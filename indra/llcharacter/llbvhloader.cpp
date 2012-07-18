@@ -44,7 +44,7 @@
 #include "llapr.h"
 
 
-using namespace std;
+//using namespace std;
 
 #define INCHES_TO_METERS 0.02540005f
 

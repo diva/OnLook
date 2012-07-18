@@ -175,8 +175,10 @@ LLViewerObject *LLViewerObject::createObject(const LLUUID &id, const LLPCode pco
 	  res = NULL; break;
 	case LL_PCODE_LEGACY_TEXT_BUBBLE:
 	  res = new LLVOTextBubble(id, pcode, regionp); break;
+#if ENABLE_CLASSIC_CLOUDS
 	case LL_VO_CLOUDS:
 	  res = new LLVOClouds(id, pcode, regionp); break;
+#endif
 	case LL_VO_SURFACE_PATCH:
 	  res = new LLVOSurfacePatch(id, pcode, regionp); break;
 	case LL_VO_SKY:
@@ -442,7 +444,9 @@ void LLViewerObject::dump() const
 	llinfos << "PositionAgent: " << getPositionAgent() << llendl;
 	llinfos << "PositionGlobal: " << getPositionGlobal() << llendl;
 	llinfos << "Velocity: " << getVelocity() << llendl;
-	if (mDrawable.notNull() && mDrawable->getNumFaces())
+	if (mDrawable.notNull() && 
+		mDrawable->getNumFaces() && 
+		mDrawable->getFace(0))
 	{
 		LLFacePool *poolp = mDrawable->getFace(0)->getPool();
 		if (poolp)
@@ -2870,6 +2874,23 @@ void LLViewerObject::processTaskInvFile(void** user_data, S32 error_code, LLExtS
 	   (object = gObjectList.findObject(ft->mTaskID)))
 	{
 		object->loadTaskInvFile(ft->mFilename);
+
+		LLInventoryObject::object_list_t::iterator it = object->mInventory->begin();
+		LLInventoryObject::object_list_t::iterator end = object->mInventory->end();
+		std::list<LLUUID>& pending_lst = object->mPendingInventoryItemsIDs;
+
+		for (; it != end && pending_lst.size(); ++it)
+		{
+			LLViewerInventoryItem* item = dynamic_cast<LLViewerInventoryItem*>(it->get());
+			if(item && item->getType() != LLAssetType::AT_CATEGORY)
+			{
+				std::list<LLUUID>::iterator id_it = std::find(pending_lst.begin(), pending_lst.begin(), item->getAssetUUID());
+				if (id_it != pending_lst.end())
+				{
+					pending_lst.erase(id_it);
+				}
+			}
+		}
 	}
 	else
 	{
@@ -2978,6 +2999,33 @@ void LLViewerObject::removeInventory(const LLUUID& item_id)
 	// function. The UI functionality that called this method should
 	// refresh the views if necessary.
 	//gBuildView->refresh();
+}
+
+bool LLViewerObject::isTextureInInventory(LLViewerInventoryItem* item)
+{
+	bool result = false;
+
+	if (item && LLAssetType::AT_TEXTURE == item->getType())
+	{
+		std::list<LLUUID>::iterator begin = mPendingInventoryItemsIDs.begin();
+		std::list<LLUUID>::iterator end = mPendingInventoryItemsIDs.end();
+
+		bool is_fetching = std::find(begin, end, item->getAssetUUID()) != end;
+		bool is_fetched = getInventoryItemByAsset(item->getAssetUUID()) != NULL;
+
+		result = is_fetched || is_fetching;
+	}
+
+	return result;
+}
+
+void LLViewerObject::updateTextureInventory(LLViewerInventoryItem* item, U8 key, bool is_new)
+{
+	if (item && !isTextureInInventory(item))
+	{
+		mPendingInventoryItemsIDs.push_back(item->getAssetUUID());
+		updateInventory(item, key, is_new);
+	}
 }
 
 void LLViewerObject::updateInventory(
@@ -4555,7 +4603,11 @@ U32 LLViewerObject::getNumVertices() const
 		num_faces = mDrawable->getNumFaces();
 		for (i = 0; i < num_faces; i++)
 		{
-			num_vertices += mDrawable->getFace(i)->getGeomCount();
+			LLFace * facep = mDrawable->getFace(i);
+			if (facep)
+			{
+				num_vertices += facep->getGeomCount();
+			}
 		}
 	}
 	return num_vertices;
@@ -4570,7 +4622,11 @@ U32 LLViewerObject::getNumIndices() const
 		num_faces = mDrawable->getNumFaces();
 		for (i = 0; i < num_faces; i++)
 		{
-			num_indices += mDrawable->getFace(i)->getIndicesCount();
+			LLFace * facep = mDrawable->getFace(i);
+			if (facep)
+			{
+				num_indices += facep->getIndicesCount();
+			}
 		}
 	}
 	return num_indices;
@@ -4855,9 +4911,11 @@ void LLViewerObject::deleteParticleSource()
 // virtual
 void LLViewerObject::updateDrawable(BOOL force_damped)
 {
-	if (mDrawable.notNull() && 
-		!mDrawable->isState(LLDrawable::ON_MOVE_LIST) &&
-		isChanged(MOVED))
+	if (!isChanged(MOVED))
+	{ //most common case, having an empty if case here makes for better branch prediction
+	}
+	else if (mDrawable.notNull() && 
+		!mDrawable->isState(LLDrawable::ON_MOVE_LIST))
 	{
 		BOOL damped_motion = 
 			!isChanged(SHIFTED) &&										// not shifted between regions this frame and...

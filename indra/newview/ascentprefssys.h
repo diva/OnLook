@@ -34,6 +34,7 @@
 
 
 #include "llpanel.h"
+#include "lldroptarget.h"
 
 
 class LLPrefsAscentSys : public LLPanel
@@ -50,6 +51,8 @@ public:
 protected:
     static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
     static void onCommitCmdLine(LLUICtrl* ctrl, void* user_data);
+    static void onCommitComboBox(LLUICtrl* ctrl, void* user_data);
+    static void onCommitTexturePicker(LLUICtrl* ctrl, void* user_data);
 
     //General -----------------------------------------------------------------------------
     BOOL mDoubleClickTeleport;
@@ -100,6 +103,26 @@ protected:
     BOOL mDisableClickSit;
     BOOL mDisplayScriptJumps;
     F32 mNumScriptDiff;
+	//Build -------------------------------------------------------------------------------
+	F32 mAlpha;
+	LLColor4 mColor;
+	BOOL mFullBright;
+	F32 mGlow;
+	std::string mMaterial;
+	BOOL mNextCopy;
+	BOOL mNextMod;
+	BOOL mNextTrans;
+	std::string mShiny;
+	BOOL mTemporary;
+	std::string mTexture;
+	BOOL mPhantom;
+	BOOL mPhysical;
+	F32 mXsize;
+	F32 mYsize;
+	F32 mZsize;
+private:
+	static LLPrefsAscentSys* sInst;
+	static void SinguBuildItemDrop(LLViewerInventoryItem* item);
 };
 
 #endif

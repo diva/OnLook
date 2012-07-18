@@ -101,7 +101,7 @@ U32 LLVertexBuffer::sSetCount = 0;
 S32 LLVertexBuffer::sCount = 0;
 S32 LLVertexBuffer::sGLCount = 0;
 S32 LLVertexBuffer::sMappedCount = 0;
-bool LLVertexBuffer::sDisableVBOMapping = false;
+bool LLVertexBuffer::sDisableVBOMapping = true;	//Temporary workaround for vbo mapping being straight up broken
 bool LLVertexBuffer::sEnableVBOs = true;
 U32 LLVertexBuffer::sGLRenderBuffer = 0;
 U32 LLVertexBuffer::sGLRenderArray = 0;
@@ -115,60 +115,6 @@ bool LLVertexBuffer::sMapped = false;
 bool LLVertexBuffer::sUseStreamDraw = true;
 bool LLVertexBuffer::sUseVAO = false;
 bool LLVertexBuffer::sPreferStreamDraw = false;
-
-const U32 FENCE_WAIT_TIME_NANOSECONDS = 10000;  //1 ms
-
-class LLGLSyncFence : public LLGLFence
-{
-public:
-#ifdef GL_ARB_sync
-	GLsync mSync;
-#endif
-	
-	LLGLSyncFence()
-	{
-#ifdef GL_ARB_sync
-		mSync = 0;
-#endif
-	}
-
-	virtual ~LLGLSyncFence()
-	{
-#ifdef GL_ARB_sync
-		if (mSync)
-		{
-			glDeleteSync(mSync);
-		}
-#endif
-	}
-
-	void placeFence()
-	{
-#ifdef GL_ARB_sync
-		if (mSync)
-		{
-			glDeleteSync(mSync);
-		}
-		mSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-#endif
-	}
-
-	void wait()
-	{
-#ifdef GL_ARB_sync
-		if (mSync)
-		{
-			while (glClientWaitSync(mSync, 0, FENCE_WAIT_TIME_NANOSECONDS) == GL_TIMEOUT_EXPIRED)
-			{ //track the number of times we've waited here
-				static S32 waits = 0;
-				waits++;
-			}
-		}
-#endif
-	}
-
-
-};
 
 
 volatile U8* LLVBOPool::allocate(U32& name, U32 size)
@@ -792,7 +738,7 @@ void LLVertexBuffer::drawArrays(U32 mode, U32 first, U32 count) const
 void LLVertexBuffer::initClass(bool use_vbo, bool no_vbo_mapping)
 {
 	sEnableVBOs = use_vbo && gGLManager.mHasVertexBufferObject;
-	sDisableVBOMapping = sEnableVBOs && no_vbo_mapping;
+	sDisableVBOMapping = sEnableVBOs;// && no_vbo_mapping; //Temporary workaround for vbo mapping being straight up broken
 
 	if (!sPrivatePoolp)
 	{ 

@@ -117,7 +117,8 @@ protected:
 	LLComboBox		*mCtrlShadowDetail;
 	LLCheckBoxCtrl	*mCtrlAvatarImpostors;
 	LLCheckBoxCtrl	*mCtrlAvatarCloth;
-	LLRadioGroup	*mRadioLightingDetail2;
+	LLCheckBoxCtrl	*mCtrlLightingDetail2;
+	LLCheckBoxCtrl	*mCtrlAmbientOcc;
 	LLRadioGroup	*mRadioTerrainDetail;
 
 	LLTextBox		*mAspectRatioLabel1;

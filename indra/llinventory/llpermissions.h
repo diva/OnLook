@@ -149,7 +149,7 @@ public:
 	const LLUUID&	getGroup() 			const	{ return mGroup; }
 
 	// return the agent_id of the last agent owner. Only returns
-	// LLUUID::null if there has never been a previous owner.
+	// LLUUID::null if there has never been a previous owner (*note: this is apparently not true, say for textures in inventory, it may return LLUUID::null even if there was a previous owner).
 	const LLUUID&	getLastOwner() 		const	{ return mLastOwner; }
 
 	U32				getMaskBase() 		const	{ return mMaskBase; }
@@ -235,6 +235,7 @@ public:
 	// Last owner doesn't have much in the way of permissions so it's 
 	//not too dangerous to do this. 
 	void setLastOwner(const LLUUID& last_owner);
+
 	// saves last owner, sets owner to uuid null, sets group
 	// owned. group_id must be the group of the object (that's who it
 	// is being deeded to) and the object must be group
@@ -323,9 +324,6 @@ public:
 
 	BOOL	importLegacyStream(std::istream& input_stream);
 	BOOL	exportLegacyStream(std::ostream& output_stream) const;
-
-	LLXMLNode *exportFileXML() const;
-	bool importXML(LLXMLNode* node);
 
 	bool operator==(const LLPermissions &rhs) const;
 	bool operator!=(const LLPermissions &rhs) const;

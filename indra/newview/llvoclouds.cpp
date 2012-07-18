@@ -52,6 +52,7 @@
 #include "pipeline.h"
 #include "llspatialpartition.h"
 
+#if ENABLE_CLASSIC_CLOUDS
 LLUUID gCloudTextureID = IMG_CLOUD_POOF;
 
 
@@ -119,29 +120,48 @@ static LLFastTimer::DeclareTimer FTM_UPDATE_CLOUDS("Cloud Update");
 BOOL LLVOClouds::updateGeometry(LLDrawable *drawable)
 {
 	LLFastTimer ftm(FTM_UPDATE_CLOUDS);
-	if (!(gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS)))
-	{
-		return TRUE;
-	}
 	
-	if (drawable->isVisible())
+	dirtySpatialGroup();
+
+	S32 num_parts = mCloudGroupp->getNumPuffs();
+	LLFace *facep;
+	LLSpatialGroup* group = drawable->getSpatialGroup();
+	if (!group && num_parts)
+	{
+		drawable->movePartition();
+		group = drawable->getSpatialGroup();
+	}
+
+	if (group && group->isVisible())
 	{
 		dirtySpatialGroup(TRUE);
 	}
 
-	LLFace *facep;
-	
-	S32 num_faces = mCloudGroupp->getNumPuffs();
-
-	if (num_faces > drawable->getNumFaces())
+	if (!num_parts)
 	{
-		drawable->setNumFacesFast(num_faces, NULL, getTEImage(0));
+		if (group && drawable->getNumFaces())
+		{
+			group->setState(LLSpatialGroup::GEOM_DIRTY);
+		}
+		drawable->setNumFaces(0, NULL, getTEImage(0));
+		LLPipeline::sCompiles++;
+		return TRUE;
+	}
+
+ 	if (!(gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS)))
+	{
+		return TRUE;
+	}
+
+	if (num_parts > drawable->getNumFaces())
+	{
+		drawable->setNumFacesFast(num_parts+num_parts/4, NULL, getTEImage(0));
 	}
 
 	mDepth = (getPositionAgent()-LLViewerCamera::getInstance()->getOrigin())*LLViewerCamera::getInstance()->getAtAxis();
 
 	S32 face_indx = 0;
-	for ( ;	face_indx < num_faces; face_indx++)
+	for ( ;	face_indx < num_parts; face_indx++)
 	{
 		facep = drawable->getFace(face_indx);
 		if (!facep)
@@ -150,16 +170,18 @@ BOOL LLVOClouds::updateGeometry(LLDrawable *drawable)
 			continue;
 		}
 
+		facep->setTEOffset(face_indx);
 		facep->setSize(4, 6);
 		
-		facep->setTEOffset(face_indx);
-		facep->setTexture(getTEImage(0));
+		facep->setViewerObject(this);
+		
 		const LLCloudPuff &puff = mCloudGroupp->getPuff(face_indx);
 		const LLVector3 puff_pos_agent = gAgent.getPosAgentFromGlobal(puff.getPositionGlobal());
 		facep->mCenterLocal = puff_pos_agent;
 		/// Update cloud color based on sun color.
 		LLColor4 float_color(LLColor3(gSky.getSunDiffuseColor() + gSky.getSunAmbientColor()),puff.getAlpha());
 		facep->setFaceColor(float_color);
+		facep->setTexture(getTEImage(0));
 	}
 	for ( ; face_indx < drawable->getNumFaces(); face_indx++)
 	{
@@ -174,8 +196,8 @@ BOOL LLVOClouds::updateGeometry(LLDrawable *drawable)
 		facep->setSize(0,0);
 	}
 
-	drawable->movePartition();
-
+	mDrawable->movePartition();
+	LLPipeline::sCompiles++;
 	return TRUE;
 }
 
@@ -212,8 +234,6 @@ void LLVOClouds::getGeometry(S32 idx,
 	color.setVec(float_color);
 	facep->setFaceColor(float_color);
 	
-	U32 vert_offset = facep->getGeomIndex();
-		
 	LLVector4a part_pos_agent;
 	part_pos_agent.load3(facep->mCenterLocal.mV);	
 	LLVector4a at;
@@ -250,33 +270,15 @@ void LLVOClouds::getGeometry(S32 idx,
 	verticesp->setAdd(ppamu, right);
 	(*verticesp++).getF32ptr()[3] = 0.f;
 
-	// *verticesp++ = puff_pos_agent - right + up;
-	// *verticesp++ = puff_pos_agent - right - up;
-	// *verticesp++ = puff_pos_agent + right + up;
-	// *verticesp++ = puff_pos_agent + right - up;
-
 	*colorsp++ = color;
 	*colorsp++ = color;
 	*colorsp++ = color;
 	*colorsp++ = color;
 
-	*texcoordsp++ = LLVector2(0.f, 1.f);
-	*texcoordsp++ = LLVector2(0.f, 0.f);
-	*texcoordsp++ = LLVector2(1.f, 1.f);
-	*texcoordsp++ = LLVector2(1.f, 0.f);
-
 	*normalsp++   = normal;
 	*normalsp++   = normal;
 	*normalsp++   = normal;
 	*normalsp++   = normal;
-
-	*indicesp++ = vert_offset + 0;
-	*indicesp++ = vert_offset + 1;
-	*indicesp++ = vert_offset + 2;
-
-	*indicesp++ = vert_offset + 1;
-	*indicesp++ = vert_offset + 3;
-	*indicesp++ = vert_offset + 2;
 }
 
 U32 LLVOClouds::getPartitionType() const
@@ -302,3 +304,4 @@ LLCloudPartition::LLCloudPartition()
 	mPartitionType = LLViewerRegion::PARTITION_CLOUD;
 }
 
+#endif

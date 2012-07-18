@@ -114,7 +114,6 @@ LLPluginProcessParent::LLPluginProcessParent(LLPluginProcessParentOwner *owner)
 	
 	// Don't start the timer here -- start it when we actually launch the plugin process.
 	mHeartbeat.stop();
-
 	
 	// Don't add to the global list until fully constructed.
 	{
@@ -173,10 +172,12 @@ void LLPluginProcessParent::errorState(void)
 		setState(STATE_ERROR);
 }
 
-void LLPluginProcessParent::init(const std::string &launcher_filename, const std::string &plugin_filename, bool debug)
+void LLPluginProcessParent::init(const std::string &launcher_filename, const std::string &plugin_dir, const std::string &plugin_filename, bool debug)
 {	
 	mProcess.setExecutable(launcher_filename);
+	mProcess.setWorkingDirectory(plugin_dir);
 	mPluginFile = plugin_filename;
+	mPluginDir = plugin_dir;
 	mCPUUsage = 0.0f;
 	mDebug = debug;	
 	setState(STATE_INITIALIZED);
@@ -483,6 +484,7 @@ void LLPluginProcessParent::idle(void)
 				{
 					LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_INTERNAL, "load_plugin");
 					message.setValue("file", mPluginFile);
+					message.setValue("dir", mPluginDir);
 					sendMessage(message);
 				}
 

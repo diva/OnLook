@@ -875,8 +875,6 @@ void init_menus()
 	gLoginMenuBarView->setBackgroundColor( color );
 
 	gMenuHolder->addChild(gLoginMenuBarView);
-	
-	LLToolMgr::getInstance()->initMenu(sMenus);
 }
 
 
@@ -1371,7 +1369,11 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 											&LLPipeline::hasRenderTypeControl,
 											(void*)LLPipeline::RENDER_TYPE_GRASS, '0', MASK_CONTROL|MASK_ALT|MASK_SHIFT));
 	//NOTE: Using a static variable, as an unsigned long long cannot fit in the space of a pointer. Pass pointer to callbacks
-	static U64 cloud_flags = (1ULL<<LLPipeline::RENDER_TYPE_WL_CLOUDS | 1ULL<<LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
+	static U64 cloud_flags = (1ULL<<LLPipeline::RENDER_TYPE_WL_CLOUDS
+#if ENABLE_CLASSIC_CLOUDS
+		| 1ULL<<LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS
+#endif
+		);
 	sub_menu->addChild(new LLMenuItemCheckGL("Clouds",  //This clobbers skyuseclassicclouds, but.. big deal.
 											&LLPipeline::toggleRenderPairedTypeControl, NULL,
 											&LLPipeline::hasRenderPairedTypeControl,
@@ -9506,4 +9508,6 @@ void initialize_menus()
 		addMenu(new RlvEnableIfNot(), "RLV.EnableIfNot");
 	}
 // [/RLVa:KB]
+
+	LLToolMgr::getInstance()->initMenu(sMenus);
 }

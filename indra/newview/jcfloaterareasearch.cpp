@@ -52,7 +52,7 @@ std::string JCFloaterAreaSearch::sSearchedDesc;
 std::string JCFloaterAreaSearch::sSearchedOwner;
 std::string JCFloaterAreaSearch::sSearchedGroup;
 
-const std::string request_string = "JCFloaterAreaSearch::Requested_ø§µ";
+const std::string request_string = "JCFloaterAreaSearch::Requested_\xF8\xA7\xB5";
 const F32 min_refresh_interval = 0.25f;	// Minimum interval between list refreshes in seconds.
 
 JCFloaterAreaSearch::JCFloaterAreaSearch() :

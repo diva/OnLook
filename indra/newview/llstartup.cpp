@@ -660,17 +660,6 @@ bool idle_startup()
 		{
 			gAudiop = NULL;
 
-#ifdef LL_OPENAL
-			if (!gAudiop
-#if !LL_WINDOWS
-			    && NULL == getenv("LL_BAD_OPENAL_DRIVER")
-#endif // !LL_WINDOWS
-			    )
-			{
-				gAudiop = (LLAudioEngine *) new LLAudioEngine_OpenAL();
-			}
-#endif
-
 #ifdef LL_FMODEX		
 			if (!gAudiop
 #if !LL_WINDOWS
@@ -679,6 +668,17 @@ bool idle_startup()
 			    )
 			{
 				gAudiop = (LLAudioEngine *) new LLAudioEngine_FMODEX(gSavedSettings.getBOOL("SHEnableFMODExProfiler"));
+			}
+#endif
+
+#ifdef LL_OPENAL
+			if (!gAudiop
+#if !LL_WINDOWS
+			    && NULL == getenv("LL_BAD_OPENAL_DRIVER")
+#endif // !LL_WINDOWS
+			    )
+			{
+				gAudiop = (LLAudioEngine *) new LLAudioEngine_OpenAL();
 			}
 #endif
 
@@ -4288,11 +4288,13 @@ bool process_login_success_response(std::string& password)
 			gMoonTextureID = id;
 		}
 
+#if ENABLE_CLASSIC_CLOUDS
 		id = global_textures["cloud_texture_id"];
 		if(id.notNull())
 		{
 			gCloudTextureID = id;
 		}
+#endif
 	}
 
 	

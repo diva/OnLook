@@ -245,9 +245,9 @@ bool LLTextureCacheLocalFileWorker::doRead()
 		}
 	}
 #else
-	if (!mDataSize || mDataSize > local_size - mOffset)
+	if (!mDataSize || mDataSize > local_size)
 	{
-		mDataSize = local_size - mOffset;
+		mDataSize = local_size;
 	}
 	mReadData = (U8*)ALLOCATE_MEM(LLImageBase::getPrivatePool(), mDataSize);
 	
@@ -375,7 +375,7 @@ bool LLTextureCacheRemoteWorker::doRead()
 		llassert(local_size != 0);	// we're assuming there is a non empty local file here...
 		if (!mDataSize || mDataSize > local_size - mOffset)
 		{
-			mDataSize = local_size - mOffset;
+			mDataSize = local_size	- mOffset;
 		}
 		// Allocate read buffer
 		mReadData = (U8*)ALLOCATE_MEM(LLImageBase::getPrivatePool(), mDataSize);
@@ -873,7 +873,7 @@ BOOL LLTextureCache::isInLocal(const LLUUID& id)
 
 //static
 const S32 MAX_REASONABLE_FILE_SIZE = 512*1024*1024; // 512 MB
-F32 LLTextureCache::sHeaderCacheVersion = 1.5f;
+F32 LLTextureCache::sHeaderCacheVersion = 1.6f;
 U32 LLTextureCache::sCacheMaxEntries = MAX_REASONABLE_FILE_SIZE / TEXTURE_CACHE_ENTRY_SIZE;
 S64 LLTextureCache::sCacheMaxTexturesSize = 0; // no limit
 const char* entries_filename = "texture.entries";

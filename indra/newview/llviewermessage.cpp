@@ -2261,7 +2261,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 									position,
 									false);
 						}
-						LLGiveInventory::doGiveInventoryItem(from_id, item);
+						LLGiveInventory::doGiveInventoryItem(from_id, item, computed_session_id);
 					}
 				}
 			}
@@ -4754,8 +4754,6 @@ void process_kill_object(LLMessageSystem *mesgsys, void **user_data)
 			LL_DEBUGS("Messaging") << "Kill message for local " << local_id << LL_ENDL;
 		}
 
-		LLSelectMgr::getInstance()->removeObjectFromSelections(id);
-
 		// ...don't kill the avatar
 		if (!(id == gAgentID))
 		{
@@ -4785,6 +4783,12 @@ void process_kill_object(LLMessageSystem *mesgsys, void **user_data)
 				gObjectList.mNumUnknownKills++;
 			}
 		}
+
+		// We should remove the object from selection after it is marked dead by gObjectList to make LLToolGrab,
+        // which is using the object, release the mouse capture correctly when the object dies.
+        // See LLToolGrab::handleHoverActive() and LLToolGrab::handleHoverNonPhysical().
+		LLSelectMgr::getInstance()->removeObjectFromSelections(id);
+
 	}
 }
 
@@ -5332,7 +5336,7 @@ void process_avatar_sit_response(LLMessageSystem *mesgsys, void **user_data)
 	if (object)
 	{
 		LLVector3 sit_spot = object->getPositionAgent() + (sitPosition * object->getRotation());
-		if (!use_autopilot || isAgentAvatarValid() && gAgentAvatarp->isSitting() && gAgentAvatarp->getRoot() == object->getRoot())
+		if (!use_autopilot || (isAgentAvatarValid() && gAgentAvatarp->isSitting() && gAgentAvatarp->getRoot() == object->getRoot()))
 		{
 			//we're already sitting on this object, so don't autopilot
 		}

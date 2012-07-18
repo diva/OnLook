@@ -151,6 +151,14 @@ LLFloaterAbout::LLFloaterAbout()
     support.append(llformat("Built with MSVC version %d\n\n", _MSC_VER));
 #endif
 
+#if LL_CLANG
+    support.append(llformat("Built with Clang version %d\n\n", CLANG_VERSION));
+#endif
+
+#if LL_ICC
+    support.append(llformat("Built with ICC version %d\n\n", __ICC));
+#endif
+
 #if LL_GNUC
     support.append(llformat("Built with GCC version %d\n\n", GCC_VERSION));
 #endif
@@ -208,13 +216,14 @@ LLFloaterAbout::LLFloaterAbout()
 	support.append( gSysCPU.getCPUString() );
 	support.append("\n");
 
+	/* This is confusing and WRONG.
 	support.append("SSE Support:");
 	if(gSysCPU.hasSSE())
 		support.append(" SSE2\n");
 	else if(gSysCPU.hasSSE())
 		support.append(" SSE\n");
 	else
-		support.append(" None\n");
+		support.append(" None\n"); */
 
 	U32 memory = gSysMemory.getPhysicalMemoryKB() / 1024;
 	// Moved hack adjustment to Windows memory size into llsys.cpp

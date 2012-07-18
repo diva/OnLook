@@ -30,11 +30,11 @@ include(BuildVersion)
 
 include(UnixInstall)
 
-set (GCC_DISABLE_FATAL_WARNINGS TRUE)
+set (DISABLE_FATAL_WARNINGS TRUE)
 
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE ReleaseSSE2 CACHE STRING
-      "Build type.  One of: Debug Release ReleaseSSE2 RelWithDebInfo" FORCE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING
+      "Build type.  One of: Debug Release RelWithDebInfo" FORCE)
 endif (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 
 # Create a 'prepare' target in which to perform setup actions.  This

@@ -224,7 +224,6 @@ public:
 
 	void setVoiceModerationCtrlMode(const BOOL& moderated_voice);
 	
-	static void onClickMuteVoice(void* user_data);
 	static void onClickMuteVoiceCommit(LLUICtrl* ctrl, void* user_data);
 	static void onClickMuteTextCommit(LLUICtrl* ctrl, void* user_data);
 	static void onVolumeChange(LLUICtrl* source, void* user_data);

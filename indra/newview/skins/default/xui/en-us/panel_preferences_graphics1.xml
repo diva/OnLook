@@ -37,66 +37,64 @@
 -->
 	<slider bottom="-91" control_name="RenderQualityPerformance" increment="1" initial_val="0" left="165" max_val="3" min_val="0" name="QualityPerformanceSelection" show_text="false" width="150" />
 	<check_box bottom="-96" control_name="RenderCustomSettings" label="Custom" left="395" initial_value="true" name="CustomSettings"/>
-	<view_border bevel_style="none" bottom="-395" height="280" left="5" name="GraphicsBorder" width="485"/>
+	<!--view_border bevel_style="none" bottom="-395" height="280" left="5" name="GraphicsBorder" width="485"/-->
 	<text bottom="-130" height="12" left="10" name="ShadersText">Shaders:</text>
-	<check_box bottom_delta="-23" control_name="RenderObjectBump" height="16" initial_value="true" label="Bump Mapping and Shiny" left="10" name="BumpShiny"/>
-	<check_box bottom_delta="-17" control_name="VertexShaderEnable" height="16" initial_value="true" label="Basic Shaders" left_delta="0" name="BasicShaders" tool_tip="Disabling this option may prevent some graphics card drivers from crashing."/>
-	<check_box bottom_delta="-17" control_name="WindLightUseAtmosShaders" initial_value="true" label="Atmospheric Shaders" left_delta="0" name="WindLightUseAtmosShaders"/>
-	<check_box bottom_delta="-17" control_name="RenderDeferred" initial_value="true" label="Deferred Shading" left_delta="0" name="RenderDeferred"/>
+	<check_box bottom_delta="-23" control_name="RenderObjectBump" height="16" initial_value="true" label="Bump mapping and shiny" left="10" name="BumpShiny"/>
+    <check_box bottom_delta="-17" control_name="RenderLocalLights" height="16" label="Local Lights" name="LightingDetailRadio"/>
+	<check_box bottom_delta="-17" control_name="VertexShaderEnable" height="16" initial_value="true" label="Basic shaders" left_delta="0" name="BasicShaders" tool_tip="Disabling this option may prevent some graphics card drivers from crashing."/>
+	<check_box bottom_delta="-17" control_name="WindLightUseAtmosShaders" initial_value="true" label="Atmospheric shaders" left_delta="0" name="WindLightUseAtmosShaders"/>
+	<check_box bottom_delta="-17" control_name="RenderDeferred" initial_value="true" label="Lighting and Shadows" tool_tip="Deferred Shading" left_delta="0" name="RenderDeferred"/>
+    <check_box bottom_delta="-17" control_name="RenderDeferredSSAO" height="16" initial_value="true" label="Ambient Occlusion" left_delta="0" name="UseSSAO"/>
 	<check_box bottom_delta="-17" control_name="RenderDepthOfField"	initial_value="true" label="Depth of Field" left_delta="0" name="RenderDepthOfField"/>
-	<text bottom_delta="-17" height="12" left="15" name="ReflectionDetailText">Water Reflections:</text>
-	<combo_box bottom_delta="-20" control_name="RenderReflectionDetail" label="Reflection Detail" left_delta="-2" name="ReflectionDetailCombo" width="160" height="16">
-		<combo_item name="0" value="0">Disabled</combo_item>
-		<combo_item name="1" value="1">Terrain and Trees</combo_item>
-		<combo_item name="2" value="2">All Static Objects</combo_item>
-		<combo_item name="3" value="3">All Avatars and Objects</combo_item>
+  <text bottom_delta="-60" height="12" left="15" name="ShadowDetailText">Shadows:</text>
+  <combo_box bottom_delta="-22" control_name="RenderShadowDetail" label="Shadow Detail" left_delta="-2" name="ShadowDetailCombo" width="160" height="16">
+	  <combo_item name="0" value="0">Disabled</combo_item>
+	  <combo_item name="1" value="1">Sun/Moon</combo_item>
+	  <combo_item name="2" value="2">Sun/Moon + Projectors</combo_item>
+  </combo_box>
+	<text bottom_delta="-20" height="12" left="15" name="ReflectionDetailText">Water Reflections:</text>
+	<combo_box bottom_delta="-22" control_name="RenderReflectionDetail" label="Reflection Detail" left_delta="-2" name="ReflectionDetailCombo" width="160" height="16">
+		<combo_item name="0" value="0">Minimal</combo_item>
+		<combo_item name="1" value="1">Terrain and trees</combo_item>
+		<combo_item name="2" value="2">All static objects</combo_item>
+		<combo_item name="3" value="3">All avatars and objects</combo_item>
 		<combo_item name="4" value="4">Everything</combo_item>
 	</combo_box>
-  <text bottom_delta="-17" height="12" left="15" name="ShadowDetailText">Deferred Shadows:</text>
-  <combo_box bottom_delta="-20" control_name="RenderShadowDetail" label="Shadow Detail" left_delta="-2" name="ShadowDetailCombo" width="160" height="16">
-	  <combo_item name="0" value="0">Disabled</combo_item>
-	  <combo_item name="1" value="1">Sun shadows</combo_item>
-	  <combo_item name="2" value="2">Sun and spotlight shadows</combo_item>
-  </combo_box>
 
-  <text bottom="-317" height="12" left="10" name="AvatarRenderingText">Avatar Rendering:</text>
-  <check_box bottom_delta="-18" control_name="RenderUseImpostors" initial_value="true" label="Avatar Impostors" name="AvatarImpostors"/>
-  <slider bottom_delta="-12" left_delta="8" control_name="RenderAvatarMaxVisible" 	  	 decimal_digits="0" increment="1" initial_val="35" label="Max non-impostors" label_width="100" max_val="50" min_val="1" name="AvatarMaxVisible" width="195"/>
-  <check_box bottom_delta="-22" left_delta="-8" control_name="RenderAvatarVP" initial_value="true" label="Hardware Skinning" name="AvatarVertexProgram"/>
-  <check_box bottom_delta="-17" control_name="RenderAvatarCloth" initial_value="true" label="Avatar Cloth" name="AvatarCloth"/>
+  <slider bottom_delta="-24" left="5" control_name="RenderAvatarPhysicsLODFactor" increment="0.1" label="  Avatar Physics:" label_width="79" max_val="1" min_val="0" name="AvatarPhysicsDetail" show_text="false" width="160"/>
+  <text bottom_delta="-2" left="170" height="12" name="AvatarPhysicsDetailText">Off</text>
   <!--text bottom="-131" height="12" left="464" name="DrawDistanceMeterText1">m</text-->
   <text bottom="-131" height="12" left="470" name="DrawDistanceMeterText2">m</text>
   <slider bottom="-135"      control_name="RenderFarClip"	  	  		  decimal_digits="0" height="16" increment="8" initial_val="160" label="Draw Distance:" label_width="101" left="215" max_val="1024" min_val="64" name="DrawDistance" width="262"/>
-  <slider bottom_delta="-16" control_name="RenderMaxPartCount"	  		  decimal_digits="0" height="16" increment="256" initial_val="4096"	  label="Max. Particle Count:" label_width="101"	  max_val="8192" min_val="0" name="MaxParticleCount" width="262"/>
-  <slider bottom_delta="-20" control_name="RenderGlowResolutionPow" 	  decimal_digits="0" height="16" increment="1" initial_val="8" label="Post Process Quality:"	  label_width="101" max_val="9" min_val="8" name="RenderPostProcess" show_text="false" width="226"/>
-  <text bottom_delta="-17" height="12" left="215" name="MeshDetailText">Mesh Detail:</text>
-  <slider bottom_delta="-18" control_name="RenderVolumeLODFactor" increment="0.09375" label="  Objects:" label_width="79" max_val="2" min_val="0.5" name="ObjectMeshDetail" show_text="false" width="223"/>
+  <slider bottom_delta="-15" control_name="RenderMaxPartCount"	  		  decimal_digits="0" height="16" increment="256" initial_val="4096"	  label="Max. Particle Count:" label_width="101"	  max_val="8192" min_val="0" name="MaxParticleCount" width="262"/>
+  <slider bottom_delta="-15" control_name="RenderAvatarMaxVisible" 	  	 decimal_digits="0" increment="1" initial_val="35" label="Max non-impostors" label_width="101" max_val="50" min_val="1" name="AvatarMaxVisible" width="250"/>
+  <slider bottom_delta="-25" control_name="RenderGlowResolutionPow" 	  decimal_digits="0" height="16" increment="1" initial_val="8" label="Post Process Quality:"	  label_width="101" max_val="9" min_val="8" name="RenderPostProcess" show_text="false" width="226"/>
+  <text bottom_delta="-20" height="12" left="215" name="MeshDetailText">Level of Detail:</text>
+  <slider bottom_delta="-20" control_name="RenderVolumeLODFactor" increment="0.09375" label="  Objects:" label_width="79" max_val="2" min_val="0.5" name="ObjectMeshDetail" show_text="false" width="223"/>
   <slider bottom_delta="-20" control_name="RenderFlexTimeFactor" increment="0.1" label="  Flexiprims:" label_width="79" max_val="1" min_val="0" name="FlexibleMeshDetail" show_text="false" width="223"/>
   <slider bottom_delta="-20" control_name="RenderTreeLODFactor"	increment="0.125" label="  Trees:" label_width="79" max_val="1" min_val="0" name="TreeMeshDetail" show_text="false" width="223"/>
   <slider bottom_delta="-20" control_name="RenderAvatarLODFactor" increment="0.125" label="  Avatars:" label_width="79" max_val="1" min_val="0" name="AvatarMeshDetail" show_text="false" width="223"/>
-  <slider bottom_delta="-20" control_name="RenderAvatarPhysicsLODFactor" increment="0.1" label="  Avatar Physics:" label_width="79" max_val="1" min_val="0" name="AvatarPhysicsDetail" show_text="false" width="223"/>
   <slider bottom_delta="-20" control_name="RenderTerrainLODFactor" increment="0.125" label="  Terrain:" label_width="79" max_val="2" min_val="1" name="TerrainMeshDetail" show_text="false" width="223"/>
   <slider bottom_delta="-20" control_name="WLSkyDetail"			  		  decimal_digits="0" increment="8" label="  Sky:" label_width="79" max_val="128" min_val="16" name="SkyMeshDetail"   show_text="false" width="223"/>
-  <text bottom="-172" height="12" left="444" name="PostProcessText">Low</text>
+  <text bottom="-192" height="12" left="444" name="PostProcessText">Low</text>
   <text bottom_delta="-38" height="12" name="ObjectMeshDetailText">Low</text>
   <text bottom_delta="-20" height="12" name="FlexibleMeshDetailText">Low</text>
   <text bottom_delta="-20" height="12" name="TreeMeshDetailText">Low</text>
   <text bottom_delta="-20" height="12" name="AvatarMeshDetailText">Low</text>
-  <text bottom_delta="-20" height="12" name="AvatarPhysicsDetailText">Off</text>
   <text bottom_delta="-20" height="12" name="TerrainMeshDetailText">Low</text>
   <text bottom_delta="-20" height="12" name="SkyMeshDetailText">Low</text>
-  <text bottom="-354"	   height="12" left="215" name="LightingDetailText">Lighting Detail:</text>
-  <radio_group bottom_delta="-40" control_name="RenderLocalLights" draw_border="false" height="38" name="LightingDetailRadio" width="321">
-	  <radio_item bottom="-15" height="16" left="3" name="SunMoon" width="156">Sun and moon only</radio_item>
-	  <radio_item bottom="-31" height="16" name="LocalLights" width="156">Nearby local lights</radio_item>
-  </radio_group>
-  <text bottom="-354" height="12" left="370" name="TerrainDetailText">Terrain Detail:</text>
+  <text bottom="-360" height="12" left="230" name="AvatarRenderingText">Avatar Rendering:</text>
+  <check_box bottom_delta="-16" control_name="RenderUseImpostors" initial_value="true" label="Avatar impostors" name="AvatarImpostors"/>
+  <check_box bottom_delta="-16" control_name="RenderAvatarVP" initial_value="true" label="Hardware skinning" name="AvatarVertexProgram"/>
+  <check_box bottom_delta="-16" control_name="RenderAvatarCloth" initial_value="true" label="Avatar cloth" name="AvatarCloth"/>
+  <text bottom="-360" height="12" left="395" name="TerrainDetailText">Terrain detail:</text>
   <radio_group bottom_delta="-40" control_name="RenderTerrainDetail" draw_border="false" height="38" name="TerrainDetailRadio" width="321">
 	  <radio_item bottom="-15" height="16" left="3" name="0" width="315">Low</radio_item>
 	  <radio_item bottom="-31" height="16" name="2" width="315">High</radio_item>
   </radio_group>
-  <button bottom="-430" height="20" label="Recommended Settings" left="130" name="Defaults" scale_image="true" width="170"/>
-  <button bottom="-430" height="20" label="Hardware Options" 	  left="310" name="GraphicsHardwareButton" scale_image="true" width="170"/>
+  <button bottom="-440" height="20" label="Reset" left="110" name="Defaults" scale_image="true" width="100"/>
+  <!--button bottom="-440" height="20" label="Advanced" left="230" name="CustomSettingsButton" scale_image="true" width="120" toggle="true" control_name="RenderCustomSettings"/-->
+  <button bottom="-440" height="20" label="Hardware" left="370" name="GraphicsHardwareButton" scale_image="true" width="120"/>
   <string name="resolution_format">[RES_X] x [RES_Y]</string>
   <string name="aspect_ratio_text">[NUM]:[DEN]</string>
 </panel>

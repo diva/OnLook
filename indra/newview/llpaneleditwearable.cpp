@@ -61,6 +61,47 @@
 
 #include "llwearablelist.h"
 
+// subparts of the UI for focus, camera position, etc.
+enum ESubpart {
+        SUBPART_SHAPE_HEAD = 1, // avoid 0
+        SUBPART_SHAPE_EYES,
+        SUBPART_SHAPE_EARS,
+        SUBPART_SHAPE_NOSE,
+        SUBPART_SHAPE_MOUTH,
+        SUBPART_SHAPE_CHIN,
+        SUBPART_SHAPE_TORSO,
+        SUBPART_SHAPE_LEGS,
+        SUBPART_SHAPE_WHOLE,
+        SUBPART_SHAPE_DETAIL,
+        SUBPART_SKIN_COLOR,
+        SUBPART_SKIN_FACEDETAIL,
+        SUBPART_SKIN_MAKEUP,
+        SUBPART_SKIN_BODYDETAIL,
+        SUBPART_HAIR_COLOR,
+        SUBPART_HAIR_STYLE,
+        SUBPART_HAIR_EYEBROWS,
+        SUBPART_HAIR_FACIAL,
+        SUBPART_EYES,
+        SUBPART_SHIRT,
+        SUBPART_PANTS,
+        SUBPART_SHOES,
+        SUBPART_SOCKS,
+        SUBPART_JACKET,
+        SUBPART_GLOVES,
+        SUBPART_UNDERSHIRT,
+        SUBPART_UNDERPANTS,
+        SUBPART_SKIRT,
+        SUBPART_ALPHA,
+        SUBPART_TATTOO,
+        SUBPART_PHYSICS_BREASTS_UPDOWN,
+        SUBPART_PHYSICS_BREASTS_INOUT,
+        SUBPART_PHYSICS_BREASTS_LEFTRIGHT,
+        SUBPART_PHYSICS_BELLY_UPDOWN,
+        SUBPART_PHYSICS_BUTT_UPDOWN,
+        SUBPART_PHYSICS_BUTT_LEFTRIGHT,
+        SUBPART_PHYSICS_ADVANCED,
+ };
+
 using namespace LLVOAvatarDefines;
 
 typedef std::vector<ESubpart> subpart_vec_t;
@@ -696,7 +737,7 @@ BOOL LLPanelEditWearable::postBuild()
 						{
 							llinfos << "Finding button " << subpart_entry->mButtonName << llendl;
 							llassert_always(getChild<LLButton>(subpart_entry->mButtonName,true,false));
-							childSetAction(subpart_entry->mButtonName, &LLPanelEditWearable::onBtnSubpart, (void*)index);
+							childSetAction(subpart_entry->mButtonName, &LLPanelEditWearable::onBtnSubpart, reinterpret_cast<void*>(index));
 						}
                 }	
 				// initialize texture and color picker controls
@@ -934,7 +975,7 @@ void LLPanelEditWearable::setWearableIndex(S32 index)
 
 	}
 
-	const LLEditWearableDictionary::SubpartEntry *subpart_entry = LLEditWearableDictionary::getInstance()->getSubpart(mCurrentSubpart);
+	const LLEditWearableDictionary::SubpartEntry *subpart_entry = LLEditWearableDictionary::getInstance()->getSubpart((ESubpart)mCurrentSubpart);
 	if(subpart_entry)
 	{
 		value_map_t sorted_params;

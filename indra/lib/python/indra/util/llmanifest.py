@@ -120,7 +120,7 @@ ARGUMENTS=[
         On Linux this would try to use Linux_i686Manifest.""",
          default=""),
     dict(name='build', description='Build directory.', default=DEFAULT_SRCTREE),
-    dict(name='buildtype', description="""The build type used. ('Debug', 'Release', 'ReleaseSSE2' or 'RelWithDebInfo')
+    dict(name='buildtype', description="""The build type used. ('Debug', 'Release', or 'RelWithDebInfo')
         Default is Release """,
          default="Release"),
     dict(name='branding_id', description="""Identifier for the branding set to 

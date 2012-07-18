@@ -5583,7 +5583,7 @@ LLUIImagePtr LLWearableBridge::getIcon() const
 	return LLInventoryIcon::getIcon(mAssetType, mInvType, mWearableType, FALSE);
 }
 
-//LLAppearanceMgr::moveWearable unfortunately fails for non-link item, so links in CoF must be found for this to work.
+//LLAppearanceMgr::moveWearable unfortunately fails for non-link items, so links in CoF must be found for this to work.
 void move_wearable_item(LLViewerInventoryItem* item, bool closer_to_body)
 {
 	if(!item)

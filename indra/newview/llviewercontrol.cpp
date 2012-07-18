@@ -377,8 +377,12 @@ static bool handleAudioStreamMusicChanged(const LLSD& newvalue)
 
 static bool handleUseOcclusionChanged(const LLSD& newvalue)
 {
-	LLPipeline::sUseOcclusion = (newvalue.asBoolean() && gGLManager.mHasOcclusionQuery 
-		&& LLFeatureManager::getInstance()->isFeatureAvailable("UseOcclusion") && !gUseWireframe) ? 2 : 0;
+	LLPipeline::sUseOcclusion = 
+			(!gUseWireframe
+			&& LLGLSLShader::sNoFixedFunction
+			&& LLFeatureManager::getInstance()->isFeatureAvailable("UseOcclusion") 
+			&& newvalue.asBoolean() 
+			&& gGLManager.mHasOcclusionQuery) ? 2 : 0;
 	return true;
 }
 
@@ -579,10 +583,11 @@ bool handleCloudSettingsChanged(const LLSD& newvalue)
 	if((bool)LLPipeline::hasRenderTypeControl((void*)LLPipeline::RENDER_TYPE_WL_CLOUDS)!=bCloudsEnabled)
 		LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_WL_CLOUDS);
 
+#if ENABLE_CLASSIC_CLOUDS
 	if( !gSavedSettings.getBOOL("SkyUseClassicClouds") ) bCloudsEnabled = false;
-
 	if((bool)LLPipeline::hasRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS)!=bCloudsEnabled )
 		LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
+#endif
 	return true;
 }
 
