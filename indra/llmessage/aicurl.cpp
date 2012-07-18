@@ -193,14 +193,18 @@ ssl_dyn_create_function_type  old_ssl_dyn_create_function;
 ssl_dyn_destroy_function_type old_ssl_dyn_destroy_function;
 ssl_dyn_lock_function_type    old_ssl_dyn_lock_function;
 
+// Set for openssl-1.0.1...1.0.1c.
+static bool need_renegotiation_hack = false;
+
 // Initialize OpenSSL library for thread-safety.
 void ssl_init(void)
 {
   // The version identifier format is: MMNNFFPPS: major minor fix patch status.
   int const compiled_openSLL_major = (OPENSSL_VERSION_NUMBER >> 28) & 0xff;
   int const compiled_openSLL_minor = (OPENSSL_VERSION_NUMBER >> 20) & 0xff;
-  int const linked_openSLL_major = (SSLeay() >> 28) & 0xff;
-  int const linked_openSLL_minor = (SSLeay() >> 20) & 0xff;
+  unsigned long const ssleay = SSLeay();
+  int const linked_openSLL_major = (ssleay >> 28) & 0xff;
+  int const linked_openSLL_minor = (ssleay >> 20) & 0xff;
   // Check if dynamically loaded version is compatible with the one we compiled against.
   // As off version 1.0.0 also minor versions are compatible.
   if (linked_openSLL_major != compiled_openSLL_major ||
@@ -237,6 +241,13 @@ void ssl_init(void)
   CRYPTO_set_dynlock_create_callback(&ssl_dyn_create_function);
   CRYPTO_set_dynlock_lock_callback(&ssl_dyn_lock_function);
   CRYPTO_set_dynlock_destroy_callback(&ssl_dyn_destroy_function);
+  need_renegotiation_hack = (0x10001000UL <= ssleay && ssleay < 0x10001040);
+  if (need_renegotiation_hack)
+  {
+	llwarns << "This version of libopenssl has a bug that we work around by forcing the TLSv1 protocol. "
+	           "That works on Second Life, but might cause you to fail to login on some OpenSim grids. "
+			   "Upgrade to openssl 1.0.1d or higher to avoid this warning." << llendl;
+  }
   llinfos << "Successful initialization of " <<
 	  SSLeay_version(SSLEAY_VERSION) << " (0x" << std::hex << SSLeay() << ")." << llendl;
 }
@@ -996,15 +1007,19 @@ void CurlEasyRequest::applyDefaultOptions(void)
 {
   CertificateAuthority_rat CertificateAuthority_r(gCertificateAuthority);
   setoptString(CURLOPT_CAINFO, CertificateAuthority_r->file);
-  // This option forces openssl to use TLS version 1.
-  // The Linden Lab servers don't support later TLS versions, and libopenssl-1.0.1c has
-  // a bug where renegotiation fails (see http://rt.openssl.org/Ticket/Display.html?id=2828),
-  // causing the connection to fail completely without this hack.
-  // For a commandline test of the same, observe the difference between:
-  // openssl s_client       -connect login.agni.lindenlab.com:443 -CAfile packaged/app_settings/CA.pem -debug
-  // and
-  // openssl s_client -tls1 -connect login.agni.lindenlab.com:443 -CAfile packaged/app_settings/CA.pem -debug
-  setopt(CURLOPT_SSLVERSION, (long)CURL_SSLVERSION_TLSv1);
+  if (need_renegotiation_hack)
+  {
+	// This option forces openssl to use TLS version 1.
+	// The Linden Lab servers don't support later TLS versions, and libopenssl-1.0.1-beta1 up till and including
+	// libopenssl-1.0.1c have a bug where renegotiation fails (see http://rt.openssl.org/Ticket/Display.html?id=2828),
+	// causing the connection to fail completely without this hack.
+	// For a commandline test of the same, observe the difference between:
+	// openssl s_client       -connect login.agni.lindenlab.com:443 -CAfile packaged/app_settings/CA.pem -debug
+	// which gets no response from the server after sending the initial data, and
+	// openssl s_client -tls1 -connect login.agni.lindenlab.com:443 -CAfile packaged/app_settings/CA.pem -debug
+	// which finishes the negotiation and ends with 'Verify return code: 0 (ok)'
+	setopt(CURLOPT_SSLVERSION, (long)CURL_SSLVERSION_TLSv1);
+  }
   setopt(CURLOPT_NOSIGNAL, 1);
   // The old code did this for the 'buffered' version, but I think it's nonsense.
   //setopt(CURLOPT_DNS_CACHE_TIMEOUT, 0);
