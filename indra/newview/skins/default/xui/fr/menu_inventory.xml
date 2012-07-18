@@ -68,6 +68,12 @@
 	<menu_item_call label="Éditer" name="Wearable Edit"/>
 	<menu_item_call label="Porter" name="Wearable Wear"/>
 	<menu_item_call label="Enlever" name="Take Off"/>
+	<menu_item_call label="Trouver l'origine" name="Find Original"/>
+	<menu_item_call label="Porter" name="Wearable And Object Wear"/>
+	<menu_item_call label="&#9650; Haut" name="Wearable Move Forward"/>
+	<menu_item_call label="&#9660; Bas" name="Wearable Move Back"/>
+	<menu_item_call label="Ajouter" name="Wearable Add"/>
+	<menu_item_call label="Enlever de l'ensemble" name="Remove From Outfit"/>
 	<menu_item_call label="--aucune option--" name="--no options--"/>
   <menu_item_call bottom_delta="-18" height="18" label="Porter l'ensemble" left="0" name="Wear Items" width="128">
     <on_click filter="" function="Inventory.DoToSelected" userdata="wearitems" />
