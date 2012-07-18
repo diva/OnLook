@@ -231,7 +231,6 @@ BOOL LLShaderMgr::attachShaderFeatures(LLGLSLShader * shader)
 	
 	if (features->hasLighting)
 	{
-	
 		if (features->hasWaterFog)
 		{
 			if (features->disableTextureIndex)
@@ -308,7 +307,7 @@ BOOL LLShaderMgr::attachShaderFeatures(LLGLSLShader * shader)
 				}
 				shader->mFeatures.mIndexedTextureChannels = llmax(LLGLSLShader::sIndexedTextureChannels-1, 1);
 			}
-		}		
+		}
 	}
 	
 	// NOTE order of shader object attaching is VERY IMPORTANT!!!
@@ -571,7 +570,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		return 0;
 	}
 
-		//we can't have any lines longer than 1024 characters 
+	//we can't have any lines longer than 1024 characters 
 	//or any shaders longer than 4096 lines... deal - DaveP
 	GLcharARB buff[1024];
 	GLcharARB* text[4096];

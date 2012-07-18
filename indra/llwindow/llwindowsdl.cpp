@@ -39,6 +39,7 @@
 
 #include "llwindowcallbacks.h"
 #include "llkeyboardsdl.h"
+
 #include "llerror.h"
 #include "llgl.h"
 #include "llstring.h"
@@ -221,15 +222,14 @@ LLWindowSDL::LLWindowSDL(LLWindowCallbacks* callbacks,
 #endif // LL_X11
 
 #if LL_GTK
-	// We MUST be the first to initialize GTK, i.e. we have to beat
-	// our embedded Mozilla to the punch so that GTK doesn't get badly
+	// We MUST be the first to initialize GTK so that GTK doesn't get badly
 	// initialized with a non-C locale and cause lots of serious random
 	// weirdness.
 	ll_try_gtk_init();
 #endif // LL_GTK
 
-	// Get the original aspect ratio of the main device.
-	mOriginalAspectRatio = 1024.0 / 768.0;  // !!! *FIX: ? //(double)CGDisplayPixelsWide(mDisplay) / (double)CGDisplayPixelsHigh(mDisplay);
+	// Assume 4:3 aspect ratio until we know better
+	mOriginalAspectRatio = 1024.0 / 768.0;
 
 	if (title.empty())
 		mWindowTitle = "SDL Window";  // *FIX: (???)
@@ -425,7 +425,6 @@ static int x11_detect_VRAM_kb()
 BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, BOOL fullscreen, BOOL disable_vsync)
 {
 	//bool			glneedsinit = false;
-//    const char *gllibname = null;
 
 	llinfos << "createContext, fullscreen=" << fullscreen <<
 	    " size=" << width << "x" << height << llendl;
@@ -856,11 +855,13 @@ void LLWindowSDL::hide()
     // *FIX: What to do with SDL?
 }
 
+//virtual
 void LLWindowSDL::minimize()
 {
     // *FIX: What to do with SDL?
 }
 
+//virtual
 void LLWindowSDL::restore()
 {
     // *FIX: What to do with SDL?
@@ -1680,12 +1681,13 @@ void check_vm_bloat()
 	}
 #endif // LL_LINUX
 }
+
+
 // virtual
 void LLWindowSDL::processMiscNativeEvents()
 {
 #if LL_GTK
 	// Pump GTK events to avoid starvation for:
-	// * Embedded Gecko
 	// * DBUS servicing
 	// * Anything else which quietly hooks into the default glib/GTK loop
     if (ll_try_gtk_init())
@@ -1721,7 +1723,7 @@ void LLWindowSDL::processMiscNativeEvents()
 
 void LLWindowSDL::gatherInput()
 {
-	const Uint32 CLICK_THRESHOLD = 500;  // milliseconds
+    const Uint32 CLICK_THRESHOLD = 500;  // milliseconds
     static int leftClick = 0;
     static int rightClick = 0;
     static Uint32 lastLeftDown = 0;
@@ -1747,16 +1749,17 @@ void LLWindowSDL::gatherInput()
 		    mKeyScanCode = event.key.keysym.scancode;
 		    mKeyVirtualKey = event.key.keysym.unicode;
 		    mKeyModifiers = event.key.keysym.mod;
-                gKeyboard->handleKeyDown(event.key.keysym.sym, event.key.keysym.mod);
-		// part of the fix for SL-13243
-		if (SDLCheckGrabbyKeys(event.key.keysym.sym, TRUE) != 0)
-			SDLReallyCaptureInput(TRUE);
 
-                if (event.key.keysym.unicode)
-				{
-					handleUnicodeUTF16(event.key.keysym.unicode,
-									   gKeyboard->currentMask(FALSE));
-				}
+		    gKeyboard->handleKeyDown(event.key.keysym.sym, event.key.keysym.mod);
+		    // part of the fix for SL-13243
+		    if (SDLCheckGrabbyKeys(event.key.keysym.sym, TRUE) != 0)
+			    SDLReallyCaptureInput(TRUE);
+
+		    if (event.key.keysym.unicode)
+		    {
+			    handleUnicodeUTF16(event.key.keysym.unicode,
+					       gKeyboard->currentMask(FALSE));
+		    }
                 break;
 
             case SDL_KEYUP:
@@ -1767,8 +1770,8 @@ void LLWindowSDL::gatherInput()
 		    if (SDLCheckGrabbyKeys(event.key.keysym.sym, FALSE) == 0)
 			    SDLReallyCaptureInput(FALSE); // part of the fix for SL-13243
 
-		gKeyboard->handleKeyUp(event.key.keysym.sym, event.key.keysym.mod);
-                break;
+		    gKeyboard->handleKeyUp(event.key.keysym.sym, event.key.keysym.mod);
+		    break;
 
             case SDL_MOUSEBUTTONDOWN:
             {
@@ -1878,7 +1881,7 @@ void LLWindowSDL::gatherInput()
     			}
                 break;
 		}
-		
+
 		mCallbacks->handleResize(this, width, height);
                 break;
             }
@@ -1932,6 +1935,8 @@ void LLWindowSDL::gatherInput()
 		break;
         }
     }
+	
+	updateCursor();
 
 #if LL_X11
     // This is a good time to stop flashing the icon if our mFlashTimer has
@@ -2018,7 +2023,7 @@ static SDL_Cursor *makeSDLCursorFromBMP(const char *filename, int hotx, int hoty
 	return sdlcursor;
 }
 
-void LLWindowSDL::setCursor(ECursorType cursor)
+void LLWindowSDL::updateCursor()
 {
 	if (ATIbug) {
 		// cursor-updating is very flaky when this bug is
@@ -2026,11 +2031,11 @@ void LLWindowSDL::setCursor(ECursorType cursor)
 		return;
 	}
 
-	if (mCurrentCursor != cursor)
+	if (mCurrentCursor != mNextCursor)
 	{
-		if (cursor < UI_CURSOR_COUNT)
+		if (mNextCursor < UI_CURSOR_COUNT)
 		{
-			SDL_Cursor *sdlcursor = mSDLCursors[cursor];
+			SDL_Cursor *sdlcursor = mSDLCursors[mNextCursor];
 			// Try to default to the arrow for any cursors that
 			// did not load correctly.
 			if (!sdlcursor && mSDLCursors[UI_CURSOR_ARROW])
@@ -2038,9 +2043,9 @@ void LLWindowSDL::setCursor(ECursorType cursor)
 			if (sdlcursor)
 				SDL_SetCursor(sdlcursor);
 		} else {
-			llwarns << "Tried to set invalid cursor number " << cursor << llendl;
+			llwarns << "Tried to set invalid cursor number " << mNextCursor << llendl;
 		}
-		mCurrentCursor = cursor;
+		mCurrentCursor = mNextCursor;
 	}
 }
 

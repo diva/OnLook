@@ -677,6 +677,7 @@ void LLWindowWin32::hide()
 	ShowWindow(mWindowHandle, SW_HIDE);
 }
 
+//virtual
 void LLWindowWin32::minimize()
 {
 	setMouseClipping(FALSE);
@@ -684,7 +685,7 @@ void LLWindowWin32::minimize()
 	ShowWindow(mWindowHandle, SW_MINIMIZE);
 }
 
-
+//virtual
 void LLWindowWin32::restore()
 {
 	ShowWindow(mWindowHandle, SW_RESTORE);
@@ -1019,6 +1020,7 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, BO
 		dw_style = WS_OVERLAPPEDWINDOW;
 	}
 
+
 	// don't post quit messages when destroying old windows
 	mPostQuit = FALSE;
 
@@ -1070,6 +1072,8 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, BO
 		return FALSE;
 	}
 
+	LL_INFOS("Window") << "Device context retrieved." << llendl ;
+
 	if (!(pixel_format = ChoosePixelFormat(mhDC, &pfd)))
 	{
 		close();
@@ -1077,6 +1081,8 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, BO
 			mCallbacks->translateString("MBError"), OSMB_OK);
 		return FALSE;
 	}
+
+	LL_INFOS("Window") << "Pixel format chosen." << llendl ;
 
 	// Verify what pixel format we actually received.
 	if (!DescribePixelFormat(mhDC, pixel_format, sizeof(PIXELFORMATDESCRIPTOR),
@@ -1653,13 +1659,13 @@ void LLWindowWin32::initCursors()
 	mCursor[ UI_CURSOR_PIPETTE ] = LoadCursor(module, TEXT("TOOLPIPETTE"));
 
 	// Color cursors
-	mCursor[UI_CURSOR_TOOLSIT] = loadColorCursor(TEXT("TOOLSIT"));
-	mCursor[UI_CURSOR_TOOLBUY] = loadColorCursor(TEXT("TOOLBUY"));
-	mCursor[UI_CURSOR_TOOLPAY] = loadColorCursor(TEXT("TOOLPAY"));
-	mCursor[UI_CURSOR_TOOLOPEN] = loadColorCursor(TEXT("TOOLOPEN"));
-	mCursor[UI_CURSOR_TOOLPLAY] = loadColorCursor(TEXT("TOOLPLAY"));
-	mCursor[UI_CURSOR_TOOLPAUSE] = loadColorCursor(TEXT("TOOLPAUSE"));
-	mCursor[UI_CURSOR_TOOLMEDIAOPEN] = loadColorCursor(TEXT("TOOLMEDIAOPEN"));
+	mCursor[ UI_CURSOR_TOOLSIT ] = loadColorCursor(TEXT("TOOLSIT"));
+	mCursor[ UI_CURSOR_TOOLBUY ] = loadColorCursor(TEXT("TOOLBUY"));
+	mCursor[ UI_CURSOR_TOOLPAY ] = loadColorCursor(TEXT("TOOLPAY"));
+	mCursor[ UI_CURSOR_TOOLOPEN ] = loadColorCursor(TEXT("TOOLOPEN"));
+	mCursor[ UI_CURSOR_TOOLPLAY ] = loadColorCursor(TEXT("TOOLPLAY"));
+	mCursor[ UI_CURSOR_TOOLPAUSE ] = loadColorCursor(TEXT("TOOLPAUSE"));
+	mCursor[ UI_CURSOR_TOOLMEDIAOPEN ] = loadColorCursor(TEXT("TOOLMEDIAOPEN"));
 
 	// Note: custom cursors that are not found make LoadCursor() return NULL.
 	for( S32 i = 0; i < UI_CURSOR_COUNT; i++ )
@@ -1673,18 +1679,18 @@ void LLWindowWin32::initCursors()
 
 
 
-void LLWindowWin32::setCursor(ECursorType cursor)
+void LLWindowWin32::updateCursor()
 {
-	if (cursor == UI_CURSOR_ARROW
+	if (mNextCursor == UI_CURSOR_ARROW
 		&& mBusyCount > 0)
 	{
-		cursor = UI_CURSOR_WORKING;
+		mNextCursor = UI_CURSOR_WORKING;
 	}
 
-	if( mCurrentCursor != cursor )
+	if( mCurrentCursor != mNextCursor )
 	{
-		mCurrentCursor = cursor;
-		SetCursor( mCursor[cursor] );
+		mCurrentCursor = mNextCursor;
+		SetCursor( mCursor[mNextCursor] );
 	}
 }
 
@@ -1763,6 +1769,8 @@ void LLWindowWin32::gatherInput()
 	}
 
 	mInputProcessingPaused = FALSE;
+
+	updateCursor();
 
 	// clear this once we've processed all mouse messages that might have occurred after
 	// we slammed the mouse position

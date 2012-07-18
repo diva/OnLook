@@ -18,7 +18,7 @@ if (NOT FMODEX_LIBRARY)
   set(FMODEX_SDK_DIR CACHE PATH "Path to the FMOD Ex SDK.")
   if (FMODEX_SDK_DIR)
     find_library(FMODEX_LIBRARY
-                 fmodex fmodex_vc fmodexL_vc
+                 fmodex_vc fmodexL_vc fmodex fmodexL fmodex64 fmodexL64
                  PATHS
                  ${FMODEX_SDK_DIR}/api/lib
                  ${FMODEX_SDK_DIR}/api
