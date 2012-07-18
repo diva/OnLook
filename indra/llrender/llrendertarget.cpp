@@ -699,6 +699,28 @@ bool LLMultisampleBuffer::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth
 	release();
 	stop_glerror();
 
+	if (!gGLManager.mHasFramebufferMultisample || !gGLManager.mHasFramebufferObject || !(sUseFBO || use_fbo))
+		return false;
+
+	if(color_fmt != GL_RGBA)
+	{
+		llwarns << "Unsupported color format: " << color_fmt << llendl;
+		return false;
+	}
+
+	//Restrict to valid sample count
+	{
+		mSamples = samples;
+		mSamples = llmin(mSamples, (U32)4);	//Cap to prevent memory bloat.
+		mSamples = llmin(mSamples, (U32) gGLManager.mMaxIntegerSamples);//GL_RGBA
+
+		if(depth && !stencil)
+			mSamples = llmin(mSamples, (U32) gGLManager.mMaxSamples);	//GL_DEPTH_COMPONENT16_ARB
+	}
+
+	if (mSamples <= 1)
+		return false;
+	
 	mResX = resx;
 	mResY = resy;
 
@@ -706,30 +728,16 @@ bool LLMultisampleBuffer::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth
 	mUseDepth = depth;
 	mStencil = stencil;
 
-	if (!gGLManager.mHasFramebufferMultisample)
-	{
-		llerrs << "Attempting to allocate unsupported render target type!" << llendl;
-		return false;
-	}
-
-	mSamples = gGLManager.getNumFBOFSAASamples(samples);
-	
-	if (mSamples <= 1)
-	{
-		llerrs << "Cannot create a multisample buffer with less than 2 samples." << llendl;
-		return false;
-	}
-
-	stop_glerror();
-
-	if ((sUseFBO || use_fbo) && gGLManager.mHasFramebufferObject)
 	{
 
 		if (depth)
 		{
 			stop_glerror();
 			if(!allocateDepth())
+			{
+				release();
 				return false;
+			}
 			stop_glerror();
 		}
 		glGenFramebuffers(1, (GLuint *) &mFBO);
@@ -779,6 +787,7 @@ bool LLMultisampleBuffer::addColorAttachment(U32 color_fmt)
 	if (glGetError() != GL_NO_ERROR)
 	{
 		llwarns << "Unable to allocate color buffer for multisample render target." << llendl;
+		release();
 		return false;
 	}
 	
