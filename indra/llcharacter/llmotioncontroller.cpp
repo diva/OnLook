@@ -837,6 +837,7 @@ void LLMotionController::updateMotions(bool force_update)
 				}
 
 				updateLoadingMotions();
+
 				return;
 			}
 			
