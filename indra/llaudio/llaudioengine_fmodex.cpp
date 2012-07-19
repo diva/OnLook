@@ -95,6 +95,28 @@ inline bool Check_FMOD_Error(FMOD_RESULT result, const char *string)
 	return true;
 }
 
+void* __stdcall decode_alloc(unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr)
+{
+	if(type & FMOD_MEMORY_STREAM_DECODE)
+	{
+		llinfos << "Decode buffer size: " << size << llendl;
+	}
+	else if(type & FMOD_MEMORY_STREAM_FILE)
+	{
+		llinfos << "Strean buffer size: " << size << llendl;
+	}
+	return new char[size];
+}
+void* __stdcall decode_realloc(void *ptr, unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr)
+{
+	memset(ptr,0,size);
+	return ptr;
+}
+void __stdcall decode_dealloc(void *ptr, FMOD_MEMORY_TYPE type, const char *sourcestr)
+{
+	delete[] ptr;
+}
+
 bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 {
 
@@ -107,6 +129,10 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 	FMOD_RESULT result;
 
 	LL_DEBUGS("AppInit") << "LLAudioEngine_FMODEX::init() initializing FMOD" << LL_ENDL;
+
+	result = FMOD::Memory_Initialize(NULL, NULL, &decode_alloc, &decode_realloc, &decode_dealloc, FMOD_MEMORY_STREAM_DECODE | FMOD_MEMORY_STREAM_FILE);
+	if(Check_FMOD_Error(result, "FMOD::Memory_Initialize"))
+		return false;
 
 	result = FMOD::System_Create(&mSystem);
 	if(Check_FMOD_Error(result, "FMOD::System_Create"))
@@ -156,12 +182,14 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 				*/
 				result = mSystem->setDSPBufferSize(1024, 10);
 				Check_FMOD_Error(result, "FMOD::System::setDSPBufferSize");
+				llwarns << "Windows audio acceleration is disabled. This may introduce latency issues." << llendl;
 			}
 			result = mSystem->getDriverInfo(0, name, 256, 0);
 			Check_FMOD_Error(result, "FMOD::System::getDriverInfo");
 
 			if (strstr(name, "SigmaTel"))
 			{
+				llwarns << "SigmaTel device detected. This may introduce audio quality issues." << llendl;
 				/*
 				Sigmatel sound devices crackle for some reason if the format is PCM 16bit.
 				PCM floating point output seems to solve it.

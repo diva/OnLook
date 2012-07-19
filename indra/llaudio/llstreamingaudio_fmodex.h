@@ -37,6 +37,7 @@
 #include "stdtypes.h" // from llcommon
 
 #include "llstreamingaudio.h"
+#include "lltimer.h"
 
 //Stubs
 class LLAudioStreamManagerFMODEX;
@@ -66,6 +67,8 @@ class LLStreamingAudio_FMODEX : public LLStreamingAudioInterface
 	/*virtual*/ const LLSD *getMetaData(){return mMetaData;}	//return NULL if not playing.
 	/*virtual*/ bool supportsWaveData(){return true;}
 	/*virtual*/ bool getWaveData(float* arr, S32 count, S32 stride = 1);
+	/*virtual*/ bool supportsAdjustableBufferSizes(){return true;}
+	/*virtual*/ void setBufferSizes(U32 streambuffertime, U32 decodebuffertime);
 private:
 	FMOD::System *mSystem;
 
@@ -75,6 +78,10 @@ private:
 
 	std::string mURL;
 	F32 mGain;
+
+	LLTimer mLastStarved;
+	unsigned int mStarvedProgress;
+	unsigned int mStarvedNoProgressFrames;
 
 	LLSD *mMetaData;
 };
