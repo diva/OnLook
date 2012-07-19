@@ -39,7 +39,7 @@
 #endif
 #include <deque>
 
-#define DEBUG_WINDOWS_CODE_ON_LINUX 1
+#define DEBUG_WINDOWS_CODE_ON_LINUX 0
 
 #if DEBUG_WINDOWS_CODE_ON_LINUX
 
@@ -422,8 +422,8 @@ void PollSet::remove(curl_socket_t s)
 	while (cur != s)
 	{
 	  llassert(i > 0);
-	  curl_socket_t next = mFileDescriptors[--i];
-	  mFileDescriptors[i] = cur;
+	  curl_socket_t next = mFdSet.fd_array[--i];
+	  mFdSet.fd_array[i] = cur;
 	  cur = next;
 	}
 	if (mIter > i)
