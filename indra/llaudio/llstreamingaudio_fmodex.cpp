@@ -70,9 +70,7 @@ LLStreamingAudio_FMODEX::LLStreamingAudio_FMODEX(FMOD::System *system) :
 	mCurrentInternetStreamp(NULL),
 	mFMODInternetStreamChannelp(NULL),
 	mGain(1.0f),
-	mMetaData(NULL),
-	mStarvedProgress(0),
-	mStarvedNoProgressFrames(0)
+	mMetaData(NULL)
 {
 	// Number of milliseconds of audio to buffer for the audio card.
 	// Must be larger than the usual Second Life frame stutter time.
@@ -252,27 +250,10 @@ void LLStreamingAudio_FMODEX::update()
 					llinfos << "  (diskbusy="<<diskbusy<<")" << llendl;
 					llinfos << "  (progress="<<progress<<")" << llendl;
 					mFMODInternetStreamChannelp->setMute(true);
-					mStarvedProgress = progress;
-					mStarvedNoProgressFrames = 0;
-				}
-				else if(mStarvedProgress == progress)
-				{
-					if(++mStarvedNoProgressFrames >= 10)
-					{
-						//we got 10 consecutive updates of 0 progress made on the stream buffer. It probably stalled.
-						llinfos << "Stream unable to recover from starvation. Halting." << llendl;
-						stop();
-						return;
-					}
-				}
-				else
-				{
-					mStarvedNoProgressFrames = 0;
-					mStarvedProgress = progress;
 				}
 				mLastStarved.start();
 			}
-			else if(mLastStarved.getStarted() && mLastStarved.getElapsedTimeF32() > 5.f)
+			else if(mLastStarved.getStarted() && mLastStarved.getElapsedTimeF32() > 1.f)
 			{
 				mLastStarved.stop();
 				mFMODInternetStreamChannelp->setMute(false);
