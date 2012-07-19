@@ -32,6 +32,7 @@
 #define AICURLEASYREQUEST_H
 
 #include "aistatemachine.h"
+#include "aitimer.h"
 #include "aicurl.h"
 
 // A curl easy request state machine.
@@ -58,6 +59,11 @@ class AICurlEasyRequestStateMachine : public AIStateMachine, public AICurlEasyHa
 
   private:
 	bool mBuffered;		// Argument used for construction of mCurlEasyRequest.
+	bool mAdded;		// Set when the last command to the curl thread was to add the request.
+	bool mTimedOut;		// Set if the expiration timer timed out.
+	bool mFinished;		// Set by the curl thread to signal it finished.
+	bool mHandled;		// Set when we processed the received data.
+	AITimer* mTimer;	// Expiration timer.
 
   protected:
 	// AICurlEasyRequest Events.

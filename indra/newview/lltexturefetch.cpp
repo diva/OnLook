@@ -2364,14 +2364,6 @@ void LLTextureFetch::commonUpdate()
 	// Run a cross-thread command, if any.
 	cmdDoWork();
 #endif
-
-	// Update Curl on same thread as mCurlGetRequest was constructed
-	llassert_always(mCurlGetRequest);
-	S32 processed = mCurlGetRequest->process();
-	if (processed > 0)
-	{
-		lldebugs << "processed: " << processed << " messages." << llendl;
-	}
 }
 
 

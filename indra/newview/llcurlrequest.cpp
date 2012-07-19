@@ -135,13 +135,6 @@ bool Request::post(std::string const& url, headers_t const& headers, LLSD const&
   return true;	// We throw in case of problems.
 }
 
-S32 Request::process(void)
-{
-  //FIXME: needs implementation
-  //DoutEntering(dc::warning, "Request::process()");
-  return 0;
-}
-
 } // namespace AICurlInterface
 //==================================================================================
 

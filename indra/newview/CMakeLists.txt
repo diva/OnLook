@@ -17,7 +17,7 @@ if(NOT FMODEX)
 	include(FMOD)
 endif(NOT FMODEX)
 include(OPENAL)
-include(HUNSPELL)
+include(Hunspell)
 include(FindOpenGL)
 #include(JsonCpp)
 include(LLAddBuildTest)
@@ -98,8 +98,8 @@ set(viewer_SOURCE_FILES
     ascentprefschat.cpp
     ascentprefssys.cpp
     ascentprefsvan.cpp
-    dhparam.cpp
-    dsaparam.cpp
+	#dhparam.cpp
+	#dsaparam.cpp
     emeraldboobutils.cpp
     dofloaterhex.cpp
     dohexeditor.cpp
@@ -111,6 +111,7 @@ set(viewer_SOURCE_FILES
     hippolimits.cpp
     hipporestrequest.cpp
     hippopanelgrids.cpp
+	importtracker.cpp
     jcfloaterareasearch.cpp
     chatbar_as_cmdline.cpp
     qtoolalign.cpp
@@ -170,6 +171,7 @@ set(viewer_SOURCE_FILES
     lldrawpoolwater.cpp
     lldrawpoolwlsky.cpp
     lldriverparam.cpp
+	lldroptarget.cpp
     lldynamictexture.cpp
     llemote.cpp
     lleventinfo.cpp
@@ -604,6 +606,7 @@ set(viewer_HEADER_FILES
     hippolimits.h
     hipporestrequest.h
     hippopanelgrids.h
+	importtracker.h
     jcfloaterareasearch.h
     lggdicdownload.h
     lgghunspell_wrapper.h
@@ -666,6 +669,7 @@ set(viewer_HEADER_FILES
     lldrawpoolwater.h
     lldrawpoolwlsky.h
     lldriverparam.h
+	lldroptarget.h
     lldynamictexture.h
     llemote.h
     lleventinfo.h

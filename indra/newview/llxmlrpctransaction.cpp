@@ -325,7 +325,16 @@ void LLXMLRPCTransaction::Impl::curlEasyRequestCallback(bool success)
 
 	if (!success)
 	{
-		setStatus(LLXMLRPCTransaction::StatusOtherError, "Statemachine failed");
+		// AICurlEasyRequestStateMachine did abort.
+		// This currently only happens when libcurl didn't finish before the timer expired.
+		std::ostringstream msg;
+		F32 timeout_value = gSavedSettings.getF32("CurlRequestTimeOut");
+		msg << "Connection to " << mURI << " timed out (" << timeout_value << " s)!";
+		if (timeout_value < 40)
+		{
+			msg << "\nTry increasing CurlRequestTimeOut in Debug Settings.";
+		}
+		setStatus(LLXMLRPCTransaction::StatusOtherError, msg.str());
 		return;
 	}
 
@@ -470,11 +479,16 @@ void LLXMLRPCTransaction::Impl::setCurlStatus(CURLcode code)
 size_t LLXMLRPCTransaction::Impl::curlDownloadCallback(
 		char* data, size_t size, size_t nmemb, void* user_data)
 {
-	DoutEntering(dc::curl, "LLXMLRPCTransaction::Impl::curlDownloadCallback(\"" << buf2str(data, size * nmemb) << "\", " << size << ", " << nmemb << ", " << user_data << ")");
-
 	Impl& impl(*(Impl*)user_data);
 	
 	size_t n = size * nmemb;
+
+#ifdef CWDEBUG
+	if (n < 80)
+	  Dout(dc::curl, "Entering LLXMLRPCTransaction::Impl::curlDownloadCallback(\"" << buf2str(data, n) << "\", " << size << ", " << nmemb << ", " << user_data << ")");
+	else
+	  Dout(dc::curl, "Entering LLXMLRPCTransaction::Impl::curlDownloadCallback(\"" << buf2str(data, 40) << "\"...\"" << buf2str(data + n - 40, 40) << "\", " << size << ", " << nmemb << ", " << user_data << ")");
+#endif
 
 	impl.mResponseText.append(data, n);
 	
@@ -504,7 +518,7 @@ LLXMLRPCTransaction::~LLXMLRPCTransaction()
 	delete &impl;
 }
 
-bool LLXMLRPCTransaction::process()
+bool LLXMLRPCTransaction::is_finished(void) const
 {
 	return impl.is_finished();
 }

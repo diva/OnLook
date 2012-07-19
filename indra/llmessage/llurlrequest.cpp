@@ -260,11 +260,22 @@ void LLURLRequest::allowCookies()
 }
 
 //virtual 
-bool LLURLRequest::isValid() 
+bool LLURLRequest::hasExpiration(void) const
 {
-	//FIXME - wtf is with this isValid?
-	//return mDetail->mCurlRequest->isValid(); 
-	return true;
+	// Currently, this ALWAYS returns false -- because only AICurlEasyRequestStateMachine uses buffered
+	// AICurlEasyRequest objects, and LLURLRequest uses (unbuffered) AICurlEasyRequest directly, which
+	// have no expiration facility.
+	return mDetail->mCurlEasyRequest.isBuffered();
+}
+
+//virtual 
+bool LLURLRequest::hasNotExpired(void) const
+{
+	if (!mDetail->mCurlEasyRequest.isBuffered())
+	  return true;
+	AICurlEasyRequest_wat buffered_easy_request_w(*mDetail->mCurlEasyRequest);
+	AICurlResponderBuffer_wat buffer_w(*mDetail->mCurlEasyRequest);
+	return buffer_w->isValid();
 }
 
 // virtual
@@ -272,10 +283,24 @@ LLIOPipe::EStatus LLURLRequest::handleError(
 	LLIOPipe::EStatus status,
 	LLPumpIO* pump)
 {
+	DoutEntering(dc::curl, "LLURLRequest::handleError(" << LLIOPipe::lookupStatusString(status) << ", " << (void*)pump << ")");
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
-	
-	if(!isValid())
+
+	if (LL_LIKELY(!mDetail->mCurlEasyRequest.isBuffered()))	// Currently always true.
 	{
+		// The last reference will be deleted when the pump that this chain belongs to
+		// is removed from the running chains vector, upon returning from this function.
+		// This keeps the CurlEasyRequest object alive until the curl thread cleanly removed it.
+		Dout(dc::curl, "Calling mDetail->mCurlEasyRequest.removeRequest()");
+		mDetail->mCurlEasyRequest.removeRequest();
+	}
+	else if (!hasNotExpired())
+	{
+		// The buffered version has it's own time out handling, and that already expired,
+		// so we can ignore the expiration of this timer (currently never happens).
+		// I left it here because it's what LL did (in the form if (!isValid() ...),
+		// and it would be relevant if this characteristic of mDetail->mCurlEasyRequest
+		// would change. --Aleric
 		return STATUS_EXPIRED ;
 	}
 

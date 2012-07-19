@@ -56,28 +56,23 @@ class LLVBOPool
 public:
 	static U32 sBytesPooled;
 	static U32 sIndexBytesPooled;
-	
-	static U32 sCurGLName;
 
-	LLVBOPool(U32 vboUsage, U32 vboType);
-		
+	LLVBOPool(U32 vboUsage, U32 vboType)
+		: mUsage(vboUsage)
+		, mType(vboType)
+	{}
+
 	const U32 mUsage;
 	const U32 mType;
 
 	//size MUST be a power of 2
-	volatile U8* allocate(U32& name, U32 size, bool for_seed = false);
+	volatile U8* allocate(U32& name, U32 size);
 	
 	//size MUST be the size provided to allocate that returned the given name
 	void release(U32 name, volatile U8* buffer, U32 size);
 	
-	//batch allocate buffers to be provided to the application on demand
-	void seedPool();
-
 	//destroy all records in mFreeList
 	void cleanup();
-
-	U32 genBuffer();
-	void deleteBuffer(U32 name);
 
 	class Record
 	{
@@ -86,12 +81,10 @@ public:
 		volatile U8* mClientData;
 	};
 
-	std::list<U32> mGLNamePool;
-
 	typedef std::list<Record> record_list_t;
 	std::vector<record_list_t> mFreeList;
-	std::vector<U32> mMissCount;
 };
+
 
 //============================================================================
 // base class 
@@ -126,22 +119,13 @@ public:
 	static LLVBOPool sStreamIBOPool;
 	static LLVBOPool sDynamicIBOPool;
 
-	static std::list<U32> sAvailableVAOName;
-	static U32 sCurVAOName;
-
 	static bool	sUseStreamDraw;
 	static bool sUseVAO;
 	static bool	sPreferStreamDraw;
 
-	static void seedPools();
-
-	static U32 getVAOName();
-	static void releaseVAOName(U32 name);
-
 	static void initClass(bool use_vbo, bool no_vbo_mapping);
 	static void cleanupClass();
 	static void setupClientArrays(U32 data_mask);
-	static void pushPositions(U32 mode, const LLVector4a* pos, U32 count);
 	static void drawArrays(U32 mode, const std::vector<LLVector3>& pos, const std::vector<LLVector3>& norm);
 	static void drawElements(U32 mode, const LLVector4a* pos, const LLVector2* tc, S32 num_indices, const U16* indicesp);
 
@@ -218,6 +202,7 @@ protected:
 	void 	destroyGLIndices();
 	void	updateNumVerts(S32 nverts);
 	void	updateNumIndices(S32 nindices); 
+	bool	useVBOs() const;
 	void	unmapBuffer();
 		
 public:
@@ -226,8 +211,6 @@ public:
 	// map for data access
 	volatile U8*		mapVertexBuffer(S32 type, S32 index, S32 count, bool map_range);
 	volatile U8*		mapIndexBuffer(S32 index, S32 count, bool map_range);
-
-	void bindForFeedback(U32 channel, U32 type, U32 index, U32 count);
 
 	// set for rendering
 	virtual void	setBuffer(U32 data_mask); 	// calls  setupVertexBuffer() if data_mask is not 0
@@ -251,14 +234,12 @@ public:
 	bool getNormalStrider(LLStrider<LLVector3>& strider, S32 index=0, S32 count = -1, bool map_range = false);
 	bool getBinormalStrider(LLStrider<LLVector3>& strider, S32 index=0, S32 count = -1, bool map_range = false);
 	bool getColorStrider(LLStrider<LLColor4U>& strider, S32 index=0, S32 count = -1, bool map_range = false);
-	bool getTextureIndexStrider(LLStrider<LLColor4U>& strider, S32 index=0, S32 count = -1, bool map_range = false);
 	bool getEmissiveStrider(LLStrider<LLColor4U>& strider, S32 index=0, S32 count = -1, bool map_range = false);
 	bool getWeightStrider(LLStrider<F32>& strider, S32 index=0, S32 count = -1, bool map_range = false);
 	bool getWeight4Strider(LLStrider<LLVector4>& strider, S32 index=0, S32 count = -1, bool map_range = false);
 	bool getClothWeightStrider(LLStrider<LLVector4>& strider, S32 index=0, S32 count = -1, bool map_range = false);
 	
 
-	bool useVBOs() const;
 	bool isEmpty() const					{ return mEmpty; }
 	bool isLocked() const					{ return mVertexLocked || mIndexLocked; }
 	S32 getNumVerts() const					{ return mNumVerts; }

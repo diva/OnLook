@@ -100,10 +100,9 @@ public:
 	 * @param chain The pipes for the chain
 	 * @param timeout The number of seconds in the future to
 	 * expire. Pass in 0.0f to never expire.
-	 * @param has_curl_request The chain contains LLURLRequest if true.
 	 * @return Returns true if anything was added to the pump.
 	 */
-	bool addChain(const chain_t& chain, F32 timeout, bool has_curl_request = false);
+	bool addChain(const chain_t& chain, F32 timeout);
 	
 	/** 
 	 * @brief Struct to associate a pipe with it's buffer io indexes.
@@ -347,7 +346,7 @@ protected:
 		// basic member data
 		bool mInit;
 		bool mEOS;
-		bool mHasCurlRequest;
+		bool mHasExpiration;
 		S32 mLock;
 		LLFrameTimer mTimer;
 		links_t::iterator mHead;

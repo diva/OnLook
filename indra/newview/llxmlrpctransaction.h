@@ -110,7 +110,7 @@ public:
 		StatusOtherError
 	} Status;
 
-	bool process();
+	bool is_finished(void) const;
 		// Returns true when done.
 		
 	Status status(int* curlCode);

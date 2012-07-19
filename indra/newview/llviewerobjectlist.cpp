@@ -87,6 +87,9 @@
 extern F32 gMinObjectDistance;
 extern BOOL gAnimateTextures;
 
+#include "importtracker.h"
+extern ImportTracker gImportTracker;
+
 void dialog_refresh_all();
 
 #define CULL_VIS
@@ -271,6 +274,15 @@ void LLViewerObjectList::processUpdateCore(LLViewerObject* objectp,
 	// so that the drawable parent is set properly
 	findOrphans(objectp, msg->getSenderIP(), msg->getSenderPort());
 	
+	if(just_created && objectp &&
+	(gImportTracker.getState() == ImportTracker::WAND /*||
+	gImportTracker.getState() == ImportTracker::BUILDING*/) &&
+	objectp->mCreateSelected && objectp->permYouOwner() &&
+	objectp->permModify() && objectp->permCopy() && objectp->permTransfer())
+	{
+		gImportTracker.get_update(objectp->mLocalID, just_created, objectp->mCreateSelected);
+	}
+
 	// If we're just wandering around, don't create new objects selected.
 	if (just_created 
 		&& update_type != OUT_TERSE_IMPROVED 

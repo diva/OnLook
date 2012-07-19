@@ -400,7 +400,7 @@ void LLPipeline::init()
 	sDynamicLOD = gSavedSettings.getBOOL("RenderDynamicLOD");
 	sRenderBump = gSavedSettings.getBOOL("RenderObjectBump");
 	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("ShyotlRenderUseStreamVBO");
-	LLVertexBuffer::sUseVAO = gSavedSettings.getBOOL("RenderUseVAO");
+	LLVertexBuffer::sUseVAO = gSavedSettings.getBOOL("RenderUseVAO") && gSavedSettings.getBOOL("VertexShaderEnable"); //Temporary workaround for vaos being broken when shaders are off
 	LLVertexBuffer::sPreferStreamDraw = gSavedSettings.getBOOL("RenderPreferStreamDraw");
 	sRenderAttachedLights = gSavedSettings.getBOOL("RenderAttachedLights");
 	sRenderAttachedParticles = gSavedSettings.getBOOL("RenderAttachedParticles");
@@ -457,9 +457,11 @@ void LLPipeline::init()
 	{
 		mCubeVB = ll_create_cube_vb(LLVertexBuffer::MAP_VERTEX, GL_STATIC_DRAW_ARB);
 	}
-
-	mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
-	mDeferredVB->allocateBuffer(8, 0, true);
+	if(mDeferredVB.isNull())
+	{
+		mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
+		mDeferredVB->allocateBuffer(8, 0, true);
+	}
 	setLightingDetail(-1);
 	gSavedSettings.getControl("RenderAutoMaskAlphaDeferred")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	gSavedSettings.getControl("RenderAutoMaskAlphaNonDeferred")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
@@ -468,6 +470,7 @@ void LLPipeline::init()
 	//gSavedSettings.getControl("RenderDelayVBUpdate")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	gSavedSettings.getControl("UseOcclusion")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	gSavedSettings.getControl("VertexShaderEnable")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
+	gSavedSettings.getControl("RenderFSAASamples")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 }
 
 LLPipeline::~LLPipeline()
@@ -2244,7 +2247,7 @@ void LLPipeline::markOccluder(LLSpatialGroup* group)
 
 void LLPipeline::doOcclusion(LLCamera& camera)
 {
-	if (LLPipeline::sUseOcclusion > 1 && sCull->hasOcclusionGroups())
+	if (LLGLSLShader::sNoFixedFunction && LLPipeline::sUseOcclusion > 1 && sCull->hasOcclusionGroups())
 	{
 		LLVertexBuffer::unbind();
 
@@ -2329,10 +2332,10 @@ void LLPipeline::updateGL()
 		LLGLUpdate::sGLQ.pop_front();
 	}
 
-	{ //seed VBO Pools
+	/*{ //seed VBO Pools
 		LLFastTimer t(FTM_SEED_VBO_POOLS);
 		LLVertexBuffer::seedPools();
-	}
+	}*/
 }
 
 void LLPipeline::rebuildPriorityGroups()
@@ -6101,6 +6104,7 @@ void LLPipeline::doResetVertexBuffers()
 	mResetVertexBuffers = false;
 
 	mCubeVB = NULL;
+	mDeferredVB = NULL;
 
 	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
 			iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
@@ -6137,10 +6141,10 @@ void LLPipeline::doResetVertexBuffers()
 
 	sRenderBump = gSavedSettings.getBOOL("RenderObjectBump");
 	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("ShyotlRenderUseStreamVBO");
-	LLVertexBuffer::sUseVAO = gSavedSettings.getBOOL("RenderUseVAO");
+	LLVertexBuffer::sUseVAO = gSavedSettings.getBOOL("RenderUseVAO") && gPipeline.canUseVertexShaders(); //Temporary workaround for vaos being broken when shaders are off
 	LLVertexBuffer::sPreferStreamDraw = gSavedSettings.getBOOL("RenderPreferStreamDraw");
 	LLVertexBuffer::sEnableVBOs = gSavedSettings.getBOOL("RenderVBOEnable");
-	LLVertexBuffer::sDisableVBOMapping = LLVertexBuffer::sEnableVBOs && gSavedSettings.getBOOL("RenderVBOMappingDisable") ;
+	LLVertexBuffer::sDisableVBOMapping = LLVertexBuffer::sEnableVBOs;// && gSavedSettings.getBOOL("RenderVBOMappingDisable") ; //Temporary workaround for vbo mapping being straight up broken
 	sBakeSunlight = gSavedSettings.getBOOL("RenderBakeSunlight");
 	sNoAlpha = gSavedSettings.getBOOL("RenderNoAlpha");
 	LLPipeline::sTextureBindTest = gSavedSettings.getBOOL("RenderDebugTextureBind");
@@ -7240,6 +7244,11 @@ void LLPipeline::renderDeferredLighting()
 
 		glh::matrix4f mat = glh_copy_matrix(gGLModelView);
 
+		if(mDeferredVB.isNull())
+		{
+			mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
+			mDeferredVB->allocateBuffer(8, 0, true);
+		}
 		LLStrider<LLVector3> vert; 
 		mDeferredVB->getVertexStrider(vert);
 		LLStrider<LLVector2> tc0;

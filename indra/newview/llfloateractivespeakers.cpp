@@ -341,7 +341,6 @@ BOOL LLPanelActiveSpeakers::postBuild()
 
 	mMuteVoiceCtrl = getChild<LLUICtrl>("mute_btn");
 	childSetCommitCallback("mute_btn", onClickMuteVoiceCommit, this);
-	childSetAction("mute_btn", onClickMuteVoice, this);
 
 	childSetCommitCallback("speaker_volume", onVolumeChange, this);
 
@@ -718,11 +717,6 @@ void LLPanelActiveSpeakers::onClickMuteTextCommit(LLUICtrl* ctrl, void* user_dat
 	}
 }
 
-//static
-void LLPanelActiveSpeakers::onClickMuteVoice(void* user_data)
-{
-	onClickMuteVoiceCommit(NULL, user_data);
-}
 
 //static
 void LLPanelActiveSpeakers::onClickMuteVoiceCommit(LLUICtrl* ctrl, void* user_data)

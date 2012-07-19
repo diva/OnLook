@@ -80,6 +80,7 @@ enum gSSLlib_type {
 // No locking needed: initialized before threads are created, and subsequently only read.
 gSSLlib_type gSSLlib;
 bool gSetoptParamsNeedDup;
+void (*statemachines_flush_hook)(void);
 
 } // namespace
 
@@ -122,6 +123,13 @@ void ssl_locking_function(int mode, int n, char const* file, int line)
   }
 }
 
+#if LL_WINDOWS
+static unsigned long __cdecl apr_os_thread_current_wrapper()
+{
+	return (unsigned long)apr_os_thread_current();
+}
+#endif
+	
 #if HAVE_CRYPTO_THREADID
 // OpenSSL uniq id function.
 void ssl_id_function(CRYPTO_THREADID* thread_id)
@@ -185,14 +193,18 @@ ssl_dyn_create_function_type  old_ssl_dyn_create_function;
 ssl_dyn_destroy_function_type old_ssl_dyn_destroy_function;
 ssl_dyn_lock_function_type    old_ssl_dyn_lock_function;
 
+// Set for openssl-1.0.1...1.0.1c.
+static bool need_renegotiation_hack = false;
+
 // Initialize OpenSSL library for thread-safety.
 void ssl_init(void)
 {
   // The version identifier format is: MMNNFFPPS: major minor fix patch status.
   int const compiled_openSLL_major = (OPENSSL_VERSION_NUMBER >> 28) & 0xff;
   int const compiled_openSLL_minor = (OPENSSL_VERSION_NUMBER >> 20) & 0xff;
-  int const linked_openSLL_major = (SSLeay() >> 28) & 0xff;
-  int const linked_openSLL_minor = (SSLeay() >> 20) & 0xff;
+  unsigned long const ssleay = SSLeay();
+  int const linked_openSLL_major = (ssleay >> 28) & 0xff;
+  int const linked_openSLL_minor = (ssleay >> 20) & 0xff;
   // Check if dynamically loaded version is compatible with the one we compiled against.
   // As off version 1.0.0 also minor versions are compatible.
   if (linked_openSLL_major != compiled_openSLL_major ||
@@ -216,7 +228,11 @@ void ssl_init(void)
 #if HAVE_CRYPTO_THREADID
   CRYPTO_THREADID_set_callback(&ssl_id_function);
 #else
+#if LL_WINDOWS
+  CRYPTO_set_id_callback(&apr_os_thread_current_wrapper);
+#else
   CRYPTO_set_id_callback(&apr_os_thread_current);
+#endif
 #endif
   // Dynamic locks callbacks.
   old_ssl_dyn_create_function = CRYPTO_get_dynlock_create_callback();
@@ -225,6 +241,13 @@ void ssl_init(void)
   CRYPTO_set_dynlock_create_callback(&ssl_dyn_create_function);
   CRYPTO_set_dynlock_lock_callback(&ssl_dyn_lock_function);
   CRYPTO_set_dynlock_destroy_callback(&ssl_dyn_destroy_function);
+  need_renegotiation_hack = (0x10001000UL <= ssleay && ssleay < 0x10001040);
+  if (need_renegotiation_hack)
+  {
+	llwarns << "This version of libopenssl has a bug that we work around by forcing the TLSv1 protocol. "
+	           "That works on Second Life, but might cause you to fail to login on some OpenSim grids. "
+			   "Upgrade to openssl 1.0.1d or higher to avoid this warning." << llendl;
+  }
   llinfos << "Successful initialization of " <<
 	  SSLeay_version(SSLEAY_VERSION) << " (0x" << std::hex << SSLeay() << ")." << llendl;
 }
@@ -264,9 +287,9 @@ static unsigned int encoded_version(int major, int minor, int patch)
 namespace AICurlInterface {
 
 // MAIN-THREAD
-void initCurl(F32 curl_request_timeout, S32 max_number_handles)
+void initCurl(void (*flush_hook)())
 {
-  DoutEntering(dc::curl, "AICurlInterface::initCurl(" << curl_request_timeout << ", " << max_number_handles << ")");
+  DoutEntering(dc::curl, "AICurlInterface::initCurl(" << (void*)flush_hook << ")");
 
   llassert(LLThread::getRunning() == 0);		// We must not call curl_global_init unless we are the only thread.
   CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
@@ -285,7 +308,7 @@ void initCurl(F32 curl_request_timeout, S32 max_number_handles)
 	  llwarns << "libcurl's age is 0; no ares support." << llendl;
 	}
 	llassert_always((version_info->features & CURL_VERSION_SSL));	// SSL support, added in libcurl 7.10.
-	if (!(version_info->features & CURL_VERSION_ASYNCHDNS));		// Asynchronous name lookups (added in libcurl 7.10.7).
+	if (!(version_info->features & CURL_VERSION_ASYNCHDNS))			// Asynchronous name lookups (added in libcurl 7.10.7).
 	{
 	  llwarns << "libcurl was not compiled with support for asynchronous name lookups!" << llendl;
 	}
@@ -340,17 +363,24 @@ void initCurl(F32 curl_request_timeout, S32 max_number_handles)
 	}
 	llassert_always(!gSetoptParamsNeedDup);		// Might add support later.
   }
+
+  // Called in cleanupCurl.
+  statemachines_flush_hook = flush_hook;
 }
 
 // MAIN-THREAD
 void cleanupCurl(void)
 {
-  using AICurlPrivate::stopCurlThread;
-  using AICurlPrivate::curlThreadIsRunning;
+  using namespace AICurlPrivate;
 
   DoutEntering(dc::curl, "AICurlInterface::cleanupCurl()");
 
   stopCurlThread();
+  if (CurlMultiHandle::getTotalMultiHandles() != 0)
+	llwarns << "Not all CurlMultiHandle objects were destroyed!" << llendl;
+  if (statemachines_flush_hook)
+	(*statemachines_flush_hook)();
+  Stats::print();
   ssl_cleanup();
 
   llassert(LLThread::getRunning() <= (curlThreadIsRunning() ? 1 : 0));		// We must not call curl_global_cleanup unless we are the only thread left.
@@ -546,7 +576,10 @@ void CurlEasyHandle::handle_easy_error(CURLcode code)
 }
 
 // Throws AICurlNoEasyHandle.
-CurlEasyHandle::CurlEasyHandle(void) : mActiveMultiHandle(NULL), mErrorBuffer(NULL)
+CurlEasyHandle::CurlEasyHandle(void) : mActiveMultiHandle(NULL), mErrorBuffer(NULL), mQueuedForRemoval(false)
+#ifdef SHOW_ASSERT
+	, mRemovedPerCommand(true)
+#endif
 {
   mEasyHandle = curl_easy_init();
 #if 0
@@ -565,6 +598,22 @@ CurlEasyHandle::CurlEasyHandle(void) : mActiveMultiHandle(NULL), mErrorBuffer(NU
 	throw AICurlNoEasyHandle("curl_easy_init() returned NULL");
   }
 }
+
+#if 0 // Not used
+CurlEasyHandle::CurlEasyHandle(CurlEasyHandle const& orig) : mActiveMultiHandle(NULL), mErrorBuffer(NULL)
+#ifdef SHOW_ASSERT
+		, mRemovedPerCommand(true)
+#endif
+{
+  mEasyHandle = curl_easy_duphandle(orig.mEasyHandle);
+  Stats::easy_init_calls++;
+  if (!mEasyHandle)
+  {
+	Stats::easy_init_errors++;
+	throw AICurlNoEasyHandle("curl_easy_duphandle() returned NULL");
+  }
+}
+#endif
 
 CurlEasyHandle::~CurlEasyHandle()
 {
@@ -788,7 +837,7 @@ void CurlEasyRequest::revokeCallbacks(void)
   mWriteCallback = &noWriteCallback;
   mReadCallback = &noReadCallback;
   mSSLCtxCallback = &noSSLCtxCallback;
-  if (active() && !LLApp::isExiting())
+  if (active() && !no_warning())
   {
 	llwarns << "Revoking callbacks on a still active CurlEasyRequest object!" << llendl;
   }
@@ -869,7 +918,49 @@ static int curl_debug_callback(CURL*, curl_infotype infotype, char* buf, size_t 
 	LibcwDoutStream.write(buf, size);
   else if (infotype == CURLINFO_HEADER_IN || infotype == CURLINFO_HEADER_OUT)
 	LibcwDoutStream << libcwd::buf2str(buf, size);
-  else if (infotype == CURLINFO_DATA_IN || infotype == CURLINFO_DATA_OUT)
+  else if (infotype == CURLINFO_DATA_IN)
+  {
+	LibcwDoutStream << size << " bytes";
+	bool finished = false;
+	int i = 0;
+	while (i < size)
+	{
+	  char c = buf[i];
+	  if (!('0' <= c && c <= '9') && !('a' <= c && c <= 'f'))
+	  {
+		if (0 < i && i + 1 < size && buf[i] == '\r' && buf[i + 1] == '\n')
+		{
+		  // Binary output: "[0-9a-f]*\r\n ...binary data..."
+		  LibcwDoutStream << ": \"" << libcwd::buf2str(buf, i + 2) << "\"...";
+		  finished = true;
+		}
+		break;
+	  }
+	  ++i;
+	}
+	if (!finished && size > 9 && buf[0] == '<')
+	{
+	  // Human readable output: html, xml or llsd.
+	  if (!strncmp(buf, "<!DOCTYPE", 9) || !strncmp(buf, "<?xml", 5) || !strncmp(buf, "<llsd>", 6))
+	  {
+		LibcwDoutStream << ": \"" << libcwd::buf2str(buf, size) << '"';
+		finished = true;
+	  }
+	}
+	if (!finished)
+	{
+	  // Unknown format. Only print the first and last 20 characters.
+	  if (size > 40UL)
+	  {
+		LibcwDoutStream << ": \"" << libcwd::buf2str(buf, 20) << "\"...\"" << libcwd::buf2str(&buf[size - 20], 20) << '"';
+	  }
+	  else
+	  {
+		LibcwDoutStream << ": \"" << libcwd::buf2str(buf, size) << '"';
+	  }
+	}
+  }
+  else if (infotype == CURLINFO_DATA_OUT)
 	LibcwDoutStream << size << " bytes: \"" << libcwd::buf2str(buf, size) << '"';
   else
 	LibcwDoutStream << size << " bytes";
@@ -916,15 +1007,19 @@ void CurlEasyRequest::applyDefaultOptions(void)
 {
   CertificateAuthority_rat CertificateAuthority_r(gCertificateAuthority);
   setoptString(CURLOPT_CAINFO, CertificateAuthority_r->file);
-  // This option forces openssl to use TLS version 1.
-  // The Linden Lab servers don't support later TLS versions, and libopenssl-1.0.1c has
-  // a bug where renegotiation fails (see http://rt.openssl.org/Ticket/Display.html?id=2828),
-  // causing the connection to fail completely without this hack.
-  // For a commandline test of the same, observe the difference between:
-  // openssl s_client       -connect login.agni.lindenlab.com:443 -CAfile packaged/app_settings/CA.pem -debug
-  // and
-  // openssl s_client -tls1 -connect login.agni.lindenlab.com:443 -CAfile packaged/app_settings/CA.pem -debug
-  setopt(CURLOPT_SSLVERSION, (long)CURL_SSLVERSION_TLSv1);
+  if (need_renegotiation_hack)
+  {
+	// This option forces openssl to use TLS version 1.
+	// The Linden Lab servers don't support later TLS versions, and libopenssl-1.0.1-beta1 up till and including
+	// libopenssl-1.0.1c have a bug where renegotiation fails (see http://rt.openssl.org/Ticket/Display.html?id=2828),
+	// causing the connection to fail completely without this hack.
+	// For a commandline test of the same, observe the difference between:
+	// openssl s_client       -connect login.agni.lindenlab.com:443 -CAfile packaged/app_settings/CA.pem -debug
+	// which gets no response from the server after sending the initial data, and
+	// openssl s_client -tls1 -connect login.agni.lindenlab.com:443 -CAfile packaged/app_settings/CA.pem -debug
+	// which finishes the negotiation and ends with 'Verify return code: 0 (ok)'
+	setopt(CURLOPT_SSLVERSION, (long)CURL_SSLVERSION_TLSv1);
+  }
   setopt(CURLOPT_NOSIGNAL, 1);
   // The old code did this for the 'buffered' version, but I think it's nonsense.
   //setopt(CURLOPT_DNS_CACHE_TIMEOUT, 0);
@@ -1021,6 +1116,8 @@ CurlResponderBuffer::CurlResponderBuffer()
   curl_easy_request_w->send_events_to(this);
 }
 
+#define llmaybeerrs lllog(LLApp::isExiting() ? LLError::LEVEL_WARN : LLError::LEVEL_ERROR, NULL, NULL, false)
+
 // The callbacks need to be revoked when the CurlResponderBuffer is destructed (because that is what the callbacks use).
 // The AIThreadSafeSimple<CurlResponderBuffer> is destructed first (right to left), so when we get here then the
 // ThreadSafeCurlEasyRequest base class of ThreadSafeBufferedCurlEasyRequest is still intact and we can create
@@ -1033,24 +1130,34 @@ CurlResponderBuffer::~CurlResponderBuffer()
   curl_easy_request_w->revokeCallbacks();
   if (mResponder)
   {	
-	llwarns << "Calling ~CurlResponderBuffer() with active responder!" << llendl;
-	llassert(false);	// Does this ever happen? And if so, what does it mean?
-	// FIXME: Does this really mean it timed out?
-	mResponder->completedRaw(HTTP_REQUEST_TIME_OUT, "Request timeout, aborted.", sChannels, mOutput);
-	mResponder = NULL;
+	// If the responder is still alive, then that means that CurlResponderBuffer::processOutput was
+	// never called, which means that the removed_from_multi_handle event never happened.
+	// This is definitely an internal error as it can only happen when libcurl is too slow,
+	// in which case AICurlEasyRequestStateMachine::mTimer times out, but that already
+	// calls CurlResponderBuffer::timed_out().
+	llmaybeerrs << "Calling ~CurlResponderBuffer() with active responder!" << llendl;
+	if (LLApp::isExiting())
+	{
+	  // It might happen if some CurlResponderBuffer escaped clean up somehow :/
+	  mResponder = NULL;
+	}
+	else
+	{
+	  // User chose to continue.
+	  timed_out();
+	}
   }
+}
+
+void CurlResponderBuffer::timed_out(void)
+{
+	mResponder->completedRaw(HTTP_INTERNAL_ERROR, "Request timeout, aborted.", sChannels, mOutput);
+	mResponder = NULL;
 }
 
 void CurlResponderBuffer::resetState(AICurlEasyRequest_wat& curl_easy_request_w)
 {
-  if (mResponder)
-  {	
-	llwarns << "Calling CurlResponderBuffer::resetState() for active easy handle!" << llendl;
-	llassert(false);	// Does this ever happen? And if so, what does it mean?
-	// FIXME: Does this really mean it timed out?
-	mResponder->completedRaw(HTTP_REQUEST_TIME_OUT, "Request timeout, aborted.", sChannels, mOutput);
-	mResponder = NULL;
-  }
+  llassert(!mResponder);
 
   curl_easy_request_w->resetState();
 
@@ -1243,10 +1350,12 @@ CurlMultiHandle::~CurlMultiHandle()
 {
   curl_multi_cleanup(mMultiHandle);
   Stats::multi_calls++;
+#ifdef CWDEBUG
   int total = --sTotalMultiHandles;
   Dout(dc::curl, "Called CurlMultiHandle::~CurlMultiHandle() [" << (void*)this << "], " << total << " remaining.");
-  if (total == 0)
-	Stats::print();
+#else
+  --sTotalMultiHandles;
+#endif
 }
 
 } // namespace AICurlPrivate

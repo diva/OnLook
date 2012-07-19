@@ -365,6 +365,7 @@ bool LLAudioEngine_FMODEX::initWind()
 		FMOD_DSP_DESCRIPTION dspdesc;
 		memset(&dspdesc, 0, sizeof(FMOD_DSP_DESCRIPTION));	//Set everything to zero
 		strncpy(dspdesc.name,"Wind Unit", sizeof(dspdesc.name));	//Set name to "Wind Unit"
+		dspdesc.channels=2;
 		dspdesc.read = &windCallback; //Assign callback.
 		if(Check_FMOD_Error(mSystem->createDSP(&dspdesc, &mWindDSP), "FMOD::createDSP"))
 			return false;

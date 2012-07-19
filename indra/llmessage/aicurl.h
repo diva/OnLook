@@ -90,7 +90,7 @@ struct TransferInfo {
 
 // Called once at start of application (from newview/llappviewer.cpp by main thread (before threads are created)),
 // with main purpose to initialize curl.
-void initCurl(F32 curl_request_timeout = 120.f, S32 max_number_handles = 256);
+void initCurl(void (*)(void) = NULL);
 
 // Called once at start of application (from LLAppViewer::initThreads), starts AICurlThread.
 void startCurlThread(void);
@@ -237,6 +237,8 @@ struct AICurlEasyHandleEvents {
 	virtual void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w) = 0;
 	virtual void finished(AICurlEasyRequest_wat& curl_easy_request_w) = 0;
 	virtual void removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w) = 0;
+	// Avoid compiler warning.
+	virtual ~AICurlEasyHandleEvents() { }
 };
 
 #include "aicurlprivate.h"
@@ -273,6 +275,9 @@ class AICurlEasyRequest {
 
 	// Queue a command to remove this request from the multi session (or cancel a queued command to add it).
 	void removeRequest(void);
+
+	// Returns true when this AICurlEasyRequest wraps a AICurlPrivate::ThreadSafeBufferedCurlEasyRequest.
+	bool isBuffered(void) const { return mCurlEasyRequest->isBuffered(); }
 
   private:
 	// The actual pointer to the ThreadSafeCurlEasyRequest instance.

@@ -67,6 +67,7 @@ public:
 	~LLPluginProcessParent();
 		
 	void init(const std::string &launcher_filename, 
+			  const std::string &plugin_dir,
 			  const std::string &plugin_filename, 
 			  bool debug);
 
@@ -166,12 +167,13 @@ private:
 	LLProcessLauncher mProcess;
 	
 	std::string mPluginFile;
+	std::string mPluginDir;
 
 	LLPluginProcessParentOwner *mOwner;
-	
+
 	typedef std::map<std::string, LLPluginSharedMemory*> sharedMemoryRegionsType;
 	sharedMemoryRegionsType mSharedMemoryRegions;
-	
+
 	LLSD mMessageClassVersions;
 	std::string mPluginVersionString;
 	
@@ -194,7 +196,7 @@ private:
 	apr_pollfd_t mPollFD;
 	LLAPRPool mPollFDPool;
 	static apr_pollset_t *sPollSet;
-    static LLAPRPool sPollSetPool;
+	static LLAPRPool sPollSetPool;
 	static bool sPollsetNeedsRebuild;
 	static LLMutex *sInstancesMutex;
 	static std::list<LLPluginProcessParent*> sInstances;

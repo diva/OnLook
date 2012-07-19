@@ -79,7 +79,7 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	  CURLcode setopt(CURLoption option, BUILTIN parameter);
 
 	// Clone a libcurl session handle using all the options previously set.
-	CurlEasyHandle(CurlEasyHandle const& orig) : mEasyHandle(curl_easy_duphandle(orig.mEasyHandle)), mActiveMultiHandle(NULL), mErrorBuffer(NULL) { }
+	//CurlEasyHandle(CurlEasyHandle const& orig);
 
 	// URL encode/decode the given string.
 	char* escape(char* url, int length);
@@ -98,10 +98,21 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// Pause and unpause a connection.
 	CURLcode pause(int bitmask);
 
+	// Called when a request is queued for removal. In that case a race between the actual removal
+	// and revoking of the callbacks is harmless (and happens for the raw non-statemachine version).
+	void remove_queued(void) { mQueuedForRemoval = true; }
+	// In case it's added after being removed.
+	void add_queued(void) { mQueuedForRemoval = false; }
+
   private:
 	CURL* mEasyHandle;
 	CURLM* mActiveMultiHandle;
 	char* mErrorBuffer;
+	bool mQueuedForRemoval;			// Set if the easy handle is (probably) added to the multi handle, but is queued for removal.
+#ifdef SHOW_ASSERT
+  public:
+	bool mRemovedPerCommand;		// Set if mActiveMultiHandle was reset as per command from the main thread.
+#endif
 
   private:
 	// This should only be called from MultiHandle; add/remove an easy handle to/from a multi handle.
@@ -116,6 +127,11 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// If there was an error code as result, then this returns a human readable error string.
 	// Only valid when setErrorBuffer was called and the curl_easy function returned an error.
 	std::string getErrorString(void) const { return mErrorBuffer ? mErrorBuffer : "(null)"; }
+
+	// Returns true when it is expected that the parent will revoke callbacks before the curl
+	// easy handle is removed from the multi handle; that usually happens when an external
+	// error demands termination of the request (ie, an expiration).
+	bool no_warning(void) const { return mQueuedForRemoval || LLApp::isExiting(); }
 
 	// Used for debugging purposes.
 	bool operator==(CURL* easy_handle) const { return mEasyHandle == easy_handle; }
@@ -279,6 +295,9 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
 	std::stringstream& getHeaderOutput() { return mHeaderOutput; }
 	LLIOPipe::buffer_ptr_t& getOutput() { return mOutput; }
 
+	// Called if libcurl doesn't deliver within CurlRequestTimeOut seconds.
+	void timed_out(void);
+
 	// Called after removed_from_multi_handle was called.
 	void processOutput(AICurlEasyRequest_wat& curl_easy_request_w);
 
@@ -311,6 +330,10 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
   public:
 	// Return pointer to the ThreadSafe (wrapped) version of this object.
 	ThreadSafeBufferedCurlEasyRequest* get_lockobj(void);
+
+	// Return true when prepRequest was already called and the object has not been
+	// invalidated as a result of calling timed_out().
+	bool isValid(void) const { return mResponder; }
 };
 
 // This class wraps CurlEasyRequest for thread-safety and adds a reference counter so we can
@@ -325,6 +348,9 @@ class ThreadSafeCurlEasyRequest : public AIThreadSafeSimple<CurlEasyRequest> {
 		  Dout(dc::curl, "Creating ThreadSafeCurlEasyRequest with this = " << (void*)this); }
 	virtual ~ThreadSafeCurlEasyRequest()
 	    { Dout(dc::curl, "Destructing ThreadSafeCurlEasyRequest with this = " << (void*)this); }
+
+	// Returns true if this is a base class of ThreadSafeBufferedCurlEasyRequest.
+	virtual bool isBuffered(void) const { return false; }
 
   private:
 	LLAtomicU32 mReferenceCount;
@@ -344,6 +370,8 @@ class ThreadSafeBufferedCurlEasyRequest : public ThreadSafeCurlEasyRequest, publ
   public:
 	// Throws AICurlNoEasyHandle.
 	ThreadSafeBufferedCurlEasyRequest(void) { new (AIThreadSafeSimple<CurlResponderBuffer>::ptr()) CurlResponderBuffer; }
+
+	/*virtual*/ bool isBuffered(void) const { return true; }
 };
 
 // The curl easy request type wrapped in a reference counting pointer.

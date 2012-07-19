@@ -484,6 +484,7 @@ void LLPluginClassMedia::jsAgentMaturityEvent( const std::string& maturity )
 	message.setValue( "maturity", maturity );
 	sendMessage( message );
 }
+
 void LLPluginClassMedia::mouseEvent(EMouseEventType type, int button, int x, int y, MASK modifiers)
 {
 	if(type == MOUSE_EVENT_MOVE)
@@ -573,7 +574,15 @@ bool LLPluginClassMedia::keyEvent(EKeyEventType type, int key_code, MASK modifie
 			}
 		break;
 	}
-	
+
+#if LL_DARWIN	
+	if(modifiers & MASK_ALT)
+	{
+		// Option-key modified characters should be handled by the unicode input path instead of this one.
+		result = false;
+	}
+#endif
+
 	if(result)
 	{
 		LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA, "key_event");
@@ -731,6 +740,14 @@ void LLPluginClassMedia::setJavascriptEnabled(const bool enabled)
 	sendMessage(message);
 }
 
+
+void LLPluginClassMedia::enableMediaPluginDebugging( bool enable )
+{
+	LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA, "enable_media_plugin_debugging");
+	message.setValueBoolean( "enable", enable );
+	sendMessage( message );
+}
+
 void LLPluginClassMedia::setTarget(const std::string &target)
 {
 	mTarget = target;
@@ -795,7 +812,7 @@ void LLPluginClassMedia::receivePluginMessage(const LLPluginMessage &message)
 					mDirtyRect.unionWith(newDirtyRect);
 				}
 
-				LL_DEBUGS("PluginUpdated") << "adjusted incoming rect is: ("
+				LL_DEBUGS("PluginUpdated") << "adjusted incoming rect is: (" 
 					<< newDirtyRect.mLeft << ", "
 					<< newDirtyRect.mTop << ", "
 					<< newDirtyRect.mRight << ", "
@@ -958,6 +975,12 @@ void LLPluginClassMedia::receivePluginMessage(const LLPluginMessage &message)
 			mAuthURL = message.getValue("url");
 			mAuthRealm = message.getValue("realm");
 			mediaEvent(LLPluginClassMediaOwner::MEDIA_EVENT_AUTH_REQUEST);
+		}		
+		else if(message_name == "debug_message")
+		{
+			mDebugMessageText = message.getValue("message_text");
+			mDebugMessageLevel = message.getValue("message_level");
+			mediaEvent(LLPluginClassMediaOwner::MEDIA_EVENT_DEBUG_MESSAGE);
 		}
 		else
 		{
@@ -1103,6 +1126,14 @@ void LLPluginClassMedia::focus(bool focused)
 	sendMessage(message);
 }
 
+void LLPluginClassMedia::set_page_zoom_factor( double factor )
+{
+	LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "set_page_zoom_factor");
+
+	message.setValueReal("factor", factor);
+	sendMessage(message);
+}
+
 void LLPluginClassMedia::clear_cache()
 {
 	LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "clear_cache");
@@ -1183,6 +1214,13 @@ void LLPluginClassMedia::setBrowserUserAgent(const std::string& user_agent)
 
 	message.setValue("user_agent", user_agent);
 
+	sendMessage(message);
+}
+
+void LLPluginClassMedia::showWebInspector( bool show )
+{
+	LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "show_web_inspector");
+	message.setValueBoolean("show", true);	// only open for now - closed manually by user
 	sendMessage(message);
 }
 

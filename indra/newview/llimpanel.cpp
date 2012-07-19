@@ -1938,7 +1938,7 @@ void LLFloaterIMPanel::onClickHistory( void* userdata )
 		//std::string fullname(gDirUtilp->getScrubbedFileName(self->getTitle()));
 		std::string fullname(gDirUtilp->getScrubbedFileName(self->mSessionLabel));
 		// [/Ansariel: Display name support]
-		sprintf(command, "\"%s\\%s.txt\"", gDirUtilp->getPerAccountChatLogsDir().c_str(),fullname.c_str());
+		sprintf(command, "\"%s%s%s.txt\"", gDirUtilp->getPerAccountChatLogsDir().c_str(), gDirUtilp->getDirDelimiter().c_str(), fullname.c_str());
 		gViewerWindow->getWindow()->ShellEx(command);
 
 		llinfos << command << llendl;

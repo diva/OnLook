@@ -50,8 +50,6 @@ class Request {
 	bool getByteRange(std::string const& url, headers_t const& headers, S32 offset, S32 length, ResponderPtr responder);
 	bool post(std::string const& url, headers_t const& headers, std::string const& data, ResponderPtr responder, S32 time_out = 0);
 	bool post(std::string const& url, headers_t const& headers,        LLSD const& data, ResponderPtr responder, S32 time_out = 0);
-
-	S32  process(void);
 };
 
 } // namespace AICurlInterface

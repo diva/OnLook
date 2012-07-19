@@ -53,7 +53,10 @@ public:
 	virtual ~LLPluginClassBasic();
 
 	// Local initialization, called when creating a plugin process. Return true if successful.
-	bool init(std::string const& launcher_filename, std::string const& plugin_filename, bool debug);
+	bool init(std::string const& launcher_filename, 
+					  std::string const& plugin_dir, 
+					  std::string const& plugin_filename, 
+					  bool debug);
 
 	// Undoes everything init did. Called when destroying a plugin process.
 	void reset(void);

@@ -1613,12 +1613,14 @@ void LLMeshUploadThread::doWholeModelUpload()
 		LLSD body = full_model_data["asset_resources"];
 		dump_llsd_to_file(body,make_dump_name("whole_model_body_",dump_num));
 		LLCurlRequest::headers_t headers;
-		//FIXME: this might throw AICurlNoEasyHandle
+		// This might throw AICurlNoEasyHandle.
 		mCurlRequest->post(mWholeModelUploadURL, headers, body,
 						   new LLWholeModelUploadResponder(this, full_model_data, mUploadObserverHandle), mMeshUploadTimeOut);
 		do
 		{
-			mCurlRequest->process();
+			mCurlRequest->process();								// FIXME: This function does not exist anymore. The post() gets CPU time from AICurlEasyRequestStateMachine.
+																	// Therefore, if we do not want to continue here unless this upload is done... no wait, that would
+																	// be blocking and we don't want blocking...
 			//sleep for 10ms to prevent eating a whole core
 			apr_sleep(10000);
 		} while (mCurlRequest->getQueued() > 0);
@@ -1645,7 +1647,7 @@ void LLMeshUploadThread::requestWholeModelFee()
 
 	mPendingUploads++;
 	LLCurlRequest::headers_t headers;
-	//FIXME: this might throw AICurlNoEasyHandle
+	// This might throw AICurlNoEasyHandle.
 	mCurlRequest->post(mWholeModelFeeCapability, headers, model_data,
 					   new LLWholeModelFeeResponder(this,model_data, mFeeObserverHandle), mMeshUploadTimeOut);
 

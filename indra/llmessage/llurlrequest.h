@@ -190,7 +190,8 @@ public:
 	 */
 	void allowCookies();
 
-	/*virtual*/ bool isValid() ;
+	/*virtual*/ bool hasExpiration(void) const;
+	/*virtual*/ bool hasNotExpired(void) const;
 
 public:
 	/** 

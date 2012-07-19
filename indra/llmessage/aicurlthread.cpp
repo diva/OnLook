@@ -32,10 +32,118 @@
 #include "aicurlthread.h"
 #include "lltimer.h"		// ms_sleep
 #include <sys/types.h>
+#if !LL_WINDOWS
 #include <sys/select.h>
 #include <unistd.h>
 #include <fcntl.h>
+#endif
 #include <deque>
+
+#define DEBUG_WINDOWS_CODE_ON_LINUX 0
+
+#if DEBUG_WINDOWS_CODE_ON_LINUX
+
+struct windows_fd_set {
+  unsigned int fd_count;
+  curl_socket_t fd_array[64];
+};
+
+unsigned int const not_found  = (unsigned int)-1;
+
+static inline unsigned int find_fd(curl_socket_t s, windows_fd_set const* fsp)
+{
+  for (unsigned int i = 0; i < fsp->fd_count; ++i)
+  {
+	if (fsp->fd_array[i] == s)
+	  return i;
+  }
+  return not_found;
+}
+
+static int windows_select(int, windows_fd_set* readfds, windows_fd_set* writefds, windows_fd_set*, timeval* val)
+{
+  fd_set r;
+  fd_set w;
+  FD_ZERO(&r);
+  FD_ZERO(&w);
+  int mfd = -1;
+  if (readfds)
+  {
+	for (int i  = 0; i < readfds->fd_count; ++i)
+	{
+	  int fd = readfds->fd_array[i];
+	  FD_SET(fd, &r);
+	  mfd = llmax(mfd, fd);
+	}
+  }
+  if (writefds)
+  {
+	for (int i  = 0; i < writefds->fd_count; ++i)
+	{
+	  int fd = writefds->fd_array[i];
+	  FD_SET(fd, &w);
+	  mfd = llmax(mfd, fd);
+	}
+  }
+  int nfds = select(mfd + 1, readfds ? &r : NULL, writefds ? &w : NULL, NULL, val);
+  if (readfds)
+  {
+	unsigned int fd_count = 0;
+	for (int i  = 0; i < readfds->fd_count; ++i)
+	{
+	  if (FD_ISSET(readfds->fd_array[i], &r))
+		readfds->fd_array[fd_count++] = readfds->fd_array[i];
+	}
+	readfds->fd_count = fd_count;
+  }
+  if (writefds)
+  {
+	unsigned int fd_count = 0;
+	for (int i  = 0; i < writefds->fd_count; ++i)
+	{
+	  if (FD_ISSET(writefds->fd_array[i], &w))
+		writefds->fd_array[fd_count++] = writefds->fd_array[i];
+	}
+	writefds->fd_count = fd_count;
+  }
+  return nfds;
+}
+
+#undef FD_SETSIZE
+#undef FD_ZERO
+#undef FD_ISSET
+#undef FD_SET
+#undef FD_CLR
+
+int const FD_SETSIZE  = sizeof(windows_fd_set::fd_array) / sizeof(curl_socket_t);
+
+static void FD_ZERO(windows_fd_set* fsp)
+{
+  fsp->fd_count = 0;
+}
+
+static bool FD_ISSET(curl_socket_t s, windows_fd_set const* fsp)
+{
+  return find_fd(s, fsp) != not_found;
+}
+
+static void FD_SET(curl_socket_t s, windows_fd_set* fsp)
+{
+  llassert(!FD_ISSET(s, fsp));
+  fsp->fd_array[fsp->fd_count++] = s;
+}
+
+static void FD_CLR(curl_socket_t s, windows_fd_set* fsp)
+{
+  unsigned int i = find_fd(s, fsp);
+  llassert(i != not_found);
+  fsp->fd_array[i] = fsp->fd_array[--(fsp->fd_count)];
+}
+
+#define fd_set windows_fd_set
+#define select windows_select
+
+#endif // DEBUG_WINDOWS_CODE_ON_LINUX
 
 #undef AICurlPrivate
 
@@ -115,6 +223,68 @@ namespace curlthread {
 //-----------------------------------------------------------------------------
 // PollSet
 
+int const empty = 0x1;
+int const complete = 0x2;
+
+enum refresh_t {
+  not_complete_not_empty = 0,
+  complete_not_empty = complete,
+  empty_and_complete = complete|empty
+};
+
+class PollSet
+{
+  public:
+	PollSet(void);
+
+	// Add/remove a filedescriptor to/from mFileDescriptors.
+	void add(curl_socket_t s);
+	void remove(curl_socket_t s);
+
+	// Copy mFileDescriptors to an internal fd_set that is returned by access().
+	// Returns if all fds could be copied (complete) and/or if the resulting fd_set is empty.
+	refresh_t refresh(void);
+
+	// Return a pointer to the underlaying fd_set.
+	fd_set* access(void) { return &mFdSet; }
+
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+	// Return the largest fd set in mFdSet by refresh.
+	curl_socket_t get_max_fd(void) const { return mMaxFdSet; }
+#endif
+
+	// Return true if a filedescriptor is set in mFileDescriptors (used for debugging).
+	bool contains(curl_socket_t s) const;
+
+	// Return true if a filedescriptor is set in mFdSet.
+	bool is_set(curl_socket_t s) const;
+
+	// Clear filedescriptor in mFdSet.
+	void clr(curl_socket_t fd);
+
+	// Iterate over all file descriptors that were set by refresh and are still set in mFdSet.
+	void reset(void);				// Reset the iterator.
+	curl_socket_t get(void) const;	// Return next filedescriptor, or CURL_SOCKET_BAD when there are no more.
+	                   				// Only valid if reset() was called after the last call to refresh().
+	void next(void);				// Advance to next filedescriptor.
+
+  private:
+	curl_socket_t* mFileDescriptors;
+	int mNrFds;						// The number of filedescriptors in the array.
+	int mNext;						// The index of the first file descriptor to start copying, the next call to refresh().
+
+	fd_set mFdSet;					// Output variable for select(). (Re)initialized by calling refresh().
+
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+	curl_socket_t mMaxFd;			// The largest filedescriptor in the array, or CURL_SOCKET_BAD when it is empty.
+	curl_socket_t mMaxFdSet;		// The largest filedescriptor set in mFdSet by refresh(), or CURL_SOCKET_BAD when it was empty.
+	std::vector<curl_socket_t> mCopiedFileDescriptors;	// Filedescriptors copied by refresh to mFdSet.
+	std::vector<curl_socket_t>::iterator mIter;			// Index into mCopiedFileDescriptors for next(); loop variable.
+#else
+	unsigned int mIter;				// Index into fd_set::fd_array.
+#endif
+};
+
 // A PollSet can store at least 1024 filedescriptors, or FD_SETSIZE if that is larger than 1024 [MAXSIZE].
 // The number of stored filedescriptors is mNrFds [0 <= mNrFds <= MAXSIZE].
 // The largest filedescriptor is stored is mMaxFd, which is -1 iff mNrFds == 0.
@@ -132,12 +302,12 @@ namespace curlthread {
 //
 // mMaxFdSet is the largest filedescriptor in mFdSet or -1 if it is empty.
 
-static size_t const MAXSIZE = std::max(1024, FD_SETSIZE);
+static size_t const MAXSIZE = llmax(1024, FD_SETSIZE);
 
 // Create an empty PollSet.
 PollSet::PollSet(void) : mFileDescriptors(new curl_socket_t [MAXSIZE]),
                          mNrFds(0), mNext(0)
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
 						 , mMaxFd(-1), mMaxFdSet(-1)
 #endif
 {
@@ -147,10 +317,10 @@ PollSet::PollSet(void) : mFileDescriptors(new curl_socket_t [MAXSIZE]),
 // Add filedescriptor s to the PollSet.
 void PollSet::add(curl_socket_t s)
 {
-  llassert_always(mNrFds < MAXSIZE);
+  llassert_always(mNrFds < (int)MAXSIZE);
   mFileDescriptors[mNrFds++] = s;
-#if !LL_WINDOWS
-  mMaxFd = std::max(mMaxFd, s);
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+  mMaxFd = llmax(mMaxFd, s);
 #endif
 }
 
@@ -186,7 +356,7 @@ void PollSet::remove(curl_socket_t s)
   // index: 0   1   2   3   4   5
   //        a   b   c   s   d   e
   curl_socket_t cur = mFileDescriptors[i];		// cur = 'e'
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
   curl_socket_t max = -1;
 #endif
   while (cur != s)
@@ -194,8 +364,8 @@ void PollSet::remove(curl_socket_t s)
 	llassert(i > 0);
 	curl_socket_t next = mFileDescriptors[--i];	// next = 'd'
 	mFileDescriptors[i] = cur;					// Overwrite 'd' with 'e'.
-#if !LL_WINDOWS
-	max = std::max(max, cur);					// max is the maximum value in 'i' or higher.
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+	max = llmax(max, cur);					// max is the maximum value in 'i' or higher.
 #endif
 	cur = next;									// cur = 'd'
 	//                        i  NrFds = 5
@@ -214,21 +384,21 @@ void PollSet::remove(curl_socket_t s)
   //                i          NrFds = 5
   //                v           v
   // index: 0   1   2   3   4
-  //        a   b   c   d   e					// max = std::max('d', 'e')
+  //        a   b   c   d   e					// max = llmax('d', 'e')
 
   // If mNext pointed to an element before s, it should be left alone. Otherwise, if mNext pointed
   // to s it must now point to 'd', or if it pointed beyond 's' it must be decremented by 1.
   if (mNext > i)								// i is where s was.
 	--mNext;
 
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
   // If s was the largest file descriptor, we have to update mMaxFd.
   if (s == mMaxFd)
   {
 	while (i > 0)
 	{
 	  curl_socket_t next = mFileDescriptors[--i];
-	  max = std::max(max, next);
+	  max = llmax(max, next);
 	}
 	mMaxFd = max;
 	llassert(mMaxFd < s);
@@ -238,7 +408,7 @@ void PollSet::remove(curl_socket_t s)
 
   // ALSO make sure that s is no longer set in mFdSet, or we might confuse libcurl by
   // calling curl_multi_socket_action for a socket that it told us to remove.
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
   clr(s);
 #else
   // We have to use a custom implementation here, because we don't want to invalidate mIter.
@@ -246,14 +416,14 @@ void PollSet::remove(curl_socket_t s)
   // mFdSet.fd_array instead of mFileDescriptors and mIter instead of mNext.
   if (FD_ISSET(s, &mFdSet))
   {
-	int i = --mFdSet.fd_count;
-	llassert(i >= 0);
+	llassert(mFdSet.fd_count > 0);
+	unsigned int i = --mFdSet.fd_count;
 	curl_socket_t cur = mFdSet.fd_array[i];
 	while (cur != s)
 	{
 	  llassert(i > 0);
-	  curl_socket_t next = mFileDescriptors[--i];
-	  mFileDescriptors[i] = cur;
+	  curl_socket_t next = mFdSet.fd_array[--i];
+	  mFdSet.fd_array[i] = cur;
 	  cur = next;
 	}
 	if (mIter > i)
@@ -278,7 +448,7 @@ inline bool PollSet::is_set(curl_socket_t fd) const
 
 inline void PollSet::clr(curl_socket_t fd)
 {
-  return FD_CLR(fd, &mFdSet);
+  FD_CLR(fd, &mFdSet);
 }
 
 // This function fills mFdSet with at most FD_SETSIZE - 1 filedescriptors,
@@ -287,13 +457,13 @@ inline void PollSet::clr(curl_socket_t fd)
 refresh_t PollSet::refresh(void)
 {
   FD_ZERO(&mFdSet);
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
   mCopiedFileDescriptors.clear();
 #endif
 
   if (mNrFds == 0)
   {
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
 	mMaxFdSet = -1;
 #endif
 	return empty_and_complete;
@@ -308,18 +478,18 @@ refresh_t PollSet::refresh(void)
   if (mNrFds >= FD_SETSIZE)
   {
 	llwarns << "PollSet::reset: More than FD_SETSIZE (" << FD_SETSIZE << ") file descriptors active!" << llendl;
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
 	// Calculate mMaxFdSet.
 	// Run over FD_SETSIZE - 1 elements, starting at mNext, wrapping to 0 when we reach the end.
 	int max = -1, i = mNext, count = 0;
-	while (++count < FD_SETSIZE) { max = std::max(max, mFileDescriptors[i]); if (++i == mNrFds) i = 0; }
+	while (++count < FD_SETSIZE) { max = llmax(max, mFileDescriptors[i]); if (++i == mNrFds) i = 0; }
 	mMaxFdSet = max;
 #endif
   }
   else
   {
 	mNext = 0;				// Start at the beginning if we copy everything anyway.
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
 	mMaxFdSet = mMaxFd;
 #endif
   }
@@ -333,7 +503,7 @@ refresh_t PollSet::refresh(void)
 	  return not_complete_not_empty;
 	}
 	FD_SET(mFileDescriptors[i], &mFdSet);
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
 	mCopiedFileDescriptors.push_back(mFileDescriptors[i]);
 #endif
 	if (++i == mNrFds)
@@ -371,7 +541,7 @@ refresh_t PollSet::refresh(void)
 
 void PollSet::reset(void)
 {
-#if LL_WINDOWS
+#if LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX
   mIter = 0;
 #else
   if (mCopiedFileDescriptors.empty())
@@ -387,7 +557,7 @@ void PollSet::reset(void)
 
 inline curl_socket_t PollSet::get(void) const
 {
-#if LL_WINDOWS
+#if LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX
   return (mIter >= mFdSet.fd_count) ? CURL_SOCKET_BAD : mFdSet.fd_array[mIter];
 #else
   return (mIter == mCopiedFileDescriptors.end()) ? CURL_SOCKET_BAD : *mIter;
@@ -396,7 +566,7 @@ inline curl_socket_t PollSet::get(void) const
 
 void PollSet::next(void)
 {
-#if LL_WINDOWS
+#if LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX
   llassert(mIter < mFdSet.fd_count);
   ++mIter;
 #else
@@ -415,28 +585,28 @@ void PollSet::next(void)
 class MergeIterator
 {
   public:
-	MergeIterator(PollSet& readPollSet, PollSet& writePollSet);
+	MergeIterator(PollSet* readPollSet, PollSet* writePollSet);
 
 	bool next(curl_socket_t& fd_out, int& ev_bitmask_out);
 
   private:
-	PollSet& mReadPollSet;
-	PollSet& mWritePollSet;
+	PollSet* mReadPollSet;
+	PollSet* mWritePollSet;
 	int readIndx;
 	int writeIndx;
 };
 
-MergeIterator::MergeIterator(PollSet& readPollSet, PollSet& writePollSet) :
+MergeIterator::MergeIterator(PollSet* readPollSet, PollSet* writePollSet) :
     mReadPollSet(readPollSet), mWritePollSet(writePollSet), readIndx(0), writeIndx(0)
 {
-  mReadPollSet.reset();
-  mWritePollSet.reset();
+  mReadPollSet->reset();
+  mWritePollSet->reset();
 }
 
 bool MergeIterator::next(curl_socket_t& fd_out, int& ev_bitmask_out)
 {
-  curl_socket_t rfd = mReadPollSet.get();
-  curl_socket_t wfd = mWritePollSet.get();
+  curl_socket_t rfd = mReadPollSet->get();
+  curl_socket_t wfd = mWritePollSet->get();
 
   if (rfd == CURL_SOCKET_BAD && wfd == CURL_SOCKET_BAD)
 	return false;
@@ -445,28 +615,28 @@ bool MergeIterator::next(curl_socket_t& fd_out, int& ev_bitmask_out)
   {
 	fd_out = rfd;
 	ev_bitmask_out = CURL_CSELECT_IN | CURL_CSELECT_OUT;
-	mReadPollSet.next();
+	mReadPollSet->next();
   }
   else if (wfd == CURL_SOCKET_BAD || (rfd != CURL_SOCKET_BAD && rfd < wfd))	// Use and increment smaller one, unless it's CURL_SOCKET_BAD.
   {
 	fd_out = rfd;
 	ev_bitmask_out = CURL_CSELECT_IN;
-	mReadPollSet.next();
-	if (wfd != CURL_SOCKET_BAD && mWritePollSet.is_set(rfd))
+	mReadPollSet->next();
+	if (wfd != CURL_SOCKET_BAD && mWritePollSet->is_set(rfd))
 	{
 	  ev_bitmask_out |= CURL_CSELECT_OUT;
-	  mWritePollSet.clr(rfd);
+	  mWritePollSet->clr(rfd);
 	}
   }
   else
   {
 	fd_out = wfd;
 	ev_bitmask_out = CURL_CSELECT_OUT;
-	mWritePollSet.next();
-	if (rfd != CURL_SOCKET_BAD && mReadPollSet.is_set(wfd))
+	mWritePollSet->next();
+	if (rfd != CURL_SOCKET_BAD && mReadPollSet->is_set(wfd))
 	{
 	  ev_bitmask_out |= CURL_CSELECT_IN;
-	  mReadPollSet.clr(wfd);
+	  mReadPollSet->clr(wfd);
 	}
   }
 
@@ -496,8 +666,8 @@ CurlSocketInfo::CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socke
     mMultiHandle(multi_handle), mEasy(easy), mSocketFd(s), mAction(CURL_POLL_NONE)
 {
   mMultiHandle.assign(s, this);
-  llassert(!mMultiHandle.mReadPollSet.contains(s));
-  llassert(!mMultiHandle.mWritePollSet.contains(s));
+  llassert(!mMultiHandle.mReadPollSet->contains(s));
+  llassert(!mMultiHandle.mWritePollSet->contains(s));
   set_action(action);
 }
 
@@ -513,16 +683,16 @@ void CurlSocketInfo::set_action(int action)
   if ((toggle_action & CURL_POLL_IN))
   {
 	if ((action & CURL_POLL_IN))
-	  mMultiHandle.mReadPollSet.add(mSocketFd);
+	  mMultiHandle.mReadPollSet->add(mSocketFd);
 	else
-	  mMultiHandle.mReadPollSet.remove(mSocketFd);
+	  mMultiHandle.mReadPollSet->remove(mSocketFd);
   }
   if ((toggle_action & CURL_POLL_OUT))
   {
 	if ((action & CURL_POLL_OUT))
-	  mMultiHandle.mWritePollSet.add(mSocketFd);
+	  mMultiHandle.mWritePollSet->add(mSocketFd);
 	else
-	  mMultiHandle.mWritePollSet.remove(mSocketFd);
+	  mMultiHandle.mWritePollSet->remove(mSocketFd);
   }
 }
 
@@ -533,6 +703,8 @@ class AICurlThread : public LLThread
 {
   public:
 	static AICurlThread* sInstance;
+	LLMutex mWakeUpMutex;
+	bool mWakeUpFlag;			// Protected by mWakeUpMutex.
 
   public:
 	// MAIN-THREAD
@@ -548,6 +720,7 @@ class AICurlThread : public LLThread
   protected:
 	virtual void run(void);
 	void wakeup(AICurlMultiHandle_wat const& multi_handle_w);
+	void process_commands(AICurlMultiHandle_wat const& multi_handle_w);
 
   private:
 	// MAIN-THREAD
@@ -566,7 +739,9 @@ class AICurlThread : public LLThread
 AICurlThread* AICurlThread::sInstance = NULL;
 
 // MAIN-THREAD
-AICurlThread::AICurlThread(void) : LLThread("AICurlThread"), mWakeUpFd_in(CURL_SOCKET_BAD), mWakeUpFd(CURL_SOCKET_BAD), mZeroTimeOut(0), mRunning(true)
+AICurlThread::AICurlThread(void) : LLThread("AICurlThread"),
+    mWakeUpFd_in(CURL_SOCKET_BAD), mWakeUpFd(CURL_SOCKET_BAD),
+	mZeroTimeOut(0), mRunning(true), mWakeUpFlag(false)
 {
   create_wakeup_fds();
   sInstance = this;
@@ -582,9 +757,9 @@ AICurlThread::~AICurlThread()
 // MAIN-THREAD
 void AICurlThread::create_wakeup_fds(void)
 {
-#ifdef WINDOWS
-// Probably need to use sockets here, cause Windows select doesn't work for a pipe.
-#error Missing implementation
+#if LL_WINDOWS
+  // Probably need to use sockets here, cause Windows select doesn't work for a pipe.
+  #error Missing implementation
 #else
   int pipefd[2];
   if (pipe(pipefd))
@@ -607,19 +782,32 @@ void AICurlThread::create_wakeup_fds(void)
 // MAIN-THREAD
 void AICurlThread::cleanup_wakeup_fds(void)
 {
+#if LL_WINDOWS
+  #error Missing implementation
+#else
   if (mWakeUpFd_in != CURL_SOCKET_BAD)
 	close(mWakeUpFd_in);
   if (mWakeUpFd != CURL_SOCKET_BAD)
 	close(mWakeUpFd);
+#endif
 }
 
 // MAIN-THREAD
 void AICurlThread::wakeup_thread(void)
 {
   DoutEntering(dc::curl, "AICurlThread::wakeup_thread");
+  llassert(is_main_thread());
 
-#ifdef WINDOWS
-#error Missing implementation
+  // Try if curl thread is still awake and if so, pass the new commands directly.
+  if (mWakeUpMutex.tryLock())
+  {
+	mWakeUpFlag = true;
+	mWakeUpMutex.unlock();
+	return;
+  }
+
+#ifdef LL_WINDOWS
+  #error Missing implementation
 #else
   // If write() is interrupted by a signal before it writes any data, it shall return -1 with errno set to [EINTR].
   // If write() is interrupted by a signal after it successfully writes some data, it shall return the number of bytes written.
@@ -648,8 +836,8 @@ void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
 {
   DoutEntering(dc::curl, "AICurlThread::wakeup");
 
-#ifdef WINDOWS
-#error Missing implementation
+#ifdef LL_WINDOWS
+  #error Missing implementation
 #else
   // If a read() is interrupted by a signal before it reads any data, it shall return -1 with errno set to [EINTR].
   // If a read() is interrupted by a signal after it has successfully read some data, it shall return the number of bytes read.
@@ -678,6 +866,13 @@ void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
 	return;
   }
 #endif
+  process_commands(multi_handle_w);
+}
+
+void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
+{
+  DoutEntering(dc::curl, "AICurlThread::process_commands(void)");
+
   // If we get here then the main thread called wakeup_thread() recently.
   for(;;)
   {
@@ -685,7 +880,12 @@ void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
 	{
 	  command_queue_wat command_queue_w(command_queue);
 	  if (command_queue_w->empty())
+	  {
+		mWakeUpMutex.lock();
+		mWakeUpFlag = false;
+		mWakeUpMutex.unlock();
 		break;
+	  }
 	  // Move the next command from the queue into command_being_processed.
 	  *command_being_processed_wat(command_being_processed) = command_queue_w->front();
 	  command_queue_w->pop_front();
@@ -702,7 +902,7 @@ void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
 		  multi_handle_w->add_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()));
 		  break;
 		case cmd_remove:
-		  multi_handle_w->remove_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()));
+		  multi_handle_w->remove_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()), true);
 		  break;
 	  }
 	  // Done processing.
@@ -724,32 +924,53 @@ void AICurlThread::run(void)
 	  // If mRunning is true then we can only get here if mWakeUpFd != CURL_SOCKET_BAD.
 	  llassert(mWakeUpFd != CURL_SOCKET_BAD);
 	  // Copy the next batch of file descriptors from the PollSets mFiledescriptors into their mFdSet.
-	  multi_handle_w->mReadPollSet.refresh();
-	  refresh_t wres = multi_handle_w->mWritePollSet.refresh();
+	  multi_handle_w->mReadPollSet->refresh();
+	  refresh_t wres = multi_handle_w->mWritePollSet->refresh();
 	  // Add wake up fd if any, and pass NULL to select() if a set is empty.
-	  fd_set* read_fd_set = multi_handle_w->mReadPollSet.access();
+	  fd_set* read_fd_set = multi_handle_w->mReadPollSet->access();
 	  FD_SET(mWakeUpFd, read_fd_set);
-	  fd_set* write_fd_set = ((wres & empty)) ? NULL : multi_handle_w->mWritePollSet.access();
+	  fd_set* write_fd_set = ((wres & empty)) ? NULL : multi_handle_w->mWritePollSet->access();
 	  // Calculate nfds (ignored on windows).
-#if !LL_WINDOWS
-	  curl_socket_t const max_rfd = std::max(multi_handle_w->mReadPollSet.get_max_fd(), mWakeUpFd);
-	  curl_socket_t const max_wfd = multi_handle_w->mWritePollSet.get_max_fd();
-	  int nfds = std::max(max_rfd, max_wfd) + 1;
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+	  curl_socket_t const max_rfd = llmax(multi_handle_w->mReadPollSet->get_max_fd(), mWakeUpFd);
+	  curl_socket_t const max_wfd = multi_handle_w->mWritePollSet->get_max_fd();
+	  int nfds = llmax(max_rfd, max_wfd) + 1;
 	  llassert(0 <= nfds && nfds <= FD_SETSIZE);
 	  llassert((max_rfd == -1) == (read_fd_set == NULL) &&
 			   (max_wfd == -1) == (write_fd_set == NULL));	// Needed on Windows.
-	  llassert((max_rfd == -1 || multi_handle_w->mReadPollSet.is_set(max_rfd)) &&
-			   (max_wfd == -1 || multi_handle_w->mWritePollSet.is_set(max_wfd)));
+	  llassert((max_rfd == -1 || multi_handle_w->mReadPollSet->is_set(max_rfd)) &&
+			   (max_wfd == -1 || multi_handle_w->mWritePollSet->is_set(max_wfd)));
 #else
 	  int nfds = 64;
 #endif
 	  int ready = 0;
+	  // Process every command in command_queue before entering select().
+	  for(;;)
+	  {
+		mWakeUpMutex.lock();
+		if (mWakeUpFlag)
+		{
+		  mWakeUpMutex.unlock();
+		  process_commands(multi_handle_w);
+		  continue;
+		}
+		break;
+	  }
+	  // wakeup_thread() is also called after setting mRunning to false.
+	  if (!mRunning)
+	  {
+		mWakeUpMutex.unlock();
+		break;
+	  }
+	  // If we get here then mWakeUpFlag has been false since we grabbed the lock.
+	  // We're now entering select(), during which the main thread will write to the pipe/socket
+	  // to wake us up, because it can't get the lock.
 	  struct timeval timeout;
 	  long timeout_ms = multi_handle_w->getTimeOut();
 	  // If no timeout is set, sleep 1 second.
-	  if (timeout_ms < 0)
+	  if (LL_UNLIKELY(timeout_ms < 0))
 		timeout_ms = 1000;
-	  if (timeout_ms == 0)
+	  if (LL_UNLIKELY(timeout_ms == 0))
 	  {
 		if (mZeroTimeOut >= 10000)
 		{
@@ -763,7 +984,7 @@ void AICurlThread::run(void)
 	  }
 	  else
 	  {
-		if (mZeroTimeOut >= 10000)
+		if (LL_UNLIKELY(mZeroTimeOut >= 10000))
 		  llinfos << "Timeout of select() call by curl thread reset (to " << timeout_ms << " ms)." << llendl;
 		mZeroTimeOut = 0;
 	  }
@@ -787,6 +1008,7 @@ void AICurlThread::run(void)
 	  }
 #endif
 	  ready = select(nfds, read_fd_set, write_fd_set, NULL, &timeout);
+	  mWakeUpMutex.unlock();
 #ifdef CWDEBUG
 	  static int last_ready = -2;
 	  static int last_errno = 0;
@@ -818,7 +1040,7 @@ void AICurlThread::run(void)
 	  }
 	  else
 	  {
-		if (multi_handle_w->mReadPollSet.is_set(mWakeUpFd))
+		if (multi_handle_w->mReadPollSet->is_set(mWakeUpFd))
 		{
 		  // Process commands from main-thread. This can add or remove filedescriptors from the poll sets.
 		  wakeup(multi_handle_w);
@@ -831,11 +1053,13 @@ void AICurlThread::run(void)
 		while (ready > 0 && iter.next(fd, ev_bitmask))
 		{
 		  ready -= (ev_bitmask == (CURL_CSELECT_IN|CURL_CSELECT_OUT)) ? 2 : 1;
+		  // This can cause libcurl to do callbacks and remove filedescriptors, causing us to reset their bits in the poll sets.
 		  multi_handle_w->socket_action(fd, ev_bitmask);
 		  llassert(ready >= 0);
 		}
-		// Should have handled them all.
-		llassert(ready == 0);
+		// Note that ready is not necessarily 0 here, because it's possible
+		// that libcurl removed file descriptors which we subsequently
+		// didn't handle.
 	  }
 	  multi_handle_w->check_run_count();
 	}
@@ -846,8 +1070,10 @@ void AICurlThread::run(void)
 //-----------------------------------------------------------------------------
 // MultiHandle
 
-MultiHandle::MultiHandle(void) : mHandleAddedOrRemoved(false), mPrevRunningHandles(0), mRunningHandles(0), mTimeOut(-1)
+MultiHandle::MultiHandle(void) : mHandleAddedOrRemoved(false), mPrevRunningHandles(0), mRunningHandles(0), mTimeOut(-1), mReadPollSet(NULL), mWritePollSet(NULL)
 {
+  mReadPollSet = new PollSet;
+  mWritePollSet = new PollSet;
   check_multi_code(curl_multi_setopt(mMultiHandle, CURLMOPT_SOCKETFUNCTION, &MultiHandle::socket_callback));
   check_multi_code(curl_multi_setopt(mMultiHandle, CURLMOPT_SOCKETDATA, this));
   check_multi_code(curl_multi_setopt(mMultiHandle, CURLMOPT_TIMERFUNCTION, &MultiHandle::timer_callback));
@@ -856,12 +1082,16 @@ MultiHandle::MultiHandle(void) : mHandleAddedOrRemoved(false), mPrevRunningHandl
 
 MultiHandle::~MultiHandle()
 {
+  llinfos << "Destructing MultiHandle with " << mAddedEasyRequests.size() << " active curl easy handles." << llendl;
+
   // This thread was terminated.
   // Curl demands that all handles are removed from the multi session handle before calling curl_multi_cleanup.
   for(addedEasyRequests_type::iterator iter = mAddedEasyRequests.begin(); iter != mAddedEasyRequests.end(); iter = mAddedEasyRequests.begin())
   {
 	remove_easy_request(*iter);
   }
+  delete mWritePollSet;
+  delete mReadPollSet;
 }
 
 #ifdef CWDEBUG
@@ -956,7 +1186,7 @@ CURLMcode MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
   return ret;
 }
 
-CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request)
+CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request, bool as_per_command)
 {
   addedEasyRequests_type::iterator iter = mAddedEasyRequests.find(easy_request);
   if (iter == mAddedEasyRequests.end())
@@ -965,6 +1195,9 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
   {
 	AICurlEasyRequest_wat curl_easy_request_w(**iter);
 	res = curl_easy_request_w->remove_handle_from_multi(curl_easy_request_w, mMultiHandle);
+#ifdef SHOW_ASSERT
+	curl_easy_request_w->mRemovedPerCommand = as_per_command;
+#endif
   }
   mAddedEasyRequests.erase(iter);
   mHandleAddedOrRemoved = true;
@@ -1077,6 +1310,9 @@ void stopCurlThread(void)
 	  ms_sleep(10);
 	}
 	Dout(dc::curl, "Curl thread" << (curlThreadIsRunning() ? " not" : "") << " stopped after " << ((100 - count) * 10) << "ms.");
+	// Clear the command queue, for a cleaner cleanup.
+	command_queue_wat command_queue_w(command_queue);
+	command_queue_w->clear();
   }
 }
 
@@ -1129,6 +1365,7 @@ void AICurlEasyRequest::addRequest(void)
 #endif
 	// Add a command to add the new request to the multi session to the command queue.
 	command_queue_w->push_back(Command(*this, cmd_add));
+	AICurlEasyRequest_wat(*get())->add_queued();
   }
   // Something was added to the queue, wake up the thread to get it.
   wakeUpCurlThread();
@@ -1171,13 +1408,18 @@ void AICurlEasyRequest::removeRequest(void)
 	  }
 	  else
 	  {
-		// May not already have been removed from multi session handle.
-		llassert(AICurlEasyRequest_wat(*get())->active());
+		// May not already have been removed from multi session handle as per command from the main thread (through this function thus).
+		{
+		  AICurlEasyRequest_wat curl_easy_request_w(*get());
+		  llassert(curl_easy_request_w->active() || !curl_easy_request_w->mRemovedPerCommand);
+		}
 	  }
 	}
 #endif
 	// Add a command to remove this request from the multi session to the command queue.
 	command_queue_w->push_back(Command(*this, cmd_remove));
+	// Suppress warning that would otherwise happen if the callbacks are revoked before the curl thread removed the request.
+	AICurlEasyRequest_wat(*get())->remove_queued();
   }
   // Something was added to the queue, wake up the thread to get it.
   wakeUpCurlThread();
