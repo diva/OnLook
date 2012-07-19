@@ -174,7 +174,7 @@ void LLStreamingAudio_FMODEX::update()
 
 	if(mFMODInternetStreamChannelp)
 	{
-		llinfos << "progress = " << progress << llendl;
+		//llinfos << "progress = " << progress << llendl;
 		if(!mMetaData)
 			mMetaData = new LLSD;
 

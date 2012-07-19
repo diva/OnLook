@@ -279,10 +279,15 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 
 	int r_numbuffers, r_samplerate, r_channels, r_bits;
 	unsigned int r_bufferlength;
+	char r_name[256];
 	mSystem->getDSPBufferSize(&r_bufferlength, &r_numbuffers);
 	mSystem->getSoftwareFormat(&r_samplerate, NULL, &r_channels, NULL, NULL, &r_bits);
+	mSystem->getDriverInfo(0, r_name, 255, 0);
+	r_name[255] = '\0';
 	int latency = 1000.0 * r_bufferlength * r_numbuffers /r_samplerate;
-	LL_INFOS("AppInit") << "FMOD Ex parameters: " << r_samplerate << " Hz * " << r_channels << " * " <<r_bits <<" bit\n"
+
+	LL_INFOS("AppInit") << "FMOD device: "<< r_name << "\n"
+		<< "FMOD Ex parameters: " << r_samplerate << " Hz * " << r_channels << " * " <<r_bits <<" bit\n"
 		<< "\tbuffer " << r_bufferlength << " * " << r_numbuffers << " (" << latency <<"ms)" << LL_ENDL;
 
 	mInited = true;
