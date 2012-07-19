@@ -117,6 +117,68 @@ namespace curlthread {
 //-----------------------------------------------------------------------------
 // PollSet
 
+int const empty = 0x1;
+int const complete = 0x2;
+
+enum refresh_t {
+  not_complete_not_empty = 0,
+  complete_not_empty = complete,
+  empty_and_complete = complete|empty
+};
+
+class PollSet
+{
+  public:
+	PollSet(void);
+
+	// Add/remove a filedescriptor to/from mFileDescriptors.
+	void add(curl_socket_t s);
+	void remove(curl_socket_t s);
+
+	// Copy mFileDescriptors to an internal fd_set that is returned by access().
+	// Returns if all fds could be copied (complete) and/or if the resulting fd_set is empty.
+	refresh_t refresh(void);
+
+	// Return a pointer to the underlaying fd_set.
+	fd_set* access(void) { return &mFdSet; }
+
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+	// Return the largest fd set in mFdSet by refresh.
+	curl_socket_t get_max_fd(void) const { return mMaxFdSet; }
+#endif
+
+	// Return true if a filedescriptor is set in mFileDescriptors (used for debugging).
+	bool contains(curl_socket_t s) const;
+
+	// Return true if a filedescriptor is set in mFdSet.
+	bool is_set(curl_socket_t s) const;
+
+	// Clear filedescriptor in mFdSet.
+	void clr(curl_socket_t fd);
+
+	// Iterate over all file descriptors that were set by refresh and are still set in mFdSet.
+	void reset(void);				// Reset the iterator.
+	curl_socket_t get(void) const;	// Return next filedescriptor, or CURL_SOCKET_BAD when there are no more.
+	                   				// Only valid if reset() was called after the last call to refresh().
+	void next(void);				// Advance to next filedescriptor.
+
+  private:
+	curl_socket_t* mFileDescriptors;
+	int mNrFds;						// The number of filedescriptors in the array.
+	int mNext;						// The index of the first file descriptor to start copying, the next call to refresh().
+
+	fd_set mFdSet;					// Output variable for select(). (Re)initialized by calling refresh().
+
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+	curl_socket_t mMaxFd;			// The largest filedescriptor in the array, or CURL_SOCKET_BAD when it is empty.
+	curl_socket_t mMaxFdSet;		// The largest filedescriptor set in mFdSet by refresh(), or CURL_SOCKET_BAD when it was empty.
+	std::vector<curl_socket_t> mCopiedFileDescriptors;	// Filedescriptors copied by refresh to mFdSet.
+	std::vector<curl_socket_t>::iterator mIter;			// Index into mCopiedFileDescriptors for next(); loop variable.
+#else
+	unsigned int mIter;				// Index into fd_set::fd_array.
+#endif
+};
+
 // A PollSet can store at least 1024 filedescriptors, or FD_SETSIZE if that is larger than 1024 [MAXSIZE].
 // The number of stored filedescriptors is mNrFds [0 <= mNrFds <= MAXSIZE].
 // The largest filedescriptor is stored is mMaxFd, which is -1 iff mNrFds == 0.
@@ -417,28 +479,28 @@ void PollSet::next(void)
 class MergeIterator
 {
   public:
-	MergeIterator(PollSet& readPollSet, PollSet& writePollSet);
+	MergeIterator(PollSet* readPollSet, PollSet* writePollSet);
 
 	bool next(curl_socket_t& fd_out, int& ev_bitmask_out);
 
   private:
-	PollSet& mReadPollSet;
-	PollSet& mWritePollSet;
+	PollSet* mReadPollSet;
+	PollSet* mWritePollSet;
 	int readIndx;
 	int writeIndx;
 };
 
-MergeIterator::MergeIterator(PollSet& readPollSet, PollSet& writePollSet) :
+MergeIterator::MergeIterator(PollSet* readPollSet, PollSet* writePollSet) :
     mReadPollSet(readPollSet), mWritePollSet(writePollSet), readIndx(0), writeIndx(0)
 {
-  mReadPollSet.reset();
-  mWritePollSet.reset();
+  mReadPollSet->reset();
+  mWritePollSet->reset();
 }
 
 bool MergeIterator::next(curl_socket_t& fd_out, int& ev_bitmask_out)
 {
-  curl_socket_t rfd = mReadPollSet.get();
-  curl_socket_t wfd = mWritePollSet.get();
+  curl_socket_t rfd = mReadPollSet->get();
+  curl_socket_t wfd = mWritePollSet->get();
 
   if (rfd == CURL_SOCKET_BAD && wfd == CURL_SOCKET_BAD)
 	return false;
@@ -447,28 +509,28 @@ bool MergeIterator::next(curl_socket_t& fd_out, int& ev_bitmask_out)
   {
 	fd_out = rfd;
 	ev_bitmask_out = CURL_CSELECT_IN | CURL_CSELECT_OUT;
-	mReadPollSet.next();
+	mReadPollSet->next();
   }
   else if (wfd == CURL_SOCKET_BAD || (rfd != CURL_SOCKET_BAD && rfd < wfd))	// Use and increment smaller one, unless it's CURL_SOCKET_BAD.
   {
 	fd_out = rfd;
 	ev_bitmask_out = CURL_CSELECT_IN;
-	mReadPollSet.next();
-	if (wfd != CURL_SOCKET_BAD && mWritePollSet.is_set(rfd))
+	mReadPollSet->next();
+	if (wfd != CURL_SOCKET_BAD && mWritePollSet->is_set(rfd))
 	{
 	  ev_bitmask_out |= CURL_CSELECT_OUT;
-	  mWritePollSet.clr(rfd);
+	  mWritePollSet->clr(rfd);
 	}
   }
   else
   {
 	fd_out = wfd;
 	ev_bitmask_out = CURL_CSELECT_OUT;
-	mWritePollSet.next();
-	if (rfd != CURL_SOCKET_BAD && mReadPollSet.is_set(wfd))
+	mWritePollSet->next();
+	if (rfd != CURL_SOCKET_BAD && mReadPollSet->is_set(wfd))
 	{
 	  ev_bitmask_out |= CURL_CSELECT_IN;
-	  mReadPollSet.clr(wfd);
+	  mReadPollSet->clr(wfd);
 	}
   }
 
@@ -498,8 +560,8 @@ CurlSocketInfo::CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socke
     mMultiHandle(multi_handle), mEasy(easy), mSocketFd(s), mAction(CURL_POLL_NONE)
 {
   mMultiHandle.assign(s, this);
-  llassert(!mMultiHandle.mReadPollSet.contains(s));
-  llassert(!mMultiHandle.mWritePollSet.contains(s));
+  llassert(!mMultiHandle.mReadPollSet->contains(s));
+  llassert(!mMultiHandle.mWritePollSet->contains(s));
   set_action(action);
 }
 
@@ -515,16 +577,16 @@ void CurlSocketInfo::set_action(int action)
   if ((toggle_action & CURL_POLL_IN))
   {
 	if ((action & CURL_POLL_IN))
-	  mMultiHandle.mReadPollSet.add(mSocketFd);
+	  mMultiHandle.mReadPollSet->add(mSocketFd);
 	else
-	  mMultiHandle.mReadPollSet.remove(mSocketFd);
+	  mMultiHandle.mReadPollSet->remove(mSocketFd);
   }
   if ((toggle_action & CURL_POLL_OUT))
   {
 	if ((action & CURL_POLL_OUT))
-	  mMultiHandle.mWritePollSet.add(mSocketFd);
+	  mMultiHandle.mWritePollSet->add(mSocketFd);
 	else
-	  mMultiHandle.mWritePollSet.remove(mSocketFd);
+	  mMultiHandle.mWritePollSet->remove(mSocketFd);
   }
 }
 
@@ -756,22 +818,22 @@ void AICurlThread::run(void)
 	  // If mRunning is true then we can only get here if mWakeUpFd != CURL_SOCKET_BAD.
 	  llassert(mWakeUpFd != CURL_SOCKET_BAD);
 	  // Copy the next batch of file descriptors from the PollSets mFiledescriptors into their mFdSet.
-	  multi_handle_w->mReadPollSet.refresh();
-	  refresh_t wres = multi_handle_w->mWritePollSet.refresh();
+	  multi_handle_w->mReadPollSet->refresh();
+	  refresh_t wres = multi_handle_w->mWritePollSet->refresh();
 	  // Add wake up fd if any, and pass NULL to select() if a set is empty.
-	  fd_set* read_fd_set = multi_handle_w->mReadPollSet.access();
+	  fd_set* read_fd_set = multi_handle_w->mReadPollSet->access();
 	  FD_SET(mWakeUpFd, read_fd_set);
-	  fd_set* write_fd_set = ((wres & empty)) ? NULL : multi_handle_w->mWritePollSet.access();
+	  fd_set* write_fd_set = ((wres & empty)) ? NULL : multi_handle_w->mWritePollSet->access();
 	  // Calculate nfds (ignored on windows).
 #if !LL_WINDOWS
-	  curl_socket_t const max_rfd = llmax(multi_handle_w->mReadPollSet.get_max_fd(), mWakeUpFd);
-	  curl_socket_t const max_wfd = multi_handle_w->mWritePollSet.get_max_fd();
+	  curl_socket_t const max_rfd = llmax(multi_handle_w->mReadPollSet->get_max_fd(), mWakeUpFd);
+	  curl_socket_t const max_wfd = multi_handle_w->mWritePollSet->get_max_fd();
 	  int nfds = llmax(max_rfd, max_wfd) + 1;
 	  llassert(0 <= nfds && nfds <= FD_SETSIZE);
 	  llassert((max_rfd == -1) == (read_fd_set == NULL) &&
 			   (max_wfd == -1) == (write_fd_set == NULL));	// Needed on Windows.
-	  llassert((max_rfd == -1 || multi_handle_w->mReadPollSet.is_set(max_rfd)) &&
-			   (max_wfd == -1 || multi_handle_w->mWritePollSet.is_set(max_wfd)));
+	  llassert((max_rfd == -1 || multi_handle_w->mReadPollSet->is_set(max_rfd)) &&
+			   (max_wfd == -1 || multi_handle_w->mWritePollSet->is_set(max_wfd)));
 #else
 	  int nfds = 64;
 #endif
@@ -872,7 +934,7 @@ void AICurlThread::run(void)
 	  }
 	  else
 	  {
-		if (multi_handle_w->mReadPollSet.is_set(mWakeUpFd))
+		if (multi_handle_w->mReadPollSet->is_set(mWakeUpFd))
 		{
 		  // Process commands from main-thread. This can add or remove filedescriptors from the poll sets.
 		  wakeup(multi_handle_w);
@@ -902,8 +964,10 @@ void AICurlThread::run(void)
 //-----------------------------------------------------------------------------
 // MultiHandle
 
-MultiHandle::MultiHandle(void) : mHandleAddedOrRemoved(false), mPrevRunningHandles(0), mRunningHandles(0), mTimeOut(-1)
+MultiHandle::MultiHandle(void) : mHandleAddedOrRemoved(false), mPrevRunningHandles(0), mRunningHandles(0), mTimeOut(-1), mReadPollSet(NULL), mWritePollSet(NULL)
 {
+  mReadPollSet = new PollSet;
+  mWritePollSet = new PollSet;
   check_multi_code(curl_multi_setopt(mMultiHandle, CURLMOPT_SOCKETFUNCTION, &MultiHandle::socket_callback));
   check_multi_code(curl_multi_setopt(mMultiHandle, CURLMOPT_SOCKETDATA, this));
   check_multi_code(curl_multi_setopt(mMultiHandle, CURLMOPT_TIMERFUNCTION, &MultiHandle::timer_callback));
@@ -920,6 +984,8 @@ MultiHandle::~MultiHandle()
   {
 	remove_easy_request(*iter);
   }
+  delete mWritePollSet;
+  delete mReadPollSet;
 }
 
 #ifdef CWDEBUG
