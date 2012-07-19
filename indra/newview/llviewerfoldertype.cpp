@@ -133,7 +133,7 @@ LLViewerFolderDictionary::LLViewerFolderDictionary()
 	addEntry(LLFolderType::FT_MESH, 				new ViewerFolderEntry("Meshes",					"inv_folder_mesh.tga",				"inv_folder_mesh.tga",			FALSE,		false));
 	
 	addEntry(LLFolderType::FT_INBOX, 				new ViewerFolderEntry("Inbox",					"inv_folder_inbox.tga",				"inv_folder_inbox.tga",			FALSE,		false));
-	addEntry(LLFolderType::FT_OUTBOX, 				new ViewerFolderEntry("Outbox",					"inv_folder_outbox.tga",			"inv_folder_outbox",			FALSE,		false));
+	addEntry(LLFolderType::FT_OUTBOX, 				new ViewerFolderEntry("Outbox",					"inv_folder_outbox.tga",			"inv_folder_outbox.tga",		FALSE,		false));
 
 	addEntry(LLFolderType::FT_BASIC_ROOT, 			new ViewerFolderEntry("Basic Root",				"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
 		 
