@@ -1,329 +1,80 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="radar" title="Radar"
-	can_resize="true" can_minimize="true" can_close="true" can_drag_on_left="false"
-	rect_control="FloaterRadarRect" min_width="300"	min_height="300">
+<floater name="radar" title="Radar">
 
-	<scroll_list name="avatar_list"
-		    left="10" right="-10" top="-20" bottom="140" can_resize="true"
-		    column_padding="0" follows="left|top|bottom|right"
-		    draw_heading="true" multi_select="true" search_column="1"
-		    tool_tip="Hold shift or control while clicking to select multiple avatars">
-		<column name="marked" label="Mark" width="12" tool_tip="Marked avatars"/>
-		<column name="avatar_name" label="Name" width="150" tool_tip="Hold shift or control while clicking to select multiple avatars"/>
-		<column name="distance" label="Dist." width="48" tool_tip="Distance from your avatar (red=within chat range, yellow=within shout range, green=within draw distance)"/>
-		<column name="position" label="Pos." width="60" tool_tip="Position (X, Y) within this sim, or general direction (cardinal point) for outside sims"/>
-		<column name="altitude" label="Alt." width="48" tool_tip="Altitude"/>
-    <column name="activity" label="Act." width="24" tool_tip="Activity"/>
-    <column name="client" label="Client" width="80" dynamicwidth="true" tool_tip="Client the avatar is possibly using"/>
+	<scroll_list name="avatar_list" tool_tip="Mantén presionada la tecla Mayús o la tecla Ctrl al  pulsar con el mouse para seleccionar multiples avatares">
+		<column name="marked" label="Marcar" tool_tip="Avatares Marcados"/>
+		<column name="avatar_name" label="Nombre" tool_tip="Mantén presionada la tecla Mayús o la tecla Ctrl al  pulsar con el mouse para seleccionar multiples avatares"/>
+		<column name="distance" label="Dist." tool_tip="Distancia desde tu avatar (rojo=dentro del rango de chat, amarillo=dentro del rango de gritos, verde=dentro de la distancia de dibujo)"/>
+		<column name="position" label="Pos." tool_tip="Posición (X, Y) dentro del sim, o dirección general (punto cardinal) fuera del sim"/>
+		<column name="altitude" label="Alt." tool_tip="Altitud"/>
+		<column name="activity" label="Act." tool_tip="Actividad"/>
+		<column name="client" label="Cliente" tool_tip="Cliente-Visor que el avatar posiblemente esté usando"/>
 	</scroll_list>
 
-	<tab_container border="false" bottom_delta="-130" height="120" left="6" mouse_opaque="false"
-		       name="actions_tab_container" tab_position="top" follows="left|right|bottom">
-		<panel border="true" bottom_delta="-130" follows="left|top|right|bottom" height="255"
-		       label="Avatar" left="1" mouse_opaque="true"
-		     name="actions_tab" width="398">
+	<tab_container name="actions_tab_container">
+		<panel label="Avatar" name="actions_tab">
 			<!-- upper row -->
-			<button
-			       name="profile_btn"
-			       label="Profile"
-			       tool_tip="Show picture, groups, and other information"
-			       left="10"
-			       bottom_delta="-180"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="track_btn"
-			       label="(Un)Track"
-			       tool_tip="Toggle tracking of this avatar's position"
-			       left_delta="90"
-			       bottom_delta="0"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="get_key_btn"
-			       label="Get Key"
-			       tool_tip="Copies avatar's key to the clipboard"
-			       left_delta="90"
-			       bottom_delta="0"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
+			<button name="profile_btn" label="Perfil" tool_tip="Mostrar foto, grupos y demás información"/>
+			<button name="track_btn" label="(No)Rastrear" tool_tip="Rastrea la posición del avatar"/>
+			<button name="get_key_btn" label="Obtener Key" tool_tip="Copia la Key del avatar al portapapeles"/>
 			<!-- upper middle row -->
-			<button
-			       name="im_btn"
-			       label="IM"
-			       tool_tip="Open Instant Message session"
-			       left="10"
-			       bottom_delta="-22"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="offer_btn"
-			       label="Offer TP"
-			       tool_tip="Offer Teleport"
-			       left_delta="90"
-			       bottom_delta="0"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="teleport_btn"
-			       label="TP to"
-			       tool_tip="Teleport to avatar's position"
-			       left_delta="90"
-			       bottom_delta="0"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />			
+			<button name="im_btn" label="MI" tool_tip="Abre una sesión de Mensaje Instantáneo"/>
+			<button name="offer_btn" label="Ofrecer TP" tool_tip="Ofrecer Teleporte"/>
+			<button name="teleport_btn" label="TP a" tool_tip="Teleportarse a la posición del avatar"/>			
 			<!-- lower middle row-->
-			<button
-			       name="mark_btn"
-			       label="(Un)Mark"
-			       tool_tip="(Un)Mark this avatar in the list"
-			       left="10"
-			       bottom_delta="-22"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="prev_marked_btn"
-			       label="Prev Marked"
-			       tool_tip="Focus camera on previous marked avatar"
-			       left_delta="90"
-			       bottom_delta="0"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="next_marked_btn"
-			       label="Next Marked"
-			       tool_tip="Focus camera on next marked avatar"
-			       left_delta="90"
-			       bottom_delta="0"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
+			<button name="mark_btn" label="(No)Marcar" tool_tip="Marca/Desmarca a este avatar de la lista"/>
+			<button name="prev_marked_btn" label="Marcado Ant." tool_tip="Enfoca la cámara en el avatar marcado previo de la lista"/>
+			<button name="next_marked_btn" label="Marcado Sig." tool_tip="Enfoca la cámara en el avatar marcado siguiente de la lista"/>
 			<!-- lower row-->
-			<button
-			       name="focus_btn"
-			       label="Focus"
-			       tool_tip="Focus camera on this avatar in the list"
-			       left="10"
-			       bottom_delta="-22"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="prev_in_list_btn"
-			       label="Previous"
-			       tool_tip="Focus camera on previous avatar in list"
-			       left_delta="90"
-			       bottom_delta="0"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="next_in_list_btn"
-			       label="Next"
-			       tool_tip="Focus camera on next avatar in list"
-			       left_delta="90"
-			       bottom_delta="0"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
+			<button name="focus_btn" label="Foco" tool_tip="Enfoca la cámara en este avatar de la lista"/>
+			<button name="prev_in_list_btn" label="Anterior" tool_tip="Enfoca la cámara en el anterior avatar de la lista"/>
+			<button name="next_in_list_btn" label="Siguiente" tool_tip="Enfoca la cámara en el siguiente avatar de la lista"/>
 
 		</panel>
 
-		<panel border="true" bottom_delta="-150" follows="left|top|right|bottom" height="255"
-		       label="Alerts" left="1" mouse_opaque="true"
-		       name="alerts_tab" width="398">
-			<check_box height="16" label="Display alerts in chat"
-				   left="10" bottom_delta="-176" name="radar_alerts" 
-				   width="200" follows="bottom|left"
-				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
-				   initial_value="true" enabled="true" radio_style="false" 
-				   control_name="RadarChatAlerts"
-				   tool_tip="Announce alerts about incoming and outgoing avatars in chat" />
+		<panel label="Alertas" name="alerts_tab">
+			<check_box label="Mostrar Alertas en el chat" name="radar_alerts" tool_tip="Muestra en el chat las alertas de llegada y salida de los avatares" />
 
-			<check_box height="16" label="Avatars entering/exiting the sim"
-				   left="20" bottom_delta="-18" name="alerts_sim"
-				   width="200" follows="bottom|left"
-				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
-				   initial_value="true" enabled="true" radio_style="false"
-				   control_name="RadarAlertSim"
-				   tool_tip="Report avatars entering or exiting the sim" />
+			<check_box label="Avatares entrando/saliendo del sim" name="alerts_sim" tool_tip="Reporta los avatares que entran o salen del sim" />
 
-			<check_box height="16" label="Avatars within/beyond the draw distance"
-				   left="20" bottom_delta="-18" name="alerts_draw"
-				   width="200" follows="bottom|left"
-				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
-				   initial_value="true" enabled="true" radio_style="false"
-				   control_name="RadarAlertDraw"
-				   tool_tip="Report avatars getting within or beyond the draw distance" />
+			<check_box label="Avatare entrando/saliendo de la distancia de dibujo" name="alerts_draw" tool_tip="Reporta los avatares que entran o salen de la distancia de dibujo" />
 
-			<check_box height="16" label="Avatars within/beyond the shout range"
-				   left="20" bottom_delta="-18" name="alerts_chat"
-				   width="200" follows="bottom|left"
-				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
-				   initial_value="true" enabled="true" radio_style="false"
-				   control_name="RadarAlertShoutRange"
-				   tool_tip="Report avatars getting within or beyond the shout range" />
+			<check_box label="Avatares entrando/saliendo del rango de gritos" name="alerts_chat" tool_tip="Reporta los avatares que entran o salen del rango de gritos" />
 
-			<check_box height="16" label="Avatars within/beyond the chat range"
-				   left="20" bottom_delta="-18" name="alerts_chat"
-				   width="200" follows="bottom|left"
-				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
-				   initial_value="true" enabled="true" radio_style="false"
-				   control_name="RadarAlertChatRange"
-				   tool_tip="Report avatars getting within or beyond the chat range" />
+			<check_box label="Avatares entrando/saliendo del rango de chat" name="alerts_chat" tool_tip="Reporta los avatares que entran o salen del rango de chat" />
 		</panel>
 
-		<panel border="true" bottom_delta="-130" follows="left|top|right|bottom" height="255"
-		       label="Moderation" left="1" mouse_opaque="true"
-		       name="land_tab" width="398">
+		<panel label="Moderación" name="land_tab">
 			
 			<!-- Upper row -->
-			<button
-			       name="mute_btn"
-			       label="(Un)Mute"
-			       tool_tip="Mute or unmute this avatar (muted avatars' names are highlighted in red in the list)."
-			       left="10"
-			       bottom_delta="-200"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="freeze_btn"
-			       label="Freeze"
-			       tool_tip="Freeze the avatar, preventing it from moving"
-			       left_delta="90"
-			       bottom_delta="0"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="ar_btn"
-			       label="AR"
-			       tool_tip="Report abuse on this avatar"
-			       left_delta="90"
-			       bottom_delta="0"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
+			<button name="mute_btn" label="(No)Ignorar" tool_tip="Ignorar o dejar de ignorar a este avatar (los nombre de los avatares ignorados se resaltan en rojo en la lista)."/>
+			<button name="freeze_btn" label="Congelar" tool_tip="Congelar al avatar, para evitar que se pueda mover"/>
+			<button name="ar_btn" label="AR" tool_tip="Enviar un Reporte de Abuso sobre este avatar"/>
 			<!-- Lower row -->
-			<button
-			       name="eject_btn"
-			       label="Eject"
-			       tool_tip="Eject the avatar from the parcel"
-			       left="10"
-			       bottom_delta="-24"
-			       width="80"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
+			<button name="eject_btn" label="Expulsar" tool_tip="Expulsar a este avatar de la parcela"/>
 			
-			<button
-			       name="estate_eject_btn"
-			       label="Eject from estate"
-			       tool_tip="Eject this avatar from the estate"
-			       left_delta="90"
-			       bottom_delta="0"
-			       width="170"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
+			<button name="estate_eject_btn" label="Expulsar del Estado" tool_tip="Expulsar a este avatar del estado"/>
 		</panel>
 
-		<panel border="true" bottom_delta="-150" follows="left|top|right|bottom" height="255"
-		       label="Options" left="1" mouse_opaque="true"
-		       name="options_tab" width="398">
-			<check_box height="16" label="Update"
-				   left="10" bottom_delta="-180" name="update_enabled_cb" 
-				   width="200" follows="bottom|left"
-				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
-				   initial_value="true" enabled="true" radio_style="false" 
-				   tool_tip="Set whether the avatar list should update" />
-			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-				   bottom_delta="-24" drop_shadow_visible="true" enabled="true" font="SansSerifSmall" height="18" left="24"
-				   mouse_opaque="false" name="rate" width="30">
-					Rate:
+		<panel label="Opciones" name="options_tab">
+			<check_box label="Actualizar" name="update_enabled_cb" tool_tip="Definir cuando debe ser actualizada la lista de avatares"/>
+			<text name="rate">
+					Frec.:
 			</text>
-			<radio_group draw_border="true" bottom_delta="2" left_delta="44" follows="bottom|left" width="196" height="20"
-				   mouse_opaque="true" name="update_rate" control_name="RadarUpdateRate" enabled="true"
-				   tool_tip="Rate of the radar updates (eats up more FPS when higher)">
-				<radio_item type="string" length="1" bottom_delta="0" height="16" left_delta="4" mouse_opaque="true"
-		     		 	name="high" width="20" follows="bottom|left">
-					High
+			<radio_group name="update_rate" tool_tip="Frecuencia de actualización del radar (consume mas FPS cuando es alta)">
+				<radio_item name="high">
+					Alta
 				</radio_item>
-				<radio_item type="string" length="1" bottom_delta="0" height="16" left_delta="30" mouse_opaque="true"
-		     		 	name="medium" width="25" follows="bottom|left">
-					Medium
+				<radio_item name="medium">
+					Media
 				</radio_item>
-				<radio_item type="string" length="1" bottom_delta="0" height="16" left_delta="35" mouse_opaque="true"
-		     		 	name="low" width="20" follows="bottom|left">
-					Low
+				<radio_item name="low">
+					Baja
 				</radio_item>
 			</radio_group>
-			<check_box height="16" label="Announce even when closed"
-				   left="10" bottom_delta="-24" name="keep_open"
-				   width="200" follows="bottom|left"
-				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
-				   initial_value="true" enabled="true" radio_style="false"
-				   control_name="RadarKeepOpen"
-				   tool_tip="Hides floater instead of closing to still announce in chat" />
-			<check_box height="16" label="Announce keys to HUD"
-				   left="10" bottom_delta="-20" name="radar_chat_keys" 
-				   width="200" follows="bottom|left"
-				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
-				   initial_value="true" enabled="true" radio_style="false" 
-				   control_name="RadarChatKeys"
-				   tool_tip="Set whether to send keys of avatars to LSL scripts" />
-			<button
-			       name="send_keys_btn"
-			       label="Announce now"
-			       tool_tip="Send all keys to HUD now"
-			       left_delta="150"
-			       bottom_delta="-2"
-			       width="100"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
+			<check_box label="Anunciar aun estando cerrado" name="keep_open" tool_tip="Oculta el radar en vez de cerrarlo para seguir enviando los avisos al chat" />
+			<check_box label="Anunciar keys all HUD" name="radar_chat_keys" tool_tip="Definir cuando enviar las keys de los avarares a los scritps LSL" />
+			<button name="send_keys_btn" label="Anunciar Ahora" tool_tip="Envia todas las keys al HUD ahora"/>
 		</panel>
 	</tab_container>
 </floater>
