@@ -50,7 +50,7 @@ public:
 
 	const std::string& getURL() 	{ return mInternetStreamURL; }
 
-	FMOD_OPENSTATE getOpenState();
+	FMOD_OPENSTATE getOpenState(unsigned int* percentbuffered=NULL, bool* starving=NULL, bool* diskbusy=NULL);
 protected:
 	FMOD::System* mSystem;
 	FMOD::Channel* mStreamChannel;
@@ -70,11 +70,13 @@ LLStreamingAudio_FMODEX::LLStreamingAudio_FMODEX(FMOD::System *system) :
 	mCurrentInternetStreamp(NULL),
 	mFMODInternetStreamChannelp(NULL),
 	mGain(1.0f),
-	mMetaData(NULL)
+	mMetaData(NULL),
+	mStarvedProgress(0),
+	mStarvedNoProgressFrames(0)
 {
 	// Number of milliseconds of audio to buffer for the audio card.
 	// Must be larger than the usual Second Life frame stutter time.
-	const U32 buffer_seconds = 5;		//sec
+	const U32 buffer_seconds = 10;		//sec
 	const U32 estimated_bitrate = 128;	//kbit/sec
 	mSystem->setStreamBufferSize(estimated_bitrate * buffer_seconds * 128/*bytes/kbit*/, FMOD_TIMEUNIT_RAWBYTES);
 
@@ -145,7 +147,10 @@ void LLStreamingAudio_FMODEX::update()
 		return;
 	}
 
-	FMOD_OPENSTATE open_state = mCurrentInternetStreamp->getOpenState();
+	unsigned int progress;
+	bool starving;
+	bool diskbusy;
+	FMOD_OPENSTATE open_state = mCurrentInternetStreamp->getOpenState(&progress, &starving, &diskbusy);
 
 	if (open_state == FMOD_OPENSTATE_READY)
 	{
@@ -158,6 +163,7 @@ void LLStreamingAudio_FMODEX::update()
 			// Reset volume to previously set volume
 			setGain(getGain());
 			mFMODInternetStreamChannelp->setPaused(false);
+			mLastStarved.stop();
 		}
 	}
 	else if(open_state == FMOD_OPENSTATE_ERROR)
@@ -168,6 +174,7 @@ void LLStreamingAudio_FMODEX::update()
 
 	if(mFMODInternetStreamChannelp)
 	{
+		llinfos << "progress = " << progress << llendl;
 		if(!mMetaData)
 			mMetaData = new LLSD;
 
@@ -237,12 +244,46 @@ void LLStreamingAudio_FMODEX::update()
 					}
 				}
 			}
+			if(starving)
+			{
+				if(!mLastStarved.getStarted())
+				{
+					llinfos << "Stream starvation detected! Muting stream audio until it clears." << llendl;
+					llinfos << "  (diskbusy="<<diskbusy<<")" << llendl;
+					llinfos << "  (progress="<<progress<<")" << llendl;
+					mFMODInternetStreamChannelp->setMute(true);
+					mStarvedProgress = progress;
+					mStarvedNoProgressFrames = 0;
+				}
+				else if(mStarvedProgress == progress)
+				{
+					if(++mStarvedNoProgressFrames >= 10)
+					{
+						//we got 10 consecutive updates of 0 progress made on the stream buffer. It probably stalled.
+						llinfos << "Stream unable to recover from starvation. Halting." << llendl;
+						stop();
+						return;
+					}
+				}
+				else
+				{
+					mStarvedNoProgressFrames = 0;
+					mStarvedProgress = progress;
+				}
+				mLastStarved.start();
+			}
+			else if(mLastStarved.getStarted() && mLastStarved.getElapsedTimeF32() > 5.f)
+			{
+				mLastStarved.stop();
+				mFMODInternetStreamChannelp->setMute(false);
+			}
 		}
 	}
 }
 
 void LLStreamingAudio_FMODEX::stop()
 {
+	mLastStarved.stop();
 	if(mMetaData)
 	{
 		delete mMetaData;
@@ -339,6 +380,11 @@ void LLStreamingAudio_FMODEX::setGain(F32 vol)
 /*virtual*/ bool LLStreamingAudio_FMODEX::getWaveData(float* arr, S32 count, S32 stride/*=1*/)
 {
 	if(!mFMODInternetStreamChannelp || !mCurrentInternetStreamp)
+		return false;
+
+	bool muted=false;
+	mFMODInternetStreamChannelp->getMute(&muted);
+	if(muted)
 		return false;
 
 	static std::vector<float> local_array(count);	//Have to have an extra buffer to mix channels. Bleh.
@@ -442,9 +488,19 @@ bool LLAudioStreamManagerFMODEX::stopStream()
 	}
 }
 
-FMOD_OPENSTATE LLAudioStreamManagerFMODEX::getOpenState()
+FMOD_OPENSTATE LLAudioStreamManagerFMODEX::getOpenState(unsigned int* percentbuffered, bool* starving, bool* diskbusy)
 {
 	FMOD_OPENSTATE state;
-	mInternetStream->getOpenState(&state,NULL,NULL,NULL);
+	mInternetStream->getOpenState(&state,percentbuffered,starving,diskbusy);
 	return state;
+}
+
+void LLStreamingAudio_FMODEX::setBufferSizes(U32 streambuffertime, U32 decodebuffertime)
+{
+	mSystem->setStreamBufferSize(streambuffertime/1000*128*128, FMOD_TIMEUNIT_RAWBYTES);
+	FMOD_ADVANCEDSETTINGS settings;
+	memset(&settings,0,sizeof(settings));
+	settings.cbsize=sizeof(settings);
+	settings.defaultDecodeBufferSize = decodebuffertime;//ms
+	mSystem->setAdvancedSettings(&settings);
 }
