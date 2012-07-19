@@ -208,6 +208,7 @@ LLViewerObject::LLViewerObject(const LLUUID &id, const LLPCode pcode, LLViewerRe
 	mID(id),
 	mLocalID(0),
 	mTotalCRC(0),
+	mListIndex(-1),
 	mTEImages(NULL),
 	mGLName(0),
 	mbCanSelect(TRUE),
