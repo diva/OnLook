@@ -95,7 +95,7 @@ inline bool Check_FMOD_Error(FMOD_RESULT result, const char *string)
 	return true;
 }
 
-void* __stdcall decode_alloc(unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr)
+void* F_STDCALL decode_alloc(unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr)
 {
 	if(type & FMOD_MEMORY_STREAM_DECODE)
 	{
@@ -107,14 +107,14 @@ void* __stdcall decode_alloc(unsigned int size, FMOD_MEMORY_TYPE type, const cha
 	}
 	return new char[size];
 }
-void* __stdcall decode_realloc(void *ptr, unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr)
+void* F_STDCALL decode_realloc(void *ptr, unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr)
 {
 	memset(ptr,0,size);
 	return ptr;
 }
-void __stdcall decode_dealloc(void *ptr, FMOD_MEMORY_TYPE type, const char *sourcestr)
+void F_STDCALL decode_dealloc(void *ptr, FMOD_MEMORY_TYPE type, const char *sourcestr)
 {
-	delete[] ptr;
+	delete[] (char*)ptr;
 }
 
 bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
@@ -130,7 +130,7 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 
 	LL_DEBUGS("AppInit") << "LLAudioEngine_FMODEX::init() initializing FMOD" << LL_ENDL;
 
-	result = FMOD::Memory_Initialize(NULL, NULL, &decode_alloc, &decode_realloc, &decode_dealloc, FMOD_MEMORY_STREAM_DECODE | FMOD_MEMORY_STREAM_FILE);
+	result = FMOD::Memory_Initialize(NULL, 0, &decode_alloc, &decode_realloc, &decode_dealloc, FMOD_MEMORY_STREAM_DECODE | FMOD_MEMORY_STREAM_FILE);
 	if(Check_FMOD_Error(result, "FMOD::Memory_Initialize"))
 		return false;
 
