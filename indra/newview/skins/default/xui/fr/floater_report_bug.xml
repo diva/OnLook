@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="bug_reporter" title="Signaler un bug">
 	<text name="reporter_title">
-		Signalant :
+		Signalant:
 	</text>
 	<text name="sim_title">
-		Sim :
+		Sim:
 	</text>
 	<text name="pos_title">
-		Position :
+		Position:
 	</text>
 	<text name="select_object_label">
-		Cliquez sur le bouton puis l&apos;objet :
+		Cliquer sur le bouton puis l'objet:
 	</text>
-	<button label="" label_selected="" name="pick_btn" tool_tip="Le sélecteur d&apos;objet vous permet d&apos;identifier un objet comme sujet du rapport."/>
+	<button label="" label_selected="" name="pick_btn" tool_tip="Le sélecteur d'objet vous permet d'identifier un objet comme sujet du rapport."/>
 	<text name="object_name_label">
-		Nom :
+		Nom:
 	</text>
 	<text name="object_name">
 		Consetetur Sadipscing
@@ -22,8 +22,8 @@
 	<text name="owner_name_label">
 		Propriétaire :
 	</text>
-	<check_box label="Inclure une capture d&apos;écran" name="screen_check"/>
-	<texture_picker label="Instantané en cours..." name="screenshot"/>
+	<check_box label="Inclure une capture d'écran" name="screen_check"/>
+	<texture_picker label="Instantané en cours" name="screenshot"/>
 	<text name="category_label">
 		Catégorie :
 	</text>
@@ -32,7 +32,7 @@
 	</text>
 	<combo_box name="category_combo" tool_tip="Choisissez la catégorie qui décrit le mieux ce rapport">
 		<combo_item name="Selectcategory">
-			Sélectionnez une catégorie
+			Sélectionner une catégorie
 		</combo_item>
 		<combo_item name="Building">
 			Construire
@@ -87,21 +87,21 @@
 		</combo_item>
 	</combo_box>
 	<text name="sum_title">
-		Récapitulatif :
+		Récapitulatif:
 	</text>
 	<text name="dscr_title">
-		Détails (soyez aussi précis que possible) :
+		Détails (soyez aussi précis que possible):
 	</text>
 	<text_editor name="details_edit">
-		Étapes pour reproduire le bug :
+		Étapes pour reproduire le bug:
 
-Résultats observés :
+Résultats observés:
 
-Résultats attendus :
+Résultats attendus:
 	</text_editor>
 	<text name="bug_aviso">
-		Remarque : les rapports incomplets ne feront pas l&apos;objet d&apos;une enquête.
-Si ce bug vous permet de faire quelque chose que vous ne devriez pas pouvoir faire, surtout s&apos;il a des conséquences sur la sécurité et la performance, veuillez sélectionner la catégorie Exploit. Merci !
+		Remarque : les rapports incomplets ne feront pas l'objet d'une enquête.
+Si ce bug vous permet de faire quelque chose que vous ne devriez pas pouvoir faire, surtout s'il a des conséquences sur la sécurité et la performance, veuillez sélectionner la catégorie Exploit. Merci!
 	</text>
 	<button label="Signaler un bug" label_selected="Signaler un bug" name="send_btn"/>
 	<button label="Annuler" label_selected="Annuler" name="cancel_btn"/>

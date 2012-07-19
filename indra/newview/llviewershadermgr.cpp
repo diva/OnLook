@@ -343,7 +343,7 @@ void LLViewerShaderMgr::setShaders()
 	
 	//setup preprocessor definitions
 	LLShaderMgr::instance()->mDefinitions.clear();
-	LLShaderMgr::instance()->mDefinitions["samples"] = llformat("%d", gSavedSettings.getU32("RenderFSAASamples")/*gGLManager.getNumFBOFSAASamples(gSavedSettings.getU32("RenderFSAASamples"))*/);
+	LLShaderMgr::instance()->mDefinitions["samples"] = llformat("%d", gSavedSettings.getU32("RenderFSAASamples"));
 	LLShaderMgr::instance()->mDefinitions["NUM_TEX_UNITS"] = llformat("%d", gGLManager.mNumTextureImageUnits);
 
 	initAttribsAndUniforms();

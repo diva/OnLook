@@ -58,6 +58,9 @@ class LLStreamingAudioInterface
 	virtual const LLSD *getMetaData() = 0;
 	virtual bool supportsWaveData() = 0;
 	virtual bool getWaveData(float* arr, S32 count, S32 stride = 1) = 0;
+
+	virtual bool supportsAdjustableBufferSizes(){return false;}
+	virtual void setBufferSizes(U32 streambuffertime, U32 decodebuffertime){};
 };
 
 #endif // LL_STREAMINGAUDIO_H

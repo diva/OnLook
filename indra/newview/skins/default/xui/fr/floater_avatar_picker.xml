@@ -3,32 +3,36 @@
 	<tab_container name="ResidentChooserTabs">
 		<panel label="Rechercher" name="SearchPanel">
 			<text name="InstructSearchResidentName">
-				Saisissez une partie du nom du résident :
+				Saisir une partie du nom du résident:
 			</text>
 			<button label="Trouver" label_selected="Trouver" name="Find"/>
 		</panel>
-		<panel label="Cartes de visite" name="CallingCardsPanel">
+		<panel name="CallingCardsPanel" label="Cartes de visite">
 			<text name="InstructSelectCallingCard">
-				Sélectionnez une carte de visite :
+				Sélectionner une carte de visite:
 			</text>
 		</panel>
-		<panel label="Près de moi" name="NearMePanel">
+		<panel name="NearMePanel" label="Près de moi">
 			<text name="InstructSelectResident">
-				Choisir un résident
-près de vous :
+				Choisir un résident près de vous:
 			</text>
 			<button font="SansSerifSmall" label="Rafraîchir la liste" label_selected="Rafraîchir la liste" name="Refresh" left_delta="10" width="105"/>
 			<slider label="Distance" name="near_me_range" bottom_delta="-36"/>
 			<text name="meters">
-				mètres
+				Mètres
 			</text>
-			<scroll_list bottom_delta="-169" height="159" name="NearMe"  />
+			<scroll_list bottom_delta="-169" height="159" name="NearMe"/>
+		</panel>
+		<panel name="KeyPanel" label="Avec UUID" >
+			<text name="InstructSelectResident">
+				Avatar ou Group UUID:
+			</text>
 		</panel>
 	</tab_container>
 	<button label="Sélectionner" label_selected="Sélectionner" name="Select"/>
 	<button label="Annuler" label_selected="Annuler" name="Cancel"/>
 	<string name="not_found">
-		&apos;[TEXT]&apos; introuvable
+		'[TEXT]' introuvable
 	</string>
 	<string name="no_one_near">
 		Il n'y a personne près de vous

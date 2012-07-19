@@ -1,43 +1,36 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <menu_bar name="Main Menu">
 	<menu label="Fichier" name="File">
 		<tearoff_menu label="~~~~~~~~~~~" name="~~~~~~~~~~~"/>
-    <menu_item_call enabled="true" label="Import  d&apos;image ([UPLOADFEE])..."
-        mouse_opaque="true" name="Upload Image" shortcut="control|U" >
+    <menu_item_call label="Import  d'image ([UPLOADFEE])" name="Upload Image">
 		<on_click function="File.UploadImage" userdata="" />
 		<on_enable function="File.EnableUpload" />
     </menu_item_call>
-    <menu_item_call label="Import de son ([UPLOADFEE])..." name="Upload Sound"
-        mouse_opaque="true" enabled="true" >
+    <menu_item_call label="Import de son ([UPLOADFEE])" name="Upload Sound">
         <on_click function="File.UploadSound" userdata="" />
         <on_enable function="File.EnableUpload" />
     </menu_item_call>
-    <menu_item_call label="Import d&apos;animation ([UPLOADFEE])..." name="Upload Animation"
-        mouse_opaque="true" enabled="true"  >
+    <menu_item_call label="Import d'animation ([UPLOADFEE])" name="Upload Animation">
         <on_click function="File.UploadAnim" userdata="" />
         <on_enable function="File.EnableUpload" />
     </menu_item_call>
-    <menu_item_call label="Import  multiples ([UPLOADFEE] par fichier)..." name="Bulk Upload"
-        mouse_opaque="true" enabled="true" >
+    <menu_item_call label="Import  multiples ([UPLOADFEE] par fichier)" name="Bulk Upload">
         <on_click function="File.UploadBulk" userdata="" />
     </menu_item_call>
-	<menu_item_call enabled="false" hidden="false" label="Import XML" mouse_opaque="true" name="Import">
+	<menu_item_call label="Import XML" name="Import">
 		<on_click function="Object.Import" />
 		<on_enable function="Object.EnableImport" />
 	</menu_item_call>
-	<menu_item_call enabled="false" hidden="false" label="Import avec textures" mouse_opaque="true" name="Import2">
+	<menu_item_call label="Import avec textures" name="Import2">
 		<on_click function="Object.ImportUpload" />
 		<on_enable function="Object.EnableImport" />
 	</menu_item_call>
-    <menu_item_separator enabled="true" label="-----------" mouse_opaque="true" name="separator" />
-    <menu_item_call enabled="true" label="Définir les droits par défaut " 
-        mouse_opaque="true" name="perm prefs" >
+    <menu_item_separator label="-----------" name="separator" />
+    <menu_item_call label="Définir les droits par défaut " name="perm prefs" >
         <on_click function="ShowFloater" userdata="perm prefs" />
     </menu_item_call>
-		<menu_item_separator bottom="-121" enabled="true" height="8" label="-----------" left="0"
-		     mouse_opaque="true" name="separator2" width="243" />
-		<menu_item_call bottom="-140" enabled="true" height="19" label="Enregistrer la texture sur le disque dur" left="0"
-		     mouse_opaque="true" name="Save Preview As..." width="243">
+		<menu_item_separator label="-----------" name="separator2"/>
+		<menu_item_call label="Enregistrer la texture sur le disque dur" name="Save Preview As...">
 			<on_click function="File.SavePreview" userdata="" />
 			<on_enable function="File.EnableSaveAs" />
 		</menu_item_call>
@@ -59,15 +52,15 @@
 		<menu_item_call label="Coller" name="Paste"/>
 		<menu_item_call label="Supprimer" name="Delete"/>
 		<menu_item_separator label="-----------" name="separator2"/>
-		<menu_item_call label="Rechercher..." name="Search..."/>
+		<menu_item_call label="Rechercher" name="Search..."/>
 		<menu_item_separator label="-----------" name="separator3"/>
 		<menu_item_call label="Tout sélectionner" name="Select All"/>
 		<menu_item_call label="Désélectionner" name="Deselect"/>
 		<menu_item_separator label="-----------" name="separator4"/>
 		<menu_item_call label="Dupliquer" name="Duplicate"/>
 		<menu_item_separator label="-----------" name="separator5"/>
-		<menu label="Attacher l&apos;objet" name="Attach Object"/>
-		<menu label="Détacher l&apos;objet" name="Detach Object"/>
+		<menu label="Attacher l'objet" name="Attach Object"/>
+		<menu label="Détacher l'objet" name="Detach Object"/>
 		<menu label="Enlever mes habits" name="Take Off Clothing">
 			<menu_item_call label="Chemise" name="Shirt"/>
 			<menu_item_call label="Pantalon" name="Pants"/>
@@ -84,21 +77,22 @@
 		<menu_item_call label="Gestures" name="Gestures..."/>
 		<menu_item_call label="Profil" name="Profile..."/>
 		<menu_item_call label="Apparence" name="Appearance..."/>
+		<menu_item_call label="Display Name - Nom en 'Rab'" name="Display Name..."/>
 		<menu_item_separator label="-----------" name="separator7"/>
 		<menu_item_check label="Amis" name="Friends..."/>
-		<menu_item_call label="Groupes..." name="Groups..."/>
+		<menu_item_call label="Groupes" name="Groups..."/>
 		<menu_item_separator label="-----------" name="separator8"/>
-		<menu_item_call label="Préférences" name="Preferences..."/>
+		<menu_item_call label="Pr&#xE9;f&#xE9;rences" name="Preferences..."/>
 	</menu>
 	<menu label="Affichage" name="View">
 		<tearoff_menu label="~~~~~~~~~~~" name="~~~~~~~~~~~"/>
 		<menu_item_call label="Vue subjective" name="Mouselook"/>
 		<menu_item_check label="Construire" name="Build"/>
 		<menu_item_check label="Vue au joystick" name="Joystick Flycam"/>
-		<menu_item_call label="Réinitialiser l&apos;affichage" name="Reset View"/>
+		<menu_item_call label="Réinitialiser l'affichage" name="Reset View"/>
 		<menu_item_call label="Regarder le dernier intervenant" name="Look at Last Chatter" shortcut="alt|V"/>
 		<menu_item_separator label="-----------" name="separator"/>
-		<menu_item_check label="Barre d&apos;outils" name="Toolbar"/>
+		<menu_item_check label="Barre d'outils" name="Toolbar"/>
 		<menu_item_check label="Chat local" name="Chat History"/>
 		<menu_item_check label="Communiquer" name="Instant Message"/>
 		<menu_item_check label="Inventaire" name="Inventory"/>
@@ -115,11 +109,11 @@
 		<menu_item_check label="Statistiques" name="Statistics Bar"/>
 		<menu_item_check label="Recherche par Zone" name="Area Search"/>
 		<menu_item_check label="Limites des parcelles" name="Property Lines"/>
-		<menu_item_check label="Barrières d&apos;interdiction d&apos;accès" name="Banlines"/>
+		<menu_item_check label="Barrières d'interdiction d'accès" name="Banlines"/>
 		<menu_item_check label="Propriétaires" name="Land Owners"/>
 		<menu_item_separator label="-----------" name="separator4"/>
 		<menu label="Infobulles" name="Hover Tips">
-			<menu_item_check label="Affichez les infobulles" name="Show Tips"/>
+			<menu_item_check label="Afficher les infobulles" name="Show Tips"/>
 			<menu_item_separator label="-----------" name="separator"/>
 			<menu_item_check label="Infobulles des terrains" name="Land Tips"/>
 			<menu_item_check label="Infobulles de tous les objets" name="Tips On All Objects"/>
@@ -134,12 +128,12 @@
 		<menu_item_call label="Zoomer en arrière" name="Zoom Out"/>
 		<menu_item_separator label="-----------" name="separator6"/>
 		<menu_item_call label="Activer/Quitter le plein écran" name="Toggle Fullscreen"/>
-		<menu_item_call label="Taille de l&apos;interface par défaut" name="Set UI Size to Default"/>
+		<menu_item_call label="Taille de l'interface par défaut" name="Set UI Size to Default"/>
 	</menu>
 	<menu label="Monde" name="World">
 		<menu_item_call label="Chat" name="Chat"/>
 		<menu_item_check label="Toujours courir" name="Always Run"/>
-		<menu_item_call label="s'asseoir au sol" name="Sit on Ground" shortcut="control|alt|S"/>
+		<menu_item_call label="S'asseoir au sol" name="Sit on Ground" shortcut="control|alt|S"/>
 		<menu_item_check label="Voler" name="Fly" shortcut="F"/>
 		<menu_item_separator label="-----------" name="separator"/>
 		<menu_item_call label="Créer un repère ici - Landmark" name="Create Landmark Here"/>
@@ -148,7 +142,7 @@
 		<menu_item_call label="Me téléporter chez moi" name="Teleport Home"/>
 		<menu_item_separator label="-----------" name="separator3"/>
 
-    	<menu_item_call bottom="-186" enabled="true" height="19" label="Faux Absent (on off)" left="0"
+    	<menu_item_call bottom="-186" enabled="true" height="19" label="Faux Absent (on/off)" left="0"
      		mouse_opaque="true" name="Fake Away Status" width="185">
       		<on_click function="World.FakeAway" userdata=""/>
     	</menu_item_call>
@@ -163,21 +157,21 @@
 			<on_click function="World.SetBusy" userdata=""/>
 		</menu_item_call>
 
-		<menu_item_call label="Arrêter d&apos;animer mon avatar" name="Stop Animating My Avatar"/>
+		<menu_item_call label="Arrêter d'animer mon avatar" name="Stop Animating My Avatar"/>
 		<menu_item_call label="Reprendre le contrôle" name="Release Keys"/>
 		<menu_item_separator label="-----------" name="separator4"/>
-		<menu_item_call label="Historique de mon compte..." name="Account History...">
+		<menu_item_call label="Historique de mon compte" name="Account History...">
 			<on_click name="AccountHistory_url" userdata="WebLaunchAccountHistory,http://secondlife.com/account/transactions.php?lang=fr"/>
 		</menu_item_call>
-		<menu_item_call label="Gérer mon compte..." name="Manage My Account...">
+		<menu_item_call label="Gérer mon compte" name="Manage My Account...">
 			<on_click name="ManageMyAccount_url" userdata="WebLaunchJoinNow,http://secondlife.com/account/index.php?lang=fr"/>
 		</menu_item_call>
-		<menu_item_call label="Acheter des L$..." name="Buy and Sell L$..."/>
+		<menu_item_call label="Acheter des [CURRENCY]" name="Buy and Sell L$..."/>
 		<menu_item_separator label="-----------" name="separator5"/>
-		<menu_item_call label="Mes terrains..." name="My Land..."/>
-		<menu_item_call label="À propos du terrain..." name="About Land..."/>
-		<menu_item_call label="Acheter le terrain..." name="Buy Land..."/>
-		<menu_item_call label="Région et domaine..." name="Region/Estate..."/>
+		<menu_item_call label="Mes terrains" name="My Land..."/>
+		<menu_item_call label="À propos du terrain" name="About Land..."/>
+		<menu_item_call label="Acheter le terrain" name="Buy Land..."/>
+		<menu_item_call label="Région et domaine" name="Region/Estate..."/>
 		<menu_item_separator label="-----------" name="separator6"/>
 		<menu label="Environnement" name="Environment Settings">
 			<menu_item_call label="Aube" name="Sunrise"/>
@@ -203,6 +197,9 @@
 		<menu_item_check label="Sélectionner mes objets uniquement" name="Select Only My Objects"/>
 		<menu_item_check label="Sélectionner les objets déplaçables uniquement" name="Select Only Movable Objects"/>
 		<menu_item_check label="Sélectionner en entourant" name="Select By Surrounding"/>
+		<menu_item_check label="Montrer les contours de la sélection" name="Show Selection Outlines" />
+			<on_click function="Tools.ShowSelectionHighlights" userdata="" />
+			<on_check control="RenderHighlightSelections" />
 		<menu_item_check label="Afficher les parties cachées de la sélection" name="Show Hidden Selection"/>
 		<menu_item_check label="Afficher la sphère de lumière de la sélection" name="Show Light Radius for Selection"/>
 		<menu_item_check label="Afficher le faisceau de sélection" name="Show Selection Beam"/>
@@ -210,12 +207,12 @@
 		<menu_item_check label="Aligner sur la grille" name="Snap to Grid"/>
 		<menu_item_call label="Aligner sur les axes XY de la grille" name="Snap Object XY to Grid"/>
 		<menu_item_call label="Utiliser la sélection pour la grille" name="Use Selection for Grid"/>
-		<menu_item_call label="Options de la grille..." name="Grid Options..."/>
+		<menu_item_call label="Options de la grille" name="Grid Options..."/>
 		<menu_item_separator label="-----------" name="separator3"/>
 		<menu_item_check label="Modifier les parties liées" name="Edit Linked Parts"/>
-		<menu label="Selection parties liées" name="Select Linked Parts">
-		<menu_item_call label="Select Suivante" name="Select Next Part"/>		
-		<menu_item_call label="Select Precedente"	name="Select Previous Part"/>
+		<menu label="Sélection parties liées" name="Select Linked Parts">
+		<menu_item_call label="Sélection Suivante" name="Select Next Part"/>		
+		<menu_item_call label="Sélection Precedente" name="Select Previous Part"/>
 		<menu_item_call label="Inclure Suivante" name="Include Next Part"/>
 		<menu_item_call label="Inclure Precedente" name="Include Previous Part"/>
             </menu>
@@ -224,15 +221,15 @@
 		<menu_item_separator label="-----------" name="separator4"/>
 		<menu_item_call label="Mise au point sur la sélection" name="Focus on Selection"/>
 		<menu_item_call label="Zoom sur la sélection" name="Zoom to Selection"/>
-		<menu_item_call label="Acheter l&apos;objet" name="Menu Object Take">
+		<menu_item_call label="Acheter l'objet" name="Menu Object Take">
 			<on_enable userdata="Acheter,Prendre" name="EnableBuyOrTake"/>
 		</menu_item_call>
 		<menu_item_call label="Prendre une copie" name="Take Copy"/>
 		<menu_item_call label="Retourner l'objet" name="Return..."/>
-		<menu_item_call label="Remplacer l&apos;objet dans le contenu de l&apos;objet" name="Save Object Back to Object Contents"/>
-		<menu_item_call label="Admin Suppr. (fonction pour les open grids)" name="Admin Delete" shortcut="control|alt|shift|Del"/>		
+		<menu_item_call label="Remplacer l'objet dans le contenu de l'objet" name="Save Object Back to Object Contents"/>
+		<menu_item_call label="Admin Suppr.(fonction pour les open grids)" name="Admin Delete" shortcut="control|alt|shift|Del"/>		
         <menu_item_separator label="-----------" name="separator6"/>
-		<menu_item_call label="Afficher la fenêtre d&apos;alertes/erreurs de script" name="Show Script Warning/Error Window"/>
+		<menu_item_call label="Afficher la fenêtre d'alertes/erreurs de script" name="Show Script Warning/Error Window"/>
 		<menu label="Recompiler les scripts dans la sélection" name="Recompile Scripts in Selection">
 			<menu_item_call label="Mono" name="Mono"/>
 			<menu_item_call label="LSL" name="LSL"/>
@@ -240,39 +237,38 @@
 		<menu_item_call label="Réinitialiser les scripts dans la sélection" name="Reset Scripts in Selection"/>
 		<menu_item_call label="Activer les scripts dans la sélection" name="Set Scripts to Running in Selection"/>
 		<menu_item_call label="Désactiver les scripts dans la sélection" name="Set Scripts to Not Running in Selection"/>
-            <menu_item_call label="Supprimer les Scripts dans la sélection" name="Remove Scripts in Selection"/>
+            <menu_item_call label="Supprimer les scripts dans la sélection" name="Remove Scripts in Selection"/>
 	</menu>
 	<menu label="Aide" name="Help">
 		<menu_item_call label="Aide de Snowglobe/Second Life" name="Second Life Help"/>
 		<menu_item_call label="Tutoriel" name="Tutorial"/>
 		<menu_item_separator label="-----------" name="separator"/>
-		<menu_item_call label="Blog officiel..." name="Official Linden Blog..."/>
+		<menu_item_call label="Blog officiel" name="Official Linden Blog..."/>
 		<menu_item_separator label="-----------" name="separator2"/>
-		<menu_item_call label="Aide sur le LSL..." name="Scripting Portal...">
+		<menu_item_call label="Aide sur le LSL" name="Scripting Portal...">
 			<on_click name="ScriptingPortal_url" userdata="WebLaunchLSLWiki,http://wiki.secondlife.com/wiki/LSL_Portal/fr" />
 		</menu_item_call>
 		<menu_item_separator label="-----------" name="separator3"/>
-		<menu_item_call label="Signaler une infraction..." name="Report Abuse..."/>
-		<menu_item_call label="Collisions, coups et bousculades…" name="Bumps, Pushes &amp;amp; Hits..."/>
+		<menu_item_call label="Signaler une infraction" name="Report Abuse..."/>
+		<menu_item_call label="Collisions, coups et bousculades" name="Bumps, Pushes &amp;amp; Hits..."/>
 		<menu_item_call label="Mesure du lag" name="Lag Meter"/>
 		<menu_item_separator label="-----------" name="separator7"/>
 		<menu label="Signaler des bugs" name="Bug Reporting">
-			<menu_item_call label="Ouvrir un JIRA..." name="Public Issue Tracker..."/>
-			<menu_item_call label="Comment utiliser JIRA ?" name="Publc Issue Tracker Help...">
+			<menu_item_call label="Ouvrir un JIRA" name="Public Issue Tracker..."/>
+			<menu_item_call label="Comment utiliser le JIRA" name="Publc Issue Tracker Help...">
 				<on_click name="PublicIssueTrackerHelp_url" userdata="WebLaunchPublicIssueHelp,http://wiki.secondlife.com/wiki/Issue_tracker/fr" />
 			</menu_item_call>
 			<menu_item_separator label="-----------" name="separator7"/>
-			<menu_item_call label="Comment signaler des bugs ?" name="Bug Reporing 101...">
+			<menu_item_call label="Comment signaler des bugs" name="Bug Reporing 101">
 				<on_click name="BugReporting101_url" userdata="WebLaunchBugReport101,http://wiki.secondlife.com/wiki/Bug_Reporting_101/fr"/>
 			</menu_item_call>
-			<menu_item_call label="Comment signaler un problème de sécurité ?" name="Security Issues...">
+			<menu_item_call label="Comment signaler un problème de sécurité" name="Security Issues...">
 				<on_click name="SecurityIssues_url" userdata="WebLaunchSecurityIssues,http://wiki.secondlife.com/wiki/Security_issues/fr"/>
 			</menu_item_call>
-			<menu_item_call label="Wiki Assurance Qualité…" name="QA Wiki..."/>
+			<menu_item_call label="Wiki Assurance Qualité" name="QA Wiki..."/>
 			<menu_item_separator label="-----------" name="separator9"/>
-			<menu_item_call label="Signaler un bug..." name="Report Bug..."/>
+			<menu_item_call label="Signaler un bug" name="Report Bug..."/>
 		</menu>
-		<menu_item_call label="À propos de Singularity..." name="About Second Life..."/>
+		<menu_item_call label="A propos de Singularity" name="About Second Life..."/>
 	</menu>
 </menu_bar>
-</menu></menu>

@@ -1,101 +1,216 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<panel label="Propositions" name="voting_tab">
-	<text name="help_text">
-		Les propositions de groupe permettent d&apos;en savoir plus sur les objectifs du groupe ou son avis sur un sujet donné. Si vous avez les pouvoirs requis, vous pouvez créer des propositions, voter et accéder à d&apos;anciennes propositions.
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel border="true" bottom="0" follows="all" height="466" label="Propositions" left="1"
+     mouse_opaque="true" name="voting_tab" width="418">
+	<string name="help_text">
+		Les propositions de groupe permettent d&apos;en savoir plus sur les objectifs du groupe ou de donner son avis sur un sujet.
+	</string>
+	<panel background_opaque="true" background_visible="true" bevel_style="in"
+	     bg_alpha_color="blue" border="true"
+	     bottom_delta="-225" follows="left|top" height="170" left="7"
+	     mouse_opaque="false" name="open_proposals_container" width="404" />
+	<panel background_opaque="true" background_visible="true" bevel_style="in"
+	     bg_alpha_color="blue" border="true" bottom="7"
+	     follows="left|top" height="175" left="7" mouse_opaque="false"
+	     name="voting_history_container" width="404" />
+	<button bottom="-24" font="SansSerif" halign="center" height="16" label="?" left="391"
+	     name="help_button" width="20" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom="446" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifBig" h_pad="0" halign="left" height="16" left="7"
+	     mouse_opaque="false" name="proposal_header" v_pad="0" width="363">
+		Proposition de Groupe
 	</text>
-	<button label="?" name="help_button"/>
-	<text name="proposal_header">
-		Propositions du groupe en cours
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-36" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="32" left="7"
+	     mouse_opaque="false" name="proposal_instructions" v_pad="0" width="380">
+		Double clic pour voter ou cliquer Cr&#xE9;er une proposition.
 	</text>
-	<text name="proposal_voting_lbl">
-		Proposition                                                      Fin du vote                      Votée ?
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-16" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
+	     mouse_opaque="false" name="proposal_lbl" v_pad="0" visible="true"
+	     width="396">
+		Description
 	</text>
-	<text name="proposals_header_view_txt">
-		Propositions en cours
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="0" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
+	     mouse_opaque="false" name="proposal_voting_lbl" v_pad="0" visible="true"
+	     width="396">
+		Proposition                                                      Fin du vote                      Vot&#xE9;e ?
 	</text>
+	<scroll_list bottom_delta="-121" column_padding="5" column_widths="200,120,40"
+	     draw_border="true" height="120" left="11" mouse_opaque="true"
+	     multi_select="false" name="proposals" width="396" />
+	<button bottom_delta="-25" follows="left|top" font="SansSerif" halign="center"
+	     height="20" label="Cr&#xE9;er une proposition" label_selected="Cr&#xE9;er une proposition"
+	     left_delta="-0" mouse_opaque="true" name="btn_proposal" width="160" />
+	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
+	     height="20" label="Voir une proposition" label_selected="Voir une proposition" left="247"
+	     mouse_opaque="true" name="btn_view_proposal_item" width="160" />
+	<text_editor background_visible="true" bg_visible="false" border_drop_shadow_visible="false"
+	     border_visible="false" bottom="300" drop_shadow_visible="false"
+	     embedded_items="false" follows="left|top" font="SansSerif" height="90"
+	     is_unicode="false" left="11" max_length="254" mouse_opaque="true"
+	     name="proposal_text" width="289" word_wrap="true" spell_check="true" />
+	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
+	     height="20" label="Voir la Liste" label_selected="Voir la Liste" left="304"
+	     mouse_opaque="true" name="btn_view_proposal_list" width="101" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-23" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="right" height="20" left="8"
+	     mouse_opaque="false" name="quorum_lbl" v_pad="0" width="65">
+		Quorum:
+	</text>
+	<spinner bottom_delta="0" decimal_digits="0" follows="left|top" height="20"
+	     increment="1" initial_val="0" left="78" max_val="138" min_val="1"
+	     mouse_opaque="true" name="quorum" text_disabled_color="orange"
+	     tool_tip=""
+	     width="54" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-0" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="20" left_delta="60"
+	     mouse_opaque="false" name="quorum_text" v_pad="0" width="300">
+		Au moins [MEMBERS] membres doivent voter.
+	</text>
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-23" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="right" height="20" left="8"
+	     mouse_opaque="false" name="duration_lbl" v_pad="0" width="65">
+		Dur&#xE9;e:
+	</text>
+	<spinner bottom_delta="0" decimal_digits="0" follows="left|top" height="20"
+	     increment="1" initial_val="7" left_delta="70" max_val="30" min_val="1"
+	     mouse_opaque="true" name="duration"
+	     tool_tip="" width="45" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="0" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="20" left_delta="52"
+	     mouse_opaque="false" name="duration_text" v_pad="0" width="300">
+		Jours
+	</text>
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="0" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="right" height="20" left="210"
+	     mouse_opaque="false" name="majority_lbl" v_pad="0" visible="false"
+	     width="65" />
+	<radio_group bottom_delta="72" draw_border="false" follows="left|top" height="60" left="300"
+	     mouse_opaque="true" name="majority"
+	     text_disabled_color="0.67647, 0.76275, 0.93529, 0.45"
+	     tool_tip="" width="107">
+		Majorit&#xE9; simple
+		Majorit&#xE9; des 2/3
+		Unanimit&#xE9;
+	</radio_group>
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-72" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="right" height="20" left="12"
+	     mouse_opaque="false" name="start_lbl" v_pad="0" width="70">
+		D&#xE9;but:
+	</text>
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="0" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="20" left_delta="75"
+	     mouse_opaque="false" name="start_date" v_pad="0" width="200" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-16" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="right" height="20" left="12"
+	     mouse_opaque="false" name="end_lbl" v_pad="0" width="70">
+		Fin :
+	</text>
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="0" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="20" left_delta="75"
+	     mouse_opaque="false" name="end_date" v_pad="0" width="200" />
+	<button bottom="-218" follows="left|top" font="SansSerif" halign="center" height="20"
+	     label="Soumettre" label_selected="Soumettre" left="200"
+	     mouse_opaque="true" name="btn_submit" width="120" />
+	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
+	     height="20" label="Effacer" label_selected="Effacer" left_delta="128"
+	     mouse_opaque="true" name="btn_cancel" width="75" />
+	<button bottom="-218" follows="top" font="SansSerif" halign="center" height="20"
+	     label="Oui" label_selected="Oui" left="200" mouse_opaque="true"
+	     name="btn_yes" width="63" />
+	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
+	     height="20" label="Non" label_selected="Non" left_delta="70"
+	     mouse_opaque="true" name="btn_no" width="63" />
+	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
+	     height="20" label="M&apos;abstenir" label_selected="M&apos;abstenir" left_delta="70"
+	     mouse_opaque="true" name="btn_abstain" width="63" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom="-240" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifBig" h_pad="0" halign="left" height="10" left="12"
+	     mouse_opaque="false" name="txt" v_pad="0" width="363">
+		Historique
+	</text>
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-28" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="12"
+	     mouse_opaque="false" name="instructions" v_pad="0" width="400">
+		Double clic sur un ancien vote ou s&#xE9;lectionnez en un pour voir les r&#xE9;sultats.
+	</text>
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom="-296" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+	     mouse_opaque="false" name="history_list_lbl" text_wrap="true" v_pad="0"
+	     width="396">
+		Ancien vote                                                      Fin du vote
+	</text>
+	<scroll_list background_visible="true" bottom_delta="-132" column_padding="5"
+	     column_widths="220,120" draw_border="true" follows="left|top" height="126"
+	     left="10" mouse_opaque="true" multi_select="false" name="history_list"
+	     width="396" />
+	<button bottom_delta="-25" follows="top" font="SansSerif" halign="center" height="20"
+	     label="Voir" label_selected="Voir" left="287" mouse_opaque="true"
+	     name="btn_view_history_item" width="120" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="157" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="right" height="10" left="10"
+	     mouse_opaque="false" name="vote_text_lbl" v_pad="0" width="70">
+		R&#xE9;sultats :
+	</text>
+	<text_editor bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-132" drop_shadow_visible="false" embedded_items="false"
+	     follows="left|top" font="SansSerif" h_pad="0" height="126"
+	     hide_scrollbar="true" is_unicode="false" left="10" max_length="1024"
+	     mouse_opaque="true" name="vote_text"
+	     text_wrap="true" v_pad="0"
+	     width="396" word_wrap="false" />
+	<button bottom_delta="-25" follows="top" font="SansSerif" halign="center" height="20"
+	     label="Liste" label_selected="Liste" left="287" mouse_opaque="true"
+	     name="btn_view_history_list" width="120" />
+	<string name="proposals_header_view_txt">
+		Proposition de Groupe
+	</string>
 	<string name="proposals_header_view_inst">
-		Double-cliquez sur la proposition pour laquelle vous aimeriez voter
-ou cliquez sur Créer proposition pour créer une nouvelle proposition.
+		Double clic pour voter ou cliquez Cr&#xE9;er une proposition.
 	</string>
-	<text name="proposals_header_create_txt">
-		Créer une proposition
-	</text>
+	<string name="proposals_header_create_txt">
+		Cr&#xE9;er une proposition
+	</string>
 	<string name="proposals_header_create_inst">
-		Saisissez une description. Vous pouvez changer le quorum, la durée
-et la majorité requise pour que la proposition soit adoptée.
+		Saisir une description. Vous pouvez changer le quorum, la dur&#xE9;e
+et la majorit&#xE9; requise pour que la proposition soit adopt&#xE9;e.
 	</string>
-	<text name="proposals_header_vote_txt">
+	<string name="proposals_header_vote_txt">
 		Vote sur la proposition
-	</text>
+	</string>
 	<string name="proposals_header_vote_inst">
 		Pour voter, cliquez sur les boutons Oui ou Non,
 ou abstenez-vous en cliquant sur M&apos;abstenir.
 	</string>
 	<string name="proposals_header_voted_inst">
-		Vous avez voté : [VOTE]
+		Vous avez vot&#xE9;: [VOTE]
 	</string>
-	<text name="empty_proposal_txt">
-		La proposition que vous essayez de créer est vide. Veuillez saisir une description avant de créer la proposition.
-	</text>
-	<text name="proposal_instructions">
-		Double-cliquez sur la proposition sur laquelle vous voulez voter ou cliquez
-sur Créer une nouvelle proposition pour en créer une nouvelle.
-	</text>
-	<text name="proposal_lbl">
-		Description de la proposition
-	</text>
-	<button label="Créer une proposition" label_selected="Créer une proposition" name="btn_proposal"/>
-	<button label="Afficher la proposition" label_selected="Afficher la proposition" name="btn_view_proposal_item"/>
-	<button label="Afficher la liste" label_selected="Afficher la liste" name="btn_view_proposal_list"/>
-	<text name="quorum_lbl">
-		Quorum :
-	</text>
-	<spinner name="quorum" tool_tip="Nombre total de votants nécessaires pour que les résultats soient valides."/>
-	<text name="quorum_text">
-		sur [MEMBERS] membres doivent voter.
-	</text>
-	<text name="duration_lbl">
-		Durée :
-	</text>
-	<spinner name="duration" tool_tip="Durée du vote (en nombre de jours)."/>
-	<text name="duration_text">
-		jours
-	</text>
-	<radio_group left="296" name="majority" tool_tip="Majorité de tous les votes nécessaires pour remporter le vote.">
-		Majorité simple
-		Majorité des 2/3
-		Unanimité
-	</radio_group>
-	<text name="start_lbl">
-		Début :
-	</text>
-	<text name="end_lbl">
-		Fin :
-	</text>
-	<button label="Soumettre" label_selected="Soumettre" left="170" name="btn_submit" width="100"/>
-	<button label="Annuler" label_selected="Annuler" left_delta="158" name="btn_cancel"/>
-	<button font="SansSerifSmall" label="Oui" label_selected="Oui" left="205" name="btn_yes" width="60"/>
-	<button font="SansSerifSmall" label="Non" label_selected="Non" left_delta="66" name="btn_no" width="60"/>
-	<button font="SansSerifSmall" label="M&apos;abstenir" label_selected="M&apos;abstenir" left_delta="66" name="btn_abstain" width="70"/>
-	<text left="7" name="txt">
-		Historique des votes
-	</text>
-	<text left="7" name="instructions" width="405">
-		Double-cliquez sur un ancien vote ou sélectionnez-en un pour voir les résultats.
-	</text>
-	<text name="history_list_lbl">
-		Ancien vote                                                      Fin du vote
-	</text>
-	<button label="Afficher la proposition" label_selected="Afficher la proposition" left="247" name="btn_view_history_item" width="160"/>
-	<text name="vote_text_lbl">
-		Résultats du vote :
-	</text>
-	<button label="Afficher la liste" label_selected="Afficher la liste" name="btn_view_history_list"/>
+	<string name="empty_proposal_txt">
+		La proposition que vous essayez de cr&#xE9;er est vide. Veuillez saisir une description avant de cr&#xE9;er la proposition.
+	</string>
 	<string name="proposals_submit_yes_txt">
-		Soumission du Oui en cours...
+		Soumission du Oh oui je le veux en cours...
 	</string>
 	<string name="proposals_submit_no_txt">
-		Soumission du Non en cours...
+		Soumission du Non j&apos;veux po en cours...
 	</string>
 	<string name="proposals_submit_abstain_txt">
 		Soumission de l&apos;abstention en cours...
@@ -104,9 +219,9 @@ sur Créer une nouvelle proposition pour en créer une nouvelle.
 		Soumission de la nouvelle proposition en cours...
 	</string>
 	<string name="vote_recorded">
-		Votre vote a bien été reçu.
+		Votre vote a bien &#xE9;t&#xE9; re&#xE7;u.
 	</string>
 	<string name="vote_previously_recorded">
-		Vous avez déjà voté. Vous ne pouvez voter qu&apos;une seule fois sur une proposition.
+		Vous avez d&#xE9;j� vot&#xE9;. Vous ne pouvez voter qu&apos;une seule fois par proposition.
 	</string>
 </panel>

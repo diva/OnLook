@@ -4206,7 +4206,7 @@ void LLSoundBridge::openSoundPreview(void* which)
 		rect.translate(left - rect.mLeft, top - rect.mTop);
 		LLPreviewSound* preview = new LLPreviewSound("preview sound",
 										   rect,
-										   std::string("Sound: ") + me->getName(),
+										   LLTrans::getString("Sound: ") + me->getName(),
 										   me->mUUID);
 		preview->setFocus(TRUE);
 		// Keep entirely onscreen.
@@ -6308,7 +6308,7 @@ public:
 				rect.translate(left - rect.mLeft, top - rect.mTop);
 				LLPreviewSound* preview = new LLPreviewSound("preview sound",
 												   rect,
-												   std::string("Sound: ") + item->getName(),
+												   LLTrans::getString("Sound: ") + item->getName(),
 												   mUUID);
 				preview->setFocus(TRUE);
 				// Keep entirely onscreen.

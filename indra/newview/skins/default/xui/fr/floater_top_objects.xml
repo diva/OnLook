@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="top_objects" title="en cours de chargement...">
+<floater name="top_objects" title="En cours de chargement">
 	<text name="title_text">
 		Chargement...
 	</text>
@@ -12,15 +12,15 @@
 		<column label="Heure Mono" name="mono_time"/>
 	</scroll_list>
 	<text name="id_text">
-		ID de l&apos;objet :
+		ID de l'objet:
 	</text>
 	<button label="Afficher balise" name="show_beacon_btn"/>
 	<text name="obj_name_text">
-		Objet :
+		Objet:
 	</text>
 	<button label="Filtre" name="filter_object_btn"/>
 	<text name="owner_name_text">
-		Propriétaire :
+		Propriétaire:
 	</text>
 	<button label="Filtre" name="filter_owner_btn"/>
 	<button label="Renvoyer" name="return_selected_btn"/>
@@ -50,6 +50,6 @@
 		Score
 	</string>
 	<string name="none_descriptor">
-		Aucun résultat.
+		Aucun résultat
 	</string>
 </floater>

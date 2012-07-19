@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="Post-Process Floater" title="Configuración de Post Procesado">
+	<tab_container name="Post-Process Tabs">
+		<panel label="Filtro de Color" name="ColorFilterPanel">
+			<check_box label="Activar" name="enable_color_filter"/>
+			<text name="ColorFilterGammaText">
+				Gama
+			</text>
+			<slider label="" name="gamma" />
+			<text name="ColorFilterBrightnessText">
+				Brillo
+			</text>
+			<slider label="" name="brightness" />
+			<text name="ColorFilterSaturationText">
+				Saturación
+			</text>
+			<slider label="" name="saturation"/>
+			<text name="ColorFilterContrastText">
+				Contraste
+			</text>
+			<slider label="" name="contrast"/>
+			<text name="ColorFilterBaseText">
+				Color base del contraste
+			</text>
+			<slider label="R" name="contrast_base[0]"/>
+			<slider label="G" name="contrast_base[1]"/>
+			<slider label="B" name="contrast_base[2]"/>
+			<slider label="I" name="contrast_base[3]"/>
+		</panel>
+		<panel label="Desenfoque Gaussiano" name="GaussBlurPanel">
+			<check_box label="Activar" name="enable_gauss_blur"/>
+			<text name="GaussBlurPassesText">
+				Pasos a aplicar
+			</text>
+			<slider label="" name="gauss_blur_passes"/>
+		</panel>
+		<panel label="Visión Nocturna" name="NightVisionPanel">
+			<check_box label="Activar" name="enable_night_vision"/>
+			<text name="NightVisionBrightMultText">
+					Amplificación Múltiple de luz
+			</text>
+			<slider label="" name="brightness_multiplier"/>
+			<text name="NightVisionNoiseSizeText">
+				Tamaño del Ruido
+			</text>
+			<slider label="" name="noise_size"/>
+			<text name="NightVisionNoiseStrengthText">
+					Fuerza del Ruido
+			</text>
+			<slider label="" name="noise_strength"/>
+		</panel>
+		<panel label="Extras" name="Extras">
+			<button label="Cargar Efecto" label_selected="Cargar Efecto" name="PPLoadEffect"/>
+			<button label="Guardar Efecto" label_selected="Guardar Efecto" name="PPSaveEffect"/>
+			<combo_box name="PPEffectsCombo"/>
+			<line_editor label="Nombre del Efecto" name="PPEffectNameEditor"/>
+		</panel>
+	</tab_container>
+</floater>

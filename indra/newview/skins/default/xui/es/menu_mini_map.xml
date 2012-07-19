@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<menu bottom="100" color="MenuDefaultBgColor" drop_shadow="true" height="101" left="100"
+	 mouse_opaque="false" name="popup" opaque="true" width="128">
+	<menu_item_call name="Zoom Close" label="Acercar" >
+		<on_click function="MiniMap.ZoomLevel" userdata="2" />
+	</menu_item_call>
+	<menu_item_call name="Zoom Medium" label="Normal" >
+		<on_click function="MiniMap.ZoomLevel" userdata="1" />
+	</menu_item_call>
+	<menu_item_call  name="Zoom Far" label="Alejar" >
+		<on_click function="MiniMap.ZoomLevel" userdata="0" />
+	</menu_item_call>
+	<menu_item_separator />
+	<menu_item_check name="Center on Camera" label="Centrar en Cámara">
+		<on_click function="MiniMap.Center" userdata="1" />
+		<on_check function="MiniMap.CheckCenter" userdata="1" />
+	</menu_item_check>
+	<menu_item_check name="Rotate Mini-Map" label="Rotar Mini-Mapa">
+	  <on_click function="MiniMap.Rotate" userdata="" />
+	  <on_check function="MiniMap.CheckRotate" userdata="" />
+	</menu_item_check>
+	<menu_item_separator />
+	<menu_item_call name="Stop Tracking" label="Detener Seguimiento" >
+		<on_click function="MiniMap.StopTracking" />
+		<on_enable function="MiniMap.EnableTracking" />
+	</menu_item_call>
+	<menu_item_call name="Profile" label="Perfil..." >
+		<on_click function="MiniMap.ShowProfile" />
+		<on_enable function="MiniMap.EnableProfile" />
+	</menu_item_call>
+	<menu_item_call name="Camfollow" label="Cámara..." >
+		<on_click function="MiniMap.CamFollow" />
+		<on_enable function="MiniMap.EnableProfile" />
+	</menu_item_call>
+	<menu bottom_delta="0" color="MenuDefaultBgColor" drop_shadow="true" height="175" left="0"
+	     mouse_opaque="false" name="Mark" opaque="true" tear_off="false"
+	     width="125">
+		<on_enable function="MiniMap.EnableProfile" />
+		<menu_item_call name="Red" label="Rojo" >
+			<on_click function="MiniMap.setred" />
+		</menu_item_call>
+		<menu_item_call name="Green" label="Verde" >
+			<on_click function="MiniMap.setgreen" />
+		</menu_item_call>
+		<menu_item_call name="Blue" label="Azul" >
+			<on_click function="MiniMap.setblue" />
+		</menu_item_call>
+		<menu_item_call name="Yellow" label="Amarillo">
+			<on_click function="MiniMap.setyellow" />
+		</menu_item_call>
+		<menu_item_call name="Custom" label="Personalizar...">
+			<on_click function="MiniMap.setcustom" />
+		</menu_item_call>
+  </menu>
+  <menu_item_call name="Unmark" label="Desmarcar" >
+    <on_click function="MiniMap.setunmark" />
+    <on_enable function="MiniMap.enableunmark" />
+  </menu_item_call>
+</menu>

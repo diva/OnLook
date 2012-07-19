@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="rlvLocks" title="Activar Bloqueos RLV">
+	<scroll_list name="lock_list">
+		<column label="Tipo" name="lock_type"/>
+		<column label="Añadir/Quitar" name="lock_addrem"/>
+		<column label="Destino" name="lock_target"/>
+		<column label="Por" name="lock_origin"/>
+	</scroll_list>
+</floater>

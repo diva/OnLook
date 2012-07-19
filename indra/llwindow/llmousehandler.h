@@ -45,17 +45,20 @@ class LLMouseHandler
 public:
 	LLMouseHandler() {}
 	virtual ~LLMouseHandler() {}
+
 	typedef enum {
 		SHOW_NEVER,
 		SHOW_IF_NOT_BLOCKED,
 		SHOW_ALWAYS,
 	} EShowToolTip;
+
 	typedef enum {
 		CLICK_LEFT,
 		CLICK_MIDDLE,
 		CLICK_RIGHT,
 		CLICK_DOUBLELEFT
 	} EClickType;
+
 	virtual BOOL	handleAnyMouseClick(S32 x, S32 y, MASK mask, EClickType clicktype, BOOL down);
 	virtual BOOL	handleMouseDown(S32 x, S32 y, MASK mask) = 0;
 	virtual BOOL	handleMouseUp(S32 x, S32 y, MASK mask) = 0;

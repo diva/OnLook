@@ -1,36 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="Animation Preview" title="">
+<floater name="Animation Preview">
 	<text name="name_label">
-		Nom :
+		Nom:
 	</text>
 	<text name="description_label">
-		Description :
+		Description:
 	</text>
 	<spinner label="Priorité" name="priority" tool_tip="Contrôle quelles animations peuvent êtres écrasées par cette animation."/>
-	<text name="preview_label" width="110">
-		Prévisualiser pendant
-	</text>
-	<combo_box label="" name="preview_base_anim" tool_tip="Utilisez cette option pour tester votre animation pendant que votre avatar fait des choses banales." left_delta="116" width="124">
-		<combo_item name="Standing">
-			Debout
-		</combo_item>
-		<combo_item name="Walking">
-			En train de marcher
-		</combo_item>
-		<combo_item name="Sitting">
-			Assis
-		</combo_item>
-		<combo_item name="Flying">
-			En train de voler
-		</combo_item>
-	</combo_box>
-	<check_box  left="6" label="Boucle" name="loop_check" tool_tip="Joue cette animation en boucle."/>
-	<spinner left="76" label_width="55" width="105" label="Début (%)" name="loop_in_point" tool_tip="Définit le moment de l&apos;animation où la boucle repart."/>
-	<spinner left="195" label="Fin (%)" name="loop_out_point" tool_tip="Définit le moment de l&apos;animation où la boucle finit."/>
+	<check_box label="Boucle" name="loop_check" tool_tip="Joue cette animation en boucle." left="6"/>
+	<spinner width="105" label="Début(%)" label_width="55" name="loop_in_point" tool_tip="Définit le moment de l'animation où la boucle repart." left="76"/>
+	<spinner left="195" label="Fin(%)" name="loop_out_point" tool_tip="Définit le moment de l'animation où la boucle s'arrête."/>
 	<text name="hand_label" width="110">
 		Mouvement de main
 	</text>
-	<combo_box label="" name="hand_pose_combo" tool_tip="Contrôle le mouvement des mains au cours de l&apos;animation" left_delta="116" width="124">
+	<combo_box name="hand_pose_combo" tool_tip="Contrôle le mouvement des mains au cours de l'animation" left_delta="116" width="124">
 		<combo_item name="Spread">
 			Doigts écartés
 		</combo_item>
@@ -41,7 +24,7 @@
 			Pointer (les deux)
 		</combo_item>
 		<combo_item name="Fist">
-			Poings
+			Poings (les deux)
 		</combo_item>
 		<combo_item name="RelaxedLeft">
 			Détendue (gauche)
@@ -65,16 +48,16 @@
 			Saluer (droite)
 		</combo_item>
 		<combo_item name="Typing">
-			Taper
+			Taper (les deux)
 		</combo_item>
 		<combo_item name="PeaceRight">
 			Paix (droite)
 		</combo_item>
 	</combo_box>
-	<text name="emote_label">
+	<text bottom_delta="-22" follows="top|left" height="15" left="10" name="emote_label">
 		Expression
 	</text>
-	<combo_box label="" name="emote_combo" tool_tip="Contrôle l&apos;expression du visage au cours de l&apos;animation." left_delta="116" width="124">
+	<combo_box label="" name="emote_combo" tool_tip="Contrôle l'expression du visage au cours de l'animation." left_delta="116" width="124">
 		<combo_item name="[None]">
 			[None]
 		</combo_item>
@@ -130,36 +113,56 @@
 			Surprise
 		</combo_item>
 		<combo_item name="Wink">
-			Clin d&apos;œil
+			Clin d'œil
 		</combo_item>
 		<combo_item name="Worry">
 			Soucis
 		</combo_item>
 	</combo_box>
-	<spinner label_width="65" label="Transition &#10;début (s)" name="ease_in_time" tool_tip="Durée (en secondes) pendant laquelle l&apos;animation s&apos;intègre au mouvement."/>
-	<spinner label_width="65" left="160" width="125" label="Transition &#10;fin (s)" name="ease_out_time" tool_tip="Durée (en secondes) pendant laquelle l&apos;animation disparaît du mouvement."/>
+	<text name="preview_label" width="110">
+		Prévisualiser pendant
+	</text>
+	<combo_box label="" name="preview_base_anim" tool_tip="Utilisez cette option pour tester votre animation en étant seul(e) à le voir." left_delta="116" width="124">
+		<combo_item name="Standing">
+			Debout
+		</combo_item>
+		<combo_item name="Walking">
+			En train de marcher
+		</combo_item>
+		<combo_item name="Sitting">
+			Assis
+		</combo_item>
+		<combo_item name="Flying">
+			En train de voler
+		</combo_item>
+	</combo_box>
+	<spinner label="Transition &#10;début (s)"label_width="65" name="ease_in_time" tool_tip="Durée (en secondes) pendant laquelle l'animation s'intègre au mouvement."/>
+	<spinner label="Transition &#10;fin (s)" label_width="65" name="ease_out_time" tool_tip="Durée (en secondes) pendant laquelle l'animation disparaît du mouvement." left="160" width="125"/>
 	<button label="" name="play_btn" tool_tip="Jouer/Arrêter votre animation." bottom_delta="-48"/>
 	<button label="" name="stop_btn" tool_tip="Arrêter le playback"/>
 	<slider label="" name="playback_slider"/>
 	<text name="bad_animation_text">
-		Impossible de lire le fichier d&apos;animation.
+		Impossible de lire le fichier d'animation.
 
 Nous recommandons les fichiers BVH extraits de
-Poser 4.
+Poser 4
 	</text>
 	<button label="Annuler" name="cancel_btn"/>
 	<button label="Charger ([UPLOADFEE])" name="ok_btn"/>
 	<string name="failed_to_initialize">
-		Echec de l&apos;initialisation du mouvement
+		Echec de l'initialisation du mouvement
 	</string>
 	<string name="anim_too_long">
-		Le fichier d&apos;animation fait [LENGTH] secondes.
+		Le fichier d'animation fait [LENGTH] secondes
 
-La longueur maximale est de [MAX_LENGTH] secondes.
+La longueur maximale est de [MAX_LENGTH] secondes
 	</string>
 	<string name="failed_file_read">
-		Impossible de lire le fichier d&apos;animation.
+		Impossible de lire le fichier d'animation
 
 [STATUS]
+	</string>
+	<string name="in_world">
+		The animation preview is played on your avatar.
 	</string>
 </floater>

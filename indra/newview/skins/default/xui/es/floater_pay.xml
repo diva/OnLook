@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="Give Money" title="">
+	<button label="[CURRENCY]1" label_selected="[CURRENCY]1" name="fastpay 1"/>
+	<button label="[CURRENCY]5" label_selected="[CURRENCY]5" name="fastpay 5"/>
+	<button label="[CURRENCY]10" label_selected="[CURRENCY]10" name="fastpay 10"/>
+	<button label="[CURRENCY]20" label_selected="[CURRENCY]20" name="fastpay 20"/>
+	<button label="Pagar" label_selected="Pagar" name="pay btn"/>
+	<button label="Cancelar" label_selected="Cancelar" name="cancel btn"/>
+	<text name="payee_label" width="150">
+		Pagar al Residente:
+	</text>
+	<text name="payee_name" left="130">
+		[NAME]
+	</text>
+	<text name="fastpay text">
+		Pago Rápido:
+	</text>
+	<text name="message text" >
+		Mensaje:
+	</text>
+	<text name="amount text">
+		Importe:
+	</text>
+	<line_editor name="amount"/>
+</floater>

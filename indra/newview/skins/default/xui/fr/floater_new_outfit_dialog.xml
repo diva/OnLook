@@ -6,7 +6,7 @@
 	<check_box label="Peau" name="checkbox_Skin"/>
 	<check_box label="Cheveux" name="checkbox_Hair"/>
 	<check_box label="Yeux" name="checkbox_Eyes"/>
-	<check_box label="Donner le nom du dossier &#10;à l&apos;ensemble" name="rename"/>
+	<check_box label="Donner le nom du dossier &#10;&#xE0; l'ensemble" name="rename"/>
 	<check_box label="Chemise" name="checkbox_Shirt"/>
 	<check_box label="Pantalon" name="checkbox_Pants"/>
 	<check_box label="Chaussures" name="checkbox_Shoes"/>
@@ -17,9 +17,9 @@
 	<check_box label="culotte" name="checkbox_Underpants"/>
 	<check_box label="Jupe" name="checkbox_Skirt"/>
 	<check_box label="Poitrine" left="225" name="checkbox_Chest"/>
-	<check_box label="Crâne" left="225" name="checkbox_Skull"/>
-	<check_box label="Épaule gauche" left="225" name="checkbox_Left Shoulder"/>
-	<check_box label="Épaule droite" left="225" name="checkbox_Right Shoulder"/>
+	<check_box label="Cr�ne" left="225" name="checkbox_Skull"/>
+	<check_box label="Epaule gauche" left="225" name="checkbox_Left Shoulder"/>
+	<check_box label="Epaule droite" left="225" name="checkbox_Right Shoulder"/>
 	<check_box label="Main gauche" left="225" name="checkbox_Left Hand"/>
 	<check_box label="Main droite" left="225" name="checkbox_Right Hand"/>
 	<check_box label="Pied gauche" left="225" name="checkbox_Left Foot"/>
@@ -30,8 +30,8 @@
 	<check_box label="Menton" left="225" name="checkbox_Chin"/>
 	<check_box label="Oreille gauche" left="225" name="checkbox_Left Ear"/>
 	<check_box label="Oreille droite" left="325" name="checkbox_Right Ear"/>
-	<check_box label="il gauche" left="325" name="checkbox_Left Eyeball"/>
-	<check_box label="il droit" left="325" name="checkbox_Right Eyeball"/>
+	<check_box label="Oeil gauche" left="325" name="checkbox_Left Eyeball"/>
+	<check_box label="Oeil droit" left="325" name="checkbox_Right Eyeball"/>
 	<check_box label="Nez" left="325" name="checkbox_Nose"/>
 	<check_box label="Bras droit" left="325" name="checkbox_R Upper Arm"/>
 	<check_box label="Avant-bras droit" left="325" name="checkbox_R Forearm"/>
@@ -47,40 +47,40 @@
 	<check_box label="Pectoral gauche" left="460" name="checkbox_Left Pec"/>
 	<check_box label="Pectoral droit" left="460" name="checkbox_Right Pec"/>
 	<check_box label="Centre 2" left="460" name="checkbox_Center 2"/>
-	<check_box label="En haut à droite" left="460" name="checkbox_Top Right"/>
+	<check_box label="En haut � droite" left="460" name="checkbox_Top Right"/>
 	<check_box label="En haut" left="460" name="checkbox_Top"/>
-	<check_box label="En haut à gauche" left="460" name="checkbox_Top Left"/>
+	<check_box label="En haut � gauche" left="460" name="checkbox_Top Left"/>
 	<check_box label="Centre" left="460" name="checkbox_Center"/>
-	<check_box label="En bas à gauche" left="460" name="checkbox_Bottom Left"/>
+	<check_box label="En bas � gauche" left="460" name="checkbox_Bottom Left"/>
 	<check_box label="En bas" left="460" name="checkbox_Bottom"/>
-	<check_box label="En bas à droite" left="460" name="checkbox_Bottom Right"/>
-	<text length="1" name="Make New Outfit" type="string">
-		Créer un ensemble
+	<check_box label="En bas � droite" left="460" name="checkbox_Bottom Right"/>
+	<text name="Make New Outfit">
+		Cr&#xE9;er un ensemble
 	</text>
-	<text length="1" name="Outfits are folders that contain clothing and body parts. Drag an outfit folder onto your avatar to put it on.   &quot;Make New Outfit&quot; makes a new folder and saves copies of the items you are now wearing into it." type="string">
+	<text name="Outfits are folders that contain clothing and body parts. Drag an outfit folder onto your avatar to put it on.   &quot;Make New Outfit&quot; makes a new folder and saves copies of the items you are now wearing into it.">
 		Les ensembles sont des dossiers qui contiennent des habits et des parties du corps.
-Faites glisser le dossier contenant un ensemble vers votre avatar pour lui faire porter.
- 
-Le bouton Créer un ensemble vous permet de créer un dossier et d&apos;y sauvegarder les copies
+Faire glisser le dossier contenant un ensemble vers l&#x27;avatar pour lui faire porter.
+
+Le bouton Cr&#xE9;er un ensemble vous permet de cr&#xE9;er un dossier et d'y sauvegarder les copies
 des articles que vous portez maintenant.
 	</text>
-	<text length="1" name="Folder name:" type="string">
-		Nom du dossier :
+	<text name="Folder name:">
+		Nom du dossier:
 	</text>
-	<text length="1" name="Items to include in outfit:" type="string">
-		Articles à inclure à l&apos;ensemble :
+	<text name="Items to include in outfit:">
+		Articles &#xE0; inclure &#xE0; l'ensemble:
 	</text>
-	<text length="1" name="Body Parts:" type="string">
-		Parties du corps :
+	<text name="Body Parts:">
+		Parties du corps:
 	</text>
-	<text left="115" length="1" name="Clothes:" type="string">
-		Habits :
+	<text left="115" name="Clothes:">
+		Habits:
 	</text>
-	<text left="227" length="1" name="Attachments:" type="string">
-		Attachements :
+	<text left="227" name="Attachments:">
+		Attachements:
 	</text>
-	<text length="1" name="Options:" type="string">
-		Options :
+	<text name="Options:">
+		Options:
 	</text>
 	<line_editor name="name ed">
 		Nouvelle tenue

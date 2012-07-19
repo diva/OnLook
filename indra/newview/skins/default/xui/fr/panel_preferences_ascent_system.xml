@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel top="20" left="10" height="400" width="517" follows="left|top|right|bottom"
-  border="true" label="System" name="ascsys" enabled="true" mouse_opaque="true">
+  border="true" label="Syst&#xE8;me" name="ascsys" enabled="true" mouse_opaque="true">
   <tab_container label="Singularity System" bottom="0" height="440" width="497" left="0"
     name="Ascent System" tab_min_width="70" tab_position="top">
 
     <panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
-      follows="left|top|right|bottom" label="General" name="User Interface">
+      follows="left|top|right|bottom" label="G&#xE9;n&#xE9;ral" name="User Interface">
       <check_box bottom_delta="-25" control_name="DoubleClickTeleport" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
         label="Activer le TP avec le double-clic" left="10"
-        tool_tip="Double-clic sur un objet/personne pour vous y TP dessus."
+        tool_tip="Activer le TP sur un objet/une personne avec le double-clic"
         mouse_opaque="true" name="double_click_teleport_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="OptionRotateCamAfterLocalTP" enabled="true"
@@ -21,7 +21,7 @@
       <check_box bottom_delta="-20" control_name="OptionOffsetTPByAgentHeight" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
         label="Compenser la cible du TP" left="20"
-        tool_tip="Essaye de cibler le TP pour que vos pieds atterrissent au point vis&#xE9;."
+        tool_tip="Essaye de cibler le TP pour que vos pieds atterrissent au point vis&#xE9;"
         mouse_opaque="true" name="offset_teleport_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="PreviewAnimInWorld" enabled="true"
@@ -51,7 +51,7 @@
       <check_box bottom_delta="-20" control_name="AscentFlyAlwaysEnabled" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
         label="Toujours permettre le mode vol (Fly)" left="10"
-        tool_tip="Permet de voler quelque soient les droits de la sim, &#xE0; vos risques et p&#xE9;rils."
+        tool_tip="Permet de voler quelques soient les droits de la sim, &#xE0; vos risques et p&#xE9;rils."
         mouse_opaque="true" name="always_fly_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="AscentDisableMinZoomDist" enabled="true"
@@ -69,7 +69,7 @@
       <check_box bottom_delta="-20" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
         label="Confirmer les fonctions Power User" left="20"
-        tool_tip="Confirme les fonctions Power User . A vos risques et p&#xE9;rils. Ascent devs n'est pas responsable de cette utilisation."
+        tool_tip="Confirme les fonctions Power User. A vos risques et p&#xE9;rils. Singularity n'est pas responsable de cette utilisation."
         mouse_opaque="true" name="power_user_confirm_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="AscentUseSystemFolder" enabled="true"
@@ -81,13 +81,13 @@
       <check_box bottom_delta="-20" control_name="AscentSystemTemporary" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
         label="Les t&#xE9;l&#xE9;chargements temporaires vont dans le dossier : System Inventory &#x3E; Assets" left="20"
-        tool_tip="Place les t&#xE9;l&#xE9;chargements temporaires dans le dossier : System Inventory &#x3E; Assets ce qui permet de les retrouver plus ais&#xE9;ment."
+        tool_tip="Place les t&#xE9;l&#xE9;chargements temporaires dans le dossier : System Inventory &#x3E; Assets ce qui permet de les retrouver plus ais&#xE9;ment"
         mouse_opaque="true" name="temp_in_system_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="FetchInventoryOnLogin" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
         label="Pr&#xE9;charger l&#x27;inventaire &#xE0; la connection" left="10"
-        tool_tip="R&#xE9;duit l&#x27;attente lors de votre recherche initiale dans l&#x27;inventaire."
+        tool_tip="R&#xE9;duit l&#x27;attente lors de votre recherche initiale dans l&#x27;inventaire"
         mouse_opaque="true" name="fetch_inventory_on_login_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="WindEnabled" enabled="true"
@@ -109,7 +109,7 @@
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
         label="Activer le rezz rapide par rapport &#xE0; une distance progressive" left="10"
         mouse_opaque="true" name="speed_rez_check" radio_style="false"
-        tool_tip="Active, cette fonction charge progressivement les textures du plus pr&#xE8;s au plus loin."
+        tool_tip="Active, cette fonction charge progressivement les textures du plus pr&#xE8;s au plus loin"
         width="400" />
       <spinner bottom_delta="-20" control_name="SpeedRezInterval" enabled="true" decimal_digits="0"
         follows="left|top" font="SansSerifSmall" height="16" left="30" width="230"
@@ -125,7 +125,7 @@ secondes
       </text>
     </panel>
 
-    <panel border="true" bottom="-580" follows="left|top|right|bottom" height="525" label="Command Line"
+    <panel border="true" bottom="-580" follows="left|top|right|bottom" height="525" label="Commandes Texte"
       left="1" mouse_opaque="true" name="Command Line" width="418">
       <check_box bottom="-25" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
         initial_value="false" label="Activer l'usage de la barre de chat comme ligne de commande" left="10"
@@ -154,7 +154,7 @@ Tp en altitude (usage: cmd z)
         tool_tip="" name="AscentCmdLineHeight" width="200"/>
       <text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
         name="cmd_line_text_5" width="512">
-Tp "ET" retourner maison ! (usage: cmd)
+Tp &#x22;ET, rentrer maison !&#x22; (usage: cmd)
       </text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
@@ -169,7 +169,7 @@ Rezzer une plateforme (usage: cmd 0 - 30)
       <slider bottom_delta="-22" left_delta="0" name="AscentPlatformSize" control_name="AscentPlatformSize"
         decimal_digits="1" enabled="true" follows="left|top" height="18" increment="0.5"
         initial_val="5" label="Dimensions:" label_width="75" max_val="30" min_val="5"
-        mouse_opaque="true" show_text="true" width="205" auto_resize="false" tool_tip="How big do you want the platform to appear to be?"/>
+        mouse_opaque="true" show_text="true" width="205" auto_resize="false" tool_tip="Quelle taille voulez-vous ?"/>
       <text bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
         name="cmd_line_text_8" width="512">
 Calculette (usage: cmd 2 + 2)
@@ -235,13 +235,16 @@ Se tp vers un avatar (usage: cmd nom)
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
         tool_tip="Cette syntaxe permet les noms partiels."
         name="AscentCmdLineTP2" width="200"/>
+      <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_14">Active/d&#xE9;sactive le faux absent (usage: cmd)</text>
+      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="SinguCmdLineAway" width="200"/>
+
     </panel>
 
     <panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
-      follows="left|top|right|bottom" label="Security" name="Security">
+      follows="left|top|right|bottom" label="S&#xE9;curit&#xE9;" name="Security">
       <check_box bottom_delta="-25" control_name="BroadcastViewerEffects" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Emettre les effets du viewer (Exclut les rayons)" left="10"
+        label="Emettre les effets du viewer (Excluant les rayons)" left="10"
         mouse_opaque="true" name="broadcast_viewer_effects" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="DisablePointAtAndBeam" enabled="true"
@@ -253,29 +256,34 @@ Se tp vers un avatar (usage: cmd nom)
       <check_box bottom_delta="-20" control_name="PrivateLookAt" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
         label="Ne pas &#x22;Regarder vers&#x22;" left="10"
-        tool_tip="Supprime les mouvements de t&#xEA;te, et le &#x22;Regarder vers&#x22; pour soi m&#xEA;me."
+        tool_tip="Supprime les mouvements de t&#xEA;te, et le &#x22;Regarder vers&#x22; pour soi-m&#xEA;me"
         mouse_opaque="true" name="private_look_at_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="AscentShowLookAt" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
         label="Voir quand les autres &#x22;Regardent vers&#x22;" left="10"
-        tool_tip="Montre ou les autres regardent."
+        tool_tip="Montre o&#xF9; les autres regardent."
         mouse_opaque="true" name="show_look_at_check" radio_style="false"
         width="400" />
-      <check_box bottom_delta="-20" control_name="RevokePermsOnStandUp" enabled="true"
+       <check_box bottom_delta="-20" control_name="QuietSnapshotsToDisk" 
+       follows="top" initial_value="false" 
+       label="Prendre discr&#xE8;tement un photo, sur votre disque dur" 
+       tool_tip="Permet de prendre une photo en mode &#x22;espionnage&#x22;, sans bruit d&#x27;appareil, ni mouvement de cam&#xE9;ra, ni gesture. (Uniquement vers le disque dur)." 
+       name="quiet_snapshots_check"/>
+       <check_box bottom_delta="-20" control_name="RevokePermsOnStandUp" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-        label="En vous levant, r&#xE9;voquez les permissions pour l&#x27;objet sur lequel votre avatar &#xE9;tait assis" left="10"
-        tool_tip="Evite que l&#x27;objet garde le controle par exemple pour les animations."
+        label="En vous levant, annule les permissions que l&#x27;objet a sur votre avatar" left="10"
+        tool_tip="Evite que l&#x27;objet garde le contr&#xF4;le de votre avatar, comme par exemple les animations."
         mouse_opaque="true" name="revoke_perms_on_stand_up_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="DisableClickSit" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
         label="D&#xE9;sactive le &#x22;Click to sit&#x22; automatique" left="10"
-        tool_tip="D&#xE9;sactive llSitTarget, vous devrez s&#xE9;lectionner vous m&#xEA;me la fonction &#x22;sit&#x22; sur l&#x27;objet."
+        tool_tip="D&#xE9;sactive llSitTarget. Vous devrez s&#xE9;lectionner vous m&#xEA;me la fonction &#x22;sit&#x22; sur l&#x27;objet."
         mouse_opaque="true" name="disable_click_sit_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
-        initial_value="false" label="Affiche les changements de d&#xE9;comptes de scripts de la r&#xE9;gion" left_delta="0"
+        initial_value="false" label="Affiche les changements de d&#xE9;comptes de scripts de la r&#xE9;gion." left_delta="0"
         mouse_opaque="true" name="totalscriptjumps" radio_style="false" width="270"
         control_name="AscentDisplayTotalScriptJumps"
         tool_tip="D&#xE9;pendant du seuil que vous choisissez dans la fen&#xEA;tre &#xE0; droite."/>
@@ -285,36 +293,54 @@ Se tp vers un avatar (usage: cmd nom)
         tool_tip="Threshold for the script jump message [Default: 100]"/>
     </panel>
 
-    <panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
-      follows="left|top|right|bottom" label="Building" name="Building">
-      <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-        bottom_delta="-19" drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall"
-        h_pad="0" halign="left" height="10" left_delta="30" mouse_opaque="false"
-        name="text_box6" v_pad="0" width="150">
-Point de Pivot
-      </text>
-      <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16" increment="0.05"
-        label="X pos" label_width="40" left="10" mouse_opaque="true" max_val="256"
-        min_val="-256" name="X pos" width="120" control_name="AscentBuildPrefs_PivotX"/>
-      <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16" increment="0.05"
-        label="Y pos" label_width="40" left_delta="0" mouse_opaque="true" max_val="256"
-        min_val="-256" name="Y pos" width="120" control_name="AscentBuildPrefs_PivotY"/>
-      <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16" increment="0.05"
-        label="Z pos" label_width="40" left_delta="0" mouse_opaque="true" max_val="256"
-        min_val="-256" name="Z pos" width="120" control_name="AscentBuildPrefs_PivotZ"/>
-      <check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
-        label="Valeurs en pour&#xE7;entages" left_delta="-5" mouse_opaque="true"
-        tool_tip="Default settings are Percentages and every axis set at 50"
-        name="EmPivotPercToggle" radio_style="false" width="100" control_name="AscentBuildPrefs_PivotIsPercent"/>
-      <check_box bottom_delta="60" enabled="false" follows="left|top" font="SansSerifSmall" height="16"
-        initial_value="true" label="Active les &#x22;Highlights&#x22; sur les prims s&#xE9;lectionn&#xE9;s" left_delta="140"
-        mouse_opaque="true" name="EmBuildPrefsRenderHighlight_toggle" control_name="AscentRenderHighlightSelections"
-        radio_style="false" width="270"/>
-      <check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
-        initial_value="false" label="Axer sur le Root Prim" left_delta="0"
-        mouse_opaque="true" tool_tip="Par d&#xE9;faut le centre de la totalit&#xE9; du build est l&#x27;axe."
-        name="EmBuildPrefsActualRoot_toggle" control_name="AscentBuildPrefs_ActualRoot"
-        radio_style="false" width="270"/>
+    <panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true" follows="left|top|right|bottom" label="Build/Cr&#xE9;ation" name="Building">
+
+
+      <text bottom_delta="-19" follows="top" height="10" left_delta="30" name="text_box6">Point de Pivot</text>
+      <spinner bottom_delta="-20" decimal_digits="5" follows="top" height="16" increment="0.05" label="X pos" label_width="40" left="10" max_val="256" min_val="-256" name="X pos" width="120" control_name="AscentBuildPrefs_PivotX"/>
+      <spinner bottom_delta="-20" decimal_digits="5" follows="top" height="16" increment="0.05" label="Y pos" label_width="40" max_val="256" min_val="-256" name="Y pos" width="120" control_name="AscentBuildPrefs_PivotY"/>
+      <spinner bottom_delta="-20" decimal_digits="5" follows="top" height="16" increment="0.05" label="Z pos" label_width="40" max_val="256" min_val="-256" name="Z pos" width="120" control_name="AscentBuildPrefs_PivotZ"/>
+      <check_box bottom_delta="-20" follows="top" label="Valeurs en pour&#xE7;entages" left_delta="-5" tool_tip="Default settings are Percentages and every axis set at 50" name="EmPivotPercToggle" control_name="AscentBuildPrefs_PivotIsPercent"/>
+      <check_box bottom_delta="60" follows="top" label="Active les &#x22;Highlights&#x22; sur les prims s&#xE9;lectionn&#xE9;s" left_delta="140" name="EmBuildPrefsRenderHighlight_toggle" control_name="RenderHighlightSelections"/>
+	  <check_box bottom_delta="-20" follows="top" initial_value="false" label="Axe sur le Root Prim" tool_tip="Default behaviour is to show the axis on the center of mass of a linkset. If enabled, the axis will be shown on the root prim of the linkset instead." name="EmBuildPrefsActualRoot_toggle" control_name="AscentBuildPrefs_ActualRoot"/>
+      <view_border bevel_style="none" border_thickness="1" bottom="-180" follows="top" height="70" left="5" name="NextOwnerBorder" width="130"/>
+      <text bottom_delta="60" follows="top" height="10" left_delta="10" name="text_box7">Permissions:</text>
+        <check_box follows="top" height="16" initial_value="false" label="Copy " tool_tip="Next owner can make copies of creations" name="next_owner_copy" control_name="NextOwnerCopy"/>
+        <check_box follows="top" height="16" initial_value="false" label="Modify " tool_tip="Next owner can edit creations" name="next_owner_modify" control_name="NextOwnerModify"/>
+        <check_box follows="top" height="16" initial_value="true" label="Transfer " tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer" control_name="NextOwnerTransfer"/>
+      <texture_picker allow_no_texture="false" bottom="-190" can_apply_immediately="true" default_image_name="Default" follows="top" height="80" label="     Texture" left="155" name="texture control" control_name="EmeraldBuildPrefs_Texture" tool_tip="Click to choose a texture" width="64"/>
+      <check_box bottom="-131" left_delta="75" follows="top" height="16" label="Phantom" name="EmPhantomToggle" control_name="EmeraldBuildPrefs_Phantom"/>
+      <check_box follows="top" height="16" label="Physical" name="EmPhysicalToggle" control_name="EmeraldBuildPrefs_Physical"/>
+      <check_box follows="top" height="16" label="Temporaire" name="EmTemporaryToggle" control_name="EmeraldBuildPrefs_Temporary"/>
+      <combo_box bottom="-190" left_delta="6" follows="top" height="18" name="material" width="64" control_name="BuildPrefs_Material">
+        <combo_item name="Stone" value="Stone">Stone</combo_item>
+        <combo_item name="Metal" value="Metal">Metal</combo_item>
+        <combo_item name="Glass" value="Glass">Glass</combo_item>
+        <combo_item name="Wood" value="Wood">Wood</combo_item>
+        <combo_item name="Flesh" value="Flesh">Flesh</combo_item>
+        <combo_item name="Plastic" value="Plastic">Plastic</combo_item>
+        <combo_item name="Rubber" value="Rubber">Rubber</combo_item>
+      </combo_box>
+      <color_swatch border_color="0.45098, 0.517647, 0.607843, 1" bottom="-190" can_apply_immediately="true" color="1, 1, 1, 1" follows="top" height="80" label="    Couleur" left_delta="76" name="colorswatch" tool_tip="Click to open Color Picker" width="64" control_name="EmeraldBuildPrefs_Color"/>
+      <spinner bottom_delta="60" decimal_digits="0" follows="top" height="16" increment="1" label="Alpha" label_width="45" left_delta="70" max_val="100" min_val="0" name="alpha" width="97" control_name="EmeraldBuildPrefs_Alpha"/>
+      <spinner bottom_delta="-20" decimal_digits="2" follows="top" height="16" increment="0.05" label="Glow" label_width="45" max_val="1" min_val="0" name="glow" width="97" control_name="EmeraldBuildPrefs_Glow"/>
+      <check_box follows="top" height="16" label="Lumineux" name="EmFBToggle" control_name="EmeraldBuildPrefs_FullBright"/>
+      <text follows="top">Brillance</text>
+      <combo_box bottom_delta="-5" follows="top" left_delta="42" height="18" name="combobox shininess" tool_tip="Set the amount of shine for the object" width="62" control_name="EmeraldBuildPrefs_Shiny">
+        <combo_item name="None" value="None">None</combo_item>
+        <combo_item name="Low" value="Low">Low</combo_item>
+        <combo_item name="Medium" value="Medium">Medium</combo_item>
+        <combo_item name="High" value="High">High</combo_item>
+      </combo_box>
+      <check_box name="EmeraldBuildPrefsEmbedItem" left="5" bottom_delta="-15" follows="top" initial_value="false" label="Mettre un &#xE9;l&#xE9;ment dans l'object" control_name="EmeraldBuildPrefs_EmbedItem"/>
+       <view_border blevel_style="in" bottom_delta="-20" left="25" follows="top" height="16" name="build_item_drop_target_rect" width="140"/>
+        <text bottom_delta="0" left_delta="8" follows="top" height="16" name="Give inventory">Glissez l'&#xE9;l&#xE9;ment ICI</text>
+       <view_border blevel_style="in" bottom_delta="-35" left_delta="-8" follows="top" height="35" name="build_item_add_disp_rect" width="140"/>
+         <text bottom_delta="15" left_delta="0" follows="top" height="16" name="build_item_add_disp_rect_txt" halign="center" width="138">Currently set to:
+	       ITEM</text>
+       <spinner bottom="369" left="380" decimal_digits="5" follows="left|top" height="16" increment="0.0005" label="          X" label_width="40" max_val="10" min_val="0.0001" name="X size" width="110" control_name="BuildPrefs_Xsize"/>
+       <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16" increment="0.0005" label="          Y" label_width="40" max_val="10" min_val="0.0001" name="Y size" width="110" control_name="BuildPrefs_Ysize"/>
+       <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16" increment="0.0005" label="          Z" label_width="40" max_val="10" min_val="0.0001" name="Z size" width="110" control_name="BuildPrefs_Zsize"/>
     </panel>
 
   </tab_container>

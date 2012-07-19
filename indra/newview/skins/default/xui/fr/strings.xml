@@ -1,77 +1,31 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <!-- This file contains strings that used to be hardcoded in the source.
      It is only for those strings which do not belong in a floater.
      For example, the strings used in avatar chat bubbles, and strings 
      that are returned from one component and may appear in many places-->
 <strings>
-	<string name="hippo_label_free">gratuit</string>
-	<string name="hippo_label_week">semaine</string>
-	<string name="ProgressRestoring">
-		Restauration...
-	</string>
-	<string name="ProgressChangingResolution">
-		Changement de la résolution...
-	</string>
-	<string name="LoginInProgress">
-		La connexion à [APP_NAME] apparaît peut-être comme étant gelée. Veuillez patienter.
-	</string>
-	<string name="LoginAuthenticating">
-		Authentification en cours
-	</string>
-	<string name="LoginMaintenance">
-		Maintenance du compte en cours…
-	</string>
-	<string name="LoginAttempt">
-		La tentative de connexion précédente a échoué. Connexion, esssai [NUMBER]
-	</string>
-	<string name="LoginPrecaching">
-		Monde en cours de chargement PATIENCE…
-	</string>
-	<string name="LoginInitializingBrowser">
-		Navigateur Web incorporé en cours d&apos;initialisation…
-	</string>
-	<string name="LoginInitializingMultimedia">
-		Multimédia en cours d&apos;initialisation. Aimez vous Brahms ?…
-	</string>
-	<string name="LoginVerifyingCache">
-		Fichiers du cache en cours de vérification (peut prendre 60-90 s)ou pire...
-	</string>
-	<string name="LoginProcessingResponse">
-		Réponse en cours de traitement…
-	</string>
-	<string name="LoginInitializingWorld">
-		Monde en cours d&apos;initialisation…
-	</string>
-	<string name="LoginDecodingImages">
-		Décodage des images en cours, croisons les doigts...
-	</string>
-	<string name="LoginInitializingQuicktime">
-		Quicktime en cours d&apos;initialisation
-	</string>
-	<string name="LoginQuicktimeNotFound">
-		Quicktime introuvable, impossible de procéder à l&apos;initialisation.
-	</string>
-	<string name="LoginQuicktimeOK">
-		Initialisation de Quicktime réussie.
-	</string>
-	<string name="LoginWaitingForRegionHandshake">
-		Liaison avec la région en cours de création...
-	</string>
-	<string name="LoginConnectingToRegion">
-		Connexion avec la région en cours, avec un peu de chance ...
-	</string>
-	<string name="LoginDownloadingClothing">
-	<string name="Quit">
-		Quitter
-	</string>
-		Habits en cours de téléchargement, espérons le, vais je encore être tout(e) nu(e) ?
-	</string>
-	<string name="AgentLostConnection">
-		Il y a peut-être des problèmes techniques dans cette region. Veuillez vérifier votre connexion Internet.
-	</string>
-	<string name="YouHaveBeenDisconnected">
-		Vous avez été déconnecté de la région où vous étiez.
-	</string>
+	<string name="LoginInProgress">La connexion à [APP_NAME] apparaît peut-&#xEA;tre comme &#xE9;tant gel&#xE9;e. Veuillez patienter.</string>
+       	<string name="LoginInProgressNoFrozen">C&apos;est parti... en voiture Simone !</string>
+	<string name="LoginAuthenticating">Authentification en cours...</string>
+	<string name="LoginMaintenance">Maintenance du compte en cours...</string>
+	<string name="LoginAttempt">La tentative de connexion pr&#xE9;c&#xE9;dente a &#xE9;chou&#xE9;. Connexion, esssai [NUMBER]</string>
+	<string name="LoginPrecaching">Monde en cours de chargement PATIENCE...</string>
+	<string name="LoginInitializingBrowser">Navigateur Web incorpor&#xE9; en cours d&apos;initialisation...</string>
+	<string name="LoginInitializingMultimedia">Multim&#xE9;dia en cours d&apos;initialisation... Aimez vous Brahms ?</string>
+        <string name="LoginInitializingFonts">Hop hop on loade les polices de caract&#xE8;res...</string>
+	<string name="LoginVerifyingCache">Fichiers du cache en cours de v&#xE9;rification (peut prendre 60-90 s)ou pire...</string>
+	<string name="LoginProcessingResponse">R&#xE9;ponse en cours de traitement... On y r&#xE9;fl&#xE9;chit.</string>
+	<string name="LoginInitializingWorld">Monde en cours d&apos;initialisation...</string>
+	<string name="LoginDecodingImages">D&#xE9;codage des images en cours, croisons les doigts...</string>
+	<string name="LoginInitializingQuicktime">Quicktime en cours d&apos;initialisation...</string>
+	<string name="LoginQuicktimeNotFound">Quicktime introuvable, impossible de proc&#xE9;der à l&apos;initialisation.</string>
+	<string name="LoginQuicktimeOK">Initialisation de Quicktime r&#xE9;ussie.</string>
+	<string name="LoginRequestSeedCapGrant">Voyons vou&#xE8;re les capacit&#xE9;s de la r&#xE9;gion...</string>
+	<string name="LoginRetrySeedCapGrant">Voyons vou&#xE8;re les capacit&#xE9;s de la r&#xE9;gion, tentative [NUMBER]...</string>
+	<string name="LoginWaitingForRegionHandshake">Liaison avec la r&#xE9;gion en cours de cr&#xE9;ation...</string>
+	<string name="LoginConnectingToRegion">Connexion avec la r&#xE9;gion en cours, avec un peu de chance ...</string>
+	<string name="LoginDownloadingClothing">Habits en cours de t&#xE9;l&#xE9;chargement, esp&#xE9;rons-le... Vais-je encore &#xEA;tre tout(e) nu(e) ?</string>
+	<string name="AgentLostConnection">Il y a peut-&#xEA;tre des probl&#xE8;mes techniques dans cette region. Veuillez v&#xE9;rifier votre connexion Internet.</string>
 	<string name="TooltipPerson">
 		Personne
 	</string>
@@ -79,7 +33,7 @@
 		(pas de nom)
 	</string>
 	<string name="TooltipOwner">
-		Propriétaire :
+		Propri&#xE9;taire :
 	</string>
 	<string name="TooltipPublic">
 		Public
@@ -91,7 +45,7 @@
 		Script
 	</string>
 	<string name="TooltipFlagPhysics">
-		Propriétés physique
+		Propri&#xE9;t&#xE9;s physique
 	</string>
 	<string name="TooltipFlagTouch">
 		Toucher
@@ -109,16 +63,16 @@
 		Temporaire
 	</string>
 	<string name="TooltipFlagRightClickMenu">
-		(cliquez-droit pour le menu)
+		(clic-droit pour le menu)
 	</string>
 	<string name="TooltipFreeToCopy">
-		Copie autorisée
+		Copie autoris&#xE9;e
 	</string>
 	<string name="TooltipForSaleL$">
-		À vendre : [AMOUNT] L$
+		A vendre : [AMOUNT] L$
 	</string>
 	<string name="TooltipForSaleMsg">
-		À vendre : [MESSAGE]
+		A vendre : [MESSAGE]
 	</string>
 	<string name="TooltipFlagGroupBuild">
 		Contruction de groupe
@@ -130,7 +84,7 @@
 		Contruction de groupe
 	</string>
 	<string name="TooltipFlagNotSafe">
-		Non sécurisé
+		Non s&#xE9;curis&#xE9;
 	</string>
 	<string name="TooltipFlagNoFly">
 		Interdiction de voler
@@ -147,44 +101,14 @@
 	<string name="TooltipMustSingleDrop">
 		Impossible de faire glisser plus d&apos;un objet ici
 	</string>
-	<string name="TooltipOutboxDragToWorld">
-		Impossible de rezzer des articles dans la boîte d&apos;envoi vendeur
-	</string>
-	<string name="TooltipOutboxNoTransfer">
-		Impossible de vendre ou de transférer un ou plusieurs de ces objets.
-	</string>
-	<string name="TooltipOutboxNotInInventory">
-		La boîte d&apos;envoi vendeur n&apos;accepte que les articles directement issus de votre inventaire.
-	</string>
-	<string name="TooltipOutboxWorn">
-		Impossible de placer des articles que vous portez dans votre boîte d&apos;envoi vendeur
-	</string>
-	<string name="TooltipOutboxCallingCard">
-		Impossible de placer des cartes de visite dans votre boîte d&apos;envoi vendeur
-	</string>
-	<string name="TooltipOutboxFolderLevels">
-		Il existe plus de 3 niveaux de dossiers imbriqués.
-	</string>
-	<string name="TooltipOutboxTooManyFolders">
-		Le dossier de niveau supérieur contient plus de 20 sous-dossiers.
-	</string>
-	<string name="TooltipOutboxTooManyObjects">
-		Le dossier de niveau supérieur contient plus de 200 articles.
-	</string>
-	<string name="TooltipDragOntoOwnChild">
-		Impossible de déplacer un dossier vers son enfant
-	</string>
-	<string name="TooltipDragOntoSelf">
-		Impossible de déplacer un dossier vers lui-même
-	</string>
 	<string name="RetrievingData">
-		En cours d&apos;extraction...
+		En cours d&apos;extraction
 	</string>
 	<string name="ReleaseNotes">
 		Notes de version
 	</string>
 	<string name="LoadingData">
-		Chargement..
+		Chargement
 	</string>
 	<string name="AvatarNameNobody">
 		(personne)
@@ -202,13 +126,13 @@
 		Aucune erreur
 	</string>
 	<string name="AssetErrorRequestFailed">
-		Requête de l&apos;actif : échec
+		Requ&#xEA;te de l&apos;actif : &#xE9;chec
 	</string>
 	<string name="AssetErrorNonexistentFile">
-		Requête de l&apos;actif : fichier inexistant
+		Requ&#xEA;te de l&apos;actif : fichier inexistant
 	</string>
 	<string name="AssetErrorNotInDatabase">
-		Requête de l&apos;actif : actif introuvable dans la base de données
+		Requ&#xEA;te de l&apos;actif : actif introuvable dans la base de donn&#xE9;es
 	</string>
 	<string name="AssetErrorEOF">
 		Fin du ficher
@@ -220,40 +144,40 @@
 		Fichier introuvable
 	</string>
 	<string name="AssetErrorTCPTimeout">
-		Délai d&apos;attente du transfert du fichier dépassé
+		D&#xE9;lai d&apos;attente du transfert du fichier d&#xE9;pass&#xE9;
 	</string>
 	<string name="AssetErrorCircuitGone">
 		Disparition du circuit
 	</string>
 	<string name="AssetErrorPriceMismatch">
-		Il y a une différence de prix entre le client et le serveur
+		Il y a une diff&#xE9;rence de prix entre le client et le serveur
 	</string>
 	<string name="AssetErrorUnknownStatus">
 		Statut inconnu
 	</string>
-	<string name="AvatarEditingAppearance">
+	<string name="AvatarEditingApparance">
 		(Apparence en cours de modification)
 	</string>
 	<string name="AvatarAway">
 		Absent
 	</string>
 	<string name="AvatarBusy">
-		Occupé
+		Occup&#xE9;
 	</string>
 	<string name="AvatarMuted">
-		Ignoré - Mute
+		Ignor&#xE9; - Mute
 	</string>
 	<string name="anim_express_afraid">
-		Effrayé
+		Effray&#xE9;
 	</string>
 	<string name="anim_express_anger">
-		En colère
+		En col&#xE8;re
 	</string>
 	<string name="anim_away">
 		Absent
 	</string>
 	<string name="anim_backflip">
-		Salto arrière
+		Salto arri&#xE8;re
 	</string>
 	<string name="anim_express_laugh">
 		Rire en se tenant le ventre
@@ -274,7 +198,7 @@
 		Applaudir
 	</string>
 	<string name="anim_courtbow">
-		Révérence de cour
+		R&#xE9;v&#xE9;rence de cour
 	</string>
 	<string name="anim_express_cry">
 		Pleurer
@@ -304,16 +228,16 @@
 		Danse 8
 	</string>
 	<string name="anim_express_disdain">
-		Mépris
+		M&#xE9;pris
 	</string>
 	<string name="anim_drink">
 		Boire
 	</string>
 	<string name="anim_express_embarrased">
-		Gêne
+		G&#xEA;ne
 	</string>
 	<string name="anim_angry_fingerwag">
-		Désapprobation
+		D&#xE9;sapprobation
 	</string>
 	<string name="anim_fist_pump">
 		Victoire
@@ -343,13 +267,13 @@
 		Montrer ses muscles
 	</string>
 	<string name="anim_no_unhappy">
-		Non (mécontent)
+		Non (m&#xE9;content)
 	</string>
 	<string name="anim_no_head">
 		Non
 	</string>
 	<string name="anim_nyanya">
-		Na na na na nère
+		Nanan&#xE8;re
 	</string>
 	<string name="anim_punch_onetwo">
 		Gauche-droite
@@ -385,7 +309,7 @@
 		Ciseaux (pierre-papier-ciseaux)
 	</string>
 	<string name="anim_express_repulsed">
-		Dégoût
+		D&#xE9;goût
 	</string>
 	<string name="anim_kick_roundhouse_r">
 		Coup de pied circulaire
@@ -400,7 +324,7 @@
 		Crier
 	</string>
 	<string name="anim_express_shrug">
-		Hausser les épaules
+		Hausser les &#xE9;paules
 	</string>
 	<string name="anim_express_smile">
 		Sourire
@@ -409,16 +333,16 @@
 		Fumer, immobile
 	</string>
 	<string name="anim_smoke_inhale">
-		Fumer, prendre une bouffée
+		Fumer, prendre une bouff&#xE9;e
 	</string>
 	<string name="anim_smoke_throw_down">
-		Fumer, jeter son mégot
+		Fumer, jeter son m&#xE9;got
 	</string>
 	<string name="anim_express_surprise">
 		Surprise
 	</string>
 	<string name="anim_sword_strike_r">
-		Coup d&apos;épée
+		Coup d&apos;&#xE9;p&#xE9;e
 	</string>
 	<string name="anim_angry_tantrum">
 		Caprice
@@ -451,13 +375,10 @@
 		Oui
 	</string>
 	<string name="texture_loading">
-		Chargement...
+		Chargement
 	</string>
 	<string name="worldmap_offline">
 		Hors ligne
-	</string>
-	<string name="Ok">
-		OK
 	</string>
 	<string name="whisper">
 		chuchote :
@@ -472,7 +393,7 @@
 		Mature
 	</string>
 	<string name="SIM_ACCESS_ADULT">
-		Adult
+		Adulte
 	</string>
 	<string name="SIM_ACCESS_DOWN">
 		Hors ligne
@@ -484,10 +405,10 @@
 		(inconnu)
 	</string>
 	<string name="covenant_never_modified">
-		Dernière modification : (jamais)
+		Derni&#xE8;re modification : (jamais)
 	</string>
 	<string name="covenant_modified">
-		Dernière modification :
+		Derni&#xE8;re modification :
 	</string>
 	<string name="all_files">
 		Tous fichiers
@@ -526,224 +447,12 @@
 		Fichier RAW
 	</string>
 	<string name="compressed_image_files">
-		Images compressées
+		Images compress&#xE9;es
 	</string>
 	<string name="load_files">
 		Charger des fichiers
 	</string>
 	<string name="choose_the_directory">
-		Choisir le répertoire
-	</string>
-	<string name="AvatarSetNotAway">
-		Présent
-	</string>
-	<string name="AvatarSetAway">
-		Absent
-	</string>
-	<string name="AvatarSetNotBusy">
-		Pas occupé
-	</string>
-	<string name="AvatarSetBusy">
-		Occupé
-	</string>
-	<string name="ok">
-		OK
-	</string>
-	<string name="no_transfer" value=" (pas de transfert)"/>
-	<string name="no_modify" value=" (pas de modification)"/>
-	<string name="no_copy" value=" (pas de copie)"/>
-	<string name="temporary" value=" (temporaire)"></string>
-	<string name="worn" value=" (porté)"/>
-	<string name="locked" value=" (verrouillé)"></string>
-	<string name="link" value=" (lien)"/>
-	<string name="broken_link" value=" (broken_link)"/>
-	<string name="NoContents">
-		Aucun contenu
-	</string>
-	<string name="WornOnAttachmentPoint" value=" (porté sur [ATTACHMENT_POINT])"/>
-	<string name="ActiveGesture" value="[GESLABEL] (actif)"/>
-	<string name="Chat Message" value="Chat :"/>
-	<string name="Wait" value=" --- Attendre :"/>
-	<string name="AnimFlagStop" value=" Arrêter l&apos;animation :"/>
-	<string name="AnimFlagStart" value=" Lancer l&apos;animation :"/>
-	<string name="Wave" value=" Faire signe"/>
-	<string name="GestureActionNone" value="À choisir"/>
-	<string name="HelloAvatar" value=" Bonjour, avatar !"/>
-	<string name="ViewAllGestures" value="  Tout afficher &gt;&gt;"/>
-	<string name="GetMoreGestures" value="Plus &gt;&gt;"/>
-	<string name="Stone">
-		Pierre
-	</string>
-	<string name="Metal">
-		Métal
-	</string>
-	<string name="Glass">
-		Verre
-	</string>
-	<string name="Wood">
-		Bois
-	</string>
-	<string name="Flesh">
-		Chair
-	</string>
-	<string name="Plastic">
-		Plastique
-	</string>
-	<string name="Rubber">
-		Caoutchouc
-	</string>
-	<string name="Unknown">
-		(Inconnu)
-	</string>
-	<string name="Region">
-		Région
-	</string>
-	<string name="RegionSettings">
-		Réglages de la région
-	</string>
-	<string name="accel-mac-control">
-		⌃
-	</string>
-	<string name="accel-mac-command">
-		⌘
-	</string>
-	<string name="accel-mac-option">
-		⌥
-	</string>
-	<string name="accel-mac-shift">
-		⇧
-	</string>
-	<string name="accel-win-control">
-		Ctrl+
-	</string>
-	<string name="accel-win-alt">
-		Alt+
-	</string>
-	<string name="accel-win-shift">
-		Maj+
-	</string>
-	<string name="MBCmdLineError">
-		Une erreur est survenue lors de la lecture de la ligne de commande.
-Merci de consulter : http://wiki.secondlife.com/wiki/Client_parameters
-Erreur :
-	</string>
-	<string name="MBCmdLineUsg">
-		[APP_NAME] - Utilisation de la ligne de commande :
-	</string>
-	<string name="MBUnableToAccessFile">
-		[APP_NAME] ne peut accéder à un fichier requis.
-
-Cela vient du fait que quelqu&apos;un a ouvert plusieurs copies ou que votre système pense qu&apos;un fichier est ouvert.
-Si ce message persiste, veuillez redémarrer votre ordinateur.
-Si le problème persiste, vous devrez peut-être complètement désinstaller puis réinstaller [APP_NAME].
-	</string>
-	<string name="MBRequiresAltiVec">
-		[APP_NAME] nécessite un microprocesseur AltiVec (version G4 ou antérieure).
-	</string>
-	<string name="MBAlreadyRunning">
-		[APP_NAME] est déjà en cours d&apos;exécution.
-Vérifiez si une version minimisée du programme apparaît dans votre barre de tâches.
-Si ce message persiste, redémarrez votre ordinateur.
-	</string>
-	<string name="MBFrozenCrashed">
-		[APP_NAME] semble avoir crashé lors de l&apos;utilisation précédente.
-Voulez-vous envoyer un rapport de crash ?
-	</string>
-	<string name="MBAlert">
-		Notification
-	</string>
-	<string name="MBNoDirectX">
-		[APP_NAME] ne peut détecter DirectX 9.0b ou une version supérieure.
-[APP_NAME] utilise DirectX pour détecter les matériels et/ou les pilotes qui ne sont pas à jour et peuvent causer des problèmes de stabilité, de performance ou des plantages.  Bien que vous puissiez utiliser [APP_NAME] sans DirectX, nous vous recommandons de l&apos;utiliser avec DirectX 9.0b.
-
-Voulez-vous continuer ?
-	</string>
-	<string name="MBWarning">
-		Avertissement
-	</string>
-	<string name="MBNoAutoUpdate">
-		Les mises à jour automatiques n&apos;existent pas encore pour Linux.
-Veuillez télécharger la dernière version sur www.secondlife.com.
-	</string>
-	<string name="MBRegClassFailed">
-		RegisterClass a échoué
-	</string>
-	<string name="MBError">
-		Erreur
-	</string>
-	<string name="MBFullScreenErr">
-		Impossible d&apos;ouvrir le mode plein écran à [WIDTH] x [HEIGHT].
-Utilisation du mode fenêtré.
-	</string>
-	<string name="MBDestroyWinFailed">
-		Erreur de fermeture lors de la destruction de la fenêtre (DestroyWindow() a échoué)
-	</string>
-	<string name="MBShutdownErr">
-		Erreur de fermeture
-	</string>
-	<string name="MBDevContextErr">
-		Impossible de créer le contexte GL
-	</string>
-	<string name="MBPixelFmtErr">
-		Impossible de trouver le format pixel approprié
-	</string>
-	<string name="MBPixelFmtDescErr">
-		Impossible de trouver la description du format pixel
-	</string>
-	<string name="MBTrueColorWindow">
-		[APP_NAME] nécessite True Color (32 bits) pour s&apos;exécuter.
-Accédez aux paramètres d&apos;affichage de votre ordinateur et réglez le mode couleur sur 32 bits.
-	</string>
-	<string name="MBAlpha">
-		[APP_NAME] ne peut pas s&apos;exécuter, car il n&apos;y pas de canal alpha 8 bits accessible.  En général, ceci vient de problèmes avec le pilote de la carte vidéo.
-Assurez-vous d&apos;avoir installé le pilote de carte vidéo le plus récent possible.
-Assurez-vous aussi que votre écran est réglé sur True Color (32 bits) sous Panneau de configuration &gt; Affichage &gt; Paramètres.
-Si ce message persiste, veuillez aller sur la page [SUPPORT_SITE].
-	</string>
-	<string name="MBPixelFmtSetErr">
-		Impossible de trouver le format pixel approprié
-	</string>
-	<string name="MBGLContextErr">
-		Impossible de créer le contexte de rendu GL
-	</string>
-	<string name="MBGLContextActErr">
-		Impossible d&apos;activer le contexte de rendu GL
-	</string>
-	<string name="MBVideoDrvErr">
-		[APP_NAME] ne peut pas s&apos;exécuter car les pilotes de votre carte vidéo n&apos;ont pas été installés correctement, ne sont pas à jour, ou sont pour du matériel non pris en charge. Assurez-vous d&apos;avoir des pilotes de cartes vidéos récents, et même si vous avez les plus récents, réinstallez-les.
-
-Si ce message persiste, veuillez aller sur la page [SUPPORT_SITE].
-	</string>
-	<string name="Unnamed">
-		(sans nom)
-	</string>
-	<string name="group_role_everyone">
-		Tous
-	</string>
-	<string name="group_role_officers">
-		Officiers
-	</string>
-	<string name="group_role_owners">
-		Propriétaires
-	</string>
-	<string name="group_member_status_online">
-		En ligne
-	</string>
-	<string name="Chat" value=" Chat :">
-		Chat
-	</string>
-	<string name="ExternalEditorNotSet">
-		Sélectionnez un éditeur à l&apos;aide du paramètre ExternalEditor.
-	</string>
-	<string name="ExternalEditorNotFound">
-		Éditeur externe spécifié introuvable.
-Essayez avec le chemin d&apos;accès à l&apos;éditeur entre guillemets doubles
-(par ex. : &quot;/chemin_accès/editor&quot; &quot;%s&quot;).
-	</string>
-	<string name="ExternalEditorCommandParseError">
-		Erreur lors de l&apos;analyse de la commande d&apos;éditeur externe.
-	</string>
-	<string name="ExternalEditorFailedToRun">
-		Échec d&apos;exécution de l&apos;éditeur externe.
+		Choisir le r&#xE9;pertoire
 	</string>
 </strings>

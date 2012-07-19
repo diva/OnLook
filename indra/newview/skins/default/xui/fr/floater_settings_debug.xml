@@ -2,16 +2,16 @@
 <floater name="settings_debug" title="Paramétrages du mode Debug">
 	<combo_box name="boolean_combo">
 		<combo_item name="TRUE">
-			TRUE
+			VRAI
 		</combo_item>
 		<combo_item name="FALSE">
-			FALSE
+			FAUX
 		</combo_item>
 	</combo_box>
-	<color_swatch label="Couleur" name="color_swatch" width="43" />
-	<spinner label="x" name="val_spinner_1" />
-	<spinner label="x" name="val_spinner_2" />
-	<spinner label="x" name="val_spinner_3" />
-	<spinner label="x" name="val_spinner_4" />
-	<button label="Paramètres par défaut" name="default_btn" />
+	<color_swatch label="Couleur" name="color_swatch" width="43"/>
+	<spinner label="x" name="val_spinner_1"/>
+	<spinner label="x" name="val_spinner_2"/>
+	<spinner label="x" name="val_spinner_3"/>
+	<spinner label="x" name="val_spinner_4"/>
+	<button label="Paramètres par défaut" name="default_btn"/>
 </floater>

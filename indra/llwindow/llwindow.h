@@ -104,12 +104,14 @@ public:
 	virtual S32 getBusyCount() const;
 
 	// Sets cursor, may set to arrow+hourglass
-	virtual void setCursor(ECursorType cursor) = 0;
+	virtual void setCursor(ECursorType cursor) { mNextCursor = cursor; };
 	virtual ECursorType getCursor() const;
+	virtual void updateCursor() = 0;
 
 	virtual void captureMouse() = 0;
 	virtual void releaseMouse() = 0;
 	virtual void setMouseClipping( BOOL b ) = 0;
+
 	virtual BOOL isClipboardTextAvailable() = 0;
 	virtual BOOL pasteTextFromClipboard(LLWString &dst) = 0;
 	virtual BOOL copyTextToClipboard(const LLWString &src) = 0;
@@ -196,6 +198,7 @@ protected:
 	LLWindowResolution* mSupportedResolutions;
 	S32			mNumSupportedResolutions;
 	ECursorType	mCurrentCursor;
+	ECursorType	mNextCursor;
 	BOOL		mCursorHidden;
 	S32			mBusyCount;	// how deep is the "cursor busy" stack?
 	BOOL		mIsMouseClipping;  // Is this window currently clipping the mouse

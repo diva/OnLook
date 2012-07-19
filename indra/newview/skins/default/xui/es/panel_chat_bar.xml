@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="chat_bar">
+	<button label="Chat Local" name="History" tool_tip="Pulsa aquí para ver el historial" />
+	<line_editor label="Pulsa aqui para entrar en el chat." name="Chat Editor" tool_tip="Presiona Enter para hablar, Mayus-Enter para susurrar o Ctrl-Enter para gritar" />
+	<flyout_button label="Decir" name="Say" tool_tip="(Enter)">
+		<flyout_button_item name="shout_item">
+			Gritar
+		</flyout_button_item>
+		<flyout_button_item name="say_item">
+			Decir
+		</flyout_button_item>
+		<flyout_button_item name="whisper_item">
+			Susurar
+		</flyout_button_item>
+	</flyout_button>
+	<combo_box label="Gestos" name="Gesture"/>
+	<string name="gesture_label">
+		Gestos
+	</string>
+</panel>

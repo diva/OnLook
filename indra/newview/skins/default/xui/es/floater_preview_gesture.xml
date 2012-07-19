@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="gesture_preview">
+	<string name="stop_txt">
+		Detener
+	</string>
+	<string name="preview_txt">
+		Vista Previa
+	</string>
+	<string name="none_text">
+		-- Nada --
+	</string>
+	<text name="desc_label">
+		Descripción:
+	</text>
+	<text bottom_delta="-23" follows="top|left" font="SansSerif" left="16"
+	     name="trigger_label">
+		Disparador:
+	</text>
+	<text name="replace_text" tool_tip="Reemplaza la palabra disparadora con estas palabras. Por ejemplo, el disparador &apos;Hola&apos; reemplázalo con &apos;Hello&apos; esto hará que en el chat salga &apos;Quiero decir Hello&apos; en vez de &apos;Quiero decir Hola&apos; al ejecutar el gesto.">
+		Reemplazar:
+	</text>
+	<line_editor name="replace_editor" tool_tip="Reemplaza la palabra disparadora con estas palabras. Por ejemplo, el disparador &apos;Hola&apos; reemplázalo con &apos;Hello&apos; esto hará que en el chat salga &apos;Quiero decir Hello&apos; en vez de &apos;Quiero decir Hola&apos; al ejecutar el gesto."/>
+	<text name="key_label">
+		Atajo Teclado:
+	</text>
+	<combo_box label="Nada" name="modifier_combo"/>
+	<combo_box label="Nada" name="key_combo"/>
+	<text name="library_label">
+		Librería:
+	</text>
+	<text name="steps_label">
+		Pasos:
+	</text>
+	<scroll_list name="library_list">
+		Animación
+Sonidos
+Chat
+Esperar
+	</scroll_list>
+	<button label="Añadir &gt;&gt;" name="add_btn"/>
+	<button label="Subir" name="up_btn"/>
+	<button label="Bajar" name="down_btn"/>
+	<button label="Quitar" name="delete_btn"/>
+	<scroll_list name="step_list"/>
+	<text name="help_label">
+		Todos los pasos se ejecutan 
+simultáneamente, a menos que 
+agregues un paso de espera.
+	</text>
+	<radio_group name="animation_trigger_type">
+		<radio_item name="start">
+			Iniciar
+		</radio_item>
+		<radio_item name="stop">
+			Detener
+		</radio_item>
+	</radio_group>
+	<check_box label="Hasta que la aninación termine" name="wait_anim_check"/>
+	<check_box height="20" label="tiempo en segundos" name="wait_time_check"/>
+	<line_editor left_delta="125" name="wait_time_editor"/>
+	<check_box label="Activa" name="active_check" tool_tip="Los Gestos activos pueden ser disparados en el chat por sus frases disparadoras o pulsando sus teclas de acceso rápido. Los Gestos, por lo general, se vuelven inactivas cuando hay un conflicto en la combinación de teclas."/>
+	<button label="Vista Previa" name="preview_btn"/>
+	<button label="Guardar" name="save_btn"/>
+</floater>

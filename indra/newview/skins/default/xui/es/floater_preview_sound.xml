@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="preview_sound">
+	<text name="desc txt">
+		Descripción:
+	</text>
+	<button label="Reproducir Localmente" label_selected="Reproducir Localmente" left="150"
+	     mouse_opaque="true" name="Sound audition btn" scale_image="true"
+	     sound_flags="0" tool_tip="Play this sound so that only you can hear it."
+	     width="148" />
+	<button label="Reproducir en Mundo" label_selected="Reproducir en Mundo" left_delta="-146" name="Sound play btn" tool_tip="Play this sound so that others can hear it."
+	     width="142" />
+</floater>

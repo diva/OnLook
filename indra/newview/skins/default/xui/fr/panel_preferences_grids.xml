@@ -9,7 +9,7 @@
 		font="SansSerifSmall"
 		follows="left|top" bg_visible="false" border_visible="false" mouse_opaque="true"
 	    drop_shadow_visible="true" border_drop_shadow_visible="false">
-    Choisir une Grille:
+    Choisir une grille :
   </text>
   <combo_box max_chars="20" allow_text_entry="false" name="grid_selector"
 		height="18" width="200" left="120" bottom_delta="-4"
@@ -56,7 +56,7 @@
 		font="SansSerifSmall"
 		follows="left|top" bg_visible="false" border_visible="false" mouse_opaque="true"
 	    drop_shadow_visible="true" border_drop_shadow_visible="false">
-    Login URL:
+    Login URL :
   </text>
   <line_editor max_length="254" enabled="true" name="loginuri"
 		handle_edit_keys_directly="true"
@@ -77,7 +77,7 @@
 		font="SansSerifSmall"
 		follows="left|top" bg_visible="false" border_visible="false" mouse_opaque="true"
 	    drop_shadow_visible="true" border_drop_shadow_visible="false">
-    Plateforme:
+    Plateforme :
   </text>
   <combo_box max_chars="20" allow_text_entry="false" name="platform"
 		height="18" width="200" left="120" bottom_delta="-4"
@@ -89,7 +89,7 @@
 		font="SansSerifSmall"
 		follows="left|top" bg_visible="false" border_visible="false" mouse_opaque="true"
 		drop_shadow_visible="true" border_drop_shadow_visible="false">
-    Nom:
+    Nom :
   </text>
   <line_editor max_length="254" enabled="true" name="gridname"
 		handle_edit_keys_directly="true"
@@ -106,7 +106,7 @@
 		font="SansSerifSmall"
 		follows="left|top" bg_visible="false" border_visible="false" mouse_opaque="true"
 		drop_shadow_visible="true" border_drop_shadow_visible="false">
-    Infos:
+    Infos :
   </text>
   <text_editor type="string" length="1" bottom="-185" embedded_items="false" enabled="true" follows="left|top|right"
 	     handle_edit_keys_directly="true" 
@@ -138,7 +138,7 @@
 		font="SansSerifSmall"
 		follows="left|top" bg_visible="false" border_visible="false" mouse_opaque="true"
 	    drop_shadow_visible="true" border_drop_shadow_visible="false">
-    Aide URL:
+    Aide URL :
   </text>
   <line_editor max_length="254" enabled="true" name="helperuri"
 		handle_edit_keys_directly="true" visible="false"
@@ -154,7 +154,7 @@
   font="SansSerifSmall"
   follows="left|top" bg_visible="false" border_visible="false" mouse_opaque="true"
     drop_shadow_visible="true" border_drop_shadow_visible="false">
-    Site Web:
+    Site Web :
   </text>
   <line_editor max_length="254" enabled="true" name="website"
   handle_edit_keys_directly="true" visible="false"
@@ -170,7 +170,7 @@
   font="SansSerifSmall"
   follows="left|top" bg_visible="false" border_visible="false" mouse_opaque="true"
     drop_shadow_visible="true" border_drop_shadow_visible="false">
-    Support URL:
+    Support URL :
   </text>
   <line_editor max_length="254" enabled="true" name="support"
   handle_edit_keys_directly="true" visible="false"
@@ -186,7 +186,7 @@
   font="SansSerifSmall"
   follows="left|top" bg_visible="false" border_visible="false" mouse_opaque="true"
     drop_shadow_visible="true" border_drop_shadow_visible="false">
-    Compte URL:
+    Compte URL :
   </text>
   <line_editor max_length="254" enabled="true" name="register"
   handle_edit_keys_directly="true" visible="false"
@@ -202,7 +202,7 @@
   font="SansSerifSmall"
   follows="left|top" bg_visible="false" border_visible="false" mouse_opaque="true"
     drop_shadow_visible="true" border_drop_shadow_visible="false">
-    Mot de Passe URL:
+    Mot de Passe URL :
   </text>
   <line_editor max_length="254" enabled="true" name="password"
   handle_edit_keys_directly="true" visible="false"
@@ -218,7 +218,7 @@
   font="SansSerifSmall"
   follows="left|top" bg_visible="false" border_visible="false" mouse_opaque="true"
     drop_shadow_visible="true" border_drop_shadow_visible="false">
-    Recherche URL:
+    Recherche URL :
   </text>
   <line_editor max_length="254" enabled="true" name="search"
   handle_edit_keys_directly="true" visible="false"
@@ -229,7 +229,7 @@
   drop_shadow_visible="true" border_drop_shadow_visible="false" />
   <!-- Rendering Compatibility -->
   <check_box enabled="true" radio_style="false"
-		label="Rendu de la Compatibilé" name="render_compat" visible="false"
+		label="Rendu de la compatibilé" name="render_compat" visible="false"
 		height="18" left="115" bottom_delta="-35"
 		h_pad="0" v_pad="0" halign="left"
 		font="SansSerifSmall"

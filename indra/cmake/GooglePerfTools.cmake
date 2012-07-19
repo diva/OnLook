@@ -1,12 +1,16 @@
 # -*- cmake -*-
 include(Prebuilt)
 
+if(WORD_SIZE EQUAL 64)
+  set(DISABLE_TCMALLOC TRUE)
+endif(WORD_SIZE EQUAL 64)
+
 if (STANDALONE)
   include(FindGooglePerfTools)
 else (STANDALONE)
-  if (LINUX OR WINDOWS)
+  if (LINUX OR WINDOWS AND NOT WORD_SIZE EQUAL 64)
     use_prebuilt_binary(gperftools)
-  endif (LINUX OR WINDOWS)
+  endif (LINUX OR WINDOWS AND NOT WORD_SIZE EQUAL 64)
   if (WINDOWS)
     set(TCMALLOC_LIBRARIES libtcmalloc_minimal.lib)
     set(TCMALLOC_LINKER_FLAGS "/INCLUDE:\"__tcmalloc\"")

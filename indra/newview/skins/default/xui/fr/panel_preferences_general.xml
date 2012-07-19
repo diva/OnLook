@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel border="true" bottom="-409" height="408" label="General" left="102" name="general_panel" width="517">
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel border="true" bottom="-409" height="408" label="Général" left="102" name="general_panel" width="517">
   <radio_group bottom="-44" height="40" left="109" name="default_start_location" width="280">
-    <radio_item bottom="-20" height="20" name="MyHome" tool_tip="Par défaut, choisir mon domicile comme lieu de départ.">Domicile</radio_item>
-    <radio_item bottom="-20" height="20" left="93" name="MyLastLocation" tool_tip="Par défaut, choisir mon dernier emplacement comme lieu de départ.">Dernier emplacement.</radio_item>
+    <radio_item bottom="-20" height="20" name="MyHome" tool_tip="Par défaut, choisit le domicile comme lieu de départ.">Domicile</radio_item>
+    <radio_item bottom="-20" height="20" left="93" name="MyLastLocation" tool_tip="Par défaut, choisit le dernier emplacement comme lieu de départ.">Dernier emplacement</radio_item>
   </radio_group>
   <check_box bottom="-42" height="16" initial_value="true" label="Afficher le lieu de départ sur l&apos;écran de connexion" name="show_location_checkbox"/>
 	<combo_box bottom_delta="-27" follows="top" height="18" left="103" name="fade_out_combobox" width="111">
@@ -11,7 +11,11 @@
 		<combo_item name="Always" value="Always">Toujours</combo_item>
 	</combo_box>
 
-
+	<combo_box bottom_delta="0" follows="top" height="18" left="220" name="namesystem_combobox" width="166">
+		<combo_item name="Old Names" value="Anciens Noms">Anciens Names</combo_item>
+		<combo_item name="Display Names (with Username)" value="Display Names (with Username)">Display Names(w/Username)</combo_item>
+		<combo_item name="Display Names only" value="Display Names only">Display Names only</combo_item>
+	</combo_box>
 
 
 
@@ -22,7 +26,7 @@
 	</text>
 	<check_box label="Masquer tous les titres de groupe" name="show_all_title_checkbox"/>
 	<check_box label="Masquer mon titre de groupe" name="show_my_title_checkbox"/>
-	<color_swatch label="" name="effect_color_swatch" tool_tip="Cliquer pour ouvrir le sélecteur de couleurs"/>
+	<color_swatch label="" name="effect_color_swatch" tool_tip="Cliquez pour ouvrir le sélecteur de couleurs"/>
 	<text name="UI Size:">
 		Taille de l&apos;interface :
 	</text>
@@ -34,11 +38,11 @@
 		Catégories :
 	</text>
 	<text name="maturity_desired_prompt">
-		Je veux accéder au contenu classé :
+		Acc&#xE8;s au contenu classé :
 	</text>
 	<combo_box name="maturity_desired_combobox" left="340">
 		<combo_item name="Desired_Adult">
-			PG, Mature &#x26; Adult
+			PG, Mature, Adulte
 		</combo_item>
 		<combo_item name="Desired_Mature">
 			PG et Mature
@@ -73,7 +77,7 @@ de sélection :
 		(redémarrage requis)
 	</text>
 	<string name="region_name_prompt">
-		&lt;Saisissez le nom de la région&gt;
+		&lt;Saisir le nom de la région&gt;
 	</string>
 	<combo_box name="crash_behavior_combobox" width="166">
 		<combo_item length="1" name="Askbeforesending" type="string">
@@ -139,5 +143,6 @@ de sélection :
 			한국어 (Coréen) - Bêta
 		</combo_item>
 	</combo_box>
-	<check_box label="Partager la langue avec les objets" name="language_is_public" tool_tip="Cette option permet de faire connaître aux objets du Monde votre langue favorite."/>
+  <check_box bottom="-385" height="16" initial_value="false" label="Partager la langue avec les objets" left="101" name="language_is_public" tool_tip="Cette option permet de faire connaître aux objets du Monde votre langue favorite."/>
+  <button bottom="-425" height="25" label="Re initialiser tous les Settings (réglages)" name="clear_settings" width="250" />
 </panel>

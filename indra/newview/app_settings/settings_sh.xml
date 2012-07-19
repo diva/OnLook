@@ -41,6 +41,28 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>SHFMODExStreamBufferSize</key>
+    <map>
+      <key>Comment</key>
+      <string>Sets the streaming buffer size (in milliseconds)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>7000</integer>
+    </map>
+    <key>SHFMODExDecodeBufferSize</key>
+    <map>
+      <key>Comment</key>
+      <string>Sets the streaming decode buffer size (in milliseconds)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>1000</integer>
+    </map>
 		<key>SHAllowScriptCommands</key>
 		<map>
 			<key>Comment</key>

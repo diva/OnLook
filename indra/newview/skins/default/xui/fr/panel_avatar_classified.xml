@@ -20,18 +20,18 @@
 	<text name="classified_info_text" tool_tip="Plus vous payez cher pour votre annonce, mieux elle est placée dans la liste.">
 		Annonce passée, pas encore publiée
 	</text>
-	<text name="click_through_text" tool_tip="Nombre total de clics sur chaque bouton depuis la parution de l&apos;annonce.">
+	<text name="click_through_text" tool_tip="Nombre total de clics sur chaque bouton depuis la parution de l'annonce.">
 		Clics :
 	</text>
-	<button label="Publier..." name="classified_update_btn"/>
+	<button label="Publier" name="classified_update_btn"/>
 	<check_box label="Publier chaque semaine" name="auto_renew_check"/>
 	<string name="ad_placed_paid">
-		Annonce passée le : [DATE]. Prix : [AMT] L$.
+		Annonce passée le : [DATE]. Prix: [AMT][CURRENCY].
 	</string>
 	<string name="update_txt">
 		Mise à jour
 	</string>
 	<string name="publish_txt">
-		Publier...
+		Publier
 	</string>
 </panel>

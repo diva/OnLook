@@ -8,7 +8,7 @@
 	     initial_val="0.5" left_delta="22" max_val="1" min_val="0"
 	     mouse_opaque="true" name="volume_slider"
 	     tool_tip="Change the volume using this slider" width="50" />
-	<button bottom="-20" control_name="MuteAudio" height="20"
+	<button bottom="-20" control_name="MuteAudio" height="20" scale_image="false"
 	     image_selected="icn_speaker-muted_dark.tga"
 	     image_unselected="icn_speaker_dark.tga" label="" left_delta="52"
 	     name="mute_master" toggle="true" width="25" />

@@ -54,6 +54,7 @@
 #include "llaudioengine.h"
 #include "lloverlaybar.h"
 #include "slfloatermediafilter.h"
+#include "llstreamingaudio.h"
 
 // Static Variables
 
@@ -661,6 +662,9 @@ void LLViewerParcelMedia::playStreamingMusic(LLParcel* parcel, bool filter)
 	else if (gAudiop)
 	{
 		LLStringUtil::trim(music_url);
+		LLStreamingAudioInterface *stream = gAudiop->getStreamingAudioImpl();
+		if(stream && stream->supportsAdjustableBufferSizes())
+			stream->setBufferSizes(gSavedSettings.getU32("SHFMODExStreamBufferSize"),gSavedSettings.getU32("SHFMODExDecodeBufferSize"));
 		gAudiop->startInternetStream(music_url);
 		if (music_url.empty())
 		{
