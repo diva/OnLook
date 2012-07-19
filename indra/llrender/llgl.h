@@ -516,4 +516,5 @@ extern BOOL gGLActive;
 #ifndef GL_DEPTH24_STENCIL8
 #define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_EXT
 #endif 
+
 #endif // LL_LLGL_H

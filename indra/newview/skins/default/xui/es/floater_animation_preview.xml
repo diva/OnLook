@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="Animation Preview">
+	<text name="name_label">
+		Nombre:
+	</text>
+	<text name="description_label">
+		Descripción:
+	</text>
+	<spinner label="Prioridad" name="priority" tool_tip="Controla qué otras animaciones pueden ser anuladas por ésta."/>
+	<check_box label="Bucle" name="loop_check" tool_tip="Haz esta animación en bucle."/>
+	<spinner label="Inicio(%)" label_width="40" name="loop_in_point" tool_tip="Indica el punto en el que la animación empieza el bucle." left="85"/>
+	<spinner label="Fin(%)" label_width="30" name="loop_out_point" tool_tip="Indica el punto en el que la animación termina el bucle."/>
+	<text name="hand_label">
+		Posición de las Manos
+	</text>
+	<combo_box name="hand_pose_combo" tool_tip="Controla lo que hacen las manos durante la animación" right="190" left_delta="110">
+		<combo_item name="Spread">
+			Extendidas
+		</combo_item>
+		<combo_item name="Relaxed">
+			Relajadas
+		</combo_item>
+		<combo_item name="PointBoth">
+			Ambas Señalando
+		</combo_item>
+		<combo_item name="Fist">
+			Puño
+		</combo_item>
+		<combo_item name="RelaxedLeft">
+			La izquierda relajada
+		</combo_item>
+		<combo_item name="PointLeft">
+			La izquierda señalando
+		</combo_item>
+		<combo_item name="FistLeft">
+			La izquierda en puño
+		</combo_item>
+		<combo_item name="RelaxedRight">
+			La derecha relajada
+		</combo_item>
+		<combo_item name="PointRight">
+			La derecha señalando
+		</combo_item>
+		<combo_item name="FistRight">
+			La derecha en puño
+		</combo_item>
+		<combo_item name="SaluteRight">
+			La derecha saludando
+		</combo_item>
+		<combo_item name="Typing">
+			Escribiendo
+		</combo_item>
+		<combo_item name="PeaceRight">
+			Derecha en Signo de Paz
+		</combo_item>
+	</combo_box>
+	<text bottom_delta="-22" follows="top|left" height="15" left="10" name="emote_label">
+		Expresión
+	</text>
+	<combo_box label="" name="emote_combo" tool_tip="Controla qué hace la cara durante la animación" left_delta="110">
+		<combo_item name="[None]">
+			[Nada]
+		</combo_item>
+		<combo_item name="Aaaaah">
+			Aaaaah
+		</combo_item>
+		<combo_item name="Afraid">
+			Con Miedo
+		</combo_item>
+		<combo_item name="Angry">
+			Enfadada
+		</combo_item>
+		<combo_item name="BigSmile">
+			Gran Sonrisa
+		</combo_item>
+		<combo_item name="Bored">
+			Aburrida
+		</combo_item>
+		<combo_item name="Cry">
+			Llorar
+		</combo_item>
+		<combo_item name="Disdain">
+			Desdén
+		</combo_item>
+		<combo_item name="Embarrassed">
+			Avergonzada
+		</combo_item>
+		<combo_item name="Frown">
+			Fruncir el ceño
+		</combo_item>
+		<combo_item name="Kiss">
+			Besar
+		</combo_item>
+		<combo_item name="Laugh">
+			Carcajada
+		</combo_item>
+		<combo_item name="Plllppt">
+			Sacar la lengua
+		</combo_item>
+		<combo_item name="Repulsed">
+			Rechazo
+		</combo_item>
+		<combo_item name="Sad">
+			Triste
+		</combo_item>
+		<combo_item name="Shrug">
+			Encogerse de hombros
+		</combo_item>
+		<combo_item name="Smile">
+			Sonrisa
+		</combo_item>
+		<combo_item name="Surprise">
+			Sorpresa
+		</combo_item>
+		<combo_item name="Wink">
+			Guiño
+		</combo_item>
+		<combo_item name="Worry">
+			Preocupación
+		</combo_item>
+	</combo_box>
+	<text name="preview_label">
+		Vista Previa
+	</text>
+	<combo_box label="" name="preview_base_anim" tool_tip="Comprueba cómo se comporta tu animación a la vez que el avatar realiza acciones comunes." left_delta="110">
+		<combo_item name="Standing">
+			De Pie
+		</combo_item>
+		<combo_item name="Walking">
+			Caminando
+		</combo_item>
+		<combo_item name="Sitting">
+			Sentado
+		</combo_item>
+		<combo_item name="Flying">
+			Volando
+		</combo_item>
+	</combo_box>
+	<spinner label="Combinar (seg)" label_width="72" name="ease_in_time" tool_tip="Tiempo (en segundos) en el que se combinan las animaciones." width="122"/>
+	<spinner label="No Combinar (seg)" label_width="90" name="ease_out_time" tool_tip="Tiempo (en segundos) en el que dejan de combinarse las animaciones." left="145" width="140"/>
+	<button label="" name="play_btn" tool_tip="Reproducir/pausar tu animación."/>
+	<button label="" name="stop_btn" tool_tip="Detener la reproducción de la animación"/>
+	<slider label="" name="playback_slider"/>
+	<text name="bad_animation_text">
+		No se ha podido leer el archivo de la animación.
+
+Recomendamos usar archivos BVH exportados de
+Poser 4
+	</text>
+	<button label="Cancelar" name="cancel_btn"/>
+	<button label="Subir ([UPLOADFEE])" name="ok_btn"/>
+	<string name="failed_to_initialize">
+		 Fallo al iniciar el movimiento
+	</string>
+	<string name="anim_too_long">
+		 El archivo de la Animación dura [LENGTH] segundos.
+
+La duración máxima de una animación es de [MAX_LENGTH] segundos.
+	</string>
+	<string name="failed_file_read">
+		No se ha podido leer el archivo de la animación.
+
+[STATUS]
+	</string>
+	<string name="in_world">
+		La vista previa se reproduce en tu avatar.
+	</string>
+</floater>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="buy currency" title="Comprar Dinero">
+	<text name="info_buying">
+		Comprando Dinero:
+	</text>
+	<text name="info_cannot_buy">
+		No puedes comprar en este momento:
+	</text>
+	<text name="info_need_more">
+		Necesitas más dinero:
+	</text>
+	<text name="error_message">
+		Algo no va bien.
+	</text>
+	<button label="Ir al sitio web" name="error_web"/>
+	<text name="contacting">
+		Contactando con LindeX...
+	</text>
+	<text name="buy_action_unknown">
+		Comprar [CURRENCY] en el sistema LindeX de cambio
+	</text>
+	<text name="buy_action">
+		[NAME] [CURRENCY] [PRICE]
+	</text>
+	<text name="currency_action">
+		Comprar [CURRENCY]
+	</text>
+	<line_editor name="currency_amt">
+		1234
+	</line_editor>
+	<text name="currency_est">
+		[CURRENCY] por aprox. US$ [USD]
+	</text>
+	<text name="getting_data">
+		Obteniendo datos...
+	</text>
+	<text name="balance_label">
+		Actualmente tienes
+	</text>
+	<text name="balance_amount">
+		[CURRENCY] [AMT]
+	</text>
+	<text name="buying_label">
+		Estás comprando
+	</text>
+	<text name="buying_amount">
+		[CURRENCY] [AMT]
+	</text>
+	<text name="total_label">
+		Tu saldo será de
+	</text>
+	<text name="total_amount">
+		[CURRENCY] [AMT]
+	</text>
+	<text name="purchase_warning_repurchase">
+		Confirmando esta compra sólo compras la moneda.
+Tendrá ques intentar de nuevo la operación.
+	</text>
+	<text name="purchase_warning_notenough">
+		No estás comprando dinero suficiente.
+Aumenta la cantidad a comprar.
+	</text>
+	<button label="Cancelar" name="cancel_btn"/>
+	<button label="Comprar" name="buy_btn"/>
+	<string name="buy_currency">
+		Comprar [CURRENCY] [LINDENS] por aprox. US$ [USD]
+	</string>
+</floater>

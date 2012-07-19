@@ -122,6 +122,13 @@ static bool handleTerrainDetailChanged(const LLSD& newvalue)
 	return true;
 }
 
+static bool handleTerrainScaleChanged(const LLSD& inputvalue)
+{
+	LLSD newvalue = 1.f / inputvalue.asReal();
+	LLDrawPoolTerrain::sDetailScale = newvalue.asReal();
+	return true;
+}
+
 bool handleStateMachineMaxTimeChanged(const LLSD& newvalue)
 {
 	AIStateMachine::updateSettings();
@@ -621,6 +628,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("FirstPersonAvatarVisible")->getSignal()->connect(boost::bind(&handleRenderAvatarMouselookChanged, _2));
 	gSavedSettings.getControl("RenderFarClip")->getSignal()->connect(boost::bind(&handleRenderFarClipChanged, _2));
 	gSavedSettings.getControl("RenderTerrainDetail")->getSignal()->connect(boost::bind(&handleTerrainDetailChanged, _2));
+	gSavedSettings.getControl("RenderTerrainScale")->getSignal()->connect(boost::bind(&handleTerrainScaleChanged, _2));
 	gSavedSettings.getControl("OctreeStaticObjectSizeFactor")->getSignal()->connect(boost::bind(&handleRepartition, _2));
 	gSavedSettings.getControl("OctreeDistanceFactor")->getSignal()->connect(boost::bind(&handleRepartition, _2));
 	gSavedSettings.getControl("OctreeMaxNodeCapacity")->getSignal()->connect(boost::bind(&handleRepartition, _2));

@@ -1184,7 +1184,7 @@ void LLPanelFriends::onClickImport_filepicker_continued(AIFilePicker* filepicker
 		if(!content.has("can_mod"))continue;
 
 		LLUUID agent_id = LLUUID(iter->first);
-		if(merging && importstatellsd.has(agent_id.asString()))continue;//dont need to request what weve already requested from another list import and have not got a reply yet
+		if(merging && importstatellsd.has(agent_id.asString()))continue;//dont need to request what we've already requested from another list import and have not got a reply yet
 
 		std::string agent_name = content["name"];
 		if(!is_agent_friend(agent_id))//dont need to request what we have

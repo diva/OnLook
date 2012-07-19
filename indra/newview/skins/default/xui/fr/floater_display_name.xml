@@ -1,29 +1,24 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater can_close="true" can_drag_on_left="false" can_minimize="false"
-     can_resize="false" enabled="true" height="220"
-     mouse_opaque="true" name="Display Name" title="CHANGE DISPLAY NAME" width="400">
-
-    <text length="1" bottom_delta="-50" font="SansSerif" height="25" left="20" text_color="AlertTextColor" name="lockout_text" visible="true" width="360"
-       wrap="true">
-      Prochain changement possible: [TIME].
-    </text>
-    
-    <text left="20" bottom_delta="-20" width="360" height="18" font="SansSerif" name="set_name_label">
-      Nouveau Display Name:
-    </text>
-    <line_editor max_length="31" name="display_name_editor" width="300" height="20" left="50" bottom_delta="-20" />
-    <text left="20" bottom_delta="-25" width="360" height="18" font="SansSerif" name="name_confirm_label">
-      Ecrivez le Display Name a nouveau pour confirmer:
-    </text>
-    <line_editor max_length="31" width="300" name="display_name_confirm" height="20" bottom_delta="-20" left="50" />
-    <button height="20" bottom_delta="-28" label="Sauver" font="SansSerif" left="20" name="save_btn" tool_tip="Save your new Display Name" width="113" />
-    <button height="20" bottom_delta="0" label="Recommencer" font="SansSerif" left_delta="123" name="reset_btn" tool_tip="Make Display Name the same as Username" width="113" />
-    <button height="20" bottom_delta="0" label="Annuler" font="SansSerif" left_delta="123" name="cancel_btn" tool_tip="Cancel and close this Dialog" width="113" />
-    <text left="20" bottom_delta="-25" width="360" height="18" font="SansSerif" name="name_confirm_label">
-      Le nom que vous ajoutez a votre avatar est le Display Name.
-    </text>
-     <text left="20" bottom_delta="-18" width="360" height="18" font="SansSerif" name="name_confirm_label">
-      Ecrivez le Display Name a nouveau pour confirmer.
-    </text>
+<floater name="Display Name" title="Display Name">
+	<text name="lockout_text">
+		Prochain changement possible: [TIME].
+	</text>
+	<text name="set_name_label">
+		Nouveau Display Name:
+	</text>
+	<line_editor name="display_name_editor"/>
+	<text name="name_confirm_label">
+		R&#xE9;&#xE9;crire le Display Name pour confirmer:
+	</text>
+	<line_editor name="display_name_confirm"/>
+	<button label="Sauver" name="save_btn" tool_tip=""/>
+	<button label="Effacer" name="reset_btn" tool_tip="Efface le Display Name en cours"/>
+	<button label="Annuler" name="cancel_btn" tool_tip="Annule et ferme la fen&#xEA;tre"/>
+	<text name="name_confirm_label2">
+		Le Display Name est le nom ajout&#xE9; &#xE0; l&#x27;avatar.
+	</text>
+	<text name="name_confirm_label3">
+		Vous pouvez le changer une fois par semaine.
+	</text>
 </floater>
     

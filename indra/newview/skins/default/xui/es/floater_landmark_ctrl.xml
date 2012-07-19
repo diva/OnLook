@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="landmarkpicker" title="Organizar: Hitos">
+	<check_box label="Mostrar Carpetas" name="show_folders_check"/>
+	<button label="Nuevo" label_selected="Nuevo" name="New"/>
+	<button label="Renombrar" label_selected="Renombrar" name="Rename"/>
+	<button label="Nueva Carpeta" label_selected="Nueva Carpeta" name="NewFolder"/>
+	<button label="Editar" label_selected="Editar" name="Edit"/>
+	<button label="Borrar" label_selected="Borrar" name="Delete"/>
+	<button label="Cerrar" label_selected="Cerrar" name="Close"/>
+</floater>

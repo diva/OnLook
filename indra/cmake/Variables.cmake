@@ -76,37 +76,36 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(DARWIN 1)
 
-  #SDK Compiler and Deployment targets for XCode
-  if (${XCODE_VERSION} VERSION_LESS 4.0.0)
-    set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.5.sdk)
-    set(CMAKE_XCODE_ATTIBUTE_GCC_VERSION "4.2")
-  else (${XCODE_VERSION} VERSION_LESS 4.0.0)
+  if(${CMAKE_GENERATOR} MATCHES Xcode) 
+    #SDK Compiler and Deployment targets for XCode
+    if (${XCODE_VERSION} VERSION_LESS 4.0.0)
+      set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.5.sdk)
+      set(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
+      set(CMAKE_XCODE_ATTIBUTE_GCC_VERSION "4.2")
+    else (${XCODE_VERSION} VERSION_LESS 4.0.0)
+      set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.6.sdk)
+      set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
+      set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvmgcc42")
+    endif (${XCODE_VERSION} VERSION_LESS 4.0.0)
+  else()
     set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.6.sdk)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
     set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvmgcc42")
-  endif (${XCODE_VERSION} VERSION_LESS 4.0.0)
+  endif(${CMAKE_GENERATOR} MATCHES Xcode)
 
-  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
+  ## We currently support only 32-bit i386 builds, so use these:
+  set(CMAKE_OSX_ARCHITECTURES i386)
+  set(ARCH i386)
+  set(WORD_SIZE 32)
 
-  # NOTE: To attempt an i386/PPC Universal build, add this on the configure line:
-  # -DCMAKE_OSX_ARCHITECTURES:STRING='i386;ppc'
-  # Build only for i386 by default, system default on MacOSX 10.6 is x86_64
-  if (NOT CMAKE_OSX_ARCHITECTURES)
-    set(CMAKE_OSX_ARCHITECTURES i386)
-  endif (NOT CMAKE_OSX_ARCHITECTURES)
+  ## But if you want to compile for mixed 32/64 bit, try these:
+  # set(CMAKE_OSX_ARCHITECTURES i386;x86_64)
+  # set(ARCH universal)
+  # set(WORD_SIZE 64)
 
-  if (CMAKE_OSX_ARCHITECTURES MATCHES "i386" AND CMAKE_OSX_ARCHITECTURES MATCHES "ppc")
-    set(ARCH universal)
-  else (CMAKE_OSX_ARCHITECTURES MATCHES "i386" AND CMAKE_OSX_ARCHITECTURES MATCHES "ppc")
-    if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc")
-      set(ARCH ppc)
-    else (${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc")
-      set(ARCH i386)
-    endif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc")
-  endif (CMAKE_OSX_ARCHITECTURES MATCHES "i386" AND CMAKE_OSX_ARCHITECTURES MATCHES "ppc")
-
+  ## Finally, set up the build output directories
   set(LL_ARCH ${ARCH}_darwin)
   set(LL_ARCH_DIR universal-darwin)
-  set(WORD_SIZE 32)
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 

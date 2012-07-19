@@ -223,19 +223,25 @@ BOOL LLToolPlacer::addObject( LLPCode pcode, S32 x, S32 y, U8 use_physics )
 
 	// Set params for new object based on its PCode.
 	LLQuaternion	rotation;
-	LLVector3		scale = LLVector3(
-		gSavedSettings.getF32("BuildPrefs_Xsize"),
-		gSavedSettings.getF32("BuildPrefs_Ysize"),
-		gSavedSettings.getF32("BuildPrefs_Zsize"));
+	LLVector3		scale = DEFAULT_OBJECT_SCALE;
 
 	U8				material = LL_MCODE_WOOD;
-	if(gSavedSettings.getString("BuildPrefs_Material")== "Stone") material = LL_MCODE_STONE;
-	else if(gSavedSettings.getString("BuildPrefs_Material")== "Metal") material = LL_MCODE_METAL;
-	//if(gSavedSettings.getString("BuildPrefs_Material")== "Wood") material = LL_MCODE_WOOD; redundant
-	else if(gSavedSettings.getString("BuildPrefs_Material")== "Flesh") material = LL_MCODE_FLESH;
-	else if(gSavedSettings.getString("BuildPrefs_Material")== "Rubber") material = LL_MCODE_RUBBER;
-	else if(gSavedSettings.getString("BuildPrefs_Material")== "Plastic") material = LL_MCODE_PLASTIC;
-
+	static LLCachedControl<bool> enable_BP("LiruEnableBuildPrefs", true);
+	static LLCachedControl<bool> duplicate("CreateToolCopySelection", true);
+	//If we are using the defaults, and we aren't duplicating
+	if(enable_BP && !duplicate)
+	{
+		scale = LLVector3(
+			gSavedSettings.getF32("BuildPrefs_Xsize"),
+			gSavedSettings.getF32("BuildPrefs_Ysize"),
+			gSavedSettings.getF32("BuildPrefs_Zsize"));
+		if(gSavedSettings.getString("BuildPrefs_Material")== "Stone") material = LL_MCODE_STONE;
+		else if(gSavedSettings.getString("BuildPrefs_Material")== "Metal") material = LL_MCODE_METAL;
+		//if(gSavedSettings.getString("BuildPrefs_Material")== "Wood") material = LL_MCODE_WOOD; redundant
+		else if(gSavedSettings.getString("BuildPrefs_Material")== "Flesh") material = LL_MCODE_FLESH;
+		else if(gSavedSettings.getString("BuildPrefs_Material")== "Rubber") material = LL_MCODE_RUBBER;
+		else if(gSavedSettings.getString("BuildPrefs_Material")== "Plastic") material = LL_MCODE_PLASTIC;
+	}
 	BOOL			create_selected = FALSE;
 	LLVolumeParams	volume_params;
 	
@@ -292,7 +298,7 @@ BOOL LLToolPlacer::addObject( LLPCode pcode, S32 x, S32 y, U8 use_physics )
 	gMessageSystem->addU8Fast(_PREHASH_Material,	material);
 
 	U32 flags = 0;		// not selected
-	if (use_physics)
+	if (use_physics || (enable_BP && !duplicate && gSavedSettings.getBOOL("EmeraldBuildPrefs_Physical")))
 	{
 		flags |= FLAGS_USE_PHYSICS;
 	}
@@ -477,8 +483,9 @@ BOOL LLToolPlacer::addObject( LLPCode pcode, S32 x, S32 y, U8 use_physics )
 	
 	// Pack in name value pairs
 	gMessageSystem->sendReliable(regionp->getHost());
-	//Actually call expectRez so that importtracker can do its thing
-	gImportTracker.expectRez();
+	//If we are using the defaults, and we aren't duplicating
+	if(enable_BP && !duplicate)	//then, actually call expectRez so that importtracker can do its thing, which sadly only works close up.
+		gImportTracker.expectRez();
 	// Spawns a message, so must be after above send
 	if (create_selected)
 	{

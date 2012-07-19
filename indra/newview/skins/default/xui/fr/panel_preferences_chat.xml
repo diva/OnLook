@@ -36,7 +36,7 @@ du chat :
 	</text>
 	<spinner left="335" name="max_chat_count"/>
 	<text left="397" length="1" name="text_box5" type="string" width="74">
-		lignes
+		ligne(s)
 	</text>
 	<slider label="Opacité" name="console_opacity"/>
 	<text length="1" name="text_box6" type="string">
@@ -60,7 +60,7 @@ du chat :
 	     bottom="-410" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="12"
 	     mouse_opaque="false" name="text_translate_chat" v_pad="0" width="128">
-		Traduire:
+		Traduire :
 	</text>
 
 

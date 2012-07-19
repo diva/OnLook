@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="build options floater" title="Opciones de la Grilla">
+	<spinner label="Unidad de la Grilla (metros)" label_width="145" name="GridResolution"/>
+	<spinner label="Extensión de la Grilla (metros)" label_width="146" name="GridDrawSize"/>
+	<check_box label="Activar Subunidades" name="GridSubUnit"/>
+	<check_box label="Ver la Sección Transversal" name="GridCrossSection"/>
+	<slider label="Opacidad de la Grilla" name="GridOpacity"/>
+	<spinner label="Pasos Restringidos" name="GridProtractorSize"/>
+	<spinner label="Pasos sin Restricción" name="RotationStep"/>
+</floater>

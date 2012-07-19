@@ -4,7 +4,7 @@
 	<button label="Téléporter" name="pick_teleport_btn" />
 	<button label="Voir sur la carte" name="pick_map_btn" />
 	<text name="sort_order_text">
-		Trier :
+		Trier:
 	</text>
 	<check_box label="Activé" name="enabled_check" />
 </panel>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="MemLeak" title="Simulación de Fuga de Memoria">
+	<spinner label="Velocidad de fuga (bytes por cuadro):" name="leak_speed"/>
+	<spinner label="Fuga Máxima de Memoria (MB):" name="max_leak"/>
+	<text name="total_leaked_label">
+		Memoria fugada actualmente: [SIZE] KB
+	</text>
+	<text name="note_label_1">
+		[NOTE1]
+	</text>
+	<text name="note_label_2">
+		[NOTE2]
+	</text>
+	<button label="Iniciar" name="start_btn"/>
+	<button label="Detener" name="stop_btn"/>
+	<button label="Liberar" name="release_btn"/>
+	<button label="Cerrar"  name="close_btn"/>
+</floater>

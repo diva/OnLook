@@ -78,7 +78,7 @@ public:
 	/*virtual*/ void showCursorFromMouseMove();
 	/*virtual*/ void hideCursorUntilMouseMove();
 	/*virtual*/ BOOL isCursorHidden();
-	/*virtual*/ void setCursor(ECursorType cursor);
+	/*virtual*/ void updateCursor();
 	/*virtual*/ void captureMouse();
 	/*virtual*/ void releaseMouse();
 	/*virtual*/ void setMouseClipping( BOOL b );
@@ -102,7 +102,7 @@ public:
 	/*virtual*/ void gatherInput();
 	/*virtual*/ void swapBuffers();
 
-    /*virtual*/ void delayInputProcessing() { };
+	/*virtual*/ void delayInputProcessing() { };
 
 	// handy coordinate space conversion routines
 	/*virtual*/ BOOL convertCoords(LLCoordScreen from, LLCoordWindow *to);

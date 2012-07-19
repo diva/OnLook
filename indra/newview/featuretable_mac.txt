@@ -42,6 +42,7 @@ RenderMaxPartCount			1	8192
 RenderObjectBump			1	1
 RenderReflectionDetail		1	4
 RenderTerrainDetail			1	1
+RenderTerrainScale			1	12.0
 RenderTerrainLODFactor			1	2.0
 RenderTransparentWater			1	1
 RenderTreeLODFactor			1	1.0
@@ -62,7 +63,7 @@ RenderDeferred				1	1
 RenderDeferredSSAO			1	1
 RenderShadowDetail			1	2
 WatchdogDisabled				1	1
-RenderUseStreamVBO			1	1
+ShyotlRenderUseStreamVBO			1	1
 RenderFSAASamples			1	16
 RenderMaxTextureIndex		1	16
 RenderUseFBO				1	0
@@ -86,6 +87,7 @@ RenderMaxPartCount			1	512
 RenderObjectBump			1	0
 RenderReflectionDetail		1	0
 RenderTerrainDetail			1	0
+RenderTerrainScale			1	12.0
 RenderTerrainLODFactor		1	1
 RenderTransparentWater		1	0
 RenderTreeLODFactor			1	0
@@ -117,6 +119,7 @@ RenderMaxPartCount			1	2048
 RenderObjectBump			1	1
 RenderReflectionDetail		1	0
 RenderTerrainDetail			1	1
+RenderTerrainScale			1	9.0
 RenderTerrainLODFactor		1	1.0
 RenderTransparentWater		1	1
 RenderTreeLODFactor			1	0.5
@@ -149,6 +152,7 @@ RenderMaxPartCount			1	4096
 RenderObjectBump			1	1
 RenderReflectionDetail		1	2
 RenderTerrainDetail			1	1
+RenderTerrainScale			1	7.0
 RenderTerrainLODFactor		1	2.0
 RenderTransparentWater		1	1
 RenderTreeLODFactor			1	0.5
@@ -181,6 +185,7 @@ RenderMaxPartCount			1	8192
 RenderObjectBump			1	1
 RenderReflectionDetail		1	4
 RenderTerrainDetail			1	1
+RenderTerrainScale			1	5.0
 RenderTerrainLODFactor		1	2.0
 RenderTransparentWater		1	1
 RenderTreeLODFactor			1	1.0

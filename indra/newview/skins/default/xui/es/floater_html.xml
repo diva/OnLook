@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="htmlfloater" title="">
+	<button label="Cerrar" name="close_btn"/>
+	<web_browser name="html_floater_browser"/>
+	<button label="Volver" name="back_btn"/>
+	<button label="Avanzar" name="forward_btn"/>
+	<line_editor name="url_edit"/>
+	<button label="Ir" name="go_btn"/>
+	<string name="home_page_url">
+		http://www.secondlife.com
+	</string>
+	<string name="support_page_url">
+		http://wiki.secondlife.com/wiki/Knowledge_Base/es
+	</string>
+</floater>

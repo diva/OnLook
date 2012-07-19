@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="inspect" title="Inspeccionar Objetos">
+	<scroll_list name="object_list" tool_tip="Elige un objeto de la lista para ubicarlo en el mundo">
+		<column label="Objeto" name="object_name"/>
+		<column label="Propietario" name="owner_name"/>
+		<column label="Último Propietario" name="last_owner_name"/>
+		<column label="Creador" name="creator_name"/>
+		<column label="Caras" name="face_num" width="35"/>
+		<column label="Vértices" name="vertex_num" width="35"/>
+		<column label="Scripts" name="script_num" width="35"/>
+		<column label="Total Inv." name="inv_num" width="35"/>
+		<column label="Fecha de Creación" name="creation_date" width="150"/>
+	</scroll_list>
+	<button label="Ver Perfil de Propietario..." label_selected="" name="button owner" tool_tip="Ver Perfil del Propietario del objeto seleccionado"/>
+	<button label="Ver Perfil del Creador..." label_selected="" name="button creator" tool_tip="Ver Perfil del Creador del objeto seleccionado"/>
+</floater>

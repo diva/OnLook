@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="Joystick" title="Configuración del Joystick">
+	<check_box name="enable_joystick">
+		Activar Joystick:
+	</check_box>
+	<string name="JoystickMonitor">
+		Monitor de Joystick
+	</string>
+	<string name="Axis">
+		Eje [NUM]
+	</string>
+	<string name="NoDevice">
+		No se ha detectado el dispositivo
+	</string>
+	<spinner name="JoystickAxis1" label="Mapeo Eje X"/>
+	<spinner name="JoystickAxis4" label="Mapeo Arriba/Abajo"/>
+	<spinner name="JoystickAxis6" label="Mapeo de Zoom"/>
+	<spinner name="JoystickAxis2" label="Mapeo Eje Y"/>
+	<spinner name="JoystickAxis5" label="Mapeo Izq./der."/>
+	<spinner name="JoystickAxis0" label="Mapeo Eje Z"/>
+	<spinner name="JoystickAxis3" label="Mapeo de Giro"/>
+	<check_box label="Zoom Directo" name="ZoomDirect"/>
+	<check_box label="Cursor 3D" name="Cursor3D"/>
+	<check_box label="Nivel Automático" name="AutoLeveling"/>
+	<text name="Control Modes:">
+		Modos de Control:
+	</text>
+	<check_box name="JoystickAvatarEnabled">
+		Avatar
+	</check_box>
+	<check_box name="JoystickBuildEnabled">
+		Construir
+	</check_box>
+	<check_box name="JoystickFlycamEnabled">
+		Flycam
+	</check_box>
+	<text name="XScale">
+		Escala de X
+	</text>
+	<text name="YScale">
+		Escala de Y
+	</text>
+	<text name="ZScale">
+		Escala de Z
+	</text>
+	<text name="PitchScale">
+		Escala Arriba/Abajo
+	</text>
+	<text name="YawScale">
+		Escala Izq./Der.
+	</text>
+	<text name="RollScale">
+		Escala de Giro
+	</text>
+	<text name="XDeadZone">
+		Zona Muerta de X
+	</text>
+	<text name="YDeadZone">
+		Zona Muerta de Y
+	</text>
+	<text name="ZDeadZone">
+		Zona Muerta de Z
+	</text>
+	<text name="PitchDeadZone">
+		Zona Muerta Arriba/Abajo
+	</text>
+	<text name="YawDeadZone">
+		Zona Muerta Izq./der.
+	</text>
+	<text name="RollDeadZone">
+		Zona Muerta de Giro
+	</text>
+	<text name="Feathering">
+		Rigidez
+	</text>
+	<text name="ZoomScale2">
+		Escala de Zoom
+	</text>
+	<text name="ZoomDeadZone">
+		Zona Muerta de Zoom
+	</text>
+	<button label="Predeterminado SpaceNavigator" name="SpaceNavigatorDefaults" left="330" width="210"/>
+	<button label="OK" label_selected="OK" name="ok_btn"/>
+	<button label="Cancelar" label_selected="Cancelar" name="cancel_btn"/>
+</floater>

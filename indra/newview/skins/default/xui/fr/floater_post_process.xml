@@ -2,7 +2,7 @@
 <floater name="Post-Process Floater" title="Paramètres post-traitement">
 	<tab_container name="Post-Process Tabs">
 		<panel label="Filtre couleur" name="wmiColorFilterPanel">
-			<check_box label="Activer" name="wmiColorFilterToggle" />
+			<check_box label="Activer" name="wmiColorFilterToggle"/>
 			<text name="wmiColorFilterBrightnessText">
 				Luminosité
 			</text>
@@ -15,13 +15,13 @@
 			<text name="wmiColorFilterBaseText">
 				Couleur de base du contraste
 			</text>
-			<slider label="R" name="wmiColorFilterBaseR" />
-			<slider label="V" name="wmiColorFilterBaseG" />
-			<slider label="B" name="wmiColorFilterBaseB" />
-			<slider label="I" name="wmiColorFilterBaseI" />
+			<slider label="R" name="wmiColorFilterBaseR"/>
+			<slider label="V" name="wmiColorFilterBaseG"/>
+			<slider label="B" name="wmiColorFilterBaseB"/>
+			<slider label="I" name="wmiColorFilterBaseI"/>
 		</panel>
 		<panel label="Vision de nuit" name="wmiNightVisionPanel">
-			<check_box label="Activer" name="wmiNightVisionToggle" />
+			<check_box label="Activer" name="wmiNightVisionToggle"/>
 			<text name="wmiNightVisionBrightMultText">
 				Multiple d&apos;amplificateur de lumière
 			</text>
@@ -33,22 +33,22 @@
 			</text>
 		</panel>
 		<panel label="Éclat" name="wmiBloomPanel">
-			<check_box label="Activer" name="wmiBloomToggle" />
+			<check_box label="Activer" name="wmiBloomToggle"/>
 			<text name="wmiBloomExtractText">
 				Extraction de la luminosité
 			</text>
 			<text name="wmiBloomSizeText">
-				Taille de l&apos;éclat
+				Taille de l'éclat
 			</text>
 			<text name="wmiBloomStrengthText">
-				Force de l&apos;éclat
+				Force de l'éclat
 			</text>
 		</panel>
 		<panel label="Extras" name="Extras">
-			<button label="Charger effet" label_selected="Charger effet" name="PPLoadEffect" />
+			<button label="Charger effet" label_selected="Charger effet" name="PPLoadEffect"/>
 			<button label="Enregistrer effet" label_selected="Enregistrer effet"
 			     name="PPSaveEffect" />
-			<line_editor label="Nom de l&apos;effet" name="PPEffectNameEditor" />
+			<line_editor label="Nom de l'effet" name="PPEffectNameEditor"/>
 		</panel>
 	</tab_container>
 </floater>
