@@ -39,6 +39,112 @@
 #endif
 #include <deque>
 
+#define DEBUG_WINDOWS_CODE_ON_LINUX 1
+
+#if DEBUG_WINDOWS_CODE_ON_LINUX
+
+struct windows_fd_set {
+  unsigned int fd_count;
+  curl_socket_t fd_array[64];
+};
+
+unsigned int const not_found  = (unsigned int)-1;
+
+static inline unsigned int find_fd(curl_socket_t s, windows_fd_set const* fsp)
+{
+  for (unsigned int i = 0; i < fsp->fd_count; ++i)
+  {
+	if (fsp->fd_array[i] == s)
+	  return i;
+  }
+  return not_found;
+}
+
+static int windows_select(int, windows_fd_set* readfds, windows_fd_set* writefds, windows_fd_set*, timeval* val)
+{
+  fd_set r;
+  fd_set w;
+  FD_ZERO(&r);
+  FD_ZERO(&w);
+  int mfd = -1;
+  if (readfds)
+  {
+	for (int i  = 0; i < readfds->fd_count; ++i)
+	{
+	  int fd = readfds->fd_array[i];
+	  FD_SET(fd, &r);
+	  mfd = llmax(mfd, fd);
+	}
+  }
+  if (writefds)
+  {
+	for (int i  = 0; i < writefds->fd_count; ++i)
+	{
+	  int fd = writefds->fd_array[i];
+	  FD_SET(fd, &w);
+	  mfd = llmax(mfd, fd);
+	}
+  }
+  int nfds = select(mfd + 1, readfds ? &r : NULL, writefds ? &w : NULL, NULL, val);
+  if (readfds)
+  {
+	unsigned int fd_count = 0;
+	for (int i  = 0; i < readfds->fd_count; ++i)
+	{
+	  if (FD_ISSET(readfds->fd_array[i], &r))
+		readfds->fd_array[fd_count++] = readfds->fd_array[i];
+	}
+	readfds->fd_count = fd_count;
+  }
+  if (writefds)
+  {
+	unsigned int fd_count = 0;
+	for (int i  = 0; i < writefds->fd_count; ++i)
+	{
+	  if (FD_ISSET(writefds->fd_array[i], &w))
+		writefds->fd_array[fd_count++] = writefds->fd_array[i];
+	}
+	writefds->fd_count = fd_count;
+  }
+  return nfds;
+}
+
+#undef FD_SETSIZE
+#undef FD_ZERO
+#undef FD_ISSET
+#undef FD_SET
+#undef FD_CLR
+
+int const FD_SETSIZE  = sizeof(windows_fd_set::fd_array) / sizeof(curl_socket_t);
+
+static void FD_ZERO(windows_fd_set* fsp)
+{
+  fsp->fd_count = 0;
+}
+
+static bool FD_ISSET(curl_socket_t s, windows_fd_set const* fsp)
+{
+  return find_fd(s, fsp) != not_found;
+}
+
+static void FD_SET(curl_socket_t s, windows_fd_set* fsp)
+{
+  llassert(!FD_ISSET(s, fsp));
+  fsp->fd_array[fsp->fd_count++] = s;
+}
+
+static void FD_CLR(curl_socket_t s, windows_fd_set* fsp)
+{
+  unsigned int i = find_fd(s, fsp);
+  llassert(i != not_found);
+  fsp->fd_array[i] = fsp->fd_array[--(fsp->fd_count)];
+}
+
+#define fd_set windows_fd_set
+#define select windows_select
+
+#endif // DEBUG_WINDOWS_CODE_ON_LINUX
+
 #undef AICurlPrivate
 
 namespace AICurlPrivate {
@@ -201,7 +307,7 @@ static size_t const MAXSIZE = llmax(1024, FD_SETSIZE);
 // Create an empty PollSet.
 PollSet::PollSet(void) : mFileDescriptors(new curl_socket_t [MAXSIZE]),
                          mNrFds(0), mNext(0)
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
 						 , mMaxFd(-1), mMaxFdSet(-1)
 #endif
 {
@@ -213,7 +319,7 @@ void PollSet::add(curl_socket_t s)
 {
   llassert_always(mNrFds < (int)MAXSIZE);
   mFileDescriptors[mNrFds++] = s;
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
   mMaxFd = llmax(mMaxFd, s);
 #endif
 }
@@ -250,7 +356,7 @@ void PollSet::remove(curl_socket_t s)
   // index: 0   1   2   3   4   5
   //        a   b   c   s   d   e
   curl_socket_t cur = mFileDescriptors[i];		// cur = 'e'
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
   curl_socket_t max = -1;
 #endif
   while (cur != s)
@@ -258,7 +364,7 @@ void PollSet::remove(curl_socket_t s)
 	llassert(i > 0);
 	curl_socket_t next = mFileDescriptors[--i];	// next = 'd'
 	mFileDescriptors[i] = cur;					// Overwrite 'd' with 'e'.
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
 	max = llmax(max, cur);					// max is the maximum value in 'i' or higher.
 #endif
 	cur = next;									// cur = 'd'
@@ -285,7 +391,7 @@ void PollSet::remove(curl_socket_t s)
   if (mNext > i)								// i is where s was.
 	--mNext;
 
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
   // If s was the largest file descriptor, we have to update mMaxFd.
   if (s == mMaxFd)
   {
@@ -302,7 +408,7 @@ void PollSet::remove(curl_socket_t s)
 
   // ALSO make sure that s is no longer set in mFdSet, or we might confuse libcurl by
   // calling curl_multi_socket_action for a socket that it told us to remove.
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
   clr(s);
 #else
   // We have to use a custom implementation here, because we don't want to invalidate mIter.
@@ -351,13 +457,13 @@ inline void PollSet::clr(curl_socket_t fd)
 refresh_t PollSet::refresh(void)
 {
   FD_ZERO(&mFdSet);
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
   mCopiedFileDescriptors.clear();
 #endif
 
   if (mNrFds == 0)
   {
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
 	mMaxFdSet = -1;
 #endif
 	return empty_and_complete;
@@ -372,7 +478,7 @@ refresh_t PollSet::refresh(void)
   if (mNrFds >= FD_SETSIZE)
   {
 	llwarns << "PollSet::reset: More than FD_SETSIZE (" << FD_SETSIZE << ") file descriptors active!" << llendl;
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
 	// Calculate mMaxFdSet.
 	// Run over FD_SETSIZE - 1 elements, starting at mNext, wrapping to 0 when we reach the end.
 	int max = -1, i = mNext, count = 0;
@@ -383,7 +489,7 @@ refresh_t PollSet::refresh(void)
   else
   {
 	mNext = 0;				// Start at the beginning if we copy everything anyway.
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
 	mMaxFdSet = mMaxFd;
 #endif
   }
@@ -397,7 +503,7 @@ refresh_t PollSet::refresh(void)
 	  return not_complete_not_empty;
 	}
 	FD_SET(mFileDescriptors[i], &mFdSet);
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
 	mCopiedFileDescriptors.push_back(mFileDescriptors[i]);
 #endif
 	if (++i == mNrFds)
@@ -435,7 +541,7 @@ refresh_t PollSet::refresh(void)
 
 void PollSet::reset(void)
 {
-#if LL_WINDOWS
+#if LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX
   mIter = 0;
 #else
   if (mCopiedFileDescriptors.empty())
@@ -451,7 +557,7 @@ void PollSet::reset(void)
 
 inline curl_socket_t PollSet::get(void) const
 {
-#if LL_WINDOWS
+#if LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX
   return (mIter >= mFdSet.fd_count) ? CURL_SOCKET_BAD : mFdSet.fd_array[mIter];
 #else
   return (mIter == mCopiedFileDescriptors.end()) ? CURL_SOCKET_BAD : *mIter;
@@ -460,7 +566,7 @@ inline curl_socket_t PollSet::get(void) const
 
 void PollSet::next(void)
 {
-#if LL_WINDOWS
+#if LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX
   llassert(mIter < mFdSet.fd_count);
   ++mIter;
 #else
@@ -825,7 +931,7 @@ void AICurlThread::run(void)
 	  FD_SET(mWakeUpFd, read_fd_set);
 	  fd_set* write_fd_set = ((wres & empty)) ? NULL : multi_handle_w->mWritePollSet->access();
 	  // Calculate nfds (ignored on windows).
-#if !LL_WINDOWS
+#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
 	  curl_socket_t const max_rfd = llmax(multi_handle_w->mReadPollSet->get_max_fd(), mWakeUpFd);
 	  curl_socket_t const max_wfd = multi_handle_w->mWritePollSet->get_max_fd();
 	  int nfds = llmax(max_rfd, max_wfd) + 1;
