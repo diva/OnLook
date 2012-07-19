@@ -23,4 +23,5 @@
 	     mouse_opaque="true" name="Sound play btn" scale_image="true"
 	     sound_flags="0" tool_tip="Play this sound so that others can hear it."
 	     width="120" />
+	 <string name="Sound: ">Sound: </string>
 </floater>
