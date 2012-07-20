@@ -224,6 +224,9 @@ BOOL LLPanelDisplay::postBuild()
 
 	mGraphicsBorder = getChild<LLViewBorder>("GraphicsBorder");
 
+	// Enable Transparent Water
+	mCtrlTransparentWater = getChild<LLCheckBoxCtrl>("TransparentWater");
+
 	//----------------------------------------------------------------------------
 	// Enable Bump/Shiny
 	mCtrlBumpShiny = getChild<LLCheckBoxCtrl>("BumpShiny");
@@ -409,6 +412,7 @@ void LLPanelDisplay::refresh()
 	mQualityPerformance = gSavedSettings.getU32("RenderQualityPerformance");
 	mCustomSettings = gSavedSettings.getBOOL("RenderCustomSettings");
 
+	mTransparentWater = gSavedSettings.getBOOL("RenderTransparentWater");
 	// shader settings
 	mBumpShiny = gSavedSettings.getBOOL("RenderObjectBump");
 	mShaderEnable = gSavedSettings.getBOOL("VertexShaderEnable");
@@ -666,6 +670,7 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	llassert(mSkyFactorText != NULL);
 	llassert(mPostProcessText != NULL);
 
+	llassert(mCtrlTransparentWater != NULL);
 	llassert(mCtrlBumpShiny != NULL);
 	llassert(mCtrlWindLight != NULL);
 	llassert(mCtrlAvatarVP != NULL);
@@ -716,6 +721,7 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	mSkyFactorText->setVisible(!isHidden);
 	mPostProcessText->setVisible(!isHidden);
 
+	mCtrlTransparentWater->setVisible(!isHidden);
 	mCtrlBumpShiny->setVisible(!isHidden);
 	mCtrlWindLight->setVisible(!isHidden);
 	mCtrlAvatarVP->setVisible(!isHidden);
@@ -761,6 +767,7 @@ void LLPanelDisplay::cancel()
 
 	gSavedSettings.setBOOL("RenderCustomSettings", mCustomSettings);
 
+	gSavedSettings.setBOOL("RenderTransparentWater", mTransparentWater);
 	gSavedSettings.setBOOL("RenderObjectBump", mBumpShiny);
 	gSavedSettings.setBOOL("VertexShaderEnable", mShaderEnable);
 	gSavedSettings.setBOOL("WindLightUseAtmosShaders", mWindLight);
