@@ -574,25 +574,6 @@ bool handleVoiceClientPrefsChanged(const LLSD& newvalue)
 	return true;
 }
 
-// NaCl - Antispam Registry
-bool handleNaclAntiSpamGlobalQueueChanged(const LLSD& newvalue)
-{
-    NACLAntiSpamRegistry::setGlobalQueue(newvalue.asBoolean());
-    return true;
-}
-bool handleNaclAntiSpamTimeChanged(const LLSD& newvalue)
-{
-    NACLAntiSpamRegistry::setAllQueueTimes(newvalue.asInteger());
-    return true;
-}
-bool handleNaclAntiSpamAmountChanged(const LLSD& newvalue)
-{
-    NACLAntiSpamRegistry::setAllQueueAmounts(newvalue.asInteger());
-    return true;
-}
-// NaCl End
-
-
 bool handleTranslateChatPrefsChanged(const LLSD& newvalue)
 {
 	LLFloaterChat* floaterp = LLFloaterChat::getInstance();
@@ -815,12 +796,6 @@ void settings_setup_listeners()
     // [/Ansariel: Display name support]
 
 	gSavedSettings.getControl("AllowLargeSounds")->getSignal()->connect(boost::bind(&handleAllowLargeSounds, _2));
-
-    // NaCl - Antispam Registry
-    gSavedSettings.getControl("_NACL_AntiSpamGlobalQueue")->getSignal()->connect(boost::bind(&handleNaclAntiSpamGlobalQueueChanged, _2));
-    gSavedSettings.getControl("_NACL_AntiSpamTime")->getSignal()->connect(boost::bind(&handleNaclAntiSpamTimeChanged, _2));
-    gSavedSettings.getControl("_NACL_AntiSpamAmount")->getSignal()->connect(boost::bind(&handleNaclAntiSpamAmountChanged, _2));
-    // NaCl End
 }
 
 void onCommitControlSetting_gSavedSettings(LLUICtrl* ctrl, void* name)

@@ -246,75 +246,6 @@ const BOOL SCRIPT_QUESTION_IS_CAUTION[SCRIPT_PERMISSION_EOF] =
 	FALSE	// ControlYourCamera
 };
 
-template <typename T>
-class SH_SpamHandler
-{
-public:
-	SH_SpamHandler(const char *pToggleCtrl, const char *pDurCtrl, const char *pFreqCtrl) :
-		mDuration(pDurCtrl, 1.f),
-		mFrequency(pFreqCtrl, 5),
-		mEnabled(false)
-	{
-		gSavedSettings.getControl(pToggleCtrl)->getSignal()->connect(boost::bind(&SH_SpamHandler::CtrlToggle, this, _2));
-		CtrlToggle(gSavedSettings.getBOOL(pToggleCtrl));
-	}
-	bool CtrlToggle(const LLSD& newvalue)
-	{
-		bool on = newvalue.asBoolean();
-		if(on == mEnabled)
-			return true;
-		mEnabled = on;
-		mTimer.stop();
-		mActiveList.clear();
-		mBlockedList.clear();
-		return true;
-	}
-	bool isBlocked(const T &owner, const LLUUID &source_id, const char *pNotification, LLSD args=LLSD())
-	{
-		if(!mEnabled || isAgent(owner))
-			return false;
-		if(mBlockedList.find(owner) != mBlockedList.end())
-			return true;
-		if(mTimer.getStarted() && mTimer.getElapsedTimeF32() < mDuration)
-		{
-			typename std::map<const T,U32>::iterator it = mActiveList.insert(std::pair<const T, U32>(owner,0)).first;
-			if(++(it->second)>=mFrequency)
-			{
-				mBlockedList.insert(owner);
-				if(pNotification)
-				{
-					args["OWNER"] = owner;
-					args["SOURCE"] = source_id;
-					LLNotifications::getInstance()->add(pNotification,args);
-				}
-				return true;
-			}
-		}
-		else
-		{
-			mActiveList.clear();
-			mTimer.start();
-		}
-		return false;
-	}
-private:
-	//Owner is either a key, or a name. Do not look up perms since object may be unknown.
-	static bool isAgent(const T &owner);
-	bool mEnabled;
-	LLFrameTimer mTimer;
-	const LLCachedControl<F32> mDuration;
-	const LLCachedControl<U32> mFrequency;
-	std::map<const T,U32> mActiveList;
-	std::set<T> mBlockedList;
-};
-template<> bool SH_SpamHandler<LLUUID>::isAgent(const LLUUID &owner) { return gAgent.getID() == owner; }
-template<> bool SH_SpamHandler<std::string>::isAgent(const std::string &owner)
-{
-	std::string str;
-	gAgent.getName(str);
-	return str == owner;
-}
-
 bool friendship_offer_callback(const LLSD& notification, const LLSD& response)
 {
 	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
@@ -1705,11 +1636,6 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 
 void inventory_offer_handler(LLOfferInfo* info, BOOL from_task)
 {
-    // NaCl - Antispam Registry
-    if(NACLAntiSpamRegistry::checkQueue((U32)NACLAntiSpamRegistry::QUEUE_INVENTORY,info->mFromID))
-        return;
-    // NaCl End
-	
 	//Until throttling is implmented, busy mode should reject inventory instead of silently
 	//accepting it.  SEE SL-39554
 	if (gAgent.getBusy())
@@ -1717,7 +1643,12 @@ void inventory_offer_handler(LLOfferInfo* info, BOOL from_task)
 		info->forceResponse(IOR_BUSY);
 		return;
 	}
-	
+
+	// NaCl - Antispam Registry
+	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
+	if(antispam || NACLAntiSpamRegistry::checkQueue((U32)NACLAntiSpamRegistry::QUEUE_INVENTORY,info->mFromID))
+		return;
+	// NaCl End
 	//If muted, don't even go through the messaging stuff.  Just curtail the offer here.
 	if (LLMuteList::getInstance()->isMuted(info->mFromID, info->mFromName))
 	{
@@ -1971,6 +1902,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	{
 		return;
 	}
+	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
 	LLUUID from_id;
 	BOOL from_group;
 	LLUUID to_id;
@@ -2059,15 +1991,6 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	{
 		LLSD args;
 		args["NAME"] = name;
-		static SH_SpamHandler<LLUUID> avatar_spam_check("SGBlockGeneralSpam","SGSpamTime","SGSpamCount");
-		static SH_SpamHandler<LLUUID> object_spam_check("SGBlockGeneralSpam","SGSpamTime","SGSpamCount");
-		if(d==IM_FROM_TASK||d==IM_GOTO_URL||d==IM_FROM_TASK_AS_ALERT||d==IM_TASK_INVENTORY_OFFERED||d==IM_TASK_INVENTORY_ACCEPTED||d==IM_TASK_INVENTORY_DECLINED)
-		{
-			if(object_spam_check.isBlocked(from_id,session_id,"BlockedGeneralObjects",args))
-				return;
-		}
-		else if(avatar_spam_check.isBlocked(from_id,from_id,"BlockedGeneralAvatar",args))
-			return;
 	}
 
 	LLViewerObject *source = gObjectList.findObject(session_id); //Session ID is probably the wrong thing.
@@ -2501,6 +2424,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	case IM_GROUP_NOTICE:
 	case IM_GROUP_NOTICE_REQUESTED:
 		{
+			// NaCl - Antispam
+			if(antispam)
+				return;
+			// NaCl End
 			LL_INFOS("Messaging") << "Received IM_GROUP_NOTICE message." << LL_ENDL;
 			// Read the binary bucket for more information.
 			struct notice_bucket_header_t
@@ -2596,6 +2523,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		break;
 	case IM_GROUP_INVITATION:
 		{
+			// NaCl - Antispam
+			if(antispam)
+				return;
+			// NaCl End
 			//if (!is_linden && (is_busy || is_muted))
 			if ((is_busy || is_muted))
 			{
@@ -2640,6 +2571,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	case IM_TASK_INVENTORY_OFFERED:
 		// Someone has offered us some inventory.
 		{
+			// NaCl - Antispam
+			if(antispam)
+				return;
+			// NaCl End
 			LLOfferInfo* info = new LLOfferInfo;
 
 			if (IM_INVENTORY_OFFERED == dialog)
@@ -2892,6 +2827,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		}
 		break;
 	case IM_FROM_TASK_AS_ALERT:
+			// NaCl - Antispam
+			if(antispam)
+				return;
+			// NaCl End
 		if (is_busy && !is_owned_by_me)
 		{
 			return;
@@ -2929,6 +2868,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		
 	case IM_LURE_USER:
 		{
+			if(antispam)	return; //NaCl Antispam
 // [RLVa:KB] - Checked: 2010-12-11 (RLVa-1.2.2c) | Added: RLVa-1.2.2c
 			// If the lure sender is a specific @accepttp exception they will override muted and busy status
 			bool fRlvSummon = (rlv_handler_t::isEnabled()) && (gRlvHandler.isException(RLV_BHVR_ACCEPTTP, from_id));
@@ -3069,6 +3009,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 
 	case IM_GOTO_URL:
 		{
+			// NaCl - Antispam
+			if(antispam)
+				return;
+			// NaCl End
 			LLSD args;
 			// n.b. this is for URLs sent by the system, not for
 			// URLs sent by scripts (i.e. llLoadURL)
@@ -3093,6 +3037,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 
 	case IM_FRIENDSHIP_OFFERED:
 		{
+			// NaCl - Antispam
+			if(antispam)
+				return;
+			// NaCl End
 			LLSD payload;
 			payload["from_id"] = from_id;
 			payload["session_id"] = session_id;;
@@ -3227,6 +3175,11 @@ static LLNotificationFunctorRegistration callingcard_offer_cb_reg("OfferCallingC
 
 void process_offer_callingcard(LLMessageSystem* msg, void**)
 {
+	// NaCl - Antispam
+	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
+	if(antispam)
+		return;
+	// NaCl End
 	// someone has offered to form a friendship
 	LL_DEBUGS("Messaging") << "callingcard offer" << LL_ENDL;
 
@@ -3270,9 +3223,6 @@ void process_offer_callingcard(LLMessageSystem* msg, void**)
 		}
 		else
 		{
-			static SH_SpamHandler<LLUUID> spam_check("SGBlockCardSpam","SHSpamTime","SGSpamCount");
-			if(spam_check.isBlocked(source_id,source_id,"BlockedCards",args))
-				return;
 			LLNotificationsUtil::add("OfferCallingCard", args, payload);
 		}
 	}
@@ -3482,12 +3432,6 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 	{
 		LLSD args;
 		args["NAME"] = from_name;
-		static SH_SpamHandler<LLUUID> avatar_spam_check("SGBlockChatSpam","SGChatSpamTime","SGChatSpamCount");
-		static SH_SpamHandler<LLUUID> object_spam_check("SGBlockChatSpam","SGChatSpamTime","SGChatSpamCount");
-		if(	(chatter->isAvatar()	&&	avatar_spam_check.isBlocked(from_id,from_id,"BlockedChatterAvatar",args)) ||
-			(!chatter->isAvatar()	&&	object_spam_check.isBlocked(owner_id,from_id,"BlockedChatterObjects",args)) )
-			return;
-
 		chat.mPosAgent = chatter->getPositionAgent();
 		
 		// Make swirly things only for talking objects. (not script debug messages, though)
@@ -6132,12 +6076,10 @@ void process_economy_data(LLMessageSystem *msg, void** /*user_data*/)
 
 void notify_cautioned_script_question(const LLSD& notification, const LLSD& response, S32 orig_questions, BOOL granted)
 {
-
-    // NaCl - Antispam Registry
-    if(NACLAntiSpamRegistry::checkQueue((U32)NACLAntiSpamRegistry::QUEUE_SCRIPT_DIALOG, notification["payload"]["task_id"].asUUID()))
-        return;
-    // NaCl End
-
+	// NaCl - Antispam Registry
+	LLUUID task_id = notification["payload"]["task_id"].asUUID();
+	if(NACLAntiSpamRegistry::checkQueue((U32)NACLAntiSpamRegistry::QUEUE_SCRIPT_DIALOG,task_id)) return;
+	// NaCl End
 	// only continue if at least some permissions were requested
 	if (orig_questions)
 	{
@@ -6304,7 +6246,12 @@ static LLNotificationFunctorRegistration script_question_cb_reg_2("ScriptQuestio
 
 void process_script_question(LLMessageSystem *msg, void **user_data)
 {
-	// *TODO:translate owner name -> [FIRST] [LAST]
+	// NaCl - Antispam
+	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
+	if(antispam)
+		return;
+	// NaCl End
+	// *TODO: Translate owner name -> [FIRST] [LAST]
 
 	LLHost sender = msg->getSender();
 
@@ -6984,6 +6931,11 @@ static LLNotificationFunctorRegistration callback_script_dialog_reg_2("ScriptDia
 
 void process_script_dialog(LLMessageSystem* msg, void**)
 {
+	// NaCl - Antispam
+	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
+	if(antispam)
+		return;
+	// NaCl End
 	S32 i;
 	LLSD payload;
 
@@ -7078,10 +7030,6 @@ void process_script_dialog(LLMessageSystem* msg, void**)
 	{
 		args["NAME"] = LLCacheName::buildFullName(first_name, last_name);
 
-		static SH_SpamHandler<std::string> spam_check("SGBlockDialogSpam","SGSpamTime","SGSpamCount");
-		if(spam_check.isBlocked(first_name + " " + last_name,object_id,"BlockedDialogs",args))
-			return;
-
 		if (is_text_box)
 		{
 			args["DEFAULT"] = default_text;
@@ -7165,6 +7113,11 @@ void callback_load_url_name(const LLUUID& id, const std::string& full_name, bool
 
 void process_load_url(LLMessageSystem* msg, void**)
 {
+	// NaCl - Antispam
+	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
+	if(antispam)
+		return;
+	// NaCl End
 	LLUUID object_id;
 	LLUUID owner_id;
 	BOOL owner_is_group;
@@ -7255,6 +7208,11 @@ void process_initiate_download(LLMessageSystem* msg, void**)
 
 void process_script_teleport_request(LLMessageSystem* msg, void**)
 {
+	// NaCl - Antispam
+	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
+	if(antispam)
+		return;
+	// NaCl End
 	if (!gSavedSettings.getBOOL("ScriptsCanShowUI")) return;
 	
 	std::string object_name;

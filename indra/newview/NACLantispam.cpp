@@ -388,3 +388,19 @@ void NACLAntiSpamRegistry::purgeGlobalEntries()
 	}
 	globalEntries.clear();
 }
+bool NACLAntiSpamRegistry::handleNaclAntiSpamGlobalQueueChanged(const LLSD& newvalue)
+{
+    setGlobalQueue(newvalue.asBoolean());
+    return true;
+}
+bool NACLAntiSpamRegistry::handleNaclAntiSpamTimeChanged(const LLSD& newvalue)
+{
+    setAllQueueTimes(newvalue.asInteger());
+    return true;
+}
+bool NACLAntiSpamRegistry::handleNaclAntiSpamAmountChanged(const LLSD& newvalue)
+{
+    setAllQueueAmounts(newvalue.asInteger());
+    return true;
+}
+

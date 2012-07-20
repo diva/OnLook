@@ -49,6 +49,9 @@ public:
 	static void setAllQueueTimes(U32 amount);
 	static void setAllQueueAmounts(U32 time);
 	static bool checkQueue(U32 name, LLUUID& source, U32 multiplier=1, bool silent=false);
+	static bool handleNaclAntiSpamGlobalQueueChanged(const LLSD& newvalue);
+	static bool handleNaclAntiSpamTimeChanged(const LLSD& newvalue);
+	static bool handleNaclAntiSpamAmountChanged(const LLSD& newvalue);
 	static void clearRegisteredQueue(U32 name);
 	static void purgeRegisteredQueue(U32 name);
 	static void clearAllQueues();
