@@ -346,7 +346,9 @@ void LLVolumeImplFlexible::doIdleUpdate(LLAgent &agent, LLWorld &world, const F6
 					gPipeline.markRebuild(drawablep, LLDrawable::REBUILD_POSITION, FALSE);
 				}
 			}
-		}
+ 		}
+		if(!mInitialized)
+			updateRenderRes();
 	}
 }
 
