@@ -44,6 +44,7 @@ namespace FMOD
 {
 	class System;
 	class Channel;
+	class ChannelGroup;
 	class Sound;
 	class DSP;
 }
@@ -83,6 +84,9 @@ protected:
 	FMOD::DSP *mWindDSP;
 	FMOD::System *mSystem;
 	bool mEnableProfiler;
+
+public:
+	static FMOD::ChannelGroup *mChannelGroups[LLAudioEngine::AUDIO_TYPE_COUNT];
 };
 
 

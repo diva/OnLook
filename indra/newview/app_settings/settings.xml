@@ -1801,6 +1801,17 @@
       <key>Value</key>
       <real>1.0</real>
     </map>
+    <key>AudioLevelUnderwaterRolloff</key>
+    <map>
+      <key>Comment</key>
+      <string>Controls the distance-based dropoff of audio volume when camera is submerged (fraction or multiple of default audio rolloff)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>4.0</real>
+    </map>
     <key>AudioLevelSFX</key>
     <map>
       <key>Comment</key>

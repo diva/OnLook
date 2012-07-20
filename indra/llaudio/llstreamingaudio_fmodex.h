@@ -80,8 +80,6 @@ private:
 	F32 mGain;
 
 	LLTimer mLastStarved;
-	unsigned int mStarvedProgress;
-	unsigned int mStarvedNoProgressFrames;
 
 	LLSD *mMetaData;
 };
