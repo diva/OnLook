@@ -245,7 +245,6 @@
 #include "lltexlayer.h"
 
 // <edit>
-#include "dofloaterhex.h"
 #include "hgfloatertexteditor.h"
 #include "llfloatervfs.h"
 #include "llfloatervfsexplorer.h"
@@ -473,7 +472,6 @@ void handle_force_ground_sit(void*);
 void handle_phantom_avatar(void*);
 void handle_hide_typing_notification(void*);
 void handle_close_all_notifications(void*);
-void handle_reopen_with_hex_editor(void*);
 //void handle_open_message_log(void*);
 void handle_edit_ao(void*);
 void handle_local_assets(void*);
@@ -3637,11 +3635,6 @@ void process_grant_godlike_powers(LLMessageSystem* msg, void**)
 }
 
 // <edit>
-
-void handle_reopen_with_hex_editor(void*)
-{
-
-}
 
 /*void handle_open_message_log(void*)
 {

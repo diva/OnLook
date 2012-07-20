@@ -35,8 +35,8 @@
 
 #include "lluuid.h"
 #include "llstring.h"
-#include "llmemtype.h"
 #include "llthread.h"
+#include "llmemtype.h"
 #include "aithreadsafe.h"
 
 const S32 MIN_IMAGE_MIP =  2; // 4x4, only used for expand/contract power of 2

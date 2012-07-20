@@ -37,7 +37,6 @@ include(LLUI)
 include(LLVFS)
 include(LLWindow)
 include(LLXML)
-include(LLXUIXML)
 include(LScript)
 include(Linking)
 include(NDOF)
@@ -72,7 +71,6 @@ include_directories(
     ${LLVFS_INCLUDE_DIRS}
     ${LLWINDOW_INCLUDE_DIRS}
     ${LLXML_INCLUDE_DIRS}
-    ${LLXUIXML_INCLUDE_DIRS}
     ${LSCRIPT_INCLUDE_DIRS}
     ${LSCRIPT_INCLUDE_DIRS}/lscript_compile
     )
@@ -98,11 +96,7 @@ set(viewer_SOURCE_FILES
     ascentprefschat.cpp
     ascentprefssys.cpp
     ascentprefsvan.cpp
-	#dhparam.cpp
-	#dsaparam.cpp
     emeraldboobutils.cpp
-    dofloaterhex.cpp
-    dohexeditor.cpp
     floatersculptpreview.cpp
     hbfloatergrouptitles.cpp
     hgfloatertexteditor.cpp
@@ -595,8 +589,6 @@ set(viewer_HEADER_FILES
     ascentprefssys.h
     ascentprefsvan.h
     emeraldboobutils.h
-    dofloaterhex.h
-    dohexeditor.h
     floatersculptpreview.h
     hbfloatergrouptitles.h
     hgfloatertexteditor.h
@@ -1550,7 +1542,6 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${LLVFS_LIBRARIES}
     ${LLWINDOW_LIBRARIES}
     ${LLXML_LIBRARIES}
-    ${LLXUIXML_LIBRARIES}
     ${LSCRIPT_LIBRARIES}
     ${LLMATH_LIBRARIES}
     ${LLCOMMON_LIBRARIES}

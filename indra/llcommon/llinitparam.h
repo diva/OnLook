@@ -35,6 +35,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "llerror.h"
+#include "lltypeinfolookup.h"
 
 namespace LLInitParam
 {
@@ -205,7 +206,7 @@ namespace LLInitParam
 		mutable std::string	mValueName;
 	};
 
-	class Parser
+	class LL_COMMON_API Parser
 	{
 		LOG_CLASS(Parser);
 
@@ -227,9 +228,9 @@ namespace LLInitParam
 		typedef bool (*parser_write_func_t)(Parser& parser, const void*, name_stack_t&);
 		typedef boost::function<void (name_stack_t&, S32, S32, const possible_values_t*)>	parser_inspect_func_t;
 
-		typedef std::map<const std::type_info*, parser_read_func_t, CompareTypeID>		parser_read_func_map_t;
-		typedef std::map<const std::type_info*, parser_write_func_t, CompareTypeID>		parser_write_func_map_t;
-		typedef std::map<const std::type_info*, parser_inspect_func_t, CompareTypeID>	parser_inspect_func_map_t;
+		typedef LLTypeInfoLookup<parser_read_func_t>		parser_read_func_map_t;
+		typedef LLTypeInfoLookup<parser_write_func_t>		parser_write_func_map_t;
+		typedef LLTypeInfoLookup<parser_inspect_func_t>		parser_inspect_func_map_t;
 
 		Parser(parser_read_func_map_t& read_map, parser_write_func_map_t& write_map, parser_inspect_func_map_t& inspect_map)
 		:	mParseSilently(false),
@@ -301,7 +302,7 @@ namespace LLInitParam
 	class Param;
 
 	// various callbacks and constraints associated with an individual param
-	struct ParamDescriptor
+	struct LL_COMMON_API ParamDescriptor
 	{
 		struct UserData
 		{
@@ -341,7 +342,7 @@ namespace LLInitParam
 	typedef boost::shared_ptr<ParamDescriptor> ParamDescriptorPtr;
 
 	// each derived Block class keeps a static data structure maintaining offsets to various params
-	class BlockDescriptor
+	class LL_COMMON_API BlockDescriptor
 	{
 	public:
 		BlockDescriptor();
@@ -369,7 +370,7 @@ namespace LLInitParam
 		class BaseBlock*				mCurrentBlockPtr;		// pointer to block currently being constructed
 	};
 
-	class BaseBlock
+	class LL_COMMON_API BaseBlock
 	{
 	public:
 		//TODO: implement in terms of owned_ptr
@@ -566,7 +567,7 @@ namespace LLInitParam
 		static bool equals(const BaseBlock::Lazy<T>& a, const BaseBlock::Lazy<T>& b) { return !a.empty() || !b.empty(); }
 	};
 
-	class Param
+	class LL_COMMON_API Param
 	{
 	public:
 		void setProvided(bool is_provided = true)
@@ -1253,15 +1254,16 @@ namespace LLInitParam
 			return mValues.back();
 		}
 
-		void add(const value_t& item)
+		self_t& add(const value_t& item)
 		{
 			param_value_t param_value;
 			param_value.setValue(item);
 			mValues.push_back(param_value);
 			setProvided();
+			return *this;
 		}
 
-		void add(const typename name_value_lookup_t::name_t& name)
+		self_t& add(const typename name_value_lookup_t::name_t& name)
 		{
 			value_t value;
 
@@ -1271,6 +1273,8 @@ namespace LLInitParam
 				add(value);
 				mValues.back().setValueName(name);
 			}
+
+			return *this;
 		}
 
 		// implicit conversion
@@ -1441,13 +1445,14 @@ namespace LLInitParam
 			return mValues.back();
 		}
 
-		void add(const value_t& item)
+		self_t& add(const value_t& item)
 		{
 			mValues.push_back(item);
 			setProvided();
+			return *this;
 		}
 
-		void add(const typename name_value_lookup_t::name_t& name)
+		self_t& add(const typename name_value_lookup_t::name_t& name)
 		{
 			value_t value;
 
@@ -1457,6 +1462,7 @@ namespace LLInitParam
 				add(value);
 				mValues.back().setValueName(name);
 			}
+			return *this;
 		}
 
 		// implicit conversion
@@ -2057,8 +2063,8 @@ namespace LLInitParam
 		
 
 		// block param interface
-		bool deserializeBlock(Parser& p, Parser::name_stack_range_t name_stack_range, bool new_name);
-		void serializeBlock(Parser& p, Parser::name_stack_t& name_stack, const BaseBlock* diff_block = NULL) const;
+		LL_COMMON_API bool deserializeBlock(Parser& p, Parser::name_stack_range_t name_stack_range, bool new_name);
+		LL_COMMON_API void serializeBlock(Parser& p, Parser::name_stack_t& name_stack, const BaseBlock* diff_block = NULL) const;
 		bool inspectBlock(Parser& p, Parser::name_stack_t name_stack = Parser::name_stack_t(), S32 min_count = 0, S32 max_count = S32_MAX) const
 		{
 			//TODO: implement LLSD params as schema type Any

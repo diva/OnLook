@@ -15,8 +15,8 @@ include_directories(
     )
 
 set(llcommon_SOURCE_FILES
-	aiframetimer.cpp
-	imageids.cpp
+    aiframetimer.cpp
+    imageids.cpp
     indra_constants.cpp
     llallocator.cpp
     llallocator_heap_profile.cpp
@@ -24,7 +24,7 @@ set(llcommon_SOURCE_FILES
     llapr.cpp
     llaprpool.cpp
     llassettype.cpp
-	llavatarname.cpp
+    llavatarname.cpp
     llbase32.cpp
     llbase64.cpp
     llcommon.cpp
@@ -53,6 +53,7 @@ set(llcommon_SOURCE_FILES
     llformat.cpp
     llframetimer.cpp
     llheartbeat.cpp
+    llinitparam.cpp
     llinstancetracker.cpp
     llindraconfigfile.cpp
     llliveappconfig.cpp
@@ -171,6 +172,7 @@ set(llcommon_HEADER_FILES
     llheartbeat.h
     llhttpstatuscodes.h
     llindexedqueue.h
+    llinitparam.h
     llinstancetracker.h
     llindraconfigfile.h
     llkeythrottle.h
@@ -212,6 +214,7 @@ set(llcommon_HEADER_FILES
     llsingleton.h
     llskiplist.h
     llskipmap.h
+    llsortedvector.h
     llstack.h
     llstacktrace.h
     llstat.h
@@ -226,6 +229,7 @@ set(llcommon_HEADER_FILES
     llthreadsafequeue.h
     lltimer.h
     lltreeiterators.h
+    lltypeinfolookup.h
     lluri.h
     lluuid.h
     lluuidhashmap.h
