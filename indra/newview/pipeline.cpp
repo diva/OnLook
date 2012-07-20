@@ -1833,7 +1833,7 @@ void LLPipeline::checkReferences(LLFace* face)
 			check_references(group, face);
 		}
 
-		for (LLCullResult::drawable_list_t::iterator iter = sCull->beginVisibleList(); iter != sCull->endVisibleList(); ++iter)
+		for (LLCullResult::drawable_iterator iter = sCull->beginVisibleList(); iter != sCull->endVisibleList(); ++iter)
 		{
 			LLDrawable* drawable = *iter;
 			check_references(drawable, face);
@@ -1865,7 +1865,7 @@ void LLPipeline::checkReferences(LLDrawable* drawable)
 			check_references(group, drawable);
 		}
 
-		for (LLCullResult::drawable_list_t::iterator iter = sCull->beginVisibleList(); iter != sCull->endVisibleList(); ++iter)
+		for (LLCullResult::drawable_iterator iter = sCull->beginVisibleList(); iter != sCull->endVisibleList(); ++iter)
 		{
 			if (drawable == *iter)
 			{
