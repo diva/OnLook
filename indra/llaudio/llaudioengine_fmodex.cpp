@@ -72,6 +72,8 @@ bool attemptDelayLoad()
 
 FMOD_RESULT F_CALLBACK windCallback(FMOD_DSP_STATE *dsp_state, float *inbuffer, float *outbuffer, unsigned int length, int inchannels, int outchannels);
 
+FMOD::ChannelGroup *LLAudioEngine_FMODEX::mChannelGroups[LLAudioEngine::AUDIO_TYPE_COUNT] = {0};
+
 LLAudioEngine_FMODEX::LLAudioEngine_FMODEX(bool enable_profiler)
 {
 	mInited = false;
@@ -207,7 +209,13 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 
 	U32 fmod_flags = FMOD_INIT_NORMAL;
 	if(mEnableProfiler)
+	{
 		fmod_flags |= FMOD_INIT_ENABLE_PROFILE;
+		mSystem->createChannelGroup("None", &mChannelGroups[AUDIO_TYPE_NONE]);
+		mSystem->createChannelGroup("SFX", &mChannelGroups[AUDIO_TYPE_SFX]);
+		mSystem->createChannelGroup("UI", &mChannelGroups[AUDIO_TYPE_UI]);
+		mSystem->createChannelGroup("Ambient", &mChannelGroups[AUDIO_TYPE_AMBIENT]);
+	}
 
 #if LL_LINUX
 	bool audio_ok = false;
@@ -639,6 +647,9 @@ void LLAudioChannelFMODEX::play()
 	Check_FMOD_Error(mChannelp->setPaused(false), "FMOD::Channel::pause");
 
 	getSource()->setPlayedOnce(true);
+
+	if(LLAudioEngine_FMODEX::mChannelGroups[getSource()->getType()])
+		mChannelp->setChannelGroup(LLAudioEngine_FMODEX::mChannelGroups[getSource()->getType()]);
 }
 
 
