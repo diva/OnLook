@@ -169,19 +169,10 @@ void LLFace::init(LLDrawable* drawablep, LLViewerObject* objp)
 	mGeomCount		= 0;
 	mGeomIndex		= 0;
 	mIndicesCount	= 0;
-	if (drawablep->getRenderType() == LLPipeline::RENDER_TYPE_PARTICLES ||
-		drawablep->getRenderType() == LLPipeline::RENDER_TYPE_HUD_PARTICLES
-#if ENABLE_CLASSIC_CLOUDS
-		|| drawablep->getRenderType() == LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS
-#endif
-		)
-	{ //indicate to LLParticlePartition that this particle is uninitialized
-		mIndicesIndex = 0xFFFFFFFF;
-	}
-	else
-	{
-		mIndicesIndex	= 0;
-	}
+
+	//special value to indicate uninitialized position
+	mIndicesIndex	= 0xFFFFFFFF;
+
 	mIndexInTex = 0;
 	mTexture		= NULL;
 	mTEOffset		= -1;
@@ -214,17 +205,10 @@ void LLFace::destroy()
 		mTexture->removeFace(this) ;
 	}
 	
-	if (mDrawablep.notNull() &&
-		(mDrawablep->getRenderType() == LLPipeline::RENDER_TYPE_PARTICLES ||
-		mDrawablep->getRenderType() == LLPipeline::RENDER_TYPE_HUD_PARTICLES
-#if ENABLE_CLASSIC_CLOUDS
-		|| mDrawablep->getRenderType() == LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS
-#endif
-		) &&
-		mIndicesIndex != 0xFFFFFFFF)
+	if (isState(LLFace::PARTICLE))
 	{
 		LLVOPartGroup::freeVBSlot(getGeomIndex()/4);
-		mIndicesIndex = 0xFFFFFFFF;
+		clearState(LLFace::PARTICLE);
 	}
 
 	if (mDrawPoolp)
