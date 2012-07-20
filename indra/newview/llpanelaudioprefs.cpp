@@ -105,6 +105,7 @@ void LLPanelAudioPrefs::refreshValues()
 	mPreviousMediaVolume = gSavedSettings.getF32("AudioLevelMedia");
 	mPreviousDoppler = gSavedSettings.getF32("AudioLevelDoppler");
 	mPreviousRolloff = gSavedSettings.getF32("AudioLevelRolloff");
+	mPreviousUnderwaterRolloff = gSavedSettings.getF32("AudioLevelUnderwaterRolloff");
 
 	mPreviousMoneyThreshold = gSavedSettings.getF32("UISndMoneyChangeThreshold");
 	mPreviousHealthThreshold = gSavedSettings.getF32("UISndHealthReductionThreshold");
@@ -126,6 +127,7 @@ void LLPanelAudioPrefs::cancel()
 	gSavedSettings.setF32("AudioLevelMedia", mPreviousMediaVolume);
 	gSavedSettings.setF32("AudioLevelDoppler", mPreviousDoppler );
 	gSavedSettings.setF32("AudioLevelRolloff", mPreviousRolloff );
+	gSavedSettings.setF32("AudioLevelUnderwaterRolloff", mPreviousUnderwaterRolloff );
 
 	gSavedSettings.setF32("UISndMoneyChangeThreshold", mPreviousMoneyThreshold );
 	gSavedSettings.setF32("UISndHealthReductionThreshold", mPreviousHealthThreshold );
