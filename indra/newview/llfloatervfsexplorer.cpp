@@ -9,7 +9,6 @@
 #include "lllocalinventory.h"
 #include "llviewerwindow.h"
 #include "llassetconverter.h"
-#include "dofloaterhex.h"
 
 LLFloaterVFSExplorer* LLFloaterVFSExplorer::sInstance;
 std::map<LLVFSFileSpecifier, LLVFSFileBlock*> LLFloaterVFSExplorer::sVFSFileMap;
@@ -41,7 +40,6 @@ BOOL LLFloaterVFSExplorer::postBuild()
 	childSetAction("remove_btn", onClickRemove, this);
 	childSetAction("reload_all_btn", onClickReload, this);
 	childSetAction("copy_uuid_btn", onClickCopyUUID, this);
-	childSetAction("edit_data_btn", onClickEditData, this);
 	childSetAction("item_btn", onClickItem, this);
 	refresh();
 	return TRUE;
@@ -173,13 +171,6 @@ void LLFloaterVFSExplorer::onClickReload(void* user_data)
 {
 	LLFloaterVFSExplorer* floaterp = (LLFloaterVFSExplorer*)user_data;
 	floaterp->reloadAll();
-}
-// static
-void LLFloaterVFSExplorer::onClickEditData(void* user_data)
-{
-	LLFloaterVFSExplorer* floaterp = (LLFloaterVFSExplorer*)user_data;
-	LLVFSFileSpecifier file = floaterp->getEditEntry();
-	DOFloaterHex::show(file.mFileID, true, file.mFileType);
 }
 // static
 void LLFloaterVFSExplorer::onClickItem(void* user_data)
