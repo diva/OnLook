@@ -1700,6 +1700,6 @@ LLPointer<LLInventoryCategory> ll_create_category_from_sd(const LLSD& sd_cat)
 		LLAssetType::lookup(sd_cat[INV_ASSET_TYPE_LABEL].asString()));
 	rv->setPreferredType(
 			LLFolderType::lookup(
-			sd_cat[INV_PREFERRED_TYPE_LABEL].asString()));
+				sd_cat[INV_PREFERRED_TYPE_LABEL].asString()));
 	return rv;
 }

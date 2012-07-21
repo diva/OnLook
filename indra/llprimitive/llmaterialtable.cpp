@@ -137,6 +137,7 @@ void LLMaterialTable::initTableTransNames(std::map<std::string, std::string> nam
 		infop->mName = namemap[name];
 	}
 }
+
 void LLMaterialTable::initBasicTable()
 {
 	// *TODO: Translate

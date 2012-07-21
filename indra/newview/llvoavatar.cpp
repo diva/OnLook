@@ -40,6 +40,7 @@
 #include "llaudioengine.h"
 #include "noise.h"
 #include "llsdserialize.h"
+#include "raytrace.h"
 
 #include "llagent.h" //  Get state values from here
 #include "llagentcamera.h"

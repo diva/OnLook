@@ -250,9 +250,9 @@ BOOL LLHeadRotMotion::onUpdate(F32 time, U8* joint_mask)
 	head_rot_local = nlerp(head_slerp_amt, mLastHeadRot, head_rot_local);
 	mLastHeadRot = head_rot_local;
 
-	if(mNeckState->getJoint() && mNeckState->getJoint()->getParent()) //Guess this has crashed? Taken from snowglobe -Shyotl
+	// Set the head rotation.
+	if(mNeckState->getJoint() && mNeckState->getJoint()->getParent())
 	{
-		// Set the head rotation.
 		LLQuaternion torsoRotLocal =  mNeckState->getJoint()->getParent()->getWorldRotation() * currentInvRootRotWorld;
 		head_rot_local = head_rot_local * ~torsoRotLocal;
 		mNeckState->setRotation( nlerp(NECK_LAG, LLQuaternion::DEFAULT, head_rot_local) );

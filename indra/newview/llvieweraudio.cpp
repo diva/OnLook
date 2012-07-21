@@ -230,7 +230,7 @@ void audio_update_wind(bool force_update)
 		//
 		if (force_update || (last_camera_water_height * camera_water_height) < 0.f)
 		{
-			static const LLCachedControl<F32> audio_level_rolloff("AudioLevelRolloff",1);
+			static const LLCachedControl<F32> audio_level_rolloff("AudioLevelRolloff", 1.0f);
 			if (camera_water_height < 0.f)
 			{
 				gAudiop->setRolloffFactor(audio_level_rolloff * LL_ROLLOFF_MULTIPLIER_UNDER_WATER);
@@ -241,17 +241,18 @@ void audio_update_wind(bool force_update)
 			}
 		}
 
-        // Scale down the contribution of weather-simulation wind to the
-        // ambient wind noise.  Wind velocity averages 3.5 m/s, with gusts to 7 m/s
-        // whereas steady-state avatar walk velocity is only 3.2 m/s.
-        // Without this the world feels desolate on first login when you are
-        // standing still.
-        static LLCachedControl<F32> wind_level("AudioLevelWind", 0.5f);
-        LLVector3 scaled_wind_vec = gWindVec * wind_level;
+		// Scale down the contribution of weather-simulation wind to the
+		// ambient wind noise.  Wind velocity averages 3.5 m/s, with gusts to 7 m/s
+		// whereas steady-state avatar walk velocity is only 3.2 m/s.
+		// Without this the world feels desolate on first login when you are
+		// standing still.
+		static LLCachedControl<F32> wind_level("AudioLevelWind", 0.5f);
+		LLVector3 scaled_wind_vec = gWindVec * wind_level;
 
-        // Mix in the avatar's motion, subtract because when you walk north,
-        // the apparent wind moves south.
-        LLVector3 final_wind_vec = scaled_wind_vec - gAgent.getVelocity();
+		// Mix in the avatar's motion, subtract because when you walk north,
+		// the apparent wind moves south.
+		LLVector3 final_wind_vec = scaled_wind_vec - gAgent.getVelocity();
+
 		// rotate the wind vector to be listener (agent) relative
 		gRelativeWindVec = gAgent.getFrameAgent().rotateToLocal(final_wind_vec);
 
@@ -275,7 +276,7 @@ void audio_update_wind(bool force_update)
 		if (gSavedSettings.getBOOL("MuteWind"))
 		{
 			// volume decreases by itself
-			gAudiop->mMaxWindGain -= gAudiop->mMaxWindGain;
+			gAudiop->mMaxWindGain = 0.f;
 		}
 		// mute wind when not /*flying*/ in air
 		else if /*(gAgent.getFlying())*/ (gAgentAvatarp && gAgentAvatarp->mInAir)

@@ -93,6 +93,7 @@ class LLVisualParam
 {
 public:
 	typedef	boost::function<LLVisualParam*(S32)> visual_param_mapper;
+
 	LLVisualParam();
 	virtual ~LLVisualParam();
 
