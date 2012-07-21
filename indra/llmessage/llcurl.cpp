@@ -271,10 +271,10 @@ void LLCurl::Easy::releaseEasyHandle(CURL* handle)
 
 		if(sFreeHandles.size() < MAX_NUM_FREE_HANDLES)
 		{
-			sFreeHandles.insert(handle);
-		}
-		else
-		{
+		sFreeHandles.insert(handle);
+	}
+	else
+	{
 			LLCurl::deleteEasyHandle(handle) ;
 		}
 	}
@@ -461,9 +461,9 @@ size_t curlReadCallback(char* data, size_t size, size_t nmemb, void* user_data)
 	LLCurl::Easy* easy = (LLCurl::Easy*)user_data;
 	
 	S32 n = size * nmemb;
-	S32 startpos = easy->getInput().tellg();
+	S32 startpos = (S32)easy->getInput().tellg();
 	easy->getInput().seekg(0, std::ios::end);
-	S32 endpos = easy->getInput().tellg();
+	S32 endpos = (S32)easy->getInput().tellg();
 	easy->getInput().seekg(startpos, std::ios::beg);
 	S32 maxn = endpos - startpos;
 	n = llmin(n, maxn);
@@ -569,16 +569,16 @@ LLCurl::Multi::Multi(F32 idle_time_out)
 	}
 	
 	//llassert_always(mCurlMultiHandle);	
-	
+
 	if(mCurlMultiHandle)
 	{
-		if(LLCurl::getCurlThread()->getThreaded())
-		{
-			mMutexp = new LLMutex;
-			mDeletionMutexp = new LLMutex;
-			mEasyMutexp = new LLMutex;
-		}
-		LLCurl::getCurlThread()->addMulti(this) ;
+	if(LLCurl::getCurlThread()->getThreaded())
+	{
+		mMutexp = new LLMutex() ;
+		mDeletionMutexp = new LLMutex() ;
+		mEasyMutexp = new LLMutex() ;
+	}
+	LLCurl::getCurlThread()->addMulti(this) ;
 
 		mIdleTimeOut = idle_time_out ;
 		if(mIdleTimeOut < LLCurl::sCurlRequestTimeOut)
@@ -586,13 +586,13 @@ LLCurl::Multi::Multi(F32 idle_time_out)
 			mIdleTimeOut = LLCurl::sCurlRequestTimeOut ;
 		}
 
-		++gCurlMultiCount;
-	}
+	++gCurlMultiCount;
+}
 }
 
 LLCurl::Multi::~Multi()
 {
-	cleanup(true);
+	cleanup(true) ;	
 	
 	delete mDeletionMutexp ;
 	mDeletionMutexp = NULL ;	
@@ -943,8 +943,8 @@ bool LLCurlThread::CurlRequest::processRequest()
 
 		if(!completed)
 		{
-			setPriority(LLQueuedThread::PRIORITY_LOW) ;
-		}
+		setPriority(LLQueuedThread::PRIORITY_LOW) ;
+	}
 	}
 
 	return completed ;
@@ -954,7 +954,7 @@ void LLCurlThread::CurlRequest::finishRequest(bool completed)
 {
 	if(mMulti->isDead())
 	{
-		mCurlThread->deleteMulti(mMulti) ;
+	mCurlThread->deleteMulti(mMulti) ;
 	}
 	else
 	{
@@ -1062,7 +1062,7 @@ void LLCurlRequest::addMulti()
 		mActiveRequestCount = 0 ;
 		return;
 	}
-
+	
 	mMultiSet.insert(multi);
 	mActiveMulti = multi;
 	mActiveRequestCount = 0;
@@ -1258,15 +1258,15 @@ LLCurlEasyRequest::LLCurlEasyRequest()
 	
 	if(mMulti->isValid())
 	{
-		mEasy = mMulti->allocEasy();
-		if (mEasy)
-		{
-			mEasy->setErrorBuffer();
-			mEasy->setCA();
-			// Set proxy settings if configured to do so.
-			LLProxy::getInstance()->applyProxySettings(mEasy);
-		}
+	mEasy = mMulti->allocEasy();
+	if (mEasy)
+	{
+		mEasy->setErrorBuffer();
+		mEasy->setCA();
+		// Set proxy settings if configured to do so.
+		LLProxy::getInstance()->applyProxySettings(mEasy);
 	}
+}
 	else
 	{
 		LLCurl::getCurlThread()->killMulti(mMulti) ;
@@ -1486,7 +1486,7 @@ void LLCurl::initClass(F32 curl_reuest_timeout, S32 max_number_handles, bool mul
 	S32 mutex_count = CRYPTO_num_locks();
 	for (S32 i=0; i<mutex_count; i++)
 	{
-		sSSLMutex.push_back(new LLMutex);
+		sSSLMutex.push_back(new LLMutex());
 	}
 	CRYPTO_set_id_callback(&LLCurl::ssl_thread_id);
 	CRYPTO_set_locking_callback(&LLCurl::ssl_locking_callback);
@@ -1495,8 +1495,8 @@ void LLCurl::initClass(F32 curl_reuest_timeout, S32 max_number_handles, bool mul
 	sCurlThread = new LLCurlThread(multi_threaded) ;
 	if(multi_threaded)
 	{
-		sHandleMutexp = new LLMutex;
-		Easy::sHandleMutexp = new LLMutex;
+		sHandleMutexp = new LLMutex() ;
+		Easy::sHandleMutexp = new LLMutex() ;
 	}
 }
 
@@ -1535,7 +1535,8 @@ void LLCurl::cleanupClass()
 	delete sHandleMutexp ;
 	sHandleMutexp = NULL ;
 
-	llassert(Easy::sActiveHandles.empty());
+	// removed as per https://jira.secondlife.com/browse/SH-3115
+	//llassert(Easy::sActiveHandles.empty());
 }
 
 //static 

@@ -27,8 +27,8 @@
  */
 
 #include "linden_common.h"
-#include "llfasttimer.h"
 #include "llioutil.h"
+#include "llfasttimer.h"
 
 /**
  * LLIOFlush

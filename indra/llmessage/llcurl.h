@@ -318,7 +318,7 @@ public:
 	
 private:
 	void easyFree(LLCurl::Easy*);
-	void cleanup(bool deleted = false);
+	void cleanup(bool deleted = false) ;
 	
 	CURLM* mCurlMultiHandle;
 
@@ -378,11 +378,9 @@ private:
 	void cleanupMulti(LLCurl::Multi* multi) ;
 } ;
 
-//namespace boost
-//{
-	void intrusive_ptr_add_ref(LLCurl::Responder* p);
-	void intrusive_ptr_release(LLCurl::Responder* p);
-//};
+
+void intrusive_ptr_add_ref(LLCurl::Responder* p);
+void intrusive_ptr_release(LLCurl::Responder* p);
 
 
 class LLCurlRequest

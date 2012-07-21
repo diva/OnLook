@@ -37,6 +37,7 @@
  * OS poll indicates it will not block.
  */
 
+#include "llaprpool.h"
 #include "lliopipe.h"
 #include "apr_network_io.h"
 #include "llchainio.h"

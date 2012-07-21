@@ -97,10 +97,8 @@ std::string get_shared_secret();
 class LLMessagePollInfo
 {
 public:
-	LLMessagePollInfo(void) : mPool(LLThread::tldata().mRootPool) { }
 	apr_socket_t *mAPRSocketp;
 	apr_pollfd_t mPollFD;
-	LLAPRPool mPool;
 };
 
 namespace
@@ -289,13 +287,15 @@ LLMessageSystem::LLMessageSystem(const std::string& filename, U32 port,
 	}
 //	LL_DEBUGS("Messaging") <<  << "*** port: " << mPort << llendl;
 
-	mPollInfop = new LLMessagePollInfo;
-
+	//
+	// Create the data structure that we can poll on
+	//
 	apr_socket_t *aprSocketp = NULL;
-	apr_os_sock_put(&aprSocketp, (apr_os_sock_t*)&mSocket, mPollInfop->mPool());
+	apr_os_sock_put(&aprSocketp, (apr_os_sock_t*)&mSocket, LLAPRRootPool::get()());
 
+	mPollInfop = new LLMessagePollInfo;
 	mPollInfop->mAPRSocketp = aprSocketp;
-	mPollInfop->mPollFD.p = mPollInfop->mPool();
+	mPollInfop->mPollFD.p = LLAPRRootPool::get()();
 	mPollInfop->mPollFD.desc_type = APR_POLL_SOCKET;
 	mPollInfop->mPollFD.reqevents = APR_POLLIN;
 	mPollInfop->mPollFD.rtnevents = 0;
@@ -3142,7 +3142,7 @@ bool LLMessageSystem::generateDigestForWindowAndUUIDs(char* digest, const S32 wi
 		LL_ERRS("Messaging") << "Trying to generate complex digest on a machine without a shared secret!" << llendl;
 	}
 
-	U32 now = time(NULL);
+	U32 now = (U32)time(NULL);
 
 	now /= window;
 
@@ -3162,7 +3162,7 @@ bool LLMessageSystem::isMatchingDigestForWindowAndUUIDs(const char* digest, cons
 	}
 	
 	char our_digest[MD5HEX_STR_SIZE];	/* Flawfinder: ignore */
-	U32 now = time(NULL);
+	U32 now = (U32)time(NULL);
 
 	now /= window;
 
@@ -3208,7 +3208,7 @@ bool LLMessageSystem::generateDigestForWindow(char* digest, const S32 window) co
 		LL_ERRS("Messaging") << "Trying to generate simple digest on a machine without a shared secret!" << llendl;
 	}
 
-	U32 now = time(NULL);
+	U32 now = (U32)time(NULL);
 
 	now /= window;
 
