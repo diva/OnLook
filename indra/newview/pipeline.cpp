@@ -453,15 +453,6 @@ void LLPipeline::init()
 		mSpotLightFade[i] = 1.f;
 	}
 
-	if (mCubeVB.isNull())
-	{
-		mCubeVB = ll_create_cube_vb(LLVertexBuffer::MAP_VERTEX, GL_STATIC_DRAW_ARB);
-	}
-	if(mDeferredVB.isNull())
-	{
-		mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
-		mDeferredVB->allocateBuffer(8, 0, true);
-	}
 	setLightingDetail(-1);
 	gSavedSettings.getControl("RenderAutoMaskAlphaDeferred")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	gSavedSettings.getControl("RenderAutoMaskAlphaNonDeferred")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
