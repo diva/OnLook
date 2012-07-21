@@ -887,6 +887,8 @@ static int curl_debug_callback(CURL*, curl_infotype infotype, char* buf, size_t 
   marker << (void*)request->get_lockobj();
   libcw_do.push_marker();
   libcw_do.marker().assign(marker.str().data(), marker.str().size());
+  if (!debug::channels::dc::curlio.is_on())
+	debug::channels::dc::curlio.on();
   LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcw_do, dc::curlio|cond_nonewline_cf(infotype == CURLINFO_TEXT))
   switch (infotype)
   {

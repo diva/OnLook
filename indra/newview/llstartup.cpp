@@ -253,7 +253,9 @@ extern S32 gStartImageHeight;
 // local globals
 //
 
-
+#ifdef CWDEBUG
+static bool gCurlIo;
+#endif
 
 static LLHost gAgentSimHost;
 static BOOL gSkipOptionalUpdate = FALSE;
@@ -1334,6 +1336,9 @@ bool idle_startup()
 
 		llinfos << "Authenticating with " << grid_uri << llendl;
 
+		// Always write curl I/O debug info for the login attempt.
+		Debug(gCurlIo = dc::curl.is_on() && !dc::curlio.is_on(); if (gCurlIo) dc::curlio.on());
+
 		// TODO if statement here to use web_login_key
 	    // OGPX : which routine would this end up in? the LLSD or XMLRPC, or ....?
 		LLUserAuth::getInstance()->authenticate(
@@ -1408,6 +1413,7 @@ bool idle_startup()
 			LL_DEBUGS("AppInit") << "downloading..." << LL_ENDL;
 			return FALSE;
 		}
+		Debug(if (gCurlIo) dc::curlio.off());		// Login succeeded: restore dc::curlio to original state.
 		LLStartUp::setStartupState( STATE_LOGIN_PROCESS_RESPONSE );
 		progress += 0.01f;
 		set_startup_status(progress, LLTrans::getString("LoginProcessingResponse"), auth_message);
