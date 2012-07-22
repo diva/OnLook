@@ -175,7 +175,7 @@ BOOL LLVFile::isReadComplete()
 	{
 		LLVFSThread::Request* req = (LLVFSThread::Request*)sVFSThread->getRequest(mHandle);
 		LLVFSThread::status_t status = req->getStatus();
-		if (status == LLVFSThread::STATUS_COMPLETE)
+		if (status == LLVFSThread::STATUS_COMPLETE && !(req->getFlags() & LLVFSThread::FLAG_LOCKED))
 		{
 			mBytesRead = req->getBytesRead();
 			mPosition += mBytesRead;
