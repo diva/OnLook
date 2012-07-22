@@ -4206,9 +4206,6 @@ void LLPipeline::renderDebug()
 {
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
 
-	if(!mRenderDebugMask)
-		return;
-
 	assertInitialized();
 
 	gGL.color4f(1,1,1,1);
@@ -4218,6 +4215,46 @@ void LLPipeline::renderDebug()
 	gGL.setColorMask(true, false);
 
 	bool hud_only = hasRenderType(LLPipeline::RENDER_TYPE_HUD);
+
+	if (!hud_only && !mDebugBlips.empty())
+	{ //render debug blips
+		if (LLGLSLShader::sNoFixedFunction)
+		{
+			gUIProgram.bind();
+		}
+
+		gGL.getTexUnit(0)->bind(LLViewerFetchedTexture::sWhiteImagep, true);
+
+		glPointSize(8.f);
+		LLGLDepthTest depth(GL_TRUE, GL_TRUE, GL_ALWAYS);
+
+		gGL.begin(LLRender::POINTS);
+		for (std::list<DebugBlip>::iterator iter = mDebugBlips.begin(); iter != mDebugBlips.end(); )
+		{
+			DebugBlip& blip = *iter;
+
+			blip.mAge += gFrameIntervalSeconds;
+			if (blip.mAge > 2.f)
+			{
+				mDebugBlips.erase(iter++);
+			}
+			else
+			{
+				iter++;
+			}
+
+			blip.mPosition.mV[2] += gFrameIntervalSeconds*2.f;
+
+			gGL.color4fv(blip.mColor.mV);
+			gGL.vertex3fv(blip.mPosition.mV);
+		}
+		gGL.end();
+		gGL.flush();
+		glPointSize(1.f);
+	}
+
+	if(!mRenderDebugMask)
+		return;
 
 	// Debug stuff.
 	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
@@ -9731,5 +9768,11 @@ void LLPipeline::clearRenderTypeMask(U32 type, ...)
 	{
 		llerrs << "Invalid render type." << llendl;
 	}
+}
+
+void LLPipeline::addDebugBlip(const LLVector3& position, const LLColor4& color)
+{
+	DebugBlip blip(position, color);
+	mDebugBlips.push_back(blip);
 }
 

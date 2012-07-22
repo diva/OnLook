@@ -88,7 +88,6 @@
 #include "llvopartgroup.h"
 #include "llvosky.h"
 #include "llvosurfacepatch.h"
-#include "llvotextbubble.h"
 #include "llvotree.h"
 #include "llvovolume.h"
 #include "llvowater.h"
@@ -173,8 +172,6 @@ LLViewerObject *LLViewerObject::createObject(const LLUUID &id, const LLPCode pco
 // 	  llwarns << "Creating new tree!" << llendl;
 // 	  res = new LLVOTree(id, pcode, regionp); break;
 	  res = NULL; break;
-	case LL_PCODE_LEGACY_TEXT_BUBBLE:
-	  res = new LLVOTextBubble(id, pcode, regionp); break;
 #if ENABLE_CLASSIC_CLOUDS
 	case LL_VO_CLOUDS:
 	  res = new LLVOClouds(id, pcode, regionp); break;
@@ -2145,26 +2142,16 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 
 	if ( gShowObjectUpdates )
 	{
-		// <edit> We want to see updates from our own avatar
-		//if (!((mPrimitiveCode == LL_PCODE_LEGACY_AVATAR) && (((LLVOAvatar *) this)->mIsSelf))
-		//	&& mRegionp)
-		if(mRegionp)
-		// </edit>
+		LLColor4 color;
+		if (update_type == OUT_TERSE_IMPROVED)
 		{
-			LLViewerObject* object = gObjectList.createObjectViewer(LL_PCODE_LEGACY_TEXT_BUBBLE, mRegionp);
-			LLVOTextBubble* bubble = (LLVOTextBubble*) object;
-
-			if (update_type == OUT_TERSE_IMPROVED)
-			{
-				bubble->mColor.setVec(0.f, 0.f, 1.f, 1.f);
-			}
-			else
-			{
-				bubble->mColor.setVec(1.f, 0.f, 0.f, 1.f);
-			}
-			object->setPositionGlobal(getPositionGlobal());
-			gPipeline.addObject(object);
+			color.setVec(0.f, 0.f, 1.f, 1.f);
 		}
+		else
+		{
+			color.setVec(1.f, 0.f, 0.f, 1.f);
+		}
+		gPipeline.addDebugBlip(getPositionAgent(), color);
 	}
 
 	if ((0.0f == vel_mag_sq) && 
