@@ -226,7 +226,8 @@ LLWorkerClass::~LLWorkerClass()
 			llerrs << "LLWorkerClass destroyed with stale work handle" << llendl;
 		}
 		if (workreq->getStatus() != LLWorkerThread::STATUS_ABORTED &&
-			workreq->getStatus() != LLWorkerThread::STATUS_COMPLETE)
+			workreq->getStatus() != LLWorkerThread::STATUS_COMPLETE &&
+			!(workreq->getFlags() & LLWorkerThread::FLAG_LOCKED))
 		{
 			llerrs << "LLWorkerClass destroyed with active worker! Worker Status: " << workreq->getStatus() << llendl;
 		}
@@ -350,14 +351,10 @@ bool LLWorkerClass::checkWork(bool aborting)
 		}
 
 		LLQueuedThread::status_t status = workreq->getStatus();
-		if (status == LLWorkerThread::STATUS_ABORTED)
+		if (status == LLWorkerThread::STATUS_COMPLETE || status == LLWorkerThread::STATUS_ABORTED)
 		{
-			complete = true;
-			abort = true;
-		}
-		else if (status == LLWorkerThread::STATUS_COMPLETE)
-		{
-			complete = true;
+			complete = !(workreq->getFlags() & LLWorkerThread::FLAG_LOCKED);
+			abort = status == LLWorkerThread::STATUS_ABORTED;
 		}
 		else
 		{
