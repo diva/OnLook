@@ -3084,6 +3084,11 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 		
 		LLVector4a* weight = vol_face.mWeights;
 
+		if(!weight)
+		{
+			continue;
+		}
+
 		LLMatrix4a bind_shape_matrix;
 		bind_shape_matrix.loadu(skin->mBindShapeMatrix);
 
