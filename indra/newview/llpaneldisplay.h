@@ -107,6 +107,7 @@ protected:
 	LLSliderCtrl	*mCtrlPostProcess;				// Max Particle
 	LLSliderCtrl	*mCtrlNonImpostors;				// Max non-impostors
 
+	LLCheckBoxCtrl	*mCtrlTransparentWater;
 	LLCheckBoxCtrl	*mCtrlBumpShiny;
 	LLCheckBoxCtrl	*mCtrlWindLight;
 	LLCheckBoxCtrl	*mCtrlAvatarVP;
@@ -155,6 +156,7 @@ protected:
 	S32 mQualityPerformance;
 	BOOL mCustomSettings;
 
+	BOOL mTransparentWater;
 	BOOL mBumpShiny;
 	BOOL mShaderEnable;
 	BOOL mWindLight;

@@ -39,7 +39,8 @@
 	<check_box bottom="-96" control_name="RenderCustomSettings" label="Custom" left="395" initial_value="true" name="CustomSettings"/>
 	<!--view_border bevel_style="none" bottom="-395" height="280" left="5" name="GraphicsBorder" width="485"/-->
 	<text bottom="-130" height="12" left="10" name="ShadersText">Shaders:</text>
-	<check_box bottom_delta="-23" control_name="RenderObjectBump" height="16" initial_value="true" label="Bump mapping and shiny" left="10" name="BumpShiny"/>
+  <check_box bottom_delta="-23" control_name="RenderTransparentWater" height="16" initial_value="true" label="Transparent water" left="10" name="TransparentWater"/>
+	<check_box bottom_delta="-17" control_name="RenderObjectBump" height="16" initial_value="true" label="Bump mapping and shiny" left="10" name="BumpShiny"/>
     <check_box bottom_delta="-17" control_name="RenderLocalLights" height="16" label="Local Lights" name="LightingDetailRadio"/>
 	<check_box bottom_delta="-17" control_name="VertexShaderEnable" height="16" initial_value="true" label="Basic shaders" left_delta="0" name="BasicShaders" tool_tip="Disabling this option may prevent some graphics card drivers from crashing."/>
 	<check_box bottom_delta="-17" control_name="WindLightUseAtmosShaders" initial_value="true" label="Atmospheric shaders" left_delta="0" name="WindLightUseAtmosShaders"/>
@@ -47,20 +48,20 @@
     <check_box bottom_delta="-17" control_name="RenderDeferredSSAO" height="16" initial_value="true" label="Ambient Occlusion" left_delta="0" name="UseSSAO"/>
 	<check_box bottom_delta="-17" control_name="RenderDepthOfField"	initial_value="true" label="Depth of Field" left_delta="0" name="RenderDepthOfField"/>
   <text bottom_delta="-20" height="12" left="15" name="TerrainScaleText">Terrain Scale:</text>
-  <combo_box bottom_delta="-22" control_name="RenderTerrainScale" label="Terrain Scale" left_delta="-2" name="TerrainScaleCombo" width="160" height="16">
+  <combo_box bottom_delta="-16" control_name="RenderTerrainScale" label="Terrain Scale" left_delta="-2" name="TerrainScaleCombo" width="160" height="16">
     <combo_item name="Low" value="12">Low</combo_item>
     <combo_item name="Medium" value="9">Medium</combo_item>
 	<combo_item name="High" value="7">High</combo_item>
     <combo_item name="Ultra" value="5">Ultra</combo_item>
   </combo_box>
   <text bottom_delta="-20" height="12" left="15" name="ShadowDetailText">Shadows:</text>
-  <combo_box bottom_delta="-22" control_name="RenderShadowDetail" label="Shadow Detail" left_delta="-2" name="ShadowDetailCombo" width="160" height="16">
+  <combo_box bottom_delta="-16" control_name="RenderShadowDetail" label="Shadow Detail" left_delta="-2" name="ShadowDetailCombo" width="160" height="16">
 	  <combo_item name="0" value="0">Disabled</combo_item>
 	  <combo_item name="1" value="1">Sun/Moon</combo_item>
 	  <combo_item name="2" value="2">Sun/Moon + Projectors</combo_item>
   </combo_box>
 	<text bottom_delta="-20" height="12" left="15" name="ReflectionDetailText">Water Reflections:</text>
-	<combo_box bottom_delta="-22" control_name="RenderReflectionDetail" label="Reflection Detail" left_delta="-2" name="ReflectionDetailCombo" width="160" height="16">
+	<combo_box bottom_delta="-16" control_name="RenderReflectionDetail" label="Reflection Detail" left_delta="-2" name="ReflectionDetailCombo" width="160" height="16">
 		<combo_item name="0" value="0">Minimal</combo_item>
 		<combo_item name="1" value="1">Terrain and trees</combo_item>
 		<combo_item name="2" value="2">All static objects</combo_item>
@@ -99,7 +100,7 @@
 	  <radio_item bottom="-15" height="16" left="3" name="0" width="315">Low</radio_item>
 	  <radio_item bottom="-31" height="16" name="2" width="315">High</radio_item>
   </radio_group>
-  <button bottom="-440" height="20" label="Reset" left="110" name="Defaults" scale_image="true" width="100"/>
+  <button bottom="-440" height="20" label="Reset to defaults" left="10" name="Defaults" scale_image="true" width="240"/>
   <!--button bottom="-440" height="20" label="Advanced" left="230" name="CustomSettingsButton" scale_image="true" width="120" toggle="true" control_name="RenderCustomSettings"/-->
   <button bottom="-440" height="20" label="Hardware" left="370" name="GraphicsHardwareButton" scale_image="true" width="120"/>
   <string name="resolution_format">[RES_X] x [RES_Y]</string>
