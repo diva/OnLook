@@ -42,7 +42,6 @@
 
 
 extern const std::string CONTEXT_REQUEST;
-extern const std::string CONTEXT_DEST_URI_SD_LABEL;
 extern const std::string CONTEXT_RESPONSE;
 extern const std::string CONTEXT_TRANSFERED_BYTES;
 
@@ -276,42 +275,6 @@ private:
 	LLURLRequest(const LLURLRequest&);
 };
 
-
-/** 
- * @class LLContextURLExtractor
- * @brief This class unpacks the url out of a agent usher service so
- * it can be packed into a LLURLRequest object.
- * @see LLIOPipe
- *
- * This class assumes that the context is a map that contains an entry
- * named CONTEXT_DEST_URI_SD_LABEL.
- */
-class LLContextURLExtractor : public LLIOPipe
-{
-public:
-	LLContextURLExtractor(LLURLRequest* req) : mRequest(req) {}
-	~LLContextURLExtractor() {}
-
-protected:
-	/* @name LLIOPipe virtual implementations
-	 */
-	//@{
-	/** 
-	 * @brief Process the data in buffer
-	 */
-	virtual EStatus process_impl(
-		const LLChannelDescriptors& channels,
-		buffer_ptr_t& buffer,
-		bool& eos,
-		LLSD& context,
-		LLPumpIO* pump);
-	//@}
-
-protected:
-	LLURLRequest* mRequest;
-};
-
-
 /** 
  * @class LLURLRequestComplete
  * @brief Class which can optionally be used with an LLURLRequest to
@@ -383,12 +346,5 @@ protected:
 	// depends on correct useage from the LLURLRequest instance.
 	EStatus mRequestStatus;
 };
-
-
-
-/**
- * External constants
- */
-extern const std::string CONTEXT_DEST_URI_SD_LABEL;
 
 #endif // LL_LLURLREQUEST_H
