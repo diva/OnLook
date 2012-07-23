@@ -2626,7 +2626,7 @@ Display settings have been set to recommended levels based on your system config
   <notification
    icon="alertmodal.tga"
    name="AvatarMoved"
-   type="alertmodal">
+   type="notify">
 Your [TYPE] location is not currently available. [HELP]
 You have been moved into a nearby region.
   </notification>
@@ -5246,7 +5246,7 @@ You cannot edit or delete a default preset.
   <notification
    icon="alertmodal.tga"
    name="ChatterBoxSessionStartError"
-   type="alertmodal">
+   type="notifytip">
 Unable to start a new chat session with [RECIPIENT].
 [REASON]
     <usetemplate
@@ -5257,7 +5257,7 @@ Unable to start a new chat session with [RECIPIENT].
   <notification
    icon="alertmodal.tga"
    name="ChatterBoxSessionEventError"
-   type="alertmodal">
+   type="notifytip">
 [EVENT]
 [REASON]
     <usetemplate
@@ -5268,7 +5268,7 @@ Unable to start a new chat session with [RECIPIENT].
   <notification
    icon="alertmodal.tga"
    name="ForceCloseChatterBoxSession"
-   type="alertmodal">
+   type="notifytip">
 Your chat session with [NAME] must close.
 [REASON]
     <usetemplate
