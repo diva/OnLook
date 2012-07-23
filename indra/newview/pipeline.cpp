@@ -4251,6 +4251,12 @@ void LLPipeline::renderDebug()
 		gGL.end();
 		gGL.flush();
 		glPointSize(1.f);
+
+		if (LLGLSLShader::sNoFixedFunction)
+		{
+			gUIProgram.unbind();
+		}
+
 	}
 
 	if(!mRenderDebugMask)
