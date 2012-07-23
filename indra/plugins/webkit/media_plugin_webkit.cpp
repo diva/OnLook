@@ -1312,7 +1312,7 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 			else if(message_name == "javascript_enabled")
 			{
 				mJavascriptEnabled = message_in.getValueBoolean("enable");
-				LLQtWebKit::getInstance()->enableJavascript( mJavascriptEnabled );
+				//LLQtWebKit::getInstance()->enableJavascript( mJavascriptEnabled );
 			}
 			else if(message_name == "set_cookies")
 			{
