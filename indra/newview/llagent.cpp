@@ -135,9 +135,6 @@ LLVector3 gReSitOffset;
 
 BOOL LLAgent::exlPhantom = 0;
 BOOL LLAgent::mForceTPose = 0;
-LLVector3 LLAgent::exlStartMeasurePoint = LLVector3::zero;
-LLVector3 LLAgent::exlEndMeasurePoint = LLVector3::zero;
-
 
 const F32 LLAgent::TYPING_TIMEOUT_SECS = 5.f;
 
