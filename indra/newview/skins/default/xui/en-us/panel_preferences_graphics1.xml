@@ -47,21 +47,21 @@
 	<check_box bottom_delta="-17" control_name="RenderDeferred" initial_value="true" label="Lighting and Shadows" tool_tip="Deferred Shading" left_delta="0" name="RenderDeferred"/>
     <check_box bottom_delta="-17" control_name="RenderDeferredSSAO" height="16" initial_value="true" label="Ambient Occlusion" left_delta="0" name="UseSSAO"/>
 	<check_box bottom_delta="-17" control_name="RenderDepthOfField"	initial_value="true" label="Depth of Field" left_delta="0" name="RenderDepthOfField"/>
-  <text bottom_delta="-20" height="12" left="15" name="TerrainScaleText">Terrain Scale:</text>
-  <combo_box bottom_delta="-16" control_name="RenderTerrainScale" label="Terrain Scale" left_delta="-2" name="TerrainScaleCombo" width="160" height="16">
+  <text bottom_delta="-17" height="12" left="15" name="TerrainScaleText">Terrain Scale:</text>
+  <combo_box bottom_delta="-22" control_name="RenderTerrainScale" label="Terrain Scale" left_delta="-2" name="TerrainScaleCombo" width="160" height="16">
     <combo_item name="Low" value="12">Low</combo_item>
     <combo_item name="Medium" value="9">Medium</combo_item>
 	<combo_item name="High" value="7">High</combo_item>
     <combo_item name="Ultra" value="5">Ultra</combo_item>
   </combo_box>
-  <text bottom_delta="-20" height="12" left="15" name="ShadowDetailText">Shadows:</text>
-  <combo_box bottom_delta="-16" control_name="RenderShadowDetail" label="Shadow Detail" left_delta="-2" name="ShadowDetailCombo" width="160" height="16">
+  <text bottom_delta="-17" height="12" left="15" name="ShadowDetailText">Shadows:</text>
+  <combo_box bottom_delta="-22" control_name="RenderShadowDetail" label="Shadow Detail" left_delta="-2" name="ShadowDetailCombo" width="160" height="16">
 	  <combo_item name="0" value="0">Disabled</combo_item>
 	  <combo_item name="1" value="1">Sun/Moon</combo_item>
 	  <combo_item name="2" value="2">Sun/Moon + Projectors</combo_item>
   </combo_box>
-	<text bottom_delta="-20" height="12" left="15" name="ReflectionDetailText">Water Reflections:</text>
-	<combo_box bottom_delta="-16" control_name="RenderReflectionDetail" label="Reflection Detail" left_delta="-2" name="ReflectionDetailCombo" width="160" height="16">
+	<text bottom_delta="-17" height="12" left="15" name="ReflectionDetailText">Water Reflections:</text>
+	<combo_box bottom_delta="-22" control_name="RenderReflectionDetail" label="Reflection Detail" left_delta="-2" name="ReflectionDetailCombo" width="160" height="16">
 		<combo_item name="0" value="0">Minimal</combo_item>
 		<combo_item name="1" value="1">Terrain and trees</combo_item>
 		<combo_item name="2" value="2">All static objects</combo_item>
@@ -69,7 +69,7 @@
 		<combo_item name="4" value="4">Everything</combo_item>
 	</combo_box>
 
-  <slider bottom_delta="-24" left="5" control_name="RenderAvatarPhysicsLODFactor" increment="0.1" label="  Avatar Physics:" label_width="79" max_val="1" min_val="0" name="AvatarPhysicsDetail" show_text="false" width="160"/>
+  <slider bottom_delta="-20" left="5" control_name="RenderAvatarPhysicsLODFactor" increment="0.1" label="  Avatar Physics:" label_width="79" max_val="1" min_val="0" name="AvatarPhysicsDetail" show_text="false" width="160"/>
   <text bottom_delta="-2" left="170" height="12" name="AvatarPhysicsDetailText">Off</text>
   <!--text bottom="-131" height="12" left="464" name="DrawDistanceMeterText1">m</text-->
   <text bottom="-131" height="12" left="470" name="DrawDistanceMeterText2">m</text>

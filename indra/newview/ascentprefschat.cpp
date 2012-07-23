@@ -40,6 +40,7 @@
 #include "llradiogroup.h"
 #include "lluictrlfactory.h"
 #include "llviewercontrol.h"
+#include "NACLantispam.h"
 #include "lgghunspell_wrapper.h"
 
 #include "llstartup.h"
@@ -78,7 +79,8 @@ LLPrefsAscentChat::LLPrefsAscentChat()
 		addChild(mObjectDropTarget);
 	}
 
-	if (LLStartUp::getStartupState() == STATE_STARTED)
+	bool started = LLStartUp::getStartupState() == STATE_STARTED;
+	if (started)
 	{
 		LLUUID itemid = (LLUUID)gSavedPerAccountSettings.getString("AscentInstantMessageResponseItemData");
 		LLViewerInventoryItem* item = gInventory.getItem(itemid);
@@ -90,6 +92,9 @@ LLPrefsAscentChat::LLPrefsAscentChat()
 	else							childSetValue("im_give_disp_rect_txt","Not logged in");
 
     childSetCommitCallback("im_response", onCommitAutoResponse, this);
+
+	childSetEnabled("reset_antispam", started);
+	childSetCommitCallback("reset_antispam", onCommitResetAS, this);
 
     childSetCommitCallback("KeywordsOn", onCommitKeywords, this);
     childSetCommitCallback("KeywordsList", onCommitKeywords, this);
@@ -218,7 +223,7 @@ void LLPrefsAscentChat::onCommitTimeDate(LLUICtrl* ctrl, void* userdata)
 //static
 void LLPrefsAscentChat::onCommitAutoResponse(LLUICtrl* ctrl, void* user_data)
 {
-    LLPrefsAscentChat* self = (LLPrefsAscentChat*)user_data;	
+    LLPrefsAscentChat* self = (LLPrefsAscentChat*)user_data;
 
     gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseAnyone",  self->childGetValue("AscentInstantMessageResponseAnyone"));
     gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseFriends", self->childGetValue("AscentInstantMessageResponseFriends"));
@@ -235,6 +240,12 @@ void LLPrefsAscentChat::SinguIMResponseItemDrop(LLViewerInventoryItem* item)
 {
 	gSavedPerAccountSettings.setString("AscentInstantMessageResponseItemData", item->getUUID().asString());
 	sInst->childSetValue("im_give_disp_rect_txt","Currently set to: "+item->getName());
+}
+
+//static
+void LLPrefsAscentChat::onCommitResetAS(LLUICtrl*, void*)
+{
+	NACLAntiSpamRegistry::purgeAllQueues();
 }
 
 //static
@@ -316,13 +327,13 @@ void LLPrefsAscentChat::refreshValues()
     mIMResponseText                 = gSavedPerAccountSettings.getString("AscentInstantMessageResponse");
 
     //Spam --------------------------------------------------------------------------------
-    mBlockChatSpam                  = gSavedSettings.getBOOL("SGBlockChatSpam");
-    mChatSpamCount                  = gSavedSettings.getU32("SGChatSpamCount");
-    mChatSpamTime                   = gSavedSettings.getF32("SGChatSpamTime");
-    mBlockDialogSpam                = gSavedSettings.getBOOL("SGBlockDialogSpam");
-    mBlockCardSpam                  = gSavedSettings.getBOOL("SGBlockCardSpam");
-    mSpamCount                      = gSavedSettings.getU32("SGSpamCount");
-    mSpamTime                       = gSavedSettings.getF32("SGSpamTime");
+    mGlobalQueue                    = gSavedSettings.getBOOL("_NACL_AntiSpamGlobalQueue");
+    mChatSpamCount                  = gSavedSettings.getU32("_NACL_AntiSpamAmount");
+    mChatSpamTime                   = gSavedSettings.getU32("_NACL_AntiSpamTime");
+    mBlockDialogSpam                = gSavedSettings.getBOOL("_NACL_Antispam");
+    mSoundMulti                     = gSavedSettings.getU32("_NACL_AntiSpamSoundMulti");
+    mNewLines                       = gSavedSettings.getU32("_NACL_AntiSpamNewlines");
+    mPreloadMulti                   = gSavedSettings.getU32("_NACL_AntiSpamSoundPreloadMulti");
 
     //Text Options ------------------------------------------------------------------------
     mSpellDisplay                   = gSavedSettings.getBOOL("SpellDisplay");
@@ -503,13 +514,13 @@ void LLPrefsAscentChat::cancel()
     gSavedPerAccountSettings.setString("AscentInstantMessageResponse",      mIMResponseText);
 
     //Spam --------------------------------------------------------------------------------
-    gSavedSettings.setBOOL("SGBlockChatSpam",   mBlockChatSpam);
-    gSavedSettings.setU32("SGChatSpamCount",    mChatSpamCount);
-    gSavedSettings.setF32("SGChatSpamTime",     mChatSpamTime);
-    gSavedSettings.setBOOL("SGBlockDialogSpam", mBlockDialogSpam);
-    gSavedSettings.setBOOL("SGBlockCardSpam",   mBlockCardSpam);
-    gSavedSettings.setU32("SGSpamCount",        mSpamCount);
-    gSavedSettings.setF32("SGSpamTime",         mSpamTime);
+    gSavedSettings.setBOOL("_NACL_AntiSpamGlobalQueue",      mGlobalQueue);
+    gSavedSettings.setU32("_NACL_AntiSpamAmount",            mChatSpamCount);
+    gSavedSettings.setU32("_NACL_AntiSpamTime",              mChatSpamTime);
+    gSavedSettings.setBOOL("_NACL_Antispam",                 mBlockDialogSpam);
+    gSavedSettings.setU32("_NACL_AntiSpamSoundMulti",        mSoundMulti);
+    gSavedSettings.setU32("_NACL_AntiSpamNewlines",          mNewLines);
+    gSavedSettings.setU32("_NACL_AntiSpamSoundPreloadMulti", mPreloadMulti);
 
     //Text Options ------------------------------------------------------------------------
     gSavedSettings.setBOOL("SpellDisplay",                  mSpellDisplay);

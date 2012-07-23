@@ -233,6 +233,8 @@
 #include "lldxhardware.h"
 #endif
 
+#include "NACLantispam.h"    // for NaCl Antispam Registry
+
 //
 // exported globals
 //
@@ -1056,6 +1058,15 @@ bool idle_startup()
 		}
 		LLFile::mkdir(gDirUtilp->getChatLogsDir());
 		LLFile::mkdir(gDirUtilp->getPerAccountChatLogsDir());
+
+        // NaCl - Antispam
+        U32 antispam_time = gSavedSettings.getU32("_NACL_AntiSpamTime");
+        U32 antispam_amount = gSavedSettings.getU32("_NACL_AntiSpamAmount");
+        NACLAntiSpamRegistry::registerQueues(antispam_time, antispam_amount);
+		gSavedSettings.getControl("_NACL_AntiSpamGlobalQueue")->getSignal()->connect(boost::bind(&NACLAntiSpamRegistry::handleNaclAntiSpamGlobalQueueChanged, _2));
+		gSavedSettings.getControl("_NACL_AntiSpamTime")->getSignal()->connect(boost::bind(&NACLAntiSpamRegistry::handleNaclAntiSpamTimeChanged, _2));
+		gSavedSettings.getControl("_NACL_AntiSpamAmount")->getSignal()->connect(boost::bind(&NACLAntiSpamRegistry::handleNaclAntiSpamAmountChanged, _2));
+        // NaCl End
 
 		//good as place as any to create user windlight directories
 		std::string user_windlight_path_name(gDirUtilp->getExpandedFilename( LL_PATH_USER_SETTINGS , "windlight", ""));
@@ -4354,3 +4365,4 @@ bool process_login_success_response(std::string& password)
 	}
 	return success;
 }
+
