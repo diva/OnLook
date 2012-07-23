@@ -1938,7 +1938,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
     {
         static LLCachedControl<U32> SpamNewlines(gSavedSettings,"_NACL_AntiSpamNewlines");
         boost::sregex_iterator iter(message.begin(), message.end(), NEWLINES);
-        if(std::abs(std::distance(iter, boost::sregex_iterator())) > SpamNewlines)
+        if((U32)std::abs(std::distance(iter, boost::sregex_iterator())) > SpamNewlines)
         {
             NACLAntiSpamRegistry::blockOnQueue((U32)NACLAntiSpamRegistry::QUEUE_IM,from_id);
             LLSD args;
@@ -3511,7 +3511,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
         {
             static LLCachedControl<U32> SpamNewlines(gSavedSettings,"_NACL_AntiSpamNewlines");
             boost::sregex_iterator iter(mesg.begin(), mesg.end(), NEWLINES);
-            if(std::abs(std::distance(iter, boost::sregex_iterator())) > SpamNewlines)
+            if((U32)std::abs(std::distance(iter, boost::sregex_iterator())) > SpamNewlines)
             {
                 NACLAntiSpamRegistry::blockOnQueue((U32)NACLAntiSpamRegistry::QUEUE_CHAT,owner_id);
                 LLSD args;
