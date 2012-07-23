@@ -230,9 +230,10 @@ void audio_update_wind(bool force_update)
         static LLCachedControl<F32> wind_level("AudioLevelWind", 0.5f);
         LLVector3 scaled_wind_vec = gWindVec * wind_level;
 
-        // Mix in the avatar's motion, subtract because when you walk north,
-        // the apparent wind moves south.
-        LLVector3 final_wind_vec = scaled_wind_vec - gAgent.getVelocity();
+		// Mix in the avatar's motion, subtract because when you walk north,
+		// the apparent wind moves south.
+		LLVector3 final_wind_vec = scaled_wind_vec - gAgent.getVelocity();
+
 		// rotate the wind vector to be listener (agent) relative
 		gRelativeWindVec = gAgent.getFrameAgent().rotateToLocal(final_wind_vec);
 
@@ -256,7 +257,7 @@ void audio_update_wind(bool force_update)
 		if (gSavedSettings.getBOOL("MuteWind"))
 		{
 			// volume decreases by itself
-			gAudiop->mMaxWindGain -= gAudiop->mMaxWindGain;
+			gAudiop->mMaxWindGain = 0.f;
 		}
 		// mute wind when not /*flying*/ in air
 		else if /*(gAgent.getFlying())*/ (gAgentAvatarp && gAgentAvatarp->mInAir)

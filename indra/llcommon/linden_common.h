@@ -60,16 +60,11 @@
 #include <ctime>
 #include <iosfwd>
 
-// *TODO: Eliminate these, most library .cpp files don't need them.
-// Add them to llviewerprecompiledheaders.h if necessary.
-#include <list>
-
 // Linden only libs in alpha-order other than stdtypes.h
 // *NOTE: Please keep includes here to a minimum, see above.
 #include "stdtypes.h"
 #include "lldefs.h"
 #include "llerror.h"
 #include "llfile.h"
-#include "llformat.h"
 
 #endif

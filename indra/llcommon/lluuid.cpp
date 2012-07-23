@@ -460,7 +460,7 @@ typedef struct _ASTAT_
 }ASTAT, * PASTAT;
 
 // static
-S32 LLUUID::getNodeID(unsigned char * node_id)
+S32 LLUUID::getNodeID(unsigned char *node_id)
 {
 	  ASTAT Adapter;
       NCB Ncb;

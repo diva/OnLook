@@ -31,6 +31,8 @@
  */
 
 #include "llviewerprecompiledheaders.h"
+#include "llviewerwindow.h"
+
 
 // system library includes
 #include <stdio.h>
@@ -42,7 +44,7 @@
 #include "llmeshrepository.h"
 #include "llpanellogin.h"
 #include "llviewerkeyboard.h"
-#include "llviewerwindow.h"
+
 
 #include "llviewquery.h"
 #include "llxmltree.h"
@@ -75,6 +77,7 @@
 #include "lltimer.h"
 #include "timing.h"
 #include "llviewermenu.h"
+#include "raytrace.h"
 
 // newview includes
 #include "llagent.h"

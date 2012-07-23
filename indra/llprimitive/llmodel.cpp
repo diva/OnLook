@@ -83,7 +83,6 @@ LLModel::~LLModel()
 bool get_dom_sources(const domInputLocalOffset_Array& inputs, S32& pos_offset, S32& tc_offset, S32& norm_offset, S32 &idx_stride,
 					 domSource* &pos_source, domSource* &tc_source, domSource* &norm_source)
 {
-	
 	idx_stride = 0;
 
 	for (U32 j = 0; j < inputs.getCount(); ++j)
@@ -209,7 +208,6 @@ LLModel::EModelStatus load_face_from_dom_triangles(std::vector<LLVolumeFace>& fa
 								n[idx[i+norm_offset]*3+1],
 								n[idx[i+norm_offset]*3+2]));
 		}
-
 		
 		BOOL found = FALSE;
 			
@@ -276,7 +274,6 @@ LLModel::EModelStatus load_face_from_dom_triangles(std::vector<LLVolumeFace>& fa
 			face = LLVolumeFace();
 			point_map.clear();
 		}
-
 	}
 
 	if (!verts.empty())
@@ -509,7 +506,7 @@ LLModel::EModelStatus load_face_from_dom_polylist(std::vector<LLVolumeFace>& fac
 		{
 			material = std::string(poly->getMaterial());
 		}
-		
+	
 		materials.push_back(material);
 		face_list.push_back(face);
 		face_list.rbegin()->fillFromLegacyData(verts, indices);
@@ -538,7 +535,6 @@ LLModel::EModelStatus load_face_from_dom_polygons(std::vector<LLVolumeFace>& fac
 	std::vector<LLVolumeFace::VertexData> verts;
 
 	const domInputLocalOffset_Array& inputs = poly->getInput_array();
-
 
 	S32 v_offset = -1;
 	S32 n_offset = -1;
@@ -651,8 +647,7 @@ LLModel::EModelStatus load_face_from_dom_polygons(std::vector<LLVolumeFace>& fac
 				vert.mTexCoord.setVec(t->get(t_idx),
 								t->get(t_idx+1));								
 			}
-		
-			
+						
 			verts.push_back(vert);
 		}
 	}
@@ -1467,7 +1462,6 @@ LLSD LLModel::writeModel(
 					}
 				}
 
-
 				LLVector2 tc_range = max_tc - min_tc;
 
 				for (U32 j = 0; j < (U32)face.mNumVertices; ++j)
@@ -1983,6 +1977,7 @@ bool LLModel::matchMaterialOrder(LLModel* ref, int& refFaceCnt, int& modelFaceCn
 	
 	//build a map of material slot names to face indexes
 	bool reorder = false;
+
 	std::set<std::string> base_mat;
 	std::set<std::string> cur_mat;
 
