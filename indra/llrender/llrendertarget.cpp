@@ -308,6 +308,8 @@ void LLRenderTarget::release()
 		}
 		else
 		{
+			//Release before delete.
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, LLTexUnit::getInternalType(mUsage), 0, 0);
 			LLImageGL::deleteTextures(mUsage, 0, 0, 1, &mDepth, true);
 			stop_glerror();
 		}
@@ -339,6 +341,9 @@ void LLRenderTarget::release()
 
 	if (mTex.size() > 0)
 	{
+		//Release before delete.
+		for (U32 i = 0; i < mTex.size(); ++i)
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, LLTexUnit::getInternalType(mUsage), 0, 0);
 		sBytesAllocated -= mResX*mResY*4*mTex.size();
 		LLImageGL::deleteTextures(mUsage, mInternalFormat[0], 0, mTex.size(), &mTex[0], true);
 		mTex.clear();
@@ -490,10 +495,21 @@ void LLRenderTarget::flush(bool fetch_depth)
 			}
 			stop_glerror();		
 
+			//Following case never currently evalutes true, but it's still good to have.
 			if (mTex.size() > 1)
-			{		
+			{
 				for (U32 i = 1; i < mTex.size(); ++i)
 				{
+					glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
+					glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
+					stop_glerror();
+					glBlitFramebuffer(0, 0, mResX, mResY, 0, 0, mResX, mResY, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+					stop_glerror();
+				}
+
+				/*for (U32 i = 1; i < mTex.size(); ++i)
+				{
+
 					glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 										LLTexUnit::getInternalType(mUsage), mTex[i], 0);
 					stop_glerror();
@@ -510,7 +526,7 @@ void LLRenderTarget::flush(bool fetch_depth)
 					stop_glerror();
 					glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_RENDERBUFFER, mSampleBuffer->mTex[i]);
 					stop_glerror();
-				}
+				}*/
 			}
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
