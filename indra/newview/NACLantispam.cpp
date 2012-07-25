@@ -1,3 +1,18 @@
+/* DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+ *                   Version 2, December 2004
+ *
+ * Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+ *
+ * Everyone is permitted to copy and distribute verbatim or modified
+ * copies of this license document, and changing it is allowed as long
+ * as the name is changed.
+ *
+ *            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+ *   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+ *
+ *  0. You just DO WHAT THE FUCK YOU WANT TO.
+ */
+
 #include "llviewerprecompiledheaders.h"
 #include "NACLantispam.h"
 #include "llviewercontrol.h"
@@ -263,7 +278,7 @@ void NACLAntiSpamRegistry::blockGlobalEntry(LLUUID& source)
 	}
 	globalEntries[source.asString()]->setBlocked();
 }
-bool NACLAntiSpamRegistry::checkQueue(U32 name, LLUUID& source, U32 multiplier, bool silent)
+bool NACLAntiSpamRegistry::checkQueue(U32 name, LLUUID& source, U32 multiplier)
 {
 	if(source.isNull()) return false;
 	if(gAgent.getID() == source) return false;
@@ -295,7 +310,7 @@ bool NACLAntiSpamRegistry::checkQueue(U32 name, LLUUID& source, U32 multiplier, 
 	}
 	else
 	{
-		if(!silent)
+		if(gSavedSettings.getBOOL("AntiSpamNotify"))
 		{
 		LLSD args;
 		args["MESSAGE"] = std::string(getQueueName(name))+": Blocked object "+source.asString();

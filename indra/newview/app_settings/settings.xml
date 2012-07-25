@@ -894,7 +894,95 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
-	<key>_NACL_Antispam</key>
+    <key>AntiSpamAlerts</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from alerts will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamFriendshipOffers</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from friendship requests will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamGroupInvites</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from group invites will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamGroupNotices</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from group notices will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamItemOffers</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from inventory item offers will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamNotify</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, notifications will appear any time a spamtype is blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>AntiSpamScripts</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from scripts, including script-driven teleports and questions, and other interactive script stuff, will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamTeleports</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from teleport requests from other residents will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>_NACL_Antispam</key>
     <map>
       <key>Comment</key>
       <string>When true, all dialogs will be blocked, resets on restart.</string>
@@ -908,7 +996,7 @@
     <key>_NACL_AntiSpamGlobalQueue</key>
     <map>
         <key>Comment</key>
-        <string> </string>
+        <string>Collect spamtypes together, instead of individually counting them</string>
         <key>Persist</key>
         <integer>1</integer>
         <key>Type</key>
@@ -919,24 +1007,24 @@
     <key>_NACL_AntiSpamTime</key>
     <map>
         <key>Comment</key>
-        <string> </string>
+        <string>Time in seconds for spamtype to accumulate the _NACL_AntiSpamAmount and be blocked</string>
         <key>Persist</key>
         <integer>1</integer>
         <key>Type</key>
         <string>U32</string>
         <key>Value</key>
-        <integer>2</integer>
+        <integer>1</integer>
     </map>
         <key>_NACL_AntiSpamAmount</key>
         <map>
         <key>Comment</key>
-        <string> </string>
+        <string>Amount of spamtype to be reached before the blocking will occur.</string>
         <key>Persist</key>
         <integer>1</integer>
         <key>Type</key>
         <string>U32</string>
         <key>Value</key>
-        <integer>10</integer>
+        <integer>30</integer>
     </map>
         <key>_NACL_AntiSpamSoundMulti</key>
         <map>
@@ -947,7 +1035,7 @@
         <key>Type</key>
         <string>U32</string>
         <key>Value</key>
-        <integer>4</integer>
+        <integer>20</integer>
     </map>
         <key>_NACL_AntiSpamNewlines</key>
         <map>
@@ -958,7 +1046,7 @@
         <key>Type</key>
         <string>U32</string>
         <key>Value</key>
-        <integer>30</integer>
+        <integer>20</integer>
     </map>
     <key>_NACL_AntiSpamSoundPreloadMulti</key>
     <map>
@@ -969,7 +1057,7 @@
         <key>Type</key>
         <string>U32</string>
         <key>Value</key>
-        <integer>4</integer>
+        <integer>20</integer>
     </map>
     <!-- Vanilla SL settings that are now optionally Account-Specific -->
     <key>AgentChatColor</key>

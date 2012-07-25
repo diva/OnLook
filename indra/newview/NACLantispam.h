@@ -1,3 +1,18 @@
+/* DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+ *                   Version 2, December 2004
+ *
+ * Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+ *
+ * Everyone is permitted to copy and distribute verbatim or modified
+ * copies of this license document, and changing it is allowed as long
+ * as the name is changed.
+ *
+ *            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+ *   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+ *
+ *  0. You just DO WHAT THE FUCK YOU WANT TO.
+ */
+
 #ifndef NACLANTISPAM_H
 #define NACLANTISPAM_H
 #include <boost/tr1/unordered_map.hpp>
@@ -48,7 +63,7 @@ public:
 	static void setRegisteredQueueAmount(U32 name,U32 amount);
 	static void setAllQueueTimes(U32 amount);
 	static void setAllQueueAmounts(U32 time);
-	static bool checkQueue(U32 name, LLUUID& source, U32 multiplier=1, bool silent=false);
+	static bool checkQueue(U32 name, LLUUID& source, U32 multiplier=1);
 	static bool handleNaclAntiSpamGlobalQueueChanged(const LLSD& newvalue);
 	static bool handleNaclAntiSpamTimeChanged(const LLSD& newvalue);
 	static bool handleNaclAntiSpamAmountChanged(const LLSD& newvalue);
@@ -85,7 +100,6 @@ private:
 	static void purgeGlobalEntries();
 	static void blockGlobalEntry(LLUUID& source);
 };
-
 
 extern const std::string COLLISION_SOUNDS[];
 extern const int COLLISION_SOUNDS_SIZE;
