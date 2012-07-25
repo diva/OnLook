@@ -37,23 +37,17 @@ include_directories(
     )
 
 set(statemachine_SOURCE_FILES
-    aistatemachine.cpp
-    aicurleasyrequeststatemachine.cpp
     aifilepicker.cpp
     aifetchinventoryfolder.cpp
     aievent.cpp
-    aitimer.cpp
     )
 
 set(statemachine_HEADER_FILES
     CMakeLists.txt
-    aistatemachine.h
-    aicurleasyrequeststatemachine.h
     aifilepicker.h
     aidirpicker.h
     aifetchinventoryfolder.h
     aievent.h
-    aitimer.h
     )
 
 set_source_files_properties(${statemachine_HEADER_FILES}

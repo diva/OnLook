@@ -43,7 +43,7 @@
 #include "llappviewer.h"
 
 #include "hippogridmanager.h"
-#include "statemachine/aicurleasyrequeststatemachine.h"
+#include "aicurleasyrequeststatemachine.h"
 
 #ifdef CWDEBUG
 #include <libcwd/buf2str.h>

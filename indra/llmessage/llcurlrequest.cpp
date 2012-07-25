@@ -41,7 +41,7 @@
 
 #include "llsdserialize.h"
 #include "llcurlrequest.h"
-#include "statemachine/aicurleasyrequeststatemachine.h"
+#include "aicurleasyrequeststatemachine.h"
 
 //-----------------------------------------------------------------------------
 // class Request

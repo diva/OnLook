@@ -4,6 +4,7 @@ project(llmessage)
 
 include(00-Common)
 include(LLCommon)
+include(AIStateMachine)
 include(LLMath)
 include(LLMessage)
 include(LLVFS)
@@ -12,6 +13,7 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(
     ${LLCOMMON_INCLUDE_DIRS}
+    ${AISTATEMACHINE_INCLUDE_DIRS}
     ${LLMATH_INCLUDE_DIRS}
     ${LLMESSAGE_INCLUDE_DIRS}
     ${LLVFS_INCLUDE_DIRS}
@@ -29,8 +31,7 @@ set(llmessage_SOURCE_FILES
     llchainio.cpp
     llcircuit.cpp
     llclassifiedflags.cpp
-    aicurl.cpp
-    aicurlthread.cpp
+    llcurlrequest.cpp
     lldatapacker.cpp
     lldispatcher.cpp
     llfiltersd2xmlrpc.cpp
@@ -116,9 +117,7 @@ set(llmessage_HEADER_FILES
     llcircuit.h
     llclassifiedflags.h
     llcurl.h
-    aicurl.h
-    aicurlprivate.h
-    aicurlthread.h
+    llcurlrequest.h
     lldatapacker.h
     lldbstrings.h
     lldispatcher.h

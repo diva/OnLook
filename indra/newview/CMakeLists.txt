@@ -30,7 +30,7 @@ include(LLInventory)
 include(LLMath)
 include(LLMessage)
 include(LLPlugin)
-include(AIStateMachine)
+include(StateMachine)
 include(LLPrimitive)
 include(LLRender)
 include(LLUI)
@@ -54,6 +54,7 @@ endif (WINDOWS)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/newview
+    ${STATEMACHINE_INCLUDE_DIRS}
     ${DBUSGLIB_INCLUDE_DIRS}
     ${HUNSPELL_INCLUDE_DIR}
     ${ELFIO_INCLUDE_DIR}
@@ -152,7 +153,6 @@ set(viewer_SOURCE_FILES
     llconfirmationmanager.cpp
     llconsole.cpp
     llcontainerview.cpp
-    llcurlrequest.cpp
     llcurrencyuimanager.cpp
     llcylinder.cpp
     lldebugmessagebox.cpp
@@ -650,7 +650,6 @@ set(viewer_HEADER_FILES
     llconfirmationmanager.h
     llconsole.h
     llcontainerview.h
-    llcurlrequest.h
     llcurrencyuimanager.h
     llcylinder.h
     lldebugmessagebox.h
@@ -1541,7 +1540,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${LLINVENTORY_LIBRARIES}
     ${LLMESSAGE_LIBRARIES}
     ${LLPLUGIN_LIBRARIES}
-    ${AISTATEMACHINE_LIBRARIES}
+    ${STATEMACHINE_LIBRARIES}
     ${LLPRIMITIVE_LIBRARIES}
     ${LLRENDER_LIBRARIES}
     ${FREETYPE_LIBRARIES}

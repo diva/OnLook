@@ -78,7 +78,7 @@
 #include "llnetmap.h"
 #include "llrender.h"
 #include "llfloaterchat.h"
-#include "statemachine/aistatemachine.h"
+#include "aistatemachine.h"
 #include "aithreadsafe.h"
 #include "lldrawpoolbump.h"
 #include "emeraldboobutils.h"
