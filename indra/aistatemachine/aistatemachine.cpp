@@ -32,7 +32,6 @@
 
 #include <algorithm>
 
-#include "llcallbacklist.h"
 #include "llcontrol.h"
 #include "llfasttimer.h"
 #include "aithreadsafe.h"
@@ -66,17 +65,11 @@ namespace {
 
   typedef std::vector<QueueElement> active_statemachines_type;
   active_statemachines_type active_statemachines;
-  typedef std::vector<AIStateMachine*> continued_statemachines_type;
-  struct cscm_type
-  {
-	continued_statemachines_type continued_statemachines;
-	bool calling_mainloop;
-  };
-  AIThreadSafeDC<cscm_type> continued_statemachines_and_calling_mainloop;
 }
 
 // static
 AIThreadSafeSimpleDC<U64> AIStateMachine::sMaxCount;
+AIThreadSafeDC<AIStateMachine::csme_type> AIStateMachine::sContinuedStateMachinesAndMainloopEnabled;
 
 void AIStateMachine::updateSettings(void)
 {
@@ -221,24 +214,23 @@ void AIStateMachine::locked_cont(void)
   // If not_active is true then main-thread is not running this statemachine.
   // It might call cont() (or set_state()) but never locked_cont(), and will never
   // start actually running until we are done here and release the lock on
-  // continued_statemachines_and_calling_mainloop again. It is therefore safe
+  // sContinuedStateMachinesAndMainloopEnabled again. It is therefore safe
   // to release mSetStateLock here, with as advantage that if we're not the main-
   // thread and not_active is true, then the main-thread won't block when it has
   // a timer running that times out and calls set_state().
   mSetStateLock.unlock();
   if (not_active)
   {
-	AIWriteAccess<cscm_type> cscm_w(continued_statemachines_and_calling_mainloop);
+	AIWriteAccess<csme_type> csme_w(sContinuedStateMachinesAndMainloopEnabled);
 	// See above: it is not possible that mActive was changed since not_active
 	// was set to true above.
 	llassert_always(mActive == as_idle);
 	Dout(dc::statemachine, "Adding " << (void*)this << " to continued_statemachines");
-	cscm_w->continued_statemachines.push_back(this);
-	if (!cscm_w->calling_mainloop)
+	csme_w->continued_statemachines.push_back(this);
+	if (!csme_w->mainloop_enabled)
 	{
-	  Dout(dc::statemachine, "Adding AIStateMachine::mainloop to gIdleCallbacks");
-	  cscm_w->calling_mainloop = true;
-	  gIdleCallbacks.addFunction(&AIStateMachine::mainloop);
+	  Dout(dc::statemachine, "Activating AIStateMachine::mainloop.");
+	  csme_w->mainloop_enabled = true;
 	}
 	mActive = as_queued;
 	llassert_always(!mIdle);	// It should never happen that the main thread calls idle(), while another thread calls cont() concurrently.
@@ -499,11 +491,10 @@ void AIStateMachine::multiplex(U64 current_time)
 }
 
 //static
-void AIStateMachine::add_continued_statemachines(void)
+void AIStateMachine::add_continued_statemachines(AIReadAccess<csme_type>& csme_r)
 {
-  AIReadAccess<cscm_type> cscm_r(continued_statemachines_and_calling_mainloop);
   bool nonempty = false;
-  for (continued_statemachines_type::const_iterator iter = cscm_r->continued_statemachines.begin(); iter != cscm_r->continued_statemachines.end(); ++iter)
+  for (continued_statemachines_type::const_iterator iter = csme_r->continued_statemachines.begin(); iter != csme_r->continued_statemachines.end(); ++iter)
   {
 	nonempty = true;
 	active_statemachines.push_back(QueueElement(*iter));
@@ -511,15 +502,12 @@ void AIStateMachine::add_continued_statemachines(void)
 	(*iter)->mActive = as_active;
   }
   if (nonempty)
-	AIWriteAccess<cscm_type>(cscm_r)->continued_statemachines.clear();
+	AIWriteAccess<csme_type>(csme_r)->continued_statemachines.clear();
 }
 
-static LLFastTimer::DeclareTimer FTM_STATEMACHINE("State Machine");
 // static
-void AIStateMachine::mainloop(void*)
+void AIStateMachine::dowork(void)
 {
-  LLFastTimer t(FTM_STATEMACHINE);
-  add_continued_statemachines();
   llassert(!active_statemachines.empty());
   // Run one or more state machines.
   U64 total_clocks = 0;
@@ -590,12 +578,11 @@ void AIStateMachine::mainloop(void*)
   if (active_statemachines.empty())
   {
 	// If this was the last state machine, remove mainloop from the IdleCallbacks.
-	AIReadAccess<cscm_type> cscm_r(continued_statemachines_and_calling_mainloop);
-	if (cscm_r->continued_statemachines.empty() && cscm_r->calling_mainloop)
+	AIReadAccess<csme_type> csme_r(sContinuedStateMachinesAndMainloopEnabled, true);
+	if (csme_r->continued_statemachines.empty() && csme_r->mainloop_enabled)
 	{
-	  Dout(dc::statemachine, "Removing AIStateMachine::mainloop from gIdleCallbacks");
-	  AIWriteAccess<cscm_type>(cscm_r)->calling_mainloop = false;
-	  gIdleCallbacks.deleteFunction(&AIStateMachine::mainloop);
+	  Dout(dc::statemachine, "Deactivating AIStateMachine::mainloop: no active state machines left.");
+	  AIWriteAccess<csme_type>(csme_r)->mainloop_enabled = false;
 	}
   }
 }
@@ -604,7 +591,10 @@ void AIStateMachine::mainloop(void*)
 void AIStateMachine::flush(void)
 {
   DoutEntering(dc::curl, "AIStateMachine::flush(void)");
-  add_continued_statemachines();
+  {
+	AIReadAccess<csme_type> csme_r(sContinuedStateMachinesAndMainloopEnabled);
+	add_continued_statemachines(csme_r);
+  }
   // Abort all state machines.
   for (active_statemachines_type::iterator iter = active_statemachines.begin(); iter != active_statemachines.end(); ++iter)
   {
@@ -618,15 +608,18 @@ void AIStateMachine::flush(void)
 	for(;;)
 	{
 	  {
-		AIReadAccess<cscm_type> cscm_r(continued_statemachines_and_calling_mainloop);
-		if (!cscm_r->calling_mainloop)
+		AIReadAccess<csme_type> csme_r(sContinuedStateMachinesAndMainloopEnabled);
+		if (!csme_r->mainloop_enabled)
 		  break;
 	  }
-	  mainloop(NULL);
+	  mainloop();
 	}
 	if (batch == 1)
 	  break;
-	add_continued_statemachines();
+	{
+	  AIReadAccess<csme_type> csme_r(sContinuedStateMachinesAndMainloopEnabled);
+	  add_continued_statemachines(csme_r);
+	}
 	// Kill all state machines.
 	for (active_statemachines_type::iterator iter = active_statemachines.begin(); iter != active_statemachines.end(); ++iter)
 	{

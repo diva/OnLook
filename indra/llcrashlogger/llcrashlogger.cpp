@@ -367,6 +367,7 @@ void LLCrashLogger::updateApplication(const std::string& message)
 {
 	gServicePump->pump();
     gServicePump->callback();
+	//FIXME: AIStateMachine::mainloop(); needs CPU cycles. Can't call it from here though, because it uses gSavedSettings which is part of newview.
 }
 
 bool LLCrashLogger::init()

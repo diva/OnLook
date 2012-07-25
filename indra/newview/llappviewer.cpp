@@ -1034,6 +1034,7 @@ static LLFastTimer::DeclareTimer FTM_PUMP_SERVICE("Service");
 static LLFastTimer::DeclareTimer FTM_SERVICE_CALLBACK("Callback");
 static LLFastTimer::DeclareTimer FTM_AGENT_AUTOPILOT("Autopilot");
 static LLFastTimer::DeclareTimer FTM_AGENT_UPDATE("Update");
+static LLFastTimer::DeclareTimer FTM_STATEMACHINE("State Machine");
 
 bool LLAppViewer::mainLoop()
 {
@@ -3770,6 +3771,16 @@ void LLAppViewer::idle()
 		{
 			LLAppViewer::instance()->forceQuit();
 		}
+	}
+
+	//////////////////////////////////////
+	//
+	// Run state machines
+	//
+
+	{
+		LLFastTimer t(FTM_STATEMACHINE);
+		AIStateMachine::mainloop();
 	}
 
 	// Must wait until both have avatar object and mute list, so poll

@@ -192,6 +192,15 @@ class AIStateMachine {
 	  as_active					// State machine is on active_statemachines list.
 	};
 
+	//! Type of continued_statemachines.
+	typedef std::vector<AIStateMachine*> continued_statemachines_type;
+	//! Type of sContinuedStateMachinesAndMainloopEnabled.
+	struct csme_type
+	{
+	  continued_statemachines_type continued_statemachines;
+	  bool mainloop_enabled;
+	};
+
   public:
 	typedef U32 state_type;		//!< The type of mRunState
 
@@ -231,6 +240,7 @@ class AIStateMachine {
 	callback_type* mCallback;					//!< Pointer to signal/connection, or NULL when not connected.
 
 	static AIThreadSafeSimpleDC<U64> sMaxCount;	//!< Number of cpu clocks below which we start a new state machine within the same frame.
+	static AIThreadSafeDC<csme_type> sContinuedStateMachinesAndMainloopEnabled;	//!< Read/write locked variable pair.
 
   protected:
 	LLMutex mSetStateLock;						//!< For critical areas in set_state() and locked_cont().
@@ -365,11 +375,24 @@ class AIStateMachine {
 	char const* state_str(state_type state);
 
   private:
-	static void add_continued_statemachines(void);
-	static void mainloop(void*);
+	static void add_continued_statemachines(AIReadAccess<csme_type>& csme_r);
+	static void dowork(void);
 	void multiplex(U64 current_time);
 
   public:
+	//! Call this once per frame to give the statemachines CPU cycles.
+	static void mainloop(void)
+	{
+	  {
+		AIReadAccess<csme_type> csme_r(sContinuedStateMachinesAndMainloopEnabled, true);
+		if (!csme_r->mainloop_enabled)
+		  return;
+		if (!csme_r->continued_statemachines.empty())
+		  add_continued_statemachines(csme_r);
+	  }
+	  dowork();
+	}
+
 	//! Abort all running state machines and then run mainloop until all state machines are idle (called when application is exiting).
 	static void flush(void);
 
