@@ -113,16 +113,35 @@
 	     mouse_opaque="true" name="NextMaskDebug" v_pad="0" width="90">
 		N:
 	</text>
-	<check_box bottom="-187" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Share with group" left="10"
-	     mouse_opaque="true" name="CheckShareWithGroup" radio_style="false"
-	     width="106" />
-	<check_box bottom_delta="-32" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Allow anyone to copy" left="10"
-	     mouse_opaque="true" name="CheckEveryoneCopy" radio_style="false"
-	     width="130" />
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom_delta="-26" drop_shadow_visible="true" follows="left|top"
+	     bottom_delta="-20" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+	     mouse_opaque="true" name="GroupLabel" v_pad="0" width="198">
+		Group members can:
+	</text>
+	<check_box bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="16"
+	     initial_value="false" label="Modify" left="10" mouse_opaque="true"
+	     name="CheckGroupMod" radio_style="false" width="78" />
+	<check_box bottom_delta="0" follows="left|top" font="SansSerifSmall" height="16"
+	     initial_value="false" label="Copy" left_delta="78" mouse_opaque="true"
+	     name="CheckGroupCopy" radio_style="false" width="88" />
+	<check_box bottom_delta="0" follows="left|top" font="SansSerifSmall" height="16"
+	     initial_value="false" label="Move" left_delta="88" mouse_opaque="true"
+	     name="CheckGroupMove" radio_style="false" width="106" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-17" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+	     mouse_opaque="true" name="EveryoneLabel" v_pad="0" width="88">
+		Anyone can:
+	</text>
+	<check_box bottom_delta="-8" follows="left|top" font="SansSerifSmall" height="16"
+	     initial_value="false" label="Copy" left="88" mouse_opaque="true"
+	     name="CheckEveryoneCopy" radio_style="false" width="88" />
+	<check_box bottom_delta="0" follows="left|top" font="SansSerifSmall" height="16"
+	     initial_value="false" label="Move" left_delta="88" mouse_opaque="true"
+		 name="CheckEveryoneMove" radio_style="false" width="88" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-13" drop_shadow_visible="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
 	     mouse_opaque="true" name="NextOwnerLabel" v_pad="0" width="88">
 		Next owner can:
@@ -130,10 +149,10 @@
 	<check_box bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="16"
 	     initial_value="false" label="Modify" left="10" mouse_opaque="true"
 	     name="CheckNextOwnerModify" radio_style="false" width="78" />
-	<check_box bottom="-265" follows="left|top" font="SansSerifSmall" height="16"
+	<check_box bottom_delta="0" follows="left|top" font="SansSerifSmall" height="16"
 	     initial_value="false" label="Copy" left_delta="78" mouse_opaque="true"
 	     name="CheckNextOwnerCopy" radio_style="false" width="88" />
-	<check_box bottom="-265" follows="left|top" font="SansSerifSmall" height="16"
+	<check_box bottom_delta="0" follows="left|top" font="SansSerifSmall" height="16"
 	     initial_value="false" label="Resell/Give away" left_delta="88"
 	     mouse_opaque="true" name="CheckNextOwnerTransfer" radio_style="false"
 	     width="106" />
