@@ -5,7 +5,6 @@ project(llui)
 include(00-Common)
 include(LLCommon)
 include(LLImage)
-include(LLInventory)
 include(LLMath)
 include(LLMessage)
 include(LLRender)
@@ -17,7 +16,6 @@ include(LLXUIXML)
 include_directories(
     ${LLCOMMON_INCLUDE_DIRS}
     ${LLIMAGE_INCLUDE_DIRS}
-    ${LLINVENTORY_INCLUDE_DIRS}
     ${LLMATH_INCLUDE_DIRS}
     ${LLMESSAGE_INCLUDE_DIRS}
     ${LLRENDER_INCLUDE_DIRS}
