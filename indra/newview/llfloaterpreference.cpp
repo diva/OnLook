@@ -79,7 +79,6 @@
 #include "llviewerwindow.h"
 #include "llkeyboard.h"
 #include "llscrollcontainer.h"
-#include "llfloaterhardwaresettings.h"
 #include "hippopanelgrids.h"
 
 const S32 PREF_BORDER = 4;
@@ -318,9 +317,6 @@ void LLPreferenceCore::apply()
 	mPrefsAscentSys->apply();
 	mPrefsAscentVan->apply();
 
-	// hardware menu apply
-	LLFloaterHardwareSettings::instance()->apply();
-
 	mWebPanel->apply();
 #if LL_LCD_COMPILE
 	// only add this option if we actually have a logitech keyboard / speaker set
@@ -350,9 +346,6 @@ void LLPreferenceCore::cancel()
 	mPrefsAscentSys->cancel();
 	mPrefsAscentVan->cancel();
 
-	// cancel hardware menu
-	LLFloaterHardwareSettings::instance()->cancel();
-
 	mWebPanel->cancel();
 #if LL_LCD_COMPILE
 	// only add this option if we actually have a logitech keyboard / speaker set
@@ -380,7 +373,6 @@ void LLPreferenceCore::setPersonalInfo(const std::string& visibility, bool im_vi
 
 void LLPreferenceCore::refreshEnabledGraphics()
 {
-	LLFloaterHardwareSettings::instance()->refreshEnabledState();
 	mDisplayPanel->refreshEnabledState();
 }
 

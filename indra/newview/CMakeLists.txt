@@ -217,7 +217,6 @@ set(viewer_SOURCE_FILES
     llfloatergroupinvite.cpp
     llfloatergroups.cpp
     llfloaterhandler.cpp
-    llfloaterhardwaresettings.cpp
     llfloaterhtmlcurrency.cpp
     llfloatermediabrowser.cpp
     llfloaterhtmlsimple.cpp
@@ -710,7 +709,6 @@ set(viewer_HEADER_FILES
     llfloatergroupinvite.h
     llfloatergroups.h
     llfloaterhandler.h
-    llfloaterhardwaresettings.h
     llfloaterhtmlcurrency.h
     llfloatermediabrowser.h
     llfloaterhtmlsimple.h
