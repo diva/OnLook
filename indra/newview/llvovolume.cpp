@@ -4165,11 +4165,16 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 				facep->setTextureIndex(cur_tex);
 				texture_list.push_back(tex);
 
-				//if (can_batch_texture(facep))
+				if (can_batch_texture(facep))
 				{
 					while (i != faces.end())
 					{
 						facep = *i;
+						if (!can_batch_texture(facep))
+						{ //face is bump mapped or has an animated texture matrix -- can't 
+							//batch more than 1 texture at a time
+							break;
+						}
 						if (facep->getTexture() != tex)
 						{
 							if (distance_sort)
@@ -4195,12 +4200,6 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 								cur_tex++;
 							}
 
-							if (!can_batch_texture(facep))
-							{ //face is bump mapped or has an animated texture matrix -- can't 
-								//batch more than 1 texture at a time
-								break;
-							}
-
 							if (cur_tex >= texture_index_channels)
 							{ //cut batches when index channels are depleted
 								break;
@@ -4222,9 +4221,8 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 
 						facep->setTextureIndex(cur_tex);
 					}
+					tex = texture_list[0];
 				}
-
-				tex = texture_list[0];
 			}
 			else
 			{
