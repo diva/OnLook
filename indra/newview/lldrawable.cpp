@@ -791,19 +791,7 @@ void LLDrawable::updateTexture()
 
 	if (getVOVolume())
 	{
-		/*if (isActive())
-		{
-			if (isRoot())
-			{
-				mQuietCount = 0;
-			}
-			else
-			{
-				getParent()->mQuietCount = 0;
-			}
-		}*/
-				
-		getVOVolume()->mFaceMappingChanged = TRUE;
+		//getVOVolume()->mFaceMappingChanged = TRUE;
 		gPipeline.markRebuild(this, LLDrawable::REBUILD_MATERIAL, TRUE);
 	}
 }
