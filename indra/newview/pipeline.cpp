@@ -693,9 +693,7 @@ bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY, U32 samples)
 
 
 		//allocate deferred rendering color buffers
-		static const LLCachedControl<bool> shadow_precision("DeferredHighPrecision",true);
-		const GLuint format = shadow_precision ? GL_RGBA : GL_RGBA16F_ARB;  //TO-DO: Profile 16bit format later
-		if (!mDeferredScreen.allocate(resX, resY, format, TRUE, TRUE, LLTexUnit::TT_RECT_TEXTURE, FALSE)) return false;
+		if (!mDeferredScreen.allocate(resX, resY, GL_RGBA, TRUE, TRUE, LLTexUnit::TT_RECT_TEXTURE, FALSE)) return false;
 		if (!mDeferredDepth.allocate(resX, resY, 0, TRUE, FALSE, LLTexUnit::TT_RECT_TEXTURE, FALSE)) return false;
 		if (!addDeferredAttachments(mDeferredScreen)) return false;
 
@@ -9409,80 +9407,85 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar)
 
 	stateSort(*LLViewerCamera::getInstance(), result);
 	
-	const LLVector4a* ext = avatar->mDrawable->getSpatialExtents();
-	LLVector3 pos(avatar->getRenderPosition()+avatar->getImpostorOffset());
-
 	LLCamera camera = *viewer_camera;
-
-	camera.lookAt(viewer_camera->getOrigin(), pos, viewer_camera->getUpAxis());
-	
 	LLVector2 tdim;
+	U32 resY = 0;
+	U32 resX = 0;
 
-
-	LLVector4a half_height;
-	half_height.setSub(ext[1], ext[0]);
-	half_height.mul(0.5f);
-
-	LLVector4a left;
-	left.load3(camera.getLeftAxis().mV);
-	left.mul(left);
-	left.normalize3fast();
-
-	LLVector4a up;
-	up.load3(camera.getUpAxis().mV);
-	up.mul(up);
-	up.normalize3fast();
-
-	tdim.mV[0] = fabsf(half_height.dot3(left).getF32());
-	tdim.mV[1] = fabsf(half_height.dot3(up).getF32());
-
-	gGL.matrixMode(LLRender::MM_PROJECTION);
-	gGL.pushMatrix();
-	
-	F32 distance = (pos-camera.getOrigin()).length();
-	F32 fov = atanf(tdim.mV[1]/distance)*2.f*RAD_TO_DEG;
-	F32 aspect = tdim.mV[0]/tdim.mV[1];
-	glh::matrix4f persp = gl_perspective(fov, aspect, 1.f, 256.f);
-	glh_set_current_projection(persp);
-	gGL.loadMatrix(persp.m);
-
-	gGL.matrixMode(LLRender::MM_MODELVIEW);
-	gGL.pushMatrix();
-	glh::matrix4f mat;
-	camera.getOpenGLTransform(mat.m);
-
-	mat = glh::matrix4f((GLfloat*) OGL_TO_CFR_ROTATION) * mat;
-
-	gGL.loadMatrix(mat.m);
-	glh_set_current_modelview(mat);
-
-	glClearColor(0.0f,0.0f,0.0f,0.0f);
-	gGL.setColorMask(true, true);
-	
-	// get the number of pixels per angle
-	F32 pa = gViewerWindow->getWindowHeightRaw() / (RAD_TO_DEG * viewer_camera->getView());
-
-	//get resolution based on angle width and height of impostor (double desired resolution to prevent aliasing)
-	U32 resY = llmin(nhpo2((U32) (fov*pa)), (U32) 512);
-	U32 resX = llmin(nhpo2((U32) (atanf(tdim.mV[0]/distance)*2.f*RAD_TO_DEG*pa)), (U32) 512);
-
-	if (!avatar->mImpostor.isComplete() || resX != avatar->mImpostor.getWidth() ||
-		resY != avatar->mImpostor.getHeight())
 	{
-		static const LLCachedControl<bool> shadow_precision("DeferredHighPrecision",true); //TO-DO: Profile 16bit format later
-		avatar->mImpostor.allocate(resX,resY, (!LLPipeline::sRenderDeferred || shadow_precision) ? GL_RGBA : GL_RGBA16F_ARB,TRUE,FALSE);
+		const LLVector4a* ext = avatar->mDrawable->getSpatialExtents();
+		LLVector3 pos(avatar->getRenderPosition()+avatar->getImpostorOffset());
 
-		if (LLPipeline::sRenderDeferred)
+		camera.lookAt(viewer_camera->getOrigin(), pos, viewer_camera->getUpAxis());
+	
+		LLVector4a half_height;
+		half_height.setSub(ext[1], ext[0]);
+		half_height.mul(0.5f);
+
+		LLVector4a left;
+		left.load3(camera.getLeftAxis().mV);
+		left.mul(left);
+		left.normalize3fast();
+
+		LLVector4a up;
+		up.load3(camera.getUpAxis().mV);
+		up.mul(up);
+		up.normalize3fast();
+
+		tdim.mV[0] = fabsf(half_height.dot3(left).getF32());
+		tdim.mV[1] = fabsf(half_height.dot3(up).getF32());
+
+		gGL.matrixMode(LLRender::MM_PROJECTION);
+		gGL.pushMatrix();
+	
+		F32 distance = (pos-camera.getOrigin()).length();
+		F32 fov = atanf(tdim.mV[1]/distance)*2.f*RAD_TO_DEG;
+		F32 aspect = tdim.mV[0]/tdim.mV[1];
+		glh::matrix4f persp = gl_perspective(fov, aspect, 1.f, 256.f);
+		glh_set_current_projection(persp);
+		gGL.loadMatrix(persp.m);
+
+		gGL.matrixMode(LLRender::MM_MODELVIEW);
+		gGL.pushMatrix();
+		glh::matrix4f mat;
+		camera.getOpenGLTransform(mat.m);
+
+		mat = glh::matrix4f((GLfloat*) OGL_TO_CFR_ROTATION) * mat;
+
+		gGL.loadMatrix(mat.m);
+		glh_set_current_modelview(mat);
+
+		glClearColor(0.0f,0.0f,0.0f,0.0f);
+		gGL.setColorMask(true, true);
+	
+		// get the number of pixels per angle
+		F32 pa = gViewerWindow->getWindowHeightRaw() / (RAD_TO_DEG * viewer_camera->getView());
+
+		//get resolution based on angle width and height of impostor (double desired resolution to prevent aliasing)
+		resY = llmin(nhpo2((U32) (fov*pa)), (U32) 512);
+		resX = llmin(nhpo2((U32) (atanf(tdim.mV[0]/distance)*2.f*RAD_TO_DEG*pa)), (U32) 512);
+
+		if (!avatar->mImpostor.isComplete())
 		{
-			addDeferredAttachments(avatar->mImpostor);
+			avatar->mImpostor.allocate(resX,resY,GL_RGBA,TRUE,FALSE);
+
+			if (LLPipeline::sRenderDeferred)
+			{
+				addDeferredAttachments(avatar->mImpostor);
+			}
+		
+			gGL.getTexUnit(0)->bind(&avatar->mImpostor);
+			gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
+			gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+		}
+		else if(resX != avatar->mImpostor.getWidth() ||
+			resY != avatar->mImpostor.getHeight())
+		{
+			avatar->mImpostor.resize(resX,resY,GL_RGBA);
 		}
 
-		gGL.getTexUnit(0)->bind(&avatar->mImpostor);
-		gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
-		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+		avatar->mImpostor.bindTarget();
 	}
-
-	avatar->mImpostor.bindTarget();
 
 	if (LLPipeline::sRenderDeferred)
 	{
