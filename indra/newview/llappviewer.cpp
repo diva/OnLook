@@ -597,11 +597,14 @@ bool LLAppViewer::init()
 	//
 	LLFastTimer::reset();
 	
+	// <edit>
 	// We can call this early.
 	LLFrameTimer::global_initialization();
+	// </edit>
 
 	// initialize SSE options
 	LLVector4a::initClass();
+
 	// Need to do this initialization before we do anything else, since anything
 	// that touches files should really go through the lldir API
 	gDirUtilp->initAppDirs("SecondLife");
@@ -611,13 +614,13 @@ bool LLAppViewer::init()
 
 	initLogging();
 
+	// <edit>
 	// Curl must be initialized before any thread is running.
 	AICurlInterface::initCurl(&AIStateMachine::flush);
 
 	// Logging is initialized. Now it's safe to start the error thread.
 	startErrorThread();
 
-	// <edit>
 	gDeleteScheduler = new LLDeleteScheduler();
 	gBuildNewViewsScheduler = new LLBuildNewViewsScheduler();
 	// </edit>
