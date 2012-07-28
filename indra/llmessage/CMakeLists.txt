@@ -67,8 +67,6 @@ set(llmessage_SOURCE_FILES
     llsdmessage.cpp
     llsdmessagebuilder.cpp
     llsdmessagereader.cpp
-    llsdrpcclient.cpp
-    llsdrpcserver.cpp
     llservicebuilder.cpp
     llservice.cpp
     llstoredmessage.cpp
@@ -168,8 +166,6 @@ set(llmessage_HEADER_FILES
     llsdmessage.h
     llsdmessagebuilder.h
     llsdmessagereader.h
-    llsdrpcclient.h
-    llsdrpcserver.h
     llservice.h
     llservicebuilder.h
     llstoredmessage.h

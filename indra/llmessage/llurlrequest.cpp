@@ -52,7 +52,6 @@ static const U32 HTTP_STATUS_PIPE_ERROR = 499;
 /**
  * String constants
  */
-const std::string CONTEXT_DEST_URI_SD_LABEL("dest_uri");
 const std::string CONTEXT_TRANSFERED_BYTES("transfered_bytes");
 
 
@@ -714,42 +713,6 @@ static size_t headerCallback(char* header_line, size_t size, size_t nmemb, void*
 
 	return header_len;
 }
-
-static LLFastTimer::DeclareTimer FTM_PROCESS_URL_EXTRACTOR("URL Extractor");
-/**
- * LLContextURLExtractor
- */
-// virtual
-LLIOPipe::EStatus LLContextURLExtractor::process_impl(
-	const LLChannelDescriptors& channels,
-	buffer_ptr_t& buffer,
-	bool& eos,
-	LLSD& context,
-	LLPumpIO* pump)
-{
-	LLFastTimer t(FTM_PROCESS_URL_EXTRACTOR);
-	PUMP_DEBUG;
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
-	// The destination host is in the context.
-	if(context.isUndefined() || !mRequest)
-	{
-		return STATUS_PRECONDITION_NOT_MET;
-	}
-
-	// copy in to out, since this just extract the URL and does not
-	// actually change the data.
-	LLChangeChannel change(channels.in(), channels.out());
-	std::for_each(buffer->beginSegment(), buffer->endSegment(), change);
-
-	// find the context url
-	if(context.has(CONTEXT_DEST_URI_SD_LABEL))
-	{
-		mRequest->setURL(context[CONTEXT_DEST_URI_SD_LABEL].asString());
-		return STATUS_DONE;
-	}
-	return STATUS_ERROR;
-}
-
 
 /**
  * LLURLRequestComplete

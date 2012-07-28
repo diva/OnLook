@@ -887,6 +887,8 @@ static int curl_debug_callback(CURL*, curl_infotype infotype, char* buf, size_t 
   marker << (void*)request->get_lockobj();
   libcw_do.push_marker();
   libcw_do.marker().assign(marker.str().data(), marker.str().size());
+  if (!debug::channels::dc::curlio.is_on())
+	debug::channels::dc::curlio.on();
   LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcw_do, dc::curlio|cond_nonewline_cf(infotype == CURLINFO_TEXT))
   switch (infotype)
   {
@@ -1116,7 +1118,7 @@ CurlResponderBuffer::CurlResponderBuffer()
   curl_easy_request_w->send_events_to(this);
 }
 
-#define llmaybeerrs lllog(LLApp::isExiting() ? LLError::LEVEL_WARN : LLError::LEVEL_ERROR, NULL, NULL, false)
+#define llmaybeerrs lllog(LLApp::isRunning ? LLError::LEVEL_ERROR : LLError::LEVEL_WARN, NULL, NULL, false)
 
 // The callbacks need to be revoked when the CurlResponderBuffer is destructed (because that is what the callbacks use).
 // The AIThreadSafeSimple<CurlResponderBuffer> is destructed first (right to left), so when we get here then the
