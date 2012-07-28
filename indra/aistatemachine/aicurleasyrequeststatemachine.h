@@ -40,7 +40,7 @@
 // Before calling cersm.run() initialize the object (cersm) as follows:
 //
 // AICurlEasyRequest_wat cersm_w(cersm);
-// cersm_w->setopt(...); // etc, see the interface of AICurlPrivate::CurlEasyRequest and it's base class AICurlPrivate::CurlEasyHandle.
+// cersm_w->setopt(...); // etc, see the interface of AICurlPrivate::CurlEasyRequest.
 //
 // When the state machine finishes, call aborted() to check
 // whether or not the statemachine succeeded in fetching
@@ -64,6 +64,12 @@ class AICurlEasyRequestStateMachine : public AIStateMachine, public AICurlEasyHa
 	bool mFinished;		// Set by the curl thread to signal it finished.
 	bool mHandled;		// Set when we processed the received data.
 	AITimer* mTimer;	// Expiration timer.
+
+	static F32 sCurlRequestTimeOut;	// The time out value for mTimer.
+
+  public:
+	// Called once to set a different timeout then the default of 40 seconds.
+	static void setCurlRequestTimeOut(F32 CurlRequestTimeOut);
 
   protected:
 	// AICurlEasyRequest Events.

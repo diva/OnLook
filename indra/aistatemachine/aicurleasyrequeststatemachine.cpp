@@ -119,9 +119,8 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
 	  // Set an inactivity timer.
 	  // This shouldn't really be necessary, except in the case of a bug
 	  // in libcurl; but lets be sure and set a timer for inactivity.
-	  static LLCachedControl<F32> CurlRequestTimeOut("CurlRequestTimeOut", 40.f);
 	  mTimer = new AIPersistentTimer;			// Do not delete timer upon expiration.
-	  mTimer->setInterval(CurlRequestTimeOut);
+	  mTimer->setInterval(sCurlRequestTimeOut);
 	  mTimer->run(this, AICurlEasyRequestStateMachine_timedOut, false, false);
 	  break;
 	}
@@ -240,6 +239,15 @@ void AICurlEasyRequestStateMachine::finish_impl(void)
 AICurlEasyRequestStateMachine::AICurlEasyRequestStateMachine(bool buffered) : mBuffered(buffered), mCurlEasyRequest(buffered)
 {
   Dout(dc::statemachine, "Calling AICurlEasyRequestStateMachine(" << (buffered ? "true" : "false") << ") [" << (void*)this << "] [" << (void*)mCurlEasyRequest.get() << "]");
+}
+
+//static
+F32 AICurlEasyRequestStateMachine::sCurlRequestTimeOut = 40.f;
+
+//static
+void AICurlEasyRequestStateMachine::setCurlRequestTimeOut(F32 CurlRequestTimeOut)
+{
+  sCurlRequestTimeOut = CurlRequestTimeOut;
 }
 
 AICurlEasyRequestStateMachine::~AICurlEasyRequestStateMachine()

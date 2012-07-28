@@ -118,6 +118,7 @@
 // <edit>
 #include "lldelayeduidelete.h"
 #include "llbuildnewviewsscheduler.h"
+#include "aicurleasyrequeststatemachine.h"
 // </edit>
 // The files below handle dependencies from cleanup.
 #include "llcalc.h"
@@ -641,6 +642,9 @@ bool LLAppViewer::init()
 	LLPrivateMemoryPoolManager::initClass((BOOL)gSavedSettings.getBOOL("MemoryPrivatePoolEnabled"), (U32)gSavedSettings.getU32("MemoryPrivatePoolSize")) ;
 
     mAlloc.setProfilingEnabled(gSavedSettings.getBOOL("MemProfiling"));
+
+	AIStateMachine::setMaxCount(gSavedSettings.getU32("StateMachineMaxTime"));
+	AICurlEasyRequestStateMachine::setCurlRequestTimeOut(gSavedSettings.getF32("CurlRequestTimeOut"));
 
     initThreads();
 	LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ;

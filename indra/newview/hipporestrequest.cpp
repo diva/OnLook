@@ -19,7 +19,7 @@
 // ********************************************************************
  
  
-class HippoRestComplete : public LLURLRequestComplete
+class HippoRestComplete /* AIFIXME: public LLURLRequestComplete*/
 {
 	public:
 		HippoRestComplete(HippoRestHandler *handler) :
@@ -40,6 +40,7 @@ class HippoRestComplete : public LLURLRequestComplete
 			mHandler->addHeader(header, value);
 		}
 
+#if 0 // AIFIXME: doesn't compile
 		// Always called on request completion, prior to complete
 		void httpStatus(U32 status, const std::string& reason)
 		{
@@ -52,6 +53,7 @@ class HippoRestComplete : public LLURLRequestComplete
 		{
 			mHandler->handle(mStatus, mReason, channels, buffer);
 		}
+#endif
 
 	private:
 		HippoRestHandler *mHandler;
@@ -265,7 +267,7 @@ static void request(const std::string &url,
 		llwarns << "Failed to create LLURLRequest: " << error.what() << llendl;
 		return;
 	}
-	req->setSSLVerifyCallback(LLHTTPClient::getCertVerifyCallback(), (void *)req);
+	//AIFIXME: req->setSSLVerifyCallback(LLHTTPClient::getCertVerifyCallback(), (void *)req);
 
 	/*
 	// Insert custom headers if the caller sent any
@@ -300,7 +302,7 @@ static void request(const std::string &url,
 		req->addHeader(accept.c_str());
 	}
 
-	req->setCallback(new HippoRestComplete(handler));
+	//AIFIXME: req->setCallback(new HippoRestComplete(handler));
 
 	if ((method == LLURLRequest::HTTP_PUT) || (method == LLURLRequest::HTTP_POST)) {
 		std::string content = "Content-Type: ";
@@ -309,7 +311,7 @@ static void request(const std::string &url,
 		chain.push_back(LLIOPipe::ptr_t(body));
 	}
 
-	chain.push_back(LLIOPipe::ptr_t(req));
+	//AIFIXME: chain.push_back(LLIOPipe::ptr_t(req));
 	LLHTTPClient::getPump().addChain(chain, timeout);
 }
 

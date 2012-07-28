@@ -42,7 +42,9 @@
 
 
 const F32 HTTP_REQUEST_EXPIRY_SECS = 60.0f;
+#ifdef AI_UNUSED
 LLURLRequest::SSLCertVerifyCallback LLHTTPClient::mCertVerifyCallback = NULL;
+#endif // AI_UNUSED
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -50,6 +52,7 @@ LLURLRequest::SSLCertVerifyCallback LLHTTPClient::mCertVerifyCallback = NULL;
 
 namespace
 {
+#if 0
 	class LLHTTPClientURLAdaptor : public LLURLRequestComplete
 	{
 	public:
@@ -93,7 +96,8 @@ namespace
 		std::string mReason;
 		LLSD mHeaderOutput;
 	};
-	
+#endif
+
 	class Injector : public LLIOPipe
 	{
 	public:
@@ -206,10 +210,12 @@ namespace
 	LLPumpIO* theClientPump = NULL;
 }
 
+#ifdef AI_UNUSED
 void LLHTTPClient::setCertVerifyCallback(LLURLRequest::SSLCertVerifyCallback callback)
 {
 	LLHTTPClient::mCertVerifyCallback = callback;
 }
+#endif
 
 static void request(
 	const std::string& url,
@@ -245,11 +251,9 @@ static void request(
 		return ;
 	}
 
-	req->setSSLVerifyCallback(LLHTTPClient::getCertVerifyCallback(), (void *)req);
+	//AIFIXME: getCertVerifyCallback() always return NULL, so we might as well not do this call:  req->setSSLVerifyCallback(LLHTTPClient::getCertVerifyCallback(), (void *)req);
 
-	
-	lldebugs << LLURLRequest::actionAsVerb(method) << " " << url << " "
-		<< headers << llendl;
+	lldebugs << LLURLRequest::actionAsVerb(method) << " " << url << " " << headers << llendl;
 
 	// Insert custom headers if the caller sent any
 	if (headers.isMap())
@@ -293,7 +297,7 @@ static void request(
 		}
 	}
 
-	req->setCallback(new LLHTTPClientURLAdaptor(responder));
+	//AIFIXME: req->setCallback(new LLHTTPClientURLAdaptor(responder));
 
 	if (method == LLURLRequest::HTTP_POST  &&  gMessageSystem)
 	{
@@ -319,7 +323,7 @@ static void request(
    		chain.push_back(LLIOPipe::ptr_t(body_injector));
 	}
 
-	chain.push_back(LLIOPipe::ptr_t(req));
+	//AIFIXEM: chain.push_back(LLIOPipe::ptr_t(req));
 
 	theClientPump->addChain(chain, timeout);
 }
@@ -499,7 +503,7 @@ static LLSD blocking_request(
 		{
 			// We expect 404s, don't spam for them.
 			llwarns << "CURL REQ URL: " << url << llendl;
-			llwarns << "CURL REQ METHOD TYPE: " << method << llendl;
+			llwarns << "CURL REQ METHOD TYPE: " << LLURLRequest::actionAsVerb(method) << llendl;
 			llwarns << "CURL REQ HEADERS: " << headers.asString() << llendl;
 			llwarns << "CURL REQ BODY: " << body_str << llendl;
 			llwarns << "CURL HTTP_STATUS: " << http_status << llendl;
@@ -608,11 +612,13 @@ void LLHTTPClient::move(
 }
 
 
+//static
 void LLHTTPClient::setPump(LLPumpIO& pump)
 {
 	theClientPump = &pump;
 }
 
+//static
 bool LLHTTPClient::hasPump()
 {
 	return theClientPump != NULL;

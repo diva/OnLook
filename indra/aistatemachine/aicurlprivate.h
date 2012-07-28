@@ -301,6 +301,9 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
 	// Called after removed_from_multi_handle was called.
 	void processOutput(AICurlEasyRequest_wat& curl_easy_request_w);
 
+	// Do not write more than this amount.
+	//void setBodyLimit(U32 size) { mBodyLimit = size; }
+
   protected:
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
 	/*virtual*/ void finished(AICurlEasyRequest_wat& curl_easy_request_w);
@@ -311,6 +314,9 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
 	std::stringstream mHeaderOutput;
 	LLIOPipe::buffer_ptr_t mOutput;
 	AICurlInterface::ResponderPtr mResponder;
+	//U32 mBodyLimit;									// From the old LLURLRequestDetail::mBodyLimit, but never used.
+	S32 mByteAccumulator;
+	S32 mResponseTransferedBytes;
 
   public:
 	static LLChannelDescriptors const sChannels;		// Channel object for mOutput: we ONLY use channel 0, so this can be a constant.

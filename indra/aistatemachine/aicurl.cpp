@@ -1111,7 +1111,7 @@ static S32 const CURL_REQUEST_TIMEOUT = 30;		// Seconds per operation.
 
 LLChannelDescriptors const CurlResponderBuffer::sChannels;
 
-CurlResponderBuffer::CurlResponderBuffer()
+CurlResponderBuffer::CurlResponderBuffer() : mRequestTransferedBytes(0), mResponseTransferedBytes(0)
 {
   ThreadSafeBufferedCurlEasyRequest* lockobj = get_lockobj();
   AICurlEasyRequest_wat curl_easy_request_w(*lockobj);
@@ -1230,9 +1230,12 @@ size_t CurlResponderBuffer::curlWriteCallback(char* data, size_t size, size_t nm
   AICurlEasyRequest_wat buffered_easy_request_w(*lockobj);
 
   AICurlResponderBuffer_wat buffer_w(*lockobj);
-  S32 n = size * nmemb;
-  buffer_w->getOutput()->append(sChannels.in(), (U8 const*)data, n);
-  return n;
+  // CurlResponderBuffer::setBodyLimit is never called, so buffer_w->mBodyLimit is infinite.
+  //S32 bytes = llmin(size * nmemb, buffer_w->mBodyLimit); buffer_w->mBodyLimit -= bytes;
+  S32 bytes = size * nmemb;
+  buffer_w->getOutput()->append(sChannels.in(), (U8 const*)data, bytes);
+  mResponseTransferedBytes += bytes;
+  return bytes;
 }
 
 //static

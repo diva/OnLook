@@ -239,7 +239,7 @@ class AIStateMachine {
 	};
 	callback_type* mCallback;					//!< Pointer to signal/connection, or NULL when not connected.
 
-	static AIThreadSafeSimpleDC<U64> sMaxCount;	//!< Number of cpu clocks below which we start a new state machine within the same frame.
+	static U64 sMaxCount;						//!< Number of cpu clocks below which we start a new state machine within the same frame.
 	static AIThreadSafeDC<csme_type> sContinuedStateMachinesAndMainloopEnabled;	//!< Read/write locked variable pair.
 
   protected:
@@ -254,7 +254,7 @@ class AIStateMachine {
 #ifdef SHOW_ASSERT
 		, mContThread(0), mCalledThreadUnsafeIdle(false)
 #endif
-		{ updateSettings(); }
+		{ }
 
   protected:
 	//! The user should call 'kill()', not delete a AIStateMachine (derived) directly.
@@ -349,7 +349,7 @@ class AIStateMachine {
 	// Other.
 
 	//! Called whenever the StateMachineMaxTime setting is changed.
-	static void updateSettings(void);
+	static void setMaxCount(F32 StateMachineMaxTime);
 
 	//---------------------------------------
 	// Accessors.

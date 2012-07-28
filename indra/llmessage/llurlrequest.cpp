@@ -36,7 +36,7 @@
 #include <algorithm>
 #include <openssl/x509_vfy.h>
 #include <openssl/ssl.h>
-#include "llcurl.h"
+#include "aicurleasyrequeststatemachine.h"
 #include "llfasttimer.h"
 #include "llioutil.h"
 #include "llmemtype.h"
@@ -55,8 +55,9 @@ static const U32 HTTP_STATUS_PIPE_ERROR = 499;
 const std::string CONTEXT_TRANSFERED_BYTES("transfered_bytes");
 
 
-static size_t headerCallback(char* data, size_t size, size_t nmemb, void* user);
+//static size_t headerCallback(char* data, size_t size, size_t nmemb, void* user);
 
+#if 0
 /**
  * class LLURLRequestDetail
  */
@@ -66,23 +67,21 @@ public:
 	LLURLRequestDetail();
 	~LLURLRequestDetail();
 	std::string mURL;
-	AICurlEasyRequest mCurlEasyRequest;
+	AICurlEasyRequestStateMachine* mStateMachine;
 	LLIOPipe::buffer_ptr_t mResponseBuffer;
 	LLChannelDescriptors mChannels;
 	U8* mLastRead;
 	U32 mBodyLimit;
 	S32 mByteAccumulator;
 	bool mIsBodyLimitSet;
-	LLURLRequest::SSLCertVerifyCallback mSSLVerifyCallback;
 };
 
 LLURLRequestDetail::LLURLRequestDetail() :
-	mCurlEasyRequest(false),
+	mStateMachine(new AICurlEasyRequestStateMachine(false)),
 	mLastRead(NULL),
 	mBodyLimit(0),
 	mByteAccumulator(0),
-	mIsBodyLimitSet(false),
-    mSSLVerifyCallback(NULL)
+	mIsBodyLimitSet(false)
 {
 }
 
@@ -90,17 +89,18 @@ LLURLRequestDetail::~LLURLRequestDetail()
 {
 	mLastRead = NULL;
 }
+#endif
 
+#if AI_UNUSED
 void LLURLRequest::setSSLVerifyCallback(SSLCertVerifyCallback callback, void *param)
 {
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	mDetail->mSSLVerifyCallback = callback;
-	AICurlEasyRequest_wat curlEasyRequest_w(*mDetail->mCurlEasyRequest);
+	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
 	curlEasyRequest_w->setSSLCtxCallback(LLURLRequest::_sslCtxCallback, (void *)this);
 	curlEasyRequest_w->setopt(CURLOPT_SSL_VERIFYPEER, true);
 	curlEasyRequest_w->setopt(CURLOPT_SSL_VERIFYHOST, 2);	
 }
-
 
 // _sslCtxFunction
 // Callback function called when an SSL Context is created via CURL
@@ -123,6 +123,7 @@ CURLcode LLURLRequest::_sslCtxCallback(CURL * curl, void *sslctx, void *param)
 	return CURLE_OK;
 	
 }
+#endif
 
 /**
  * class LLURLRequest
@@ -131,7 +132,8 @@ CURLcode LLURLRequest::_sslCtxCallback(CURL * curl, void *sslctx, void *param)
 // static
 std::string LLURLRequest::actionAsVerb(LLURLRequest::ERequestAction action)
 {
-	static const std::string VERBS[] =
+	static int const array_size = HTTP_MOVE + 1;	// INVALID == 0
+	static char const* const VERBS[array_size] =
 	{
 		"(invalid)",
 		"HEAD",
@@ -141,60 +143,45 @@ std::string LLURLRequest::actionAsVerb(LLURLRequest::ERequestAction action)
 		"DELETE",
 		"MOVE"
 	};
-	if(((S32)action <=0) || ((S32)action >= REQUEST_ACTION_COUNT))
+	return VERBS[action >= array_size ? INVALID : action];
+}
+
+// This might throw AICurlNoEasyHandle.
+LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string const& url) : AICurlEasyRequestStateMachine(false), mAction(action), mURL(url)
+{
+	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
+
 	{
-		return VERBS[0];
+		AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
+		//AIFIXME: we can't really use the other callbacks: they have to be extended...  curlEasyRequest_w->setWriteCallback(&downCallback, (void*)this);
+		//AIFIXME: curlEasyRequest_w->setReadCallback(&upCallback, (void*)this);
 	}
-	return VERBS[action];
+
+	//AIFIXME: stuff they have to be extended with...  mRequestTransferedBytes = 0;
+	//AIFIXME: stuff they have to be extended with...  mResponseTransferedBytes = 0;
+	//AIFIXME: start statemachine   mState = STATE_INITIALIZED;
 }
 
-LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action) :
-	mAction(action)
-{
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
-	// This might throw AICurlNoEasyHandle.
-	initialize();
-}
-
-LLURLRequest::LLURLRequest(
-	LLURLRequest::ERequestAction action,
-	const std::string& url) :
-	mAction(action)
-{
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
-	// This might throw AICurlNoEasyHandle.
-	initialize();
-	setURL(url);
-}
-
-LLURLRequest::~LLURLRequest()
-{
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
-	{
-		AICurlEasyRequest_wat curl_easy_request_w(*mDetail->mCurlEasyRequest);
-		curl_easy_request_w->revokeCallbacks();
-		curl_easy_request_w->send_events_to(NULL);
-	}
-	delete mDetail;
-}
-
-void LLURLRequest::setURL(const std::string& url)
+#if 0
+void LLURLRequest::setURL2(const std::string& url)
 {
 	mDetail->mURL = url;
 }
 
-std::string LLURLRequest::getURL() const
+std::string LLURLRequest::getURL2() const
 {
 	return mDetail->mURL;
 }
+#endif
 
 void LLURLRequest::addHeader(const char* header)
 {
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
-	AICurlEasyRequest_wat curlEasyRequest_w(*mDetail->mCurlEasyRequest);
+	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
 	curlEasyRequest_w->addHeader(header);
 }
 
+#ifdef AI_UNUSED
 void LLURLRequest::setBodyLimit(U32 size)
 {
 	mDetail->mBodyLimit = size;
@@ -205,9 +192,10 @@ void LLURLRequest::setCallback(LLURLRequestComplete* callback)
 {
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	mCompletionCallback = callback;
-	AICurlEasyRequest_wat curlEasyRequest_w(*mDetail->mCurlEasyRequest);
+	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
 	curlEasyRequest_w->setHeaderCallback(&headerCallback, (void*)callback);
 }
+#endif
 
 // Added to mitigate the effect of libcurl looking
 // for the ALL_PROXY and http_proxy env variables
@@ -242,38 +230,41 @@ void LLURLRequest::useProxy(bool use_proxy)
 
     lldebugs << "use_proxy = " << (use_proxy?'Y':'N') << ", env_proxy = \"" << env_proxy << "\"" << llendl;
 
-	AICurlEasyRequest_wat curlEasyRequest_w(*mDetail->mCurlEasyRequest);
+	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
 	curlEasyRequest_w->setoptString(CURLOPT_PROXY, use_proxy ? env_proxy : std::string(""));
 }
 
+#ifdef AI_UNUSED
 void LLURLRequest::useProxy(const std::string &proxy)
 {
-	AICurlEasyRequest_wat curlEasyRequest_w(*mDetail->mCurlEasyRequest);
+	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
     curlEasyRequest_w->setoptString(CURLOPT_PROXY, proxy);
 }
+#endif
 
 void LLURLRequest::allowCookies()
 {
-	AICurlEasyRequest_wat curlEasyRequest_w(*mDetail->mCurlEasyRequest);
+	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
 	curlEasyRequest_w->setoptString(CURLOPT_COOKIEFILE, "");
 }
 
+#ifdef AI_UNUSED // no longer derived from LLIOPipe
 //virtual 
 bool LLURLRequest::hasExpiration(void) const
 {
 	// Currently, this ALWAYS returns false -- because only AICurlEasyRequestStateMachine uses buffered
 	// AICurlEasyRequest objects, and LLURLRequest uses (unbuffered) AICurlEasyRequest directly, which
 	// have no expiration facility.
-	return mDetail->mCurlEasyRequest.isBuffered();
+	return mDetail->mStateMachine->isBuffered();
 }
 
 //virtual 
 bool LLURLRequest::hasNotExpired(void) const
 {
-	if (!mDetail->mCurlEasyRequest.isBuffered())
+	if (!mDetail->mStateMachine->isBuffered())
 	  return true;
-	AICurlEasyRequest_wat buffered_easy_request_w(*mDetail->mCurlEasyRequest);
-	AICurlResponderBuffer_wat buffer_w(*mDetail->mCurlEasyRequest);
+	AICurlEasyRequest_wat buffered_easy_request_w(*mCurlEasyRequest);
+	AICurlResponderBuffer_wat buffer_w(*mCurlEasyRequest);
 	return buffer_w->isValid();
 }
 
@@ -285,20 +276,20 @@ LLIOPipe::EStatus LLURLRequest::handleError(
 	DoutEntering(dc::curl, "LLURLRequest::handleError(" << LLIOPipe::lookupStatusString(status) << ", " << (void*)pump << ")");
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 
-	if (LL_LIKELY(!mDetail->mCurlEasyRequest.isBuffered()))	// Currently always true.
+	if (LL_LIKELY(!mDetail->mStateMachine->isBuffered()))	// Currently always true.
 	{
 		// The last reference will be deleted when the pump that this chain belongs to
 		// is removed from the running chains vector, upon returning from this function.
 		// This keeps the CurlEasyRequest object alive until the curl thread cleanly removed it.
-		Dout(dc::curl, "Calling mDetail->mCurlEasyRequest.removeRequest()");
-		mDetail->mCurlEasyRequest.removeRequest();
+		Dout(dc::curl, "Calling mDetail->mStateMachine->removeRequest()");
+		mDetail->mStateMachine->removeRequest();
 	}
 	else if (!hasNotExpired())
 	{
 		// The buffered version has it's own time out handling, and that already expired,
 		// so we can ignore the expiration of this timer (currently never happens).
 		// I left it here because it's what LL did (in the form if (!isValid() ...),
-		// and it would be relevant if this characteristic of mDetail->mCurlEasyRequest
+		// and it would be relevant if this characteristic of mDetail->mStateMachine
 		// would change. --Aleric
 		return STATUS_EXPIRED ;
 	}
@@ -315,19 +306,6 @@ LLIOPipe::EStatus LLURLRequest::handleError(
 		mCompletionCallback = NULL;
 	}
 	return status;
-}
-
-void LLURLRequest::added_to_multi_handle(AICurlEasyRequest_wat&)
-{
-}
-
-void LLURLRequest::finished(AICurlEasyRequest_wat&)
-{
-}
-
-void LLURLRequest::removed_from_multi_handle(AICurlEasyRequest_wat&)
-{
-	mRemoved = true;
 }
 
 static LLFastTimer::DeclareTimer FTM_PROCESS_URL_REQUEST("URL Request");
@@ -392,7 +370,7 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 		}
 		mRemoved = false;
 		mState = STATE_WAITING_FOR_RESPONSE;
-		mDetail->mCurlEasyRequest.addRequest();		// Add easy handle to multi handle.
+		mDetail->mStateMachine->addRequest();	// Add easy handle to multi handle.
 
 		return STATUS_BREAK;
 	}
@@ -418,7 +396,7 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 
 			static LLFastTimer::DeclareTimer FTM_PROCESS_URL_REQUEST_GET_RESULT("Get Result");
 
-			AICurlEasyRequest_wat(*mDetail->mCurlEasyRequest)->getResult(&result);
+			AICurlEasyRequest_wat(*mCurlEasyRequest)->getResult(&result);
 		
 			mState = STATE_HAVE_RESPONSE;
 			context[CONTEXT_REQUEST][CONTEXT_TRANSFERED_BYTES] = mRequestTransferedBytes;
@@ -488,23 +466,7 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 		return STATUS_ERROR;
 	}
 }
-
-void LLURLRequest::initialize()
-{
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
-	mState = STATE_INITIALIZED;
-	// This might throw AICurlNoEasyHandle.
-	mDetail = new LLURLRequestDetail;
-
-	{
-		AICurlEasyRequest_wat curlEasyRequest_w(*mDetail->mCurlEasyRequest);
-		curlEasyRequest_w->setWriteCallback(&downCallback, (void*)this);
-		curlEasyRequest_w->setReadCallback(&upCallback, (void*)this);
-	}
-
-	mRequestTransferedBytes = 0;
-	mResponseTransferedBytes = 0;
-}
+#endif // AI_UNUSED
 
 static LLFastTimer::DeclareTimer FTM_URL_REQUEST_CONFIGURE("URL Configure");
 bool LLURLRequest::configure()
@@ -517,7 +479,7 @@ bool LLURLRequest::configure()
    		mDetail->mChannels.in(),
 		NULL);
 	{
-		AICurlEasyRequest_wat curlEasyRequest_w(*mDetail->mCurlEasyRequest);
+		AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
 		switch(mAction)
 		{
 		case HTTP_HEAD:
@@ -582,12 +544,12 @@ bool LLURLRequest::configure()
 		if(rv)
 		{
 			curlEasyRequest_w->finalizeRequest(mDetail->mURL);
-			curlEasyRequest_w->send_events_to(this);
 		}
 	}
 	return rv;
 }
 
+#if 0
 // static
 size_t LLURLRequest::downCallback(
 	char* data,
@@ -713,7 +675,9 @@ static size_t headerCallback(char* header_line, size_t size, size_t nmemb, void*
 
 	return header_len;
 }
+#endif
 
+#ifdef AI_UNUSED
 /**
  * LLURLRequestComplete
  */
@@ -783,3 +747,4 @@ LLIOPipe::EStatus LLURLRequestComplete::process_impl(
 	complete(channels, buffer);
 	return STATUS_OK;
 }
+#endif

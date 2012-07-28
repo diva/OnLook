@@ -39,8 +39,6 @@
 
 extern F64 calc_clock_frequency(void);
 
-extern LLControlGroup gSavedSettings;
-
 // Local variables.
 namespace {
   struct QueueElementComp;
@@ -68,19 +66,15 @@ namespace {
 }
 
 // static
-AIThreadSafeSimpleDC<U64> AIStateMachine::sMaxCount;
+U64 AIStateMachine::sMaxCount;
 AIThreadSafeDC<AIStateMachine::csme_type> AIStateMachine::sContinuedStateMachinesAndMainloopEnabled;
 
-void AIStateMachine::updateSettings(void)
+// static
+void AIStateMachine::setMaxCount(F32 StateMachineMaxTime)
 {
-  static const LLCachedControl<U32> StateMachineMaxTime("StateMachineMaxTime", 20);
-  static U32 last_StateMachineMaxTime = 0;
-  if (last_StateMachineMaxTime != StateMachineMaxTime)
-  {
-    Dout(dc::statemachine, "Initializing AIStateMachine::sMaxCount");
-    *AIAccess<U64>(sMaxCount) = calc_clock_frequency() * StateMachineMaxTime / 1000;
-	last_StateMachineMaxTime = StateMachineMaxTime;
-  }
+  llassert(is_main_thread());
+  Dout(dc::statemachine, "(Re)calculating AIStateMachine::sMaxCount");
+  sMaxCount = calc_clock_frequency() * StateMachineMaxTime / 1000;
 }
 
 //----------------------------------------------------------------------------
@@ -511,7 +505,6 @@ void AIStateMachine::dowork(void)
   llassert(!active_statemachines.empty());
   // Run one or more state machines.
   U64 total_clocks = 0;
-  U64 max_count = *AIAccess<U64>(sMaxCount);
   for (active_statemachines_type::iterator iter = active_statemachines.begin(); iter != active_statemachines.end(); ++iter)
   {
 	AIStateMachine& statemachine(iter->statemachine());
@@ -525,7 +518,7 @@ void AIStateMachine::dowork(void)
 	  U64 delta = LLFastTimer::getCPUClockCount64() - start;
 	  iter->add(delta);
 	  total_clocks += delta;
-	  if (total_clocks >= max_count)
+	  if (total_clocks >= sMaxCount)
 	  {
 #ifndef LL_RELEASE_FOR_DOWNLOAD
 		llwarns << "AIStateMachine::mainloop did run for " << (total_clocks * 1000 / calc_clock_frequency()) << " ms." << llendl;

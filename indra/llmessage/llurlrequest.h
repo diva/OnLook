@@ -7,6 +7,7 @@
  * $LicenseInfo:firstyear=2005&license=viewerlgpl$
  * Second Life Viewer Source Code
  * Copyright (C) 2010, Linden Research, Inc.
+ * Copyright (C) 2012, Aleric Inglewood.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,12 +36,73 @@
  */
 
 #include <string>
-#include "lliopipe.h"
-#include "llchainio.h"
-#include "llerror.h"
-#include "llcurl.h"
+#include "aicurleasyrequeststatemachine.h"
 
+class LLURLRequest : public AICurlEasyRequestStateMachine {
+  public:
+	/** 
+	 * @brief This enumeration is for specifying the type of request.
+	 */
+	enum ERequestAction
+	{
+		INVALID,
+		HTTP_HEAD,
+		HTTP_GET,
+		HTTP_PUT,
+		HTTP_POST,
+		HTTP_DELETE,
+		HTTP_MOVE, // Caller will need to set 'Destination' header
+		REQUEST_ACTION_COUNT
+	};
 
+	/**
+	 * @brief Turn the request action into an http verb.
+	 */
+	static std::string actionAsVerb(ERequestAction action);
+
+	/** 
+	 * @brief Constructor.
+	 *
+	 * @param action One of the ERequestAction enumerations.
+	 * @param url The url of the request. It should already be encoded.
+	 */
+	LLURLRequest(ERequestAction action, std::string const& url);
+
+	/**
+	 * @brief Turn on cookie handling for this request with CURLOPT_COOKIEFILE.
+	 */
+	void allowCookies(void);
+
+    /**
+     * @ brief Turn off (or on) the CURLOPT_PROXY header.
+     */
+    void useProxy(bool use_proxy);
+
+	/** 
+	 * @brief Add a header to the http post.
+	 *
+	 * The header must be correctly formatted for HTTP requests. This
+	 * provides a raw interface if you know what kind of request you
+	 * will be making during construction of this instance. All
+	 * required headers will be automatically constructed, so this is
+	 * usually useful for encoding parameters.
+	 */
+	void addHeader(char const* header);
+
+  private:
+	/** 
+	 * @brief Handle action specific url request configuration.
+	 *
+	 * @return Returns true if this is configured.
+	 */
+	bool configure(void);
+
+  private:
+	ERequestAction mAction;
+	std::string mURL;
+};
+
+#if 0
 extern const std::string CONTEXT_REQUEST;
 extern const std::string CONTEXT_RESPONSE;
 extern const std::string CONTEXT_TRANSFERED_BYTES;
@@ -65,7 +127,7 @@ typedef struct x509_store_ctx_st X509_STORE_CTX;
  * worth the time and effort to eventually port this to a raw client
  * socket.
  */
-class LLURLRequest : public LLIOPipe, protected AICurlEasyHandleEvents
+class LLURLRequest : public LLIOPipe
 {
 	LOG_CLASS(LLURLRequest);
 public:
@@ -171,9 +233,6 @@ public:
 	void setCallback(LLURLRequestComplete* callback);
 	//@}
 
-	/* @name LLIOPipe virtual implementations
-	 */
-
     /**
      * @ brief Turn off (or on) the CURLOPT_PROXY header.
      */
@@ -188,6 +247,9 @@ public:
 	 * @brief Turn on cookie handling for this request with CURLOPT_COOKIEFILE.
 	 */
 	void allowCookies();
+
+	/* @name LLIOPipe virtual implementations
+	 */
 
 	/*virtual*/ bool hasExpiration(void) const;
 	/*virtual*/ bool hasNotExpired(void) const;
@@ -229,13 +291,7 @@ protected:
 
 	static CURLcode _sslCtxCallback(CURL * curl, void *sslctx, void *param);
 	
-	// mRemoved is used instead of changing mState directly, because I'm not convinced the latter is atomic.
-	// Set to false before adding curl request and then only tested.
-	// Reset in removed_from_multi_handle (by another thread), this is thread-safe.
 	bool mRemoved;
-	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat&);
-	/*virtual*/ void finished(AICurlEasyRequest_wat&);
-	/*virtual*/ void removed_from_multi_handle(AICurlEasyRequest_wat&);
 
 private:
 	/** 
@@ -346,5 +402,6 @@ protected:
 	// depends on correct useage from the LLURLRequest instance.
 	EStatus mRequestStatus;
 };
+#endif
 
 #endif // LL_LLURLREQUEST_H

@@ -306,7 +306,7 @@ public:
 	typedef std::list<LLSegment> segment_list_t;
 	typedef segment_list_t::const_iterator const_segment_iterator_t;
 	typedef segment_list_t::iterator segment_iterator_t;
-	enum { npos = 0xffffffff };
+	static size_t const npos = (size_t)-1;		// (U8*)npos is used as a magic address.
 
 	LLBufferArray();
 	~LLBufferArray();

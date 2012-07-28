@@ -20,6 +20,7 @@ include_directories(
     )
 
 set(llmessage_SOURCE_FILES
+    llhttpclient.cpp
     llares.cpp
     llareslistener.cpp
     llassetstorage.cpp
@@ -36,7 +37,6 @@ set(llmessage_SOURCE_FILES
     lldispatcher.cpp
     llfiltersd2xmlrpc.cpp
     llhost.cpp
-    llhttpclient.cpp
     llhttpclientadapter.cpp
     llhttpnode.cpp
     llhttpsender.cpp

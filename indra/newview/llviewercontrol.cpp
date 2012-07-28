@@ -124,7 +124,8 @@ static bool handleTerrainDetailChanged(const LLSD& newvalue)
 
 bool handleStateMachineMaxTimeChanged(const LLSD& newvalue)
 {
-	AIStateMachine::updateSettings();
+	F32 StateMachineMaxTime = newvalue.asFloat();
+	AIStateMachine::setMaxCount(StateMachineMaxTime);
 	return true;
 }
 
