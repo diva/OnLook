@@ -263,7 +263,8 @@
 	<string name="load_files">Load Files</string>
 	<string name="choose_the_directory">Choose Directory</string>
 
- 
+	<string name="Sound: ">Sound: </string>
+
 	<!-- LSL Usage Hover Tips -->
   <string name="LSLTipSleepTime">
 Sleeps script for [SLEEP_TIME] seconds.
