@@ -1138,7 +1138,7 @@ CurlResponderBuffer::~CurlResponderBuffer()
 	// in which case AICurlEasyRequestStateMachine::mTimer times out, but that already
 	// calls CurlResponderBuffer::timed_out().
 	llmaybeerrs << "Calling ~CurlResponderBuffer() with active responder!" << llendl;
-	if (LLApp::isExiting())
+	if (!LLApp::isRunning())
 	{
 	  // It might happen if some CurlResponderBuffer escaped clean up somehow :/
 	  mResponder = NULL;
