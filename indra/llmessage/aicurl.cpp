@@ -1118,7 +1118,7 @@ CurlResponderBuffer::CurlResponderBuffer()
   curl_easy_request_w->send_events_to(this);
 }
 
-#define llmaybeerrs lllog(LLApp::isRunning ? LLError::LEVEL_ERROR : LLError::LEVEL_WARN, NULL, NULL, false)
+#define llmaybeerrs lllog(LLApp::isRunning() ? LLError::LEVEL_ERROR : LLError::LEVEL_WARN, NULL, NULL, false)
 
 // The callbacks need to be revoked when the CurlResponderBuffer is destructed (because that is what the callbacks use).
 // The AIThreadSafeSimple<CurlResponderBuffer> is destructed first (right to left), so when we get here then the
@@ -1138,7 +1138,7 @@ CurlResponderBuffer::~CurlResponderBuffer()
 	// in which case AICurlEasyRequestStateMachine::mTimer times out, but that already
 	// calls CurlResponderBuffer::timed_out().
 	llmaybeerrs << "Calling ~CurlResponderBuffer() with active responder!" << llendl;
-	if (LLApp::isExiting())
+	if (!LLApp::isRunning())
 	{
 	  // It might happen if some CurlResponderBuffer escaped clean up somehow :/
 	  mResponder = NULL;
