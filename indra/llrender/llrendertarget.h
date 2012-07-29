@@ -151,6 +151,8 @@ public:
 	//one renderable attachment (i.e. color buffer, depth buffer).
 	bool isComplete() const;
 
+	U32 getFBO() const {return mFBO;}
+
 	static LLRenderTarget* getCurrentBoundTarget() { return sBoundTarget; }
 
 protected:

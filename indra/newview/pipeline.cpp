@@ -54,6 +54,7 @@
 #include "llglheaders.h"
 #include "llrender.h"
 #include "llwindow.h"
+#include "llpostprocess.h"
 
 // newview includes
 #include "llagent.h"
@@ -863,6 +864,9 @@ void LLPipeline::releaseGLBuffers()
 
 	gBumpImageList.destroyGL();
 	LLVOAvatar::resetImpostors();
+
+	if(LLPostProcess::instanceExists())
+		LLPostProcess::getInstance()->destroyGL();
 }
 
 void LLPipeline::releaseLUTBuffers()
@@ -6111,12 +6115,14 @@ void LLPipeline::doResetVertexBuffers()
 
 	LLVOPartGroup::destroyGL();
 
+	if(LLPostProcess::instanceExists())
+		LLPostProcess::getInstance()->destroyGL();
+
 	LLVertexBuffer::cleanupClass();
 	
 	//delete all name pool caches
 	LLGLNamePool::cleanupPools();
 
-	
 	if (LLVertexBuffer::sGLCount > 0)
 	{
 		llwarns << "VBO wipe failed -- " << LLVertexBuffer::sGLCount << " buffers remaining." << llendl;
@@ -6923,7 +6929,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 	}
 
 	
-	if (LLRenderTarget::sUseFBO)
+	if (mScreen.getFBO())
 	{ //copy depth buffer from mScreen to framebuffer
 		LLRenderTarget::copyContentsToFramebuffer(mScreen, 0, 0, mScreen.getWidth(), mScreen.getHeight(), 
 			0, 0, mScreen.getWidth(), mScreen.getHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);

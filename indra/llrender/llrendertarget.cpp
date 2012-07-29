@@ -93,7 +93,7 @@ void LLRenderTarget::resize(U32 resx, U32 resy, U32 color_fmt)
 
 	if (mDepth)
 	{ //resize depth attachment
-		if (mStencil)
+		if (mStencil && mFBO)
 		{
 			//use render buffers where stencil buffers are in play
 			glBindRenderbuffer(GL_RENDERBUFFER, mDepth);
@@ -104,7 +104,10 @@ void LLRenderTarget::resize(U32 resx, U32 resy, U32 color_fmt)
 		{
 			gGL.getTexUnit(0)->bindManual(mUsage, mDepth);
 			U32 internal_type = LLTexUnit::getInternalType(mUsage);
-			LLImageGL::setManualImage(internal_type, 0, GL_DEPTH_COMPONENT24, mResX, mResY, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL, false);
+			if(!mStencil)
+				LLImageGL::setManualImage(internal_type, 0, GL_DEPTH_COMPONENT24, mResX, mResY, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL, false);
+			else
+				LLImageGL::setManualImage(internal_type, 0, GL_DEPTH24_STENCIL8, mResX, mResY, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL, false);
 		}
 
 		sBytesAllocated += pix_diff*4;
@@ -131,9 +134,10 @@ bool LLRenderTarget::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth, boo
 	mUsage = usage;
 	mUseDepth = depth;
 
-
 	if ((sUseFBO || use_fbo) && gGLManager.mHasFramebufferObject)
 	{
+		glGenFramebuffers(1, (GLuint *) &mFBO);
+
 		if (depth)
 		{
 			if (!allocateDepth())
@@ -142,8 +146,6 @@ bool LLRenderTarget::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth, boo
 				return false;
 			}
 		}
-
-		glGenFramebuffers(1, (GLuint *) &mFBO);
 
 		if (mDepth)
 		{
@@ -162,7 +164,7 @@ bool LLRenderTarget::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth, boo
 			}
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
-		
+
 		stop_glerror();
 	}
 
@@ -255,7 +257,7 @@ bool LLRenderTarget::addColorAttachment(U32 color_fmt)
 
 bool LLRenderTarget::allocateDepth()
 {
-	if (mStencil)
+	if (mStencil && mFBO)
 	{
 		//use render buffers where stencil buffers are in play
 		glGenRenderbuffers(1, (GLuint *) &mDepth);
@@ -267,13 +269,19 @@ bool LLRenderTarget::allocateDepth()
 	}
 	else
 	{
-		LLImageGL::generateTextures(mUsage, GL_DEPTH_COMPONENT24, 1, &mDepth);
+		if(!mStencil)
+			LLImageGL::generateTextures(mUsage, GL_DEPTH_COMPONENT24, 1, &mDepth);
+		else
+			LLImageGL::generateTextures(mUsage, GL_DEPTH24_STENCIL8, 1, &mDepth);
 		gGL.getTexUnit(0)->bindManual(mUsage, mDepth);
 		
 		U32 internal_type = LLTexUnit::getInternalType(mUsage);
 		stop_glerror();
 		clear_glerror();
-		LLImageGL::setManualImage(internal_type, 0, GL_DEPTH_COMPONENT24, mResX, mResY, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL, false);
+		if(!mStencil)
+			LLImageGL::setManualImage(internal_type, 0, GL_DEPTH_COMPONENT24, mResX, mResY, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL, false);
+		else
+			LLImageGL::setManualImage(internal_type, 0, GL_DEPTH24_STENCIL8, mResX, mResY, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL, false);
 		gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
 	}
 
@@ -337,7 +345,7 @@ void LLRenderTarget::release()
 {
 	if (mDepth)
 	{
-		if (mStencil)
+		if (mStencil && mFBO)
 		{
 			glDeleteRenderbuffers(1, (GLuint*) &mDepth);
 			stop_glerror();
@@ -490,6 +498,7 @@ void LLRenderTarget::flush(bool fetch_depth)
 	{
 		gGL.getTexUnit(0)->bind(this);
 		glCopyTexSubImage2D(LLTexUnit::getInternalType(mUsage), 0, 0, 0, 0, 0, mResX, mResY);
+		stop_glerror();
 
 		if (fetch_depth)
 		{
@@ -498,8 +507,10 @@ void LLRenderTarget::flush(bool fetch_depth)
 				allocateDepth();
 			}
 
-			gGL.getTexUnit(0)->bind(this);
-			glCopyTexImage2D(LLTexUnit::getInternalType(mUsage), 0, GL_DEPTH24_STENCIL8, 0, 0, mResX, mResY, 0);
+			gGL.getTexUnit(0)->bind(this,true);
+			glCopyTexSubImage2D(LLTexUnit::getInternalType(mUsage), 0, 0, 0, 0, 0, mResX, mResY);
+			stop_glerror();
+			//glCopyTexImage2D(LLTexUnit::getInternalType(mUsage), 0, GL_DEPTH24_STENCIL8, 0, 0, mResX, mResY, 0);
 		}
 
 		gGL.getTexUnit(0)->disable();
@@ -589,7 +600,7 @@ void LLRenderTarget::copyContents(LLRenderTarget& source, S32 srcX0, S32 srcY0, 
 	}
 	else
 	{
-		if (mask == GL_DEPTH_BUFFER_BIT && source.mStencil != mStencil)
+		if (mask == GL_DEPTH_BUFFER_BIT && !mStencil && source.mStencil != mStencil)
 		{
 			stop_glerror();
 		

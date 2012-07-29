@@ -1,0 +1,23 @@
+/**
+ * @file colorFilterF.glsl
+ *
+ * Copyright (c) 2007-$CurrentYear$, Linden Research, Inc.
+ * $License$
+ */
+ 
+#extension GL_ARB_texture_rectangle : enable
+ 
+#ifdef DEFINE_GL_FRAGCOLOR
+out vec4 gl_FragColor;
+#endif
+
+uniform sampler2DRect tex0;
+uniform int layerCount;
+
+VARYING vec2 vary_texcoord0;
+
+void main(void) 
+{
+	vec3 color = pow(floor(pow(vec3(texture2D(tex0, vary_texcoord0.st)),vec3(.6)) * layerCount)/layerCount,vec3(1.66666));
+	gl_FragColor = vec4(color, 1.0);
+}
