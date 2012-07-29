@@ -1164,9 +1164,7 @@ void CurlResponderBuffer::resetState(AICurlEasyRequest_wat& curl_easy_request_w)
   curl_easy_request_w->resetState();
 
   mOutput.reset();
-  
-  mInput.str("");
-  mInput.clear();
+  mInput.reset();
   
   mHeaderOutput.str("");
   mHeaderOutput.clear();
@@ -1183,6 +1181,10 @@ void CurlResponderBuffer::prepRequest(AICurlEasyRequest_wat& curl_easy_request_w
   {
 	curl_easy_request_w->setoptString(CURLOPT_ENCODING, "");
   }
+
+  mInput.reset(new LLBufferArray);
+  mInput->setThreaded(true);
+  mLastRead = NULL;
 
   mOutput.reset(new LLBufferArray);
   mOutput->setThreaded(true);
@@ -1244,16 +1246,10 @@ size_t CurlResponderBuffer::curlReadCallback(char* data, size_t size, size_t nme
   // to make sure that callbacks and destruction aren't done simultaneously.
   AICurlEasyRequest_wat buffered_easy_request_w(*lockobj);
 
+  S32 bytes = size * nmemb;		// The maximum amount to read.
   AICurlResponderBuffer_wat buffer_w(*lockobj);
-  S32 n = size * nmemb;
-  S32 startpos = buffer_w->getInput().tellg();
-  buffer_w->getInput().seekg(0, std::ios::end);
-  S32 endpos = buffer_w->getInput().tellg();
-  buffer_w->getInput().seekg(startpos, std::ios::beg);
-  S32 maxn = endpos - startpos;
-  n = llmin(n, maxn);
-  buffer_w->getInput().read(data, n);
-  return n;
+  buffer_w->mLastRead = buffer_w->getInput()->readAfter(sChannels.out(), buffer_w->mLastRead, (U8*)data, bytes);
+  return bytes;					// Return the amount actually read.
 }
 
 //static
