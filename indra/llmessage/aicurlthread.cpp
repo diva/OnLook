@@ -845,27 +845,50 @@ void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
   // If no process has the pipe open for writing, read() shall return 0 to indicate end-of-file.
   // If some process has the pipe open for writing and O_NONBLOCK is set, read() shall return -1 and set errno to [EAGAIN].
   char buf[256];
-  ssize_t len;
-  do
+  bool got_data = false;
+  for(;;)
   {
-    len = read(mWakeUpFd, buf, sizeof(buf));
-    if (len == -1 && errno == EAGAIN)
+	ssize_t len = read(mWakeUpFd, buf, sizeof(buf));
+	if (len > 0)
+	{
+	  // Data was read from the pipe.
+	  got_data = true;
+	  if (len < sizeof(buf))
+		break;
+	}
+	else if (len == -1)
+	{
+	  // An error occurred.
+	  if (errno == EAGAIN)
+	  {
+		if (got_data)
+		  break;
+		// There was no data, even though select() said so. If this ever happens at all(?), lets just return and enter select() again.
+		return;
+	  }
+	  else if (errno == EINTR)
+	  {
+		continue;
+	  }
+	  else
+	  {
+		llerrs << "read(3) from mWakeUpFd: " << strerror(errno) << llendl;
+		return;
+	  }
+	}
+	else
+	{
+	  // pipe(2) returned 0.
+	  llwarns << "read(3) from mWakeUpFd returned 0, indicating that the pipe on the other end was closed! Shutting down curl thread." << llendl;
+	  close(mWakeUpFd);
+	  mWakeUpFd = CURL_SOCKET_BAD;
+	  mRunning = false;
 	  return;
-  }
-  while(len == -1 && errno == EINTR);
-  if (len == -1)
-  {
-	llerrs << "read(3) from mWakeUpFd: " << strerror(errno) << llendl;
-  }
-  if (LL_UNLIKELY(len == 0))
-  {
-	llwarns << "read(3) from mWakeUpFd returned 0, indicating that the pipe on the other end was closed! Shutting down curl thread." << llendl;
-	close(mWakeUpFd);
-	mWakeUpFd = CURL_SOCKET_BAD;
-    mRunning = false;
-	return;
+	}
   }
 #endif
+  // Data was received on mWakeUpFd. This means that the main-thread added one
+  // or more commands to the command queue and called wakeUpCurlThread().
   process_commands(multi_handle_w);
 }
 
