@@ -37,7 +37,7 @@
  *   and hence I cannot change the license of it.
  */
 
-#include "linden_common.h"
+#include "llviewerprecompiledheaders.h"
 
 #include "llsdserialize.h"
 #include "llcurlrequest.h"

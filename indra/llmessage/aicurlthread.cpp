@@ -727,7 +727,10 @@ class AICurlThread : public LLThread
 	void create_wakeup_fds(void);
 	void cleanup_wakeup_fds(void);
 
+#if (!LL_WINDOWS)
+	//On Windows, single socket is used for communicating with itself! -SG
 	curl_socket_t mWakeUpFd_in;
+#endif
 	curl_socket_t mWakeUpFd;
 
 	int mZeroTimeOut;
@@ -740,7 +743,10 @@ AICurlThread* AICurlThread::sInstance = NULL;
 
 // MAIN-THREAD
 AICurlThread::AICurlThread(void) : LLThread("AICurlThread"),
-    mWakeUpFd_in(CURL_SOCKET_BAD), mWakeUpFd(CURL_SOCKET_BAD),
+#if (!LL_WINDOWS)
+    mWakeUpFd_in(CURL_SOCKET_BAD),
+#endif
+	mWakeUpFd(CURL_SOCKET_BAD),
 	mZeroTimeOut(0), mRunning(true), mWakeUpFlag(false)
 {
   create_wakeup_fds();
@@ -754,12 +760,65 @@ AICurlThread::~AICurlThread()
   cleanup_wakeup_fds();
 }
 
+#if LL_WINDOWS
+static std::string formatWSAError()
+{
+	std::ostringstream r;
+	int e = WSAGetLastError();
+	LPTSTR error_str = 0;
+	r << e;
+	if(FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, e, 0, (LPTSTR)&error_str, 0, NULL))
+	{
+		r << " " << utf16str_to_utf8str(error_str);
+		LocalFree(error_str);
+	}
+	else
+	{
+		r << " Unknown WinSock error";
+	}
+	return r.str();
+}
+#endif
+
 // MAIN-THREAD
 void AICurlThread::create_wakeup_fds(void)
 {
 #if LL_WINDOWS
-  // Probably need to use sockets here, cause Windows select doesn't work for a pipe.
-  #error Missing implementation
+  mWakeUpFd = socket(AF_INET, SOCK_DGRAM, 0); //Maybe IPPROTO_UDP as last argument? -SG
+  if(mWakeUpFd == INVALID_SOCKET)
+  {
+	  llerrs << "Failed to create wake-up socket: " << formatWSAError() << llendl;
+  }
+  int error;
+  sockaddr_in addr;
+  addr.sin_family = AF_INET;
+  addr.sin_port = 0;
+  addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  int addrlen = sizeof(addr);
+  error = bind(mWakeUpFd, (sockaddr*) &addr, addrlen);
+  if(error)
+  {
+	  llerrs << "Failed to bind wake-up socket: " << formatWSAError() << llendl;
+  }
+  error = getsockname(mWakeUpFd, (sockaddr*) &addr, &addrlen);
+  if(error)
+  {
+	  llerrs << "Failed to detect wake-up socket: " << formatWSAError() << llendl;
+  }
+  error = connect(mWakeUpFd, (sockaddr*) &addr, addrlen);
+  if(error)
+  {
+	  llerrs << "Failed to connect wake-up socket: " <<formatWSAError() << llendl;
+  }
+  u_long nonblocking_enable = TRUE;
+  error = ioctlsocket(mWakeUpFd, FIONBIO, &nonblocking_enable);
+  if(error)
+  {
+	  llerrs << "Failed to set wake-up socket nonblocking: " << formatWSAError() << llendl;
+  }
+
 #else
   int pipefd[2];
   if (pipe(pipefd))
@@ -783,7 +842,14 @@ void AICurlThread::create_wakeup_fds(void)
 void AICurlThread::cleanup_wakeup_fds(void)
 {
 #if LL_WINDOWS
-  #error Missing implementation
+  if (mWakeUpFd != CURL_SOCKET_BAD)
+  {
+	int error = closesocket(mWakeUpFd);
+	if (error)
+	{
+		llwarns << "Error closing wake-up socket" << formatWSAError() << llendl;
+	}
+  }
 #else
   if (mWakeUpFd_in != CURL_SOCKET_BAD)
 	close(mWakeUpFd_in);
@@ -807,7 +873,13 @@ void AICurlThread::wakeup_thread(void)
   }
 
 #ifdef LL_WINDOWS
-  #error Missing implementation
+  //SGTODO
+  int len = send(mWakeUpFd, "!", 1, 0);
+  if (len == SOCKET_ERROR)
+  {
+	  llerrs << "Send to wake-up socket failed: " << formatWSAError() << llendl;
+  }
+  llinfos << "Sent wakeup signal" << llendl;
 #else
   // If write() is interrupted by a signal before it writes any data, it shall return -1 with errno set to [EINTR].
   // If write() is interrupted by a signal after it successfully writes some data, it shall return the number of bytes written.
@@ -837,7 +909,31 @@ void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
   DoutEntering(dc::curl, "AICurlThread::wakeup");
 
 #ifdef LL_WINDOWS
-  #error Missing implementation
+  char buf;
+  int len;
+  bool got_data = false;
+  do
+  {
+	  len = recv(mWakeUpFd, &buf, sizeof(buf), 0);
+	  llinfos << "recv returns " << len << llendl;
+	  if(len != SOCKET_ERROR)
+	  {
+		  got_data = true;
+		  llinfos << "Received wakeup signal" << llendl;
+	  }
+  } while(len != SOCKET_ERROR);
+  int error = WSAGetLastError();
+  llinfos << "left loop, errorlevel " << error << llendl;
+  if(error != WSAEWOULDBLOCK)
+  {
+	  llerrs << "Wake-up socket drain error: " << formatWSAError() << llendl;
+  }
+  if(!got_data)
+  {
+	  llinfos << "Wakeup called but socket is empty" << llendl;
+	  return;
+  }
+  llinfos << "Passing control to process_commands" << llendl;
 #else
   // If a read() is interrupted by a signal before it reads any data, it shall return -1 with errno set to [EINTR].
   // If a read() is interrupted by a signal after it has successfully read some data, it shall return the number of bytes read.

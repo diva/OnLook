@@ -134,10 +134,10 @@ static unsigned long __cdecl apr_os_thread_current_wrapper()
 // OpenSSL uniq id function.
 void ssl_id_function(CRYPTO_THREADID* thread_id)
 {
-#if 1	// apr_os_thread_current() returns an unsigned long.
-  CRYPTO_THREADID_set_numeric(thread_id, apr_os_thread_current());
-#else	// if it would return a pointer.
+#if LL_WINDOWS	// apr_os_thread_current() returns an unsigned long.
   CRYPTO_THREADID_set_pointer(thread_id, apr_os_thread_current());
+#else	// if it would return a pointer.
+  CRYPTO_THREADID_set_numeric(thread_id, apr_os_thread_current());
 #endif
 }
 #endif // HAVE_CRYPTO_THREADID
