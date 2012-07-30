@@ -123,20 +123,13 @@ void ssl_locking_function(int mode, int n, char const* file, int line)
   }
 }
 
-#if LL_WINDOWS
-static unsigned long __cdecl apr_os_thread_current_wrapper()
-{
-	return (unsigned long)apr_os_thread_current();
-}
-#endif
-	
 #if HAVE_CRYPTO_THREADID
 // OpenSSL uniq id function.
 void ssl_id_function(CRYPTO_THREADID* thread_id)
 {
-#if LL_WINDOWS	// apr_os_thread_current() returns an unsigned long.
+#if LL_WINDOWS	// apr_os_thread_current() returns a pointer,
   CRYPTO_THREADID_set_pointer(thread_id, apr_os_thread_current());
-#else	// if it would return a pointer.
+#else			// else it returns an unsigned long.
   CRYPTO_THREADID_set_numeric(thread_id, apr_os_thread_current());
 #endif
 }
@@ -192,6 +185,13 @@ ulong_thread_id_function_type old_ulong_thread_id_function;
 ssl_dyn_create_function_type  old_ssl_dyn_create_function;
 ssl_dyn_destroy_function_type old_ssl_dyn_destroy_function;
 ssl_dyn_lock_function_type    old_ssl_dyn_lock_function;
+
+#if LL_WINDOWS
+static unsigned long __cdecl apr_os_thread_current_wrapper()
+{
+	return (unsigned long)apr_os_thread_current();
+}
+#endif
 
 // Set for openssl-1.0.1...1.0.1c.
 static bool need_renegotiation_hack = false;
