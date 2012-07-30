@@ -576,20 +576,22 @@ void LLPanelDisplay::refreshEnabledState()
 	mSkyFactorText->setEnabled(wlatmos);
 
 	// Avatar Mode and FBO
-	childSetEnabled("fbo", gGLManager.mHasFramebufferObject && !LLPipeline::sRenderDeferred);
 	if (render_deferred && wlatmos && shaders)
 	{
+		childSetEnabled("fbo", false);
 		childSetValue("fbo", true);
 		mCtrlAvatarVP->setEnabled(false);
-		mCtrlAvatarVP->setValue(true);
+		gSavedSettings.setBOOL("RenderAvatarVP", true);
 	}
 	else if (!shaders)
 	{
+		childSetEnabled("fbo", gGLManager.mHasFramebufferObject);
 		mCtrlAvatarVP->setEnabled(false);
-		mCtrlAvatarVP->setValue(false);
+		gSavedSettings.setBOOL("RenderAvatarVP", false);
 	}
 	else
 	{
+		childSetEnabled("fbo", gGLManager.mHasFramebufferObject);
 		mCtrlAvatarVP->setEnabled(true);
 	}
 
