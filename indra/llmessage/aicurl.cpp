@@ -312,10 +312,19 @@ void initCurl(void (*flush_hook)())
 	{
 	  llwarns << "libcurl was not compiled with support for asynchronous name lookups!" << llendl;
 	}
+	if (!version_info->ssl_version)
+	{
+	  llerrs << "This libcurl has no SSL support!" << llendl;
+	}
 
 	llinfos << "Successful initialization of libcurl " <<
 		version_info->version << " (0x" << std::hex << version_info->version_num << "), (" <<
-	    version_info->ssl_version << ", libz/" << version_info->libz_version << ")." << llendl;
+	    version_info->ssl_version;
+	if (version_info->libz_version)
+	{
+	  llcont << ", libz/" << version_info->libz_version;
+	}
+	llcont << ")." << llendl;
 
 	// Detect SSL library used.
 	gSSLlib = ssl_unknown;
