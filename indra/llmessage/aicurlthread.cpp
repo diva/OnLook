@@ -143,7 +143,39 @@ static void FD_CLR(curl_socket_t s, windows_fd_set* fsp)
 #define fd_set windows_fd_set
 #define select windows_select
 
+int WSAGetLastError(void)
+{
+  return errno;
+}
+
+typedef char* LPTSTR;
+
+bool FormatMessage(int, void*, int e, int, LPTSTR error_str_ptr, int, void*)
+{
+  char* error_str = *(LPTSTR*)error_str_ptr;
+  error_str = strerror(e);
+  return true;
+}
+
+void LocalFree(LPTSTR)
+{
+}
+
+int const FORMAT_MESSAGE_ALLOCATE_BUFFER = 0;
+int const FORMAT_MESSAGE_FROM_SYSTEM = 0;
+int const FORMAT_MESSAGE_IGNORE_INSERTS = 0;
+int const INVALID_SOCKET = -1;
+int const SOCKET_ERROR = -1;
+int const WSAEWOULDBLOCK = EWOULDBLOCK;
+
+int closesocket(curl_socket_t fd)
+{
+  return close(fd);
+}
+
 #endif // DEBUG_WINDOWS_CODE_ON_LINUX
+
+#define WINDOWS_CODE (LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
 
 #undef AICurlPrivate
 
@@ -248,7 +280,7 @@ class PollSet
 	// Return a pointer to the underlaying fd_set.
 	fd_set* access(void) { return &mFdSet; }
 
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	// Return the largest fd set in mFdSet by refresh.
 	curl_socket_t get_max_fd(void) const { return mMaxFdSet; }
 #endif
@@ -275,7 +307,7 @@ class PollSet
 
 	fd_set mFdSet;					// Output variable for select(). (Re)initialized by calling refresh().
 
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	curl_socket_t mMaxFd;			// The largest filedescriptor in the array, or CURL_SOCKET_BAD when it is empty.
 	curl_socket_t mMaxFdSet;		// The largest filedescriptor set in mFdSet by refresh(), or CURL_SOCKET_BAD when it was empty.
 	std::vector<curl_socket_t> mCopiedFileDescriptors;	// Filedescriptors copied by refresh to mFdSet.
@@ -307,7 +339,7 @@ static size_t const MAXSIZE = llmax(1024, FD_SETSIZE);
 // Create an empty PollSet.
 PollSet::PollSet(void) : mFileDescriptors(new curl_socket_t [MAXSIZE]),
                          mNrFds(0), mNext(0)
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 						 , mMaxFd(-1), mMaxFdSet(-1)
 #endif
 {
@@ -319,7 +351,7 @@ void PollSet::add(curl_socket_t s)
 {
   llassert_always(mNrFds < (int)MAXSIZE);
   mFileDescriptors[mNrFds++] = s;
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
   mMaxFd = llmax(mMaxFd, s);
 #endif
 }
@@ -356,7 +388,7 @@ void PollSet::remove(curl_socket_t s)
   // index: 0   1   2   3   4   5
   //        a   b   c   s   d   e
   curl_socket_t cur = mFileDescriptors[i];		// cur = 'e'
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
   curl_socket_t max = -1;
 #endif
   while (cur != s)
@@ -364,7 +396,7 @@ void PollSet::remove(curl_socket_t s)
 	llassert(i > 0);
 	curl_socket_t next = mFileDescriptors[--i];	// next = 'd'
 	mFileDescriptors[i] = cur;					// Overwrite 'd' with 'e'.
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	max = llmax(max, cur);					// max is the maximum value in 'i' or higher.
 #endif
 	cur = next;									// cur = 'd'
@@ -391,7 +423,7 @@ void PollSet::remove(curl_socket_t s)
   if (mNext > i)								// i is where s was.
 	--mNext;
 
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
   // If s was the largest file descriptor, we have to update mMaxFd.
   if (s == mMaxFd)
   {
@@ -408,7 +440,7 @@ void PollSet::remove(curl_socket_t s)
 
   // ALSO make sure that s is no longer set in mFdSet, or we might confuse libcurl by
   // calling curl_multi_socket_action for a socket that it told us to remove.
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
   clr(s);
 #else
   // We have to use a custom implementation here, because we don't want to invalidate mIter.
@@ -457,13 +489,13 @@ inline void PollSet::clr(curl_socket_t fd)
 refresh_t PollSet::refresh(void)
 {
   FD_ZERO(&mFdSet);
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
   mCopiedFileDescriptors.clear();
 #endif
 
   if (mNrFds == 0)
   {
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	mMaxFdSet = -1;
 #endif
 	return empty_and_complete;
@@ -478,7 +510,7 @@ refresh_t PollSet::refresh(void)
   if (mNrFds >= FD_SETSIZE)
   {
 	llwarns << "PollSet::reset: More than FD_SETSIZE (" << FD_SETSIZE << ") file descriptors active!" << llendl;
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	// Calculate mMaxFdSet.
 	// Run over FD_SETSIZE - 1 elements, starting at mNext, wrapping to 0 when we reach the end.
 	int max = -1, i = mNext, count = 0;
@@ -489,7 +521,7 @@ refresh_t PollSet::refresh(void)
   else
   {
 	mNext = 0;				// Start at the beginning if we copy everything anyway.
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	mMaxFdSet = mMaxFd;
 #endif
   }
@@ -503,7 +535,7 @@ refresh_t PollSet::refresh(void)
 	  return not_complete_not_empty;
 	}
 	FD_SET(mFileDescriptors[i], &mFdSet);
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	mCopiedFileDescriptors.push_back(mFileDescriptors[i]);
 #endif
 	if (++i == mNrFds)
@@ -541,7 +573,7 @@ refresh_t PollSet::refresh(void)
 
 void PollSet::reset(void)
 {
-#if LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX
+#if WINDOWS_CODE
   mIter = 0;
 #else
   if (mCopiedFileDescriptors.empty())
@@ -557,7 +589,7 @@ void PollSet::reset(void)
 
 inline curl_socket_t PollSet::get(void) const
 {
-#if LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX
+#if WINDOWS_CODE
   return (mIter >= mFdSet.fd_count) ? CURL_SOCKET_BAD : mFdSet.fd_array[mIter];
 #else
   return (mIter == mCopiedFileDescriptors.end()) ? CURL_SOCKET_BAD : *mIter;
@@ -566,7 +598,7 @@ inline curl_socket_t PollSet::get(void) const
 
 void PollSet::next(void)
 {
-#if LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX
+#if WINDOWS_CODE
   llassert(mIter < mFdSet.fd_count);
   ++mIter;
 #else
@@ -727,7 +759,7 @@ class AICurlThread : public LLThread
 	void create_wakeup_fds(void);
 	void cleanup_wakeup_fds(void);
 
-#if (!LL_WINDOWS)
+#if !WINDOWS_CODE
 	//On Windows, single socket is used for communicating with itself! -SG
 	curl_socket_t mWakeUpFd_in;
 #endif
@@ -743,7 +775,7 @@ AICurlThread* AICurlThread::sInstance = NULL;
 
 // MAIN-THREAD
 AICurlThread::AICurlThread(void) : LLThread("AICurlThread"),
-#if (!LL_WINDOWS)
+#if !WINDOWS_CODE
     mWakeUpFd_in(CURL_SOCKET_BAD),
 #endif
 	mWakeUpFd(CURL_SOCKET_BAD),
@@ -760,7 +792,7 @@ AICurlThread::~AICurlThread()
   cleanup_wakeup_fds();
 }
 
-#if LL_WINDOWS
+#if WINDOWS_CODE
 static std::string formatWSAError()
 {
 	std::ostringstream r;
@@ -771,7 +803,11 @@ static std::string formatWSAError()
 		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 		NULL, e, 0, (LPTSTR)&error_str, 0, NULL))
 	{
+#if LL_LINUX
+		r << " " << error_str;
+#else
 		r << " " << utf16str_to_utf8str(error_str);
+#endif
 		LocalFree(error_str);
 	}
 	else
@@ -785,18 +821,26 @@ static std::string formatWSAError()
 // MAIN-THREAD
 void AICurlThread::create_wakeup_fds(void)
 {
-#if LL_WINDOWS
-  mWakeUpFd = socket(AF_INET, SOCK_DGRAM, 0); //Maybe IPPROTO_UDP as last argument? -SG
+#if WINDOWS_CODE
+#if LL_LINUX
+  mWakeUpFd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+#else
+  mWakeUpFd = WSASocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP, NULL, 0, 0);
+#endif
   if(mWakeUpFd == INVALID_SOCKET)
   {
 	  llerrs << "Failed to create wake-up socket: " << formatWSAError() << llendl;
   }
   int error;
   sockaddr_in addr;
+  memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
-  addr.sin_port = 0;
   addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+#if LL_LINUX
+  socklen_t addrlen = sizeof(addr);
+#else
   int addrlen = sizeof(addr);
+#endif
   error = bind(mWakeUpFd, (sockaddr*) &addr, addrlen);
   if(error)
   {
@@ -812,8 +856,13 @@ void AICurlThread::create_wakeup_fds(void)
   {
 	  llerrs << "Failed to connect wake-up socket: " <<formatWSAError() << llendl;
   }
+#if LL_LINUX
+  long flags = O_NONBLOCK;
+  error = fcntl(mWakeUpFd, F_SETFL, flags);
+#else
   u_long nonblocking_enable = TRUE;
   error = ioctlsocket(mWakeUpFd, FIONBIO, &nonblocking_enable);
+#endif
   if(error)
   {
 	  llerrs << "Failed to set wake-up socket nonblocking: " << formatWSAError() << llendl;
@@ -841,7 +890,7 @@ void AICurlThread::create_wakeup_fds(void)
 // MAIN-THREAD
 void AICurlThread::cleanup_wakeup_fds(void)
 {
-#if LL_WINDOWS
+#if WINDOWS_CODE
   if (mWakeUpFd != CURL_SOCKET_BAD)
   {
 	int error = closesocket(mWakeUpFd);
@@ -872,7 +921,7 @@ void AICurlThread::wakeup_thread(void)
 	return;
   }
 
-#ifdef LL_WINDOWS
+#if WINDOWS_CODE
   //SGTODO
   int len = send(mWakeUpFd, "!", 1, 0);
   if (len == SOCKET_ERROR)
@@ -908,7 +957,7 @@ void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
 {
   DoutEntering(dc::curl, "AICurlThread::wakeup");
 
-#ifdef LL_WINDOWS
+#if WINDOWS_CODE
   char buf;
   int len;
   bool got_data = false;
@@ -1050,7 +1099,7 @@ void AICurlThread::run(void)
 	  FD_SET(mWakeUpFd, read_fd_set);
 	  fd_set* write_fd_set = ((wres & empty)) ? NULL : multi_handle_w->mWritePollSet->access();
 	  // Calculate nfds (ignored on windows).
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	  curl_socket_t const max_rfd = llmax(multi_handle_w->mReadPollSet->get_max_fd(), mWakeUpFd);
 	  curl_socket_t const max_wfd = multi_handle_w->mWritePollSet->get_max_fd();
 	  int nfds = llmax(max_rfd, max_wfd) + 1;
