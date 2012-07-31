@@ -74,8 +74,6 @@ struct buf2str {
 
 } // namespace libcwd
 
-extern CWD_API std::ostream& operator<<(std::ostream& os, libcwd::buf2str const& b2s);
-
 inline void init() { }
 struct libcwd_do_type {
  void on() const { }
@@ -84,11 +82,13 @@ extern CWD_API libcwd_do_type const libcw_do;
 struct Indent {
   int M_indent;
   static AI_THREADLOCAL int S_indentation;
-  enum print_nt { print };
+  enum CWD_API print_nt { print };
   CWD_API Indent(int indent) : M_indent(indent) { S_indentation += M_indent; }
   CWD_API ~Indent() { S_indentation -= M_indent; }
-  friend CWD_API std::ostream& operator<<(std::ostream& os, print_nt);
 };
+
+extern CWD_API std::ostream& operator<<(std::ostream& os, libcwd::buf2str const& b2s);
+extern CWD_API std::ostream& operator<<(std::ostream& os, Indent::print_nt);
 
 namespace dc {
 
