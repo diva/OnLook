@@ -41,6 +41,7 @@
 
 #include "llsdserialize.h"
 #include "llcurlrequest.h"
+#include "llbufferstream.h"
 #include "aicurleasyrequeststatemachine.h"
 
 //-----------------------------------------------------------------------------
@@ -94,8 +95,11 @@ bool Request::post(std::string const& url, headers_t const& headers, std::string
 
 	buffer_w->prepRequest(buffered_easy_request_w, headers, responder);
 
-	buffer_w->getInput().write(data.data(), data.size());
-	S32 bytes = buffer_w->getInput().str().length();
+	U32 bytes = data.size();
+	bool success = buffer_w->getInput()->append(buffer_w->sChannels.out(), (U8 const*)data.data(), bytes);
+	llassert_always(success);	// AIFIXME: Maybe throw an error.
+	if (!success)
+	  return false;
 	buffered_easy_request_w->setPost(NULL, bytes);
 	buffered_easy_request_w->addHeader("Content-Type: application/octet-stream");
 	buffered_easy_request_w->finalizeRequest(url);
@@ -121,8 +125,9 @@ bool Request::post(std::string const& url, headers_t const& headers, LLSD const&
 
 	buffer_w->prepRequest(buffered_easy_request_w, headers, responder);
 
-	LLSDSerialize::toXML(data, buffer_w->getInput());
-	S32 bytes = buffer_w->getInput().str().length();
+	LLBufferStream buffer_stream(buffer_w->sChannels, buffer_w->getInput().get());
+	LLSDSerialize::toXML(data, buffer_stream);
+	S32 bytes = buffer_w->getInput()->countAfter(buffer_w->sChannels.out(), NULL);
 	buffered_easy_request_w->setPost(NULL, bytes);
 	buffered_easy_request_w->addHeader("Content-Type: application/llsd+xml");
 	buffered_easy_request_w->finalizeRequest(url);

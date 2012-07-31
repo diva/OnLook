@@ -291,9 +291,9 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
 	void resetState(AICurlEasyRequest_wat& curl_easy_request_w);
 	void prepRequest(AICurlEasyRequest_wat& buffered_curl_easy_request_w, std::vector<std::string> const& headers, AICurlInterface::ResponderPtr responder, S32 time_out = 0, bool post = false);
 
-	std::stringstream& getInput() { return mInput; }
-	std::stringstream& getHeaderOutput() { return mHeaderOutput; }
-	LLIOPipe::buffer_ptr_t& getOutput() { return mOutput; }
+	LLIOPipe::buffer_ptr_t& getInput(void) { return mInput; }
+	std::stringstream& getHeaderOutput(void) { return mHeaderOutput; }
+	LLIOPipe::buffer_ptr_t& getOutput(void) { return mOutput; }
 
 	// Called if libcurl doesn't deliver within CurlRequestTimeOut seconds.
 	void timed_out(void);
@@ -310,7 +310,8 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
 	/*virtual*/ void removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
 
   private:
-	std::stringstream mInput;
+	LLIOPipe::buffer_ptr_t mInput;
+	U8* mLastRead;										// Pointer into mInput where we last stopped reading (or NULL to start at the beginning).
 	std::stringstream mHeaderOutput;
 	LLIOPipe::buffer_ptr_t mOutput;
 	AICurlInterface::ResponderPtr mResponder;
@@ -319,7 +320,7 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
 	S32 mResponseTransferedBytes;
 
   public:
-	static LLChannelDescriptors const sChannels;		// Channel object for mOutput: we ONLY use channel 0, so this can be a constant.
+	static LLChannelDescriptors const sChannels;		// Channel object for mInput (channel out()) and mOutput (channel in()).
 
   private:
 	// This class may only be created by constructing a ThreadSafeBufferedCurlEasyRequest.
