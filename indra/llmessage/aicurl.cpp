@@ -547,12 +547,12 @@ LLAtomicU32 Stats::multi_errors;
 //static
 void Stats::print(void)
 {
-  llinfos << "============ CURL  STATS ============" << llendl;
-  llinfos << "  Curl multi       errors/calls      : " << std::dec << multi_errors << "/" << multi_calls << llendl;
-  llinfos << "  Curl easy        errors/calls      : " << std::dec << easy_errors << "/" << easy_calls << llendl;
-  llinfos << "  curl_easy_init() errors/calls      : " << std::dec << easy_init_errors << "/" << easy_init_calls << llendl;
-  llinfos << "  Current number of curl easy handles: " << std::dec << (easy_init_calls - easy_init_errors - easy_cleanup_calls) << llendl;
-  llinfos << "========= END OF CURL STATS =========" << llendl;
+  llinfos_nf << "============ CURL  STATS ============" << llendl;
+  llinfos_nf << "  Curl multi       errors/calls      : " << std::dec << multi_errors << "/" << multi_calls << llendl;
+  llinfos_nf << "  Curl easy        errors/calls      : " << std::dec << easy_errors << "/" << easy_calls << llendl;
+  llinfos_nf << "  curl_easy_init() errors/calls      : " << std::dec << easy_init_errors << "/" << easy_init_calls << llendl;
+  llinfos_nf << "  Current number of curl easy handles: " << std::dec << (easy_init_calls - easy_init_errors - easy_cleanup_calls) << llendl;
+  llinfos_nf << "========= END OF CURL STATS =========" << llendl;
 }
 
 // THREAD-SAFE
@@ -806,7 +806,7 @@ void CurlEasyRequest::setSSLCtxCallback(curl_ssl_ctx_callback callback, void* us
   setopt(CURLOPT_SSL_CTX_DATA, userdata ? this : NULL);
 }
 
-#define llmaybewarns lllog(LLApp::isExiting() ? LLError::LEVEL_INFO : LLError::LEVEL_WARN, NULL, NULL, false)
+#define llmaybewarns lllog(LLApp::isExiting() ? LLError::LEVEL_INFO : LLError::LEVEL_WARN, NULL, NULL, false, true)
 
 static size_t noHeaderCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
@@ -1127,7 +1127,7 @@ CurlResponderBuffer::CurlResponderBuffer()
   curl_easy_request_w->send_events_to(this);
 }
 
-#define llmaybeerrs lllog(LLApp::isRunning() ? LLError::LEVEL_ERROR : LLError::LEVEL_WARN, NULL, NULL, false)
+#define llmaybeerrs lllog(LLApp::isRunning() ? LLError::LEVEL_ERROR : LLError::LEVEL_WARN, NULL, NULL, false, true)
 
 // The callbacks need to be revoked when the CurlResponderBuffer is destructed (because that is what the callbacks use).
 // The AIThreadSafeSimple<CurlResponderBuffer> is destructed first (right to left), so when we get here then the
