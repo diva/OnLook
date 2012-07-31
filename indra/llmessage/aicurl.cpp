@@ -200,15 +200,15 @@ static bool need_renegotiation_hack = false;
 void ssl_init(void)
 {
   // The version identifier format is: MMNNFFPPS: major minor fix patch status.
-  int const compiled_openSLL_major = (OPENSSL_VERSION_NUMBER >> 28) & 0xff;
-  int const compiled_openSLL_minor = (OPENSSL_VERSION_NUMBER >> 20) & 0xff;
+  int const compiled_openSSL_major = (OPENSSL_VERSION_NUMBER >> 28) & 0xff;
+  int const compiled_openSSL_minor = (OPENSSL_VERSION_NUMBER >> 20) & 0xff;
   unsigned long const ssleay = SSLeay();
-  int const linked_openSLL_major = (ssleay >> 28) & 0xff;
-  int const linked_openSLL_minor = (ssleay >> 20) & 0xff;
+  int const linked_openSSL_major = (ssleay >> 28) & 0xff;
+  int const linked_openSSL_minor = (ssleay >> 20) & 0xff;
   // Check if dynamically loaded version is compatible with the one we compiled against.
   // As off version 1.0.0 also minor versions are compatible.
-  if (linked_openSLL_major != compiled_openSLL_major ||
-	  (compiled_openSLL_major == 0 && linked_openSLL_minor != compiled_openSLL_minor))
+  if (linked_openSSL_major != compiled_openSSL_major ||
+	  (linked_openSSL_major == 0 && linked_openSSL_minor != compiled_openSSL_minor))
   {
 	llerrs << "The viewer was compiled against " << OPENSSL_VERSION_TEXT <<
 	    " but linked against " << SSLeay_version(SSLEAY_VERSION) <<
@@ -949,7 +949,7 @@ static int curl_debug_cb(CURL*, curl_infotype infotype, char* buf, size_t size, 
   {
 	LibcwDoutStream << size << " bytes";
 	bool finished = false;
-	int i = 0;
+	size_t i = 0;
 	while (i < size)
 	{
 	  char c = buf[i];
