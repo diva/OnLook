@@ -81,12 +81,12 @@ struct libcwd_do_type {
  void on() const { }
 };
 extern CWD_API libcwd_do_type const libcw_do;
-struct CWD_API Indent {
+struct Indent {
   int M_indent;
   static AI_THREADLOCAL int S_indentation;
   enum print_nt { print };
-  Indent(int indent) : M_indent(indent) { S_indentation += M_indent; }
-  ~Indent() { S_indentation -= M_indent; }
+  CWD_API Indent(int indent) : M_indent(indent) { S_indentation += M_indent; }
+  CWD_API ~Indent() { S_indentation -= M_indent; }
   friend CWD_API std::ostream& operator<<(std::ostream& os, print_nt);
 };
 
