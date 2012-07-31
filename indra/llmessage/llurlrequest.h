@@ -97,6 +97,13 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	 */
 	bool configure(void);
 
+	/**
+	 * @ brief Return the number of bytes to POST or PUT to the server.
+	 *
+	 * @return Returns the number of bytes we're about to upload.
+	 */
+    S32 bytes_to_send(void) const;
+
   private:
 	ERequestAction mAction;
 	std::string mURL;

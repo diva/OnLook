@@ -1231,12 +1231,12 @@ size_t CurlResponderBuffer::curlWriteCallback(char* data, size_t size, size_t nm
   // to make sure that callbacks and destruction aren't done simultaneously.
   AICurlEasyRequest_wat buffered_easy_request_w(*lockobj);
 
+  S32 bytes = size * nmemb;		// The amount to write.
   AICurlResponderBuffer_wat buffer_w(*lockobj);
   // CurlResponderBuffer::setBodyLimit is never called, so buffer_w->mBodyLimit is infinite.
   //S32 bytes = llmin(size * nmemb, buffer_w->mBodyLimit); buffer_w->mBodyLimit -= bytes;
-  S32 bytes = size * nmemb;
   buffer_w->getOutput()->append(sChannels.in(), (U8 const*)data, bytes);
-  mResponseTransferedBytes += bytes;
+  buffer_w->mResponseTransferedBytes += bytes;		// Accumulate data received from the server.
   return bytes;
 }
 
@@ -1252,7 +1252,8 @@ size_t CurlResponderBuffer::curlReadCallback(char* data, size_t size, size_t nme
   S32 bytes = size * nmemb;		// The maximum amount to read.
   AICurlResponderBuffer_wat buffer_w(*lockobj);
   buffer_w->mLastRead = buffer_w->getInput()->readAfter(sChannels.out(), buffer_w->mLastRead, (U8*)data, bytes);
-  return bytes;					// Return the amount actually read.
+  buffer_w->mRequestTransferedBytes += bytes;		// Accumulate data sent to the server.
+  return bytes;					// Return the amount actually read (might be lowered by readAfter()).
 }
 
 //static

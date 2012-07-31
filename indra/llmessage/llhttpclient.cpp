@@ -298,6 +298,7 @@ static void request(
 	}
 
 	//AIFIXME: req->setCallback(new LLHTTPClientURLAdaptor(responder));
+	llassert_always(false);
 
 	if (method == LLURLRequest::HTTP_POST  &&  gMessageSystem)
 	{

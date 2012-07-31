@@ -39,7 +39,11 @@
 #endif
 #include <deque>
 
+// On linux, add -DDEBUG_WINDOWS_CODE_ON_LINUX to test the windows code used in this file.
+#if !defined(DEBUG_WINDOWS_CODE_ON_LINUX) || !defined(LL_LINUX) || defined(LL_RELEASE)
+#undef DEBUG_WINDOWS_CODE_ON_LINUX
 #define DEBUG_WINDOWS_CODE_ON_LINUX 0
+#endif
 
 #if DEBUG_WINDOWS_CODE_ON_LINUX
 

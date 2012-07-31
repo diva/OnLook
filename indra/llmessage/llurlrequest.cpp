@@ -147,19 +147,12 @@ std::string LLURLRequest::actionAsVerb(LLURLRequest::ERequestAction action)
 }
 
 // This might throw AICurlNoEasyHandle.
-LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string const& url) : AICurlEasyRequestStateMachine(false), mAction(action), mURL(url)
+LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string const& url) : AICurlEasyRequestStateMachine(true), mAction(action), mURL(url)
 {
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 
-	{
-		AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
-		//AIFIXME: we can't really use the other callbacks: they have to be extended...  curlEasyRequest_w->setWriteCallback(&downCallback, (void*)this);
-		//AIFIXME: curlEasyRequest_w->setReadCallback(&upCallback, (void*)this);
-	}
-
-	//AIFIXME: stuff they have to be extended with...  mRequestTransferedBytes = 0;
-	//AIFIXME: stuff they have to be extended with...  mResponseTransferedBytes = 0;
 	//AIFIXME: start statemachine   mState = STATE_INITIALIZED;
+	llassert_always(false);
 }
 
 #if 0
@@ -468,6 +461,13 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 }
 #endif // AI_UNUSED
 
+S32 LLURLRequest::bytes_to_send(void) const
+{
+  //AIFIXME: how to get the number of bytes to send?
+  llassert_always(false);
+  return 0;
+}
+
 static LLFastTimer::DeclareTimer FTM_URL_REQUEST_CONFIGURE("URL Configure");
 bool LLURLRequest::configure()
 {
@@ -475,9 +475,6 @@ bool LLURLRequest::configure()
 	
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	bool rv = false;
-	S32 bytes = mDetail->mResponseBuffer->countAfter(
-   		mDetail->mChannels.in(),
-		NULL);
 	{
 		AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
 		switch(mAction)
@@ -498,16 +495,19 @@ bool LLURLRequest::configure()
 			break;
 
 		case HTTP_PUT:
+		{
 			// Disable the expect http 1.1 extension. POST and PUT default
 			// to turning this on, and I am not too sure what it means.
 			addHeader("Expect:");
 
+			S32 bytes = bytes_to_send();
 			curlEasyRequest_w->setopt(CURLOPT_UPLOAD, 1);
 			curlEasyRequest_w->setopt(CURLOPT_INFILESIZE, bytes);
 			rv = true;
 			break;
-
+		}
 		case HTTP_POST:
+		{
 			// Disable the expect http 1.1 extension. POST and PUT default
 			// to turning this on, and I am not too sure what it means.
 			addHeader("Expect:");
@@ -517,13 +517,14 @@ bool LLURLRequest::configure()
 			addHeader("Content-Type:");
 
 			// Set the handle for an http post
+			S32 bytes = bytes_to_send();
 			curlEasyRequest_w->setPost(NULL, bytes);
 
 			// Set Accept-Encoding to allow response compression
 			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, "");
 			rv = true;
 			break;
-
+		}
 		case HTTP_DELETE:
 			// Set the handle for an http post
 			curlEasyRequest_w->setoptString(CURLOPT_CUSTOMREQUEST, "DELETE");
@@ -543,7 +544,7 @@ bool LLURLRequest::configure()
 		}
 		if(rv)
 		{
-			curlEasyRequest_w->finalizeRequest(mDetail->mURL);
+			curlEasyRequest_w->finalizeRequest(mURL);
 		}
 	}
 	return rv;

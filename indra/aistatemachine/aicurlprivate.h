@@ -316,7 +316,7 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
 	LLIOPipe::buffer_ptr_t mOutput;
 	AICurlInterface::ResponderPtr mResponder;
 	//U32 mBodyLimit;									// From the old LLURLRequestDetail::mBodyLimit, but never used.
-	S32 mByteAccumulator;
+	S32 mRequestTransferedBytes;
 	S32 mResponseTransferedBytes;
 
   public:

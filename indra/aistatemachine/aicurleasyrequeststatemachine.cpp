@@ -239,6 +239,10 @@ void AICurlEasyRequestStateMachine::finish_impl(void)
 AICurlEasyRequestStateMachine::AICurlEasyRequestStateMachine(bool buffered) : mBuffered(buffered), mCurlEasyRequest(buffered)
 {
   Dout(dc::statemachine, "Calling AICurlEasyRequestStateMachine(" << (buffered ? "true" : "false") << ") [" << (void*)this << "] [" << (void*)mCurlEasyRequest.get() << "]");
+  if (!mBuffered)
+  {
+	llwarns << "Using unbuffered AICurlEasyRequestStateMachine" << llendl;
+  }
 }
 
 //static
