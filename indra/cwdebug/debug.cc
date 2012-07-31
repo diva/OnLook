@@ -413,4 +413,71 @@ void cwdebug_backtrace(int n)
 }
 #endif
 
-#endif // CWDEBUG
+#elif defined(DEBUG_CURLIO)
+
+#include "debug.h"
+
+namespace debug
+{
+
+libcwd_do_type const libcw_do;
+AI_THREADLOCAL int Indent::S_indentation;
+
+std::ostream& operator<<(std::ostream& os, Indent::print_nt)
+{
+  if (Indent::S_indentation)
+	os << std::string(Indent::S_indentation, ' ');
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, libcwd::buf2str const& b2s)
+{
+  static char const c2s_tab[7] = { 'a', 'b', 't', 'n', 'v', 'f', 'r' };
+  size_t size = b2s.mSize;
+  for (char const* p1 = b2s.mBuf; size > 0; --size, ++p1)
+  {
+	char c =*p1;
+	if ((c > 31 && c != 92 && c != 127) || (unsigned char)c > 159)
+	  os.put(c);
+	else
+	{
+	  os.put('\\');
+	  if (c > 6 && c < 14)
+	  {
+		os.put(c2s_tab[c - 7]);
+		return os;
+	  }
+	  else if (c == 27)
+	  {
+		os.put('e');
+		return os;
+	  }
+	  else if (c == '\\')
+	  {
+		os.put('\\');
+		return os;
+	  }
+	  short old_fill = os.fill('0');
+	  std::ios_base::fmtflags old_flgs = os.flags();
+	  os.width(3);
+	  os << std::oct << (int)((unsigned char)c);
+	  os.setf(old_flgs);
+	  os.fill(old_fill);
+	}
+  }
+  return os;
+}
+
+namespace dc
+{
+
+fake_channel const      warning(1, "WARNING     ");
+fake_channel const         curl(1, "CURL        ");
+fake_channel const       curlio(1, "CURLIO      ");
+fake_channel const statemachine(1, "STATEMACHINE");
+fake_channel const       notice(1, "NOTICE      ");
+
+} // namespace dc
+} // namespace debug
+
+#endif

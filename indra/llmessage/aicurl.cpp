@@ -886,9 +886,18 @@ void CurlEasyRequest::addHeader(char const* header)
   mHeaders = curl_slist_append(mHeaders, header);
 }
 
-#ifdef CWDEBUG
-static int curl_debug_callback(CURL*, curl_infotype infotype, char* buf, size_t size, void* user_ptr)
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+
+#ifndef CWDEBUG
+#define LIBCWD_DEBUGCHANNELS 0
+#define LibcwDoutScopeBegin(a, b, c) do { using namespace debug; llinfos_nf << dc::curlio.mLabel << ": ";
+#define LibcwDoutStream llcont
+#define LibcwDoutScopeEnd llcont << llendl; } while(0)
+#endif
+
+static int curl_debug_cb(CURL*, curl_infotype infotype, char* buf, size_t size, void* user_ptr)
 {
+#ifdef CWDEBUG
   using namespace ::libcwd;
 
   CurlEasyRequest* request = (CurlEasyRequest*)user_ptr;
@@ -898,6 +907,13 @@ static int curl_debug_callback(CURL*, curl_infotype infotype, char* buf, size_t 
   libcw_do.marker().assign(marker.str().data(), marker.str().size());
   if (!debug::channels::dc::curlio.is_on())
 	debug::channels::dc::curlio.on();
+#else
+  if (infotype == CURLINFO_TEXT)
+  {
+	while (size > 0 && (buf[size - 1] == '\r' ||  buf[size - 1] == '\n'))
+	  --size;
+  }
+#endif
   LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcw_do, dc::curlio|cond_nonewline_cf(infotype == CURLINFO_TEXT))
   switch (infotype)
   {
@@ -976,7 +992,9 @@ static int curl_debug_callback(CURL*, curl_infotype infotype, char* buf, size_t 
   else
 	LibcwDoutStream << size << " bytes";
   LibcwDoutScopeEnd;
+#ifdef CWDEBUG
   libcw_do.pop_marker();
+#endif
   return 0;
 }
 #endif
@@ -1041,7 +1059,7 @@ void CurlEasyRequest::applyDefaultOptions(void)
 	if (dc::curlio.is_on())
 	{
 	  setopt(CURLOPT_VERBOSE, 1);
-	  setopt(CURLOPT_DEBUGFUNCTION, &curl_debug_callback);
+	  setopt(CURLOPT_DEBUGFUNCTION, &curl_debug_cb);
 	  setopt(CURLOPT_DEBUGDATA, this);
 	}
   );

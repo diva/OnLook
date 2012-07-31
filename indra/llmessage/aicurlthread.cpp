@@ -39,7 +39,7 @@
 #endif
 #include <deque>
 
-#define DEBUG_WINDOWS_CODE_ON_LINUX 0
+#define DEBUG_WINDOWS_CODE_ON_LINUX 1
 
 #if DEBUG_WINDOWS_CODE_ON_LINUX
 
@@ -1262,7 +1262,7 @@ MultiHandle::~MultiHandle()
   delete mReadPollSet;
 }
 
-#ifdef CWDEBUG
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 #undef AI_CASE_RETURN
 #define AI_CASE_RETURN(x) do { case x: return #x; } while(0)
 char const* action_str(int action)

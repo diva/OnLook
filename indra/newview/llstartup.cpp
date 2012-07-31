@@ -253,7 +253,7 @@ extern S32 gStartImageHeight;
 // local globals
 //
 
-#ifdef CWDEBUG
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 static bool gCurlIo;
 #endif
 

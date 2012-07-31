@@ -27,6 +27,111 @@
 
 #ifndef CWDEBUG
 
+#ifdef DEBUG_CURLIO
+
+#if LL_WINDOWS
+#define CWD_DLLEXPORT __declspec(dllexport)
+#define CWD_DLLIMPORT __declspec(dllimport)
+#elif LL_LINUX
+#define CWD_DLLEXPORT __attribute__ ((visibility("default")))
+#define CWD_DLLIMPORT
+#else
+#define CWD_DLLEXPORT
+#define CWD_DLLIMPORT
+#endif // LL_WINDOWS
+
+#if LL_COMMON_LINK_SHARED
+#if defined(cwdebug_EXPORTS)
+#define CWD_API CWD_DLLEXPORT
+#else // cwdebug_EXPORTS
+#define CWD_API CWD_DLLIMPORT
+#endif // cwdebug_EXPORTS
+#else // LL_COMMON_LINK_SHARED
+#error LL_COMMON_LINK_SHARED not defined
+#endif // LL_COMMON_LINK_SHARED
+
+// If CWDEBUG is not defined, but DEBUG_CURLIO is, then replace
+// some of the cwd macro's with something that generates viewer
+// specific debug output. Note that this generates a LOT of
+// output and should not normally be defined.
+
+#include <string>
+
+#if LL_WINDOWS
+#define AI_THREADLOCAL __declspec(thread)
+#else
+#define AI_THREADLOCAL __thread
+#endif
+
+namespace debug {
+namespace libcwd {
+
+struct buf2str {
+  buf2str(char const* buf, int size) : mBuf(buf), mSize(size) { }
+  char const* mBuf;
+  int mSize;
+};
+
+} // namespace libcwd
+
+extern CWD_API std::ostream& operator<<(std::ostream& os, libcwd::buf2str const& b2s);
+
+inline void init() { }
+struct libcwd_do_type {
+ void on() const { }
+};
+extern CWD_API libcwd_do_type const libcw_do;
+struct CWD_API Indent {
+  int M_indent;
+  static AI_THREADLOCAL int S_indentation;
+  enum print_nt { print };
+  Indent(int indent) : M_indent(indent) { S_indentation += M_indent; }
+  ~Indent() { S_indentation -= M_indent; }
+  friend CWD_API std::ostream& operator<<(std::ostream& os, print_nt);
+};
+
+namespace dc {
+
+struct fake_channel {
+  int mOn;
+  char const* mLabel;
+  fake_channel(int on, char const* label) : mOn(on), mLabel(label) { }
+  fake_channel(void) : mOn(0) { }
+  bool is_on() const { return mOn; }
+  bool is_off() const { return !mOn; }
+  void on() const { }
+  void off() const { }
+};
+extern CWD_API fake_channel const warning;
+extern CWD_API fake_channel const curl;
+extern CWD_API fake_channel const curlio;
+extern CWD_API fake_channel const statemachine;
+extern CWD_API fake_channel const notice;
+
+} // namespace dc
+} // namespace debug
+
+#define Debug(x) do { using namespace debug; x; } while(0)
+#define Dout(a, b) do { using namespace debug;  if ((a).mOn) { llinfos_nf << (a).mLabel << ": " << Indent::print << b << llendl; } } while(0)
+#define DoutEntering(a, b) \
+  int __slviewer_debug_indentation = 2; \
+  { \
+	using namespace debug; \
+	if ((a).mOn) \
+	  llinfos_nf << (a).mLabel << ": " << Indent::print << "Entering " << b << llendl; \
+    else \
+	  __slviewer_debug_indentation = 0; \
+  } \
+  debug::Indent __slviewer_debug_indent(__slviewer_debug_indentation);
+
+#else // !DEBUG_CURLIO
+
+#define Debug(x)
+#define Dout(a, b)
+#define DoutEntering(a, b)
+
+#endif // !DEBUG_CURLIO
+
 #ifndef DOXYGEN         // No need to document this.  See http://libcwd.sourceforge.net/ for more info.
 
 #include <iostream>
@@ -36,9 +141,6 @@
 #define AllocTag2(p, desc)
 #define AllocTag_dynamic_description(p, x)
 #define AllocTag(p, x)
-#define Debug(x)
-#define Dout(a, b)
-#define DoutEntering(a, b)
 #define DoutFatal(a, b) LibcwDoutFatal(::std, , a, b)
 #define ForAllDebugChannels(STATEMENT)
 #define ForAllDebugObjects(STATEMENT)

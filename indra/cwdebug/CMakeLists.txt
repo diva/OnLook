@@ -34,6 +34,8 @@ if(NOT WORD_SIZE EQUAL 32)
 	endif(WINDOWS)
 endif (NOT WORD_SIZE EQUAL 32)
 
+add_definitions(-Dcwdebug_EXPORTS)
+
 list(APPEND cwdebug_SOURCE_FILES ${cwdebug_HEADER_FILES})
 
 add_library (cwdebug ${cwdebug_SOURCE_FILES})
