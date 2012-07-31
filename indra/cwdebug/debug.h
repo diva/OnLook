@@ -97,7 +97,7 @@ struct fake_channel {
   char const* mLabel;
   fake_channel(int on, char const* label) : mOn(on), mLabel(label) { }
   fake_channel(void) : mOn(0) { }
-  bool is_on() const { return mOn; }
+  bool is_on() const { return !!mOn; }
   bool is_off() const { return !mOn; }
   void on() const { }
   void off() const { }
