@@ -41,7 +41,7 @@
 #endif // LL_WINDOWS
 
 #if LL_COMMON_LINK_SHARED
-#if defined(cwdebug_EXPORTS)
+#if defined(cwdebug_EXPORTS) || defined(llcommon_EXPORTS)
 #define CWD_API CWD_DLLEXPORT
 #else // cwdebug_EXPORTS
 #define CWD_API CWD_DLLIMPORT
