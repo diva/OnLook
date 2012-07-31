@@ -421,7 +421,7 @@ namespace debug
 {
 
 libcwd_do_type const libcw_do;
-AI_THREADLOCAL int Indent::S_indentation;
+CWD_TLS int Indent::S_indentation;
 
 std::ostream& operator<<(std::ostream& os, Indent::print_nt)
 {

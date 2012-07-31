@@ -58,9 +58,11 @@
 #include <string>
 
 #if LL_WINDOWS
-#define AI_THREADLOCAL __declspec(thread)
+#define CWD_API_TLS __declspec(thread)
+#define CWD_TLS __declspec(thread)
 #else
-#define AI_THREADLOCAL __thread
+#define CWD_API_TLS CWD_API __thread
+#define CWD_TLS __thread
 #endif
 
 namespace debug {
@@ -81,7 +83,7 @@ struct libcwd_do_type {
 extern CWD_API libcwd_do_type const libcw_do;
 struct Indent {
   int M_indent;
-  static AI_THREADLOCAL int S_indentation;
+  static CWD_API_TLS int S_indentation;
   enum CWD_API print_nt { print };
   CWD_API Indent(int indent) : M_indent(indent) { S_indentation += M_indent; }
   CWD_API ~Indent() { S_indentation -= M_indent; }
