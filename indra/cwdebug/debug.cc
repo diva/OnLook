@@ -457,7 +457,7 @@ std::ostream& operator<<(std::ostream& os, libcwd::buf2str const& b2s)
 		os.put('\\');
 		return os;
 	  }
-	  short old_fill = os.fill('0');
+	  std::ostream::char_type old_fill = os.fill('0');
 	  std::ios_base::fmtflags old_flgs = os.flags();
 	  os.width(3);
 	  os << std::oct << (int)((unsigned char)c);
