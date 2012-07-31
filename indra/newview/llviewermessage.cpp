@@ -2060,8 +2060,8 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		LLAvatarTracker::instance().getBuddyInfo(from_id) == NULL )
 		do_auto_response = true;
 
-	if( is_muted && !gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseMuted") )
-		do_auto_response = false;
+	if( is_muted )
+		do_auto_response = gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseMuted");
 
 	if( offline != IM_ONLINE )
 		do_auto_response = false;
