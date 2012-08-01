@@ -57,7 +57,6 @@
 #include "lldaycyclemanager.h"
 #include "llwlparamset.h"
 #include "llwlparammanager.h"
-#include "llpostprocess.h"
 #include "llfloaterwindlight.h"
 
 

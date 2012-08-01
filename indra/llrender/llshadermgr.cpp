@@ -679,7 +679,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 
 		vec4 diffuseLookup(vec2 texcoord)
 		{
-			switch (vary_texture_index.r))
+			switch (vary_texture_index))
 			{
 				case 0: ret = texture2D(tex0, texcoord); break;
 				case 1: ret = texture2D(tex1, texcoord); break;
@@ -703,7 +703,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 
 		if (texture_index_channels > 1)
 		{
-			text[count++] = strdup("VARYING_FLAT ivec4 vary_texture_index;\n");
+			text[count++] = strdup("VARYING_FLAT int vary_texture_index;\n");
 		}
 
 		text[count++] = strdup("vec4 diffuseLookup(vec2 texcoord)\n");
@@ -721,7 +721,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 			{ //switches are unreliable on some NVIDIA drivers
 				for (S32 i = 0; i < texture_index_channels; ++i)
 				{
-					std::string if_string = llformat("\t%sif (vary_texture_index.r == %d) { return texture2D(tex%d, texcoord); }\n", i > 0 ? "else " : "", i, i); 
+					std::string if_string = llformat("\t%sif (vary_texture_index == %d) { return texture2D(tex%d, texcoord); }\n", i > 0 ? "else " : "", i, i); 
 					text[count++] = strdup(if_string.c_str());
 				}
 				text[count++] = strdup("\treturn vec4(1,0,1,1);\n");
@@ -730,13 +730,13 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 			else
 			{
 				text[count++] = strdup("\tvec4 ret = vec4(1,0,1,1);\n");
-				text[count++] = strdup("\tswitch (vary_texture_index.r)\n");
+				text[count++] = strdup("\tswitch (vary_texture_index)\n");
 				text[count++] = strdup("\t{\n");
 		
 				//switch body
 				for (S32 i = 0; i < texture_index_channels; ++i)
 				{
-					std::string case_str = llformat("\t\tcase %d: ret = texture2D(tex%d, texcoord); break;\n", i, i);
+					std::string case_str = llformat("\t\tcase %d: return texture2D(tex%d, texcoord);\n", i, i);
 					text[count++] = strdup(case_str.c_str());
 				}
 
