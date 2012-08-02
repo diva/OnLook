@@ -811,10 +811,10 @@ static std::string formatWSAError()
 	}
 	return r.str();
 }
-#else if WINDOWS_CODE
+#elif WINDOWS_CODE
 static std::string formatWSAError()
 {
-	return "NOT IMPLEMENTED";
+	return strerror(errno);
 }
 #endif
 
@@ -907,7 +907,7 @@ void AICurlThread::create_wakeup_fds(void)
 {
 #if WINDOWS_CODE
 	//SGTODO
-	SOCKET socks[2];
+	curl_socket_t socks[2];
 	if (dumb_socketpair(socks, false) == SOCKET_ERROR)
 	{
 		llerrs << "Failed to generate wake-up socket pair" << formatWSAError() << llendl;
