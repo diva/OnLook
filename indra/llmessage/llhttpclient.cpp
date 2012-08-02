@@ -251,7 +251,8 @@ static void request(
 		return ;
 	}
 
-	//AIFIXME: getCertVerifyCallback() always return NULL, so we might as well not do this call:  req->setSSLVerifyCallback(LLHTTPClient::getCertVerifyCallback(), (void *)req);
+	//AIFIXME: getCertVerifyCallback() always return NULL, so we might as well not do this call:
+	//req->setSSLVerifyCallback(LLHTTPClient::getCertVerifyCallback(), (void *)req);
 
 	lldebugs << LLURLRequest::actionAsVerb(method) << " " << url << " " << headers << llendl;
 
@@ -283,50 +284,51 @@ static void request(
             lldebugs << "header = " << header.str() << llendl;
             req->addHeader(header.str().c_str());
         }
+
+		if (method == LLURLRequest::HTTP_PUT || method == LLURLRequest::HTTP_POST)
+		{
+			static std::string const CONTENT_TYPE("Content-Type");
+			if(!headers.has(CONTENT_TYPE))
+			{
+				// If the Content-Type header was passed in, it has
+				// already been added as a header through req->addHeader
+				// in the loop above. We defer to the caller's wisdom, but
+				// if they did not specify a Content-Type, then ask the
+				// injector.
+				req->addHeader(llformat("Content-Type: %s", body_injector->contentType()).c_str());
+			}
+		}
+		else
+		{
+			// Check to see if we have already set Accept or not. If no one
+			// set it, set it to application/llsd+xml since that's what we
+			// almost always want.
+			static std::string const ACCEPT("Accept");
+			if (!headers.has(ACCEPT))
+			{
+				req->addHeader("Accept: application/llsd+xml");
+			}
+		}
     }
 
-	// Check to see if we have already set Accept or not. If no one
-	// set it, set it to application/llsd+xml since that's what we
-	// almost always want.
-	if( method != LLURLRequest::HTTP_PUT && method != LLURLRequest::HTTP_POST )
+	if (method == LLURLRequest::HTTP_POST && gMessageSystem)
 	{
-		static const std::string ACCEPT("Accept");
-		if(!headers.has(ACCEPT))
-		{
-			req->addHeader("Accept: application/llsd+xml");
-		}
-	}
-
-	//AIFIXME: req->setCallback(new LLHTTPClientURLAdaptor(responder));
-	llassert_always(false);
-
-	if (method == LLURLRequest::HTTP_POST  &&  gMessageSystem)
-	{
-		req->addHeader(llformat("X-SecondLife-UDP-Listen-Port: %d",
-								gMessageSystem->mPort).c_str());
+		req->addHeader(llformat("X-SecondLife-UDP-Listen-Port: %d", gMessageSystem->mPort).c_str());
    	}
 
 	if (method == LLURLRequest::HTTP_PUT || method == LLURLRequest::HTTP_POST)
 	{
-		static const std::string CONTENT_TYPE("Content-Type");
-		if(!headers.has(CONTENT_TYPE))
-		{
-			// If the Content-Type header was passed in, it has
-			// already been added as a header through req->addHeader
-			// in the loop above. We defer to the caller's wisdom, but
-			// if they did not specify a Content-Type, then ask the
-			// injector.
-			req->addHeader(
-				llformat(
-					"Content-Type: %s",
-					body_injector->contentType()).c_str());
-		}
    		chain.push_back(LLIOPipe::ptr_t(body_injector));
 	}
 
-	//AIFIXEM: chain.push_back(LLIOPipe::ptr_t(req));
+	//AIFIXME: chain.push_back(LLIOPipe::ptr_t(req));
 
-	theClientPump->addChain(chain, timeout);
+	AICurlEasyRequest_wat buffered_easy_request_w(*req->mCurlEasyRequest);
+	AICurlResponderBuffer_wat buffer_w(*req->mCurlEasyRequest);
+	buffer_w->prepRequest(buffered_easy_request_w, headers, responder);
+
+	req->setRequestTimeOut(timeout);
+	//AIFIXME: theClientPump->addChain(chain, timeout);
 }
 
 

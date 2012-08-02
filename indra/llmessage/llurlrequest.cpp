@@ -150,9 +150,7 @@ std::string LLURLRequest::actionAsVerb(LLURLRequest::ERequestAction action)
 LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string const& url) : AICurlEasyRequestStateMachine(true), mAction(action), mURL(url)
 {
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
-
-	//AIFIXME: start statemachine   mState = STATE_INITIALIZED;
-	llassert_always(false);
+	run();
 }
 
 #if 0

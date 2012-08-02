@@ -58,24 +58,31 @@ class AICurlEasyRequestStateMachine : public AIStateMachine, public AICurlEasyHa
 	AICurlEasyRequest mCurlEasyRequest;
 
   private:
-	bool mBuffered;		// Argument used for construction of mCurlEasyRequest.
-	bool mAdded;		// Set when the last command to the curl thread was to add the request.
-	bool mTimedOut;		// Set if the expiration timer timed out.
-	bool mFinished;		// Set by the curl thread to signal it finished.
-	bool mHandled;		// Set when we processed the received data.
-	AITimer* mTimer;	// Expiration timer.
+	bool mBuffered;						// Argument used for construction of mCurlEasyRequest.
+	bool mAdded;						// Set when the last command to the curl thread was to add the request.
+	bool mTimedOut;						// Set if the expiration timer timed out.
+	bool mFinished;						// Set by the curl thread to signal it finished.
+	bool mHandled;						// Set when we processed the received data.
+	AITimer* mTimer;					// Expiration timer.
+	F32 mRequestTimeOut;				// The time out value for mTimer.
 
-	static F32 sCurlRequestTimeOut;	// The time out value for mTimer.
+	static F32 sCurlRequestTimeOut;		// The default time out value for mTimer (CurlRequestTimeOut debug setting).
 
   public:
 	// Called once to set a different timeout then the default of 40 seconds.
-	static void setCurlRequestTimeOut(F32 CurlRequestTimeOut);
+	static void setDefaultRequestTimeOut(F32 defaultRequestTimeOut);
+
+	// Called to set a specific time out, instead of the default one.
+	void setRequestTimeOut(F32 requestTimeOut);
 
   protected:
 	// AICurlEasyRequest Events.
 
 	// Called when this curl easy handle was added to a multi handle.
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat&);
+
+	// Called for each received HTTP header key/value pair.
+	/*virtual*/ void decoded_header(AICurlEasyRequest_wat&, std::string const& key, std::string const& value);
 
 	// Called when this curl easy handle finished processing (right before it is removed from the multi handle).
 	/*virtual*/ void finished(AICurlEasyRequest_wat&);

@@ -1091,6 +1091,12 @@ void CurlEasyRequest::added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_req
 	mEventsTarget->added_to_multi_handle(curl_easy_request_w);
 }
 
+void CurlEasyRequest::decoded_header(AICurlEasyRequest_wat& curl_easy_request_w, std::string const& key, std::string const& value)
+{
+  if (mEventsTarget)
+	mEventsTarget->decoded_header(curl_easy_request_w, key, value);
+}
+
 void CurlEasyRequest::finished(AICurlEasyRequest_wat& curl_easy_request_w)
 {
   if (mEventsTarget)
@@ -1106,7 +1112,7 @@ void CurlEasyRequest::removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy
 //-----------------------------------------------------------------------------
 // CurlResponderBuffer
 
-static unsigned int const MAX_REDIRECTS = 5;
+static int const HTTP_REDIRECTS_DEFAULT = 10;
 static S32 const CURL_REQUEST_TIMEOUT = 30;		// Seconds per operation.
 
 LLChannelDescriptors const CurlResponderBuffer::sChannels;
@@ -1165,9 +1171,6 @@ void CurlResponderBuffer::resetState(AICurlEasyRequest_wat& curl_easy_request_w)
 
   mOutput.reset();
   mInput.reset();
-  
-  mHeaderOutput.str("");
-  mHeaderOutput.clear();
 }
 
 ThreadSafeBufferedCurlEasyRequest* CurlResponderBuffer::get_lockobj(void)
@@ -1194,14 +1197,14 @@ void CurlResponderBuffer::prepRequest(AICurlEasyRequest_wat& curl_easy_request_w
   curl_easy_request_w->setReadCallback(&curlReadCallback, lockobj);
   curl_easy_request_w->setHeaderCallback(&curlHeaderCallback, lockobj);
 
-  // Allow up to five redirects.
+  // Allow up to ten redirects.
   if (responder && responder->followRedir())
   {
 	curl_easy_request_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
-	curl_easy_request_w->setopt(CURLOPT_MAXREDIRS, MAX_REDIRECTS);
+	curl_easy_request_w->setopt(CURLOPT_MAXREDIRS, HTTP_REDIRECTS_DEFAULT);
   }
 
-  curl_easy_request_w->setopt(CURLOPT_SSL_VERIFYPEER, true);
+  curl_easy_request_w->setopt(CURLOPT_SSL_VERIFYPEER, 1);
   // Don't verify host name so urls with scrubbed host names will work (improves DNS performance).
   curl_easy_request_w->setopt(CURLOPT_SSL_VERIFYHOST, 0);
 
@@ -1261,19 +1264,84 @@ size_t CurlResponderBuffer::curlHeaderCallback(char* data, size_t size, size_t n
 {
   ThreadSafeBufferedCurlEasyRequest* lockobj = static_cast<ThreadSafeBufferedCurlEasyRequest*>(user_data);
 
-  // We need to lock the curl easy request object too, because that lock is used
+  // We need to lock the curl easy request object, because that lock is used
   // to make sure that callbacks and destruction aren't done simultaneously.
   AICurlEasyRequest_wat buffered_easy_request_w(*lockobj);
 
-  AICurlResponderBuffer_wat buffer_w(*lockobj);
-  size_t n = size * nmemb;
-  buffer_w->getHeaderOutput().write(data, n);
-  return n;
+  // This used to be headerCallback() in llurlrequest.cpp.
+
+  char const* const header_line = static_cast<char const*>(data);
+  size_t const header_len = size * nmemb;
+
+  if (!header_len)
+  {
+	return header_len;
+  }
+  std::string header(header_line, header_len);
+  if (!LLStringUtil::_isASCII(header))
+  {
+	return header_len;
+  }
+
+  // Per HTTP spec the first header line must be the status line.
+  if (header.substr(0, 5) == "HTTP/")
+  {
+	std::string::iterator const begin = header.begin();
+	std::string::iterator const end = header.end();
+	std::string::iterator pos1 = std::find(begin, end, ' ');
+	if (pos1 != end) ++pos1;
+	std::string::iterator pos2 = std::find(pos1, end, ' ');
+	if (pos2 != end) ++pos2;
+	std::string::iterator pos3 = std::find(pos2, end, '\r');
+	U32 status;
+	std::string reason;
+	if (pos3 != end && std::isdigit(*pos1))
+	{
+	  status = atoi(&header_line[pos1 - begin]);
+	  reason.assign(pos2, pos3);
+	}
+	else
+	{
+	  status = HTTP_INTERNAL_ERROR;
+	  reason = "Header parse error.";
+	  llwarns << "Received broken header line from server: \"" << header << "\"" << llendl;
+	}
+	AICurlResponderBuffer_wat(*lockobj)->setStatusAndReason(status, reason);
+	return header_len;
+  }
+
+  std::string::iterator sep = std::find(header.begin(), header.end(), ':');
+
+  if (sep != header.end())
+  {
+	std::string key(header.begin(), sep);
+	std::string value(sep + 1, header.end());
+
+	key = utf8str_tolower(utf8str_trim(key));
+	value = utf8str_trim(value);
+
+	AICurlResponderBuffer_wat(*lockobj)->decoded_header(buffered_easy_request_w, key, value);
+  }
+  else
+  {
+	LLStringUtil::trim(header);
+	if (!header.empty())
+	{
+	  llwarns << "Unable to parse header: " << header << llendl;
+	}
+  }
+
+  return header_len;
 }
 
 void CurlResponderBuffer::added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w)
 {
   Dout(dc::curl, "Calling CurlResponderBuffer::added_to_multi_handle(@" << (void*)&*curl_easy_request_w << ") for this = " << (void*)this);
+}
+
+void CurlResponderBuffer::decoded_header(AICurlEasyRequest_wat& curl_easy_request_w, std::string const& key, std::string const& value)
+{
+  Dout(dc::curl, "Calling CurlResponderBuffer::decoded_header(@" << (void*)&*curl_easy_request_w << ", \"" << key << "\", \"" << value << "\") for this = " << (void*)this);
 }
 
 void CurlResponderBuffer::finished(AICurlEasyRequest_wat& curl_easy_request_w)
@@ -1304,7 +1372,7 @@ void CurlResponderBuffer::processOutput(AICurlEasyRequest_wat& curl_easy_request
   if (code == CURLE_OK)
   {
 	curl_easy_request_w->getinfo(CURLINFO_RESPONSE_CODE, &responseCode);
-	//*TODO: get reason from first line of mHeaderOutput
+	//AIFIXME: fill responseReason if (responseCode < 200 || responseCode >= 300).
   }
   else
   {

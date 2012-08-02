@@ -235,6 +235,7 @@ typedef AIAccess<AICurlPrivate::CurlEasyRequest> AICurlEasyRequest_wat;
 struct AICurlEasyHandleEvents {
 	// Events.
 	virtual void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w) = 0;
+	virtual void decoded_header(AICurlEasyRequest_wat& curl_easy_request_w, std::string const& key, std::string const& value) = 0;
 	virtual void finished(AICurlEasyRequest_wat& curl_easy_request_w) = 0;
 	virtual void removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w) = 0;
 	// Avoid compiler warning.

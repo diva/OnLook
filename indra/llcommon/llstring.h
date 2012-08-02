@@ -318,6 +318,7 @@ public:
 	 * should work.
 	 */
 	static void _makeASCII(std::basic_string<T>& string);
+	static bool _isASCII(std::basic_string<T> const& string);
 
 	// Conversion to other data types
 	static BOOL	convertToBOOL(const std::basic_string<T>& string, BOOL& value);
@@ -1071,6 +1072,19 @@ void LLStringUtilBase<T>::_makeASCII(std::basic_string<T>& string)
 			string[i] = LL_UNKNOWN_CHAR;
 		}
 	}
+}
+
+template<class T> 
+bool LLStringUtilBase<T>::_isASCII(std::basic_string<T> const& string)
+{
+	size_type const len = string.length();
+	T bit_collector = 0;
+	for (size_type i = 0; i < len; ++i)
+	{
+		bit_collector |= string[i];
+	}
+	T const ascii_bits = 0x7f;
+	return !(bit_collector & ~ascii_bits);
 }
 
 // static

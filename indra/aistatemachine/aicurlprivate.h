@@ -267,6 +267,7 @@ class CurlEasyRequest : public CurlEasyHandle {
   protected:
 	// Pass events to parent.
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
+	/*virtual*/ void decoded_header(AICurlEasyRequest_wat& curl_easy_request_w, std::string const& key, std::string const& value);
 	/*virtual*/ void finished(AICurlEasyRequest_wat& curl_easy_request_w);
 	/*virtual*/ void removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
 };
@@ -292,10 +293,9 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
 	void prepRequest(AICurlEasyRequest_wat& buffered_curl_easy_request_w, std::vector<std::string> const& headers, AICurlInterface::ResponderPtr responder, S32 time_out = 0, bool post = false);
 
 	LLIOPipe::buffer_ptr_t& getInput(void) { return mInput; }
-	std::stringstream& getHeaderOutput(void) { return mHeaderOutput; }
 	LLIOPipe::buffer_ptr_t& getOutput(void) { return mOutput; }
 
-	// Called if libcurl doesn't deliver within CurlRequestTimeOut seconds.
+	// Called if libcurl doesn't deliver within mRequestTimeOut seconds.
 	void timed_out(void);
 
 	// Called after removed_from_multi_handle was called.
@@ -306,16 +306,18 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
 
   protected:
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
+	/*virtual*/ void decoded_header(AICurlEasyRequest_wat& curl_easy_request_w, std::string const& key, std::string const& value);
 	/*virtual*/ void finished(AICurlEasyRequest_wat& curl_easy_request_w);
 	/*virtual*/ void removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
 
   private:
 	LLIOPipe::buffer_ptr_t mInput;
 	U8* mLastRead;										// Pointer into mInput where we last stopped reading (or NULL to start at the beginning).
-	std::stringstream mHeaderOutput;
 	LLIOPipe::buffer_ptr_t mOutput;
 	AICurlInterface::ResponderPtr mResponder;
 	//U32 mBodyLimit;									// From the old LLURLRequestDetail::mBodyLimit, but never used.
+	U32 mStatus;										// HTTP status, decoded from the first header line.
+	std::string mReason;								// The "reason" from the same header line.
 	S32 mRequestTransferedBytes;
 	S32 mResponseTransferedBytes;
 
@@ -333,6 +335,9 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
     static size_t curlWriteCallback(char* data, size_t size, size_t nmemb, void* user_data);
     static size_t curlReadCallback(char* data, size_t size, size_t nmemb, void* user_data);
     static size_t curlHeaderCallback(char* data, size_t size, size_t nmemb, void* user_data);
+
+	// Called from curlHeaderCallback.
+	void setStatusAndReason(U32 status, std::string const& reason) { mStatus = status; mReason = reason; }
 
   public:
 	// Return pointer to the ThreadSafe (wrapped) version of this object.
