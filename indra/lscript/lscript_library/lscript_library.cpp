@@ -469,102 +469,109 @@ void LLScriptLibrary::init()
 
 	addFunction(10.f, 0.f, dummy_func, "llGetEnv", "s", "s");
 	addFunction(10.f, 0.f, dummy_func, "llRegionSayTo", NULL, "kis");
+    
+	// energy, sleep, dummy_func, name, return type, parameters, help text, gods-only
 
-  // Adding missing (more recent) LSL functions.
-
-	addFunction(10.f, 0.f, dummy_func, "llCastRay", "l", "vvl");
-	addFunction(10.f, 0.f, dummy_func, "llGetSPMaxMemory", "i", NULL);
-	addFunction(10.f, 0.f, dummy_func, "llGetUsedMemory", "i", NULL);
-	addFunction(10.f, 0.f, dummy_func, "llGodLikeRezObject", NULL, "kv");
-	addFunction(10.f, 0.f, dummy_func, "llScriptProfiler", NULL, "i");
-	addFunction(10.f, 0.f, dummy_func, "llSetInventoryPermMask", NULL, "sii");
-	addFunction(10.f, 0.f, dummy_func, "llSetObjectPermMask", NULL, "ii");
-	// Even more recent
+	// Server v11.08.10.238207 new functions:
 	addFunction(10.f, 0.f, dummy_func, "llSetMemoryLimit", "i", "i");
+	addFunction(10.f, 0.f, dummy_func, "llGetMemoryLimit", "i", NULL);
 	addFunction(10.f, 0.f, dummy_func, "llSetLinkMedia", "i", "iil");
 	addFunction(10.f, 0.f, dummy_func, "llGetLinkMedia", "l", "iil");
 	addFunction(10.f, 0.f, dummy_func, "llClearLinkMedia", "i", "ii");
 	addFunction(10.f, 0.f, dummy_func, "llSetLinkCamera", NULL, "ivv");
 	addFunction(10.f, 0.f, dummy_func, "llSetContentType", NULL, "ki");
-	addFunction(10.f, 0.f, dummy_func, "llLinkSitTarget", NULL, "ivr");
+	addFunction(10.f, 0.f, dummy_func, "llLinkSitTarget", NULL, "ivq");
 	addFunction(10.f, 0.f, dummy_func, "llAvatarOnLinkSitTarget", "k", "i");
-	addFunction(10.f, 0.f, dummy_func, "llGetMassMKS", "f", NULL);
-	addFunction(10.f, 0.f, dummy_func, "llGetMemoryLimit", "i", NULL);
-	addFunction(10.f, 0.f, dummy_func, "llGetParcelMusicURL", "s", NULL);
-	addFunction(10.f, 0.f, dummy_func, "llGetPhysicsMaterial", "l", NULL);
-	addFunction(10.f, 0.f, dummy_func, "llManageEstateAccess", "i", "ik");
-	addFunction(10.f, 0.f, dummy_func, "llSetAngularVelocity", NULL, "vi");
-	addFunction(10.f, 0.f, dummy_func, "llSetKeyframedMotion", NULL, "ll");
-	addFunction(10.f, 0.f, dummy_func, "llSetPhysicsMaterial", NULL, "iffff");
-	addFunction(10.f, 0.f, dummy_func, "llSetRegionPos", "i", "v");
 	addFunction(10.f, 0.f, dummy_func, "llSetVelocity", NULL, "vi");
+	// Server v11.09.09.240509 new functions:
+	addFunction(10.f, 0.f, dummy_func, "llCastRay", "l", "vvl");
+	addFunction(10.f, 0.f, dummy_func, "llGetMassMKS", "f", NULL);
+	addFunction(10.f, 0.f, dummy_func, "llSetPhysicsMaterial", NULL, "iffff");
+	addFunction(10.f, 0.f, dummy_func, "llGetPhysicsMaterial", "l", NULL);
+	// Server v11.10.18.243270 new functions:
+	addFunction(10.f, 0.f, dummy_func, "llManageEstateAccess", "i", "ik");
+	// Server RC magnum v11.10.31.244254 new function:
+	addFunction(10.f, 0.f, dummy_func, "llSetKeyframedMotion", NULL, "ll");
+	// Server RC Le Tigre v11.10.30.245889 new function:
 	addFunction(10.f, 0.f, dummy_func, "llTransferLindenDollars", "k", "ki");
 
+	// llGenerateKey officially implemented now added
+	addFunction(10.f, 0.f, dummy_func, "llGenerateKey", "k", NULL);
 
-	//Pathfinder functions. Current state: alpha, thus subject to change.
-	//This and the preceding line are to be removed in future revisions of this file.
+	// Server new function 2011-12-13:
+	addFunction(10.f, 0.f, dummy_func, "llGetParcelMusicURL", "s", NULL);
+
+	// Missing script functions as of 2011-12-13
+	addFunction(10.f, 0.f, dummy_func, "llScriptProfiler", NULL, "i");
+	addFunction(10.f, 0.f, dummy_func, "llGetSPMaxMemory", "i", NULL);
+	addFunction(10.f, 0.f, dummy_func, "llGetUsedMemory", "i", NULL);
+	addFunction(10.f, 0.f, dummy_func, "llSetAngularVelocity", NULL, "vi");
+
+	// Server 12.01.24.248357 new functions
+	addFunction(0.f, 0.f, dummy_func, "llSetRegionPos", "i", "v");
+
+	// Server 12.04.13.253827 new function
+	addFunction(0.f, 0.f, dummy_func, "llGetAgentList", "l", "il");
+	
+	// Server RC Magnum 12.05.25.258071 new functions:
+	addFunction(0.f, 0.f, dummy_func, "llAttachToAvatarTemp", NULL, "i");
+	addFunction(0.f, 0.f, dummy_func, "llTeleportAgent", NULL, "ksvv");
+	addFunction(0.f, 0.f, dummy_func, "llTeleportAgentGlobalCoords", NULL, "kvvv");
+
+	// Pathfinding functions
 	addFunction(10.f, 0.f, dummy_func, "llCreateCharacter", NULL, "l");
 	addFunction(10.f, 0.f, dummy_func, "llDeleteCharacter", NULL, NULL);
 	addFunction(10.f, 0.f, dummy_func, "llEvade", NULL, "kl");
 	addFunction(10.f, 0.f, dummy_func, "llExecCharacterCmd", NULL, "il");
-	addFunction(10.f, 0.f, dummy_func, "llGetClosestNavPoint", "l", "vl");
 	addFunction(10.f, 0.f, dummy_func, "llFleeFrom", NULL, "vfl");
+	addFunction(10.f, 0.f, dummy_func, "llGetClosestNavPoint", NULL, "vl");
+	addFunction(10.f, 0.f, dummy_func, "llGetStaticPath", NULL, "vvfl");
 	addFunction(10.f, 0.f, dummy_func, "llNavigateTo", NULL, "vl");
 	addFunction(10.f, 0.f, dummy_func, "llPatrolPoints", NULL, "ll");
 	addFunction(10.f, 0.f, dummy_func, "llPursue", NULL, "kl");
 	addFunction(10.f, 0.f, dummy_func, "llUpdateCharacter", NULL, "l");
-	addFunction(10.f, 0.f, dummy_func, "llWanderWithin", NULL, "vfl");
+	addFunction(10.f, 0.f, dummy_func, "llWanderWithin", NULL, "vvl");
 
-
-
-	// REGARDING OSSL FUNCTIONS
+	// SL-LSL Functions to be added above this line
+	// ---------------------------------------------
+	// NOTE bytecode placement no longer applies, viewers do not compile scripts anymore (confirmed with LL, also noted by Phoenix/Firestorm team.)
+	// REGARDING NON SL-LSL FUNCTIONS (OSSL, aaFunctions, botFunctions)
 	// These additions should be posted underneath the llFunctions
 	// These functions pertain to OpenSimulator and are in no part applicable to SecondLife by Linden Labs
 	// The Current State of these functions are in flux and development is ongoing.  Not all the functions are presently
-	// documented and therefore the description may be incomplete and require further attention.
-	// OpenSimulator is written in C# and not CPP therefore some values for example "double = float" etc. are different.
-
-	// OSSL corrections and syntax additions added + set in same order as found in OSSL_stub.cs of OpenSim Source (Updated PM October-21-2010
-	// based on OpenSimulator Ver. 0.7.x DEV/Master Git # a7acb650d400a280a7b9edabd304376dff9c81af - a7acb65-r/14142
+	// fully documented and therefore the description may be incomplete and require further attention.
+	// OpenSim & Aurora-Sim are written in C# and not CPP therefore some values for example "double = float" etc. are different.
+	//
+	// OSSL corrections and syntax additions added + set initially in same order as found in IOSSL_Api.cs of Aurora-Sim & OpenSim Source
+	// updates added @ end of each subsection for update timeline maint.
 	// Updates by WhiteStar Magic
-	
-	// It should be noted though, that the order of OSSL functions is not important for correct functionality. 
-
-	addFunction(10.f, 0.f, dummy_func, "osSetRegionWaterHeight", NULL, "f");
-	addFunction(10.f, 0.f, dummy_func, "osSetRegionSunSettings", NULL, "iif");
-	addFunction(10.f, 0.f, dummy_func, "osSetEstateSunSettings", NULL, "if");
-	addFunction(10.f, 0.f, dummy_func, "osGetCurrentSunHour", "f", NULL);
-	addFunction(10.f, 0.f, dummy_func, "osSunGetParam","f", "s");  // Deprecated. Use osGetSunParam instead
-	addFunction(10.f, 0.f, dummy_func, "osSunSetParam", "sf", NULL);  // Deprecated. Use osSetSunParam instead
-	addFunction(10.f, 0.f, dummy_func, "osWindActiveModelPluginName", "s", NULL);
-	addFunction(10.f, 0.f, dummy_func, "osParcelJoin", NULL, "vv");
-	addFunction(10.f, 0.f, dummy_func, "osParcelSubdivide", NULL, "vv");
-	addFunction(10.f, 0.f, dummy_func, "osParcelSetDetails", NULL, "vv"); // Deprecated. Use osSetParcelDetails instead.
-	// addFunction(10.f, 0.f, dummy_func, "osWindParamSet", NULL, "ssf"); // This function was renamed before it was implemented. Leaving this in for now.
-	// addFunction(10.f, 0.f, dummy_func, "osWindParamGet", "f", "ss");  // This function was renamed before it was implemented. Leaving this in for now.
-	addFunction(10.f, 0.f, dummy_func, "osList2Double", "f", "li");
+	//
+	// OSSL Functions COMMON to OpenSim & Aurora-Sim 
 	addFunction(10.f, 0.f, dummy_func, "osSetDynamicTextureURL", NULL, "ksssi");
-	addFunction(10.f, 0.f, dummy_func, "osSetDynamicTextureData", NULL, "ksssi");
 	addFunction(10.f, 0.f, dummy_func, "osSetDynamicTextureURLBlend", NULL, "ksssii");
-	addFunction(10.f, 0.f, dummy_func, "osSetDynamicTextureDataBlend", NULL, "ksssii");
 	addFunction(10.f, 0.f, dummy_func, "osSetDynamicTextureURLBlendFace", NULL, "ksssfiiii");
+	addFunction(10.f, 0.f, dummy_func, "osSetDynamicTextureData", NULL, "ksssi");
+	addFunction(10.f, 0.f, dummy_func, "osSetDynamicTextureDataBlend", NULL, "ksssii");
 	addFunction(10.f, 0.f, dummy_func, "osSetDynamicTextureDataBlendFace", NULL, "ksssfiiii");
-	addFunction(10.f, 0.f, dummy_func, "osTerrainGetHeight", "f", "ii");   // Deprecated. Use osGetTerrainHeight instead
-	addFunction(10.f, 0.f, dummy_func, "osTerrainSetHeight", NULL, "iif");   // Deprecated. Use osSetTerrainHeight instead
+	addFunction(10.f, 0.f, dummy_func, "osGetTerrainHeight", "f", "ii");
+	addFunction(10.f, 0.f, dummy_func, "osSetTerrainHeight", NULL, "iif");
 	addFunction(10.f, 0.f, dummy_func, "osTerrainFlush", NULL, NULL);
 	addFunction(10.f, 0.f, dummy_func, "osRegionRestart", "i", "f");
 	addFunction(10.f, 0.f, dummy_func, "osRegionNotice",NULL, "s");
 	addFunction(10.f, 0.f, dummy_func, "osConsoleCommand", NULL, "s");
 	addFunction(10.f, 0.f, dummy_func, "osSetParcelMediaURL", NULL, "s");
-	addFunction(10.f, 0.f, dummy_func, "osSetParcelSIPAddress", NULL, "s");
 	addFunction(10.f, 0.f, dummy_func, "osSetPrimFloatOnWater", NULL, "i");
-	addFunction(10.f, 0.f, dummy_func, "osTeleportAgent", NULL, "ksvv");
+	addFunction(10.f, 0.f, dummy_func, "osSetParcelSIPAddress", NULL, "s");
 	addFunction(10.f, 0.f, dummy_func, "osGetAgentIP", "s", "k");
 	addFunction(10.f, 0.f, dummy_func, "osGetAgents", "l", NULL);
+	addFunction(10.f, 0.f, dummy_func, "osTeleportAgent", NULL, "ksvv");  // Polymorphic
+	addFunction(10.f, 0.f, dummy_func, "osTeleportOwner", NULL, "svv");   // Polymorphic
 	addFunction(10.f, 0.f, dummy_func, "osAvatarPlayAnimation", NULL, "ks");
 	addFunction(10.f, 0.f, dummy_func, "osAvatarStopAnimation", NULL, "ks");
+	addFunction(10.f, 0.f, dummy_func, "osForceAttachToAvatar", NULL, "i");  // May.03.2012
+	addFunction(10.f, 0.f, dummy_func, "osForceDetachFromAvatar", NULL, NULL);  // May.03.2012
 	addFunction(10.f, 0.f, dummy_func, "osMovePen", NULL, "sii");
-	addFunction(10.f, 0.f, dummy_func, "osDrawLine", NULL, "siiii");
+	addFunction(10.f, 0.f, dummy_func, "osDrawLine", NULL, "siiii");      // Polymorphic
 	addFunction(10.f, 0.f, dummy_func, "osDrawText", NULL, "ss");
 	addFunction(10.f, 0.f, dummy_func, "osDrawEllipse", NULL, "sii");
 	addFunction(10.f, 0.f, dummy_func, "osDrawRectangle", NULL, "sii");
@@ -574,14 +581,27 @@ void LLScriptLibrary::init()
 	addFunction(10.f, 0.f, dummy_func, "osSetFontSize", NULL, "si");
 	addFunction(10.f, 0.f, dummy_func, "osSetFontName", NULL, "ss");
 	addFunction(10.f, 0.f, dummy_func, "osSetPenSize", NULL, "si");
+	addFunction(10.f, 0.f, dummy_func, "osSetPenColor", NULL, "ss");
 	addFunction(10.f, 0.f, dummy_func, "osSetPenCap", NULL, "sss");
-	addFunction(10.f, 0.f, dummy_func, "osSetPenColour", NULL, "ss"); // Deprecated. Use osSetPenColor instead
 	addFunction(10.f, 0.f, dummy_func, "osDrawImage", NULL, "siis");
 	addFunction(10.f, 0.f, dummy_func, "osGetDrawStringSize", "v", "sssi");
-	addFunction(10.f, 0.f, dummy_func, "osSetStateEvents", NULL, "i");
+	addFunction(10.f, 0.f, dummy_func, "osList2Double", "f", "li");
+	addFunction(10.f, 0.f, dummy_func, "osSetRegionWaterHeight", NULL, "f");
+	addFunction(10.f, 0.f, dummy_func, "osSetRegionSunSettings", NULL, "iif");
+	addFunction(10.f, 0.f, dummy_func, "osSetEstateSunSettings", NULL, "if");
+	addFunction(10.f, 0.f, dummy_func, "osGetCurrentSunHour", "f", NULL);
+	addFunction(10.f, 0.f, dummy_func, "osGetSunParam","f", "s");
+	addFunction(10.f, 0.f, dummy_func, "osSetSunParam", "sf", NULL);
+	addFunction(10.f, 0.f, dummy_func, "osWindActiveModelPluginName", "s", NULL);
+	addFunction(10.f, 0.f, dummy_func, "osSetWindParam", NULL, "ssf");
+	addFunction(10.f, 0.f, dummy_func, "osGetWindParam", "f", "ss");
+	addFunction(10.f, 0.f, dummy_func, "osParcelJoin", NULL, "vv");
+	addFunction(10.f, 0.f, dummy_func, "osParcelSubdivide", NULL, "vv");
+	addFunction(10.f, 0.f, dummy_func, "osSetParcelDetails", NULL, "vl");
 	addFunction(10.f, 0.f, dummy_func, "osGetScriptEngineName", "s", NULL);
 	addFunction(10.f, 0.f, dummy_func, "osGetSimulatorVersion", "s", NULL);
 	addFunction(10.f, 0.f, dummy_func, "osParseJSON", "s", "s");
+	addFunction(10.f, 0.f, dummy_func, "osParseJSONNew", "s", "s"); // mar.5.2012
 	addFunction(10.f, 0.f, dummy_func, "osMessageObject", NULL, "ks");
 	addFunction(10.f, 0.f, dummy_func, "osMakeNotecard", NULL, "sl");
 	addFunction(10.f, 0.f, dummy_func, "osGetNotecardLine", "s", "si");
@@ -592,16 +612,16 @@ void LLScriptLibrary::init()
 	addFunction(10.f, 0.f, dummy_func, "osGetGridNick", "s", NULL);
 	addFunction(10.f, 0.f, dummy_func, "osGetGridName", "s", NULL);
 	addFunction(10.f, 0.f, dummy_func, "osGetGridLoginURI", "s", NULL);
+	addFunction(10.f, 0.f, dummy_func, "osGetGridHomeURI","s",NULL); // mar.5.2012
+	addFunction(10.f, 0.f, dummy_func, "osGetGridGatekeeperURI", "s", "NULL");  //mar.11.2012
+	addFunction(10.f, 0.f, dummy_func, "osGetGridCustom","s","k"); // mar.5.2012
 	addFunction(10.f, 0.f, dummy_func, "osFormatString", "s", "sl");
 	addFunction(10.f, 0.f, dummy_func, "osMatchString", "l", "ssi");
+	addFunction(10.f, 0.f, dummy_func, "osReplaceString", "s", "sssi"); // mar.5.2012
 	addFunction(10.f, 0.f, dummy_func, "osLoadedCreationDate", "s", NULL);
 	addFunction(10.f, 0.f, dummy_func, "osLoadedCreationTime", "s", NULL);
 	addFunction(10.f, 0.f, dummy_func, "osLoadedCreationID", "s", NULL);
 	addFunction(10.f, 0.f, dummy_func, "osGetLinkPrimitiveParams", "l", "il");
-	addFunction(10.f, 0.f, dummy_func, "osNpcCreate", "k", "ssvk");
-	addFunction(10.f, 0.f, dummy_func, "osNpcMoveTo", NULL, "kv");
-	addFunction(10.f, 0.f, dummy_func, "osNpcSay", NULL, "ks");
-	addFunction(10.f, 0.f, dummy_func, "osNpcRemove", NULL, "k");
 	addFunction(10.f, 0.f, dummy_func, "osGetMapTexture", "k", NULL);
 	addFunction(10.f, 0.f, dummy_func, "osGetRegionMapTexture", "k", "s");
 	addFunction(10.f, 0.f, dummy_func, "osGetRegionStats", "l", NULL);
@@ -613,52 +633,105 @@ void LLScriptLibrary::init()
 	addFunction(10.f, 0.f, dummy_func, "osGetPrimitiveParams", "l", "kl");
 	addFunction(10.f, 0.f, dummy_func, "osSetPrimitiveParams", NULL, "kl");
 	addFunction(10.f, 0.f, dummy_func, "osSetProjectionParams", NULL, "kikfff");
-	addFunction(10.f, 0.f, dummy_func, "osUnixTimeToTimestamp", "s", "i");
-	addFunction(10.f, 0.f, dummy_func, "osSetPenColor", NULL, "ss");
-	addFunction(10.f, 0.f, dummy_func, "osGetSunParam","f", "s");
-	addFunction(10.f, 0.f, dummy_func, "osSetSunParam", NULL, "sf");
-	addFunction(10.f, 0.f, dummy_func, "osSetParcelDetails", NULL, "vl");
-	addFunction(10.f, 0.f, dummy_func, "osGetTerrainHeight", "f", "ii");
-	addFunction(10.f, 0.f, dummy_func, "osSetTerrainHeight", NULL, "iif");
 	addFunction(10.f, 0.f, dummy_func, "osGetAvatarList", "l", NULL);
-	addFunction(10.f, 0.f, dummy_func, "osTeleportOwner", NULL, "svv");
-	addFunction(10.f, 0.f, dummy_func, "osGetWindParam","f", "ss");
-	addFunction(10.f, 0.f, dummy_func, "osSetWindParam", NULL, "ssf");
-	
+	addFunction(10.f, 0.f, dummy_func, "osUnixTimeToTimestamp", "s", "i");
+	addFunction(10.f, 0.f, dummy_func, "osGetInventoryDesc", "s", "s");    //mar.17.2012
+	addFunction(10.f, 0.f, dummy_func, "osInviteToGroup", "i", "k");  // May.03.2012
+	addFunction(10.f, 0.f, dummy_func, "osEjectFromGroup", "i", "k");  // May.03.2012
+	addFunction(10.f, 0.f, dummy_func, "osSetTerrainTexture", NULL, "ik");  // May.03.2012
+	addFunction(10.f, 0.f, dummy_func, "osSetTerrainTextureHeight", NULL, "iff");  // May.03.2012
 
-	// LightShare functions
+//
+// OSSL Functions OpenSim Unique
+	addFunction(10.f, 0.f, dummy_func, "osSetStateEvents", NULL, "i");
+	addFunction(10.f, 0.f, dummy_func, "osIsNpc","i","k"); // mar.5.2012
+	addFunction(10.f, 0.f, dummy_func, "osNpcCreate", "k", "ssvk");
+	addFunction(10.f, 0.f, dummy_func, "osNpcSaveAppearance", NULL, "ks");
+	addFunction(10.f, 0.f, dummy_func, "osNpcLoadAppearance", NULL, "ks");
+	addFunction(10.f, 0.f, dummy_func, "osNpcGetPos","k","k");
+	addFunction(10.f, 0.f, dummy_func, "osNpcMoveTo", NULL, "kv");
+	addFunction(10.f, 0.f, dummy_func, "osNpcMoveToTarget", NULL, "kvi");
+	addFunction(10.f, 0.f, dummy_func, "osNpcGetOwner","k","k"); // mar.5.2012
+	addFunction(10.f, 0.f, dummy_func, "osNpcGetRot", "r", "k");
+	addFunction(10.f, 0.f, dummy_func, "osNpcSetRot", NULL, "kr");
+	addFunction(10.f, 0.f, dummy_func, "osNpcStopMoveToTarget", NULL, "k");
+	addFunction(10.f, 0.f, dummy_func, "osNpcSay", NULL, "ks");
+	addFunction(10.f, 0.f, dummy_func, "osNpcSay", NULL, "kis");  // May.03.2012
+	addFunction(10.f, 0.f, dummy_func, "osNpcSit", NULL, "kki");
+	addFunction(10.f, 0.f, dummy_func, "osNpcStand", NULL, "k");
+	addFunction(10.f, 0.f, dummy_func, "osNpcRemove", NULL, "k");
+	addFunction(10.f, 0.f, dummy_func, "osNpcPlayAnimation",NULL,"ks"); // mar.5.2012
+	addFunction(10.f, 0.f, dummy_func, "osNpcStopAnimation",NULL,"ks"); // mar.5.2012
+	addFunction(10.f, 0.f, dummy_func, "osOwnerSaveAppearance", NULL, "s");
+	addFunction(10.f, 0.f, dummy_func, "osAgentSaveAppearance", NULL, "ks");
+	addFunction(10.f, 0.f, dummy_func, "osNpcShout", NULL, "kis");  // May.03.2012
+	addFunction(10.f, 0.f, dummy_func, "osNpcWhisper", NULL, "kis");  // May.03.2012
+//
+// OSSL Functions Aurora-Sim Unique
+	addFunction(10.f, 0.f, dummy_func, "osReturnObject", NULL, "k");
+	addFunction(10.f, 0.f, dummy_func, "osReturnObjects", NULL, "f");
+	addFunction(10.f, 0.f, dummy_func, "osShutDown", NULL, NULL);
+	addFunction(10.f, 0.f, dummy_func, "osAddAgentToGroup", NULL, "kss");
+	addFunction(10.f, 0.f, dummy_func, "osRezObject", NULL, "svvriiiii");
+//
+// LightShare functions (Careminster Variant)
 	addFunction(10.f, 0.f, dummy_func, "cmSetWindlightScene", "i", "l");
 	addFunction(10.f, 0.f, dummy_func, "cmSetWindlightSceneTargeted", "i", "lk");
 	addFunction(10.f, 0.f, dummy_func, "cmGetWindlightScene", "l", "l");
-	// LightShare functions - alternate versions
-	// don't ask me why they renamed 'em, but we need to include both versions -- MC
+// LightShare functions - alternate versions (os & aa variant)
 	addFunction(10.f, 0.f, dummy_func, "lsSetWindlightScene", "i", "l");
 	addFunction(10.f, 0.f, dummy_func, "lsSetWindlightSceneTargeted", "i", "lk");
 	addFunction(10.f, 0.f, dummy_func, "lsGetWindlightScene", "l", "l");
-
-	// New OSSL functions 08-10-2011
-	addFunction(10.f, 0.f, dummy_func, "osNpcSaveAppearance", "k", "ks");
-	addFunction(10.f, 0.f, dummy_func, "osNpcLoadAppearance", NULL, "ks");
-	addFunction(10.f, 0.f, dummy_func, "osNpcMoveToTarget", NULL, "kvi");
-	addFunction(10.f, 0.f, dummy_func, "osOwnerSaveAppearance", "k", "s");
-
-	// More new stuffs
-	addFunction(10.f, 0.f, dummy_func, "osNpcGetRot", "r", "k");
-	addFunction(10.f, 0.f, dummy_func, "osNpcSetRot", NULL, "kr");
-	addFunction(10.f, 0.f, dummy_func, "osAgentSaveAppearance", "k", "ks");
-	addFunction(10.f, 0.f, dummy_func, "osNpcGetPos", "v", "k");
-	addFunction(10.f, 0.f, dummy_func, "osNpcStopMoveToTarget", NULL, "k");
-
-	addFunction(10.f, 0.f, dummy_func, "osIsNpc", "i", "k");
-	addFunction(10.f, 0.f, dummy_func, "osNpcGetOwner", "k", "k");
-	addFunction(10.f, 0.f, dummy_func, "osGetGridCustom", "s", "s");
-	addFunction(10.f, 0.f, dummy_func, "osGetGridHomeURI", "s", NULL);
-	addFunction(10.f, 0.f, dummy_func, "osNpcPlayAnimation", NULL, "ks");
-	addFunction(10.f, 0.f, dummy_func, "osNpcSit", NULL, "kki");
-	addFunction(10.f, 0.f, dummy_func, "osNpcStand", NULL, "k");
-	addFunction(10.f, 0.f, dummy_func, "osNpcStopAnimation", NULL, "ks");
-	addFunction(10.f, 0.f, dummy_func, "osSetRot", NULL, "kq");
-
+//
+// aaFunctions   Aurora-Sim ONLY
+	addFunction(10.f, 0.f, dummy_func, "aaSetCloudDensity", NULL, "f");
+	addFunction(10.f, 0.f, dummy_func, "aaUpdateDatabase", NULL, "sss");
+	addFunction(10.f, 0.f, dummy_func, "aaQueryDatabase", "l", "ss");
+	addFunction(10.f, 0.f, dummy_func, "aaDeserializeXMLValues", "l", "s");
+	addFunction(10.f, 0.f, dummy_func, "aaDeserializeXMLKeys","l", "s");
+	addFunction(10.f, 0.f, dummy_func, "aaSetConeOfSilence", NULL, "f");
+	addFunction(10.f, 0.f, dummy_func, "aaSerializeXML", "s", "ll");
+	addFunction(10.f, 0.f, dummy_func, "aaGetTeam", "s", "k");
+	addFunction(10.f, 0.f, dummy_func, "aaGetHealth", "f", "k");
+	addFunction(10.f, 0.f, dummy_func, "aaJoinCombat", NULL, "k");
+	addFunction(10.f, 0.f, dummy_func, "aaLeaveCombat", NULL, "k");
+	addFunction(10.f, 0.f, dummy_func, "aaJoinCombatTeam", NULL, "ks");
+	addFunction(10.f, 0.f, dummy_func, "aaRequestCombatPermission", NULL, "s");
+	addFunction(10.f, 0.f, dummy_func, "aaThawAvatar", NULL, "s");
+	addFunction(10.f, 0.f, dummy_func, "aaFreezeAvatar", NULL, "s");
+	addFunction(10.f, 0.f, dummy_func, "aaGetTeamMembers", "l", "s");
+	addFunction(10.f, 0.f, dummy_func, "aaGetLastOwner", "s", NULL);
+	addFunction(10.f, 0.f, dummy_func, "aaSayDistance", NULL, "ifs");
+	addFunction(10.f, 0.f, dummy_func, "aaSayTo", NULL, "ss");
+	addFunction(10.f, 0.f, dummy_func, "aaGetWalkDisabled ", "i", "s");
+	addFunction(10.f, 0.f, dummy_func, "aaSetWalkDisabled", NULL, "si");
+	addFunction(10.f, 0.f, dummy_func, "aaGetFlyDisabled ", "i", "s");
+	addFunction(10.f, 0.f, dummy_func, "aaSetFlyDisabled", NULL, "sf");
+	addFunction(10.f, 0.f, dummy_func, "aaAvatarFullName2Key ", "s", "s");
+	addFunction(10.f, 0.f, dummy_func, "aaRaiseError", NULL, "s");
+	addFunction(10.f, 0.f, dummy_func, "aaGetText ", "s", NULL);
+	addFunction(10.f, 0.f, dummy_func, "aaGetTextColor ", "r", NULL);
+	addFunction(10.f, 0.f, dummy_func, "aaSetEnv ", NULL, "sl");
+	addFunction(10.f, 0.f, dummy_func, "aaGetIsInfiniteRegion", "i", NULL);
+// botFunctions   Aurora-Sim ONLY
+	addFunction(10.f, 0.f, dummy_func, "botGetWaitingTime", "v", "i");
+	addFunction(10.f, 0.f, dummy_func, "botSetMap", NULL, "slii");
+	addFunction(10.f, 0.f, dummy_func, "botCreateBot", "s", "sssv");
+	addFunction(10.f, 0.f, dummy_func, "botRemoveBot", NULL, "s");
+	addFunction(10.f, 0.f, dummy_func, "botPauseMovement", NULL, "s");
+	addFunction(10.f, 0.f, dummy_func, "botResumeMovement", NULL, "s");
+	addFunction(10.f, 0.f, dummy_func, "botFollowAvatar", NULL, "ssff");
+	addFunction(10.f, 0.f, dummy_func, "botStopFollowAvatar", NULL, "s");
+	addFunction(10.f, 0.f, dummy_func, "botSendChatMessage", NULL, "ssii");
+	addFunction(10.f, 0.f, dummy_func, "botSendIM",NULL,"sss");
+	addFunction(10.f, 0.f, dummy_func, "botSetShouldFly", NULL, "si");
+	addFunction(10.f, 0.f, dummy_func, "botSitObject", NULL, "ssv");
+	addFunction(10.f, 0.f, dummy_func, "botStandUp", NULL, "s");
+	addFunction(10.f, 0.f, dummy_func, "botTouchObject", NULL, "ss");
+	addFunction(10.f, 0.f, dummy_func, "botAddTag", NULL, "ss");
+	addFunction(10.f, 0.f, dummy_func, "botGetBotsWithTag", "l", "s");
+	addFunction(10.f, 0.f, dummy_func, "botRemoveBotsWithTag", NULL, "s");
+	// energy, sleep, dummy_func, name, return type, parameters
 }
 
 LLScriptLibraryFunction::LLScriptLibraryFunction(F32 eu, F32 st, void (*exec_func)(LLScriptLibData *, LLScriptLibData *, const LLUUID &), const char *name, const char *ret_type, const char *args, BOOL god_only)
