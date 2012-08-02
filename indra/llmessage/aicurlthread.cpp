@@ -981,9 +981,7 @@ void AICurlThread::wakeup_thread(void)
 
 #if WINDOWS_CODE
   //SGTODO
-  Dout(dc::curl, "ENTERING send()");
   int len = send(mWakeUpFd_in, "!", 1, 0);
-  Dout(dc::curl, "LEAVING send()");
   if (len == SOCKET_ERROR)
   {
 	  llerrs << "Send to wake-up socket failed: " << formatWSAError() << llendl;
