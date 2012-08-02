@@ -132,9 +132,9 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 
 	LL_DEBUGS("AppInit") << "LLAudioEngine_FMODEX::init() initializing FMOD" << LL_ENDL;
 
-	result = FMOD::Memory_Initialize(NULL, 0, &decode_alloc, &decode_realloc, &decode_dealloc, FMOD_MEMORY_STREAM_DECODE | FMOD_MEMORY_STREAM_FILE);
-	if(Check_FMOD_Error(result, "FMOD::Memory_Initialize"))
-		return false;
+	//result = FMOD::Memory_Initialize(NULL, 0, &decode_alloc, &decode_realloc, &decode_dealloc, FMOD_MEMORY_STREAM_DECODE | FMOD_MEMORY_STREAM_FILE);
+	//if(Check_FMOD_Error(result, "FMOD::Memory_Initialize"))
+	//	return false;
 
 	result = FMOD::System_Create(&mSystem);
 	if(Check_FMOD_Error(result, "FMOD::System_Create"))
