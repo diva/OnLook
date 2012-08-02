@@ -254,6 +254,10 @@ extern "C" { int yyerror(const char *fmt, ...); }
 "OBJECT_TOTAL_SCRIPT_COUNT"		{ count(); yylval.ival = OBJECT_TOTAL_SCRIPT_COUNT; return(INTEGER_CONSTANT); }
 "OBJECT_SCRIPT_MEMORY"		{ count(); yylval.ival = OBJECT_SCRIPT_MEMORY; return(INTEGER_CONSTANT); }
 "OBJECT_SCRIPT_TIME"		{ count(); yylval.ival = OBJECT_SCRIPT_TIME; return(INTEGER_CONSTANT); }
+"OBJECT_PRIM_EQUIVALENCE"	{ count(); yylval.ival = OBJECT_PRIM_EQUIVALENCE; return(INTEGER_CONSTANT); }
+"OBJECT_SERVER_COST"	{ count(); yylval.ival = OBJECT_SERVER_COST; return(INTEGER_CONSTANT); }
+"OBJECT_STREAMING_COST"	{ count(); yylval.ival = OBJECT_STREAMING_COST; return(INTEGER_CONSTANT); }
+"OBJECT_PHYSICS_COST"	{ count(); yylval.ival = OBJECT_SCRIPT_TIME; return(INTEGER_CONSTANT); }
 
 "TYPE_INTEGER"			{ count(); yylval.ival = LST_INTEGER; return(INTEGER_CONSTANT); }	
 "TYPE_FLOAT"			{ count(); yylval.ival = LST_FLOATINGPOINT; return(INTEGER_CONSTANT); }	
@@ -347,7 +351,6 @@ extern "C" { int yyerror(const char *fmt, ...); }
 "REMOTE_DATA_REQUEST"	{ count(); yylval.ival = LSL_REMOTE_DATA_REQUEST; return(INTEGER_CONSTANT); }
 "REMOTE_DATA_REPLY"		{ count(); yylval.ival = LSL_REMOTE_DATA_REPLY; return(INTEGER_CONSTANT); }
 
-
 "PSYS_PART_FLAGS"		{ count(); yylval.ival = LLPS_PART_FLAGS; return(INTEGER_CONSTANT); }
 "PSYS_PART_START_COLOR"	{ count(); yylval.ival = LLPS_PART_START_COLOR; return (INTEGER_CONSTANT); }
 "PSYS_PART_START_ALPHA"	{ count(); yylval.ival = LLPS_PART_START_ALPHA; return (INTEGER_CONSTANT); }
@@ -356,7 +359,6 @@ extern "C" { int yyerror(const char *fmt, ...); }
 "PSYS_PART_END_ALPHA"	{ count(); yylval.ival = LLPS_PART_END_ALPHA; return (INTEGER_CONSTANT); }
 "PSYS_PART_END_SCALE"	{ count(); yylval.ival = LLPS_PART_END_SCALE; return (INTEGER_CONSTANT); }
 "PSYS_PART_MAX_AGE"		{ count(); yylval.ival = LLPS_PART_MAX_AGE; return (INTEGER_CONSTANT); }
-
 
 "PSYS_PART_WIND_MASK"				{ count(); yylval.ival = LLPartData::LL_PART_WIND_MASK; return(INTEGER_CONSTANT); }
 "PSYS_PART_INTERP_COLOR_MASK"		{ count(); yylval.ival = LLPartData::LL_PART_INTERP_COLOR_MASK; return(INTEGER_CONSTANT); }
@@ -367,7 +369,6 @@ extern "C" { int yyerror(const char *fmt, ...); }
 "PSYS_PART_TARGET_POS_MASK"			{ count(); yylval.ival = LLPartData::LL_PART_TARGET_POS_MASK; return(INTEGER_CONSTANT); }
 "PSYS_PART_EMISSIVE_MASK"			{ count(); yylval.ival = LLPartData::LL_PART_EMISSIVE_MASK; return(INTEGER_CONSTANT); }
 "PSYS_PART_TARGET_LINEAR_MASK"		{ count(); yylval.ival = LLPartData::LL_PART_TARGET_LINEAR_MASK; return(INTEGER_CONSTANT); }
-
 
 "PSYS_SRC_MAX_AGE"					{ count(); yylval.ival = LLPS_SRC_MAX_AGE; return(INTEGER_CONSTANT); }
 "PSYS_SRC_PATTERN"					{ count(); yylval.ival = LLPS_SRC_PATTERN; return(INTEGER_CONSTANT); }
@@ -393,7 +394,6 @@ extern "C" { int yyerror(const char *fmt, ...); }
 "PSYS_SRC_PATTERN_ANGLE_CONE"		{ count(); yylval.ival = LLPartSysData::LL_PART_SRC_PATTERN_ANGLE_CONE; return(INTEGER_CONSTANT); }
 "PSYS_SRC_PATTERN_ANGLE_CONE_EMPTY"	{ count(); yylval.ival = LLPartSysData::LL_PART_SRC_PATTERN_ANGLE_CONE_EMPTY; return(INTEGER_CONSTANT); }
 
-
 "VEHICLE_TYPE_NONE"		{ count(); yylval.ival = VEHICLE_TYPE_NONE; return(INTEGER_CONSTANT); }
 "VEHICLE_TYPE_SLED"		{ count(); yylval.ival = VEHICLE_TYPE_SLED; return(INTEGER_CONSTANT); }
 "VEHICLE_TYPE_CAR"		{ count(); yylval.ival = VEHICLE_TYPE_CAR; return(INTEGER_CONSTANT); }
@@ -407,8 +407,6 @@ extern "C" { int yyerror(const char *fmt, ...); }
 "VEHICLE_LINEAR_MOTOR_DIRECTION"	{ count(); yylval.ival = VEHICLE_LINEAR_MOTOR_DIRECTION; return(INTEGER_CONSTANT); }
 "VEHICLE_ANGULAR_MOTOR_DIRECTION"	{ count(); yylval.ival = VEHICLE_ANGULAR_MOTOR_DIRECTION; return(INTEGER_CONSTANT); }
 "VEHICLE_LINEAR_MOTOR_OFFSET"	    { count(); yylval.ival = VEHICLE_LINEAR_MOTOR_OFFSET; return(INTEGER_CONSTANT); }
-
-
 
 "VEHICLE_HOVER_HEIGHT"		{ count(); yylval.ival = VEHICLE_HOVER_HEIGHT; return(INTEGER_CONSTANT); }
 "VEHICLE_HOVER_EFFICIENCY"	{ count(); yylval.ival = VEHICLE_HOVER_EFFICIENCY; return(INTEGER_CONSTANT); }
@@ -444,8 +442,6 @@ extern "C" { int yyerror(const char *fmt, ...); }
 "VEHICLE_FLAG_MOUSELOOK_BANK"		{ count(); yylval.ival = VEHICLE_FLAG_MOUSELOOK_BANK; return(INTEGER_CONSTANT); }
 "VEHICLE_FLAG_CAMERA_DECOUPLED"		{ count(); yylval.ival = VEHICLE_FLAG_CAMERA_DECOUPLED; return(INTEGER_CONSTANT); }
 
-
-
 "PRIM_TYPE"				{ count(); yylval.ival = LSL_PRIM_TYPE; return(INTEGER_CONSTANT); }
 "PRIM_MATERIAL"			{ count(); yylval.ival = LSL_PRIM_MATERIAL; return(INTEGER_CONSTANT); }
 "PRIM_PHYSICS"			{ count(); yylval.ival = LSL_PRIM_PHYSICS; return(INTEGER_CONSTANT); }
@@ -463,6 +459,15 @@ extern "C" { int yyerror(const char *fmt, ...); }
 "PRIM_FULLBRIGHT"		{ count(); yylval.ival = LSL_PRIM_FULLBRIGHT; return(INTEGER_CONSTANT); }
 "PRIM_TEXGEN"			{ count(); yylval.ival = LSL_PRIM_TEXGEN; return(INTEGER_CONSTANT); }
 "PRIM_GLOW"	     		{ count(); yylval.ival = LSL_PRIM_GLOW; return(INTEGER_CONSTANT); }
+"PRIM_TEXT"				{ count(); yylval.ival = LSL_PRIM_TEXT; return(INTEGER_CONSTANT); }
+"PRIM_NAME"				{ count(); yylval.ival = LSL_PRIM_NAME; return(INTEGER_CONSTANT); }
+"PRIM_DESC"				{ count(); yylval.ival = LSL_PRIM_DESC; return(INTEGER_CONSTANT); }
+"PRIM_ROT_LOCAL"		{ count(); yylval.ival = LSL_PRIM_ROT_LOCAL; return(INTEGER_CONSTANT); }
+"PRIM_PHYSICS_SHAPE_TYPE" { count(); yylval.ival = LSL_PRIM_PHYSICS_SHAPE_TYPE; return(INTEGER_CONSTANT); }
+"PRIM_OMEGA"			{ count(); yylval.ival = LSL_PRIM_OMEGA; return(INTEGER_CONSTANT); }
+"PRIM_POS_LOCAL"		{ count(); yylval.ival = LSL_PRIM_POS_LOCAL; return(INTEGER_CONSTANT); }
+"PRIM_LINK_TARGET"		{ count(); yylval.ival = LSL_PRIM_LINK_TARGET; return(INTEGER_CONSTANT); }
+"PRIM_SLICE"			{ count(); yylval.ival = LSL_PRIM_SLICE; return(INTEGER_CONSTANT); }
 
 "PRIM_TYPE_BOX"			{ count(); yylval.ival = LSL_PRIM_TYPE_BOX; return(INTEGER_CONSTANT); }
 "PRIM_TYPE_CYLINDER"	{ count(); yylval.ival = LSL_PRIM_TYPE_CYLINDER; return(INTEGER_CONSTANT); }
@@ -521,6 +526,15 @@ extern "C" { int yyerror(const char *fmt, ...); }
 "PRIM_SCULPT_TYPE_MASK" 	{ count(); yylval.ival = LSL_PRIM_SCULPT_TYPE_MASK; return(INTEGER_CONSTANT); }
 "PRIM_SCULPT_FLAG_MIRROR" 	{ count(); yylval.ival = LSL_PRIM_SCULPT_FLAG_MIRROR; return(INTEGER_CONSTANT); }
 "PRIM_SCULPT_FLAG_INVERT" 	{ count(); yylval.ival = LSL_PRIM_SCULPT_FLAG_INVERT; return(INTEGER_CONSTANT); }
+
+"PRIM_PHYSICS_SHAPE_PRIM"   { count(); yylval.ival = LSL_PRIM_PHYSICS_SHAPE_PRIM; return(INTEGER_CONSTANT); }
+"PRIM_PHYSICS_SHAPE_NONE"   { count(); yylval.ival = LSL_PRIM_PHYSICS_SHAPE_NONE; return(INTEGER_CONSTANT); }
+"PRIM_PHYSICS_SHAPE_CONVEX" { count(); yylval.ival = LSL_PRIM_PHYSICS_SHAPE_CONVEX; return(INTEGER_CONSTANT); }
+
+"DENSITY"               { count(); yylval.ival = LSL_DENSITY; return(INTEGER_CONSTANT); }
+"FRICTION"              { count(); yylval.ival = LSL_FRICTION; return(INTEGER_CONSTANT); }
+"RESTITUTION"           { count(); yylval.ival = LSL_RESTITUTION; return(INTEGER_CONSTANT); }
+"GRAVITY_MULTIPLIER"    { count(); yylval.ival = LSL_GRAVITY_MULTIPLIER; return(INTEGER_CONSTANT); }
 
 "MASK_BASE"				{ count(); yylval.ival = 0; return(INTEGER_CONSTANT); }
 "MASK_OWNER"			{ count(); yylval.ival = 1; return(INTEGER_CONSTANT); }
@@ -595,6 +609,7 @@ extern "C" { int yyerror(const char *fmt, ...); }
 "HTTP_BODY_MAXLENGTH" { count(); yylval.ival = HTTP_BODY_MAXLENGTH; return(INTEGER_CONSTANT); }
 "HTTP_BODY_TRUNCATED" { count(); yylval.ival = HTTP_BODY_TRUNCATED; return(INTEGER_CONSTANT); }
 "HTTP_VERIFY_CERT" { count(); yylval.ival = HTTP_VERIFY_CERT; return(INTEGER_CONSTANT); }
+"HTTP_VERBOSE_THROTTLE" { count(); yylval.ival = HTTP_VERBOSE_THROTTLE; return(INTEGER_CONSTANT); }
 
 "PARCEL_COUNT_TOTAL"		{ count(); yylval.ival = OC_TOTAL; return(INTEGER_CONSTANT); }
 "PARCEL_COUNT_OWNER"		{ count(); yylval.ival = OC_OWNER; return(INTEGER_CONSTANT); }
@@ -674,6 +689,54 @@ extern "C" { int yyerror(const char *fmt, ...); }
 "STATUS_NOT_SUPPORTED"               { count(); yylval.ival = LSL_STATUS_NOT_SUPPORTED; return(INTEGER_CONSTANT); }
 "STATUS_INTERNAL_ERROR"              { count(); yylval.ival = LSL_STATUS_INTERNAL_ERROR; return(INTEGER_CONSTANT); }
 "STATUS_WHITELIST_FAILED"            { count(); yylval.ival = LSL_STATUS_WHITELIST_FAILED; return(INTEGER_CONSTANT); }
+
+"PROFILE_SCRIPT_NONE"                { count(); yylval.ival = LSL_PROFILE_SCRIPT_NONE; return(INTEGER_CONSTANT); }
+"PROFILE_SCRIPT_MEMORY"              { count(); yylval.ival = LSL_PROFILE_SCRIPT_MEMORY; return(INTEGER_CONSTANT); }
+
+"CONTENT_TYPE_TEXT"                  { count(); yylval.ival = LSL_CONTENT_TYPE_TEXT; return(INTEGER_CONSTANT); }
+"CONTENT_TYPE_HTML"                  { count(); yylval.ival = LSL_CONTENT_TYPE_HTML; return(INTEGER_CONSTANT); }
+
+"RCERR_UNKNOWN"                      { count(); yylval.ival = LSL_RCERR_UNKNOWN; return(INTEGER_CONSTANT); }
+"RCERR_SIM_PERF_LOW"                 { count(); yylval.ival = LSL_RCERR_SIM_PERF_LOW; return(INTEGER_CONSTANT); }
+"RCERR_CAST_TIME_EXCEEDED"           { count(); yylval.ival = LSL_RCERR_CAST_TIME_EXCEEDED; return(INTEGER_CONSTANT); }
+
+"RC_REJECT_TYPES"                    { count(); yylval.ival = LSL_RC_REJECT_TYPES; return(INTEGER_CONSTANT); }
+"RC_DETECT_PHANTOM"                  { count(); yylval.ival = LSL_RC_DETECT_PHANTOM; return(INTEGER_CONSTANT); }
+"RC_DATA_FLAGS"                      { count(); yylval.ival = LSL_RC_DATA_FLAGS; return(INTEGER_CONSTANT); }
+"RC_MAX_HITS"                        { count(); yylval.ival = LSL_RC_MAX_HITS; return(INTEGER_CONSTANT); }
+
+"RC_REJECT_AGENTS"                   { count(); yylval.ival = LSL_RC_REJECT_AGENTS; return(INTEGER_CONSTANT); }
+"RC_REJECT_PHYSICAL"                 { count(); yylval.ival = LSL_RC_REJECT_PHYSICAL; return(INTEGER_CONSTANT); }
+"RC_REJECT_NONPHYSICAL"              { count(); yylval.ival = LSL_RC_REJECT_NONPHYSICAL; return(INTEGER_CONSTANT); }
+"RC_REJECT_LAND"                     { count(); yylval.ival = LSL_RC_REJECT_LAND; return(INTEGER_CONSTANT); }
+
+"RC_GET_NORMAL"                      { count(); yylval.ival = LSL_RC_GET_NORMAL; return(INTEGER_CONSTANT); }
+"RC_GET_ROOT_KEY"                    { count(); yylval.ival = LSL_RC_GET_ROOT_KEY; return(INTEGER_CONSTANT); }
+"RC_GET_LINK_NUM"                    { count(); yylval.ival = LSL_RC_GET_LINK_NUM; return(INTEGER_CONSTANT); }
+
+"ESTATE_ACCESS_ALLOWED_AGENT_ADD"    { count(); yylval.ival = LSL_ESTATE_ACCESS_ALLOWED_AGENT_ADD; return(INTEGER_CONSTANT); }
+"ESTATE_ACCESS_ALLOWED_AGENT_REMOVE" { count(); yylval.ival = LSL_ESTATE_ACCESS_ALLOWED_AGENT_REMOVE; return(INTEGER_CONSTANT); }
+"ESTATE_ACCESS_ALLOWED_GROUP_ADD"    { count(); yylval.ival = LSL_ESTATE_ACCESS_ALLOWED_GROUP_ADD; return(INTEGER_CONSTANT); }
+"ESTATE_ACCESS_ALLOWED_GROUP_REMOVE" { count(); yylval.ival = LSL_ESTATE_ACCESS_ALLOWED_GROUP_REMOVE; return(INTEGER_CONSTANT); }
+"ESTATE_ACCESS_BANNED_AGENT_ADD"     { count(); yylval.ival = LSL_ESTATE_ACCESS_BANNED_AGENT_ADD; return(INTEGER_CONSTANT); }
+"ESTATE_ACCESS_BANNED_AGENT_REMOVE"  { count(); yylval.ival = LSL_ESTATE_ACCESS_BANNED_AGENT_REMOVE; return(INTEGER_CONSTANT); }
+
+"KFM_COMMAND"		{ count(); yylval.ival = LSL_KFM_COMMAND; return(INTEGER_CONSTANT); }
+"KFM_MODE"			{ count(); yylval.ival = LSL_KFM_MODE; return(INTEGER_CONSTANT); }
+"KFM_DATA"			{ count(); yylval.ival = LSL_KFM_DATA; return(INTEGER_CONSTANT); }
+"KFM_FORWARD"		{ count(); yylval.ival = LSL_KFM_FORWARD; return(INTEGER_CONSTANT); }
+"KFM_LOOP"			{ count(); yylval.ival = LSL_KFM_LOOP; return(INTEGER_CONSTANT); }
+"KFM_PING_PONG"		{ count(); yylval.ival = LSL_KFM_PING_PONG; return(INTEGER_CONSTANT); }
+"KFM_REVERSE"		{ count(); yylval.ival = LSL_KFM_REVERSE; return(INTEGER_CONSTANT); }
+"KFM_ROTATION"		{ count(); yylval.ival = LSL_KFM_ROTATION; return(INTEGER_CONSTANT); }
+"KFM_TRANSLATION"	{ count(); yylval.ival = LSL_KFM_TRANSLATION; return(INTEGER_CONSTANT); }
+"KFM_CMD_PLAY"		{ count(); yylval.ival = LSL_KFM_CMD_PLAY; return(INTEGER_CONSTANT); }
+"KFM_CMD_STOP"		{ count(); yylval.ival = LSL_KFM_CMD_STOP; return(INTEGER_CONSTANT); }
+"KFM_CMD_PAUSE"		{ count(); yylval.ival = LSL_KFM_CMD_PAUSE; return(INTEGER_CONSTANT); }
+
+"AGENT_LIST_PARCEL"         { count(); yylval.ival = 1; return(INTEGER_CONSTANT); }
+"AGENT_LIST_PARCEL_OWNER"   { count(); yylval.ival = 2; return(INTEGER_CONSTANT); }
+"AGENT_LIST_REGION"         { count(); yylval.ival = 4; return(INTEGER_CONSTANT); }
 
 {L}({L}|{N})*		{ count(); yylval.sval = new char[strlen(yytext) + 1]; strcpy(yylval.sval, yytext); return(IDENTIFIER); }
 
