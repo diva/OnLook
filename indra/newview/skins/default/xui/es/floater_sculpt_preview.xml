@@ -1,41 +1,38 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater can_close="true" can_drag_on_left="false" can_minimize="false"
-     can_resize="false" height="550" min_height="140" min_width="300"
-     name="Image Preview" title="" width="550">
-	<text left ="20" bottom_delta="-25" follows="top|left" height="15" name="preview_label" font="SansSerifLarge">
-		Preview image as:
+<floater name="Image Preview" title="">
+	<text name="preview_label">
+		Vista Previa de la imagen como:
 	</text>
-	<combo_box bottom_delta="-8" follows="left|top" height="24" label="Clothing Type"
-	     left="145" name="clothing_type_combo" width="160">
+	<combo_box label="Ropas" name="clothing_type_combo">
 		<combo_item name="Image">
-			Image
+			Imagen
 		</combo_item>
 		<combo_item name="Hair">
-			Hair
+			Pelo
 		</combo_item>
 		<combo_item name="FemaleHead">
-			Female Head
+			Cabeza Femenina
 		</combo_item>
 		<combo_item name="FemaleUpperBody">
-			Female Upper Body
+			Cuerpo Superior Femenino
 		</combo_item>
 		<combo_item name="FemaleLowerBody">
-			Female Lower Body
+			Cuerpo Inferior Femenino
 		</combo_item>
 		<combo_item name="MaleHead">
-			Male Head
+			Cabeza Masculina
 		</combo_item>
 		<combo_item name="MaleUpperBody">
-			Male Upper Body
+			Cuerpo Superior Masculino
 		</combo_item>
 		<combo_item name="MaleLowerBody">
-			Male Lower Body
+			Cuerpo Inferior Masculino
 		</combo_item>
 		<combo_item name="Skirt">
-			Skirt
+			Falda
 		</combo_item>
 		<combo_item name="SculptedPrim">
-			Sculpted Prim
+			Prim Sculpt
 		</combo_item>
 	</combo_box>
 </floater>

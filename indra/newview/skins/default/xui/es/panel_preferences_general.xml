@@ -1,153 +1,153 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="General" name="general_panel">
-	  <radio_group name="default_start_location">
-			 <radio_item name="MyHome" tool_tip="Iniciar sesión de forma predeterminada en Mi Base.">
-					Mi Base
-			 </radio_item>
-			 <radio_item name="MyLastLocation" tool_tip="Iniciar sesión de forma predeterminada en mi última ubicación.">
-					Mi Última Ubicación
-			 </radio_item>
-	  </radio_group>
-	  <check_box label="Mostrar Ubicación Inicial en Inicio de Sesión" name="show_location_checkbox"/>
-	  <combo_box name="fade_out_combobox">
-			 <combo_item name="Never">
-					Nunca
-			 </combo_item>
-			 <combo_item name="Show Temporarily" >
-					Mostrar Temporalmente
-			 </combo_item>
-			 <combo_item name="Always">
-					Siempre
-			 </combo_item>
-	  </combo_box>
-	  <combo_box name="namesystem_combobox">
-			 <combo_item name="Old Names">
-					Nombres Antiguos
-			 </combo_item>
-			 <combo_item name="Display Names (with Username)">
-					Nombres Mostrados (y Usuario)
-			 </combo_item>
-			 <combo_item name="Display Names only">
-					Solamente Nombres Mostrados
-			  </combo_item>
-	  </combo_box>
-	  <check_box label="Nombres de Avatar en pequeño" name="small_avatar_names_checkbox"/>
-	  <check_box label="Ocultar mi Nombre en mi Pantalla" name="show_my_name_checkbox"/>
-	  <text name="group_titles_textbox">
-			 Títulos de Grupo:
-	  </text>
-	  <check_box label="Ocultar todos los Títulos de Grupo" name="show_all_title_checkbox"/>
-	  <check_box label="Ocultar mi Título de Grupo" name="show_my_title_checkbox"/>
-	  <text name="UI Size:">
-			 Tamaño Interface:
-	  </text>
-	  <check_box label="Resolución independiente del tamaño" name="ui_auto_scale"/>
-	  <spinner label="Ausente tras:" name="afk_timeout_spinner"/>
-	  <check_box label="Avisar cuando gasto o recibo dinero" name="notify_money_change_checkbox"/>
-	  <text name="maturity_desired_label">Rating:</text>
-	  <text name="maturity_desired_prompt">
-			 Quiero acceder a contenido 
-	  </text>
-	  <combo_box name="maturity_desired_combobox">
-			 <combo_item name="Desired_Adult">
-					PG, Mature y Adulto
-			 </combo_item>
-			 <combo_item name="Desired_Mature">
-					PG y Mature
-			 </combo_item>
-			 <combo_item name="Desired_PG">
-					Sólo PG
-			 </combo_item>
-	  </combo_box>
-	  <text name="maturity_desired_textbox">
-			 Sólo PG
-	  </text>
-	  <text name="start_location_textbox">
-			 Ubicación Inicial:
-	  </text>
-	  <text name="show_names_textbox">
-			 Mostrar Nombres:
-	  </text>
-	  <text name="seconds_textbox">
-			 segundos
-	  </text>
-	  <text name="crash_report_textbox">
-			 Reportes de fallos:</text>
-	  <text name="language_textbox">
-			 Idioma:
-	  </text>
-	  <text name="language_textbox2">
-			 (Requiere reiniciar para aplicar)
-          *Usar UI en Inglés</text>
-	  <combo_box name="language_combobox">
-			 <combo_item name="System Default Language">
-					Predeterminado del Sistema
-			 </combo_item>
-			 <combo_item name="English">
-					English(Inglés)
-			 </combo_item>		
-			 <!-- After "System Default" and "English", please keep the rest of these combo_items in alphabetical order by the first character in the string.--> 
-			 <combo_item name="Spanish">
-					Español
-			 </combo_item>
-			 <combo_item name="French">
-					Français(Francés)
-			 </combo_item>
-			 <!-- Also, with the above advice in mind, keep completed UI translations above this line.-->
-			 <combo_item name="Danish">
-					Dansk(Danés)*
-			 </combo_item>
-			 <combo_item name="Deutsch(German)">
-					Deutsch(Alemán)*
-			 </combo_item>
-			 <combo_item name="Italian">
-					Italiano(Italiano)*
-			 </combo_item>
-			 <combo_item name="Hungarian">
-					Magyar(Húngaro)*
-			 </combo_item>
-			 <combo_item name="Dutch">
-					Nederlands(Holandés)*
-			 </combo_item>
-			 <combo_item name="Polish">
-					Polski(Polaco)*
-			 </combo_item>
-			 <combo_item name="Portugese">
-					Portugués(Portugués)*
-			 </combo_item>
-			 <combo_item name="Russian">
-					Русский(Ruso)*
-			 </combo_item>
-			 <combo_item name="Turkish">
-					Türkçe(Turco)*
-			 </combo_item>
-			 <combo_item name="Ukrainian">
-					Українська(Ucraniano)*
-			 </combo_item>
-			 <combo_item name="Chinese">
-					中文(简体)(Chino)*
-			 </combo_item>
-			 <combo_item name="(Japanese)">
-					日本語(Japones)*
-			 </combo_item>
-			 <combo_item name="(Korean)">
-					한국어(Coreano)*
-			 </combo_item>
-	  </combo_box>
-	  <string name="region_name_prompt">
-			 &lt;Escribe el nombre de la región&gt;
-	  </string>
-	  <combo_box name="crash_behavior_combobox">
-			 <combo_item name="Askbeforesending">
-					Preguntar antes de enviar
-			 </combo_item>
-			 <combo_item name="Alwayssend">
-					Enviar Siempre
-			 </combo_item>
-			 <combo_item name="Neversend">
-					Nunca Enviar
-			 </combo_item>
-	  </combo_box>
-	  <check_box label="Compartir idioma con los objetos" name="language_is_public" tool_tip="Esta opción le permite a los objetos conocer tu idioma seleccionado."/>
-	  <button label="Reiniciar Configuración" name="clear_settings"/>
+	<radio_group name="default_start_location">
+		<radio_item name="MyHome" tool_tip="Iniciar sesión de forma predeterminada en Mi Base.">
+			Mi Base
+		</radio_item>
+		<radio_item name="MyLastLocation" tool_tip="Iniciar sesión de forma predeterminada en mi última ubicación.">
+			Mi Última Ubicación
+		</radio_item>
+	</radio_group>
+	<check_box label="Mostrar Ubicación Inicial en Inicio de Sesión" name="show_location_checkbox"/>
+	<combo_box name="fade_out_combobox">
+		<combo_item name="Never">
+			Nunca
+		</combo_item>
+		<combo_item name="Show Temporarily" >
+			Mostrar Temporalmente
+		</combo_item>
+		<combo_item name="Always">
+			Siempre
+		</combo_item>
+	</combo_box>
+	<combo_box name="namesystem_combobox">
+		<combo_item name="Old Names">
+			Nombres Antiguos
+		</combo_item>
+		<combo_item name="Display Names (with Username)">
+			Nombres Mostrados (y Usuario)
+		</combo_item>
+		<combo_item name="Display Names only">
+			Solamente Nombres Mostrados
+		</combo_item>
+	</combo_box>
+	<check_box label="Nombres de Avatar en pequeño" name="small_avatar_names_checkbox"/>
+	<check_box label="Ocultar mi Nombre en mi Pantalla" name="show_my_name_checkbox"/>
+	<text name="group_titles_textbox">
+		Títulos de Grupo:
+	</text>
+	<check_box label="Ocultar todos los Títulos de Grupo" name="show_all_title_checkbox"/>
+	<check_box label="Ocultar mi Título de Grupo" name="show_my_title_checkbox"/>
+	<text name="UI Size:">
+		Tamaño Interface:
+	</text>
+	<check_box label="Resolución independiente del tamaño" name="ui_auto_scale"/>
+	<spinner label="Ausente tras:" name="afk_timeout_spinner"/>
+	<check_box label="Avisar cuando gasto o recibo dinero" name="notify_money_change_checkbox"/>
+	<text name="maturity_desired_label">Rating:</text>
+	<text name="maturity_desired_prompt">
+		Quiero acceder a contenido 
+	</text>
+	<combo_box name="maturity_desired_combobox">
+		<combo_item name="Desired_Adult">
+			PG, Mature y Adulto
+		</combo_item>
+		<combo_item name="Desired_Mature">
+			PG y Mature
+		</combo_item>
+		<combo_item name="Desired_PG">
+			Sólo PG
+		</combo_item>
+	</combo_box>
+	<text name="maturity_desired_textbox">
+		Sólo PG
+	</text>
+	<text name="start_location_textbox">
+		Ubicación Inicial:
+	</text>
+	<text name="show_names_textbox">
+		Mostrar Nombres:
+	</text>
+	<text name="seconds_textbox">
+		segundos
+	</text>
+	<text name="crash_report_textbox">
+		Reportes de fallos:</text>
+	<text name="language_textbox">
+		Idioma:
+	</text>
+	<text name="language_textbox2">
+		(Requiere reiniciar para aplicar)
+		*Usar UI en Inglés</text>
+	<combo_box name="language_combobox">
+		<combo_item name="System Default Language">
+			Predeterminado del Sistema
+		</combo_item>
+		<combo_item name="English">
+			English(Inglés)
+		</combo_item>		
+		<!-- After "System Default" and "English", please keep the rest of these combo_items in alphabetical order by the first character in the string.--> 
+		<combo_item name="Spanish">
+			Español
+		</combo_item>
+		<combo_item name="French">
+			Français(Francés)
+		</combo_item>
+		<!-- Also, with the above advice in mind, keep completed UI translations above this line.-->
+		<combo_item name="Danish">
+			Dansk(Danés)*
+		</combo_item>
+		<combo_item name="Deutsch(German)">
+			Deutsch(Alemán)*
+		</combo_item>
+		<combo_item name="Italian">
+			Italiano(Italiano)*
+		</combo_item>
+		<combo_item name="Hungarian">
+			Magyar(Húngaro)*
+		</combo_item>
+		<combo_item name="Dutch">
+			Nederlands(Holandés)*
+		</combo_item>
+		<combo_item name="Polish">
+			Polski(Polaco)*
+		</combo_item>
+		<combo_item name="Portugese">
+			Portugués(Portugués)*
+		</combo_item>
+		<combo_item name="Russian">
+			Русский(Ruso)*
+		</combo_item>
+		<combo_item name="Turkish">
+			Türkçe(Turco)*
+		</combo_item>
+		<combo_item name="Ukrainian">
+			Українська(Ucraniano)*
+		</combo_item>
+		<combo_item name="Chinese">
+			中文(简体)(Chino)*
+		</combo_item>
+		<combo_item name="(Japanese)">
+			日本語(Japones)*
+		</combo_item>
+		<combo_item name="(Korean)">
+			한국어(Coreano)*
+		</combo_item>
+	</combo_box>
+	<string name="region_name_prompt">
+		&lt;Escribe el nombre de la región&gt;
+	</string>
+	<combo_box name="crash_behavior_combobox">
+		<combo_item name="Askbeforesending">
+			Preguntar antes de enviar
+		</combo_item>
+		<combo_item name="Alwayssend">
+			Enviar Siempre
+		</combo_item>
+		<combo_item name="Neversend">
+			Nunca Enviar
+		</combo_item>
+	</combo_box>
+	<check_box label="Compartir idioma con los objetos" name="language_is_public" tool_tip="Esta opción le permite a los objetos conocer tu idioma seleccionado."/>
+	<button label="Reiniciar Configuración" name="clear_settings"/>
 </panel>

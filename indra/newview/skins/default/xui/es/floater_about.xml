@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="floater_about" title="Acerca de Singularity Viewer">
-  <tab_container name="about_tab">
-    <panel label="Información" help_topic="about_support_tab" name="support_panel">
-      <button label="Copiar al portapapeles" name="copy_btn"/>
-    </panel>
+	<tab_container name="about_tab">
+		<panel label="Información" help_topic="about_support_tab" name="support_panel">
+			<button label="Copiar al portapapeles" name="copy_btn"/>
+		</panel>
 
-    <panel label="Créditos" help_topic="about_credits_tab" name="credits_panel">
-      <text_editor name="credits_editor">
+		<panel label="Créditos" help_topic="about_credits_tab" name="credits_panel">
+			<text_editor name="credits_editor">
 Singularity Viewer es desarrollado y mantenido por Siana Gearz, Shyotl Kuhr, Aleric Inglewood, Narv Czervik, Tigh MacFanatic, Inusaito Kanya, Sovereign Engineer y Latif Khalifa, con contribuciones de Fractured Crystal, Fritigern Gothly, Henri Beauchamp, McCabe Maxsted, Kadah Coba, Kitty Barnett, nhede Core, Nomade Zhao, Revolution Smythe, Selvone Franizzi, Thickbrick Sleaford, Zauber Parecelsus, Wolfspirit Magic y otros. Singularity está basado en el código fuente del Visor Ascent. Los créditos del Visor Ascent incluyen a Hg Beeks, Charley Levenque, Hazim Gazov, Zwagoth Klaar, Qarl Fizz, y otros. El Visor Ascent está basado en el código fuente del visor Inertia.
 
 Singularity Viewer incluye código fuente aportado por los siguientes residentes: Able Whitman, Adam Marker, Agathos Frascati, Aimee Trescothick, Alejandro Rosenthal, Aleric Inglewood, Alissa Sabre, Angus Boyd, Ann Congrejo, Argent Stonecutter, Asuka Neely, Balp Allen, Benja Kepler, Biancaluce Robbiani, Blakar Ogre, blino Nakamura, Boroondas Gupte, Bulli Schumann, bushing Spatula, Carjay McGinnis, Catherine Pfeffer, Celierra Darling, Cron Stardust, Dale Glass, Drewan Keats, Dylan Haskell, Dzonatas Sol, Eddy Stryker, EponymousDylan Ra, Eva Nowicka, Farallon Greyskin, Feep Larsson, Flemming Congrejo, Fluf Fredriksson, Fractured Crystal, Fremont Cunningham, Geneko Nemeth, Gigs Taggart, Ginko Bayliss, Grazer Kline, Gudmund Shepherd, Hamncheese Omlet, HappySmurf Papp, Henri Beauchamp, Hikkoshi Sakai, Hiro Sommambulist, Hoze Menges, Ian Kas, Irene Muni, Iskar Ariantho, Jacek Antonelli, JB Kraft, Joghert LeSabre, Kage Pixel, Ken March, Kerutsen Sellery, Khyota Wulluf, Kunnis Basiat, Lisa Lowe, Lockhart Cordoso, 
-maciek marksman, Magnus Balczo, Malwina Dollinger, march Korda, Matthew Dowd, McCabe Maxsted, Michelle2 Zenovka, Mm Alder, Mr Greggan, Nicholaz Beresford, Nounouch Hapmouche, Patric Mills, Paul Churchill, Paula Innis, Peekay Semyorka, Peter Lameth, Pf Shan, princess niven, Renault Clio, Ringo Tuxing, Robin Cornelius, Ryozu Kojima, Salahzar Stenvaag, Sammy Frederix, Scrippy Scofield, Seg Baphomet, Sergen Davies, SignpostMarv Martin, Simon Nolan, SpacedOut Frye, Sporked Friis, Stevex Janus, Still Defiant, Strife Onizuka, Tayra Dagostino, TBBle Kurosawa, Teardrops Fall, tenebrous pau, Tharax Ferraris, Thickbrick Sleaford, Thraxis Epsilon, tiamat bingyi, TraductoresAnonimos Alter, Tue Torok, Vadim Bigbear, Vixen Heron, Whoops Babii, Wilton Lundquist, Zarkonnen Decosta, Zi Ree, Zipherius Turas, Franxisco Romano, Damian Zhaoying
+maciek marksman, Magnus Balczo, Malwina Dollinger, march Korda, Matthew Dowd, McCabe Maxsted, Michelle2 Zenovka, Mm Alder, Mr Greggan, Nicholaz Beresford, Nounouch Hapmouche, Patric Mills, Paul Churchill, Paula Innis, Peekay Semyorka, Peter Lameth, Pf Shan, princess niven, Renault Clio, Ringo Tuxing, Robin Cornelius, Ryozu Kojima, Salahzar Stenvaag, Sammy Frederix, Scrippy Scofield, Seg Baphomet, Sergen Davies, SignpostMarv Martin, Simon Nolan, SpacedOut Frye, Sporked Friis, Stevex Janus, Still Defiant, Strife Onizuka, Tayra Dagostino, TBBle Kurosawa, Teardrops Fall, tenebrous pau, Tharax Ferraris, Thickbrick Sleaford, Thraxis Epsilon, tiamat bingyi, TraductoresAnonimos Alter, Tue Torok, Vadim Bigbear, Vixen Heron, Whoops Babii, Wilton Lundquist, Zarkonnen Decosta, Zi Ree, Zipherius Turas, Damian Zhaoying
 
 Second Life llega a ti gracias a Philip, Tessa, Andrew, Cory, James, Ben, Char, Charlie, Colin, Dan, Daniel, Doug, Eric, Hamlet, Haney, Eve, Hunter, Ian, Jeff, Jennifer, Jim, John, Lee, Mark, Peter, Phoenix, Richard, Robin, Xenon, Steve, Tanya, Eddie, Avi, Frank, Bruce, Aaron, Alice, Bob, Debra, Eileen, Helen, Janet, Louie, Leviathania, Stefan, Ray, Kevin, Tom, Mikeb, MikeT, Burgess, Elena, Tracy, Bill, Todd, Ryan, Zach, Sarah, Nova, Tim, Stephanie, Michael, Evan, Nicolas, Catherine, Rachelle, Dave, Holly, Bub, Kelly, Magellan, Ramzi, Don, Sabin, Jill, Rheya, Jeska, Torley, Kona, Callum, Charity, Ventrella, Jack, Vektor, Iris, Chris, Nicole, Mick, Reuben, Blue, Babbage, Yedwab, Deana, Lauren, Brent, Pathfinder, Chadrick, Altruima, Jesse, Teeny, Monroe, Icculus, David, Tess, Lizzie, Patsy, Isaac, Lawrence, Cyn, Bo, Gia, Annette, Marius, Tbone, Jonathan, Karen, Ginsu, Satoko, Yuko, Makiko, Thomas, Harry, Seth, Alexei, Brian, Guy, Runitai, Ethan, Data, Cornelius, Kenny, Swiss, Zero, Natria, Wendy, Stephen, 
 Teeple, Thumper, Lucy, Dee, Mia, Liana, Warren, Branka, Aura, beez, Milo, Hermia, Red, Thrax, Joe, Sally, Magenta, Mogura, Paul, Jose, Rejean, Henrik, Lexie, Amber, Logan, Xan, Nora, Morpheus, Donovan, Leyla, MichaelFrancis, Beast, Cube, Bucky, Joshua, Stryfe, Harmony, Teresa, Claudia, Walker, Glenn, Fritz, Fordak, June, Cleopetra, Jean, Ivy, Betsy, Roosevelt, Spike, Ken, Which, Tofu, Chiyo, Rob, Zee, dustin, George, Del, Matthew, Cat, Jacqui, Lightfoot, Adrian, Viola, Alfred, Noel, Irfan, Sunil, Yool, Rika, Jane, Xtreme, Frontier, a2, Neo, Siobhan, Yoz, Justin, Elle, Qarl, Benjamin, Isabel, Gulliver, Everett, Christopher, Izzy, Stephany, Garry, Sejong, Sean, Tobin, Iridium, Meta, Anthony, Jeremy, JP, Jake, Maurice, Madhavi, Leopard, Kyle, Joon, Kari, Bert, Belinda, Jon, Kristi, Bridie, Pramod, KJ, Socrates, Maria, Ivan, Aric, Yamasaki, Adreanne, Jay, MitchK, Ceren, Coco, Durl, Jenny, Periapse, Kartic, Storrs, Lotte, Sandy, Rohn, Colossus, Zen, BigPapi, Brad, Pastrami, Kurz, Mani, Neuro, Jaime, MJ, Rowan, 
@@ -19,11 +19,11 @@ Gabriel, Locklainn, Claire, Devin, Minerva, Monty, Austin, Bradford, Si, Keira, 
 
 Linden Lab agradece a los siguientes residentes: able whitman, Adeon Writer, adonaira aabye, Aeron Kohime, Agathos Frascati, Aimee Trescothick, Aleric Inglewood, Alissa Sabre, Aminom Marvin, Angela Talamasca, Aralara Rajal, Armin Weatherwax, Ashrilyn Hayashida, Athanasius Skytower, Aura Dirval, Barney Boomslang, Biancaluce Robbiani, Biker Offcourse, Borg Capalini, Bulli Schumann, catherine pfeffer, Chalice Yao, Corre Porta, Court Goodman, Cummere Mayo, Dale Innis, Darien Caldwell, Darjeeling Schoonhoven, Daten Thielt, dimentox travanti, Dirk Talamasca, Drew Dwi, Duckless Vandyke, Elanthius Flagstaff, Electro Burnstein, emiley tomsen, Escort DeFarge, Eva Rau, Ezian Ecksol, Fire Centaur, Fluf Fredriksson, Francisco Koolhoven, Frontera Thor, Frungi Stastny, Gally Young, gearsawe stonecutter, Gigs Taggart, Gordon Wendt, Gudmund Shepherd, Gypsy Paz, Harleen Gretzky, Henri Beauchamp, Inma Rau, Irene Muni, Iskar Ariantho, Jacek Antonelli, JB Kraft, Jessicka Graves, Joeseph Albanese, Joshua Philgarlic, Khyota 
 Wulluf, kirstenlee Cinquetti, Latif Khalifa, Lex Neva, Lilibeth Andree, Lisa Lowe, Lunita Savira, Loosey Demonia, lum pfohl, Marcos Fonzarelli, MartinRJ Fayray, Marusame Arai, Matthew Dowd, Maya Remblai, McCabe Maxsted, Meghan Dench, Melchoir Tokhes, Menos Short, Michelle2 Zenovka, Mimika Oh, Minerva Memel, Mm Alder, Ochi Wolfe, Omei Turnbull, Pesho Replacement, Phantom Ninetails, phoenixflames kukulcan, Polo Gufler, prez pessoa, princess niven, Prokofy Neva, Qie Niangao, Rem Beattie, RodneyLee Jessop, Saijanai Kuhn, Seg Baphomet, Sergen Davies, Shirley Marquez, SignpostMarv Martin, Sindy Tsure, Sira Arbizu, Skips Jigsaw, Sougent Harrop, Spritely Pixel, Squirrel Wood, StarSong Bright, Subversive Writer, Sugarcult Dagger, Sylumm Grigorovich, Tammy Nowotny, Tanooki Darkes, Tayra Dagostino, Theoretical Chemistry, Thickbrick Sleaford, valerie rosewood, Vex Streeter, Vixen Heron, Whoops Babii, Winter Ventura, Xiki Luik, Yann Dufaux, Yina Yao, Yukinoroh Kamachi, Zolute Infinity, Zwagoth Klaar
-      </text_editor>
-    </panel>
+			</text_editor>
+		</panel>
 
-    <panel label="Licenses" name="licenses_panel">
-      <text_editor name="licenses_editor"> 
+		<panel label="Licenses" name="licenses_panel">
+			<text_editor name="licenses_editor"> 
 3Dconnexion SDK Copyright (C) 1992-2007 3Dconnexion
 APR Copyright (C) 2000-2012 The Apache Software Foundation
 Collada DOM Copyright 2006 Sony Computer Entertainment Inc.
@@ -50,8 +50,8 @@ zlib Copyright (C) 1995-2012 Jean-loup Gailly and Mark Adler.
 All rights reserved.  Ver licenses.txt para mayor información.
 
 Voice chat Audio coding: Polycom(R) Siren14(TM) (ITU-T Rec. G.722.1 Annex C)
-      </text_editor>
-    </panel>
-  </tab_container>  
-  <string name="you_are_at">Estás en [POSITION]</string>
+			</text_editor>
+		</panel>
+	</tab_container>  
+	<string name="you_are_at">Estás en [POSITION]</string>
 </floater>

@@ -1,96 +1,91 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="item properties" title="Propiedades de los Items del Inventario">
-	  <text name="LabelItemNameTitle">
-			 Nombre:
-	  </text>
-	  <line_editor name="name_line"/>
-	  <text name="LabelItemDescTitle">
-			 Descripción:
-	  </text>
-	  <line_editor name="desc_line"/>
-	  <text name="LabelAssetTitle">
-			 Asset:
-	  </text>
-	  <line_editor name="asset_id_line"/>
-	  <text name="LabelCreatorTitle">
-			 Creador:
-	  </text>
-	  <line_editor name="creator_id_line"/>
-	  <text name="LabelOwnerTitle">
-			 Propietario:
-	  </text>
-	  <line_editor name="owner_id_line"/>
-	  <combo_box name="type_combo">
-			 <combo_item name="texture" value="texture">
-					textura
-			 </combo_item>
-			 <combo_item name="sound" value="sound">
-					sonido
-			 </combo_item>
-			 <combo_item name="callcard" value="callcard">
-					tarjeta de llamada
-			 </combo_item>
-			 <combo_item name="landmark" value="landmark">
-					hito
-			 </combo_item>
-			 <combo_item name="script" value="script">
-					script
-			 </combo_item>
-			 <combo_item name="clothing" value="clothing">
-					Ropa
-			 </combo_item>
-			 <combo_item name="object" value="object">
-					objeto
-			 </combo_item>
-			 <combo_item name="notecard" value="notecard">
-					nota
-			 </combo_item>
-			 <combo_item name="category" value="category">
-					categoría
-			 </combo_item>
-			 <combo_item name="root" value="root">
-					raíz
-			 </combo_item>
-			 <combo_item name="lsltext" value="lsltext">
-					lsltext
-			 </combo_item>
-			 <combo_item name="lslbyte" value="lslbyte">
-					lslbyte
-			 </combo_item>
-			 <combo_item name="txtr_tga" value="txtr_tga">
-					txtr_tga
-			 </combo_item>
-			 <combo_item name="bodypart" value="bodypart">
-					parte de cuerpo
-			 </combo_item>
-			 <combo_item name="trash" value="trash">
-					papelera
-			 </combo_item>
-			 <combo_item name="snapshot" value="snapshot">
-					foto
-			 </combo_item>
-			 <combo_item name="lstndfnd" value="lstndfnd">
-					lstndfnd
-			 </combo_item>
-			 <combo_item name="snd_wav" value="snd_wav">
-					snd_wav
-			 </combo_item>
-			 <combo_item name="img_tga" value="img_tga">
-					img_tga
-			 </combo_item>
-			 <combo_item name="jpeg" value="jpeg">
-					jpeg
-			 </combo_item>
-			 <combo_item name="animatn" value="animatn">
-					animación
-			 </combo_item>
-			 <combo_item name="gesture" value="gesture">
-					gesto
-			 </combo_item>
-			 <combo_item name="simstate" value="simstate">
-					simstate
-			 </combo_item>
-	  </combo_box>
-	  <check_box label="Abrir inmediatamente" name="chk_open"/>
-	  <button label="OK" name="ok_btn"/>
+	<text name="LabelItemNameTitle">
+		Nombre:
+	</text>
+	<text name="LabelItemDescTitle">
+		Descripción:
+	</text>
+	<text name="LabelAssetTitle">
+		Asset:
+	</text>
+	<text name="LabelCreatorTitle">
+		Creador:
+	</text>
+	<text name="LabelOwnerTitle">
+		Propietario:
+	</text>
+	<combo_box name="type_combo">
+		<combo_item name="texture">
+			Textura
+		</combo_item>
+		<combo_item name="sound">
+			Sonido
+		</combo_item>
+		<combo_item name="callcard">
+			Tarjeta de llamada
+		</combo_item>
+		<combo_item name="landmark">
+			Hito
+		</combo_item>
+		<combo_item name="script">
+			Script
+		</combo_item>
+		<combo_item name="clothing">
+			Ropa
+		</combo_item>
+		<combo_item name="object">
+			Objeto
+		</combo_item>
+		<combo_item name="notecard">
+			Nota
+		</combo_item>
+		<combo_item name="category">
+			Categoría
+		</combo_item>
+		<combo_item name="root">
+			Raíz
+		</combo_item>
+		<combo_item name="lsltext">
+			lsltext
+		</combo_item>
+		<combo_item name="lslbyte">
+			lslbyte
+		</combo_item>
+		<combo_item name="txtr_tga">
+			txtr_tga
+		</combo_item>
+		<combo_item name="bodypart">
+			Parte de cuerpo
+		</combo_item>
+		<combo_item name="trash">
+			Papelera
+		</combo_item>
+		<combo_item name="snapshot">
+			Foto
+		</combo_item>
+		<combo_item name="lstndfnd">
+			lstndfnd
+		</combo_item>
+		<combo_item name="snd_wav">
+			Sonido_wav
+		</combo_item>
+		<combo_item name="img_tga">
+			Imagen tga
+		</combo_item>
+		<combo_item name="jpeg">
+			jpeg
+		</combo_item>
+		<combo_item name="animatn">
+			Animación
+		</combo_item>
+		<combo_item name="gesture">
+			Gesto
+		</combo_item>
+		<combo_item name="simstate">
+			simstate
+		</combo_item>
+	</combo_box>
+	<check_box label="Abrir inmediatamente" name="chk_open"/>
+	<button label="OK" name="ok_btn"/>
 </floater>

@@ -6,7 +6,7 @@
 				Buscando...
 			</string>
 			<string name="not_found_text">
-				Nada encontrado.
+				Nada hallado.
 			</string>
 			<text name="find">
 				Buscar:
@@ -167,10 +167,10 @@
 					Arte y Cultura
 				</combo_item>
 				<combo_item name="Charity/SupportGroups">
-					Representaciones
+					Grupos de Ayuda y Caridad
 				</combo_item>
 				<combo_item name="Miscellaneous">
-					Miscelaneos
+					Misceláneos
 				</combo_item>
 			</combo_box>
 			<check_box label="Contenido PG" name="incpg"/>
@@ -180,7 +180,7 @@
 			<button label="Borrar" label_selected="Borrar" name="Delete"/>
 			<scroll_list name="results">
 				<column label="Nombre" name="name"/>
-				<column label="Hora (PT)" name="date"/>
+				<column label="Día (PT)" name="date"/>
 				<column label="Hora" name="time"/>
 			</scroll_list>
 			<button label="Siguiente &gt;" label_selected="Siguiente &gt;" name="Next &gt;"/>
@@ -247,8 +247,6 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<text name="areacheck_symbol">
 				m²
 			</text>
-			<line_editor name="priceedit"/>
-			<line_editor name="areaedit"/>
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
 			<scroll_list name="results">
 				<column label="Nombre" name="name"/>
@@ -270,7 +268,6 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<text name="find">
 				  Buscar:
 			</text>
-			<line_editor name="name"/>
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
@@ -380,7 +377,6 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<text name="find">
 				Buscar:
 			</text>
-			<line_editor name="name"/>
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
 			<scroll_list name="results">
 				<column label="Nombre" name="name"/>
@@ -409,7 +405,6 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 				<column label="Nombre" name="name"/>
 				<column label="Miembros" name="members"/>
 			</scroll_list>
-			<text name="result_text"/>
 		</panel>
 	</tab_container>
 	<panel name="Panel Avatar"/>

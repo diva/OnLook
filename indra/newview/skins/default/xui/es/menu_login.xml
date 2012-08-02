@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<menu_bar bottom="-18" drop_shadow="false" enabled="true" follows="left|top|right"
-     height="18" left="0" mouse_opaque="true" name="Login Menu" opaque="true"
-     tear_off="false" width="802">
+<menu_bar name="Login Menu">
 	<menu name="File" label="Archivo" >
 		<menu_item_call name="Quit" label="Salir" >
 			<on_click function="File.Quit" userdata="" />

@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel name="GroupInfoFinder" title="Buscar Infor de Grupo">
-	  <text name="default_needs_apply_text">
-			 Hay cambios sin aplicar en esta pestaña.
-	  </text>
-	  <text name="want_apply_text">
-			 ¿Deseas aplicar estos cambios?
-	  </text>
-	  <tab_container name="group_tab_container">
-			 <panel name="general_tab" />
-			 <panel name="roles_tab" />
-			 <panel name="notices_tab" />
-			 <panel name="voting_tab" />
-			 <panel name="land_money_tab" />
-	  </tab_container>
+	<text name="default_needs_apply_text">
+		Hay cambios sin aplicar en esta pestaña.
+	</text>
+	<text name="want_apply_text">
+		¿Deseas aplicar estos cambios?
+	</text>
+	<tab_container name="group_tab_container">
+		<panel name="general_tab" />
+		<panel name="roles_tab" />
+		<panel name="notices_tab" />
+		<panel name="voting_tab" />
+		<panel name="land_money_tab" />
+	</tab_container>
 </panel>

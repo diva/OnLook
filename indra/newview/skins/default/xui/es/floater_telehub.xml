@@ -1,43 +1,31 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater can_close="true" can_drag_on_left="false" can_minimize="true"
-     can_resize="false" height="250" min_height="220" min_width="83"
-     name="telehub" title="Telehub" width="272">
-	<text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16"
-	     left="10" name="status_text_connected" width="260">
-		Telehub connected to object [OBJECT]
+<floater name="telehub" title="Punto de Teleporte">
+	<text name="status_text_connected">
+		Punto de Teleporte conectado al objeto [OBJECT]
 	</text>
-	<text bottom_delta="0" follows="left|top" font="SansSerifSmall" height="16" left="10"
-	     name="status_text_not_connected" width="200">
-		No telehub connected.
+	<text name="status_text_not_connected">
+		Punto de Teleporte sin conectar.
 	</text>
-	<text bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="20"
-	     left="10" name="help_text_connected" width="260">
-		To remove, click Disconnect.
+	<text name="help_text_connected">
+		Para quitar, pulsa desconectar.
 	</text>
-	<text bottom_delta="0" follows="left|top" font="SansSerifSmall" height="20" left="10"
-	     name="help_text_not_connected" width="260">
-		Select object and click Connect Telehub.
+	<text name="help_text_not_connected">
+		Selecciona el objeto y pulsa Conectar el Punto de Teleporte.
 	</text>
-	<button bottom_delta="-20" follows="top|left" font="SansSerifSmall" height="20"
-	     label="Connect Telehub" left="10" name="connect_btn" width="110" />
-	<button bottom_delta="0" follows="top|left" font="SansSerifSmall" height="20"
-	     label="Disconnect" left="130" name="disconnect_btn" width="110" />
-	<text bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="16"
-	     left="10" name="spawn_points_text" width="200">
-		Spawn Points (positions, not objects):
+	<button label="Conectar el Punto de Teleporte" name="connect_btn"/>
+	<button label="Desconectar" name="disconnect_btn"/>
+	<text name="spawn_points_text">
+		Generar Puntos (posiciones, no objetos):
 	</text>
-	<scroll_list bottom_delta="-60" draw_border="true" follows="left|top" font="SansSerifSmall"
-	     height="60" left="10" multi_select="false" name="spawn_points_list"
-	     width="230" />
-	<button bottom_delta="-25" follows="top|left" font="SansSerifSmall" height="20"
-	     label="Add Spawn" left="10" name="add_spawn_point_btn" width="110" />
-	<button bottom_delta="0" follows="top|left" font="SansSerifSmall" height="20"
-	     label="Remove Spawn" left="130" name="remove_spawn_point_btn" width="110" />
-	<text bottom_delta="-85" follows="top|left" font="SansSerifSmall" height="80"
-	     left="10" name="spawn_point_help" width="260">
-		Select object and click Add to specify position.
-You may then move or delete the object.
-Positions are relative to the telehub center.
-Select item in list to show position in world.
+	<button label="Añadir punto" name="add_spawn_point_btn"/>
+	<button label="Quitar punto" name="remove_spawn_point_btn"/>
+	<text name="spawn_point_help">
+		Selecciona el objeto y pulsa Añadir para
+especificar la posición.
+Hecho eso, puedes mover o borrar el objeto.
+Las posiciones son relativas al centro del
+Punto de Teleporte.
+Selecciona un ítem de la lista para mostrar su
+posición en el mundo.	
 	</text>
 </floater>

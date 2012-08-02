@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <multi_floater name="floater_chatterbox" title="Comunicarse">
-	  <tab_container name="chatterbox_tabs"/>
-</multi_floater>
+	<tab_container name="chatterbox_tabs"/>
+</multi_floater>1
 

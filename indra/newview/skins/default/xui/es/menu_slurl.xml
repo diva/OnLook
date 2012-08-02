@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<menu bottom="100" color="0, 0, 0, 1" drop_shadow="true" height="101" left="100"
-     mouse_opaque="false" name="Popup" opaque="true" width="128">
+<menu name="Popup">
 	<menu_item_separator name="Landmark Separator" />
 	<menu_item_call label="Acerca de la URL" name="about_url" >
 		<on_click filter="" function="Inventory.DoToSelected" userdata="about" />

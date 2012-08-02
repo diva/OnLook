@@ -50,10 +50,10 @@
 			<slider label="" name="noise_strength"/>
 		</panel>
 		<panel label="Extras" name="Extras">
+			<combo_box name="PPEffectsCombo"/>
+			<line_editor label="Nombre del Efecto" name="PPEffectNameEditor"/>		
 			<button label="Cargar Efecto" label_selected="Cargar Efecto" name="PPLoadEffect"/>
 			<button label="Guardar Efecto" label_selected="Guardar Efecto" name="PPSaveEffect"/>
-			<combo_box name="PPEffectsCombo"/>
-			<line_editor label="Nombre del Efecto" name="PPEffectNameEditor"/>
 		</panel>
 	</tab_container>
 </floater>
