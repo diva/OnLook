@@ -387,9 +387,9 @@ public:
 	void diffuseColor4fv(const F32* c);
 	void diffuseColor4ubv(const U8* c);
 
-	void vertexBatchPreTransformed(LLVector3* verts, S32 vert_count);
-	void vertexBatchPreTransformed(LLVector3* verts, LLVector2* uvs, S32 vert_count);
-	void vertexBatchPreTransformed(LLVector3* verts, LLVector2* uvs, LLColor4U*, S32 vert_count);
+	void vertexBatchPreTransformed(LLVector4a* verts, S32 vert_count);
+	void vertexBatchPreTransformed(LLVector4a* verts, LLVector2* uvs, S32 vert_count);
+	void vertexBatchPreTransformed(LLVector4a* verts, LLVector2* uvs, LLColor4U*, S32 vert_count);
 
 	void setColorMask(bool writeColor, bool writeAlpha);
 	void setColorMask(bool writeColorR, bool writeColorG, bool writeColorB, bool writeAlpha);
@@ -449,7 +449,7 @@ private:
 	F32				mCurrAlphaFuncVal;
 
 	LLPointer<LLVertexBuffer>	mBuffer;
-	LLStrider<LLVector3>		mVerticesp;
+	LLStrider<LLVector4a>		mVerticesp;
 	LLStrider<LLVector2>		mTexcoordsp;
 	LLStrider<LLColor4U>		mColorsp;
 	std::vector<LLTexUnit*>		mTexUnits;
@@ -463,8 +463,8 @@ private:
 
 	F32				mMaxAnisotropy;
 
-	std::vector<LLVector3> mUIOffset;
-	std::vector<LLVector3> mUIScale;
+	std::vector<LLVector4a*> mUIOffset;
+	std::vector<LLVector4a*> mUIScale;
 
 };
 

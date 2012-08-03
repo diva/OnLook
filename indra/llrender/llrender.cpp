@@ -1480,9 +1480,8 @@ void LLRender::translateUI(F32 x, F32 y, F32 z)
 		llerrs << "Need to push a UI translation frame before offsetting" << llendl;
 	}
 
-	mUIOffset.back().mV[0] += x;
-	mUIOffset.back().mV[1] += y;
-	mUIOffset.back().mV[2] += z;
+	LLVector4a add(x,y,x);
+	mUIOffset.back()->add(add);
 }
 
 void LLRender::scaleUI(F32 x, F32 y, F32 z)
@@ -1492,27 +1491,28 @@ void LLRender::scaleUI(F32 x, F32 y, F32 z)
 		llerrs << "Need to push a UI transformation frame before scaling." << llendl;
 	}
 
-	mUIScale.back().scaleVec(LLVector3(x,y,z));
+	LLVector4a scale(x,y,z);
+	mUIScale.back()->mul(scale);
 }
 
 void LLRender::pushUIMatrix()
 {
 	if (mUIOffset.empty())
 	{
-		mUIOffset.push_back(LLVector3(0,0,0));
+		mUIOffset.push_back(new LLVector4a(0.f));
 	}
 	else
 	{
-		mUIOffset.push_back(mUIOffset.back());
+		mUIOffset.push_back(new LLVector4a(*mUIOffset.back()));
 	}
 	
 	if (mUIScale.empty())
 	{
-		mUIScale.push_back(LLVector3(1,1,1));
+		mUIScale.push_back(new LLVector4a(1.f));
 	}
 	else
 	{
-		mUIScale.push_back(mUIScale.back());
+		mUIScale.push_back(new LLVector4a(*mUIScale.back()));
 	}
 }
 
@@ -1522,7 +1522,9 @@ void LLRender::popUIMatrix()
 	{
 		llerrs << "UI offset stack blown." << llendl;
 	}
+	delete mUIOffset.back();
 	mUIOffset.pop_back();
+	delete mUIScale.back();
 	mUIScale.pop_back();
 }
 
@@ -1532,7 +1534,7 @@ LLVector3 LLRender::getUITranslation()
 	{
 		return LLVector3(0,0,0);
 	}
-	return mUIOffset.back();
+	return LLVector3(mUIOffset.back()->getF32ptr());
 }
 
 LLVector3 LLRender::getUIScale()
@@ -1541,7 +1543,7 @@ LLVector3 LLRender::getUIScale()
 	{
 		return LLVector3(1,1,1);
 	}
-	return mUIScale.back();
+	return LLVector3(mUIOffset.back()->getF32ptr());
 }
 
 
@@ -1551,8 +1553,8 @@ void LLRender::loadUIIdentity()
 	{
 		llerrs << "Need to push UI translation frame before clearing offset." << llendl;
 	}
-	mUIOffset.back().setVec(0,0,0);
-	mUIScale.back().setVec(1,1,1);
+	mUIOffset.back()->splat(0.f);
+	mUIScale.back()->splat(1.f);
 }
 
 void LLRender::setColorMask(bool writeColor, bool writeAlpha)
@@ -1935,12 +1937,15 @@ void LLRender::vertex3f(const GLfloat& x, const GLfloat& y, const GLfloat& z)
 
 	if (mUIOffset.empty())
 	{
-		mVerticesp[mCount] = LLVector3(x,y,z);
+		mVerticesp[mCount].set(x,y,z);
 	}
 	else
 	{
-		LLVector3 vert = (LLVector3(x,y,z)+mUIOffset.back()).scaledVec(mUIScale.back());
-		mVerticesp[mCount] = vert;
+		//LLVector3 vert = (LLVector3(x,y,z)+mUIOffset.back()).scaledVec(mUIScale.back());
+		LLVector4a& vert = mVerticesp[mCount];
+		vert.set(x,y,z);
+		vert.add(*mUIOffset.back());
+		vert.mul(*mUIScale.back());
 	}
 
 	if (mMode == LLRender::QUADS && LLRender::sGLCoreProfile)
@@ -1968,7 +1973,7 @@ void LLRender::vertex3f(const GLfloat& x, const GLfloat& y, const GLfloat& z)
 	mTexcoordsp[mCount] = mTexcoordsp[mCount-1];	
 }
 
-void LLRender::vertexBatchPreTransformed(LLVector3* verts, S32 vert_count)
+void LLRender::vertexBatchPreTransformed(LLVector4a* verts, S32 vert_count)
 {
 	if (mCount + vert_count > 4094)
 	{
@@ -2025,7 +2030,7 @@ void LLRender::vertexBatchPreTransformed(LLVector3* verts, S32 vert_count)
 	mVerticesp[mCount] = mVerticesp[mCount-1];
 }
 
-void LLRender::vertexBatchPreTransformed(LLVector3* verts, LLVector2* uvs, S32 vert_count)
+void LLRender::vertexBatchPreTransformed(LLVector4a* verts, LLVector2* uvs, S32 vert_count)
 {
 	if (mCount + vert_count > 4094)
 	{
@@ -2083,7 +2088,7 @@ void LLRender::vertexBatchPreTransformed(LLVector3* verts, LLVector2* uvs, S32 v
 	mTexcoordsp[mCount] = mTexcoordsp[mCount-1];
 }
 
-void LLRender::vertexBatchPreTransformed(LLVector3* verts, LLVector2* uvs, LLColor4U* colors, S32 vert_count)
+void LLRender::vertexBatchPreTransformed(LLVector4a* verts, LLVector2* uvs, LLColor4U* colors, S32 vert_count)
 {
 	if (mCount + vert_count > 4094)
 	{
