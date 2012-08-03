@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="General" name="general_panel">
-	<radio_group name="default_start_location">
+	<radio_group name="default_start_location" width="250">
 		<radio_item name="MyHome" tool_tip="Iniciar sesión de forma predeterminada en Mi Base.">
 			Mi Base
 		</radio_item>

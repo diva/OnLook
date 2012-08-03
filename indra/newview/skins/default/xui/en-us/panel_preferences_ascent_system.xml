@@ -120,7 +120,7 @@
       <spinner bottom_delta="60" decimal_digits="0" follows="top" height="16" increment="1" label="Alpha" label_width="45" left_delta="70" max_val="100" min_val="0" name="alpha" width="97" control_name="EmeraldBuildPrefs_Alpha"/>
       <spinner bottom_delta="-20" decimal_digits="2" follows="top" height="16" increment="0.05" label="Glow" label_width="45" max_val="1" min_val="0" name="glow" width="97" control_name="EmeraldBuildPrefs_Glow"/>
       <check_box follows="top" height="16" label="Full Bright" name="EmFBToggle" control_name="EmeraldBuildPrefs_FullBright"/>
-      <text follows="top">Shine</text>
+      <text name="shine" follows="top">Shine</text>
       <combo_box bottom_delta="-5" follows="top" left_delta="33" height="18" name="combobox shininess" tool_tip="Set the amount of shine for the object" width="64" control_name="EmeraldBuildPrefs_Shiny">
         <combo_item name="None" value="None">None</combo_item>
         <combo_item name="Low" value="Low">Low</combo_item>

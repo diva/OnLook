@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel name="region_text_lbl">
+<panel label="Depurador" name="Debug">
+	<text name="region_text_lbl">
 		Región:
 	</text>
 	<text name="region_text">
 		desconocida
 	</text>
-	<check_box label="Disactivar Scripts" name="disable_scripts_check" tool_tip="Desactiva todos los scripts en esta región"/>
+	<check_box label="Desactivar Scripts" name="disable_scripts_check" tool_tip="Desactiva todos los scripts en esta región"/>
 	<button label="?" name="disable_scripts_help"/>
-	<check_box label="Disactivar Colisiones" name="disable_collisions_check" tool_tip="Desactiva las colisiones provocadas por objetos en esta región"/>
+	<check_box label="Desactivar Colisiones" name="disable_collisions_check" tool_tip="Desactiva las colisiones provocadas por objetos en esta región"/>
 	<button label="?" name="disable_collisions_help"/>
 	<check_box label="Desactivar Físicas" name="disable_physics_check" tool_tip="Desactiva todas las propiedades físicas en esta región"/>
 	<button label="?" name="disable_physics_help"/>
