@@ -1655,6 +1655,7 @@ bool LLAppViewer::cleanup()
 	
 	writeDebugInfo();
 
+	LLViewerMedia::saveCookieFile();
 	// Stop the plugin read thread if it's running.
 	LLPluginProcessParent::setUseReadThread(false);
 
