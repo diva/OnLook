@@ -55,6 +55,7 @@
 #include "llvieweraudio.h"
 #include "llweb.h"
 
+#include "llfloateravatarinfo.h"	// for getProfileURL() function
 //#include "viewerversion.h"
 
 // Merov: Temporary definitions while porting the new viewer media code to Snowglobe
@@ -83,11 +84,6 @@ public:
 		completeAny(status, mime_type);
 	}
 
-	virtual void error( U32 status, const std::string& reason )
-	{
-		// completeAny(status, "none/none");
-	}
-
 	void completeAny(U32 status, const std::string& mime_type)
 	{
 		if(!mInitialized && ! mime_type.empty())
@@ -104,9 +100,81 @@ public:
 		viewer_media_t mMediaImpl;
 		bool mInitialized;
 };
+
+class LLViewerMediaOpenIDResponder : public LLHTTPClient::Responder
+{
+LOG_CLASS(LLViewerMediaOpenIDResponder);
+public:
+	LLViewerMediaOpenIDResponder( )
+	{
+	}
+
+	~LLViewerMediaOpenIDResponder()
+	{
+	}
+
+	/* virtual */ void completedHeader(U32 status, const std::string& reason, const LLSD& content)
+	{
+		LL_DEBUGS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
+		LL_DEBUGS("MediaAuth") << content << LL_ENDL;
+		std::string cookie = content["set-cookie"].asString();
+		
+		LLViewerMedia::openIDCookieResponse(cookie);
+	}
+
+	/* virtual */ void completedRaw(
+		U32 status,
+		const std::string& reason,
+		const LLChannelDescriptors& channels,
+		const LLIOPipe::buffer_ptr_t& buffer)
+	{
+		// This is just here to disable the default behavior (attempting to parse the response as llsd).
+		// We don't care about the content of the response, only the set-cookie header.
+	}
+
+};
+
+class LLViewerMediaWebProfileResponder : public LLHTTPClient::Responder
+{
+LOG_CLASS(LLViewerMediaWebProfileResponder);
+public:
+	LLViewerMediaWebProfileResponder(std::string host)
+	{
+		mHost = host;
+	}
+
+	~LLViewerMediaWebProfileResponder()
+	{
+	}
+
+	/* virtual */ void completedHeader(U32 status, const std::string& reason, const LLSD& content)
+	{
+		LL_WARNS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
+		LL_WARNS("MediaAuth") << content << LL_ENDL;
+
+		std::string cookie = content["set-cookie"].asString();
+
+		LLViewerMedia::getCookieStore()->setCookiesFromHost(cookie, mHost);
+	}
+
+	 void completedRaw(
+		U32 status,
+		const std::string& reason,
+		const LLChannelDescriptors& channels,
+		const LLIOPipe::buffer_ptr_t& buffer)
+	{
+		// This is just here to disable the default behavior (attempting to parse the response as llsd).
+		// We don't care about the content of the response, only the set-cookie header.
+	}
+
+	std::string mHost;
+};
+
+LLPluginCookieStore *LLViewerMedia::sCookieStore = NULL;
+LLURL LLViewerMedia::sOpenIDURL;
+std::string LLViewerMedia::sOpenIDCookie;
 typedef std::list<LLViewerMediaImpl*> impl_list;
 static impl_list sViewerMediaImplList;
-LLPluginCookieStore *LLViewerMedia::sCookieStore = NULL;
 static std::string sUpdatedCookies;
 static const char *PLUGIN_COOKIE_FILE_NAME = "plugin_cookies.txt";
 
@@ -370,6 +438,9 @@ void LLViewerMedia::clearAllCookies()
 			LLFile::remove(target);
 		}
 	}
+	
+	// If we have an OpenID cookie, re-add it to the cookie store.
+	setOpenIDCookie();
 }
 	
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -453,6 +524,9 @@ void LLViewerMedia::loadCookieFile()
 			plugin->clear_cookies();
 		}
 	}
+	
+	// If we have an OpenID cookie, re-add it to the cookie store.
+	setOpenIDCookie();
 }
 
 
@@ -522,6 +596,112 @@ void LLViewerMedia::removeCookie(const std::string &name, const std::string &dom
 	// To remove a cookie, add one with the same name, domain, and path that expires in the past.
 	
 	addCookie(name, "", domain, LLDate(LLDate::now().secondsSinceEpoch() - 1.0), path);
+}
+
+
+LLSD LLViewerMedia::getHeaders()
+{
+	LLSD headers = LLSD::emptyMap();
+	headers["Accept"] = "*/*";
+	headers["Content-Type"] = "application/xml";
+	headers["Cookie"] = sOpenIDCookie;
+	headers["User-Agent"] = getCurrentUserAgent();
+
+	return headers;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// static
+void LLViewerMedia::setOpenIDCookie()
+{
+	if(!sOpenIDCookie.empty())
+	{
+		// The LLURL can give me the 'authority', which is of the form: [username[:password]@]hostname[:port]
+		// We want just the hostname for the cookie code, but LLURL doesn't seem to have a way to extract that.
+		// We therefore do it here.
+		std::string authority = sOpenIDURL.mAuthority;
+		std::string::size_type host_start = authority.find('@'); 
+		if(host_start == std::string::npos)
+		{
+			// no username/password
+			host_start = 0;
+		}
+		else
+		{
+			// Hostname starts after the @. 
+			// (If the hostname part is empty, this may put host_start at the end of the string.  In that case, it will end up passing through an empty hostname, which is correct.)
+			++host_start;
+		}
+		std::string::size_type host_end = authority.rfind(':'); 
+		if((host_end == std::string::npos) || (host_end < host_start))
+		{
+			// no port
+			host_end = authority.size();
+		}
+		
+		getCookieStore()->setCookiesFromHost(sOpenIDCookie, authority.substr(host_start, host_end - host_start));
+		
+		// Do a web profile get so we can store the cookie 
+		LLSD headers = LLSD::emptyMap();
+		headers["Accept"] = "*/*";
+		headers["Cookie"] = sOpenIDCookie;
+		headers["User-Agent"] = getCurrentUserAgent();
+
+		std::string profile_url = getProfileURL("");
+		LLURL raw_profile_url( profile_url.c_str() );
+
+		LL_DEBUGS("MediaAuth") << "Requesting " << profile_url << llendl;
+		LL_DEBUGS("MediaAuth") << "sOpenIDCookie = [" << sOpenIDCookie << "]" << llendl;
+		LLHTTPClient::get(profile_url,  
+			new LLViewerMediaWebProfileResponder(raw_profile_url.getAuthority()),
+			headers);
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// static
+void LLViewerMedia::openIDSetup(const std::string &openid_url, const std::string &openid_token)
+{
+	LL_DEBUGS("MediaAuth") << "url = \"" << openid_url << "\", token = \"" << openid_token << "\"" << LL_ENDL;
+
+	// post the token to the url 
+	// the responder will need to extract the cookie(s).
+
+	// Save the OpenID URL for later -- we may need the host when adding the cookie.
+	sOpenIDURL.init(openid_url.c_str());
+	
+	// We shouldn't ever do this twice, but just in case this code gets repurposed later, clear existing cookies.
+	sOpenIDCookie.clear();
+
+	LLSD headers = LLSD::emptyMap();
+	// Keep LLHTTPClient from adding an "Accept: application/llsd+xml" header
+	headers["Accept"] = "*/*";
+	// and use the expected content-type for a post, instead of the LLHTTPClient::postRaw() default of "application/octet-stream"
+	headers["Content-Type"] = "application/x-www-form-urlencoded";
+
+	// postRaw() takes ownership of the buffer and releases it later, so we need to allocate a new buffer here.
+	size_t size = openid_token.size();
+	U8 *data = new U8[size];
+	memcpy(data, openid_token.data(), size);
+
+	LLHTTPClient::postRaw( 
+		openid_url, 
+		data, 
+		size, 
+		new LLViewerMediaOpenIDResponder(),
+		headers);
+			
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// static
+void LLViewerMedia::openIDCookieResponse(const std::string &cookie)
+{
+	LL_DEBUGS("MediaAuth") << "Cookie received: \"" << cookie << "\"" << LL_ENDL;
+	
+	sOpenIDCookie += cookie;
+
+	setOpenIDCookie();
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 // static

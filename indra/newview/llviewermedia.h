@@ -92,8 +92,17 @@ class LLViewerMedia
 	static void addSessionCookie(const std::string &name, const std::string &value, const std::string &domain, const std::string &path = std::string("/"), bool secure = false );
 	static void removeCookie(const std::string &name, const std::string &domain, const std::string &path = std::string("/") );
 	
+	static void openIDSetup(const std::string &openid_url, const std::string &openid_token);
+	static void openIDCookieResponse(const std::string &cookie);
+
+	static LLSD getHeaders();
+
 private:
+	static void setOpenIDCookie();
+
 	static LLPluginCookieStore *sCookieStore;
+	static LLURL sOpenIDURL;
+	static std::string sOpenIDCookie;
 };
 
 // Implementation functions not exported into header file
@@ -104,7 +113,6 @@ class LLViewerMediaImpl
 public:
 
 	friend class LLViewerMedia;
-	friend class LLMimeDiscoveryResponder;
 
 	LLViewerMediaImpl(const std::string& media_url,
 		const LLUUID& texture_id,
@@ -122,9 +130,6 @@ public:
 	bool initializePlugin(const std::string& media_type);
 	LLPluginClassMedia* getMediaPlugin() const { return (LLPluginClassMedia*)mPluginBase; }
 	void setSize(int width, int height);
-
-	// Inherited from LLViewerPluginManager.
-	/*virtual*/ void update();
 
 	void play();
 	void stop();
@@ -155,6 +160,7 @@ public:
 	void scaleMouse(S32 *mouse_x, S32 *mouse_y);
 
 	void updateMovieImage(const LLUUID& image_id, BOOL active);
+	void update();
 	void updateImagesMediaStreams();
 	LLUUID getMediaTextureID();
 	

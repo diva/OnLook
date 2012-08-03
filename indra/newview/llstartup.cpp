@@ -4306,7 +4306,6 @@ bool process_login_success_response(std::string& password)
 #endif
 	}
 
-	
 	// Override grid info with anything sent in the login response
 	std::string tmp = response["gridname"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setGridName(tmp);
@@ -4350,6 +4349,14 @@ bool process_login_success_response(std::string& password)
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setVoiceConnector(tmp);
 	gHippoGridManager->saveFile();
 	gHippoLimits->setLimits();
+
+	// Start the process of fetching the OpenID session cookie for this user login
+	std::string openid_url = response["openid_url"];
+	if(!openid_url.empty())
+	{
+		std::string openid_token = response["openid_token"];
+		LLViewerMedia::openIDSetup(openid_url, openid_token);
+	}
 
 	gIMMgr->loadIgnoreGroup();
 
