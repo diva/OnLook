@@ -740,8 +740,8 @@ class LinuxManifest(ViewerManifest):
         if self.args['buildtype'].lower() in ['release', 'releasesse2']:
             print "* Going strip-crazy on the packaged binaries, since this is a RELEASE build"
             # makes some small assumptions about our packaged dir structure
-            self.run_command("find %(d)r/bin %(d)r/lib* -type f | xargs --no-run-if-empty strip --strip-unneeded" % {'d': self.get_dst_prefix()} )
-            self.run_command("find %(d)r/bin %(d)r/lib* -type f -not -name \\*.so | xargs --no-run-if-empty strip -s" % {'d': self.get_dst_prefix()} )
+            self.run_command("find %(d)r/bin %(d)r/lib* -type f | xargs -d '\n' --no-run-if-empty strip --strip-unneeded" % {'d': self.get_dst_prefix()} )
+            self.run_command("find %(d)r/bin %(d)r/lib* -type f -not -name \\*.so | xargs -d '\n' --no-run-if-empty strip -s" % {'d': self.get_dst_prefix()} )
 
         # Fix access permissions
         self.run_command("""
@@ -837,7 +837,7 @@ class Linux_x86_64Manifest(LinuxManifest):
             self.path("libSDL-1.2.so*")
             self.path("libELFIO.so")
             self.path("libjpeg.so*")
-            self.path("libpng.so*")
+            self.path("libpng*.so*")
             self.path("libz.so*")
 
             # OpenAL
