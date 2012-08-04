@@ -143,6 +143,7 @@
 #include "llfloaterperms.h"
 #include "llfloaterpostprocess.h"
 #include "llfloaterpreference.h"
+#include "llfloaterregiondebugconsole.h"
 #include "llfloaterregioninfo.h"
 #include "llfloaterreporter.h"
 #include "llfloaterscriptdebug.h"
@@ -417,6 +418,21 @@ void handle_god_mode(void*);
 
 // God menu
 void handle_leave_god_mode(void*);
+
+//Generic handler for singleton-based floaters.
+template<typename T>
+BOOL handle_singleton_check(void *)
+{
+	return T::instanceExists();
+}
+template<typename T>
+void handle_singleton_toggle(void *)
+{
+	if(!T::instanceExists())
+		T::getInstance();
+	else
+		T::getInstance()->close();
+}
 
 // <edit>
 void handle_fake_away_status(void*);
@@ -811,7 +827,7 @@ void init_menus()
 	menu->addChild(new LLMenuItemCallGL(	"Asset Blacklist",
 											&handle_blacklist, NULL));
 	menu->addChild(new LLMenuItemCheckGL(  "Streaming Audio Display", 
-											&handle_ticker_toggle, &handle_ticker_enabled, &handle_ticker_check, NULL ));
+											&handle_ticker_toggle, &handle_ticker_enabled, &handle_singleton_check<SHFloaterMediaTicker>, NULL ));
 	
 	
 	
@@ -1282,6 +1298,7 @@ void init_debug_ui_menu(LLMenuGL* menu)
 		(void*)"DoubleClickTeleport"));
 	menu->addSeparator();
 //	menu->addChild(new LLMenuItemCallGL( "Print Packets Lost",			&print_packets_lost, NULL, NULL, 'L', MASK_SHIFT ));
+	menu->addChild(new LLMenuItemCheckGL("Region Debug", handle_singleton_toggle<LLFloaterRegionDebugConsole>, NULL, handle_singleton_check<LLFloaterRegionDebugConsole>,NULL,'`', MASK_CONTROL|MASK_SHIFT));
 	menu->addChild(new LLMenuItemCheckGL("Debug SelectMgr", menu_toggle_control, NULL, menu_check_control, (void*)"DebugSelectMgr"));
 	menu->addChild(new LLMenuItemToggleGL("Debug Clicks", &gDebugClicks));
 	menu->addChild(new LLMenuItemToggleGL("Debug Views", &LLView::sDebugRects));
