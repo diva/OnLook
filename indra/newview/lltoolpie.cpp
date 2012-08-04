@@ -927,7 +927,7 @@ static bool handle_media_click(const LLPickInfo& pick)
 		}
 		else
 		{
-			media_impl->mouseDown(pick.mXYCoords.mX, pick.mXYCoords.mY);
+			media_impl->mouseDown(pick.mXYCoords.mX, pick.mXYCoords.mY, gKeyboard->currentMask(TRUE));
 			media_impl->mouseCapture(); // the mouse-up will happen when capture is lost
 		}
 
@@ -973,7 +973,7 @@ static bool handle_media_hover(const LLPickInfo& pick)
 	{
 		if(LLViewerMediaFocus::getInstance()->getFocus())
 		{
-			media_impl->mouseMove(pick.mXYCoords.mX, pick.mXYCoords.mY);
+			media_impl->mouseMove(pick.mXYCoords.mX, pick.mXYCoords.mY, gKeyboard->currentMask(TRUE));
 		}
 
 		// Set mouse over flag if unset

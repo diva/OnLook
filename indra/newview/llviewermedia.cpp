@@ -52,6 +52,7 @@
 #include "llviewertexture.h"
 #include "llviewertexturelist.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llvieweraudio.h"
 #include "llweb.h"
 
@@ -477,6 +478,8 @@ void LLViewerMedia::setCookiesEnabled(bool enabled)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // static 
+/////////////////////////////////////////////////////////////////////////////////////////
+// static
 LLPluginCookieStore *LLViewerMedia::getCookieStore()
 {
 	if(sCookieStore == NULL)
@@ -640,7 +643,7 @@ void LLViewerMedia::setOpenIDCookie()
 		}
 		
 		getCookieStore()->setCookiesFromHost(sOpenIDCookie, authority.substr(host_start, host_end - host_start));
-		
+
 		// Do a web profile get so we can store the cookie 
 		LLSD headers = LLSD::emptyMap();
 		headers["Accept"] = "*/*";
@@ -740,7 +743,9 @@ LLViewerMediaImpl::LLViewerMediaImpl(const std::string& media_url,
 	mTextureUsedHeight(0),
 	mSuspendUpdates(false),
 	mVisible(true),
-	mClearCache(false)
+	mHasFocus(false),
+	mClearCache(false),
+	mBackgroundColor(LLColor4::white)
 { 
 	createMediaSource();
 }
@@ -813,7 +818,7 @@ LLPluginClassMedia* LLViewerMediaImpl::newSourceFromMediaType(std::string media_
 	
 	if(plugin_basename.empty())
 	{
-		LL_WARNS("Media") << "Couldn't find plugin for media type " << media_type << LL_ENDL;
+		LL_WARNS_ONCE("Media") << "Couldn't find plugin for media type " << media_type << LL_ENDL;
 	}
 	else
 	{
@@ -839,12 +844,12 @@ LLPluginClassMedia* LLViewerMediaImpl::newSourceFromMediaType(std::string media_
 		llstat s;
 		if(LLFile::stat(launcher_name, &s))
 		{
-			LL_WARNS("Media") << "Couldn't find launcher at " << launcher_name << LL_ENDL;
+			LL_WARNS_ONCE("Media") << "Couldn't find launcher at " << launcher_name << LL_ENDL;
 			llassert(false);	// Fail in debugging mode.
 		}
 		else if(LLFile::stat(plugin_name, &s))
 		{
-			LL_WARNS("Media") << "Couldn't find plugin at " << plugin_name << LL_ENDL;
+			LL_WARNS_ONCE("Media") << "Couldn't find plugin at " << plugin_name << LL_ENDL;
 			llassert(false);	// Fail in debugging mode.
 		}
 		else
@@ -915,6 +920,8 @@ bool LLViewerMediaImpl::initializePlugin(const std::string& media_type)
 		media_source->setLoop(mMediaLoop);
 		media_source->setAutoScale(mMediaAutoScale);
 		media_source->setBrowserUserAgent(LLViewerMedia::getCurrentUserAgent());
+		media_source->focus(mHasFocus);
+		media_source->setBackgroundColor(mBackgroundColor);
 
 		if(gSavedSettings.getBOOL("BrowserIgnoreSSLCertErrors"))
 		{
@@ -1046,6 +1053,8 @@ void LLViewerMediaImpl::setVolume(F32 volume)
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::focus(bool focus)
 {
+	mHasFocus = focus;
+
 	LLPluginClassMedia* plugin = getMediaPlugin();
 	if (plugin)
 	{
@@ -1062,6 +1071,12 @@ void LLViewerMediaImpl::focus(bool focus)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
+bool LLViewerMediaImpl::hasFocus() const
+{
+	// FIXME: This might be able to be a bit smarter by hooking into LLViewerMediaFocus, etc.
+	return mHasFocus;
+}
+
 void LLViewerMediaImpl::clearCache()
 {
 	LLPluginClassMedia* plugin = getMediaPlugin();
@@ -1074,8 +1089,9 @@ void LLViewerMediaImpl::clearCache()
 		mClearCache = true;
 	}
 }
+
 //////////////////////////////////////////////////////////////////////////////////////////
-void LLViewerMediaImpl::mouseDown(S32 x, S32 y)
+void LLViewerMediaImpl::mouseDown(S32 x, S32 y, MASK mask, S32 button)
 {
 	LLPluginClassMedia* plugin = getMediaPlugin();
 	scaleMouse(&x, &y);
@@ -1083,12 +1099,12 @@ void LLViewerMediaImpl::mouseDown(S32 x, S32 y)
 	mLastMouseY = y;
 	if (plugin)
 	{
-		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_DOWN, LEFT_BUTTON, x, y, 0);
+		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_DOWN, button, x, y, mask);
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-void LLViewerMediaImpl::mouseUp(S32 x, S32 y)
+void LLViewerMediaImpl::mouseUp(S32 x, S32 y, MASK mask, S32 button)
 {
 	LLPluginClassMedia* plugin = getMediaPlugin();
 	scaleMouse(&x, &y);
@@ -1096,12 +1112,12 @@ void LLViewerMediaImpl::mouseUp(S32 x, S32 y)
 	mLastMouseY = y;
 	if (plugin)
 	{
-		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_UP, LEFT_BUTTON, x, y, 0);
+		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_UP, button, x, y, mask);
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-void LLViewerMediaImpl::mouseMove(S32 x, S32 y)
+void LLViewerMediaImpl::mouseMove(S32 x, S32 y, MASK mask)
 {
 	LLPluginClassMedia* plugin = getMediaPlugin();
 	scaleMouse(&x, &y);
@@ -1109,12 +1125,75 @@ void LLViewerMediaImpl::mouseMove(S32 x, S32 y)
 	mLastMouseY = y;
 	if (plugin)
 	{
-		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_MOVE, LEFT_BUTTON, x, y, 0);
+		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_MOVE, 0, x, y, mask);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//static 
+void LLViewerMediaImpl::scaleTextureCoords(const LLVector2& texture_coords, S32 *x, S32 *y)
+{
+	LLPluginClassMedia* plugin = getMediaPlugin();
+	F32 texture_x = texture_coords.mV[VX];
+	F32 texture_y = texture_coords.mV[VY];
+	
+	// Deal with repeating textures by wrapping the coordinates into the range [0, 1.0)
+	texture_x = fmodf(texture_x, 1.0f);
+	if(texture_x < 0.0f)
+		texture_x = 1.0 + texture_x;
+		
+	texture_y = fmodf(texture_y, 1.0f);
+	if(texture_y < 0.0f)
+		texture_y = 1.0 + texture_y;
+
+	// scale x and y to texel units.
+	*x = llround(texture_x * plugin->getTextureWidth());
+	*y = llround((1.0f - texture_y) * plugin->getTextureHeight());
+
+	// Adjust for the difference between the actual texture height and the amount of the texture in use.
+	*y -= (plugin->getTextureHeight() - plugin->getHeight());
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+void LLViewerMediaImpl::mouseDown(const LLVector2& texture_coords, MASK mask, S32 button)
+{
+	LLPluginClassMedia* plugin = getMediaPlugin();
+	if(plugin)
+	{
+		S32 x, y;
+		scaleTextureCoords(texture_coords, &x, &y);
+
+		mouseDown(x, y, mask, button);
+	}
+}
+
+void LLViewerMediaImpl::mouseUp(const LLVector2& texture_coords, MASK mask, S32 button)
+{
+	LLPluginClassMedia* plugin = getMediaPlugin();
+	if(plugin)
+	{		
+		S32 x, y;
+		scaleTextureCoords(texture_coords, &x, &y);
+
+		mouseUp(x, y, mask, button);
+	}
+}
+
+void LLViewerMediaImpl::mouseMove(const LLVector2& texture_coords, MASK mask)
+{
+	LLPluginClassMedia* plugin = getMediaPlugin();
+	if(plugin)
+	{		
+		S32 x, y;
+		scaleTextureCoords(texture_coords, &x, &y);
+
+		mouseMove(x, y, mask);
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-void LLViewerMediaImpl::mouseLeftDoubleClick(S32 x, S32 y)
+void LLViewerMediaImpl::mouseDoubleClick(S32 x, S32 y, MASK mask, S32 button)
 {
 	LLPluginClassMedia* plugin = getMediaPlugin();
 	scaleMouse(&x, &y);
@@ -1122,7 +1201,20 @@ void LLViewerMediaImpl::mouseLeftDoubleClick(S32 x, S32 y)
 	mLastMouseY = y;
 	if (plugin)
 	{
-		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_DOUBLE_CLICK, LEFT_BUTTON, x, y, 0);
+		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_DOUBLE_CLICK, button, x, y, mask);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+void LLViewerMediaImpl::scrollWheel(S32 x, S32 y, MASK mask)
+{
+	LLPluginClassMedia* plugin = getMediaPlugin();
+	scaleMouse(&x, &y);
+	mLastMouseX = x;
+	mLastMouseY = y;
+	if (plugin)
+	{
+		plugin->scrollEvent(x, y, mask);
 	}
 }
 
@@ -1132,7 +1224,7 @@ void LLViewerMediaImpl::onMouseCaptureLost()
 	LLPluginClassMedia* plugin = getMediaPlugin();
 	if (plugin)
 	{
-		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_UP, LEFT_BUTTON, mLastMouseX, mLastMouseY, 0);
+		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_UP, 0, mLastMouseX, mLastMouseY, 0);
 	}
 }
 
@@ -1150,6 +1242,18 @@ BOOL LLViewerMediaImpl::handleMouseUp(S32 x, S32 y, MASK mask)
 
 	return TRUE; 
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
+const std::string& LLViewerMediaImpl::getName() const 
+{ 
+	LLPluginClassMedia* plugin = getMediaPlugin();
+	if (plugin)
+	{
+		return plugin->getMediaName();
+	}
+	
+	return LLStringUtil::null; 
+};
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::navigateHome()
 {
@@ -1261,7 +1365,7 @@ bool LLViewerMediaImpl::handleKeyHere(KEY key, MASK mask)
 		if(!result)
 		{
 			
-			LLSD native_key_data = LLSD::emptyMap(); 
+			LLSD native_key_data = gViewerWindow->getWindow()->getNativeKeyData();
 			
 			result = plugin->keyEvent(LLPluginClassMedia::KEY_EVENT_DOWN ,key, mask, native_key_data);
 			// Since the viewer internal event dispatching doesn't give us key-up events, simulate one here.
@@ -1284,7 +1388,7 @@ bool LLViewerMediaImpl::handleUnicodeCharHere(llwchar uni_char)
 		if (uni_char >= 32 // discard 'control' characters
 			&& uni_char != 127) // SDL thinks this is 'delete' - yuck.
 		{
-			LLSD native_key_data = LLSD::emptyMap(); 
+			LLSD native_key_data = gViewerWindow->getWindow()->getNativeKeyData();
 			
 			plugin->textInput(wstring_to_utf8str(LLWString(1, uni_char)), gKeyboard->currentMask(FALSE), native_key_data);
 		}
@@ -1367,6 +1471,7 @@ void LLViewerMediaImpl::update()
 			plugin->set_cookies(sUpdatedCookies);
 		}
 	}
+
 	if (!plugin)
 	{
 		return;
@@ -1446,21 +1551,21 @@ void LLViewerMediaImpl::updateImagesMediaStreams()
 	}
 	
 	LLViewerMediaTexture* placeholder_image = (LLViewerMediaTexture*)LLViewerTextureManager::getFetchedTexture( mTextureId );
-	LLPluginClassMedia* plugin = getMediaPlugin();
-
 	placeholder_image->getLastReferencedTimer()->reset();
+
+	LLPluginClassMedia* plugin = getMediaPlugin();
 
 	if (mNeedsNewTexture 
 		|| placeholder_image->getUseMipMaps()
-		|| ! placeholder_image->mIsMediaTexture
+		|| !placeholder_image->mIsMediaTexture
 		|| (placeholder_image->getWidth() != plugin->getTextureWidth())
 		|| (placeholder_image->getHeight() != plugin->getTextureHeight())
 		|| (mTextureUsedWidth != plugin->getWidth())
 		|| (mTextureUsedHeight != plugin->getHeight())
 		)
 	{
-		llinfos << "initializing media placeholder" << llendl;
-		llinfos << "movie image id " << mTextureId << llendl;
+		LL_DEBUGS("Media") << "initializing media placeholder" << LL_ENDL;
+		LL_DEBUGS("Media") << "movie image id " << mTextureId << LL_ENDL;
 
 		int texture_width = plugin->getTextureWidth();
 		int texture_height = plugin->getTextureHeight();
@@ -1474,7 +1579,9 @@ void LLViewerMediaImpl::updateImagesMediaStreams()
 		// MEDIAOPT: seems insane that we actually have to make an imageraw then
 		// immediately discard it
 		LLPointer<LLImageRaw> raw = new LLImageRaw(texture_width, texture_height, texture_depth);
-		raw->clear(0x0f, 0x0f, 0x0f, 0xff);
+		// Clear the texture to the background color, ignoring alpha.
+		// convert background color channels from [0.0, 1.0] to [0, 255];
+		raw->clear(int(mBackgroundColor.mV[VX] * 255.0f), int(mBackgroundColor.mV[VY] * 255.0f), int(mBackgroundColor.mV[VZ] * 255.0f), 0xff);
 		int discard_level = 0;
 
 		// ask media source for correct GL image format constants
@@ -1711,3 +1818,13 @@ LLViewerMediaImpl::canPaste() const
 		return FALSE;
 }
 
+void LLViewerMediaImpl::setBackgroundColor(LLColor4 color)
+{
+	mBackgroundColor = color; 
+
+	LLPluginClassMedia* plugin = getMediaPlugin();
+	if(plugin)
+	{
+		plugin->setBackgroundColor(mBackgroundColor);
+	}
+};
