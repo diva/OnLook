@@ -189,7 +189,16 @@ BOOL LLOverlayBar::postBuild()
 	setFocusRoot(TRUE);
 	mBuilt = true;
 
-	mOriginalIMLabel = getChild<LLButton>("New IM")->getLabelSelected();
+	mChatbarAndButtons.connect(this,"chatbar_and_buttons");
+	mNewIM.connect(this,"New IM");
+	mNotBusy.connect(this,"Set Not Busy");
+	mMouseLook.connect(this,"Mouselook");
+	mStandUp.connect(this,"Stand Up");
+	mFlyCam.connect(this,"Flycam");
+	mChatBar.connect(this,"chat_bar");
+	mVoiceRemoteContainer.connect(this,"voice_remote_container");
+
+	mOriginalIMLabel = mNewIM->getLabelSelected();
 
 	layoutButtons();
 
@@ -203,6 +212,7 @@ BOOL LLOverlayBar::postBuild()
 	childSetVisible("AdvSettings_container_exp", sAdvSettingsPopup);
 	childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));	
 
+
 	return TRUE;
 }
 
@@ -214,6 +224,12 @@ LLOverlayBar::~LLOverlayBar()
 // virtual
 void LLOverlayBar::reshape(S32 width, S32 height, BOOL called_from_parent)
 {
+	S32 delta_width = width - getRect().getWidth();
+	S32 delta_height = height - getRect().getHeight();
+
+	if (!delta_width && !delta_height && !sForceReshape)
+		return;
+
 	LLView::reshape(width, height, called_from_parent);
 
 	if (mBuilt) 
@@ -266,7 +282,7 @@ void LLOverlayBar::refresh()
 
 	BOOL im_received = gIMMgr->getIMReceived();
 	int unread_count = gIMMgr->getIMUnreadCount();
-	LLButton* button = getChild<LLButton>("New IM");
+	LLButton* button = mNewIM;
 
 	if ((button && button->getVisible() != im_received) ||
 			(button && button->getVisible()))
@@ -291,7 +307,7 @@ void LLOverlayBar::refresh()
 	}
 
 	BOOL busy = gAgent.getBusy();
-	button = getChild<LLButton>("Set Not Busy");
+	button = mNotBusy;
 	if (button && button->getVisible() != busy)
 	{
 		button->setVisible(busy);
@@ -301,7 +317,7 @@ void LLOverlayBar::refresh()
 	}
 
 	BOOL flycam = LLViewerJoystick::getInstance()->getOverrideCamera();
-	button = getChild<LLButton>("Flycam");
+	button = mFlyCam;
 	if (button && button->getVisible() != flycam)
 	{
 		button->setVisible(flycam);
@@ -313,7 +329,7 @@ void LLOverlayBar::refresh()
 	BOOL mouselook_grabbed;
 	mouselook_grabbed = gAgent.isControlGrabbed(CONTROL_ML_LBUTTON_DOWN_INDEX)
 		|| gAgent.isControlGrabbed(CONTROL_ML_LBUTTON_UP_INDEX);
-	button = getChild<LLButton>("Mouselook");
+	button = mMouseLook;
 
 	if (button && button->getVisible() != mouselook_grabbed)
 	{
@@ -331,7 +347,7 @@ void LLOverlayBar::refresh()
 		sitting = gAgentAvatarp->isSitting() && !gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT);
 // [/RLVa:KB]
 	}
-	button = getChild<LLButton>("Stand Up");
+	button = mStandUp;
 
 	if (button && button->getVisible() != sitting)
 	{
@@ -355,7 +371,7 @@ void LLOverlayBar::refresh()
 	}
 
 
-	button = getChild<LLButton>("Cancel TP");
+	button = mCancelBtn;
 
 	if (button && button->getVisible() != teleporting)
 	{
@@ -398,11 +414,11 @@ void LLOverlayBar::refresh()
 		}
 	}
 	if(!in_mouselook)
-		childSetVisible("voice_remote_container", LLVoiceClient::voiceEnabled());
+		mVoiceRemoteContainer->setVisible(LLVoiceClient::voiceEnabled());
 
 	// always let user toggle into and out of chatbar
 	static const LLCachedControl<bool> chat_visible("ChatVisible",true);
-	childSetVisible("chat_bar", chat_visible);
+	mChatBar->setVisible(chat_visible);
 
 	if (buttons_changed)
 	{

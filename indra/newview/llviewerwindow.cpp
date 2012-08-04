@@ -3094,7 +3094,7 @@ void LLViewerWindow::updateUI()
 		}
 
 		// snap floaters to top of chat bar/button strip
-		LLView* chatbar_and_buttons = gOverlayBar->getChild<LLView>("chatbar_and_buttons", TRUE);
+		LLView* chatbar_and_buttons = gOverlayBar->getChatbarAndButtons();
 		// find top of chatbar and state buttons, if either are visible
 		if (chatbar_and_buttons && chatbar_and_buttons->getLocalBoundingRect().notEmpty())
 		{

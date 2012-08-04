@@ -44,6 +44,8 @@ extern S32 TOOL_BAR_HEIGHT;
 	class LLFakeResizeHandle;
 #endif // LL_DARWIN
 
+class LLFlyoutButton;
+
 class LLToolBar
 :	public LLPanel
 {
@@ -97,6 +99,13 @@ private:
 #if LL_DARWIN
 	LLFakeResizeHandle *mResizeHandle;
 #endif // LL_DARWIN
+
+	CachedUICtrl<LLFlyoutButton> mCommunicateBtn;
+	CachedUICtrl<LLButton> mFlyBtn;
+	CachedUICtrl<LLButton> mBuildBtn;
+	CachedUICtrl<LLButton> mMapBtn;
+	CachedUICtrl<LLButton> mRadarBtn;
+	CachedUICtrl<LLButton> mInventoryBtn;
 };
 
 extern LLToolBar *gToolBar;

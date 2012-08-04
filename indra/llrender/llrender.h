@@ -364,12 +364,14 @@ public:
 
 	void begin(const GLuint& mode);
 	void end();
-	void vertex2i(const GLint& x, const GLint& y);
-	void vertex2f(const GLfloat& x, const GLfloat& y);
-	void vertex3f(const GLfloat& x, const GLfloat& y, const GLfloat& z);
-	void vertex2fv(const GLfloat* v);
-	void vertex3fv(const GLfloat* v);
-	
+
+	LL_FORCE_INLINE void vertex2i(const GLint& x, const GLint& y) { vertex4a(LLVector4a((GLfloat)x,(GLfloat)y,0.f)); }
+	LL_FORCE_INLINE void vertex2f(const GLfloat& x, const GLfloat& y) { vertex4a(LLVector4a(x,y,0.f)); }
+	LL_FORCE_INLINE void vertex3f(const GLfloat& x, const GLfloat& y, const GLfloat& z) { vertex4a(LLVector4a(x,y,z)); }
+	LL_FORCE_INLINE void vertex2fv(const GLfloat* v) { vertex4a(LLVector4a(v[0],v[1],0.f)); }
+	LL_FORCE_INLINE void vertex3fv(const GLfloat* v) { vertex4a(LLVector4a(v[0],v[1],v[2])); }
+	void vertex4a(const LLVector4a& v);
+
 	void texCoord2i(const GLint& x, const GLint& y);
 	void texCoord2f(const GLfloat& x, const GLfloat& y);
 	void texCoord2fv(const GLfloat* tc);

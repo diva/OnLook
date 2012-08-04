@@ -1915,7 +1915,7 @@ void LLRender::flush()
 	}
 }
 
-void LLRender::vertex3f(const GLfloat& x, const GLfloat& y, const GLfloat& z)
+void LLRender::vertex4a(const LLVector4a& vertex)
 { 
 	//the range of mVerticesp, mColorsp and mTexcoordsp is [0, 4095]
 	if (mCount > 2048)
@@ -1937,15 +1937,13 @@ void LLRender::vertex3f(const GLfloat& x, const GLfloat& y, const GLfloat& z)
 
 	if (mUIOffset.empty())
 	{
-		mVerticesp[mCount].set(x,y,z);
+		mVerticesp[mCount]=vertex;
 	}
 	else
 	{
 		//LLVector3 vert = (LLVector3(x,y,z)+mUIOffset.back()).scaledVec(mUIScale.back());
-		LLVector4a& vert = mVerticesp[mCount];
-		vert.set(x,y,z);
-		vert.add(*mUIOffset.back());
-		vert.mul(*mUIScale.back());
+		mVerticesp[mCount].setAdd(vertex,*mUIOffset.back());
+		mVerticesp[mCount].mul(*mUIScale.back());
 	}
 
 	if (mMode == LLRender::QUADS && LLRender::sGLCoreProfile)
@@ -2146,26 +2144,6 @@ void LLRender::vertexBatchPreTransformed(LLVector4a* verts, LLVector2* uvs, LLCo
 	mVerticesp[mCount] = mVerticesp[mCount-1];
 	mTexcoordsp[mCount] = mTexcoordsp[mCount-1];
 	mColorsp[mCount] = mColorsp[mCount-1];
-}
-
-void LLRender::vertex2i(const GLint& x, const GLint& y)
-{
-	vertex3f((GLfloat) x, (GLfloat) y, 0);	
-}
-
-void LLRender::vertex2f(const GLfloat& x, const GLfloat& y)
-{ 
-	vertex3f(x,y,0);
-}
-
-void LLRender::vertex2fv(const GLfloat* v)
-{ 
-	vertex3f(v[0], v[1], 0);
-}
-
-void LLRender::vertex3fv(const GLfloat* v)
-{
-	vertex3f(v[0], v[1], v[2]);
 }
 
 void LLRender::texCoord2f(const GLfloat& x, const GLfloat& y)

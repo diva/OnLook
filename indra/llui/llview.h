@@ -187,6 +187,15 @@ public:
 
 	void initFromParams(const LLView::Params&);
 
+	template<typename T>
+	struct CachedUICtrl
+	{
+		CachedUICtrl():mPtr(NULL){}
+		T* connect(LLView* parent,const char* pName){return mPtr = parent->getChild<T>(pName);}
+		T* operator->(){return mPtr;}
+		operator T*() const{return mPtr;}
+		T* mPtr;
+	};
 protected:
 	LLView(const LLView::Params&);
 	//friend class LLUICtrlFactory;
