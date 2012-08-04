@@ -2293,50 +2293,6 @@ void LLSelectMgr::packObjectIDAsParam(LLSelectNode* node, void *)
 }
 
 //-----------------------------------------------------------------------------
-// Rotation options
-//-----------------------------------------------------------------------------
-void LLSelectMgr::selectionResetRotation()
-{
-	struct f : public LLSelectedObjectFunctor
-	{
-		virtual bool apply(LLViewerObject* object)
-		{
-			LLQuaternion identity(0.f, 0.f, 0.f, 1.f);
-			object->setRotation(identity);
-			if (object->mDrawable.notNull())
-			{
-				gPipeline.markMoved(object->mDrawable, TRUE);
-			}
-			object->sendRotationUpdate();
-			return true;
-		}
-	} func;
-	getSelection()->applyToRootObjects(&func);
-}
-
-void LLSelectMgr::selectionRotateAroundZ(F32 degrees)
-{
-	LLQuaternion rot( degrees * DEG_TO_RAD, LLVector3(0,0,1) );
-	struct f : public LLSelectedObjectFunctor
-	{
-		LLQuaternion mRot;
-		f(const LLQuaternion& rot) : mRot(rot) {}
-		virtual bool apply(LLViewerObject* object)
-		{
-			object->setRotation( object->getRotationEdit() * mRot );
-			if (object->mDrawable.notNull())
-			{
-				gPipeline.markMoved(object->mDrawable, TRUE);
-			}
-			object->sendRotationUpdate();
-			return true;
-		}
-	} func(rot);
-	getSelection()->applyToRootObjects(&func);	
-}
-
-
-//-----------------------------------------------------------------------------
 // selectionTexScaleAutofit()
 //-----------------------------------------------------------------------------
 void LLSelectMgr::selectionTexScaleAutofit(F32 repeats_per_meter)
@@ -4199,13 +4155,6 @@ void LLSelectMgr::selectionUpdatePhantom(BOOL is_phantom)
 	LLSelectMgrApplyFlags func(	FLAGS_PHANTOM, is_phantom);
 	getSelection()->applyToObjects(&func);	
 }
-
-void LLSelectMgr::selectionUpdateCastShadows(BOOL cast_shadows)
-{
-	LLSelectMgrApplyFlags func(	FLAGS_CAST_SHADOWS, cast_shadows);
-	getSelection()->applyToObjects(&func);	
-}
-
 
 //----------------------------------------------------------------------
 // Helpful packing functions for sendObjectMessage()

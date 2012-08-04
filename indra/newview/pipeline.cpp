@@ -3132,7 +3132,7 @@ void renderPhysicalBeacons(LLDrawable* drawablep)
 	if (vobj 
 		&& !vobj->isAvatar() 
 		//&& !vobj->getParent()
-		&& vobj->usePhysics())
+		&& vobj->flagUsePhysics())
 	{
 		if (gPipeline.sRenderBeacons)
 		{

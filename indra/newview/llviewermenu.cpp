@@ -564,7 +564,6 @@ BOOL get_visibility(void*);
 void request_friendship(const LLUUID& agent_id);
 
 // Tools menu
-void handle_force_unlock(void*);
 void handle_selected_texture_info(void*);
 void handle_dump_image_list(void*);
 
@@ -6335,30 +6334,6 @@ void dump_select_mgr(void*)
 void dump_inventory(void*)
 {
 	gInventory.dumpInventory();
-}
-
-// forcibly unlock an object
-void handle_force_unlock(void*)
-{
-	// First, make it public.
-	LLSelectMgr::getInstance()->sendOwner(LLUUID::null, LLUUID::null, TRUE);
-
-	// Second, lie to the viewer and mark it editable and unowned
-
-	struct f : public LLSelectedObjectFunctor
-	{
-		virtual bool apply(LLViewerObject* object)
-		{
-			object->mFlags |= FLAGS_OBJECT_MOVE;
-			object->mFlags |= FLAGS_OBJECT_MODIFY;
-			object->mFlags |= FLAGS_OBJECT_COPY;
-
-			object->mFlags &= ~FLAGS_OBJECT_ANY_OWNER;
-			object->mFlags &= ~FLAGS_OBJECT_YOU_OWNER;
-			return true;
-		}
-	} func;
-	LLSelectMgr::getInstance()->getSelection()->applyToObjects(&func);
 }
 
 void handle_dump_followcam(void*)

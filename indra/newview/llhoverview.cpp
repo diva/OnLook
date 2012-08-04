@@ -408,7 +408,7 @@ void LLHoverView::updateText()
 				LLViewerObject *parent = (LLViewerObject *)object->getParent();
 
 				if (object &&
-					(object->usePhysics() ||
+					(object->flagUsePhysics() ||
 					 object->flagScripted() || 
 					 object->flagHandleTouch() || (parent && parent->flagHandleTouch()) ||
 					 object->flagTakesMoney() || (parent && parent->flagTakesMoney()) ||
@@ -423,7 +423,7 @@ void LLHoverView::updateText()
 						line.append(LLTrans::getString("TooltipFlagScript") + " ");
 					}
 
-					if (object->usePhysics())
+					if (object->flagUsePhysics())
 					{
 						line.append(LLTrans::getString("TooltipFlagPhysics") + " ");
 					}
@@ -456,7 +456,7 @@ void LLHoverView::updateText()
 						line.append(LLTrans::getString("TooltipFlagTemporary") + " ");
 					}
 
-					if (object->usePhysics() || 
+					if (object->flagUsePhysics() || 
 						object->flagHandleTouch() ||
 						(parent && parent->flagHandleTouch()) )
 					{

@@ -460,7 +460,7 @@ void LLViewerObject::dump() const
 	/*
 	llinfos << "Velocity: " << getVelocity() << llendl;
 	llinfos << "AnyOwner: " << permAnyOwner() << " YouOwner: " << permYouOwner() << " Edit: " << mPermEdit << llendl;
-	llinfos << "UsePhysics: " << usePhysics() << " CanSelect " << mbCanSelect << " UserSelected " << mUserSelected << llendl;
+	llinfos << "UsePhysics: " << flagUsePhysics() << " CanSelect " << mbCanSelect << " UserSelected " << mUserSelected << llendl;
 	llinfos << "AppAngle: " << mAppAngle << llendl;
 	llinfos << "PixelArea: " << mPixelArea << llendl;
 
@@ -2068,6 +2068,8 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 	//
 	//
 
+	// If we're going to skip this message, why are we 
+	// doing all the parenting, etc above?
 	U32 packet_id = mesgsys->getCurrentRecvPacketID(); 
 	if (packet_id < mLatestRecvPacketID && 
 		mLatestRecvPacketID - packet_id < 65536)
@@ -2128,12 +2130,11 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 		}
 	}
 
-	if (new_rot != mLastRot
+	if (new_rot != getRotation()
 		|| new_angv != old_angv)
 	{
-		if (new_rot != mLastRot)
+		if (new_rot != getRotation())
 		{
-			mLastRot = new_rot;
 			setRotation(new_rot);
 		}
 		
@@ -4164,38 +4165,6 @@ void LLViewerObject::sendMaterialUpdate() const
 
 }
 
-// formerly send_object_rotation
-void LLViewerObject::sendRotationUpdate() const
-{
-	LLViewerRegion* regionp = getRegion();
-	if(!regionp) return;
-	gMessageSystem->newMessageFast(_PREHASH_ObjectRotation);
-	gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-	gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
-	gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-	gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-	gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, mLocalID);
-	gMessageSystem->addQuatFast(_PREHASH_Rotation, getRotationEdit());
-	//llinfos << "Sent rotation " << getRotationEdit() << llendl;
-	gMessageSystem->sendReliable( regionp->getHost() );
-}
-
-/* Obsolete, we use MultipleObjectUpdate instead
-//// formerly send_object_position_global
-//void LLViewerObject::sendPositionUpdate() const
-//{
-//	gMessageSystem->newMessageFast(_PREHASH_ObjectPosition);
-//	gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-//	gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
-//	gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-//	gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-//	gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID,	mLocalID );
-//	gMessageSystem->addVector3Fast(_PREHASH_Position, getPositionRegion());
-//	LLViewerRegion* regionp = getRegion();
-//	gMessageSystem->sendReliable(regionp->getHost());
-//}
-*/
-
 //formerly send_object_shape(LLViewerObject *object)
 void LLViewerObject::sendShapeUpdate()
 {
@@ -5280,7 +5249,7 @@ BOOL LLViewerObject::permAnyOwner() const
 { 
 	if (isRootEdit())
 	{
-		return ((mFlags & FLAGS_OBJECT_ANY_OWNER) != 0); 
+		return flagObjectAnyOwner(); 
 	}
 	else
 	{
@@ -5302,7 +5271,7 @@ BOOL LLViewerObject::permYouOwner() const
 			return TRUE;
 		}
 # endif
-		return ((mFlags & FLAGS_OBJECT_YOU_OWNER) != 0); 
+		return flagObjectYouOwner(); 
 #endif
 	}
 	else
@@ -5316,7 +5285,7 @@ BOOL LLViewerObject::permGroupOwner() const
 { 
 	if (isRootEdit())
 	{
-		return ((mFlags & FLAGS_OBJECT_GROUP_OWNED) != 0); 
+		return flagObjectGroupOwned(); 
 	}
 	else
 	{
@@ -5339,7 +5308,7 @@ BOOL LLViewerObject::permOwnerModify() const
 			return TRUE;
 	}
 # endif
-		return ((mFlags & FLAGS_OBJECT_OWNER_MODIFY) != 0); 
+		return flagObjectOwnerModify(); 
 #endif
 	}
 	else
@@ -5363,7 +5332,7 @@ BOOL LLViewerObject::permModify() const
 			return TRUE;
 	}
 # endif
-		return ((mFlags & FLAGS_OBJECT_MODIFY) != 0); 
+		return flagObjectModify(); 
 #endif
 	}
 	else
@@ -5387,7 +5356,7 @@ BOOL LLViewerObject::permCopy() const
 			return TRUE;
 		}
 # endif
-		return ((mFlags & FLAGS_OBJECT_COPY) != 0); 
+		return flagObjectCopy();
 #endif
 	}
 	else
@@ -5411,7 +5380,7 @@ BOOL LLViewerObject::permMove() const
 			return TRUE;
 		}
 # endif
-		return ((mFlags & FLAGS_OBJECT_MOVE) != 0); 
+		return flagObjectMove(); 
 #endif
 	}
 	else
@@ -5435,7 +5404,7 @@ BOOL LLViewerObject::permTransfer() const
 			return TRUE;
 		}
 # endif
-		return ((mFlags & FLAGS_OBJECT_TRANSFER) != 0); 
+		return flagObjectTransfer(); 
 #endif
 	}
 	else
@@ -5483,19 +5452,12 @@ void LLViewerObject::markForUpdate(BOOL priority)
 
 bool LLViewerObject::getIncludeInSearch() const
 {
-	return ((mFlags & FLAGS_INCLUDE_IN_SEARCH) != 0);
+	return flagIncludeInSearch();
 }
 
 void LLViewerObject::setIncludeInSearch(bool include_in_search)
 {
-	if (include_in_search)
-	{
-		mFlags |= FLAGS_INCLUDE_IN_SEARCH;
-	}
-	else
-	{
-		mFlags &= ~FLAGS_INCLUDE_IN_SEARCH;
-	}
+	setFlags(FLAGS_INCLUDE_IN_SEARCH, include_in_search);
 }
 
 void LLViewerObject::setRegion(LLViewerRegion *regionp)
@@ -5520,8 +5482,8 @@ void LLViewerObject::setRegion(LLViewerRegion *regionp)
 
 bool LLViewerObject::specialHoverCursor() const
 {
-	return (mFlags & FLAGS_USE_PHYSICS)
-			|| (mFlags & FLAGS_HANDLE_TOUCH)
+	return flagUsePhysics()
+			|| flagHandleTouch()
 			|| (mClickAction != 0);
 }
 
@@ -5534,10 +5496,15 @@ void LLViewerObject::updateFlags(BOOL physics_changed)
 	gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
 	gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
 	gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, getLocalID() );
-	gMessageSystem->addBOOLFast(_PREHASH_UsePhysics, usePhysics() );
+	gMessageSystem->addBOOLFast(_PREHASH_UsePhysics, flagUsePhysics() );
 	gMessageSystem->addBOOL("IsTemporary", flagTemporaryOnRez() );
 	gMessageSystem->addBOOL("IsPhantom", flagPhantom() );
-	gMessageSystem->addBOOL("CastsShadows", flagCastShadows() );
+
+	// stinson 02/28/2012 : This CastsShadows BOOL is no longer used in either the viewer or the simulator
+	// The simulator code does not even unpack this value when the message is received.
+	// This could be potentially hijacked in the future for another use should the urgent need arise.
+	gMessageSystem->addBOOL("CastsShadows", FALSE );
+
 	if (physics_changed)
 	{
 		gMessageSystem->nextBlock("ExtraPhysics");
@@ -5551,6 +5518,19 @@ void LLViewerObject::updateFlags(BOOL physics_changed)
 }
 
 BOOL LLViewerObject::setFlags(U32 flags, BOOL state)
+{
+	BOOL setit = setFlagsWithoutUpdate(flags, state);
+
+	// BUG: Sometimes viewer physics and simulator physics get
+	// out of sync.  To fix this, always send update to simulator.
+// 	if (setit)
+	{
+		updateFlags();
+	}
+	return setit;
+}
+
+BOOL LLViewerObject::setFlagsWithoutUpdate(U32 flags, BOOL state)
 {
 	BOOL setit = FALSE;
 	if (state)
@@ -5568,13 +5548,6 @@ BOOL LLViewerObject::setFlags(U32 flags, BOOL state)
 			mFlags &= ~flags;
 			setit = TRUE;
 		}
-	}
-
-	// BUG: Sometimes viewer physics and simulator physics get
-	// out of sync.  To fix this, always send update to simulator.
-// 	if (setit)
-	{
-		updateFlags();
 	}
 	return setit;
 }
