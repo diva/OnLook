@@ -250,6 +250,7 @@ set(llcommon_HEADER_FILES
 set_source_files_properties(${llcommon_HEADER_FILES}
                             PROPERTIES HEADER_FILE_ONLY TRUE)
 
+list(APPEND llcommon_SOURCE_FILES ${cwdebug_SOURCE_FILES})
 list(APPEND llcommon_SOURCE_FILES ${llcommon_HEADER_FILES})
 
 add_library (llcommon SHARED ${llcommon_SOURCE_FILES})
@@ -262,14 +263,8 @@ target_link_libraries(
     ${ZLIB_LIBRARIES}
     ${WINDOWS_LIBRARIES}
     ${BOOST_REGEX_LIBRARY}
-    ${CWDEBUG_LIBRARIES}
     ${CORESERVICES_LIBRARY}
     )
-
-if (LINUX)
-    # When linking with llcommon later, we do not want to link with cwdebug.a again.
-    set_property(TARGET llcommon PROPERTY LINK_INTERFACE_LIBRARIES "-lapr-1 -laprutil-1 -lz")
-endif (LINUX)
 
 if (DARWIN)
     # Don't embed a full path in the library's install name

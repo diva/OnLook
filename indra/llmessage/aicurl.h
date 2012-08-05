@@ -37,7 +37,8 @@
 #include <stdexcept>
 #include <boost/intrusive_ptr.hpp>
 #include <boost/utility.hpp>
-#include <curl/curl.h>		// CURL, CURLM, CURLMcode, CURLoption, curl_*_callback
+#include <curl/curl.h>		// Needed for files that include this header (also for aicurlprivate.h).
+#include "debug_libcurl.h"
 
 // Make sure we don't use this option: it is not thread-safe.
 #undef CURLOPT_DNS_USE_GLOBAL_CACHE

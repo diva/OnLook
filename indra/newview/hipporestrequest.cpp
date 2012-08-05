@@ -6,7 +6,6 @@
 #ifndef CURL_STATICLIB
 #define CURL_STATICLIB 1
 #endif
-#include <curl/curl.h>
 
 #include <stdtypes.h>
 #include <llbufferstream.h>
@@ -15,6 +14,8 @@
 #include <llurlrequest.h>
 #include <llxmltree.h>
 
+#include <curl/curl.h>
+#include "debug_libcurl.h"
 
 // ********************************************************************
  

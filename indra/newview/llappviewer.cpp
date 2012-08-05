@@ -63,7 +63,6 @@
 #include "llviewerjoystick.h"
 #include "llfloaterjoystick.h"
 #include "llares.h" 
-#include "llcurl.h"
 #include "llfloatersnapshot.h"
 #include "lltexturestats.h"
 #include "llviewerwindow.h"

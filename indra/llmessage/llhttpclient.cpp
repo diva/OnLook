@@ -38,7 +38,6 @@
 #include "lluri.h"
 
 #include "message.h"
-#include <curl/curl.h>
 
 
 const F32 HTTP_REQUEST_EXPIRY_SECS = 60.0f;

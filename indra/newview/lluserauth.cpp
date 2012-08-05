@@ -47,7 +47,6 @@
 #include "stringize.h"
 
 // NOTE: MUST include these after otherincludes since queue gets redefined!?!!
-#include <curl/curl.h>
 #include <xmlrpc-epi/xmlrpc.h>
 
 
