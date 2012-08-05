@@ -280,6 +280,10 @@ void LLPanelPermissions::refresh()
 	BOOL is_perm_modify = (LLSelectMgr::getInstance()->getSelection()->getFirstRootNode() 
 							&& LLSelectMgr::getInstance()->selectGetRootsModify()) 
 							|| LLSelectMgr::getInstance()->selectGetModify();
+	BOOL is_nonpermanent_enforced = (LLSelectMgr::getInstance()->getSelection()->getFirstRootNode() 
+						   && LLSelectMgr::getInstance()->selectGetRootsNonPermanentEnforced())
+		|| LLSelectMgr::getInstance()->selectGetNonPermanentEnforced();
+
 	const LLFocusableElement* keyboard_focus_view = gFocusMgr.getKeyboardFocus();
 	S32 string_index = 0;
 	std::string MODIFY_INFO_STRINGS[] =
@@ -394,12 +398,12 @@ void LLPanelPermissions::refresh()
 		}
 	}
 	
-	childSetEnabled("button set group",owners_identical && (mOwnerID == gAgent.getID()));
+	childSetEnabled("button set group",owners_identical && (mOwnerID == gAgent.getID()) && is_nonpermanent_enforced);
 	childSetEnabled("button open group", group_id.notNull());
 
 	// figure out the contents of the name, description, & category
 	BOOL edit_name_desc = FALSE;
-	if(is_one_object && objectp->permModify())
+	if(is_one_object && objectp->permModify() && !objectp->isPermanentEnforced())
 	{
 		edit_name_desc = TRUE;
 	}
@@ -628,15 +632,13 @@ void LLPanelPermissions::refresh()
 	bool has_change_perm_ability = false;
 	bool has_change_sale_ability = false;
 
-	if(valid_base_perms 
-	   && (self_owned 
-		   || (group_owned && gAgent.hasPowerInGroup(group_id, GP_OBJECT_MANIPULATE))))
+	if(valid_base_perms && is_nonpermanent_enforced &&
+		(self_owned || (group_owned && gAgent.hasPowerInGroup(group_id, GP_OBJECT_MANIPULATE))))
 	{
 		has_change_perm_ability = true;
 	}
-	if(valid_base_perms 
-	   && (self_owned 
-		   || (group_owned && gAgent.hasPowerInGroup(group_id, GP_OBJECT_SET_SALE))))
+	if(valid_base_perms && is_nonpermanent_enforced &&
+		(self_owned || (group_owned && gAgent.hasPowerInGroup(group_id, GP_OBJECT_SET_SALE))))
 	{
 		has_change_sale_ability = true;
 	}
@@ -847,8 +849,8 @@ void LLPanelPermissions::refresh()
 			ComboClickAction->setCurrentByIndex((S32)click_action);
 		}
 	}
-	childSetEnabled("label click action",is_perm_modify && all_volume);
-	childSetEnabled("clickaction",is_perm_modify && all_volume);
+	childSetEnabled("label click action",is_perm_modify && is_nonpermanent_enforced && all_volume);
+	childSetEnabled("clickaction",is_perm_modify && is_nonpermanent_enforced && all_volume);
 }
 
 

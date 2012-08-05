@@ -5450,6 +5450,11 @@ void LLViewerObject::markForUpdate(BOOL priority)
 	}
 }
 
+bool LLViewerObject::isPermanentEnforced() const
+{
+	return flagObjectPermanent() && (mRegionp != gAgent.getRegion()) && !gAgent.isGodlike();
+}
+
 bool LLViewerObject::getIncludeInSearch() const
 {
 	return flagIncludeInSearch();

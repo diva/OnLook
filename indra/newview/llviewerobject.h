@@ -491,6 +491,9 @@ public:
 	inline BOOL		flagObjectCopy() const			{ return ((mFlags & FLAGS_OBJECT_COPY) != 0); }
 	inline BOOL		flagObjectMove() const			{ return ((mFlags & FLAGS_OBJECT_MOVE) != 0); }
 	inline BOOL		flagObjectTransfer() const		{ return ((mFlags & FLAGS_OBJECT_TRANSFER) != 0); }
+	inline BOOL		flagObjectPermanent() const		{ return ((mFlags & FLAGS_AFFECTS_NAVMESH) != 0); }
+	inline BOOL		flagCharacter() const			{ return ((mFlags & FLAGS_CHARACTER) != 0); }
+	inline BOOL		flagVolumeDetect() const		{ return ((mFlags & FLAGS_VOLUME_DETECT) != 0); }
 	inline BOOL		flagIncludeInSearch() const     { return ((mFlags & FLAGS_INCLUDE_IN_SEARCH) != 0); }
 	inline BOOL		flagScripted() const			{ return ((mFlags & FLAGS_SCRIPTED) != 0); }
 	inline BOOL		flagHandleTouch() const			{ return ((mFlags & FLAGS_HANDLE_TOUCH) != 0); }
@@ -509,6 +512,8 @@ public:
 	inline F32      getPhysicsFriction() const      { return mPhysicsFriction; }
 	inline F32      getPhysicsDensity() const       { return mPhysicsDensity; }
 	inline F32      getPhysicsRestitution() const   { return mPhysicsRestitution; }
+	
+	bool            isPermanentEnforced() const;
 
 	bool getIncludeInSearch() const;
 	void setIncludeInSearch(bool include_in_search);

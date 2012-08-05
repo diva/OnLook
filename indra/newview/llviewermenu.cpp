@@ -374,7 +374,6 @@ void near_sit_object();
 BOOL is_selection_buy_not_take();
 S32 selection_price();
 BOOL enable_take();
-void handle_take();
 bool confirm_take(const LLSD& notification, const LLSD& response, LLObjectSelectionHandle selection_handle);
 
 void handle_buy_object(LLSaleInfo sale_info);
@@ -4524,8 +4523,9 @@ static bool get_derezzable_objects(
 		{
 		case DRD_TAKE_INTO_AGENT_INVENTORY:
 		case DRD_TRASH:
-			if( (node->mPermissions->allowTransferTo(gAgent.getID()) && object->permModify())
-				|| (node->allowOperationOnNode(PERM_OWNER, GP_OBJECT_MANIPULATE)) )
+			if (!object->isPermanentEnforced() &&
+				((node->mPermissions->allowTransferTo(gAgent.getID()) && object->permModify())
+				|| (node->allowOperationOnNode(PERM_OWNER, GP_OBJECT_MANIPULATE))))
 			{
 				can_derez_current = TRUE;
 			}
@@ -4945,9 +4945,10 @@ BOOL enable_take()
 			return TRUE;
 		}
 # endif
-		if((node->mPermissions->allowTransferTo(gAgent.getID())
+		if(!object->isPermanentEnforced() &&
+			((node->mPermissions->allowTransferTo(gAgent.getID())
 			&& object->permModify())
-		   || (node->mPermissions->getOwner() == gAgent.getID()))
+			|| (node->mPermissions->getOwner() == gAgent.getID())))
 		{
 			return TRUE;
 		}
@@ -7296,6 +7297,7 @@ BOOL object_selected_and_point_valid(void *user_data)
 	return (selection->getRootObjectCount() == 1) && 
 		(selection->getFirstRootObject()->getPCode() == LL_PCODE_VOLUME) && 
 		selection->getFirstRootObject()->permYouOwner() &&
+		!selection->getFirstRootObject()->flagObjectPermanent() &&
 		!((LLViewerObject*)selection->getFirstRootObject()->getRoot())->isAvatar() && 
 		(selection->getFirstRootObject()->getNVPair("AssetContainer") == NULL);
 }
@@ -7971,8 +7973,8 @@ BOOL enable_save_into_inventory(void*)
 			return TRUE;
 		}
 	}
-#endif
 	return FALSE;
+#endif
 }
 
 BOOL enable_save_into_task_inventory(void*)
