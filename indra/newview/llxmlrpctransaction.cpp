@@ -250,7 +250,7 @@ void LLXMLRPCTransaction::Impl::init(XMLRPC_REQUEST request, bool useGzip)
 
 		/* Setting the DNS cache timeout to -1 disables it completely.
 		   This might help with bug #503 */
-		curlEasyRequest_w->setopt(CURLOPT_DNS_CACHE_TIMEOUT, -1);
+		curlEasyRequest_w->setopt(CURLOPT_DNS_CACHE_TIMEOUT, -1L);
 
 		curlEasyRequest_w->addHeader("Content-Type: text/xml");
 
