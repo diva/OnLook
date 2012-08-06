@@ -260,6 +260,7 @@
 #include "slfloatermediafilter.h"
 #include "llviewerobjectbackup.h"
 #include "llagentui.h"
+#include "llpathfindingmanager.h"
 
 #include "hippogridmanager.h"
 
@@ -2742,6 +2743,16 @@ class LLObjectMeasure : public view_listener_t
 	}
 };
 
+bool enable_object_select_in_pathfinding_linksets()
+{
+	return LLPathfindingManager::getInstance()->isPathfindingEnabledForCurrentRegion() && LLSelectMgr::getInstance()->selectGetEditableLinksets();
+}
+
+bool enable_object_select_in_pathfinding_characters()
+{
+	return LLPathfindingManager::getInstance()->isPathfindingEnabledForCurrentRegion() &&  LLSelectMgr::getInstance()->selectGetViewableCharacters();
+}
+
 class LLAvatarAnims : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -5192,6 +5203,7 @@ class LLToolsSaveToInventory : public view_listener_t
 		return true;
 	}
 };
+
 class LLToolsSaveToObjectInventory : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -5203,6 +5215,22 @@ class LLToolsSaveToObjectInventory : public view_listener_t
 			derez_objects(DRD_SAVE_INTO_TASK_INVENTORY, node->mFromTaskID);
 		}
 		return true;
+	}
+};
+
+class LLToolsEnablePathfinding : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		return (LLPathfindingManager::getInstance() != NULL) && LLPathfindingManager::getInstance()->isPathfindingEnabledForCurrentRegion();
+	}
+};
+
+class LLToolsEnablePathfindingView : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		return (LLPathfindingManager::getInstance() != NULL) && LLPathfindingManager::getInstance()->isPathfindingEnabledForCurrentRegion() && LLPathfindingManager::getInstance()->isPathfindingViewEnabled();
 	}
 };
 
@@ -9379,6 +9407,9 @@ void initialize_menus()
 	addMenu(new LLToolsEnableBuyOrTake(), "Tools.EnableBuyOrTake");
 	addMenu(new LLToolsEnableTakeCopy(), "Tools.EnableTakeCopy");
 	addMenu(new LLToolsEnableSaveToObjectInventory(), "Tools.SaveToObjectInventory");
+
+	addMenu(new LLToolsEnablePathfinding(), "Tools.EnablePathfinding");
+	addMenu(new LLToolsEnablePathfindingView(), "Tools.EnablePathfindingView");
 
 	/*addMenu(new LLToolsVisibleBuyObject(), "Tools.VisibleBuyObject");
 	addMenu(new LLToolsVisibleTakeObject(), "Tools.VisibleTakeObject");*/

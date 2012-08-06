@@ -221,6 +221,8 @@
 #include "shfloatermediaticker.h"
 // </edit>
 
+#include "llpathfindingmanager.h"
+
 #include "llavatarnamecache.h"
 #include "lgghunspell_wrapper.h"
 
@@ -2729,6 +2731,10 @@ bool idle_startup()
 		// reset timers now that we are running "logged in" logic
 		LLFastTimer::reset();
 		display_startup();
+
+		llassert(LLPathfindingManager::getInstance() != NULL);
+		LLPathfindingManager::getInstance()->initSystem();
+
 		return TRUE;
 	}
 

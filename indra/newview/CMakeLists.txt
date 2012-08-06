@@ -380,6 +380,7 @@ set(viewer_SOURCE_FILES
     llpanelmsgs.cpp
     llpanelnetwork.cpp
     llpanelobject.cpp
+    llpanelpathfindingrebakenavmesh.cpp
     llpanelpermissions.cpp
     llpanelpick.cpp
     llpanelplace.cpp
@@ -388,6 +389,15 @@ set(viewer_SOURCE_FILES
     llpanelweb.cpp
     llparcelselection.cpp
     llpatchvertexarray.cpp
+    llpathfindingcharacter.cpp
+    llpathfindingcharacterlist.cpp
+    llpathfindinglinkset.cpp
+    llpathfindinglinksetlist.cpp
+    llpathfindingmanager.cpp
+    llpathfindingnavmesh.cpp
+    llpathfindingnavmeshstatus.cpp
+    llpathfindingobject.cpp
+    llpathfindingobjectlist.cpp
     llphysicsmotion.cpp
     llphysicsshapebuilderutil.cpp
     llpolymesh.cpp
@@ -879,6 +889,7 @@ set(viewer_HEADER_FILES
     llpanelmsgs.h
     llpanelnetwork.h
     llpanelobject.h
+    llpanelpathfindingrebakenavmesh.h
     llpanelpermissions.h
     llpanelpick.h
     llpanelplace.h
@@ -887,6 +898,15 @@ set(viewer_HEADER_FILES
     llpanelweb.h
     llparcelselection.h
     llpatchvertexarray.h
+    llpathfindingcharacter.h
+    llpathfindingcharacterlist.h
+    llpathfindinglinkset.h
+    llpathfindinglinksetlist.h
+    llpathfindingmanager.h
+    llpathfindingnavmesh.h
+    llpathfindingnavmeshstatus.h
+    llpathfindingobject.h
+    llpathfindingobjectlist.h
     llphysicsmotion.h
     llphysicsshapebuilderutil.h
     llpolymesh.h

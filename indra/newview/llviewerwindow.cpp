@@ -128,6 +128,7 @@
 #include "llmodaldialog.h"
 #include "llmorphview.h"
 #include "llmoveview.h"
+#include "llpanelpathfindingrebakenavmesh.h"
 #include "llnotify.h"
 #include "lloverlaybar.h"
 #include "llpreviewtexture.h"
@@ -1955,6 +1956,10 @@ void LLViewerWindow::initWorldUI()
 		// put behind everything else in the UI
 		mRootView->addChildInBack(gHUDView);
 	}
+	
+	LLPanel* panel_ssf_container = getRootView()->getChild<LLPanel>("state_management_buttons_container");
+	LLPanelPathfindingRebakeNavmesh *panel_rebake_navmesh = LLPanelPathfindingRebakeNavmesh::getInstance();
+	panel_ssf_container->addChild(panel_rebake_navmesh);
 }
 
 // initWorldUI that wasn't before logging in. Some of this may require the access the 'LindenUserDir'.
