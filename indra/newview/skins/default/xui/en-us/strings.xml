@@ -3595,4 +3595,7 @@ Try enclosing path to the editor with double quotes.
  <string name="ExternalEditorCommandParseError">Error parsing the external editor command.</string>
  <string name="ExternalEditorFailedToRun">External editor failed to run.</string>
 
+  <string name="Left">Left</string>
+  <string name="Right">Right</string>
+
 </strings>
