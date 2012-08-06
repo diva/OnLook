@@ -327,7 +327,7 @@ LLNotifyBox::LLNotifyBox(LLNotificationPtr notification,
 						   this,
 						   sFont);
 		btn->setScaleImage(TRUE);
-		btn->setToolTip(std::string("Next")); // *TODO: Translate
+		btn->setToolTip(LLTrans::getString("next"));
 		addChild(btn);
 		mNextBtn = btn;
 

@@ -48,6 +48,7 @@
 #include "llfloatergroupinfo.h"
 #include "llinventoryicon.h"
 #include "llinventory.h"
+#include "lltrans.h"
 
 #include "llglheaders.h"
 #include "llagent.h"
@@ -143,14 +144,14 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 	};
 
 	// Title
-	addChild(new NoticeText(std::string("title"),LLRect(x,y,RIGHT - HPAD,y - LINE_HEIGHT),std::string("Group Notice"),LLFontGL::getFontSansSerifHuge()));
+	addChild(new NoticeText(std::string("title"),LLRect(x,y,RIGHT - HPAD,y - LINE_HEIGHT),LLTrans::getString("GroupNotifyGroupNotice"),LLFontGL::getFontSansSerifHuge()));
 
 	y -= llfloor(1.5f*LINE_HEIGHT);
 
 	x += HPAD + HPAD + ICON_WIDTH;
 
 	std::stringstream from;
-	from << "Sent by " << from_name << ", " << group_name;
+	from << LLTrans::getString("GroupNotifySentBy") << " " + from_name << LLTrans::getString(",") + " " << group_name;
 
 	addChild(new NoticeText(std::string("group"),LLRect(x,y,RIGHT - HPAD,y - LINE_HEIGHT),from.str(),LLFontGL::getFontSansSerif()));
 	
@@ -216,7 +217,7 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 
 	if (mHasInventory)
 	{
-			addChild(new NoticeText(std::string("subjecttitle"),LLRect(x,y,x + LABEL_WIDTH,y - LINE_HEIGHT),std::string("Attached: "),LLFontGL::getFontSansSerif()));
+			addChild(new NoticeText(std::string("subjecttitle"),LLRect(x,y,x + LABEL_WIDTH,y - LINE_HEIGHT),LLTrans::getString("GroupNotifyAttached"),LLFontGL::getFontSansSerif()));
 
 			LLUIImagePtr item_icon = LLInventoryIcon::getIcon(mInventoryOffer->mType,
 													LLInventoryType::IT_TEXTURE,
@@ -244,7 +245,7 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 	}
 
 	LLButton* btn;
-	btn = new LLButton(std::string("next"),
+	btn = new LLButton(LLTrans::getString("next"),
 				LLRect(getRect().getWidth()-26, BOTTOM_PAD + 20, getRect().getWidth()-2, BOTTOM_PAD),
 				std::string("notify_next.png"),
 				std::string("notify_next.png"),
@@ -252,7 +253,7 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 				onClickNext,
 				this,
 				LLFontGL::getFontSansSerif());
-	btn->setToolTip(std::string("Next")); // *TODO: Translate
+	btn->setToolTip(LLTrans::getString("next"));
 	btn->setScaleImage(TRUE);
 	addChild(btn);
 	mNextBtn = btn;
@@ -267,7 +268,7 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 								btn_width,
 								BTN_HEIGHT);
 
-	btn = new LLButton(std::string("OK"), btn_rect, LLStringUtil::null, onClickOk, this);
+	btn = new LLButton(LLTrans::getString("ok"), btn_rect, LLStringUtil::null, onClickOk, this);
 	addChild(btn, -1);
 	setDefaultBtn(btn);
 
@@ -279,8 +280,8 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 								wide_btn_width,
 								BTN_HEIGHT);
 
-	btn = new LLButton(std::string("Group Notices"), btn_rect, LLStringUtil::null, onClickGroupInfo, this);
-	btn->setToolTip(std::string("View past notices or opt-out of receiving these messages here.")); // TODO: Translate
+	btn = new LLButton(LLTrans::getString("GroupNotifyGroupNotices"), btn_rect, LLStringUtil::null, onClickGroupInfo, this);
+	btn->setToolTip(LLTrans::getString("GroupNotifyViewPastNotices"));
 	addChild(btn, -1);
 
 	if (mHasInventory)
@@ -295,11 +296,11 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 		std::string btn_lbl("");
 		if(is_openable(mInventoryOffer->mType))
 		{
-			btn_lbl = "Open Attachment";
+			btn_lbl = LLTrans::getString("GroupNotifyOpenAttachment");
 		}
 		else
 		{
-			btn_lbl = "Save Attachment";
+			btn_lbl = LLTrans::getString("GroupNotifySaveAttachment");
 		}
 		mSaveInventoryBtn = new LLButton(btn_lbl, btn_rect, LLStringUtil::null, onClickSaveInventory, this);
 		mSaveInventoryBtn->setVisible(mHasInventory);

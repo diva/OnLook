@@ -42,6 +42,7 @@
 #include "llviewercontrol.h"
 #include "NACLantispam.h"
 #include "lgghunspell_wrapper.h"
+#include "lltrans.h"
 
 #include "llstartup.h"
 
@@ -85,11 +86,11 @@ LLPrefsAscentChat::LLPrefsAscentChat()
 		LLUUID itemid = (LLUUID)gSavedPerAccountSettings.getString("AscentInstantMessageResponseItemData");
 		LLViewerInventoryItem* item = gInventory.getItem(itemid);
 
-		if		(item)				childSetValue("im_give_disp_rect_txt","Currently set to: "+item->getName());
-		else if (itemid.isNull())	childSetValue("im_give_disp_rect_txt","Currently not set");
-		else 						childSetValue("im_give_disp_rect_txt","Currently set to an item not on this account");
+		if		(item)				childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + LLTrans::getString(":") + " " +item->getName());
+		else if (itemid.isNull())	childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlyNotSet"));
+		else 						childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + " " + LLTrans::getString("AnItemNotOnThisAccount"));
 	}
-	else							childSetValue("im_give_disp_rect_txt","Not logged in");
+	else							childSetValue("im_give_disp_rect_txt", LLTrans::getString("NotLoggedIn"));
 
     childSetCommitCallback("im_response", onCommitAutoResponse, this);
 
@@ -240,7 +241,7 @@ void LLPrefsAscentChat::onCommitAutoResponse(LLUICtrl* ctrl, void* user_data)
 void LLPrefsAscentChat::SinguIMResponseItemDrop(LLViewerInventoryItem* item)
 {
 	gSavedPerAccountSettings.setString("AscentInstantMessageResponseItemData", item->getUUID().asString());
-	sInst->childSetValue("im_give_disp_rect_txt","Currently set to: "+item->getName());
+	sInst->childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + LLTrans::getString(":") + " " +item->getName());
 }
 
 //static

@@ -82,7 +82,7 @@
 			<button
 			       name="teleport_btn"
 			       label="TP to"
-			       tool_tip="Teleport to avatar's position"
+			       tool_tip="Teleport to avatar's position (Ctrl-Enter)"
 			       left_delta="90"
 			       bottom_delta="0"
 			       width="80"
@@ -128,7 +128,7 @@
 			<button
 			       name="focus_btn"
 			       label="Focus"
-			       tool_tip="Focus camera on this avatar in the list"
+			       tool_tip="Focus camera on this avatar in the list (Enter)"
 			       left="10"
 			       bottom_delta="-22"
 			       width="80"
@@ -326,4 +326,10 @@
 			       />
 		</panel>
 	</tab_container>
+	<string name="has_entered">has entered</string>
+	<string name="has_left">has left</string>
+	<string name="the_sim">the sim</string>
+	<string name="draw_distance">draw distance</string>
+	<string name="shout_range">shout range</string>
+	<string name="chat_range">chat range</string>
 </floater>

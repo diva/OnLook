@@ -1410,7 +1410,6 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		itemp = (LLViewerInventoryItem*)gInventory.getItem(mObjectID);
 	}
 
-	// *TODO:translate
 	std::string from_string; // Used in the pop-up.
 	std::string chatHistory_string;  // Used in chat history.
 	if (mFromObject == TRUE)
@@ -1420,13 +1419,18 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 			std::string group_name;
 			if (gCacheName->getGroupName(mFromID, group_name))
 			{
-				from_string = std::string("An object named '") + mFromName + "' owned by the group '" + group_name + "'";
-				chatHistory_string = mFromName + " owned by the group '" + group_name + "'";
+				from_string = LLTrans::getString("InvOfferAnObjectNamed") + " " + LLTrans::getString("'")
+				+ mFromName + LLTrans::getString("'") + " " + LLTrans::getString("InvOfferOwnedByGroup")
+				+ " " + LLTrans::getString("'") + group_name + LLTrans::getString("'");
+
+				chatHistory_string = mFromName + " " + LLTrans::getString("InvOfferOwnedByGroup")
+				+ " " + group_name +  + LLTrans::getString("'") + LLTrans::getString(".");
 			}
 			else
 			{
-				from_string = std::string("An object named '") + mFromName + "' owned by an unknown group";
-				chatHistory_string = mFromName + " owned by an unknown group";
+				from_string = LLTrans::getString("InvOfferAnObjectNamed") + " " + LLTrans::getString("'")
+				+ mFromName + LLTrans::getString("'") + " " + LLTrans::getString("InvOfferOwnedByUnknownGroup");
+				chatHistory_string = mFromName + " " + LLTrans::getString("InvOfferOwnedByUnknownGroup" + LLTrans::getString("."));
 			}
 		}
 		else
@@ -1439,16 +1443,19 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 				{
 					full_name = RlvStrings::getAnonym(full_name);
 				}
-				from_string = std::string("An object named '") + mFromName + "' owned by " + full_name;
-				chatHistory_string = mFromName + " owned by " + full_name;
+				from_string = LLTrans::getString("InvOfferAnObjectNamed") + " " + LLTrans::getString("'") + mFromName
+				+ LLTrans::getString("'") +" " + LLTrans::getString("InvOfferOwnedBy") + full_name;
+				chatHistory_string = mFromName + " " + LLTrans::getString("InvOfferOwnedBy") + " " + full_name + LLTrans::getString(".");
 // [/RLVa:KB]
 				//from_string = std::string("An object named '") + mFromName + "' owned by " + first_name + " " + last_name;
 				//chatHistory_string = mFromName + " owned by " + first_name + " " + last_name;
 			}
 			else
 			{
-				from_string = std::string("An object named '") + mFromName + "' owned by an unknown user";
-				chatHistory_string = mFromName + " owned by an unknown user";
+
+				from_string = LLTrans::getString("InvOfferAnObjectNamed") + " " + LLTrans::getString("'")
+				+ mFromName + LLTrans::getString("'") + " " + LLTrans::getString("InvOfferOwnedByUnknownUser");
+				chatHistory_string = mFromName + " " + LLTrans::getString("InvOfferOwnedByUnknownUser") + LLTrans::getString(".");
 			}
 		}
 	}
@@ -1504,7 +1511,7 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		//don't spam them if they are getting flooded
 		if (check_offer_throttle(mFromName, true))
 		{
-			log_message = chatHistory_string + " gave you " + mDesc + ".";
+			log_message = chatHistory_string + " " + LLTrans::getString("InvOfferGaveYou") + " " + mDesc + LLTrans::getString(".");
  			chat.mText = log_message;
  			LLFloaterChat::addChatHistory(chat);
 		}
@@ -1590,7 +1597,10 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		}
 // [/RLVa:KB]
 
-		log_message = "You decline " + mDesc + " from " + mFromName + ".";
+		LLStringUtil::format_map_t log_message_args;
+		log_message_args["[DESC]"] = mDesc;
+		log_message_args["[NAME]"] = mFromName;
+		log_message = LLTrans::getString("InvOfferDecline", log_message_args);
 		chat.mText = log_message;
 		if( LLMuteList::getInstance()->isMuted(mFromID ) && ! LLMuteList::getInstance()->isLinden(mFromName) )  // muting for SL-42269
 		{
@@ -2035,7 +2045,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 					computed_session_id,
 					from_id,
 					name,
-					llformat("%s has begun an IM session with you.",name.c_str()),
+					llformat("%s ",name.c_str()) + LLTrans::getString("IM_announce_incoming"),
 					name,
 					IM_NOTHING_SPECIAL,
 					parent_estate_id,
@@ -2099,7 +2109,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 							computed_session_id,
 							from_id,
 							SYSTEM_FROM,
-							llformat("Autoresponse sent to %s.",name.c_str()),
+							LLTrans::getString("IM_autoresponded_to") + llformat(" %s.",name.c_str()),
 							LLStringUtil::null,
 							IM_NOTHING_SPECIAL,
 							parent_estate_id,
@@ -2217,7 +2227,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 									computed_session_id,
 									from_id,
 									SYSTEM_FROM,
-									llformat("Sent %s auto-response item \"%s\"",name.c_str(),item->getName().c_str()),
+									llformat("%s %s \"%s\"",name.c_str(), LLTrans::getString("IM_autoresponse_sent_item").c_str(), item->getName().c_str()),
 									LLStringUtil::null,
 									IM_NOTHING_SPECIAL,
 									parent_estate_id,
@@ -2368,7 +2378,9 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			std::string saved;
 			if(offline == IM_OFFLINE)
 			{
-				saved = llformat("(Saved %s) ", formatted_time(timestamp).c_str());
+				LLStringUtil::format_map_t args;
+				args["[LONG_TIMESTAMP]"] = formatted_time(timestamp);
+				saved = LLTrans::getString("Saved_message", args);
 			}
 			buffer = separator_string + saved  + message.substr(message_offset);
 
@@ -3902,7 +3914,7 @@ void process_teleport_start(LLMessageSystem *msg, void**)
 	}
 	else
 	{
-		gViewerWindow->setProgressCancelButtonVisible(TRUE, std::string("Cancel")); // *TODO: Translate
+		gViewerWindow->setProgressCancelButtonVisible(TRUE, LLTrans::getString("Cancel"));
 	}
 
 	// Freeze the UI and show progress bar
@@ -3941,7 +3953,7 @@ void process_teleport_progress(LLMessageSystem* msg, void**)
 	}
 	else
 	{
-		gViewerWindow->setProgressCancelButtonVisible(TRUE, std::string("Cancel")); //TODO: Translate
+		gViewerWindow->setProgressCancelButtonVisible(TRUE, LLTrans::getString("Cancel"));
 	}
 	std::string buffer;
 	msg->getString("Info", "Message", buffer);
@@ -6405,7 +6417,7 @@ void container_inventory_arrived(LLViewerObject* object,
 		LLUUID cat_id;
 		cat_id = gInventory.createNewCategory(gInventory.getRootFolderID(),
 											   LLFolderType::FT_NONE,
-											  std::string("Acquired Items")); //TODO: Translate
+											  LLTrans::getString("AcquiredItems"));
 
 		LLInventoryObject::object_list_t::const_iterator it = inventory->begin();
 		LLInventoryObject::object_list_t::const_iterator end = inventory->end();
