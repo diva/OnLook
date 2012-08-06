@@ -531,15 +531,18 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 		LLScrollListCell* name_cell = itemp->getColumn(1);
 		if (name_cell)
 		{
-			//FIXME: remove hard coding of font colors
 			if (speakerp->mStatus == LLSpeaker::STATUS_NOT_IN_CHANNEL)	
 			{
-				// draw inactive speakers in gray
-				name_cell->setColor(LLColor4::grey4);
+				// draw inactive speakers in different color
+				static LLCachedControl<LLColor4> sSpeakersInactive(gColors, "SpeakersInactive");
+
+				name_cell->setColor(sSpeakersInactive);
 			}
 			else
 			{
-				name_cell->setColor(LLColor4::black);
+				static LLCachedControl<LLColor4> sDefaultListText(gColors, "DefaultListText");
+
+				name_cell->setColor(sDefaultListText);
 			}
 			// <edit>
 			if(!mShowTextChatters && !(speakerp->mStatus == LLSpeaker::STATUS_NOT_IN_CHANNEL) && speakerp->mID != gAgent.getID())
@@ -560,7 +563,11 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 					}
 				}
 				if(!found)
-					name_cell->setColor(LLColor4::red);
+				{
+					static LLCachedControl<LLColor4> sSpeakersGhost(gColors, "SpeakersGhost");
+
+					name_cell->setColor(sSpeakersGhost);
+				}
 			}
 			// </edit>
 

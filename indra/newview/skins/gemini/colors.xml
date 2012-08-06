@@ -72,6 +72,7 @@
 <ScrollHighlightedColor value="222, 222, 222, 80" />	    <!-- Hover color -->
 <ScrollbarThumbColor value="66, 66, 66, 80" />            <!-- Scroll bar-->
 <ScrollbarTrackColor value="10, 10, 10, 80" />          <!-- Scroll bar background-->
+<DefaultListText value="255, 255, 255, 255"/>                     <!-- We are replacing all the hardcoded black text with this color so we can make skins with white text on dark background -->
 
 <!-- MENUS -->
 <MenuBarBgColor value="33, 33, 33, 255" />
@@ -140,6 +141,21 @@
 <MapLinden value="0, 128, 255, 255" />
 <MapMuted value="110, 110, 110, 220" />
 
+<!-- RADAR -->
+
+<RadarAvatar value="255, 255, 255, 255" />
+<RadarFriend value="70, 128, 70, 255" />
+<RadarLinden value="0, 0, 128, 255" />
+<RadarEstateOwner value="204, 102, 10, 255" />
+<RadarMuted value="33, 33, 33, 255" />
+<RadarTextChatRange value="255, 66, 66, 128"/>
+<RadarTextShoutRange value="255, 255, 66, 128"/>
+<RadarTextDrawDist value="66, 153, 66, 128"/>
+
+<!-- SPEAKERS -->
+<SpeakersInactive value="76, 76, 76, 255"/>
+<SpeakersGhost value="255, 0, 0, 255"/>
+
 <!-- MINI-MAP -->
 <NetMapBackgroundColor value="0, 0, 0, 77" />
 <NetMapYouOwnAboveWater value="0, 255, 255, 255" />
@@ -181,17 +197,11 @@
 <FilterTextColor value="255, 255, 255, 128" />
 <InventoryItemSuffixColor value="128, 128, 128, 255" />     <!-- "worn", "no modify", etc-->
 <InventorySearchStatusColor value="255, 255, 255, 128" />
+<ComboBoxBg value="11, 11, 11, 255"/>
 <ConsoleBackground value="0, 0, 0, 255" />
 <FolderViewLoadingMessageTextColor value="255, 255, 255, 128"/>     <!-- "loading..." in the inv -->
 <InventoryBackgroundColor value="11, 11, 11, 80"/>
 <SHMediaTickerOscillatorColor value ="0, 0, 0, 191"/>
-<DefaultListText value="255, 255, 255, 255"/> <!-- We are replacing all the hardcoded black text with this color so we can make skins with white text on dark background -->
-<ComboBoxBg value="11, 11, 11, 255"/>
-<AvatarListTextDistNormalRange value="255, 255, 255, 255"/>
-<AvatarListTextDistShoutRange value="255, 255, 255, 128"/>
-<AvatarListTextDistOver value="255, 66, 66, 128"/>
-<AvatarListTextAgeYoung value="255, 0, 0, 255"/>
-<AvatarListTextAgeNormal value="255, 255, 255, 255"/>
 
 <!-- Alert box colors -->
 <AlertBoxColor value="33, 33, 33, 255" />               <!-- Warnings floaters, like when returning objects -->

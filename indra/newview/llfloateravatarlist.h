@@ -171,6 +171,8 @@ private:
 public:
 	~LLFloaterAvatarList();
 
+	virtual BOOL	handleKeyHere(KEY key, MASK mask);
+
 	/*virtual*/ void onClose(bool app_quitting);
 	/*virtual*/ void onOpen();
 	/*virtual*/ BOOL postBuild();

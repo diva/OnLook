@@ -73,6 +73,7 @@
 <ScrollHighlightedColor value="183, 184, 188, 128" />	    <!-- Hover color -->
 <ScrollbarThumbColor value="60, 76, 124, 255" />            <!-- Scroll bar-->
 <ScrollbarTrackColor value="153, 154, 158, 255" />          <!-- Scroll bar background-->
+<DefaultListText value="0, 0, 0, 255"/>                     <!-- We are replacing all the hardcoded black text with this color so we can make skins with white text on dark background -->
 
 <!-- MENUS -->
 <MenuBarBgColor value="62, 62, 62, 255" />
@@ -149,6 +150,13 @@
 <RadarLinden value="0, 0, 128, 255" />
 <RadarEstateOwner value="204, 102, 10, 255" />
 <RadarMuted value="128, 128, 128, 255" />
+<RadarTextChatRange value="255, 0, 0, 255"/>
+<RadarTextShoutRange value="255, 255, 0, 128"/>
+<RadarTextDrawDist value="0, 153, 0, 255"/>
+
+<!-- SPEAKERS -->
+<SpeakersInactive value="76, 76, 76, 255"/>
+<SpeakersGhost value="255, 0, 0, 255"/>
 
 <!-- MINI-MAP -->
 <NetMapBackgroundColor value="0, 0, 0, 77" />

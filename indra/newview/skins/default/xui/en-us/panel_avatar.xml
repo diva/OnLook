@@ -146,6 +146,7 @@
 			<scroll_list background_visible="true" bottom="-282" column_padding="5" draw_border="true"
 			     follows="left|top" height="90" left="79" mouse_opaque="false"
 			     multi_select="false" name="groups" width="321" />
+			<string name="None">None</string>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-304" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="4"

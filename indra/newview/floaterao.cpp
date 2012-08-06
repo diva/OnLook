@@ -22,6 +22,7 @@
 #include "chatbar_as_cmdline.h"
 //#include "llfloaterchat.h"
 #include "llfirstuse.h"
+#include "lltrans.h"
 
 #include "llinventory.h"
 #include "llinventoryfunctions.h"
@@ -330,20 +331,20 @@ BOOL LLFloaterAO::postBuild()
 		LLViewerInventoryItem* itemimport = gInventory.getItem(itemidimport);
 		if(itemimport)
 		{
-			childSetValue("ao_nc_text","Currently set to: "+itemimport->getName());
+			childSetValue("ao_nc_text", LLTrans::getString("CurrentlySetTo") + LLTrans::getString(":") + " " +itemimport->getName());
 		}
 		else if(itemidimport.isNull())
 		{
-			childSetValue("ao_nc_text","Currently not set");
+			childSetValue("ao_nc_text", LLTrans::getString("CurrentlyNotSet"));
 		}
 		else
 		{
-			childSetValue("ao_nc_text","Currently set to a item not on this account");
+			childSetValue("ao_nc_text", LLTrans::getString("CurrentlySetTo") + " " + LLTrans::getString("AnItemNotOnThisAccount"));
 		}
 	}
 	else
 	{
-		childSetValue("ao_nc_text","Not logged in");
+		childSetValue("ao_nc_text", LLTrans::getString("NotLoggedIn"));
 	}
 	childSetAction("more_btn", onClickMore, this);
 	childSetAction("less_btn", onClickLess, this);
@@ -794,7 +795,7 @@ void LLFloaterAO::setCurrentStandId(const LLUUID& id)
 void LLFloaterAO::AOItemDrop(LLViewerInventoryItem* item)
 {
 	gSavedPerAccountSettings.setString("AOConfigNotecardID", item->getUUID().asString());
-	sInstance->childSetValue("ao_nc_text","Currently set to: "+item->getName());
+	sInstance->childSetValue("ao_nc_text", LLTrans::getString("CurrentlySetTo") + LLTrans::getString(":") + " " +item->getName());
 }
 
 LLUUID LLFloaterAO::GetAnimID(const LLUUID& id)

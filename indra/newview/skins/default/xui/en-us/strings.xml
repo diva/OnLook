@@ -38,6 +38,7 @@
 	<!--  progress -->
 	<string name="ProgressRestoring">Restoring...</string>
 	<string name="ProgressChangingResolution">Changing Resolution...</string>
+
 	<!-- Login -->
 	<string name="LoginInProgress">Logging in. [APP_NAME] may appear frozen.  Please wait.</string>
 	<string name="LoginInProgressNoFrozen">Logging in...</string>
@@ -110,6 +111,10 @@
 	
 	<string name="TooltipDragOntoOwnChild">You can't move a folder into its child</string>
 	<string name="TooltipDragOntoSelf">You can't move a folder into itself</string>
+
+	<!-- searching - generic -->
+	<string name="Searching">Searching...</string>
+	<string name="NoneFound">None found.</string>
 
 	<!-- Indicates that an avatar's name or other similar datum is being retrieved. General usage. -->
 	<string name="RetrievingData">Retrieving...</string>
@@ -223,6 +228,10 @@
 	<string name="anim_yes_happy">Yes (Happy)</string>
 	<string name="anim_yes_head">Yes</string>
 
+	<!-- build floater -->
+	<string name="multiple_textures">Multiple</string>
+
+	<!-- world map -->
 	<string name="texture_loading">Loading...</string>
 	<string name="worldmap_offline">Offline</string>
 
@@ -2742,6 +2751,12 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	</string>
 <!-- *** END OF OpenSimulator & Aurora-Sim syntax section *** -->
 
+	<!-- Strings needed by drop targets -->
+	<string name="CurrentlyNotSet">Currently not set</string>
+	<string name="CurrentlySetTo">Currently set to</string>
+	<string name="AnItemNotOnThisAccount">an item not on this account</string>
+	<string name="NotLoggedIn">Not logged in</string>
+
   <!-- Avatar busy/away mode -->
 	<string name="AvatarSetNotAway">Not Away</string>
 	<string name="AvatarSetAway">Away</string>
@@ -2749,10 +2764,32 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="AvatarSetBusy">Busy</string>
 
 
-
+	<!-- LLGroupNotify -->
+	<!-- used in the construction of a Group Notice blue dialog box, buttons, tooltip etc. Seems to be no longer utilized by code in Viewer 2.0 -->
+	<string name="next">Next</string>
 	<string name="ok">OK</string>
+	<string name="GroupNotifyGroupNotice">Group Notice</string>
+	<string name="GroupNotifyGroupNotices">Group Notices</string>
+	<string name="GroupNotifySentBy">Sent by</string>
+	<string name="GroupNotifyAttached">Attached:</string>
+	<string name="GroupNotifyViewPastNotices">View past notices or opt-out of receiving these messages here.</string>
+	<string name="GroupNotifyOpenAttachment">Open Attachment</string>
+	<string name="GroupNotifySaveAttachment">Save Attachment</string>
+
+	<!-- body parts -->
+	<string name="BodyPartsRightArm">Right Arm</string>
+	<string name="BodyPartsHead">Head</string>
+	<string name="BodyPartsLeftArm">Left Arm</string>
+	<string name="BodyPartsLeftLeg">Left Leg</string>
+	<string name="BodyPartsTorso">Torso</string>
+	<string name="BodyPartsRightLeg">Right Leg</string>
+
 	<!-- mouselook -->
 	<string name="LeaveMouselook">Press ESC to return to World View</string>
+
+	<!-- inventory -->
+	<string name="InventoryNoMatchingItems">No matching items found in inventory.</string>
+
 	<!-- use value="" because they have preceding spaces -->
 	<string name="no_transfer" value=" (no transfer)" />
 	<string name="no_modify"   value=" (no modify)" />
@@ -2779,6 +2816,29 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="HelloAvatar"   value=" Hello, avatar! " />
 	<string name="ViewAllGestures"  value="  View All &gt;&gt;" />
 	<string name="GetMoreGestures"  value="  Get More &gt;&gt;" />
+
+	<!-- inventory filter -->
+    <!-- use value="" because they have preceding spaces -->
+	<string name="Animations"    value=" Animations," />
+	<string name="Calling Cards" value=" Calling Cards," />
+	<string name="Clothing"      value=" Clothing," />
+	<string name="Gestures"      value=" Gestures," />
+	<string name="Landmarks"     value=" Landmarks," />
+	<string name="Notecards"     value=" Notecards," />
+	<string name="Objects"       value=" Objects," />
+	<string name="Scripts"       value=" Scripts," />
+	<string name="Sounds"        value=" Sounds," />
+	<string name="Textures"      value=" Textures," />
+	<string name="Snapshots"     value=" Snapshots," />
+	<string name="No Filters"    value="No " />
+	<string name="Since Logoff"  value=" - Since Logoff" />
+	<string name="Worn"          value=" - Worn" />
+
+
+	<!-- inventory FVBridge -->
+	<!--  This is used in llpanelinventory.cpp when constructing a context menu for an item for Sale  -->
+	<string name="Buy">Buy</string>
+
 	<string name="Stone">Stone</string>
 	<string name="Metal">Metal</string>
 	<string name="Glass">Glass</string>
@@ -2787,12 +2847,59 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="Plastic">Plastic</string>
 	<string name="Rubber">Rubber</string>
 	<string name="Light">Light</string>
+
+	<!-- compile queue-->
+	<string name="CompileQueueDownloadedCompiling">Downloaded, now compiling</string>
+	<string name="CompileQueueScriptNotFound">Script not found on server.</string>
+	<string name="CompileQueueProblemDownloading">Problem downloading</string>
+	<string name="CompileQueueInsufficientPermDownload">Insufficient permissions to download a script.</string>
+	<string name="CompileQueueInsufficientPermFor">Insufficient permissions for</string>
+	<string name="CompileQueueUnknownFailure">Unknown failure to download</string>
+	<string name="CompileQueueTitle">Recompilation Progress</string>
+	<string name="CompileQueueStart">recompile</string>
+	<string name="ResetQueueTitle">Reset Progress</string>
+	<string name="ResetQueueStart">reset</string>
+	<string name="RunQueueTitle">Set Running Progress</string>
+	<string name="RunQueueStart">set running</string>
+	<string name="NotRunQueueTitle">Set Not Running Progress</string>
+	<string name="NotRunQueueStart">set not running</string>
+
+	<!-- compile comment text-->
+	<string name="CompileSuccessful">Compile successful!</string>
+	<string name="CompileSuccessfulSaving">Compile successful, saving...</string>
+	<string name="SaveComplete">Save complete.</string>
+	<string name="ObjectOutOfRange">Script (object out of range)</string>
+
 	<string name="Unknown">(Unknown)</string>
 	<!-- Environment settings -->
 	<string name="Local">Local</string>
 	<string name="LocalSettings">Local Settings</string>
 	<string name="Region">Region</string>
 	<string name="RegionSettings">Region Settings</string>
+
+	<!-- inventory offer -->
+	<string name="InvOfferAnObjectNamed">An object named</string>
+	<string name="InvOfferOwnedByGroup">owned by the group</string>
+	<string name="InvOfferOwnedByUnknownGroup">owned by an unknown group</string>
+	<string name="InvOfferOwnedBy">owned by</string>
+	<string name="InvOfferOwnedByUnknownUser">owned by an unknown user</string>
+	<string name="InvOfferGaveYou">gave you</string>
+	<string name="InvOfferDecline">You decline [DESC] from [NAME].</string>
+
+	<!-- Viewer menu -->
+	<string name="AcquiredItems">Acquired Items</string>
+	<string name="Cancel">Cancel</string>
+	<string name="UploadingCosts">Uploading [NAME] costs [CURRENCY] [AMOUNT]</string>
+	<string name="UnknownFileExtension">
+		Unknown file extension .%s
+Expected .wav, .tga, .bmp, .jpg, .jpeg, or .bvh
+	</string>
+  <string name="MuteObject2">Mute</string>
+  <string name="MuteAvatar">Mute</string>
+  <string name="UnmuteObject">Unmute</string>
+  <string name="UnmuteAvatar">Unmute</string>
+
+
 	<!-- menu accelerators -->
 	<string name="accel-mac-control">Ctrl-</string>
 	<string name="accel-mac-command">Cmd-</string>
@@ -2801,6 +2908,32 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="accel-win-control">Ctrl-</string>
 	<string name="accel-win-alt">Alt-</string>
 	<string name="accel-win-shift">Shift-</string>
+
+	<!-- Directions, HUD -->
+	<string name="Direction_Forward">Forward</string>
+	<string name="Direction_Left">Left</string>
+	<string name="Direction_Right">Right</string>
+	<string name="Direction_Back">Back</string>
+	<string name="Direction_North">North</string>
+	<string name="Direction_South">South</string>
+	<string name="Direction_West">West</string>
+	<string name="Direction_East">East</string>
+	<string name="Direction_Up">Up</string>
+	<string name="Direction_Down">Down</string>
+
+	<string name="None">None</string>
+
+	<!-- punctuations -->
+	<string name=":">:</string>
+	<string name=",">,</string>
+	<string name="...">...</string>
+	<string name="***">***</string>
+	<string name="(">(</string>
+	<string name=")">)</string>
+	<string name=".">.</string>
+	<string name="'">'</string>
+	<string name="---">---</string>
+
 	<!-- OSMessageBox messages -->
 	<string name="MBCmdLineError">
 		An error was found parsing the command line.
@@ -2862,12 +2995,594 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 
 If you continue to receive this message, contact the [SUPPORT_SITE].
 	</string>
-	
+
+	<!-- Avatar Shape Information -->
+<string name="5 O'Clock Shadow">5 O'Clock Shadow</string>
+
+<string name="All White">All White</string>
+<string name="Anime Eyes">Anime Eyes</string>
+<string name="Arced">Arched</string>
+<string name="Arm Length">Arm Length</string>
+<string name="Attached">Attached</string>
+<string name="Attached Earlobes">Attached Earlobes</string>
+
+
+<string name="Back Fringe">Back Fringe</string>
+
+<string name="Baggy">Baggy</string>
+<string name="Bangs">Bangs</string>
+
+<string name="Beady Eyes">Beady Eyes</string>
+<string name="Belly Size">Belly Size</string>
+<string name="Big">Big</string>
+<string name="Big Butt">Big Butt</string>
+
+<string name="Big Hair Back">Big Hair: Back</string>
+<string name="Big Hair Front">Big Hair: Front</string>
+<string name="Big Hair Top">Big Hair: Top</string>
+<string name="Big Head">Big Head</string>
+<string name="Big Pectorals">Big Pectorals</string>
+<string name="Big Spikes">Big Spikes</string>
+<string name="Black">Black</string>
+<string name="Blonde">Blonde</string>
+<string name="Blonde Hair">Blonde Hair</string>
+<string name="Blush">Blush</string>
+<string name="Blush Color">Blush Color</string>
+<string name="Blush Opacity">Blush Opacity</string>
+<string name="Body Definition">Body Definition</string>
+<string name="Body Fat">Body Fat</string>
+<string name="Body Freckles">Body Freckles</string>
+<string name="Body Thick">Body Thick</string>
+<string name="Body Thickness">Body Thickness</string>
+<string name="Body Thin">Body Thin</string>
+
+<string name="Bow Legged">Bow Legged</string>
+<string name="Breast Buoyancy">Breast Buoyancy</string>
+<string name="Breast Cleavage">Breast Cleavage</string>
+<string name="Breast Size">Breast Size</string>
+<string name="Bridge Width">Bridge Width</string>
+<string name="Broad">Broad</string>
+<string name="Brow Size">Brow Size</string>
+<string name="Bug Eyes">Bug Eyes</string>
+<string name="Bugged Eyes">Bugged Eyes</string>
+<string name="Bulbous">Bulbous</string>
+<string name="Bulbous Nose">Bulbous Nose</string>
+
+<string name="Breast Physics Mass">Breast Mass</string>
+<string name="Breast Physics Smoothing">Breast Smoothing</string>
+<string name="Breast Physics Gravity">Breast Gravity</string>
+<string name="Breast Physics Drag">Breast Drag</string>
+
+<string name="Breast Physics InOut Max Effect">Max Effect</string>
+<string name="Breast Physics InOut Spring">Spring</string>
+<string name="Breast Physics InOut Gain">Gain</string>
+<string name="Breast Physics InOut Damping">Damping</string>
+
+<string name="Breast Physics UpDown Max Effect">Max Effect</string>
+<string name="Breast Physics UpDown Spring">Spring</string>
+<string name="Breast Physics UpDown Gain">Gain</string>
+<string name="Breast Physics UpDown Damping">Damping</string>
+
+<string name="Breast Physics LeftRight Max Effect">Max Effect</string>
+<string name="Breast Physics LeftRight Spring">Spring</string>
+<string name="Breast Physics LeftRight Gain">Gain</string>
+<string name="Breast Physics LeftRight Damping">Damping</string>
+
+<string name="Belly Physics Mass">Belly Mass</string>
+<string name="Belly Physics Smoothing">Belly Smoothing</string>
+<string name="Belly Physics Gravity">Belly Gravity</string>
+<string name="Belly Physics Drag">Belly Drag</string>
+
+<string name="Belly Physics UpDown Max Effect">Max Effect</string>
+<string name="Belly Physics UpDown Spring">Spring</string>
+<string name="Belly Physics UpDown Gain">Gain</string>
+<string name="Belly Physics UpDown Damping">Damping</string>
+
+<string name="Butt Physics Mass">Butt Mass</string>
+<string name="Butt Physics Smoothing">Butt Smoothing</string>
+<string name="Butt Physics Gravity">Butt Gravity</string>
+<string name="Butt Physics Drag">Butt Drag</string>
+
+<string name="Butt Physics UpDown Max Effect">Max Effect</string>
+<string name="Butt Physics UpDown Spring">Spring</string>
+<string name="Butt Physics UpDown Gain">Gain</string>
+<string name="Butt Physics UpDown Damping">Damping</string>
+
+<string name="Butt Physics LeftRight Max Effect">Max Effect</string>
+<string name="Butt Physics LeftRight Spring">Spring</string>
+<string name="Butt Physics LeftRight Gain">Gain</string>
+<string name="Butt Physics LeftRight Damping">Damping</string>
+
+<string name="Bushy Eyebrows">Bushy Eyebrows</string>
+<string name="Bushy Hair">Bushy Hair</string>
+<string name="Butt Size">Butt Size</string>
+<string name="Butt Gravity">Butt Gravity</string>
+<string name="bustle skirt">Bustle Skirt</string>
+<string name="no bustle">No Bustle</string>
+<string name="more bustle">More Bustle</string>
+
+<string name="Chaplin">Chaplin</string>
+<string name="Cheek Bones">Cheek Bones</string>
+<string name="Chest Size">Chest Size</string>
+<string name="Chin Angle">Chin Angle</string>
+<string name="Chin Cleft">Chin Cleft</string>
+<string name="Chin Curtains">Chin Curtains</string>
+
+<string name="Chin Depth">Chin Depth</string>
+<string name="Chin Heavy">Chin Heavy</string>
+<string name="Chin In">Chin In</string>
+<string name="Chin Out">Chin Out</string>
+<string name="Chin-Neck">Chin-Neck</string>
+<string name="Clear">Clear</string>
+<string name="Cleft">Cleft</string>
+<string name="Close Set Eyes">Close Set Eyes</string>
+<string name="Closed">Closed</string>
+<string name="Closed Back">Closed Back</string>
+<string name="Closed Front">Closed Front</string>
+<string name="Closed Left">Closed Left</string>
+<string name="Closed Right">Closed Right</string>
+<string name="Coin Purse">Coin Purse</string>
+<string name="Collar Back">Collar Back</string>
+
+
+
+<string name="Collar Front">Collar Front</string>
+
+
+
+<string name="Corner Down">Corner Down</string>
+
+<string name="Corner Up">Corner Up</string>
+<string name="Creased">Creased</string>
+<string name="Crooked Nose">Crooked Nose</string>
+
+<string name="Cuff Flare">Cuff Flare</string>
+<string name="Dark">Dark</string>
+<string name="Dark Green">Dark Green</string>
+<string name="Darker">Darker</string>
+<string name="Deep">Deep</string>
+<string name="Default Heels">Default Heels</string>
+
+<string name="Dense">Dense</string>
+
+<string name="Double Chin">Double Chin</string>
+<string name="Downturned">Downturned</string>
+<string name="Duffle Bag">Duffle Bag</string>
+<string name="Ear Angle">Ear Angle</string>
+<string name="Ear Size">Ear Size</string>
+<string name="Ear Tips">Ear Tips</string>
+<string name="Egg Head">Egg Head</string>
+<string name="Eye Bags">Eye Bags</string>
+<string name="Eye Color">Eye Color</string>
+<string name="Eye Depth">Eye Depth</string>
+<string name="Eye Lightness">Eye Lightness</string>
+<string name="Eye Opening">Eye Opening</string>
+<string name="Eye Pop">Eye Pop</string>
+<string name="Eye Size">Eye Size</string>
+<string name="Eye Spacing">Eye Spacing</string>
+
+<string name="Eyebrow Arc">Eyebrow Arc</string>
+<string name="Eyebrow Density">Eyebrow Density</string>
+
+<string name="Eyebrow Height">Eyebrow Height</string>
+<string name="Eyebrow Points">Eyebrow Points</string>
+<string name="Eyebrow Size">Eyebrow Size</string>
+
+<string name="Eyelash Length">Eyelash Length</string>
+<string name="Eyeliner">Eyeliner</string>
+<string name="Eyeliner Color">Eyeliner Color</string>
+
+<string name="Eyes Bugged">Eyes Bugged</string>
+
+
+
+
+
+
+
+
+<string name="Face Shear">Face Shear</string>
+<string name="Facial Definition">Facial Definition</string>
+<string name="Far Set Eyes">Far Set Eyes</string>
+
+<string name="Fat Lips">Fat Lips</string>
+
+<string name="Female">Female</string>
+<string name="Fingerless">Fingerless</string>
+<string name="Fingers">Fingers</string>
+<string name="Flared Cuffs">Flared Cuffs</string>
+<string name="Flat">Flat</string>
+<string name="Flat Butt">Flat Butt</string>
+<string name="Flat Head">Flat Head</string>
+<string name="Flat Toe">Flat Toe</string>
+<string name="Foot Size">Foot Size</string>
+<string name="Forehead Angle">Forehead Angle</string>
+<string name="Forehead Heavy">Forehead Heavy</string>
+<string name="Freckles">Freckles</string>
+
+<string name="Front Fringe">Front Fringe</string>
+
+<string name="Full Back">Full Back</string>
+<string name="Full Eyeliner">Full Eyeliner</string>
+<string name="Full Front">Full Front</string>
+<string name="Full Hair Sides">Full Hair Sides</string>
+<string name="Full Sides">Full Sides</string>
+<string name="Glossy">Glossy</string>
+<string name="Glove Fingers">Glove Fingers</string>
+
+<string name="Glove Length">Glove Length</string>
+
+
+<string name="Hair">Hair</string>
+<string name="Hair Back">Hair: Back</string>
+<string name="Hair Front">Hair: Front</string>
+<string name="Hair Sides">Hair: Sides</string>
+<string name="Hair Sweep">Hair Sweep</string>
+<string name="Hair Thickess">Hair Thickness</string>
+<string name="Hair Thickness">Hair Thickness</string>
+<string name="Hair Tilt">Hair Tilt</string>
+<string name="Hair Tilted Left">Hair Tilted Left</string>
+<string name="Hair Tilted Right">Hair Tilted Right</string>
+<string name="Hair Volume">Hair: Volume</string>
+<string name="Hand Size">Hand Size</string>
+<string name="Handlebars">Handlebars</string>
+<string name="Head Length">Head Length</string>
+<string name="Head Shape">Head Shape</string>
+<string name="Head Size">Head Size</string>
+<string name="Head Stretch">Head Stretch</string>
+<string name="Heel Height">Heel Height</string>
+<string name="Heel Shape">Heel Shape</string>
+<string name="Height">Height</string>
+<string name="High">High</string>
+<string name="High Heels">High Heels</string>
+<string name="High Jaw">High Jaw</string>
+<string name="High Platforms">High Platforms</string>
+<string name="High and Tight">High and Tight</string>
+<string name="Higher">Higher</string>
+<string name="Hip Length">Hip Length</string>
+<string name="Hip Width">Hip Width</string>
+<string name="In">In</string>
+<string name="In Shdw Color">Inner Shadow Color</string>
+<string name="In Shdw Opacity">Inner Shadow Opacity</string>
+<string name="Inner Eye Corner">Inner Eye Corner</string>
+<string name="Inner Eye Shadow">Inner Eye Shadow</string>
+<string name="Inner Shadow">Inner Shadow</string>
+
+
+<string name="Jacket Length">Jacket Length</string>
+
+<string name="Jacket Wrinkles">Jacket Wrinkles</string>
+<string name="Jaw Angle">Jaw Angle</string>
+<string name="Jaw Jut">Jaw Jut</string>
+<string name="Jaw Shape">Jaw Shape</string>
+<string name="Join">Join</string>
+<string name="Jowls">Jowls</string>
+<string name="Knee Angle">Knee Angle</string>
+<string name="Knock Kneed">Knock Kneed</string>
+
+<string name="Large">Large</string>
+<string name="Large Hands">Large Hands</string>
+<string name="Left Part">Left Part</string>
+<string name="Leg Length">Leg Length</string>
+<string name="Leg Muscles">Leg Muscles</string>
+<string name="Less">Less</string>
+<string name="Less Body Fat">Less Body Fat</string>
+<string name="Less Curtains">Less Curtains</string>
+<string name="Less Freckles">Less Freckles</string>
+<string name="Less Full">Less Full</string>
+<string name="Less Gravity">Less Gravity</string>
+<string name="Less Love">Less Love</string>
+<string name="Less Muscles">Less Muscles</string>
+<string name="Less Muscular">Less Muscular</string>
+<string name="Less Rosy">Less Rosy</string>
+<string name="Less Round">Less Round</string>
+<string name="Less Saddle">Less Saddle</string>
+<string name="Less Square">Less Square</string>
+<string name="Less Volume">Less Volume</string>
+<string name="Less soul">Less soul</string>
+<string name="Lighter">Lighter</string>
+<string name="Lip Cleft">Lip Cleft</string>
+<string name="Lip Cleft Depth">Lip Cleft Depth</string>
+<string name="Lip Fullness">Lip Fullness</string>
+<string name="Lip Pinkness">Lip Pinkness</string>
+<string name="Lip Ratio">Lip Ratio</string>
+<string name="Lip Thickness">Lip Thickness</string>
+<string name="Lip Width">Lip Width</string>
+<string name="Lipgloss">Lipgloss</string>
+<string name="Lipstick">Lipstick</string>
+<string name="Lipstick Color">Lipstick Color</string>
+<string name="Long">Long</string>
+<string name="Long Head">Long Head</string>
+<string name="Long Hips">Long Hips</string>
+<string name="Long Legs">Long Legs</string>
+<string name="Long Neck">Long Neck</string>
+<string name="Long Pigtails">Long Pigtails</string>
+<string name="Long Ponytail">Long Ponytail</string>
+<string name="Long Torso">Long Torso</string>
+<string name="Long arms">Long arms</string>
+
+
+<string name="Loose Pants">Loose Pants</string>
+<string name="Loose Shirt">Loose Shirt</string>
+<string name="Loose Sleeves">Loose Sleeves</string>
+
+<string name="Love Handles">Love Handles</string>
+<string name="Low">Low</string>
+<string name="Low Heels">Low Heels</string>
+<string name="Low Jaw">Low Jaw</string>
+<string name="Low Platforms">Low Platforms</string>
+<string name="Low and Loose">Low and Loose</string>
+<string name="Lower">Lower</string>
+<string name="Lower Bridge">Lower Bridge</string>
+<string name="Lower Cheeks">Lower Cheeks</string>
+
+<string name="Male">Male</string>
+<string name="Middle Part">Middle Part</string>
+<string name="More">More</string>
+<string name="More Blush">More Blush</string>
+<string name="More Body Fat">More Body Fat</string>
+<string name="More Curtains">More Curtains</string>
+<string name="More Eyeshadow">More Eyeshadow</string>
+<string name="More Freckles">More Freckles</string>
+<string name="More Full">More Full</string>
+<string name="More Gravity">More Gravity</string>
+<string name="More Lipstick">More Lipstick</string>
+<string name="More Love">More Love</string>
+<string name="More Lower Lip">More Lower Lip</string>
+<string name="More Muscles">More Muscles</string>
+<string name="More Muscular">More Muscular</string>
+<string name="More Rosy">More Rosy</string>
+<string name="More Round">More Round</string>
+<string name="More Saddle">More Saddle</string>
+<string name="More Sloped">More Sloped</string>
+<string name="More Square">More Square</string>
+<string name="More Upper Lip">More Upper Lip</string>
+<string name="More Vertical">More Vertical</string>
+<string name="More Volume">More Volume</string>
+<string name="More soul">More soul</string>
+<string name="Moustache">Moustache</string>
+
+<string name="Mouth Corner">Mouth Corner</string>
+<string name="Mouth Position">Mouth Position</string>
+<string name="Mowhawk">Mohawk</string>
+<string name="Muscular">Muscular</string>
+<string name="Mutton Chops">Mutton Chops</string>
+
+<string name="Nail Polish">Nail Polish</string>
+<string name="Nail Polish Color">Nail Polish Color</string>
+<string name="Narrow">Narrow</string>
+<string name="Narrow Back">Narrow Back</string>
+<string name="Narrow Front">Narrow Front</string>
+<string name="Narrow Lips">Narrow Lips</string>
+<string name="Natural">Natural</string>
+<string name="Neck Length">Neck Length</string>
+<string name="Neck Thickness">Neck Thickness</string>
+<string name="No Blush">No Blush</string>
+<string name="No Eyeliner">No Eyeliner</string>
+<string name="No Eyeshadow">No Eyeshadow</string>
+
+<string name="No Lipgloss">No Lipgloss</string>
+<string name="No Lipstick">No Lipstick</string>
+<string name="No Part">No Part</string>
+<string name="No Polish">No Polish</string>
+<string name="No Red">No Red</string>
+<string name="No Spikes">No Spikes</string>
+<string name="No White">No White</string>
+<string name="No Wrinkles">No Wrinkles</string>
+<string name="Normal Lower">Normal Lower</string>
+<string name="Normal Upper">Normal Upper</string>
+<string name="Nose Left">Nose Left</string>
+<string name="Nose Right">Nose Right</string>
+<string name="Nose Size">Nose Size</string>
+<string name="Nose Thickness">Nose Thickness</string>
+<string name="Nose Tip Angle">Nose Tip Angle</string>
+<string name="Nose Tip Shape">Nose Tip Shape</string>
+<string name="Nose Width">Nose Width</string>
+<string name="Nostril Division">Nostril Division</string>
+<string name="Nostril Width">Nostril Width</string>
+
+
+<string name="Opaque">Opaque</string>
+<string name="Open">Open</string>
+<string name="Open Back">Open Back</string>
+<string name="Open Front">Open Front</string>
+<string name="Open Left">Open Left</string>
+<string name="Open Right">Open Right</string>
+<string name="Orange">Orange</string>
+<string name="Out">Out</string>
+<string name="Out Shdw Color">Outer Shadow Color</string>
+<string name="Out Shdw Opacity">Outer Shadow Opacity</string>
+<string name="Outer Eye Corner">Outer Eye Corner</string>
+<string name="Outer Eye Shadow">Outer Eye Shadow</string>
+<string name="Outer Shadow">Outer Shadow</string>
+<string name="Overbite">Overbite</string>
+
+<string name="Package">Package</string>
+<string name="Painted Nails">Painted Nails</string>
+<string name="Pale">Pale</string>
+<string name="Pants Crotch">Pants Crotch</string>
+<string name="Pants Fit">Pants Fit</string>
+<string name="Pants Length">Pants Length</string>
+
+
+<string name="Pants Waist">Pants Waist</string>
+<string name="Pants Wrinkles">Pants Wrinkles</string>
+<string name="Part">Part</string>
+<string name="Part Bangs">Part Bangs</string>
+<string name="Pectorals">Pectorals</string>
+<string name="Pigment">Pigment</string>
+<string name="Pigtails">Pigtails</string>
+<string name="Pink">Pink</string>
+<string name="Pinker">Pinker</string>
+<string name="Platform Height">Platform Height</string>
+<string name="Platform Width">Platform Width</string>
+<string name="Pointy">Pointy</string>
+<string name="Pointy Heels">Pointy Heels</string>
+
+<string name="Ponytail">Ponytail</string>
+<string name="Poofy Skirt">Poofy Skirt</string>
+<string name="Pop Left Eye">Pop Left Eye</string>
+<string name="Pop Right Eye">Pop Right Eye</string>
+<string name="Puffy">Puffy</string>
+<string name="Puffy Eyelids">Puffy Eyelids</string>
+<string name="Rainbow Color">Rainbow Color</string>
+<string name="Red Hair">Red Hair</string>
+
+<string name="Regular">Regular</string>
+
+<string name="Right Part">Right Part</string>
+<string name="Rosy Complexion">Rosy Complexion</string>
+<string name="Round">Round</string>
+
+<string name="Ruddiness">Ruddiness</string>
+<string name="Ruddy">Ruddy</string>
+<string name="Rumpled Hair">Rumpled Hair</string>
+<string name="Saddle Bags">Saddle Bags</string>
+
+
+<string name="Scrawny Leg">Scrawny Leg</string>
+<string name="Separate">Separate</string>
+
+
+<string name="Shallow">Shallow</string>
+<string name="Shear Back">Shear Back</string>
+<string name="Shear Face">Shear Face</string>
+<string name="Shear Front">Shear Front</string>
+
+<string name="Shear Left Up">Shear Left Up</string>
+
+<string name="Shear Right Up">Shear Right Up</string>
+<string name="Sheared Back">Sheared Back</string>
+<string name="Sheared Front">Sheared Front</string>
+<string name="Shift Left">Shift Left</string>
+<string name="Shift Mouth">Shift Mouth</string>
+<string name="Shift Right">Shift Right</string>
+<string name="Shirt Bottom">Shirt Bottom</string>
+
+<string name="Shirt Fit">Shirt Fit</string>
+
+<string name="Shirt Wrinkles">Shirt Wrinkles</string>
+<string name="Shoe Height">Shoe Height</string>
+
+<string name="Short">Short</string>
+<string name="Short Arms">Short Arms</string>
+<string name="Short Legs">Short Legs</string>
+<string name="Short Neck">Short Neck</string>
+<string name="Short Pigtails">Short Pigtails</string>
+<string name="Short Ponytail">Short Ponytail</string>
+<string name="Short Sideburns">Short Sideburns</string>
+<string name="Short Torso">Short Torso</string>
+<string name="Short hips">Short hips</string>
+<string name="Shoulders">Shoulders</string>
+
+<string name="Side Fringe">Side Fringe</string>
+<string name="Sideburns">Sideburns</string>
+
+<string name="Sides Hair">Sides Hair</string>
+<string name="Sides Hair Down">Sides Hair Down</string>
+<string name="Sides Hair Up">Sides Hair Up</string>
+
+<string name="Skinny Neck">Skinny Neck</string>
+<string name="Skirt Fit">Skirt Fit</string>
+<string name="Skirt Length">Skirt Length</string>
+<string name="Slanted Forehead">Slanted Forehead</string>
+<string name="Sleeve Length">Sleeve Length</string>
+
+
+
+<string name="Sleeve Looseness">Sleeve Looseness</string>
+<string name="Slit Back">Slit: Back</string>
+<string name="Slit Front">Slit: Front</string>
+<string name="Slit Left">Slit: Left</string>
+<string name="Slit Right">Slit: Right</string>
+<string name="Small">Small</string>
+<string name="Small Hands">Small Hands</string>
+<string name="Small Head">Small Head</string>
+<string name="Smooth">Smooth</string>
+<string name="Smooth Hair">Smooth Hair</string>
+<string name="Socks Length">Socks Length</string>
+
+
+<string name="Soulpatch">Soulpatch</string>
+
+<string name="Sparse">Sparse</string>
+<string name="Spiked Hair">Spiked Hair</string>
+<string name="Square">Square</string>
+<string name="Square Toe">Square Toe</string>
+<string name="Squash Head">Squash Head</string>
+
+<string name="Stretch Head">Stretch Head</string>
+<string name="Sunken">Sunken</string>
+<string name="Sunken Chest">Sunken Chest</string>
+<string name="Sunken Eyes">Sunken Eyes</string>
+<string name="Sweep Back">Sweep Back</string>
+<string name="Sweep Forward">Sweep Forward</string>
+
+<string name="Tall">Tall</string>
+<string name="Taper Back">Taper Back</string>
+<string name="Taper Front">Taper Front</string>
+<string name="Thick Heels">Thick Heels</string>
+<string name="Thick Neck">Thick Neck</string>
+<string name="Thick Toe">Thick Toe</string>
+
+<string name="Thin">Thin</string>
+<string name="Thin Eyebrows">Thin Eyebrows</string>
+<string name="Thin Lips">Thin Lips</string>
+<string name="Thin Nose">Thin Nose</string>
+<string name="Tight Chin">Tight Chin</string>
+<string name="Tight Cuffs">Tight Cuffs</string>
+<string name="Tight Pants">Tight Pants</string>
+<string name="Tight Shirt">Tight Shirt</string>
+<string name="Tight Skirt">Tight Skirt</string>
+<string name="Tight Sleeves">Tight Sleeves</string>
+
+<string name="Toe Shape">Toe Shape</string>
+<string name="Toe Thickness">Toe Thickness</string>
+<string name="Torso Length">Torso Length</string>
+<string name="Torso Muscles">Torso Muscles</string>
+<string name="Torso Scrawny">Torso Scrawny</string>
+<string name="Unattached">Unattached</string>
+<string name="Uncreased">Uncreased</string>
+<string name="Underbite">Underbite</string>
+<string name="Unnatural">Unnatural</string>
+<string name="Upper Bridge">Upper Bridge</string>
+<string name="Upper Cheeks">Upper Cheeks</string>
+<string name="Upper Chin Cleft">Upper Chin Cleft</string>
+
+<string name="Upper Eyelid Fold">Upper Eyelid Fold</string>
+<string name="Upturned">Upturned</string>
+<string name="Very Red">Very Red</string>
+<string name="Waist Height">Waist Height</string>
+
+
+<string name="Well-Fed">Well-Fed</string>
+<string name="White Hair">White Hair</string>
+<string name="Wide">Wide</string>
+<string name="Wide Back">Wide Back</string>
+<string name="Wide Front">Wide Front</string>
+<string name="Wide Lips">Wide Lips</string>
+<string name="Wild">Wild</string>
+<string name="Wrinkles">Wrinkles</string>
+
+	<!-- IM system messages -->
+	<string name="IM_announce_incoming">has begun an IM session with you.</string>
+	<string name="IM_autoresponded_to">Autoresponse sent to</string>
+	<string name="IM_autoresponse_sent_item">was sent auto-response item</string>
+	<string name="Unnamed">(Unnamed)</string>
+	<string name="Saved_message">(Saved [LONG_TIMESTAMP])</string>
+	<string name="PowerUser1">You are bestowed with powers beyond mortal comprehension.</string>
+	<string name="PowerUser2">Use your newfound abilities wisely.</string>
+	<string name="Unlocked:">Unlocked:</string>
+	<string name="PowerUser3">- Animation Priority up to 7 - Meant for animations that should override anything and everything at all times. DO NOT USE THIS FOR GENERAL ANIMATIONS.</string>
+	<string name="RightClick">Right click</string>
+	<string name="PowerUser4">Destroy objects - Permanently deletes an object immediately, when you don't feel like waiting for the server to respond.</string>
+	<string name="PowerUser5">Explode objects - Turns an object physical, temporary, and delinks it.</string>
+
   <string name="group_role_everyone">Everyone</string>
   <string name="group_role_officers">Officers</string>
-  <string name="group_role_owners">Owners</string>	
+  <string name="group_role_owners">Owners</string>
   <string name="group_member_status_online">Online</string>
-  
+
   <string name="Chat">Chat</string>
 
   <string name="DefaultMimeType">none/none</string>
@@ -2879,5 +3594,8 @@ Try enclosing path to the editor with double quotes.
 (e.g. "/path to my/editor" "%s")</string>
  <string name="ExternalEditorCommandParseError">Error parsing the external editor command.</string>
  <string name="ExternalEditorFailedToRun">External editor failed to run.</string>
+
+  <string name="Left">Left</string>
+  <string name="Right">Right</string>
 
 </strings>

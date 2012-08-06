@@ -70,6 +70,7 @@
 <ScrollHighlightedColor value="183, 184, 188, 128"/>	<!-- Hover color -->
 <ScrollbarThumbColor value="100, 100, 100, 255"/>
 <ScrollbarTrackColor value="153, 154, 158, 255"/>
+<DefaultListText value="255, 255, 255, 255"/>           <!-- We are replacing all the hardcoded black text with this color so we can make skins with white text on dark background -->
 
 <!-- MENUS -->
 <MenuBarBgColor value="62, 62, 62, 255"/>

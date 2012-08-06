@@ -707,14 +707,13 @@ void LLTaskInvFVBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 		return;
 	}
 
-	 // *TODO: Translate
 	if(gAgent.allowOperation(PERM_OWNER, item->getPermissions(),
 							 GP_OBJECT_MANIPULATE)
 	   && item->getSaleInfo().isForSale())
 	{
 		items.push_back(std::string("Task Buy"));
 
-		std::string label("Buy");
+		std::string label= LLTrans::getString("Buy");
 		// Check the price of the item.
 		S32 price = getPrice();
 		if (-1 == price)
@@ -1072,13 +1071,12 @@ void LLTaskSoundBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	std::vector<std::string> items;
 	std::vector<std::string> disabled_items;
 
-	// *TODO: Translate
 	if(item->getPermissions().getOwner() != gAgent.getID()
 	   && item->getSaleInfo().isForSale())
 	{
 		items.push_back(std::string("Task Buy"));
 
-		std::string label("Buy");
+		std::string label= LLTrans::getString("Buy");
 		// Check the price of the item.
 		S32 price = getPrice();
 		if (-1 == price)
@@ -1905,24 +1903,23 @@ void LLPanelObjectInventory::draw()
 
 	if(mIsInventoryEmpty)
 	{
-		// *TODO: Translate
 		if((LLUUID::null != mTaskUUID) && (!mHaveInventory))
 		{
-			LLFontGL::getFontSansSerif()->renderUTF8(std::string("Loading contents..."), 0,
-										 (S32)(getRect().getWidth() * 0.5f),
-										 10,
-										 LLColor4( 1, 1, 1, 1 ),
-										 LLFontGL::HCENTER,
-										 LLFontGL::BOTTOM);
+			LLFontGL::getFontSansSerif()->renderUTF8(LLTrans::getString("LoadingContents"), 0,
+													 (S32)(getRect().getWidth() * 0.5f),
+													 10,
+													 LLColor4( 1, 1, 1, 1 ),
+													 LLFontGL::HCENTER,
+													 LLFontGL::BOTTOM);
 		}
 		else if(mHaveInventory)
 		{
-			LLFontGL::getFontSansSerif()->renderUTF8(std::string("No contents"), 0,
-										 (S32)(getRect().getWidth() * 0.5f),
-										 10,
-										 LLColor4( 1, 1, 1, 1 ),
-										 LLFontGL::HCENTER,
-										 LLFontGL::BOTTOM);
+			LLFontGL::getFontSansSerif()->renderUTF8(LLTrans::getString("NoContents"), 0,
+													 (S32)(getRect().getWidth() * 0.5f),
+													 10,
+													 LLColor4( 1, 1, 1, 1 ),
+													 LLFontGL::HCENTER,
+													 LLFontGL::BOTTOM);
 		}
 	}
 }
