@@ -1424,7 +1424,7 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 				+ " " + LLTrans::getString("'") + group_name + LLTrans::getString("'");
 
 				chatHistory_string = mFromName + " " + LLTrans::getString("InvOfferOwnedByGroup")
-				+ " " + group_name +  + LLTrans::getString("'") + LLTrans::getString(".");
+				+ " " + group_name + LLTrans::getString("'") + LLTrans::getString(".");
 			}
 			else
 			{
