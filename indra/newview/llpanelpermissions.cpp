@@ -66,6 +66,7 @@
 #include "llviewercontrol.h"
 #include "lluictrlfactory.h"
 #include "roles_constants.h"
+#include "lltrans.h"
 
 #include "hippogridmanager.h"
 
@@ -291,11 +292,17 @@ void LLPanelPermissions::refresh()
 		getString("text modify info 1"),
 		getString("text modify info 2"),
 		getString("text modify info 3"),
-		getString("text modify info 4")
+		getString("text modify info 4"),
+		getString("text modify info 5"),
+		getString("text modify info 6")
 	};
 	if(!is_perm_modify)
 	{
 		string_index += 2;
+	}
+	else if (!is_nonpermanent_enforced)
+	{
+		string_index += 4;
 	}
 	if(!is_one_object)
 	{
@@ -303,6 +310,34 @@ void LLPanelPermissions::refresh()
 	}
 	childSetEnabled("perm_modify",true);
 	childSetText("perm_modify",MODIFY_INFO_STRINGS[string_index]);
+
+	std::string pfAttrName;
+
+	if ((LLSelectMgr::getInstance()->getSelection()->getFirstRootNode() 
+		&& LLSelectMgr::getInstance()->selectGetRootsNonPathfinding())
+		|| LLSelectMgr::getInstance()->selectGetNonPathfinding())
+	{
+		pfAttrName = "Pathfinding_Object_Attr_None";
+	}
+	else if ((LLSelectMgr::getInstance()->getSelection()->getFirstRootNode() 
+		&& LLSelectMgr::getInstance()->selectGetRootsPermanent())
+		|| LLSelectMgr::getInstance()->selectGetPermanent())
+	{
+		pfAttrName = "Pathfinding_Object_Attr_Permanent";
+	}
+	else if ((LLSelectMgr::getInstance()->getSelection()->getFirstRootNode() 
+		&& LLSelectMgr::getInstance()->selectGetRootsCharacter())
+		|| LLSelectMgr::getInstance()->selectGetCharacter())
+	{
+		pfAttrName = "Pathfinding_Object_Attr_Character";
+	}
+	else
+	{
+		pfAttrName = "Pathfinding_Object_Attr_MultiSelect";
+	}
+
+	getChildView("pathfinding_attributes_value")->setEnabled(TRUE);
+	getChild<LLUICtrl>("pathfinding_attributes_value")->setValue(LLTrans::getString(pfAttrName));
 
 	childSetEnabled("Permissions:",true);
 	

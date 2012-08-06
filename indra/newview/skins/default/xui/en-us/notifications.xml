@@ -102,6 +102,21 @@
     </form>
   </template>
 
+  <template name="okhelpignore">
+    <form>
+      <button
+       default="true"
+       index="0"
+       name="OK"
+       text="$yestext"/>
+      <button
+       index="1"
+       name="Help"
+       text="$helptext"/>
+      <ignore text="$ignoretext"/>
+    </form>
+  </template>
+
   <template name="yesnocancelbuttons">
     <form>
       <button
@@ -7125,6 +7140,19 @@ You locally updated a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME]
   <global name="UnsupportedCPU">
 - Your CPU speed does not meet the minimum requirements.
   </global>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_ChangeToFlexiblePath"
+   type="alertmodal">
+    The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh.
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
 
   <global name="UnsupportedGLRequirements">
     You do not appear to have the proper hardware requirements for [APP_NAME]. The viewer requires an OpenGL graphics card that has multitexture support. If this is the case, you may want to make sure that you have the latest drivers for your graphics card, and service packs and patches for your operating system.
