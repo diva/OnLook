@@ -593,11 +593,19 @@ void AIStateMachine::flush(void)
   {
 	AIStateMachine& statemachine(iter->statemachine());
 	if (statemachine.abortable())
-	  statemachine.abort();
+	{
+	  // We can't safely call abort() here for non-running (run() was called, but they we're initialized yet) statemachines,
+	  // because that might call kill() which in some cases is undesirable (ie, when it is owned by a partent that will
+	  // also call abort() on it when it is aborted itself).
+	  if (statemachine.running())
+		statemachine.abort();
+	  else
+		statemachine.idle();		// Stop the statemachine from starting, in the next loop with batch == 0.
+	}
   }
   for (int batch = 0;; ++batch)
   {
-	// Run mainloop until all state machines are idle.
+	// Run mainloop until all state machines are idle (batch == 0) or deleted (batch == 1).
 	for(;;)
 	{
 	  {
