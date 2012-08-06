@@ -195,8 +195,8 @@ namespace
 			S32 fileSize = vfile.getSize();
 			U8* fileBuffer;
 			fileBuffer = new U8 [fileSize];
-            vfile.read(fileBuffer, fileSize);
-            ostream.write((char*)fileBuffer, fileSize);
+			vfile.read(fileBuffer, fileSize);
+			ostream.write((char*)fileBuffer, fileSize);
 			delete [] fileBuffer;
 			eos = true;
 			return STATUS_DONE;
@@ -224,7 +224,7 @@ static void request(
 	LLCurl::ResponderPtr responder,
 	const F32 timeout = HTTP_REQUEST_EXPIRY_SECS,
 	const LLSD& headers = LLSD()
-    )
+	)
 {
 	if (responder)
 	{
@@ -256,7 +256,13 @@ static void request(
 
 	lldebugs << LLURLRequest::actionAsVerb(method) << " " << url << " " << headers << llendl;
 
-	// Insert custom headers if the caller sent any
+	// Insert custom headers if the caller sent any.
+
+	std::vector<std::string> headers_vector;
+	bool has_content_type = false;
+	bool has_accept = false;
+
+	// Note that headers always is a map, unless no argument was passed.
 	if (headers.isMap())
 	{
 		if (headers.has("Cookie"))
@@ -264,68 +270,71 @@ static void request(
 			req->allowCookies();
 		}
 
-        LLSD::map_const_iterator iter = headers.beginMap();
-        LLSD::map_const_iterator end  = headers.endMap();
+		LLSD::map_const_iterator iter = headers.beginMap();
+		LLSD::map_const_iterator const end  = headers.endMap();
 
-        for (; iter != end; ++iter)
-        {
-            std::ostringstream header;
-            //if the header is "Pragma" with no value
-            //the caller intends to force libcurl to drop
-            //the Pragma header it so gratuitously inserts
-            //Before inserting the header, force libcurl
-            //to not use the proxy (read: llurlrequest.cpp)
-			static const std::string PRAGMA("Pragma");
-			if ((iter->first == PRAGMA) && (iter->second.asString().empty()))
-            {
-                req->useProxy(false);
-            }
-            header << iter->first << ": " << iter->second.asString() ;
-            lldebugs << "header = " << header.str() << llendl;
-            req->addHeader(header.str().c_str());
-        }
-
-		if (method == LLURLRequest::HTTP_PUT || method == LLURLRequest::HTTP_POST)
+		for (; iter != end; ++iter)
 		{
-			static std::string const CONTENT_TYPE("Content-Type");
-			if(!headers.has(CONTENT_TYPE))
+			// If the header is "Pragma" with no value, the caller intends to
+			// force libcurl to drop the Pragma header it so gratuitously inserts.
+			// Before inserting the header, force libcurl to not use the proxy.
+			if (iter->first.compare("Pragma") == 0 && iter->second.asString().empty())
 			{
-				// If the Content-Type header was passed in, it has
-				// already been added as a header through req->addHeader
-				// in the loop above. We defer to the caller's wisdom, but
-				// if they did not specify a Content-Type, then ask the
-				// injector.
-				req->addHeader(llformat("Content-Type: %s", body_injector->contentType()).c_str());
+				req->useProxy(false);
 			}
-		}
-		else
-		{
-			// Check to see if we have already set Accept or not. If no one
-			// set it, set it to application/llsd+xml since that's what we
-			// almost always want.
-			static std::string const ACCEPT("Accept");
-			if (!headers.has(ACCEPT))
+			if (iter->first.compare("Content-Type") == 0)
 			{
-				req->addHeader("Accept: application/llsd+xml");
+				has_content_type = true;
 			}
-		}
-    }
+			if (iter->first.compare("Accept") == 0)
+			{
+				has_accept = true;
+			}
 
-	if (method == LLURLRequest::HTTP_POST && gMessageSystem)
-	{
-		req->addHeader(llformat("X-SecondLife-UDP-Listen-Port: %d", gMessageSystem->mPort).c_str());
-   	}
+			std::ostringstream header;
+			header << iter->first << ": " << iter->second.asString();
+			headers_vector.push_back(header.str());
+		}
+	}
 
 	if (method == LLURLRequest::HTTP_PUT || method == LLURLRequest::HTTP_POST)
 	{
-   		chain.push_back(LLIOPipe::ptr_t(body_injector));
+		if (!has_content_type)
+		{
+			// If the Content-Type header was passed in, it has
+			// already been added as a header through req->addHeader
+			// in the loop above. We defer to the caller's wisdom, but
+			// if they did not specify a Content-Type, then ask the
+			// injector.
+			headers_vector.push_back(llformat("Content-Type: %s", body_injector->contentType()));
+		}
+	}
+	else
+	{
+		// Check to see if we have already set Accept or not. If no one
+		// set it, set it to application/llsd+xml since that's what we
+		// almost always want.
+		if (!has_accept)
+		{
+			headers_vector.push_back("Accept: application/llsd+xml");
+		}
+	}
+	if (method == LLURLRequest::HTTP_POST && gMessageSystem)
+	{
+		headers_vector.push_back(llformat("X-SecondLife-UDP-Listen-Port: %d", gMessageSystem->mPort));
+	}
+
+	if (method == LLURLRequest::HTTP_PUT || method == LLURLRequest::HTTP_POST)
+	{
+		//AIFIXME:
+		chain.push_back(LLIOPipe::ptr_t(body_injector));
 	}
 
 	//AIFIXME: chain.push_back(LLIOPipe::ptr_t(req));
 
 	AICurlEasyRequest_wat buffered_easy_request_w(*req->mCurlEasyRequest);
 	AICurlResponderBuffer_wat buffer_w(*req->mCurlEasyRequest);
-	buffer_w->prepRequest(buffered_easy_request_w, headers, responder);
+	buffer_w->prepRequest(buffered_easy_request_w, headers_vector, responder);
 
 	req->setRequestTimeOut(timeout);
 	//AIFIXME: theClientPump->addChain(chain, timeout);

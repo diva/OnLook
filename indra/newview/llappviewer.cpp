@@ -644,7 +644,7 @@ bool LLAppViewer::init()
     mAlloc.setProfilingEnabled(gSavedSettings.getBOOL("MemProfiling"));
 
 	AIStateMachine::setMaxCount(gSavedSettings.getU32("StateMachineMaxTime"));
-	AICurlEasyRequestStateMachine::setCurlRequestTimeOut(gSavedSettings.getF32("CurlRequestTimeOut"));
+	AICurlEasyRequestStateMachine::setDefaultRequestTimeOut(gSavedSettings.getF32("CurlRequestTimeOut"));
 
     initThreads();
 	LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ;
