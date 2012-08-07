@@ -268,7 +268,7 @@ static void request(const std::string &url,
 		llwarns << "Failed to create LLURLRequest: " << error.what() << llendl;
 		return;
 	}
-	req->setSSLVerifyCallback(LLHTTPClient::getCertVerifyCallback(), (void *)req);
+	req->checkRootCertificate(true);
 
 	/*
 	// Insert custom headers if the caller sent any

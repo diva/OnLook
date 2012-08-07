@@ -155,12 +155,6 @@ public:
 		///< for testing
 	static LLPumpIO &getPump();
 		///< Hippo special
-
-	static void setCertVerifyCallback(LLURLRequest::SSLCertVerifyCallback callback);
-	static  LLURLRequest::SSLCertVerifyCallback getCertVerifyCallback() { return mCertVerifyCallback; }
-
-protected:
-	static LLURLRequest::SSLCertVerifyCallback mCertVerifyCallback;
 };
 
 #endif // LL_LLHTTPCLIENT_H

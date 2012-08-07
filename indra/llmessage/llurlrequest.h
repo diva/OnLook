@@ -142,7 +142,7 @@ public:
 	 * Set whether request will check that remote server
 	 * certificates are signed by a known root CA when using HTTPS.
 	 */
-	void setSSLVerifyCallback(SSLCertVerifyCallback callback, void * param);
+	void checkRootCertificate(bool check);
 
 	
 	/**
@@ -227,8 +227,6 @@ protected:
 	 S32 mRequestTransferedBytes;
 	 S32 mResponseTransferedBytes;
 
-	static CURLcode _sslCtxCallback(CURL * curl, void *sslctx, void *param);
-	
 	// mRemoved is used instead of changing mState directly, because I'm not convinced the latter is atomic.
 	// Set to false before adding curl request and then only tested.
 	// Reset in removed_from_multi_handle (by another thread), this is thread-safe.
