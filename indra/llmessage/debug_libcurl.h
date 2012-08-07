@@ -1,9 +1,19 @@
 #ifndef DEBUG_LIBCURL
 #define DEBUG_LIBCURL
 
-#ifdef DEBUG_CURLIO
+#ifndef DEBUG_CURLIO
+#error "Don't include debug_libcurl.h unless DEBUG_CURLIO is defined."
+#endif
 
-#include <curl/curl.h>
+#ifndef CURLINFO_TYPEMASK
+#error "<curl/curl.h> must be included before including debug_libcurl.h!"
+#endif
+
+#ifndef LLPREPROCESSOR_H
+// CURL_STATICLIB is needed on windows namely, which is defined in llpreprocessor.h (but only on windows).
+#error "llpreprocessor.h must be included before <curl/curl.h>."
+#endif
+
 #include "debug.h"
 
 extern "C" {
@@ -77,7 +87,5 @@ extern CWD_API char* debug_curl_version(void);
 #define curl_version() debug_curl_version()
 
 #endif // !COMPILING_DEBUG_LIBCURL_CC
-
-#endif // DEBUG_CURLIO
 
 #endif // DEBUG_LIBCURL

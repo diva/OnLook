@@ -8,14 +8,16 @@
 #endif
 
 #include <stdtypes.h>
-#include <llbufferstream.h>
-#include <llerror.h>
-#include <llhttpclient.h>
-#include <llurlrequest.h>
-#include <llxmltree.h>
+#include "llbufferstream.h"
+#include "llerror.h"
+#include "llhttpclient.h"
+#include "llurlrequest.h"
+#include "llxmltree.h"
 
 #include <curl/curl.h>
+#ifdef DEBUG_CURLIO
 #include "debug_libcurl.h"
+#endif
 
 // ********************************************************************
  

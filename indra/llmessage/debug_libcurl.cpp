@@ -4,6 +4,8 @@
 #include <iostream>
 #include <iomanip>
 #include <stdarg.h>
+#include "llpreprocessor.h"
+#include <curl/curl.h>
 #define COMPILING_DEBUG_LIBCURL_CC
 #include "debug_libcurl.h"
 #include "../llcommon/llerror.h"
@@ -801,6 +803,7 @@ char* debug_curl_version(void)
 
 }
 
-#else
+#else	// DEBUG_CURLIO
 int debug_libcurl_dummy;	// I thought some OS didn't like empty source files.
-#endif
+#endif	// DEBUG_CURLIO
+

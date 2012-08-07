@@ -177,6 +177,19 @@ int closesocket(curl_socket_t fd)
   return close(fd);
 }
 
+int const FIONBIO = 0;
+
+int ioctlsocket(int fd, int, unsigned long* nonblocking_enable)
+{
+  int res = fcntl(fd, F_GETFL, 0);
+  llassert_always(res != -1);
+  if (*nonblocking_enable)
+	res |= O_NONBLOCK;
+  else
+	res &= ~O_NONBLOCK;
+  return fcntl(fd, F_SETFD, res);
+}
+
 #endif // DEBUG_WINDOWS_CODE_ON_LINUX
 
 #define WINDOWS_CODE (LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
@@ -894,7 +907,7 @@ static int dumb_socketpair(SOCKET socks[2], bool make_overlapped)
     WSASetLastError(e);
     return SOCKET_ERROR;
 }
-#else
+#elif WINDOWS_CODE
 int dumb_socketpair(int socks[2], int dummy)
 {
     (void) dummy;
@@ -933,7 +946,7 @@ void AICurlThread::create_wakeup_fds(void)
   {
 	llerrs << "Failed to create wakeup pipe: " << strerror(errno) << llendl;
   }
-  long flags = O_NONBLOCK;
+  int const flags = O_NONBLOCK;
   for (int i = 0; i < 2; ++i)
   {
 	if (fcntl(pipefd[i], F_SETFL, flags))

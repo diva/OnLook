@@ -37,11 +37,16 @@
 #include <stdexcept>
 #include <boost/intrusive_ptr.hpp>
 #include <boost/utility.hpp>
+
+#include "llpreprocessor.h"
 #include <curl/curl.h>		// Needed for files that include this header (also for aicurlprivate.h).
+#ifdef DEBUG_CURLIO
 #include "debug_libcurl.h"
+#endif
 
 // Make sure we don't use this option: it is not thread-safe.
 #undef CURLOPT_DNS_USE_GLOBAL_CACHE
+#define CURLOPT_DNS_USE_GLOBAL_CACHE do_not_use_CURLOPT_DNS_USE_GLOBAL_CACHE
 
 #include "stdtypes.h"		// U32
 #include "lliopipe.h"		// LLIOPipe::buffer_ptr_t

@@ -30,6 +30,7 @@ set(llmessage_SOURCE_FILES
     llcircuit.cpp
     llclassifiedflags.cpp
     aicurl.cpp
+    debug_libcurl.cpp
     aicurlthread.cpp
     lldatapacker.cpp
     lldispatcher.cpp
@@ -117,6 +118,7 @@ set(llmessage_HEADER_FILES
     llclassifiedflags.h
     llcurl.h
     aicurl.h
+    debug_libcurl.h
     aicurlprivate.h
     aicurlthread.h
     lldatapacker.h
