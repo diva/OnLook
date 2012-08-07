@@ -609,11 +609,24 @@ CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 	void* ptr;
 	curl_off_t offset;
   } param;
+  unsigned int param_type = (option / 10000) * 10000;
   va_start(ap, option);
-  param.ptr = va_arg(ap, void*);
+  switch (param_type)
+  {
+	case CURLOPTTYPE_LONG:
+	  param.along = va_arg(ap, long);
+	  break;
+	case CURLOPTTYPE_OBJECTPOINT:
+	case CURLOPTTYPE_FUNCTIONPOINT:
+	  param.ptr = va_arg(ap, void*);
+	  break;
+	case CURLOPTTYPE_OFF_T:
+	  param.offset = va_arg(ap, curl_off_t);
+	  break;
+  }
   va_end(ap);
   ret = curl_easy_setopt(handle, option, param.ptr);
-  switch ((option / 10000) * 10000)
+  switch (param_type)
   {
 	case CURLOPTTYPE_LONG:
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", " << param.along << "L) = " << ret);
@@ -732,11 +745,24 @@ CURLMcode debug_curl_multi_setopt(CURLM* multi_handle, CURLMoption option, ...)
 	void* ptr;
 	curl_off_t offset;
   } param;
+  unsigned int param_type = (option / 10000) * 10000;
   va_start(ap, option);
-  param.ptr = va_arg(ap, void*);
+  switch (param_type)
+  {
+	case CURLOPTTYPE_LONG:
+	  param.along = va_arg(ap, long);
+	  break;
+	case CURLOPTTYPE_OBJECTPOINT:
+	case CURLOPTTYPE_FUNCTIONPOINT:
+	  param.ptr = va_arg(ap, void*);
+	  break;
+	case CURLOPTTYPE_OFF_T:
+	  param.offset = va_arg(ap, curl_off_t);
+	  break;
+  }
   va_end(ap);
   ret = curl_multi_setopt(multi_handle, option, param.ptr);
-  switch ((option / 10000) * 10000)
+  switch (param_type)
   {
 	case CURLOPTTYPE_LONG:
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", " << param.along << "L) = " << ret);
