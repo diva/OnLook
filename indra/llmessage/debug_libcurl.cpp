@@ -625,19 +625,22 @@ CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 	  break;
   }
   va_end(ap);
-  ret = curl_easy_setopt(handle, option, param.ptr);
   switch (param_type)
   {
 	case CURLOPTTYPE_LONG:
+	  ret = curl_easy_setopt(handle, option, param.along);
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", " << param.along << "L) = " << ret);
 	  break;
 	case CURLOPTTYPE_OBJECTPOINT:
+	  ret = curl_easy_setopt(handle, option, param.ptr);
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", (object*)0x" << std::hex << (size_t)param.ptr << std::dec << ") = " << ret);
 	  break;
 	case CURLOPTTYPE_FUNCTIONPOINT:
+	  ret = curl_easy_setopt(handle, option, param.ptr);
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", (function*)0x" << std::hex << (size_t)param.ptr << std::dec << ") = " << ret);
 	  break;
 	case CURLOPTTYPE_OFF_T:
+	  ret = curl_easy_setopt(handle, option, param.offset);
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", (curl_off_t)" << param.offset << ") = " << ret);
 	  break;
   }
@@ -761,19 +764,22 @@ CURLMcode debug_curl_multi_setopt(CURLM* multi_handle, CURLMoption option, ...)
 	  break;
   }
   va_end(ap);
-  ret = curl_multi_setopt(multi_handle, option, param.ptr);
   switch (param_type)
   {
 	case CURLOPTTYPE_LONG:
+	  ret = curl_multi_setopt(multi_handle, option, param.along);
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", " << param.along << "L) = " << ret);
 	  break;
 	case CURLOPTTYPE_OBJECTPOINT:
+	  ret = curl_multi_setopt(multi_handle, option, param.ptr);
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", (object*)0x" << std::hex << (size_t)param.ptr << std::dec << ") = " << ret);
 	  break;
 	case CURLOPTTYPE_FUNCTIONPOINT:
+	  ret = curl_multi_setopt(multi_handle, option, param.ptr);
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", (function*)0x" << std::hex << (size_t)param.ptr << std::dec << ") = " << ret);
 	  break;
 	case CURLOPTTYPE_OFF_T:
+	  ret = curl_easy_setopt(handle, option, param.offset);
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", (curl_off_t)" << param.offset << ") = " << ret);
 	  break;
   }
