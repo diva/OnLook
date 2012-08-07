@@ -1,73 +1,70 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Grids" name="Grids panel">
-	  <!-- Grid Selector -->
-	  <text name="grid_selector_label" >
-			 Elegir un grid:
-	  </text>
-	  <button label="Predeterminado" name="btn_default"/>
-	  <text name="default_grid">
-			 ([DEFAULT])
-	  </text>
-	  <!-- Buttons -->
-	  <button label="Quitar" name="btn_delete" />
-	  <button label="Añadir" name="btn_add"/>
-	  <button label="Copiar" name="btn_copy"/>
-	  <!-- Advanced -->
-	  <button label="Avanzado" name="btn_advanced"/>
-	  <!-- Login URI -->
-	  <text name="loginuri_label">
-			 URL de Inicio:
-	  </text>
-	  <!--<button label="Get Grid Info" label_selected="Get Grid Info" enabled="true" name="btn_gridinfo"
-		height="18" width="100" left="120" bottom_delta="-22"
-		halign="center"
-		follows="left|top" scale_image="true"
-	    font="SansSerifSmall" mouse_opaque="true" />-->
-	  <!-- Platform -->
-	  <text name="platform_label">
-			 Plataforma:
-	  </text>
-	  <!-- Grid Name -->
-	  <text name="gridname_label">
-			 Nombre del Grid:
-	  </text>
- 
-	  <!-- Grid Message -->
-	  <text name="gridmessage_label">
-			 Información del Grid:
-	  </text>
-  
-	  <!-- Advanced settings -->
-  
-	  <!-- Grid Splash Page -->
-	  <text name="loginpage_label">
-			 Página de Bienvenida:
-	  </text>
-	  <!-- Helper URI -->
-	  <text name="helperuri_label">
-			 URL de Ayuda:
-	  </text>
-	  <!-- Web Site -->
-	  <text name="website_label">
-			 Sitio Web:
-	  </text>
-	  <!-- Support URL -->
-	  <text name="support_label">
-			 URL de Soporte:
-	  </text>
-	  <!-- Account URL -->
-	  <text name="register_label">
-			 URL de Usuario:
-	  </text>
-	  <!-- Password URL -->
-	  <text name="password_label">
-			 URL Contraseña:
-	  </text>
-	  <!-- Search URL -->
-	  <text name="search_label">
-			 URL de Búsqueda:
-	  </text>
-	  <!-- Rendering Compatibility -->
-	  <check_box label="Compatibilidad de Renderizado" name="render_compat"/>
-	  <button label="?" name="btn_help_render_compat" left_delta="200" />
+	<!-- Grid Selector -->
+	<text name="grid_selector_label" >
+		Elegir un grid:
+	</text>
+	<button label="Predeterminado" name="btn_default"/>
+	<text name="default_grid">
+		([DEFAULT])
+	</text>
+	<!-- Buttons -->
+	<button label="Quitar" name="btn_delete" />
+	<button label="Añadir" name="btn_add"/>
+	<button label="Copiar" name="btn_copy"/>
+	<!-- Advanced -->
+	<button label="Avanzado" name="btn_advanced"/>
+	<!-- Login URI -->
+	<text name="loginuri_label">
+		URL de Inicio:
+	</text>
+	<!--<button label="Get Grid Info" label_selected="Get Grid Info" enabled="true" name="btn_gridinfo"
+	height="18" width="100" left="120" bottom_delta="-22"
+	halign="center"
+	follows="left|top" scale_image="true"
+		font="SansSerifSmall" mouse_opaque="true" />-->
+	<!-- Platform -->
+	<text name="platform_label">
+		Plataforma:
+	</text>
+	<!-- Grid Name -->
+	<text name="gridname_label">
+		Nombre del Grid:
+	</text>
+	<!-- Grid Message -->
+	<text name="gridmessage_label">
+		Información del Grid:
+	</text>
+	<!-- Advanced settings -->
+	<!-- Grid Splash Page -->
+	<text name="loginpage_label">
+		Página de Bienvenida:
+	</text>
+	<!-- Helper URI -->
+	<text name="helperuri_label">
+		URI de Ayuda:
+	</text>
+	<!-- Web Site -->
+	<text name="website_label">
+		Sitio Web:
+	</text>
+	<!-- Support URL -->
+	<text name="support_label">
+		URL de Soporte:
+	</text>
+	<!-- Account URL -->
+	<text name="register_label">
+		URL de Usuario:
+	</text>
+	<!-- Password URL -->
+	<text name="password_label">
+		URL Contraseña:
+	</text>
+	<!-- Search URL -->
+	<text name="search_label">
+		URL de Búsqueda:
+	</text>
+	<!-- Rendering Compatibility -->
+	<check_box label="Compatibilidad de Renderizado" name="render_compat"/>
+	<button label="?" name="btn_help_render_compat" left_delta="200" />
 </panel>

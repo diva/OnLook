@@ -1,66 +1,67 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Vanity" name="ascvan">
-	  <tab_container label="Singularity Vanity" name="Ascent Vanity">
-			 <panel label="Principal  (General)" name="General">
-					<check_box label="Cuando se aplicable, guardar Ajustes Vaninty por cuenta." tool_tip="Guarda ajustes individuales por cuenta, permitiendo una mas fácil personalización de Alts." name="use_account_settings_check"/>
-					<check_box label="Ocultar pantalla de progreso de Telerport" tool_tip="Activado, el visor ocultará la pantalla de progreso de Teleportación, pemitiendo leer MIs.." name="disable_tp_screen_check"/>
-					<check_box label="Reproducir sonidos de teleport cuando al cambiar de sim" tool_tip="El Visor reproducirá el sonido de trnasportación al hacer un teleport." name="tp_sound_check"/>
-					<check_box label="Ocultar la pantalla de inicio/cierre de sesión" tool_tip="Marcadao, el visor ocultará la pantalla de progreso de inicio/cierre de sesión." name="disable_logout_screen_check"/>
-					<check_box label="Desactivar animaciones de chat, susurro y gritos" tool_tip="Quiar las animaciones de tu avatar. El efecto es visible para todos" name="disable_chat_animation"/>
-			 </panel>
-			 <panel label="Tags/Colores" name="TagsColors">
-					<!-- Client tag options -->
-					<check_box label="Usar Tag de Visor:" left="10" tool_tip="Activándolo mostrará el tag de tu visor, en forma local, sobre tu nombre de avatar." name="show_my_tag_check"/>
-					<combo_box tool_tip="Tag del Visor ( Y colores subsecuentes) a transmitir. Sobreescribir en forma local por Tag/Colores personalizados." name="tag_spoofing_combobox">
-						  <combo_item name="Singularity" >
-								 Singularity
-						  </combo_item>
-					</combo_box>
-					<check_box label="Mostrarte tag de cliente" tool_tip="Elige el color que verás del tag de tu visor." name="show_self_tag_check"/>
-					<check_box label="Mostrarte color del tag de cliente" tool_tip="Activándolo,  ajustará el nombre de avatar en el color de tu cliente o en el color personalizado." name="show_self_tag_color_check"/>
-					<check_box label="Ver tags de amigos como (Amigo)" tool_tip="Activándolo cambia el tag de cliente de tus amigos a (Amigo)." name="show_friend_tag_check"/>
-					<!-- End of Left Side -->
-					<check_box label="Usar color y etiqueta personalizadas (Sólo local)" tool_tip="Activándolo te permitirá ajustar tu tag de nombre para mostrar con tu tag de cliente y color  personalizados. Esto sólo funciona para ti mismo." name="customize_own_tag_check"/>
-					<text bottom_delta="-17" left_delta="25" follows="top" height="10" name="custom_tag_label_text">
-						  Etiqueta:
-					</text>
-					<line_editor left_delta="45" name="custom_tag_label_box" tool_tip="Texto personalizado que usarás para reemplazar el tag de tu visor (Sólo Local)"/>
-					<text name="custom_tag_color_text">
-						  Color:
-					</text>
-					<color_swatch name="custom_tag_color_swatch" tool_tip="Color personalizado que usarás para reemplazar el color del tag de tu visor (Sólo Local)"/>
-					<check_box label="Mostrar Tag de Visor de los demás" tool_tip="Activándolo mostrará el nombre de Tag de visor sobre los nombres de avatar de otros usuarios." name="show_other_tag_check"/>
-					<check_box label="Mostrar color de Tag de visor de los demás" tool_tip="Activándolo fijará el color del tag del visor de los demás a su propio color." name="show_client_tag_color_check"/>
-					<check_box label="Mostrar tiempo inactivo" tool_tip="Activándolo mostrará la cantidad de tiempo que el avatar está inactivo." name="show_idle_time_check"/>
-					<check_box label="Chequear automáticamente actualizaciones de clientes" tool_tip="Activándolo permite a Singularity descargar nuevas definiciones de clientes cuando sea necesario." name="update_tags_check"/>
-					<button name="update_clientdefs" label="Actualización Manual" height="18" left_delta="310" width="150"/>
-					<!-- End of Client Tag settings -->
-					<text name="effects_color_textbox">
-						  Color para Mis Efectos:
-					</text>
-					<color_swatch label="Efectos" name="effect_color_swatch"/>
-					<check_box label="Utilizar Color de Tipo de usuario (Amigo, Linden, etc.)" left="10" tool_tip="Activándolo mostrará con el color definido abajo a la gente que cumple con determinado criterio de tipo de usuario (Lindens, Propietarios de Estado, amigo, usuarios bloquedos)." name="use_status_check"/>
-					<text name="friends_color_textbox">
-						  Color Para:
-(Radar, Tag, Minimap)</text>
-					<color_swatch label="Amigos" name="friend_color_swatch" tool_tip="Color para los amigos"/>
-					<color_swatch label="Estado" name="estate_owner_color_swatch" tool_tip="Color para Administrador de Regiones"/>
-					<color_swatch label="Lindens" name="linden_color_swatch" tool_tip="Color para empleados de Linden Lab"/>
-					<color_swatch label="Ignorados" name="muted_color_swatch" tool_tip="Color para usuarios ignorados o bloqueados"/>
-			 </panel>
-			 <panel label="Fiísica de Avatar" name="Body Dynamics">
-					<check_box label="Activar física avanzada de los senos del avatar" name="EmBreastsToggle" tool_tip="Deberás seleccionar Aplicar para activar o desactivar estos controles"/>
-					<slider name="EmeraldBoobMass" label="Masa del Seno:"/>
-					<slider name="EmeraldBoobHardness" label="Rebote de Seno:" />
-					<slider name="EmeraldBoobVelMax" label="Vel.Máx. Senos:" />
-					<slider name="EmeraldBoobFriction" label="Fricción de Senos:"/>
-					<slider name="EmeraldBoobVelMin" label="Vel.Mín.Senos:"/>
-					<text name="av_mod_textbox">
-						  Modificar Desplazamientos del Avatar
-					</text>
-					<spinner label="Modificador X" name="X Modifier" tool_tip="Utiliza esto para manipular, en grados, el delimitador del avatar. Puede ser utilizado para distorsionar las órbitas, o para elevar o aumentar los senos sin alterar el cuerpo del avatar." width="133" label_width="70"/>
-					<spinner label="Modificador Y" name="Y Modifier" tool_tip="Utiliza esto para manipular, en grados, el delimitador del avatar. Puede ser utilizado para distorsionar las órbitas, o para elevar o aumentar los senos sin alterar el cuerpo del avatar." width="133" label_width="70"/>
-					<spinner label="Modificador Z" name="Z Modifier" tool_tip="Utiliza esto para manipular, en grados, el delimitador del avatar. Puede ser utilizado para distorsionar las órbitas, o para elevar o aumentar los senos sin alterar el cuerpo del avatar." width="133" label_width="70"/>
-			 </panel>
-	  </tab_container>
+	<tab_container label="Singularity Vanity" name="Ascent Vanity">
+		<panel label="Principal  (General)" name="General">
+			<check_box label="Cuando se aplicable, guardar Ajustes Vaninty por cuenta." tool_tip="Guarda ajustes individuales por cuenta, permitiendo una mas fácil personalización de Alts." name="use_account_settings_check"/>
+			<check_box label="Ocultar pantalla de progreso de Telerport" tool_tip="Activado, el visor ocultará la pantalla de progreso de Teleportación, pemitiendo leer MIs.." name="disable_tp_screen_check"/>
+			<check_box label="Reproducir sonidos de teleport cuando al cambiar de sim" tool_tip="El Visor reproducirá el sonido de trnasportación al hacer un teleport." name="tp_sound_check"/>
+			<check_box label="Ocultar la pantalla de inicio/cierre de sesión" tool_tip="Marcadao, el visor ocultará la pantalla de progreso de inicio/cierre de sesión." name="disable_logout_screen_check"/>
+			<check_box label="Desactivar animaciones de chat, susurro y gritos" tool_tip="Quiar las animaciones de tu avatar. El efecto es visible para todos" name="disable_chat_animation"/>
+		</panel>
+		<panel label="Tags/Colores" name="TagsColors">
+			<!-- Client tag options -->
+			<check_box label="Usar Tag de Visor:" left="10" tool_tip="Activándolo mostrará el tag de tu visor, en forma local, sobre tu nombre de avatar." name="show_my_tag_check"/>
+			<combo_box tool_tip="Tag del Visor ( Y colores subsecuentes) a transmitir. Sobreescribir en forma local por Tag/Colores personalizados." name="tag_spoofing_combobox">
+				<combo_item name="Singularity" >
+					Singularity
+				</combo_item>
+			</combo_box>
+			<check_box label="Mostrarte tag de cliente" tool_tip="Elige el color que verás del tag de tu visor." name="show_self_tag_check"/>
+			<check_box label="Mostrarte color del tag de cliente" tool_tip="Activándolo,  ajustará el nombre de avatar en el color de tu cliente o en el color personalizado." name="show_self_tag_color_check"/>
+			<check_box label="Ver tags de amigos como (Amigo)" tool_tip="Activándolo cambia el tag de cliente de tus amigos a (Amigo)." name="show_friend_tag_check"/>
+			<!-- End of Left Side -->
+			<check_box label="Usar color y etiqueta personalizadas (Sólo local)" tool_tip="Activándolo te permitirá ajustar tu tag de nombre para mostrar con tu tag de cliente y color  personalizados. Esto sólo funciona para ti mismo." name="customize_own_tag_check"/>
+			<text bottom_delta="-17" left_delta="25" follows="top" height="10" name="custom_tag_label_text">
+				Etiqueta:
+			</text>
+			<line_editor left_delta="45" name="custom_tag_label_box" tool_tip="Texto personalizado que usarás para reemplazar el tag de tu visor (Sólo Local)"/>
+			<text name="custom_tag_color_text">
+				Color:
+			</text>
+			<color_swatch name="custom_tag_color_swatch" tool_tip="Color personalizado que usarás para reemplazar el color del tag de tu visor (Sólo Local)"/>
+			<check_box label="Mostrar Tag de Visor de los demás" tool_tip="Activándolo mostrará el nombre de Tag de visor sobre los nombres de avatar de otros usuarios." name="show_other_tag_check"/>
+			<check_box label="Mostrar color de Tag de visor de los demás" tool_tip="Activándolo fijará el color del tag del visor de los demás a su propio color." name="show_client_tag_color_check"/>
+			<check_box label="Mostrar tiempo inactivo" tool_tip="Activándolo mostrará la cantidad de tiempo que el avatar está inactivo." name="show_idle_time_check"/>
+			<check_box label="Chequear automáticamente actualizaciones de clientes" tool_tip="Activándolo permite a Singularity descargar nuevas definiciones de clientes cuando sea necesario." name="update_tags_check"/>
+			<button name="update_clientdefs" label="Actualización Manual" height="18" left_delta="310" width="150"/>
+			<!-- End of Client Tag settings -->
+			<text name="effects_color_textbox">
+				Color para Mis Efectos:
+			</text>
+			<color_swatch label="Efectos" name="effect_color_swatch"/>
+			<check_box label="Utilizar Color de Tipo de usuario (Amigo, Linden, etc.)" left="10" tool_tip="Activándolo mostrará con el color definido abajo a la gente que cumple con determinado criterio de tipo de usuario (Lindens, Propietarios de Estado, amigo, usuarios bloquedos)." name="use_status_check"/>
+			<text name="friends_color_textbox">
+				Color Para:
+(Radar, Tag, Minimap)
+			</text>
+			<color_swatch label="Amigos" name="friend_color_swatch" tool_tip="Color para los amigos"/>
+			<color_swatch label="Estado" name="estate_owner_color_swatch" tool_tip="Color para Administrador de Regiones"/>
+			<color_swatch label="Lindens" name="linden_color_swatch" tool_tip="Color para empleados de Linden Lab"/>
+			<color_swatch label="Ignorados" name="muted_color_swatch" tool_tip="Color para usuarios ignorados o bloqueados"/>
+		</panel>
+		<panel label="Fiísica de Avatar" name="Body Dynamics">
+			<check_box label="Activar física avanzada de los senos del avatar" name="EmBreastsToggle" tool_tip="Deberás seleccionar Aplicar para activar o desactivar estos controles"/>
+			<slider name="EmeraldBoobMass" label="Masa del Seno:"/>
+			<slider name="EmeraldBoobHardness" label="Rebote de Seno:" />
+			<slider name="EmeraldBoobVelMax" label="Vel.Máx. Senos:" />
+			<slider name="EmeraldBoobFriction" label="Fricción de Senos:"/>
+			<slider name="EmeraldBoobVelMin" label="Vel.Mín.Senos:"/>
+			<text name="av_mod_textbox">
+				Modificar Desplazamientos del Avatar
+			</text>
+			<spinner label="Modificador X" name="X Modifier" tool_tip="Utiliza esto para manipular, en grados, el delimitador del avatar. Puede ser utilizado para distorsionar las órbitas, o para elevar o aumentar los senos sin alterar el cuerpo del avatar." width="133" label_width="70"/>
+			<spinner label="Modificador Y" name="Y Modifier" tool_tip="Utiliza esto para manipular, en grados, el delimitador del avatar. Puede ser utilizado para distorsionar las órbitas, o para elevar o aumentar los senos sin alterar el cuerpo del avatar." width="133" label_width="70"/>
+			<spinner label="Modificador Z" name="Z Modifier" tool_tip="Utiliza esto para manipular, en grados, el delimitador del avatar. Puede ser utilizado para distorsionar las órbitas, o para elevar o aumentar los senos sin alterar el cuerpo del avatar." width="133" label_width="70"/>
+		</panel>
+	</tab_container>
 </panel>

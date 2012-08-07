@@ -3,310 +3,273 @@
      It is only for those strings which don't belong in a floater.
      For example, the strings used in avatar chat bubbles, and strings
      that are returned from one component and may appear in many places-->
-	  <strings>
-
-			 <string name="CURRENCY">L$</string>
-			 <string name="GRID_OWNER">Linden Lab</string>
-
-			 <string name="hippo_label_free">free</string>
-			 <string name="hippo_label_week">week</string>
-			 <string name="TeleportOfferMaturity">
-					[NAME] te ofrece un TP a [DESTINATION]
-			 </string>
-			 <string name="TeleportLureMaturity">
-					[NAME]'s teleport lure is to [DESTINATION]
-			 </string>
-			 <string name="AvatarIdle">
-					Inactivo por [MINUTES]min
-			 </string>
-
-			 <!-- Default Args - these arguments will be replaced in all strings -->
-			 <string name="SECOND_LIFE">Second Life</string>
-			 <string name="APP_NAME">Singularity Viewer</string>
-			 <string name="CAPITALIZED_APP_NAME">SINGULARITY VIEWER</string>
-			 <string name="SECOND_LIFE_GRID">Grid Second Life</string>
-			 <string name="SUPPORT_SITE">Portal de Soporte de Second Life</string>
-
-			 <!-- starting up -->
-			 <string name="StartupDetectingHardware">Detectando hardware...</string>
-			 <string name="StartupLoading">Cargando [APP_NAME]...</string>
-			 <string name="StartupClearingCache">Limpiadno caché...</string>
-			 <string name="StartupInitializingTextureCache">Inicializando Caché de Testuras...</string>
-			 <string name="StartupInitializingVFS">Inicializando VFS...</string>
-			 <string name="StartupRequireDriverUpdate">¡Ha fallado la inicialización gráfica. Por favor, actualiza los controladores gráficos!</string>
-
-			 <!--  progress -->
-			 <string name="ProgressRestoring">Restaurando...</string>
-			 <string name="ProgressChangingResolution">Cmabiando la Ressolución...</string>
-			 <!-- Login -->
-			 <string name="LoginInProgress">Iniciando sesión. [APP_NAME] puede aparecer congelado.  Espera por favor.</string>
-			 <string name="LoginInProgressNoFrozen">Iniciando sesión...</string>
-			 <string name="LoginAuthenticating">Autenticando</string>
-			 <string name="LoginMaintenance">Realizando mantenimiento de cuentas...</string>
-			 <string name="LoginAttempt">Ha fallado el inicio de sesión previo. Iniciando sesión, intento [NUMBER]</string>
-			 <string name="LoginPrecaching">Cargando el Mundo...</string>
-			 <string name="LoginInitializingBrowser">iniciando navegador web incorporado...</string>
-			 <string name="LoginInitializingMultimedia">Inicializando multimedia...</string>
-			 <string name="LoginInitializingFonts">Cargando fuentes...</string>
-			 <string name="LoginVerifyingCache">Verificando archivos de caché (puede demorar entre 60-90 segundos)...</string>
-			 <string name="LoginProcessingResponse">Procesando Respuesta...</string>
-			 <string name="LoginInitializingWorld">Inicializando el Mundo...</string>
-			 <string name="LoginDecodingImages">Decodificando Imágenes...</string>
-			 <string name="LoginInitializingQuicktime">Inicializando QuickTime...</string>
-			 <string name="LoginQuicktimeNotFound">No se ha encontrado QuickTime - incapaz de iniciarlo.</string>
-			 <string name="LoginQuicktimeOK">QuickTime ha sido inicializado satisfactoriamente.</string>
-			 <string name="LoginRequestSeedCapGrant">Solicitando capacidades de la Región...</string>
-			 <string name="LoginRetrySeedCapGrant">Solicitando capacidades de la Región, intento [NUMBER]...</string>
-			 <string name="LoginWaitingForRegionHandshake">Esperando saludo de la Región...</string>
-			 <string name="LoginConnectingToRegion">Conectando a la región...</string>
-			 <string name="LoginDownloadingClothing">Descargando ropas...</string>
-
-			 <string name="LoginFailed">Inicio de sesión fallido.</string>
-			 <string name="Quit">Salir</string>
-
-			 <!-- Disconnection -->
-			 <string name="AgentLostConnection">Esta región está experimentando problemas.  Revisa por favor tu conexión a Internet.</string>
-			 <string name="SavingSettings">Guardando tus configuraciones...</string>
-			 <string name="LoggingOut">Cerrando sesión...</string>
-			 <string name="ShuttingDown">Cerrando...</string>
-			 <string name="YouHaveBeenDisconnected">Has sido desconectado de la región donde te encontrabas.</string>
-			 <string name="SentToInvalidRegion">Se te ha enviado a una región no válida.</string>
-
-			 <!-- Tooltip, llhoverview.cpp -->
-			 <string name="TooltipPerson">Persona</string><!-- Object under mouse pointer is an avatar -->
-			 <string name="TooltipNoName">(sin nombre)</string> <!-- No name on an object -->
-			 <string name="TooltipOwner">Propietario:</string> <!-- Owner name follows -->
-			 <string name="TooltipPublic">Público</string> <!-- Public permissions on an object -->
-			 <string name="TooltipIsGroup">(Grupo)</string> <!-- The name before this text is that of a group -->
-			 <string name="TooltipFlagScript">Script</string>
-			 <string name="TooltipFlagPhysics">Físico</string>
-			 <string name="TooltipFlagTouch">Tocar</string>
-			 <string name="TooltipFlagL$">[CURRENCY]</string>
-			 <string name="TooltipFlagDropInventory">Soltar Inventario</string>
-			 <string name="TooltipFlagPhantom">Fantasma</string>
-			 <string name="TooltipFlagTemporary">Temporario</string>
-			 <string name="TooltipFlagRightClickMenu">(Botón derecho para menú)</string>
-			 <string name="TooltipFreeToCopy">Libre para copiar</string>
-			 <string name="TooltipForSaleL$">En venta: [CURRENCY][AMOUNT]</string> <!-- L$ version -->
-			 <string name="TooltipForSaleMsg">En venta: [MESSAGE]</string> <!-- Message (RetrievingData) -->
-			 <string name="TooltipFlagGroupBuild">Construir Grupo</string>
-			 <string name="TooltipFlagNoBuild">No Construir</string>
-			 <string name="TooltipFlagNoEdit">Construir Grupo</string>
-			 <string name="TooltipFlagNotSafe">No seguro</string><!-- damage area -->
-			 <string name="TooltipFlagNoFly">No volar</string>
-			 <string name="TooltipFlagGroupScripts">Scripts de Grupo</string>
-			 <string name="TooltipFlagNoScripts">Sin Scripts</string>
-			 <string name="TooltipLand">Terreno:</string>
-			 <string name="TooltipMustSingleDrop">Sólo un único item puede ser arrastrado aquí</string>
-
-			 <string name="TooltipOutboxDragToWorld">No puedes rezear item en tu Merchant Outbox</string>
-			 <string name="TooltipOutboxNoTransfer">Uno o más de estos objetos no pueden ser vendidos o transferidos.</string>
-			 <string name="TooltipOutboxNotInInventory">Tu Merchant Outbox solo puede aceptar items de tu inventario</string>
-			 <string name="TooltipOutboxWorn">No puedes colocar items que tienes vestidos en tu Merchant Outbox</string>
-			 <string name="TooltipOutboxCallingCard">No puedes colocar Tarjetas de LLamada en tu Merchant OutBox</string>
-			 <string name="TooltipOutboxFolderLevels">La profundidad de carpetas anidades es superior a 3</string>
-			 <string name="TooltipOutboxTooManyFolders">El recuento de subcarpetas en el nivel superior supera las 20</string>
-			 <string name="TooltipOutboxTooManyObjects">El recuento de items en la carpeta de nivel superior supera los 200</string>
-	
-			 <string name="TooltipDragOntoOwnChild">No puedes mover una carpeta a su carpeta secundaria</string>
-			 <string name="TooltipDragOntoSelf">No puedes mover una carpeta en si misma</string>
-
-			 <!-- Indicates that an avatar's name or other similar datum is being retrieved. General usage. -->
-			 <string name="RetrievingData">Recuperando...</string>
-
-			 <string name="ReleaseNotes">Notas de Lanzamiento</string>
-
-			 <!-- Indicates something is being loaded. Maybe should be merged with RetrievingData -->
-			 <string name="LoadingData">Cargando...</string>
-
-
-			 <!-- namecache -->
-			 <!-- Avatar name: text shown for LLUUID::null -->
-			 <string name="AvatarNameNobody">(nadie)</string>
-
-			 <!-- Avatar name: text shown while fetching name -->
-			 <string name="AvatarNameWaiting">(esperando)</string>
-
-			 <!-- Avatar name: text shown as an alternative to AvatarNameFetching, easter egg. -->
-			 <string name="AvatarNameHippos">(hippos)</string>
-
-			 <!-- Group name: text shown for LLUUID::null -->
-			 <string name="GroupNameNone">(ninguno)</string>
-
-			 <!-- Asset errors. Used in llassetstorage.cpp, translation from error code to error message. -->
-			 <string name="AssetErrorNone">Sin errores</string>
-			 <string name="AssetErrorRequestFailed">Petición de Asset: fallida</string>
-			 <string name="AssetErrorNonexistentFile">Petición de Asset: archivo inexistente</string>
-			 <string name="AssetErrorNotInDatabase">Petición de Asset: activo no hallado en la base de datos</string>
-			 <string name="AssetErrorEOF">Fin de archivo</string>
-			 <string name="AssetErrorCannotOpenFile">No se puede abrir el archivo</string>
-			 <string name="AssetErrorFileNotFound">Archivo no encontrado</string>
-			 <string name="AssetErrorTCPTimeout">Tiempo de espera en transferencia de archivo agotado</string>
-			 <string name="AssetErrorCircuitGone">El circuito se ha ido</string>
-			 <string name="AssetErrorPriceMismatch">El Visor y el Servidor no coinciden con el precio</string>
-			 <string name="AssetErrorUnknownStatus">Estado desconocido</string>
-
-			 <!-- llvoavatar. Displayed in the avatar's chat bubble -->
-			 <string name="AvatarEditingAppearance">(Editando Apariencia)</string>
-			 <string name="AvatarAway">Ausente</string>
-			 <string name="AvatarBusy">Ocupado</string>
-			 <string name="AvatarMuted">Bloqueado</string>
-
-			 <!-- animations -->
-			 <string name="anim_express_afraid">Miedo</string>
-			 <string name="anim_express_anger">Enfado</string>
-			 <string name="anim_away">Ausente</string>
-			 <string name="anim_backflip">alto mortal atrás</string>
-			 <string name="anim_express_laugh">Carcajada</string>
-			 <string name="anim_express_toothsmile">Gran sonrisa</string>
-			 <string name="anim_blowkiss">Mandar un beso</string>
-			 <string name="anim_express_bored">Aburrimiento</string>
-			 <string name="anim_bow">Reverencia</string>
-			 <string name="anim_clap">Aplauso</string>
-			 <string name="anim_courtbow">Reverencia floreada</string>
-			 <string name="anim_express_cry">Llanto</string>
-			 <string name="anim_dance1">Baile 1</string>
-			 <string name="anim_dance2">Baile 2</string>
-			 <string name="anim_dance3">Baile 3</string>
-			 <string name="anim_dance4">Baile 4</string>
-			 <string name="anim_dance5">Baile 5</string>
-			 <string name="anim_dance6">Baile 6</string>
-			 <string name="anim_dance7">Baile 7</string>
-			 <string name="anim_dance8">Baile 8</string>
-			 <string name="anim_express_disdain">Desdén</string>
-			 <string name="anim_drink">Beber</string>
-			 <string name="anim_express_embarrased">Avergonzado</string>
-			 <string name="anim_angry_fingerwag">Negar con el dedo</string>
-			 <string name="anim_fist_pump">Gesto de Victoria</string>
-			 <string name="anim_yoga_float">Yoga flotando</string>
-			 <string name="anim_express_frown">Fruncir el ceño</string>
-			 <string name="anim_impatient">Impaciente</string>
-			 <string name="anim_jumpforjoy">Salto de alegría</string>
-			 <string name="anim_kissmybutt">Bésame el culo</string>
-			 <string name="anim_express_kiss">Besar</string>
-			 <string name="anim_laugh_short">Reír</string>
-			 <string name="anim_musclebeach">Sacar músculo</string>
-			 <string name="anim_no_unhappy">No (con enfado)</string>
-			 <string name="anim_no_head">No</string>
-			 <string name="anim_nyanya">Ña-Ña-Ña</string>
-			 <string name="anim_punch_onetwo">Puñetazo uno-dos</string>
-			 <string name="anim_express_open_mouth">Abrir la boca</string>
-			 <string name="anim_peace">Paz</string>
-			 <string name="anim_point_you">Señalar a otro/a</string>
-			 <string name="anim_point_me">Señalarse</string>
-			 <string name="anim_punch_l">Puñetazo izquierdo</string>
-			 <string name="anim_punch_r">Puñetazo derecho</string>
-			 <string name="anim_rps_countdown">PPT cuenta</string>
-			 <string name="anim_rps_paper">PPT papel</string>
-			 <string name="anim_rps_rock">PPT piedra</string>
-			 <string name="anim_rps_scissors">PPT tijera</string>
-			 <string name="anim_express_repulsed">Rechazo</string>
-			 <string name="anim_kick_roundhouse_r">Patada circular</string>
-			 <string name="anim_express_sad">Triste</string>
-			 <string name="anim_salute">Saludo militar</string>
-			 <string name="anim_shout">Gritar</string>
-			 <string name="anim_express_shrug">Encogerse de hombros</string>
-			 <string name="anim_express_smile">Sonreír</string>
-			 <string name="anim_smoke_idle">Fumar: en la mano</string>
-			 <string name="anim_smoke_inhale">Fumar: Inhalar</string>
-			 <string name="anim_smoke_throw_down">Fumar: tirar el cigarro</string>
-			 <string name="anim_express_surprise">Sorpresa</string>
-			 <string name="anim_sword_strike_r">Estocada</string>
-			 <string name="anim_angry_tantrum">Berrinche</string>
-			 <string name="anim_express_tongue_out">Sacar la lengua</string>
-			 <string name="anim_hello">Agitar la mano</string>
-			 <string name="anim_whisper">Susurrar</string>
-			 <string name="anim_whistle">Silbar</string>
-			 <string name="anim_express_wink">Guiño</string>
-			 <string name="anim_wink_hollywood">Guiño (Hollywood)</string>
-			 <string name="anim_express_worry">Preocuparse</string>
-			 <string name="anim_yes_happy">Sí (contento)</string>
-			 <string name="anim_yes_head">Si</string>
-
-			 <string name="texture_loading">Cargando...</string>
-			 <string name="worldmap_offline">Desconectado</string>
-
-			 <!-- animations uploading status codes -->
-			 <string name="Ok">OK</string>
-			 <!-- Chat -->
-			 <string name="whisper">Susurros:</string>
-			 <string name="shout">Gritos:</string>
-
-			 <!-- Sim Access labels -->
-			 <string name="SIM_ACCESS_PG">PG</string>
-			 <string name="SIM_ACCESS_MATURE">Mature</string>
-			 <string name="SIM_ACCESS_ADULT">Adulto</string>
-			 <string name="SIM_ACCESS_DOWN">Desconectado</string>
-			 <string name="SIM_ACCESS_MIN">Desconocido</string>
-
-			 <!-- For use when we do not have land type back from the server -->
-			 <string name="land_type_unknown">(Desconocido)</string>
-
-			 <!-- Covenant info -->
-			 <string name="covenant_never_modified">Última Modificación: (nunca)</string>
-			 <string name="covenant_modified">Última Modificación: </string>
-
-			 <!-- File load/save dialogs -->
-			 <string name="all_files">Todos los Archivos</string>
-			 <string name="sound_files">Sonidos</string>
-			 <string name="animation_files">Animaciones</string>
-			 <string name="image_files">Imágenes</string>
-			 <string name="save_file_verb">Guardar</string>
-			 <string name="load_file_verb">Cargar</string>
-			 <string name="targa_image_files">Imágenes Targa</string>
-			 <string name="bitmap_image_files">Imágenes de Mapa de Bits</string>
-			 <string name="avi_movie_file">Película AVI</string>
-			 <string name="xaf_animation_file">Animación XAF</string>
-			 <string name="xml_file">Archivo XML</string>
-			 <string name="raw_file">Archivo RAW</string>
-			 <string name="compressed_image_files">Imágenes Comprimidas</string>
-			 <string name="load_files">Cargar Archivos</string>
-			 <string name="choose_the_directory">Seleccionar Directorio</string>
-
- 
-			 <!-- LSL Usage Hover Tips -->
-			 <string name="LSLTipSleepTime">
-					Pausa el script por [SLEEP_TIME] segundos.
-			 </string>
-
-			 <string name="LSLTipText_llSin">
-					float llSin(float theta)
+	<strings>
+	<string name="CURRENCY">L$</string>
+	<string name="GRID_OWNER">Linden Lab</string>
+	<string name="hippo_label_free">free</string>
+	<string name="hippo_label_week">semana</string>
+	<string name="TeleportOfferMaturity">[NAME] te ofrece un TP a [DESTINATION]</string>
+	<string name="TeleportLureMaturity">[NAME] te ofrece una invitación de teleporte a [DESTINATION]</string>
+	<string name="AvatarIdle">Inactivo por [MINUTES] min</string>
+	<!-- Default Args - these arguments will be replaced in all strings -->
+	<string name="SECOND_LIFE">Second Life</string>
+	<string name="APP_NAME">Singularity Viewer</string>
+	<string name="CAPITALIZED_APP_NAME">SINGULARITY VIEWER</string>
+	<string name="SECOND_LIFE_GRID">Grid Second Life</string>
+	<string name="SUPPORT_SITE">Portal de Soporte de Second Life</string>
+	<!-- starting up -->
+	<string name="StartupDetectingHardware">Detectando hardware...</string>
+	<string name="StartupLoading">Cargando [APP_NAME]...</string>
+	<string name="StartupClearingCache">Limpiando caché...</string>
+	<string name="StartupInitializingTextureCache">Inicializando Caché de Texturas...</string>
+	<string name="StartupInitializingVFS">Inicializando VFS...</string>
+	<string name="StartupRequireDriverUpdate">¡Ha fallado la inicialización gráfica. Por favor, actualiza los controladores gráficos!</string>
+	<!--  progress -->
+	<string name="ProgressRestoring">Restaurando...</string>
+	<string name="ProgressChangingResolution">Cambiando la Resolución...</string>
+	<!-- Login -->
+	<string name="LoginInProgress">Iniciando sesión. [APP_NAME] puede aparecer congelado.  Espera por favor.</string>
+	<string name="LoginInProgressNoFrozen">Iniciando sesión...</string>
+	<string name="LoginAuthenticating">Autenticando</string>
+	<string name="LoginMaintenance">Realizando mantenimiento de cuentas...</string>
+	<string name="LoginAttempt">Ha fallado el inicio de sesión previo. Iniciando sesión, intento [NUMBER]</string>
+	<string name="LoginPrecaching">Cargando el Mundo...</string>
+	<string name="LoginInitializingBrowser">iniciando navegador web incorporado...</string>
+	<string name="LoginInitializingMultimedia">Inicializando multimedia...</string>
+	<string name="LoginInitializingFonts">Cargando fuentes...</string>
+	<string name="LoginVerifyingCache">Verificando archivos de caché (puede demorar entre 60-90 segundos)...</string>
+	<string name="LoginProcessingResponse">Procesando Respuesta...</string>
+	<string name="LoginInitializingWorld">Inicializando el Mundo...</string>
+	<string name="LoginDecodingImages">Decodificando Imágenes...</string>
+	<string name="LoginInitializingQuicktime">Inicializando QuickTime...</string>
+	<string name="LoginQuicktimeNotFound">No se ha encontrado QuickTime - incapaz de iniciarlo.</string>
+	<string name="LoginQuicktimeOK">QuickTime ha sido inicializado satisfactoriamente.</string>
+	<string name="LoginRequestSeedCapGrant">Solicitando capacidades de la Región...</string>
+	<string name="LoginRetrySeedCapGrant">Solicitando capacidades de la Región, intento [NUMBER]...</string>
+	<string name="LoginWaitingForRegionHandshake">Esperando saludo de la Región...</string>
+	<string name="LoginConnectingToRegion">Conectando a la región...</string>
+	<string name="LoginDownloadingClothing">Descargando ropas...</string>
+	<string name="LoginFailed">Inicio de sesión fallido.</string>
+	<string name="Quit">Salir</string>
+	<!-- Disconnection -->
+	<string name="AgentLostConnection">Esta región está experimentando problemas.  Revisa por favor tu conexión a Internet.</string>
+	<string name="SavingSettings">Guardando tus configuraciones...</string>
+	<string name="LoggingOut">Cerrando sesión...</string>
+	<string name="ShuttingDown">Cerrando...</string>
+	<string name="YouHaveBeenDisconnected">Has sido desconectado de la región donde te encontrabas.</string>
+	<string name="SentToInvalidRegion">Se te ha enviado a una región no válida.</string>
+	<!-- Tooltip, llhoverview.cpp -->
+	<string name="TooltipPerson">Persona</string><!-- Object under mouse pointer is an avatar -->
+	<string name="TooltipNoName">(sin nombre)</string> <!-- No name on an object -->
+	<string name="TooltipOwner">Propietario:</string> <!-- Owner name follows -->
+	<string name="TooltipPublic">Público</string> <!-- Public permissions on an object -->
+	<string name="TooltipIsGroup">(Grupo)</string> <!-- The name before this text is that of a group -->
+	<string name="TooltipFlagScript">Script</string>
+	<string name="TooltipFlagPhysics">Material</string>
+	<string name="TooltipFlagTouch">Tocar</string>
+	<string name="TooltipFlagL$">[CURRENCY]</string>
+	<string name="TooltipFlagDropInventory">Soltar Inventario</string>
+	<string name="TooltipFlagPhantom">Fantasma</string>
+	<string name="TooltipFlagTemporary">Temporario</string>
+	<string name="TooltipFlagRightClickMenu">(Botón derecho para menú)</string>
+	<string name="TooltipFreeToCopy">Libre para copiar</string>
+	<string name="TooltipForSaleL$">En venta: [CURRENCY][AMOUNT]</string> <!-- L$ version -->
+	<string name="TooltipForSaleMsg">En venta: [MESSAGE]</string> <!-- Message (RetrievingData) -->
+	<string name="TooltipFlagGroupBuild">Construir Grupo</string>
+	<string name="TooltipFlagNoBuild">No Construir</string>
+	<string name="TooltipFlagNoEdit">Construir Grupo</string>
+	<string name="TooltipFlagNotSafe">No seguro</string><!-- damage area -->
+	<string name="TooltipFlagNoFly">No volar</string>
+	<string name="TooltipFlagGroupScripts">Scripts de Grupo</string>
+	<string name="TooltipFlagNoScripts">Sin Scripts</string>
+	<string name="TooltipLand">Terreno:</string>
+	<string name="TooltipMustSingleDrop">Sólo un único item puede ser arrastrado aquí</string>
+	<string name="TooltipOutboxDragToWorld">No puedes rezear ítems en tu Merchant Outbox</string>
+	<string name="TooltipOutboxNoTransfer">Uno o más de estos objetos no pueden ser vendidos o transferidos.</string>
+	<string name="TooltipOutboxNotInInventory">Tu Merchant Outbox solo puede aceptar ítems de tu inventario</string>
+	<string name="TooltipOutboxWorn">No puedes colocar ítems que tienes vestidos en tu Merchant Outbox</string>
+	<string name="TooltipOutboxCallingCard">No puedes colocar Tarjetas de LLamada en tu Merchant OutBox</string>
+	<string name="TooltipOutboxFolderLevels">La profundidad de carpetas anidades es superior a 3</string>
+	<string name="TooltipOutboxTooManyFolders">El recuento de subcarpetas en el nivel superior supera las 20</string>
+	<string name="TooltipOutboxTooManyObjects">El recuento de items en la carpeta de nivel superior supera los 200</string>
+	<string name="TooltipDragOntoOwnChild">No puedes mover una carpeta a su carpeta secundaria</string>
+	<string name="TooltipDragOntoSelf">No puedes mover una carpeta en si misma</string>
+	<!-- Indicates that an avatar's name or other similar datum is being retrieved. General usage. -->
+	<string name="RetrievingData">Recuperando...</string>
+	<string name="ReleaseNotes">Notas de Lanzamiento</string>
+	<!-- Indicates something is being loaded. Maybe should be merged with RetrievingData -->
+	<string name="LoadingData">Cargando...</string>
+	<!-- namecache -->
+	<!-- Avatar name: text shown for LLUUID::null -->
+	<string name="AvatarNameNobody">(nadie)</string>
+	<!-- Avatar name: text shown while fetching name -->
+	<string name="AvatarNameWaiting">(esperando)</string>
+	<!-- Avatar name: text shown as an alternative to AvatarNameFetching, easter egg. -->
+	<string name="AvatarNameHippos">(hippos)</string>
+	<!-- Group name: text shown for LLUUID::null -->
+	<string name="GroupNameNone">(ninguno)</string>
+	<!-- Asset errors. Used in llassetstorage.cpp, translation from error code to error message. -->
+	<string name="AssetErrorNone">Sin errores</string>
+	<string name="AssetErrorRequestFailed">Petición de Activos: fallida</string>
+	<string name="AssetErrorNonexistentFile">Petición de Activos: archivo inexistente</string>
+	<string name="AssetErrorNotInDatabase">Petición de Activos: activo no hallado en la base de datos</string>
+	<string name="AssetErrorEOF">Fin de archivo</string>
+	<string name="AssetErrorCannotOpenFile">No se puede abrir el archivo</string>
+	<string name="AssetErrorFileNotFound">Archivo no encontrado</string>
+	<string name="AssetErrorTCPTimeout">Tiempo de espera en transferencia de archivo agotado</string>
+	<string name="AssetErrorCircuitGone">El circuito se ha ido</string>
+	<string name="AssetErrorPriceMismatch">El Visor y el Servidor no coinciden con el precio</string>
+	<string name="AssetErrorUnknownStatus">Estado desconocido</string>
+	<!-- llvoavatar. Displayed in the avatar's chat bubble -->
+	<string name="AvatarEditingAppearance">(Editando Apariencia)</string>
+	<string name="AvatarAway">Ausente</string>
+	<string name="AvatarBusy">Ocupado</string>
+	<string name="AvatarMuted">Bloqueado</string>
+	<!-- animations -->
+	<string name="anim_express_afraid">Miedo</string>
+	<string name="anim_express_anger">Enfado</string>
+	<string name="anim_away">Ausente</string>
+	<string name="anim_backflip">Salto mortal atrás</string>
+	<string name="anim_express_laugh">Carcajada</string>
+	<string name="anim_express_toothsmile">Gran sonrisa</string>
+	<string name="anim_blowkiss">Mandar un beso</string>
+	<string name="anim_express_bored">Aburrimiento</string>
+	<string name="anim_bow">Reverencia</string>
+	<string name="anim_clap">Aplauso</string>
+	<string name="anim_courtbow">Reverencia floreada</string>
+	<string name="anim_express_cry">Llanto</string>
+	<string name="anim_dance1">Baile 1</string>
+	<string name="anim_dance2">Baile 2</string>
+	<string name="anim_dance3">Baile 3</string>
+	<string name="anim_dance4">Baile 4</string>
+	<string name="anim_dance5">Baile 5</string>
+	<string name="anim_dance6">Baile 6</string>
+	<string name="anim_dance7">Baile 7</string>
+	<string name="anim_dance8">Baile 8</string>
+	<string name="anim_express_disdain">Desdén</string>
+	<string name="anim_drink">Beber</string>
+	<string name="anim_express_embarrased">Avergonzado</string>
+	<string name="anim_angry_fingerwag">Negar con el dedo</string>
+	<string name="anim_fist_pump">Gesto de Victoria</string>
+	<string name="anim_yoga_float">Yoga flotando</string>
+	<string name="anim_express_frown">Fruncir el ceño</string>
+	<string name="anim_impatient">Impaciente</string>
+	<string name="anim_jumpforjoy">Salto de alegría</string>
+	<string name="anim_kissmybutt">Bésame el culo</string>
+	<string name="anim_express_kiss">Besar</string>
+	<string name="anim_laugh_short">Reír</string>
+	<string name="anim_musclebeach">Sacar músculo</string>
+	<string name="anim_no_unhappy">No (con enfado)</string>
+	<string name="anim_no_head">No</string>
+	<string name="anim_nyanya">Ña-Ña-Ña</string>
+	<string name="anim_punch_onetwo">Puñetazo uno-dos</string>
+	<string name="anim_express_open_mouth">Abrir la boca</string>
+	<string name="anim_peace">Paz</string>
+	<string name="anim_point_you">Señalar a otro/a</string>
+	<string name="anim_point_me">Señalarse</string>
+	<string name="anim_punch_l">Puñetazo izquierdo</string>
+	<string name="anim_punch_r">Puñetazo derecho</string>
+	<string name="anim_rps_countdown">PPT cuenta</string>
+	<string name="anim_rps_paper">PPT papel</string>
+	<string name="anim_rps_rock">PPT piedra</string>
+	<string name="anim_rps_scissors">PPT tijera</string>
+	<string name="anim_express_repulsed">Rechazo</string>
+	<string name="anim_kick_roundhouse_r">Patada circular</string>
+	<string name="anim_express_sad">Triste</string>
+	<string name="anim_salute">Saludo militar</string>
+	<string name="anim_shout">Gritar</string>
+	<string name="anim_express_shrug">Encogerse de hombros</string>
+	<string name="anim_express_smile">Sonreír</string>
+	<string name="anim_smoke_idle">Fumar: en la mano</string>
+	<string name="anim_smoke_inhale">Fumar: Inhalar</string>
+	<string name="anim_smoke_throw_down">Fumar: tirar el cigarro</string>
+	<string name="anim_express_surprise">Sorpresa</string>
+	<string name="anim_sword_strike_r">Estocada</string>
+	<string name="anim_angry_tantrum">Berrinche</string>
+	<string name="anim_express_tongue_out">Sacar la lengua</string>
+	<string name="anim_hello">Agitar la mano</string>
+	<string name="anim_whisper">Susurrar</string>
+	<string name="anim_whistle">Silbar</string>
+	<string name="anim_express_wink">Guiño</string>
+	<string name="anim_wink_hollywood">Guiño (Hollywood)</string>
+	<string name="anim_express_worry">Preocuparse</string>
+	<string name="anim_yes_happy">Sí (contento)</string>
+	<string name="anim_yes_head">Si</string>
+	<string name="texture_loading">Cargando...</string>
+	<string name="worldmap_offline">Desconectado</string>
+	<!-- animations uploading status codes -->
+	<string name="Ok">OK</string>
+	<!-- Chat -->
+	<string name="whisper">Susurros:</string>
+	<string name="shout">Gritos:</string>
+	<!-- Sim Access labels -->
+	<string name="SIM_ACCESS_PG">PG</string>
+	<string name="SIM_ACCESS_MATURE">Mature</string>
+	<string name="SIM_ACCESS_ADULT">Adulto</string>
+	<string name="SIM_ACCESS_DOWN">Desconectado</string>
+	<string name="SIM_ACCESS_MIN">Desconocido</string>
+	<!-- For use when we do not have land type back from the server -->
+	<string name="land_type_unknown">(Desconocido)</string>
+	<!-- Covenant info -->
+	<string name="covenant_never_modified">Última Modificación: (nunca)</string>
+	<string name="covenant_modified">Última Modificación: </string>
+	<!-- File load/save dialogs -->
+	<string name="all_files">Todos los Archivos</string>
+	<string name="sound_files">Sonidos</string>
+	<string name="animation_files">Animaciones</string>
+	<string name="image_files">Imágenes</string>
+	<string name="save_file_verb">Guardar</string>
+	<string name="load_file_verb">Cargar</string>
+	<string name="targa_image_files">Imágenes Targa</string>
+	<string name="bitmap_image_files">Imágenes de Mapa de Bits</string>
+	<string name="avi_movie_file">Película AVI</string>
+	<string name="xaf_animation_file">Animación XAF</string>
+	<string name="xml_file">Archivo XML</string>
+	<string name="raw_file">Archivo RAW</string>
+	<string name="compressed_image_files">Imágenes Comprimidas</string>
+	<string name="load_files">Cargar Archivos</string>
+	<string name="choose_the_directory">Seleccionar Directorio</string>
+	<string name="Sound: ">Sonido: </string>
+	<!-- LSL Usage Hover Tips -->
+	<string name="LSLTipSleepTime">Pausa el script por [SLEEP_TIME] segundos.</string>
+	<string name="LSLTipText_llSin">
+		float llSin(float theta)
 Devuelve el seno de theta (theta en radianes)
-			 </string>
-			 <string name="LSLTipText_llCos">
-					float llCos(float theta)
+	</string>
+	<string name="LSLTipText_llCos">
+		float llCos(float theta)
 Devuelve el coseno de theta (theta en radianes)
-			 </string>
-			 <string name="LSLTipText_llTan">
-					float llTan(float theta)
-Returns the tangent of theta (theta in radians)
+	</string>
+	<string name="LSLTipText_llTan">
+		float llTan(float theta)
+Devuelve la tangente de theta (theta en radianes)
   </string>
   <string name="LSLTipText_llAtan2">
-float llAtan2(float y, float x)
-Returns the arctangent2 of y, x
+		float llAtan2(float y, float x)
+Devuelve el arcotangente2 de y, x
   </string>
   <string name="LSLTipText_llSqrt">
-float llSqrt(float val)
-Returns the square root of val, or returns 0 and triggers a Math Error for imaginary results
+		float llSqrt(float val)
+Devuelve la raíz cuadrada de val, o devuelve 0 y desencadena un error para resultados imaginarios
   </string>
   <string name="LSLTipText_llPow">
-float llPow(float base, float exponent)
-Returns the base raised to the power exponent, or returns 0 and triggers Math Error for imaginary results
+		float llPow(float base, float exponent)
+Devuelve la base elevada a la potencia del exponente, o devuelve 0 y desencadena un error para resultados imaginarios		
   </string>
   <string name="LSLTipText_llAbs">
-integer llAbs(integer val)
-Returns the positive version of val
+		integer llAbs(integer val)
+Devuelve el positivo de val
   </string>
   <string name="LSLTipText_llFabs">
-float llFabs(float val)
-Returns the positive version of val
+	float llFabs(float val)
+Devuelve el positivo de val
   </string>
-  <string name="LSLTipText_llFrand">
-float llFrand(float mag)
-Returns a pseudo random number in the range [0,mag) or (mag,0]
+	<string name="LSLTipText_llFrand">
+		float llFrand(float mag)
+Devuelve un número seudo aleatoreo en el rango [0,mag) o (mag,0]
   </string>
   <string name="LSLTipText_llFloor">
-integer llFloor(float val)
+		integer llFloor(float val)
 Returns largest integer value &lt;= val
   </string>
   <string name="LSLTipText_llCeil">
@@ -1821,148 +1784,145 @@ key llAvatarOnLinkSitTarget( integer link )
 Returns a key that is the UUID of the user seated on the prim.
   </string>
 
-
 <!-- No info on these functions yet....
   <string name="LSLTipText_llSetVelocity">
   </string>
   <string name="LSLTipText_llSetRotationalVelocity">
   </string>
 -->
-  <!-- Avatar busy/away mode -->
-	<string name="AvatarSetNotAway">Not Away</string>
-	<string name="AvatarSetAway">Away</string>
-	<string name="AvatarSetNotBusy">Not Busy</string>
-	<string name="AvatarSetBusy">Busy</string>
-
-
-
+	<!-- Avatar busy/away mode -->
+	<string name="AvatarSetNotAway">No ausente</string>
+	<string name="AvatarSetAway">Ausente</string>
+	<string name="AvatarSetNotBusy">No Ocupado</string>
+	<string name="AvatarSetBusy">Ocupado</string>
 	<string name="ok">OK</string>
 	<!-- mouselook -->
-	<string name="LeaveMouselook">Press ESC to return to World View</string>
+	<string name="LeaveMouselook">Pulsa ESC para regresar a la vista del mundo</string>
 	<!-- use value="" because they have preceding spaces -->
-	<string name="no_transfer" value=" (no transfer)" />
-	<string name="no_modify"   value=" (no modify)" />
-	<string name="no_copy"     value=" (no copy)" />
-	<string name="temporary"   value=" (temporary)" />
-	<string name="worn"        value=" (worn)" />
-	<string name="locked" value=" (locked)" />
-	<string name="link"        value=" (link)" />
-	<string name="broken_link" value=" (broken_link)" />
-	<string name="LoadingContents">Loading contents...</string>
-	<string name="NoContents">No contents</string>
-	<string name="WornOnAttachmentPoint" value=" (worn on [ATTACHMENT_POINT])" />
-	<string name="LockedOnAttachmentPoint" value=" (locked to [ATTACHMENT_POINT])" />
-	<string name="ActiveGesture" value="[GESLABEL] (active)"/>
+	<string name="no_transfer" value=" (no transferible)" />
+	<string name="no_modify"   value=" (no modificable)" />
+	<string name="no_copy"     value=" (no copiable)" />
+	<string name="temporary"   value=" (temporal)" />
+	<string name="worn"        value=" (vestido)" />
+	<string name="locked" value=" (bloqueado)" />
+	<string name="link"        value=" (enlace)" />
+	<string name="broken_link" value=" (enlace roto)" />
+	<string name="LoadingContents">Cargando contenidos...</string>
+	<string name="NoContents">Sin Contenido</string>
+	<string name="WornOnAttachmentPoint" value=" (vestido en [ATTACHMENT_POINT])" />
+	<string name="LockedOnAttachmentPoint" value=" (bloqueado en[ATTACHMENT_POINT])" />
+	<string name="ActiveGesture" value="[GESLABEL] (activo)"/>
 	<!-- Gestures labels -->
     <!-- use value="" because they have preceding spaces -->
     <string name="Chat Message"  value=" Chat : " />
-    <string name="Sound"         value=" Sound : " />
-	<string name="Wait"          value=" --- Wait : " />
-	<string name="AnimFlagStop"  value=" Stop Animation :    " />
-	<string name="AnimFlagStart" value=" Start Animation :   " />
-	<string name="Wave"          value=" Wave " />
-	<string name="GestureActionNone" value="None" />
-	<string name="HelloAvatar"   value=" Hello, avatar! " />
-	<string name="ViewAllGestures"  value="  View All &gt;&gt;" />
-	<string name="GetMoreGestures"  value="  Get More &gt;&gt;" />
-	<string name="Stone">Stone</string>
+    <string name="Sound"         value=" Sonido : " />
+	<string name="Wait"          value=" --- Esperar : " />
+	<string name="AnimFlagStop"  value=" Detener Animación :    " />
+	<string name="AnimFlagStart" value=" Iniciar Animación :   " />
+	<string name="Wave"          value=" Onda " />
+	<string name="GestureActionNone" value="Nada" />
+	<string name="HelloAvatar"   value=" ¡Hola Avatar! " />
+	<string name="ViewAllGestures"  value="  Ver Todo &gt;&gt;" />
+	<string name="GetMoreGestures"  value="  Obtener Más &gt;&gt;" />
+	<string name="Stone">Piedra</string>
 	<string name="Metal">Metal</string>
-	<string name="Glass">Glass</string>
-	<string name="Wood">Wood</string>
-	<string name="Flesh">Flesh</string>
-	<string name="Plastic">Plastic</string>
-	<string name="Rubber">Rubber</string>
-	<string name="Light">Light</string>
-	<string name="Unknown">(Unknown)</string>
+	<string name="Glass">Vidrio</string>
+	<string name="Wood">Madera</string>
+	<string name="Flesh">Carne</string>
+	<string name="Plastic">Plástico</string>
+	<string name="Rubber">Goma</string>
+	<string name="Light">Luz</string>
+	<string name="Unknown">(Desconocido)</string>
 	<!-- Environment settings -->
 	<string name="Local">Local</string>
-	<string name="LocalSettings">Local Settings</string>
-	<string name="Region">Region</string>
-	<string name="RegionSettings">Region Settings</string>
+	<string name="LocalSettings">Configuración Local</string>
+	<string name="Region">Región</string>
+	<string name="RegionSettings">Configuración de Región</string>
 	<!-- menu accelerators -->
 	<string name="accel-mac-control">Ctrl-</string>
 	<string name="accel-mac-command">Cmd-</string>
 	<string name="accel-mac-option">Opt-</string>
-	<string name="accel-mac-shift">Shift-</string>
+	<string name="accel-mac-shift">Mayús</string>
 	<string name="accel-win-control">Ctrl-</string>
 	<string name="accel-win-alt">Alt-</string>
-	<string name="accel-win-shift">Shift-</string>
+	<string name="accel-win-shift">Mayús</string>
 	<!-- OSMessageBox messages -->
 	<string name="MBCmdLineError">
-		An error was found parsing the command line.
-Please see: http://wiki.secondlife.com/wiki/Client_parameters
+		Se ha encontrado un error analizando la línea de comandos-
+Por favor, mira en: http://wiki.secondlife.com/wiki/Client_parameters
 Error:
 	</string>
-	<string name="MBCmdLineUsg">[APP_NAME] Command line usage:</string>
+	<string name="MBCmdLineUsg">[APP_NAME] Uso de la Línea de Comandos:</string>
 	<string name="MBUnableToAccessFile">
-		[APP_NAME] is unable to access a file that it needs.
+		[APP_NAME] es incapaz de acceder a un archivo que necesita.
 
-This can be because you somehow have multiple copies running, or your system incorrectly thinks a file is open.
-If this message persists, restart your computer and try again.
-If it continues to persist, you may need to completely uninstall [APP_NAME] and reinstall it.
+Esto puede ser porque de alguna manera tienes varias copias en ejecución, o tu sistema de forma incorrecta piensa que un archivo está abierto.
+Si este mensaje persiste, reinicia el equipo y vuelve a intentarlo.
+Si persiste, puede que tengas que desinstalar completamente [APP_NAME] y volver a instalarlo.
 	</string>
-	<string name="MBRequiresAltiVec"> [APP_NAME] requires a processor with AltiVec (G4 or later).</string>
+	<string name="MBRequiresAltiVec"> [APP_NAME] requiere un procesador con AltiVec (G4 o posterior).</string>
 	<string name="MBAlreadyRunning">
-		[APP_NAME] is already running.
-Check your task bar for a minimized copy of the program.
-If this message persists, restart your computer.
+		[APP_NAME] ya está siendo ejecutado.
+Revisa tu barra de tareas y busca copia minimizada del programa.
+Si este mensaje persiste, reinicia tu equipo.
 	</string>
 	<string name="MBFrozenCrashed">
-		[APP_NAME] appears to have frozen or crashed on the previous run.
-Would you like to send a crash report?
+		[APP_NAME] parece haberse congelado o sufrido un fallo en la ejecución anterior.
+¿Quieres enviar un reporte de fallos?
 	</string>
-	<string name="MBAlert">Notification</string>
+	<string name="MBAlert">Notificación</string>
 	<string name="MBNoDirectX">
-		[APP_NAME] is unable to detect DirectX 9.0b or greater.
-[APP_NAME] uses DirectX to detect hardware and/or outdated drivers that can cause stability problems, poor performance and crashes.  While you can run [APP_NAME] without it, we highly recommend running with DirectX 9.0b.
+		[APP_NAME] es incapaz de detectar DirectX 9.0b o superior.
+[APP_NAME] usa DirecX para detectar el hardware y/o los controladores desactualizados que pueden causar inestabilidad, pobre rendmiento y caídas. Si bien puedes ejecutar [APP_NAME] sin esto, recomendamos encarecidamente ejecutarlo con DirectX 9.0b.
 
-Do you wish to continue?
+¿Quieres continuar?
 	</string>
-	<string name="MBWarning">Warning</string>
-	<string name="MBRegClassFailed">RegisterClass failed</string>
+	<string name="MBWarning">Cuidado</string>
+	<string name="MBRegClassFailed">Fallo de RegisterClass</string>
 	<string name="MBError">Error</string>
 	<string name="MBFullScreenErr">
-		Unable to run fullscreen at [WIDTH] x [HEIGHT].
-Running in window.
+		Incapaz de ejecutar a pantalla completa en [WIDTH] x [HEIGHT].
+Ejecutando en ventana.
 	</string>
-	<string name="MBDestroyWinFailed">Shutdown Error while destroying window (DestroyWindow() failed)</string>
-	<string name="MBShutdownErr">Shutdown Error</string>
-	<string name="MBDevContextErr">Can't make GL device context</string>
+	<string name="MBDestroyWinFailed">Error de cierre mientras se destruía la ventana (falló DestroyWindow())</string>
+	<string name="MBShutdownErr">Error de Cierre</string>
+	<string name="MBDevContextErr">Imposible crear el contexto de dispositivo GL</string>
 	<string name="MBPixelFmtErr">Can't find suitable pixel format</string>
 	<string name="MBPixelFmtDescErr">Can't get pixel format description</string>
 	<string name="MBTrueColorWindow">
-		[APP_NAME] requires True Color (32-bit) to run.
-Please go to your computer's display settings and set the color mode to 32-bit.
+		[APP_NAME] requiere True Color (32-bit) para ser ejecutado.
+Por favor, ve a la configuración de pantalla de tu equipo y configura el modo de color en 32-bit.
 	</string>
 	<string name="MBAlpha">
-		[APP_NAME] is unable to run because it can't get an 8 bit alpha channel.  Usually this is due to video card driver issues.
-Please make sure you have the latest video card drivers installed.
-Also be sure your monitor is set to True Color (32-bit) in Control Panels &gt; Display &gt; Settings.
-If you continue to receive this message, contact the [SUPPORT_SITE].
+		[APP_NAME] es incapaz de ejecutarse porque no puede obtener un canal alfa de 8 bit.  Usualmente esto ocurre debido a problemas con la tarjeta gráfica.
+Por favor, asegurate que tienes actualizados los controladores de tu tarjeta gráfica.
+Además, asegurate que tu pantalla esta definida en Color Verdadero (32-bit) En el Panel de Control &gt; Pantalla &gt; Configuraciones.
+
+Si continuas recibiendo este mensaje, contacta con [SUPPORT_SITE].
 	</string>
 	<string name="MBPixelFmtSetErr">Can't set pixel format</string>
 	<string name="MBGLContextErr">Can't create GL rendering context</string>
 	<string name="MBGLContextActErr">Can't activate GL rendering context</string>
 	<string name="MBVideoDrvErr">
-		[APP_NAME] is unable to run because your video card drivers did not install properly, are out of date, or are for unsupported hardware. Please make sure you have the latest video card drivers and even if you do have the latest, try reinstalling them.
+		[APP_NAME] es incapaz de ejecutarse porque tu tarjeta gráfica no está instalada correctamente, es obsoleta o no está soportada. Por favor, asegurate que tienes actualizados los controladores de tu tarjeta gráfica, incluso, si están actualizados, intenta reinstalarlos..
 
-If you continue to receive this message, contact the [SUPPORT_SITE].
+Si continuas recibiendo este mensaje, contacta con [SUPPORT_SITE].
 	</string>
 	
-  <string name="group_role_everyone">Everyone</string>
-  <string name="group_role_officers">Officers</string>
-  <string name="group_role_owners">Owners</string>	
-  <string name="group_member_status_online">Online</string>
+  <string name="group_role_everyone">Cualquiera</string>
+  <string name="group_role_officers">Oficiales</string>
+  <string name="group_role_owners">Propietarios</string>	
+  <string name="group_member_status_online">Conectado</string>
   
   <string name="Chat">Chat</string>
 
-  <string name="DefaultMimeType">none/none</string>
+  <string name="DefaultMimeType">ninguno/ninguno</string>
 
  <!-- External editor status codes -->
- <string name="ExternalEditorNotSet">Select an editor using the ExternalEditor setting.</string>
- <string name="ExternalEditorNotFound">Cannot find the external editor you specified.
-Try enclosing path to the editor with double quotes.
-(e.g. "/path to my/editor" "%s")</string>
+ <string name="ExternalEditorNotSet">Escoge un editor usando las configuraciones de Editor Externo.</string>
+ <string name="ExternalEditorNotFound">No se puede hallar el editor externo que has especificado.
+Intenta entrecomillando el camino al editor.
+(P.ej. "/Camino al/editor" "%s")</string>
  <string name="ExternalEditorCommandParseError">Error parsing the external editor command.</string>
  <string name="ExternalEditorFailedToRun">External editor failed to run.</string>
 

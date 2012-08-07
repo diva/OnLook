@@ -2,52 +2,51 @@
 <!-- Local Asset Browser: xui -->
 <!-- floater definition start -->
 <floater name="local_bitmap_browser_floater" title="Navegador Local de Bitmap" >
-<!-- floater definition end, left side begin -->
-	  <button name="add_btn" label="Agregar"/>
-	  <button name="del_btn" label="Quitar"/>
-	  <button name="upload_btn" label="Subir"/>
-	  <button name="more_btn" label="Mas"/>
-	  <button name="less_btn" label="Menos"/>
-	  <scroll_list name="bitmap_list" >
-			 <column name="bitmap_name" label="Nombre"/>
-			 <column name="bitmap_uuid" label="UUID"/>
-	  </scroll_list>
-	  <!-- left side done, right side begin -->
-	  <line_editor  name="path_text"/>
-	  <text name="path_caption_text">
-			 Ruta Local:
-	  </text>
-	  <line_editor name="uuid_text" />
-	  <text name="uuid_caption_text">
-			 Local UdddUID:
-	  </text>
-	  <texture_picker label="Textura" name="texture_view"/>
-	  <check_box label="Mantener Actualizado" name="keep_updating_checkbox" tool_tip="Activar o desactivar el control periódico de las fuentes de bitmaps en tu disco duro para ver si han sido actualizadas"/>
-	  <combo_box name="type_combobox">
-			 <combo_item name="type_texture" value="type_texture">
-					Textura
-			 </combo_item>
-			 <combo_item name="type_sculptie" value="type_sculptie">
-					Sculptmap
-			 </combo_item>
-			 <combo_item name="type_layer" value="type_layer">
-					Ropas
-			 </combo_item>
-	  </combo_box>
-	  <text name="time_caption_text">
-			 Hora:
-	  </text>
-	  <text name="time_text">
-			 (aqui la fecha)
-	  </text>
-	  <text name="link_caption_text">
-			 Enlace:
-	  </text>
-	  <text name="link_text">
-			 (Estado del Link)
-	  </text>
-	  <text name="name_caption_text">
-			 Nombre:
-	  </text>
-	  <line_editor name="name_text"/>
+	<!-- floater definition end, left side begin -->
+	<button name="add_btn" label="Agregar"/>
+	<button name="del_btn" label="Quitar"/>
+	<button name="upload_btn" label="Subir"/>
+	<button name="more_btn" label="Mas"/>
+	<button name="less_btn" label="Menos"/>
+	<scroll_list name="bitmap_list" >
+		<column name="bitmap_name" label="Nombre"/>
+		<column name="bitmap_uuid" label="UUID"/>
+	</scroll_list>
+	<!-- left side done, right side begin -->
+	<line_editor  name="path_text"/>
+	<text name="path_caption_text">
+		Ruta Local:
+	</text>
+	<line_editor name="uuid_text" />
+	<text name="uuid_caption_text">
+		Local UdddUID:
+	</text>
+	<texture_picker label="Textura" name="texture_view"/>
+	<check_box label="Mantener Actualizado" name="keep_updating_checkbox" tool_tip="Activar o desactivar el control periódico de las fuentes de bitmaps en tu disco duro para ver si han sido actualizadas"/>
+	<combo_box name="type_combobox">
+		<combo_item name="type_texture" value="type_texture">
+			Textura
+		</combo_item>
+		<combo_item name="type_sculptie" value="type_sculptie">
+			Sculptmap
+		</combo_item>
+		<combo_item name="type_layer" value="type_layer">
+			Ropas
+		</combo_item>
+	</combo_box>
+	<text name="time_caption_text">
+		Hora:
+	</text>
+	<text name="time_text">
+		(aqui la fecha)
+	</text>
+	<text name="link_caption_text">
+		Enlace:
+	</text>
+	<text name="link_text">
+		(Estado del Link)
+	</text>
+	<text name="name_caption_text">
+		Nombre:
+	</text>
 </floater>

@@ -1,189 +1,236 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Gráficos" name="Display panel">
-	  <button label="?" name="GraphicsPreferencesHelpButton"/>
-	  <check_box label="Ejecutar el Visor en Ventana" name="windowed mode" tool_tip="Si setá desmarcado, el visor se ejecutará a pantalla completa cuando inicies sesión."/>
-	  <text name="WindowSizeLabel">
-			 Tamaño de Ventana:
-	  </text>
-	  <combo_box name="windowsize combo">
-			 <combo_item name="800x600">
-					800x600
-			 </combo_item>
-			 <combo_item name="720x480">
-					720x480 (NTSC)
-			 </combo_item>
-			 <combo_item name="768x576">
-					768x576 (PAL)
-			 </combo_item>
-			 <combo_item name="1024x768">
-					1024x768
-			 </combo_item>
-			 <combo_item name="1280x720">
-					1280x720 (HDV720)
-			 </combo_item>
-			 <combo_item name="1440x1080">
-					1440x1080 (HDV1080)
-			 </combo_item>
-			 <combo_item name="1920x1080">
-					1920x1080 (HD1080)
-			 </combo_item>
-	  </combo_box>
-	  <text name="DisplayResLabel">
-			 Resolución de Pantalla:
-	  </text>
-	  <combo_box name="fullscreen combo" left="130" />
-	  <text name="AspectRatioLabel1">
-			 Proporción:
-	  </text>
-	  <combo_box name="aspect_ratio" tool_tip="Ancho / Alto" left="130" >
-			 <combo_item name="4:3(StandardCRT)">
-					4:3 (CRT Estándar)
-			 </combo_item>
-			 <combo_item name="5:4(1280x1024LCD)">
-					5:4 (1280x1024 LCD)
-			 </combo_item>
-			 <combo_item name="8:5(Widescreen)">
-					16:10 (PC Pantalla ancha)
-			 </combo_item>
-			 <combo_item name="16:9(Widescreen)">
-					16:9 (TV Pantalla ancha)
-			 </combo_item>
-	  </combo_box>
-	  <check_box label="Detectar proporción automáticamente" name="aspect_auto_detect" left="280"/>
-	  <text name="QualityText">
-			 Calidad y Rendimiento:
-	  </text>
-	  <text name="FasterText"  left="130">
-			 Rápido
-	  </text>
-	  <text name="ShadersPrefText">
-			 Bajo
-	  </text>
-	  <text name="ShadersPrefText2">
-			 Medio
-	  </text>
-	  <text name="ShadersPrefText3">
-			 Alto
-	  </text>
-	  <text name="ShadersPrefText4">
-			 Ultra
-	  </text>
-	  <text name="QualityText2">
-			 Alta Calidad
-	  </text>
-	  <!-- Are these icons really necessary? 
-	<icon bottom="-89" height="14" image_name="rounded_square.tga" left="173" name="LowDivet" width="2"/>
-	<icon bottom="-89" height="14" image_name="rounded_square.tga" left_delta="44" name="MidDivet" width="2"/>
-	<icon bottom="-89" height="14" image_name="rounded_square.tga" left_delta="44" name="HighDivet" width="2"/>
-	<icon bottom="-89" height="14" image_name="rounded_square.tga" left_delta="44" name="UltraDivet" width="2"/>
--->
-	  <check_box label="Personalizar" name="CustomSettings"/>
-	  <text name="ShadersText">
-			 Sombreado:
-	  </text>
-	  <check_box label="Relieve y Brillos" name="BumpShiny"/>
-	  <check_box label="Luces Locales" name="LightingDetailRadio"/>
-	  <check_box label="Sombreado Básico" name="BasicShaders" tool_tip="Desactivar esta opción puede prevenir fallos con algunas tarjetas gráficas."/>
-	  <check_box label="Sombreado Atmosférico" name="WindLightUseAtmosShaders"/>
-	  <check_box label="Iluminación y Sombras" tool_tip="Sombreado Diferido" name="RenderDeferred"/>
-	  <check_box label="Oclusión Ambiental" name="UseSSAO"/>
-	  <check_box label="Profundidad de Campo" name="RenderDepthOfField"/>
-	  <text name="ShadowDetailText">
-			 Sombras:
-	  </text>
-	  <combo_box label="Detalle de Sombras" name="ShadowDetailCombo">
-			 <combo_item name="0">
+	<check_box label="Ejecutar el Visor en Ventana" name="windowed mode" tool_tip="Si está desmarcado, el visor se ejecutará a pantalla completa cuando inicies sesión."/>
+	<text name="WindowSizeLabel">
+		Tamaño de Ventana:
+	</text>
+	<combo_box name="windowsize combo">
+		<combo_item name="800x600">
+			800x600
+		</combo_item>
+		<combo_item name="720x480">
+			720x480 (NTSC)
+		</combo_item>
+		<combo_item name="768x576">
+			768x576 (PAL)
+		</combo_item>
+		<combo_item name="1024x768">
+			1024x768
+		</combo_item>
+		<combo_item name="1280x720">
+			1280x720 (HDV720)
+		</combo_item>
+		<combo_item name="1440x1080">
+			1440x1080 (HDV1080)
+		</combo_item>
+		<combo_item name="1920x1080">
+			1920x1080 (HD1080)
+		</combo_item>
+	</combo_box>
+	<text name="DisplayResLabel">
+		Resolución de Pantalla:
+	</text>
+	<text name="AspectRatioLabel1">
+		Proporción:
+	</text>
+	<combo_box name="aspect_ratio" tool_tip="Ancho / Alto" left="130" >
+		<combo_item name="4:3(StandardCRT)">
+			4:3 (CRT Estándar)
+		</combo_item>
+		<combo_item name="5:4(1280x1024LCD)">
+			5:4 (1280x1024 LCD)
+		</combo_item>
+		<combo_item name="8:5(Widescreen)">
+			16:10 (PC Pantalla ancha)
+		</combo_item>
+		<combo_item name="16:9(Widescreen)">
+			16:9 (TV Pantalla ancha)
+		</combo_item>
+	</combo_box>
+	<button label="Predeterminado" name="Defaults" width="110"/>	
+	<check_box label="Detectar proporción automáticamente" name="aspect_auto_detect" left="280"/>
+	<tab_container name="graphics_tab">
+		<panel label="General" name="Main">
+			<button label="?" name="GraphicsPreferencesHelpButton"/>
+			<text name="QualityText">
+				Calidad y Rendimiento:
+			</text>
+			<text name="FasterText"  left="130">
+				Rápido
+			</text>
+			<text name="ShadersPrefText">
+				Bajo
+			</text>
+			<text name="ShadersPrefText2">
+				Medio
+			</text>
+			<text name="ShadersPrefText3">
+				Alto
+			</text>
+			<text name="ShadersPrefText4">
+				Ultra
+			</text>
+			<text name="QualityText2">
+				Alta Calidad
+			</text>
+			<check_box label="Personalizar" name="CustomSettings"/>
+			<text name="ShadersText">
+				Sombreado:
+			</text>
+			<check_box label="Agua Transparente" name="TransparentWater"/>			
+			<check_box label="Relieve y Brillos" name="BumpShiny"/>
+			<check_box label="Luces Locales" name="LightingDetailRadio"/>
+			<check_box label="Sombreado Básico" name="BasicShaders" tool_tip="Desactivar esta opción puede prevenir fallos con algunas tarjetas gráficas."/>
+			<check_box label="Sombreado Atmosférico" name="WindLightUseAtmosShaders"/>
+			<check_box label="Iluminación y Sombras" tool_tip="Sombreado Diferido" name="RenderDeferred"/>
+			<check_box label="Oclusión Ambiental" name="UseSSAO"/>
+			<check_box label="Profundidad de Campo" name="RenderDepthOfField"/>
+			<text name="TerrainScaleText">
+				Escala de Terreno:
+			</text>
+			<combo_box label="Escala de Terreno" name="TerrainScaleCombo">
+				<combo_item name="Low">
+					Baja
+				</combo_item>
+				<combo_item name="Medium">
+					Media
+				</combo_item>
+				<combo_item name="High">
+					Alta
+				</combo_item>
+				<combo_item name="Ultra">
+					Ultra
+				</combo_item>
+			</combo_box>			
+			<text name="ShadowDetailText">
+				Sombras:
+			</text>
+			<combo_box label="Detalle de Sombras" name="ShadowDetailCombo">
+				<combo_item name="0">
 					Desactivado
-			 </combo_item>
-			 <combo_item name="1">
+				</combo_item>
+				<combo_item name="1">
 					Sol/Luna
-			 </combo_item>
-			 <combo_item name="2">
+				</combo_item>
+				<combo_item name="2">
 					Sol/Luna + Proyectores
-			 </combo_item>
-	  </combo_box>
-	  <text name="ReflectionDetailText">
-			 Reflejos en el Agua:
-	  </text>
-	  <combo_box label="Detalle de los Reflejos" name="ReflectionDetailCombo">
-			 <combo_item name="0">
+				</combo_item>
+			</combo_box>
+			<text name="ReflectionDetailText">
+				Reflejos en el Agua:
+			</text>
+			<combo_box label="Detalle de los Reflejos" name="ReflectionDetailCombo">
+				<combo_item name="0">
 					Mínimos
-			 </combo_item>
-			 <combo_item name="1">
+				</combo_item>
+				<combo_item name="1">
 					Terreno y Árboles
-			 </combo_item>
-			 <combo_item name="2">
+				</combo_item>
+				<combo_item name="2">
 					Objetos Estáticos
-			 </combo_item>
-			 <combo_item name="3">
+				</combo_item>
+				<combo_item name="3">
 					Avatares y Objetos
-			 </combo_item>
-			 <combo_item name="4">
+				</combo_item>
+				<combo_item name="4">
 					Todo
-			 </combo_item>
-	  </combo_box>
-	  <slider label="  Física de Avatar:" name="AvatarPhysicsDetail" width="165"/>
-	  <text name="AvatarPhysicsDetailText">
-			 Apagada
-	  </text>
-	  <!--text bottom="-131" height="12" left="464" name="DrawDistanceMeterText1">m</text-->
-	  <text name="DrawDistanceMeterText2">
-			 m
-	  </text>
-	  <slider label="Distancia de Dibujo:" name="DrawDistance"/>
-	  <slider label="Máximo de Partículas:" name="MaxParticleCount"/>
-	  <slider label="Máx No Simulados" name="AvatarMaxVisible"/>
-	  <slider label="PostProcesado:" name="RenderPostProcess"/>
-	  <text name="MeshDetailText">
-			 Nivel de Detalles:
-	  </text>
-	  <slider label="  Objetos:" name="ObjectMeshDetail" />
-	  <slider label="  Prims Flexibles:" name="FlexibleMeshDetail"/>
-	  <slider label="  Árboles:" name="TreeMeshDetail"/>
-	  <slider label="  Avatares:" name="AvatarMeshDetail"/>
-	  <slider label="  Terreno:" name="TerrainMeshDetail"/>
-	  <slider label="  Cielo:" name="SkyMeshDetail"/>
-	  <text name="PostProcessText">
-			 Bajo
-	  </text>
-	  <text name="ObjectMeshDetailText">
-			 Bajo
-	  </text>
-	  <text name="FlexibleMeshDetailText">
-			 Bajo
-	  </text>
-	  <text name="TreeMeshDetailText">
-			 Bajo
-	  </text>
-	  <text name="AvatarMeshDetailText">
-			 Bajo
-	  </text>
-	  <text name="TerrainMeshDetailText">
-			 Bajo
-	  </text>
-	  <text name="SkyMeshDetailText">
-			 Bajo
-	  </text>
-	  <text name="AvatarRenderingText">
-			 Renderizado del Avatar:
-	  </text>
-	  <check_box label="Avatares Simulados" name="AvatarImpostors"/>
-	  <check_box label="Renderizado por Hardware" name="AvatarVertexProgram"/>
-	  <check_box label="Ropas de Avatar" name="AvatarCloth"/>
-	  <text name="TerrainDetailText">
-			 Detalle del Terreno:
-	  </text>
-	  <radio_group name="TerrainDetailRadio">
-			 <radio_item name="0">
+				</combo_item>
+			</combo_box>
+			<slider label="  Física de Avatar:" name="AvatarPhysicsDetail" width="165"/>
+			<text name="AvatarPhysicsDetailText">
+				Apagada
+			</text>
+			<text name="DrawDistanceMeterText2">
+				m
+			</text>
+			<slider label="Distancia de Dibujo:" name="DrawDistance"/>
+			<slider label="Máximo de Partículas:" name="MaxParticleCount"/>
+			<slider label="Máx No Simulados" name="AvatarMaxVisible"/>
+			<slider label="PostProcesado:" name="RenderPostProcess"/>
+			<text name="MeshDetailText">
+				Nivel de Detalles:
+			</text>
+			<slider label="  Objetos:" name="ObjectMeshDetail" />
+			<slider label="  Prims Flexibles:" name="FlexibleMeshDetail"/>
+			<slider label="  Árboles:" name="TreeMeshDetail"/>
+			<slider label="  Avatares:" name="AvatarMeshDetail"/>
+			<slider label="  Terreno:" name="TerrainMeshDetail"/>
+			<slider label="  Cielo:" name="SkyMeshDetail"/>
+			<text name="ObjectMeshDetailText">
+				Bajo
+			</text>
+			<text name="FlexibleMeshDetailText">
+				Bajo
+			</text>
+			<text name="TreeMeshDetailText">
+				Bajo
+			</text>
+			<text name="AvatarMeshDetailText">
+				Bajo
+			</text>
+			<text name="TerrainMeshDetailText">
+				Bajo
+			</text>
+			<text name="SkyMeshDetailText">
+				Bajo
+			</text>
+			<text name="AvatarRenderingText">
+				Renderizado del Avatar:
+			</text>
+			<check_box label="Avatares Simulados" name="AvatarImpostors"/>
+			<check_box label="Renderizado por Hardware" name="AvatarVertexProgram"/>
+			<check_box label="Ropas de Avatar" name="AvatarCloth"/>
+			<text name="TerrainDetailText">
+				Detalle del Terreno:
+			</text>
+			<radio_group name="TerrainDetailRadio">
+				<radio_item name="0">
 					Bajo
-			 </radio_item>
-			 <radio_item name="2">
+				</radio_item>
+				<radio_item name="2">
 					Alto
-			 </radio_item>
-	  </radio_group>
-	  <button label="Reiniciar" name="Defaults"/>
-	  <!--button bottom="-440" height="20" label="Advanced" left="230" name="CustomSettingsButton" scale_image="true" width="120" toggle="true" control_name="RenderCustomSettings"/-->
-	  <button label="Hardware" name="GraphicsHardwareButton"/>
-	  <string name="resolution_format">[RES_X] x [RES_Y]</string>
-	  <string name="aspect_ratio_text">[NUM]:[DEN]</string>
+				</radio_item>
+			</radio_group>
+			<text name="PostProcessText">
+				Bajo
+			</text>
+		</panel>
+		<panel name="Hardware" label="Hardware">
+			<check_box label="Filtrado Anisotrópico (más lento si se activa)" name="ani"/>
+			<text name="Antialiasing:">
+				Antialiasing:
+			</text>
+			<combo_box label="Antialiasing" name="fsaa">
+				<combo_item name="FSAADisabled">
+					Desactivado
+				</combo_item>
+				<combo_item name="2x">
+					2x
+				</combo_item>
+				<combo_item name="4x">
+					4x
+				</combo_item>
+				<combo_item name="8x">
+					8x
+				</combo_item>
+				<combo_item name="16x">
+					16x
+				</combo_item>
+			</combo_box>
+			<spinner label="Memoria p/ Texturas (MB):" name="GrapicsCardTextureMemory" tool_tip="Cantidad de memoria asignada a las texturas. Por defecto es la memoria de la tarjeta de vídeo. Reducir esta cantidad puede mejorar el rendimiento, pero también puede hacer que las texturas se vean borrosas."/>
+			<check_box  label="Activar OpenGL Vertex Buffer Objects" name="vbo" tool_tip="Habilitar esta opción en hardware moderno puede proporcionar una mejora en el rendimiento. Sin embargo, el hardware antiguo ofrece una pobre implementación de VBOs y puede causar fallos cuando esta opcíon esté activada."/>
+			<check_box label="Activar Flujo VBOs" name="vbo_stream" tool_tip="Desactivar esta opción puede mejorar el rendimiento cuando se habilita VBO. Desactivarlo produce una mejora visible en diversas GPUs de AMD."/>
+			<check_box label="Activar OpenGL Frame Buffer Objects" name="fbo" tool_tip="Habilitar esta opción en hardware moderno puede proporcionar una mejora en el rendimiento. Sin embargo, si se habilita en combinación con el antialiasing en GPUs de AMD pueden causar problemas de mezcla de texturas. Este ajuste es necesario para renderizado diferido."/>
+			<spinner label="Gama:" name="gamma" width="202" tool_tip="(brillo, más bajo es mayor brlilo)"/>
+			<spinner label="Intensidad de la niebla:" name="fog"/>
+			<text name="note">
+				Nota: Las configuraciones de Gama e 
+Intensidad de la Niebla no están disponibles 
+cuando se activan las Sombras de la Atmósfera.
+			</text>
+		</panel>
+	</tab_container>
+	<string name="resolution_format">[RES_X] x [RES_Y]</string>
+	<string name="aspect_ratio_text">[NUM]:[DEN]</string>
 </panel>
+

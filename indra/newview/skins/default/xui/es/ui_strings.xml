@@ -9,9 +9,9 @@
 	<string name="accel-mac-control">Ctrl-</string>
 	<string name="accel-mac-command">Cmd-</string>
 	<string name="accel-mac-option">Opt-</string>
-	<string name="accel-mac-shift">Mayus-</string>
+	<string name="accel-mac-shift">Mayús-</string>
 	<string name="accel-win-control">Ctrl-</string>
 	<string name="accel-win-alt">Alt-</string>
-	<string name="accel-win-shift">Mayus-</string>
+	<string name="accel-win-shift">Mayús-</string>
 
 </strings>

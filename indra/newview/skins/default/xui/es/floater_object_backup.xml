@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="Import" title="Progreso de la Importación">
-	  <text name="name_label"> 
-			 Progreso
-	  </text>  
+	<text name="name_label"> 
+		Progreso
+	</text>  
 </floater>
