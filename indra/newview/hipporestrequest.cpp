@@ -256,7 +256,7 @@ static void request(const std::string &url,
 	LLPumpIO::chain_t chain;
 
 	LLURLRequest *req = new LLURLRequest(method, url);
-	req->setSSLVerifyCallback(LLHTTPClient::getCertVerifyCallback(), (void *)req);
+	req->checkRootCertificate(true);
 
 	/*
 	// Insert custom headers if the caller sent any

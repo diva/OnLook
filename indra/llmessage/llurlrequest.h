@@ -143,7 +143,7 @@ public:
 	 * Set whether request will check that remote server
 	 * certificates are signed by a known root CA when using HTTPS.
 	 */
-	void setSSLVerifyCallback(SSLCertVerifyCallback callback, void * param);
+	void checkRootCertificate(bool check);
 
 	
 	/**
@@ -226,8 +226,6 @@ protected:
 	 S32 mRequestTransferedBytes;
 	 S32 mResponseTransferedBytes;
 
-	static CURLcode _sslCtxCallback(CURL * curl, void *sslctx, void *param);
-	
 private:
 	/** 
 	 * @brief Initialize the object. Called during construction.

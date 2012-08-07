@@ -42,8 +42,6 @@
 
 
 const F32 HTTP_REQUEST_EXPIRY_SECS = 60.0f;
-LLURLRequest::SSLCertVerifyCallback LLHTTPClient::mCertVerifyCallback = NULL;
-
 ////////////////////////////////////////////////////////////////////////////
 
 // Responder class moved to LLCurl
@@ -206,11 +204,6 @@ namespace
 	LLPumpIO* theClientPump = NULL;
 }
 
-void LLHTTPClient::setCertVerifyCallback(LLURLRequest::SSLCertVerifyCallback callback)
-{
-	LLHTTPClient::mCertVerifyCallback = callback;
-}
-
 static void request(
 	const std::string& url,
 	LLURLRequest::ERequestAction method,
@@ -234,7 +227,7 @@ static void request(
 		return ;
 	}
 
-	req->setSSLVerifyCallback(LLHTTPClient::getCertVerifyCallback(), (void *)req);
+	req->checkRootCertificate(true);
 
 	
 	lldebugs << LLURLRequest::actionAsVerb(method) << " " << url << " "

@@ -100,37 +100,6 @@ LLURLRequestDetail::~LLURLRequestDetail()
 	mLastRead = NULL;
 }
 
-void LLURLRequest::setSSLVerifyCallback(SSLCertVerifyCallback callback, void *param)
-{
-	mDetail->mSSLVerifyCallback = callback;
-	mDetail->mCurlRequest->setSSLCtxCallback(LLURLRequest::_sslCtxCallback, (void *)this);
-	mDetail->mCurlRequest->setopt(CURLOPT_SSL_VERIFYPEER, true);
-	mDetail->mCurlRequest->setopt(CURLOPT_SSL_VERIFYHOST, 2);	
-}
-
-
-// _sslCtxFunction
-// Callback function called when an SSL Context is created via CURL
-// used to configure the context for custom cert validation
-
-CURLcode LLURLRequest::_sslCtxCallback(CURL * curl, void *sslctx, void *param)
-{	
-	LLURLRequest *req = (LLURLRequest *)param;
-	if(req == NULL || req->mDetail->mSSLVerifyCallback == NULL)
-	{
-		SSL_CTX_set_cert_verify_callback((SSL_CTX *)sslctx, NULL, NULL);
-		return CURLE_OK;
-	}
-	SSL_CTX * ctx = (SSL_CTX *) sslctx;
-	// disable any default verification for server certs
-	SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
-	// set the verification callback.
-	SSL_CTX_set_cert_verify_callback(ctx, req->mDetail->mSSLVerifyCallback, (void *)req);
-	// the calls are void
-	return CURLE_OK;
-	
-}
-
 /**
  * class LLURLRequest
  */
@@ -195,6 +164,13 @@ void LLURLRequest::addHeader(const char* header)
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	mDetail->mCurlRequest->slist_append(header);
 }
+
+void LLURLRequest::checkRootCertificate(bool check)
+{
+	mDetail->mCurlRequest->setopt(CURLOPT_SSL_VERIFYPEER, (check? TRUE : FALSE));
+	mDetail->mCurlRequest->setoptString(CURLOPT_ENCODING, "");
+}
+
 
 void LLURLRequest::setBodyLimit(U32 size)
 {
