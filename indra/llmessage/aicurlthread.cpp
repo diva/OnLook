@@ -911,12 +911,22 @@ void AICurlThread::create_wakeup_fds(void)
 	if (dumb_socketpair(socks, false) == SOCKET_ERROR)
 	{
 		llerrs << "Failed to generate wake-up socket pair" << formatWSAError() << llendl;
+		return;
 	}
-	else
+	u_long nonblocking_enable = TRUE;
+	int error = ioctlsocket(socks[0], FIONBIO, &nonblocking_enable);
+	if(error)
 	{
-		mWakeUpFd = socks[0];
-		mWakeUpFd_in = socks[1];
+		llerrs << "Failed to set wake-up socket nonblocking: " << formatWSAError() << llendl;
 	}
+	llassert(nonblocking_enable);
+	error = ioctlsocket(socks[1], FIONBIO, &nonblocking_enable);
+	if(error)
+	{
+		llerrs << "Failed to set wake-up input socket nonblocking: " << formatWSAError() << llendl;
+	}
+	mWakeUpFd = socks[0];
+	mWakeUpFd_in = socks[1];
 #else
   int pipefd[2];
   if (pipe(pipefd))
