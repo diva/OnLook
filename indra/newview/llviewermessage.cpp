@@ -1430,7 +1430,7 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 			{
 				from_string = LLTrans::getString("InvOfferAnObjectNamed") + " " + LLTrans::getString("'")
 				+ mFromName + LLTrans::getString("'") + " " + LLTrans::getString("InvOfferOwnedByUnknownGroup");
-				chatHistory_string = mFromName + " " + LLTrans::getString("InvOfferOwnedByUnknownGroup" + LLTrans::getString("."));
+				chatHistory_string = mFromName + " " + LLTrans::getString("InvOfferOwnedByUnknownGroup") + LLTrans::getString(".");
 			}
 		}
 		else
