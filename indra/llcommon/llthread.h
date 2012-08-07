@@ -33,6 +33,12 @@
 #ifndef LL_LLTHREAD_H
 #define LL_LLTHREAD_H
 
+#ifdef __GNUC__
+// Needed for is_main_thread() when compiling with optimization (relwithdebinfo).
+// It doesn't hurt to just always specify it though.
+#pragma interface
+#endif
+
 #include "llapp.h"
 #include "llapr.h"
 #include "llmemory.h"
@@ -308,7 +314,7 @@ private:
 	LLMutexBase* mMutex;
 };
 
-class AIRWLock
+class LL_COMMON_API AIRWLock
 {
 public:
 	AIRWLock(LLAPRPool& parent = LLThread::tldata().mRootPool) :
