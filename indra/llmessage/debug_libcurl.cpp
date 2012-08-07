@@ -3,12 +3,14 @@
 #include "sys.h"
 #include <iostream>
 #include <iomanip>
+#include <cstdlib>
 #include <stdarg.h>
 #include "llpreprocessor.h"
 #include <curl/curl.h>
 #define COMPILING_DEBUG_LIBCURL_CC
 #include "debug_libcurl.h"
-#include "../llcommon/llerror.h"
+#include "debug.h"
+#include "llerror.h"
 
 #define CURL_VERSION(major, minor, patch)	\
     (LIBCURL_VERSION_MAJOR > major ||		\
@@ -623,6 +625,9 @@ CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 	case CURLOPTTYPE_OFF_T:
 	  param.offset = va_arg(ap, curl_off_t);
 	  break;
+	default:
+	  std::cerr << "Extracting param_type failed; option = " << option << "; param_type = " << param_type << std::endl;
+	  std::exit(EXIT_FAILURE);
   }
   va_end(ap);
   switch (param_type)
@@ -642,6 +647,8 @@ CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 	case CURLOPTTYPE_OFF_T:
 	  ret = curl_easy_setopt(handle, option, param.offset);
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", (curl_off_t)" << param.offset << ") = " << ret);
+	  break;
+	default:
 	  break;
   }
   return ret;
@@ -762,6 +769,9 @@ CURLMcode debug_curl_multi_setopt(CURLM* multi_handle, CURLMoption option, ...)
 	case CURLOPTTYPE_OFF_T:
 	  param.offset = va_arg(ap, curl_off_t);
 	  break;
+	default:
+	  std::cerr << "Extracting param_type failed; option = " << option << "; param_type = " << param_type << std::endl;
+	  std::exit(EXIT_FAILURE);
   }
   va_end(ap);
   switch (param_type)
@@ -781,6 +791,8 @@ CURLMcode debug_curl_multi_setopt(CURLM* multi_handle, CURLMoption option, ...)
 	case CURLOPTTYPE_OFF_T:
 	  ret = curl_multi_setopt(multi_handle, option, param.offset);
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", (curl_off_t)" << param.offset << ") = " << ret);
+	  break;
+	default:	// Stop compiler complaining about no default.
 	  break;
   }
   return ret;

@@ -14,38 +14,36 @@
 #error "llpreprocessor.h must be included before <curl/curl.h>."
 #endif
 
-#include "debug.h"
-
 extern "C" {
 
-extern CWD_API void debug_curl_easy_cleanup(CURL* handle);
-extern CWD_API CURL* debug_curl_easy_duphandle(CURL* handle);
-extern CWD_API char* debug_curl_easy_escape(CURL* curl, char* url, int length);
-extern CWD_API CURLcode debug_curl_easy_getinfo(CURL* curl, CURLINFO info, ...);
-extern CWD_API CURL* debug_curl_easy_init(void);
-extern CWD_API CURLcode debug_curl_easy_pause(CURL* handle, int bitmask);
-extern CWD_API CURLcode debug_curl_easy_perform(CURL* handle);
-extern CWD_API void debug_curl_easy_reset(CURL* handle);
-extern CWD_API CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...);
-extern CWD_API char const* debug_curl_easy_strerror(CURLcode errornum);
-extern CWD_API char* debug_curl_easy_unescape(CURL* curl, char* url, int inlength, int* outlength); 
-extern CWD_API void debug_curl_free(char* ptr);
-extern CWD_API time_t debug_curl_getdate(char const* datestring, time_t* now);
-extern CWD_API void debug_curl_global_cleanup(void);
-extern CWD_API CURLcode debug_curl_global_init(long flags);
-extern CWD_API CURLMcode debug_curl_multi_add_handle(CURLM* multi_handle, CURL* easy_handle); 
-extern CWD_API CURLMcode debug_curl_multi_assign(CURLM* multi_handle, curl_socket_t sockfd, void* sockptr);
-extern CWD_API CURLMcode debug_curl_multi_cleanup(CURLM* multi_handle);
-extern CWD_API CURLMsg* debug_curl_multi_info_read(CURLM* multi_handle, int* msgs_in_queue);
-extern CWD_API CURLM* debug_curl_multi_init(void);
-extern CWD_API CURLMcode debug_curl_multi_remove_handle(CURLM* multi_handle, CURL* easy_handle);
-extern CWD_API CURLMcode debug_curl_multi_setopt(CURLM* multi_handle, CURLMoption option, ...);
-extern CWD_API CURLMcode debug_curl_multi_socket_action(CURLM* multi_handle, curl_socket_t sockfd, int ev_bitmask, int* running_handles);
-extern CWD_API char const* debug_curl_multi_strerror(CURLMcode errornum);
-extern CWD_API struct curl_slist* debug_curl_slist_append(struct curl_slist* list, char const* string);
-extern CWD_API void debug_curl_slist_free_all(struct curl_slist* list);
-extern CWD_API char* debug_curl_unescape(char const* url, int length);
-extern CWD_API char* debug_curl_version(void);
+extern void debug_curl_easy_cleanup(CURL* handle);
+extern CURL* debug_curl_easy_duphandle(CURL* handle);
+extern char* debug_curl_easy_escape(CURL* curl, char* url, int length);
+extern CURLcode debug_curl_easy_getinfo(CURL* curl, CURLINFO info, ...);
+extern CURL* debug_curl_easy_init(void);
+extern CURLcode debug_curl_easy_pause(CURL* handle, int bitmask);
+extern CURLcode debug_curl_easy_perform(CURL* handle);
+extern void debug_curl_easy_reset(CURL* handle);
+extern CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...);
+extern char const* debug_curl_easy_strerror(CURLcode errornum);
+extern char* debug_curl_easy_unescape(CURL* curl, char* url, int inlength, int* outlength); 
+extern void debug_curl_free(char* ptr);
+extern time_t debug_curl_getdate(char const* datestring, time_t* now);
+extern void debug_curl_global_cleanup(void);
+extern CURLcode debug_curl_global_init(long flags);
+extern CURLMcode debug_curl_multi_add_handle(CURLM* multi_handle, CURL* easy_handle); 
+extern CURLMcode debug_curl_multi_assign(CURLM* multi_handle, curl_socket_t sockfd, void* sockptr);
+extern CURLMcode debug_curl_multi_cleanup(CURLM* multi_handle);
+extern CURLMsg* debug_curl_multi_info_read(CURLM* multi_handle, int* msgs_in_queue);
+extern CURLM* debug_curl_multi_init(void);
+extern CURLMcode debug_curl_multi_remove_handle(CURLM* multi_handle, CURL* easy_handle);
+extern CURLMcode debug_curl_multi_setopt(CURLM* multi_handle, CURLMoption option, ...);
+extern CURLMcode debug_curl_multi_socket_action(CURLM* multi_handle, curl_socket_t sockfd, int ev_bitmask, int* running_handles);
+extern char const* debug_curl_multi_strerror(CURLMcode errornum);
+extern struct curl_slist* debug_curl_slist_append(struct curl_slist* list, char const* string);
+extern void debug_curl_slist_free_all(struct curl_slist* list);
+extern char* debug_curl_unescape(char const* url, int length);
+extern char* debug_curl_version(void);
 
 }
 
