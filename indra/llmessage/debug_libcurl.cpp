@@ -779,7 +779,7 @@ CURLMcode debug_curl_multi_setopt(CURLM* multi_handle, CURLMoption option, ...)
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", (function*)0x" << std::hex << (size_t)param.ptr << std::dec << ") = " << ret);
 	  break;
 	case CURLOPTTYPE_OFF_T:
-	  ret = curl_easy_setopt(handle, option, param.offset);
+	  ret = curl_multi_setopt(multi_handle, option, param.offset);
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", (curl_off_t)" << param.offset << ") = " << ret);
 	  break;
   }
