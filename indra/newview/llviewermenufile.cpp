@@ -504,6 +504,19 @@ class LLFileSavePreview : public view_listener_t
 	}
 };
 
+class LLFileSavePreviewPNG : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLFloater* top = gFloaterView->getFrontmost();
+		if (top)
+		{
+			top->saveAsType(true);
+		}
+		return true;
+	}
+};
+
 class LLFileTakeSnapshot : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -1313,6 +1326,7 @@ void init_menu_file()
 	(new LLFileMinimizeAllWindows())->registerListener(gMenuHolder, "File.MinimizeAllWindows");
 	// </edit>
 	(new LLFileSavePreview())->registerListener(gMenuHolder, "File.SavePreview");
+	(new LLFileSavePreviewPNG())->registerListener(gMenuHolder, "File.SavePreviewPNG");
 	(new LLFileTakeSnapshot())->registerListener(gMenuHolder, "File.TakeSnapshot");
 	(new LLFileTakeSnapshotToDisk())->registerListener(gMenuHolder, "File.TakeSnapshotToDisk");
 	(new LLFileQuit())->registerListener(gMenuHolder, "File.Quit");

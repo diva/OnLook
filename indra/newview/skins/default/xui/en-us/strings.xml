@@ -3569,7 +3569,7 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 	<string name="IM_autoresponded_to">Autoresponse sent to</string>
 	<string name="IM_autoresponse_sent_item">was sent auto-response item</string>
 	<string name="Unnamed">(Unnamed)</string>
-	<string name="Saved_message">(Saved [LONG_TIMESTAMP])</string>
+	<string name="Saved_message">(Saved [LONG_TIMESTAMP]) </string>
 	<string name="PowerUser1">You are bestowed with powers beyond mortal comprehension.</string>
 	<string name="PowerUser2">Use your newfound abilities wisely.</string>
 	<string name="Unlocked:">Unlocked:</string>
