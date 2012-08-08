@@ -3546,6 +3546,18 @@ Kick [EVIL_USER] from this estate?
   </notification>
 
   <notification
+   icon="alert.tga"
+   label="Confirm Kick and Ban"
+   name="EstateBanUser"
+   type="alert">
+Kick and Ban [EVIL_USER] from this estate?
+    <usetemplate
+     name="okcancelbuttons"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
    icon="alertmodal.tga"
    name="EstateChangeCovenant"
    type="alertmodal">
