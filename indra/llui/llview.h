@@ -56,6 +56,7 @@
 #include "llcursortypes.h"
 #include "llinitparam.h"
 #include "llfocusmgr.h"
+#include <boost/unordered_map.hpp>
 
 const U32	FOLLOWS_NONE	= 0x00;
 const U32	FOLLOWS_LEFT	= 0x01;
@@ -186,6 +187,15 @@ public:
 
 	void initFromParams(const LLView::Params&);
 
+	template<typename T>
+	struct CachedUICtrl
+	{
+		CachedUICtrl():mPtr(NULL){}
+		T* connect(LLView* parent,const char* pName){return mPtr = parent->getChild<T>(pName);}
+		T* operator->(){return mPtr;}
+		operator T*() const{return mPtr;}
+		T* mPtr;
+	};
 protected:
 	LLView(const LLView::Params&);
 	//friend class LLUICtrlFactory;
@@ -454,6 +464,7 @@ public:
 	const child_list_t*	getChildList() const { return &mChildList; }
 	child_list_const_iter_t	beginChild() const { return mChildList.begin(); }
 	child_list_const_iter_t	endChild() const { return mChildList.end(); }
+	boost::unordered_map<const std::string, LLView*> mChildHashMap;
 
 	// LLMouseHandler functions
 	//  Default behavior is to pass events to children

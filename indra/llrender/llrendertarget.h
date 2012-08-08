@@ -80,6 +80,12 @@ public:
 	//multiple calls will release previously allocated resources
 	bool allocate(U32 resx, U32 resy, U32 color_fmt, bool depth, bool stencil, LLTexUnit::eTextureType usage = LLTexUnit::TT_TEXTURE, bool use_fbo = FALSE);
 
+	//resize existing attachments to use new resolution and color format
+	// CAUTION: if the GL runs out of memory attempting to resize, this render target will be undefined
+	// DO NOT use for screen space buffers or for scratch space for an image that might be uploaded
+	// DO use for render targets that resize often and aren't likely to ruin someone's day if they break
+	void resize(U32 resx, U32 resy, U32 color_fmt);
+
 	//provide this render target with a multisample resource.
 	void setSampleBuffer(LLMultisampleBuffer* buffer);
 
@@ -145,6 +151,8 @@ public:
 	//one renderable attachment (i.e. color buffer, depth buffer).
 	bool isComplete() const;
 
+	U32 getFBO() const {return mFBO;}
+
 	static LLRenderTarget* getCurrentBoundTarget() { return sBoundTarget; }
 
 protected:
@@ -168,6 +176,7 @@ protected:
 class LLMultisampleBuffer : public LLRenderTarget
 {
 	U32 mSamples;
+	U32 mColorFormat;
 public:
 	LLMultisampleBuffer();
 	virtual ~LLMultisampleBuffer();
@@ -180,6 +189,7 @@ public:
 	bool allocate(U32 resx, U32 resy, U32 color_fmt, bool depth, bool stencil, LLTexUnit::eTextureType usage, bool use_fbo, U32 samples);
 	virtual bool addColorAttachment(U32 color_fmt);
 	virtual bool allocateDepth();
+	void resize(U32 resx, U32 resy);
 };
 
 #endif //!LL_MESA_HEADLESS

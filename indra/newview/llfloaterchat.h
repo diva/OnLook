@@ -50,6 +50,7 @@ class LLUUID;
 class LLCheckBoxCtrl;
 class LLPanelActiveSpeakers;
 class LLLogChat;
+class LLChatBar;
 
 class LLFloaterChat
 	:	public LLFloater, public LLUISingleton<LLFloaterChat, LLFloaterChat>
@@ -95,6 +96,9 @@ public:
 
 	LLPanelActiveSpeakers* mPanel;
 	BOOL mScrolledToEnd;
+
+	CachedUICtrl<LLButton> mToggleActiveSpeakersBtn;
+	CachedUICtrl<LLChatBar> mChatPanel;
 };
 
 #endif

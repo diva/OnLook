@@ -1565,6 +1565,7 @@ LLViewerWindow::LLViewerWindow(
 	LLVertexBuffer::initClass(gSavedSettings.getBOOL("RenderVBOEnable"), gSavedSettings.getBOOL("RenderVBOMappingDisable"));
 	LL_INFOS("RenderInit") << "LLVertexBuffer initialization done." << LL_ENDL ;
 	gGL.init() ;
+	LLImageGL::initClass(LLViewerTexture::MAX_GL_IMAGE_CATEGORY) ;
 
 	if (LLFeatureManager::getInstance()->isSafe()
 		|| (gSavedSettings.getS32("LastFeatureVersion") != LLFeatureManager::getInstance()->getVersion())
@@ -1589,7 +1590,6 @@ LLViewerWindow::LLViewerWindow(
 		
 	// Init the image list.  Must happen after GL is initialized and before the images that
 	// LLViewerWindow needs are requested.
-	LLImageGL::initClass(LLViewerTexture::MAX_GL_IMAGE_CATEGORY) ;
 	gTextureList.init();
 	LLViewerTextureManager::init() ;
 	gBumpImageList.init();
@@ -3097,7 +3097,7 @@ void LLViewerWindow::updateUI()
 		}
 
 		// snap floaters to top of chat bar/button strip
-		LLView* chatbar_and_buttons = gOverlayBar->getChild<LLView>("chatbar_and_buttons", TRUE);
+		LLView* chatbar_and_buttons = gOverlayBar->getChatbarAndButtons();
 		// find top of chatbar and state buttons, if either are visible
 		if (chatbar_and_buttons && chatbar_and_buttons->getLocalBoundingRect().notEmpty())
 		{
@@ -4842,7 +4842,7 @@ void LLViewerWindow::stopGL(BOOL save_state)
 		
 		if(LLPostProcess::instanceExists())
 		{
-			LLPostProcess::getInstance()->invalidate();
+			LLPostProcess::getInstance()->destroyGL();
 		}
 
 		gTextureList.destroyGL(save_state);

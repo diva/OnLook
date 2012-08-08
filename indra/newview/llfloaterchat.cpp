@@ -135,9 +135,9 @@ void LLFloaterChat::draw()
 {
 	// enable say and shout only when text available
 		
-	childSetValue("toggle_active_speakers_btn", childIsVisible("active_speakers_panel"));
+	mToggleActiveSpeakersBtn->setValue(mPanel->getVisible());
 
-	LLChatBar* chat_barp = getChild<LLChatBar>("chat_panel", TRUE);
+	LLChatBar* chat_barp = mChatPanel;
 	if (chat_barp)
 	{
 		chat_barp->refresh();
@@ -156,6 +156,9 @@ BOOL LLFloaterChat::postBuild()
 	{
 		chat_barp->setGestureCombo(getChild<LLComboBox>( "Gesture"));
 	}
+
+	mToggleActiveSpeakersBtn.connect(this,"toggle_active_speakers_btn");
+	mChatPanel.connect(this,"chat_panel");
 	return TRUE;
 }
 

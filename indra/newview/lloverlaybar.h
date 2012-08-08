@@ -52,6 +52,7 @@ class LLSlider;
 class LLVoiceRemoteCtrl;
 class wlfPanel_AdvSettings;
 class AORemoteCtrl;
+class LLChatBar;
 
 class LLOverlayBar
 :	public LLPanel
@@ -68,6 +69,8 @@ public:
 
 	// helpers for returning desired state
 	BOOL musicPlaying() { return mMusicState == PLAYING; }
+
+	LLView* getChatbarAndButtons() const {return mChatbarAndButtons;}
 	
 	static void onClickIMReceived(void* data);
 	static void onClickSetNotBusy(void* data);
@@ -114,7 +117,14 @@ protected:
 	S32 mMusicState;
 	std::string			mOriginalIMLabel;
 	
-
+	CachedUICtrl<LLView> mChatbarAndButtons;
+	CachedUICtrl<LLButton> mNewIM;
+	CachedUICtrl<LLButton> mNotBusy;
+	CachedUICtrl<LLButton> mMouseLook;
+	CachedUICtrl<LLButton> mStandUp;
+	CachedUICtrl<LLButton> mFlyCam;
+	CachedUICtrl<LLChatBar> mChatBar;
+	CachedUICtrl<LLPanel> mVoiceRemoteContainer;
 private:
 	
 

@@ -76,6 +76,45 @@ LLRenderTarget::~LLRenderTarget()
 	release();
 }
 
+void LLRenderTarget::resize(U32 resx, U32 resy, U32 color_fmt)
+{
+	//for accounting, get the number of pixels added/subtracted
+	S32 pix_diff = (resx*resy)-(mResX*mResY);
+
+	mResX = resx;
+	mResY = resy;
+
+	for (U32 i = 0; i < mTex.size(); ++i)
+	{ //resize color attachments
+		gGL.getTexUnit(0)->bindManual(mUsage, mTex[i]);
+		LLImageGL::setManualImage(LLTexUnit::getInternalType(mUsage), 0, color_fmt, mResX, mResY, GL_RGBA, GL_UNSIGNED_BYTE, NULL, false);
+		sBytesAllocated += pix_diff*4;
+	}
+
+	if (mDepth)
+	{ //resize depth attachment
+		if (mStencil && mFBO)
+		{
+			//use render buffers where stencil buffers are in play
+			glBindRenderbuffer(GL_RENDERBUFFER, mDepth);
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, mResX, mResY);
+			glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		}
+		else
+		{
+			gGL.getTexUnit(0)->bindManual(mUsage, mDepth);
+			U32 internal_type = LLTexUnit::getInternalType(mUsage);
+			if(!mStencil)
+				LLImageGL::setManualImage(internal_type, 0, GL_DEPTH_COMPONENT24, mResX, mResY, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL, false);
+			else
+				LLImageGL::setManualImage(internal_type, 0, GL_DEPTH24_STENCIL8, mResX, mResY, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL, false);
+		}
+
+		sBytesAllocated += pix_diff*4;
+	}
+	if(mSampleBuffer)
+		mSampleBuffer->resize(resx,resy);
+}
 
 void LLRenderTarget::setSampleBuffer(LLMultisampleBuffer* buffer)
 {
@@ -95,9 +134,10 @@ bool LLRenderTarget::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth, boo
 	mUsage = usage;
 	mUseDepth = depth;
 
-
 	if ((sUseFBO || use_fbo) && gGLManager.mHasFramebufferObject)
 	{
+		glGenFramebuffers(1, (GLuint *) &mFBO);
+
 		if (depth)
 		{
 			if (!allocateDepth())
@@ -106,8 +146,6 @@ bool LLRenderTarget::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth, boo
 				return false;
 			}
 		}
-
-		glGenFramebuffers(1, (GLuint *) &mFBO);
 
 		if (mDepth)
 		{
@@ -126,7 +164,7 @@ bool LLRenderTarget::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth, boo
 			}
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
-		
+
 		stop_glerror();
 	}
 
@@ -219,7 +257,7 @@ bool LLRenderTarget::addColorAttachment(U32 color_fmt)
 
 bool LLRenderTarget::allocateDepth()
 {
-	if (mStencil)
+	if (mStencil && mFBO)
 	{
 		//use render buffers where stencil buffers are in play
 		glGenRenderbuffers(1, (GLuint *) &mDepth);
@@ -231,23 +269,29 @@ bool LLRenderTarget::allocateDepth()
 	}
 	else
 	{
-		LLImageGL::generateTextures(mUsage, GL_DEPTH_COMPONENT24, 1, &mDepth);
+		if(!mStencil)
+			LLImageGL::generateTextures(mUsage, GL_DEPTH_COMPONENT24, 1, &mDepth);
+		else
+			LLImageGL::generateTextures(mUsage, GL_DEPTH24_STENCIL8, 1, &mDepth);
 		gGL.getTexUnit(0)->bindManual(mUsage, mDepth);
 		
 		U32 internal_type = LLTexUnit::getInternalType(mUsage);
 		stop_glerror();
 		clear_glerror();
-		LLImageGL::setManualImage(internal_type, 0, GL_DEPTH_COMPONENT24, mResX, mResY, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL, false);
+		if(!mStencil)
+			LLImageGL::setManualImage(internal_type, 0, GL_DEPTH_COMPONENT24, mResX, mResY, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL, false);
+		else
+			LLImageGL::setManualImage(internal_type, 0, GL_DEPTH24_STENCIL8, mResX, mResY, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL, false);
 		gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
 	}
-
-	sBytesAllocated += mResX*mResY*4;
 
 	if (glGetError() != GL_NO_ERROR)
 	{
 		llwarns << "Unable to allocate depth buffer for render target." << llendl;
 		return false;
 	}
+
+	sBytesAllocated += mResX*mResY*4;
 
 	return true;
 }
@@ -301,7 +345,7 @@ void LLRenderTarget::release()
 {
 	if (mDepth)
 	{
-		if (mStencil)
+		if (mStencil && mFBO)
 		{
 			glDeleteRenderbuffers(1, (GLuint*) &mDepth);
 			stop_glerror();
@@ -309,7 +353,11 @@ void LLRenderTarget::release()
 		else
 		{
 			//Release before delete.
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, LLTexUnit::getInternalType(mUsage), 0, 0);
+			if(mFBO)
+			{
+				glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, LLTexUnit::getInternalType(mUsage), 0, 0);
+			}
 			LLImageGL::deleteTextures(mUsage, 0, 0, 1, &mDepth, true);
 			stop_glerror();
 		}
@@ -453,6 +501,7 @@ void LLRenderTarget::flush(bool fetch_depth)
 	{
 		gGL.getTexUnit(0)->bind(this);
 		glCopyTexSubImage2D(LLTexUnit::getInternalType(mUsage), 0, 0, 0, 0, 0, mResX, mResY);
+		stop_glerror();
 
 		if (fetch_depth)
 		{
@@ -461,8 +510,10 @@ void LLRenderTarget::flush(bool fetch_depth)
 				allocateDepth();
 			}
 
-			gGL.getTexUnit(0)->bind(this);
-			glCopyTexImage2D(LLTexUnit::getInternalType(mUsage), 0, GL_DEPTH24_STENCIL8, 0, 0, mResX, mResY, 0);
+			gGL.getTexUnit(0)->bind(this,true);
+			glCopyTexSubImage2D(LLTexUnit::getInternalType(mUsage), 0, 0, 0, 0, 0, mResX, mResY);
+			stop_glerror();
+			//glCopyTexImage2D(LLTexUnit::getInternalType(mUsage), 0, GL_DEPTH24_STENCIL8, 0, 0, mResX, mResY, 0);
 		}
 
 		gGL.getTexUnit(0)->disable();
@@ -472,7 +523,7 @@ void LLRenderTarget::flush(bool fetch_depth)
 		stop_glerror();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		stop_glerror();
-	
+
 		if (mSampleBuffer)
 		{
 			LLGLEnable multisample(GL_MULTISAMPLE);
@@ -482,7 +533,7 @@ void LLRenderTarget::flush(bool fetch_depth)
 			check_framebuffer_status();
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, mSampleBuffer->mFBO);
 			check_framebuffer_status();
-			
+
 			stop_glerror();
 			if(gGLManager.mIsATI)
 			{
@@ -532,7 +583,6 @@ void LLRenderTarget::flush(bool fetch_depth)
 		}
 	}
 }
-
 void LLRenderTarget::copyContents(LLRenderTarget& source, S32 srcX0, S32 srcY0, S32 srcX1, S32 srcY1,
 						S32 dstX0, S32 dstY0, S32 dstX1, S32 dstY1, U32 mask, U32 filter)
 {
@@ -553,7 +603,7 @@ void LLRenderTarget::copyContents(LLRenderTarget& source, S32 srcX0, S32 srcY0, 
 	}
 	else
 	{
-		if (mask == GL_DEPTH_BUFFER_BIT && source.mStencil != mStencil)
+		if (mask == GL_DEPTH_BUFFER_BIT && !mStencil && source.mStencil != mStencil)
 		{
 			stop_glerror();
 		
@@ -642,7 +692,8 @@ void LLRenderTarget::getViewport(S32* viewport)
 // LLMultisampleBuffer implementation
 //==================================================
 LLMultisampleBuffer::LLMultisampleBuffer() :
-	mSamples(0)
+	mSamples(0),
+	mColorFormat(0)
 {
 
 }
@@ -743,6 +794,7 @@ bool LLMultisampleBuffer::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth
 	mUsage = usage;
 	mUseDepth = depth;
 	mStencil = stencil;
+	mColorFormat = color_fmt;
 
 	{
 
@@ -778,6 +830,42 @@ bool LLMultisampleBuffer::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth
 	}
 
 	return addColorAttachment(color_fmt);
+}
+
+void LLMultisampleBuffer::resize(U32 resx, U32 resy)
+{
+	//for accounting, get the number of pixels added/subtracted
+	S32 pix_diff = (resx*resy)-(mResX*mResY);
+		
+	mResX = resx;
+	mResY = resy;
+
+	for (U32 i = 0; i < mTex.size(); ++i)
+	{ //resize color attachments
+		glBindRenderbuffer(GL_RENDERBUFFER, mTex[i]);
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, mSamples, mColorFormat, mResX, mResY);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		sBytesAllocated += pix_diff*4;
+	}
+
+	if (mDepth)
+	{ //resize depth attachment
+		if (mStencil)
+		{
+			//use render buffers where stencil buffers are in play
+			glBindRenderbuffer(GL_RENDERBUFFER, mDepth);
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER, mSamples, GL_DEPTH24_STENCIL8, mResX, mResY);
+			glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		}
+		else
+		{
+			glBindRenderbuffer(GL_RENDERBUFFER, mDepth);
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER, mSamples, GL_DEPTH_COMPONENT24, mResX, mResY);
+			glBindRenderbuffer(GL_RENDERBUFFER, 0);
+			
+		}
+		sBytesAllocated += pix_diff*4;
+	}
 }
 
 bool LLMultisampleBuffer::addColorAttachment(U32 color_fmt)
@@ -829,12 +917,13 @@ bool LLMultisampleBuffer::allocateDepth()
 	clear_glerror();
 	if (mStencil)
 	{
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, mSamples, GL_DEPTH24_STENCIL8, mResX, mResY);	
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, mSamples, GL_DEPTH24_STENCIL8, mResX, mResY);
 	}
 	else
 	{
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, mSamples, GL_DEPTH_COMPONENT16_ARB, mResX, mResY);	
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, mSamples, GL_DEPTH_COMPONENT24, mResX, mResY);
 	}
+
 	if (glGetError() != GL_NO_ERROR)
 	{
 		llwarns << "Unable to allocate depth buffer for multisample render target." << llendl;
@@ -845,4 +934,3 @@ bool LLMultisampleBuffer::allocateDepth()
 	
 	return true;
 }
-
