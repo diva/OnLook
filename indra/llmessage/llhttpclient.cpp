@@ -25,7 +25,7 @@
  */
 
 #include "linden_common.h"
-#include <openssl/x509_vfy.h>
+
 #include "llhttpclient.h"
 
 #include "llassetstorage.h"
@@ -40,8 +40,8 @@
 #include "message.h"
 #include <curl/curl.h>
 
-
 const F32 HTTP_REQUEST_EXPIRY_SECS = 60.0f;
+
 ////////////////////////////////////////////////////////////////////////////
 
 // Responder class moved to LLCurl
@@ -158,7 +158,7 @@ namespace
 				fstream.seekg(0, std::ios::end);
 				U32 fileSize = (U32)fstream.tellg();
 				fstream.seekg(0, std::ios::beg);
-				std::vector<char> fileBuffer(fileSize);
+				std::vector<char> fileBuffer(fileSize); //Mem leak fix'd
 				fstream.read(&fileBuffer[0], fileSize);
 				ostream.write(&fileBuffer[0], fileSize);
 				fstream.close();
@@ -187,11 +187,9 @@ namespace
 			
 			LLVFile vfile(gVFS, mUUID, mAssetType, LLVFile::READ);
 			S32 fileSize = vfile.getSize();
-			U8* fileBuffer;
-			fileBuffer = new U8 [fileSize];
-            vfile.read(fileBuffer, fileSize);
-            ostream.write((char*)fileBuffer, fileSize);
-			delete [] fileBuffer;
+			std::vector<U8> fileBuffer(fileSize);
+			vfile.read(&fileBuffer[0], fileSize);
+			ostream.write((char*)&fileBuffer[0], fileSize);
 			eos = true;
 			return STATUS_DONE;
 		}
@@ -200,7 +198,6 @@ namespace
 		LLAssetType::EType mAssetType;
 	};
 
-	
 	LLPumpIO* theClientPump = NULL;
 }
 
@@ -210,8 +207,7 @@ static void request(
 	Injector* body_injector,
 	LLCurl::ResponderPtr responder,
 	const F32 timeout = HTTP_REQUEST_EXPIRY_SECS,
-	const LLSD& headers = LLSD()
-    )
+	const LLSD& headers = LLSD())
 {
 	if (!LLHTTPClient::hasPump())
 	{
@@ -221,26 +217,12 @@ static void request(
 	LLPumpIO::chain_t chain;
 
 	LLURLRequest* req = new LLURLRequest(method, url);
-	if(!req->isValid())//failed
-	{
-		delete req ;
-		return ;
-	}
 
 	req->checkRootCertificate(true);
 
-	
-	lldebugs << LLURLRequest::actionAsVerb(method) << " " << url << " "
-		<< headers << llendl;
-
-	// Insert custom headers if the caller sent any
-	if (headers.isMap())
-	{
-		if (headers.has("Cookie"))
-		{
-			req->allowCookies();
-		}
-
+    // Insert custom headers is the caller sent any
+    if (headers.isMap())
+    {
         LLSD::map_const_iterator iter = headers.beginMap();
         LLSD::map_const_iterator end  = headers.endMap();
 
@@ -422,16 +404,11 @@ static LLSD blocking_request(
 {
 	lldebugs << "blockingRequest of " << url << llendl;
 	char curl_error_buffer[CURL_ERROR_SIZE] = "\0";
-	CURL* curlp = LLCurl::newEasyHandle();
-	llassert_always(curlp != NULL) ;
-
+	CURL* curlp = curl_easy_init();
 	LLHTTPBuffer http_buffer;
 	std::string body_str;
 	
 	// other request method checks root cert first, we skip?
-
-	// Apply configured proxy settings
-	LLProxy::getInstance()->applyProxySettings(curlp);
 	
 	// * Set curl handle options
 	curl_easy_setopt(curlp, CURLOPT_NOSIGNAL, 1);	// don't use SIGALRM for timeouts
@@ -440,7 +417,7 @@ static LLSD blocking_request(
 	curl_easy_setopt(curlp, CURLOPT_WRITEDATA, &http_buffer);
 	curl_easy_setopt(curlp, CURLOPT_URL, url.c_str());
 	curl_easy_setopt(curlp, CURLOPT_ERRORBUFFER, curl_error_buffer);
-
+	
 	// * Setup headers (don't forget to free them after the call!)
 	curl_slist* headers_list = NULL;
 	if (headers.isMap())
@@ -518,7 +495,7 @@ static LLSD blocking_request(
 	}
 
 	// * Cleanup
-	LLCurl::deleteEasyHandle(curlp);
+	curl_easy_cleanup(curlp);
 	return response;
 }
 
@@ -618,8 +595,7 @@ bool LLHTTPClient::hasPump()
 	return theClientPump != NULL;
 }
 
-//static
-LLPumpIO& LLHTTPClient::getPump()
+LLPumpIO &LLHTTPClient::getPump()
 {
 	return *theClientPump;
 }

@@ -637,9 +637,8 @@ bool LLAppViewer::init()
     mAlloc.setProfilingEnabled(gSavedSettings.getBOOL("MemProfiling"));
     // *NOTE:Mani - LLCurl::initClass is not thread safe. 
     // Called before threads are created.
-    LLCurl::initClass(gSavedSettings.getF32("CurlRequestTimeOut"), 
-						gSavedSettings.getS32("CurlMaximumNumberOfHandles"), 
-						gSavedSettings.getBOOL("CurlUseMultipleThreads"));
+    LLCurl::initClass(gSavedSettings.getF32("CurlRequestTimeOut"));
+
 	LL_INFOS("InitInfo") << "LLCurl initialized." << LL_ENDL ;
 
     initThreads();
