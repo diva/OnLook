@@ -2390,7 +2390,7 @@ U32 LLVOVolume::getRenderCost(texture_cost_t &textures) const
 		produces_light = 1;
 	}
 
-	for (U32 i = 0; i < num_faces; ++i)
+	for (S32 i = 0; i < (S32)num_faces; ++i)
 	{
 		const LLFace* face = drawablep->getFace(i);
 		if (!face) continue;
