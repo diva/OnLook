@@ -480,6 +480,20 @@ std::ostream& operator<<(std::ostream& os, CURLMsg* msg)
   return os;
 }
 
+struct Socket {
+  curl_socket_t mSocket;
+  Socket(curl_socket_t sockfd) : mSocket(sockfd) { }
+};
+
+std::ostream& operator<<(std::ostream& os, Socket const& sock)
+{
+  if (sock.mSocket == CURL_SOCKET_TIMEOUT)
+	os << "CURL_SOCKET_TIMEOUT";
+  else
+	os << sock.mSocket;
+  return os;
+}
+
 struct EvBitmask {
   int mBitmask;
   EvBitmask(int mask) : mBitmask(mask) { }
@@ -710,7 +724,7 @@ CURLMcode debug_curl_multi_assign(CURLM* multi_handle, curl_socket_t sockfd, voi
 {
   CURLMcode ret;
   ret = curl_multi_assign(multi_handle, sockfd, sockptr);
-  Dout(dc::curl, "curl_multi_assign(" << (AICURLM*)multi_handle << ", " << sockfd << ", " << sockptr << ") = " << ret);
+  Dout(dc::curl, "curl_multi_assign(" << (AICURLM*)multi_handle << ", " << Socket(sockfd) << ", " << sockptr << ") = " << ret);
   return ret;
 }
 
@@ -802,7 +816,7 @@ CURLMcode debug_curl_multi_socket_action(CURLM* multi_handle, curl_socket_t sock
 {
   CURLMcode ret;
   ret = curl_multi_socket_action(multi_handle, sockfd, ev_bitmask, running_handles);
-  Dout(dc::curl, "curl_multi_socket_action(" << (AICURLM*)multi_handle << ", " << sockfd <<
+  Dout(dc::curl, "curl_multi_socket_action(" << (AICURLM*)multi_handle << ", " << Socket(sockfd) <<
 	  ", " << EvBitmask(ev_bitmask) << ", {" << (ret == CURLM_OK ? *running_handles : 0) << "}) = " << ret);
   return ret;
 }
