@@ -83,6 +83,7 @@
 #include "llvector4a.h"
 #include "llfont.h"
 #include "llvocache.h"
+#include "llvopartgroup.h"
 #include "llfloaterteleporthistory.h"
 
 #include "llweb.h"
@@ -602,6 +603,10 @@ bool LLAppViewer::init()
 
 	// initialize SSE options
 	LLVector4a::initClass();
+
+	//initialize particle index pool
+	LLVOPartGroup::initClass();
+
 	// Need to do this initialization before we do anything else, since anything
 	// that touches files should really go through the lldir API
 	gDirUtilp->initAppDirs("SecondLife");

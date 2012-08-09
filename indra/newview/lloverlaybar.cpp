@@ -191,7 +191,16 @@ BOOL LLOverlayBar::postBuild()
 	setFocusRoot(TRUE);
 	mBuilt = true;
 
-	mOriginalIMLabel = getChild<LLButton>("New IM")->getLabelSelected();
+	mChatbarAndButtons.connect(this,"chatbar_and_buttons");
+	mNewIM.connect(this,"New IM");
+	mNotBusy.connect(this,"Set Not Busy");
+	mMouseLook.connect(this,"Mouselook");
+	mStandUp.connect(this,"Stand Up");
+	mFlyCam.connect(this,"Flycam");
+	mChatBar.connect(this,"chat_bar");
+	mVoiceRemoteContainer.connect(this,"voice_remote_container");
+
+	mOriginalIMLabel = mNewIM->getLabelSelected();
 
 	layoutButtons();
 
@@ -205,6 +214,7 @@ BOOL LLOverlayBar::postBuild()
 	childSetVisible("AdvSettings_container_exp", sAdvSettingsPopup);
 	childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));	
 
+
 	return TRUE;
 }
 
@@ -216,6 +226,12 @@ LLOverlayBar::~LLOverlayBar()
 // virtual
 void LLOverlayBar::reshape(S32 width, S32 height, BOOL called_from_parent)
 {
+	S32 delta_width = width - getRect().getWidth();
+	S32 delta_height = height - getRect().getHeight();
+
+	if (!delta_width && !delta_height && !sForceReshape)
+		return;
+
 	LLView::reshape(width, height, called_from_parent);
 
 	if (mBuilt) 
@@ -261,9 +277,8 @@ void LLOverlayBar::layoutButtons()
 	}
 }
 
-LLButton* LLOverlayBar::updateButtonVisiblity(const std::string& button_name, bool visible)
+LLButton* LLOverlayBar::updateButtonVisiblity(LLButton* button, bool visible)
 {
-	LLButton* button = findChild<LLButton>(button_name);
 	if (button && (bool)button->getVisible() != visible)
 	{
 		button->setVisible(visible);
@@ -278,7 +293,7 @@ void LLOverlayBar::refresh()
 {
 	bool buttons_changed = FALSE;
 
-	if(LLButton* button = updateButtonVisiblity("New IM",gIMMgr->getIMReceived()))
+	if(LLButton* button = updateButtonVisiblity(mNewIM,gIMMgr->getIMReceived()))
 	{
 		int unread_count = gIMMgr->getIMUnreadCount();
 		if (unread_count > 0)
@@ -296,14 +311,14 @@ void LLOverlayBar::refresh()
 		}
 		buttons_changed = true;
 	}
-	buttons_changed |= updateButtonVisiblity("Set Not Busy",gAgent.getBusy()) != NULL;
-	buttons_changed |= updateButtonVisiblity("Flycam",LLViewerJoystick::getInstance()->getOverrideCamera()) != NULL;
-	buttons_changed |= updateButtonVisiblity("Mouselook",gAgent.isControlGrabbed(CONTROL_ML_LBUTTON_DOWN_INDEX)||gAgent.isControlGrabbed(CONTROL_ML_LBUTTON_UP_INDEX)) != NULL;
+	buttons_changed |= updateButtonVisiblity(mNotBusy,gAgent.getBusy()) != NULL;
+	buttons_changed |= updateButtonVisiblity(mFlyCam,LLViewerJoystick::getInstance()->getOverrideCamera()) != NULL;
+	buttons_changed |= updateButtonVisiblity(mMouseLook,gAgent.isControlGrabbed(CONTROL_ML_LBUTTON_DOWN_INDEX)||gAgent.isControlGrabbed(CONTROL_ML_LBUTTON_UP_INDEX)) != NULL;
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
 //  buttons_changed |= updateButtonVisiblity("Stand Up", isAgentAvatarValid() && gAgentAvatarp->isSitting()) != NULL;
-	buttons_changed |= updateButtonVisiblity("Stand Up",isAgentAvatarValid() && gAgentAvatarp->isSitting() && !gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) != NULL;
+	buttons_changed |= updateButtonVisiblity(mStandUp,isAgentAvatarValid() && gAgentAvatarp->isSitting() && !gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) != NULL;
 // [/RLVa:KB]
-	buttons_changed |= updateButtonVisiblity("Cancel TP",(gAgent.getTeleportState() >= LLAgent::TELEPORT_START) &&	(gAgent.getTeleportState() <= LLAgent::TELEPORT_MOVING)) != NULL;
+	buttons_changed |= updateButtonVisiblity(mCancelBtn,(gAgent.getTeleportState() >= LLAgent::TELEPORT_START) &&	(gAgent.getTeleportState() <= LLAgent::TELEPORT_MOVING)) != NULL;
 
 	moveChildToBackOfTabGroup(mAORemote);
 	moveChildToBackOfTabGroup(mMediaRemote);
@@ -338,11 +353,11 @@ void LLOverlayBar::refresh()
 		}
 	}
 	if(!in_mouselook)
-		childSetVisible("voice_remote_container", LLVoiceClient::voiceEnabled());
+		mVoiceRemoteContainer->setVisible(LLVoiceClient::voiceEnabled());
 
 	// always let user toggle into and out of chatbar
 	static const LLCachedControl<bool> chat_visible("ChatVisible",true);
-	childSetVisible("chat_bar", chat_visible);
+	mChatBar->setVisible(chat_visible);
 
 	if (buttons_changed)
 	{
