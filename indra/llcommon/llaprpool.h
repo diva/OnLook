@@ -48,6 +48,7 @@
 #include "apr_portable.h"
 #include "apr_pools.h"
 #include "llerror.h"
+#include "aithreadid.h"
 
 extern void ll_init_apr();
 

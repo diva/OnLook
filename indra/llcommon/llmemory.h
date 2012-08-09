@@ -523,7 +523,6 @@ void  LLPrivateMemoryPoolTester::operator delete[](void* addr)
 
 //EVENTUALLY REMOVE THESE:
 #include "llpointer.h"
-#include "llrefcount.h"
 #include "llsingleton.h"
 #include "llsafehandle.h"
 

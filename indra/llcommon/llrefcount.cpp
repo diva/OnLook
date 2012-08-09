@@ -38,14 +38,6 @@ LLRefCount::LLRefCount(const LLRefCount& other)
 :	mRef(0)
 {
 #if LL_REF_COUNT_DEBUG
-	if(gAPRPoolp)
-	{
-		mMutexp = new LLMutex(gAPRPoolp) ;
-	}
-	else
-	{
-		mMutexp = NULL ;
-	}
 	mCrashAtUnlock = FALSE ;
 #endif
 }
@@ -60,14 +52,6 @@ LLRefCount::LLRefCount() :
 	mRef(0)
 {
 #if LL_REF_COUNT_DEBUG
-	if(gAPRPoolp)
-	{
-		mMutexp = new LLMutex(gAPRPoolp) ;
-	}
-	else
-	{
-		mMutexp = NULL ;
-	}
 	mCrashAtUnlock = FALSE ;
 #endif
 }
@@ -78,29 +62,20 @@ LLRefCount::~LLRefCount()
 	{
 		llerrs << "deleting non-zero reference" << llendl;
 	}
-
-#if LL_REF_COUNT_DEBUG
-	if(gAPRPoolp)
-	{
-		delete mMutexp ;
-	}
-#endif
 }
 
 #if LL_REF_COUNT_DEBUG
 void LLRefCount::ref() const
 { 
-	if(mMutexp)
-	{
-		if(mMutexp->isLocked()) 
+		if(mMutex.isLocked()) 
 		{
 			mCrashAtUnlock = TRUE ;
 			llerrs << "the mutex is locked by the thread: " << mLockedThreadID 
-				<< " Current thread: " << LLThread::currentID() << llendl ;
+				<< " Current thread: " << AIThreadID() << llendl ;
 		}
 
-		mMutexp->lock() ;
-		mLockedThreadID = LLThread::currentID() ;
+		mMutex.lock() ;
+		mLockedThreadID.reset();
 
 		mRef++; 
 
@@ -108,27 +83,20 @@ void LLRefCount::ref() const
 		{
 			while(1); //crash here.
 		}
-		mMutexp->unlock() ;
-	}
-	else
-	{
-		mRef++; 
-	}
+		mMutex.unlock() ;
 } 
 
 S32 LLRefCount::unref() const
 {
-	if(mMutexp)
-	{
-		if(mMutexp->isLocked()) 
+		if(mMutex.isLocked()) 
 		{
 			mCrashAtUnlock = TRUE ;
 			llerrs << "the mutex is locked by the thread: " << mLockedThreadID 
-				<< " Current thread: " << LLThread::currentID() << llendl ;
+				<< " Current thread: " << AIThreadID() << llendl ;
 		}
 
-		mMutexp->lock() ;
-		mLockedThreadID = LLThread::currentID() ;
+		mMutex.lock() ;
+		mLockedThreadID.reset();
 		
 		llassert(mRef >= 1);
 		if (0 == --mRef) 
@@ -137,7 +105,7 @@ S32 LLRefCount::unref() const
 			{
 				while(1); //crash here.
 			}
-			mMutexp->unlock() ;
+			mMutex.unlock() ;
 
 			delete this; 
 			return 0;
@@ -147,18 +115,7 @@ S32 LLRefCount::unref() const
 		{
 			while(1); //crash here.
 		}
-		mMutexp->unlock() ;
+		mMutex.unlock() ;
 		return mRef;
-	}
-	else
-	{
-		llassert(mRef >= 1);
-		if (0 == --mRef) 
-		{
-			delete this; 
-			return 0;
-		}
-		return mRef;
-	}
 }	
 #endif
