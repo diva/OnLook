@@ -1752,21 +1752,20 @@ bool LLAppViewer::cleanup()
 	delete gVFS;
 	gVFS = NULL;
 
-	// Cleanup settings last in case other clases reference them
-	gSavedSettings.cleanup();
-	gColors.cleanup();
-	gCrashSettings.cleanup();
-	
 	LLWatchdog::getInstance()->cleanup();
 
 	llinfos << "Shutting down message system" << llendflush;
 	end_messaging_system();
 	llinfos << "Message system deleted." << llendflush;
 
-	LLUserAuth::getInstance()->reset(); // Reset before AICurlInterface::cleanupCurl, else LLCURL::sHandleMutex == NULL
 	LLApp::stopErrorThread();			// The following call is not thread-safe. Have to stop all threads.
 	AICurlInterface::cleanupCurl();
 
+	// Cleanup settings last in case other classes reference them.
+	gSavedSettings.cleanup();
+	gColors.cleanup();
+	gCrashSettings.cleanup();
+	
 	// If we're exiting to launch an URL, do that here so the screen
 	// is at the right resolution before we launch IE.
 	if (!gLaunchFileOnQuit.empty())
