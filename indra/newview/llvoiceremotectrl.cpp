@@ -111,7 +111,7 @@ void LLVoiceRemoteCtrl::draw()
 	mTalkBtn->setEnabled(voice_active);
 	mTalkLockBtn->setEnabled(voice_active);
 
-	static LLCachedControl<bool> ptt_currently_enabled("PPTCurrentlyEnabled",false);
+	static LLCachedControl<bool> ptt_currently_enabled("PTTCurrentlyEnabled",false);
 	// propagate ptt state to button display,
 	if (!mTalkBtn->hasMouseCapture())
 	{
