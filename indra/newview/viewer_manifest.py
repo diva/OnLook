@@ -837,7 +837,7 @@ class Linux_x86_64Manifest(LinuxManifest):
             self.path("libSDL-1.2.so*")
             self.path("libELFIO.so")
             self.path("libjpeg.so*")
-            self.path("libpng.so*")
+            self.path("libpng*.so*")
             self.path("libz.so*")
 
             # OpenAL

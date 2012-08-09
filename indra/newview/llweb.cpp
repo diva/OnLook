@@ -35,11 +35,20 @@
 
 #include "llweb.h"
 
-#include "llviewerwindow.h"
-#include "llwindow.h"
+// Library includes
+#include "llwindow.h"	// spawnWebBrowser()
 
-#include "llviewercontrol.h"
+#include "llagent.h"
+#include "llappviewer.h"
 #include "llfloatermediabrowser.h"
+#include "llparcel.h"
+#include "llviewercontrol.h"
+#include "llviewernetwork.h"
+#include "llviewerparcelmgr.h"
+#include "llviewerregion.h"
+#include "llviewerwindow.h"
+
+#include "sgversion.h"
 
 // static
 void LLWeb::initClass()
@@ -123,6 +132,64 @@ std::string LLWeb::escapeURL(const std::string& url)
 		}
 	}
 	return escaped_url;
+}
+
+//static
+std::string LLWeb::expandURLSubstitutions(const std::string &url,
+										  const LLSD &default_subs)
+{
+    gCurrentVersion = llformat("%s %d.%d.%d.%d",
+        gVersionChannel,
+        gVersionMajor,
+        gVersionMinor,
+        gVersionPatch,
+        gVersionBuild );
+
+	LLSD substitution = default_subs;
+	substitution["VERSION"] = gCurrentVersion;
+	substitution["VERSION_MAJOR"] = gVersionMajor;
+	substitution["VERSION_MINOR"] = gVersionMinor;
+	substitution["VERSION_PATCH"] = gVersionPatch;
+	substitution["VERSION_BUILD"] = gVersionBuild;
+	substitution["CHANNEL"] = gVersionChannel;
+	substitution["GRID"] = LLViewerLogin::getInstance()->getGridLabel();
+	substitution["OS"] = LLAppViewer::instance()->getOSInfo().getOSStringSimple();
+	substitution["SESSION_ID"] = gAgent.getSessionID();
+	substitution["FIRST_LOGIN"] = gAgent.isFirstLogin();
+
+	// work out the current language
+	std::string lang = LLUI::getLanguage();
+	if (lang == "en-us")
+	{
+		// *HACK: the correct fix is to change English.lproj/language.txt,
+		// but we're late in the release cycle and this is a less risky fix
+		lang = "en";
+	}
+	substitution["LANGUAGE"] = lang;
+
+	// find the region ID
+	LLUUID region_id;
+	LLViewerRegion *region = gAgent.getRegion();
+	if (region)
+	{
+		region_id = region->getRegionID();
+	}
+	substitution["REGION_ID"] = region_id;
+
+	// find the parcel local ID
+	S32 parcel_id = 0;
+	LLParcel* parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
+	if (parcel)
+	{
+		parcel_id = parcel->getLocalID();
+	}
+	substitution["PARCEL_ID"] = llformat("%d", parcel_id);
+
+	// expand all of the substitution strings and escape the url
+	std::string expanded_url = url;
+	LLStringUtil::format(expanded_url, substitution);
+
+	return LLWeb::escapeURL(expanded_url);
 }
 
 // virtual

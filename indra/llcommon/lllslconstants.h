@@ -73,6 +73,15 @@ const S32 LSL_PRIM_TEXGEN		= 22;
 const S32 LSL_PRIM_POINT_LIGHT	= 23;
 const S32 LSL_PRIM_CAST_SHADOWS	= 24;
 const S32 LSL_PRIM_GLOW     	= 25;
+const S32 LSL_PRIM_TEXT			= 26;
+const S32 LSL_PRIM_NAME			= 27;
+const S32 LSL_PRIM_DESC			= 28;
+const S32 LSL_PRIM_ROT_LOCAL	= 29;
+const S32 LSL_PRIM_PHYSICS_SHAPE_TYPE = 30;
+const S32 LSL_PRIM_OMEGA		= 32;
+const S32 LSL_PRIM_POS_LOCAL	= 33;
+const S32 LSL_PRIM_LINK_TARGET	= 34;
+const S32 LSL_PRIM_SLICE	    = 35;
 
 const S32 LSL_PRIM_TYPE_BOX		= 0;
 const S32 LSL_PRIM_TYPE_CYLINDER= 1;
@@ -132,6 +141,15 @@ const S32 LSL_PRIM_SCULPT_TYPE_MASK     = 7;
 const S32 LSL_PRIM_SCULPT_FLAG_INVERT   = 64;
 const S32 LSL_PRIM_SCULPT_FLAG_MIRROR   = 128;
 
+const S32 LSL_PRIM_PHYSICS_SHAPE_PRIM	= 0;
+const S32 LSL_PRIM_PHYSICS_SHAPE_NONE	= 1;
+const S32 LSL_PRIM_PHYSICS_SHAPE_CONVEX = 2;
+
+const S32 LSL_DENSITY				= 1;
+const S32 LSL_FRICTION				= 2;
+const S32 LSL_RESTITUTION			= 4;
+const S32 LSL_GRAVITY_MULTIPLIER	= 8;
+
 const S32 LSL_ALL_SIDES				= -1;
 const S32 LSL_LINK_ROOT				= 1;
 const S32 LSL_LINK_FIRST_CHILD		= 2;
@@ -189,6 +207,13 @@ const S32 OBJECT_RUNNING_SCRIPT_COUNT = 9;
 const S32 OBJECT_TOTAL_SCRIPT_COUNT = 10;
 const S32 OBJECT_SCRIPT_MEMORY = 11;
 const S32 OBJECT_SCRIPT_TIME = 12;
+const S32 OBJECT_PRIM_EQUIVALENCE = 13;
+const S32 OBJECT_SERVER_COST = 14;
+const S32 OBJECT_STREAMING_COST = 15;
+const S32 OBJECT_PHYSICS_COST = 16;
+
+// llTextBox() magic token string - yes it's a hack. 
+char const* const TEXTBOX_MAGIC_TOKEN = "!!llTextBox!!"; 
 
 // changed() event flags
 const U32	CHANGED_NONE = 0x0;
@@ -216,4 +241,156 @@ const U32 LSL_STATUS_INTERNAL_ERROR     = 1999;
 
 // Start per-function errors below, starting at 2000:
 const U32 LSL_STATUS_WHITELIST_FAILED   = 2001;
+
+// Memory profiling support
+const S32 LSL_PROFILE_SCRIPT_NONE		= 0;
+const S32 LSL_PROFILE_SCRIPT_MEMORY		= 1;
+
+// HTTP responses contents type
+const S32 LSL_CONTENT_TYPE_TEXT = 0;
+const S32 LSL_CONTENT_TYPE_HTML = 1;
+
+// Ray casting
+const S32 LSL_RCERR_UNKNOWN				= -1;
+const S32 LSL_RCERR_SIM_PERF_LOW		= -2;
+const S32 LSL_RCERR_CAST_TIME_EXCEEDED	= -3;
+
+const S32 LSL_RC_REJECT_TYPES			= 0;
+const S32 LSL_RC_DETECT_PHANTOM			= 1;
+const S32 LSL_RC_DATA_FLAGS				= 2;
+const S32 LSL_RC_MAX_HITS				= 3;
+
+const S32 LSL_RC_REJECT_AGENTS			= 1;
+const S32 LSL_RC_REJECT_PHYSICAL		= 2;
+const S32 LSL_RC_REJECT_NONPHYSICAL		= 4;
+const S32 LSL_RC_REJECT_LAND			= 8;
+
+const S32 LSL_RC_GET_NORMAL				= 1;
+const S32 LSL_RC_GET_ROOT_KEY			= 2;
+const S32 LSL_RC_GET_LINK_NUM			= 4;
+
+// Estate management
+const S32 LSL_ESTATE_ACCESS_ALLOWED_AGENT_ADD		= 4;
+const S32 LSL_ESTATE_ACCESS_ALLOWED_AGENT_REMOVE	= 8;
+const S32 LSL_ESTATE_ACCESS_ALLOWED_GROUP_ADD		= 16;
+const S32 LSL_ESTATE_ACCESS_ALLOWED_GROUP_REMOVE	= 32;
+const S32 LSL_ESTATE_ACCESS_BANNED_AGENT_ADD		= 64;
+const S32 LSL_ESTATE_ACCESS_BANNED_AGENT_REMOVE		= 128;
+
+// Key Frame Motion:
+const S32 LSL_KFM_COMMAND		= 0;
+const S32 LSL_KFM_MODE			= 1;
+const S32 LSL_KFM_DATA			= 2;
+const S32 LSL_KFM_FORWARD		= 0;
+const S32 LSL_KFM_LOOP			= 1;
+const S32 LSL_KFM_PING_PONG		= 2;
+const S32 LSL_KFM_REVERSE		= 3;
+const S32 LSL_KFM_ROTATION		= 1;
+const S32 LSL_KFM_TRANSLATION	= 2;
+const S32 LSL_KFM_CMD_PLAY		= 0;
+const S32 LSL_KFM_CMD_STOP		= 1;
+const S32 LSL_KFM_CMD_PAUSE		= 2;
+
+// Second Life Server/12 12.04.30.255166  constants for llGetAgentList
+const S32 AGENT_LIST_PARCEL               = 1;
+const S32 AGENT_LIST_PARCEL_OWNER         = 2; 
+const S32 AGENT_LIST_REGION               = 4;
+
+
+// --- SL Constants ABOVE this line ---
+// --- OpenSim / Aurora-Sim constants Below ---
+// OpenSim Constants (\OpenSim\Region\ScriptEngine\Shared\Api\Runtime\LSL_Constants.cs) 
+// Constants for cmWindlight (\OpenSim\Region\ScriptEngine\Shared\Api\Runtime\CM_Constants.cs) 
+const S32 CHANGED_ANIMATION	        = 16384;
+const S32 PARCEL_DETAILS_CLAIMDATE = 10; // used by OpenSim osSetParcelDetails
+const S32 STATS_TIME_DILATION	    = 0;
+const S32 STATS_SIM_FPS 	        = 1;
+const S32 STATS_PHYSICS_FPS 	    = 2;
+const S32 STATS_AGENT_UPDATES 	    = 3;
+const S32 STATS_ROOT_AGENTS 	    = 4;
+const S32 STATS_CHILD_AGENTS        = 5;
+const S32 STATS_TOTAL_PRIMS         = 6;
+const S32 STATS_ACTIVE_PRIMS	    = 7;
+const S32 STATS_FRAME_MS 	        = 8;
+const S32 STATS_NET_MS 	            = 9;
+const S32 STATS_PHYSICS_MS 	        = 10;
+const S32 STATS_IMAGE_MS 	        = 11;
+const S32 STATS_OTHER_MS            = 12;
+const S32 STATS_IN_PACKETS_PER_SECOND   = 13;
+const S32 STATS_OUT_PACKETS_PER_SECOND 	= 14;
+const S32 STATS_UNACKED_BYTES 	    = 15;
+const S32 STATS_AGENT_MS 	        = 16;
+const S32 STATS_PENDING_DOWNLOADS   = 17;
+const S32 STATS_PENDING_UPLOADS 	= 18;
+const S32 STATS_ACTIVE_SCRIPTS 	    = 19;
+const S32 STATS_SCRIPT_LPS          = 20;
+// osNPC
+const S32 OS_NPC_FLY 	            = 0;
+const S32 OS_NPC_NO_FLY 	        = 1;
+const S32 OS_NPC_LAND_AT_TARGET 	= 2;
+const S32 OS_NPC_SIT_NOW 	        = 0;
+const U32 OS_NPC_CREATOR_OWNED 	    = 0x1;
+const U32 OS_NPC_NOT_OWNED          = 0x2;
+const U32 OS_NPC_SENSE_AS_AGENT     = 0x4;
+const U32 OS_NPC_RUNNING            = 4;
+// Lightshare / Windlight
+const S32 WL_WATER_COLOR                = 0;
+const S32 WL_WATER_FOG_DENSITY_EXPONENT	= 1;
+const S32 WL_UNDERWATER_FOG_MODIFIER	= 2;
+const S32 WL_REFLECTION_WAVELET_SCALE	= 3;
+const S32 WL_FRESNEL_SCALE	            = 4;
+const S32 WL_FRESNEL_OFFSET	            = 5;
+const S32 WL_REFRACT_SCALE_ABOVE	    = 6;
+const S32 WL_REFRACT_SCALE_BELOW	    = 7;
+const S32 WL_BLUR_MULTIPLIER	        = 8;
+const S32 WL_BIG_WAVE_DIRECTION	        = 9;
+const S32 WL_LITTLE_WAVE_DIRECTION	    = 10;
+const S32 WL_NORMAL_MAP_TEXTURE	        = 11;
+const S32 WL_HORIZON	                = 12;
+const S32 WL_HAZE_HORIZON	            = 13;
+const S32 WL_BLUE_DENSITY	            = 14;
+const S32 WL_HAZE_DENSITY	            = 15;
+const S32 WL_DENSITY_MULTIPLIER	        = 16;
+const S32 WL_DISTANCE_MULTIPLIER	    = 17;
+const S32 WL_MAX_ALTITUDE	            = 18;
+const S32 WL_SUN_MOON_COLOR	            = 19;
+const S32 WL_AMBIENT	                = 20;
+const S32 WL_EAST_ANGLE	                = 21;
+const S32 WL_SUN_GLOW_FOCUS	            = 22;
+const S32 WL_SUN_GLOW_SIZE	            = 23;
+const S32 WL_SCENE_GAMMA	            = 24;
+const S32 WL_STAR_BRIGHTNESS	        = 25;
+const S32 WL_CLOUD_COLOR	            = 26;
+const S32 WL_CLOUD_XY_DENSITY         	= 27;
+const S32 WL_CLOUD_COVERAGE           	= 28;
+const S32 WL_CLOUD_SCALE	            = 29;
+const S32 WL_CLOUD_DETAIL_XY_DENSITY	= 30;
+const S32 WL_CLOUD_SCROLL_X	            = 31;
+const S32 WL_CLOUD_SCROLL_Y	            = 32;
+const S32 WL_CLOUD_SCROLL_Y_LOCK	    = 33;
+const S32 WL_CLOUD_SCROLL_X_LOCK	    = 34;
+const S32 WL_DRAW_CLASSIC_CLOUDS	    = 35;
+const S32 WL_SUN_MOON_POSITION	        = 36;
+// Aurora-Sim Constants  (\Aurora\AuroraDotNetEngine\APIs\AA_Constants.cs) -->
+const S32 BOT_FOLLOW_FLAG_NONE	        = 0;  
+const S32 BOT_FOLLOW_FLAG_INDEFINITELY  = 1;  
+const S32 BOT_FOLLOW_WALK	            = 0;  
+const S32 BOT_FOLLOW_RUN	            = 1;  
+const S32 BOT_FOLLOW_FLY	            = 2;  
+const S32 BOT_FOLLOW_TELEPORT	        = 3;  
+const S32 BOT_FOLLOW_WAIT	            = 4;  
+const S32 BOT_FOLLOW_TRIGGER_HERE_EVENT	= 1;
+const S32 BOT_FOLLOW_FLAG_FORCEDIRECTPATH = 4;
+// string constants from Aurora-Sim
+char const* const ENABLE_GRAVITY = "enable_gravity";
+char const* const GRAVITY_FORCE_X = "gravity_force_x";
+char const* const GRAVITY_FORCE_Y = "gravity_force_y";
+char const* const GRAVITY_FORCE_Z = "gravity_force_z";
+char const* const ADD_GRAVITY_POINT = "add_gravity_point";
+char const* const ADD_GRAVITY_FORCE = "add_gravity_force";
+char const* const START_TIME_REVERSAL_SAVING = "start_time_reversal_saving";
+char const* const STOP_TIME_REVERSAL_SAVING = "stop_time_reversal_saving";
+char const* const START_TIME_REVERSAL = "start_time_reversal";
+char const* const STOP_TIME_REVERSAL = "stop_time_reversal";    
+
 #endif

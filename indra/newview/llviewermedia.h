@@ -33,15 +33,19 @@
 #ifndef LLVIEWERMEDIA_H
 #define LLVIEWERMEDIA_H
 
-#include "llviewermediaeventemitter.h"
-#include "llviewerpluginmanager.h"
 #include "llfocusmgr.h"
 #include "llpanel.h"
+#include "llviewermediaeventemitter.h"
+#include "llviewerpluginmanager.h"
+#include "llpluginclassmedia.h"
+#include "v4color.h"
+#include "llurl.h"
 
 class LLViewerMediaImpl;
 class LLUUID;
 class LLSD;
 class LLViewerTexture;
+class LLPluginCookieStore;
 
 typedef LLPointer<LLViewerMediaImpl> viewer_media_t;
 
@@ -72,6 +76,33 @@ class LLViewerMedia
 
 		static void cleanupClass();
 
+	// Clear all cookies for all plugins
+	static void clearAllCookies();
+	
+	// Clear all plugins' caches
+	static void clearAllCaches();
+	
+	// Set the "cookies enabled" flag for all loaded plugins
+	static void setCookiesEnabled(bool enabled);
+	
+	static LLPluginCookieStore *getCookieStore();
+	static void loadCookieFile();
+	static void saveCookieFile();
+	static void addCookie(const std::string &name, const std::string &value, const std::string &domain, const LLDate &expires, const std::string &path = std::string("/"), bool secure = false );
+	static void addSessionCookie(const std::string &name, const std::string &value, const std::string &domain, const std::string &path = std::string("/"), bool secure = false );
+	static void removeCookie(const std::string &name, const std::string &domain, const std::string &path = std::string("/") );
+	
+	static void openIDSetup(const std::string &openid_url, const std::string &openid_token);
+	static void openIDCookieResponse(const std::string &cookie);
+
+	static LLSD getHeaders();
+
+private:
+	static void setOpenIDCookie();
+
+	static LLPluginCookieStore *sCookieStore;
+	static LLURL sOpenIDURL;
+	static std::string sOpenIDCookie;
 };
 
 // Implementation functions not exported into header file
@@ -80,6 +111,8 @@ class LLViewerMediaImpl
 {
 	LOG_CLASS(LLViewerMediaImpl);
 public:
+
+	friend class LLViewerMedia;
 
 	LLViewerMediaImpl(const std::string& media_url,
 		const LLUUID& texture_id,
@@ -98,9 +131,6 @@ public:
 	LLPluginClassMedia* getMediaPlugin() const { return (LLPluginClassMedia*)mPluginBase; }
 	void setSize(int width, int height);
 
-	// Inherited from LLViewerPluginManager.
-	/*virtual*/ void update();
-
 	void play();
 	void stop();
 	void pause();
@@ -108,10 +138,16 @@ public:
 	void seek(F32 time);
 	void setVolume(F32 volume);
 	void focus(bool focus);
-	void mouseDown(S32 x, S32 y);
-	void mouseUp(S32 x, S32 y);
-	void mouseMove(S32 x, S32 y);
-	void mouseLeftDoubleClick(S32 x,S32 y );
+	// True if the impl has user focus.
+	bool hasFocus() const;
+	void mouseDown(S32 x, S32 y, MASK mask, S32 button = 0);
+	void mouseUp(S32 x, S32 y, MASK mask, S32 button = 0);
+	void mouseMove(S32 x, S32 y, MASK mask);
+	void mouseDown(const LLVector2& texture_coords, MASK mask, S32 button = 0);
+	void mouseUp(const LLVector2& texture_coords, MASK mask, S32 button = 0);
+	void mouseMove(const LLVector2& texture_coords, MASK mask);
+	void mouseDoubleClick(S32 x,S32 y, MASK mask, S32 button = 0);
+	void scrollWheel(S32 x, S32 y, MASK mask);
 	void mouseCapture();
 
 	void navigateHome();
@@ -124,11 +160,14 @@ public:
 	std::string getMediaURL() { return mMediaURL; }
 	std::string getHomeURL() { return mHomeURL; }
 	void setHomeURL(const std::string& home_url) { mHomeURL = home_url; }
+	void clearCache();
 	std::string getMimeType() { return mMimeType; }
 	void getTextureSize(S32 *texture_width, S32 *texture_height);
 	void scaleMouse(S32 *mouse_x, S32 *mouse_y);
+	void scaleTextureCoords(const LLVector2& texture_coords, S32 *x, S32 *y);
 
 	void updateMovieImage(const LLUUID& image_id, BOOL active);
+	void update();
 	void updateImagesMediaStreams();
 	LLUUID getMediaTextureID();
 	
@@ -166,7 +205,7 @@ public:
 	/*virtual*/ BOOL	handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sticky_rect_screen) { return FALSE; };
 	/*virtual*/ BOOL	handleMiddleMouseDown(S32 x, S32 y, MASK mask) { return FALSE; };
 	/*virtual*/ BOOL	handleMiddleMouseUp(S32 x, S32 y, MASK mask) {return FALSE; };
-	/*virtual*/ const std::string& getName() const { return LLStringUtil::null; };
+	/*virtual*/ const std::string& getName() const;
 	/*virtual*/ BOOL isView() const { return FALSE; };
 	/*virtual*/ void	screenPointToLocal(S32 screen_x, S32 screen_y, S32* local_x, S32* local_y) const {};
 	/*virtual*/ void	localPointToScreen(S32 local_x, S32 local_y, S32* screen_x, S32* screen_y) const {};
@@ -174,6 +213,7 @@ public:
 
 	// Inherited from LLPluginClassMediaOwner
 	/*virtual*/ void handleMediaEvent(LLPluginClassMedia* self, LLPluginClassMediaOwner::EMediaEvent);
+	/*virtual*/ void handleCookieSet(LLPluginClassMedia* self, const std::string &cookie);
 
 	// LLEditMenuHandler overrides
 	/*virtual*/ void	cut();
@@ -184,8 +224,10 @@ public:
 
 	/*virtual*/ void	paste();
 	/*virtual*/ BOOL	canPaste() const;
-	
-public:
+
+	bool mNeedsNewTexture;
+	void setBackgroundColor(LLColor4 color);
+private:
 	// a single media url with some data and an impl.
 	LLUUID mTextureId;
 	bool  mMovieImageHasMips;
@@ -198,11 +240,13 @@ public:
 	S32 mMediaHeight;
 	bool mMediaAutoScale;
 	bool mMediaLoop;
-	bool mNeedsNewTexture;
 	S32 mTextureUsedWidth;
 	S32 mTextureUsedHeight;
 	bool mSuspendUpdates;
 	bool mVisible;
+	bool mHasFocus;
+	bool mClearCache;
+	LLColor4 mBackgroundColor;
 
 private:
 	/*LLViewerMediaTexture*/LLViewerTexture *updatePlaceholderImage();

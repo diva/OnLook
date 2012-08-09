@@ -872,7 +872,6 @@ set(viewer_HEADER_FILES
     llpanellandmedia.h
     llpanellandobjects.h
     llpanellandoptions.h
-    llpanelLCD.h
     llpanellogin.h
     llpanelmaininventory.h
     llpanelmorph.h

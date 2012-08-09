@@ -52,5 +52,4 @@ private:
 	LLProcessorInfoImpl* mImpl;
 };
 
-
-#endif
+#endif // LLPROCESSOR_H

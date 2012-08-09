@@ -217,11 +217,6 @@
 
 ////// Windows-specific includes to the bottom - nasty defines in these pollute the preprocessor
 //
-#if LL_WINDOWS && LL_LCD_COMPILE
-	#include "lllcd.h"
-#endif
-
-
 //----------------------------------------------------------------------------
 // viewer.cpp - these are only used in viewer, should be easily moved.
 
@@ -814,13 +809,6 @@ bool LLAppViewer::init()
 	// call all self-registered classes
 	LLInitClassList::instance().fireCallbacks();
 
-#if LL_LCD_COMPILE
-		// start up an LCD window on a logitech keyboard, if there is one
-		HINSTANCE hInstance = GetModuleHandle(NULL);
-		gLcdScreen = new LLLCD(hInstance);
-		CreateLCDDebugWindows();
-#endif
-
 	LLFolderViewItem::initClass(); // SJB: Needs to happen after initWindow(), not sure why but related to fonts
 		
 	gGLManager.getGLInfo(gDebugInfo);
@@ -1202,11 +1190,6 @@ bool LLAppViewer::mainLoop()
 					pingMainloopTimeout("Main:Snapshot");
 					LLFloaterSnapshot::update(); // take snapshots
 					gGLActive = FALSE;
-#if LL_LCD_COMPILE
-					// update LCD Screen
-					pingMainloopTimeout("Main:LCD");
-					gLcdScreen->UpdateDisplay();
-#endif
 				}
 
 			}
@@ -1574,12 +1557,6 @@ bool LLAppViewer::cleanup()
 	//	gDXHardware.cleanup();
 	//#endif // LL_WINDOWS
 
-#if LL_LCD_COMPILE
-	// shut down the LCD window on a logitech keyboard, if there is one
-	delete gLcdScreen;
-	gLcdScreen = NULL;
-#endif
-
 	LLVolumeMgr* volume_manager = LLPrimitive::getVolumeManager();
 	if (!volume_manager->cleanup())
 	{
@@ -1682,6 +1659,7 @@ bool LLAppViewer::cleanup()
 	
 	writeDebugInfo();
 
+	LLViewerMedia::saveCookieFile();
 	// Stop the plugin read thread if it's running.
 	LLPluginProcessParent::setUseReadThread(false);
 
