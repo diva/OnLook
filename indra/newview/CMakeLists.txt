@@ -1595,6 +1595,14 @@ if (LINUX)
 
   set(product ${VIEWER_BRANDING_NAME_CAMELCASE}-${ARCH}-${viewer_VERSION})
 
+  if (FMODEX)
+    if(MANIFEST_LIBRARIES)
+      set(MANIFEST_LIBRARIES "${MANIFEST_LIBRARIES}|${FMODEX_LIBRARY}")
+    else(MANIFEST_LIBRARIES)
+      set(MANIFEST_LIBRARIES "--extra_libraries=${FMODEX_LIBRARY}")
+    endif(MANIFEST_LIBRARIES)
+  endif (FMODEX)
+
   add_custom_command(
       OUTPUT ${product}.tar.bz2
       COMMAND ${PYTHON_EXECUTABLE}
@@ -1613,6 +1621,7 @@ if (LINUX)
         --dest=${CMAKE_CURRENT_BINARY_DIR}/packaged
         --touch=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/.${product}.touched
         --buildtype=${CMAKE_BUILD_TYPE}
+		  ${MANIFEST_LIBRARIES}
       DEPENDS secondlife-stripped ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
       )
 

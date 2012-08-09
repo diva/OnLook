@@ -809,6 +809,16 @@ class Linux_i686Manifest(LinuxManifest):
             self.end_prefix("lib")
 
 
+            if self.args['extra_libraries'] != None:
+                print self.args['extra_libraries']
+                path_list = self.args['extra_libraries'].split('|')
+                for path in path_list:
+                    path = os.path.realpath(path)
+                    path_pair = path.rsplit('/', 1)
+                    if self.prefix(src=path_pair[0], dst="lib"):
+                        self.path(path_pair[1])
+                        self.end_prefix()
+
             # Vivox runtimes
             if self.prefix(src="vivox-runtime/i686-linux", dst="bin"):
                     self.path("SLVoice")
