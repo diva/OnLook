@@ -304,11 +304,12 @@ private:
 	easy_free_list_t mEasyFreeList;
 };
 
-namespace boost
-{
+// DONT UNCOMMENT BREAKS GCC47
+//namespace boost
+//{
 	void intrusive_ptr_add_ref(LLCurl::Responder* p);
 	void intrusive_ptr_release(LLCurl::Responder* p);
-};
+//};
 
 
 class LLCurlRequest
