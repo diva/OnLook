@@ -2877,12 +2877,19 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 
   <string name="DefaultMimeType">none/none</string>
 
- <!-- External editor status codes -->
- <string name="ExternalEditorNotSet">Select an editor using the ExternalEditor setting.</string>
- <string name="ExternalEditorNotFound">Cannot find the external editor you specified.
+  <!-- External editor status codes -->
+  <string name="ExternalEditorNotSet">Select an editor using the ExternalEditor setting.</string>
+  <string name="ExternalEditorNotFound">Cannot find the external editor you specified.
 Try enclosing path to the editor with double quotes.
 (e.g. "/path to my/editor" "%s")</string>
- <string name="ExternalEditorCommandParseError">Error parsing the external editor command.</string>
- <string name="ExternalEditorFailedToRun">External editor failed to run.</string>
+  <string name="ExternalEditorCommandParseError">Error parsing the external editor command.</string>
+  <string name="ExternalEditorFailedToRun">External editor failed to run.</string>
+
+  <!-- Pathfinding -->
+  <string name="Pathfinding_Wiki_URL">http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer</string>
+  <string name="Pathfinding_Object_Attr_None">None</string>
+  <string name="Pathfinding_Object_Attr_Permanent">Affects navmesh</string>
+  <string name="Pathfinding_Object_Attr_Character">Character</string>
+  <string name="Pathfinding_Object_Attr_MultiSelect">(Multiple)</string>
 
 </strings>
