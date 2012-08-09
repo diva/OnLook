@@ -29,26 +29,6 @@
 
 #ifdef DEBUG_CURLIO
 
-#if LL_WINDOWS
-#define CWD_DLLEXPORT __declspec(dllexport)
-#define CWD_DLLIMPORT __declspec(dllimport)
-#elif LL_LINUX
-#define CWD_DLLEXPORT __attribute__ ((visibility("default")))
-#define CWD_DLLIMPORT
-#else
-#define CWD_DLLEXPORT
-#define CWD_DLLIMPORT
-#endif // LL_WINDOWS
-
-#if LL_COMMON_LINK_SHARED
-#if defined(llcommon_EXPORTS)
-#define CWD_API CWD_DLLEXPORT
-#else // cwdebug_EXPORTS
-#define CWD_API CWD_DLLIMPORT
-#endif // cwdebug_EXPORTS
-#else // LL_COMMON_LINK_SHARED
-#error LL_COMMON_LINK_SHARED not defined
-#endif // LL_COMMON_LINK_SHARED
 #include "aithreadid.h"
 
 // If CWDEBUG is not defined, but DEBUG_CURLIO is, then replace
@@ -59,10 +39,11 @@
 #include <string>
 
 #if LL_WINDOWS
-#define CWD_API_TLS __declspec(thread)
+// On windows, thread-local data is automatically exported.
+#define LL_COMMON_API_TLS __declspec(thread)
 #define CWD_TLS __declspec(thread)
 #else
-#define CWD_API_TLS CWD_API __thread
+#define LL_COMMON_API_TLS LL_COMMON_API __thread
 #define CWD_TLS __thread
 #endif
 
@@ -81,17 +62,17 @@ inline void init() { }
 struct libcwd_do_type {
  void on() const { }
 };
-extern CWD_API libcwd_do_type const libcw_do;
+extern LL_COMMON_API libcwd_do_type const libcw_do;
 struct Indent {
   int M_indent;
-  static CWD_API_TLS int S_indentation;
-  enum CWD_API print_nt { print };
-  CWD_API Indent(int indent) : M_indent(indent) { S_indentation += M_indent; }
-  CWD_API ~Indent() { S_indentation -= M_indent; }
+  static LL_COMMON_API_TLS int S_indentation;
+  enum LL_COMMON_API print_nt { print };
+  LL_COMMON_API Indent(int indent) : M_indent(indent) { S_indentation += M_indent; }
+  LL_COMMON_API ~Indent() { S_indentation -= M_indent; }
 };
 
-extern CWD_API std::ostream& operator<<(std::ostream& os, libcwd::buf2str const& b2s);
-extern CWD_API std::ostream& operator<<(std::ostream& os, Indent::print_nt);
+extern LL_COMMON_API std::ostream& operator<<(std::ostream& os, libcwd::buf2str const& b2s);
+extern LL_COMMON_API std::ostream& operator<<(std::ostream& os, Indent::print_nt);
 
 namespace dc {
 
