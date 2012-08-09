@@ -45,16 +45,11 @@
 #include "apr_thread_cond.h"
 #include "llaprpool.h"
 #include "llatomic.h"
+#include "aithreadid.h"
 
 class LLThread;
 class LLMutex;
 class LLCondition;
-
-#if LL_WINDOWS
-#define ll_thread_local __declspec(thread)
-#else
-#define ll_thread_local __thread
-#endif
 
 class LL_COMMON_API LLThreadLocalDataMember
 {
@@ -85,10 +80,12 @@ private:
 	~LLThreadLocalData();
 };
 
+// Print to llerrs if the current thread is not the main thread.
+LL_COMMON_API void assert_main_thread();
+
 class LL_COMMON_API LLThread
 {
 private:
-	static apr_os_thread_t sMainThreadID;
 	static U32 sIDIter;
 	static LLAtomicS32	sCount;
 	static LLAtomicS32	sRunning;
@@ -108,11 +105,9 @@ public:
 	bool isQuitting() const { return (QUITTING == mStatus); }
 	bool isStopped() const { return (STOPPED == mStatus); }
 	
-	static U32 currentID(); // Return ID of current thread
 	static S32 getCount() { return sCount; }	
 	static S32 getRunning() { return sRunning; }
 	static void yield(); // Static because it can be called by the main thread, which doesn't have an LLThread data structure.
-	static bool is_main_thread(void) { return apr_os_thread_equal(LLThread::sMainThreadID, apr_os_thread_current()); }
 
 public:
 	// PAUSE / RESUME functionality. See source code for important usage notes.
@@ -136,11 +131,6 @@ public:
 	// Return thread-local data for the current thread.
 	static LLThreadLocalData& tldata(void) { return LLThreadLocalData::tldata(); }
 
-	// Called once, from LLThreadLocalData::init().
-	static void set_main_thread_id(void);
-
-	U32 getID() const { return mID; }
-
 private:
 	bool				mPaused;
 	
@@ -153,7 +143,6 @@ protected:
 
 	apr_thread_t		*mAPRThreadp;
 	volatile EThreadStatus		mStatus;
-	U32					mID;
 	
 	friend void LLThreadLocalData::create(LLThread* threadp);
 	LLThreadLocalData*  mThreadLocalData;
@@ -183,8 +172,7 @@ protected:
 };
 
 #ifdef SHOW_ASSERT
-LL_COMMON_API inline bool is_main_thread(void) { return LLThread::is_main_thread(); }
-#define ASSERT_SINGLE_THREAD do { static apr_os_thread_t first_thread_id = apr_os_thread_current(); llassert(apr_os_thread_equal(first_thread_id, apr_os_thread_current())); } while(0)
+#define ASSERT_SINGLE_THREAD do { static AIThreadID first_thread_id; llassert(first_thread_id.equals_current_thread()); } while(0)
 #else
 #define ASSERT_SINGLE_THREAD do { } while(0)
 #endif
@@ -204,32 +192,24 @@ LL_COMMON_API inline bool is_main_thread(void) { return LLThread::is_main_thread
 class LL_COMMON_API LLMutexBase
 {
 public:
-	typedef enum
-	{
-		NO_THREAD = 0xFFFFFFFF
-	} e_locking_thread;
-
 	LLMutexBase() ;
 	
 	void lock();		// blocks
 	void unlock();
 	// Returns true if lock was obtained successfully.
-	bool tryLock() { return !APR_STATUS_IS_EBUSY(apr_thread_mutex_trylock(mAPRMutexp)); }
+	bool tryLock();
 
-	// non-blocking, but does do a lock/unlock so not free
-	bool isLocked() { bool is_not_locked = tryLock(); if (is_not_locked) unlock(); return !is_not_locked; }
+	// Returns true if a call to lock() would block (returns false if self-locked()).
+	bool isLocked() const;
 
 	// Returns true if locked by this thread.
 	bool isSelfLocked() const;
-
-	// get ID of locking thread
-	U32 lockingThread() const { return mLockingThread; }
 
 protected:
 	// mAPRMutexp is initialized and uninitialized in the derived class.
 	apr_thread_mutex_t* mAPRMutexp;
 	mutable U32			mCount;
-	mutable U32			mLockingThread;
+	mutable AIThreadID	mLockingThread;
 
 private:
 	// Disallow copy construction and assignment.

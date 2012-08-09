@@ -206,7 +206,7 @@ void AIStateMachine::locked_cont(void)
   // Atomic test mActive and change mIdle.
   mIdleActive.lock();
 #ifdef SHOW_ASSERT
-  mContThread = apr_os_thread_current();
+  mContThread.reset();
 #endif
   mIdle = false;
   bool not_active = mActive == as_idle;
@@ -253,7 +253,7 @@ void AIStateMachine::set_state(state_type state)
   mSetStateLock.lock();
 
   // Do not call set_state() unless running.
-  llassert(mState == bs_run || !LLThread::is_main_thread());
+  llassert(mState == bs_run || !is_main_thread());
 
   // If this function is called from another thread than the main thread, then we have to ignore
   // it if we're not idle and the state is less than the current state. The main thread must
@@ -279,12 +279,12 @@ void AIStateMachine::set_state(state_type state)
   // state is less than the current state, ignore it.
   // Also, if abort() or finish() was called, then we should just ignore it.
   if (mState != bs_run ||
-	  (!mIdle && state <= mRunState && !LLThread::is_main_thread()))
+	  (!mIdle && state <= mRunState && !AIThreadID::in_main_thread()))
   {
 #ifdef SHOW_ASSERT
 	// It's a bit weird if the same thread does two calls on a row where the second call
 	// has a smaller value: warn about that.
-	if (mState == bs_run && mContThread == apr_os_thread_current())
+	if (mState == bs_run && mContThread.equals_current_thread())
 	{
 	  llwarns << "Ignoring call to set_state(" << state_str(state) <<
 		  ") by non-main thread before main-thread could react on previous call, "
@@ -296,7 +296,7 @@ void AIStateMachine::set_state(state_type state)
   }
 
   // Do not call idle() when set_state is called from another thread; use idle(state_type) instead.
-  llassert(!mCalledThreadUnsafeIdle || LLThread::is_main_thread());
+  llassert(!mCalledThreadUnsafeIdle || is_main_thread());
 
   // Change mRunState to the requested value.
   if (mRunState != state)

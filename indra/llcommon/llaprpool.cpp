@@ -60,10 +60,10 @@ void LLAPRPool::create(LLAPRPool& parent)
 	//
 	// In other words, it's safe for any thread to create a (sub)pool, independent of who
 	// owns the parent pool.
-	mOwner = apr_os_thread_current();
+	mOwner.reset();
 #else
 	mOwner = mParent->mOwner;
-	llassert(apr_os_thread_equal(mOwner, apr_os_thread_current()));
+	llassert(mOwner.equals_current_thread());
 #endif
 	apr_status_t const apr_pool_create_status = apr_pool_create(&mPool, mParent->mPool);
 	llassert_always(apr_pool_create_status == APR_SUCCESS);
@@ -83,7 +83,7 @@ void LLAPRPool::destroy(void)
 		// of course. Otherwise, if we are a subpool, only the thread that owns
 		// the parent may destruct us, since that is the pool that is still alive,
 		// possibly being used by others and being altered here.
-		llassert(!mParent || apr_os_thread_equal(mParent->mOwner, apr_os_thread_current()));
+		llassert(!mParent || mParent->mOwner.equals_current_thread());
 #endif
 		apr_pool_t* pool = mPool;
 		mPool = NULL;				// Mark that we are BEING destructed.

@@ -15,8 +15,9 @@ include_directories(
     )
 
 set(llcommon_SOURCE_FILES
-	aiframetimer.cpp
-	imageids.cpp
+    aiframetimer.cpp
+    aithreadid.cpp
+    imageids.cpp
     indra_constants.cpp
     llallocator.cpp
     llallocator_heap_profile.cpp
@@ -24,7 +25,7 @@ set(llcommon_SOURCE_FILES
     llapr.cpp
     llaprpool.cpp
     llassettype.cpp
-	llavatarname.cpp
+    llavatarname.cpp
     llbase32.cpp
     llbase64.cpp
     llcommon.cpp
@@ -103,6 +104,7 @@ set(llcommon_HEADER_FILES
     CMakeLists.txt
 
     aiframetimer.h
+    aithreadid.h
     aithreadsafe.h
     bitpack.h
     ctype_workaround.h

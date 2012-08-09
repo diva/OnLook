@@ -49,6 +49,7 @@
 #else // LL_COMMON_LINK_SHARED
 #error LL_COMMON_LINK_SHARED not defined
 #endif // LL_COMMON_LINK_SHARED
+#include "aithreadid.h"
 
 // If CWDEBUG is not defined, but DEBUG_CURLIO is, then replace
 // some of the cwd macro's with something that generates viewer
@@ -104,23 +105,23 @@ struct fake_channel {
   void on() const { }
   void off() const { }
 };
-extern CWD_API fake_channel const warning;
-extern CWD_API fake_channel const curl;
-extern CWD_API fake_channel const curlio;
-extern CWD_API fake_channel const statemachine;
-extern CWD_API fake_channel const notice;
+extern LL_COMMON_API fake_channel const warning;
+extern LL_COMMON_API fake_channel const curl;
+extern LL_COMMON_API fake_channel const curlio;
+extern LL_COMMON_API fake_channel const statemachine;
+extern LL_COMMON_API fake_channel const notice;
 
 } // namespace dc
 } // namespace debug
 
 #define Debug(x) do { using namespace debug; x; } while(0)
-#define Dout(a, b) do { using namespace debug;  if ((a).mOn) { llinfos_nf << (a).mLabel << ": " << Indent::print << b << llendl; } } while(0)
+#define Dout(a, b) do { using namespace debug;  if ((a).mOn) { llinfos_nf << AIThreadID::DoutPrint << (a).mLabel << ": " << Indent::print << b << llendl; } } while(0)
 #define DoutEntering(a, b) \
   int __slviewer_debug_indentation = 2; \
   { \
 	using namespace debug; \
 	if ((a).mOn) \
-	  llinfos_nf << (a).mLabel << ": " << Indent::print << "Entering " << b << llendl; \
+	  llinfos_nf << AIThreadID::DoutPrint << (a).mLabel << ": " << Indent::print << "Entering " << b << llendl; \
     else \
 	  __slviewer_debug_indentation = 0; \
   } \

@@ -208,7 +208,7 @@ class AIStateMachine {
 	S64 mSleep;									//!< Non-zero while the state machine is sleeping.
 	LLMutex mIdleActive;						//!< Used for atomic operations on the pair mIdle / mActive.
 #ifdef SHOW_ASSERT
-	apr_os_thread_t mContThread;				//!< Thread that last called locked_cont().
+	AIThreadID mContThread;						//!< Thread that last called locked_cont().
 	bool mCalledThreadUnsafeIdle;				//!< Set to true when idle() is called.
 #endif
 
@@ -242,7 +242,7 @@ class AIStateMachine {
 	//! Create a non-running state machine.
 	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mActive(as_idle), mSleep(0), mParent(NULL), mCallback(NULL)
 #ifdef SHOW_ASSERT
-		, mContThread(0), mCalledThreadUnsafeIdle(false)
+		, mContThread(AIThreadID::none), mCalledThreadUnsafeIdle(false)
 #endif
 		{ updateSettings(); }
 
@@ -269,7 +269,7 @@ class AIStateMachine {
 		mSetStateLock.lock();
 		// Ignore calls to cont() if the statemachine isn't idle. See comments in set_state().
 		// Calling cont() twice or after calling set_state(), without first calling idle(), is an error.
-		if (mState != bs_run || !mIdle) { llassert(mState != bs_run || mContThread != apr_os_thread_current()); mSetStateLock.unlock(); return; }
+		if (mState != bs_run || !mIdle) { llassert(mState != bs_run || !mContThread.equals_current_thread()); mSetStateLock.unlock(); return; }
 		locked_cont();
 	}
   private:
