@@ -1011,7 +1011,6 @@ void AICurlThread::wakeup_thread(void)
   }
   llassert_always(len == 1);
   //SGTODO: handle EAGAIN if needed
-  llinfos << "Sent wakeup signal" << llendl;
 #else
   // If write() is interrupted by a signal before it writes any data, it shall return -1 with errno set to [EINTR].
   // If write() is interrupted by a signal after it successfully writes some data, it shall return the number of bytes written.
