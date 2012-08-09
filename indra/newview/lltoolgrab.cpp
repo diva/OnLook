@@ -214,28 +214,41 @@ BOOL LLToolGrab::handleObjectHit(const LLPickInfo& info)
 
 	// Clicks on scripted or physical objects are temporary grabs, so
 	// not "Build mode"
-	mHideBuildHighlight = script_touch || objectp->usePhysics();
+	mHideBuildHighlight = script_touch || objectp->flagUsePhysics();
 
-	if (!objectp->usePhysics())
+	if (!objectp->flagUsePhysics())
 	{
-		// In mouselook, we shouldn't be able to grab non-physical, 
-		// non-touchable objects.  If it has a touch handler, we
-		// do grab it (so llDetectedGrab works), but movement is
-		// blocked on the server side. JC
-		if (gAgentCamera.cameraMouselook() && !script_touch)
+		if (script_touch)
 		{
-			mMode = GRAB_LOCKED;
-			gViewerWindow->hideCursor();
-			gViewerWindow->moveCursorToCenter();
+			mMode = GRAB_NONPHYSICAL;  // if it has a script, use the non-physical grab
 		}
 		else
 		{
-			mMode = GRAB_NONPHYSICAL;
+			// In mouselook, we shouldn't be able to grab non-physical, 
+			// non-touchable objects.  If it has a touch handler, we
+			// do grab it (so llDetectedGrab works), but movement is
+			// blocked on the server side. JC
+			if (gAgentCamera.cameraMouselook())
+			{
+				mMode = GRAB_LOCKED;
+				gViewerWindow->hideCursor();
+				gViewerWindow->moveCursorToCenter();
+			}
+			else if (objectp->permMove() && !objectp->isPermanentEnforced())
+			{
+				mMode = GRAB_ACTIVE_CENTER;
+				gViewerWindow->hideCursor();
+				gViewerWindow->moveCursorToCenter();
+			}
+			else
+			{
+				mMode = GRAB_LOCKED;
+			}
+
+			
 		}
-		// Don't bail out here, go on and grab so buttons can get
-		// their "touched" event.
 	}
-	else if( !objectp->permMove() )
+	else if( objectp->flagCharacter() || !objectp->permMove() || objectp->isPermanentEnforced())
 	{
 		// if mouse is over a physical object without move permission, show feedback if user tries to move it.
 		mMode = GRAB_LOCKED;

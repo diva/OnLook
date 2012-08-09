@@ -115,7 +115,8 @@ LLFloaterPostProcess* LLFloaterPostProcess::instance()
 
 void LLFloaterPostProcess::onControlChanged(LLUICtrl* ctrl, void* userData)
 {
-	LLPostProcess::getInstance()->setSelectedEffectValue((char const *)userData,ctrl->getValue());
+	LLSD v = ctrl->getValue();
+	LLPostProcess::getInstance()->setSelectedEffectValue((char const *)userData, v);
 }
 
 void LLFloaterPostProcess::onLoadEffect(void* userData)

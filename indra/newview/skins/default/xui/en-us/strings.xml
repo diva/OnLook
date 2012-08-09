@@ -1852,6 +1852,13 @@ For AI Character: Navigate to destination.
 	<string name="LSLTipText_llCreateCharacter">
 llCreateCharacter(list options)
 Convert linkset to AI Character which can navigate the world.
+  <!-- Pathfinding -->
+  <string name="Pathfinding_Wiki_URL">http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer</string>
+  <string name="Pathfinding_Object_Attr_None">None</string>
+  <string name="Pathfinding_Object_Attr_Permanent">Affects navmesh</string>
+  <string name="Pathfinding_Object_Attr_Character">Character</string>
+  <string name="Pathfinding_Object_Attr_MultiSelect">(Multiple)</string>
+
 	</string>
 	<string name="LSLTipText_llPursue">
 llPursue(key target, list options)

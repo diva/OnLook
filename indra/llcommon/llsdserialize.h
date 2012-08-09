@@ -755,6 +755,9 @@ public:
 		LLPointer<LLSDXMLParser> p = new LLSDXMLParser;
 		return p->parse(str, sd, LLSDSerialize::SIZE_UNLIMITED);
 	}
+	// Line oriented parser, 30% faster than fromXML(), but can
+	// only be used when you know you have the complete XML
+	// document available in the stream.
 	static S32 fromXMLDocument(LLSD& sd, std::istream& str)
 	{
 		LLPointer<LLSDXMLParser> p = new LLSDXMLParser();
@@ -791,4 +794,5 @@ public:
 //dirty little zip functions -- yell at davep
 LL_COMMON_API std::string zip_llsd(LLSD& data);
 LL_COMMON_API bool unzip_llsd(LLSD& data, std::istream& is, S32 size);
+LL_COMMON_API U8* unzip_llsdNavMesh( bool& valid, unsigned int& outsize,std::istream& is, S32 size);
 #endif // LL_LLSDSERIALIZE_H

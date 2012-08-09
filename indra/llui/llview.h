@@ -485,6 +485,10 @@ public:
 	/*virtual*/ void	screenPointToLocal(S32 screen_x, S32 screen_y, S32* local_x, S32* local_y) const;
 	/*virtual*/ void	localPointToScreen(S32 local_x, S32 local_y, S32* screen_x, S32* screen_y) const;
 
+	template <class T> T* findChild(const std::string& name)
+	{
+		return getChild<T>(name,true,false);
+	}
 	template <class T> T* getChild(const std::string& name, BOOL recurse = TRUE, BOOL create_if_missing = TRUE) const
 	{
 		LLView* child = getChildView(name, recurse, FALSE);

@@ -275,7 +275,7 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 	// Switch to grab tool if physical or triggerable
 	if (object && 
 		!object->isAvatar() && 
-		((object->usePhysics() || (parent && !parent->isAvatar() && parent->usePhysics())) || touchable) && 
+		((object->flagUsePhysics() || (parent && !parent->isAvatar() && parent->flagUsePhysics())) || touchable) && 
 		!always_show)
 	{
 // [RLVa:KB] - Checked: 2010-01-02 (RLVa-1.1.0l) | Modified: RLVa-1.1.0l
@@ -703,8 +703,8 @@ BOOL LLToolPie::handleHover(S32 x, S32 y, MASK mask)
 			gViewerWindow->getWindow()->setCursor(UI_CURSOR_ARROW);
 		}
 // [/RLVa:KB]
-		else if ((object && !object->isAvatar() && object->usePhysics()) 
-				 || (parent && !parent->isAvatar() && parent->usePhysics()))
+		else if ((object && !object->isAvatar() && object->flagUsePhysics()) 
+				 || (parent && !parent->isAvatar() && parent->flagUsePhysics()))
 		{
 			gViewerWindow->getWindow()->setCursor(UI_CURSOR_TOOLGRAB);
 		}

@@ -102,6 +102,21 @@
     </form>
   </template>
 
+  <template name="okhelpignore">
+    <form>
+      <button
+       default="true"
+       index="0"
+       name="OK"
+       text="$yestext"/>
+      <button
+       index="1"
+       name="Help"
+       text="$helptext"/>
+      <ignore text="$ignoretext"/>
+    </form>
+  </template>
+
   <template name="yesnocancelbuttons">
     <form>
       <button
@@ -1525,6 +1540,13 @@ You can only link complete sets of objects, and must select more than one object
 Unable to link because you don&apos;t have modify permission on all the objects.
 
 Please make sure none are locked, and that you own all of them.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="CannotLinkPermanent"
+   type="alertmodal">
+    Objects cannot be linked across region boundaries.
   </notification>
 
   <notification
@@ -5943,6 +5965,53 @@ You cannot create objects here.
   </notification>
 
   <notification
+     icon="notify.tga"
+     name="PathfindingDirty"
+     type="notify">
+    <unique/>
+    The region has pending pathfinding changes.  If you have build rights, you may rebake the region by clicking on the “Rebake region” button.
+  </notification>
+
+  <notification
+     icon="notify.tga"
+     name="DynamicPathfindingDisabled"
+     type="notify">
+    <unique/>
+    Dynamic pathfinding is not enabled on this region.  Scripted objects using pathfinding LSL calls may not operate as expected on this region.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingRebakeNavmesh"
+   type="alertmodal">
+    <unique/>
+    Changing certain objects in this region could cause other moving objects to behave incorrectly.  To make moving objects behave correctly, click the “Rebake region” button.  Choose “Help” for more information.
+    <url
+      option="1"
+      name="url"
+      target = "_external">
+      http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer
+    </url>
+    <usetemplate
+     name="okhelpignore"
+     ignoretext="Changing certain objects in this region could cause other moving objects to behave incorrectly."
+     yestext="OK"
+     helptext="Help"
+     />
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingCannotRebakeNavmesh"
+   type="alertmodal">
+    <unique/>
+    An error occurred.  There may be a network or server problem, or you may not have build rights.  Sometimes logging out and back in will solve this problem.
+    <usetemplate
+     name="okbutton"
+     yestext="OK"
+     />
+  </notification>
+  <notification
    icon="notify.tga"
    name="ScriptsStopped"
    type="notify">
@@ -7071,6 +7140,19 @@ You locally updated a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME]
   <global name="UnsupportedCPU">
 - Your CPU speed does not meet the minimum requirements.
   </global>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_ChangeToFlexiblePath"
+   type="alertmodal">
+    The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh.
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
 
   <global name="UnsupportedGLRequirements">
     You do not appear to have the proper hardware requirements for [APP_NAME]. The viewer requires an OpenGL graphics card that has multitexture support. If this is the case, you may want to make sure that you have the latest drivers for your graphics card, and service packs and patches for your operating system.

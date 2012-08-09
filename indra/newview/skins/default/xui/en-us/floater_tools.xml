@@ -409,7 +409,7 @@
 			    mouse_opaque="true" name="perm_modify" v_pad="0" width="250">
 				You can modify this object.
 			</text>
-			<check_box bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="16"
+			<check_box bottom_delta="-16" follows="left|top" font="SansSerifSmall" height="16"
 			    initial_value="false" label="Share with group" left="10"
 			    mouse_opaque="true" name="checkbox share with group"
 			    tool_tip="Allow all members of the set group to share and use your permissions for this object. You must Deed to enable role restrictions."
@@ -420,21 +420,21 @@
 			<string name="text deed">
 				Deed
 			</string>
-			<button bottom="-186" follows="top|right" font="SansSerifSmall" halign="center"
+			<button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="20" label="Deed..." label_selected="Deed..." left_delta="172"
 			     mouse_opaque="true" name="button deed" scale_image="TRUE"
 			     tool_tip="Group shared objects can be deeded by a group officer."
 			     width="78" />
-			<check_box bottom="-206" follows="left|top" font="SansSerifSmall" height="16"
+			<check_box bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16"
 			     initial_value="false" label="Allow anyone to move" left="10"
 			     mouse_opaque="true" name="checkbox allow everyone move" width="142" />
-			<check_box bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="16"
+			<check_box bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16"
 			     initial_value="false" label="Allow anyone to copy" left="10"
 			     mouse_opaque="true" name="checkbox allow everyone copy" width="141" />
-			<check_box bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="16"
+			<check_box bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16"
 			     initial_value="false" label="Show in search" left="10" name="search_check"
 			     tool_tip="Let people see this object in search results" width="78" />
-			<check_box bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="16"
+			<check_box bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16"
 			     initial_value="false" label="For Sale" left="10" mouse_opaque="true"
 			     name="checkbox for sale" width="78" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
@@ -446,7 +446,7 @@
 			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="0"
 			     follows="left|top|right" font="SansSerifSmall" height="16" left_delta="80"
 			     max_length="25" mouse_opaque="true" name="Edit Cost" width="75" />
-			<radio_group bottom="-286" draw_border="false" follows="left|top|right" height="16"
+			<radio_group bottom_delta="-18" draw_border="false" follows="left|top|right" height="16"
 			     left="42" mouse_opaque="true" name="sale type" width="218">
 				<radio_item bottom="-16" follows="left|top" height="16" left="0" mouse_opaque="true"
 				     name="Original" width="70">
@@ -462,7 +462,7 @@
 				</radio_item>
 			</radio_group>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-298" drop_shadow_visible="true" follows="left|top|right"
+			     bottom_delta="-5" drop_shadow_visible="true" follows="left|top|right"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
 			     mouse_opaque="true" name="Next owner can:" v_pad="0" width="250">
 				Next owner can:
@@ -477,12 +477,12 @@
 			     initial_value="false" label="Resell/Give away" left_delta="60"
 			     mouse_opaque="true" name="checkbox next owner can transfer" width="130" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-332" drop_shadow_visible="true" follows="left|top"
+			     bottom="-334" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
 			     mouse_opaque="true" name="label click action" v_pad="0" width="150">
 				When Left-Clicked:
 			</text>
-			<combo_box allow_text_entry="false" bottom_delta="-25" follows="left|top" height="18"
+			<combo_box bottom_delta="-24" allow_text_entry="false" follows="left|top" height="20"
 			     left="10" max_chars="20" mouse_opaque="true" name="clickaction" width="150">
 			     <!-- Do not reorder these items, the index numbers are
 					used internally. JC -->
@@ -549,6 +549,40 @@
 			     mouse_opaque="true" name="F:" v_pad="0" width="74">
 				F:
 			</text>
+      <panel bottom="-302" border="true" height="155" left="5" width="260" />
+      <panel
+     bottom="-328"
+     border="false"
+     follows="left|top"
+     layout="topleft"
+     mouse_opaque="false"
+     name="pathfinding_attrs_panel"
+     left="0"
+     top_pad="0"
+     height="25"
+     width="290">
+        <text
+           type="string"
+           follows="left|top"
+           name="pathfinding_attributes_label"
+           top_pad="4"
+           width="150"
+           left="10">
+          Pathfinding attributes:
+        </text>
+        <text
+           bottom_delta="0"
+           left_delta="120"
+           type="string"
+           text_color="TextLinkColor"
+           follows="left|top"
+           name="pathfinding_attributes_value"
+           width="130"
+           word_wrap="false"
+           left_pad="0">
+          Test
+        </text>
+      </panel>
 			<string name="text modify info 1">
 				You can modify this object.
 			</string>
@@ -561,6 +595,12 @@
 			<string name="text modify info 4">
 				You cannot modify these objects.
 			</string>
+      <string name="text modify info 5">
+        You can't modify this object across a region boundary
+      </string>
+      <string name="text modify info 6">
+        You can't modify these objects across a region boundary
+      </string>
 			<string name="text modify warning">
 				Must select entire object to set permissions.
 			</string>

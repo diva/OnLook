@@ -571,7 +571,7 @@ void LLPostProcess::setSelectedEffectValue(std::string const & setting, LLSD& va
 	S32 elem=0;
 	if(sscanf(setting.c_str(),"%255[^[][%d]", buf, &elem) == 2)
 	{
-		mSelectedEffectInfo[buf][elem] = value;
+		mSelectedEffectInfo[std::string(buf)][elem] = value;
 	}
 	else
 	{

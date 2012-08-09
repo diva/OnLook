@@ -227,16 +227,6 @@ void LLXMLRPCTransaction::Impl::init(XMLRPC_REQUEST request, bool useGzip)
 		mCurlRequest = new LLCurlEasyRequest();
 	}
 
-	if(!mCurlRequest->isValid())
-	{
-		llwarns << "mCurlRequest is invalid." << llendl ;
-
-		delete mCurlRequest ;
-		mCurlRequest = NULL ;
-		return ;
-	}
-
-
 	LLProxy::getInstance()->applyProxySettings(mCurlRequest);
 
 //	mCurlRequest->setopt(CURLOPT_VERBOSE, 1); // usefull for debugging
@@ -292,7 +282,7 @@ LLXMLRPCTransaction::Impl::~Impl()
 
 bool LLXMLRPCTransaction::Impl::process()
 {
-	if(!mCurlRequest || !mCurlRequest->isValid())
+	if(!mCurlRequest || !mCurlRequest->getEasy())
 	{
 		llwarns << "transaction failed." << llendl ;
 
@@ -326,7 +316,7 @@ bool LLXMLRPCTransaction::Impl::process()
 	//const F32 MAX_PROCESSING_TIME = 0.05f;
 	//LLTimer timer;
 
-	mCurlRequest->wait();
+	mCurlRequest->perform();
 
 	/*while (mCurlRequest->perform() > 0)
 	{
