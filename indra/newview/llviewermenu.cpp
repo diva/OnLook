@@ -250,6 +250,7 @@
 #include "llfloatervfs.h"
 #include "llfloatervfsexplorer.h"
 #include "shfloatermediaticker.h"
+#include "llpacketring.h"
 // </edit>
 
 #include "scriptcounter.h"

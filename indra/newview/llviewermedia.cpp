@@ -48,6 +48,7 @@
 #include "llnotificationsutil.h"
 #include "lluuid.h"
 #include "llkeyboard.h"
+#include "llhttpclient.h"
 
 // Merov: Temporary definitions while porting the new viewer media code to Snowglobe
 const int LEFT_BUTTON  = 0;

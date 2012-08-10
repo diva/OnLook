@@ -61,6 +61,7 @@
 #include "message.h"
 #include "pipeline.h"
 #include "llappviewer.h"		// for do_disconnect()
+#include "llpacketring.h"
 
 #include <deque>
 #include <queue>

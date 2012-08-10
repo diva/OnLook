@@ -219,6 +219,7 @@
 #include "llfloaterblacklist.h"
 #include "scriptcounter.h"
 #include "shfloatermediaticker.h"
+#include "llpacketring.h"
 // </edit>
 
 #include "llavatarnamecache.h"

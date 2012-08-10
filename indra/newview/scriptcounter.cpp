@@ -43,6 +43,7 @@
 #include "llviewercontrol.h"
 #include "llviewernetwork.h"
 #include "llviewerobject.h"
+#include "llpacketring.h"
 #include <sstream>
 
 ScriptCounter* ScriptCounter::sInstance;
