@@ -201,8 +201,8 @@ void ScriptCounter::serializeSelection(bool delScript)
 		F32 throttle = gSavedSettings.getF32("OutBandwidth");
 		if((throttle == 0.f) || (throttle > 128000.f))
 		{
-			gMessageSystem->mPacketRing.setOutBandwidth(128000);
-			gMessageSystem->mPacketRing.setUseOutThrottle(TRUE);
+			gMessageSystem->mPacketRing->setOutBandwidth(128000);
+			gMessageSystem->mPacketRing->setUseOutThrottle(TRUE);
 		}
 		showResult(llformat("Counting scripts, please wait..."));
 		if((objectCount == 1) && !(foo->isAvatar()))
@@ -340,13 +340,13 @@ void ScriptCounter::completechk()
 			F32 throttle = gSavedSettings.getF32("OutBandwidth");
 			if(throttle != 0.f)
 			{
-				gMessageSystem->mPacketRing.setOutBandwidth(throttle);
-				gMessageSystem->mPacketRing.setUseOutThrottle(TRUE);
+				gMessageSystem->mPacketRing->setOutBandwidth(throttle);
+				gMessageSystem->mPacketRing->setUseOutThrottle(TRUE);
 			}
 			else
 			{
-				gMessageSystem->mPacketRing.setOutBandwidth(0.0);
-				gMessageSystem->mPacketRing.setUseOutThrottle(FALSE);
+				gMessageSystem->mPacketRing->setOutBandwidth(0.0);
+				gMessageSystem->mPacketRing->setUseOutThrottle(FALSE);
 			}
 			llinfos << "Sending readout to chat..." << llendl;
 			showResult(user_msg);

@@ -56,6 +56,7 @@
 #include "llstl.h"
 #include "lltransfermanager.h"
 #include "llmodularmath.h"
+#include "llpacketring.h"
 
 const S32 PING_START_BLOCK = 3;		// How many pings behind we have to be to consider ourself blocked.
 const S32 PING_RELEASE_BLOCK = 2;	// How many pings behind we have to be to consider ourself unblocked.
@@ -346,7 +347,7 @@ S32 LLCircuitData::resendUnackedPackets(const F64 now)
 
 			packetp->mBuffer[0] |= LL_RESENT_FLAG;  // tag packet id as being a resend	
 
-			gMessageSystem->mPacketRing.sendPacket(packetp->mSocket, 
+			gMessageSystem->mPacketRing->sendPacket(packetp->mSocket, 
 											   (char *)packetp->mBuffer, packetp->mBufferLength, 
 											   packetp->mHost);
 
