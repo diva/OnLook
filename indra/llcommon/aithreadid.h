@@ -33,28 +33,22 @@
 
 #include <apr_portable.h>	// apr_os_thread_t, apr_os_thread_current(), apr_os_thread_equal().
 #include <iosfwd>			// std::ostream.
-#include "llpreprocessor.h"	// LL_COMMON_API
+#include "llpreprocessor.h"	// LL_COMMON_API, LL_COMMON_API_TLS
 #include "llerror.h"
-
-#if LL_WINDOWS
-#define ll_thread_local __declspec(thread)
-#else
-#define ll_thread_local __thread
-#endif
 
 // Lightweight wrapper around apr_os_thread_t.
 // This class introduces no extra assembly code after optimization; it's only intend is to provide type-safety.
-class LL_COMMON_API AIThreadID
+class AIThreadID
 {
 private:
 	apr_os_thread_t mID;
-	static apr_os_thread_t sMainThreadID;
-	static apr_os_thread_t const undefinedID = (apr_os_thread_t)-1;
+	static LL_COMMON_API apr_os_thread_t sMainThreadID;
+	static LL_COMMON_API apr_os_thread_t const undefinedID;
 #ifndef LL_DARWIN
-	static ll_thread_local apr_os_thread_t lCurrentThread;
+	static LL_COMMON_API_TLS apr_os_thread_t lCurrentThread;
 #endif
 public:
-	static AIThreadID const sNone;
+	static LL_COMMON_API AIThreadID const sNone;
 	enum undefined_thread_t { none };
 	enum dout_print_t { DoutPrint };
 

@@ -38,15 +38,6 @@
 
 #include <string>
 
-#if LL_WINDOWS
-// On windows, thread-local data is automatically exported.
-#define LL_COMMON_API_TLS __declspec(thread)
-#define CWD_TLS __declspec(thread)
-#else
-#define LL_COMMON_API_TLS LL_COMMON_API __thread
-#define CWD_TLS __thread
-#endif
-
 namespace debug {
 namespace libcwd {
 

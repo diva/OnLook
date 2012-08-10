@@ -195,4 +195,16 @@
 # define LL_COMMON_API
 #endif // LL_COMMON_LINK_SHARED
 
+// Darwin does not support thread-local data.
+#ifndef LL_DARWIN
+#if LL_WINDOWS
+// On windows, thread-local data is automatically exported.
+#define LL_COMMON_API_TLS __declspec(thread)
+#define CWD_TLS __declspec(thread)
+#else // Linux
+#define LL_COMMON_API_TLS LL_COMMON_API __thread
+#define CWD_TLS __thread
+#endif
+#endif
+
 #endif	//	not LL_LINDEN_PREPROCESSOR_H
