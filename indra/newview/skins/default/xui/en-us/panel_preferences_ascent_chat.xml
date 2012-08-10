@@ -70,7 +70,7 @@
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="Spam" name="Spam">
       <check_box control_name="_NACL_AntiSpamGlobalQueue" label="No messagetype-specific spam queues" name="spammsg_checkbox" width="256" left="6"/>
       <button height="23" label="Reset antispam queues" label_selected="Reset antispam queues" name="reset_antispam" width="230" bottom_delta="0" left="260"/>
-      <spinner control_name="_NACL_AntiSpamTime" decimal_digits="0" increment="1" min_val="1" max_val="60" label="Antispam time(seconds):" label_width="330" tool_tip="Lower is less sensitive" name="antispamtime" width="390" left="10"/>
+      <spinner control_name="_NACL_AntiSpamTime" decimal_digits="0" increment="1" min_val="0" max_val="60" label="Antispam time(seconds):" label_width="330" tool_tip="Lower is less sensitive, 0 will turn off Antispam, but not Dialog Blocking." name="antispamtime" width="390" left="10"/>
       <spinner control_name="_NACL_AntiSpamAmount" decimal_digits="0" increment="1" min_val="5" max_val="99999" label="Antispam amount:" label_width="330" tool_tip="Higher is less sensitive" name="antispamamount" width="390"/>
       <spinner control_name="_NACL_AntiSpamSoundMulti" decimal_digits="0" increment="1" min_val="1" max_val="99999" label="Amount multiplicatior for sound antispam:" label_width="330" tool_tip="Higher is less sensitive" left="10" name="antispamsoundmulti" width="390"/>
       <spinner control_name="_NACL_AntiSpamSoundPreloadMulti" decimal_digits="0" increment="1" min_val="1" max_val="99999" label="Amount multiplicatior for sound preload antispam:" label_width="330" tool_tip="Higher is less sensitive" name="antispamsoundpreloadmulti" width="390"/>
