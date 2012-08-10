@@ -4035,7 +4035,7 @@ void print_packets_lost(void*)
 
 void drop_packet(void*)
 {
-	gMessageSystem->mPacketRing.dropPackets(1);
+	gMessageSystem->mPacketRing->dropPackets(1);
 }
 
 
