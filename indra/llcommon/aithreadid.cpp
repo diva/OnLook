@@ -34,7 +34,7 @@
 
 AIThreadID const AIThreadID::sNone(AIThreadID::none);
 apr_os_thread_t AIThreadID::sMainThreadID;
-apr_os_thread_t const undefinedID = (apr_os_thread_t)-1;
+apr_os_thread_t const AIThreadID::undefinedID = (apr_os_thread_t)-1;
 #ifndef LL_DARWIN
 apr_os_thread_t CWD_TLS AIThreadID::lCurrentThread;
 #endif
