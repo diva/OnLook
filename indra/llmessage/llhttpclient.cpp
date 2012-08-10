@@ -446,7 +446,7 @@ static LLSD blocking_request(
 		std::string body_str;
 		
 		// * Set curl handle options
-		curlEasyRequest_w->setopt(CURLOPT_TIMEOUT, timeout);	// seconds, see warning at top of function.
+		curlEasyRequest_w->setopt(CURLOPT_TIMEOUT, (long)timeout);	// seconds, see warning at top of function.
 		curlEasyRequest_w->setWriteCallback(&LLHTTPBuffer::curl_write, &http_buffer);
 
 		// * Setup headers.

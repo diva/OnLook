@@ -263,7 +263,7 @@ void LLXMLRPCTransaction::Impl::init(XMLRPC_REQUEST request, bool useGzip)
 		if (mRequestText)
 		{
 			Dout(dc::curl, "Writing " << mRequestTextSize << " bytes: \"" << libcwd::buf2str(mRequestText, mRequestTextSize) << "\".");;
-			curlEasyRequest_w->setopt(CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)mRequestTextSize);
+			curlEasyRequest_w->setopt(CURLOPT_POSTFIELDSIZE, mRequestTextSize);
 			curlEasyRequest_w->setoptString(CURLOPT_COPYPOSTFIELDS, mRequestText);
 		}
 		else

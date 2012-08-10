@@ -717,8 +717,78 @@ void intrusive_ptr_release(ThreadSafeCurlEasyRequest* threadsafe_curl_easy_reque
   }
 }
 
+CURLcode CurlEasyHandle::setopt(CURLoption option, long parameter)
+{
+  llassert((CURLOPTTYPE_LONG  <= option && option < CURLOPTTYPE_LONG  + 1000) ||
+		   (sizeof(curl_off_t) == sizeof(long) &&
+			CURLOPTTYPE_OFF_T <= option && option < CURLOPTTYPE_OFF_T + 1000));
+  llassert(!mActiveMultiHandle);
+  setErrorBuffer();
+  return check_easy_code(curl_easy_setopt(mEasyHandle, option, parameter));
+}
+
+// The standard requires that sizeof(long) < sizeof(long long), so it's safe to overload like this.
+// We assume that one of them is 64 bit, the size of curl_off_t.
+CURLcode CurlEasyHandle::setopt(CURLoption option, long long parameter)
+{
+  llassert(sizeof(curl_off_t) == sizeof(long long) &&
+		   CURLOPTTYPE_OFF_T <= option && option < CURLOPTTYPE_OFF_T + 1000);
+  llassert(!mActiveMultiHandle);
+  setErrorBuffer();
+  return check_easy_code(curl_easy_setopt(mEasyHandle, option, parameter));
+}
+
+CURLcode CurlEasyHandle::setopt(CURLoption option, void const* parameter)
+{
+  llassert(CURLOPTTYPE_OBJECTPOINT <= option && option < CURLOPTTYPE_OBJECTPOINT + 1000);
+  setErrorBuffer();
+  return check_easy_code(curl_easy_setopt(mEasyHandle, option, parameter));
+}
+
+#define DEFINE_FUNCTION_SETOPT1(function_type, opt1) \
+	CURLcode CurlEasyHandle::setopt(CURLoption option, function_type parameter) \
+	{ \
+	  llassert(option == opt1); \
+	  setErrorBuffer(); \
+	  return check_easy_code(curl_easy_setopt(mEasyHandle, option, parameter)); \
+	}
+
+#define DEFINE_FUNCTION_SETOPT3(function_type, opt1, opt2, opt3) \
+	CURLcode CurlEasyHandle::setopt(CURLoption option, function_type parameter) \
+	{ \
+	  llassert(option == opt1 || option == opt2 || option == opt3); \
+	  setErrorBuffer(); \
+	  return check_easy_code(curl_easy_setopt(mEasyHandle, option, parameter)); \
+	}
+
+#define DEFINE_FUNCTION_SETOPT4(function_type, opt1, opt2, opt3, opt4) \
+	CURLcode CurlEasyHandle::setopt(CURLoption option, function_type parameter) \
+	{ \
+	  llassert(option == opt1 || option == opt2 || option == opt3 || option == opt4); \
+	  setErrorBuffer(); \
+	  return check_easy_code(curl_easy_setopt(mEasyHandle, option, parameter)); \
+	}
+
+DEFINE_FUNCTION_SETOPT1(curl_debug_callback, CURLOPT_DEBUGFUNCTION)
+DEFINE_FUNCTION_SETOPT4(curl_write_callback, CURLOPT_HEADERFUNCTION, CURLOPT_WRITEFUNCTION, CURLOPT_INTERLEAVEFUNCTION, CURLOPT_READFUNCTION)
+//DEFINE_FUNCTION_SETOPT1(curl_read_callback, CURLOPT_READFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_ssl_ctx_callback, CURLOPT_SSL_CTX_FUNCTION)
+DEFINE_FUNCTION_SETOPT3(curl_conv_callback, CURLOPT_CONV_FROM_NETWORK_FUNCTION, CURLOPT_CONV_TO_NETWORK_FUNCTION, CURLOPT_CONV_FROM_UTF8_FUNCTION)
+#if 0 // Not used by the viewer.
+DEFINE_FUNCTION_SETOPT1(curl_progress_callback, CURLOPT_PROGRESSFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_seek_callback, CURLOPT_SEEKFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_ioctl_callback, CURLOPT_IOCTLFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_sockopt_callback, CURLOPT_SOCKOPTFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_opensocket_callback, CURLOPT_OPENSOCKETFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_closesocket_callback, CURLOPT_CLOSESOCKETFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_sshkeycallback, CURLOPT_SSH_KEYFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_chunk_bgn_callback, CURLOPT_CHUNK_BGN_FUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_chunk_end_callback, CURLOPT_CHUNK_END_FUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_fnmatch_callback, CURLOPT_FNMATCH_FUNCTION)
+#endif
+
 //-----------------------------------------------------------------------------
-// CurlEasyReqest
+// CurlEasyRequest
 
 void CurlEasyRequest::setoptString(CURLoption option, std::string const& value)
 {
@@ -729,8 +799,8 @@ void CurlEasyRequest::setoptString(CURLoption option, std::string const& value)
 void CurlEasyRequest::setPost(char const* postdata, S32 size)
 {
   setopt(CURLOPT_POST, 1L);
-  setopt(CURLOPT_POSTFIELDS, static_cast<void*>(const_cast<char*>(postdata)));
   setopt(CURLOPT_POSTFIELDSIZE, size);
+  setopt(CURLOPT_POSTFIELDS, postdata);
 }
 
 ThreadSafeCurlEasyRequest* CurlEasyRequest::get_lockobj(void)

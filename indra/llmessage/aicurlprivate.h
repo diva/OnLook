@@ -59,6 +59,9 @@ void stopCurlThread(void);
 class ThreadSafeCurlEasyRequest;
 class ThreadSafeBufferedCurlEasyRequest;
 
+#define DECLARE_SETOPT(param_type) \
+	CURLcode setopt(CURLoption option, param_type parameter)
+
 // This class wraps CURL*'s.
 // It guarantees that a pointer is cleaned up when no longer needed, as required by libcurl.
 class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEvents {
@@ -75,8 +78,31 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	void reset(void) { llassert(!mActiveMultiHandle); curl_easy_reset(mEasyHandle); }
 
 	// Set options for a curl easy handle.
-	template<typename BUILTIN>
-	  CURLcode setopt(CURLoption option, BUILTIN parameter);
+	DECLARE_SETOPT(long);
+	DECLARE_SETOPT(long long);
+	DECLARE_SETOPT(void const*);
+	DECLARE_SETOPT(curl_debug_callback);
+	DECLARE_SETOPT(curl_write_callback);
+	//DECLARE_SETOPT(curl_read_callback);	Same type as curl_write_callback
+	DECLARE_SETOPT(curl_ssl_ctx_callback);
+	DECLARE_SETOPT(curl_conv_callback);
+#if 0	// Not used by the viewer.
+	DECLARE_SETOPT(curl_progress_callback);
+	DECLARE_SETOPT(curl_seek_callback);
+	DECLARE_SETOPT(curl_ioctl_callback);
+	DECLARE_SETOPT(curl_sockopt_callback);
+	DECLARE_SETOPT(curl_opensocket_callback);
+	DECLARE_SETOPT(curl_closesocket_callback);
+	DECLARE_SETOPT(curl_sshkeycallback);
+	DECLARE_SETOPT(curl_chunk_bgn_callback);
+	DECLARE_SETOPT(curl_chunk_end_callback);
+	DECLARE_SETOPT(curl_fnmatch_callback);
+#endif
+#if __LP64__	// sizeof(long) > sizeof(S32), see http://en.cppreference.com/w/cpp/language/types
+	// Automatically cast small int types to a long if they differ in size.
+	CURLcode setopt(CURLoption option, U32 parameter) { return setopt(option, (long)parameter); }
+	CURLcode setopt(CURLoption option, S32 parameter) { return setopt(option, (long)parameter); }
+#endif
 
 	// Clone a libcurl session handle using all the options previously set.
 	//CurlEasyHandle(CurlEasyHandle const& orig);
@@ -159,14 +185,6 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// Return, and possibly create, the curl (easy) error buffer used by the current thread.
 	static char* getTLErrorBuffer(void);
 };
-
-template<typename BUILTIN>
-CURLcode CurlEasyHandle::setopt(CURLoption option, BUILTIN parameter)
-{
-  llassert(!mActiveMultiHandle);
-  setErrorBuffer();
-  return check_easy_code(curl_easy_setopt(mEasyHandle, option, parameter));
-}
 
 // CurlEasyRequest adds a slightly more powerful interface that can be used
 // to set the options on a curl easy handle.
@@ -397,16 +415,41 @@ class CurlMultiHandle : public boost::noncopyable {
 
   public:
 	// Set options for a curl multi handle.
-	template<typename BUILTIN>
-	  CURLMcode setopt(CURLMoption option, BUILTIN parameter);
+	CURLMcode setopt(CURLMoption option, long parameter);
+	CURLMcode setopt(CURLMoption option, curl_socket_callback parameter);
+	CURLMcode setopt(CURLMoption option, curl_multi_timer_callback parameter);
+	CURLMcode setopt(CURLMoption option, void* parameter);
 
 	// Returns total number of existing CURLM* handles (excluding ones created outside this class).
 	static U32 getTotalMultiHandles(void) { return sTotalMultiHandles; }
 };
 
-template<typename BUILTIN>
-CURLMcode CurlMultiHandle::setopt(CURLMoption option, BUILTIN parameter)
+// Overload the setopt methods in order to enforce the correct types (ie, convert an int to a long).
+
+// curl_multi_setopt may only be passed a long,
+inline CURLMcode CurlMultiHandle::setopt(CURLMoption option, long parameter)
 {
+  llassert(option == CURLMOPT_MAXCONNECTS || option == CURLMOPT_PIPELINING);
+  return check_multi_code(curl_multi_setopt(mMultiHandle, option, parameter));
+}
+
+// ... or a function pointer,
+inline CURLMcode CurlMultiHandle::setopt(CURLMoption option, curl_socket_callback parameter)
+{
+  llassert(option == CURLMOPT_SOCKETFUNCTION);
+  return check_multi_code(curl_multi_setopt(mMultiHandle, option, parameter));
+}
+
+inline CURLMcode CurlMultiHandle::setopt(CURLMoption option, curl_multi_timer_callback parameter)
+{
+  llassert(option == CURLMOPT_TIMERFUNCTION);
+  return check_multi_code(curl_multi_setopt(mMultiHandle, option, parameter));
+}
+
+// ... or an object pointer.
+inline CURLMcode CurlMultiHandle::setopt(CURLMoption option, void* parameter)
+{
+  llassert(option == CURLMOPT_SOCKETDATA || option == CURLMOPT_TIMERDATA);
   return check_multi_code(curl_multi_setopt(mMultiHandle, option, parameter));
 }
 
