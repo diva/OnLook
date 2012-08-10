@@ -98,11 +98,10 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	DECLARE_SETOPT(curl_chunk_end_callback);
 	DECLARE_SETOPT(curl_fnmatch_callback);
 #endif
-#if __LP64__	// sizeof(long) > sizeof(S32), see http://en.cppreference.com/w/cpp/language/types
-	// Automatically cast small int types to a long if they differ in size.
+	// Automatically cast int types to a long. Note that U32/S32 are int and
+	// that you can overload int and long even if they have the same size.
 	CURLcode setopt(CURLoption option, U32 parameter) { return setopt(option, (long)parameter); }
 	CURLcode setopt(CURLoption option, S32 parameter) { return setopt(option, (long)parameter); }
-#endif
 
 	// Clone a libcurl session handle using all the options previously set.
 	//CurlEasyHandle(CurlEasyHandle const& orig);
