@@ -76,6 +76,9 @@ ATI FirePro M5800				.*ATI.*FirePro.*M58.*						3		1
 ATI FirePro M7740				.*ATI.*FirePro.*M77.*						3		1
 ATI FirePro M7820				.*ATI.*FirePro.*M78.*						3		1
 ATI FireMV						.*ATI.*FireMV.*								0		1
+ATI Geforce 9500 GT				.*ATI.*Geforce 9500 *GT.*					2		1
+ATI Geforce 9600 GT				.*ATI.*Geforce 9600 *GT.*					2		1
+ATI Geforce 9800 GT				.*ATI.*Geforce 9800 *GT.*					2		1
 ATI Generic						.*ATI.*Generic.*							0		0
 ATI Hercules 9800				.*ATI.*Hercules.*9800.*						1		1
 ATI IGP 340M					.*ATI.*IGP.*340M.*							0		0
@@ -100,8 +103,8 @@ ATI Mobility Radeon HD 545v		.*ATI.*Mobility.*HD *545v.*					2		1
 ATI Mobility Radeon HD 550v		.*ATI.*Mobility.*HD *550v.*					2		1
 ATI Mobility Radeon HD 560v		.*ATI.*Mobility.*HD *560v.*					2		1
 ATI Mobility Radeon HD 565v		.*ATI.*Mobility.*HD *565v.*					2		1
-ATI Mobility Radeon HD 2300		.*ATI.*Mobility.*HD *23.*					1		1
-ATI Mobility Radeon HD 2400		.*ATI.*Mobility.*HD *24.*					1		1
+ATI Mobility Radeon HD 2300		.*ATI.*Mobility.*HD *23.*					2		1
+ATI Mobility Radeon HD 2400		.*ATI.*Mobility.*HD *24.*					2		1
 ATI Mobility Radeon HD 2600		.*ATI.*Mobility.*HD *26.*					3		1
 ATI Mobility Radeon HD 2700		.*ATI.*Mobility.*HD *27.*					3		1
 ATI Mobility Radeon HD 3100		.*ATI.*Mobility.*HD *31.*					0		1
@@ -142,23 +145,23 @@ ATI Mobility Radeon X6xx		.*ATI.*Mobility.*X6.*						1		1
 ATI Mobility Radeon X7xx		.*ATI.*Mobility.*X7.*						1		1
 ATI Mobility Radeon Xxxx		.*ATI.*Mobility.*X.*						0		1
 ATI Mobility Radeon				.*ATI.*Mobility.*							0		1
-ATI Radeon HD 2300				.*ATI.*Radeon HD *23..						0		1
-ATI Radeon HD 2400				.*ATI.*Radeon HD *24..						1		1
+ATI Radeon HD 2300				.*ATI.*Radeon HD *23..						2		1
+ATI Radeon HD 2400				.*ATI.*Radeon HD *24..						2		1
 ATI Radeon HD 2600				.*ATI.*Radeon HD *26..						2		1
 ATI Radeon HD 2900				.*ATI.*Radeon HD *29..						3		1
 ATI Radeon HD 3000				.*ATI.*Radeon HD *30..						0		1
 ATI Radeon HD 3100				.*ATI.*Radeon HD *31..						1		1
 ATI Radeon HD 3200				.*ATI.*Radeon HD *32..						1		1
-ATI Radeon HD 3300				.*ATI.*Radeon HD *33..						1		1
-ATI Radeon HD 3400				.*ATI.*Radeon HD *34..						1		1
-ATI Radeon HD 3500				.*ATI.*Radeon HD *35..						1		1
+ATI Radeon HD 3300				.*ATI.*Radeon HD *33..						2		1
+ATI Radeon HD 3400				.*ATI.*Radeon HD *34..						2		1
+ATI Radeon HD 3500				.*ATI.*Radeon HD *35..						2		1
 ATI Radeon HD 3600				.*ATI.*Radeon HD *36..						3		1
 ATI Radeon HD 3700				.*ATI.*Radeon HD *37..						3		1
 ATI Radeon HD 3800				.*ATI.*Radeon HD *38..						3		1
 ATI Radeon HD 4100				.*ATI.*Radeon HD *41..						1		1
 ATI Radeon HD 4200				.*ATI.*Radeon HD *42..						1		1
-ATI Radeon HD 4300				.*ATI.*Radeon HD *43..						1		1
-ATI Radeon HD 4400				.*ATI.*Radeon HD *44..						1		1
+ATI Radeon HD 4300				.*ATI.*Radeon HD *43..						2		1
+ATI Radeon HD 4400				.*ATI.*Radeon HD *44..						2		1
 ATI Radeon HD 4500				.*ATI.*Radeon HD *45..						3		1
 ATI Radeon HD 4600				.*ATI.*Radeon HD *46..						3		1
 ATI Radeon HD 4700				.*ATI.*Radeon HD *47..						3		1
@@ -179,6 +182,7 @@ ATI Radeon HD 6600				.*ATI.*Radeon HD *66..						3		1
 ATI Radeon HD 6700				.*ATI.*Radeon HD *67..						3		1
 ATI Radeon HD 6800				.*ATI.*Radeon HD *68..						3		1
 ATI Radeon HD 6900				.*ATI.*Radeon HD *69..						3		1
+ATI Radeon HD 7300				.*ATI.*Radeon HD *73..						3		1
 ATI Radeon HD 7400				.*ATI.*Radeon HD *74..						3		1
 ATI Radeon HD 7500				.*ATI.*Radeon HD *75..						3		1
 ATI Radeon HD 7600				.*ATI.*Radeon HD *76..						3		1
@@ -298,8 +302,11 @@ Intel Brookdale					.*Intel.*Brookdale.*						0		0
 Intel Cantiga					.*Intel.*Cantiga.*							0		1
 Intel Eaglelake					.*Intel.*Eaglelake.*						0		1
 Intel Graphics Media HD			.*Intel.*Graphics Media.*HD.*				0		1
+Intel HD Graphics 2000			.*Intel.*HD Graphics 2000.*					1		1
+Intel HD Graphics 3000			.*Intel.*HD Graphics 3000.*					2		1
+Intel HD Graphics 4000			.*Intel.*HD Graphics 4000.*					2		1
 Intel HD Graphics				.*Intel.*HD Graphics.*						2		1
-Intel Mobile 4 Series			.*Intel.*Mobile *4 Series.*					0		1
+Intel Mobile 4 Series			.*Intel.*Mobile.* 4 Series.*				0		1
 Intel Media Graphics HD			.*Intel.*Media Graphics HD.*				0		1
 Intel Montara					.*Intel.*Montara.*							0		0
 Intel Pineview					.*Intel.*Pineview.*							0		1
@@ -315,6 +322,8 @@ NVIDIA 310						.*NVIDIA .*GeForce 310.*					3		1
 NVIDIA 315M						.*NVIDIA .*GeForce 315M.*					2		1
 NVIDIA 315						.*NVIDIA .*GeForce 315.*					3		1
 NVIDIA 320M						.*NVIDIA .*GeForce 320M.*					2		1
+NVIDIA 605M						.*NVIDIA .*GeForce 605M.*					2		1
+NVIDIA 610M						.*NVIDIA .*GeForce 610M.*					2		1
 NVIDIA G100M					.*NVIDIA .*100M.*							0		1
 NVIDIA G100						.*NVIDIA .*100.*							0		1
 NVIDIA G102M					.*NVIDIA .*102M.*							0		1
@@ -360,6 +369,10 @@ NVIDIA GT 530M					.*NVIDIA .*GT *530(M)?.*					3		1
 NVIDIA GT 540M					.*NVIDIA .*GT *54.(M)?.*					3		1
 NVIDIA GT 550M					.*NVIDIA .*GT *550(M)?.*					3		1
 NVIDIA GT 555M					.*NVIDIA .*GT *555(M)?.*					3		1
+NVIDIA GT 620M					.*NVIDIA .*GT *620(M)?.*					3		1
+NVIDIA GT 630M					.*NVIDIA .*GT *630(M)?.*					3		1
+NVIDIA GT 635M					.*NVIDIA .*GT *635(M)?.*					3		1
+NVIDIA GT 640M					.*NVIDIA .*GT *640(M)?.*					3		1
 NVIDIA GTS 160M					.*NVIDIA .*GT(S)? *160(M)?.*				2		1
 NVIDIA GTS 240					.*NVIDIA .*GTS *24.*						3		1
 NVIDIA GTS 250					.*NVIDIA .*GTS *25.*						3		1
@@ -389,6 +402,14 @@ NVIDIA GTX 570					.*NVIDIA .*GTX *57.*						3		1
 NVIDIA GTX 580M					.*NVIDIA .*GTX *580M.*						3		1
 NVIDIA GTX 580					.*NVIDIA .*GTX *58.*						3		1
 NVIDIA GTX 590					.*NVIDIA .*GTX *59.*						3		1
+NVIDIA GTX 650					.*NVIDIA .*GTX *65.*						3		1
+NVIDIA GTX 660					.*NVIDIA .*GTX *66.*						3		1
+NVIDIA GTX 670M					.*NVIDIA .*GTX *670M.*						3		1
+NVIDIA GTX 675M					.*NVIDIA .*GTX *675M.*						3		1
+NVIDIA GTX 670					.*NVIDIA .*GTX *67.*						3		1
+NVIDIA GTX 680M					.*NVIDIA .*GTX *680M.*						3		1
+NVIDIA GTX 680					.*NVIDIA .*GTX *68.*						3		1
+NVIDIA GTX 690					.*NVIDIA .*GTX *69.*						3		1
 NVIDIA C51						.*NVIDIA .*C51.*							0		1
 NVIDIA G72						.*NVIDIA .*G72.*							1		1
 NVIDIA G73						.*NVIDIA .*G73.*							1		1
@@ -405,80 +426,80 @@ NVIDIA GeForce 4 MX				.*NVIDIA .*GeForce ?4 MX.*					0		1
 NVIDIA GeForce 4 PCX			.*NVIDIA .*GeForce ?4 PCX.*					0		1
 NVIDIA GeForce 4 Ti				.*NVIDIA .*GeForce ?4 Ti.*					0		1
 NVIDIA GeForce 6100				.*NVIDIA .*GeForce 61.*						0		1
-NVIDIA GeForce 6200				.*NVIDIA.*GeForce 62.*						0		1
-NVIDIA GeForce 6500				.*NVIDIA.*GeForce 65.*						0		1
-NVIDIA GeForce 6600				.*NVIDIA.*GeForce 66.*						1		1
-NVIDIA GeForce 6700				.*NVIDIA.*GeForce 67.*						2		1
-NVIDIA GeForce 6800				.*NVIDIA.*GeForce 68.*						2		1
+NVIDIA GeForce 6200				.*NVIDIA .*GeForce 62.*						0		1
+NVIDIA GeForce 6500				.*NVIDIA .*GeForce 65.*						0		1
+NVIDIA GeForce 6600				.*NVIDIA .*GeForce 66.*						1		1
+NVIDIA GeForce 6700				.*NVIDIA .*GeForce 67.*						2		1
+NVIDIA GeForce 6800				.*NVIDIA .*GeForce 68.*						2		1
 NVIDIA GeForce 7000M			.*NVIDIA.*GeForce 7000M.*					0		1
+NVIDIA GeForce 7000				.*NVIDIA .*GeForce 70.*						0		1
 NVIDIA GeForce 7100M			.*NVIDIA.*GeForce 7100M.*					0		1
-NVIDIA GeForce 7000				.*NVIDIA.*GeForce 70.*						0		1
-NVIDIA GeForce 7100				.*NVIDIA.*GeForce 71.*						0		1
-NVIDIA GeForce 7200				.*NVIDIA.*GeForce 72.*						1		1
-NVIDIA GeForce 7300				.*NVIDIA.*GeForce 73.*						1		1
-NVIDIA GeForce 7500				.*NVIDIA.*GeForce 75.*						1		1
-NVIDIA GeForce 7600				.*NVIDIA.*GeForce 76.*						2		1
-NVIDIA GeForce 7800				.*NVIDIA.*GeForce.*78.*						2		1
-NVIDIA GeForce 7900				.*NVIDIA.*GeForce.*79.*						2		1
-NVIDIA GeForce 8100				.*NVIDIA.*GeForce 81.*						1		1
-NVIDIA GeForce 8200M			.*NVIDIA.*GeForce 8200M.*					1		1
-NVIDIA GeForce 8200				.*NVIDIA.*GeForce 82.*						1		1
-NVIDIA GeForce 8300				.*NVIDIA.*GeForce 83.*						1		1
-NVIDIA GeForce 8400M			.*NVIDIA.*GeForce 8400M.*					1		1
-NVIDIA GeForce 8400				.*NVIDIA.*GeForce 84.*						1		1
-NVIDIA GeForce 8500				.*GeForce 85.*								3		1
-NVIDIA GeForce 8600M			.*NVIDIA.*GeForce.*8600M.*					1		1
-NVIDIA GeForce 8600				.*NVIDIA.*GeForce 86.*						3		1
-NVIDIA GeForce 8700M			.*NVIDIA.*GeForce 8700M.*					3		1
-NVIDIA GeForce 8700				.*NVIDIA.*GeForce 87.*						3		1
-NVIDIA GeForce 8800				.*NVIDIA.*GeForce 88.*						3		1
-NVIDIA GeForce 8800M			.*NVIDIA.*GeForce 8800M.*					3		1
-NVIDIA GeForce 9100M			.*NVIDIA.*GeForce 9100M.*					0		1
-NVIDIA GeForce 9100				.*NVIDIA.*GeForce 91.*						0		1
-NVIDIA GeForce 9200M			.*NVIDIA.*GeForce 9200M.*					1		1
-NVIDIA GeForce 9200				.*NVIDIA.*GeForce 92.*						1		1
-NVIDIA GeForce 9300M			.*NVIDIA.*GeForce 9300M.*					1		1
-NVIDIA GeForce 9300				.*NVIDIA.*GeForce 93.*						1		1
-NVIDIA GeForce 9400M			.*NVIDIA.*GeForce 9400M.*					1		1
-NVIDIA GeForce 9400				.*NVIDIA.*GeForce 94.*						1		1
-NVIDIA GeForce 9500				.*NVIDIA.*GeForce 95.*						2		1
-NVIDIA GeForce 9500M			.*NVIDIA.*GeForce 9500M.*					2		1
-NVIDIA GeForce 9600				.*NVIDIA.*GeForce.*96.*						2		1
-NVIDIA GeForce 9600M			.*NVIDIA.*GeForce 9600M.*					2		1
-NVIDIA GeForce 9700M			.*NVIDIA.*GeForce 9700M.*					2		1
-NVIDIA GeForce 9800M			.*NVIDIA.*GeForce 9800M.*					3		1
-NVIDIA GeForce 9800				.*NVIDIA.*GeForce.*98.*						3		1
-NVIDIA GeForce FX 5100			.*NVIDIA.*GeForce FX 51.*					0		1
-NVIDIA GeForce FX 5200			.*NVIDIA.*GeForce FX 52.*					0		1
-NVIDIA GeForce FX 5300			.*NVIDIA.*GeForce FX 53.*					0		1
-NVIDIA GeForce FX 5500			.*NVIDIA.*GeForce FX 55.*					0		1
-NVIDIA GeForce FX 5600			.*NVIDIA.*GeForce FX 56.*					0		1
-NVIDIA GeForce FX 5700			.*NVIDIA.*GeForce FX 57.*					1		1
-NVIDIA GeForce FX 5800			.*NVIDIA.*GeForce FX 58.*					1		1
-NVIDIA GeForce FX 5900			.*NVIDIA.*GeForce FX 59.*					1		1
-NVIDIA GeForce FX Go5100		.*NVIDIA.*GeForce FX Go51.*					0		1
-NVIDIA GeForce FX Go5200		.*NVIDIA.*GeForce FX Go52.*					0		1
-NVIDIA GeForce FX Go5300		.*NVIDIA.*GeForce FX Go53.*					0		1
-NVIDIA GeForce FX Go5500		.*NVIDIA.*GeForce FX Go55.*					0		1
-NVIDIA GeForce FX Go5600		.*NVIDIA.*GeForce FX Go56.*					0		1
-NVIDIA GeForce FX Go5700		.*NVIDIA.*GeForce FX Go57.*					1		1
-NVIDIA GeForce FX Go5800		.*NVIDIA.*GeForce FX Go58.*					1		1
+NVIDIA GeForce 7100				.*NVIDIA .*GeForce 71.*						0		1
+NVIDIA GeForce 7200				.*NVIDIA .*GeForce 72.*						1		1
+NVIDIA GeForce 7300				.*NVIDIA .*GeForce 73.*						1		1
+NVIDIA GeForce 7500				.*NVIDIA .*GeForce 75.*						1		1
+NVIDIA GeForce 7600				.*NVIDIA .*GeForce 76.*						2		1
+NVIDIA GeForce 7800				.*NVIDIA .*GeForce 78.*						2		1
+NVIDIA GeForce 7900				.*NVIDIA .*GeForce 79.*						2		1
+NVIDIA GeForce 8100				.*NVIDIA .*GeForce 81.*						1		1
+NVIDIA GeForce 8200M			.*NVIDIA .*GeForce 8200M.*					1		1
+NVIDIA GeForce 8200				.*NVIDIA .*GeForce 82.*						1		1
+NVIDIA GeForce 8300				.*NVIDIA .*GeForce 83.*						2		1
+NVIDIA GeForce 8400M			.*NVIDIA .*GeForce 8400M.*					2		1
+NVIDIA GeForce 8400				.*NVIDIA .*GeForce 84.*						2		1
+NVIDIA GeForce 8500				.*NVIDIA .*GeForce 85.*						3		1
+NVIDIA GeForce 8600M			.*NVIDIA .*GeForce 8600M.*					2		1
+NVIDIA GeForce 8600				.*NVIDIA .*GeForce 86.*						3		1
+NVIDIA GeForce 8700M			.*NVIDIA .*GeForce 8700M.*					3		1
+NVIDIA GeForce 8700				.*NVIDIA .*GeForce 87.*						3		1
+NVIDIA GeForce 8800M			.*NVIDIA .*GeForce 8800M.*					3		1
+NVIDIA GeForce 8800				.*NVIDIA .*GeForce 88.*						3		1
+NVIDIA GeForce 9100M			.*NVIDIA .*GeForce 9100M.*					0		1
+NVIDIA GeForce 9100				.*NVIDIA .*GeForce 91.*						0		1
+NVIDIA GeForce 9200M			.*NVIDIA .*GeForce 9200M.*					1		1
+NVIDIA GeForce 9200				.*NVIDIA .*GeForce 92.*						1		1
+NVIDIA GeForce 9300M			.*NVIDIA .*GeForce 9300M.*					2		1
+NVIDIA GeForce 9300				.*NVIDIA .*GeForce 93.*						2		1
+NVIDIA GeForce 9400M			.*NVIDIA .*GeForce 9400M.*					2		1
+NVIDIA GeForce 9400				.*NVIDIA .*GeForce 94.*						2		1
+NVIDIA GeForce 9500M			.*NVIDIA .*GeForce 9500M.*					2		1
+NVIDIA GeForce 9500				.*NVIDIA .*GeForce 95.*						2		1
+NVIDIA GeForce 9600M			.*NVIDIA .*GeForce 9600M.*					3		1
+NVIDIA GeForce 9600				.*NVIDIA .*GeForce 96.*						2		1
+NVIDIA GeForce 9700M			.*NVIDIA .*GeForce 9700M.*					2		1
+NVIDIA GeForce 9800M			.*NVIDIA .*GeForce 9800M.*					3		1
+NVIDIA GeForce 9800				.*NVIDIA .*GeForce 98.*						3		1
+NVIDIA GeForce FX 5100			.*NVIDIA .*GeForce FX 51.*					0		1
+NVIDIA GeForce FX 5200			.*NVIDIA .*GeForce FX 52.*					0		1
+NVIDIA GeForce FX 5300			.*NVIDIA .*GeForce FX 53.*					0		1
+NVIDIA GeForce FX 5500			.*NVIDIA .*GeForce FX 55.*					0		1
+NVIDIA GeForce FX 5600			.*NVIDIA .*GeForce FX 56.*					0		1
+NVIDIA GeForce FX 5700			.*NVIDIA .*GeForce FX 57.*					1		1
+NVIDIA GeForce FX 5800			.*NVIDIA .*GeForce FX 58.*					1		1
+NVIDIA GeForce FX 5900			.*NVIDIA .*GeForce FX 59.*					1		1
+NVIDIA GeForce FX Go5100		.*NVIDIA .*GeForce FX Go51.*				0		1
+NVIDIA GeForce FX Go5200		.*NVIDIA .*GeForce FX Go52.*				0		1
+NVIDIA GeForce FX Go5300		.*NVIDIA .*GeForce FX Go53.*				0		1
+NVIDIA GeForce FX Go5500		.*NVIDIA .*GeForce FX Go55.*				0		1
+NVIDIA GeForce FX Go5600		.*NVIDIA .*GeForce FX Go56.*				0		1
+NVIDIA GeForce FX Go5700		.*NVIDIA .*GeForce FX Go57.*				1		1
+NVIDIA GeForce FX Go5800		.*NVIDIA .*GeForce FX Go58.*				1		1
 NVIDIA GeForce FX Go5900		.*NVIDIA .*GeForce FX Go59.*				1		1
 NVIDIA GeForce FX Go5xxx		.*NVIDIA .*GeForce FX Go.*					0		1
-NVIDIA GeForce Go 6100			.*NVIDIA.*GeForce Go 61.*					0		1
-NVIDIA GeForce Go 6200			.*NVIDIA.*GeForce Go 62.*					0		1
-NVIDIA GeForce Go 6400			.*NVIDIA.*GeForce Go 64.*					1		1
-NVIDIA GeForce Go 6500			.*NVIDIA.*GeForce Go 65.*					1		1
-NVIDIA GeForce Go 6600			.*NVIDIA.*GeForce Go 66.*					1		1
-NVIDIA GeForce Go 6700			.*NVIDIA.*GeForce Go 67.*					1		1
-NVIDIA GeForce Go 6800			.*NVIDIA.*GeForce Go 68.*					1		1
+NVIDIA GeForce Go 6100			.*NVIDIA .*GeForce Go 61.*					0		1
+NVIDIA GeForce Go 6200			.*NVIDIA .*GeForce Go 62.*					0		1
+NVIDIA GeForce Go 6400			.*NVIDIA .*GeForce Go 64.*					1		1
+NVIDIA GeForce Go 6500			.*NVIDIA .*GeForce Go 65.*					1		1
+NVIDIA GeForce Go 6600			.*NVIDIA .*GeForce Go 66.*					1		1
+NVIDIA GeForce Go 6700			.*NVIDIA .*GeForce Go 67.*					1		1
+NVIDIA GeForce Go 6800			.*NVIDIA .*GeForce Go 68.*					1		1
 NVIDIA GeForce Go 7200			.*NVIDIA .*GeForce Go 72.*					1		1
 NVIDIA GeForce Go 7300 LE		.*NVIDIA .*GeForce Go 73.*LE.*				0		1
 NVIDIA GeForce Go 7300			.*NVIDIA .*GeForce Go 73.*					1		1
 NVIDIA GeForce Go 7400			.*NVIDIA .*GeForce Go 74.*					1		1
 NVIDIA GeForce Go 7600			.*NVIDIA .*GeForce Go 76.*					2		1
-NVIDIA GeForce Go 7700			.*NVIDIA.*GeForce Go 77.*					2		1
-NVIDIA GeForce Go 7800			.*NVIDIA.*GeForce Go 78.*					2		1
+NVIDIA GeForce Go 7700			.*NVIDIA .*GeForce Go 77.*					2		1
+NVIDIA GeForce Go 7800			.*NVIDIA .*GeForce Go 78.*					2		1
 NVIDIA GeForce Go 7900			.*NVIDIA .*GeForce Go 79.*					2		1
 NVIDIA D9M						.*NVIDIA .*D9M.*							1		1
 NVIDIA G94						.*NVIDIA .*G94.*							3		1
@@ -524,24 +545,28 @@ NVIDIA Quadro4					.*Quadro4.*									0		1
 NVIDIA Quadro DCC				.*Quadro DCC.*								0		1
 NVIDIA Quadro CX				.*Quadro.*CX.*								3		1
 NVIDIA Quadro FX 770			.*Quadro.*FX *770(M)?.*						2		1
-NVIDIA Quadro FX 880			.*Quadro.*FX *880(M)?.*						2		1
 NVIDIA Quadro FX 1400			.*Quadro.*FX.*1400(M)?.*					1		1
-NVIDIA Quadro FX 1500			.*Quadro.*FX.*1500(M)?.*					1		1
+NVIDIA Quadro FX 1500			.*Quadro.*FX *1500(M)?.*					1		1
 NVIDIA Quadro FX 1600			.*Quadro.*FX *1600(M)?.*					2		1
 NVIDIA Quadro FX 1700			.*Quadro.*FX.*1700(M)?.*					2		1
 NVIDIA Quadro FX 1800			.*Quadro.*FX.*1800(M)?.*					2		1
+NVIDIA Quadro FX 2500M			.*Quadro.*FX *2500M.*						2		1
+NVIDIA Quadro FX 2700M			.*Quadro.*FX *2700M.*						3		1
+NVIDIA Quadro FX 2800M			.*Quadro.*FX *2800M.*						3		1
 NVIDIA Quadro FX 3400			.*Quadro.*FX.*3400(M)?.*					1		1
 NVIDIA Quadro FX 3450			.*Quadro.*FX.*3450(M)?.*					1		1
-NVIDIA Quadro FX 3500			.*Quadro.*FX.*3500(M)?.*					1		1
-NVIDIA Quadro FX 3700			.*Quadro.*FX.*3700(M)?.*					2		1
-NVIDIA Quadro FX 3800			.*Quadro.*FX.*3800(M)?.*					2		1
+NVIDIA Quadro FX 3500			.*Quadro.*FX *3500.*						2		1
+NVIDIA Quadro FX 3600			.*Quadro.*FX *3600.*						3		1
+NVIDIA Quadro FX 3700			.*Quadro.*FX *3700.*						3		1
+NVIDIA Quadro FX 3800			.*Quadro.*FX *3800.*						3		1
 NVIDIA Quadro FX 370			.*Quadro.*FX.*370(M)?.*						2		1
 NVIDIA Quadro FX 380			.*Quadro.*FX.*380(M)?.*						2		1
 NVIDIA Quadro FX 4000			.*Quadro.*FX.*4000(M)?.*					1		1
-NVIDIA Quadro FX 4500			.*Quadro.*FX.*4500(M)?.*					1		1
+NVIDIA Quadro FX 4500			.*Quadro.*FX *45.*							3		1
+NVIDIA Quadro FX 880			.*Quadro.*FX *880(M)?.*						3		1
 NVIDIA Quadro FX 4600			.*Quadro.*FX.*4600(M)?.*					2		1
 NVIDIA Quadro FX 4700			.*Quadro.*FX.*4700(M)?.*					2		1
-NVIDIA Quadro FX 4800			.*Quadro.*FX.*4800(M)?.*					2		1
+NVIDIA Quadro FX 4800			.*NVIDIA .*Quadro *FX *4800.*				3		1
 NVIDIA Quadro FX 470			.*Quadro.*FX.*470(M)?.*						3		1
 NVIDIA Quadro FX 5500			.*Quadro.*FX.*5500(M)?.*					1		1
 NVIDIA Quadro FX 5600			.*Quadro.*FX.*5600(M)?.*					2		1
@@ -561,6 +586,7 @@ NVIDIA Quadro NVS 2100M			.*NVIDIA .*NVS *2100M.*						2		1
 NVIDIA Quadro NVS 3100M			.*NVIDIA .*NVS *3100M.*						2		1
 NVIDIA Quadro NVS 4200M			.*NVIDIA .*NVS *4200M.*						2		1
 NVIDIA Quadro NVS 5100M			.*NVIDIA .*NVS *5100M.*						2		1
+NVIDIA Quadro NVS				.*NVIDIA .*NVS								0		1
 NVIDIA Quadro 2000				.*Quadro.*2000.*							2		1
 NVIDIA Quadro 4000				.*Quadro.*4000.*							2		1
 NVIDIA Quadro 5000				.*Quadro.*5000.*							2		1
