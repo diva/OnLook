@@ -441,6 +441,7 @@ std::ostream& operator<<(std::ostream& os, Indent::print_nt)
   return os;
 }
 
+#ifdef DEBUG_CURLIO
 std::ostream& operator<<(std::ostream& os, print_thread_id_t)
 {
 	if (!AIThreadID::in_main_thread_inline())
@@ -453,6 +454,7 @@ std::ostream& operator<<(std::ostream& os, print_thread_id_t)
 	}
 	return os;
 }
+#endif
 
 std::ostream& operator<<(std::ostream& os, libcwd::buf2str const& b2s)
 {
