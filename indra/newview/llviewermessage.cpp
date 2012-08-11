@@ -3857,24 +3857,16 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			chat.mPosAgent = chatter->getPositionAgent();
 		}
 
-		// truth table:
-		// LINDEN	MUTED	BUSY	OWNED_BY_YOU	TASK		DISPLAY		STORE IN HISTORY
-		// F		T		*		*				*			No			No
-		// F		F		T		F				*			No			Yes
-		// *		F		F		*				*			Yes			Yes
-		// *		F		*		T				*			Yes			Yes
-		// T		*		*		*				F			Yes			Yes
-
 		chat.mMuted = is_muted && !is_linden;
+		bool only_history = visible_in_chat_bubble || (!is_linden && !is_owned_by_me && is_busy);
+#if 0	// Google translate doesn't work anymore
 		if (!chat.mMuted)
 		{
-			bool only_history = visible_in_chat_bubble || (!is_linden && !is_owned_by_me && is_busy);
-#if 0	// Google translate doesn't work anymore
 			check_translate_chat(mesg, chat, only_history);
-#else
-			add_floater_chat(chat, only_history);
-#endif
 		}
+#else
+		add_floater_chat(chat, only_history);
+#endif
 	}
 }
 
