@@ -3,9 +3,9 @@
 	<tab_container label="Chat Avanzado" name="Ascent Chat">
 		<panel label="Chat/MI" name="Chat/IM">
 			<text name="objects_link_text_box">
-				MIs:
+				Mensajes Instantáneos:
 			</text>
-			<check_box label="Usar Pestañas de MI Verticales (Requiere reiniciar)" name="use_vertical_ims_check"/>
+			<check_box label="Usar Pestañas Verticales (Requiere reiniciar)" name="use_vertical_ims_check"/>
 			<check_box label="Anunciar Mensajes Instantáneos Entrantes" tool_tip="Abre una ventana de MI cuando alguien comienza a escribirte un MI. Esto te permite conocer cuando alguien te abre un MI antes de enviartelo." name="quickstart_im_check"/>
 			<check_box label="No enviar '[nombre] está escribiendo...'  en MIs" tool_tip="Tu contacto de MI no verá '______ está escribiendo...' cuando le respondes." name="hide_typing_check"/>
 			<check_box label="Mostrar nombre del grupo en el chat" tool_tip="El nombre del grupo también será mostrado si el MI es de un chat de grupo." name="append_group_name_check"/>
@@ -33,7 +33,7 @@
 			<text name="time_format_text_box">
 				Formato de Hora:
 			</text>
-			<combo_box tool_tip="Muestras las horas o bien en formato 12-23 o 12PM-11PM." name="time_format_combobox">
+			<combo_box tool_tip="Muestras las horas o bien en formato 12-23 o 12PM-11PM." name="time_format_combobox" left="105" width="120">
 				<combo_item name="24hours">
 					Reloj de 24-horas
 				</combo_item>
@@ -45,7 +45,7 @@
 			<text name="date_format_text_box">
 				Formato de Fecha:
 			</text>
-			<combo_box name="date_format_combobox">
+			<combo_box name="date_format_combobox" left="105" width="120">
 				<combo_item name="year_first">
 					YYYY-MM-DD
 				</combo_item>
@@ -61,7 +61,7 @@
 			<check_box label="Responder a no amigos" name="AscentInstantMessageResponseFriends" tool_tip="Envia un mensaje pre-grabado de tu elección cuando alguien te abre un IM. (Escribe tu mensaje en el área de texto  de la Ventana Texto de Respuesta."/>
 			<check_box label="Responder a quienes tienes ignorados" name="AscentInstantMessageResponseMuted" tool_tip="Envia un mensaje pre-grabado de tu elección cuando alguien te abre un IM. (Escribe tu mensaje en el área de texto  de la Ventana Texto de Respuesta."/>
 			<check_box label="Enviar apenas comienzan a escribir" name="AscentInstantMessageShowOnTyping"/>
-			<check_box label="No mostrar MIs contestados automáticamente" name="AscentInstantMessageShowResponded"/>
+			<check_box label="No mostrar MIs autorespondidos" name="AscentInstantMessageShowResponded"/>
 			<check_box label="Responder a todos los mensajes" name="AscentInstantMessageResponseRepeat"/>
 			<check_box label="Enviar un item junto con la respuesta" name="AscentInstantMessageResponseItem" tool_tip="Puedes incluir un item de tu inventario para enviar junto con tu respuesta automática, arrástrandolo desde tu inventario al cuadro inferior"/>
 			<text name="im_give_disp_rect_txt" tool_tip="Arrastra un ítem del Inventario hasta aquí para entregarlo junto con tu respuesta automática">

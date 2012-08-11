@@ -8,7 +8,7 @@
 	</text>
 	<spinner label="Altura del Agua" name="water_height_spin"/>
 	<button label="?" name="water_height_help"/>
-	<spinner label="Límite de elevación del Terreno" label_width="120"name="terrain_raise_spin"/>
+	<spinner label="Límite de elevación del Terreno" label_width="120" name="terrain_raise_spin"/>
 	<button label="?" name="terrain_raise_help"/>
 	<spinner label="Límite de bajada del Terreno" label_width="120" name="terrain_lower_spin"/>
 	<button label="?" name="terrain_lower_help"/>

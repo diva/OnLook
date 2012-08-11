@@ -16,9 +16,10 @@
 		Apretar para Hablar
 	</text>
 	<text name="voice_chat_description">
-		El modo Apretar para Hablar controla cuándo tu voz se transmite. En el modo 'un toque', 
-pulsa y suelta el botón Apretar para Hablar para activar y desactivar su micrófono. Si no se está 
-en el modo 'un toque', el micrófono está activo sólo cuando se mantiene pulsado el botón.
+		El modo Apretar para Hablar controla cuándo tu voz se transmite. En el modo 
+'un toque', pulsa y suelta el botón Apretar para Hablar para activar y desactivar 
+tu micrófono. Si no se está en el modo 'un toque', el micrófono está activo
+sólo cuando se mantiene pulsado el botón.
 	</text>
 	<check_box label="Usar Apretar para Hablar en el modo 'Un Toque'" name="push_to_talk_toggle_check"/>
 	<text name="push_to_talk_label">
@@ -35,7 +36,7 @@ en el modo 'un toque', el micrófono está activo sólo cuando se mantiene pulsa
 	</text>
 	<check_box label="Aceptar llamadas sólo de mis contactos" left_delta="20" name="voice_call_friends_only_check"/>
 	<check_box label="Apagar el micrófono al terminar la llamada por MI" name="auto_disengage_mic_check"/>
-	<button label="Configuración de Dispositivos" left="28" mouse_opaque="true" name="device_settings_btn" width="155"/>
+	<button label="Configuración de Dispositivos" left="28" name="device_settings_btn" width="200"/>
 	<text name="device_settings_text">
 		NOTA: Ejecutar esta configuración te desconectará temporalmente del chat de voz, 
 y los cambios se aplicarán inmediatamente..

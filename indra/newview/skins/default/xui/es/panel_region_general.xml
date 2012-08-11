@@ -54,6 +54,6 @@
 	<button label="Aplicar" name="apply_btn"/>
 	<button label="Teleportar Usuario a su Base..." name="kick_btn"/>
 	<button label="Teleportar a todos los usuarios a su base..." name="kick_all_btn"/>
-	<button label="Enviar mensaje a la Región..."/>
+	<button label="Enviar mensaje a la Región..." name="im_btn"/>
 	<button label="Administrar Telepuerto..." name="manage_telehub_btn"/>
 </panel>

@@ -27,9 +27,10 @@
 	</text_editor>
 	<button label="Reinicar" name="reset_covenant"/>
 	<text name="covenant_help_text">
-		Los cambios en el Convenio serán mostrados en todas las parcelas del Estado.
+		Los cambios en el Convenio serán mostrados en todas las parcelas 
+del Estado.
 	</text>
-	<text name="covenant_instructions">
+	<text bottom_delta="-28" name="covenant_instructions">
 		Arrastra y suelta una nota para cambiar el Convenio para este Estado.
 	</text>
 	<text name="region_section_lbl">

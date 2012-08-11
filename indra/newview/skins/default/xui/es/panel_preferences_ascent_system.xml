@@ -133,7 +133,7 @@
 			<spinner label="Alfa" name="alpha" />
 			<spinner label="Brillo" name="glow"/>
 			<check_box label="Brillo Total" name="EmFBToggle"/>
-			<text follows="top">
+			<text name="shine" follows="top">
 				Brillar
 			</text>
 			<combo_box label="Brillo" name="combobox shininess" tool_tip="Fijar la intensidad de brillo para el objeto">
@@ -150,7 +150,6 @@
 					Alto
 				</combo_item>
 			</combo_box>
-			<check_box name="EmeraldBuildPrefsEmbedItem" label="Colocar un item dentro del nuevo objeto"/>
 			<check_box name="EmeraldBuildPrefsEmbedItem" label="Colocar un item dentro del nuevo objeto"/>
 			<text name="Give inventory">
 				Soltar aquí item de Invent.

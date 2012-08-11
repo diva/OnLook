@@ -2,7 +2,7 @@
 <panel label="Gráficos" name="Display panel">
 	<check_box label="Ejecutar el Visor en Ventana" name="windowed mode" tool_tip="Si está desmarcado, el visor se ejecutará a pantalla completa cuando inicies sesión."/>
 	<text name="WindowSizeLabel">
-		Tamaño de Ventana:
+		Tamaño de la Ventana:
 	</text>
 	<combo_box name="windowsize combo">
 		<combo_item name="800x600">
@@ -73,7 +73,7 @@
 			<text name="QualityText2">
 				Alta Calidad
 			</text>
-			<check_box label="Personalizar" name="CustomSettings"/>
+			<check_box left="385" label="Personalizar" name="CustomSettings"/>
 			<text name="ShadersText">
 				Sombreado:
 			</text>
