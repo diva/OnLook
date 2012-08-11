@@ -809,7 +809,7 @@ class Linux_i686Manifest(LinuxManifest):
             self.end_prefix("lib")
 
 
-            if self.args['extra_libraries'] != None:
+            if 'extra_libraries' in self.args:
                 print self.args['extra_libraries']
                 path_list = self.args['extra_libraries'].split('|')
                 for path in path_list:
@@ -854,7 +854,7 @@ class Linux_x86_64Manifest(LinuxManifest):
             self.path("libopenal.so*")
             self.path("libalut.so*")
 
-            if self.args['extra_libraries'] != None:
+            if 'extra_libraries' in self.args:
                 print self.args['extra_libraries']
                 path_list = self.args['extra_libraries'].split('|')
                 for path in path_list:
