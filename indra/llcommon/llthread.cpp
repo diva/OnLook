@@ -72,7 +72,7 @@ LLAtomicS32	LLThread::sRunning = 0;
 
 LL_COMMON_API void assert_main_thread()
 {
-	if (!AIThreadID::in_main_thread())
+	if (!AIThreadID::in_main_thread_inline())
 	{
 		llerrs << "Illegal execution outside main thread." << llendl;
 	}
@@ -407,12 +407,12 @@ LLMutexBase::LLMutexBase() :
 
 bool LLMutexBase::isSelfLocked() const
 {
-	return mLockingThread.equals_current_thread();
+	return mLockingThread.equals_current_thread_inline();
 }
 
 void LLMutexBase::lock() 
 { 
-	if (mLockingThread.equals_current_thread())
+	if (mLockingThread.equals_current_thread_inline())
 	{ //redundant lock
 		mCount++;
 		return;
@@ -420,12 +420,12 @@ void LLMutexBase::lock()
 
 	apr_thread_mutex_lock(mAPRMutexp);
 	
-	mLockingThread.reset();
+	mLockingThread.reset_inline();
 }
 
 bool LLMutexBase::tryLock()
 {
-	if (mLockingThread.equals_current_thread())
+	if (mLockingThread.equals_current_thread_inline())
 	{ //redundant lock
 		mCount++;
 		return true;
@@ -433,7 +433,7 @@ bool LLMutexBase::tryLock()
 	bool success = !APR_STATUS_IS_EBUSY(apr_thread_mutex_trylock(mAPRMutexp));
 	if (success)
 	{
-		mLockingThread.reset();
+		mLockingThread.reset_inline();
 	}
 	return success;
 }
@@ -441,7 +441,7 @@ bool LLMutexBase::tryLock()
 // non-blocking, but does do a lock/unlock so not free
 bool LLMutexBase::isLocked() const
 {
-	if (mLockingThread.equals_current_thread())
+	if (mLockingThread.equals_current_thread_inline())
 	  return false;		// A call to lock() won't block.
 	if (APR_STATUS_IS_EBUSY(apr_thread_mutex_trylock(mAPRMutexp)))
 	  return true;

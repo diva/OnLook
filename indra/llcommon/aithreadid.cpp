@@ -27,7 +27,6 @@
  *   - Initial version, written by Aleric Inglewood @ SL
  */
 
-#include "sys.h"
 #include <iostream>
 #include <iomanip>
 #include "aithreadid.h"
@@ -36,7 +35,7 @@ AIThreadID const AIThreadID::sNone(AIThreadID::none);
 apr_os_thread_t AIThreadID::sMainThreadID;
 apr_os_thread_t const AIThreadID::undefinedID = (apr_os_thread_t)-1;
 #ifndef LL_DARWIN
-apr_os_thread_t CWD_TLS AIThreadID::lCurrentThread;
+apr_os_thread_t ll_thread_local AIThreadID::lCurrentThread;
 #endif
 
 void AIThreadID::set_main_thread_id(void)
@@ -51,21 +50,27 @@ void AIThreadID::set_current_thread_id(void)
 #endif
 }
 
+void AIThreadID::reset(void)
+{
+	mID = lCurrentThread;
+}
+
+bool AIThreadID::equals_current_thread(void) const
+{
+	return apr_os_thread_equal(mID, lCurrentThread);
+}
+
+bool AIThreadID::in_main_thread(void)
+{
+	return apr_os_thread_equal(lCurrentThread, sMainThreadID);
+}
+
+apr_os_thread_t AIThreadID::getCurrentThread(void)
+{
+	return lCurrentThread;
+}
+
 std::ostream& operator<<(std::ostream& os, AIThreadID const& id)
 {
 	return os << id.mID;
 }
-
-std::ostream& operator<<(std::ostream& os, AIThreadID::dout_print_t)
-{
-	if (!AIThreadID::in_main_thread())
-	{
-#ifdef LL_DARWIN
-		os << std::hex << (size_t)apr_os_thread_current() << std::dec << ' ';
-#else
-		os << std::hex << (size_t)AIThreadID::lCurrentThread << std::dec << ' ';
-#endif
-	}
-	return os;
-}
-

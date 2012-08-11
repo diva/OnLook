@@ -29,14 +29,13 @@
 
 #ifdef DEBUG_CURLIO
 
-#include "aithreadid.h"
-
 // If CWDEBUG is not defined, but DEBUG_CURLIO is, then replace
 // some of the cwd macro's with something that generates viewer
 // specific debug output. Note that this generates a LOT of
 // output and should not normally be defined.
 
 #include <string>
+#include "llpreprocessor.h"
 
 namespace debug {
 namespace libcwd {
@@ -49,6 +48,7 @@ struct buf2str {
 
 } // namespace libcwd
 
+enum print_thread_id_t { print_thread_id };
 inline void init() { }
 struct libcwd_do_type {
  void on() const { }
@@ -56,14 +56,15 @@ struct libcwd_do_type {
 extern LL_COMMON_API libcwd_do_type const libcw_do;
 struct Indent {
   int M_indent;
-  static LL_COMMON_API_TLS int S_indentation;
+  static ll_thread_local int S_indentation;
   enum LL_COMMON_API print_nt { print };
-  LL_COMMON_API Indent(int indent) : M_indent(indent) { S_indentation += M_indent; }
-  LL_COMMON_API ~Indent() { S_indentation -= M_indent; }
+  LL_COMMON_API Indent(int indent);
+  LL_COMMON_API ~Indent();
 };
 
 extern LL_COMMON_API std::ostream& operator<<(std::ostream& os, libcwd::buf2str const& b2s);
 extern LL_COMMON_API std::ostream& operator<<(std::ostream& os, Indent::print_nt);
+extern LL_COMMON_API std::ostream& operator<<(std::ostream& os, print_thread_id_t);
 
 namespace dc {
 
@@ -87,13 +88,13 @@ extern LL_COMMON_API fake_channel const notice;
 } // namespace debug
 
 #define Debug(x) do { using namespace debug; x; } while(0)
-#define Dout(a, b) do { using namespace debug;  if ((a).mOn) { llinfos_nf << AIThreadID::DoutPrint << (a).mLabel << ": " << Indent::print << b << llendl; } } while(0)
+#define Dout(a, b) do { using namespace debug;  if ((a).mOn) { llinfos_nf << print_thread_id << (a).mLabel << ": " << Indent::print << b << llendl; } } while(0)
 #define DoutEntering(a, b) \
   int __slviewer_debug_indentation = 2; \
   { \
 	using namespace debug; \
 	if ((a).mOn) \
-	  llinfos_nf << AIThreadID::DoutPrint << (a).mLabel << ": " << Indent::print << "Entering " << b << llendl; \
+	  llinfos_nf << print_thread_id << (a).mLabel << ": " << Indent::print << "Entering " << b << llendl; \
     else \
 	  __slviewer_debug_indentation = 0; \
   } \

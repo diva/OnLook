@@ -75,7 +75,7 @@ void LLRefCount::ref() const
 		}
 
 		mMutex.lock() ;
-		mLockedThreadID.reset();
+		mLockedThreadID.reset_inline();
 
 		mRef++; 
 
@@ -96,7 +96,7 @@ S32 LLRefCount::unref() const
 		}
 
 		mMutex.lock() ;
-		mLockedThreadID.reset();
+		mLockedThreadID.reset_inline();
 		
 		llassert(mRef >= 1);
 		if (0 == --mRef) 

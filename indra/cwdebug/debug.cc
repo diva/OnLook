@@ -416,18 +416,42 @@ void cwdebug_backtrace(int n)
 #elif defined(DEBUG_CURLIO)
 
 #include "debug.h"
+#include "aithreadid.h"
 
 namespace debug
 {
 
 libcwd_do_type const libcw_do;
-CWD_TLS int Indent::S_indentation;
+ll_thread_local int Indent::S_indentation;
+
+Indent::Indent(int indent) : M_indent(indent)
+{
+	S_indentation += M_indent;
+}
+
+Indent::~Indent()
+{
+	S_indentation -= M_indent;
+}
 
 std::ostream& operator<<(std::ostream& os, Indent::print_nt)
 {
   if (Indent::S_indentation)
 	os << std::string(Indent::S_indentation, ' ');
   return os;
+}
+
+std::ostream& operator<<(std::ostream& os, print_thread_id_t)
+{
+	if (!AIThreadID::in_main_thread_inline())
+	{
+#ifdef LL_DARWIN
+		os << std::hex << (size_t)apr_os_thread_current() << std::dec << ' ';
+#else
+		os << std::hex << (size_t)AIThreadID::getCurrentThread_inline() << std::dec << ' ';
+#endif
+	}
+	return os;
 }
 
 std::ostream& operator<<(std::ostream& os, libcwd::buf2str const& b2s)

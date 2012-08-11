@@ -34,7 +34,6 @@
 #include <apr_portable.h>	// apr_os_thread_t, apr_os_thread_current(), apr_os_thread_equal().
 #include <iosfwd>			// std::ostream.
 #include "llpreprocessor.h"	// LL_COMMON_API, LL_COMMON_API_TLS
-#include "llerror.h"
 
 // Lightweight wrapper around apr_os_thread_t.
 // This class introduces no extra assembly code after optimization; it's only intend is to provide type-safety.
@@ -45,12 +44,11 @@ private:
 	static LL_COMMON_API apr_os_thread_t sMainThreadID;
 	static LL_COMMON_API apr_os_thread_t const undefinedID;
 #ifndef LL_DARWIN
-	static LL_COMMON_API_TLS apr_os_thread_t lCurrentThread;
+	static ll_thread_local apr_os_thread_t lCurrentThread;
 #endif
 public:
 	static LL_COMMON_API AIThreadID const sNone;
 	enum undefined_thread_t { none };
-	enum dout_print_t { DoutPrint };
 
 public:
 	AIThreadID(void) : mID(apr_os_thread_current()) { }
@@ -62,7 +60,6 @@ public:
 	friend LL_COMMON_API bool operator==(AIThreadID const& id1, AIThreadID const& id2) { return apr_os_thread_equal(id1.mID, id2.mID); }
 	friend LL_COMMON_API bool operator!=(AIThreadID const& id1, AIThreadID const& id2) { return !apr_os_thread_equal(id1.mID, id2.mID); }
 	friend LL_COMMON_API std::ostream& operator<<(std::ostream& os, AIThreadID const& id);
-	friend LL_COMMON_API std::ostream& operator<<(std::ostream& os, dout_print_t);
 	static void set_main_thread_id(void);					// Called once to set sMainThreadID.
 	static void set_current_thread_id(void);				// Called once for every thread to set lCurrentThread.
 #ifdef LL_DARWIN
@@ -70,9 +67,15 @@ public:
 	bool equals_current_thread(void) const { return apr_os_thread_equal(mID, apr_os_thread_current()); }
 	static bool in_main_thread(void) { return apr_os_thread_equal(apr_os_thread_current(), sMainThreadID); }
 #else
-	void reset(void) { mID = lCurrentThread; }
-	bool equals_current_thread(void) const { return apr_os_thread_equal(mID, lCurrentThread); }
-	static bool in_main_thread(void) { return apr_os_thread_equal(lCurrentThread, sMainThreadID); }
+	LL_COMMON_API void reset(void);
+	LL_COMMON_API bool equals_current_thread(void) const;
+	LL_COMMON_API static bool in_main_thread(void);
+	LL_COMMON_API static apr_os_thread_t getCurrentThread(void);
+	// The *_inline variants cannot be exported because they access a thread-local member.
+	void reset_inline(void) { mID = lCurrentThread; }
+	bool equals_current_thread_inline(void) const { return apr_os_thread_equal(mID, lCurrentThread); }
+	static bool in_main_thread_inline(void) { return apr_os_thread_equal(lCurrentThread, sMainThreadID); }
+	static apr_os_thread_t getCurrentThread_inline(void) { return lCurrentThread; }
 #endif
 };
 
