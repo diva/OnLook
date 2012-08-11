@@ -854,6 +854,16 @@ class Linux_x86_64Manifest(LinuxManifest):
             self.path("libopenal.so*")
             self.path("libalut.so*")
 
+            if self.args['extra_libraries'] != None:
+                print self.args['extra_libraries']
+                path_list = self.args['extra_libraries'].split('|')
+                for path in path_list:
+                    path = os.path.realpath(path)
+                    path_pair = path.rsplit('/', 1)
+                    if self.prefix(src=path_pair[0], dst="lib64"):
+                        self.path(path_pair[1])
+                        self.end_prefix()
+
             self.end_prefix("lib64")
 
             # Vivox runtimes and libs

@@ -457,7 +457,7 @@ public:
 			mDataEnd = NULL;
 		}
 
-		notifyRemoval(data);
+		this->notifyRemoval(data);
 		checkAlive();
 	}
 

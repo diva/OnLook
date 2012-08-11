@@ -199,8 +199,9 @@ void LLCurl::Responder::completedHeader(U32 status, const std::string& reason, c
 
 }
 
-namespace boost
-{
+// DONT UNCOMMENT THIS IT BREAKS GCC47
+//namespace boost
+//{
 	void intrusive_ptr_add_ref(LLCurl::Responder* p)
 	{
 		++p->mReferenceCount;
@@ -213,7 +214,7 @@ namespace boost
 			delete p;
 		}
 	}
-};
+//};
 
 
 //////////////////////////////////////////////////////////////////////////////
