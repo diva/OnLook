@@ -35,6 +35,7 @@
 #include "llfloaterreporter.h"
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llfloaterregioninfo.h"
 #include "llviewerregion.h"
 #include "lltracker.h"
 #include "llviewerstats.h"
