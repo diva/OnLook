@@ -394,7 +394,6 @@ LLPanelObject::LLPanelObject(const std::string& name)
 	mIsPhysical(FALSE),
 	mIsTemporary(FALSE),
 	mIsPhantom(FALSE),
-	mCastShadows(TRUE),
 	mSelectedType(MI_BOX)
 {
 }
@@ -478,10 +477,10 @@ void LLPanelObject::getState( )
 	}
 
 	// can move or rotate only linked group with move permissions, or sub-object with move and modify perms
-	BOOL enable_move	= objectp->permMove() && ((!objectp->isAttachment() && objectp->permModify()) || !gSavedSettings.getBOOL("EditLinkedParts"));
-	BOOL enable_scale	= objectp->permMove() && objectp->permModify();
-	BOOL enable_rotate	= objectp->permMove() && ((objectp->permModify() && !objectp->isAttachment()) || !gSavedSettings.getBOOL("EditLinkedParts"));
-	BOOL enable_link	= objectp->permMove() && ((!objectp->isAttachment() && objectp->permModify()) || !gSavedSettings.getBOOL("EditLinkedParts"));
+	BOOL enable_move	= objectp->permMove() && !objectp->isPermanentEnforced() && ((root_objectp == NULL) || !root_objectp->isPermanentEnforced()) && !objectp->isAttachment() && (objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
+	BOOL enable_scale	= objectp->permMove() && !objectp->isPermanentEnforced() && ((root_objectp == NULL) || !root_objectp->isPermanentEnforced()) && objectp->permModify();
+	BOOL enable_rotate	= objectp->permMove() && !objectp->isPermanentEnforced() && ((root_objectp == NULL) || !root_objectp->isPermanentEnforced()) && ( (objectp->permModify() && !objectp->isAttachment()) || !gSavedSettings.getBOOL("EditLinkedParts"));
+
 	childSetEnabled("build_math_constants",true);
 	S32 selected_count = LLSelectMgr::getInstance()->getSelection()->getObjectCount();
 	BOOL single_volume = (LLSelectMgr::getInstance()->selectionAllPCode( LL_PCODE_VOLUME ))
@@ -528,8 +527,8 @@ void LLPanelObject::getState( )
 	mCtrlPosX->setEnabled(enable_move);
 	mCtrlPosY->setEnabled(enable_move);
 	mCtrlPosZ->setEnabled(enable_move);
-	mBtnLinkObj->setEnabled((enable_link && !single_volume));
-	mBtnUnlinkObj->setEnabled((enable_link && (selected_count > 1)));
+	mBtnLinkObj->setEnabled((enable_move && !single_volume));
+	mBtnUnlinkObj->setEnabled((enable_move && (selected_count > 1)));
 	mBtnCopyPos->setEnabled(enable_move);
 	mBtnPastePos->setEnabled(enable_move);
 	mBtnPastePosClip->setEnabled(enable_move);
@@ -624,9 +623,15 @@ void LLPanelObject::getState( )
 		childSetVisible("select_single", TRUE);
 		childSetEnabled("select_single", TRUE);
 	}
+	BOOL is_flexible = volobjp && volobjp->isFlexible();
+	BOOL is_permanent = root_objectp->flagObjectPermanent();
+	BOOL is_permanent_enforced = root_objectp->isPermanentEnforced();
+	BOOL is_character = root_objectp->flagCharacter();
+	llassert(!is_permanent || !is_character); // should never have a permanent object that is also a character
+
 	// Lock checkbox - only modifiable if you own the object.
 	BOOL self_owned = (gAgent.getID() == owner_id);
-	mCheckLock->setEnabled( roots_selected > 0 && self_owned );
+	mCheckLock->setEnabled( roots_selected > 0 && self_owned && !is_permanent_enforced);
 
 	// More lock and debit checkbox - get the values
 	BOOL valid;
@@ -656,29 +661,27 @@ void LLPanelObject::getState( )
 		}
 	}
 
-	BOOL is_flexible = volobjp && volobjp->isFlexible();
-
 	// Physics checkbox
-	mIsPhysical = root_objectp->usePhysics();
+	mIsPhysical = root_objectp->flagUsePhysics();
+	llassert(!is_permanent || !mIsPhysical); // should never have a permanent object that is also physical
+
 	mCheckPhysics->set( mIsPhysical );
 	mCheckPhysics->setEnabled( roots_selected>0 
 								&& (editable || gAgent.isGodlike()) 
-								&& !is_flexible);
+								&& !is_flexible && !is_permanent);
 
 	mIsTemporary = root_objectp->flagTemporaryOnRez();
+	llassert(!is_permanent || !mIsTemporary); // should never has a permanent object that is also temporary
+
 	mCheckTemporary->set( mIsTemporary );
-	mCheckTemporary->setEnabled( roots_selected>0 && editable );
+	mCheckTemporary->setEnabled( roots_selected>0 && editable && !is_permanent);
 
 	mIsPhantom = root_objectp->flagPhantom();
+	BOOL is_volume_detect = root_objectp->flagVolumeDetect();
+	llassert(!is_character || !mIsPhantom); // should never have a character that is also a phantom
 	mCheckPhantom->set( mIsPhantom );
-	mCheckPhantom->setEnabled( roots_selected>0 && editable && !is_flexible );
+	mCheckPhantom->setEnabled( roots_selected>0 && editable && !is_flexible && !is_permanent_enforced && !is_character && !is_volume_detect);
 
-#if 0 // 1.9.2
-	mCastShadows = root_objectp->flagCastShadows();
-	mCheckCastShadows->set( mCastShadows );
-	mCheckCastShadows->setEnabled( roots_selected==1 && editable );
-#endif
-	
 	// Update material part
 	// slightly inefficient - materials are unique per object, not per TE
 	U8 material_code = 0;
@@ -731,6 +734,7 @@ void LLPanelObject::getState( )
 	BOOL hole_enabled = FALSE;
 	F32 scale_x=1.f, scale_y=1.f;
 	BOOL isMesh = FALSE;
+	
 	if( !objectp || !objectp->getVolume() || !editable || !single_volume)
 	{
 		// Clear out all geometry fields.
@@ -759,11 +763,10 @@ void LLPanelObject::getState( )
 	{
 		// Only allowed to change these parameters for objects
 		// that you have permissions on AND are not attachments.
-		enabled = root_objectp->permModify();
-
-		const LLVolumeParams &volume_params = objectp->getVolume()->getParams();
-
+		enabled = root_objectp->permModify() && !root_objectp->isPermanentEnforced();
+		
 		// Volume type
+		const LLVolumeParams &volume_params = objectp->getVolume()->getParams();
 		U8 path = volume_params.getPathParams().getCurveType();
 		U8 profile_and_hole = volume_params.getProfileParams().getCurveType();
 		U8 profile	= profile_and_hole & LL_PCODE_PROFILE_MASK;
@@ -1522,22 +1525,6 @@ void LLPanelObject::sendIsPhantom()
 	else
 	{
 		llinfos << "update phantom not changed" << llendl;
-	}
-}
-
-void LLPanelObject::sendCastShadows()
-{
-	BOOL value = mCheckCastShadows->get();
-	if( mCastShadows != value )
-	{
-		LLSelectMgr::getInstance()->selectionUpdateCastShadows(value);
-		mCastShadows = value;
-
-		llinfos << "update cast shadows sent" << llendl;
-	}
-	else
-	{
-		llinfos << "update cast shadows not changed" << llendl;
 	}
 }
 
@@ -2369,10 +2356,6 @@ void LLPanelObject::clearCtrls()
 	mCheckTemporary	->setEnabled( FALSE );
 	mCheckPhantom	->set(FALSE);
 	mCheckPhantom	->setEnabled( FALSE );
-#if 0 // 1.9.2
-	mCheckCastShadows->set(FALSE);
-	mCheckCastShadows->setEnabled( FALSE );
-#endif
 	mComboMaterial	->setEnabled( FALSE );
 	mLabelMaterial	->setEnabled( FALSE );
 	// Disable text labels
@@ -2467,14 +2450,6 @@ void LLPanelObject::onCommitPhantom( LLUICtrl* ctrl, void* userdata )
 	LLPanelObject* self = (LLPanelObject*) userdata;
 	self->sendIsPhantom();
 }
-
-// static
-void LLPanelObject::onCommitCastShadows( LLUICtrl* ctrl, void* userdata )
-{
-	LLPanelObject* self = (LLPanelObject*) userdata;
-	self->sendCastShadows();
-}
-
 
 // static
 void LLPanelObject::onSelectSculpt(LLUICtrl* ctrl, void* userdata)

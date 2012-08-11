@@ -14,8 +14,8 @@
 				     name="padding" use_bounding_rect="true" user_resize="false" width="420" />
 				<layout_panel auto_resize="false" bottom="0" follows="left|bottom|right|top" height="20"
 				     left="0" min_height="20" min_width="100" mouse_opaque="false"
-				     name="state_buttons" use_bounding_rect="true" user_resize="false"
-				     width="420">
+				     name="state_management_buttons_container" use_bounding_rect="true" user_resize="false"
+				     width="799">
 					<button bottom="1" follows="left|bottom" font="SansSerif" halign="center" height="20"
 					     label="New IM" label_selected="New IM" left="0"
 					     name="New IM" scale_image="true"
@@ -25,7 +25,7 @@
 					     label="Set Not Busy" label_selected="Set Not Busy" left="114"
 					     name="Set Not Busy" scale_image="true"
 					     tool_tip="Chat and IM is hidden for you. Click here to set yourself not busy."
-					     width="102" />
+					     width="112" />
 					<button bottom="1" follows="left|bottom" font="SansSerif" halign="center" height="20"
 					     label="Flycam" label_selected="Flycam" left="229" name="Flycam" scale_image="true"
 					     tool_tip="Your camera is under joystick control, click here to release it."

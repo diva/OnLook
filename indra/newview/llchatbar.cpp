@@ -165,6 +165,9 @@ BOOL LLChatBar::postBuild()
 		mInputEditor->setEnableLineHistory(TRUE);
 	}
 
+	mHistoryBtn.connect(this,"History");
+	mSayBtn.connect(this,"Say");
+
 	mIsBuilt = TRUE;
 
 	return TRUE;
@@ -228,9 +231,9 @@ void LLChatBar::refresh()
 		gAgent.stopTyping();
 	}
 
-	childSetValue("History", LLFloaterChat::instanceVisible(LLSD()));
+	mHistoryBtn->setValue(LLFloaterChat::instanceVisible(LLSD()));
 
-	childSetEnabled("Say", mInputEditor->getText().size() > 0);
+	mSayBtn->setEnabled(mInputEditor->getText().size() > 0);
 	//childSetEnabled("Shout", mInputEditor->getText().size() > 0); createDummyWidget Making Dummy -HgB
 
 }

@@ -4,7 +4,7 @@
 		<layout_panel min_width="410" name="main_panel" width="410">
 			<layout_stack name="chatbar_and_buttons" right="410">
 				<layout_panel name="padding" width="410"/>
-				<layout_panel name="state_buttons" width="410">
+				<layout_panel name="state_management_buttons_container" width="410">
 					
 					<button label="Disponible" label_selected="Disponible" name="Set Not Busy" tool_tip="Le chat et les IM ne s&apos;affichent pas. Cliquez ici pour ne plus être en mode occupé(e)."/>
 					<button label="Flycam" label_selected="Flycam" name="Flycam" tool_tip="Votre caméra est contrôlée par le joystick, cliquez ici pour la libérer."/>

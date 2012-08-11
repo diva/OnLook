@@ -170,6 +170,7 @@ LLGLSLShader			gGlowExtractProgram(LLViewerShaderMgr::SHADER_EFFECT);		//Not in 
 LLGLSLShader			gPostColorFilterProgram(LLViewerShaderMgr::SHADER_EFFECT);	//Not in mShaderList
 LLGLSLShader			gPostNightVisionProgram(LLViewerShaderMgr::SHADER_EFFECT);	//Not in mShaderList
 LLGLSLShader			gPostGaussianBlurProgram(LLViewerShaderMgr::SHADER_EFFECT);	//Not in mShaderList
+LLGLSLShader			gPostPosterizeProgram(LLViewerShaderMgr::SHADER_EFFECT);	//Not in mShaderList
  
  // Deferred rendering shaders
 LLGLSLShader			gDeferredImpostorProgram(LLViewerShaderMgr::SHADER_DEFERRED);
@@ -956,6 +957,23 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 		{
 			gPostGaussianBlurProgram.bind();
 			gPostGaussianBlurProgram.uniform1i("tex0", 0);
+		}
+	}
+
+	{
+		vector<string> shaderUniforms;
+		shaderUniforms.reserve(1);
+		shaderUniforms.push_back("layerCount");
+
+		gPostPosterizeProgram.mName = "Posterize Shader (Post)";
+		gPostPosterizeProgram.mShaderFiles.clear();
+		gPostPosterizeProgram.mShaderFiles.push_back(make_pair("effects/PosterizeF.glsl", GL_FRAGMENT_SHADER_ARB));
+		gPostPosterizeProgram.mShaderFiles.push_back(make_pair("interface/onetexturenocolorV.glsl", GL_VERTEX_SHADER_ARB));
+		gPostPosterizeProgram.mShaderLevel = mVertexShaderLevel[SHADER_EFFECT];
+		if(gPostPosterizeProgram.createShader(NULL, &shaderUniforms))
+		{
+			gPostPosterizeProgram.bind();
+			gPostPosterizeProgram.uniform1i("tex0", 0);
 		}
 	}
 	#endif

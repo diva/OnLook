@@ -200,7 +200,6 @@
 #include "llnamelistctrl.h"
 #include "llnamebox.h"
 #include "llnameeditor.h"
-#include "llpostprocess.h"
 #include "llwlparammanager.h"
 #include "llwaterparammanager.h"
 #include "llagentlanguage.h"
@@ -220,6 +219,8 @@
 #include "scriptcounter.h"
 #include "shfloatermediaticker.h"
 // </edit>
+
+#include "llpathfindingmanager.h"
 
 #include "llavatarnamecache.h"
 #include "lgghunspell_wrapper.h"
@@ -1094,12 +1095,14 @@ bool idle_startup()
 			// END TODO
 			LLPanelLogin::close();
 		}
-		
+
 		//For HTML parsing in text boxes.
 		LLTextEditor::setLinkColor( gSavedSettings.getColor4("HTMLLinkColor") );
 
 		// Load URL History File
 		LLURLHistory::loadFile("url_history.xml");
+		// Load media plugin cookies
+		LLViewerMedia::loadCookieFile();
 				
 		//-------------------------------------------------
 		// Handle startup progress screen
@@ -2740,6 +2743,10 @@ bool idle_startup()
 		// reset timers now that we are running "logged in" logic
 		LLFastTimer::reset();
 		display_startup();
+
+		llassert(LLPathfindingManager::getInstance() != NULL);
+		LLPathfindingManager::getInstance()->initSystem();
+
 		return TRUE;
 	}
 
@@ -4304,7 +4311,6 @@ bool process_login_success_response(std::string& password)
 #endif
 	}
 
-	
 	// Override grid info with anything sent in the login response
 	std::string tmp = response["gridname"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setGridName(tmp);
@@ -4348,6 +4354,14 @@ bool process_login_success_response(std::string& password)
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setVoiceConnector(tmp);
 	gHippoGridManager->saveFile();
 	gHippoLimits->setLimits();
+
+	// Start the process of fetching the OpenID session cookie for this user login
+	std::string openid_url = response["openid_url"];
+	if(!openid_url.empty())
+	{
+		std::string openid_token = response["openid_token"];
+		LLViewerMedia::openIDSetup(openid_url, openid_token);
+	}
 
 	gIMMgr->loadIgnoreGroup();
 

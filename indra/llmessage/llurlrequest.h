@@ -40,7 +40,6 @@
 #include "llerror.h"
 #include "llcurl.h"
 
-
 extern const std::string CONTEXT_REQUEST;
 extern const std::string CONTEXT_DEST_URI_SD_LABEL;
 extern const std::string CONTEXT_RESPONSE;
@@ -143,9 +142,8 @@ public:
 	 * Set whether request will check that remote server
 	 * certificates are signed by a known root CA when using HTTPS.
 	 */
-	void setSSLVerifyCallback(SSLCertVerifyCallback callback, void * param);
+	void checkRootCertificate(bool check);
 
-	
 	/**
 	 * @brief Return at most size bytes of body.
 	 *
@@ -190,14 +188,11 @@ public:
 	 */
 	void allowCookies();
 
-	/*virtual*/ bool isValid() ;
-
 public:
 	/** 
 	 * @brief Give this pipe a chance to handle a generated error
 	 */
 	virtual EStatus handleError(EStatus status, LLPumpIO* pump);
-
 	
 protected:
 	/** 
@@ -223,11 +218,9 @@ protected:
 	ERequestAction mAction;
 	LLURLRequestDetail* mDetail;
 	LLIOPipe::ptr_t mCompletionCallback;
-	 S32 mRequestTransferedBytes;
-	 S32 mResponseTransferedBytes;
+	S32 mRequestTransferedBytes;
+	S32 mResponseTransferedBytes;
 
-	static CURLcode _sslCtxCallback(CURL * curl, void *sslctx, void *param);
-	
 private:
 	/** 
 	 * @brief Initialize the object. Called during construction.

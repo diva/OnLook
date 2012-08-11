@@ -115,17 +115,8 @@ LLFloaterPostProcess* LLFloaterPostProcess::instance()
 
 void LLFloaterPostProcess::onControlChanged(LLUICtrl* ctrl, void* userData)
 {
-	char const *VariableName = (char const *)userData;
-	char buf[256];
-	S32 elem=0;
-	if(sscanf(VariableName,"%255[^[][%d]", buf, &elem) == 2)
-	{
-		LLPostProcess::getInstance()->tweaks[(const char*)buf][elem] = ctrl->getValue();
-	}
-	else
-	{
-		LLPostProcess::getInstance()->tweaks[VariableName] = ctrl->getValue();
-	}
+	LLSD v = ctrl->getValue();
+	LLPostProcess::getInstance()->setSelectedEffectValue((char const *)userData, v);
 }
 
 void LLFloaterPostProcess::onLoadEffect(void* userData)
@@ -145,7 +136,7 @@ void LLFloaterPostProcess::onSaveEffect(void* userData)
 
 	std::string effectName(editBox->getValue().asString());
 
-	if (LLPostProcess::getInstance()->mAllEffects.has(effectName))
+	if (LLPostProcess::getInstance()->getAllEffectInfo().has(effectName))
 	{
 		LLSD payload;
 		payload["effect_name"] = effectName;
@@ -153,7 +144,7 @@ void LLFloaterPostProcess::onSaveEffect(void* userData)
 	}
 	else
 	{
-		LLPostProcess::getInstance()->saveEffect(effectName);
+		LLPostProcess::getInstance()->saveEffectAs(effectName);
 		sPostProcess->syncMenu();
 	}
 }
@@ -175,7 +166,7 @@ bool LLFloaterPostProcess::saveAlertCallback(const LLSD& notification, const LLS
 	// if they choose save, do it.  Otherwise, don't do anything
 	if (option == 0)
 	{
-		LLPostProcess::getInstance()->saveEffect(notification["payload"]["effect_name"].asString());
+		LLPostProcess::getInstance()->saveEffectAs(notification["payload"]["effect_name"].asString());
 
 		sPostProcess->syncMenu();
 	}
@@ -209,17 +200,17 @@ void LLFloaterPostProcess::syncMenu()
 	comboBox->removeall();
 
 	LLSD::map_const_iterator currEffect;
-	for(currEffect = LLPostProcess::getInstance()->mAllEffects.beginMap();
-		currEffect != LLPostProcess::getInstance()->mAllEffects.endMap();
+	for(currEffect = LLPostProcess::getInstance()->getAllEffectInfo().beginMap();
+		currEffect != LLPostProcess::getInstance()->getAllEffectInfo().endMap();
 		++currEffect) 
 	{
 		comboBox->add(currEffect->first);
 	}
 
 	// set the current effect as selected.
-	comboBox->selectByValue(LLPostProcess::getInstance()->getSelectedEffect());
+	comboBox->selectByValue(LLPostProcess::getInstance()->getSelectedEffectName());
 
-	LLSD &tweaks = LLPostProcess::getInstance()->tweaks;
+	const LLSD &tweaks = LLPostProcess::getInstance()->getSelectedEffectInfo();
 	//Iterate down all uniforms handled by post-process shaders. Update any linked ui elements.
 	for (LLSD::map_const_iterator it = tweaks.beginMap(); it != tweaks.endMap(); ++it)
 	{

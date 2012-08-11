@@ -2,31 +2,25 @@
  * @file llphysicsmotion.cpp
  * @brief Implementation of LLPhysicsMotion class.
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2011&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2011, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -74,6 +68,19 @@ inline F64 llsgn(const F64 a)
 class LLPhysicsMotion
 {
 public:
+	typedef enum
+	{
+		SMOOTHING = 0,
+		MASS,
+		GRAVITY,
+		SPRING,
+		GAIN,
+		DAMPING,
+		DRAG,
+		MAX_EFFECT,
+		NUM_PARAMS
+	} eParamName;
+
         /*
           param_driver_name: The param that controls the params that are being affected by the physics.
           joint_name: The joint that the body part is attached to.  The joint is
@@ -107,8 +114,12 @@ public:
 				mVelocity_local(0)
         {
                 mJointState = new LLJointState;
-        }
 
+				for (U32 i = 0; i < NUM_PARAMS; ++i)
+				{
+					mParamCache[i] = NULL;
+				}
+		}
 		void getString(std::ostringstream &oss);
 
         BOOL initialize();
@@ -124,19 +135,46 @@ public:
 		
 		void reset();
 protected:
-        F32 getParamValue(const std::string& controller_key)
-        {
-                const controller_map_t::const_iterator& entry = mParamControllers.find(controller_key);
+
+		F32 getParamValue(eParamName param)
+		{
+			static std::string controller_key[] = 
+			{
+				"Smoothing",
+				"Mass",
+				"Gravity",
+				"Spring",
+				"Gain",
+				"Damping",
+				"Drag",
+				"MaxEffect"
+			};
+
+			if (!mParamCache[param])
+			{
+				const controller_map_t::const_iterator& entry = mParamControllers.find(controller_key[param]);
                 if (entry == mParamControllers.end())
                 {
-                        return sDefaultController[controller_key];
+                        return sDefaultController[controller_key[param]];
                 }
                 const std::string& param_name = (*entry).second.c_str();
-                return mCharacter->getVisualParamWeight(param_name.c_str());
-        }
+                mParamCache[param] = mCharacter->getVisualParam(param_name.c_str());
+			}
+				
+			if (mParamCache[param])
+			{
+				return mParamCache[param]->getWeight();
+			}
+			else
+			{
+				return sDefaultController[controller_key[param]];
+			}
+		}
+
+        
         void setParamValue(LLViewerVisualParam *param,
                            const F32 new_value_local,
-						   F32 behavior_maxeffect);
+                                                   F32 behavior_maxeffect);
 
         F32 toLocal(const LLVector3 &world);
         F32 calculateVelocity_local();
@@ -164,6 +202,8 @@ private:
 
         F32 mLastTime;
         
+		LLVisualParam* mParamCache[NUM_PARAMS];
+
         static default_controller_map_t sDefaultController;
 };
 
@@ -268,7 +308,7 @@ void LLPhysicsMotion::getString(std::ostringstream &oss)
 	oss << " Controllers:" << std::endl;
 	for(controller_map_t::const_iterator it = mParamControllers.begin(); it!= mParamControllers.end(); ++it)
 	{
-		oss << "  mParamControllers[\"" << it->first << "\"] = \"" << it->second << "\" =" << getParamValue(it->first) << std::endl;
+		oss << "  mParamControllers[\"" << it->first << "\"] = \"" << it->second << "\" =" << mCharacter->getVisualParamWeight(it->first.c_str()) << std::endl;
 	}
 }
 
@@ -574,15 +614,16 @@ BOOL LLPhysicsMotion::onUpdate(F32 time)
 
         LLJoint *joint = mJointState->getJoint();
 
-        const F32 behavior_mass = getParamValue("Mass");
-        const F32 behavior_gravity = getParamValue("Gravity");
-        const F32 behavior_spring = getParamValue("Spring");
-        const F32 behavior_gain = getParamValue("Gain");
-        const F32 behavior_damping = getParamValue("Damping");
-        const F32 behavior_drag = getParamValue("Drag");
-        const BOOL physics_test = FALSE; // Enable this to simulate bouncing on all parts.
+		const F32 behavior_mass = getParamValue(MASS);
+		const F32 behavior_gravity = getParamValue(GRAVITY);
+		const F32 behavior_spring = getParamValue(SPRING);
+		const F32 behavior_gain = getParamValue(GAIN);
+		const F32 behavior_damping = getParamValue(DAMPING);
+		const F32 behavior_drag = getParamValue(DRAG);
+		F32 behavior_maxeffect = getParamValue(MAX_EFFECT);
+		
+		const BOOL physics_test = FALSE; // Enable this to simulate bouncing on all parts.
         
-        F32 behavior_maxeffect = getParamValue("MaxEffect");
         if (physics_test)
                 behavior_maxeffect = 1.0f;
 

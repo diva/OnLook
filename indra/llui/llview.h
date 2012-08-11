@@ -56,6 +56,7 @@
 #include "llcursortypes.h"
 #include "llinitparam.h"
 #include "llfocusmgr.h"
+#include <boost/unordered_map.hpp>
 
 const U32	FOLLOWS_NONE	= 0x00;
 const U32	FOLLOWS_LEFT	= 0x01;
@@ -186,6 +187,15 @@ public:
 
 	void initFromParams(const LLView::Params&);
 
+	template<typename T>
+	struct CachedUICtrl
+	{
+		CachedUICtrl():mPtr(NULL){}
+		T* connect(LLView* parent,const char* pName){return mPtr = parent->getChild<T>(pName);}
+		T* operator->(){return mPtr;}
+		operator T*() const{return mPtr;}
+		T* mPtr;
+	};
 protected:
 	LLView(const LLView::Params&);
 	//friend class LLUICtrlFactory;
@@ -454,6 +464,7 @@ public:
 	const child_list_t*	getChildList() const { return &mChildList; }
 	child_list_const_iter_t	beginChild() const { return mChildList.begin(); }
 	child_list_const_iter_t	endChild() const { return mChildList.end(); }
+	boost::unordered_map<const std::string, LLView*> mChildHashMap;
 
 	// LLMouseHandler functions
 	//  Default behavior is to pass events to children
@@ -467,13 +478,17 @@ public:
 	/*virtual*/ BOOL	handleRightMouseDown(S32 x, S32 y, MASK mask);
 	/*virtual*/ BOOL	handleRightMouseUp(S32 x, S32 y, MASK mask);	
 	/*virtual*/ BOOL	handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sticky_rect); // Display mToolTipMsg if no child handles it.
-	/*virtual*/ const std::string&	getName() const;
+	/*virtual*/ const std::string& getName() const;
 	/*virtual*/ void	onMouseCaptureLost();
 	/*virtual*/ BOOL	hasMouseCapture();
 	/*virtual*/ BOOL isView(); // Hack to support LLFocusMgr
 	/*virtual*/ void	screenPointToLocal(S32 screen_x, S32 screen_y, S32* local_x, S32* local_y) const;
 	/*virtual*/ void	localPointToScreen(S32 local_x, S32 local_y, S32* screen_x, S32* screen_y) const;
 
+	template <class T> T* findChild(const std::string& name)
+	{
+		return getChild<T>(name,true,false);
+	}
 	template <class T> T* getChild(const std::string& name, BOOL recurse = TRUE, BOOL create_if_missing = TRUE) const
 	{
 		LLView* child = getChildView(name, recurse, FALSE);

@@ -170,7 +170,7 @@ BOOL LLMediaCtrl::handleHover( S32 x, S32 y, MASK mask )
 
 	if (mMediaSource)
 	{
-		mMediaSource->mouseMove(x, y);
+		mMediaSource->mouseMove(x, y, mask);
 
 		gViewerWindow->setCursor(mLastSetCursor);
 	}
@@ -198,7 +198,7 @@ BOOL LLMediaCtrl::handleMouseUp( S32 x, S32 y, MASK mask )
 
 	if (mMediaSource)
 	{
-		mMediaSource->mouseUp(x, y);
+		mMediaSource->mouseUp(x, y, mask);
 
 		/*// *HACK: LLMediaImplLLMozLib automatically takes focus on mouseup,
 		// in addition to the onFocusReceived() call below.  Undo this. JC
@@ -222,7 +222,7 @@ BOOL LLMediaCtrl::handleMouseDown( S32 x, S32 y, MASK mask )
 	convertInputCoords(x, y);
 
 	if (mMediaSource)
-		mMediaSource->mouseDown(x, y);
+		mMediaSource->mouseDown(x, y, mask);
 	
 	gFocusMgr.setMouseCapture( this );
 
@@ -265,11 +265,11 @@ BOOL LLMediaCtrl::handleRightMouseDown( S32 x, S32 y, MASK mask )
 {
 	if (LLUICtrl::handleRightMouseDown(x, y, mask)) return TRUE;
 
-	/*S32 media_x = x, media_y = y;
+	S32 media_x = x, media_y = y;
 	convertInputCoords(media_x, media_y);
 
 	if (mMediaSource)
-		mMediaSource->mouseDown(media_x, media_y);
+		mMediaSource->mouseDown(media_x, media_y, mask, 1);
 	
 	gFocusMgr.setMouseCapture( this );
 
@@ -277,7 +277,7 @@ BOOL LLMediaCtrl::handleRightMouseDown( S32 x, S32 y, MASK mask )
 	{
 		setFocus( TRUE );
 	}
-	*/
+
 	return TRUE;
 }
 
@@ -289,7 +289,7 @@ BOOL LLMediaCtrl::handleDoubleClick( S32 x, S32 y, MASK mask )
 	convertInputCoords(x, y);
 
 	if (mMediaSource)
-		mMediaSource->mouseLeftDoubleClick( x, y);
+		mMediaSource->mouseDoubleClick( x, y, mask);
 
 	gFocusMgr.setMouseCapture( this );
 
@@ -916,20 +916,16 @@ void LLMediaCtrl::handleMediaEvent(LLPluginClassMedia* self, EMediaEvent event)
 		
 		case MEDIA_EVENT_NAVIGATE_BEGIN:
 		{
-			LL_INFOS("Media") <<  "Media event:  MEDIA_EVENT_NAVIGATE_BEGIN, url is " << self->getNavigateURI() << LL_ENDL;
-			if(mMediaSource && mHideLoading)
-			{
-				mMediaSource->suspendUpdates(true);
-			}
+			LL_DEBUGS("Media") <<  "Media event:  MEDIA_EVENT_NAVIGATE_BEGIN, url is " << self->getNavigateURI() << LL_ENDL;
 		};
 		break;
 		
 		case MEDIA_EVENT_NAVIGATE_COMPLETE:
 		{
-			LL_INFOS("Media") <<  "Media event:  MEDIA_EVENT_NAVIGATE_COMPLETE, result string is: " << self->getNavigateResultString() << LL_ENDL;
-			if(mMediaSource && mHideLoading)
+			LL_DEBUGS("Media") <<  "Media event:  MEDIA_EVENT_NAVIGATE_COMPLETE, result string is: " << self->getNavigateResultString() << LL_ENDL;
+			if(mHidingInitialLoad)
 			{
-				mMediaSource->suspendUpdates(false);
+				mHidingInitialLoad = false;
 			}
 		};
 		break;

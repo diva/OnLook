@@ -32,17 +32,17 @@
 #include <algorithm>
 #include <openssl/x509_vfy.h>
 #include <openssl/ssl.h>
+
 #include "llcurl.h"
-#include "llfasttimer.h"
 #include "llioutil.h"
 #include "llmemtype.h"
-#include "llproxy.h"
 #include "llpumpio.h"
 #include "llsd.h"
 #include "llstring.h"
 #include "apr_env.h"
 #include "llapr.h"
 #include "llscopedvolatileaprpool.h"
+#include "llfasttimer.h"
 static const U32 HTTP_STATUS_PIPE_ERROR = 499;
 
 /**
@@ -66,7 +66,7 @@ public:
 	~LLURLRequestDetail();
 	std::string mURL;
 	LLCurlEasyRequest* mCurlRequest;
-	LLIOPipe::buffer_ptr_t mResponseBuffer;
+	LLBufferArray* mResponseBuffer;
 	LLChannelDescriptors mChannels;
 	U8* mLastRead;
 	U32 mBodyLimit;
@@ -77,58 +77,22 @@ public:
 
 LLURLRequestDetail::LLURLRequestDetail() :
 	mCurlRequest(NULL),
+	mResponseBuffer(NULL),
 	mLastRead(NULL),
 	mBodyLimit(0),
 	mByteAccumulator(0),
-	mIsBodyLimitSet(false),
-    mSSLVerifyCallback(NULL)
+	mIsBodyLimitSet(false)
 {
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	mCurlRequest = new LLCurlEasyRequest();
-	
-	if(!mCurlRequest->isValid()) //failed.
-	{
-		delete mCurlRequest ;
-		mCurlRequest = NULL ;
-	}
 }
 
 LLURLRequestDetail::~LLURLRequestDetail()
 {
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	delete mCurlRequest;
+	mResponseBuffer = NULL;
 	mLastRead = NULL;
-}
-
-void LLURLRequest::setSSLVerifyCallback(SSLCertVerifyCallback callback, void *param)
-{
-	mDetail->mSSLVerifyCallback = callback;
-	mDetail->mCurlRequest->setSSLCtxCallback(LLURLRequest::_sslCtxCallback, (void *)this);
-	mDetail->mCurlRequest->setopt(CURLOPT_SSL_VERIFYPEER, true);
-	mDetail->mCurlRequest->setopt(CURLOPT_SSL_VERIFYHOST, 2);	
-}
-
-
-// _sslCtxFunction
-// Callback function called when an SSL Context is created via CURL
-// used to configure the context for custom cert validation
-
-CURLcode LLURLRequest::_sslCtxCallback(CURL * curl, void *sslctx, void *param)
-{	
-	LLURLRequest *req = (LLURLRequest *)param;
-	if(req == NULL || req->mDetail->mSSLVerifyCallback == NULL)
-	{
-		SSL_CTX_set_cert_verify_callback((SSL_CTX *)sslctx, NULL, NULL);
-		return CURLE_OK;
-	}
-	SSL_CTX * ctx = (SSL_CTX *) sslctx;
-	// disable any default verification for server certs
-	SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
-	// set the verification callback.
-	SSL_CTX_set_cert_verify_callback(ctx, req->mDetail->mSSLVerifyCallback, (void *)req);
-	// the calls are void
-	return CURLE_OK;
-	
 }
 
 /**
@@ -189,12 +153,18 @@ std::string LLURLRequest::getURL() const
 {
 	return mDetail->mURL;
 }
-
 void LLURLRequest::addHeader(const char* header)
 {
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	mDetail->mCurlRequest->slist_append(header);
 }
+
+void LLURLRequest::checkRootCertificate(bool check)
+{
+	mDetail->mCurlRequest->setopt(CURLOPT_SSL_VERIFYPEER, (check? TRUE : FALSE));
+	mDetail->mCurlRequest->setoptString(CURLOPT_ENCODING, "");
+}
+
 
 void LLURLRequest::setBodyLimit(U32 size)
 {
@@ -240,9 +210,9 @@ void LLURLRequest::useProxy(bool use_proxy)
 		}
     }
 
-    lldebugs << "use_proxy = " << (use_proxy?'Y':'N') << ", env_proxy = \"" << env_proxy << "\"" << llendl;
+    LL_DEBUGS("Proxy") << "use_proxy = " << (use_proxy?'Y':'N') << ", env_proxy = " << (!env_proxy.empty() ? env_proxy : "(null)") << LL_ENDL;
 
-    if (use_proxy)
+    if (use_proxy && !env_proxy.empty())
     {
 		mDetail->mCurlRequest->setoptString(CURLOPT_PROXY, env_proxy);
     }
@@ -262,24 +232,12 @@ void LLURLRequest::allowCookies()
 	mDetail->mCurlRequest->setoptString(CURLOPT_COOKIEFILE, "");
 }
 
-//virtual 
-bool LLURLRequest::isValid() 
-{
-	return mDetail->mCurlRequest && mDetail->mCurlRequest->isValid(); 
-}
-
 // virtual
 LLIOPipe::EStatus LLURLRequest::handleError(
 	LLIOPipe::EStatus status,
 	LLPumpIO* pump)
 {
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
-	
-	if(!isValid())
-	{
-		return STATUS_EXPIRED ;
-	}
-
 	if(mCompletionCallback && pump)
 	{
 		LLURLRequestComplete* complete = NULL;
@@ -309,7 +267,8 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	//llinfos << "LLURLRequest::process_impl()" << llendl;
 	if (!buffer) return STATUS_ERROR;
-	
+	if (!mDetail) return STATUS_ERROR; //Seems to happen on occasion. Need to hunt down why.
+
 	// we're still waiting or prcessing, check how many
 	// bytes we have accumulated.
 	const S32 MIN_ACCUMULATION = 100000;
@@ -348,7 +307,7 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 
 		// *FIX: bit of a hack, but it should work. The configure and
 		// callback method expect this information to be ready.
-		mDetail->mResponseBuffer = buffer;
+		mDetail->mResponseBuffer = buffer.get();
 		mDetail->mChannels = channels;
 		if(!configure())
 		{
@@ -367,10 +326,7 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 		static LLFastTimer::DeclareTimer FTM_URL_PERFORM("Perform");
 		{
 			LLFastTimer t(FTM_URL_PERFORM);
-			if(!mDetail->mCurlRequest->wait())
-			{
-				return status ;
-			}
+			mDetail->mCurlRequest->perform();
 		}
 
 		while(1)
@@ -465,12 +421,6 @@ void LLURLRequest::initialize()
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	mState = STATE_INITIALIZED;
 	mDetail = new LLURLRequestDetail;
-
-	if(!isValid())
-	{
-		return ;
-	}
-
 	mDetail->mCurlRequest->setopt(CURLOPT_NOSIGNAL, 1);
 	mDetail->mCurlRequest->setWriteCallback(&downCallback, (void*)this);
 	mDetail->mCurlRequest->setReadCallback(&upCallback, (void*)this);
