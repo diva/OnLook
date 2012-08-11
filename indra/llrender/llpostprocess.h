@@ -149,7 +149,7 @@ public:
 	inline LLSD const & getSelectedEffectInfo(void) const			{ return mSelectedEffectInfo; }
 	//  Setters
 	void setSelectedEffect(std::string const & effectName);
-	void setSelectedEffectValue(std::string const & setting, LLSD& value);
+	void setSelectedEffectValue(std::string const & setting, LLSD value);
 	void resetSelectedEffect();
 	void saveEffectAs(std::string const & effectName);
 };
