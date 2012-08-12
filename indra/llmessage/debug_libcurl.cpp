@@ -11,6 +11,9 @@
 #include "debug_libcurl.h"
 #include "debug.h"
 #include "llerror.h"
+#ifdef CWDEBUG
+#include <libcwd/buf2str.h>
+#endif
 
 #define CURL_VERSION(major, minor, patch)	\
     (LIBCURL_VERSION_MAJOR > major ||		\
@@ -277,6 +280,7 @@ std::ostream& operator<<(std::ostream& os, CURLoption option)
 	CASEPRINT(CURLOPT_PROGRESSDATA);
 	CASEPRINT(CURLOPT_AUTOREFERER);
 	CASEPRINT(CURLOPT_PROXYPORT);
+	CASEPRINT(CURLOPT_POSTFIELDSIZE);
 	CASEPRINT(CURLOPT_HTTPPROXYTUNNEL);
 	CASEPRINT(CURLOPT_INTERFACE);
 	CASEPRINT(CURLOPT_KRBLEVEL);
@@ -552,25 +556,26 @@ CURLcode debug_curl_easy_getinfo(CURL* curl, CURLINFO info, ...)
   CURLcode ret;
   va_list ap;
   union param_type {
+	void* some_ptr;
 	long* long_ptr;
-	char* char_ptr;
-	curl_slist* curl_slist_ptr;
+	char** char_ptr;
+	curl_slist** curl_slist_ptr;
 	double* double_ptr;
   } param;
   va_start(ap, info);
-  param.long_ptr = va_arg(ap, long*);
+  param.some_ptr = va_arg(ap, void*);
   va_end(ap);
-  ret = curl_easy_getinfo(curl, info, param.long_ptr);
+  ret = curl_easy_getinfo(curl, info, param.some_ptr);
   if (info == CURLINFO_PRIVATE)
   {
-	Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", 0x" << std::hex << (size_t)param.char_ptr << std::dec << ") = " << ret);
+	Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", 0x" << std::hex << (size_t)param.some_ptr << std::dec << ") = " << ret);
   }
   else
   {
 	switch((info & CURLINFO_TYPEMASK))
 	{
 	  case CURLINFO_STRING:
-		Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", (char*){ \"" << (ret == CURLE_OK ? param.char_ptr : " <unchanged> ") << "\" }) = " << ret);
+		Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", (char**){ \"" << (ret == CURLE_OK ? *param.char_ptr : " <unchanged> ") << "\" }) = " << ret);
 		break;
 	  case CURLINFO_LONG:
 		Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", (long*){ " << (ret == CURLE_OK ? *param.long_ptr : 0L) << "L }) = " << ret);
@@ -579,7 +584,7 @@ CURLcode debug_curl_easy_getinfo(CURL* curl, CURLINFO info, ...)
 		Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", (double*){" << (ret == CURLE_OK ? *param.double_ptr : 0.) << "}) = " << ret);
 		break;
 	  case CURLINFO_SLIST:
-		Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", (curl_slist*){ " << (ret == CURLE_OK ? *param.curl_slist_ptr : unchanged_slist) << " }) = " << ret);
+		Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", (curl_slist**){ " << (ret == CURLE_OK ? **param.curl_slist_ptr : unchanged_slist) << " }) = " << ret);
 		break;
 	}
   }
@@ -644,24 +649,93 @@ CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 	  std::exit(EXIT_FAILURE);
   }
   va_end(ap);
+  static long postfieldsize;					// Cache. Assumes only one thread sets CURLOPT_POSTFIELDSIZE.
   switch (param_type)
   {
 	case CURLOPTTYPE_LONG:
+	{
 	  ret = curl_easy_setopt(handle, option, param.along);
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", " << param.along << "L) = " << ret);
+	  if (option == CURLOPT_POSTFIELDSIZE)
+	  {
+		postfieldsize = param.along;
+	  }
 	  break;
+	}
 	case CURLOPTTYPE_OBJECTPOINT:
+	{
 	  ret = curl_easy_setopt(handle, option, param.ptr);
-	  Dout(dc::curl, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", (object*)0x" << std::hex << (size_t)param.ptr << std::dec << ") = " << ret);
+	  LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcwd::libcw_do, dc::curl)
+	  LibcwDoutStream << "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", ";
+	  // For a subset of all options that take a char*, print the string passed.
+	  if (option == CURLOPT_PROXY ||			// Set HTTP proxy to use. The parameter should be a char* to a zero terminated string holding the host name or dotted IP address.
+		  option == CURLOPT_PROXYUSERPWD ||		// Pass a char* as parameter, which should be [user name]:[password] to use for the connection to the HTTP proxy.
+		  option == CURLOPT_CAINFO ||			// Pass a char * to a zero terminated string naming a file holding one or more certificates to verify the peer with.
+		  option == CURLOPT_URL ||				// Pass in a pointer to the actual URL to deal with. The parameter should be a char * to a zero terminated string [...]
+		  option == CURLOPT_COOKIEFILE ||		// Pass a pointer to a zero terminated string as parameter. It should contain the name of your file holding cookie data to read.
+		  option == CURLOPT_CUSTOMREQUEST ||	// Pass a pointer to a zero terminated string as parameter. It can be used to specify the request instead of GET or HEAD when performing HTTP based requests
+		  option == CURLOPT_ENCODING ||			// Sets the contents of the Accept-Encoding: header sent in a HTTP request, and enables decoding of a response when a Content-Encoding: header is received.
+		  option == CURLOPT_POSTFIELDS ||
+		  option == CURLOPT_COPYPOSTFIELDS)		// Full data to post in a HTTP POST operation.
+	  {
+		bool const is_postfield = option == CURLOPT_POSTFIELDS || option == CURLOPT_COPYPOSTFIELDS;
+		char* str = (char*)param.ptr;
+		long size;
+		LibcwDoutStream << "(char*)0x" << std::hex << (size_t)param.ptr << std::dec << ")";
+		if (is_postfield)
+		{
+		  size = postfieldsize < 32 ? postfieldsize : 32;	// Only print first 32 characters (this was already written to debug output before).
+		}
+		else
+		{
+		  size = strlen(str);
+		}
+		LibcwDoutStream << "[";
+		if (str)
+		{
+		  LibcwDoutStream << libcwd::buf2str(str, size);
+		  if (is_postfield && postfieldsize > 32)
+			LibcwDoutStream << "...";
+		}
+		else
+		{
+		  LibcwDoutStream << "NULL";
+		}
+		LibcwDoutStream << "](" << (is_postfield ? postfieldsize : size) << " bytes))";
+	  }
+	  else
+	  {
+		LibcwDoutStream << "(object*)0x" << std::hex << (size_t)param.ptr << std::dec << ")";
+	  }
+	  LibcwDoutStream << " = " << ret;
+	  LibcwDoutScopeEnd;
+	  if (option == CURLOPT_HTTPHEADER && param.ptr)
+	  {
+		debug::Indent indent(2);
+		Dout(dc::curl, "HTTP Headers:");
+		struct curl_slist* list = (struct curl_slist*)param.ptr;
+		while (list)
+		{
+		  Dout(dc::curl, '"' << list->data << '"');
+		  list = list->next;
+		}
+	  }
 	  break;
+	}
 	case CURLOPTTYPE_FUNCTIONPOINT:
 	  ret = curl_easy_setopt(handle, option, param.ptr);
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", (function*)0x" << std::hex << (size_t)param.ptr << std::dec << ") = " << ret);
 	  break;
 	case CURLOPTTYPE_OFF_T:
+	{
 	  ret = curl_easy_setopt(handle, option, param.offset);
 	  Dout(dc::curl, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", (curl_off_t)" << param.offset << ") = " << ret);
+	  if (option == CURLOPT_POSTFIELDSIZE_LARGE)
+	  {
+		postfieldsize = (long)param.offset;
+	  }
 	  break;
+    }
 	default:
 	  break;
   }

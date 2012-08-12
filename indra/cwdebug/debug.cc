@@ -421,7 +421,8 @@ void cwdebug_backtrace(int n)
 namespace debug
 {
 
-libcwd_do_type const libcw_do;
+namespace libcwd { libcwd_do_type const libcw_do; }
+
 ll_thread_local int Indent::S_indentation;
 
 Indent::Indent(int indent) : M_indent(indent)
