@@ -119,6 +119,8 @@
 	<!-- Indicates something is being loaded. Maybe should be merged with RetrievingData -->
 	<string name="LoadingData">Loading...</string>
 
+	<!-- TODO: port other "IM system messages" from V3 -->
+	<string name="Unnamed">(Unnamed)</string>
 
 	<!-- namecache -->
 	<!-- Avatar name: text shown for LLUUID::null -->
