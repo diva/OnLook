@@ -806,18 +806,15 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libopenal.so.1")
             self.path("libtcmalloc_minimal.so.0")
             self.path("libtcmalloc_minimal.so.0.2.2")
-            self.end_prefix("lib")
-
 
             if 'extra_libraries' in self.args:
-                print self.args['extra_libraries']
                 path_list = self.args['extra_libraries'].split('|')
                 for path in path_list:
-                    path = os.path.realpath(path)
-                    path_pair = path.rsplit('/', 1)
-                    if self.prefix(src=path_pair[0], dst="lib"):
-                        self.path(path_pair[1])
-                        self.end_prefix()
+                    src_path = os.path.realpath(path)
+                    dst_path = os.path.basename(path)
+                    self.path(src_path, dst_path)
+
+            self.end_prefix("lib")
 
             # Vivox runtimes
             if self.prefix(src="vivox-runtime/i686-linux", dst="bin"):
@@ -855,14 +852,11 @@ class Linux_x86_64Manifest(LinuxManifest):
             self.path("libalut.so*")
 
             if 'extra_libraries' in self.args:
-                print self.args['extra_libraries']
                 path_list = self.args['extra_libraries'].split('|')
                 for path in path_list:
-                    path = os.path.realpath(path)
-                    path_pair = path.rsplit('/', 1)
-                    if self.prefix(src=path_pair[0], dst="lib64"):
-                        self.path(path_pair[1])
-                        self.end_prefix()
+                    src_path = os.path.realpath(path)
+                    dst_path = os.path.basename(path)
+                    self.path(src_path, dst_path)
 
             self.end_prefix("lib64")
 
