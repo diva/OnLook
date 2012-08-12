@@ -1,5 +1,4 @@
 <?xml version="1.0" ?><notifications>
-  
   <global name="skipnexttime">
 
 		Don&apos;t show me this again
@@ -195,7 +194,7 @@ The media filters have been cleared
    name="MissingAlert"
    label="Unknown Alert Message"
    type="alertmodal">
-Your version of [APP_NAME] does not know how to display the alert message it just received.
+Your version of [APP_NAME] does not know how to display the alert message it just received.  Please verify that you have the latest [APP_NAME] installed.
 
 Error details: The alert called &apos;[_NAME]&apos; was not found in notifications.xml.
     <usetemplate
@@ -269,7 +268,7 @@ An error occurred while updating [APP_NAME]. Please download the latest version 
    icon="alertmodal.tga"
    name="LoginFailedNoNetwork"
    type="alertmodal">
-Could not connect to the [SECOND_LIFE_GRID]. 
+Could not connect to the [SECOND_LIFE_GRID].
 &apos;[DIAGNOSTIC]&apos;
 Make sure your Internet connection is working properly.
 	<usetemplate
@@ -430,7 +429,7 @@ Save all changes to clothing/body parts?
    icon="alertmodal.tga"
    name="GrantModifyRights"
    type="alertmodal">
-Granting modify rights to another resident allows them to change, delete or take ANY objects you may have in-world. Be VERY careful when handing out this permission.
+Granting modify rights to another Resident allows them to change, delete or take ANY objects you may have in-world. Be VERY careful when handing out this permission.
 Do you want to grant modify rights for [NAME]?
     <usetemplate
      name="okcancelbuttons"
@@ -442,7 +441,7 @@ Do you want to grant modify rights for [NAME]?
    icon="alertmodal.tga"
    name="GrantModifyRightsMultiple"
    type="alertmodal">
-Granting modify rights to another resident allows them to change ANY objects you may have in-world. Be VERY careful when handing out this permission.
+Granting modify rights to another Resident allows them to change ANY objects you may have in-world. Be VERY careful when handing out this permission.
 Do you want to grant modify rights for the selected Residents?
     <usetemplate
      name="okcancelbuttons"
@@ -1641,7 +1640,7 @@ Could not find &apos;data&apos; chunk in WAV header:
 Wrong chunk size in WAV file:
 [FILE]
   </notification>
-  
+
   <notification
    icon="alertmodal.tga"
    name="SoundFileInvalidTooLong"
@@ -1716,11 +1715,11 @@ Unable to upload [FILE] due to the following reason: [REASON]
 Please try again later.
   </notification>
 
-   <notification
-    icon="alertmodal.tga"
-    name="UploadCostConfirmation"
-    type="alertmodal">
-This upload will cost L$[PRICE], do you wish to continue with the upload?
+  <notification
+   icon="alertmodal.tga"
+   name="UploadCostConfirmation"
+   type="alertmodal">
+This upload will cost [CURRENCY][PRICE], do you wish to continue with the upload?
     <usetemplate
      name="okcancelbuttons"
      notext="Cancel"
@@ -1853,7 +1852,7 @@ Sorry, but system was unable to locate landmark destination.
   <notification
    icon="alertmodal.tga"
    name="timeout_tport"
-   type="alertmodal">
+   type="notifytip">
 Sorry, but system was unable to complete the teleport connection.  Try again in a moment.
   </notification>
   <notification
@@ -1877,7 +1876,7 @@ The asset queue in this region is currently clogged so your teleport request wil
   <notification
    icon="alertmodal.tga"
    name="expired_tport"
-   type="alertmodal">
+   type="notifytip">
 Sorry, but the system was unable to complete your teleport request in a timely fashion. Please try again in a few minutes.
   </notification>
   <notification
@@ -1918,7 +1917,9 @@ Unable to force land ownership because selection spans multiple regions. Please 
    icon="alertmodal.tga"
    name="ForceOwnerAuctionWarning"
    type="alertmodal">
-This parcel is up for auction. Forcing ownership will cancel the auction and potentially make some residents unhappy if bidding has begun. Force ownership?
+This parcel is up for auction. Forcing ownership will cancel the auction and potentially make some Residents unhappy if bidding has begun.
+Force ownership?
+    <tag>confirm</tag>
     <usetemplate
      name="okcancelbuttons"
      notext="Cancel"
@@ -2656,7 +2657,7 @@ You have been moved into a nearby region.
   <notification
    icon="alertmodal.tga"
    name="ClothingLoading"
-   type="alertmodal">
+   type="notifytip">
 Your clothing is still downloading.
 You can use [SECOND_LIFE] normally and other people will see you correctly.
     <form name="form">
@@ -2882,7 +2883,7 @@ Can&apos;t add estate owner to estate &apos;Banned Resident&apos; list.
   <notification
    icon="alertmodal.tga"
    name="CanNotChangeAppearanceUntilLoaded"
-   type="alertmodal">
+   type="notifytip">
 Can&apos;t change appearance until clothing and shape are loaded.
   </notification>
 
@@ -3083,6 +3084,7 @@ Visit the [SECOND_LIFE] Public Issue Tracker, where you can report bugs and othe
    name="WebLaunchSinguIssue"
    type="alertmodal">
 Visit the Singularity Issue Tracker, to report bugs and issues with Singularity Viewer.
+Please be sure that your report won't be a duplicate of an existing one.
     <usetemplate
      ignoretext="When launching web browser to view Singularity Issue Tracker"
      name="okcancelignore"
@@ -3118,7 +3120,7 @@ Go to the Official [GRID_OWNER] Blog, for the latest news and information.
    icon="alertmodal.tga"
    name="WebLaunchLSLGuide"
    type="alertmodal">
-Go to the Scripting Guide for scripting help?
+Do you want to open the Scripting Guide for help with scripting?
     <usetemplate
      ignoretext="When launching web browser to view the Scripting Guide"
      name="okcancelignore"
@@ -3130,7 +3132,7 @@ Go to the Scripting Guide for scripting help?
    icon="alertmodal.tga"
    name="WebLaunchLSLWiki"
    type="alertmodal">
-Go to the LSL Portal for scripting help?
+Do you want to visit the LSL Portal for help with scripting?
     <usetemplate
      ignoretext="When launching web browser to view the LSL Portal"
      name="okcancelignore"
@@ -3566,6 +3568,18 @@ Kick [EVIL_USER] from this estate?
   </notification>
 
   <notification
+   icon="alert.tga"
+   label="Confirm Kick and Ban"
+   name="EstateBanUser"
+   type="alert">
+Kick and Ban [EVIL_USER] from this estate?
+    <usetemplate
+     name="okcancelbuttons"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
    icon="alertmodal.tga"
    name="EstateChangeCovenant"
    type="alertmodal">
@@ -3737,7 +3751,7 @@ You can click &apos;Change Preference&apos; to raise your maturity Rating prefer
 	  icon="alertmodal.tga"
 	  name="TooManyPrimsSelected"
 	  type="alertmodal">
-		"There are too many prims selected.  Please select [MAX_PRIM_COUNT] or fewer prims and try again"
+There are too many prims selected.  Please select [MAX_PRIM_COUNT] or fewer prims and try again
 		<usetemplate
 		 name="okbutton"
 		 yestext="OK"/>
@@ -4253,7 +4267,7 @@ Default: off
    label="Voice Version Mismatch"
    name="VoiceVersionMismatch"
    type="alertmodal">
-This version of [APP_NAME] is not compatible with the Voice Chat feature in this region. Please upgrate to the latest version.
+This version of [APP_NAME] is not compatible with the Voice Chat feature in this region. In order for Voice Chat to function correctly you will need to update [APP_NAME].
   </notification>
 
   <notification
@@ -5542,7 +5556,7 @@ Terrain.raw downloaded
    icon="notifytip.tga"
    name="GestureMissing"
    type="notifytip">
-Gesture [NAME] is missing from database.
+Gesture [NAME] is missing from the database.
   </notification>
 
   <notification
@@ -5901,7 +5915,7 @@ The objects on the selected parcel of land that is owned by [NAME] have been ret
    icon="notify.tga"
    name="OtherObjectsReturned2"
    type="notify">
-The objects on the selected parcel of land owned by the resident &apos;[NAME]&apos; have been returned to their owner.
+The objects on the selected parcel of land owned by the Resident &apos;[NAME]&apos; have been returned to their owner.
   </notification>
 
   <notification
@@ -5934,7 +5948,7 @@ You can be hurt here. If you die, you will be teleported to your home location.
    name="NoFly"
    type="notify">
 This land has flying disabled (&apos;no fly&apos;).
-You cannot fly here.
+You cannot fly here, without Always allow fly enabled from System preferences.
     <unique/>
   </notification>
 
@@ -6013,6 +6027,14 @@ You cannot create objects here.
   </notification>
   <notification
    icon="notify.tga"
+   name="SeeAvatars"
+   type="notify">
+    <unique/>    
+This parcel hides avatars and text chat from another parcel.   You can&apos;t see other residents outside the parcel, and those outside are not able to see you.  Regular text chat on channel 0 is also blocked.
+  </notification>
+
+  <notification
+   icon="notify.tga"
    name="ScriptsStopped"
    type="notify">
 An administrator has temporarily stopped scripts in this region.
@@ -6030,14 +6052,14 @@ This region is not running any scripts.
    name="NoOutsideScripts"
    type="notify">
 This land has outside scripts disabled (&apos;no outside scripts&apos;).
-No scripts will run except those belonging to the land owner.
+No scripts will work here except those belonging to the land owner.
   </notification>
 
   <notification
    icon="notify.tga"
    name="ClaimPublicLand"
    type="notify">
-Can only claim public land in region you&apos;re in.
+You can only claim public land in the Region you&apos;re in.
   </notification>
 
   <notification
@@ -6294,6 +6316,7 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
    name="GodMessage"
    type="notify">
 [NAME]
+
 [MESSAGE]
   </notification>
 
@@ -6322,7 +6345,7 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
    icon="notify.tga"
    name="TeleportOffered"
    type="notify">
-[NAME] has offered to teleport you to his or her location:
+[NAME] has offered to teleport you to their location:
 
 [MESSAGE]
     <form name="form">
@@ -7381,4 +7404,3 @@ Your shape, skin, hair or eyes might be defect.
 
 
 </notifications>
-

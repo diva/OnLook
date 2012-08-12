@@ -6,11 +6,9 @@
 	<text name="set_name_label">
 		Nuevo Nombre a Mostrar:
 	</text>
-	<line_editor name="display_name_editor"/>
 	<text name="name_confirm_label">
 		Vuelve a escribir tu nombre nuevo para confirmarlo:
 	</text>
-	<line_editor name="display_name_confirm"/>
 	<button label="Guardar" name="save_btn" tool_tip="Guardar tu nuevo Nombre a Mostrar" />
 	<button label="Restablecer" name="reset_btn" tool_tip="Hacer que tu Nombre a Mostrar sea el mismo que tu nombre de usuario" />
 	<button label="Cancelar" name="cancel_btn" tool_tip="Cancelar y cerrar esta ventana" />

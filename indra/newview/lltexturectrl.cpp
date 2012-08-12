@@ -1099,7 +1099,7 @@ LLTextureCtrl::LLTextureCtrl(
 		LLRect( 
 			0, image_middle + line_height / 2,
 			getRect().getWidth(), image_middle - line_height / 2 ),
-		std::string("Multiple"),
+		LLTrans::getString("multiple_textures"),
 		LLFontGL::getFontSansSerifSmall() );
 	mTentativeLabel->setHAlign( LLFontGL::HCENTER );
 	mTentativeLabel->setFollowsAll();

@@ -3,6 +3,11 @@
      can_resize="true" enabled="true" height="400" left="408" min_height="100"
      min_width="100" mouse_opaque="true" name="queue" title="Reset Progress"
      width="300" border_bevel="none" border_thickness="0">
+	<string name="Starting">Starting [START] of [COUNT] items.</string>
+	<string name="Done">Done.</string>
+	<string name="Resetting">Resetting</string>
+	<string name="Running">Running</string>
+	<string name="NotRunning">Not Running</string>
 	<button bottom="-392" enabled="true" follows="right|bottom" font="SansSerif"
 	     halign="center" height="24" label="Close" label_selected="Close" left="220"
 	     mouse_opaque="true" name="close" width="64" />

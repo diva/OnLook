@@ -320,7 +320,7 @@ void LLPanelAvatarSecondLife::processProperties(void* data, EAvatarProcessorType
 //			}
 			if (0 == pAvatarGroups->group_list.size())
 			{
-				group_list->addCommentText(std::string("None")); // *TODO: Translate
+				group_list->addCommentText(getString("None"));
 			}
 
 			for(LLAvatarGroups::group_list_t::const_iterator it = pAvatarGroups->group_list.begin();
@@ -570,11 +570,6 @@ BOOL LLPanelAvatarSecondLife::postBuild(void)
 	childSetVisible("?",LLPanelAvatar::sAllowFirstLife);
 
 	childSetVisible("online_yes",FALSE);
-
-	// These are cruft but may still exist in some xml files
-	// TODO: remove the following 2 lines once translators grab these changes
-	childSetVisible("online_unknown",FALSE);
-	childSetVisible("online_no",FALSE);
 
 	childSetAction("Find on Map", LLPanelAvatar::onClickTrack, getPanelAvatar());
 	childSetAction("Instant Message...", LLPanelAvatar::onClickIM, getPanelAvatar());

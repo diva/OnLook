@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater label="(desconocido)" name="im_floater" title="(desconocido)">
 	<string name="ringing">
-		Joining Voice Chat...
+		Uniéndose al Chat de Voz...
 	</string>
 	<string name="connected">
-		Connected, click End Call to hang up
+		Conectado, pulsa Colgar para terminar
 	</string>
 	<string name="hang_up">
-		Left Voice Chat
+		Abandonando Chat de Voz
 	</string>
 	<string name="voice_icon">
 		icn_voice-groupfocus.tga
 	</string>
 	<string name="title_string">
-		Instant Message with [NAME]
+		Mensaje Instantáneo con [NAME]
 	</string>
 	<string name="typing_start_string">
-		[NAME] is typing...
+		[NAME] está escribiendo...
 	</string>
 	<string name="session_start_string">
-		Starting session with [NAME], please wait.
+		Iniciando sesión con [NAME], espera por favor.
 	</string>
 	<string name="default_text_label">
-		Click here to instant message.
+		Pulsa aquí para enviar un Mensaje Instantáneo.
 	</string>
 	<string name="moderated_chat_label">
-		(Moderated: Voices off by default)
+		(Moderado: Voz apagada por defecto)
 	</string>
 	<string name="muted_text_label">
-		Your text chat has been disabled by a Group Moderator.
+		Tu chat de texto ha sido deshabilitado por un Moderador del Grupo.
 	</string>
 	<layout_stack name="panels">
 		<layout_panel name="im_contents_panel">
-			<button label="Group Info" name="group_info_btn"/>
-			<button label="Join Call" name="start_call_btn"/>
-			<button label="End Call" name="end_call_btn"/>
+			<button label="Info del Grupo" name="group_info_btn"/>
+			<button label="Unirse" name="start_call_btn"/>
+			<button label="Finalizar" name="end_call_btn"/>
 			<button label="Historial" name="history_btn"/>
-			<button label="&lt; &lt;" label_selected="&gt; &gt;" name="toggle_active_speakers_btn" tool_tip="Click here to toggle a list of active participants in this IM session."/>
+			<button label="&lt; &lt;" label_selected="&gt; &gt;" name="toggle_active_speakers_btn" tool_tip="Pulsa aquí para mostrar/ocultar la lista de participantes activos en esta sesión de MI."/>
 			<button label="Enviar" name="send_btn"/>
 		</layout_panel>
 	</layout_stack>

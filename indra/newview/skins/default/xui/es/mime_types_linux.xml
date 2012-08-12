@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <mimetypes name="default">
 	<defaultlabel>
-		(Unknown)
+		(Desconocido)
 	</defaultlabel>
 	<defaultwidget>
-		none
+		ninguno
 	</defaultwidget>
 	<defaultimpl>
 		media_plugin_webkit
 	</defaultimpl>
 	<widgetset name="web">
 		<label name="web_label">
-			Web Content
+			Contenido Web
 		</label>
 		<icon>
 			icn_media_web.tga
@@ -20,21 +20,21 @@
 			text/html
 		</default_type>
 		<tooltip name="web_tooltip">
-			This location has Web content
+			Esta ubicación tiene contenido Web
 		</tooltip>
 		<playtip name="web_playtip">
-			Show Web content
+			Mostrar contenido Web
 		</playtip>
 		<allow_resize>
-			true
+			verdadero
 		</allow_resize>
 		<allow_looping>
-			false
+			falso
 		</allow_looping>
 	</widgetset>
 	<widgetset name="movie">
 		<label name="movie_label">
-			Movie
+			Película
 		</label>
 		<default_type>
 			video/*
@@ -43,21 +43,21 @@
 			icn_media_movie.tga
 		</icon>
 		<tooltip name="movie_tooltip">
-			There is a movie to play here
+			Aquí hay una película para reproducir
 		</tooltip>
 		<playtip name="movie_playtip">
-			Play movie
+			Reproducir película
 		</playtip>
 		<allow_resize>
-			false
+			falso
 		</allow_resize>
 		<allow_looping>
-			true
+			verdadero
 		</allow_looping>
 	</widgetset>
 	<widgetset name="image">
 		<label name="image_label">
-			Image
+			Imagen
 		</label>
 		<icon>
 			icn_media_web.tga
@@ -66,16 +66,16 @@
 			image/*
 		</default_type>
 		<tooltip name="image_tooltip">
-			There is an image at this location
+			Hay un imagen en esta ubicación
 		</tooltip>
 		<playtip name="image_playtip">
-			View this location&apos;s image
+			Ver la imagen de esta ubicación
 		</playtip>
 		<allow_resize>
-			false
+			falso
 		</allow_resize>
 		<allow_looping>
-			false
+			falso
 		</allow_looping>
 	</widgetset>
 	<widgetset name="audio">
@@ -89,24 +89,24 @@
 			audio/*
 		</default_type>
 		<tooltip name="audio_tooltip">
-			There is audio at this location
+			Hay audio en esta ubicación
 		</tooltip>
 		<playtip name="audio_playtip">
-			Play this location&apos;s audio
+			Reproducir el audio de esta ubicación
 		</playtip>
 		<allow_resize>
-			false
+			falso
 		</allow_resize>
 		<allow_looping>
-			true
+			verdadero
 		</allow_looping>
 	</widgetset>
 	<scheme name="rtsp">
 		<label name="rtsp_label">
-			Real Time Streaming
+			Streaming en tiempo real
 		</label>
 		<widgettype>
-			movie
+			película
 		</widgettype>
 		<impl>
 			media_plugin_gstreamer
@@ -114,10 +114,10 @@
 	</scheme>
 	<mimetype name="blank">
 		<label name="blank_label">
-			- None -
+			- Ninguna -
 		</label>
 		<widgettype>
-			none
+			ninguna
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -125,10 +125,10 @@
 	</mimetype>
 	<mimetype name="none/none">
 		<label name="none/none_label">
-			- None -
+			- Ninguna -
 		</label>
 		<widgettype>
-			none
+			ninguna
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -150,7 +150,7 @@
 			Video
 		</label>
 		<widgettype>
-			movie
+			película
 		</widgettype>
 		<impl>
 			media_plugin_gstreamer
@@ -158,10 +158,10 @@
 	</mimetype>
 	<mimetype name="image/*">
 		<label name="image2_label">
-			Image
+			Imagen
 		</label>
 		<widgettype>
-			image
+			imagen
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -169,7 +169,7 @@
 	</mimetype>
 	<mimetype menu="1" name="video/vnd.secondlife.qt.legacy">
 		<label name="vnd.secondlife.qt.legacy_label">
-			Movie (QuickTime)
+			Pelicula (QuickTime)
 		</label>
 		<widgettype>
 			movie
@@ -202,10 +202,10 @@
 	</mimetype>
 	<mimetype name="application/pdf">
 		<label name="application/pdf_label">
-			PDF Document
+			Documento PDF
 		</label>
 		<widgettype>
-			image
+			imagen
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -213,10 +213,10 @@
 	</mimetype>
 	<mimetype name="application/postscript">
 		<label name="application/postscript_label">
-			Postscript Document
+			Documento Postscript
 		</label>
 		<widgettype>
-			image
+			imagen
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -227,7 +227,7 @@
 			Rich Text (RTF)
 		</label>
 		<widgettype>
-			image
+			imagen
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -238,7 +238,7 @@
 			Synchronized Multimedia Integration Language (SMIL)
 		</label>
 		<widgettype>
-			movie
+			película
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -246,7 +246,7 @@
 	</mimetype>
 	<mimetype name="application/xhtml+xml">
 		<label name="application/xhtml+xml_label">
-			Web Page (XHTML)
+			Página Web (XHTML)
 		</label>
 		<widgettype>
 			web
@@ -260,7 +260,7 @@
 			Macromedia Director
 		</label>
 		<widgettype>
-			image
+			imagen
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -312,10 +312,10 @@
 	</mimetype>
 	<mimetype menu="1" name="image/bmp">
 		<label name="image/bmp_label">
-			Image (BMP)
+			Imagen (BMP)
 		</label>
 		<widgettype>
-			image
+			imagen
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -323,10 +323,10 @@
 	</mimetype>
 	<mimetype menu="1" name="image/gif">
 		<label name="image/gif_label">
-			Image (GIF)
+			Imagen (GIF)
 		</label>
 		<widgettype>
-			image
+			imagen
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -334,10 +334,10 @@
 	</mimetype>
 	<mimetype menu="1" name="image/jpeg">
 		<label name="image/jpeg_label">
-			Image (JPEG)
+			Imagen (JPEG)
 		</label>
 		<widgettype>
-			image
+			imagen
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -345,10 +345,10 @@
 	</mimetype>
 	<mimetype menu="1" name="image/png">
 		<label name="image/png_label">
-			Image (PNG)
+			Imagen (PNG)
 		</label>
 		<widgettype>
-			image
+			imagen
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -356,10 +356,10 @@
 	</mimetype>
 	<mimetype name="image/svg+xml">
 		<label name="image/svg+xml_label">
-			Image (SVG)
+			Imagen (SVG)
 		</label>
 		<widgettype>
-			image
+			imagen
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -367,10 +367,10 @@
 	</mimetype>
 	<mimetype menu="1" name="image/tiff">
 		<label name="image/tiff_label">
-			Image (TIFF)
+			Imagen (TIFF)
 		</label>
 		<widgettype>
-			image
+			imagen
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -378,7 +378,7 @@
 	</mimetype>
 	<mimetype menu="1" name="text/html">
 		<label name="text/html_label">
-			Web Page
+			Página Web
 		</label>
 		<widgettype>
 			web
@@ -389,10 +389,10 @@
 	</mimetype>
 	<mimetype menu="1" name="text/plain">
 		<label name="text/plain_label">
-			Text
+			Texto
 		</label>
 		<widgettype>
-			text
+			texto
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -403,7 +403,7 @@
 			XML
 		</label>
 		<widgettype>
-			text
+			texto
 		</widgettype>
 		<impl>
 			media_plugin_webkit
@@ -411,10 +411,10 @@
 	</mimetype>
 	<mimetype menu="1" name="video/mpeg">
 		<label name="video/mpeg_label">
-			Movie (MPEG)
+			Película (MPEG)
 		</label>
 		<widgettype>
-			movie
+			película
 		</widgettype>
 		<impl>
 			media_plugin_gstreamer
@@ -422,10 +422,10 @@
 	</mimetype>
 	<mimetype name="video/mp4">
 		<label name="video/mp4_label">
-			Movie (MP4)
+			Película (MP4)
 		</label>
 		<widgettype>
-			movie
+			película
 		</widgettype>
 		<impl>
 			media_plugin_gstreamer
@@ -433,10 +433,10 @@
 	</mimetype>
 	<mimetype menu="1" name="video/quicktime">
 		<label name="video/quicktime_label">
-			Movie (QuickTime)
+			Película (QuickTime)
 		</label>
 		<widgettype>
-			movie
+			película
 		</widgettype>
 		<impl>
 			media_plugin_gstreamer
@@ -444,10 +444,10 @@
 	</mimetype>
 	<mimetype name="video/x-ms-asf">
 		<label name="video/x-ms-asf_label">
-			Movie (Windows Media ASF)
+			Película (Windows Media ASF)
 		</label>
 		<widgettype>
-			movie
+			película
 		</widgettype>
 		<impl>
 			media_plugin_gstreamer
@@ -455,10 +455,10 @@
 	</mimetype>
 	<mimetype name="video/x-ms-wmv">
 		<label name="video/x-ms-wmv_label">
-			Movie (Windows Media WMV)
+			Película (Windows Media WMV)
 		</label>
 		<widgettype>
-			movie
+			película
 		</widgettype>
 		<impl>
 			media_plugin_gstreamer
@@ -466,10 +466,10 @@
 	</mimetype>
 	<mimetype menu="1" name="video/x-msvideo">
 		<label name="video/x-msvideo_label">
-			Movie (AVI)
+			Película (AVI)
 		</label>
 		<widgettype>
-			movie
+			película
 		</widgettype>
 		<impl>
 			media_plugin_gstreamer

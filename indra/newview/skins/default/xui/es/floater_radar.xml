@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="radar" title="Radar">
-
 	<scroll_list name="avatar_list" tool_tip="Mantén presionada la tecla Mayús o la tecla Ctrl al  pulsar con el mouse para seleccionar multiples avatares">
 		<column name="marked" label="Marcar" tool_tip="Avatares Marcados"/>
 		<column name="avatar_name" label="Nombre" tool_tip="Mantén presionada la tecla Mayús o la tecla Ctrl al  pulsar con el mouse para seleccionar multiples avatares"/>

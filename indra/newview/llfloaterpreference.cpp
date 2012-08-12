@@ -78,7 +78,6 @@
 #include "llviewerwindow.h"
 #include "llkeyboard.h"
 #include "llscrollcontainer.h"
-#include "llfloaterhardwaresettings.h"
 #include "hippopanelgrids.h"
 
 const S32 PREF_BORDER = 4;
@@ -303,9 +302,6 @@ void LLPreferenceCore::apply()
 	mPrefsAscentSys->apply();
 	mPrefsAscentVan->apply();
 
-	// hardware menu apply
-	LLFloaterHardwareSettings::instance()->apply();
-
 	mWebPanel->apply();
 }
 
@@ -327,9 +323,6 @@ void LLPreferenceCore::cancel()
 	mPrefsAscentSys->cancel();
 	mPrefsAscentVan->cancel();
 
-	// cancel hardware menu
-	LLFloaterHardwareSettings::instance()->cancel();
-
 	mWebPanel->cancel();
 }
 
@@ -349,7 +342,6 @@ void LLPreferenceCore::setPersonalInfo(const std::string& visibility, bool im_vi
 
 void LLPreferenceCore::refreshEnabledGraphics()
 {
-	LLFloaterHardwareSettings::instance()->refreshEnabledState();
 	mDisplayPanel->refreshEnabledState();
 }
 

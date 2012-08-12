@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="floater_inventory_backup" title="Respaldar Inventario">
-	  <scroll_list name="item_list">
-			 <column name="type" width="20" />
-			 <column label="Nombre" name="name" />
-			 <column label="Estado" name="status"/>
-	  </scroll_list>
-	  <line_editor name="progress_background" />
-	  <line_editor name="progress_foreground"/>
+	<scroll_list name="item_list">
+		<column name="type" width="20" />
+		<column label="Nombre" name="name" />
+		<column label="Estado" name="status"/>
+	</scroll_list>
 </floater>

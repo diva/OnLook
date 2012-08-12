@@ -1,62 +1,62 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Red" name="network">
-	  <text name="text_box">
-			 Ancho de banda Máximo:
-	  </text>
-	  <text name="text_box2">
-			 kbps (kilobits por segundo)
-	  </text>
-	  <text name="cache_size_label_l">
-			 Tamaño de Caché de Disco (MB):
-	  </text>
-	  <text name="text_box5">
-			 MB
-	  </text>
-	  <button label="Borrar Caché" name="clear_cache"/>
-	  <text name="cache_location_label">
-			 Ubicación de Caché en Disco:
-	  </text>
-	  <button label="Establecer" label_selected="Establecer" name="set_cache"/>
-	  <button label="Reiniciar" label_selected="Reiniciar" name="reset_cache"/>
-	  <check_box label="Puerto de Conexión Personalizado" name="connection_port_enabled"/>
-	  <spinner label="Puerto Número:" name="connection_port"/>
-	  <text name="socks5_auth_label">
-			 Proxy Http:
-	  </text>
-	  <radio_group name="socks5_http_proxy_type">	  
-			 <radio_item name="None" tool_tip="Sin Proxy Http">
-					Ninguno
-			 </radio_item>
-			 <radio_item name="Socks" tool_tip="Utilizar Socks para el Proxy Http">
-					Socks
-			 </radio_item>
-			 <radio_item name="Web" tool_tip="Utilizar web proxy para el Proxy Http">
-					Web
-			 </radio_item>
-	  </radio_group>
-	  <check_box label="Activar Proxy SOCKS 5" name="socks5_proxy_enabled"/>
-	  <text name="socks5_host_label">
-			 Host Socks 5:
-	  </text>
-	  <line_editor name="socks5_proxy_host" tool_tip="Nombre dirección IP del Proxy SOCKS5 que quieres utilizar"/>
-	  <spinner label="Puerto Número:" name="socks5_proxy_port"/>
-	  <text name="socks5_auth_label2">
-			 Autenticación Socks5:
-	  </text>
-	  <radio_group name="socks5_auth">
-			 <radio_item name="None" tool_tip="Sin Autenticación">
-					Ninguna
-			 </radio_item>
-			 <radio_item name="UserPass" tool_tip="Usuario / Contraseña de autenticación">
-					Usuario / Contraseña
-			 </radio_item>
-	  </radio_group>
-	  <text name="socks5_username_label">
-			 Usuario:
-	  </text>
-	  <line_editor name="socks5_proxy_username" tool_tip="Usuario para el Proxy Socks5"/>
-	  <text name="socks5_password_label">
-			 Contraseña:
-	  </text>
-	  <line_editor name="socks5_proxy_password" tool_tip="Contraseña para el Proxy Socks5"/>
+	<text name="text_box">
+		Ancho de banda Máximo:
+	</text>
+	<text name="text_box2">
+		kbps (kilobits por segundo)
+	</text>
+	<text name="cache_size_label_l">
+		Tamaño de Caché de Disco (MB):
+	</text>
+	<text name="text_box5">
+		MB
+	</text>
+	<button label="Borrar Caché" name="clear_cache"/>
+	<text name="cache_location_label">
+		Ubicación del Caché en Disco:
+	</text>
+	<button label="Establecer" label_selected="Establecer" name="set_cache"/>
+	<button label="Reiniciar" label_selected="Reiniciar" name="reset_cache"/>
+	<check_box label="Puerto de Conexión Personalizado" name="connection_port_enabled"/>
+	<spinner label="Puerto Número:" name="connection_port"/>
+	<text name="socks5_auth_label">
+		Proxy Http:
+	</text>
+	<radio_group name="socks5_http_proxy_type">	  
+		<radio_item name="None" tool_tip="Sin Proxy Http">
+			Ninguno
+		</radio_item>
+		<radio_item name="Socks" tool_tip="Utilizar Socks para el Proxy Http">
+			Socks
+		</radio_item>
+		<radio_item name="Web" tool_tip="Utilizar web proxy para el Proxy Http">
+			Web
+		</radio_item>
+	</radio_group>
+	<check_box label="Activar Proxy SOCKS 5" name="socks5_proxy_enabled"/>
+	<text name="socks5_host_label">
+		Host Socks 5:
+	</text>
+	<line_editor name="socks5_proxy_host" tool_tip="Nombre dirección IP del Proxy SOCKS5 que quieres utilizar"/>
+	<spinner label="Puerto Número:" name="socks5_proxy_port"/>
+	<text name="socks5_auth_label2">
+		Autenticación Socks5:
+	</text>
+	<radio_group name="socks5_auth">
+		<radio_item name="None" tool_tip="Sin Autenticación">
+			Ninguna
+		</radio_item>
+		<radio_item name="UserPass" tool_tip="Usuario / Contraseña de autenticación">
+			Usuario / Contraseña
+		</radio_item>
+	</radio_group>
+	<text name="socks5_username_label">
+		Usuario:
+	</text>
+	<line_editor name="socks5_proxy_username" tool_tip="Usuario para el Proxy Socks5"/>
+	<text name="socks5_password_label">
+		Contraseña:
+	</text>
+	<line_editor name="socks5_proxy_password" tool_tip="Contraseña para el Proxy Socks5"/>
 </panel>

@@ -1290,9 +1290,8 @@ LLPreviewLSL::LLPreviewLSL(const std::string& name, const LLRect& rect,
 void LLPreviewLSL::callbackLSLCompileSucceeded()
 {
 	llinfos << "LSL Bytecode saved" << llendl;
-	// *TODO: Translate
-	mScriptEd->mErrorList->addCommentText(std::string("Compile successful!"));
-	mScriptEd->mErrorList->addCommentText(std::string("Save complete."));
+	mScriptEd->mErrorList->addCommentText(LLTrans::getString("CompileSuccessful"));
+	mScriptEd->mErrorList->addCommentText(LLTrans::getString("SaveComplete"));
 	closeIfNeeded();
 }
 
@@ -1890,9 +1889,8 @@ void LLLiveLSLEditor::callbackLSLCompileSucceeded(const LLUUID& task_id,
 												  bool is_script_running)
 {
 	lldebugs << "LSL Bytecode saved" << llendl;
-	// *TODO: Translate
-	mScriptEd->mErrorList->addCommentText(std::string("Compile successful!"));
-	mScriptEd->mErrorList->addCommentText(std::string("Save complete."));
+	mScriptEd->mErrorList->addCommentText(LLTrans::getString("CompileSuccessful"));
+	mScriptEd->mErrorList->addCommentText(LLTrans::getString("SaveComplete"));
 	closeIfNeeded();
 }
 
@@ -2244,8 +2242,7 @@ void LLLiveLSLEditor::draw()
 	{
 		// HACK: Display this information in the title bar.
 		// Really ought to put in main window.
-		// *TODO: Translate
-		setTitle(std::string("Script (object out of range)"));
+		setTitle(LLTrans::getString("ObjectOutOfRange"));
 		runningCheckbox->setEnabled(FALSE);
 		// object may have fallen out of range.
 		mHaveRunningInfo = FALSE;
@@ -2468,8 +2465,7 @@ void LLLiveLSLEditor::uploadAssetLegacy(const std::string& filename,
 	else
 	{
 		llinfos << "Compile worked!" << llendl;
-		// *TODO: Translate
-		mScriptEd->mErrorList->addCommentText(std::string("Compile successful, saving..."));
+		mScriptEd->mErrorList->addCommentText(LLTrans::getString("CompileSuccessfulSaving"));
 		if(gAssetStorage)
 		{
 			llinfos << "LLLiveLSLEditor::saveAsset "
@@ -2543,8 +2539,7 @@ void LLLiveLSLEditor::onSaveBytecodeComplete(const LLUUID& asset_uuid, void* use
 		if(self)
 		{
 			// Tell the user that the compile worked.
-			// *TODO: Translate
-			self->mScriptEd->mErrorList->addCommentText(std::string("Save complete."));
+			self->mScriptEd->mErrorList->addCommentText(LLTrans::getString("SaveComplete"));
 			// close the window if this completes both uploads
 			self->getWindow()->decBusyCount();
 			self->mPendingUploads--;

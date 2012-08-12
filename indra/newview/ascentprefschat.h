@@ -57,6 +57,7 @@ protected:
     static void onCommitTimeDate(LLUICtrl* ctrl, void *userdata);
     static void onCommitAutoResponse(LLUICtrl* ctrl, void* user_data);
 	static void onCommitResetAS(LLUICtrl*,void*);
+	static void onCommitDialogBlock(LLUICtrl*, void*);
     static void onCommitKeywords(LLUICtrl* ctrl, void* user_data);
 
     //Chat/IM -----------------------------------------------------------------------------
@@ -89,6 +90,14 @@ protected:
     U32  mChatSpamCount;
     U32  mChatSpamTime;
     BOOL mBlockDialogSpam;
+    BOOL mBlockAlertSpam;
+    BOOL mBlockFriendSpam;
+    BOOL mBlockGroupNoticeSpam;
+    BOOL mBlockGroupInviteSpam;
+    BOOL mBlockItemOfferSpam;
+    BOOL mBlockScriptSpam;
+    BOOL mBlockTeleportSpam;
+    BOOL mNotifyOnSpam;
     BOOL mSoundMulti;
     U32  mNewLines;
     U32  mPreloadMulti;

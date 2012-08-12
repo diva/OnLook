@@ -46,6 +46,7 @@
 #include "llsdserialize.h"
 #include "llsdutil.h"
 #include "llstring.h"
+#include "lltrans.h"
 #include "lltransactiontypes.h"
 #include "lluictrlfactory.h"
 #include "lluuid.h"
@@ -94,6 +95,7 @@
 #include "lllocalinventory.h"
 // </edit>
 
+#include "hippogridmanager.h"
 #include "importtracker.h"
 
 using namespace LLOldEvents;
@@ -502,6 +504,19 @@ class LLFileSavePreview : public view_listener_t
 	}
 };
 
+class LLFileSavePreviewPNG : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLFloater* top = gFloaterView->getFrontmost();
+		if (top)
+		{
+			top->saveAsType(true);
+		}
+		return true;
+	}
+};
+
 class LLFileTakeSnapshot : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -855,8 +870,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 	else
 	{
 		// Unknown extension
-		// *TODO: Translate?
-		error_message = llformat("Unknown file extension .%s\nExpected .wav, .tga, .bmp, .jpg, .jpeg, or .bvh", exten.c_str());
+		error_message = llformat(LLTrans::getString("UnknownFileExtension").c_str(), exten.c_str());
 		error = TRUE;;
 	}
 
@@ -1021,10 +1035,11 @@ void upload_done_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 
 			if(!(can_afford_transaction(expected_upload_cost)))
 			{
-				LLFloaterBuyCurrency::buyCurrency(
-					llformat("Uploading %s costs",
-							 data->mAssetInfo.getName().c_str()), // *TODO: Translate
-					expected_upload_cost);
+				LLStringUtil::format_map_t args;
+				args["[NAME]"] = data->mAssetInfo.getName();
+				args["[CURRENCY]"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
+				args["[AMOUNT]"] = llformat("%d", expected_upload_cost);
+				LLFloaterBuyCurrency::buyCurrency( LLTrans::getString("UploadingCosts", args), expected_upload_cost );
 				is_balance_sufficient = FALSE;
 			}
 			else if(region)
@@ -1311,6 +1326,7 @@ void init_menu_file()
 	(new LLFileMinimizeAllWindows())->registerListener(gMenuHolder, "File.MinimizeAllWindows");
 	// </edit>
 	(new LLFileSavePreview())->registerListener(gMenuHolder, "File.SavePreview");
+	(new LLFileSavePreviewPNG())->registerListener(gMenuHolder, "File.SavePreviewPNG");
 	(new LLFileTakeSnapshot())->registerListener(gMenuHolder, "File.TakeSnapshot");
 	(new LLFileTakeSnapshotToDisk())->registerListener(gMenuHolder, "File.TakeSnapshotToDisk");
 	(new LLFileQuit())->registerListener(gMenuHolder, "File.Quit");

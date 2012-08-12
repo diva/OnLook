@@ -3,13 +3,11 @@
 	<text name="name_label">
 		Nombre:
 	</text>
-	<line_editor name="name_form"/>
 	<text name="description_label">
 		Descripción:
 	</text>
-	<line_editor name="description_form"/>
 	<text name="preview_label">
-			 Vista Previa como:
+		Vista Previa como:
 	</text>
 	<combo_box label="Ropa" name="clothing_type_combo">
 		<combo_item name="Image">

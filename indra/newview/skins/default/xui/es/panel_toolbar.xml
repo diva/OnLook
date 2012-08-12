@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel name="toolbar">    
-	  <string name="Redock Windows">
-			 Reacoplar Ventana
-	  </string>
-	  <panel filename="panel_bg_toolbar.xml"/>
-	  <layout_stack name="toolbar_stack" >
-			 <button label="" name="chat_btn" tool_tip="Mostrar Barra de Chat. (Intro)"/>
-			 <flyout_button label="Comunicación" name="communicate_btn" tool_tip="Comunícate con tus amigos o grupos.(Ctrl-T)" />
-			 <button label="Radar" name="radar_list_btn" tool_tip="Ver lista de avatares cercanos.(Ctrl-Shift-A)"/>
-			 <button label="Volar" label_selected="Stop Flying" name="fly_btn" tool_tip="Despegar(F o Inicio). Usa E/C o AvPáa/RePág para ascender o descender"/>
-			 <button label="Capturar" name="snapshot_btn" tool_tip="Guardar una captura de pantalla al disco o al inventario.(Ctrl-Shift-S para abrir el flotante, Ctrl-`(~) toma la captura sin el flotante)"/>
-			 <button label="Buscar" name="directory_btn" tool_tip="Buscar lugares, eventos, personas, y más.(Ctrl-F)"/>
-			 <button label="Construir" name="build_btn" tool_tip="Crear nuevos objetos. (B)"/>
-			 <button label="Mapa" name="map_btn" tool_tip="Mapa del Mundo. (Ctrl-M)"/>
-			 <button label="MiniMapa" name="radar_btn" tool_tip="Mapa del área a tu alrededor. (Ctrl-Shift-M)"/>
-			 <button label="Inventario" name="inventory_btn" tool_tip="Tus items. (Ctrl-I)"/>
-	  </layout_stack>
+	<string name="Redock Windows">
+		Reacoplar Ventana
+	</string>
+	<panel filename="panel_bg_toolbar.xml"/>
+	<layout_stack name="toolbar_stack" >
+		<button label="" name="chat_btn" tool_tip="Mostrar Barra de Chat. (Intro)"/>
+		<flyout_button label="Comunicación" name="communicate_btn" tool_tip="Comunícate con tus amigos o grupos.(Ctrl-T)" />
+		<button label="Radar" name="radar_list_btn" tool_tip="Ver lista de avatares cercanos.(Ctrl-Shift-A)"/>
+		<button label="Volar" label_selected="Stop Flying" name="fly_btn" tool_tip="Despegar(F o Inicio). Usa E/C o AvPáa/RePág para ascender o descender"/>
+		<button label="Foto" name="snapshot_btn" tool_tip="Guardar una captura de pantalla al disco o al inventario.(Ctrl-Shift-S para abrir el flotante, Ctrl-`(~) toma la captura sin el flotante)"/>
+		<button label="Buscar" name="directory_btn" tool_tip="Buscar lugares, eventos, personas, y más.(Ctrl-F)"/>
+		<button label="Construir" name="build_btn" tool_tip="Crear nuevos objetos. (B)"/>
+		<button label="Mapa" name="map_btn" tool_tip="Mapa del Mundo. (Ctrl-M)"/>
+		<button label="MiniMapa" name="radar_btn" tool_tip="Mapa del área a tu alrededor. (Ctrl-Shift-M)"/>
+		<button label="Inventario" name="inventory_btn" tool_tip="Tus items. (Ctrl-I)"/>
+	</layout_stack>
 </panel>

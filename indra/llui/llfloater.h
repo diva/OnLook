@@ -217,6 +217,7 @@ public:
 	virtual BOOL	canSaveAs() const { return FALSE; }
 
 	virtual void	saveAs() {}
+	virtual void	saveAsType(BOOL type=false) {}
 	
 	// <edit>
 	virtual LLUUID  getItemID() { return LLUUID::null; }

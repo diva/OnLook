@@ -565,13 +565,13 @@ void LLPostProcess::setSelectedEffect(std::string const & effectName)
 	}
 }
 
-void LLPostProcess::setSelectedEffectValue(std::string const & setting, LLSD& value)
+void LLPostProcess::setSelectedEffectValue(std::string const & setting, LLSD value)
 {
 	char buf[256];
 	S32 elem=0;
 	if(sscanf(setting.c_str(),"%255[^[][%d]", buf, &elem) == 2)
 	{
-		mSelectedEffectInfo[std::string(buf)][elem] = value;
+		mSelectedEffectInfo[static_cast<const char*>(buf)][elem] = value;
 	}
 	else
 	{

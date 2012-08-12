@@ -42,6 +42,7 @@
 #include "llviewercontrol.h"
 #include "NACLantispam.h"
 #include "lgghunspell_wrapper.h"
+#include "lltrans.h"
 
 #include "llstartup.h"
 
@@ -85,16 +86,17 @@ LLPrefsAscentChat::LLPrefsAscentChat()
 		LLUUID itemid = (LLUUID)gSavedPerAccountSettings.getString("AscentInstantMessageResponseItemData");
 		LLViewerInventoryItem* item = gInventory.getItem(itemid);
 
-		if		(item)				childSetValue("im_give_disp_rect_txt","Currently set to: "+item->getName());
-		else if (itemid.isNull())	childSetValue("im_give_disp_rect_txt","Currently not set");
-		else 						childSetValue("im_give_disp_rect_txt","Currently set to an item not on this account");
+		if		(item)				childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + LLTrans::getString(":") + " " +item->getName());
+		else if (itemid.isNull())	childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlyNotSet"));
+		else 						childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + " " + LLTrans::getString("AnItemNotOnThisAccount"));
 	}
-	else							childSetValue("im_give_disp_rect_txt","Not logged in");
+	else							childSetValue("im_give_disp_rect_txt", LLTrans::getString("NotLoggedIn"));
 
     childSetCommitCallback("im_response", onCommitAutoResponse, this);
 
 	childSetEnabled("reset_antispam", started);
 	childSetCommitCallback("reset_antispam", onCommitResetAS, this);
+	childSetCommitCallback("antispam_checkbox", onCommitDialogBlock, this);
 
     childSetCommitCallback("KeywordsOn", onCommitKeywords, this);
     childSetCommitCallback("KeywordsList", onCommitKeywords, this);
@@ -239,13 +241,28 @@ void LLPrefsAscentChat::onCommitAutoResponse(LLUICtrl* ctrl, void* user_data)
 void LLPrefsAscentChat::SinguIMResponseItemDrop(LLViewerInventoryItem* item)
 {
 	gSavedPerAccountSettings.setString("AscentInstantMessageResponseItemData", item->getUUID().asString());
-	sInst->childSetValue("im_give_disp_rect_txt","Currently set to: "+item->getName());
+	sInst->childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + LLTrans::getString(":") + " " +item->getName());
 }
 
 //static
 void LLPrefsAscentChat::onCommitResetAS(LLUICtrl*, void*)
 {
 	NACLAntiSpamRegistry::purgeAllQueues();
+}
+
+//static
+void LLPrefsAscentChat::onCommitDialogBlock(LLUICtrl* ctrl, void* user_data)
+{
+	LLPrefsAscentChat* self = (LLPrefsAscentChat*)user_data;
+	bool enabled = ctrl->getValue().asBoolean();
+	self->childSetEnabled("Block All Dialogs From", !enabled);
+	self->childSetEnabled("Alerts",                 !enabled);
+	self->childSetEnabled("Friendship Offers",      !enabled);
+	self->childSetEnabled("Group Invites",          !enabled);
+	self->childSetEnabled("Group Notices",          !enabled);
+	self->childSetEnabled("Item Offers",            !enabled);
+	self->childSetEnabled("Scripts",                !enabled);
+	self->childSetEnabled("Teleport Offers",        !enabled);
 }
 
 //static
@@ -331,6 +348,14 @@ void LLPrefsAscentChat::refreshValues()
     mChatSpamCount                  = gSavedSettings.getU32("_NACL_AntiSpamAmount");
     mChatSpamTime                   = gSavedSettings.getU32("_NACL_AntiSpamTime");
     mBlockDialogSpam                = gSavedSettings.getBOOL("_NACL_Antispam");
+    mBlockAlertSpam                 = gSavedSettings.getBOOL("AntiSpamAlerts");
+    mBlockFriendSpam                = gSavedSettings.getBOOL("AntiSpamFriendshipOffers");
+    mBlockGroupInviteSpam           = gSavedSettings.getBOOL("AntiSpamGroupInvites");
+    mBlockGroupNoticeSpam           = gSavedSettings.getBOOL("AntiSpamGroupNotices");
+    mBlockItemOfferSpam             = gSavedSettings.getBOOL("AntiSpamItemOffers");
+    mBlockScriptSpam                = gSavedSettings.getBOOL("AntiSpamScripts");
+    mBlockTeleportSpam              = gSavedSettings.getBOOL("AntiSpamTeleports");
+    mNotifyOnSpam                   = gSavedSettings.getBOOL("AntiSpamNotify");
     mSoundMulti                     = gSavedSettings.getU32("_NACL_AntiSpamSoundMulti");
     mNewLines                       = gSavedSettings.getU32("_NACL_AntiSpamNewlines");
     mPreloadMulti                   = gSavedSettings.getU32("_NACL_AntiSpamSoundPreloadMulti");
@@ -377,6 +402,16 @@ void LLPrefsAscentChat::refresh()
     LLWStringUtil::replaceChar(auto_response, '^', '\n');
     LLWStringUtil::replaceChar(auto_response, '%', ' ');
     childSetText("im_response", wstring_to_utf8str(auto_response));
+
+    //Antispam ------------------------------------------------------------------------
+	childSetEnabled("Block All Dialogs From", !mBlockDialogSpam);
+	childSetEnabled("Alerts",                 !mBlockDialogSpam);
+	childSetEnabled("Friendship Offers",      !mBlockDialogSpam);
+	childSetEnabled("Group Invites",          !mBlockDialogSpam);
+	childSetEnabled("Group Notices",          !mBlockDialogSpam);
+	childSetEnabled("Item Offers",            !mBlockDialogSpam);
+	childSetEnabled("Scripts",                !mBlockDialogSpam);
+	childSetEnabled("Teleport Offers",        !mBlockDialogSpam);
 
     //Text Options ------------------------------------------------------------------------
     combo = getChild<LLComboBox>("SpellBase");
@@ -518,6 +553,14 @@ void LLPrefsAscentChat::cancel()
     gSavedSettings.setU32("_NACL_AntiSpamAmount",            mChatSpamCount);
     gSavedSettings.setU32("_NACL_AntiSpamTime",              mChatSpamTime);
     gSavedSettings.setBOOL("_NACL_Antispam",                 mBlockDialogSpam);
+	gSavedSettings.setBOOL("AntiSpamAlerts",                 mBlockAlertSpam);
+	gSavedSettings.setBOOL("AntiSpamFriendshipOffers",       mBlockFriendSpam);
+	gSavedSettings.setBOOL("AntiSpamGroupNotices",           mBlockGroupNoticeSpam);
+	gSavedSettings.setBOOL("AntiSpamGroupInvites",           mBlockGroupInviteSpam);
+	gSavedSettings.setBOOL("AntiSpamItemOffers",             mBlockItemOfferSpam);
+	gSavedSettings.setBOOL("AntiSpamScripts",                mBlockScriptSpam);
+	gSavedSettings.setBOOL("AntiSpamTeleports",              mBlockTeleportSpam);
+	gSavedSettings.setBOOL("AntiSpamNotify",                 mNotifyOnSpam);
     gSavedSettings.setU32("_NACL_AntiSpamSoundMulti",        mSoundMulti);
     gSavedSettings.setU32("_NACL_AntiSpamNewlines",          mNewLines);
     gSavedSettings.setU32("_NACL_AntiSpamSoundPreloadMulti", mPreloadMulti);

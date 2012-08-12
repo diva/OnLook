@@ -40,7 +40,6 @@
 
 #include "llagent.h"
 #include "llagentcamera.h"
-#include "llviewercontrol.h"
 #include "llfocusmgr.h"
 #include "llfirstuse.h"
 #include "llfloateravatarinfo.h"
@@ -56,8 +55,10 @@
 #include "lltoolgrab.h"
 #include "lltoolmgr.h"
 #include "lltoolselect.h"
+#include "lltrans.h"
 #include "llviewercamera.h"
 #include "llviewerparcelmedia.h"
+#include "llviewercontrol.h"
 #include "llviewermenu.h"
 #include "llviewerobjectlist.h"
 #include "llviewerobject.h"
@@ -65,8 +66,8 @@
 #include "llviewerwindow.h"
 #include "llwindow.h"
 #include "llviewermedia.h"
-#include "llviewermediafocus.h"
 #include "llvoavatarself.h"
+#include "llviewermediafocus.h"
 #include "llworld.h"
 #include "llui.h"
 #include "llweb.h"
@@ -401,12 +402,12 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 			std::string name = avatar->getFullname();
 			if (LLMuteList::getInstance()->isMuted(avatar->getID(), name))
 			{
-				gMenuHolder->childSetText("Avatar Mute", std::string("Unmute")); // *TODO:Translate
+				gMenuHolder->childSetText("Avatar Mute", LLTrans::getString("UnmuteAvatar"));
 				//gMutePieMenu->setLabel("Unmute");
 			}
 			else
 			{
-				gMenuHolder->childSetText("Avatar Mute", std::string("Mute")); // *TODO:Translate
+				gMenuHolder->childSetText("Avatar Mute", LLTrans::getString("MuteAvatar"));
 				//gMutePieMenu->setLabel("Mute");
 			}
 
@@ -451,12 +452,12 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 			}
 			if (LLMuteList::getInstance()->isMuted(object->getID(), name))
 			{
-				gMenuHolder->childSetText("Object Mute", std::string("Unmute")); // *TODO:Translate
+				gMenuHolder->childSetText("Object Mute", LLTrans::getString("UnmuteObject"));
 				//gMuteObjectPieMenu->setLabel("Unmute");
 			}
 			else
 			{
-				gMenuHolder->childSetText("Object Mute", std::string("Mute")); // *TODO:Translate
+				gMenuHolder->childSetText("Object Mute", LLTrans::getString("MuteObject2"));
 				//gMuteObjectPieMenu->setLabel("Mute");
 			}
 			

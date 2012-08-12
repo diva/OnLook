@@ -740,8 +740,8 @@ class LinuxManifest(ViewerManifest):
         if self.args['buildtype'].lower() in ['release', 'releasesse2']:
             print "* Going strip-crazy on the packaged binaries, since this is a RELEASE build"
             # makes some small assumptions about our packaged dir structure
-            self.run_command("find %(d)r/bin %(d)r/lib* -type f | xargs --no-run-if-empty strip --strip-unneeded" % {'d': self.get_dst_prefix()} )
-            self.run_command("find %(d)r/bin %(d)r/lib* -type f -not -name \\*.so | xargs --no-run-if-empty strip -s" % {'d': self.get_dst_prefix()} )
+            self.run_command("find %(d)r/bin %(d)r/lib* -type f | xargs -d '\n' --no-run-if-empty strip --strip-unneeded" % {'d': self.get_dst_prefix()} )
+            self.run_command("find %(d)r/bin %(d)r/lib* -type f -not -name \\*.so | xargs -d '\n' --no-run-if-empty strip -s" % {'d': self.get_dst_prefix()} )
 
         # Fix access permissions
         self.run_command("""
@@ -809,7 +809,7 @@ class Linux_i686Manifest(LinuxManifest):
             self.end_prefix("lib")
 
 
-            if self.args['extra_libraries'] != None:
+            if 'extra_libraries' in self.args:
                 print self.args['extra_libraries']
                 path_list = self.args['extra_libraries'].split('|')
                 for path in path_list:
@@ -853,6 +853,16 @@ class Linux_x86_64Manifest(LinuxManifest):
             # OpenAL
             self.path("libopenal.so*")
             self.path("libalut.so*")
+
+            if 'extra_libraries' in self.args:
+                print self.args['extra_libraries']
+                path_list = self.args['extra_libraries'].split('|')
+                for path in path_list:
+                    path = os.path.realpath(path)
+                    path_pair = path.rsplit('/', 1)
+                    if self.prefix(src=path_pair[0], dst="lib64"):
+                        self.path(path_pair[1])
+                        self.end_prefix()
 
             self.end_prefix("lib64")
 

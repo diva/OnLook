@@ -697,6 +697,7 @@ private:
 	LLColor4		mFgUnselectedColor;
 	LLColor4		mFgDisabledColor;
 	LLColor4		mHighlightedColor;
+	LLColor4		mDefaultListTextColor;
 
 	S32				mBorderThickness;
 	void			(*mOnDoubleClickCallback)(void* userdata);

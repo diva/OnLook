@@ -1,50 +1,46 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel name="panel_login">
-	  <web_browser name="login_html" />
-	  <string name="real_url">
-			 http://secondlife.com/app/login/
-	  </string>
-	  <string name="forgot_password_url">
-			 http://secondlife.com/account/request.php
-	  </string>
-	  <text name="name_label">
-			 Nombre o Usuario:
-	  </text>
-	  <combo_box name="name_combo" />
-	  <text name="password_text">
-			 Contraseña:	
-	  </text>
-	  <line_editor name="password_edit"/>
-	  <check_box label="Recordar Nombre" name="remember_name_check"/>
-	  <check_box label="Recordar Contraseña" name="remember_check" width="138" />
-	  <text name="grids_combo_text">
-			 Grid:
-	  </text>
-	  <combo_box name="grids_combo" width="120" />
-	  <button name="grids_btn" label="Administrar Grid"/>		 
-	  <text name="start_location_text" v_pad="0" width="120">
-			 Posición Inicial:
-	  </text>
-	  <combo_box name="regionuri_edit"/>
-	  <combo_box name="start_location_combo" width="155">
-			 <combo_item name="MyHome" value="My Home">
-					Mi Base
-			 </combo_item>
-			 <combo_item name="MyLastLocation" value="My Last Location">
-					Mi Última Ubicación
-			 </combo_item>
-			 <combo_item name="Typeregionname" value="&lt;Type region name&gt;">
-					&lt;Escribe el Nombre de la Región&gt;
-			 </combo_item>
-	  </combo_box>
-	  <button label="Iniciar Sesión" label_selected="Iniciar Sesión" name="connect_btn" width="100" />
-	  <text name="create_new_account_text" width="200">
-			 Registrate para obtener una Cuenta
-	  </text>
-	  <text name="forgot_password_text" width="200">
-			 ¿Olvidaste tu Nombre o tu Contraseña?
-	  </text>
-	  <text name="channel_text">
-			 [CHANNEL] [VERSION]
-	  </text>
+	<string name="real_url">
+		http://secondlife.com/app/login/
+	</string>
+	<string name="forgot_password_url">
+		http://secondlife.com/account/request.ph
+	</string>
+	<text name="name_label">
+		Nombre o Usuario:
+	</text>
+	<combo_box name="name_combo" />
+	<text name="password_text">
+		Contraseña:	
+	</text>
+	<check_box label="Recordar Nombre" name="remember_name_check"/>
+	<check_box label="Recordar Contraseña" name="remember_check" width="138" />
+	<text name="grids_combo_text">
+		Grid:
+	</text>
+	<button name="grids_btn" label="Administrar Grid"/>		 
+	<text name="start_location_text" v_pad="0" width="120">
+		Posición Inicial:
+	</text>
+	<combo_box name="start_location_combo" width="155">
+		<combo_item name="MyHome" value="My Home">
+			Mi Base
+		</combo_item>
+		<combo_item name="MyLastLocation" value="My Last Location">
+			Mi Última Ubicación
+		</combo_item>
+		<combo_item name="Typeregionname" value="&lt;Type region name&gt;">
+			&lt;Escribe el Nombre de la Región&gt;
+		</combo_item>
+	</combo_box>
+	<button label="Iniciar Sesión" label_selected="Iniciar Sesión" name="connect_btn" width="100" />
+	<text name="create_new_account_text" width="200">
+		Registrate para obtener una Cuenta
+	</text>
+	<text name="forgot_password_text" width="200">
+		¿Olvidaste tu Nombre o tu Contraseña?
+	</text>
+	<text name="channel_text">
+		[CHANNEL] [VERSION]
+	</text>
 </panel>

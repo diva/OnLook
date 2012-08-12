@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Audio y Video" name="Media panel">
-	  <text name="muting_text">
-			 Volumen:
-	  </text>
-	  <text name="streaming_prefs_text">
-			 Preferencias de Streaming:
-	  </text>
-	  <text name="audio_prefs_text">
-			 Preferencias de Audio:
-	  </text>
-	  <panel label="Volumen" name="Volume Panel"/>
-			 <check_box label="Reproducir Música cuando esté disponible (usa más ancho de banda)" name="streaming_music"/>
-			 <check_box label="Reproducir Media cuando esté disponible (usa más ancho de banda)" name="streaming_video"/>
-			 <check_box label="Reproducir Media Automáticamente" name="auto_streaming_video"/>
-			 <check_box label="Solicitar Permiso (Activar Filtro de Media)" name="streaming_video"/>
-			 <check_box label="Silenciar audio al minimizar la ventana" name="mute_when_minimized"/>
-			 <slider label="Efecto Doppler" name="Doppler Effect"/>
-			 <slider label="Factor de Atenuación" name="Rolloff Factor"/>
-			 <spinner label="Informar transacción de [CURRENCY] desde:" name="currency_change_threshold" label_width="170" width="234"/>
-			 <spinner label="Informar Estado de vida desde:" name="Health Change Threshold" label_width="170" width="234"/>
+	<text name="muting_text">
+		Volumen:
+	</text>
+	<text name="streaming_prefs_text">
+		Preferencias de Streaming:
+	</text>
+	<text name="audio_prefs_text">
+		Preferencias de Audio:
+	</text>
+	<panel label="Volumen" name="Volume Panel"/>
+		<check_box label="Reproducir Música cuando esté disponible (usa más ancho de banda)" name="streaming_music"/>
+		<check_box label="Reproducir Media cuando esté disponible (usa más ancho de banda)" name="streaming_video"/>
+		<check_box label="Reproducir Media Automáticamente" name="auto_streaming_video"/>
+		<check_box label="Solicitar Permiso (Activar Filtro de Media)" name="streaming_video"/>
+		<check_box label="Silenciar audio al minimizar la ventana" name="mute_when_minimized"/>
+		<slider label="Efecto Doppler" name="Doppler Effect"/>
+		<slider label="Factor de Atenuación" name="Rolloff Factor"/>
+		<spinner label="Informar transacción de [CURRENCY] desde:" name="currency_change_threshold" label_width="170" width="234"/>
+		<spinner label="Informar Estado de vida desde:" name="Health Change Threshold" label_width="170" width="234"/>
 </panel>
