@@ -701,6 +701,7 @@ CURLMcode CurlEasyHandle::remove_handle_from_multi(AICurlEasyRequest_wat& curl_e
   mActiveMultiHandle = NULL;
   CURLMcode res = check_multi_code(curl_multi_remove_handle(multi, mEasyHandle));
   removed_from_multi_handle(curl_easy_request_w);
+  mPostField = NULL;
   return res;
 }
 
@@ -796,11 +797,33 @@ void CurlEasyRequest::setoptString(CURLoption option, std::string const& value)
   setopt(option, value.c_str());
 }
 
-void CurlEasyRequest::setPost(char const* postdata, S32 size)
+void CurlEasyRequest::setPost(AIPostFieldPtr const& postdata, S32 size)
 {
-  setopt(CURLOPT_POST, 1L);
+  llassert_always(postdata->data());
+
+  Dout(dc::curl, "POST size is " << size << " bytes: \"" << libcwd::buf2str(postdata->data(), size) << "\".");
+  setPostField(postdata);		// Make sure the data stays around until we don't need it anymore.
+
+  setPost_raw(size, postdata->data());
+}
+
+void CurlEasyRequest::setPost_raw(S32 size, char const* data)
+{
+  if (!data)
+  {
+	// data == NULL when we're going to read the data using CURLOPT_READFUNCTION.
+	Dout(dc::curl, "POST size is " << size << " bytes.");
+  }
+
+  // The server never replies with 100-continue, so suppress the "Expect: 100-continue" header that libcurl adds by default.
+  addHeader("Expect:");
+  if (size > 0)
+  {
+	addHeader("Connection: keep-alive");
+	addHeader("Keep-alive: 300");
+  }
   setopt(CURLOPT_POSTFIELDSIZE, size);
-  setopt(CURLOPT_POSTFIELDS, postdata);
+  setopt(CURLOPT_POSTFIELDS, data);
 }
 
 ThreadSafeCurlEasyRequest* CurlEasyRequest::get_lockobj(void)
@@ -1133,8 +1156,23 @@ void CurlEasyRequest::finalizeRequest(std::string const& url)
 {
   llassert(!mRequestFinalized);
   mResult = CURLE_FAILED_INIT;		// General error code, the final code is written here in MultiHandle::check_run_count when msg is CURLMSG_DONE.
-  mRequestFinalized = true;
   lldebugs << url << llendl;
+#ifdef SHOW_ASSERT
+  // Do a sanity check on the headers.
+  int content_type_count = 0;
+  for (curl_slist* list = mHeaders; list; list = list->next)
+  {
+	if (strncmp(list->data, "Content-Type:", 13) == 0)
+	{
+	  ++content_type_count;
+	}
+  }
+  if (content_type_count > 1)
+  {
+	llwarns << content_type_count << " Content-Type: headers!" << llendl;
+  }
+#endif
+  mRequestFinalized = true;
   setopt(CURLOPT_HTTPHEADER, mHeaders);
   setoptString(CURLOPT_URL, url);
   // The following line is a bit tricky: we store a pointer to the object without increasing its reference count.
@@ -1270,7 +1308,8 @@ void CurlResponderBuffer::prepRequest(AICurlEasyRequest_wat& curl_easy_request_w
 {
   if (post)
   {
-	curl_easy_request_w->setoptString(CURLOPT_ENCODING, "");
+	// Accept everything (send an Accept-Encoding header containing all encodings we support (zlib and gzip)).
+	curl_easy_request_w->setoptString(CURLOPT_ENCODING, "");	// CURLOPT_ACCEPT_ENCODING
   }
 
   mInput.reset(new LLBufferArray);
@@ -1303,9 +1342,7 @@ void CurlResponderBuffer::prepRequest(AICurlEasyRequest_wat& curl_easy_request_w
 
   if (!post)
   {
-	curl_easy_request_w->addHeader("Connection: keep-alive");
-	curl_easy_request_w->addHeader("Keep-alive: 300");
-	// Add other headers.
+	// Add extra headers.
 	for (std::vector<std::string>::const_iterator iter = headers.begin(); iter != headers.end(); ++iter)
 	{
 	  curl_easy_request_w->addHeader((*iter).c_str());

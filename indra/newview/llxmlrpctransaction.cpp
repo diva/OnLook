@@ -168,8 +168,6 @@ public:
 	LLCurl::TransferInfo mTransferInfo;
 	
 	std::string			mURI;
-	char*				mRequestText;
-	int					mRequestTextSize;
 	
 	std::string			mProxyAddress;
 
@@ -200,7 +198,6 @@ LLXMLRPCTransaction::Impl::Impl(const std::string& uri,
 	: mCurlEasyRequestStateMachinePtr(NULL),
 	  mStatus(LLXMLRPCTransaction::StatusNotStarted),
 	  mURI(uri),
-	  mRequestText(0), 
 	  mResponse(0)
 {
 	init(request, useGzip);
@@ -212,7 +209,6 @@ LLXMLRPCTransaction::Impl::Impl(const std::string& uri,
 	: mCurlEasyRequestStateMachinePtr(NULL),
 	  mStatus(LLXMLRPCTransaction::StatusNotStarted),
 	  mURI(uri),
-	  mRequestText(0), 
 	  mResponse(0)
 {
 	XMLRPC_REQUEST request = XMLRPC_RequestNew();
@@ -223,8 +219,13 @@ LLXMLRPCTransaction::Impl::Impl(const std::string& uri,
 	init(request, useGzip);
 }
 
-
-
+// Store pointer to data allocated with XMLRPC_REQUEST_ToXML and call XMLRPC_Free to free it upon destruction.
+class AIXMLRPCData : public AIPostField
+{
+  public:
+	AIXMLRPCData(char const* allocated_data) : AIPostField(allocated_data) { }
+	/*virtual*/ ~AIXMLRPCData() { XMLRPC_Free(const_cast<char*>(mData)); mData = NULL; }
+};
 
 void LLXMLRPCTransaction::Impl::init(XMLRPC_REQUEST request, bool useGzip)
 {
@@ -259,12 +260,11 @@ void LLXMLRPCTransaction::Impl::init(XMLRPC_REQUEST request, bool useGzip)
 			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, "");
 		}
 		
-		mRequestText = XMLRPC_REQUEST_ToXML(request, &mRequestTextSize);
-		if (mRequestText)
+		int requestTextSize;
+		char* requestText = XMLRPC_REQUEST_ToXML(request, &requestTextSize);
+		if (requestText)
 		{
-			Dout(dc::curl, "Writing " << mRequestTextSize << " bytes: \"" << libcwd::buf2str(mRequestText, mRequestTextSize) << "\".");;
-			curlEasyRequest_w->setopt(CURLOPT_POSTFIELDSIZE, mRequestTextSize);
-			curlEasyRequest_w->setoptString(CURLOPT_COPYPOSTFIELDS, mRequestText);
+			curlEasyRequest_w->setPost(new AIXMLRPCData(requestText), requestTextSize);
 		}
 		else
 		{
@@ -297,11 +297,6 @@ LLXMLRPCTransaction::Impl::~Impl()
 	if (mResponse)
 	{
 		XMLRPC_RequestFree(mResponse, 1);
-	}
-	
-	if (mRequestText)
-	{
-		XMLRPC_Free(mRequestText);
 	}
 }
 

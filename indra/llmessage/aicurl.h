@@ -247,6 +247,21 @@ struct AICurlEasyHandleEvents {
 	virtual ~AICurlEasyHandleEvents() { }
 };
 
+// Pointer to data we're going to POST.
+class AIPostField : public LLThreadSafeRefCount {
+  protected:
+	char const* mData;
+
+  public:
+	AIPostField(char const* data) : mData(data) { }
+	char const* data(void) const { return mData; }
+};
+
+// The pointer to the data that we have to POST is passed around as AIPostFieldPtr,
+// which causes it to automatically clean up when there are no pointers left
+// pointing to it.
+typedef LLPointer<AIPostField> AIPostFieldPtr;
+
 #include "aicurlprivate.h"
 
 // AICurlPrivate::CurlEasyRequestPtr, a boost::intrusive_ptr, is no more threadsafe than a

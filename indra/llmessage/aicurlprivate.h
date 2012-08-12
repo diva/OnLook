@@ -143,6 +143,7 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	CURL* mEasyHandle;
 	CURLM* mActiveMultiHandle;
 	char* mErrorBuffer;
+	AIPostFieldPtr mPostField;		// This keeps the POSTFIELD data alive for as long as the easy handle exists.
 	bool mQueuedForRemoval;			// Set if the easy handle is (probably) added to the multi handle, but is queued for removal.
 #ifdef SHOW_ASSERT
   public:
@@ -190,6 +191,9 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// Return the underlying curl easy handle.
 	CURL* getEasyHandle(void) const { return mEasyHandle; }
 
+	// Keep POSTFIELD data alive.
+	void setPostField(AIPostFieldPtr const& post_field_ptr) { mPostField = post_field_ptr; }
+
   private:
 	// Return, and possibly create, the curl (easy) error buffer used by the current thread.
 	static char* getTLErrorBuffer(void);
@@ -208,9 +212,13 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 // AICurlEasyRequest is deleted, then also the ThreadSafeCurlEasyRequest is deleted
 // and the CurlEasyRequest destructed.
 class CurlEasyRequest : public CurlEasyHandle {
+  private:
+	void setPost_raw(S32 size, char const* data);
   public:
+	void setPost(S32 size) { setPost_raw(size, NULL); }
+	void setPost(AIPostFieldPtr const& postdata, S32 size);
+	void setPost(char const* data, S32 size) { setPost(new AIPostField(data), size); }
 	void setoptString(CURLoption option, std::string const& value);
-	void setPost(char const* postdata, S32 size);
 	void addHeader(char const* str);
 
   private:

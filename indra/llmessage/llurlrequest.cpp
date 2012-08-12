@@ -526,6 +526,7 @@ bool LLURLRequest::configure()
 			curlEasyRequest_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
 			rv = true;
 			break;
+
 		case HTTP_GET:
 			curlEasyRequest_w->setopt(CURLOPT_HTTPGET, 1);
 			curlEasyRequest_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
@@ -538,24 +539,15 @@ bool LLURLRequest::configure()
 		case HTTP_PUT:
 			// Disable the expect http 1.1 extension. POST and PUT default
 			// to turning this on, and I am not too sure what it means.
-			addHeader("Expect:");
-
+			curlEasyRequest_w->addHeader("Expect:");
 			curlEasyRequest_w->setopt(CURLOPT_UPLOAD, 1);
 			curlEasyRequest_w->setopt(CURLOPT_INFILESIZE, bytes);
 			rv = true;
 			break;
 
 		case HTTP_POST:
-			// Disable the expect http 1.1 extension. POST and PUT default
-			// to turning this on, and I am not too sure what it means.
-			addHeader("Expect:");
-
-			// Disable the content type http header.
-			// *FIX: what should it be?
-			addHeader("Content-Type:");
-
 			// Set the handle for an http post
-			curlEasyRequest_w->setPost(NULL, bytes);
+			curlEasyRequest_w->setPost(bytes);
 
 			// Set Accept-Encoding to allow response compression
 			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, "");
