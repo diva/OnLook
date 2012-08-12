@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <cstdlib>
 #include <stdarg.h>
+#include <cstring>
 #include "llpreprocessor.h"
 #include <curl/curl.h>
 #define COMPILING_DEBUG_LIBCURL_CC
