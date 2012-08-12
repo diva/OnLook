@@ -4818,31 +4818,6 @@ Put it in a web page to give others easy access to this location or try it out y
 
   <notification
    icon="alertmodal.tga"
-   name="GraphicsPreferencesHelp"
-   type="alertmodal">
-This panel controls window size and resolution and the quality of the client&apos;s graphics.  The Preferences &gt; Graphics interface allows you to choose between four graphics levels: Low, Mid, High, and Ultra. You may also customize your graphics settings by checking the Custom checkbox and manipulating the following settings:
-
-Shaders: Enable or disable various types of pixel shaders.
-
-Reflection Detail: Sets the types of objects that water can reflect.
-
-Avatar Rendering: Sets options that affect how the client renders avatars.
-
-Draw Distance: Affects how far out from your viewpoint objects will be rendered in the scene.
-
-Max Particle Count: Sets the maximum number of particles you are able to see on your screen at once.
-
-Post Process Quality: Sets the resolution with which Glow is rendered.
-
-Mesh Detail: Sets the amount of detail or number of triangles used in rendering certain objects. A higher value takes longer to render, but makes these objects appear with more detail.
-
-Lighting Detail: Selects what types of lights you would like to render.
-
-Terrain Detail: Sets the amount of detail you would like to see for the terrain texture.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
    name="WLSavePresetAlert"
    type="alertmodal">
 Do you wish to overwrite the saved preset?
