@@ -291,7 +291,9 @@ LLCurl::Easy* LLCurl::Easy::getEasy()
 	
 	// set no DNS caching as default for all easy handles. This prevents them adopting a
 	// multi handles cache if they are added to one.
-	CURLcode result = curl_easy_setopt(easy->mCurlEasyHandle, CURLOPT_DNS_CACHE_TIMEOUT, 0);
+	CURLcode result = curl_easy_setopt(easy->mCurlEasyHandle, CURLOPT_DNS_CACHE_TIMEOUT, 10);
+	check_curl_code(result);
+	result = curl_easy_setopt(easy->mCurlEasyHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 	check_curl_code(result);
 
 	// Disable SSL/TLS session caching. Some servers refuse to talk to us when session ids are enabled.
@@ -478,6 +480,8 @@ void LLCurl::Easy::prepRequest(const std::string& url,
 
 	//setopt(CURLOPT_VERBOSE, 1); // useful for debugging
 	setopt(CURLOPT_NOSIGNAL, 1);
+
+	setopt(CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 
 	// Set the CURL options for either Socks or HTTP proxy
 	LLProxy::getInstance()->applyProxySettings(this);
