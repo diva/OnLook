@@ -549,7 +549,7 @@
 			     mouse_opaque="true" name="F:" v_pad="0" width="74">
 				F:
 			</text>
-      <panel bottom="-302" border="true" height="155" left="5" width="260" />
+      <panel mouse_opaque="false" bottom="-302" border="true" height="155" left="5" width="260"/>
       <panel
      bottom="-328"
      border="false"

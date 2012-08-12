@@ -416,7 +416,6 @@ LLFloaterTools::LLFloaterTools()
 	mPanelFace(NULL),
 	mPanelLandInfo(NULL),
 
-	mTabLand(NULL),
 	mDirty(TRUE)
 {
 	setAutoFocus(FALSE);

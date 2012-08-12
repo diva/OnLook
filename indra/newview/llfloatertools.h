@@ -186,8 +186,6 @@ public:
 	LLPanelFace				*mPanelFace;
 	LLPanelLandInfo			*mPanelLandInfo;
 
-	LLTabContainer*			mTabLand;
-
 	LLParcelSelectionHandle	mParcelSelection;
 	LLObjectSelectionHandle	mObjectSelection;
 
