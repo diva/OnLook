@@ -124,8 +124,6 @@
 	<!-- Indicates something is being loaded. Maybe should be merged with RetrievingData -->
 	<string name="LoadingData">Loading...</string>
 
-	<!-- TODO: port other "IM system messages" from V3 -->
-	<string name="Unnamed">(Unnamed)</string>
 
 	<!-- namecache -->
 	<!-- Avatar name: text shown for LLUUID::null -->
@@ -3592,9 +3590,9 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
   <string name="group_role_owners">Owners</string>
   <string name="group_member_status_online">Online</string>
 
-  <string name="Chat">Chat</string>
 
   <string name="DefaultMimeType">none/none</string>
+  <string name="Chat">Chat</string>
 
   <!-- External editor status codes -->
   <string name="ExternalEditorNotSet">Select an editor using the ExternalEditor setting.</string>
