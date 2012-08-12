@@ -657,7 +657,7 @@ void CurlEasyHandle::setErrorBuffer(void)
   }
 }
 
-CURLcode CurlEasyHandle::getinfo(CURLINFO info, void* data)
+CURLcode CurlEasyHandle::getinfo_priv(CURLINFO info, void* data)
 {
   setErrorBuffer();
   return check_easy_code(curl_easy_getinfo(mEasyHandle, info, data));

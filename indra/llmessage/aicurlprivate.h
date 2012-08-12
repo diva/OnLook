@@ -111,11 +111,21 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	char* unescape(char* url, int inlength , int* outlength);
 
 	// Extract information from a curl handle.
-	CURLcode getinfo(CURLINFO info, void* data);
-#if _WIN64 || __x86_64__ || __ppc64__
+  private:
+	CURLcode getinfo_priv(CURLINFO info, void* data);
+  public:
+	// The rest are inlines to provide some type-safety.
+	CURLcode getinfo(CURLINFO info, char** data) { return getinfo_priv(info, data); }
+	CURLcode getinfo(CURLINFO info, curl_slist** data) { return getinfo_priv(info, data); }
+	CURLcode getinfo(CURLINFO info, double* data) { return getinfo_priv(info, data); }
+	CURLcode getinfo(CURLINFO info, long* data) { return getinfo_priv(info, data); }
+#ifdef __LP64__	// sizeof(long) > sizeof(int) ?
 	// Overload for integer types that are too small (libcurl demands a long).
-	CURLcode getinfo(CURLINFO info, S32* data) { long ldata; CURLcode res = getinfo(info, &ldata); *data = static_cast<S32>(ldata); return res; }
-	CURLcode getinfo(CURLINFO info, U32* data) { long ldata; CURLcode res = getinfo(info, &ldata); *data = static_cast<U32>(ldata); return res; }
+	CURLcode getinfo(CURLINFO info, S32* data) { long ldata; CURLcode res = getinfo_priv(info, &ldata); *data = static_cast<S32>(ldata); return res; }
+	CURLcode getinfo(CURLINFO info, U32* data) { long ldata; CURLcode res = getinfo_priv(info, &ldata); *data = static_cast<U32>(ldata); return res; }
+#else
+	CURLcode getinfo(CURLINFO info, S32* data) { return getinfo_priv(info, static_cast<long*>(data)); }
+	CURLcode getinfo(CURLINFO info, U32* data) { return getinfo_priv(info, static_cast<long*>(data)); }
 #endif
 
 	// Perform a file transfer (blocking).
