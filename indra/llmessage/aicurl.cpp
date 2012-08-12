@@ -993,14 +993,14 @@ static int curl_debug_cb(CURL*, curl_infotype infotype, char* buf, size_t size, 
   libcw_do.marker().assign(marker.str().data(), marker.str().size());
   if (!debug::channels::dc::curlio.is_on())
 	debug::channels::dc::curlio.on();
-  LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcwd::libcw_do, dc::curlio|cond_nonewline_cf(infotype == CURLINFO_TEXT))
+  LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcw_do, dc::curlio|cond_nonewline_cf(infotype == CURLINFO_TEXT))
 #else
   if (infotype == CURLINFO_TEXT)
   {
 	while (size > 0 && (buf[size - 1] == '\r' ||  buf[size - 1] == '\n'))
 	  --size;
   }
-  LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcwd::libcw_do, dc::curlio)
+  LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcw_do, dc::curlio)
 #endif
   switch (infotype)
   {
