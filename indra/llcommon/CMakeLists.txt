@@ -54,6 +54,7 @@ set(llcommon_SOURCE_FILES
     llformat.cpp
     llframetimer.cpp
     llheartbeat.cpp
+    llinitparam.cpp
     llinstancetracker.cpp
     llindraconfigfile.cpp
     llliveappconfig.cpp
@@ -173,6 +174,7 @@ set(llcommon_HEADER_FILES
     llheartbeat.h
     llhttpstatuscodes.h
     llindexedqueue.h
+    llinitparam.h
     llinstancetracker.h
     llindraconfigfile.h
     llkeythrottle.h
@@ -214,6 +216,7 @@ set(llcommon_HEADER_FILES
     llsingleton.h
     llskiplist.h
     llskipmap.h
+    llsortedvector.h
     llstack.h
     llstacktrace.h
     llstat.h
@@ -228,6 +231,7 @@ set(llcommon_HEADER_FILES
     llthreadsafequeue.h
     lltimer.h
     lltreeiterators.h
+    lltypeinfolookup.h
     lluri.h
     lluuid.h
     lluuidhashmap.h

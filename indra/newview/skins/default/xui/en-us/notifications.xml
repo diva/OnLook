@@ -1,5 +1,4 @@
 <?xml version="1.0" ?><notifications>
-  
   <global name="skipnexttime">
 
 		Don&apos;t show me this again
@@ -102,6 +101,21 @@
     </form>
   </template>
 
+  <template name="okhelpignore">
+    <form>
+      <button
+       default="true"
+       index="0"
+       name="OK"
+       text="$yestext"/>
+      <button
+       index="1"
+       name="Help"
+       text="$helptext"/>
+      <ignore text="$ignoretext"/>
+    </form>
+  </template>
+
   <template name="yesnocancelbuttons">
     <form>
       <button
@@ -180,7 +194,7 @@ The media filters have been cleared
    name="MissingAlert"
    label="Unknown Alert Message"
    type="alertmodal">
-Your version of [APP_NAME] does not know how to display the alert message it just received.
+Your version of [APP_NAME] does not know how to display the alert message it just received.  Please verify that you have the latest [APP_NAME] installed.
 
 Error details: The alert called &apos;[_NAME]&apos; was not found in notifications.xml.
     <usetemplate
@@ -254,7 +268,7 @@ An error occurred while updating [APP_NAME]. Please download the latest version 
    icon="alertmodal.tga"
    name="LoginFailedNoNetwork"
    type="alertmodal">
-Could not connect to the [SECOND_LIFE_GRID]. 
+Could not connect to the [SECOND_LIFE_GRID].
 &apos;[DIAGNOSTIC]&apos;
 Make sure your Internet connection is working properly.
 	<usetemplate
@@ -415,7 +429,7 @@ Save all changes to clothing/body parts?
    icon="alertmodal.tga"
    name="GrantModifyRights"
    type="alertmodal">
-Granting modify rights to another resident allows them to change, delete or take ANY objects you may have in-world. Be VERY careful when handing out this permission.
+Granting modify rights to another Resident allows them to change, delete or take ANY objects you may have in-world. Be VERY careful when handing out this permission.
 Do you want to grant modify rights for [NAME]?
     <usetemplate
      name="okcancelbuttons"
@@ -427,7 +441,7 @@ Do you want to grant modify rights for [NAME]?
    icon="alertmodal.tga"
    name="GrantModifyRightsMultiple"
    type="alertmodal">
-Granting modify rights to another resident allows them to change ANY objects you may have in-world. Be VERY careful when handing out this permission.
+Granting modify rights to another Resident allows them to change ANY objects you may have in-world. Be VERY careful when handing out this permission.
 Do you want to grant modify rights for the selected Residents?
     <usetemplate
      name="okcancelbuttons"
@@ -1529,6 +1543,13 @@ Please make sure none are locked, and that you own all of them.
 
   <notification
    icon="alertmodal.tga"
+   name="CannotLinkPermanent"
+   type="alertmodal">
+    Objects cannot be linked across region boundaries.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="CannotLinkDifferentOwners"
    type="alertmodal">
 Unable to link because not all of the objects have the same owner.
@@ -1619,7 +1640,7 @@ Could not find &apos;data&apos; chunk in WAV header:
 Wrong chunk size in WAV file:
 [FILE]
   </notification>
-  
+
   <notification
    icon="alertmodal.tga"
    name="SoundFileInvalidTooLong"
@@ -1694,11 +1715,11 @@ Unable to upload [FILE] due to the following reason: [REASON]
 Please try again later.
   </notification>
 
-   <notification
-    icon="alertmodal.tga"
-    name="UploadCostConfirmation"
-    type="alertmodal">
-This upload will cost L$[PRICE], do you wish to continue with the upload?
+  <notification
+   icon="alertmodal.tga"
+   name="UploadCostConfirmation"
+   type="alertmodal">
+This upload will cost [CURRENCY][PRICE], do you wish to continue with the upload?
     <usetemplate
      name="okcancelbuttons"
      notext="Cancel"
@@ -1831,7 +1852,7 @@ Sorry, but system was unable to locate landmark destination.
   <notification
    icon="alertmodal.tga"
    name="timeout_tport"
-   type="alertmodal">
+   type="notifytip">
 Sorry, but system was unable to complete the teleport connection.  Try again in a moment.
   </notification>
   <notification
@@ -1855,7 +1876,7 @@ The asset queue in this region is currently clogged so your teleport request wil
   <notification
    icon="alertmodal.tga"
    name="expired_tport"
-   type="alertmodal">
+   type="notifytip">
 Sorry, but the system was unable to complete your teleport request in a timely fashion. Please try again in a few minutes.
   </notification>
   <notification
@@ -1896,7 +1917,9 @@ Unable to force land ownership because selection spans multiple regions. Please 
    icon="alertmodal.tga"
    name="ForceOwnerAuctionWarning"
    type="alertmodal">
-This parcel is up for auction. Forcing ownership will cancel the auction and potentially make some residents unhappy if bidding has begun. Force ownership?
+This parcel is up for auction. Forcing ownership will cancel the auction and potentially make some Residents unhappy if bidding has begun.
+Force ownership?
+    <tag>confirm</tag>
     <usetemplate
      name="okcancelbuttons"
      notext="Cancel"
@@ -2626,7 +2649,7 @@ Display settings have been set to recommended levels based on your system config
   <notification
    icon="alertmodal.tga"
    name="AvatarMoved"
-   type="alertmodal">
+   type="notify">
 Your [TYPE] location is not currently available. [HELP]
 You have been moved into a nearby region.
   </notification>
@@ -2634,7 +2657,7 @@ You have been moved into a nearby region.
   <notification
    icon="alertmodal.tga"
    name="ClothingLoading"
-   type="alertmodal">
+   type="notifytip">
 Your clothing is still downloading.
 You can use [SECOND_LIFE] normally and other people will see you correctly.
     <form name="form">
@@ -2860,7 +2883,7 @@ Can&apos;t add estate owner to estate &apos;Banned Resident&apos; list.
   <notification
    icon="alertmodal.tga"
    name="CanNotChangeAppearanceUntilLoaded"
-   type="alertmodal">
+   type="notifytip">
 Can&apos;t change appearance until clothing and shape are loaded.
   </notification>
 
@@ -3061,6 +3084,7 @@ Visit the [SECOND_LIFE] Public Issue Tracker, where you can report bugs and othe
    name="WebLaunchSinguIssue"
    type="alertmodal">
 Visit the Singularity Issue Tracker, to report bugs and issues with Singularity Viewer.
+Please be sure that your report won't be a duplicate of an existing one.
     <usetemplate
      ignoretext="When launching web browser to view Singularity Issue Tracker"
      name="okcancelignore"
@@ -3096,7 +3120,7 @@ Go to the Official [GRID_OWNER] Blog, for the latest news and information.
    icon="alertmodal.tga"
    name="WebLaunchLSLGuide"
    type="alertmodal">
-Go to the Scripting Guide for scripting help?
+Do you want to open the Scripting Guide for help with scripting?
     <usetemplate
      ignoretext="When launching web browser to view the Scripting Guide"
      name="okcancelignore"
@@ -3108,7 +3132,7 @@ Go to the Scripting Guide for scripting help?
    icon="alertmodal.tga"
    name="WebLaunchLSLWiki"
    type="alertmodal">
-Go to the LSL Portal for scripting help?
+Do you want to visit the LSL Portal for help with scripting?
     <usetemplate
      ignoretext="When launching web browser to view the LSL Portal"
      name="okcancelignore"
@@ -3544,6 +3568,18 @@ Kick [EVIL_USER] from this estate?
   </notification>
 
   <notification
+   icon="alert.tga"
+   label="Confirm Kick and Ban"
+   name="EstateBanUser"
+   type="alert">
+Kick and Ban [EVIL_USER] from this estate?
+    <usetemplate
+     name="okcancelbuttons"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
    icon="alertmodal.tga"
    name="EstateChangeCovenant"
    type="alertmodal">
@@ -3715,7 +3751,7 @@ You can click &apos;Change Preference&apos; to raise your maturity Rating prefer
 	  icon="alertmodal.tga"
 	  name="TooManyPrimsSelected"
 	  type="alertmodal">
-		"There are too many prims selected.  Please select [MAX_PRIM_COUNT] or fewer prims and try again"
+There are too many prims selected.  Please select [MAX_PRIM_COUNT] or fewer prims and try again
 		<usetemplate
 		 name="okbutton"
 		 yestext="OK"/>
@@ -4231,7 +4267,7 @@ Default: off
    label="Voice Version Mismatch"
    name="VoiceVersionMismatch"
    type="alertmodal">
-This version of [APP_NAME] is not compatible with the Voice Chat feature in this region. Please upgrate to the latest version.
+This version of [APP_NAME] is not compatible with the Voice Chat feature in this region. In order for Voice Chat to function correctly you will need to update [APP_NAME].
   </notification>
 
   <notification
@@ -4782,31 +4818,6 @@ Put it in a web page to give others easy access to this location or try it out y
 
   <notification
    icon="alertmodal.tga"
-   name="GraphicsPreferencesHelp"
-   type="alertmodal">
-This panel controls window size and resolution and the quality of the client&apos;s graphics.  The Preferences &gt; Graphics interface allows you to choose between four graphics levels: Low, Mid, High, and Ultra. You may also customize your graphics settings by checking the Custom checkbox and manipulating the following settings:
-
-Shaders: Enable or disable various types of pixel shaders.
-
-Reflection Detail: Sets the types of objects that water can reflect.
-
-Avatar Rendering: Sets options that affect how the client renders avatars.
-
-Draw Distance: Affects how far out from your viewpoint objects will be rendered in the scene.
-
-Max Particle Count: Sets the maximum number of particles you are able to see on your screen at once.
-
-Post Process Quality: Sets the resolution with which Glow is rendered.
-
-Mesh Detail: Sets the amount of detail or number of triangles used in rendering certain objects. A higher value takes longer to render, but makes these objects appear with more detail.
-
-Lighting Detail: Selects what types of lights you would like to render.
-
-Terrain Detail: Sets the amount of detail you would like to see for the terrain texture.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
    name="WLSavePresetAlert"
    type="alertmodal">
 Do you wish to overwrite the saved preset?
@@ -5246,7 +5257,7 @@ You cannot edit or delete a default preset.
   <notification
    icon="alertmodal.tga"
    name="ChatterBoxSessionStartError"
-   type="alertmodal">
+   type="notifytip">
 Unable to start a new chat session with [RECIPIENT].
 [REASON]
     <usetemplate
@@ -5257,7 +5268,7 @@ Unable to start a new chat session with [RECIPIENT].
   <notification
    icon="alertmodal.tga"
    name="ChatterBoxSessionEventError"
-   type="alertmodal">
+   type="notifytip">
 [EVENT]
 [REASON]
     <usetemplate
@@ -5268,7 +5279,7 @@ Unable to start a new chat session with [RECIPIENT].
   <notification
    icon="alertmodal.tga"
    name="ForceCloseChatterBoxSession"
-   type="alertmodal">
+   type="notifytip">
 Your chat session with [NAME] must close.
 [REASON]
     <usetemplate
@@ -5520,7 +5531,7 @@ Terrain.raw downloaded
    icon="notifytip.tga"
    name="GestureMissing"
    type="notifytip">
-Gesture [NAME] is missing from database.
+Gesture [NAME] is missing from the database.
   </notification>
 
   <notification
@@ -5879,7 +5890,7 @@ The objects on the selected parcel of land that is owned by [NAME] have been ret
    icon="notify.tga"
    name="OtherObjectsReturned2"
    type="notify">
-The objects on the selected parcel of land owned by the resident &apos;[NAME]&apos; have been returned to their owner.
+The objects on the selected parcel of land owned by the Resident &apos;[NAME]&apos; have been returned to their owner.
   </notification>
 
   <notification
@@ -5912,7 +5923,7 @@ You can be hurt here. If you die, you will be teleported to your home location.
    name="NoFly"
    type="notify">
 This land has flying disabled (&apos;no fly&apos;).
-You cannot fly here.
+You cannot fly here, without Always allow fly enabled from System preferences.
     <unique/>
   </notification>
 
@@ -5943,6 +5954,61 @@ You cannot create objects here.
   </notification>
 
   <notification
+     icon="notify.tga"
+     name="PathfindingDirty"
+     type="notify">
+    <unique/>
+    The region has pending pathfinding changes.  If you have build rights, you may rebake the region by clicking on the “Rebake region” button.
+  </notification>
+
+  <notification
+     icon="notify.tga"
+     name="DynamicPathfindingDisabled"
+     type="notify">
+    <unique/>
+    Dynamic pathfinding is not enabled on this region.  Scripted objects using pathfinding LSL calls may not operate as expected on this region.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingRebakeNavmesh"
+   type="alertmodal">
+    <unique/>
+    Changing certain objects in this region could cause other moving objects to behave incorrectly.  To make moving objects behave correctly, click the “Rebake region” button.  Choose “Help” for more information.
+    <url
+      option="1"
+      name="url"
+      target = "_external">
+      http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer
+    </url>
+    <usetemplate
+     name="okhelpignore"
+     ignoretext="Changing certain objects in this region could cause other moving objects to behave incorrectly."
+     yestext="OK"
+     helptext="Help"
+     />
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingCannotRebakeNavmesh"
+   type="alertmodal">
+    <unique/>
+    An error occurred.  There may be a network or server problem, or you may not have build rights.  Sometimes logging out and back in will solve this problem.
+    <usetemplate
+     name="okbutton"
+     yestext="OK"
+     />
+  </notification>
+  <notification
+   icon="notify.tga"
+   name="SeeAvatars"
+   type="notify">
+    <unique/>    
+This parcel hides avatars and text chat from another parcel.   You can&apos;t see other residents outside the parcel, and those outside are not able to see you.  Regular text chat on channel 0 is also blocked.
+  </notification>
+
+  <notification
    icon="notify.tga"
    name="ScriptsStopped"
    type="notify">
@@ -5961,14 +6027,14 @@ This region is not running any scripts.
    name="NoOutsideScripts"
    type="notify">
 This land has outside scripts disabled (&apos;no outside scripts&apos;).
-No scripts will run except those belonging to the land owner.
+No scripts will work here except those belonging to the land owner.
   </notification>
 
   <notification
    icon="notify.tga"
    name="ClaimPublicLand"
    type="notify">
-Can only claim public land in region you&apos;re in.
+You can only claim public land in the Region you&apos;re in.
   </notification>
 
   <notification
@@ -6225,6 +6291,7 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
    name="GodMessage"
    type="notify">
 [NAME]
+
 [MESSAGE]
   </notification>
 
@@ -6253,7 +6320,7 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
    icon="notify.tga"
    name="TeleportOffered"
    type="notify">
-[NAME] has offered to teleport you to his or her location:
+[NAME] has offered to teleport you to their location:
 
 [MESSAGE]
     <form name="form">
@@ -7072,6 +7139,19 @@ You locally updated a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME]
 - Your CPU speed does not meet the minimum requirements.
   </global>
 
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_ChangeToFlexiblePath"
+   type="alertmodal">
+    The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh.
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
   <global name="UnsupportedGLRequirements">
     You do not appear to have the proper hardware requirements for [APP_NAME]. The viewer requires an OpenGL graphics card that has multitexture support. If this is the case, you may want to make sure that you have the latest drivers for your graphics card, and service packs and patches for your operating system.
   </global>
@@ -7299,4 +7379,3 @@ Your shape, skin, hair or eyes might be defect.
 
 
 </notifications>
-

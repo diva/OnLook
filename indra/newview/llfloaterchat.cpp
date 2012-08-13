@@ -135,9 +135,9 @@ void LLFloaterChat::draw()
 {
 	// enable say and shout only when text available
 		
-	childSetValue("toggle_active_speakers_btn", childIsVisible("active_speakers_panel"));
+	mToggleActiveSpeakersBtn->setValue(mPanel->getVisible());
 
-	LLChatBar* chat_barp = getChild<LLChatBar>("chat_panel", TRUE);
+	LLChatBar* chat_barp = mChatPanel;
 	if (chat_barp)
 	{
 		chat_barp->refresh();
@@ -156,6 +156,9 @@ BOOL LLFloaterChat::postBuild()
 	{
 		chat_barp->setGestureCombo(getChild<LLComboBox>( "Gesture"));
 	}
+
+	mToggleActiveSpeakersBtn.connect(this,"toggle_active_speakers_btn");
+	mChatPanel.connect(this,"chat_panel");
 	return TRUE;
 }
 
@@ -316,7 +319,7 @@ void LLFloaterChat::addChatHistory(const LLChat& chat, bool log_to_file)
 	{
 		// desaturate muted chat
 		LLColor4 muted_color = lerp(color, LLColor4::grey, 0.5f);
-		add_timestamped_line(history_editor_with_mute, chat, color);
+		add_timestamped_line(history_editor_with_mute, chat, muted_color);
 	}
 	
 	// add objects as transient speakers that can be muted
@@ -452,20 +455,6 @@ void LLFloaterChat::addChat(const LLChat& chat,
 	}
 // [/RLVa:KB]
 
-#if LL_LCD_COMPILE
-	// add into LCD displays
-	if (!invisible_script_debug_chat)
-	{
-		if (!from_instant_message)
-		{
-			AddNewChatToLCD(chat.mText);
-		}
-		else
-		{
-			AddNewIMToLCD(chat.mText);
-		}
-	}
-#endif
 	if (!invisible_script_debug_chat 
 		&& !chat.mMuted 
 		&& gConsole 

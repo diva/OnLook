@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="floater_hex" title="Editor Hexadecimal" >
-	  <text name="status_text" >
-			 Cargando...
-	  </text>
-	  <slider label="Columnas" name="column_count"/>
-	  <button name="upload_btn" label="[UPLOAD]"/>
-	  <button name="save_btn" label="Guardar"/>
-	  <hex_editor name="hex"/>
+	<text name="status_text" >
+		Cargando...
+	</text>
+	<slider label="Columnas" name="column_count"/>
+	<button name="upload_btn" label="[UPLOAD]"/>
+	<button name="save_btn" label="Guardar"/>
+	<hex_editor name="hex"/>
 </floater>

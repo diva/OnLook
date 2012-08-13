@@ -71,7 +71,6 @@
 #include "lluictrlfactory.h"
 #include "llfeaturemanager.h"
 #include "llviewershadermgr.h"
-#include "llfloaterhardwaresettings.h"
 #include "llboost.h"
 
 //RN temporary includes for resolution switching
@@ -110,9 +109,6 @@ BOOL LLPanelDisplay::postBuild()
 	
 	// Help button
 	childSetAction("GraphicsPreferencesHelpButton", onOpenHelp, this);
-
-	// Hardware settings button
-	childSetAction("GraphicsHardwareButton", onOpenHardwareSettings, NULL);
 
 	//============================================================================
 	// Resolution
@@ -223,6 +219,9 @@ BOOL LLPanelDisplay::postBuild()
 	mCtrlCustomSettings->setCallbackUserData(this);
 
 	mGraphicsBorder = getChild<LLViewBorder>("GraphicsBorder");
+
+	// Enable Transparent Water
+	mCtrlTransparentWater = getChild<LLCheckBoxCtrl>("TransparentWater");
 
 	//----------------------------------------------------------------------------
 	// Enable Bump/Shiny
@@ -356,6 +355,9 @@ BOOL LLPanelDisplay::postBuild()
 	mShadowDetailText = getChild<LLTextBox>("ShadowDetailText");
 	mTerrainScaleText = getChild<LLTextBox>("TerrainScaleText");
 
+	// Hardware tab
+	childSetCommitCallback("vbo", &LLPanelDisplay::onRenderVBOEnable, this);
+
 	refresh();
 
 	return TRUE;
@@ -414,6 +416,7 @@ void LLPanelDisplay::refresh()
 	mQualityPerformance = gSavedSettings.getU32("RenderQualityPerformance");
 	mCustomSettings = gSavedSettings.getBOOL("RenderCustomSettings");
 
+	mTransparentWater = gSavedSettings.getBOOL("RenderTransparentWater");
 	// shader settings
 	mBumpShiny = gSavedSettings.getBOOL("RenderObjectBump");
 	mShaderEnable = gSavedSettings.getBOOL("VertexShaderEnable");
@@ -459,6 +462,17 @@ void LLPanelDisplay::refresh()
 	updateSliderText(mCtrlPostProcess, mPostProcessText);
 	updateSliderText(mCtrlSkyFactor, mSkyFactorText);
 
+	// Hardware tab
+	mUseVBO = gSavedSettings.getBOOL("RenderVBOEnable");
+	mUseFBO = gSavedSettings.getBOOL("RenderUseFBO");
+	mUseAniso = gSavedSettings.getBOOL("RenderAnisotropic");
+	mFSAASamples = gSavedSettings.getU32("RenderFSAASamples");
+	mGamma = gSavedSettings.getF32("RenderGamma");
+	mVideoCardMem = gSavedSettings.getS32("TextureMemory");
+	mFogRatio = gSavedSettings.getF32("RenderFogRatio");
+
+	childSetValue("fsaa", (LLSD::Integer) mFSAASamples);
+
 	refreshEnabledState();
 }
 
@@ -499,10 +513,6 @@ void LLPanelDisplay::refreshEnabledState()
 	bool bumpshiny = gGLManager.mHasCubeMap && LLCubeMap::sUseCubeMaps && LLFeatureManager::getInstance()->isFeatureAvailable("RenderObjectBump");
 	mCtrlBumpShiny->setEnabled(bumpshiny ? TRUE : FALSE);
 
-	// Avatar Mode
-	S32 max_avatar_shader = LLViewerShaderMgr::instance()->mMaxAvatarShaderLevel;
-	mCtrlAvatarVP->setEnabled((max_avatar_shader > 0) ? TRUE : FALSE);
-	
 	if (gSavedSettings.getBOOL("VertexShaderEnable") == FALSE || 
 		gSavedSettings.getBOOL("RenderAvatarVP") == FALSE)
 	{
@@ -513,6 +523,7 @@ void LLPanelDisplay::refreshEnabledState()
 		mCtrlAvatarCloth->setEnabled(true);
 	}
 
+	static LLCachedControl<bool> wlatmos("WindLightUseAtmosShaders",false);
 	//I actually recommend RenderUseFBO:FALSE for ati users when not using deferred, so RenderUseFBO shouldn't control visibility of the element.
 	// Instead, gGLManager.mHasFramebufferObject seems better as it is determined by hardware and not current user settings. -Shyotl
 	//Enabling deferred will force RenderUseFBO to TRUE.
@@ -520,13 +531,14 @@ void LLPanelDisplay::refreshEnabledState()
 		LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred") && //Ensure it's enabled in the gpu feature table
 		LLFeatureManager::getInstance()->isFeatureAvailable("RenderAvatarVP") && //Hardware Skinning. Deferred forces RenderAvatarVP to true
 		LLFeatureManager::getInstance()->isFeatureAvailable("VertexShaderEnable") && gSavedSettings.getBOOL("VertexShaderEnable") && //Basic Shaders
-		LLFeatureManager::getInstance()->isFeatureAvailable("WindLightUseAtmosShaders") && gSavedSettings.getBOOL("WindLightUseAtmosShaders"); //Atmospheric Shaders
+		LLFeatureManager::getInstance()->isFeatureAvailable("WindLightUseAtmosShaders") && wlatmos; //Atmospheric Shaders
 
 
 	mCtrlDeferred->setEnabled(can_defer);
-	mCtrlShadowDetail->setEnabled(can_defer && gSavedSettings.getBOOL("RenderDeferred"));
-	mCtrlAmbientOcc->setEnabled(can_defer && gSavedSettings.getBOOL("RenderDeferred"));
-	mCtrlDeferredDoF->setEnabled(can_defer && gSavedSettings.getBOOL("RenderDeferred"));
+	static LLCachedControl<bool> render_deferred("RenderDeferred",false);
+	mCtrlShadowDetail->setEnabled(can_defer && render_deferred);
+	mCtrlAmbientOcc->setEnabled(can_defer && render_deferred);
+	mCtrlDeferredDoF->setEnabled(can_defer && render_deferred);
 
 	// Disable max non-impostors slider if avatar impostors are off
 	mCtrlNonImpostors->setEnabled(gSavedSettings.getBOOL("RenderUseImpostors"));
@@ -539,15 +551,15 @@ void LLPanelDisplay::refreshEnabledState()
 	mCtrlShaderEnable->setEnabled(fCtrlShaderEnable && (!gRlvHandler.hasBehaviour(RLV_BHVR_SETENV) || !mShaderEnable));
 // [/RLVa:KB]
 
-	BOOL shaders = mCtrlShaderEnable->get();
+	bool shaders = mCtrlShaderEnable->get();
 	if (shaders)
 	{
 		mRadioTerrainDetail->setValue(1);
-		mRadioTerrainDetail->setEnabled(FALSE);
+		mRadioTerrainDetail->setEnabled(false);
 	}
 	else
 	{
-		mRadioTerrainDetail->setEnabled(TRUE);
+		mRadioTerrainDetail->setEnabled(true);
 	}
 
 	// *HACK just checks to see if we can use shaders... 
@@ -559,9 +571,52 @@ void LLPanelDisplay::refreshEnabledState()
 	mCtrlWindLight->setEnabled(fCtrlWindLightEnable && (!gRlvHandler.hasBehaviour(RLV_BHVR_SETENV) || !mWindLight));
 // [/RLVa:KB]
 
-	// turn off sky detail if atmostpherics isn't on
-	mCtrlSkyFactor->setEnabled(gSavedSettings.getBOOL("WindLightUseAtmosShaders"));
-	mSkyFactorText->setEnabled(gSavedSettings.getBOOL("WindLightUseAtmosShaders"));
+	// turn off sky detail if atmospherics isn't on
+	mCtrlSkyFactor->setEnabled(wlatmos);
+	mSkyFactorText->setEnabled(wlatmos);
+
+	// Avatar Mode and FBO
+	if (render_deferred && wlatmos && shaders)
+	{
+		childSetEnabled("fbo", false);
+		childSetValue("fbo", true);
+		mCtrlAvatarVP->setEnabled(false);
+		gSavedSettings.setBOOL("RenderAvatarVP", true);
+	}
+	else if (!shaders)
+	{
+		childSetEnabled("fbo", gGLManager.mHasFramebufferObject);
+		mCtrlAvatarVP->setEnabled(false);
+		gSavedSettings.setBOOL("RenderAvatarVP", false);
+	}
+	else
+	{
+		childSetEnabled("fbo", gGLManager.mHasFramebufferObject);
+		mCtrlAvatarVP->setEnabled(true);
+	}
+
+	// Hardware tab
+	S32 min_tex_mem = LLViewerTextureList::getMinVideoRamSetting();
+	S32 max_tex_mem = LLViewerTextureList::getMaxVideoRamSetting();
+	childSetMinValue("GrapicsCardTextureMemory", min_tex_mem);
+	childSetMaxValue("GrapicsCardTextureMemory", max_tex_mem);
+
+	if (!LLFeatureManager::getInstance()->isFeatureAvailable("RenderVBOEnable") ||
+		!gGLManager.mHasVertexBufferObject)
+	{
+		childSetEnabled("vbo", false);
+		//Streaming VBOs -Shyotl
+		childSetEnabled("vbo_stream", false);
+	}
+	else
+	{
+		childSetEnabled("vbo_stream", LLVertexBuffer::sEnableVBOs);
+	}
+
+	// if no windlight shaders, enable gamma, and fog distance
+	childSetEnabled("gamma",!wlatmos);
+	childSetEnabled("fog",  !wlatmos);
+	childSetVisible("note",  wlatmos);
 
 	// now turn off any features that are unavailable
 	disableUnavailableSettings();
@@ -678,6 +733,7 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	llassert(mSkyFactorText != NULL);
 	llassert(mPostProcessText != NULL);
 
+	llassert(mCtrlTransparentWater != NULL);
 	llassert(mCtrlBumpShiny != NULL);
 	llassert(mCtrlWindLight != NULL);
 	llassert(mCtrlAvatarVP != NULL);
@@ -730,6 +786,7 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	mSkyFactorText->setVisible(!isHidden);
 	mPostProcessText->setVisible(!isHidden);
 
+	mCtrlTransparentWater->setVisible(!isHidden);
 	mCtrlBumpShiny->setVisible(!isHidden);
 	mCtrlWindLight->setVisible(!isHidden);
 	mCtrlAvatarVP->setVisible(!isHidden);
@@ -777,6 +834,7 @@ void LLPanelDisplay::cancel()
 
 	gSavedSettings.setBOOL("RenderCustomSettings", mCustomSettings);
 
+	gSavedSettings.setBOOL("RenderTransparentWater", mTransparentWater);
 	gSavedSettings.setBOOL("RenderObjectBump", mBumpShiny);
 	gSavedSettings.setBOOL("VertexShaderEnable", mShaderEnable);
 	gSavedSettings.setBOOL("WindLightUseAtmosShaders", mWindLight);
@@ -805,6 +863,15 @@ void LLPanelDisplay::cancel()
 	gSavedSettings.setU32("WLSkyDetail", mSkyLOD);
 	gSavedSettings.setS32("RenderMaxPartCount", mParticleCount);
 	gSavedSettings.setS32("RenderGlowResolutionPow", mPostProcess);
+
+	// Hardware tab
+	gSavedSettings.setBOOL("RenderVBOEnable", mUseVBO);
+	gSavedSettings.setBOOL("RenderUseFBO", mUseFBO);
+	gSavedSettings.setBOOL("RenderAnisotropic", mUseAniso);
+	gSavedSettings.setU32("RenderFSAASamples", mFSAASamples);
+	gSavedSettings.setF32("RenderGamma", mGamma);
+	gSavedSettings.setS32("TextureMemory", mVideoCardMem);
+	gSavedSettings.setF32("RenderFogRatio", mFogRatio);
 }
 
 void LLPanelDisplay::apply()
@@ -815,6 +882,21 @@ void LLPanelDisplay::apply()
 	if (mCtrlWindowed->get())
 	{
 		applyWindowSize();
+	}
+
+	// Hardware tab
+	//Still do a bit of voodoo here. V2 forces restart to change FSAA with FBOs off.
+	//Let's not do that, and instead do pre-V2 FSAA change handling for that particular case
+	if(!LLRenderTarget::sUseFBO && (mFSAASamples != (U32)childGetValue("fsaa").asInteger()))
+	{
+		bool logged_in = (LLStartUp::getStartupState() >= STATE_STARTED);
+		LLWindow* window = gViewerWindow->getWindow();
+		LLCoordScreen size;
+		window->getSize(&size);
+		gViewerWindow->changeDisplaySettings(window->getFullscreen(),
+												size,
+												gSavedSettings.getBOOL("DisableVerticalSync"),
+												logged_in);
 	}
 }
 
@@ -847,11 +929,6 @@ void LLPanelDisplay::onOpenHelp(void* user_data)
 	const char* xml_alert = "GraphicsPreferencesHelp";
 	LLFloater* parent_floater = gFloaterView->getParentFloater(self);
 	LLNotifications::instance().add(parent_floater->contextualNotification(xml_alert));
-}
-
-void LLPanelDisplay::onOpenHardwareSettings(void* user_data)
-{
-	LLFloaterHardwareSettings::show();
 }
 
 void LLPanelDisplay::onApplyResolution(LLUICtrl* src, void* user_data)
@@ -1030,6 +1107,15 @@ void LLPanelDisplay::onVertexShaderEnable(LLUICtrl* self, void* data)
 	LLFloaterPreference::refreshEnabledGraphics();
 }
 
+//static
+void LLPanelDisplay::onRenderVBOEnable(LLUICtrl* self, void* data)
+{
+	LLPanelDisplay* panel = (LLPanelDisplay*)data;
+	bool enable = panel->childGetValue("vbo").asBoolean();
+	panel->childSetEnabled("vbo_stream", enable);
+	if(!enable)	panel->childSetValue("vbo_stream", false);
+}
+
 void LLPanelDisplay::setHardwareDefaults(void* user_data)
 {
 	LLFeatureManager::getInstance()->applyRecommendedSettings();
@@ -1092,7 +1178,7 @@ void LLPanelDisplay::updateMeterText(LLUICtrl* ctrl, void* user_data)
 	LLTextBox* m1 = panel->getChild<LLTextBox>("DrawDistanceMeterText1");
 	LLTextBox* m2 = panel->getChild<LLTextBox>("DrawDistanceMeterText2");
 
-	// toggle the two text boxes based on whether we have 1 or two digits
+	// toggle the two text boxes based on whether we have 2 or 3 digits
 	F32 val = slider->getValueF32();
 	bool two_digits = val < 100;
 	m1->setVisible(two_digits);

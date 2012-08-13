@@ -650,9 +650,9 @@ LLSD LLObjectBackup::primsToLLSD(LLViewerObject::child_list_t child_list, bool i
 		prim_llsd["scale"] = object->getScale().getValue();
 
 		// Flags
-		prim_llsd["shadows"] = object->flagCastShadows();
+		prim_llsd["shadows"] = FALSE;
 		prim_llsd["phantom"] = object->flagPhantom();
-		prim_llsd["physical"] = (BOOL)(object->mFlags & FLAGS_USE_PHYSICS);
+		prim_llsd["physical"] = object->flagUsePhysics();
 
 		// Volume params
 		LLVolumeParams params = object->getVolume()->getParams();
@@ -994,9 +994,9 @@ void LLObjectBackup::xmlToPrim(LLSD prim_llsd, LLViewerObject* object)
 
 	object->setScale(prim_llsd["scale"]);
 
-	if (prim_llsd.has("shadows"))
+	/*if (prim_llsd.has("shadows"))
 		if (prim_llsd["shadows"].asInteger() == 1)
-			object->setFlags(FLAGS_CAST_SHADOWS, true);
+			object->setFlags(FLAGS_CAST_SHADOWS, true);*/
 
 	if (prim_llsd.has("phantom"))
 		if (prim_llsd["phantom"].asInteger() == 1)
@@ -1068,7 +1068,6 @@ void LLObjectBackup::xmlToPrim(LLSD prim_llsd, LLViewerObject* object)
 	//if (mPrimImportIter != mThisGroup.endMap())
 	//	mPrimImportIter++;
 
-	object->sendRotationUpdate();
 	object->sendTEUpdate();	
 	object->sendShapeUpdate();
 	LLSelectMgr::getInstance()->sendMultipleUpdate(UPD_SCALE | UPD_POSITION);

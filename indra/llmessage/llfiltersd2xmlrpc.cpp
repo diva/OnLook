@@ -80,7 +80,6 @@
 
 #include "llbuffer.h"
 #include "llbufferstream.h"
-#include "llfasttimer.h"
 #include "llmemorystream.h"
 #include "llsd.h"
 #include "llsdserialize.h"

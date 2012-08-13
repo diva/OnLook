@@ -740,8 +740,8 @@ class LinuxManifest(ViewerManifest):
         if self.args['buildtype'].lower() in ['release', 'releasesse2']:
             print "* Going strip-crazy on the packaged binaries, since this is a RELEASE build"
             # makes some small assumptions about our packaged dir structure
-            self.run_command("find %(d)r/bin %(d)r/lib* -type f | xargs --no-run-if-empty strip --strip-unneeded" % {'d': self.get_dst_prefix()} )
-            self.run_command("find %(d)r/bin %(d)r/lib* -type f -not -name \\*.so | xargs --no-run-if-empty strip -s" % {'d': self.get_dst_prefix()} )
+            self.run_command("find %(d)r/bin %(d)r/lib* -type f | xargs -d '\n' --no-run-if-empty strip --strip-unneeded" % {'d': self.get_dst_prefix()} )
+            self.run_command("find %(d)r/bin %(d)r/lib* -type f -not -name \\*.so | xargs -d '\n' --no-run-if-empty strip -s" % {'d': self.get_dst_prefix()} )
 
         # Fix access permissions
         self.run_command("""
@@ -806,8 +806,15 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libopenal.so.1")
             self.path("libtcmalloc_minimal.so.0")
             self.path("libtcmalloc_minimal.so.0.2.2")
-            self.end_prefix("lib")
 
+            if 'extra_libraries' in self.args:
+                path_list = self.args['extra_libraries'].split('|')
+                for path in path_list:
+                    src_path = os.path.realpath(path)
+                    dst_path = os.path.basename(path)
+                    self.path(src_path, dst_path)
+
+            self.end_prefix("lib")
 
             # Vivox runtimes
             if self.prefix(src="vivox-runtime/i686-linux", dst="bin"):
@@ -837,12 +844,19 @@ class Linux_x86_64Manifest(LinuxManifest):
             self.path("libSDL-1.2.so*")
             self.path("libELFIO.so")
             self.path("libjpeg.so*")
-            self.path("libpng.so*")
+            self.path("libpng*.so*")
             self.path("libz.so*")
 
             # OpenAL
             self.path("libopenal.so*")
             self.path("libalut.so*")
+
+            if 'extra_libraries' in self.args:
+                path_list = self.args['extra_libraries'].split('|')
+                for path in path_list:
+                    src_path = os.path.realpath(path)
+                    dst_path = os.path.basename(path)
+                    self.path(src_path, dst_path)
 
             self.end_prefix("lib64")
 

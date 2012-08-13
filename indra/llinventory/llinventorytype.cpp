@@ -148,7 +148,7 @@ DEFAULT_ASSET_FOR_INV_TYPE[LLAssetType::AT_COUNT] =
 	LLInventoryType::IT_NONE,			// 46	AT_NONE
 	LLInventoryType::IT_NONE,			// 47	AT_NONE
 	LLInventoryType::IT_NONE,			// 48	AT_NONE
-	LLInventoryType::IT_MESH            // 49	AT_MESH
+	LLInventoryType::IT_MESH			// 49	AT_MESH
 };
 
 // static

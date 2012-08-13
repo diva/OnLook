@@ -440,7 +440,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		case LLAgent::TELEPORT_START_ARRIVAL:
 			// Transition to ARRIVING.  Viewer has received avatar update, etc., from destination simulator
 			gTeleportArrivalTimer.reset();
-			gViewerWindow->setProgressCancelButtonVisible(FALSE, std::string("Cancel")); //TODO: Translate
+				gViewerWindow->setProgressCancelButtonVisible(FALSE, LLTrans::getString("Cancel"));
 			gViewerWindow->setProgressPercent(75.f);
 			gAgent.setTeleportState( LLAgent::TELEPORT_ARRIVING );
 			gAgent.setTeleportMessage(
@@ -459,7 +459,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 					LLFirstUse::useTeleport();
 					gAgent.setTeleportState( LLAgent::TELEPORT_NONE );
 				}
-				gViewerWindow->setProgressCancelButtonVisible(FALSE, std::string("Cancel")); //TODO: Translate
+				gViewerWindow->setProgressCancelButtonVisible(FALSE, LLTrans::getString("Cancel"));
 				gViewerWindow->setProgressPercent(  arrival_fraction * 25.f + 75.f);
 				gViewerWindow->setProgressString(message);
 			}
@@ -1009,7 +1009,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 			{
 				gPipeline.mDeferredScreen.flush();
-				if(LLRenderTarget::sUseFBO)
+				if(gPipeline.mDeferredScreen.getFBO())
 				{
 					LLRenderTarget::copyContentsToFramebuffer(gPipeline.mDeferredScreen, 0, 0, gPipeline.mDeferredScreen.getWidth(), 
 															  gPipeline.mDeferredScreen.getHeight(), 0, 0, 
@@ -1021,7 +1021,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			else
 			{
 				gPipeline.mScreen.flush();
-				if(LLRenderTarget::sUseFBO)
+				if(gPipeline.mScreen.getFBO())
 				{				
 					LLRenderTarget::copyContentsToFramebuffer(gPipeline.mScreen, 0, 0, gPipeline.mScreen.getWidth(), 
 															  gPipeline.mScreen.getHeight(), 0, 0, 
@@ -1283,14 +1283,12 @@ void render_ui(F32 zoom_factor, int subfield, bool tiling)
 		if (to_texture)
 		{
 			gPipeline.renderBloom(gSnapshot, zoom_factor, subfield, tiling);
-			gPipeline.mScreen.flush(); //blit, etc.
 		}
-		/// We copy the frame buffer straight into a texture here,
-		/// and then display it again with compositor effects.
-		/// Using render to texture would be faster/better, but I don't have a 
-		/// grasp of their full display stack just yet.
+
 		if(gPipeline.canUseVertexShaders())
-			LLPostProcess::getInstance()->apply(gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight());
+		{
+			LLPostProcess::getInstance()->renderEffects(gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight());
+		}
 		
 		render_hud_elements();
 		render_hud_attachments();

@@ -61,22 +61,13 @@
 #include "llfloaterchat.h"
 #include "llviewerstats.h"
 #include "lluictrlfactory.h"
+#include "lltrans.h"
 
 #include "llselectmgr.h"
 
 ///----------------------------------------------------------------------------
 /// Local function declarations, constants, enums, and typedefs
 ///----------------------------------------------------------------------------
-
-// *TODO:Translate
-const std::string COMPILE_QUEUE_TITLE("Recompilation Progress");
-const std::string COMPILE_START_STRING("recompile");
-const std::string RESET_QUEUE_TITLE("Reset Progress");
-const std::string RESET_START_STRING("reset");
-const std::string RUN_QUEUE_TITLE("Set Running Progress");
-const std::string RUN_START_STRING("set running");
-const std::string NOT_RUN_QUEUE_TITLE("Set Not Running Progress");
-const std::string NOT_RUN_START_STRING("set not running");
 
 struct LLScriptQueueData
 {
@@ -211,8 +202,11 @@ BOOL LLFloaterScriptQueue::start()
 		n_objects = selectHandle->getRootObjectCount();
 	}
 
-	buffer = llformat("Starting %s of %d items.", mStartString.c_str(), n_objects); // *TODO: Translate
-	
+	LLStringUtil::format_map_t args;
+	args["[START]"] = mStartString;
+	args["[COUNT]"] = llformat ("%d", mObjectIDs.count());
+	buffer = getString ("Starting", args);
+
 	LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
 	list->addCommentText(buffer);
 
@@ -250,8 +244,7 @@ BOOL LLFloaterScriptQueue::nextObject()
 		LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
 
 		mDone = TRUE;
-		std::string buffer = "Done."; // *TODO: Translate
-		list->addCommentText(buffer);
+		list->addCommentText(getString("Done"));
 		childSetEnabled("close",TRUE);
 	}
 	return successful_start;
@@ -346,7 +339,7 @@ LLFloaterCompileQueue* LLFloaterCompileQueue::create(BOOL mono)
 }
 
 LLFloaterCompileQueue::LLFloaterCompileQueue(const std::string& name, const LLRect& rect)
-: LLFloaterScriptQueue(name, rect, COMPILE_QUEUE_TITLE, COMPILE_START_STRING)
+: LLFloaterScriptQueue(name, rect, LLTrans::getString("CompileQueueTitle"), LLTrans::getString("CompileQueueStart"))
 { }
 
 LLFloaterCompileQueue::~LLFloaterCompileQueue()
@@ -454,7 +447,7 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 			else
 			{
 				// It's now in the file, now compile it.
-				buffer = std::string("Downloaded, now compiling: ") + data->mScriptName; // *TODO: Translate
+				buffer = LLTrans::getString("CompileQueueDownloadedCompiling") + (": ") + data->mScriptName;
 
 				// Write script to local file for compilation.
 				LLFILE *fp = LLFile::fopen(filename, "wb");	 /*Flawfinder: ignore*/
@@ -493,19 +486,21 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 
 		if( LL_ERR_ASSET_REQUEST_NOT_IN_DATABASE == status )
 		{
-			LLChat chat(std::string("Script not found on server.")); // *TODO: Translate
+			LLChat chat(LLTrans::getString("CompileQueueScriptNotFound"));
 			LLFloaterChat::addChat(chat);
-			buffer = std::string("Problem downloading: ") + data->mScriptName; // *TODO: Translate
+
+			buffer = LLTrans::getString("CompileQueueProblemDownloading") + LLTrans::getString(":") + " " + data->mScriptName;
 		}
 		else if (LL_ERR_INSUFFICIENT_PERMISSIONS == status)
 		{
-			LLChat chat(std::string("Insufficient permissions to download a script.")); // *TODO: Translate
+			LLChat chat(LLTrans::getString("CompileQueueInsufficientPermDownload"));
 			LLFloaterChat::addChat(chat);
-			buffer = std::string("Insufficient permissions for: ") + data->mScriptName; // *TODO: Translate
+
+			buffer = LLTrans::getString("CompileQueueInsufficientPermFor") + LLTrans::getString(":") + " " + data->mScriptName;
 		}
 		else
 		{
-			buffer = std::string("Unknown failure to download ") + data->mScriptName; // *TODO: Translate
+			buffer = LLTrans::getString("CompileQueueUnknownFailure") + (" ") + data->mScriptName;
 		}
 
 		llwarns << "Problem downloading script asset." << llendl;
@@ -671,7 +666,7 @@ LLFloaterResetQueue* LLFloaterResetQueue::create()
 }
 
 LLFloaterResetQueue::LLFloaterResetQueue(const std::string& name, const LLRect& rect)
-: LLFloaterScriptQueue(name, rect, RESET_QUEUE_TITLE, RESET_START_STRING)
+: LLFloaterScriptQueue(name, rect, LLTrans::getString("ResetQueueTitle"), LLTrans::getString("ResetQueueStart"))
 { }
 
 LLFloaterResetQueue::~LLFloaterResetQueue()
@@ -698,7 +693,7 @@ void LLFloaterResetQueue::handleInventory(LLViewerObject* viewer_obj,
 				LLInventoryItem* item = (LLInventoryItem*)((LLInventoryObject*)(*it));
 				LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
 				std::string buffer;
-				buffer = std::string("Resetting: ") + item->getName(); // *TODO: Translate
+				buffer = getString("Resetting") + LLTrans::getString(":") + " " + item->getName();
 				list->addCommentText(buffer);
 				LLMessageSystem* msg = gMessageSystem;
 				msg->newMessageFast(_PREHASH_ScriptReset);
@@ -733,7 +728,7 @@ LLFloaterRunQueue* LLFloaterRunQueue::create()
 }
 
 LLFloaterRunQueue::LLFloaterRunQueue(const std::string& name, const LLRect& rect)
-: LLFloaterScriptQueue(name, rect, RUN_QUEUE_TITLE, RUN_START_STRING)
+: LLFloaterScriptQueue(name, rect, LLTrans::getString("RunQueueTitle"), LLTrans::getString("RunQueueStart"))
 { }
 
 LLFloaterRunQueue::~LLFloaterRunQueue()
@@ -741,7 +736,7 @@ LLFloaterRunQueue::~LLFloaterRunQueue()
 }
 
 void LLFloaterRunQueue::handleInventory(LLViewerObject* viewer_obj,
-										   LLInventoryObject::object_list_t* inv)
+										  LLInventoryObject::object_list_t* inv)
 {
 	// find all of the lsl, leaving off duplicates. We'll remove
 	// all matching asset uuids on compilation success.
@@ -760,7 +755,7 @@ void LLFloaterRunQueue::handleInventory(LLViewerObject* viewer_obj,
 				LLInventoryItem* item = (LLInventoryItem*)((LLInventoryObject*)(*it));
 				LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
 				std::string buffer;
-				buffer = std::string("Running: ") + item->getName(); // *TODO: Translate
+				buffer = getString("Running") + LLTrans::getString(":") + " " + item->getName();
 				list->addCommentText(buffer);
 
 				LLMessageSystem* msg = gMessageSystem;
@@ -797,7 +792,7 @@ LLFloaterNotRunQueue* LLFloaterNotRunQueue::create()
 }
 
 LLFloaterNotRunQueue::LLFloaterNotRunQueue(const std::string& name, const LLRect& rect)
-: LLFloaterScriptQueue(name, rect, NOT_RUN_QUEUE_TITLE, NOT_RUN_START_STRING)
+: LLFloaterScriptQueue(name, rect, LLTrans::getString("NotRunQueueTitle"), LLTrans::getString("NotRunQueueStart"))
 { }
 
 LLFloaterNotRunQueue::~LLFloaterNotRunQueue()
@@ -824,7 +819,7 @@ void LLFloaterNotRunQueue::handleInventory(LLViewerObject* viewer_obj,
 				LLInventoryItem* item = (LLInventoryItem*)((LLInventoryObject*)(*it));
 				LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
 				std::string buffer;
-				buffer = std::string("Not running: ") +item->getName(); // *TODO: Translate
+				buffer = getString("NotRunning") + LLTrans::getString(":") + " " + item->getName();
 				list->addCommentText(buffer);
 	
 				LLMessageSystem* msg = gMessageSystem;

@@ -1,82 +1,82 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <teleport_messages>
-  <message_set name="errors">
-    <message name="invalid_tport">
-      Ha habido un problema al procesar tu petición de teleporte. Debes volver a iniciar sesión para poder teleportarte. Si te sigue apareciendo este mensaje, revisa, por favor, las preguntas frecuentes en el Soporte técnico:
+	<message_set name="errors">
+		<message name="invalid_tport">
+			Ha habido un problema al procesar tu petición de teleporte. Debes volver a iniciar sesión para poder teleportarte. Si te sigue apareciendo este mensaje, revisa, por favor, las preguntas frecuentes en el Soporte técnico:
 www.secondlife.com/support
-    </message>
-    <message name="invalid_region_handoff">
-      Ha habido un problema al procesar tu paso a otra región. Debes volver a iniciar sesión para poder pasar de región a región. Si te sigue apareciendo este mensaje, revisa, por favor, las preguntas frecuentes en el Soporte técnico:
+		</message>
+		<message name="invalid_region_handoff">
+			Ha habido un problema al procesar tu paso a otra región. Debes volver a iniciar sesión para poder pasar de región a región. Si te sigue apareciendo este mensaje, revisa, por favor, las preguntas frecuentes en el Soporte técnico:
 www.secondlife.com/support      
-    </message>
-    <message name="blocked_tport">
-      Lo sentimos, en estos momentos los teleportes están bloqueados. Vuelve a intentarlo en un momento. Si sigues sin poder teleportarte, desconéctate y vuelve a iniciar sesión para solucionar el problema.      
-    </message>
-    <message name="nolandmark_tport">
-      Lo sentimos, pero el sistema no ha podido localizar el destino de este hito.      
-    </message>
-    <message name="timeout_tport">
-      Lo sentimos, pero el sistema no ha podido completar el teleporte.
+		</message>
+		<message name="blocked_tport">
+			Lo sentimos, en estos momentos los teleportes están bloqueados. Vuelve a intentarlo en un momento. Si sigues sin poder teleportarte, desconéctate y vuelve a iniciar sesión para solucionar el problema.      
+		</message>
+		<message name="nolandmark_tport">
+			Lo sentimos, pero el sistema no ha podido localizar el destino de este hito.      
+		</message>
+		<message name="timeout_tport">
+			Lo sentimos, pero el sistema no ha podido completar el teleporte.
 Vuelve a intentarlo en un momento.
- 	</message>
-    <message name="noaccess_tport">
-      Lo sentimos, pero no tienes acceso al destino de este teleporte.    
- 	</message>
- 	<message name="missing_attach_tport">
-      Aún no han llegado tus objetos anexados. Espera unos segundos más o desconéctate y vuelve a iniciar sesión antes de teleportarte.
+		</message>
+		<message name="noaccess_tport">
+			Lo sentimos, pero no tienes acceso al destino de este teleporte.    
+		</message>
+		<message name="missing_attach_tport">
+			Aún no han llegado tus objetos anexados. Espera unos segundos más o desconéctate y vuelve a iniciar sesión antes de teleportarte.
 		</message>
 		<message name="too_many_uploads_tport">
-			The asset queue in this region is currently clogged so your teleport
-request will not be able to succeed in a timely manner. Please try again
-in a few minutes or go to a less busy area.
+			La cola de espera en esta región está actualmente obstruida, 
+por lo que tu petición de teleporte no se atenderá en un tiempo prudencial. 
+Por favor, vuelve a intentarlo en unos minutos o ve a una zona menos ocupada.		
 		</message>
 		<message name="expired_tport">
-			Sorry, but the system was unable to complete your teleport request
-in a timely fashion. Please try again in a few minutes.
+			Lo sentimos, pero el sistema no ha podido atender a tu petición de teleporte 
+en un tiempo prudencial. Por favor, vuelve a intentarlo en unos pocos minutos.
 		</message>
 		<message name="expired_region_handoff">
-			Sorry, but the system was unable to complete your region crossing
-in a timely fashion. Please try again in a few minutes.
+			Lo sentimos, pero el sistema no ha podido completar tu paso a otra región 
+en un tiempo prudencial. Por favor, vuelve a intentarlo en unos pocos minutos.
 		</message>
 		<message name="no_host">
-			Unable to find teleport destination. The destination may be
-temporarily unavailable or no longer exists. Please try again
-in a few minutes.
+			Ha sido imposible encontrar el destino del teleporte: 
+o está desactivado temporalmente o ya no existe. 
+Por favor, vuelve a intentarlo en unos pocos minutos.
 		</message>
 		<message name="no_inventory_host">
-			The inventory system is currently unavailable.
+			En estos momentos no está disponible el sistema del inventario.
 		</message>
 	</message_set>
 	<message_set name="progress">
 		<message name="sending_dest">
-			Sending to destination.
+			Enviando al destino.
 		</message>
 		<message name="redirecting">
-			Redirecting to different location.
+			Redirigiendo a una ubicación diferente.
 		</message>
 		<message name="relaying">
-			Relaying to destination.
+			Reorientando el destino.
 		</message>
 		<message name="sending_home">
-			Sending home location request.
+			Enviando la petición de posición de la Base.
 		</message>
 		<message name="sending_landmark">
-			Sending landmark location request.
+			Enviando la petición de posición del hito.
 		</message>
 		<message name="completing">
-			Completing teleport.
+			Completando el teleporte.
 		</message>
 		<message name="resolving">
-			Resolving destination.
+			Resolviendo el destino.
 		</message>
 		<message name="contacting">
-			Contacting new region.
+			Contactando con la nueva región.
 		</message>
 		<message name="arriving">
-			Arriving...
+			Llegando...
 		</message>
 		<message name="requesting">
-			Requesting Teleport...
+			Solicitando Teleporte...
 		</message>
 	</message_set>
 </teleport_messages>

@@ -83,6 +83,8 @@
 #include "lldrawpoolbump.h"
 #include "emeraldboobutils.h"
 
+#include "NACLantispam.h"    // for NaCl Antispam Registry
+
 #ifdef TOGGLE_HACKED_GODLIKE_VIEWER
 BOOL 				gHackGodmode = FALSE;
 #endif
@@ -698,6 +700,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("AudioLevelVoice")->getSignal()->connect(boost::bind(&handleAudioVolumeChanged, _2));
 	gSavedSettings.getControl("AudioLevelDoppler")->getSignal()->connect(boost::bind(&handleAudioVolumeChanged, _2));
 	gSavedSettings.getControl("AudioLevelRolloff")->getSignal()->connect(boost::bind(&handleAudioVolumeChanged, _2));
+	gSavedSettings.getControl("AudioLevelUnderwaterRolloff")->getSignal()->connect(boost::bind(&handleAudioVolumeChanged, _2));
 	gSavedSettings.getControl("AudioStreamingMusic")->getSignal()->connect(boost::bind(&handleAudioStreamMusicChanged, _2));
 	gSavedSettings.getControl("MuteAudio")->getSignal()->connect(boost::bind(&handleAudioVolumeChanged, _2));
 	gSavedSettings.getControl("MuteMusic")->getSignal()->connect(boost::bind(&handleAudioVolumeChanged, _2));

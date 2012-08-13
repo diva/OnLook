@@ -20,9 +20,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>cbaafc55fb8b14283541791e82f13462</string>
+            <string>5add23ded1a53f57044132cb1aed4950</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/linux64-32bitcompatibilitylibs-20100903.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/linux64-32bitcompatibilitylibs-20100903_1.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -188,9 +188,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>a7c23f5395f79033dbb09b201f16a4ce</string>
+            <string>ac6e5b52d5cf13443607c09d8c62b6c5</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/boost-1.48.0-linux-x86_64-20120514.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/boost-1.48.0-linux-x86_64-20120719.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>

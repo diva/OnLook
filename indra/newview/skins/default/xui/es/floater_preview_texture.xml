@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="preview_texture">
 	<text name="desc txt">
-			Descripción:
+		Descripción:
 	</text>
 	<text name="uuid txt">
-			UUID:
+		UUID:
 	</text>
 	<text name="uploader txt">
-			Subida por:
+		Subida por:
 	</text>
 	<button label="Perfil" name="openprofile"/>
 	<text name="uploadtime txt">
-			Subida el:
+		Subida el:
 	</text>
 	<text name="alphanote">
-			Cargando...
+		Cargando...
 	</text>
 	<button label="Mantener" label_selected="Mantener" name="Keep"/>
 	<button label="Descartar" label_selected="Descartar" name="Discard"/>
 	<button label="Copiar al Inventario" name="Copy To Inventory"/>
 	<text name="dimensions">
-			Tamaño: [WIDTH] x [HEIGHT]
+		Tamaño: [WIDTH] x [HEIGHT]
 	</text>
 	<text name="aspect_ratio">
-			Aspecto Vista Previa
+		Aspecto Vista Previa
 	</text>
 	<combo_box name="combo_aspect_ratio" tool_tip="Vista Previa en aspecto fijo">
 		<combo_item name="Unconstrained">

@@ -45,6 +45,7 @@
 #include "lluictrlfactory.h"
 #include "llviewercontrol.h"
 #include "llstartup.h"
+#include "lltrans.h"
 
 LLDropTarget* mBuildDropTarget;
 LLPrefsAscentSys* LLPrefsAscentSys::sInst;
@@ -102,11 +103,11 @@ LLPrefsAscentSys::LLPrefsAscentSys()
 		LLUUID itemid = (LLUUID)gSavedPerAccountSettings.getString("EmeraldBuildPrefs_Item");
 		LLViewerInventoryItem* item = gInventory.getItem(itemid);
 
-		if		(item)				childSetValue("build_item_add_disp_rect_txt", "Currently set to:\n"+item->getName());
-		else if (itemid.isNull())	childSetValue("build_item_add_disp_rect_txt", "Currently\nnot set");
-		else 						childSetValue("build_item_add_disp_rect_txt", "Currently set to\nan item not on this account");
+		if		(item)				childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + LLTrans::getString(":") + "\n" +item->getName());
+		else if (itemid.isNull())	childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlyNotSet"));
+		else 						childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + "\n" + LLTrans::getString("AnItemNotOnThisAccount"));
 	}
-	else							childSetValue("build_item_add_disp_rect_txt", "You are\nnot logged in");
+	else							childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("NotLoggedIn"));
 
 	refreshValues();
     refresh();
@@ -165,7 +166,7 @@ void LLPrefsAscentSys::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
             gAudiop->triggerSound(LLUUID("58a38e89-44c6-c52b-deb8-9f1ddc527319"), gAgent.getID(), 1.0f, LLAudioEngine::AUDIO_TYPE_UI, lpos_global);
             LLChat chat;
             chat.mSourceType = CHAT_SOURCE_SYSTEM;
-            chat.mText = llformat("You are bestowed with powers beyond mortal comprehension.\nUse your newfound abilities wisely.\nUnlocked:\n- Animation Priority up to 7 - Meant for animations that should override anything and everything at all times. DO NOT USE THIS FOR GENERAL ANIMATIONS.\n- Right click > Destroy objects - Permanently deletes an object immediately, when you don't feel like waiting for the server to respond.\n- Right Click > Explode objects - Turns an object physical, temporary, and delinks it.");
+            chat.mText = LLTrans::getString("PowerUser1") + "\n" + LLTrans::getString("PowerUser2") + "\n" + LLTrans::getString("Unlocked:") + "\n" + LLTrans::getString("PowerUser3") + "\n- " + LLTrans::getString("RightClick") + " > " + LLTrans::getString("PowerUser4") + "\n- " + LLTrans::getString("RightClick") + " > " + LLTrans::getString("PowerUser5");
             LLFloaterChat::addChat(chat);
         }
     }
@@ -247,7 +248,7 @@ void LLPrefsAscentSys::onCommitTexturePicker(LLUICtrl* ctrl, void* userdata)
 void LLPrefsAscentSys::SinguBuildItemDrop(LLViewerInventoryItem* item)
 {
 	gSavedPerAccountSettings.setString("EmeraldBuildPrefs_Item", item->getUUID().asString());
-	sInst->childSetValue("build_item_add_disp_rect_txt","Currently set to:\n"+item->getName());
+	sInst->childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + LLTrans::getString(":") + "\n" + item->getName());
 }
 
 void LLPrefsAscentSys::refreshValues()

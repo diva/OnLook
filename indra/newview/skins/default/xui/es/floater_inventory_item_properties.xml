@@ -47,8 +47,17 @@
 	<text name="NextMaskDebug">
 		N:
 	</text>
-	<check_box label="Compartir con el Grupo" name="CheckShareWithGroup"/>
-	<check_box label="Permitir a cualquiera que lo copie" name="CheckEveryoneCopy"/>
+	<text name="GroupLabel">
+		Los miembros del grupo pueden:
+	</text>
+	<check_box label="Modificarlo" name="CheckGroupMod"/>
+	<check_box label="Copiarlo" name="CheckGroupCopy"/>
+	<check_box label="Moverlo" name="CheckGroupMove"/>
+	<text name="EveryoneLabel">
+		Cualquiera puede:
+	</text>
+	<check_box label="Copiarlo" name="CheckEveryoneCopy"/>
+	<check_box label="Moverlo" name="CheckEveryoneMove"/>
 	<text name="NextOwnerLabel" width="250">
 		El próximo propietario puede:
 	</text>
@@ -56,7 +65,7 @@
 	<check_box label="Copiarlo" name="CheckNextOwnerCopy"/>
 	<check_box label="Venderlo/Darlo" name="CheckNextOwnerTransfer"/>
 	<text name="SaleLabel" width="150">
-		Marcar Item como:
+		Marcar Ítem como:
 	</text>
 	<check_box label="En Venta" name="CheckPurchase"/>
 	<radio_group name="RadioSaleType">

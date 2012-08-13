@@ -77,9 +77,8 @@ LLScrollingPanelParam::LLScrollingPanelParam( const std::string& name,
 		mHintMin->setAllowsUpdates( FALSE );
 		mHintMax->setAllowsUpdates( FALSE );
 
-		// *TODO::translate
-		std::string min_name = param->getMinDisplayName();
-		std::string max_name = param->getMaxDisplayName();
+		std::string min_name = LLTrans::getString(param->getMinDisplayName());
+		std::string max_name = LLTrans::getString(param->getMaxDisplayName());
 		childSetValue("min param text", min_name);
 		childSetValue("max param text", max_name);
 		mLess = getChild<LLButton>("less");

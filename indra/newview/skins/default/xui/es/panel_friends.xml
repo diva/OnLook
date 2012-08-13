@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel name="friends">
-	  <string name="Multiple">
-			 Varios Amigos...
-	  </string>
-	  <scroll_list name="friend_list" tool_tip="Para seleccionar a varios amigos, manten pulsado Ctrl o Mays. mientras les vas pulsando">
-			 <column tool_tip="Estado En Línea"/>
-			 <column label="Nombre" name="friend_name" tool_tip="Nombre"/>
-			 <column name="icon_visible_online" tool_tip="Tu amigo puede ver cuándo estás conectado"/>
-			 <column name="icon_visible_map" tool_tip="Tu amigo puede localizarte en el mapa"/>
-			 <column name="icon_edit_mine" tool_tip="Tu amigo puede editar, borrar o tomar tus objetos"/>
-			 <column name="icon_visible_online_theirs" tool_tip="Puedes ver cuando tus amigos están conectados (Actualizable al inicio de sesión)"/>
-			 <column name="icon_visible_map_theirs" tool_tip="Puedes localizarlos en el mapa"/>
-			 <column name="icon_edit_theirs" tool_tip="Puedes editar los objetos de este amigo"/>
-			 <column name="friend_last_update_generation"/>
-	  </scroll_list>
-	  <search_editor name="buddy_search_lineedit" label="Buscar Contactos" tool_tip="Nombre del amigo que estás buscando"/>
-	  <button label="0" name="expand_collapse_btn" tool_tip="Ampliar/Contraer información extra"/>
-	  <button label="MI/Llamada" name="im_btn" tool_tip="Abrir sesión de Mensajes Instantáneos"/>
-	  <button label="Perfil" name="profile_btn" tool_tip="Mostrar foto, grupos e información adicional"/>
-	  <button label="Teleportar..." name="offer_teleport_btn" tool_tip="Ofrecer Teleporte a tu ubicación a este amigo" />
-	  <button label="Pagar..." name="pay_btn" tool_tip="Dar dinero ([CURRENCY]) a este amigo"/>
-	  <button label="Quitar..." name="remove_btn" tool_tip="Quitar a este residente de tu lista de amigos"/>
-	  <button label="Agregar..." name="add_btn" tool_tip="Ofrecer amistad a este residente"/>
-	  <text name="friends">
-			 En Línea:
-	  </text>
-	  <text name="f_num">
-			 0000
-	  </text>
-	  <text name="sel">
-			 Seleccionados:
-	  </text>
-	  <text name="s_num">
-			 0000
-	  </text>		 
+	<string name="Multiple">
+		Varios Amigos...
+	</string>
+	<scroll_list name="friend_list" tool_tip="Para seleccionar a varios amigos, manten pulsado Ctrl o Mays. mientras les vas pulsando">
+		<column tool_tip="Estado En Línea"/>
+		<column label="Nombre" name="friend_name" tool_tip="Nombre"/>
+		<column name="icon_visible_online" tool_tip="Tu amigo puede ver cuándo estás conectado"/>
+		<column name="icon_visible_map" tool_tip="Tu amigo puede localizarte en el mapa"/>
+		<column name="icon_edit_mine" tool_tip="Tu amigo puede editar, borrar o tomar tus objetos"/>
+		<column name="icon_visible_online_theirs" tool_tip="Puedes ver cuando tus amigos están conectados (Actualizable al inicio de sesión)"/>
+		<column name="icon_visible_map_theirs" tool_tip="Puedes localizarlos en el mapa"/>
+		<column name="icon_edit_theirs" tool_tip="Puedes editar los objetos de este amigo"/>
+		<column name="friend_last_update_generation"/>
+	</scroll_list>
+	<search_editor name="buddy_search_lineedit" label="Buscar Contactos" tool_tip="Nombre del amigo que estás buscando"/>
+	<button label="0" name="expand_collapse_btn" tool_tip="Ampliar/Contraer información extra"/>
+	<button label="MI/Llamada" name="im_btn" tool_tip="Abrir sesión de Mensajes Instantáneos"/>
+	<button label="Perfil" name="profile_btn" tool_tip="Mostrar foto, grupos e información adicional"/>
+	<button label="Teleportar..." name="offer_teleport_btn" tool_tip="Ofrecer Teleporte a tu ubicación a este amigo" />
+	<button label="Pagar..." name="pay_btn" tool_tip="Dar dinero ([CURRENCY]) a este amigo"/>
+	<button label="Quitar..." name="remove_btn" tool_tip="Quitar a este residente de tu lista de amigos"/>
+	<button label="Agregar..." name="add_btn" tool_tip="Ofrecer amistad a este residente"/>
+	<text name="friends">
+		Conectado:
+	</text>
+	<text name="f_num">
+		0000
+	</text>
+	<text name="sel">
+		Seleccionados:
+	</text>
+	<text name="s_num">
+		0000
+	</text>		 
 </panel>

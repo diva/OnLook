@@ -255,9 +255,6 @@ public:
 	SHLureRequest *mPendingLure;
 	void showLureDestination(const std::string fromname, const int global_x, const int global_y, const int x, const int y, const int z, const std::string maturity);
 	void onFoundLureDestination(LLSimInfo *siminfo = NULL);
-
-	static LLVector3 exlStartMeasurePoint;
-	static LLVector3 exlEndMeasurePoint;
 	// </edit>
 	
 private:

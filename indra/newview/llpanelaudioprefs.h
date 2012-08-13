@@ -67,6 +67,7 @@ private:
 	F32             mPreviousDoppler;
 	F32             mPreviousDistance;
 	F32             mPreviousRolloff;
+	F32             mPreviousUnderwaterRolloff;
 
 	S32             mPreviousBitrate;
 

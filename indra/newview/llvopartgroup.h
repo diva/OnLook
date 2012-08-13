@@ -51,6 +51,7 @@ public:
 	static S32 sVBSlotFree[LL_MAX_PARTICLE_COUNT];
 	static S32* sVBSlotCursor;
 
+	static void initClass();
 	static void restoreGL();
 	static void destroyGL();
 	static S32 findAvailableVBSlot();

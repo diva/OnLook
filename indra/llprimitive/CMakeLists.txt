@@ -17,6 +17,7 @@ include_directories(
 
 set(llprimitive_SOURCE_FILES
     llmaterialtable.cpp
+    llmediaentry.cpp
     llmodel.cpp
     llprimitive.cpp
     llprimtexturelist.cpp

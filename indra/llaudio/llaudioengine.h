@@ -43,11 +43,11 @@
 #include "lluuid.h"
 #include "llframetimer.h"
 #include "llassettype.h"
+#include "llextendedstatus.h"
 
 #include "lllistener.h"
 
 const F32 LL_WIND_UPDATE_INTERVAL = 0.1f;
-const F32 LL_ROLLOFF_MULTIPLIER_UNDER_WATER = 5.f;			//  How much sounds are weaker under water
 const F32 LL_WIND_UNDERWATER_CENTER_FREQ = 20.f;
 
 const F32 ATTACHED_OBJECT_TIMEOUT = 5.0f;

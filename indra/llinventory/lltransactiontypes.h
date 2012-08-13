@@ -74,6 +74,7 @@ const S32 TRANS_CLASSIFIED_RENEW	= 2005;
 // automatically end up in the list below :-(
 // So make sure you check the transaction_description table
 const S32 TRANS_RECURRING_GENERIC  = 2100;
+
 // Codes 3000-3999 reserved for inventory transactions
 const S32 TRANS_GIVE_INVENTORY		= 3000;
 

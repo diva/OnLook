@@ -49,6 +49,7 @@
 #include "llmoveview.h"
 #include "llchatbar.h"
 #include "llnotificationsutil.h"
+#include "llpanelpathfindingrebakenavmesh.h"
 #include "llparcel.h"
 #include "llrendersphere.h"
 #include "llsdmessage.h"
@@ -100,6 +101,8 @@
 #include "llattachmentsmgr.h"
 // [/RLVa:KB]
 
+#include "NACLantispam.h" // for NaCl Antispam Registry
+
 using namespace LLVOAvatarDefines;
 
 const BOOL ANIMATE = TRUE;
@@ -133,9 +136,6 @@ LLVector3 gReSitOffset;
 
 BOOL LLAgent::exlPhantom = 0;
 BOOL LLAgent::mForceTPose = 0;
-LLVector3 LLAgent::exlStartMeasurePoint = LLVector3::zero;
-LLVector3 LLAgent::exlEndMeasurePoint = LLVector3::zero;
-
 
 const F32 LLAgent::TYPING_TIMEOUT_SECS = 5.f;
 
@@ -665,6 +665,10 @@ void LLAgent::setRegion(LLViewerRegion *regionp)
 				<< " located at " << ip << llendl;
 		if (mRegionp)
 		{
+            // NaCl - Antispam Registry
+            NACLAntiSpamRegistry::purgeAllQueues();
+            // NaCl End
+
 			// We've changed regions, we're now going to change our agent coordinate frame.
 			mAgentOriginGlobal = regionp->getOriginGlobal();
 			LLVector3d agent_offset_global = mRegionp->getOriginGlobal();
@@ -1871,6 +1875,8 @@ void LLAgent::endAnimationUpdateUI()
 		gMenuBarView->setVisible(TRUE);
 		gStatusBar->setVisibleForMouselook(true);
 
+		LLPanelPathfindingRebakeNavmesh::getInstance()->setVisible(TRUE);
+
 		LLToolMgr::getInstance()->setCurrentToolset(gBasicToolset);
 
 
@@ -1959,6 +1965,7 @@ void LLAgent::endAnimationUpdateUI()
 		// hide menus
 		gMenuBarView->setVisible(FALSE);
 		gStatusBar->setVisibleForMouselook(false);
+		LLPanelPathfindingRebakeNavmesh::getInstance()->setVisible(FALSE);
 
 		// clear out camera lag effect
 		gAgentCamera.clearCameraLag();

@@ -516,7 +516,7 @@ void LLPanelFace::getState()
 		&& objectp->getPCode() == LL_PCODE_VOLUME
 		&& objectp->permModify())
 	{
-		BOOL editable = objectp->permModify();
+		BOOL editable = objectp->permModify() && !objectp->isPermanentEnforced();
 
 
 		// only turn on auto-adjust button if there is a media renderer and the media is loaded
@@ -1246,7 +1246,7 @@ void LLPanelFace::onClickPaste(void* userdata)
 	LLPrimitive obj;
 	obj.setNumTEs(U8(textures.size()));
 	
-	for (int i = 0; i < textures.size(); i++)
+	for (int i = 0; i < textures.size() && i < objectp->getNumTEs(); i++)
 	{
 		llinfos << "Pasting params on face " << i << "." << llendl;
 		LLSD cur_tex = objectp->getTE(i)->asLLSD();

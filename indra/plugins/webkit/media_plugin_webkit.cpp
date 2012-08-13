@@ -25,8 +25,8 @@
  * $/LicenseInfo$
  * @endcond
  */
-#include "linden_common.h"
 #include "llqtwebkit.h"
+#include "linden_common.h"
 #include "indra_constants.h" // for indra keyboard codes
 
 #include "lltimer.h"
@@ -1016,14 +1016,6 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 
 				// FIXME: Should we do anything with this if it comes in after the browser has been initialized?
 			}
-			else if(message_name == "plugins_enabled")
-			{
-				mPluginsEnabled = message_in.getValueBoolean("enable");
-			}
-			else if(message_name == "javascript_enabled")
-			{
-				mJavascriptEnabled = message_in.getValueBoolean("enable");
-			}
 			else if(message_name == "size_change")
 			{
 				std::string name = message_in.getValue("name");
@@ -1312,12 +1304,12 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 				mCookiesEnabled = message_in.getValueBoolean("enable");
 				LLQtWebKit::getInstance()->enableCookies( mCookiesEnabled );
 			}
-			else if(message_name == "enable_plugins")
+			else if(message_name == "plugins_enabled")
 			{
 				mPluginsEnabled = message_in.getValueBoolean("enable");
 				LLQtWebKit::getInstance()->enablePlugins( mPluginsEnabled );
 			}
-			else if(message_name == "enable_javascript")
+			else if(message_name == "javascript_enabled")
 			{
 				mJavascriptEnabled = message_in.getValueBoolean("enable");
 				//LLQtWebKit::getInstance()->enableJavascript( mJavascriptEnabled );

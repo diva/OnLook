@@ -33,34 +33,247 @@
 #include "linden_common.h"
 
 #include "llpostprocess.h"
-#include "llglslshader.h"
-#include "llsdserialize.h"
-#include "llrender.h"
-#include "llvertexbuffer.h"
 
 #include "lldir.h"
+#include "llgl.h"
+#include "llglslshader.h"
+#include "llrender.h"
+#include "llsdserialize.h"
+#include "llsdutil.h"
+#include "llsdutil_math.h"
+#include "llvertexbuffer.h"
+#include "llfasttimer.h"
+
 extern LLGLSLShader			gPostColorFilterProgram;
 extern LLGLSLShader			gPostNightVisionProgram;
 extern LLGLSLShader			gPostGaussianBlurProgram;
+extern LLGLSLShader			gPostPosterizeProgram;
 
 static const unsigned int NOISE_SIZE = 512;
 
-/// CALCULATING LUMINANCE (Using NTSC lum weights)
-/// http://en.wikipedia.org/wiki/Luma_%28video%29
-static const float LUMINANCE_R = 0.299f;
-static const float LUMINANCE_G = 0.587f;
-static const float LUMINANCE_B = 0.114f;
-
 static const char * const XML_FILENAME = "postprocesseffects.xml";
 
-LLPostProcess::LLPostProcess(void) : 
-					mVBO(NULL),  
-					mAllEffects(LLSD::emptyMap()),
-					mScreenWidth(1), mScreenHeight(1)
+template<> LLSD LLPostProcessShader::LLShaderSetting<LLVector4>::getDefaultValue()
 {
-	mSceneRenderTexture = NULL ; 
-	mNoiseTexture = NULL ;
-					
+	return mDefault.getValue();
+}
+template<> void LLPostProcessShader::LLShaderSetting<LLVector4>::setValue(const LLSD& value)
+{
+	mValue = ll_vector4_from_sd(value); 
+}
+
+LLSD LLPostProcessShader::getDefaults()
+{
+	LLSD defaults;
+	for(std::vector<LLShaderSettingBase*>::iterator it=mSettings.begin();it!=mSettings.end();++it)
+	{
+		defaults[(*it)->mSettingName]=(*it)->getDefaultValue();
+	}
+	return defaults;
+}
+void LLPostProcessShader::loadSettings(const LLSD& settings)
+{
+	for(std::vector<LLShaderSettingBase*>::iterator it=mSettings.begin();it!=mSettings.end();++it)
+	{
+		LLSD value = settings[(*it)->mSettingName];
+		(*it)->setValue(value);
+	}
+}
+
+class LLColorFilterShader : public LLPostProcessShader
+{
+private:
+	LLShaderSetting<bool> mEnabled;
+	LLShaderSetting<F32> mGamma, mBrightness, mContrast, mSaturation;
+	LLShaderSetting<LLVector4> mContrastBase;
+public:
+	LLColorFilterShader() :
+		mEnabled("enable_color_filter",false),
+		mGamma("gamma",1.f),
+		mBrightness("brightness",1.f),
+		mContrast("contrast",1.f),
+		mSaturation("saturation",1.f),
+		mContrastBase("contrast_base",LLVector4(1.f,1.f,1.f,0.5f))
+	{
+		mSettings.push_back(&mEnabled);
+		mSettings.push_back(&mGamma);
+		mSettings.push_back(&mBrightness);
+		mSettings.push_back(&mContrast);
+		mSettings.push_back(&mSaturation);
+		mSettings.push_back(&mContrastBase);
+	}
+
+	bool isEnabled()	{ return mEnabled && gPostColorFilterProgram.mProgramObject; }
+	S32 getColorChannel()	{ return 0; }
+	S32 getDepthChannel()	{ return -1; }
+
+	QuadType bind()
+	{
+		if(!isEnabled())
+			return QUAD_NONE;
+
+		/// CALCULATING LUMINANCE (Using NTSC lum weights)
+		/// http://en.wikipedia.org/wiki/Luma_%28video%29
+		static const float LUMINANCE_R = 0.299f;
+		static const float LUMINANCE_G = 0.587f;
+		static const float LUMINANCE_B = 0.114f;
+
+		gPostColorFilterProgram.bind();
+
+		gPostColorFilterProgram.uniform1f("gamma", mGamma);
+		gPostColorFilterProgram.uniform1f("brightness", mBrightness);
+		gPostColorFilterProgram.uniform1f("contrast", mContrast);
+		float baseI = (mContrastBase.mValue[VX] + mContrastBase.mValue[VY] + mContrastBase.mValue[VZ]) / 3.0f;
+		baseI = mContrastBase.mValue[VW] / ((baseI < 0.001f) ? 0.001f : baseI);
+		float baseR = mContrastBase.mValue[VX] * baseI;
+		float baseG = mContrastBase.mValue[VY] * baseI;
+		float baseB = mContrastBase.mValue[VZ] * baseI;
+		gPostColorFilterProgram.uniform3fv("contrastBase", 1, LLVector3(baseR, baseG, baseB).mV);
+		gPostColorFilterProgram.uniform1f("saturation", mSaturation);
+		gPostColorFilterProgram.uniform3fv("lumWeights", 1, LLVector3(LUMINANCE_R, LUMINANCE_G, LUMINANCE_B).mV);
+		return QUAD_NORMAL;
+	}
+	bool draw(U32 pass) {return pass == 1;}
+	void unbind()
+	{
+		gPostColorFilterProgram.unbind();
+	}
+};
+
+class LLNightVisionShader : public LLPostProcessShader
+{
+private:
+	LLShaderSetting<bool> mEnabled;
+	LLShaderSetting<F32> mBrightnessMult, mNoiseStrength;
+public:
+	LLNightVisionShader() : 
+		mEnabled("enable_night_vision",false),
+		mBrightnessMult("brightness_multiplier",3.f),
+		mNoiseStrength("noise_strength",.4f)
+	{
+		mSettings.push_back(&mEnabled);
+		mSettings.push_back(&mBrightnessMult);
+		mSettings.push_back(&mNoiseStrength);
+	}
+	bool isEnabled()	{ return mEnabled && gPostNightVisionProgram.mProgramObject; }
+	S32 getColorChannel()	{ return 0; }
+	S32 getDepthChannel()	{ return -1; }
+	QuadType bind()
+	{
+		if(!isEnabled())
+			return QUAD_NONE;
+
+		gPostNightVisionProgram.bind();
+
+		LLPostProcess::getInstance()->bindNoise(1);
+	
+		gPostNightVisionProgram.uniform1f("brightMult", mBrightnessMult);
+		gPostNightVisionProgram.uniform1f("noiseStrength", mNoiseStrength);
+		
+		return QUAD_NOISE;
+		
+	}
+	bool draw(U32 pass) {return pass == 1;}
+	void unbind()
+	{
+		gPostNightVisionProgram.unbind();
+	}
+};
+
+class LLGaussBlurShader : public LLPostProcessShader
+{
+private:
+	LLShaderSetting<bool> mEnabled;
+	LLShaderSetting<S32> mNumPasses;
+	GLint mPassLoc;
+public:
+	LLGaussBlurShader() :
+		mEnabled("enable_gauss_blur",false),
+		mNumPasses("gauss_blur_passes",2),
+		mPassLoc(0)
+	{
+		mSettings.push_back(&mEnabled);
+		mSettings.push_back(&mNumPasses);
+	}
+	bool isEnabled()	{ return mEnabled && mNumPasses && gPostGaussianBlurProgram.mProgramObject; }
+	S32 getColorChannel()	{ return 0; }
+	S32 getDepthChannel()	{ return -1; }
+	QuadType bind()
+	{
+		if(!isEnabled())
+			return QUAD_NONE;
+
+		gPostGaussianBlurProgram.bind();
+
+		mPassLoc = gPostGaussianBlurProgram.getUniformLocation("horizontalPass");
+
+		return QUAD_NORMAL;
+	}
+	bool draw(U32 pass) 
+	{
+		if((S32)pass > mNumPasses*2)
+			return false;
+		glUniform1iARB(mPassLoc, (pass-1) % 2);
+		return true;
+	}
+	void unbind()
+	{
+		gPostGaussianBlurProgram.unbind();
+	}
+};
+
+class LLPosterizeShader : public LLPostProcessShader
+{
+private:
+	LLShaderSetting<bool> mEnabled;
+	LLShaderSetting<S32> mNumLayers;
+public:
+	LLPosterizeShader() :
+		mEnabled("enable_posterize",false),
+		mNumLayers("posterize_layers",2)
+	{
+		mSettings.push_back(&mEnabled);
+		mSettings.push_back(&mNumLayers);
+	}
+	bool isEnabled()	{ return mEnabled && gPostPosterizeProgram.mProgramObject; }
+	S32 getColorChannel()	{ return 0; }
+	S32 getDepthChannel()	{ return -1; }
+	QuadType bind()
+	{
+		if(!isEnabled())
+			return QUAD_NONE;
+
+		gPostPosterizeProgram.bind();
+
+		gPostPosterizeProgram.uniform1i("layerCount", mNumLayers);
+
+		return QUAD_NORMAL;
+	}
+	bool draw(U32 pass) 
+	{
+		return pass == 1;
+	}
+	void unbind()
+	{
+		gPostPosterizeProgram.unbind();
+	}
+};
+
+LLPostProcess::LLPostProcess(void) : 
+					mVBO(NULL),
+					mDepthTexture(0),
+					mNoiseTexture(NULL),
+					mScreenWidth(0),
+					mScreenHeight(0),
+					mNoiseTextureScale(0.f),
+					mSelectedEffectInfo(LLSD::emptyMap()),
+					mAllEffectInfo(LLSD::emptyMap())
+{
+	mShaders.push_back(new LLColorFilterShader());
+	mShaders.push_back(new LLNightVisionShader());
+	mShaders.push_back(new LLGaussBlurShader());
+	mShaders.push_back(new LLPosterizeShader());
+
 	/*  Do nothing.  Needs to be updated to use our current shader system, and to work with the move into llrender.*/
 	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight", XML_FILENAME));
 	LL_DEBUGS2("AppInit", "Shaders") << "Loading PostProcess Effects settings from " << pathName << LL_ENDL;
@@ -71,99 +284,43 @@ LLPostProcess::LLPostProcess(void) :
 	{
 		LLPointer<LLSDParser> parser = new LLSDXMLParser();
 
-		parser->parse(effectsXML, mAllEffects, LLSDSerialize::SIZE_UNLIMITED);
+		parser->parse(effectsXML, mAllEffectInfo, LLSDSerialize::SIZE_UNLIMITED);
 	}
 
-	if (!mAllEffects.has("default"))
+	if (!mAllEffectInfo.has("default"))
+		mAllEffectInfo["default"] = LLSD::emptyMap();
+
+	LLSD& defaults = mAllEffectInfo["default"];
+
+	for(std::list<LLPointer<LLPostProcessShader> >::iterator it=mShaders.begin();it!=mShaders.end();++it)
 	{
-		LLSD & defaultEffect = (mAllEffects["default"] = LLSD::emptyMap());
-
-		/*defaultEffect["enable_night_vision"] = LLSD::Boolean(false);
-		defaultEffect["enable_color_filter"] = LLSD::Boolean(false);*/
-
-		/// NVG Defaults
-		defaultEffect["brightness_multiplier"] = 3.0;
-		defaultEffect["noise_size"] = 25.0;
-		defaultEffect["noise_strength"] = 0.4;
-
-		// TODO BTest potentially add this to tweaks?
-		mNoiseTextureScale = 1.0f;
-
-		/// Color Filter Defaults
-		defaultEffect["gamma"] = 1.0;
-		defaultEffect["brightness"] = 1.0;
-		defaultEffect["contrast"] = 1.0;
-		defaultEffect["saturation"] = 1.0;
-
-		LLSD& contrastBase = (defaultEffect["contrast_base"] = LLSD::emptyArray());
-		contrastBase.append(1.0);
-		contrastBase.append(1.0);
-		contrastBase.append(1.0);
-		contrastBase.append(0.5);
-
-		defaultEffect["gauss_blur_passes"] = 2;
+		LLSD shader_defaults = (*it)->getDefaults();
+		for (LLSD::map_const_iterator it2 = defaults.beginMap();it2 != defaults.endMap();++it2)
+		{
+			if(!defaults.has(it2->first))
+				defaults[it2->first]=it2->second;
+		}
 	}
-
+	for(std::list<LLPointer<LLPostProcessShader> >::iterator it=mShaders.begin();it!=mShaders.end();++it)
+	{
+		(*it)->loadSettings(defaults);
+	}
 	setSelectedEffect("default");
-	// */
 }
 
 LLPostProcess::~LLPostProcess(void)
 {
-	invalidate() ;
-}
-
-/*static*/void LLPostProcess::cleanupClass()
-{
-	if(instanceExists())
-		getInstance()->invalidate() ;
-}
-
-void LLPostProcess::setSelectedEffect(std::string const & effectName)
-{
-	mSelectedEffectName = effectName;
-	static_cast<LLSD &>(tweaks) = mAllEffects[effectName];
-}
-
-void LLPostProcess::saveEffect(std::string const & effectName)
-{
-	mAllEffects[effectName] = tweaks;
-
-	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight", XML_FILENAME));
-	//llinfos << "Saving PostProcess Effects settings to " << pathName << llendl;
-
-	llofstream effectsXML(pathName);
-
-	LLPointer<LLSDFormatter> formatter = new LLSDXMLFormatter();
-
-	formatter->format(mAllEffects, effectsXML);
-}
-void LLPostProcess::invalidate()
-{
-	mSceneRenderTexture = NULL ;
-	mNoiseTexture = NULL ;
-	mVBO = NULL ;
-}
-
-void LLPostProcess::apply(unsigned int width, unsigned int height)
-{
-	if(shadersEnabled())
-	{
-		if (mVBO.isNull() || width != mScreenWidth || height != mScreenHeight)
-		{
-			initialize(width, height);
-		}
-		doEffects();
-	}
+	destroyGL() ;
 }
 
 void LLPostProcess::initialize(unsigned int width, unsigned int height)
 {
-	invalidate();
+	destroyGL();
 	mScreenWidth = width;
 	mScreenHeight = height;
 
-	createScreenTexture();
+	createScreenTextures();
+	createNoiseTexture();
 
 	//Setup our VBO.
 	{
@@ -185,127 +342,129 @@ void LLPostProcess::initialize(unsigned int width, unsigned int height)
 
 		mVBO->flush();
 	}
-
-	checkError();
-	createNoiseTexture();
-	checkError();
+	stop_glerror();
 }
 
-inline bool LLPostProcess::shadersEnabled(void)
+void LLPostProcess::createScreenTextures()
 {
-	return (tweaks.useColorFilter().asBoolean() ||
-			tweaks.useNightVisionShader().asBoolean() ||
-			tweaks.useGaussBlurFilter().asBoolean() );
-}
+	const LLTexUnit::eTextureType type = LLTexUnit::TT_RECT_TEXTURE;
 
-void LLPostProcess::applyShaders(void)
-{
-	bool copy_buffer = false;
-	if (tweaks.useColorFilter())
+	mRenderTarget[0].allocate(mScreenWidth,mScreenHeight,GL_RGBA,FALSE,FALSE,type,FALSE);
+	if(mRenderTarget[0].getFBO())//Only need pingpong between two rendertargets if FBOs are supported.
+		mRenderTarget[1].allocate(mScreenWidth,mScreenHeight,GL_RGBA,FALSE,FALSE,type,FALSE);
+	stop_glerror();
+
+	if(mDepthTexture)
+		LLImageGL::deleteTextures(type, 0, 0, 1, &mDepthTexture, true);
+
+	for(std::list<LLPointer<LLPostProcessShader> >::iterator it=mShaders.begin();it!=mShaders.end();++it)
 	{
-		applyColorFilterShader();
-		checkError();
-		copy_buffer = true;
-	}
-	if (tweaks.useGaussBlurFilter())
-	{
-		/// If any of the above shaders have been called update the frame buffer;
-		if (copy_buffer)
-			copyFrameBuffer();
-		applyGaussBlurShader();
-		checkError();
-		copy_buffer = true;
-	}
-	if (tweaks.useNightVisionShader())
-	{
-		/// If any of the above shaders have been called update the frame buffer;
-		if (copy_buffer)
-			copyFrameBuffer();
-		applyNightVisionShader();
-		checkError();
-		copy_buffer = true;
-	}
-}
-
-void LLPostProcess::applyColorFilterShader(void)
-{	
-	if(gPostColorFilterProgram.mProgramObject == 0)
-		return;
-
-	gPostColorFilterProgram.bind();
-
-	gGL.getTexUnit(0)->bind(mSceneRenderTexture);
-
-	gPostColorFilterProgram.uniform1f("gamma", tweaks.getGamma());
-	gPostColorFilterProgram.uniform1f("brightness", tweaks.getBrightness());
-	gPostColorFilterProgram.uniform1f("contrast", tweaks.getContrast());
-	float baseI = (tweaks.getContrastBaseR() + tweaks.getContrastBaseG() + tweaks.getContrastBaseB()) / 3.0f;
-	baseI = tweaks.getContrastBaseIntensity() / ((baseI < 0.001f) ? 0.001f : baseI);
-	float baseR = tweaks.getContrastBaseR() * baseI;
-	float baseG = tweaks.getContrastBaseG() * baseI;
-	float baseB = tweaks.getContrastBaseB() * baseI;
-	gPostColorFilterProgram.uniform3fv("contrastBase", 1, LLVector3(baseR, baseG, baseB).mV);
-	gPostColorFilterProgram.uniform1f("saturation", tweaks.getSaturation());
-	gPostColorFilterProgram.uniform3fv("lumWeights", 1, LLVector3(LUMINANCE_R, LUMINANCE_G, LUMINANCE_B).mV);
-		
-	/// Draw a screen space quad
-	drawOrthoQuad(QUAD_NORMAL);
-	gPostColorFilterProgram.unbind();
-}
-
-void LLPostProcess::applyNightVisionShader(void)
-{	
-	if(gPostNightVisionProgram.mProgramObject == 0)
-		return;
-
-	gPostNightVisionProgram.bind();
-
-	gGL.getTexUnit(0)->bind(mSceneRenderTexture);
-	gGL.getTexUnit(1)->bind(mNoiseTexture);
-	
-	gPostNightVisionProgram.uniform1f("brightMult", tweaks.getBrightMult());
-	gPostNightVisionProgram.uniform1f("noiseStrength", tweaks.getNoiseStrength());
-	mNoiseTextureScale = 0.001f + ((100.f - tweaks.getNoiseSize()) / 100.f);
-	mNoiseTextureScale *= (mScreenHeight / NOISE_SIZE);
-	
-	/// Draw a screen space quad
-	drawOrthoQuad(QUAD_NOISE);
-	gPostNightVisionProgram.unbind();
-}
-
-void LLPostProcess::applyGaussBlurShader(void)
-{
-	int pass_count = tweaks.getGaussBlurPasses();
-	if(!pass_count || gPostGaussianBlurProgram.mProgramObject == 0)
-		return;
-
-	gPostGaussianBlurProgram.bind();
-
-	gGL.getTexUnit(0)->bind(mSceneRenderTexture);
-
-	GLint horiz_pass = gPostGaussianBlurProgram.getUniformLocation("horizontalPass");
-	for(int i = 0;i<pass_count;++i)
-	{
-		for(int j = 0;j<2;++j)
+		if((*it)->getDepthChannel()>=0)
 		{
-			if(i || j)
-				copyFrameBuffer();		
-			glUniform1iARB(horiz_pass, j);
-			drawOrthoQuad(QUAD_NORMAL);
+			LLImageGL::generateTextures(type, GL_DEPTH_COMPONENT24, 1, &mDepthTexture);
+			gGL.getTexUnit(0)->bindManual(type, mDepthTexture);
+			LLImageGL::setManualImage(LLTexUnit::getInternalType(type), 0, GL_DEPTH_COMPONENT24, mScreenWidth, mScreenHeight, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL, false);
+			stop_glerror();
+			gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
+			gGL.getTexUnit(0)->setTextureAddressMode(LLTexUnit::TAM_CLAMP);
+			stop_glerror();
+			break;
 		}
 	}
-	gPostGaussianBlurProgram.unbind();
+}
+
+void LLPostProcess::createNoiseTexture()
+{	
+	std::vector<GLubyte> buffer(NOISE_SIZE * NOISE_SIZE);
+	for (unsigned int i = 0; i < NOISE_SIZE; i++){
+		for (unsigned int k = 0; k < NOISE_SIZE; k++){
+			buffer[(i * NOISE_SIZE) + k] = (GLubyte)((double) rand() / ((double) RAND_MAX + 1.f) * 255.f);
+		}
+	}
+
+	mNoiseTexture = new LLImageGL(FALSE) ;
+	if(mNoiseTexture->createGLTexture())
+	{
+		gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_TEXTURE, mNoiseTexture->getTexName());
+		LLImageGL::setManualImage(GL_TEXTURE_2D, 0, GL_LUMINANCE, NOISE_SIZE, NOISE_SIZE, GL_LUMINANCE, GL_UNSIGNED_BYTE, &buffer[0]);
+		stop_glerror();
+		gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_BILINEAR);
+		gGL.getTexUnit(0)->setTextureAddressMode(LLTexUnit::TAM_WRAP);
+		stop_glerror();
+	}
+}
+
+void LLPostProcess::destroyGL()
+{
+	mRenderTarget[0].release();
+	mRenderTarget[1].release();
+	if(mDepthTexture)
+		LLImageGL::deleteTextures(LLTexUnit::TT_RECT_TEXTURE, 0, 0, 1, &mDepthTexture, true);
+	mDepthTexture=0;
+	mNoiseTexture = NULL ;
+	mVBO = NULL ;
+}
+
+/*static*/void LLPostProcess::cleanupClass()
+{
+	if(instanceExists())
+		getInstance()->destroyGL() ;
+}
+
+void LLPostProcess::copyFrameBuffer()
+{
+	mRenderTarget[!!mRenderTarget[0].getFBO()].bindTexture(0,0);
+	glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB,0,0,0,0,0,mScreenWidth, mScreenHeight);
+
+	if(mDepthTexture)
+	{
+		for(std::list<LLPointer<LLPostProcessShader> >::iterator it=mShaders.begin();it!=mShaders.end();++it)
+		{
+			if((*it)->isEnabled() && (*it)->getDepthChannel()>=0)
+			{
+				gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_RECT_TEXTURE, mDepthTexture);
+				glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB,0,0,0,0,0,mScreenWidth, mScreenHeight);
+				break;
+			}
+		}
+	}
+
+}
+
+void LLPostProcess::bindNoise(U32 channel)
+{
+	gGL.getTexUnit(channel)->bind(mNoiseTexture);
+}
+
+void LLPostProcess::renderEffects(unsigned int width, unsigned int height)
+{
+	for(std::list<LLPointer<LLPostProcessShader> >::iterator it=mShaders.begin();it!=mShaders.end();++it)
+	{
+		if((*it)->isEnabled())
+		{
+			if (mVBO.isNull() || width != mScreenWidth || height != mScreenHeight)
+			{
+				initialize(width, height);
+			}
+			doEffects();
+			return;
+		}
+	}
 }
 
 void LLPostProcess::doEffects(void)
 {
 	LLVertexBuffer::unbind();
 
+	mNoiseTextureScale = 0.001f + ((100.f - mSelectedEffectInfo["noise_size"].asFloat()) / 100.f);
+	mNoiseTextureScale *= (mScreenHeight / NOISE_SIZE);
+
 	/// Copy the screen buffer to the render texture
 	copyFrameBuffer();
+	stop_glerror();
 
 	//Disable depth. Set blendmode to replace.
-	LLGLDepthTest depth(GL_FALSE);
+	LLGLDepthTest depth(GL_FALSE,GL_FALSE);
 	LLGLEnable blend(GL_BLEND);
 	gGL.setSceneBlendType(LLRender::BT_REPLACE);
 
@@ -319,7 +478,6 @@ void LLPostProcess::doEffects(void)
 	gGL.loadIdentity();
 	
 	applyShaders();
-	checkError();
 
 	LLGLSLShader::bindNoShader();
 
@@ -333,13 +491,46 @@ void LLPostProcess::doEffects(void)
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);	//Restore blendstate. Alpha is ASSUMED for hud/ui render, etc.
 
 	gGL.getTexUnit(1)->disable();
-	checkError();
 }
 
-void LLPostProcess::copyFrameBuffer()
+void LLPostProcess::applyShaders(void)
 {
-	gGL.getTexUnit(0)->bindManual(mSceneRenderTexture->getTarget(), mSceneRenderTexture->getTexName());
-	glCopyTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, 0, 0, mScreenWidth, mScreenHeight, 0);
+	QuadType quad;
+	bool primary_rendertarget = 1;
+	for(std::list<LLPointer<LLPostProcessShader> >::iterator it=mShaders.begin();it!=mShaders.end();++it)
+	{
+		if((quad = (*it)->bind()) != QUAD_NONE)
+		{
+			S32 color_channel = (*it)->getColorChannel();
+			S32 depth_channel = (*it)->getDepthChannel();
+
+			if(depth_channel >= 0)
+				gGL.getTexUnit(depth_channel)->bindManual(LLTexUnit::TT_RECT_TEXTURE, mDepthTexture);
+
+			U32 pass = 1;
+
+			while((*it)->draw(pass++))
+			{
+				mRenderTarget[!primary_rendertarget].bindTarget();
+
+				if(color_channel >= 0)
+					mRenderTarget[mRenderTarget[0].getFBO() ? primary_rendertarget : !primary_rendertarget].bindTexture(0,color_channel);
+
+				drawOrthoQuad(quad);
+				mRenderTarget[!primary_rendertarget].flush();
+				if(mRenderTarget[0].getFBO())
+					primary_rendertarget = !primary_rendertarget;
+			}
+			(*it)->unbind();
+		}
+	}
+	//Only need to copy to framebuffer if FBOs are supported, else we've already been drawing to the framebuffer to begin with.
+	if(mRenderTarget[0].getFBO())
+	{
+		//copyContentsToFramebuffer also binds the main framebuffer.
+		LLRenderTarget::copyContentsToFramebuffer(mRenderTarget[primary_rendertarget],0,0,mScreenWidth,mScreenHeight,0,0,mScreenWidth,mScreenHeight,GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	}
+	stop_glerror();
 }
 
 void LLPostProcess::drawOrthoQuad(QuadType type)
@@ -364,64 +555,59 @@ void LLPostProcess::drawOrthoQuad(QuadType type)
 	mVBO->drawArrays(LLRender::TRIANGLE_STRIP, 0, 4);
 }
 
-void LLPostProcess::createScreenTexture()
+void LLPostProcess::setSelectedEffect(std::string const & effectName)
 {
-	std::vector<GLubyte> data(mScreenWidth * mScreenHeight * 3, 0) ;
-
-	mSceneRenderTexture = new LLImageGL(FALSE) ;	
-	if(mSceneRenderTexture->createGLTexture())
+	mSelectedEffectName = effectName;
+	mSelectedEffectInfo = mAllEffectInfo[effectName];
+	for(std::list<LLPointer<LLPostProcessShader> >::iterator it=mShaders.begin();it!=mShaders.end();++it)
 	{
-		gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_RECT_TEXTURE, mSceneRenderTexture->getTexName());
-		LLImageGL::setManualImage(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, mScreenWidth, mScreenHeight, GL_RGB, GL_UNSIGNED_BYTE, &data[0]);
-		gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
-		gGL.getTexUnit(0)->setTextureAddressMode(LLTexUnit::TAM_CLAMP);
+		(*it)->loadSettings(mSelectedEffectInfo);
 	}
 }
 
-void LLPostProcess::createNoiseTexture()
-{	
-	std::vector<GLubyte> buffer(NOISE_SIZE * NOISE_SIZE);
-	for (unsigned int i = 0; i < NOISE_SIZE; i++){
-		for (unsigned int k = 0; k < NOISE_SIZE; k++){
-			buffer[(i * NOISE_SIZE) + k] = (GLubyte)((double) rand() / ((double) RAND_MAX + 1.f) * 255.f);
-		}
-	}
-
-	mNoiseTexture = new LLImageGL(FALSE) ;
-	if(mNoiseTexture->createGLTexture())
-	{
-		gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_TEXTURE, mNoiseTexture->getTexName());
-		LLImageGL::setManualImage(GL_TEXTURE_2D, 0, GL_LUMINANCE, NOISE_SIZE, NOISE_SIZE, GL_LUMINANCE, GL_UNSIGNED_BYTE, &buffer[0]);
-		gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_BILINEAR);
-		gGL.getTexUnit(0)->setTextureAddressMode(LLTexUnit::TAM_WRAP);
-	}
-}
-
-bool LLPostProcess::checkError(void)
+void LLPostProcess::setSelectedEffectValue(std::string const & setting, LLSD value)
 {
-	GLenum glErr;
-    bool    retCode = false;
-
-    glErr = glGetError();
-    while (glErr != GL_NO_ERROR)
-    {
-		// shaderErrorLog << (const char *) gluErrorString(glErr) << std::endl;
-		char const * err_str_raw = (const char *) gluErrorString(glErr);
-
-		if(err_str_raw == NULL)
-		{
-			std::ostringstream err_builder;
-			err_builder << "unknown error number " << glErr;
-			mShaderErrorString = err_builder.str();
-		}
-		else
-		{
-			mShaderErrorString = err_str_raw;
-		}
-
-        retCode = true;
-        glErr = glGetError();
-    }
-    return retCode;
+	char buf[256];
+	S32 elem=0;
+	if(sscanf(setting.c_str(),"%255[^[][%d]", buf, &elem) == 2)
+	{
+		mSelectedEffectInfo[static_cast<const char*>(buf)][elem] = value;
+	}
+	else
+	{
+		mSelectedEffectInfo[setting] = value;
+	}
+	for(std::list<LLPointer<LLPostProcessShader> >::iterator it=mShaders.begin();it!=mShaders.end();++it)
+	{
+		(*it)->loadSettings(mSelectedEffectInfo);
+	}
 }
+
+void LLPostProcess::resetSelectedEffect()
+{
+	if(!llsd_equals(mAllEffectInfo[mSelectedEffectName], mSelectedEffectInfo))
+	{
+		mSelectedEffectInfo = mAllEffectInfo[mSelectedEffectName];
+		for(std::list<LLPointer<LLPostProcessShader> >::iterator it=mShaders.begin();it!=mShaders.end();++it)
+		{
+			(*it)->loadSettings(mSelectedEffectInfo);
+		}
+	}
+}
+
+void LLPostProcess::saveEffectAs(std::string const & effectName)
+{
+	mAllEffectInfo[effectName] = mSelectedEffectInfo;
+
+	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight", XML_FILENAME));
+	//llinfos << "Saving PostProcess Effects settings to " << pathName << llendl;
+
+	llofstream effectsXML(pathName);
+
+	LLPointer<LLSDFormatter> formatter = new LLSDXMLFormatter();
+
+	formatter->format(mAllEffectInfo, effectsXML);
+}
+
+
 

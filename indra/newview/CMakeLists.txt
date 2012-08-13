@@ -37,7 +37,6 @@ include(LLUI)
 include(LLVFS)
 include(LLWindow)
 include(LLXML)
-include(LLXUIXML)
 include(LScript)
 include(Linking)
 include(NDOF)
@@ -72,7 +71,6 @@ include_directories(
     ${LLVFS_INCLUDE_DIRS}
     ${LLWINDOW_INCLUDE_DIRS}
     ${LLXML_INCLUDE_DIRS}
-    ${LLXUIXML_INCLUDE_DIRS}
     ${LSCRIPT_INCLUDE_DIRS}
     ${LSCRIPT_INCLUDE_DIRS}/lscript_compile
     )
@@ -98,11 +96,7 @@ set(viewer_SOURCE_FILES
     ascentprefschat.cpp
     ascentprefssys.cpp
     ascentprefsvan.cpp
-	#dhparam.cpp
-	#dsaparam.cpp
     emeraldboobutils.cpp
-    dofloaterhex.cpp
-    dohexeditor.cpp
     floatersculptpreview.cpp
     hbfloatergrouptitles.cpp
     hgfloatertexteditor.cpp
@@ -115,6 +109,7 @@ set(viewer_SOURCE_FILES
     jcfloaterareasearch.cpp
     chatbar_as_cmdline.cpp
     qtoolalign.cpp
+	NACLantispam.cpp
     llaccountingcostmanager.cpp
     llagent.cpp
     llagentaccess.cpp
@@ -223,7 +218,6 @@ set(viewer_SOURCE_FILES
     llfloatergroupinvite.cpp
     llfloatergroups.cpp
     llfloaterhandler.cpp
-    llfloaterhardwaresettings.cpp
     llfloaterhtmlcurrency.cpp
     llfloatermediabrowser.cpp
     llfloaterhtmlsimple.cpp
@@ -251,6 +245,7 @@ set(viewer_SOURCE_FILES
     llfloaterpostprocess.cpp
     llfloaterpreference.cpp
     llfloaterproperties.cpp
+    llfloaterregiondebugconsole.cpp
     llfloaterregioninfo.cpp
     llfloaterreporter.cpp
     llfloatersearchreplace.cpp
@@ -380,6 +375,7 @@ set(viewer_SOURCE_FILES
     llpanelmsgs.cpp
     llpanelnetwork.cpp
     llpanelobject.cpp
+    llpanelpathfindingrebakenavmesh.cpp
     llpanelpermissions.cpp
     llpanelpick.cpp
     llpanelplace.cpp
@@ -388,6 +384,15 @@ set(viewer_SOURCE_FILES
     llpanelweb.cpp
     llparcelselection.cpp
     llpatchvertexarray.cpp
+    llpathfindingcharacter.cpp
+    llpathfindingcharacterlist.cpp
+    llpathfindinglinkset.cpp
+    llpathfindinglinksetlist.cpp
+    llpathfindingmanager.cpp
+    llpathfindingnavmesh.cpp
+    llpathfindingnavmeshstatus.cpp
+    llpathfindingobject.cpp
+    llpathfindingobjectlist.cpp
     llphysicsmotion.cpp
     llphysicsshapebuilderutil.cpp
     llpolymesh.cpp
@@ -527,7 +532,6 @@ set(viewer_SOURCE_FILES
     llvopartgroup.cpp
     llvosky.cpp
     llvosurfacepatch.cpp
-    llvotextbubble.cpp
     llvotree.cpp
     llvovolume.cpp
     llvowater.cpp
@@ -575,6 +579,7 @@ set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
 
+	NACLantispam.h
     sgmemstat.h
     sgversion.h
     llviewerobjectbackup.h
@@ -594,8 +599,6 @@ set(viewer_HEADER_FILES
     ascentprefssys.h
     ascentprefsvan.h
     emeraldboobutils.h
-    dofloaterhex.h
-    dohexeditor.h
     floatersculptpreview.h
     hbfloatergrouptitles.h
     hgfloatertexteditor.h
@@ -719,7 +722,6 @@ set(viewer_HEADER_FILES
     llfloatergroupinvite.h
     llfloatergroups.h
     llfloaterhandler.h
-    llfloaterhardwaresettings.h
     llfloaterhtmlcurrency.h
     llfloatermediabrowser.h
     llfloaterhtmlsimple.h
@@ -747,6 +749,7 @@ set(viewer_HEADER_FILES
     llfloaterpreference.h
     llfloaterperms.h
     llfloaterproperties.h
+    llfloaterregiondebugconsole.h
     llfloaterregioninfo.h
     llfloaterreporter.h
     llfloatersearchreplace.h
@@ -869,7 +872,6 @@ set(viewer_HEADER_FILES
     llpanellandmedia.h
     llpanellandobjects.h
     llpanellandoptions.h
-    llpanelLCD.h
     llpanellogin.h
     llpanelmaininventory.h
     llpanelmorph.h
@@ -877,6 +879,7 @@ set(viewer_HEADER_FILES
     llpanelmsgs.h
     llpanelnetwork.h
     llpanelobject.h
+    llpanelpathfindingrebakenavmesh.h
     llpanelpermissions.h
     llpanelpick.h
     llpanelplace.h
@@ -885,6 +888,15 @@ set(viewer_HEADER_FILES
     llpanelweb.h
     llparcelselection.h
     llpatchvertexarray.h
+    llpathfindingcharacter.h
+    llpathfindingcharacterlist.h
+    llpathfindinglinkset.h
+    llpathfindinglinksetlist.h
+    llpathfindingmanager.h
+    llpathfindingnavmesh.h
+    llpathfindingnavmeshstatus.h
+    llpathfindingobject.h
+    llpathfindingobjectlist.h
     llphysicsmotion.h
     llphysicsshapebuilderutil.h
     llpolymesh.h
@@ -1028,7 +1040,6 @@ set(viewer_HEADER_FILES
     llvopartgroup.h
     llvosky.h
     llvosurfacepatch.h
-    llvotextbubble.h
     llvotree.h
     llvotreenew.h
     llvovolume.h
@@ -1550,7 +1561,6 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${LLVFS_LIBRARIES}
     ${LLWINDOW_LIBRARIES}
     ${LLXML_LIBRARIES}
-    ${LLXUIXML_LIBRARIES}
     ${LSCRIPT_LIBRARIES}
     ${LLMATH_LIBRARIES}
     ${LLCOMMON_LIBRARIES}
@@ -1585,6 +1595,14 @@ if (LINUX)
 
   set(product ${VIEWER_BRANDING_NAME_CAMELCASE}-${ARCH}-${viewer_VERSION})
 
+  if (FMODEX)
+    if(MANIFEST_LIBRARIES)
+      set(MANIFEST_LIBRARIES "${MANIFEST_LIBRARIES}|${FMODEX_LIBRARY}")
+    else(MANIFEST_LIBRARIES)
+      set(MANIFEST_LIBRARIES "--extra_libraries=${FMODEX_LIBRARY}")
+    endif(MANIFEST_LIBRARIES)
+  endif (FMODEX)
+
   add_custom_command(
       OUTPUT ${product}.tar.bz2
       COMMAND ${PYTHON_EXECUTABLE}
@@ -1603,6 +1621,7 @@ if (LINUX)
         --dest=${CMAKE_CURRENT_BINARY_DIR}/packaged
         --touch=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/.${product}.touched
         --buildtype=${CMAKE_BUILD_TYPE}
+		  ${MANIFEST_LIBRARIES}
       DEPENDS secondlife-stripped ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
       )
 

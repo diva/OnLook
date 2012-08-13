@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="status">
-	  <text name="ParcelNameText" tool_tip="Nombre de la parcela en la que estás. Pulsa aquí para ver Acerca del Terreno.">
+	<text name="ParcelNameText" tool_tip="Nombre de la parcela en la que estás. Pulsa aquí para ver Acerca del Terreno.">
 		El nombre de la parcela va aquí
-	  </text>
+	</text>
 	<text name="BalanceText" tool_tip="Saldo de tu cuenta">
-			 Cargando...
+		Cargando...
 	</text>
 	<button name="buycurrency" tool_tip="Comprar dinero"/>
 	<text type="string" name="TimeText" tool_tip="Hora actual (Del Pacífico)">
 		24:00
 	</text>
 	<string name="StatBarDaysOfWeek">
-			 Domingo:Lunes:Martes:Miércoles:Viernes:Sábado
+		Domingo:Lunes:Martes:Miércoles:Viernes:Sábado
 	</string>
 	<string name="StatBarMonthsOfYear">
-			 Enero:Febrero:Marzo:Abril:Mayo:Junio:Julio:Agosto:Setiembre:Octubre:Noviembre:Diciembre
+		Enero:Febrero:Marzo:Abril:Mayo:Junio:Julio:Agosto:Setiembre:Octubre:Noviembre:Diciembre
 	</string>
 	<button name="scriptout" tool_tip="Aviso de Errores de Scripts" />
 	<button name="health" tool_tip="Salud"/>

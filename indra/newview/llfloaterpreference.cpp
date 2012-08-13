@@ -58,7 +58,6 @@
 #include "llpanelgeneral.h"
 #include "llpanelinput.h"
 #include "llpanellogin.h"
-#include "llpanelLCD.h"
 #include "llpanelmsgs.h"
 #include "llpanelweb.h"
 #include "llpanelskins.h"
@@ -79,7 +78,6 @@
 #include "llviewerwindow.h"
 #include "llkeyboard.h"
 #include "llscrollcontainer.h"
-#include "llfloaterhardwaresettings.h"
 #include "hippopanelgrids.h"
 
 const S32 PREF_BORDER = 4;
@@ -178,20 +176,6 @@ LLPreferenceCore::LLPreferenceCore(LLTabContainer* tab_container, LLButton * def
 	mPrefsIM = new LLPrefsIM();
 	mTabContainer->addTabPanel(mPrefsIM->getPanel(), mPrefsIM->getPanel()->getLabel());
 	mPrefsIM->getPanel()->setDefaultBtn(default_btn);
-
-#if LL_LCD_COMPILE
-
-	// only add this option if we actually have a logitech keyboard / speaker set
-	if (gLcdScreen->Enabled())
-	{
-		mLCDPanel = new LLPanelLCD();
-		mTabContainer->addTabPanel(mLCDPanel, mLCDPanel->getLabel());
-		mLCDPanel->setDefaultBtn(default_btn);
-	}
-
-#else
-	mLCDPanel = NULL;
-#endif
 
 	mMsgPanel = new LLPanelMsgs();
 	mTabContainer->addTabPanel(mMsgPanel, mMsgPanel->getLabel());
@@ -318,18 +302,7 @@ void LLPreferenceCore::apply()
 	mPrefsAscentSys->apply();
 	mPrefsAscentVan->apply();
 
-	// hardware menu apply
-	LLFloaterHardwareSettings::instance()->apply();
-
 	mWebPanel->apply();
-#if LL_LCD_COMPILE
-	// only add this option if we actually have a logitech keyboard / speaker set
-	if (gLcdScreen->Enabled())
-	{
-		mLCDPanel->apply();
-	}
-#endif
-//	mWebPanel->apply();
 }
 
 
@@ -350,18 +323,7 @@ void LLPreferenceCore::cancel()
 	mPrefsAscentSys->cancel();
 	mPrefsAscentVan->cancel();
 
-	// cancel hardware menu
-	LLFloaterHardwareSettings::instance()->cancel();
-
 	mWebPanel->cancel();
-#if LL_LCD_COMPILE
-	// only add this option if we actually have a logitech keyboard / speaker set
-	if (gLcdScreen->Enabled())
-	{
-		mLCDPanel->cancel();
-	}
-#endif
-//	mWebPanel->cancel();
 }
 
 // static
@@ -380,7 +342,6 @@ void LLPreferenceCore::setPersonalInfo(const std::string& visibility, bool im_vi
 
 void LLPreferenceCore::refreshEnabledGraphics()
 {
-	LLFloaterHardwareSettings::instance()->refreshEnabledState();
 	mDisplayPanel->refreshEnabledState();
 }
 

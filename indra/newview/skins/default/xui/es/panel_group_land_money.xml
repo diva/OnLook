@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Terreno y [CURRENCY]" name="land_money_tab" >
-	  <string name="help_text">
-			 Se listan las parcelas propiedad del grupo, detallando las contribuciones. Aparece una advertencia si el Terreno total en uso es menor que o igual a la Contribución total. Las pestañas &apos;Planificación&apos;, &apos;Detalles&apos; y &apos;Ventas&apos; aportan información sobre las finanzas del grupo	  
-	  </string>
-	  <button label="?" name="help_button"/>
-	  <string name="cant_view_group_land_text">
-			 No tienes permiso para ver qué terreno posee el grupo.
-	  </string>
-	  <string name="cant_view_group_accounting_text">
-			 No tienes permiso para ver la información de la cuenta del grupo.
-	  </string>
-	  <string name="loading_txt">
-			 Cargando...
-	  </string>
-	  <text name="group_land_heading">
-			 Terreno propiedad del grupo
-	</text>
+	<string name="help_text">
+		Se listan las parcelas propiedad del grupo, detallando las contribuciones. Aparece una advertencia si el Terreno total en uso es menor que o igual a la Contribución total. Las pestañas &apos;Planificación&apos;, &apos;Detalles&apos; y &apos;Ventas&apos; aportan información sobre las finanzas del grupo	  
+	</string>
+	<button label="?" name="help_button"/>
+	<string name="cant_view_group_land_text">
+		No tienes permiso para ver qué terreno posee el grupo.
+	</string>
+	<string name="cant_view_group_accounting_text">
+		No tienes permiso para ver la información de la cuenta del grupo.
+	</string>
+	<string name="loading_txt">
+		Cargando...
+	</string>
+	<text name="group_land_heading">
+		Terreno propiedad del grupo
+	/text>
 	<scroll_list name="group_parcel_list">
 		<column label="Parcela" name="name"/>
 		<column label="Región" name="location"/>

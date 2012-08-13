@@ -1,59 +1,58 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Chat de Texto" name="chat">
-	  <text name="text_box">
-			 Tamaño Fuente de Chat:
-	  </text>
-	  <radio_group name="chat_font_size">
-			 <radio_item name="radio">
-					Pequeño
-			 </radio_item>
-			 <radio_item name="radio2">
-					Medio
-			 </radio_item>
-			 <radio_item name="radio3">
-					Grande
-			 </radio_item>
-	  </radio_group>
-	  <text name="text_box2">
-			 Color de Chat:
-	  </text>
-	  <color_swatch label="Tu" name="user"/>
-	  <color_swatch label="Otros" name="agent"/>
-	  <color_swatch label="MI" left_delta="54" name="im" width="44"/>
-	  <color_swatch label="Sistema" name="system"/>
-	  <color_swatch label="Errores" name="script_error"/>
-	  <color_swatch label="Objetos" name="objects"/>
-	  <color_swatch label="Propietario" name="owner"/>
-	  <color_swatch label="Burbuja" name="background"/>
-	  <color_swatch label="URLs" name="links"/>
-	
-	  <text name="text_box3">
-			 Consola de Chat:
-	  </text>
-	  <spinner label="Desvanecer Chat tras" name="fade_chat_time" label_width="107" width="160"/>
-	  <text name="text_box4"  left="312" >
-			 (segundos)
-	  </text>
-	  <spinner left="370" name="max_chat_count"/>
-	  <text left="435" name="text_box5">
-			 (# líneas)
-	  </text>
-	  <slider label="Opacidad" name="console_opacity"/>
-	  <check_box label="Usar Ancho completo de pantalla (Requeire reinicio)" name="chat_full_width_check"/>
-	  <text name="text_box6" >
-			 Opciones de Chat:
-	  </text>
-	  <check_box label="Cerrar barra de chat al presionar Intro" name="close_chat_on_return_check"/>
-	  <check_box label="Las teclas de cursor siempre mueven al avatar al chatear" name="arrow_keys_move_avatar_check"/>
-	  <check_box label="Mostrar horario en el chat local" name="show_timestamps_check"/>
-	  <check_box label="Mostrar errores de scripts y avisos como chat regular" name="script_errors_as_chat"/>
-	  <check_box label="Ejecutar animación de escribir al chatear" name="play_typing_animation"/>
-	  <text name="text_box7">
-			 Burbuja de Chat:
-	  </text>
-	  <check_box label="Mostrar Burbuja de chat" name="bubble_text_chat"/>
-	  <slider label="Opacidad" name="bubble_chat_opacity"/>
-<!--
+	<text name="text_box">
+		Tamaño Fuente de Chat:
+	</text>
+	<radio_group name="chat_font_size">
+		<radio_item name="radio">
+			Pequeño
+		</radio_item>
+		<radio_item name="radio2">
+			Medio
+		</radio_item>
+		<radio_item name="radio3">
+			Grande
+		</radio_item>
+	</radio_group>
+	<text name="text_box2">
+		Color de Chat:
+	</text>
+	<color_swatch label="Tu" name="user"/>
+	<color_swatch label="Otros" name="agent"/>
+	<color_swatch label="MI" left_delta="54" name="im" width="44"/>
+	<color_swatch label="Sistema" name="system"/>
+	<color_swatch label="Errores" name="script_error"/>
+	<color_swatch label="Objetos" name="objects"/>
+	<color_swatch label="Propietario" name="owner"/>
+	<color_swatch label="Burbuja" name="background"/>
+	<color_swatch label="URLs" name="links"/>
+	<text name="text_box3">
+		Consola de Chat:
+	</text>
+	<spinner label="Desvanecer Chat tras" name="fade_chat_time" label_width="107" width="160"/>
+	<text name="text_box4"  left="312" >
+		(segundos)
+	</text>
+	<spinner left="370" name="max_chat_count"/>
+	<text left="435" name="text_box5">
+		(# líneas)
+	</text>
+	<slider label="Opacidad" name="console_opacity"/>
+	<check_box label="Usar Ancho completo de pantalla (Requeire reinicio)" name="chat_full_width_check"/>
+	<text name="text_box6" >
+		Opciones de Chat:
+	</text>
+	<check_box label="Cerrar barra de chat al presionar Intro" name="close_chat_on_return_check"/>
+	<check_box label="Las teclas de cursor siempre mueven al avatar al chatear" name="arrow_keys_move_avatar_check"/>
+	<check_box label="Mostrar horario en el chat local" name="show_timestamps_check"/>
+	<check_box label="Mostrar errores de scripts y avisos como chat regular" name="script_errors_as_chat"/>
+	<check_box label="Ejecutar animación de escribir al chatear" name="play_typing_animation"/>
+	<text name="text_box7">
+		Burbuja de Chat:
+	</text>
+	<check_box label="Mostrar Burbuja de chat" name="bubble_text_chat"/>
+	<slider label="Opacidad" name="bubble_chat_opacity"/>
+	<!--
 	<text bottom="-410" height="10" left="12" name="text_translate_chat">Translate Chat:</text>
 	<check_box bottom="-417" control_name="TranslateChat" height="16" initial_value="false" label="Use machine translation while chatting (powered by Google)" left="148" name="translate_chat"/>
 	<text bottom="-432" height="10" left="149" name="text_translate_chat">Translate into this language:</text>	

@@ -959,11 +959,16 @@ void LLFolderView::draw()
 		static LLCachedControl<LLColor4> sSearchStatusColor(gColors, "InventorySearchStatusColor", LLColor4::white );
 		if (LLInventoryModelBackgroundFetch::instance().folderFetchActive() || mCompletedFilterGeneration < mFilter->getMinRequiredGeneration())
 		{
-			mStatusText = std::string("Searching..."); // *TODO:translate
+			mStatusText = LLTrans::getString("Searching");
 		}
 		else
 		{
-			mStatusText = std::string("No matching items found in inventory."); // *TODO:translate
+		//	if(getFilter())
+		//	{
+		//		LLStringUtil::format_map_t args;
+		//		args["[SEARCH_TERM]"] = LLURI::escape(getFilter()->getFilterSubStringOrig());
+				mStatusText = LLTrans::getString("InventoryNoMatchingItems"); //, args);
+		//	}
 		}
 		mStatusTextBox->setWrappedText(mStatusText);
 		mStatusTextBox->setVisible( TRUE );

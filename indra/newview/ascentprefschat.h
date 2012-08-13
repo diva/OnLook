@@ -56,6 +56,8 @@ protected:
     static void onSpellBaseComboBoxCommit(LLUICtrl* ctrl, void* userdata);
     static void onCommitTimeDate(LLUICtrl* ctrl, void *userdata);
     static void onCommitAutoResponse(LLUICtrl* ctrl, void* user_data);
+	static void onCommitResetAS(LLUICtrl*,void*);
+	static void onCommitDialogBlock(LLUICtrl*, void*);
     static void onCommitKeywords(LLUICtrl* ctrl, void* user_data);
 
     //Chat/IM -----------------------------------------------------------------------------
@@ -84,13 +86,21 @@ protected:
     std::string mIMResponseText;
 
     //Spam --------------------------------------------------------------------------------
-    BOOL mBlockChatSpam;
+    BOOL mGlobalQueue;
     U32  mChatSpamCount;
-    F32  mChatSpamTime;
+    U32  mChatSpamTime;
     BOOL mBlockDialogSpam;
-    BOOL mBlockCardSpam;
-    U32  mSpamCount;
-    F32  mSpamTime;
+    BOOL mBlockAlertSpam;
+    BOOL mBlockFriendSpam;
+    BOOL mBlockGroupNoticeSpam;
+    BOOL mBlockGroupInviteSpam;
+    BOOL mBlockItemOfferSpam;
+    BOOL mBlockScriptSpam;
+    BOOL mBlockTeleportSpam;
+    BOOL mNotifyOnSpam;
+    BOOL mSoundMulti;
+    U32  mNewLines;
+    U32  mPreloadMulti;
 
     //Text Options ------------------------------------------------------------------------
     BOOL mSpellDisplay;

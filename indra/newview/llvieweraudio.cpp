@@ -134,6 +134,7 @@ void audio_update_volume(bool force_update)
 	static const LLCachedControl<bool> mute_when_minimized("MuteWhenMinimized",true);
 	static const LLCachedControl<F32> audio_level_doppler("AudioLevelDoppler",1.0);
 	static const LLCachedControl<F32> audio_level_rolloff("AudioLevelRolloff",1.0);
+	static const LLCachedControl<F32> audio_level_underwater_rolloff("AudioLevelUnderwaterRolloff",3.0);
 	BOOL mute_audio = _mute_audio;
 	if (!gViewerWindow->getActive() && mute_when_minimized)
 	{
@@ -147,7 +148,11 @@ void audio_update_volume(bool force_update)
 		gAudiop->setMasterGain ( master_volume );
 
 		gAudiop->setDopplerFactor(audio_level_doppler);
-		gAudiop->setRolloffFactor(audio_level_rolloff);
+		if(!LLViewerCamera::getInstance()->cameraUnderWater())
+			gAudiop->setRolloffFactor( audio_level_rolloff );
+		else
+			gAudiop->setRolloffFactor( audio_level_underwater_rolloff );
+
 		gAudiop->setMuted(mute_audio);
 		
 		if (force_update)
@@ -215,32 +220,8 @@ void audio_update_listener()
 void audio_update_wind(bool force_update)
 {
 #ifdef kAUDIO_ENABLE_WIND
-	//
-	//  Extract height above water to modulate filter by whether above/below water 
-	// 
-	LLViewerRegion* region = gAgent.getRegion();
-	if (region)
+	if(gAgent.getRegion())
 	{
-		static F32 last_camera_water_height = -1000.f;
-		LLVector3 camera_pos = gAgentCamera.getCameraPositionAgent();
-		F32 camera_water_height = camera_pos.mV[VZ] - region->getWaterHeight();
-		
-		//
-		//  Don't update rolloff factor unless water surface has been crossed
-		//
-		if (force_update || (last_camera_water_height * camera_water_height) < 0.f)
-		{
-			static const LLCachedControl<F32> audio_level_rolloff("AudioLevelRolloff",1);
-			if (camera_water_height < 0.f)
-			{
-				gAudiop->setRolloffFactor(audio_level_rolloff * LL_ROLLOFF_MULTIPLIER_UNDER_WATER);
-			}
-			else 
-			{
-				gAudiop->setRolloffFactor(audio_level_rolloff);
-			}
-		}
-
         // Scale down the contribution of weather-simulation wind to the
         // ambient wind noise.  Wind velocity averages 3.5 m/s, with gusts to 7 m/s
         // whereas steady-state avatar walk velocity is only 3.2 m/s.
@@ -249,9 +230,10 @@ void audio_update_wind(bool force_update)
         static LLCachedControl<F32> wind_level("AudioLevelWind", 0.5f);
         LLVector3 scaled_wind_vec = gWindVec * wind_level;
 
-        // Mix in the avatar's motion, subtract because when you walk north,
-        // the apparent wind moves south.
-        LLVector3 final_wind_vec = scaled_wind_vec - gAgent.getVelocity();
+		// Mix in the avatar's motion, subtract because when you walk north,
+		// the apparent wind moves south.
+		LLVector3 final_wind_vec = scaled_wind_vec - gAgent.getVelocity();
+
 		// rotate the wind vector to be listener (agent) relative
 		gRelativeWindVec = gAgent.getFrameAgent().rotateToLocal(final_wind_vec);
 
@@ -275,7 +257,7 @@ void audio_update_wind(bool force_update)
 		if (gSavedSettings.getBOOL("MuteWind"))
 		{
 			// volume decreases by itself
-			gAudiop->mMaxWindGain -= gAudiop->mMaxWindGain;
+			gAudiop->mMaxWindGain = 0.f;
 		}
 		// mute wind when not /*flying*/ in air
 		else if /*(gAgent.getFlying())*/ (gAgentAvatarp && gAgentAvatarp->mInAir)
@@ -289,8 +271,7 @@ void audio_update_wind(bool force_update)
 			gAudiop->mMaxWindGain = llmax(gAudiop->mMaxWindGain - volume_delta, 0.f);
 		}
 		
-		last_camera_water_height = camera_water_height;
-		gAudiop->updateWind(gRelativeWindVec, camera_water_height);
+		gAudiop->updateWind(gRelativeWindVec, gAgentCamera.getCameraPositionAgent()[VZ] - gAgent.getRegion()->getWaterHeight());
 	}
 #endif
 }

@@ -36,6 +36,7 @@
 #include "llpanel.h"
 
 class LLButton;
+class LLIconCtrl;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -61,6 +62,16 @@ protected:
 	void build();
 
 	std::string mCachedPauseTip;
+
+	CachedUICtrl<LLButton> mMusicPlayBtn;
+	CachedUICtrl<LLButton> mMusicStopBtn;
+	CachedUICtrl<LLButton> mMusicPauseBtn;
+	CachedUICtrl<LLButton> mMediaPlayBtn;
+	CachedUICtrl<LLButton> mMediaStopBtn;
+	CachedUICtrl<LLButton> mMediaPauseBtn;
+	CachedUICtrl<LLButton> mExpandBtn;
+	CachedUICtrl<LLIconCtrl> mMediaIcon;
+	CachedUICtrl<LLIconCtrl> mMusicIcon;
 };
 
 #endif

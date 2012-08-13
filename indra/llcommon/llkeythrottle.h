@@ -174,6 +174,7 @@ public:
 		F64 averageCount = curr.count + prevCount * (1.0 - timeInCurrent);
 		return averageCount;
 	}
+
 	// call each time the key wants use
 	State noteAction(const T& id, S32 weight = 1)
 	{

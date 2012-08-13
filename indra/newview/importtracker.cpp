@@ -203,7 +203,7 @@ void ImportTracker::get_update(S32 newid, BOOL justCreated, BOOL createSelected)
 				msg->addBOOLFast(_PREHASH_UsePhysics, gSavedSettings.getBOOL("EmeraldBuildPrefs_Physical"));
 				msg->addBOOLFast(_PREHASH_IsTemporary, gSavedSettings.getBOOL("EmeraldBuildPrefs_Temporary"));
 				msg->addBOOLFast(_PREHASH_IsPhantom, gSavedSettings.getBOOL("EmeraldBuildPrefs_Phantom") );
-				msg->addBOOL("CastsShadows", true );
+				msg->addBOOL("CastsShadows", false );
 				msg->sendReliable(gAgent.getRegion()->getHost());
 
 				if(gSavedSettings.getBOOL("EmeraldBuildPrefs_EmbedItem"))

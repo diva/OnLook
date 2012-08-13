@@ -46,6 +46,9 @@ class LLButton;
 class LLPanelActiveSpeakers;
 class LLSpeakerMgr;
 class LLVoiceChannel;
+class LLSlider;
+class LLTextBox;
+class LLCheckBoxCtrl;
 
 
 // data for a given participant in a voice channel
@@ -296,6 +299,13 @@ protected:
 	LLPointer<SpeakerAddListener> mSpeakerAddListener;
 	LLPointer<SpeakerRemoveListener> mSpeakerRemoveListener;
 	LLPointer<SpeakerClearListener> mSpeakerClearListener;
+
+	CachedUICtrl<LLUICtrl> mVolumeSlider;
+	CachedUICtrl<LLTextBox> mModeratorCtrlLbl;
+	CachedUICtrl<LLCheckBoxCtrl> mModeratorAllowVoiceCheckbox;
+	CachedUICtrl<LLCheckBoxCtrl> mModeratorAllowTextCheckbox;
+	CachedUICtrl<LLPanel> mModeratorModePanel;
+	CachedUICtrl<LLPanel> mModeratorControlsPanel;
 };
 
 

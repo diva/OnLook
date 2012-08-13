@@ -161,6 +161,13 @@ BOOL LLToolBar::postBuild()
 	childSetAction("inventory_btn", onClickInventory, this);
 	childSetControlName("inventory_btn", "ShowInventory");
 
+	mCommunicateBtn.connect(this, "communicate_btn");
+	mFlyBtn.connect(this, "fly_btn");
+	mBuildBtn.connect(this, "build_btn");
+	mMapBtn.connect(this, "map_btn");
+	mRadarBtn.connect(this, "radar_btn");
+	mInventoryBtn.connect(this, "inventory_button");
+
 	for (child_list_const_iter_t child_iter = getChildList()->begin();
 		 child_iter != getChildList()->end(); ++child_iter)
 	{
@@ -292,7 +299,9 @@ void LLToolBar::refresh()
 	if(!isAgentAvatarValid())
 		return;
 
-	BOOL show = gSavedSettings.getBOOL("ShowToolBar");
+	static LLCachedControl<bool> show("ShowToolBar", true);
+	static LLCachedControl<bool> ascent_fly_always_enabled("AscentFlyAlwaysEnabled", true);
+	static LLCachedControl<bool> ascent_build_always_enabled("AscentBuildAlwaysEnabled", true);
 	BOOL mouselook = gAgentCamera.cameraMouselook();
 	setVisible(show && !mouselook);
 
@@ -302,9 +311,8 @@ void LLToolBar::refresh()
 		sitting = gAgentAvatarp->isSitting();
 	}
 
-	childSetEnabled("fly_btn", (gAgent.canFly() || gAgent.getFlying() || gSavedSettings.getBOOL("AscentFlyAlwaysEnabled")) && !sitting );
-
-	childSetEnabled("build_btn", (LLViewerParcelMgr::getInstance()->allowAgentBuild() || gSavedSettings.getBOOL("AscentBuildAlwaysEnabled")) );
+	mFlyBtn->setEnabled((gAgent.canFly() || gAgent.getFlying() || ascent_fly_always_enabled) && !sitting );
+	mBuildBtn->setEnabled((LLViewerParcelMgr::getInstance()->allowAgentBuild() || ascent_build_always_enabled));
 
 	// Check to see if we're in build mode
 	BOOL build_mode = LLToolMgr::getInstance()->inEdit();
@@ -323,11 +331,11 @@ void LLToolBar::refresh()
 	{
 		// If we're rez-restricted, we can still edit => allow build floater
 		// If we're edit-restricted, we can still rez => allow build floater
-		childSetEnabled("build_btn", !(gRlvHandler.hasBehaviour(RLV_BHVR_REZ) && gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) );
+		mBuildBtn->setEnabled(!(gRlvHandler.hasBehaviour(RLV_BHVR_REZ) && gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)));
 
-		childSetEnabled("map_btn", !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWWORLDMAP) );
-		childSetEnabled("radar_btn", !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWMINIMAP) );
-		childSetEnabled("inventory_btn", !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWINV) );
+		mMapBtn->setEnabled(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWWORLDMAP));
+		mRadarBtn->setEnabled(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWMINIMAP));
+		mInventoryBtn->setEnabled(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWINV));
 	}
 // [/RLVa:KB]
 
@@ -339,7 +347,7 @@ void LLToolBar::refresh()
 
 void LLToolBar::updateCommunicateList()
 {
-	LLFlyoutButton* communicate_button = getChild<LLFlyoutButton>("communicate_btn");
+	LLFlyoutButton* communicate_button = mCommunicateBtn;
 	LLSD selected = communicate_button->getValue();
 
 	communicate_button->removeall();

@@ -89,12 +89,12 @@
 				<on_enable function="Object.EnableReportAbuse" />
 			</menu_item_call>
 		</pie_menu>
-		<menu_item_call enabled="false" label="Comprar..." name="Buy...">
+		<menu_item_call label="Comprar..." name="Buy...">
 			<on_click function="Object.Buy" />
 			<on_enable function="Object.EnableBuy" />
 		</menu_item_call>
 	</pie_menu>
-	<menu_item_call enabled="false" label="Editar..." name="Edit...">
+	<menu_item_call label="Editar..." name="Edit...">
 		<on_click function="Object.Edit" />
 		<on_enable function="EnableEdit" />
 	</menu_item_call>
