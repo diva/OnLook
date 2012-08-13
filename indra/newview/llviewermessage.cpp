@@ -219,19 +219,20 @@ const F32 OFFER_THROTTLE_TIME=10.f; //time period in seconds
 
 //script permissions
 const std::string SCRIPT_QUESTIONS[SCRIPT_PERMISSION_EOF] = 
-	{ 
-		"ScriptTakeMoney",
-		"ActOnControlInputs",
-		"RemapControlInputs",
-		"AnimateYourAvatar",
-		"AttachToYourAvatar",
-		"ReleaseOwnership",
-		"LinkAndDelink",
-		"AddAndRemoveJoints",
-		"ChangePermissions",
-		"TrackYourCamera",
-		"ControlYourCamera"
-	};
+{
+	"ScriptTakeMoney",
+	"ActOnControlInputs",
+	"RemapControlInputs",
+	"AnimateYourAvatar",
+	"AttachToYourAvatar",
+	"ReleaseOwnership",
+	"LinkAndDelink",
+	"AddAndRemoveJoints",
+	"ChangePermissions",
+	"TrackYourCamera",
+	"ControlYourCamera",
+	"TeleportYourAgent"
+};
 
 const BOOL SCRIPT_QUESTION_IS_CAUTION[SCRIPT_PERMISSION_EOF] = 
 {
@@ -245,7 +246,8 @@ const BOOL SCRIPT_QUESTION_IS_CAUTION[SCRIPT_PERMISSION_EOF] =
 	FALSE,	// AddAndRemoveJoints
 	FALSE,	// ChangePermissions
 	FALSE,	// TrackYourCamera,
-	FALSE	// ControlYourCamera
+	FALSE,	// ControlYourCamera
+	FALSE   // TeleportYourAgent
 };
 
 bool friendship_offer_callback(const LLSD& notification, const LLSD& response)
