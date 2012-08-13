@@ -34,10 +34,10 @@
 #include <string>
 
 #include <boost/intrusive_ptr.hpp>
-#include "llurlrequest.h"
 #include "llassettype.h"
 #include "llcurl.h"
 #include "lliopipe.h"
+#include "llurlrequest.h"
 
 extern const F32 HTTP_REQUEST_EXPIRY_SECS;
 

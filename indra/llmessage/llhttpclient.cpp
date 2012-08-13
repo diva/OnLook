@@ -25,7 +25,6 @@
  */
 
 #include "linden_common.h"
-#include <openssl/x509_vfy.h>
 #include "llhttpclient.h"
 
 #include "llassetstorage.h"
@@ -38,7 +37,6 @@
 #include "lluri.h"
 
 #include "message.h"
-
 
 const F32 HTTP_REQUEST_EXPIRY_SECS = 60.0f;
 ////////////////////////////////////////////////////////////////////////////
@@ -186,11 +184,9 @@ namespace
 			
 			LLVFile vfile(gVFS, mUUID, mAssetType, LLVFile::READ);
 			S32 fileSize = vfile.getSize();
-			U8* fileBuffer;
-			fileBuffer = new U8 [fileSize];
-            vfile.read(fileBuffer, fileSize);
-            ostream.write((char*)fileBuffer, fileSize);
-			delete [] fileBuffer;
+			std::vector<U8> fileBuffer(fileSize);
+			vfile.read(&fileBuffer[0], fileSize);
+			ostream.write((char*)&fileBuffer[0], fileSize);
 			eos = true;
 			return STATUS_DONE;
 		}
@@ -199,7 +195,6 @@ namespace
 		LLAssetType::EType mAssetType;
 	};
 
-	
 	LLPumpIO* theClientPump = NULL;
 }
 
@@ -209,8 +204,7 @@ static void request(
 	Injector* body_injector,
 	LLCurl::ResponderPtr responder,
 	const F32 timeout = HTTP_REQUEST_EXPIRY_SECS,
-	const LLSD& headers = LLSD()
-    )
+	const LLSD& headers = LLSD())
 {
 	if (responder)
 	{

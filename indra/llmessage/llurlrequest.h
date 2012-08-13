@@ -40,7 +40,6 @@
 #include "llerror.h"
 #include "llcurl.h"
 
-
 extern const std::string CONTEXT_REQUEST;
 extern const std::string CONTEXT_RESPONSE;
 extern const std::string CONTEXT_TRANSFERED_BYTES;
@@ -144,7 +143,6 @@ public:
 	 */
 	void checkRootCertificate(bool check);
 
-	
 	/**
 	 * @brief Return at most size bytes of body.
 	 *
@@ -197,7 +195,6 @@ public:
 	 * @brief Give this pipe a chance to handle a generated error
 	 */
 	virtual EStatus handleError(EStatus status, LLPumpIO* pump);
-
 	
 protected:
 	/** 
@@ -224,8 +221,8 @@ protected:
 	ERequestAction mAction;
 	LLURLRequestDetail* mDetail;
 	LLIOPipe::ptr_t mCompletionCallback;
-	 S32 mRequestTransferedBytes;
-	 S32 mResponseTransferedBytes;
+	S32 mRequestTransferedBytes;
+	S32 mResponseTransferedBytes;
 
 	// mRemoved is used instead of changing mState directly, because I'm not convinced the latter is atomic.
 	// Set to false before adding curl request and then only tested.

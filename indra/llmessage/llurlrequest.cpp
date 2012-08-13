@@ -36,17 +36,17 @@
 #include <algorithm>
 #include <openssl/x509_vfy.h>
 #include <openssl/ssl.h>
+
 #include "llcurl.h"
-#include "llfasttimer.h"
 #include "llioutil.h"
 #include "llmemtype.h"
-#include "llproxy.h"
 #include "llpumpio.h"
 #include "llsd.h"
 #include "llstring.h"
 #include "apr_env.h"
 #include "llapr.h"
 #include "llscopedvolatileaprpool.h"
+#include "llfasttimer.h"
 static const U32 HTTP_STATUS_PIPE_ERROR = 499;
 
 /**
@@ -73,7 +73,6 @@ public:
 	U32 mBodyLimit;
 	S32 mByteAccumulator;
 	bool mIsBodyLimitSet;
-	LLURLRequest::SSLCertVerifyCallback mSSLVerifyCallback;
 };
 
 LLURLRequestDetail::LLURLRequestDetail() :
@@ -81,8 +80,7 @@ LLURLRequestDetail::LLURLRequestDetail() :
 	mLastRead(NULL),
 	mBodyLimit(0),
 	mByteAccumulator(0),
-	mIsBodyLimitSet(false),
-    mSSLVerifyCallback(NULL)
+	mIsBodyLimitSet(false)
 {
 }
 
@@ -164,10 +162,10 @@ void LLURLRequest::addHeader(const char* header)
 
 void LLURLRequest::checkRootCertificate(bool check)
 {
-	mDetail->mCurlRequest->setopt(CURLOPT_SSL_VERIFYPEER, (check? TRUE : FALSE));
-	mDetail->mCurlRequest->setoptString(CURLOPT_ENCODING, "");
+	AICurlEasyRequest_wat curlEasyRequest_w(*mDetail->mCurlEasyRequest);
+	curlEasyRequest_w->setopt(CURLOPT_SSL_VERIFYPEER, check ? 1L : 0L);
+	curlEasyRequest_w->setoptString(CURLOPT_ENCODING, "");
 }
-
 
 void LLURLRequest::setBodyLimit(U32 size)
 {
@@ -214,10 +212,10 @@ void LLURLRequest::useProxy(bool use_proxy)
 		}
     }
 
-    lldebugs << "use_proxy = " << (use_proxy?'Y':'N') << ", env_proxy = \"" << env_proxy << "\"" << llendl;
+	LL_DEBUGS("Proxy") << "use_proxy = " << (use_proxy?'Y':'N') << ", env_proxy = " << (!env_proxy.empty() ? env_proxy : "(null)") << LL_ENDL;
 
 	AICurlEasyRequest_wat curlEasyRequest_w(*mDetail->mCurlEasyRequest);
-	curlEasyRequest_w->setoptString(CURLOPT_PROXY, use_proxy ? env_proxy : std::string(""));
+	curlEasyRequest_w->setoptString(CURLOPT_PROXY, (use_proxy && !env_proxy.empty()) ? env_proxy : std::string(""));
 }
 
 void LLURLRequest::useProxy(const std::string &proxy)
@@ -319,7 +317,9 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	//llinfos << "LLURLRequest::process_impl()" << llendl;
 	if (!buffer) return STATUS_ERROR;
-	
+
+	if (!mDetail) return STATUS_ERROR; //Seems to happen on occasion. Need to hunt down why.
+
 	// we're still waiting or processing, check how many
 	// bytes we have accumulated.
 	const S32 MIN_ACCUMULATION = 100000;
