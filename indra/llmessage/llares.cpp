@@ -37,6 +37,7 @@
 #include "apr_poll.h"
 
 #include "llapr.h"
+#include "llaprpool.h"
 #include "llareslistener.h"
 
 #if defined(LL_WINDOWS)
