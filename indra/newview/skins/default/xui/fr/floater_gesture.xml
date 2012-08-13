@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="gestures" title="Gestures utilisées">
 	<text name="help_label">
 		Double-cliquer sur une gesture pour jouer les animations

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="floaterland" title="A propos du terrain">
 	<tab_container name="landtab">
 		<panel label="Général" name="land_general_panel">

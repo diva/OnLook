@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="Panel Avatar" width="470">
 	<tab_container name="tab" width="459">
 		<panel label="2ème vie" name="2nd Life" width="458">

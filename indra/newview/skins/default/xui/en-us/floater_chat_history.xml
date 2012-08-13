@@ -20,6 +20,7 @@
 	<string name="AddAndRemoveJoints">Add and remove joints with other objects</string>
 	<string name="ChangePermissions">Change its permissions</string>
 	<string name="TrackYourCamera">Track your camera</string>
+	<string name="TeleportYourAgent">Teleport you</string>
 	<string name="ControlYourCamera">Control your camera</string>
 	<layout_stack border="false" bottom="0" follows="left|top|right|bottom" height="260" left="0" orientation="horizontal" width="430" name="panels">
 		<layout_panel border="false" bottom="0" default_tab_group="1" height="135" left="0" min_width="275" name="im_contents_panel" width="305">

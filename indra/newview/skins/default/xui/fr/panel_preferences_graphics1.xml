@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Graphiques" name="Display panel">
 	<button label="?" name="GraphicsPreferencesHelpButton"/>
 	<text_editor bottom="-56" height="40" left="25" name="FullScreenInfo" width="460">
