@@ -18,7 +18,7 @@
 				<button bottom="-28" enabled="false" follows="left|top" height="20" image_overlay="icon_avatar_offline.tga" label="" left="4" name="profile_btn" right="34" scale_image="true"/>
 				<text bottom_delta="9" follows="left|top|right" left_delta="34" name="resident_name" valign="center" width="140">Rumplstiltskin Califragilistic</text>
 				<volume_slider bottom_delta="-29" follows="left|top" height="15" increment="0.05" initial_val="0.5" left="0" max_val="1.0" min_val="0.0" name="speaker_volume" width="110"/>
-				<button bottom_delta="0" height="20" image_selected="icn_speaker-muted_dark.tga" image_unselected="icn_speaker_dark.tga" label="" left_delta="110" name="mute_btn" tool_tip="Mute voice for this resident" width="25"/>
+				<button bottom_delta="0" height="20" image_selected="icn_speaker-muted_dark.tga" image_unselected="icn_speaker_dark.tga" scale_image="false" label="" left_delta="110" name="mute_btn" tool_tip="Mute voice for this resident" width="25"/>
 				<check_box bottom_delta="-25" enabled="false" follows="left|top" height="25" label="Mute Text" left="3" name="mute_text_btn"/>
 			</panel>
 		</layout_panel>

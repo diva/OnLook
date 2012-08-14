@@ -430,8 +430,8 @@ BOOL LLVOVolume::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 {
 	LLViewerObject::idleUpdate(agent, world, time);
 
-	static LLFastTimer::DeclareTimer ftm("Volume Idle");
-	LLFastTimer t(ftm);
+	//static LLFastTimer::DeclareTimer ftm("Volume Idle");
+	//LLFastTimer t(ftm);
 
 	if (mDead || mDrawable.isNull())
 	{
@@ -2390,7 +2390,7 @@ U32 LLVOVolume::getRenderCost(texture_cost_t &textures) const
 		produces_light = 1;
 	}
 
-	for (S32 i = 0; i < num_faces; ++i)
+	for (S32 i = 0; i < (S32)num_faces; ++i)
 	{
 		const LLFace* face = drawablep->getFace(i);
 		if (!face) continue;
@@ -3084,6 +3084,11 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 		
 		LLVector4a* weight = vol_face.mWeights;
 
+		if(!weight)
+		{
+			continue;
+		}
+
 		LLMatrix4a bind_shape_matrix;
 		bind_shape_matrix.loadu(skin->mBindShapeMatrix);
 
@@ -3481,7 +3486,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 		LLFastTimer t(FTM_REBUILD_VOLUME_FACE_LIST);
 
 		//get all the faces into a list
-		for (LLSpatialGroup::element_iter drawable_iter = group->getData().begin(); drawable_iter != group->getData().end(); ++drawable_iter)
+		for (LLSpatialGroup::element_iter drawable_iter = group->getDataBegin(); drawable_iter != group->getDataEnd(); ++drawable_iter)
 		{
 			LLDrawable* drawablep = *drawable_iter;
 		
@@ -3887,7 +3892,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 	if (!LLPipeline::sDelayVBUpdate)
 	{
 		//drawables have been rebuilt, clear rebuild status
-		for (LLSpatialGroup::element_iter drawable_iter = group->getData().begin(); drawable_iter != group->getData().end(); ++drawable_iter)
+		for (LLSpatialGroup::element_iter drawable_iter = group->getDataBegin(); drawable_iter != group->getDataEnd(); ++drawable_iter)
 		{
 			LLDrawable* drawablep = *drawable_iter;
 			drawablep->clearState(LLDrawable::REBUILD_ALL);
@@ -3927,7 +3932,7 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 		
 		std::set<LLVertexBuffer*> mapped_buffers;
 
-		for (LLSpatialGroup::element_iter drawable_iter = group->getData().begin(); drawable_iter != group->getData().end(); ++drawable_iter)
+		for (LLSpatialGroup::element_iter drawable_iter = group->getDataBegin(); drawable_iter != group->getDataEnd(); ++drawable_iter)
 		{
 			LLDrawable* drawablep = *drawable_iter;
 
@@ -3951,8 +3956,14 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 						if (buff)
 						{
 							llassert(!face->isState(LLFace::RIGGED));
-							face->getGeometryVolume(*volume, face->getTEOffset(), 
-								vobj->getRelativeXform(), vobj->getRelativeXformInvTrans(), face->getGeomIndex());
+
+							if (!face->getGeometryVolume(*volume, face->getTEOffset(), 
+								vobj->getRelativeXform(), vobj->getRelativeXformInvTrans(), face->getGeomIndex()))
+							{ //something's gone wrong with the vertex buffer accounting, rebuild this group 
+								group->dirtyGeom();
+								gPipeline.markRebuild(group, TRUE);
+							}
+
 
 							if (buff->isLocked())
 							{
@@ -3993,7 +4004,7 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 				llwarns << "Not all mapped vertex buffers are unmapped!" << llendl ;
 				warningsCount = 1;
 			}
-			for (LLSpatialGroup::element_iter drawable_iter = group->getData().begin(); drawable_iter != group->getData().end(); ++drawable_iter)
+			for (LLSpatialGroup::element_iter drawable_iter = group->getDataBegin(); drawable_iter != group->getDataEnd(); ++drawable_iter)
 			{
 				LLDrawable* drawablep = *drawable_iter;
 				for (S32 i = 0; i < drawablep->getNumFaces(); ++i)
@@ -4159,11 +4170,16 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 				facep->setTextureIndex(cur_tex);
 				texture_list.push_back(tex);
 
-				//if (can_batch_texture(facep))
+				if (can_batch_texture(facep))
 				{
 					while (i != faces.end())
 					{
 						facep = *i;
+						if (!can_batch_texture(facep))
+						{ //face is bump mapped or has an animated texture matrix -- can't 
+							//batch more than 1 texture at a time
+							break;
+						}
 						if (facep->getTexture() != tex)
 						{
 							if (distance_sort)
@@ -4189,12 +4205,6 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 								cur_tex++;
 							}
 
-							if (!can_batch_texture(facep))
-							{ //face is bump mapped or has an animated texture matrix -- can't 
-								//batch more than 1 texture at a time
-								break;
-							}
-
 							if (cur_tex >= texture_index_channels)
 							{ //cut batches when index channels are depleted
 								break;
@@ -4216,9 +4226,8 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 
 						facep->setTextureIndex(cur_tex);
 					}
+					tex = texture_list[0];
 				}
-
-				tex = texture_list[0];
 			}
 			else
 			{
@@ -4294,8 +4303,11 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 
 					llassert(!facep->isState(LLFace::RIGGED));
 
-					facep->getGeometryVolume(*volume, te_idx, 
-						vobj->getRelativeXform(), vobj->getRelativeXformInvTrans(), index_offset,true);
+					if (!facep->getGeometryVolume(*volume, te_idx, 
+						vobj->getRelativeXform(), vobj->getRelativeXformInvTrans(), index_offset,true))
+					{
+						llwarns << "Failed to get geometry for face!" << llendl;
+					}
 
 					if (drawablep->isState(LLDrawable::ANIMATED_CHILD))
 					{
@@ -4464,7 +4476,7 @@ void LLGeometryManager::addGeometryCount(LLSpatialGroup* group, U32 &vertex_coun
 
 	//for each drawable
 
-	for (LLSpatialGroup::element_iter drawable_iter = group->getData().begin(); drawable_iter != group->getData().end(); ++drawable_iter)
+	for (LLSpatialGroup::element_iter drawable_iter = group->getDataBegin(); drawable_iter != group->getDataEnd(); ++drawable_iter)
 	{
 		LLDrawable* drawablep = *drawable_iter;
 		

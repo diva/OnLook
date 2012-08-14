@@ -31,6 +31,8 @@
  */
 
 #include "llviewerprecompiledheaders.h"
+#include "llviewerwindow.h"
+
 
 // system library includes
 #include <stdio.h>
@@ -42,7 +44,7 @@
 #include "llmeshrepository.h"
 #include "llpanellogin.h"
 #include "llviewerkeyboard.h"
-#include "llviewerwindow.h"
+
 
 #include "llviewquery.h"
 #include "llxmltree.h"
@@ -75,6 +77,7 @@
 #include "lltimer.h"
 #include "timing.h"
 #include "llviewermenu.h"
+#include "raytrace.h"
 
 // newview includes
 #include "llagent.h"
@@ -128,6 +131,7 @@
 #include "llmodaldialog.h"
 #include "llmorphview.h"
 #include "llmoveview.h"
+#include "llpanelpathfindingrebakenavmesh.h"
 #include "llnotify.h"
 #include "lloverlaybar.h"
 #include "llpreviewtexture.h"
@@ -1562,6 +1566,7 @@ LLViewerWindow::LLViewerWindow(
 	LLVertexBuffer::initClass(gSavedSettings.getBOOL("RenderVBOEnable"), gSavedSettings.getBOOL("RenderVBOMappingDisable"));
 	LL_INFOS("RenderInit") << "LLVertexBuffer initialization done." << LL_ENDL ;
 	gGL.init() ;
+	LLImageGL::initClass(LLViewerTexture::MAX_GL_IMAGE_CATEGORY) ;
 
 	if (LLFeatureManager::getInstance()->isSafe()
 		|| (gSavedSettings.getS32("LastFeatureVersion") != LLFeatureManager::getInstance()->getVersion())
@@ -1586,7 +1591,6 @@ LLViewerWindow::LLViewerWindow(
 		
 	// Init the image list.  Must happen after GL is initialized and before the images that
 	// LLViewerWindow needs are requested.
-	LLImageGL::initClass(LLViewerTexture::MAX_GL_IMAGE_CATEGORY) ;
 	gTextureList.init();
 	LLViewerTextureManager::init() ;
 	gBumpImageList.init();
@@ -1955,6 +1959,10 @@ void LLViewerWindow::initWorldUI()
 		// put behind everything else in the UI
 		mRootView->addChildInBack(gHUDView);
 	}
+	
+	LLPanel* panel_ssf_container = getRootView()->getChild<LLPanel>("state_management_buttons_container");
+	LLPanelPathfindingRebakeNavmesh *panel_rebake_navmesh = LLPanelPathfindingRebakeNavmesh::getInstance();
+	panel_ssf_container->addChild(panel_rebake_navmesh);
 }
 
 // initWorldUI that wasn't before logging in. Some of this may require the access the 'LindenUserDir'.
@@ -3094,7 +3102,7 @@ void LLViewerWindow::updateUI()
 		}
 
 		// snap floaters to top of chat bar/button strip
-		LLView* chatbar_and_buttons = gOverlayBar->getChild<LLView>("chatbar_and_buttons", TRUE);
+		LLView* chatbar_and_buttons = gOverlayBar->getChatbarAndButtons();
 		// find top of chatbar and state buttons, if either are visible
 		if (chatbar_and_buttons && chatbar_and_buttons->getLocalBoundingRect().notEmpty())
 		{
@@ -3425,8 +3433,11 @@ void LLViewerWindow::renderSelections( BOOL for_gl_pick, BOOL pick_parcel_walls,
 					{
 						LLSelectNode* nodep = *iter;
 						LLViewerObject* object = nodep->getObject();
+						LLViewerObject *root_object = (object == NULL) ? NULL : object->getRootEdit();
 						BOOL this_object_movable = FALSE;
-						if (object->permMove() && (object->permModify() || selecting_linked_set))
+						if (object->permMove() && !object->isPermanentEnforced() &&
+							((root_object == NULL) || !root_object->isPermanentEnforced()) &&
+							(object->permModify() || selecting_linked_set))
 						{
 							moveable_object_selected = TRUE;
 							this_object_movable = TRUE;
@@ -4839,7 +4850,7 @@ void LLViewerWindow::stopGL(BOOL save_state)
 		
 		if(LLPostProcess::instanceExists())
 		{
-			LLPostProcess::getInstance()->invalidate();
+			LLPostProcess::getInstance()->destroyGL();
 		}
 
 		gTextureList.destroyGL(save_state);

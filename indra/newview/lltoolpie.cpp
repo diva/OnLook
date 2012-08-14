@@ -40,7 +40,6 @@
 
 #include "llagent.h"
 #include "llagentcamera.h"
-#include "llviewercontrol.h"
 #include "llfocusmgr.h"
 #include "llfirstuse.h"
 #include "llfloateravatarinfo.h"
@@ -56,8 +55,10 @@
 #include "lltoolgrab.h"
 #include "lltoolmgr.h"
 #include "lltoolselect.h"
+#include "lltrans.h"
 #include "llviewercamera.h"
 #include "llviewerparcelmedia.h"
+#include "llviewercontrol.h"
 #include "llviewermenu.h"
 #include "llviewerobjectlist.h"
 #include "llviewerobject.h"
@@ -65,8 +66,8 @@
 #include "llviewerwindow.h"
 #include "llwindow.h"
 #include "llviewermedia.h"
-#include "llviewermediafocus.h"
 #include "llvoavatarself.h"
+#include "llviewermediafocus.h"
 #include "llworld.h"
 #include "llui.h"
 #include "llweb.h"
@@ -275,7 +276,7 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 	// Switch to grab tool if physical or triggerable
 	if (object && 
 		!object->isAvatar() && 
-		((object->usePhysics() || (parent && !parent->isAvatar() && parent->usePhysics())) || touchable) && 
+		((object->flagUsePhysics() || (parent && !parent->isAvatar() && parent->flagUsePhysics())) || touchable) && 
 		!always_show)
 	{
 // [RLVa:KB] - Checked: 2010-01-02 (RLVa-1.1.0l) | Modified: RLVa-1.1.0l
@@ -401,12 +402,12 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 			std::string name = avatar->getFullname();
 			if (LLMuteList::getInstance()->isMuted(avatar->getID(), name))
 			{
-				gMenuHolder->childSetText("Avatar Mute", std::string("Unmute")); // *TODO:Translate
+				gMenuHolder->childSetText("Avatar Mute", LLTrans::getString("UnmuteAvatar"));
 				//gMutePieMenu->setLabel("Unmute");
 			}
 			else
 			{
-				gMenuHolder->childSetText("Avatar Mute", std::string("Mute")); // *TODO:Translate
+				gMenuHolder->childSetText("Avatar Mute", LLTrans::getString("MuteAvatar"));
 				//gMutePieMenu->setLabel("Mute");
 			}
 
@@ -451,12 +452,12 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 			}
 			if (LLMuteList::getInstance()->isMuted(object->getID(), name))
 			{
-				gMenuHolder->childSetText("Object Mute", std::string("Unmute")); // *TODO:Translate
+				gMenuHolder->childSetText("Object Mute", LLTrans::getString("UnmuteObject"));
 				//gMuteObjectPieMenu->setLabel("Unmute");
 			}
 			else
 			{
-				gMenuHolder->childSetText("Object Mute", std::string("Mute")); // *TODO:Translate
+				gMenuHolder->childSetText("Object Mute", LLTrans::getString("MuteObject2"));
 				//gMuteObjectPieMenu->setLabel("Mute");
 			}
 			
@@ -703,8 +704,8 @@ BOOL LLToolPie::handleHover(S32 x, S32 y, MASK mask)
 			gViewerWindow->getWindow()->setCursor(UI_CURSOR_ARROW);
 		}
 // [/RLVa:KB]
-		else if ((object && !object->isAvatar() && object->usePhysics()) 
-				 || (parent && !parent->isAvatar() && parent->usePhysics()))
+		else if ((object && !object->isAvatar() && object->flagUsePhysics()) 
+				 || (parent && !parent->isAvatar() && parent->flagUsePhysics()))
 		{
 			gViewerWindow->getWindow()->setCursor(UI_CURSOR_TOOLGRAB);
 		}
@@ -927,7 +928,7 @@ static bool handle_media_click(const LLPickInfo& pick)
 		}
 		else
 		{
-			media_impl->mouseDown(pick.mXYCoords.mX, pick.mXYCoords.mY);
+			media_impl->mouseDown(pick.mXYCoords.mX, pick.mXYCoords.mY, gKeyboard->currentMask(TRUE));
 			media_impl->mouseCapture(); // the mouse-up will happen when capture is lost
 		}
 
@@ -973,7 +974,7 @@ static bool handle_media_hover(const LLPickInfo& pick)
 	{
 		if(LLViewerMediaFocus::getInstance()->getFocus())
 		{
-			media_impl->mouseMove(pick.mXYCoords.mX, pick.mXYCoords.mY);
+			media_impl->mouseMove(pick.mXYCoords.mX, pick.mXYCoords.mY, gKeyboard->currentMask(TRUE));
 		}
 
 		// Set mouse over flag if unset

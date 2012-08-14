@@ -296,10 +296,10 @@ public:
 	void setLight(LLDrawable *drawablep, BOOL is_light);
 	
 	BOOL hasRenderBatches(const U32 type) const;
-	LLCullResult::drawinfo_list_t::iterator beginRenderMap(U32 type);
-	LLCullResult::drawinfo_list_t::iterator endRenderMap(U32 type);
-	LLCullResult::sg_list_t::iterator beginAlphaGroups();
-	LLCullResult::sg_list_t::iterator endAlphaGroups();
+	LLCullResult::drawinfo_iterator beginRenderMap(U32 type);
+	LLCullResult::drawinfo_iterator endRenderMap(U32 type);
+	LLCullResult::sg_iterator beginAlphaGroups();
+	LLCullResult::sg_iterator endAlphaGroups();
 	
 
 	void addTrianglesDrawn(S32 index_count, U32 render_type = LLRender::TRIANGLES);
@@ -365,6 +365,8 @@ public:
 	static void refreshCachedSettings();
 
 	static void throttleNewMemoryAllocation(BOOL disable);
+
+	void addDebugBlip(const LLVector3& position, const LLColor4& color);
 
 private:
 	void unloadShaders();
@@ -718,6 +720,20 @@ public:
 	std::vector<LLFace*>		mHighlightFaces;	// highlight faces on physical objects
 protected:
 	std::vector<LLFace*>		mSelectedFaces;
+
+	class DebugBlip
+	{
+	public:
+		LLColor4 mColor;
+		LLVector3 mPosition;
+		F32 mAge;
+
+		DebugBlip(const LLVector3& position, const LLColor4& color)
+			: mColor(color), mPosition(position), mAge(0.f)
+		{ }
+	};
+
+	std::list<DebugBlip> mDebugBlips;
 
 	LLPointer<LLViewerFetchedTexture>	mFaceSelectImagep;
 	

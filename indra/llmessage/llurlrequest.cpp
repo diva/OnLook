@@ -37,16 +37,15 @@
 #include <openssl/x509_vfy.h>
 #include <openssl/ssl.h>
 #include "aicurleasyrequeststatemachine.h"
-#include "llfasttimer.h"
 #include "llioutil.h"
 #include "llmemtype.h"
-#include "llproxy.h"
 #include "llpumpio.h"
 #include "llsd.h"
 #include "llstring.h"
 #include "apr_env.h"
 #include "llapr.h"
 #include "llscopedvolatileaprpool.h"
+#include "llfasttimer.h"
 static const U32 HTTP_STATUS_PIPE_ERROR = 499;
 
 /**
@@ -88,40 +87,6 @@ LLURLRequestDetail::LLURLRequestDetail() :
 LLURLRequestDetail::~LLURLRequestDetail()
 {
 	mLastRead = NULL;
-}
-#endif
-
-#if AI_UNUSED
-void LLURLRequest::setSSLVerifyCallback(SSLCertVerifyCallback callback, void *param)
-{
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
-	mDetail->mSSLVerifyCallback = callback;
-	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
-	curlEasyRequest_w->setSSLCtxCallback(LLURLRequest::_sslCtxCallback, (void *)this);
-	curlEasyRequest_w->setopt(CURLOPT_SSL_VERIFYPEER, true);
-	curlEasyRequest_w->setopt(CURLOPT_SSL_VERIFYHOST, 2);	
-}
-
-// _sslCtxFunction
-// Callback function called when an SSL Context is created via CURL
-// used to configure the context for custom cert validation
-
-CURLcode LLURLRequest::_sslCtxCallback(CURL * curl, void *sslctx, void *param)
-{	
-	LLURLRequest *req = (LLURLRequest *)param;
-	if(req == NULL || req->mDetail->mSSLVerifyCallback == NULL)
-	{
-		SSL_CTX_set_cert_verify_callback((SSL_CTX *)sslctx, NULL, NULL);
-		return CURLE_OK;
-	}
-	SSL_CTX * ctx = (SSL_CTX *) sslctx;
-	// disable any default verification for server certs
-	SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
-	// set the verification callback.
-	SSL_CTX_set_cert_verify_callback(ctx, req->mDetail->mSSLVerifyCallback, (void *)req);
-	// the calls are void
-	return CURLE_OK;
-	
 }
 #endif
 
@@ -172,6 +137,13 @@ void LLURLRequest::addHeader(const char* header)
 	curlEasyRequest_w->addHeader(header);
 }
 
+void LLURLRequest::checkRootCertificate(bool check)
+{
+	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
+	curlEasyRequest_w->setopt(CURLOPT_SSL_VERIFYPEER, check ? 1L : 0L);
+	curlEasyRequest_w->setoptString(CURLOPT_ENCODING, "");
+}
+
 #ifdef AI_UNUSED
 void LLURLRequest::setBodyLimit(U32 size)
 {
@@ -219,10 +191,10 @@ void LLURLRequest::useProxy(bool use_proxy)
 		}
     }
 
-    lldebugs << "use_proxy = " << (use_proxy?'Y':'N') << ", env_proxy = \"" << env_proxy << "\"" << llendl;
+	LL_DEBUGS("Proxy") << "use_proxy = " << (use_proxy?'Y':'N') << ", env_proxy = " << (!env_proxy.empty() ? env_proxy : "(null)") << LL_ENDL;
 
 	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
-	curlEasyRequest_w->setoptString(CURLOPT_PROXY, use_proxy ? env_proxy : std::string(""));
+	curlEasyRequest_w->setoptString(CURLOPT_PROXY, (use_proxy && !env_proxy.empty()) ? env_proxy : std::string(""));
 }
 
 #ifdef AI_UNUSED
@@ -314,7 +286,9 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	//llinfos << "LLURLRequest::process_impl()" << llendl;
 	if (!buffer) return STATUS_ERROR;
-	
+
+	if (!mDetail) return STATUS_ERROR; //Seems to happen on occasion. Need to hunt down why.
+
 	// we're still waiting or processing, check how many
 	// bytes we have accumulated.
 	const S32 MIN_ACCUMULATION = 100000;
@@ -483,6 +457,7 @@ bool LLURLRequest::configure()
 			curlEasyRequest_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
 			rv = true;
 			break;
+
 		case HTTP_GET:
 			curlEasyRequest_w->setopt(CURLOPT_HTTPGET, 1);
 			curlEasyRequest_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
@@ -496,8 +471,7 @@ bool LLURLRequest::configure()
 		{
 			// Disable the expect http 1.1 extension. POST and PUT default
 			// to turning this on, and I am not too sure what it means.
-			addHeader("Expect:");
-
+			curlEasyRequest_w->addHeader("Expect:");
 			S32 bytes = bytes_to_send();
 			curlEasyRequest_w->setopt(CURLOPT_UPLOAD, 1);
 			curlEasyRequest_w->setopt(CURLOPT_INFILESIZE, bytes);
@@ -506,17 +480,9 @@ bool LLURLRequest::configure()
 		}
 		case HTTP_POST:
 		{
-			// Disable the expect http 1.1 extension. POST and PUT default
-			// to turning this on, and I am not too sure what it means.
-			addHeader("Expect:");
-
-			// Disable the content type http header.
-			// *FIX: what should it be?
-			addHeader("Content-Type:");
-
 			// Set the handle for an http post
 			S32 bytes = bytes_to_send();
-			curlEasyRequest_w->setPost(NULL, bytes);
+			curlEasyRequest_w->setPost(bytes);
 
 			// Set Accept-Encoding to allow response compression
 			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, "");

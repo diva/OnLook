@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="Display Name" title="Cambiar Tu Nombre A Mostrar">
+	<text name="lockout_text">
+		No puedes cambiar el nombre mostrado hasta: [TIME].
+	</text>
+	<text name="set_name_label">
+		Nuevo Nombre a Mostrar:
+	</text>
+	<text name="name_confirm_label">
+		Vuelve a escribir tu nombre nuevo para confirmarlo:
+	</text>
+	<button label="Guardar" name="save_btn" tool_tip="Guardar tu nuevo Nombre a Mostrar" />
+	<button label="Restablecer" name="reset_btn" tool_tip="Hacer que tu Nombre a Mostrar sea el mismo que tu nombre de usuario" />
+	<button label="Cancelar" name="cancel_btn" tool_tip="Cancelar y cerrar esta ventana" />
+	<text name="name_confirm_label2"  bottom_delta="-23">
+		El nombre que le has dado a tu avatar se denomina 
+Nombre a Mostrar.
+	</text>
+	<text name="name_confirm_label3"  bottom_delta="-30">
+		Puedes cambiarlo una vez a la semana.
+	</text>
+</floater>
+    

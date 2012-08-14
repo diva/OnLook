@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="rlv_behaviours" title="Activar Restricciones RLV">
+	<tab_container name="behaviour_tab">
+		<panel label="Restricciones" name="behaviour_panel">
+			<scroll_list name="behaviour_list">
+				<column label="Restricción" name="behaviour"/>
+				<column label="Nombre de Objeto" name="issuer"/>
+			</scroll_list>
+		</panel>
+		<panel label="Excepciones" name="exception_panel">
+			<scroll_list name="exception_list">
+				<column label="Restricción" name="behaviour"/>
+				<column label="Opción" name="option"/>
+				<column label="Nombre de Objeto" name="issuer"/>
+			</scroll_list>
+		</panel>
+	</tab_container>
+	<button label="Copiar al Portapapeles" name="copy_btn"/>
+</floater>

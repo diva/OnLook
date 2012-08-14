@@ -89,6 +89,16 @@ BOOL LLMediaRemoteCtrl::postBuild()
 	childSetAction("media_pause",LLOverlayBar::toggleMediaPlay,this);
 	childSetAction("music_pause",LLOverlayBar::toggleMusicPlay,this);
 
+	mMusicPlayBtn.connect(this,"music_play");
+	mMusicStopBtn.connect(this,"music_stop");
+	mMusicPauseBtn.connect(this,"music_pause");
+	mMediaPlayBtn.connect(this,"media_play");
+	mMediaStopBtn.connect(this,"media_stop");
+	mMediaPauseBtn.connect(this,"media_pause");
+	mMediaIcon.connect(this,"media_icon");
+	mMusicIcon.connect(this,"music_icon");
+	mExpandBtn.connect(this,"expand");
+
 	childSetAction("expand", onClickExpandBtn, this);
 
 	LLButton *pause = getChild<LLButton>("music_pause");
@@ -101,7 +111,7 @@ void LLMediaRemoteCtrl::draw()
 {
 	enableMediaButtons();
 	
-	LLButton* expand_button = getChild<LLButton>("expand");
+	LLButton* expand_button = mExpandBtn;
 	if (expand_button)
 	{
 		if (expand_button->getToggleState())
@@ -147,8 +157,8 @@ void LLMediaRemoteCtrl::setToolTip(const std::string& msg)
 	std::string tool_tip = LLMIMETypes::findToolTip(mime_type);
 	std::string play_tip = LLMIMETypes::findPlayTip(mime_type);
 	// childSetToolTip("media_stop", mControls->getString("stop_label") + "\n" + tool_tip);
-	childSetToolTip("media_icon", tool_tip);
-	childSetToolTip("media_play", play_tip);
+	mMediaIcon->setToolTip(tool_tip);
+	mMediaIcon->setToolTip(play_tip);
 }
 
 void LLMediaRemoteCtrl::enableMediaButtons()
@@ -227,13 +237,13 @@ void LLMediaRemoteCtrl::enableMediaButtons()
 		// Don't test the mime-type: this is not updated in a consistent basis. The existence of a valid gAudiop is enough guarantee.
 	}
 	const std::string media_icon_name = LLMIMETypes::findIcon(media_type);
-	LLButton* music_play_btn = getChild<LLButton>("music_play");
-	LLButton* music_stop_btn = getChild<LLButton>("music_stop");
-	LLButton* music_pause_btn = getChild<LLButton>("music_pause");
-	LLButton* media_play_btn = getChild<LLButton>("media_play");
-	LLButton* media_stop_btn = getChild<LLButton>("media_stop");
-	LLButton* media_pause_btn = getChild<LLButton>("media_pause");
-	LLIconCtrl* media_icon = getChild<LLIconCtrl>("media_icon");
+	LLButton* music_play_btn = mMusicPlayBtn;
+	LLButton* music_stop_btn = mMusicStopBtn;
+	LLButton* music_pause_btn = mMusicPauseBtn;
+	LLButton* media_play_btn = mMediaPlayBtn;
+	LLButton* media_stop_btn = mMediaPlayBtn;
+	LLButton* media_pause_btn = mMediaPauseBtn;
+	LLIconCtrl* media_icon = mMediaIcon;
 
 	music_play_btn->setEnabled(play_music_enabled);
 	music_stop_btn->setEnabled(stop_music_enabled);
@@ -262,7 +272,7 @@ void LLMediaRemoteCtrl::enableMediaButtons()
 			music_pause_btn->setToolTip(mCachedPauseTip);
 	}
 
-	childSetColor("music_icon", music_icon_color);
+	mMusicIcon->setColor(music_icon_color);
 	if(!media_icon_name.empty())
 	{
 		media_icon->setImage(media_icon_name);
@@ -273,7 +283,7 @@ void LLMediaRemoteCtrl::enableMediaButtons()
 	media_pause_btn->setEnabled(media_show_pause);
 	media_pause_btn->setVisible(media_show_pause);
 	media_play_btn->setVisible(! media_show_pause);
-	childSetColor("media_icon", media_icon_color);
+	mMediaIcon->setColor(media_icon_color);
 
 	setToolTip(media_url);
 }

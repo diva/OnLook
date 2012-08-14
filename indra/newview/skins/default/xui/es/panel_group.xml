@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="GroupInfo" title="Información del Grupo">
+	<string name="default_needs_apply_text">
+		Hay cambios sin aplicar en esta pestaña.
+	</string>
+	<string name="want_apply_text">
+		¿Deseas aplicar estos cambios?
+	</string>
+	<tab_container name="group_tab_container">
+		<panel name="general_tab" />
+		<panel name="roles_tab" />
+		<panel name="notices_tab" />
+		<panel name="voting_tab" />
+		<panel name="land_money_tab" />
+	</tab_container>
+	<button label="Aplicar" label_selected="Aplicar" name="btn_apply"/>
+	<button label="Cancelar" label_selected="Cancelar" name="btn_cancel"/>
+	<button label="OK" label_selected="OK" name="btn_ok"/>
+	<button label="Actualizar" label_selected="Actualizar" name="btn_refresh"/>
+</panel>

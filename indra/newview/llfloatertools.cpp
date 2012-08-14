@@ -110,9 +110,6 @@ void click_popup_minimize(void*);
 void click_popup_grab_drag(LLUICtrl *, void*);
 void click_popup_grab_lift(LLUICtrl *, void*);
 void click_popup_grab_spin(LLUICtrl *, void*);
-void click_popup_rotate_left(void*);
-void click_popup_rotate_reset(void*);
-void click_popup_rotate_right(void*);
 void click_popup_dozer_mode(LLUICtrl *, void *user);
 void commit_slider_dozer_size(LLUICtrl *, void*);
 void commit_slider_dozer_force(LLUICtrl *, void*);
@@ -419,7 +416,6 @@ LLFloaterTools::LLFloaterTools()
 	mPanelFace(NULL),
 	mPanelLandInfo(NULL),
 
-	mTabLand(NULL),
 	mDirty(TRUE)
 {
 	setAutoFocus(FALSE);
@@ -946,25 +942,6 @@ void commit_slider_zoom(LLUICtrl *ctrl, void*)
 	F32 zoom_level = (F32)ctrl->getValue().asReal() * 2.f; // / 0.5f;
 	gAgentCamera.setCameraZoomFraction(zoom_level);
 }
-
-void click_popup_rotate_left(void*)
-{
-	LLSelectMgr::getInstance()->selectionRotateAroundZ( 45.f );
-	dialog_refresh_all();
-}
-
-void click_popup_rotate_reset(void*)
-{
-	LLSelectMgr::getInstance()->selectionResetRotation();
-	dialog_refresh_all();
-}
-
-void click_popup_rotate_right(void*)
-{
-	LLSelectMgr::getInstance()->selectionRotateAroundZ( -45.f );
-	dialog_refresh_all();
-}
-
 
 void click_popup_dozer_mode(LLUICtrl *, void *user)
 {

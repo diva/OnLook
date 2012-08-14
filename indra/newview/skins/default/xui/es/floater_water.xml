@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="Water Floater" title="Editor Avanzado del Agua">
+	<text name="KeyFramePresetsText">
+		Aguar Predefinida:
+	</text>
+	<combo_box name="WaterPresetsCombo"/>
+	<button label="Nuevo" label_selected="Nuevo" name="WaterNewPreset"/>
+	<button label="Guardar" label_selected="Guardar" name="WaterSavePreset"/>
+	<button label="Borrar" label_selected="Borrar" name="WaterDeletePreset"/>
+	<tab_container name="Water Tabs">
+		<panel label="Configuraciones" name="Settings">
+			<text name="BHText">
+				Color del Aguar
+			</text>
+			<button name="WaterFogColorHelp"/>
+			<color_swatch label="" name="WaterFogColor" tool_tip="Pulsa para abrir el selector de color"/>
+			<text name="WaterFogDensText">
+				Transparencia
+			</text>
+			<button label="?" name="WaterFogDensityHelp"/>
+			<slider label="" name="WaterFogDensity"/>
+			<text name="WaterUnderWaterFogModText">
+				Modificador claridad del agua
+			</text>
+			<button label="?" name="WaterUnderWaterFogModHelp"/>
+			<slider label="" name="WaterUnderWaterFogMod"/>
+			<text name="BDensText">
+				Escala de Reflexión de Ondulaciones
+			</text>
+			<button label="?" name="WaterNormalScaleHelp"/>
+			<text name="BHText2">
+				1
+			</text>
+			<text name="BHText3">
+				2
+			</text>
+			<text name="BHText4">
+				3
+			</text>
+			<slider label="" name="WaterNormalScaleX"/>
+			<slider label="" name="WaterNormalScaleY"/>
+			<slider label="" name="WaterNormalScaleZ"/>
+			<text name="HDText">
+				Escala Fresnel
+			</text>
+			<button label="?" name="WaterFresnelScaleHelp"/>
+			<slider label="" name="WaterFresnelScale"/>
+			<text name="FresnelOffsetText">
+				Desplazamiento Fresnel
+			</text>
+			<button label="?" name="WaterFresnelOffsetHelp"/>
+			<slider label="" name="WaterFresnelOffset"/>
+			<text name="DensMultText">
+				Refracción de la Superficie
+			</text>
+			<button label="?" name="WaterScaleAboveHelp"/>
+			<slider label="" name="WaterScaleAbove"/>
+			<text name="WaterScaleBelowText">
+				Refracción bajo la Superficie
+			</text>
+			<button label="?" name="WaterScaleBelowHelp"/>
+			<slider label="" name="WaterScaleBelow"/>
+			<text name="MaxAltText">
+				Desenfoque
+			</text>
+			<button label="?" name="WaterBlurMultiplierHelp"/>
+			<slider label="" name="WaterBlurMult"/>
+		</panel>
+		<panel label="Imagen" name="Waves">
+			<text name="BHText">
+				Dirección de la Ola Grande
+			</text>
+			<button label="?" name="WaterWave1Help"/>
+			<text name="WaterWave1DirXText">
+				X
+			</text>
+			<text name="WaterWave1DirYText">
+				Y
+			</text>
+			<slider label="" name="WaterWave1DirX"/>
+			<slider label="" name="WaterWave1DirY"/>
+			<text name="BHText2">
+				Dirección de la Ola Normal
+			</text>
+			<button label="?" name="WaterWave2Help"/>
+			<text name="WaterWave2DirXText">
+				X
+			</text>
+			<text name="WaterWave2DirYText">
+				Y
+			</text>
+			<slider label="" name="WaterWave2DirX"/>
+			<slider label="" name="WaterWave2DirY"/>
+			<text name="BHText3">
+				Vista Normal
+			</text>
+			<button label="?" name="WaterNormalMapHelp"/>
+			<texture_picker label="" name="WaterNormalMap"/>
+		</panel>
+	</tab_container>
+	<string name="WLDefaultWaterNames">
+		Default:Glassy:Pond:Murky:Second Plague:SNAKE!!!:Valdez
+	</string>
+</floater>

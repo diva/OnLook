@@ -47,7 +47,6 @@ add_custom_target(prepare DEPENDS ${prepare_depends})
 
 add_subdirectory(cmake)
 add_subdirectory(${LIBS_OPEN_PREFIX}aistatemachine)
-add_subdirectory(${LIBS_OPEN_PREFIX}cwdebug)
 add_subdirectory(${LIBS_OPEN_PREFIX}llaudio)
 add_subdirectory(${LIBS_OPEN_PREFIX}llcharacter)
 add_subdirectory(${LIBS_OPEN_PREFIX}llcommon)
@@ -78,7 +77,6 @@ if (VIEWER)
   add_subdirectory(${LIBS_OPEN_PREFIX}llcrashlogger)
   add_subdirectory(${LIBS_OPEN_PREFIX}llplugin)
   add_subdirectory(${LIBS_OPEN_PREFIX}llui)
-  add_subdirectory(${LIBS_OPEN_PREFIX}llxuixml)
 
   # viewer plugins directory
   add_subdirectory(${LIBS_OPEN_PREFIX}plugins)

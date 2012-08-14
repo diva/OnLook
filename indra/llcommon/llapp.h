@@ -43,9 +43,13 @@ template <typename Type> class LLAtomic32;
 typedef LLAtomic32<U32> LLAtomicU32;
 class LLErrorThread;
 class LLLiveFile;
+
+
 #if LL_LINUX
-typedef struct siginfo siginfo_t;
+	#include <signal.h>
+	//typedef struct siginfo siginfo_t; //Removed as per changes in glibc 2.16 - Drake Arconis
 #endif
+
 
 typedef void (*LLAppErrorHandler)();
 typedef void (*LLAppChildCallback)(int pid, bool exited, int status);

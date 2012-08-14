@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="texture picker" title="Seleccionar: Textura" >
+	<string name="choose_picture">
+		Pulsar para seleccionar una textura
+	</string>
+	<text name="Multiple">
+		Múltiple
+	</text>
+	<text name="unknown">
+		Medidas: [DIMENSIONS]
+	</text>
+	<button label="Predeterminda" label_selected="Predeterminada" name="Default"/>
+	<button label="Alfa" label_selected="Alfa" name="Alpha"/>
+	<button label="Blanca" label_selected="Blanca" name="Blank"/>
+	<button label="Invisible" label_selected="Invisible" name="Invisible"/>
+	<check_box label="Mostrar Carpetas" name="show_folders_check"/>
+	<check_box label="Aplicar inmediatamente" name="apply_immediate_check"/>
+	<button label="" label_selected="" name="Pipette"/>
+	<button label="Cancelar" label_selected="Cancelar" name="Cancel"/>
+	<button label="Seleccionar" label_selected="Seleccionar" name="Select"/>
+	<button label="Aplciar UUID" label_selected="Aplicar UUID" name="ApplyUUID"/>
+	<string name="pick title">
+		Seleccionar:
+	</string>
+
+  	<tab_container name="actions_tab_container">
+		<panel label="Inventario" name="server_tab">
+			<search_editor label="Escribe aquí para buscar" name="inventory search editor"/>
+		</panel>
+		<panel label="Computador" name="local_tab">
+			<!-- tag: vaa emerald local_asset_browser [begin] -->
+			<text name="select_local">
+				Selecciona una textura desde tu computador para tener una vista previa en el mundo
+			</text>
+			<button label="Añadir" name="Add"/>
+			<button label="Quitar" name="Remove"/>
+			<button label="Propiedades..." name="Browser"/>
+			<scroll_list name="local_name_list">
+				<column name="unit_name" label="Nombre"/>
+				<column name="unit_id_HIDDEN" label="ID"/>
+			</scroll_list>
+			<!-- tag: vaa emerald local_asset_browser [end] -->
+		</panel>
+	</tab_container>
+</floater>

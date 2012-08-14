@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="Event" title="Eventos">
+	<text name="event_name_label">
+		Nombre:
+	</text>
+	<text name="event_name">
+		(ninguno)
+	</text>
+	<text name="event_category_label">
+		Tipo:
+	</text>
+	<text name="event_category">
+		(ninguno)
+	</text>
+	<text name="event_mature_label">
+		Contenido Mature:
+	</text>
+	<text name="event_mature_yes">
+		Si
+	</text>
+	<text name="event_mature_no">
+		No
+	</text>
+	<text name="event_date_label">
+		Fecha:
+	</text>
+	<text name="event_date">
+		(ninguna)
+	</text>
+	<text name="event_duration_label">
+		Duración del Evento:
+	</text>
+	<text name="event_duration">
+		(ninguna)
+	</text>
+	<text name="event_runby_label">
+		Auspiciado por:
+	</text>
+	<text name="event_runby">
+		(nadie)
+	</text>
+	<text name="event_location_label">
+		Ubicación:
+	</text>
+	<text name="event_location">
+		(ninguna)
+	</text>
+	<text name="event_cover_label">
+		Cuota de participación:
+	</text>
+	<text name="event_cover">
+		(ninguna)
+	</text>
+	<text name="event_desc_label">
+		Descripción:
+	</text>
+	<button label="Teleportar" name="teleport_btn"/>
+	<button label="Mostrar en el Mapa" name="map_btn"/>
+	<button label="Notificar" name="notify_btn"/>
+	<button label="Crear Evento..." name="create_event_btn"/>
+	<string name="none">
+		ninguna
+	</string>
+	<string name="notify">
+		Notificar
+	</string>
+	<string name="dont_notify">
+		No notificar
+	</string>
+</panel>

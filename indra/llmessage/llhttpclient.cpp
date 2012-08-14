@@ -25,7 +25,6 @@
  */
 
 #include "linden_common.h"
-#include <openssl/x509_vfy.h>
 #include "llhttpclient.h"
 
 #include "llassetstorage.h"
@@ -36,16 +35,13 @@
 #include "llvfile.h"
 #include "llvfs.h"
 #include "lluri.h"
+#include "llpumpio.h"		// LLPumpIO::chain_t
 
 #include "message.h"
-#include <curl/curl.h>
-
 
 const F32 HTTP_REQUEST_EXPIRY_SECS = 60.0f;
 #ifdef AI_UNUSED
-LLURLRequest::SSLCertVerifyCallback LLHTTPClient::mCertVerifyCallback = NULL;
 #endif // AI_UNUSED
-
 ////////////////////////////////////////////////////////////////////////////
 
 // Responder class moved to LLCurl
@@ -128,7 +124,7 @@ namespace
 	{
 	public:
 		RawInjector(const U8* data, S32 size) : mData(data), mSize(size) {}
-		virtual ~RawInjector() {delete mData;}
+		virtual ~RawInjector() {delete [] mData;}
 
 		const char* contentType() { return "application/octet-stream"; }
 
@@ -193,11 +189,9 @@ namespace
 			
 			LLVFile vfile(gVFS, mUUID, mAssetType, LLVFile::READ);
 			S32 fileSize = vfile.getSize();
-			U8* fileBuffer;
-			fileBuffer = new U8 [fileSize];
-			vfile.read(fileBuffer, fileSize);
-			ostream.write((char*)fileBuffer, fileSize);
-			delete [] fileBuffer;
+			std::vector<U8> fileBuffer(fileSize);
+			vfile.read(&fileBuffer[0], fileSize);
+			ostream.write((char*)&fileBuffer[0], fileSize);
 			eos = true;
 			return STATUS_DONE;
 		}
@@ -206,16 +200,8 @@ namespace
 		LLAssetType::EType mAssetType;
 	};
 
-	
 	LLPumpIO* theClientPump = NULL;
 }
-
-#ifdef AI_UNUSED
-void LLHTTPClient::setCertVerifyCallback(LLURLRequest::SSLCertVerifyCallback callback)
-{
-	LLHTTPClient::mCertVerifyCallback = callback;
-}
-#endif
 
 static void request(
 	const std::string& url,
@@ -223,8 +209,7 @@ static void request(
 	Injector* body_injector,
 	LLCurl::ResponderPtr responder,
 	const F32 timeout = HTTP_REQUEST_EXPIRY_SECS,
-	const LLSD& headers = LLSD()
-	)
+	const LLSD& headers = LLSD())
 {
 	if (responder)
 	{
@@ -251,8 +236,7 @@ static void request(
 		return ;
 	}
 
-	//AIFIXME: getCertVerifyCallback() always return NULL, so we might as well not do this call:
-	//req->setSSLVerifyCallback(LLHTTPClient::getCertVerifyCallback(), (void *)req);
+	req->checkRootCertificate(true);
 
 	lldebugs << LLURLRequest::actionAsVerb(method) << " " << url << " " << headers << llendl;
 
@@ -460,10 +444,9 @@ static LLSD blocking_request(
 		AICurlEasyRequest_wat curlEasyRequest_w(*easy_request);
 
 		LLHTTPBuffer http_buffer;
-		std::string body_str;
 		
 		// * Set curl handle options
-		curlEasyRequest_w->setopt(CURLOPT_TIMEOUT, timeout);	// seconds, see warning at top of function.
+		curlEasyRequest_w->setopt(CURLOPT_TIMEOUT, (long)timeout);	// seconds, see warning at top of function.
 		curlEasyRequest_w->setWriteCallback(&LLHTTPBuffer::curl_write, &http_buffer);
 
 		// * Setup headers.
@@ -480,6 +463,9 @@ static LLSD blocking_request(
 			}
 		}
 		
+		// Needs to stay alive until after the call to perform().
+		std::ostringstream ostr;
+
 		// * Setup specific method / "verb" for the URI (currently only GET and POST supported + poppy)
 		if (method == LLURLRequest::HTTP_GET)
 		{
@@ -487,24 +473,13 @@ static LLSD blocking_request(
 		}
 		else if (method == LLURLRequest::HTTP_POST)
 		{
-			curlEasyRequest_w->setopt(CURLOPT_POST, 1);
-			//serialize to ostr then copy to str - need to because ostr ptr is unstable :(
-			std::ostringstream ostr;
-			LLSDSerialize::toXML(body, ostr);
-			body_str = ostr.str();
-			curlEasyRequest_w->setopt(CURLOPT_POSTFIELDS, body_str.c_str());
 			//copied from PHP libs, correct?
 			curlEasyRequest_w->addHeader("Content-Type: application/llsd+xml");
-
-			// copied from llurlrequest.cpp
-			// it appears that apache2.2.3 or django in etch is busted. If
-			// we do not clear the expect header, we get a 500. May be
-			// limited to django/mod_wsgi.
-			curlEasyRequest_w->addHeader("Expect:");
+			LLSDSerialize::toXML(body, ostr);
+			curlEasyRequest_w->setPost(ostr.str().c_str(), ostr.str().length());
 		}
 		
 		// * Do the action using curl, handle results
-		lldebugs << "HTTP body: " << body_str << llendl;
 		curlEasyRequest_w->addHeader("Accept: application/llsd+xml");
 		curlEasyRequest_w->finalizeRequest(url);
 
@@ -517,7 +492,7 @@ static LLSD blocking_request(
 			llwarns << "CURL REQ URL: " << url << llendl;
 			llwarns << "CURL REQ METHOD TYPE: " << LLURLRequest::actionAsVerb(method) << llendl;
 			llwarns << "CURL REQ HEADERS: " << headers.asString() << llendl;
-			llwarns << "CURL REQ BODY: " << body_str << llendl;
+			llwarns << "CURL REQ BODY: " << ostr.str() << llendl;
 			llwarns << "CURL HTTP_STATUS: " << http_status << llendl;
 			llwarns << "CURL ERROR: " << curlEasyRequest_w->getErrorString() << llendl;
 			llwarns << "CURL ERROR BODY: " << http_buffer.asString() << llendl;

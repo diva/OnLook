@@ -16,7 +16,7 @@
 			Film
 		</label>
 		<tooltip name="movie_tooltip">
-			Vous pouvez jouer un film ici
+			Jouer un film ici
 		</tooltip>
 		<playtip name="movie_playtip">
 			Jouer le film

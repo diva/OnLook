@@ -43,6 +43,7 @@
 #include "lluictrlfactory.h"
 #include "llwindow.h"
 #include "llviewerwindow.h"
+#include "llhttpclient.h"
 
 static LLFloaterURLEntry* sInstance = NULL;
 

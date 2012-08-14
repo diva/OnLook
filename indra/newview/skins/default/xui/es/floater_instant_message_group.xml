@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater label="(desconocido)" name="im_floater" title="(desconocido)">
+	<string name="ringing">
+		Uniéndose al Chat de Voz...
+	</string>
+	<string name="connected">
+		Conectado, pulsa Colgar para terminar
+	</string>
+	<string name="hang_up">
+		Abandonando Chat de Voz
+	</string>
+	<string name="voice_icon">
+		icn_voice-groupfocus.tga
+	</string>
+	<string name="title_string">
+		Mensaje Instantáneo con [NAME]
+	</string>
+	<string name="typing_start_string">
+		[NAME] está escribiendo...
+	</string>
+	<string name="session_start_string">
+		Iniciando sesión con [NAME], espera por favor.
+	</string>
+	<string name="default_text_label">
+		Pulsa aquí para enviar un Mensaje Instantáneo.
+	</string>
+	<string name="moderated_chat_label">
+		(Moderado: Voz apagada por defecto)
+	</string>
+	<string name="muted_text_label">
+		Tu chat de texto ha sido deshabilitado por un Moderador del Grupo.
+	</string>
+	<layout_stack name="panels">
+		<layout_panel name="im_contents_panel">
+			<button label="Info del Grupo" name="group_info_btn"/>
+			<button label="Unirse" name="start_call_btn"/>
+			<button label="Finalizar" name="end_call_btn"/>
+			<button label="Historial" name="history_btn"/>
+			<button label="&lt; &lt;" label_selected="&gt; &gt;" name="toggle_active_speakers_btn" tool_tip="Pulsa aquí para mostrar/ocultar la lista de participantes activos en esta sesión de MI."/>
+			<button label="Enviar" name="send_btn"/>
+		</layout_panel>
+	</layout_stack>
+	<string name="live_help_dialog">
+		*** Bienvenido a la Petición de Ayuda *** 
+Por favor, en primer lugar revisa nuestras páginas de ayuda de SL pulsando F1, o accede a la Base de Conocimientos http://secondlife.com/knowledgebase/ 
+Si no encuentras allí la respuesta que buscas, por favor, empieza el proceso escribiendo tu pregunta, y espera unos momentos a que responda algunos de los ayudantes disponibles.
+-=-=- El tiempo de respuesta puede variar, especialmente durante las horas punta -=-=-
+	</string>
+</floater>

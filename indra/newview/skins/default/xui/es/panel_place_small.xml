@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="Place" title="Lugar">
+	<text name="name_label">
+		Nombre:
+	</text>
+	<text name="description_label">
+		Descripción:
+	</text>
+	<text name="information_label">
+		Información:
+	</text>
+	<text name="land_type_label">
+		Tipo de Terreno:
+	</text>
+	<text name="location_label">
+		Ubicación:
+	</text>
+	<button label="Teleportar" name="teleport_btn"/>
+	<button label="Mostrar en el Mapa" name="map_btn"/>
+	<button label="Ofertas..." name="auction_btn"/>
+	<string name="traffic_text">
+		Tráfico: [TRAFFIC]
+	</string>
+	<string name="area_text">
+		Superficie: [AREA] m². 
+	</string>
+	<string name="forsale_text">
+		En venta por [CURRENCY][PRICE]
+	</string>
+	<string name="auction_text">
+		ID de la Subasta [ID].
+	</string>
+	<string name="server_update_text">
+		La información del lugar no está disponible sin una actualización del servidor.
+	</string>
+	<string name="server_error_text">
+		La información de esta ubicación no está disponible actualmente, por favor, intenta de nuevo más tarde.
+	</string>
+	<string name="server_forbidden_text">
+		La información de esta ubicación no está disponible debido a la restricción de acceso. Por favor, verifica tus permisos con el propietario de la parcela.
+	</string>
+</panel>

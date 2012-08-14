@@ -84,7 +84,6 @@ protected:
 	LLComboBox		*mCtrlFullScreen;               // Fullscreen resolution
 	LLCheckBoxCtrl	*mCtrlAutoDetectAspect;			// automatically detect aspect ratio
 	LLComboBox		*mCtrlAspectRatio;				// user provided aspect ratio
-	LLComboBox		*mCtrlReflectionDetail;
 
 	LLCheckBoxCtrl	*mCtrlWindowed;					// windowed mode
 	LLComboBox      *mCtrlWindowSize;               // window size for windowed mode
@@ -108,13 +107,16 @@ protected:
 	LLSliderCtrl	*mCtrlPostProcess;				// Max Particle
 	LLSliderCtrl	*mCtrlNonImpostors;				// Max non-impostors
 
+	LLCheckBoxCtrl	*mCtrlTransparentWater;
 	LLCheckBoxCtrl	*mCtrlBumpShiny;
 	LLCheckBoxCtrl	*mCtrlWindLight;
 	LLCheckBoxCtrl	*mCtrlAvatarVP;
 	LLCheckBoxCtrl	*mCtrlShaderEnable;
 	LLCheckBoxCtrl	*mCtrlDeferred;
 	LLCheckBoxCtrl	*mCtrlDeferredDoF;
+	LLComboBox		*mCtrlReflectionDetail;
 	LLComboBox		*mCtrlShadowDetail;
+	LLComboBox		*mCtrlTerrainScale;
 	LLCheckBoxCtrl	*mCtrlAvatarImpostors;
 	LLCheckBoxCtrl	*mCtrlAvatarCloth;
 	LLCheckBoxCtrl	*mCtrlLightingDetail2;
@@ -144,6 +146,7 @@ protected:
 	LLTextBox		*mSkyFactorText;
 	LLTextBox		*mPostProcessText;
 	LLTextBox		*mShadowDetailText;
+	LLTextBox		*mTerrainScaleText;
 
 	BOOL mFSAutoDetectAspect;
 	F32 mAspectRatio;
@@ -153,6 +156,7 @@ protected:
 	S32 mQualityPerformance;
 	BOOL mCustomSettings;
 
+	BOOL mTransparentWater;
 	BOOL mBumpShiny;
 	BOOL mShaderEnable;
 	BOOL mWindLight;
@@ -162,6 +166,7 @@ protected:
 
 	S32 mReflectionDetail;
 	S32 mShadowDetail;
+	F32 mTerrainScale;
 
 	BOOL mAvatarImpostors;
 	S32 mNonImpostors;
@@ -180,6 +185,15 @@ protected:
 	S32 mParticleCount;
 	S32 mPostProcess;
 
+	// Hardware tab
+	BOOL mUseVBO;
+	BOOL mUseFBO;
+	BOOL mUseAniso;
+	U32 mFSAASamples;
+	F32 mGamma;
+	S32 mVideoCardMem;
+	F32 mFogRatio;
+
 	static void setGraphicsSettings(LLControlGroup& group);
 	static void createGroup();
 
@@ -190,7 +204,6 @@ protected:
 	static void onChangeCustom(LLUICtrl *ctrl, void *data);
 	
 	static void onOpenHelp(void *data);
-	static void onOpenHardwareSettings(void *data);
 	static void onCommitAutoDetectAspect(LLUICtrl *ctrl, void *data);
 	static void onKeystrokeAspectRatio(LLLineEditor* caller, void* user_data);
 	static void onSelectAspectRatio(LLUICtrl*, void*);
@@ -204,6 +217,9 @@ protected:
 
 	// callback for when client turns on shaders
 	static void onVertexShaderEnable(LLUICtrl*, void*);
+
+	// callbacks for hardware tab
+	static void onRenderVBOEnable(LLUICtrl*, void*);
 
 	// helper function
 	static void fractionFromDecimal(F32 decimal_val, S32& numerator, S32& denominator);

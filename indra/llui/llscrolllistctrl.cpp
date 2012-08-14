@@ -666,6 +666,7 @@ LLScrollListCtrl::LLScrollListCtrl(const std::string& name, const LLRect& rect,
 	mFgUnselectedColor( LLUI::sColorsGroup->getColor("ScrollUnselectedColor") ),
 	mFgDisabledColor( LLUI::sColorsGroup->getColor("ScrollDisabledColor") ),
 	mHighlightedColor( LLUI::sColorsGroup->getColor("ScrollHighlightedColor") ),
+	mDefaultListTextColor( LLUI::sColorsGroup->getColor("DefaultListText") ),
 	mBorderThickness( 2 ),
 	mOnDoubleClickCallback( NULL ),
 	mOnMaximumSelectCallback( NULL ),
@@ -3542,6 +3543,10 @@ LLScrollListItem* LLScrollListCtrl::addElement(const LLSD& value, EAddPosition p
 			if (has_color)
 			{
 				cell->setColor(color);
+			}
+			else
+			{
+				cell->setColor(mDefaultListTextColor);
 			}
 			new_item->setColumn(index, cell);
 			if (columnp->mHeader && !value.asString().empty())

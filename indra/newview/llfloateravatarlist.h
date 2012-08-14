@@ -171,6 +171,8 @@ private:
 public:
 	~LLFloaterAvatarList();
 
+	virtual BOOL	handleKeyHere(KEY key, MASK mask);
+
 	/*virtual*/ void onClose(bool app_quitting);
 	/*virtual*/ void onOpen();
 	/*virtual*/ BOOL postBuild();
@@ -280,11 +282,13 @@ private:
 	static void onClickAR(void *userdata);
 	static void onClickTeleport(void *userdata);
 	static void onClickEjectFromEstate(void *userdata);
+	static void onClickBanFromEstate(void *userdata);
 
 	static void callbackFreeze(const LLSD& notification, const LLSD& response);
 	static void callbackEject(const LLSD& notification, const LLSD& response);
 	static void callbackAR(void *userdata);
 	static void callbackEjectFromEstate(const LLSD& notification, const LLSD& response);
+	static void callbackBanFromEstate(const LLSD& notification, const LLSD& response);
 
 	static void onSelectName(LLUICtrl*, void *userdata);
 

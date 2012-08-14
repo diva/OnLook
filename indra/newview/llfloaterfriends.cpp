@@ -80,8 +80,6 @@
 // <dogmode> stuff for Contact groups
 #include "ascentfloatercontactgroups.h"
 
-//Maximum number of people you can select to do an operation on at once.
-#define MAX_FRIEND_SELECT 20
 #define DEFAULT_PERIOD 5.0
 #define RIGHTS_CHANGE_TIMEOUT 5.0
 #define OBSERVER_TIMEOUT 0.5
@@ -368,8 +366,6 @@ void LLPanelFriends::onChangeContactGroup(LLUICtrl* ctrl, void* user_data)
 BOOL LLPanelFriends::postBuild()
 {
 	mFriendsList = getChild<LLScrollListCtrl>("friend_list");
-	mFriendsList->setMaxSelectable(MAX_FRIEND_SELECT);
-	mFriendsList->setMaximumSelectCallback(onMaximumSelect);
 	mFriendsList->setCommitOnSelectionChange(TRUE);
 	childSetCommitCallback("friend_list", onSelectName, this);
 	childSetCommitCallback("buddy_group_combobox", onChangeContactGroup, this);
@@ -816,14 +812,6 @@ void LLPanelFriends::onSelectName(LLUICtrl* ctrl, void* user_data)
 	}
 }
 
-//static
-void LLPanelFriends::onMaximumSelect(void* user_data)
-{
-	LLSD args;
-	args["MAX_SELECT"] = llformat("%d", MAX_FRIEND_SELECT);
-	LLNotificationsUtil::add("MaxListSelectMessage", args);
-};
-
 // static
 void LLPanelFriends::onClickProfile(void* user_data)
 {
@@ -1184,7 +1172,7 @@ void LLPanelFriends::onClickImport_filepicker_continued(AIFilePicker* filepicker
 		if(!content.has("can_mod"))continue;
 
 		LLUUID agent_id = LLUUID(iter->first);
-		if(merging && importstatellsd.has(agent_id.asString()))continue;//dont need to request what weve already requested from another list import and have not got a reply yet
+		if(merging && importstatellsd.has(agent_id.asString()))continue;//dont need to request what we've already requested from another list import and have not got a reply yet
 
 		std::string agent_name = content["name"];
 		if(!is_agent_friend(agent_id))//dont need to request what we have

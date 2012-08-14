@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="Postcard" title="Enviar Foto por Email">
+	<text name="to_label">
+		Email Destinat.:
+	</text>
+	<text name="from_label">
+		Tu Email:
+	</text>
+	<text name="name_label">
+		Tu Nombre:
+	</text>
+	<text name="subject_label">
+		Asunto:
+	</text>
+	<line_editor label="Escribe el Asunto aquí." left="120" max_length="100"
+	     name="subject_form" width="150" spell_check="true" />
+	<text bottom_delta="-23" follows="top|left" font="SansSerif" left="12"
+	     name="msg_label">
+		Mensaje:
+	</text>
+	<text_editor name="msg_form">
+		Escribe tu Mensaje aquí.
+	</text_editor>
+	<text name="fine_print">
+		Si el destinatario se une a nuestro universo, recibirás un bono por referido.
+	</text>
+	<button label="Cancelar" name="cancel_btn" right="-10" width="100" />
+	<button label="Enviar" left_delta="-106" name="send_btn" width="100" />
+	<string name="default_subject">
+		Tarjeta Postal desde [SECOND_LIFE].
+  </string>
+	<string name="default_message">
+		¡Mira esto!
+	</string>
+	<string name="upload_message">
+		"Enviando..."
+	</string>	
+</floater>

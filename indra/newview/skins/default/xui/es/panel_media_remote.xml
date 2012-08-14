@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="media_remote">
+	<panel filename="panel_bg_tab.xml"/>
+	<panel filename="panel_media_controls.xml"/>
+</panel>

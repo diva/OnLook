@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="price_for_listing" title="Publicar Aviso Clasificado">
+	<text name="explanation_text">
+		Tu aviso clasificado se mantendrá durante una
+semana desde la fecha de su publicación. 
+ 
+ La posición de tu aviso en el listado de avisos
+ se determina por cuanto decidas pagar.
+ Mientras más pagues por el aviso, mas alto en 
+ la lista y aparecerá en los primeros lugares.
+	</text>
+	<text name="price_text">
+		Precio por el Aviso ([CURRENCY]):
+	</text>
+	<button label="Cancelar" name="cancel_btn"/>
+	<button label="Definir Precio" name="set_price_btn"/>
+</floater>

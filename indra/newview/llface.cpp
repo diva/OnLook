@@ -169,19 +169,10 @@ void LLFace::init(LLDrawable* drawablep, LLViewerObject* objp)
 	mGeomCount		= 0;
 	mGeomIndex		= 0;
 	mIndicesCount	= 0;
-	if (drawablep->getRenderType() == LLPipeline::RENDER_TYPE_PARTICLES ||
-		drawablep->getRenderType() == LLPipeline::RENDER_TYPE_HUD_PARTICLES
-#if ENABLE_CLASSIC_CLOUDS
-		|| drawablep->getRenderType() == LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS
-#endif
-		)
-	{ //indicate to LLParticlePartition that this particle is uninitialized
-		mIndicesIndex = 0xFFFFFFFF;
-	}
-	else
-	{
-		mIndicesIndex	= 0;
-	}
+
+	//special value to indicate uninitialized position
+	mIndicesIndex	= 0xFFFFFFFF;
+
 	mIndexInTex = 0;
 	mTexture		= NULL;
 	mTEOffset		= -1;
@@ -214,17 +205,10 @@ void LLFace::destroy()
 		mTexture->removeFace(this) ;
 	}
 	
-	if (mDrawablep.notNull() &&
-		(mDrawablep->getRenderType() == LLPipeline::RENDER_TYPE_PARTICLES ||
-		mDrawablep->getRenderType() == LLPipeline::RENDER_TYPE_HUD_PARTICLES
-#if ENABLE_CLASSIC_CLOUDS
-		|| mDrawablep->getRenderType() == LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS
-#endif
-		) &&
-		mIndicesIndex != 0xFFFFFFFF)
+	if (isState(LLFace::PARTICLE))
 	{
 		LLVOPartGroup::freeVBSlot(getGeomIndex()/4);
-		mIndicesIndex = 0xFFFFFFFF;
+		clearState(LLFace::PARTICLE);
 	}
 
 	if (mDrawPoolp)
@@ -335,7 +319,20 @@ void LLFace::setTexture(LLViewerTexture* tex)
 
 void LLFace::dirtyTexture()
 {
-	gPipeline.markTextured(getDrawable());
+	LLDrawable* drawablep = getDrawable();
+
+	if (mVObjp.notNull() && mVObjp->getVolume() && 
+		mTexture.notNull() && mTexture->getComponents() == 4)
+	{ //dirty texture on an alpha object should be treated as an LoD update
+		LLVOVolume* vobj = drawablep->getVOVolume();
+		if (vobj)
+		{
+			vobj->mLODChanged = TRUE;
+		}
+		gPipeline.markRebuild(drawablep, LLDrawable::REBUILD_VOLUME, FALSE);
+	}		
+			
+	gPipeline.markTextured(drawablep);
 }
 
 void LLFace::switchTexture(LLViewerTexture* new_texture)
@@ -1209,19 +1206,25 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	{
 		if (num_indices + (S32) mIndicesIndex > mVertexBuffer->getNumIndices())
 		{
-			llwarns	<< "Index buffer overflow!" << llendl;
-			llwarns << "Indices Count: " << mIndicesCount
-					<< " VF Num Indices: " << num_indices
-					<< " Indices Index: " << mIndicesIndex
-					<< " VB Num Indices: " << mVertexBuffer->getNumIndices() << llendl;
-			llwarns	<< " Face Index: " << f
-					<< " Pool Type: " << mPoolType << llendl;
+			if (gDebugGL)
+			{
+				llwarns	<< "Index buffer overflow!" << llendl;
+				llwarns << "Indices Count: " << mIndicesCount
+						<< " VF Num Indices: " << num_indices
+						<< " Indices Index: " << mIndicesIndex
+						<< " VB Num Indices: " << mVertexBuffer->getNumIndices() << llendl;
+				llwarns	<< " Face Index: " << f
+						<< " Pool Type: " << mPoolType << llendl;
+			}
 			return FALSE;
 		}
 
 		if (num_vertices + mGeomIndex > mVertexBuffer->getNumVerts())
 		{
-			llwarns << "Vertex buffer overflow!" << llendl;
+			if (gDebugGL)
+			{
+				llwarns << "Vertex buffer overflow!" << llendl;
+			}
 			return FALSE;
 		}
 	}
@@ -1632,7 +1635,8 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 						if (!do_xform)
 						{
 							LLFastTimer t(FTM_FACE_TEX_QUICK_NO_XFORM);
-							LLVector4a::memcpyNonAliased16((F32*) tex_coords.get(), (F32*) vf.mTexCoords, num_vertices*2*sizeof(F32));
+							S32 tc_size = (num_vertices*2*sizeof(F32)+0xF) & ~0xF;
+							LLVector4a::memcpyNonAliased16((F32*) tex_coords.get(), (F32*) vf.mTexCoords, tc_size);
 						}
 						else
 						{
@@ -1853,15 +1857,12 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 
 			LLVector4a texIdx;
 
-			U8 index = mTextureIndex < 255 ? mTextureIndex : 0;
+			S32 index = mTextureIndex < 255 ? mTextureIndex : 0;
 
 			F32 val = 0.f;
-			U8* vp = (U8*) &val;
-			vp[0] = index;
-			vp[1] = 0;
-			vp[2] = 0;
-			vp[3] = 0;
-
+			S32* vp = (S32*) &val;
+			*vp = index;
+			
 			llassert(index <= LLGLSLShader::sIndexedTextureChannels-1);
 
 			LLVector4Logical mask;

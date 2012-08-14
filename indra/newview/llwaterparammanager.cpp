@@ -76,8 +76,6 @@
 
 #include "llagentcamera.h"
 
-#include "curl/curl.h"
-
 LLWaterParamManager::LLWaterParamManager() :
 	mFogColor(22.f/255.f, 43.f/255.f, 54.f/255.f, 0.0f, 0.0f, "waterFogColor", "WaterFogColor"),
 	mFogDensity(4, "waterFogDensity", 2),

@@ -34,7 +34,6 @@
 #define LLVIEWERASSETSTORAGE_H
 
 #include "llassetstorage.h"
-//#include "curl/curl.h"
 
 class LLVFile;
 

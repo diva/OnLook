@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="toolbox floater" title="" short_title="Construire">
 	<button label="" label_selected="" name="button focus" tool_tip="Mise au point"/>
 	<button label="" label_selected="" name="button move" tool_tip="Déplacer"/>
@@ -17,7 +17,7 @@
 	<check_box label="Sélectionner une face" name="radio select face"/>
 	<check_box label="Modifier les parties liées" name="checkbox edit linked parts"/>
 	<text name="text ruler mode">
-		Axe :
+		Axe:
 	</text>
 	<combo_box name="combobox grid mode">
 		<combo_item name="World">
@@ -33,26 +33,26 @@
 	<check_box label="Étirer les deux côtés" name="checkbox uniform"/>
 	<check_box label="Étirer les textures" name="checkbox stretch textures"/>
 	<check_box label="Utiliser la grille" name="checkbox snap to grid"/>
-	<button label="Options..." label_selected="Options..." name="Options..."/>
+	<button label="Options" label_selected="Options" name="Options"/>
 	<text name="text status">
 		Glissez pour déplacer, Maj-glissez pour copier.
 	</text>
-	<button label="" label_selected="" name="ToolCube" tool_tip="Cube"/>
-	<button label="" label_selected="" name="ToolPrism" tool_tip="Prisme droit"/>
-	<button label="" label_selected="" name="ToolPyramid" tool_tip="Pyramide"/>
-	<button label="" label_selected="" name="ToolTetrahedron" tool_tip="Tétraèdre"/>
-	<button label="" label_selected="" name="ToolCylinder" tool_tip="Cylindre"/>
-	<button label="" label_selected="" name="ToolHemiCylinder" tool_tip="Demi-cylindre"/>
-	<button label="" label_selected="" name="ToolCone" tool_tip="Cône"/>
-	<button label="" label_selected="" name="ToolHemiCone" tool_tip="Demi-cône"/>
-	<button label="" label_selected="" name="ToolSphere" tool_tip="Sphère"/>
-	<button label="" label_selected="" name="ToolHemiSphere" tool_tip="Demi-sphère"/>
-	<button label="" label_selected="" name="ToolTorus" tool_tip="Tore"/>
-	<button label="" label_selected="" name="ToolTube" tool_tip="Tube"/>
-	<button label="" label_selected="" name="ToolRing" tool_tip="Anneau"/>
-	<button label="" label_selected="" name="ToolTree" tool_tip="Arbre"/>
-	<button label="" label_selected="" name="ToolGrass" tool_tip="Herbe"/>
-	<check_box label="Maintenir l&apos;outil sélectionné" name="checkbox sticky"/>
+	<button name="ToolCube" tool_tip="Cube"/>
+	<button name="ToolPrism" tool_tip="Prisme droit"/>
+	<button name="ToolPyramid" tool_tip="Pyramide"/>
+	<button name="ToolTetrahedron" tool_tip="Tétraèdre"/>
+	<button name="ToolCylinder" tool_tip="Cylindre"/>
+	<button name="ToolHemiCylinder" tool_tip="Demi-cylindre"/>
+	<button name="ToolCone" tool_tip="Cône"/>
+	<button name="ToolHemiCone" tool_tip="Demi-cône"/>
+	<button name="ToolSphere" tool_tip="Sphère"/>
+	<button name="ToolHemiSphere" tool_tip="Demi-sphère"/>
+	<button name="ToolTorus" tool_tip="Tore"/>
+	<button name="ToolTube" tool_tip="Tube"/>
+	<button name="ToolRing" tool_tip="Anneau"/>
+	<button name="ToolTree" tool_tip="Arbre"/>
+	<button name="ToolGrass" tool_tip="Herbe"/>
+	<check_box label="Maintenir l'outil sélectionné" name="checkbox sticky"/>
 	<check_box label="Copier la sélection" name="checkbox copy selection"/>
 	<check_box label="Centrer" name="checkbox copy centers"/>
 	<check_box label="Pivoter" name="checkbox copy rotates"/>
@@ -65,7 +65,7 @@
 	<check_box label="Annuler modification" name="radio revert"/>
 	<button label="Appliquer" label_selected="Appliquer" name="button apply to selection" tool_tip="Modifier le terrain sélectionné" left="176"/>
 	<text name="Bulldozer:">
-		Bulldozer :
+		Bulldozer:
 	</text>
 	<text name="Dozer Size:">
 		Taille
@@ -74,28 +74,28 @@
 		Force
 	</text>
 	<text name="obj_count">
-		Objets sélectionnés : [COUNT]
+		Objets sélectionnés: [COUNT]
 	</text>
 	<text name="prim_count">
-		Prims : [COUNT]
+		Prims: [COUNT]
 	</text>
 	<tab_container name="Object Info Tabs">
 		<panel label="Général" name="General">
 			<text name="Name:">
-				Nom :
+				Nom:
 			</text>
 			<text name="Description:">
-				Description :
+				Description:
 			</text>
 			<text name="Creator:">
-				Créateur :
+				Créateur:
 			</text>
 			<text name="Creator Name">
 				Thrax Linden
 			</text>
 			<button label="Profil" label_selected="Profil" name="button creator profile"/>
 			<text name="Owner:">
-				Propriétaire :
+				Propriétaire:
 			</text>
 
 		    <button label="Profil" label_selected="Profil" name="button last owner profile"/>
@@ -103,7 +103,7 @@
 				bottom_delta="-20" drop_shadow_visible="true" follows="left|top"
 				font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
 				mouse_opaque="true" name="Last Owner:" v_pad="0" width="78">
-				Dernier Proprio:
+				Dernier Proprio :
 			</text>
 
 			<text name="Owner Name">
@@ -111,37 +111,33 @@
 			</text>
 			<button label="Profil" label_selected="Profil" name="button owner profile"/>
 			<text name="Group:">
-				Groupe :
+				Groupe:
 			</text>
 			<text name="Group Name Proxy">
 				Les Lindens
 			</text>
-			<button label="Définir..." label_selected="Définir..." name="button set group"/>
-
-			<button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
-			    height="16" label="Voir" label_selected="Open" left_delta="30"
-			    mouse_opaque="true" name="button open group" scale_image="TRUE" width="48" />
-
+			<button label="Définir" label_selected="Définir" name="button set group"/>
+			<button label="Voir" name="button open group"/>
 			<text name="Permissions:">
-				Droits :
+				Droits:
 			</text>
 			<text name="perm_modify">
 				Vous pouvez modifier cet objet.
 			</text>
-			<check_box label="Partager avec le groupe" name="checkbox share with group" tool_tip="Autorisez tous les membres du groupe choisi à utiliser et à partager vos droits pour cet objet. Pour activer les restrictions de rôles, vous devez d&apos;abord cliquer sur Transférer."/>
+			<check_box label="Partager avec le groupe" name="checkbox share with group" tool_tip="Autorise tous les membres du groupe choisi à utiliser et à partager vos droits pour cet objet. Pour activer les restrictions de rôles, vous devez d&apos;abord cliquer sur Transférer."/>
 			<string name="text deed continued">
-				Transférer...
+				Transférer
 			</string>
 			<string name="text deed">
 				Transférer
 			</string>
-			<button label="Céder..." label_selected="Céder..." name="button deed" tool_tip="Les objets partagés par un groupe peuvent être cédés par un officier."/>
+			<button label="Céder" label_selected="Céder" name="button deed" tool_tip="Les objets partagés par un groupe peuvent être cédés par un officier."/>
 			<check_box label="Autoriser tout le monde à déplacer" name="checkbox allow everyone move"/>
 			<check_box label="Autoriser tout le monde à copier" name="checkbox allow everyone copy"/>
-			<check_box label="Afficher dans la recherche" name="search_check" tool_tip="Afficher l&apos;objet dans les résultats de recherche"/>
+			<check_box label="Afficher dans la recherche" name="search_check" tool_tip="Affiche l&apos;objet dans les résultats de recherche"/>
 			<check_box label="À vendre" name="checkbox for sale"/>
 			<text name="Cost">
-				Prix : L$
+				Prix : [CURRENCY]
 			</text>
 			<radio_group name="sale type">
 				<radio_item name="Original">
@@ -155,7 +151,7 @@
 				</radio_item>
 			</radio_group>
 			<text name="Next owner can:">
-				Le prochain propriétaire pourra :
+				Le prochain propriétaire pourra:
 			</text>
 			<check_box label="Modifier" name="checkbox next owner can modify"/>
 			<check_box label="Copier" left_delta="66" name="checkbox next owner can copy"/>
@@ -186,30 +182,24 @@
 					Ouvrir le média de la parcelle
 				</combo_item>
 			</combo_box>
-
-			<button bottom="-338" follows="top|right" font="SansSerifSmall" halign="center"
-				height="20" label="Copier la Clef" label_selected="Copy Key" left="172"
-				mouse_opaque="true" name="button cpy_key" scale_image="TRUE"
-				tool_tip="Copie la clef dans le presse papier."
-				width="80" />
-
+			<button bottom="-338" label="Copier la Clef" tool_tip="Copie la clef dans le presse-papier." width="80"/>
 			<text name="B:">
-				B :
+				B:
 			</text>
 			<text name="O:">
-				O :
+				O:
 			</text>
 			<text name="G:">
-				G :
+				G:
 			</text>
 			<text name="E:">
-				E :
+				E:
 			</text>
 			<text name="N:">
-				N :
+				N:
 			</text>
 			<text name="F:">
-				F :
+				F:
 			</text>
 			<string name="text modify info 1">
 				Vous pouvez modifier cet objet.
@@ -224,16 +214,16 @@
 				Vous ne pouvez pas modifier ces objets.
 			</string>
 			<string name="text modify warning">
-				Sélectionnez l&apos;objet en entier.
+				Sélectionnez l'objet en entier.
 			</string>
 			<string name="Cost Default">
-				Prix :           L$
+				Prix:           [CURRENCY]
 			</string>
 			<string name="Cost Total">
-				Prix total :  L$
+				Prix total:  [CURRENCY]
 			</string>
 			<string name="Cost Per Unit">
-				Prix par :     L$
+				Prix par:     [CURRENCY]
 			</string>
 			<string name="Cost Mixed">
 				Prix mixte
@@ -244,21 +234,21 @@
 		</panel>
 		<panel label="Objet" name="Object">
 			<text name="select_single">
-				paramètres.
+				
 			</text>
 			<text name="edit_object">
-				  
+				
 			</text>
 			<button bottom="-26" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="18" label="Lier" left="10" mouse_opaque="true" name="link_obj"  enabled="true"
-			     tool_tip="He come to town..."  width="50" />
+			     tool_tip=""  width="50" />
 			<button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="18" label="Delier" left_delta="50" mouse_opaque="true" name="unlink_obj"  enabled="true"
 			     tool_tip="Unlinks linkset."  width="50" />
-			<check_box label="Verrouillé" name="checkbox locked" tool_tip="Empêche l&apos;objet d&apos;être déplacé ou supprimé. Utile pendant la construction pour éviter les modifications involontaires."/>
-			<check_box label="Physique" name="Physical Checkbox Ctrl" tool_tip="Permet à l&apos;objet d&apos;être poussé et affecté par la gravité"/>
-			<check_box label="Temporaire" name="Temporary Checkbox Ctrl" tool_tip="L&apos;objet est supprimé 1 mn après sa création."/>
-			<check_box label="Fantôme" name="Phantom Checkbox Ctrl" tool_tip="Permet à l&apos;objet de ne pas entrer en collision avec d&apos;autres objets ou avatars."/>
+			<check_box label="Verrouillé" name="checkbox locked" tool_tip="Empêche l'objet d'être déplacé ou supprimé. Utile pendant la construction pour éviter les modifications involontaires."/>
+			<check_box label="Physique" name="Physical Checkbox Ctrl" tool_tip="Permet à l'objet d'être poussé et affecté par la gravité"/>
+			<check_box label="Temporaire" name="Temporary Checkbox Ctrl" tool_tip="L'objet est supprimé 2 mn après sa création."/>
+			<check_box label="Fantôme" name="Phantom Checkbox Ctrl" tool_tip="Permet à l'objet de ne pas entrer en collision avec d'autres objets ou avatars."/>
 			<text name="label position">
 				Position (mètres)
 			</text>
@@ -401,8 +391,8 @@
 				Révolutions
 			</text>
 			<texture_picker label="Texture du sculptie" name="sculpt texture control" tool_tip="Cliquez pour sélectionner une image"/>
-			<check_box label="Mirroir" name="sculpt mirror control" tool_tip="Retourne le sculptie le long de l&apos;axe des X."/>
-			<check_box label="A l&apos;envers" name="sculpt invert control" tool_tip="Inverse les valeurs normales d&apos;un sculptie et le fait apparaître à l&apos;envers."/>
+			<check_box label="Miroir" name="sculpt mirror control" tool_tip="Retourne le sculptie le long de l'axe des X."/>
+			<check_box label="A l'envers" name="sculpt invert control" tool_tip="Inverse les valeurs normales d'un sculptie et le fait apparaître à l'envers."/>
 			<text name="label sculpt type">
 				Type de raccord
 			</text>
@@ -429,9 +419,9 @@
 				Sélectionnez un prim pour modifier les attributs.
 			</text>
 			<text name="edit_object">
-				Modifier les attributs de l&apos;objet :
+				Modifiez les attributs de l'objet:
 			</text>
-			<check_box label="Flexibilité" name="Flexible1D Checkbox Ctrl" tool_tip="Donne à l&apos;objet de la souplesse sur l&apos;axe des Z (côté client uniquement)."/>
+			<check_box label="Flexibilité" name="Flexible1D Checkbox Ctrl" tool_tip="Donne à l'objet de la souplesse sur l'axe des Z (côté client uniquement)."/>
 			<spinner label="Souplesse" name="FlexNumSections"/>
 			<spinner label="Gravité" name="FlexGravity"/>
 			<spinner label="Élasticité" name="FlexFriction"/>
@@ -440,7 +430,7 @@
 			<spinner label="Force X" name="FlexForceX"/>
 			<spinner label="Force Y" name="FlexForceY"/>
 			<spinner label="Force Z" name="FlexForceZ"/>
-			<check_box label="Lumière" name="Light Checkbox Ctrl" tool_tip="Permet aux objets d&apos;émettre de la lumière"/>
+			<check_box label="Lumière" name="Light Checkbox Ctrl" tool_tip="Permet aux objets d'émettre de la lumière"/>
 			<text name="label color">
 				Couleur
 			</text>
@@ -451,7 +441,7 @@
 		</panel>
 		<panel label="Texture" name="Texture">
 			<texture_picker label="Texture" name="texture control" tool_tip="Cliquez pour sélectionner une image"/>
-			<color_swatch label="Couleur" name="colorswatch" tool_tip="Cliquer pour ouvrir le sélecteur de couleurs"/>
+			<color_swatch label="Couleur" name="colorswatch" tool_tip="Cliquez pour ouvrir le sélecteur de couleurs"/>
 			<text name="color trans" width="88">
 				Transparence
 			</text>
@@ -580,7 +570,7 @@
 			<button label="Ajuster" label_selected="Ajuster" left="150" name="button align"/>
 		</panel>
 		<panel label="Contenu" name="Contents">
-			<button label="Nouveau script" label_selected="Nouveau script..." name="button new script"/>
+			<button label="Nouveau script" label_selected="Nouveau script" name="button new script"/>
 			<button label="Permissions" name="button permissions"/>
 		</panel>
 	</tab_container>
@@ -589,27 +579,27 @@
 			Informations sur la parcelle
 		</text>
 		<text name="label_area_price">
-			Prix : [PRICE] L$ pour [AREA] m².
+			Prix : [PRICE][CURRENCY] pour [AREA] m².
 		</text>
 		<text name="label_area">
 			Surface : [AREA] m²
 		</text>
-		<button label="À propos du terrain..." label_selected="À propos du terrain..." name="button about land" width="142"/>
+		<button label="A propos du terrain" label_selected="A propos du terrain" name="button about land" width="142"/>
 		<check_box label="Afficher les propriétaires" name="checkbox show owners" tool_tip="Colorie les parcelles en fonction de leur propriétaire"/>
 		<button label="?" label_selected="?" name="button show owners help" left_delta="154"/>
 		<text name="label_parcel_modify">
 			Modifier la parcelle
 		</text>
-		<button label="Diviser..." label_selected="Diviser..." name="button subdivide land" width="142"/>
-		<button label="Fusionner..." label_selected="Fusionner..." name="button join land" width="142"/>
+		<button label="Diviser" label_selected="Diviser" name="button subdivide land" width="142"/>
+		<button label="Fusionner" label_selected="Fusionner" name="button join land" width="142"/>
 		<text name="label_parcel_trans">
 			Transactions
 		</text>
-		<button label="Acheter le terrain..." label_selected="Acheter le terrain..." name="button buy land" width="142"/>
-		<button label="Abandonner le terrain..." label_selected="Abandonner le terrain..." name="button abandon land" width="142"/>
+		<button label="Acheter le terrain" label_selected="Acheter le terrain" name="button buy land" width="142"/>
+		<button label="Abandonner le terrain" label_selected="Abandonner le terrain" name="button abandon land" width="142"/>
 	</panel>
 	<string name="status_rotate">
-		Pour faire tourner l&apos;objet, faîtes glisser les bandes de couleur.
+		Pour faire tourner l'objet, faîtes glisser les bandes de couleur.
 	</string>
 	<string name="status_scale">
 		Pour étirer le côté sélectionné, cliquez et faites glisser.
@@ -621,10 +611,10 @@
 		Cliquez et maintenez pour modifier le terrain.
 	</string>
 	<string name="status_camera">
-		Cliquez et faites glisser pour changer l&apos;affichage.
+		Cliquez et faites glisser pour changer l'affichage.
 	</string>
 	<string name="status_grab">
-		Glisser pour déplacer, Ctrl pour soulever, Crtl-Maj pour pivoter.
+		Glissez pour déplacer, Ctrl pour soulever, Crtl-Maj pour pivoter.
 	</string>
 	<string name="status_place">
 		Cliquez pour construire.

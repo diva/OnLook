@@ -3,7 +3,7 @@
 	<button label="Enregistrer" label_selected="Enregistrer" name="Save" />
 	<button label="Annuler" label_selected="Annuler" name="Cancel" />
 	<text type="string" length="1" name="Save item as:">
-		Enregistrer l&apos;objet sous :
+		Enregistrez l'objet sous:
 	</text>
 	<line_editor name="name ed">
 		Nouveau [DESC]

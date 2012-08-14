@@ -106,6 +106,15 @@ void LLListener_FMODEX::commitDeferredChanges()
 
 void LLListener_FMODEX::setRolloffFactor(F32 factor)
 {
+	//An internal FMODEx optimization skips 3D updates if there have not been changes to the 3D sound environment.
+	//Sadly, a change in rolloff is not accounted for, thus we must touch the listener properties as well.
+	//In short: Changing the position ticks a dirtyflag inside fmodex, which makes it not skip 3D processing next update call.
+	if(mRolloffFactor != factor)
+	{
+		LLVector3 pos = mVelocity - LLVector3(0.f,0.f,.1f);
+		mSystem->set3DListenerAttributes(0, (FMOD_VECTOR*)pos.mV, NULL, NULL, NULL);
+		mSystem->set3DListenerAttributes(0, (FMOD_VECTOR*)mVelocity.mV, NULL, NULL, NULL);
+	}
 	mRolloffFactor = factor;
 	mSystem->set3DSettings(mDopplerFactor, 1.f, mRolloffFactor);
 }

@@ -147,7 +147,52 @@ static void FD_CLR(curl_socket_t s, windows_fd_set* fsp)
 #define fd_set windows_fd_set
 #define select windows_select
 
+int WSAGetLastError(void)
+{
+  return errno;
+}
+
+typedef char* LPTSTR;
+
+bool FormatMessage(int, void*, int e, int, LPTSTR error_str_ptr, int, void*)
+{
+  char* error_str = *(LPTSTR*)error_str_ptr;
+  error_str = strerror(e);
+  return true;
+}
+
+void LocalFree(LPTSTR)
+{
+}
+
+int const FORMAT_MESSAGE_ALLOCATE_BUFFER = 0;
+int const FORMAT_MESSAGE_FROM_SYSTEM = 0;
+int const FORMAT_MESSAGE_IGNORE_INSERTS = 0;
+int const INVALID_SOCKET = -1;
+int const SOCKET_ERROR = -1;
+int const WSAEWOULDBLOCK = EWOULDBLOCK;
+
+int closesocket(curl_socket_t fd)
+{
+  return close(fd);
+}
+
+int const FIONBIO = 0;
+
+int ioctlsocket(int fd, int, unsigned long* nonblocking_enable)
+{
+  int res = fcntl(fd, F_GETFL, 0);
+  llassert_always(res != -1);
+  if (*nonblocking_enable)
+	res |= O_NONBLOCK;
+  else
+	res &= ~O_NONBLOCK;
+  return fcntl(fd, F_SETFD, res);
+}
+
 #endif // DEBUG_WINDOWS_CODE_ON_LINUX
+
+#define WINDOWS_CODE (LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
 
 #undef AICurlPrivate
 
@@ -252,7 +297,7 @@ class PollSet
 	// Return a pointer to the underlaying fd_set.
 	fd_set* access(void) { return &mFdSet; }
 
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	// Return the largest fd set in mFdSet by refresh.
 	curl_socket_t get_max_fd(void) const { return mMaxFdSet; }
 #endif
@@ -279,7 +324,7 @@ class PollSet
 
 	fd_set mFdSet;					// Output variable for select(). (Re)initialized by calling refresh().
 
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	curl_socket_t mMaxFd;			// The largest filedescriptor in the array, or CURL_SOCKET_BAD when it is empty.
 	curl_socket_t mMaxFdSet;		// The largest filedescriptor set in mFdSet by refresh(), or CURL_SOCKET_BAD when it was empty.
 	std::vector<curl_socket_t> mCopiedFileDescriptors;	// Filedescriptors copied by refresh to mFdSet.
@@ -311,7 +356,7 @@ static size_t const MAXSIZE = llmax(1024, FD_SETSIZE);
 // Create an empty PollSet.
 PollSet::PollSet(void) : mFileDescriptors(new curl_socket_t [MAXSIZE]),
                          mNrFds(0), mNext(0)
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 						 , mMaxFd(-1), mMaxFdSet(-1)
 #endif
 {
@@ -323,7 +368,7 @@ void PollSet::add(curl_socket_t s)
 {
   llassert_always(mNrFds < (int)MAXSIZE);
   mFileDescriptors[mNrFds++] = s;
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
   mMaxFd = llmax(mMaxFd, s);
 #endif
 }
@@ -360,7 +405,7 @@ void PollSet::remove(curl_socket_t s)
   // index: 0   1   2   3   4   5
   //        a   b   c   s   d   e
   curl_socket_t cur = mFileDescriptors[i];		// cur = 'e'
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
   curl_socket_t max = -1;
 #endif
   while (cur != s)
@@ -368,7 +413,7 @@ void PollSet::remove(curl_socket_t s)
 	llassert(i > 0);
 	curl_socket_t next = mFileDescriptors[--i];	// next = 'd'
 	mFileDescriptors[i] = cur;					// Overwrite 'd' with 'e'.
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	max = llmax(max, cur);					// max is the maximum value in 'i' or higher.
 #endif
 	cur = next;									// cur = 'd'
@@ -395,7 +440,7 @@ void PollSet::remove(curl_socket_t s)
   if (mNext > i)								// i is where s was.
 	--mNext;
 
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
   // If s was the largest file descriptor, we have to update mMaxFd.
   if (s == mMaxFd)
   {
@@ -412,7 +457,7 @@ void PollSet::remove(curl_socket_t s)
 
   // ALSO make sure that s is no longer set in mFdSet, or we might confuse libcurl by
   // calling curl_multi_socket_action for a socket that it told us to remove.
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
   clr(s);
 #else
   // We have to use a custom implementation here, because we don't want to invalidate mIter.
@@ -461,13 +506,13 @@ inline void PollSet::clr(curl_socket_t fd)
 refresh_t PollSet::refresh(void)
 {
   FD_ZERO(&mFdSet);
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
   mCopiedFileDescriptors.clear();
 #endif
 
   if (mNrFds == 0)
   {
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	mMaxFdSet = -1;
 #endif
 	return empty_and_complete;
@@ -482,7 +527,7 @@ refresh_t PollSet::refresh(void)
   if (mNrFds >= FD_SETSIZE)
   {
 	llwarns << "PollSet::reset: More than FD_SETSIZE (" << FD_SETSIZE << ") file descriptors active!" << llendl;
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	// Calculate mMaxFdSet.
 	// Run over FD_SETSIZE - 1 elements, starting at mNext, wrapping to 0 when we reach the end.
 	int max = -1, i = mNext, count = 0;
@@ -493,7 +538,7 @@ refresh_t PollSet::refresh(void)
   else
   {
 	mNext = 0;				// Start at the beginning if we copy everything anyway.
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	mMaxFdSet = mMaxFd;
 #endif
   }
@@ -507,7 +552,7 @@ refresh_t PollSet::refresh(void)
 	  return not_complete_not_empty;
 	}
 	FD_SET(mFileDescriptors[i], &mFdSet);
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	mCopiedFileDescriptors.push_back(mFileDescriptors[i]);
 #endif
 	if (++i == mNrFds)
@@ -545,7 +590,7 @@ refresh_t PollSet::refresh(void)
 
 void PollSet::reset(void)
 {
-#if LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX
+#if WINDOWS_CODE
   mIter = 0;
 #else
   if (mCopiedFileDescriptors.empty())
@@ -561,7 +606,7 @@ void PollSet::reset(void)
 
 inline curl_socket_t PollSet::get(void) const
 {
-#if LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX
+#if WINDOWS_CODE
   return (mIter >= mFdSet.fd_count) ? CURL_SOCKET_BAD : mFdSet.fd_array[mIter];
 #else
   return (mIter == mCopiedFileDescriptors.end()) ? CURL_SOCKET_BAD : *mIter;
@@ -570,7 +615,7 @@ inline curl_socket_t PollSet::get(void) const
 
 void PollSet::next(void)
 {
-#if LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX
+#if WINDOWS_CODE
   llassert(mIter < mFdSet.fd_count);
   ++mIter;
 #else
@@ -744,7 +789,8 @@ AICurlThread* AICurlThread::sInstance = NULL;
 
 // MAIN-THREAD
 AICurlThread::AICurlThread(void) : LLThread("AICurlThread"),
-    mWakeUpFd_in(CURL_SOCKET_BAD), mWakeUpFd(CURL_SOCKET_BAD),
+    mWakeUpFd_in(CURL_SOCKET_BAD),
+	mWakeUpFd(CURL_SOCKET_BAD),
 	mZeroTimeOut(0), mRunning(true), mWakeUpFlag(false)
 {
   create_wakeup_fds();
@@ -758,19 +804,149 @@ AICurlThread::~AICurlThread()
   cleanup_wakeup_fds();
 }
 
+#if LL_WINDOWS
+static std::string formatWSAError()
+{
+	std::ostringstream r;
+	int e = WSAGetLastError();
+	LPTSTR error_str = 0;
+	r << e;
+	if(FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, e, 0, (LPTSTR)&error_str, 0, NULL))
+	{
+		r << " " << utf16str_to_utf8str(error_str);
+		LocalFree(error_str);
+	}
+	else
+	{
+		r << " Unknown WinSock error";
+	}
+	return r.str();
+}
+#elif WINDOWS_CODE
+static std::string formatWSAError()
+{
+	return strerror(errno);
+}
+#endif
+
+#if LL_WINDOWS
+ /* Copyright 2007, 2010 by Nathan C. Myers <ncm@cantrip.org>
+ * This code is Free Software.  It may be copied freely, in original or 
+ * modified form, subject only to the restrictions that (1) the author is
+ * relieved from all responsibilities for any use for any purpose, and (2)
+ * this copyright notice must be retained, unchanged, in its entirety.  If
+ * for any reason the author might be held responsible for any consequences
+ * of copying or use, license is withheld.  
+ */
+static int dumb_socketpair(SOCKET socks[2], bool make_overlapped)
+{
+    union {
+       struct sockaddr_in inaddr;
+       struct sockaddr addr;
+    } a;
+    SOCKET listener;
+    int e;
+    socklen_t addrlen = sizeof(a.inaddr);
+    DWORD flags = (make_overlapped ? WSA_FLAG_OVERLAPPED : 0);
+    int reuse = 1;
+
+    if (socks == 0) {
+      WSASetLastError(WSAEINVAL);
+      return SOCKET_ERROR;
+    }
+
+    listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (listener == INVALID_SOCKET) 
+        return SOCKET_ERROR;
+
+    memset(&a, 0, sizeof(a));
+    a.inaddr.sin_family = AF_INET;
+    a.inaddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    a.inaddr.sin_port = 0; 
+
+    socks[0] = socks[1] = INVALID_SOCKET;
+    do {
+        if (setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, 
+               (char*) &reuse, (socklen_t) sizeof(reuse)) == -1)
+            break;
+        if  (bind(listener, &a.addr, sizeof(a.inaddr)) == SOCKET_ERROR)
+            break;
+
+        memset(&a, 0, sizeof(a));
+        if  (getsockname(listener, &a.addr, &addrlen) == SOCKET_ERROR)
+            break;
+        // win32 getsockname may only set the port number, p=0.0005.
+        // ( http://msdn.microsoft.com/library/ms738543.aspx ):
+        a.inaddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+        a.inaddr.sin_family = AF_INET;
+
+        if (listen(listener, 1) == SOCKET_ERROR)
+            break;
+
+        socks[0] = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, flags);
+        if (socks[0] == INVALID_SOCKET)
+            break;
+        if (connect(socks[0], &a.addr, sizeof(a.inaddr)) == SOCKET_ERROR)
+            break;
+
+        socks[1] = accept(listener, NULL, NULL);
+        if (socks[1] == INVALID_SOCKET)
+            break;
+
+        closesocket(listener);
+        return 0;
+
+    } while (0);
+
+    e = WSAGetLastError();
+    closesocket(listener);
+    closesocket(socks[0]);
+    closesocket(socks[1]);
+    WSASetLastError(e);
+    return SOCKET_ERROR;
+}
+#elif WINDOWS_CODE
+int dumb_socketpair(int socks[2], int dummy)
+{
+    (void) dummy;
+    return socketpair(AF_LOCAL, SOCK_STREAM, 0, socks);
+}
+#endif
+
 // MAIN-THREAD
 void AICurlThread::create_wakeup_fds(void)
 {
-#if LL_WINDOWS
-  // Probably need to use sockets here, cause Windows select doesn't work for a pipe.
-  #error Missing implementation
+#if WINDOWS_CODE
+	//SGTODO
+	curl_socket_t socks[2];
+	if (dumb_socketpair(socks, false) == SOCKET_ERROR)
+	{
+		llerrs << "Failed to generate wake-up socket pair" << formatWSAError() << llendl;
+		return;
+	}
+	u_long nonblocking_enable = TRUE;
+	int error = ioctlsocket(socks[0], FIONBIO, &nonblocking_enable);
+	if(error)
+	{
+		llerrs << "Failed to set wake-up socket nonblocking: " << formatWSAError() << llendl;
+	}
+	llassert(nonblocking_enable);
+	error = ioctlsocket(socks[1], FIONBIO, &nonblocking_enable);
+	if(error)
+	{
+		llerrs << "Failed to set wake-up input socket nonblocking: " << formatWSAError() << llendl;
+	}
+	mWakeUpFd = socks[0];
+	mWakeUpFd_in = socks[1];
 #else
   int pipefd[2];
   if (pipe(pipefd))
   {
 	llerrs << "Failed to create wakeup pipe: " << strerror(errno) << llendl;
   }
-  long flags = O_NONBLOCK;
+  int const flags = O_NONBLOCK;
   for (int i = 0; i < 2; ++i)
   {
 	if (fcntl(pipefd[i], F_SETFL, flags))
@@ -786,8 +962,24 @@ void AICurlThread::create_wakeup_fds(void)
 // MAIN-THREAD
 void AICurlThread::cleanup_wakeup_fds(void)
 {
-#if LL_WINDOWS
-  #error Missing implementation
+#if WINDOWS_CODE
+	//SGTODO
+	if (mWakeUpFd != CURL_SOCKET_BAD)
+	{
+		int error = closesocket(mWakeUpFd);
+		if (error)
+		{
+			llwarns << "Error closing wake-up socket" << formatWSAError() << llendl;
+		}
+	}
+	if (mWakeUpFd_in != CURL_SOCKET_BAD)
+	{
+		int error = closesocket(mWakeUpFd_in);
+		if (error)
+		{
+			llwarns << "Error closing wake-up input socket" << formatWSAError() << llendl;
+		}
+	}
 #else
   if (mWakeUpFd_in != CURL_SOCKET_BAD)
 	close(mWakeUpFd_in);
@@ -810,8 +1002,15 @@ void AICurlThread::wakeup_thread(void)
 	return;
   }
 
-#ifdef LL_WINDOWS
-  #error Missing implementation
+#if WINDOWS_CODE
+  //SGTODO
+  int len = send(mWakeUpFd_in, "!", 1, 0);
+  if (len == SOCKET_ERROR)
+  {
+	  llerrs << "Send to wake-up socket failed: " << formatWSAError() << llendl;
+  }
+  llassert_always(len == 1);
+  //SGTODO: handle EAGAIN if needed
 #else
   // If write() is interrupted by a signal before it writes any data, it shall return -1 with errno set to [EINTR].
   // If write() is interrupted by a signal after it successfully writes some data, it shall return the number of bytes written.
@@ -840,8 +1039,50 @@ void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
 {
   DoutEntering(dc::curl, "AICurlThread::wakeup");
 
-#ifdef LL_WINDOWS
-  #error Missing implementation
+#if WINDOWS_CODE
+  //SGTODO
+  char buf[256];
+  bool got_data = false;
+  for(;;)
+  {
+	int len = recv(mWakeUpFd, buf, sizeof(buf), 0);
+	if (len > 0)
+	{
+	  // Data was read from the pipe.
+	  got_data = true;
+	  if (len < sizeof(buf))
+		break;
+	}
+	else if (len == SOCKET_ERROR)
+	{
+	  // An error occurred.
+	  if (errno == EWOULDBLOCK)
+	  {
+		if (got_data)
+		  break;
+		// There was no data, even though select() said so. If this ever happens at all(?), lets just return and enter select() again.
+		return;
+	  }
+	  else if (errno == EINTR)
+	  {
+		continue;
+	  }
+	  else
+	  {
+		llerrs << "read(3) from mWakeUpFd: " << formatWSAError() << llendl;
+		return;
+	  }
+	}
+	else
+	{
+	  // pipe(2) returned 0.
+	  llwarns << "read(3) from mWakeUpFd returned 0, indicating that the pipe on the other end was closed! Shutting down curl thread." << llendl;
+	  closesocket(mWakeUpFd);
+	  mWakeUpFd = CURL_SOCKET_BAD;
+	  mRunning = false;
+	  return;
+	}
+  }
 #else
   // If a read() is interrupted by a signal before it reads any data, it shall return -1 with errno set to [EINTR].
   // If a read() is interrupted by a signal after it has successfully read some data, it shall return the number of bytes read.
@@ -958,7 +1199,7 @@ void AICurlThread::run(void)
 	  FD_SET(mWakeUpFd, read_fd_set);
 	  fd_set* write_fd_set = ((wres & empty)) ? NULL : multi_handle_w->mWritePollSet->access();
 	  // Calculate nfds (ignored on windows).
-#if !(LL_WINDOWS || DEBUG_WINDOWS_CODE_ON_LINUX)
+#if !WINDOWS_CODE
 	  curl_socket_t const max_rfd = llmax(multi_handle_w->mReadPollSet->get_max_fd(), mWakeUpFd);
 	  curl_socket_t const max_wfd = multi_handle_w->mWritePollSet->get_max_fd();
 	  int nfds = llmax(max_rfd, max_wfd) + 1;
@@ -1121,7 +1362,7 @@ MultiHandle::~MultiHandle()
   delete mReadPollSet;
 }
 
-#ifdef CWDEBUG
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 #undef AI_CASE_RETURN
 #define AI_CASE_RETURN(x) do { case x: return #x; } while(0)
 char const* action_str(int action)

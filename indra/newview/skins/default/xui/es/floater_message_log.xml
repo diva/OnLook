@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="Message Log" title="Registro de Mensajes" >
+	<scroll_list name="net_list">
+		<column name="text" label="texto" />
+		<column name="icon0" label="icon0"/>
+		<column name="icon1" label="icon1"/>
+	</scroll_list>
+	<button name="filter_choice_btn" label="…"/>
+	<line_editor name="filter_edit" />
+	<button name="filter_apply_btn" label="✔"/>
+	<button name="clear_log_btn" label="C"/>
+	<scroll_list name="message_log">
+		<column name="sequence" label="secuencia"/>
+		<column name="type" label="tipo"/>
+		<column name="direction" label="dirección"/>
+		<column name="net" label="red"/>
+		<column name="name" label="nombre"/>
+		<!--<column name="flag_zer" label="zer" width="8"/>
+		<column name="flag_rel" label="rel" width="8"/>
+		<column name="flag_rsd" label="rsd" width="8"/>
+		<column name="flag_ack" label="ack" width="8"/>-->
+		<column name="summary" label="sumario"/>
+	</scroll_list>
+</floater>

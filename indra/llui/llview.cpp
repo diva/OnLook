@@ -336,6 +336,7 @@ bool LLView::addChild(LLView* child, S32 tab_group)
 
 	// add to front of child list, as normal
 	mChildList.push_front(child);
+	mChildHashMap[child->getName()]=child;
 
 	// add to ctrl list if is LLUICtrl
 	if (child->isCtrl())
@@ -374,6 +375,14 @@ void LLView::removeChild(LLView* child)
 		// if we are removing an item we are currently iterating over, that would be bad
 		llassert(child->mInDraw == false);
 		mChildList.remove( child );
+		for(boost::unordered_map<const std::string, LLView*>::iterator it=mChildHashMap.begin(); it != mChildHashMap.end(); ++it)
+		{
+			if(it->second == child)
+			{
+				mChildHashMap.erase(it);
+				break;
+			}
+		}
 		child->mParentView = NULL;
 		if (child->isCtrl())
 		{
@@ -607,6 +616,7 @@ void LLView::deleteAllChildren()
 		LLView* viewp = mChildList.front();
 		delete viewp; // will remove the child from mChildList
 	}
+	mChildHashMap.clear();
 }
 
 void LLView::setAllChildrenEnabled(BOOL b)
@@ -1506,13 +1516,18 @@ LLView* LLView::getChildView(const std::string& name, BOOL recurse, BOOL create_
 	//if(name.empty())
 	//	return NULL;
 	// Look for direct children *first*
-	BOOST_FOREACH(LLView* childp, mChildList)
+	/*BOOST_FOREACH(LLView* childp, mChildList)
 	{
 		llassert(childp);
 		if (childp->getName() == name)
 		{
 			return childp;
 		}
+	}*/
+	boost::unordered_map<const std::string, LLView*>::const_iterator it = mChildHashMap.find(name);
+	if(it != mChildHashMap.end())
+	{
+		return it->second;
 	}
 	if (recurse)
 	{

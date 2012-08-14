@@ -52,6 +52,7 @@
 #include "llviewerstats.h"
 #include "llworld.h"
 #include "llstartup.h"
+#include "llbuffer.h"
 
 //////////////////////////////////////////////////////////////////////////////
 class LLTextureFetchWorker : public LLWorkerClass

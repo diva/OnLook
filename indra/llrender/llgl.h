@@ -104,11 +104,7 @@ public:
 	BOOL mHasDrawBuffers;
 	BOOL mHasDepthClamp;
 	BOOL mHasTextureRectangle;
-	BOOL mHasTextureMultisample;
 	BOOL mHasTransformFeedback;
-	S32 mMaxSampleMaskWords;
-	S32 mMaxColorTextureSamples;
-	S32 mMaxDepthTextureSamples;
 	S32 mMaxIntegerSamples;
 
 	// Other extensions.
@@ -155,7 +151,6 @@ public:
 	void printGLInfoString();
 	void getGLInfo(LLSD& info);
 
-	U32 getNumFBOFSAASamples(U32 desired_samples = 32);
 	// In ALL CAPS
 	std::string mGLVendor;
 	std::string mGLVendorShort;
@@ -521,4 +516,5 @@ extern BOOL gGLActive;
 #ifndef GL_DEPTH24_STENCIL8
 #define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_EXT
 #endif 
+
 #endif // LL_LLGL_H

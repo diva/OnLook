@@ -123,21 +123,14 @@ void ssl_locking_function(int mode, int n, char const* file, int line)
   }
 }
 
-#if LL_WINDOWS
-static unsigned long __cdecl apr_os_thread_current_wrapper()
-{
-	return (unsigned long)apr_os_thread_current();
-}
-#endif
-	
 #if HAVE_CRYPTO_THREADID
 // OpenSSL uniq id function.
 void ssl_id_function(CRYPTO_THREADID* thread_id)
 {
-#if 1	// apr_os_thread_current() returns an unsigned long.
-  CRYPTO_THREADID_set_numeric(thread_id, apr_os_thread_current());
-#else	// if it would return a pointer.
+#if LL_WINDOWS	// apr_os_thread_current() returns a pointer,
   CRYPTO_THREADID_set_pointer(thread_id, apr_os_thread_current());
+#else			// else it returns an unsigned long.
+  CRYPTO_THREADID_set_numeric(thread_id, apr_os_thread_current());
 #endif
 }
 #endif // HAVE_CRYPTO_THREADID
@@ -193,6 +186,13 @@ ssl_dyn_create_function_type  old_ssl_dyn_create_function;
 ssl_dyn_destroy_function_type old_ssl_dyn_destroy_function;
 ssl_dyn_lock_function_type    old_ssl_dyn_lock_function;
 
+#if LL_WINDOWS
+static unsigned long __cdecl apr_os_thread_current_wrapper()
+{
+	return (unsigned long)apr_os_thread_current();
+}
+#endif
+
 // Set for openssl-1.0.1...1.0.1c.
 static bool need_renegotiation_hack = false;
 
@@ -200,15 +200,15 @@ static bool need_renegotiation_hack = false;
 void ssl_init(void)
 {
   // The version identifier format is: MMNNFFPPS: major minor fix patch status.
-  int const compiled_openSLL_major = (OPENSSL_VERSION_NUMBER >> 28) & 0xff;
-  int const compiled_openSLL_minor = (OPENSSL_VERSION_NUMBER >> 20) & 0xff;
+  int const compiled_openSSL_major = (OPENSSL_VERSION_NUMBER >> 28) & 0xff;
+  int const compiled_openSSL_minor = (OPENSSL_VERSION_NUMBER >> 20) & 0xff;
   unsigned long const ssleay = SSLeay();
-  int const linked_openSLL_major = (ssleay >> 28) & 0xff;
-  int const linked_openSLL_minor = (ssleay >> 20) & 0xff;
+  int const linked_openSSL_major = (ssleay >> 28) & 0xff;
+  int const linked_openSSL_minor = (ssleay >> 20) & 0xff;
   // Check if dynamically loaded version is compatible with the one we compiled against.
   // As off version 1.0.0 also minor versions are compatible.
-  if (linked_openSLL_major != compiled_openSLL_major ||
-	  (compiled_openSLL_major == 0 && linked_openSLL_minor != compiled_openSLL_minor))
+  if (linked_openSSL_major != compiled_openSSL_major ||
+	  (linked_openSSL_major == 0 && linked_openSSL_minor != compiled_openSSL_minor))
   {
 	llerrs << "The viewer was compiled against " << OPENSSL_VERSION_TEXT <<
 	    " but linked against " << SSLeay_version(SSLEAY_VERSION) <<
@@ -312,10 +312,19 @@ void initCurl(void (*flush_hook)())
 	{
 	  llwarns << "libcurl was not compiled with support for asynchronous name lookups!" << llendl;
 	}
+	if (!version_info->ssl_version)
+	{
+	  llerrs << "This libcurl has no SSL support!" << llendl;
+	}
 
 	llinfos << "Successful initialization of libcurl " <<
 		version_info->version << " (0x" << std::hex << version_info->version_num << "), (" <<
-	    version_info->ssl_version << ", libz/" << version_info->libz_version << ")." << llendl;
+	    version_info->ssl_version;
+	if (version_info->libz_version)
+	{
+	  llcont << ", libz/" << version_info->libz_version;
+	}
+	llcont << ")." << llendl;
 
 	// Detect SSL library used.
 	gSSLlib = ssl_unknown;
@@ -538,12 +547,12 @@ LLAtomicU32 Stats::multi_errors;
 //static
 void Stats::print(void)
 {
-  llinfos << "============ CURL  STATS ============" << llendl;
-  llinfos << "  Curl multi       errors/calls      : " << std::dec << multi_errors << "/" << multi_calls << llendl;
-  llinfos << "  Curl easy        errors/calls      : " << std::dec << easy_errors << "/" << easy_calls << llendl;
-  llinfos << "  curl_easy_init() errors/calls      : " << std::dec << easy_init_errors << "/" << easy_init_calls << llendl;
-  llinfos << "  Current number of curl easy handles: " << std::dec << (easy_init_calls - easy_init_errors - easy_cleanup_calls) << llendl;
-  llinfos << "========= END OF CURL STATS =========" << llendl;
+  llinfos_nf << "============ CURL  STATS ============" << llendl;
+  llinfos_nf << "  Curl multi       errors/calls      : " << std::dec << multi_errors << "/" << multi_calls << llendl;
+  llinfos_nf << "  Curl easy        errors/calls      : " << std::dec << easy_errors << "/" << easy_calls << llendl;
+  llinfos_nf << "  curl_easy_init() errors/calls      : " << std::dec << easy_init_errors << "/" << easy_init_calls << llendl;
+  llinfos_nf << "  Current number of curl easy handles: " << std::dec << (easy_init_calls - easy_init_errors - easy_cleanup_calls) << llendl;
+  llinfos_nf << "========= END OF CURL STATS =========" << llendl;
 }
 
 // THREAD-SAFE
@@ -648,7 +657,7 @@ void CurlEasyHandle::setErrorBuffer(void)
   }
 }
 
-CURLcode CurlEasyHandle::getinfo(CURLINFO info, void* data)
+CURLcode CurlEasyHandle::getinfo_priv(CURLINFO info, void* data)
 {
   setErrorBuffer();
   return check_easy_code(curl_easy_getinfo(mEasyHandle, info, data));
@@ -692,6 +701,7 @@ CURLMcode CurlEasyHandle::remove_handle_from_multi(AICurlEasyRequest_wat& curl_e
   mActiveMultiHandle = NULL;
   CURLMcode res = check_multi_code(curl_multi_remove_handle(multi, mEasyHandle));
   removed_from_multi_handle(curl_easy_request_w);
+  mPostField = NULL;
   return res;
 }
 
@@ -708,8 +718,78 @@ void intrusive_ptr_release(ThreadSafeCurlEasyRequest* threadsafe_curl_easy_reque
   }
 }
 
+CURLcode CurlEasyHandle::setopt(CURLoption option, long parameter)
+{
+  llassert((CURLOPTTYPE_LONG  <= option && option < CURLOPTTYPE_LONG  + 1000) ||
+		   (sizeof(curl_off_t) == sizeof(long) &&
+			CURLOPTTYPE_OFF_T <= option && option < CURLOPTTYPE_OFF_T + 1000));
+  llassert(!mActiveMultiHandle);
+  setErrorBuffer();
+  return check_easy_code(curl_easy_setopt(mEasyHandle, option, parameter));
+}
+
+// The standard requires that sizeof(long) < sizeof(long long), so it's safe to overload like this.
+// We assume that one of them is 64 bit, the size of curl_off_t.
+CURLcode CurlEasyHandle::setopt(CURLoption option, long long parameter)
+{
+  llassert(sizeof(curl_off_t) == sizeof(long long) &&
+		   CURLOPTTYPE_OFF_T <= option && option < CURLOPTTYPE_OFF_T + 1000);
+  llassert(!mActiveMultiHandle);
+  setErrorBuffer();
+  return check_easy_code(curl_easy_setopt(mEasyHandle, option, parameter));
+}
+
+CURLcode CurlEasyHandle::setopt(CURLoption option, void const* parameter)
+{
+  llassert(CURLOPTTYPE_OBJECTPOINT <= option && option < CURLOPTTYPE_OBJECTPOINT + 1000);
+  setErrorBuffer();
+  return check_easy_code(curl_easy_setopt(mEasyHandle, option, parameter));
+}
+
+#define DEFINE_FUNCTION_SETOPT1(function_type, opt1) \
+	CURLcode CurlEasyHandle::setopt(CURLoption option, function_type parameter) \
+	{ \
+	  llassert(option == opt1); \
+	  setErrorBuffer(); \
+	  return check_easy_code(curl_easy_setopt(mEasyHandle, option, parameter)); \
+	}
+
+#define DEFINE_FUNCTION_SETOPT3(function_type, opt1, opt2, opt3) \
+	CURLcode CurlEasyHandle::setopt(CURLoption option, function_type parameter) \
+	{ \
+	  llassert(option == opt1 || option == opt2 || option == opt3); \
+	  setErrorBuffer(); \
+	  return check_easy_code(curl_easy_setopt(mEasyHandle, option, parameter)); \
+	}
+
+#define DEFINE_FUNCTION_SETOPT4(function_type, opt1, opt2, opt3, opt4) \
+	CURLcode CurlEasyHandle::setopt(CURLoption option, function_type parameter) \
+	{ \
+	  llassert(option == opt1 || option == opt2 || option == opt3 || option == opt4); \
+	  setErrorBuffer(); \
+	  return check_easy_code(curl_easy_setopt(mEasyHandle, option, parameter)); \
+	}
+
+DEFINE_FUNCTION_SETOPT1(curl_debug_callback, CURLOPT_DEBUGFUNCTION)
+DEFINE_FUNCTION_SETOPT4(curl_write_callback, CURLOPT_HEADERFUNCTION, CURLOPT_WRITEFUNCTION, CURLOPT_INTERLEAVEFUNCTION, CURLOPT_READFUNCTION)
+//DEFINE_FUNCTION_SETOPT1(curl_read_callback, CURLOPT_READFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_ssl_ctx_callback, CURLOPT_SSL_CTX_FUNCTION)
+DEFINE_FUNCTION_SETOPT3(curl_conv_callback, CURLOPT_CONV_FROM_NETWORK_FUNCTION, CURLOPT_CONV_TO_NETWORK_FUNCTION, CURLOPT_CONV_FROM_UTF8_FUNCTION)
+#if 0 // Not used by the viewer.
+DEFINE_FUNCTION_SETOPT1(curl_progress_callback, CURLOPT_PROGRESSFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_seek_callback, CURLOPT_SEEKFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_ioctl_callback, CURLOPT_IOCTLFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_sockopt_callback, CURLOPT_SOCKOPTFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_opensocket_callback, CURLOPT_OPENSOCKETFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_closesocket_callback, CURLOPT_CLOSESOCKETFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_sshkeycallback, CURLOPT_SSH_KEYFUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_chunk_bgn_callback, CURLOPT_CHUNK_BGN_FUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_chunk_end_callback, CURLOPT_CHUNK_END_FUNCTION)
+DEFINE_FUNCTION_SETOPT1(curl_fnmatch_callback, CURLOPT_FNMATCH_FUNCTION)
+#endif
+
 //-----------------------------------------------------------------------------
-// CurlEasyReqest
+// CurlEasyRequest
 
 void CurlEasyRequest::setoptString(CURLoption option, std::string const& value)
 {
@@ -717,11 +797,33 @@ void CurlEasyRequest::setoptString(CURLoption option, std::string const& value)
   setopt(option, value.c_str());
 }
 
-void CurlEasyRequest::setPost(char const* postdata, S32 size)
+void CurlEasyRequest::setPost(AIPostFieldPtr const& postdata, S32 size)
 {
-  setopt(CURLOPT_POST, 1L);
-  setopt(CURLOPT_POSTFIELDS, static_cast<void*>(const_cast<char*>(postdata)));
+  llassert_always(postdata->data());
+
+  Dout(dc::curl, "POST size is " << size << " bytes: \"" << libcwd::buf2str(postdata->data(), size) << "\".");
+  setPostField(postdata);		// Make sure the data stays around until we don't need it anymore.
+
+  setPost_raw(size, postdata->data());
+}
+
+void CurlEasyRequest::setPost_raw(S32 size, char const* data)
+{
+  if (!data)
+  {
+	// data == NULL when we're going to read the data using CURLOPT_READFUNCTION.
+	Dout(dc::curl, "POST size is " << size << " bytes.");
+  }
+
+  // The server never replies with 100-continue, so suppress the "Expect: 100-continue" header that libcurl adds by default.
+  addHeader("Expect:");
+  if (size > 0)
+  {
+	addHeader("Connection: keep-alive");
+	addHeader("Keep-alive: 300");
+  }
   setopt(CURLOPT_POSTFIELDSIZE, size);
+  setopt(CURLOPT_POSTFIELDS, data);
 }
 
 ThreadSafeCurlEasyRequest* CurlEasyRequest::get_lockobj(void)
@@ -797,7 +899,7 @@ void CurlEasyRequest::setSSLCtxCallback(curl_ssl_ctx_callback callback, void* us
   setopt(CURLOPT_SSL_CTX_DATA, userdata ? this : NULL);
 }
 
-#define llmaybewarns lllog(LLApp::isExiting() ? LLError::LEVEL_INFO : LLError::LEVEL_WARN, NULL, NULL, false)
+#define llmaybewarns lllog(LLApp::isExiting() ? LLError::LEVEL_INFO : LLError::LEVEL_WARN, NULL, NULL, false, true)
 
 static size_t noHeaderCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
@@ -877,9 +979,11 @@ void CurlEasyRequest::addHeader(char const* header)
   mHeaders = curl_slist_append(mHeaders, header);
 }
 
-#ifdef CWDEBUG
-static int curl_debug_callback(CURL*, curl_infotype infotype, char* buf, size_t size, void* user_ptr)
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+
+static int curl_debug_cb(CURL*, curl_infotype infotype, char* buf, size_t size, void* user_ptr)
 {
+#ifdef CWDEBUG
   using namespace ::libcwd;
 
   CurlEasyRequest* request = (CurlEasyRequest*)user_ptr;
@@ -890,6 +994,14 @@ static int curl_debug_callback(CURL*, curl_infotype infotype, char* buf, size_t 
   if (!debug::channels::dc::curlio.is_on())
 	debug::channels::dc::curlio.on();
   LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcw_do, dc::curlio|cond_nonewline_cf(infotype == CURLINFO_TEXT))
+#else
+  if (infotype == CURLINFO_TEXT)
+  {
+	while (size > 0 && (buf[size - 1] == '\r' ||  buf[size - 1] == '\n'))
+	  --size;
+  }
+  LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcw_do, dc::curlio)
+#endif
   switch (infotype)
   {
 	case CURLINFO_TEXT:
@@ -924,7 +1036,7 @@ static int curl_debug_callback(CURL*, curl_infotype infotype, char* buf, size_t 
   {
 	LibcwDoutStream << size << " bytes";
 	bool finished = false;
-	int i = 0;
+	size_t i = 0;
 	while (i < size)
 	{
 	  char c = buf[i];
@@ -967,7 +1079,9 @@ static int curl_debug_callback(CURL*, curl_infotype infotype, char* buf, size_t 
   else
 	LibcwDoutStream << size << " bytes";
   LibcwDoutScopeEnd;
+#ifdef CWDEBUG
   libcw_do.pop_marker();
+#endif
   return 0;
 }
 #endif
@@ -1032,7 +1146,7 @@ void CurlEasyRequest::applyDefaultOptions(void)
 	if (dc::curlio.is_on())
 	{
 	  setopt(CURLOPT_VERBOSE, 1);
-	  setopt(CURLOPT_DEBUGFUNCTION, &curl_debug_callback);
+	  setopt(CURLOPT_DEBUGFUNCTION, &curl_debug_cb);
 	  setopt(CURLOPT_DEBUGDATA, this);
 	}
   );
@@ -1042,8 +1156,23 @@ void CurlEasyRequest::finalizeRequest(std::string const& url)
 {
   llassert(!mRequestFinalized);
   mResult = CURLE_FAILED_INIT;		// General error code, the final code is written here in MultiHandle::check_run_count when msg is CURLMSG_DONE.
-  mRequestFinalized = true;
   lldebugs << url << llendl;
+#ifdef SHOW_ASSERT
+  // Do a sanity check on the headers.
+  int content_type_count = 0;
+  for (curl_slist* list = mHeaders; list; list = list->next)
+  {
+	if (strncmp(list->data, "Content-Type:", 13) == 0)
+	{
+	  ++content_type_count;
+	}
+  }
+  if (content_type_count > 1)
+  {
+	llwarns << content_type_count << " Content-Type: headers!" << llendl;
+  }
+#endif
+  mRequestFinalized = true;
   setopt(CURLOPT_HTTPHEADER, mHeaders);
   setoptString(CURLOPT_URL, url);
   // The following line is a bit tricky: we store a pointer to the object without increasing its reference count.
@@ -1124,7 +1253,7 @@ CurlResponderBuffer::CurlResponderBuffer() : mRequestTransferedBytes(0), mRespon
   curl_easy_request_w->send_events_to(this);
 }
 
-#define llmaybeerrs lllog(LLApp::isRunning() ? LLError::LEVEL_ERROR : LLError::LEVEL_WARN, NULL, NULL, false)
+#define llmaybeerrs lllog(LLApp::isRunning() ? LLError::LEVEL_ERROR : LLError::LEVEL_WARN, NULL, NULL, false, true)
 
 // The callbacks need to be revoked when the CurlResponderBuffer is destructed (because that is what the callbacks use).
 // The AIThreadSafeSimple<CurlResponderBuffer> is destructed first (right to left), so when we get here then the
@@ -1182,7 +1311,8 @@ void CurlResponderBuffer::prepRequest(AICurlEasyRequest_wat& curl_easy_request_w
 {
   if (post)
   {
-	curl_easy_request_w->setoptString(CURLOPT_ENCODING, "");
+	// Accept everything (send an Accept-Encoding header containing all encodings we support (zlib and gzip)).
+	curl_easy_request_w->setoptString(CURLOPT_ENCODING, "");	// CURLOPT_ACCEPT_ENCODING
   }
 
   mInput.reset(new LLBufferArray);
@@ -1215,9 +1345,7 @@ void CurlResponderBuffer::prepRequest(AICurlEasyRequest_wat& curl_easy_request_w
 
   if (!post)
   {
-	curl_easy_request_w->addHeader("Connection: keep-alive");
-	curl_easy_request_w->addHeader("Keep-alive: 300");
-	// Add other headers.
+	// Add extra headers.
 	for (std::vector<std::string>::const_iterator iter = headers.begin(); iter != headers.end(); ++iter)
 	{
 	  curl_easy_request_w->addHeader((*iter).c_str());

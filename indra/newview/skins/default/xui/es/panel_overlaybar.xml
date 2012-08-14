@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="overlay">
+	<layout_stack name="overlay_layout_panel">
+		<layout_panel name="main_panel">
+			<layout_stack name="chatbar_and_buttons">
+				<layout_panel name="padding"/>
+				<layout_panel name="state_buttons">
+					<button label="Nuevo MI" label_selected="Nuevo MI" name="New IM" tool_tip="Tienes un Mensaje Instantáneo pendiente. Pulsa para ver los MIs"/>
+					<button label="Fijar No Ocupado" label_selected="Fijar No Ocupado" name="Set Not Busy" tool_tip="El Chat y los MI están ocultos para ti. Pulsa aquí para definir tu estado como No Ocupado"/>
+					<button label="Flycam" label_selected="Flycam" name="Flycam" tool_tip="Tu cámara está siendo controlada por un joystick, pulsa aquí para liberar el control"/>
+					<button label="Vista Subjetiva" label_selected="Vista Subjetiva" name="Mouselook" tool_tip="Usa el mouse para dirigir tu vista. Si tienes un arma, pulsando el botón del ratón harás fuego"/>
+					<button label="Pararse" label_selected="Pararse" name="Stand Up" tool_tip="Pulsa aquí para pararte"/>
+					<button label="Cancelar TP" label_selected="Cancelar TP" name="Cancel TP" tool_tip="Pulsa aquí para cancerla el proceso de teleporte actual"/>
+				</layout_panel>
+				<layout_panel name="chat_bar"/>
+			</layout_stack>
+		</layout_panel>
+		<layout_panel name="ao_remote_container">
+			<panel name="ao_remote"/>
+		</layout_panel>
+		<layout_panel name="media_remote_container">
+			<panel name="media_remote"/>
+		</layout_panel>
+		<layout_panel name="voice_remote_container">
+			<panel name="voice_remote"/>
+		</layout_panel>
+		<layout_panel name="AdvSettings_container">
+			<panel name="Adv_Settings"/>
+		</layout_panel>
+		<layout_panel name="AdvSettings_container_exp">
+			<panel name="Adv_Settings"/>
+		</layout_panel>
+	</layout_stack>
+	<string name="unread_count_string_plural">
+		Nuevos MIs
+	</string>
+</panel>

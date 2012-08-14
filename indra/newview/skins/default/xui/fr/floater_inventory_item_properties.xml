@@ -1,51 +1,51 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="item properties" title="Propriétés de l&apos;objet de l&apos;inventaire">
+<floater name="item properties" title="Propriétés de l'objet de l'inventaire">
 	<text name="LabelItemNameTitle">
-		Nom :
+		Nom:
 	</text>
 	<text name="LabelItemDescTitle">
-		Description :
+		Description:
 	</text>
 	<text name="LabelCreatorTitle">
-		Créateur :
+		Créateur:
 	</text>
 	<text name="LabelCreatorName">
 		Nicole Linden
 	</text>
 	<button label="Profil..." label_selected="" name="BtnCreator"/>
 	<text name="LabelOwnerTitle">
-		Propriétaire :
+		Propriétaire:
 	</text>
 	<text name="LabelOwnerName">
 		Thrax Linden
 	</text>
 	<button label="Profil..." label_selected="" name="BtnOwner"/>
 	<text name="LabelAcquiredTitle">
-		Acquis :
+		Acquis:
 	</text>
 	<text name="LabelAcquiredDate">
 		Wed May 24 12:50:46 2006
 	</text>
 	<text name="OwnerLabel">
-		Vous pouvez :
+		Vous pouvez:
 	</text>
 	<check_box label="Modifier" name="CheckOwnerModify"/>
 	<check_box label="Copier" name="CheckOwnerCopy"/>
 	<check_box label="Revendre/Donner" name="CheckOwnerTransfer"/>
 	<text name="BaseMaskDebug">
-		B :
+		B:
 	</text>
 	<text name="OwnerMaskDebug">
-		O :
+		O:
 	</text>
 	<text name="GroupMaskDebug">
-		G :
+		G:
 	</text>
 	<text name="EveryoneMaskDebug">
-		E :
+		E:
 	</text>
 	<text name="NextMaskDebug">
-		N :
+		N:
 	</text>
 	<check_box label="Partager avec le groupe" name="CheckShareWithGroup"/>
 	<check_box label="Autoriser tout le monde à copier" name="CheckEveryoneCopy"/>
@@ -56,7 +56,7 @@
 	<check_box label="Copier" name="CheckNextOwnerCopy"/>
 	<check_box label="Revendre/Donner" name="CheckNextOwnerTransfer"/>
 	<text name="SaleLabel">
-		Marquer l&apos;objet :
+		Marquer l'objet:
 	</text>
 	<check_box label="À vendre" name="CheckPurchase"/>
 	<radio_group name="RadioSaleType">
@@ -68,7 +68,7 @@
 		</radio_item>
 	</radio_group>
 	<text name="TextPrice">
-		Prix :  L$
+		Prix:  [CURRENCY]
 	</text>
 	<string name="unknown">
 		(inconnu)
@@ -77,9 +77,9 @@
 		(public)
 	</string>
 	<string name="you_can">
-		Vous pouvez :
+		Vous pouvez:
 	</string>
 	<string name="owner_can">
-		Le propriétaire peut :
+		Le propriétaire peut:
 	</string>
 </floater>

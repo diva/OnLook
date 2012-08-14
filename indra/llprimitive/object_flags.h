@@ -2,31 +2,25 @@
  * @file object_flags.h
  * @brief Flags for object creation and transmission
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -34,43 +28,47 @@
 #define LL_OBJECT_FLAGS_H
 
 // downstream flags from sim->viewer
-const U32	FLAGS_USE_PHYSICS			= 0x00000001;
-const U32	FLAGS_CREATE_SELECTED		= 0x00000002;
-const U32	FLAGS_OBJECT_MODIFY			= 0x00000004;
-const U32	FLAGS_OBJECT_COPY			= 0x00000008;
-const U32	FLAGS_OBJECT_ANY_OWNER		= 0x00000010;
-const U32	FLAGS_OBJECT_YOU_OWNER		= 0x00000020;
-const U32	FLAGS_SCRIPTED				= 0x00000040;
-const U32	FLAGS_HANDLE_TOUCH			= 0x00000080;
-const U32	FLAGS_OBJECT_MOVE			= 0x00000100;
-const U32	FLAGS_TAKES_MONEY			= 0x00000200;
-const U32	FLAGS_PHANTOM				= 0x00000400;
-const U32	FLAGS_INVENTORY_EMPTY		= 0x00000800;
+const U32   FLAGS_USE_PHYSICS          = (1U << 0);
+const U32   FLAGS_CREATE_SELECTED      = (1U << 1);
+const U32   FLAGS_OBJECT_MODIFY        = (1U << 2);
+const U32   FLAGS_OBJECT_COPY          = (1U << 3);
+const U32   FLAGS_OBJECT_ANY_OWNER     = (1U << 4);
+const U32   FLAGS_OBJECT_YOU_OWNER     = (1U << 5);
+const U32   FLAGS_SCRIPTED             = (1U << 6);
+const U32   FLAGS_HANDLE_TOUCH         = (1U << 7);
+const U32   FLAGS_OBJECT_MOVE          = (1U << 8);
+const U32   FLAGS_TAKES_MONEY          = (1U << 9);
+const U32   FLAGS_PHANTOM              = (1U << 10);
+const U32   FLAGS_INVENTORY_EMPTY      = (1U << 11);
 
-const U32	FLAGS_JOINT_HINGE			= 0x00001000;
-const U32	FLAGS_JOINT_P2P				= 0x00002000;
-const U32	FLAGS_JOINT_LP2P			= 0x00004000;
-// const U32	FLAGS_JOINT_WHEEL		= 0x00008000;
-const U32	FLAGS_INCLUDE_IN_SEARCH		= 0x00008000;
+const U32   FLAGS_AFFECTS_NAVMESH      = (1U << 12);
+const U32   FLAGS_CHARACTER            = (1U << 13);
+const U32   FLAGS_VOLUME_DETECT        = (1U << 14);
+const U32   FLAGS_INCLUDE_IN_SEARCH    = (1U << 15);
 
-const U32	FLAGS_ALLOW_INVENTORY_DROP	= 0x00010000;
-const U32	FLAGS_OBJECT_TRANSFER		= 0x00020000;
-const U32	FLAGS_OBJECT_GROUP_OWNED	= 0x00040000;
-//const U32	FLAGS_OBJECT_YOU_OFFICER	= 0x00080000;
+const U32   FLAGS_ALLOW_INVENTORY_DROP = (1U << 16);
+const U32   FLAGS_OBJECT_TRANSFER      = (1U << 17);
+const U32   FLAGS_OBJECT_GROUP_OWNED   = (1U << 18);
+//const U32 FLAGS_UNUSED_000           = (1U << 19); // was FLAGS_OBJECT_YOU_OFFICER
 
-const U32 	FLAGS_CAMERA_DECOUPLED 		= 0x00100000;
-const U32	FLAGS_ANIM_SOURCE			= 0x00200000;
-const U32	FLAGS_CAMERA_SOURCE			= 0x00400000;
+const U32   FLAGS_CAMERA_DECOUPLED     = (1U << 20);
+const U32   FLAGS_ANIM_SOURCE          = (1U << 21);
+const U32   FLAGS_CAMERA_SOURCE        = (1U << 22);
 
-const U32	FLAGS_CAST_SHADOWS			= 0x00800000;
+//const U32 FLAGS_UNUSED_001           = (1U << 23); // was FLAGS_CAST_SHADOWS
 
-const U32	FLAGS_OBJECT_OWNER_MODIFY	= 0x10000000;
+//const U32 FLAGS_UNUSED_002           = (1U << 24);
+//const U32 FLAGS_UNUSED_003           = (1U << 25);
+//const U32 FLAGS_UNUSED_004           = (1U << 26);
+//const U32 FLAGS_UNUSED_005           = (1U << 27);
 
-const U32	FLAGS_TEMPORARY_ON_REZ		= 0x20000000;
-const U32	FLAGS_TEMPORARY				= 0x40000000;
-const U32	FLAGS_ZLIB_COMPRESSED		= 0x80000000;
+const U32   FLAGS_OBJECT_OWNER_MODIFY  = (1U << 28);
 
-const U32	FLAGS_LOCAL					= FLAGS_ANIM_SOURCE | FLAGS_CAMERA_SOURCE;
+const U32   FLAGS_TEMPORARY_ON_REZ     = (1U << 29);
+const U32	FLAGS_TEMPORARY			   = (1U << 30);
+//const U32 FLAGS_UNUSED_007           = (1U << 31); // was FLAGS_ZLIB_COMPRESSED
+
+const U32   FLAGS_LOCAL                = FLAGS_ANIM_SOURCE | FLAGS_CAMERA_SOURCE;
 
 typedef enum e_havok_joint_type
 {

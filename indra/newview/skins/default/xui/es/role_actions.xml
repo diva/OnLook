@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<role_actions>
+	<action_set 
+		description="Estas capacidades incluyen poderes para añadir o quitar miembros del grupo, y para pemitir que se sumen nuevos miembros sin necesidad de invitación." 
+		name="Membership">
+		<action 
+			description="Invitar Personas al Grupo" 
+			longdescription="Invitar personas al grupo usando el botón &apos;Invitar a un nuevo miembro&apos; en Miembros y Roles &gt; subpestaña Miembros." 
+			name="member invite"/>
+		<action 
+			description="Expulsar a miembros del grupo" 
+			longdescription="Expulsar a miembros del grupo usando el botón &apos;Expulsar del grupo&apos; en Miembros y Roles &gt; subpestaña Miembros. Un propietario puede expulsar a cualquiera, excepto a otro propietario. Si no eres un propietario, un miembro del grupo puede expulsarte sólo si tiene concedida esta capacidad específica. Para quitar capacidades a los miembros, debes tener la de &apos;Quitar capacidades a miembros&apos;." 
+			name="member eject"/>
+		<action 
+			description="Activar/desactivar &apos;Inscripción libre&apos; y cambiar &apos;Cuota de inscripción&apos;" 
+			longdescription="Activar/desactivar &apos;Inscripción libre&apos; para permitir o no que se unan sin invitación nuevos miembros, y cambiar la &apos;Cuota de inscripción&apos; en la sección Preferencias del grupo de la pestaña General." 
+			name="member options"/>
+	</action_set>
+	<action_set 
+		description="Estas habilidades incluyen el poder añadir, quitar y cambiar roles, asignarlos a  miembros, y darles capacidades" 
+		name="Roles">
+		<action 
+			description="Crear nuevos roles" 
+			longdescription="Crear nuevos roles en Miembros y Roles &gt; pestaña Roles &gt; botón Crear un rol nuevo." 
+			name="role create"/>
+		<action 
+			description="Borrar Roles" 
+			longdescription="Borrar roles en Miembros y Roles &gt; pestaña Roles &gt; botón Eliminar el rol." 
+			name="role delete"/>
+		<action 
+			description="Cambiar nombres de roles, títulos, descripciones y si los integrantes de lo roles son visibles." 
+			longdescription="Cambiar nombres de roles, títulos, descripciones y si los integrantes de lo roles son visibles. Esto se hace al pié de la pestaña Miembros y Roles &gt; subpestaña Roles luego de seleccionar un rol." 
+			name="role properties"/>
+		<action 
+			description="Designar miembros para el rol de Asignador" 
+			longdescription="Designar miembros para un rol en la sección Roles asignados de la pestaña Miembros y Roles &gt; subpestaña Miembros. Un miembro con este poder sólo puede asignar a otros el rol que él posee." 
+			name="role assign member limited"/>
+		<action 
+			description="Designar miembros para cualquier Rol" 
+			longdescription="Designar miembros para cualquier rol en la sección Roles asignados de la pestaña Miembros y Roles &gt; subpestaña Miembros. *AVISO* Todos los miembros con esta capacidad podrán asignarse a sí mismos (y a otros miembros) roles con mayores poderes de los que actualmente tienen. Potencialmente, podrían elevarse hasta poderes cercanos a los del propietario. Asegúrate de lo que estás haciendo antes de otorgar esta capacidad." 
+			name="role assign member"/>
+		<action 
+			description="Quitar miembros de los roles" 
+			longdescription="Quitar miembros de roles en la sección Capacidades asignadas de Miembros y Roles &gt; subpestaña Roles. No se pueden quitar a los Propietarios." 
+			name="role remove member"/>
+		<action 
+			description="Añadir o quitar capacidades a los roles" 
+			longdescription="Añadir o quitar capacidades a los roles en la sección Capacidades asignadas de Miembros y Roles &gt; subpestaña Roles. *AVISO* Todos los miembros con esta capacidad podrán asignarse a sí mismos -y a otros miembros- roles con mayores poderes de los que actualmente tienen. Potencialmente, podrían elevarse hasta poderes cercanos a los del propietario. Asegúrate de lo que estás haciendo antes de otorgar esta capacidad." 
+			name="role change actions"/> 
+	</action_set>
+	<action_set 
+		description="Estas capacidades incluyen poderes para modificar la identidad del grupo, como su visibilidad pública, su carta o su emblema." 
+		name="Group Identity">
+		<action 
+			description="Cambiar la carta, emblema y &apos;Mostrar en la búsqueda&apos;" 
+			longdescription="Cambiar la carta, emblema y &apos;Mostrar en la búsqueda&apos;, y qué miembros serán visibles en la información del grupo de la pestaña General." 
+			name="group change identity"/>
+	</action_set>
+	<action_set 
+		description="Estas capacidades incluyen poderes para transferir, modificar y vender terrenos del grupo. Ve al menú Mundo &gt; Acerca del terreno, o pulsa con el botón derecho en el terreno y selecciona &apos;Acerca del terreno...&apos;, o pulsa en la información de la parcela en la barra superior del menú." 
+		name="Parcel Management">
+		<action 
+			description="Transferir  y comprar terreno para el grupo" 
+			longdescription="Transferir y comprar terreno para el grupo. Se hace en Acerca del terreno &gt; pestaña General." 
+			name="land deed"/>
+		<action 
+			description="Abandonar terreno a favor de Governor Linden" 
+			longdescription="Abandonar al terreno a favor de Governor Linden. *AVISO* Todos los miembros del Rol con esta capacidad pueden abandonar terreno perteneciente al grupo en Acerca del terreno &gt; pestaña General, devolviendo la posesión a Linden ¡gratuitamente! Asegúrate de lo que estás haciendo antes de otorgar esta capacidad." 
+			name="land release"/>
+		<action 
+			description="Vender terreno" 
+			longdescription="Vender terreno. *AVISO* Todos los miembros del ROl con esta capacidad pueden vender terreno perteneciente al grupo -¡en la forma en que quieran!- en Acerca del terreno &gt; pestaña General. Asegúrate de lo que estás haciendo antes de otorgar esta capacidad." 
+			name="land set sale info"/>
+		<action 
+			description="Dividir y unir parcelas" 
+			longdescription="Dividir y unir parcelas. Se hace pulsando con el botón derecho en el terreno, &apos;Modificar el terreno&apos;, y dibujando en el terreno con el ratón lo que se quiere seleccionar. Para dividir, selecciona la parte que quieres separar y pulsa &apos;Subdividir...&apos;. Para unir, selecciona dos o más parcelas contiguas y pulsa &apos;Unir...&apos;." 
+			name="land divide join"/>
+	</action_set>
+	<action_set 
+		description="Estas capacidades incluyen poder cambiar el nombre de la parcela y su configuración pública, también si se muestra en la Búsqueda y las opciones del punto de llegada y el de teleporte." 
+		name="Parcel Identity">
+		<action 
+			description="Activar/Desactivar &apos;Mostrar en Búsqueda&apos; y el definir la Categoría" longdescription="Activar/Desactivar el &apos;Mostrar en Búsqueda&apos; y en que Categoría se mostrará en Acerca del terreno &gt; pestaña Opciones." 
+			name="land find places"/>
+		<action 
+			description="Cambiar el nombre de la parcela, la descripción, y la configuración de &apos;Mostrar en Búsqueda&apos;" 
+			longdescription="Cambiar el nombre y descripción de la parcela, y la configuración de &apos;Mostrar en Búsqueda&apos;. Se hace en Acerca del terreno &gt; pestaña Opciones." 
+			name="land change identity"/>
+		<action 
+			description="Definir los puntos de llegada y teleporte" 
+			longdescription="En una parcela perteneciente al grupo, los miembros con un rol que tenga esta capacidad pueden definir el Punto de Llegada o el de Teleporte para un mejor control. Se hace en Acerca del terreno &gt; pestaña Opciones." 
+			name="land set landing point"/>
+	</action_set>
+	<action_set 
+		description="Estas capacidades incluyen poderes que afectan a las opciones de la parcela, como &apos;Crear objetos&apos;, &apos;Editar el terreno&apos; y las configuraciones de la música y los media." 
+		name="Parcel Settings">
+		<action 
+			description="Cambiar música y configuraciones de los media" longdescription="Cambiar la música en streaming y las configuraciones de vídeo en Acerca del terreno &gt; pestaña Media." 
+			name="land change media"/>
+		<action 
+			description="Activar/desactivar &apos;Editar el terreno&apos;" 
+			longdescription="Activar/desactivar &apos;Editar el terreno&apos;. *AVISO* Acerca del terreno &gt; pestaña Opciones &gt; Editar el terreno, permite a cualquiera alterar la forma de tu terreno y sustituir y mover plantas Linden. Asegúrate de lo que estás haciendo antes de otorgar esta capacidad. La edición del terreno se activada/desactiva en Acerca del terreno &gt; pestaña Opciones." 
+			name="land edit"/>
+		<action 
+			description="Activar/desactivar varios ítems de Acerca del terreno &gt; Opciones" 
+			longdescription="Activar/desactivar en un terreno del grupo los ítems de Acerca del terreno &gt; pestaña Opciones: &apos;Seguro (sin daño)&apos;, &apos;Volar&apos;, y permitir a otros residentes: &apos;Crear objetos&apos;, &apos;Editar el terreno&apos;, &apos;Crear hitos&apos;, y &apos;Ejecutar scripts&apos;." 
+			name="land options"/>
+	</action_set>
+	<action_set 
+		description="Estas capacidades incluyen poderes que permiten a los miembros rebasar las restricciones de parcelas pertenecientes al grupo." 
+		name="Parcel Powers">
+		<action 
+			description="Permitir siempre &apos;Editar el terreno&apos;" 
+			longdescription="Los Miembros del rol con esta capacidad pueden editar el terreno de una parcela perteneciente al grupo aunque eso esté desactivado en Acerca del terreno &gt; pestaña Opciones." 
+			name="land allow edit land"/>
+		<action 
+			description="Permitir siempre &apos;Volar&apos;" 
+			longdescription="Los Miembros del rol con esta capacidad pueden volar sobre una parcela perteneciente al grupo aunque eso esté desactivado en Acerca del terreno &gt; pestaña Opciones." 
+			name="land allow fly"/>
+		<action 
+			description="Permitir siempre &apos;Crear objetos&apos;" 
+			longdescription="Los Miembros del rol con esta capacidad pueden crear objetos en una parcela perteneciente al grupo aunque eso esté desactivado en Acerca del terreno &gt; pestaña Opciones." 
+			name="land allow create"/>
+		<action 
+			description="Permitir siempre &apos;Crear hitos&apos;" 
+			longdescription="Los Miembros del rol con esta capacidad pueden crear un hito en una parcela perteneciente al grupo aunque eso esté desactivado en Acerca del terreno &gt; pestaña Opciones." 
+			name="land allow landmark"/>
+		<action 
+			description="Permitir &apos;Fijar Base&apos; en el terreno del grupo" 
+			longdescription="Los Miembros del rol con esta capacidad pueden usar el menú Mundo &gt; Fijar mi Base aquí en una parcela transferida al grupo." 
+			name="land allow set home"/>
+		<action 
+			description="Permitir &quot;Organización de eventos&quot; en un terreno de grupo" 
+			longdescription="Los miembros con un rol que tenga esta capacidad pueden seleccionar parcelas propiedad de un grupo como sede de la organización de eventos."
+			name="land allow host event"/>			 
+	</action_set>
+	<action_set
+		description="Estas capacidades incluyen poderes para permitir o restringir el acceso a parcelas pertenecientes al grupo, incluyendo el congelar y expulsar a residentes."
+		name="Parcel Access">
+		<action 
+			description="Administrar las listas de Acceso a la Parcela"
+			longdescription="Administra las listas de acceso a la parcela en Acerca del terreno &gt; pestaña Acceso."
+			name="land manage allowed"/>
+		<action 
+			description="Administrar la lista de residentes con acceso prohibido"
+			longdescription="Administrar la lista de residentes con el acceso prohibido a la parcela en Acerca del terreno &gt; pestaña Acceso."
+			name="land manage banned"/>
+		<action 
+			description="Cambiar en la parcela el &apos;Vender pases a...&apos;"
+			longdescription="Cambiar la configuración de &apos;Vender pases a...&apos; en Acerca del terreno &gt; pestaña Acceso."
+			name="land manage passes"/>
+		<action 
+			description="Expulsar y congelar residentes en las parcelas"
+			longdescription="Los miembros con el rol con esta capacidad pueden actuar frente a un residente indeseado en una parcela del grupo pulsando con el botón derecho sobre él, Más &gt; y seleccionando &apos;Expulsar...&apos; o &apos;Congelar...&apos;."
+			name="land admin"/>
+	</action_set>
+	<action_set
+		description="Estas capacidades incluyen poderes que permiten a los miembros devolver objetos y poner y mover plantas Linden. Es útil para que los miembros organicen el paisaje, pero debe ser usado con cuidado, ya que no se pueden deshacer los cambios en los objetos retornados."
+		name="Parcel Content">
+		<action 
+			description="Devolver objetos que pertenecen al grupo"
+			longdescription="Devolver objetos pertenecientes al grupo en parcelas de su propiedad en Acerca del terreno &gt; pestaña Objetos."
+			name="land return group owned"/>
+		<action 
+			description="Devolver objetos definidos para el grupo"
+			longdescription="Devolver objetos en parcelas pertenecientes al grupo en Acerca del terreno &gt; pestaña Objetos."
+			name="land return group set"/>
+		<action 
+			description="Devolver objetos que no pertenecen al grupo"
+			longdescription="Devolver objetos que estén en una parcela del grupo y pertenezcan a alguien que no sea del grupo en Acerca del terreno &gt; pestaña Objetos."
+			name="land return non group"/>
+		<action 
+			description="Modificar el paisaje usando plantas Linden"
+			longdescription="La capacidad de modificar el paisaje permite poner y mover árboles Linden, plantas y arbustos. Estos ítems están en la &apos;s Biblioteca de tu Inventario &gt; carpeta Objetos, o pueden crearse con el botón Construir."
+			name="land gardening"/>
+	</action_set>
+	<action_set
+		description="Estas capacidades incluyen poderes para transferir, modificar y vender objetos pertenecientes al grupo. Estos cambios se hacen en la pestaña General de la herramienta de edición. Para ver sus configuraciones, pulsa en un objeto con el botón derecho y elige Editar."
+		name="Object Management">
+		<action 
+			description="Transferir objetos al grupo"
+			longdescription="Transferir objetos al grupo en Editar &gt; pestaña General."
+			name="object deed"/>
+		<action 
+			description="Manipular (mover, copiar, y modificar) objetos del grupo"
+			longdescription="Manipular (mover, copiar, y modificar) objetos pertenecientes al grupo en Editar &gt; pestaña General."
+			name="object manipulate"/>
+		<action 
+			description="Poner a la venta objetos propiedad del grupo"
+			longdescription="Poner a la venta objetos pertenecientes al grupo en Editar &gt; pestaña General."
+			name="object set sale"/>
+	</action_set>
+	<action_set
+	     description="Estas habilidades incluyen poderes para que los miembros paguen deudas del grupo o reciban sus dividendos, y para limitar el acceso al historial de la cuenta del grupo."
+	     name="Accounting">
+		<action 
+			description="Pagar deudas y recibir dividendos del grupo"
+			longdescription="Los miembros del rol con esta capacidad, automáticamente pagarán deudas del grupo y recibirán sus dividendos. Esto significa que recibirán una parte de las ventas de terrenos del grupo, y que contribuirá a cosas como, por ejemplo, las cuotas por posesión de terreno."
+			name="accounting accountable"/>
+	</action_set>
+	<action_set
+		description="Estas habilidades incluyen poderes para enviar, recibir y ver avisos de grupo."
+		name="Notices">
+		<action 
+			description="Enviar Avisos"
+			longdescription="Los miembros del rol con esta capacidad pueden enviar avisos en Información del Grupo &gt; pestaña Avisos."
+			name="notices send"/>
+		<action 
+			description="Recibir nuevos avisos y ver los anteriores"
+			longdescription="Los miembros del rol con esta capacidad pueden recibir los avisos nuevos, y ver los anteriores en Información del grupo &gt; pestaña Avisos."
+			name="notices receive"/>
+	</action_set>
+	<action_set
+		description="Estas habilidades incluyen poderes para permitir a los miembros crear propuestas, votarlas, y ver el historial de votaciones."
+		name="Proposals">
+		<action 
+			description="Crear Propuestas"
+			longdescription="Los miembros del rol con esta capacidad pueden crear propuestas para que sean votadas en Información del grupo &gt; pestaña Propuestas."
+			name="proposal start"/>
+		<action 
+			description="Votar las Propuestas"
+			longdescription="Los miembros del rol con esta capacidad pueden votar las propuestas en Información del grupo &gt; pestaña Propuestas."
+			name="proposal vote"/>
+	</action_set>
+	<action_set
+		description="Estas capacidades incluyen poderes para permitir o no el aceso a las sesiones de chat del grupo y al chat de voz del mismo." 
+		name="Chat">
+		<action 
+			description="Unirse al Chat de Grupo"
+			longdescription="Los miembros del rol con esta capacidad pueden abrir sesiones de chat del grupo, tanto de texto como de voz."
+			name="join group chat"/>
+		<action description="Unirse al Chat de Voz"
+			longdescription="Los miembros del rol con esta capacidad pueden abrir sesiones de chat de voz del grupo. NOTA: para acceder al chat de voz debe tenerse la capacidad &apos;Unirse al Chat de Ggrupo&apos;."
+			name="join voice chat"/>	
+		<action description="Moderar el Chat de Grupo"
+			longdescription="Los miembros del rol con esta capacidad pueden controlar el acceso y las participaciones en los chats de texto y de voz del grupo."
+			name="moderate group chat"/>
+	</action_set>
+</role_actions>

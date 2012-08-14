@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="contents" title="Prueba de Fuentes">
+	<text font="SansSerifSmall">
+		SansSerifSmall
+	</text>
+	<text font="SansSerifMedium">
+		SansSerifMedium
+	</text>
+	<text font="SansSerif">
+		SansSerif, sin tamaño ni estilo (Debería ser igual a Medium)
+	</text>
+	<text font="SansSerifLarge">
+		SansSerifLarge
+	</text>
+	<text font="SansSerifHuge">
+		SansSerifHuge
+	</text>
+	<text font="Monospace">
+		Monospace
+	</text>
+	<text font="Monospace" font_size="Large">
+		Monospace tamaño=Grande
+	</text>
+	<text font="SansSerifLarge" font_style="BOLD">
+		SansSerifLarge estilo=NEGRITA
+	</text>
+	<text font="SansSerifBold">
+		SansSerifBold
+	</text>
+	<text font="SansSerif" font_style="BOLD">
+		SansSerif estilo=NEGRITA (debería ser igual a SansSerifBold)
+	</text>
+	<text font="SansSerif" font-style="ITALIC">
+		SansSerif estilo=ITÁLICA
+	</text>
+	<text font="SansSerif" font-style="BOLD|ITALIC">
+		SansSerif estilo=NEGRITA|ITÁLICA
+	</text>
+	<text font="SansSerif" font-style="BOLD|ITALIC" font-shadow="soft">
+		SansSerif estilo=NEGRITA|ITÁLICA sombreado = DROP_SHADOW_SOFT
+	</text>
+	<text font="SansSerif" font-style="UNDERLINE">
+		SansSerif estilo=SUBRAYADO
+	</text>
+	<text font="SansSerif" font-shadow="hard">
+		SansSerif sombreado =DROP_SHADOW
+	</text>
+	<text font="SansSerif" font-shadow="soft">
+		SansSerif sombreado=DROP_SHADOW_SOFT
+	</text>
+	<text font="DejaVu">
+		DejaVu
+	</text>
+	<text font="DejaVu" font-style="BOLD">
+		DejaVu estilo=NEGRITA
+	</text>
+	<text font="DejaVu" font-style="ITALIC">
+		DejaVu estilo=ITALIC
+	</text>
+	<text font="DejaVu" font-style="BOLD|ITALIC">
+		DejaVu estilo=NEGRITA|ITÁLICA
+	</text>
+	<text font="DejaVu" font_size="Large" font-style="BOLD|ITALIC">
+		DejaVu tamaño=grande estilo=NEGRITA|ITÁLICA
+	</text>
+	<text font="Helvetica">
+		Helvetica
+	</text>
+	<text font="Helvetica" font-style="BOLD">
+		Helvetica estilo=NEGRITA
+	</text>
+	<text font="Helvetica" font-style="ITALIC">
+		Helvetica estilo=ITALIC
+	</text>
+	<text font="Helvetica" font-style="BOLD|ITALIC">
+		Helvetica estilo=NEGRITA|ITÁLICA
+	</text>
+	<text font="Helvetica" font_size="Large" font-style="BOLD|ITALIC">
+		Helvetica tamaño=grande estilo=NEGRITA|ITÁLICA
+	</text>
+	<text name="linea">
+		OverrideTest, debería de aparecer aquí en Times. (Desde default/xui/en-us)
+	</text>
+	<text font="BogusFontName">
+		BogusFontName
+	</text>
+</floater>

@@ -256,24 +256,23 @@ BOOL LLVOAvatarSelf::buildMenus()
 	//-------------------------------------------------------------------------
 	if(gNoRender)
 		return TRUE;
-	// *TODO: Translate
 	gAttachBodyPartPieMenus[0] = NULL;
-	gAttachBodyPartPieMenus[1] = new LLPieMenu(std::string("Right Arm >"));
-	gAttachBodyPartPieMenus[2] = new LLPieMenu(std::string("Head >"));
-	gAttachBodyPartPieMenus[3] = new LLPieMenu(std::string("Left Arm >"));
+	gAttachBodyPartPieMenus[1] = new LLPieMenu(LLTrans::getString("BodyPartsRightArm") + " >");
+	gAttachBodyPartPieMenus[2] = new LLPieMenu(LLTrans::getString("BodyPartsHead") + " >");
+	gAttachBodyPartPieMenus[3] = new LLPieMenu(LLTrans::getString("BodyPartsLeftArm") + " >");
 	gAttachBodyPartPieMenus[4] = NULL;
-	gAttachBodyPartPieMenus[5] = new LLPieMenu(std::string("Left Leg >"));
-	gAttachBodyPartPieMenus[6] = new LLPieMenu(std::string("Torso >"));
-	gAttachBodyPartPieMenus[7] = new LLPieMenu(std::string("Right Leg >"));
+	gAttachBodyPartPieMenus[5] = new LLPieMenu(LLTrans::getString("BodyPartsLeftLeg") + " >");
+	gAttachBodyPartPieMenus[6] = new LLPieMenu(LLTrans::getString("BodyPartsTorso") + " >");
+	gAttachBodyPartPieMenus[7] = new LLPieMenu(LLTrans::getString("BodyPartsRightLeg") + " >");
 
 	gDetachBodyPartPieMenus[0] = NULL;
-	gDetachBodyPartPieMenus[1] = new LLPieMenu(std::string("Right Arm >"));
-	gDetachBodyPartPieMenus[2] = new LLPieMenu(std::string("Head >"));
-	gDetachBodyPartPieMenus[3] = new LLPieMenu(std::string("Left Arm >"));
+	gDetachBodyPartPieMenus[1] = new LLPieMenu(LLTrans::getString("BodyPartsRightArm") + " >");
+	gDetachBodyPartPieMenus[2] = new LLPieMenu(LLTrans::getString("BodyPartsHead") + " >");
+	gDetachBodyPartPieMenus[3] = new LLPieMenu(LLTrans::getString("BodyPartsLeftArm") + " >");
 	gDetachBodyPartPieMenus[4] = NULL;
-	gDetachBodyPartPieMenus[5] = new LLPieMenu(std::string("Left Leg >"));
-	gDetachBodyPartPieMenus[6] = new LLPieMenu(std::string("Torso >"));
-	gDetachBodyPartPieMenus[7] = new LLPieMenu(std::string("Right Leg >"));
+	gDetachBodyPartPieMenus[5] = new LLPieMenu(LLTrans::getString("BodyPartsLeftLeg") + " >");
+	gDetachBodyPartPieMenus[6] = new LLPieMenu(LLTrans::getString("BodyPartsTorso") + " >");
+	gDetachBodyPartPieMenus[7] = new LLPieMenu(LLTrans::getString("BodyPartsRightLeg") + " >");
 
 	for (S32 i = 0; i < 8; i++)
 	{
@@ -713,7 +712,7 @@ void LLVOAvatarSelf::stopMotionFromSource(const LLUUID& source_id)
 	LLViewerObject* object = gObjectList.findObject(source_id);
 	if (object)
 	{
-		object->mFlags &= ~FLAGS_ANIM_SOURCE;
+		object->setFlagsWithoutUpdate(FLAGS_ANIM_SOURCE, FALSE);
 	}
 }
 

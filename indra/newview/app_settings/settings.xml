@@ -8,7 +8,6 @@
 		<string>settings_sh.xml</string>
 		<string>settings_rlv.xml</string>
 	</array>
-	
 	<key>SianaRenderDeferredInvisiprim</key>
 	<map>
 	  <key>Comment</key>
@@ -895,6 +894,171 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>AntiSpamAlerts</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from alerts will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamFriendshipOffers</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from friendship requests will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamGroupInvites</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from group invites will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamGroupNotices</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from group notices will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamItemOffers</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from inventory item offers will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamNotify</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, notifications will appear any time a spamtype is blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>AntiSpamScripts</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from scripts, including script-driven teleports and questions, and other interactive script stuff, will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamTeleports</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from teleport requests from other residents will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>_NACL_Antispam</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, all dialogs will be blocked, resets on restart.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>_NACL_AntiSpamGlobalQueue</key>
+    <map>
+        <key>Comment</key>
+        <string>Collect spamtypes together, instead of individually counting them</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>Boolean</string>
+        <key>Value</key>
+        <integer>0</integer>
+    </map>
+    <key>_NACL_AntiSpamTime</key>
+    <map>
+        <key>Comment</key>
+        <string>Time in seconds for spamtype to accumulate the _NACL_AntiSpamAmount and be blocked</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>U32</string>
+        <key>Value</key>
+        <integer>1</integer>
+    </map>
+        <key>_NACL_AntiSpamAmount</key>
+        <map>
+        <key>Comment</key>
+        <string>Amount of spamtype to be reached before the blocking will occur.</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>U32</string>
+        <key>Value</key>
+        <integer>30</integer>
+    </map>
+        <key>_NACL_AntiSpamSoundMulti</key>
+        <map>
+        <key>Comment</key>
+        <string> </string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>U32</string>
+        <key>Value</key>
+        <integer>20</integer>
+    </map>
+        <key>_NACL_AntiSpamNewlines</key>
+        <map>
+        <key>Comment</key>
+        <string>How many newlines a message can have before it's considered spam.</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>U32</string>
+        <key>Value</key>
+        <integer>20</integer>
+    </map>
+    <key>_NACL_AntiSpamSoundPreloadMulti</key>
+    <map>
+        <key>Comment</key>
+        <string> </string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>U32</string>
+        <key>Value</key>
+        <integer>20</integer>
+    </map>
     <!-- Vanilla SL settings that are now optionally Account-Specific -->
     <key>AgentChatColor</key>
     <map>
@@ -1725,6 +1889,17 @@
       <key>Value</key>
       <real>1.0</real>
     </map>
+    <key>AudioLevelUnderwaterRolloff</key>
+    <map>
+      <key>Comment</key>
+      <string>Controls the distance-based dropoff of audio volume when camera is submerged (fraction or multiple of default audio rolloff)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>4.0</real>
+    </map>
     <key>AudioLevelSFX</key>
     <map>
       <key>Comment</key>
@@ -1796,7 +1971,7 @@
       <key>Comment</key>
       <string>Enable texture auditting.</string>
       <key>Persist</key>
-      <integer>1</integer>
+      <integer>0</integer>
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
@@ -7055,6 +7230,17 @@
       <string>String</string>
       <key>Value</key>
       <string>help/index.html</string>
+    </map>
+    <key>WebProfileURL</key>
+    <map>
+      <key>Comment</key>
+      <string>URL for Web Profiles</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>https://my.secondlife.com/[AGENT_NAME]</string>
     </map>
     <key>HighResSnapshot</key>
     <map>
@@ -13212,7 +13398,7 @@
       <key>Type</key>
       <string>S32</string>
       <key>Value</key>
-      <integer>10</integer>
+      <integer>5</integer>
     </map>
     <key>SystemLanguage</key>
     <map>
@@ -15086,3 +15272,4 @@
     </map>
   </map>
 </llsd>
+

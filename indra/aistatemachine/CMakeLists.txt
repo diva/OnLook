@@ -18,6 +18,7 @@ include_directories(
     )
 
 set(aistatemachine_SOURCE_FILES
+    debug_libcurl.cpp
     aistatemachine.cpp
     aitimer.cpp
     aicurl.cpp
@@ -28,6 +29,7 @@ set(aistatemachine_SOURCE_FILES
 set(aistatemachine_HEADER_FILES
     CMakeLists.txt
 
+    debug_libcurl.h
     aistatemachine.h
     aitimer.h
     aicurlprivate.h

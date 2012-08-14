@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="script ed float" title="Script: Nuevo Script">
+	<button label="Restablecer" label_selected="Restablecer" name="Reset"/>
+	<check_box label="Ejecuntándose" name="running"/>
+	<check_box label="Mono" name="mono"/>
+	<string name="not_allowed">
+		No tienes permiso para ver este script.
+	</string>
+	<string name="script_running">
+		Ejecutándose...
+	</string>
+</floater>

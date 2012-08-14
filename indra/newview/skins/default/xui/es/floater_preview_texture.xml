@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="preview_texture">
+	<text name="desc txt">
+		Descripción:
+	</text>
+	<text name="uuid txt">
+		UUID:
+	</text>
+	<text name="uploader txt">
+		Subida por:
+	</text>
+	<button label="Perfil" name="openprofile"/>
+	<text name="uploadtime txt">
+		Subida el:
+	</text>
+	<text name="alphanote">
+		Cargando...
+	</text>
+	<button label="Mantener" label_selected="Mantener" name="Keep"/>
+	<button label="Descartar" label_selected="Descartar" name="Discard"/>
+	<button label="Copiar al Inventario" name="Copy To Inventory"/>
+	<text name="dimensions">
+		Tamaño: [WIDTH] x [HEIGHT]
+	</text>
+	<text name="aspect_ratio">
+		Aspecto Vista Previa
+	</text>
+	<combo_box name="combo_aspect_ratio" tool_tip="Vista Previa en aspecto fijo">
+		<combo_item name="Unconstrained">
+			Sin restricciones
+		</combo_item>
+		<combo_item name="1:1" tool_tip="Insignia de Grupo o Imagen del Perfil en 1ra. Vida">
+			1:1
+		</combo_item>
+		<combo_item name="4:3" tool_tip="Imagen del Perfil en 2da. Vida">
+			4:3
+		</combo_item>
+		<combo_item name="10:7" tool_tip="Clasificados y listados de la búsqueda, hitos">
+			10:7
+		</combo_item>
+		<combo_item name="3:2" tool_tip="Acerca del Terreno">
+			3:2
+		</combo_item>
+		<combo_item name="16:10">
+			16:10
+		</combo_item>
+		<combo_item name="16:9" tool_tip="Imagen Destacados del Perfil">
+			16:9
+		</combo_item>
+		<combo_item name="2:1">
+			2:1
+		</combo_item>
+	</combo_box>
+</floater>

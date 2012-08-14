@@ -89,6 +89,14 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	 */
 	void addHeader(char const* header);
 
+	/**
+	 * @brief Check remote server certificate signed by a known root CA.
+	 *
+	 * Set whether request will check that remote server
+	 * certificates are signed by a known root CA when using HTTPS.
+	 */
+	void checkRootCertificate(bool check);
+
   private:
 	/** 
 	 * @brief Handle action specific url request configuration.
@@ -108,7 +116,6 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	ERequestAction mAction;
 	std::string mURL;
 };
-
 #if 0
 extern const std::string CONTEXT_REQUEST;
 extern const std::string CONTEXT_RESPONSE;
@@ -206,15 +213,6 @@ public:
 	void addHeader(const char* header);
 
 	/**
-	 * @brief Check remote server certificate signed by a known root CA.
-	 *
-	 * Set whether request will check that remote server
-	 * certificates are signed by a known root CA when using HTTPS.
-	 */
-	void setSSLVerifyCallback(SSLCertVerifyCallback callback, void * param);
-
-	
-	/**
 	 * @brief Return at most size bytes of body.
 	 *
 	 * If the body had more bytes than this limit, they will not be
@@ -266,7 +264,6 @@ public:
 	 * @brief Give this pipe a chance to handle a generated error
 	 */
 	virtual EStatus handleError(EStatus status, LLPumpIO* pump);
-
 	
 protected:
 	/** 
@@ -293,11 +290,9 @@ protected:
 	ERequestAction mAction;
 	LLURLRequestDetail* mDetail;
 	LLIOPipe::ptr_t mCompletionCallback;
-	 S32 mRequestTransferedBytes;
-	 S32 mResponseTransferedBytes;
+	S32 mRequestTransferedBytes;
+	S32 mResponseTransferedBytes;
 
-	static CURLcode _sslCtxCallback(CURL * curl, void *sslctx, void *param);
-	
 	bool mRemoved;
 
 private:

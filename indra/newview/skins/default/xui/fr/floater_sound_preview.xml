@@ -1,28 +1,11 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="Sound Preview" title="sound.wav">
 	<text name="name_label">
-		Nom :
+		Nom:
 	</text>
 	<text name="description_label">
-		Description :
+		Description:
 	</text>
 	<button label="Annuler" label_selected="Annuler" name="cancel_btn"/>
-	<button label="Importer ([AMOUNT] L$)" label_selected="Charger ([AMOUNT] L$)" name="ok_btn"/>
-	<text name="text">
-		Débit (kbps) :
-	</text>
-	<radio_group name="bitrate">
-		<radio_item name="32">
-			32
-		</radio_item>
-		<radio_item name="64">
-			64
-		</radio_item>
-		<radio_item name="96">
-			96
-		</radio_item>
-		<radio_item name="128">
-			128
-		</radio_item>
-	</radio_group>
+	<button label="Importer ([UPLOADFEE])" label_selected="Charger ([UPLOADFEE])" name="ok_btn"/>
 </floater>

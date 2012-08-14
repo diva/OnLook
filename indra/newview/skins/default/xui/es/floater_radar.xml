@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="radar" title="Radar">
+	<scroll_list name="avatar_list" tool_tip="Mantén presionada la tecla Mayús o la tecla Ctrl al  pulsar con el mouse para seleccionar multiples avatares">
+		<column name="marked" label="Marcar" tool_tip="Avatares Marcados"/>
+		<column name="avatar_name" label="Nombre" tool_tip="Mantén presionada la tecla Mayús o la tecla Ctrl al  pulsar con el mouse para seleccionar multiples avatares"/>
+		<column name="distance" label="Dist." tool_tip="Distancia desde tu avatar (rojo=dentro del rango de chat, amarillo=dentro del rango de gritos, verde=dentro de la distancia de dibujo)"/>
+		<column name="position" label="Pos." tool_tip="Posición (X, Y) dentro del sim, o dirección general (punto cardinal) fuera del sim"/>
+		<column name="altitude" label="Alt." tool_tip="Altitud"/>
+		<column name="activity" label="Act." tool_tip="Actividad"/>
+		<column name="client" label="Cliente" tool_tip="Cliente-Visor que el avatar posiblemente esté usando"/>
+	</scroll_list>
+
+	<tab_container name="actions_tab_container">
+		<panel label="Avatar" name="actions_tab">
+			<!-- upper row -->
+			<button name="profile_btn" label="Perfil" tool_tip="Mostrar foto, grupos y demás información"/>
+			<button name="track_btn" label="(No)Rastrear" tool_tip="Rastrea la posición del avatar"/>
+			<button name="get_key_btn" label="Obtener Key" tool_tip="Copia la Key del avatar al portapapeles"/>
+			<!-- upper middle row -->
+			<button name="im_btn" label="MI" tool_tip="Abre una sesión de Mensaje Instantáneo"/>
+			<button name="offer_btn" label="Ofrecer TP" tool_tip="Ofrecer Teleporte"/>
+			<button name="teleport_btn" label="TP a" tool_tip="Teleportarse a la posición del avatar"/>			
+			<!-- lower middle row-->
+			<button name="mark_btn" label="(No)Marcar" tool_tip="Marca/Desmarca a este avatar de la lista"/>
+			<button name="prev_marked_btn" label="Marcado Ant." tool_tip="Enfoca la cámara en el avatar marcado previo de la lista"/>
+			<button name="next_marked_btn" label="Marcado Sig." tool_tip="Enfoca la cámara en el avatar marcado siguiente de la lista"/>
+			<!-- lower row-->
+			<button name="focus_btn" label="Foco" tool_tip="Enfoca la cámara en este avatar de la lista"/>
+			<button name="prev_in_list_btn" label="Anterior" tool_tip="Enfoca la cámara en el anterior avatar de la lista"/>
+			<button name="next_in_list_btn" label="Siguiente" tool_tip="Enfoca la cámara en el siguiente avatar de la lista"/>
+
+		</panel>
+
+		<panel label="Alertas" name="alerts_tab">
+			<check_box label="Mostrar Alertas en el chat" name="radar_alerts" tool_tip="Muestra en el chat las alertas de llegada y salida de los avatares" />
+
+			<check_box label="Avatares entrando/saliendo del sim" name="alerts_sim" tool_tip="Reporta los avatares que entran o salen del sim" />
+
+			<check_box label="Avatare entrando/saliendo de la distancia de dibujo" name="alerts_draw" tool_tip="Reporta los avatares que entran o salen de la distancia de dibujo" />
+
+			<check_box label="Avatares entrando/saliendo del rango de gritos" name="alerts_chat" tool_tip="Reporta los avatares que entran o salen del rango de gritos" />
+
+			<check_box label="Avatares entrando/saliendo del rango de chat" name="alerts_chat" tool_tip="Reporta los avatares que entran o salen del rango de chat" />
+		</panel>
+
+		<panel label="Moderación" name="land_tab">
+			
+			<!-- Upper row -->
+			<button name="mute_btn" label="(No)Ignorar" tool_tip="Ignorar o dejar de ignorar a este avatar (los nombre de los avatares ignorados se resaltan en rojo en la lista)."/>
+			<button name="freeze_btn" label="Congelar" tool_tip="Congelar al avatar, para evitar que se pueda mover"/>
+			<button name="ar_btn" label="AR" tool_tip="Enviar un Reporte de Abuso sobre este avatar"/>
+			<!-- Lower row -->
+			<button name="eject_btn" label="Expulsar" tool_tip="Expulsar a este avatar de la parcela"/>
+			
+			<button name="estate_eject_btn" label="Expulsar del Estado" tool_tip="Expulsar a este avatar del estado"/>
+		</panel>
+
+		<panel label="Opciones" name="options_tab">
+			<check_box label="Actualizar" name="update_enabled_cb" tool_tip="Definir cuando debe ser actualizada la lista de avatares"/>
+			<text name="rate">
+					Frec.:
+			</text>
+			<radio_group name="update_rate" tool_tip="Frecuencia de actualización del radar (consume mas FPS cuando es alta)">
+				<radio_item name="high">
+					Alta
+				</radio_item>
+				<radio_item name="medium">
+					Media
+				</radio_item>
+				<radio_item name="low">
+					Baja
+				</radio_item>
+			</radio_group>
+			<check_box label="Anunciar aun estando cerrado" name="keep_open" tool_tip="Oculta el radar en vez de cerrarlo para seguir enviando los avisos al chat" />
+			<check_box label="Anunciar keys all HUD" name="radar_chat_keys" tool_tip="Definir cuando enviar las keys de los avarares a los scritps LSL" />
+			<button name="send_keys_btn" label="Anunciar Ahora" tool_tip="Envia todas las keys al HUD ahora"/>
+		</panel>
+	</tab_container>
+</floater>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<multi_floater name="floater_chatterbox" title="" >
+	<panel name="panel_littletoolbar" >
+		<button label="" left="2" name="chat_btn" tool_tip="Mostrar barra de Chat. (Intro)"/>
+			<flyout_button label="Comunicarse" name="communicate_btn" tool_tip="Comunicarte con tus amigos y grupos."/>
+			<button label="Volar" label_selected="Dejar de Volar" name="fly_btn" tool_tip="Comenzar a Volar. Usa E/C o AvPág/RePág para ascender y descender."/>
+	</panel>
+	<panel name="panel_unfocused_floater" >
+		<text name="titlebar_focused" >
+			Sin foco
+		</text>
+		<combo_box name="combo_box_1" label="Combo Box"/>
+		<text_editor name="Chat History Editor">
+			Text
+		</text_editor>
+	</panel>
+	<panel name="panel_focused_floater">
+		<text name="titlebar_focused" >
+			En foco
+		</text>
+		<tab_container name="chatterbox_tabs">
+			<panel name="test_1" label="En foco">
+				<slider label="Control Deslizante" label_width="36" name="SliderTestName"/>
+            <check_box name="check_box_test_1" label="Verdadero"/>
+				<check_box name="check_box_test_2" label="Falso"/>
+            <text_editor name="Chat History Editor">
+					Chat de Texto
+				</text_editor>
+			</panel>
+			<panel name="test_2" label="Sin Foco" />
+		</tab_container>
+	</panel>
+</multi_floater>

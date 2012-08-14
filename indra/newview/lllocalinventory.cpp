@@ -11,7 +11,6 @@
 #include "llpreviewtexture.h"
 #include "llpreviewgesture.h"
 #include "llpreviewlandmark.h"
-#include "dofloaterhex.h"
 #include "hgfloatertexteditor.h"
 
 #include "llappviewer.h"
@@ -151,8 +150,7 @@ void LLLocalInventory::open(LLUUID item_id)
 	}
 	else
 	{
-		llwarns << "Dunno how to open type " << type << ", falling back to hex editor" << llendl;
-		DOFloaterHex::show(item_id);
+		llwarns << "Dunno how to open type " << type << llendl;
 	}
 }
 

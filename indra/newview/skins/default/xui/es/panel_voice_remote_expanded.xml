@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="voice_remote">
+	<panel name="panel_bg_tab"/>
+	<button label="" name="end_call_btn" tool_tip="Pulsa para terminar la llamada"/>
+	<button label="" name="voice_channel_bg"/>
+	<icon label="" name="voice_channel_icon"/>
+	<text label="" name="channel_label"/>
+	<panel filename="panel_voice_controls.xml"/>
+</panel>

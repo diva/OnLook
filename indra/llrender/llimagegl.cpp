@@ -330,7 +330,6 @@ S32 LLImageGL::updateBoundTexMem(const S32 mem, const S32 ncomponents, S32 categ
 //static 
 void LLImageGL::destroyGL(BOOL save_state)
 {
-	deleteDeadTextures(); //Dump unimportant textures.
 	for (S32 stage = 0; stage < gGLManager.mNumTextureUnits; stage++)
 	{
 		gGL.getTexUnit(stage)->unbind(LLTexUnit::TT_TEXTURE);
@@ -364,7 +363,6 @@ void LLImageGL::destroyGL(BOOL save_state)
 	}
 	llinfos << "Storing " << stored_count << " images..." << llendl;
 	sAllowReadBackRaw = false ;
-	deleteDeadTextures();//Now, actually call glDeleteTextures for everything.
 }
 
 //static 
@@ -1528,7 +1526,7 @@ void LLImageGL::deleteDeadTextures()
 {
 	bool reset = false;
 
-	for(U32 i=0;i<LLTexUnit::TT_NONE;++i)
+	/*for(U32 i=0;i<LLTexUnit::TT_NONE;++i)
 	{
 		for(dead_texturelist_t::iterator it=sDeadTextureList[i].begin();it!=sDeadTextureList[i].end();++it)
 		{
@@ -1554,7 +1552,7 @@ void LLImageGL::deleteDeadTextures()
 				stop_glerror();
 			}
 		}
-	}
+	}*/
 
 	if (reset)
 	{
@@ -2003,7 +2001,6 @@ BOOL LLImageGL::getMask(const LLVector2 &tc)
 
 void LLImageGL::setCategory(S32 category) 
 {
-#if 0 //turn this off temporarily because it is not in use now.
 	if(!gAuditTexture)
 	{
 		return ;
@@ -2024,7 +2021,6 @@ void LLImageGL::setCategory(S32 category)
 			mCategory = -1 ;
 		}
 	}
-#endif
 }
 
 //for debug use 
@@ -2055,14 +2051,16 @@ S32 LLImageGL::getTextureCounterIndex(U32 val)
 void LLImageGL::incTextureCounter(U32 val, S32 ncomponents, S32 category) 
 {
 	sTextureLoadedCounter[getTextureCounterIndex(val)]++ ;
-	sTextureMemByCategory[category] += (S32)val * ncomponents ;
+	if(category > -1)
+		sTextureMemByCategory[category] += (S32)val * ncomponents ;
 }
 
 //static
 void LLImageGL::decTextureCounter(U32 val, S32 ncomponents, S32 category) 
 {
 	sTextureLoadedCounter[getTextureCounterIndex(val)]-- ;
-	sTextureMemByCategory[category] += (S32)val * ncomponents ;
+	if(category > -1)
+		sTextureMemByCategory[category] -= (S32)val * ncomponents ;
 }
 
 void LLImageGL::setCurTexSizebar(S32 index, BOOL set_pick_size)

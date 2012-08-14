@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="groups">
+	<scroll_list name="group list">
+		<column label="Nombre" name="name" tool_tip="Nombre"/>
+		<!--<column label="Active" name="is_active_group"
+		    tool_tip="Group is set as active" width="40" />-->
+		<column name="is_listed_group" tool_tip="El Grupo es visible en tu perfil"/>
+		<column name="is_chattable_group" tool_tip="Recibir chat del grupo"/>
+		<column name="is_notice_group" tool_tip="Recibir avisos del grupo"/>
+	</scroll_list>
+	<text name="groupdesc">
+		Tu grupo activo se muestra en Itálica.
+	</text>
+	<text name="groupcount">
+		Perteneces a [COUNT] grupos (de un máximo de [MAX]).
+	</text>
+	<button label="MI/Llamar" name="IM" tool_tip="Abrir sesión de Mensajes Instantáneos"/>
+	<button label="Info" name="Info"/>
+	<button label="Activar" name="Activate"/>
+	<button label="Abandonar" name="Leave"/>
+	<button label="Crear..." name="Create"/>
+	<button label="Buscar..." name="Search..."/>
+  	<button label="Invitar..." name="Invite..."/>
+	<button label="Títulos..." name="Titles..."/>
+	<string name="none">
+		ninguno
+	</string>
+</panel>

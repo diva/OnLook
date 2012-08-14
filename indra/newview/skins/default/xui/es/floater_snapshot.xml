@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="Snapshot" title="Vista Previa de la foto">
+	<text name="type_label">
+		Destino de la foto
+	</text>
+	<radio_group label="Tipo de foto" name="snapshot_type_radio">
+		<radio_item name="postcard">
+			Enviar por Email
+		</radio_item>
+		<radio_item name="texture">
+			Guardarla en tu inventario ([UPLOADFEE])
+		</radio_item>
+		<radio_item name="local">
+			Guardarla en disco duro
+		</radio_item>
+	</radio_group>
+	<text name="file_size_label">
+		Tamaño del Archivo: [SIZE] KB
+	</text>
+	<button label="Actualizar foto" name="new_snapshot_btn"/>
+	<button label="Enviar" name="send_btn"/>
+	<button label="Guardar ([UPLOADFEE])" name="upload_btn"/>
+	<flyout_button label="Guardar" name="save_btn" tool_tip="Guardar la imagen en un archivo">
+		<flyout_button_item name="save_item">
+			Guardar
+		</flyout_button_item>
+		<flyout_button_item name="saveas_item">
+			Guardar Como...
+		</flyout_button_item>
+	</flyout_button>
+	<button label="Cancelar" name="discard_btn"/>
+	<button label="Más &gt;&gt;" name="more_btn" tool_tip="Opciones Avanzadas"/>
+	<button label="&lt;&lt; Menos" name="less_btn" tool_tip="Opciones Avanzadas"/>
+	<text name="type_label2">
+		Tamaño
+	</text>
+	<text name="format_label">
+		Formato
+	</text>
+	<combo_box label="Resolución" name="postcard_size_combo">
+		<combo_item name="CurrentWindow">
+			Ventana Actual
+		</combo_item>
+		<combo_item name="640x480">
+			640x480
+		</combo_item>
+		<combo_item name="800x600">
+			800x600
+		</combo_item>
+		<combo_item name="1024x768">
+			1024x768
+		</combo_item>
+		<combo_item name="Custom">
+			Personalizado
+		</combo_item>
+	</combo_box>
+	<combo_box label="Resolución" name="texture_size_combo">
+		<combo_item name="CurrentWindow">
+			Ventana Actual
+		</combo_item>
+		<combo_item name="Small(128x128)">
+			Pequeño (128x128)
+		</combo_item>
+		<combo_item name="Medium(256x256)">
+			Medio (256x256)
+		</combo_item>
+		<combo_item name="Large(512x512)">
+			Alto (512x512)
+		</combo_item>
+		<combo_item name="Custom">
+			Personalizado
+		</combo_item>
+	</combo_box>
+	<combo_box label="Resolución" name="local_size_combo">
+		<combo_item name="CurrentWindow">
+			Ventana Actual
+		</combo_item>
+		<combo_item name="320x240">
+			320x240
+		</combo_item>
+		<combo_item name="640x480">
+			640x480
+		</combo_item>
+		<combo_item name="800x600">
+			800x600
+		</combo_item>
+		<combo_item name="1024x768">
+			1024x768
+		</combo_item>
+		<combo_item name="1280x1024">
+			1280x1024
+		</combo_item>
+		<combo_item name="1600x1200">
+			1600x1200
+		</combo_item>
+		<combo_item name="Custom">
+			Personalizado
+		</combo_item>
+	</combo_box>
+	<combo_box label="Formato" name="local_format_combo">
+		<combo_item name="PNG">
+			PNG
+		</combo_item>
+		<combo_item name="JPEG">
+			JPEG
+		</combo_item>
+		<combo_item name="BMP">
+			BMP
+		</combo_item>
+	</combo_box>
+	<spinner label="Ancho" name="snapshot_width"/>
+	<spinner label="Alto" name="snapshot_height"/>
+	<check_box label="Mantener Proporciones" name="keep_aspect_check" />
+	<slider label="Calidad de la Imagen" name="image_quality_slider"/>
+	<text name="layer_type_label">
+		Captura:
+	</text>
+	<combo_box label="Capas de la Imagen" name="layer_types">
+		<combo_item name="Colors">
+			Colores
+		</combo_item>
+		<combo_item name="Depth">
+			Profundidad
+		</combo_item>
+	</combo_box>
+	<check_box label="Incluir la interfaz en la foto" name="ui_check" />
+	<check_box label="Incluir HUDs en la foto"name="hud_check" />
+	<check_box label="Mantener abierto tras guardar" name="keep_open_check"/>
+	<check_box label="Congelar la toma (Vista Previa en Pantalla Completa)" name="freeze_frame_check"/>
+	<check_box label="Actualizar Automáticamente" name="auto_snapshot_check"/>
+	<check_box label="Imagen Temporal (Gratis)" name="temp_check" tooltip="Definir en los activos que es una imagen temporaria, lo que signfica que será gratis, pero también que su existencia será limitada."/>
+	<string name="unknown">
+		desconocido
+	</string>
+</floater>
+ 

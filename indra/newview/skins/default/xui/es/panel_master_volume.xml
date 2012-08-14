@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="master_volume">
+	<button label="" name="volume" tool_tip="Control Maestro del Volumen, pulsa aquí para ir a las configuraciones del volumen"/>
+	<volume_slider name="volume_slider" tool_tip="Cambia el volumen usando este control deslizante"/>
+	<button label="" name="mute_master"/>
+</panel>

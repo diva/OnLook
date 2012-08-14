@@ -464,12 +464,8 @@ class DarwinManifest(ViewerManifest):
             self.path(self.info_plist_name(), dst="Info.plist")
 
             # copy additional libs in <bundle>/Contents/MacOS/
-            self.path("../../libraries/universal-darwin/lib_release/libhunspell-1.2.dylib", dst="MacOS/libhunspell-1.2.dylib")
-            self.path("../../libraries/universal-darwin/lib_release/libndofdev.dylib", dst="MacOS/libndofdev.dylib")
-            #self.path("../../libraries/universal-darwin/lib_release/libvorbisenc.2.dylib", dst="MacOS/libvorbisenc.2.dylib")
-            #self.path("../../libraries/universal-darwin/lib_release/libvorbisfile.3.dylib", dst="MacOS/libvorbisfile.3.dylib")
-            #self.path("../../libraries/universal-darwin/lib_release/libvorbis.0.dylib", dst="MacOS/libvorbis.0.dylib")
-            #self.path("../../libraries/universal-darwin/lib_release/libogg.0.dylib", dst="MacOS/libogg.0.dylib")
+            self.path("../../libraries/universal-darwin/lib/release/libndofdev.dylib", dst="Resources/libndofdev.dylib")
+            self.path("../../libraries/universal-darwin/lib/release/libhunspell-1.3.0.dylib", dst="Resources/libhunspell-1.3.0.dylib")
 
             # most everything goes in the Resources directory
             if self.prefix(src="", dst="Resources"):
@@ -514,11 +510,11 @@ class DarwinManifest(ViewerManifest):
 		self.path("../llcommon/" + self.args['configuration'] + "/libllcommon.dylib", "libllcommon.dylib")
                 
                 libfile = "lib%s.dylib"
-                libdir = "../../libraries/universal-darwin/lib_release"
+                libdir = "../../libraries/universal-darwin/lib/release"
 
                 for libfile in ("libapr-1.0.dylib",
                                 "libaprutil-1.0.dylib",
-                                "libexpat.0.5.0.dylib"):
+                                "libexpat.1.5.2.dylib"):
                     self.path(os.path.join(libdir, libfile), libfile)
 
                 # For using FMOD for sound...but, fmod is proprietary so some might not use it...
@@ -545,7 +541,7 @@ class DarwinManifest(ViewerManifest):
                 for libfile in ("libllcommon.dylib",
                                 "libapr-1.0.dylib",
                                 "libaprutil-1.0.dylib",
-                                "libexpat.0.5.0.dylib"):
+                                "libexpat.1.5.2.dylib"):
                     target_lib = os.path.join('../../..', libfile)
                     self.run_command("ln -sf %(target)r %(link)r" %
                                      {'target': target_lib,
@@ -561,7 +557,7 @@ class DarwinManifest(ViewerManifest):
                     self.path("../plugins/filepicker/" + self.args['configuration'] + "/basic_plugin_filepicker.dylib", "basic_plugin_filepicker.dylib")
                     self.path("../plugins/quicktime/" + self.args['configuration'] + "/media_plugin_quicktime.dylib", "media_plugin_quicktime.dylib")
                     self.path("../plugins/webkit/" + self.args['configuration'] + "/media_plugin_webkit.dylib", "media_plugin_webkit.dylib")
-                    self.path("../../libraries/universal-darwin/lib_release/libllqtwebkit.dylib", "libllqtwebkit.dylib")
+                    self.path("../../libraries/universal-darwin/lib/release/libllqtwebkit.dylib", "libllqtwebkit.dylib")
 
                     self.end_prefix("llplugin")              
 
@@ -744,8 +740,8 @@ class LinuxManifest(ViewerManifest):
         if self.args['buildtype'].lower() in ['release', 'releasesse2']:
             print "* Going strip-crazy on the packaged binaries, since this is a RELEASE build"
             # makes some small assumptions about our packaged dir structure
-            self.run_command("find %(d)r/bin %(d)r/lib* -type f | xargs --no-run-if-empty strip --strip-unneeded" % {'d': self.get_dst_prefix()} )
-            self.run_command("find %(d)r/bin %(d)r/lib* -type f -not -name \\*.so | xargs --no-run-if-empty strip -s" % {'d': self.get_dst_prefix()} )
+            self.run_command("find %(d)r/bin %(d)r/lib* -type f | xargs -d '\n' --no-run-if-empty strip --strip-unneeded" % {'d': self.get_dst_prefix()} )
+            self.run_command("find %(d)r/bin %(d)r/lib* -type f -not -name \\*.so | xargs -d '\n' --no-run-if-empty strip -s" % {'d': self.get_dst_prefix()} )
 
         # Fix access permissions
         self.run_command("""
@@ -810,8 +806,15 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libopenal.so.1")
             self.path("libtcmalloc_minimal.so.0")
             self.path("libtcmalloc_minimal.so.0.2.2")
-            self.end_prefix("lib")
 
+            if 'extra_libraries' in self.args:
+                path_list = self.args['extra_libraries'].split('|')
+                for path in path_list:
+                    src_path = os.path.realpath(path)
+                    dst_path = os.path.basename(path)
+                    self.path(src_path, dst_path)
+
+            self.end_prefix("lib")
 
             # Vivox runtimes
             if self.prefix(src="vivox-runtime/i686-linux", dst="bin"):
@@ -829,26 +832,31 @@ class Linux_x86_64Manifest(LinuxManifest):
 
         self.path("../llcommon/libllcommon.so", "lib64/libllcommon.so")
 
-        if (not self.standalone()) and self.prefix("../../libraries/x86_64-linux/lib_release_client", dst="lib64"):
-            self.path("libapr-1.so.0")
-            self.path("libaprutil-1.so.0")
-            self.path("libdb-4.2.so")
-            self.path("libcrypto.so.1.0.0")
-            self.path("libexpat.so.1")
-            self.path("libhunspell-1.2.so.0.0.0", "libhunspell-1.2.so.0")
-            self.path("libssl.so.1.0.0")
-            self.path("libuuid.so", "libuuid.so.1")
-            self.path("libSDL-1.2.so.0")
+        if (not self.standalone()) and self.prefix("../../libraries/x86_64-linux/lib/release", dst="lib64"):
+            self.path("libapr-1.so*")
+            self.path("libaprutil-1.so*")
+            self.path("libdb-*.so*")
+            self.path("libcrypto.so.*")
+            self.path("libexpat.so*")
+            self.path("libhunspell-1.3.so*")
+            self.path("libssl.so*")
+            self.path("libuuid.so*")
+            self.path("libSDL-1.2.so*")
             self.path("libELFIO.so")
-            self.path("libjpeg.so.7")
-            self.path("libpng12.so.0")
-            self.path("libopenjpeg.so.2")
-            self.path("libxml2.so.2")
-            #self.path("libz.so.1") #not needed
+            self.path("libjpeg.so*")
+            self.path("libpng*.so*")
+            self.path("libz.so*")
 
             # OpenAL
-            self.path("libopenal.so.1")
-            self.path("libalut.so.0")
+            self.path("libopenal.so*")
+            self.path("libalut.so*")
+
+            if 'extra_libraries' in self.args:
+                path_list = self.args['extra_libraries'].split('|')
+                for path in path_list:
+                    src_path = os.path.realpath(path)
+                    dst_path = os.path.basename(path)
+                    self.path(src_path, dst_path)
 
             self.end_prefix("lib64")
 

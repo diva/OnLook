@@ -47,9 +47,12 @@
 #include "stringize.h"
 
 // NOTE: MUST include these after otherincludes since queue gets redefined!?!!
-#include <curl/curl.h>
 #include <xmlrpc-epi/xmlrpc.h>
 
+#include <curl/curl.h>
+#ifdef DEBUG_CURLIO
+#include "debug_libcurl.h"
+#endif
 
 // Don't define PLATFORM_STRING for unknown platforms - they need
 // to get added to the login cgi script, so we want this to cause an

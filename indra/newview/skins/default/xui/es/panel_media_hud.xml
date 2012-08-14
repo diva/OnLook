@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel label="" name="MediaHUD">
+	<panel name="media_region"/>
+	<!--icon name="bg_image" image_name="media_panel_hoverrectangle.png" visible="true" left="10" bottom="32" right="-10" top="-10" follows="left|right|top|bottom"/-->
+	<layout_stack orientation="horizontal" left="0" bottom="0" follows="left|right|bottom" visible="true" width="208" height="32">
+		<layout_panel user_resize="false"/>
+		<layout_panel user_resize="false" auto_resize="false" width="210" min_width="208">
+			<panel name="media_focused_controls">
+				<button name="back" label=""/>
+				<button name="fwd" label=""/>
+				<button name="home" label=""/>
+				<button name="media_stop" label=""/>
+				<button name="reload" label=""/>
+				<button name="stop" label=""/>
+				<button name="play" label=""/>
+				<button name="pause" label=""/>
+				<button name="scrollup" label=""/>
+				<button name="scrollleft" label=""/>
+				<button name="scrollright" label=""/>
+				<button name="scrolldown" label=""/>
+				<button name="zoom_frame" label=""/>
+				<button name="new_window" label=""/>
+				<button name="close" label=""/>
+			</panel>
+			<panel name="media_hover_controls">
+				<button name="zoom_frame_hover" label=""/>
+				<button name="new_window_hover" label=""/>
+			</panel>
+		</layout_panel>
+		<layout_panel user_resize="false"/>
+	</layout_stack> 
+</panel>

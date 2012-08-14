@@ -177,6 +177,7 @@ class LLMediaCtrl :
 		bool mStretchToFill;
 		bool mMaintainAspectRatio;
 		bool mHideLoading;
+		bool mHidingInitialLoad;
 		bool mDecoupleTextureSize;
 		S32 mTextureWidth;
 		S32 mTextureHeight;

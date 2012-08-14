@@ -2,9 +2,9 @@
 <panel name="Pick" title="Favori">
 	<button label="Définir position" name="set_location_btn" left="200"/>
 	<button label="Téléporter" name="pick_teleport_btn" width="80"/>
-	<button bottom_delta="0" halign="center" label="Voir sur la carte" name="pick_map_btn" width="110" left="90" />
+	<button bottom_delta="0" halign="center" label="Voir sur la carte" name="pick_map_btn" width="110" left="90"/>
 	<text name="sort_order_text">
-		Trier :
+		Trier:
 	</text>
-	<check_box label="Activé" name="enabled_check" />
+	<check_box label="Activé" name="enabled_check"/>
 </panel>

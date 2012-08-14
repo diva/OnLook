@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="floater_auction" title="Iniciar venta de terreno Linden">
+	<check_box label="Incluir la valla amarilla de selección" name="fence_check"/>
+	<button label="Instantánea" label_selected="Instantánea" name="snapshot_btn"/>
+	<button label="OK" label_selected="OK" name="ok_btn"/>
+	<string name="already for sale">
+		No puedes subastar parcelas que ya están en venta.
+	</string>
+</floater>

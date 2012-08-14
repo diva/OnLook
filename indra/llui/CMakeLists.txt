@@ -11,7 +11,6 @@ include(LLRender)
 include(LLWindow)
 include(LLVFS)
 include(LLXML)
-include(LLXUIXML)
 
 include_directories(
     ${LLCOMMON_INCLUDE_DIRS}
@@ -22,7 +21,6 @@ include_directories(
     ${LLWINDOW_INCLUDE_DIRS}
     ${LLVFS_INCLUDE_DIRS}
     ${LLXML_INCLUDE_DIRS}
-    ${LLXUIXML_INCLUDE_DIRS}
     )
 
 set(llui_SOURCE_FILES
@@ -71,6 +69,7 @@ set(llui_SOURCE_FILES
     lltextparser.cpp
     lltrans.cpp
     llui.cpp
+    lluicolor.cpp
     lluictrl.cpp
     lluictrlfactory.cpp
     lluiimage.cpp
@@ -140,6 +139,7 @@ set(llui_HEADER_FILES
     lluictrl.h
     lluifwd.h
     llui.h
+    lluicolor.h
     lluiimage.h
     lluistring.h
     lluixmltags.h
@@ -163,7 +163,6 @@ target_link_libraries(llui
     llwindow
     llimage
     llvfs       # ugh, just for LLDir
-    llxuixml
     llxml
     llcommon    # must be after llimage, llwindow, llrender
     llmath

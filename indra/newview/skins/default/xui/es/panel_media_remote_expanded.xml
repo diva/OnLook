@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="media_remote">
+	<panel filename="panel_bg_tab.xml"/>
+	<panel label="Audio &amp; Vídeo" name="Volume Panel"/>
+	<panel filename="panel_media_controls.xml"/>
+	<string name="play_label">
+		Reproducir
+	</string>
+	<string name="stop_label">
+		Detener
+	</string>
+	<string name="pause_label">
+		Pausa
+	</string>
+	<string name="default_tooltip_label">
+		No se ha especificado media
+	</string>
+	<string name="media_hidden_label">
+		(la URL ha sido ocultada por el propietario de la parcela)
+	</string>
+	<string name="media_icon_tooltip_web">
+		Esta ubicación muestra contenido desde la Web . Pulsa el botón Reproducir para ver cl contenido Web.
+	</string>
+	<string name="media_icon_tooltip_movie">
+		Esta ubicación muestra contenido de video. Pulsa Reproducir para ver el Vídeo.
+	</string>
+	<string name="media_play_tooltip">
+		Mostrar contenido web en esta ubicación.
+	</string>
+</panel>

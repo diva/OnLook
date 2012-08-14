@@ -118,20 +118,20 @@ public:
 	virtual void setOpenArrangeRecursively(BOOL openitem, ERecurseType recurse);
 	virtual BOOL addFolder( LLFolderViewFolder* folder);
 
-	// Finds width and height of this object and it's children.  Also
-	// makes sure that this view and it's children are the right size.
+	// Find width and height of this object and its children. Also
+	// makes sure that this view and its children are the right size.
 	virtual S32 arrange( S32* width, S32* height, S32 filter_generation );
 
 	void arrangeAll() { mArrangeGeneration++; }
 	S32 getArrangeGeneration() { return mArrangeGeneration; }
 
-	// applies filters to control visibility of inventory items
+	// Apply filters to control visibility of inventory items
 	virtual void filter( LLInventoryFilter& filter);
 
-	// get the last selected item
+	// Get the last selected item
 	virtual LLFolderViewItem* getCurSelectedItem( void );
 
-	// Record the selected item and pass it down the hierachy.
+	// Record the selected item and pass it down the hierarchy.
 	virtual BOOL setSelection(LLFolderViewItem* selection, BOOL openitem,
 		BOOL take_keyboard_focus);
 
@@ -141,13 +141,13 @@ public:
 	// Called once a frame to update the selection if mSelectThisID has been set
 	void updateSelection();
 
-	// This method is used to toggle the selection of an item. Walks
-	// children, and keeps track of selected objects.
+	// This method is used to toggle the selection of an item. 
+	// Walks children and keeps track of selected objects.
 	virtual BOOL changeSelection(LLFolderViewItem* selection, BOOL selected);
 
 	virtual std::set<LLUUID> getSelectionList() const;
 
-	// make sure if ancestor is selected, descendents are not
+	// Make sure if ancestor is selected, descendents are not
 	void sanitizeSelection();
 	void clearSelection();
 	void addToSelectionList(LLFolderViewItem* item);
@@ -158,21 +158,21 @@ public:
 	void setDraggingOverItem(LLFolderViewItem* item) { mDraggingOverItem = item; }
 	LLFolderViewItem* getDraggingOverItem() { return mDraggingOverItem; }
 
-	// deletion functionality
+	// Deletion functionality
  	void removeSelectedItems();
 
-	// open the selected item.
+	// Open the selected item
 	void openSelectedItems( void );
 	void propertiesSelectedItems( void );
 
-	// change the folder type
+	// Change the folder type
 	void changeType(LLInventoryModel *model, LLFolderType::EType new_folder_type);
 
 	void autoOpenItem(LLFolderViewFolder* item);
 	void closeAutoOpenedFolders();
 	BOOL autoOpenTest(LLFolderViewFolder* item);
 
-	// copy & paste
+	// Copy & paste
 	virtual void	copy();
 	virtual BOOL	canCopy() const;
 
@@ -185,7 +185,7 @@ public:
 	virtual void	doDelete();
 	virtual BOOL	canDoDelete() const;
 
-	// public rename functionality - can only start the process
+	// Public rename functionality - can only start the process
 	void startRenamingSelectedItem( void );
 
 	// These functions were used when there was only one folderview,

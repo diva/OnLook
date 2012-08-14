@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="media_controls">
+	<icon label="" name="music_icon" tool_tip="Reproduce/Pausa la música en streaming"/>
+	<button label="" name="music_play" tool_tip="Reproduce/Pausa la música en streaming"/>
+	<button label="" name="music_pause" tool_tip="Pausa la música en streaming"/>
+	<button label="" name="music_stop" tool_tip="Detiene la música en streaming"/>
+	<icon label="" name="media_icon" tool_tip="Reproduce/Pausa la música en streaming"/>
+	<button label="" name="media_play" tool_tip="Reproduce/Pausa la música en streaming"/>
+	<button name="media_pause" tool_tip="Pausa la música en streaming"/>
+	<button label="" name="media_stop" tool_tip="Detiene la música en streaming"/>
+	<volume_slider name="volume_slider" tool_tip="Volumen Maestro"/>
+	<button name="mute_master" tool_tip="Silencio Maestro"/>
+	<button label="" name="expand" tool_tip="Ajustes individuales de niveles de volumen"/>
+	<string name="play_label">
+		Reproducir
+	</string>
+	<string name="stop_label">
+		Detener
+	</string>
+	<string name="pause_label">
+		Pausa
+	</string>
+	<string name="default_tooltip_label">
+		No se ha especificado Media
+	</string>
+	<string name="media_hidden_label">
+		(La URL ha sido ocultada por el propietario de la parcela)
+	</string>
+	<string name="media_icon_tooltip_web">
+		Esta ubicación muestra contenido desde la Web . Pulsa el botón Reproducir para ver cl contenido Web.
+	</string>
+	<string name="media_icon_tooltip_movie">
+		Esta ubicación muestra contenido de video. Pulsa Reproducir para ver el Vídeo.
+	</string>
+	<string name="media_play_tooltip">
+		Mostrar contenido web en esta ubicación.
+	</string>
+</panel>

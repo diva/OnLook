@@ -6,15 +6,19 @@
 #ifndef CURL_STATICLIB
 #define CURL_STATICLIB 1
 #endif
-#include <curl/curl.h>
 
 #include <stdtypes.h>
-#include <llbufferstream.h>
-#include <llerror.h>
-#include <llhttpclient.h>
-#include <llurlrequest.h>
-#include <llxmltree.h>
+#include "llbufferstream.h"
+#include "llerror.h"
+#include "llhttpclient.h"
+#include "llurlrequest.h"
+#include "llxmltree.h"
+#include "llpumpio.h"		// LLPumpIO::chain_t
 
+#include <curl/curl.h>
+#ifdef DEBUG_CURLIO
+#include "debug_libcurl.h"
+#endif
 
 // ********************************************************************
  
@@ -267,7 +271,7 @@ static void request(const std::string &url,
 		llwarns << "Failed to create LLURLRequest: " << error.what() << llendl;
 		return;
 	}
-	//AIFIXME: req->setSSLVerifyCallback(LLHTTPClient::getCertVerifyCallback(), (void *)req);
+	req->checkRootCertificate(true);
 
 	/*
 	// Insert custom headers if the caller sent any

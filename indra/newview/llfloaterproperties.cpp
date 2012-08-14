@@ -197,9 +197,12 @@ LLFloaterProperties::LLFloaterProperties(const std::string& name, const LLRect& 
 	// owner permissions
 	// Permissions debug text
 	// group permissions
-	childSetCommitCallback("CheckShareWithGroup",&onCommitPermissions, this);
+	childSetCommitCallback("CheckGroupCopy",&onCommitPermissions, this);
+	childSetCommitCallback("CheckGroupMod",&onCommitPermissions, this);
+	childSetCommitCallback("CheckGroupMove",&onCommitPermissions, this);
 	// everyone permissions
 	childSetCommitCallback("CheckEveryoneCopy",&onCommitPermissions, this);
+	childSetCommitCallback("CheckEveryoneMove",&onCommitPermissions, this);
 	// next owner permissions
 	childSetCommitCallback("CheckNextOwnerModify",&onCommitPermissions, this);
 	childSetCommitCallback("CheckNextOwnerCopy",&onCommitPermissions, this);
@@ -261,8 +264,11 @@ void LLFloaterProperties::refresh()
 			"CheckOwnerModify",
 			"CheckOwnerCopy",
 			"CheckOwnerTransfer",
-			"CheckShareWithGroup",
+			"CheckGroupCopy",
+			"CheckGroupMod",
+			"CheckGroupMove",
 			"CheckEveryoneCopy",
+			"CheckEveryoneMove",
 			"CheckNextOwnerModify",
 			"CheckNextOwnerCopy",
 			"CheckNextOwnerTransfer",
@@ -530,13 +536,23 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 	// Check for ability to change values.
 	if (!is_link && is_obj_modify && can_agent_manipulate)
 	{
-		childSetEnabled("CheckShareWithGroup",TRUE);
+		childSetEnabled("GroupLabel",       true);
+		childSetEnabled("CheckGroupCopy",owner_mask & PERM_TRANSFER);
+		childSetEnabled("CheckGroupMod", owner_mask & PERM_MODIFY);
+		childSetEnabled("CheckGroupMove",   true);
+		childSetEnabled("EveryoneLabel",    true);
 		childSetEnabled("CheckEveryoneCopy",(owner_mask & PERM_COPY) && (owner_mask & PERM_TRANSFER));
+		childSetEnabled("CheckEveryoneMove",true);
 	}
 	else
 	{
-		childSetEnabled("CheckShareWithGroup",FALSE);
+		childSetEnabled("GroupLabel",       false);
+		childSetEnabled("CheckGroupCopy",   false);
+		childSetEnabled("CheckGroupMod",    false);
+		childSetEnabled("CheckGroupMove",   false);
+		childSetEnabled("EveryoneLabel",    false);
 		childSetEnabled("CheckEveryoneCopy",FALSE);
+		childSetEnabled("CheckEveryoneMove",false);
 	}
 
 	// Set values.
@@ -544,36 +560,12 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 	BOOL is_group_modify = (group_mask & PERM_MODIFY) ? TRUE : FALSE;
 	BOOL is_group_move = (group_mask & PERM_MOVE) ? TRUE : FALSE;
 
-	if (is_group_copy && is_group_modify && is_group_move)
-	{
-		childSetValue("CheckShareWithGroup",LLSD((BOOL)TRUE));
-
-		LLCheckBoxCtrl* ctl = getChild<LLCheckBoxCtrl>("CheckShareWithGroup");
-		if(ctl)
-		{
-			ctl->setTentative(FALSE);
-		}
-	}
-	else if (!is_group_copy && !is_group_modify && !is_group_move)
-	{
-		childSetValue("CheckShareWithGroup",LLSD((BOOL)FALSE));
-		LLCheckBoxCtrl* ctl = getChild<LLCheckBoxCtrl>("CheckShareWithGroup");
-		if(ctl)
-		{
-			ctl->setTentative(FALSE);
-		}
-	}
-	else
-	{
-		LLCheckBoxCtrl* ctl = getChild<LLCheckBoxCtrl>("CheckShareWithGroup");
-		if(ctl)
-		{
-			ctl->setTentative(TRUE);
-			ctl->set(TRUE);
-		}
-	}
+	childSetValue("CheckGroupCopy", is_group_copy);
+	childSetValue("CheckGroupMod",  is_group_modify);
+	childSetValue("CheckGroupMove", is_group_move);
 	
 	childSetValue("CheckEveryoneCopy",LLSD((BOOL)(everyone_mask & PERM_COPY)));
+	childSetValue("CheckEveryoneMove",LLSD((BOOL)(everyone_mask & PERM_MOVE)));
 
 	///////////////
 	// SALE INFO //
@@ -762,13 +754,30 @@ void LLFloaterProperties::onCommitPermissions(LLUICtrl* ctrl, void* data)
 	LLPermissions perm(item->getPermissions());
 
 
-	LLCheckBoxCtrl* CheckShareWithGroup = self->getChild<LLCheckBoxCtrl>("CheckShareWithGroup");
-
-	if(CheckShareWithGroup)
+	LLCheckBoxCtrl* CheckGroupCopy = self->getChild<LLCheckBoxCtrl>("CheckGroupCopy");
+	if(CheckGroupCopy)
 	{
 		perm.setGroupBits(gAgent.getID(), gAgent.getGroupID(),
-						CheckShareWithGroup->get(),
-						PERM_MODIFY | PERM_MOVE | PERM_COPY);
+						CheckGroupCopy->get(), PERM_COPY);
+	}
+	LLCheckBoxCtrl* CheckGroupMod = self->getChild<LLCheckBoxCtrl>("CheckGroupMod");
+	if(CheckGroupMod)
+	{
+		perm.setGroupBits(gAgent.getID(), gAgent.getGroupID(),
+						CheckGroupMod->get(), PERM_MODIFY);
+	}
+	LLCheckBoxCtrl* CheckGroupMove = self->getChild<LLCheckBoxCtrl>("CheckGroupMove");
+	if(CheckGroupMove)
+	{
+		perm.setGroupBits(gAgent.getID(), gAgent.getGroupID(),
+						CheckGroupMove->get(), PERM_MOVE);
+	}
+
+	LLCheckBoxCtrl* CheckEveryoneMove = self->getChild<LLCheckBoxCtrl>("CheckEveryoneMove");
+	if(CheckEveryoneMove)
+	{
+		perm.setEveryoneBits(gAgent.getID(), gAgent.getGroupID(),
+						 CheckEveryoneMove->get(), PERM_MOVE);
 	}
 	LLCheckBoxCtrl* CheckEveryoneCopy = self->getChild<LLCheckBoxCtrl>("CheckEveryoneCopy");
 	if(CheckEveryoneCopy)

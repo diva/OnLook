@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="top_objects" title="cargando...">
+	<text name="title_text">
+		Cargando...
+	</text>
+	<scroll_list name="objects_list">
+		<column label="Puntuación" name="score"/>
+		<column label="Nombre" name="name"/>
+		<column label="Propietario" name="owner"/>
+		<column label="Ubicación" name="location"/>
+		<column label="Tiempo" name="time" width="60"/>
+		<column label="Tiempo en Mono" name="mono_time" width="100"/>
+		<column label="URLs" name="URLs"/>
+	</scroll_list>
+	<text name="id_text">
+		ID del Objeto:
+	</text>
+	<button label="Mostrar Balizas" name="show_beacon_btn"/>
+	<text name="obj_name_text">
+		Objeto:
+	</text>
+	<button label="Filtro" name="filter_object_btn"/>
+	<text name="owner_name_text">
+		Propietario:
+	</text>
+	<button label="Filtro" name="filter_owner_btn"/>
+	<button label="Devolver Seleccionado" name="return_selected_btn" width="152"/>
+	<button label="Devolver Todo" left="165" name="return_all_btn" width="110" />
+	<button label="Advertencia de Lag" left="280" name="lagwarning" width="130" />
+	<button label="Expulsar" left="415" name="kick" width="80" />
+	<button label="Desactivar Seleccionado" name="disable_selected_btn" width="152" />
+	<button label="Desactivar Todo" left="165" name="disable_all_btn" width="110" />
+	<button label="Perfil" left="280" name="profile" width="130" />  
+	<button label="TP a" left="415" name="tpto" width="80" />
+	<button label="Actualizar" name="refresh_btn" right="-10" width="70" />
+	<string name="top_scripts_title">
+		Top Scripts
+	</string>
+	<string name="top_scripts_text">
+		[COUNT] scripts usando un total de [TIME] ms
+	</string>
+	<string name="scripts_score_label">
+		Tiempo
+	</string>
+    <string name="scripts_mono_time_label">
+		Tiempo en Mono
+    </string>
+    <string name="top_colliders_title">
+		Top Colisionadores
+	</string>
+	<string name="top_colliders_text">
+		Top [COUNT] objetos con muchas potenciales colisiones
+	</string>
+	<string name="colliders_score_label">
+		Puntaje
+	</string>
+    <string name="none_descriptor">
+		Ninguno Encontrado.
+	</string>
+</floater>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="EmeraldIRC_dictionaries" title="Descargar Diccionarios">
+	  <text name="EmDics_txt">
+A continuación hay un a lista de diccionarios adicionales
+que puedes descargar desde el sitio de Imprudence.
+
+Selecciona el diccionario que deseas tener para instalar
+y luego presiona el botón Descargar
+	  <combo_box name="Emerald_combo_dics" tool_tip=""/>
+	  <button label="Descargar" name="Emerald_dic_download"/>
+</floater> 

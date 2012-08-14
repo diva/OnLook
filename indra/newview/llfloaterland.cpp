@@ -80,6 +80,7 @@
 #include "llviewercontrol.h"
 #include "roles_constants.h"
 #include "llworld.h"
+#include "lltrans.h"
 
 #include "hippogridmanager.h"
 
@@ -1498,7 +1499,7 @@ void LLPanelLandObjects::onClickRefresh(void* userdata)
 
 	// ready the list for results
 	self->mOwnerList->deleteAllItems();
-	self->mOwnerList->addCommentText(std::string("Searching...")); // *TODO: Translate
+	self->mOwnerList->addCommentText(LLTrans::getString("Searching"));
 	self->mOwnerList->setEnabled(FALSE);
 	self->mFirstReply = TRUE;
 
@@ -1612,7 +1613,7 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 	// check for no results
 	if (0 == self->mOwnerList->getItemCount())
 	{
-		self->mOwnerList->addCommentText(std::string("None found.")); // *TODO: Translate
+		self->mOwnerList->addCommentText(LLTrans::getString("None_found"));
 	}
 	else
 	{
@@ -2446,7 +2447,6 @@ void LLPanelLandAccess::refresh()
 			childSetToolTipArg("AccessList", "[LISTED]", llformat("%d",count));
 			childSetToolTipArg("AccessList", "[MAX]", llformat("%d",PARCEL_MAX_ACCESS_LIST));
 
-			// *TODO: Translate
 			for (access_map_const_iterator cit = parcel->mAccessList.begin();
 				 cit != parcel->mAccessList.end(); ++cit)
 			{
@@ -2460,19 +2460,23 @@ void LLPanelLandAccess::refresh()
 					suffix.assign(" (");
 					if (seconds >= 120)
 					{
-						std::string buf = llformat("%d minutes", (seconds/60));
+						std::string buf = llformat("%d ", (seconds/60)) + getString("minutes");
 						suffix.append(buf);
 					}
 					else if (seconds >= 60)
 					{
-						suffix.append("1 minute");
+						suffix.append(getString("1_minute"));
+					}
+					else if (seconds == 1)
+					{
+						suffix.append(getString("1_second"));
 					}
 					else
 					{
-						std::string buf = llformat("%d seconds", seconds);
+						std::string buf = llformat("%d ", seconds) + getString("seconds");
 						suffix.append(buf);
 					}
-					suffix.append(" remaining)");
+					suffix.append(" " + getString("remaining") + ")");
 				}
 				if (mListAccess)
 					mListAccess->addNameItem(entry.mID, ADD_SORTED, TRUE, suffix);
@@ -2499,19 +2503,23 @@ void LLPanelLandAccess::refresh()
 					suffix.assign(" (");
 					if (seconds >= 120)
 					{
-						std::string buf = llformat("%d minutes", (seconds/60));
+						std::string buf = llformat("%d ", (seconds/60)) + getString("minutes");
 						suffix.append(buf);
 					}
 					else if (seconds >= 60)
 					{
-						suffix.append("1 minute");
+						suffix.append(getString("1_minute"));
+					}
+					else if (seconds == 1)
+					{
+						suffix.append(getString("1_second"));
 					}
 					else
 					{
-						std::string buf = llformat("%d seconds", seconds);
+						std::string buf = llformat("%d ", seconds) + getString("seconds");
 						suffix.append(buf);
 					}
-					suffix.append(" remaining)");
+					suffix.append(" " + getString("remaining") + ")");
 				}
 				mListBanned->addNameItem(entry.mID, ADD_SORTED, TRUE, suffix);
 			}

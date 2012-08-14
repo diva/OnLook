@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<fonts>
+
+  <font name="default" comment="archivos de fuentes por defecto (Respaldos Globales)">
+    <file>DejaVuSansCondensed.ttf</file>
+    <os name="Windows">
+      <file>MSGOTHIC.TTC</file>
+      <file>gulim.ttc</file>
+      <file>simhei.ttf</file>
+      <file>ArialUni.ttf</file>
+    </os>
+    <os name="Mac">
+      <file>ヒラギノ角ゴ ProN W3.otf</file>
+      <file>ヒラギノ角ゴ Pro W3.otf</file>
+      <file>AppleGothic.ttf</file>
+      <file>AppleGothic.dfont</file>
+      <file>华文细黑.ttf</file>
+      <file>儷黑 Pro.ttf</file>
+      <file>Apple Symbols.ttf</file>
+    </os>
+  </font>
+
+  <font name="SansSerif" comment="Nombre de la fuente san-serif (Nombre del archivo Truetype)">
+    <file>DroidSans.ttf</file>
+  </font>
+
+  <font name="SansSerifBold" comment="Nombre de la fuente bold sans-serif" font_style="Bold">
+	<file>DroidSans-Bold.ttf</file>
+  </font>
+
+  <font name="Monospace" comment="Nombre de la fuente monospace">
+		<file>DejaVuSansMono.ttf</file>
+  </font>
+
+  <font name="DejaVu" comment="Nombre de la fuente DejaVu">
+    <file>DejaVuSans.ttf</file>
+  </font>
+
+  <font name="DejaVu" comment="Nombre de la fuente DejaVu (Negrita)" font_style="BOLD">
+    <file>DejaVuSansBold.ttf</file>
+  </font>
+
+  <font name="DejaVu" comment="Nombre de la fuente DejaVu (itálica)" font_style="ITALIC">
+    <file>DejaVuSansOblique.ttf</file>
+  </font>
+
+  <font name="DejaVu" comment="Nombre de la fuente DejaVu (Itálica negrita)" font_style="BOLD|ITALIC">
+    <file>DejaVuSansBoldOblique.ttf</file>
+  </font>
+
+  <font name="Helvetica" comment="Nombre de la fuente Helvetica"> 
+    <file>arial.ttf</file>
+  </font>
+
+  <font name="Helvetica" comment="Nombre de la fuente Helvetica (Negrita)" font_style="BOLD">
+    <file>arialbd.ttf</file>
+  </font>
+
+  <font name="Helvetica" comment="Nombre de la fuente Helvetica (itálica)" font_style="ITALIC">
+    <file>ariali.ttf</file>
+  </font>
+
+  <font name="Helvetica" comment="Nombre de la fuente Helvetica (Negrita Itálica)" font_style="BOLD|ITALIC">
+    <file>arialbi.ttf</file>
+  </font>
+
+  <font name="OverrideTest" comment=" Nombre de la fuente de prueba de sobreescritura">
+    <file>times.ttf</file>
+  </font>
+
+  <font_size name="Monospace" comment="Tamaño de la fuente monospaced  (puntos, o 1/72 de una pulgada)" size="9.0"/>
+  <font_size name="Huge" comment="Tamaño de la fuente grande (puntos, o 1/72 de una pulgada)" size="14.0"/>
+  <font_size name="Large" comment="Tamaño de la fuente larga (puntos, o 1/72 de una pulgada)" size="11.0"/>
+  <font_size name="Medium" comment="Tamaño de la fuente media (puntos, o 1/72 de  una pulgada)" size="9.5"/>
+  <font_size name="Small" comment="Tamaño de la fuente pequeña (puntos, o 1/72 de una pulgada)" size="8.5"/>
+</fonts>
+

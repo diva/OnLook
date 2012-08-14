@@ -81,6 +81,7 @@
 #include "v4math.h"
 #include "lltransfertargetvfile.h"
 #include "llmemtype.h"
+#include "llpacketring.h"
 
 // Constants
 //const char* MESSAGE_LOG_FILENAME = "message.log";
@@ -97,10 +98,8 @@ std::string get_shared_secret();
 class LLMessagePollInfo
 {
 public:
-	LLMessagePollInfo(void) : mPool(LLThread::tldata().mRootPool) { }
 	apr_socket_t *mAPRSocketp;
 	apr_pollfd_t mPollFD;
-	LLAPRPool mPool;
 };
 
 namespace
@@ -245,7 +244,8 @@ LLMessageSystem::LLMessageSystem(const std::string& filename, U32 port,
 								 bool failure_is_fatal,
 								 const F32 circuit_heartbeat_interval, const F32 circuit_timeout) :
 	mCircuitInfo(circuit_heartbeat_interval, circuit_timeout),
-	mLastMessageFromTrustedMessageService(false)
+	mLastMessageFromTrustedMessageService(false),
+	mPacketRing(new LLPacketRing)
 {
 	init();
 
@@ -289,13 +289,15 @@ LLMessageSystem::LLMessageSystem(const std::string& filename, U32 port,
 	}
 //	LL_DEBUGS("Messaging") <<  << "*** port: " << mPort << llendl;
 
-	mPollInfop = new LLMessagePollInfo;
-
+	//
+	// Create the data structure that we can poll on
+	//
 	apr_socket_t *aprSocketp = NULL;
-	apr_os_sock_put(&aprSocketp, (apr_os_sock_t*)&mSocket, mPollInfop->mPool());
+	apr_os_sock_put(&aprSocketp, (apr_os_sock_t*)&mSocket, LLAPRRootPool::get()());
 
+	mPollInfop = new LLMessagePollInfo;
 	mPollInfop->mAPRSocketp = aprSocketp;
-	mPollInfop->mPollFD.p = mPollInfop->mPool();
+	mPollInfop->mPollFD.p = LLAPRRootPool::get()();
 	mPollInfop->mPollFD.desc_type = APR_POLL_SOCKET;
 	mPollInfop->mPollFD.reqevents = APR_POLLIN;
 	mPollInfop->mPollFD.rtnevents = 0;
@@ -382,6 +384,9 @@ LLMessageSystem::~LLMessageSystem()
 
 	delete mPollInfop;
 	mPollInfop = NULL;
+
+	delete mPacketRing;
+	mPacketRing = NULL;
 
 	mIncomingCompressedSize = 0;
 	mCurrentRecvPacketID = 0;
@@ -548,13 +553,13 @@ BOOL LLMessageSystem::checkMessages( S64 frame_count )
 
 		U8* buffer = mTrueReceiveBuffer;
 		
-		mTrueReceiveSize = mPacketRing.receivePacket(mSocket, (char *)mTrueReceiveBuffer);
+		mTrueReceiveSize = mPacketRing->receivePacket(mSocket, (char *)mTrueReceiveBuffer);
 		// If you want to dump all received packets into SecondLife.log, uncomment this
 		//dumpPacketToLog();
 		
 		receive_size = mTrueReceiveSize;
-		mLastSender = mPacketRing.getLastSender();
-		mLastReceivingIF = mPacketRing.getLastReceivingInterface();
+		mLastSender = mPacketRing->getLastSender();
+		mLastReceivingIF = mPacketRing->getLastReceivingInterface();
 		
 		if (receive_size < (S32) LL_MINIMUM_VALID_PACKET_SIZE)
 		{
@@ -1129,7 +1134,7 @@ S32 LLMessageSystem::flushReliable(const LLHost &host)
 	return send_bytes;
 }
 
-LLHTTPClient::ResponderPtr LLMessageSystem::createResponder(const std::string& name)
+LLFnPtrResponder* LLMessageSystem::createResponder(const std::string& name)
 {
 	if(mSendReliable)
 	{
@@ -1328,7 +1333,7 @@ S32 LLMessageSystem::sendMessage(const LLHost &host)
 	}
 
 	BOOL success;
-	success = mPacketRing.sendPacket(mSocket, (char *)buf_ptr, buffer_length, host);
+	success = mPacketRing->sendPacket(mSocket, (char *)buf_ptr, buffer_length, host);
 
 	if (!success)
 	{
@@ -3142,7 +3147,7 @@ bool LLMessageSystem::generateDigestForWindowAndUUIDs(char* digest, const S32 wi
 		LL_ERRS("Messaging") << "Trying to generate complex digest on a machine without a shared secret!" << llendl;
 	}
 
-	U32 now = time(NULL);
+	U32 now = (U32)time(NULL);
 
 	now /= window;
 
@@ -3162,7 +3167,7 @@ bool LLMessageSystem::isMatchingDigestForWindowAndUUIDs(const char* digest, cons
 	}
 	
 	char our_digest[MD5HEX_STR_SIZE];	/* Flawfinder: ignore */
-	U32 now = time(NULL);
+	U32 now = (U32)time(NULL);
 
 	now /= window;
 
@@ -3208,7 +3213,7 @@ bool LLMessageSystem::generateDigestForWindow(char* digest, const S32 window) co
 		LL_ERRS("Messaging") << "Trying to generate simple digest on a machine without a shared secret!" << llendl;
 	}
 
-	U32 now = time(NULL);
+	U32 now = (U32)time(NULL);
 
 	now /= window;
 
@@ -3361,7 +3366,7 @@ void LLMessageSystem::establishBidirectionalTrust(const LLHost &host, S64 frame_
 
 void LLMessageSystem::dumpPacketToLog()
 {
-	LL_WARNS("Messaging") << "Packet Dump from:" << mPacketRing.getLastSender() << llendl;
+	LL_WARNS("Messaging") << "Packet Dump from:" << mPacketRing->getLastSender() << llendl;
 	LL_WARNS("Messaging") << "Packet Size:" << mTrueReceiveSize << llendl;
 	char line_buffer[256];		/* Flawfinder: ignore */
 	S32 i;

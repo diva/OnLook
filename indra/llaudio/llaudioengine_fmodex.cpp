@@ -72,6 +72,8 @@ bool attemptDelayLoad()
 
 FMOD_RESULT F_CALLBACK windCallback(FMOD_DSP_STATE *dsp_state, float *inbuffer, float *outbuffer, unsigned int length, int inchannels, int outchannels);
 
+FMOD::ChannelGroup *LLAudioEngine_FMODEX::mChannelGroups[LLAudioEngine::AUDIO_TYPE_COUNT] = {0};
+
 LLAudioEngine_FMODEX::LLAudioEngine_FMODEX(bool enable_profiler)
 {
 	mInited = false;
@@ -95,6 +97,28 @@ inline bool Check_FMOD_Error(FMOD_RESULT result, const char *string)
 	return true;
 }
 
+void* F_STDCALL decode_alloc(unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr)
+{
+	if(type & FMOD_MEMORY_STREAM_DECODE)
+	{
+		llinfos << "Decode buffer size: " << size << llendl;
+	}
+	else if(type & FMOD_MEMORY_STREAM_FILE)
+	{
+		llinfos << "Strean buffer size: " << size << llendl;
+	}
+	return new char[size];
+}
+void* F_STDCALL decode_realloc(void *ptr, unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr)
+{
+	memset(ptr,0,size);
+	return ptr;
+}
+void F_STDCALL decode_dealloc(void *ptr, FMOD_MEMORY_TYPE type, const char *sourcestr)
+{
+	delete[] (char*)ptr;
+}
+
 bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 {
 
@@ -107,6 +131,10 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 	FMOD_RESULT result;
 
 	LL_DEBUGS("AppInit") << "LLAudioEngine_FMODEX::init() initializing FMOD" << LL_ENDL;
+
+	//result = FMOD::Memory_Initialize(NULL, 0, &decode_alloc, &decode_realloc, &decode_dealloc, FMOD_MEMORY_STREAM_DECODE | FMOD_MEMORY_STREAM_FILE);
+	//if(Check_FMOD_Error(result, "FMOD::Memory_Initialize"))
+	//	return false;
 
 	result = FMOD::System_Create(&mSystem);
 	if(Check_FMOD_Error(result, "FMOD::System_Create"))
@@ -124,54 +152,8 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 			<< ")!  You should be using FMOD Ex" << FMOD_VERSION << LL_ENDL;
 	}
 
-#if LL_WINDOWS
-	int numdrivers;
-	FMOD_SPEAKERMODE speakermode;
-	FMOD_CAPS caps;
-	char name[256];
-
-	//Is this block applicable to linux?
-	{
-		result = mSystem->getNumDrivers(&numdrivers);
-		Check_FMOD_Error(result, "FMOD::System::getNumDrivers");
-		if (numdrivers == 0)
-		{
-			result = mSystem->setOutput(FMOD_OUTPUTTYPE_NOSOUND);
-			Check_FMOD_Error(result, "FMOD::System::setOutput");
-		}
-		else
-		{
-			result = mSystem->getDriverCaps(0, &caps, 0, &speakermode);
-			Check_FMOD_Error(result,"FMOD::System::getDriverCaps");
-			/*
-			Set the user selected speaker mode.
-			*/
-			result = mSystem->setSpeakerMode(speakermode);
-			Check_FMOD_Error(result, "FMOD::System::setSpeakerMode");
-			if (caps & FMOD_CAPS_HARDWARE_EMULATED)
-			{
-				/*
-				The user has the 'Acceleration' slider set to off! This is really bad
-				for latency! You might want to warn the user about this.
-				*/
-				result = mSystem->setDSPBufferSize(1024, 10);
-				Check_FMOD_Error(result, "FMOD::System::setDSPBufferSize");
-			}
-			result = mSystem->getDriverInfo(0, name, 256, 0);
-			Check_FMOD_Error(result, "FMOD::System::getDriverInfo");
-
-			if (strstr(name, "SigmaTel"))
-			{
-				/*
-				Sigmatel sound devices crackle for some reason if the format is PCM 16bit.
-				PCM floating point output seems to solve it.
-				*/
-				result = mSystem->setSoftwareFormat(48000, FMOD_SOUND_FORMAT_PCMFLOAT, 0,0, FMOD_DSP_RESAMPLER_LINEAR);
-				Check_FMOD_Error(result,"FMOD::System::setSoftwareFormat");
-			}
-		}
-	}
-#endif //LL_WINDOWS
+	result = mSystem->setSoftwareFormat(44100, FMOD_SOUND_FORMAT_PCM16, 0, 0, FMOD_DSP_RESAMPLER_LINEAR);
+	Check_FMOD_Error(result,"FMOD::System::setSoftwareFormat");
 
 	// In this case, all sounds, PLUS wind and stream will be software.
 	result = mSystem->setSoftwareChannels(num_channels + 2);
@@ -179,7 +161,13 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 
 	U32 fmod_flags = FMOD_INIT_NORMAL;
 	if(mEnableProfiler)
+	{
 		fmod_flags |= FMOD_INIT_ENABLE_PROFILE;
+		mSystem->createChannelGroup("None", &mChannelGroups[AUDIO_TYPE_NONE]);
+		mSystem->createChannelGroup("SFX", &mChannelGroups[AUDIO_TYPE_SFX]);
+		mSystem->createChannelGroup("UI", &mChannelGroups[AUDIO_TYPE_UI]);
+		mSystem->createChannelGroup("Ambient", &mChannelGroups[AUDIO_TYPE_AMBIENT]);
+	}
 
 #if LL_LINUX
 	bool audio_ok = false;
@@ -296,6 +284,19 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 		setStreamingAudioImpl(new LLStreamingAudio_FMODEX(mSystem));
 
 	LL_INFOS("AppInit") << "LLAudioEngine_FMODEX::init() FMOD Ex initialized correctly" << LL_ENDL;
+
+	int r_numbuffers, r_samplerate, r_channels, r_bits;
+	unsigned int r_bufferlength;
+	char r_name[256];
+	mSystem->getDSPBufferSize(&r_bufferlength, &r_numbuffers);
+	mSystem->getSoftwareFormat(&r_samplerate, NULL, &r_channels, NULL, NULL, &r_bits);
+	mSystem->getDriverInfo(0, r_name, 255, 0);
+	r_name[255] = '\0';
+	int latency = 1000.0 * r_bufferlength * r_numbuffers /r_samplerate;
+
+	LL_INFOS("AppInit") << "FMOD device: "<< r_name << "\n"
+		<< "FMOD Ex parameters: " << r_samplerate << " Hz * " << r_channels << " * " <<r_bits <<" bit\n"
+		<< "\tbuffer " << r_bufferlength << " * " << r_numbuffers << " (" << latency <<"ms)" << LL_ENDL;
 
 	mInited = true;
 
@@ -611,6 +612,9 @@ void LLAudioChannelFMODEX::play()
 	Check_FMOD_Error(mChannelp->setPaused(false), "FMOD::Channel::pause");
 
 	getSource()->setPlayedOnce(true);
+
+	if(LLAudioEngine_FMODEX::mChannelGroups[getSource()->getType()])
+		mChannelp->setChannelGroup(LLAudioEngine_FMODEX::mChannelGroups[getSource()->getType()]);
 }
 
 

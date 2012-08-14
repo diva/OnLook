@@ -54,6 +54,7 @@
 #include "llglheaders.h"
 #include "llrender.h"
 #include "llwindow.h"
+#include "llpostprocess.h"
 
 // newview includes
 #include "llagent.h"
@@ -453,15 +454,6 @@ void LLPipeline::init()
 		mSpotLightFade[i] = 1.f;
 	}
 
-	if (mCubeVB.isNull())
-	{
-		mCubeVB = ll_create_cube_vb(LLVertexBuffer::MAP_VERTEX, GL_STATIC_DRAW_ARB);
-	}
-	if(mDeferredVB.isNull())
-	{
-		mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
-		mDeferredVB->allocateBuffer(8, 0, true);
-	}
 	setLightingDetail(-1);
 	gSavedSettings.getControl("RenderAutoMaskAlphaDeferred")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	gSavedSettings.getControl("RenderAutoMaskAlphaNonDeferred")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
@@ -632,12 +624,6 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 	static const LLCachedControl<U32> RenderFSAASamples("RenderFSAASamples",0);
 	U32 samples = RenderFSAASamples.get() - RenderFSAASamples.get() % 2;	//Must be multipe of 2.
 
-	//Don't multisample if not using FXAA, or if fbos are disabled, or if multisampled fbos are not supported.
-	if(!LLPipeline::sRenderDeferred && (!LLRenderTarget::sUseFBO || !gGLManager.mHasFramebufferMultisample))
-	{
-		samples = 0;
-	}
-
 	//try to allocate screen buffers at requested resolution and samples
 	// - on failure, shrink number of samples and try again
 	// - if not multisampled, shrink resolution and try again (favor X resolution over Y)
@@ -693,6 +679,7 @@ bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY, U32 samples)
 	}
 
 	mSampleBuffer.release();
+	mScreen.release();
 
 	if (LLPipeline::sRenderDeferred)
 	{
@@ -707,9 +694,7 @@ bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY, U32 samples)
 
 
 		//allocate deferred rendering color buffers
-		static const LLCachedControl<bool> shadow_precision("DeferredHighPrecision",true);
-		const GLuint format = shadow_precision ? GL_RGBA : GL_RGBA16F_ARB;  //TO-DO: Profile 16bit format later
-		if (!mDeferredScreen.allocate(resX, resY, format, TRUE, TRUE, LLTexUnit::TT_RECT_TEXTURE, FALSE)) return false;
+		if (!mDeferredScreen.allocate(resX, resY, GL_RGBA, TRUE, TRUE, LLTexUnit::TT_RECT_TEXTURE, FALSE)) return false;
 		if (!mDeferredDepth.allocate(resX, resY, 0, TRUE, FALSE, LLTexUnit::TT_RECT_TEXTURE, FALSE)) return false;
 		if (!addDeferredAttachments(mDeferredScreen)) return false;
 
@@ -790,7 +775,6 @@ bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY, U32 samples)
 		if (!mScreen.allocate(resX, resY, GL_RGBA, TRUE, TRUE, LLTexUnit::TT_RECT_TEXTURE, FALSE)) return false;
 		if(samples > 1)
 		{
-			
 			if(mSampleBuffer.allocate(resX,resY,GL_RGBA,TRUE,TRUE,LLTexUnit::TT_RECT_TEXTURE,FALSE,samples))
 				mScreen.setSampleBuffer(&mSampleBuffer);
 			else
@@ -880,6 +864,9 @@ void LLPipeline::releaseGLBuffers()
 
 	gBumpImageList.destroyGL();
 	LLVOAvatar::resetImpostors();
+
+	if(LLPostProcess::instanceExists())
+		LLPostProcess::getInstance()->destroyGL();
 }
 
 void LLPipeline::releaseLUTBuffers()
@@ -906,6 +893,8 @@ void LLPipeline::releaseScreenBuffers()
 	{
 		mShadow[i].release();
 	}
+
+	mSampleBuffer.release();
 }
 
 
@@ -1178,7 +1167,7 @@ public:
 	{
 		LLSpatialGroup* group = (LLSpatialGroup*) node->getListener(0);
 
-		if (!group->isState(LLSpatialGroup::GEOM_DIRTY) && !group->getData().empty())
+		if (!group->isState(LLSpatialGroup::GEOM_DIRTY) && !group->isEmpty())
 		{
 			for (LLSpatialGroup::draw_map_t::iterator i = group->mDrawMap.begin(); i != group->mDrawMap.end(); ++i)
 			{
@@ -1785,7 +1774,7 @@ void LLPipeline::clearReferences()
 
 void check_references(LLSpatialGroup* group, LLDrawable* drawable)
 {
-	for (LLSpatialGroup::element_iter i = group->getData().begin(); i != group->getData().end(); ++i)
+	for (LLSpatialGroup::element_iter i = group->getDataBegin(); i != group->getDataEnd(); ++i)
 	{
 		if (drawable == *i)
 		{
@@ -1807,7 +1796,7 @@ void check_references(LLDrawable* drawable, LLFace* face)
 
 void check_references(LLSpatialGroup* group, LLFace* face)
 {
-	for (LLSpatialGroup::element_iter i = group->getData().begin(); i != group->getData().end(); ++i)
+	for (LLSpatialGroup::element_iter i = group->getDataBegin(); i != group->getDataEnd(); ++i)
 	{
 		LLDrawable* drawable = *i;
 		check_references(drawable, face);
@@ -1819,25 +1808,25 @@ void LLPipeline::checkReferences(LLFace* face)
 #if 0
 	if (sCull)
 	{
-		for (LLCullResult::sg_list_t::iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
+		for (LLCullResult::sg_iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
 		{
 			LLSpatialGroup* group = *iter;
 			check_references(group, face);
 		}
 
-		for (LLCullResult::sg_list_t::iterator iter = sCull->beginAlphaGroups(); iter != sCull->endAlphaGroups(); ++iter)
+		for (LLCullResult::sg_iterator iter = sCull->beginAlphaGroups(); iter != sCull->endAlphaGroups(); ++iter)
 		{
 			LLSpatialGroup* group = *iter;
 			check_references(group, face);
 		}
 
-		for (LLCullResult::sg_list_t::iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
+		for (LLCullResult::sg_iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
 		{
 			LLSpatialGroup* group = *iter;
 			check_references(group, face);
 		}
 
-		for (LLCullResult::drawable_list_t::iterator iter = sCull->beginVisibleList(); iter != sCull->endVisibleList(); ++iter)
+		for (LLCullResult::drawable_iterator iter = sCull->beginVisibleList(); iter != sCull->endVisibleList(); ++iter)
 		{
 			LLDrawable* drawable = *iter;
 			check_references(drawable, face);
@@ -1851,25 +1840,25 @@ void LLPipeline::checkReferences(LLDrawable* drawable)
 #if 0
 	if (sCull)
 	{
-		for (LLCullResult::sg_list_t::iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
+		for (LLCullResult::sg_iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
 		{
 			LLSpatialGroup* group = *iter;
 			check_references(group, drawable);
 		}
 
-		for (LLCullResult::sg_list_t::iterator iter = sCull->beginAlphaGroups(); iter != sCull->endAlphaGroups(); ++iter)
+		for (LLCullResult::sg_iterator iter = sCull->beginAlphaGroups(); iter != sCull->endAlphaGroups(); ++iter)
 		{
 			LLSpatialGroup* group = *iter;
 			check_references(group, drawable);
 		}
 
-		for (LLCullResult::sg_list_t::iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
+		for (LLCullResult::sg_iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
 		{
 			LLSpatialGroup* group = *iter;
 			check_references(group, drawable);
 		}
 
-		for (LLCullResult::drawable_list_t::iterator iter = sCull->beginVisibleList(); iter != sCull->endVisibleList(); ++iter)
+		for (LLCullResult::drawable_iterator iter = sCull->beginVisibleList(); iter != sCull->endVisibleList(); ++iter)
 		{
 			if (drawable == *iter)
 			{
@@ -1902,19 +1891,19 @@ void LLPipeline::checkReferences(LLDrawInfo* draw_info)
 #if 0
 	if (sCull)
 	{
-		for (LLCullResult::sg_list_t::iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
+		for (LLCullResult::sg_iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
 		{
 			LLSpatialGroup* group = *iter;
 			check_references(group, draw_info);
 		}
 
-		for (LLCullResult::sg_list_t::iterator iter = sCull->beginAlphaGroups(); iter != sCull->endAlphaGroups(); ++iter)
+		for (LLCullResult::sg_iterator iter = sCull->beginAlphaGroups(); iter != sCull->endAlphaGroups(); ++iter)
 		{
 			LLSpatialGroup* group = *iter;
 			check_references(group, draw_info);
 		}
 
-		for (LLCullResult::sg_list_t::iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
+		for (LLCullResult::sg_iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
 		{
 			LLSpatialGroup* group = *iter;
 			check_references(group, draw_info);
@@ -1928,7 +1917,7 @@ void LLPipeline::checkReferences(LLSpatialGroup* group)
 #if 0
 	if (sCull)
 	{
-		for (LLCullResult::sg_list_t::iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
+		for (LLCullResult::sg_iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
 		{
 			if (group == *iter)
 			{
@@ -1936,7 +1925,7 @@ void LLPipeline::checkReferences(LLSpatialGroup* group)
 			}
 		}
 
-		for (LLCullResult::sg_list_t::iterator iter = sCull->beginAlphaGroups(); iter != sCull->endAlphaGroups(); ++iter)
+		for (LLCullResult::sg_iterator iter = sCull->beginAlphaGroups(); iter != sCull->endAlphaGroups(); ++iter)
 		{
 			if (group == *iter)
 			{
@@ -1944,7 +1933,7 @@ void LLPipeline::checkReferences(LLSpatialGroup* group)
 			}
 		}
 
-		for (LLCullResult::sg_list_t::iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
+		for (LLCullResult::sg_iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
 		{
 			if (group == *iter)
 			{
@@ -2183,7 +2172,7 @@ void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_cl
 
 void LLPipeline::markNotCulled(LLSpatialGroup* group, LLCamera& camera)
 {
-	if (group->getData().empty())
+	if (group->isEmpty())
 	{ 
 		return;
 	}
@@ -2286,7 +2275,7 @@ void LLPipeline::doOcclusion(LLCamera& camera)
 		}
 		mCubeVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 
-		for (LLCullResult::sg_list_t::iterator iter = sCull->beginOcclusionGroups(); iter != sCull->endOcclusionGroups(); ++iter)
+		for (LLCullResult::sg_iterator iter = sCull->beginOcclusionGroups(); iter != sCull->endOcclusionGroups(); ++iter)
 		{
 			LLSpatialGroup* group = *iter;
 			group->doOcclusion(&camera);
@@ -2820,7 +2809,7 @@ void LLPipeline::stateSort(LLCamera& camera, LLCullResult &result)
 	//LLVertexBuffer::unbind();
 
 	grabReferences(result);
-	for (LLCullResult::sg_list_t::iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
+	for (LLCullResult::sg_iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
 	{
 		LLSpatialGroup* group = *iter;
 		group->checkOcclusion();
@@ -2831,7 +2820,7 @@ void LLPipeline::stateSort(LLCamera& camera, LLCullResult &result)
 		else
 		{
 			group->setVisible();
-			for (LLSpatialGroup::element_iter i = group->getData().begin(); i != group->getData().end(); ++i)
+			for (LLSpatialGroup::element_iter i = group->getDataBegin(); i != group->getDataEnd(); ++i)
 			{
 				markVisible(*i, camera);
 			}
@@ -2846,9 +2835,9 @@ void LLPipeline::stateSort(LLCamera& camera, LLCullResult &result)
 	if (LLViewerCamera::sCurCameraID == LLViewerCamera::CAMERA_WORLD)
 	{
 		LLSpatialGroup* last_group = NULL;
-		for (LLCullResult::bridge_list_t::iterator i = sCull->beginVisibleBridge(); i != sCull->endVisibleBridge(); ++i)
+		for (LLCullResult::bridge_iterator i = sCull->beginVisibleBridge(); i != sCull->endVisibleBridge(); ++i)
 		{
-			LLCullResult::bridge_list_t::iterator cur_iter = i;
+			LLCullResult::bridge_iterator cur_iter = i;
 			LLSpatialBridge* bridge = *cur_iter;
 			LLSpatialGroup* group = bridge->getSpatialGroup();
 
@@ -2878,7 +2867,7 @@ void LLPipeline::stateSort(LLCamera& camera, LLCullResult &result)
 		}
 	}
 
-	for (LLCullResult::sg_list_t::iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
+	for (LLCullResult::sg_iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
 	{
 		LLSpatialGroup* group = *iter;
 		group->checkOcclusion();
@@ -2900,7 +2889,7 @@ void LLPipeline::stateSort(LLCamera& camera, LLCullResult &result)
 	
 	{
 		LLFastTimer ftm(FTM_STATESORT_DRAWABLE);
-		for (LLCullResult::drawable_list_t::iterator iter = sCull->beginVisibleList();
+		for (LLCullResult::drawable_iterator iter = sCull->beginVisibleList();
 			 iter != sCull->endVisibleList(); ++iter)
 		{
 			LLDrawable *drawablep = *iter;
@@ -2919,7 +2908,7 @@ void LLPipeline::stateSort(LLSpatialGroup* group, LLCamera& camera)
 	LLMemType mt(LLMemType::MTYPE_PIPELINE_STATE_SORT);
 	if (!sSkipUpdate && group->changeLOD())
 	{
-		for (LLSpatialGroup::element_iter i = group->getData().begin(); i != group->getData().end(); ++i)
+		for (LLSpatialGroup::element_iter i = group->getDataBegin(); i != group->getDataEnd(); ++i)
 		{
 			LLDrawable* drawablep = *i;
 			stateSort(drawablep, camera);
@@ -3049,13 +3038,13 @@ void LLPipeline::stateSort(LLDrawable* drawablep, LLCamera& camera)
 }
 
 
-void forAllDrawables(LLCullResult::sg_list_t::iterator begin, 
-					 LLCullResult::sg_list_t::iterator end,
+void forAllDrawables(LLCullResult::sg_iterator begin, 
+					 LLCullResult::sg_iterator end,
 					 void (*func)(LLDrawable*))
 {
-	for (LLCullResult::sg_list_t::iterator i = begin; i != end; ++i)
+	for (LLCullResult::sg_iterator i = begin; i != end; ++i)
 	{
-		for (LLSpatialGroup::element_iter j = (*i)->getData().begin(); j != (*i)->getData().end(); ++j)
+		for (LLSpatialGroup::element_iter j = (*i)->getDataBegin(); j != (*i)->getDataEnd(); ++j)
 		{
 			func(*j);	
 		}
@@ -3136,7 +3125,7 @@ void renderPhysicalBeacons(LLDrawable* drawablep)
 	if (vobj 
 		&& !vobj->isAvatar() 
 		//&& !vobj->getParent()
-		&& vobj->usePhysics())
+		&& vobj->flagUsePhysics())
 	{
 		if (gPipeline.sRenderBeacons)
 		{
@@ -3223,7 +3212,7 @@ void LLPipeline::postSort(LLCamera& camera)
 
 	llpushcallstacks ;
 	//rebuild drawable geometry
-	for (LLCullResult::sg_list_t::iterator i = sCull->beginDrawableGroups(); i != sCull->endDrawableGroups(); ++i)
+	for (LLCullResult::sg_iterator i = sCull->beginDrawableGroups(); i != sCull->endDrawableGroups(); ++i)
 	{
 		LLSpatialGroup* group = *i;
 		if (!sUseOcclusion || 
@@ -3241,7 +3230,7 @@ void LLPipeline::postSort(LLCamera& camera)
 
 	
 	//build render map
-	for (LLCullResult::sg_list_t::iterator i = sCull->beginVisibleGroups(); i != sCull->endVisibleGroups(); ++i)
+	for (LLCullResult::sg_iterator i = sCull->beginVisibleGroups(); i != sCull->endVisibleGroups(); ++i)
 	{
 		LLSpatialGroup* group = *i;
 
@@ -4183,7 +4172,7 @@ void LLPipeline::renderPhysicsDisplay()
 		}
 	}
 
-	for (LLCullResult::bridge_list_t::const_iterator i = sCull->beginVisibleBridge(); i != sCull->endVisibleBridge(); ++i)
+	for (LLCullResult::bridge_iterator i = sCull->beginVisibleBridge(); i != sCull->endVisibleBridge(); ++i)
 	{
 		LLSpatialBridge* bridge = *i;
 		if (!bridge->isDead() && hasRenderType(bridge->mDrawableType))
@@ -4210,9 +4199,6 @@ void LLPipeline::renderDebug()
 {
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
 
-	if(!mRenderDebugMask)
-		return;
-
 	assertInitialized();
 
 	gGL.color4f(1,1,1,1);
@@ -4222,6 +4208,52 @@ void LLPipeline::renderDebug()
 	gGL.setColorMask(true, false);
 
 	bool hud_only = hasRenderType(LLPipeline::RENDER_TYPE_HUD);
+
+	if (!hud_only && !mDebugBlips.empty())
+	{ //render debug blips
+		if (LLGLSLShader::sNoFixedFunction)
+		{
+			gUIProgram.bind();
+		}
+
+		gGL.getTexUnit(0)->bind(LLViewerFetchedTexture::sWhiteImagep, true);
+
+		glPointSize(8.f);
+		LLGLDepthTest depth(GL_TRUE, GL_TRUE, GL_ALWAYS);
+
+		gGL.begin(LLRender::POINTS);
+		for (std::list<DebugBlip>::iterator iter = mDebugBlips.begin(); iter != mDebugBlips.end(); )
+		{
+			DebugBlip& blip = *iter;
+
+			blip.mAge += gFrameIntervalSeconds;
+			if (blip.mAge > 2.f)
+			{
+				mDebugBlips.erase(iter++);
+			}
+			else
+			{
+				iter++;
+			}
+
+			blip.mPosition.mV[2] += gFrameIntervalSeconds*2.f;
+
+			gGL.color4fv(blip.mColor.mV);
+			gGL.vertex3fv(blip.mPosition.mV);
+		}
+		gGL.end();
+		gGL.flush();
+		glPointSize(1.f);
+
+		if (LLGLSLShader::sNoFixedFunction)
+		{
+			gUIProgram.unbind();
+		}
+
+	}
+
+	if(!mRenderDebugMask)
+		return;
 
 	// Debug stuff.
 	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
@@ -4242,7 +4274,7 @@ void LLPipeline::renderDebug()
 		}
 	}
 
-	for (LLCullResult::bridge_list_t::const_iterator i = sCull->beginVisibleBridge(); i != sCull->endVisibleBridge(); ++i)
+	for (LLCullResult::bridge_iterator i = sCull->beginVisibleBridge(); i != sCull->endVisibleBridge(); ++i)
 	{
 		LLSpatialBridge* bridge = *i;
 		if (!bridge->isDead() && hasRenderType(bridge->mDrawableType))
@@ -6126,12 +6158,14 @@ void LLPipeline::doResetVertexBuffers()
 
 	LLVOPartGroup::destroyGL();
 
+	if(LLPostProcess::instanceExists())
+		LLPostProcess::getInstance()->destroyGL();
+
 	LLVertexBuffer::cleanupClass();
 	
 	//delete all name pool caches
 	LLGLNamePool::cleanupPools();
 
-	
 	if (LLVertexBuffer::sGLCount > 0)
 	{
 		llwarns << "VBO wipe failed -- " << LLVertexBuffer::sGLCount << " buffers remaining." << llendl;
@@ -6938,7 +6972,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 	}
 
 	
-	if (LLRenderTarget::sUseFBO)
+	if (mScreen.getFBO())
 	{ //copy depth buffer from mScreen to framebuffer
 		LLRenderTarget::copyContentsToFramebuffer(mScreen, 0, 0, mScreen.getWidth(), mScreen.getHeight(), 
 			0, 0, mScreen.getWidth(), mScreen.getHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
@@ -9332,7 +9366,7 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 void LLPipeline::renderGroups(LLRenderPass* pass, U32 type, U32 mask, BOOL texture)
 {
-	for (LLCullResult::sg_list_t::iterator i = sCull->beginVisibleGroups(); i != sCull->endVisibleGroups(); ++i)
+	for (LLCullResult::sg_iterator i = sCull->beginVisibleGroups(); i != sCull->endVisibleGroups(); ++i)
 	{
 		LLSpatialGroup* group = *i;
 		if (!group->isDead() &&
@@ -9422,80 +9456,85 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar)
 
 	stateSort(*LLViewerCamera::getInstance(), result);
 	
-	const LLVector4a* ext = avatar->mDrawable->getSpatialExtents();
-	LLVector3 pos(avatar->getRenderPosition()+avatar->getImpostorOffset());
-
 	LLCamera camera = *viewer_camera;
-
-	camera.lookAt(viewer_camera->getOrigin(), pos, viewer_camera->getUpAxis());
-	
 	LLVector2 tdim;
+	U32 resY = 0;
+	U32 resX = 0;
 
-
-	LLVector4a half_height;
-	half_height.setSub(ext[1], ext[0]);
-	half_height.mul(0.5f);
-
-	LLVector4a left;
-	left.load3(camera.getLeftAxis().mV);
-	left.mul(left);
-	left.normalize3fast();
-
-	LLVector4a up;
-	up.load3(camera.getUpAxis().mV);
-	up.mul(up);
-	up.normalize3fast();
-
-	tdim.mV[0] = fabsf(half_height.dot3(left).getF32());
-	tdim.mV[1] = fabsf(half_height.dot3(up).getF32());
-
-	gGL.matrixMode(LLRender::MM_PROJECTION);
-	gGL.pushMatrix();
-	
-	F32 distance = (pos-camera.getOrigin()).length();
-	F32 fov = atanf(tdim.mV[1]/distance)*2.f*RAD_TO_DEG;
-	F32 aspect = tdim.mV[0]/tdim.mV[1];
-	glh::matrix4f persp = gl_perspective(fov, aspect, 1.f, 256.f);
-	glh_set_current_projection(persp);
-	gGL.loadMatrix(persp.m);
-
-	gGL.matrixMode(LLRender::MM_MODELVIEW);
-	gGL.pushMatrix();
-	glh::matrix4f mat;
-	camera.getOpenGLTransform(mat.m);
-
-	mat = glh::matrix4f((GLfloat*) OGL_TO_CFR_ROTATION) * mat;
-
-	gGL.loadMatrix(mat.m);
-	glh_set_current_modelview(mat);
-
-	glClearColor(0.0f,0.0f,0.0f,0.0f);
-	gGL.setColorMask(true, true);
-	
-	// get the number of pixels per angle
-	F32 pa = gViewerWindow->getWindowHeightRaw() / (RAD_TO_DEG * viewer_camera->getView());
-
-	//get resolution based on angle width and height of impostor (double desired resolution to prevent aliasing)
-	U32 resY = llmin(nhpo2((U32) (fov*pa)), (U32) 512);
-	U32 resX = llmin(nhpo2((U32) (atanf(tdim.mV[0]/distance)*2.f*RAD_TO_DEG*pa)), (U32) 512);
-
-	if (!avatar->mImpostor.isComplete() || resX != avatar->mImpostor.getWidth() ||
-		resY != avatar->mImpostor.getHeight())
 	{
-		static const LLCachedControl<bool> shadow_precision("DeferredHighPrecision",true); //TO-DO: Profile 16bit format later
-		avatar->mImpostor.allocate(resX,resY, (!LLPipeline::sRenderDeferred || shadow_precision) ? GL_RGBA : GL_RGBA16F_ARB,TRUE,FALSE);
+		const LLVector4a* ext = avatar->mDrawable->getSpatialExtents();
+		LLVector3 pos(avatar->getRenderPosition()+avatar->getImpostorOffset());
 
-		if (LLPipeline::sRenderDeferred)
+		camera.lookAt(viewer_camera->getOrigin(), pos, viewer_camera->getUpAxis());
+	
+		LLVector4a half_height;
+		half_height.setSub(ext[1], ext[0]);
+		half_height.mul(0.5f);
+
+		LLVector4a left;
+		left.load3(camera.getLeftAxis().mV);
+		left.mul(left);
+		left.normalize3fast();
+
+		LLVector4a up;
+		up.load3(camera.getUpAxis().mV);
+		up.mul(up);
+		up.normalize3fast();
+
+		tdim.mV[0] = fabsf(half_height.dot3(left).getF32());
+		tdim.mV[1] = fabsf(half_height.dot3(up).getF32());
+
+		gGL.matrixMode(LLRender::MM_PROJECTION);
+		gGL.pushMatrix();
+	
+		F32 distance = (pos-camera.getOrigin()).length();
+		F32 fov = atanf(tdim.mV[1]/distance)*2.f*RAD_TO_DEG;
+		F32 aspect = tdim.mV[0]/tdim.mV[1];
+		glh::matrix4f persp = gl_perspective(fov, aspect, 1.f, 256.f);
+		glh_set_current_projection(persp);
+		gGL.loadMatrix(persp.m);
+
+		gGL.matrixMode(LLRender::MM_MODELVIEW);
+		gGL.pushMatrix();
+		glh::matrix4f mat;
+		camera.getOpenGLTransform(mat.m);
+
+		mat = glh::matrix4f((GLfloat*) OGL_TO_CFR_ROTATION) * mat;
+
+		gGL.loadMatrix(mat.m);
+		glh_set_current_modelview(mat);
+
+		glClearColor(0.0f,0.0f,0.0f,0.0f);
+		gGL.setColorMask(true, true);
+	
+		// get the number of pixels per angle
+		F32 pa = gViewerWindow->getWindowHeightRaw() / (RAD_TO_DEG * viewer_camera->getView());
+
+		//get resolution based on angle width and height of impostor (double desired resolution to prevent aliasing)
+		resY = llmin(nhpo2((U32) (fov*pa)), (U32) 512);
+		resX = llmin(nhpo2((U32) (atanf(tdim.mV[0]/distance)*2.f*RAD_TO_DEG*pa)), (U32) 512);
+
+		if (!avatar->mImpostor.isComplete())
 		{
-			addDeferredAttachments(avatar->mImpostor);
+			avatar->mImpostor.allocate(resX,resY,GL_RGBA,TRUE,FALSE);
+
+			if (LLPipeline::sRenderDeferred)
+			{
+				addDeferredAttachments(avatar->mImpostor);
+			}
+		
+			gGL.getTexUnit(0)->bind(&avatar->mImpostor);
+			gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
+			gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+		}
+		else if(resX != avatar->mImpostor.getWidth() ||
+			resY != avatar->mImpostor.getHeight())
+		{
+			avatar->mImpostor.resize(resX,resY,GL_RGBA);
 		}
 
-		gGL.getTexUnit(0)->bind(&avatar->mImpostor);
-		gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
-		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+		avatar->mImpostor.bindTarget();
 	}
-
-	avatar->mImpostor.bindTarget();
 
 	if (LLPipeline::sRenderDeferred)
 	{
@@ -9597,22 +9636,22 @@ BOOL LLPipeline::hasRenderBatches(const U32 type) const
 	return sCull->getRenderMapSize(type) > 0;
 }
 
-LLCullResult::drawinfo_list_t::iterator LLPipeline::beginRenderMap(U32 type)
+LLCullResult::drawinfo_iterator LLPipeline::beginRenderMap(U32 type)
 {
 	return sCull->beginRenderMap(type);
 }
 
-LLCullResult::drawinfo_list_t::iterator LLPipeline::endRenderMap(U32 type)
+LLCullResult::drawinfo_iterator LLPipeline::endRenderMap(U32 type)
 {
 	return sCull->endRenderMap(type);
 }
 
-LLCullResult::sg_list_t::iterator LLPipeline::beginAlphaGroups()
+LLCullResult::sg_iterator LLPipeline::beginAlphaGroups()
 {
 	return sCull->beginAlphaGroups();
 }
 
-LLCullResult::sg_list_t::iterator LLPipeline::endAlphaGroups()
+LLCullResult::sg_iterator LLPipeline::endAlphaGroups()
 {
 	return sCull->endAlphaGroups();
 }
@@ -9735,5 +9774,11 @@ void LLPipeline::clearRenderTypeMask(U32 type, ...)
 	{
 		llerrs << "Invalid render type." << llendl;
 	}
+}
+
+void LLPipeline::addDebugBlip(const LLVector3& position, const LLColor4& color)
+{
+	DebugBlip blip(position, color);
+	mDebugBlips.push_back(blip);
 }
 

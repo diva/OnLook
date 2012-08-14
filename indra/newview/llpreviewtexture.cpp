@@ -39,6 +39,7 @@
 #include "llcombobox.h"
 #include "statemachine/aifilepicker.h"
 #include "llfloaterinventory.h"
+#include "llimagepng.h"
 #include "llimagetga.h"
 #include "llinventory.h"
 #include "llnotificationsutil.h"
@@ -375,17 +376,27 @@ BOOL LLPreviewTexture::canSaveAs() const
 	return mIsCopyable && !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
 }
 
+static bool sPng(false);
 
 // virtual
-void LLPreviewTexture::saveAs()
+void LLPreviewTexture::saveAsType(BOOL png)
 {
 	if( mLoadingFullImage )
 		return;
 
 	const LLViewerInventoryItem* item = getItem() ;
 	AIFilePicker* filepicker = AIFilePicker::create();
-	filepicker->open(item ? LLDir::getScrubbedFileName(item->getName()) + ".tga" : LLStringUtil::null, FFSAVE_TGA, "", "image");
-	filepicker->run(boost::bind(&LLPreviewTexture::saveAs_continued, this, item, filepicker));
+	sPng = png;
+	if(png)
+	{
+		filepicker->open(item ? LLDir::getScrubbedFileName(item->getName()) + ".png" : LLStringUtil::null, FFSAVE_PNG, "", "image");
+		filepicker->run(boost::bind(&LLPreviewTexture::saveAs_continued, this, item, filepicker));
+	}
+	else
+	{
+		filepicker->open(item ? LLDir::getScrubbedFileName(item->getName()) + ".tga" : LLStringUtil::null, FFSAVE_TGA, "", "image");
+		filepicker->run(boost::bind(&LLPreviewTexture::saveAs_continued, this, item, filepicker));
+	}
 }
 
 void LLPreviewTexture::saveAs_continued(LLViewerInventoryItem const* item, AIFilePicker* filepicker)
@@ -433,14 +444,16 @@ void LLPreviewTexture::onFileLoadedForSave(BOOL success,
 
 	if( self && final && success )
 	{
+		//FIXME: There has to be a better way
+		LLPointer<LLImagePNG> image_png = new LLImagePNG;
 		LLPointer<LLImageTGA> image_tga = new LLImageTGA;
-		if( !image_tga->encode( src ) )
+		if( sPng ? !image_png->encode( src, 0.0 ) : !image_tga->encode( src ) )
 		{
 			LLSD args;
 			args["FILE"] = self->mSaveFileName;
 			LLNotificationsUtil::add("CannotEncodeFile", args);
 		}
-		else if( !image_tga->save( self->mSaveFileName ) )
+		else if( sPng ? !image_png->save( self->mSaveFileName ) : !image_tga->save( self->mSaveFileName ) )
 		{
 			LLSD args;
 			args["FILE"] = self->mSaveFileName;

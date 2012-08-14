@@ -148,7 +148,7 @@ const char *LLAssetType::lookup(LLAssetType::EType asset_type)
 }
 
 // static
-LLAssetType::EType LLAssetType::lookup( const char* name )
+LLAssetType::EType LLAssetType::lookup(const char* name)
 {
 	return lookup(ll_safe_string(name));
 }
@@ -186,7 +186,7 @@ const char *LLAssetType::lookupHumanReadable(LLAssetType::EType asset_type)
 }
 
 // static
-LLAssetType::EType LLAssetType::lookupHumanReadable( const char* name )
+LLAssetType::EType LLAssetType::lookupHumanReadable(const char* name)
 {
 	return lookupHumanReadable(ll_safe_string(name));
 }
@@ -208,12 +208,9 @@ LLAssetType::EType LLAssetType::lookupHumanReadable(const std::string& readable_
 	return AT_NONE;
 }
 
-//NOTE: LLAssetType::lookupDragAndDropType & LLAssetType::generateDescriptionFor moved to newview/llviewerassettype.h
-
 // static
 bool LLAssetType::lookupCanLink(EType asset_type)
 {
-	//Check that enabling all these other types as linkable doesn't break things.
 	const LLAssetDictionary *dict = LLAssetDictionary::getInstance();
 	const AssetEntry *entry = dict->lookup(asset_type);
 	if (entry)
@@ -221,9 +218,6 @@ bool LLAssetType::lookupCanLink(EType asset_type)
 		return entry->mCanLink;
 	}
 	return false;
-	
-	/*return (asset_type == AT_CLOTHING || asset_type == AT_OBJECT || asset_type == AT_CATEGORY ||
-			asset_type == AT_BODYPART || asset_type == AT_GESTURE);*/
 }
 
 // static
@@ -268,4 +262,3 @@ bool LLAssetType::lookupIsAssetIDKnowable(EType asset_type)
 	}
 	return false;
 }
-

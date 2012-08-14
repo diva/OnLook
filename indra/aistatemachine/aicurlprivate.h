@@ -59,6 +59,9 @@ void stopCurlThread(void);
 class ThreadSafeCurlEasyRequest;
 class ThreadSafeBufferedCurlEasyRequest;
 
+#define DECLARE_SETOPT(param_type) \
+	CURLcode setopt(CURLoption option, param_type parameter)
+
 // This class wraps CURL*'s.
 // It guarantees that a pointer is cleaned up when no longer needed, as required by libcurl.
 class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEvents {
@@ -75,8 +78,30 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	void reset(void) { llassert(!mActiveMultiHandle); curl_easy_reset(mEasyHandle); }
 
 	// Set options for a curl easy handle.
-	template<typename BUILTIN>
-	  CURLcode setopt(CURLoption option, BUILTIN parameter);
+	DECLARE_SETOPT(long);
+	DECLARE_SETOPT(long long);
+	DECLARE_SETOPT(void const*);
+	DECLARE_SETOPT(curl_debug_callback);
+	DECLARE_SETOPT(curl_write_callback);
+	//DECLARE_SETOPT(curl_read_callback);	Same type as curl_write_callback
+	DECLARE_SETOPT(curl_ssl_ctx_callback);
+	DECLARE_SETOPT(curl_conv_callback);
+#if 0	// Not used by the viewer.
+	DECLARE_SETOPT(curl_progress_callback);
+	DECLARE_SETOPT(curl_seek_callback);
+	DECLARE_SETOPT(curl_ioctl_callback);
+	DECLARE_SETOPT(curl_sockopt_callback);
+	DECLARE_SETOPT(curl_opensocket_callback);
+	DECLARE_SETOPT(curl_closesocket_callback);
+	DECLARE_SETOPT(curl_sshkeycallback);
+	DECLARE_SETOPT(curl_chunk_bgn_callback);
+	DECLARE_SETOPT(curl_chunk_end_callback);
+	DECLARE_SETOPT(curl_fnmatch_callback);
+#endif
+	// Automatically cast int types to a long. Note that U32/S32 are int and
+	// that you can overload int and long even if they have the same size.
+	CURLcode setopt(CURLoption option, U32 parameter) { return setopt(option, (long)parameter); }
+	CURLcode setopt(CURLoption option, S32 parameter) { return setopt(option, (long)parameter); }
 
 	// Clone a libcurl session handle using all the options previously set.
 	//CurlEasyHandle(CurlEasyHandle const& orig);
@@ -86,11 +111,21 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	char* unescape(char* url, int inlength , int* outlength);
 
 	// Extract information from a curl handle.
-	CURLcode getinfo(CURLINFO info, void* data);
-#if _WIN64 || __x86_64__ || __ppc64__
+  private:
+	CURLcode getinfo_priv(CURLINFO info, void* data);
+  public:
+	// The rest are inlines to provide some type-safety.
+	CURLcode getinfo(CURLINFO info, char** data) { return getinfo_priv(info, data); }
+	CURLcode getinfo(CURLINFO info, curl_slist** data) { return getinfo_priv(info, data); }
+	CURLcode getinfo(CURLINFO info, double* data) { return getinfo_priv(info, data); }
+	CURLcode getinfo(CURLINFO info, long* data) { return getinfo_priv(info, data); }
+#ifdef __LP64__	// sizeof(long) > sizeof(int) ?
 	// Overload for integer types that are too small (libcurl demands a long).
-	CURLcode getinfo(CURLINFO info, S32* data) { long ldata; CURLcode res = getinfo(info, &ldata); *data = static_cast<S32>(ldata); return res; }
-	CURLcode getinfo(CURLINFO info, U32* data) { long ldata; CURLcode res = getinfo(info, &ldata); *data = static_cast<U32>(ldata); return res; }
+	CURLcode getinfo(CURLINFO info, S32* data) { long ldata; CURLcode res = getinfo_priv(info, &ldata); *data = static_cast<S32>(ldata); return res; }
+	CURLcode getinfo(CURLINFO info, U32* data) { long ldata; CURLcode res = getinfo_priv(info, &ldata); *data = static_cast<U32>(ldata); return res; }
+#else
+	CURLcode getinfo(CURLINFO info, S32* data) { return getinfo_priv(info, static_cast<long*>(data)); }
+	CURLcode getinfo(CURLINFO info, U32* data) { return getinfo_priv(info, static_cast<long*>(data)); }
 #endif
 
 	// Perform a file transfer (blocking).
@@ -108,6 +143,7 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	CURL* mEasyHandle;
 	CURLM* mActiveMultiHandle;
 	char* mErrorBuffer;
+	AIPostFieldPtr mPostField;		// This keeps the POSTFIELD data alive for as long as the easy handle exists.
 	bool mQueuedForRemoval;			// Set if the easy handle is (probably) added to the multi handle, but is queued for removal.
 #ifdef SHOW_ASSERT
   public:
@@ -155,18 +191,13 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// Return the underlying curl easy handle.
 	CURL* getEasyHandle(void) const { return mEasyHandle; }
 
+	// Keep POSTFIELD data alive.
+	void setPostField(AIPostFieldPtr const& post_field_ptr) { mPostField = post_field_ptr; }
+
   private:
 	// Return, and possibly create, the curl (easy) error buffer used by the current thread.
 	static char* getTLErrorBuffer(void);
 };
-
-template<typename BUILTIN>
-CURLcode CurlEasyHandle::setopt(CURLoption option, BUILTIN parameter)
-{
-  llassert(!mActiveMultiHandle);
-  setErrorBuffer();
-  return check_easy_code(curl_easy_setopt(mEasyHandle, option, parameter));
-}
 
 // CurlEasyRequest adds a slightly more powerful interface that can be used
 // to set the options on a curl easy handle.
@@ -181,9 +212,13 @@ CURLcode CurlEasyHandle::setopt(CURLoption option, BUILTIN parameter)
 // AICurlEasyRequest is deleted, then also the ThreadSafeCurlEasyRequest is deleted
 // and the CurlEasyRequest destructed.
 class CurlEasyRequest : public CurlEasyHandle {
+  private:
+	void setPost_raw(S32 size, char const* data);
   public:
+	void setPost(S32 size) { setPost_raw(size, NULL); }
+	void setPost(AIPostFieldPtr const& postdata, S32 size);
+	void setPost(char const* data, S32 size) { setPost(new AIPostField(data), size); }
 	void setoptString(CURLoption option, std::string const& value);
-	void setPost(char const* postdata, S32 size);
 	void addHeader(char const* str);
 
   private:
@@ -408,16 +443,41 @@ class CurlMultiHandle : public boost::noncopyable {
 
   public:
 	// Set options for a curl multi handle.
-	template<typename BUILTIN>
-	  CURLMcode setopt(CURLMoption option, BUILTIN parameter);
+	CURLMcode setopt(CURLMoption option, long parameter);
+	CURLMcode setopt(CURLMoption option, curl_socket_callback parameter);
+	CURLMcode setopt(CURLMoption option, curl_multi_timer_callback parameter);
+	CURLMcode setopt(CURLMoption option, void* parameter);
 
 	// Returns total number of existing CURLM* handles (excluding ones created outside this class).
 	static U32 getTotalMultiHandles(void) { return sTotalMultiHandles; }
 };
 
-template<typename BUILTIN>
-CURLMcode CurlMultiHandle::setopt(CURLMoption option, BUILTIN parameter)
+// Overload the setopt methods in order to enforce the correct types (ie, convert an int to a long).
+
+// curl_multi_setopt may only be passed a long,
+inline CURLMcode CurlMultiHandle::setopt(CURLMoption option, long parameter)
 {
+  llassert(option == CURLMOPT_MAXCONNECTS || option == CURLMOPT_PIPELINING);
+  return check_multi_code(curl_multi_setopt(mMultiHandle, option, parameter));
+}
+
+// ... or a function pointer,
+inline CURLMcode CurlMultiHandle::setopt(CURLMoption option, curl_socket_callback parameter)
+{
+  llassert(option == CURLMOPT_SOCKETFUNCTION);
+  return check_multi_code(curl_multi_setopt(mMultiHandle, option, parameter));
+}
+
+inline CURLMcode CurlMultiHandle::setopt(CURLMoption option, curl_multi_timer_callback parameter)
+{
+  llassert(option == CURLMOPT_TIMERFUNCTION);
+  return check_multi_code(curl_multi_setopt(mMultiHandle, option, parameter));
+}
+
+// ... or an object pointer.
+inline CURLMcode CurlMultiHandle::setopt(CURLMoption option, void* parameter)
+{
+  llassert(option == CURLMOPT_SOCKETDATA || option == CURLMOPT_TIMERDATA);
   return check_multi_code(curl_multi_setopt(mMultiHandle, option, parameter));
 }
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="telehub" title="Punto de Teleporte">
+	<text name="status_text_connected">
+		Punto de Teleporte conectado al objeto [OBJECT]
+	</text>
+	<text name="status_text_not_connected">
+		Punto de Teleporte sin conectar.
+	</text>
+	<text name="help_text_connected">
+		Para quitar, pulsa desconectar.
+	</text>
+	<text name="help_text_not_connected">
+		Selecciona el objeto y pulsa Conectar el Punto de Teleporte.
+	</text>
+	<button label="Conectar el Punto de Teleporte" name="connect_btn"/>
+	<button label="Desconectar" name="disconnect_btn"/>
+	<text name="spawn_points_text">
+		Generar Puntos (posiciones, no objetos):
+	</text>
+	<button label="Añadir punto" name="add_spawn_point_btn"/>
+	<button label="Quitar punto" name="remove_spawn_point_btn"/>
+	<text name="spawn_point_help">
+		Selecciona el objeto y pulsa Añadir para
+especificar la posición.
+Hecho eso, puedes mover o borrar el objeto.
+Las posiciones son relativas al centro del
+Punto de Teleporte.
+Selecciona un ítem de la lista para mostrar su
+posición en el mundo.	
+	</text>
+</floater>

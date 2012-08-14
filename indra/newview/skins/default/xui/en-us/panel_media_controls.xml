@@ -63,7 +63,7 @@
 	     initial_val="0.5" left_delta="15" max_val="1" min_val="0"
 	     mouse_opaque="true" name="volume_slider" tool_tip="Master Volume"
 	     width="56" />
-	<button bottom="-19" control_name="MuteAudio" height="20"
+	<button bottom="-19" control_name="MuteAudio" height="20" scale_image="false" 
 	     image_selected="icn_speaker-muted_dark.tga"
 	     image_unselected="icn_speaker_dark.tga" label="" left_delta="56"
 	     name="mute_master" toggle="true" tool_tip="Master Mute" width="24" />

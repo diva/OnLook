@@ -122,6 +122,7 @@ static void onClickFly(void*);
 static void onClickPush(void*);
 static void onClickVoice(void*);
 static void onClickBuild(void*);
+static void onClickSeeAV(void*);
 static void onClickScripts(void*);
 static void onClickBuyLand(void*);
 static void onClickScriptDebug(void*);
@@ -168,6 +169,7 @@ mSquareMetersCommitted(0)
 	childSetAction("buyland", onClickBuyLand, this );
 	childSetAction("buycurrency", onClickBuyCurrency, this );
 	childSetAction("no_build", onClickBuild, this );
+	childSetAction("status_SeeAV", onClickSeeAV, this );
 	childSetAction("no_scripts", onClickScripts, this );
 	childSetAction("restrictpush", onClickPush, this );
 	childSetAction("status_no_voice", onClickVoice, this );
@@ -829,6 +831,11 @@ static void onClickVoice(void* )
 static void onClickBuild(void*)
 {
 	LLNotificationsUtil::add("NoBuild");
+}
+
+static void onClickSeeAV(void*)
+{
+	LLNotificationsUtil::add("SeeAvatars");
 }
 
 static void onClickScripts(void*)

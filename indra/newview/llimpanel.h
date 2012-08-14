@@ -48,6 +48,8 @@ class LLInventoryItem;
 class LLInventoryCategory;
 class LLIMSpeakerMgr;
 class LLPanelActiveSpeakers;
+class LLPanel;
+class LLButton;
 
 class LLVoiceChannel : public LLVoiceClientStatusObserver
 {
@@ -385,6 +387,13 @@ private:
 	boost::signals2::connection mFocusLostSignal;
 
 
+	CachedUICtrl<LLPanel> mActiveSpeakersPanel;
+	CachedUICtrl<LLButton> mToggleActiveSpeakersBtn;
+	CachedUICtrl<LLUICtrl> mVolumeSlider;
+	CachedUICtrl<LLButton> mEndCallBtn;
+	CachedUICtrl<LLButton> mStartCallBtn;
+	CachedUICtrl<LLButton> mSendBtn;
+	CachedUICtrl<LLButton> mMuteBtn;
 
 	void disableWhileSessionStarting();
 

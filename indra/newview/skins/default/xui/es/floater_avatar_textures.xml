@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="avatar_texture_debug" title="Texturas del Avatar" >
+	<button label="Enviar IDs a la Consola" label_selected="Volcado" name="Dump"/>
+	<!-- The names of the following must match the definitions in llvoavatardefines.cpp -->
+	<texture_picker label="Pelo Base" name="hair-baked"/>
+	<texture_picker label="Pelo" name="hair_grain"/>
+	<texture_picker label="Ojos Base" name="eyes-baked"/>
+	<texture_picker label="ojos" name="eyes_iris"/>
+	<texture_picker label="Cabeza Base" name="head-baked"/>
+	<texture_picker label="Maquillaje" name="head_bodypaint"/>
+	<texture_picker label="Tatuajes Cabeza" name="head_tattoo"/>
+	<texture_picker label="Tatuaje Parte Superior del Cuerpo" name="upper_tattoo"/>
+	<texture_picker label="Tatuaje Parte Inferior del Cuerpo" name="lower_tattoo"/>
+	<texture_picker label="Base Parte Superior del Cuerpo" name="upper-baked"/>
+	<texture_picker label="Piel Parte Superior del Cuerpo" name="upper_bodypaint"/>
+	<texture_picker label="Camiseta" name="upper_undershirt"/>
+	<texture_picker label="Camisa" name="upper_shirt"/>
+	<texture_picker label="Chaqueta" name="upper_jacket" />
+	<texture_picker label="Guantes" name="upper_gloves"/>
+	<texture_picker label="Base Parte Inferior del Cuerpo" name="lower-baked"/>
+	<texture_picker label="Piel Parte Inferior del cuerpo" name="lower_bodypaint"/>
+	<texture_picker label="Calzoncillos" name="lower_underpants"/>
+	<texture_picker label="Pants" name="Pantalones"/>
+	<texture_picker label="Fada Chaqueta" name="lower_jacket"/>
+	<texture_picker label="Medias" name="lower_socks"/>
+	<texture_picker label="Falda Base" name="skirt-baked"/>
+	<texture_picker label="Falda" name="skirt"/>
+	<texture_picker label="Zapatos" name="lower_shoes"/>
+</floater>

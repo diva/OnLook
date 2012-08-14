@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="script search" title="Buscar / Reemplazar">
+	<check_box label="Mayúsculas/Minúsculas" name="case_text"/>
+	<button label="Buscar" label_selected="Buscar" name="search_btn"/>
+	<button label="Reemplazar" label_selected="Reemplazar" name="replace_btn"/>
+	<button label="Reemplazar Todo" label_selected="Reemplazar Todo" name="replace_all_btn"/>
+	<text name="search_label">
+		Buscar
+	</text>
+	<text name="replace_label">
+		 Reemplazar
+	</text>
+</floater>

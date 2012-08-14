@@ -113,6 +113,7 @@ void LLDrawable::init()
 	
 	mGeneration = -1;
 	mBinRadius = 1.f;
+	mBinIndex = -1;
 	mSpatialBridge = NULL;
 }
 
@@ -790,19 +791,7 @@ void LLDrawable::updateTexture()
 
 	if (getVOVolume())
 	{
-		/*if (isActive())
-		{
-			if (isRoot())
-			{
-				mQuietCount = 0;
-			}
-			else
-			{
-				getParent()->mQuietCount = 0;
-			}
-		}*/
-				
-		getVOVolume()->mFaceMappingChanged = TRUE;
+		//getVOVolume()->mFaceMappingChanged = TRUE;
 		gPipeline.markRebuild(this, LLDrawable::REBUILD_MATERIAL, TRUE);
 	}
 }
@@ -963,6 +952,12 @@ void LLDrawable::updateUVMinMax()
 {
 }
 
+LLSpatialGroup* LLDrawable::getSpatialGroup() const
+{ 
+	llassert((mSpatialGroupp == NULL) ? getBinIndex() == -1 : getBinIndex() != -1);
+	return mSpatialGroupp; 
+}
+
 void LLDrawable::setSpatialGroup(LLSpatialGroup *groupp)
 {
 /*if (mSpatialGroupp && (groupp != mSpatialGroupp))
@@ -985,6 +980,8 @@ void LLDrawable::setSpatialGroup(LLSpatialGroup *groupp)
 	}
 
 	mSpatialGroupp = groupp;
+
+	llassert((mSpatialGroupp == NULL) ? getBinIndex() == -1 : getBinIndex() != -1);
 }
 
 LLSpatialPartition* LLDrawable::getSpatialPartition()
@@ -1107,6 +1104,8 @@ LLSpatialBridge::LLSpatialBridge(LLDrawable* root, BOOL render_by_group, U32 dat
 	mDrawable = root;
 	root->setSpatialBridge(this);
 	
+	mBinIndex = -1;
+
 	mRenderType = mDrawable->mRenderType;
 	mDrawableType = mDrawable->mRenderType;
 	
@@ -1500,7 +1499,13 @@ void LLSpatialBridge::cleanupReferences()
 	LLDrawable::cleanupReferences();
 	if (mDrawable)
 	{
-		mDrawable->setSpatialGroup(NULL);
+		LLSpatialGroup* group = mDrawable->getSpatialGroup();
+		if (group)
+		{
+			group->mOctreeNode->remove(mDrawable);
+			mDrawable->setSpatialGroup(NULL);
+		}
+		
 		if (mDrawable->getVObj())
 		{
 			LLViewerObject::const_child_list_t& child_list = mDrawable->getVObj()->getChildren();
@@ -1511,7 +1516,12 @@ void LLSpatialBridge::cleanupReferences()
 				LLDrawable* drawable = child->mDrawable;					
 				if (drawable)
 				{
-					drawable->setSpatialGroup(NULL);
+					LLSpatialGroup* group = drawable->getSpatialGroup();
+					if (group)
+					{
+						group->mOctreeNode->remove(drawable);
+						drawable->setSpatialGroup(NULL);
+					}
 				}
 			}
 		}

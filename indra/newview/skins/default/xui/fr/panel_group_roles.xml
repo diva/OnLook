@@ -1,160 +1,277 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<panel label="Membres et rôles" name="roles_tab">
-	<text name="default_needs_apply_text">
-		Certains changements n&apos;ont pas été appliqués sur ce sous-onglet.
-	</text>
-	<text name="want_apply_text">
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel border="true" bottom="0" height="466" label="Membres &amp; R&#xF4;les" left="1"
+     name="roles_tab" width="418">
+	<string name="default_needs_apply_text">
+		Certains changements n&apos;ont pas &#xE9;t&#xE9; appliqu&#xE9;s sur ce sous-onglet.
+	</string>
+	<string name="want_apply_text">
 		Voulez-vous enregistrer les modifications ?
-	</text>
-	<text name="cant_delete_role">
-		Les Rôles Tout le monde et Propriétaires sont spéciaux et ne peuvent être supprimés.
-	</text>
-	<button label="?" name="help_button"/>
-	<panel name="members_header">
-		<text name="static">
-			Membres
+	</string>
+	<string name="help_text" />
+	<button bottom="-24" font="SansSerif" halign="center" height="16" label="?" left="391"
+	     name="help_button" width="20" />
+	<panel border="false" bottom="-24" height="24" left="7" name="members_header"
+	     visible="true" width="380">
+		<text bottom_delta="-20" font="SansSerifBig" halign="left" height="16" left="0"
+		     name="static" width="150">
+			Membres &amp; R&#xF4;les
 		</text>
-		<text name="static2">
-			Les rôles de chaque membre peuvent être personnalisés, ce qui permet une
+		<text bottom_delta="-36" font="SansSerifSmall" halign="left" height="32" left="0"
+		     name="static2" width="400">
+			Les r&#xF4;les de chaque membre peuvent &#xEA;tre personnalis&#xE9;s, ce qui permet une
 meilleure organisation du groupe.
 		</text>
 	</panel>
-	<panel name="roles_header">
-		<text name="static">
-			Rôles
+	<panel border="false" bottom_delta="0" height="24" left="7" name="roles_header"
+	     visible="false" width="380">
+		<text bottom_delta="-20" font="SansSerifBig" halign="left" height="16" left="0"
+		     name="static" width="100">
+			R&#xF4;les
 		</text>
-		<text name="role_properties_modifiable">
-			Sélectionnez un rôle ci-dessous. Vous pouvez modifier le nom, la
+		<text bottom_delta="-20" font="SansSerifSmall" halign="left" height="16" left="0"
+		     name="role_properties_modifiable" visible="false" width="394">
+			S&#xE9;lectionner un r&#xF4;le ci-dessous. Vous pouvez modifier le nom, la
 description et le titre du membre.
 		</text>
-		<text name="role_properties_not_modifiable">
-			Sélectionnez un rôle ci-dessous pour en connaître les propriétés, les
-membres et les pouvoirs.
+		<text bottom_delta="0" font="SansSerifSmall" halign="left" height="16" left="0"
+		     name="role_properties_not_modifiable" visible="true" width="394">
+			S&#xE9;lectionner un r&#xF4;le ci-dessous.
 		</text>
-		<text bottom_delta="-28" name="role_actions_modifiable">
-			Vous pouvez aussi assigner des pouvoirs au rôle.
+		<text bottom_delta="-14" font="SansSerifSmall" halign="left" height="16" left="0"
+		     name="role_actions_modifiable" visible="false" width="394">
+			
 		</text>
-		<text name="role_actions_not_modifiable">
-			Vous pouvez afficher mais non modifier les pouvoirs assignés.
+		<text bottom_delta="0" font="SansSerifSmall" halign="left" height="16" left="0"
+		     name="role_actions_not_modifiable" visible="true" width="394">
+			
 		</text>
 	</panel>
-	<panel name="actions_header">
-		<text name="static">
+	<panel border="false" bottom_delta="-20" height="24" left="7" name="actions_header"
+	     visible="false" width="380">
+		<text bottom_delta="0" font="SansSerifBig" halign="left" height="16" left="0"
+		     name="static" width="200">
 			Pouvoirs
 		</text>
-		<text name="static2">
-			Vous pouvez afficher la description du pouvoir et voir à quels rôles ou à
-quels membres ces pouvoirs sont assignés.
+		<text bottom_delta="-36" font="SansSerifSmall" halign="left" height="32" left="0"
+		     name="static2" width="394">
+			Vous pouvez afficher la description du pouvoir et voir &#xE0; quels rôles ou &#xE0;
+quels membres ces pouvoirs sont assign&#xE9;s.
 		</text>
 	</panel>
-	<tab_container height="164" name="roles_tab_container">
-		<panel height="148" label="Membres" name="members_sub_tab" tool_tip="Membres">
-			<line_editor bottom="127" name="search_text"/>
-			<button label="Rechercher" name="search_button" width="75"/>
-			<button label="Afficher tout" left_delta="80" name="show_all_button"/>
-			<name_list bottom_delta="-105" height="104" name="member_list">
-				<column label="Nom du membre" name="name"/>
-				<column label="Surface donnée" name="donated" width="116"/>
-				<column label="Dernière connexion" name="online" width="136"/>
+	<tab_container border="false" bottom_delta="-190" height="180" left="6"
+	     name="roles_tab_container" tab_position="top" width="406">
+		<panel border="true" bottom="0" height="164" label="Membres" left="1"
+		     name="members_sub_tab" select="true" tool_tip="Membres" width="406">
+			<line_editor bevel_style="in" border_style="line"
+			     border_thickness="1" bottom="143" follows="left|top" font="SansSerifSmall"
+			     height="16" is_unicode="false" left="4" max_length="63" mouse_opaque="true"
+			     name="search_text" width="100" />
+			<button bottom_delta="-2" font="SansSerifSmall" halign="center" height="20"
+			     label="Chercher" left_delta="105" name="search_button" width="60" />
+			<button bottom_delta="0" enabled="false" font="SansSerifSmall" halign="center"
+			     height="20" label="Tout Voir" left_delta="65" name="show_all_button"
+			     width="80" />
+			<name_list allow_calling_card_drop="false" background_visible="true" bottom_delta="-121"
+			     column_padding="0" draw_border="true" draw_heading="true"
+			     heading_font="SansSerifSmall"
+			     heading_height="14" height="120" left="4" multi_select="true"
+			     name="member_list" width="396">
+				<column label="Nom du Membre" name="name" width="136" />
+				<column label="Surface donn&#xE9;e" name="donated" width="136" />
+				<column label="Derni&#xE8;re Co" name="online" width="116" />
 			</name_list>
-			<button label="Inviter un membre..." name="member_invite" width="165"/>
-			<button label="Expulser un membre" name="member_eject"/>
-			<text name="help_text">
-				Vous pouvez ajouter ou supprimer les rôles assignés aux membres.
-Pour sélectionner plusieurs membres, cliquez sur leurs noms en maintenant la touche Ctrl enfoncée.
-			</text>
-		</panel>
-		<panel height="148" label="Rôles" name="roles_sub_tab">
-			<line_editor bottom="127" name="search_text"/>
-			<button label="Rechercher" name="search_button" width="75"/>
-			<button label="Afficher tout" left_delta="80" name="show_all_button"/>
-			<scroll_list bottom_delta="-104" height="104" name="role_list">
-				<column label="Nom du rôle" name="name"/>
-				<column label="Titre" name="title"/>
-				<column label="Membres" name="members"/>
-			</scroll_list>
-			<button label="Créer un rôle..." name="role_create"/>
-			<button label="Supprimer le rôle" name="role_delete"/>
-			<text name="help_text">
-				Chaque rôle possède un titre et des pouvoirs. Un membre peut avoir plusieurs rôles mais il ne peut y avoir que 10 rôles dans un groupe, Visiteur et Propriétaire inclus.
-			</text>
-			<string name="cant_delete_role">
-				Les rôles Tous et Propriétaires sont spéciaux et ne peuvent pas être supprimés.
+			<button bottom_delta="-20" font="SansSerif" halign="center" height="19"
+			     label="Inviter un Membre " left="4" name="member_invite" width="146" />
+			<button bottom_delta="0" font="SansSerif" halign="center" height="19"
+			     label="Ejecter du Groupe" left="-153" name="member_eject" width="146" />
+			<string name="help_text">
+			Vous pouvez ajouter ou supprimer les r&#xF4;les assign&#xE9;s aux membres.
+Pour s&#xE9;lectionner plusieurs membres, cliquez sur leurs noms en maintenant la touche Ctrl enfonc&#xE9;e.
 			</string>
+			<icon image_name="inv_folder_plain_closed.tga" name="power_folder_icon" width="16" height="16" visible="false"/> <!-- Hiding this until we can figure out why it's not showing up in the right place. -BG -->
 		</panel>
-		<panel height="148" label="Pouvoirs" name="actions_sub_tab">
-			<line_editor bottom="127" name="search_text"/>
-			<button label="Rechercher" name="search_button" width="75"/>
-			<button label="Afficher tout" left_delta="80" name="show_all_button"/>
-			<scroll_list bottom_delta="-120" height="118" name="action_list" tool_tip="Sélectionnez un pouvoir pour en afficher les détails.">
-				<column label="" name="icon"/>
-				<column label="" name="action"/>
+		<panel border="true" bottom="0" height="164" label="R&#xF4;les"
+		     left="1" name="roles_sub_tab" width="398">
+			<line_editor bevel_style="in" border_style="line"
+			     border_thickness="1" bottom="143" follows="left|top" font="SansSerifSmall"
+			     height="16" is_unicode="false" left="4" max_length="63" mouse_opaque="true"
+			     name="search_text" width="100" />
+			<button bottom_delta="-2" font="SansSerifSmall" halign="center" height="20"
+			     label="Chercher" left_delta="105" name="search_button" width="60" />
+			<button bottom_delta="0" enabled="false" font="SansSerifSmall" halign="center"
+			     height="20" label="Tout Voir" left_delta="65" name="show_all_button"
+			     width="80" />
+			<scroll_list allow_calling_card_drop="false" background_visible="true" bottom_delta="-120"
+			     column_padding="0" draw_border="true" draw_heading="true" enabled="true"
+			     follows="left|top"
+			     heading_font="SansSerifSmall" heading_height="14" height="120" left="4"
+			     mouse_opaque="true" multi_select="false" name="role_list" width="396">
+				<column label="Nom du R&#xF4;le" name="name" width="126" />
+				<column label="Titre" name="title" width="186" />
+				<column label="Membres" name="members" width="76" />
 			</scroll_list>
-			<text name="help_text">
-				Les pouvoirs déterminent les facultés de chaque membre dans le groupe.
-			</text>
+			<button bottom_delta="-21" font="SansSerif" halign="center" height="19"
+			     label="Nouveau R&#xF4;le..." left="4" name="role_create" width="146" />
+			<button bottom_delta="0" font="SansSerif" halign="center" height="19"
+			     label="Supprimer le R&#xF4;le" left="-153" name="role_delete" width="146" />
+			<string name="help_text">
+				Chaque r&#xF4;le poss&#xE8;de un titre et des pouvoirs. Un membre peut avoir plusieurs r&#xF4;les mais il ne peut y avoir que 10 r&#xF4;les dans un groupe, Visiteur et Propri&#xE9;taire inclus.
+			</string>
+			<string name="cant_delete_role">
+				Les &apos;Everyone&apos; t &apos;Owners&apos; sont des r&#xF4;les sp&#xE9;ciaux qui ne peuvent &#xEA;tre supprim&#xE9;s.
+			</string>
+			<icon height="16" image_name="inv_folder_plain_closed.tga" name="power_folder_icon"
+			     width="16" visible="false"/> <!-- Hiding this until we can figure out why it's not showing up in the right place. -BG -->
+			<icon height="16" image_name="checkbox_enabled_true.tga" name="power_all_have_icon"
+			     width="16" visible="false"/> <!-- Hiding this until we can figure out why it's not showing up in the right place. -BG -->
+			<icon height="16" image_name="checkbox_enabled_false.tga" name="power_partial_icon"
+			     width="16" visible="false"/> <!-- Hiding this until we can figure out why it's not showing up in the right place. -BG -->
+		</panel>
+		<panel border="true" bottom="0"
+		     height="164" label="Pouvoirs" left="1" name="actions_sub_tab" width="398">
+			<line_editor bevel_style="in" border_style="line"
+			     border_thickness="1" bottom="143" follows="left|top" font="SansSerifSmall"
+			     height="16" is_unicode="false" left="6" max_length="63" mouse_opaque="true"
+			     name="search_text" width="100" />
+			<button bottom_delta="-2" font="SansSerifSmall" halign="center" height="20"
+			     label="Chercher" left_delta="105" name="search_button" width="60" />
+			<button bottom_delta="0" enabled="false" font="SansSerifSmall" halign="center"
+			     height="20" label="Tout Voir" left_delta="65" name="show_all_button"
+			     width="80" />
+			<scroll_list allow_calling_card_drop="false" background_visible="true" bottom_delta="-134"
+			     column_padding="0" draw_border="true" draw_heading="false"
+			     draw_stripes="false"
+			     follows="left|top" height="134" left="6"
+			     mouse_opaque="true" multi_select="true" name="action_list"
+			     search_column="1" tool_tip=""
+			     width="392">
+				<column label="" name="icon" width="18" />
+				<column label="" name="action" width="356" />
+			</scroll_list>
+			<string name="help_text">
+				Permet aux membres de ce r&#xF4;le des actions sp&#xE9;cifiques. Les possibilit&#xE9;s sont vari&#xE9;es.
+			</string>
+			<icon image_name="inv_folder_plain_closed.tga" name="power_folder_icon" width="16" height="16" visible="false"/> <!-- Hiding this until we can figure out why it's not showing up in the right place. -BG -->
 		</panel>
 	</tab_container>
-	<panel name="members_footer">
-		<text name="static">
-			Rôles assignés
+	<panel border="false" bottom_delta="-235" height="215" left="7" name="members_footer"
+	     select="true" visible="true" width="406">
+		<text bottom_delta="0" font="SansSerif" halign="left" height="16" left="0"
+		     name="static" width="100">
+			R&#xF4;les assign&#xE9;s
 		</text>
-		<text name="static2">
-			Pouvoirs attribués
+		<text bottom_delta="0" font="SansSerif" halign="left" height="16" left="150"
+		     name="static2" width="150">
+			Pouvoirs attribu&#xE9;s
 		</text>
-		<scroll_list name="member_assigned_roles">
-			<column label="" name="checkbox"/>
-			<column label="" name="role"/>
+		<scroll_list bottom_delta="-199" draw_border="true" draw_heading="false"
+		     draw_stripes="false" enabled="false" height="198" left="0"
+		     multi_select="false" name="member_assigned_roles" width="145">
+			<column label="" name="checkbox" width="18" />
+			<column label="" name="role" width="109" />
 		</scroll_list>
-		<scroll_list name="member_allowed_actions" tool_tip="Pour avoir des détails sur chacun des pouvoirs attribués, allez à l&apos;onglet Pouvoirs.">
-			<column label="" name="icon"/>
-			<column label="" name="action"/>
+		<scroll_list bottom_delta="0" draw_border="true" draw_heading="false" draw_stripes="false"
+		     enabled="false" height="198" left="150" multi_select="false"
+		     name="member_allowed_actions"
+		     tool_tip="Pour plus de d&#xE9;tails, voir l'onglet &#x22;Pouvoirs&#x22;."
+		     width="254">
+			<column label="" name="icon" width="14" />
+			<column label="" name="action" width="224" />
 		</scroll_list>
 	</panel>
-	<panel name="roles_footer">
-		<text name="static">
+	<panel border="false" bottom_delta="0" height="215" left="7" name="roles_footer"
+	     visible="false" width="406">
+		<text bottom_delta="0" font="SansSerif" halign="left" height="16" left="0"
+		     name="static" width="100">
 			Nom
 		</text>
-		<text name="static2">
+		<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+		     bottom_delta="0" drop_shadow_visible="false" font="SansSerif" halign="left"
+		     height="16" left="150" name="static2"
+		     width="100">
 			Description
 		</text>
-		<line_editor name="role_name">
-			Employés
+		<line_editor bevel_style="in" bg_visible="false"
+		     border_drop_shadow_visible="false" border_style="line" border_thickness="1"
+		     border_visible="false" bottom_delta="-16" drop_shadow_visible="false"
+		     follows="left|top" font="SansSerifSmall" height="16" is_unicode="false"
+		     left="0" max_length="20" mouse_opaque="true" name="role_name"
+		     width="145" spell_check="true">
+			Employ&#xE9;s
 		</line_editor>
-		<text name="static3">
+		<text bottom_delta="-16" font="SansSerif" halign="left" height="16" left="0"
+		     name="static3" width="100">
 			Titre
 		</text>
-		<line_editor name="role_title">
+		<line_editor bevel_style="in" bg_visible="false" border_drop_shadow_visible="false"
+		     border_style="line" border_thickness="1" border_visible="false"
+		     bottom_delta="-16" drop_shadow_visible="false" follows="left|top"
+		     font="SansSerifSmall" height="16" is_unicode="false" left="0"
+		     max_length="20" mouse_opaque="true" name="role_title"
+		     width="145" spell_check="true">
 			(en attente)
 		</line_editor>
-		<text_editor name="role_description">
+		<text_editor bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+		     bottom_delta="0" drop_shadow_visible="false" font="SansSerifSmall"
+		     h_pad="0" halign="left" height="48" hide_scrollbar="true" left="150"
+		     max_length="254" name="role_description"
+		     v_pad="0" width="254"
+		     word_wrap="true" spell_check="true">
 			(en attente)
 		</text_editor>
-		<text name="static4">
-			Membres assignés
+		<text bottom_delta="-26" font="SansSerif" halign="left" height="16" left="0"
+		     name="static4" width="120">
+			Membres assign&#xE9;s
 		</text>
-		<text name="static5" tool_tip="Une liste des pouvoirs auquel le rôle sélectionné a accès.">
-			Pouvoirs attribués
+		<text bottom_delta="0" font="SansSerif" halign="left" height="16" left="150"
+		     name="static5"
+		     tool_tip=""
+		     width="240">
+			Pouvoirs attribu&#xE9;s
 		</text>
-		<check_box label="Membres visibles" name="role_visible_in_list" tool_tip="Définit si les membres de ce rôle sont visibles à partir de l&apos;onglet Général aux personnes en dehors du groupe."/>
-		<scroll_list name="role_allowed_actions" tool_tip="Pour avoir des détails sur chacun des pouvoirs attribués, allez à l&apos;onglet Pouvoirs.">
-			<column label="" name="icon"/>
-			<column label="" name="checkbox"/>
-			<column label="" name="action"/>
+		<name_list bottom_delta="-105" draw_border="true" draw_stripes="false" enabled="false"
+		     height="105" left="0" multi_select="false" name="role_assigned_members"
+		     width="145" />
+		<check_box bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="16"
+		     initial_value="false" label="Membres visibles" left="0"
+		     mouse_opaque="true" name="role_visible_in_list" radio_style="false"
+		     tool_tip="Définit si les membres de ce rôle sont visibles dans l'onglet Général pour les personnes externes."
+		     width="361" />
+		<scroll_list bottom_delta="0" draw_border="true" draw_heading="false" draw_stripes="false"
+		     height="125" left="150" multi_select="false" name="role_allowed_actions"
+		     search_column="2"
+		     tool_tip="Pour plus de d&#xE9;tails, voir l'onglet &#x22;Pouvoirs&#x22;."
+		     width="254">
+			<column label="" name="icon" width="2" />
+			<column label="" name="checkbox" width="16" />
+			<column label="" name="action" width="220" />
 		</scroll_list>
 	</panel>
-	<panel name="actions_footer">
-		<text name="static">
+	<panel border="false" bottom_delta="0" height="215" left="7" name="actions_footer"
+	     visible="false" width="406">
+		<text bottom_delta="0" font="SansSerif" halign="left" height="16" left="0"
+		     name="static" width="100">
 			Description
 		</text>
-		<text_editor name="action_description">
-			Ce pouvoir permet d&apos;expulser des membres du groupe. Seul un propriétaire peut expulser un autre propriétaire.
+		<text_editor bevel_style="in" bottom_delta="-48"
+		     enabled="false" font="SansSerifSmall" h_pad="0" halign="left" height="48"
+		     hide_scrollbar="true" left="0" max_length="512" name="action_description"
+		     v_pad="0" width="404" word_wrap="true">
+			Ce pouvoir permet d&apos;expulser des membres du groupe. Seul un propri&#xE9;taire peut expulser un autre propri&#xE9;taire.
 		</text_editor>
-		<text name="static2">
-			Rôles avec ce pouvoir
+		<text bottom_delta="-26" font="SansSerif" halign="left" height="16" left="0"
+		     name="static2" width="145">
+			R&#xF4;les avec ce pouvoir :
 		</text>
-		<text name="static3">
-			Membres avec ce pouvoir
+		<text bottom_delta="0" font="SansSerif" halign="left" height="16" left="150"
+		     name="static3" width="200">
+			Membres avec ce pouvoir :
 		</text>
+		<scroll_list bottom_delta="-125" draw_border="true" enabled="false" height="125" left="0"
+		     multi_select="false" name="action_roles" width="145" />
+		<name_list background_opaque="true" background_visible="true" bg_alpha_color="blue"
+		     bg_opaque_color="grey" bottom_delta="0" draw_border="true" enabled="false"
+		     height="125" left="150" multi_select="false" name="action_members"
+		     width="254" />
 	</panel>
 </panel>

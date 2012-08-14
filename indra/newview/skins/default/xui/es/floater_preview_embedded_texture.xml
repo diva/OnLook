@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="preview_texture">
+	<button label="Copiar al Inventario" name="Copy To Inventory"/>
+	<text name="dimensions">Dimensiones: [WIDTH] x [HEIGHT]</text>
+</floater>

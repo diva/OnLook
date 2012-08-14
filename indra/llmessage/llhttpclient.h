@@ -34,7 +34,6 @@
 #include <string>
 
 #include <boost/intrusive_ptr.hpp>
-//#include "llurlrequest.h"
 #include "llassettype.h"
 #include "llcurl.h"
 #include "lliopipe.h"
@@ -155,13 +154,7 @@ public:
 		///< for testing
 	static LLPumpIO &getPump();
 		///< Hippo special
-
 #ifdef AI_UNUSED
-	static void setCertVerifyCallback(LLURLRequest::SSLCertVerifyCallback callback);
-	static  LLURLRequest::SSLCertVerifyCallback getCertVerifyCallback() { return mCertVerifyCallback; }
-
-protected:
-	static LLURLRequest::SSLCertVerifyCallback mCertVerifyCallback;
 #endif // AI_UNUSED
 };
 

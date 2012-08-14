@@ -7,29 +7,29 @@
 		<column label="Surface" name="area"/>
 		<column label="" name="hidden"/>
 	</scroll_list>
-	<button label="Téléporter" label_selected="Téléporter" name="Teleport" tool_tip="Téléportez-vous au milieu de ce terrain."/>
-	<button label="Voir sur la carte" label_selected="Voir sur la carte" name="Show on Map" tool_tip="Affichez ce terrain sur la carte du monde."/>
+	<button label="Téléporter" label_selected="Téléporter" name="Teleport" tool_tip="Téléporter au milieu de ce terrain."/>
+	<button label="Voir sur la carte" label_selected="Voir sur la carte" name="Show on Map" tool_tip="Afficher ce terrain sur la carte du monde."/>
 	<text name="contrib_label">
-		Vos contributions :
+		Vos contributions:
 	</text>
 	<scroll_list name="grant list">
 		<column label="Groupe" name="group"/>
 		<column label="Surface" name="area"/>
 	</scroll_list>
 	<text name="allowed_label">
-		Surface de terrain autorisée avec votre compte :
+		Surface de terrain autorisée avec votre compte:
 	</text>
 	<text name="allowed_text">
 		[AREA] m²
 	</text>
 	<text name="current_label">
-		Surface occupée actuellement :
+		Surface occupée actuellement:
 	</text>
 	<text name="current_text">
 		[AREA] m²
 	</text>
 	<text name="available_label">
-		Disponible à l&apos;achat :
+		Disponible à l'achat:
 	</text>
 	<text name="available_text">
 		[AREA] m²

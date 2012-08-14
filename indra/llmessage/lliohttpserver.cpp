@@ -33,7 +33,6 @@
 #include "llapr.h"
 #include "llbuffer.h"
 #include "llbufferstream.h"
-#include "llfasttimer.h"
 #include "llhttpnode.h"
 #include "lliopipe.h"
 #include "lliosocket.h"

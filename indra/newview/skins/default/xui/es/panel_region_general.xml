@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel label="Región" name="General">
+	<text name="region_text_lbl">
+		Región:
+	</text>
+	<text name="region_text">
+		desconocida
+	</text>
+	<text name="version_channel_text_lbl">
+		Versión: 
+	</text>
+	<text name="version_channel_text">
+		desconocida
+	</text>
+	<text name="region_type_lbl">
+		Tipo: 
+	</text>
+	<text name="region_type">
+		desconocido
+	</text>
+	<check_box label="Bloquear Terraformado" name="block_terraform_check"/>
+	<button label="?" name="terraform_help"/>
+	<check_box label="Bloquear Volar" name="block_fly_check"/>
+	<button label="?" name="fly_help"/>
+	<check_box label="Permitir Daño" name="allow_damage_check"/>
+	<button label="?" name="damage_help"/>
+	<check_box label="Restringir Empujones" name="restrict_pushobject"/>
+	<button label="?" name="restrict_pushobject_help"/>
+	<check_box label="Permitir reventa de terreno" name="allow_land_resell_check"/>
+	<button label="?" name="land_resell_help"/>
+	<check_box label="Permitir Unir/Dividir Terreno" name="allow_parcel_changes_check"/>
+	<button label="?" name="parcel_changes_help"/>
+	<check_box label="Bloquear Mostrar Parcela en la Búsqueda" name="block_parcel_search_check" tool_tip="Permitir (o no) que la gente vea a esta región y sus parcelas en los resultados de las búsquedas"/>
+	<button label="?" name="parcel_search_help"/>
+	<spinner label="Límite de Avatares" name="agent_limit_spin"/>
+	<button label="?" name="agent_limit_help"/>
+	<spinner label="Bonus de Objetos" name="object_bonus_spin"/>
+	<button label="?" name="object_bonus_help"/>
+	<text label="Calificación" name="access_text">
+		Calificación:
+	</text>
+	<combo_box label="Contenido" name="access_combo">
+		<combo_item name="Adult">
+			Adulto
+		</combo_item>
+		<combo_item name="Mature">
+			Mature
+		</combo_item>
+		<combo_item name="PG">
+			PG
+		</combo_item>
+	</combo_box>
+	<button label="?" name="access_help"/>
+	<button label="Aplicar" name="apply_btn"/>
+	<button label="Teleportar Usuario a su Base..." name="kick_btn"/>
+	<button label="Teleportar a todos los usuarios a su base..." name="kick_all_btn"/>
+	<button label="Enviar mensaje a la Región..." name="im_btn"/>
+	<button label="Administrar Telepuerto..." name="manage_telehub_btn"/>
+</panel>

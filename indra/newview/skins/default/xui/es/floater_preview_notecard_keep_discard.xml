@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="preview notecard" title="Nota:">
+	<text name="desc txt">
+		Descripción:
+	</text>
+	<menu_bar name="motecard_menu" >
+		<menu name="Edit" label="Editar">
+			<menu_item_call label="Deshacer" name="Undo"/>
+			<menu_item_call label="Rehacer" name="Redo"/>
+			<menu_item_call label="Cortar" name="Cut"/>
+			<menu_item_call label="Copiar" name="Copy"/>
+			<menu_item_call label="Pegar" name="Paste"/>
+			<menu_item_call label="Seleccionar Todo" name="Select All"/>
+			<menu_item_call label="Deseleccionar" name="Deselect"/>
+			<menu_item_call label="Buscar / Reemplazar..." name="Search / Replace..."/>
+		</menu>
+	</menu_bar>
+	<text_editor name="Notecard Editor">
+		Cargando...
+	</text_editor>
+	<button label="Mantener" label_selected="Mantener" name="Keep"/>
+	<button label="Guardar" label_selected="Guardar" name="Save"/>
+	<button label="Descartar" label_selected="Descartar" name="Discard"/>
+	<string name="no_object">
+		Incapaz de hallar el objeto contenido en esta nota.
+	</string>
+	<string name="not_allowed">
+		No tienes permiso para ver esta nota.
+	</string>
+</floater>

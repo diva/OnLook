@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="gestures" title="Gestos Activos">
+	<text name="help_label">
+		Pulsa dos veces en un gesto para reproducir las animaciones
+	</text>
+	<scroll_list name="gesture_list">
+		<column label="Disparador" name="trigger" width="75"/>
+		<column label="Tecla" name="shortcut"/>
+		<column label="Nombre" name="name"/>
+	</scroll_list>
+	<button label="Nueva" name="new_gesture_btn"/>
+	<!--
+	<button label="Inventory" name="inventory_btn"/>
+	-->
+	<button label="Editar" name="edit_btn"/>
+	<button label="Reproducir" name="play_btn"/>
+	<button label="Detener" name="stop_btn"/>
+</floater>

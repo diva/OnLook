@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel label="Terreno" name="Terrain">
+	<text name="region_text_lbl">
+		Región:
+	</text>
+	<text name="region_text">
+		desconocida
+	</text>
+	<spinner label="Altura del Agua" name="water_height_spin"/>
+	<button label="?" name="water_height_help"/>
+	<spinner label="Límite de elevación del Terreno" label_width="120" name="terrain_raise_spin"/>
+	<button label="?" name="terrain_raise_help"/>
+	<spinner label="Límite de bajada del Terreno" label_width="120" name="terrain_lower_spin"/>
+	<button label="?" name="terrain_lower_help"/>
+	<check_box label="Usar Sol del Estado" name="use_estate_sun_check"/>
+	<button label="?" name="use_estate_sun_help"/>
+	<check_box label="Sol Fijo" name="fixed_sun_check"/>
+	<button label="?" name="fixed_sun_help"/>
+	<slider label="Fase" name="sun_hour_slider"/>
+	<button label="Aplicar" name="apply_btn"/>
+	<button label="Descargar el RAW del terreno..." name="download_raw_btn" tool_tip="Disponible sólo para propietarios de estado, no para los administradores"/>
+	<button label="?" name="download_raw_help"/>
+	<button label="Subir un RAW de terreno..." name="upload_raw_btn" tool_tip="Disponible sólo para propietarios de estado, no para los administradores"/>
+	<button label="?" name="upload_raw_help"/>
+	<button label="Predeterminar Terreno" name="bake_terrain_btn" tool_tip="Definir el terreno actual como punto medio para los límites de elevación/bajada"/>
+	<button label="?" name="bake_terrain_help"/>
+</panel>

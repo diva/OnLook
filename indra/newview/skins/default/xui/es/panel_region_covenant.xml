@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel label="Convenio" name="Covenant">
+	<text name="estate_section_lbl">
+		Estado:
+	</text>
+	<text name="estate_name_lbl">
+		Nombre:
+	</text>
+	<text name="estate_name_text">
+		mainland
+	</text>
+	<text name="estate_owner_lbl">
+		Propietario:
+	</text>
+	<text name="estate_owner_text">
+		(ninguno)
+	</text>
+	<text name="estate_cov_lbl">
+		Convenio:
+	</text>
+	<text name="covenant_timestamp_text">
+		Última Modificación Mie Dic 31 16:00:00 1969
+	</text>
+	<button label="?" name="covenant_help"/>
+	<text_editor name="covenant_editor">
+		No se ha provisto un Convenio para este Estado.
+	</text_editor>
+	<button label="Reinicar" name="reset_covenant"/>
+	<text name="covenant_help_text">
+		Los cambios en el Convenio serán mostrados en todas las parcelas 
+del Estado.
+	</text>
+	<text bottom_delta="-28" name="covenant_instructions">
+		Arrastra y suelta una nota para cambiar el Convenio para este Estado.
+	</text>
+	<text name="region_section_lbl">
+		Región:
+	</text>
+	<text name="region_name_lbl">
+		Nombre:
+	</text>
+	<text name="region_name_text">
+		leyla
+	</text>
+	<text name="region_landtype_lbl">
+		Tipo:
+	</text>
+	<text name="region_landtype_text">
+		Mainland / Homestead
+	</text>
+	<text name="region_maturity_lbl">
+		Calificación:
+	</text>
+	<text name="region_maturity_text">
+		Adulto
+	</text>
+	<text name="resellable_lbl">
+		Revender:
+	</text>
+	<text name="resellable_clause">
+		Las parcelas en esta región no pueden ser revendidas.
+	</text>
+	<text name="changeable_lbl">
+		Subdividir:
+	</text>
+	<text name="changeable_clause">
+		Las parcelas en esta región no pueden ser unidas ni subdivididas.
+	</text>
+	<string name="can_resell">
+		Los terrenos comprados en esta región pueden ser revendidos.
+	</string>
+	<string name="can_not_resell">
+		Los terrenos comprados en esta región no pueden ser revendidos.
+	</string>
+	<string name="can_change">
+		Los terrenos comprados en esta región pueden ser unidos o subdivididos.
+	</string>
+	<string name="can_not_change">
+		Los terrenos comprados en esta región no pueden ser unidos ni subdivididos.
+	</string>
+</panel>

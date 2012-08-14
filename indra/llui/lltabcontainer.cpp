@@ -751,7 +751,7 @@ void LLTabContainer::addTabPanel(LLPanel* child,
 		else
 		{
 			tab_panel_top = getRect().getHeight() - getTopBorderHeight();
-			tab_panel_bottom = (TABCNTR_TAB_HEIGHT - TABCNTR_BUTTON_PANEL_OVERLAP);  // Run to the edge, covering up the border
+			tab_panel_bottom = (TABCNTR_TAB_HEIGHT + LLPANEL_BORDER_WIDTH*2 - TABCNTR_BUTTON_PANEL_OVERLAP);  // Run to the edge, covering up the border
 		}
 	}
 	else

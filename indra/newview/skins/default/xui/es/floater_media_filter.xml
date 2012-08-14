@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="floatermediafilter" title="Filtro de Medios">
+	<text name="info1" >
+		Los dominios en Negrita están en la lista permanente (ej.: en lista blanca o lista negra).
+	</text>
+	<text name="info2" >
+		Los dominios en itálica están en la lista de sesión (ej: permitidos o denegados temporariamente).
+	</text>
+	<scroll_list name="whitelist_list" >
+		<column name="whitelist_col" label="Dominios Permitidos u objetos del servidor" />
+	</scroll_list>
+	<scroll_list name="blacklist_list" >
+		<column name="blacklist_col" label="Dominios bloqueados u objetos del servidor" />
+	</scroll_list>
+	<button name="add_whitelist" label="Añadir..." tool_tip="Añadir un servidor a la Lista Blanca"/>
+	<button name="remove_whitelist" label="Quitar" tool_tip="Quitar el servidor seleccionado de la Lista Blanca"/>
+	<button name="clear_lists" label="Limpiar Listas" tool_tip="Limpiar todas las Listas" />
+	<button name="show_ips" label="Mostrar IPs" tool_tip="Mostrar las direcciones IP asociadas a cada nombre de dominio (Hace que el visor entre en paus mientras actualiza la lista debido a la búsqueda de DNSs)"/>
+	<button name="add_blacklist" label="Añadir..." tool_tip="Añadir un server a la Lista Negra"/>
+	<button name="remove_blacklist" label="Quitar" tool_tip="Quitar el servidor seleccionado de la Lista Negra"/>
+	<text name="add_text">
+		Nuevo dominio:
+	</text>
+	<check_box name="match_ip" label="Añadir/Quitar IP coincidente" tool_tip="Añadir o Quitar cualquier IP asociada con un nombre de dominio agregado o quitado"/>
+	<line_editor name="input_domain" tool_tip="Ingresa la nueva URL, nombre de dominio, IP o ruta HTTP del servidor del objeto con script"/>
+	<button name="commit_domain" label="Añadir" tool_tip="Añadir a la Lista"/>
+</floater>

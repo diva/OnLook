@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel label="Depurador" name="Debug">
+	<text name="region_text_lbl">
+		Región:
+	</text>
+	<text name="region_text">
+		desconocida
+	</text>
+	<check_box label="Desactivar Scripts" name="disable_scripts_check" tool_tip="Desactiva todos los scripts en esta región"/>
+	<button label="?" name="disable_scripts_help"/>
+	<check_box label="Desactivar Colisiones" name="disable_collisions_check" tool_tip="Desactiva las colisiones provocadas por objetos en esta región"/>
+	<button label="?" name="disable_collisions_help"/>
+	<check_box label="Desactivar Físicas" name="disable_physics_check" tool_tip="Desactiva todas las propiedades físicas en esta región"/>
+	<button label="?" name="disable_physics_help"/>
+	<button label="Aplicar" name="apply_btn"/>
+	<text name="objret_text_lbl">
+	  Devolver Objeto
+	</text>
+	<text name="resident_text_lbl">
+	  Residente:
+	</text>
+	<line_editor name="target_avatar_name">
+	  (nadie)
+	</line_editor>
+	<button label="Elegir..." name="choose_avatar_btn"/>
+	<text name="options_text_lbl">
+	  Opciones:
+	</text>
+	<check_box label="Devolver sólo los objetos con scritps" name="return_scripts" tool_tip="Devuelve solamente los objetos que tienen scripts"/>
+	<check_box label="Devolver sólo los objetos en terreno ajeno" name="return_other_land" tool_tip="Devuelve solamente los objetos que están en terrenos pertenecientes a otras personas"/>
+	<check_box label="Devolver los objetos de todas las regiones de este estado" name="return_estate_wide" tool_tip="Devuelve los objetos que están en todas las regiones que conforman este estado"/>
+	<button label="Devolver" name="return_btn"/>
+	<button label="Obtener Top Colisionadores..." name="top_colliders_btn" tool_tip="Lista de los objetos que experimetan un mayor potencial de colisiones"/>
+	<button label="?" name="top_colliders_help"/>
+	<button label="Obtener Top Scripts..." name="top_scripts_btn" tool_tip="Lista de los objetos que consumen mayor cantidad de tiempo ejecutando scripts"/>
+	<button label="?" name="top_scripts_help"/>
+	<button label="Reiniciar Región" name="restart_btn" tool_tip="Inicia la cuenta regresiva en x segundos y reinicia la región"/>
+	<spinner name="rcount" label="Segundos:"/>
+	<button label="?" name="restart_help"/>
+	<button label="Retrasar el Reinicio" name="cancel_restart_btn" tool_tip="Retrasa una hora el reinicio de la región"/>
+</panel>
