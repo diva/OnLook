@@ -123,9 +123,9 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// Overload for integer types that are too small (libcurl demands a long).
 	CURLcode getinfo(CURLINFO info, S32* data) { long ldata; CURLcode res = getinfo_priv(info, &ldata); *data = static_cast<S32>(ldata); return res; }
 	CURLcode getinfo(CURLINFO info, U32* data) { long ldata; CURLcode res = getinfo_priv(info, &ldata); *data = static_cast<U32>(ldata); return res; }
-#else
-	CURLcode getinfo(CURLINFO info, S32* data) { return getinfo_priv(info, static_cast<long*>(data)); }
-	CURLcode getinfo(CURLINFO info, U32* data) { return getinfo_priv(info, static_cast<long*>(data)); }
+#else			// sizeof(long) == sizeof(int)
+	CURLcode getinfo(CURLINFO info, S32* data) { return getinfo_priv(info, reinterpret_cast<long*>(data)); }
+	CURLcode getinfo(CURLINFO info, U32* data) { return getinfo_priv(info, reinterpret_cast<long*>(data)); }
 #endif
 
 	// Perform a file transfer (blocking).
