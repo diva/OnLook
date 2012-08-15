@@ -44,16 +44,15 @@
 #include "llmaterialtable.h"
 #include "llpermissionsflags.h"
 #include "llstring.h"
-#include "lltrans.h"
 #include "llvolume.h"
 #include "m3math.h"
 #include "material_codes.h"
 
 // project includes
-#include "llagent.h"
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
 #include "llcolorswatch.h"
+#include "lltexturectrl.h"
 #include "llcombobox.h"
 #include "llfirstuse.h"
 #include "llfocusmgr.h"
@@ -67,6 +66,7 @@
 #include "lltool.h"
 #include "lltoolcomp.h"
 #include "lltoolmgr.h"
+#include "lltrans.h"
 #include "llui.h"
 #include "llviewerobject.h"
 #include "llviewerregion.h"
@@ -75,15 +75,15 @@
 #include "llworld.h"
 #include "pipeline.h"
 #include "llviewershadermgr.h"
+#include "llnotificationsutil.h"
 
 #include "lldrawpool.h"
 #include "lluictrlfactory.h"
-#include "lltexturectrl.h"
+
 // For mesh physics
+#include "llagent.h"
 #include "llviewercontrol.h"
 #include "llmeshrepository.h"
-
-#include "llnotificationsutil.h"
 
 #include <boost/bind.hpp>
 
@@ -189,7 +189,7 @@ BOOL	LLPanelVolume::postBuild()
 }
 
 LLPanelVolume::LLPanelVolume(const std::string& name)
-	:	LLPanel(name)
+	: LLPanel(name)
 {
 	setMouseOpaque(FALSE);
 
@@ -460,7 +460,7 @@ void LLPanelVolume::getState( )
 }
 
 // static
-BOOL LLPanelVolume::precommitValidate(LLUICtrl* ctrl,void* userdata)
+bool LLPanelVolume::precommitValidate( const LLSD& data )
 {
 	// TODO: Richard will fill this in later.  
 	return TRUE; // FALSE means that validation failed and new value should not be commited.
@@ -487,7 +487,7 @@ void LLPanelVolume::refresh()
 	getChildView("Light Focus")->setVisible( visible);
 	getChildView("Light Ambiance")->setVisible( visible);
 	getChildView("light texture control")->setVisible( visible);
-	
+
 	bool enable_mesh = false;
 
 	LLSD sim_features;
@@ -693,7 +693,6 @@ void LLPanelVolume::onLightSelectColor(LLUICtrl* ctrl, void* userdata)
 	}
 }
 
-
 void LLPanelVolume::onLightSelectTexture(LLUICtrl* ctrl, void* userdata)
 {
 	LLPanelVolume* self = (LLPanelVolume*) userdata;
@@ -768,6 +767,8 @@ void LLPanelVolume::onCommitLight( LLUICtrl* ctrl, void* userdata )
 			//self->getChildView("Light Ambiance")->setEnabled(FALSE);
 		}
 	}
+
+
 }
 
 // static

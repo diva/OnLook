@@ -63,15 +63,15 @@ public:
 
 	void			refresh();
 
-	static BOOL		precommitValidate(LLUICtrl* ctrl,void* userdata);
+	static bool		precommitValidate(const LLSD& data);
 
 	static void		onCommitLock(LLUICtrl *ctrl, void *data);
 	static void 	onCommitPosition(		LLUICtrl* ctrl, void* userdata);
 	static void 	onCommitScale(			LLUICtrl* ctrl, void* userdata);
 	static void 	onCommitRotation(		LLUICtrl* ctrl, void* userdata);
-	static void 	onCommitPhysics(		LLUICtrl* ctrl, void* userdata);
 	static void 	onCommitTemporary(		LLUICtrl* ctrl, void* userdata);
 	static void 	onCommitPhantom(		LLUICtrl* ctrl, void* userdata);
+	static void 	onCommitPhysics(		LLUICtrl* ctrl, void* userdata);
 
 	static void		onLinkObj(				void* user_data);
 	static void		onUnlinkObj(			void* user_data);
@@ -86,8 +86,8 @@ public:
 	static void 	onPasteRotClip(			void* user_data);
 	static void 	onCopyParams(			void* user_data);
 	static void 	onPasteParams(			void* user_data);
-	
-	static void 	onCommitParametric(		LLUICtrl* ctrl, void* userdata);
+
+	static void 	onCommitParametric(LLUICtrl* ctrl, void* userdata);
 
 	static void 	onCommitMaterial(		LLUICtrl* ctrl, void* userdata);
 
@@ -96,7 +96,7 @@ public:
 	static void     onSelectSculpt(        LLUICtrl* ctrl, void* userdata);
 	static BOOL     onDropSculpt(          LLUICtrl* ctrl, LLInventoryItem* item, void* ud);
 	static void     onCommitSculptType(    LLUICtrl *ctrl, void* userdata);
-		
+
 	static void		onClickBuildConstants(void *);
 	static const 	LLUUID& findItemID(const LLUUID& asset_id);
 
@@ -109,23 +109,23 @@ protected:
 	void			sendIsPhysical();
 	void			sendIsTemporary();
 	void			sendIsPhantom();
+
 	void            sendSculpt();
 	
 	void 			getVolumeParams(LLVolumeParams& volume_params);
 	
 protected:
-
 	static LLVector3 mClipboardPos;
 	static LLVector3 mClipboardSize;
 	static LLVector3 mClipboardRot;
 	static LLVolumeParams mClipboardVolumeParams;
 	static BOOL hasParamClipboard;
-	
+
 	S32				mComboMaterialItemCount;
 
 	LLTextBox*		mLabelMaterial;
 	LLComboBox*		mComboMaterial;
-	
+
 	// Per-object options
 	LLTextBox*		mLabelBaseType;
 	LLComboBox*		mComboBaseType;
@@ -189,15 +189,15 @@ protected:
 	LLButton		*mBtnCopyPos;
 	LLButton		*mBtnPastePos;
 	LLButton		*mBtnPastePosClip;
-	
+
 	LLButton		*mBtnCopySize;
 	LLButton		*mBtnPasteSize;
 	LLButton		*mBtnPasteSizeClip;
-	
+
 	LLButton		*mBtnCopyRot;
 	LLButton		*mBtnPasteRot;
 	LLButton		*mBtnPasteRotClip;
-	
+
 	LLButton		*mBtnCopyParams;
 	LLButton		*mBtnPasteParams;
 
@@ -212,9 +212,6 @@ protected:
 	LLCheckBoxCtrl  *mCtrlSculptMirror;
 	LLCheckBoxCtrl  *mCtrlSculptInvert;
 	
-
-
-
 	LLVector3		mCurEulerDegrees;		// to avoid sending rotation when not changed
 	BOOL			mIsPhysical;			// to avoid sending "physical" when not changed
 	BOOL			mIsTemporary;			// to avoid sending "temporary" when not changed
