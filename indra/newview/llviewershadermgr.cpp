@@ -599,6 +599,7 @@ void LLViewerShaderMgr::setShaders()
 	LLWaterParamManager::getInstance()->updateShaderLinks();
 	LLWLParamManager::getInstance()->updateShaderLinks();
 
+	gPipeline.refreshCachedSettings();
 	gPipeline.createGLBuffers();
 
 	reentrance = false;
