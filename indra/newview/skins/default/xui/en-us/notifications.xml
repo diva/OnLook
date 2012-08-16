@@ -7377,5 +7377,33 @@ Your shape, skin, hair or eyes might be defect.
     </form>
   </notification>
 
+  <notification
+   icon="alertmodal.tga"
+   name="BulkTemporaryUpload"
+   type="alertmodal">
+Would you like to bulk upload the files as temporary files?
+Only textures will upload as temporary on Agni and Aditi.
+
+WARNING: Each upload costs [UPLOADCOST] if it's not temporary
+    <usetemplate
+     name="yesnocancelbuttons"
+     notext="Permanent"
+     yestext="Temporary"
+     canceltext="Cancel"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="BulkTemporaryUploadFree"
+   type="alertmodal">
+Would you like to bulk upload the files as temporary files?
+Only textures will upload as temporary on Agni and Aditi.
+    <usetemplate
+     name="yesnocancelbuttons"
+     notext="Permanent"
+     yestext="Temporary"
+     canceltext="Cancel"/>
+  </notification>
+
 
 </notifications>

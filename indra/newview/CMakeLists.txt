@@ -83,7 +83,6 @@ set(viewer_SOURCE_FILES
     emeraldboobutils.cpp
     floaterao.cpp
     floaterlocalassetbrowse.cpp
-    floatersculptpreview.cpp
     floatervoicelicense.cpp
     hbfloatergrouptitles.cpp
     hgfloatertexteditor.cpp
@@ -584,7 +583,6 @@ set(viewer_HEADER_FILES
     emeraldboobutils.h
     floaterao.h
     floaterlocalassetbrowse.h
-    floatersculptpreview.h
     floatervoicelicense.h
     hbfloatergrouptitles.h
     hgfloatertexteditor.h
