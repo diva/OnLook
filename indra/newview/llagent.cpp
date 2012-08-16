@@ -70,6 +70,7 @@
 #include "llviewermenu.h"
 #include "llviewerobjectlist.h"
 #include "llviewerparcelmgr.h"
+#include "llviewerregion.h"
 #include "llviewerstats.h"
 #include "llviewerwindow.h"
 #include "llvoavatarself.h"
@@ -77,21 +78,20 @@
 #include "llworldmap.h"
 
 //Misc non-standard includes
-#include "llviewerregion.h"
 #include "llurldispatcher.h"
 #include "llimview.h" //For gIMMgr
 //Floaters
-#include "llfloatermute.h"
-#include "llfloatermap.h"
 #include "llfloateractivespeakers.h"
+#include "llfloateravatarinfo.h"
+#include "llfloaterchat.h"
 #include "llfloaterdirectory.h"
 #include "llfloatergroupinfo.h"
 #include "llfloatergroups.h"
-#include "llfloateravatarinfo.h"
-#include "llfloaterworldmap.h"
 #include "llfloaterland.h"
+#include "llfloatermap.h"
+#include "llfloatermute.h"
 #include "llfloatersnapshot.h"
-#include "llfloaterchat.h"
+#include "llfloaterworldmap.h"
 
 #include "lluictrlfactory.h" //For LLUICtrlFactory::getLayeredXMLNode
 
@@ -121,7 +121,6 @@ const F64 CHAT_AGE_FAST_RATE = 3.0;
 const F32 MIN_FIDGET_TIME = 8.f; // seconds
 const F32 MAX_FIDGET_TIME = 20.f; // seconds
 
-
 // The agent instance.
 LLAgent gAgent;
 std::string gAuthString;
@@ -130,7 +129,7 @@ std::string gAuthString;
 LLUUID gReSitTargetID;
 LLVector3 gReSitOffset;
 // </edit>
-//
+//--------------------------------------------------------------------
 // Statics
 //
 
@@ -247,6 +246,7 @@ LLAgent::LLAgent() :
 	mFirstLogin(FALSE),
 	mGenderChosen(FALSE),
 	mAppearanceSerialNum(0),
+
 	mMouselookModeInSignal(NULL),
 	mMouselookModeOutSignal(NULL),
 	mPendingLure(NULL)
@@ -309,7 +309,6 @@ LLAgent::~LLAgent()
 	delete mEffectColor;
 	mEffectColor = NULL;
 }
-
 
 // Handle any actions that need to be performed when the main app gains focus
 // (such as through alt-tab).
@@ -481,7 +480,7 @@ void LLAgent::movePitch(F32 mag)
 
 	if (mag > 0)
 	{
-		setControlFlags(AGENT_CONTROL_PITCH_POS );
+		setControlFlags(AGENT_CONTROL_PITCH_POS);
 	}
 	else if (mag < 0)
 	{
@@ -534,8 +533,6 @@ BOOL LLAgent::getPhantom()
 {
 	return exlPhantom;
 }
-
-//
 
 //-----------------------------------------------------------------------------
 // setFlying()
@@ -665,9 +662,9 @@ void LLAgent::setRegion(LLViewerRegion *regionp)
 				<< " located at " << ip << llendl;
 		if (mRegionp)
 		{
-            // NaCl - Antispam Registry
-            NACLAntiSpamRegistry::purgeAllQueues();
-            // NaCl End
+			// NaCl - Antispam Registry
+			NACLAntiSpamRegistry::purgeAllQueues();
+			// NaCl End
 
 			// We've changed regions, we're now going to change our agent coordinate frame.
 			mAgentOriginGlobal = regionp->getOriginGlobal();
@@ -1713,7 +1710,6 @@ void LLAgent::updateAgentPosition(const F32 dt, const F32 yaw_radians, const S32
 	gAgentCamera.updateLookAt(mouse_x, mouse_y);
 }
 
-
 // friends and operators
 
 std::ostream& operator<<(std::ostream &s, const LLAgent &agent)
@@ -2399,7 +2395,7 @@ bool LLAgent::sendMaturityPreferenceToServer(int preferredMaturity)
 		{
 			access_prefs["max"] = "A";
 		}
-		
+
 		LLSD body = LLSD::emptyMap();
 		body["access_prefs"] = access_prefs;
 		llinfos << "Sending access prefs update to " << (access_prefs["max"].asString()) << " via capability to: "
@@ -2808,7 +2804,6 @@ BOOL LLAgent::allowOperation(PermissionBit op,
 
 	return perm.allowOperationBy(op, agent_proxy, group_proxy);
 }
-
 
 void LLAgent::getName(std::string& name)
 {
@@ -3497,7 +3492,7 @@ bool LLAgent::teleportCore(bool is_local)
 
 	// hide land floater too - it'll be out of date
 	LLFloaterLand::hideInstance();
-	
+
 	LLViewerParcelMgr::getInstance()->deselectLand();
 	LLViewerMediaFocus::getInstance()->setFocusFace(false, NULL, 0, NULL);
 
@@ -3755,8 +3750,7 @@ void LLAgent::setTeleportState(ETeleportState state)
 	}
 
 	switch (mTeleportState)
-	
-	{	
+	{
 		case TELEPORT_NONE:
 			mbTeleportKeepsLookAt = false;
 			break;
@@ -4023,10 +4017,10 @@ void LLAgent::sendAgentSetAppearance()
 				break;
 			}
 			msg->nextBlockFast(_PREHASH_VisualParam );
+
 			// We don't send the param ids.  Instead, we assume that the receiver has the same params in the same sequence.
 			const F32 param_value = param->getWeight();
 			const U8 new_weight = F32_to_U8(param_value, param->getMinWeight(), param->getMaxWeight());
-
 			msg->addU8Fast(_PREHASH_ParamValue, new_weight );
 			transmitted_params++;
 		}
@@ -4043,7 +4037,7 @@ void LLAgent::sendAgentDataUpdateRequest()
 {
 	gMessageSystem->newMessageFast(_PREHASH_AgentDataUpdateRequest);
 	gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-	gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+	gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
 	gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
 	sendReliableMessage();
 }
@@ -4235,4 +4229,3 @@ LLAgentQueryManager::~LLAgentQueryManager()
 }
 
 // EOF
-

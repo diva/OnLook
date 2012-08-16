@@ -189,6 +189,7 @@ S32 LLToolPlacer::getTreeGrassSpecies(std::map<std::string, S32> &table, const c
 		return (rand() % max);
 	}
 }
+
 BOOL LLToolPlacer::addObject( LLPCode pcode, S32 x, S32 y, U8 use_physics )
 {
 	LLVector3 ray_start_region;
@@ -224,7 +225,6 @@ BOOL LLToolPlacer::addObject( LLPCode pcode, S32 x, S32 y, U8 use_physics )
 	// Set params for new object based on its PCode.
 	LLQuaternion	rotation;
 	LLVector3		scale = DEFAULT_OBJECT_SCALE;
-
 	U8				material = LL_MCODE_WOOD;
 	static LLCachedControl<bool> enable_BP("LiruEnableBuildPrefs", true);
 	static LLCachedControl<bool> duplicate("CreateToolCopySelection", true);
@@ -486,6 +486,7 @@ BOOL LLToolPlacer::addObject( LLPCode pcode, S32 x, S32 y, U8 use_physics )
 	//If we are using the defaults, and we aren't duplicating
 	if(enable_BP && !duplicate)	//then, actually call expectRez so that importtracker can do its thing, which sadly only works close up.
 		gImportTracker.expectRez();
+
 	// Spawns a message, so must be after above send
 	if (create_selected)
 	{
