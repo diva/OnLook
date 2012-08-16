@@ -36,6 +36,7 @@
 #include "llagentui.h"
 #include "llanimationstates.h"
 #include "llcallingcard.h"
+#include "llcapabilitylistener.h"
 #include "llconsole.h"
 #include "llenvmanager.h"
 #include "llfirstuse.h"
@@ -2157,65 +2158,38 @@ void LLAgent::setStartPosition( U32 location_id )
     agent_pos.mV[VZ] = llclamp( agent_pos.mV[VZ],
                                 mRegionp->getLandHeightRegion( agent_pos ),
                                 LLWorld::getInstance()->getRegionMaxHeight() );
+    // Send the CapReq
+    LLSD request;
+    LLSD body;
+    LLSD homeLocation;
 
-	// Do we have HomeLocation capability?
-	std::string capURL = gAgent.getRegion()->getCapability("HomeLocation");
+    homeLocation["LocationId"] = LLSD::Integer(location_id);
+    homeLocation["LocationPos"] = ll_sdmap_from_vector3(agent_pos);
+    homeLocation["LocationLookAt"] = ll_sdmap_from_vector3(mFrameAgent.getAtAxis());
 
-	if ( capURL.empty() )
-	{
-		// Send UDP message about the new location
-        LLMessageSystem* msg = gMessageSystem;
-        msg->newMessageFast(_PREHASH_SetStartLocationRequest);
-        msg->nextBlockFast( _PREHASH_AgentData);
-        msg->addUUIDFast(_PREHASH_AgentID, getID());
-        msg->addUUIDFast(_PREHASH_SessionID, getSessionID());
-        msg->nextBlockFast( _PREHASH_StartLocationData);
-        // corrected by sim
-        msg->addStringFast(_PREHASH_SimName, "");
-        msg->addU32Fast(_PREHASH_LocationID, location_id);
-        msg->addVector3Fast(_PREHASH_LocationPos, agent_pos);
-        msg->addVector3Fast(_PREHASH_LocationLookAt,mFrameAgent.getAtAxis());
-  
-        // Reliable only helps when setting home location.  Last
-        // location is sent on quit, and we don't have time to ack
-        // the packets.
-        msg->sendReliable(mRegionp->getHost());
-	}
-	else
-	{
-        // Send the CapReq
-        LLSD request;
-        LLSD body;
-        LLSD homeLocation;
+    body["HomeLocation"] = homeLocation;
 
-        homeLocation["LocationId"] = LLSD::Integer(location_id);
-        homeLocation["LocationPos"] = ll_sdmap_from_vector3(agent_pos);
-        homeLocation["LocationLookAt"] = ll_sdmap_from_vector3(mFrameAgent.getAtAxis());
+    // This awkward idiom warrants explanation.
+    // For starters, LLSDMessage::ResponderAdapter is ONLY for testing the new
+    // LLSDMessage functionality with a pre-existing LLHTTPClient::Responder.
+    // In new code, define your reply/error methods on the same class as the
+    // sending method, bind them to local LLEventPump objects and pass those
+    // LLEventPump names in the request LLSD object.
+    // When testing old code, the new LLHomeLocationResponder object
+    // is referenced by an LLHTTPClient::ResponderPtr, so when the
+    // ResponderAdapter is deleted, the LLHomeLocationResponder will be too.
+    // We must trust that the underlying LLHTTPClient code will eventually
+    // fire either the reply callback or the error callback; either will cause
+    // the ResponderAdapter to delete itself.
+    LLSDMessage::ResponderAdapter*
+        adapter(new LLSDMessage::ResponderAdapter(new LLHomeLocationResponder()));
 
-        body["HomeLocation"] = homeLocation;
+    request["message"] = "HomeLocation";
+    request["payload"] = body;
+    request["reply"]   = adapter->getReplyName();
+    request["error"]   = adapter->getErrorName();
 
-        // This awkward idiom warrants explanation.
-        // For starters, LLSDMessage::ResponderAdapter is ONLY for testing the new
-        // LLSDMessage functionality with a pre-existing LLHTTPClient::Responder.
-        // In new code, define your reply/error methods on the same class as the
-        // sending method, bind them to local LLEventPump objects and pass those
-        // LLEventPump names in the request LLSD object.
-        // When testing old code, the new LLHomeLocationResponder object
-        // is referenced by an LLHTTPClient::ResponderPtr, so when the
-        // ResponderAdapter is deleted, the LLHomeLocationResponder will be too.
-        // We must trust that the underlying LLHTTPClient code will eventually
-        // fire either the reply callback or the error callback; either will cause
-        // the ResponderAdapter to delete itself.
-        LLSDMessage::ResponderAdapter*
-            adapter(new LLSDMessage::ResponderAdapter(new LLHomeLocationResponder()));
-
-        request["message"] = "HomeLocation";
-        request["payload"] = body;
-        request["reply"]   = adapter->getReplyName();
-        request["error"]   = adapter->getErrorName();
-
-        gAgent.getRegion()->getCapAPI().post(request);
-	}
+    gAgent.getRegion()->getCapAPI().post(request);
 
     const U32 HOME_INDEX = 1;
     if( HOME_INDEX == location_id )
@@ -2223,6 +2197,33 @@ void LLAgent::setStartPosition( U32 location_id )
         setHomePosRegion( mRegionp->getHandle(), getPositionAgent() );
     }
 }
+
+struct HomeLocationMapper: public LLCapabilityListener::CapabilityMapper
+{
+    // No reply message expected
+    HomeLocationMapper(): LLCapabilityListener::CapabilityMapper("HomeLocation") {}
+    virtual void buildMessage(LLMessageSystem* msg,
+                              const LLUUID& agentID,
+                              const LLUUID& sessionID,
+                              const std::string& capabilityName,
+                              const LLSD& payload) const
+    {
+        msg->newMessageFast(_PREHASH_SetStartLocationRequest);
+        msg->nextBlockFast( _PREHASH_AgentData);
+        msg->addUUIDFast(_PREHASH_AgentID, agentID);
+        msg->addUUIDFast(_PREHASH_SessionID, sessionID);
+        msg->nextBlockFast( _PREHASH_StartLocationData);
+        // corrected by sim
+        msg->addStringFast(_PREHASH_SimName, "");
+        msg->addU32Fast(_PREHASH_LocationID, payload["HomeLocation"]["LocationId"].asInteger());
+        msg->addVector3Fast(_PREHASH_LocationPos,
+                            ll_vector3_from_sdmap(payload["HomeLocation"]["LocationPos"]));
+        msg->addVector3Fast(_PREHASH_LocationLookAt,
+                            ll_vector3_from_sdmap(payload["HomeLocation"]["LocationLookAt"]));
+    }
+};
+// Need an instance of this class so it will self-register
+static HomeLocationMapper homeLocationMapper;
 
 void LLAgent::requestStopMotion( LLMotion* motion )
 {
