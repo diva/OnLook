@@ -557,7 +557,7 @@ bool LLImageGL::checkSize(S32 width, S32 height)
 	return check_power_of_two(width) && check_power_of_two(height);
 }
 
-void LLImageGL::setSize(S32 width, S32 height, S32 ncomponents)
+void LLImageGL::setSize(S32 width, S32 height, S32 ncomponents, S32 discard_level)
 {
 	if (width != mWidth || height != mHeight || ncomponents != mComponents)
 	{
@@ -590,6 +590,11 @@ void LLImageGL::setSize(S32 width, S32 height, S32 ncomponents)
 				width >>= 1;
 				height >>= 1;
 			}
+			if(discard_level > 0)
+			{
+				mMaxDiscardLevel = llmax(mMaxDiscardLevel, (S8)discard_level);
+			}
+
 		}
 		else
 		{
@@ -1254,7 +1259,6 @@ BOOL LLImageGL::createGLTexture(S32 discard_level, const LLImageRaw* imageraw, S
 		llassert(mCurrentDiscardLevel >= 0);
 		discard_level = mCurrentDiscardLevel;
 	}
-	discard_level = llclamp(discard_level, 0, (S32)mMaxDiscardLevel);
 
 	// Actual image width/height = raw image width/height * 2^discard_level
 	S32 raw_w = imageraw->getWidth() ;
@@ -1263,7 +1267,7 @@ BOOL LLImageGL::createGLTexture(S32 discard_level, const LLImageRaw* imageraw, S
 	S32 h = raw_h << discard_level;
 
 	// setSize may call destroyGLTexture if the size does not match
-	setSize(w, h, imageraw->getComponents());
+	setSize(w, h, imageraw->getComponents(), discard_level);
 
 	if( !mHasExplicitFormat )
 	{
@@ -1323,7 +1327,6 @@ BOOL LLImageGL::createGLTexture(S32 discard_level, const U8* data_in, BOOL data_
 		llassert(mCurrentDiscardLevel >= 0);
 		discard_level = mCurrentDiscardLevel;
 	}
-	discard_level = llclamp(discard_level, 0, (S32)mMaxDiscardLevel);
 
 	if (mTexName != 0 && discard_level == mCurrentDiscardLevel)
 	{
@@ -1818,6 +1821,7 @@ void LLImageGL::analyzeAlpha(const void* data_in, U32 w, U32 h)
 		llassert(w%2 == 0);
 		llassert(h%2 == 0);
 		const GLubyte* rowstart = ((const GLubyte*) data_in) + mAlphaOffset;
+
 		for (U32 y = 0; y < h; y+=2)
 		{
 			const GLubyte* current = rowstart;
