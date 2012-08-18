@@ -35,6 +35,7 @@
 #include "llfloaterreporter.h"
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llfloaterregioninfo.h"
 #include "llviewerregion.h"
 #include "lltracker.h"
 #include "llviewerstats.h"
@@ -319,11 +320,6 @@ BOOL LLFloaterAvatarList::postBuild()
 	mTracking = FALSE;
 	mUpdate = TRUE;
 
-	// Hide them until some other way is found
-	// Users may not expect to find a Ban feature on the Eject button
-	// Perhaps turn it into a FlyOutButton?
-	childSetVisible("estate_ban_btn", false);
-
 	// Set callbacks
 	childSetAction("profile_btn", onClickProfile, this);
 	childSetAction("im_btn", onClickIM, this);
@@ -344,6 +340,7 @@ BOOL LLFloaterAvatarList::postBuild()
 	childSetAction("ar_btn", onClickAR, this);
 	childSetAction("teleport_btn", onClickTeleport, this);
 	childSetAction("estate_eject_btn", onClickEjectFromEstate, this);
+	childSetAction("estate_ban_btn", onClickBanFromEstate, this);
 
 	childSetAction("send_keys_btn", onClickSendKeys, this);
 
@@ -1111,6 +1108,36 @@ BOOL LLFloaterAvatarList::handleKeyHere(KEY key, MASK mask)
 			return TRUE;
 		}
 	}
+
+	if (( KEY_RETURN == key ) && (MASK_SHIFT == mask))
+	{
+		LLDynamicArray<LLUUID> ids = self->mAvatarList->getSelectedIDs();
+		if (ids.size() > 0)
+		{
+			if (ids.size() == 1)
+			{
+				// Single avatar
+				LLUUID agent_id = ids[0];
+
+				// [Ansariel: Display name support]
+				LLAvatarName avatar_name;
+				if (LLAvatarNameCache::get(agent_id, &avatar_name))
+				{
+					gIMMgr->setFloaterOpen(TRUE);
+					gIMMgr->addSession(LLCacheName::cleanFullName(avatar_name.getLegacyName()),IM_NOTHING_SPECIAL,agent_id);
+				}
+				// [Ansariel: Display name support]
+			}
+			else
+			{
+				// Group IM
+				LLUUID session_id;
+				session_id.generate();
+				gIMMgr->setFloaterOpen(TRUE);
+				gIMMgr->addSession("Avatars Conference", IM_SESSION_CONFERENCE_START, ids[0], ids);
+			}
+		}
+	}
 	return LLPanel::handleKeyHere(key, mask);
 }
 
@@ -1499,6 +1526,7 @@ static void cmd_eject(const LLUUID& avatar, const std::string& name)       { sen
 static void cmd_ban(const LLUUID& avatar, const std::string& name)         { send_eject(avatar, true); }
 static void cmd_profile(const LLUUID& avatar, const std::string& name)     { LLFloaterAvatarInfo::showFromDirectory(avatar); }
 static void cmd_estate_eject(const LLUUID& avatar, const std::string& name){ send_estate_message("teleporthomeuser", avatar); }
+static void cmd_estate_ban(const LLUUID &avatar, const std::string &name)  { LLPanelEstateInfo::sendEstateAccessDelta(ESTATE_ACCESS_BANNED_AGENT_ADD | ESTATE_ACCESS_ALLOWED_AGENT_REMOVE | ESTATE_ACCESS_NO_REPLY, avatar); }
 
 void LLFloaterAvatarList::doCommand(void (*func)(const LLUUID& avatar, const std::string& name))
 {
@@ -1595,6 +1623,18 @@ void LLFloaterAvatarList::callbackEjectFromEstate(const LLSD& notification, cons
 }
 
 //static
+void LLFloaterAvatarList::callbackBanFromEstate(const LLSD& notification, const LLSD& response)
+{
+	S32 option = LLNotification::getSelectedOption(notification, response);
+
+	if (option == 0)
+	{
+		getInstance()->doCommand(cmd_estate_eject); //Eject first, just in case.
+		getInstance()->doCommand(cmd_estate_ban);
+	}
+}
+
+//static
 void LLFloaterAvatarList::callbackIdle(void* userdata)
 {
 	if (instanceExists())
@@ -1661,6 +1701,15 @@ void LLFloaterAvatarList::onClickEjectFromEstate(void* userdata)
 	LLSD payload;
 	args["EVIL_USER"] = ((LLFloaterAvatarList*)userdata)->getSelectedNames();
 	LLNotificationsUtil::add("EstateKickUser", args, payload, callbackEjectFromEstate);
+}
+
+//static
+void LLFloaterAvatarList::onClickBanFromEstate(void* userdata)
+{
+	LLSD args;
+	LLSD payload;
+	args["EVIL_USER"] = ((LLFloaterAvatarList*)userdata)->getSelectedNames();
+	LLNotificationsUtil::add("EstateBanUser", args, payload, callbackBanFromEstate);
 }
 
 //static

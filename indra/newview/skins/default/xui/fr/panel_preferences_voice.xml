@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel bottom="-409" height="408" label="Voice Chat" left="102" name="chat" width="517">
 	<text bottom_delta="-20" left_delta="12" name="voice_unavailable">Le chat vocal n'est pas disponible</text>
 	<check_box bottom_delta="0" label="Activer la voix" left="8" name="enable_voice_check"/>

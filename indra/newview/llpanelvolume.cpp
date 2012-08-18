@@ -44,16 +44,15 @@
 #include "llmaterialtable.h"
 #include "llpermissionsflags.h"
 #include "llstring.h"
-#include "lltrans.h"
 #include "llvolume.h"
 #include "m3math.h"
 #include "material_codes.h"
 
 // project includes
-#include "llagent.h"
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
 #include "llcolorswatch.h"
+#include "lltexturectrl.h"
 #include "llcombobox.h"
 #include "llfirstuse.h"
 #include "llfocusmgr.h"
@@ -67,6 +66,7 @@
 #include "lltool.h"
 #include "lltoolcomp.h"
 #include "lltoolmgr.h"
+#include "lltrans.h"
 #include "llui.h"
 #include "llviewerobject.h"
 #include "llviewerregion.h"
@@ -75,13 +75,17 @@
 #include "llworld.h"
 #include "pipeline.h"
 #include "llviewershadermgr.h"
+#include "llnotificationsutil.h"
 
 #include "lldrawpool.h"
 #include "lluictrlfactory.h"
-#include "lltexturectrl.h"
+
 // For mesh physics
+#include "llagent.h"
 #include "llviewercontrol.h"
 #include "llmeshrepository.h"
+
+#include <boost/bind.hpp>
 
 // "Features" Tab
 
@@ -89,7 +93,7 @@ BOOL	LLPanelVolume::postBuild()
 {
 	// Flexible Objects Parameters
 	{
-		childSetCommitCallback("Flexible1D Checkbox Ctrl",onCommitIsFlexible,this);
+		getChild<LLCheckboxCtrl>("Flexible1D Checkbox Ctrl")->setCommitCallback(boost::bind(&LLPanelVolume::onCommitIsFlexible, this, _1, _2), NULL);
 		childSetCommitCallback("FlexNumSections",onCommitFlexible,this);
 		getChild<LLUICtrl>("FlexNumSections")->setValidateBeforeCommit(precommitValidate);
 		childSetCommitCallback("FlexGravity",onCommitFlexible,this);
@@ -185,7 +189,7 @@ BOOL	LLPanelVolume::postBuild()
 }
 
 LLPanelVolume::LLPanelVolume(const std::string& name)
-	:	LLPanel(name)
+	: LLPanel(name)
 {
 	setMouseOpaque(FALSE);
 
@@ -246,7 +250,7 @@ void LLPanelVolume::getState( )
 	owners_identical = LLSelectMgr::getInstance()->selectGetOwner(owner_id, owner_name);
 
 	// BUG? Check for all objects being editable?
-	BOOL editable = root_objectp->permModify();
+	BOOL editable = root_objectp->permModify() && !root_objectp->isPermanentEnforced();
 	BOOL single_volume = LLSelectMgr::getInstance()->selectionAllPCode( LL_PCODE_VOLUME )
 		&& LLSelectMgr::getInstance()->getSelection()->getObjectCount() == 1;
 
@@ -344,7 +348,7 @@ void LLPanelVolume::getState( )
 	getChild<LLUICtrl>("Flexible1D Checkbox Ctrl")->setValue(is_flexible);
 	if (is_flexible || (volobjp && volobjp->canBeFlexible()))
 	{
-		getChildView("Flexible1D Checkbox Ctrl")->setEnabled(editable && single_volume && volobjp && !volobjp->isMesh());
+		getChildView("Flexible1D Checkbox Ctrl")->setEnabled(editable && single_volume && volobjp && !volobjp->isMesh() && !objectp->isPermanentEnforced());
 	}
 	else
 	{
@@ -449,14 +453,14 @@ void LLPanelVolume::getState( )
 
 	mComboPhysicsShapeType->add(getString("Convex Hull"), LLSD(2));	
 	mComboPhysicsShapeType->setValue(LLSD(objectp->getPhysicsShapeType()));
-	mComboPhysicsShapeType->setEnabled(editable);
+	mComboPhysicsShapeType->setEnabled(editable && !objectp->isPermanentEnforced() && ((root_objectp == NULL) || !root_objectp->isPermanentEnforced()));
 
 	mObject = objectp;
 	mRootObject = root_objectp;
 }
 
 // static
-BOOL LLPanelVolume::precommitValidate(LLUICtrl* ctrl,void* userdata)
+bool LLPanelVolume::precommitValidate( const LLSD& data )
 {
 	// TODO: Richard will fill this in later.  
 	return TRUE; // FALSE means that validation failed and new value should not be commited.
@@ -483,7 +487,7 @@ void LLPanelVolume::refresh()
 	getChildView("Light Focus")->setVisible( visible);
 	getChildView("Light Ambiance")->setVisible( visible);
 	getChildView("light texture control")->setVisible( visible);
-	
+
 	bool enable_mesh = false;
 
 	LLSD sim_features;
@@ -689,7 +693,6 @@ void LLPanelVolume::onLightSelectColor(LLUICtrl* ctrl, void* userdata)
 	}
 }
 
-
 void LLPanelVolume::onLightSelectTexture(LLUICtrl* ctrl, void* userdata)
 {
 	LLPanelVolume* self = (LLPanelVolume*) userdata;
@@ -764,6 +767,8 @@ void LLPanelVolume::onCommitLight( LLUICtrl* ctrl, void* userdata )
 			//self->getChildView("Light Ambiance")->setEnabled(FALSE);
 		}
 	}
+
+
 }
 
 // static
@@ -810,10 +815,26 @@ void LLPanelVolume::onCommitFlexible( LLUICtrl* ctrl, void* userdata )
 	self->refresh();
 }
 
-// static
-void LLPanelVolume::onCommitIsFlexible( LLUICtrl* ctrl, void* userdata )
+void LLPanelVolume::onCommitIsFlexible(LLUICtrl *, void*)
 {
-	LLPanelVolume* self = (LLPanelVolume*) userdata;
-	self->sendIsFlexible();
+	if (mObject->flagObjectPermanent())
+	{
+		LLNotificationsUtil::add("PathfindingLinksets_ChangeToFlexiblePath", LLSD(), LLSD(), boost::bind(&LLPanelVolume::handleResponseChangeToFlexible, this, _1, _2));
+	}
+	else
+	{
+		sendIsFlexible();
+	}
 }
 
+void LLPanelVolume::handleResponseChangeToFlexible(const LLSD &pNotification, const LLSD &pResponse)
+{
+	if (LLNotificationsUtil::getSelectedOption(pNotification, pResponse) == 0)
+	{
+		sendIsFlexible();
+	}
+	else
+	{
+		getChild<LLUICtrl>("Flexible1D Checkbox Ctrl")->setValue(FALSE);
+	}
+}

@@ -60,7 +60,7 @@
 			<button
 			       name="im_btn"
 			       label="IM"
-			       tool_tip="Open Instant Message session"
+			       tool_tip="Open Instant Message session (Shift-Enter)"
 			       left="10"
 			       bottom_delta="-22"
 			       width="80"
@@ -263,6 +263,18 @@
 			       left_delta="90"
 			       bottom_delta="0"
 			       width="170"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<!-- Lowest row -->
+			<button
+			       name="estate_ban_btn"
+			       label="Eject And Ban From Estate"
+			       tool_tip="Eject and Ban this avatar from the estate"
+			       left="10"
+			       bottom_delta="-24"
+			       width="260"
 			       height="20"
 			       font="SansSerifSmall"
 			       follows="bottom|left"

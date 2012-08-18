@@ -376,24 +376,24 @@ private:
 // uses the MSVC compiler intrinsics __cpuid() and __rdtsc().
 
 // Delays for the specified amount of milliseconds
-static	void	_Delay(unsigned int ms)
+static void _Delay(unsigned int ms)
 {
-   LARGE_INTEGER	freq, c1, c2;
-	__int64		x;
+	LARGE_INTEGER freq, c1, c2;
+	__int64 x;
 
-   // Get High-Res Timer frequency
+	// Get High-Res Timer frequency
 	if (!QueryPerformanceFrequency(&freq))	
 		return;
-		
+
 	// Convert ms to High-Res Timer value
 	x = freq.QuadPart/1000*ms;		
 
-   // Get first snapshot of High-Res Timer value
+	// Get first snapshot of High-Res Timer value
 	QueryPerformanceCounter(&c1);		
 	do
 	{
-            // Get second snapshot
-	    QueryPerformanceCounter(&c2);	
+		// Get second snapshot
+		QueryPerformanceCounter(&c2);	
 	}while(c2.QuadPart-c1.QuadPart < x);
 	// Loop while (second-first < x)	
 }

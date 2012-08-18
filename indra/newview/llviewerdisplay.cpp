@@ -178,7 +178,7 @@ void display_startup()
 
 void display_update_camera(bool tiling=false)
 {
-	llpushcallstacks ;
+	llpushcallstacks;
 	// TODO: cut draw distance down if customizing avatar?
 	// TODO: cut draw distance on per-parcel basis?
 
@@ -289,8 +289,8 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 	stop_glerror();
 
 	gPipeline.disableLights();
-	//reset vertex buffers if needed
 
+	//reset vertex buffers if needed
 	gPipeline.doResetVertexBuffers();
 
 	stop_glerror();
@@ -620,6 +620,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 	gViewerWindow->setup3DViewport();
 
 	gPipeline.resetFrameStats();	// Reset per-frame statistics.
+
 	if (!gDisconnected)
 	{
 		LLAppViewer::instance()->pingMainloopTimeout("Display:Update");
@@ -644,7 +645,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		LLHUDManager::getInstance()->updateEffects();
 		LLHUDObject::updateAll();
 		stop_glerror();
-		
+
 		if(!tiling)
 		{
 			gFrameStats.start(LLFrameStats::UPDATE_GEOM);
@@ -706,7 +707,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		LLGLState::checkTextureChannels();
 		LLGLState::checkClientArrays();
 
-		BOOL to_texture = gPipeline.canUseVertexShaders() && 
+		BOOL to_texture = gPipeline.canUseVertexShaders() &&
 						LLPipeline::sRenderGlow;
 
 		LLAppViewer::instance()->pingMainloopTimeout("Display:Swap");
@@ -823,6 +824,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		llpushcallstacks ;
 		LLGLState::checkStates();
 		LLGLState::checkClientArrays();
+
 		///////////////////////////////////
 		//
 		// StateSort
@@ -1002,6 +1004,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 				gGL.getTexUnit((U32)i)->disable();
 			}
 		}
+
 		LLAppViewer::instance()->pingMainloopTimeout("Display:RenderFlush");		
 		
 		if (to_texture)
@@ -1009,7 +1012,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 			{
 				gPipeline.mDeferredScreen.flush();
-				if(LLRenderTarget::sUseFBO)
+				if(gPipeline.mDeferredScreen.getFBO())
 				{
 					LLRenderTarget::copyContentsToFramebuffer(gPipeline.mDeferredScreen, 0, 0, gPipeline.mDeferredScreen.getWidth(), 
 															  gPipeline.mDeferredScreen.getHeight(), 0, 0, 
@@ -1021,7 +1024,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			else
 			{
 				gPipeline.mScreen.flush();
-				if(LLRenderTarget::sUseFBO)
+				if(gPipeline.mScreen.getFBO())
 				{				
 					LLRenderTarget::copyContentsToFramebuffer(gPipeline.mScreen, 0, 0, gPipeline.mScreen.getWidth(), 
 															  gPipeline.mScreen.getHeight(), 0, 0, 
@@ -1032,7 +1035,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			}
 		}
 		//gGL.flush();
-		
+
 		if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 		{
 			gPipeline.renderDeferredLighting();
@@ -1046,7 +1049,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			LLFastTimer t(FTM_RENDER_UI);
 			gFrameStats.start(LLFrameStats::RENDER_UI);
 			render_ui();
-		}		
+		}
 
 
 		LLSpatialGroup::sNoDelete = FALSE;
@@ -1054,7 +1057,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 
 		gPipeline.rebuildGroups();
 	}
-	
+
 	LLAppViewer::instance()->pingMainloopTimeout("Display:FrameStats");
 	
 	gFrameStats.start(LLFrameStats::MISC_END);
@@ -1263,6 +1266,7 @@ BOOL setup_hud_matrices(const LLRect& screen_region)
 }
 
 static LLFastTimer::DeclareTimer FTM_SWAP("Swap");
+
 void render_ui(F32 zoom_factor, int subfield, bool tiling)
 {
 	LLGLState::checkStates();
@@ -1283,14 +1287,12 @@ void render_ui(F32 zoom_factor, int subfield, bool tiling)
 		if (to_texture)
 		{
 			gPipeline.renderBloom(gSnapshot, zoom_factor, subfield, tiling);
-			gPipeline.mScreen.flush(); //blit, etc.
 		}
-		/// We copy the frame buffer straight into a texture here,
-		/// and then display it again with compositor effects.
-		/// Using render to texture would be faster/better, but I don't have a 
-		/// grasp of their full display stack just yet.
+
 		if(gPipeline.canUseVertexShaders())
-			LLPostProcess::getInstance()->apply(gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight());
+		{
+			LLPostProcess::getInstance()->renderEffects(gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight());
+		}
 		
 		render_hud_elements();
 		render_hud_attachments();
@@ -1303,7 +1305,6 @@ void render_ui(F32 zoom_factor, int subfield, bool tiling)
 	}
 
 	{
-		
 		gGL.color4f(1,1,1,1);
 		if (gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_UI))
 		{

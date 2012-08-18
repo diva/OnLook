@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="Inventory" title="Inventaire">
 	<search_editor label="Saisir votre recherche ici" name="inventory search editor"/>
   <button left="6" bottom_delta="-26" height="22" width="22" follows="left|top" halign="center"

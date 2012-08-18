@@ -54,6 +54,5 @@ private:
 
 //Menu callbacks.
 BOOL handle_ticker_enabled(void *);
-BOOL handle_ticker_check(void *);
 void handle_ticker_toggle(void *);
 

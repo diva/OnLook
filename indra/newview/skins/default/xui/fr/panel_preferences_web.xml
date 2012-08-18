@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Web" name="web">
 	<radio_group name="use_external_browser">
 		<radio_item name="external" tool_tip="Utilisez le navigateur web du système pour l'aide, les liens web etc. Déconseillé en mode plein écran.">

@@ -395,12 +395,12 @@ LLAudioStreamManagerFMODEX::LLAudioStreamManagerFMODEX(FMOD::System *system, con
 {
 	mInternetStreamURL = url;
 
-	FMOD_CREATESOUNDEXINFO exinfo;
+	/*FMOD_CREATESOUNDEXINFO exinfo;
 	memset(&exinfo,0,sizeof(exinfo));
 	exinfo.cbsize = sizeof(exinfo);
-	exinfo.suggestedsoundtype = FMOD_SOUND_TYPE_MPEG;	//Hint to speed up loading.
+	exinfo.suggestedsoundtype = FMOD_SOUND_TYPE_OGGVORBIS;	//Hint to speed up loading.*/
 
-	FMOD_RESULT result = mSystem->createStream(url.c_str(), FMOD_2D | FMOD_NONBLOCKING | FMOD_IGNORETAGS, &exinfo, &mInternetStream);
+	FMOD_RESULT result = mSystem->createStream(url.c_str(), FMOD_2D | FMOD_NONBLOCKING | FMOD_IGNORETAGS, 0, &mInternetStream);
 
 	if (result!= FMOD_OK)
 	{

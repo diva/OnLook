@@ -101,6 +101,21 @@
     </form>
   </template>
 
+  <template name="okhelpignore">
+    <form>
+      <button
+       default="true"
+       index="0"
+       name="OK"
+       text="$yestext"/>
+      <button
+       index="1"
+       name="Help"
+       text="$helptext"/>
+      <ignore text="$ignoretext"/>
+    </form>
+  </template>
+
   <template name="yesnocancelbuttons">
     <form>
       <button
@@ -1524,6 +1539,13 @@ You can only link complete sets of objects, and must select more than one object
 Unable to link because you don&apos;t have modify permission on all the objects.
 
 Please make sure none are locked, and that you own all of them.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="CannotLinkPermanent"
+   type="alertmodal">
+    Objects cannot be linked across region boundaries.
   </notification>
 
   <notification
@@ -3546,6 +3568,18 @@ Kick [EVIL_USER] from this estate?
   </notification>
 
   <notification
+   icon="alert.tga"
+   label="Confirm Kick and Ban"
+   name="EstateBanUser"
+   type="alert">
+Kick and Ban [EVIL_USER] from this estate?
+    <usetemplate
+     name="okcancelbuttons"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
    icon="alertmodal.tga"
    name="EstateChangeCovenant"
    type="alertmodal">
@@ -4784,31 +4818,6 @@ Put it in a web page to give others easy access to this location or try it out y
 
   <notification
    icon="alertmodal.tga"
-   name="GraphicsPreferencesHelp"
-   type="alertmodal">
-This panel controls window size and resolution and the quality of the client&apos;s graphics.  The Preferences &gt; Graphics interface allows you to choose between four graphics levels: Low, Mid, High, and Ultra. You may also customize your graphics settings by checking the Custom checkbox and manipulating the following settings:
-
-Shaders: Enable or disable various types of pixel shaders.
-
-Reflection Detail: Sets the types of objects that water can reflect.
-
-Avatar Rendering: Sets options that affect how the client renders avatars.
-
-Draw Distance: Affects how far out from your viewpoint objects will be rendered in the scene.
-
-Max Particle Count: Sets the maximum number of particles you are able to see on your screen at once.
-
-Post Process Quality: Sets the resolution with which Glow is rendered.
-
-Mesh Detail: Sets the amount of detail or number of triangles used in rendering certain objects. A higher value takes longer to render, but makes these objects appear with more detail.
-
-Lighting Detail: Selects what types of lights you would like to render.
-
-Terrain Detail: Sets the amount of detail you would like to see for the terrain texture.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
    name="WLSavePresetAlert"
    type="alertmodal">
 Do you wish to overwrite the saved preset?
@@ -5944,6 +5953,53 @@ You cannot create objects here.
     <unique/>
   </notification>
 
+  <notification
+     icon="notify.tga"
+     name="PathfindingDirty"
+     type="notify">
+    <unique/>
+    The region has pending pathfinding changes.  If you have build rights, you may rebake the region by clicking on the “Rebake region” button.
+  </notification>
+
+  <notification
+     icon="notify.tga"
+     name="DynamicPathfindingDisabled"
+     type="notify">
+    <unique/>
+    Dynamic pathfinding is not enabled on this region.  Scripted objects using pathfinding LSL calls may not operate as expected on this region.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingRebakeNavmesh"
+   type="alertmodal">
+    <unique/>
+    Changing certain objects in this region could cause other moving objects to behave incorrectly.  To make moving objects behave correctly, click the “Rebake region” button.  Choose “Help” for more information.
+    <url
+      option="1"
+      name="url"
+      target = "_external">
+      http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer
+    </url>
+    <usetemplate
+     name="okhelpignore"
+     ignoretext="Changing certain objects in this region could cause other moving objects to behave incorrectly."
+     yestext="OK"
+     helptext="Help"
+     />
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingCannotRebakeNavmesh"
+   type="alertmodal">
+    <unique/>
+    An error occurred.  There may be a network or server problem, or you may not have build rights.  Sometimes logging out and back in will solve this problem.
+    <usetemplate
+     name="okbutton"
+     yestext="OK"
+     />
+  </notification>
   <notification
    icon="notify.tga"
    name="SeeAvatars"
@@ -7082,6 +7138,19 @@ You locally updated a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME]
   <global name="UnsupportedCPU">
 - Your CPU speed does not meet the minimum requirements.
   </global>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_ChangeToFlexiblePath"
+   type="alertmodal">
+    The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh.
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
 
   <global name="UnsupportedGLRequirements">
     You do not appear to have the proper hardware requirements for [APP_NAME]. The viewer requires an OpenGL graphics card that has multitexture support. If this is the case, you may want to make sure that you have the latest drivers for your graphics card, and service packs and patches for your operating system.

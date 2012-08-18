@@ -1178,7 +1178,7 @@ void LLPanelDisplay::updateMeterText(LLUICtrl* ctrl, void* user_data)
 	LLTextBox* m1 = panel->getChild<LLTextBox>("DrawDistanceMeterText1");
 	LLTextBox* m2 = panel->getChild<LLTextBox>("DrawDistanceMeterText2");
 
-	// toggle the two text boxes based on whether we have 1 or two digits
+	// toggle the two text boxes based on whether we have 2 or 3 digits
 	F32 val = slider->getValueF32();
 	bool two_digits = val < 100;
 	m1->setVisible(two_digits);

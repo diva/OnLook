@@ -2001,7 +2001,6 @@ BOOL LLImageGL::getMask(const LLVector2 &tc)
 
 void LLImageGL::setCategory(S32 category) 
 {
-#if 0 //turn this off temporarily because it is not in use now.
 	if(!gAuditTexture)
 	{
 		return ;
@@ -2022,7 +2021,6 @@ void LLImageGL::setCategory(S32 category)
 			mCategory = -1 ;
 		}
 	}
-#endif
 }
 
 //for debug use 
@@ -2053,14 +2051,16 @@ S32 LLImageGL::getTextureCounterIndex(U32 val)
 void LLImageGL::incTextureCounter(U32 val, S32 ncomponents, S32 category) 
 {
 	sTextureLoadedCounter[getTextureCounterIndex(val)]++ ;
-	sTextureMemByCategory[category] += (S32)val * ncomponents ;
+	if(category > -1)
+		sTextureMemByCategory[category] += (S32)val * ncomponents ;
 }
 
 //static
 void LLImageGL::decTextureCounter(U32 val, S32 ncomponents, S32 category) 
 {
 	sTextureLoadedCounter[getTextureCounterIndex(val)]-- ;
-	sTextureMemByCategory[category] += (S32)val * ncomponents ;
+	if(category > -1)
+		sTextureMemByCategory[category] -= (S32)val * ncomponents ;
 }
 
 void LLImageGL::setCurTexSizebar(S32 index, BOOL set_pick_size)

@@ -255,10 +255,6 @@ BOOL handle_ticker_enabled(void *)
 {
 	return gAudiop && gAudiop->getStreamingAudioImpl() && gAudiop->getStreamingAudioImpl()->supportsMetaData();
 }
-BOOL handle_ticker_check(void *)
-{
-	return SHFloaterMediaTicker::instanceExists();
-}
 void handle_ticker_toggle(void *)
 {
 	if(!handle_ticker_enabled(NULL))

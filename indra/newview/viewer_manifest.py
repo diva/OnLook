@@ -806,8 +806,15 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libopenal.so.1")
             self.path("libtcmalloc_minimal.so.0")
             self.path("libtcmalloc_minimal.so.0.2.2")
-            self.end_prefix("lib")
 
+            if 'extra_libraries' in self.args:
+                path_list = self.args['extra_libraries'].split('|')
+                for path in path_list:
+                    src_path = os.path.realpath(path)
+                    dst_path = os.path.basename(path)
+                    self.path(src_path, dst_path)
+
+            self.end_prefix("lib")
 
             # Vivox runtimes
             if self.prefix(src="vivox-runtime/i686-linux", dst="bin"):
@@ -843,6 +850,13 @@ class Linux_x86_64Manifest(LinuxManifest):
             # OpenAL
             self.path("libopenal.so*")
             self.path("libalut.so*")
+
+            if 'extra_libraries' in self.args:
+                path_list = self.args['extra_libraries'].split('|')
+                for path in path_list:
+                    src_path = os.path.realpath(path)
+                    dst_path = os.path.basename(path)
+                    self.path(src_path, dst_path)
 
             self.end_prefix("lib64")
 

@@ -110,6 +110,9 @@ protected:
 	LLComboBox*		mGestureCombo;
 
 	LLChatBarGestureObserver* mObserver;
+
+	CachedUICtrl<LLButton> mHistoryBtn;
+	CachedUICtrl<LLButton> mSayBtn;
 };
 
 extern LLChatBar *gChatBar;

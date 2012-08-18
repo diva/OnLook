@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="chat_bar">
 	<button label="Chat local" name="History" tool_tip="Cliquez ici pour voir ce qui a été dit"/>
 	<line_editor label="Cliquez ici pour chatter." name="Chat Editor" tool_tip="Appuyez sur Entrée pour dire quelque chose, Ctrl-Entrée pour crier."/>

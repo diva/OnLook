@@ -32,53 +32,27 @@
 
 #include "llviewerprecompiledheaders.h"
 
-// system libraries
-#include <boost/tokenizer.hpp>
-
 #include "llviewermenufile.h"
-
-// linden libraries
-#include "lleconomy.h"
-#include "llhttpclient.h"
-#include "llimage.h"
-#include "llmemberlistener.h"
-#include "llnotificationsutil.h"
-#include "llsdserialize.h"
-#include "llsdutil.h"
-#include "llstring.h"
-#include "lltrans.h"
-#include "lltransactiontypes.h"
-#include "lluictrlfactory.h"
-#include "lluuid.h"
-#include "llvorbisencode.h"
-#include "message.h"
 
 // project includes
 #include "llagent.h"
 #include "llagentcamera.h"
-#include "llappviewer.h"
-#include "llassetuploadresponders.h"
+#include "statemachine/aifilepicker.h"
+#include "llfloateranimpreview.h"
+#include "llfloaterimagepreview.h"
 #ifdef MESH_UPLOAD
 #include "llfloatermodelpreview.h"
 #endif
-
-#include "llimagejpeg.h"
-#include "llimagepng.h"
-#include "llimagebmp.h"
-
-#include "statemachine/aifilepicker.h"
-#include "llfloateranimpreview.h"
-#include "llfloaterbuycurrency.h"
-
-#include "llfloaterimagepreview.h"
 #include "llfloaternamedesc.h"
 #include "llfloatersnapshot.h"
-
+#include "llimage.h"
+#include "llimagebmp.h"
+#include "llimagepng.h"
+#include "llimagejpeg.h"
 #include "llinventorymodel.h"	// gInventory
 #include "llresourcedata.h"
 #include "llfloaterperms.h"
 #include "llstatusbar.h"
-
 #include "llviewercontrol.h"	// gSavedSettings
 #include "llviewertexturelist.h"
 #include "lluictrlfactory.h"
@@ -86,7 +60,10 @@
 #include "llviewerregion.h"
 #include "llviewerstats.h"
 #include "llviewerwindow.h"
+#include "llappviewer.h"
 #include "lluploaddialog.h"
+#include "lltrans.h"
+#include "llfloaterbuycurrency.h"
 // <edit>
 #include "llselectmgr.h"
 #include "llassettype.h"
@@ -94,6 +71,24 @@
 #include "llbvhloader.h"
 #include "lllocalinventory.h"
 // </edit>
+
+// linden libraries
+#include "llassetuploadresponders.h"
+#include "lleconomy.h"
+#include "llhttpclient.h"
+#include "llmemberlistener.h"
+#include "llnotificationsutil.h"
+#include "llsdserialize.h"
+#include "llsdutil.h"
+#include "llstring.h"
+#include "lltransactiontypes.h"
+#include "lluictrlfactory.h"
+#include "lluuid.h"
+#include "llvorbisencode.h"
+#include "message.h"
+
+// system libraries
+#include <boost/tokenizer.hpp>
 
 #include "hippogridmanager.h"
 #include "importtracker.h"
@@ -570,7 +565,7 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 			  case LLFloaterSnapshot::SNAPSHOT_FORMAT_PNG:
 				formatted = new LLImagePNG;
 				break;
-			  case LLFloaterSnapshot::SNAPSHOT_FORMAT_BMP: 
+			  case LLFloaterSnapshot::SNAPSHOT_FORMAT_BMP:
 				formatted = new LLImageBMP;
 				break;
 			  default: 
@@ -1220,7 +1215,11 @@ void upload_new_resource(const LLTransactionID &tid, LLAssetType::EType asset_ty
 				if (balance < expected_upload_cost)
 				{
 					// insufficient funds, bail on this upload
-					LLFloaterBuyCurrency::buyCurrency("Uploading costs", expected_upload_cost);
+					LLStringUtil::format_map_t args;
+					args["[NAME]"] = name;
+					args["[CURRENCY]"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
+					args["[AMOUNT]"] = llformat("%d", expected_upload_cost);
+					LLFloaterBuyCurrency::buyCurrency( LLTrans::getString("UploadingCosts", args), expected_upload_cost );
 					return;
 				}
 			}

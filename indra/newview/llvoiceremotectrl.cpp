@@ -90,7 +90,12 @@ BOOL LLVoiceRemoteCtrl::postBuild()
 
 	childSetAction("voice_channel_bg", onClickVoiceChannel, this);
 
-
+	mEndCallBtn.connect(this,"end_call_btn");
+	mVoiceVolIcon.connect(this,"voice_volume");
+	mVoiceChanIcon.connect(this,"voice_channel_icon");
+	mVoiceChanBgBtn.connect(this,"voice_channel_bg");
+	mChanLabelTextBox.connect(this,"channel_label");
+	mShowChanBtn.connect(this,"show_channel");
 	return TRUE;
 }
 
@@ -106,14 +111,15 @@ void LLVoiceRemoteCtrl::draw()
 	mTalkBtn->setEnabled(voice_active);
 	mTalkLockBtn->setEnabled(voice_active);
 
+	static LLCachedControl<bool> ptt_currently_enabled("PTTCurrentlyEnabled",false);
 	// propagate ptt state to button display,
 	if (!mTalkBtn->hasMouseCapture())
 	{
 		// not in push to talk mode, or push to talk is active means I'm talking
-		mTalkBtn->setToggleState(!gSavedSettings.getBOOL("PTTCurrentlyEnabled") || gVoiceClient->getUserPTTState());
+		mTalkBtn->setToggleState(!ptt_currently_enabled || gVoiceClient->getUserPTTState());
 	}
 	mSpeakersBtn->setToggleState(LLFloaterActiveSpeakers::instanceVisible(LLSD()));
-	mTalkLockBtn->setToggleState(!gSavedSettings.getBOOL("PTTCurrentlyEnabled"));
+	mTalkLockBtn->setToggleState(!ptt_currently_enabled);
 
 	std::string talk_blip_image;
 	if (gVoiceClient->getIsSpeaking(gAgent.getID()))
@@ -148,7 +154,7 @@ void LLVoiceRemoteCtrl::draw()
 		talk_blip_image = "icn_voice_ptt-off.tga";
 	}
 
-	LLIconCtrl* icon = getChild<LLIconCtrl>("voice_volume");
+	LLIconCtrl* icon = mVoiceVolIcon;
 	if (icon)
 	{
 		icon->setImage(talk_blip_image);
@@ -162,23 +168,23 @@ void LLVoiceRemoteCtrl::draw()
 	}
 
 	LLVoiceChannel* current_channel = LLVoiceChannel::getCurrentVoiceChannel();
-	childSetEnabled("end_call_btn", LLVoiceClient::voiceEnabled() 
+	mEndCallBtn->setEnabled(LLVoiceClient::voiceEnabled() 
 								&& current_channel
 								&& current_channel->isActive()
 								&& current_channel != LLVoiceChannelProximal::getInstance());
 
-	childSetValue("channel_label", active_channel_name);
-	childSetToolTip("voice_channel_bg", active_channel_name);
+	mChanLabelTextBox->setValue(active_channel_name);
+	mVoiceChanBgBtn->setToolTip(active_channel_name);
 
 	if (current_channel)
 	{
-		LLIconCtrl* voice_channel_icon = getChild<LLIconCtrl>("voice_channel_icon");
+		LLIconCtrl* voice_channel_icon = mVoiceChanIcon;
 		if (voice_channel_icon && voice_floater)
 		{
 			voice_channel_icon->setImage(voice_floater->getString("voice_icon"));
 		}
 
-		LLButton* voice_channel_bg = getChild<LLButton>("voice_channel_bg");
+		LLButton* voice_channel_bg = mVoiceChanBgBtn;
 		if (voice_channel_bg)
 		{
 			LLColor4 bg_color;
@@ -198,7 +204,7 @@ void LLVoiceRemoteCtrl::draw()
 		}
 	}
 
-	LLButton* expand_button = getChild<LLButton>("show_channel");
+	LLButton* expand_button = mShowChanBtn;
 	if (expand_button)
 	{
 		if (expand_button->getToggleState())

@@ -34,10 +34,11 @@
 #include <string>
 
 #include <boost/intrusive_ptr.hpp>
-#include "llurlrequest.h"
+
 #include "llassettype.h"
 #include "llcurl.h"
 #include "lliopipe.h"
+#include "llurlrequest.h"
 
 extern const F32 HTTP_REQUEST_EXPIRY_SECS;
 
@@ -55,7 +56,6 @@ public:
 	typedef LLCurl::Responder Responder;
 	typedef LLCurl::ResponderPtr ResponderPtr;
 
-	
 	/** @name non-blocking API */
 	//@{
 	static void head(
@@ -153,12 +153,6 @@ public:
 		///< for testing
 	static LLPumpIO &getPump();
 		///< Hippo special
-
-	static void setCertVerifyCallback(LLURLRequest::SSLCertVerifyCallback callback);
-	static  LLURLRequest::SSLCertVerifyCallback getCertVerifyCallback() { return mCertVerifyCallback; }
-
-protected:
-	static LLURLRequest::SSLCertVerifyCallback mCertVerifyCallback;
 };
 
 #endif // LL_LLHTTPCLIENT_H

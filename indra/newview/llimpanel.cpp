@@ -1411,6 +1411,15 @@ BOOL LLFloaterIMPanel::postBuild()
 		}
 
 		setDefaultBtn("send_btn");
+
+		mActiveSpeakersPanel.connect(this,"active_speakers_panel");
+		mToggleActiveSpeakersBtn.connect(this,"toggle_active_speakers_btn");
+		mVolumeSlider.connect(this,"speaker_volume");
+		mEndCallBtn.connect(this,"end_call_btn");
+		mStartCallBtn.connect(this,"start_call_btn");
+		mSendBtn.connect(this,"send_btn");
+		mMuteBtn.connect(this,"mute_btn");
+
 		return TRUE;
 	}
 
@@ -1466,10 +1475,10 @@ void LLFloaterIMPanel::draw()
 					  && mCallBackEnabled;
 
 	// hide/show start call and end call buttons
-	childSetVisible("end_call_btn", LLVoiceClient::voiceEnabled() && mVoiceChannel->getState() >= LLVoiceChannel::STATE_CALL_STARTED);
-	childSetVisible("start_call_btn", LLVoiceClient::voiceEnabled() && mVoiceChannel->getState() < LLVoiceChannel::STATE_CALL_STARTED);
-	childSetEnabled("start_call_btn", enable_connect);
-	childSetEnabled("send_btn", !childGetValue("chat_editor").asString().empty());
+	mEndCallBtn->setVisible(LLVoiceClient::voiceEnabled() && mVoiceChannel->getState() >= LLVoiceChannel::STATE_CALL_STARTED);
+	mStartCallBtn->setVisible(LLVoiceClient::voiceEnabled() && mVoiceChannel->getState() < LLVoiceChannel::STATE_CALL_STARTED);
+	mStartCallBtn->setEnabled(enable_connect);
+	mSendBtn->setEnabled(!childGetValue("chat_editor").asString().empty());
 	
 	LLPointer<LLSpeaker> self_speaker = mSpeakers->findSpeaker(gAgent.getID());
 	if(!mTextIMPossible)
@@ -1497,10 +1506,10 @@ void LLFloaterIMPanel::draw()
 	// show speakers window when voice first connects
 	if (mShowSpeakersOnConnect && mVoiceChannel->isActive())
 	{
-		childSetVisible("active_speakers_panel", TRUE);
+		mActiveSpeakersPanel->setVisible(true);
 		mShowSpeakersOnConnect = FALSE;
 	}
-	childSetValue("toggle_active_speakers_btn", childIsVisible("active_speakers_panel"));
+	mToggleActiveSpeakersBtn->setValue(mActiveSpeakersPanel->getVisible());
 
 	if (mTyping)
 	{
@@ -1531,11 +1540,11 @@ void LLFloaterIMPanel::draw()
 	else
 	{
 		// refresh volume and mute checkbox
-		childSetVisible("speaker_volume", LLVoiceClient::voiceEnabled() && mVoiceChannel->isActive());
-		childSetValue("speaker_volume", gVoiceClient->getUserVolume(mOtherParticipantUUID));
+		mVolumeSlider->setVisible(LLVoiceClient::voiceEnabled() && mVoiceChannel->isActive());
+		mVolumeSlider->setValue(gVoiceClient->getUserVolume(mOtherParticipantUUID));
 
-		childSetValue("mute_btn", LLMuteList::getInstance()->isMuted(mOtherParticipantUUID, LLMute::flagVoiceChat));
-		childSetVisible("mute_btn", LLVoiceClient::voiceEnabled() && mVoiceChannel->isActive());
+		mMuteBtn->setValue(LLMuteList::getInstance()->isMuted(mOtherParticipantUUID, LLMute::flagVoiceChat));
+		mMuteBtn->setVisible(LLVoiceClient::voiceEnabled() && mVoiceChannel->isActive());
 	}
 	LLFloater::draw();
 }

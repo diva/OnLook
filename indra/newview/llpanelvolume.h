@@ -64,11 +64,11 @@ public:
 	void			sendIsLight();
 	void			sendIsFlexible();
 
-	static BOOL		precommitValidate(LLUICtrl* ctrl,void* userdata);
+	static bool		precommitValidate(const LLSD& data);
 	
 	static void 	onCommitIsLight(		LLUICtrl* ctrl, void* userdata);
 	static void 	onCommitLight(			LLUICtrl* ctrl, void* userdata);
-	static void 	onCommitIsFlexible(		LLUICtrl* ctrl, void* userdata);
+	void			onCommitIsFlexible(		LLUICtrl* ctrl, void* userdata);
 	static void 	onCommitFlexible(		LLUICtrl* ctrl, void* userdata);
 	static void     onCommitPhysicsParam(       LLUICtrl* ctrl, void* userdata);
 
@@ -89,6 +89,9 @@ protected:
 	void            sendPhysicsFriction(LLUICtrl* ctrl, void* userdata);
 	void            sendPhysicsRestitution(LLUICtrl* ctrl, void* userdata);
 	void            sendPhysicsDensity(LLUICtrl* ctrl, void* userdata);
+
+	void            handleResponseChangeToFlexible(const LLSD &pNotification, const LLSD &pResponse);
+
 /*
 	LLTextBox*		mLabelSelectSingleMessage;
 	// Light
@@ -114,6 +117,7 @@ protected:
 	LLPointer<LLViewerObject> mObject;
 	LLPointer<LLViewerObject> mRootObject;
 	LLTextBox*		mComboPhysicsShapeLabel;
+
 	LLComboBox*     mComboPhysicsShapeType;
 	LLSpinCtrl*     mSpinPhysicsGravity;
 	LLSpinCtrl*     mSpinPhysicsFriction;

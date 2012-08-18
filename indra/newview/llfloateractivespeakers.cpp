@@ -353,6 +353,13 @@ BOOL LLPanelActiveSpeakers::postBuild()
 	childSetCommitCallback("moderator_allow_text", onModeratorMuteText, this);
 	childSetCommitCallback("moderation_mode", onChangeModerationMode, this);
 
+	mVolumeSlider.connect(this,"speaker_volume");
+	mModeratorCtrlLbl.connect(this,"moderator_controls_label");
+	mModeratorAllowVoiceCheckbox.connect(this,"moderator_allow_voice");
+	mModeratorAllowTextCheckbox.connect(this,"moderator_allow_text");
+	mModeratorModePanel.connect(this,"moderation_mode_panel");
+	mModeratorControlsPanel.connect(this,"moderator_controls");
+
 	// update speaker UI
 	handleSpeakerSelect();
 
@@ -625,25 +632,21 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 								//&& !LLMuteList::getInstance()->isLinden(selected_speakerp->mDisplayName));
 								&& !LLMuteList::getInstance()->isLinden(selected_speakerp->mLegacyName));
 	}
-	childSetValue("speaker_volume", gVoiceClient->getUserVolume(selected_id));
-	childSetEnabled("speaker_volume", LLVoiceClient::voiceEnabled()
+	mVolumeSlider->setValue(gVoiceClient->getUserVolume(selected_id));
+	mVolumeSlider->setEnabled(LLVoiceClient::voiceEnabled()
 					&& gVoiceClient->getVoiceEnabled(selected_id)
 					&& selected_id.notNull() 
 					&& selected_id != gAgent.getID() 
 					&& (selected_speakerp.notNull() && (selected_speakerp->mType == LLSpeaker::SPEAKER_AGENT || selected_speakerp->mType == LLSpeaker::SPEAKER_EXTERNAL)));
 
-	childSetEnabled(
-		"moderator_controls_label",
-		selected_id.notNull());
+	mModeratorCtrlLbl->setEnabled(selected_id.notNull());
 
-	childSetEnabled(
-		"moderator_allow_voice", 
+	mModeratorAllowVoiceCheckbox->setEnabled(
 		selected_id.notNull() 
 		&& mSpeakerMgr->isVoiceActive()
 		&& gVoiceClient->getVoiceEnabled(selected_id));
 
-	childSetEnabled(
-		"moderator_allow_text", 
+	mModeratorAllowTextCheckbox->setEnabled(
 		selected_id.notNull());
 
 	if (mProfileBtn)
@@ -668,8 +671,8 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 	LLPointer<LLSpeaker> self_speakerp = mSpeakerMgr->findSpeaker(gAgent.getID());
 	if(self_speakerp)
 	{
-		childSetVisible("moderation_mode_panel", self_speakerp->mIsModerator && mSpeakerMgr->isVoiceActive());
-		childSetVisible("moderator_controls", self_speakerp->mIsModerator);
+		mModeratorModePanel->setVisible(self_speakerp->mIsModerator && mSpeakerMgr->isVoiceActive());
+		mModeratorControlsPanel->setVisible(self_speakerp->mIsModerator);
 	}
 
 	// keep scroll value stable
