@@ -53,6 +53,11 @@ find_path(FMODEX_INCLUDE_DIR fmod.h
           ${FMODEX_SDK_DIR}
           )
 
+if(DARWIN)
+  set(FMODEX_ORIG_LIBRARY "${FMODEX_LIBRARY}")
+  set(FMODEX_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/libfmodex.dylib")
+endif(DARWIN)
+
 if (FMODEX_LIBRARY AND FMODEX_INCLUDE_DIR)
   set(FMODEX ON CACHE BOOL "Use closed source FMOD Ex sound library.")
 else (FMODEX_LIBRARY AND FMODEX_INCLUDE_DIR)
