@@ -9,6 +9,18 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+	<key>SGShiftCrouchToggle</key>
+	<map>
+	  <key>Comment</key>
+	  <string>Allow crouch toggle by holding shift</string>
+	  <key>Persist</key>
+	  <integer>1</integer>
+	  <key>Type</key>
+	  <string>Boolean</string>
+	  <key>Value</key>
+	  <integer>1</integer>
+	</map>
+
 	<key>SGServerVersionChangedNofification</key>
 	<map>
 	  <key>Comment</key>
