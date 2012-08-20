@@ -8,6 +8,19 @@
 		<string>settings_sh.xml</string>
 		<string>settings_rlv.xml</string>
 	</array>
+
+	<key>SGServerVersionChangedNofification</key>
+	<map>
+	  <key>Comment</key>
+	  <string>Notify when going to a simulator of different version</string>
+	  <key>Persist</key>
+	  <integer>1</integer>
+	  <key>Type</key>
+	  <string>Boolean</string>
+	  <key>Value</key>
+	  <integer>0</integer>
+	</map>
+
 	<key>SianaRenderDeferredInvisiprim</key>
 	<map>
 	  <key>Comment</key>

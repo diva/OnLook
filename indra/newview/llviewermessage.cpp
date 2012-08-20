@@ -4392,7 +4392,7 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 		return;
 	}
 
-	if (!gLastVersionChannel.empty())
+	if (!gLastVersionChannel.empty() && gSavedSettings.getBOOL("SGServerVersionChangedNofification"))
 	{
 		LLSD payload;
 		payload["message"] = version_channel;
