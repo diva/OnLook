@@ -396,7 +396,7 @@ void LLFloaterPostcard::sendPostcard()
 		body["name"] = childGetValue("name_form").asString();
 		body["subject"] = childGetValue("subject_form").asString();
 		body["msg"] = childGetValue("msg_form").asString();
-		LLHTTPClient::post(url, body, new LLSendPostcardResponder(body, mAssetID, LLAssetType::AT_IMAGE_JPEG));
+		LLHTTPClient::post4(url, body, new LLSendPostcardResponder(body, mAssetID, LLAssetType::AT_IMAGE_JPEG));
 	} 
 	else
 	{

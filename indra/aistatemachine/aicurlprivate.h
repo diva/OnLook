@@ -34,6 +34,8 @@
 #include <sstream>
 #include "llatomic.h"
 
+class AIHTTPHeaders;
+
 namespace AICurlPrivate {
 namespace curlthread { class MultiHandle; }
 
@@ -213,13 +215,14 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 // and the CurlEasyRequest destructed.
 class CurlEasyRequest : public CurlEasyHandle {
   private:
-	void setPost_raw(S32 size, char const* data);
+	void setPost_raw(U32 size, char const* data);
   public:
-	void setPost(S32 size) { setPost_raw(size, NULL); }
-	void setPost(AIPostFieldPtr const& postdata, S32 size);
-	void setPost(char const* data, S32 size) { setPost(new AIPostField(data), size); }
+	void setPost(U32 size) { setPost_raw(size, NULL); }
+	void setPost(AIPostFieldPtr const& postdata, U32 size);
+	void setPost(char const* data, U32 size) { setPost(new AIPostField(data), size); }
 	void setoptString(CURLoption option, std::string const& value);
 	void addHeader(char const* str);
+	void addHeaders(AIHTTPHeaders const& headers);
 
   private:
 	// Callback stubs.
@@ -324,11 +327,13 @@ class CurlEasyRequest : public CurlEasyHandle {
 // is deleted and the CurlResponderBuffer destructed.
 class CurlResponderBuffer : protected AICurlEasyHandleEvents {
   public:
-	void resetState(AICurlEasyRequest_wat& curl_easy_request_w);
-	void prepRequest(AICurlEasyRequest_wat& buffered_curl_easy_request_w, std::vector<std::string> const& headers, AICurlInterface::ResponderPtr responder, S32 time_out = 0, bool post = false);
+	typedef AICurlInterface::Responder::buffer_ptr_t buffer_ptr_t;
 
-	LLIOPipe::buffer_ptr_t& getInput(void) { return mInput; }
-	LLIOPipe::buffer_ptr_t& getOutput(void) { return mOutput; }
+	void resetState(AICurlEasyRequest_wat& curl_easy_request_w);
+	void prepRequest(AICurlEasyRequest_wat& buffered_curl_easy_request_w, AIHTTPHeaders const& headers, AICurlInterface::ResponderPtr responder, S32 time_out = 0);
+
+	buffer_ptr_t& getInput(void) { return mInput; }
+	buffer_ptr_t& getOutput(void) { return mOutput; }
 
 	// Called if libcurl doesn't deliver within mRequestTimeOut seconds.
 	void timed_out(void);
@@ -346,9 +351,9 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
 	/*virtual*/ void removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
 
   private:
-	LLIOPipe::buffer_ptr_t mInput;
+	buffer_ptr_t mInput;
 	U8* mLastRead;										// Pointer into mInput where we last stopped reading (or NULL to start at the beginning).
-	LLIOPipe::buffer_ptr_t mOutput;
+	buffer_ptr_t mOutput;
 	AICurlInterface::ResponderPtr mResponder;
 	//U32 mBodyLimit;									// From the old LLURLRequestDetail::mBodyLimit, but never used.
 	U32 mStatus;										// HTTP status, decoded from the first header line.

@@ -766,14 +766,13 @@ bool LLMeshRepoThread::fetchMeshSkinInfo(const LLUUID& mesh_id)
 			}
 
 			//reading from VFS failed for whatever reason, fetch from sim
-			std::vector<std::string> headers;
-			headers.push_back("Accept: application/octet-stream");
+			AIHTTPHeaders headers("Accept", "application/octet-stream");
 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{				
 				// This might throw AICurlNoEasyHandle.
-				mCurlRequest->getByteRange(http_url, headers, offset, size,
+				mCurlRequest->getByteRange2(http_url, headers, offset, size,
 										   new LLMeshSkinInfoResponder(mesh_id, offset, size));
 				LLMeshRepository::sHTTPRequestCount++;
 			}
@@ -841,14 +840,13 @@ bool LLMeshRepoThread::fetchMeshDecomposition(const LLUUID& mesh_id)
 			}
 
 			//reading from VFS failed for whatever reason, fetch from sim
-			std::vector<std::string> headers;
-			headers.push_back("Accept: application/octet-stream");
+			AIHTTPHeaders headers("Accept", "application/octet-stream");
 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{				
 				// This might throw AICurlNoEasyHandle.
-				mCurlRequest->getByteRange(http_url, headers, offset, size,
+				mCurlRequest->getByteRange2(http_url, headers, offset, size,
 										   new LLMeshDecompositionResponder(mesh_id, offset, size));
 				LLMeshRepository::sHTTPRequestCount++;
 			}
@@ -916,14 +914,13 @@ bool LLMeshRepoThread::fetchMeshPhysicsShape(const LLUUID& mesh_id)
 			}
 
 			//reading from VFS failed for whatever reason, fetch from sim
-			std::vector<std::string> headers;
-			headers.push_back("Accept: application/octet-stream");
+			AIHTTPHeaders headers("Accept", "application/octet-stream");
 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{				
 				// This might throw AICurlNoEasyHandle.
-				mCurlRequest->getByteRange(http_url, headers, offset, size,
+				mCurlRequest->getByteRange2(http_url, headers, offset, size,
 										   new LLMeshPhysicsShapeResponder(mesh_id, offset, size));
 				LLMeshRepository::sHTTPRequestCount++;
 			}
@@ -966,8 +963,7 @@ bool LLMeshRepoThread::fetchMeshHeader(const LLVolumeParams& mesh_params, U32& c
 	}
 
 	//either cache entry doesn't exist or is corrupt, request header from simulator	
-	std::vector<std::string> headers;
-	headers.push_back("Accept: application/octet-stream");
+	AIHTTPHeaders headers("Accept", "application/octet-stream");
 
 	std::string http_url = constructUrl(mesh_params.getSculptID());
 	if (!http_url.empty())
@@ -976,7 +972,7 @@ bool LLMeshRepoThread::fetchMeshHeader(const LLVolumeParams& mesh_params, U32& c
 		//within the first 4KB
 		//NOTE -- this will break of headers ever exceed 4KB		
 		// This might throw AICurlNoEasyHandle.
-		mCurlRequest->getByteRange(http_url, headers, 0, 4096, new LLMeshHeaderResponder(mesh_params));
+		mCurlRequest->getByteRange2(http_url, headers, 0, 4096, new LLMeshHeaderResponder(mesh_params));
 		LLMeshRepository::sHTTPRequestCount++;
 		count++;
 	}
@@ -1031,14 +1027,13 @@ void LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod, 
 			}
 
 			//reading from VFS failed for whatever reason, fetch from sim
-			std::vector<std::string> headers;
-			headers.push_back("Accept: application/octet-stream");
+			AIHTTPHeaders headers("Accept", "application/octet-stream");
 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{				
 				// This might throw AICurlNoEasyHandle.
-				mCurlRequest->getByteRange(constructUrl(mesh_id), headers, offset, size,
+				mCurlRequest->getByteRange2(constructUrl(mesh_id), headers, offset, size,
 										   new LLMeshLODResponder(mesh_params, lod, offset, size));
 				LLMeshRepository::sHTTPRequestCount++;
 				count++;
@@ -1612,9 +1607,9 @@ void LLMeshUploadThread::doWholeModelUpload()
 		wholeModelToLLSD(full_model_data, true);
 		LLSD body = full_model_data["asset_resources"];
 		dump_llsd_to_file(body,make_dump_name("whole_model_body_",dump_num));
-		LLCurlRequest::headers_t headers;
+		AIHTTPHeaders headers;
 		// This might throw AICurlNoEasyHandle.
-		mCurlRequest->post(mWholeModelUploadURL, headers, body,
+		mCurlRequest->post2(mWholeModelUploadURL, headers, body,
 						   new LLWholeModelUploadResponder(this, full_model_data, mUploadObserverHandle), mMeshUploadTimeOut);
 		do
 		{
@@ -1646,9 +1641,9 @@ void LLMeshUploadThread::requestWholeModelFee()
 	dump_llsd_to_file(model_data,make_dump_name("whole_model_fee_request_",dump_num));
 
 	mPendingUploads++;
-	LLCurlRequest::headers_t headers;
+	AIHTTPHeaders headers;
 	// This might throw AICurlNoEasyHandle.
-	mCurlRequest->post(mWholeModelFeeCapability, headers, model_data,
+	mCurlRequest->post2(mWholeModelFeeCapability, headers, model_data,
 					   new LLWholeModelFeeResponder(this,model_data, mFeeObserverHandle), mMeshUploadTimeOut);
 
 	do

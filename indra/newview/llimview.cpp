@@ -400,7 +400,7 @@ bool inviteUserResponse(const LLSD& notification, const LLSD& response)
 				LLSD data;
 				data["method"] = "accept invitation";
 				data["session-id"] = session_id;
-				LLHTTPClient::post(
+				LLHTTPClient::post4(
 					url,
 					data,
 					new LLViewerChatterBoxInvitationAcceptResponder(
@@ -438,7 +438,7 @@ bool inviteUserResponse(const LLSD& notification, const LLSD& response)
 			LLSD data;
 			data["method"] = "decline invitation";
 			data["session-id"] = session_id;
-			LLHTTPClient::post(
+			LLHTTPClient::post4(
 				url,
 				data,
 				NULL);				
@@ -1720,7 +1720,7 @@ public:
 				LLSD data;
 				data["method"] = "accept invitation";
 				data["session-id"] = session_id;
-				LLHTTPClient::post(
+				LLHTTPClient::post4(
 					url,
 					data,
 					new LLViewerChatterBoxInvitationAcceptResponder(

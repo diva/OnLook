@@ -235,7 +235,7 @@ void fetch_items_from_llsd(const LLSD& items_llsd)
 		if (!url.empty())
 		{
 			body[i]["agent_id"]	= gAgent.getID();
-			LLHTTPClient::post(url, body[i], new LLInventoryModel::fetchInventoryResponder(body[i]));
+			LLHTTPClient::post4(url, body[i], new LLInventoryModel::fetchInventoryResponder(body[i]));
 			continue;
 		}
 

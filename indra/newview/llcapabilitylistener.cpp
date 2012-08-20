@@ -106,12 +106,11 @@ bool LLCapabilityListener::capListener(const LLSD& request)
     if (! url.empty())
     {
         // This capability is supported by the region to which we're talking.
-        LLHTTPClient::post(url, payload,
+        LLHTTPClient::post4(url, payload,
                            new LLSDMessage::EventResponder(LLEventPumps::instance(),
                                                            request,
                                                            mProvider.getDescription(),
                                                            cap, reply, error),
-                           LLSD(),  // headers
                            timeout);
     }
     else

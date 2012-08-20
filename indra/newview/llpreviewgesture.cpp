@@ -1183,7 +1183,7 @@ void LLPreviewGesture::saveIfNeeded()
 				// Saving into agent inventory
 				LLSD body;
 				body["item_id"] = mItemUUID;
-				LLHTTPClient::post(agent_url, body,
+				LLHTTPClient::post4(agent_url, body,
 					new LLUpdateAgentInventoryResponder(body, asset_id, LLAssetType::AT_GESTURE));
 				delayedUpload = TRUE;
 			}
@@ -1193,7 +1193,7 @@ void LLPreviewGesture::saveIfNeeded()
 				LLSD body;
 				body["task_id"] = mObjectUUID;
 				body["item_id"] = mItemUUID;
-				LLHTTPClient::post(task_url, body,
+				LLHTTPClient::post4(task_url, body,
 					new LLUpdateTaskInventoryResponder(body, asset_id, LLAssetType::AT_GESTURE));
 			}
 			else if (gAssetStorage)

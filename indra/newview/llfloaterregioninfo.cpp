@@ -760,7 +760,7 @@ BOOL LLPanelRegionGeneralInfo::sendUpdate()
 		body["allow_parcel_changes"] = childGetValue("allow_parcel_changes_check");
 		body["block_parcel_search"] = childGetValue("block_parcel_search_check");
 
-		LLHTTPClient::post(url, body, new LLHTTPClient::ResponderIgnore);
+		LLHTTPClient::post4(url, body, new LLHTTPClient::ResponderIgnore);
 	}
 	else
 	{
@@ -2356,7 +2356,7 @@ bool LLPanelEstateInfo::commitEstateInfoCaps()
 	body["owner_abuse_email"] = childGetValue("abuse_email_address").asString();
 
 	// we use a responder so that we can re-get the data after committing to the database
-	LLHTTPClient::post(url, body, new LLEstateChangeInfoResponder((void*)this));
+	LLHTTPClient::post4(url, body, new LLEstateChangeInfoResponder((void*)this));
     return true;
 }
 

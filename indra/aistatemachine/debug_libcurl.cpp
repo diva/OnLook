@@ -702,7 +702,11 @@ CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 		{
 		  LibcwDoutStream << "NULL";
 		}
-		LibcwDoutStream << "](" << (is_postfield ? postfieldsize : size) << " bytes))";
+		LibcwDoutStream << "]";
+		if (str)
+		{
+		  LibcwDoutStream << "(" << (is_postfield ? postfieldsize : size) << " bytes))";
+		}
 	  }
 	  else
 	  {

@@ -572,7 +572,7 @@ LLUUID LLInventoryModel::createNewCategory(const LLUUID& parent_id,
 			request["payload"] = body;
 
 //			viewer_region->getCapAPI().post(request);
-			LLHTTPClient::post(
+			LLHTTPClient::post4(
 						   url,
 						   body,
 						   new LLCreateInventoryCategoryResponder(this, callback, user_data) );

@@ -1046,7 +1046,6 @@ bool LLAppViewer::mainLoop()
 
 	// Create IO Pump to use for HTTP Requests.
 	gServicePump = new LLPumpIO;
-	LLHTTPClient::setPump(*gServicePump);
 	LLCurl::setCAFile(gDirUtilp->getCAFile());
 	
 	// Note: this is where gLocalSpeakerMgr and gActiveSpeakerMgr used to be instantiated.

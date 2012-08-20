@@ -20,6 +20,7 @@ include_directories(
     )
 
 set(llmessage_SOURCE_FILES
+    aihttpheaders.cpp
     llhttpclient.cpp
     llares.cpp
     llareslistener.cpp
@@ -104,6 +105,7 @@ set(llmessage_SOURCE_FILES
 set(llmessage_HEADER_FILES
     CMakeLists.txt
 
+    aihttpheaders.h
     llares.h
     llareslistener.h
     llassetstorage.h

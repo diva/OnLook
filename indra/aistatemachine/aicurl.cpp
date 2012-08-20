@@ -51,6 +51,7 @@
 #include "lltimer.h"		// ms_sleep
 #include "llproxy.h"
 #include "llhttpstatuscodes.h"
+#include "aihttpheaders.h"
 #ifdef CWDEBUG
 #include <libcwd/buf2str.h>
 #endif
@@ -797,7 +798,7 @@ void CurlEasyRequest::setoptString(CURLoption option, std::string const& value)
   setopt(option, value.c_str());
 }
 
-void CurlEasyRequest::setPost(AIPostFieldPtr const& postdata, S32 size)
+void CurlEasyRequest::setPost(AIPostFieldPtr const& postdata, U32 size)
 {
   llassert_always(postdata->data());
 
@@ -807,13 +808,16 @@ void CurlEasyRequest::setPost(AIPostFieldPtr const& postdata, S32 size)
   setPost_raw(size, postdata->data());
 }
 
-void CurlEasyRequest::setPost_raw(S32 size, char const* data)
+void CurlEasyRequest::setPost_raw(U32 size, char const* data)
 {
   if (!data)
   {
 	// data == NULL when we're going to read the data using CURLOPT_READFUNCTION.
 	Dout(dc::curl, "POST size is " << size << " bytes.");
   }
+
+  // Accept everything (send an Accept-Encoding header containing all encodings we support (zlib and gzip)).
+  setoptString(CURLOPT_ENCODING, "");	// CURLOPT_ACCEPT_ENCODING
 
   // The server never replies with 100-continue, so suppress the "Expect: 100-continue" header that libcurl adds by default.
   addHeader("Expect:");
@@ -823,7 +827,7 @@ void CurlEasyRequest::setPost_raw(S32 size, char const* data)
 	addHeader("Keep-alive: 300");
   }
   setopt(CURLOPT_POSTFIELDSIZE, size);
-  setopt(CURLOPT_POSTFIELDS, data);
+  setopt(CURLOPT_POSTFIELDS, data);			// Implies CURLOPT_POST
 }
 
 ThreadSafeCurlEasyRequest* CurlEasyRequest::get_lockobj(void)
@@ -977,6 +981,12 @@ void CurlEasyRequest::addHeader(char const* header)
 {
   llassert(!mRequestFinalized);
   mHeaders = curl_slist_append(mHeaders, header);
+}
+
+void CurlEasyRequest::addHeaders(AIHTTPHeaders const& headers)
+{
+  llassert(!mRequestFinalized);
+  headers.append_to(mHeaders);
 }
 
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
@@ -1307,14 +1317,8 @@ ThreadSafeBufferedCurlEasyRequest* CurlResponderBuffer::get_lockobj(void)
   return static_cast<ThreadSafeBufferedCurlEasyRequest*>(AIThreadSafeSimple<CurlResponderBuffer>::wrapper_cast(this));
 }
 
-void CurlResponderBuffer::prepRequest(AICurlEasyRequest_wat& curl_easy_request_w, std::vector<std::string> const& headers, AICurlInterface::ResponderPtr responder, S32 time_out, bool post)
+void CurlResponderBuffer::prepRequest(AICurlEasyRequest_wat& curl_easy_request_w, AIHTTPHeaders const& headers, AICurlInterface::ResponderPtr responder, S32 time_out)
 {
-  if (post)
-  {
-	// Accept everything (send an Accept-Encoding header containing all encodings we support (zlib and gzip)).
-	curl_easy_request_w->setoptString(CURLOPT_ENCODING, "");	// CURLOPT_ACCEPT_ENCODING
-  }
-
   mInput.reset(new LLBufferArray);
   mInput->setThreaded(true);
   mLastRead = NULL;
@@ -1343,14 +1347,8 @@ void CurlResponderBuffer::prepRequest(AICurlEasyRequest_wat& curl_easy_request_w
   // Keep responder alive.
   mResponder = responder;
 
-  if (!post)
-  {
-	// Add extra headers.
-	for (std::vector<std::string>::const_iterator iter = headers.begin(); iter != headers.end(); ++iter)
-	{
-	  curl_easy_request_w->addHeader((*iter).c_str());
-	}
-  }
+  // Add extra headers.
+  curl_easy_request_w->addHeaders(headers);
 }
 
 //static
@@ -1500,7 +1498,12 @@ void CurlResponderBuffer::processOutput(AICurlEasyRequest_wat& curl_easy_request
   if (code == CURLE_OK)
   {
 	curl_easy_request_w->getinfo(CURLINFO_RESPONSE_CODE, &responseCode);
-	//AIFIXME: fill responseReason if (responseCode < 200 || responseCode >= 300).
+	// If getResult code is CURLE_OK then we should have decoded the first header line ourselves.
+	llassert(responseCode == mStatus);
+	if (responseCode == mStatus)
+	  responseReason = mReason;
+	else
+	  responseReason = "Unknown reason.";
   }
   else
   {

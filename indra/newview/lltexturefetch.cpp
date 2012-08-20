@@ -149,7 +149,7 @@ public:
 	// void relese() { --mActiveCount; }
 
 	S32 callbackHttpGet(const LLChannelDescriptors& channels,
-						 const LLIOPipe::buffer_ptr_t& buffer,
+						 const LLHTTPClient::Responder::buffer_ptr_t& buffer,
 						 bool partial, bool success);
 	void callbackCacheRead(bool success, LLImageFormatted* image,
 						   S32 imagesize, BOOL islocal);
@@ -303,7 +303,7 @@ public:
 
 	virtual void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
-							  const LLIOPipe::buffer_ptr_t& buffer)
+							  const buffer_ptr_t& buffer)
 	{
 		static LLCachedControl<bool> log_to_viewer_log(gSavedSettings,"LogTextureDownloadsToViewerLog");
 		static LLCachedControl<bool> log_to_sim(gSavedSettings,"LogTextureDownloadsToSimulator");
@@ -1319,11 +1319,10 @@ bool LLTextureFetchWorker::doWork(S32 param)
 #endif
 
 				// Will call callbackHttpGet when curl request completes
-				std::vector<std::string> headers;
-				headers.push_back("Accept: image/x-j2c");
+				AIHTTPHeaders headers("Accept", "image/x-j2c");
 				try
 				{
-					res = mFetcher->mCurlGetRequest->getByteRange(mUrl, headers, offset, mRequestedSize,
+					res = mFetcher->mCurlGetRequest->getByteRange2(mUrl, headers, offset, mRequestedSize,
 																  new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, offset, true));
 				}
 				catch(AICurlNoEasyHandle const& error)
@@ -1806,7 +1805,7 @@ bool LLTextureFetchWorker::processSimulatorPackets()
 //////////////////////////////////////////////////////////////////////////////
 
 S32 LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
-										   const LLIOPipe::buffer_ptr_t& buffer,
+										   const LLHTTPClient::Responder::buffer_ptr_t& buffer,
 										   bool partial, bool success)
 {
 	S32 data_size = 0 ;

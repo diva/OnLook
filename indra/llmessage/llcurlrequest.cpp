@@ -43,6 +43,7 @@
 #include "llcurlrequest.h"
 #include "llbufferstream.h"
 #include "aicurleasyrequeststatemachine.h"
+#include "aihttpheaders.h"
 
 //-----------------------------------------------------------------------------
 // class Request
@@ -50,12 +51,13 @@
 
 namespace AICurlInterface {
 
-bool Request::get(std::string const& url, ResponderPtr responder)
+bool Request::get2(std::string const& url, ResponderPtr responder)
 {
-  return getByteRange(url, headers_t(), 0, -1, responder);
+  AIHTTPHeaders empty_headers;
+  return getByteRange2(url, empty_headers, 0, -1, responder);
 }
 
-bool Request::getByteRange(std::string const& url, headers_t const& headers, S32 offset, S32 length, ResponderPtr responder)
+bool Request::getByteRange2(std::string const& url, AIHTTPHeaders const& headers, S32 offset, S32 length, ResponderPtr responder)
 {
   DoutEntering(dc::curl, "Request::getByteRange(" << url << ", ...)");
 
@@ -63,7 +65,7 @@ bool Request::getByteRange(std::string const& url, headers_t const& headers, S32
   AICurlEasyRequestStateMachine* buffered_easy_request = new AICurlEasyRequestStateMachine(true);
 
   {
-    AICurlEasyRequest_wat buffered_easy_request_w(*buffered_easy_request->mCurlEasyRequest);
+	AICurlEasyRequest_wat buffered_easy_request_w(*buffered_easy_request->mCurlEasyRequest);
 
 	AICurlResponderBuffer_wat(*buffered_easy_request->mCurlEasyRequest)->prepRequest(buffered_easy_request_w, headers, responder);
 
@@ -82,7 +84,7 @@ bool Request::getByteRange(std::string const& url, headers_t const& headers, S32
   return true;	// We throw in case of problems.
 }
 
-bool Request::post(std::string const& url, headers_t const& headers, std::string const& data, ResponderPtr responder, S32 time_out)
+bool Request::post2(std::string const& url, AIHTTPHeaders const& headers, std::string const& data, ResponderPtr responder, S32 time_out)
 {
   DoutEntering(dc::curl, "Request::post(" << url << ", ...)");
 
@@ -97,14 +99,14 @@ bool Request::post(std::string const& url, headers_t const& headers, std::string
 
 	U32 bytes = data.size();
 	bool success = buffer_w->getInput()->append(buffer_w->sChannels.out(), (U8 const*)data.data(), bytes);
-	llassert_always(success);	// AIFIXME: Maybe throw an error.
 	if (!success)
-	  return false;
+	{
+	  buffered_easy_request->kill();
+	  throw AICurlNoBody("LLBufferArray::copyIntoBuffers() returned false");
+	}
 	buffered_easy_request_w->setPost(bytes);
 	buffered_easy_request_w->addHeader("Content-Type: application/octet-stream");
 	buffered_easy_request_w->finalizeRequest(url);
-
-	lldebugs << "POSTING: " << bytes << " bytes." << llendl;
   }
 
   buffered_easy_request->run();
@@ -112,7 +114,7 @@ bool Request::post(std::string const& url, headers_t const& headers, std::string
   return true;	// We throw in case of problems.
 }
 
-bool Request::post(std::string const& url, headers_t const& headers, LLSD const& data, ResponderPtr responder, S32 time_out)
+bool Request::post3(std::string const& url, AIHTTPHeaders const& headers, LLSD const& data, ResponderPtr responder, S32 time_out)
 {
   DoutEntering(dc::curl, "Request::post(" << url << ", ...)");
 

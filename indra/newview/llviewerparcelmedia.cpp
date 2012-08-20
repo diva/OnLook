@@ -467,7 +467,7 @@ void LLViewerParcelMedia::sendMediaNavigateMessage(const std::string& url)
 		body["agent-id"] = gAgent.getID();
 		body["local-id"] = LLViewerParcelMgr::getInstance()->getAgentParcel()->getLocalID();
 		body["url"] = url;
-		LLHTTPClient::post(region_url, body, new LLHTTPClient::ResponderIgnore);
+		LLHTTPClient::post4(region_url, body, new LLHTTPClient::ResponderIgnore);
 	}
 	else
 	{

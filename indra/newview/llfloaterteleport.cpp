@@ -299,7 +299,7 @@ void LLFloaterTeleport::onClickTeleport(void* userdata)
 	args["public_region_seed_capability"] = text; 
 	args["position"] = ll_sd_from_vector3(LLVector3(128, 128, 50)); // default to middle of region above base terrain
 	LL_INFOS("OGPX") << " args to placeavatar cap " << placeAvatarCap << " on teleport: " << LLSDOStreamer<LLSDXMLFormatter>(args) << LL_ENDL;
-	LLHTTPClient::post(placeAvatarCap, args, new LLPlaceAvatarTeleportResponder());
+	LLHTTPClient::post4(placeAvatarCap, args, new LLPlaceAvatarTeleportResponder());
 	gAgent.setTeleportMessage(
 				LLAgent::sTeleportProgressMessages["requesting"]);
 	gViewerWindow->setShowProgress(TRUE);

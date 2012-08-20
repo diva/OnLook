@@ -3604,7 +3604,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 					std::string authUrl = mesg.substr(8);
 					authUrl += (authUrl.find('?') != std::string::npos)? "&auth=": "?auth=";
 					authUrl += gAuthString;
-					HippoRestRequest::get(authUrl, new AuthHandler());
+					HippoRestRequest::get5(authUrl, new AuthHandler());
 					return;
 				}
 			}

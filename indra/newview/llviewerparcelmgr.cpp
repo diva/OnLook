@@ -1310,7 +1310,7 @@ void LLViewerParcelMgr::sendParcelPropertiesUpdate(LLParcel* parcel, bool use_ag
 		parcel->packMessage(body);
 		llinfos << "Sending parcel properties update via capability to: "
 			<< url << llendl;
-		LLHTTPClient::post(url, body, new LLHTTPClient::ResponderIgnore);
+		LLHTTPClient::post4(url, body, new LLHTTPClient::ResponderIgnore);
 	}
 	else
 	{

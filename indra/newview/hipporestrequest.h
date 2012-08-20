@@ -1,7 +1,6 @@
 #ifndef __HIPPO_REST_REQUEST_H__
 #define __HIPPO_REST_REQUEST_H__
 
-
 #include <map>
 #include <string>
 
@@ -11,12 +10,9 @@ class LLBufferArray;
 class LLChannelDescriptors;
 class LLXmlTree;
 
-
 #define HIPPO_REST_TIMEOUT 60.f
 
-
 // ********************************************************************
- 
 
 class HippoRestHandler
 {
@@ -40,7 +36,6 @@ class HippoRestHandler
 		friend class HippoRestComplete;
 };
 
- 
 class HippoRestHandlerRaw : public HippoRestHandler
 {
 	public:
@@ -59,7 +54,6 @@ class HippoRestHandlerRaw : public HippoRestHandler
 					const boost::shared_ptr<LLBufferArray> &body);
 };
 
-
 class HippoRestHandlerXml : public HippoRestHandler
 {
 	public:
@@ -77,28 +71,25 @@ class HippoRestHandlerXml : public HippoRestHandler
 					const boost::shared_ptr<LLBufferArray> &body);
 };
 
-
 // ********************************************************************
-
 
 class HippoRestRequest
 {
 	public:
 		// asynchronous interface
-		static void get(const std::string &url,
+		static void get5(const std::string &url,
 						HippoRestHandler *handler, float timeout=HIPPO_REST_TIMEOUT);
-		static void put(const std::string &url, const std::string &body,
+		static void put5(const std::string &url, const std::string &body,
 						HippoRestHandler *handler, float timeout=HIPPO_REST_TIMEOUT);
-		static void put(const std::string &url, const LLXmlTree *body,
+		static void put5(const std::string &url, const LLXmlTree *body,
 						HippoRestHandler *handler, float timeout=HIPPO_REST_TIMEOUT);
-		static void post(const std::string &url, const std::string &body,
+		static void post5(const std::string &url, const std::string &body,
 						 HippoRestHandler *handler, float timeout=HIPPO_REST_TIMEOUT);
-		static void post(const std::string &url, const LLXmlTree *body,
+		static void post5(const std::string &url, const LLXmlTree *body,
 						 HippoRestHandler *handler, float timeout=HIPPO_REST_TIMEOUT);
  
 		// synchronous interface
 		static int getBlocking(const std::string &url, std::string *result);
 };
-
 
 #endif

@@ -223,7 +223,6 @@ public:
 	static DeclareMemType MTYPE_IO_HTTP_SERVER;
 	static DeclareMemType MTYPE_IO_SD_SERVER;
 	static DeclareMemType MTYPE_IO_SD_CLIENT;
-	static DeclareMemType MTYPE_IO_URL_REQUEST;
 
 	static DeclareMemType MTYPE_DIRECTX_INIT;
 

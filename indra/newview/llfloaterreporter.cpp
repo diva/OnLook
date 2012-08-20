@@ -877,14 +877,14 @@ void LLFloaterReporter::sendReportViaCaps(std::string url, std::string sshot_url
 	if(childGetValue("screen_check").asBoolean() && !sshot_url.empty())
 	{
 		// try to upload screenshot
-		LLHTTPClient::post(sshot_url, report, new LLUserReportScreenshotResponder(report, 
+		LLHTTPClient::post4(sshot_url, report, new LLUserReportScreenshotResponder(report, 
 															mResourceDatap->mAssetInfo.mUuid, 
 															mResourceDatap->mAssetInfo.mType));			
 	}
 	else
 	{
 		// screenshot not wanted or we don't have screenshot cap
-		LLHTTPClient::post(url, report, new LLUserReportResponder());			
+		LLHTTPClient::post4(url, report, new LLUserReportResponder);			
 	}
 }
 

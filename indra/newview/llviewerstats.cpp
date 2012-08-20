@@ -874,6 +874,6 @@ void send_stats()
 	body["MinimalSkin"] = false;
 	
 	LLViewerStats::getInstance()->addToMessage(body);
-	LLHTTPClient::post(url, body, new ViewerStatsResponder());
+	LLHTTPClient::post4(url, body, new ViewerStatsResponder);
 }
 

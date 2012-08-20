@@ -208,7 +208,7 @@ void LLFloaterRegionDebugConsole::onInput(LLUICtrl* ctrl, const LLSD& param)
 		else
 		{
 			// Using SimConsole (deprecated)
-			LLHTTPClient::post(
+			LLHTTPClient::post4(
 				url,
 				LLSD(input->getText()),
 				new ConsoleResponder(mOutput));
@@ -217,7 +217,7 @@ void LLFloaterRegionDebugConsole::onInput(LLUICtrl* ctrl, const LLSD& param)
 	else
 	{
 		// Using SimConsoleAsync
-		LLHTTPClient::post(
+		LLHTTPClient::post4(
 			url,
 			LLSD(input->getText()),
 			new AsyncConsoleResponder);

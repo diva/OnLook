@@ -33,23 +33,19 @@
 
 #include <string>
 
-#include <boost/intrusive_ptr.hpp>
 #include "llassettype.h"
 #include "llcurl.h"
-#include "lliopipe.h"
+#include "aihttpheaders.h"
 
-extern const F32 HTTP_REQUEST_EXPIRY_SECS;
+extern F32 const HTTP_REQUEST_EXPIRY_SECS;
 
 class LLUUID;
 class LLPumpIO;
 class LLSD;
 
-
 class LLHTTPClient
 {
 public:
-	// class Responder moved to LLCurl
-
 	// For convenience
 	typedef LLCurl::Responder Responder;
 	typedef LLCurl::ResponderPtr ResponderPtr;
@@ -59,57 +55,51 @@ public:
 
 	/** @name non-blocking API */
 	//@{
-	static void head(
-		const std::string& url,
-		ResponderPtr,
-		const LLSD& headers = LLSD(),
-		const F32 timeout=HTTP_REQUEST_EXPIRY_SECS);
-	static void getByteRange(const std::string& url, S32 offset, S32 bytes, ResponderPtr, const LLSD& headers=LLSD(), const F32 timeout=HTTP_REQUEST_EXPIRY_SECS);
-	static void get(const std::string& url, ResponderPtr, const LLSD& headers = LLSD(), const F32 timeout=HTTP_REQUEST_EXPIRY_SECS);
-	static void get(const std::string& url, const LLSD& query, ResponderPtr, const LLSD& headers = LLSD(), const F32 timeout=HTTP_REQUEST_EXPIRY_SECS);
+	static void head4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout = HTTP_REQUEST_EXPIRY_SECS);
+	static void head4(std::string const& url, ResponderPtr responder, F32 timeout = HTTP_REQUEST_EXPIRY_SECS)
+	    { AIHTTPHeaders headers; head4(url, responder, headers, timeout); }
 
-	static void put(
-		const std::string& url,
-		const LLSD& body,
-		ResponderPtr,
-		const LLSD& headers = LLSD(),
-		const F32 timeout=HTTP_REQUEST_EXPIRY_SECS);
-	static void getHeaderOnly(const std::string& url, ResponderPtr, const F32 timeout=HTTP_REQUEST_EXPIRY_SECS);
-	static void getHeaderOnly(const std::string& url, ResponderPtr, const LLSD& headers, const F32 timeout=HTTP_REQUEST_EXPIRY_SECS);
+	static void getByteRange4(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout = HTTP_REQUEST_EXPIRY_SECS);
+	static void getByteRange4(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, F32 timeout = HTTP_REQUEST_EXPIRY_SECS)
+	    { AIHTTPHeaders headers; getByteRange4(url, offset, bytes, responder, headers, timeout); }
 
-	static void post(
-		const std::string& url,
-		const LLSD& body,
-		ResponderPtr,
-		const LLSD& headers = LLSD(),
-		const F32 timeout=HTTP_REQUEST_EXPIRY_SECS);
+	static void get4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout = HTTP_REQUEST_EXPIRY_SECS);
+	static void get4(std::string const& url, ResponderPtr responder, F32 timeout = HTTP_REQUEST_EXPIRY_SECS)
+	    { AIHTTPHeaders headers; get4(url, responder, headers, timeout); }
+
+	static void get4(std::string const& url, LLSD const& query, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout = HTTP_REQUEST_EXPIRY_SECS);
+	static void get4(std::string const& url, LLSD const& query, ResponderPtr responder, F32 timeout = HTTP_REQUEST_EXPIRY_SECS)
+	    { AIHTTPHeaders headers; get4(url, query, responder, headers, timeout); }
+
+	static void put4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout = HTTP_REQUEST_EXPIRY_SECS);
+	static void put4(std::string const& url, LLSD const& body, ResponderPtr responder, F32 timeout = HTTP_REQUEST_EXPIRY_SECS)
+	    { AIHTTPHeaders headers; put4(url, body, responder, headers, timeout); }
+
+	static void getHeaderOnly4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout = HTTP_REQUEST_EXPIRY_SECS);
+	static void getHeaderOnly4(std::string const& url, ResponderPtr responder, F32 timeout = HTTP_REQUEST_EXPIRY_SECS)
+	    { AIHTTPHeaders headers; getHeaderOnly4(url, responder, headers, timeout); }
+
+	static void post4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout = HTTP_REQUEST_EXPIRY_SECS);
+	static void post4(std::string const& url, LLSD const& body, ResponderPtr responder, F32 timeout = HTTP_REQUEST_EXPIRY_SECS)
+	    { AIHTTPHeaders headers; post4(url, body, responder, headers, timeout); }
+
 	/** Takes ownership of data and deletes it when sent */
-	static void postRaw(
-		const std::string& url,
-		const U8* data,
-		S32 size,
-		ResponderPtr responder,
-		const LLSD& headers = LLSD(),
-		const F32 timeout=HTTP_REQUEST_EXPIRY_SECS);
-	static void postFile(
-		const std::string& url,
-		const std::string& filename,
-		ResponderPtr,
-		const LLSD& headers = LLSD(),
-		const F32 timeout=HTTP_REQUEST_EXPIRY_SECS);
-	static void postFile(
-		const std::string& url,
-		const LLUUID& uuid,
-		LLAssetType::EType asset_type,
-		ResponderPtr responder,
-		const LLSD& headers = LLSD(),
-		const F32 timeout=HTTP_REQUEST_EXPIRY_SECS);
+	static void postRaw4(std::string const& url, const char* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout = HTTP_REQUEST_EXPIRY_SECS);
+	static void postRaw4(std::string const& url, const char* data, S32 size, ResponderPtr responder, F32 timeout = HTTP_REQUEST_EXPIRY_SECS)
+	    { AIHTTPHeaders headers; postRaw4(url, data, size, responder, headers, timeout); }
 
-	static void del(
-		const std::string& url,
-		ResponderPtr responder,
-		const LLSD& headers = LLSD(),
-		const F32 timeout=HTTP_REQUEST_EXPIRY_SECS);
+	static void postFile4(std::string const& url, std::string const& filename, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout = HTTP_REQUEST_EXPIRY_SECS);
+	static void postFile4(std::string const& url, std::string const& filename, ResponderPtr responder, F32 timeout = HTTP_REQUEST_EXPIRY_SECS)
+	    { AIHTTPHeaders headers; postFile4(url, filename, responder, headers, timeout); }
+
+	static void postFile4(std::string const& url, const LLUUID& uuid, LLAssetType::EType asset_type, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout = HTTP_REQUEST_EXPIRY_SECS);
+	static void postFile4(std::string const& url, const LLUUID& uuid, LLAssetType::EType asset_type, ResponderPtr responder, F32 timeout = HTTP_REQUEST_EXPIRY_SECS)
+	    { AIHTTPHeaders headers; postFile4(url, uuid, asset_type, responder, headers, timeout); }
+
+	static void del4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout = HTTP_REQUEST_EXPIRY_SECS);
+	static void del4(std::string const& url, ResponderPtr responder, F32 timeout = HTTP_REQUEST_EXPIRY_SECS)
+	    { AIHTTPHeaders headers; del4(url, responder, headers, timeout); }
+
 		///< sends a DELETE method, but we can't call it delete in c++
 	
 	/**
@@ -121,12 +111,9 @@ public:
 	 * @param headers A map of key:value headers to pass to the request
 	 * @param timeout The number of seconds to give the server to respond.
 	 */
-	static void move(
-		const std::string& url,
-		const std::string& destination,
-		ResponderPtr responder,
-		const LLSD& headers = LLSD(),
-		const F32 timeout=HTTP_REQUEST_EXPIRY_SECS);
+	static void move4(std::string const& url, std::string const& destination, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout = HTTP_REQUEST_EXPIRY_SECS);
+	static void move4(std::string const& url, std::string const& destination, ResponderPtr responder, F32 timeout = HTTP_REQUEST_EXPIRY_SECS)
+	    { AIHTTPHeaders headers; move4(url, destination, responder, headers, timeout); }
 
 	//@}
 
@@ -136,7 +123,7 @@ public:
 	 * @param url the complete serialized (and escaped) url to get
 	 * @return An LLSD of { 'status':status, 'body':payload }
 	 */
-	static LLSD blockingGet(const std::string& url);
+	static LLSD blockingGet(std::string const& url);
 
 	/**
 	 * @brief Blocking HTTP POST that returns an LLSD map of status and body.
@@ -145,17 +132,7 @@ public:
 	 * @param body the LLSD post body
 	 * @return An LLSD of { 'status':status (an int), 'body':payload (an LLSD) }
 	 */
-	static LLSD blockingPost(const std::string& url, const LLSD& body);
-
-	
-	static void setPump(LLPumpIO& pump);
-		///< must be called before any of the above calls are made
-	static bool hasPump();
-		///< for testing
-	static LLPumpIO &getPump();
-		///< Hippo special
-#ifdef AI_UNUSED
-#endif // AI_UNUSED
+	static LLSD blockingPost(std::string const& url, LLSD const& body);
 };
 
 #endif // LL_LLHTTPCLIENT_H

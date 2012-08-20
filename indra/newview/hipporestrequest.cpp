@@ -13,7 +13,6 @@
 #include "llhttpclient.h"
 #include "llurlrequest.h"
 #include "llxmltree.h"
-#include "llpumpio.h"		// LLPumpIO::chain_t
 
 #include <curl/curl.h>
 #ifdef DEBUG_CURLIO
@@ -136,40 +135,25 @@ void HippoRestHandlerXml::handle(int status, const std::string &reason,
 
 // ********************************************************************
 
-
-class BodyData : public LLIOPipe
+class BodyDataRaw : public Injector
 {
 	public:
-		virtual ~BodyData() { }
-		virtual const char *getContentMimeType() const = 0;
-};
-
-class BodyDataRaw : public BodyData
-{
-	public:
-		explicit BodyDataRaw(const std::string &data) :
-			mData(data)
-		{
-		}
-		virtual ~BodyDataRaw() { }
+		explicit BodyDataRaw(const std::string &data) : mData(data) { }
  
-		const char *getContentMimeType() const { return "application/octet-stream"; }
+		/*virtual*/ char const* contentType(void) const { return "application/octet-stream"; }
  
-		EStatus process_impl(const LLChannelDescriptors &channels,
-							 buffer_ptr_t &buffer, bool &eos,
-							 LLSD &context, LLPumpIO *pump)
+		/*virtual*/ U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer)
 		{
 			LLBufferStream ostream(channels, buffer.get());
 			ostream.write(mData.data(), mData.size());
-			eos = true;
-			return STATUS_DONE;
+			return mData.size();
 		}
 
 	private:
 		std::string mData;
 };
 
-class BodyDataXml : public BodyData
+class BodyDataXml : public Injector
 {
 	public:
 		explicit BodyDataXml(const LLXmlTree *tree) :
@@ -182,18 +166,15 @@ class BodyDataXml : public BodyData
 			if (mTree) delete mTree;
 		}
 
-		const char *getContentMimeType() const { return "application/xml"; }
+		/*virtual*/ char const* contentType(void) const { return "application/xml"; }
 
-		EStatus process_impl(const LLChannelDescriptors &channels,
-							 buffer_ptr_t &buffer, bool &eos,
-							 LLSD &context, LLPumpIO *pump)
+		/*virtual*/ U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer)
 		{
 			std::string data;
 			mTree->write(data);
 			LLBufferStream ostream(channels, buffer.get());
 			ostream.write(data.data(), data.size());
-			eos = true;
-			return STATUS_DONE;
+			return data.size();
 		}
 
 	private:
@@ -206,40 +187,40 @@ class BodyDataXml : public BodyData
 
 static void request(const std::string &url,
 					LLURLRequest::ERequestAction method,
-					BodyData *body,
+					Injector *body,
 					HippoRestHandler *handler, float timeout);
 
 
 // static
-void HippoRestRequest::get(const std::string &url,
+void HippoRestRequest::get5(const std::string &url,
 						   HippoRestHandler *handler, float timeout)
 {
 	request(url, LLURLRequest::HTTP_GET, 0, handler, timeout);
 }
 
 // static
-void HippoRestRequest::put(const std::string &url, const std::string &body,
+void HippoRestRequest::put5(const std::string &url, const std::string &body,
 						   HippoRestHandler *handler, float timeout)
 {
 	request(url, LLURLRequest::HTTP_PUT, new BodyDataRaw(body), handler, timeout);
 }
 
 // static
-void HippoRestRequest::put(const std::string &url, const LLXmlTree *body,
+void HippoRestRequest::put5(const std::string &url, const LLXmlTree *body,
 						   HippoRestHandler *handler, float timeout)
 {
 	request(url, LLURLRequest::HTTP_PUT, new BodyDataXml(body), handler, timeout);
 }
 
 // static
-void HippoRestRequest::post(const std::string &url, const std::string &body,
+void HippoRestRequest::post5(const std::string &url, const std::string &body,
 							HippoRestHandler *handler, float timeout)
 {
 	request(url, LLURLRequest::HTTP_POST, new BodyDataRaw(body), handler, timeout);
 }
 
 // static
-void HippoRestRequest::post(const std::string &url, const LLXmlTree *body,
+void HippoRestRequest::post5(const std::string &url, const LLXmlTree *body,
 							HippoRestHandler *handler, float timeout)
 {
 	request(url, LLURLRequest::HTTP_POST, new BodyDataXml(body), handler, timeout);
@@ -251,27 +232,21 @@ void HippoRestRequest::post(const std::string &url, const LLXmlTree *body,
 
 static void request(const std::string &url,
 					LLURLRequest::ERequestAction method,
-					BodyData *body,
+					Injector *body,
 					HippoRestHandler *handler, float timeout)
 {
-	if (!LLHTTPClient::hasPump())
-	{
-		// !!! responder->completed(U32_MAX, "No pump", LLSD());
-		return;
-	}
-	LLPumpIO::chain_t chain;
-
 	LLURLRequest *req;
 	try
 	{
-		req = new LLURLRequest(method, url);
+		AIHTTPHeaders empty_headers;
+		//AIFIXME (doesn't compile): req = new LLURLRequest(method, url, body, handler, empty_headers);
 	}
 	catch(AICurlNoEasyHandle const& error)
 	{
 		llwarns << "Failed to create LLURLRequest: " << error.what() << llendl;
 		return;
 	}
-	req->checkRootCertificate(true);
+	// Already done by default. req->checkRootCertificate(true);
 
 	/*
 	// Insert custom headers if the caller sent any
@@ -310,13 +285,13 @@ static void request(const std::string &url,
 
 	if ((method == LLURLRequest::HTTP_PUT) || (method == LLURLRequest::HTTP_POST)) {
 		std::string content = "Content-Type: ";
-		content += body->getContentMimeType();
+		content += body->contentType();
 		req->addHeader(content.c_str());
-		chain.push_back(LLIOPipe::ptr_t(body));
+		//AIFIXME: chain.push_back(LLIOPipe::ptr_t(body));
 	}
 
 	//AIFIXME: chain.push_back(LLIOPipe::ptr_t(req));
-	LLHTTPClient::getPump().addChain(chain, timeout);
+	//LLHTTPClient::getPump().addChain(chain, timeout);
 }
 
 

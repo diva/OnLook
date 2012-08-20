@@ -587,7 +587,7 @@ void LLPanelClassified::sendClassifiedInfoRequest()
 		if (!url.empty())
 		{
 			llinfos << "Classified stat request via capability" << llendl;
-			LLHTTPClient::post(url, body, new LLClassifiedStatsResponder(((LLView*)this)->getHandle(), mClassifiedID));
+			LLHTTPClient::post4(url, body, new LLClassifiedStatsResponder(((LLView*)this)->getHandle(), mClassifiedID));
 		}
 	}
 }
@@ -999,7 +999,7 @@ void LLPanelClassified::sendClassifiedClickMessage(const std::string& type)
 
 	std::string url = gAgent.getRegion()->getCapability("SearchStatTracking");
 	llinfos << "LLPanelClassified::sendClassifiedClickMessage via capability" << llendl;
-	LLHTTPClient::post(url, body, new LLHTTPClient::ResponderIgnore);
+	LLHTTPClient::post4(url, body, new LLHTTPClient::ResponderIgnore);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

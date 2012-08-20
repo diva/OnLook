@@ -130,7 +130,7 @@ BOOL FloaterVoiceLicense::postBuild()
 		std::string url = getString( "real_url" );
 		if(url.substr(0,4) == "http") {
 			gResponsePtr = LLIamHereVoice::build( this );
-			LLHTTPClient::get( url, gResponsePtr );
+			LLHTTPClient::get4( url, gResponsePtr );
 		} else {
 			setSiteIsAlive(false);
 		}

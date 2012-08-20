@@ -35,6 +35,8 @@
 #include <vector>
 #include <boost/intrusive_ptr.hpp>
 
+class AIHTTPHeaders;
+
 // Things defined in this namespace are called from elsewhere in the viewer code.
 namespace AICurlInterface {
 
@@ -44,12 +46,10 @@ typedef boost::intrusive_ptr<Responder> ResponderPtr;
 
 class Request {
   public:
-	typedef std::vector<std::string> headers_t;
-	
-	bool get(std::string const& url, ResponderPtr responder);
-	bool getByteRange(std::string const& url, headers_t const& headers, S32 offset, S32 length, ResponderPtr responder);
-	bool post(std::string const& url, headers_t const& headers, std::string const& data, ResponderPtr responder, S32 time_out = 0);
-	bool post(std::string const& url, headers_t const& headers,        LLSD const& data, ResponderPtr responder, S32 time_out = 0);
+	bool get2(std::string const& url, ResponderPtr responder);
+	bool getByteRange2(std::string const& url, AIHTTPHeaders const& headers, S32 offset, S32 length, ResponderPtr responder);
+	bool post2(std::string const& url, AIHTTPHeaders const& headers, std::string const& data, ResponderPtr responder, S32 time_out = 0);
+	bool post3(std::string const& url, AIHTTPHeaders const& headers,        LLSD const& data, ResponderPtr responder, S32 time_out = 0);
 };
 
 } // namespace AICurlInterface

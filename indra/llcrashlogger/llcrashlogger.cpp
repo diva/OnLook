@@ -315,7 +315,7 @@ bool LLCrashLogger::runCrashLogPost(std::string host, LLSD data, std::string msg
 	for(int i = 0; i < retries; ++i)
 	{
 		status_message = llformat("%s, try %d...", msg.c_str(), i+1);
-		LLHTTPClient::post(host, data, new LLCrashLoggerResponder(), timeout);
+		LLHTTPClient::post4(host, data, new LLCrashLoggerResponder(), timeout);
 		while(!gBreak)
 		{
 			updateApplication(status_message);
@@ -395,7 +395,6 @@ bool LLCrashLogger::init()
 	}
 
 	gServicePump = new LLPumpIO;
-	LLHTTPClient::setPump(*gServicePump);
 
 	//If we've opened the crash logger, assume we can delete the marker file if it exists	
 	if( gDirUtilp )

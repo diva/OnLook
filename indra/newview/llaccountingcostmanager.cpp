@@ -137,7 +137,7 @@ void LLAccountingCostManager::fetchCosts( eSelectionType selectionType, const st
 			LLSD dataToPost = LLSD::emptyMap();		
 			dataToPost[keystr.c_str()] = objectList;
 
-			LLHTTPClient::post( url, dataToPost, new LLAccountingCostResponder( objectList ));
+			LLHTTPClient::post4( url, dataToPost, new LLAccountingCostResponder( objectList ));
 		}
 	}
 	else

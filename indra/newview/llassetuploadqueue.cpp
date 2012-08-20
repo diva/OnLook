@@ -47,7 +47,7 @@ public:
 	LLAssetUploadChainResponder(const LLSD& post_data,
 								const std::string& file_name,
 								const LLUUID& queue_id,
-								U8* data, 
+								char* data, 
 								U32 data_size,
 								std::string script_name,
 								LLAssetUploadQueueSupplier *supplier) :
@@ -110,7 +110,7 @@ public:
 		llinfos << "Compiling " << llendl;
 
 		// postRaw takes ownership of mData and will delete it.
-		LLHTTPClient::postRaw(uploader, mData, mDataSize, this);
+		LLHTTPClient::postRaw4(uploader, mData, mDataSize, this);
 		mData = NULL;
 		mDataSize = 0;
 	}
@@ -137,7 +137,7 @@ public:
 	}
 
 	LLAssetUploadQueueSupplier *mSupplier;
-	U8* mData;
+	char* mData;
 	U32 mDataSize;
 	std::string mScriptName;
 };
@@ -174,7 +174,7 @@ void LLAssetUploadQueue::request(LLAssetUploadQueueSupplier** supplier)
 	if (object)
 	{
 		url = object->getRegion()->getCapability("UpdateScriptTask");
-		LLHTTPClient::post(url, body,
+		LLHTTPClient::post4(url, body,
 							new LLAssetUploadChainResponder(
 								body, data.mFilename, data.mQueueId, 
 								data.mData, data.mDataSize, data.mScriptName, *supplier));
@@ -189,7 +189,7 @@ void LLAssetUploadQueue::queue(const std::string& filename,
 							   BOOL is_running, 
 							   BOOL is_target_mono, 
 							   const LLUUID& queue_id,
-							   U8* script_data,
+							   char* script_data,
 							   U32 data_size,
 							   std::string script_name)
 {

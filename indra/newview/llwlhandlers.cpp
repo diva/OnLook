@@ -88,7 +88,7 @@ bool LLEnvironmentRequest::doRequest()
 	}
 
 	LL_INFOS("WindlightCaps") << "Requesting region windlight settings via " << url << LL_ENDL;
-	LLHTTPClient::get(url, new LLEnvironmentRequestResponder());
+	LLHTTPClient::get4(url, new LLEnvironmentRequestResponder());
 	return true;
 }
 
@@ -160,7 +160,7 @@ bool LLEnvironmentApply::initiateRequest(const LLSD& content)
 
 	LL_INFOS("WindlightCaps") << "Sending windlight settings to " << url << LL_ENDL;
 	LL_DEBUGS("WindlightCaps") << "content: " << content << LL_ENDL;
-	LLHTTPClient::post(url, content, new LLEnvironmentApplyResponder());
+	LLHTTPClient::post4(url, content, new LLEnvironmentApplyResponder());
 	return true;
 }
 

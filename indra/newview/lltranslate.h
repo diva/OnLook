@@ -109,7 +109,7 @@ private:
 	static void stringReplaceAll(std::string& context, const std::string& from, const std::string& to);
 	static BOOL parseGoogleTranslate(const std::string result, std::string &translation, std::string &detectedLanguage);
 
-	static LLSD m_Header;
+	static AIHTTPHeaders m_Header;
 	static const char* m_GoogleURL;
 	static const char* m_GoogleLangSpec;
 	static const char* m_AcceptHeader;

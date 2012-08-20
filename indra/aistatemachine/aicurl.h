@@ -36,6 +36,7 @@
 #include <set>
 #include <stdexcept>
 #include <boost/intrusive_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>
 
 #include "llpreprocessor.h"
@@ -49,11 +50,12 @@
 #define CURLOPT_DNS_USE_GLOBAL_CACHE do_not_use_CURLOPT_DNS_USE_GLOBAL_CACHE
 
 #include "stdtypes.h"		// U32
-#include "lliopipe.h"		// LLIOPipe::buffer_ptr_t
 #include "llatomic.h"		// LLAtomicU32
 #include "aithreadsafe.h"
 
 class LLSD;
+class LLBufferArray;
+class LLChannelDescriptors;
 
 //-----------------------------------------------------------------------------
 // Exceptions.
@@ -74,6 +76,11 @@ class AICurlNoEasyHandle : public AICurlError {
 class AICurlNoMultiHandle : public AICurlError {
   public:
 	AICurlNoMultiHandle(std::string const& message) : AICurlError(message) { }
+};
+
+class AICurlNoBody : public AICurlError {
+  public:
+	AICurlNoBody(std::string const& message) : AICurlError(message) { }
 };
 
 // End Exceptions.
@@ -147,6 +154,9 @@ void setCAPath(std::string const& file);
 // destructed too.
 //
 class Responder {
+  public:
+	typedef boost::shared_ptr<LLBufferArray> buffer_ptr_t;
+
   protected:
 	Responder(void);
 	virtual ~Responder();
@@ -169,7 +179,7 @@ class Responder {
 
 	// Derived classes can override this to get the raw data of the body of the HTML message that was received.
 	// The default is to interpret the content as LLSD and call completed().
-	virtual void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, LLIOPipe::buffer_ptr_t const& buffer);
+	virtual void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
 
 	// Called from LLHTTPClient request calls, if an error occurs even before we can call one of the above.
 	// It calls completed() with a fake status U32_MAX, as that is what some derived clients expect (bad design).
@@ -272,13 +282,19 @@ typedef LLPointer<AIPostField> AIPostFieldPtr;
 
 // AICurlEasyRequest: a thread safe, reference counting, auto-cleaning curl easy handle.
 class AICurlEasyRequest {
-  public:
+  private:
+	// Use AICurlEasyRequestStateMachine, not AICurlEasyRequest.
+	friend class AICurlEasyRequestStateMachine;
+
 	// Initial construction is allowed (thread-safe).
 	// Note: If ThreadSafeCurlEasyRequest() throws then the memory allocated is still freed.
 	// 'new' never returned however and neither the constructor nor destructor of mCurlEasyRequest is called in this case.
 	// This might throw AICurlNoEasyHandle.
 	AICurlEasyRequest(bool buffered) :
 	    mCurlEasyRequest(buffered ? new AICurlPrivate::ThreadSafeBufferedCurlEasyRequest : new AICurlPrivate::ThreadSafeCurlEasyRequest) { }
+
+  public:
+	// Used for storing this object in a standard container (see MultiHandle::add_easy_request).
 	AICurlEasyRequest(AICurlEasyRequest const& orig) : mCurlEasyRequest(orig.mCurlEasyRequest) { }
 
 	// For the rest, only allow read operations.

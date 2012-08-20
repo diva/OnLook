@@ -25,191 +25,162 @@
  */
 
 #include "linden_common.h"
-#include "llhttpclient.h"
 
-#include "llassetstorage.h"
-#include "lliopipe.h"
-#include "llurlrequest.h"
+#include <boost/shared_ptr.hpp>
+
+#include "llhttpclient.h"
 #include "llbufferstream.h"
 #include "llsdserialize.h"
 #include "llvfile.h"
-#include "llvfs.h"
-#include "lluri.h"
-#include "llpumpio.h"		// LLPumpIO::chain_t
+#include "llurlrequest.h"
 
-#include "message.h"
-
-const F32 HTTP_REQUEST_EXPIRY_SECS = 60.0f;
-#ifdef AI_UNUSED
-#endif // AI_UNUSED
+F32 const HTTP_REQUEST_EXPIRY_SECS = 60.0f;
 ////////////////////////////////////////////////////////////////////////////
 
-// Responder class moved to LLCurl
-
-namespace
-{
 #if 0
-	class LLHTTPClientURLAdaptor : public LLURLRequestComplete
+class LLHTTPClientURLAdaptor : public LLURLRequestComplete
+{
+public:
+	LLHTTPClientURLAdaptor(LLCurl::ResponderPtr responder)
+		: LLURLRequestComplete(), mResponder(responder), mStatus(499),
+		  mReason("LLURLRequest complete w/no status")
 	{
-	public:
-		LLHTTPClientURLAdaptor(LLCurl::ResponderPtr responder)
-			: LLURLRequestComplete(), mResponder(responder), mStatus(499),
-			  mReason("LLURLRequest complete w/no status")
-		{
-		}
-		
-		~LLHTTPClientURLAdaptor()
-		{
-		}
+	}
+	
+	~LLHTTPClientURLAdaptor()
+	{
+	}
 
-		virtual void httpStatus(U32 status, const std::string& reason)
-		{
-			LLURLRequestComplete::httpStatus(status,reason);
+	virtual void httpStatus(U32 status, const std::string& reason)
+	{
+		LLURLRequestComplete::httpStatus(status,reason);
 
-			mStatus = status;
-			mReason = reason;
-		}
+		mStatus = status;
+		mReason = reason;
+	}
 
-		virtual void complete(const LLChannelDescriptors& channels,
-							  const buffer_ptr_t& buffer)
+	virtual void complete(const LLChannelDescriptors& channels,
+						  const buffer_ptr_t& buffer)
+	{
+		if (mResponder.get())
 		{
-			if (mResponder.get())
-			{
-				// Allow clients to parse headers before we attempt to parse
-				// the body and provide completed/result/error calls.
-				mResponder->completedHeader(mStatus, mReason, mHeaderOutput);
-				mResponder->completedRaw(mStatus, mReason, channels, buffer);
-			}
+			// Allow clients to parse headers before we attempt to parse
+			// the body and provide completed/result/error calls.
+			mResponder->completedHeader(mStatus, mReason, mHeaderOutput);
+			mResponder->completedRaw(mStatus, mReason, channels, buffer);
 		}
-		virtual void header(const std::string& header, const std::string& value)
-		{
-			mHeaderOutput[header] = value;
-		}
+	}
+	virtual void header(const std::string& header, const std::string& value)
+	{
+		mHeaderOutput[header] = value;
+	}
 
-	private:
-		LLCurl::ResponderPtr mResponder;
-		U32 mStatus;
-		std::string mReason;
-		LLSD mHeaderOutput;
-	};
+private:
+	LLCurl::ResponderPtr mResponder;
+	U32 mStatus;
+	std::string mReason;
+	LLSD mHeaderOutput;
+};
 #endif
 
-	class Injector : public LLIOPipe
+class LLSDInjector : public Injector
+{
+  public:
+	LLSDInjector(LLSD const& sd) : mSD(sd) { }
+
+	/*virtual*/ char const* contentType(void) const { return "application/llsd+xml"; }
+
+	/*virtual*/ U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer)
 	{
-	public:
-		virtual const char* contentType() = 0;
-	};
+		LLBufferStream ostream(channels, buffer.get());
+		LLSDSerialize::toXML(mSD, ostream);
+		//AIFIXME: remove this
+		llassert(ostream.count_out() > 0 && ostream.count_in() == 0);
+		return ostream.count_out();
+	}
 
-	class LLSDInjector : public Injector
+	LLSD const mSD;
+};
+
+class RawInjector : public Injector
+{
+  public:
+	RawInjector(char const* data, U32 size) : mData(data), mSize(size) { }
+	/*virtual*/ ~RawInjector() { delete [] mData; }
+
+	/*virtual*/ char const* contentType(void) const { return "application/octet-stream"; }
+
+	/*virtual*/ U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer)
 	{
-	public:
-		LLSDInjector(const LLSD& sd) : mSD(sd) {}
-		virtual ~LLSDInjector() {}
+		LLBufferStream ostream(channels, buffer.get());
+		ostream.write(mData, mSize);
+		return mSize;
+	}
 
-		const char* contentType() { return "application/llsd+xml"; }
+	char const* mData;
+	U32 mSize;
+};
 
-		virtual EStatus process_impl(const LLChannelDescriptors& channels,
-			buffer_ptr_t& buffer, bool& eos, LLSD& context, LLPumpIO* pump)
-		{
-			LLBufferStream ostream(channels, buffer.get());
-			LLSDSerialize::toXML(mSD, ostream);
-			eos = true;
-			return STATUS_DONE;
-		}
+class FileInjector : public Injector
+{
+  public:
+	FileInjector(std::string const& filename) : mFilename(filename) { }
 
-		const LLSD mSD;
-	};
+	char const* contentType(void) const { return "application/octet-stream"; }
 
-	class RawInjector : public Injector
+	/*virtual*/ U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer)
 	{
-	public:
-		RawInjector(const U8* data, S32 size) : mData(data), mSize(size) {}
-		virtual ~RawInjector() {delete [] mData;}
+		LLBufferStream ostream(channels, buffer.get());
 
-		const char* contentType() { return "application/octet-stream"; }
+		llifstream fstream(mFilename, std::iostream::binary | std::iostream::out);
+		if (!fstream.is_open())
+		  throw AICurlNoBody(llformat("Failed to open \"%s\".", mFilename.c_str()));
 
-		virtual EStatus process_impl(const LLChannelDescriptors& channels,
-			buffer_ptr_t& buffer, bool& eos, LLSD& context, LLPumpIO* pump)
-		{
-			LLBufferStream ostream(channels, buffer.get());
-			ostream.write((const char *)mData, mSize);  // hopefully chars are always U8s
-			eos = true;
-			return STATUS_DONE;
-		}
+		fstream.seekg(0, std::ios::end);
+		U32 fileSize = fstream.tellg();
+		fstream.seekg(0, std::ios::beg);
+		std::vector<char> fileBuffer(fileSize);
+		fstream.read(&fileBuffer[0], fileSize);
+		ostream.write(&fileBuffer[0], fileSize);
+		fstream.close();
 
-		const U8* mData;
-		S32 mSize;
-	};
-	
-	class FileInjector : public Injector
+		return fileSize;
+	}
+
+	std::string const mFilename;
+};
+
+class VFileInjector : public Injector
+{
+public:
+	VFileInjector(LLUUID const& uuid, LLAssetType::EType asset_type) : mUUID(uuid), mAssetType(asset_type) { }
+
+	/*virtual*/ char const* contentType(void) const { return "application/octet-stream"; }
+
+	/*virtual*/ U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer)
 	{
-	public:
-		FileInjector(const std::string& filename) : mFilename(filename) {}
-		virtual ~FileInjector() {}
+		LLBufferStream ostream(channels, buffer.get());
+		
+		LLVFile vfile(gVFS, mUUID, mAssetType, LLVFile::READ);
+		S32 fileSize = vfile.getSize();
+		std::vector<U8> fileBuffer(fileSize);
+		vfile.read(&fileBuffer[0], fileSize);
+		ostream.write((char*)&fileBuffer[0], fileSize);
+		
+		return fileSize;
+	}
 
-		const char* contentType() { return "application/octet-stream"; }
-
-		virtual EStatus process_impl(const LLChannelDescriptors& channels,
-			buffer_ptr_t& buffer, bool& eos, LLSD& context, LLPumpIO* pump)
-		{
-			LLBufferStream ostream(channels, buffer.get());
-
-			llifstream fstream(mFilename, std::iostream::binary | std::iostream::out);
-			if(fstream.is_open())
-			{
-				fstream.seekg(0, std::ios::end);
-				U32 fileSize = fstream.tellg();
-				fstream.seekg(0, std::ios::beg);
-				std::vector<char> fileBuffer(fileSize);
-				fstream.read(&fileBuffer[0], fileSize);
-				ostream.write(&fileBuffer[0], fileSize);
-				fstream.close();
-				eos = true;
-				return STATUS_DONE;
-			}
-			
-			return STATUS_ERROR;
-		}
-
-		const std::string mFilename;
-	};
-	
-	class VFileInjector : public Injector
-	{
-	public:
-		VFileInjector(const LLUUID& uuid, LLAssetType::EType asset_type) : mUUID(uuid), mAssetType(asset_type) {}
-		virtual ~VFileInjector() {}
-
-		const char* contentType() { return "application/octet-stream"; }
-
-		virtual EStatus process_impl(const LLChannelDescriptors& channels,
-			buffer_ptr_t& buffer, bool& eos, LLSD& context, LLPumpIO* pump)
-		{
-			LLBufferStream ostream(channels, buffer.get());
-			
-			LLVFile vfile(gVFS, mUUID, mAssetType, LLVFile::READ);
-			S32 fileSize = vfile.getSize();
-			std::vector<U8> fileBuffer(fileSize);
-			vfile.read(&fileBuffer[0], fileSize);
-			ostream.write((char*)&fileBuffer[0], fileSize);
-			eos = true;
-			return STATUS_DONE;
-		}
-
-		const LLUUID mUUID;
-		LLAssetType::EType mAssetType;
-	};
-
-	LLPumpIO* theClientPump = NULL;
-}
+	LLUUID const mUUID;
+	LLAssetType::EType mAssetType;
+};
 
 static void request(
 	const std::string& url,
 	LLURLRequest::ERequestAction method,
 	Injector* body_injector,
 	LLCurl::ResponderPtr responder,
-	const F32 timeout = HTTP_REQUEST_EXPIRY_SECS,
-	const LLSD& headers = LLSD())
+	AIHTTPHeaders& headers,
+	F32 timeout = HTTP_REQUEST_EXPIRY_SECS)
 {
 	if (responder)
 	{
@@ -217,17 +188,10 @@ static void request(
 		responder->setURL(url);
 	}
 
-	if (!LLHTTPClient::hasPump())
-	{
-		responder->fatalError("No pump");
-		return;
-	}
-	LLPumpIO::chain_t chain;
-
 	LLURLRequest* req;
 	try
 	{
-		req = new LLURLRequest(method, url);
+		req = new LLURLRequest(method, url, body_injector, responder, headers);
 	}
 	catch(AICurlNoEasyHandle& error)
 	{
@@ -236,140 +200,40 @@ static void request(
 		return ;
 	}
 
-	req->checkRootCertificate(true);
-
-	lldebugs << LLURLRequest::actionAsVerb(method) << " " << url << " " << headers << llendl;
-
-	// Insert custom headers if the caller sent any.
-
-	std::vector<std::string> headers_vector;
-	bool has_content_type = false;
-	bool has_accept = false;
-
-	// Note that headers always is a map, unless no argument was passed.
-	if (headers.isMap())
-	{
-		if (headers.has("Cookie"))
-		{
-			req->allowCookies();
-		}
-
-		LLSD::map_const_iterator iter = headers.beginMap();
-		LLSD::map_const_iterator const end  = headers.endMap();
-
-		for (; iter != end; ++iter)
-		{
-			// If the header is "Pragma" with no value, the caller intends to
-			// force libcurl to drop the Pragma header it so gratuitously inserts.
-			// Before inserting the header, force libcurl to not use the proxy.
-			if (iter->first.compare("Pragma") == 0 && iter->second.asString().empty())
-			{
-				req->useProxy(false);
-			}
-			if (iter->first.compare("Content-Type") == 0)
-			{
-				has_content_type = true;
-			}
-			if (iter->first.compare("Accept") == 0)
-			{
-				has_accept = true;
-			}
-
-			std::ostringstream header;
-			header << iter->first << ": " << iter->second.asString();
-			headers_vector.push_back(header.str());
-		}
-	}
-
-	if (method == LLURLRequest::HTTP_PUT || method == LLURLRequest::HTTP_POST)
-	{
-		if (!has_content_type)
-		{
-			// If the Content-Type header was passed in, it has
-			// already been added as a header through req->addHeader
-			// in the loop above. We defer to the caller's wisdom, but
-			// if they did not specify a Content-Type, then ask the
-			// injector.
-			headers_vector.push_back(llformat("Content-Type: %s", body_injector->contentType()));
-		}
-	}
-	else
-	{
-		// Check to see if we have already set Accept or not. If no one
-		// set it, set it to application/llsd+xml since that's what we
-		// almost always want.
-		if (!has_accept)
-		{
-			headers_vector.push_back("Accept: application/llsd+xml");
-		}
-	}
-	if (method == LLURLRequest::HTTP_POST && gMessageSystem)
-	{
-		headers_vector.push_back(llformat("X-SecondLife-UDP-Listen-Port: %d", gMessageSystem->mPort));
-	}
-
-	if (method == LLURLRequest::HTTP_PUT || method == LLURLRequest::HTTP_POST)
-	{
-		//AIFIXME:
-		chain.push_back(LLIOPipe::ptr_t(body_injector));
-	}
-
-	//AIFIXME: chain.push_back(LLIOPipe::ptr_t(req));
-
-	AICurlEasyRequest_wat buffered_easy_request_w(*req->mCurlEasyRequest);
-	AICurlResponderBuffer_wat buffer_w(*req->mCurlEasyRequest);
-	buffer_w->prepRequest(buffered_easy_request_w, headers_vector, responder);
-
 	req->setRequestTimeOut(timeout);
-	//AIFIXME: theClientPump->addChain(chain, timeout);
+	req->run();
 }
 
-
-void LLHTTPClient::getByteRange(
-	const std::string& url,
-	S32 offset,
-	S32 bytes,
-	ResponderPtr responder,
-	const LLSD& hdrs,
-	const F32 timeout)
+void LLHTTPClient::getByteRange4(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
 {
-	LLSD headers = hdrs;
 	if(offset > 0 || bytes > 0)
 	{
-		std::string range = llformat("bytes=%d-%d", offset, offset+bytes-1);
-		headers["Range"] = range;
+		headers.addHeader("Range", llformat("bytes=%d-%d", offset, offset + bytes - 1));
 	}
-    request(url, LLURLRequest::HTTP_GET, NULL, responder, timeout, headers);
+    request(url, LLURLRequest::HTTP_GET, NULL, responder, headers, timeout);
 }
 
-void LLHTTPClient::head(
-	const std::string& url,
-	ResponderPtr responder,
-	const LLSD& headers,
-	const F32 timeout)
+void LLHTTPClient::head4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
 {
-	request(url, LLURLRequest::HTTP_HEAD, NULL, responder, timeout, headers);
+	request(url, LLURLRequest::HTTP_HEAD, NULL, responder, headers, timeout);
 }
 
-void LLHTTPClient::get(const std::string& url, ResponderPtr responder, const LLSD& headers, const F32 timeout)
+void LLHTTPClient::get4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
 {
-	request(url, LLURLRequest::HTTP_GET, NULL, responder, timeout, headers);
-}
-void LLHTTPClient::getHeaderOnly(const std::string& url, ResponderPtr responder, const LLSD& headers, const F32 timeout)
-{
-	request(url, LLURLRequest::HTTP_HEAD, NULL, responder, timeout, headers);
-}
-void LLHTTPClient::getHeaderOnly(const std::string& url, ResponderPtr responder, const F32 timeout)
-{
-	getHeaderOnly(url, responder, LLSD(), timeout);
+	request(url, LLURLRequest::HTTP_GET, NULL, responder, headers, timeout);
 }
 
-void LLHTTPClient::get(const std::string& url, const LLSD& query, ResponderPtr responder, const LLSD& headers, const F32 timeout)
+void LLHTTPClient::getHeaderOnly4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
+{
+	request(url, LLURLRequest::HTTP_HEAD, NULL, responder, headers, timeout);
+}
+
+void LLHTTPClient::get4(std::string const& url, LLSD const& query, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
 {
 	LLURI uri;
 	
 	uri = LLURI::buildHTTP(url, LLSD::emptyArray(), query);
-	get(uri.asString(), responder, headers, timeout);
+	get4(uri.asString(), responder, headers, timeout);
 }
 
 // A simple class for managing data returned from a curl http request.
@@ -426,18 +290,18 @@ private:
 	@returns an LLSD map: {status: integer, body: map}
   */
 static LLSD blocking_request(
-	const std::string& url,
+	std::string const& url,
 	LLURLRequest::ERequestAction method,
-	const LLSD& body,
-	const LLSD& headers = LLSD(),
-	const F32 timeout = 5
-)
+	LLSD const& body,
+	AIHTTPHeaders& headers,
+	F32 timeout = 5)
 {
 	lldebugs << "blockingRequest of " << url << llendl;
 
 	S32 http_status = 499;
 	LLSD response = LLSD::emptyMap();
 
+#if 0 // AIFIXME: rewrite to use AICurlEasyRequestStateMachine
 	try
 	{
 		AICurlEasyRequest easy_request(false);
@@ -508,6 +372,7 @@ static LLSD blocking_request(
 	{
 		response["body"] = error.what();
 	}
+#endif
 
 	response["status"] = http_status;
 	return response;
@@ -515,104 +380,50 @@ static LLSD blocking_request(
 
 LLSD LLHTTPClient::blockingGet(const std::string& url)
 {
-	return blocking_request(url, LLURLRequest::HTTP_GET, LLSD());
+	AIHTTPHeaders empty_headers;
+	return blocking_request(url, LLURLRequest::HTTP_GET, LLSD(), empty_headers);
 }
 
 LLSD LLHTTPClient::blockingPost(const std::string& url, const LLSD& body)
 {
-	return blocking_request(url, LLURLRequest::HTTP_POST, body);
+	AIHTTPHeaders empty_headers;
+	return blocking_request(url, LLURLRequest::HTTP_POST, body, empty_headers);
 }
 
-void LLHTTPClient::put(
-	const std::string& url,
-	const LLSD& body,
-	ResponderPtr responder,
-	const LLSD& headers,
-	const F32 timeout)
+void LLHTTPClient::put4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
 {
-	request(url, LLURLRequest::HTTP_PUT, new LLSDInjector(body), responder, timeout, headers);
+	request(url, LLURLRequest::HTTP_PUT, new LLSDInjector(body), responder, headers, timeout);
 }
 
-void LLHTTPClient::post(
-	const std::string& url,
-	const LLSD& body,
-	ResponderPtr responder,
-	const LLSD& headers,
-	const F32 timeout)
+void LLHTTPClient::post4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
 {
-	request(url, LLURLRequest::HTTP_POST, new LLSDInjector(body), responder, timeout, headers);
+	request(url, LLURLRequest::HTTP_POST, new LLSDInjector(body), responder, headers, timeout);
 }
 
-void LLHTTPClient::postRaw(
-	const std::string& url,
-	const U8* data,
-	S32 size,
-	ResponderPtr responder,
-	const LLSD& headers,
-	const F32 timeout)
+void LLHTTPClient::postRaw4(std::string const& url, char const* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
 {
-	request(url, LLURLRequest::HTTP_POST, new RawInjector(data, size), responder, timeout, headers);
+	request(url, LLURLRequest::HTTP_POST, new RawInjector(data, size), responder, headers, timeout);
 }
 
-void LLHTTPClient::postFile(
-	const std::string& url,
-	const std::string& filename,
-	ResponderPtr responder,
-	const LLSD& headers,
-	const F32 timeout)
+void LLHTTPClient::postFile4(std::string const& url, std::string const& filename, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
 {
-	request(url, LLURLRequest::HTTP_POST, new FileInjector(filename), responder, timeout, headers);
+	request(url, LLURLRequest::HTTP_POST, new FileInjector(filename), responder, headers, timeout);
 }
 
-void LLHTTPClient::postFile(
-	const std::string& url,
-	const LLUUID& uuid,
-	LLAssetType::EType asset_type,
-	ResponderPtr responder,
-	const LLSD& headers,
-	const F32 timeout)
+void LLHTTPClient::postFile4(std::string const& url, LLUUID const& uuid, LLAssetType::EType asset_type, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
 {
-	request(url, LLURLRequest::HTTP_POST, new VFileInjector(uuid, asset_type), responder, timeout, headers);
+	request(url, LLURLRequest::HTTP_POST, new VFileInjector(uuid, asset_type), responder, headers, timeout);
 }
 
 // static
-void LLHTTPClient::del(
-	const std::string& url,
-	ResponderPtr responder,
-	const LLSD& headers,
-	const F32 timeout)
+void LLHTTPClient::del4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
 {
-	request(url, LLURLRequest::HTTP_DELETE, NULL, responder, timeout, headers);
+	request(url, LLURLRequest::HTTP_DELETE, NULL, responder, headers, timeout);
 }
 
 // static
-void LLHTTPClient::move(
-	const std::string& url,
-	const std::string& destination,
-	ResponderPtr responder,
-	const LLSD& hdrs,
-	const F32 timeout)
+void LLHTTPClient::move4(std::string const& url, std::string const& destination, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
 {
-	LLSD headers = hdrs;
-	headers["Destination"] = destination;
-	request(url, LLURLRequest::HTTP_MOVE, NULL, responder, timeout, headers);
-}
-
-
-//static
-void LLHTTPClient::setPump(LLPumpIO& pump)
-{
-	theClientPump = &pump;
-}
-
-//static
-bool LLHTTPClient::hasPump()
-{
-	return theClientPump != NULL;
-}
-
-//static
-LLPumpIO& LLHTTPClient::getPump()
-{
-	return *theClientPump;
+	headers.addHeader("Destination", destination);
+	request(url, LLURLRequest::HTTP_MOVE, NULL, responder, headers, timeout);
 }

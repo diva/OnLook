@@ -65,7 +65,7 @@ void LLProductInfoRequestManager::initSingleton()
 	std::string url = gAgent.getRegion()->getCapability("ProductInfoRequest");
 	if (!url.empty())
 	{
-		LLHTTPClient::get(url, new LLProductInfoRequestResponder());
+		LLHTTPClient::get4(url, new LLProductInfoRequestResponder());
 	}
 }
 

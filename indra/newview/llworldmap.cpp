@@ -441,7 +441,7 @@ void LLWorldMap::sendMapLayerRequest()
 	if (!url.empty())
 	{
 		llinfos << "LLWorldMap::sendMapLayerRequest via capability" << llendl;
-		LLHTTPClient::post(url, body, new LLMapLayerResponder());
+		LLHTTPClient::post4(url, body, new LLMapLayerResponder);
 	}
 	else
 	{

@@ -231,7 +231,7 @@ void LLFloaterURLEntry::onBtnOK( void* userdata )
 	// Discover the MIME type only for "http" scheme.
 	if(scheme == "http" || scheme == "https")
 	{
-		LLHTTPClient::getHeaderOnly( media_url,
+		LLHTTPClient::getHeaderOnly4( media_url,
 			new LLMediaTypeResponder(self->getHandle()));
 	}
 	else

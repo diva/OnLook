@@ -37,6 +37,15 @@
 
 #include <string>
 #include "aicurleasyrequeststatemachine.h"
+#include "aihttpheaders.h"
+
+class Injector
+{
+  public:
+	typedef AICurlInterface::Responder::buffer_ptr_t buffer_ptr_t;
+	virtual char const* contentType(void) const = 0;
+	virtual U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer) = 0;
+};
 
 class LLURLRequest : public AICurlEasyRequestStateMachine {
   public:
@@ -66,7 +75,7 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	 * @param action One of the ERequestAction enumerations.
 	 * @param url The url of the request. It should already be encoded.
 	 */
-	LLURLRequest(ERequestAction action, std::string const& url);
+	LLURLRequest(ERequestAction action, std::string const& url, Injector* body, AICurlInterface::ResponderPtr responder, AIHTTPHeaders& headers);
 
 	/**
 	 * @brief Turn on cookie handling for this request with CURLOPT_COOKIEFILE.
@@ -89,33 +98,27 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	 */
 	void addHeader(char const* header);
 
-	/**
-	 * @brief Check remote server certificate signed by a known root CA.
-	 *
-	 * Set whether request will check that remote server
-	 * certificates are signed by a known root CA when using HTTPS.
-	 */
-	void checkRootCertificate(bool check);
-
   private:
 	/** 
 	 * @brief Handle action specific url request configuration.
 	 *
 	 * @return Returns true if this is configured.
 	 */
-	bool configure(void);
-
-	/**
-	 * @ brief Return the number of bytes to POST or PUT to the server.
-	 *
-	 * @return Returns the number of bytes we're about to upload.
-	 */
-    S32 bytes_to_send(void) const;
+	bool configure(AICurlEasyRequest_wat const& curlEasyRequest_w);
 
   private:
 	ERequestAction mAction;
 	std::string mURL;
+	Injector* mBody;					// Non-zero iff the action is HTTP_POST and HTTP_PUT.
+	U32 mBodySize;
+	AICurlInterface::ResponderPtr mResponder;
+	AIHTTPHeaders mHeaders;
+
+  protected:
+	// Handle initializing the object.
+	/*virtual*/ void initialize_impl(void);
 };
+
 #if 0
 extern const std::string CONTEXT_REQUEST;
 extern const std::string CONTEXT_RESPONSE;

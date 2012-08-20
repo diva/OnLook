@@ -46,6 +46,7 @@
 #include "llapr.h"
 #include "llscopedvolatileaprpool.h"
 #include "llfasttimer.h"
+#include "message.h"
 static const U32 HTTP_STATUS_PIPE_ERROR = 499;
 
 /**
@@ -112,10 +113,75 @@ std::string LLURLRequest::actionAsVerb(LLURLRequest::ERequestAction action)
 }
 
 // This might throw AICurlNoEasyHandle.
-LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string const& url) : AICurlEasyRequestStateMachine(true), mAction(action), mURL(url)
+LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string const& url, Injector* body, AICurlInterface::ResponderPtr responder, AIHTTPHeaders& headers) :
+    AICurlEasyRequestStateMachine(true), mAction(action), mURL(url), mBody(body), mResponder(responder), mHeaders(headers)
 {
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
-	run();
+}
+
+void LLURLRequest::initialize_impl(void)
+{
+	if (mHeaders.hasHeader("Cookie"))
+	{
+		allowCookies();
+	}
+
+	// If the header is "Pragma" with no value, the caller intends to
+	// force libcurl to drop the Pragma header it so gratuitously inserts.
+	// Before inserting the header, force libcurl to not use the proxy.
+	std::string pragma_value;
+	if (mHeaders.getValue("Pragma", pragma_value) && pragma_value.empty())
+	{
+		useProxy(false);
+	}
+
+	if (mAction == HTTP_PUT || mAction == HTTP_POST)
+	{
+		// If the Content-Type header was passed in we defer to the caller's wisdom,
+		// but if they did not specify a Content-Type, then ask the injector.
+		mHeaders.addHeader("Content-Type", mBody->contentType(), AIHTTPHeaders::keep_existing_header);
+	}
+	else
+	{
+		// Check to see if we have already set Accept or not. If no one
+		// set it, set it to application/llsd+xml since that's what we
+		// almost always want.
+		mHeaders.addHeader("Accept", "application/llsd+xml", AIHTTPHeaders::keep_existing_header);
+	}
+
+	if (mAction == HTTP_POST && gMessageSystem)
+	{
+		mHeaders.addHeader("X-SecondLife-UDP-Listen-Port", llformat("%d", gMessageSystem->mPort));
+	}
+
+	bool success = false;
+	try
+	{
+		AICurlEasyRequest_wat buffered_easy_request_w(*mCurlEasyRequest);
+		AICurlResponderBuffer_wat buffer_w(*mCurlEasyRequest);
+		buffer_w->prepRequest(buffered_easy_request_w, mHeaders, mResponder);
+
+		if (mBody)
+		{
+			// This might throw AICurlNoBody.
+			mBodySize = mBody->get_body(buffer_w->sChannels, buffer_w->getInput());
+		}
+
+		success = configure(buffered_easy_request_w);
+	}
+	catch (AICurlNoBody const& error)
+	{
+		llwarns << "Injector::get_body() failed: " << error.what() << llendl; 
+	}
+
+	if (success)
+	{
+		// Continue to initialize base class.
+		AICurlEasyRequestStateMachine::initialize_impl();
+	}
+	else
+	{
+		abort();
+	}
 }
 
 #if 0
@@ -132,16 +198,8 @@ std::string LLURLRequest::getURL2() const
 
 void LLURLRequest::addHeader(const char* header)
 {
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
 	curlEasyRequest_w->addHeader(header);
-}
-
-void LLURLRequest::checkRootCertificate(bool check)
-{
-	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
-	curlEasyRequest_w->setopt(CURLOPT_SSL_VERIFYPEER, check ? 1L : 0L);
-	curlEasyRequest_w->setoptString(CURLOPT_ENCODING, "");
 }
 
 #ifdef AI_UNUSED
@@ -153,7 +211,6 @@ void LLURLRequest::setBodyLimit(U32 size)
 
 void LLURLRequest::setCallback(LLURLRequestComplete* callback)
 {
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	mCompletionCallback = callback;
 	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
 	curlEasyRequest_w->setHeaderCallback(&headerCallback, (void*)callback);
@@ -237,7 +294,6 @@ LLIOPipe::EStatus LLURLRequest::handleError(
 	LLPumpIO* pump)
 {
 	DoutEntering(dc::curl, "LLURLRequest::handleError(" << LLIOPipe::lookupStatusString(status) << ", " << (void*)pump << ")");
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 
 	if (LL_LIKELY(!mDetail->mStateMachine->isBuffered()))	// Currently always true.
 	{
@@ -283,12 +339,12 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 {
 	LLFastTimer t(FTM_PROCESS_URL_REQUEST);
 	PUMP_DEBUG;
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	//llinfos << "LLURLRequest::process_impl()" << llendl;
 	if (!buffer) return STATUS_ERROR;
 
 	if (!mDetail) return STATUS_ERROR; //Seems to happen on occasion. Need to hunt down why.
 
+	//AIFIXME: implement this again:
 	// we're still waiting or processing, check how many
 	// bytes we have accumulated.
 	const S32 MIN_ACCUMULATION = 100000;
@@ -433,22 +489,10 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 }
 #endif // AI_UNUSED
 
-S32 LLURLRequest::bytes_to_send(void) const
+bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 {
-  //AIFIXME: how to get the number of bytes to send?
-  llassert_always(false);
-  return 0;
-}
-
-static LLFastTimer::DeclareTimer FTM_URL_REQUEST_CONFIGURE("URL Configure");
-bool LLURLRequest::configure()
-{
-	LLFastTimer t(FTM_URL_REQUEST_CONFIGURE);
-	
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	bool rv = false;
 	{
-		AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
 		switch(mAction)
 		{
 		case HTTP_HEAD:
@@ -472,20 +516,15 @@ bool LLURLRequest::configure()
 			// Disable the expect http 1.1 extension. POST and PUT default
 			// to turning this on, and I am not too sure what it means.
 			curlEasyRequest_w->addHeader("Expect:");
-			S32 bytes = bytes_to_send();
 			curlEasyRequest_w->setopt(CURLOPT_UPLOAD, 1);
-			curlEasyRequest_w->setopt(CURLOPT_INFILESIZE, bytes);
+			curlEasyRequest_w->setopt(CURLOPT_INFILESIZE, mBodySize);
 			rv = true;
 			break;
 		}
 		case HTTP_POST:
 		{
 			// Set the handle for an http post
-			S32 bytes = bytes_to_send();
-			curlEasyRequest_w->setPost(bytes);
-
-			// Set Accept-Encoding to allow response compression
-			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, "");
+			curlEasyRequest_w->setPost(mBodySize);
 			rv = true;
 			break;
 		}
@@ -498,7 +537,6 @@ bool LLURLRequest::configure()
 		case HTTP_MOVE:
 			// Set the handle for an http post
 			curlEasyRequest_w->setoptString(CURLOPT_CUSTOMREQUEST, "MOVE");
-			// *NOTE: should we check for the Destination header?
 			rv = true;
 			break;
 
@@ -522,7 +560,6 @@ size_t LLURLRequest::downCallback(
 	size_t nmemb,
 	void* user)
 {
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	LLURLRequest* req = (LLURLRequest*)user;
 	if(STATE_WAITING_FOR_RESPONSE == req->mState)
 	{
@@ -558,7 +595,6 @@ size_t LLURLRequest::upCallback(
 	size_t nmemb,
 	void* user)
 {
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	LLURLRequest* req = (LLURLRequest*)user;
 	S32 bytes = llmin(
 		(S32)(size * nmemb),
@@ -649,13 +685,11 @@ static size_t headerCallback(char* header_line, size_t size, size_t nmemb, void*
 LLURLRequestComplete::LLURLRequestComplete() :
 	mRequestStatus(LLIOPipe::STATUS_ERROR)
 {
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 }
 
 // virtual
 LLURLRequestComplete::~LLURLRequestComplete()
 {
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 }
 
 //virtual 
@@ -694,7 +728,6 @@ void LLURLRequestComplete::noResponse()
 
 void LLURLRequestComplete::responseStatus(LLIOPipe::EStatus status)
 {
-	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	mRequestStatus = status;
 }
 

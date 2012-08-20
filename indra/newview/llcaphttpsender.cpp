@@ -50,5 +50,5 @@ void LLCapHTTPSender::send(const LLHost& host, const std::string& message,
 	LLSD llsd;
 	llsd["message"] = message;
 	llsd["body"] = body;
-	LLHTTPClient::post(mCap, llsd, response);
+	LLHTTPClient::post4(mCap, llsd, response);
 }

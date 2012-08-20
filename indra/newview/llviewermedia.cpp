@@ -645,17 +645,17 @@ void LLViewerMedia::setOpenIDCookie()
 		getCookieStore()->setCookiesFromHost(sOpenIDCookie, authority.substr(host_start, host_end - host_start));
 
 		// Do a web profile get so we can store the cookie 
-		LLSD headers = LLSD::emptyMap();
-		headers["Accept"] = "*/*";
-		headers["Cookie"] = sOpenIDCookie;
-		headers["User-Agent"] = getCurrentUserAgent();
+		AIHTTPHeaders headers;
+		headers.addHeader("Accept", "*/*");
+		headers.addHeader("Cookie", sOpenIDCookie);
+		headers.addHeader("User-Agent", getCurrentUserAgent());
 
 		std::string profile_url = getProfileURL("");
 		LLURL raw_profile_url( profile_url.c_str() );
 
 		LL_DEBUGS("MediaAuth") << "Requesting " << profile_url << llendl;
 		LL_DEBUGS("MediaAuth") << "sOpenIDCookie = [" << sOpenIDCookie << "]" << llendl;
-		LLHTTPClient::get(profile_url,  
+		LLHTTPClient::get4(profile_url,  
 			new LLViewerMediaWebProfileResponder(raw_profile_url.getAuthority()),
 			headers);
 	}
@@ -676,18 +676,18 @@ void LLViewerMedia::openIDSetup(const std::string &openid_url, const std::string
 	// We shouldn't ever do this twice, but just in case this code gets repurposed later, clear existing cookies.
 	sOpenIDCookie.clear();
 
-	LLSD headers = LLSD::emptyMap();
+	AIHTTPHeaders headers;
 	// Keep LLHTTPClient from adding an "Accept: application/llsd+xml" header
-	headers["Accept"] = "*/*";
+	headers.addHeader("Accept", "*/*");
 	// and use the expected content-type for a post, instead of the LLHTTPClient::postRaw() default of "application/octet-stream"
-	headers["Content-Type"] = "application/x-www-form-urlencoded";
+	headers.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
 	// postRaw() takes ownership of the buffer and releases it later, so we need to allocate a new buffer here.
 	size_t size = openid_token.size();
-	U8 *data = new U8[size];
+	char* data = new char[size];
 	memcpy(data, openid_token.data(), size);
 
-	LLHTTPClient::postRaw( 
+	LLHTTPClient::postRaw4(
 		openid_url, 
 		data, 
 		size, 
@@ -1278,7 +1278,7 @@ void LLViewerMediaImpl::navigateTo(const std::string& url, const std::string& mi
 		{
 			if(mime_type.empty())
 			{
-				LLHTTPClient::getHeaderOnly( url, new LLMimeDiscoveryResponder(this));
+				LLHTTPClient::getHeaderOnly4( url, new LLMimeDiscoveryResponder(this));
 			}
 			else if(initializeMedia(mime_type) && (plugin = getMediaPlugin()))
 			{

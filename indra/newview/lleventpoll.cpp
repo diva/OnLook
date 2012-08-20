@@ -76,7 +76,7 @@ namespace
 		virtual void completedRaw(U32 status,
 									const std::string& reason,
 									const LLChannelDescriptors& channels,
-									const LLIOPipe::buffer_ptr_t& buffer);
+									const buffer_ptr_t& buffer);
 	private:
 
 		bool	mDone;
@@ -160,7 +160,7 @@ namespace
 	void LLEventPollResponder::completedRaw(U32 status,
 									const std::string& reason,
 									const LLChannelDescriptors& channels,
-									const LLIOPipe::buffer_ptr_t& buffer)
+									const buffer_ptr_t& buffer)
 	{
 		if (status == HTTP_BAD_GATEWAY)
 		{
@@ -182,7 +182,7 @@ namespace
 		
 		lldebugs <<	"LLEventPollResponder::makeRequest	<" << mCount <<	"> ack = "
 				 <<	LLSDXMLStreamer(mAcknowledge) << llendl;
-		LLHTTPClient::post(mPollURL, request, this);
+		LLHTTPClient::post4(mPollURL, request, this);
 	}
 
 	void LLEventPollResponder::handleMessage(const	LLSD& content)

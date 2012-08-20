@@ -1201,7 +1201,7 @@ void upload_new_resource(const LLTransactionID &tid, LLAssetType::EType asset_ty
 		body["everyone_mask"] = LLSD::Integer(everyone_perms);
 		body["expected_upload_cost"] = LLSD::Integer(expected_upload_cost);
 		
-		LLHTTPClient::post(url, body,
+		LLHTTPClient::post4(url, body,
 						   new LLNewAgentInventoryResponder(body, uuid, asset_type));
 	}
 	else
@@ -1370,7 +1370,7 @@ void NewResourceItemCallback::fire(const LLUUID& new_item_id)
 	}
 	
 	if(agent_url.empty()) return;
-	LLHTTPClient::post(agent_url, body,
+	LLHTTPClient::post4(agent_url, body,
 	new LLUpdateAgentInventoryResponder(body, vfile_id, new_item->getType()));
 }
 // </edit>

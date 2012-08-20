@@ -83,11 +83,10 @@ bool LLSDMessage::httpListener(const LLSD& request)
     {
         timeout = HTTP_REQUEST_EXPIRY_SECS;
     }
-    LLHTTPClient::post(url, payload,
+    LLHTTPClient::post4(url, payload,
                        new LLSDMessage::EventResponder(LLEventPumps::instance(),
                                                        request,
                                                        url, "POST", reply, error),
-                       LLSD(),      // headers
                        (F32)timeout);
     return false;
 }

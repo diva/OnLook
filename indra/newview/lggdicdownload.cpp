@@ -59,7 +59,7 @@ public:
 		U32 status,
 		const std::string& reason,
 		const LLChannelDescriptors& channels,
-		const LLIOPipe::buffer_ptr_t& buffer);
+		const buffer_ptr_t& buffer);
 private:
 	lggDicDownloadFloater* panel;
 	std::string name;
@@ -131,8 +131,8 @@ void lggDicDownloadFloater::onClickDownload(void* data)
 			if (!comboBox->getSelectedItemLabel().empty())
 			{
 				std::string newDict(self->sNames[comboBox->getCurrentIndex()]);
-				LLHTTPClient::get(gSavedSettings.getString("SpellDownloadURL")+newDict+".aff", new EmeraldDicDownloader(self,newDict+".aff"));
-				LLHTTPClient::get(gSavedSettings.getString("SpellDownloadURL")+newDict+".dic", new EmeraldDicDownloader(NULL,newDict+".dic"));
+				LLHTTPClient::get4(gSavedSettings.getString("SpellDownloadURL")+newDict+".aff", new EmeraldDicDownloader(self,newDict+".aff"));
+				LLHTTPClient::get4(gSavedSettings.getString("SpellDownloadURL")+newDict+".dic", new EmeraldDicDownloader(NULL,newDict+".dic"));
 				
 				LLButton* button = self->getChild<LLButton>("Emerald_dic_download");
 				if (button)
@@ -163,7 +163,7 @@ EmeraldDicDownloader::EmeraldDicDownloader(lggDicDownloadFloater* spanel, std::s
 }
 
 
-void EmeraldDicDownloader::completedRaw(U32 status, const std::string& reason, const LLChannelDescriptors& channels, const LLIOPipe::buffer_ptr_t& buffer)
+void EmeraldDicDownloader::completedRaw(U32 status, const std::string& reason, const LLChannelDescriptors& channels, const buffer_ptr_t& buffer)
 {
 	if (status < 200 || status >= 300)
 	{
