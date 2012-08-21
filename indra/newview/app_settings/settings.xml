@@ -21,7 +21,7 @@
 	  <integer>1</integer>
 	</map>
 
-	<key>SGServerVersionChangedNofification</key>
+	<key>SGServerVersionChangedNotification</key>
 	<map>
 	  <key>Comment</key>
 	  <string>Notify when going to a simulator of different version</string>
@@ -11998,7 +11998,7 @@
     <key>Type</key>
     <string>U32</string>
     <key>Value</key>
-    <integer>32</integer>
+    <integer>128</integer>
   </map>
   <key>RunBtnState</key>
   <map>
