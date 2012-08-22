@@ -99,6 +99,7 @@ protected:
     BOOL mPrivateLookAt;
     BOOL mShowLookAt;
 	BOOL mQuietSnapshotsToDisk;
+	BOOL mDetachBridge;
 	BOOL mRevokePermsOnStandUp;
     BOOL mDisableClickSit;
     BOOL mDisplayScriptJumps;

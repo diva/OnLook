@@ -298,6 +298,7 @@ void LLPrefsAscentSys::refreshValues()
     mPrivateLookAt				= gSavedSettings.getBOOL("PrivateLookAt");
     mShowLookAt					= gSavedSettings.getBOOL("AscentShowLookAt");
 	mQuietSnapshotsToDisk		= gSavedSettings.getBOOL("QuietSnapshotsToDisk");
+	mDetachBridge				= gSavedSettings.getBOOL("SGDetachBridge");
     mRevokePermsOnStandUp		= gSavedSettings.getBOOL("RevokePermsOnStandUp");
     mDisableClickSit			= gSavedSettings.getBOOL("DisableClickSit");
     mDisplayScriptJumps			= gSavedSettings.getBOOL("AscentDisplayTotalScriptJumps");
@@ -445,6 +446,7 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("PrivateLookAt",                 mPrivateLookAt);
     gSavedSettings.setBOOL("AscentShowLookAt",              mShowLookAt);
     gSavedSettings.setBOOL("QuietSnapshotsToDisk",			mQuietSnapshotsToDisk);
+    gSavedSettings.setBOOL("SGDetachBridge",    			mDetachBridge);
     gSavedSettings.setBOOL("RevokePermsOnStandUp",          mRevokePermsOnStandUp);
     gSavedSettings.setBOOL("DisableClickSit",               mDisableClickSit);
     gSavedSettings.setBOOL("AscentDisplayTotalScriptJumps", mDisplayScriptJumps);

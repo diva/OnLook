@@ -1153,6 +1153,9 @@ void LLVOVolume::updateFaceFlags()
 {
 	for (S32 i = 0; i < getVolume()->getNumFaces(); i++)
 	{
+		if(mDrawable->getNumFaces() <= i || getNumTEs() <= i)
+			return;
+
 		LLFace *face = mDrawable->getFace(i);
 		if (face)
 		{

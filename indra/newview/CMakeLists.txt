@@ -83,7 +83,6 @@ set(viewer_SOURCE_FILES
     emeraldboobutils.cpp
     floaterao.cpp
     floaterlocalassetbrowse.cpp
-    floatersculptpreview.cpp
     floatervoicelicense.cpp
     hbfloatergrouptitles.cpp
     hgfloatertexteditor.cpp
@@ -584,7 +583,6 @@ set(viewer_HEADER_FILES
     emeraldboobutils.h
     floaterao.h
     floaterlocalassetbrowse.h
-    floatersculptpreview.h
     floatervoicelicense.h
     hbfloatergrouptitles.h
     hgfloatertexteditor.h
@@ -1371,12 +1369,9 @@ if (FMOD OR FMODEX)
   endif (FMOD)
 
   if (DARWIN)
-    #if(FMOD) # FIXME: This makes no sense, we can't nest an if(FMODEX) and it's senseless to check for FMOD again.
+    if(FMOD)
       set(fmodwrapper_SOURCE_FILES fmodwrapper.cpp)
       add_library(fmodwrapper SHARED ${fmodwrapper_SOURCE_FILES})
-      if (FMODEX)
-        set(fmodwrapper_needed_LIBRARIES ${FMODEX_LIBRARY} ${CARBON_LIBRARY})
-      endif (FMODEX)
       if (FMOD)
         set(fmodwrapper_needed_LIBRARIES ${FMOD_LIBRARY} ${CARBON_LIBRARY})
       endif (FMOD)
@@ -1389,7 +1384,7 @@ if (FMOD OR FMODEX)
         )
       set(FMODWRAPPER_LIBRARY fmodwrapper)
       target_link_libraries(fmodwrapper ${fmodwrapper_needed_LIBRARIES})
-    #endif(FMOD) # FIXME!
+    endif(FMOD)
     if(FMODEX)
       set(FMODWRAPPER_LIBRARY ${FMODEX_LIBRARY})
     endif(FMODEX)
@@ -1441,21 +1436,21 @@ if (WINDOWS)
         set(release_flags "/MAP:Release/${VIEWER_BINARY_NAME}.map")
     endif()
 
-if (FMOD)
-	if(MANIFEST_LIBRARIES)
-		set(MANIFEST_LIBRARIES "${MANIFEST_LIBRARIES}|${FMOD_BINARY_DIR}/fmod.dll")
-	else(MANIFEST_LIBRARIES)
-		set(MANIFEST_LIBRARIES "--extra_libraries=${FMOD_BINARY_DIR}/fmod.dll")
-	endif(MANIFEST_LIBRARIES)
-endif (FMOD)
-if (FMODEX)
-	if(MANIFEST_LIBRARIES)
-		set(MANIFEST_LIBRARIES "${MANIFEST_LIBRARIES}|${FMODEX_BINARY_DIR}/fmodex.dll")
-	else(MANIFEST_LIBRARIES)
-		set(MANIFEST_LIBRARIES "--extra_libraries=${FMODEX_BINARY_DIR}/fmodex.dll")
-	endif(MANIFEST_LIBRARIES)
-	set(EXTRA_LINKER_FLAGS "/DELAYLOAD:fmodex.dll")
-endif (FMODEX)
+    if (FMOD)
+        if(MANIFEST_LIBRARIES)
+            set(MANIFEST_LIBRARIES "${MANIFEST_LIBRARIES}|${FMOD_BINARY_DIR}/fmod.dll")
+        else(MANIFEST_LIBRARIES)
+            set(MANIFEST_LIBRARIES "--extra_libraries=${FMOD_BINARY_DIR}/fmod.dll")
+        endif(MANIFEST_LIBRARIES)
+    endif (FMOD)
+    if (FMODEX)
+        if(MANIFEST_LIBRARIES)
+       	    set(MANIFEST_LIBRARIES "${MANIFEST_LIBRARIES}|${FMODEX_BINARY_DIR}/fmodex.dll")
+        else(MANIFEST_LIBRARIES)
+            set(MANIFEST_LIBRARIES "--extra_libraries=${FMODEX_BINARY_DIR}/fmodex.dll")
+        endif(MANIFEST_LIBRARIES)
+        set(EXTRA_LINKER_FLAGS "/DELAYLOAD:fmodex.dll")
+    endif (FMODEX)
 
     set_target_properties(${VIEWER_BINARY_NAME}
         PROPERTIES
@@ -1667,6 +1662,15 @@ if (DARWIN)
     )
 
   add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit basic_plugin_filepicker)
+
+  if (FMODEX)
+    add_custom_command(OUTPUT "${FMODEX_LIBRARY}"
+                      COMMAND cp "${FMODEX_ORIG_LIBRARY}" "${FMODEX_LIBRARY}"
+                      COMMAND install_name_tool -id "@executable_path/../Resources/libfmodex.dylib" ${FMODEX_LIBRARY}
+                      DEPENDS "${FMODEX_ORIG_LIBRARY}")
+    add_custom_target(fmodex_modified_library DEPENDS "${FMODEX_LIBRARY}")
+    add_dependencies(${VIEWER_BINARY_NAME} fmodex_modified_library)
+  endif (FMODEX)
 
   if (PACKAGE)
       add_custom_target(package ALL DEPENDS ${VIEWER_BINARY_NAME})

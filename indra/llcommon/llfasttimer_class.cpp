@@ -183,6 +183,10 @@ BOOL LLFastTimer::sMetricLog = FALSE;
 LLMutex* LLFastTimer::sLogLock = NULL;
 std::queue<LLSD> LLFastTimer::sLogQueue;
 
+#if LL_WINDOWS
+#define USE_RDTSC 1
+#endif
+
 std::vector<LLFastTimer::FrameState>* LLFastTimer::sTimerInfos = NULL;
 U64				LLFastTimer::sTimerCycles = 0;
 U32				LLFastTimer::sTimerCalls = 0;
@@ -380,7 +384,9 @@ void LLFastTimer::updateCachedPointers()
 }
 
 // See lltimer.cpp.
-#if LL_LINUX || LL_DARWIN || LL_SOLARIS
+#if USE_RDTSC
+std::string LLFastTimer::sClockType = "rdtsc";
+#elif LL_LINUX || LL_DARWIN || LL_SOLARIS
 std::string LLFastTimer::sClockType = "gettimeofday";
 #elif LL_WINDOWS
 std::string LLFastTimer::sClockType = "QueryPerformanceCounter";
@@ -391,6 +397,9 @@ std::string LLFastTimer::sClockType = "QueryPerformanceCounter";
 //static
 U64 LLFastTimer::countsPerSecond() // counts per second for the *32-bit* timer
 {
+#if USE_RDTSC
+	static U64 sCPUClockFrequency = U64(LLProcessorInfo().getCPUFrequency()*1000000.0);
+#else
 	static bool firstcall = true;
 	static U64 sCPUClockFrequency;
 	if (firstcall)
@@ -398,6 +407,7 @@ U64 LLFastTimer::countsPerSecond() // counts per second for the *32-bit* timer
 		sCPUClockFrequency = calc_clock_frequency();
 		firstcall = false;
 	}
+#endif
 	return sCPUClockFrequency >> 8;
 }
 
@@ -937,6 +947,38 @@ LLFastTimer::LLFastTimer(LLFastTimer::FrameState* state)
 // Important note: These implementations must be FAST!
 //
 
+#if USE_RDTSC
+U32 LLFastTimer::getCPUClockCount32()
+{
+	U32 ret_val;
+	__asm
+	{
+        _emit   0x0f
+        _emit   0x31
+		shr eax,8
+		shl edx,24
+		or eax, edx
+		mov dword ptr [ret_val], eax
+	}
+    return ret_val;
+}
+
+// return full timer value, *not* shifted by 8 bits
+U64 LLFastTimer::getCPUClockCount64()
+{
+	U64 ret_val;
+	__asm
+	{
+        _emit   0x0f
+        _emit   0x31
+		mov eax,eax
+		mov edx,edx
+		mov dword ptr [ret_val+4], edx
+		mov dword ptr [ret_val], eax
+	}
+    return ret_val;
+}
+#else
 //LL_COMMON_API U64 get_clock_count(); // in lltimer.cpp
 // These use QueryPerformanceCounter, which is arguably fine and also works on AMD architectures.
 U32 LLFastTimer::getCPUClockCount32()
@@ -948,4 +990,4 @@ U64 LLFastTimer::getCPUClockCount64()
 {
 	return get_clock_count();
 }
-
+#endif

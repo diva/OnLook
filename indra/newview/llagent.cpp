@@ -36,6 +36,7 @@
 #include "llagentui.h"
 #include "llanimationstates.h"
 #include "llcallingcard.h"
+#include "llcapabilitylistener.h"
 #include "llconsole.h"
 #include "llenvmanager.h"
 #include "llfirstuse.h"
@@ -2196,6 +2197,33 @@ void LLAgent::setStartPosition( U32 location_id )
         setHomePosRegion( mRegionp->getHandle(), getPositionAgent() );
     }
 }
+
+struct HomeLocationMapper: public LLCapabilityListener::CapabilityMapper
+{
+    // No reply message expected
+    HomeLocationMapper(): LLCapabilityListener::CapabilityMapper("HomeLocation") {}
+    virtual void buildMessage(LLMessageSystem* msg,
+                              const LLUUID& agentID,
+                              const LLUUID& sessionID,
+                              const std::string& capabilityName,
+                              const LLSD& payload) const
+    {
+        msg->newMessageFast(_PREHASH_SetStartLocationRequest);
+        msg->nextBlockFast( _PREHASH_AgentData);
+        msg->addUUIDFast(_PREHASH_AgentID, agentID);
+        msg->addUUIDFast(_PREHASH_SessionID, sessionID);
+        msg->nextBlockFast( _PREHASH_StartLocationData);
+        // corrected by sim
+        msg->addStringFast(_PREHASH_SimName, "");
+        msg->addU32Fast(_PREHASH_LocationID, payload["HomeLocation"]["LocationId"].asInteger());
+        msg->addVector3Fast(_PREHASH_LocationPos,
+                            ll_vector3_from_sdmap(payload["HomeLocation"]["LocationPos"]));
+        msg->addVector3Fast(_PREHASH_LocationLookAt,
+                            ll_vector3_from_sdmap(payload["HomeLocation"]["LocationLookAt"]));
+    }
+};
+// Need an instance of this class so it will self-register
+static HomeLocationMapper homeLocationMapper;
 
 void LLAgent::requestStopMotion( LLMotion* motion )
 {
