@@ -1,0 +1,14 @@
+<llsd>
+    <map>
+    <key>skin_name</key>
+        <string>New Silver</string>
+    <key>author_name</key>
+        <string>Linden Lab</string>
+    <key>additional_author_names</key>
+        <string>Nomade Zhao</string>
+    <key>skin_info</key>
+        <string>This is a variation around silver the alternate skin for Linden Lab's Second Life viewer. Variations autour de la Skin Silver, re adapt&#xE9;e pour Singularity</string>
+    <key>folder_name</key>
+        <string>new_silver</string>
+    </map>
+</llsd>

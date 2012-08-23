@@ -1,0 +1,15 @@
+<llsd>
+    <map>
+    <key>skin_name</key>
+        <string>Dark Catalan</string>
+    <key>author_name</key>
+        <string>Nomade Zhao - Skills Hak</string>
+    <key>additional_author_names</key>
+        <string>Linden Lab</string>
+    <key>skin_info</key>
+        <string>A Catalan Skin inspired by the Skill Hak's Gemini Skin (with love for Selv).
+Une Skin "Dark" aux couleurs de la Catalogne, inspir&#xE9;e de la Skin Gemini de Skill Hak (with love for Selv)</string>
+    <key>folder_name</key>
+        <string>darkcatalan</string>
+    </map>
+</llsd>

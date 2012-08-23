@@ -53,7 +53,7 @@
 <TextBgWriteableColor value="255, 255, 255, 255" />	<!-- Text field background when not receiving input (unfocused) -->
 <TextCursorColor value="102, 204, 0, 255" />
 <TextFgColor value="0, 0, 0, 255" />
-<TextFgReadOnlyColor value="0, 0, 0, 255" />
+<TextFgReadOnlyColor value="0, 115, 15, 255" />	<!-- texte pour voir la a propos -->
 <TextFgTentativeColor value="0, 0, 0, 255" />
 <TextEmbeddedItemReadOnlyColor value="0, 0, 0, 255" />	<!-- i.e. About Land name that you don't own -->
 <TextEmbeddedItemColor value="0, 0, 0, 255" />
@@ -182,7 +182,6 @@
 <ConsoleBackground value="0, 0, 0, 255" />
 <FolderViewLoadingMessageTextColor value="0, 0, 0, 255"/>
 <InventoryBackgroundColor value="255, 255, 255, 255"/>
-<SHMediaTickerOscillatorColor value ="0, 0, 0, 191"/>
 <ComboBoxBg value="255, 255, 255, 255"/>
 <AvatarListTextDistNormalRange value="0, 0, 0, 255"/>
 <AvatarListTextDistShoutRange value="0, 0, 0, 128"/>
