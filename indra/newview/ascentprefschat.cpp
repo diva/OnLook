@@ -96,6 +96,7 @@ LLPrefsAscentChat::LLPrefsAscentChat()
 
 	childSetEnabled("reset_antispam", started);
 	childSetCommitCallback("reset_antispam", onCommitResetAS, this);
+	childSetCommitCallback("enable_as", onCommitEnableAS, this);
 	childSetCommitCallback("antispam_checkbox", onCommitDialogBlock, this);
 
     childSetCommitCallback("KeywordsOn", onCommitKeywords, this);
@@ -251,6 +252,20 @@ void LLPrefsAscentChat::onCommitResetAS(LLUICtrl*, void*)
 }
 
 //static
+void LLPrefsAscentChat::onCommitEnableAS(LLUICtrl* ctrl, void* user_data)
+{
+	LLPrefsAscentChat* self = (LLPrefsAscentChat*)user_data;
+	bool enabled = ctrl->getValue().asBoolean();
+	self->childSetEnabled("spammsg_checkbox",          enabled);
+	self->childSetEnabled("antispamtime",              enabled);
+	self->childSetEnabled("antispamamount",            enabled);
+	self->childSetEnabled("antispamsoundmulti",        enabled);
+	self->childSetEnabled("antispamsoundpreloadmulti", enabled);
+	self->childSetEnabled("antispamnewlines",          enabled);
+	self->childSetEnabled("Notify On Spam",            enabled);
+}
+
+//static
 void LLPrefsAscentChat::onCommitDialogBlock(LLUICtrl* ctrl, void* user_data)
 {
 	LLPrefsAscentChat* self = (LLPrefsAscentChat*)user_data;
@@ -344,6 +359,7 @@ void LLPrefsAscentChat::refreshValues()
     mIMResponseText                 = gSavedPerAccountSettings.getString("AscentInstantMessageResponse");
 
     //Spam --------------------------------------------------------------------------------
+	mEnableAS                       = gSavedSettings.getBOOL("AntiSpamEnabled");
     mGlobalQueue                    = gSavedSettings.getBOOL("_NACL_AntiSpamGlobalQueue");
     mChatSpamCount                  = gSavedSettings.getU32("_NACL_AntiSpamAmount");
     mChatSpamTime                   = gSavedSettings.getU32("_NACL_AntiSpamTime");
@@ -404,6 +420,15 @@ void LLPrefsAscentChat::refresh()
     childSetText("im_response", wstring_to_utf8str(auto_response));
 
     //Antispam ------------------------------------------------------------------------
+	// sensitivity tuners
+	childSetEnabled("spammsg_checkbox",          mEnableAS);
+	childSetEnabled("antispamtime",              mEnableAS);
+	childSetEnabled("antispamamount",            mEnableAS);
+	childSetEnabled("antispamsoundmulti",        mEnableAS);
+	childSetEnabled("antispamsoundpreloadmulti", mEnableAS);
+	childSetEnabled("antispamnewlines",          mEnableAS);
+	childSetEnabled("Notify On Spam",            mEnableAS);
+	// dialog blocking tuners
 	childSetEnabled("Block All Dialogs From", !mBlockDialogSpam);
 	childSetEnabled("Alerts",                 !mBlockDialogSpam);
 	childSetEnabled("Friendship Offers",      !mBlockDialogSpam);
@@ -549,6 +574,7 @@ void LLPrefsAscentChat::cancel()
     gSavedPerAccountSettings.setString("AscentInstantMessageResponse",      mIMResponseText);
 
     //Spam --------------------------------------------------------------------------------
+	gSavedSettings.setBOOL("AntiSpamEnabled",                mEnableAS);
     gSavedSettings.setBOOL("_NACL_AntiSpamGlobalQueue",      mGlobalQueue);
     gSavedSettings.setU32("_NACL_AntiSpamAmount",            mChatSpamCount);
     gSavedSettings.setU32("_NACL_AntiSpamTime",              mChatSpamTime);
