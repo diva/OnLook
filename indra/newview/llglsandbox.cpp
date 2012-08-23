@@ -67,10 +67,13 @@
 #include "llresmgr.h"
 #include "pipeline.h"
 #include "llspatialpartition.h"
- 
+
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
+
+// Height of the yellow selection highlight posts for land
+const F32 PARCEL_POST_HEIGHT = 0.666f;
 
 // Returns true if you got at least one object
 void LLToolSelectRect::handleRectangleSelection(S32 x, S32 y, MASK mask)
@@ -708,29 +711,27 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 				x2 = x1 + PARCEL_GRID_STEP_METERS;
 				y2 = y1;
 
-				{
-					dy = (pos_y - y1) + DIST_OFFSET;
-					
-					if (pos_x < x1)
-						dx = pos_x - x1;
-					else if (pos_x > x2)
-						dx = pos_x - x2;
-					else 
-						dx = 0;
-					
-					dist = dx*dx+dy*dy;
+				dy = (pos_y - y1) + DIST_OFFSET;
 
-					if (dist < MIN_DIST_SQ)
-						alpha = MAX_ALPHA;
-					else if (dist > MAX_DIST_SQ)
-						alpha = 0.0f;
-					else
-						alpha = 30/dist;
+				if (pos_x < x1)
+					dx = pos_x - x1;
+				else if (pos_x > x2)
+					dx = pos_x - x2;
+				else
+					dx = 0;
 
-					alpha = llclamp(alpha, 0.0f, MAX_ALPHA);
+				dist = dx*dx+dy*dy;
 
-					gGL.color4f(1.f, 1.f, 1.f, alpha);
-				}
+				if (dist < MIN_DIST_SQ)
+					alpha = MAX_ALPHA;
+				else if (dist > MAX_DIST_SQ)
+					alpha = 0.0f;
+				else
+					alpha = 30/dist;
+
+				alpha = llclamp(alpha, 0.0f, MAX_ALPHA);
+
+				gGL.color4f(1.f, 1.f, 1.f, alpha);
 
 				if ((pos_y - y1) < 0) direction = SOUTH_MASK;
 				else 		direction = NORTH_MASK;
@@ -748,29 +749,27 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 				x2 = x1;
 				y2 = y1 + PARCEL_GRID_STEP_METERS;
 
-				{					
-					dx = (pos_x - x1) + DIST_OFFSET;
-		
-					if (pos_y < y1) 
-						dy = pos_y - y1;
-					else if (pos_y > y2)
-						dy = pos_y - y2;
-					else 
-						dy = 0;
+				dx = (pos_x - x1) + DIST_OFFSET;
 
-					dist = dx*dx+dy*dy;
-					
-					if (dist < MIN_DIST_SQ) 
-						alpha = MAX_ALPHA;
-					else if (dist > MAX_DIST_SQ)
-						alpha = 0.0f;
-					else
-						alpha = 30/dist;
+				if (pos_y < y1)
+					dy = pos_y - y1;
+				else if (pos_y > y2)
+					dy = pos_y - y2;
+				else
+					dy = 0;
 
-					alpha = llclamp(alpha, 0.0f, MAX_ALPHA);
+				dist = dx*dx+dy*dy;
 
-					gGL.color4f(1.f, 1.f, 1.f, alpha);
-				}
+				if (dist < MIN_DIST_SQ)
+					alpha = MAX_ALPHA;
+				else if (dist > MAX_DIST_SQ)
+					alpha = 0.0f;
+				else
+					alpha = 30/dist;
+
+				alpha = llclamp(alpha, 0.0f, MAX_ALPHA);
+
+				gGL.color4f(1.f, 1.f, 1.f, alpha);
 
 				if ((pos_x - x1) > 0) direction = WEST_MASK;
 				else 		direction = EAST_MASK;
@@ -927,4 +926,3 @@ void LLViewerObjectList::renderObjectBeacons()
 }
 
 
-	

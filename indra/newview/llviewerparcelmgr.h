@@ -53,9 +53,6 @@ class LLViewerRegion;
 //							  | EAST_MASK 
 //							  | WEST_MASK);
 
-const F32 PARCEL_POST_HEIGHT = 0.666f;
-//const F32 PARCEL_POST_HEIGHT = 20.f;
-
 // Specify the type of land transfer taking place
 //enum ELandTransferType
 //{
