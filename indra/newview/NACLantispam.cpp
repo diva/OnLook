@@ -111,6 +111,8 @@ void NACLAntiSpamQueue::blockEntry(LLUUID& source)
 }
 int NACLAntiSpamQueue::checkEntry(LLUUID& name, U32 multiplier)
 {
+	static LLCachedControl<bool> enabled(gSavedSettings,"AntiSpamEnabled",false);
+	if(!enabled) return 0;
 	it=entries.find(name.asString());
 	if(it != entries.end())
 	{
@@ -200,7 +202,7 @@ void NACLAntiSpamRegistry::setRegisteredQueueTime(U32 name, U32 time)
 {
 	if(name >= QUEUE_MAX || queues[name] == 0)
 	{
-		LL_ERRS("AntiSpam") << "CODE BUG: Attempting to use a antispam queue that was not created or was outside of the reasonable range of queues. Queue: " << getQueueName(name) << llendl;
+		LL_ERRS("AntiSpam") << "CODE BUG: Attempting to set time of antispam queue that was outside of the reasonable range of queues or not created. Queue: " << getQueueName(name) << llendl;
 		return;
 	}
 	
@@ -210,7 +212,7 @@ void NACLAntiSpamRegistry::setRegisteredQueueAmount(U32 name, U32 amount)
 {
 	if(name >= QUEUE_MAX || queues[name] == 0)
 	{
-		LL_ERRS("AntiSpam") << "CODE BUG: Attempting to use a antispam queue that was not created or was outside of the reasonable range of queues. Queue: " << getQueueName(name) << llendl;
+		LL_ERRS("AntiSpam") << "CODE BUG: Attempting to set amount for antispam queue that was outside of the reasonable range of queues or not created. Queue: " << getQueueName(name) << llendl;
 		return;
 	}
 	
@@ -237,7 +239,7 @@ void NACLAntiSpamRegistry::clearRegisteredQueue(U32 name)
 {
 	if(name >= QUEUE_MAX || queues[name] == 0)
 	{
-		LL_ERRS("AntiSpam") << "CODE BUG: Attempting to use a antispam queue that was not created or was outside of the reasonable range of queues. Queue: " << getQueueName(name) << llendl;
+		LL_ERRS("AntiSpam") << "CODE BUG: Attempting to clear antispam queue that was outside of the reasonable range of queues or not created. Queue: " << getQueueName(name) << llendl;
 		return;
 	}
 	
@@ -247,7 +249,7 @@ void NACLAntiSpamRegistry::purgeRegisteredQueue(U32 name)
 {
 	if(name >= QUEUE_MAX || queues[name] == 0)
 	{
-		LL_ERRS("AntiSpam") << "CODE BUG: Attempting to use a antispam queue that was not created or was outside of the reasonable range of queues. Queue: " << getQueueName(name) << llendl;
+		LL_ERRS("AntiSpam") << "CODE BUG: Attempting to purge antispam queue that was outside of the reasonable range of queues or not created. Queue: " << getQueueName(name) << llendl;
 		return;
 	}
 	
@@ -263,7 +265,7 @@ void NACLAntiSpamRegistry::blockOnQueue(U32 name, LLUUID& source)
 	{
 		if(name >= QUEUE_MAX || queues[name] == 0)
 		{
-			LL_ERRS("AntiSpam") << "CODE BUG: Attempting to use a antispam queue that was not created or was outside of the reasonable range of queues. Queue: " << getQueueName(name) << llendl;
+			LL_ERRS("AntiSpam") << "CODE BUG: Attempting to use a antispam queue that was outside of the reasonable range of queues or not created. Queue: " << getQueueName(name) << llendl;
 			return;
 		}
 		queues[name]->blockEntry(source);
@@ -295,7 +297,7 @@ bool NACLAntiSpamRegistry::checkQueue(U32 name, LLUUID& source, U32 multiplier)
 	{
 		if(name >= QUEUE_MAX || queues[name] == 0)
 		{
-			LL_ERRS("AntiSpam") << "CODE BUG: Attempting to use a antispam queue that was not created or was outside of the reasonable range of queues. Queue: " << getQueueName(name) << llendl;
+			LL_ERRS("AntiSpam") << "CODE BUG: Attempting to check antispam queue that was outside of the reasonable range of queues or not created. Queue: " << getQueueName(name) << llendl;
 			return false;
 		}
 		result=queues[name]->checkEntry(source,multiplier);
@@ -356,6 +358,8 @@ void NACLAntiSpamRegistry::purgeAllQueues()
 }
 int NACLAntiSpamRegistry::checkGlobalEntry(LLUUID& name, U32 multiplier)
 {
+	static LLCachedControl<bool> enabled(gSavedSettings,"AntiSpamEnabled",false);
+	if(!enabled) return 0;
 	it2=globalEntries.find(name.asString());
 	if(it2 != globalEntries.end())
 	{

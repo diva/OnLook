@@ -2916,6 +2916,10 @@ Expected .wav, .tga, .bmp, .jpg, .jpeg, or .bvh
 	<string name="accel-win-alt">Alt-</string>
 	<string name="accel-win-shift">Shift-</string>
 
+	<!-- Previews -->
+	<string name="FileSaved">File Saved</string>
+	<string name="Receiving">Receiving</string>
+
 	<!-- Directions, HUD -->
 	<string name="Direction_Forward">Forward</string>
 	<string name="Direction_Left">Left</string>
