@@ -13,7 +13,7 @@ residentes'.
 		Elegir qué rol asignarles:
 	</text>
 	<combo_box name="role_name" tool_tip="Elige de la lista de roles cuál asignar a los miembros."/>
-	<button label="Enviar Invitacioens" name="ok_button"/>
+	<button label="Enviar Invitaciones" name="ok_button"/>
 	<button label="Cancelar" name="cancel_button"/>
 	<string name="confirm_invite_owner_str">
 		¿Estás seguro de que quieres invitar a un nuevo propietario/s? ¡Esta acción es permanente!
