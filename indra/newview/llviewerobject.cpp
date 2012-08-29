@@ -4168,6 +4168,22 @@ void LLViewerObject::sendMaterialUpdate() const
 
 }
 
+// formerly send_object_rotation
+void LLViewerObject::sendRotationUpdate() const
+{
+	LLViewerRegion* regionp = getRegion();
+	if(!regionp) return;
+	gMessageSystem->newMessageFast(_PREHASH_ObjectRotation);
+	gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+	gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
+	gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+	gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+	gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, mLocalID);
+	gMessageSystem->addQuatFast(_PREHASH_Rotation, getRotationEdit());
+	//llinfos << "Sent rotation " << getRotationEdit() << llendl;
+	gMessageSystem->sendReliable( regionp->getHost() );
+}
+
 //formerly send_object_shape(LLViewerObject *object)
 void LLViewerObject::sendShapeUpdate()
 {
