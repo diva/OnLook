@@ -1,7 +1,9 @@
 #extension GL_ARB_texture_rectangle : enable
 
 #ifdef DEFINE_GL_FRAGCOLOR
-out vec4 gl_FragColor;
+out vec4 frag_color;
+#else
+#define frag_color gl_FragColor
 #endif
 
 uniform sampler2DRect tex0;
@@ -31,5 +33,5 @@ void main(void)
 		color += weight.z * vec3(texture2DRect(tex0, vec2(vary_texcoord0.s,vary_texcoord0.t+offset.t)));
 		color += weight.z * vec3(texture2DRect(tex0, vec2(vary_texcoord0.s,vary_texcoord0.t-offset.t)));
 	}
-	gl_FragColor = vec4(color.xyz,1.0);
+	frag_color = vec4(color.xyz,1.0);
 }
