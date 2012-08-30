@@ -27,21 +27,6 @@
 				Leyla Linden
 			</text>
 			<button label="Perfil..." label_selected="Perfil..." name="Profile..."/>
-			<string name="group_owned_text">
-				(Propiedad del Grupo)
-			</string>
-			<string name="profile_text">
-				Perfil...
-			</string>
-			<string name="info_text">
-				Información...
-			</string>
-			<string name="public_text">
-				(público)
-			</string>
-			<string name="none_text">
-				(ninguno)
-			</string>
 			<text name="Group:">
 				Grupo:
 			</text>
@@ -59,7 +44,6 @@
 			<text name="For Sale: Price L$[PRICE].">
 				Precio: [CURRENCY][PRICE] ([CURRENCY][PRICE_PER_SQM]/m².).
 			</text>
-			<text name="SalePending"/>
 			<button label="Vender el Terreno..." label_selected="Vender el Terreno..." name="Sell Land..."/>
 			<text name="For sale to">
 				En venta a: [BUYER]
@@ -113,6 +97,21 @@
 			<string name="need_tier_to_modify">
 				Debe aprobar su compra para modificar este terreno.
 			</string>
+			<string name="group_owned_text">
+				(Propiedad del Grupo)
+			</string>
+			<string name="profile_text">
+				Perfil...
+			</string>
+			<string name="info_text">
+				Información...
+			</string>
+			<string name="public_text">
+				(público)
+			</string>
+			<string name="none_text">
+				(ninguno)
+			</string>			
 			<string name="sale_pending_text">
 				(Venta pendiente)
 			</string>
@@ -121,6 +120,7 @@
 Ve al Menú Mundo &gt; Acerca del terreno o selecciona otra parcela para ver sus características.
 			</string>
 		</panel>
+		<!-- ======================== -->
 		<panel label="Convenio" name="land_covenant_panel" >
 			<text name="estate_section_lbl">
 				Estado:
@@ -189,6 +189,7 @@ Ve al Menú Mundo &gt; Acerca del terreno o selecciona otra parcela para ver sus
 				El terreno comprado en esta región no se podrá unir o dividir.
 			</string>
 		</panel>
+		<!-- ============================= -->
 		<panel label="Objetos" name="land_objects_panel">
 			<text name="parcel_object_bonus">
 				Plus de Objectos en la Región: [BONUS]
@@ -250,7 +251,6 @@ Ve al Menú Mundo &gt; Acerca del terreno o selecciona otra parcela para ver sus
 			<text name="Autoreturn" width="350">
 				Autoretorno de objetos a otros residentes (minutos; 0 para desactivar):
 			</text>
-			<line_editor name="clean other time" right="-25"/>
 			<text name="Object Owners:" width="250">
 				Propietarios de los objetos:
 			</text>
@@ -264,6 +264,7 @@ Ve al Menú Mundo &gt; Acerca del terreno o selecciona otra parcela para ver sus
 				<column name="mostrecent" label="Recientes"/>
 			</name_list>
 		</panel>
+		><!-- ========================== -->
 		<panel label="Opciones" name="land_options_panel">
 			<text name="allow_label">
 				Permitir a otros residentes:
@@ -290,12 +291,6 @@ Ve al Menú Mundo &gt; Acerca del terreno o selecciona otra parcela para ver sus
 				Opciones del terreno:
 			</text>
 			<check_box label="Seguro (sin daño)" name="check safe" tool_tip="Marcado, convierte el terreno en 'seguro', desactivando el daño en combate. Si no, se activa el daño en combate."/>
-			<string name="push_restrict_text">
-				Sin empujones
-			</string>
-			<string name="push_restrict_region_text">
-				Sin empujones (Prevalece lo marcado en la Región)
-			</string>
 			<check_box name="PushRestrictCheck" tool_tip="Previene scripts que empujen. Marcando esta opción evitará que en tu terreno haya comportamientos destructivos."/>
 			<check_box label="Mostrar parcela en la busqueda ([DIRECTORYFEE]) en" name="ShowDirectoryCheck" tool_tip="Permitir que aparezca esta parcela en los resultados de la búsqueda" left="14"/>
 			<string name="search_enabled_tooltip">
@@ -308,6 +303,9 @@ Sólo las parcelas más grandes pueden listarse en la búsqueda.
 			<string name="search_disabled_permissions_tooltip">
 				Esta opción no esta activada porque no puedes modificar las opciones de la parcela.
 			</string>
+			<string name="see_avs_text">
+				Ver y conversar con residentes en esta parcela
+			</string>			
 			<combo_box name="land category with adult" left="280">
 				<combo_item name="AnyCategory">
 					Cualquier Categoría
@@ -415,9 +413,7 @@ Sólo las parcelas más grandes pueden listarse en la búsqueda.
 				Permitir a residentes en otras parcelas:
 			</text>
 			<check_box label="Ver Avatares" name="SeeAvatarsCheck" tool_tip="Premite a los residentes en otras parcelas ver y conversar con los residentes en esta parcela, y tu prodrás verlos y conversar también con ellos."/>
-			<string name="see_avs_text">
-				Ver y conversar con residentes en esta parcela
-			</string>
+
 			<text name="Snapshot:">
 				 Foto:
 			</text>
@@ -444,22 +440,26 @@ Sólo las parcelas más grandes pueden listarse en la búsqueda.
 					Cualquiera
 				</combo_item>
 			</combo_box>
+			<string name="push_restrict_text">
+				Sin empujones
+			</string>
+			<string name="push_restrict_region_text">
+				Sin empujones (Prevalece lo marcado en la Región)
+			</string>			
 		</panel>
+		<!-- =============================== -->
 		<panel label="Media" name="land_media_panel">
 			<text name="with media:" width="70">
 				Tipo de media:
 			</text>
 			<combo_box name="media type" tool_tip="Especifica si la URL es una película, página web u otro tipo de media" left="90"/>
-			<text name="mime_type"/>
 			<text name="at URL:">
 				URL base:
 			</text>
-			<line_editor name="media_url"/>
 			<button label="Definir..." label_selected="Definir..." name="set_media_url"/>
 			<text name="at URL2:">
 				URL actual:
 			</text>
-			<text name="current_url"/>
 			<button label="Reiniciar..." label_selected="Reiniciar..." name="reset_media_url"/>
 			<text name="media_reset" tool_tip="Tiempo transcurrido para revertir al URL por defecto de la parcela (0 para no retornar el valor defecto)" width="300">
 				Retornar al URL por defecto en:
@@ -490,24 +490,14 @@ Selecciona la miniatura para elegir una textura diferente.
 			<text name="media_size" tool_tip="Tamaño para mostrar la webs, déjalo en  0 para el valor por defecto."  width="100">
 				Tamaño de Media:
 			</text>
-			<spinner name="media_size_width" tool_tip="Ancho para mostrar la webs, déjalo en  0 para el valor por defecto." left="110"/>
+			<spinner name="media_size_width" tool_tip="Ancho para mostrar la web, déjalo en  0 para el valor por defecto." left="110"/>
 			<spinner name="media_size_height" tool_tip="Alto para mostrar la webs, déjalo en  0 para el valor por defecto."/>
 			<text name="pixels">
 				pixeles
 			</text>
-			<text name="Interaction:">
-				  Interactivo:
-			</text>
-			<radio_group name="radio_navigate_allow">
-				<radio_item name="Anyone" tool_tip="Cualquier residente puede interactuar con el media.">
-					Cualquiera
-				</radio_item>
-				<radio_item name="Group" tool_tip="Sólo miembros del Grupo con permiso de control puede interactuar con el media.">
-					Grupo
-				</radio_item>
-			</radio_group>
 		</panel>
-		<panel name="land_audio_panel">
+		<!-- ================================ -->
+		<panel name="land_audio_panel" label="Música">
 			<text name="MusicURL:">
 				URL de la música:
 			</text>
@@ -537,6 +527,7 @@ Selecciona la miniatura para elegir una textura diferente.
 				</radio_item>
 			</radio_group>
 		</panel>
+		<!-- ============================== -->
 		<panel label="Acceso" name="land_access_panel">
 			<text name="Limit access to this parcel to:">
 				Acceso a esta parcela
@@ -550,6 +541,11 @@ Selecciona la miniatura para elegir una textura diferente.
 			<string name="estate_override">
 				Una o mas de estas opciones está configurada a nivel del Estado
 			</string>
+			<string name="minutes">minutos</string>
+			<string name="1_minute">1 minuto</string>
+			<string name="1_second">1 segundo</string>
+			<string name="seconds">segundos</string>
+			<string name="remaining">restantes</string>			
 			<check_box label="Permitir Acceso al Grupo: [GROUP]" name="GroupCheck" tool_tip="Definir el Grupo en la pestaña General."/>
 			<check_box label="Vender pases para:" name="PassCheck" tool_tip="Permitir acceso temporario a esta parcela"/>
 			<combo_box name="pass_combo">

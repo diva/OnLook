@@ -1048,6 +1048,7 @@ extern char const* const _PREHASH_SimIP;
 extern char const* const _PREHASH_GodID;
 extern char const* const _PREHASH_TeleportMinPrice;
 extern char const* const _PREHASH_VoteItem;
+extern char const* const _PREHASH_ObjectRotation;
 extern char const* const _PREHASH_SitRotation;
 extern char const* const _PREHASH_SnapSelection;
 extern char const* const _PREHASH_SoundTrigger;
