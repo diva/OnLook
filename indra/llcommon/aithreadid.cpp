@@ -50,6 +50,7 @@ void AIThreadID::set_current_thread_id(void)
 #endif
 }
 
+#ifndef LL_DARWIN
 void AIThreadID::reset(void)
 {
 	mID = lCurrentThread;
@@ -69,6 +70,7 @@ apr_os_thread_t AIThreadID::getCurrentThread(void)
 {
 	return lCurrentThread;
 }
+#endif
 
 std::ostream& operator<<(std::ostream& os, AIThreadID const& id)
 {
