@@ -45,7 +45,6 @@ public:
 	LLMultiFloater(const std::string& name, const std::string& rect_control, LLTabContainer::TabPosition tab_pos = LLTabContainer::TOP, BOOL auto_resize = TRUE);
 	virtual ~LLMultiFloater() {};
 
-	virtual BOOL postBuild();
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
 	/*virtual*/ void open();	/* Flawfinder: ignore */
 	/*virtual*/ void onClose(bool app_quitting);

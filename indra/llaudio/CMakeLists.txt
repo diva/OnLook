@@ -111,10 +111,4 @@ list(APPEND llaudio_SOURCE_FILES ${llaudio_HEADER_FILES})
 
 add_library (llaudio ${llaudio_SOURCE_FILES})
 add_dependencies(llaudio prepare)
-target_link_libraries(
-    llaudio
-    ${VORBISENC_LIBRARIES}
-    ${VORBISFILE_LIBRARIES}
-    ${VORBIS_LIBRARIES}
-    ${OGG_LIBRARIES}
-    )
+

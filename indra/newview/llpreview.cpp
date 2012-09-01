@@ -563,6 +563,7 @@ void LLMultiPreview::open()		/*Flawfinder: ignore*/
 	{
 		frontmost_preview->loadAsset();
 	}
+	LLMultiFloater::postBuild();
 }
 
 

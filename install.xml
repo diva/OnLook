@@ -587,9 +587,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>4f787437a5e063ccde6637dfb1ebc01d</string>
+            <string>82b85cce650e7409fc165bc730e2ad7a</string>
             <key>url</key>
-            <uri>https://www.avination.com/viewerfiles/google_perftools-1.8-windows-20111005.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/gperftools-2.0-svn-windows-20120830.tar.bz2</uri>
           </map>
         </map>
       </map>

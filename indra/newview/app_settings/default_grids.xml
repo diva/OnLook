@@ -2,7 +2,7 @@
   <array>
 
     <map>
-      <key>default_grids_version</key><string>20</string>
+      <key>default_grids_version</key><string>21</string>
     </map>
 
     <!-- Second Life -->
@@ -38,6 +38,23 @@
       <key>auto_update</key><boolean>0</boolean>
     </map>
 
+    <!-- OSGrid -->
+    <map>
+      <key>auto_update</key> <boolean>0</boolean>
+      <key>gridname</key> <string>OSGrid</string>
+      <key>gridnick</key> <string>osgrid</string>
+      <key>helperuri</key> <string>http://helper.osgrid.org/</string>
+      <key>inventory_links</key> <boolean>0</boolean>
+      <key>loginpage</key> <string>http://www.osgrid.org/splash/</string>
+      <key>loginuri</key> <string>http://login.osgrid.org/</string>
+      <key>password</key> <string>http://www.osgrid.org/</string>
+      <key>platform</key> <string>OpenSim</string>
+      <key>register</key> <string>http://www.osgrid.org/</string>
+      <key>render_compat</key> <boolean>1</boolean>
+      <key>search</key> <string />
+      <key>support</key> <string>http://www.osgrid.org/</string>
+      <key>website</key> <string>http://www.osgrid.org/</string>
+    </map>
 
     <!-- Local Host -->
     <map>
