@@ -2260,8 +2260,8 @@ void LLPanelLandOptions::onCommitAny(LLUICtrl *ctrl, void *userdata)
 	BOOL allow_damage		= !self->mCheckSafe->get();
 	BOOL allow_fly			= self->mCheckFly->get();
 	BOOL allow_landmark		= self->mCheckLandmark->get();
-	BOOL allow_group_scripts	= self->mCheckGroupScripts->get() || self->mCheckOtherScripts->get();
 	BOOL allow_other_scripts	= self->mCheckOtherScripts->get();
+	BOOL allow_group_scripts	= self->mCheckGroupScripts->get() || allow_other_scripts;
 	BOOL allow_publish		= FALSE;
 	BOOL mature_publish		= self->mMatureCtrl->get();
 	BOOL push_restriction	= self->mPushRestrictionCtrl->get();
@@ -2424,7 +2424,7 @@ void LLPanelLandAccess::refresh()
 		mListAccess->deleteAllItems();
 	if (mListBanned)
 		mListBanned->deleteAllItems();
-	
+
 	LLParcel *parcel = mParcel->getParcel();
 	
 	// Display options

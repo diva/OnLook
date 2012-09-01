@@ -151,6 +151,45 @@
 	<string name="AssetErrorPriceMismatch">Viewer and server do not agree on price</string>
 	<string name="AssetErrorUnknownStatus">Unknown status</string>
 
+	<!-- Asset Type human readable names:  these will replace variable [TYPE] in notification FailedToFindWearable* -->
+	<!-- Will also replace [OBJECTTYPE] in notifications: UserGiveItem, ObjectGiveItem -->
+	<!-- Also used by AntiSpamBlock notification for [TYPE], since this looks like a good place. -->
+	<string name="texture">texture</string>
+	<string name="sound">sound</string>
+	<string name="calling card">calling card</string>
+	<string name="Inventory">inventory</string>
+	<string name="Instant Message">instant message</string>
+	<string name="Script Dialog">script dialog</string>
+	<string name="Sound Preload">sound preload</string>
+	<string name="Teleport">teleport</string>
+	<string name="Unknown">unknown</string>
+	<string name="landmark">landmark</string>
+	<string name="legacy script">legacy script</string>
+	<string name="clothing">clothing</string>
+	<string name="object">object</string>
+	<string name="note card">notecard</string>
+	<string name="folder">folder</string>
+	<string name="root">root</string>
+	<string name="lsl2 script">LSL2 script</string>
+	<string name="lsl bytecode">LSL bytecode</string>
+	<string name="tga texture">tga texture</string>
+	<string name="body part">body part</string>
+	<string name="snapshot">snapshot</string>
+	<string name="lost and found">Lost and Found</string>
+	<string name="targa image">targa image</string>
+	<string name="trash">Trash</string>
+	<string name="jpeg image">jpeg image</string>
+	<string name="animation">animation</string>
+	<string name="gesture">gesture</string>
+	<string name="simstate">simstate</string>
+	<string name="favorite">favorite</string>
+	<string name="symbolic link">link</string>
+	<string name="symbolic folder link">folder link</string>
+	<string name="current outfit">current outfit</string>
+	<string name="outfit">outfit</string>
+	<string name="my outfits">my outfits</string>
+  <string name="mesh">mesh</string>
+
 	<!-- llvoavatar. Displayed in the avatar's chat bubble -->
 	<string name="AvatarEditingAppearance">(Editing Appearance)</string>
 	<string name="AvatarAway">Away</string>
@@ -234,12 +273,29 @@
 	<!-- world map -->
 	<string name="texture_loading">Loading...</string>
 	<string name="worldmap_offline">Offline</string>
+	<string name="worldmap_results_none_found">None found.</string>
 
 	<!-- animations uploading status codes -->
 	<string name="Ok">OK</string>
 	<!-- Chat -->
 	<string name="whisper">whispers:</string>
 	<string name="shout">shouts:</string>
+	<string name="ringing">Connecting to in-world Voice Chat...</string>
+	<string name="connected">Connected</string>
+	<string name="unavailable">Voice not available at your current location</string>
+	<string name="hang_up">Disconnected from in-world Voice Chat</string>
+	<string name="ScriptTakeMoney">Take currency from you</string>
+	<string name="ActOnControlInputs">Act on your control inputs</string>
+	<string name="RemapControlInputs">Remap your control inputs</string>
+	<string name="AnimateYourAvatar">Animate your avatar</string>
+	<string name="AttachToYourAvatar">Attach to your avatar</string>
+	<string name="ReleaseOwnership">Release ownership and become public</string>
+	<string name="LinkAndDelink">Link and delink from other objects</string>
+	<string name="AddAndRemoveJoints">Add and remove joints with other objects</string>
+	<string name="ChangePermissions">Change its permissions</string>
+	<string name="TrackYourCamera">Track your camera</string>
+  <string name="ControlYourCamera">Control your camera</string>
+  <string name="TeleportYourAgent">Teleport you</string>
 
 	<!-- Sim Access labels -->
 	<string name="SIM_ACCESS_PG">PG</string>
@@ -1204,7 +1260,7 @@ Returns the mean region frames per second
 	</string>
 	<string name="LSLTipText_llParticleSystem">
 llParticleSystem(list rules)
-Creates a particle system based on rules.	An empty list removes the particle system.
+Creates a particle system based on rules.  An empty list removes the particle system.
 List format is [ rule1, data1, rule2, data2 . . . rulen, datan ]
 	</string>
 	<string name="LSLTipText_llGroundRepel">
@@ -1241,7 +1297,7 @@ Removes the enabled bits in &apos;flags&apos;
 	</string>
 	<string name="LSLTipText_llSitTarget">
 llSitTarget(vector offset, rotation rot)
-Sets the sit location for the prim.	If offset == &lt;0,0,0&gt; then the sit target is removed.
+Sets the sit location for the prim.  If offset == &lt;0,0,0&gt; then the sit target is removed.
 	</string>
 	<string name="LSLTipText_llAvatarOnSitTarget">
 key llAvatarOnSitTarget()
@@ -1720,7 +1776,8 @@ Returns the media params for a particular face on an object, given the desired l
 	</string>
 	<string name="LSLTipText_llClearPrimMedia">
 integer llClearPrimMedia(integer face)
-Clears (deletes) the media and all params from the given face.	</string>
+Clears (deletes) the media and all params from the given face.
+	</string>
 	<string name="LSLTipText_llSetLinkPrimitiveParamsFast">
 llSetLinkPrimitiveParamsFast(integer linknumber, list rules)
 Set primitive parameters for linknumber based on rules with no built-in script sleep.
@@ -2811,10 +2868,14 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="WornOnAttachmentPoint" value=" (worn on [ATTACHMENT_POINT])" />
 	<string name="LockedOnAttachmentPoint" value=" (locked to [ATTACHMENT_POINT])" />
 	<string name="ActiveGesture" value="[GESLABEL] (active)"/>
+	<!-- Inventory permissions -->
+	<string name="PermYes">Yes</string>
+	<string name="PermNo">No</string>
+
 	<!-- Gestures labels -->
-	<!-- use value="" because they have preceding spaces -->
-	<string name="Chat Message"  value=" Chat : " />
-	<string name="Sound"         value=" Sound : " />
+    <!-- use value="" because they have preceding spaces -->
+    <string name="Chat Message"  value=" Chat : " />
+    <string name="Sound"         value=" Sound : " />
 	<string name="Wait"          value=" --- Wait : " />
 	<string name="AnimFlagStop"  value=" Stop Animation :    " />
 	<string name="AnimFlagStart" value=" Start Animation :   " />
@@ -2845,6 +2906,7 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<!-- inventory FVBridge -->
 	<!--  This is used in llpanelinventory.cpp when constructing a context menu for an item for Sale  -->
 	<string name="Buy">Buy</string>
+	<string name="Buyfor" value="Buy for "/><!-- Grid currency is appended automatically -->
 
 	<string name="Stone">Stone</string>
 	<string name="Metal">Metal</string>
@@ -2877,7 +2939,44 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="SaveComplete">Save complete.</string>
 	<string name="ObjectOutOfRange">Script (object out of range)</string>
 
+	<!-- god tools -->
+	<string name="GodToolsObjectOwnedBy">Object [OBJECT] owned by [OWNER]</string>
+
+	<!-- groups -->
+	<string name="Group" value=" (group)" />
 	<string name="Unknown">(Unknown)</string>
+	<string name="SummaryForTheWeek"    value="Summary for this week, beginning on " />
+	<string name="NextStipendDay"       value="The next stipend day is " />
+	<string name="GroupIndividualShare" value="                      Group       Individual Share" />
+	<string name="GroupColumn"          value="                      Group" />
+
+	<!-- floater IM bonus_info: When a Linden with Admin/god status receives a new IM this displays the estate (Mainland vs. teen grid) of the source avatar.
+		This is to help Lindens when answering questions. -->
+	<string name="IMParentEstate">parent estate</string>
+	<string name="IMMainland">mainland</string>
+	<string name="IMTeen">teen</string>
+
+	<!-- floater region info -->
+	<!-- The following will replace variable [ALL_ESTATES] in notifications EstateAllowed*, EstateBanned*, EstateManager* -->
+	<string name="RegionInfoError">error</string>
+	<string name="RegionInfoAllEstatesOwnedBy">
+		all estates owned by [OWNER]
+	</string>
+	<string name="RegionInfoAllEstatesYouOwn">all estates that you own</string>
+	<string name="RegionInfoAllEstatesYouManage">
+		all estates that you manage for [OWNER]
+	</string>
+	<string name="RegionInfoAllowedResidents">Allowed Residents: ([ALLOWEDAGENTS], max [MAXACCESS])</string>
+	<string name="RegionInfoAllowedGroups">Allowed groups: ([ALLOWEDGROUPS], max [MAXACCESS])</string>
+
+	<!-- panel contents -->
+	<string name="PanelContentsNewScript">New Script</string>
+
+	<!-- Region/Estate Covenant -->
+	<string name="RegionNoCovenant">There is no Covenant provided for this Estate.</string>
+	<string name="RegionNoCovenantOtherOwner">There is no Covenant provided for this Estate. The land on this estate is being sold by the Estate owner, not Linden Lab.  Please contact the Estate Owner for sales details.</string>
+	<string name="none_text"  value=" (none) " />
+
 	<!-- Environment settings -->
 	<string name="Local">Local</string>
 	<string name="LocalSettings">Local Settings</string>
@@ -2892,6 +2991,18 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="InvOfferOwnedByUnknownUser">owned by an unknown user</string>
 	<string name="InvOfferGaveYou">gave you</string>
 	<string name="InvOfferDecline">You decline [DESC] from [NAME].</string>
+
+	<!-- group money -->
+	<string name="GroupMoneyTotal">Total</string>
+	<string name="GroupMoneyBought">bought</string>
+	<string name="GroupMoneyPaidYou">paid you</string>
+	<string name="GroupMoneyPaidInto">paid into</string>
+	<string name="GroupMoneyBoughtPassTo">bought pass to</string>
+	<string name="GroupMoneyPaidFeeForEvent">paid fee for event</string>
+	<string name="GroupMoneyPaidPrizeForEvent">paid prize for event</string>
+	<string name="GroupMoneyBalance">Balance</string>
+	<string name="GroupMoneyCredits">Credits</string>
+	<string name="GroupMoneyDebits">Debits</string>
 
 	<!-- Viewer menu -->
 	<string name="AcquiredItems">Acquired Items</string>
@@ -3580,7 +3691,7 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 	<string name="IM_autoresponded_to">Autoresponse sent to</string>
 	<string name="IM_autoresponse_sent_item">was sent auto-response item</string>
 	<string name="Unnamed">(Unnamed)</string>
-	<string name="Saved_message">(Saved [LONG_TIMESTAMP]) </string>
+	<string name="Saved_message" value="(Saved [LONG_TIMESTAMP]) "/>
 	<string name="PowerUser1">You are bestowed with powers beyond mortal comprehension.</string>
 	<string name="PowerUser2">Use your newfound abilities wisely.</string>
 	<string name="Unlocked:">Unlocked:</string>
@@ -3588,6 +3699,108 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 	<string name="RightClick">Right click</string>
 	<string name="PowerUser4">Destroy objects - Permanently deletes an object immediately, when you don't feel like waiting for the server to respond.</string>
 	<string name="PowerUser5">Explode objects - Turns an object physical, temporary, and delinks it.</string>
+
+	<!-- voice calls -->
+
+  <string name="ringing-im">
+    Joining voice call...
+  </string>
+  <string name="connected-im">
+    Connected, click Leave Call to hang up
+  </string>
+  <string name="hang_up-im">
+    Left voice call
+  </string>
+  <string name="answering-im">
+    Connecting...
+  </string>
+  <string name="inventory_item_offered-im">
+    Inventory item offered
+  </string>
+
+
+  <string name="only_user_message">
+    You are the only user in this session.
+  </string>
+  <string name="offline_message">
+    [NAME] is offline.
+  </string>
+  <string name="invite_message">
+    Click the [BUTTON NAME] button to accept/connect to this voice chat.
+  </string>
+  <string name="muted_message">
+    You have muted this Resident. Sending a message will automatically unmute them.
+  </string>
+  <!--Sometimes string name is gotten from the body of server response.
+  For ex.: from gIMMgr::showSessionStartError in the LLViewerChatterBoxSessionStartReply::post.
+  In case of the EXT-3115 issue 'generic' is passed into the gIMMgr::showSessionStartError as a string name.
+  Also there are some other places where "generic" is used.
+  So, let's add string with name="generic" with the same value as "generic_request_error" -->
+  <string name="generic">
+    Error making request, please try again later.
+  </string>
+  <string name="generic_request_error">
+    Error making request, please try again later.
+  </string>
+  <string name="insufficient_perms_error">
+    You do not have sufficient permissions.
+  </string>
+  <string name="session_does_not_exist_error">
+    The session no longer exists
+  </string>
+  <string name="no_ability_error">
+    You do not have that ability.
+  </string>
+  <string name="no_ability">
+    You do not have that ability.
+  </string>
+  <string name="not_a_mod_error">
+    You are not a session moderator.
+  </string>
+  <!--Sometimes string name is gotten from the body of server response.
+  For ex.: from gIMMgr::showSessionStartError in the LLViewerChatterBoxSessionStartReply::post.
+  In case of the EXT-3562 issue 'muted' is passed into the gIMMgr::showSessionStartError as a string name.
+  So, let's add string with name="muted" with the same value as "muted_error" -->
+  <string name="muted">
+    A group moderator disabled your text chat.
+  </string>
+  <string name="muted_error">
+    A group moderator disabled your text chat.
+  </string>
+  <string name="add_session_event">
+    Unable to add users to chat session with [RECIPIENT].
+  </string>
+  <!--Sometimes string name is gotten from the body of server response.
+  For ex.: from gIMMgr::showSessionStartError in the LLViewerChatterBoxSessionStartReply::post.
+  In case of the EXT-3562 issue 'message' is passed into the gIMMgr::showSessionStartError as a string name.
+  So, let's add string with name="message" with the same value as "message_session_event" -->
+  <string name="message">
+    Unable to send your message to the chat session with [RECIPIENT].
+  </string>
+  <string name="message_session_event">
+    Unable to send your message to the chat session with [RECIPIENT].
+  </string>
+  <string name="mute">
+    Error while moderating.
+  </string>
+  <!--Sometimes string name is gotten from the body of server response.
+  For ex.: from gIMMgr::showSessionStartError in the LLViewerChatterBoxSessionStartReply::post.
+  In case of the EXT-3459 issue 'removed' is passed into the gIMMgr::showSessionStartError as a string name.
+  So, let's add string with name="removed" with the same value as "removed_from_group" -->
+  <string name="removed">
+    You have been removed from the group.
+  </string>
+  <string name="removed_from_group">
+    You have been removed from the group.
+  </string>
+  <string name="close_on_no_ability">
+    You no longer have the ability to be in the chat session.
+  </string>
+
+  <string name="Home position set.">Home position set.</string>
+
+  <!-- Financial operations strings -->
+  <string name="this_costs">This costs [CURRENCY]</string>
 
   <string name="group_role_everyone">Everyone</string>
   <string name="group_role_officers">Officers</string>
@@ -3598,13 +3811,13 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
   <string name="DefaultMimeType">none/none</string>
   <string name="Chat">Chat</string>
 
-  <!-- External editor status codes -->
-  <string name="ExternalEditorNotSet">Select an editor using the ExternalEditor setting.</string>
-  <string name="ExternalEditorNotFound">Cannot find the external editor you specified.
+ <!-- External editor status codes -->
+ <string name="ExternalEditorNotSet">Select an editor using the ExternalEditor setting.</string>
+ <string name="ExternalEditorNotFound">Cannot find the external editor you specified.
 Try enclosing path to the editor with double quotes.
 (e.g. "/path to my/editor" "%s")</string>
-  <string name="ExternalEditorCommandParseError">Error parsing the external editor command.</string>
-  <string name="ExternalEditorFailedToRun">External editor failed to run.</string>
+ <string name="ExternalEditorCommandParseError">Error parsing the external editor command.</string>
+ <string name="ExternalEditorFailedToRun">External editor failed to run.</string>
 
   <!-- Pathfinding -->
   <string name="Pathfinding_Wiki_URL">http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer</string>
@@ -3615,5 +3828,8 @@ Try enclosing path to the editor with double quotes.
 
   <string name="Left">Left</string>
   <string name="Right">Right</string>
+
+  <!-- teleport_strings.xml's strings we need -->
+  <string name="completed_from">Teleport completed from</string>
 
 </strings>
