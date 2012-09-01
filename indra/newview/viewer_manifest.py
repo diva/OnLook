@@ -872,7 +872,7 @@ class Linux_x86_64Manifest(LinuxManifest):
                 self.end_prefix("lib32")
 
         # 32bit libs needed for voice
-        if self.prefix("../../libraries/x86_64-linux/lib_release_client/32bit-compat", dst="lib32"):
+        if self.prefix("../../libraries/x86_64-linux/lib/release/32bit-compat", dst="lib32"):
             self.path("libalut.so")
             self.path("libidn.so.11")
             self.path("libopenal.so.1")
