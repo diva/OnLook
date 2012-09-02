@@ -3686,6 +3686,10 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 <string name="Wild">Wild</string>
 <string name="Wrinkles">Wrinkles</string>
 
+	<!-- System Messages -->
+	<string name="ItemsComingInTooFastFrom">[APP_NAME]: Items coming in too fast from [FROM_NAME], automatic preview disabled for [TIME] seconds.</string>
+	<string name="ItemsComingInTooFast">[APP_NAME]: Items coming in too fast, automatic preview disabled for [TIME] seconds.</string>
+
 	<!-- IM system messages -->
 	<string name="IM_announce_incoming">has begun an IM session with you.</string>
 	<string name="IM_autoresponded_to">Autoresponse sent to</string>
@@ -3801,6 +3805,8 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 
   <!-- Financial operations strings -->
   <string name="this_costs">This costs [CURRENCY]</string>
+
+  <string name="giving">Giving [CURRENCY]</string>
 
   <string name="group_role_everyone">Everyone</string>
   <string name="group_role_officers">Officers</string>

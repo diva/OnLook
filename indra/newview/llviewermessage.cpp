@@ -31,8 +31,8 @@
  */
 
 #include "llviewerprecompiledheaders.h"
-
 #include "llviewermessage.h"
+#include <boost/lexical_cast.hpp>
 
 #include <deque>
 
@@ -78,7 +78,6 @@
 #include "llviewercontrol.h"
 #include "lldrawpool.h"
 #include "llfirstuse.h"
-#include "llfloateractivespeakers.h"
 #include "llfloateranimpreview.h"
 #include "llfloaterbuycurrency.h"
 #include "llfloaterbuyland.h"
@@ -115,6 +114,7 @@
 #include "llstatenums.h"
 #include "llstatusbar.h"
 #include "llimview.h"
+#include "llfloateractivespeakers.h"
 #include "lltexturestats.h"
 #include "lltool.h"
 #include "lltoolbar.h"
@@ -127,14 +127,13 @@
 #include "llviewerdisplay.h"
 #include "llviewerfoldertype.h"
 #include "llviewergenericmessage.h"
+#include "llviewermenu.h"
 #include "llviewerinventory.h"
 #include "llviewerjoystick.h"
-#include "llviewermenu.h"
 #include "llviewerobject.h"
 #include "llviewerobjectlist.h"
 #include "llviewerparcelmgr.h"
 #include "llviewerpartsource.h"
-#include "llviewerregion.h"
 #include "llviewerstats.h"
 #include "llviewertexteditor.h"
 #include "llviewerthrottle.h"
@@ -148,6 +147,7 @@
 #include "llfloaterworldmap.h"
 #include "llviewerdisplay.h"
 #include "llkeythrottle.h"
+#include "llviewerregion.h"
 // <edit>
 #include "llviewernetwork.h"
 // </edit>
@@ -184,7 +184,6 @@
 // NaCl - Antispam Registry
 #include "NACLantispam.h"
 // NaCl - Newline flood protection
-#include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 static const boost::regex NEWLINES("\\n{1}");
 // NaCl End
@@ -337,7 +336,9 @@ void give_money(const LLUUID& uuid, LLViewerRegion* region, S32 amount, BOOL is_
 	}
 	else
 	{
-		LLFloaterBuyCurrency::buyCurrency("Giving", amount);
+		LLStringUtil::format_map_t args;
+		args["CURRENCY"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
+		LLFloaterBuyCurrency::buyCurrency( LLTrans::getString("giving", args)+LLTrans::getString(" "), amount );
 	}
 }
 
@@ -400,12 +401,10 @@ void process_layer_data(LLMessageSystem *mesgsys, void **user_data)
 {
 	LLViewerRegion *regionp = LLWorld::getInstance()->getRegion(mesgsys->getSender());
 
-	if (!regionp || gNoRender)
+	if(!regionp || gNoRender)
 	{
 		return;
 	}
-
-
 	S32 size;
 	S8 type;
 
@@ -797,6 +796,7 @@ static void highlight_inventory_objects_in_panel(const std::vector<LLUUID>& item
 		}
 	}
 }
+
 static LLNotificationFunctorRegistration jgr_1("JoinGroup", join_group_response);
 static LLNotificationFunctorRegistration jgr_2("JoinedTooManyGroupsMember", join_group_response);
 static LLNotificationFunctorRegistration jgr_3("JoinGroupCanAfford", join_group_response);
@@ -1161,21 +1161,29 @@ bool check_offer_throttle(const std::string& from_name, bool check_only)
 			{
 				// Use the name of the last item giver, who is probably the person
 				// spamming you.
-				std::ostringstream message;
-				message << LLAppViewer::instance()->getSecondLifeTitle();
+
+				LLStringUtil::format_map_t arg;
+				std::string log_msg;
+				std::ostringstream time ;
+				time<<OFFER_THROTTLE_TIME;
+
+				arg["APP_NAME"] = LLAppViewer::instance()->getSecondLifeTitle();
+				arg["TIME"] = time.str();
+
 				if (!from_name.empty())
 				{
-					message << ": Items coming in too fast from " << from_name;
+					arg["FROM_NAME"] = from_name;
+					log_msg = LLTrans::getString("ItemsComingInTooFastFrom", arg);
 				}
 				else
 				{
-					message << ": Items coming in too fast";
+					log_msg = LLTrans::getString("ItemsComingInTooFast", arg);
 				}
-				message << ", automatic preview disabled for "
-					<< OFFER_THROTTLE_TIME << " seconds.";
-				chat.mText = message.str();
+
+				chat.mText = log_msg;
 				//this is kinda important, so actually put it on screen
 				LLFloaterChat::addChat(chat, FALSE, FALSE);
+
 				throttle_logged=true;
 			}
 			return false;
@@ -1187,7 +1195,7 @@ bool check_offer_throttle(const std::string& from_name, bool check_only)
 		}
 	}
 }
- 
+
 void open_inventory_offer(const uuid_vec_t& items, const std::string& from_name)
 {
 	uuid_vec_t::const_iterator it = items.begin();
@@ -1733,7 +1741,6 @@ void inventory_offer_handler(LLOfferInfo* info, BOOL from_task)
 	payload["from_id"] = info->mFromID;
 	args["OBJECTFROMNAME"] = info->mFromName;
 	args["NAME"] = info->mFromName;
-	
 	if (info->mFromGroup)
 	{
 		std::string group_name;
@@ -2004,7 +2011,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	BOOL is_muted = LLMuteList::getInstance()->isMuted(from_id, name, LLMute::flagTextChat);
 	BOOL is_linden = LLMuteList::getInstance()->isLinden(name);
 	BOOL is_owned_by_me = FALSE;
-	
+
 	LLUUID computed_session_id = LLIMMgr::computeSessionID(dialog,from_id);
 	
 	chat.mMuted = is_muted && !is_linden;
@@ -2603,7 +2610,6 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				return;
 			// NaCl End
 			LLOfferInfo* info = new LLOfferInfo;
-
 			if (IM_INVENTORY_OFFERED == dialog)
 			{
 				struct offer_agent_bucket_t
@@ -2808,7 +2814,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			chat.mFromName = name;
 
 			// Build a link to open the object IM info window.
-			std::string location = ll_safe_string((char*)binary_bucket,binary_bucket_size);
+			std::string location = ll_safe_string((char*)binary_bucket, binary_bucket_size);
 
 			LLSD query_string;
 			query_string["owner"] = from_id;
@@ -3126,7 +3132,6 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	}
 }
 
-
 void busy_message (LLMessageSystem* msg, LLUUID from_id) 
 {
 	if (gAgent.getBusy())
@@ -3375,17 +3380,13 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 	msg->getUUID("ChatData", "SourceID", from_id);
 	chat.mFromID = from_id;
 	
-
 	chatter = gObjectList.findObject(from_id);
-
-	if(chatter)
+	if(chatter && chatter->isAvatar())
 	{
-		if(chatter->isAvatar())
-		{
-			((LLVOAvatar*)chatter)->mIdleTimer.reset();
-		}
+		((LLVOAvatar*)chatter)->mIdleTimer.reset();
 	}
 
+	// Object owner for objects
 	msg->getUUID("ChatData", "OwnerID", owner_id);
 
 	msg->getU8Fast(_PREHASH_ChatData, _PREHASH_SourceType, source_temp);
@@ -3906,7 +3907,7 @@ void process_teleport_start(LLMessageSystem *msg, void**)
 
 	//if (teleport_flags & TELEPORT_FLAGS_DISABLE_CANCEL)
 // [RLVa:KB] - Checked: 2009-07-07 (RLVa-1.0.0d) | Added: RLVa-0.2.0b
- 	if ( (teleport_flags & TELEPORT_FLAGS_DISABLE_CANCEL) || (!gRlvHandler.getCanCancelTp()) )
+	if ( (teleport_flags & TELEPORT_FLAGS_DISABLE_CANCEL) || (!gRlvHandler.getCanCancelTp()) )
 // [/RLVa:KB]
 	{
 		gViewerWindow->setProgressCancelButtonVisible(FALSE);
@@ -3926,6 +3927,7 @@ void process_teleport_start(LLMessageSystem *msg, void**)
 		make_ui_sound("UISndTeleportOut");
 		
 		LL_INFOS("Messaging") << "Teleport initiated by remote TeleportStart message with TeleportFlags: " <<  teleport_flags << LL_ENDL;
+
 		// Don't call LLFirstUse::useTeleport here because this could be
 		// due to being killed, which would send you home, not to a Telehub
 	}
@@ -4293,12 +4295,13 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 		gAgent.sendAgentSetAppearance();
 
 // [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
-		if ( (isAgentAvatarValid()) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )
+		if (isAgentAvatarValid() && !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
 // [/RLVa:KB]
-//		if (avatarp)
+//		if (isAgentAvatarValid())
 		{
 			// Chat the "back" SLURL. (DEV-4907)
-			LLChat chat(LLTrans::getString("completed_from") + gAgent.getTeleportSourceSLURL());
+
+			LLChat chat(LLTrans::getString("completed_from") + LLTrans::getString(" ") + gAgent.getTeleportSourceSLURL());
 			chat.mSourceType = CHAT_SOURCE_SYSTEM;
 			LLFloaterChat::addChatHistory(chat);
 
@@ -4528,6 +4531,7 @@ void send_agent_update(BOOL force_send, BOOL send_reliable)
 	// </edit>
 
 	MASK	key_mask = gKeyboard->currentMask(TRUE);
+
 	if (key_mask & MASK_ALT || key_mask & MASK_CONTROL)
 	{
 		control_flags &= ~(	AGENT_CONTROL_LBUTTON_DOWN |
@@ -4917,7 +4921,7 @@ void process_sound_trigger(LLMessageSystem *msg, void **)
 		if(owner_id != gAgent.getID() || !gSavedSettings.getBOOL("EnableGestureSoundsSelf"))
 			return;
 	}
-		
+
 	// <edit>
 	//gAudiop->triggerSound(sound_id, owner_id, gain, LLAudioEngine::AUDIO_TYPE_SFX, pos_global);
 	gAudiop->triggerSound(sound_id, owner_id, gain, LLAudioEngine::AUDIO_TYPE_SFX, pos_global, object_id);
@@ -5646,7 +5650,6 @@ void process_time_dilation(LLMessageSystem *msg, void **user_data)
 	}
 }
 */
-
 
 
 void process_money_balance_reply( LLMessageSystem* msg, void** )
