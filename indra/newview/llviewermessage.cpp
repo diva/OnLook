@@ -338,7 +338,7 @@ void give_money(const LLUUID& uuid, LLViewerRegion* region, S32 amount, BOOL is_
 	{
 		LLStringUtil::format_map_t args;
 		args["CURRENCY"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
-		LLFloaterBuyCurrency::buyCurrency( LLTrans::getString("giving", args)+LLTrans::getString(" "), amount );
+		LLFloaterBuyCurrency::buyCurrency( LLTrans::getString("giving", args)+" ", amount );
 	}
 }
 
@@ -4301,7 +4301,7 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 		{
 			// Chat the "back" SLURL. (DEV-4907)
 
-			LLChat chat(LLTrans::getString("completed_from") + LLTrans::getString(" ") + gAgent.getTeleportSourceSLURL());
+			LLChat chat(LLTrans::getString("completed_from") + " " + gAgent.getTeleportSourceSLURL());
 			chat.mSourceType = CHAT_SOURCE_SYSTEM;
 			LLFloaterChat::addChatHistory(chat);
 
