@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel border="true" bottom="-409" height="408" label="Général" left="102" name="general_panel" width="517">
   <radio_group bottom="-44" height="40" left="109" name="default_start_location" width="280">
     <radio_item bottom="-20" height="20" name="MyHome" tool_tip="Par défaut, choisit le domicile comme lieu de départ.">Domicile</radio_item>

@@ -8,9 +8,15 @@
 		<combo_item name="720x480" value="720 x 480">720x480 (NTSC)</combo_item>
 		<combo_item name="768x576" value="768 x 576">768x576 (PAL)</combo_item>
 		<combo_item name="1024x768" value="1024 x 768">1024x768</combo_item>
-		<combo_item name="1280x720" value="1280 x 720">1280x720 (HDV720)</combo_item>
+		<combo_item name="1280x720" value="1280 x 720">1280x720 (HD)</combo_item>
+		<combo_item name="1366x768" value="1366 x 768">1366x768</combo_item>
+		<combo_item name="1280x800" value="1280 x 800">1280x800</combo_item>
+		<combo_item name="1440x900" value="1440 x 900">1440x900</combo_item>
+		<combo_item name="1600x900" value="1600 x 900">1600x900 (HD+)</combo_item>
+		<combo_item name="1680×1050" value="1680 × 1050">1680×1050</combo_item>
 		<combo_item name="1440x1080" value="1440 x 1080">1440x1080 (HDV1080)</combo_item>
-		<combo_item name="1920x1080" value="1920 x 1080">1920x1080 (HD1080)</combo_item>
+		<combo_item name="1920x1080" value="1920 x 1080">1920x1080 (Full-HD)</combo_item>
+		<combo_item name="2560×1440" value="2560 × 1440">2560×1440</combo_item>
 	</combo_box>
 	<text bottom="-62" height="12" left="10" name="DisplayResLabel">Display Resolution:</text>
 	<combo_box bottom="-67"	height="18" left="165" name="fullscreen combo" width="150"/>

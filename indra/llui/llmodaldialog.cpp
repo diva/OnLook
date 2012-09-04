@@ -69,6 +69,12 @@ LLModalDialog::~LLModalDialog()
 	{
 		gFocusMgr.unlockFocus();
 	}
+
+	std::list<LLModalDialog*>::iterator iter = std::find(sModalStack.begin(), sModalStack.end(), this);
+	if (iter != sModalStack.end())
+	{
+			llerrs << "Attempt to delete dialog while still in sModalStack!" << llendl;
+	}
 }
 
 // virtual
@@ -91,6 +97,8 @@ void LLModalDialog::startModal()
 {
 	if (mModal)
 	{
+
+
 		// If Modal, Hide the active modal dialog
 		if (!sModalStack.empty())
 		{
@@ -102,6 +110,14 @@ void LLModalDialog::startModal()
 		gFocusMgr.setMouseCapture( this );
 		gFocusMgr.setTopCtrl( this );
 		setFocus(TRUE);
+
+		std::list<LLModalDialog*>::iterator iter = std::find(sModalStack.begin(), sModalStack.end(), this);
+		if (iter != sModalStack.end())
+		{
+			sModalStack.erase(iter);
+			llwarns << "Dialog already on modal stack" << llendl;
+			//TODO: incvestigate in which specific cases it happens, cause that's not good! -SG
+		}
 
 		sModalStack.push_front( this );
 	}
@@ -314,5 +330,16 @@ void LLModalDialog::onAppFocusGained()
 	}
 }
 
-
-
+void LLModalDialog::shutdownModals()
+{
+	// This method is only for use during app shutdown. ~LLModalDialog()
+	// checks sModalStack, and if the dialog instance is still there, it
+	// crumps with "Attempt to delete dialog while still in sModalStack!" But
+	// at app shutdown, all bets are off. If the user asks to shut down the
+	// app, we shouldn't have to care WHAT's open. Put differently, if a modal
+	// dialog is so crucial that we can't let the user terminate until s/he
+	// addresses it, we should reject a termination request. The current state
+	// of affairs is that we accept it, but then produce an llerrs popup that
+	// simply makes our software look unreliable.
+	sModalStack.clear();
+}

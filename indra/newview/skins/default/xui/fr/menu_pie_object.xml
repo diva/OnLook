@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <pie_menu name="Object Pie">
 	<menu_item_call label="Ouvrir" name="Open">
 		<on_click function="Object.Open" />

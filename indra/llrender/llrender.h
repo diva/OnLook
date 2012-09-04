@@ -345,6 +345,7 @@ public:
 	void loadIdentity();
 	void multMatrix(const GLfloat* m);
 	void matrixMode(U32 mode);	
+	U32 getMatrixMode();
 
 	const glh::matrix4f& getModelviewMatrix();
 	const glh::matrix4f& getProjectionMatrix();

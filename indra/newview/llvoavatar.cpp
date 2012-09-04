@@ -9700,8 +9700,17 @@ BOOL LLVOAvatar::isTextureDefined(LLVOAvatarDefines::ETextureIndex te, U32 index
 		return FALSE;
 	}
 
-	return (getImage(te, index)->getID() != IMG_DEFAULT_AVATAR && 
-			getImage(te, index)->getID() != IMG_DEFAULT);
+	LLViewerTexture* img = getImage(te, index);
+	if(img)
+	{
+		return (img->getID() != IMG_DEFAULT_AVATAR &&
+		        img->getID() != IMG_DEFAULT);
+	}
+	else
+	{
+		llwarns << "Image doesn't exist" << llendl;
+		return FALSE;
+	}
 }
 
 //virtual

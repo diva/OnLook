@@ -57,6 +57,7 @@ protected:
     static void onCommitTimeDate(LLUICtrl* ctrl, void *userdata);
     static void onCommitAutoResponse(LLUICtrl* ctrl, void* user_data);
 	static void onCommitResetAS(LLUICtrl*,void*);
+	static void onCommitEnableAS(LLUICtrl*, void*);
 	static void onCommitDialogBlock(LLUICtrl*, void*);
     static void onCommitKeywords(LLUICtrl* ctrl, void* user_data);
 
@@ -86,6 +87,7 @@ protected:
     std::string mIMResponseText;
 
     //Spam --------------------------------------------------------------------------------
+    BOOL mEnableAS;
     BOOL mGlobalQueue;
     U32  mChatSpamCount;
     U32  mChatSpamTime;

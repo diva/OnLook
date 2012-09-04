@@ -221,7 +221,7 @@ void LLToolCamera::pickCallback(const LLPickInfo& pick_info)
 			gViewerWindow->getLeftMouseDown() && 
 			!freeze_time &&
 			(hit_obj == gAgentAvatarp || 
-				(hit_obj && hit_obj->isAttachment() && LLVOAvatar::findAvatarFromAttachment(hit_obj)->isSelf())))
+			 (hit_obj && hit_obj->isAttachment() && LLVOAvatar::findAvatarFromAttachment(hit_obj)->isSelf())))
 		{
 			LLToolCamera::getInstance()->mMouseSteering = TRUE;
 		}

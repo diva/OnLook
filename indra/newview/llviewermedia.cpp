@@ -338,7 +338,14 @@ void LLViewerMedia::setVolume(F32 volume)
 	{
 		LLViewerMediaImpl* pimpl = *iter;
 		LLPluginClassMedia* plugin = pimpl->getMediaPlugin();
-		plugin->setVolume(volume);
+		if(plugin)
+		{
+			plugin->setVolume(volume);
+		}
+		else
+		{
+			llwarns << "Plug-in already destroyed" << llendl;
+		}
 	}
 }
 

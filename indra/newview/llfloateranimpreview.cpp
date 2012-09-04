@@ -1,4 +1,4 @@
-/** 
+/**
  * @file llfloateranimpreview.cpp
  * @brief LLFloaterAnimPreview class implementation
  *
@@ -1430,17 +1430,18 @@ void LLFloaterAnimPreview::onBtnOK(void* userdata)
 				}
 				else
 				// </edit>
-
-				upload_new_resource(floaterp->mTransactionID, // tid
+				{
+					upload_new_resource(floaterp->mTransactionID, // tid
 						    LLAssetType::AT_ANIMATION,
 						    name,
 						    desc,
 						    0,
-						    LLFolderType::FT_ANIMATION,
+						    LLFolderType::FT_NONE,
 						    LLInventoryType::IT_ANIMATION,
 						    LLFloaterPerms::getNextOwnerPerms(), LLFloaterPerms::getGroupPerms(), LLFloaterPerms::getEveryonePerms(),
 						    name,
 						    callback, expected_upload_cost, userdata);
+				}
 			}
 			else
 			{

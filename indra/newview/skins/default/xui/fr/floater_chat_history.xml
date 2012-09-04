@@ -60,6 +60,9 @@
 	<string name="ControlYourCamera">
 		Contrôler votre caméra
 	</string>
+	<string name="TeleportYourAgent">
+		Vous téléporter
+	</string>
 	<layout_stack name="panels">
 		<layout_panel name="im_contents_panel">
 			<combo_box label="Gestures" name="Gesture">

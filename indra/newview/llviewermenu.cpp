@@ -939,6 +939,8 @@ void init_client_menu(LLMenuGL* menu)
 									   	'6', MASK_CONTROL|MASK_SHIFT ) );
 		}
 
+		sub->addChild(new LLMenuItemCheckGL("Region Debug Console", handle_singleton_toggle<LLFloaterRegionDebugConsole>, NULL, handle_singleton_check<LLFloaterRegionDebugConsole>,NULL,'`', MASK_CONTROL|MASK_SHIFT));
+
 		sub->addChild(new LLMenuItemCheckGL("Fast Timers", 
 										&toggle_visibility,
 										NULL,
@@ -1296,7 +1298,6 @@ void init_debug_ui_menu(LLMenuGL* menu)
 		(void*)"DoubleClickTeleport"));
 	menu->addSeparator();
 //	menu->addChild(new LLMenuItemCallGL( "Print Packets Lost",			&print_packets_lost, NULL, NULL, 'L', MASK_SHIFT ));
-	menu->addChild(new LLMenuItemCheckGL("Region Debug", handle_singleton_toggle<LLFloaterRegionDebugConsole>, NULL, handle_singleton_check<LLFloaterRegionDebugConsole>,NULL,'`', MASK_CONTROL|MASK_SHIFT));
 	menu->addChild(new LLMenuItemCheckGL("Debug SelectMgr", menu_toggle_control, NULL, menu_check_control, (void*)"DebugSelectMgr"));
 	menu->addChild(new LLMenuItemToggleGL("Debug Clicks", &gDebugClicks));
 	menu->addChild(new LLMenuItemToggleGL("Debug Views", &LLView::sDebugRects));

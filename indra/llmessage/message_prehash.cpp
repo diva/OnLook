@@ -1048,6 +1048,7 @@ char const* const _PREHASH_SimIP = LLMessageStringTable::getInstance()->getStrin
 char const* const _PREHASH_GodID = LLMessageStringTable::getInstance()->getString("GodID");
 char const* const _PREHASH_TeleportMinPrice = LLMessageStringTable::getInstance()->getString("TeleportMinPrice");
 char const* const _PREHASH_VoteItem = LLMessageStringTable::getInstance()->getString("VoteItem");
+char const* const _PREHASH_ObjectRotation = LLMessageStringTable::getInstance()->getString("ObjectRotation");
 char const* const _PREHASH_SitRotation = LLMessageStringTable::getInstance()->getString("SitRotation");
 char const* const _PREHASH_SnapSelection = LLMessageStringTable::getInstance()->getString("SnapSelection");
 char const* const _PREHASH_SoundTrigger = LLMessageStringTable::getInstance()->getString("SoundTrigger");

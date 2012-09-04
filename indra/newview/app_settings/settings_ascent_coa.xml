@@ -3,6 +3,20 @@
 	<map>
 		<!-- Ascent's Optionally Account-Specific Settings -->
 
+    <key>SGDetachBridge</key>
+    <map>
+      <key>Comment</key>
+      <string>Force detach phoenix, firestorm, whatever bridge may be there on attachment point 127</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+      <key>IsCOA</key>
+      <integer>1</integer>
+    </map>
+
     <key>SGDisableChatAnimation</key>
     <map>
       <key>Comment</key>

@@ -88,6 +88,7 @@ LLMultiFloater::LLMultiFloater(
 	{
 		mTabContainer->setRightTabBtnOffset(RESIZE_HANDLE_WIDTH);
 	}
+	mTabContainer->setCommitCallback(boost::bind(&LLMultiFloater::onTabSelected, this));
 
 	addChild(mTabContainer);
 }
@@ -114,6 +115,7 @@ LLMultiFloater::LLMultiFloater(
 	{
 		mTabContainer->setRightTabBtnOffset(RESIZE_HANDLE_WIDTH);
 	}
+	mTabContainer->setCommitCallback(boost::bind(&LLMultiFloater::onTabSelected, this));
 
 	addChild(mTabContainer);
 	
@@ -482,7 +484,7 @@ void LLMultiFloater::setCanResize(BOOL can_resize)
 	}
 }
 
-BOOL LLMultiFloater::postBuild()
+/*BOOL LLMultiFloater::postBuild()
 {
 	// remember any original xml minimum size
 	getResizeLimits(&mOrigMinWidth, &mOrigMinHeight);
@@ -501,7 +503,7 @@ BOOL LLMultiFloater::postBuild()
 	}
 
 	return FALSE;
-}
+}*/
 
 void LLMultiFloater::updateResizeLimits()
 {
