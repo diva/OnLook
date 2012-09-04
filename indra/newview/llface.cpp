@@ -758,6 +758,9 @@ static void xform4a(LLVector4a &tex_coord, const LLVector4a& trans, const LLVect
 
 bool less_than_max_mag(const LLVector4a& vec)
 {
+#if 1
+	return true;
+#else
 	LLVector4a MAX_MAG;
 	MAX_MAG.splat(1024.f*1024.f);
 
@@ -767,6 +770,7 @@ bool less_than_max_mag(const LLVector4a& vec)
 	S32 lt = val.lessThan(MAX_MAG).getGatheredBits() & 0x7;
 	
 	return lt == 0x7;
+#endif
 }
 
 BOOL LLFace::genVolumeBBoxes(const LLVolume &volume, S32 f,
