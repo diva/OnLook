@@ -125,7 +125,7 @@ int LLPluginInstance::load(const std::string& plugin_dir, std::string &plugin_fi
 			buf[0] = 0;
 			if (error)
 			{
-				strncpy(buf, dlerror(), sizeof(buf));
+				strncpy(buf, error, sizeof(buf));
 			}
 			buf[sizeof(buf) - 1] = 0;
 		}
