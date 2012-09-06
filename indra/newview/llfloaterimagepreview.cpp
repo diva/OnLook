@@ -111,6 +111,7 @@ BOOL LLFloaterImagePreview::postBuild()
 	}
 
 	childSetLabelArg("ok_btn", "[UPLOADFEE]", gHippoGridManager->getConnectedGrid()->getUploadFee());
+	childSetAction("ok_btn", onBtnOK, this);
 
 	LLCtrlSelectionInterface* iface = childGetSelectionInterface("clothing_type_combo");
 	if (iface)

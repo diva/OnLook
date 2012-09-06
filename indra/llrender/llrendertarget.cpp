@@ -389,9 +389,6 @@ void LLRenderTarget::release()
 
 	if (mTex.size() > 0)
 	{
-		//Release before delete.
-		for (U32 i = 0; i < mTex.size(); ++i)
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, LLTexUnit::getInternalType(mUsage), 0, 0);
 		sBytesAllocated -= mResX*mResY*4*mTex.size();
 		LLImageGL::deleteTextures(mUsage, mInternalFormat[0], 0, mTex.size(), &mTex[0], true);
 		mTex.clear();

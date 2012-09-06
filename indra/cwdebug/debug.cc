@@ -447,11 +447,7 @@ std::ostream& operator<<(std::ostream& os, print_thread_id_t)
 {
 	if (!AIThreadID::in_main_thread_inline())
 	{
-#ifdef LL_DARWIN
-		os << std::hex << (size_t)apr_os_thread_current() << std::dec << ' ';
-#else
 		os << std::hex << (size_t)AIThreadID::getCurrentThread_inline() << std::dec << ' ';
-#endif
 	}
 	return os;
 }

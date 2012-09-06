@@ -717,8 +717,8 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		}
 		else if (major_version > 1 || minor_version >= 30)
 		{  //switches are supported in GLSL 1.30 and later
-			if (gGLManager.mIsNVIDIA)
-			{ //switches are unreliable on some NVIDIA drivers
+			if (gGLManager.mIsNVIDIA || (gGLManager.mIsATI && gGLManager.mGLVersion < 3.3f))
+			{ //switches are unreliable on old drivers
 				for (S32 i = 0; i < texture_index_channels; ++i)
 				{
 					std::string if_string = llformat("\t%sif (vary_texture_index == %d) { return texture2D(tex%d, texcoord); }\n", i > 0 ? "else " : "", i, i); 

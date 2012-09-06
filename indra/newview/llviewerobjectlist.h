@@ -128,9 +128,7 @@ public:
 
 	void dirtyAllObjectInventory();
 
-	void removeFromActiveList(LLViewerObject* objectp);
 	void updateActive(LLViewerObject *objectp);
-	
 	void updateAvatarVisibility();
 
 	// Selection related stuff
@@ -208,7 +206,7 @@ public:
 	typedef std::vector<LLPointer<LLViewerObject> > vobj_list_t;
 
 	vobj_list_t mObjects;
-	std::vector<LLPointer<LLViewerObject> > mActiveObjects;
+	std::set<LLPointer<LLViewerObject> > mActiveObjects;
 
 	vobj_list_t mMapObjects;
 

@@ -1068,6 +1068,7 @@ void LLObjectBackup::xmlToPrim(LLSD prim_llsd, LLViewerObject* object)
 	//if (mPrimImportIter != mThisGroup.endMap())
 	//	mPrimImportIter++;
 
+	object->sendRotationUpdate();
 	object->sendTEUpdate();	
 	object->sendShapeUpdate();
 	LLSelectMgr::getInstance()->sendMultipleUpdate(UPD_SCALE | UPD_POSITION);

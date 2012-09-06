@@ -525,6 +525,14 @@ class DarwinManifest(ViewerManifest):
                     print "Skipping libfmodwrapper.dylib - not found"
                     pass
 
+                # And now FMOD Ex!
+                try:
+                    self.path("libfmodex.dylib", "libfmodex.dylib")
+                    pass
+                except:
+                    print "Skipping libfmodex.dylib - not found"
+                    pass
+
                 # our apps
                 try:
                   self.path("../mac_crash_logger/" + self.args['configuration'] + "/mac-crash-logger.app", "mac-crash-logger.app")
@@ -872,7 +880,7 @@ class Linux_x86_64Manifest(LinuxManifest):
                 self.end_prefix("lib32")
 
         # 32bit libs needed for voice
-        if self.prefix("../../libraries/x86_64-linux/lib_release_client/32bit-compat", dst="lib32"):
+        if self.prefix("../../libraries/x86_64-linux/lib/release/32bit-compat", dst="lib32"):
             self.path("libalut.so")
             self.path("libidn.so.11")
             self.path("libopenal.so.1")

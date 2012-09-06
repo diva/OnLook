@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel border="false" bottom="0" follows="bottom|left" height="490" left="330"
      name="Classified" title="Classified" width="450">
-	<texture_picker bottom="-315" follows="left|top" height="300" left="20" name="snapshot_ctrl"
+	<texture_picker bottom="-325" follows="left|top" height="300" left="20" name="snapshot_ctrl"
 	     width="400" />
 	<line_editor bottom_delta="-8" enabled="false" follows="left|top"
 	     font="SansSerif" height="20" left="20" name="given_name_editor"

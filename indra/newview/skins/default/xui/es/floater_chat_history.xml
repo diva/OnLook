@@ -12,9 +12,6 @@
 	<string name="hang_up">
 		Desconectado del Chat de Voz
 	</string>
-	<string name="voice_icon">
-		icn_voice-localchat.tga
-	</string>
 	<string name="IM_logging_string">
 		-- Registro de Mensajes Instantáneos activado --
 	</string>
@@ -46,7 +43,7 @@
 		Anular propiedad y pasar a ser público
 	</string>
 	<string name="LinkAndDelink">
-		Enlazar y desenlazar de otros objetos
+		Enlazarse y desenlazarse de otros objetos
 	</string>
 	<string name="AddAndRemoveJoints">
 		Añadir y quitar uniones con otros objetos
@@ -56,6 +53,9 @@
 	</string>
 	<string name="TrackYourCamera">
 		Seguir tu cámara
+	</string>
+	<string name="TeleportYourAgent">
+		Teleportarte
 	</string>
 	<string name="ControlYourCamera">
 		Controlar tu cámara

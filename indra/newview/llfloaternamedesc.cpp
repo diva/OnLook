@@ -157,7 +157,7 @@ BOOL LLFloaterNameDesc::postBuild()
 
 	// OK button
 	childSetLabelArg("ok_btn", "[UPLOADFEE]", gHippoGridManager->getConnectedGrid()->getUploadFee());
-	childSetAction("ok_btn", onBtnOK, this);
+	//childSetAction("ok_btn", onBtnOK, this);
 	setDefaultBtn("ok_btn");
 
 	return TRUE;

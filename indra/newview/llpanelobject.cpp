@@ -115,15 +115,6 @@ enum {
 	MI_VOLUME_COUNT
 };
 
-
-
-
-
-
-
-
-
-
 enum {
 	MI_HOLE_SAME,
 	MI_HOLE_CIRCLE,
@@ -377,11 +368,6 @@ BOOL	LLPanelObject::postBuild()
 	childSetCommitCallback("sculpt mirror control", onCommitSculptType, this);
 	mCtrlSculptInvert = getChild<LLCheckBoxCtrl>("sculpt invert control");
 	childSetCommitCallback("sculpt invert control", onCommitSculptType, this);
-	
-
-
-
-
 
 	// Start with everyone disabled
 	clearCtrls();
@@ -455,7 +441,7 @@ void LLPanelObject::getState( )
 	}
 
 	LLCalc* calcp = LLCalc::getInstance();
-	
+
 	LLVOVolume *volobjp = NULL;
 	if ( objectp && (objectp->getPCode() == LL_PCODE_VOLUME))
 	{
@@ -477,7 +463,7 @@ void LLPanelObject::getState( )
 	}
 
 	// can move or rotate only linked group with move permissions, or sub-object with move and modify perms
-	BOOL enable_move	= objectp->permMove() && !objectp->isPermanentEnforced() && ((root_objectp == NULL) || !root_objectp->isPermanentEnforced()) && !objectp->isAttachment() && (objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
+	BOOL enable_move	= objectp->permMove() && !objectp->isPermanentEnforced() && ((root_objectp == NULL) || !root_objectp->isPermanentEnforced()) && ( (objectp->permModify() && !objectp->isAttachment()) || !gSavedSettings.getBOOL("EditLinkedParts"));
 	BOOL enable_scale	= objectp->permMove() && !objectp->isPermanentEnforced() && ((root_objectp == NULL) || !root_objectp->isPermanentEnforced()) && objectp->permModify();
 	BOOL enable_rotate	= objectp->permMove() && !objectp->isPermanentEnforced() && ((root_objectp == NULL) || !root_objectp->isPermanentEnforced()) && ( (objectp->permModify() && !objectp->isAttachment()) || !gSavedSettings.getBOOL("EditLinkedParts"));
 
@@ -527,8 +513,9 @@ void LLPanelObject::getState( )
 	mCtrlPosX->setEnabled(enable_move);
 	mCtrlPosY->setEnabled(enable_move);
 	mCtrlPosZ->setEnabled(enable_move);
-	mBtnLinkObj->setEnabled((enable_move && !single_volume));
-	mBtnUnlinkObj->setEnabled((enable_move && (selected_count > 1)));
+	mBtnLinkObj->setEnabled(LLSelectMgr::getInstance()->enableLinkObjects());
+	mBtnUnlinkObj->setEnabled((LLSelectMgr::getInstance()->enableUnlinkObjects()
+							   && (selected_count > 1) && LLSelectMgr::getInstance()->getSelection()->getRootObjectCount()<=1));
 	mBtnCopyPos->setEnabled(enable_move);
 	mBtnPastePos->setEnabled(enable_move);
 	mBtnPastePosClip->setEnabled(enable_move);
@@ -623,6 +610,7 @@ void LLPanelObject::getState( )
 		childSetVisible("select_single", TRUE);
 		childSetEnabled("select_single", TRUE);
 	}
+
 	BOOL is_flexible = volobjp && volobjp->isFlexible();
 	BOOL is_permanent = root_objectp->flagObjectPermanent();
 	BOOL is_permanent_enforced = root_objectp->isPermanentEnforced();
@@ -1231,19 +1219,13 @@ void LLPanelObject::getState( )
 	default:
 		if (editable)
 		{
-
-
-
-
-
-
-
 			mSpinScaleX->set( 1.f - scale_x );
 			mSpinScaleY->set( 1.f - scale_y );
 			mSpinScaleX->setMinValue(-1.f);
 			mSpinScaleX->setMaxValue(1.f);
 			mSpinScaleY->setMinValue(-1.f);
 			mSpinScaleY->setMaxValue(1.f);
+
 			// Torus' Hole Size is Box/Cyl/Prism's Taper
 			calcp->setVar(LLCalc::X_TAPER, 1.f - scale_x);
 			calcp->setVar(LLCalc::Y_TAPER, 1.f - scale_y);
@@ -1403,7 +1385,9 @@ void LLPanelObject::getState( )
 	// sculpt texture
 	if (selected_item == MI_SCULPT)
 	{
-        LLUUID id;
+
+
+		LLUUID id;
 		LLSculptParams *sculpt_params = (LLSculptParams *)objectp->getParameterEntry(LLNetworkData::PARAMS_SCULPT);
 
 		
@@ -1414,10 +1398,11 @@ void LLPanelObject::getState( )
 				mSculptTextureRevert = sculpt_params->getSculptTexture();
 				mSculptTypeRevert    = sculpt_params->getSculptType();
 			}
+
 			U8 sculpt_type = sculpt_params->getSculptType();
 			U8 sculpt_stitching = sculpt_type & LL_SCULPT_TYPE_MASK;
 			BOOL sculpt_invert = sculpt_type & LL_SCULPT_FLAG_INVERT;
-			BOOL sculpt_mirror = sculpt_type & LL_SCULPT_FLAG_MIRROR;		
+			BOOL sculpt_mirror = sculpt_type & LL_SCULPT_FLAG_MIRROR;
 			isMesh = (sculpt_stitching == LL_SCULPT_TYPE_MESH);
 
 			LLTextureCtrl*  mTextureCtrl = getChild<LLTextureCtrl>("sculpt texture control");
@@ -1465,7 +1450,7 @@ void LLPanelObject::getState( )
 
 	mCtrlSculptMirror->setVisible(sculpt_texture_visible && !isMesh);
 	mCtrlSculptInvert->setVisible(sculpt_texture_visible && !isMesh);
-	
+
 	//----------------------------------------------------------------------------
 
 	mObject = objectp;
@@ -1473,7 +1458,7 @@ void LLPanelObject::getState( )
 }
 
 // static
-BOOL LLPanelObject::precommitValidate( LLUICtrl* ctrl, void* userdata )
+bool LLPanelObject::precommitValidate( const LLSD& data )
 {
 	// TODO: Richard will fill this in later.  
 	return TRUE; // FALSE means that validation failed and new value should not be commited.
@@ -1612,86 +1597,6 @@ void LLPanelObject::getVolumeParams(LLVolumeParams& volume_params)
 	U8 path;
 	switch ( selected_type )
 	{
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	case MI_CYLINDER:
 		profile = LL_PCODE_PROFILE_CIRCLE;
 		path = LL_PCODE_PATH_LINE;
@@ -1900,7 +1805,7 @@ void LLPanelObject::getVolumeParams(LLVolumeParams& volume_params)
 	// Scale X,Y
 	F32 scale_x = mSpinScaleX->get();
 	F32 scale_y = mSpinScaleY->get();
-		// <edit>
+	// <edit>
 	//if ( was_selected_type == MI_BOX || was_selected_type == MI_CYLINDER || was_selected_type == MI_PRISM)
 	if ( was_selected_type == MI_BOX || was_selected_type == MI_CYLINDER || was_selected_type == MI_PRISM ||
 		was_selected_type == MI_SPHERE ||
@@ -1933,7 +1838,6 @@ void LLPanelObject::getVolumeParams(LLVolumeParams& volume_params)
 
 	// Revolutions
 	F32 revolutions	  = mSpinRevolutions->get();
-
 
 	if ( selected_type == MI_SPHERE )
 	{
@@ -2140,7 +2044,7 @@ void LLPanelObject::sendPosition(BOOL btn_down)
 
 	LLVector3 newpos(mCtrlPosX->get(), mCtrlPosY->get(), mCtrlPosZ->get());
 	LLViewerRegion* regionp = mObject->getRegion();
-		
+
 	// Clamp the Z height
 	const F32 height = newpos.mV[VZ];
 	const F32 min_height = LLWorld::getInstance()->getMinAllowedZ(mObject, mObject->getPositionGlobal());

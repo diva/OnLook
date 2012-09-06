@@ -128,7 +128,7 @@ void ssl_locking_function(int mode, int n, char const* file, int line)
 // OpenSSL uniq id function.
 void ssl_id_function(CRYPTO_THREADID* thread_id)
 {
-#if LL_WINDOWS	// apr_os_thread_current() returns a pointer,
+#if LL_WINDOWS || LL_DARWIN	// apr_os_thread_current() returns a pointer,
   CRYPTO_THREADID_set_pointer(thread_id, apr_os_thread_current());
 #else			// else it returns an unsigned long.
   CRYPTO_THREADID_set_numeric(thread_id, apr_os_thread_current());

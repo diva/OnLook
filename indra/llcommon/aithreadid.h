@@ -62,11 +62,7 @@ public:
 	friend LL_COMMON_API std::ostream& operator<<(std::ostream& os, AIThreadID const& id);
 	static void set_main_thread_id(void);					// Called once to set sMainThreadID.
 	static void set_current_thread_id(void);				// Called once for every thread to set lCurrentThread.
-#ifdef LL_DARWIN
-	void reset(void) { mID = apr_os_thread_current(); }
-	bool equals_current_thread(void) const { return apr_os_thread_equal(mID, apr_os_thread_current()); }
-	static bool in_main_thread(void) { return apr_os_thread_equal(apr_os_thread_current(), sMainThreadID); }
-#else
+#ifndef LL_DARWIN
 	LL_COMMON_API void reset(void);
 	LL_COMMON_API bool equals_current_thread(void) const;
 	LL_COMMON_API static bool in_main_thread(void);
@@ -76,6 +72,16 @@ public:
 	bool equals_current_thread_inline(void) const { return apr_os_thread_equal(mID, lCurrentThread); }
 	static bool in_main_thread_inline(void) { return apr_os_thread_equal(lCurrentThread, sMainThreadID); }
 	static apr_os_thread_t getCurrentThread_inline(void) { return lCurrentThread; }
+#else
+	// Both variants are inline on OS X.
+	void reset(void) { mID = apr_os_thread_current(); }
+	void reset_inline(void) { mID = apr_os_thread_current(); }
+	bool equals_current_thread(void) const { return apr_os_thread_equal(mID, apr_os_thread_current()); }
+	bool equals_current_thread_inline(void) const { return apr_os_thread_equal(mID, apr_os_thread_current()); }
+	static bool in_main_thread(void) { return apr_os_thread_equal(apr_os_thread_current(), sMainThreadID); }
+	static bool in_main_thread_inline(void) { return apr_os_thread_equal(apr_os_thread_current(), sMainThreadID); }
+	static apr_os_thread_t getCurrentThread(void) { return apr_os_thread_current(); }
+	static apr_os_thread_t getCurrentThread_inline(void) { return apr_os_thread_current(); }
 #endif
 };
 

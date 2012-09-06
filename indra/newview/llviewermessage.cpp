@@ -219,19 +219,20 @@ const F32 OFFER_THROTTLE_TIME=10.f; //time period in seconds
 
 //script permissions
 const std::string SCRIPT_QUESTIONS[SCRIPT_PERMISSION_EOF] = 
-	{ 
-		"ScriptTakeMoney",
-		"ActOnControlInputs",
-		"RemapControlInputs",
-		"AnimateYourAvatar",
-		"AttachToYourAvatar",
-		"ReleaseOwnership",
-		"LinkAndDelink",
-		"AddAndRemoveJoints",
-		"ChangePermissions",
-		"TrackYourCamera",
-		"ControlYourCamera"
-	};
+{
+	"ScriptTakeMoney",
+	"ActOnControlInputs",
+	"RemapControlInputs",
+	"AnimateYourAvatar",
+	"AttachToYourAvatar",
+	"ReleaseOwnership",
+	"LinkAndDelink",
+	"AddAndRemoveJoints",
+	"ChangePermissions",
+	"TrackYourCamera",
+	"ControlYourCamera",
+	"TeleportYourAgent"
+};
 
 const BOOL SCRIPT_QUESTION_IS_CAUTION[SCRIPT_PERMISSION_EOF] = 
 {
@@ -245,7 +246,8 @@ const BOOL SCRIPT_QUESTION_IS_CAUTION[SCRIPT_PERMISSION_EOF] =
 	FALSE,	// AddAndRemoveJoints
 	FALSE,	// ChangePermissions
 	FALSE,	// TrackYourCamera,
-	FALSE	// ControlYourCamera
+	FALSE,	// ControlYourCamera
+	FALSE   // TeleportYourAgent
 };
 
 bool friendship_offer_callback(const LLSD& notification, const LLSD& response)
@@ -1944,23 +1946,26 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	msg->getStringFast(_PREHASH_MessageBlock, _PREHASH_FromAgentName, name);
 	msg->getStringFast(_PREHASH_MessageBlock, _PREHASH_Message,		message);
 	// NaCl - Newline flood protection
-	LLViewerObject* obj=gObjectList.findObject(from_id);
-	if(!from_id.isNull() //Not from nothing.
-	&& gAgent.getID() != from_id //Not from self.
-	&& !(obj && obj->permYouOwner())) //Not from own object.
-	{
-		static LLCachedControl<U32> SpamNewlines(gSavedSettings,"_NACL_AntiSpamNewlines");
-		boost::sregex_iterator iter(message.begin(), message.end(), NEWLINES);
-		if((U32)std::abs(std::distance(iter, boost::sregex_iterator())) > SpamNewlines)
+	static LLCachedControl<bool> AntiSpamEnabled(gSavedSettings,"AntiSpamEnabled",false);
+	if(AntiSpamEnabled){
+		LLViewerObject* obj=gObjectList.findObject(from_id);
+		if(!from_id.isNull() //Not from nothing.
+				&& gAgent.getID() != from_id //Not from self.
+				&& !(obj && obj->permYouOwner())) //Not from own object.
 		{
-			NACLAntiSpamRegistry::blockOnQueue((U32)NACLAntiSpamRegistry::QUEUE_IM,from_id);
-			if(gSavedSettings.getBOOL("AntiSpamNotify"))
+			static LLCachedControl<U32> SpamNewlines(gSavedSettings,"_NACL_AntiSpamNewlines");
+			boost::sregex_iterator iter(message.begin(), message.end(), NEWLINES);
+			if((U32)std::abs(std::distance(iter, boost::sregex_iterator())) > SpamNewlines)
 			{
-				LLSD args;
-				args["MESSAGE"] = "Message: Blocked newline flood from "+from_id.asString();
-				LLNotificationsUtil::add("SystemMessageTip", args);
+				NACLAntiSpamRegistry::blockOnQueue((U32)NACLAntiSpamRegistry::QUEUE_IM,from_id);
+				if(gSavedSettings.getBOOL("AntiSpamNotify"))
+				{
+					LLSD args;
+					args["MESSAGE"] = "Message: Blocked newline flood from "+from_id.asString();
+					LLNotificationsUtil::add("SystemMessageTip", args);
+				}
+				return;
 			}
-			return;
 		}
 	}
 	// NaCl End
@@ -3517,23 +3522,26 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		msg->getStringFast(_PREHASH_ChatData, _PREHASH_Message, mesg);
 
 		// NaCl - Newline flood protection
-		LLViewerObject* obj=gObjectList.findObject(from_id);
-		if(!(from_id.isNull())	//Not from nothing.
-		|| !(gAgent.getID() != from_id)	//Not from self.
-		|| !(obj && obj->permYouOwner()))	//Not from own object.
-		{
-			static LLCachedControl<U32> SpamNewlines(gSavedSettings,"_NACL_AntiSpamNewlines");
-			boost::sregex_iterator iter(mesg.begin(), mesg.end(), NEWLINES);
-			if((U32)std::abs(std::distance(iter, boost::sregex_iterator())) > SpamNewlines)
+		static LLCachedControl<bool> AntiSpamEnabled(gSavedSettings,"AntiSpamEnabled",false);
+		if(AntiSpamEnabled){
+			LLViewerObject* obj=gObjectList.findObject(from_id);
+			if(!(from_id.isNull())	//Not from nothing.
+					|| !(gAgent.getID() != from_id)	//Not from self.
+					|| !(obj && obj->permYouOwner()))	//Not from own object.
 			{
-				NACLAntiSpamRegistry::blockOnQueue((U32)NACLAntiSpamRegistry::QUEUE_CHAT,owner_id);
-				if(gSavedSettings.getBOOL("AntiSpamNotify"))
+				static LLCachedControl<U32> SpamNewlines(gSavedSettings,"_NACL_AntiSpamNewlines");
+				boost::sregex_iterator iter(mesg.begin(), mesg.end(), NEWLINES);
+				if((U32)std::abs(std::distance(iter, boost::sregex_iterator())) > SpamNewlines)
 				{
-					LLSD args;
-					args["MESSAGE"] = "Chat: Blocked newline flood from "+owner_id.asString();
-					LLNotificationsUtil::add("SystemMessageTip", args);
+					NACLAntiSpamRegistry::blockOnQueue((U32)NACLAntiSpamRegistry::QUEUE_CHAT,owner_id);
+					if(gSavedSettings.getBOOL("AntiSpamNotify"))
+					{
+						LLSD args;
+						args["MESSAGE"] = "Chat: Blocked newline flood from "+owner_id.asString();
+						LLNotificationsUtil::add("SystemMessageTip", args);
+					}
+					return;
 				}
-				return;
 			}
 		}
 		// NaCl End
@@ -4390,7 +4398,7 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 		return;
 	}
 
-	if (!gLastVersionChannel.empty())
+	if (!gLastVersionChannel.empty() && gSavedSettings.getBOOL("SGServerVersionChangedNotification"))
 	{
 		LLSD payload;
 		payload["message"] = version_channel;

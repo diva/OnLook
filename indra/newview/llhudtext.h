@@ -99,6 +99,7 @@ public:
 	void setAlpha(F32 alpha);
 	void setZCompare(const BOOL zcompare);
 	void setDoFade(const BOOL do_fade);
+	bool getDoFade() const { return mDoFade; }
 //	void setVisibleOffScreen(BOOL visible) { mVisibleOffScreen = visible; }
 	
 	// mMaxLines of -1 means unlimited lines.
