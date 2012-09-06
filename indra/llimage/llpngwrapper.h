@@ -32,7 +32,12 @@
 #ifndef LL_LLPNGWRAPPER_H
 #define LL_LLPNGWRAPPER_H
 
+#ifdef LL_STANDALONE
+#include <png.h>
+#else
+// Workaround for wrongly packaged prebuilt.
 #include "libpng15/png.h"
+#endif
 #include "llimage.h"
 
 class LLPngWrapper
