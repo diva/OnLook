@@ -1,9 +1,9 @@
 # -*- cmake -*-
 include(Prebuilt)
 
-if(WORD_SIZE EQUAL 64)
-  set(DISABLE_TCMALLOC TRUE)
-endif(WORD_SIZE EQUAL 64)
+#if(WORD_SIZE EQUAL 64)
+#  set(DISABLE_TCMALLOC TRUE)
+#endif(WORD_SIZE EQUAL 64)
 
 if (STANDALONE)
   include(FindGooglePerfTools)

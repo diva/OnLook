@@ -62,6 +62,10 @@ add_subdirectory(${LIBS_OPEN_PREFIX}llvfs)
 add_subdirectory(${LIBS_OPEN_PREFIX}llwindow)
 add_subdirectory(${LIBS_OPEN_PREFIX}llxml)
 
+if(STANDALONE)
+  add_subdirectory(${LIBS_OPEN_PREFIX}llqtwebkit)
+endif(STANDALONE)
+
 if (EXISTS ${LIBS_CLOSED_DIR}llkdu AND NOT STANDALONE)
   add_subdirectory(${LIBS_CLOSED_PREFIX}llkdu)
 endif (EXISTS ${LIBS_CLOSED_DIR}llkdu AND NOT STANDALONE)
