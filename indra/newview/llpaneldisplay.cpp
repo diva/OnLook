@@ -877,7 +877,7 @@ void LLPanelDisplay::cancel()
 void LLPanelDisplay::apply()
 {
 	U32 fsaa_value = childGetValue("fsaa").asInteger();
-	bool apply_fsaa_change = !LLRenderTarget::sUseFBO && (mFSAASamples != fsaa_value);
+	bool apply_fsaa_change = !gSavedSettings.getBOOL("RenderUseFBO") && (mFSAASamples != fsaa_value);
 	gSavedSettings.setU32("RenderFSAASamples", fsaa_value);
 
 	applyResolution();
