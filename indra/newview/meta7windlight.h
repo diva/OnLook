@@ -31,6 +31,9 @@
 
 #include "linden_common.h"
 
+#pragma pack(push)
+#pragma pack(1)
+
 struct M7Color3{
 	M7Color3(){};
 	M7Color3(F32 pRed, F32 pGreen, F32 pBlue)
@@ -124,8 +127,8 @@ struct Meta7WindlightPacket {
 	char cloudScrollXLock;
 	char cloudScrollYLock;
 	char drawClassicClouds;
-	
-
 };
+
+#pragma pack(pop)
 
 #endif

@@ -112,7 +112,7 @@
   <panel border="true" bottom="-400" height="244" left="50" name="Hardware" label="Hardware" width="500">
 	<check_box bottom="-22" control_name="RenderAnisotropic" height="16" initial_value="false" label="Anisotropic Filtering (slower when enabled)" left="5" name="ani" width="256"/>
     <text bottom="-37" height="12" left="10" name="Antialiasing:" width="128">Antialiasing:</text>
-    <combo_box bottom="-41" control_name="RenderFSAASamples" height="16" initial_value="false" label="Antialiasing" left="148" name="fsaa" width="64">
+    <combo_box bottom="-41" height="16" initial_value="false" label="Antialiasing" left="148" name="fsaa" width="64">
       <combo_item name="FSAADisabled" value="0">Disabled</combo_item>
 	  <combo_item name="2x" value="2">2x</combo_item>
       <combo_item name="4x" value="4">4x</combo_item>
