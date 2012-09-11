@@ -1044,9 +1044,9 @@ BOOL LLVOVolume::calcLOD()
 	F32 radius;
 	F32 distance;
 
-	if (mDrawable->isState(LLDrawable::RIGGED) && getAvatar())
+	if (mDrawable->isState(LLDrawable::RIGGED) && getAvatar() && getAvatar()->mDrawable)
 	{
-		LLVOAvatar* avatar = getAvatar(); 
+		LLVOAvatar* avatar = getAvatar();
 		distance = avatar->mDrawable->mDistanceWRTCamera;
 		radius = avatar->getBinRadius();
 	}

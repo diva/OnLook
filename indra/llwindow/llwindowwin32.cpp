@@ -387,6 +387,8 @@ LLWindowWin32::LLWindowWin32(LLWindowCallbacks* callbacks,
 	mhDC = NULL;
 	mhRC = NULL;
 
+	llinfos<<"Desired FSAA Samples = "<<mFSAASamples<<llendl;
+
 	// Initialize the keyboard
 	gKeyboard = new LLKeyboardWin32();
 	gKeyboard->setCallbacks(callbacks);
@@ -1274,21 +1276,155 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, BO
 
 		LL_INFOS("Window") << "pixel formats done." << llendl ;
 
-		S32 swap_method = 0;
-		S32 cur_format = num_formats-1;
-		GLint swap_query = WGL_SWAP_METHOD_ARB;
-
-		BOOL found_format = FALSE;
-
-		while (!found_format && wglGetPixelFormatAttribivARB(mhDC, pixel_format, 0, 1, &swap_query, &swap_method))
+		/*for(int i = 0; i <= num_formats-1; ++i)
 		{
-			if (swap_method == WGL_SWAP_UNDEFINED_ARB || cur_format <= 0)
+			GLint query[] = {	WGL_SAMPLE_BUFFERS_ARB,
+								WGL_SAMPLES_ARB,
+								WGL_NUMBER_PIXEL_FORMATS_ARB,
+								WGL_DRAW_TO_WINDOW_ARB,
+								WGL_DRAW_TO_BITMAP_ARB,
+								WGL_ACCELERATION_ARB,
+								WGL_NEED_PALETTE_ARB,
+								WGL_NEED_SYSTEM_PALETTE_ARB,
+								WGL_SWAP_LAYER_BUFFERS_ARB,
+								WGL_SWAP_METHOD_ARB,
+								WGL_NUMBER_OVERLAYS_ARB,
+								WGL_NUMBER_UNDERLAYS_ARB,
+								WGL_TRANSPARENT_ARB,
+								WGL_TRANSPARENT_RED_VALUE_ARB,
+								WGL_TRANSPARENT_GREEN_VALUE_ARB,
+								WGL_TRANSPARENT_BLUE_VALUE_ARB,
+								WGL_TRANSPARENT_ALPHA_VALUE_ARB,
+								WGL_TRANSPARENT_INDEX_VALUE_ARB,
+								WGL_SHARE_DEPTH_ARB,
+								WGL_SHARE_STENCIL_ARB,
+								WGL_SHARE_ACCUM_ARB,
+								WGL_SUPPORT_GDI_ARB,
+								WGL_SUPPORT_OPENGL_ARB,
+								WGL_DOUBLE_BUFFER_ARB,
+								WGL_STEREO_ARB,
+								WGL_PIXEL_TYPE_ARB,
+								WGL_COLOR_BITS_ARB,
+								WGL_RED_BITS_ARB,
+								WGL_RED_SHIFT_ARB,
+								WGL_GREEN_BITS_ARB,
+								WGL_GREEN_SHIFT_ARB,
+								WGL_BLUE_BITS_ARB,
+								WGL_BLUE_SHIFT_ARB,
+								WGL_ALPHA_BITS_ARB,
+								WGL_ALPHA_SHIFT_ARB,
+								WGL_ACCUM_BITS_ARB,
+								WGL_ACCUM_RED_BITS_ARB,
+								WGL_ACCUM_GREEN_BITS_ARB,
+								WGL_ACCUM_BLUE_BITS_ARB,
+								WGL_ACCUM_ALPHA_BITS_ARB,
+								WGL_DEPTH_BITS_ARB,
+								WGL_STENCIL_BITS_ARB,
+								WGL_AUX_BUFFERS_ARB};
+			std::string names[] = {	"WGL_SAMPLE_BUFFERS_ARB",
+								"WGL_SAMPLES_ARB",
+								"WGL_NUMBER_PIXEL_FORMATS_ARB",
+								"WGL_DRAW_TO_WINDOW_ARB",
+								"WGL_DRAW_TO_BITMAP_ARB",
+								"WGL_ACCELERATION_ARB",
+								"WGL_NEED_PALETTE_ARB",
+								"WGL_NEED_SYSTEM_PALETTE_ARB",
+								"WGL_SWAP_LAYER_BUFFERS_ARB",
+								"WGL_SWAP_METHOD_ARB",
+								"WGL_NUMBER_OVERLAYS_ARB",
+								"WGL_NUMBER_UNDERLAYS_ARB",
+								"WGL_TRANSPARENT_ARB",
+								"WGL_TRANSPARENT_RED_VALUE_ARB",
+								"WGL_TRANSPARENT_GREEN_VALUE_ARB",
+								"WGL_TRANSPARENT_BLUE_VALUE_ARB",
+								"WGL_TRANSPARENT_ALPHA_VALUE_ARB",
+								"WGL_TRANSPARENT_INDEX_VALUE_ARB",
+								"WGL_SHARE_DEPTH_ARB",
+								"WGL_SHARE_STENCIL_ARB",
+								"WGL_SHARE_ACCUM_ARB",
+								"WGL_SUPPORT_GDI_ARB",
+								"WGL_SUPPORT_OPENGL_ARB",
+								"WGL_DOUBLE_BUFFER_ARB",
+								"WGL_STEREO_ARB",
+								"WGL_PIXEL_TYPE_ARB",
+								"WGL_COLOR_BITS_ARB",
+								"WGL_RED_BITS_ARB",
+								"WGL_RED_SHIFT_ARB",
+								"WGL_GREEN_BITS_ARB",
+								"WGL_GREEN_SHIFT_ARB",
+								"WGL_BLUE_BITS_ARB",
+								"WGL_BLUE_SHIFT_ARB",
+								"WGL_ALPHA_BITS_ARB",
+								"WGL_ALPHA_SHIFT_ARB",
+								"WGL_ACCUM_BITS_ARB",
+								"WGL_ACCUM_RED_BITS_ARB",
+								"WGL_ACCUM_GREEN_BITS_ARB",
+								"WGL_ACCUM_BLUE_BITS_ARB",
+								"WGL_ACCUM_ALPHA_BITS_ARB",
+								"WGL_DEPTH_BITS_ARB",
+								"WGL_STENCIL_BITS_ARB",
+								"WGL_AUX_BUFFERS_ARB"};
+			S32 results[sizeof(query)/sizeof(query[0])]={0};
+
+			if(wglGetPixelFormatAttribivARB(mhDC, pixel_formats[i], 0, sizeof(query)/sizeof(query[0]), query, results))
 			{
+				llinfos << i << ":" << llendl;
+				for(int j = 0; j < sizeof(query)/sizeof(query[0]); ++j)
+				{
+					switch(results[j])
+					{
+					case WGL_NO_ACCELERATION_ARB:
+						llinfos << "   " << names[j] << " = " << "WGL_NO_ACCELERATION_ARB" << llendl;
+						break;
+					case WGL_GENERIC_ACCELERATION_ARB:
+						llinfos << "   " << names[j] << " = " << "WGL_GENERIC_ACCELERATION_ARB" << llendl;
+						break;
+					case WGL_FULL_ACCELERATION_ARB:
+						llinfos << "   " << names[j] << " = " << "WGL_FULL_ACCELERATION_ARB" << llendl;
+						break;
+					case WGL_SWAP_EXCHANGE_ARB:
+						llinfos << "   " << names[j] << " = " << "WGL_SWAP_EXCHANGE_ARB" << llendl;
+						break;
+					case WGL_SWAP_COPY_ARB:
+						llinfos << "   " << names[j] << " = " << "WGL_SWAP_COPY_ARB" << llendl;
+						break;
+					case WGL_SWAP_UNDEFINED_ARB:
+						llinfos << "   " << names[j] << " = " << "WGL_SWAP_UNDEFINED_ARB" << llendl;
+						break;
+					case WGL_TYPE_RGBA_ARB:
+						llinfos << "   " << names[j] << " = " << "WGL_TYPE_RGBA_ARB" << llendl;
+						break;
+					case WGL_TYPE_COLORINDEX_ARB:
+						llinfos << "   " << names[j] << " = " << "WGL_TYPE_COLORINDEX_ARB" << llendl;
+						break;
+					default:
+						llinfos << "   " << names[j] << " = " << results[j] << llendl;
+					}
+					
+				}
+			}
+		}*/
+
+		//Singu note: Reversed order of this loop. Generally, choosepixelformat returns an array with the closer matches towards the start.
+		S32 swap_method = 0;
+		S32 cur_format = 0;//num_formats-1;
+		GLint swap_query = WGL_SWAP_METHOD_ARB;
+		BOOL found_format = FALSE;
+		while (!found_format && wglGetPixelFormatAttribivARB(mhDC, pixel_formats[cur_format], 0, 1, &swap_query, &swap_method))
+		{
+			if (swap_method == WGL_SWAP_UNDEFINED_ARB /*|| cur_format <= 0*/)
+			{
+				found_format = TRUE;
+			}
+			else if(cur_format >= num_formats-1)
+			{
+				cur_format = 0;
 				found_format = TRUE;
 			}
 			else
 			{
-				--cur_format;
+				//--cur_format;
+				++cur_format;
 			}
 		}
 		
@@ -1494,6 +1630,10 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, BO
 		glClear(GL_COLOR_BUFFER_BIT);
 		swapBuffers();
 	}
+
+	int buf = 0;
+	glGetIntegerv(GL_SAMPLES, &buf);
+	llinfos << "Acquired FSAA Samples = " << buf << llendl;
 
 	return TRUE;
 }

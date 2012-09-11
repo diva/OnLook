@@ -758,6 +758,9 @@ static void xform4a(LLVector4a &tex_coord, const LLVector4a& trans, const LLVect
 
 bool less_than_max_mag(const LLVector4a& vec)
 {
+#if 1
+	return true;
+#else
 	LLVector4a MAX_MAG;
 	MAX_MAG.splat(1024.f*1024.f);
 
@@ -767,6 +770,7 @@ bool less_than_max_mag(const LLVector4a& vec)
 	S32 lt = val.lessThan(MAX_MAG).getGatheredBits() & 0x7;
 	
 	return lt == 0x7;
+#endif
 }
 
 BOOL LLFace::genVolumeBBoxes(const LLVolume &volume, S32 f,
@@ -1635,8 +1639,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 						if (!do_xform)
 						{
 							LLFastTimer t(FTM_FACE_TEX_QUICK_NO_XFORM);
-							S32 tc_size = (num_vertices*2*sizeof(F32)+0xF) & ~0xF;
-							LLVector4a::memcpyNonAliased16((F32*) tex_coords.get(), (F32*) vf.mTexCoords, tc_size);
+							LLVector4a::memcpyNonAliased16((F32*) tex_coords.get(), (F32*) vf.mTexCoords, num_vertices*2*sizeof(F32));
 						}
 						else
 						{
@@ -1857,12 +1860,15 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 
 			LLVector4a texIdx;
 
-			S32 index = mTextureIndex < 255 ? mTextureIndex : 0;
+			U8 index = mTextureIndex < 255 ? mTextureIndex : 0;
 
 			F32 val = 0.f;
-			S32* vp = (S32*) &val;
-			*vp = index;
-			
+			U8* vp = (U8*) &val;
+			vp[0] = index;
+			vp[1] = 0;
+			vp[2] = 0;
+			vp[3] = 0;
+
 			llassert(index <= LLGLSLShader::sIndexedTextureChannels-1);
 
 			LLVector4Logical mask;
