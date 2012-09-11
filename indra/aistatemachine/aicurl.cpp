@@ -42,6 +42,7 @@
 #define OPENSSL_THREAD_DEFINES
 #include <openssl/opensslconf.h>	// OPENSSL_THREADS
 #include <openssl/crypto.h>
+#include <openssl/ssl.h>
 
 #include "aicurl.h"
 #include "llbufferstream.h"
@@ -242,13 +243,7 @@ void ssl_init(void)
   CRYPTO_set_dynlock_create_callback(&ssl_dyn_create_function);
   CRYPTO_set_dynlock_lock_callback(&ssl_dyn_lock_function);
   CRYPTO_set_dynlock_destroy_callback(&ssl_dyn_destroy_function);
-  need_renegotiation_hack = (0x10001000UL <= ssleay && ssleay < 0x10001040);
-  if (need_renegotiation_hack)
-  {
-	llwarns << "This version of libopenssl has a bug that we work around by forcing the TLSv1 protocol. "
-	           "That works on Second Life, but might cause you to fail to login on some OpenSim grids. "
-			   "Upgrade to openssl 1.0.1d or higher to avoid this warning." << llendl;
-  }
+  need_renegotiation_hack = (0x10001000UL <= ssleay);
   llinfos << "Successful initialization of " <<
 	  SSLeay_version(SSLEAY_VERSION) << " (0x" << std::hex << SSLeay() << ")." << llendl;
 }
@@ -900,7 +895,7 @@ void CurlEasyRequest::setSSLCtxCallback(curl_ssl_ctx_callback callback, void* us
   mSSLCtxCallback = callback;
   mSSLCtxCallbackUserData = userdata;
   setopt(CURLOPT_SSL_CTX_FUNCTION, callback ? &CurlEasyRequest::SSLCtxCallback : NULL);
-  setopt(CURLOPT_SSL_CTX_DATA, userdata ? this : NULL);
+  setopt(CURLOPT_SSL_CTX_DATA, this);
 }
 
 #define llmaybewarns lllog(LLApp::isExiting() ? LLError::LEVEL_INFO : LLError::LEVEL_WARN, NULL, NULL, false, true)
@@ -1129,23 +1124,36 @@ void CurlEasyRequest::applyProxySettings(void)
   }
 }
 
+//static
+CURLcode CurlEasyRequest::curlCtxCallback(CURL* curl, void* sslctx, void* parm)
+{
+  SSL_CTX* ctx = (SSL_CTX*)sslctx;
+  // Turn off TLS v1.1 (which is not supported anyway by Linden Lab) because otherwise we fail to connect.
+  // Also turn off SSL v2, which is highly broken and strongly discouraged[1].
+  // [1] http://www.openssl.org/docs/ssl/SSL_CTX_set_options.html#SECURE_RENEGOTIATION
+  long options = SSL_OP_NO_SSLv2;
+  if (need_renegotiation_hack)
+  {
+	// This option disables openssl to use TLS version 1.1.
+	// The Linden Lab servers don't support TLS versions later than 1.0, and libopenssl-1.0.1-beta1 up till and including
+	// libopenssl-1.0.1c have a bug (or feature?) where (re)negotiation fails (see http://rt.openssl.org/Ticket/Display.html?id=2828),
+	// causing the connection to fail completely without this hack.
+	// For a commandline test of the same, observe the difference between:
+	// openssl s_client            -connect login.agni.lindenlab.com:443 -CAfile packaged/app_settings/CA.pem -debug
+	// which gets no response from the server after sending the initial data, and
+	// openssl s_client -no_tls1_1 -connect login.agni.lindenlab.com:443 -CAfile packaged/app_settings/CA.pem -debug
+	// which finishes the negotiation and ends with 'Verify return code: 0 (ok)'
+	options |= SSL_OP_NO_TLSv1_1;
+  }
+  SSL_CTX_set_options(ctx, options);
+  return CURLE_OK;
+}
+
 void CurlEasyRequest::applyDefaultOptions(void)
 {
   CertificateAuthority_rat CertificateAuthority_r(gCertificateAuthority);
   setoptString(CURLOPT_CAINFO, CertificateAuthority_r->file);
-  if (need_renegotiation_hack)
-  {
-	// This option forces openssl to use TLS version 1.
-	// The Linden Lab servers don't support later TLS versions, and libopenssl-1.0.1-beta1 up till and including
-	// libopenssl-1.0.1c have a bug where renegotiation fails (see http://rt.openssl.org/Ticket/Display.html?id=2828),
-	// causing the connection to fail completely without this hack.
-	// For a commandline test of the same, observe the difference between:
-	// openssl s_client       -connect login.agni.lindenlab.com:443 -CAfile packaged/app_settings/CA.pem -debug
-	// which gets no response from the server after sending the initial data, and
-	// openssl s_client -tls1 -connect login.agni.lindenlab.com:443 -CAfile packaged/app_settings/CA.pem -debug
-	// which finishes the negotiation and ends with 'Verify return code: 0 (ok)'
-	setopt(CURLOPT_SSLVERSION, (long)CURL_SSLVERSION_TLSv1);
-  }
+  setSSLCtxCallback(&curlCtxCallback, NULL);
   setopt(CURLOPT_NOSIGNAL, 1);
   // The old code did this for the 'buffered' version, but I think it's nonsense.
   //setopt(CURLOPT_DNS_CACHE_TIMEOUT, 0);
