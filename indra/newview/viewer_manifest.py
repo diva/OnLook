@@ -525,6 +525,14 @@ class DarwinManifest(ViewerManifest):
                     print "Skipping libfmodwrapper.dylib - not found"
                     pass
 
+                # And now FMOD Ex!
+                try:
+                    self.path("libfmodex.dylib", "libfmodex.dylib")
+                    pass
+                except:
+                    print "Skipping libfmodex.dylib - not found"
+                    pass
+
                 # our apps
                 try:
                   self.path("../mac_crash_logger/" + self.args['configuration'] + "/mac-crash-logger.app", "mac-crash-logger.app")

@@ -3348,6 +3348,87 @@ You are no longer frozen.
 
   <notification
    icon="alertmodal.tga"
+   name="SetDisplayNameSuccess"
+   type="alert">
+Hi [DISPLAY_NAME]!
+
+Just like in real life, it takes a while for everyone to learn about a new name.  Please allow several days for [http://wiki.secondlife.com/wiki/Setting_your_display_name your name to update] in objects, scripts, search, etc.
+  </notification>
+
+  <notification
+ icon="alertmodal.tga"
+ name="SetDisplayNameBlocked"
+ type="alert">
+Sorry, you cannot change your display name. If you feel this is in error, please contact support.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="SetDisplayNameFailedLength"
+   type="alertmodal">
+Sorry, that name is too long.  Display names can have a maximum of [LENGTH] characters.
+
+Please try a shorter name.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="SetDisplayNameFailedGeneric"
+   type="alertmodal">
+    Sorry, we could not set your display name.  Please try again later.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="SetDisplayNameMismatch"
+   type="alertmodal">
+    The display names you entered do not match. Please re-enter.
+  </notification>
+
+  <!-- *NOTE: This should never happen -->
+  <notification
+   icon="alertmodal.tga"
+   name="AgentDisplayNameUpdateThresholdExceeded"
+   type="alertmodal">
+Sorry, you have to wait longer before you can change your display name.
+
+See http://wiki.secondlife.com/wiki/Setting_your_display_name
+
+Please try again later.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="AgentDisplayNameSetBlocked"
+   type="alertmodal">
+ Sorry, we could not set your requested name because it contains a banned word.
+
+ Please try a different name.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+ name="AgentDisplayNameSetInvalidUnicode"
+ type="alertmodal">
+    The display name you wish to set contains invalid characters.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+ name="AgentDisplayNameSetOnlyPunctuation"
+ type="alertmodal">
+    Your display name must contain letters other than punctuation.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="DisplayNameUpdate"
+   type="notifytip">
+    [OLD_NAME] ([SLID]) is now known as [NEW_NAME].
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="OfferTeleport"
    type="alertmodal">
 Offer a teleport to your location with the following message?
@@ -5488,7 +5569,7 @@ Topic: [SUBJECT], Message: [MESSAGE]
    icon="notifytip.tga"
    name="AddSelfFriend"
    type="notifytip">
-You cannot add yourself as a friend.
+Although you're very nice, you cannot add yourself as a friend.
   </notification>
 
   <notification
@@ -5499,12 +5580,12 @@ Uploading in-world and web site snapshots...
 (Takes about 5 minutes.)
   </notification>
 
-<notification
+  <notification
    icon="notify.tga"
    name="UploadPayment"
    type="notify">
 You paid [CURRENCY][AMOUNT] to upload.
-</notification>
+  </notification>
 
   <notification
    icon="notifytip.tga"
@@ -5705,7 +5786,7 @@ Copy failed because you lack copy permission
    icon="notifytip.tga"
    name="InventoryAccepted"
    type="notifytip">
-[NAME] accepted your inventory offer.
+[NAME] received your inventory offer.
   </notification>
 
   <notification
@@ -5857,13 +5938,13 @@ If you want to view streaming media on parcels that support it you should go to 
    icon="notify.tga"
    name="NoPlugin"
    type="notify">
-    No Media Plugin was found to handle the "[MIME_TYPE]" mime type.  Media of this type will be unavailable.
+No Media Plugin was found to handle the "[MIME_TYPE]" mime type.  Media of this type will be unavailable.
   </notification>
   <notification
    icon="alertmodal.tga"
    name="MediaPluginFailed"
    type="alertmodal">
-    The following Media Plugin has failed:
+The following Media Plugin has failed:
     [PLUGIN]
 
 Please re-install the plugin or contact the vendor if you continue to experience problems.
@@ -6000,6 +6081,7 @@ You cannot create objects here.
      yestext="OK"
      />
   </notification>
+
   <notification
    icon="notify.tga"
    name="SeeAvatars"
@@ -6128,7 +6210,7 @@ Could not teleport closer to destination.
 	icon="notify.tga"
 	name="TPCancelled"
 	type="notify">
-	Teleport cancelled.
+Teleport cancelled.
   </notification>
 
   <notification
@@ -6503,7 +6585,7 @@ Failed to find [TYPE] named [DESC] in database.
    icon="notify.tga"
    name="InvalidWearable"
    type="notify">
-    The item you are trying to wear uses a feature that your viewer can&apos;t read. Please consider using the latest [APP_NAME].
+The item you are trying to wear uses a feature that your Viewer can&apos;t read. Please consider using the latest [APP_NAME].
   </notification>
 
   <notification
@@ -7135,10 +7217,6 @@ You uploaded a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME] second
 You locally updated a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME] seconds.
   </notification>
 
-  <global name="UnsupportedCPU">
-- Your CPU speed does not meet the minimum requirements.
-  </global>
-
   <notification
    icon="alertmodal.tga"
    name="PathfindingLinksets_ChangeToFlexiblePath"
@@ -7152,136 +7230,12 @@ You locally updated a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME]
      yestext="OK"/>
   </notification>
 
-  <global name="UnsupportedGLRequirements">
-    You do not appear to have the proper hardware requirements for [APP_NAME]. The viewer requires an OpenGL graphics card that has multitexture support. If this is the case, you may want to make sure that you have the latest drivers for your graphics card, and service packs and patches for your operating system.
-  </global>
-
-  <global name="UnsupportedCPUSSE2">
-    You do not appear to have the proper hardware requirements for [APP_NAME]. The viewer requires a CPU that supports SSE2
-  </global>
-  
-  <global name="UnsupportedCPUSSE">
-    You do not appear to have the proper hardware requirements for [APP_NAME]. The viewer requires a CPU that supports SSE
-  </global>
-  
-  <global name="UnsupportedCPUAmount">
-796
-  </global>
-
-  <global name="UnsupportedRAMAmount">
-510
-  </global>
-
-  <global name="UnsupportedGPU">
-- Your graphics card does not meet the minimum requirements.
-  </global>
-
-  <global name="UnsupportedRAM">
-- Your system memory does not meet the minimum requirements.
-  </global>
-
-  <global name="PermYes">
-Yes
-  </global>
-
-  <global name="PermNo">
-No
-  </global>
-
-  <notification
-   icon="alertmodal.tga"
-   name="SetDisplayNameSuccess"
-   type="alert">
-    Hi [DISPLAY_NAME]!
-
-    Just like in real life, it takes a while for everyone to learn about a new name.  Please allow several days for [http://wiki.secondlife.com/wiki/Setting_your_display_name your name to update] in objects, scripts, search, etc.
-  </notification>
-
-  <notification
- icon="alertmodal.tga"
- name="SetDisplayNameBlocked"
- type="alert">
-    Sorry, you cannot change your display name. If you feel this is in error, please contact support.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="SetDisplayNameFailedLength"
-   type="alertmodal">
-    Sorry, that name is too long.  Display names can have a maximum of [LENGTH] characters.
-
-    Please try a shorter name.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="SetDisplayNameFailedGeneric"
-   type="alertmodal">
-    Sorry, we could not set your display name.  Please try again later.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="SetDisplayNameMismatch"
-   type="alertmodal">
-    The display names you entered do not match. Please re-enter.
-  </notification>
-
-  <!-- *NOTE: This should never happen -->
-  <notification
-   icon="alertmodal.tga"
-   name="AgentDisplayNameUpdateThresholdExceeded"
-   type="alertmodal">
-    Sorry, you have to wait longer before you can change your display name.
-
-    See http://wiki.secondlife.com/wiki/Setting_your_display_name
-
-    Please try again later.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="AgentDisplayNameSetBlocked"
-   type="alertmodal">
-    Sorry, we could not set your requested name because it contains a banned word.
-
-    Please try a different name.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
- name="AgentDisplayNameSetInvalidUnicode"
- type="alertmodal">
-    The display name you wish to set contains invalid characters.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
- name="AgentDisplayNameSetOnlyPunctuation"
- type="alertmodal">
-    Your display name must contain letters other than punctuation.
-  </notification>
-
-  <notification
- icon="notifytip.tga"
- name="DisplayNameUpdate"
- type="notifytip">
-    [OLD_NAME] ([SLID]) is now known as [NEW_NAME].
-  </notification>
-
   <notification
    icon="notify.tga"
    name="FirstAO"
    type="notify">
     For instructions, make a new template in the AO. Use the toolbar to toggle the AO on/off.
   </notification>
-
-  <notification icon="notifytip.tga" name="BlockedCards" type="notifytip">Blocked calling cards from [NAME] ([SOURCE])</notification>
-  <notification icon="notifytip.tga" name="BlockedDialogs" type="notifytip">Blocking all dialogs from [NAME]'s objects. (Origin: [SOURCE])</notification>
-  <notification icon="notifytip.tga" name="BlockedGeneralAvatar" type="notifytip">Blocked spam from avatar [NAME] ([SOURCE])</notification>
-  <notification icon="notifytip.tga" name="BlockedGeneralObjects" type="notifytip">Blocked spam from objects owned by [OWNER] ([SOURCE])</notification>
-  <notification icon="notifytip.tga" name="BlockedChatterAvatar" type="notifytip">Blocked chat-spam from avatar [NAME] ([SOURCE])</notification>
-  <notification icon="notifytip.tga" name="BlockedChatterObjects" type="notifytip">Blocked chat-spam from objects owned by [OWNER] ([SOURCE])</notification>
 
   <notification
  icon="notify.tga"
@@ -7377,5 +7331,88 @@ Your shape, skin, hair or eyes might be defect.
     </form>
   </notification>
 
+  <notification
+   icon="alertmodal.tga"
+   name="BulkTemporaryUpload"
+   type="alertmodal">
+Would you like to bulk upload the files as temporary files?
+Only textures will upload as temporary on Agni and Aditi.
+
+WARNING: Each upload costs [UPLOADCOST] if it's not temporary
+    <usetemplate
+     name="yesnocancelbuttons"
+     notext="Permanent"
+     yestext="Temporary"
+     canceltext="Cancel"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="BulkTemporaryUploadFree"
+   type="alertmodal">
+Would you like to bulk upload the files as temporary files?
+Only textures will upload as temporary on Agni and Aditi.
+    <usetemplate
+     name="yesnocancelbuttons"
+     notext="Permanent"
+     yestext="Temporary"
+     canceltext="Cancel"/>
+  </notification>
+
+  <global name="UnsupportedGLRequirements">
+You do not appear to have the proper hardware requirements for [APP_NAME]. The viewer requires an OpenGL graphics card that has multitexture support. If this is the case, you may want to make sure that you have the latest drivers for your graphics card, and service packs and patches for your operating system.
+  </global>
+
+  <global name="UnsupportedCPUAmount">
+796
+  </global>
+
+  <global name="UnsupportedRAMAmount">
+510
+  </global>
+
+  <global name="UnsupportedCPU">
+- Your CPU speed does not meet the minimum requirements.
+  </global>
+
+  <global name="UnsupportedCPUSSE2">
+    You do not appear to have the proper hardware requirements for [APP_NAME]. The viewer requires a CPU that supports SSE2
+  </global>
+
+  <global name="UnsupportedCPUSSE">
+    You do not appear to have the proper hardware requirements for [APP_NAME]. The viewer requires a CPU that supports SSE
+  </global>
+
+  <global name="UnsupportedGPU">
+- Your graphics card does not meet the minimum requirements.
+  </global>
+
+  <global name="UnsupportedRAM">
+- Your system memory does not meet the minimum requirements.
+  </global>
+
+<!-- these are alert strings from server. the name needs to match entire the server string, and needs to be changed
+	whenever the server string changes -->
+   <global name="You can only set your 'Home Location' on your land or at a mainland Infohub.">
+If you own a piece of land, you can make it your home location.
+Otherwise, you can look at the Map and find places marked &quot;Infohub&quot;.
+  </global>
+  <global name="You died and have been teleported to your home location">
+You died and have been teleported to your home location.
+  </global>
+
+  <notification
+   icon="notifytip.tga"
+   name="AntiSpamBlock"
+   type="notifytip">
+AntiSpam: Blocked [SOURCE] for spamming [TYPE]s [AMOUNT] times in [TIME] seconds.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="AntiSpamNewlineFlood"
+   type="notifytip">
+AntiSpam: Blocked newline flood from [SOURCE] (over [AMOUNT] newlines).
+  </notification>
 
 </notifications>

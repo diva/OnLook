@@ -73,8 +73,8 @@
 	<button label="" label_selected="" name="ToolGrass" tool_tip="Hierba"/>
 	<check_box label="Mantener Seleccionado" name="checkbox sticky"/>
 	<check_box label="Copiar Seleccionado" name="checkbox copy selection"/>
-	<check_box label="Centrado" name="checkbox copy centers"/>
-	<check_box label="Rotado" name="checkbox copy rotates"/>
+	<check_box label="Centrar" name="checkbox copy centers"/>
+	<check_box label="Rotar" name="checkbox copy rotates"/>
 
 <!-- Land panel -->
 
@@ -149,7 +149,7 @@
 				Transferir...
 			</string>
 			<string name="text deed">
-				Deed
+				Transferir
 			</string>
 			<button label="Transferir..." label_selected="Transferir..." name="button deed" tool_tip="Los objetos compartidos por el grupo pueden ser transferidos por un oficial del grupo."/>
 			<check_box label="Permitir que cualquiera lo mueva" name="checkbox allow everyone move"/>
@@ -223,6 +223,15 @@
 			<text name="F:">
 				F:
 			</text>
+			<!-- ========================  -->
+			<panel name="pathfinding_attrs_panel">
+				<text name="pathfinding_attributes_label">
+					Atributos de Pathfinding:
+				</text>
+				<text name="pathfinding_attributes_value">
+					Test
+				</text>
+			</panel>
 			<string name="text modify info 1">
 				Puedes modificar este objeto.
 			</string>
@@ -235,6 +244,12 @@
 			<string name="text modify info 4">
 				No puedes modificar estos objetos.
 			</string>
+			<string name="text modify info 5">
+				You can't modify this object across a region boundary
+			</string>
+			<string name="text modify info 6">
+				You can't modify these objects across a region boundary
+			</string>			
 			<string name="text modify warning">
 				Debes seleccionar todo el objeto para definir los permisos.
 			</string>
@@ -667,7 +682,6 @@ de Textura
     	<panel label="Contenido" name="Contents">
 			<button label="Nuevo Script" label_selected="Nuevo Script" name="button new script"/>
 			<button label="Permisos..." name="button permissions" />
-			<panel name="ContentsInventory"/>
 		</panel>
 	</tab_container>
 
@@ -684,9 +698,9 @@ de Textura
 		<text name="label_area">
 			Superficie: [AREA] m²
 		</text>
-		<button label="Acerca del Terreno..." label_selected="Acerca del Terreno..."name="button about land" width="112" />
+		<button label="Acerca del Terreno..." label_selected="Acerca del Terreno..." name="button about land" width="112" />
 		<check_box tool_tip="El color de las parcelas es según su propietario" label="Mostrar Propietarios" name="checkbox show owners"/>
-		<button label="?" label_selected="?" name="button show owners help"/>
+		<button label="?" label_selected="?" name="button show owners help" left_delta="130"/>
 	<!-- Modify Parcel -->
 		<text name="label_parcel_modify">
 			Modificar Parcela

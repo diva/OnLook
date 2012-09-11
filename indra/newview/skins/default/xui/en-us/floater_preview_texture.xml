@@ -43,6 +43,8 @@
 		h_pad="50" halign="left" height="16" right="345" mouse_opaque="true" name="alphanote" v_pad="0" width="80">
 			Loading...
 	</text>
+	<string name="No Alpha">No Alpha</string>
+	<string name="Has Alpha">Has Alpha</string>
 	<button bottom="8" enabled="true" follows="left|bottom" font="SansSerif" halign="center" height="20" 
 		label="Keep" label_selected="Keep" left="9" mouse_opaque="true" name="Keep" scale_image="true" width="100" />
 	<button bottom="8" enabled="true" follows="left|bottom" font="SansSerif" halign="center" height="20" 
@@ -86,4 +88,5 @@
 			2:1
 		</combo_item>
 	</combo_box>
+	<string name="Unknown">Unknown</string>
 </floater>

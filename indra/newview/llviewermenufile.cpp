@@ -359,12 +359,10 @@ class LLFileUploadBulk : public view_listener_t
 		// Also fix single upload to charge first, then refund
 		// <edit>
 		S32 expected_upload_cost = LLGlobalEconomy::Singleton::getInstance()->getPriceUpload();
+		const char* notification_type = expected_upload_cost ? "BulkTemporaryUpload" : "BulkTemporaryUploadFree";
 		LLSD args;
-		std::string msg = "Would you like to bulk upload the files as temporary files?\nOnly textures will upload as temporary on Agni and Aditi.";
-		if(expected_upload_cost)
-			msg.append(llformat("\nWARNING: Each upload costs L$%d if it's not temporary.",expected_upload_cost));
-		args["MESSAGE"] = msg;
-		LLNotifications::instance().add("GenericAlertYesNoCancel", args, LLSD(), onConfirmBulkUploadTemp);
+		args["UPLOADCOST"] = gHippoGridManager->getConnectedGrid()->getUploadFee();
+		LLNotifications::instance().add(notification_type, args, LLSD(), onConfirmBulkUploadTemp);
 		return true;
 	}
 

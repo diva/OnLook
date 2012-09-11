@@ -1,0 +1,15 @@
+<llsd>
+    <map>
+    <key>skin_name</key>
+        <string>Orange Life</string>
+    <key>author_name</key>
+        <string>Nomade Zhao - 3DX</string>
+    <key>additional_author_names</key>
+        <string>Linden Lab</string>
+    <key>skin_info</key>
+        <string>Orange Life freely inspired by the skin from the open life viewer.
+Orange Life, skin inspir&#xE9;e de celle de l'open life viewer.</string>
+    <key>folder_name</key>
+        <string>orangelife</string>
+    </map>
+</llsd>

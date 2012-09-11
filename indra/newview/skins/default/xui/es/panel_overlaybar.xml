@@ -4,7 +4,7 @@
 		<layout_panel name="main_panel">
 			<layout_stack name="chatbar_and_buttons">
 				<layout_panel name="padding"/>
-				<layout_panel name="state_buttons">
+				<layout_panel name="state_management_buttons_container">
 					<button label="Nuevo MI" label_selected="Nuevo MI" name="New IM" tool_tip="Tienes un Mensaje Instantáneo pendiente. Pulsa para ver los MIs"/>
 					<button label="Fijar No Ocupado" label_selected="Fijar No Ocupado" name="Set Not Busy" tool_tip="El Chat y los MI están ocultos para ti. Pulsa aquí para definir tu estado como No Ocupado"/>
 					<button label="Flycam" label_selected="Flycam" name="Flycam" tool_tip="Tu cámara está siendo controlada por un joystick, pulsa aquí para liberar el control"/>

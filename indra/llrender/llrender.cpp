@@ -1451,6 +1451,16 @@ void LLRender::matrixMode(U32 mode)
 	mMatrixMode = mode;
 }
 
+U32 LLRender::getMatrixMode()
+{
+	if (mMatrixMode >= MM_TEXTURE0 && mMatrixMode <= MM_TEXTURE3)
+	{ //always return MM_TEXTURE if current matrix mode points at any texture matrix
+		return MM_TEXTURE;
+	}
+	return mMatrixMode;
+}
+
+
 void LLRender::loadIdentity()
 {
 	flush();

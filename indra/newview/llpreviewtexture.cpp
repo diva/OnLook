@@ -44,6 +44,7 @@
 #include "llinventory.h"
 #include "llnotificationsutil.h"
 #include "llresmgr.h"
+#include "lltrans.h"
 #include "lltextbox.h"
 #include "lltextureview.h"
 #include "llui.h"
@@ -56,12 +57,12 @@
 const S32 PREVIEW_TEXTURE_MIN_WIDTH = 300;
 const S32 PREVIEW_TEXTURE_MIN_HEIGHT = 120;
 
-const F32 PREVIEW_TEXTURE_MAX_ASPECT = 200.f;
-const F32 PREVIEW_TEXTURE_MIN_ASPECT = 0.005f;
-
 const S32 CLIENT_RECT_VPAD = 4;
 
 const F32 SECONDS_TO_SHOW_FILE_SAVED_MSG = 8.f;
+
+const F32 PREVIEW_TEXTURE_MAX_ASPECT = 200.f;
+const F32 PREVIEW_TEXTURE_MIN_ASPECT = 0.005f;
 
 LLPreviewTexture * LLPreviewTexture::sInstance;
 LLPreviewTexture::LLPreviewTexture(const std::string& name,
@@ -163,8 +164,11 @@ LLPreviewTexture::~LLPreviewTexture()
 	{
 		getWindow()->decBusyCount();
 	}
-	mImage->setBoostLevel(mImageOldBoostLevel);
-	mImage = NULL;
+	if(mImage)
+	{
+		mImage->setBoostLevel(mImageOldBoostLevel);
+		mImage = NULL;
+	}
 	sInstance = NULL;
 }
 
@@ -185,14 +189,12 @@ void LLPreviewTexture::init()
 	{
 		childSetAction("Copy To Inventory",LLPreview::onBtnCopyToInv,this);
 	}
-
 	else if (mShowKeepDiscard)
 	{
 		childSetAction("Keep",onKeepBtn,this);
 		childSetAction("Discard",onDiscardBtn,this);
 	}
-
-	else 
+	else
 	{
 		// If the buttons are hidden move stuff down to use the space.
 		
@@ -233,7 +235,7 @@ void LLPreviewTexture::init()
 			childSetText("uuid", getItemID().asString());
 			childSetText("uploader", getItemCreatorName());
 			childSetText("uploadtime", getItemCreationDate());
-			childSetText("alphanote", std::string("Loading..."));
+			childSetText("alphanote", LLTrans::getString("LoadingData"));
 		}
 	}
 	
@@ -287,12 +289,12 @@ void LLPreviewTexture::draw()
 				if (!mImage->getIsAlphaMask())
 				{
 					childSetColor("alphanote", LLColor4::green);
-					childSetText("alphanote", std::string("No Alpha"));
+					childSetText("alphanote", getString("No Alpha"));
 				}
 				else
 				{
 					childSetColor("alphanote", LLColor4::red);
-					childSetText("alphanote", std::string("Has Alpha"));
+					childSetText("alphanote", getString("Has Alpha"));
 				}
 				mAlphaMaskResult = mImage->getIsAlphaMask();
 			}
@@ -320,8 +322,7 @@ void LLPreviewTexture::draw()
 
 			if( mLoadingFullImage )
 			{
-				// *TODO: Translate
-				LLFontGL::getFontSansSerif()->renderUTF8(std::string("Receiving:"), 0,
+				LLFontGL::getFontSansSerif()->renderUTF8(LLTrans::getString("Receiving"), 0,
 					interior.mLeft + 4, 
 					interior.mBottom + 4,
 					LLColor4::white, LLFontGL::LEFT, LLFontGL::BOTTOM,
@@ -357,8 +358,7 @@ void LLPreviewTexture::draw()
 			}
 			else if(!mSavedFileTimer.hasExpired())
 			{
-				// *TODO: Translate
-				LLFontGL::getFontSansSerif()->renderUTF8(std::string("File Saved"), 0,
+				LLFontGL::getFontSansSerif()->renderUTF8(LLTrans::getString("FileSaved"), 0,
 					interior.mLeft + 4,
 					interior.mBottom + 4,
 					LLColor4::white, LLFontGL::LEFT, LLFontGL::BOTTOM,
@@ -367,6 +367,7 @@ void LLPreviewTexture::draw()
 			}
 		}
 	} 
+
 }
 
 
@@ -408,6 +409,7 @@ void LLPreviewTexture::saveAs_continued(LLViewerInventoryItem const* item, AIFil
 	mSaveFileName = filepicker->getFilename();
 	mLoadingFullImage = TRUE;
 	getWindow()->incBusyCount();
+
 	mImage->forceToSaveRawImage(0) ;//re-fetch the raw image if the old one is removed.
 	mImage->setLoadedCallback( LLPreviewTexture::onFileLoadedForSave, 
 								0, TRUE, FALSE, new LLUUID( mItemUUID ), &mCallbackTextureList );
@@ -497,7 +499,7 @@ std::string LLPreviewTexture::getItemCreationDate()
 		timeToFormattedString(item->getCreationDate(), gSavedSettings.getString("TimestampFormat"), time);
 		return time;
 	}
-	return "Unknown";
+	return getString("Unknown");
 }
 
 std::string LLPreviewTexture::getItemCreatorName()
@@ -510,7 +512,7 @@ std::string LLPreviewTexture::getItemCreatorName()
 		mCreatorKey = item->getCreatorUUID();
 		return name;
 	}
-	return "Unknown";
+	return getString("Unknown");
 }
 
 
