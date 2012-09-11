@@ -253,6 +253,9 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// Called from applyDefaultOptions.
 	void applyProxySettings(void);
 
+	// Used in applyProxySettings.
+	static CURLcode curlCtxCallback(CURL* curl, void* sslctx, void* parm);
+
   public:
 	// Set default options that we want applied to all curl easy handles.
 	void applyDefaultOptions(void);
