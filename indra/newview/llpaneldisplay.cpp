@@ -876,6 +876,10 @@ void LLPanelDisplay::cancel()
 
 void LLPanelDisplay::apply()
 {
+	U32 fsaa_value = childGetValue("fsaa").asInteger();
+	bool apply_fsaa_change = !gSavedSettings.getBOOL("RenderUseFBO") && (mFSAASamples != fsaa_value);
+	gSavedSettings.setU32("RenderFSAASamples", fsaa_value);
+
 	applyResolution();
 	
 	// Only set window size if we're not in fullscreen mode
@@ -887,7 +891,7 @@ void LLPanelDisplay::apply()
 	// Hardware tab
 	//Still do a bit of voodoo here. V2 forces restart to change FSAA with FBOs off.
 	//Let's not do that, and instead do pre-V2 FSAA change handling for that particular case
-	if(!LLRenderTarget::sUseFBO && (mFSAASamples != (U32)childGetValue("fsaa").asInteger()))
+	if(apply_fsaa_change)
 	{
 		bool logged_in = (LLStartUp::getStartupState() >= STATE_STARTED);
 		LLWindow* window = gViewerWindow->getWindow();
