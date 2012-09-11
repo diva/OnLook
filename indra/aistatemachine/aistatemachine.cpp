@@ -510,12 +510,12 @@ void AIStateMachine::dowork(void)
 	AIStateMachine& statemachine(iter->statemachine());
 	if (!statemachine.mIdle)
 	{
-	  U64 start = LLFastTimer::getCPUClockCount64();
+	  U64 start = get_clock_count();
 	  // This might call idle() and then pass the statemachine to another thread who then may call cont().
 	  // Hence, after this isn't not sure what mIdle is, and it can change from true to false at any moment,
 	  // if it is true after this function returns.
 	  statemachine.multiplex(start);
-	  U64 delta = LLFastTimer::getCPUClockCount64() - start;
+	  U64 delta = get_clock_count() - start;
 	  iter->add(delta);
 	  total_clocks += delta;
 	  if (total_clocks >= sMaxCount)
