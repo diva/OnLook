@@ -265,7 +265,7 @@ target_link_libraries(
     ${EXPAT_LIBRARIES}
     ${ZLIB_LIBRARIES}
     ${WINDOWS_LIBRARIES}
-    ${BOOST_REGEX_LIBRARY}
+    ${Boost_REGEX_LIBRARY}
     ${CWDEBUG_LIBRARIES}
     ${CORESERVICES_LIBRARY}
     )
