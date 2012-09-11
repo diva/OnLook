@@ -1122,6 +1122,7 @@ CURLcode CurlEasyRequest::curlCtxCallback(CURL* curl, void* sslctx, void* parm)
   // Also turn off SSL v2, which is highly broken and strongly discouraged[1].
   // [1] http://www.openssl.org/docs/ssl/SSL_CTX_set_options.html#SECURE_RENEGOTIATION
   long options = SSL_OP_NO_SSLv2;
+#ifdef SSL_OP_NO_TLSv1_1	// Only defined for openssl version 1.0.1 and up.
   if (need_renegotiation_hack)
   {
 	// This option disables openssl to use TLS version 1.1.
@@ -1135,6 +1136,9 @@ CURLcode CurlEasyRequest::curlCtxCallback(CURL* curl, void* sslctx, void* parm)
 	// which finishes the negotiation and ends with 'Verify return code: 0 (ok)'
 	options |= SSL_OP_NO_TLSv1_1;
   }
+#else
+  llassert_always(!need_renegotiation_hack);
+#endif
   SSL_CTX_set_options(ctx, options);
   return CURLE_OK;
 }
