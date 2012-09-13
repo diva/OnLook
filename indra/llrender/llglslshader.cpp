@@ -244,14 +244,16 @@ BOOL LLGLSLShader::createShader(vector<string> * attributes,
 
 BOOL LLGLSLShader::attachObject(std::string object)
 {
-	if (LLShaderMgr::instance()->mShaderObjects.count(object) > 0)
+	std::multimap<std::string, LLShaderMgr::CachedObjectInfo>::iterator it = LLShaderMgr::instance()->mShaderObjects.begin();
+	for(it;it!=LLShaderMgr::instance()->mShaderObjects.end();it++)
 	{
-		stop_glerror();
-		glAttachObjectARB(mProgramObject, LLShaderMgr::instance()->mShaderObjects[object]);
-		stop_glerror();
-		return TRUE;
+		if((*it).first == object)
+		{
+			glAttachObjectARB(mProgramObject, (*it).second.mHandle);
+			stop_glerror();
+			return TRUE;
+		}
 	}
-	else
 	{
 		LL_WARNS("ShaderLoading") << "Attempting to attach shader object that hasn't been compiled: " << object << LL_ENDL;
 		return FALSE;
@@ -262,6 +264,20 @@ void LLGLSLShader::attachObject(GLhandleARB object)
 {
 	if (object != 0)
 	{
+		std::multimap<std::string, LLShaderMgr::CachedObjectInfo>::iterator it = LLShaderMgr::instance()->mShaderObjects.begin();
+		for(it;it!=LLShaderMgr::instance()->mShaderObjects.end();it++)
+		{
+			if((*it).second.mHandle == object)
+			{
+				LL_DEBUGS("ShaderLoading") << "Attached: " << (*it).first << llendl;
+				break;
+			}
+		}
+		if(it == LLShaderMgr::instance()->mShaderObjects.end())
+		{
+			LL_WARNS("ShaderLoading") << "Attached unknown shader!" << llendl;
+		}
+		
 		stop_glerror();
 		glAttachObjectARB(mProgramObject, object);
 		stop_glerror();
