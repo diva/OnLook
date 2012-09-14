@@ -245,7 +245,7 @@ BOOL LLGLSLShader::createShader(vector<string> * attributes,
 BOOL LLGLSLShader::attachObject(std::string object)
 {
 	std::multimap<std::string, LLShaderMgr::CachedObjectInfo>::iterator it = LLShaderMgr::instance()->mShaderObjects.begin();
-	for(it;it!=LLShaderMgr::instance()->mShaderObjects.end();it++)
+	for(; it!=LLShaderMgr::instance()->mShaderObjects.end(); it++)
 	{
 		if((*it).first == object)
 		{
@@ -265,7 +265,7 @@ void LLGLSLShader::attachObject(GLhandleARB object)
 	if (object != 0)
 	{
 		std::multimap<std::string, LLShaderMgr::CachedObjectInfo>::iterator it = LLShaderMgr::instance()->mShaderObjects.begin();
-		for(it;it!=LLShaderMgr::instance()->mShaderObjects.end();it++)
+		for(; it!=LLShaderMgr::instance()->mShaderObjects.end(); it++)
 		{
 			if((*it).second.mHandle == object)
 			{
