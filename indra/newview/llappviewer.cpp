@@ -1017,6 +1017,8 @@ void LLAppViewer::checkMemory()
 
 static LLFastTimer::DeclareTimer FTM_MESSAGES("System Messages");
 static LLFastTimer::DeclareTimer FTM_SLEEP("Sleep");
+static LLFastTimer::DeclareTimer FTM_YIELD("Yield");
+
 static LLFastTimer::DeclareTimer FTM_TEXTURE_CACHE("Texture Cache");
 static LLFastTimer::DeclareTimer FTM_DECODE("Image Decode");
 static LLFastTimer::DeclareTimer FTM_VFS("VFS Thread");
@@ -1084,7 +1086,7 @@ bool LLAppViewer::mainLoop()
 				LLFastTimer t2(FTM_MESSAGES);
 				gViewerWindow->getWindow()->processMiscNativeEvents();
 			}
-			
+		
 			pingMainloopTimeout("Main:GatherInput");
 			
 			if (gViewerWindow)
@@ -1207,6 +1209,7 @@ bool LLAppViewer::mainLoop()
 				// yield some time to the os based on command line option
 				if(mYieldTime >= 0)
 				{
+					LLFastTimer t(FTM_YIELD);
 					ms_sleep(mYieldTime);
 				}
 

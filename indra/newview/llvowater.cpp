@@ -140,6 +140,7 @@ LLDrawable *LLVOWater::createDrawable(LLPipeline *pipeline)
 }
 
 static LLFastTimer::DeclareTimer FTM_UPDATE_WATER("Update Water");
+
 BOOL LLVOWater::updateGeometry(LLDrawable *drawable)
 {
 	LLFastTimer ftm(FTM_UPDATE_WATER);
@@ -213,6 +214,7 @@ BOOL LLVOWater::updateGeometry(LLDrawable *drawable)
 	{ //bump edge patches down 10 cm to prevent aliasing along edges
 		z_fudge = -0.1f;
 	}
+
 	for (y = 0; y < size; y++)
 	{
 		for (x = 0; x < size; x++)
