@@ -1103,6 +1103,7 @@ LLTextureCtrl::LLTextureCtrl(
 		LLFontGL::getFontSansSerifSmall() );
 	mTentativeLabel->setHAlign( LLFontGL::HCENTER );
 	mTentativeLabel->setFollowsAll();
+	mTentativeLabel->setMouseOpaque(FALSE);
 	addChild( mTentativeLabel );
 
 	LLRect border_rect(0, getRect().getHeight(), getRect().getWidth(), 0);
