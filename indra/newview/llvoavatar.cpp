@@ -2099,7 +2099,9 @@ LLViewerObject* LLVOAvatar::lineSegmentIntersectRiggedAttachments(const LLVector
 									  LLVector3* normal,
 									  LLVector3* bi_normal)
 {
-	if (isSelf() && !gAgent.needsRenderAvatar())
+	static const LLCachedControl<bool> allow_mesh_picking("SGAllowRiggedMeshSelection");
+
+	if (!allow_mesh_picking || (isSelf() && !gAgent.needsRenderAvatar()))
 	{
 		return NULL;
 	}

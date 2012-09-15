@@ -2831,10 +2831,11 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector3& start, const LLVector3& e
 
 	if (mDrawable->isState(LLDrawable::RIGGED))
 	{
-		if (gFloaterTools->getVisible() && getAvatar()->isSelf())
+		static const LLCachedControl<bool> allow_mesh_picking("SGAllowRiggedMeshSelection");
+		if (allow_mesh_picking && gFloaterTools->getVisible() && getAvatar()->isSelf())
 		{
 			updateRiggedVolume();
-			genBBoxes(FALSE);
+			//genBBoxes(FALSE);
 			volume = mRiggedVolume;
 			transform = false;
 		}
