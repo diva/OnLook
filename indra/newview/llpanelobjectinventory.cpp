@@ -94,8 +94,8 @@ public:
 	LLTaskInvFVBridge(LLPanelObjectInventory* panel,
 					  const LLUUID& uuid,
 					  const std::string& name,
-		U32 flags=0);
-	virtual ~LLTaskInvFVBridge( ) {}
+					  U32 flags=0);
+	virtual ~LLTaskInvFVBridge() {}
 
 	virtual LLFontGL::StyleFlags getLabelStyle() const { return LLFontGL::NORMAL; }
 	virtual std::string getLabelSuffix() const { return LLStringUtil::null; }
@@ -243,9 +243,9 @@ void LLTaskInvFVBridge::buyItem()
         if (sale_info.getSaleType() != LLSaleInfo::FS_CONTENTS)
         {
         	U32 next_owner_mask = perm.getMaskNextOwner();
-        	args["MODIFYPERM"] = LLNotifications::instance().getGlobalString((next_owner_mask & PERM_MODIFY) ? "PermYes" : "PermNo");
-        	args["COPYPERM"] = LLNotifications::instance().getGlobalString((next_owner_mask & PERM_COPY) ? "PermYes" : "PermNo");
-        	args["RESELLPERM"] = LLNotifications::instance().getGlobalString((next_owner_mask & PERM_TRANSFER) ? "PermYes" : "PermNo");
+        	args["MODIFYPERM"] = LLTrans::getString((next_owner_mask & PERM_MODIFY) ? "PermYes" : "PermNo");
+        	args["COPYPERM"] = LLTrans::getString((next_owner_mask & PERM_COPY) ? "PermYes" : "PermNo");
+        	args["RESELLPERM"] = LLTrans::getString((next_owner_mask & PERM_TRANSFER) ? "PermYes" : "PermNo");
         }
 
 		std::string alertdesc;
@@ -318,9 +318,17 @@ const std::string& LLTaskInvFVBridge::getName() const
 const std::string& LLTaskInvFVBridge::getDisplayName() const
 {
 	LLInventoryItem* item = findItem();
+
 	if(item)
 	{
 		mDisplayName.assign(item->getName());
+
+		// Localize "New Script", "New Script 1", "New Script 2", etc.
+		if (item->getType() == LLAssetType::AT_LSL_TEXT &&
+			LLStringUtil::startsWith(item->getName(), "New Script"))
+		{
+			LLStringUtil::replaceString(mDisplayName, "New Script", LLTrans::getString("PanelContentsNewScript"));
+		}
 
 		const LLPermissions& perm(item->getPermissions());
 		BOOL copy = gAgent.allowOperation(PERM_COPY, perm, GP_OBJECT_MANIPULATE);
@@ -677,7 +685,9 @@ void LLTaskInvFVBridge::performAction(LLInventoryModel* model, std::string actio
 		{
 			if (price > 0 && price > gStatusBar->getBalance())
 			{
-				LLFloaterBuyCurrency::buyCurrency("This costs", price);
+				LLStringUtil::format_map_t args;
+				args["CURRENCY"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
+				LLFloaterBuyCurrency::buyCurrency( LLTrans::getString("this_costs", args), price );
 			}
 			else
 			{
@@ -723,7 +733,7 @@ void LLTaskInvFVBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 		else
 		{
 			std::ostringstream info;
-			info << "Buy for " << gHippoGridManager->getConnectedGrid()->getCurrencySymbol() << price;
+			info << LLTrans::getString("Buyfor") << gHippoGridManager->getConnectedGrid()->getCurrencySymbol() << price;
 			label.assign(info.str());
 		}
 
@@ -1013,8 +1023,8 @@ class LLTaskSoundBridge : public LLTaskInvFVBridge
 {
 public:
 	LLTaskSoundBridge(LLPanelObjectInventory* panel,
-		const LLUUID& uuid,
-		const std::string& name) :
+					  const LLUUID& uuid,
+					  const std::string& name) :
 		LLTaskInvFVBridge(panel, uuid, name) {}
 
 	virtual BOOL canOpenItem() const { return TRUE; }
@@ -1086,7 +1096,7 @@ void LLTaskSoundBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 		else
 		{
 			std::ostringstream info;
-			info << "Buy for " << gHippoGridManager->getConnectedGrid()->getCurrencySymbol() << price;
+			info <<  LLTrans::getString("Buyfor") << gHippoGridManager->getConnectedGrid()->getCurrencySymbol() << price;
 			label.assign(info.str());
 		}
 
@@ -1121,6 +1131,7 @@ void LLTaskSoundBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	}
 
 	items.push_back(std::string("Task Play"));
+
 	/*menu.addSeparator();
 	menu.append(new LLMenuItemCallGL("Play",
 									 &LLTaskSoundBridge::playSound,
@@ -1138,8 +1149,8 @@ class LLTaskLandmarkBridge : public LLTaskInvFVBridge
 {
 public:
 	LLTaskLandmarkBridge(LLPanelObjectInventory* panel,
-		const LLUUID& uuid,
-		const std::string& name) :
+						 const LLUUID& uuid,
+						 const std::string& name) :
 		LLTaskInvFVBridge(panel, uuid, name) {}
 };
 
