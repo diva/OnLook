@@ -300,25 +300,6 @@
           </map>
         </map>
       </map>
-      <key>dbghelp</key>
-      <map>
-        <key>copyright</key>
-        <string>Copyright Microsoft Corporation</string>
-        <key>description</key>
-        <string>dbghelp: Debug helper from Microsoft Debugging Tools For Windows</string>
-        <key>license</key>
-        <string>MSDTW</string>
-        <key>packages</key>
-        <map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>b7563064037e032143ca2d610aae5153</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/dbghelp-6.11.1.404-windows-20090520.tar.bz2</uri>
-          </map>
-        </map>
-      </map>
       <key>dbusglib</key>
       <map>
         <key>copyright</key>
