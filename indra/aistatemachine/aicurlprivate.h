@@ -308,7 +308,6 @@ class CurlEasyRequest : public CurlEasyHandle {
   protected:
 	// Pass events to parent.
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
-	/*virtual*/ void decoded_header(AICurlEasyRequest_wat& curl_easy_request_w, std::string const& key, std::string const& value);
 	/*virtual*/ void finished(AICurlEasyRequest_wat& curl_easy_request_w);
 	/*virtual*/ void removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
 };
@@ -328,7 +327,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 // is created which only happens by creating a AICurlEasyRequest(true) instance,
 // and when the last AICurlEasyRequest is deleted, then the ThreadSafeBufferedCurlEasyRequest
 // is deleted and the CurlResponderBuffer destructed.
-class CurlResponderBuffer : protected AICurlEasyHandleEvents {
+class CurlResponderBuffer : protected AICurlResponderBufferEvents, protected AICurlEasyHandleEvents {
   public:
 	typedef AICurlInterface::Responder::buffer_ptr_t buffer_ptr_t;
 
@@ -347,9 +346,17 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
 	// Do not write more than this amount.
 	//void setBodyLimit(U32 size) { mBodyLimit = size; }
 
+    // Post-initialization, set the parent to pass the events to.
+    void send_events_to(AICurlResponderBufferEvents* target) { mEventsTarget = target; }
+
   protected:
+	// Events from this class.
+	/*virtual*/ void received_HTTP_header(void);
+	/*virtual*/ void received_header(std::string const& key, std::string const& value);
+	/*virtual*/ void completed_headers(U32 status, std::string const& reason);
+
+	// CurlEasyHandle events.
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
-	/*virtual*/ void decoded_header(AICurlEasyRequest_wat& curl_easy_request_w, std::string const& key, std::string const& value);
 	/*virtual*/ void finished(AICurlEasyRequest_wat& curl_easy_request_w);
 	/*virtual*/ void removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
 
@@ -363,6 +370,7 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
 	std::string mReason;								// The "reason" from the same header line.
 	S32 mRequestTransferedBytes;
 	S32 mResponseTransferedBytes;
+	AICurlResponderBufferEvents* mEventsTarget;
 
   public:
 	static LLChannelDescriptors const sChannels;		// Channel object for mInput (channel out()) and mOutput (channel in()).
@@ -380,7 +388,7 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
     static size_t curlHeaderCallback(char* data, size_t size, size_t nmemb, void* user_data);
 
 	// Called from curlHeaderCallback.
-	void setStatusAndReason(U32 status, std::string const& reason) { mStatus = status; mReason = reason; }
+	void setStatusAndReason(U32 status, std::string const& reason);
 
   public:
 	// Return pointer to the ThreadSafe (wrapped) version of this object.

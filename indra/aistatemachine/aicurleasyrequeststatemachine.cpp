@@ -78,11 +78,6 @@ void AICurlEasyRequestStateMachine::added_to_multi_handle(AICurlEasyRequest_wat&
 }
 
 // CURL-THREAD
-void AICurlEasyRequestStateMachine::decoded_header(AICurlEasyRequest_wat&, std::string const& key, std::string const& value)
-{
-}
-
-// CURL-THREAD
 void AICurlEasyRequestStateMachine::finished(AICurlEasyRequest_wat&)
 {
   mFinished = true;

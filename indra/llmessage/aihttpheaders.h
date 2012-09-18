@@ -54,6 +54,9 @@ class AIHTTPHeaders {
 	// Construct a container with a single header.
 	AIHTTPHeaders(std::string const& key, std::string const& value);
 
+	// Clear all headers.
+	void clear(void) { if (mContainer) mContainer->mKeyValuePairs.clear(); }
+
 	// Add a header. Returns true if the header already existed.
 	bool addHeader(std::string const& key, std::string const& value, op_type op = new_header);
 
@@ -63,7 +66,7 @@ class AIHTTPHeaders {
 	// Return true if the header already exists.
 	bool hasHeader(std::string const& key) const;
 
-	// Return true if key exists and full value_out with the value. Return false otherwise.
+	// Return true if key exists and fill value_out with the value. Return false otherwise.
 	bool getValue(std::string const& key, std::string& value_out) const;
 
 	// Append the headers to slist.

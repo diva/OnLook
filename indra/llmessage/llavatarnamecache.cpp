@@ -129,7 +129,7 @@ namespace LLAvatarNameCache
 	// Erase expired names from cache
 	void eraseUnrefreshed();
 
-	bool expirationFromCacheControl(LLSD headers, F64 *expires);
+	bool expirationFromCacheControl(AIHTTPHeaders const& headers, F64* expires);
 }
 
 /* Sample response:
@@ -179,16 +179,14 @@ private:
 	std::vector<LLUUID> mAgentIDs;
 
 	// Need the headers to look up Expires: and Retry-After:
-	LLSD mHeaders;
+	AIHTTPHeaders mHeaders;
 	
 public:
 	LLAvatarNameResponder(const std::vector<LLUUID>& agent_ids)
-	:	mAgentIDs(agent_ids),
-		mHeaders()
+	:	mAgentIDs(agent_ids)
 	{ }
 	
-	/*virtual*/ void completedHeader(U32 status, const std::string& reason, 
-		const LLSD& headers)
+	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPHeaders const& headers)
 	{
 		mHeaders = headers;
 	}
@@ -788,7 +786,7 @@ void LLAvatarNameCache::insert(const LLUUID& agent_id, const LLAvatarName& av_na
 	sCache[agent_id] = av_name;
 }
 
-F64 LLAvatarNameCache::nameExpirationFromHeaders(LLSD headers)
+F64 LLAvatarNameCache::nameExpirationFromHeaders(AIHTTPHeaders const& headers)
 {
 	F64 expires = 0.0;
 	if (expirationFromCacheControl(headers, &expires))
@@ -804,16 +802,15 @@ F64 LLAvatarNameCache::nameExpirationFromHeaders(LLSD headers)
 	}
 }
 
-bool LLAvatarNameCache::expirationFromCacheControl(LLSD headers, F64 *expires)
+bool LLAvatarNameCache::expirationFromCacheControl(AIHTTPHeaders const& headers, F64* expires)
 {
 	bool fromCacheControl = false;
 	F64 now = LLFrameTimer::getTotalSeconds();
 	// Allow the header to override the default
-	LLSD cache_control_header = headers["cache-control"];
-	if (cache_control_header.isDefined())
+	std::string cache_control;
+	if (headers.getValue("cache-control", cache_control))
 	{
 		S32 max_age = 0;
-		std::string cache_control = cache_control_header.asString();
 		if (max_age_from_cache_control(cache_control, &max_age))
 		{
 			*expires = now + (F64)max_age;

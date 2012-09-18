@@ -278,7 +278,7 @@ static void request(const std::string &url,
 	if ((method != LLURLRequest::HTTP_PUT) && (method != LLURLRequest::HTTP_POST)) {
 		std::string accept = "Accept: ";
 		accept += handler->getAcceptMimeType();
-		req->addHeader(accept.c_str());
+		//AIFIXME req is not defined: req->addHeader(accept.c_str());
 	}
 
 	//AIFIXME: req->setCallback(new HippoRestComplete(handler));
@@ -286,7 +286,7 @@ static void request(const std::string &url,
 	if ((method == LLURLRequest::HTTP_PUT) || (method == LLURLRequest::HTTP_POST)) {
 		std::string content = "Content-Type: ";
 		content += body->contentType();
-		req->addHeader(content.c_str());
+		//AIFIXME req is not defined: req->addHeader(content.c_str());
 		//AIFIXME: chain.push_back(LLIOPipe::ptr_t(body));
 	}
 

@@ -37,52 +37,6 @@
 F32 const HTTP_REQUEST_EXPIRY_SECS = 60.0f;
 ////////////////////////////////////////////////////////////////////////////
 
-#if 0
-class LLHTTPClientURLAdaptor : public LLURLRequestComplete
-{
-public:
-	LLHTTPClientURLAdaptor(LLCurl::ResponderPtr responder)
-		: LLURLRequestComplete(), mResponder(responder), mStatus(499),
-		  mReason("LLURLRequest complete w/no status")
-	{
-	}
-	
-	~LLHTTPClientURLAdaptor()
-	{
-	}
-
-	virtual void httpStatus(U32 status, const std::string& reason)
-	{
-		LLURLRequestComplete::httpStatus(status,reason);
-
-		mStatus = status;
-		mReason = reason;
-	}
-
-	virtual void complete(const LLChannelDescriptors& channels,
-						  const buffer_ptr_t& buffer)
-	{
-		if (mResponder.get())
-		{
-			// Allow clients to parse headers before we attempt to parse
-			// the body and provide completed/result/error calls.
-			mResponder->completedHeader(mStatus, mReason, mHeaderOutput);
-			mResponder->completedRaw(mStatus, mReason, channels, buffer);
-		}
-	}
-	virtual void header(const std::string& header, const std::string& value)
-	{
-		mHeaderOutput[header] = value;
-	}
-
-private:
-	LLCurl::ResponderPtr mResponder;
-	U32 mStatus;
-	std::string mReason;
-	LLSD mHeaderOutput;
-};
-#endif
-
 class LLSDInjector : public Injector
 {
   public:

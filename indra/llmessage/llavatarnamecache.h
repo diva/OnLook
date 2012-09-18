@@ -32,8 +32,8 @@
 
 #include <boost/signals2.hpp>
 
-class LLSD;
 class LLUUID;
+class AIHTTPHeaders;
 
 namespace LLAvatarNameCache
 {
@@ -98,7 +98,7 @@ namespace LLAvatarNameCache
 
 	// Compute name expiration time from HTTP Cache-Control header,
 	// or return default value, in seconds from epoch.
-	F64 nameExpirationFromHeaders(LLSD headers);
+	F64 nameExpirationFromHeaders(AIHTTPHeaders const& headers);
 
 	void addUseDisplayNamesCallback(const use_display_name_signal_t::slot_type& cb);
 }

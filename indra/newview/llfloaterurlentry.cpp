@@ -59,10 +59,13 @@ public:
 
 	  LLHandle<LLFloater> mParent;
 
+	  virtual bool needsHeaders(void) const { return true; }
 
-	  virtual void completedHeader(U32 status, const std::string& reason, const LLSD& content)
+	  virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPHeaders const& headers)
 	  {
-		  std::string media_type = content["content-type"].asString();
+		  std::string media_type;
+		  bool content_type_found = headers.getValue("content-type", media_type);
+		  llassert_always(content_type_found);
 		  std::string::size_type idx1 = media_type.find_first_of(";");
 		  std::string mime_type = media_type.substr(0, idx1);
 		  completeAny(status, mime_type);

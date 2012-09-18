@@ -81,9 +81,6 @@ class AICurlEasyRequestStateMachine : public AIStateMachine, public AICurlEasyHa
 	// Called when this curl easy handle was added to a multi handle.
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat&);
 
-	// Called for each received HTTP header key/value pair.
-	/*virtual*/ void decoded_header(AICurlEasyRequest_wat&, std::string const& key, std::string const& value);
-
 	// Called when this curl easy handle finished processing (right before it is removed from the multi handle).
 	/*virtual*/ void finished(AICurlEasyRequest_wat&);
 

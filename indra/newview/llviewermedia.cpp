@@ -75,11 +75,13 @@ public:
 		  mInitialized(false)
 	{}
 
+	virtual bool needsHeaders(void) const { return true; }
 
-
-	virtual void completedHeader(U32 status, const std::string& reason, const LLSD& content)
+	virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPHeaders const& headers)
 	{
-		std::string media_type = content["content-type"].asString();
+		std::string media_type;
+		bool content_type_found = headers.getValue("content-type", media_type);
+		llassert_always(content_type_found);
 		std::string::size_type idx1 = media_type.find_first_of(";");
 		std::string mime_type = media_type.substr(0, idx1);
 		completeAny(status, mime_type);
@@ -114,13 +116,17 @@ public:
 	{
 	}
 
-	/* virtual */ void completedHeader(U32 status, const std::string& reason, const LLSD& content)
+	/* virtual */ bool needsHeaders(void) const { return true; }
+
+	/* virtual */ void completedHeaders(U32 status, std::string const& reason, AIHTTPHeaders const& headers)
 	{
 		LL_DEBUGS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
-		LL_DEBUGS("MediaAuth") << content << LL_ENDL;
-		std::string cookie = content["set-cookie"].asString();
-		
-		LLViewerMedia::openIDCookieResponse(cookie);
+		LL_DEBUGS("MediaAuth") << headers << LL_ENDL;
+		std::string cookie;
+		if (headers.getValue("set-cookie", cookie))
+		{
+		  LLViewerMedia::openIDCookieResponse(cookie);
+		}
 	}
 
 	/* virtual */ void completedRaw(
@@ -148,14 +154,18 @@ public:
 	{
 	}
 
-	/* virtual */ void completedHeader(U32 status, const std::string& reason, const LLSD& content)
+	/* virtual */ bool needsHeaders(void) const { return true; }
+
+	/* virtual */ void completedHeaders(U32 status, std::string const& reason, AIHTTPHeaders const& headers)
 	{
-		LL_WARNS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
-		LL_WARNS("MediaAuth") << content << LL_ENDL;
+		LL_INFOS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
+		LL_INFOS("MediaAuth") << headers << LL_ENDL;
 
-		std::string cookie = content["set-cookie"].asString();
-
-		LLViewerMedia::getCookieStore()->setCookiesFromHost(cookie, mHost);
+		std::string cookie;
+		if (headers.getValue("set-cookie", cookie))
+		{
+			LLViewerMedia::getCookieStore()->setCookiesFromHost(cookie, mHost);
+		}
 	}
 
 	 void completedRaw(

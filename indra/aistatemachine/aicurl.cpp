@@ -445,9 +445,10 @@ void Responder::setURL(std::string const& url)
 
 // Called with HTML header.
 // virtual
-void Responder::completedHeader(U32, std::string const&, LLSD const&)
+void Responder::completedHeaders(U32, std::string const&, AIHTTPHeaders const&)
 {
-  // Nothing.
+  // This should not be called unless a derived class implemented it.
+  llerrs << "Unexpected call to completedHeaders()." << llendl;
 }
 
 // Called with HTML body.
@@ -1242,12 +1243,6 @@ void CurlEasyRequest::added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_req
 	mEventsTarget->added_to_multi_handle(curl_easy_request_w);
 }
 
-void CurlEasyRequest::decoded_header(AICurlEasyRequest_wat& curl_easy_request_w, std::string const& key, std::string const& value)
-{
-  if (mEventsTarget)
-	mEventsTarget->decoded_header(curl_easy_request_w, key, value);
-}
-
 void CurlEasyRequest::finished(AICurlEasyRequest_wat& curl_easy_request_w)
 {
   if (mEventsTarget)
@@ -1268,7 +1263,7 @@ static S32 const CURL_REQUEST_TIMEOUT = 30;		// Seconds per operation.
 
 LLChannelDescriptors const CurlResponderBuffer::sChannels;
 
-CurlResponderBuffer::CurlResponderBuffer() : mRequestTransferedBytes(0), mResponseTransferedBytes(0)
+CurlResponderBuffer::CurlResponderBuffer() : mRequestTransferedBytes(0), mResponseTransferedBytes(0), mEventsTarget(NULL)
 {
   ThreadSafeBufferedCurlEasyRequest* lockobj = get_lockobj();
   AICurlEasyRequest_wat curl_easy_request_w(*lockobj);
@@ -1358,6 +1353,11 @@ void CurlResponderBuffer::prepRequest(AICurlEasyRequest_wat& curl_easy_request_w
 
   // Keep responder alive.
   mResponder = responder;
+  // Send header events to responder if needed.
+  if (mResponder->needsHeaders())
+  {
+	  send_events_to(mResponder.get());
+  }
 
   // Add extra headers.
   curl_easy_request_w->addHeaders(headers);
@@ -1444,7 +1444,11 @@ size_t CurlResponderBuffer::curlHeaderCallback(char* data, size_t size, size_t n
 	  reason = "Header parse error.";
 	  llwarns << "Received broken header line from server: \"" << header << "\"" << llendl;
 	}
-	AICurlResponderBuffer_wat(*lockobj)->setStatusAndReason(status, reason);
+	{
+	  AICurlResponderBuffer_wat curl_responder_buffer_w(*lockobj);
+	  curl_responder_buffer_w->received_HTTP_header();
+	  curl_responder_buffer_w->setStatusAndReason(status, reason);
+	}
 	return header_len;
   }
 
@@ -1458,7 +1462,7 @@ size_t CurlResponderBuffer::curlHeaderCallback(char* data, size_t size, size_t n
 	key = utf8str_tolower(utf8str_trim(key));
 	value = utf8str_trim(value);
 
-	AICurlResponderBuffer_wat(*lockobj)->decoded_header(buffered_easy_request_w, key, value);
+	AICurlResponderBuffer_wat(*lockobj)->received_header(key, value);
   }
   else
   {
@@ -1472,19 +1476,20 @@ size_t CurlResponderBuffer::curlHeaderCallback(char* data, size_t size, size_t n
   return header_len;
 }
 
-void CurlResponderBuffer::added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w)
+void CurlResponderBuffer::setStatusAndReason(U32 status, std::string const& reason)
 {
-  Dout(dc::curl, "Calling CurlResponderBuffer::added_to_multi_handle(@" << (void*)&*curl_easy_request_w << ") for this = " << (void*)this);
+  mStatus = status;
+  mReason = reason;
 }
 
-void CurlResponderBuffer::decoded_header(AICurlEasyRequest_wat& curl_easy_request_w, std::string const& key, std::string const& value)
+void CurlResponderBuffer::added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w)
 {
-  Dout(dc::curl, "Calling CurlResponderBuffer::decoded_header(@" << (void*)&*curl_easy_request_w << ", \"" << key << "\", \"" << value << "\") for this = " << (void*)this);
+  llerrs << "Unexpected call to added_to_multi_handle()." << llendl;
 }
 
 void CurlResponderBuffer::finished(AICurlEasyRequest_wat& curl_easy_request_w)
 {
-  Dout(dc::curl, "Calling CurlResponderBuffer::finished(@" << (void*)&*curl_easy_request_w << ") for this = " << (void*)this);
+  llerrs << "Unexpected call to finished()." << llendl;
 }
 
 void CurlResponderBuffer::removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w)
@@ -1534,11 +1539,37 @@ void CurlResponderBuffer::processOutput(AICurlEasyRequest_wat& curl_easy_request
 
   if (mResponder)
   {	
+    if (mEventsTarget)
+	{
+	  // Only the responder registers for these events.
+	  llassert(mEventsTarget == mResponder.get());
+	  // Allow clients to parse headers before we attempt to parse
+	  // the body and provide completed/result/error calls.
+	  mEventsTarget->completed_headers(responseCode, responseReason);
+	}
 	mResponder->completedRaw(responseCode, responseReason, sChannels, mOutput);
 	mResponder = NULL;
   }
 
   resetState(curl_easy_request_w);
+}
+
+void CurlResponderBuffer::received_HTTP_header(void)
+{
+  if (mEventsTarget)
+	mEventsTarget->received_HTTP_header();
+}
+
+void CurlResponderBuffer::received_header(std::string const& key, std::string const& value)
+{
+  if (mEventsTarget)
+	mEventsTarget->received_header(key, value);
+}
+
+void CurlResponderBuffer::completed_headers(U32 status, std::string const& reason)
+{
+  if (mEventsTarget)
+	mEventsTarget->completed_headers(status, reason);
 }
 
 //-----------------------------------------------------------------------------
