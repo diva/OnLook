@@ -151,7 +151,7 @@
 #include "llnamevalue.h"
 #include "llpacketack.h"
 #include "llpacketbuffer.h"
-#include "llpacketring.h"
+//#include "llpacketring.h"
 #include "llpartdata.h"
 #include "llregionhandle.h"
 #include "lltaskname.h"

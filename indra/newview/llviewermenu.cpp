@@ -250,6 +250,7 @@
 #include "llfloatervfs.h"
 #include "llfloatervfsexplorer.h"
 #include "shfloatermediaticker.h"
+#include "llpacketring.h"
 // </edit>
 
 #include "scriptcounter.h"
@@ -4048,7 +4049,7 @@ void print_packets_lost(void*)
 
 void drop_packet(void*)
 {
-	gMessageSystem->mPacketRing.dropPackets(1);
+	gMessageSystem->mPacketRing->dropPackets(1);
 }
 
 

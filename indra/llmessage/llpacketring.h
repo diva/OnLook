@@ -32,7 +32,7 @@
 
 #include "llhost.h"
 #include "llpacketbuffer.h"
-#include "llproxy.h"
+//#include "llproxy.h"
 #include "llthrottle.h"
 #include "net.h"
 

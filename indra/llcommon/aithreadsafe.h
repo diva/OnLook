@@ -673,18 +673,18 @@ protected:
 
 #ifdef LL_DEBUG
 	mutable bool mAccessed;
-	mutable apr_os_thread_t mTheadID;
+	mutable AIThreadID mTheadID;
 
 	void accessed(void) const
 	{
 	  if (!mAccessed)
 	  {
 		mAccessed = true;
-		mTheadID = apr_os_thread_current();
+		mTheadID.reset();
 	  }
 	  else
 	  {
-		llassert_always(apr_os_thread_equal(mTheadID, apr_os_thread_current()));
+		llassert_always(mTheadID.equals_current_thread());
 	  }
 	}
 #endif

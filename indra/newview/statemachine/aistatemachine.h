@@ -207,12 +207,17 @@ class AIStateMachine {
 	active_type mActive;						//!< Whether statemachine is idle, queued to be added to the active list, or already on the active list.
 	S64 mSleep;									//!< Non-zero while the state machine is sleeping.
 	LLMutex mIdleActive;						//!< Used for atomic operations on the pair mIdle / mActive.
+#ifdef SHOW_ASSERT
+	AIThreadID mContThread;						//!< Thread that last called locked_cont().
+	bool mCalledThreadUnsafeIdle;				//!< Set to true when idle() is called.
+#endif
 
 	// Callback facilities.
 	// From within an other state machine:
 	AIStateMachine* mParent;					//!< The parent object that started this state machine, or NULL if there isn't any.
 	state_type mNewParentState;					//!< The state at which the parent should continue upon a successful finish.
 	bool mAbortParent;							//!< If true, abort parent on abort(). Otherwise continue as normal.
+	bool mOnAbortSignalParent;					//!< If true and mAbortParent is false, change state of parent even on abort.
 	// From outside a state machine:
 	struct callback_type {
 	  typedef boost::signals2::signal<void (bool)> signal_type;
@@ -228,20 +233,29 @@ class AIStateMachine {
 	static AIThreadSafeSimpleDC<U64> sMaxCount;	//!< Number of cpu clocks below which we start a new state machine within the same frame.
 
   protected:
+	LLMutex mSetStateLock;						//!< For critical areas in set_state() and locked_cont().
+
 	//! State of the derived class. Only valid if mState == bs_run. Call set_state to change.
-	state_type mRunState;
+	volatile state_type mRunState;
 
   public:
 	//! Create a non-running state machine.
-	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mActive(as_idle), mSleep(0), mParent(NULL), mCallback(NULL) { updateSettings(); }
+	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mActive(as_idle), mSleep(0), mParent(NULL), mCallback(NULL)
+#ifdef SHOW_ASSERT
+		, mContThread(AIThreadID::none), mCalledThreadUnsafeIdle(false)
+#endif
+		{ updateSettings(); }
 
   protected:
 	//! The user should call 'kill()', not delete a AIStateMachine (derived) directly.
-	virtual ~AIStateMachine() { llassert(mState == bs_killed && mActive == as_idle); }
+	virtual ~AIStateMachine() { llassert((mState == bs_killed && mActive == as_idle) || mState == bs_initialize); }
 
   public:
-	//! Halt the state machine until cont() is called.
+	//! Halt the state machine until cont() is called (not thread-safe).
 	void idle(void);
+
+	//! Halt the state machine until cont() is called, provided it is still in 'cur_run_state'.
+	void idle(state_type current_run_state);
 
 	//! Temporarily halt the state machine.
 	void yield_frame(unsigned int frames) { mSleep = -(S64)frames; }
@@ -250,15 +264,25 @@ class AIStateMachine {
 	void yield_ms(unsigned int ms) { mSleep = get_clock_count() + calc_clock_frequency() * ms / 1000; }
 
 	//! Continue running after calling idle.
-	void cont(void);
+	void cont(void)
+	{
+		mSetStateLock.lock();
+		// Ignore calls to cont() if the statemachine isn't idle. See comments in set_state().
+		// Calling cont() twice or after calling set_state(), without first calling idle(), is an error.
+		if (mState != bs_run || !mIdle) { llassert(mState != bs_run || !mContThread.equals_current_thread()); mSetStateLock.unlock(); return; }
+		locked_cont();
+	}
+  private:
+	void locked_cont(void);
 
+  public:
 	//---------------------------------------
 	// Changing the state.
 
 	//! Change state to <code>bs_run</code>. May only be called after creation or after returning from finish().
 	// If <code>parent</code> is non-NULL, change the parent state machine's state to <code>new_parent_state</code>
 	// upon finish, or in the case of an abort and when <code>abort_parent</code> is true, call parent->abort() instead.
-	void run(AIStateMachine* parent, state_type new_parent_state, bool abort_parent = true);
+	void run(AIStateMachine* parent, state_type new_parent_state, bool abort_parent = true, bool on_abort_signal_parent = true);
 
 	//! Change state to 'bs_run'. May only be called after creation or after returning from finish().
 	// Does not cause a callback.
@@ -326,11 +350,14 @@ class AIStateMachine {
 	//! Return true if the derived class is running (also when we are idle).
 	bool running(void) const { return mState == bs_run; }
 
+	//! Return true if it's safe to call abort.
+	bool abortable(void) const { return mState == bs_run || mState == bs_initialize; }
+
 	//! Return true if the derived class is running but idle.
 	bool waiting(void) const { return mState == bs_run && mIdle; }
 
 	// Use some safebool idiom (http://www.artima.com/cppsource/safebool.html) rather than operator bool.
-	typedef state_type AIStateMachine::* const bool_type;
+	typedef volatile state_type AIStateMachine::* const bool_type;
 	//! Return true if state machine successfully finished.
 	operator bool_type() const { return ((mState == bs_initialize || mState == bs_callback) && !mAborted) ? &AIStateMachine::mRunState : 0; }
 
@@ -338,8 +365,13 @@ class AIStateMachine {
 	char const* state_str(state_type state);
 
   private:
+	static void add_continued_statemachines(void);
 	static void mainloop(void*);
 	void multiplex(U64 current_time);
+
+  public:
+	//! Abort all running state machines and then run mainloop until all state machines are idle (called when application is exiting).
+	static void flush(void);
 
   protected:
 	//---------------------------------------

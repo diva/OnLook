@@ -76,7 +76,14 @@ LLIOPipe::~LLIOPipe()
 }
 
 //virtual 
-bool LLIOPipe::isValid() 
+bool LLIOPipe::hasExpiration(void) const
+{
+	// LLIOPipe::hasNotExpired always returns true.
+	return false;
+}
+
+//virtual 
+bool LLIOPipe::hasNotExpired(void) const
 {
 	return true ;
 }

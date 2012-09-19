@@ -42,6 +42,7 @@
 #include "v4color.h"
 #include "v4coloru.h"
 #include "llinstancetracker.h"
+#include "llrefcount.h"
 
 #include "llcontrolgroupreader.h"
 

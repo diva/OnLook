@@ -4,31 +4,25 @@
  * @date 2004-11-21
  * @brief Implementation of the i/o pump and related functions.
  *
- * $LicenseInfo:firstyear=2004&license=viewergpl$
- * 
- * Copyright (c) 2004-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2004&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -40,12 +34,11 @@
 #include "apr_poll.h"
 
 #include "llapr.h"
+#include "llfasttimer.h"
 #include "llmemtype.h"
 #include "llstl.h"
 #include "llstat.h"
 #include "llthread.h"
-#include "llfasttimer.h"
-#include <iterator> //VS2010
 
 // These should not be enabled in production, but they can be
 // intensely useful during development for finding certain kinds of
@@ -191,17 +184,28 @@ LLPumpIO::LLPumpIO(void) :
 LLPumpIO::~LLPumpIO()
 {
 	LLMemType m1(LLMemType::MTYPE_IO_PUMP);
-	cleanup();
+#if LL_THREADS_APR
+	if (mChainsMutex) apr_thread_mutex_destroy(mChainsMutex);
+	if (mCallbackMutex) apr_thread_mutex_destroy(mCallbackMutex);
+#endif
+	mChainsMutex = NULL;
+	mCallbackMutex = NULL;
+	if(mPollset)
+	{
+//		lldebugs << "cleaning up pollset" << llendl;
+		apr_pollset_destroy(mPollset);
+		mPollset = NULL;
+	}
 }
 
-bool LLPumpIO::addChain(const chain_t& chain, F32 timeout)
+bool LLPumpIO::addChain(chain_t const& chain, F32 timeout)
 {
 	LLMemType m1(LLMemType::MTYPE_IO_PUMP);
-	if(chain.empty()) return false;
 
-#if LL_THREADS_APR
-	LLScopedLock lock(mChainsMutex);
-#endif
+	chain_t::const_iterator it = chain.begin();
+	chain_t::const_iterator const end = chain.end();
+	if (it == end) return false;
+
 	LLChainInfo info;
 	info.setTimeoutSeconds(timeout);
 	info.mData = LLIOPipe::buffer_ptr_t(new LLBufferArray);
@@ -212,14 +216,17 @@ bool LLPumpIO::addChain(const chain_t& chain, F32 timeout)
 #else
 	lldebugs << "LLPumpIO::addChain() " << chain[0] <<llendl;
 #endif
-	chain_t::const_iterator it = chain.begin();
-	chain_t::const_iterator end = chain.end();
 	for(; it != end; ++it)
 	{
+		info.mHasExpiration = info.mHasExpiration || (*it)->hasExpiration();
 		link.mPipe = (*it);
 		link.mChannels = info.mData->nextChannel();
 		info.mChainLinks.push_back(link);
 	}
+
+#if LL_THREADS_APR
+	LLScopedLock lock(mChainsMutex);
+#endif
 	mPendingChains.push_back(info);
 	return true;
 }
@@ -236,11 +243,10 @@ bool LLPumpIO::addChain(
 	// description, we need to have that description matched to a
 	// particular buffer.
 	if(!data) return false;
-	if(links.empty()) return false;
+	links_t::const_iterator link = links.begin();
+	links_t::const_iterator const end = links.end();
+	if (link == end) return false;
 
-#if LL_THREADS_APR
-	LLScopedLock lock(mChainsMutex);
-#endif
 #if LL_DEBUG_PIPE_TYPE_IN_PUMP
 	lldebugs << "LLPumpIO::addChain() " << links[0].mPipe << " '"
 		<< typeid(*(links[0].mPipe)).name() << "'" << llendl;
@@ -252,6 +258,17 @@ bool LLPumpIO::addChain(
 	info.mChainLinks = links;
 	info.mData = data;
 	info.mContext = context;
+	for (; link != end; ++link)
+	{
+		if (link->mPipe->hasExpiration())
+		{
+			info.mHasExpiration = true;
+			break;
+		}
+	}
+#if LL_THREADS_APR
+	LLScopedLock lock(mChainsMutex);
+#endif
 	mPendingChains.push_back(info);
 	return true;
 }
@@ -438,6 +455,15 @@ void LLPumpIO::pump()
 
 static LLFastTimer::DeclareTimer FTM_PUMP_IO("Pump IO");
 
+LLPumpIO::current_chain_t LLPumpIO::removeRunningChain(LLPumpIO::current_chain_t& run_chain) 
+{
+	std::for_each(
+				(*run_chain).mDescriptors.begin(),
+				(*run_chain).mDescriptors.end(),
+				ll_delete_apr_pollset_fd_client_data());
+	return mRunningChains.erase(run_chain);
+}
+
 //timeout is in microseconds
 void LLPumpIO::pump(const S32& poll_timeout)
 {
@@ -583,10 +609,16 @@ void LLPumpIO::pump(const S32& poll_timeout)
 //						<< (*run_chain).mChainLinks[0].mPipe
 //						<< " because we reached the end." << llendl;
 #endif
-				run_chain = mRunningChains.erase(run_chain);
+				run_chain = removeRunningChain(run_chain);
 				continue;
 			}
 		}
+		else if(isChainExpired(*run_chain))
+		{
+			run_chain = removeRunningChain(run_chain);
+			continue;
+		}
+
 		PUMP_DEBUG;
 		if((*run_chain).mLock)
 		{
@@ -694,11 +726,7 @@ void LLPumpIO::pump(const S32& poll_timeout)
 			PUMP_DEBUG;
 			// This chain is done. Clean up any allocated memory and
 			// erase the chain info.
-			std::for_each(
-				(*run_chain).mDescriptors.begin(),
-				(*run_chain).mDescriptors.end(),
-				ll_delete_apr_pollset_fd_client_data());
-			run_chain = mRunningChains.erase(run_chain);
+			run_chain = removeRunningChain(run_chain);
 
 			// *NOTE: may not always need to rebuild the pollset.
 			mRebuildPollset = true;
@@ -832,22 +860,6 @@ void LLPumpIO::initialize(void)
 	apr_thread_mutex_create(&mChainsMutex, APR_THREAD_MUTEX_UNNESTED, mPool());
 	apr_thread_mutex_create(&mCallbackMutex, APR_THREAD_MUTEX_UNNESTED, mPool());
 #endif
-}
-void LLPumpIO::cleanup()
-{
-	LLMemType m1(LLMemType::MTYPE_IO_PUMP);
-#if LL_THREADS_APR
-	if (mChainsMutex) apr_thread_mutex_destroy(mChainsMutex);
-	if (mCallbackMutex) apr_thread_mutex_destroy(mCallbackMutex);
-#endif
-	mChainsMutex = NULL;
-	mCallbackMutex = NULL;
-	if(mPollset)
-	{
-//		lldebugs << "cleaning up pollset" << llendl;
-		apr_pollset_destroy(mPollset);
-		mPollset = NULL;
-	}
 }
 
 void LLPumpIO::rebuildPollset()
@@ -1083,10 +1095,30 @@ void LLPumpIO::processChain(LLChainInfo& chain)
 	PUMP_DEBUG;
 }
 
+bool LLPumpIO::isChainExpired(LLChainInfo& chain)
+{
+	if(!chain.mHasExpiration)
+	{
+		return false ;
+	}
+
+	for(links_t::iterator iter = chain.mChainLinks.begin(); iter != chain.mChainLinks.end(); ++iter)
+	{
+		if(!(*iter).mPipe->hasNotExpired())
+		{
+			return true ;
+		}
+	}
+
+	return false ;
+}
+
 bool LLPumpIO::handleChainError(
 	LLChainInfo& chain,
 	LLIOPipe::EStatus error)
 {
+	DoutEntering(dc::notice, "LLPumpIO::handleChainError(" << (void*)&chain << ", " << LLIOPipe::lookupStatusString(error) << ")");
+
 	LLMemType m1(LLMemType::MTYPE_IO_PUMP);
 	links_t::reverse_iterator rit;
 	if(chain.mHead == chain.mChainLinks.end())
@@ -1124,6 +1156,9 @@ bool LLPumpIO::handleChainError(
 #endif
 			keep_going = false;
 			break;
+		case LLIOPipe::STATUS_EXPIRED:
+			keep_going = false;
+			break ;
 		default:
 			if(LLIOPipe::isSuccess(error))
 			{
@@ -1146,6 +1181,7 @@ LLPumpIO::LLChainInfo::LLChainInfo() :
 	mInit(false),
 	mLock(0),
 	mEOS(false),
+	mHasExpiration(false),
 	mDescriptorsPool(new LLAPRPool(LLThread::tldata().mRootPool))
 {
 	LLMemType m1(LLMemType::MTYPE_IO_PUMP);

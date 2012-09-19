@@ -1320,8 +1320,15 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				// Will call callbackHttpGet when curl request completes
 				std::vector<std::string> headers;
 				headers.push_back("Accept: image/x-j2c");
-				res = mFetcher->mCurlGetRequest->getByteRange(mUrl, headers, offset, mRequestedSize,
-															  new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, offset, true));
+				try
+				{
+					res = mFetcher->mCurlGetRequest->getByteRange(mUrl, headers, offset, mRequestedSize,
+																  new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, offset, true));
+				}
+				catch(AICurlNoEasyHandle const& error)
+				{
+					llwarns << error.what() << llendl;
+				}
 			}
 			if (!res)
 			{
@@ -2357,14 +2364,6 @@ void LLTextureFetch::commonUpdate()
 	// Run a cross-thread command, if any.
 	cmdDoWork();
 #endif
-
-	// Update Curl on same thread as mCurlGetRequest was constructed
-	llassert_always(mCurlGetRequest);
-	S32 processed = mCurlGetRequest->process();
-	if (processed > 0)
-	{
-		lldebugs << "processed: " << processed << " messages." << llendl;
-	}
 }
 
 
@@ -2429,7 +2428,7 @@ void LLTextureFetch::shutDownImageDecodeThread()
 void LLTextureFetch::startThread()
 {
 	// Construct mCurlGetRequest from Worker Thread
-	mCurlGetRequest = new LLCurlRequest();
+	mCurlGetRequest = new AICurlInterface::Request;
 }
 
 // WORKER THREAD

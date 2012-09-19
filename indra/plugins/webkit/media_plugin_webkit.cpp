@@ -25,8 +25,8 @@
  * $/LicenseInfo$
  * @endcond
  */
-#include "llqtwebkit.h"
 #include "linden_common.h"
+#include "llqtwebkit.h"
 #include "indra_constants.h" // for indra keyboard codes
 
 #include "lltimer.h"
@@ -160,8 +160,8 @@ private:
 		mVolumeCatcher.pump();
 
 		checkEditState();
-		
-		if(mInitState == INIT_STATE_NAVIGATE_COMPLETE)
+	
+		if(mInitState >= INIT_STATE_NAVIGATE_COMPLETE)
 		{
 			if(!mInitialNavigateURL.empty())
 			{
@@ -284,7 +284,7 @@ private:
 		bool result = LLQtWebKit::getInstance()->init( application_dir, component_dir, mProfileDir, native_window_handle );
 		if ( result )
 		{
-			mInitState = INIT_STATE_INITIALIZED;
+			setInitState(INIT_STATE_INITIALIZED);
 
 			// debug spam sent to viewer and displayed in the log as usual
 			postDebugMessage( "browser initialized okay" );

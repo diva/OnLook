@@ -61,7 +61,7 @@ bool LLAgentLanguage::update()
 		body["language"] = language;
 		body["language_is_public"] = gSavedSettings.getBOOL("LanguageIsPublic");
 		
-		LLHTTPClient::post(url, body, new LLHTTPClient::Responder);
+		LLHTTPClient::post(url, body, new LLHTTPClient::ResponderIgnore);
 	}
     return true;
 }

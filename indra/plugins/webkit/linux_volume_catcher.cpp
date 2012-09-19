@@ -36,9 +36,10 @@
  */
 
 #include "linden_common.h"
-# include <set>
+#include <set>
 
 #include "volume_catcher.h"
+#include "llaprpool.h"
 
 #ifndef LL_WINDOWS
 #include <unistd.h>
@@ -53,7 +54,6 @@ extern "C" {
 #include <pulse/subscribe.h>
 #include <pulse/glib-mainloop.h> // There's no special reason why we want the *glib* PA mainloop, but the generic polling implementation seems broken.
 
-#include "llaprpool.h"
 #include "apr_dso.h"
 #ifdef LL_STANDALONE
 #include <dlfcn.h>
