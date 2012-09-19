@@ -389,9 +389,6 @@ void LLRenderTarget::release()
 
 	if (mTex.size() > 0)
 	{
-		//Release before delete.
-		for (U32 i = 0; i < mTex.size(); ++i)
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, LLTexUnit::getInternalType(mUsage), 0, 0);
 		sBytesAllocated -= mResX*mResY*4*mTex.size();
 		LLImageGL::deleteTextures(mUsage, mInternalFormat[0], 0, mTex.size(), &mTex[0], true);
 		mTex.clear();
@@ -778,11 +775,8 @@ bool LLMultisampleBuffer::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth
 	//Restrict to valid sample count
 	{
 		mSamples = samples;
-		mSamples = llmin(mSamples, (U32)4);	//Cap to prevent memory bloat.
-		mSamples = llmin(mSamples, (U32) gGLManager.mMaxIntegerSamples);//GL_RGBA
-
-		if(depth && !stencil)
-			mSamples = llmin(mSamples, (U32) gGLManager.mMaxSamples);	//GL_DEPTH_COMPONENT16_ARB
+		//mSamples = llmin(mSamples, (U32)4);	//Cap to prevent memory bloat.
+		mSamples = llmin(mSamples, (U32) gGLManager.mMaxSamples);
 	}
 
 	if (mSamples <= 1)

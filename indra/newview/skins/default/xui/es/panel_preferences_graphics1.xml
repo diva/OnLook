@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Gráficos" name="Display panel">
 	<check_box label="Ejecutar el Visor en Ventana" name="windowed mode" tool_tip="Si está desmarcado, el visor se ejecutará a pantalla completa cuando inicies sesión."/>
+	<button label="Valores Predeterminados" name="Defaults" tool_tip="Reiniciar a los valores gráficos recomendados" width="170"/>		
 	<text name="WindowSizeLabel">
 		Tamaño de la Ventana:
 	</text>
@@ -18,14 +19,32 @@
 			1024x768
 		</combo_item>
 		<combo_item name="1280x720">
-			1280x720 (HDV720)
+			1280x720 (HD)
+		</combo_item>
+		<combo_item name="1366x768">
+			1366x768
+		</combo_item>
+		<combo_item name="1280x800">
+			1280x800
+		</combo_item>
+		<combo_item name="1440x900">
+			1440x900
+		</combo_item>
+		<combo_item name="1600x900">
+			1600x900 (HD+)
+		</combo_item>
+		<combo_item name="1680×1050">
+			1680×1050
 		</combo_item>
 		<combo_item name="1440x1080">
 			1440x1080 (HDV1080)
 		</combo_item>
 		<combo_item name="1920x1080">
-			1920x1080 (HD1080)
+			1920x1080 (Full-HD)
 		</combo_item>
+		<combo_item name="2560×1440">
+			2560×1440
+		</combo_item>		
 	</combo_box>
 	<text name="DisplayResLabel">
 		Resolución de Pantalla:
@@ -47,11 +66,10 @@
 			16:9 (TV Pantalla ancha)
 		</combo_item>
 	</combo_box>
-	<button label="Predeterminado" name="Defaults" width="110"/>	
+
 	<check_box label="Detectar proporción automáticamente" name="aspect_auto_detect" left="280"/>
 	<tab_container name="graphics_tab">
 		<panel label="General" name="Main">
-			<button label="?" name="GraphicsPreferencesHelpButton"/>
 			<text name="QualityText">
 				Calidad y Rendimiento:
 			</text>
@@ -140,6 +158,9 @@
 			<text name="AvatarPhysicsDetailText">
 				Apagada
 			</text>
+			<text name="DrawDistanceMeterText1">
+				m
+			</text>			
 			<text name="DrawDistanceMeterText2">
 				m
 			</text>
@@ -147,6 +168,9 @@
 			<slider label="Máximo de Partículas:" name="MaxParticleCount"/>
 			<slider label="Máx No Simulados" name="AvatarMaxVisible"/>
 			<slider label="PostProcesado:" name="RenderPostProcess"/>
+			<text name="PostProcessText">
+				Bajo
+			</text>			
 			<text name="MeshDetailText">
 				Nivel de Detalles:
 			</text>
@@ -191,10 +215,8 @@
 					Alto
 				</radio_item>
 			</radio_group>
-			<text name="PostProcessText">
-				Bajo
-			</text>
 		</panel>
+		<!-- =========================== -->
 		<panel name="Hardware" label="Hardware">
 			<check_box label="Filtrado Anisotrópico (más lento si se activa)" name="ani"/>
 			<text name="Antialiasing:">

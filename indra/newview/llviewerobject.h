@@ -93,18 +93,6 @@ typedef void (*inventory_callback)(LLViewerObject*,
 								   S32 serial_num,
 								   void*);
 
-// a small struct for keeping track of joints
-struct LLVOJointInfo
-{
-	EHavokJointType mJointType;
-	LLVector3 mPivot;			// parent-frame
-	// whether the below an axis or anchor (and thus its frame)
-	// depends on the joint type:
-	//     HINGE   ==>   axis=parent-frame
-	//     P2P     ==>   anchor=child-frame
-	LLVector3 mAxisOrAnchor;	
-};
-
 // for exporting textured materials from SL
 struct LLMaterialExportInfo
 {
@@ -192,8 +180,6 @@ public:
 	virtual void 	updateRadius() {};
 	virtual F32 	getVObjRadius() const; // default implemenation is mDrawable->getRadius()
 	
-	BOOL 			isJointChild() const { return mJointInfo ? TRUE : FALSE; } 
-	EHavokJointType	getJointType() const { return mJointInfo ? mJointInfo->mJointType : HJT_INVALID; }
 	// for jointed and other parent-relative hacks
 	LLViewerObject* getSubParent();
 	const LLViewerObject* getSubParent() const;
@@ -233,8 +219,6 @@ public:
 	const LLUUID &getID() const						{ return mID; }
 	U32 getLocalID() const							{ return mLocalID; }
 	U32 getCRC() const								{ return mTotalCRC; }
-	S32 getListIndex() const						{ return mListIndex; }
-	void setListIndex(S32 idx)						{ mListIndex = idx; }
 
 	virtual BOOL isFlexible() const					{ return FALSE; }
 	virtual BOOL isSculpted() const 				{ return FALSE; }
@@ -316,6 +300,7 @@ public:
 
 	inline void setRotation(const F32 x, const F32 y, const F32 z, BOOL damped = FALSE);
 	inline void setRotation(const LLQuaternion& quat, BOOL damped = FALSE);
+	void sendRotationUpdate() const;
 
 	/*virtual*/	void	setNumTEs(const U8 num_tes);
 	/*virtual*/	void	setTE(const U8 te, const LLTextureEntry &texture_entry);
@@ -618,9 +603,6 @@ public:
 	// Last total CRC received from sim, used for caching
 	U32				mTotalCRC;
 
-	// index into LLViewerObjectList::mActiveObjects or -1 if not in list
-	S32				mListIndex;
-
 	LLPointer<LLViewerTexture> *mTEImages;
 
 	// Selection, picking and rendering variables
@@ -654,6 +636,9 @@ public:
 
 	// TODO: Make all this stuff private.  JC
 	LLPointer<LLHUDText> mText;
+	std::string mHudTextString;	//Cache for reset on debug infodisplay toggle.
+	LLColor4 mHudTextColor;		//Cache for reset on debug infodisplay toggle.
+
 	LLPointer<LLHUDIcon> mIcon;
 
 	bool mIsNameAttachment;
@@ -753,7 +738,6 @@ protected:
 	F32				mRotTime;					// Amount (in seconds) that object has rotated according to angular velocity (llSetTargetOmega)
 	LLQuaternion	mAngularVelocityRot;		// accumulated rotation from the angular velocity computations
 
-	LLVOJointInfo*  mJointInfo;
 	U8				mState;	// legacy
 	LLViewerObjectMedia* mMedia;	// NULL if no media associated
 	U8 mClickAction;

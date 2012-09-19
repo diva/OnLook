@@ -35,10 +35,10 @@
 #include "lltoolbrush.h"
 #include "lltoolselectland.h"
 
+// library headers
 #include "llgl.h"
 #include "llnotificationsutil.h"
 #include "llrender.h"
-
 #include "message.h"
 
 #include "llagent.h"

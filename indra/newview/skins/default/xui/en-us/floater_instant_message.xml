@@ -12,12 +12,12 @@
 	<string name="unavailable_text_label">Text chat is not available for this call.</string>
 	<string name="inventory_item_offered">Inventory item offered</string>
 	<button bottom="-37" height="20" label="Profile" left="5" name="profile_callee_btn" width="80"/>
-	<button bottom="-37" height="20" label="Teleport" left_delta="80" name="profile_tele_btn" width="80"/>
 	<button bottom="-37" follows="left|top" halign="center" height="20" label="History" left_delta="80" name="history_btn" visible="true" width="80"/>
+	<button bottom="-37" height="20" label="Teleport" left_delta="80" name="profile_tele_btn" width="80"/>
 	<check_box bottom="-37" follows="top" height="20" left_delta="80" name="rp_mode">RP Mode</check_box>
 	<button bottom="-37" follows="left|top" height="20" image_overlay="icn_voice-call-start.tga" image_overlay_alignment="left" label="Call" left_delta="80" name="start_call_btn" width="80"/>
 	<button bottom="-37" follows="top" height="20" image_overlay="icn_voice-call-end.tga" image_overlay_alignment="left" label="End" name="end_call_btn" visible="false" width="80"/>
-	<panel border="false" bottom="-34" follows="left|top" height="20" left_delta="50" name="speaker_controls" width="100">
+	<panel border="false" bottom="-34" follows="left|top" height="20" left_delta="80" name="speaker_controls" width="100">
 		<volume_slider bottom="0" follows="bottom" height="15" increment="0.05" initial_val="0.5" max_val="1.0" min_val="0.0" name="speaker_volume" width="56"/>
 		<button bottom="0" height="20" image_selected="icn_speaker-muted_dark.tga" image_unselected="icn_speaker_dark.tga" scale_image="false" label="" left_delta="56" name="mute_btn" tool_tip="Mute voice" width="25"/>
 	</panel>

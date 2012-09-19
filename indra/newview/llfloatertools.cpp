@@ -75,11 +75,11 @@
 #include "lltoolplacer.h"
 #include "lltoolselectland.h"
 #include "llui.h"
+#include "llviewercontrol.h"
+#include "llviewerjoystick.h"
 #include "llviewermenu.h"
 #include "llviewerparcelmgr.h"
 #include "llviewerwindow.h"
-#include "llviewercontrol.h"
-#include "llviewerjoystick.h"
 #include "lluictrlfactory.h"
 #include "llmeshrepository.h"
 
@@ -101,7 +101,9 @@ const std::string PANEL_NAMES[LLFloaterTools::PANEL_COUNT] =
 	std::string("Content"),	// PANEL_CONTENTS,
 };
 
+
 // Local prototypes
+void commit_grid_mode(LLUICtrl *ctrl, void*);
 void commit_select_component(LLUICtrl *ctrl, void *data);
 void click_show_more(void*);
 void click_popup_info(void*);
@@ -117,8 +119,7 @@ void click_apply_to_selection(void*);
 void commit_radio_zoom(LLUICtrl *, void*);
 void commit_radio_orbit(LLUICtrl *, void*);
 void commit_radio_pan(LLUICtrl *, void*);
-void commit_grid_mode(LLUICtrl *, void*);
-void commit_slider_zoom(LLUICtrl *, void*);
+void commit_slider_zoom(LLUICtrl *ctrl, void*);
 void commit_select_tool(LLUICtrl *ctrl, void *data);
 
 
@@ -212,7 +213,6 @@ LLPCode toolData[]={
 
 BOOL	LLFloaterTools::postBuild()
 {	
-	
 	// Hide until tool selected
 	setVisible(FALSE);
 
@@ -223,59 +223,60 @@ BOOL	LLFloaterTools::postBuild()
 	getDragHandle()->setEnabled( !gSavedSettings.getBOOL("ToolboxAutoMove") );
 
 	LLRect rect;
-	mBtnFocus = getChild<LLButton>("button focus");//btn;
+	mBtnFocus			= getChild<LLButton>("button focus");//btn;
 	childSetAction("button focus",LLFloaterTools::setEditTool, (void*)LLToolCamera::getInstance());
-	mBtnMove = getChild<LLButton>("button move");
+	mBtnMove			= getChild<LLButton>("button move");
 	childSetAction("button move",LLFloaterTools::setEditTool, (void*)LLToolGrab::getInstance());
-	mBtnEdit = getChild<LLButton>("button edit");
+	mBtnEdit			= getChild<LLButton>("button edit");
 	childSetAction("button edit",LLFloaterTools::setEditTool, (void*)LLToolCompTranslate::getInstance());
-	mBtnCreate = getChild<LLButton>("button create");
+	mBtnCreate			= getChild<LLButton>("button create");
 	childSetAction("button create",LLFloaterTools::setEditTool, (void*)LLToolCompCreate::getInstance());
-	mBtnLand = getChild<LLButton>("button land" );
+	mBtnLand			= getChild<LLButton>("button land" );
 	childSetAction("button land",LLFloaterTools::setEditTool, (void*)LLToolSelectLand::getInstance());
-	mTextStatus = getChild<LLTextBox>("text status");
+	mTextStatus			= getChild<LLTextBox>("text status");
 
 	childSetCommitCallback("slider zoom",commit_slider_zoom,this);
 
-	mRadioZoom = getChild<LLCheckBoxCtrl>("radio zoom");
+	mRadioZoom				= getChild<LLCheckBoxCtrl>("radio zoom");
 	childSetCommitCallback("radio zoom",commit_radio_zoom,this);
-	mRadioOrbit = getChild<LLCheckBoxCtrl>("radio orbit");
+	mRadioOrbit				= getChild<LLCheckBoxCtrl>("radio orbit");
 	childSetCommitCallback("radio orbit",commit_radio_orbit,this);
-	mRadioPan = getChild<LLCheckBoxCtrl>("radio pan");
+	mRadioPan				= getChild<LLCheckBoxCtrl>("radio pan");
 	childSetCommitCallback("radio pan",commit_radio_pan,this);
 
-	mRadioMove = getChild<LLCheckBoxCtrl>("radio move");
+	mRadioMove				= getChild<LLCheckBoxCtrl>("radio move");
 	childSetCommitCallback("radio move",click_popup_grab_drag,this);
-	mRadioLift = getChild<LLCheckBoxCtrl>("radio lift");
+	mRadioLift				= getChild<LLCheckBoxCtrl>("radio lift");
 	childSetCommitCallback("radio lift",click_popup_grab_lift,this);
-	mRadioSpin = getChild<LLCheckBoxCtrl>("radio spin");
+	mRadioSpin				= getChild<LLCheckBoxCtrl>("radio spin");
 	childSetCommitCallback("radio spin",click_popup_grab_spin,NULL);
-	mRadioPosition = getChild<LLCheckBoxCtrl>("radio position");
+	mRadioPosition			= getChild<LLCheckBoxCtrl>("radio position");
 	childSetCommitCallback("radio position",commit_select_tool,NULL);
-	mRadioRotate = getChild<LLCheckBoxCtrl>("radio rotate");
+	mRadioRotate			= getChild<LLCheckBoxCtrl>("radio rotate");
 	childSetCommitCallback("radio rotate",commit_select_tool,NULL);
-	mRadioStretch = getChild<LLCheckBoxCtrl>("radio stretch");
+	mRadioStretch			= getChild<LLCheckBoxCtrl>("radio stretch");
 	childSetCommitCallback("radio stretch",commit_select_tool,NULL);
-	mRadioSelectFace = getChild<LLCheckBoxCtrl>("radio select face");
+	mRadioSelectFace		= getChild<LLCheckBoxCtrl>("radio select face");
 	childSetCommitCallback("radio select face",commit_select_tool,NULL);
-	mRadioAlign = getChild<LLCheckBoxCtrl>("radio align");
+	mRadioAlign				= getChild<LLCheckBoxCtrl>("radio align");
 	childSetCommitCallback("radio align",commit_select_tool,NULL);
-	mCheckSelectIndividual = getChild<LLCheckBoxCtrl>("checkbox edit linked parts");
+	mCheckSelectIndividual	= getChild<LLCheckBoxCtrl>("checkbox edit linked parts");
 	childSetValue("checkbox edit linked parts",(BOOL)gSavedSettings.getBOOL("EditLinkedParts"));
 	childSetCommitCallback("checkbox edit linked parts",commit_select_component,this);
-	mCheckSnapToGrid = getChild<LLCheckBoxCtrl>("checkbox snap to grid");
+	mCheckSnapToGrid		= getChild<LLCheckBoxCtrl>("checkbox snap to grid");
 	childSetValue("checkbox snap to grid",(BOOL)gSavedSettings.getBOOL("SnapEnabled"));
-	mBtnGridOptions = getChild<LLButton>("Options...");
+	mBtnGridOptions			= getChild<LLButton>("Options...");
 	childSetAction("Options...",onClickGridOptions, this);
-	mCheckStretchUniform = getChild<LLCheckBoxCtrl>("checkbox uniform");
+	mCheckStretchUniform	= getChild<LLCheckBoxCtrl>("checkbox uniform");
 	childSetValue("checkbox uniform",(BOOL)gSavedSettings.getBOOL("ScaleUniform"));
-	mCheckStretchTexture = getChild<LLCheckBoxCtrl>("checkbox stretch textures");
+	mCheckStretchTexture	= getChild<LLCheckBoxCtrl>("checkbox stretch textures");
 	childSetValue("checkbox stretch textures",(BOOL)gSavedSettings.getBOOL("ScaleStretchTextures"));
-	mCheckLimitDrag = getChild<LLCheckBoxCtrl>("checkbox limit drag distance");
+	mCheckLimitDrag			= getChild<LLCheckBoxCtrl>("checkbox limit drag distance");
 	childSetValue("checkbox limit drag distance",(BOOL)gSavedSettings.getBOOL("LimitDragDistance"));
-	mTextGridMode = getChild<LLTextBox>("text ruler mode");
-	mComboGridMode = getChild<LLComboBox>("combobox grid mode");
+	mTextGridMode			= getChild<LLTextBox>("text ruler mode");
+	mComboGridMode			= getChild<LLComboBox>("combobox grid mode");
 	childSetCommitCallback("combobox grid mode",commit_grid_mode, this);
+
 	//
 	// Create Buttons
 	//
@@ -287,9 +288,7 @@ BOOL	LLFloaterTools::postBuild()
 		{
 			found->setClickedCallback(boost::bind(&LLFloaterTools::setObjectType, toolData[t]));
 			mButtons.push_back( found );
-		}
-		else
-		{
+		}else{
 			llwarns << "Tool button not found! DOA Pending." << llendl;
 		}
 	}
@@ -320,14 +319,14 @@ BOOL	LLFloaterTools::postBuild()
 	mBtnApplyToSelection = getChild<LLButton>("button apply to selection");
 	childSetAction("button apply to selection",click_apply_to_selection,  (void*)0);
 
-	mSliderDozerSize = getChild<LLSlider>("slider brush size");
+	mSliderDozerSize		= getChild<LLSlider>("slider brush size");
 	childSetCommitCallback("slider brush size", commit_slider_dozer_size,  (void*)0);
 	childSetValue( "slider brush size", gSavedSettings.getF32("LandBrushSize"));
-	
-	mSliderDozerForce = getChild<LLSlider>("slider force");
+
+	mSliderDozerForce		= getChild<LLSlider>("slider force");
 	childSetCommitCallback("slider force",commit_slider_dozer_force,  (void*)0);
 	// the setting stores the actual force multiplier, but the slider is logarithmic, so we convert here
-	childSetValue( "slider force", log10(gSavedSettings.getF32("LandBrushForce")));
+	childSetValue("slider force", log10(gSavedSettings.getF32("LandBrushForce")));
 
 	mTab = getChild<LLTabContainer>("Object Info Tabs");
 	if(mTab)
@@ -491,7 +490,7 @@ void LLFloaterTools::refresh()
 			{
 				value_string = "0"; // An unlinked prim is "link 0".
 			}
-			else 
+			else
 			{
 				children.push_front(selected->getRootEdit()); // need root in the list too
 				S32 index = 0;
@@ -514,7 +513,7 @@ void LLFloaterTools::refresh()
 	}
 	childSetTextArg("link_num_obj_count",  "[DESC]", desc_string);	
 	childSetTextArg("link_num_obj_count",  "[NUM]", value_string);
-	
+
 	LLStringUtil::format_map_t selection_args;
 	selection_args["COUNT"] = llformat("%.1d", (S32)prim_count);
 	if(gMeshRepo.meshRezEnabled())
@@ -597,7 +596,7 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 	childSetVisible("slider zoom", focus_visible);
 	childSetEnabled("slider zoom", gCameraBtnZoom);
 
-	mRadioZoom	->set(	!gCameraBtnOrbit &&
+	mRadioZoom	->set(!gCameraBtnOrbit &&
 						!gCameraBtnPan &&
 						!(mask == MASK_ORBIT) &&
 						!(mask == (MASK_ORBIT | MASK_ALT)) &&
@@ -684,21 +683,21 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 
 		switch (mObjectSelection->getSelectType())
 		{
-		case SELECT_TYPE_HUD:
-		  mComboGridMode->add(getString("grid_screen_text"));
-		  mComboGridMode->add(getString("grid_local_text"));
-		  //mComboGridMode->add(getString("grid_reference_text"));
-		  break;
-		case SELECT_TYPE_WORLD:
-		  mComboGridMode->add(getString("grid_world_text"));
-		  mComboGridMode->add(getString("grid_local_text"));
-		  mComboGridMode->add(getString("grid_reference_text"));
-		  break;
-		case SELECT_TYPE_ATTACHMENT:
-		  mComboGridMode->add(getString("grid_attachment_text"));
-		  mComboGridMode->add(getString("grid_local_text"));
-		  mComboGridMode->add(getString("grid_reference_text"));
-		  break;
+			case SELECT_TYPE_HUD:
+				mComboGridMode->add(getString("grid_screen_text"));
+				mComboGridMode->add(getString("grid_local_text"));
+				//mComboGridMode->add(getString("grid_reference_text"));
+				break;
+			case SELECT_TYPE_WORLD:
+				mComboGridMode->add(getString("grid_world_text"));
+				mComboGridMode->add(getString("grid_local_text"));
+				mComboGridMode->add(getString("grid_reference_text"));
+				break;
+			case SELECT_TYPE_ATTACHMENT:
+				mComboGridMode->add(getString("grid_attachment_text"));
+				mComboGridMode->add(getString("grid_local_text"));
+				mComboGridMode->add(getString("grid_reference_text"));
+				break;
 		}
 
 		mComboGridMode->setCurrentByIndex(index);
@@ -832,8 +831,8 @@ void LLFloaterTools::onOpen()
 	mParcelSelection = LLViewerParcelMgr::getInstance()->getFloatingParcelSelection();
 	mObjectSelection = LLSelectMgr::getInstance()->getEditSelection();
 	
-	// gMenuBarView->setItemVisible(std::string("Tools"), TRUE);
-	// gMenuBarView->arrange();
+	//gMenuBarView->setItemVisible(std::string("Tools"), TRUE);
+	//gMenuBarView->arrange();
 }
 
 // virtual
@@ -868,7 +867,7 @@ void LLFloaterTools::onClose(bool app_quitting)
 		// so manually reset tool to default (pie menu tool)
 		LLToolMgr::getInstance()->getCurrentToolset()->selectFirstTool();
 	}
-	else 
+	else
 	{
 		// Switch back to mouselook toolset
 		LLToolMgr::getInstance()->setCurrentToolset(gMouselookToolset);
@@ -963,10 +962,7 @@ void commit_slider_dozer_force(LLUICtrl *ctrl, void*)
 	gSavedSettings.setF32("LandBrushForce", dozer_force);
 }
 
-
-
-
-void click_apply_to_selection(void* user)
+void click_apply_to_selection(void*)
 {
 	LLToolBrushLand::getInstance()->modifyLandInSelectionGlobal();
 }
@@ -1028,19 +1024,19 @@ void commit_select_component(LLUICtrl *ctrl, void *data)
 	}
 }
 
-void commit_grid_mode(LLUICtrl *ctrl, void *data)   
-{   
-	LLComboBox* combo = (LLComboBox*)ctrl;   
-    
-	LLSelectMgr::getInstance()->setGridMode((EGridMode)combo->getCurrentIndex());
-} 
-
 // static 
 void LLFloaterTools::setObjectType( LLPCode pcode )
 {
 	LLToolPlacer::setObjectType( pcode );
 	gSavedSettings.setBOOL("CreateToolCopySelection", FALSE);
 	gFocusMgr.setMouseCapture(NULL);
+}
+
+void commit_grid_mode(LLUICtrl *ctrl, void *data)
+{
+	LLComboBox* combo = (LLComboBox*)ctrl;
+
+	LLSelectMgr::getInstance()->setGridMode((EGridMode)combo->getCurrentIndex());
 }
 
 // static
@@ -1069,25 +1065,25 @@ void LLFloaterTools::onSelectTreesGrass(LLUICtrl*, void*)
 {
 	const std::string &selected = gFloaterTools->mComboTreesGrass->getValue();
 	LLPCode pcode = LLToolPlacer::getObjectType();
-	if (pcode == LL_PCODE_LEGACY_TREE) 
+	if (pcode == LL_PCODE_LEGACY_TREE)
 	{
 		gSavedSettings.setString("LastTree", selected);
-	} 
-	else if (pcode == LL_PCODE_LEGACY_GRASS) 
+	}
+	else if (pcode == LL_PCODE_LEGACY_GRASS)
 	{
 		gSavedSettings.setString("LastGrass", selected);
-	}  
+	}
 }
 
 void LLFloaterTools::updateTreeGrassCombo(bool visible)
 {
 	LLTextBox* tree_grass_label = getChild<LLTextBox>("tree_grass_label");
-	if (visible) 
+	if (visible)
 	{
 		LLPCode pcode = LLToolPlacer::getObjectType();
 		std::map<std::string, S32>::iterator it, end;
 		std::string selected;
-		if (pcode == LL_PCODE_LEGACY_TREE) 
+		if (pcode == LL_PCODE_LEGACY_TREE)
 		{
 			tree_grass_label->setVisible(visible);
 			LLButton* button = getChild<LLButton>("ToolTree");
@@ -1096,8 +1092,8 @@ void LLFloaterTools::updateTreeGrassCombo(bool visible)
 			selected = gSavedSettings.getString("LastTree");
 			it = LLVOTree::sSpeciesNames.begin();
 			end = LLVOTree::sSpeciesNames.end();
-		} 
-		else if (pcode == LL_PCODE_LEGACY_GRASS) 
+		}
+		else if (pcode == LL_PCODE_LEGACY_GRASS)
 		{
 			tree_grass_label->setVisible(visible);
 			LLButton* button = getChild<LLButton>("ToolGrass");
@@ -1106,8 +1102,8 @@ void LLFloaterTools::updateTreeGrassCombo(bool visible)
 			selected = gSavedSettings.getString("LastGrass");
 			it = LLVOGrass::sSpeciesNames.begin();
 			end = LLVOGrass::sSpeciesNames.end();
-		} 
-		else 
+		}
+		else
 		{
 			mComboTreesGrass->removeall();
 			mComboTreesGrass->setLabel(LLStringExplicit(""));  // LLComboBox::removeall() does not clear the label
@@ -1122,7 +1118,7 @@ void LLFloaterTools::updateTreeGrassCombo(bool visible)
 
 		int select = 0, i = 0;
 
-		while (it != end) 
+		while (it != end)
 		{
 			const std::string &species = it->first;
 			mComboTreesGrass->add(species);  ++i;

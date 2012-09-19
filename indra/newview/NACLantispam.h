@@ -25,11 +25,11 @@ class NACLAntiSpamQueueEntry
 protected:
 	NACLAntiSpamQueueEntry();
 	void clearEntry();
-	U32 getEntryAmount();
-	U32 getEntryTime();
+	U32 getEntryAmount() const;
+	U32 getEntryTime() const;
 	void updateEntryAmount();
 	void updateEntryTime();
-	bool getBlocked();
+	bool getBlocked() const;
 	void setBlocked();
 private:
 	U32 entryAmount;
@@ -39,6 +39,9 @@ private:
 class NACLAntiSpamQueue
 {
 	friend class NACLAntiSpamRegistry;
+public:
+	U32 getAmount() const;
+	U32 getTime() const;
 protected:
 	NACLAntiSpamQueue(U32 time, U32 amount);
 	void setAmount(U32 amount);
@@ -58,7 +61,7 @@ class NACLAntiSpamRegistry
 public:
 	NACLAntiSpamRegistry(U32 time=2, U32 amount=10);
 	static void registerQueues(U32 time=2, U32 amount=10);
-	static void registerQueue(U32 name, U32 time, U32 amount);
+//	static void registerQueue(U32 name, U32 time, U32 amount);
 	static void setRegisteredQueueTime(U32 name, U32 time);
 	static void setRegisteredQueueAmount(U32 name,U32 amount);
 	static void setAllQueueTimes(U32 amount);

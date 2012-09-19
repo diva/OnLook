@@ -32,7 +32,7 @@
 #define AISTATEMACHINE_H
 
 #include "aithreadsafe.h"
-#include "llfasttimer.h"
+#include "lltimer.h"
 #include <boost/signals2.hpp>
 
 //!
@@ -247,7 +247,7 @@ class AIStateMachine {
 	void yield_frame(unsigned int frames) { mSleep = -(S64)frames; }
 
 	//! Temporarily halt the state machine.
-	void yield_ms(unsigned int ms) { mSleep = LLFastTimer::getCPUClockCount64() + LLFastTimer::countsPerSecond() * ms / 1000; }
+	void yield_ms(unsigned int ms) { mSleep = get_clock_count() + calc_clock_frequency() * ms / 1000; }
 
 	//! Continue running after calling idle.
 	void cont(void);

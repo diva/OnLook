@@ -66,7 +66,7 @@ public:
 	public:
 		~NamedTimer();
 
-		enum { HISTORY_NUM = 300 };
+		static const int HISTORY_NUM;
 
 		const std::string& getName() const { return mName; }
 		NamedTimer* getParent() const { return mParent; }
@@ -82,8 +82,8 @@ public:
 		void setCollapsed(bool collapsed) { mCollapsed = collapsed; }
 		bool getCollapsed() const { return mCollapsed; }
 
-		U32 getCountAverage() const; //{ return mCountAverage }
-		U32 getCallAverage() const; //{ return mCallAverage }
+		U32 getCountAverage() const;
+		U32 getCallAverage() const;
 
 		U32 getHistoricalCount(S32 history_index = 0) const;
 		U32 getHistoricalCalls(S32 history_index = 0) const;
@@ -122,11 +122,11 @@ public:
 
 		U32 		mTotalTimeCounter;
 
-		U32 		mCountAverage;
-		U32			mCallAverage;
+		F64 		mCountAverage;
+		F64			mCallAverage;
 
-		U32*		mCountHistory;
-		U32*		mCallHistory;
+		std::vector<U32> mCountHistory;
+		std::vector<U32> mCallHistory;
 
 		// tree structure
 		NamedTimer*					mParent;				// NamedTimer of caller(parent)
@@ -258,11 +258,10 @@ public:
 	static CurTimerData		sCurTimerData;
 	static std::string sClockType;
 
-public:
+private:
 	static U32 getCPUClockCount32();
 	static U64 getCPUClockCount64();
 
-private:
 	static S32				sCurFrameIndex;
 	static S32				sLastFrameIndex;
 	static U64				sLastFrameTime;

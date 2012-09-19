@@ -87,7 +87,7 @@ void agent_toggle_down( EKeystate s )
 	if(KEYSTATE_UP == s) return;
 	
 	gAgent.moveUp(-1);
-	if(KEYSTATE_DOWN == s && !gAgent.getFlying())
+	if(KEYSTATE_DOWN == s && !gAgent.getFlying() && gSavedSettings.getBOOL("SGShiftCrouchToggle"))
 	{
 		isCrouch = !isCrouch;
 	}

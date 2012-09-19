@@ -52,7 +52,14 @@ add_executable(SLPlugin
 set_target_properties(SLPlugin
   PROPERTIES
   MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/slplugin_info.plist
+)
+
+if (WINDOWS)
+  set_target_properties(SLPlugin
+    PROPERTIES
+    LINK_FLAGS "/OPT:NOREF"
   )
+endif()
 
 target_link_libraries(SLPlugin
   ${LLPLUGIN_LIBRARIES}

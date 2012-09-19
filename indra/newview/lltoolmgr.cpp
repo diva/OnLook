@@ -34,8 +34,9 @@
 
 #include "lltoolmgr.h"
 
-#include "lltool.h"
+#include "llfirstuse.h"
 // tools and manipulators
+#include "lltool.h"
 #include "llmanipscale.h"
 #include "llselectmgr.h"
 #include "lltoolbrush.h"
@@ -59,7 +60,6 @@
 #include "llviewerjoystick.h"
 #include "llviewermenu.h"
 #include "llviewerparcelmgr.h"
-#include "llfirstuse.h"
 #include "llfloatertools.h"
 
 #include "rlvhandler.h"
@@ -315,7 +315,7 @@ void LLToolMgr::toggleBuildMode()
 			{
 				handle_toggle_flycam();
 			}
-				
+
 			if (gAgentCamera.getFocusOnAvatar())
 			{
 				// zoom in if we're looking at the avatar
@@ -514,3 +514,7 @@ void LLToolset::selectPrevTool()
 		selectToolByIndex((S32)mToolList.size()-1);
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////
+
+

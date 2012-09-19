@@ -1044,9 +1044,9 @@ BOOL LLVOVolume::calcLOD()
 	F32 radius;
 	F32 distance;
 
-	if (mDrawable->isState(LLDrawable::RIGGED) && getAvatar())
+	if (mDrawable->isState(LLDrawable::RIGGED) && getAvatar() && getAvatar()->mDrawable)
 	{
-		LLVOAvatar* avatar = getAvatar(); 
+		LLVOAvatar* avatar = getAvatar();
 		distance = avatar->mDrawable->mDistanceWRTCamera;
 		radius = avatar->getBinRadius();
 	}
@@ -1153,6 +1153,9 @@ void LLVOVolume::updateFaceFlags()
 {
 	for (S32 i = 0; i < getVolume()->getNumFaces(); i++)
 	{
+		if(mDrawable->getNumFaces() <= i || getNumTEs() <= i)
+			return;
+
 		LLFace *face = mDrawable->getFace(i);
 		if (face)
 		{
@@ -1602,9 +1605,13 @@ S32 LLVOVolume::setTEColor(const U8 te, const LLColor4& color)
 	}
 	else if (color != tep->getColor())
 	{
-		if (color.mV[3] != tep->getColor().mV[3])
+		F32 old_alpha = tep->getColor().mV[3];
+		if ((color.mV[3] != old_alpha) && (color.mV[3] == 1.f || old_alpha == 1.f))
 		{
 			gPipeline.markTextured(mDrawable);
+			//treat this alpha change as an LoD update since render batches may need to get rebuilt
+			mLODChanged = TRUE;
+			gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME, FALSE);
 		}
 		retval = LLPrimitive::setTEColor(te, color);
 		if (mDrawable.notNull() && retval)
@@ -2824,10 +2831,11 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector3& start, const LLVector3& e
 
 	if (mDrawable->isState(LLDrawable::RIGGED))
 	{
-		if (gFloaterTools->getVisible() && getAvatar()->isSelf())
+		static const LLCachedControl<bool> allow_mesh_picking("SGAllowRiggedMeshSelection");
+		if (allow_mesh_picking && gFloaterTools->getVisible() && getAvatar()->isSelf())
 		{
 			updateRiggedVolume();
-			genBBoxes(FALSE);
+			//genBBoxes(FALSE);
 			volume = mRiggedVolume;
 			transform = false;
 		}
@@ -3507,8 +3515,8 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 				continue;
 			}
 
-			if ((vobj->isMesh() &&
-				(vobj->getVolume() && !vobj->getVolume()->isMeshAssetLoaded()) || !gMeshRepo.meshRezEnabled()))
+			if (vobj->isMesh() &&
+					((vobj->getVolume() && !vobj->getVolume()->isMeshAssetLoaded()) || !gMeshRepo.meshRezEnabled()))
 			{
 				continue;
 			}

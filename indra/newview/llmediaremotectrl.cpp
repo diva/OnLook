@@ -241,7 +241,7 @@ void LLMediaRemoteCtrl::enableMediaButtons()
 	LLButton* music_stop_btn = mMusicStopBtn;
 	LLButton* music_pause_btn = mMusicPauseBtn;
 	LLButton* media_play_btn = mMediaPlayBtn;
-	LLButton* media_stop_btn = mMediaPlayBtn;
+	LLButton* media_stop_btn = mMediaStopBtn;
 	LLButton* media_pause_btn = mMediaPauseBtn;
 	LLIconCtrl* media_icon = mMediaIcon;
 

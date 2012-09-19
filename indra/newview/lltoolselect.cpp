@@ -108,7 +108,7 @@ LLObjectSelectionHandle LLToolSelect::handleObjectSelection(const LLPickInfo& pi
 				}
 			}
 		}
-		
+
 		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_FARTOUCH)) && (object) && ((!object->isAttachment()) || (!object->permYouOwner())) &&
 			 (dist_vec_squared(gAgent.getPositionAgent(), object->getPositionRegion()) > 1.5f * 1.5f) )
 		{
@@ -265,7 +265,7 @@ LLObjectSelectionHandle LLToolSelect::handleObjectSelection(const LLPickInfo& pi
 	} //if(!object)
 
 	// Cleanup temp select settings above.
-	if (temp_select || LLSelectMgr::getInstance()->mAllowSelectAvatar)
+	if (temp_select ||LLSelectMgr::getInstance()->mAllowSelectAvatar)
 	{
 		gSavedSettings.setBOOL("SelectOwnedOnly", select_owned);
 		gSavedSettings.setBOOL("SelectMovableOnly", select_movable);
