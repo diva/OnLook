@@ -39,6 +39,9 @@
 
 #include "linden_common.h"
 
+#if LL_WINDOWS
+#include <winsock2.h> //remove classic winsock from windows.h
+#endif
 #define OPENSSL_THREAD_DEFINES
 #include <openssl/opensslconf.h>	// OPENSSL_THREADS
 #include <openssl/crypto.h>
