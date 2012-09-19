@@ -1276,6 +1276,7 @@ void LLSpatialGroup::handleDestruction(const TreeNode* node)
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	setState(DEAD);
 	
+	{OctreeGuard guard(mOctreeNode);
 	for (element_iter i = getDataBegin(); i != getDataEnd(); ++i)
 	{
 		LLDrawable* drawable = *i;
@@ -1283,6 +1284,7 @@ void LLSpatialGroup::handleDestruction(const TreeNode* node)
 		{
 			drawable->setSpatialGroup(NULL);
 		}
+	}
 	}
 	
 	//clean up avatar attachment stats
@@ -1363,6 +1365,7 @@ void LLSpatialGroup::destroyGL(bool keep_occlusion)
 	}
 
 
+	OctreeGuard guard(mOctreeNode);
 	for (LLSpatialGroup::element_iter i = getDataBegin(); i != getDataEnd(); ++i)
 	{
 		LLDrawable* drawable = *i;
@@ -2065,6 +2068,7 @@ public:
 	{
 		LLSpatialGroup::OctreeNode* branch = group->mOctreeNode;
 
+		OctreeGuard guard(branch);
 		for (LLSpatialGroup::OctreeNode::const_element_iter i = branch->getDataBegin(); i != branch->getDataEnd(); ++i)
 		{
 			LLDrawable* drawable = *i;
@@ -2189,6 +2193,7 @@ public:
 		LLSpatialGroup* group = (LLSpatialGroup*) state->getListener(0);
 		group->destroyGL();
 
+		{OctreeGuard guard(group->mOctreeNode);
 		for (LLSpatialGroup::element_iter i = group->getDataBegin(); i != group->getDataEnd(); ++i)
 		{
 			LLDrawable* drawable = *i;
@@ -2196,6 +2201,7 @@ public:
 			{
 				gPipeline.markRebuild(drawable, LLDrawable::REBUILD_ALL, TRUE);
 			}
+		}
 		}
 
 		for (LLSpatialGroup::bridge_list_t::iterator i = group->mBridgeList.begin(); i != group->mBridgeList.end(); ++i)
@@ -2502,6 +2508,7 @@ void renderOctree(LLSpatialGroup* group)
 			gGL.flush();
 			glLineWidth(1.f);
 			gGL.flush();
+			OctreeGuard guard(group->mOctreeNode);
 			for (LLSpatialGroup::element_iter i = group->getDataBegin(); i != group->getDataEnd(); ++i)
 			{
 				LLDrawable* drawable = *i;
@@ -3358,6 +3365,7 @@ void renderPhysicsShape(LLDrawable* drawable, LLVOVolume* volume)
 
 void renderPhysicsShapes(LLSpatialGroup* group)
 {
+	OctreeGuard guard(group->mOctreeNode);
 	for (LLSpatialGroup::OctreeNode::const_element_iter i = group->getDataBegin(); i != group->getDataEnd(); ++i)
 	{
 		LLDrawable* drawable = *i;
@@ -3885,6 +3893,7 @@ public:
 			}
 		}
 
+		{OctreeGuard guard(branch);
 		for (LLSpatialGroup::OctreeNode::const_element_iter i = branch->getDataBegin(); i != branch->getDataEnd(); ++i)
 		{
 			LLDrawable* drawable = *i;
@@ -3980,7 +3989,7 @@ public:
 					}
 				}
 			}
-		}
+		}}
 		
 		for (LLSpatialGroup::draw_map_t::iterator i = group->mDrawMap.begin(); i != group->mDrawMap.end(); ++i)
 		{
@@ -4070,6 +4079,7 @@ public:
 			return;
 		}
 
+		OctreeGuard guard(branch);
 		for (LLSpatialGroup::OctreeNode::const_element_iter i = branch->getDataBegin(); i != branch->getDataEnd(); ++i)
 		{
 			LLDrawable* drawable = *i;
@@ -4293,6 +4303,7 @@ public:
 	
 	virtual void visit(const LLSpatialGroup::OctreeNode* branch) 
 	{	
+		OctreeGuard guard(branch);
 		for (LLSpatialGroup::OctreeNode::const_element_iter i = branch->getDataBegin(); i != branch->getDataEnd(); ++i)
 		{
 			check(*i);
@@ -4303,6 +4314,7 @@ public:
 	{
 		node->accept(this);
 	
+		OctreeGuard guard(node);
 		for (U32 i = 0; i < node->getChildCount(); i++)
 		{
 			const LLSpatialGroup::OctreeNode* child = node->getChild(i);
