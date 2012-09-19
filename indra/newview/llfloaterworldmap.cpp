@@ -64,6 +64,7 @@
 #include "llscrolllistctrl.h"
 #include "lltextbox.h"
 #include "lltracker.h"
+#include "lltrans.h"
 #include "llurldispatcher.h"
 #include "llviewermenu.h"
 #include "llviewerregion.h"
@@ -1625,7 +1626,8 @@ void LLFloaterWorldMap::updateSims(bool found_null_sim)
 	}
 	else
 	{
-		list->addCommentText(std::string("None found."));
+		// if we found nothing, say "none"
+		list->addCommentText(LLTrans::getString("worldmap_results_none_found"));
 		list->operateOnAll(LLCtrlListInterface::OP_DESELECT);
 	}
 }

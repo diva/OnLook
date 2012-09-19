@@ -9,7 +9,7 @@
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-110" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="center" height="14" left="4"
-	     mouse_opaque="true" name="Multiple" v_pad="0" width="163">
+	     mouse_opaque="false" name="Multiple" v_pad="0" width="163">
 		Multiple
 	</text>
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
