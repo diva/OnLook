@@ -176,6 +176,8 @@
 			<boolean>0</boolean>
       <key>enable_posterize</key>
       <boolean>0</boolean>
+      <key>enable_motionblur</key>
+      <boolean>0</boolean>
 			<key>gauss_blur_passes</key>
 			<integer>2</integer>
 			<key>extract_high</key>
@@ -189,6 +191,8 @@
 			<key>saturation</key>
 			<real>1</real>
       <key>posterize_layers</key>
+      <real>10</real>
+      <key>blur_strength</key>
       <real>10</real>
     </map>
 	</map>

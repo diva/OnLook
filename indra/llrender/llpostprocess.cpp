@@ -48,6 +48,7 @@ extern LLGLSLShader			gPostColorFilterProgram;
 extern LLGLSLShader			gPostNightVisionProgram;
 extern LLGLSLShader			gPostGaussianBlurProgram;
 extern LLGLSLShader			gPostPosterizeProgram;
+extern LLGLSLShader			gPostMotionBlurProgram;
 
 static const unsigned int NOISE_SIZE = 512;
 
@@ -259,6 +260,53 @@ public:
 	}
 };
 
+class LLMotionShader : public LLPostProcessShader
+{
+private:
+	LLShaderSetting<bool> mEnabled;
+	LLShaderSetting<S32> mStrength;
+public:
+	LLMotionShader() :
+		mEnabled("enable_motionblur",false),
+		mStrength("blur_strength",false)
+	{
+		mSettings.push_back(&mEnabled);
+		mSettings.push_back(&mStrength);
+	}
+	bool isEnabled()	{ return mEnabled && gPostMotionBlurProgram.mProgramObject; }
+	S32 getColorChannel()	{ return 0; }
+	S32 getDepthChannel()	{ return 1; }
+	QuadType bind()
+	{
+		if(!isEnabled())
+		{
+			return QUAD_NONE;
+		}
+
+		glh::matrix4f inv_proj(gGLModelView);
+		inv_proj.mult_left(gGLProjection);
+		inv_proj = inv_proj.inverse();
+		glh::matrix4f prev_proj(gGLPreviousModelView);
+		prev_proj.mult_left(gGLProjection);
+
+		LLVector2 screen_rect = LLPostProcess::getInstance()->getDimensions();
+
+		gPostMotionBlurProgram.bind();
+		gPostMotionBlurProgram.uniformMatrix4fv("prev_proj", 1, GL_FALSE, prev_proj.m);
+		gPostMotionBlurProgram.uniformMatrix4fv("inv_proj", 1, GL_FALSE, inv_proj.m);
+		gPostMotionBlurProgram.uniform2fv("screen_res", 1, screen_rect.mV);
+		gPostMotionBlurProgram.uniform1i("blur_strength", mStrength);
+	}
+	bool draw(U32 pass) 
+	{
+		return pass == 1;
+	}
+	void unbind()
+	{
+		gPostMotionBlurProgram.unbind();
+	}
+};
+
 LLPostProcess::LLPostProcess(void) : 
 					mVBO(NULL),
 					mDepthTexture(0),
@@ -269,10 +317,12 @@ LLPostProcess::LLPostProcess(void) :
 					mSelectedEffectInfo(LLSD::emptyMap()),
 					mAllEffectInfo(LLSD::emptyMap())
 {
+	mShaders.push_back(new LLMotionShader());
 	mShaders.push_back(new LLColorFilterShader());
 	mShaders.push_back(new LLNightVisionShader());
 	mShaders.push_back(new LLGaussBlurShader());
 	mShaders.push_back(new LLPosterizeShader());
+
 
 	/*  Do nothing.  Needs to be updated to use our current shader system, and to work with the move into llrender.*/
 	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight", XML_FILENAME));
