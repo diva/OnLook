@@ -185,8 +185,16 @@ public:
 	virtual void updateShaderUniforms(LLGLSLShader * shader) = 0; // Pure Virtual
 
 public:
+	struct CachedObjectInfo
+	{
+		CachedObjectInfo(GLhandleARB handle, U32 level, GLenum type) : 
+			mHandle(handle), mLevel(level), mType(type) {}
+		GLhandleARB mHandle;	//Actual handle of the opengl shader object.
+		U32 mLevel;				//Level /might/ not be needed, but it's stored to ensure there's no change in behavior.
+		GLenum mType;			//GL_VERTEX_SHADER_ARB or GL_FRAGMENT_SHADER_ARB. Tracked because some utility shaders can be loaded as both types (carefully).
+	};
 	// Map of shader names to compiled
-	std::map<std::string, GLhandleARB> mShaderObjects;
+	std::multimap<std::string, CachedObjectInfo > mShaderObjects;	//Singu Note: Packing more info here. Doing such provides capability to skip unneeded duplicate loading..
 
 	//global (reserved slot) shader parameters
 	std::vector<std::string> mReservedAttribs;

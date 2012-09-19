@@ -221,7 +221,7 @@ private:
 	std::list<LLUUID> mIgnoreGroupList;
 
 public:
-		
+
 	S32 getIgnoreGroupListCount() { return mIgnoreGroupList.size(); }
 };
 
@@ -230,11 +230,6 @@ class LLFloaterIM : public LLMultiFloater
 {
 public:
 	LLFloaterIM();
-	/*virtual*/ BOOL postBuild();
-
-	static std::map<std::string,std::string> sEventStringsMap;
-	static std::map<std::string,std::string> sErrorStringsMap;
-	static std::map<std::string,std::string> sForceCloseSessionMap;
 };
 
 // Globals

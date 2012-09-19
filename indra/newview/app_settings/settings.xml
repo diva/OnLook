@@ -9,6 +9,17 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+	<key>SGAllowRiggedMeshSelection</key>
+	<map>
+	  <key>Comment</key>
+	  <string>Allow selection of your worn rigged meshes in build mode</string>
+	  <key>Persist</key>
+	  <integer>1</integer>
+	  <key>Type</key>
+	  <string>Boolean</string>
+	  <key>Value</key>
+	  <integer>0</integer>
+	</map>
 	<key>SGShiftCrouchToggle</key>
 	<map>
 	  <key>Comment</key>
@@ -20,7 +31,6 @@
 	  <key>Value</key>
 	  <integer>1</integer>
 	</map>
-
 	<key>SGServerVersionChangedNotification</key>
 	<map>
 	  <key>Comment</key>
@@ -1032,7 +1042,7 @@
     <key>_NACL_AntiSpamGlobalQueue</key>
     <map>
         <key>Comment</key>
-        <string>Collect spamtypes together, instead of individually counting them</string>
+		<string>Collect spamtypes together, instead of individually counting them; Use in cases of extreme spam, only.</string>
         <key>Persist</key>
         <integer>1</integer>
         <key>Type</key>
@@ -1043,7 +1053,7 @@
     <key>_NACL_AntiSpamTime</key>
     <map>
         <key>Comment</key>
-        <string>Time in seconds for spamtype to accumulate the _NACL_AntiSpamAmount and be blocked</string>
+        <string>Time in seconds for spamtype to accumulate to more than _NACL_AntiSpamAmount and be blocked</string>
         <key>Persist</key>
         <integer>1</integer>
         <key>Type</key>
@@ -1054,7 +1064,7 @@
         <key>_NACL_AntiSpamAmount</key>
         <map>
         <key>Comment</key>
-        <string>Amount of spamtype to be reached before the blocking will occur.</string>
+        <string>Count of spamtype to be reached during _NACL_AntiSpamTime before the spam blocking will occur.</string>
         <key>Persist</key>
         <integer>1</integer>
         <key>Type</key>
@@ -1065,7 +1075,7 @@
         <key>_NACL_AntiSpamSoundMulti</key>
         <map>
         <key>Comment</key>
-        <string> </string>
+        <string>Multiplier for _NACL_AntiSpamTime for sounds heard in _NACL_AntiSpamTime interval needed to trigger a block, since sounds are more common than messages</string>
         <key>Persist</key>
         <integer>1</integer>
         <key>Type</key>
@@ -1076,18 +1086,18 @@
         <key>_NACL_AntiSpamNewlines</key>
         <map>
         <key>Comment</key>
-        <string>How many newlines a message can have before it's considered spam.</string>
+        <string>How many newlines a message is allowed to have without being considered spam.</string>
         <key>Persist</key>
         <integer>1</integer>
         <key>Type</key>
         <string>U32</string>
         <key>Value</key>
-        <integer>20</integer>
+        <integer>70</integer>
     </map>
     <key>_NACL_AntiSpamSoundPreloadMulti</key>
     <map>
         <key>Comment</key>
-        <string> </string>
+        <string>Multiplier for _NACL_AntiSpamTime for sounds preloaded in _NACL_AntiSpamTime interval needed to trigger a block, since sound preloads are more common than messages</string>
         <key>Persist</key>
         <integer>1</integer>
         <key>Type</key>

@@ -74,6 +74,7 @@
 #include "llsurface.h"
 #include "llviewercontrol.h"
 #include "lluictrlfactory.h"
+#include "lltrans.h"
 
 #include "lltransfertargetfile.h"
 #include "lltransfersourcefile.h"
@@ -172,6 +173,7 @@ LLFloaterGodTools::~LLFloaterGodTools()
 	// children automatically deleted
 }
 
+
 U32 LLFloaterGodTools::computeRegionFlags() const
 {
 	U32 flags = gAgent.getRegion()->getRegionFlags();
@@ -245,14 +247,16 @@ void LLFloaterGodTools::showPanel(const std::string& panel_name)
 void LLFloaterGodTools::onTabChanged(LLUICtrl* ctrl, const LLSD& param)
 {
 	LLPanel* panel = (LLPanel*)ctrl->getChildView(param.asString(),false,false);
-	if(panel)
+	if (panel)
 		panel->setFocus(TRUE);
 }
-
 
 // static
 void LLFloaterGodTools::processRegionInfo(LLMessageSystem* msg)
 {
+	llassert(msg);
+	if (!msg) return;
+
 	//const S32 SIM_NAME_BUF = 256;
 	U32 region_flags;
 	U8 sim_access;
@@ -307,12 +311,12 @@ void LLFloaterGodTools::processRegionInfo(LLMessageSystem* msg)
 		regionp->setBillableFactor(billable_factor);
 	}
 
+	if (!sGodTools) return;
+
 	// push values to god tools, if available
-	if (sGodTools 
+	if ( gAgent.isGodlike()
 		&& sGodTools->mPanelRegionTools
-		&& sGodTools->mPanelObjectTools
-		&& msg
-		&& gAgent.isGodlike())
+		&& sGodTools->mPanelObjectTools)
 	{
 		LLPanelRegionTools* rtool = sGodTools->mPanelRegionTools;
 		sGodTools->mCurrentHost = host;
@@ -371,6 +375,8 @@ void LLFloaterGodTools::sendRegionInfoRequest()
 
 void LLFloaterGodTools::sendGodUpdateRegionInfo()
 {
+	if (!sGodTools) return;
+
 	LLViewerRegion *regionp = gAgent.getRegion();
 	if (gAgent.isGodlike()
 		&& sGodTools->mPanelRegionTools
@@ -777,9 +783,7 @@ void LLPanelRegionTools::setPricePerMeter(S32 price)
 // static
 void LLPanelRegionTools::onChangeAnything(LLUICtrl* ctrl, void* userdata)
 {
-	if (sGodTools 
-		&& userdata
-		&& gAgent.isGodlike())
+	if (sGodTools && userdata && gAgent.isGodlike())
 	{
 		LLPanelRegionTools* region_tools = (LLPanelRegionTools*) userdata;
 		region_tools->childEnable("Apply");
@@ -803,9 +807,7 @@ void LLPanelRegionTools::onChangePrelude(LLUICtrl* ctrl, void* data)
 // static
 void LLPanelRegionTools::onChangeSimName(LLLineEditor* caller, void* userdata )
 {
-	if (sGodTools 
-		&& userdata
-		&& gAgent.isGodlike())
+	if (sGodTools && userdata && gAgent.isGodlike())
 	{
 		LLPanelRegionTools* region_tools = (LLPanelRegionTools*) userdata;
 		region_tools->childEnable("Apply");
@@ -815,10 +817,9 @@ void LLPanelRegionTools::onChangeSimName(LLLineEditor* caller, void* userdata )
 //static
 void LLPanelRegionTools::onRefresh(void* userdata)
 {
+	if(!sGodTools) return;
 	LLViewerRegion *region = gAgent.getRegion();
-	if (region 
-		&& sGodTools 
-		&& gAgent.isGodlike())
+	if (region && gAgent.isGodlike())
 	{
 		sGodTools->sendRegionInfoRequest();
 	}
@@ -827,11 +828,9 @@ void LLPanelRegionTools::onRefresh(void* userdata)
 // static
 void LLPanelRegionTools::onApplyChanges(void* userdata)
 {
+	if(!sGodTools) return;
 	LLViewerRegion *region = gAgent.getRegion();
-	if (region 
-		&& sGodTools 
-		&& userdata
-		&& gAgent.isGodlike())
+	if (region && userdata && gAgent.isGodlike())
 	{
 		LLPanelRegionTools* region_tools = (LLPanelRegionTools*) userdata;
 
@@ -840,19 +839,19 @@ void LLPanelRegionTools::onApplyChanges(void* userdata)
 	}
 }
 
-// static 
+// static
 void LLPanelRegionTools::onBakeTerrain(void *userdata)
 {
 	LLPanelRequestTools::sendRequest("terrain", "bake", gAgent.getRegionHost());
 }
 
-// static 
+// static
 void LLPanelRegionTools::onRevertTerrain(void *userdata)
 {
 	LLPanelRequestTools::sendRequest("terrain", "revert", gAgent.getRegionHost());
 }
 
-// static 
+// static
 void LLPanelRegionTools::onSwapTerrain(void *userdata)
 {
 	LLPanelRequestTools::sendRequest("terrain", "swap", gAgent.getRegionHost());
@@ -953,7 +952,6 @@ bool LLPanelGridTools::finishKick(const LLSD& notification, const LLSD& response
 {
 	S32 option = LLNotification::getSelectedOption(notification, response);
 
-
 	if (option == 0)
 	{
 		LLMessageSystem* msg = gMessageSystem;
@@ -1027,7 +1025,8 @@ bool LLPanelGridTools::flushMapVisibilityCachesConfirm(const LLSD& notification,
 
 // Default constructor
 LLPanelObjectTools::LLPanelObjectTools(const std::string& title) 
-: 	LLPanel(title), mTargetAvatar()
+	: 	LLPanel(title),
+		mTargetAvatar()
 {
 }
 
@@ -1063,7 +1062,7 @@ void LLPanelObjectTools::setTargetAvatar(const LLUUID &target_id)
 	mTargetAvatar = target_id;
 	if (target_id.isNull())
 	{
-		childSetValue("target_avatar_name", "(no target)");
+		childSetValue("target_avatar_name", getString("no_target"));
 	}
 } 
 
@@ -1146,8 +1145,9 @@ void LLPanelObjectTools::enableAllWidgets()
 // static
 void LLPanelObjectTools::onGetTopColliders(void* userdata)
 {
-	if (sGodTools 
-		&& gAgent.isGodlike())
+	if(!sGodTools) return;
+
+	if (gAgent.isGodlike())
 	{
 		LLFloaterTopObjects::show();
 		LLFloaterTopObjects::setMode(STAT_REPORT_TOP_COLLIDERS);
@@ -1158,8 +1158,9 @@ void LLPanelObjectTools::onGetTopColliders(void* userdata)
 // static
 void LLPanelObjectTools::onGetTopScripts(void* userdata)
 {
-	if (sGodTools 
-		&& gAgent.isGodlike()) 
+	if(!sGodTools) return;
+
+	if (gAgent.isGodlike())
 	{
 		LLFloaterTopObjects::show();
 		LLFloaterTopObjects::setMode(STAT_REPORT_TOP_SCRIPTS);
@@ -1170,8 +1171,7 @@ void LLPanelObjectTools::onGetTopScripts(void* userdata)
 // static
 void LLPanelObjectTools::onGetScriptDigest(void* userdata)
 {
-	if (sGodTools 
-		&& gAgent.isGodlike())
+	if (sGodTools && gAgent.isGodlike())
 	{
 		// get the list of scripts and number of occurences of each
 		// (useful for finding self-replicating objects)
@@ -1281,7 +1281,10 @@ void LLPanelObjectTools::onClickSetBySelection(void* data)
 	LLSelectMgr::getInstance()->selectGetOwner(owner_id, owner_name);
 
 	panelp->mTargetAvatar = owner_id;
-	std::string name = "Object " + node->mName + " owned by " + owner_name;
+	LLStringUtil::format_map_t args;
+	args["[OBJECT]"] = node->mName;
+	args["[OWNER]"] = owner_name;
+	std::string name = LLTrans::getString("GodToolsObjectOwnedBy", args);
 	panelp->childSetValue("target_avatar_name", name);
 }
 
@@ -1295,11 +1298,10 @@ void LLPanelObjectTools::callbackAvatarID(const std::vector<std::string>& names,
 	object_tools->refresh();
 }
 
-
 // static
 void LLPanelObjectTools::onChangeAnything(LLUICtrl* ctrl, void* userdata)
 {
-	if (sGodTools 
+	if (sGodTools
 		&& userdata
 		&& gAgent.isGodlike())
 	{
@@ -1311,15 +1313,12 @@ void LLPanelObjectTools::onChangeAnything(LLUICtrl* ctrl, void* userdata)
 // static
 void LLPanelObjectTools::onApplyChanges(void* userdata)
 {
+	if(!sGodTools) return;
 	LLViewerRegion *region = gAgent.getRegion();
-	if (region 
-		&& sGodTools 
-		&& userdata
-		&& gAgent.isGodlike())
+	if (region && userdata && gAgent.isGodlike())
 	{
 		LLPanelObjectTools* object_tools = (LLPanelObjectTools*) userdata;
 		// TODO -- implement this
-
 		object_tools->childDisable("Apply");
 		sGodTools->sendGodUpdateRegionInfo();
 	}

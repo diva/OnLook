@@ -50,19 +50,20 @@
 #include "llchat.h"
 #include "llconsole.h"
 #include "llfloater.h"
-#include "llfloatergroupinfo.h"
-#include "llimview.h"
-#include "llfloaterinventory.h"
-#include "llinventory.h"
-#include "llinventoryfunctions.h"
 #include "llfloateractivespeakers.h"
 #include "llfloateravatarinfo.h"
 #include "llfloaterchat.h"
+#include "llfloatergroupinfo.h"
+#include "llimview.h"
+#include "llinventory.h"
+#include "llinventoryfunctions.h"
+#include "llfloaterinventory.h"
+#include "llcheckboxctrl.h"
 #include "llkeyboard.h"
 #include "lllineeditor.h"
-#include "llcheckboxctrl.h"
 #include "llnotify.h"
 #include "llresmgr.h"
+#include "lltrans.h"
 #include "lltabcontainer.h"
 #include "llviewertexteditor.h"
 #include "llviewermessage.h"
@@ -2544,7 +2545,7 @@ void LLFloaterIMPanel::chatFromLogFile(LLLogChat::ELogLineType type, std::string
 		// add log end message
 		if (gSavedPerAccountSettings.getBOOL("LogInstantMessages"))
 		{
-			message = LLFloaterChat::getInstance()->getString("IM_logging_string");
+			message = LLFloaterChat::getInstance()->getString("IM_end_log_string");
 		}
 		break;
 	case LLLogChat::LOG_LINE:
@@ -2562,19 +2563,8 @@ void LLFloaterIMPanel::chatFromLogFile(LLLogChat::ELogLineType type, std::string
 void LLFloaterIMPanel::showSessionStartError(
 	const std::string& error_string)
 {
-	//the error strings etc. should be really be static and local
-	//to this file instead of in the LLFloaterIM
-	//but they were in llimview.cpp first and unfortunately
-	//some translations into non English languages already occurred
-	//thus making it a tad harder to change over to a
-	//"correct" solution.  The best solution
-	//would be to store all of the misc. strings into
-	//their own XML file which would be read in by any LLIMPanel
-	//post build function instead of repeating the same info
-	//in the group, adhoc and normal IM xml files.
 	LLSD args;
-	args["REASON"] =
-		LLFloaterIM::sErrorStringsMap[error_string];
+	args["REASON"] = LLTrans::getString(error_string);
 	args["RECIPIENT"] = getTitle();
 
 	LLSD payload;
@@ -2592,13 +2582,14 @@ void LLFloaterIMPanel::showSessionEventError(
 	const std::string& error_string)
 {
 	LLSD args;
-	std::string recipient = getTitle();
-	std::string reason = LLFloaterIM::sErrorStringsMap[error_string];
-	boost::replace_all(reason, "[RECIPIENT]", recipient);
-	std::string event = LLFloaterIM::sEventStringsMap[event_string];
-	boost::replace_all(event, "[RECIPIENT]", recipient);
-	args["REASON"] = reason;
-	args["EVENT"] = event;
+	LLStringUtil::format_map_t event_args;
+
+	event_args["RECIPIENT"] = getTitle();
+
+	args["REASON"] =
+		LLTrans::getString(error_string);
+	args["EVENT"] =
+		LLTrans::getString(event_string, event_args);
 
 	LLNotifications::instance().add(
 		"ChatterBoxSessionEventError",
@@ -2611,7 +2602,7 @@ void LLFloaterIMPanel::showSessionForceClose(
 	LLSD args;
 
 	args["NAME"] = getTitle();
-	args["REASON"] = LLFloaterIM::sForceCloseSessionMap[reason_string];
+	args["REASON"] = LLTrans::getString(reason_string);
 
 	LLSD payload;
 	payload["session_id"] = mSessionUUID;

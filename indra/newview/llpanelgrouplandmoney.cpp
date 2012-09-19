@@ -1105,7 +1105,7 @@ void LLGroupMoneyDetailsTabEventHandler::processReply(LLMessageSystem* msg,
 
 	text.append(1, '\n');
 
-	text.append(llformat("%-24s %6d\n", "Total", total_amount));
+	text.append(llformat("%-24s %6d\n", LLTrans::getString("GroupMoneyTotal").c_str(), total_amount));
 
 	if ( mImplementationp->mTextEditorp )
 	{
@@ -1227,7 +1227,7 @@ void LLGroupMoneySalesTabEventHandler::processReply(LLMessageSystem* msg,
 	S32 transactions = msg->getNumberOfBlocksFast(_PREHASH_HistoryData);
 	if (transactions == 0)
 	{
-		text.append("(none)");
+		text.append(LLTrans::getString("none_text"));
 	}
 	else
 	{
@@ -1252,22 +1252,22 @@ void LLGroupMoneySalesTabEventHandler::processReply(LLMessageSystem* msg,
 				switch(type)
 				{
 				case TRANS_OBJECT_SALE:
-					verb = "bought";
+					verb = LLTrans::getString("GroupMoneyBought").c_str();
 					break;
 				case TRANS_GIFT:
-					verb = "paid you";
+					verb = LLTrans::getString("GroupMoneyPaidYou").c_str();
 					break;
 				case TRANS_PAY_OBJECT:
-					verb = "paid into";
+					verb = LLTrans::getString("GroupMoneyPaidInto").c_str();
 					break;
 				case TRANS_LAND_PASS_SALE:
-					verb = "bought pass to";
+					verb = LLTrans::getString("GroupMoneyBoughtPassTo").c_str();
 					break;
 				case TRANS_EVENT_FEE:
-					verb = "paid fee for event";
+					verb = LLTrans::getString("GroupMoneyPaidFeeForEvent").c_str();
 					break;
 				case TRANS_EVENT_PRIZE:
-					verb = "paid prize for event";
+					verb = LLTrans::getString("GroupMoneyPaidPrizeForEvent").c_str();
 					break;
 				default:
 					verb = "";
@@ -1429,15 +1429,18 @@ void LLGroupMoneyPlanningTabEventHandler::processReply(LLMessageSystem* msg,
 		return;
 	}
 
-	text.append("Summary for this week, beginning on ");
+	text.append(LLTrans::getString("SummaryForTheWeek"));
+
 	text.append(start_date);
+	text.append(".  ");
 
 	if (current_interval == 0)
 	{
-		text.append("The next stipend day is ");
+		text.append(LLTrans::getString("NextStipendDay"));
+
 		text.append(next_stipend_date);
-		text.append("\n\n");
-		text.append(llformat("%-24s%s%6d\n", "Balance",
+		text.append(".\n\n");
+		text.append(llformat("%-24s%s%6d\n", LLTrans::getString("GroupMoneyBalance").c_str(),
 			gHippoGridManager->getConnectedGrid()->getCurrencySymbol().c_str(),
 			balance));
 		text.append(1, '\n');
@@ -1445,15 +1448,15 @@ void LLGroupMoneyPlanningTabEventHandler::processReply(LLMessageSystem* msg,
 
 	// [DEV-29503] Hide the individual info since
 	// non_exempt_member here is a wrong choice to calculate individual shares.
-	// text.append( "                      Group       Individual Share\n");
-	// text.append(llformat( "%-24s %6d      %6d \n", "Credits", total_credits, (S32)floor((F32)total_credits/(F32)non_exempt_members)));
-	// text.append(llformat( "%-24s %6d      %6d \n", "Debits", total_debits, (S32)floor((F32)total_debits/(F32)non_exempt_members)));
-	// text.append(llformat( "%-24s %6d      %6d \n", "Total", total_credits + total_debits,  (S32)floor((F32)(total_credits + total_debits)/(F32)non_exempt_members)));
+// 	text.append( LLTrans::getString("GroupIndividualShare"));
+// 	text.append(llformat( "%-24s %6d      %6d \n", LLTrans::getString("GroupMoneyCredits").c_str(), total_credits, (S32)floor((F32)total_credits/(F32)non_exempt_members)));
+// 	text.append(llformat( "%-24s %6d      %6d \n", LLTrans::getString("GroupMoneyDebits").c_str(), total_debits, (S32)floor((F32)total_debits/(F32)non_exempt_members)));
+// 	text.append(llformat( "%-24s %6d      %6d \n", LLTrans::getString("GroupMoneyTotal").c_str(), total_credits + total_debits,  (S32)floor((F32)(total_credits + total_debits)/(F32)non_exempt_members)));
 
-	text.append( "                      Group\n");
-	text.append(llformat( "%-24s %6d\n", "Credits", total_credits));
-	text.append(llformat( "%-24s %6d\n", "Debits", total_debits));
-	text.append(llformat( "%-24s %6d\n", "Total", total_credits + total_debits));
+	text.append(llformat( "%s\n", LLTrans::getString("GroupColumn").c_str()));
+	text.append(llformat( "%-24s %6d\n", LLTrans::getString("GroupMoneyCredits").c_str(), total_credits));
+	text.append(llformat( "%-24s %6d\n", LLTrans::getString("GroupMoneyDebits").c_str(), total_debits));
+	text.append(llformat( "%-24s %6d\n", LLTrans::getString("GroupMoneyTotal").c_str(), total_credits + total_debits));
 	
 	if ( mImplementationp->mTextEditorp )
 	{

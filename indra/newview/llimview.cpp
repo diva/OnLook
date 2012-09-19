@@ -41,6 +41,7 @@
 #include "llhttpclient.h"
 #include "llsdutil_math.h"
 #include "llstring.h"
+#include "lltrans.h"
 #include "lluictrlfactory.h"
 
 #include "llagent.h"
@@ -80,19 +81,6 @@
 // Globals
 //
 LLIMMgr* gIMMgr = NULL;
-
-//
-// Statics
-//
-// *FIXME: make these all either UIStrings or Strings
-static std::string sOnlyUserMessage;
-static LLUIString sOfflineMessage;
-static std::string sMutedMessage;
-static LLUIString sInviteMessage;
-
-std::map<std::string,std::string> LLFloaterIM::sEventStringsMap;
-std::map<std::string,std::string> LLFloaterIM::sErrorStringsMap;
-std::map<std::string,std::string> LLFloaterIM::sForceCloseSessionMap;
 
 //
 // Helper Functions
@@ -172,18 +160,16 @@ public:
 			gIMMgr->clearPendingAgentListUpdates(mSessionID);
 			gIMMgr->clearPendingInvitation(mSessionID);
 
-			LLFloaterIMPanel* floaterp =
-				gIMMgr->findFloaterBySession(mSessionID);
+			LLFloaterIMPanel* floaterp = gIMMgr->findFloaterBySession(mSessionID);
 
 			if ( floaterp )
 			{
 				if ( 404 == statusNum )
 				{
 					std::string error_string;
-					error_string = "does not exist";
+					error_string = "session_does_not_exist_error";
 
-					floaterp->showSessionStartError(
-						error_string);
+					floaterp->showSessionStartError(error_string);
 				}
 			}
 		}
@@ -248,86 +234,6 @@ LLFloaterIM::LLFloaterIM()
 	// LLMultiFloater::resizeToContents() when called through LLMultiFloater::addFloater())
 	this->mAutoResize = FALSE;
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_im.xml");
-}
-
-BOOL LLFloaterIM::postBuild()
-{
-	// IM session initiation warnings
-	sOnlyUserMessage = getString("only_user_message");
-	sOfflineMessage = getString("offline_message");
-	sMutedMessage = getString("muted_message");
-
-	sInviteMessage = getString("invite_message");
-
-	if ( sErrorStringsMap.find("generic") == sErrorStringsMap.end() )
-	{
-		sErrorStringsMap["generic"] =
-			getString("generic_request_error");
-	}
-
-	if ( sErrorStringsMap.find("unverified") ==
-		 sErrorStringsMap.end() )
-	{
-		sErrorStringsMap["unverified"] =
-			getString("insufficient_perms_error");
-	}
-
-	if ( sErrorStringsMap.end() ==
-		 sErrorStringsMap.find("no_ability") )
-	{
-		sErrorStringsMap["no_ability"] =
-			getString("no_ability_error");
-	}
-
-	if ( sErrorStringsMap.end() ==
-		 sErrorStringsMap.find("muted") )
-	{
-		sErrorStringsMap["muted"] =
-			getString("muted_error");
-	}
-
-	if ( sErrorStringsMap.end() ==
-		 sErrorStringsMap.find("not_a_moderator") )
-	{
-		sErrorStringsMap["not_a_moderator"] =
-			getString("not_a_mod_error");
-	}
-
-	if ( sErrorStringsMap.end() ==
-		 sErrorStringsMap.find("does not exist") )
-	{
-		sErrorStringsMap["does not exist"] =
-			getString("session_does_not_exist_error");
-	}
-
-	if ( sEventStringsMap.end() == sEventStringsMap.find("add") )
-	{
-		sEventStringsMap["add"] =
-			getString("add_session_event");
-	}
-
-	if ( sEventStringsMap.end() == sEventStringsMap.find("message") )
-	{
-		sEventStringsMap["message"] =
-			getString("message_session_event");
-	}
-
-
-	if ( sForceCloseSessionMap.end() ==
-		 sForceCloseSessionMap.find("removed") )
-	{
-		sForceCloseSessionMap["removed"] =
-			getString("removed_from_group");
-	}
-
-	if ( sForceCloseSessionMap.end() ==
-		 sForceCloseSessionMap.find("no ability") )
-	{
-		sForceCloseSessionMap["no ability"] =
-			getString("close_on_no_ability");
-	}
-
-	return TRUE;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -645,10 +551,10 @@ void LLIMMgr::addMessage(
 		{
 			// *TODO:translate (low priority, god ability)
 			std::ostringstream bonus_info;
-			bonus_info << "*** parent estate: "
+			bonus_info << LLTrans::getString("***")+ " "+ LLTrans::getString("IMParentEstate") + LLTrans::getString(":") + " "
 				<< parent_estate_id
-				<< ((parent_estate_id == 1) ? ", mainland" : "")
-				<< ((parent_estate_id == 5) ? ", teen" : "");
+				<< ((parent_estate_id == 1) ? LLTrans::getString(",") + LLTrans::getString("IMMainland") : "")
+				<< ((parent_estate_id == 5) ? LLTrans::getString(",") + LLTrans::getString ("IMTeen") : "");
 
 			// once we have web-services (or something) which returns
 			// information about a region id, we can print this out
@@ -717,23 +623,20 @@ void LLIMMgr::addSystemMessage(const LLUUID& session_id, const std::string& mess
 	// null session id means near me (chat history)
 	if (session_id.isNull())
 	{
-		LLFloaterChat* floaterp = LLFloaterChat::getInstance();
-
-		message = floaterp->getString(message_name);
+		message = LLTrans::getString(message_name);
 		message.setArgs(args);
 
 		LLChat chat(message);
 		chat.mSourceType = CHAT_SOURCE_SYSTEM;
+
 		LLFloaterChat::getInstance()->addChatHistory(chat);
 	}
 	else // going to IM session
 	{
-		LLFloaterIMPanel* floaterp = findFloaterBySession(session_id);
-		if (floaterp)
+		message = LLTrans::getString(message_name + "-im");
+		message.setArgs(args);
+		if (hasSession(session_id))
 		{
-			message = floaterp->getString(message_name);
-			message.setArgs(args);
-
 			gIMMgr->addMessage(session_id, LLUUID::null, SYSTEM_FROM, message.getString());
 		}
 	}
@@ -764,7 +667,7 @@ int LLIMMgr::getIMUnreadCount()
 }
 
 // This method returns TRUE if the local viewer has a session
-// currently open keyed to the uuid. 
+// currently open keyed to the uuid.
 BOOL LLIMMgr::isIMSessionOpen(const LLUUID& uuid)
 {
 	LLFloaterIMPanel* floater = findFloaterBySession(uuid);
@@ -780,12 +683,14 @@ LLUUID LLIMMgr::addP2PSession(const std::string& name,
 	LLUUID session_id = addSession(name, IM_NOTHING_SPECIAL, other_participant_id);
 
 	LLFloaterIMPanel* floater = findFloaterBySession(session_id);
-	if(floater)
+	if (floater)
 	{
-		LLVoiceChannelP2P* voice_channelp = (LLVoiceChannelP2P*)floater->getVoiceChannel();
-		voice_channelp->setSessionHandle(voice_session_handle, caller_uri);		
+		LLVoiceChannelP2P* voice_channel = dynamic_cast<LLVoiceChannelP2P*>(floater->getVoiceChannel());
+		if (voice_channel)
+		{
+			voice_channel->setSessionHandle(voice_session_handle, caller_uri);
+		}
 	}
-
 	return session_id;
 }
 
@@ -951,7 +856,7 @@ void LLIMMgr::inviteToSession(
 	payload["session_handle"] = session_handle;
 	payload["session_uri"] = session_uri;
 	payload["notify_box_type"] = notify_box_type;
-	
+
 	LLVoiceChannel* channelp = LLVoiceChannel::getChannelByID(session_id);
 	if (channelp && channelp->callStarted())
 	{
@@ -962,17 +867,13 @@ void LLIMMgr::inviteToSession(
 
 	if (type == IM_SESSION_P2P_INVITE || ad_hoc_invite)
 	{
-		// is the inviter a friend?
-		if (LLAvatarTracker::instance().getBuddyInfo(caller_id) == NULL)
+		if	(	// we're rejecting non-friend voice calls and this isn't a friend
+				(gSavedSettings.getBOOL("VoiceCallsFriendsOnly") && (LLAvatarTracker::instance().getBuddyInfo(caller_id) == NULL))
+			)
 		{
-			// if not, and we are ignoring voice invites from non-friends
-			// then silently decline
-			if (gSavedSettings.getBOOL("VoiceCallsFriendsOnly"))
-			{
-				// invite not from a friend, so decline
-				LLNotifications::instance().forceResponse(LLNotification::Params("VoiceInviteP2P").payload(payload), 1);
-				return;
-			}
+			// silently decline the call
+			LLNotifications::instance().forceResponse(LLNotification::Params("VoiceInviteP2P").payload(payload), 1);
+			return;
 		}
 	}
 
@@ -980,7 +881,8 @@ void LLIMMgr::inviteToSession(
 	{
 		if (caller_name.empty())
 		{
-			gCacheName->get(caller_id, true, boost::bind(&LLIMMgr::onInviteNameLookup,_1,_2,_3,payload));
+			gCacheName->get(caller_id, true,  // voice
+				boost::bind(&LLIMMgr::onInviteNameLookup, _1, _2, _3, payload));
 		}
 		else
 		{
@@ -998,7 +900,7 @@ void LLIMMgr::inviteToSession(
 	}
 }
 
-//static 
+//static
 void LLIMMgr::onInviteNameLookup(const LLUUID& id, const std::string& full_name, bool is_group, LLSD payload)
 {
 	payload["caller_name"] = full_name;
@@ -1234,7 +1136,8 @@ void LLIMMgr::noteOfflineUsers(
 	S32 count = ids.count();
 	if(count == 0)
 	{
-		floater->addHistoryLine(sOnlyUserMessage, gSavedSettings.getColor4("SystemChatColor"));
+		const std::string& only_user = LLTrans::getString("only_user_message");
+		floater->addHistoryLine(only_user, gSavedSettings.getColor4("SystemChatColor"));
 	}
 	else
 	{
@@ -1244,10 +1147,11 @@ void LLIMMgr::noteOfflineUsers(
 		{
 			info = at.getBuddyInfo(ids.get(i));
 			std::string full_name;
-			if(info && !info->isOnline()
-			   && gCacheName->getFullName(ids.get(i), full_name))
+			if (info
+				&& !info->isOnline()
+				&& gCacheName->getFullName(ids.get(i), full_name))
 			{
-				LLUIString offline = sOfflineMessage;
+				LLUIString offline = LLTrans::getString("offline_message");
 				offline.setArg("[NAME]", full_name);
 				floater->addHistoryLine(offline, gSavedSettings.getColor4("SystemChatColor"));
 			}
@@ -1272,7 +1176,8 @@ void LLIMMgr::noteMutedUsers(LLFloaterIMPanel* floater,
 		{
 			if( ml->isMuted(ids.get(i)) )
 			{
-				LLUIString muted = sMutedMessage;
+				LLUIString muted = LLTrans::getString("muted_message");
+
 				floater->addHistoryLine(muted);
 				break;
 			}
@@ -1474,10 +1379,8 @@ public:
 		}
 		else
 		{
-			//throw an error dialog and close the temp session's
-			//floater
-			LLFloaterIMPanel* floater = 
-				gIMMgr->findFloaterBySession(temp_session_id);
+			//throw an error dialog and close the temp session's floater
+			LLFloaterIMPanel* floater = gIMMgr->findFloaterBySession(temp_session_id);
 
 			if ( floater )
 			{

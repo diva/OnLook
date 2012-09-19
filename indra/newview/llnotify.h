@@ -152,7 +152,7 @@ public:
 	public: 
 		Matcher(){}
 		virtual ~Matcher() {}
-		virtual BOOL matches(const LLNotificationPtr) const = 0;
+		virtual bool matches(const LLNotificationPtr) const = 0;
 	};
 	// Walks the list and removes any stacked messages for which the given matcher returns TRUE.
 	// Useful when muting people and things in order to clear out any similar previously queued messages.
