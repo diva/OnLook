@@ -548,25 +548,6 @@
           </map>
         </map>
       </map>
-      <key>google_breakpad</key>
-      <map>
-        <key>copyright</key>
-        <string>Copyright (c) Google Inc.</string>
-        <key>description</key>
-        <string>A cross platform crashreporter</string>
-        <key>license</key>
-        <string>bsd</string>
-        <key>packages</key>
-        <map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>0bf54905717704c56d4cd0d72d2208b5</string>
-            <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/google_breakpad-0.0.0-rev599-windows-20110218.tar.bz2</uri>
-          </map>
-        </map>
-      </map>
       <key>gperftools</key>
       <map>
         <key>copyright</key>

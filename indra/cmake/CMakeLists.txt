@@ -27,7 +27,6 @@ set(cmake_SOURCE_FILES
     FindBerkeleyDB.cmake
     FindCARes.cmake
     FindELFIO.cmake
-	FindGoogleBreakpad.cmake
     FindGooglePerfTools.cmake
     FindHunSpell.cmake
     FindMT.cmake
@@ -38,7 +37,6 @@ set(cmake_SOURCE_FILES
     FMODEX.cmake
     FreeType.cmake
     GStreamer010Plugin.cmake
-	GoogleBreakpad.cmake
     GooglePerfTools.cmake
     Hunspell.cmake
     JPEG.cmake
