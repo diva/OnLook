@@ -160,10 +160,6 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// Returns true if this easy handle was added to a curl multi handle.
 	bool active(void) const { return mActiveMultiHandle; }
 
-	// If there was an error code as result, then this returns a human readable error string.
-	// Only valid when setErrorBuffer was called and the curl_easy function returned an error.
-	std::string getErrorString(void) const { return mErrorBuffer ? mErrorBuffer : "(null)"; }
-
 	// Returns true when it is expected that the parent will revoke callbacks before the curl
 	// easy handle is removed from the multi handle; that usually happens when an external
 	// error demands termination of the request (ie, an expiration).
@@ -203,8 +199,7 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 // to set the options on a curl easy handle.
 //
 // Calling sendRequest() will then connect to the given URL and perform
-// the data exchange. If an error occurs related to this handle, it can
-// be read by calling getErrorString().
+// the data exchange. Use getResult() to determine if an error occurred.
 //
 // Note that the life cycle of a CurlEasyRequest is controlled by AICurlEasyRequest:
 // a CurlEasyRequest is only ever created as base class of a ThreadSafeCurlEasyRequest,
@@ -264,13 +259,13 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// This actually adds the headers that were collected with addHeader.
 	void finalizeRequest(std::string const& url);
 
-	// Store result code that is returned by getResult.
+	// Called by MultiHandle::check_run_count() to store result code that is returned by getResult.
 	void store_result(CURLcode result) { mResult = result; }
 
-	// Called when the curl easy handle is done.
+	// Called by MultiHandle::check_run_count() when the curl easy handle is done.
 	void done(AICurlEasyRequest_wat& curl_easy_request_w) { finished(curl_easy_request_w); }
 
-	// Fill info with the transfer info.
+	// Called by MultiHandle::check_run_count() to fill info with the transfer info.
 	void getTransferInfo(AICurlInterface::TransferInfo* info);
 
 	// If result != CURLE_FAILED_INIT then also info was filled.

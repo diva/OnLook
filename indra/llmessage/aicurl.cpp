@@ -653,6 +653,10 @@ void CurlEasyHandle::setErrorBuffer(void)
 	  mErrorBuffer = NULL;
 	}
   }
+  if (mErrorBuffer)
+  {
+	mErrorBuffer[0] = '\0';
+  }
 }
 
 CURLcode CurlEasyHandle::getinfo_priv(CURLINFO info, void* data)
@@ -1448,15 +1452,7 @@ void CurlResponderBuffer::processOutput(AICurlEasyRequest_wat& curl_easy_request
   else
   {
 	responseCode = 499;
-	responseReason = AICurlInterface::strerror(code) + " : ";
-	if (code == CURLE_FAILED_INIT)
-	{
-	  responseReason += "Curl Easy Handle initialization failed.";
-	}
-	else
-	{
-	  responseReason += curl_easy_request_w->getErrorString();
-	}
+	responseReason = AICurlInterface::strerror(code);
 	curl_easy_request_w->setopt(CURLOPT_FRESH_CONNECT, TRUE);
   }
 

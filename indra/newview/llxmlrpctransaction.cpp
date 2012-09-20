@@ -340,8 +340,8 @@ void LLXMLRPCTransaction::Impl::curlEasyRequestCallback(bool success)
 	if (result != CURLE_OK)
 	{
 		setCurlStatus(result);
-		llwarns << "LLXMLRPCTransaction CURL error "
-				<< mCurlCode << ": " << curlEasyRequest_w->getErrorString() << llendl;
+		llwarns << "LLXMLRPCTransaction CURL error: "
+				<< AICurlInterface::strerror(mCurlCode) << llendl;
 		llwarns << "LLXMLRPCTransaction request URI: "
 				<< mURI << llendl;
 			

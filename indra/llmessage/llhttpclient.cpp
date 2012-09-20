@@ -480,7 +480,6 @@ static LLSD blocking_request(
 			llwarns << "CURL REQ HEADERS: " << headers.asString() << llendl;
 			llwarns << "CURL REQ BODY: " << ostr.str() << llendl;
 			llwarns << "CURL HTTP_STATUS: " << http_status << llendl;
-			llwarns << "CURL ERROR: " << curlEasyRequest_w->getErrorString() << llendl;
 			llwarns << "CURL ERROR BODY: " << http_buffer.asString() << llendl;
 			response["body"] = http_buffer.asString();
 		}
