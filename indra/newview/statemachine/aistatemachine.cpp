@@ -38,8 +38,6 @@
 #include "aithreadsafe.h"
 #include "aistatemachine.h"
 
-extern F64 calc_clock_frequency(void);
-
 extern LLControlGroup gSavedSettings;
 
 // Local variables.
