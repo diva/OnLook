@@ -61,6 +61,7 @@
 #include "message.h"
 #include "pipeline.h"
 #include "llappviewer.h"		// for do_disconnect()
+#include "llpacketring.h"
 
 #include <deque>
 #include <queue>
@@ -779,8 +780,8 @@ void LLWorld::updateNetStats()
 	S32 packets_out = gMessageSystem->mPacketsOut - mLastPacketsOut;
 	S32 packets_lost = gMessageSystem->mDroppedPackets - mLastPacketsLost;
 
-	S32 actual_in_bits = gMessageSystem->mPacketRing.getAndResetActualInBits();
-	S32 actual_out_bits = gMessageSystem->mPacketRing.getAndResetActualOutBits();
+	S32 actual_in_bits = gMessageSystem->mPacketRing->getAndResetActualInBits();
+	S32 actual_out_bits = gMessageSystem->mPacketRing->getAndResetActualOutBits();
 	LLViewerStats::getInstance()->mActualInKBitStat.addValue(actual_in_bits/1024.f);
 	LLViewerStats::getInstance()->mActualOutKBitStat.addValue(actual_out_bits/1024.f);
 	LLViewerStats::getInstance()->mKBitStat.addValue(bits/1024.f);

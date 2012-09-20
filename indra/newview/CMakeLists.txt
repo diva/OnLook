@@ -8,10 +8,10 @@ include(DBusGlib)
 include(DirectX)
 include(ELFIO)
 if(FMODEX)
-    include(FMODEX)
-    set(FMOD OFF)
+  include(FMODEX)
+  set(FMOD OFF)
 else(FMODEX)
-    include(FMOD)
+  include(FMOD)
 endif(FMODEX)
 include(OPENAL)
 include(FindOpenGL)
@@ -132,6 +132,7 @@ set(viewer_SOURCE_FILES
     llconfirmationmanager.cpp
     llconsole.cpp
     llcontainerview.cpp
+    llcurlrequest.cpp
     llcurrencyuimanager.cpp
     llcylinder.cpp
     lldaycyclemanager.cpp
@@ -633,6 +634,7 @@ set(viewer_HEADER_FILES
     llconfirmationmanager.h
     llconsole.h
     llcontainerview.h
+    llcurlrequest.h
     llcurrencyuimanager.h
     llcylinder.h
     lldaycyclemanager.h
@@ -1560,10 +1562,10 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${LLCOMMON_LIBRARIES}
     ${NDOF_LIBRARY}
     ${viewer_LIBRARIES}
-    ${BOOST_FILESYSTEM_LIBRARY}
-    ${BOOST_PROGRAM_OPTIONS_LIBRARY}
-    ${BOOST_REGEX_LIBRARY}
-    ${BOOST_SYSTEM_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    ${Boost_REGEX_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY}
     ${DBUSGLIB_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${FMODWRAPPER_LIBRARY} # must come after LLAudio

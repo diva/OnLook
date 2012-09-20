@@ -33,6 +33,7 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "lltexturestatsuploader.h"
+#include "llhttpclient.h"
 
 LLTextureStatsUploader::LLTextureStatsUploader()
 {

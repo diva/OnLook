@@ -99,7 +99,7 @@ std::string LLLogChat::timestamp(bool withdate)
 
 
 //static
-void LLLogChat::saveHistory(std::string filename, std::string line)
+void LLLogChat::saveHistory(std::string const& filename, std::string line)
 {
 	if(!filename.size())
 	{
@@ -120,7 +120,7 @@ void LLLogChat::saveHistory(std::string filename, std::string line)
 	}
 }
 
-void LLLogChat::loadHistory(std::string filename , void (*callback)(ELogLineType,std::string,void*), void* userdata)
+void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogLineType,std::string,void*), void* userdata)
 {
 	if(!filename.size())
 	{

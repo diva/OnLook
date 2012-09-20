@@ -41,6 +41,7 @@
 #include "lldir.h"
 #include "llendianswizzle.h"
 #include "llassetstorage.h"
+#include "llrefcount.h"
 
 #include "vorbis/codec.h"
 #include "vorbis/vorbisfile.h"

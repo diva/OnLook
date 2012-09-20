@@ -32,6 +32,7 @@
 #include "lluuid.h"
 #include "llviewertexture.h"
 #include "llvolume.h"
+#include "llcurlrequest.h"
 
 #if MESH_IMPORT
 #define LLCONVEXDECOMPINTER_STATIC 1
@@ -67,7 +68,6 @@ struct LLCDHull
 
 class LLVOVolume;
 class LLMeshResponder;
-class LLCurlRequest;
 class LLMutex;
 class LLCondition;
 class LLVFS;
@@ -246,12 +246,10 @@ public:
 	static S32 sActiveLODRequests;
 	static U32 sMaxConcurrentRequests;
 
-	LLCurlRequest*	mCurlRequest;
+	AICurlInterface::Request* mCurlRequest;
 	LLMutex*		mMutex;
 	LLMutex*		mHeaderMutex;
 	LLCondition*	mSignal;
-
-	bool mWaiting;
 
 	//map of known mesh headers
 	typedef std::map<LLUUID, LLSD> mesh_header_map;
@@ -351,7 +349,7 @@ public:
 
 	void loadMeshLOD(const LLVolumeParams& mesh_params, S32 lod);
 	bool fetchMeshHeader(const LLVolumeParams& mesh_params, U32& count);
-	bool fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod, U32& count);
+	void fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod, U32& count);
 	bool headerReceived(const LLVolumeParams& mesh_params, U8* data, S32 data_size);
 	bool lodReceived(const LLVolumeParams& mesh_params, S32 lod, U8* data, S32 data_size);
 	bool skinInfoReceived(const LLUUID& mesh_id, U8* data, S32 data_size);

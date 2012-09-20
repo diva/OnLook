@@ -525,6 +525,14 @@ void LLShaderMgr::dumpObjectLog(GLhandleARB ret, BOOL warns)
 
 GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shader_level, GLenum type, S32 texture_index_channels)
 {
+	std::pair<std::multimap<std::string, CachedObjectInfo >::iterator, std::multimap<std::string, CachedObjectInfo>::iterator> range;
+	range = mShaderObjects.equal_range(filename);
+	for (std::multimap<std::string, CachedObjectInfo>::iterator it = range.first; it != range.second;++it)
+	{
+		if((*it).second.mLevel == shader_level && (*it).second.mType == type)
+			return (*it).second.mHandle;
+	}
+
 	GLenum error = GL_NO_ERROR;
 	if (gDebugGL)
 	{
@@ -888,7 +896,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 	if (ret)
 	{
 		// Add shader file to map
-		mShaderObjects[filename] = ret;
+		mShaderObjects.insert(make_pair(filename,CachedObjectInfo(ret,try_gpu_class,type)));
 		shader_level = try_gpu_class;
 	}
 	else

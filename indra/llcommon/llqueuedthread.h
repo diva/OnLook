@@ -111,6 +111,8 @@ public:
 				return mPriority > second.mPriority;
 		}
 
+		virtual void deleteRequest(); // Only method to delete a request
+
 	protected:
 		status_t setStatus(status_t newstatus)
 		{
@@ -130,7 +132,6 @@ public:
 		
 		virtual bool processRequest() = 0; // Return true when request has completed
 		virtual void finishRequest(bool completed); // Always called from thread after request has completed or aborted
-		virtual void deleteRequest(); // Only method to delete a request
 
 		void setPriority(U32 pri)
 		{

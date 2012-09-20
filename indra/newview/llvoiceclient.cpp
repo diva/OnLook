@@ -1113,7 +1113,7 @@ LLVoiceClient::LLVoiceClient()
 	gVoiceClient = this;
 	mWriteInProgress = false;
 	mAreaVoiceDisabled = false;
-	mPTT = true;
+	mPTT = false;
 	mUserPTTState = false;
 	mMuteMic = false;
 	mSessionTerminateRequested = false;

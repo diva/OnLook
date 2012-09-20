@@ -41,7 +41,6 @@
 #include "llcurl.h"
 
 extern const std::string CONTEXT_REQUEST;
-extern const std::string CONTEXT_DEST_URI_SD_LABEL;
 extern const std::string CONTEXT_RESPONSE;
 extern const std::string CONTEXT_TRANSFERED_BYTES;
 
@@ -65,7 +64,7 @@ typedef struct x509_store_ctx_st X509_STORE_CTX;
  * worth the time and effort to eventually port this to a raw client
  * socket.
  */
-class LLURLRequest : public LLIOPipe
+class LLURLRequest : public LLIOPipe, protected AICurlEasyHandleEvents
 {
 	LOG_CLASS(LLURLRequest);
 public:
@@ -188,6 +187,9 @@ public:
 	 */
 	void allowCookies();
 
+	/*virtual*/ bool hasExpiration(void) const;
+	/*virtual*/ bool hasNotExpired(void) const;
+
 public:
 	/** 
 	 * @brief Give this pipe a chance to handle a generated error
@@ -212,6 +214,7 @@ protected:
 		STATE_INITIALIZED,
 		STATE_WAITING_FOR_RESPONSE,
 		STATE_PROCESSING_RESPONSE,
+		STATE_CURL_FINISHED,
 		STATE_HAVE_RESPONSE,
 	};
 	EState mState;
@@ -220,6 +223,14 @@ protected:
 	LLIOPipe::ptr_t mCompletionCallback;
 	S32 mRequestTransferedBytes;
 	S32 mResponseTransferedBytes;
+
+	// mRemoved is used instead of changing mState directly, because I'm not convinced the latter is atomic.
+	// Set to false before adding curl request and then only tested.
+	// Reset in removed_from_multi_handle (by another thread), this is thread-safe.
+	bool mRemoved;
+	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat&);
+	/*virtual*/ void finished(AICurlEasyRequest_wat&);
+	/*virtual*/ void removed_from_multi_handle(AICurlEasyRequest_wat&);
 
 private:
 	/** 
@@ -258,42 +269,6 @@ private:
 	 */
 	LLURLRequest(const LLURLRequest&);
 };
-
-
-/** 
- * @class LLContextURLExtractor
- * @brief This class unpacks the url out of a agent usher service so
- * it can be packed into a LLURLRequest object.
- * @see LLIOPipe
- *
- * This class assumes that the context is a map that contains an entry
- * named CONTEXT_DEST_URI_SD_LABEL.
- */
-class LLContextURLExtractor : public LLIOPipe
-{
-public:
-	LLContextURLExtractor(LLURLRequest* req) : mRequest(req) {}
-	~LLContextURLExtractor() {}
-
-protected:
-	/* @name LLIOPipe virtual implementations
-	 */
-	//@{
-	/** 
-	 * @brief Process the data in buffer
-	 */
-	virtual EStatus process_impl(
-		const LLChannelDescriptors& channels,
-		buffer_ptr_t& buffer,
-		bool& eos,
-		LLSD& context,
-		LLPumpIO* pump);
-	//@}
-
-protected:
-	LLURLRequest* mRequest;
-};
-
 
 /** 
  * @class LLURLRequestComplete
@@ -366,12 +341,5 @@ protected:
 	// depends on correct useage from the LLURLRequest instance.
 	EStatus mRequestStatus;
 };
-
-
-
-/**
- * External constants
- */
-extern const std::string CONTEXT_DEST_URI_SD_LABEL;
 
 #endif // LL_LLURLREQUEST_H

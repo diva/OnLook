@@ -335,12 +335,12 @@
 			<button bottom="-44" follows="left|top" font="SansSerif" halign="center" height="20"
 			     label="Delete..." label_selected="Delete..." left_delta="74"
 			     mouse_opaque="true" name="Delete..." width="70" />
-      		<!-- <button bottom="-44" follows="left|top" font="SansSerif" halign="center" height="20"
+      		<button bottom="-44" follows="left|top" font="SansSerif" halign="center" height="20"
      			label="Import..." label_selected="Import..." left_delta="74"
      			mouse_opaque="true" name="Import..." width="70" />
      		<button bottom="-44" follows="left|top" font="SansSerif" halign="center" height="20"
      			label="Export..." label_selected="Export..." left_delta="74"
-     			mouse_opaque="true" name="Export..." width="70" />-->
+     			mouse_opaque="true" name="Export..." width="70" />
 			<tab_container bottom="-411" follows="left|top" height="363" left="4" mouse_opaque="false"
 			     name="picks tab" tab_position="left" width="412" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"

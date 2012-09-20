@@ -963,10 +963,14 @@ namespace LLError
 		settings_w->shouldLogCallCounter += 1;
 		
 		std::string class_name = className(site.mClassInfo);
-		std::string function_name = functionName(site.mFunction);
-		if (site.mClassInfo != typeid(NoClassInfo))
+		std::string function_name;
+		if (site.mFunction)
 		{
-			function_name = class_name + "::" + function_name;
+		  function_name = functionName(site.mFunction);
+		  if (site.mClassInfo != typeid(NoClassInfo))
+		  {
+			  function_name = class_name + "::" + function_name;
+		  }
 		}
 
 		ELevel compareLevel = settings_w->defaultLevel;
@@ -976,7 +980,7 @@ namespace LLError
 		// So, in increasing order of importance:
 		// Default < Broad Tag < File < Class < Function < Narrow Tag
 		((site.mNarrowTag != NULL) ? checkLevelMap(settings_w->tagLevelMap, site.mNarrowTag, compareLevel) : false)
-		|| checkLevelMap(settings_w->functionLevelMap, function_name, compareLevel)
+		|| (site.mFunction && checkLevelMap(settings_w->functionLevelMap, function_name, compareLevel))
 		|| checkLevelMap(settings_w->classLevelMap, class_name, compareLevel)
 		|| checkLevelMap(settings_w->fileLevelMap, abbreviateFile(site.mFile), compareLevel)
 		|| ((site.mBroadTag != NULL) ? checkLevelMap(settings_w->tagLevelMap, site.mBroadTag, compareLevel) : false);
@@ -1083,8 +1087,8 @@ namespace LLError
 			default:				prefix << "XXX";		break;
 		};
 
-		bool need_function = true;
-		if (site.mBroadTag && *site.mBroadTag != '\0')
+		bool need_function = site.mFunction;
+		if (need_function && site.mBroadTag && *site.mBroadTag != '\0')
 		{
 			prefix << "(\"" << site.mBroadTag << "\")";
 #if LL_DEBUG
@@ -1112,7 +1116,7 @@ namespace LLError
 #if LL_WINDOWS
 			// DevStudio: __FUNCTION__ already includes the full class name
 #else
-			if (need_function && site.mClassInfo != typeid(NoClassInfo))
+			if (site.mClassInfo != typeid(NoClassInfo))
 			{
 				prefix << className(site.mClassInfo) << "::";
 			}

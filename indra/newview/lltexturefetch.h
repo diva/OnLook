@@ -37,7 +37,7 @@
 #include "llimage.h"
 #include "lluuid.h"
 #include "llworkerthread.h"
-#include "llcurl.h"
+#include "llcurlrequest.h"
 #include "lltextureinfo.h"
 #include "llapr.h"
 
@@ -107,7 +107,7 @@ public:
 							LLViewerAssetStats * main_stats);
 	void commandDataBreak();
 
-	LLCurlRequest & getCurlRequest()	{ return *mCurlGetRequest; }
+	AICurlInterface::Request& getCurlRequest()	{ return *mCurlGetRequest; }
 
 	bool isQAMode() const				{ return mQAMode; }
 
@@ -178,7 +178,7 @@ private:
 
 	LLTextureCache* mTextureCache;
 	LLImageDecodeThread* mImageDecodeThread;
-	LLCurlRequest* mCurlGetRequest;
+	AICurlInterface::Request* mCurlGetRequest;
 	
 	// Map of all requests by UUID
 	typedef std::map<LLUUID,LLTextureFetchWorker*> map_t;

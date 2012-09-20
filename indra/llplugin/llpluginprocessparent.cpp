@@ -379,6 +379,7 @@ void LLPluginProcessParent::idle(void)
 				}
 				else
 				{
+					// Set PluginAttachDebuggerToPlugins to TRUE to use this. You might also want to set DebugPluginDisableTimeout to TRUE.
 					if(mDebug)
 					{
 						// If we're set to debug, start up a gdb instance in a new terminal window and have it attach to the plugin process and continue.
@@ -400,14 +401,37 @@ void LLPluginProcessParent::idle(void)
 						mDebugger.launch();
 #elif LL_LINUX
 						// The command we're constructing would look like this on the command line:
-						// /usr/bin/xterm -geometry 160x24-0+0 -e '/usr/bin/gdb -n /proc/12345/exe 12345'
-						// This can be changed by setting the following environment variables, for example:
-						// export LL_DEBUG_TERMINAL_COMMAND="/usr/bin/gnome-terminal --geometry=165x24-0+0 -e %s"
+						// /usr/bin/xterm -geometry 160x24-0+0 -e /usr/bin/gdb -n /proc/12345/exe 12345
+						// Note that most terminals demand that all arguments to the process that is
+						// started with -e are passed as arguments to the terminal: there are no quotes
+						// around '/usr/bin/gdb -n /proc/12345/exe 12345'. This is the case for xterm,
+						// uxterm, konsole etc. The exception might be gnome-terminal.
+						//
+						// The constructed command can be changed by setting the following environment
+						// variables, for example:
+						//
 						// export LL_DEBUG_GDB_PATH=/usr/bin/gdb
+						// export LL_DEBUG_TERMINAL_COMMAND='/usr/bin/gnome-terminal --geometry=165x24-0+0 -e "%s"'
+						//
+						// Or, as second example, if you are running the viewer on host 'A', and you want
+						// to open the gdb terminal on the X display of host 'B', you would run on host B:
+						// 'ssh -X A' (and then start the viewer, or just leave the terminal open), and
+						// then use:
+						//
+						// export LL_DEBUG_TERMINAL_COMMAND="/usr/bin/uxterm -fs 9 -fa 'DejaVu Sans Mono' -display localhost:10 -geometry 209x31+0-50 -e %s"
+						//
+						// which would open the terminal on B (no quotes around the %s, since this uses uxterm!).
+						// For a list of available strings to pass to the -fa, run in a terminal: fc-list :scalable=true:spacing=mono: family
+
 						char const* env;
-						std::string const terminal_command = (env = getenv("LL_DEBUG_TERMINAL_COMMAND")) ? env : "/usr/bin/xterm -geometry 160x24+0+0 -e %s";
+						std::string terminal_command = (env = getenv("LL_DEBUG_TERMINAL_COMMAND")) ? env : "/usr/bin/xterm -geometry 160x24+0+0 -e %s";
 						char const* const gdb_path = (env = getenv("LL_DEBUG_GDB_PATH")) ? env : "/usr/bin/gdb";
 						cmd << gdb_path << " -n /proc/" << mProcess.getProcessID() << "/exe " << mProcess.getProcessID();
+						std::string::size_type pos = terminal_command.find("%s");
+						if (pos != std::string::npos)
+						{
+							terminal_command.replace(pos, 2, cmd.str());
+						}
 
                         typedef boost::tokenizer< boost::escaped_list_separator<
                                 char>, std::basic_string<
@@ -429,14 +453,7 @@ void LLPluginProcessParent::idle(void)
 						mDebugger.setExecutable(*token);
 						while (++token != tokens.end())
 						{
-								if (*token == "%s")
-								{
-									mDebugger.addArgument(cmd.str());
-								}
-								else
-								{
-									mDebugger.addArgument(*token);
-								}
+							mDebugger.addArgument(*token);
 						}
 						mDebugger.launch();
 #endif
