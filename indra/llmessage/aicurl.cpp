@@ -247,7 +247,7 @@ void ssl_init(void)
   CRYPTO_set_dynlock_destroy_callback(&ssl_dyn_destroy_function);
   need_renegotiation_hack = (0x10001000UL <= ssleay);
   llinfos << "Successful initialization of " <<
-	  SSLeay_version(SSLEAY_VERSION) << " (0x" << std::hex << SSLeay() << ")." << llendl;
+	  SSLeay_version(SSLEAY_VERSION) << " (0x" << std::hex << SSLeay() << std::dec << ")." << llendl;
 }
 
 // Cleanup OpenSSL library thread-safety.
@@ -316,7 +316,7 @@ void initCurl(void (*flush_hook)())
 	}
 
 	llinfos << "Successful initialization of libcurl " <<
-		version_info->version << " (0x" << std::hex << version_info->version_num << "), (" <<
+		version_info->version << " (0x" << std::hex << version_info->version_num << std::dec << "), (" <<
 	    version_info->ssl_version;
 	if (version_info->libz_version)
 	{
