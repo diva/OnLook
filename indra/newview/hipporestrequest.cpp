@@ -146,6 +146,7 @@ class BodyDataRaw : public Injector
 		{
 			LLBufferStream ostream(channels, buffer.get());
 			ostream.write(mData.data(), mData.size());
+			ostream << std::flush;
 			return mData.size();
 		}
 
@@ -174,6 +175,7 @@ class BodyDataXml : public Injector
 			mTree->write(data);
 			LLBufferStream ostream(channels, buffer.get());
 			ostream.write(data.data(), data.size());
+			ostream << std::flush;
 			return data.size();
 		}
 

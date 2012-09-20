@@ -48,8 +48,8 @@ class LLSDInjector : public Injector
 	{
 		LLBufferStream ostream(channels, buffer.get());
 		LLSDSerialize::toXML(mSD, ostream);
-		//AIFIXME: remove this
-		llassert(ostream.count_out() > 0 && ostream.count_in() == 0);
+		// Need to flush the LLBufferStream or count_out() returns more than the written data.
+		ostream << std::flush;
 		return ostream.count_out();
 	}
 
@@ -68,6 +68,7 @@ class RawInjector : public Injector
 	{
 		LLBufferStream ostream(channels, buffer.get());
 		ostream.write(mData, mSize);
+		ostream << std::flush;			// Always flush a LLBufferStream when done writing to it.
 		return mSize;
 	}
 
@@ -84,21 +85,32 @@ class FileInjector : public Injector
 
 	/*virtual*/ U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer)
 	{
-		LLBufferStream ostream(channels, buffer.get());
-
 		llifstream fstream(mFilename, std::iostream::binary | std::iostream::out);
 		if (!fstream.is_open())
 		  throw AICurlNoBody(llformat("Failed to open \"%s\".", mFilename.c_str()));
-
+		LLBufferStream ostream(channels, buffer.get());
+		char tmpbuf[4096];
+#ifdef SHOW_ASSERT
+		size_t total_len = 0;
 		fstream.seekg(0, std::ios::end);
-		U32 fileSize = fstream.tellg();
+		size_t file_size = fstream.tellg();
 		fstream.seekg(0, std::ios::beg);
-		std::vector<char> fileBuffer(fileSize);
-		fstream.read(&fileBuffer[0], fileSize);
-		ostream.write(&fileBuffer[0], fileSize);
+#endif
+		while (fstream)
+		{
+			std::streamsize len = fstream.readsome(tmpbuf, sizeof(tmpbuf));
+			if (len > 0)
+			{
+				ostream.write(tmpbuf, len);
+#ifdef SHOW_ASSERT
+				total_len += len;
+#endif
+			}
+		}
 		fstream.close();
-
-		return fileSize;
+		ostream << std::flush;
+		llassert(total_len == file_size && total_len == ostream.count_out());
+		return ostream.count_out();
 	}
 
 	std::string const mFilename;
@@ -120,6 +132,7 @@ public:
 		std::vector<U8> fileBuffer(fileSize);
 		vfile.read(&fileBuffer[0], fileSize);
 		ostream.write((char*)&fileBuffer[0], fileSize);
+		ostream << std::flush;
 		
 		return fileSize;
 	}

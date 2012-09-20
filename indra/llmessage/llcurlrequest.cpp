@@ -129,6 +129,8 @@ bool Request::post3(std::string const& url, AIHTTPHeaders const& headers, LLSD c
 
 	LLBufferStream buffer_stream(buffer_w->sChannels, buffer_w->getInput().get());
 	LLSDSerialize::toXML(data, buffer_stream);
+	// Need to flush the LLBufferStream or countAfter() returns more than the written data.
+	buffer_stream << std::flush;
 	S32 bytes = buffer_w->getInput()->countAfter(buffer_w->sChannels.out(), NULL);
 	buffered_easy_request_w->setPost(bytes);
 	buffered_easy_request_w->addHeader("Content-Type: application/llsd+xml");
