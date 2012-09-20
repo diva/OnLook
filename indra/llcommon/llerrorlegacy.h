@@ -114,7 +114,7 @@ const int LL_ERR_PRICE_MISMATCH = -23018;
 		: liru_slashpos2 == std::string::npos ? std::string(__FILE__)/*Apparently, we're in / or perhaps the top of the drive, print as is*/\
 			: std::string(__FILE__).substr(1+liru_slashpos2))/*print foo/bar.cpp or perhaps foo\bar.cpp*/
 
-#define llassert_always(func)		if (LL_UNLIKELY(!(func))) llerrs <<"\nASSERT(" #func ")\nfile:"<<liru_assert_strip<<" line:"<<__LINE__ << llendl;
+#define llassert_always(func)	do { if (LL_UNLIKELY(!(func))) llerrs << "\nASSERT(" #func ")\nfile:" << liru_assert_strip << " line:" << std::dec << __LINE__ << llendl; } while(0)
 
 #ifdef SHOW_ASSERT
 #define llassert(func)			llassert_always(func)

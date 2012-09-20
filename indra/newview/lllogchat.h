@@ -34,6 +34,8 @@
 #ifndef LL_LLLOGCHAT_H
 #define LL_LLLOGCHAT_H
 
+#include <string>
+
 class LLLogChat
 {
 public:
@@ -44,9 +46,9 @@ public:
 		LOG_END
 	};
 	static std::string timestamp(bool withdate = false);
-	static std::string makeLogFileName(std::string(filename));
-	static void saveHistory(std::string filename, std::string line);
-	static void loadHistory(std::string filename, 
+	static std::string makeLogFileName(std::string filename);
+	static void saveHistory(std::string const& filename, std::string line);
+	static void loadHistory(std::string const& filename, 
 		                    void (*callback)(ELogLineType,std::string,void*), 
 							void* userdata);
 private:

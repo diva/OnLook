@@ -264,6 +264,10 @@ protected:
 	 * @ brief This method is called once as soon as logging is initialized.
 	 */
 	void startErrorThread();
+	/**
+	 * @brief This method is called at the end, just prior to deinitializing curl.
+	 */
+	void stopErrorThread();
 
 private:
 	void setupErrorHandling();		// Do platform-specific error-handling setup (signals, structured exceptions)

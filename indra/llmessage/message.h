@@ -48,9 +48,9 @@
 #include "string_table.h"
 #include "llcircuit.h"
 #include "lltimer.h"
-#include "llpacketring.h"
+//#include "llpacketring.h"
 #include "llhost.h"
-#include "llhttpclient.h"
+//#include "llhttpclient.h"
 #include "llhttpnode.h"
 #include "llpacketack.h"
 #include "llsingleton.h"
@@ -60,6 +60,12 @@
 #include "llmessagesenderinterface.h"
 
 #include "llstoredmessage.h"
+
+class LLPacketRing;
+namespace
+{
+	class LLFnPtrResponder;
+}
 
 const U32 MESSAGE_MAX_STRINGS_LENGTH = 64;
 const U32 MESSAGE_NUMBER_OF_HASH_BUCKETS = 8192;
@@ -213,7 +219,7 @@ class LLMessageSystem : public LLMessageSenderInterface
 	LLHost				mUntrustedInterface;
 
  public:
-	LLPacketRing				mPacketRing;
+	LLPacketRing*				mPacketRing;
 	LLReliablePacketParams			mReliablePacketParams;
 
 	// Set this flag to TRUE when you want *very* verbose logs.
@@ -494,7 +500,7 @@ public:
 		void (*callback)(void **,S32), 
 		void ** callback_data);
 
-	LLHTTPClient::ResponderPtr createResponder(const std::string& name);
+	LLFnPtrResponder* createResponder(const std::string& name);
 	S32		sendMessage(const LLHost &host);
 	S32		sendMessage(const U32 circuit);
 private:

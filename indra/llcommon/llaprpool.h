@@ -48,6 +48,7 @@
 #include "apr_portable.h"
 #include "apr_pools.h"
 #include "llerror.h"
+#include "aithreadid.h"
 
 extern void ll_init_apr();
 
@@ -62,22 +63,22 @@ class LL_COMMON_API LLAPRPool
 protected:
 	apr_pool_t* mPool;			//!< Pointer to the underlaying pool. NULL if not initialized.
 	LLAPRPool* mParent;			//!< Pointer to the parent pool, if any. Only valid when mPool is non-zero.
-	apr_os_thread_t mOwner;		//!< The thread that owns this memory pool. Only valid when mPool is non-zero.
+	AIThreadID mOwner;			//!< The thread that owns this memory pool. Only valid when mPool is non-zero.
 
 public:
 	//! Construct an uninitialized (destructed) pool.
-	LLAPRPool(void) : mPool(NULL) { }
+	LLAPRPool(void) : mPool(NULL), mOwner(AIThreadID::none) { }
 
     //! Construct a subpool from an existing pool.
 	// This is not a copy-constructor, this class doesn't have one!
-	LLAPRPool(LLAPRPool& parent) : mPool(NULL) { create(parent); }
+	LLAPRPool(LLAPRPool& parent) : mPool(NULL), mOwner(AIThreadID::none) { create(parent); }
 
 	//! Destruct the memory pool (free all of it's subpools and allocated memory).
 	~LLAPRPool() { destroy(); }
 
 protected:
 	// Create a pool that is allocated from the Operating System. Only used by LLAPRRootPool.
-	LLAPRPool(int) : mPool(NULL), mParent(NULL), mOwner(apr_os_thread_current())
+	LLAPRPool(int) : mPool(NULL), mParent(NULL)
 	{
 		apr_status_t const apr_pool_create_status = apr_pool_create(&mPool, NULL);
 		llassert_always(apr_pool_create_status == APR_SUCCESS);
@@ -104,7 +105,7 @@ public:
 	apr_pool_t* operator()(void) const
 	{
 		llassert(mPool);
-		llassert(apr_os_thread_equal(mOwner, apr_os_thread_current()));
+		llassert(mOwner.equals_current_thread());
 		return mPool;
 	}
 
@@ -112,7 +113,7 @@ public:
 	void clear(void)
 	{
 		llassert(mPool);
-		llassert(apr_os_thread_equal(mOwner, apr_os_thread_current()));
+		llassert(mOwner.equals_current_thread());
 		apr_pool_clear(mPool);
 	}
 
@@ -124,13 +125,13 @@ public:
 	void* palloc(size_t size)
 	{
 		llassert(mPool);
-		llassert(apr_os_thread_equal(mOwner, apr_os_thread_current()));
+		llassert(mOwner.equals_current_thread());
 		return apr_palloc(mPool, size);
 	}
 	void* pcalloc(size_t size)
 	{
 		llassert(mPool);
-		llassert(apr_os_thread_equal(mOwner, apr_os_thread_current()));
+		llassert(mOwner.equals_current_thread());
 		return apr_pcalloc(mPool, size);
 	}
 #endif

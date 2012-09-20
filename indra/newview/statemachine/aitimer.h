@@ -70,7 +70,6 @@ class AITimer : public AIStateMachine {
 	 * @brief Set the interval after which the timer should expire.
 	 *
 	 * @param interval Amount of time in seconds before the timer will expire.
-	 * @param True if the timer should be deleted after it expires; false means it will keep firing at regular intervals.
 	 *
 	 * Call abort() at any time to stop the timer (and delete the AITimer object).
 	 */

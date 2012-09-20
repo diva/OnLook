@@ -29,7 +29,9 @@ set(llmessage_SOURCE_FILES
     llchainio.cpp
     llcircuit.cpp
     llclassifiedflags.cpp
-    llcurl.cpp
+    aicurl.cpp
+    debug_libcurl.cpp
+    aicurlthread.cpp
     lldatapacker.cpp
     lldispatcher.cpp
     llfiltersd2xmlrpc.cpp
@@ -66,8 +68,6 @@ set(llmessage_SOURCE_FILES
     llsdmessage.cpp
     llsdmessagebuilder.cpp
     llsdmessagereader.cpp
-    llsdrpcclient.cpp
-    llsdrpcserver.cpp
     llservicebuilder.cpp
     llservice.cpp
     llstoredmessage.cpp
@@ -117,6 +117,10 @@ set(llmessage_HEADER_FILES
     llcircuit.h
     llclassifiedflags.h
     llcurl.h
+    aicurl.h
+    debug_libcurl.h
+    aicurlprivate.h
+    aicurlthread.h
     lldatapacker.h
     lldbstrings.h
     lldispatcher.h
@@ -164,8 +168,6 @@ set(llmessage_HEADER_FILES
     llsdmessage.h
     llsdmessagebuilder.h
     llsdmessagereader.h
-    llsdrpcclient.h
-    llsdrpcserver.h
     llservice.h
     llservicebuilder.h
     llstoredmessage.h
