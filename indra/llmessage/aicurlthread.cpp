@@ -1440,18 +1440,27 @@ CURLMsg const* MultiHandle::info_read(int* msgs_in_queue) const
   return ret;
 }
 
-CURLMcode MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
+static U32 curl_concurrent_connections = 8;						// Initialized on start up by startCurlThread().
+
+void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
 {
-  std::pair<addedEasyRequests_type::iterator, bool> res = mAddedEasyRequests.insert(easy_request);
-  llassert(res.second);							// May not have been added before.
-  CURLMcode ret;
+  if (mAddedEasyRequests.size() < curl_concurrent_connections)	// Not throttled?
   {
-	AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
-	ret = curl_easy_request_w->add_handle_to_multi(curl_easy_request_w, mMultiHandle);
+	CURLMcode ret;
+	{
+	  AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
+	  ret = curl_easy_request_w->add_handle_to_multi(curl_easy_request_w, mMultiHandle);
+	}
+	if (ret == CURLM_OK)
+	{
+	  mHandleAddedOrRemoved = true;
+	  std::pair<addedEasyRequests_type::iterator, bool> res = mAddedEasyRequests.insert(easy_request);
+	  llassert(res.second);							// May not have been added before.
+	  Dout(dc::curl, "MultiHandle::add_easy_request: Added AICurlEasyRequest " << (void*)easy_request.get() << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
+	  return;
+	}
   }
-  mHandleAddedOrRemoved = true;
-  Dout(dc::curl, "MultiHandle::add_easy_request: Added AICurlEasyRequest " << (void*)easy_request.get() << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
-  return ret;
+  mQueuedRequests.push_back(easy_request);
 }
 
 CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request, bool as_per_command)
@@ -1470,6 +1479,14 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
   mAddedEasyRequests.erase(iter);
   mHandleAddedOrRemoved = true;
   Dout(dc::curl, "MultiHandle::remove_easy_request: Removed AICurlEasyRequest " << (void*)easy_request.get() << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
+
+  // Attempt to add a queued request, if any.
+  if (!mQueuedRequests.empty())
+  {
+	add_easy_request(mQueuedRequests.front());
+	mQueuedRequests.pop_front();
+  }
+
   return res;
 }
 
@@ -1697,11 +1714,12 @@ void AICurlEasyRequest::removeRequest(void)
 
 namespace AICurlInterface {
 
-void startCurlThread(void)
+void startCurlThread(U32 CurlConcurrentConnections)
 {
   using namespace AICurlPrivate::curlthread;
 
   llassert(is_main_thread());
+  curl_concurrent_connections = CurlConcurrentConnections;	// Debug Setting.
   AICurlThread::sInstance = new AICurlThread;
   AICurlThread::sInstance->start();
 }

@@ -33,6 +33,7 @@
 
 #include "aicurl.h"
 #include <vector>
+#include <deque>
 
 #undef AICurlPrivate
 
@@ -59,7 +60,7 @@ class MultiHandle : public CurlMultiHandle
 	~MultiHandle();
 
 	// Add/remove an easy handle to/from a multi session.
-	CURLMcode add_easy_request(AICurlEasyRequest const& easy_request);
+	void add_easy_request(AICurlEasyRequest const& easy_request);
 	CURLMcode remove_easy_request(AICurlEasyRequest const& easy_request, bool as_per_command = false);
 
 	// Reads/writes available data from a particular socket (non-blocking).
@@ -100,6 +101,10 @@ class MultiHandle : public CurlMultiHandle
 
 	PollSet* mReadPollSet;
 	PollSet* mWritePollSet;
+
+  private:
+	// Temporary throttling hack.
+	std::deque<AICurlEasyRequest> mQueuedRequests;	// Waiting (throttled) requests.
 };
 
 } // namespace curlthread

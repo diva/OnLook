@@ -99,7 +99,7 @@ struct TransferInfo {
 void initCurl(void (*)(void) = NULL);
 
 // Called once at start of application (from LLAppViewer::initThreads), starts AICurlThread.
-void startCurlThread(void);
+void startCurlThread(U32 CurlConcurrentConnections);
 
 // Called once at end of application (from newview/llappviewer.cpp by main thread),
 // with purpose to stop curl threads, free curl resources and deinitialize curl.
