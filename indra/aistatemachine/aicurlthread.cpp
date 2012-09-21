@@ -1382,7 +1382,7 @@ char const* action_str(int action)
 //static
 int MultiHandle::socket_callback(CURL* easy, curl_socket_t s, int action, void* userp, void* socketp)
 {
-  DoutEntering(dc::curl, "MultiHandle::socket_callback(" << (void*)easy << ", " << s << ", " << action_str(action) << ", " << (void*)userp << ", " << (void*)socketp << ")");
+  DoutEntering(dc::curl, "MultiHandle::socket_callback((CURL*)" << (void*)easy << ", " << s << ", " << action_str(action) << ", " << (void*)userp << ", " << (void*)socketp << ")");
   MultiHandle& self = *static_cast<MultiHandle*>(userp);
   CurlSocketInfo* sock_info = static_cast<CurlSocketInfo*>(socketp);
   if (action == CURL_POLL_REMOVE)

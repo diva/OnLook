@@ -37,8 +37,6 @@
 #include "aithreadsafe.h"
 #include "aistatemachine.h"
 
-extern F64 calc_clock_frequency(void);
-
 // Local variables.
 namespace {
   struct QueueElementComp;

@@ -39,6 +39,9 @@
 
 #include "linden_common.h"
 
+#if LL_WINDOWS
+#include <winsock2.h> //remove classic winsock from windows.h
+#endif
 #define OPENSSL_THREAD_DEFINES
 #include <openssl/opensslconf.h>	// OPENSSL_THREADS
 #include <openssl/crypto.h>
@@ -245,7 +248,7 @@ void ssl_init(void)
   CRYPTO_set_dynlock_destroy_callback(&ssl_dyn_destroy_function);
   need_renegotiation_hack = (0x10001000UL <= ssleay);
   llinfos << "Successful initialization of " <<
-	  SSLeay_version(SSLEAY_VERSION) << " (0x" << std::hex << SSLeay() << ")." << llendl;
+	  SSLeay_version(SSLEAY_VERSION) << " (0x" << std::hex << SSLeay() << std::dec << ")." << llendl;
 }
 
 // Cleanup OpenSSL library thread-safety.
@@ -314,7 +317,7 @@ void initCurl(void (*flush_hook)())
 	}
 
 	llinfos << "Successful initialization of libcurl " <<
-		version_info->version << " (0x" << std::hex << version_info->version_num << "), (" <<
+		version_info->version << " (0x" << std::hex << version_info->version_num << std::dec << "), (" <<
 	    version_info->ssl_version;
 	if (version_info->libz_version)
 	{
@@ -651,6 +654,10 @@ void CurlEasyHandle::setErrorBuffer(void)
 	  llwarns << "curl_easy_setopt(" << (void*)mEasyHandle << "CURLOPT_ERRORBUFFER, " << (void*)error_buffer << ") failed with error " << res << llendl;
 	  mErrorBuffer = NULL;
 	}
+  }
+  if (mErrorBuffer)
+  {
+	mErrorBuffer[0] = '\0';
   }
 }
 
@@ -1525,15 +1532,7 @@ void CurlResponderBuffer::processOutput(AICurlEasyRequest_wat& curl_easy_request
   else
   {
 	responseCode = 499;
-	responseReason = AICurlInterface::strerror(code) + " : ";
-	if (code == CURLE_FAILED_INIT)
-	{
-	  responseReason += "Curl Easy Handle initialization failed.";
-	}
-	else
-	{
-	  responseReason += curl_easy_request_w->getErrorString();
-	}
+	responseReason = AICurlInterface::strerror(code);
 	curl_easy_request_w->setopt(CURLOPT_FRESH_CONNECT, TRUE);
   }
 

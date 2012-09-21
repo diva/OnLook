@@ -548,7 +548,7 @@ char* debug_curl_easy_escape(CURL* curl, char* url, int length)
 {
   char* ret;
   ret = curl_easy_escape(curl, url, length);
-  Dout(dc::curl, "curl_easy_escape(" << curl << ", \"" << url << "\", " << length << ") = \"" << ret << '"');
+  Dout(dc::curl, "curl_easy_escape(" << (AICURL*)curl << ", \"" << url << "\", " << length << ") = \"" << ret << '"');
   return ret;
 }
 
@@ -569,23 +569,23 @@ CURLcode debug_curl_easy_getinfo(CURL* curl, CURLINFO info, ...)
   ret = curl_easy_getinfo(curl, info, param.some_ptr);
   if (info == CURLINFO_PRIVATE)
   {
-	Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", 0x" << std::hex << (size_t)param.some_ptr << std::dec << ") = " << ret);
+	Dout(dc::curl, "curl_easy_getinfo(" << (AICURL*)curl << ", " << info << ", 0x" << std::hex << (size_t)param.some_ptr << std::dec << ") = " << ret);
   }
   else
   {
 	switch((info & CURLINFO_TYPEMASK))
 	{
 	  case CURLINFO_STRING:
-		Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", (char**){ \"" << (ret == CURLE_OK ? *param.char_ptr : " <unchanged> ") << "\" }) = " << ret);
+		Dout(dc::curl, "curl_easy_getinfo(" << (AICURL*)curl << ", " << info << ", (char**){ \"" << (ret == CURLE_OK ? *param.char_ptr : " <unchanged> ") << "\" }) = " << ret);
 		break;
 	  case CURLINFO_LONG:
-		Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", (long*){ " << (ret == CURLE_OK ? *param.long_ptr : 0L) << "L }) = " << ret);
+		Dout(dc::curl, "curl_easy_getinfo(" << (AICURL*)curl << ", " << info << ", (long*){ " << (ret == CURLE_OK ? *param.long_ptr : 0L) << "L }) = " << ret);
 		break;
 	  case CURLINFO_DOUBLE:
-		Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", (double*){" << (ret == CURLE_OK ? *param.double_ptr : 0.) << "}) = " << ret);
+		Dout(dc::curl, "curl_easy_getinfo(" << (AICURL*)curl << ", " << info << ", (double*){" << (ret == CURLE_OK ? *param.double_ptr : 0.) << "}) = " << ret);
 		break;
 	  case CURLINFO_SLIST:
-		Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", (curl_slist**){ " << (ret == CURLE_OK ? **param.curl_slist_ptr : unchanged_slist) << " }) = " << ret);
+		Dout(dc::curl, "curl_easy_getinfo(" << (AICURL*)curl << ", " << info << ", (curl_slist**){ " << (ret == CURLE_OK ? **param.curl_slist_ptr : unchanged_slist) << " }) = " << ret);
 		break;
 	}
   }
@@ -759,7 +759,7 @@ char* debug_curl_easy_unescape(CURL* curl, char* url, int inlength, int* outleng
 {
   char* ret;
   ret = curl_easy_unescape(curl, url, inlength, outlength);
-  Dout(dc::curl, "curl_easy_unescape(" << curl << ", \"" << url << "\", " << inlength << ", " << ((ret && outlength) ? *outlength : 1) << ") = \"" << ret << '"');
+  Dout(dc::curl, "curl_easy_unescape(" << (AICURL*)curl << ", \"" << url << "\", " << inlength << ", " << ((ret && outlength) ? *outlength : 1) << ") = \"" << ret << '"');
   return ret;
 }
 

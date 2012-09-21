@@ -780,7 +780,7 @@ LLTextureFetchWorker::LLTextureFetchWorker(LLTextureFetch* fetcher,
 
 	calcWorkPriority();
 	mType = host.isOk() ? LLImageBase::TYPE_AVATAR_BAKE : LLImageBase::TYPE_NORMAL;
-// 	llinfos << "Create: " << mID << " mHost:" << host << " Discard=" << discard << llendl;
+ 	llinfos << "Create: " << mID << " mHost:" << host << " Discard=" << discard << " URL:"<< mUrl << llendl;
 	if (!mFetcher->mDebugPause)
 	{
 		U32 work_priority = mWorkPriority | LLWorkerThread::PRIORITY_HIGH;
@@ -2107,7 +2107,7 @@ bool LLTextureFetch::createRequest(const std::string& url, const LLUUID& id, con
 		worker->unlockWorkMutex();
 	}
 
-// 	llinfos << "REQUESTED: " << id << " Discard: " << desired_discard << llendl;
+ 	llinfos << "REQUESTED: " << id << " Discard: " << desired_discard << llendl;
 	return true;
 }
 
