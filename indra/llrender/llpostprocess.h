@@ -142,6 +142,9 @@ private:
 	void drawOrthoQuad(QuadType type);	//Finally draws fullscreen quad with the shader currently bound.
 
 public:
+	LLVector2 getDimensions() { return LLVector2(mScreenWidth,mScreenHeight); }
+
+
 	// UI interaction
 	//  Getters
 	inline LLSD const & getAllEffectInfo(void) const				{ return mAllEffectInfo; }

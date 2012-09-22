@@ -1025,6 +1025,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			//when rendering next frame's occlusion queries
 			for (U32 i = 0; i < 16; i++)
 			{
+				gGLPreviousModelView[i] = gGLLastModelView[i];
 				gGLLastModelView[i] = gGLModelView[i];
 				gGLLastProjection[i] = gGLProjection[i];
 			}
