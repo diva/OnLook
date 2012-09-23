@@ -19,8 +19,3 @@ else (NOT STANDALONE)
   endif(LINUX AND ${ARCH} STREQUAL "x86_64")
   set(STANDALONE ON)
 endif(NOT STANDALONE)
-
-if (WINDOWS)
-  use_prebuilt_binary(dbghelp)
-endif (WINDOWS)
-

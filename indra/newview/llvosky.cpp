@@ -352,7 +352,6 @@ LLVOSky::LLVOSky(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp)
 	cloud_pos_density1 = LLColor3();
 	cloud_pos_density2 = LLColor3();
 
-
 	mInitialized = FALSE;
 	mbCanSelect = FALSE;
 	mUpdateTimer.reset();
@@ -408,7 +407,6 @@ LLVOSky::~LLVOSky()
 
 	mCubeMap = NULL;
 }
-
 
 void LLVOSky::init()
 {
@@ -1250,6 +1248,7 @@ void LLVOSky::createDummyVertexBuffer()
 }
 
 static LLFastTimer::DeclareTimer FTM_RENDER_FAKE_VBO_UPDATE("Fake VBO Update");
+
 void LLVOSky::updateDummyVertexBuffer()
 {	
 	if(!LLVertexBuffer::sEnableVBOs)
@@ -1491,6 +1490,7 @@ BOOL LLVOSky::updateHeavenlyBodyGeometry(LLDrawable *drawable, const S32 f, cons
 	}
 
 	llassert(facep->getVertexBuffer()->getNumIndices() == 6);
+
 	index_offset = facep->getGeometry(verticesp,normalsp,texCoordsp, indicesp);
 
 	if (-1 == index_offset)

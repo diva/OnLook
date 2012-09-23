@@ -547,6 +547,8 @@ void LLMotionController::updateIdleActiveMotions()
 //-----------------------------------------------------------------------------
 // updateMotionsByType()
 //-----------------------------------------------------------------------------
+static LLFastTimer::DeclareTimer FTM_MOTION_ON_UPDATE("Motion onUpdate");
+
 void LLMotionController::updateMotionsByType(LLMotion::LLMotionBlendType anim_type)
 {
 	BOOL update_result = TRUE;
@@ -704,7 +706,10 @@ void LLMotionController::updateMotionsByType(LLMotion::LLMotionBlendType anim_ty
 			}
 
 			// perform motion update
-			update_result = motionp->onUpdate(mAnimTime - motionp->mActivationTimestamp, last_joint_signature);
+			{
+				LLFastTimer t(FTM_MOTION_ON_UPDATE);
+				update_result = motionp->onUpdate(mAnimTime - motionp->mActivationTimestamp, last_joint_signature);
+			}
 		}
 
 		//**********************

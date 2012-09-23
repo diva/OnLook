@@ -514,8 +514,11 @@ void LLPanelObject::getState( )
 	mCtrlPosY->setEnabled(enable_move);
 	mCtrlPosZ->setEnabled(enable_move);
 	mBtnLinkObj->setEnabled(LLSelectMgr::getInstance()->enableLinkObjects());
-	mBtnUnlinkObj->setEnabled((LLSelectMgr::getInstance()->enableUnlinkObjects()
-							   && (selected_count > 1) && LLSelectMgr::getInstance()->getSelection()->getRootObjectCount()<=1));
+	LLViewerObject* linkset_parent = objectp->getSubParent()? objectp->getSubParent() : objectp;
+	mBtnUnlinkObj->setEnabled(
+				LLSelectMgr::getInstance()->enableUnlinkObjects()
+				&& (linkset_parent->numChildren() >= 1)
+				&& LLSelectMgr::getInstance()->getSelection()->getRootObjectCount()<=1);
 	mBtnCopyPos->setEnabled(enable_move);
 	mBtnPastePos->setEnabled(enable_move);
 	mBtnPastePosClip->setEnabled(enable_move);

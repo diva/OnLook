@@ -177,8 +177,7 @@ void LLWearableList::processGetAssetReply( const char* filename, const LLAssetID
 	else
 	{
 		LLSD args;
-		// *TODO:translate
-		args["TYPE"] = LLAssetType::lookupHumanReadable(data->mAssetType);
+		args["TYPE"] =LLTrans::getString(LLAssetType::lookupHumanReadable(data->mAssetType));
 		if (isNewWearable)
 		{
 			LLNotificationsUtil::add("InvalidWearable");
@@ -230,7 +229,7 @@ LLWearable* LLWearableList::createNewWearable( LLWearableType::EType type )
 	LLWearable *wearable = generateNewWearable();
 	wearable->setType( type );
 	
-	std::string name = LLWearableType::getTypeDefaultNewName(wearable->getType());
+	std::string name = LLTrans::getString( LLWearableType::getTypeDefaultNewName(wearable->getType()) );
 	wearable->setName( name );
 
 	LLPermissions perm;

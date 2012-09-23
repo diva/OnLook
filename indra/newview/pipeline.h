@@ -168,7 +168,7 @@ public:
 	void        markRebuild(LLDrawable *drawablep, LLDrawable::EDrawableFlags flag = LLDrawable::REBUILD_ALL, BOOL priority = FALSE);
 	void		markPartitionMove(LLDrawable* drawablep);
 	void		markMeshDirty(LLSpatialGroup* group);
-		
+
 	//get the object between start and end that's closest to start.
 	LLViewerObject* lineSegmentIntersectInWorld(const LLVector3& start, const LLVector3& end,
 												BOOL pick_transparent,

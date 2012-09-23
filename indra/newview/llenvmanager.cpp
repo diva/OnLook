@@ -494,11 +494,13 @@ void LLEnvManagerNew::onRegionSettingsResponse(const LLSD& content)
 	// Load region sky presets.
 	LLWLParamManager::instance().refreshRegionPresets();
 
-	// Not possible to assume M7WL should take precidence as OpenSim will send both
-	// bool bOverridden = M7WindlightInterface::getInstance()->hasOverride();
+	bool bOverridden = M7WindlightInterface::getInstance()->hasOverride();
 
 	// If using server settings, update managers.
-	if (getUseRegionSettings())
+//	if (getUseRegionSettings())
+// [RLVa:KB] - Checked: 2011-08-29 (RLVa-1.4.1a) | Added: RLVa-1.4.1a
+	if (!bOverridden && (getUseRegionSettings()) && (LLWLParamManager::getInstance()->mAnimator.getIsRunning()) )
+// [/RLVa:KB]
 	{
 		updateManagersFromPrefs(mInterpNextChangeMessage);
 	}

@@ -1104,19 +1104,24 @@ bool LLMeshRepoThread::headerReceived(const LLVolumeParams& mesh_params, U8* dat
 			mMeshHeader[mesh_id] = header;
 			}
 
+
+		LLMutexLock lock(mMutex); // <FS:ND/> FIRE-7182, make sure only one thread access mPendingLOD at the same time.
+
 		//check for pending requests
 		pending_lod_map::iterator iter = mPendingLOD.find(mesh_params);
 		if (iter != mPendingLOD.end())
 		{
-			LLMutexLock lock(mMutex);
+			//			LLMutexLock lock(mMutex); <FS:ND/> FIRE-7182, lock was moved up, before calling mPendingLOD.find
 			for (U32 i = 0; i < iter->second.size(); ++i)
 			{
 				LODRequest req(mesh_params, iter->second[i]);
 				mLODReqQ.push(req);
 				LLMeshRepository::sLODProcessing++;
 			}
+
+			mPendingLOD.erase(iter); // <FS:ND/> FIRE-7182, only call erase if iter is really valid.
 		}
-		mPendingLOD.erase(iter);
+		//		mPendingLOD.erase(iter); // <FS:ND/> avoid crash by moving erase up.
 	}
 
 	return true;

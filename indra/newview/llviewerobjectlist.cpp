@@ -1499,6 +1499,10 @@ void LLViewerObjectList::onPhysicsFlagsFetchFailure(const LLUUID& object_id)
 	mPendingPhysicsFlags.erase(object_id);
 }
 
+static LLFastTimer::DeclareTimer FTM_SHIFT_OBJECTS("Shift Objects");
+static LLFastTimer::DeclareTimer FTM_PIPELINE_SHIFT("Pipeline Shift");
+static LLFastTimer::DeclareTimer FTM_REGION_SHIFT("Region Shift");
+
 void LLViewerObjectList::shiftObjects(const LLVector3 &offset)
 {
 	// This is called when we shift our origin when we cross region boundaries...
@@ -1509,6 +1513,8 @@ void LLViewerObjectList::shiftObjects(const LLVector3 &offset)
 	{
 		return;
 	}
+
+	LLFastTimer t(FTM_SHIFT_OBJECTS);
 
 	LLViewerObject *objectp;
 	for (vobj_list_t::iterator iter = mObjects.begin(); iter != mObjects.end(); ++iter)
@@ -1526,8 +1532,15 @@ void LLViewerObjectList::shiftObjects(const LLVector3 &offset)
 		}
 	}
 
-	gPipeline.shiftObjects(offset);
-	LLWorld::getInstance()->shiftRegions(offset);
+	{
+		LLFastTimer t(FTM_PIPELINE_SHIFT);
+		gPipeline.shiftObjects(offset);
+	}
+
+	{
+		LLFastTimer t(FTM_REGION_SHIFT);
+		LLWorld::getInstance()->shiftRegions(offset);
+	}
 }
 
 void LLViewerObjectList::repartitionObjects()
@@ -2062,8 +2075,8 @@ void LLViewerObjectList::findOrphans(LLViewerObject* objectp, U32 ip, U32 port)
 			llinfos << "Agent: " << objectp->getPositionAgent() << llendl;
 			addDebugBeacon(objectp->getPositionAgent(),"");
 #endif
-            gPipeline.markMoved(objectp->mDrawable);                
-            objectp->setChanged(LLXform::MOVED | LLXform::SILHOUETTE);
+			gPipeline.markMoved(objectp->mDrawable);                
+			objectp->setChanged(LLXform::MOVED | LLXform::SILHOUETTE);
 
 			// Flag the object as no longer orphaned
 			childp->mOrphaned = FALSE;

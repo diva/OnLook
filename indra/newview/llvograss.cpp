@@ -330,6 +330,7 @@ BOOL LLVOGrass::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 		
 		return TRUE ;
 	}
+
 	if (mPatch && (mLastPatchUpdateTime != mPatch->getLastUpdateTime()))
 	{
 		gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME, TRUE);

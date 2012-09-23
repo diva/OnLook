@@ -210,7 +210,24 @@ bool stort_calls(const std::pair<std::string, U32>& left, const std::pair<std::s
 #endif //PROF_CTRL_CALLS
 bool cmd_line_chat(std::string revised_text, EChatType type)
 {
-	if(gSavedSettings.getBOOL("AscentCmdLine"))
+	static LLCachedControl<bool> sAscentCmdLine(gSavedSettings, "AscentCmdLine");
+	static LLCachedControl<std::string> sAscentCmdLinePos(gSavedSettings,  "AscentCmdLinePos");
+	static LLCachedControl<std::string> sAscentCmdLineDrawDistance(gSavedSettings,  "AscentCmdLineDrawDistance");
+	static LLCachedControl<std::string> sAscentCmdTeleportToCam(gSavedSettings,  "AscentCmdTeleportToCam");
+	static LLCachedControl<std::string> sAscentCmdLineKeyToName(gSavedSettings,  "AscentCmdLineKeyToName");
+	static LLCachedControl<std::string> sAscentCmdLineOfferTp(gSavedSettings,  "AscentCmdLineOfferTp");
+	static LLCachedControl<std::string> sAscentCmdLineGround(gSavedSettings,  "AscentCmdLineGround");
+	static LLCachedControl<std::string> sAscentCmdLineHeight(gSavedSettings,  "AscentCmdLineHeight");
+	static LLCachedControl<std::string> sAscentCmdLineTeleportHome(gSavedSettings,  "AscentCmdLineTeleportHome");
+	static LLCachedControl<std::string> sAscentCmdLineRezPlatform(gSavedSettings,  "AscentCmdLineRezPlatform");
+	static LLCachedControl<std::string> sAscentCmdLineMapTo(gSavedSettings,  "AscentCmdLineMapTo");
+	static LLCachedControl<bool> sAscentCmdLineMapToKeepPos(gSavedSettings, "AscentMapToKeepPos");
+	static LLCachedControl<std::string> sAscentCmdLineCalc(gSavedSettings,  "AscentCmdLineCalc");
+	static LLCachedControl<std::string> sAscentCmdLineTP2(gSavedSettings,  "AscentCmdLineTP2");
+	static LLCachedControl<std::string> sSinguCmdLineClearChat(gSavedSettings,  "SinguCmdLineAway");
+	static LLCachedControl<std::string> sAscentCmdLineClearChat(gSavedSettings,  "AscentCmdLineClearChat");
+
+	if(sAscentCmdLine)
 	{
 		std::istringstream i(revised_text);
 		std::string command;
@@ -218,7 +235,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 		command = utf8str_tolower(command);
 		if(command != "")
 		{
-			if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLinePos")))
+			if(command == utf8str_tolower(sAscentCmdLinePos))
 			{
 				F32 x,y,z;
 				if (i >> x)
@@ -241,74 +258,73 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					}
 				}
 			}
-			else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineDrawDistance")))
+			else if(command == utf8str_tolower(sAscentCmdLineDrawDistance))
 			{
-                int drawDist;
-                if(i >> drawDist)
-                {
-                    gSavedSettings.setF32("RenderFarClip", drawDist);
-                    gAgentCamera.mDrawDistance=drawDist;
-                    char buffer[DB_IM_MSG_BUF_SIZE * 2];  /* Flawfinder: ignore */
-                    snprintf(buffer,sizeof(buffer),"Draw distance set to: %dm",drawDist);
+				int drawDist;
+				if(i >> drawDist)
+				{
+					gSavedSettings.setF32("RenderFarClip", drawDist);
+					gAgentCamera.mDrawDistance=drawDist;
+					char buffer[DB_IM_MSG_BUF_SIZE * 2];  /* Flawfinder: ignore */
+					snprintf(buffer,sizeof(buffer),"Draw distance set to: %dm",drawDist);
 					cmdline_printchat(std::string(buffer));
 					return false;
-                }
+				}
 			}
-			else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdTeleportToCam")))
-            {
+			else if(command == utf8str_tolower(sAscentCmdTeleportToCam))
+			{
 				gAgent.teleportViaLocation(gAgentCamera.getCameraPositionGlobal());
 				return false;
-            }
-			else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineKeyToName")))
-            {
-                LLUUID targetKey;
-                if(i >> targetKey)
-                {
-                    std::string object_name;
-                    gCacheName->getFullName(targetKey, object_name);
-                    char buffer[DB_IM_MSG_BUF_SIZE * 2];  /* Flawfinder: ignore */
-                    snprintf(buffer,sizeof(buffer),"%s: (%s)",targetKey.asString().c_str(), object_name.c_str());
+			}
+			else if(command == utf8str_tolower(sAscentCmdLineKeyToName))
+			{
+				LLUUID targetKey;
+				if(i >> targetKey)
+				{
+					std::string object_name;
+					gCacheName->getFullName(targetKey, object_name);
+					char buffer[DB_IM_MSG_BUF_SIZE * 2];  /* Flawfinder: ignore */
+					snprintf(buffer,sizeof(buffer),"%s: (%s)",targetKey.asString().c_str(), object_name.c_str());
 					cmdline_printchat(std::string(buffer));
-                }
+				}
 				return false;
-            }
-			else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineOfferTp")))
-            {
-                std::string avatarKey;
+			}
+			else if(command == utf8str_tolower(sAscentCmdLineOfferTp))
+			{
+				std::string avatarKey;
 //				llinfos << "CMD DEBUG 0 " << command << " " << avatarName << llendl;
-                if(i >> avatarKey)
-                {
+				if(i >> avatarKey)
+				{
 //				llinfos << "CMD DEBUG 0 afterif " << command << " " << avatarName << llendl;
-                    LLUUID tempUUID;
-                    if(LLUUID::parseUUID(avatarKey, &tempUUID))
-                    {
-                        char buffer[DB_IM_MSG_BUF_SIZE * 2];  /* Flawfinder: ignore */
-                        LLDynamicArray<LLUUID> ids;
-                        ids.push_back(tempUUID);
-                        std::string tpMsg="Join me!";
-                        LLMessageSystem* msg = gMessageSystem;
-                        msg->newMessageFast(_PREHASH_StartLure);
-                        msg->nextBlockFast(_PREHASH_AgentData);
-                        msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-                        msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-                        msg->nextBlockFast(_PREHASH_Info);
-                        msg->addU8Fast(_PREHASH_LureType, (U8)0); 
+					LLUUID tempUUID;
+					if(LLUUID::parseUUID(avatarKey, &tempUUID))
+					{
+						char buffer[DB_IM_MSG_BUF_SIZE * 2];  /* Flawfinder: ignore */
+						LLDynamicArray<LLUUID> ids;
+						ids.push_back(tempUUID);
+						std::string tpMsg="Join me!";
+						LLMessageSystem* msg = gMessageSystem;
+						msg->newMessageFast(_PREHASH_StartLure);
+						msg->nextBlockFast(_PREHASH_AgentData);
+						msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+						msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+						msg->nextBlockFast(_PREHASH_Info);
+						msg->addU8Fast(_PREHASH_LureType, (U8)0); 
 
-                        msg->addStringFast(_PREHASH_Message, tpMsg);
-                        for(LLDynamicArray<LLUUID>::iterator itr = ids.begin(); itr != ids.end(); ++itr)
-                        {
-                            msg->nextBlockFast(_PREHASH_TargetData);
-                            msg->addUUIDFast(_PREHASH_TargetID, *itr);
-                        }
-                        gAgent.sendReliableMessage();
-                        snprintf(buffer,sizeof(buffer),"Offered TP to key %s",tempUUID.asString().c_str());
+						msg->addStringFast(_PREHASH_Message, tpMsg);
+						for(LLDynamicArray<LLUUID>::iterator itr = ids.begin(); itr != ids.end(); ++itr)
+						{
+							msg->nextBlockFast(_PREHASH_TargetData);
+							msg->addUUIDFast(_PREHASH_TargetID, *itr);
+						}
+						gAgent.sendReliableMessage();
+						snprintf(buffer,sizeof(buffer),"Offered TP to key %s",tempUUID.asString().c_str());
 						cmdline_printchat(std::string(buffer));
 						return false;
-                    }
-                }
-            }
-			
-			else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineGround")))
+					}
+				}
+			}
+			else if(command == utf8str_tolower(sAscentCmdLineGround))
 			{
 				LLVector3 agentPos = gAgent.getPositionAgent();
 				U64 agentRegion = gAgent.getRegion()->getHandle();
@@ -317,7 +333,8 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 				pos_global += LLVector3d((F64)targetPos.mV[0],(F64)targetPos.mV[1],(F64)targetPos.mV[2]);
 				gAgent.teleportViaLocation(pos_global);
 				return false;
-			}else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineHeight")))
+			}
+			else if(command == utf8str_tolower(sAscentCmdLineHeight))
 			{
 				F32 z;
 				if(i >> z)
@@ -330,17 +347,20 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					gAgent.teleportViaLocation(pos_global);
 					return false;
 				}
-			}else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineTeleportHome")))
+			}
+			else if(command == utf8str_tolower(sAscentCmdLineTeleportHome))
 			{
 				gAgent.teleportHome();
 				return false;
-            }else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineRezPlatform")))
-            {
+			}
+			else if(command == utf8str_tolower(sAscentCmdLineRezPlatform))
+			{
 				F32 width;
 				if (i >> width) cmdline_rezplat(false, width);
 				else cmdline_rezplat();
 				return false;
-			}else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineMapTo")))
+			}
+			else if(command == utf8str_tolower(sAscentCmdLineMapTo))
 			{
 				if (revised_text.length() > command.length() + 1) //Typing this command with no argument was causing a crash. -Madgeek
 				{
@@ -351,7 +371,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					std::string region_name = LLWeb::escapeURL(revised_text.substr(command.length()+1));
 					std::string url;
 
-					if(!gSavedSettings.getBOOL("AscentMapToKeepPos"))
+					if(!sAscentCmdLineMapToKeepPos)
 					{
 						agent_x = 128;
 						agent_y = 128;
@@ -362,7 +382,8 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					LLURLDispatcher::dispatch(url, NULL, true);
 				}
 				return false;
-			}else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineCalc")))//Cryogenic Blitz
+			}
+			else if(command == utf8str_tolower(sAscentCmdLineCalc))//Cryogenic Blitz
 			{
 				bool success;
 				F32 result = 0.f;
@@ -391,7 +412,8 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					cmdline_printchat(out);
 					return false;
 				}
-			}else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineTP2")))
+			}
+			else if(command == utf8str_tolower(sAscentCmdLineTP2))
 			{
 				if (revised_text.length() > command.length() + 1) //Typing this command with no argument was causing a crash. -Madgeek
 				{
@@ -399,11 +421,13 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					cmdline_tp2name(name);
 				}
 				return false;
-			}else if(command == utf8str_tolower(gSavedSettings.getString("SinguCmdLineAway")))
+			}
+			else if(command == utf8str_tolower(sSinguCmdLineClearChat))
 			{
 				handle_fake_away_status(NULL);
 				return false;
-			}else if(command == "typingstop")
+			}
+			else if(command == "typingstop")
 			{
 				std::string text;
 				if(i >> text)
@@ -411,7 +435,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					gChatBar->sendChatFromViewer(text, CHAT_TYPE_STOP, FALSE);
 				}
 			}
-			else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineClearChat")))
+			else if(command == utf8str_tolower(sAscentCmdLineClearChat))
 			{
 				LLFloaterChat* chat = LLFloaterChat::getInstance(LLSD());
 				if(chat)
@@ -422,7 +446,8 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					history_editor_with_mute->clear();
 					return false;
 				}
-			}else if(command == "invrepair")
+			}
+			else if(command == "invrepair")
 			{
 				invrepair();
 			}
@@ -513,55 +538,61 @@ void cmdline_tp2name(std::string target)
 
 void cmdline_rezplat(bool use_saved_value, F32 visual_radius) //cmdline_rezplat() will still work... just will use the saved value
 {
-    LLVector3 agentPos = gAgent.getPositionAgent()+(gAgent.getVelocity()*(F32)0.333);
-    LLMessageSystem* msg = gMessageSystem;
-    msg->newMessageFast(_PREHASH_ObjectAdd);
-    msg->nextBlockFast(_PREHASH_AgentData);
-    msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-    msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-    msg->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
-    msg->nextBlockFast(_PREHASH_ObjectData);
-    msg->addU8Fast(_PREHASH_PCode, LL_PCODE_VOLUME);
-    msg->addU8Fast(_PREHASH_Material,    LL_MCODE_METAL);
+	LLVector3 agentPos = gAgent.getPositionAgent()+(gAgent.getVelocity()*(F32)0.333);
+	LLMessageSystem* msg = gMessageSystem;
+	msg->newMessageFast(_PREHASH_ObjectAdd);
+	msg->nextBlockFast(_PREHASH_AgentData);
+	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+	msg->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
+	msg->nextBlockFast(_PREHASH_ObjectData);
+	msg->addU8Fast(_PREHASH_PCode, LL_PCODE_VOLUME);
+	msg->addU8Fast(_PREHASH_Material, LL_MCODE_METAL);
 
-    if(agentPos.mV[2] > 4096.0)msg->addU32Fast(_PREHASH_AddFlags, FLAGS_CREATE_SELECTED);
-    else msg->addU32Fast(_PREHASH_AddFlags, 0);
+	if(agentPos.mV[2] > 4096.0)
+		msg->addU32Fast(_PREHASH_AddFlags, FLAGS_CREATE_SELECTED);
+	else
+		msg->addU32Fast(_PREHASH_AddFlags, 0);
 
-    LLVolumeParams    volume_params;
+	LLVolumeParams volume_params;
 
-    volume_params.setType( LL_PCODE_PROFILE_CIRCLE, LL_PCODE_PATH_CIRCLE_33 );
-    volume_params.setRatio    ( 2, 2 );
-    volume_params.setShear    ( 0, 0 );
-    volume_params.setTaper(2.0f,2.0f);
-    volume_params.setTaperX(0.f);
-    volume_params.setTaperY(0.f);
+	volume_params.setType( LL_PCODE_PROFILE_CIRCLE, LL_PCODE_PATH_CIRCLE_33 );
+	volume_params.setRatio( 2, 2 );
+	volume_params.setShear( 0, 0 );
+	volume_params.setTaper(2.0f,2.0f);
+	volume_params.setTaperX(0.f);
+	volume_params.setTaperY(0.f);
 
-    LLVolumeMessage::packVolumeParams(&volume_params, msg);
-    LLVector3 rezpos = agentPos - LLVector3(0.0f,0.0f,2.5f);
-    LLQuaternion rotation;
-    rotation.setQuat(90.f * DEG_TO_RAD, LLVector3::y_axis);
+	LLVolumeMessage::packVolumeParams(&volume_params, msg);
+	LLVector3 rezpos = agentPos - LLVector3(0.0f,0.0f,2.5f);
+	LLQuaternion rotation;
+	rotation.setQuat(90.f * DEG_TO_RAD, LLVector3::y_axis);
 
-	if (use_saved_value) visual_radius = gSavedSettings.getF32("AscentPlatformSize");
+	if (use_saved_value)
+	{
+		visual_radius = gSavedSettings.getF32("AscentPlatformSize");
+	}
+
 	F32 realsize = visual_radius / 3.0f;
 	if (realsize < 0.01f) realsize = 0.01f;
 	else if (realsize > 10.0f) realsize = 10.0f;
 
-    msg->addVector3Fast(_PREHASH_Scale,            LLVector3(0.01f,realsize,realsize) );
-    msg->addQuatFast(_PREHASH_Rotation,            rotation );
-    msg->addVector3Fast(_PREHASH_RayStart,        rezpos );
-    msg->addVector3Fast(_PREHASH_RayEnd,            rezpos );
-    msg->addU8Fast(_PREHASH_BypassRaycast,        (U8)1 );
-    msg->addU8Fast(_PREHASH_RayEndIsIntersection, (U8)FALSE );
-    msg->addU8Fast(_PREHASH_State, 0);
-    msg->addUUIDFast(_PREHASH_RayTargetID,            LLUUID::null );
-    msg->sendReliable(gAgent.getRegionHost());
+	msg->addVector3Fast(_PREHASH_Scale, LLVector3(0.01f,realsize,realsize) );
+	msg->addQuatFast(_PREHASH_Rotation, rotation );
+	msg->addVector3Fast(_PREHASH_RayStart, rezpos );
+	msg->addVector3Fast(_PREHASH_RayEnd, rezpos );
+	msg->addU8Fast(_PREHASH_BypassRaycast, (U8)1 );
+	msg->addU8Fast(_PREHASH_RayEndIsIntersection, (U8)FALSE );
+	msg->addU8Fast(_PREHASH_State, 0);
+	msg->addUUIDFast(_PREHASH_RayTargetID, LLUUID::null );
+	msg->sendReliable(gAgent.getRegionHost());
 }
 
 void cmdline_printchat(std::string message)
 {
-    LLChat chat;
-    chat.mText = message;
+	LLChat chat;
+	chat.mText = message;
 	chat.mSourceType = CHAT_SOURCE_SYSTEM;
-    LLFloaterChat::addChat(chat, FALSE, FALSE);
+	LLFloaterChat::addChat(chat, FALSE, FALSE);
 }
 
