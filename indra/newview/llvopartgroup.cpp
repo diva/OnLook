@@ -167,6 +167,7 @@ void LLVOPartGroup::freeVBSlot(S32 idx)
 		*sVBSlotCursor = idx;
 	}
 }
+
 LLVOPartGroup::LLVOPartGroup(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp)
 	:	LLAlphaObject(id, pcode, regionp),
 		mViewerPartGroupp(NULL)
@@ -180,7 +181,6 @@ LLVOPartGroup::LLVOPartGroup(const LLUUID &id, const LLPCode pcode, LLViewerRegi
 LLVOPartGroup::~LLVOPartGroup()
 {
 }
-
 
 BOOL LLVOPartGroup::isActive() const
 {

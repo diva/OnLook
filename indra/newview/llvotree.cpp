@@ -894,7 +894,6 @@ void LLVOTree::updateMesh()
 	S32 stop_depth = 0;
 	F32 alpha = 1.0;
 	
-
 	U32 vert_count = 0;
 	U32 index_count = 0;
 	
