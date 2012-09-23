@@ -311,6 +311,10 @@ class AICurlEasyRequest {
 	AICurlEasyRequest& operator=(AICurlEasyRequest const&) { return *this; }
 
   public:
+	// Instead of assignment, it might be helpful to use swap.
+	void swap(AICurlEasyRequest& cer) { mCurlEasyRequest.swap(cer.mCurlEasyRequest); }
+
+  public:
 	// The more exotic member functions of this class, to deal with passing this class
 	// as CURLOPT_PRIVATE pointer to a curl handle and afterwards restore it.
 	// For "internal use" only; don't use things from AICurlPrivate yourself.
