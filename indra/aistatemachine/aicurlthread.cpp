@@ -1461,13 +1461,41 @@ void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
 	}
   }
   mQueuedRequests.push_back(easy_request);
+#ifdef SHOW_ASSERT
+  // Not active yet, but it's no longer an error if next we try to remove the request.
+  AICurlEasyRequest_wat(*easy_request)->mRemovedPerCommand = false;
+#endif
 }
 
 CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request, bool as_per_command)
 {
   addedEasyRequests_type::iterator iter = mAddedEasyRequests.find(easy_request);
   if (iter == mAddedEasyRequests.end())
-	return (CURLMcode)-2;				// Was already removed before.
+  {
+	// The request could be queued.
+	std::deque<AICurlEasyRequest>::iterator const end = mQueuedRequests.end();
+	std::deque<AICurlEasyRequest>::iterator cur = std::find(mQueuedRequests.begin(), end, easy_request);
+	if (cur != end)
+	{
+	  // We can't use erase because that uses assignment to move elements, which is private because it isn't thread-safe for AICurlEasyRequest.
+	  // Therefore, move the element that we found to the back with swap (could just swap with the end immediately,
+	  // but I don't want to break the order in which requests where added). Swap is also not thread-safe, but OK here
+	  // because it only touches the AICurlEasyRequest objects in the deque, and the deque is protected by the
+	  // lock on MultiHandle.
+	  std::deque<AICurlEasyRequest>::iterator prev = cur;
+	  while (++cur != end)
+	  {
+		prev->swap(*cur);
+		prev = cur;
+	  }
+#ifdef SHOW_ASSERT
+	  // Now a second remove command would be an error again.
+	  AICurlEasyRequest_wat(**prev)->mRemovedPerCommand = true;
+#endif
+	  mQueuedRequests.pop_back();
+	}
+	return (CURLMcode)-2;				// Was already removed before, or never added (queued).
+  }
   CURLMcode res;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(**iter);
