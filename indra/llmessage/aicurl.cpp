@@ -1158,6 +1158,8 @@ void CurlEasyRequest::applyDefaultOptions(void)
   setopt(CURLOPT_NOSIGNAL, 1);
   // The old code did this for the 'buffered' version, but I think it's nonsense.
   //setopt(CURLOPT_DNS_CACHE_TIMEOUT, 0);
+  // Disable SSL/TLS session caching; some servers (aka id.secondlife.com) refuse connections when session ids are enabled.
+  setopt(CURLOPT_SSL_SESSIONID_CACHE, 0);
   // Set the CURL options for either SOCKS or HTTP proxy.
   applyProxySettings();
   // Cause libcurl to print all it's I/O traffic on the debug channel.
