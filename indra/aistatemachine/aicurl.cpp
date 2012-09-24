@@ -1185,7 +1185,7 @@ void CurlEasyRequest::applyDefaultOptions(void)
 void CurlEasyRequest::finalizeRequest(std::string const& url)
 {
   llassert(!mRequestFinalized);
-  mResult = CURLE_FAILED_INIT;		// General error code, the final code is written here in MultiHandle::check_run_count when msg is CURLMSG_DONE.
+  mResult = CURLE_FAILED_INIT;		// General error code; the final result code is stored here by MultiHandle::check_run_count when msg is CURLMSG_DONE.
   lldebugs << url << llendl;
 #ifdef SHOW_ASSERT
   // Do a sanity check on the headers.
@@ -1266,7 +1266,8 @@ void CurlEasyRequest::removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy
 // CurlResponderBuffer
 
 static int const HTTP_REDIRECTS_DEFAULT = 10;
-static S32 const CURL_REQUEST_TIMEOUT = 30;		// Seconds per operation.
+static S32 const CURL_REQUEST_TIMEOUT = 30;		// The minimum value of the CURLOPT_TIMEOUT option (which is the maximum
+												// time in seconds that we allow a libcurl transfer operation to take).
 
 LLChannelDescriptors const CurlResponderBuffer::sChannels;
 

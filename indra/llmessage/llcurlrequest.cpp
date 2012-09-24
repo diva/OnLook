@@ -95,7 +95,7 @@ bool Request::post2(std::string const& url, AIHTTPHeaders const& headers, std::s
     AICurlEasyRequest_wat buffered_easy_request_w(*buffered_easy_request->mCurlEasyRequest);
 	AICurlResponderBuffer_wat buffer_w(*buffered_easy_request->mCurlEasyRequest);
 
-	buffer_w->prepRequest(buffered_easy_request_w, headers, responder);
+	buffer_w->prepRequest(buffered_easy_request_w, headers, responder, time_out);
 
 	U32 bytes = data.size();
 	bool success = buffer_w->getInput()->append(buffer_w->sChannels.out(), (U8 const*)data.data(), bytes);
@@ -125,7 +125,7 @@ bool Request::post3(std::string const& url, AIHTTPHeaders const& headers, LLSD c
     AICurlEasyRequest_wat buffered_easy_request_w(*buffered_easy_request->mCurlEasyRequest);
 	AICurlResponderBuffer_wat buffer_w(*buffered_easy_request->mCurlEasyRequest);
 
-	buffer_w->prepRequest(buffered_easy_request_w, headers, responder);
+	buffer_w->prepRequest(buffered_easy_request_w, headers, responder, time_out);
 
 	LLBufferStream buffer_stream(buffer_w->sChannels, buffer_w->getInput().get());
 	LLSDSerialize::toXML(data, buffer_stream);

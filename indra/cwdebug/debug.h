@@ -173,7 +173,9 @@ extern LL_COMMON_API fake_channel const notice;
 #include <boost/shared_array.hpp>
 #if CWDEBUG_LOCATION
 #include <execinfo.h>		// Needed for 'backtrace'.
+#include "llpreprocessor.h"
 #endif
+#include <set>
 
 #define CWD_API __attribute__ ((visibility("default")))
 
@@ -274,6 +276,8 @@ class BackTrace {
     boost::shared_array<void*> M_buffer;
     int M_frames;
   public:
+  	static ll_thread_local size_t S_number;
+  public:
     BackTrace(void** buffer, int frames) : M_buffer(new void* [frames]), M_frames(frames) { std::memcpy(M_buffer.get(), buffer, sizeof(void*) * frames); }
 
     friend bool operator<(BackTrace const& bt1, BackTrace const& bt2)
@@ -299,18 +303,80 @@ extern pthread_mutex_t backtrace_mutex;
     using namespace debug; \
     void* buffer[32]; \
     int frames = backtrace(buffer, 32); \
-    size_t size; \
     { \
       pthread_mutex_lock(&backtrace_mutex); \
       backtraces.push_back(BackTrace(buffer, frames)); \
-      size = backtraces.size(); \
+      BackTrace::S_number = backtraces.size(); \
       pthread_mutex_unlock(&backtrace_mutex); \
     } \
-    Dout(dc::backtrace, "Stored backtrace #" << size); \
+    Dout(dc::backtrace, "Stored backtrace #" << BackTrace::S_number); \
   } while(0)
+
+class LL_COMMON_API BackTraces {
+  private:
+	typedef std::vector<size_t> trace_container_type;
+	trace_container_type mBackTraces;
+
+  public:
+	void store_trace(size_t trace);
+	void remove_trace(size_t trace);
+
+	void dump(void) const;
+};
+
+class LL_COMMON_API BackTraceTracker {
+  private:
+	BackTraces* mBackTraces;
+	size_t mTrace;
+
+  public:
+	BackTraceTracker(BackTraces* back_traces);
+	~BackTraceTracker();
+
+	BackTraceTracker(BackTraceTracker const&);
+	BackTraceTracker& operator=(BackTraceTracker const&);
+
+	void dump(void) const { mBackTraces->dump(); }
+};
+
 #else
 #define BACKTRACE do { } while(0)
 #endif // CWDEBUG_LOCATION
+
+template<class T>
+class LL_COMMON_API InstanceTracker {
+  private:
+	T const* mInstance;
+	static pthread_mutex_t sInstancesMutex;
+	static std::set<T const*> sInstances;
+	static void remember(T const* instance) { pthread_mutex_lock(&sInstancesMutex); sInstances.insert(instance); pthread_mutex_unlock(&sInstancesMutex); }
+	static void forget(T const* instance) { pthread_mutex_lock(&sInstancesMutex); sInstances.erase(instance); pthread_mutex_unlock(&sInstancesMutex); }
+  public:
+	InstanceTracker(T const* instance) : mInstance(instance) { remember(mInstance); }
+	~InstanceTracker() { forget(mInstance); }
+	InstanceTracker& operator=(InstanceTracker const& orig) { forget(mInstance); mInstance = orig.mInstance; remember(mInstance); return *this; }
+	static void dump(void);
+  private:
+	// Non-copyable. Instead of copying, call InstanceTracker(T const*) with the this pointer of the new instance.
+    InstanceTracker(InstanceTracker const& orig);
+};
+
+template<class T>
+pthread_mutex_t InstanceTracker<T>::sInstancesMutex = PTHREAD_MUTEX_INITIALIZER;
+
+template<class T>
+std::set<T const*> InstanceTracker<T>::sInstances;
+
+template<class T>
+void InstanceTracker<T>::dump(void)
+{
+  pthread_mutex_lock(&sInstancesMutex);
+  for (typename std::set<T const*>::iterator iter = sInstances.begin(); iter != sInstances.end(); ++iter)
+  {
+	std::cout << *iter << std::endl;
+  }
+  pthread_mutex_unlock(&sInstancesMutex);
+}
 
 } // namespace debug
 
