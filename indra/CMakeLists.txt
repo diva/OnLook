@@ -65,7 +65,7 @@ if (EXISTS ${LIBS_CLOSED_DIR}llkdu AND NOT STANDALONE)
   add_subdirectory(${LIBS_CLOSED_PREFIX}llkdu)
 endif (EXISTS ${LIBS_CLOSED_DIR}llkdu AND NOT STANDALONE)
 
-add_subdirectory(${LIBS_OPEN_PREFIX}lscript)
+#add_subdirectory(${LIBS_OPEN_PREFIX}lscript)
 
 if (WINDOWS AND EXISTS ${LIBS_CLOSED_DIR}copy_win_scripts)
   add_subdirectory(${LIBS_CLOSED_PREFIX}copy_win_scripts)

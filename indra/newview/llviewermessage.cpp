@@ -42,7 +42,7 @@
 #include "llaudioengine.h" 
 #include "llavatarnamecache.h"
 #include "indra_constants.h"
-#include "lscript_byteformat.h"
+#include "../lscript/lscript_byteformat.h"	//Need LSCRIPTRunTimePermissionBits and SCRIPT_PERMISSION_*
 
 #include "llfloaterbump.h"
 #include "llassetstorage.h"

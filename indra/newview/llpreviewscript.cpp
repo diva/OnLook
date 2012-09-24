@@ -53,8 +53,8 @@
 #include "llscrollcontainer.h"
 #include "llscrolllistctrl.h"
 #include "llslider.h"
-#include "lscript_rt_interface.h"
-#include "lscript_export.h"
+//#include "lscript_rt_interface.h"
+//#include "lscript_export.h"
 #include "lltextbox.h"
 #include "lltooldraganddrop.h"
 #include "llvfile.h"
@@ -92,6 +92,9 @@
 #include "llviewercontrol.h"
 #include "llappviewer.h"
 #include "llpanelobjectinventory.h"
+
+#include "llsdserialize.h"
+
 // [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f)
 #include "rlvhandler.h"
 #include "rlvlocks.h"
@@ -206,6 +209,34 @@ struct LLSECKeywordCompare
 	}
 };
 
+std::vector<LLScriptEdCore::LSLFunctionProps> LLScriptEdCore::mParsedFunctions;
+//static
+void LLScriptEdCore::parseFunctions(const std::string& filename)
+{
+	std::string filepath = gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, filename);
+
+	if(LLFile::isfile(filepath))
+	{
+		LLSD function_list;
+		llifstream importer(filepath);
+		if(importer.is_open())
+		{
+			LLSDSerialize::fromXMLDocument(function_list, importer);
+			importer.close();
+			
+			for (LLSD::map_const_iterator it = function_list.beginMap(); it != function_list.endMap(); ++it)
+			{
+				LSLFunctionProps fn;
+				fn.mName = it->first;
+				fn.mSleepTime = it->second["sleep_time"].asFloat();
+				fn.mGodOnly = it->second["god_only"].asBoolean();
+
+				mParsedFunctions.push_back(fn);
+			}
+		}
+	}
+}
+
 LLScriptEdCore::LLScriptEdCore(
 	const std::string& name,
 	const LLRect& rect,
@@ -258,8 +289,8 @@ LLScriptEdCore::LLScriptEdCore(
 
 	std::vector<std::string> funcs;
 	std::vector<std::string> tooltips;
-	for (std::vector<LLScriptLibraryFunction>::const_iterator i = gScriptLibrary.mFunctions.begin();
-	i != gScriptLibrary.mFunctions.end(); ++i)
+	for (std::vector<LSLFunctionProps>::const_iterator i = mParsedFunctions.begin();
+	i != mParsedFunctions.end(); ++i)
 	{
 		// Make sure this isn't a god only function, or the agent is a god.
 		if (!i->mGodOnly || gAgent.isGodlike())
@@ -1472,10 +1503,20 @@ void LLPreviewLSL::saveIfNeeded()
 		{
 			uploadAssetViaCaps(url, filename, mItemUUID);
 		}
+		else
+		{
+			LLSD row;
+			row["columns"][0]["value"] = LLTrans::getString("CompileQueueDownloadedCompiling");
+			row["columns"][0]["font"] = "SANSSERIF_SMALL";
+			mScriptEd->mErrorList->addElement(row);
+			LLFile::remove(filename);
+		}
+#if 0 //Client side compiling disabled.
 		else if (gAssetStorage)
 		{
 			uploadAssetLegacy(filename, mItemUUID, tid);
 		}
+#endif
 	}
 }
 
@@ -1497,6 +1538,7 @@ void LLPreviewLSL::uploadAssetViaCaps(const std::string& url,
 	LLHTTPClient::post(url, body, new LLUpdateAgentInventoryResponder(body, filename, LLAssetType::AT_LSL_TEXT));
 }
 
+#if 0 //Client side compiling disabled.
 void LLPreviewLSL::uploadAssetLegacy(const std::string& filename,
 									  const LLUUID& item_id,
 									  const LLTransactionID& tid)
@@ -1580,7 +1622,7 @@ void LLPreviewLSL::uploadAssetLegacy(const std::string& filename,
 	LLFile::remove(err_filename);
 	LLFile::remove(dst_filename);
 }
-
+#endif
 
 // static
 void LLPreviewLSL::onSaveComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status) // StoreAssetData callback (fixed)
@@ -2375,10 +2417,20 @@ void LLLiveLSLEditor::saveIfNeeded()
 		uploadAssetViaCaps(url, filename, mObjectID,
 						   mItemID, is_running);
 	}
+	else
+	{
+		LLSD row;
+		row["columns"][0]["value"] = LLTrans::getString("CompileQueueDownloadedCompiling");
+		row["columns"][0]["font"] = "SANSSERIF_SMALL";
+		mScriptEd->mErrorList->addElement(row);
+		LLFile::remove(filename);
+	}
+#if 0 //Client side compiling disabled.
 	else if (gAssetStorage)
 	{
 		uploadAssetLegacy(filename, object, tid, is_running);
 	}
+#endif
 }
 
 void LLLiveLSLEditor::uploadAssetViaCaps(const std::string& url,
@@ -2397,6 +2449,7 @@ void LLLiveLSLEditor::uploadAssetViaCaps(const std::string& url,
 		new LLUpdateTaskInventoryResponder(body, filename, LLAssetType::AT_LSL_TEXT));
 }
 
+#if 0 //Client side compiling disabled.
 void LLLiveLSLEditor::uploadAssetLegacy(const std::string& filename,
 										LLViewerObject* object,
 										const LLTransactionID& tid,
@@ -2495,6 +2548,7 @@ void LLLiveLSLEditor::uploadAssetLegacy(const std::string& filename,
 	runningCheckbox->setLabel(getString("script_running"));
 	runningCheckbox->setEnabled(TRUE);
 }
+#endif
 
 void LLLiveLSLEditor::onSaveTextComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status) // StoreAssetData callback (fixed)
 {
