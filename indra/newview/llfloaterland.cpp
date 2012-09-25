@@ -1613,7 +1613,7 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 	// check for no results
 	if (0 == self->mOwnerList->getItemCount())
 	{
-		self->mOwnerList->addCommentText(LLTrans::getString("None_found"));
+		self->mOwnerList->addCommentText(LLTrans::getString("NoneFound"));
 	}
 	else
 	{
