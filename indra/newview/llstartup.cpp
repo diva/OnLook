@@ -999,7 +999,7 @@ bool idle_startup()
 			gDebugInfo["LoginName"] = firstname + " " + lastname;	
 		}
 
-		LLScriptEdCore::parseFunctions("lsl_functions_sl.xml");	//Singu Note: This parsing function essentially replaces the entirety of the lscript_list library
+		LLScriptEdCore::parseFunctions("lsl_functions_sl.xml");	//Singu Note: This parsing function essentially replaces the entirety of the lscript_library library
 		
 		gHippoGridManager->setCurrentGridAsConnected();
 		gHippoLimits->setLimits();

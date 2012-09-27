@@ -1506,7 +1506,7 @@ void LLPreviewLSL::saveIfNeeded()
 		else
 		{
 			LLSD row;
-			row["columns"][0]["value"] = LLTrans::getString("CompileQueueDownloadedCompiling");
+			row["columns"][0]["value"] = LLTrans::getString("CompileQueueProblemUploading");
 			row["columns"][0]["font"] = "SANSSERIF_SMALL";
 			mScriptEd->mErrorList->addElement(row);
 			LLFile::remove(filename);
@@ -2420,7 +2420,7 @@ void LLLiveLSLEditor::saveIfNeeded()
 	else
 	{
 		LLSD row;
-		row["columns"][0]["value"] = LLTrans::getString("CompileQueueDownloadedCompiling");
+		row["columns"][0]["value"] = LLTrans::getString("CompileQueueProblemUploading");
 		row["columns"][0]["font"] = "SANSSERIF_SMALL";
 		mScriptEd->mErrorList->addElement(row);
 		LLFile::remove(filename);
