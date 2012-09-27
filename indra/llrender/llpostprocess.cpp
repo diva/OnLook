@@ -296,6 +296,8 @@ public:
 		gPostMotionBlurProgram.uniformMatrix4fv("inv_proj", 1, GL_FALSE, inv_proj.m);
 		gPostMotionBlurProgram.uniform2fv("screen_res", 1, screen_rect.mV);
 		gPostMotionBlurProgram.uniform1i("blur_strength", mStrength);
+
+		return QUAD_NORMAL;
 	}
 	bool draw(U32 pass) 
 	{
