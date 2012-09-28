@@ -973,6 +973,17 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>AntiSpamGroupFeeInvites</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, dialogs from group invites that require an entry fee will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>AntiSpamGroupNotices</key>
     <map>
       <key>Comment</key>
