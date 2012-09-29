@@ -729,12 +729,15 @@ Boolean LLFilePickerBase::navOpenFilterProc(AEDesc *theItem, void *info, void *c
 							if (fileInfo.filetype != 'JPEG' && fileInfo.filetype != 'JPG ' && 
 								fileInfo.filetype != 'BMP ' && fileInfo.filetype != 'TGA ' &&
 								fileInfo.filetype != 'BMPf' && fileInfo.filetype != 'TPIC' &&
-								fileInfo.filetype != 'PNG ' &&
+								fileInfo.filetype != 'PNG ' && fileInfo.filetype != 'JP2' &&
 								(fileInfo.extension && (CFStringCompare(fileInfo.extension, CFSTR("jpeg"), kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
 								CFStringCompare(fileInfo.extension, CFSTR("jpg"), kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
 								CFStringCompare(fileInfo.extension, CFSTR("bmp"), kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
 								CFStringCompare(fileInfo.extension, CFSTR("tga"), kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
-								CFStringCompare(fileInfo.extension, CFSTR("png"), kCFCompareCaseInsensitive) != kCFCompareEqualTo))
+								CFStringCompare(fileInfo.extension, CFSTR("png"), kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
+								CFStringCompare(fileInfo.extension, CFSTR("jp2"), kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
+								CFStringCompare(fileInfo.extension, CFSTR("j2k"), kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
+								CFStringCompare(fileInfo.extension, CFSTR("j2c"), kCFCompareCaseInsensitive) != kCFCompareEqualTo))
 								)
 							{
 								result = false;
@@ -1353,7 +1356,8 @@ static std::string add_imageload_filter_to_gtkchooser(GtkWindow *picker)
 	gtk_file_filter_add_mime_type(gfilter, "image/jpeg");
 	gtk_file_filter_add_mime_type(gfilter, "image/png");
 	gtk_file_filter_add_mime_type(gfilter, "image/bmp");
-	std::string filtername = LLTrans::getString("image_files") + " (*.tga; *.bmp; *.jpg; *.png)";
+	gtk_file_filter_add_mime_type(gfilter, "image/jp2");
+	std::string filtername = LLTrans::getString("image_files") + " (*.tga; *.bmp; *.jpg; *.png; *.jp2; *.j2k; *.j2c)";
 	add_common_filters_to_gtkchooser(gfilter, picker, filtername);
 	return filtername;
 }
