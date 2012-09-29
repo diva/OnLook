@@ -2817,8 +2817,8 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 
 	<!-- Strings needed by drop targets -->
 	<string name="CurrentlyNotSet">Currently not set</string>
-	<string name="CurrentlySetTo">Currently set to</string>
-	<string name="AnItemNotOnThisAccount">an item not on this account</string>
+	<string name="CurrentlySetTo">Currently set to: [ITEM]</string>
+	<string name="CurrentlySetToAnItemNotOnThisAccount">Currently set to an item not on this account</string>
 	<string name="NotLoggedIn">Not logged in</string>
 
   <!-- Avatar busy/away mode -->

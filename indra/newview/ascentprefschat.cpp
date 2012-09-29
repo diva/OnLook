@@ -86,11 +86,18 @@ LLPrefsAscentChat::LLPrefsAscentChat()
 		LLUUID itemid = (LLUUID)gSavedPerAccountSettings.getString("AscentInstantMessageResponseItemData");
 		LLViewerInventoryItem* item = gInventory.getItem(itemid);
 
-		if		(item)				childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + LLTrans::getString(":") + " " +item->getName());
-		else if (itemid.isNull())	childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlyNotSet"));
-		else 						childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + " " + LLTrans::getString("AnItemNotOnThisAccount"));
+		if (item)
+		{
+			LLStringUtil::format_map_t args;
+			args["[ITEM]"] = item->getName();
+			childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlySetTo", args));
+		}
+		else if (itemid.isNull())
+			childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlyNotSet"));
+		else
+			childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlySetToAnItemNotOnThisAccount"));
 	}
-	else							childSetValue("im_give_disp_rect_txt", LLTrans::getString("NotLoggedIn"));
+	else	childSetValue("im_give_disp_rect_txt", LLTrans::getString("NotLoggedIn"));
 
     childSetCommitCallback("im_response", onCommitAutoResponse, this);
 
@@ -242,7 +249,9 @@ void LLPrefsAscentChat::onCommitAutoResponse(LLUICtrl* ctrl, void* user_data)
 void LLPrefsAscentChat::SinguIMResponseItemDrop(LLViewerInventoryItem* item)
 {
 	gSavedPerAccountSettings.setString("AscentInstantMessageResponseItemData", item->getUUID().asString());
-	sInst->childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + LLTrans::getString(":") + " " +item->getName());
+	LLStringUtil::format_map_t args;
+	args["[ITEM]"] = item->getName();
+	sInst->childSetValue("im_give_disp_rect_txt", LLTrans::getString("CurrentlySetTo", args));
 }
 
 //static

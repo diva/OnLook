@@ -84,54 +84,55 @@ typedef enum e_radar_alert_type
 void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool entering)
 {
 	static LLCachedControl<bool> radar_chat_alerts(gSavedSettings, "RadarChatAlerts");
+	if (!radar_chat_alerts) return;
 	static LLCachedControl<bool> radar_alert_sim(gSavedSettings, "RadarAlertSim");
 	static LLCachedControl<bool> radar_alert_draw(gSavedSettings, "RadarAlertDraw");
 	static LLCachedControl<bool> radar_alert_shout_range(gSavedSettings, "RadarAlertShoutRange");
 	static LLCachedControl<bool> radar_alert_chat_range(gSavedSettings, "RadarAlertChatRange");
 	static LLCachedControl<bool> radar_chat_keys(gSavedSettings, "RadarChatKeys");
 
-	if (radar_chat_alerts)
+	LLFloaterAvatarList* self = LLFloaterAvatarList::getInstance();
+	LLStringUtil::format_map_t args;
+	switch(type)
 	{
+		case ALERT_TYPE_SIM:
+			if (radar_alert_sim)
+			{
+				args["[RANGE]"] = self->getString("the_sim");
+			}
+			break;
+
+		case ALERT_TYPE_DRAW:
+			if (radar_alert_draw)
+			{
+				args["[RANGE]"] = self->getString("draw_distance");
+			}
+			break;
+
+		case ALERT_TYPE_SHOUTRANGE:
+			if (radar_alert_shout_range)
+			{
+				args["[RANGE]"] = self->getString("shout_range");
+			}
+			break;
+
+		case ALERT_TYPE_CHATRANGE:
+			if (radar_alert_chat_range)
+			{
+				args["[RANGE]"] = self->getString("chat_range");
+			}
+			break;
+	}
+	if (args.find("[RANGE]") != args.end())
+	{
+		args["[NAME]"] = name;
+		args["[ACTION]"] = self->getString(entering ? "has_entered" : "has_left");
 		LLChat chat;
-		LLFloaterAvatarList* self = LLFloaterAvatarList::getInstance();
-		std::string message =  name + " " + self->getString(entering ? "has_entered" : "has_left") + " ";
-		switch(type)
-		{
-			case ALERT_TYPE_SIM:
-				if (radar_alert_sim)
-				{
-					chat.mText = message + self->getString("the_sim") + ".";
-				}
-				break;
-
-			case ALERT_TYPE_DRAW:
-				if (radar_alert_draw)
-				{
-					chat.mText = message + self->getString("draw_distance") + ".";
-				}
-				break;
-
-			case ALERT_TYPE_SHOUTRANGE:
-				if (radar_alert_shout_range)
-				{
-					chat.mText = message + self->getString("shout_range") + ".";
-				}
-				break;
-
-			case ALERT_TYPE_CHATRANGE:
-				if (radar_alert_chat_range)
-				{
-					chat.mText = message + self->getString("chat_range") + ".";
-				}
-				break;
-		}
-		if (chat.mText != "")
-		{
-			chat.mFromName = name;
-			chat.mURL = llformat("secondlife:///app/agent/%s/about",key.asString().c_str());
-			chat.mSourceType = CHAT_SOURCE_SYSTEM;
-			LLFloaterChat::addChat(chat);
-		}
+		chat.mText = self->getString("template", args);
+		chat.mFromName = name;
+		chat.mURL = llformat("secondlife:///app/agent/%s/about",key.asString().c_str());
+		chat.mSourceType = CHAT_SOURCE_SYSTEM;
+		LLFloaterChat::addChat(chat);
 	}
 }
 
