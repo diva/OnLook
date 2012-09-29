@@ -39,7 +39,6 @@
 
 #include "llaudioengine.h"
 #include "noise.h"
-#include "llsdserialize.h"
 #include "raytrace.h"
 
 #include "llagent.h" //  Get state values from here
@@ -101,6 +100,7 @@
 #include "llanimstatelabels.h"
 #include "lltrans.h"
 #include "llappearancemgr.h"
+
 #include "llgesturemgr.h" //needed to trigger the voice gesticulations
 #include "llvoiceclient.h"
 #include "llvoicevisualizer.h" // Ventrella
@@ -6938,7 +6938,7 @@ U32 LLVOAvatar::getNumAttachments() const
 		 iter != mAttachmentPoints.end();
 		 ++iter)
 	{
-		LLViewerJointAttachment *attachment_pt = (*iter).second;
+		const LLViewerJointAttachment *attachment_pt = (*iter).second;
 		num_attachments += attachment_pt->getNumObjects();
 	}
 	return num_attachments;
@@ -9511,132 +9511,177 @@ void LLVOAvatar::getImpostorValues(LLVector4a* extents, LLVector3& angle, F32& d
 
 void LLVOAvatar::idleUpdateRenderCost()
 {
-	static const U32 ARC_BODY_PART_COST = 200;
-	static const U32 ARC_LIMIT = 20000;
-
-	static std::set<LLUUID> all_textures;
-
-	if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_ATTACHMENT_BYTES))
-	{ //set debug text to attachment geometry bytes here so render cost will override
-		setDebugText(llformat("%.1f KB, %.2f m^2", mAttachmentGeometryBytes/1024.f, mAttachmentSurfaceArea));
-	}
-
 	if (!gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_SHAME))
 	{
 		return;
 	}
 
-	U32 cost = 0;
-	LLVOVolume::texture_cost_t textures;
+	F32 red, green;
 
-	for (U8 baked_index = 0; baked_index < BAKED_NUM_INDICES; baked_index++)
+	static LLCachedControl<bool> UseOldARC(gSavedSettings, "LiruSensibleARC", true);
+	if(UseOldARC)
 	{
-		const LLVOAvatarDictionary::BakedEntry *baked_dict = LLVOAvatarDictionary::getInstance()->getBakedTexture((EBakedTextureIndex)baked_index);
-		ETextureIndex tex_index = baked_dict->mTextureIndex;
-		if ((tex_index != TEX_SKIRT_BAKED) || (isWearingWearableType(LLWearableType::WT_SKIRT)))
-		{
-			if (isTextureVisible(tex_index))
-			{
-				cost +=ARC_BODY_PART_COST;
-			}
-		}
-	}
+		U32 shame = 1;
 
+		std::set<LLUUID> textures;
 
-	for (attachment_map_t::const_iterator iter = mAttachmentPoints.begin(); 
-		 iter != mAttachmentPoints.end();
-		 ++iter)
-	{
-		LLViewerJointAttachment* attachment = iter->second;
-		for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = attachment->mAttachedObjects.begin();
-			 attachment_iter != attachment->mAttachedObjects.end();
-			 ++attachment_iter)
+		attachment_map_t::const_iterator iter;
+		for (iter = mAttachmentPoints.begin();
+				iter != mAttachmentPoints.end();
+				++iter)
 		{
-			const LLViewerObject* attached_object = (*attachment_iter);
-			if (attached_object && !attached_object->isHUDAttachment())
+			LLViewerJointAttachment* attachment = iter->second;
+			for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = attachment->mAttachedObjects.begin();
+					attachment_iter != attachment->mAttachedObjects.end();
+					++attachment_iter)
 			{
-				textures.clear();
-				const LLDrawable* drawable = attached_object->mDrawable;
-				if (drawable)
+				const LLViewerObject* object = (*attachment_iter);
+				if (object && !object->isHUDAttachment())
 				{
-					const LLVOVolume* volume = drawable->getVOVolume();
-					if (volume)
+					LLDrawable* drawable = object->mDrawable;
+					if (drawable)
 					{
-						cost += volume->getRenderCost(textures);
-
-						const_child_list_t children = volume->getChildren();
-						for (const_child_list_t::const_iterator child_iter = children.begin();
-							  child_iter != children.end();
-							  ++child_iter)
+						shame += 10;
+						LLVOVolume* volume = drawable->getVOVolume();
+						if (volume)
 						{
-							LLViewerObject* child_obj = *child_iter;
-							LLVOVolume *child = dynamic_cast<LLVOVolume*>( child_obj );
-							if (child)
-							{
-								cost += child->getRenderCost(textures);
-							}
-						}
-
-						for (LLVOVolume::texture_cost_t::iterator iter = textures.begin(); iter != textures.end(); ++iter)
-						{
-							// add the cost of each individual texture in the linkset
-							cost += iter->second;
+							shame += calc_shame(volume, textures);
 						}
 					}
 				}
 			}
 		}
 
+		shame += textures.size() * 5;
+
+		setDebugText(llformat("%d", shame));
+		green = 1.f-llclamp(((F32) shame-1024.f)/1024.f, 0.f, 1.f);
+		red = llmin((F32) shame/1024.f, 1.f);
 	}
-
-
-
-	// Diagnostic output to identify all avatar-related textures.
-	// Does not affect rendering cost calculation.
-	// Could be wrapped in a debug option if output becomes problematic.
-	if (isSelf())
+	else
 	{
-		// print any attachment textures we didn't already know about.
-		for (LLVOVolume::texture_cost_t::iterator it = textures.begin(); it != textures.end(); ++it)
+		static const U32 ARC_BODY_PART_COST = 200;
+		static const U32 ARC_LIMIT = 20000;
+
+		static std::set<LLUUID> all_textures;
+
+		if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_ATTACHMENT_BYTES))
+		{ //set debug text to attachment geometry bytes here so render cost will override
+			setDebugText(llformat("%.1f KB, %.2f m^2", mAttachmentGeometryBytes/1024.f, mAttachmentSurfaceArea));
+		}
+
+		U32 cost = 0;
+		LLVOVolume::texture_cost_t textures;
+
+		for (U8 baked_index = 0; baked_index < BAKED_NUM_INDICES; baked_index++)
 		{
-			LLUUID image_id = it->first;
-			if( image_id.isNull() || image_id == IMG_DEFAULT || image_id == IMG_DEFAULT_AVATAR)
-				continue;
-			if (all_textures.find(image_id) == all_textures.end())
+			const LLVOAvatarDictionary::BakedEntry *baked_dict = LLVOAvatarDictionary::getInstance()->getBakedTexture((EBakedTextureIndex)baked_index);
+			ETextureIndex tex_index = baked_dict->mTextureIndex;
+			if ((tex_index != TEX_SKIRT_BAKED) || (isWearingWearableType(LLWearableType::WT_SKIRT)))
 			{
-				// attachment texture not previously seen.
-				llinfos << "attachment_texture: " << image_id.asString() << llendl;
-				all_textures.insert(image_id);
+				if (isTextureVisible(tex_index))
+				{
+					cost +=ARC_BODY_PART_COST;
+				}
 			}
 		}
 
-		// print any avatar textures we didn't already know about
-		for (LLVOAvatarDictionary::Textures::const_iterator iter = LLVOAvatarDictionary::getInstance()->getTextures().begin();
-			 iter != LLVOAvatarDictionary::getInstance()->getTextures().end();
-			 ++iter)
+
+		for (attachment_map_t::const_iterator iter = mAttachmentPoints.begin();
+				iter != mAttachmentPoints.end();
+				++iter)
 		{
-			const LLVOAvatarDictionary::TextureEntry *texture_dict = iter->second;
-			// TODO: MULTI-WEARABLE: handle multiple textures for self
-			const LLViewerTexture* te_image = getImage(iter->first,0);
-			if (!te_image)
-				continue;
-			LLUUID image_id = te_image->getID();
-			if( image_id.isNull() || image_id == IMG_DEFAULT || image_id == IMG_DEFAULT_AVATAR)
-				continue;
-			if (all_textures.find(image_id) == all_textures.end())
+			LLViewerJointAttachment* attachment = iter->second;
+			for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = attachment->mAttachedObjects.begin();
+					attachment_iter != attachment->mAttachedObjects.end();
+					++attachment_iter)
 			{
-				llinfos << "local_texture: " << texture_dict->mName << ": " << image_id << llendl;
-				all_textures.insert(image_id);
+				const LLViewerObject* attached_object = (*attachment_iter);
+				if (attached_object && !attached_object->isHUDAttachment())
+				{
+					textures.clear();
+					const LLDrawable* drawable = attached_object->mDrawable;
+					if (drawable)
+					{
+						const LLVOVolume* volume = drawable->getVOVolume();
+						if (volume)
+						{
+							cost += volume->getRenderCost(textures);
+
+							const_child_list_t children = volume->getChildren();
+							for (const_child_list_t::const_iterator child_iter = children.begin();
+									child_iter != children.end();
+									++child_iter)
+							{
+								LLViewerObject* child_obj = *child_iter;
+								LLVOVolume *child = dynamic_cast<LLVOVolume*>( child_obj );
+								if (child)
+								{
+									cost += child->getRenderCost(textures);
+								}
+							}
+
+							for (LLVOVolume::texture_cost_t::iterator iter = textures.begin(); iter != textures.end(); ++iter)
+							{
+								// add the cost of each individual texture in the linkset
+								cost += iter->second;
+							}
+						}
+					}
+				}
+			}
+
+		}
+
+
+
+		// Diagnostic output to identify all avatar-related textures.
+		// Does not affect rendering cost calculation.
+		// Could be wrapped in a debug option if output becomes problematic.
+		if (isSelf())
+		{
+			// print any attachment textures we didn't already know about.
+			for (LLVOVolume::texture_cost_t::iterator it = textures.begin(); it != textures.end(); ++it)
+			{
+				LLUUID image_id = it->first;
+				if( image_id.isNull() || image_id == IMG_DEFAULT || image_id == IMG_DEFAULT_AVATAR)
+					continue;
+				if (all_textures.find(image_id) == all_textures.end())
+				{
+					// attachment texture not previously seen.
+					llinfos << "attachment_texture: " << image_id.asString() << llendl;
+					all_textures.insert(image_id);
+				}
+			}
+
+			// print any avatar textures we didn't already know about
+			for (LLVOAvatarDictionary::Textures::const_iterator iter = LLVOAvatarDictionary::getInstance()->getTextures().begin();
+					iter != LLVOAvatarDictionary::getInstance()->getTextures().end();
+					++iter)
+			{
+				const LLVOAvatarDictionary::TextureEntry *texture_dict = iter->second;
+				// TODO: MULTI-WEARABLE: handle multiple textures for self
+				const LLViewerTexture* te_image = getImage(iter->first,0);
+				if (!te_image)
+					continue;
+				LLUUID image_id = te_image->getID();
+				if( image_id.isNull() || image_id == IMG_DEFAULT || image_id == IMG_DEFAULT_AVATAR)
+					continue;
+				if (all_textures.find(image_id) == all_textures.end())
+				{
+					llinfos << "local_texture: " << texture_dict->mName << ": " << image_id << llendl;
+					all_textures.insert(image_id);
+				}
 			}
 		}
+
+
+		std::string viz_string = LLVOAvatar::rezStatusToString(getRezzedStatus());
+		setDebugText(llformat("%s %d", viz_string.c_str(), cost));
+		mVisualComplexity = cost;
+		green = 1.f-llclamp(((F32) cost-(F32)ARC_LIMIT)/(F32)ARC_LIMIT, 0.f, 1.f);
+		red = llmin((F32) cost/(F32)ARC_LIMIT, 1.f);
 	}
-
-	
-	std::string viz_string = LLVOAvatar::rezStatusToString(getRezzedStatus());
-	setDebugText(llformat("%s %d", viz_string.c_str(), cost));
-	mVisualComplexity = cost;
-	F32 green = 1.f-llclamp(((F32) cost-(F32)ARC_LIMIT)/(F32)ARC_LIMIT, 0.f, 1.f);
-	F32 red = llmin((F32) cost/(F32)ARC_LIMIT, 1.f);
 	mText->setColor(LLColor4(red,green,0,1));
 }
 
