@@ -134,12 +134,12 @@ class InstallFile(object):
             print "Found matching package:", self.filename
             return
         print "Downloading",self.url,"to local file",self.filename
-        
+
         request = urllib2.Request(self.url)
-        
+
         if re.match("/^http:\/\/github.com/", self.url):
-			request.add_header('User-agent', defaultUserAgent)
-        
+            request.add_header('User-agent', defaultUserAgent)
+
         file(self.filename, 'wb').write(urllib2.urlopen(request).read())
         if self.md5sum and not self._is_md5sum_match():
             raise RuntimeError("Error matching md5 for %s" % self.url)
@@ -379,7 +379,7 @@ class Installer(object):
 
     def _update_installable(self, name, platform, url, md5sum):
         """Update installable entry with specific package information.
-        @param installable[in,out] a dict containing installable details. 
+        @param installable[in,out] a dict containing installable details.
         @param platform Platform info, i.e. linux/i686, windows/i686 etc.
         @param url URL of tar file
         @param md5sum md5sum of tar file
@@ -420,16 +420,16 @@ windows/i686/vs/2003 -- specify a windows visual studio 2003 package"""
             print "Updating installable '" + name + "'."
         for arg in ('platform', 'url', 'md5sum'):
             if not kwargs[arg]:
-                if arg == 'platform': 
+                if arg == 'platform':
                     print platform_help_str
                 kwargs[arg] = raw_input("Package "+arg+":")
         #path = kwargs['platform'].split('/')
 
-        return self._update_installable(name, kwargs['platform'], 
+        return self._update_installable(name, kwargs['platform'],
                         kwargs['url'], kwargs['md5sum'])
 
     def add_installable_metadata(self, name, **kwargs):
-        """Interactively add (only) library metadata into install, 
+        """Interactively add (only) library metadata into install,
         w/o adding installable"""
         if name not in self._installables:
             print "Adding installable '" + name + "'."
@@ -531,8 +531,8 @@ windows/i686/vs/2003 -- specify a windows visual studio 2003 package"""
         """
         ifiles = []
         for bin in self._installables:
-            ifiles.extend(self._installables[bin].ifiles(bin, 
-                                                         platform, 
+            ifiles.extend(self._installables[bin].ifiles(bin,
+                                                         platform,
                                                          cache_dir))
         to_install = []
         to_uninstall = []
@@ -579,7 +579,7 @@ windows/i686/vs/2003 -- specify a windows visual studio 2003 package"""
                             target = os.path.basename(tfile)
                             soname = os.popen("readelf -d \"%(install_dir)s/%(tfile)s\" %(stderr_redirect)s"
                                 " | grep SONAME | sed -e 's/.*\[//;s/\].*//'" %
-								{"install_dir": install_dir, "tfile": tfile, "stderr_redirect": ("2>/dev/null" if self._dryrun else "")}).read()
+                                                                {"install_dir": install_dir, "tfile": tfile, "stderr_redirect": ("2>/dev/null" if self._dryrun else "")}).read()
                             soname = soname.strip()
                             if soname:  # not empty
                                 tmpfname = os.path.dirname(LINK) + "/" + soname
@@ -634,13 +634,13 @@ windows/i686/vs/2003 -- specify a windows visual studio 2003 package"""
             self.uninstall(to_uninstall, install_dir)
         self._install(to_install, install_dir)
 
-    def do_install(self, installables, platform, install_dir, cache_dir=None, 
+    def do_install(self, installables, platform, install_dir, cache_dir=None,
                    check_license=True, scp=None):
         """Determine what installables should be installed. If they were
         passed in on the command line, use them, otherwise install
         all known installables.
         """
-        if not cache_dir: 
+        if not cache_dir:
             cache_dir = _default_installable_cache()
         all_installables = self.list_installables()
         if not len(installables):
@@ -651,7 +651,7 @@ windows/i686/vs/2003 -- specify a windows visual studio 2003 package"""
             install_installables = installables
             for installable in install_installables:
                 if installable not in all_installables:
-                    raise RuntimeError('Unknown installable: %s' % 
+                    raise RuntimeError('Unknown installable: %s' %
                                        (installable,))
         if check_license:
             # *TODO: check against a list of 'known good' licenses.
@@ -660,13 +660,13 @@ windows/i686/vs/2003 -- specify a windows visual studio 2003 package"""
             for installable in install_installables:
                 if not self.is_valid_license(installable):
                     return 1
-    
+
         # Set up the 'scp' handler
         opener = urllib2.build_opener()
         scp_or_http = SCPOrHTTPHandler(scp)
         opener.add_handler(scp_or_http)
         urllib2.install_opener(opener)
-    
+
         # Do the work of installing the requested installables.
         self.install(
             install_installables,
@@ -680,7 +680,7 @@ windows/i686/vs/2003 -- specify a windows visual studio 2003 package"""
             if pkg not in self._installed:
                 raise RuntimeError("No '%s' available for '%s'." %
                                    (pkg, platform))
-    
+
     def do_uninstall(self, installables, install_dir):
         # Do not bother to check license if we're uninstalling.
         all_installed = self.list_installed()
@@ -692,7 +692,7 @@ windows/i686/vs/2003 -- specify a windows visual studio 2003 package"""
             uninstall_installables = installables
             for installable in uninstall_installables:
                 if installable not in all_installed:
-                    raise RuntimeError('Installable not installed: %s' % 
+                    raise RuntimeError('Installable not installed: %s' %
                                        (installable,))
         self.uninstall(uninstall_installables, install_dir)
 
@@ -815,8 +815,8 @@ def _get_platform():
     this_platform = platform_map[sys.platform]
     if this_platform == 'linux':
         if platform.architecture()[0] == '64bit':
-            # TODO -- someday when install.py accepts a platform of the form 
-            # os/arch/compiler/compiler_version then we can replace the 
+            # TODO -- someday when install.py accepts a platform of the form
+            # os/arch/compiler/compiler_version then we can replace the
             # 'linux64' platform with 'linux/x86_64/gcc/4.1'
             this_platform = 'linux64'
     return this_platform
@@ -832,7 +832,7 @@ def _getuser():
         return win32api.GetUserName()
 
 def _default_installable_cache():
-    """In general, the installable files do not change much, so find a 
+    """In general, the installable files do not change much, so find a
     host/user specific location to cache files."""
     user = _getuser()
     cache_dir = "/var/tmp/%s/install.cache" % user
@@ -882,75 +882,75 @@ linux/x86_64/gcc/4.0
 darwin/universal/gcc/4.0
 """)
     parser.add_option(
-        '--dry-run', 
+        '--dry-run',
         action='store_true',
         default=False,
         dest='dryrun',
         help='Do not actually install files. Downloads will still happen.')
     parser.add_option(
-        '--install-manifest', 
+        '--install-manifest',
         type='string',
         default=os.path.join(base_dir, 'install.xml'),
         dest='install_filename',
         help='The file used to describe what should be installed.')
     parser.add_option(
-        '--installed-manifest', 
+        '--installed-manifest',
         type='string',
         default=os.path.join(base_dir, 'installed.xml'),
         dest='installed_filename',
         help='The file used to record what is installed.')
     parser.add_option(
-        '--export-manifest', 
+        '--export-manifest',
         action='store_true',
         default=False,
         dest='export_manifest',
         help="Print the install manifest to stdout and exit.")
     parser.add_option(
-        '-p', '--platform', 
+        '-p', '--platform',
         type='string',
         default=_get_platform(),
         dest='platform',
         help="""Override the automatically determined platform. \
 You can specify 'all' to do a installation of installables for all platforms.""")
     parser.add_option(
-        '--cache-dir', 
+        '--cache-dir',
         type='string',
         default=_default_installable_cache(),
         dest='cache_dir',
         help='Where to download files. Default: %s'% \
              (_default_installable_cache()))
     parser.add_option(
-        '--install-dir', 
+        '--install-dir',
         type='string',
         default=base_dir,
         dest='install_dir',
         help='Where to unpack the installed files.')
     parser.add_option(
-        '--list-installed', 
+        '--list-installed',
         action='store_true',
         default=False,
         dest='list_installed',
         help="List the installed package names and exit.")
     parser.add_option(
-        '--skip-license-check', 
+        '--skip-license-check',
         action='store_false',
         default=True,
         dest='check_license',
         help="Do not perform the license check.")
     parser.add_option(
-        '--list-licenses', 
+        '--list-licenses',
         action='store_true',
         default=False,
         dest='list_licenses',
         help="List known licenses and exit.")
     parser.add_option(
-        '--detail-license', 
+        '--detail-license',
         type='string',
         default=None,
         dest='detail_license',
         help="Get detailed information on specified license and exit.")
     parser.add_option(
-        '--add-license', 
+        '--add-license',
         type='string',
         default=None,
         dest='new_license',
@@ -959,114 +959,114 @@ license. Specify --license-url if the license is remote or specify \
 --license-text, otherwse the license text will be read from standard \
 input.""")
     parser.add_option(
-        '--license-url', 
+        '--license-url',
         type='string',
         default=None,
         dest='license_url',
         help="""Put the specified url into an added license. \
 Ignored if --add-license is not specified.""")
     parser.add_option(
-        '--license-text', 
+        '--license-text',
         type='string',
         default=None,
         dest='license_text',
         help="""Put the text into an added license. \
 Ignored if --add-license is not specified.""")
     parser.add_option(
-        '--remove-license', 
+        '--remove-license',
         type='string',
         default=None,
         dest='remove_license',
         help="Remove a named license.")
     parser.add_option(
-        '--remove-installable', 
+        '--remove-installable',
         type='string',
         default=None,
         dest='remove_installable',
         help="Remove a installable from the install file.")
     parser.add_option(
-        '--add-installable', 
+        '--add-installable',
         type='string',
         default=None,
         dest='add_installable',
-        help="""Add a installable into the install file. Argument is \ 
+        help="""Add a installable into the install file. Argument is \
 the name of the installable to add.""")
     parser.add_option(
-        '--add-installable-metadata', 
+        '--add-installable-metadata',
         type='string',
         default=None,
         dest='add_installable_metadata',
         help="""Add package for library into the install file. Argument is \
 the name of the library to add.""")
     parser.add_option(
-        '--installable-copyright', 
+        '--installable-copyright',
         type='string',
         default=None,
         dest='installable_copyright',
         help="""Copyright for specified new package. Ignored if \
 --add-installable is not specified.""")
     parser.add_option(
-        '--installable-license', 
+        '--installable-license',
         type='string',
         default=None,
         dest='installable_license',
         help="""Name of license for specified new package. Ignored if \
 --add-installable is not specified.""")
     parser.add_option(
-        '--installable-description', 
+        '--installable-description',
         type='string',
         default=None,
         dest='installable_description',
         help="""Description for specified new package. Ignored if \
 --add-installable is not specified.""")
     parser.add_option(
-        '--add-installable-package', 
+        '--add-installable-package',
         type='string',
         default=None,
         dest='add_installable_package',
         help="""Add package for library into the install file. Argument is \
 the name of the library to add.""")
     parser.add_option(
-        '--package-platform', 
+        '--package-platform',
         type='string',
         default=None,
         dest='package_platform',
         help="""Platform for specified new package. \
 Ignored if --add-installable or --add-installable-package is not specified.""")
     parser.add_option(
-        '--package-url', 
+        '--package-url',
         type='string',
         default=None,
         dest='package_url',
         help="""URL for specified package. \
 Ignored if --add-installable or --add-installable-package is not specified.""")
     parser.add_option(
-        '--package-md5', 
+        '--package-md5',
         type='string',
         default=None,
         dest='package_md5',
         help="""md5sum for new package. \
 Ignored if --add-installable or --add-installable-package is not specified.""")
     parser.add_option(
-        '--list', 
+        '--list',
         action='store_true',
         default=False,
         dest='list_installables',
         help="List the installables in the install manifest and exit.")
     parser.add_option(
-        '--detail', 
+        '--detail',
         type='string',
         default=None,
         dest='detail_installable',
         help="Get detailed information on specified installable and exit.")
     parser.add_option(
-        '--detail-installed', 
+        '--detail-installed',
         type='string',
         default=None,
         dest='detail_installed',
         help="Get list of files for specified installed installable and exit.")
     parser.add_option(
-        '--uninstall', 
+        '--uninstall',
         action='store_true',
         default=False,
         dest='uninstall',
@@ -1074,7 +1074,7 @@ Ignored if --add-installable or --add-installable-package is not specified.""")
 during installation, if no installables are listed then all installed \
 installables are removed.""")
     parser.add_option(
-        '--scp', 
+        '--scp',
         type='string',
         default='scp',
         dest='scp',
@@ -1179,9 +1179,9 @@ def main():
     elif options.uninstall:
         installer.do_uninstall(args, options.install_dir)
     else:
-        installer.do_install(args, options.platform, options.install_dir, 
-                             options.cache_dir, options.check_license, 
-                             options.scp) 
+        installer.do_install(args, options.platform, options.install_dir,
+                             options.cache_dir, options.check_license,
+                             options.scp)
 
     # save out any changes
     installer.save()
