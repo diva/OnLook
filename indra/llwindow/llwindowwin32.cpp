@@ -1416,7 +1416,7 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, BO
 			{
 				found_format = TRUE;
 			}
-			else if(cur_format >= num_formats-1)
+			else if(cur_format >= (S32)num_formats-1)
 			{
 				cur_format = 0;
 				found_format = TRUE;

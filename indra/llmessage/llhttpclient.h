@@ -34,7 +34,6 @@
 #include <string>
 
 #include <boost/intrusive_ptr.hpp>
-
 #include "llassettype.h"
 #include "llcurl.h"
 #include "lliopipe.h"
@@ -55,6 +54,9 @@ public:
 	// For convenience
 	typedef LLCurl::Responder Responder;
 	typedef LLCurl::ResponderPtr ResponderPtr;
+
+	// The default actually already ignores responses.
+	class ResponderIgnore : public Responder { };
 
 	/** @name non-blocking API */
 	//@{

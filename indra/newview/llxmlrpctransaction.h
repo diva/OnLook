@@ -110,8 +110,8 @@ public:
 		StatusOtherError
 	} Status;
 
-	bool process();
-		// run the request a little, returns true when done
+	bool is_finished(void) const;
+		// Returns true when done.
 		
 	Status status(int* curlCode);
 		// return status, and extended CURL code, if code isn't null
@@ -127,7 +127,7 @@ public:
 		// retains ownership of the result object, don't free it
 	
 	F64 transferRate();
-		// only valid if StsatusComplete, otherwise 0.0
+		// only valid if StatusComplete, otherwise 0.0
 		
 private:
 	class Impl;

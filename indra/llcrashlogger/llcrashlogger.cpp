@@ -371,6 +371,9 @@ void LLCrashLogger::updateApplication(const std::string& message)
 
 bool LLCrashLogger::init()
 {
+	// Initialize curl
+	AICurlInterface::initCurl();
+
 	// We assume that all the logs we're looking for reside on the current drive
 	gDirUtilp->initAppDirs("SecondLife");
 

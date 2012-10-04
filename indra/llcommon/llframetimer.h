@@ -44,6 +44,9 @@
 #include "lltimer.h"
 #include "timing.h"
 #include <apr_thread_mutex.h>
+#ifdef SHOW_ASSERT
+#include "aithreadid.h"			// is_main_thread()
+#endif
 
 class LL_COMMON_API LLFrameTimer
 {

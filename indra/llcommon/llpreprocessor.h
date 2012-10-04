@@ -195,4 +195,13 @@
 # define LL_COMMON_API
 #endif // LL_COMMON_LINK_SHARED
 
+// Darwin does not support thread-local data.
+#ifndef LL_DARWIN
+#if LL_WINDOWS
+#define ll_thread_local __declspec(thread)
+#else // Linux
+#define ll_thread_local __thread
+#endif
+#endif
+
 #endif	//	not LL_LINDEN_PREPROCESSOR_H

@@ -218,6 +218,7 @@
 #include "llfloaterblacklist.h"
 #include "scriptcounter.h"
 #include "shfloatermediaticker.h"
+#include "llpacketring.h"
 // </edit>
 
 #include "llpathfindingmanager.h"
@@ -256,7 +257,9 @@ extern S32 gStartImageHeight;
 // local globals
 //
 
-
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+static bool gCurlIo;
+#endif
 
 static LLHost gAgentSimHost;
 static BOOL gSkipOptionalUpdate = FALSE;
@@ -628,21 +631,21 @@ bool idle_startup()
 
 
 			F32 dropPercent = gSavedSettings.getF32("PacketDropPercentage");
-			msg->mPacketRing.setDropPercentage(dropPercent);
+			msg->mPacketRing->setDropPercentage(dropPercent);
 
             F32 inBandwidth = gSavedSettings.getF32("InBandwidth"); 
             F32 outBandwidth = gSavedSettings.getF32("OutBandwidth"); 
 			if (inBandwidth != 0.f)
 			{
 				LL_DEBUGS("AppInit") << "Setting packetring incoming bandwidth to " << inBandwidth << LL_ENDL;
-				msg->mPacketRing.setUseInThrottle(TRUE);
-				msg->mPacketRing.setInBandwidth(inBandwidth);
+				msg->mPacketRing->setUseInThrottle(TRUE);
+				msg->mPacketRing->setInBandwidth(inBandwidth);
 			}
 			if (outBandwidth != 0.f)
 			{
 				LL_DEBUGS("AppInit") << "Setting packetring outgoing bandwidth to " << outBandwidth << LL_ENDL;
-				msg->mPacketRing.setUseOutThrottle(TRUE);
-				msg->mPacketRing.setOutBandwidth(outBandwidth);
+				msg->mPacketRing->setUseOutThrottle(TRUE);
+				msg->mPacketRing->setOutBandwidth(outBandwidth);
 			}
 		}
 
@@ -1348,6 +1351,9 @@ bool idle_startup()
 
 		llinfos << "Authenticating with " << grid_uri << llendl;
 
+		// Always write curl I/O debug info for the login attempt.
+		Debug(gCurlIo = dc::curl.is_on() && !dc::curlio.is_on(); if (gCurlIo) dc::curlio.on());
+
 		// TODO if statement here to use web_login_key
 	    // OGPX : which routine would this end up in? the LLSD or XMLRPC, or ....?
 		LLUserAuth::getInstance()->authenticate(
@@ -1422,6 +1428,7 @@ bool idle_startup()
 			LL_DEBUGS("AppInit") << "downloading..." << LL_ENDL;
 			return FALSE;
 		}
+		Debug(if (gCurlIo) dc::curlio.off());		// Login succeeded: restore dc::curlio to original state.
 		LLStartUp::setStartupState( STATE_LOGIN_PROCESS_RESPONSE );
 		progress += 0.01f;
 		set_startup_status(progress, LLTrans::getString("LoginProcessingResponse"), auth_message);
@@ -3607,6 +3614,7 @@ std::string LLStartUp::startupStateToString(EStartupState state)
 #define RTNENUM(E) case E: return #E
 	switch(state){
 		RTNENUM( STATE_FIRST );
+		RTNENUM( STATE_BROWSER_INIT );
 		RTNENUM( STATE_LOGIN_SHOW );
 		RTNENUM( STATE_LOGIN_WAIT );
 		RTNENUM( STATE_LOGIN_CLEANUP );
@@ -3614,10 +3622,13 @@ std::string LLStartUp::startupStateToString(EStartupState state)
 		RTNENUM( STATE_UPDATE_CHECK );
 		RTNENUM( STATE_LOGIN_AUTH_INIT );
 		RTNENUM( STATE_LOGIN_AUTHENTICATE );
+		RTNENUM( STATE_WAIT_LEGACY_LOGIN );
+		RTNENUM( STATE_XMLRPC_LEGACY_LOGIN );
 		RTNENUM( STATE_LOGIN_NO_DATA_YET );
 		RTNENUM( STATE_LOGIN_DOWNLOADING );
 		RTNENUM( STATE_LOGIN_PROCESS_RESPONSE );
 		RTNENUM( STATE_WORLD_INIT );
+		RTNENUM( STATE_MULTIMEDIA_INIT );
 		RTNENUM( STATE_FONT_INIT );
 		RTNENUM( STATE_SEED_GRANTED_WAIT );
 		RTNENUM( STATE_SEED_CAP_GRANTED );
@@ -3630,10 +3641,10 @@ std::string LLStartUp::startupStateToString(EStartupState state)
 		RTNENUM( STATE_WEARABLES_WAIT );
 		RTNENUM( STATE_CLEANUP );
 		RTNENUM( STATE_STARTED );
-	default:
-		return llformat("(state #%d)", state);
 	}
 #undef RTNENUM
+	// Never reached.
+	return llformat("(state #%d)", state);
 }
 
 

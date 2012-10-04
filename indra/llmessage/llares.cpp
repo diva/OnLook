@@ -28,7 +28,6 @@
 
 #include "linden_common.h"
 #include "llares.h"
-#include "llscopedvolatileaprpool.h"
 
 #include <ares_dns.h>
 #include <ares_version.h>
@@ -38,6 +37,7 @@
 #include "apr_poll.h"
 
 #include "llapr.h"
+#include "llaprpool.h"
 #include "llareslistener.h"
 
 #if defined(LL_WINDOWS)

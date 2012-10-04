@@ -63,7 +63,6 @@
 #include "llviewerjoystick.h"
 #include "llfloaterjoystick.h"
 #include "llares.h" 
-#include "llcurl.h"
 #include "llfloatersnapshot.h"
 #include "lltexturestats.h"
 #include "llviewerwindow.h"
@@ -611,6 +610,9 @@ bool LLAppViewer::init()
 
 	initLogging();
 
+	// Curl must be initialized before any thread is running.
+	AICurlInterface::initCurl(&AIStateMachine::flush);
+
 	// Logging is initialized. Now it's safe to start the error thread.
 	startErrorThread();
 
@@ -635,11 +637,6 @@ bool LLAppViewer::init()
 	LLPrivateMemoryPoolManager::initClass((BOOL)gSavedSettings.getBOOL("MemoryPrivatePoolEnabled"), (U32)gSavedSettings.getU32("MemoryPrivatePoolSize")) ;
 
     mAlloc.setProfilingEnabled(gSavedSettings.getBOOL("MemProfiling"));
-    // *NOTE:Mani - LLCurl::initClass is not thread safe. 
-    // Called before threads are created.
-    LLCurl::initClass(gSavedSettings.getF32("CurlRequestTimeOut"));
-
-	LL_INFOS("InitInfo") << "LLCurl initialized." << LL_ENDL ;
 
     initThreads();
 	LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ;
@@ -1742,22 +1739,20 @@ bool LLAppViewer::cleanup()
 	delete gVFS;
 	gVFS = NULL;
 
-	// Cleanup settings last in case other clases reference them
-	gSavedSettings.cleanup();
-	gColors.cleanup();
-	gCrashSettings.cleanup();
-	
 	LLWatchdog::getInstance()->cleanup();
 
 	llinfos << "Shutting down message system" << llendflush;
 	end_messaging_system();
 	llinfos << "Message system deleted." << llendflush;
 
-	LLUserAuth::getInstance()->reset(); //reset before LLCurl::cleanupClass, else LLCURL::sHandleMutex == NULL
-	// *NOTE:Mani - The following call is not thread safe. 
-	LLCurl::cleanupClass();
-	llinfos << "LLCurl cleaned up." << llendflush;
+	LLApp::stopErrorThread();			// The following call is not thread-safe. Have to stop all threads.
+	AICurlInterface::cleanupCurl();
 
+	// Cleanup settings last in case other classes reference them.
+	gSavedSettings.cleanup();
+	gColors.cleanup();
+	gCrashSettings.cleanup();
+	
 	// If we're exiting to launch an URL, do that here so the screen
 	// is at the right resolution before we launch IE.
 	if (!gLaunchFileOnQuit.empty())
@@ -1824,6 +1819,8 @@ bool LLAppViewer::initThreads()
 	{
 		LLWatchdog::getInstance()->init(watchdog_killer_callback);
 	}
+
+	AICurlInterface::startCurlThread();
 
 	LLImage::initClass();
 	

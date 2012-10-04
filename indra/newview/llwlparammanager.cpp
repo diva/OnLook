@@ -77,7 +77,6 @@
 #include "llviewerregion.h"
 #include "llassetuploadresponders.h"
 
-#include "curl/curl.h"
 #include "llstreamtools.h"
 
 // [RLVa:KB] - Checked: 2011-09-04 (RLVa-1.4.1a) | Added: RLVa-1.4.1a

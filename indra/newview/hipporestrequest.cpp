@@ -6,15 +6,18 @@
 #ifndef CURL_STATICLIB
 #define CURL_STATICLIB 1
 #endif
-#include <curl/curl.h>
 
 #include <stdtypes.h>
-#include <llbufferstream.h>
-#include <llerror.h>
-#include <llhttpclient.h>
-#include <llurlrequest.h>
-#include <llxmltree.h>
+#include "llbufferstream.h"
+#include "llerror.h"
+#include "llhttpclient.h"
+#include "llurlrequest.h"
+#include "llxmltree.h"
 
+#include <curl/curl.h>
+#ifdef DEBUG_CURLIO
+#include "debug_libcurl.h"
+#endif
 
 // ********************************************************************
  
@@ -255,7 +258,16 @@ static void request(const std::string &url,
 	}
 	LLPumpIO::chain_t chain;
 
-	LLURLRequest *req = new LLURLRequest(method, url);
+	LLURLRequest *req;
+	try
+	{
+		req = new LLURLRequest(method, url);
+	}
+	catch(AICurlNoEasyHandle const& error)
+	{
+		llwarns << "Failed to create LLURLRequest: " << error.what() << llendl;
+		return;
+	}
 	req->checkRootCertificate(true);
 
 	/*
@@ -324,10 +336,11 @@ int HippoRestRequest::getBlocking(const std::string &url, std::string *result)
 
 	char curlErrorBuffer[CURL_ERROR_SIZE];
 	CURL* curlp = curl_easy_init();
+	llassert_always(curlp);
 
 	curl_easy_setopt(curlp, CURLOPT_NOSIGNAL, 1);	// don't use SIGALRM for timeouts
 	curl_easy_setopt(curlp, CURLOPT_TIMEOUT, 5);	// seconds
-        curl_easy_setopt(curlp, CURLOPT_CAINFO, gDirUtilp->getCAFile().c_str());
+	curl_easy_setopt(curlp, CURLOPT_CAINFO, gDirUtilp->getCAFile().c_str());
 
 	curl_easy_setopt(curlp, CURLOPT_WRITEFUNCTION, curlWrite);
 	curl_easy_setopt(curlp, CURLOPT_WRITEDATA, result);
@@ -337,7 +350,7 @@ int HippoRestRequest::getBlocking(const std::string &url, std::string *result)
 
 	*result = "";
 	S32 curlSuccess = curl_easy_perform(curlp);
-	S32 httpStatus = 499;
+	long httpStatus = 499L;		// curl_easy_getinfo demands pointer to long.
 	curl_easy_getinfo(curlp, CURLINFO_RESPONSE_CODE, &httpStatus);
 
 	if (curlSuccess != 0) {

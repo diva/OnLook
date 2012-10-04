@@ -133,6 +133,7 @@ set(viewer_SOURCE_FILES
     llconfirmationmanager.cpp
     llconsole.cpp
     llcontainerview.cpp
+    llcurlrequest.cpp
     llcurrencyuimanager.cpp
     llcylinder.cpp
     lldaycyclemanager.cpp
@@ -634,6 +635,7 @@ set(viewer_HEADER_FILES
     llconfirmationmanager.h
     llconsole.h
     llcontainerview.h
+    llcurlrequest.h
     llcurrencyuimanager.h
     llcylinder.h
     lldaycyclemanager.h
