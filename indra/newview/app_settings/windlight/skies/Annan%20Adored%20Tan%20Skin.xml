@@ -2,36 +2,36 @@
     <map>
     <key>ambient</key>
         <array>
-				<real>0.29999998211860657</real>
-            <real>0.17999999225139618</real>
-            <real>0</real>
-            <real>0.29999998211860657</real>
+            <real>1.53460693359375</real>
+            <real>1.2169990539550781</real>
+            <real>1.18414306640625</real>
+            <real>0.51153564453125</real>
         </array>
     <key>blue_density</key>
         <array>
-            <real>0.97999995946884155</real>
-            <real>0.97999995946884155</real>
-            <real>0.97999995946884155</real>
-            <real>0.48999997973442078</real>
+            <real>1.5458984375</real>
+            <real>1.520721435546875</real>
+            <real>1.5166015625</real>
+            <real>0.77294921875</real>
         </array>
     <key>blue_horizon</key>
         <array>
-            <real>0.31999999284744263</real>
-            <real>0.31999999284744263</real>
-            <real>0.31999999284744263</real>
-            <real>0.15999999642372131</real>
+            <real>0.5263671875</real>
+            <real>0.2863616943359375</real>
+            <real>0.2392578125</real>
+            <real>0.26318359375</real>
         </array>
     <key>cloud_color</key>
         <array>
             <real>0.50999999046325684</real>
             <real>0.50999999046325684</real>
             <real>0.50999999046325684</real>
-            <real>1</real>
+            <real>0.50999999046325684</real>
         </array>
     <key>cloud_pos_density1</key>
         <array>
-            <real>0.5</real>
-            <real>0.5</real>
+            <real>0.34999999403953552</real>
+            <real>0.31000000238418579</real>
             <real>1</real>
             <real>1</real>
         </array>
@@ -44,7 +44,7 @@
         </array>
     <key>cloud_scale</key>
         <array>
-            <real>0.079999998211860657</real>
+            <real>0.099999994039535522</real>
             <real>0</real>
             <real>0</real>
             <real>1</real>
@@ -56,21 +56,21 @@
         </array>
     <key>cloud_shadow</key>
         <array>
-            <real>0.25999999046325684</real>
+            <real>0.35999998450279236</real>
             <real>0</real>
             <real>0</real>
             <real>1</real>
         </array>
     <key>density_multiplier</key>
         <array>
-            <real>0.00031000000308267772</real>
+            <real>0.0002899999963119626</real>
             <real>0</real>
             <real>0</real>
             <real>1</real>
         </array>
     <key>distance_multiplier</key>
         <array>
-            <real>6.8000001907348633</real>
+            <real>0</real>
             <real>0</real>
             <real>0</real>
             <real>1</real>
@@ -79,8 +79,8 @@
         <real>0</real>
     <key>enable_cloud_scroll</key>
         <array>
-            <boolean>1</boolean>
-            <boolean>1</boolean>
+            <boolean>0</boolean>
+            <boolean>0</boolean>
         </array>
     <key>gamma</key>
         <array>
@@ -91,14 +91,14 @@
         </array>
     <key>glow</key>
         <array>
-            <real>5</real>
+            <real>20</real>
             <real>0.0010000000474974513</real>
-            <real>-0.33000001311302185</real>
+            <real>-2.1499998569488525</real>
             <real>1</real>
         </array>
     <key>haze_density</key>
         <array>
-            <real>1.8899999856948853</real>
+            <real>0</real>
             <real>0</real>
             <real>0</real>
             <real>1</real>
@@ -113,13 +113,13 @@
     <key>lightnorm</key>
         <array>
             <real>0</real>
-            <real>0.36227512359619141</real>
-            <real>-0.93207120895385742</real>
+            <real>0.5735776424407959</real>
+            <real>-0.81915122270584106</real>
             <real>0</real>
         </array>
     <key>max_y</key>
         <array>
-            <real>752</real>
+            <real>560</real>
             <real>0</real>
             <real>0</real>
             <real>1</real>
@@ -129,13 +129,13 @@
     <key>star_brightness</key>
         <real>0</real>
     <key>sun_angle</key>
-        <real>2.7708849906921387</real>
+        <real>2.5307259559631348</real>
     <key>sunlight_color</key>
         <array>
-            <real>1.3799998760223389</real>
-            <real>1.3799998760223389</real>
-            <real>1.3799998760223389</real>
-            <real>0.45999997854232788</real>
+            <real>0.9609375</real>
+            <real>0.9609375</real>
+            <real>0.9609375</real>
+            <real>0.3203125</real>
         </array>
     </map>
 </llsd>
