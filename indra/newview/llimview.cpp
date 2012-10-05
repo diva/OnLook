@@ -77,6 +77,9 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy viewerChatterBoxInvitationAcceptResponder_timeout;
+
 //
 // Globals
 //
@@ -91,7 +94,6 @@ LLIMMgr* gIMMgr = NULL;
 //{
 //	return (LLStringUtil::compareDict( a->mName, b->mName ) < 0);
 //}
-
 class LLViewerChatterBoxInvitationAcceptResponder :
 	public LLHTTPClient::Responder
 {
@@ -174,6 +176,8 @@ public:
 			}
 		}
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerChatterBoxInvitationAcceptResponder_timeout; }
 
 private:
 	LLUUID mSessionID;

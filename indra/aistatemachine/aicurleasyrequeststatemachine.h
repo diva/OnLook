@@ -64,16 +64,11 @@ class AICurlEasyRequestStateMachine : public AIStateMachine, public AICurlEasyHa
 	bool mFinished;						// Set by the curl thread to signal it finished.
 	bool mHandled;						// Set when we processed the received data.
 	AITimer* mTimer;					// Expiration timer.
-	F32 mRequestTimeOut;				// The time out value for mTimer.
-
-	static F32 sCurlRequestTimeOut;		// The default time out value for mTimer (CurlRequestTimeOut debug setting).
+	F32 mTotalDelayTimeout;				// The time out value for mTimer.
 
   public:
-	// Called once to set a different timeout then the default of 40 seconds.
-	static void setDefaultRequestTimeOut(F32 defaultRequestTimeOut);
-
 	// Called to set a specific time out, instead of the default one.
-	void setRequestTimeOut(F32 requestTimeOut);
+	void setTotalDelayTimeout(F32 totalDelayTimeout);
 
   protected:
 	// AICurlEasyRequest Events.

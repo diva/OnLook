@@ -63,6 +63,8 @@
 #include "llmeshrepository.h" //for LLMeshRepository::sBytesReceived
 #include "sgmemstat.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy viewerStatsResponder_timeout;
 
 class StatAttributes
 {
@@ -710,6 +712,8 @@ public:
     {
 		llinfos << "ViewerStatsResponder::result" << llendl;
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerStatsResponder_timeout; }
 };
 
 /*

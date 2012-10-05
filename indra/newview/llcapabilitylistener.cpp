@@ -95,12 +95,14 @@ bool LLCapabilityListener::capListener(const LLSD& request)
                                << LL_ENDL;
         return false;               // in case fatal-error function isn't
     }
+#if 0	// AIFIXME: ignore this for now
     // Establish default timeout. This test relies on LLSD::asReal() returning
     // exactly 0.0 for an undef value.
     if (! timeout)
     {
         timeout = HTTP_REQUEST_EXPIRY_SECS;
     }
+#endif
     // Look up the url for the requested capability name.
     std::string url = mProvider.getCapability(cap);
     if (! url.empty())
@@ -110,8 +112,7 @@ bool LLCapabilityListener::capListener(const LLSD& request)
                            new LLSDMessage::EventResponder(LLEventPumps::instance(),
                                                            request,
                                                            mProvider.getDescription(),
-                                                           cap, reply, error),
-                           timeout);
+                                                           cap, reply, error));
     }
     else
     {

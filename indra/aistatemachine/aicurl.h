@@ -57,6 +57,7 @@
 class LLSD;
 class LLBufferArray;
 class LLChannelDescriptors;
+class AIHTTPTimeoutPolicy;
 
 //-----------------------------------------------------------------------------
 // Exceptions.
@@ -209,6 +210,9 @@ class Responder : public AICurlResponderBufferEvents {
   public:
 	// Derived classes that implement completedHeaders() should return true here.
 	virtual bool needsHeaders(void) const { return false; }
+
+	// Timeout policy to use.
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const = 0;
 
 	// Derived classes can override this to get the raw data of the body of the HTML message that was received.
 	// The default is to interpret the content as LLSD and call completed().

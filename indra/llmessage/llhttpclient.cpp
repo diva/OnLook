@@ -34,7 +34,10 @@
 #include "llvfile.h"
 #include "llurlrequest.h"
 
-F32 const HTTP_REQUEST_EXPIRY_SECS = 60.0f;
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy blockingGet_timeout;
+extern AIHTTPTimeoutPolicy blockingPost_timeout;
+
 ////////////////////////////////////////////////////////////////////////////
 
 class LLSDInjector : public Injector
@@ -146,8 +149,7 @@ static void request(
 	LLURLRequest::ERequestAction method,
 	Injector* body_injector,
 	LLCurl::ResponderPtr responder,
-	AIHTTPHeaders& headers,
-	F32 timeout = HTTP_REQUEST_EXPIRY_SECS)
+	AIHTTPHeaders& headers)
 {
 	if (responder)
 	{
@@ -167,40 +169,39 @@ static void request(
 		return ;
 	}
 
-	req->setRequestTimeOut(timeout);
 	req->run();
 }
 
-void LLHTTPClient::getByteRange4(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
+void LLHTTPClient::getByteRange4(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	if(offset > 0 || bytes > 0)
 	{
 		headers.addHeader("Range", llformat("bytes=%d-%d", offset, offset + bytes - 1));
 	}
-    request(url, LLURLRequest::HTTP_GET, NULL, responder, headers, timeout);
+    request(url, LLURLRequest::HTTP_GET, NULL, responder, headers);
 }
 
-void LLHTTPClient::head4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
+void LLHTTPClient::head4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
 {
-	request(url, LLURLRequest::HTTP_HEAD, NULL, responder, headers, timeout);
+	request(url, LLURLRequest::HTTP_HEAD, NULL, responder, headers);
 }
 
-void LLHTTPClient::get4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
+void LLHTTPClient::get4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
 {
-	request(url, LLURLRequest::HTTP_GET, NULL, responder, headers, timeout);
+	request(url, LLURLRequest::HTTP_GET, NULL, responder, headers);
 }
 
-void LLHTTPClient::getHeaderOnly4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
+void LLHTTPClient::getHeaderOnly4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
 {
-	request(url, LLURLRequest::HTTP_HEAD, NULL, responder, headers, timeout);
+	request(url, LLURLRequest::HTTP_HEAD, NULL, responder, headers);
 }
 
-void LLHTTPClient::get4(std::string const& url, LLSD const& query, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
+void LLHTTPClient::get4(std::string const& url, LLSD const& query, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	LLURI uri;
 	
 	uri = LLURI::buildHTTP(url, LLSD::emptyArray(), query);
-	get4(uri.asString(), responder, headers, timeout);
+	get4(uri.asString(), responder, headers);
 }
 
 // A simple class for managing data returned from a curl http request.
@@ -261,7 +262,7 @@ static LLSD blocking_request(
 	LLURLRequest::ERequestAction method,
 	LLSD const& body,
 	AIHTTPHeaders& headers,
-	F32 timeout = 5)
+	AIHTTPTimeoutPolicy const& timeout)
 {
 	lldebugs << "blockingRequest of " << url << llendl;
 
@@ -347,49 +348,49 @@ static LLSD blocking_request(
 LLSD LLHTTPClient::blockingGet(const std::string& url)
 {
 	AIHTTPHeaders empty_headers;
-	return blocking_request(url, LLURLRequest::HTTP_GET, LLSD(), empty_headers);
+	return blocking_request(url, LLURLRequest::HTTP_GET, LLSD(), empty_headers, blockingGet_timeout);
 }
 
 LLSD LLHTTPClient::blockingPost(const std::string& url, const LLSD& body)
 {
 	AIHTTPHeaders empty_headers;
-	return blocking_request(url, LLURLRequest::HTTP_POST, body, empty_headers);
+	return blocking_request(url, LLURLRequest::HTTP_POST, body, empty_headers, blockingPost_timeout);
 }
 
-void LLHTTPClient::put4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
+void LLHTTPClient::put4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers)
 {
-	request(url, LLURLRequest::HTTP_PUT, new LLSDInjector(body), responder, headers, timeout);
+	request(url, LLURLRequest::HTTP_PUT, new LLSDInjector(body), responder, headers);
 }
 
-void LLHTTPClient::post4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
+void LLHTTPClient::post4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers)
 {
-	request(url, LLURLRequest::HTTP_POST, new LLSDInjector(body), responder, headers, timeout);
+	request(url, LLURLRequest::HTTP_POST, new LLSDInjector(body), responder, headers);
 }
 
-void LLHTTPClient::postRaw4(std::string const& url, char const* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
+void LLHTTPClient::postRaw4(std::string const& url, char const* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers)
 {
-	request(url, LLURLRequest::HTTP_POST, new RawInjector(data, size), responder, headers, timeout);
+	request(url, LLURLRequest::HTTP_POST, new RawInjector(data, size), responder, headers);
 }
 
-void LLHTTPClient::postFile4(std::string const& url, std::string const& filename, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
+void LLHTTPClient::postFile4(std::string const& url, std::string const& filename, ResponderPtr responder, AIHTTPHeaders& headers)
 {
-	request(url, LLURLRequest::HTTP_POST, new FileInjector(filename), responder, headers, timeout);
+	request(url, LLURLRequest::HTTP_POST, new FileInjector(filename), responder, headers);
 }
 
-void LLHTTPClient::postFile4(std::string const& url, LLUUID const& uuid, LLAssetType::EType asset_type, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
+void LLHTTPClient::postFile4(std::string const& url, LLUUID const& uuid, LLAssetType::EType asset_type, ResponderPtr responder, AIHTTPHeaders& headers)
 {
-	request(url, LLURLRequest::HTTP_POST, new VFileInjector(uuid, asset_type), responder, headers, timeout);
+	request(url, LLURLRequest::HTTP_POST, new VFileInjector(uuid, asset_type), responder, headers);
 }
 
 // static
-void LLHTTPClient::del4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
+void LLHTTPClient::del4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
 {
-	request(url, LLURLRequest::HTTP_DELETE, NULL, responder, headers, timeout);
+	request(url, LLURLRequest::HTTP_DELETE, NULL, responder, headers);
 }
 
 // static
-void LLHTTPClient::move4(std::string const& url, std::string const& destination, ResponderPtr responder, AIHTTPHeaders& headers, F32 timeout)
+void LLHTTPClient::move4(std::string const& url, std::string const& destination, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	headers.addHeader("Destination", destination);
-	request(url, LLURLRequest::HTTP_MOVE, NULL, responder, headers, timeout);
+	request(url, LLURLRequest::HTTP_MOVE, NULL, responder, headers);
 }

@@ -4227,16 +4227,82 @@
       <key>Value</key>
       <integer>256</integer>
     </map>
-    <key>CurlRequestTimeOut</key>
+    <key>CurlTimeoutDNSLookup</key>
     <map>
       <key>Comment</key>
-      <string>Max idle time of a curl request before killed (requires restart)</string>
+      <string>Extra time in seconds added to CurlTimeoutConnect for the initial connect to a host (requires restart)</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
-      <string>F32</string>
+      <string>U32</string>
       <key>Value</key>
-      <real>120.0</real>
+      <real>60</real>
+    </map>
+    <key>CurlTimeoutConnect</key>
+    <map>
+      <key>Comment</key>
+      <string>Maximum time allowed until a connection is established (after adding the easy handle) until the server is considered unreachable and the connection is terminated (requires restart)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <real>10</real>
+    </map>
+    <key>CurlTimeoutReplyDelay</key>
+    <map>
+      <key>Comment</key>
+      <string>Maximum time the viewer will wait between sending data to the server and receiving (a partial) reply (requires restart)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <real>60</real>
+    </map>
+    <key>CurlTimeoutLowSpeedLimit</key>
+    <map>
+      <key>Comment</key>
+      <string>If a transfer speed drops below this value (in bytes/s) during CurlTimeoutLowSpeedTime seconds, the transfer is considered too slow and is terminated (requires restart)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <real>56000</real>
+    </map>
+    <key>CurlTimeoutLowSpeedTime</key>
+    <map>
+      <key>Comment</key>
+      <string>If a transfer speed drops below CurlTimeoutLowSpeedLimit (in bytes/s) during this amount of seconds, the transfer is considered too slow and is terminated (requires restart)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <real>30</real>
+    </map>
+    <key>CurlTimeoutMaxTransaction</key>
+    <map>
+      <key>Comment</key>
+      <string>Maximum total time of a curl transaction, from when the easy handle is added till the transaction has completed. This INCLUDES DNS lookups (CurlTimeoutConnect), connect time (CurlTimeoutConnect) and waiting for the first server reply (CurlTimeoutReply) as well as the actually time needed for data transfer (requires restart)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <real>300</real>
+    </map>
+    <key>CurlTimeoutMaxTotalDelay</key>
+    <map>
+      <key>Comment</key>
+	  <string>Maximum total time of a curl request, from when it is requested till the transaction has completed. This includes queuing due to connection throttling on top of the events covered by CurlTimeoutMaxTransaction (requires restart)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <real>600</real>
     </map>
     <key>Cursor3D</key>
     <map>

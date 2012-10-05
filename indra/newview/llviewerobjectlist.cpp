@@ -92,6 +92,10 @@ extern ImportTracker gImportTracker;
 
 void dialog_refresh_all();
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy objectCostResponder_timeout;
+extern AIHTTPTimeoutPolicy physicsFlagsResponder_timeout;
+
 #define CULL_VIS
 //#define ORPHAN_SPAM
 //#define IGNORE_DEAD
@@ -768,10 +772,11 @@ public:
 		}
 	}
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return objectCostResponder_timeout; }
+
 private:
 	LLSD mObjectIDs;
 };
-
 
 class LLPhysicsFlagsResponder : public LLCurl::Responder
 {
@@ -863,6 +868,8 @@ public:
 			}
 		}
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return physicsFlagsResponder_timeout; }
 
 private:
 	LLSD mObjectIDs;

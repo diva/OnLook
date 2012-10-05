@@ -49,6 +49,9 @@
 #include <libcwd/buf2str.h>
 #endif
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy XMLRPCTransaction_timeout;
+
 LLXMLRPCValue LLXMLRPCValue::operator[](const char* id) const
 {
 	return LLXMLRPCValue(XMLRPC_VectorGetValueWithID(mV, id));
@@ -232,7 +235,7 @@ void LLXMLRPCTransaction::Impl::init(XMLRPC_REQUEST request, bool useGzip)
 	{
 		try
 		{
-			mCurlEasyRequestStateMachinePtr = new AICurlEasyRequestStateMachine(false);
+			mCurlEasyRequestStateMachinePtr = new AICurlEasyRequestStateMachine(false);		// AIFIXME: This is the only unbuffered AICurlEasyRequestStateMachine left.
 		}
 		catch(AICurlNoEasyHandle const& error)
 		{
@@ -246,8 +249,6 @@ void LLXMLRPCTransaction::Impl::init(XMLRPC_REQUEST request, bool useGzip)
 		BOOL vefifySSLCert = !gSavedSettings.getBOOL("NoVerifySSLCert");
 		curlEasyRequest_w->setopt(CURLOPT_SSL_VERIFYPEER, vefifySSLCert);
 		curlEasyRequest_w->setopt(CURLOPT_SSL_VERIFYHOST, vefifySSLCert ? 2 : 0);
-		// Be a little impatient about establishing connections.
-		curlEasyRequest_w->setopt(CURLOPT_CONNECTTIMEOUT, 40L);
 
 		/* Setting the DNS cache timeout to -1 disables it completely.
 		   This might help with bug #503 */
@@ -271,7 +272,7 @@ void LLXMLRPCTransaction::Impl::init(XMLRPC_REQUEST request, bool useGzip)
 			setStatus(StatusOtherError);
 		}
 
-		curlEasyRequest_w->finalizeRequest(mURI);
+		curlEasyRequest_w->finalizeRequest(mURI, XMLRPCTransaction_timeout, mCurlEasyRequestStateMachinePtr);
 	}
 	if (mStatus == LLXMLRPCTransaction::StatusNotStarted)	// It could be LLXMLRPCTransaction::StatusOtherError.
 	{
@@ -479,10 +480,13 @@ size_t LLXMLRPCTransaction::Impl::curlDownloadCallback(
 	size_t n = size * nmemb;
 
 #ifdef CWDEBUG
+	void* lockobj = impl.mCurlEasyRequestStateMachinePtr ? impl.mCurlEasyRequestStateMachinePtr->mCurlEasyRequest.get_ptr().get() : NULL;
 	if (n < 80)
-	  Dout(dc::curl, "Entering LLXMLRPCTransaction::Impl::curlDownloadCallback(\"" << buf2str(data, n) << "\", " << size << ", " << nmemb << ", " << user_data << ")");
+	  Dout(dc::curl, "Entering LLXMLRPCTransaction::Impl::curlDownloadCallback(\"" <<
+		  buf2str(data, n) << "\", " << size << ", " << nmemb << ", " << user_data << ") [" << lockobj << ']');
 	else
-	  Dout(dc::curl, "Entering LLXMLRPCTransaction::Impl::curlDownloadCallback(\"" << buf2str(data, 40) << "\"...\"" << buf2str(data + n - 40, 40) << "\", " << size << ", " << nmemb << ", " << user_data << ")");
+	  Dout(dc::curl, "Entering LLXMLRPCTransaction::Impl::curlDownloadCallback(\"" <<
+		  buf2str(data, 40) << "\"...\"" << buf2str(data + n - 40, 40) << "\", " << size << ", " << nmemb << ", " << user_data << ") [" << lockobj << ']');
 #endif
 
 	impl.mResponseText.append(data, n);

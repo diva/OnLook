@@ -91,6 +91,9 @@
 const S32 TERRAIN_TEXTURE_COUNT = 4;
 const S32 CORNER_COUNT = 4;
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy estateChangeInfoResponder_timeout;
+
 ///----------------------------------------------------------------------------
 /// Local class declaration
 ///----------------------------------------------------------------------------
@@ -2325,6 +2328,9 @@ public:
 		llinfos << "LLEstateChangeInfoResponder::error "
 			<< status << ": " << reason << llendl;
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return estateChangeInfoResponder_timeout; }
+
 private:
 	LLPanelEstateInfo* mpPanel;
 };

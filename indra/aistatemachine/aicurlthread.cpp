@@ -1382,7 +1382,12 @@ char const* action_str(int action)
 //static
 int MultiHandle::socket_callback(CURL* easy, curl_socket_t s, int action, void* userp, void* socketp)
 {
-  DoutEntering(dc::curl, "MultiHandle::socket_callback((CURL*)" << (void*)easy << ", " << s << ", " << action_str(action) << ", " << (void*)userp << ", " << (void*)socketp << ")");
+#ifdef CWDEBUG
+  ThreadSafeCurlEasyRequest* lockobj = NULL;
+  curl_easy_getinfo(easy, CURLINFO_PRIVATE, &lockobj);
+  DoutEntering(dc::curl, "MultiHandle::socket_callback((CURL*)" << (void*)easy << ", " << s <<
+	  ", " << action_str(action) << ", " << (void*)userp << ", " << (void*)socketp << ") [CURLINFO_PRIVATE = " << (void*)lockobj << "]");
+#endif
   MultiHandle& self = *static_cast<MultiHandle*>(userp);
   CurlSocketInfo* sock_info = static_cast<CurlSocketInfo*>(socketp);
   if (action == CURL_POLL_REMOVE)
@@ -1449,6 +1454,7 @@ void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
 	CURLMcode ret;
 	{
 	  AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
+	  curl_easy_request_w->timeout_add_easy_request();
 	  ret = curl_easy_request_w->add_handle_to_multi(curl_easy_request_w, mMultiHandle);
 	}
 	if (ret == CURLM_OK)
@@ -1456,7 +1462,7 @@ void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
 	  mHandleAddedOrRemoved = true;
 	  std::pair<addedEasyRequests_type::iterator, bool> res = mAddedEasyRequests.insert(easy_request);
 	  llassert(res.second);							// May not have been added before.
-	  Dout(dc::curl, "MultiHandle::add_easy_request: Added AICurlEasyRequest " << (void*)easy_request.get() << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
+	  Dout(dc::curl, "MultiHandle::add_easy_request: Added AICurlEasyRequest " << (void*)easy_request.get_ptr().get() << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
 	  return;
 	}
   }
@@ -1506,7 +1512,7 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
   }
   mAddedEasyRequests.erase(iter);
   mHandleAddedOrRemoved = true;
-  Dout(dc::curl, "MultiHandle::remove_easy_request: Removed AICurlEasyRequest " << (void*)easy_request.get() << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
+  Dout(dc::curl, "MultiHandle::remove_easy_request: Removed AICurlEasyRequest " << (void*)easy_request.get_ptr().get() << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
 
   // Attempt to add a queued request, if any.
   if (!mQueuedRequests.empty())
@@ -1541,8 +1547,10 @@ void MultiHandle::check_run_count(void)
 #ifdef CWDEBUG
 		  char* eff_url;
 		  curl_easy_request_w->getinfo(CURLINFO_EFFECTIVE_URL, &eff_url);
-		  Dout(dc::curl, "Finished: " << eff_url << " (" << msg->data.result << ")");
+		  Dout(dc::curl, "Finished: " << eff_url << " (" << curl_easy_strerror(msg->data.result) << ") [CURLINFO_PRIVATE = " << (void*)ptr << "]");
 #endif
+		  // Update timeout administration.
+		  curl_easy_request_w->timeout_done(msg->data.result);
 		  // Signal that this easy handle finished.
 		  curl_easy_request_w->done(curl_easy_request_w);
 		}

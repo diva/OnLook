@@ -119,6 +119,7 @@
 #include "lldelayeduidelete.h"
 #include "llbuildnewviewsscheduler.h"
 #include "aicurleasyrequeststatemachine.h"
+#include "aihttptimeoutpolicy.h"
 // </edit>
 // The files below handle dependencies from cleanup.
 #include "llcalc.h"
@@ -642,7 +643,18 @@ bool LLAppViewer::init()
     mAlloc.setProfilingEnabled(gSavedSettings.getBOOL("MemProfiling"));
 
 	AIStateMachine::setMaxCount(gSavedSettings.getU32("StateMachineMaxTime"));
-	AICurlEasyRequestStateMachine::setDefaultRequestTimeOut(gSavedSettings.getF32("CurlRequestTimeOut"));
+
+	AIHTTPTimeoutPolicy::setDefaultCurlTimeout(
+		AIHTTPTimeoutPolicy(
+			"CurlTimeout* Debug Settings",
+			gSavedSettings.getU32("CurlTimeoutDNSLookup"),
+			gSavedSettings.getU32("CurlTimeoutConnect"),
+			gSavedSettings.getU32("CurlTimeoutReplyDelay"),
+			gSavedSettings.getU32("CurlTimeoutLowSpeedTime"),
+			gSavedSettings.getU32("CurlTimeoutLowSpeedLimit"),
+			gSavedSettings.getU32("CurlTimeoutMaxTransaction"),
+			gSavedSettings.getU32("CurlTimeoutMaxTotalDelay")
+		));
 
     initThreads();
 	LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ;

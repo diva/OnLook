@@ -76,7 +76,7 @@ bool Request::getByteRange2(std::string const& url, AIHTTPHeaders const& headers
 	  buffered_easy_request_w->addHeader(range.c_str());
 	}
 
-	buffered_easy_request_w->finalizeRequest(url);
+	buffered_easy_request_w->finalizeRequest(url, responder->getHTTPTimeoutPolicy(), buffered_easy_request);
   }
 
   buffered_easy_request->run();
@@ -84,7 +84,7 @@ bool Request::getByteRange2(std::string const& url, AIHTTPHeaders const& headers
   return true;	// We throw in case of problems.
 }
 
-bool Request::post2(std::string const& url, AIHTTPHeaders const& headers, std::string const& data, ResponderPtr responder, S32 time_out)
+bool Request::post2(std::string const& url, AIHTTPHeaders const& headers, std::string const& data, ResponderPtr responder)
 {
   DoutEntering(dc::curl, "Request::post(" << url << ", ...)");
 
@@ -95,7 +95,7 @@ bool Request::post2(std::string const& url, AIHTTPHeaders const& headers, std::s
     AICurlEasyRequest_wat buffered_easy_request_w(*buffered_easy_request->mCurlEasyRequest);
 	AICurlResponderBuffer_wat buffer_w(*buffered_easy_request->mCurlEasyRequest);
 
-	buffer_w->prepRequest(buffered_easy_request_w, headers, responder, time_out);
+	buffer_w->prepRequest(buffered_easy_request_w, headers, responder);
 
 	U32 bytes = data.size();
 	bool success = buffer_w->getInput()->append(buffer_w->sChannels.out(), (U8 const*)data.data(), bytes);
@@ -106,7 +106,7 @@ bool Request::post2(std::string const& url, AIHTTPHeaders const& headers, std::s
 	}
 	buffered_easy_request_w->setPost(bytes);
 	buffered_easy_request_w->addHeader("Content-Type: application/octet-stream");
-	buffered_easy_request_w->finalizeRequest(url);
+	buffered_easy_request_w->finalizeRequest(url, responder->getHTTPTimeoutPolicy(), buffered_easy_request);
   }
 
   buffered_easy_request->run();
@@ -114,7 +114,7 @@ bool Request::post2(std::string const& url, AIHTTPHeaders const& headers, std::s
   return true;	// We throw in case of problems.
 }
 
-bool Request::post3(std::string const& url, AIHTTPHeaders const& headers, LLSD const& data, ResponderPtr responder, S32 time_out)
+bool Request::post3(std::string const& url, AIHTTPHeaders const& headers, LLSD const& data, ResponderPtr responder)
 {
   DoutEntering(dc::curl, "Request::post(" << url << ", ...)");
 
@@ -125,7 +125,7 @@ bool Request::post3(std::string const& url, AIHTTPHeaders const& headers, LLSD c
     AICurlEasyRequest_wat buffered_easy_request_w(*buffered_easy_request->mCurlEasyRequest);
 	AICurlResponderBuffer_wat buffer_w(*buffered_easy_request->mCurlEasyRequest);
 
-	buffer_w->prepRequest(buffered_easy_request_w, headers, responder, time_out);
+	buffer_w->prepRequest(buffered_easy_request_w, headers, responder);
 
 	LLBufferStream buffer_stream(buffer_w->sChannels, buffer_w->getInput().get());
 	LLSDSerialize::toXML(data, buffer_stream);
@@ -134,7 +134,7 @@ bool Request::post3(std::string const& url, AIHTTPHeaders const& headers, LLSD c
 	S32 bytes = buffer_w->getInput()->countAfter(buffer_w->sChannels.out(), NULL);
 	buffered_easy_request_w->setPost(bytes);
 	buffered_easy_request_w->addHeader("Content-Type: application/llsd+xml");
-	buffered_easy_request_w->finalizeRequest(url);
+	buffered_easy_request_w->finalizeRequest(url, responder->getHTTPTimeoutPolicy(), buffered_easy_request);
 
 	lldebugs << "POSTING: " << bytes << " bytes." << llendl;
   }

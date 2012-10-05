@@ -35,6 +35,8 @@
 #include "llatomic.h"
 
 class AIHTTPHeaders;
+class AIHTTPTimeoutPolicy;
+class AICurlEasyRequestStateMachine;
 
 namespace AICurlPrivate {
 namespace curlthread { class MultiHandle; }
@@ -87,9 +89,9 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	DECLARE_SETOPT(curl_write_callback);
 	//DECLARE_SETOPT(curl_read_callback);	Same type as curl_write_callback
 	DECLARE_SETOPT(curl_ssl_ctx_callback);
+	DECLARE_SETOPT(curl_progress_callback);
 	DECLARE_SETOPT(curl_conv_callback);
 #if 0	// Not used by the viewer.
-	DECLARE_SETOPT(curl_progress_callback);
 	DECLARE_SETOPT(curl_seek_callback);
 	DECLARE_SETOPT(curl_ioctl_callback);
 	DECLARE_SETOPT(curl_sockopt_callback);
@@ -225,6 +227,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	static size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userdata);
 	static size_t readCallback(char* ptr, size_t size, size_t nmemb, void* userdata);
 	static CURLcode SSLCtxCallback(CURL* curl, void* sslctx, void* userdata);
+	static int progressCallback(void* clientp, double dltotal, double dlnow, double ultotal, double ulnow);
 
 	curl_write_callback mHeaderCallback;
 	void* mHeaderCallbackUserData;
@@ -234,12 +237,15 @@ class CurlEasyRequest : public CurlEasyHandle {
 	void* mReadCallbackUserData;
 	curl_ssl_ctx_callback mSSLCtxCallback;
 	void* mSSLCtxCallbackUserData;
+	curl_progress_callback mProgressCallback;
+	void* mProgressCallbackUserData;
 
   public:
 	void setHeaderCallback(curl_write_callback callback, void* userdata);
 	void setWriteCallback(curl_write_callback callback, void* userdata);
 	void setReadCallback(curl_read_callback callback, void* userdata);
 	void setSSLCtxCallback(curl_ssl_ctx_callback callback, void* userdata);
+	void setProgressCallback(curl_progress_callback callback, void* userdata);
 
 	// Call this if the set callbacks are about to be invalidated.
 	void revokeCallbacks(void);
@@ -260,7 +266,26 @@ class CurlEasyRequest : public CurlEasyHandle {
 
 	// Prepare the request for adding it to a multi session, or calling perform.
 	// This actually adds the headers that were collected with addHeader.
-	void finalizeRequest(std::string const& url);
+	void finalizeRequest(std::string const& url, AIHTTPTimeoutPolicy const& policy, AICurlEasyRequestStateMachine* state_machine);
+
+	// Called by MultiHandle::add_easy_request when the easy handle is actually being added to the multi handle.
+	void timeout_add_easy_request(void);
+
+	// Called when data was written the first time, meaning that the connection succeeded.
+	void timeout_connected(void);
+
+	// Called when data is sent.
+	void timeout_data_sent(size_t n);
+
+	// Called when data is received.
+	void timeout_data_received(size_t n);
+
+	// Called immediately before done() after curl finished, with code.
+	void timeout_done(CURLcode code);
+
+	// Progress meter callback.
+	static int timeout_progress(void* userdata, double dltotal, double dlnow, double ultotal, double ulnow);
+	int timeout_progress(double dlnow, double ulnow);
 
 	// Called by MultiHandle::check_run_count() to store result code that is returned by getResult.
 	void store_result(CURLcode result) { mResult = result; }
@@ -280,12 +305,25 @@ class CurlEasyRequest : public CurlEasyHandle {
 	AICurlEasyHandleEvents* mEventsTarget;
 	CURLcode mResult;
 
+	// AIFIXME: put all timeout stuff in it's own class.
+	AIHTTPTimeoutPolicy const* mTimeoutPolicy;
+	bool mTimeoutConnected;							// Set if we succeeded to connect and are transfering data.
+#ifdef CWDEBUG
+	U64 mTimeout_connect_time;						// Time at which mTimeoutConnected was set to true (for debugging purposes only).
+#endif
+	bool mTimeoutWaitingForReply;					// Set after we finished sending data to the server and are waiting for the reply.
+	bool mTimeoutNothingReceivedYet;				// Set when connected, reset when the HTML reply header from the server is received.
+	U64 mTimeout_progress_time;						// The (last) time timeout_progress() was called, in microseconds.
+	U64 mTransferOK;								// The last time the transfer rate was OK.
+	double mTimeout_dlnow;							// Number of downloaded bytes so far, as per last call to timeout_progress.
+	double mTimeout_ulnow;							// Number of uploaded bytes so far, as per last call to timeout_progress.
+
   private:
 	// This class may only be created by constructing a ThreadSafeCurlEasyRequest.
 	friend class ThreadSafeCurlEasyRequest;
 	// Throws AICurlNoEasyHandle.
 	CurlEasyRequest(void) :
-	    mHeaders(NULL), mRequestFinalized(false), mEventsTarget(NULL), mResult(CURLE_FAILED_INIT)
+	    mHeaders(NULL), mRequestFinalized(false), mEventsTarget(NULL), mResult(CURLE_FAILED_INIT), mTimeoutPolicy(NULL)
       { applyDefaultOptions(); }
   public:
 	~CurlEasyRequest();
@@ -327,7 +365,7 @@ class CurlResponderBuffer : protected AICurlResponderBufferEvents, protected AIC
 	typedef AICurlInterface::Responder::buffer_ptr_t buffer_ptr_t;
 
 	void resetState(AICurlEasyRequest_wat& curl_easy_request_w);
-	void prepRequest(AICurlEasyRequest_wat& buffered_curl_easy_request_w, AIHTTPHeaders const& headers, AICurlInterface::ResponderPtr responder, S32 time_out = 0);
+	void prepRequest(AICurlEasyRequest_wat& buffered_curl_easy_request_w, AIHTTPHeaders const& headers, AICurlInterface::ResponderPtr responder);
 
 	buffer_ptr_t& getInput(void) { return mInput; }
 	buffer_ptr_t& getOutput(void) { return mOutput; }

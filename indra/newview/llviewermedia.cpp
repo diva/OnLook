@@ -59,6 +59,11 @@
 #include "llfloateravatarinfo.h"	// for getProfileURL() function
 //#include "viewerversion.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy mimeDiscoveryResponder_timeout;
+extern AIHTTPTimeoutPolicy viewerMediaOpenIDResponder_timeout;
+extern AIHTTPTimeoutPolicy viewerMediaWebProfileResponder_timeout;
+
 // Merov: Temporary definitions while porting the new viewer media code to Snowglobe
 const int LEFT_BUTTON  = 0;
 const int RIGHT_BUTTON = 1;
@@ -98,6 +103,8 @@ public:
 			}
 		}
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return mimeDiscoveryResponder_timeout; }
 
 	public:
 		viewer_media_t mMediaImpl;
@@ -139,6 +146,7 @@ public:
 		// We don't care about the content of the response, only the set-cookie header.
 	}
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerMediaOpenIDResponder_timeout; }
 };
 
 class LLViewerMediaWebProfileResponder : public LLHTTPClient::Responder
@@ -168,7 +176,7 @@ public:
 		}
 	}
 
-	 void completedRaw(
+	void completedRaw(
 		U32 status,
 		const std::string& reason,
 		const LLChannelDescriptors& channels,
@@ -177,6 +185,8 @@ public:
 		// This is just here to disable the default behavior (attempting to parse the response as llsd).
 		// We don't care about the content of the response, only the set-cookie header.
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerMediaWebProfileResponder_timeout; }
 
 	std::string mHost;
 };

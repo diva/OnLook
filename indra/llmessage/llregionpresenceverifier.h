@@ -34,6 +34,9 @@
 #include <boost/intrusive_ptr.hpp>
 
 class LLHTTPClientInterface;
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy regionResponder_timeout;
+extern AIHTTPTimeoutPolicy verifiedDestinationResponder_timeout;
 
 class LLRegionPresenceVerifier
 {
@@ -58,6 +61,8 @@ public:
 	class RegionResponder : public LLHTTPClient::Responder
 	{
 	public:
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return regionResponder_timeout; }
+
 		RegionResponder(const std::string& uri, ResponsePtr data,
 						S32 retry_count);
 		virtual ~RegionResponder(); 
@@ -73,6 +78,8 @@ public:
 	class VerifiedDestinationResponder : public LLHTTPClient::Responder
 	{
 	public:
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return verifiedDestinationResponder_timeout; }
+
 		VerifiedDestinationResponder(const std::string& uri, ResponsePtr data,
 									 const LLSD& content, S32 retry_count);
 		virtual ~VerifiedDestinationResponder();

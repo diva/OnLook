@@ -54,6 +54,10 @@
 #include "llstartup.h"
 #include "llbuffer.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy HTTPGetResponder_timeout;
+extern AIHTTPTimeoutPolicy lcl_responder_timeout;
+
 //////////////////////////////////////////////////////////////////////////////
 class LLTextureFetchWorker : public LLWorkerClass
 {
@@ -288,7 +292,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////
-
 class HTTPGetResponder : public LLCurl::Responder
 {
 	LOG_CLASS(HTTPGetResponder);
@@ -300,6 +303,8 @@ public:
 	~HTTPGetResponder()
 	{
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return HTTPGetResponder_timeout; }
 
 	virtual void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
@@ -3036,8 +3041,7 @@ TFReqSendMetrics::doWork(LLTextureFetch * fetcher)
                       volatile const S32 & live_sequence,
                       volatile bool & reporting_break,
 					  volatile bool & reporting_started)
-			: LLCurl::Responder(),
-			  mFetcher(fetcher),
+			: mFetcher(fetcher),
               mExpectedSequence(expected_sequence),
               mLiveSequence(live_sequence),
 			  mReportingBreak(reporting_break),
@@ -3071,6 +3075,7 @@ TFReqSendMetrics::doWork(LLTextureFetch * fetcher)
                     mReportingStarted = true;
                 }
 			}
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return lcl_responder_timeout; }
 
 	private:
 		LLTextureFetch * mFetcher;

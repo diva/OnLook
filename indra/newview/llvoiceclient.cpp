@@ -82,6 +82,10 @@
 
 #define USE_SESSION_GROUPS 0
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy viewerVoiceAccountProvisionResponder_timeout;
+extern AIHTTPTimeoutPolicy voiceClientCapResponder_timeout;
+
 static bool sConnectingToAgni = false;
 F32 LLVoiceClient::OVERDRIVEN_POWER_LEVEL = 0.7f;
 
@@ -186,6 +190,8 @@ public:
 				voice_account_server_uri);
 		}
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerVoiceAccountProvisionResponder_timeout; }
 
 private:
 	int mRetries;
@@ -1008,7 +1014,6 @@ static bool sMuteListListener_listening = false;
 static LLVoiceClientFriendsObserver *friendslist_listener = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
-
 class LLVoiceClientCapResponder : public LLHTTPClient::Responder
 {
 public:
@@ -1016,6 +1021,7 @@ public:
 
 	virtual void error(U32 status, const std::string& reason);	// called with bad status codes
 	virtual void result(const LLSD& content);
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return voiceClientCapResponder_timeout; }
 
 private:
 };

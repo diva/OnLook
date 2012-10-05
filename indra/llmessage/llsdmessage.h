@@ -37,6 +37,8 @@
 #include <stdexcept>
 
 class LLSD;
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy eventResponder_timeout;
 
 /**
  * Class managing the messaging API described in
@@ -124,6 +126,8 @@ private:
     class EventResponder: public LLHTTPClient::Responder
     {
     public:
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return eventResponder_timeout; }
+
         /**
          * LLHTTPClient::Responder that dispatches via named LLEventPump instances.
          * We bind LLEventPumps, even though it's an LLSingleton, for testability.

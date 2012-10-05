@@ -171,6 +171,9 @@ namespace LLAvatarNameCache
 </llsd>
 */
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy avatarNameResponder_timeout;
+
 class LLAvatarNameResponder : public LLHTTPClient::Responder
 {
 private:
@@ -182,6 +185,8 @@ private:
 	AIHTTPHeaders mHeaders;
 	
 public:
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return avatarNameResponder_timeout; }
+
 	LLAvatarNameResponder(const std::vector<LLUUID>& agent_ids)
 	:	mAgentIDs(agent_ids)
 	{ }

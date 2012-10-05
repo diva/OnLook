@@ -84,6 +84,11 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy startConferenceChatResponder_timeout;
+extern AIHTTPTimeoutPolicy voiceCallCapResponder_timeout;
+extern AIHTTPTimeoutPolicy sessionInviteResponder_timeout;
+
 //
 // Constants
 //
@@ -214,6 +219,8 @@ public:
 		//the possible different language translations
 	}
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return startConferenceChatResponder_timeout; }
+
 private:
 	LLUUID mTempSessionID;
 	LLUUID mCreatorID;
@@ -301,6 +308,7 @@ public:
 
 	virtual void error(U32 status, const std::string& reason);	// called with bad status codes
 	virtual void result(const LLSD& content);
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return voiceCallCapResponder_timeout; }
 
 private:
 	LLUUID mSessionID;
@@ -1563,6 +1571,8 @@ public:
 		llinfos << "Error inviting all agents to session" << llendl;
 		//throw something back to the viewer here?
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return sessionInviteResponder_timeout; }
 
 private:
 	LLUUID mSessionID;

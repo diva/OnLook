@@ -55,6 +55,8 @@
 #include "llworld.h"
 #include "pipeline.h" // for gPipeline
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy placeAvatarTeleportResponder_timeout;
 
 // OGPX HTTP responder for PlaceAvatar cap used for Teleport
 // very similar to the responder in Login, but not as many fields are returned in the TP version
@@ -218,6 +220,8 @@ public:
 		// gViewerWindow->setShowProgress(FALSE);
 		
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return placeAvatarTeleportResponder_timeout; }
 };
 
 // Statics

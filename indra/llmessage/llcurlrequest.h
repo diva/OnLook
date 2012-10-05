@@ -48,8 +48,8 @@ class Request {
   public:
 	bool get2(std::string const& url, ResponderPtr responder);
 	bool getByteRange2(std::string const& url, AIHTTPHeaders const& headers, S32 offset, S32 length, ResponderPtr responder);
-	bool post2(std::string const& url, AIHTTPHeaders const& headers, std::string const& data, ResponderPtr responder, S32 time_out = 0);
-	bool post3(std::string const& url, AIHTTPHeaders const& headers,        LLSD const& data, ResponderPtr responder, S32 time_out = 0);
+	bool post2(std::string const& url, AIHTTPHeaders const& headers, std::string const& data, ResponderPtr responder);
+	bool post3(std::string const& url, AIHTTPHeaders const& headers,        LLSD const& data, ResponderPtr responder);
 };
 
 } // namespace AICurlInterface

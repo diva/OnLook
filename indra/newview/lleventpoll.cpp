@@ -46,6 +46,9 @@
 #include "message.h"
 #include "lltrans.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy eventPollResponder_timeout;
+
 namespace
 {
 	// We will wait RETRY_SECONDS + (errorCount * RETRY_SECONDS_INC) before retrying after an error.
@@ -72,6 +75,7 @@ namespace
 		void handleMessage(const LLSD& content);
 		virtual	void error(U32 status, const std::string& reason);
 		virtual	void result(const LLSD&	content);
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return eventPollResponder_timeout; }
 
 		virtual void completedRaw(U32 status,
 									const std::string& reason,

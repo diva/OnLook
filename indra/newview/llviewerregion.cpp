@@ -82,13 +82,16 @@
 	#pragma warning(disable:4355)
 #endif
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy baseCapabilitiesComplete_timeout;
+extern AIHTTPTimeoutPolicy simulatorFeaturesReceived_timeout;
+
 const F32 WATER_TEXTURE_SCALE = 8.f;			//  Number of times to repeat the water texture across a region
 const S16 MAX_MAP_DIST = 10;
 // The server only keeps our pending agent info for 60 seconds.
 // We want to allow for seed cap retry, but its not useful after that 60 seconds.
 // Give it 3 chances, each at 18 seconds to give ourselves a few seconds to connect anyways if we give up.
 const S32 MAX_SEED_CAP_ATTEMPTS_BEFORE_LOGIN = 3;
-const F32 CAP_REQUEST_TIMEOUT = 18;
 // Even though we gave up on login, keep trying for caps after we are logged in:
 const S32 MAX_CAP_REQUEST_ATTEMPTS = 30;
 
@@ -261,6 +264,8 @@ public:
 			LLStartUp::setStartupState( STATE_SEED_CAP_GRANTED );
 		}
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return baseCapabilitiesComplete_timeout; }
 
     static boost::intrusive_ptr<BaseCapabilitiesComplete> build( U64 region_handle, S32 id )
     {
@@ -1662,8 +1667,7 @@ void LLViewerRegion::setSeedCapability(const std::string& url)
 
 	S32 id = ++mImpl->mHttpResponderID;
 	LLHTTPClient::post4(url, capabilityNames, 
-						BaseCapabilitiesComplete::build(getHandle(), id),
-						CAP_REQUEST_TIMEOUT);
+						BaseCapabilitiesComplete::build(getHandle(), id));
 }
 
 S32 LLViewerRegion::getNumSeedCapRetries()
@@ -1698,8 +1702,7 @@ void LLViewerRegion::failedSeedCapability()
 
 		S32 id = ++mImpl->mHttpResponderID;
 		LLHTTPClient::post4(url, capabilityNames, 
-						BaseCapabilitiesComplete::build(getHandle(), id),
-						CAP_REQUEST_TIMEOUT);
+						BaseCapabilitiesComplete::build(getHandle(), id));
 	}
 	else
 	{
@@ -1736,6 +1739,8 @@ public:
 		regionp->setSimulatorFeatures(content);
 	}
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return simulatorFeaturesReceived_timeout; }
+
 private:
 	void retry()
 	{
@@ -1743,7 +1748,7 @@ private:
 		{
 			mAttempt++;
 			LL_WARNS2("AppInit", "SimulatorFeatures") << "Re-trying '" << mRetryURL << "'.  Retry #" << mAttempt << LL_ENDL;
-			LLHTTPClient::get4(mRetryURL, new SimulatorFeaturesReceived(*this), CAP_REQUEST_TIMEOUT);
+			LLHTTPClient::get4(mRetryURL, new SimulatorFeaturesReceived(*this));
 		}
 	}
 	
@@ -1769,7 +1774,7 @@ void LLViewerRegion::setCapability(const std::string& name, const std::string& u
 	else if (name == "SimulatorFeatures")
 	{
 		// kick off a request for simulator features
-		LLHTTPClient::get4(url, new SimulatorFeaturesReceived(url, getHandle()), CAP_REQUEST_TIMEOUT);
+		LLHTTPClient::get4(url, new SimulatorFeaturesReceived(url, getHandle()));
 	}
 	else
 	{

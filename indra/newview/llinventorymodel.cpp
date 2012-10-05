@@ -60,6 +60,9 @@
 #include "process.h"
 #endif
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy createInventoryCategoryResponder_timeout;
+
 // Increment this if the inventory contents change in a non-backwards-compatible way.
 // For viewers with link items support, former caches are incorrect.
 const S32 LLInventoryModel::sCurrentInvCacheVersion = 2;
@@ -510,6 +513,8 @@ public:
 		}
 
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return createInventoryCategoryResponder_timeout; }
 
 private:
 	void (*mCallback)(const LLSD&, void*);

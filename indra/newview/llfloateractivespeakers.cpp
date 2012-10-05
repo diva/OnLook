@@ -57,6 +57,11 @@
 
 #include "llavatarname.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy muteVoiceResponder_timeout;
+extern AIHTTPTimeoutPolicy muteTextResponder_timeout;
+extern AIHTTPTimeoutPolicy moderationModeResponder_timeout;
+
 using namespace LLOldEvents;
 
 const F32 SPEAKER_TIMEOUT = 10.f; // seconds of not being on voice channel before removed from list of active speakers
@@ -882,6 +887,8 @@ void LLPanelActiveSpeakers::onModeratorMuteVoice(LLUICtrl* ctrl, void* user_data
 			}
 		}
 
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return muteVoiceResponder_timeout; }
+
 	private:
 		LLUUID mSessionID;
 	};
@@ -947,6 +954,8 @@ void LLPanelActiveSpeakers::onModeratorMuteText(LLUICtrl* ctrl, void* user_data)
 			}
 		}
 
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return muteTextResponder_timeout; }
+
 	private:
 		LLUUID mSessionID;
 	};
@@ -987,6 +996,7 @@ void LLPanelActiveSpeakers::onChangeModerationMode(LLUICtrl* ctrl, void* user_da
 		{
 			llwarns << status << ": " << reason << llendl;
 		}
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return moderationModeResponder_timeout; }
 	};
 
 	LLHTTPClient::post4(url, data, new ModerationModeResponder());

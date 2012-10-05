@@ -37,6 +37,9 @@
 #include "llview.h"
 #include "lluuid.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy classifiedStatsResponder_timeout;
+
 class LLClassifiedStatsResponder : public LLHTTPClient::Responder
 {
 public:
@@ -45,6 +48,7 @@ public:
 	virtual void result(const LLSD& content);
 	//If we get back an error (not found, etc...), handle it here
 	virtual void error(U32 status, const std::string& reason);
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return classifiedStatsResponder_timeout; }
 
 protected:
 	LLHandle<LLView> mClassifiedPanelHandle;

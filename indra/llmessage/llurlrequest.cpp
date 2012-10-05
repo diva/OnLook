@@ -293,14 +293,14 @@ LLIOPipe::EStatus LLURLRequest::handleError(
 	LLIOPipe::EStatus status,
 	LLPumpIO* pump)
 {
-	DoutEntering(dc::curl, "LLURLRequest::handleError(" << LLIOPipe::lookupStatusString(status) << ", " << (void*)pump << ")");
+	DoutEntering(dc::curl, "LLURLRequest::handleError(" << LLIOPipe::lookupStatusString(status) << ", " << (void*)pump << ") [" << (void*)mCurlEasyRequest.get_ptr().get() << "]");
 
 	if (LL_LIKELY(!mDetail->mStateMachine->isBuffered()))	// Currently always true.
 	{
 		// The last reference will be deleted when the pump that this chain belongs to
 		// is removed from the running chains vector, upon returning from this function.
 		// This keeps the CurlEasyRequest object alive until the curl thread cleanly removed it.
-		Dout(dc::curl, "Calling mDetail->mStateMachine->removeRequest()");
+		Dout(dc::curl, "Calling mDetail->mStateMachine->removeRequest() [" << (void*)mCurlEasyRequest.get_ptr().get() << "]");
 		mDetail->mStateMachine->removeRequest();
 	}
 	else if (!hasNotExpired())
@@ -546,7 +546,7 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 		}
 		if(rv)
 		{
-			curlEasyRequest_w->finalizeRequest(mURL);
+			curlEasyRequest_w->finalizeRequest(mURL, mResponder->getHTTPTimeoutPolicy(), this);
 		}
 	}
 	return rv;

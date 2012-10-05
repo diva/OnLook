@@ -40,6 +40,8 @@
 #include "llsd.h"
 #include "llcontrol.h"
 
+class AIHTTPTimeoutPolicy;
+
 class LLCrashLogger : public LLApp
 {
 public:
@@ -57,7 +59,7 @@ public:
 	virtual bool cleanup() { return true; }
 	void setUserText(const std::string& text) { mCrashInfo["UserNotes"] = text; }
 	S32 getCrashBehavior() { return mCrashBehavior; }
-	bool runCrashLogPost(std::string host, LLSD data, std::string msg, int retries, int timeout);
+	bool runCrashLogPost(std::string host, LLSD data, std::string msg, int retries);
 protected:
 	S32 mCrashBehavior;
 	BOOL mCrashInPreviousExec;

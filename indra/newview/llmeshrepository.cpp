@@ -74,6 +74,15 @@
 
 #include <queue>
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy meshHeaderResponder_timeout;
+extern AIHTTPTimeoutPolicy meshLODResponder_timeout;
+extern AIHTTPTimeoutPolicy meshSkinInfoResponder_timeout;
+extern AIHTTPTimeoutPolicy meshDecompositionResponder_timeout;
+extern AIHTTPTimeoutPolicy meshPhysicsShapeResponder_timeout;
+extern AIHTTPTimeoutPolicy wholeModelFeeResponder_timeout;
+extern AIHTTPTimeoutPolicy wholeModelUploadResponder_timeout;
+
 LLMeshRepository gMeshRepo;
 
 const U32 MAX_MESH_REQUESTS_PER_SECOND = 100;
@@ -221,6 +230,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshHeaderResponder_timeout; }
 };
 
 class LLMeshLODResponder : public LLCurl::Responder
@@ -246,6 +256,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshLODResponder_timeout; }
 };
 
 class LLMeshSkinInfoResponder : public LLCurl::Responder
@@ -264,6 +275,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshSkinInfoResponder_timeout; }
 };
 
 class LLMeshDecompositionResponder : public LLCurl::Responder
@@ -282,6 +294,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshDecompositionResponder_timeout; }
 };
 
 class LLMeshPhysicsShapeResponder : public LLCurl::Responder
@@ -300,6 +313,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshPhysicsShapeResponder_timeout; }
 };
 
 #if MESH_IMPORT
@@ -403,6 +417,7 @@ public:
 		}
 	}
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return wholeModelFeeResponder_timeout; }
 };
 
 class LLWholeModelUploadResponder: public LLCurl::Responder
@@ -459,6 +474,8 @@ public:
 			}
 		}
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return wholeModelUploadResponder_timeout; }
 };
 #endif //MESH_IMPORT
 

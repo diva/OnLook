@@ -36,6 +36,10 @@
 #include "llviewerprecompiledheaders.h"
 #include "llhttpclient.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy environmentRequestResponder_timeout;
+extern AIHTTPTimeoutPolicy environmentApplyResponder_timeout;
+
 class LLEnvironmentRequest
 {
 	LOG_CLASS(LLEnvironmentRequest);
@@ -54,6 +58,7 @@ class LLEnvironmentRequestResponder: public LLHTTPClient::Responder
 public:
 	virtual void result(const LLSD& content);
 	virtual void error(U32 status, const std::string& reason);
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return environmentRequestResponder_timeout; }
 
 private:
 	friend class LLEnvironmentRequest;
@@ -96,6 +101,8 @@ public:
 	virtual void result(const LLSD& content);
 
 	virtual void error(U32 status, const std::string& reason); // non-200 errors only
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return environmentApplyResponder_timeout; }
 
 private:
 	friend class LLEnvironmentApply;

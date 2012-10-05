@@ -77,17 +77,18 @@ bool LLSDMessage::httpListener(const LLSD& request)
         out << "request event without 'url' key to '" << mEventPump.getName() << "'";
         throw ArgError(out.str());
     }
+#if 0	// AIFIXME: ignore this for now
     // Establish default timeout. This test relies on LLSD::asReal() returning
     // exactly 0.0 for an undef value.
     if (! timeout)
     {
         timeout = HTTP_REQUEST_EXPIRY_SECS;
     }
+#endif
     LLHTTPClient::post4(url, payload,
                        new LLSDMessage::EventResponder(LLEventPumps::instance(),
                                                        request,
-                                                       url, "POST", reply, error),
-                       (F32)timeout);
+                                                       url, "POST", reply, error));
     return false;
 }
 

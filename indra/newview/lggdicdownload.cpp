@@ -49,6 +49,8 @@
 #include "llbufferstream.h"
 
 class lggDicDownloadFloater;
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy emeraldDicDownloader_timeout;
 
 class EmeraldDicDownloader : public LLHTTPClient::Responder
 {
@@ -60,6 +62,7 @@ public:
 		const std::string& reason,
 		const LLChannelDescriptors& channels,
 		const buffer_ptr_t& buffer);
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return emeraldDicDownloader_timeout; }
 private:
 	lggDicDownloadFloater* panel;
 	std::string name;

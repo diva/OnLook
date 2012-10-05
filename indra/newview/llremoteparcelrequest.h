@@ -38,6 +38,9 @@
 #include "llhttpclient.h"
 #include "llpanel.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy remoteParcelRequestResponder_timeout;
+
 class LLRemoteParcelRequestResponder : public LLHTTPClient::Responder
 {
 public:
@@ -46,6 +49,7 @@ public:
 	virtual void result(const LLSD& content);
 	//If we get back an error (not found, etc...), handle it here
 	virtual void error(U32 status, const std::string& reason);
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return remoteParcelRequestResponder_timeout; }
 
 protected:
 	LLHandle<LLPanel> mPlacePanelHandle;

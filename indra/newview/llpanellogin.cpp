@@ -95,6 +95,9 @@
 
 #define USE_VIEWER_AUTH 0
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy iamHereLogin_timeout;
+
 const S32 BLACK_BORDER_HEIGHT = 160;
 const S32 MAX_PASSWORD = 16;
 
@@ -204,6 +207,8 @@ class LLIamHereLogin : public LLHTTPClient::Responder
 			if ( mParent )
 				mParent->setSiteIsAlive( false );
 		};
+
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return iamHereLogin_timeout; }
 };
 
 // this is global and not a class member to keep crud out of the header file

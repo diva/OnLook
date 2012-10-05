@@ -30,6 +30,7 @@
 
 #include "linden_common.h"
 #include "aicurleasyrequeststatemachine.h"
+#include "aihttptimeoutpolicy.h"
 #include "llcontrol.h"
 
 enum curleasyrequeststatemachine_state_type {
@@ -61,7 +62,7 @@ void AICurlEasyRequestStateMachine::initialize_impl(void)
 {
   {
 	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
-	llassert(curlEasyRequest_w->is_finalized());	// Call finalizeRequest(url) before calling run().
+	llassert(curlEasyRequest_w->is_finalized());	// Call finalizeRequest() before calling run().
 	curlEasyRequest_w->send_events_to(this);
   }
   mAdded = false;
@@ -116,13 +117,13 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
 	  // 3) AICurlEasyRequestStateMachine_finished (running)
 	  // 4) AICurlEasyRequestStateMachine_removed_after_finished (running)
 
-	  if (mRequestTimeOut > 0.f)
+	  if (mTotalDelayTimeout > 0.f)
 	  {
 		// Set an inactivity timer.
 		// This shouldn't really be necessary, except in the case of a bug
 		// in libcurl; but lets be sure and set a timer for inactivity.
 		mTimer = new AIPersistentTimer;			// Do not delete timer upon expiration.
-		mTimer->setInterval(mRequestTimeOut);
+		mTimer->setInterval(mTotalDelayTimeout);
 		mTimer->run(this, AICurlEasyRequestStateMachine_timedOut, false, false);
 	  }
 	  break;
@@ -246,7 +247,7 @@ void AICurlEasyRequestStateMachine::finish_impl(void)
 }
 
 AICurlEasyRequestStateMachine::AICurlEasyRequestStateMachine(bool buffered) :
-    mBuffered(buffered), mCurlEasyRequest(buffered), mTimer(NULL), mRequestTimeOut(sCurlRequestTimeOut)
+    mBuffered(buffered), mCurlEasyRequest(buffered), mTimer(NULL), mTotalDelayTimeout(AIHTTPTimeoutPolicy::getDebugSettingsCurlTimeout().getTotalDelay())
 {
   Dout(dc::statemachine, "Calling AICurlEasyRequestStateMachine(" << (buffered ? "true" : "false") << ") [" << (void*)this << "] [" << (void*)mCurlEasyRequest.get() << "]");
   if (!mBuffered)
@@ -255,18 +256,9 @@ AICurlEasyRequestStateMachine::AICurlEasyRequestStateMachine(bool buffered) :
   }
 }
 
-//static
-F32 AICurlEasyRequestStateMachine::sCurlRequestTimeOut = 40.f;
-
-//static
-void AICurlEasyRequestStateMachine::setDefaultRequestTimeOut(F32 defaultRequestTimeOut)
+void AICurlEasyRequestStateMachine::setTotalDelayTimeout(F32 totalDelayTimeout)
 {
-  sCurlRequestTimeOut = defaultRequestTimeOut;
-}
-
-void AICurlEasyRequestStateMachine::setRequestTimeOut(F32 curlRequestTimeOut)
-{
-  mRequestTimeOut = curlRequestTimeOut;
+  mTotalDelayTimeout = totalDelayTimeout;
 }
 
 AICurlEasyRequestStateMachine::~AICurlEasyRequestStateMachine()

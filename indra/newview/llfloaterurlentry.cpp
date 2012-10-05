@@ -45,6 +45,9 @@
 #include "llviewerwindow.h"
 #include "llhttpclient.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy mediaTypeResponder_timeout;
+
 static LLFloaterURLEntry* sInstance = NULL;
 
 // Move this to its own file.
@@ -85,6 +88,8 @@ public:
 		  if ( floater_url_entry )
 			  floater_url_entry->headerFetchComplete( status, resolved_mime_type );
 	  }
+
+	  virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return mediaTypeResponder_timeout; }
 };
 
 //-----------------------------------------------------------------------------

@@ -19,7 +19,6 @@
 
 #include "hipporestrequest.h"
 
-
 // ********************************************************************
 // Global Variables
 
@@ -859,7 +858,6 @@ void HippoGridManager::loadFromFile()
 	setDefaultGrid(last_grid);
 	setCurrentGrid(last_grid);
 }
-
 
 void HippoGridManager::parseUrl(const std::string url, bool mergeIfNewer)
 {

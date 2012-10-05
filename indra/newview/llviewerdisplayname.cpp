@@ -40,6 +40,9 @@
 #include "llnotificationsutil.h"
 #include "llui.h"					// getLanguage()
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy setDisplayNameResponder_timeout;
+
 namespace LLViewerDisplayName
 {
 	// Fired when viewer receives server response to display name change
@@ -64,6 +67,8 @@ public:
 		LLViewerDisplayName::sSetDisplayNameSignal(false, "", LLSD());
 		LLViewerDisplayName::sSetDisplayNameSignal.disconnect_all_slots();
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return setDisplayNameResponder_timeout; }
 };
 
 void LLViewerDisplayName::set(const std::string& display_name, const set_name_slot_t& slot)

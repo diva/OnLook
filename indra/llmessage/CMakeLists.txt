@@ -21,6 +21,7 @@ include_directories(
 
 set(llmessage_SOURCE_FILES
     aihttpheaders.cpp
+    aihttptimeoutpolicy.cpp
     llhttpclient.cpp
     llares.cpp
     llareslistener.cpp
@@ -106,6 +107,7 @@ set(llmessage_HEADER_FILES
     CMakeLists.txt
 
     aihttpheaders.h
+    aihttptimeoutpolicy.h
     llares.h
     llareslistener.h
     llassetstorage.h

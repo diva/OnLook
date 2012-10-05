@@ -37,6 +37,9 @@
 #include "llbufferstream.h"
 #include "json/reader.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy translationReceiver_timeout;
+
 class LLTranslate
 {
 public :
@@ -62,6 +65,8 @@ public :
 			LL_WARNS("Translate") << "URL Request error: " << reason << LL_ENDL;
 			handleFailure();
 		}
+
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return translationReceiver_timeout; }
 
 		virtual void completedRaw(
 			U32 status,

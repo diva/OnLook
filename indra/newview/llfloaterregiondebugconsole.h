@@ -34,6 +34,8 @@
 #include "llhttpclient.h"
 
 class LLTextEditor;
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy floaterRegionDebugConsole_timeout;
 
 typedef boost::signals2::signal<
 	void (const std::string& output)> console_reply_signal_t;
@@ -43,6 +45,8 @@ class LLFloaterRegionDebugConsole : public LLFloater, public LLHTTPClient::Respo
 public:
 	LLFloaterRegionDebugConsole();
 	virtual ~LLFloaterRegionDebugConsole();
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return floaterRegionDebugConsole_timeout; }
 
 	// virtual
 	BOOL postBuild();

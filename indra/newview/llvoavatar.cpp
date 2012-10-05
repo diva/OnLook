@@ -113,6 +113,7 @@
 // <edit>
 #include "llfloaterexploreanimations.h"
 #include "llimagemetadatareader.h"
+#include "aihttptimeoutpolicy.h"
 // </edit>
 
 #include "llavatarname.h"

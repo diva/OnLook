@@ -43,8 +43,10 @@
 #include <string>
 #include <vector>
 
-class LLInventoryObserver;
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy fetchInventoryResponder_timeout;
 
+class LLInventoryObserver;
 class LLInventoryObject;
 class LLInventoryItem;
 class LLInventoryCategory;
@@ -54,7 +56,6 @@ class LLViewerInventoryItem;
 class LLViewerInventoryCategory;
 class LLMessageSystem;
 class LLInventoryCollectFunctor;
-
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // LLInventoryModel
@@ -88,6 +89,7 @@ public:
 		fetchInventoryResponder(const LLSD& request_sd) : mRequestSD(request_sd) {};
 		void result(const LLSD& content);			
 		void error(U32 status, const std::string& reason);
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return fetchInventoryResponder_timeout; }
 	protected:
 		LLSD mRequestSD;
 	};
