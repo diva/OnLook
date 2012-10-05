@@ -58,6 +58,9 @@
 #include "aihttpheaders.h"
 #include "aihttptimeoutpolicy.h"
 #include "aicurleasyrequeststatemachine.h"
+
+// Some pretty printing for curl easy handle related things:
+// Print the lock object related to the current easy handle in every debug output.
 #ifdef CWDEBUG
 #include <libcwd/buf2str.h>
 #include <sstream>
@@ -70,9 +73,19 @@
 	Dout(dc::curl, x); \
 	libcw_do.pop_marker(); \
   } while(0)
-#else
+#define DoutCurlEasyEntering(x) do { \
+	using namespace libcwd; \
+	std::ostringstream marker; \
+	marker << (void*)this->get_lockobj(); \
+	libcw_do.push_marker(); \
+	libcw_do.marker().assign(marker.str().data(), marker.str().size()); \
+	DoutEntering(dc::curl, x); \
+	libcw_do.pop_marker(); \
+  } while(0)
+#else // !CWDEBUG
 #define DoutCurlEasy(x) Dout(dc::curl, x << " [" << (void*)this->get_lockobj() << ']')
-#endif
+#define DoutCurlEasyEntering(x) DoutEntering(dc::curl, x << " [" << (void*)this->get_lockobj() << ']')
+#endif // CWDEBUG
 
 //==================================================================================
 // Local variables.
@@ -1230,51 +1243,6 @@ void CurlEasyRequest::applyDefaultOptions(void)
   );
 }
 
-void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolicy const& policy, AICurlEasyRequestStateMachine* state_machine)
-{
-  llassert(!mRequestFinalized);
-  mResult = CURLE_FAILED_INIT;		// General error code; the final result code is stored here by MultiHandle::check_run_count when msg is CURLMSG_DONE.
-  lldebugs << url << llendl;
-#ifdef SHOW_ASSERT
-  // Do a sanity check on the headers.
-  int content_type_count = 0;
-  for (curl_slist* list = mHeaders; list; list = list->next)
-  {
-	if (strncmp(list->data, "Content-Type:", 13) == 0)
-	{
-	  ++content_type_count;
-	}
-  }
-  if (content_type_count > 1)
-  {
-	llwarns << content_type_count << " Content-Type: headers!" << llendl;
-  }
-#endif
-  mRequestFinalized = true;
-  setopt(CURLOPT_HTTPHEADER, mHeaders);
-  setoptString(CURLOPT_URL, url);
-  mTimeoutPolicy = &policy;
-  state_machine->setTotalDelayTimeout(policy.getTotalDelay());
-  // The following line is a bit tricky: we store a pointer to the object without increasing its reference count.
-  // Of course we could increment the reference count, but that doesn't help much: if then this pointer would
-  // get "lost" we'd have a memory leak. Either way we must make sure that it is impossible that this pointer
-  // will be used if the object is deleted [In fact, since this is finalizeRequest() and not addRequest(),
-  // incrementing the reference counter would be wrong: if addRequest() is never called then the object is
-  // destroyed shortly after and this pointer is never even used.]
-  // This pointer is used in MultiHandle::check_run_count, which means that addRequest() was called and
-  // the reference counter was increased and the object is being kept alive, see the comments above
-  // command_queue in aicurlthread.cpp. In fact, this object survived until MultiHandle::add_easy_request
-  // was called and is kept alive by MultiHandle::mAddedEasyRequests. The only way to get deleted after
-  // that is when MultiHandle::remove_easy_request is called, which first removes the easy handle from
-  // the multi handle. So that it's (hopefully) no longer possible that info_read() in
-  // MultiHandle::check_run_count returns this easy handle, after the object is destroyed by deleting
-  // it from MultiHandle::mAddedEasyRequests.
-  setopt(CURLOPT_PRIVATE, get_lockobj());
-}
-
-//.............................................................................
-// HTTP Timeout stuff
-
 // url must be of the form
 // (see http://www.ietf.org/rfc/rfc3986.txt Appendix A for definitions not given here):
 //
@@ -1299,8 +1267,8 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
 // - userinfo does not contain a '@', and if it exists, is always terminated by a '@'.
 // - port does not contain a ':', and if it exists is always prepended by a ':'.
 //
-// Only called by CurlEasyRequest::timeout_add_easy_request.
-static std::string extract_canonical_hostname(std::string url)
+// Only called by CurlEasyRequest::finalizeRequest.
+static std::string extract_canonical_hostname(std::string const& url)
 {
   std::string::size_type pos;
   std::string::size_type authority = 0;														// Default if there is no sheme.
@@ -1325,13 +1293,57 @@ static std::string extract_canonical_hostname(std::string url)
   return hostname;
 }
 
+void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolicy const& policy, AICurlEasyRequestStateMachine* state_machine)
+{
+  DoutCurlEasyEntering("CurlEasyRequest::finalizeRequest(\"" << url << "\", " << policy.name() << ", " << (void*)state_machine << ")");
+  llassert(!mRequestFinalized);
+  mResult = CURLE_FAILED_INIT;		// General error code; the final result code is stored here by MultiHandle::check_run_count when msg is CURLMSG_DONE.
+#ifdef SHOW_ASSERT
+  // Do a sanity check on the headers.
+  int content_type_count = 0;
+  for (curl_slist* list = mHeaders; list; list = list->next)
+  {
+	if (strncmp(list->data, "Content-Type:", 13) == 0)
+	{
+	  ++content_type_count;
+	}
+  }
+  if (content_type_count > 1)
+  {
+	llwarns << "Requesting: \"" << url << "\": " << content_type_count << " Content-Type: headers!" << llendl;
+  }
+#endif
+  mRequestFinalized = true;
+  setopt(CURLOPT_HTTPHEADER, mHeaders);
+  setoptString(CURLOPT_URL, url);
+  mTimeoutLowercaseHostname = extract_canonical_hostname(url);
+  mTimeoutPolicy = &policy;
+  state_machine->setTotalDelayTimeout(policy.getTotalDelay());
+  // The following line is a bit tricky: we store a pointer to the object without increasing its reference count.
+  // Of course we could increment the reference count, but that doesn't help much: if then this pointer would
+  // get "lost" we'd have a memory leak. Either way we must make sure that it is impossible that this pointer
+  // will be used if the object is deleted [In fact, since this is finalizeRequest() and not addRequest(),
+  // incrementing the reference counter would be wrong: if addRequest() is never called then the object is
+  // destroyed shortly after and this pointer is never even used.]
+  // This pointer is used in MultiHandle::check_run_count, which means that addRequest() was called and
+  // the reference counter was increased and the object is being kept alive, see the comments above
+  // command_queue in aicurlthread.cpp. In fact, this object survived until MultiHandle::add_easy_request
+  // was called and is kept alive by MultiHandle::mAddedEasyRequests. The only way to get deleted after
+  // that is when MultiHandle::remove_easy_request is called, which first removes the easy handle from
+  // the multi handle. So that it's (hopefully) no longer possible that info_read() in
+  // MultiHandle::check_run_count returns this easy handle, after the object is destroyed by deleting
+  // it from MultiHandle::mAddedEasyRequests.
+  setopt(CURLOPT_PRIVATE, get_lockobj());
+}
+
+//.............................................................................
+// HTTP Timeout stuff
+
 // CURL-THREAD
 // This is called when the easy handle is actually being added to the multi handle (thus after being queued).
 void CurlEasyRequest::timeout_add_easy_request(void)
 {
-  char* eff_url;
-  getinfo(CURLINFO_EFFECTIVE_URL, &eff_url);	// According to a discussion on IRC with a curl developer, we can rely on this returning the set CURLOPT_URL at this point.
-  setopt(CURLOPT_CONNECTTIMEOUT, mTimeoutPolicy->getConnectTimeout(extract_canonical_hostname(eff_url)));
+  setopt(CURLOPT_CONNECTTIMEOUT, mTimeoutPolicy->getConnectTimeout(mTimeoutLowercaseHostname));
   setopt(CURLOPT_TIMEOUT, mTimeoutPolicy->getCurlTransaction());
   // We do NOT use CURLOPT_LOW_SPEED_TIME and CURLOPT_LOW_SPEED_LIMIT,
   // instead use a progress meter callback.
@@ -1462,9 +1474,7 @@ void CurlEasyRequest::timeout_done(CURLcode code)
 {
   if (code == CURLE_OPERATION_TIMEDOUT && !mTimeoutConnected)
   {
-	char* eff_url;
-	getinfo(CURLINFO_EFFECTIVE_URL, &eff_url);	//AIFIXME: cache hostname, cause this might have changed.
-	AIHTTPTimeoutPolicy::connect_timed_out(extract_canonical_hostname(eff_url));
+	AIHTTPTimeoutPolicy::connect_timed_out(mTimeoutLowercaseHostname);
 	// AIFIXME: use return value to change priority
   }
   // Abuse this boolean to tell any subsequent call to timeout_progress that this certainly can't timeout anymore.

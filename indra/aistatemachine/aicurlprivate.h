@@ -307,6 +307,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 
 	// AIFIXME: put all timeout stuff in it's own class.
 	AIHTTPTimeoutPolicy const* mTimeoutPolicy;
+	std::string mTimeoutLowercaseHostname;			// Lowercase hostname (canonicalized) extracted from the url.
 	bool mTimeoutConnected;							// Set if we succeeded to connect and are transfering data.
 #ifdef CWDEBUG
 	U64 mTimeout_connect_time;						// Time at which mTimeoutConnected was set to true (for debugging purposes only).
