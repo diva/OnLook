@@ -88,6 +88,9 @@ void AICurlEasyRequestStateMachine::finished(AICurlEasyRequest_wat&)
 // CURL-THREAD
 void AICurlEasyRequestStateMachine::removed_from_multi_handle(AICurlEasyRequest_wat&)
 {
+  llassert(mFinished || mTimedOut);		// If we neither finished nor timed out, then why is this being removed?
+  										// Note that allowing this would cause an assertion later on for removing
+										// a CurlResponderBuffer with a still active Responder.
   set_state(mFinished ? AICurlEasyRequestStateMachine_removed_after_finished : AICurlEasyRequestStateMachine_removed);
 }
 

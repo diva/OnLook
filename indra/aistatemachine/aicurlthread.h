@@ -82,6 +82,12 @@ class MultiHandle : public CurlMultiHandle
 	long mTimeOut;				// The last time out in ms as set by the callback CURLMOPT_TIMERFUNCTION.
 
   private:
+	// Store result and trigger events for easy request.
+	void finish_easy_request(AICurlEasyRequest const& easy_request, CURLcode result);
+	// Remove easy request at iter (must exist).
+	// Note that it's possible that a new request from mQueuedRequests is inserted before iter.
+	CURLMcode remove_easy_request(addedEasyRequests_type::iterator const& iter, bool as_per_command);
+
     static int socket_callback(CURL* easy, curl_socket_t s, int action, void* userp, void* socketp);
     static int timer_callback(CURLM* multi, long timeout_ms, void* userp);
 

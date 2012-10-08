@@ -1374,13 +1374,16 @@ MultiHandle::~MultiHandle()
 
 void MultiHandle::handle_stalls(void)
 {
-  for(addedEasyRequests_type::iterator iter = mAddedEasyRequests.begin(); iter != mAddedEasyRequests.end(); iter = mAddedEasyRequests.begin())
+  for(addedEasyRequests_type::iterator iter = mAddedEasyRequests.begin(); iter != mAddedEasyRequests.end();)
   {
 	if (AICurlEasyRequest_wat(**iter)->timeout_has_stalled())
 	{
 	  Dout(dc::curl, "MultiHandle::handle_stalls(): Easy request stalled! [" << (void*)iter->get_ptr().get() << "]");
-	  remove_easy_request(*iter, false);
+	  finish_easy_request(*iter, CURLE_OPERATION_TIMEDOUT);
+	  remove_easy_request(iter++, false);
 	}
+	else
+	  ++iter;
   }
 }
 
@@ -1527,6 +1530,11 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
 	}
 	return (CURLMcode)-2;				// Was already removed before, or never added (queued).
   }
+  return remove_easy_request(iter, as_per_command);
+}
+
+CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator const& iter, bool as_per_command)
+{
   CURLMcode res;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(**iter);
@@ -1535,9 +1543,12 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
 	curl_easy_request_w->mRemovedPerCommand = as_per_command;
 #endif
   }
+#if CWDEBUG
+  ThreadSafeCurlEasyRequest* lockobj = iter->get_ptr().get();
+#endif
   mAddedEasyRequests.erase(iter);
   mHandleAddedOrRemoved = true;
-  Dout(dc::curl, "MultiHandle::remove_easy_request: Removed AICurlEasyRequest " << (void*)easy_request.get_ptr().get() << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
+  Dout(dc::curl, "MultiHandle::remove_easy_request: Removed AICurlEasyRequest " << (void*)lockobj << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
 
   // Attempt to add a queued request, if any.
   if (!mQueuedRequests.empty())
@@ -1565,20 +1576,8 @@ void MultiHandle::check_run_count(void)
 		llassert_always(rese == CURLE_OK);
 		AICurlEasyRequest easy_request(ptr);
 		llassert(*AICurlEasyRequest_wat(*easy_request) == easy);
-		// Store the result and transfer info in the easy handle.
-		{
-		  AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
-		  curl_easy_request_w->store_result(msg->data.result);
-#ifdef CWDEBUG
-		  char* eff_url;
-		  curl_easy_request_w->getinfo(CURLINFO_EFFECTIVE_URL, &eff_url);
-		  Dout(dc::curl, "Finished: " << eff_url << " (" << curl_easy_strerror(msg->data.result) << ") [CURLINFO_PRIVATE = " << (void*)ptr << "]");
-#endif
-		  // Update timeout administration.
-		  curl_easy_request_w->timeout_done(msg->data.result);
-		  // Signal that this easy handle finished.
-		  curl_easy_request_w->done(curl_easy_request_w);
-		}
+		// Store result and trigger events for the easy request.
+		finish_easy_request(easy_request, msg->data.result);
 		// This invalidates msg, but not easy_request.
 		CURLMcode res = remove_easy_request(easy_request);
 		// This should hold, I think, because the handles are obviously ok and
@@ -1600,6 +1599,22 @@ void MultiHandle::check_run_count(void)
 	mHandleAddedOrRemoved = false;
   }
   mPrevRunningHandles = mRunningHandles;
+}
+
+void MultiHandle::finish_easy_request(AICurlEasyRequest const& easy_request, CURLcode result)
+{
+  AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
+  // Store the result in the easy handle.
+  curl_easy_request_w->store_result(result);
+#ifdef CWDEBUG
+  char* eff_url;
+  curl_easy_request_w->getinfo(CURLINFO_EFFECTIVE_URL, &eff_url);
+  Dout(dc::curl, "Finished: " << eff_url << " (" << curl_easy_strerror(result) << ") [CURLINFO_PRIVATE = " << (void*)easy_request.get_ptr().get() << "]");
+#endif
+  // Update timeout administration.
+  curl_easy_request_w->timeout_done(result);
+  // Signal that this easy handle finished.
+  curl_easy_request_w->done(curl_easy_request_w);
 }
 
 } // namespace curlthread
