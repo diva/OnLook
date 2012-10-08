@@ -95,6 +95,9 @@ class MultiHandle : public CurlMultiHandle
 	// This is called before sleeping, after calling (one or more times) socket_action.
 	void check_run_count(void);
 
+	// Called from the main loop every time select() timed out.
+	void handle_stalls(void);
+
   public:
 	//-----------------------------------------------------------------------------
 	// Curl socket administration:

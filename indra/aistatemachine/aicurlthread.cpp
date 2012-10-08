@@ -30,7 +30,7 @@
 
 #include "linden_common.h"
 #include "aicurlthread.h"
-#include "lltimer.h"		// ms_sleep
+#include "lltimer.h"		// ms_sleep, get_clock_count
 #include <sys/types.h>
 #if !LL_WINDOWS
 #include <sys/select.h>
@@ -699,7 +699,7 @@ bool MergeIterator::next(curl_socket_t& fd_out, int& ev_bitmask_out)
 class CurlSocketInfo
 {
   public:
-	CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socket_t s, int action);
+	CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socket_t s, int action, ThreadSafeCurlEasyRequest* lockobj);
 	~CurlSocketInfo();
 
 	void set_action(int action);
@@ -709,11 +709,13 @@ class CurlSocketInfo
 	CURL const* mEasy;
 	curl_socket_t mSocketFd;
 	int mAction;
+	AICurlEasyRequest mEasyRequest;
 };
 
-CurlSocketInfo::CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socket_t s, int action) :
-    mMultiHandle(multi_handle), mEasy(easy), mSocketFd(s), mAction(CURL_POLL_NONE)
+CurlSocketInfo::CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socket_t s, int action, ThreadSafeCurlEasyRequest* lockobj) :
+    mMultiHandle(multi_handle), mEasy(easy), mSocketFd(s), mAction(CURL_POLL_NONE), mEasyRequest(lockobj)
 {
+  llassert(*AICurlEasyRequest_wat(*mEasyRequest) == easy);
   mMultiHandle.assign(s, this);
   llassert(!mMultiHandle.mReadPollSet->contains(s));
   llassert(!mMultiHandle.mWritePollSet->contains(s));
@@ -741,7 +743,12 @@ void CurlSocketInfo::set_action(int action)
 	if ((action & CURL_POLL_OUT))
 	  mMultiHandle.mWritePollSet->add(mSocketFd);
 	else
+	{
 	  mMultiHandle.mWritePollSet->remove(mSocketFd);
+	  // If CURL_POLL_OUT is removed, we have nothing more to send apparently.
+	  AICurlEasyRequest_wat curl_easy_request_w(*mEasyRequest);
+	  curl_easy_request_w->timeout_upload_finished();		// Update timeout administration.
+	}
   }
 }
 
@@ -1302,9 +1309,12 @@ void AICurlThread::run(void)
 		llwarns << "select() failed: " << errno << ", " << strerror(errno) << llendl;
 		continue;
 	  }
-	  else if (ready == 0)
+	  // Clock count used for timeouts.
+	  CurlEasyRequest::sTimeoutClockCount = get_clock_count();
+	  if (ready == 0)
 	  {
 		multi_handle_w->socket_action(CURL_SOCKET_TIMEOUT, 0);
+		multi_handle_w->handle_stalls();
 	  }
 	  else
 	  {
@@ -1362,6 +1372,18 @@ MultiHandle::~MultiHandle()
   delete mReadPollSet;
 }
 
+void MultiHandle::handle_stalls(void)
+{
+  for(addedEasyRequests_type::iterator iter = mAddedEasyRequests.begin(); iter != mAddedEasyRequests.end(); iter = mAddedEasyRequests.begin())
+  {
+	if (AICurlEasyRequest_wat(**iter)->timeout_has_stalled())
+	{
+	  Dout(dc::curl, "MultiHandle::handle_stalls(): Easy request stalled! [" << (void*)iter->get_ptr().get() << "]");
+	  remove_easy_request(*iter, false);
+	}
+  }
+}
+
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 #undef AI_CASE_RETURN
 #define AI_CASE_RETURN(x) do { case x: return #x; } while(0)
@@ -1398,7 +1420,10 @@ int MultiHandle::socket_callback(CURL* easy, curl_socket_t s, int action, void* 
   {
 	if (!sock_info)
 	{
-	  sock_info = new CurlSocketInfo(self, easy, s, action);
+	  ThreadSafeCurlEasyRequest* ptr;
+	  CURLcode rese = curl_easy_getinfo(easy, CURLINFO_PRIVATE, &ptr);
+	  llassert_always(rese == CURLE_OK);
+	  sock_info = new CurlSocketInfo(self, easy, s, action, ptr);
 	}
 	else
 	{

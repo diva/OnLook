@@ -70,7 +70,9 @@
 	marker << (void*)this->get_lockobj(); \
 	libcw_do.push_marker(); \
 	libcw_do.marker().assign(marker.str().data(), marker.str().size()); \
+	libcw_do.inc_indent(2); \
 	Dout(dc::curl, x); \
+	libcw_do.dec_indent(2); \
 	libcw_do.pop_marker(); \
   } while(0)
 #define DoutCurlEasyEntering(x) do { \
@@ -79,7 +81,9 @@
 	marker << (void*)this->get_lockobj(); \
 	libcw_do.push_marker(); \
 	libcw_do.marker().assign(marker.str().data(), marker.str().size()); \
+	libcw_do.inc_indent(2); \
 	DoutEntering(dc::curl, x); \
+	libcw_do.dec_indent(2); \
 	libcw_do.pop_marker(); \
   } while(0)
 #else // !CWDEBUG
@@ -810,9 +814,9 @@ DEFINE_FUNCTION_SETOPT1(curl_debug_callback, CURLOPT_DEBUGFUNCTION)
 DEFINE_FUNCTION_SETOPT4(curl_write_callback, CURLOPT_HEADERFUNCTION, CURLOPT_WRITEFUNCTION, CURLOPT_INTERLEAVEFUNCTION, CURLOPT_READFUNCTION)
 //DEFINE_FUNCTION_SETOPT1(curl_read_callback, CURLOPT_READFUNCTION)
 DEFINE_FUNCTION_SETOPT1(curl_ssl_ctx_callback, CURLOPT_SSL_CTX_FUNCTION)
-DEFINE_FUNCTION_SETOPT1(curl_progress_callback, CURLOPT_PROGRESSFUNCTION)
 DEFINE_FUNCTION_SETOPT3(curl_conv_callback, CURLOPT_CONV_FROM_NETWORK_FUNCTION, CURLOPT_CONV_TO_NETWORK_FUNCTION, CURLOPT_CONV_FROM_UTF8_FUNCTION)
 #if 0 // Not used by the viewer.
+DEFINE_FUNCTION_SETOPT1(curl_progress_callback, CURLOPT_PROGRESSFUNCTION)
 DEFINE_FUNCTION_SETOPT1(curl_seek_callback, CURLOPT_SEEKFUNCTION)
 DEFINE_FUNCTION_SETOPT1(curl_ioctl_callback, CURLOPT_IOCTLFUNCTION)
 DEFINE_FUNCTION_SETOPT1(curl_sockopt_callback, CURLOPT_SOCKOPTFUNCTION)
@@ -938,24 +942,6 @@ void CurlEasyRequest::setSSLCtxCallback(curl_ssl_ctx_callback callback, void* us
   setopt(CURLOPT_SSL_CTX_DATA, this);
 }
 
-//static
-int CurlEasyRequest::progressCallback(void* userdata, double dltotal, double dlnow, double ultotal, double ulnow)
-{
-  CurlEasyRequest* self = static_cast<CurlEasyRequest*>(userdata);
-  ThreadSafeCurlEasyRequest* lockobj = self->get_lockobj();
-  AICurlEasyRequest_wat lock_self(*lockobj);
-  return self->mProgressCallback(self->mProgressCallbackUserData, dltotal, dlnow, ultotal, ulnow);
-}
-
-void CurlEasyRequest::setProgressCallback(curl_progress_callback callback, void* userdata)
-{
-  mProgressCallback = callback;
-  mProgressCallbackUserData = userdata;
-  setopt(CURLOPT_PROGRESSFUNCTION, callback ? &CurlEasyRequest::progressCallback : NULL);
-  setopt(CURLOPT_PROGRESSDATA, userdata ? this : NULL);
-  setopt(CURLOPT_NOPROGRESS, callback ? 0L: 1L);
-}
-
 #define llmaybewarns lllog(LLApp::isExiting() ? LLError::LEVEL_INFO : LLError::LEVEL_WARN, NULL, NULL, false, true)
 
 static size_t noHeaderCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
@@ -982,19 +968,12 @@ static CURLcode noSSLCtxCallback(CURL* curl, void* sslctx, void* parm)
   return CURLE_ABORTED_BY_CALLBACK;
 }
 
-static int noProgressCallback(void* userdata, double dltotal, double dlnow, double ultotal, double ulnow)
-{
-  llmaybewarns << "Calling noProgressCallback(); curl session aborted." << llendl;
-  return CURLE_ABORTED_BY_CALLBACK;
-}
-
 void CurlEasyRequest::revokeCallbacks(void)
 {
   if (mHeaderCallback == &noHeaderCallback &&
 	  mWriteCallback == &noWriteCallback &&
 	  mReadCallback == &noReadCallback &&
-	  mSSLCtxCallback == &noSSLCtxCallback &&
-	  mProgressCallback == &noProgressCallback)
+	  mSSLCtxCallback == &noSSLCtxCallback)
   {
 	// Already revoked.
 	return;
@@ -1003,7 +982,6 @@ void CurlEasyRequest::revokeCallbacks(void)
   mWriteCallback = &noWriteCallback;
   mReadCallback = &noReadCallback;
   mSSLCtxCallback = &noSSLCtxCallback;
-  mProgressCallback = &noProgressCallback;
   if (active() && !no_warning())
   {
 	llwarns << "Revoking callbacks on a still active CurlEasyRequest object!" << llendl;
@@ -1012,7 +990,6 @@ void CurlEasyRequest::revokeCallbacks(void)
   curl_easy_setopt(getEasyHandle(), CURLOPT_WRITEHEADER, &noWriteCallback);
   curl_easy_setopt(getEasyHandle(), CURLOPT_READFUNCTION, &noReadCallback);
   curl_easy_setopt(getEasyHandle(), CURLOPT_SSL_CTX_FUNCTION, &noSSLCtxCallback);
-  curl_easy_setopt(getEasyHandle(), CURLOPT_PROGRESSFUNCTION, &noProgressCallback);
 }
 
 CurlEasyRequest::~CurlEasyRequest()
@@ -1339,146 +1316,233 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
 //.............................................................................
 // HTTP Timeout stuff
 
+//static
+F64 const CurlEasyRequest::sTimeoutClockWidth = 1.0 / calc_clock_frequency();	// Time between two clock ticks, in seconds.
+U64 CurlEasyRequest::sTimeoutClockCount;										// Clock count, set once per select() exit.
+
 // CURL-THREAD
 // This is called when the easy handle is actually being added to the multi handle (thus after being queued).
+// AIFIXME: Doing this only when it is actually being added assures that the first curl easy handle that is
+// being added for a particular host will be the one getting extra 'DNS lookup' connect time.
+// However, if another curl easy handle for the same host is added immediately after, it will
+// get less connect time, while it still (also) has to wait for this DNS lookup.
+//
+//          <-----------------------------mTimeoutNothingReceivedYet-------------------------->
+// queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
+//         ^
+//         |
 void CurlEasyRequest::timeout_add_easy_request(void)
 {
   setopt(CURLOPT_CONNECTTIMEOUT, mTimeoutPolicy->getConnectTimeout(mTimeoutLowercaseHostname));
   setopt(CURLOPT_TIMEOUT, mTimeoutPolicy->getCurlTransaction());
-  // We do NOT use CURLOPT_LOW_SPEED_TIME and CURLOPT_LOW_SPEED_LIMIT,
-  // instead use a progress meter callback.
-  setProgressCallback(&AICurlPrivate::CurlEasyRequest::timeout_progress, this);
   // This boolean is valid (only) if we get a time out event from libcurl.
-  mTimeoutConnected = false;
-}
-
-// CURL-THREAD
-// This is called when the connection succeeded (thus after DNS lookup and connect).
-void CurlEasyRequest::timeout_connected(void)
-{
-  DoutCurlEasy("Calling CurlEasyRequest::timeout_connected(): mTimeoutWaitingForReply = false");
-  mTimeoutConnected = true;
-#ifdef CWDEBUG
-  mTimeout_connect_time = get_clock_count();
-#endif
-  // Now that mTimeoutConnected is set we'll be calling timeout_progress(); initialize the variables used there.
-  mTimeout_dlnow = 0;
-  mTimeout_ulnow = 0;
-  mTimeout_progress_time = 0;
-  mTimeoutWaitingForReply = false;
   mTimeoutNothingReceivedYet = true;
+  mTimeoutStalled = (U64)-1;
 }
 
 // CURL-THREAD
-// This is called when data was sent to the server socket.
-void CurlEasyRequest::timeout_data_sent(size_t n)
+// This is called when body data was sent to the server socket.
+//                                                    <--mTimeoutLowSpeedOn-->
+// queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
+//                                                    ^ ^ ^       ^   ^      ^
+//                                                    | | |       |   |      |
+bool CurlEasyRequest::timeout_data_sent(size_t n)
 {
-  if (!mTimeoutConnected)
+  // Generate events.
+  if (!mTimeoutLowSpeedOn)
   {
-	// If we can send data (for the first time) then that's our way to know we connected.
-	timeout_connected();
+	// If we can send data (for the first time) then that's our only way to know we connected.
+	timeout_reset_lowspeed();
   }
+  // Detect low speed.
+  return timeout_lowspeed(n);
+}
+
+// CURL-THREAD
+// This is called when the 'low speed' timer should be started.
+//                                                    <--mTimeoutLowSpeedOn-->                 <----mTimeoutLowSpeedOn---->
+// queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
+//                                                    ^                                        ^
+//                                                    |                                        |
+void CurlEasyRequest::timeout_reset_lowspeed(void)
+{
+  mTimeoutLowSpeedClock = get_clock_count();
+  mTimeoutLowSpeedOn = true;
+  mTimeoutLastSecond = -1;			// This causes timeout_lowspeed to initialize the rest.
+  mTimeoutStalled = (U64)-1;		// Stop reply delay timer.
+}
+
+// CURL-THREAD
+// This is called when everything we had to send to the server has been sent.
+//                                                    <--mTimeoutLowSpeedOn-->
+// queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
+//                                                                             ^
+//                                                                             |
+void CurlEasyRequest::timeout_upload_finished(void)
+{
+  // We finished uploading (if there was a body to upload at all), so not more transfer rate timeouts.
+  mTimeoutLowSpeedOn = false;
+  // Timeout if the server doesn't reply quick enough.
+  mTimeoutStalled = sTimeoutClockCount + mTimeoutPolicy->getReplyDelay() / sTimeoutClockWidth;
 }
 
 // CURL-THREAD
 // This is called when data was received from the server.
-void CurlEasyRequest::timeout_data_received(size_t n)
-{
-  if (n > 0)
-  {
-#ifdef CWDEBUG
-	if (mTimeoutNothingReceivedYet)
-	  DoutCurlEasy("CurlEasyRequest::timeout_data_received(): Received data from server: set mTimeoutWaitingForReply = false");
-#endif
-	// We received something, now switch to getLowSpeedLimit()/getLowSpeedTime().
-	mTimeoutWaitingForReply = false;
-	mTimeoutNothingReceivedYet = false;
-  }
-}
-
-// CURL_THREAD
-//static
-int CurlEasyRequest::timeout_progress(void* userdata, double dltotal, double dlnow, double ultotal, double ulnow)
-{
-  CurlEasyRequest* self = static_cast<CurlEasyRequest*>(userdata);
-
-  //AIFIXME: There has to be a better way to determine this (because it feels fuzzy, I only allow it to SET the boolean):
-#ifdef CWDEBUG
-  if (!self->mTimeoutWaitingForReply && (self->mTimeoutNothingReceivedYet && ultotal > 0 && ulnow == ultotal))
-	Dout(dc::curl, "CurlEasyRequest::timeout_progress(): uploading data finished: set mTimeoutWaitingForReply = true [" << (void*)self->get_lockobj() << ']');
-#endif
-  llassert(ulnow == 0 || ultotal > 0);	// Do we always know the total upload size?
-  self->mTimeoutWaitingForReply = self->mTimeoutWaitingForReply || (self->mTimeoutNothingReceivedYet && ultotal > 0 && ulnow == ultotal);
-
-  return self->mTimeoutConnected ? self->timeout_progress(dlnow, ulnow) : 0;
-}
-
-// CURL_THREAD
-// dlnow is the number of bytes of the BODY of the message, received from the server.
-// ulnow is the number of bytes of the BODY of the message, sent to the server so far.
 //
-// Note that the algorithm used here is basically the same as libcurl uses
-// for CURLOPT_LOW_SPEED_LIMIT / CURLOPT_LOW_SPEED_TIME, but we can't use that
-// because we need to change the variables involved during transfer, which isn't
-// officially supported by libcurl.
-// Libcurl does the progress callback at the exact same point as checking for
-// low speed, and the same data is passed (except the time, unfortunately), so
-// the functionality is the same.
-int CurlEasyRequest::timeout_progress(double dlnow, double ulnow)
+//          <-----------------------------mTimeoutNothingReceivedYet--------------------------><----mTimeoutLowSpeedOn---->
+// queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
+//                                                                                             ^  ^   ^     ^    ^  ^ ^   ^
+//                                                                                             |  |   |     |    |  | |   |
+bool CurlEasyRequest::timeout_data_received(size_t n)
 {
-  static double const clock_frequency = calc_clock_frequency();
-  U64 last_time = mTimeout_progress_time;
-  mTimeout_progress_time = get_clock_count();
-  double transfer = (dlnow - mTimeout_dlnow) + (ulnow - mTimeout_ulnow);	// Just combine up and download :p.
-  mTimeout_dlnow = dlnow;
-  mTimeout_ulnow = ulnow;
-  if (!last_time || mTimeout_progress_time == last_time)					// Is this the first time this function is called (or are we called infinitely fast)?
+  // The HTTP header of the reply is the first thing we receive.
+  if (mTimeoutNothingReceivedYet && n > 0)
   {
-	DoutCurlEasy("timeout_progress(" << dlnow << ", " << ulnow << ") called at " <<
-		((mTimeout_progress_time - mTimeout_connect_time) / clock_frequency) << " seconds after connect" <<
-		(last_time ? "" : " (first time)"));
-	// Start the timer: we need to have a too low transfer rate, for at least
-	// mTimeoutPolicy->getLowSpeedTime() seconds, counting from this moment.
-	mTransferOK = mTimeout_progress_time;
-	return 0;
+	mTimeoutNothingReceivedYet = false;
+	// We received something; switch to getLowSpeedLimit()/getLowSpeedTime().
+	timeout_reset_lowspeed();
   }
-  transfer *= clock_frequency / (mTimeout_progress_time - last_time);		// Bytes per second.
-  U64 timer = mTimeout_progress_time - mTransferOK;							// Low speed timer in clock ticks.
-  U16 lowspeedtime = mTimeoutWaitingForReply ? mTimeoutPolicy->getReplyDelay() : mTimeoutPolicy->getLowSpeedTime();
-  U32 lowspeedlimit = mTimeoutWaitingForReply ? (U32)1 : mTimeoutPolicy->getLowSpeedLimit();
-  DoutCurlEasy("timeout_progress(" << dlnow << ", " << ulnow << ") called at " << ((mTimeout_progress_time - mTimeout_connect_time) / clock_frequency) <<
-	  " seconds after connect (timer = " << (timer / clock_frequency) << " s ; transfer = " << transfer << " bytes/s; lowspeedtime = " << lowspeedtime <<
-	  "; lowspeedlimit = " << lowspeedlimit << " (mTimeoutWaitingForReply == " << (mTimeoutWaitingForReply ? "true" : "false") << "))");
-  if (transfer >= lowspeedlimit)
+  return mTimeoutLowSpeedOn ? timeout_lowspeed(n) : false;
+}
+
+// CURL_THREAD
+// bytes is the number of bytes we just sent or received (including headers).
+// Returns true if the transfer should be aborted.
+//
+// queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
+//                                                    ^ ^ ^       ^   ^      ^                 ^  ^   ^     ^    ^  ^ ^   ^
+//                                                    | | |       |   |      |                 |  |   |     |    |  | |   |
+bool CurlEasyRequest::timeout_lowspeed(size_t bytes)
+{
+  DoutCurlEasyEntering("CurlEasyRequest::timeout_lowspeed(" << bytes << ")");
+
+  // The algorithm to determine if we timed out if different from how libcurls CURLOPT_LOW_SPEED_TIME works.
+  //
+  // libcurl determines the transfer rate since the last call to an equivalent 'lowspeed' function, and then
+  // triggers a timeout if CURLOPT_LOW_SPEED_TIME long such a transfer value is less than CURLOPT_LOW_SPEED_LIMIT.
+  // That doesn't work right because once there IS data it can happen that this function is called a few
+  // times (with less than a milisecond in between) causing seemingly VERY high "transfer rate" spikes.
+  // The only correct way to determine the transfer rate is to actually average over CURLOPT_LOW_SPEED_TIME
+  // seconds.
+  //
+  // We do this as follows: we create low_speed_time (in seconds) buckets and fill them with the number
+  // of bytes received during that second. We also keep track of the sum of all bytes received between 'now'
+  // and 'now - llmax(starttime, low_speed_time)'. Then if that period reaches at least low_speed_time
+  // seconds, and the transfer rate (sum / low_speed_time) is less than low_speed_limit, we abort.
+
+  // When are we?
+  S32 second = (sTimeoutClockCount - mTimeoutLowSpeedClock) * sTimeoutClockWidth;
+
+  // If this is the same second as last time, just add the number of bytes to the current bucket.
+  if (second == mTimeoutLastSecond)
   {
-	// Yay! Transfer rate is OK; restart timeout timer.
-	mTransferOK = mTimeout_progress_time;
+	mTimeoutTotalBytes += bytes;
+	mTimeoutBuckets[mTimeoutBucket] += bytes;
+	return false;
   }
-  else if (timer > clock_frequency * lowspeedtime)
+
+  // We arrived at a new second.
+  // The below is at most executed once per second, even though for
+  // every currently connected transfer, CPU is not a big issue.
+
+  // Determine the number of buckets needed and increase the number of buckets if needed.
+  U16 const low_speed_time = mTimeoutPolicy->getLowSpeedTime();
+  if (low_speed_time > mTimeoutBuckets.size())
   {
-	// We haven't seen a high enough transfer rate for too long. Abort the transfer.
-	llwarns <<
+	mTimeoutBuckets.resize(low_speed_time, 0);
+  }
+
+  S32 s = mTimeoutLastSecond;
+  mTimeoutLastSecond = second;
+
+  // If this is the first time this function is called, we need to do some initialization.
+  if (s == -1)
+  {
+	mTimeoutBucket = 0;				// It doesn't really matter where we start.
+	mTimeoutTotalBytes = bytes;
+	mTimeoutBuckets[mTimeoutBucket] = bytes;
+	return false;
+  }
+
+  // Update all administration.
+  U16 bucket = mTimeoutBucket;
+  while(1)		// Run over all the seconds that were skipped.
+  {
+	if (++bucket == low_speed_time)
+	  bucket = 0;
+	if (++s == second)
+	  break;
+    mTimeoutTotalBytes -= mTimeoutBuckets[bucket];
+	mTimeoutBuckets[bucket] = 0;
+  }
+  mTimeoutBucket = bucket;
+  mTimeoutTotalBytes -= mTimeoutBuckets[mTimeoutBucket];
+  mTimeoutTotalBytes += bytes;
+  mTimeoutBuckets[mTimeoutBucket] = bytes;
+
+  // Check if we timed out.
+  U32 const low_speed_limit = mTimeoutPolicy->getLowSpeedLimit();
+  U32 mintotalbytes = low_speed_limit * low_speed_time;
+  DoutCurlEasy("Transfered " << mTimeoutTotalBytes << " bytes in " << llmin(second, (S32)low_speed_time) << " seconds after " << second << " second" << ((second == 1) ? "" : "s") << ".");
+  if (second >= low_speed_time)
+  {
+	DoutCurlEasy("Average transfer rate is " << (mTimeoutTotalBytes / low_speed_time) << " bytes/s (low speed limit is " << low_speed_limit << " bytes/s)");
+	if (mTimeoutTotalBytes < mintotalbytes)
+	{
+	  // The average transfer rate over the passed low_speed_time seconds is too low. Abort the transfer.
+	  llwarns <<
 #ifdef CWDEBUG
-	  (void*)get_lockobj() << ": "
+		(void*)get_lockobj() << ": "
 #endif
-	  "aborting slow connection (transfer rate below " << lowspeedlimit <<
-	  " for more than " << lowspeedtime << " second" << ((lowspeedtime == 1) ? "" : "s") << ")." << llendl;
-	return 1;
+		"aborting slow connection (average transfer rate below " << low_speed_limit <<
+		" for more than " << low_speed_time << " second" << ((low_speed_time == 1) ? "" : "s") << ")." << llendl;
+	  return true;
+	}
   }
-  return 0;
+
+  // Calculate how long the data transfer may stall until we should timeout.
+  llassert_always(mintotalbytes > 0);
+  S32 max_stall_time = 0;
+  U32 dropped_bytes = 0;
+  while(1)
+  {
+	if (++bucket == low_speed_time)				// The next second the next bucket will be emptied.
+	  bucket = 0;
+	++max_stall_time;
+	dropped_bytes += mTimeoutBuckets[bucket];
+	// Note how, when max_stall_time == low_speed_time, dropped_bytes has
+	// to be equal to mTimeoutTotalBytes, the sum of all vector elements.
+	llassert_always(max_stall_time < low_speed_time || dropped_bytes == mTimeoutTotalBytes);
+	// And thus the following will certainly abort.
+	if (second + max_stall_time >= low_speed_time && mTimeoutTotalBytes - dropped_bytes < mintotalbytes)
+	  break;
+  }
+  // If this function isn't called until mTimeoutStalled, we stalled.
+  mTimeoutStalled = sTimeoutClockCount + max_stall_time / sTimeoutClockWidth;
+
+  return false;
 }
 
 // CURL-THREAD
 // This is called immediately before done() after curl finished, with code.
+//                                                                                             <----mTimeoutLowSpeedOn---->
+// queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
+//                                                                                                                         ^
+//                                                                                                                         |
 void CurlEasyRequest::timeout_done(CURLcode code)
 {
-  if (code == CURLE_OPERATION_TIMEDOUT && !mTimeoutConnected)
+  // AIFIXME: checking mTimeoutConnected doesn't work: CURL_POLL_OUT is set when connect() is called and always
+  // reset before we get here causing timeout_upload_finished() to be called: mTimeoutConnected will always be true.
+  // Also mTimeoutNothingReceivedYet is hardly accurate, as what we really want to know is if the DNS failed.
+  if (code == CURLE_OPERATION_TIMEDOUT && mTimeoutNothingReceivedYet)
   {
+	// Inform policy object that there might be problems with this host.
 	AIHTTPTimeoutPolicy::connect_timed_out(mTimeoutLowercaseHostname);
 	// AIFIXME: use return value to change priority
   }
-  // Abuse this boolean to tell any subsequent call to timeout_progress that this certainly can't timeout anymore.
-  mTimeoutConnected = false;
+  // Make sure no timeout will happen anymore.
+  mTimeoutLowSpeedOn = false;
+  mTimeoutStalled = (U64)-1;
 }
 
 // End of HTTP Timeout stuff.
@@ -1643,8 +1707,12 @@ size_t CurlResponderBuffer::curlWriteCallback(char* data, size_t size, size_t nm
   // CurlResponderBuffer::setBodyLimit is never called, so buffer_w->mBodyLimit is infinite.
   //S32 bytes = llmin(size * nmemb, buffer_w->mBodyLimit); buffer_w->mBodyLimit -= bytes;
   buffer_w->getOutput()->append(sChannels.in(), (U8 const*)data, bytes);
-  buffer_w->mResponseTransferedBytes += bytes;				// Accumulate data received from the server.
-  buffered_easy_request_w->timeout_data_received(bytes);	// Timeout administration.
+  buffer_w->mResponseTransferedBytes += bytes;					// Accumulate data received from the server.
+  if (buffered_easy_request_w->timeout_data_received(bytes))	// Update timeout administration.
+  {
+	// Transfer timed out. Return 0 which will abort with error CURLE_WRITE_ERROR.
+	return 0;
+  }
   return bytes;
 }
 
@@ -1660,8 +1728,12 @@ size_t CurlResponderBuffer::curlReadCallback(char* data, size_t size, size_t nme
   S32 bytes = size * nmemb;		// The maximum amount to read.
   AICurlResponderBuffer_wat buffer_w(*lockobj);
   buffer_w->mLastRead = buffer_w->getInput()->readAfter(sChannels.out(), buffer_w->mLastRead, (U8*)data, bytes);
-  buffer_w->mRequestTransferedBytes += bytes;			// Accumulate data sent to the server.
-  buffered_easy_request_w->timeout_data_sent(bytes);	// Timeout administration.
+  buffer_w->mRequestTransferedBytes += bytes;				// Accumulate data sent to the server.
+  if (buffered_easy_request_w->timeout_data_sent(bytes))	// Timeout administration.
+  {
+	// Transfer timed out. Return CURL_READFUNC_ABORT which will abort with error CURLE_ABORTED_BY_CALLBACK.
+	return CURL_READFUNC_ABORT;
+  }
   return bytes;					// Return the amount actually read (might be lowered by readAfter()).
 }
 
@@ -1678,8 +1750,11 @@ size_t CurlResponderBuffer::curlHeaderCallback(char* data, size_t size, size_t n
 
   char const* const header_line = static_cast<char const*>(data);
   size_t const header_len = size * nmemb;
-  buffered_easy_request_w->timeout_data_received(header_len);	// Timeout administration.
-
+  if (buffered_easy_request_w->timeout_data_received(header_len))	// Update timeout administration.
+  {
+	// Transfer timed out. Return 0 which will abort with error CURLE_WRITE_ERROR.
+	return 0;
+  }
   if (!header_len)
   {
 	return header_len;
