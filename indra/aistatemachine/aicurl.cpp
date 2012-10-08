@@ -1338,6 +1338,7 @@ void CurlEasyRequest::timeout_add_easy_request(void)
   // This boolean is valid (only) if we get a time out event from libcurl.
   mTimeoutNothingReceivedYet = true;
   mTimeoutStalled = (U64)-1;
+  DoutCurlEasy("timeout_add_easy_request: mTimeoutStalled set to -1");
 }
 
 // CURL-THREAD
@@ -1370,6 +1371,7 @@ void CurlEasyRequest::timeout_reset_lowspeed(void)
   mTimeoutLowSpeedOn = true;
   mTimeoutLastSecond = -1;			// This causes timeout_lowspeed to initialize the rest.
   mTimeoutStalled = (U64)-1;		// Stop reply delay timer.
+  DoutCurlEasy("timeout_reset_lowspeed: mTimeoutStalled set to -1");
 }
 
 // CURL-THREAD
@@ -1384,6 +1386,7 @@ void CurlEasyRequest::timeout_upload_finished(void)
   mTimeoutLowSpeedOn = false;
   // Timeout if the server doesn't reply quick enough.
   mTimeoutStalled = sTimeoutClockCount + mTimeoutPolicy->getReplyDelay() / sTimeoutClockWidth;
+  DoutCurlEasy("timeout_upload_finished: mTimeoutStalled set to sTimeoutClockCount (" << sTimeoutClockCount << ") + " << (mTimeoutStalled - sTimeoutClockCount) << " (" << mTimeoutPolicy->getReplyDelay() << " seconds)");
 }
 
 // CURL-THREAD
@@ -1519,6 +1522,7 @@ bool CurlEasyRequest::timeout_lowspeed(size_t bytes)
   }
   // If this function isn't called until mTimeoutStalled, we stalled.
   mTimeoutStalled = sTimeoutClockCount + max_stall_time / sTimeoutClockWidth;
+  DoutCurlEasy("mTimeoutStalled set to sTimeoutClockCount (" << sTimeoutClockCount << ") + " << (mTimeoutStalled - sTimeoutClockCount) << " (" << max_stall_time << " seconds)");
 
   return false;
 }
@@ -1543,6 +1547,7 @@ void CurlEasyRequest::timeout_done(CURLcode code)
   // Make sure no timeout will happen anymore.
   mTimeoutLowSpeedOn = false;
   mTimeoutStalled = (U64)-1;
+  DoutCurlEasy("timeout_done: mTimeoutStalled set to -1");
 }
 
 // End of HTTP Timeout stuff.

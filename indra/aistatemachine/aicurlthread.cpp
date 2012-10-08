@@ -695,6 +695,23 @@ bool MergeIterator::next(curl_socket_t& fd_out, int& ev_bitmask_out)
 //-----------------------------------------------------------------------------
 // CurlSocketInfo
 
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#undef AI_CASE_RETURN
+#define AI_CASE_RETURN(x) do { case x: return #x; } while(0)
+static char const* action_str(int action)
+{
+  switch(action)
+  {
+	AI_CASE_RETURN(CURL_POLL_NONE);
+	AI_CASE_RETURN(CURL_POLL_IN);
+	AI_CASE_RETURN(CURL_POLL_OUT);
+	AI_CASE_RETURN(CURL_POLL_INOUT);
+	AI_CASE_RETURN(CURL_POLL_REMOVE);
+  }
+  return "<unknown action>";
+}
+#endif
+
 // A class with info for each socket that is in use by curl.
 class CurlSocketInfo
 {
@@ -729,6 +746,7 @@ CurlSocketInfo::~CurlSocketInfo()
 
 void CurlSocketInfo::set_action(int action)
 {
+  Dout(dc::curl, "CurlSocketInfo::set_action(" << action_str(mAction) << " --> " << action_str(action) << ") [" << (void*)mEasyRequest.get_ptr().get() << "]");
   int toggle_action = mAction ^ action; 
   mAction = action;
   if ((toggle_action & CURL_POLL_IN))
@@ -1366,6 +1384,7 @@ MultiHandle::~MultiHandle()
   // Curl demands that all handles are removed from the multi session handle before calling curl_multi_cleanup.
   for(addedEasyRequests_type::iterator iter = mAddedEasyRequests.begin(); iter != mAddedEasyRequests.end(); iter = mAddedEasyRequests.begin())
   {
+	finish_easy_request(*iter, CURLE_OK);	// Error code is not used anyway.
 	remove_easy_request(*iter);
   }
   delete mWritePollSet;
@@ -1386,23 +1405,6 @@ void MultiHandle::handle_stalls(void)
 	  ++iter;
   }
 }
-
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
-#undef AI_CASE_RETURN
-#define AI_CASE_RETURN(x) do { case x: return #x; } while(0)
-char const* action_str(int action)
-{
-  switch(action)
-  {
-	AI_CASE_RETURN(CURL_POLL_NONE);
-	AI_CASE_RETURN(CURL_POLL_IN);
-	AI_CASE_RETURN(CURL_POLL_OUT);
-	AI_CASE_RETURN(CURL_POLL_INOUT);
-	AI_CASE_RETURN(CURL_POLL_REMOVE);
-  }
-  return "<unknown action>";
-}
-#endif
 
 //static
 int MultiHandle::socket_callback(CURL* easy, curl_socket_t s, int action, void* userp, void* socketp)
