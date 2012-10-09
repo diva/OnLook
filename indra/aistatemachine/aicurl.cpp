@@ -1061,6 +1061,8 @@ static int curl_debug_cb(CURL*, curl_infotype infotype, char* buf, size_t size, 
 	  break;
 	case CURLINFO_HEADER_OUT:
 	  LibcwDoutStream << "H< ";
+	  if (size >= 4 && strncmp(buf, "GET ", 4) == 0)
+		request->mDebugIsGetMethod = true;
 	  break;
 	case CURLINFO_DATA_IN:
 	  LibcwDoutStream << "D> ";
@@ -1171,6 +1173,7 @@ void CurlEasyRequest::applyProxySettings(void)
 //static
 CURLcode CurlEasyRequest::curlCtxCallback(CURL* curl, void* sslctx, void* parm)
 {
+  DoutEntering(dc::curl, "CurlEasyRequest::curlCtxCallback((CURL*)" << (void*)curl << ", " << sslctx << ", " << parm << ")");
   SSL_CTX* ctx = (SSL_CTX*)sslctx;
   // Turn off TLS v1.1 (which is not supported anyway by Linden Lab) because otherwise we fail to connect.
   // Also turn off SSL v2, which is highly broken and strongly discouraged[1].
@@ -1320,6 +1323,21 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
 F64 const CurlEasyRequest::sTimeoutClockWidth = 1.0 / calc_clock_frequency();	// Time between two clock ticks, in seconds.
 U64 CurlEasyRequest::sTimeoutClockCount;										// Clock count, set once per select() exit.
 
+void CurlEasyRequest::timeout_timings(void)
+{
+  double t;
+  getinfo(CURLINFO_NAMELOOKUP_TIME, &t);
+  DoutCurlEasy("CURLINFO_NAMELOOKUP_TIME = " << t);
+  getinfo(CURLINFO_CONNECT_TIME, &t);
+  DoutCurlEasy("CURLINFO_CONNECT_TIME = " << t);
+  getinfo(CURLINFO_APPCONNECT_TIME, &t);
+  DoutCurlEasy("CURLINFO_APPCONNECT_TIME = " << t);
+  getinfo(CURLINFO_PRETRANSFER_TIME, &t);
+  DoutCurlEasy("CURLINFO_PRETRANSFER_TIME = " << t);
+  getinfo(CURLINFO_STARTTRANSFER_TIME, &t);
+  DoutCurlEasy("CURLINFO_STARTTRANSFER_TIME = " << t);
+}
+
 // CURL-THREAD
 // This is called when the easy handle is actually being added to the multi handle (thus after being queued).
 // AIFIXME: Doing this only when it is actually being added assures that the first curl easy handle that is
@@ -1336,9 +1354,11 @@ void CurlEasyRequest::timeout_add_easy_request(void)
   setopt(CURLOPT_CONNECTTIMEOUT, mTimeoutPolicy->getConnectTimeout(mTimeoutLowercaseHostname));
   setopt(CURLOPT_TIMEOUT, mTimeoutPolicy->getCurlTransaction());
   // This boolean is valid (only) if we get a time out event from libcurl.
+  mTimeoutLowSpeedOn = false;
   mTimeoutNothingReceivedYet = true;
   mTimeoutStalled = (U64)-1;
   DoutCurlEasy("timeout_add_easy_request: mTimeoutStalled set to -1");
+  mTimeoutUploadFinished = false;
 }
 
 // CURL-THREAD
@@ -1367,11 +1387,11 @@ bool CurlEasyRequest::timeout_data_sent(size_t n)
 //                                                    |                                        |
 void CurlEasyRequest::timeout_reset_lowspeed(void)
 {
-  mTimeoutLowSpeedClock = get_clock_count();
+  mTimeoutLowSpeedClock = sTimeoutClockCount;
   mTimeoutLowSpeedOn = true;
   mTimeoutLastSecond = -1;			// This causes timeout_lowspeed to initialize the rest.
   mTimeoutStalled = (U64)-1;		// Stop reply delay timer.
-  DoutCurlEasy("timeout_reset_lowspeed: mTimeoutStalled set to -1");
+  DoutCurlEasy("timeout_reset_lowspeed: mTimeoutLowSpeedClock = " << mTimeoutLowSpeedClock << "; mTimeoutStalled = -1");
 }
 
 // CURL-THREAD
@@ -1382,6 +1402,10 @@ void CurlEasyRequest::timeout_reset_lowspeed(void)
 //                                                                             |
 void CurlEasyRequest::timeout_upload_finished(void)
 {
+  if (1 || mTimeoutUploadFinished)
+	timeout_timings();
+  llassert(!mTimeoutUploadFinished);	// If we get here twice, then the 'upload finished' detection failed.
+  mTimeoutUploadFinished = true;
   // We finished uploading (if there was a body to upload at all), so not more transfer rate timeouts.
   mTimeoutLowSpeedOn = false;
   // Timeout if the server doesn't reply quick enough.
@@ -1402,6 +1426,16 @@ bool CurlEasyRequest::timeout_data_received(size_t n)
   if (mTimeoutNothingReceivedYet && n > 0)
   {
 	mTimeoutNothingReceivedYet = false;
+	if (!mTimeoutUploadFinished)
+	{
+	  // mTimeoutUploadFinished not being set this point should only happen for GET requests (in fact, then it is normal),
+	  // because in that case it is impossible to detect the difference between connecting and waiting for a reply without
+	  // using CURLOPT_DEBUGFUNCTION. Note that mDebugIsGetMethod is only valid when the debug channel 'curlio' is on,
+	  // because it is set in the debug callback function.
+	  Debug(llassert(mDebugIsGetMethod || !dc::curlio.is_on()));
+	  // 'Upload finished' detection failed, generate it now.
+	  timeout_upload_finished();
+	}
 	// We received something; switch to getLowSpeedLimit()/getLowSpeedTime().
 	timeout_reset_lowspeed();
   }
@@ -1435,6 +1469,10 @@ bool CurlEasyRequest::timeout_lowspeed(size_t bytes)
 
   // When are we?
   S32 second = (sTimeoutClockCount - mTimeoutLowSpeedClock) * sTimeoutClockWidth;
+  llassert(sTimeoutClockWidth > 0.0);
+  // This REALLY should never happen, but due to another bug it did happened
+  // and caused something so evil and hard to find that... NEVER AGAIN!
+  llassert(second >= 0);
 
   // If this is the same second as last time, just add the number of bytes to the current bucket.
   if (second == mTimeoutLastSecond)
@@ -1520,7 +1558,7 @@ bool CurlEasyRequest::timeout_lowspeed(size_t bytes)
 	if (second + max_stall_time >= low_speed_time && mTimeoutTotalBytes - dropped_bytes < mintotalbytes)
 	  break;
   }
-  // If this function isn't called until mTimeoutStalled, we stalled.
+  // If this function isn't called again within max_stall_time seconds, we stalled.
   mTimeoutStalled = sTimeoutClockCount + max_stall_time / sTimeoutClockWidth;
   DoutCurlEasy("mTimeoutStalled set to sTimeoutClockCount (" << sTimeoutClockCount << ") + " << (mTimeoutStalled - sTimeoutClockCount) << " (" << max_stall_time << " seconds)");
 
@@ -1535,19 +1573,37 @@ bool CurlEasyRequest::timeout_lowspeed(size_t bytes)
 //                                                                                                                         |
 void CurlEasyRequest::timeout_done(CURLcode code)
 {
-  // AIFIXME: checking mTimeoutConnected doesn't work: CURL_POLL_OUT is set when connect() is called and always
-  // reset before we get here causing timeout_upload_finished() to be called: mTimeoutConnected will always be true.
-  // Also mTimeoutNothingReceivedYet is hardly accurate, as what we really want to know is if the DNS failed.
-  if (code == CURLE_OPERATION_TIMEDOUT && mTimeoutNothingReceivedYet)
+  timeout_timings();
+  llassert(mTimeoutUploadFinished || mTimeoutNothingReceivedYet);		// If this is false then the 'upload finished' detection failed.
+  if (code == CURLE_OPERATION_TIMEDOUT)
   {
-	// Inform policy object that there might be problems with this host.
-	AIHTTPTimeoutPolicy::connect_timed_out(mTimeoutLowercaseHostname);
-	// AIFIXME: use return value to change priority
+	if (mTimeoutNothingReceivedYet)
+	{
+	  // Only consider this to possibly be related to a DNS lookup if we didn't connect
+	  // to the remote host yet. Note that CURLINFO_CONNECT_TIME gives the time needed
+	  // to connect to the proxy, or first host-- and fails to take redirects into account.
+	  // Also note that CURLINFO_APPCONNECT_TIME gives the time of the FIRST actual
+	  // connect, so for any transfers on the same pipeline that come after this we
+	  // also correctly determine that there was not a problem with a DNS lookup.
+	  double appconnect_time;
+	  getinfo(CURLINFO_APPCONNECT_TIME, &appconnect_time);
+	  if (appconnect_time == 0)
+	  {
+		// Inform policy object that there might be problems with resolving this host.
+		AIHTTPTimeoutPolicy::connect_timed_out(mTimeoutLowercaseHostname);
+		// AIFIXME: use return value to change priority
+	  }
+	}
   }
   // Make sure no timeout will happen anymore.
   mTimeoutLowSpeedOn = false;
   mTimeoutStalled = (U64)-1;
   DoutCurlEasy("timeout_done: mTimeoutStalled set to -1");
+}
+
+void CurlEasyRequest::timeout_print_diagnostics(AIHTTPTimeoutPolicy const& policy)
+{
+  llwarns << "Request to " << mTimeoutLowercaseHostname << " timed out for " << policy.name() << llendl;
 }
 
 // End of HTTP Timeout stuff.
@@ -1880,6 +1936,10 @@ void CurlResponderBuffer::processOutput(AICurlEasyRequest_wat& curl_easy_request
 
   if (mResponder)
   {	
+	if (code == CURLE_OPERATION_TIMEDOUT)
+	{
+	  curl_easy_request_w->timeout_print_diagnostics(mResponder->getHTTPTimeoutPolicy());
+	}
     if (mEventsTarget)
 	{
 	  // Only the responder registers for these events.

@@ -253,7 +253,7 @@ namespace AICurlPrivate {
 	  // Called from applyDefaultOptions.
 	  void applyProxySettings(void);
 
-	  // Used in applyProxySettings.
+	  // Used in applyDefaultOptions.
 	  static CURLcode curlCtxCallback(CURL* curl, void* sslctx, void* parm);
 
 	public:
@@ -288,6 +288,9 @@ namespace AICurlPrivate {
 	  // Accessor.
 	  bool timeout_has_stalled(void) const { return mTimeoutStalled < sTimeoutClockCount;  }
 
+	  // Called from CurlResponderBuffer::processOutput if a timeout occurred.
+	  void timeout_print_diagnostics(AIHTTPTimeoutPolicy const& policy);
+
 	private:
 	  // (Re)start low speed transer rate detection.
 	  void timeout_reset_lowspeed(void);
@@ -300,7 +303,7 @@ namespace AICurlPrivate {
 
 	public:
 	  // Called by MultiHandle::check_run_count() to store result code that is returned by getResult.
-	  void store_result(CURLcode result) { mResult = result; }
+	  void storeResult(CURLcode result) { mResult = result; }
 
 	  // Called by MultiHandle::check_run_count() when the curl easy handle is done.
 	  void done(AICurlEasyRequest_wat& curl_easy_request_w) { finished(curl_easy_request_w); }
@@ -324,6 +327,7 @@ namespace AICurlPrivate {
 	  U16 mTimeoutBucket;								// The bucket corresponding to mTimeoutLastSecond.
 	  bool mTimeoutNothingReceivedYet;					// Set when connected, reset when the HTML reply header from the server is received.
 	  bool mTimeoutLowSpeedOn;							// Set while uploading or downloading data.
+	  bool mTimeoutUploadFinished;						// Only used for debugging.
 	  S32 mTimeoutLastSecond;							// The time at which timeout_lowspeed was last called, in seconds since mTimeoutLowSpeedClock.
 	  U32 mTimeoutTotalBytes;							// The sum of all bytes in mTimeoutBuckets.
 	  U64 mTimeoutLowSpeedClock;						// Clock count at which low speed transfer rate started.
@@ -331,13 +335,20 @@ namespace AICurlPrivate {
     public:
 	  static F64 const sTimeoutClockWidth;				// Time between two clock ticks in seconds.
 	  static U64 sTimeoutClockCount;					// Clock count used during one loop of the main loop.
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+	  bool mDebugIsGetMethod;
+#endif
 
 	private:
 	  // This class may only be created by constructing a ThreadSafeCurlEasyRequest.
 	  friend class ThreadSafeCurlEasyRequest;
 	  // Throws AICurlNoEasyHandle.
 	CurlEasyRequest(void) :
-	    mHeaders(NULL), mRequestFinalized(false), mEventsTarget(NULL), mResult(CURLE_FAILED_INIT), mTimeoutPolicy(NULL)
+	    mHeaders(NULL), mRequestFinalized(false), mEventsTarget(NULL), mResult(CURLE_FAILED_INIT),
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+		mDebugIsGetMethod(false),
+#endif
+		mTimeoutPolicy(NULL)
       { applyDefaultOptions(); }
   public:
 	~CurlEasyRequest();
@@ -348,6 +359,7 @@ namespace AICurlPrivate {
 
 	// For debugging purposes
 	bool is_finalized(void) const { return mRequestFinalized; }
+	void timeout_timings(void);
 
 	// Return pointer to the ThreadSafe (wrapped) version of this object.
 	ThreadSafeCurlEasyRequest* get_lockobj(void);

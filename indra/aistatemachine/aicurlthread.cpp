@@ -697,7 +697,7 @@ bool MergeIterator::next(curl_socket_t& fd_out, int& ev_bitmask_out)
 
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 #undef AI_CASE_RETURN
-#define AI_CASE_RETURN(x) do { case x: return #x; } while(0)
+#define AI_CASE_RETURN(x) case x: return #x;
 static char const* action_str(int action)
 {
   switch(action)
@@ -709,6 +709,32 @@ static char const* action_str(int action)
 	AI_CASE_RETURN(CURL_POLL_REMOVE);
   }
   return "<unknown action>";
+}
+
+struct DebugFdSet {
+  int nfds;
+  fd_set* fdset;
+  DebugFdSet(int n, fd_set* p) : nfds(n), fdset(p) { }
+};
+
+std::ostream& operator<<(std::ostream& os, DebugFdSet const& s)
+{
+  if (!s.fdset)
+	return os << "NULL";
+  bool first = true;
+  os << '{';
+  for (int fd = 0; fd < s.nfds; ++fd)
+  {
+	if (FD_ISSET(fd, s.fdset))
+	{
+	  if (!first)
+		os << ", ";
+	  os << fd;
+	  first = false;
+	}
+  }
+  os << '}';
+  return os;
 }
 #endif
 
@@ -763,9 +789,17 @@ void CurlSocketInfo::set_action(int action)
 	else
 	{
 	  mMultiHandle.mWritePollSet->remove(mSocketFd);
-	  // If CURL_POLL_OUT is removed, we have nothing more to send apparently.
+
+	  // The following is a bit of a hack, needed because of the lack of proper timeout callbacks in libcurl.
+	  // The removal of CURL_POLL_OUT could be part of the SSL handshake, therefore check if we're already connected:
 	  AICurlEasyRequest_wat curl_easy_request_w(*mEasyRequest);
-	  curl_easy_request_w->timeout_upload_finished();		// Update timeout administration.
+	  double pretransfer_time;
+	  curl_easy_request_w->getinfo(CURLINFO_PRETRANSFER_TIME, &pretransfer_time);
+	  if (pretransfer_time > 0)
+	  {
+		// If CURL_POLL_OUT is removed and CURLINFO_PRETRANSFER_TIME is already set, then we have nothing more to send apparently.
+		curl_easy_request_w->timeout_upload_finished();		// Update timeout administration.
+	  }
 	}
   }
 }
@@ -1284,6 +1318,9 @@ void AICurlThread::run(void)
 	  timeout.tv_sec = timeout_ms / 1000;
 	  timeout.tv_usec = (timeout_ms % 1000) * 1000;
 #ifdef CWDEBUG
+#ifdef DEBUG_CURLIO
+	  Dout(dc::curl|flush_cf|continued_cf, "select(" << nfds << ", " << DebugFdSet(nfds, read_fd_set) << ", " << DebugFdSet(nfds, write_fd_set) << ", NULL, timeout = " << timeout_ms << " ms) = ");
+#else
 	  static int last_nfds = -1;
 	  static long last_timeout_ms = -1;
 	  static int same_count = 0;
@@ -1300,9 +1337,13 @@ void AICurlThread::run(void)
 		++same_count;
 	  }
 #endif
+#endif
 	  ready = select(nfds, read_fd_set, write_fd_set, NULL, &timeout);
 	  mWakeUpMutex.unlock();
 #ifdef CWDEBUG
+#ifdef DEBUG_CURLIO
+	  Dout(dc::finish|cond_error_cf(ready == -1), ready);
+#else
 	  static int last_ready = -2;
 	  static int last_errno = 0;
 	  if (!same)
@@ -1320,6 +1361,7 @@ void AICurlThread::run(void)
 	  if (ready == -1)
 		last_errno = errno;
 #endif
+#endif
 	  // Select returns the total number of bits set in each of the fd_set's (upon return),
 	  // or -1 when an error occurred. A value of 0 means that a timeout occurred.
 	  if (ready == -1)
@@ -1329,6 +1371,7 @@ void AICurlThread::run(void)
 	  }
 	  // Clock count used for timeouts.
 	  CurlEasyRequest::sTimeoutClockCount = get_clock_count();
+	  Dout(dc::curl, "CurlEasyRequest::sTimeoutClockCount = " << CurlEasyRequest::sTimeoutClockCount);
 	  if (ready == 0)
 	  {
 		multi_handle_w->socket_action(CURL_SOCKET_TIMEOUT, 0);
@@ -1607,7 +1650,7 @@ void MultiHandle::finish_easy_request(AICurlEasyRequest const& easy_request, CUR
 {
   AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
   // Store the result in the easy handle.
-  curl_easy_request_w->store_result(result);
+  curl_easy_request_w->storeResult(result);
 #ifdef CWDEBUG
   char* eff_url;
   curl_easy_request_w->getinfo(CURLINFO_EFFECTIVE_URL, &eff_url);
