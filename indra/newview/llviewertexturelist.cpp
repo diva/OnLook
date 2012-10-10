@@ -628,7 +628,6 @@ void LLViewerTextureList::updateImages(F32 max_time)
 		clearFetchingRequests();
 		return;
 	}
-	LLAppViewer::getTextureFetch()->setTextureBandwidth(LLViewerStats::getInstance()->mTextureKBitStat.getMeanPerSec());
 
 	S32 global_raw_memory;
 	{
