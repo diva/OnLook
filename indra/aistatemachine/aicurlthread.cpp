@@ -1654,7 +1654,42 @@ void MultiHandle::finish_easy_request(AICurlEasyRequest const& easy_request, CUR
 #ifdef CWDEBUG
   char* eff_url;
   curl_easy_request_w->getinfo(CURLINFO_EFFECTIVE_URL, &eff_url);
-  Dout(dc::curl, "Finished: " << eff_url << " (" << curl_easy_strerror(result) << ") [CURLINFO_PRIVATE = " << (void*)easy_request.get_ptr().get() << "]");
+  double namelookup_time, connect_time, appconnect_time, pretransfer_time, starttransfer_time;
+  curl_easy_request_w->getinfo(CURLINFO_NAMELOOKUP_TIME, &namelookup_time);
+  curl_easy_request_w->getinfo(CURLINFO_CONNECT_TIME, &connect_time);
+  curl_easy_request_w->getinfo(CURLINFO_APPCONNECT_TIME, &appconnect_time);
+  curl_easy_request_w->getinfo(CURLINFO_PRETRANSFER_TIME, &pretransfer_time);
+  curl_easy_request_w->getinfo(CURLINFO_STARTTRANSFER_TIME, &starttransfer_time);
+  // If appconnect_time is almost equal to connect_time, then it was just set because this is a connection re-use.
+  if (appconnect_time - connect_time <= 1e-6)
+  {
+	appconnect_time = 0;
+  }
+  // If connect_time is almost equal to namelookup_time, then it was just set because it was already connected.
+  if (connect_time - namelookup_time <= 1e-6)
+  {
+	connect_time = 0;
+  }
+  // If namelookup_time is less than 500 microseconds, then it's very likely just a DNS cache lookup.
+  if (namelookup_time < 500e-6)
+  {
+	namelookup_time = 0;
+  }
+  Dout(dc::curl|continued_cf, "Finished: " << eff_url << " (" << curl_easy_strerror(result) << "); ");
+  if (namelookup_time)
+  {
+    Dout(dc::continued, "namelookup time: " << namelookup_time << ", ");
+  }
+  if (connect_time)
+  {
+    Dout(dc::continued, "connect_time: " << connect_time << ", ");
+  }
+  if (appconnect_time)
+  {
+	Dout(dc::continued, "appconnect_time: " << appconnect_time << ", ");
+  }
+  Dout(dc::finish, "pretransfer_time: " << pretransfer_time << ", starttransfer_time: " << starttransfer_time <<
+	  ". [CURLINFO_PRIVATE = " << (void*)easy_request.get_ptr().get() << "]");
 #endif
   // Update timeout administration.
   curl_easy_request_w->timeout_done(result);

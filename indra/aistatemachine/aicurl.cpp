@@ -1573,26 +1573,32 @@ bool CurlEasyRequest::timeout_lowspeed(size_t bytes)
 //                                                                                                                         |
 void CurlEasyRequest::timeout_done(CURLcode code)
 {
-  timeout_timings();
   llassert(mTimeoutUploadFinished || mTimeoutNothingReceivedYet);		// If this is false then the 'upload finished' detection failed.
-  if (code == CURLE_OPERATION_TIMEDOUT)
+  if (code == CURLE_OPERATION_TIMEDOUT || code == CURLE_COULDNT_RESOLVE_HOST)
   {
-	if (mTimeoutNothingReceivedYet)
+	bool dns_problem = false;
+	if (code == CURLE_COULDNT_RESOLVE_HOST)
 	{
-	  // Only consider this to possibly be related to a DNS lookup if we didn't connect
-	  // to the remote host yet. Note that CURLINFO_CONNECT_TIME gives the time needed
-	  // to connect to the proxy, or first host-- and fails to take redirects into account.
-	  // Also note that CURLINFO_APPCONNECT_TIME gives the time of the FIRST actual
-	  // connect, so for any transfers on the same pipeline that come after this we
-	  // also correctly determine that there was not a problem with a DNS lookup.
-	  double appconnect_time;
-	  getinfo(CURLINFO_APPCONNECT_TIME, &appconnect_time);
-	  if (appconnect_time == 0)
-	  {
-		// Inform policy object that there might be problems with resolving this host.
-		AIHTTPTimeoutPolicy::connect_timed_out(mTimeoutLowercaseHostname);
-		// AIFIXME: use return value to change priority
-	  }
+	  // Note that CURLINFO_OS_ERRNO returns 0; we don't know any more than this.
+	  llwarns << "Failed to resolve hostname " << mTimeoutLowercaseHostname << llendl;
+	  dns_problem = true;
+	}
+	else if (mTimeoutNothingReceivedYet)
+	{
+	  // Only consider this to possibly be related to a DNS lookup if we didn't
+	  // resolved the host yet, which can be detected by asking for
+	  // CURLINFO_NAMELOOKUP_TIME which is set when libcurl initiates the
+	  // actual connect and thus knows the IP# (possibly from it's DNS cache).
+	  double namelookup_time;
+	  getinfo(CURLINFO_NAMELOOKUP_TIME, &namelookup_time);
+	  dns_problem = (namelookup_time == 0);
+	}
+	if (dns_problem)
+	{
+	  // Inform policy object that there might be problems with resolving this host.
+	  // This will increase the connect timeout the next time we try to connect to this host.
+	  AIHTTPTimeoutPolicy::connect_timed_out(mTimeoutLowercaseHostname);
+	  // AIFIXME: use return value to change priority
 	}
   }
   // Make sure no timeout will happen anymore.
