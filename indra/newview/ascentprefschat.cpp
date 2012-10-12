@@ -376,6 +376,7 @@ void LLPrefsAscentChat::refreshValues()
     mBlockAlertSpam                 = gSavedSettings.getBOOL("AntiSpamAlerts");
     mBlockFriendSpam                = gSavedSettings.getBOOL("AntiSpamFriendshipOffers");
     mBlockGroupInviteSpam           = gSavedSettings.getBOOL("AntiSpamGroupInvites");
+	mBlockGroupFeeInviteSpam        = gSavedSettings.getBOOL("AntiSpamGroupFeeInvites");
     mBlockGroupNoticeSpam           = gSavedSettings.getBOOL("AntiSpamGroupNotices");
     mBlockItemOfferSpam             = gSavedSettings.getBOOL("AntiSpamItemOffers");
     mBlockScriptSpam                = gSavedSettings.getBOOL("AntiSpamScripts");
@@ -592,6 +593,7 @@ void LLPrefsAscentChat::cancel()
 	gSavedSettings.setBOOL("AntiSpamFriendshipOffers",       mBlockFriendSpam);
 	gSavedSettings.setBOOL("AntiSpamGroupNotices",           mBlockGroupNoticeSpam);
 	gSavedSettings.setBOOL("AntiSpamGroupInvites",           mBlockGroupInviteSpam);
+	gSavedSettings.setBOOL("AntiSpamGroupFeeInvites",		 mBlockGroupFeeInviteSpam);
 	gSavedSettings.setBOOL("AntiSpamItemOffers",             mBlockItemOfferSpam);
 	gSavedSettings.setBOOL("AntiSpamScripts",                mBlockScriptSpam);
 	gSavedSettings.setBOOL("AntiSpamTeleports",              mBlockTeleportSpam);

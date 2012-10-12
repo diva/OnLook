@@ -96,6 +96,7 @@ protected:
     BOOL mBlockFriendSpam;
     BOOL mBlockGroupNoticeSpam;
     BOOL mBlockGroupInviteSpam;
+	BOOL mBlockGroupFeeInviteSpam;
     BOOL mBlockItemOfferSpam;
     BOOL mBlockScriptSpam;
     BOOL mBlockTeleportSpam;

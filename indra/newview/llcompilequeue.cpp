@@ -50,7 +50,7 @@
 #include "llviewerobject.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
-#include "lscript_rt_interface.h"
+//#include "lscript_rt_interface.h"
 #include "llviewercontrol.h"
 #include "llviewerobject.h"
 #include "llviewerregion.h"
@@ -446,6 +446,16 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 			}
 			else
 			{
+				std::string text = LLTrans::getString("CompileQueueProblemUploading");
+				LLChat chat(text);
+				LLFloaterChat::addChat(chat);
+				buffer = text + LLTrans::getString(":") + " " + data->mScriptName;
+				llwarns << "Problem uploading script asset." << llendl;
+				if(queue) queue->removeItemByItemID(data->mItemId);
+			}
+#if 0 //Client side compiling disabled.
+			else
+			{
 				// It's now in the file, now compile it.
 				buffer = LLTrans::getString("CompileQueueDownloadedCompiling") + (": ") + data->mScriptName;
 
@@ -478,6 +488,7 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 				// Delete it after we're done compiling?
 				LLFile::remove(filename);
 			}
+#endif
 		}
 	}
 	else
@@ -551,6 +562,7 @@ void LLFloaterCompileQueue::onSaveBytecodeComplete(const LLUUID& asset_id, void*
 }
 
 // compile the file given and save it out.
+#if 0 //Client side compiling disabled.
 void LLFloaterCompileQueue::compile(const std::string& filename,
 									const LLUUID& item_id)
 {
@@ -590,6 +602,7 @@ void LLFloaterCompileQueue::compile(const std::string& filename,
 									(void*)data, FALSE);
 	}
 }
+#endif
 
 void LLFloaterCompileQueue::removeItemByItemID(const LLUUID& asset_id)
 {

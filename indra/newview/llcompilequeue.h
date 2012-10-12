@@ -163,7 +163,9 @@ protected:
 									   S32 status, LLExtStat ext_status);
 
 	// compile the file given and save it out.
+#if 0 //Client side compiling disabled.
 	void compile(const std::string& filename, const LLUUID& asset_id);
+#endif
 	
 	// remove any object in mScriptScripts with the matching uuid.
 	void removeItemByAssetID(const LLUUID& asset_id);

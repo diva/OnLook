@@ -61,7 +61,7 @@ set(cmake_SOURCE_FILES
     LLVFS.cmake
     LLWindow.cmake
     LLXML.cmake
-    LScript.cmake
+#    LScript.cmake
     Linking.cmake
     NDOF.cmake
     OPENAL.cmake
