@@ -5,7 +5,7 @@ project(statemachine)
 include(00-Common)
 include(LLCommon)
 include(LLPlugin)
-include(LLMessage)		# This is needed by LLPlugin.
+include(LLMessage)
 include(LLMath)
 include(LLVFS)
 include(LLXML)
@@ -36,6 +36,7 @@ include_directories(
 
 set(statemachine_SOURCE_FILES
     aistatemachine.cpp
+    aicurleasyrequeststatemachine.cpp
     aifilepicker.cpp
     aifetchinventoryfolder.cpp
     aievent.cpp
@@ -45,6 +46,7 @@ set(statemachine_SOURCE_FILES
 set(statemachine_HEADER_FILES
     CMakeLists.txt
     aistatemachine.h
+    aicurleasyrequeststatemachine.h
     aifilepicker.h
     aidirpicker.h
     aifetchinventoryfolder.h

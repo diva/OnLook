@@ -297,6 +297,20 @@ void LLApp::startErrorThread()
 	}
 }
 
+void LLApp::stopErrorThread()
+{
+	LLApp::setStopped();	// Signal error thread that we stopped.
+	int count = 0;
+	while (mThreadErrorp && !mThreadErrorp->isStopped() && ++count < 100)
+	{
+		ms_sleep(10);
+	}
+	if (mThreadErrorp && !mThreadErrorp->isStopped())
+	{
+		llwarns << "Failed to stop Error Thread." << llendl;
+	}
+}
+
 void LLApp::setErrorHandler(LLAppErrorHandler handler)
 {
 	LLApp::sErrorHandler = handler;

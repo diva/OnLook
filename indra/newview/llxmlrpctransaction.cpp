@@ -43,6 +43,11 @@
 #include "llappviewer.h"
 
 #include "hippogridmanager.h"
+#include "statemachine/aicurleasyrequeststatemachine.h"
+
+#ifdef CWDEBUG
+#include <libcwd/buf2str.h>
+#endif
 
 LLXMLRPCValue LLXMLRPCValue::operator[](const char* id) const
 {
@@ -154,7 +159,7 @@ class LLXMLRPCTransaction::Impl
 public:
 	typedef LLXMLRPCTransaction::Status	Status;
 
-	LLCurlEasyRequest* mCurlRequest;
+	AICurlEasyRequestStateMachine*	mCurlEasyRequestStateMachinePtr;
 
 	Status		mStatus;
 	CURLcode	mCurlCode;
@@ -163,8 +168,6 @@ public:
 	LLCurl::TransferInfo mTransferInfo;
 	
 	std::string			mURI;
-	char*				mRequestText;
-	int					mRequestTextSize;
 	
 	std::string			mProxyAddress;
 
@@ -176,7 +179,8 @@ public:
 		 const std::string& method, LLXMLRPCValue params, bool useGzip);
 	~Impl();
 	
-	bool process();
+	bool is_finished(void) const;
+	void curlEasyRequestCallback(bool success);
 	
 	void setStatus(Status code,
 				   const std::string& message = "", const std::string& uri = "");
@@ -191,10 +195,9 @@ private:
 
 LLXMLRPCTransaction::Impl::Impl(const std::string& uri,
 		XMLRPC_REQUEST request, bool useGzip)
-	: mCurlRequest(0),
+	: mCurlEasyRequestStateMachinePtr(NULL),
 	  mStatus(LLXMLRPCTransaction::StatusNotStarted),
 	  mURI(uri),
-	  mRequestText(0), 
 	  mResponse(0)
 {
 	init(request, useGzip);
@@ -203,10 +206,9 @@ LLXMLRPCTransaction::Impl::Impl(const std::string& uri,
 
 LLXMLRPCTransaction::Impl::Impl(const std::string& uri,
 		const std::string& method, LLXMLRPCValue params, bool useGzip)
-	: mCurlRequest(0),
+	: mCurlEasyRequestStateMachinePtr(NULL),
 	  mStatus(LLXMLRPCTransaction::StatusNotStarted),
 	  mURI(uri),
-	  mRequestText(0), 
 	  mResponse(0)
 {
 	XMLRPC_REQUEST request = XMLRPC_RequestNew();
@@ -217,177 +219,170 @@ LLXMLRPCTransaction::Impl::Impl(const std::string& uri,
 	init(request, useGzip);
 }
 
-
-
+// Store pointer to data allocated with XMLRPC_REQUEST_ToXML and call XMLRPC_Free to free it upon destruction.
+class AIXMLRPCData : public AIPostField
+{
+  public:
+	AIXMLRPCData(char const* allocated_data) : AIPostField(allocated_data) { }
+	/*virtual*/ ~AIXMLRPCData() { XMLRPC_Free(const_cast<char*>(mData)); mData = NULL; }
+};
 
 void LLXMLRPCTransaction::Impl::init(XMLRPC_REQUEST request, bool useGzip)
 {
-	if (!mCurlRequest)
 	{
-		mCurlRequest = new LLCurlEasyRequest();
+		try
+		{
+			mCurlEasyRequestStateMachinePtr = new AICurlEasyRequestStateMachine(false);
+		}
+		catch(AICurlNoEasyHandle const& error)
+		{
+			llwarns << "Failed to initialize LLXMLRPCTransaction: " << error.what() << llendl;
+			setStatus(StatusOtherError, "No curl easy handle");
+			return;
+		}
+		AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequestStateMachinePtr->mCurlEasyRequest);
+
+		curlEasyRequest_w->setWriteCallback(&curlDownloadCallback, (void*)this);
+		BOOL vefifySSLCert = !gSavedSettings.getBOOL("NoVerifySSLCert");
+		curlEasyRequest_w->setopt(CURLOPT_SSL_VERIFYPEER, vefifySSLCert);
+		curlEasyRequest_w->setopt(CURLOPT_SSL_VERIFYHOST, vefifySSLCert ? 2 : 0);
+		// Be a little impatient about establishing connections.
+		curlEasyRequest_w->setopt(CURLOPT_CONNECTTIMEOUT, 40L);
+
+		/* Setting the DNS cache timeout to -1 disables it completely.
+		   This might help with bug #503 */
+		curlEasyRequest_w->setopt(CURLOPT_DNS_CACHE_TIMEOUT, -1L);
+
+		curlEasyRequest_w->addHeader("Content-Type: text/xml");
+
+		if (useGzip)
+		{
+			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, "");
+		}
+		
+		int requestTextSize;
+		char* requestText = XMLRPC_REQUEST_ToXML(request, &requestTextSize);
+		if (requestText)
+		{
+			curlEasyRequest_w->setPost(new AIXMLRPCData(requestText), requestTextSize);
+		}
+		else
+		{
+			setStatus(StatusOtherError);
+		}
+
+		curlEasyRequest_w->finalizeRequest(mURI);
 	}
-
-	LLProxy::getInstance()->applyProxySettings(mCurlRequest);
-
-//	mCurlRequest->setopt(CURLOPT_VERBOSE, 1); // usefull for debugging
-	mCurlRequest->setopt(CURLOPT_NOSIGNAL, 1);
-	mCurlRequest->setWriteCallback(&curlDownloadCallback, (void*)this);
-    	BOOL vefifySSLCert = !gSavedSettings.getBOOL("NoVerifySSLCert");
-	mCurlRequest->setopt(CURLOPT_SSL_VERIFYPEER, vefifySSLCert);
-	mCurlRequest->setopt(CURLOPT_SSL_VERIFYHOST, vefifySSLCert ? 2 : 0);
-	// Be a little impatient about establishing connections.
-	mCurlRequest->setopt(CURLOPT_CONNECTTIMEOUT, 40L);
-
-	/* Setting the DNS cache timeout to -1 disables it completely.
-	   This might help with bug #503 */
-	mCurlRequest->setopt(CURLOPT_DNS_CACHE_TIMEOUT, -1);
-
-    mCurlRequest->slist_append("Content-Type: text/xml");
-
-	if (useGzip)
+	if (mStatus == LLXMLRPCTransaction::StatusNotStarted)	// It could be LLXMLRPCTransaction::StatusOtherError.
 	{
-		mCurlRequest->setoptString(CURLOPT_ENCODING, "");
-	}
-	
-	mRequestText = XMLRPC_REQUEST_ToXML(request, &mRequestTextSize);
-	if (mRequestText)
-	{
-		mCurlRequest->setoptString(CURLOPT_POSTFIELDS, mRequestText);
-		mCurlRequest->setopt(CURLOPT_POSTFIELDSIZE, mRequestTextSize);
+	  mCurlEasyRequestStateMachinePtr->run(boost::bind(&LLXMLRPCTransaction::Impl::curlEasyRequestCallback, this, _1));
+	  setStatus(LLXMLRPCTransaction::StatusStarted);
 	}
 	else
 	{
-		setStatus(StatusOtherError);
+	  // This deletes the statemachine immediately.
+	  mCurlEasyRequestStateMachinePtr->kill();
+	  mCurlEasyRequestStateMachinePtr = NULL;
 	}
-
-	mCurlRequest->sendRequest(mURI);
 }
-
 
 LLXMLRPCTransaction::Impl::~Impl()
 {
+	if (mCurlEasyRequestStateMachinePtr && mCurlEasyRequestStateMachinePtr->running())
+	{
+		llwarns << "Calling LLXMLRPCTransaction::Impl::~Impl while mCurlEasyRequestStateMachinePtr is still running" << llendl;
+		mCurlEasyRequestStateMachinePtr->abort();
+	}
+
 	if (mResponse)
 	{
 		XMLRPC_RequestFree(mResponse, 1);
 	}
-	
-	if (mRequestText)
-	{
-		XMLRPC_Free(mRequestText);
-	}
-	
-	delete mCurlRequest;
-	mCurlRequest = NULL ;
 }
 
-bool LLXMLRPCTransaction::Impl::process()
+bool LLXMLRPCTransaction::Impl::is_finished(void) const
 {
-	if(!mCurlRequest || !mCurlRequest->getEasy())
-	{
-		llwarns << "transaction failed." << llendl ;
+	// Nothing to process anymore. Just wait till the statemachine finished.
+	return mStatus != LLXMLRPCTransaction::StatusNotStarted &&
+	       mStatus != LLXMLRPCTransaction::StatusStarted &&
+		   mStatus != LLXMLRPCTransaction::StatusDownloading;
+}
 
-		delete mCurlRequest ;
-		mCurlRequest = NULL ;
-		return true ; //failed, quit.
+void LLXMLRPCTransaction::Impl::curlEasyRequestCallback(bool success)
+{
+	llassert(mStatus == LLXMLRPCTransaction::StatusStarted || mStatus == LLXMLRPCTransaction::StatusDownloading);
+
+	AICurlEasyRequestStateMachine* state_machine = mCurlEasyRequestStateMachinePtr;
+	// We're done with the statemachine, one way or another.
+	// Set mCurlEasyRequestStateMachinePtr to NULL so we won't call mCurlEasyRequestStateMachinePtr->running() in the destructor.
+	// Note that the state machine auto-cleaning: it will be deleted by the main-thread after this function returns.
+	mCurlEasyRequestStateMachinePtr = NULL;
+
+	if (!success)
+	{
+		// AICurlEasyRequestStateMachine did abort.
+		// This currently only happens when libcurl didn't finish before the timer expired.
+		std::ostringstream msg;
+		F32 timeout_value = gSavedSettings.getF32("CurlRequestTimeOut");
+		msg << "Connection to " << mURI << " timed out (" << timeout_value << " s)!";
+		if (timeout_value < 40)
+		{
+			msg << "\nTry increasing CurlRequestTimeOut in Debug Settings.";
+		}
+		setStatus(LLXMLRPCTransaction::StatusOtherError, msg.str());
+		return;
 	}
 
-	switch(mStatus)
+	AICurlEasyRequest_wat curlEasyRequest_w(*state_machine->mCurlEasyRequest);
+	CURLcode result;
+	curlEasyRequest_w->getResult(&result, &mTransferInfo);
+
+	if (result != CURLE_OK)
 	{
-		case LLXMLRPCTransaction::StatusComplete:
-		case LLXMLRPCTransaction::StatusCURLError:
-		case LLXMLRPCTransaction::StatusXMLRPCError:
-		case LLXMLRPCTransaction::StatusOtherError:
-		{
-			return true;
-		}
-		
-		case LLXMLRPCTransaction::StatusNotStarted:
-		{
-			setStatus(LLXMLRPCTransaction::StatusStarted);
-			break;
-		}
-		
-		default:
-		{
-			// continue onward
-		}
+		setCurlStatus(result);
+		llwarns << "LLXMLRPCTransaction CURL error "
+				<< mCurlCode << ": " << curlEasyRequest_w->getErrorString() << llendl;
+		llwarns << "LLXMLRPCTransaction request URI: "
+				<< mURI << llendl;
+			
+		return;
 	}
 	
-	//const F32 MAX_PROCESSING_TIME = 0.05f;
-	//LLTimer timer;
+	setStatus(LLXMLRPCTransaction::StatusComplete);
 
-	mCurlRequest->perform();
+	mResponse = XMLRPC_REQUEST_FromXML(
+			mResponseText.data(), mResponseText.size(), NULL);
 
-	/*while (mCurlRequest->perform() > 0)
+	bool		hasError = false;
+	bool		hasFault = false;
+	int			faultCode = 0;
+	std::string	faultString;
+
+	LLXMLRPCValue error(XMLRPC_RequestGetError(mResponse));
+	if (error.isValid())
 	{
-		if (timer.getElapsedTimeF32() >= MAX_PROCESSING_TIME)
-		{
-			return false;
-		}
-	}*/
-
-	while(1)
-	{
-		CURLcode result;
-		bool newmsg = mCurlRequest->getResult(&result, &mTransferInfo);
-		if (newmsg)
-		{
-			if (result != CURLE_OK)
-			{
-				setCurlStatus(result);
-				llwarns << "LLXMLRPCTransaction CURL error "
-						<< mCurlCode << ": " << mCurlRequest->getErrorString() << llendl;
-				llwarns << "LLXMLRPCTransaction request URI: "
-						<< mURI << llendl;
-					
-				return true;
-			}
-			
-			setStatus(LLXMLRPCTransaction::StatusComplete);
-
-			mResponse = XMLRPC_REQUEST_FromXML(
-					mResponseText.data(), mResponseText.size(), NULL);
-
-			bool		hasError = false;
-			bool		hasFault = false;
-			int			faultCode = 0;
-			std::string	faultString;
-
-			LLXMLRPCValue error(XMLRPC_RequestGetError(mResponse));
-			if (error.isValid())
-			{
-				hasError = true;
-				faultCode = error["faultCode"].asInt();
-				faultString = error["faultString"].asString();
-			}
-			else if (XMLRPC_ResponseIsFault(mResponse))
-			{
-				hasFault = true;
-				faultCode = XMLRPC_GetResponseFaultCode(mResponse);
-				faultString = XMLRPC_GetResponseFaultString(mResponse);
-			}
-
-			if (hasError || hasFault)
-			{
-				setStatus(LLXMLRPCTransaction::StatusXMLRPCError);
-				
-				llwarns << "LLXMLRPCTransaction XMLRPC "
-						<< (hasError ? "error " : "fault ")
-						<< faultCode << ": "
-						<< faultString << llendl;
-				llwarns << "LLXMLRPCTransaction request URI: "
-						<< mURI << llendl;
-			}
-			
-			return true;
-		}
-		else
-		{
-			break; // done
-		}
+		hasError = true;
+		faultCode = error["faultCode"].asInt();
+		faultString = error["faultString"].asString();
 	}
-	
-	return false;
+	else if (XMLRPC_ResponseIsFault(mResponse))
+	{
+		hasFault = true;
+		faultCode = XMLRPC_GetResponseFaultCode(mResponse);
+		faultString = XMLRPC_GetResponseFaultString(mResponse);
+	}
+
+	if (hasError || hasFault)
+	{
+		setStatus(LLXMLRPCTransaction::StatusXMLRPCError);
+		
+		llwarns << "LLXMLRPCTransaction XMLRPC "
+				<< (hasError ? "error " : "fault ")
+				<< faultCode << ": "
+				<< faultString << llendl;
+		llwarns << "LLXMLRPCTransaction request URI: "
+				<< mURI << llendl;
+	}
 }
 
 void LLXMLRPCTransaction::Impl::setStatus(Status status,
@@ -483,6 +478,13 @@ size_t LLXMLRPCTransaction::Impl::curlDownloadCallback(
 	
 	size_t n = size * nmemb;
 
+#ifdef CWDEBUG
+	if (n < 80)
+	  Dout(dc::curl, "Entering LLXMLRPCTransaction::Impl::curlDownloadCallback(\"" << buf2str(data, n) << "\", " << size << ", " << nmemb << ", " << user_data << ")");
+	else
+	  Dout(dc::curl, "Entering LLXMLRPCTransaction::Impl::curlDownloadCallback(\"" << buf2str(data, 40) << "\"...\"" << buf2str(data + n - 40, 40) << "\", " << size << ", " << nmemb << ", " << user_data << ")");
+#endif
+
 	impl.mResponseText.append(data, n);
 	
 	if (impl.mStatus == LLXMLRPCTransaction::StatusStarted)
@@ -511,9 +513,9 @@ LLXMLRPCTransaction::~LLXMLRPCTransaction()
 	delete &impl;
 }
 
-bool LLXMLRPCTransaction::process()
+bool LLXMLRPCTransaction::is_finished(void) const
 {
-	return impl.process();
+	return impl.is_finished();
 }
 
 LLXMLRPCTransaction::Status LLXMLRPCTransaction::status(int* curlCode)

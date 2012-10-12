@@ -2,6 +2,9 @@
 
 project(media_plugin_base)
 
+# Fail at configure, not link time.
+set(OpenGL_FIND_REQUIRED ON)
+
 include(00-Common)
 include(LLCommon)
 include(LLImage)

@@ -29,6 +29,11 @@
  * $/LicenseInfo$
  */
 
+#ifdef __GNUC__
+// Generate code for inlines from llthread.h (needed for is_main_thread()).
+#pragma implementation "llthread.h"
+#endif
+
 #include "linden_common.h"
 #include "llapr.h"
 
@@ -62,18 +67,12 @@
 // 
 //----------------------------------------------------------------------------
 
-#if !LL_DARWIN
-U32 ll_thread_local local_thread_ID = 0;
-#endif 
-
-U32 LLThread::sIDIter = 0;
 LLAtomicS32	LLThread::sCount = 0;
 LLAtomicS32	LLThread::sRunning = 0;
 
 LL_COMMON_API void assert_main_thread()
 {
-	static U32 s_thread_id = LLThread::currentID();
-	if (LLThread::currentID() != s_thread_id)
+	if (!AIThreadID::in_main_thread_inline())
 	{
 		llerrs << "Illegal execution outside main thread." << llendl;
 	}
@@ -90,9 +89,8 @@ void *APR_THREAD_FUNC LLThread::staticRun(apr_thread_t *apr_threadp, void *datap
 
 	LLThread *threadp = (LLThread *)datap;
 
-#if !LL_DARWIN
-	local_thread_ID = threadp->mID;
-#endif
+	// Initialize thread-local cache of current thread ID (if supported).
+	AIThreadID::set_current_thread_id();
 
 	// Create a thread local data.
 	LLThreadLocalData::create(threadp);
@@ -132,7 +130,6 @@ LLThread::LLThread(std::string const& name) :
 	mStatus(STOPPED),
 	mThreadLocalData(NULL)
 {
-	mID = ++sIDIter;
 	sCount++;
 	llassert(sCount <= 50);
 	mRunCondition = new LLCondition;
@@ -277,12 +274,6 @@ void LLThread::setQuitting()
 }
 
 // static
-U32 LLThread::currentID()
-{
-	return (U32)apr_os_thread_current();
-}
-
-// static
 void LLThread::yield()
 {
 #if LL_LINUX || LL_SOLARIS
@@ -310,14 +301,18 @@ void LLThread::wakeLocked()
 	}
 }
 
-#ifdef SHOW_ASSERT
-// This allows the use of llassert(is_main_thread()) to assure the current thread is the main thread.
-static apr_os_thread_t main_thread_id;
-LL_COMMON_API bool is_main_thread(void) { return apr_os_thread_equal(main_thread_id, apr_os_thread_current()); }
-#endif
-
 // The thread private handle to access the LLThreadLocalData instance.
 apr_threadkey_t* LLThreadLocalData::sThreadLocalDataKey;
+
+LLThreadLocalData::LLThreadLocalData(char const* name) : mCurlMultiHandle(NULL), mCurlErrorBuffer(NULL), mName(name)
+{
+}
+
+LLThreadLocalData::~LLThreadLocalData()
+{
+  delete mCurlMultiHandle;
+  delete [] mCurlErrorBuffer;
+}
 
 //static
 void LLThreadLocalData::init(void)
@@ -328,6 +323,10 @@ void LLThreadLocalData::init(void)
 		return;
 	}
 
+	// This function is called by the main thread (these values are also needed in the next line).
+	AIThreadID::set_main_thread_id();
+	AIThreadID::set_current_thread_id();
+
 	apr_status_t status = apr_threadkey_private_create(&sThreadLocalDataKey, &LLThreadLocalData::destroy, LLAPRRootPool::get()());
 	ll_apr_assert_status(status);   // Or out of memory, or system-imposed limit on the
 									// total number of keys per process {PTHREAD_KEYS_MAX}
@@ -335,11 +334,6 @@ void LLThreadLocalData::init(void)
 
 	// Create the thread-local data for the main thread (this function is called by the main thread).
 	LLThreadLocalData::create(NULL);
-
-#ifdef SHOW_ASSERT
-	// This function is called by the main thread.
-	main_thread_id = apr_os_thread_current();
-#endif
 }
 
 // This is called once for every thread when the thread is destructed.
@@ -352,7 +346,7 @@ void LLThreadLocalData::destroy(void* thread_local_data)
 //static
 void LLThreadLocalData::create(LLThread* threadp)
 {
-	LLThreadLocalData* new_tld = new LLThreadLocalData;
+	LLThreadLocalData* new_tld = new LLThreadLocalData(threadp ? threadp->mName.c_str() : "main thread");
 	if (threadp)
 	{
 		threadp->mThreadLocalData = new_tld;
@@ -406,27 +400,19 @@ void LLCondition::broadcast()
 
 //============================================================================
 LLMutexBase::LLMutexBase() :
-	mLockingThread(NO_THREAD),
+	mLockingThread(AIThreadID::sNone),
 	mCount(0)
 {
 }
 
 bool LLMutexBase::isSelfLocked() const
 {
-#if LL_DARWIN
-	return mLockingThread == LLThread::currentID();
-#else
-	return mLockingThread == local_thread_ID;
-#endif
+	return mLockingThread.equals_current_thread_inline();
 }
 
 void LLMutexBase::lock() 
 { 
-#if LL_DARWIN
-	if (mLockingThread == LLThread::currentID())
-#else
-	if (mLockingThread == local_thread_ID)
-#endif
+	if (mLockingThread.equals_current_thread_inline())
 	{ //redundant lock
 		mCount++;
 		return;
@@ -434,11 +420,33 @@ void LLMutexBase::lock()
 
 	apr_thread_mutex_lock(mAPRMutexp);
 	
-#if LL_DARWIN
-	mLockingThread = LLThread::currentID();
-#else
-	mLockingThread = local_thread_ID;
-#endif
+	mLockingThread.reset_inline();
+}
+
+bool LLMutexBase::tryLock()
+{
+	if (mLockingThread.equals_current_thread_inline())
+	{ //redundant lock
+		mCount++;
+		return true;
+	}
+	bool success = !APR_STATUS_IS_EBUSY(apr_thread_mutex_trylock(mAPRMutexp));
+	if (success)
+	{
+		mLockingThread.reset_inline();
+	}
+	return success;
+}
+
+// non-blocking, but does do a lock/unlock so not free
+bool LLMutexBase::isLocked() const
+{
+	if (mLockingThread.equals_current_thread_inline())
+	  return false;		// A call to lock() won't block.
+	if (APR_STATUS_IS_EBUSY(apr_thread_mutex_trylock(mAPRMutexp)))
+	  return true;
+	apr_thread_mutex_unlock(mAPRMutexp);
+	return false;
 }
 
 void LLMutexBase::unlock()
@@ -448,7 +456,7 @@ void LLMutexBase::unlock()
 		mCount--;
 		return;
 	}
-	mLockingThread = NO_THREAD;
+	mLockingThread = AIThreadID::sNone;
 
 	apr_thread_mutex_unlock(mAPRMutexp);
 }

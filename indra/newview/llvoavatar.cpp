@@ -53,12 +53,10 @@
 #include "lldriverparam.h"
 #include "lleditingmotion.h"
 #include "llemote.h"
-
 #include "llfirstuse.h"
 #include "llfloaterchat.h"
 #include "llfloaterinventory.h"
 #include "llheadrotmotion.h"
-
 #include "llhudeffecttrail.h"
 #include "llhudmanager.h"
 #include "llinventorybridge.h"
@@ -112,7 +110,6 @@
 
 // <edit>
 #include "llfloaterexploreanimations.h"
-#include "llimagemetadatareader.h"
 // </edit>
 
 #include "llavatarname.h"

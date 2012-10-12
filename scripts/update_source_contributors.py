@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 """\
 @file update_source_contributors.py
-@brief Update the source contributor list in one place, instead of having 
+@brief Update the source contributor list in one place, instead of having
 to substitute by hand.  Derived from update_viewer_version.py
 
 $LicenseInfo:firstyear=2006&license=viewergpl$
@@ -98,7 +98,7 @@ Options:
   --verbose
   --help
    Print this message and exit.
-   
+
 """
 def _getstatusoutput(cmd):
     """Return Win32 (status, output) of executing cmd
@@ -200,4 +200,3 @@ def main():
     return 0
 
 main()
-

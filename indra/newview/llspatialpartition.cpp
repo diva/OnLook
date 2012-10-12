@@ -2001,7 +2001,7 @@ public:
 
 	virtual void processGroup(LLSpatialGroup* group)
 	{
-		llassert(!group->isState(LLSpatialGroup::DIRTY) && !group->isEmpty())
+		llassert(!group->isState(LLSpatialGroup::DIRTY) && !group->isEmpty());
 		
 		if (mRes < 2)
 		{

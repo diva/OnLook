@@ -33,6 +33,7 @@
 #include "llmemory.h"
 #include "llsingleton.h"
 #include "llthread.h"
+#include "aithreadsafe.h"
 #include <string>
 
 // SOCKS error codes returned from the StartProxy method
@@ -206,41 +207,92 @@ enum LLSocks5AuthType
  * The implementation of HTTP proxying is handled by libcurl. LLProxy
  * is responsible for managing the HTTP proxy options and provides a
  * thread-safe method to apply those options to a curl request
- * (LLProxy::applyProxySettings()). This method is overloaded
- * to accommodate the various abstraction libcurl layers that exist
- * throughout the viewer (LLCurlEasyRequest, LLCurl::Easy, and CURL).
- *
- * If you are working with LLCurl or LLCurlEasyRequest objects,
- * the configured proxy settings will be applied in the constructors
- * of those request handles.  If you are working with CURL objects
- * directly, you will need to pass the handle of the request to
- * applyProxySettings() before issuing the request.
+ * (LLProxy::applyProxySettings()).
  *
  * To ensure thread safety, all LLProxy members that relate to the HTTP
  * proxy require the LLProxyMutex to be locked before accessing.
  */
+
+struct ProxyUnshared
+{
+	/*###########################################################################################
+	MEMBERS READ AND WRITTEN ONLY IN THE MAIN THREAD.
+	###########################################################################################*/
+
+	// UDP proxy address and port
+	LLHost mUDPProxy;
+
+	// TCP proxy control channel address and port
+	LLHost mTCPProxy;
+
+	// socket handle to proxy TCP control channel
+	LLSocket::ptr_t mProxyControlChannel;
+
+	/*###########################################################################################
+	END OF UNSHARED MEMBERS
+	###########################################################################################*/
+};
+
+struct ProxyShared
+{
+	ProxyShared(void);
+
+	/*###########################################################################################
+	MEMBERS WRITTEN IN MAIN THREAD AND READ IN ANY THREAD.
+	###########################################################################################*/
+
+	// HTTP proxy address and port
+	LLHost mHTTPProxy;
+
+	// Currently selected HTTP proxy type. Can be web or SOCKS.
+	LLHttpProxyType mProxyType;
+
+	// SOCKS 5 selected authentication method.
+	LLSocks5AuthType mAuthMethodSelected;
+
+	// SOCKS 5 username
+	std::string mSocksUsername;
+	// SOCKS 5 password
+	std::string mSocksPassword;
+
+	/*###########################################################################################
+	END OF SHARED MEMBERS
+	###########################################################################################*/
+};
+
 class LLProxy: public LLSingleton<LLProxy>
 {
 	LOG_CLASS(LLProxy);
+
 public:
+	typedef AISTAccessConst<ProxyUnshared> Unshared_crat;		// Constant Read Access Type for Unshared (cannot be converted to write access).
+	typedef AISTAccess<ProxyUnshared> Unshared_rat;				// Read Access Type for Unshared (same as write access type, since we don't lock at all).
+	typedef AISTAccess<ProxyUnshared> Unshared_wat;				// Write Access Type, for Unshared.
+	typedef AIReadAccessConst<ProxyShared> Shared_crat;			// Constant Read Access Type for Shared (cannot be converted to write access).
+	typedef AIReadAccess<ProxyShared> Shared_rat;				// Read Access Type for Shared.
+	typedef AIWriteAccess<ProxyShared> Shared_wat;				// Write Access Type for Shared.
+
 	/*###########################################################################################
-	METHODS THAT DO NOT LOCK mProxyMutex!
+	Public methods that only access variables not shared between threads.
 	###########################################################################################*/
 	// Constructor, cannot have parameters due to LLSingleton parent class. Call from main thread only.
 	LLProxy();
 
-	// Static check for enabled status for UDP packets. Call from main thread only.
-	static bool isSOCKSProxyEnabled() { return sUDPProxyEnabled; }
+	// Static check for enabled status for UDP packets. Called from main thread only.
+	static bool isSOCKSProxyEnabled(void) { llassert(is_main_thread()); return sUDPProxyEnabled; }
 
-	// Get the UDP proxy address and port. Call from main thread only.
-	LLHost getUDPProxy() const { return mUDPProxy; }
+	// Get the UDP proxy address and port. Called from main thread only.
+	LLHost getUDPProxy(void) const { return Unshared_crat(mUnshared)->mUDPProxy; }
 
 	/*###########################################################################################
-	END OF NON-LOCKING METHODS
+	End of methods that only access variables not shared between threads.
 	###########################################################################################*/
 
+	// Return true if there is a good chance that the HTTP proxy is currently enabled.
+	bool HTTPProxyEnabled(void) const { return mHTTPProxyEnabled; }
+
 	/*###########################################################################################
-	METHODS THAT LOCK mProxyMutex! DO NOT CALL WHILE mProxyMutex IS LOCKED!
+	Public methods that access variables shared between threads.
 	###########################################################################################*/
 	// Destructor, closes open connections. Do not call directly, use cleanupClass().
 	~LLProxy();
@@ -251,9 +303,7 @@ public:
 
 	// Apply the current proxy settings to a curl request. Doesn't do anything if mHTTPProxyEnabled is false.
 	// Safe to call from any thread.
-	void applyProxySettings(CURL* handle);
-	void applyProxySettings(LLCurl::Easy* handle);
-	void applyProxySettings(LLCurlEasyRequest* handle);
+	void applyProxySettings(AICurlEasyRequest_wat const& curlEasyRequest_w);
 
 	// Start a connection to the SOCKS 5 proxy. Call from main thread only.
 	S32 startSOCKSProxy(LLHost host);
@@ -273,30 +323,37 @@ public:
 	bool enableHTTPProxy();
 
 	// Stop proxying HTTP packets. Call from main thread only.
-	void disableHTTPProxy();
+	// Note that this needs shared_w to be passed because we want the shared members to be locked when this is reset to false.
+	void disableHTTPProxy(Shared_wat const& shared_w) { mHTTPProxyEnabled = false; }
+	void disableHTTPProxy(void) { disableHTTPProxy(Shared_wat(mShared)); }
+
+	// Get the currently selected HTTP proxy address and port
+	LLHost const& getHTTPProxy(Shared_crat const& shared_r) const { return shared_r->mHTTPProxy; }
+
+	// Get the currently selected HTTP proxy type
+	LLHttpProxyType getHTTPProxyType(Shared_crat const& shared_r) const { return shared_r->mProxyType; }
+
+	// Get the currently selected auth method.
+	LLSocks5AuthType getSelectedAuthMethod(Shared_crat const& shared_r) const { return shared_r->mAuthMethodSelected; }
+
+	// SOCKS 5 username and password accessors.
+	std::string getSocksUser(Shared_crat const& shared_r) const { return shared_r->mSocksUsername; }
+	std::string getSocksPwd(Shared_crat const& shared_r) const { return shared_r->mSocksPassword; }
 
 	/*###########################################################################################
-	END OF LOCKING METHODS
+	End of methods that access variables shared between threads.
 	###########################################################################################*/
+
 private:
 	/*###########################################################################################
-	METHODS THAT LOCK mProxyMutex! DO NOT CALL WHILE mProxyMutex IS LOCKED!
+	Private methods that access variables shared between threads.
 	###########################################################################################*/
 
 	// Perform a SOCKS 5 authentication and UDP association with the proxy server.
 	S32 proxyHandshake(LLHost proxy);
 
-	// Get the currently selected auth method.
-	LLSocks5AuthType getSelectedAuthMethod() const;
-
-	// Get the currently selected HTTP proxy type
-	LLHttpProxyType getHTTPProxyType() const;
-
-	std::string getSocksPwd() const;
-	std::string getSocksUser() const;
-
 	/*###########################################################################################
-	END OF LOCKING METHODS
+	End of methods that access variables shared between threads.
 	###########################################################################################*/
 
 private:
@@ -304,49 +361,16 @@ private:
 	// Instead use enableHTTPProxy() and disableHTTPProxy() instead.
 	mutable LLAtomic32<bool> mHTTPProxyEnabled;
 
-	// Mutex to protect shared members in non-main thread calls to applyProxySettings().
-	mutable LLMutex mProxyMutex;
-
-	/*###########################################################################################
-	MEMBERS READ AND WRITTEN ONLY IN THE MAIN THREAD. DO NOT SHARE!
-	###########################################################################################*/
-
 	// Is the UDP proxy enabled?
 	static bool sUDPProxyEnabled;
 
-	// UDP proxy address and port
-	LLHost mUDPProxy;
-	// TCP proxy control channel address and port
-	LLHost mTCPProxy;
+	AIThreadSafeSingleThreadDC<ProxyUnshared> mUnshared;
+	AIThreadSafeDC<ProxyShared> mShared;
 
-	// socket handle to proxy TCP control channel
-	LLSocket::ptr_t mProxyControlChannel;
-
-	/*###########################################################################################
-	END OF UNSHARED MEMBERS
-	###########################################################################################*/
-
-	/*###########################################################################################
-	MEMBERS WRITTEN IN MAIN THREAD AND READ IN ANY THREAD. ONLY READ OR WRITE AFTER LOCKING mProxyMutex!
-	###########################################################################################*/
-
-	// HTTP proxy address and port
-	LLHost mHTTPProxy;
-
-	// Currently selected HTTP proxy type. Can be web or socks.
-	LLHttpProxyType mProxyType;
-
-	// SOCKS 5 selected authentication method.
-	LLSocks5AuthType mAuthMethodSelected;
-
-	// SOCKS 5 username
-	std::string mSocksUsername;
-	// SOCKS 5 password
-	std::string mSocksPassword;
-
-	/*###########################################################################################
-	END OF SHARED MEMBERS
-	###########################################################################################*/
+public:
+	// For thread-safe read access. Use the _crat access types with these.
+	AIThreadSafeSingleThreadDC<ProxyUnshared> const& unshared_lockobj(void) const { return mUnshared; }
+	AIThreadSafeDC<ProxyShared> const& shared_lockobj(void) const { return mShared; }
 };
 
 #endif

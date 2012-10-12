@@ -1,7 +1,7 @@
 # -*- cmake -*-
 include(Prebuilt)
 
-set(CURL_FIND_QUIETLY ON)
+set(CURL_FIND_QUIETLY OFF)
 set(CURL_FIND_REQUIRED ON)
 
 if (STANDALONE)

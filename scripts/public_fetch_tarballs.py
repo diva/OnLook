@@ -134,8 +134,8 @@ def extract_tarball_sans_linden(filename, targetdir):
             archive.extract(tarentry)
     archive.close()
 
-# Extract either .tar.gz file or .zip file to targetdir, stripping off the 
-# leading "linden" directory, but leaving the directory structure otherwise 
+# Extract either .tar.gz file or .zip file to targetdir, stripping off the
+# leading "linden" directory, but leaving the directory structure otherwise
 # intact.
 def extract_archive_sans_linden(filename, targetdir):
     if(filename.endswith('.tar.gz')):
@@ -143,7 +143,7 @@ def extract_archive_sans_linden(filename, targetdir):
     elif(filename.endswith('.zip')):
         extract_zipfile_sans_linden(filename, targetdir)
     else:
-        raise Exception, "Unhandled archive type" 
+        raise Exception, "Unhandled archive type"
 
 def get_assetnames_by_platform(platform):
     assetnames=['SLASSET_ART']
@@ -170,7 +170,7 @@ def _get_platform():
 
 # copied from install.py
 def _default_installable_cache():
-    """In general, the installable files do not change much, so find a 
+    """In general, the installable files do not change much, so find a
     host/user specific location to cache files."""
     user = _getuser()
     cache_dir = "/var/tmp/%s/install.cache" % user
@@ -215,7 +215,7 @@ Example:
   the corresponding asset bundle into your source tree.
 """)
     parser.add_option(
-        '-p', '--platform', 
+        '-p', '--platform',
         type='choice',
         default=_get_platform(),
         dest='platform',
@@ -225,14 +225,14 @@ You can specify 'all' to get assets for all platforms.  Choices: windows, \
 darwin, linux, solaris, or all.  Default: autodetected (%s)""" % \
              _get_platform())
     parser.add_option(
-        '--cache-dir', 
+        '--cache-dir',
         type='string',
         default=_default_installable_cache(),
         dest='cache_dir',
         help='Where to download files. Default: %s'% \
              (_default_installable_cache()))
     parser.add_option(
-        '--install-dir', 
+        '--install-dir',
         type='string',
         default=base_dir,
         dest='install_dir',
@@ -278,4 +278,3 @@ def main(argv):
 # execute main() only if invoked directly:
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
-

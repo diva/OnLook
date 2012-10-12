@@ -999,7 +999,7 @@ void LLPanelClassified::sendClassifiedClickMessage(const std::string& type)
 
 	std::string url = gAgent.getRegion()->getCapability("SearchStatTracking");
 	llinfos << "LLPanelClassified::sendClassifiedClickMessage via capability" << llendl;
-	LLHTTPClient::post(url, body, new LLHTTPClient::Responder());
+	LLHTTPClient::post(url, body, new LLHTTPClient::ResponderIgnore);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

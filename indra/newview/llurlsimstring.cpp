@@ -38,7 +38,10 @@
 #include "llpanellogin.h"
 #include "llviewercontrol.h"
 
-#include "curl/curl.h"
+#include <curl/curl.h>			// curl_unescape, curl_free
+#ifdef DEBUG_CURLIO
+#include "debug_libcurl.h"
+#endif
 
 //static
 LLURLSimString LLURLSimString::sInstance;

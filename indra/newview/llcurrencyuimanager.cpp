@@ -266,7 +266,7 @@ bool LLCurrencyUIManager::Impl::checkTransaction()
 		return false;
 	}
 	
-	if (!mTransaction->process())
+	if (!mTransaction->is_finished())
 	{
 		return false;
 	}
