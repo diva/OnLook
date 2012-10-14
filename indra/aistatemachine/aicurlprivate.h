@@ -116,20 +116,20 @@ namespace AICurlPrivate {
 
 	  // Extract information from a curl handle.
 	private:
-	  CURLcode getinfo_priv(CURLINFO info, void* data);
+	  CURLcode getinfo_priv(CURLINFO info, void* data) const;
 	public:
 	  // The rest are inlines to provide some type-safety.
-	  CURLcode getinfo(CURLINFO info, char** data) { return getinfo_priv(info, data); }
-	  CURLcode getinfo(CURLINFO info, curl_slist** data) { return getinfo_priv(info, data); }
-	  CURLcode getinfo(CURLINFO info, double* data) { return getinfo_priv(info, data); }
-	  CURLcode getinfo(CURLINFO info, long* data) { return getinfo_priv(info, data); }
+	  CURLcode getinfo(CURLINFO info, char** data) const { return getinfo_priv(info, data); }
+	  CURLcode getinfo(CURLINFO info, curl_slist** data) const { return getinfo_priv(info, data); }
+	  CURLcode getinfo(CURLINFO info, double* data) const { return getinfo_priv(info, data); }
+	  CURLcode getinfo(CURLINFO info, long* data) const { return getinfo_priv(info, data); }
 #ifdef __LP64__	// sizeof(long) > sizeof(int) ?
 	  // Overload for integer types that are too small (libcurl demands a long).
-	  CURLcode getinfo(CURLINFO info, S32* data) { long ldata; CURLcode res = getinfo_priv(info, &ldata); *data = static_cast<S32>(ldata); return res; }
-	  CURLcode getinfo(CURLINFO info, U32* data) { long ldata; CURLcode res = getinfo_priv(info, &ldata); *data = static_cast<U32>(ldata); return res; }
+	  CURLcode getinfo(CURLINFO info, S32* data) const { long ldata; CURLcode res = getinfo_priv(info, &ldata); *data = static_cast<S32>(ldata); return res; }
+	  CURLcode getinfo(CURLINFO info, U32* data) const { long ldata; CURLcode res = getinfo_priv(info, &ldata); *data = static_cast<U32>(ldata); return res; }
 #else			// sizeof(long) == sizeof(int)
-	  CURLcode getinfo(CURLINFO info, S32* data) { return getinfo_priv(info, reinterpret_cast<long*>(data)); }
-	  CURLcode getinfo(CURLINFO info, U32* data) { return getinfo_priv(info, reinterpret_cast<long*>(data)); }
+	  CURLcode getinfo(CURLINFO info, S32* data) const { return getinfo_priv(info, reinterpret_cast<long*>(data)); }
+	  CURLcode getinfo(CURLINFO info, U32* data) const { return getinfo_priv(info, reinterpret_cast<long*>(data)); }
 #endif
 
 	  // Perform a file transfer (blocking).
@@ -146,7 +146,7 @@ namespace AICurlPrivate {
 	private:
 	  CURL* mEasyHandle;
 	  CURLM* mActiveMultiHandle;
-	  char* mErrorBuffer;
+	  mutable char* mErrorBuffer;
 	  AIPostFieldPtr mPostField;		// This keeps the POSTFIELD data alive for as long as the easy handle exists.
 	  bool mQueuedForRemoval;			// Set if the easy handle is (probably) added to the multi handle, but is queued for removal.
 #ifdef SHOW_ASSERT
@@ -174,7 +174,7 @@ namespace AICurlPrivate {
 
 	private:
 	  // Call this prior to every curl_easy function whose return value is passed to check_easy_code.
-	  void setErrorBuffer(void);
+	  void setErrorBuffer(void) const;
 
 	  static void handle_easy_error(CURLcode code);
 
@@ -363,6 +363,7 @@ namespace AICurlPrivate {
 
 	// Return pointer to the ThreadSafe (wrapped) version of this object.
 	ThreadSafeCurlEasyRequest* get_lockobj(void);
+	ThreadSafeCurlEasyRequest const* get_lockobj(void) const;
 
   protected:
 	// Pass events to parent.
@@ -452,6 +453,7 @@ class CurlResponderBuffer : protected AICurlResponderBufferEvents, protected AIC
   public:
 	// Return pointer to the ThreadSafe (wrapped) version of this object.
 	ThreadSafeBufferedCurlEasyRequest* get_lockobj(void);
+	ThreadSafeBufferedCurlEasyRequest const* get_lockobj(void) const;
 
 	// Return true when prepRequest was already called and the object has not been
 	// invalidated as a result of calling timed_out().

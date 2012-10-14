@@ -678,7 +678,7 @@ char* CurlEasyHandle::getTLErrorBuffer(void)
   return tldata.mCurlErrorBuffer;
 }
 
-void CurlEasyHandle::setErrorBuffer(void)
+void CurlEasyHandle::setErrorBuffer(void) const
 {
   char* error_buffer = getTLErrorBuffer();
   if (mErrorBuffer != error_buffer)
@@ -697,7 +697,7 @@ void CurlEasyHandle::setErrorBuffer(void)
   }
 }
 
-CURLcode CurlEasyHandle::getinfo_priv(CURLINFO info, void* data)
+CURLcode CurlEasyHandle::getinfo_priv(CURLINFO info, void* data) const
 {
   setErrorBuffer();
   return check_easy_code(curl_easy_getinfo(mEasyHandle, info, data));
@@ -872,6 +872,11 @@ void CurlEasyRequest::setPost_raw(U32 size, char const* data)
 ThreadSafeCurlEasyRequest* CurlEasyRequest::get_lockobj(void)
 {
   return static_cast<ThreadSafeCurlEasyRequest*>(AIThreadSafeSimpleDC<CurlEasyRequest>::wrapper_cast(this));
+}
+
+ThreadSafeCurlEasyRequest const* CurlEasyRequest::get_lockobj(void) const
+{
+  return static_cast<ThreadSafeCurlEasyRequest const*>(AIThreadSafeSimpleDC<CurlEasyRequest>::wrapper_cast(this));
 }
 
 //static
@@ -1721,6 +1726,11 @@ void CurlResponderBuffer::resetState(AICurlEasyRequest_wat& curl_easy_request_w)
 ThreadSafeBufferedCurlEasyRequest* CurlResponderBuffer::get_lockobj(void)
 {
   return static_cast<ThreadSafeBufferedCurlEasyRequest*>(AIThreadSafeSimple<CurlResponderBuffer>::wrapper_cast(this));
+}
+
+ThreadSafeBufferedCurlEasyRequest const* CurlResponderBuffer::get_lockobj(void) const
+{
+  return static_cast<ThreadSafeBufferedCurlEasyRequest const*>(AIThreadSafeSimple<CurlResponderBuffer>::wrapper_cast(this));
 }
 
 void CurlResponderBuffer::prepRequest(AICurlEasyRequest_wat& curl_easy_request_w, AIHTTPHeaders const& headers, AICurlInterface::ResponderPtr responder)
