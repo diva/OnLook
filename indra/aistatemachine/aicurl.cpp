@@ -1213,6 +1213,16 @@ void CurlEasyRequest::applyDefaultOptions(void)
   setopt(CURLOPT_NOSIGNAL, 1);
   // Cache DNS look ups an hour. If we set it smaller we risk frequent connect timeouts in cases where DNS look ups are slow.
   setopt(CURLOPT_DNS_CACHE_TIMEOUT, 3600);
+  // Only resolve to IPV4.
+  // Rationale: if a host resolves to both, ipv4 and ipv6, then this stops libcurl from
+  // using the ipv6 address. If we don't do that then libcurl first attempts to connect
+  // to the ipv4 IP number (using only HALF the connect timeout we passed to it!) and if
+  // that fails try the ipv6 IP number, which then most likely fails with "network unreachable".
+  // Then libcurl immediately returns with just the ipv6 error as result masking the real problem.
+  // Since the viewer doesn't support IPv6 at least for UDP services, and there are no
+  // transition plans to IPv6 anywhere at this moment, the easiest way to get rid of this
+  // problem is by simply not falling back to ipv6.
+  setopt(CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
   // Disable SSL/TLS session caching; some servers (aka id.secondlife.com) refuse connections when session ids are enabled.
   setopt(CURLOPT_SSL_SESSIONID_CACHE, 0);
   // Set the CURL options for either SOCKS or HTTP proxy.
