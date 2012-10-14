@@ -864,10 +864,9 @@ AICurlThread::~AICurlThread()
 }
 
 #if LL_WINDOWS
-static std::string formatWSAError()
+static std::string formatWSAError(int e = WSAGetLastError())
 {
 	std::ostringstream r;
-	int e = WSAGetLastError();
 	LPTSTR error_str = 0;
 	r << e;
 	if(FormatMessage(
@@ -884,9 +883,9 @@ static std::string formatWSAError()
 	return r.str();
 }
 #elif WINDOWS_CODE
-static std::string formatWSAError()
+static std::string formatWSAError(int e = errno)
 {
-	return strerror(errno);
+	return strerror(e);
 }
 #endif
 
@@ -1675,7 +1674,21 @@ void MultiHandle::finish_easy_request(AICurlEasyRequest const& easy_request, CUR
   {
 	namelookup_time = 0;
   }
-  Dout(dc::curl|continued_cf, "Finished: " << eff_url << " (" << curl_easy_strerror(result) << "); ");
+  Dout(dc::curl|continued_cf, "Finished: " << eff_url << " (" << curl_easy_strerror(result));
+  if (result != CURLE_OK)
+  {
+	long os_error;
+	curl_easy_request_w->getinfo(CURLINFO_OS_ERRNO, &os_error);
+	if (os_error)
+	{
+#if WINDOWS_CODE
+	  Dout(dc::continued, ": " << formatWSAError(os_error));
+#else
+	  Dout(dc::continued, ": " << strerror(os_error));
+#endif
+	}
+  }
+  Dout(dc::continued, "); ");
   if (namelookup_time)
   {
     Dout(dc::continued, "namelookup time: " << namelookup_time << ", ");
