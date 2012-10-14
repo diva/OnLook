@@ -116,6 +116,20 @@ float pcfShadow(sampler2DShadow shadowMap, vec4 stc, float scl, vec2 pos_screen)
         return shadow*0.2;
 }
 
+vec4 unpack(vec2 tc)
+{
+//#define PACK_NORMALS
+#ifdef PACK_NORMALS
+	vec4 enc = texture2DRect(normalMap, tc).xyzw;
+	enc = vec4((enc.xy*4.0)-2.0,0.0,enc.w);
+	float prod = dot(enc.xy,enc.xy);
+	return vec4(enc.xy*sqrt(1.0-prod*.25),1.0-prod*.5,enc.w);
+#else
+	vec4 norm = texture2DRect(normalMap, tc).xyz;
+	return vec4(norm.xyz*2.0-1.0,norm.w);
+#endif
+}
+
 void main() 
 {
 	vec2 pos_screen = vary_fragcoord.xy;
@@ -124,9 +138,8 @@ void main()
 	
 	vec4 pos = getPosition(pos_screen);
 	
-	vec4 nmap4 = texture2DRect(normalMap, pos_screen);
-	nmap4 = vec4((nmap4.xy-0.5)*2.0,nmap4.z,nmap4.w); // unpack norm
-	float displace = nmap4.w;
+	vec4 nmap4 = unpack(pos_screen) // unpack norm
+	float displace = nmap4.w*norm.z;
 	vec3 norm = nmap4.xyz;
 	
 	/*if (pos.z == 0.0) // do nothing for sky *FIX: REMOVE THIS IF/WHEN THE POSITION MAP IS BEING USED AS A STENCIL

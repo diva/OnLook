@@ -114,6 +114,19 @@ float calcAmbientOcclusion(vec4 pos, vec3 norm)
 	return min(ret, 1.0);
 }
 
+vec3 unpack(vec2 tc)
+{
+//#define PACK_NORMALS
+#ifdef PACK_NORMALS
+	vec2 enc = texture2DRect(normalMap, tc).xy;
+	enc = enc*4.0-2.0;
+	float prod = dot(enc,enc);
+	return vec3(enc*sqrt(1.0-prod*.25),1.0-prod*.5);
+#else
+	vec3 norm = texture2DRect(normalMap, tc).xyz;
+	return norm*2.0-1.0;
+#endif
+}
 void main() 
 {
 	vec2 pos_screen = vary_fragcoord.xy;
@@ -122,8 +135,7 @@ void main()
 	
 	vec4 pos = getPosition(pos_screen);
 	
-	vec3 norm = texture2DRect(normalMap, pos_screen).xyz;
-	norm = vec3((norm.xy-0.5)*2.0,norm.z); // unpack norm
+	vec3 norm = unpack(pos_screen); // unpack norm
 		
 	frag_color[0] = 1.0;
 	frag_color[1] = calcAmbientOcclusion(pos, norm);

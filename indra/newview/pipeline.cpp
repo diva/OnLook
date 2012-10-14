@@ -340,8 +340,9 @@ void validate_framebuffer_object();
 
 bool addDeferredAttachments(LLRenderTarget& target)
 {
+	static const LLCachedControl<bool> SHPrecisionDeferredNormals("SHPrecisionDeferredNormals",false);
 	return target.addColorAttachment(GL_RGBA) && //specular
-			target.addColorAttachment(GL_RGBA); //normal+z	
+			target.addColorAttachment(SHPrecisionDeferredNormals ? GL_RGB10_A2 : GL_RGBA); //normal+z
 }
 
 LLPipeline::LLPipeline() :
