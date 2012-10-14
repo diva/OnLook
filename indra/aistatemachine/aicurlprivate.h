@@ -397,7 +397,7 @@ class CurlResponderBuffer : protected AICurlResponderBufferEvents, protected AIC
 	buffer_ptr_t& getInput(void) { return mInput; }
 	buffer_ptr_t& getOutput(void) { return mOutput; }
 
-	// Called if libcurl doesn't deliver within mRequestTimeOut seconds.
+	// Called if libcurl doesn't deliver within AIHTTPTimeoutPolicy::mMaximumTotalDelay seconds.
 	void timed_out(void);
 
 	// Called after removed_from_multi_handle was called.
