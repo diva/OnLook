@@ -79,7 +79,7 @@ class MultiHandle : public CurlMultiHandle
 	bool mHandleAddedOrRemoved;	// Set when an easy handle was added or removed, reset in check_run_count().
 	int mPrevRunningHandles;	// The last value of mRunningHandles that check_run_count() was called with.
 	int mRunningHandles;		// The last value returned by curl_multi_socket_action.
-	long mTimeOut;				// The last time out in ms as set by the callback CURLMOPT_TIMERFUNCTION.
+	long mTimeout;								// The last timeout in ms as set by the callback CURLMOPT_TIMERFUNCTION.
 
   private:
 	// Store result and trigger events for easy request.
@@ -96,7 +96,7 @@ class MultiHandle : public CurlMultiHandle
 	int getRunningHandles(void) const { return mRunningHandles; }
 
 	// Returns how long to wait for socket action before calling socket_action(CURL_SOCKET_TIMEOUT, 0), in ms.
-	int getTimeOut(void) const { return mTimeOut; }
+	int getTimeout(void) const { return mTimeout; }
 
 	// This is called before sleeping, after calling (one or more times) socket_action.
 	void check_run_count(void);

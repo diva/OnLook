@@ -850,7 +850,7 @@ class AICurlThread : public LLThread
 	curl_socket_t mWakeUpFd_in;
 	curl_socket_t mWakeUpFd;
 
-	int mZeroTimeOut;
+	int mZeroTimeout;
 
 	volatile bool mRunning;
 };
@@ -862,7 +862,7 @@ AICurlThread* AICurlThread::sInstance = NULL;
 AICurlThread::AICurlThread(void) : LLThread("AICurlThread"),
     mWakeUpFd_in(CURL_SOCKET_BAD),
 	mWakeUpFd(CURL_SOCKET_BAD),
-	mZeroTimeOut(0), mRunning(true), mWakeUpFlag(false)
+	mZeroTimeout(0), mRunning(true), mWakeUpFlag(false)
 {
   create_wakeup_fds();
   sInstance = this;
@@ -1304,27 +1304,27 @@ void AICurlThread::run(void)
 	  // We're now entering select(), during which the main thread will write to the pipe/socket
 	  // to wake us up, because it can't get the lock.
 	  struct timeval timeout;
-	  long timeout_ms = multi_handle_w->getTimeOut();
+	  long timeout_ms = multi_handle_w->getTimeout();
 	  // If no timeout is set, sleep 1 second.
 	  if (LL_UNLIKELY(timeout_ms < 0))
 		timeout_ms = 1000;
 	  if (LL_UNLIKELY(timeout_ms == 0))
 	  {
-		if (mZeroTimeOut >= 10000)
+		if (mZeroTimeout >= 10000)
 		{
-		  if (mZeroTimeOut == 10000)
+		  if (mZeroTimeout == 10000)
 			llwarns << "Detected more than 10000 zero-timeout calls of select() by curl thread (more than 101 seconds)!" << llendl;
 		}
-		else if (mZeroTimeOut >= 1000)
+		else if (mZeroTimeout >= 1000)
 		  timeout_ms = 10;
-		else if (mZeroTimeOut >= 100)
+		else if (mZeroTimeout >= 100)
 		  timeout_ms = 1;
 	  }
 	  else
 	  {
-		if (LL_UNLIKELY(mZeroTimeOut >= 10000))
+		if (LL_UNLIKELY(mZeroTimeout >= 10000))
 		  llinfos << "Timeout of select() call by curl thread reset (to " << timeout_ms << " ms)." << llendl;
-		mZeroTimeOut = 0;
+		mZeroTimeout = 0;
 	  }
 	  timeout.tv_sec = timeout_ms / 1000;
 	  timeout.tv_usec = (timeout_ms % 1000) * 1000;
@@ -1497,7 +1497,7 @@ int MultiHandle::timer_callback(CURLM* multi, long timeout_ms, void* userp)
 {
   MultiHandle& self = *static_cast<MultiHandle*>(userp);
   llassert(multi == self.mMultiHandle);
-  self.mTimeOut = timeout_ms;
+  self.mTimeout = timeout_ms;
   Dout(dc::curl, "MultiHandle::timer_callback(): timeout set to " << timeout_ms << " ms.");
   return 0;
 }

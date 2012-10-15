@@ -326,11 +326,11 @@ void LLXMLRPCTransaction::Impl::curlEasyRequestCallback(bool success)
 		if (LLApp::isRunning())
 		{
 			std::ostringstream msg;
-			F32 timeout_value = gSavedSettings.getF32("CurlRequestTimeOut");
+			F32 timeout_value = gSavedSettings.getF32("CurlRequestTimeout");
 			msg << "Connection to " << mURI << " timed out (" << timeout_value << " s)!";
 			if (timeout_value < 40)
 			{
-				msg << "\nTry increasing CurlRequestTimeOut in Debug Settings.";
+				msg << "\nTry increasing CurlRequestTimeout in Debug Settings.";
 			}
 			setStatus(LLXMLRPCTransaction::StatusOtherError, msg.str());
 		}
