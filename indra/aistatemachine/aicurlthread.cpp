@@ -1713,10 +1713,8 @@ void MultiHandle::finish_easy_request(AICurlEasyRequest const& easy_request, CUR
   Dout(dc::finish, "pretransfer_time: " << pretransfer_time << ", starttransfer_time: " << starttransfer_time <<
 	  ". [CURLINFO_PRIVATE = " << (void*)easy_request.get_ptr().get() << "]");
 #endif
-  // Update timeout administration.
-  curl_easy_request_w->httptimeout()->done(curl_easy_request_w, result);
   // Signal that this easy handle finished.
-  curl_easy_request_w->done(curl_easy_request_w);
+  curl_easy_request_w->done(curl_easy_request_w, result);
 }
 
 //-----------------------------------------------------------------------------
@@ -2096,13 +2094,14 @@ void CurlResponderBuffer::processOutput(AICurlEasyRequest_wat& curl_easy_request
 	curl_easy_request_w->setopt(CURLOPT_FRESH_CONNECT, TRUE);
   }
 
+  llassert(mResponder);	// AIFIXME: We always have a responder now, no?
   if (mResponder)
   {	
-	if (code == CURLE_OPERATION_TIMEDOUT)
+	if (code != CURLE_OK)
 	{
-	  curl_easy_request_w->httptimeout()->print_diagnostics(curl_easy_request_w);
+	  curl_easy_request_w->print_diagnostics(curl_easy_request_w, code);
 	}
-    if (mEventsTarget)
+	if (mEventsTarget)
 	{
 	  // Only the responder registers for these events.
 	  llassert(mEventsTarget == mResponder.get());

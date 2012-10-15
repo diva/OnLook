@@ -337,11 +337,22 @@ class CurlEasyRequest : public CurlEasyHandle {
 	void set_timeout_opts(void);
 
   public:
-	// Called by MultiHandle::check_run_count() to store result code that is returned by getResult.
+	// Called by MultiHandle::finish_easy_request() to store result code that is returned by getResult.
 	void storeResult(CURLcode result) { mResult = result; }
 
-	// Called by MultiHandle::check_run_count() when the curl easy handle is done.
-	void done(AICurlEasyRequest_wat& curl_easy_request_w) { finished(curl_easy_request_w); }
+	// Called by MultiHandle::finish_easy_request() when the curl easy handle is done.
+	void done(AICurlEasyRequest_wat& curl_easy_request_w, CURLcode result)
+	{
+	  if (mTimeout)
+	  {
+		// Update timeout administration.
+		mTimeout->done(curl_easy_request_w, result);
+	  }
+	  finished(curl_easy_request_w);
+	}
+
+	// Called by in case of an error.
+	void print_diagnostics(AICurlEasyRequest_wat const& curlEasyRequest_w, CURLcode code);
 
 	// Called by MultiHandle::check_run_count() to fill info with the transfer info.
 	void getTransferInfo(AICurlInterface::TransferInfo* info);

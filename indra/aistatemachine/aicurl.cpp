@@ -1260,6 +1260,19 @@ void CurlEasyRequest::removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy
 	mEventsTarget->removed_from_multi_handle(curl_easy_request_w);
 }
 
+void CurlEasyRequest::print_diagnostics(AICurlEasyRequest_wat const& curlEasyRequest_w, CURLcode code)
+{
+  if (code == CURLE_OPERATION_TIMEDOUT)
+  {
+	// mTimeout SHOULD always be set, but I see no reason not to test it, as
+	// this is far from the code that guaranteeds that it is set.
+	if (mTimeout)
+	{
+	  mTimeout->print_diagnostics(curlEasyRequest_w);
+	}
+  }
+}
+
 //-----------------------------------------------------------------------------
 // CurlResponderBuffer
 
