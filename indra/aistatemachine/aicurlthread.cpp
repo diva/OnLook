@@ -1420,7 +1420,7 @@ void AICurlThread::run(void)
 //-----------------------------------------------------------------------------
 // MultiHandle
 
-MultiHandle::MultiHandle(void) : mHandleAddedOrRemoved(false), mPrevRunningHandles(0), mRunningHandles(0), mTimeOut(-1), mReadPollSet(NULL), mWritePollSet(NULL)
+MultiHandle::MultiHandle(void) : mRunningHandles(0), mTimeout(-1), mReadPollSet(NULL), mWritePollSet(NULL)
 {
   mReadPollSet = new PollSet;
   mWritePollSet = new PollSet;
@@ -1543,7 +1543,6 @@ void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
 	}
 	if (ret == CURLM_OK)
 	{
-	  mHandleAddedOrRemoved = true;
 	  std::pair<addedEasyRequests_type::iterator, bool> res = mAddedEasyRequests.insert(easy_request);
 	  llassert(res.second);							// May not have been added before.
 	  Dout(dc::curl, "MultiHandle::add_easy_request: Added AICurlEasyRequest " << (void*)easy_request.get_ptr().get() << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
@@ -1603,7 +1602,6 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
   ThreadSafeCurlEasyRequest* lockobj = iter->get_ptr().get();
 #endif
   mAddedEasyRequests.erase(iter);
-  mHandleAddedOrRemoved = true;
   Dout(dc::curl, "MultiHandle::remove_easy_request: Removed AICurlEasyRequest " << (void*)lockobj << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
 
   // Attempt to add a queued request, if any.
@@ -1618,7 +1616,8 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
 
 void MultiHandle::check_run_count(void)
 {
-  if (mHandleAddedOrRemoved || mRunningHandles < mPrevRunningHandles)
+  llassert(mAddedEasyRequests.size() >= mRunningHandles);
+  if (mAddedEasyRequests.size() - mRunningHandles > 0)			// There is no need to do this when all easy handles are accounted for.
   {
 	CURLMsg const* msg;
 	int msgs_left;
@@ -1652,9 +1651,7 @@ void MultiHandle::check_run_count(void)
 		// Destruction of easy_request at this point, causes the CurlEasyRequest to be deleted.
 	  }
 	}
-	mHandleAddedOrRemoved = false;
   }
-  mPrevRunningHandles = mRunningHandles;
 }
 
 void MultiHandle::finish_easy_request(AICurlEasyRequest const& easy_request, CURLcode result)

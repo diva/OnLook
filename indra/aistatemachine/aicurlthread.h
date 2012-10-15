@@ -74,11 +74,8 @@ class MultiHandle : public CurlMultiHandle
 
   private:
 	typedef std::set<AICurlEasyRequest, AICurlEasyRequestCompare> addedEasyRequests_type;
-	addedEasyRequests_type mAddedEasyRequests;
-
-	bool mHandleAddedOrRemoved;	// Set when an easy handle was added or removed, reset in check_run_count().
-	int mPrevRunningHandles;	// The last value of mRunningHandles that check_run_count() was called with.
-	int mRunningHandles;		// The last value returned by curl_multi_socket_action.
+	addedEasyRequests_type mAddedEasyRequests;	// All easy requests currently added to the multi handle.
+	int mRunningHandles;						// The last value returned by curl_multi_socket_action.
 	long mTimeout;								// The last timeout in ms as set by the callback CURLMOPT_TIMERFUNCTION.
 
   private:
