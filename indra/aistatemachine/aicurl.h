@@ -49,7 +49,7 @@
 #undef CURLOPT_DNS_USE_GLOBAL_CACHE
 #define CURLOPT_DNS_USE_GLOBAL_CACHE do_not_use_CURLOPT_DNS_USE_GLOBAL_CACHE
 
-#include "stdtypes.h"		// U32
+#include "stdtypes.h"		// U16, S32, U32, F64
 #include "llatomic.h"		// LLAtomicU32
 #include "aithreadsafe.h"
 #include "aihttpheaders.h"
@@ -58,6 +58,38 @@ class LLSD;
 class LLBufferArray;
 class LLChannelDescriptors;
 class AIHTTPTimeoutPolicy;
+
+// Some pretty printing for curl easy handle related things:
+// Print the lock object related to the current easy handle in every debug output.
+#ifdef CWDEBUG
+#include <libcwd/buf2str.h>
+#include <sstream>
+#define DoutCurl(x) do { \
+	using namespace libcwd; \
+	std::ostringstream marker; \
+	marker << (void*)this->get_lockobj(); \
+	libcw_do.push_marker(); \
+	libcw_do.marker().assign(marker.str().data(), marker.str().size()); \
+	libcw_do.inc_indent(2); \
+	Dout(dc::curl, x); \
+	libcw_do.dec_indent(2); \
+	libcw_do.pop_marker(); \
+  } while(0)
+#define DoutCurlEntering(x) do { \
+	using namespace libcwd; \
+	std::ostringstream marker; \
+	marker << (void*)this->get_lockobj(); \
+	libcw_do.push_marker(); \
+	libcw_do.marker().assign(marker.str().data(), marker.str().size()); \
+	libcw_do.inc_indent(2); \
+	DoutEntering(dc::curl, x); \
+	libcw_do.dec_indent(2); \
+	libcw_do.pop_marker(); \
+  } while(0)
+#else // !CWDEBUG
+#define DoutCurl(x) Dout(dc::curl, x << " [" << (void*)this->get_lockobj() << ']')
+#define DoutCurlEntering(x) DoutEntering(dc::curl, x << " [" << (void*)this->get_lockobj() << ']')
+#endif // CWDEBUG
 
 //-----------------------------------------------------------------------------
 // Exceptions.
