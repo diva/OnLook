@@ -125,28 +125,28 @@ void LLPolyMeshSharedData::setupLOD(LLPolyMeshSharedData* reference_data)
 //-----------------------------------------------------------------------------
 void LLPolyMeshSharedData::freeMeshData()
 {
-	if (!mReferenceData)
-	{
-		mNumVertices = 0;
+        if (!mReferenceData)
+        {
+                mNumVertices = 0;
 
-		delete [] mBaseCoords;
-		mBaseCoords = NULL;
+                ll_aligned_free_16(mBaseCoords);
+                mBaseCoords = NULL;
 
-		delete [] mBaseNormals;
-		mBaseNormals = NULL;
+                ll_aligned_free_16(mBaseNormals);
+                mBaseNormals = NULL;
 
-		delete [] mBaseBinormals;
-		mBaseBinormals = NULL;
+                ll_aligned_free_16(mBaseBinormals);
+                mBaseBinormals = NULL;
 
-		delete [] mTexCoords;
-		mTexCoords = NULL;
+                ll_aligned_free_16(mTexCoords);
+                mTexCoords = NULL;
 
-		delete [] mDetailTexCoords;
-		mDetailTexCoords = NULL;
+                ll_aligned_free_16(mDetailTexCoords);
+                mDetailTexCoords = NULL;
 
-		delete [] mWeights;
-		mWeights = NULL;
-	}
+                ll_aligned_free_16(mWeights);
+                mWeights = NULL;
+        }
 
 	mNumFaces = 0;
 	delete [] mFaces;
@@ -228,14 +228,14 @@ U32 LLPolyMeshSharedData::getNumKB()
 //-----------------------------------------------------------------------------
 BOOL LLPolyMeshSharedData::allocateVertexData( U32 numVertices )
 {
-	U32 i;
-	mBaseCoords = new LLVector4a[ numVertices ];
-	mBaseNormals = new LLVector4a[ numVertices ];
-	mBaseBinormals = new LLVector4a[ numVertices ];
-	mTexCoords = new LLVector2[ numVertices ];
-	mDetailTexCoords = new LLVector2[ numVertices ];
-	mWeights = new F32[ numVertices ];
-	for (i = 0; i < numVertices; i++)
+        U32 i;
+        mBaseCoords = (LLVector4a*) ll_aligned_malloc_16(numVertices*sizeof(LLVector4a));
+        mBaseNormals = (LLVector4a*) ll_aligned_malloc_16(numVertices*sizeof(LLVector4a));
+        mBaseBinormals = (LLVector4a*) ll_aligned_malloc_16(numVertices*sizeof(LLVector4a));
+        mTexCoords = (LLVector2*) ll_aligned_malloc_16(numVertices*sizeof(LLVector2));
+        mDetailTexCoords = (LLVector2*) ll_aligned_malloc_16(numVertices*sizeof(LLVector2));
+        mWeights = (F32*) ll_aligned_malloc_16(numVertices*sizeof(F32));
+        for (i = 0; i < numVertices; i++)
 	{
 		mBaseCoords[i].clear();
 		mBaseNormals[i].clear();

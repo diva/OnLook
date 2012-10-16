@@ -121,11 +121,12 @@ public:
 	typedef typename std::vector<LLTreeListener<T>*>::iterator	tree_listener_iter;
 	typedef LLOctreeNode<T>**									child_list;
 	typedef LLOctreeNode<T>**									child_iter;
+
 	typedef LLTreeNode<T>		BaseType;
 	typedef LLOctreeNode<T>		oct_node;
 	typedef LLOctreeListener<T>	oct_listener;
 
-	/*void* operator new(size_t size)
+	void* operator new(size_t size)
 	{
 		return ll_aligned_malloc_16(size);
 	}
@@ -133,7 +134,7 @@ public:
 	void operator delete(void* ptr)
 	{
 		ll_aligned_free_16(ptr);
-	}*/
+	}
 
 	LLOctreeNode(	const LLVector4a& center, 
 					const LLVector4a& size, 

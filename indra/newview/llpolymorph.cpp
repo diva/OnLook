@@ -74,9 +74,9 @@ LLPolyMorphData::LLPolyMorphData(const LLPolyMorphData &rhs) :
 {
 	const S32 numVertices = mNumIndices;
 
-	mCoords = new LLVector4a[numVertices];
-	mNormals = new LLVector4a[numVertices];
-	mBinormals = new LLVector4a[numVertices];
+	mCoords = static_cast<LLVector4a*>(ll_aligned_malloc_16(numVertices * sizeof(LLVector4a)));
+	mNormals = static_cast<LLVector4a*>(ll_aligned_malloc_16(numVertices * sizeof(LLVector4a)));
+	mBinormals = static_cast<LLVector4a*>(ll_aligned_malloc_16(numVertices * sizeof(LLVector4a)));
 	mTexCoords = new LLVector2[numVertices];
 	mVertexIndices = new U32[numVertices];
 	
@@ -90,17 +90,12 @@ LLPolyMorphData::LLPolyMorphData(const LLPolyMorphData &rhs) :
 	}
 }
 
-
 //-----------------------------------------------------------------------------
 // ~LLPolyMorphData()
 //-----------------------------------------------------------------------------
 LLPolyMorphData::~LLPolyMorphData()
 {
-	delete [] mVertexIndices;
-	delete [] mCoords;
-	delete [] mNormals;
-	delete [] mBinormals;
-	delete [] mTexCoords;
+	freeData();
 }
 
 //-----------------------------------------------------------------------------
@@ -120,11 +115,16 @@ BOOL LLPolyMorphData::loadBinary(LLFILE *fp, LLPolyMeshSharedData *mesh)
 	}
 
 	//-------------------------------------------------------------------------
+	// free any existing data
+	//-------------------------------------------------------------------------
+	freeData();
+
+	//-------------------------------------------------------------------------
 	// allocate vertices
 	//-------------------------------------------------------------------------
-	mCoords = new LLVector4a[numVertices];
-	mNormals = new LLVector4a[numVertices];
-	mBinormals = new LLVector4a[numVertices];
+	mCoords = static_cast<LLVector4a*>(ll_aligned_malloc_16(numVertices * sizeof(LLVector4a)));
+	mNormals = static_cast<LLVector4a*>(ll_aligned_malloc_16(numVertices * sizeof(LLVector4a)));
+	mBinormals = static_cast<LLVector4a*>(ll_aligned_malloc_16(numVertices * sizeof(LLVector4a)));
 	mTexCoords = new LLVector2[numVertices];
 	// Actually, we are allocating more space than we need for the skiplist
 	mVertexIndices = new U32[numVertices];
@@ -205,6 +205,42 @@ BOOL LLPolyMorphData::loadBinary(LLFILE *fp, LLPolyMeshSharedData *mesh)
 	mAvgDistortion.normalize3fast();
 
 	return TRUE;
+}
+
+//-----------------------------------------------------------------------------
+// freeData()
+//-----------------------------------------------------------------------------
+void LLPolyMorphData::freeData()
+{
+	if (mCoords != NULL)
+	{
+		ll_aligned_free_16(mCoords);
+		mCoords = NULL;
+	}
+
+	if (mNormals != NULL)
+	{
+		ll_aligned_free_16(mNormals);
+		mNormals = NULL;
+	}
+
+	if (mBinormals != NULL)
+	{
+		ll_aligned_free_16(mBinormals);
+		mBinormals = NULL;
+	}
+
+	if (mTexCoords != NULL)
+	{
+		delete [] mTexCoords;
+		mTexCoords = NULL;
+	}
+
+	if (mVertexIndices != NULL)
+	{
+		delete [] mVertexIndices;
+		mVertexIndices = NULL;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -354,9 +390,9 @@ BOOL LLPolyMorphData::setMorphFromMesh(LLPolyMesh *morph)
 	if (num_significant == 0)
 		nindices = 1;
 
-	LLVector4a* new_coords     = new LLVector4a[nindices];
-	LLVector4a* new_normals    = new LLVector4a[nindices];
-	LLVector4a* new_binormals  = new LLVector4a[nindices];
+	LLVector4a* new_coords     = static_cast<LLVector4a*>(ll_aligned_malloc_16(nindices * sizeof(LLVector4a)));
+	LLVector4a* new_normals    = static_cast<LLVector4a*>(ll_aligned_malloc_16(nindices * sizeof(LLVector4a)));
+	LLVector4a* new_binormals  = static_cast<LLVector4a*>(ll_aligned_malloc_16(nindices * sizeof(LLVector4a)));
 	LLVector2* new_tex_coords = new LLVector2[nindices];
 	U32* new_vertex_indices   = new U32[nindices];
 
@@ -490,11 +526,7 @@ BOOL LLPolyMorphData::setMorphFromMesh(LLPolyMesh *morph)
 	//-------------------------------------------------------------------------
 	// reallocate vertices
 	//-------------------------------------------------------------------------
-	delete [] mVertexIndices;
-	delete [] mCoords;
-	delete [] mNormals;
-	delete [] mBinormals;
-	delete [] mTexCoords;
+	freeData();
 
 	mVertexIndices = new_vertex_indices;
 	mCoords        = new_coords;
