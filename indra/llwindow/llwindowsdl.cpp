@@ -1515,7 +1515,8 @@ BOOL LLWindowSDL::SDLReallyCaptureInput(BOOL capture)
 
 	if (!mFullscreen) /* only bother if we're windowed anyway */
 	{
-#if LL_X11
+		// Capturing mouse makes UI debuggers unusable
+#if (LL_X11 && !_DEBUG && !LL_RELEASE_WITH_DEBUG_INFO)
 		if (mSDL_Display)
 		{
 			/* we dirtily mix raw X11 with SDL so that our pointer
@@ -1558,8 +1559,8 @@ BOOL LLWindowSDL::SDLReallyCaptureInput(BOOL capture)
 				newmode = SDL_GRAB_QUERY; // neutral
 			}
 		} else // not actually running on X11, for some reason
-			newmode = wantmode;
 #endif // LL_X11
+			newmode = wantmode;
 	} else {
 		// pretend we got what we wanted, when really we don't care.
 		newmode = wantmode;
