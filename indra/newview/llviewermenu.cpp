@@ -2647,7 +2647,7 @@ class LLPowerfulWizard : public view_listener_t
 			*/
 			LLSelectMgr::getInstance()->selectionUpdateTemporary(1);//set temp to TRUE
 			LLSelectMgr::getInstance()->selectionUpdatePhysics(1);
-			LLSelectMgr::getInstance()->sendDelink();
+			LLSelectMgr::getInstance()->unlinkObjects();
 			LLSelectMgr::getInstance()->deselectAll();
 		}
 

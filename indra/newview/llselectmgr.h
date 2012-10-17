@@ -663,8 +663,6 @@ public:
 	void sendAttach(U8 attachment_point, bool replace=true);
 	void sendDetach();
 	void sendDropAttachment();
-	void sendLink();
-	void sendDelink();
 	//void sendHinge(U8 type);
 	//void sendDehinge();
 	void sendSelect();
@@ -705,7 +703,8 @@ private:
 							void (*pack_body)(LLSelectNode* node, void *user_data), 
 							void *user_data,
 							ESendType send_type);
-
+	void sendLink();
+	void sendDelink();
 
 	static void packAgentID(	void *);
 	static void packAgentAndSessionID(void* user_data);
