@@ -95,17 +95,6 @@ const S32 SCULPT_MIN_AREA_DETAIL = 1;
 
 extern BOOL gDebugGL;
 
-void assert_aligned(void* ptr, uintptr_t alignment)
-{
-#if 0
-	uintptr_t t = (uintptr_t) ptr;
-	if (t%alignment != 0)
-	{
-		llerrs << "Alignment check failed." << llendl;
-	}
-#endif
-}
-
 BOOL check_same_clock_dir( const LLVector3& pt1, const LLVector3& pt2, const LLVector3& pt3, const LLVector3& norm)
 {    
 	LLVector3 test = (pt2-pt1)%(pt3-pt2);
@@ -6967,14 +6956,14 @@ void LLVolumeFace::resizeVertices(S32 num_verts)
 	if (num_verts)
 	{
 		mPositions = (LLVector4a*) ll_aligned_malloc_16(sizeof(LLVector4a)*num_verts);
-		assert_aligned(mPositions, 16);
+		ll_assert_aligned(mPositions, 16);
 		mNormals = (LLVector4a*) ll_aligned_malloc_16(sizeof(LLVector4a)*num_verts);
-		assert_aligned(mNormals, 16);
+		ll_assert_aligned(mNormals, 16);
 
 		//pad texture coordinate block end to allow for QWORD reads
 		S32 size = ((num_verts*sizeof(LLVector2)) + 0xF) & ~0xF;
 		mTexCoords = (LLVector2*) ll_aligned_malloc_16(size);
-		assert_aligned(mTexCoords, 16);
+		ll_assert_aligned(mTexCoords, 16);
 	}
 	else
 	{
@@ -7062,7 +7051,8 @@ void LLVolumeFace::pushIndex(const U16& idx)
 	S32 old_size = ((mNumIndices*2)+0xF) & ~0xF;
 	if (new_size != old_size)
 	{
-		mIndices = (U16*) realloc(mIndices, new_size);
+		mIndices = (U16*) ll_aligned_realloc_16(mIndices, new_size, old_size);
+		ll_assert_aligned(mIndices,16);
 	}
 	
 	mIndices[mNumIndices++] = idx;
