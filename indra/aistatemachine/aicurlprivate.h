@@ -458,7 +458,7 @@ class CurlResponderBuffer : protected AICurlResponderBufferEvents, protected AIC
 	// Events from this class.
 	/*virtual*/ void received_HTTP_header(void);
 	/*virtual*/ void received_header(std::string const& key, std::string const& value);
-	/*virtual*/ void completed_headers(U32 status, std::string const& reason);
+	/*virtual*/ void completed_headers(U32 status, std::string const& reason, CURLcode code, AICurlInterface::TransferInfo* info);
 
 	// CurlEasyHandle events.
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);

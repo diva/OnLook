@@ -2076,7 +2076,8 @@ void CurlResponderBuffer::processOutput(AICurlEasyRequest_wat& curl_easy_request
   std::string responseReason;
   
   CURLcode code;
-  curl_easy_request_w->getResult(&code);
+  AICurlInterface::TransferInfo info;
+  curl_easy_request_w->getResult(&code, &info);
   if (code == CURLE_OK)
   {
 	curl_easy_request_w->getinfo(CURLINFO_RESPONSE_CODE, &responseCode);
@@ -2107,7 +2108,7 @@ void CurlResponderBuffer::processOutput(AICurlEasyRequest_wat& curl_easy_request
 	  llassert(mEventsTarget == mResponder.get());
 	  // Allow clients to parse result codes and headers before we attempt to parse
 	  // the body and provide completed/result/error calls.
-	  mEventsTarget->completed_headers(responseCode, responseReason);
+	  mEventsTarget->completed_headers(responseCode, responseReason, code, (code == CURLE_FAILED_INIT) ? NULL : &info);
 	}
 	mResponder->completedRaw(responseCode, responseReason, sChannels, mOutput);
 	mResponder = NULL;
@@ -2128,10 +2129,10 @@ void CurlResponderBuffer::received_header(std::string const& key, std::string co
 	mEventsTarget->received_header(key, value);
 }
 
-void CurlResponderBuffer::completed_headers(U32 status, std::string const& reason)
+void CurlResponderBuffer::completed_headers(U32 status, std::string const& reason, CURLcode code, AICurlInterface::TransferInfo* info)
 {
   if (mEventsTarget)
-	mEventsTarget->completed_headers(status, reason);
+	mEventsTarget->completed_headers(status, reason, code, info);
 }
 
 //static
