@@ -54,6 +54,8 @@
 #include "aithreadsafe.h"
 #include "aihttpheaders.h"
 
+extern bool gNoVerifySSLCert;
+
 class LLSD;
 class LLBufferArray;
 class LLChannelDescriptors;
@@ -147,7 +149,7 @@ struct TransferInfo {
 void initCurl(void (*)(void) = NULL);
 
 // Called once at start of application (from LLAppViewer::initThreads), starts AICurlThread.
-void startCurlThread(U32 CurlConcurrentConnections);
+void startCurlThread(U32 CurlConcurrentConnections, bool NoVerifySSLCert);
 
 // Called once at end of application (from newview/llappviewer.cpp by main thread),
 // with purpose to stop curl threads, free curl resources and deinitialize curl.

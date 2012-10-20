@@ -2482,12 +2482,13 @@ void AICurlEasyRequest::removeRequest(void)
 
 namespace AICurlInterface {
 
-void startCurlThread(U32 CurlConcurrentConnections)
+void startCurlThread(U32 CurlConcurrentConnections, bool NoVerifySSLCert)
 {
   using namespace AICurlPrivate::curlthread;
 
   llassert(is_main_thread());
   curl_concurrent_connections = CurlConcurrentConnections;	// Debug Setting.
+  gNoVerifySSLCert = NoVerifySSLCert;						// Debug Setting.
   AICurlThread::sInstance = new AICurlThread;
   AICurlThread::sInstance->start();
 }

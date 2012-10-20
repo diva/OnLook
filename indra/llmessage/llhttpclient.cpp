@@ -149,7 +149,9 @@ static void request(
 	LLURLRequest::ERequestAction method,
 	Injector* body_injector,
 	LLCurl::ResponderPtr responder,
-	AIHTTPHeaders& headers)
+	AIHTTPHeaders& headers,
+	bool is_auth = false,
+	bool no_compression = false)
 {
 	if (responder)
 	{
@@ -160,7 +162,7 @@ static void request(
 	LLURLRequest* req;
 	try
 	{
-		req = new LLURLRequest(method, url, body_injector, responder, headers);
+		req = new LLURLRequest(method, url, body_injector, responder, headers, is_auth, no_compression);
 	}
 	catch(AICurlNoEasyHandle& error)
 	{

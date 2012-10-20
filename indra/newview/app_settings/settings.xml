@@ -9059,7 +9059,7 @@
     <key>NoVerifySSLCert</key>
     <map>
       <key>Comment</key>
-      <string>Do not verify SSL peers.</string>
+      <string>Do not verify SSL peers (requires restart)</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

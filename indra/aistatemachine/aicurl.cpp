@@ -60,6 +60,12 @@
 #include "aicurleasyrequeststatemachine.h"
 
 //==================================================================================
+// Debug Settings
+//
+
+bool gNoVerifySSLCert;
+
+//==================================================================================
 // Local variables.
 //
 
@@ -828,9 +834,6 @@ void CurlEasyRequest::setPost_raw(U32 size, char const* data)
 	DoutCurl("POST size is " << size << " bytes.");
   }
 
-  // Accept everything (send an Accept-Encoding header containing all encodings we support (zlib and gzip)).
-  setoptString(CURLOPT_ENCODING, "");	// CURLOPT_ACCEPT_ENCODING
-
   // The server never replies with 100-continue, so suppress the "Expect: 100-continue" header that libcurl adds by default.
   addHeader("Expect:");
   if (size > 0)
@@ -1366,10 +1369,6 @@ void CurlResponderBuffer::prepRequest(AICurlEasyRequest_wat& curl_easy_request_w
 	curl_easy_request_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_request_w->setopt(CURLOPT_MAXREDIRS, HTTP_REDIRECTS_DEFAULT);
   }
-
-  curl_easy_request_w->setopt(CURLOPT_SSL_VERIFYPEER, 1);
-  // Don't verify host name so urls with scrubbed host names will work (improves DNS performance).
-  curl_easy_request_w->setopt(CURLOPT_SSL_VERIFYHOST, 0);
 
   // Keep responder alive.
   mResponder = responder;

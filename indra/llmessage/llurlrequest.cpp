@@ -113,8 +113,10 @@ std::string LLURLRequest::actionAsVerb(LLURLRequest::ERequestAction action)
 }
 
 // This might throw AICurlNoEasyHandle.
-LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string const& url, Injector* body, AICurlInterface::ResponderPtr responder, AIHTTPHeaders& headers) :
-    AICurlEasyRequestStateMachine(true), mAction(action), mURL(url), mBody(body), mResponder(responder), mHeaders(headers)
+LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string const& url, Injector* body,
+	AICurlInterface::ResponderPtr responder, AIHTTPHeaders& headers, bool is_auth, bool no_compression) :
+    AICurlEasyRequestStateMachine(true), mAction(action), mURL(url), mIsAuth(is_auth), mNoCompression(no_compression),
+	mBody(body), mResponder(responder), mHeaders(headers)
 {
 }
 
@@ -507,7 +509,7 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 			curlEasyRequest_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
 
 			// Set Accept-Encoding to allow response compression
-			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, "");
+			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, mNoCompression ? "identity" : "");
 			rv = true;
 			break;
 
@@ -525,6 +527,9 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 		{
 			// Set the handle for an http post
 			curlEasyRequest_w->setPost(mBodySize);
+
+			// Set Accept-Encoding to allow response compression
+			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, mNoCompression ? "identity" : "");
 			rv = true;
 			break;
 		}
@@ -546,6 +551,10 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 		}
 		if(rv)
 		{
+			curlEasyRequest_w->setopt(CURLOPT_SSL_VERIFYPEER, gNoVerifySSLCert ? 0L : 1L);
+			// Don't verify host name if this is not an authentication request,
+			// so urls with scrubbed host names will work (improves DNS performance).
+			curlEasyRequest_w->setopt(CURLOPT_SSL_VERIFYHOST, (gNoVerifySSLCert || !mIsAuth) ? 0L : 2L);
 			curlEasyRequest_w->finalizeRequest(mURL, mResponder->getHTTPTimeoutPolicy(), this);
 		}
 	}

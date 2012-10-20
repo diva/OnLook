@@ -75,7 +75,7 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	 * @param action One of the ERequestAction enumerations.
 	 * @param url The url of the request. It should already be encoded.
 	 */
-	LLURLRequest(ERequestAction action, std::string const& url, Injector* body, AICurlInterface::ResponderPtr responder, AIHTTPHeaders& headers);
+	LLURLRequest(ERequestAction action, std::string const& url, Injector* body, AICurlInterface::ResponderPtr responder, AIHTTPHeaders& headers, bool is_auth, bool no_compression);
 
 	/**
 	 * @brief Turn on cookie handling for this request with CURLOPT_COOKIEFILE.
@@ -109,6 +109,8 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
   private:
 	ERequestAction mAction;
 	std::string mURL;
+	bool mIsAuth;						// Set for authentication messages (login, buy land, buy currency).
+	bool mNoCompression;				// Set to disable using gzip.
 	Injector* mBody;					// Non-zero iff the action is HTTP_POST and HTTP_PUT.
 	U32 mBodySize;
 	AICurlInterface::ResponderPtr mResponder;
