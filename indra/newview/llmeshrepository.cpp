@@ -1811,7 +1811,7 @@ void LLMeshLODResponder::completedRaw(U32 status, const std::string& reason,
 
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
-	if (status < 200 || status > 400)
+	if (status < 200 || status >= 400)
 	{
 		llwarns << status << ": " << reason << llendl;
 	}
@@ -1865,7 +1865,7 @@ void LLMeshSkinInfoResponder::completedRaw(U32 status, const std::string& reason
 {
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
-	if (status < 200 || status > 400)
+	if (status < 200 || status >= 400)
 	{
 		llwarns << status << ": " << reason << llendl;
 	}
@@ -1919,7 +1919,7 @@ void LLMeshDecompositionResponder::completedRaw(U32 status, const std::string& r
 {
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
-	if (status < 200 || status > 400)
+	if (status < 200 || status >= 400)
 	{
 		llwarns << status << ": " << reason << llendl;
 	}
@@ -1973,7 +1973,7 @@ void LLMeshPhysicsShapeResponder::completedRaw(U32 status, const std::string& re
 {
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
-	if (status < 200 || status > 400)
+	if (status < 200 || status >= 400)
 	{
 		llwarns << status << ": " << reason << llendl;
 	}
@@ -2025,7 +2025,7 @@ void LLMeshHeaderResponder::completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer)
 {
-	if (status < 200 || status > 400)
+	if (status < 200 || status >= 400)
 	{
 		//llwarns
 		//	<< "Header responder failed with status: "
