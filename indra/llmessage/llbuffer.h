@@ -495,6 +495,7 @@ public:
 	 * @return Returns the segment if there is one.
 	 */
 	segment_iterator_t beginSegment();
+	const_segment_iterator_t beginSegment() const;
 
 	/** 
 	 * @brief Get the one-past-the-end segment in the buffer array
@@ -502,6 +503,7 @@ public:
 	 * @return Returns the iterator for an invalid segment location.
 	 */
 	segment_iterator_t endSegment();
+	const_segment_iterator_t endSegment() const;
 
 	/** 
 	 * @brief Get the segment which holds the given address.

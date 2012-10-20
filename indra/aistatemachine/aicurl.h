@@ -204,7 +204,7 @@ class Responder : public AICurlResponderBufferEvents {
 	Responder(void);
 	virtual ~Responder();
 
-  private:
+  protected:
 	// Associated URL, used for debug output.
 	std::string mURL;
 
@@ -215,6 +215,9 @@ class Responder : public AICurlResponderBufferEvents {
 	// Called to set the URL of the current request for this Responder,
 	// used only when printing debug output regarding activity of the Responder.
 	void setURL(std::string const& url);
+
+	// Accessor.
+	std::string const& getURL(void) const { return mURL; }
 
   protected:
 	// Called when the "HTTP/1.0 <status> <reason>" header is received.
@@ -237,7 +240,7 @@ class Responder : public AICurlResponderBufferEvents {
 	  completedHeaders(status, reason, mReceivedHeaders);
 	}
 
-	// Derived classes can override this to get the HTML header that was received, when the message is completed.
+	// Derived classes can override this to get the HTML headers that were received, when the message is completed.
 	// The default does nothing.
 	virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPHeaders const& headers);
 
@@ -251,11 +254,6 @@ class Responder : public AICurlResponderBufferEvents {
 	// Derived classes can override this to get the raw data of the body of the HTML message that was received.
 	// The default is to interpret the content as LLSD and call completed().
 	virtual void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
-
-	// Called from LLHTTPClient request calls, if an error occurs even before we can call one of the above.
-	// It calls completed() with a fake status U32_MAX, as that is what some derived clients expect (bad design).
-	// This means that if a derived class overrides completedRaw() it now STILL has to override completed() to catch this error.
-	void fatalError(std::string const& reason);
 
 	// A derived class should return true if curl should follow redirections.
 	// The default is not to follow redirections.

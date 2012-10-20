@@ -479,12 +479,6 @@ void Responder::completedRaw(U32 status, std::string const& reason, LLChannelDes
   completed(status, reason, content);
 }
 
-void Responder::fatalError(std::string const& reason)
-{
-  llwarns << "Responder::fatalError(\"" << reason << "\") is called (" << mURL << "). Passing it to Responder::completed with fake HTML error status and empty HTML body!" << llendl;
-  completed(U32_MAX, reason, LLSD());
-}
-
 // virtual
 void Responder::completed(U32 status, std::string const& reason, LLSD const& content)
 {
@@ -1364,7 +1358,7 @@ void CurlResponderBuffer::prepRequest(AICurlEasyRequest_wat& curl_easy_request_w
   curl_easy_request_w->setHeaderCallback(&curlHeaderCallback, lockobj);
 
   // Allow up to ten redirects.
-  if (responder && responder->followRedir())
+  if (responder->followRedir())
   {
 	curl_easy_request_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_request_w->setopt(CURLOPT_MAXREDIRS, HTTP_REDIRECTS_DEFAULT);

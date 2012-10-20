@@ -2105,7 +2105,7 @@ void CurlResponderBuffer::processOutput(AICurlEasyRequest_wat& curl_easy_request
 	{
 	  // Only the responder registers for these events.
 	  llassert(mEventsTarget == mResponder.get());
-	  // Allow clients to parse headers before we attempt to parse
+	  // Allow clients to parse result codes and headers before we attempt to parse
 	  // the body and provide completed/result/error calls.
 	  mEventsTarget->completed_headers(responseCode, responseReason);
 	}

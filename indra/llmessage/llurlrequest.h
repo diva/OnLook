@@ -77,6 +77,11 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	 */
 	LLURLRequest(ERequestAction action, std::string const& url, Injector* body, AICurlInterface::ResponderPtr responder, AIHTTPHeaders& headers, bool is_auth, bool no_compression);
 
+  protected:
+	// Call abort(), not delete.
+	/*virtual*/ ~LLURLRequest() { }
+
+  public:
 	/**
 	 * @brief Turn on cookie handling for this request with CURLOPT_COOKIEFILE.
 	 */

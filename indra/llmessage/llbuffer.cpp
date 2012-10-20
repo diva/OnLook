@@ -393,12 +393,26 @@ LLBufferArray::segment_iterator_t LLBufferArray::splitAfter(U8* address)
 	mSegments.insert(it, segment2);
 	return rv;
 }
-							   
+
+//mMutexp should be locked before calling this.
+LLBufferArray::const_segment_iterator_t LLBufferArray::beginSegment() const
+{
+	ASSERT_LLBUFFERARRAY_MUTEX_LOCKED
+	return mSegments.begin();
+}
+
 //mMutexp should be locked before calling this.
 LLBufferArray::segment_iterator_t LLBufferArray::beginSegment()
 {
 	ASSERT_LLBUFFERARRAY_MUTEX_LOCKED
 	return mSegments.begin();
+}
+
+//mMutexp should be locked before calling this.
+LLBufferArray::const_segment_iterator_t LLBufferArray::endSegment() const
+{
+	ASSERT_LLBUFFERARRAY_MUTEX_LOCKED
+	return mSegments.end();
 }
 
 //mMutexp should be locked before calling this.

@@ -516,7 +516,7 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 		case HTTP_PUT:
 		{
 			// Disable the expect http 1.1 extension. POST and PUT default
-			// to turning this on, and I am not too sure what it means.
+			// to using this, causing the broken server to get confused.
 			curlEasyRequest_w->addHeader("Expect:");
 			curlEasyRequest_w->setopt(CURLOPT_UPLOAD, 1);
 			curlEasyRequest_w->setopt(CURLOPT_INFILESIZE, mBodySize);

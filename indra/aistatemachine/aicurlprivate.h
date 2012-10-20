@@ -366,7 +366,7 @@ class CurlEasyRequest : public CurlEasyHandle {
   private:
 	curl_slist* mHeaders;
 	AICurlEasyHandleEvents* mEventsTarget;
-	CURLcode mResult;
+	CURLcode mResult;		//AIFIXME: this does not belong in the request object, but belongs in the response object.
 
 	AIHTTPTimeoutPolicy const* mTimeoutPolicy;
 	std::string mLowercaseHostname;				// Lowercase hostname (canonicalized) extracted from the url.
