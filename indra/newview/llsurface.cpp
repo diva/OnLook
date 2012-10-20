@@ -61,6 +61,7 @@
 #include "lldrawable.h"
 
 extern LLPipeline gPipeline;
+extern bool gShiftFrame;
 
 LLColor4U MAX_WATER_COLOR(0, 48, 96, 240);
 
@@ -351,13 +352,21 @@ void LLSurface::getNeighboringRegions( std::vector<LLViewerRegion*>& uniqueRegio
 	}	
 }
 
+
+void LLSurface::getNeighboringRegionsStatus( std::vector<S32>& regions )
+{
+	S32 i;
+	for (i = 0; i < 8; i++)
+	{
+		if ( mNeighbors[i] != NULL )
+		{
+			regions.push_back( i );
+		}
+	}	
+}
+
 void LLSurface::connectNeighbor(LLSurface *neighborp, U32 direction)
 {
-	if (gNoRender)
-	{
-		return;
-	}
-
 	S32 i;
 	LLSurfacePatch *patchp, *neighbor_patchp;
 
@@ -618,6 +627,11 @@ void LLSurface::moveZ(const S32 x, const S32 y, const F32 delta)
 
 void LLSurface::updatePatchVisibilities(LLAgent &agent) 
 {
+	if (gShiftFrame)
+	{
+		return;
+	}
+
 	LLVector3 pos_region = mRegionp->getPosRegionFromGlobal(gAgentCamera.getCameraPositionGlobal());
 
 	LLSurfacePatch *patchp;

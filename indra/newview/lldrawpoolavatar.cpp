@@ -1040,9 +1040,13 @@ void LLDrawPoolAvatar::endDeferredSkinned()
 	gGL.getTexUnit(0)->activate();
 }
 
+static LLFastTimer::DeclareTimer FTM_RENDER_AVATARS("renderAvatars");
+
 
 void LLDrawPoolAvatar::renderAvatars(LLVOAvatar* single_avatar, S32 pass)
 {
+	LLFastTimer t(FTM_RENDER_AVATARS);
+
 	if (pass == -1)
 	{
 		for (S32 i = 1; i < getNumPasses(); i++)
@@ -1546,8 +1550,12 @@ void LLDrawPoolAvatar::renderDeferredRiggedBump(LLVOAvatar* avatar)
 	renderRigged(avatar, RIGGED_DEFERRED_BUMP);
 }
 
+static LLFastTimer::DeclareTimer FTM_RIGGED_VBO("Rigged VBO");
+
 void LLDrawPoolAvatar::updateRiggedVertexBuffers(LLVOAvatar* avatar)
 {
+	LLFastTimer t(FTM_RIGGED_VBO);
+
 	//update rigged vertex buffers
 	for (U32 type = 0; type < NUM_RIGGED_PASSES; ++type)
 	{

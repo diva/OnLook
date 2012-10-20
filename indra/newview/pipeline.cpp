@@ -142,6 +142,8 @@ void check_stack_depth(S32 stack_depth)
 //#define DEBUG_INDICES
 #endif
 
+bool gShiftFrame = false;
+
 const F32 BACKLIGHT_DAY_MAGNITUDE_AVATAR = 0.2f;
 const F32 BACKLIGHT_NIGHT_MAGNITUDE_AVATAR = 0.1f;
 const F32 BACKLIGHT_DAY_MAGNITUDE_OBJECT = 0.1f;
@@ -543,6 +545,7 @@ void LLPipeline::cleanup()
 	mInitialized = FALSE;
 
 	mDeferredVB = NULL;
+	mCubeVB = NULL;
 }
 
 //============================================================================

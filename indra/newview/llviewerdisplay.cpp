@@ -90,6 +90,8 @@
 #include "rlvlocks.h"
 // [/RLVa:KB]
 
+extern bool gShiftFrame;
+
 LLPointer<LLViewerTexture> gDisconnectedImagep = NULL;
 
 // used to toggle renderer back on after teleport
@@ -1109,6 +1111,8 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 	display_stats();
 				
 	LLAppViewer::instance()->pingMainloopTimeout("Display:Done");
+
+	gShiftFrame = false;
 }
 
 void render_hud_attachments()

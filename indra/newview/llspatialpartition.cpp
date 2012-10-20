@@ -73,6 +73,7 @@ const F32 SG_OCCLUSION_FUDGE = 0.25f;
 #define assert_states_valid(x)
 #endif
 
+extern bool gShiftFrame;
 
 static U32 sZombieGroups = 0;
 U32 LLSpatialGroup::sNodeCount = 0;
@@ -806,7 +807,10 @@ void LLSpatialGroup::shift(const LLVector4a &offset)
 	mObjectExtents[0].add(offset);
 	mObjectExtents[1].add(offset);
 
-	if (!mSpatialPartition->mRenderByGroup)
+	if (!mSpatialPartition->mRenderByGroup && 
+		mSpatialPartition->mPartitionType != LLViewerRegion::PARTITION_TREE &&
+		mSpatialPartition->mPartitionType != LLViewerRegion::PARTITION_TERRAIN &&
+		mSpatialPartition->mPartitionType != LLViewerRegion::PARTITION_BRIDGE)
 	{
 		setState(GEOM_DIRTY);
 		gPipeline.markRebuild(this, TRUE);
@@ -1118,6 +1122,11 @@ void LLSpatialGroup::updateDistance(LLCamera &camera)
 	if (LLViewerCamera::sCurCameraID != LLViewerCamera::CAMERA_WORLD)
 	{
 		llwarns << "Attempted to update distance for camera other than world camera!" << llendl;
+		return;
+	}
+
+	if (gShiftFrame)
+	{
 		return;
 	}
 
@@ -1734,6 +1743,8 @@ BOOL LLSpatialPartition::remove(LLDrawable *drawablep, LLSpatialGroup *curp)
 	{
 		drawablep->setSpatialGroup(NULL);
 	}
+
+	drawablep->setSpatialGroup(NULL);
 
 	assert_octree_valid(mOctree);
 	
