@@ -1294,7 +1294,7 @@ CurlResponderBuffer::~CurlResponderBuffer()
 {
   ThreadSafeBufferedCurlEasyRequest* lockobj = get_lockobj();
   AICurlEasyRequest_wat curl_easy_request_w(*lockobj);				// Wait 'til possible callbacks have returned.
-  curl_easy_request_w->send_events_to(NULL);
+  send_events_to(NULL);
   curl_easy_request_w->revokeCallbacks();
   if (mResponder)
   {	

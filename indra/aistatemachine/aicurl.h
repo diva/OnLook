@@ -223,8 +223,8 @@ class Responder : public AICurlResponderBufferEvents {
 	std::string const& getURL(void) const { return mURL; }
 
   protected:
-	// Called when the "HTTP/1.0 <status> <reason>" header is received.
-	/*virual*/ void received_HTTP_header(void)
+	// Called when the "HTTP/1.x <status> <reason>" header is received.
+	/*virtual*/ void received_HTTP_header(void)
 	{
 	  // It's possible that this page was moved (302), so we already saw headers
 	  // from the 302 page and are starting over on the new page now.
