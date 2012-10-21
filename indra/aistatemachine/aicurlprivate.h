@@ -325,6 +325,9 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// Used in applyDefaultOptions.
 	static CURLcode curlCtxCallback(CURL* curl, void* sslctx, void* parm);
 
+	// Called from get_timeout_object and httptimeout.
+	void create_timeout_object(ThreadSafeCurlEasyRequest* lockobj);
+
   public:
 	// Set default options that we want applied to all curl easy handles.
 	void applyDefaultOptions(void);
@@ -370,7 +373,8 @@ class CurlEasyRequest : public CurlEasyHandle {
 
 	AIHTTPTimeoutPolicy const* mTimeoutPolicy;
 	std::string mLowercaseHostname;				// Lowercase hostname (canonicalized) extracted from the url.
-	LLPointer<curlthread::HTTPTimeout> mTimeout;
+	LLPointer<curlthread::HTTPTimeout> mTimeout;// Timeout administration object associated with last created CurlSocketInfo.
+	bool mTimeoutIsOrphan;						// Set to true when mTimeout is not (yet) associated with a CurlSocketInfo.
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
   public:
 	bool mDebugIsGetMethod;
@@ -381,9 +385,10 @@ class CurlEasyRequest : public CurlEasyHandle {
 	AIHTTPTimeoutPolicy const* getTimeoutPolicy(void) const { return mTimeoutPolicy; }
 	std::string const& getLowercaseHostname(void) const { return mLowercaseHostname; }
 	// Called by CurlSocketInfo to allow access to the last (after a redirect) HTTPTimeout object related to this request.
-	void set_timeout_object(LLPointer<curlthread::HTTPTimeout>& timeout) { mTimeout = timeout; }
-	// And the accessor for it.
-    LLPointer<curlthread::HTTPTimeout>& httptimeout(void) { return mTimeout; }
+	// This creates mTimeout (unless mTimeoutIsOrphan is set in which case it adopts the orphan).
+	LLPointer<curlthread::HTTPTimeout>& get_timeout_object(ThreadSafeCurlEasyRequest* lockobj);
+	// Accessor for mTimeout with optional creation of orphaned object (if lockobj != NULL).
+	LLPointer<curlthread::HTTPTimeout>& httptimeout(ThreadSafeCurlEasyRequest* lockobj = NULL) { if (lockobj && !mTimeout) create_timeout_object(lockobj); return mTimeout; }
 	// Return true if no data has been received on the latest socket (if any) for too long.
 	bool has_stalled(void) const { return mTimeout && mTimeout->has_stalled(); }
 
@@ -391,7 +396,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// This class may only be created by constructing a ThreadSafeCurlEasyRequest.
 	friend class ThreadSafeCurlEasyRequest;
 	// Throws AICurlNoEasyHandle.
-	CurlEasyRequest(void) : mHeaders(NULL), mEventsTarget(NULL), mResult(CURLE_FAILED_INIT), mTimeoutPolicy(NULL)
+	CurlEasyRequest(void) : mHeaders(NULL), mEventsTarget(NULL), mResult(CURLE_FAILED_INIT), mTimeoutPolicy(NULL), mTimeoutIsOrphan(false)
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 		, mDebugIsGetMethod(false)
 #endif

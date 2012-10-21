@@ -773,8 +773,7 @@ CurlSocketInfo::CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socke
   // CurlSocketInfo objects for a request and we need upload_finished() to be called on the HTTPTimeout
   // object related to THIS CurlSocketInfo.
   AICurlEasyRequest_wat easy_request_w(*lockobj);
-  mTimeout = new HTTPTimeout(easy_request_w->getTimeoutPolicy(), lockobj);
-  easy_request_w->set_timeout_object(mTimeout);
+  mTimeout = easy_request_w->get_timeout_object(lockobj);
 }
 
 CurlSocketInfo::~CurlSocketInfo()
@@ -2170,8 +2169,12 @@ size_t CurlResponderBuffer::curlReadCallback(char* data, size_t size, size_t nme
   S32 bytes = size * nmemb;		// The maximum amount to read.
   AICurlResponderBuffer_wat buffer_w(*lockobj);
   buffer_w->mLastRead = buffer_w->getInput()->readAfter(sChannels.out(), buffer_w->mLastRead, (U8*)data, bytes);
-  buffer_w->mRequestTransferedBytes += bytes;					// Accumulate data sent to the server.
-  if (buffered_easy_request_w->httptimeout()->data_sent(bytes))	// Timeout administration.
+  buffer_w->mRequestTransferedBytes += bytes;		// Accumulate data sent to the server.
+  // Timeout administration. Note that it can happen that we get here
+  // before the socket callback has been called, because the silly libcurl
+  // writes headers without informing us. In that case it's OK to create
+  // the Timeout object on the fly, so pass lockobj.
+  if (buffered_easy_request_w->httptimeout(lockobj)->data_sent(bytes))
   {
 	// Transfer timed out. Return CURL_READFUNC_ABORT which will abort with error CURLE_ABORTED_BY_CALLBACK.
 	return CURL_READFUNC_ABORT;
