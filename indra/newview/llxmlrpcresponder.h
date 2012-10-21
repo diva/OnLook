@@ -1,10 +1,11 @@
 /** 
- * @file llxmlrpctransaction.h
- * @brief LLXMLRPCTransaction and related class header file
+ * @file llxmlrpcresponder.h
+ * @brief LLXMLRPCResponder and related class header file
  *
  * $LicenseInfo:firstyear=2006&license=viewergpl$
  * 
  * Copyright (c) 2006-2009, Linden Research, Inc.
+ * Copyright (c) 2012, Aleric Inglewood.
  * 
  * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
@@ -30,10 +31,16 @@
  * $/LicenseInfo$
  */
 
-#ifndef LLXMLRPCTRANSACTION_H
-#define LLXMLRPCTRANSACTION_H
+#ifndef LLXMLRPCRESPONDER_H
+#define LLXMLRPCRESPONDER_H
 
 #include <string>
+#include "llurlrequest.h"	// Injector
+#include "llcurl.h"
+#include "llhttpstatuscodes.h"
+
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy XMLRPCResponder_timeout;
 
 typedef struct _xmlrpc_request* XMLRPC_REQUEST;
 typedef struct _xmlrpc_value* XMLRPC_VALUE;
@@ -84,56 +91,35 @@ private:
 	XMLRPC_VALUE mV;
 };
 
-
-class LLXMLRPCTransaction
-	// an asynchronous request and respones via XML-RPC
-{
-public:
-	LLXMLRPCTransaction(const std::string& uri,
-		XMLRPC_REQUEST request, bool useGzip = true);
-		// does not take ownership of the request object
-		// request can be freed as soon as the transaction is constructed
-
-	LLXMLRPCTransaction(const std::string& uri,
-		const std::string& method, LLXMLRPCValue params, bool useGzip = true);
-		// *does* take control of the request value, you must not free it
-		
-	~LLXMLRPCTransaction();
-	
-	typedef enum {
-		StatusNotStarted,
-		StatusStarted,
-		StatusDownloading,
-		StatusComplete,
-		StatusCURLError,
-		StatusXMLRPCError,
-		StatusOtherError
-	} Status;
-
-	bool is_finished(void) const;
-		// Returns true when done.
-		
-	Status status(int* curlCode);
-		// return status, and extended CURL code, if code isn't null
-	std::string statusMessage();
-		// return a message string, suitable for showing the user
-	std::string statusURI();
-		// return a URI for the user with more information
-		// can be empty
-
-	XMLRPC_REQUEST response();
-	LLXMLRPCValue responseValue();
-		// only valid if StatusComplete, otherwise NULL
-		// retains ownership of the result object, don't free it
-	
-	F64 transferRate();
-		// only valid if StatusComplete, otherwise 0.0
-		
+class XMLRPCResponder : public LLCurl::Responder {
 private:
-	class Impl;
-	Impl& impl;
+	CURLcode mCode;
+	U32 mStatus;
+	AICurlInterface::TransferInfo mTransferInfo;
+	S32 mBufferSize;
+	bool mReceivedHTTPHeader;
+	bool mFinished;
+	std::string mReason;
+	XMLRPC_REQUEST mResponse;
+
+public:
+	XMLRPCResponder(void) : mCode(CURLE_FAILED_INIT), mStatus(HTTP_INTERNAL_ERROR), mReceivedHTTPHeader(false), mFinished(false) { }
+
+	// Accessors.
+	CURLcode result_code(void) const { return mCode; }
+	U32 http_result(void) const { return mStatus; }
+	F64 transferRate(void) const;
+	bool is_downloading(void) const { return mReceivedHTTPHeader; }
+	bool is_finished(void) const { return mFinished; }
+	std::string const& reason(void) const { return mReason; }
+	XMLRPC_REQUEST response(void) const { return mResponse; }
+	LLXMLRPCValue responseValue(void) const;
+
+	/*virtual*/ bool needsHeaders(void) const { return true; }
+	/*virtual*/ void received_HTTP_header(void) { mReceivedHTTPHeader = true; LLCurl::Responder::received_HTTP_header(); }
+	/*virtual*/ void completed_headers(U32 status, std::string const& reason, CURLcode code, AICurlInterface::TransferInfo* info);
+	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return XMLRPCResponder_timeout; }
 };
 
-
-
-#endif // LLXMLRPCTRANSACTION_H
+#endif // LLXMLRPCRESPONDER_H

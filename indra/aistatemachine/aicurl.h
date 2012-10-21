@@ -136,7 +136,7 @@ struct AICurlResponderBufferEvents {
 namespace AICurlInterface {
 
 // Output parameter of AICurlPrivate::CurlEasyRequest::getResult.
-// Only used by LLXMLRPCTransaction::Impl.
+// Used in XMLRPCResponder.
 struct TransferInfo {
   TransferInfo() : mSizeDownload(0.0), mTotalTime(0.0), mSpeedDownload(0.0) { }
   F64 mSizeDownload;

@@ -43,6 +43,8 @@ class LLSD;
 class AIHTTPTimeoutPolicy;
 
 extern AIHTTPTimeoutPolicy responderIgnore_timeout;
+typedef struct _xmlrpc_request* XMLRPC_REQUEST;
+typedef struct _xmlrpc_value* XMLRPC_VALUE;
 
 class LLHTTPClient
 {
@@ -83,6 +85,15 @@ public:
 	static void post4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers);
 	static void post4(std::string const& url, LLSD const& body, ResponderPtr responder)
 	    { AIHTTPHeaders headers; post4(url, body, responder, headers); }
+
+	/** Takes ownership of request and deletes it when sent */
+	static void postXMLRPC(std::string const& url, XMLRPC_REQUEST request, ResponderPtr responder, AIHTTPHeaders& headers);
+	static void postXMLRPC(std::string const& url, XMLRPC_REQUEST request, ResponderPtr responder)
+	    { AIHTTPHeaders headers; postXMLRPC(url, request, responder, headers); }
+
+	static void postXMLRPC(std::string const& url, char const* method, XMLRPC_VALUE value, ResponderPtr responder, AIHTTPHeaders& headers);
+	static void postXMLRPC(std::string const& url, char const* method, XMLRPC_VALUE value, ResponderPtr responder)
+	    { AIHTTPHeaders headers; postXMLRPC(url, method, value, responder, headers); }
 
 	/** Takes ownership of data and deletes it when sent */
 	static void postRaw4(std::string const& url, const char* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers);

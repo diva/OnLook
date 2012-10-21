@@ -27,6 +27,7 @@
 #include "linden_common.h"
 
 #include <boost/shared_ptr.hpp>
+#include <xmlrpc-epi/xmlrpc.h>
 
 #include "llhttpclient.h"
 #include "llbufferstream.h"
@@ -39,6 +40,29 @@ extern AIHTTPTimeoutPolicy blockingGet_timeout;
 extern AIHTTPTimeoutPolicy blockingPost_timeout;
 
 ////////////////////////////////////////////////////////////////////////////
+
+class XMLRPCInjector : public Injector {
+public:
+	XMLRPCInjector(XMLRPC_REQUEST request) : mRequest(request), mRequestText(NULL) { }
+	~XMLRPCInjector() { XMLRPC_RequestFree(mRequest, 1); XMLRPC_Free(const_cast<char*>(mRequestText)); }
+
+	/*virtual*/ char const* contentType(void) const { return "text/xml"; }
+	/*virtual*/ U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer)
+	{
+		int requestTextSize;
+		mRequestText = XMLRPC_REQUEST_ToXML(mRequest, &requestTextSize);
+		if (!mRequestText)
+			throw AICurlNoBody("XMLRPC_REQUEST_ToXML returned NULL.");
+		LLBufferStream ostream(channels, buffer.get());
+		ostream.write(mRequestText, requestTextSize);
+		ostream << std::flush;          // Always flush a LLBufferStream when done writing to it.
+		return requestTextSize;
+	}
+
+private:
+	XMLRPC_REQUEST const mRequest;
+	char const* mRequestText;
+};
 
 class LLSDInjector : public Injector
 {
@@ -367,6 +391,22 @@ void LLHTTPClient::put4(std::string const& url, LLSD const& body, ResponderPtr r
 void LLHTTPClient::post4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	request(url, LLURLRequest::HTTP_POST, new LLSDInjector(body), responder, headers);
+}
+
+void LLHTTPClient::postXMLRPC(std::string const& url, XMLRPC_REQUEST xmlrpc_request, ResponderPtr responder, AIHTTPHeaders& headers)
+{
+  	request(url, LLURLRequest::HTTP_POST, new XMLRPCInjector(xmlrpc_request), responder, headers, true, false);		// Does use compression.
+}
+
+void LLHTTPClient::postXMLRPC(std::string const& url, char const* method, XMLRPC_VALUE value, ResponderPtr responder, AIHTTPHeaders& headers)
+{
+	XMLRPC_REQUEST xmlrpc_request = XMLRPC_RequestNew();
+	XMLRPC_RequestSetMethodName(xmlrpc_request, method);
+	XMLRPC_RequestSetRequestType(xmlrpc_request, xmlrpc_request_call);
+	XMLRPC_RequestSetData(xmlrpc_request, value);
+	// XMLRPCInjector takes ownership of xmlrpc_request and will free it when done.
+	// LLURLRequest takes ownership of the XMLRPCInjector object and will free it when done.
+  	request(url, LLURLRequest::HTTP_POST, new XMLRPCInjector(xmlrpc_request), responder, headers, true, true);		// Does not use compression.
 }
 
 void LLHTTPClient::postRaw4(std::string const& url, char const* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers)

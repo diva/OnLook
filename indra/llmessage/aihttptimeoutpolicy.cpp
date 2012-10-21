@@ -729,5 +729,5 @@ P(voiceCallCapResponder);
 P(voiceClientCapResponder);
 P(wholeModelFeeResponder);
 P(wholeModelUploadResponder);
-P2(XMLRPCTransaction,							connect_40s);
+P2(XMLRPCResponder,								connect_40s);
 

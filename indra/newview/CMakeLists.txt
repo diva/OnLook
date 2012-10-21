@@ -544,7 +544,7 @@ set(viewer_SOURCE_FILES
     llworldmap.cpp
     llworldmipmap.cpp
     llworldmapview.cpp
-    llxmlrpctransaction.cpp
+    llxmlrpcresponder.cpp
     m7wlinterface.cpp
     NACLantispam.cpp
     noise.cpp
@@ -1051,7 +1051,7 @@ set(viewer_HEADER_FILES
     llworldmap.h
     llworldmipmap.h
     llworldmapview.h
-    llxmlrpctransaction.h
+    llxmlrpcresponder.h
     m7wlinterface.h
     macmain.h
     NACLantispam.h
