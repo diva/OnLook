@@ -129,7 +129,7 @@ namespace LLAvatarNameCache
 	// Erase expired names from cache
 	void eraseUnrefreshed();
 
-	bool expirationFromCacheControl(AIHTTPHeaders const& headers, F64* expires);
+	bool expirationFromCacheControl(AIHTTPReceivedHeaders const& headers, F64* expires);
 }
 
 /* Sample response:
@@ -182,7 +182,7 @@ private:
 	std::vector<LLUUID> mAgentIDs;
 
 	// Need the headers to look up Expires: and Retry-After:
-	AIHTTPHeaders mHeaders;
+	AIHTTPReceivedHeaders mHeaders;
 	
 public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return avatarNameResponder_timeout; }
@@ -191,7 +191,7 @@ public:
 	:	mAgentIDs(agent_ids)
 	{ }
 	
-	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPHeaders const& headers)
+	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{
 		mHeaders = headers;
 	}
@@ -791,42 +791,33 @@ void LLAvatarNameCache::insert(const LLUUID& agent_id, const LLAvatarName& av_na
 	sCache[agent_id] = av_name;
 }
 
-F64 LLAvatarNameCache::nameExpirationFromHeaders(AIHTTPHeaders const& headers)
+F64 LLAvatarNameCache::nameExpirationFromHeaders(AIHTTPReceivedHeaders const& headers)
 {
-	F64 expires = 0.0;
-	if (expirationFromCacheControl(headers, &expires))
-	{
-		return expires;
-	}
-	else
-	{
-		// With no expiration info, default to an hour
-		const F64 DEFAULT_EXPIRES = 60.0 * 60.0;
-		F64 now = LLFrameTimer::getTotalSeconds();
-		return now + DEFAULT_EXPIRES;
-	}
+	F64 expires;
+	expirationFromCacheControl(headers, &expires);
+	return expires;
 }
 
-bool LLAvatarNameCache::expirationFromCacheControl(AIHTTPHeaders const& headers, F64* expires)
+bool LLAvatarNameCache::expirationFromCacheControl(AIHTTPReceivedHeaders const& headers, F64* expires)
 {
 	bool fromCacheControl = false;
+	S32 max_age = 3600;	// With no expiration info, default to an hour.
 	F64 now = LLFrameTimer::getTotalSeconds();
 	// Allow the header to override the default
 	std::string cache_control;
-	if (headers.getValue("cache-control", cache_control))
+	if (headers.getFirstValue("cache-control", cache_control))
 	{
-		S32 max_age = 0;
 		if (max_age_from_cache_control(cache_control, &max_age))
 		{
-			*expires = now + (F64)max_age;
 			fromCacheControl = true;
 		}
 	}
+	*expires = now + (F64)max_age;
 	LL_DEBUGS("AvNameCache")
 		<< ( fromCacheControl ? "expires based on cache control " : "default expiration " )
 		<< "in " << *expires - now << " seconds"
 		<< LL_ENDL;
-	
+
 	return fromCacheControl;
 }
 

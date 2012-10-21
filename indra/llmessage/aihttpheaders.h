@@ -26,6 +26,8 @@
  *
  *   15/08/2012
  *   Initial version, written by Aleric Inglewood @ SL
+ *   21/10/2012
+ *   Added AIHTTPReceivedHeaders
  */
 
 #ifndef AIHTTPHEADERS_H
@@ -34,6 +36,7 @@
 #include <string>
 #include <map>
 #include <iosfwd>
+#include <algorithm>
 #include "llpointer.h"
 #include "llthread.h"			// LLThreadSafeRefCount
 
@@ -49,7 +52,7 @@ class AIHTTPHeaders {
 	};
 
 	// Construct an empty container.
-	AIHTTPHeaders(void);
+	AIHTTPHeaders(void) { }
 
 	// Construct a container with a single header.
 	AIHTTPHeaders(std::string const& key, std::string const& value);
@@ -79,6 +82,72 @@ class AIHTTPHeaders {
 	typedef std::map<std::string, std::string> container_t;
 	typedef std::pair<container_t::iterator, bool> insert_t;
 
+	struct Container : public LLThreadSafeRefCount {
+	  container_t mKeyValuePairs;
+	};
+
+	LLPointer<Container> mContainer;
+};
+
+// Functor that returns true if c1 is less than c2, ignoring bit 5.
+// The effect is that characters in the range a-z equivalent ordering with A-Z.
+// This function assumes UTF-8 or ASCII encoding!
+//
+// Note that other characters aren't important in the case of HTTP header keys;
+// however if one considers all printable ASCII characters, then this functor
+// also compares "@[\]^" equal to "`{|}~" (any other is either not printable or
+// would be equal to a not printable character).
+struct AIHTTPReceivedHeadersCharCompare {
+  bool operator()(std::string::value_type c1, std::string::value_type c2) const
+  {
+	static std::string::value_type const bit5 = 0x20;
+	return (c1 | bit5) < (c2 | bit5);
+  }
+};
+
+// Functor to lexiographically compare two HTTP header keys using the above predicate.
+// This means that for example "Content-Type" and "content-type" will have equivalent ordering.
+struct AIHTTPReceivedHeadersCompare {
+  bool operator()(std::string const& h1, std::string const& h2) const
+  {
+	static AIHTTPReceivedHeadersCharCompare const predicate;
+	return std::lexicographical_compare(h1.begin(), h1.end(), h2.begin(), h2.end(), predicate);
+  }
+};
+
+class AIHTTPReceivedHeaders {
+  private:
+	typedef std::multimap<std::string, std::string, AIHTTPReceivedHeadersCompare> container_t;
+
+  public:
+	typedef container_t::const_iterator iterator_type;
+	typedef std::pair<iterator_type, iterator_type> range_type;
+
+	// Construct an empty container.
+	AIHTTPReceivedHeaders(void) { }
+
+	// Clear all headers.
+	void clear(void) { if (mContainer) mContainer->mKeyValuePairs.clear(); }
+
+	// Add a header.
+	void addHeader(std::string const& key, std::string const& value);
+
+	// Return true if there are no headers associated with this object.
+	bool empty(void) const { return !mContainer || mContainer->mKeyValuePairs.empty(); }
+
+	// Return true if the header exists.
+	bool hasHeader(std::string const& key) const;
+
+	// Return true if key exists and fill value_out with the value. Return false otherwise.
+	bool getFirstValue(std::string const& key, std::string& value_out) const;
+
+	// Return true if key exists and fill value_out with all values. Return false otherwise.
+	bool getValues(std::string const& key, range_type& value_out) const;
+
+	// For debug purposes.
+	friend std::ostream& operator<<(std::ostream& os, AIHTTPReceivedHeaders const& headers);
+
+  private:
 	struct Container : public LLThreadSafeRefCount {
 	  container_t mKeyValuePairs;
 	};

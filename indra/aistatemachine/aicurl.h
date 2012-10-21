@@ -212,7 +212,7 @@ class Responder : public AICurlResponderBufferEvents {
 	std::string mURL;
 
 	// Headers received from the server.
-	AIHTTPHeaders mReceivedHeaders;
+	AIHTTPReceivedHeaders mReceivedHeaders;
 
   public:
 	// Called to set the URL of the current request for this Responder,
@@ -245,7 +245,7 @@ class Responder : public AICurlResponderBufferEvents {
 
 	// Derived classes can override this to get the HTML headers that were received, when the message is completed.
 	// The default does nothing.
-	virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPHeaders const& headers);
+	virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers);
 
   public:
 	// Derived classes that implement completedHeaders() should return true here.

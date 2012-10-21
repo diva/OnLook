@@ -458,7 +458,7 @@ AIHTTPTimeoutPolicy const& Responder::getHTTPTimeoutPolicy(void) const
 
 // Called with HTML header.
 // virtual
-void Responder::completedHeaders(U32, std::string const&, AIHTTPHeaders const&)
+void Responder::completedHeaders(U32, std::string const&, AIHTTPReceivedHeaders const&)
 {
   // This should not be called unless a derived class implemented it.
   llerrs << "Unexpected call to completedHeaders()." << llendl;

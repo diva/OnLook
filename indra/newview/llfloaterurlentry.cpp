@@ -64,10 +64,10 @@ public:
 
 	  virtual bool needsHeaders(void) const { return true; }
 
-	  virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPHeaders const& headers)
+	  virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	  {
 		  std::string media_type;
-		  bool content_type_found = headers.getValue("content-type", media_type);
+		  bool content_type_found = headers.getFirstValue("content-type", media_type);
 		  llassert_always(content_type_found);
 		  std::string::size_type idx1 = media_type.find_first_of(";");
 		  std::string mime_type = media_type.substr(0, idx1);

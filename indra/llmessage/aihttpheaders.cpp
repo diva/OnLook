@@ -35,10 +35,6 @@
 #include "debug_libcurl.h"
 #endif
 
-AIHTTPHeaders::AIHTTPHeaders(void)
-{
-}
-
 AIHTTPHeaders::AIHTTPHeaders(std::string const& key, std::string const& value) : mContainer(new Container)
 {
   addHeader(key, value);
@@ -94,6 +90,56 @@ std::ostream& operator<<(std::ostream& os, AIHTTPHeaders const& headers)
 	bool first = true;
 	AIHTTPHeaders::container_t::const_iterator const end = headers.mContainer->mKeyValuePairs.end();
 	for (AIHTTPHeaders::container_t::const_iterator iter = headers.mContainer->mKeyValuePairs.begin(); iter != end; ++iter)
+	{
+	  if (!first)
+		os << ", ";
+	  os << '"' << iter->first << ": " << iter->second << '"';
+	  first = false;
+	}
+  }
+  os << '}';
+  return os;
+}
+
+void AIHTTPReceivedHeaders::addHeader(std::string const& key, std::string const& value)
+{
+  if (!mContainer)
+  {
+	mContainer = new Container;
+  }
+  mContainer->mKeyValuePairs.insert(container_t::value_type(key, value));
+}
+
+bool AIHTTPReceivedHeaders::hasHeader(std::string const& key) const
+{
+  return !mContainer ? false : (mContainer->mKeyValuePairs.find(key) != mContainer->mKeyValuePairs.end());
+}
+
+bool AIHTTPReceivedHeaders::getFirstValue(std::string const& key, std::string& value_out) const
+{
+  AIHTTPReceivedHeaders::container_t::const_iterator iter;
+  if (!mContainer || (iter = mContainer->mKeyValuePairs.find(key)) == mContainer->mKeyValuePairs.end())
+	return false;
+  value_out = iter->second;
+  return true;
+}
+
+bool AIHTTPReceivedHeaders::getValues(std::string const& key, range_type& value_out) const
+{
+  if (!mContainer)
+	return false;
+  value_out = mContainer->mKeyValuePairs.equal_range(key);
+  return value_out.first != value_out.second;
+}
+
+std::ostream& operator<<(std::ostream& os, AIHTTPReceivedHeaders const& headers)
+{
+  os << '{';
+  if (headers.mContainer)
+  {
+	bool first = true;
+	AIHTTPReceivedHeaders::container_t::const_iterator const end = headers.mContainer->mKeyValuePairs.end();
+	for (AIHTTPReceivedHeaders::container_t::const_iterator iter = headers.mContainer->mKeyValuePairs.begin(); iter != end; ++iter)
 	{
 	  if (!first)
 		os << ", ";

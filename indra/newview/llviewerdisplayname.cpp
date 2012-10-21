@@ -184,7 +184,7 @@ class LLDisplayNameUpdate : public LLHTTPNode
 		// *TODO: get actual headers out of ResponsePtr
 		//LLSD headers = response->mHeaders;
 		av_name.mExpires = 
-			LLAvatarNameCache::nameExpirationFromHeaders(AIHTTPHeaders());
+			LLAvatarNameCache::nameExpirationFromHeaders(AIHTTPReceivedHeaders());
 
 		LLAvatarNameCache::insert(agent_id, av_name);
 

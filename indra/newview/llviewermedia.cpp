@@ -82,10 +82,10 @@ public:
 
 	virtual bool needsHeaders(void) const { return true; }
 
-	virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPHeaders const& headers)
+	virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{
 		std::string media_type;
-		bool content_type_found = headers.getValue("content-type", media_type);
+		bool content_type_found = headers.getFirstValue("content-type", media_type);
 		llassert_always(content_type_found);
 		std::string::size_type idx1 = media_type.find_first_of(";");
 		std::string mime_type = media_type.substr(0, idx1);
@@ -125,14 +125,15 @@ public:
 
 	/* virtual */ bool needsHeaders(void) const { return true; }
 
-	/* virtual */ void completedHeaders(U32 status, std::string const& reason, AIHTTPHeaders const& headers)
+	/* virtual */ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{
 		LL_DEBUGS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
 		LL_DEBUGS("MediaAuth") << headers << LL_ENDL;
-		std::string cookie;
-		if (headers.getValue("set-cookie", cookie))
+		AIHTTPReceivedHeaders::range_type cookies;
+		if (headers.getValues("set-cookie", cookies))
 		{
-		  LLViewerMedia::openIDCookieResponse(cookie);
+			for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
+				LLViewerMedia::openIDCookieResponse(cookie->second);
 		}
 	}
 
@@ -164,15 +165,16 @@ public:
 
 	/* virtual */ bool needsHeaders(void) const { return true; }
 
-	/* virtual */ void completedHeaders(U32 status, std::string const& reason, AIHTTPHeaders const& headers)
+	/* virtual */ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{
 		LL_INFOS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
 		LL_INFOS("MediaAuth") << headers << LL_ENDL;
 
-		std::string cookie;
-		if (headers.getValue("set-cookie", cookie))
+		AIHTTPReceivedHeaders::range_type cookies;
+		if (headers.getValues("set-cookie", cookies))
 		{
-			LLViewerMedia::getCookieStore()->setCookiesFromHost(cookie, mHost);
+			for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
+			  LLViewerMedia::getCookieStore()->setCookiesFromHost(cookie->second, mHost);
 		}
 	}
 
