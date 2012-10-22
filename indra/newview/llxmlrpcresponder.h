@@ -91,31 +91,20 @@ private:
 	XMLRPC_VALUE mV;
 };
 
-class XMLRPCResponder : public LLCurl::Responder {
+class XMLRPCResponder : public AICurlInterface::LegacyPolledResponder {
 private:
-	CURLcode mCode;
-	U32 mStatus;
 	AICurlInterface::TransferInfo mTransferInfo;
 	S32 mBufferSize;
 	bool mReceivedHTTPHeader;
-	bool mFinished;
-	std::string mReason;
 	XMLRPC_REQUEST mResponse;
 
 public:
-	XMLRPCResponder(void) : mCode(CURLE_FAILED_INIT), mStatus(HTTP_INTERNAL_ERROR), mReceivedHTTPHeader(false), mFinished(false) { }
-
 	// Accessors.
-	CURLcode result_code(void) const { return mCode; }
-	U32 http_result(void) const { return mStatus; }
 	F64 transferRate(void) const;
 	bool is_downloading(void) const { return mReceivedHTTPHeader; }
-	bool is_finished(void) const { return mFinished; }
-	std::string const& reason(void) const { return mReason; }
 	XMLRPC_REQUEST response(void) const { return mResponse; }
 	LLXMLRPCValue responseValue(void) const;
 
-	/*virtual*/ bool needsHeaders(void) const { return true; }
 	/*virtual*/ void received_HTTP_header(void) { mReceivedHTTPHeader = true; LLCurl::Responder::received_HTTP_header(); }
 	/*virtual*/ void completed_headers(U32 status, std::string const& reason, CURLcode code, AICurlInterface::TransferInfo* info);
 	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);

@@ -230,39 +230,68 @@ void LLHTTPClient::get4(std::string const& url, LLSD const& query, ResponderPtr 
 	get4(uri.asString(), responder, headers);
 }
 
-// A simple class for managing data returned from a curl http request.
-class LLHTTPBuffer
-{
-public:
-	LLHTTPBuffer() { }
-
-	static size_t curl_write(char* ptr, size_t size, size_t nmemb, void* user_data)
-	{
-		LLHTTPBuffer* self = (LLHTTPBuffer*)user_data;
-		
-		size_t bytes = (size * nmemb);
-		self->mBuffer.append(ptr,bytes);
-		return nmemb;
-	}
-
-	LLSD asLLSD()
-	{
-		LLSD content;
-
-		if (mBuffer.empty()) return content;
-		
-		std::istringstream istr(mBuffer);
-		LLSDSerialize::fromXML(content, istr);
-		return content;
-	}
-
-	std::string asString()
-	{
-		return mBuffer;
-	}
-
+class BlockingResponder : public AICurlInterface::LegacyPolledResponder {
 private:
-	std::string mBuffer;
+	LLCondition mSignal;
+	LLSD mResponse;
+	std::ostringstream mBody;
+
+public:
+	void wait(void);
+	LLSD const& response(void) const { llassert(mFinished && mCode == CURLE_OK && mStatus == HTTP_OK); return mResponse; }
+	std::string const& body(void) const { llassert(mFinished && mCode == CURLE_OK && mStatus != HTTP_OK); return mBody.str(); }
+
+	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
+};
+
+void BlockingResponder::completedRaw(U32, std::string const&, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+{
+  if (mCode == CURLE_OK)
+  {
+	LLBufferStream istr(channels, buffer.get());
+	if (mStatus == HTTP_OK)
+	{
+	  LLSDSerialize::fromXML(mResponse, istr);
+	}
+	else
+	{
+	  mBody << istr;
+	}
+  }
+  mSignal.lock();
+  mFinished = true;
+  mSignal.unlock();
+  mSignal.signal();
+}
+
+void BlockingResponder::wait(void)
+{
+  if (AIThreadID::in_main_thread())
+  {
+	// We're the main thread, so we have to give AIStateMachine CPU cycles.
+	while (!mFinished)
+	{
+	  AIStateMachine::mainloop();
+	  ms_sleep(10);
+	}
+  }
+  else	// Hopefully not the curl thread :p
+  {
+	mSignal.lock();
+	while (!mFinished)
+	  mSignal.wait();
+	mSignal.unlock();
+  }
+}
+
+class BlockingPostResponder : public BlockingResponder {
+public:
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return blockingPost_timeout; }
+};
+
+class BlockingGetResponder : public BlockingResponder {
+public:
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return blockingGet_timeout; }
 };
 
 // These calls are blocking! This is usually bad, unless you're a dataserver. Then it's awesome.
@@ -287,85 +316,54 @@ static LLSD blocking_request(
 	std::string const& url,
 	LLURLRequest::ERequestAction method,
 	LLSD const& body,
-	AIHTTPHeaders& headers,
-	AIHTTPTimeoutPolicy const& timeout)
+	AIHTTPHeaders& headers)
 {
 	lldebugs << "blockingRequest of " << url << llendl;
 
-	S32 http_status = 499;
-	LLSD response = LLSD::emptyMap();
-
-#if 0 // AIFIXME: rewrite to use AICurlEasyRequestStateMachine
-	try
+	boost::intrusive_ptr<BlockingResponder> responder;
+	if (method == LLURLRequest::HTTP_POST)
 	{
-		AICurlEasyRequest easy_request(false);
-		AICurlEasyRequest_wat curlEasyRequest_w(*easy_request);
+		responder = new BlockingPostResponder;
+		LLHTTPClient::post4(url, body, responder, headers);
+	}
+	else
+	{
+		llassert(method == LLURLRequest::HTTP_GET);
+		responder = new BlockingGetResponder;
+		LLHTTPClient::get4(url, responder, headers);
+	}
 
-		LLHTTPBuffer http_buffer;
-		
-		// * Set curl handle options
-		curlEasyRequest_w->setopt(CURLOPT_TIMEOUT, (long)timeout);	// seconds, see warning at top of function.
-		curlEasyRequest_w->setWriteCallback(&LLHTTPBuffer::curl_write, &http_buffer);
+	responder->wait();
 
-		// * Setup headers.
-		if (headers.isMap())
-		{
-			LLSD::map_const_iterator iter = headers.beginMap();
-			LLSD::map_const_iterator end  = headers.endMap();
-			for (; iter != end; ++iter)
-			{
-				std::ostringstream header;
-				header << iter->first << ": " << iter->second.asString() ;
-				lldebugs << "header = " << header.str() << llendl;
-				curlEasyRequest_w->addHeader(header.str().c_str());
-			}
-		}
-		
-		// Needs to stay alive until after the call to perform().
-		std::ostringstream ostr;
+	S32 http_status = HTTP_INTERNAL_ERROR;
+	LLSD response = LLSD::emptyMap();
+	CURLcode result = responder->result_code();
 
-		// * Setup specific method / "verb" for the URI (currently only GET and POST supported + poppy)
-		if (method == LLURLRequest::HTTP_GET)
+	if (result == CURLE_OK && (http_status = responder->http_status()) == HTTP_OK)
+	{
+		response["body"] = responder->response();
+	}
+	else if (result == CURLE_OK)
+	{
+		// We expect 404s, don't spam for them.
+		if (http_status != 404)
 		{
-			curlEasyRequest_w->setopt(CURLOPT_HTTPGET, 1);
-		}
-		else if (method == LLURLRequest::HTTP_POST)
-		{
-			//copied from PHP libs, correct?
-			curlEasyRequest_w->addHeader("Content-Type: application/llsd+xml");
-			LLSDSerialize::toXML(body, ostr);
-			curlEasyRequest_w->setPost(ostr.str().c_str(), ostr.str().length());
-		}
-		
-		// * Do the action using curl, handle results
-		curlEasyRequest_w->addHeader("Accept: application/llsd+xml");
-		curlEasyRequest_w->finalizeRequest(url);
-
-		S32 curl_success = curlEasyRequest_w->perform();
-		curlEasyRequest_w->getinfo(CURLINFO_RESPONSE_CODE, &http_status);
-		// if we get a non-404 and it's not a 200 OR maybe it is but you have error bits,
-		if ( http_status != 404 && (http_status != 200 || curl_success != 0) )
-		{
-			// We expect 404s, don't spam for them.
 			llwarns << "CURL REQ URL: " << url << llendl;
 			llwarns << "CURL REQ METHOD TYPE: " << LLURLRequest::actionAsVerb(method) << llendl;
-			llwarns << "CURL REQ HEADERS: " << headers.asString() << llendl;
-			llwarns << "CURL REQ BODY: " << ostr.str() << llendl;
+			llwarns << "CURL REQ HEADERS: " << headers << llendl;
+			if (method == LLURLRequest::HTTP_POST)
+			{
+				llwarns << "CURL REQ BODY: " << body.asString() << llendl;
+			}
 			llwarns << "CURL HTTP_STATUS: " << http_status << llendl;
-			llwarns << "CURL ERROR BODY: " << http_buffer.asString() << llendl;
-			response["body"] = http_buffer.asString();
+			llwarns << "CURL ERROR BODY: " << responder->body() << llendl;
 		}
-		else
-		{
-			response["body"] = http_buffer.asLLSD();
-			lldebugs << "CURL response: " << http_buffer.asString() << llendl;
-		}
+		response["body"] = responder->body();
 	}
-	catch(AICurlNoEasyHandle const& error)
+	else
 	{
-		response["body"] = error.what();
+		response["body"] = responder->reason();
 	}
-#endif
 
 	response["status"] = http_status;
 	return response;
@@ -374,13 +372,13 @@ static LLSD blocking_request(
 LLSD LLHTTPClient::blockingGet(const std::string& url)
 {
 	AIHTTPHeaders empty_headers;
-	return blocking_request(url, LLURLRequest::HTTP_GET, LLSD(), empty_headers, blockingGet_timeout);
+	return blocking_request(url, LLURLRequest::HTTP_GET, LLSD(), empty_headers);
 }
 
 LLSD LLHTTPClient::blockingPost(const std::string& url, const LLSD& body)
 {
 	AIHTTPHeaders empty_headers;
-	return blocking_request(url, LLURLRequest::HTTP_POST, body, empty_headers, blockingPost_timeout);
+	return blocking_request(url, LLURLRequest::HTTP_POST, body, empty_headers);
 }
 
 void LLHTTPClient::put4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers)

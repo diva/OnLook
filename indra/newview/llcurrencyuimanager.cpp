@@ -265,7 +265,7 @@ bool LLCurrencyUIManager::Impl::checkTransaction()
 		return false;
 	}
 
-	if (mResponder->result_code() != CURLE_OK || mResponder->http_result() < 200 || mResponder->http_result() >= 400)
+	if (mResponder->result_code() != CURLE_OK || mResponder->http_status() < 200 || mResponder->http_status() >= 400)
 	{
 		setError(mResponder->reason(), mResponder->getURL());
 	}

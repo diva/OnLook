@@ -52,6 +52,7 @@
 #include "stdtypes.h"		// U16, S32, U32, F64
 #include "llatomic.h"		// LLAtomicU32
 #include "aithreadsafe.h"
+#include "llhttpstatuscodes.h"
 #include "aihttpheaders.h"
 
 extern bool gNoVerifySSLCert;
@@ -244,11 +245,13 @@ class Responder : public AICurlResponderBufferEvents {
 	}
 
 	// Derived classes can override this to get the HTML headers that were received, when the message is completed.
-	// The default does nothing.
-	virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers);
+	virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+	{
+	  // The default does nothing.
+	}
 
   public:
-	// Derived classes that implement completedHeaders() should return true here.
+	// Derived classes that implement completed_headers()/completedHeaders() should return true here.
 	virtual bool needsHeaders(void) const { return false; }
 
 	// Timeout policy to use.
@@ -298,6 +301,32 @@ class Responder : public AICurlResponderBufferEvents {
 // A Responder is passed around as ResponderPtr, which causes it to automatically
 // destruct when there are no pointers left pointing to it.
 typedef boost::intrusive_ptr<Responder> ResponderPtr;
+
+// Same as above except that this class stores the result, allowing old polling
+// code to poll if the transaction finished by calling is_finished() (from the
+// main the thread) and then access the results-- as opposed to immediately
+// digesting the results when any of the virtual functions are called.
+class LegacyPolledResponder : public Responder {
+  protected:
+	CURLcode mCode;
+	U32 mStatus;
+	std::string mReason;
+	bool mFinished;
+
+  public:
+	LegacyPolledResponder(void) : mCode(CURLE_FAILED_INIT), mStatus(HTTP_INTERNAL_ERROR), mFinished(false) { }
+
+	// Accessors.
+	CURLcode result_code(void) const { return mCode; }
+	U32 http_status(void) const { return mStatus; }
+	bool is_finished(void) const { return mFinished; }
+	std::string const& reason(void) const { return mReason; }
+
+	/*virtual*/ bool needsHeaders(void) const { return true; }
+	/*virtual*/ void completed_headers(U32 status, std::string const& reason, CURLcode code, AICurlInterface::TransferInfo* info);
+	// This must be defined by the derived class and set mFinished = true at the end.
+	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer) = 0;
+};
 
 } // namespace AICurlInterface
 

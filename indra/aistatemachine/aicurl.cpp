@@ -456,14 +456,6 @@ AIHTTPTimeoutPolicy const& Responder::getHTTPTimeoutPolicy(void) const
   return AIHTTPTimeoutPolicy::getDebugSettingsCurlTimeout();
 }
 
-// Called with HTML header.
-// virtual
-void Responder::completedHeaders(U32, std::string const&, AIHTTPReceivedHeaders const&)
-{
-  // This should not be called unless a derived class implemented it.
-  llerrs << "Unexpected call to completedHeaders()." << llendl;
-}
-
 // Called with HTML body.
 // virtual
 void Responder::completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, LLIOPipe::buffer_ptr_t const& buffer)
@@ -527,6 +519,16 @@ void intrusive_ptr_release(Responder* responder)
   {
 	delete responder;
   }
+}
+
+// virtual
+void LegacyPolledResponder::completed_headers(U32 status, std::string const& reason, CURLcode code, AICurlInterface::TransferInfo* info)
+{
+  mCode = code;
+  mStatus = status;
+  mReason = reason;
+  // Call base class implementation.
+  Responder::completed_headers(status, reason, code, info);
 }
 
 } // namespace AICurlInterface
