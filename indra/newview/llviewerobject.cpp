@@ -5460,8 +5460,11 @@ BOOL LLViewerObject::setFlagsWithoutUpdate(U32 flags, BOOL state)
 void LLViewerObject::setPhysicsShapeType(U8 type)
 {
 	mPhysicsShapeUnknown = false;
+	if (type != mPhysicsShapeType)
+	{
 	mPhysicsShapeType = type;
 	mCostStale = true;
+}
 }
 
 void LLViewerObject::setPhysicsGravity(F32 gravity)
@@ -5488,7 +5491,6 @@ U8 LLViewerObject::getPhysicsShapeType() const
 { 
 	if (mPhysicsShapeUnknown)
 	{
-		mPhysicsShapeUnknown = false;
 		gObjectList.updatePhysicsFlags(this);
 	}
 

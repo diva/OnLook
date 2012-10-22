@@ -92,6 +92,8 @@ extern BOOL gAnimateTextures;
 #include "importtracker.h"
 extern ImportTracker gImportTracker;
 
+#define MAX_CONCURRENT_PHYSICS_REQUESTS 256
+
 void dialog_refresh_all();
 
 #define CULL_VIS
@@ -1083,8 +1085,6 @@ void LLViewerObjectList::fetchObjectCosts()
 				LLSD id_list;
 				U32 object_index = 0;
 
-				U32 count = 0;
-
 				for (
 					std::set<LLUUID>::iterator iter = mStaleObjectCost.begin();
 					iter != mStaleObjectCost.end();
@@ -1101,7 +1101,7 @@ void LLViewerObjectList::fetchObjectCosts()
 
 					mStaleObjectCost.erase(iter++);
 
-					if (count++ >= 450)
+					if (object_index >= MAX_CONCURRENT_PHYSICS_REQUESTS)
 					{
 						break;
 					}
@@ -1146,7 +1146,7 @@ void LLViewerObjectList::fetchPhysicsFlags()
 				for (
 					std::set<LLUUID>::iterator iter = mStalePhysicsFlags.begin();
 					iter != mStalePhysicsFlags.end();
-					++iter)
+					)
 				{
 					// Check to see if a request for this object
 					// has already been made.
@@ -1156,12 +1156,14 @@ void LLViewerObjectList::fetchPhysicsFlags()
 						mPendingPhysicsFlags.insert(*iter);
 						id_list[object_index++] = *iter;
 					}
-				}
 
-				// id_list should now contain all
-				// requests in mStalePhysicsFlags before, so clear
-				// it now
-				mStalePhysicsFlags.clear();
+					mStalePhysicsFlags.erase(iter++);
+					
+					if (object_index >= MAX_CONCURRENT_PHYSICS_REQUESTS)
+					{
+						break;
+					}
+				}
 
 				if ( id_list.size() > 0 )
 				{
