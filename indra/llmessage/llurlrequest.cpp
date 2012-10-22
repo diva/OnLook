@@ -346,7 +346,6 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 
 	if (!mDetail) return STATUS_ERROR; //Seems to happen on occasion. Need to hunt down why.
 
-	//AIFIXME: implement this again:
 	// we're still waiting or processing, check how many
 	// bytes we have accumulated.
 	const S32 MIN_ACCUMULATION = 100000;
