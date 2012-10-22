@@ -710,7 +710,9 @@ void LLViewerPartSim::updateSimulation()
 
 		if (mViewerPartSources[i]->isDead())
 		{
-			mViewerPartSources.erase(mViewerPartSources.begin() + i);
+			mViewerPartSources[i] = mViewerPartSources.back();
+			mViewerPartSources.pop_back();
+			//mViewerPartSources.erase(mViewerPartSources.begin() + i);
 			count--;
 			i+=deldir;
 		}
@@ -747,7 +749,9 @@ void LLViewerPartSim::updateSimulation()
 			if (!mViewerPartGroups[i]->getCount())
 			{
 				delete mViewerPartGroups[i];
-				mViewerPartGroups.erase(mViewerPartGroups.begin() + i);
+				mViewerPartGroups[i] = mViewerPartGroups.back();
+				mViewerPartGroups.pop_back();
+				//mViewerPartGroups.erase(mViewerPartGroups.begin() + i);
 				i--;
 				count--;
 			}
@@ -838,7 +842,12 @@ void LLViewerPartSim::cleanupRegion(LLViewerRegion *regionp)
 		if ((*iter)->getRegion() == regionp)
 		{
 			delete *iter;
-			i = mViewerPartGroups.erase(iter);			
+			*iter = mViewerPartGroups.back();
+			bool done = (i == mViewerPartGroups.end());
+			mViewerPartGroups.pop_back();
+			if(done)
+				break;
+			//i = mViewerPartGroups.erase(iter);			
 		}
 	}
 }
