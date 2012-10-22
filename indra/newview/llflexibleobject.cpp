@@ -394,8 +394,8 @@ void LLVolumeImplFlexible::doIdleUpdate()
 				}
 			}
 		}
-		//if(!mInitialized)
-		//	updateRenderRes();
+		if(!mInitialized)
+			updateRenderRes();
 	}
 }
 
