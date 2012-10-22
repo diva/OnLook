@@ -1642,6 +1642,10 @@ void LLPipeline::updateMovedList(LLDrawable::drawable_vector_t& moved_list)
 		drawablep->clearState(LLDrawable::EARLY_MOVE | LLDrawable::MOVE_UNDAMPED);
 		if (done)
 		{
+			if (drawablep->isRoot())
+			{
+				drawablep->makeStatic();
+			}
 			drawablep->clearState(LLDrawable::ON_MOVE_LIST);
 			if (drawablep->isState(LLDrawable::ANIMATED_CHILD))
 			{ //will likely not receive any future world matrix updates
@@ -6130,8 +6134,11 @@ void LLPipeline::resetVertexBuffers(LLDrawable* drawable)
 }
 
 void LLPipeline::resetVertexBuffers()
-{	mResetVertexBuffers = true;
+{
+	mResetVertexBuffers = true;
 }
+
+static LLFastTimer::DeclareTimer FTM_RESET_VB("Reset VB");
 
 void LLPipeline::doResetVertexBuffers()
 {
@@ -6167,6 +6174,8 @@ void LLPipeline::doResetVertexBuffers()
 
 	if(LLPostProcess::instanceExists())
 		LLPostProcess::getInstance()->destroyGL();
+
+	LLVOPartGroup::destroyGL();
 
 	LLVertexBuffer::cleanupClass();
 	

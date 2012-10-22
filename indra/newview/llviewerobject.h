@@ -150,7 +150,7 @@ public:
 	LLNameValue*	getNVPair(const std::string& name) const;			// null if no name value pair by that name
 
 	// Object create and update functions
-	virtual BOOL	idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time);
+	virtual void	idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time);
 
 	// Types of media we can associate
 	enum { MEDIA_NONE = 0, MEDIA_SET = 1 };

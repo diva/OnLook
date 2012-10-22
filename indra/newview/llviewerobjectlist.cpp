@@ -56,6 +56,8 @@
 #include "llstring.h"
 #include "llhudnametag.h"
 #include "lldrawable.h"
+#include "llflexibleobject.h"
+#include "llviewertextureanim.h"
 #include "xform.h"
 #include "llsky.h"
 #include "llviewercamera.h"
@@ -917,8 +919,6 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 
 	const F64 frame_time = LLFrameTimer::getElapsedSeconds();
 	
-	std::vector<LLViewerObject*> kill_list;
-	S32 num_active_objects = 0;
 	LLViewerObject *objectp = NULL;	
 	
 	// Make a copy of the list in case something in idleUpdate() messes with it
@@ -982,23 +982,19 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 			idle_iter != idle_end; idle_iter++)
 		{
 			objectp = *idle_iter;
-			if (objectp->idleUpdate(agent, world, frame_time))
-			{
-				num_active_objects++;				
-			}
-			else
-			{
-				//  If Idle Update returns false, kill object!
-				kill_list.push_back(objectp);
-			}
+			llassert(objectp->isActive());
+			objectp->idleUpdate(agent, world, frame_time);
+
 		}
-		for (std::vector<LLViewerObject*>::iterator kill_iter = kill_list.begin();
-			kill_iter != kill_list.end(); kill_iter++)
-		{
-			objectp = *kill_iter;
-			killObject(objectp);
-		}
+
+		//update flexible objects
+		LLVolumeImplFlexible::updateClass();
+
+		//update animated textures
+		LLViewerTextureAnim::updateClass();
 	}
+
+
 
 	fetchObjectCosts();
 	fetchPhysicsFlags();
@@ -1066,7 +1062,7 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 	*/
 
 	LLViewerStats::getInstance()->mNumObjectsStat.addValue((S32) mObjects.size() - mNumDeadObjects);
-	LLViewerStats::getInstance()->mNumActiveObjectsStat.addValue(num_active_objects);
+	LLViewerStats::getInstance()->mNumActiveObjectsStat.addValue(idle_count);
 	LLViewerStats::getInstance()->mNumSizeCulledStat.addValue(mNumSizeCulled);
 	LLViewerStats::getInstance()->mNumVisCulledStat.addValue(mNumVisCulled);
 }
@@ -1437,8 +1433,9 @@ void LLViewerObjectList::removeFromActiveList(LLViewerObject* objectp)
 		{
 			mActiveObjects[idx] = mActiveObjects[last_index];
 			mActiveObjects[idx]->setListIndex(idx);
-			mActiveObjects.pop_back();
 		}
+
+		mActiveObjects.pop_back();
 	}
 }
 
@@ -1482,6 +1479,9 @@ void LLViewerObjectList::updateActive(LLViewerObject *objectp)
 			objectp->setOnActiveList(FALSE);
 		}
 	}
+
+	llassert(objectp->isActive() || objectp->getListIndex() == -1);
+
 }
 
 void LLViewerObjectList::updateObjectCost(LLViewerObject* object)
@@ -1552,6 +1552,10 @@ void LLViewerObjectList::onPhysicsFlagsFetchFailure(const LLUUID& object_id)
 	mPendingPhysicsFlags.erase(object_id);
 }
 
+static LLFastTimer::DeclareTimer FTM_SHIFT_OBJECTS("Shift Objects");
+static LLFastTimer::DeclareTimer FTM_PIPELINE_SHIFT("Pipeline Shift");
+static LLFastTimer::DeclareTimer FTM_REGION_SHIFT("Region Shift");
+
 void LLViewerObjectList::shiftObjects(const LLVector3 &offset)
 {
 	// This is called when we shift our origin when we cross region boundaries...
@@ -1562,6 +1566,8 @@ void LLViewerObjectList::shiftObjects(const LLVector3 &offset)
 	{
 		return;
 	}
+
+	LLFastTimer t(FTM_SHIFT_OBJECTS);
 
 	LLViewerObject *objectp;
 	for (vobj_list_t::iterator iter = mObjects.begin(); iter != mObjects.end(); ++iter)
@@ -1579,8 +1585,15 @@ void LLViewerObjectList::shiftObjects(const LLVector3 &offset)
 		}
 	}
 
-	gPipeline.shiftObjects(offset);
-	LLWorld::getInstance()->shiftRegions(offset);
+	{
+		LLFastTimer t(FTM_PIPELINE_SHIFT);
+		gPipeline.shiftObjects(offset);
+	}
+
+	{
+		LLFastTimer t(FTM_REGION_SHIFT);
+		LLWorld::getInstance()->shiftRegions(offset);
+	}
 }
 
 void LLViewerObjectList::repartitionObjects()

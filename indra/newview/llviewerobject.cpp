@@ -810,6 +810,12 @@ BOOL LLViewerObject::setDrawableParent(LLDrawable* parentp)
 	}
 	LLDrawable* old_parent = mDrawable->mParent;
 	mDrawable->mParent = parentp; 
+		
+	if (parentp && mDrawable->isActive())
+	{
+		parentp->makeActive();
+		parentp->setState(LLDrawable::ACTIVE_CHILD);
+	}
 
 	gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME, TRUE);
 	if(	(old_parent != parentp && old_parent)
@@ -2133,9 +2139,15 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 		gPipeline.addDebugBlip(getPositionAgent(), color);
 	}
 
-	if ((0.0f == vel_mag_sq) && 
-		(0.0f == accel_mag_sq) &&
-		(0.0f == getAngularVelocity().magVecSquared()))
+	const F32 MAG_CUTOFF = F_APPROXIMATELY_ZERO;
+
+	llassert(vel_mag_sq >= 0.f);
+	llassert(accel_mag_sq >= 0.f);
+	llassert(getAngularVelocity().magVecSquared() >= 0.f);
+
+	if ((MAG_CUTOFF >= vel_mag_sq) && 
+		(MAG_CUTOFF >= accel_mag_sq) &&
+		(MAG_CUTOFF >= getAngularVelocity().magVecSquared()))
 	{
 		mStatic = TRUE; // This object doesn't move!
 	}
@@ -2209,17 +2221,15 @@ BOOL LLViewerObject::isActive() const
 	return TRUE;
 }
 
-BOOL LLViewerObject::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
+
+
+void LLViewerObject::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 {
 	//static LLFastTimer::DeclareTimer ftm("Viewer Object");
 	//LLFastTimer t(ftm);
 
-	if (mDead)
+	if (!mDead)
 	{
-		// It's dead.  Don't update it.
-		return TRUE;
-	}
-
 	// CRO - don't velocity interp linked objects!
 	// Leviathan - but DO velocity interp joints
 	if (!mStatic && sVelocityInterpolate && !isSelected())
@@ -2228,12 +2238,12 @@ BOOL LLViewerObject::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 		F32 dt_raw = (F32)(time - mLastInterpUpdateSecs);
 		F32 dt = mTimeDilation * dt_raw;
 
-		applyAngularVelocity(dt);
+			applyAngularVelocity(dt);
 
-		if (isAttachment())
-		{
-			mLastInterpUpdateSecs = time;
-			return TRUE;
+			if (isAttachment())
+				{
+					mLastInterpUpdateSecs = time;
+				return;
 		}
 		else
 		{	// Move object based on it's velocity and rotation
@@ -2242,8 +2252,7 @@ BOOL LLViewerObject::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 	}
 
 	updateDrawable(FALSE);
-
-	return TRUE;
+}
 }
 
 

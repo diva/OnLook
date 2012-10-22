@@ -104,7 +104,6 @@ void LLDrawable::init()
 	mPositionGroup.clear();
 	mExtents[0].clear();
 	mExtents[1].clear();
-	mQuietCount = 0;
 
 	mState     = 0;
 	mVObjp   = NULL;
@@ -412,6 +411,8 @@ void LLDrawable::makeActive()
 		if (!isRoot() && !mParent->isActive())
 		{
 			mParent->makeActive();
+			//NOTE: linked set will now NEVER become static
+			mParent->setState(LLDrawable::ACTIVE_CHILD);
 		}
 
 		//all child objects must also be active
@@ -431,41 +432,27 @@ void LLDrawable::makeActive()
 
 		if (mVObjp->getPCode() == LL_PCODE_VOLUME)
 		{
-			if (mVObjp->isFlexible())
-			{
-				return;
-			}
-		}
-	
-		if (mVObjp->getPCode() == LL_PCODE_VOLUME)
-		{
 			gPipeline.markRebuild(this, LLDrawable::REBUILD_VOLUME, TRUE);
 		}
 		updatePartition();
 	}
 
-	if (isRoot())
-	{
-		mQuietCount = 0;
-	}
-	else
-	{
-		getParent()->mQuietCount = 0;
-	}
+	llassert(isAvatar() || isRoot() || mParent->isActive());
 }
 
 
 void LLDrawable::makeStatic(BOOL warning_enabled)
 {
-	if (isState(ACTIVE))
+	if (isState(ACTIVE) && 
+		!isState(ACTIVE_CHILD) && 
+		!mVObjp->isAttachment() && 
+		!mVObjp->isFlexible())
 	{
 		clearState(ACTIVE | ANIMATED_CHILD);
 
-		if (mParent.notNull() && mParent->isActive() && warning_enabled)
-		{
-			LL_WARNS_ONCE("Drawable") << "Drawable becomes static with active parent!" << LL_ENDL;
-		}
-
+		//drawable became static with active parent, not acceptable
+		llassert(mParent.isNull() || !mParent->isActive() || !warning_enabled);
+		
 		LLViewerObject::const_child_list_t& child_list = mVObjp->getChildren();
 		for (LLViewerObject::child_list_t::const_iterator iter = child_list.begin();
 			 iter != child_list.end(); iter++)
@@ -492,8 +479,8 @@ void LLDrawable::makeStatic(BOOL warning_enabled)
 			mSpatialBridge->markDead();
 			setSpatialBridge(NULL);
 		}
+		updatePartition();
 	}
-	updatePartition();
 }
 
 // Returns "distance" between target destination and resulting xfrom
@@ -643,8 +630,6 @@ BOOL LLDrawable::updateMove()
 		return FALSE;
 	}
 	
-	makeActive();
-	
 	BOOL done;
 
 	if (isState(MOVE_UNDAMPED))
@@ -653,6 +638,7 @@ BOOL LLDrawable::updateMove()
 	}
 	else
 	{
+		makeActive();
 		done = updateMoveDamped();
 	}
 	return done;

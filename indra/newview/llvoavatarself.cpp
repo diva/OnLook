@@ -570,25 +570,14 @@ BOOL LLVOAvatarSelf::updateCharacter(LLAgent &agent)
 }
 
 // virtual
-BOOL LLVOAvatarSelf::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
+void LLVOAvatarSelf::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 {
-	if (!isAgentAvatarValid())
+	if (isAgentAvatarValid())
 	{
-		return TRUE;
+		LLVOAvatar::idleUpdate(agent, world, time);
+		if(!gNoRender)
+			idleUpdateTractorBeam();
 	}
-	/*if(!gNoRender)
-	{
-		//Emerald performs some force-bakes stuff here. Added it in because we noticed slow responses with client tag ident. -HgB
-		for(U8 i=0;i<getNumTEs();++i)
-		{
-			LLViewerTexture* te = getTEImage(i);
-			te->forceActive();
-		}
-	}*/
-	LLVOAvatar::idleUpdate(agent,world,time);
-	if(!gNoRender)
-		idleUpdateTractorBeam();
-	return TRUE;	
 }
 
 // virtual
