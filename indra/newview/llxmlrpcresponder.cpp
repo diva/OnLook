@@ -205,7 +205,6 @@ void XMLRPCResponder::completedRaw(U32 status, std::string const& reason, LLChan
 			}
 		}
 	}
-	mFinished = true;
 }
 
 LLXMLRPCValue XMLRPCResponder::responseValue(void) const

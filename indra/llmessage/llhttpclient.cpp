@@ -258,6 +258,8 @@ void BlockingResponder::completedRaw(U32, std::string const&, LLChannelDescripto
 	  mBody << istr;
 	}
   }
+  // Normally mFinished is set immediately after returning from this function,
+  // but we do it here, because we need to set it before calling mSignal.signal().
   mSignal.lock();
   mFinished = true;
   mSignal.unlock();

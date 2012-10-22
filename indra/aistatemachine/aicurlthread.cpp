@@ -2109,7 +2109,7 @@ void CurlResponderBuffer::processOutput(AICurlEasyRequest_wat& curl_easy_request
 	  // the body and provide completed/result/error calls.
 	  mEventsTarget->completed_headers(responseCode, responseReason, code, (code == CURLE_FAILED_INIT) ? NULL : &info);
 	}
-	mResponder->completedRaw(responseCode, responseReason, sChannels, mOutput);
+	mResponder->finished(responseCode, responseReason, sChannels, mOutput);
 	mResponder = NULL;
   }
 

@@ -433,7 +433,7 @@ std::string strerror(CURLcode errorcode)
 // class Responder
 //
 
-Responder::Responder(void) : mReferenceCount(0)
+Responder::Responder(void) : mReferenceCount(0), mFinished(false)
 {
   DoutEntering(dc::curl, "AICurlInterface::Responder() with this = " << (void*)this);
 }
@@ -1340,7 +1340,7 @@ CurlResponderBuffer::~CurlResponderBuffer()
 
 void CurlResponderBuffer::timed_out(void)
 {
-	mResponder->completedRaw(HTTP_INTERNAL_ERROR, "Request timeout, aborted.", sChannels, mOutput);
+	mResponder->finished(HTTP_INTERNAL_ERROR, "Request timeout, aborted.", sChannels, mOutput);
 	mResponder = NULL;
 }
 
