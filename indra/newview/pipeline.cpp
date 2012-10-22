@@ -1467,6 +1467,7 @@ void LLPipeline::removeMutedAVsLights(LLVOAvatar* muted_avatar)
 			gPipeline.mLights.erase(iter->drawable);
 			gPipeline.mNearbyLights.erase(iter++);
 		}
+		else ++iter;
 	}
 }
 
