@@ -1455,6 +1455,21 @@ void LLPipeline::unlinkDrawable(LLDrawable *drawable)
 
 }
 
+//static
+void LLPipeline::removeMutedAVsLights(LLVOAvatar* muted_avatar)
+{
+	LLFastTimer t(FTM_REMOVE_FROM_LIGHT_SET);
+	for (light_set_t::iterator iter = gPipeline.mNearbyLights.begin();
+		 iter != gPipeline.mNearbyLights.end();)
+	{
+		if (iter->drawable->getVObj()->isAttachment() && iter->drawable->getVObj()->getAvatar() == muted_avatar)
+		{
+			gPipeline.mLights.erase(iter->drawable);
+			gPipeline.mNearbyLights.erase(iter++);
+		}
+	}
+}
+
 U32 LLPipeline::addObject(LLViewerObject *vobj)
 {
 	llassert_always(vobj);
@@ -5012,38 +5027,34 @@ void LLPipeline::calcNearbyLights(LLCamera& camera)
 		F32 max_dist = LIGHT_MAX_RADIUS * 4.f; // ignore enitrely lights > 4 * max light rad
 		
 		// UPDATE THE EXISTING NEARBY LIGHTS
-		if (!LLPipeline::sSkipUpdate)
+		light_set_t cur_nearby_lights;
+		for (light_set_t::iterator iter = mNearbyLights.begin();
+			iter != mNearbyLights.end(); iter++)
 		{
-			light_set_t cur_nearby_lights;
-			for (light_set_t::iterator iter = mNearbyLights.begin();
-				iter != mNearbyLights.end(); iter++)
+			const Light* light = &(*iter);
+			LLDrawable* drawable = light->drawable;
+			LLVOVolume* volight = drawable->getVOVolume();
+			if (!volight || !drawable->isState(LLDrawable::LIGHT))
 			{
-				const Light* light = &(*iter);
-				LLDrawable* drawable = light->drawable;
-				LLVOVolume* volight = drawable->getVOVolume();
-				if (!volight || !drawable->isState(LLDrawable::LIGHT))
-				{
-					setLight(drawable,false);	//remove from mLight list
-					drawable->clearState(LLDrawable::NEARBY_LIGHT);
-					continue;
-				}
-				if (light->fade <= -LIGHT_FADE_TIME)
-				{
-					drawable->clearState(LLDrawable::NEARBY_LIGHT);
-					continue;
-				}
-				if (!sRenderAttachedLights && volight && volight->isAttachment())
-				{
-					drawable->clearState(LLDrawable::NEARBY_LIGHT);
-					continue;
-				}
-
-				F32 dist = calc_light_dist(volight, cam_pos, max_dist);
-				cur_nearby_lights.insert(Light(drawable, dist, light->fade));
+				drawable->clearState(LLDrawable::NEARBY_LIGHT);
+				continue;
 			}
-			mNearbyLights = cur_nearby_lights;
+			if (light->fade <= -LIGHT_FADE_TIME)
+			{
+				drawable->clearState(LLDrawable::NEARBY_LIGHT);
+				continue;
+			}
+			if (!sRenderAttachedLights && volight && volight->isAttachment())
+			{
+				drawable->clearState(LLDrawable::NEARBY_LIGHT);
+				continue;
+			}
+
+			F32 dist = calc_light_dist(volight, cam_pos, max_dist);
+			cur_nearby_lights.insert(Light(drawable, dist, light->fade));
 		}
-		
+		mNearbyLights = cur_nearby_lights;
+				
 		// FIND NEW LIGHTS THAT ARE IN RANGE
 		light_set_t new_nearby_lights;
 		for (LLDrawable::drawable_set_t::iterator iter = mLights.begin();
