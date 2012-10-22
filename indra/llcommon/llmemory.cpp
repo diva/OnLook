@@ -1354,7 +1354,7 @@ char* LLPrivateMemoryPool::allocate(U32 size)
 	//if the asked size larger than MAX_BLOCK_SIZE, fetch from heap directly, the pool does not manage it
 	if(size >= CHUNK_SIZE)
 	{
-		return (char*)malloc(size) ;
+		return (char*)ll_aligned_malloc_16(size) ;
 	}
 
 	char* p = NULL ;
