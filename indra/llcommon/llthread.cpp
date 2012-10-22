@@ -118,7 +118,6 @@ void *APR_THREAD_FUNC LLThread::staticRun(apr_thread_t *apr_threadp, void *datap
 	// the critical area of the mSignal lock)].
 	lldebugs << "LLThread::staticRun() Exiting: " << name << llendl;
 
-	--sRunning;		// Would be better to do this after joining with the thread, but we don't join :/
 	return NULL;
 }
 
