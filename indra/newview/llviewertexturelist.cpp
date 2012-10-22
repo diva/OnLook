@@ -623,11 +623,19 @@ static LLFastTimer::DeclareTimer FTM_IMAGE_MEDIA("Media");
 
 void LLViewerTextureList::updateImages(F32 max_time)
 {
+	static BOOL cleared = FALSE;
 	if(gAgent.getTeleportState() != LLAgent::TELEPORT_NONE)
 	{
-		clearFetchingRequests();
+		if(!cleared)
+		{
+			clearFetchingRequests();
+			gPipeline.clearRebuildGroups();
+			cleared = TRUE;
+		}
 		return;
 	}
+	cleared = FALSE;
+
 	LLAppViewer::getTextureFetch()->setTextureBandwidth(LLViewerStats::getInstance()->mTextureKBitStat.getMeanPerSec());
 
 	S32 global_raw_memory;
