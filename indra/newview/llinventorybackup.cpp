@@ -106,7 +106,7 @@ void LLFloaterInventoryBackupSettings::onClickNext(void* userdata)
 	for( ; item_iter != order->mItems.end(); )
 	{
 		if(type_remove[(*item_iter)->getType()])
-			order->mItems.erase(item_iter);
+			item_iter = order->mItems.erase(item_iter);
 		else
 			++item_iter;
 	}
