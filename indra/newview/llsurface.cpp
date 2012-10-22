@@ -42,6 +42,7 @@
 #include "llappviewer.h"
 #include "llworld.h"
 #include "llviewercontrol.h"
+#include "llviewertexture.h"
 #include "llsurfacepatch.h"
 #include "llvosurfacepatch.h"
 #include "llvowater.h"

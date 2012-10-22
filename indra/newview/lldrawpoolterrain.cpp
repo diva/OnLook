@@ -316,6 +316,7 @@ void LLDrawPoolTerrain::drawLoop()
 
 			if (model_matrix != gGLLastMatrix)
 			{
+				llassert(gGL.getMatrixMode() == LLRender::MM_MODELVIEW);
 				gGLLastMatrix = model_matrix;
 				gGL.loadMatrix(gGLModelView);
 				if (model_matrix)
@@ -793,6 +794,7 @@ void LLDrawPoolTerrain::renderFull2TU()
 	gGL.loadIdentity();
 	gGL.translatef(-2.f, 0.f, 0.f);
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
+
 	// Care about alpha only
 	gGL.getTexUnit(0)->setTextureColorBlend(LLTexUnit::TBO_REPLACE, LLTexUnit::TBS_PREV_COLOR);
 	gGL.getTexUnit(0)->setTextureAlphaBlend(LLTexUnit::TBO_REPLACE, LLTexUnit::TBS_TEX_ALPHA);

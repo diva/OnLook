@@ -3043,6 +3043,8 @@ void renderMeshBaseHull(LLVOVolume* volume, U32 data_mask, LLColor4& color, LLCo
 
 void render_hull(LLModel::PhysicsMesh& mesh, const LLColor4& color, const LLColor4& line_color)
 {
+	if(mesh.mPositions.empty() ||  mesh.mNormals.empty())
+		return;
 	gGL.diffuseColor4fv(color.mV);
 	LLVertexBuffer::drawArrays(LLRender::TRIANGLES, mesh.mPositions, mesh.mNormals);
 	LLGLEnable offset(GL_POLYGON_OFFSET_LINE);
@@ -3404,6 +3406,8 @@ void renderPhysicsShapes(LLSpatialGroup* group)
 			LLViewerObject* object = drawable->getVObj();
 			if (object && object->getPCode() == LLViewerObject::LL_VO_SURFACE_PATCH)
 			{
+				gGL.pushMatrix();
+				gGL.multMatrix((F32*) object->getRegion()->mRenderMatrix.mMatrix);
 				//push face vertices for terrain
 				for (S32 i = 0; i < drawable->getNumFaces(); ++i)
 				{
@@ -3425,6 +3429,7 @@ void renderPhysicsShapes(LLSpatialGroup* group)
 						}
 					}
 				}
+				gGL.popMatrix();
 			}
 		}
 	}
