@@ -4321,7 +4321,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 				}
 				else if (facep->canRenderAsMask())
 				{
-					if (te->getFullbright() || LLPipeline::sNoAlpha)
+					if (te->getFullbright() || fullbright || LLPipeline::sNoAlpha)
 					{
 						registerFace(group, facep, LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK);
 					}
