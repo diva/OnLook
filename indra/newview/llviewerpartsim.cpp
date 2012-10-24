@@ -729,7 +729,7 @@ void LLViewerPartSim::updateSimulation()
 		LLViewerObject* vobj = mViewerPartGroups[i]->mVOPartGroupp;
 
 		S32 visirate = 1;
-		if (vobj)
+		if (vobj && vobj->mDrawable.notNull())
 		{
 			LLSpatialGroup* group = vobj->mDrawable->getSpatialGroup();
 			if (group && !group->isVisible()) // && !group->isState(LLSpatialGroup::OBJECT_DIRTY))
@@ -740,7 +740,7 @@ void LLViewerPartSim::updateSimulation()
 
 		if ((LLDrawable::getCurrentFrame()+mViewerPartGroups[i]->mID)%visirate == 0)
 		{
-			if (vobj)
+			if (vobj && vobj->mDrawable.notNull())
 			{
 				gPipeline.markRebuild(vobj->mDrawable, LLDrawable::REBUILD_ALL, TRUE);
 			}
