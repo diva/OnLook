@@ -567,14 +567,15 @@ LLUUID LLInventoryModel::createNewCategory(const LLUUID& parent_id,
 		{
 			//Let's use the new capability.
 
-			LLSD request, body;
+//			LLSD request;
+			LLSD body;
 			body["folder_id"] = id;
 			body["parent_id"] = parent_id;
 			body["type"] = (LLSD::Integer) preferred_type;
 			body["name"] = name;
 
-			request["message"] = "CreateInventoryCategory";
-			request["payload"] = body;
+//			request["message"] = "CreateInventoryCategory";
+//			request["payload"] = body;
 
 //			viewer_region->getCapAPI().post(request);
 			LLHTTPClient::post4(
