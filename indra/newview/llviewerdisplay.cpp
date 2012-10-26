@@ -320,6 +320,11 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 	}
 
 	gViewerWindow->checkSettings();
+
+	if(gWindowResized)  //Singu Note: gViewerWindow->checkSettings() can call LLViewerWindow::reshape(). If it has then skip this frame.
+	{
+		return;
+	}
 	
 	{
 		LLFastTimer ftm(FTM_PICK);

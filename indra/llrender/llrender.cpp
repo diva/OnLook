@@ -1120,6 +1120,9 @@ void LLRender::refreshState(void)
 	
 	setAlphaRejectSettings(mCurrAlphaFunc, mCurrAlphaFuncVal);
 
+	//Singu note: Also reset glBlendFunc
+	blendFunc(mCurrBlendColorSFactor,mCurrBlendColorDFactor,mCurrBlendAlphaSFactor,mCurrBlendAlphaDFactor);
+
 	mDirty = false;
 }
 
@@ -1586,7 +1589,7 @@ void LLRender::setColorMask(bool writeColorR, bool writeColorG, bool writeColorB
 	if (mCurrColorMask[0] != writeColorR ||
 		mCurrColorMask[1] != writeColorG ||
 		mCurrColorMask[2] != writeColorB ||
-		mCurrColorMask[3] != writeAlpha)
+		mCurrColorMask[3] != writeAlpha || mDirty)
 	{
 		mCurrColorMask[0] = writeColorR;
 		mCurrColorMask[1] = writeColorG;
@@ -1641,7 +1644,7 @@ void LLRender::setAlphaRejectSettings(eCompareFunc func, F32 value)
 	}
 
 	if (mCurrAlphaFunc != func ||
-		mCurrAlphaFuncVal != value)
+		mCurrAlphaFuncVal != value || mDirty)
 	{
 		mCurrAlphaFunc = func;
 		mCurrAlphaFuncVal = value;
@@ -1685,7 +1688,7 @@ void LLRender::blendFunc(eBlendFactor sfactor, eBlendFactor dfactor)
 	llassert(sfactor < BF_UNDEF);
 	llassert(dfactor < BF_UNDEF);
 	if (mCurrBlendColorSFactor != sfactor || mCurrBlendColorDFactor != dfactor ||
-	    mCurrBlendAlphaSFactor != sfactor || mCurrBlendAlphaDFactor != dfactor)
+	    mCurrBlendAlphaSFactor != sfactor || mCurrBlendAlphaDFactor != dfactor || mDirty)
 	{
 		mCurrBlendColorSFactor = sfactor;
 		mCurrBlendAlphaSFactor = sfactor;
@@ -1710,7 +1713,7 @@ void LLRender::blendFunc(eBlendFactor color_sfactor, eBlendFactor color_dfactor,
 		return;
 	}
 	if (mCurrBlendColorSFactor != color_sfactor || mCurrBlendColorDFactor != color_dfactor ||
-	    mCurrBlendAlphaSFactor != alpha_sfactor || mCurrBlendAlphaDFactor != alpha_dfactor)
+	    mCurrBlendAlphaSFactor != alpha_sfactor || mCurrBlendAlphaDFactor != alpha_dfactor || mDirty)
 	{
 		mCurrBlendColorSFactor = color_sfactor;
 		mCurrBlendAlphaSFactor = alpha_sfactor;
