@@ -71,7 +71,7 @@ const int RIGHT_BUTTON = 1;
 ///////////////////////////////////////////////////////////////////////////////
 // Helper class that tries to download a URL from a web site and calls a method
 // on the Panel Land Media and to discover the MIME type
-class LLMimeDiscoveryResponder : public LLHTTPClient::Responder
+class LLMimeDiscoveryResponder : public AICurlInterface::ResponderWithCompleted
 {
 LOG_CLASS(LLMimeDiscoveryResponder);
 public:
@@ -111,7 +111,7 @@ public:
 		bool mInitialized;
 };
 
-class LLViewerMediaOpenIDResponder : public LLHTTPClient::Responder
+class LLViewerMediaOpenIDResponder : public AICurlInterface::ResponderWithCompleted
 {
 LOG_CLASS(LLViewerMediaOpenIDResponder);
 public:
@@ -150,7 +150,7 @@ public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerMediaOpenIDResponder_timeout; }
 };
 
-class LLViewerMediaWebProfileResponder : public LLHTTPClient::Responder
+class LLViewerMediaWebProfileResponder : public AICurlInterface::ResponderWithCompleted
 {
 LOG_CLASS(LLViewerMediaWebProfileResponder);
 public:

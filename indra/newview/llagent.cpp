@@ -2188,6 +2188,7 @@ void LLAgent::setStartPosition( U32 location_id )
     request["payload"] = body;
     request["reply"]   = adapter->getReplyName();
     request["error"]   = adapter->getErrorName();
+    request["timeoutpolicy"] = adapter->getTimeoutPolicyName();
 
     gAgent.getRegion()->getCapAPI().post(request);
 

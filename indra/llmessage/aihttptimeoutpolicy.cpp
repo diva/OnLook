@@ -186,6 +186,7 @@ AIHTTPTimeoutPolicy::AIHTTPTimeoutPolicy(char const* name, AIHTTPTimeoutPolicyBa
 	mMaximumCurlTransaction(mBase->mMaximumCurlTransaction),
 	mMaximumTotalDelay(mBase->mMaximumTotalDelay)
 {
+  sNameMap.insert(namemap_t::value_type(name, this));
   // Register for changes to the base policy.
   mBase->derived(this);
 }
@@ -645,6 +646,24 @@ AIHTTPTimeoutPolicyBase connect_40s(AIHTTPTimeoutPolicyBase::getDebugSettingsCur
 // End of policy definitions.
 //=======================================================================================================
 
+//static
+AIHTTPTimeoutPolicy::namemap_t AIHTTPTimeoutPolicy::sNameMap;
+
+//static
+AIHTTPTimeoutPolicy const* AIHTTPTimeoutPolicy::getTimeoutPolicyByName(std::string const& name)
+{
+  namemap_t::iterator iter = sNameMap.find(name);
+  if (iter == sNameMap.end())
+  {
+	if (!name.empty())
+	{
+	  llwarns << "Cannot find AIHTTPTimeoutPolicy with name \"" << name << "\"." << llendl;
+	}
+	return &sDebugSettingsCurlTimeout;
+  }
+  return iter->second;
+}
+
 //=======================================================================================================
 // Start of Responder timeout policy list.
 
@@ -674,9 +693,7 @@ P(environmentApplyResponder);
 P(environmentRequestResponder);
 P(estateChangeInfoResponder);
 P(eventPollResponder);
-P(eventResponder);
 P(fetchInventoryResponder);
-P(floaterRegionDebugConsole);
 P(fnPtrResponder);
 P2(groupProposalBallotResponder,				transfer_300s);
 P(homeLocationResponder);

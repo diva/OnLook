@@ -592,6 +592,12 @@ public:
 	void setThreaded(bool threaded);
 	//@}
 
+	/**
+	 * @brief Read channel channel of LLBufferArray and write it to ostr.
+	 * This is a Singularity extension.
+	 */
+	void writeChannelTo(std::ostream& ostr, S32 channel) const;
+
 protected:
 	/** 
 	 * @brief Optimally put data in buffers, and reutrn segments.

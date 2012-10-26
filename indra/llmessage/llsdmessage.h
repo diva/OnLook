@@ -90,13 +90,15 @@ public:
          * interesting if you suspect some usage will lead to an exception or
          * log message.
          */
-        ResponderAdapter(LLHTTPClient::ResponderPtr responder,
+        ResponderAdapter(LLHTTPClient::Responder* responder,
                          const std::string& name="ResponderAdapter");
 
         /// EventPump name on which LLSDMessage should post reply event
         std::string getReplyName() const { return mReplyPump.getName(); }
         /// EventPump name on which LLSDMessage should post error event
         std::string getErrorName() const { return mErrorPump.getName(); }
+        /// Name of timeout policy to use.
+        std::string getTimeoutPolicyName() const;
 
     private:
         // We have two different LLEventStreams, though we route them both to
@@ -126,7 +128,7 @@ private:
     class EventResponder: public LLHTTPClient::Responder
     {
     public:
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return eventResponder_timeout; }
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return *mHTTPTimeoutPolicy; }
 
         /**
          * LLHTTPClient::Responder that dispatches via named LLEventPump instances.
@@ -144,14 +146,9 @@ private:
         EventResponder(LLEventPumps& pumps,
                        const LLSD& request,
                        const std::string& target, const std::string& message,
-                       const std::string& replyPump, const std::string& errorPump):
-            mPumps(pumps),
-            mReqID(request),
-            mTarget(target),
-            mMessage(message),
-            mReplyPump(replyPump),
-            mErrorPump(errorPump)
-        {}
+                       const std::string& replyPump, const std::string& errorPump);
+
+		void setTimeoutPolicy(std::string const& name);
     
         virtual void result(const LLSD& data);
         virtual void errorWithContent(U32 status, const std::string& reason, const LLSD& content);
@@ -160,6 +157,7 @@ private:
         LLEventPumps& mPumps;
         LLReqID mReqID;
         const std::string mTarget, mMessage, mReplyPump, mErrorPump;
+        AIHTTPTimeoutPolicy const* mHTTPTimeoutPolicy;
     };
 
 private:

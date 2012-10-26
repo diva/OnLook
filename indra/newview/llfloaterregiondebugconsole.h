@@ -40,13 +40,11 @@ extern AIHTTPTimeoutPolicy floaterRegionDebugConsole_timeout;
 typedef boost::signals2::signal<
 	void (const std::string& output)> console_reply_signal_t;
 
-class LLFloaterRegionDebugConsole : public LLFloater, public LLHTTPClient::Responder, public LLSingleton<LLFloaterRegionDebugConsole>
+class LLFloaterRegionDebugConsole : public LLFloater, public LLSingleton<LLFloaterRegionDebugConsole>
 {
 public:
 	LLFloaterRegionDebugConsole();
 	virtual ~LLFloaterRegionDebugConsole();
-
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return floaterRegionDebugConsole_timeout; }
 
 	// virtual
 	BOOL postBuild();

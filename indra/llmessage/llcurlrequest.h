@@ -41,8 +41,8 @@ class AIHTTPHeaders;
 namespace AICurlInterface {
 
 // Forward declaration.
-class Responder;
-typedef boost::intrusive_ptr<Responder> ResponderPtr;
+class ResponderBase;
+typedef boost::intrusive_ptr<ResponderBase> ResponderPtr;
 
 class Request {
   public:

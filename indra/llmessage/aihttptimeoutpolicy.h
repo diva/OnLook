@@ -33,6 +33,7 @@
 
 #include "stdtypes.h"
 #include <string>
+#include <map>
 
 class AIHTTPTimeoutPolicyBase;
 
@@ -52,6 +53,8 @@ class AIHTTPTimeoutPolicy {
 	char const* const mName;				// The name of this policy, for debugging purposes.
 	AIHTTPTimeoutPolicyBase* const mBase;	// Policy this policy was based on.
 	static AIHTTPTimeoutPolicyBase sDebugSettingsCurlTimeout;	// CurlTimeout* debug settings.
+	typedef std::map<std::string, AIHTTPTimeoutPolicy*> namemap_t;	// Type of sNameMap.
+	static namemap_t sNameMap;				// Map of name of timeout policies (as returned by name()) to AIHTTPTimeoutPolicy* (this).
 
   private:
 	U16 mDNSLookupGrace;			// Extra connect timeout the first time we connect to a host (this is to allow for DNS lookups).
@@ -97,6 +100,7 @@ class AIHTTPTimeoutPolicy {
 	U16 getCurlTransaction(void) const { return mMaximumCurlTransaction; }
 	U16 getTotalDelay(void) const { return mMaximumTotalDelay; }
 	static AIHTTPTimeoutPolicy const& getDebugSettingsCurlTimeout(void);
+	static AIHTTPTimeoutPolicy const* getTimeoutPolicyByName(std::string const& name);
 
 	// Called once at start up of viewer to set a different default timeout policy than HTTPTimeoutPolicy_default.
 	static void setDefaultCurlTimeout(AIHTTPTimeoutPolicy const& defaultCurlTimeout);

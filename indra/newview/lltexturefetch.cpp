@@ -292,7 +292,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////
-class HTTPGetResponder : public LLCurl::Responder
+class HTTPGetResponder : public AICurlInterface::ResponderWithCompleted
 {
 	LOG_CLASS(HTTPGetResponder);
 public:

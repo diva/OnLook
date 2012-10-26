@@ -430,50 +430,92 @@ std::string strerror(CURLcode errorcode)
 }
 
 //-----------------------------------------------------------------------------
-// class Responder
+// class ResponderBase
 //
 
-Responder::Responder(void) : mReferenceCount(0), mFinished(false)
+ResponderBase::ResponderBase(void) : mReferenceCount(0), mFinished(false)
 {
   DoutEntering(dc::curl, "AICurlInterface::Responder() with this = " << (void*)this);
 }
 
-Responder::~Responder()
+ResponderBase::~ResponderBase()
 {
-  DoutEntering(dc::curl, "AICurlInterface::Responder::~Responder() with this = " << (void*)this << "; mReferenceCount = " << mReferenceCount);
+  DoutEntering(dc::curl, "AICurlInterface::ResponderBase::~ResponderBase() with this = " << (void*)this << "; mReferenceCount = " << mReferenceCount);
   llassert(mReferenceCount == 0);
 }
 
-void Responder::setURL(std::string const& url)
+void ResponderBase::setURL(std::string const& url)
 {
   // setURL is called from llhttpclient.cpp (request()), before calling any of the below (of course).
   // We don't need locking here therefore; it's a case of initializing before use.
   mURL = url;
 }
 
-AIHTTPTimeoutPolicy const& Responder::getHTTPTimeoutPolicy(void) const
+AIHTTPTimeoutPolicy const& ResponderBase::getHTTPTimeoutPolicy(void) const
 {
   return AIHTTPTimeoutPolicy::getDebugSettingsCurlTimeout();
 }
 
+void ResponderBase::decode_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, LLSD& content)
+{
+  // If the status indicates success (and we get here) then we expect the body to be LLSD.
+  bool const should_be_llsd = (200 <= status && status < 300);
+  if (should_be_llsd)
+  {
+	LLBufferStream istr(channels, buffer.get());
+	if (LLSDSerialize::fromXML(content, istr) == LLSDParser::PARSE_FAILURE)
+	{
+	  // Unfortunately we can't show the body of the message... I think this is a pretty serious error
+	  // though, so if this ever happens it has to be investigated by making a copy of the buffer
+	  // before serializing it, as is done below.
+	  llwarns << "Failed to deserialize LLSD. " << mURL << " [" << status << "]: " << reason << llendl;
+	}
+	// LLSDSerialize::fromXML destructed buffer, we can't initialize content now.
+	return;
+  }
+  // Put the body in content as-is.
+  std::stringstream ss;
+  buffer->writeChannelTo(ss, channels.in());
+  content = ss.str();
+#ifdef SHOW_ASSERT
+  if (!should_be_llsd)
+  {
+	// Make sure that the server indeed never returns LLSD as body when the http status is an error.
+	LLSD dummy;
+	bool server_sent_llsd_with_http_error = LLSDSerialize::fromXML(dummy, ss) > 0;
+	if (server_sent_llsd_with_http_error)
+	{
+	  llwarns << "The server sent us a response with http status " << status << " and LLSD(!) body: \"" << ss.str() << "\"!" << llendl;
+	}
+	llassert(!server_sent_llsd_with_http_error);
+  }
+#endif
+}
+
 // Called with HTML body.
 // virtual
-void Responder::completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, LLIOPipe::buffer_ptr_t const& buffer)
+void ResponderWithCompleted::completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 {
   LLSD content;
-  LLBufferStream istr(channels, buffer.get());
-  if (!LLSDSerialize::fromXML(content, istr))
-  {
-	llinfos << "Failed to deserialize LLSD. " << mURL << " [" << status << "]: " << reason << llendl;
-  }
+  decode_body(status, reason, channels, buffer, content);
 
   // Allow derived class to override at this point.
   completed(status, reason, content);
 }
 
 // virtual
-void Responder::completed(U32 status, std::string const& reason, LLSD const& content)
+void ResponderWithCompleted::completed(U32 status, std::string const& reason, LLSD const& content)
 {
+  // Either completedRaw() or this method must be overridden by the derived class. Hence, we should never get here.
+  llassert_always(false);
+}
+
+// virtual
+void Responder::finished(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+{
+  LLSD content;
+  decode_body(status, reason, channels, buffer, content);
+
   // HTML status good?
   if (200 <= status && status < 300)
   {
@@ -485,6 +527,7 @@ void Responder::completed(U32 status, std::string const& reason, LLSD const& con
 	// Allow derived class to override at this point.
 	errorWithContent(status, reason, content);
   }
+  mFinished = true;
 }
 
 // virtual
@@ -500,20 +543,14 @@ void Responder::error(U32 status, std::string const& reason)
   llinfos << mURL << " [" << status << "]: " << reason << llendl;
 }
 
-// virtual
-void Responder::result(LLSD const&)
-{
-  // Nothing.
-}
-
 // Friend functions.
 
-void intrusive_ptr_add_ref(Responder* responder)
+void intrusive_ptr_add_ref(ResponderBase* responder)
 {
   responder->mReferenceCount++;
 }
 
-void intrusive_ptr_release(Responder* responder)
+void intrusive_ptr_release(ResponderBase* responder)
 {
   if (--responder->mReferenceCount == 0)
   {
@@ -528,7 +565,7 @@ void LegacyPolledResponder::completed_headers(U32 status, std::string const& rea
   mStatus = status;
   mReason = reason;
   // Call base class implementation.
-  Responder::completed_headers(status, reason, code, info);
+  ResponderBase::completed_headers(status, reason, code, info);
 }
 
 } // namespace AICurlInterface

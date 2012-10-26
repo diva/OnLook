@@ -210,7 +210,7 @@ S32 LLMeshRepoThread::sActiveHeaderRequests = 0;
 S32 LLMeshRepoThread::sActiveLODRequests = 0;
 U32	LLMeshRepoThread::sMaxConcurrentRequests = 1;
 
-class LLMeshHeaderResponder : public LLCurl::Responder
+class LLMeshHeaderResponder : public LLCurl::ResponderWithCompleted
 {
 public:
 	LLVolumeParams mMeshParams;
@@ -233,7 +233,7 @@ public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshHeaderResponder_timeout; }
 };
 
-class LLMeshLODResponder : public LLCurl::Responder
+class LLMeshLODResponder : public LLCurl::ResponderWithCompleted
 {
 public:
 	LLVolumeParams mMeshParams;
@@ -259,7 +259,7 @@ public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshLODResponder_timeout; }
 };
 
-class LLMeshSkinInfoResponder : public LLCurl::Responder
+class LLMeshSkinInfoResponder : public LLCurl::ResponderWithCompleted
 {
 public:
 	LLUUID mMeshID;
@@ -278,7 +278,7 @@ public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshSkinInfoResponder_timeout; }
 };
 
-class LLMeshDecompositionResponder : public LLCurl::Responder
+class LLMeshDecompositionResponder : public LLCurl::ResponderWithCompleted
 {
 public:
 	LLUUID mMeshID;
@@ -297,7 +297,7 @@ public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshDecompositionResponder_timeout; }
 };
 
-class LLMeshPhysicsShapeResponder : public LLCurl::Responder
+class LLMeshPhysicsShapeResponder : public LLCurl::ResponderWithCompleted
 {
 public:
 	LLUUID mMeshID;

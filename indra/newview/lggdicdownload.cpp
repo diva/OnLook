@@ -52,7 +52,7 @@ class lggDicDownloadFloater;
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy emeraldDicDownloader_timeout;
 
-class EmeraldDicDownloader : public LLHTTPClient::Responder
+class EmeraldDicDownloader : public AICurlInterface::ResponderWithCompleted
 {
 public:
 	EmeraldDicDownloader(lggDicDownloadFloater* spanel, std::string sname);

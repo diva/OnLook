@@ -650,6 +650,20 @@ U8* LLBufferArray::readAfter(
 	return rv;
 }
 
+void LLBufferArray::writeChannelTo(std::ostream& ostr, S32 channel) const
+{
+	LLMemType m1(LLMemType::MTYPE_IO_BUFFER);
+	LLMutexLock lock(mMutexp) ;
+	const_segment_iterator_t const end = mSegments.end();
+	for (const_segment_iterator_t it = mSegments.begin(); it != end; ++it)
+	{
+		if (it->isOnChannel(channel))
+		{
+			ostr.write((char*)it->data(), it->size());
+		}
+	}
+}
+
 U8* LLBufferArray::seek(
 	S32 channel,
 	U8* start,

@@ -73,14 +73,10 @@ namespace
 
 		
 		void handleMessage(const LLSD& content);
-		virtual	void error(U32 status, const std::string& reason);
+		virtual void error(U32 status, const std::string& reason);
 		virtual	void result(const LLSD&	content);
 		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return eventPollResponder_timeout; }
 
-		virtual void completedRaw(U32 status,
-									const std::string& reason,
-									const LLChannelDescriptors& channels,
-									const buffer_ptr_t& buffer);
 	private:
 
 		bool	mDone;
@@ -158,24 +154,6 @@ namespace
 		stop();
 		lldebugs <<	"LLEventPollResponder::~Impl <" <<	mCount << "> "
 				 <<	mPollURL <<	llendl;
-	}
-
-	// virtual 
-	void LLEventPollResponder::completedRaw(U32 status,
-									const std::string& reason,
-									const LLChannelDescriptors& channels,
-									const buffer_ptr_t& buffer)
-	{
-		if (status == HTTP_BAD_GATEWAY)
-		{
-			// These errors are not parsable as LLSD, 
-			// which LLHTTPClient::Responder::completedRaw will try to do.
-			completed(status, reason, LLSD());
-		}
-		else
-		{
-			LLHTTPClient::Responder::completedRaw(status,reason,channels,buffer);
-		}
 	}
 
 	void LLEventPollResponder::makeRequest()
@@ -295,7 +273,7 @@ LLEventPoll::LLEventPoll(const std::string&	poll_url, const LLHost& sender)
 
 LLEventPoll::~LLEventPoll()
 {
-	LLHTTPClient::Responder* responderp = mImpl.get();
+	AICurlInterface::ResponderBase* responderp = mImpl.get();
 	LLEventPollResponder* event_poll_responder = dynamic_cast<LLEventPollResponder*>(responderp);
 	if (event_poll_responder) event_poll_responder->stop();
 }

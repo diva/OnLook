@@ -53,7 +53,7 @@ static LLFloaterURLEntry* sInstance = NULL;
 // Move this to its own file.
 // helper class that tries to download a URL from a web site and calls a method
 // on the Panel Land Media and to discover the MIME type
-class LLMediaTypeResponder : public LLHTTPClient::Responder
+class LLMediaTypeResponder : public LLHTTPClient::ResponderIgnoreBody
 {
 public:
 	LLMediaTypeResponder( const LLHandle<LLFloater> parent ) :

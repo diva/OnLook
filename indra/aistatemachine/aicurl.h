@@ -200,13 +200,16 @@ void setCAPath(std::string const& file);
 // destructed. Also, if any of those are destructed then the Responder is automatically
 // destructed too.
 //
-class Responder : public AICurlResponderBufferEvents {
+class ResponderBase : public AICurlResponderBufferEvents {
   public:
 	typedef boost::shared_ptr<LLBufferArray> buffer_ptr_t;
 
   protected:
-	Responder(void);
-	virtual ~Responder();
+	ResponderBase(void);
+	virtual ~ResponderBase();
+
+	// Read body from buffer and put it into content. If status indicates success, interpret it as LLSD, otherwise copy it as-is.
+	void decode_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, LLSD& content);
 
   protected:
 	// Associated URL, used for debug output.
@@ -227,11 +230,7 @@ class Responder : public AICurlResponderBufferEvents {
 	std::string const& getURL(void) const { return mURL; }
 
 	// Called by CurlResponderBuffer::timed_out or CurlResponderBuffer::processOutput.
-	void finished(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
-	{
-	  completedRaw(status, reason, channels, buffer);
-	  mFinished = true;
-	}
+	virtual void finished(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer) = 0;
 
 	// Return true if the curl thread is done with this transaction.
 	// If this returns true then it is guaranteed that none of the
@@ -279,6 +278,25 @@ class Responder : public AICurlResponderBufferEvents {
 	  // The default does nothing.
 	}
 
+  private:
+	// Used by ResponderPtr. Object is deleted when reference count reaches zero.
+	LLAtomicU32 mReferenceCount;
+
+	friend void intrusive_ptr_add_ref(ResponderBase* p);	// Called by boost::intrusive_ptr when a new copy of a boost::intrusive_ptr<ResponderBase> is made.
+	friend void intrusive_ptr_release(ResponderBase* p);	// Called by boost::intrusive_ptr when a boost::intrusive_ptr<ResponderBase> is destroyed.
+															// This function must delete the ResponderBase object when the reference count reaches zero.
+};
+
+class ResponderWithCompleted : public ResponderBase {
+  protected:
+	virtual void finished(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+	{
+	  // Allow classes derived from ResponderBase to override completedRaw
+	  // (if not they should override completed or be derived from Responder instead).
+	  completedRaw(status, reason, channels, buffer);
+	  mFinished = true;
+	}
+
 	// Derived classes can override this to get the raw data of the body of the HTML message that was received.
 	// The default is to interpret the content as LLSD and call completed().
 	virtual void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
@@ -287,9 +305,25 @@ class Responder : public AICurlResponderBufferEvents {
 	// The default is to call result() (or errorWithContent() in case of a HTML status indicating an error).
 	virtual void completed(U32 status, std::string const& reason, LLSD const& content);
 
+#ifdef SHOW_ASSERT
+	// Responders derived from this class must override either completedRaw or completed.
+	// They may not attempt to override any of the virual functions defined by Responder.
+	// Define those functions here with different parameter in order to cause a compile
+	// warning when a class accidently tries to override them.
+	enum YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS { };
+	virtual void result(YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS) { }
+	virtual void errorWithContent(YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS) { }
+	virtual void error(YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS) { }
+#endif
+};
+
+class Responder : public ResponderBase {
+  protected:
+	virtual void finished(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
+
 	// ... or, derived classes can override this to received the content of a body upon success.
 	// The default does nothing.
-	virtual void result(LLSD const& content);
+	virtual void result(LLSD const& content) = 0;
 
 	// Derived classes can override this to get informed when a bad HTML status code is received.
 	// The default calls error().
@@ -303,27 +337,29 @@ class Responder : public AICurlResponderBufferEvents {
 	// Called from LLSDMessage::ResponderAdapter::listener.
 	// LLSDMessage::ResponderAdapter is a hack, showing among others by fact that these functions need to be public.
 
-	void pubErrorWithContent(U32 status, std::string const& reason, LLSD const& content) { errorWithContent(status, reason, content); }
-	void pubResult(LLSD const& content) { result(content); }
+	void pubErrorWithContent(U32 status, std::string const& reason, LLSD const& content) { errorWithContent(status, reason, content); mFinished = true; }
+	void pubResult(LLSD const& content) { result(content); mFinished = true; }
 
-  private:
-	// Used by ResponderPtr. Object is deleted when reference count reaches zero.
-	LLAtomicU32 mReferenceCount;
-
-	friend void intrusive_ptr_add_ref(Responder* p);		// Called by boost::intrusive_ptr when a new copy of a boost::intrusive_ptr<Responder> is made.
-	friend void intrusive_ptr_release(Responder* p);		// Called by boost::intrusive_ptr when a boost::intrusive_ptr<Responder> is destroyed.
-															// This function must delete the Responder object when the reference count reaches zero.
+#ifdef SHOW_ASSERT
+	// Responders derived from this class must override result, and either errorWithContent or error.
+	// They may not attempt to override any of the virual functions defined by ResponderWithCompleted.
+	// Define those functions here with different parameter in order to cause a compile
+	// warning when a class accidently tries to override them.
+	enum YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS { };
+	virtual void completedRaw(YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS) { }
+	virtual void completed(YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS) { }
+#endif
 };
 
 // A Responder is passed around as ResponderPtr, which causes it to automatically
 // destruct when there are no pointers left pointing to it.
-typedef boost::intrusive_ptr<Responder> ResponderPtr;
+typedef boost::intrusive_ptr<ResponderBase> ResponderPtr;
 
 // Same as above except that this class stores the result, allowing old polling
 // code to poll if the transaction finished by calling is_finished() (from the
 // main the thread) and then access the results-- as opposed to immediately
 // digesting the results when any of the virtual functions are called.
-class LegacyPolledResponder : public Responder {
+class LegacyPolledResponder : public ResponderWithCompleted {
   protected:
 	CURLcode mCode;
 	U32 mStatus;

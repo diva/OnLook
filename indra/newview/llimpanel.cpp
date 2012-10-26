@@ -184,7 +184,7 @@ void start_deprecated_conference_chat(
 	delete[] bucket;
 }
 
-class LLStartConferenceChatResponder : public LLHTTPClient::Responder
+class LLStartConferenceChatResponder : public LLHTTPClient::ResponderIgnoreBody
 {
 public:
 	LLStartConferenceChatResponder(
@@ -1558,7 +1558,7 @@ void LLFloaterIMPanel::draw()
 	LLFloater::draw();
 }
 
-class LLSessionInviteResponder : public LLHTTPClient::Responder
+class LLSessionInviteResponder : public LLHTTPClient::ResponderIgnoreBody
 {
 public:
 	LLSessionInviteResponder(const LLUUID& session_id)

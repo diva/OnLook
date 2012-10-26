@@ -53,8 +53,8 @@ public:
 	typedef LLCurl::Responder Responder;
 	typedef LLCurl::ResponderPtr ResponderPtr;
 
-	// The default actually already ignores responses.
-	class ResponderIgnore : public Responder { virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return responderIgnore_timeout;} };
+	class ResponderIgnoreBody : public Responder { void result(LLSD const&) { } };
+	class ResponderIgnore : public ResponderIgnoreBody { virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return responderIgnore_timeout;} };
 
 	/** @name non-blocking API */
 	//@{

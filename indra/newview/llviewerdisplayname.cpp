@@ -58,7 +58,7 @@ namespace LLViewerDisplayName
 
 }
 
-class LLSetDisplayNameResponder : public LLHTTPClient::Responder
+class LLSetDisplayNameResponder : public LLHTTPClient::ResponderIgnoreBody
 {
 public:
 	// only care about errors

@@ -168,7 +168,7 @@ std::string gFullName;
 
 // helper class that trys to download a URL from a web site and calls a method 
 // on parent class indicating if the web server is working or not
-class LLIamHereLogin : public LLHTTPClient::Responder
+class LLIamHereLogin : public AICurlInterface::ResponderWithCompleted
 {
 	private:
 		LLIamHereLogin( LLPanelLogin* parent ) :
@@ -193,20 +193,11 @@ class LLIamHereLogin : public LLHTTPClient::Responder
 								  const LLChannelDescriptors& channels,
 								  const LLIOPipe::buffer_ptr_t& buffer)
 		{
-			completed(status, reason, LLSD()); // will call result() or error()
+			if (mParent)
+			{
+				mParent->setSiteIsAlive(200 <= status && status < 300);
+			}
 		}
-	
-		virtual void result( const LLSD& content )
-		{
-			if ( mParent )
-				mParent->setSiteIsAlive( true );
-		};
-
-		virtual void error( U32 status, const std::string& reason )
-		{
-			if ( mParent )
-				mParent->setSiteIsAlive( false );
-		};
 
 		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return iamHereLogin_timeout; }
 };

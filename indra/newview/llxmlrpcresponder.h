@@ -105,7 +105,7 @@ public:
 	XMLRPC_REQUEST response(void) const { return mResponse; }
 	LLXMLRPCValue responseValue(void) const;
 
-	/*virtual*/ void received_HTTP_header(void) { mReceivedHTTPHeader = true; LLCurl::Responder::received_HTTP_header(); }
+	/*virtual*/ void received_HTTP_header(void) { mReceivedHTTPHeader = true; LLCurl::ResponderBase::received_HTTP_header(); }
 	/*virtual*/ void completed_headers(U32 status, std::string const& reason, CURLcode code, AICurlInterface::TransferInfo* info);
 	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return XMLRPCResponder_timeout; }

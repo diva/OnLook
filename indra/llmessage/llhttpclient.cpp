@@ -234,30 +234,17 @@ class BlockingResponder : public AICurlInterface::LegacyPolledResponder {
 private:
 	LLCondition mSignal;
 	LLSD mResponse;
-	std::ostringstream mBody;
 
 public:
 	void wait(void);
 	LLSD const& response(void) const { llassert(mFinished && mCode == CURLE_OK && mStatus == HTTP_OK); return mResponse; }
-	std::string const& body(void) const { llassert(mFinished && mCode == CURLE_OK && mStatus != HTTP_OK); return mBody.str(); }
 
 	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
 };
 
-void BlockingResponder::completedRaw(U32, std::string const&, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+void BlockingResponder::completedRaw(U32, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 {
-  if (mCode == CURLE_OK)
-  {
-	LLBufferStream istr(channels, buffer.get());
-	if (mStatus == HTTP_OK)
-	{
-	  LLSDSerialize::fromXML(mResponse, istr);
-	}
-	else
-	{
-	  mBody << istr;
-	}
-  }
+  decode_body(mCode, reason, channels, buffer, mResponse);		// This puts the body asString() in mResponse in case of http error.
   // Normally mFinished is set immediately after returning from this function,
   // but we do it here, because we need to set it before calling mSignal.signal().
   mSignal.lock();
@@ -341,7 +328,7 @@ static LLSD blocking_request(
 	LLSD response = LLSD::emptyMap();
 	CURLcode result = responder->result_code();
 
-	if (result == CURLE_OK && (http_status = responder->http_status()) == HTTP_OK)
+	if (result == CURLE_OK && (http_status = responder->http_status()) >= 200 && http_status < 300)
 	{
 		response["body"] = responder->response();
 	}
@@ -358,9 +345,9 @@ static LLSD blocking_request(
 				llwarns << "CURL REQ BODY: " << body.asString() << llendl;
 			}
 			llwarns << "CURL HTTP_STATUS: " << http_status << llendl;
-			llwarns << "CURL ERROR BODY: " << responder->body() << llendl;
+			llwarns << "CURL ERROR BODY: " << responder->response().asString() << llendl;
 		}
-		response["body"] = responder->body();
+		response["body"] = responder->response().asString();
 	}
 	else
 	{

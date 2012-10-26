@@ -849,7 +849,7 @@ void LLPanelActiveSpeakers::onModeratorMuteVoice(LLUICtrl* ctrl, void* user_data
 	// ctrl value represents ability to type, so invert
 	data["params"]["mute_info"]["voice"] = !ctrl->getValue();
 
-	class MuteVoiceResponder : public LLHTTPClient::Responder
+	class MuteVoiceResponder : public LLHTTPClient::ResponderIgnoreBody
 	{
 	public:
 		MuteVoiceResponder(const LLUUID& session_id)
@@ -916,7 +916,7 @@ void LLPanelActiveSpeakers::onModeratorMuteText(LLUICtrl* ctrl, void* user_data)
 	// ctrl value represents ability to type, so invert
 	data["params"]["mute_info"]["text"] = !ctrl->getValue();
 
-	class MuteTextResponder : public LLHTTPClient::Responder
+	class MuteTextResponder : public LLHTTPClient::ResponderIgnoreBody
 	{
 	public:
 		MuteTextResponder(const LLUUID& session_id)
@@ -990,7 +990,7 @@ void LLPanelActiveSpeakers::onChangeModerationMode(LLUICtrl* ctrl, void* user_da
 		data["params"]["update_info"]["moderated_mode"]["voice"] = true;
 	}
 
-	struct ModerationModeResponder : public LLHTTPClient::Responder
+	struct ModerationModeResponder : public LLHTTPClient::ResponderIgnoreBody
 	{
 		virtual void error(U32 status, const std::string& reason)
 		{

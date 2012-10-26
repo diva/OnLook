@@ -77,7 +77,7 @@ namespace
 	// we assume that the simulator has received our request. Error will be
 	// called if this request times out.
 	//
-	class AsyncConsoleResponder : public LLHTTPClient::Responder
+	class AsyncConsoleResponder : public LLHTTPClient::ResponderIgnoreBody
 	{
 	public:
 		/* virtual */
