@@ -91,7 +91,6 @@ set(viewer_SOURCE_FILES
     hippogridmanager.cpp
     hippolimits.cpp
     hippopanelgrids.cpp
-    hipporestrequest.cpp
     importtracker.cpp
     jcfloaterareasearch.cpp
     lggdicdownload.cpp
@@ -591,7 +590,6 @@ set(viewer_HEADER_FILES
     hippogridmanager.h
     hippolimits.h
     hippopanelgrids.h
-    hipporestrequest.h
     importtracker.h
     jcfloaterareasearch.h
     lggdicdownload.h

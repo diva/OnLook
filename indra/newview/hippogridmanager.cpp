@@ -17,8 +17,6 @@
 #include "llviewercontrol.h"
 #include "llweb.h"
 
-#include "hipporestrequest.h"
-
 // ********************************************************************
 // Global Variables
 
@@ -491,7 +489,7 @@ bool HippoGridInfo::retrieveGridInfo()
 	 	uri += '/';
 	}
 	std::string reply;
-	int result = HippoRestRequest::getBlocking(uri + "get_grid_info", &reply);
+	int result = LLHTTPClient::blockingGetRaw(uri + "get_grid_info", reply);
 	if (result != 200) return false;
 
 	llinfos << "Received: " << reply << llendl;

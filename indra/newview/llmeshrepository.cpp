@@ -366,7 +366,7 @@ void log_upload_error(S32 status, const LLSD& content, std::string stage, std::s
 	}
 }
 
-class LLWholeModelFeeResponder: public LLCurl::Responder
+class LLWholeModelFeeResponder: public LLCurl::ResponderWithCompleted
 {
 	LLMeshUploadThread* mThread;
 	LLSD mModelData;
@@ -420,7 +420,7 @@ public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return wholeModelFeeResponder_timeout; }
 };
 
-class LLWholeModelUploadResponder: public LLCurl::Responder
+class LLWholeModelUploadResponder: public LLCurl::ResponderWithCompleted
 {
 	LLMeshUploadThread* mThread;
 	LLSD mModelData;

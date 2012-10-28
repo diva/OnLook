@@ -8,6 +8,7 @@ include(AIStateMachine)
 include(LLMath)
 include(LLMessage)
 include(LLVFS)
+include(LLXML)
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -17,6 +18,7 @@ include_directories(
     ${LLMATH_INCLUDE_DIRS}
     ${LLMESSAGE_INCLUDE_DIRS}
     ${LLVFS_INCLUDE_DIRS}
+    ${LLXML_INCLUDE_DIRS}
     )
 
 set(llmessage_SOURCE_FILES
@@ -244,7 +246,8 @@ if (LL_TESTS)
     ${LLVFS_LIBRARIES}
     ${LLMATH_LIBRARIES}
     ${LLCOMMON_LIBRARIES}
-      ${GOOGLEMOCK_LIBRARIES}
+    ${GOOGLEMOCK_LIBRARIES}
+    ${LLXML_LIBRARIES}
     )
 
   LL_ADD_INTEGRATION_TEST(

@@ -128,6 +128,7 @@ void LLSDMessage::EventResponder::errorWithContent(U32 status, const std::string
         LLSD info(mReqID.makeResponse());
         info["target"]  = mTarget;
         info["message"] = mMessage;
+        info["code"] = mCode;
         info["status"]  = LLSD::Integer(status);
         info["reason"]  = reason;
         info["content"] = content;
@@ -172,7 +173,7 @@ bool LLSDMessage::ResponderAdapter::listener(const LLSD& payload, bool success)
     }
     else
     {
-        responder->pubErrorWithContent(payload["status"].asInteger(), payload["reason"], payload["content"]);
+        responder->pubErrorWithContent((CURLcode)payload["code"].asInteger(), payload["status"].asInteger(), payload["reason"], payload["content"]);
     }
 
     /*---------------- MUST BE LAST STATEMENT BEFORE RETURN ----------------*/

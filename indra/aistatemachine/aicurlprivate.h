@@ -377,7 +377,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	bool mTimeoutIsOrphan;						// Set to true when mTimeout is not (yet) associated with a CurlSocketInfo.
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
   public:
-	bool mDebugIsGetMethod;
+	bool mDebugIsHeadOrGetMethod;
 #endif
 
   public:
@@ -398,7 +398,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// Throws AICurlNoEasyHandle.
 	CurlEasyRequest(void) : mHeaders(NULL), mEventsTarget(NULL), mResult(CURLE_FAILED_INIT), mTimeoutPolicy(NULL), mTimeoutIsOrphan(false)
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
-		, mDebugIsGetMethod(false)
+		, mDebugIsHeadOrGetMethod(false)
 #endif
 		{ applyDefaultOptions(); }
   public:

@@ -1789,9 +1789,9 @@ bool HTTPTimeout::data_received(size_t n)
 	{
 	  // mUploadFinished not being set this point should only happen for GET requests (in fact, then it is normal),
 	  // because in that case it is impossible to detect the difference between connecting and waiting for a reply without
-	  // using CURLOPT_DEBUGFUNCTION. Note that mDebugIsGetMethod is only valid when the debug channel 'curlio' is on,
+	  // using CURLOPT_DEBUGFUNCTION. Note that mDebugIsHeadOrGetMethod is only valid when the debug channel 'curlio' is on,
 	  // because it is set in the debug callback function.
-	  Debug(llassert(AICurlEasyRequest_wat(*mLockObj)->mDebugIsGetMethod || !dc::curlio.is_on()));
+	  Debug(llassert(AICurlEasyRequest_wat(*mLockObj)->mDebugIsHeadOrGetMethod || !dc::curlio.is_on()));
 	  // 'Upload finished' detection failed, generate it now.
 	  upload_finished();
 	}
@@ -2094,24 +2094,20 @@ void CurlResponderBuffer::processOutput(AICurlEasyRequest_wat& curl_easy_request
 	curl_easy_request_w->setopt(CURLOPT_FRESH_CONNECT, TRUE);
   }
 
-  llassert(mResponder);	// AIFIXME: We always have a responder now, no?
-  if (mResponder)
-  {	
-	if (code != CURLE_OK)
-	{
-	  curl_easy_request_w->print_diagnostics(curl_easy_request_w, code);
-	}
-	if (mEventsTarget)
-	{
-	  // Only the responder registers for these events.
-	  llassert(mEventsTarget == mResponder.get());
-	  // Allow clients to parse result codes and headers before we attempt to parse
-	  // the body and provide completed/result/error calls.
-	  mEventsTarget->completed_headers(responseCode, responseReason, code, (code == CURLE_FAILED_INIT) ? NULL : &info);
-	}
-	mResponder->finished(responseCode, responseReason, sChannels, mOutput);
-	mResponder = NULL;
+  if (code != CURLE_OK)
+  {
+	curl_easy_request_w->print_diagnostics(curl_easy_request_w, code);
   }
+  if (mEventsTarget)
+  {
+	// Only the responder registers for these events.
+	llassert(mEventsTarget == mResponder.get());
+	// Allow clients to parse result codes and headers before we attempt to parse
+	// the body and provide completed/result/error calls.
+	mEventsTarget->completed_headers(responseCode, responseReason, code, (code == CURLE_FAILED_INIT) ? NULL : &info);
+  }
+  mResponder->finished(code, responseCode, responseReason, sChannels, mOutput);
+  mResponder = NULL;
 
   resetState(curl_easy_request_w);
 }
@@ -2297,8 +2293,8 @@ int debug_callback(CURL*, curl_infotype infotype, char* buf, size_t size, void* 
 	  break;
 	case CURLINFO_HEADER_OUT:
 	  LibcwDoutStream << "H< ";
-	  if (size >= 4 && strncmp(buf, "GET ", 4) == 0)
-		request->mDebugIsGetMethod = true;
+	  if (size >= 5 && (strncmp(buf, "GET ", 4) == 0 || strncmp(buf, "HEAD ", 5) == 0))
+		request->mDebugIsHeadOrGetMethod = true;
 	  break;
 	case CURLINFO_DATA_IN:
 	  LibcwDoutStream << "D> ";

@@ -34,10 +34,12 @@
 #include "llsdserialize.h"
 #include "llvfile.h"
 #include "llurlrequest.h"
+#include "llxmltree.h"
 
 class AIHTTPTimeoutPolicy;
-extern AIHTTPTimeoutPolicy blockingGet_timeout;
-extern AIHTTPTimeoutPolicy blockingPost_timeout;
+extern AIHTTPTimeoutPolicy blockingLLSDPost_timeout;
+extern AIHTTPTimeoutPolicy blockingLLSDGet_timeout;
+extern AIHTTPTimeoutPolicy blockingRawGet_timeout;
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -62,6 +64,27 @@ public:
 private:
 	XMLRPC_REQUEST const mRequest;
 	char const* mRequestText;
+};
+
+class XmlTreeInjector : public Injector
+{
+	public:
+		XmlTreeInjector(LLXmlTree const* tree) : mTree(tree) { }
+		~XmlTreeInjector() { delete const_cast<LLXmlTree*>(mTree); }
+
+		/*virtual*/ char const* contentType(void) const { return "application/xml"; }
+		/*virtual*/ U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer)
+		{
+			std::string data;
+			mTree->write(data);
+			LLBufferStream ostream(channels, buffer.get());
+			ostream.write(data.data(), data.size());
+			ostream << std::flush;          // Always flush a LLBufferStream when done writing to it.
+			return data.size();
+		}
+
+	private:
+		LLXmlTree const* mTree;
 };
 
 class LLSDInjector : public Injector
@@ -230,28 +253,27 @@ void LLHTTPClient::get4(std::string const& url, LLSD const& query, ResponderPtr 
 	get4(uri.asString(), responder, headers);
 }
 
+//=============================================================================
+// Blocking Responders.
+//
+
 class BlockingResponder : public AICurlInterface::LegacyPolledResponder {
 private:
-	LLCondition mSignal;
-	LLSD mResponse;
+	LLCondition mSignal;	// Wait condition to wait till mFinished is true.
+	static LLSD LLSD_dummy;
+	static std::string Raw_dummy;
 
 public:
-	void wait(void);
-	LLSD const& response(void) const { llassert(mFinished && mCode == CURLE_OK && mStatus == HTTP_OK); return mResponse; }
+	void wait(void);		// Blocks until mFinished is true.
+	virtual LLSD const& getLLSD(void) const { llassert(false); return LLSD_dummy; }
+	virtual std::string const& getRaw(void) const { llassert(false); return Raw_dummy; }
 
-	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
+protected:
+	void wakeup(void);		// Call this at the end of completedRaw.
 };
 
-void BlockingResponder::completedRaw(U32, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
-{
-  decode_body(mCode, reason, channels, buffer, mResponse);		// This puts the body asString() in mResponse in case of http error.
-  // Normally mFinished is set immediately after returning from this function,
-  // but we do it here, because we need to set it before calling mSignal.signal().
-  mSignal.lock();
-  mFinished = true;
-  mSignal.unlock();
-  mSignal.signal();
-}
+LLSD BlockingResponder::LLSD_dummy;
+std::string BlockingResponder::Raw_dummy;
 
 void BlockingResponder::wait(void)
 {
@@ -273,17 +295,67 @@ void BlockingResponder::wait(void)
   }
 }
 
-class BlockingPostResponder : public BlockingResponder {
-public:
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return blockingPost_timeout; }
+void BlockingResponder::wakeup(void)
+{
+  // Normally mFinished is set immediately after returning from this function,
+  // but we do it here, because we need to set it before calling mSignal.signal().
+  mSignal.lock();
+  mFinished = true;
+  mSignal.unlock();
+  mSignal.signal();
+}
+
+class BlockingLLSDResponder : public BlockingResponder {
+private:
+	LLSD mResponse;
+
+protected:
+	/*virtual*/ LLSD const& getLLSD(void) const { llassert(mFinished && mCode == CURLE_OK && mStatus == HTTP_OK); return mResponse; }
+	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+	{
+		decode_llsd_body(mCode, reason, channels, buffer, mResponse);		// This puts the body asString() in mResponse in case of http error.
+		wakeup();
+	}
 };
 
-class BlockingGetResponder : public BlockingResponder {
-public:
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return blockingGet_timeout; }
+class BlockingRawResponder : public BlockingResponder {
+private:
+	std::string mResponse;
+
+protected:
+	/*virtual*/ std::string const& getRaw(void) const { llassert(mFinished && mCode == CURLE_OK && mStatus == HTTP_OK); return mResponse; }
+	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+	{
+		decode_raw_body(mCode, reason, channels, buffer, mResponse);
+		wakeup();
+	}
 };
+
+class BlockingLLSDPostResponder : public BlockingLLSDResponder {
+public:
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return blockingLLSDPost_timeout; }
+};
+
+class BlockingLLSDGetResponder : public BlockingLLSDResponder {
+public:
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return blockingLLSDGet_timeout; }
+};
+
+class BlockingRawGetResponder : public BlockingRawResponder {
+public:
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return blockingRawGet_timeout; }
+};
+
+// End blocking responders.
+//=============================================================================
 
 // These calls are blocking! This is usually bad, unless you're a dataserver. Then it's awesome.
+
+enum EBlockingRequestAction {
+  HTTP_LLSD_POST,
+  HTTP_LLSD_GET,
+  HTTP_RAW_GET
+};
 
 /**
 	@brief does a blocking request on the url, returning the data or bad status.
@@ -303,22 +375,26 @@ public:
   */
 static LLSD blocking_request(
 	std::string const& url,
-	LLURLRequest::ERequestAction method,
-	LLSD const& body,
-	AIHTTPHeaders& headers)
+	EBlockingRequestAction method,
+	LLSD const& body)				// Only used for HTTP_LLSD_POST
 {
 	lldebugs << "blockingRequest of " << url << llendl;
 
+	AIHTTPHeaders headers;
 	boost::intrusive_ptr<BlockingResponder> responder;
-	if (method == LLURLRequest::HTTP_POST)
+	if (method == HTTP_LLSD_POST)
 	{
-		responder = new BlockingPostResponder;
+		responder = new BlockingLLSDPostResponder;
 		LLHTTPClient::post4(url, body, responder, headers);
 	}
-	else
+	else if (method == HTTP_LLSD_GET)
 	{
-		llassert(method == LLURLRequest::HTTP_GET);
-		responder = new BlockingGetResponder;
+		responder = new BlockingLLSDGetResponder;
+		LLHTTPClient::get4(url, responder, headers);
+	}
+	else // method == HTTP_RAW_GET
+	{
+		responder = new BlockingRawGetResponder;
 		LLHTTPClient::get4(url, responder, headers);
 	}
 
@@ -328,9 +404,18 @@ static LLSD blocking_request(
 	LLSD response = LLSD::emptyMap();
 	CURLcode result = responder->result_code();
 
-	if (result == CURLE_OK && (http_status = responder->http_status()) >= 200 && http_status < 300)
+	http_status = responder->http_status();
+	bool http_success = http_status >= 200 && http_status < 300;
+	if (result == CURLE_OK && http_success)
 	{
-		response["body"] = responder->response();
+		if (method == HTTP_RAW_GET)
+		{
+			response["body"] = responder->getRaw();
+		}
+		else
+		{
+			response["body"] = responder->getLLSD();
+		}
 	}
 	else if (result == CURLE_OK)
 	{
@@ -338,16 +423,30 @@ static LLSD blocking_request(
 		if (http_status != 404)
 		{
 			llwarns << "CURL REQ URL: " << url << llendl;
-			llwarns << "CURL REQ METHOD TYPE: " << LLURLRequest::actionAsVerb(method) << llendl;
+			llwarns << "CURL REQ METHOD TYPE: " << method << llendl;
 			llwarns << "CURL REQ HEADERS: " << headers << llendl;
-			if (method == LLURLRequest::HTTP_POST)
+			if (method == HTTP_LLSD_POST)
 			{
 				llwarns << "CURL REQ BODY: " << body.asString() << llendl;
 			}
 			llwarns << "CURL HTTP_STATUS: " << http_status << llendl;
-			llwarns << "CURL ERROR BODY: " << responder->response().asString() << llendl;
+			if (method == HTTP_RAW_GET)
+			{
+				llwarns << "CURL ERROR BODY: " << responder->getRaw() << llendl;
+			}
+			else
+			{
+				llwarns << "CURL ERROR BODY: " << responder->getLLSD().asString() << llendl;
+			}
 		}
-		response["body"] = responder->response().asString();
+		if (method == HTTP_RAW_GET)
+		{
+			response["body"] = responder->getRaw();
+		}
+		else
+		{
+			response["body"] = responder->getLLSD().asString();
+		}
 	}
 	else
 	{
@@ -358,16 +457,21 @@ static LLSD blocking_request(
 	return response;
 }
 
-LLSD LLHTTPClient::blockingGet(const std::string& url)
-{
-	AIHTTPHeaders empty_headers;
-	return blocking_request(url, LLURLRequest::HTTP_GET, LLSD(), empty_headers);
-}
-
 LLSD LLHTTPClient::blockingPost(const std::string& url, const LLSD& body)
 {
-	AIHTTPHeaders empty_headers;
-	return blocking_request(url, LLURLRequest::HTTP_POST, body, empty_headers);
+	return blocking_request(url, HTTP_LLSD_POST, body);
+}
+
+LLSD LLHTTPClient::blockingGet(const std::string& url)
+{
+	return blocking_request(url, HTTP_LLSD_GET, LLSD());
+}
+
+U32 LLHTTPClient::blockingGetRaw(const std::string& url, std::string& body)
+{
+	LLSD result = blocking_request(url, HTTP_RAW_GET, LLSD());
+	body = result["body"].asString();
+	return result["status"].asInteger();
 }
 
 void LLHTTPClient::put4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers)

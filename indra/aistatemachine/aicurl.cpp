@@ -433,7 +433,7 @@ std::string strerror(CURLcode errorcode)
 // class ResponderBase
 //
 
-ResponderBase::ResponderBase(void) : mReferenceCount(0), mFinished(false)
+ResponderBase::ResponderBase(void) : mReferenceCount(0), mCode(CURLE_FAILED_INIT), mFinished(false)
 {
   DoutEntering(dc::curl, "AICurlInterface::Responder() with this = " << (void*)this);
 }
@@ -456,7 +456,7 @@ AIHTTPTimeoutPolicy const& ResponderBase::getHTTPTimeoutPolicy(void) const
   return AIHTTPTimeoutPolicy::getDebugSettingsCurlTimeout();
 }
 
-void ResponderBase::decode_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, LLSD& content)
+void ResponderBase::decode_llsd_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, LLSD& content)
 {
   // If the status indicates success (and we get here) then we expect the body to be LLSD.
   bool const should_be_llsd = (200 <= status && status < 300);
@@ -492,12 +492,25 @@ void ResponderBase::decode_body(U32 status, std::string const& reason, LLChannel
 #endif
 }
 
+void ResponderBase::decode_raw_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, std::string& content)
+{
+	LLMutexLock lock(buffer->getMutex());
+	LLBufferArray::const_segment_iterator_t const end = buffer->endSegment();
+	for (LLBufferArray::const_segment_iterator_t iter = buffer->beginSegment(); iter != end; ++iter)
+	{
+		if (iter->isOnChannel(channels.in()))
+		{
+			content.append((char*)iter->data(), iter->size());
+		}
+	}
+}
+
 // Called with HTML body.
 // virtual
 void ResponderWithCompleted::completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 {
   LLSD content;
-  decode_body(status, reason, channels, buffer, content);
+  decode_llsd_body(status, reason, channels, buffer, content);
 
   // Allow derived class to override at this point.
   completed(status, reason, content);
@@ -511,13 +524,15 @@ void ResponderWithCompleted::completed(U32 status, std::string const& reason, LL
 }
 
 // virtual
-void Responder::finished(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+void Responder::finished(CURLcode code, U32 http_status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 {
-  LLSD content;
-  decode_body(status, reason, channels, buffer, content);
+  mCode = code;
 
-  // HTML status good?
-  if (200 <= status && status < 300)
+  LLSD content;
+  decode_llsd_body(http_status, reason, channels, buffer, content);
+
+  // HTTP status good?
+  if (200 <= http_status && http_status < 300)
   {
 	// Allow derived class to override at this point.
 	result(content);
@@ -525,8 +540,9 @@ void Responder::finished(U32 status, std::string const& reason, LLChannelDescrip
   else
   {
 	// Allow derived class to override at this point.
-	errorWithContent(status, reason, content);
+	errorWithContent(http_status, reason, content);
   }
+
   mFinished = true;
 }
 
@@ -556,16 +572,6 @@ void intrusive_ptr_release(ResponderBase* responder)
   {
 	delete responder;
   }
-}
-
-// virtual
-void LegacyPolledResponder::completed_headers(U32 status, std::string const& reason, CURLcode code, AICurlInterface::TransferInfo* info)
-{
-  mCode = code;
-  mStatus = status;
-  mReason = reason;
-  // Call base class implementation.
-  ResponderBase::completed_headers(status, reason, code, info);
 }
 
 } // namespace AICurlInterface
@@ -1377,7 +1383,7 @@ CurlResponderBuffer::~CurlResponderBuffer()
 
 void CurlResponderBuffer::timed_out(void)
 {
-	mResponder->finished(HTTP_INTERNAL_ERROR, "Request timeout, aborted.", sChannels, mOutput);
+	mResponder->finished(CURLE_OK, HTTP_INTERNAL_ERROR, "Request timeout, aborted.", sChannels, mOutput);
 	mResponder = NULL;
 }
 

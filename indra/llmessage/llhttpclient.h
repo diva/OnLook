@@ -130,12 +130,21 @@ public:
 	//@}
 
 	/**
-	 * @brief Blocking HTTP get that returns an LLSD map of status and body.
+	 * @brief Blocking HTTP GET that returns an LLSD map of status and body.
 	 *
 	 * @param url the complete serialized (and escaped) url to get
 	 * @return An LLSD of { 'status':status, 'body':payload }
 	 */
 	static LLSD blockingGet(std::string const& url);
+
+	/**
+	 * @brief Blocking HTTP GET that returns the raw body.
+	 *
+	 * @param url the complete serialized (and escaped) url to get
+	 * @param result the target string to write the body to
+	 * @return HTTP status
+	 */
+	static U32 blockingGetRaw(const std::string& url, std::string& result);
 
 	/**
 	 * @brief Blocking HTTP POST that returns an LLSD map of status and body.

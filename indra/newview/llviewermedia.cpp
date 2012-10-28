@@ -71,7 +71,7 @@ const int RIGHT_BUTTON = 1;
 ///////////////////////////////////////////////////////////////////////////////
 // Helper class that tries to download a URL from a web site and calls a method
 // on the Panel Land Media and to discover the MIME type
-class LLMimeDiscoveryResponder : public AICurlInterface::ResponderWithCompleted
+class LLMimeDiscoveryResponder : public LLHTTPClient::ResponderIgnoreBody
 {
 LOG_CLASS(LLMimeDiscoveryResponder);
 public:
