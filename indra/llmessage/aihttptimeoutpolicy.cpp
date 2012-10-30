@@ -69,8 +69,8 @@ U16 const ABS_max_reply_delay = 120;					// If the server needs more than 2 minu
 U16 const ABS_min_low_speed_time = 4;					// Intuitively, I think it makes no sense to average a download speed over less than 4 seconds.
 U16 const ABS_max_low_speed_time = 120;					// Averaging it over a time considerably larger than the normal timeout periods makes no sense either.
 
-U32 const ABS_min_low_speed_limit = 1000;				// AIFIXME: this should be 1 byte/s, set at 1000 now for debugging purposes.
-U32 const ABS_max_low_speed_limit = 1000000;			// This limit almost certainly higher than what the maximum speed you get from the server!
+U32 const ABS_min_low_speed_limit = 1;					// In case you don't want to timeout when there is any data received at all.
+U32 const ABS_max_low_speed_limit = 1000000;			// This limit is almost certainly higher than the maximum speed you get from the server.
 
 U16 const ABS_min_transaction = 60;						// This is an absurd low value for experimentation. In reality, you should control
 														// termination of really slow connections through the low_speed settings.
@@ -195,6 +195,14 @@ AIHTTPTimeoutPolicy::AIHTTPTimeoutPolicy(char const* name, AIHTTPTimeoutPolicyBa
 void AIHTTPTimeoutPolicy::setDefaultCurlTimeout(AIHTTPTimeoutPolicy const& timeout)
 {
   sDebugSettingsCurlTimeout = timeout;
+  llinfos << "CurlTimeout Debug Settings now"
+	  ": DNSLookup: " << sDebugSettingsCurlTimeout.mDNSLookupGrace <<
+	  "; Connect: " << sDebugSettingsCurlTimeout.mMaximumConnectTime <<
+	  "; ReplyDelay: " << sDebugSettingsCurlTimeout.mMaximumReplyDelay <<
+	  "; LowSpeedTime: " << sDebugSettingsCurlTimeout.mLowSpeedTime <<
+	  "; LowSpeedLimit: " << sDebugSettingsCurlTimeout.mLowSpeedLimit <<
+	  "; MaxTransaction: " << sDebugSettingsCurlTimeout.mMaximumCurlTransaction <<
+	  "; MaxTotalDelay: " << sDebugSettingsCurlTimeout.mMaximumTotalDelay << llendl;
   if (sDebugSettingsCurlTimeout.mDNSLookupGrace < AITP_default_DNS_lookup_grace)
   {
 	llwarns << "CurlTimeoutDNSLookup (" << sDebugSettingsCurlTimeout.mDNSLookupGrace << ") is lower than the built-in default value (" << AITP_default_DNS_lookup_grace << ")." << llendl;
