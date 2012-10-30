@@ -313,7 +313,7 @@ protected:
 	/*virtual*/ LLSD const& getLLSD(void) const { llassert(mFinished && mCode == CURLE_OK && mStatus == HTTP_OK); return mResponse; }
 	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 	{
-		decode_llsd_body(mCode, reason, channels, buffer, mResponse);		// This puts the body asString() in mResponse in case of http error.
+		decode_llsd_body(status, reason, channels, buffer, mResponse);		// This puts the body asString() in mResponse in case of http error.
 		wakeup();
 	}
 };
