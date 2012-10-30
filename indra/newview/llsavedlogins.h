@@ -119,7 +119,9 @@ public:
 	void setGrid(const std::string& value){
 		mEntry.insert("grid", LLSD(value));
 	}
-	
+
+	bool isSecondLife() const;
+
 	LLSD asLLSD() const;
 
 	static const size_t PASSWORD_HASH_LENGTH = 32;

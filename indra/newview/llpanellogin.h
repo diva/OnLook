@@ -71,10 +71,10 @@ public:
 	 * @param	firstname	First name value.
 	 * @param	lastname	Last name value.
 	 * @param	password	Password, as plaintext or munged.
-	 * @param	login_history	Login history object. An empty one can be provided if no history is available.
+	 * @param	is_secondlife True if First/Last refer to a SecondLife(tm) account.
 	 */
 	static void setFields(const std::string& firstname, const std::string& lastname,
-						  const std::string& password, const LLSavedLogins& login_history = LLSavedLogins());
+						  const std::string& password);
 
 	/**
 	 * @brief	Set the values of the displayed fields from a populated history entry.

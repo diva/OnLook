@@ -114,7 +114,7 @@ static bool nameSplit(const std::string& full, std::string& first, std::string& 
 	if (fragments.size() == 1)
 	{
 		if (gHippoGridManager->getConnectedGrid()->isSecondLife())
-			last = "resident";
+			last = "Resident";
 		else
 			last = "";
 	}
@@ -123,8 +123,8 @@ static bool nameSplit(const std::string& full, std::string& first, std::string& 
 	return (fragments.size() <= 2);
 }
 
-static std::string nameJoin(const std::string& first,const std::string& last) {
-	if (last.empty() || boost::algorithm::iequals(last, "resident"))
+static std::string nameJoin(const std::string& first,const std::string& last, bool strip_resident) {
+	if (last.empty() || (strip_resident && boost::algorithm::iequals(last, "Resident")))
 		return first;
 	else {
 		if(std::islower(last[0]))
@@ -134,15 +134,15 @@ static std::string nameJoin(const std::string& first,const std::string& last) {
 	}
 }
 
-static std::string getDisplayString(const std::string& first, const std::string& last, const std::string& grid) {
+static std::string getDisplayString(const std::string& first, const std::string& last, const std::string& grid, bool is_secondlife) {
 	if(grid == gHippoGridManager->getDefaultGridNick())
-		return nameJoin(first, last);
+		return nameJoin(first, last, is_secondlife);
 	else
-		return nameJoin(first, last) + " (" + grid + ")";
+		return nameJoin(first, last, is_secondlife) + " (" + grid + ")";
 }
 
 static std::string getDisplayString(const LLSavedLoginEntry& entry) {
-	return getDisplayString(entry.getFirstName(), entry.getLastName(), entry.getGrid());
+	return getDisplayString(entry.getFirstName(), entry.getLastName(), entry.getGrid(), entry.isSecondLife());
 }
 
 class LLLoginRefreshHandler : public LLCommandHandler
@@ -661,8 +661,7 @@ void LLPanelLogin::show(const LLRect &rect,
 // static
 void LLPanelLogin::setFields(const std::string& firstname,
 			     const std::string& lastname,
-			     const std::string& password,
-			     const LLSavedLogins& login_history)
+			     const std::string& password)
 {
 	if (!sInstance)
 	{
@@ -673,7 +672,7 @@ void LLPanelLogin::setFields(const std::string& firstname,
 	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("name_combo");
 
 	llassert_always(firstname.find(' ') == std::string::npos);
-	login_combo->setLabel(nameJoin(firstname, lastname));
+	login_combo->setLabel(nameJoin(firstname, lastname, false));
 
 	// Max "actual" password length is 16 characters.
 	// Hex digests are always 32 characters.
@@ -710,7 +709,7 @@ void LLPanelLogin::setFields(const LLSavedLoginEntry& entry, bool takeFocus)
 	}
 
 	LLCheckBoxCtrl* remember_pass_check = sInstance->getChild<LLCheckBoxCtrl>("remember_check");
-	std::string fullname = nameJoin(entry.getFirstName(), entry.getLastName()); 
+	std::string fullname = nameJoin(entry.getFirstName(), entry.getLastName(), entry.isSecondLife()); 
 	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("name_combo");
 	login_combo->setTextEntry(fullname);
 	login_combo->resetTextDirty();
