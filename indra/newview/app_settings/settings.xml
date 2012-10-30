@@ -4208,7 +4208,7 @@
     <key>CurlConcurrentConnections</key>
     <map>
       <key>Comment</key>
-      <string>Maximum number of simultaneous curl connections (requires restart)</string>
+      <string>Maximum number of simultaneous curl connections</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -4230,7 +4230,7 @@
     <key>CurlTimeoutDNSLookup</key>
     <map>
       <key>Comment</key>
-      <string>Extra time in seconds added to CurlTimeoutConnect for the initial connect to a host (requires restart)</string>
+      <string>Extra time in seconds added to CurlTimeoutConnect for the initial connect to a host</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -4241,7 +4241,7 @@
     <key>CurlTimeoutConnect</key>
     <map>
       <key>Comment</key>
-      <string>Maximum time allowed until a connection is established (after adding the easy handle) until the server is considered unreachable and the connection is terminated (requires restart)</string>
+      <string>Maximum time allowed until a connection is established (after adding the easy handle) until the server is considered unreachable and the connection is terminated</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -4252,7 +4252,7 @@
     <key>CurlTimeoutReplyDelay</key>
     <map>
       <key>Comment</key>
-      <string>Maximum time the viewer will wait between sending data to the server and receiving (a partial) reply (requires restart)</string>
+      <string>Maximum time the viewer will wait between sending data to the server and receiving (a partial) reply</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -4263,7 +4263,7 @@
     <key>CurlTimeoutLowSpeedLimit</key>
     <map>
       <key>Comment</key>
-      <string>If a transfer speed drops below this value (in bytes/s) during CurlTimeoutLowSpeedTime seconds, the transfer is considered too slow and is terminated (requires restart)</string>
+      <string>If a transfer speed drops below this value (in bytes/s) during CurlTimeoutLowSpeedTime seconds, the transfer is considered too slow and is terminated</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -4274,7 +4274,7 @@
     <key>CurlTimeoutLowSpeedTime</key>
     <map>
       <key>Comment</key>
-      <string>If a transfer speed drops below CurlTimeoutLowSpeedLimit (in bytes/s) during this amount of seconds, the transfer is considered too slow and is terminated (requires restart)</string>
+      <string>If a transfer speed drops below CurlTimeoutLowSpeedLimit (in bytes/s) during this amount of seconds, the transfer is considered too slow and is terminated</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -4285,7 +4285,7 @@
     <key>CurlTimeoutMaxTransaction</key>
     <map>
       <key>Comment</key>
-      <string>Maximum total time of a curl transaction, from when the easy handle is added till the transaction has completed. This INCLUDES DNS lookups (CurlTimeoutConnect), connect time (CurlTimeoutConnect) and waiting for the first server reply (CurlTimeoutReply) as well as the actually time needed for data transfer (requires restart)</string>
+      <string>Maximum total time of a curl transaction, from when the easy handle is added till the transaction has completed. This INCLUDES DNS lookups (CurlTimeoutDNSLookup), connect time (CurlTimeoutConnect) and waiting for the first server reply (CurlTimeoutReply) as well as the actually time needed for data transfer</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -4296,7 +4296,7 @@
     <key>CurlTimeoutMaxTotalDelay</key>
     <map>
       <key>Comment</key>
-	  <string>Maximum total time of a curl request, from when it is requested till the transaction has completed. This includes queuing due to connection throttling on top of the events covered by CurlTimeoutMaxTransaction (requires restart)</string>
+	  <string>Maximum total time of a curl request, from when it is requested till the transaction has completed. This includes queuing due to connection throttling on top of the events covered by CurlTimeoutMaxTransaction</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -9059,7 +9059,7 @@
     <key>NoVerifySSLCert</key>
     <map>
       <key>Comment</key>
-      <string>Do not verify SSL peers (requires restart)</string>
+      <string>Do not verify SSL peers</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

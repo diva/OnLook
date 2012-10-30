@@ -94,6 +94,8 @@ class AIHTTPTimeoutPolicy {
 	// Accessors.
 	char const* name(void) const { return mName; }
 	U16 getConnectTimeout(std::string const& hostname) const;
+	U16 getDNSLookup(void) const { return mDNSLookupGrace; }
+	U16 getConnect(void) const { return mMaximumConnectTime; }
 	U16 getReplyDelay(void) const { return mMaximumReplyDelay; }
 	U16 getLowSpeedTime(void) const { return mLowSpeedTime; }
 	U32 getLowSpeedLimit(void) const { return mLowSpeedLimit; }
@@ -114,5 +116,23 @@ class AIHTTPTimeoutPolicy {
 	// Abused assigned operator (called by AIHTTPTimeoutPolicyBase::operator=).
 	AIHTTPTimeoutPolicy& operator=(AIHTTPTimeoutPolicy const&);
 };
+
+class LLSD;
+
+// Handlers for Debug Setting changes.
+bool validateCurlTimeoutDNSLookup(LLSD const& newvalue);
+bool handleCurlTimeoutDNSLookup(LLSD const& newvalue);
+bool validateCurlTimeoutConnect(LLSD const& newvalue);
+bool handleCurlTimeoutConnect(LLSD const& newvalue);
+bool validateCurlTimeoutReplyDelay(LLSD const& newvalue);
+bool handleCurlTimeoutReplyDelay(LLSD const& newvalue);
+bool validateCurlTimeoutLowSpeedLimit(LLSD const& newvalue);
+bool handleCurlTimeoutLowSpeedLimit(LLSD const& newvalue);
+bool validateCurlTimeoutLowSpeedTime(LLSD const& newvalue);
+bool handleCurlTimeoutLowSpeedTime(LLSD const& newvalue);
+bool validateCurlTimeoutMaxTransaction(LLSD const& newvalue);
+bool handleCurlTimeoutMaxTransaction(LLSD const& newvalue);
+bool validateCurlTimeoutMaxTotalDelay(LLSD const& newvalue);
+bool handleCurlTimeoutMaxTotalDelay(LLSD const& newvalue);
 
 #endif // AIHTTPTIMEOUTPOLICY_H

@@ -2493,5 +2493,20 @@ void startCurlThread(U32 CurlConcurrentConnections, bool NoVerifySSLCert)
   AICurlThread::sInstance->start();
 }
 
+bool handleCurlConcurrentConnections(LLSD const& newvalue)
+{
+  using namespace AICurlPrivate::curlthread;
+
+  curl_concurrent_connections = newvalue.asInteger();
+  llinfos << "CurlConcurrentConnections set to " << curl_concurrent_connections << llendl;
+  return true;
+}
+
+bool handleNoVerifySSLCert(LLSD const& newvalue)
+{
+  gNoVerifySSLCert = newvalue.asBoolean();
+  return true;
+}
+
 } // namespace AICurlInterface
 

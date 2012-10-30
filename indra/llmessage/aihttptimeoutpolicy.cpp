@@ -602,8 +602,6 @@ void AIHTTPTimeoutPolicy::sanity_checks(void) const
 //=======================================================================================================
 // Start of policy definitions.
 
-// AIFIXME: update all policies whenever a CurlTimeout* settings is changed.
-
 // Policy with hardcoded default values.
 AIHTTPTimeoutPolicyBase HTTPTimeoutPolicy_default(
 		AITP_default_DNS_lookup_grace,
@@ -645,6 +643,132 @@ AIHTTPTimeoutPolicyBase connect_40s(AIHTTPTimeoutPolicyBase::getDebugSettingsCur
 
 // End of policy definitions.
 //=======================================================================================================
+
+bool validateCurlTimeoutDNSLookup(LLSD const& newvalue)
+{
+  U32 new_value = newvalue.asInteger();
+  AIHTTPTimeoutPolicyBase timeout = AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout();
+  AIHTTPTimeoutPolicyOperators::DNS op(new_value);
+  op.perform(&timeout);
+  return timeout.getDNSLookup() == new_value;
+}
+
+bool handleCurlTimeoutDNSLookup(LLSD const& newvalue)
+{
+  AIHTTPTimeoutPolicyBase timeout = AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout();
+  AIHTTPTimeoutPolicyOperators::DNS op(newvalue.asInteger());
+  op.perform(&timeout);
+  AIHTTPTimeoutPolicy::setDefaultCurlTimeout(timeout);
+  return true;
+}
+
+bool validateCurlTimeoutConnect(LLSD const& newvalue)
+{
+  U32 new_value = newvalue.asInteger();
+  AIHTTPTimeoutPolicyBase timeout = AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout();
+  AIHTTPTimeoutPolicyOperators::Connect op(new_value);
+  op.perform(&timeout);
+  return timeout.getConnect() == new_value;
+}
+
+bool handleCurlTimeoutConnect(LLSD const& newvalue)
+{
+  AIHTTPTimeoutPolicyBase timeout = AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout();
+  AIHTTPTimeoutPolicyOperators::Connect op(newvalue.asInteger());
+  op.perform(&timeout);
+  AIHTTPTimeoutPolicy::setDefaultCurlTimeout(timeout);
+  return true;
+}
+
+bool validateCurlTimeoutReplyDelay(LLSD const& newvalue)
+{
+  U32 new_value = newvalue.asInteger();
+  AIHTTPTimeoutPolicyBase timeout = AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout();
+  AIHTTPTimeoutPolicyOperators::Reply op(new_value);
+  op.perform(&timeout);
+  return timeout.getReplyDelay() == new_value;
+}
+
+bool handleCurlTimeoutReplyDelay(LLSD const& newvalue)
+{
+  AIHTTPTimeoutPolicyBase timeout = AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout();
+  AIHTTPTimeoutPolicyOperators::Reply op(newvalue.asInteger());
+  op.perform(&timeout);
+  AIHTTPTimeoutPolicy::setDefaultCurlTimeout(timeout);
+  return true;
+}
+
+bool validateCurlTimeoutLowSpeedLimit(LLSD const& newvalue)
+{
+  U32 new_value = newvalue.asInteger();
+  AIHTTPTimeoutPolicyBase timeout = AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout();
+  AIHTTPTimeoutPolicyOperators::Speed op(timeout.getLowSpeedTime(), new_value);
+  op.perform(&timeout);
+  return timeout.getLowSpeedLimit() == new_value;
+}
+
+bool handleCurlTimeoutLowSpeedLimit(LLSD const& newvalue)
+{
+  AIHTTPTimeoutPolicyBase timeout = AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout();
+  AIHTTPTimeoutPolicyOperators::Speed op(timeout.getLowSpeedTime(), newvalue.asInteger());
+  op.perform(&timeout);
+  AIHTTPTimeoutPolicy::setDefaultCurlTimeout(timeout);
+  return true;
+}
+
+bool validateCurlTimeoutLowSpeedTime(LLSD const& newvalue)
+{
+  U32 new_value = newvalue.asInteger();
+  AIHTTPTimeoutPolicyBase timeout = AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout();
+  AIHTTPTimeoutPolicyOperators::Speed op(new_value, timeout.getLowSpeedLimit());
+  op.perform(&timeout);
+  return timeout.getLowSpeedTime() == new_value;
+}
+
+bool handleCurlTimeoutLowSpeedTime(LLSD const& newvalue)
+{
+  AIHTTPTimeoutPolicyBase timeout = AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout();
+  AIHTTPTimeoutPolicyOperators::Speed op(newvalue.asInteger(), timeout.getLowSpeedLimit());
+  op.perform(&timeout);
+  AIHTTPTimeoutPolicy::setDefaultCurlTimeout(timeout);
+  return true;
+}
+
+bool validateCurlTimeoutMaxTransaction(LLSD const& newvalue)
+{
+  U32 new_value = newvalue.asInteger();
+  AIHTTPTimeoutPolicyBase timeout = AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout();
+  AIHTTPTimeoutPolicyOperators::Transaction op(new_value);
+  op.perform(&timeout);
+  return timeout.getCurlTransaction() == new_value;
+}
+
+bool handleCurlTimeoutMaxTransaction(LLSD const& newvalue)
+{
+  AIHTTPTimeoutPolicyBase timeout = AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout();
+  AIHTTPTimeoutPolicyOperators::Transaction op(newvalue.asInteger());
+  op.perform(&timeout);
+  AIHTTPTimeoutPolicy::setDefaultCurlTimeout(timeout);
+  return true;
+}
+
+bool validateCurlTimeoutMaxTotalDelay(LLSD const& newvalue)
+{
+  U32 new_value = newvalue.asInteger();
+  AIHTTPTimeoutPolicyBase timeout = AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout();
+  AIHTTPTimeoutPolicyOperators::Total op(new_value);
+  op.perform(&timeout);
+  return timeout.getTotalDelay() == new_value;
+}
+
+bool handleCurlTimeoutMaxTotalDelay(LLSD const& newvalue)
+{
+  AIHTTPTimeoutPolicyBase timeout = AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout();
+  AIHTTPTimeoutPolicyOperators::Total op(newvalue.asInteger());
+  op.perform(&timeout);
+  AIHTTPTimeoutPolicy::setDefaultCurlTimeout(timeout);
+  return true;
+}
 
 //static
 AIHTTPTimeoutPolicy::namemap_t AIHTTPTimeoutPolicy::sNameMap;

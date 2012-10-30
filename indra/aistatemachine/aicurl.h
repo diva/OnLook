@@ -55,6 +55,7 @@
 #include "llhttpstatuscodes.h"
 #include "aihttpheaders.h"
 
+// Debug Settings.
 extern bool gNoVerifySSLCert;
 
 class LLSD;
@@ -147,6 +148,10 @@ struct TransferInfo {
 
 //-----------------------------------------------------------------------------
 // Global functions.
+
+// Called to handle changes in Debug Settings.
+bool handleCurlConcurrentConnections(LLSD const& newvalue);
+bool handleNoVerifySSLCert(LLSD const& newvalue);
 
 // Called once at start of application (from newview/llappviewer.cpp by main thread (before threads are created)),
 // with main purpose to initialize curl.

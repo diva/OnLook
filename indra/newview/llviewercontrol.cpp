@@ -82,6 +82,8 @@
 #include "aithreadsafe.h"
 #include "lldrawpoolbump.h"
 #include "emeraldboobutils.h"
+#include "aicurl.h"
+#include "aihttptimeoutpolicy.h"
 
 #include "NACLantispam.h"    // for NaCl Antispam Registry
 
@@ -625,6 +627,7 @@ static bool handleAllowLargeSounds(const LLSD& newvalue)
 		gAudiop->setAllowLargeSounds(newvalue.asBoolean());
 	return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////
 void settings_setup_listeners()
 {
@@ -792,6 +795,24 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("AscentAvatarXModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _2));
 	gSavedSettings.getControl("AscentAvatarYModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _2));
 	gSavedSettings.getControl("AscentAvatarZModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _2));
+
+	gSavedSettings.getControl("CurlConcurrentConnections")->getSignal()->connect(boost::bind(&AICurlInterface::handleCurlConcurrentConnections, _2));
+	gSavedSettings.getControl("NoVerifySSLCert")->getSignal()->connect(boost::bind(&AICurlInterface::handleNoVerifySSLCert, _2));
+
+	gSavedSettings.getControl("CurlTimeoutDNSLookup")->getValidateSignal()->connect(boost::bind(&validateCurlTimeoutDNSLookup, _2));
+	gSavedSettings.getControl("CurlTimeoutDNSLookup")->getSignal()->connect(boost::bind(&handleCurlTimeoutDNSLookup, _2));
+	gSavedSettings.getControl("CurlTimeoutConnect")->getValidateSignal()->connect(boost::bind(&validateCurlTimeoutConnect, _2));
+	gSavedSettings.getControl("CurlTimeoutConnect")->getSignal()->connect(boost::bind(&handleCurlTimeoutConnect, _2));
+	gSavedSettings.getControl("CurlTimeoutReplyDelay")->getValidateSignal()->connect(boost::bind(&validateCurlTimeoutReplyDelay, _2));
+	gSavedSettings.getControl("CurlTimeoutReplyDelay")->getSignal()->connect(boost::bind(&handleCurlTimeoutReplyDelay, _2));
+	gSavedSettings.getControl("CurlTimeoutLowSpeedLimit")->getValidateSignal()->connect(boost::bind(&validateCurlTimeoutLowSpeedLimit, _2));
+	gSavedSettings.getControl("CurlTimeoutLowSpeedLimit")->getSignal()->connect(boost::bind(&handleCurlTimeoutLowSpeedLimit, _2));
+	gSavedSettings.getControl("CurlTimeoutLowSpeedTime")->getValidateSignal()->connect(boost::bind(&validateCurlTimeoutLowSpeedTime, _2));
+	gSavedSettings.getControl("CurlTimeoutLowSpeedTime")->getSignal()->connect(boost::bind(&handleCurlTimeoutLowSpeedTime, _2));
+	gSavedSettings.getControl("CurlTimeoutMaxTransaction")->getValidateSignal()->connect(boost::bind(&validateCurlTimeoutMaxTransaction, _2));
+	gSavedSettings.getControl("CurlTimeoutMaxTransaction")->getSignal()->connect(boost::bind(&handleCurlTimeoutMaxTransaction, _2));
+	gSavedSettings.getControl("CurlTimeoutMaxTotalDelay")->getValidateSignal()->connect(boost::bind(&validateCurlTimeoutMaxTotalDelay, _2));
+	gSavedSettings.getControl("CurlTimeoutMaxTotalDelay")->getSignal()->connect(boost::bind(&handleCurlTimeoutMaxTotalDelay, _2));
 
     // [Ansariel: Display name support]
 	gSavedSettings.getControl("PhoenixNameSystem")->getSignal()->connect(boost::bind(&handlePhoenixNameSystemChanged, _2));
