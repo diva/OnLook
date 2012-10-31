@@ -688,7 +688,7 @@ void LLViewerObjectList::updateApparentAngles(LLAgent &agent)
 	LLVOAvatar::cullAvatarsByPixelArea();
 }
 
-class LLObjectCostResponder : public LLCurl::Responder
+class LLObjectCostResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLObjectCostResponder(const LLSD& object_ids)
@@ -778,7 +778,7 @@ private:
 	LLSD mObjectIDs;
 };
 
-class LLPhysicsFlagsResponder : public LLCurl::Responder
+class LLPhysicsFlagsResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLPhysicsFlagsResponder(const LLSD& object_ids)

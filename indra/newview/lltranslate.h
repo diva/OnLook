@@ -43,7 +43,7 @@ extern AIHTTPTimeoutPolicy translationReceiver_timeout;
 class LLTranslate
 {
 public :
-	class TranslationReceiver: public LLHTTPClient::Responder
+	class TranslationReceiver: public LLHTTPClient::ResponderWithResult
 	{
 	protected:
 		TranslationReceiver(const std::string &fromLang, const std::string &toLang)

@@ -92,7 +92,7 @@ LLFloaterTOS::LLFloaterTOS(ETOSType type, const std::string & message)
 
 // helper class that trys to download a URL from a web site and calls a method 
 // on parent class indicating if the web server is working or not
-class LLIamHere : public LLHTTPClient::Responder
+class LLIamHere : public LLHTTPClient::ResponderWithResult
 {
 	private:
 		LLIamHere( LLFloaterTOS* parent ) :

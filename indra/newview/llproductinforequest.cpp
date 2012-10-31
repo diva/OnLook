@@ -42,7 +42,7 @@
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy productInfoRequestResponder_timeout;
 
-class LLProductInfoRequestResponder : public LLHTTPClient::Responder
+class LLProductInfoRequestResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	//If we get back a normal response, handle it here

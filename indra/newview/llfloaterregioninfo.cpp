@@ -2310,7 +2310,7 @@ void LLPanelEstateInfo::getEstateOwner()
 }
 */
 
-class LLEstateChangeInfoResponder : public LLHTTPClient::Responder
+class LLEstateChangeInfoResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLEstateChangeInfoResponder(void* userdata) : mpPanel((LLPanelEstateInfo*)userdata) {};

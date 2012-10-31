@@ -42,7 +42,7 @@ class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy homeLocationResponder_timeout;
 
 /* Typedef, Enum, Class, Struct, etc. */
-class LLHomeLocationResponder : public LLHTTPClient::Responder
+class LLHomeLocationResponder : public LLHTTPClient::ResponderWithResult
 {
 	virtual void result( const LLSD& content );
 	virtual void error( U32 status, const std::string& reason );

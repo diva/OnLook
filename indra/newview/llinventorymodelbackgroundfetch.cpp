@@ -393,7 +393,7 @@ void LLInventoryModelFetchItemResponder::error( U32 status, const std::string& r
 	LLInventoryModelBackgroundFetch::instance().incrFetchCount(-1);
 }
 
-class LLInventoryModelFetchDescendentsResponder: public LLHTTPClient::Responder
+class LLInventoryModelFetchDescendentsResponder: public LLHTTPClient::ResponderWithResult
 {
 	public:
 	LLInventoryModelFetchDescendentsResponder(const LLSD& request_sd, uuid_vec_t recursive_cats) : 

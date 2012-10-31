@@ -107,7 +107,7 @@ public:
 
 namespace
 {
-	class LLFnPtrResponder : public LLHTTPClient::Responder
+	class LLFnPtrResponder : public LLHTTPClient::ResponderWithResult
 	{
 		LOG_CLASS(LLFnPtrResponder);
 	public:

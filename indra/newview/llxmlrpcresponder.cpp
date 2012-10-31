@@ -156,14 +156,14 @@ XMLRPC_VALUE LLXMLRPCValue::getValue() const
 	return mV;
 }
 
-void XMLRPCResponder::completed_headers(U32 status, std::string const& reason, CURLcode code, AICurlInterface::TransferInfo* info)
+void XMLRPCResponder::completed_headers(U32 status, std::string const& reason, AITransferInfo* info)
 {
 	if (info)
 	{
 		mTransferInfo = *info;
 	}
 	// Call base class implementation.
-	LegacyPolledResponder::completed_headers(status, reason, code, info);
+	LegacyPolledResponder::completed_headers(status, reason, info);
 }
 
 void XMLRPCResponder::completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)

@@ -301,7 +301,7 @@ bool send_start_session_messages(
 	return false;
 }
 
-class LLVoiceCallCapResponder : public LLHTTPClient::Responder
+class LLVoiceCallCapResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLVoiceCallCapResponder(const LLUUID& session_id) : mSessionID(session_id) {};

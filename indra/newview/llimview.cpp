@@ -95,7 +95,7 @@ LLIMMgr* gIMMgr = NULL;
 //	return (LLStringUtil::compareDict( a->mName, b->mName ) < 0);
 //}
 class LLViewerChatterBoxInvitationAcceptResponder :
-	public LLHTTPClient::Responder
+	public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLViewerChatterBoxInvitationAcceptResponder(

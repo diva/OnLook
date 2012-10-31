@@ -41,7 +41,7 @@
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy remoteParcelRequestResponder_timeout;
 
-class LLRemoteParcelRequestResponder : public LLHTTPClient::Responder
+class LLRemoteParcelRequestResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLRemoteParcelRequestResponder(LLHandle<LLPanel> place_panel_handle);

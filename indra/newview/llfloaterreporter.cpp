@@ -858,7 +858,7 @@ public:
 	}
 };
 
-class LLUserReportResponder : public LLHTTPClient::Responder
+class LLUserReportResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLUserReportResponder() { }

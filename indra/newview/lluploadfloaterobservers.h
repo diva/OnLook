@@ -98,7 +98,7 @@ protected:
 };
 
 
-class LLUploadModelPremissionsResponder : public LLHTTPClient::Responder
+class LLUploadModelPremissionsResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 

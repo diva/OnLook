@@ -64,7 +64,7 @@ extern AIHTTPTimeoutPolicy placeAvatarTeleportResponder_timeout;
 // OGPX TODO: mResult should not get replaced in result(), instead 
 //            should replace individual LLSD fields in mResult.
 class LLPlaceAvatarTeleportResponder :
-	public LLHTTPClient::Responder
+	public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLPlaceAvatarTeleportResponder()

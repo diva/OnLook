@@ -52,7 +52,7 @@ private:
 	static bool doRequest();
 };
 
-class LLEnvironmentRequestResponder: public LLHTTPClient::Responder
+class LLEnvironmentRequestResponder: public LLHTTPClient::ResponderWithResult
 {
 	LOG_CLASS(LLEnvironmentRequestResponder);
 public:
@@ -80,7 +80,7 @@ private:
 	static clock_t UPDATE_WAIT_SECONDS;
 };
 
-class LLEnvironmentApplyResponder: public LLHTTPClient::Responder
+class LLEnvironmentApplyResponder: public LLHTTPClient::ResponderWithResult
 {
 	LOG_CLASS(LLEnvironmentApplyResponder);
 public:

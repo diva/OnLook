@@ -358,10 +358,10 @@ class CurlEasyRequest : public CurlEasyHandle {
 	void print_diagnostics(AICurlEasyRequest_wat const& curlEasyRequest_w, CURLcode code);
 
 	// Called by MultiHandle::check_run_count() to fill info with the transfer info.
-	void getTransferInfo(AICurlInterface::TransferInfo* info);
+	void getTransferInfo(AITransferInfo* info);
 
 	// If result != CURLE_FAILED_INIT then also info was filled.
-	void getResult(CURLcode* result, AICurlInterface::TransferInfo* info = NULL);
+	void getResult(CURLcode* result, AITransferInfo* info = NULL);
 
 	// For debugging purposes.
 	void print_curl_timings(void) const;
@@ -424,7 +424,8 @@ class CurlEasyRequest : public CurlEasyHandle {
 
 // Buffers used by the AICurlInterface::Request API.
 // Curl callbacks write into and read from these buffers.
-// The interface with the rest of the code is through AICurlInterface::Responder.
+// The interface with the rest of the code is through
+// AICurlInterface::ResponderBase and derived classes.
 //
 // The lifetime of a CurlResponderBuffer is slightly shorter than its
 // associated CurlEasyRequest; this class can only be created as base class
@@ -439,10 +440,10 @@ class CurlEasyRequest : public CurlEasyHandle {
 // is deleted and the CurlResponderBuffer destructed.
 class CurlResponderBuffer : protected AICurlResponderBufferEvents, protected AICurlEasyHandleEvents {
   public:
-	typedef AICurlInterface::Responder::buffer_ptr_t buffer_ptr_t;
+	typedef boost::shared_ptr<LLBufferArray> buffer_ptr_t;
 
 	void resetState(AICurlEasyRequest_wat& curl_easy_request_w);
-	void prepRequest(AICurlEasyRequest_wat& buffered_curl_easy_request_w, AIHTTPHeaders const& headers, AICurlInterface::ResponderPtr responder);
+	void prepRequest(AICurlEasyRequest_wat& buffered_curl_easy_request_w, AIHTTPHeaders const& headers, LLHTTPClient::ResponderPtr responder);
 
 	buffer_ptr_t& getInput(void) { return mInput; }
 	buffer_ptr_t& getOutput(void) { return mOutput; }
@@ -463,7 +464,7 @@ class CurlResponderBuffer : protected AICurlResponderBufferEvents, protected AIC
 	// Events from this class.
 	/*virtual*/ void received_HTTP_header(void);
 	/*virtual*/ void received_header(std::string const& key, std::string const& value);
-	/*virtual*/ void completed_headers(U32 status, std::string const& reason, CURLcode code, AICurlInterface::TransferInfo* info);
+	/*virtual*/ void completed_headers(U32 status, std::string const& reason, AITransferInfo* info);
 
 	// CurlEasyHandle events.
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
@@ -474,7 +475,7 @@ class CurlResponderBuffer : protected AICurlResponderBufferEvents, protected AIC
 	buffer_ptr_t mInput;
 	U8* mLastRead;										// Pointer into mInput where we last stopped reading (or NULL to start at the beginning).
 	buffer_ptr_t mOutput;
-	AICurlInterface::ResponderPtr mResponder;
+	LLHTTPClient::ResponderPtr mResponder;
 	//U32 mBodyLimit;									// From the old LLURLRequestDetail::mBodyLimit, but never used.
 	U32 mStatus;										// HTTP status, decoded from the first header line.
 	std::string mReason;								// The "reason" from the same header line.

@@ -48,6 +48,7 @@
 #include "llpumpio.h"
 #include "llhttpclient.h"
 #include "llsdserialize.h"
+#include "llcurl.h"
 
 LLPumpIO* gServicePump;
 BOOL gBreak = false;
@@ -56,7 +57,7 @@ BOOL gSent = false;
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy crashLoggerResponder_timeout;
 
-class LLCrashLoggerResponder : public LLHTTPClient::Responder
+class LLCrashLoggerResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return crashLoggerResponder_timeout; }

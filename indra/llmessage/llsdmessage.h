@@ -66,31 +66,39 @@ public:
      * must be visible to the reply/error methods can conveniently be stored
      * on that class itself, if it's not already.
      *
-     * The LLHTTPClient::Responder idiom requires a separate instance of a
+     * The LLHTTPClient::ResponderBase idiom requires a separate instance of a
      * separate class so that it can dispatch to the code of interest by
      * calling canonical virtual methods. Interesting state must be copied
      * into that new object. 
      *
      * With some trepidation, because existing response code is packaged in
-     * LLHTTPClient::Responder subclasses, we provide this adapter class
+     * LLHTTPClient::ResponderWithResult subclasses, we provide this adapter class
      * <i>for transitional purposes only.</i> Instantiate a new heap
      * ResponderAdapter with your new LLHTTPClient::ResponderPtr. Pass
      * ResponderAdapter::getReplyName() and/or getErrorName() in your
      * LLSDMessage (or LLViewerRegion::getCapAPI()) request event. The
      * ResponderAdapter will call the appropriate Responder method, then
      * @c delete itself.
+     *
+     * Singularity note: I think this class/API is a bad idea that makes things
+     * more complex, a lot slower and less OO. The idea to get methods called
+     * on the same class that does the request is a nice idea, but should
+     * be implemented through boost::bind and NOT use LLSD. Avoid.
+     * Also note that this only works for ResponderWithResult derived classes,
+     * not for responders derived from ResponderWithCompleted.
+     * --Aleric
      */
     class ResponderAdapter
     {
     public:
         /**
-         * Bind the new LLHTTPClient::Responder subclass instance.
+         * Bind the new LLHTTPClient::ResponderWithResult subclass instance.
          *
          * Passing the constructor a name other than the default is only
          * interesting if you suspect some usage will lead to an exception or
          * log message.
          */
-        ResponderAdapter(LLHTTPClient::Responder* responder,
+        ResponderAdapter(LLHTTPClient::ResponderWithResult* responder,
                          const std::string& name="ResponderAdapter");
 
         /// EventPump name on which LLSDMessage should post reply event
@@ -125,13 +133,13 @@ private:
     friend class LLCapabilityListener;
     /// Responder used for internal purposes by LLSDMessage and
     /// LLCapabilityListener. Others should use higher-level APIs.
-    class EventResponder: public LLHTTPClient::Responder
+    class EventResponder: public LLHTTPClient::ResponderWithResult
     {
     public:
 		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return *mHTTPTimeoutPolicy; }
 
         /**
-         * LLHTTPClient::Responder that dispatches via named LLEventPump instances.
+         * LLHTTPClient::ResponderWithResult that dispatches via named LLEventPump instances.
          * We bind LLEventPumps, even though it's an LLSingleton, for testability.
          * We bind the string names of the desired LLEventPump instances rather
          * than actually obtain()ing them so we only obtain() the one we're going

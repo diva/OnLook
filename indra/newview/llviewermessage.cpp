@@ -3350,7 +3350,7 @@ void check_translate_chat(const std::string &mesg, LLChat &chat, const BOOL hist
 // defined in llchatbar.cpp, but not declared in any header
 void send_chat_from_viewer(std::string utf8_out_text, EChatType type, S32 channel);
 
-class AuthHandler : public AICurlInterface::ResponderWithCompleted
+class AuthHandler : public LLHTTPClient::ResponderWithCompleted
 {
 protected:
 	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)

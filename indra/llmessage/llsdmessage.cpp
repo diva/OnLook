@@ -145,7 +145,7 @@ void LLSDMessage::EventResponder::errorWithContent(U32 status, const std::string
     }
 }
 
-LLSDMessage::ResponderAdapter::ResponderAdapter(LLHTTPClient::Responder* responder,
+LLSDMessage::ResponderAdapter::ResponderAdapter(LLHTTPClient::ResponderWithResult* responder,
                                                 const std::string& name):
     mResponder(responder),
     mReplyPump(name + ".reply", true), // tweak name for uniqueness
@@ -162,7 +162,7 @@ std::string LLSDMessage::ResponderAdapter::getTimeoutPolicyName(void) const
 
 bool LLSDMessage::ResponderAdapter::listener(const LLSD& payload, bool success)
 {
-    AICurlInterface::Responder* responder = dynamic_cast<AICurlInterface::Responder*>(mResponder.get());
+    LLHTTPClient::ResponderWithResult* responder = dynamic_cast<LLHTTPClient::ResponderWithResult*>(mResponder.get());
     // If this assertion fails then ResponderAdapter has been used for a ResponderWithCompleted derived class,
     // which is not allowed because ResponderAdapter can only work for classes derived from Responder that
     // implement result() and errorWithContent (or just error).

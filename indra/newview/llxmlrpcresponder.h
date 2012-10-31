@@ -91,9 +91,9 @@ private:
 	XMLRPC_VALUE mV;
 };
 
-class XMLRPCResponder : public AICurlInterface::LegacyPolledResponder {
+class XMLRPCResponder : public LLHTTPClient::LegacyPolledResponder {
 private:
-	AICurlInterface::TransferInfo mTransferInfo;
+	AITransferInfo mTransferInfo;
 	S32 mBufferSize;
 	bool mReceivedHTTPHeader;
 	XMLRPC_REQUEST mResponse;
@@ -105,8 +105,8 @@ public:
 	XMLRPC_REQUEST response(void) const { return mResponse; }
 	LLXMLRPCValue responseValue(void) const;
 
-	/*virtual*/ void received_HTTP_header(void) { mReceivedHTTPHeader = true; LLCurl::ResponderBase::received_HTTP_header(); }
-	/*virtual*/ void completed_headers(U32 status, std::string const& reason, CURLcode code, AICurlInterface::TransferInfo* info);
+	/*virtual*/ void received_HTTP_header(void) { mReceivedHTTPHeader = true; LLHTTPClient::ResponderBase::received_HTTP_header(); }
+	/*virtual*/ void completed_headers(U32 status, std::string const& reason, AITransferInfo* info);
 	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return XMLRPCResponder_timeout; }
 };

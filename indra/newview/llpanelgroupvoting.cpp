@@ -684,7 +684,7 @@ void LLPanelGroupVoting::handleFailure(
 	}
 }
 
-class LLStartGroupVoteResponder : public LLHTTPClient::Responder
+class LLStartGroupVoteResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLStartGroupVoteResponder(const LLUUID& group_id)
@@ -717,7 +717,7 @@ private:
 	LLUUID mGroupID;
 };
 
-class LLGroupProposalBallotResponder : public LLHTTPClient::Responder
+class LLGroupProposalBallotResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLGroupProposalBallotResponder(const LLUUID& group_id)

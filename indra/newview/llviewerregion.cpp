@@ -209,7 +209,7 @@ public:
 };
 LLRegionHandler gRegionHandler;
 
-class BaseCapabilitiesComplete : public LLHTTPClient::Responder
+class BaseCapabilitiesComplete : public LLHTTPClient::ResponderWithResult
 {
 	LOG_CLASS(BaseCapabilitiesComplete);
 public:
@@ -1711,7 +1711,7 @@ void LLViewerRegion::failedSeedCapability()
 	}
 }
 
-class SimulatorFeaturesReceived : public LLHTTPClient::Responder
+class SimulatorFeaturesReceived : public LLHTTPClient::ResponderWithResult
 {
 	LOG_CLASS(SimulatorFeaturesReceived);
 public:

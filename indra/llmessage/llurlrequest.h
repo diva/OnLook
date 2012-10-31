@@ -42,7 +42,7 @@
 class Injector
 {
   public:
-	typedef AICurlInterface::Responder::buffer_ptr_t buffer_ptr_t;
+	typedef LLHTTPClient::ResponderBase::buffer_ptr_t buffer_ptr_t;
 	virtual char const* contentType(void) const = 0;
 	virtual U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer) = 0;
 };
@@ -75,7 +75,7 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	 * @param action One of the ERequestAction enumerations.
 	 * @param url The url of the request. It should already be encoded.
 	 */
-	LLURLRequest(ERequestAction action, std::string const& url, Injector* body, AICurlInterface::ResponderPtr responder, AIHTTPHeaders& headers, bool is_auth, bool no_compression);
+	LLURLRequest(ERequestAction action, std::string const& url, Injector* body, LLHTTPClient::ResponderPtr responder, AIHTTPHeaders& headers, bool is_auth, bool no_compression);
 
   protected:
 	// Call abort(), not delete.
@@ -118,7 +118,7 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	bool mNoCompression;				// Set to disable using gzip.
 	Injector* mBody;					// Non-zero iff the action is HTTP_POST and HTTP_PUT.
 	U32 mBodySize;
-	AICurlInterface::ResponderPtr mResponder;
+	LLHTTPClient::ResponderPtr mResponder;
 	AIHTTPHeaders mHeaders;
 
   protected:

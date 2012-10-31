@@ -470,7 +470,7 @@ LLUUID LLInventoryModel::findCategoryByName(std::string name)
 	return LLUUID::null;
 }
 
-class LLCreateInventoryCategoryResponder : public LLHTTPClient::Responder
+class LLCreateInventoryCategoryResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLCreateInventoryCategoryResponder(LLInventoryModel* model,

@@ -88,7 +88,7 @@ namespace
 		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return asyncConsoleResponder_timeout; }
 	};
 
-	class ConsoleResponder : public LLHTTPClient::Responder
+	class ConsoleResponder : public LLHTTPClient::ResponderWithResult
 	{
 	public:
 		ConsoleResponder(LLTextEditor *output) : mOutput(output)

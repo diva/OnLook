@@ -168,7 +168,7 @@ std::string gFullName;
 
 // helper class that trys to download a URL from a web site and calls a method 
 // on parent class indicating if the web server is working or not
-class LLIamHereLogin : public AICurlInterface::ResponderWithCompleted
+class LLIamHereLogin : public LLHTTPClient::ResponderWithCompleted
 {
 	private:
 		LLIamHereLogin( LLPanelLogin* parent ) :

@@ -33,7 +33,6 @@
 #include "llsd.h"
 #include <boost/intrusive_ptr.hpp>
 
-class LLHTTPClientInterface;
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy regionResponder_timeout;
 extern AIHTTPTimeoutPolicy verifiedDestinationResponder_timeout;
@@ -50,15 +49,13 @@ public:
 		virtual void onRegionVerified(const LLSD& region_details) = 0;
 		virtual void onRegionVerificationFailed() = 0;
 
-		virtual LLHTTPClientInterface& getHttpClient() = 0;
-
 	public: /* but not really -- don't touch this */
 		U32 mReferenceCount;		
 	};
 
 	typedef boost::intrusive_ptr<Response> ResponsePtr;
 
-	class RegionResponder : public LLHTTPClient::Responder
+	class RegionResponder : public LLHTTPClient::ResponderWithResult
 	{
 	public:
 		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return regionResponder_timeout; }
@@ -75,7 +72,7 @@ public:
 		S32 mRetryCount;
 	};
 
-	class VerifiedDestinationResponder : public LLHTTPClient::Responder
+	class VerifiedDestinationResponder : public LLHTTPClient::ResponderWithResult
 	{
 	public:
 		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return verifiedDestinationResponder_timeout; }

@@ -44,7 +44,6 @@ set(llmessage_SOURCE_FILES
     lldispatcher.cpp
     llfiltersd2xmlrpc.cpp
     llhost.cpp
-    llhttpclientadapter.cpp
     llhttpnode.cpp
     llhttpsender.cpp
     llinstantmessage.cpp
@@ -139,8 +138,6 @@ set(llmessage_HEADER_FILES
     llfollowcamparams.h
     llhost.h
     llhttpclient.h
-    llhttpclientinterface.h
-    llhttpclientadapter.h
     llhttpnode.h
     llhttpnodeadapter.h
     llhttpsender.h
@@ -237,7 +234,6 @@ if (LL_TESTS)
   include(Tut)
 
   SET(llmessage_TEST_SOURCE_FILES
-    # llhttpclientadapter.cpp
     llmime.cpp
     llnamevalue.cpp
     lltrustedmessageservice.cpp

@@ -111,7 +111,7 @@ public:
 		bool mInitialized;
 };
 
-class LLViewerMediaOpenIDResponder : public AICurlInterface::ResponderWithCompleted
+class LLViewerMediaOpenIDResponder : public LLHTTPClient::ResponderWithCompleted
 {
 LOG_CLASS(LLViewerMediaOpenIDResponder);
 public:
@@ -150,7 +150,7 @@ public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerMediaOpenIDResponder_timeout; }
 };
 
-class LLViewerMediaWebProfileResponder : public AICurlInterface::ResponderWithCompleted
+class LLViewerMediaWebProfileResponder : public LLHTTPClient::ResponderWithCompleted
 {
 LOG_CLASS(LLViewerMediaWebProfileResponder);
 public:

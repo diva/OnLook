@@ -65,6 +65,7 @@
 #include "llinventorymodel.h"
 #include "llfoldertype.h"
 #include "llviewerparcelmgr.h"
+#include "aicurl.h"
 
 #include "boost/lexical_cast.hpp"
 #ifndef LL_WINDOWS
@@ -209,7 +210,7 @@ S32 LLMeshRepoThread::sActiveHeaderRequests = 0;
 S32 LLMeshRepoThread::sActiveLODRequests = 0;
 U32	LLMeshRepoThread::sMaxConcurrentRequests = 1;
 
-class LLMeshHeaderResponder : public LLCurl::ResponderWithCompleted
+class LLMeshHeaderResponder : public LLHTTPClient::ResponderWithCompleted
 {
 public:
 	LLVolumeParams mMeshParams;
@@ -232,7 +233,7 @@ public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshHeaderResponder_timeout; }
 };
 
-class LLMeshLODResponder : public LLCurl::ResponderWithCompleted
+class LLMeshLODResponder : public LLHTTPClient::ResponderWithCompleted
 {
 public:
 	LLVolumeParams mMeshParams;
@@ -258,7 +259,7 @@ public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshLODResponder_timeout; }
 };
 
-class LLMeshSkinInfoResponder : public LLCurl::ResponderWithCompleted
+class LLMeshSkinInfoResponder : public LLHTTPClient::ResponderWithCompleted
 {
 public:
 	LLUUID mMeshID;
@@ -277,7 +278,7 @@ public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshSkinInfoResponder_timeout; }
 };
 
-class LLMeshDecompositionResponder : public LLCurl::ResponderWithCompleted
+class LLMeshDecompositionResponder : public LLHTTPClient::ResponderWithCompleted
 {
 public:
 	LLUUID mMeshID;
@@ -296,7 +297,7 @@ public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshDecompositionResponder_timeout; }
 };
 
-class LLMeshPhysicsShapeResponder : public LLCurl::ResponderWithCompleted
+class LLMeshPhysicsShapeResponder : public LLHTTPClient::ResponderWithCompleted
 {
 public:
 	LLUUID mMeshID;
@@ -365,7 +366,7 @@ void log_upload_error(S32 status, const LLSD& content, std::string stage, std::s
 	}
 }
 
-class LLWholeModelFeeResponder: public LLCurl::ResponderWithCompleted
+class LLWholeModelFeeResponder: public LLHTTPClient::ResponderWithCompleted
 {
 	LLMeshUploadThread* mThread;
 	LLSD mModelData;
@@ -419,7 +420,7 @@ public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return wholeModelFeeResponder_timeout; }
 };
 
-class LLWholeModelUploadResponder: public LLCurl::ResponderWithCompleted
+class LLWholeModelUploadResponder: public LLHTTPClient::ResponderWithCompleted
 {
 	LLMeshUploadThread* mThread;
 	LLSD mModelData;

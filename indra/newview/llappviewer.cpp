@@ -95,6 +95,7 @@
 #include "llprimitive.h"
 #include "llnotifications.h"
 #include "llnotificationsutil.h"
+#include "llcurl.h"
 #include <boost/bind.hpp>
 
 #if LL_WINDOWS

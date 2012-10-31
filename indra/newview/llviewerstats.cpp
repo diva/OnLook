@@ -697,7 +697,7 @@ void update_statistics(U32 frame_count)
 	}
 }
 
-class ViewerStatsResponder : public LLHTTPClient::Responder
+class ViewerStatsResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
     ViewerStatsResponder() { }

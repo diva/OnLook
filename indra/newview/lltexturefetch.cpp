@@ -153,7 +153,7 @@ public:
 	// void relese() { --mActiveCount; }
 
 	S32 callbackHttpGet(const LLChannelDescriptors& channels,
-						 const LLHTTPClient::Responder::buffer_ptr_t& buffer,
+						 const LLHTTPClient::ResponderBase::buffer_ptr_t& buffer,
 						 bool partial, bool success);
 	void callbackCacheRead(bool success, LLImageFormatted* image,
 						   S32 imagesize, BOOL islocal);
@@ -292,7 +292,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////
-class HTTPGetResponder : public AICurlInterface::ResponderWithCompleted
+class HTTPGetResponder : public LLHTTPClient::ResponderWithCompleted
 {
 	LOG_CLASS(HTTPGetResponder);
 public:
@@ -1811,7 +1811,7 @@ bool LLTextureFetchWorker::processSimulatorPackets()
 //////////////////////////////////////////////////////////////////////////////
 
 S32 LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
-										   const LLHTTPClient::Responder::buffer_ptr_t& buffer,
+										   const LLHTTPClient::ResponderBase::buffer_ptr_t& buffer,
 										   bool partial, bool success)
 {
 	S32 data_size = 0 ;
@@ -3016,7 +3016,7 @@ TFReqSendMetrics::doWork(LLTextureFetch * fetcher)
      * refactoring of the LLQueuedThread usage, these POSTs
      * could be put in a request object and made more reliable.
 	 */
-	class lcl_responder : public LLCurl::Responder
+	class lcl_responder : public LLHTTPClient::ResponderWithResult
 	{
 	public:
 		lcl_responder(LLTextureFetch * fetcher,

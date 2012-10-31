@@ -110,7 +110,7 @@ LLHTTPRegistration<LLAgentStateChangeNode> gHTTPRegistrationAgentStateChangeNode
 // NavMeshStatusResponder
 //---------------------------------------------------------------------------
 
-class NavMeshStatusResponder : public LLHTTPClient::Responder
+class NavMeshStatusResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	NavMeshStatusResponder(const std::string &pCapabilityURL, LLViewerRegion *pRegion, bool pIsGetStatusOnly);
@@ -133,7 +133,7 @@ private:
 // NavMeshResponder
 //---------------------------------------------------------------------------
 
-class NavMeshResponder : public LLHTTPClient::Responder
+class NavMeshResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	NavMeshResponder(const std::string &pCapabilityURL, U32 pNavMeshVersion, LLPathfindingNavMeshPtr pNavMeshPtr);
@@ -155,7 +155,7 @@ private:
 // AgentStateResponder
 //---------------------------------------------------------------------------
 
-class AgentStateResponder : public LLHTTPClient::Responder
+class AgentStateResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	AgentStateResponder(const std::string &pCapabilityURL);
@@ -175,7 +175,7 @@ private:
 //---------------------------------------------------------------------------
 // NavMeshRebakeResponder
 //---------------------------------------------------------------------------
-class NavMeshRebakeResponder : public LLHTTPClient::Responder
+class NavMeshRebakeResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	NavMeshRebakeResponder(const std::string &pCapabilityURL, LLPathfindingManager::rebake_navmesh_callback_t pRebakeNavMeshCallback);
@@ -235,7 +235,7 @@ typedef boost::shared_ptr<LinksetsResponder> LinksetsResponderPtr;
 //---------------------------------------------------------------------------
 // ObjectLinksetsResponder
 //---------------------------------------------------------------------------
-class ObjectLinksetsResponder : public LLHTTPClient::Responder
+class ObjectLinksetsResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	ObjectLinksetsResponder(const std::string &pCapabilityURL, LinksetsResponderPtr pLinksetsResponsderPtr);
@@ -255,7 +255,7 @@ private:
 //---------------------------------------------------------------------------
 // TerrainLinksetsResponder
 //---------------------------------------------------------------------------
-class TerrainLinksetsResponder : public LLHTTPClient::Responder
+class TerrainLinksetsResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	TerrainLinksetsResponder(const std::string &pCapabilityURL, LinksetsResponderPtr pLinksetsResponsderPtr);
@@ -275,7 +275,7 @@ private:
 //---------------------------------------------------------------------------
 // CharactersResponder
 //---------------------------------------------------------------------------
-class CharactersResponder : public LLHTTPClient::Responder
+class CharactersResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	CharactersResponder(const std::string &pCapabilityURL, LLPathfindingManager::request_id_t pRequestId, LLPathfindingManager::object_request_callback_t pCharactersCallback);

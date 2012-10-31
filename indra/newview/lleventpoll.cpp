@@ -58,7 +58,7 @@ namespace
 	const F32 EVENT_POLL_ERROR_RETRY_SECONDS_INC = 5.f; // ~ half of a normal timeout.
 	const S32 MAX_EVENT_POLL_HTTP_ERRORS = 10; // ~5 minutes, by the above rules.
 
-	class LLEventPollResponder : public LLHTTPClient::Responder
+	class LLEventPollResponder : public LLHTTPClient::ResponderWithResult
 	{
 	public:
 		
@@ -273,7 +273,7 @@ LLEventPoll::LLEventPoll(const std::string&	poll_url, const LLHost& sender)
 
 LLEventPoll::~LLEventPoll()
 {
-	AICurlInterface::ResponderBase* responderp = mImpl.get();
+	LLHTTPClient::ResponderBase* responderp = mImpl.get();
 	LLEventPollResponder* event_poll_responder = dynamic_cast<LLEventPollResponder*>(responderp);
 	if (event_poll_responder) event_poll_responder->stop();
 }

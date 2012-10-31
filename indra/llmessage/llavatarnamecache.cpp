@@ -174,7 +174,7 @@ namespace LLAvatarNameCache
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy avatarNameResponder_timeout;
 
-class LLAvatarNameResponder : public LLHTTPClient::Responder
+class LLAvatarNameResponder : public LLHTTPClient::ResponderWithResult
 {
 private:
 	// need to store agent ids that are part of this request in case of

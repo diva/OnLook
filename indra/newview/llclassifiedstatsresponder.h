@@ -40,7 +40,7 @@
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy classifiedStatsResponder_timeout;
 
-class LLClassifiedStatsResponder : public LLHTTPClient::Responder
+class LLClassifiedStatsResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLClassifiedStatsResponder(LLHandle<LLView> classified_panel_handle, LLUUID classified_id);

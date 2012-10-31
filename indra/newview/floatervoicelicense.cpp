@@ -65,7 +65,7 @@ FloaterVoiceLicense::FloaterVoiceLicense(const LLSD& key)
 
 // helper class that trys to download a URL from a web site and calls a method 
 // on parent class indicating if the web server is working or not
-class LLIamHereVoice : public LLHTTPClient::Responder
+class LLIamHereVoice : public LLHTTPClient::ResponderWithResult
 {
 	private:
 		LLIamHereVoice( FloaterVoiceLicense* parent ) :

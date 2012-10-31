@@ -144,7 +144,7 @@ static int scale_speaker_volume(float volume)
 }
 
 class LLViewerVoiceAccountProvisionResponder :
-	public LLHTTPClient::Responder
+	public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLViewerVoiceAccountProvisionResponder(int retries)
@@ -1014,7 +1014,7 @@ static bool sMuteListListener_listening = false;
 static LLVoiceClientFriendsObserver *friendslist_listener = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
-class LLVoiceClientCapResponder : public LLHTTPClient::Responder
+class LLVoiceClientCapResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLVoiceClientCapResponder(void){};

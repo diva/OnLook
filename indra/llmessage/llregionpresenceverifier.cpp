@@ -27,7 +27,6 @@
 #include "linden_common.h"
 
 #include "llregionpresenceverifier.h"
-#include "llhttpclientinterface.h"
 #include <sstream>
 #include "net.h"
 #include "message.h"
@@ -78,7 +77,7 @@ void LLRegionPresenceVerifier::RegionResponder::result(const LLSD& content)
 
 	std::stringstream uri;
 	uri << "http://" << destination.getString() << "/state/basic/";
-	mSharedData->getHttpClient().get(
+	LLHTTPClient::get(
 		uri.str(),
 		new VerifiedDestinationResponder(mUri, mSharedData, content, mRetryCount));
 }
@@ -131,12 +130,11 @@ void LLRegionPresenceVerifier::VerifiedDestinationResponder::result(const LLSD& 
 
 void LLRegionPresenceVerifier::VerifiedDestinationResponder::retry()
 {
-	LLSD headers;
-	headers["Cache-Control"] = "no-cache, max-age=0";
+	AIHTTPHeaders headers("Cache-Control", "no-cache, max-age=0");
 	llinfos << "Requesting region information, get uncached for region "
 			<< mUri << llendl;
 	--mRetryCount;
-	mSharedData->getHttpClient().get(mUri, new RegionResponder(mUri, mSharedData, mRetryCount), headers);
+	LLHTTPClient::get(mUri, new RegionResponder(mUri, mSharedData, mRetryCount), headers);
 }
 
 void LLRegionPresenceVerifier::VerifiedDestinationResponder::error(U32 status, const std::string& reason)

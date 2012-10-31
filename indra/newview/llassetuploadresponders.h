@@ -51,7 +51,7 @@ void on_new_single_inventory_upload_complete(LLAssetType::EType asset_type,
 
 // Abstract class for supporting asset upload
 // via capabilities
-class LLAssetUploadResponder : public LLHTTPClient::Responder
+class LLAssetUploadResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLAssetUploadResponder(const LLSD& post_data,
@@ -96,7 +96,7 @@ public:
 // are needed (such as different confirmation messages, etc.)
 // the functions onApplicationLevelError and showConfirmationDialog.
 class LLNewAgentInventoryVariablePriceResponder :
-	public LLHTTPClient::Responder
+	public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLNewAgentInventoryVariablePriceResponder(

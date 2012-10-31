@@ -83,7 +83,7 @@ public:
 	typedef LLDynamicArray<LLPointer<LLViewerInventoryItem> > item_array_t;
 	typedef std::set<LLUUID> changed_items_t;
 
-	class fetchInventoryResponder : public LLHTTPClient::Responder
+	class fetchInventoryResponder : public LLHTTPClient::ResponderWithResult
 	{
 	public:
 		fetchInventoryResponder(const LLSD& request_sd) : mRequestSD(request_sd) {};

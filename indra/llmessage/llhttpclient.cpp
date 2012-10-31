@@ -35,6 +35,7 @@
 #include "llvfile.h"
 #include "llurlrequest.h"
 #include "llxmltree.h"
+#include "aihttptimeoutpolicy.h"
 
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy blockingLLSDPost_timeout;
@@ -195,7 +196,7 @@ static void request(
 	const std::string& url,
 	LLURLRequest::ERequestAction method,
 	Injector* body_injector,
-	LLCurl::ResponderPtr responder,
+	LLHTTPClient::ResponderPtr responder,
 	AIHTTPHeaders& headers,
 	bool is_auth = false,
 	bool no_compression = false)
@@ -254,10 +255,159 @@ void LLHTTPClient::get(std::string const& url, LLSD const& query, ResponderPtr r
 }
 
 //=============================================================================
+// Responders base classes.
+//
+
+//-----------------------------------------------------------------------------
+// class LLHTTPClient::ResponderBase
+//
+
+LLHTTPClient::ResponderBase::ResponderBase(void) : mReferenceCount(0), mCode(CURLE_FAILED_INIT), mFinished(false)
+{
+  DoutEntering(dc::curl, "AICurlInterface::Responder() with this = " << (void*)this);
+}
+
+LLHTTPClient::ResponderBase::~ResponderBase()
+{
+  DoutEntering(dc::curl, "AICurlInterface::ResponderBase::~ResponderBase() with this = " << (void*)this << "; mReferenceCount = " << mReferenceCount);
+  llassert(mReferenceCount == 0);
+}
+
+void LLHTTPClient::ResponderBase::setURL(std::string const& url)
+{
+  // setURL is called from llhttpclient.cpp (request()), before calling any of the below (of course).
+  // We don't need locking here therefore; it's a case of initializing before use.
+  mURL = url;
+}
+
+AIHTTPTimeoutPolicy const& LLHTTPClient::ResponderBase::getHTTPTimeoutPolicy(void) const
+{
+  return AIHTTPTimeoutPolicy::getDebugSettingsCurlTimeout();
+}
+
+void LLHTTPClient::ResponderBase::decode_llsd_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, LLSD& content)
+{
+  // If the status indicates success (and we get here) then we expect the body to be LLSD.
+  bool const should_be_llsd = (200 <= status && status < 300);
+  if (should_be_llsd)
+  {
+	LLBufferStream istr(channels, buffer.get());
+	if (LLSDSerialize::fromXML(content, istr) == LLSDParser::PARSE_FAILURE)
+	{
+	  // Unfortunately we can't show the body of the message... I think this is a pretty serious error
+	  // though, so if this ever happens it has to be investigated by making a copy of the buffer
+	  // before serializing it, as is done below.
+	  llwarns << "Failed to deserialize LLSD. " << mURL << " [" << status << "]: " << reason << llendl;
+	}
+	// LLSDSerialize::fromXML destructed buffer, we can't initialize content now.
+	return;
+  }
+  // Put the body in content as-is.
+  std::stringstream ss;
+  buffer->writeChannelTo(ss, channels.in());
+  content = ss.str();
+#ifdef SHOW_ASSERT
+  if (!should_be_llsd)
+  {
+	// Make sure that the server indeed never returns LLSD as body when the http status is an error.
+	LLSD dummy;
+	bool server_sent_llsd_with_http_error = LLSDSerialize::fromXML(dummy, ss) > 0;
+	if (server_sent_llsd_with_http_error)
+	{
+	  llwarns << "The server sent us a response with http status " << status << " and LLSD(!) body: \"" << ss.str() << "\"!" << llendl;
+	}
+	llassert(!server_sent_llsd_with_http_error);
+  }
+#endif
+}
+
+void LLHTTPClient::ResponderBase::decode_raw_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, std::string& content)
+{
+	LLMutexLock lock(buffer->getMutex());
+	LLBufferArray::const_segment_iterator_t const end = buffer->endSegment();
+	for (LLBufferArray::const_segment_iterator_t iter = buffer->beginSegment(); iter != end; ++iter)
+	{
+		if (iter->isOnChannel(channels.in()))
+		{
+			content.append((char*)iter->data(), iter->size());
+		}
+	}
+}
+
+// Called with HTML body.
+// virtual
+void LLHTTPClient::ResponderWithCompleted::completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+{
+  LLSD content;
+  decode_llsd_body(status, reason, channels, buffer, content);
+
+  // Allow derived class to override at this point.
+  completed(status, reason, content);
+}
+
+// virtual
+void LLHTTPClient::ResponderWithCompleted::completed(U32 status, std::string const& reason, LLSD const& content)
+{
+  // Either completedRaw() or this method must be overridden by the derived class. Hence, we should never get here.
+  llassert_always(false);
+}
+
+// virtual
+void LLHTTPClient::ResponderWithResult::finished(CURLcode code, U32 http_status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+{
+  mCode = code;
+
+  LLSD content;
+  decode_llsd_body(http_status, reason, channels, buffer, content);
+
+  // HTTP status good?
+  if (200 <= http_status && http_status < 300)
+  {
+	// Allow derived class to override at this point.
+	result(content);
+  }
+  else
+  {
+	// Allow derived class to override at this point.
+	errorWithContent(http_status, reason, content);
+  }
+
+  mFinished = true;
+}
+
+// virtual
+void LLHTTPClient::ResponderWithResult::errorWithContent(U32 status, std::string const& reason, LLSD const&)
+{
+  // Allow derived class to override at this point.
+  error(status, reason);
+}
+
+// virtual
+void LLHTTPClient::ResponderWithResult::error(U32 status, std::string const& reason)
+{
+  llinfos << mURL << " [" << status << "]: " << reason << llendl;
+}
+
+// Friend functions.
+
+void intrusive_ptr_add_ref(LLHTTPClient::ResponderBase* responder)
+{
+  responder->mReferenceCount++;
+}
+
+void intrusive_ptr_release(LLHTTPClient::ResponderBase* responder)
+{
+  if (--responder->mReferenceCount == 0)
+  {
+	delete responder;
+  }
+}
+
+//-----------------------------------------------------------------------------
 // Blocking Responders.
 //
 
-class BlockingResponder : public AICurlInterface::LegacyPolledResponder {
+class BlockingResponder : public LLHTTPClient::LegacyPolledResponder {
 private:
 	LLCondition mSignal;	// Wait condition to wait till mFinished is true.
 	static LLSD LLSD_dummy;
@@ -346,7 +496,7 @@ public:
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return blockingRawGet_timeout; }
 };
 
-// End blocking responders.
+// End (blocking) responders.
 //=============================================================================
 
 // These calls are blocking! This is usually bad, unless you're a dataserver. Then it's awesome.

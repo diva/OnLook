@@ -38,7 +38,7 @@ LLAccountingCostManager::LLAccountingCostManager()
 {	
 }
 //===============================================================================
-class LLAccountingCostResponder : public LLCurl::Responder
+class LLAccountingCostResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLAccountingCostResponder( const LLSD& objectIDs )
