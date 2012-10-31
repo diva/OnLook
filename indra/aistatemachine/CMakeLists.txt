@@ -18,24 +18,15 @@ include_directories(
     )
 
 set(aistatemachine_SOURCE_FILES
-    debug_libcurl.cpp
     aistatemachine.cpp
     aitimer.cpp
-    aicurl.cpp
-    aicurlthread.cpp
-    aicurleasyrequeststatemachine.cpp
     )
 
 set(aistatemachine_HEADER_FILES
     CMakeLists.txt
 
-    debug_libcurl.h
     aistatemachine.h
     aitimer.h
-    aicurlprivate.h
-    aicurl.h
-    aicurlthread.h
-    aicurleasyrequeststatemachine.h
     )
 
 set_source_files_properties(${aistatemachine_HEADER_FILES}

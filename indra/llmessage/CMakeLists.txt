@@ -22,8 +22,12 @@ include_directories(
     )
 
 set(llmessage_SOURCE_FILES
+    aicurl.cpp
+    aicurleasyrequeststatemachine.cpp
+    aicurlthread.cpp
     aihttpheaders.cpp
     aihttptimeoutpolicy.cpp
+    debug_libcurl.cpp
     llhttpclient.cpp
     llares.cpp
     llareslistener.cpp
@@ -107,8 +111,13 @@ set(llmessage_SOURCE_FILES
 set(llmessage_HEADER_FILES
     CMakeLists.txt
 
+    aicurl.h
+    aicurleasyrequeststatemachine.h
+    aicurlprivate.h
+    aicurlthread.h
     aihttpheaders.h
     aihttptimeoutpolicy.h
+    debug_libcurl.h
     llares.h
     llareslistener.h
     llassetstorage.h
