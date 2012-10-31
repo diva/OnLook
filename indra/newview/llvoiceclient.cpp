@@ -1370,7 +1370,7 @@ void LLVoiceClient::requestVoiceAccountProvision(S32 retries)
 
 		if ( url == "" ) return;
 
-		LLHTTPClient::post4(
+		LLHTTPClient::post(
 			url,
 			LLSD(),
 			new LLViewerVoiceAccountProvisionResponder(retries));
@@ -5067,7 +5067,7 @@ void LLVoiceClient::parcelChanged()
 
 		std::string url = gAgent.getRegion()->getCapability("ParcelVoiceInfoRequest");
 		LLSD data;
-		LLHTTPClient::post4(
+		LLHTTPClient::post(
 			url,
 			data,
 			new LLVoiceClientCapResponder);

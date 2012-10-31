@@ -281,11 +281,11 @@ void LLAssetUploadResponder::uploadUpload(const LLSD& content)
 	std::string uploader = content["uploader"];
 	if (mFileName.empty())
 	{
-		LLHTTPClient::postFile4(uploader, mVFileID, mAssetType, this);
+		LLHTTPClient::postFile(uploader, mVFileID, mAssetType, this);
 	}
 	else
 	{
-		LLHTTPClient::postFile4(uploader, mFileName, this);
+		LLHTTPClient::postFile(uploader, mFileName, this);
 	}
 }
 
@@ -944,7 +944,7 @@ public:
 		if ( getFilename().empty() )
 		{
 			// we have no filename, use virtual file ID instead
-			LLHTTPClient::postFile4(
+			LLHTTPClient::postFile(
 				confirmation_url,
 				getVFileID(),
 				getAssetType(),
@@ -952,7 +952,7 @@ public:
 		}
 		else
 		{
-			LLHTTPClient::postFile4(
+			LLHTTPClient::postFile(
 				confirmation_url,
 				getFilename(),
 				responder);

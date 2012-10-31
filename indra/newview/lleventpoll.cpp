@@ -164,7 +164,7 @@ namespace
 		
 		lldebugs <<	"LLEventPollResponder::makeRequest	<" << mCount <<	"> ack = "
 				 <<	LLSDXMLStreamer(mAcknowledge) << llendl;
-		LLHTTPClient::post4(mPollURL, request, this);
+		LLHTTPClient::post(mPollURL, request, this);
 	}
 
 	void LLEventPollResponder::handleMessage(const	LLSD& content)

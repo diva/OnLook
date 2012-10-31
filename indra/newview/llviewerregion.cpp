@@ -1666,7 +1666,7 @@ void LLViewerRegion::setSeedCapability(const std::string& url)
 	llinfos << "posting to seed " << url << llendl;
 
 	S32 id = ++mImpl->mHttpResponderID;
-	LLHTTPClient::post4(url, capabilityNames, 
+	LLHTTPClient::post(url, capabilityNames, 
 						BaseCapabilitiesComplete::build(getHandle(), id));
 }
 
@@ -1701,7 +1701,7 @@ void LLViewerRegion::failedSeedCapability()
 				<< mImpl->mSeedCapAttempts << ")" << llendl;
 
 		S32 id = ++mImpl->mHttpResponderID;
-		LLHTTPClient::post4(url, capabilityNames, 
+		LLHTTPClient::post(url, capabilityNames, 
 						BaseCapabilitiesComplete::build(getHandle(), id));
 	}
 	else
@@ -1748,7 +1748,7 @@ private:
 		{
 			mAttempt++;
 			LL_WARNS2("AppInit", "SimulatorFeatures") << "Re-trying '" << mRetryURL << "'.  Retry #" << mAttempt << LL_ENDL;
-			LLHTTPClient::get4(mRetryURL, new SimulatorFeaturesReceived(*this));
+			LLHTTPClient::get(mRetryURL, new SimulatorFeaturesReceived(*this));
 		}
 	}
 	
@@ -1774,7 +1774,7 @@ void LLViewerRegion::setCapability(const std::string& name, const std::string& u
 	else if (name == "SimulatorFeatures")
 	{
 		// kick off a request for simulator features
-		LLHTTPClient::get4(url, new SimulatorFeaturesReceived(url, getHandle()));
+		LLHTTPClient::get(url, new SimulatorFeaturesReceived(url, getHandle()));
 	}
 	else
 	{

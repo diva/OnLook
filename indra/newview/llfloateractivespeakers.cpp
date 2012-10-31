@@ -893,7 +893,7 @@ void LLPanelActiveSpeakers::onModeratorMuteVoice(LLUICtrl* ctrl, void* user_data
 		LLUUID mSessionID;
 	};
 
-	LLHTTPClient::post4(
+	LLHTTPClient::post(
 		url,
 		data,
 		new MuteVoiceResponder(self->mSpeakerMgr->getSessionID()));
@@ -960,7 +960,7 @@ void LLPanelActiveSpeakers::onModeratorMuteText(LLUICtrl* ctrl, void* user_data)
 		LLUUID mSessionID;
 	};
 
-	LLHTTPClient::post4(
+	LLHTTPClient::post(
 		url,
 		data,
 		new MuteTextResponder(self->mSpeakerMgr->getSessionID()));
@@ -999,7 +999,7 @@ void LLPanelActiveSpeakers::onChangeModerationMode(LLUICtrl* ctrl, void* user_da
 		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return moderationModeResponder_timeout; }
 	};
 
-	LLHTTPClient::post4(url, data, new ModerationModeResponder());
+	LLHTTPClient::post(url, data, new ModerationModeResponder());
 }
 
 //

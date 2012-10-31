@@ -171,7 +171,7 @@ BOOL LLFloaterTOS::postBuild()
 	{
 		web_browser->addObserver(this);
 		gResponsePtr = LLIamHere::build( this );
-		LLHTTPClient::get4( getString( "real_url" ), gResponsePtr );
+		LLHTTPClient::get( getString( "real_url" ), gResponsePtr );
 	}
 
 	return TRUE;

@@ -284,7 +284,7 @@ bool LLWaterParamManager::savePresetToNotecard(const std::string & name)
 		file.write((U8*)buffer.c_str(), size);
 		LLSD body;
 		body["item_id"] = item->getUUID();
-		LLHTTPClient::post4(agent_url, body, new LLUpdateAgentInventoryResponder(body, asset_id, LLAssetType::AT_NOTECARD));
+		LLHTTPClient::post(agent_url, body, new LLUpdateAgentInventoryResponder(body, asset_id, LLAssetType::AT_NOTECARD));
 	}
 	else
 	{

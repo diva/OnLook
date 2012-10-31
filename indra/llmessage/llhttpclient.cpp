@@ -221,7 +221,7 @@ static void request(
 	req->run();
 }
 
-void LLHTTPClient::getByteRange4(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	if(offset > 0 || bytes > 0)
 	{
@@ -230,27 +230,27 @@ void LLHTTPClient::getByteRange4(std::string const& url, S32 offset, S32 bytes, 
     request(url, LLURLRequest::HTTP_GET, NULL, responder, headers);
 }
 
-void LLHTTPClient::head4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::head(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	request(url, LLURLRequest::HTTP_HEAD, NULL, responder, headers);
 }
 
-void LLHTTPClient::get4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::get(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	request(url, LLURLRequest::HTTP_GET, NULL, responder, headers);
 }
 
-void LLHTTPClient::getHeaderOnly4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::getHeaderOnly(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	request(url, LLURLRequest::HTTP_HEAD, NULL, responder, headers);
 }
 
-void LLHTTPClient::get4(std::string const& url, LLSD const& query, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::get(std::string const& url, LLSD const& query, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	LLURI uri;
 	
 	uri = LLURI::buildHTTP(url, LLSD::emptyArray(), query);
-	get4(uri.asString(), responder, headers);
+	get(uri.asString(), responder, headers);
 }
 
 //=============================================================================
@@ -385,17 +385,17 @@ static LLSD blocking_request(
 	if (method == HTTP_LLSD_POST)
 	{
 		responder = new BlockingLLSDPostResponder;
-		LLHTTPClient::post4(url, body, responder, headers);
+		LLHTTPClient::post(url, body, responder, headers);
 	}
 	else if (method == HTTP_LLSD_GET)
 	{
 		responder = new BlockingLLSDGetResponder;
-		LLHTTPClient::get4(url, responder, headers);
+		LLHTTPClient::get(url, responder, headers);
 	}
 	else // method == HTTP_RAW_GET
 	{
 		responder = new BlockingRawGetResponder;
-		LLHTTPClient::get4(url, responder, headers);
+		LLHTTPClient::get(url, responder, headers);
 	}
 
 	responder->wait();
@@ -474,12 +474,12 @@ U32 LLHTTPClient::blockingGetRaw(const std::string& url, std::string& body)
 	return result["status"].asInteger();
 }
 
-void LLHTTPClient::put4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::put(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	request(url, LLURLRequest::HTTP_PUT, new LLSDInjector(body), responder, headers);
 }
 
-void LLHTTPClient::post4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::post(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	request(url, LLURLRequest::HTTP_POST, new LLSDInjector(body), responder, headers);
 }
@@ -500,29 +500,29 @@ void LLHTTPClient::postXMLRPC(std::string const& url, char const* method, XMLRPC
   	request(url, LLURLRequest::HTTP_POST, new XMLRPCInjector(xmlrpc_request), responder, headers, true, true);		// Does not use compression.
 }
 
-void LLHTTPClient::postRaw4(std::string const& url, char const* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::postRaw(std::string const& url, char const* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	request(url, LLURLRequest::HTTP_POST, new RawInjector(data, size), responder, headers);
 }
 
-void LLHTTPClient::postFile4(std::string const& url, std::string const& filename, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::postFile(std::string const& url, std::string const& filename, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	request(url, LLURLRequest::HTTP_POST, new FileInjector(filename), responder, headers);
 }
 
-void LLHTTPClient::postFile4(std::string const& url, LLUUID const& uuid, LLAssetType::EType asset_type, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::postFile(std::string const& url, LLUUID const& uuid, LLAssetType::EType asset_type, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	request(url, LLURLRequest::HTTP_POST, new VFileInjector(uuid, asset_type), responder, headers);
 }
 
 // static
-void LLHTTPClient::del4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::del(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	request(url, LLURLRequest::HTTP_DELETE, NULL, responder, headers);
 }
 
 // static
-void LLHTTPClient::move4(std::string const& url, std::string const& destination, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::move(std::string const& url, std::string const& destination, ResponderPtr responder, AIHTTPHeaders& headers)
 {
 	headers.addHeader("Destination", destination);
 	request(url, LLURLRequest::HTTP_MOVE, NULL, responder, headers);

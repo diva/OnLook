@@ -364,7 +364,7 @@ void HGFloaterTextEditor::onClickSave(void* user_data)
 
 	if(caps)
 	{
-		LLHTTPClient::post4(url, body,
+		LLHTTPClient::post(url, body,
 					new LLUpdateAgentInventoryResponder(body, fake_asset_id, item->getType()));
 	}
 }

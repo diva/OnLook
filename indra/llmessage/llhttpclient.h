@@ -58,33 +58,33 @@ public:
 
 	/** @name non-blocking API */
 	//@{
-	static void head4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void head4(std::string const& url, ResponderPtr responder)
-	    { AIHTTPHeaders headers; head4(url, responder, headers); }
+	static void head(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers);
+	static void head(std::string const& url, ResponderPtr responder)
+	    { AIHTTPHeaders headers; head(url, responder, headers); }
 
-	static void getByteRange4(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void getByteRange4(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder)
-	    { AIHTTPHeaders headers; getByteRange4(url, offset, bytes, responder, headers); }
+	static void getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers);
+	static void getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder)
+	    { AIHTTPHeaders headers; getByteRange(url, offset, bytes, responder, headers); }
 
-	static void get4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void get4(std::string const& url, ResponderPtr responder)
-	    { AIHTTPHeaders headers; get4(url, responder, headers); }
+	static void get(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers);
+	static void get(std::string const& url, ResponderPtr responder)
+	    { AIHTTPHeaders headers; get(url, responder, headers); }
 
-	static void get4(std::string const& url, LLSD const& query, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void get4(std::string const& url, LLSD const& query, ResponderPtr responder)
-	    { AIHTTPHeaders headers; get4(url, query, responder, headers); }
+	static void get(std::string const& url, LLSD const& query, ResponderPtr responder, AIHTTPHeaders& headers);
+	static void get(std::string const& url, LLSD const& query, ResponderPtr responder)
+	    { AIHTTPHeaders headers; get(url, query, responder, headers); }
 
-	static void put4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void put4(std::string const& url, LLSD const& body, ResponderPtr responder)
-	    { AIHTTPHeaders headers; put4(url, body, responder, headers); }
+	static void put(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers);
+	static void put(std::string const& url, LLSD const& body, ResponderPtr responder)
+	    { AIHTTPHeaders headers; put(url, body, responder, headers); }
 
-	static void getHeaderOnly4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void getHeaderOnly4(std::string const& url, ResponderPtr responder)
-	    { AIHTTPHeaders headers; getHeaderOnly4(url, responder, headers); }
+	static void getHeaderOnly(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers);
+	static void getHeaderOnly(std::string const& url, ResponderPtr responder)
+	    { AIHTTPHeaders headers; getHeaderOnly(url, responder, headers); }
 
-	static void post4(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void post4(std::string const& url, LLSD const& body, ResponderPtr responder)
-	    { AIHTTPHeaders headers; post4(url, body, responder, headers); }
+	static void post(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers);
+	static void post(std::string const& url, LLSD const& body, ResponderPtr responder)
+	    { AIHTTPHeaders headers; post(url, body, responder, headers); }
 
 	/** Takes ownership of request and deletes it when sent */
 	static void postXMLRPC(std::string const& url, XMLRPC_REQUEST request, ResponderPtr responder, AIHTTPHeaders& headers);
@@ -96,21 +96,21 @@ public:
 	    { AIHTTPHeaders headers; postXMLRPC(url, method, value, responder, headers); }
 
 	/** Takes ownership of data and deletes it when sent */
-	static void postRaw4(std::string const& url, const char* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void postRaw4(std::string const& url, const char* data, S32 size, ResponderPtr responder)
-	    { AIHTTPHeaders headers; postRaw4(url, data, size, responder, headers); }
+	static void postRaw(std::string const& url, const char* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers);
+	static void postRaw(std::string const& url, const char* data, S32 size, ResponderPtr responder)
+	    { AIHTTPHeaders headers; postRaw(url, data, size, responder, headers); }
 
-	static void postFile4(std::string const& url, std::string const& filename, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void postFile4(std::string const& url, std::string const& filename, ResponderPtr responder)
-	    { AIHTTPHeaders headers; postFile4(url, filename, responder, headers); }
+	static void postFile(std::string const& url, std::string const& filename, ResponderPtr responder, AIHTTPHeaders& headers);
+	static void postFile(std::string const& url, std::string const& filename, ResponderPtr responder)
+	    { AIHTTPHeaders headers; postFile(url, filename, responder, headers); }
 
-	static void postFile4(std::string const& url, const LLUUID& uuid, LLAssetType::EType asset_type, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void postFile4(std::string const& url, const LLUUID& uuid, LLAssetType::EType asset_type, ResponderPtr responder)
-	    { AIHTTPHeaders headers; postFile4(url, uuid, asset_type, responder, headers); }
+	static void postFile(std::string const& url, const LLUUID& uuid, LLAssetType::EType asset_type, ResponderPtr responder, AIHTTPHeaders& headers);
+	static void postFile(std::string const& url, const LLUUID& uuid, LLAssetType::EType asset_type, ResponderPtr responder)
+	    { AIHTTPHeaders headers; postFile(url, uuid, asset_type, responder, headers); }
 
-	static void del4(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void del4(std::string const& url, ResponderPtr responder)
-	    { AIHTTPHeaders headers; del4(url, responder, headers); }
+	static void del(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers);
+	static void del(std::string const& url, ResponderPtr responder)
+	    { AIHTTPHeaders headers; del(url, responder, headers); }
 
 		///< sends a DELETE method, but we can't call it delete in c++
 	
@@ -123,9 +123,9 @@ public:
 	 * @param headers A map of key:value headers to pass to the request
 	 * @param timeout The number of seconds to give the server to respond.
 	 */
-	static void move4(std::string const& url, std::string const& destination, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void move4(std::string const& url, std::string const& destination, ResponderPtr responder)
-	    { AIHTTPHeaders headers; move4(url, destination, responder, headers); }
+	static void move(std::string const& url, std::string const& destination, ResponderPtr responder, AIHTTPHeaders& headers);
+	static void move(std::string const& url, std::string const& destination, ResponderPtr responder)
+	    { AIHTTPHeaders headers; move(url, destination, responder, headers); }
 
 	//@}
 

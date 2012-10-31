@@ -103,7 +103,7 @@ bool LLCapabilityListener::capListener(const LLSD& request)
             new LLSDMessage::EventResponder(LLEventPumps::instance(), request, mProvider.getDescription(), cap, reply, error);
         responder->setTimeoutPolicy(timeoutpolicy);
         // This capability is supported by the region to which we're talking.
-        LLHTTPClient::post4(url, payload, responder);
+        LLHTTPClient::post(url, payload, responder);
     }
     else
     {

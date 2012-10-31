@@ -541,7 +541,7 @@ void LLTexLayerSetBuffer::doUpload()
 				{
 					LLSD body = LLSD::emptyMap();
 					// The responder will call LLTexLayerSetBuffer::onTextureUploadComplete()
-					LLHTTPClient::post4(url, body, new LLSendTexLayerResponder(body, mUploadID, LLAssetType::AT_TEXTURE, baked_upload_data));
+					LLHTTPClient::post(url, body, new LLSendTexLayerResponder(body, mUploadID, LLAssetType::AT_TEXTURE, baked_upload_data));
 					llinfos << "Baked texture upload via capability of " << mUploadID << " to " << url << llendl;
 				} 
 				else

@@ -114,7 +114,7 @@ void LLViewerDisplayName::set(const std::string& display_name, const set_name_sl
 	// communicates with the back-end.
 	LLSD body;
 	body["display_name"] = change_array;
-	LLHTTPClient::post4(cap_url, body, new LLSetDisplayNameResponder, headers);
+	LLHTTPClient::post(cap_url, body, new LLSetDisplayNameResponder, headers);
 }
 
 class LLSetDisplayNameReply : public LLHTTPNode

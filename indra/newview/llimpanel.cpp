@@ -279,7 +279,7 @@ bool send_start_session_messages(
 
 			data["params"] = agents;
 
-			LLHTTPClient::post4(
+			LLHTTPClient::post(
 				url,
 				data,
 				new LLStartConferenceChatResponder(
@@ -724,7 +724,7 @@ void LLVoiceChannelGroup::getChannelInfo()
 		LLSD data;
 		data["method"] = "call";
 		data["session-id"] = mSessionID;
-		LLHTTPClient::post4(url,
+		LLHTTPClient::post(url,
 						   data,
 						   new LLVoiceCallCapResponder(mSessionID));
 	}
@@ -1604,7 +1604,7 @@ BOOL LLFloaterIMPanel::inviteToSession(const LLDynamicArray<LLUUID>& ids)
 
 		data["method"] = "invite";
 		data["session-id"] = mSessionUUID;
-		LLHTTPClient::post4(
+		LLHTTPClient::post(
 			url,
 			data,
 			new LLSessionInviteResponder(

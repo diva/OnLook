@@ -110,7 +110,7 @@ public:
 		llinfos << "Compiling " << llendl;
 
 		// postRaw takes ownership of mData and will delete it.
-		LLHTTPClient::postRaw4(uploader, mData, mDataSize, this);
+		LLHTTPClient::postRaw(uploader, mData, mDataSize, this);
 		mData = NULL;
 		mDataSize = 0;
 	}
@@ -174,7 +174,7 @@ void LLAssetUploadQueue::request(LLAssetUploadQueueSupplier** supplier)
 	if (object)
 	{
 		url = object->getRegion()->getCapability("UpdateScriptTask");
-		LLHTTPClient::post4(url, body,
+		LLHTTPClient::post(url, body,
 							new LLAssetUploadChainResponder(
 								body, data.mFilename, data.mQueueId, 
 								data.mData, data.mDataSize, data.mScriptName, *supplier));

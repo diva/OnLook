@@ -1214,7 +1214,7 @@ void myupload_new_resource(const LLTransactionID &tid, LLAssetType::EType asset_
 		LLSDSerialize::toXML(body, llsdxml);
 		LL_DEBUGS("ObjectBackup") << "posting body to capability: " << llsdxml.str() << LL_ENDL;
 		//LLHTTPClient::post(url, body, new LLNewAgentInventoryResponder(body, uuid, asset_type));
-		LLHTTPClient::post4(url, body, new importResponder(body, uuid, asset_type));
+		LLHTTPClient::post(url, body, new importResponder(body, uuid, asset_type));
 	}
 	else
 	{

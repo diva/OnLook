@@ -391,7 +391,7 @@ void LLPanelPlace::displayParcelInfo(const LLVector3& pos_region,
 			U64 region_handle = to_region_handle(pos_global);
 			body["region_handle"] = ll_sd_from_U64(region_handle);
 		}
-		LLHTTPClient::post4(url, body, new LLRemoteParcelRequestResponder(this->getHandle()));
+		LLHTTPClient::post(url, body, new LLRemoteParcelRequestResponder(this->getHandle()));
 	}
 	else
 	{

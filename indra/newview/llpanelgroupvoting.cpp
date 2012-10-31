@@ -790,7 +790,7 @@ void LLPanelGroupVoting::impl::sendStartGroupProposal()
 		body["duration"]		= duration_seconds;
 		body["proposal-text"]	= mProposalText->getText();
 
-		LLHTTPClient::post4(
+		LLHTTPClient::post(
 			url,
 			body,
 			new LLStartGroupVoteResponder(mGroupID));
@@ -836,7 +836,7 @@ void LLPanelGroupVoting::impl::sendGroupProposalBallot(const std::string& vote)
 		body["group-id"]		= mGroupID;
 		body["vote"]	= vote;
 
-		LLHTTPClient::post4(
+		LLHTTPClient::post(
 			url,
 			body,
 			new LLGroupProposalBallotResponder(mGroupID));

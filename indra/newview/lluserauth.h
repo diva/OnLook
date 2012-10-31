@@ -38,7 +38,6 @@
 #include <map>
 #include <boost/intrusive_ptr.hpp>
 
-class LLURLRequest;
 class XMLRPCResponder;
 
 // forward decl of types from xlrpc.h

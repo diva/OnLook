@@ -385,7 +385,7 @@ void LLAvatarNameCache::requestNamesViaCapability()
 			LL_DEBUGS("AvNameCache") << "LLAvatarNameCache::requestNamesViaCapability first "
 									 << ids << " ids"
 									 << LL_ENDL;
-			LLHTTPClient::get4(url, new LLAvatarNameResponder(agent_ids));
+			LLHTTPClient::get(url, new LLAvatarNameResponder(agent_ids));
 			url.clear();
 			agent_ids.clear();
 		}
@@ -396,7 +396,7 @@ void LLAvatarNameCache::requestNamesViaCapability()
 		LL_DEBUGS("AvNameCache") << "LLAvatarNameCache::requestNamesViaCapability all "
 								 << ids << " ids"
 								 << LL_ENDL;
-		LLHTTPClient::get4(url, new LLAvatarNameResponder(agent_ids));
+		LLHTTPClient::get(url, new LLAvatarNameResponder(agent_ids));
 		url.clear();
 		agent_ids.clear();
 	}

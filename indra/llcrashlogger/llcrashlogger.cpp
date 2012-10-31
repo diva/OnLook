@@ -320,7 +320,7 @@ bool LLCrashLogger::runCrashLogPost(std::string host, LLSD data, std::string msg
 	for(int i = 0; i < retries; ++i)
 	{
 		status_message = llformat("%s, try %d...", msg.c_str(), i+1);
-		LLHTTPClient::post4(host, data, new LLCrashLoggerResponder);
+		LLHTTPClient::post(host, data, new LLCrashLoggerResponder);
 		while(!gBreak)
 		{
 			updateApplication(status_message);

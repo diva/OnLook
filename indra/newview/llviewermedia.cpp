@@ -684,7 +684,7 @@ void LLViewerMedia::setOpenIDCookie()
 
 		LL_DEBUGS("MediaAuth") << "Requesting " << profile_url << llendl;
 		LL_DEBUGS("MediaAuth") << "sOpenIDCookie = [" << sOpenIDCookie << "]" << llendl;
-		LLHTTPClient::get4(profile_url,  
+		LLHTTPClient::get(profile_url,  
 			new LLViewerMediaWebProfileResponder(raw_profile_url.getAuthority()),
 			headers);
 	}
@@ -716,7 +716,7 @@ void LLViewerMedia::openIDSetup(const std::string &openid_url, const std::string
 	char* data = new char[size];
 	memcpy(data, openid_token.data(), size);
 
-	LLHTTPClient::postRaw4(
+	LLHTTPClient::postRaw(
 		openid_url, 
 		data, 
 		size, 
@@ -1307,7 +1307,7 @@ void LLViewerMediaImpl::navigateTo(const std::string& url, const std::string& mi
 		{
 			if(mime_type.empty())
 			{
-				LLHTTPClient::getHeaderOnly4( url, new LLMimeDiscoveryResponder(this));
+				LLHTTPClient::getHeaderOnly( url, new LLMimeDiscoveryResponder(this));
 			}
 			else if(initializeMedia(mime_type) && (plugin = getMediaPlugin()))
 			{

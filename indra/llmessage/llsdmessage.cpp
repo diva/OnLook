@@ -83,7 +83,7 @@ bool LLSDMessage::httpListener(const LLSD& request)
 	LLSDMessage::EventResponder* responder =
 		new LLSDMessage::EventResponder(LLEventPumps::instance(), request, url, "POST", reply, error);
 	responder->setTimeoutPolicy(timeoutpolicy);
-    LLHTTPClient::post4(url, payload, responder);
+    LLHTTPClient::post(url, payload, responder);
     return false;
 }
 

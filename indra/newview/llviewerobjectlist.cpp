@@ -1106,7 +1106,7 @@ void LLViewerObjectList::fetchObjectCosts()
 					LLSD post_data = LLSD::emptyMap();
 
 					post_data["object_ids"] = id_list;
-					LLHTTPClient::post4(
+					LLHTTPClient::post(
 						url,
 						post_data,
 						new LLObjectCostResponder(id_list));
@@ -1162,7 +1162,7 @@ void LLViewerObjectList::fetchPhysicsFlags()
 					LLSD post_data = LLSD::emptyMap();
 
 					post_data["object_ids"] = id_list;
-					LLHTTPClient::post4(
+					LLHTTPClient::post(
 						url,
 						post_data,
 						new LLPhysicsFlagsResponder(id_list));

@@ -569,7 +569,7 @@ bool LLPreviewNotecard::saveIfNeeded(LLInventoryItem* copyitem)
 				body["item_id"] = mItemUUID;
 				llinfos << "Saving notecard " << mItemUUID
 					<< " into agent inventory via " << agent_url << llendl;
-				LLHTTPClient::post4(agent_url, body,
+				LLHTTPClient::post(agent_url, body,
 					new LLUpdateAgentInventoryResponder(body, asset_id, LLAssetType::AT_NOTECARD));
 			}
 			else if (!mObjectUUID.isNull() && !task_url.empty())
@@ -582,7 +582,7 @@ bool LLPreviewNotecard::saveIfNeeded(LLInventoryItem* copyitem)
 				body["item_id"] = mItemUUID;
 				llinfos << "Saving notecard " << mItemUUID << " into task "
 					<< mObjectUUID << " via " << task_url << llendl;
-				LLHTTPClient::post4(task_url, body,
+				LLHTTPClient::post(task_url, body,
 					new LLUpdateTaskInventoryResponder(body, asset_id, LLAssetType::AT_NOTECARD));
 			}
 			else if (gAssetStorage)

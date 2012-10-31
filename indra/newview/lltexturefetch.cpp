@@ -1323,12 +1323,13 @@ bool LLTextureFetchWorker::doWork(S32 param)
 															 LLImageBase::TYPE_AVATAR_BAKE == mType);
 #endif
 
-				// Will call callbackHttpGet when curl request completes
-				AIHTTPHeaders headers("Accept", "image/x-j2c");
 				try
 				{
-					res = mFetcher->mCurlGetRequest->getByteRange2(mUrl, headers, offset, mRequestedSize,
-																  new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, offset, true));
+					// Will call callbackHttpGet when curl request completes
+					AIHTTPHeaders headers("Accept", "image/x-j2c");
+					LLHTTPClient::getByteRange(mUrl, offset, mRequestedSize,
+												new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, offset, true), headers);
+					res = true;
 				}
 				catch(AICurlNoEasyHandle const& error)
 				{
@@ -1994,8 +1995,7 @@ LLTextureFetch::LLTextureFetch(LLTextureCache* cache, LLImageDecodeThread* image
 	  mImageDecodeThread(imagedecodethread),
 	  mTextureBandwidth(0),
 	  mHTTPTextureBits(0),
-	  mTotalHTTPRequests(0),
-	  mCurlGetRequest(NULL)
+	  mTotalHTTPRequests(0)
 #if HTTP_METRICS
 	  ,mQAMode(qa_mode)
 #endif
@@ -2430,25 +2430,8 @@ void LLTextureFetch::shutDownImageDecodeThread()
 }
 
 // WORKER THREAD
-void LLTextureFetch::startThread()
-{
-	// Construct mCurlGetRequest from Worker Thread
-	mCurlGetRequest = new AICurlInterface::Request;
-}
-
-// WORKER THREAD
-void LLTextureFetch::endThread()
-{
-	// Destroy mCurlGetRequest from Worker Thread
-	delete mCurlGetRequest;
-	mCurlGetRequest = NULL;
-}
-
-// WORKER THREAD
 void LLTextureFetch::threadedUpdate()
 {
-	llassert_always(mCurlGetRequest);
-	
 	// Limit update frequency
 	const F32 PROCESS_TIME = 0.05f; 
 	static LLFrameTimer process_timer;
@@ -3118,9 +3101,7 @@ TFReqSendMetrics::doWork(LLTextureFetch * fetcher)
 
 	if (! mCapsURL.empty())
 	{
-		LLCurlRequest::headers_t headers;
-		fetcher->getCurlRequest().post(mCapsURL,
-									   headers,
+		LLHTTPClient::post(mCapsURL,
 									   merged_llsd,
 									   new lcl_responder(fetcher,
 														 report_sequence,

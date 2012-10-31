@@ -887,7 +887,7 @@ void LLPanelLogin::refreshLoginPage()
 
 	std::string login_page = gHippoGridManager->getConnectedGrid()->getLoginPage();
 	if (!login_page.empty()) {
-		LLHTTPClient::head4(login_page, gResponsePtr);
+		LLHTTPClient::head(login_page, gResponsePtr);
 	} else {
 		sInstance->setSiteIsAlive(false);
 	}

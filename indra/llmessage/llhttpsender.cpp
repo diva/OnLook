@@ -55,7 +55,7 @@ void LLHTTPSender::send(const LLHost& host, const std::string& name,
 	std::ostringstream stream;
 	stream << "http://" << host << "/trusted-message/" << name;
 	llinfos << "LLHTTPSender::send: POST to " << stream.str() << llendl;
-	LLHTTPClient::post4(stream.str(), body, response);
+	LLHTTPClient::post(stream.str(), body, response);
 }
 
 //static 

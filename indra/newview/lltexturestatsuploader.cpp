@@ -47,7 +47,7 @@ void LLTextureStatsUploader::uploadStatsToSimulator(const std::string texture_ca
 {
 	if ( texture_cap_url != "" )
 	{
-		LLHTTPClient::post4(texture_cap_url, texture_stats, NULL);
+		LLHTTPClient::post(texture_cap_url, texture_stats, NULL);
 	}
 	else
 	{

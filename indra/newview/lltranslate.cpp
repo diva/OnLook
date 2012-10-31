@@ -74,7 +74,7 @@ void LLTranslate::translateMessage(LLHTTPClient::ResponderPtr &result, const std
 		m_Header.addHeader(m_AgentHeader, user_agent);
 	}
 
-	LLHTTPClient::get4(url, result, m_Header, m_GoogleTimeout);
+	LLHTTPClient::get(url, result, m_Header, m_GoogleTimeout);
 }
 
 //static

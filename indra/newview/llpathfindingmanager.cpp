@@ -377,7 +377,7 @@ void LLPathfindingManager::requestGetNavMeshForRegion(LLViewerRegion *pRegion, b
 		llassert(!navMeshStatusURL.empty());
 		navMeshPtr->handleNavMeshCheckVersion();
 		LLHTTPClient::ResponderPtr navMeshStatusResponder = new NavMeshStatusResponder(navMeshStatusURL, pRegion, pIsGetStatusOnly);
-		LLHTTPClient::get4(navMeshStatusURL, navMeshStatusResponder);
+		LLHTTPClient::get(navMeshStatusURL, navMeshStatusResponder);
 	}
 }
 
@@ -411,12 +411,12 @@ void LLPathfindingManager::requestGetLinksets(request_id_t pRequestId, object_re
 			LinksetsResponderPtr linksetsResponderPtr(new LinksetsResponder(pRequestId, pLinksetsCallback, true, doRequestTerrain));
 
 			LLHTTPClient::ResponderPtr objectLinksetsResponder = new ObjectLinksetsResponder(objectLinksetsURL, linksetsResponderPtr);
-			LLHTTPClient::get4(objectLinksetsURL, objectLinksetsResponder);
+			LLHTTPClient::get(objectLinksetsURL, objectLinksetsResponder);
 
 			if (doRequestTerrain)
 			{
 				LLHTTPClient::ResponderPtr terrainLinksetsResponder = new TerrainLinksetsResponder(terrainLinksetsURL, linksetsResponderPtr);
-				LLHTTPClient::get4(terrainLinksetsURL, terrainLinksetsResponder);
+				LLHTTPClient::get(terrainLinksetsURL, terrainLinksetsResponder);
 			}
 		}
 	}
@@ -460,13 +460,13 @@ void LLPathfindingManager::requestSetLinksets(request_id_t pRequestId, const LLP
 			if (!objectPostData.isUndefined())
 			{
 				LLHTTPClient::ResponderPtr objectLinksetsResponder = new ObjectLinksetsResponder(objectLinksetsURL, linksetsResponderPtr);
-				LLHTTPClient::put4(objectLinksetsURL, objectPostData, objectLinksetsResponder);
+				LLHTTPClient::put(objectLinksetsURL, objectPostData, objectLinksetsResponder);
 			}
 
 			if (!terrainPostData.isUndefined())
 			{
 				LLHTTPClient::ResponderPtr terrainLinksetsResponder = new TerrainLinksetsResponder(terrainLinksetsURL, linksetsResponderPtr);
-				LLHTTPClient::put4(terrainLinksetsURL, terrainPostData, terrainLinksetsResponder);
+				LLHTTPClient::put(terrainLinksetsURL, terrainPostData, terrainLinksetsResponder);
 			}
 		}
 	}
@@ -499,7 +499,7 @@ void LLPathfindingManager::requestGetCharacters(request_id_t pRequestId, object_
 			pCharactersCallback(pRequestId, kRequestStarted, emptyCharacterListPtr);
 
 			LLHTTPClient::ResponderPtr charactersResponder = new CharactersResponder(charactersURL, pRequestId, pCharactersCallback);
-			LLHTTPClient::get4(charactersURL, charactersResponder);
+			LLHTTPClient::get(charactersURL, charactersResponder);
 		}
 	}
 }
@@ -532,7 +532,7 @@ void LLPathfindingManager::requestGetAgentState()
 			std::string agentStateURL = getAgentStateURLForRegion(currentRegion);
 			llassert(!agentStateURL.empty());
 			LLHTTPClient::ResponderPtr responder = new AgentStateResponder(agentStateURL);
-			LLHTTPClient::get4(agentStateURL, responder);
+			LLHTTPClient::get(agentStateURL, responder);
 		}
 	}
 }
@@ -556,7 +556,7 @@ void LLPathfindingManager::requestRebakeNavMesh(rebake_navmesh_callback_t pRebak
 		LLSD postData;			
 		postData["command"] = "rebuild";
 		LLHTTPClient::ResponderPtr responder = new NavMeshRebakeResponder(navMeshStatusURL, pRebakeNavMeshCallback);
-		LLHTTPClient::post4(navMeshStatusURL, postData, responder);
+		LLHTTPClient::post(navMeshStatusURL, postData, responder);
 	}
 }
 
@@ -580,7 +580,7 @@ void LLPathfindingManager::sendRequestGetNavMeshForRegion(LLPathfindingNavMeshPt
 			LLHTTPClient::ResponderPtr responder = new NavMeshResponder(navMeshURL, pNavMeshStatus.getVersion(), navMeshPtr);
 
 			LLSD postData;
-			LLHTTPClient::post4(navMeshURL, postData, responder);
+			LLHTTPClient::post(navMeshURL, postData, responder);
 		}
 	}
 }

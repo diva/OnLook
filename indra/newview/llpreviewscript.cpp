@@ -1494,7 +1494,7 @@ void LLPreviewLSL::uploadAssetViaCaps(const std::string& url,
 	{
 		body["target"] = "lsl2";
 	}
-	LLHTTPClient::post4(url, body, new LLUpdateAgentInventoryResponder(body, filename, LLAssetType::AT_LSL_TEXT));
+	LLHTTPClient::post(url, body, new LLUpdateAgentInventoryResponder(body, filename, LLAssetType::AT_LSL_TEXT));
 }
 
 void LLPreviewLSL::uploadAssetLegacy(const std::string& filename,
@@ -2393,7 +2393,7 @@ void LLLiveLSLEditor::uploadAssetViaCaps(const std::string& url,
 	body["item_id"] = item_id;
 	body["is_script_running"] = is_running;
 	body["target"] = monoChecked() ? "mono" : "lsl2";
-	LLHTTPClient::post4(url, body,
+	LLHTTPClient::post(url, body,
 		new LLUpdateTaskInventoryResponder(body, filename, LLAssetType::AT_LSL_TEXT));
 }
 
