@@ -41,6 +41,7 @@
 #include <fcntl.h>
 #endif
 #include <deque>
+#include <cctype>
 
 // On linux, add -DDEBUG_WINDOWS_CODE_ON_LINUX to test the windows code used in this file.
 #if !defined(DEBUG_WINDOWS_CODE_ON_LINUX) || !defined(LL_LINUX) || defined(LL_RELEASE)
@@ -1615,8 +1616,8 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
 
 void MultiHandle::check_run_count(void)
 {
-  llassert(mAddedEasyRequests.size() >= mRunningHandles);
-  if (mAddedEasyRequests.size() - mRunningHandles > 0)			// There is no need to do this when all easy handles are accounted for.
+  llassert(mAddedEasyRequests.size() >= (size_t)mRunningHandles);
+  if (mAddedEasyRequests.size() - (size_t)mRunningHandles > 0)			// There is no need to do this when all easy handles are accounted for.
   {
 	CURLMsg const* msg;
 	int msgs_left;

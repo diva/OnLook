@@ -30,6 +30,7 @@
 
 #include "sys.h"
 #include "aihttptimeoutpolicy.h"
+#define NOMINMAX
 #include "llerror.h"
 #include "lldefs.h"
 #include "v3math.h"
@@ -290,8 +291,8 @@ struct DNS : PolicyOp {
   DNS(int seconds) : mSeconds(seconds) { }
   DNS(int seconds, PolicyOp& op) : PolicyOp(op), mSeconds(seconds) { }
   static void fix(AIHTTPTimeoutPolicy* policy);
-  static int min(void) { return ABS_min_DNS_lookup; }
-  static int max(void) { return ABS_max_DNS_lookup; }
+  static U16 min(void) { return ABS_min_DNS_lookup; }
+  static U16 max(void) { return ABS_max_DNS_lookup; }
   virtual void perform(AIHTTPTimeoutPolicy* policy) const;
 };
 
@@ -300,8 +301,8 @@ struct Connect : PolicyOp {
   Connect(int seconds) : mSeconds(seconds) { }
   Connect(int seconds, PolicyOp& op) : PolicyOp(op), mSeconds(seconds) { }
   static void fix(AIHTTPTimeoutPolicy* policy);
-  static int min(void) { return ABS_min_connect_time; }
-  static int max(void) { return ABS_max_connect_time; }
+  static U16 min(void) { return ABS_min_connect_time; }
+  static U16 max(void) { return ABS_max_connect_time; }
   virtual void perform(AIHTTPTimeoutPolicy* policy) const;
 };
 
@@ -310,8 +311,8 @@ struct Reply : PolicyOp {
   Reply(int seconds) : mSeconds(seconds) { }
   Reply(int seconds, PolicyOp& op) : PolicyOp(op), mSeconds(seconds) { }
   static void fix(AIHTTPTimeoutPolicy* policy);
-  static int min(void) { return ABS_min_reply_delay; }
-  static int max(void) { return ABS_max_reply_delay; }
+  static U16 min(void) { return ABS_min_reply_delay; }
+  static U16 max(void) { return ABS_max_reply_delay; }
   virtual void perform(AIHTTPTimeoutPolicy* policy) const;
 };
 
@@ -321,10 +322,10 @@ struct Speed : PolicyOp {
   Speed(int seconds, int rate) : mSeconds(seconds), mRate(rate) { }
   Speed(int seconds, int rate, PolicyOp& op) : PolicyOp(op), mSeconds(seconds), mRate(rate) { }
   static void fix(AIHTTPTimeoutPolicy* policy);
-  static int min(void) { return ABS_min_low_speed_time; }
-  static int max(AIHTTPTimeoutPolicy const* policy) { return llmin(ABS_max_low_speed_time, (U16)(policy->mMaximumCurlTransaction / 2)); }
-  static int lmin(void) { return ABS_min_low_speed_limit; }
-  static int lmax(void) { return ABS_max_low_speed_limit; }
+  static U16 min(void) { return ABS_min_low_speed_time; }
+  static U16 max(AIHTTPTimeoutPolicy const* policy) { return llmin(ABS_max_low_speed_time, (U16)(policy->mMaximumCurlTransaction / 2)); }
+  static U32 lmin(void) { return ABS_min_low_speed_limit; }
+  static U32 lmax(void) { return ABS_max_low_speed_limit; }
   virtual void perform(AIHTTPTimeoutPolicy* policy) const;
 };
 
@@ -333,8 +334,8 @@ struct Transaction : PolicyOp {
   Transaction(int seconds) : mSeconds(seconds) { }
   Transaction(int seconds, PolicyOp& op) : PolicyOp(op), mSeconds(seconds) { }
   static void fix(AIHTTPTimeoutPolicy* policy);
-  static int min(AIHTTPTimeoutPolicy const* policy) { return llmax((int)ABS_min_transaction, policy->mMaximumConnectTime + policy->mMaximumReplyDelay + 4 * policy->mLowSpeedTime); }
-  static int max(void) { return ABS_max_transaction; }
+  static U16 min(AIHTTPTimeoutPolicy const* policy) { return llmax(ABS_min_transaction, (U16)(policy->mMaximumConnectTime + policy->mMaximumReplyDelay + 4 * policy->mLowSpeedTime)); }
+  static U16 max(void) { return ABS_max_transaction; }
   virtual void perform(AIHTTPTimeoutPolicy* policy) const;
 };
 
@@ -343,8 +344,8 @@ struct Total : PolicyOp {
   Total(int seconds) : mSeconds(seconds) { }
   Total(int seconds, PolicyOp& op) : PolicyOp(op), mSeconds(seconds) { }
   static void fix(AIHTTPTimeoutPolicy* policy);
-  static int min(AIHTTPTimeoutPolicy const* policy) { return llmax((int)ABS_min_total_delay, policy->mMaximumCurlTransaction + 1); }
-  static int max(void) { return ABS_max_total_delay; }
+  static U16 min(AIHTTPTimeoutPolicy const* policy) { return llmax(ABS_min_total_delay, (U16)(policy->mMaximumCurlTransaction + 1)); }
+  static U16 max(void) { return ABS_max_total_delay; }
   virtual void perform(AIHTTPTimeoutPolicy* policy) const;
 };
 

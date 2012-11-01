@@ -45,6 +45,8 @@ class Injector
 	typedef LLHTTPClient::ResponderBase::buffer_ptr_t buffer_ptr_t;
 	virtual char const* contentType(void) const = 0;
 	virtual U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer) = 0;
+	// To avoid compiler warning.
+	virtual ~Injector() { }
 };
 
 class LLURLRequest : public AICurlEasyRequestStateMachine {

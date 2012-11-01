@@ -173,7 +173,7 @@ void XMLRPCResponder::completedRaw(U32 status, std::string const& reason, LLChan
 		mBufferSize = buffer->count(channels.in());
 		if (200 <= status && status < 400)
 		{
-			char* ptr;
+			char* ptr = NULL;
 			char* buf = NULL;
 			LLMutexLock lock(buffer->getMutex());
 			LLBufferArray::const_segment_iterator_t const end = buffer->endSegment();
