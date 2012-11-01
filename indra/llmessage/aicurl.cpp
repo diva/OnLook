@@ -879,7 +879,7 @@ void CurlEasyRequest::resetState(void)
   mHeaders = NULL;
   mTimeoutPolicy = NULL;
   mTimeout = NULL;
-  mEventsTarget = NULL;
+  mHandleEventsTarget = NULL;
   mResult = CURLE_FAILED_INIT;
   applyDefaultOptions();
 }
@@ -1152,20 +1152,20 @@ void CurlEasyRequest::getResult(CURLcode* result, AITransferInfo* info)
 
 void CurlEasyRequest::added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w)
 {
-  if (mEventsTarget)
-	mEventsTarget->added_to_multi_handle(curl_easy_request_w);
+  if (mHandleEventsTarget)
+	mHandleEventsTarget->added_to_multi_handle(curl_easy_request_w);
 }
 
 void CurlEasyRequest::finished(AICurlEasyRequest_wat& curl_easy_request_w)
 {
-  if (mEventsTarget)
-	mEventsTarget->finished(curl_easy_request_w);
+  if (mHandleEventsTarget)
+	mHandleEventsTarget->finished(curl_easy_request_w);
 }
 
 void CurlEasyRequest::removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w)
 {
-  if (mEventsTarget)
-	mEventsTarget->removed_from_multi_handle(curl_easy_request_w);
+  if (mHandleEventsTarget)
+	mHandleEventsTarget->removed_from_multi_handle(curl_easy_request_w);
 }
 
 void CurlEasyRequest::print_diagnostics(AICurlEasyRequest_wat const& curlEasyRequest_w, CURLcode code)
@@ -1188,7 +1188,7 @@ static int const HTTP_REDIRECTS_DEFAULT = 10;
 
 LLChannelDescriptors const CurlResponderBuffer::sChannels;
 
-CurlResponderBuffer::CurlResponderBuffer() : mRequestTransferedBytes(0), mResponseTransferedBytes(0), mEventsTarget(NULL)
+CurlResponderBuffer::CurlResponderBuffer() : mRequestTransferedBytes(0), mResponseTransferedBytes(0), mBufferEventsTarget(NULL)
 {
   ThreadSafeBufferedCurlEasyRequest* lockobj = get_lockobj();
   AICurlEasyRequest_wat curl_easy_request_w(*lockobj);
@@ -1205,7 +1205,7 @@ CurlResponderBuffer::~CurlResponderBuffer()
 {
   ThreadSafeBufferedCurlEasyRequest* lockobj = get_lockobj();
   AICurlEasyRequest_wat curl_easy_request_w(*lockobj);				// Wait 'til possible callbacks have returned.
-  send_events_to(NULL);
+  send_buffer_events_to(NULL);
   curl_easy_request_w->revokeCallbacks();
   if (mResponder)
   {	
@@ -1280,7 +1280,7 @@ void CurlResponderBuffer::prepRequest(AICurlEasyRequest_wat& curl_easy_request_w
   // Send header events to responder if needed.
   if (mResponder->needsHeaders())
   {
-	  send_events_to(mResponder.get());
+	  send_buffer_events_to(mResponder.get());
   }
 
   // Add extra headers.

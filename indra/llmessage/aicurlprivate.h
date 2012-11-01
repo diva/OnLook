@@ -368,7 +368,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 
   private:
 	curl_slist* mHeaders;
-	AICurlEasyHandleEvents* mEventsTarget;
+	AICurlEasyHandleEvents* mHandleEventsTarget;
 	CURLcode mResult;		//AIFIXME: this does not belong in the request object, but belongs in the response object.
 
 	AIHTTPTimeoutPolicy const* mTimeoutPolicy;
@@ -396,7 +396,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// This class may only be created by constructing a ThreadSafeCurlEasyRequest.
 	friend class ThreadSafeCurlEasyRequest;
 	// Throws AICurlNoEasyHandle.
-	CurlEasyRequest(void) : mHeaders(NULL), mEventsTarget(NULL), mResult(CURLE_FAILED_INIT), mTimeoutPolicy(NULL), mTimeoutIsOrphan(false)
+	CurlEasyRequest(void) : mHeaders(NULL), mHandleEventsTarget(NULL), mResult(CURLE_FAILED_INIT), mTimeoutPolicy(NULL), mTimeoutIsOrphan(false)
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 		, mDebugIsHeadOrGetMethod(false)
 #endif
@@ -406,7 +406,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 
   public:
 	// Post-initialization, set the parent to pass the events to.
-	void send_events_to(AICurlEasyHandleEvents* target) { mEventsTarget = target; }
+	void send_events_to(AICurlEasyHandleEvents* target) { mHandleEventsTarget = target; }
 
 	// For debugging purposes
 	bool is_finalized(void) const { return mTimeoutPolicy; }
@@ -458,7 +458,7 @@ class CurlResponderBuffer : protected AICurlResponderBufferEvents, protected AIC
 	//void setBodyLimit(U32 size) { mBodyLimit = size; }
 
     // Post-initialization, set the parent to pass the events to.
-    void send_events_to(AICurlResponderBufferEvents* target) { mEventsTarget = target; }
+    void send_buffer_events_to(AICurlResponderBufferEvents* target) { mBufferEventsTarget = target; }
 
   protected:
 	// Events from this class.
@@ -481,7 +481,7 @@ class CurlResponderBuffer : protected AICurlResponderBufferEvents, protected AIC
 	std::string mReason;								// The "reason" from the same header line.
 	S32 mRequestTransferedBytes;
 	S32 mResponseTransferedBytes;
-	AICurlResponderBufferEvents* mEventsTarget;
+	AICurlResponderBufferEvents* mBufferEventsTarget;
 
   public:
 	static LLChannelDescriptors const sChannels;		// Channel object for mInput (channel out()) and mOutput (channel in()).

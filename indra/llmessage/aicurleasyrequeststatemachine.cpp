@@ -238,7 +238,7 @@ void AICurlEasyRequestStateMachine::finish_impl(void)
 	if (mBuffered)
 	{
 	  AICurlResponderBuffer_wat buffered_easy_request_w(*mCurlEasyRequest);
-	  buffered_easy_request_w->send_events_to(NULL);
+	  buffered_easy_request_w->send_buffer_events_to(NULL);
 	}
 	curl_easy_request_w->send_events_to(NULL);
 	curl_easy_request_w->revokeCallbacks();
