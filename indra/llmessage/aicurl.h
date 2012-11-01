@@ -145,11 +145,6 @@ void startCurlThread(U32 CurlConcurrentConnections, bool NoVerifySSLCert);
 // with purpose to stop curl threads, free curl resources and deinitialize curl.
 void cleanupCurl(void);
 
-// Called from indra/llmessage/llurlrequest.cpp to print debug output regarding
-// an error code returned by EasyRequest::getResult.
-// Just returns curl_easy_strerror(errorcode).
-std::string strerror(CURLcode errorcode);
-
 // Called from indra/newview/llfloaterabout.cpp for the About floater, and
 // from newview/llappviewer.cpp in behalf of debug output.
 // Just returns curl_version().

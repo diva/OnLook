@@ -422,16 +422,8 @@ void setCAPath(std::string const& path)
   CertificateAuthority_w->path = path;
 }
 
-// THREAD-SAFE
-std::string strerror(CURLcode errorcode)
-{
-  // libcurl is thread safe, no locking needed.
-  return curl_easy_strerror(errorcode);
-}
-
 } // namespace AICurlInterface
 //==================================================================================
-
 
 //==================================================================================
 // Local implementation.

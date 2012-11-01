@@ -2089,8 +2089,8 @@ void CurlResponderBuffer::processOutput(AICurlEasyRequest_wat& curl_easy_request
   }
   else
   {
-	responseCode = 499;
-	responseReason = AICurlInterface::strerror(code);
+	responseCode = HTTP_INTERNAL_ERROR;
+	responseReason = curl_easy_strerror(code);
 	curl_easy_request_w->setopt(CURLOPT_FRESH_CONNECT, TRUE);
   }
 
