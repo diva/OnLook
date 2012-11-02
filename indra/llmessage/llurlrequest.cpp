@@ -78,7 +78,7 @@ std::string LLURLRequest::actionAsVerb(LLURLRequest::ERequestAction action)
 // This might throw AICurlNoEasyHandle.
 LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string const& url, Injector* body,
 	LLHTTPClient::ResponderPtr responder, AIHTTPHeaders& headers, bool is_auth, bool no_compression) :
-    AICurlEasyRequestStateMachine(true), mAction(action), mURL(url), mIsAuth(is_auth), mNoCompression(no_compression),
+    mAction(action), mURL(url), mIsAuth(is_auth), mNoCompression(no_compression),
 	mBody(body), mResponder(responder), mHeaders(headers)
 {
 }
@@ -121,17 +121,16 @@ void LLURLRequest::initialize_impl(void)
 	bool success = false;
 	try
 	{
-		AICurlEasyRequest_wat buffered_easy_request_w(*mCurlEasyRequest);
-		AICurlResponderBuffer_wat buffer_w(*mCurlEasyRequest);
-		buffer_w->prepRequest(buffered_easy_request_w, mHeaders, mResponder);
+		AICurlEasyRequest_wat easy_request_w(*mCurlEasyRequest);
+		easy_request_w->prepRequest(easy_request_w, mHeaders, mResponder);
 
 		if (mBody)
 		{
 			// This might throw AICurlNoBody.
-			mBodySize = mBody->get_body(buffer_w->sChannels, buffer_w->getInput());
+			mBodySize = mBody->get_body(easy_request_w->sChannels, easy_request_w->getInput());
 		}
 
-		success = configure(buffered_easy_request_w);
+		success = configure(easy_request_w);
 	}
 	catch (AICurlNoBody const& error)
 	{

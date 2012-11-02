@@ -84,15 +84,6 @@ public:
 	 * associated CurlResponderBuffer, however, if everything works correctly, then normally a
 	 * responder is deleted in CurlResponderBuffer::removed_from_multi_handle by setting
 	 * mReponder to NULL.
-	 *
-	 * Note that the lifetime of CurlResponderBuffer is (a bit) shorter than the associated
-	 * CurlEasyRequest (because of the order of base classes of ThreadSafeBufferedCurlEasyRequest)
-	 * and the callbacks, as set by prepRequest, only use those two.
-	 * A callback locks the CurlEasyRequest before actually making the callback, and the
-	 * destruction of CurlResponderBuffer also first locks the CurlEasyRequest, and then revokes
-	 * the callbacks. This assures that a Responder is never used when the objects it uses are
-	 * destructed. Also, if any of those are destructed then the Responder is automatically
-	 * destructed too.
 	 */
 	class ResponderBase : public AICurlResponderBufferEvents {
 	public:

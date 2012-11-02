@@ -52,13 +52,12 @@
 // Construction of a AICurlEasyRequestStateMachine might throw AICurlNoEasyHandle.
 class AICurlEasyRequestStateMachine : public AIStateMachine, public AICurlEasyHandleEvents {
   public:
-	AICurlEasyRequestStateMachine(bool buffered);
+	AICurlEasyRequestStateMachine(void);
 
 	// Transparent access.
 	AICurlEasyRequest mCurlEasyRequest;
 
   private:
-	bool mBuffered;						// Argument used for construction of mCurlEasyRequest.
 	bool mAdded;						// Set when the last command to the curl thread was to add the request.
 	bool mTimedOut;						// Set if the expiration timer timed out.
 	bool mFinished;						// Set by the curl thread to signal it finished.

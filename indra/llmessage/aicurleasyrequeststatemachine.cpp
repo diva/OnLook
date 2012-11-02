@@ -63,7 +63,7 @@ void AICurlEasyRequestStateMachine::initialize_impl(void)
   {
 	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
 	llassert(curlEasyRequest_w->is_finalized());	// Call finalizeRequest() before calling run().
-	curlEasyRequest_w->send_events_to(this);
+	curlEasyRequest_w->send_handle_events_to(this);
   }
   mAdded = false;
   mTimedOut = false;
@@ -90,7 +90,7 @@ void AICurlEasyRequestStateMachine::removed_from_multi_handle(AICurlEasyRequest_
 {
   llassert(mFinished || mTimedOut);		// If we neither finished nor timed out, then why is this being removed?
   										// Note that allowing this would cause an assertion later on for removing
-										// a CurlResponderBuffer with a still active Responder.
+										// a BufferedCurlEasyRequest with a still active Responder.
   set_state(mFinished ? AICurlEasyRequestStateMachine_removed_after_finished : AICurlEasyRequestStateMachine_removed);
 }
 
@@ -175,12 +175,8 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
 		}
 
 		// The request finished and either data or an error code is available.
-		if (mBuffered)
-		{
-		  AICurlEasyRequest_wat easy_request_w(*mCurlEasyRequest);
-		  AICurlResponderBuffer_wat buffered_easy_request_w(*mCurlEasyRequest);
-		  buffered_easy_request_w->processOutput(easy_request_w);
-		}
+		AICurlEasyRequest_wat easy_request_w(*mCurlEasyRequest);
+		easy_request_w->processOutput();
 	  }
 
 	  if (current_state == AICurlEasyRequestStateMachine_finished)
@@ -196,11 +192,10 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
 	case AICurlEasyRequestStateMachine_removed:
 	{
 	  // The request was removed from the multi handle.
-	  if (mBuffered && mTimedOut)
+	  if (mTimedOut)
 	  {
 		AICurlEasyRequest_wat easy_request_w(*mCurlEasyRequest);
-		AICurlResponderBuffer_wat buffered_easy_request_w(*mCurlEasyRequest);
-		buffered_easy_request_w->timed_out();
+		easy_request_w->timed_out();
 	  }
 
 	  // We're done. If we timed out, abort -- or else the application will
@@ -235,12 +230,8 @@ void AICurlEasyRequestStateMachine::finish_impl(void)
   // Revoke callbacks.
   {
 	AICurlEasyRequest_wat curl_easy_request_w(*mCurlEasyRequest);
-	if (mBuffered)
-	{
-	  AICurlResponderBuffer_wat buffered_easy_request_w(*mCurlEasyRequest);
-	  buffered_easy_request_w->send_buffer_events_to(NULL);
-	}
-	curl_easy_request_w->send_events_to(NULL);
+	curl_easy_request_w->send_buffer_events_to(NULL);
+	curl_easy_request_w->send_handle_events_to(NULL);
 	curl_easy_request_w->revokeCallbacks();
   }
   if (mTimer)
@@ -254,14 +245,10 @@ void AICurlEasyRequestStateMachine::finish_impl(void)
   kill();
 }
 
-AICurlEasyRequestStateMachine::AICurlEasyRequestStateMachine(bool buffered) :
-    mBuffered(buffered), mCurlEasyRequest(buffered), mTimer(NULL), mTotalDelayTimeout(AIHTTPTimeoutPolicy::getDebugSettingsCurlTimeout().getTotalDelay())
+AICurlEasyRequestStateMachine::AICurlEasyRequestStateMachine(void) :
+    mTimer(NULL), mTotalDelayTimeout(AIHTTPTimeoutPolicy::getDebugSettingsCurlTimeout().getTotalDelay())
 {
-  Dout(dc::statemachine, "Calling AICurlEasyRequestStateMachine(" << (buffered ? "true" : "false") << ") [" << (void*)this << "] [" << (void*)mCurlEasyRequest.get() << "]");
-  if (!mBuffered)
-  {
-	llwarns << "Using unbuffered AICurlEasyRequestStateMachine" << llendl;
-  }
+  Dout(dc::statemachine, "Calling AICurlEasyRequestStateMachine(void) [" << (void*)this << "] [" << (void*)mCurlEasyRequest.get() << "]");
 }
 
 void AICurlEasyRequestStateMachine::setTotalDelayTimeout(F32 totalDelayTimeout)
