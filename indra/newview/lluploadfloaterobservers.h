@@ -37,6 +37,9 @@
 #include "llhttpclient.h"
 #include "llui.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy uploadModelPremissionsResponder_timeout;
+
 class LLUploadPermissionsObserver
 {
 public:
@@ -95,7 +98,7 @@ protected:
 };
 
 
-class LLUploadModelPremissionsResponder : public LLHTTPClient::Responder
+class LLUploadModelPremissionsResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 
@@ -104,6 +107,8 @@ public:
 	void error(U32 status, const std::string& reason);
 
 	void result(const LLSD& content);
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return uploadModelPremissionsResponder_timeout; }
 
 private:
 	LLHandle<LLUploadPermissionsObserver> mObserverHandle;

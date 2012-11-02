@@ -113,12 +113,11 @@ void *APR_THREAD_FUNC LLThread::staticRun(apr_thread_t *apr_threadp, void *datap
 
 	// Only now print this info [doing that before setting mStatus
 	// to STOPPED makes it much more likely that another thread runs
-	// after the LLCurl::Multi::run() function exits and we actually
-	// change this variable (which really SHOULD have been inside
-	// the critical area of the mSignal lock)].
+	// after the AICurlPrivate::curlthread::AICurlThread::run() function
+	// exits and we actually change this variable (which really SHOULD
+	// have been inside the critical area of the mSignal lock)].
 	lldebugs << "LLThread::staticRun() Exiting: " << name << llendl;
 
-	--sRunning;		// Would be better to do this after joining with the thread, but we don't join :/
 	return NULL;
 }
 

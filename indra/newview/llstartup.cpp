@@ -32,6 +32,7 @@
 
 #include "llviewerprecompiledheaders.h"
 
+#include <boost/algorithm/string.hpp>
 #include "llstartup.h"
 
 #if LL_WINDOWS
@@ -893,7 +894,7 @@ bool idle_startup()
 			}
 			else
 			{
-				LLPanelLogin::setFields(firstname, lastname, password, login_history);
+				LLPanelLogin::setFields(firstname, lastname, password);
 				// <edit>
 				gFullName = utf8str_tolower(firstname + " " + lastname);
 				// </edit>
@@ -1591,10 +1592,11 @@ bool idle_startup()
 			if(process_login_success_response(password))
 			{
 				std::string name = firstname;
-				std::string last_name = lastname;
-				LLStringUtil::toLower(last_name);
-				if(last_name != "resident")
+				if (!gHippoGridManager->getCurrentGrid()->isSecondLife() ||
+					!boost::algorithm::iequals(lastname, "Resident"))
+				{
 					name += " " + lastname;
+				}
 				gViewerWindow->getWindow()->setTitle(LLAppViewer::instance()->getWindowTitle() + "- " + name);
 							// Pass the user information to the voice chat server interface.
 				gVoiceClient->userAuthorized(firstname, lastname, gAgentID);

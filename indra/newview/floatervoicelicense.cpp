@@ -52,6 +52,8 @@
 #include "llvfile.h"
 #include "message.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy iamHereVoice_timeout;
 
 FloaterVoiceLicense::FloaterVoiceLicense(const LLSD& key)
 :	LLModalDialog( std::string(" "), 100, 100 ),
@@ -63,7 +65,7 @@ FloaterVoiceLicense::FloaterVoiceLicense(const LLSD& key)
 
 // helper class that trys to download a URL from a web site and calls a method 
 // on parent class indicating if the web server is working or not
-class LLIamHereVoice : public LLHTTPClient::Responder
+class LLIamHereVoice : public LLHTTPClient::ResponderWithResult
 {
 	private:
 		LLIamHereVoice( FloaterVoiceLicense* parent ) :
@@ -73,7 +75,6 @@ class LLIamHereVoice : public LLHTTPClient::Responder
 		FloaterVoiceLicense* mParent;
 
 	public:
-
 		static boost::intrusive_ptr< LLIamHereVoice > build( FloaterVoiceLicense* parent )
 		{
 			return boost::intrusive_ptr< LLIamHereVoice >( new LLIamHereVoice( parent ) );
@@ -101,6 +102,8 @@ class LLIamHereVoice : public LLHTTPClient::Responder
 				mParent->setSiteIsAlive( alive );
 			}
 		};
+
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return iamHereVoice_timeout; }
 };
 
 // this is global and not a class member to keep crud out of the header file

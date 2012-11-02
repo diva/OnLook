@@ -84,6 +84,11 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy startConferenceChatResponder_timeout;
+extern AIHTTPTimeoutPolicy voiceCallCapResponder_timeout;
+extern AIHTTPTimeoutPolicy sessionInviteResponder_timeout;
+
 //
 // Constants
 //
@@ -179,7 +184,7 @@ void start_deprecated_conference_chat(
 	delete[] bucket;
 }
 
-class LLStartConferenceChatResponder : public LLHTTPClient::Responder
+class LLStartConferenceChatResponder : public LLHTTPClient::ResponderIgnoreBody
 {
 public:
 	LLStartConferenceChatResponder(
@@ -213,6 +218,8 @@ public:
 		//and it is not worth the effort switching over all
 		//the possible different language translations
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return startConferenceChatResponder_timeout; }
 
 private:
 	LLUUID mTempSessionID;
@@ -294,13 +301,14 @@ bool send_start_session_messages(
 	return false;
 }
 
-class LLVoiceCallCapResponder : public LLHTTPClient::Responder
+class LLVoiceCallCapResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLVoiceCallCapResponder(const LLUUID& session_id) : mSessionID(session_id) {};
 
 	virtual void error(U32 status, const std::string& reason);	// called with bad status codes
 	virtual void result(const LLSD& content);
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return voiceCallCapResponder_timeout; }
 
 private:
 	LLUUID mSessionID;
@@ -1550,7 +1558,7 @@ void LLFloaterIMPanel::draw()
 	LLFloater::draw();
 }
 
-class LLSessionInviteResponder : public LLHTTPClient::Responder
+class LLSessionInviteResponder : public LLHTTPClient::ResponderIgnoreBody
 {
 public:
 	LLSessionInviteResponder(const LLUUID& session_id)
@@ -1563,6 +1571,8 @@ public:
 		llinfos << "Error inviting all agents to session" << llendl;
 		//throw something back to the viewer here?
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return sessionInviteResponder_timeout; }
 
 private:
 	LLUUID mSessionID;

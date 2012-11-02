@@ -249,7 +249,7 @@ std::ostream& operator<<(std::ostream& os, CURLoption option)
 	CASEPRINT(CURLOPT_LOW_SPEED_TIME);
 	CASEPRINT(CURLOPT_RESUME_FROM);
 	CASEPRINT(CURLOPT_COOKIE);
-	CASEPRINT(CURLOPT_RTSPHEADER);
+	CASEPRINT(CURLOPT_HTTPHEADER);
 	CASEPRINT(CURLOPT_HTTPPOST);
 	CASEPRINT(CURLOPT_SSLCERT);
 	CASEPRINT(CURLOPT_KEYPASSWD);
@@ -702,7 +702,11 @@ CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 		{
 		  LibcwDoutStream << "NULL";
 		}
-		LibcwDoutStream << "](" << (is_postfield ? postfieldsize : size) << " bytes))";
+		LibcwDoutStream << "]";
+		if (str)
+		{
+		  LibcwDoutStream << "(" << (is_postfield ? postfieldsize : size) << " bytes))";
+		}
 	  }
 	  else
 	  {

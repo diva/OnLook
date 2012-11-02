@@ -44,7 +44,8 @@
 #include "llframetimer.h"
 #include "lllineeditor.h"
 #include "llviewchildren.h"
-#include "llxmlrpctransaction.h"
+#include "llxmlrpcresponder.h"
+#include "llhttpclient.h"
 #include "llviewernetwork.h"
 
 #include "hippogridmanager.h"
@@ -89,8 +90,8 @@ public:
 	};
 
 	TransactionType		 mTransactionType;
-	LLXMLRPCTransaction* mTransaction;
-	
+	boost::intrusive_ptr<XMLRPCResponder> mResponder;
+
 	bool		 mCurrencyChanged;
 	LLFrameTimer mCurrencyKeyTimer;
 
@@ -128,14 +129,13 @@ LLCurrencyUIManager::Impl::Impl(LLPanel& dialog)
 	mSiteCurrencyEstimated(false),
 	  mSiteCurrencyEstimatedCost(0),
 	mBought(false),
-	mTransactionType(TransactionNone), mTransaction(0),
+	mTransactionType(TransactionNone),
 	mCurrencyChanged(false)
 {
 }
 
 LLCurrencyUIManager::Impl::~Impl()
 {
-	delete mTransaction;
 }
 
 void LLCurrencyUIManager::Impl::updateCurrencyInfo()
@@ -166,7 +166,7 @@ void LLCurrencyUIManager::Impl::updateCurrencyInfo()
 
 void LLCurrencyUIManager::Impl::finishCurrencyInfo()
 {
-	LLXMLRPCValue result = mTransaction->responseValue();
+	LLXMLRPCValue result = mResponder->responseValue();
 
 	bool success = result["success"].asBool();
 	if (!success)
@@ -219,7 +219,7 @@ void LLCurrencyUIManager::Impl::startCurrencyBuy(const std::string& password)
 
 void LLCurrencyUIManager::Impl::finishCurrencyBuy()
 {
-	LLXMLRPCValue result = mTransaction->responseValue();
+	LLXMLRPCValue result = mResponder->responseValue();
 
 	bool success = result["success"].asBool();
 	if (!success)
@@ -246,34 +246,28 @@ void LLCurrencyUIManager::Impl::startTransaction(TransactionType type,
 		transactionURI = LLViewerLogin::getInstance()->getHelperURI() + "currency.php";
 	}
 
-	delete mTransaction;
-
 	mTransactionType = type;
-	mTransaction = new LLXMLRPCTransaction(
-		transactionURI,
-		method,
-		params,
-		false /* don't use gzip */
-		);
+	mResponder = new XMLRPCResponder;
+	LLHTTPClient::postXMLRPC(transactionURI, method, params.getValue(), mResponder);
 
 	clearError();
 }
 
 bool LLCurrencyUIManager::Impl::checkTransaction()
 {
-	if (!mTransaction)
+	if (!mResponder)
 	{
 		return false;
 	}
 	
-	if (!mTransaction->is_finished())
+	if (!mResponder->is_finished())
 	{
 		return false;
 	}
 
-	if (mTransaction->status(NULL) != LLXMLRPCTransaction::StatusComplete)
+	if (mResponder->result_code() != CURLE_OK || mResponder->http_status() < 200 || mResponder->http_status() >= 400)
 	{
-		setError(mTransaction->statusMessage(), mTransaction->statusURI());
+		setError(mResponder->reason(), mResponder->getURL());
 	}
 	else {
 		switch (mTransactionType)
@@ -283,11 +277,11 @@ bool LLCurrencyUIManager::Impl::checkTransaction()
 			default: ;
 		}
 	}
-	
-	delete mTransaction;
-	mTransaction = NULL;
+
+	// We're done with this data.
+	mResponder = NULL;
 	mTransactionType = TransactionNone;
-	
+
 	return true;
 }
 
@@ -309,7 +303,7 @@ void LLCurrencyUIManager::Impl::clearError()
 bool LLCurrencyUIManager::Impl::considerUpdateCurrency()
 {
 	if (mCurrencyChanged
-	&&  !mTransaction 
+	&&  !mResponder
 	&&  mCurrencyKeyTimer.getElapsedTimeF32() >= CURRENCY_ESTIMATE_FREQUENCY)
 	{
 		updateCurrencyInfo();

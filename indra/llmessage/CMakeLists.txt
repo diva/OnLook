@@ -4,20 +4,31 @@ project(llmessage)
 
 include(00-Common)
 include(LLCommon)
+include(AIStateMachine)
 include(LLMath)
 include(LLMessage)
 include(LLVFS)
+include(LLXML)
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(
     ${LLCOMMON_INCLUDE_DIRS}
+    ${AISTATEMACHINE_INCLUDE_DIRS}
     ${LLMATH_INCLUDE_DIRS}
     ${LLMESSAGE_INCLUDE_DIRS}
     ${LLVFS_INCLUDE_DIRS}
+    ${LLXML_INCLUDE_DIRS}
     )
 
 set(llmessage_SOURCE_FILES
+    aicurl.cpp
+    aicurleasyrequeststatemachine.cpp
+    aicurlthread.cpp
+    aihttpheaders.cpp
+    aihttptimeoutpolicy.cpp
+    debug_libcurl.cpp
+    llhttpclient.cpp
     llares.cpp
     llareslistener.cpp
     llassetstorage.cpp
@@ -29,15 +40,10 @@ set(llmessage_SOURCE_FILES
     llchainio.cpp
     llcircuit.cpp
     llclassifiedflags.cpp
-    aicurl.cpp
-    debug_libcurl.cpp
-    aicurlthread.cpp
     lldatapacker.cpp
     lldispatcher.cpp
     llfiltersd2xmlrpc.cpp
     llhost.cpp
-    llhttpclient.cpp
-    llhttpclientadapter.cpp
     llhttpnode.cpp
     llhttpsender.cpp
     llinstantmessage.cpp
@@ -104,6 +110,13 @@ set(llmessage_SOURCE_FILES
 set(llmessage_HEADER_FILES
     CMakeLists.txt
 
+    aicurl.h
+    aicurleasyrequeststatemachine.h
+    aicurlprivate.h
+    aicurlthread.h
+    aihttpheaders.h
+    aihttptimeoutpolicy.h
+    debug_libcurl.h
     llares.h
     llareslistener.h
     llassetstorage.h
@@ -117,10 +130,6 @@ set(llmessage_HEADER_FILES
     llcircuit.h
     llclassifiedflags.h
     llcurl.h
-    aicurl.h
-    debug_libcurl.h
-    aicurlprivate.h
-    aicurlthread.h
     lldatapacker.h
     lldbstrings.h
     lldispatcher.h
@@ -129,8 +138,6 @@ set(llmessage_HEADER_FILES
     llfollowcamparams.h
     llhost.h
     llhttpclient.h
-    llhttpclientinterface.h
-    llhttpclientadapter.h
     llhttpnode.h
     llhttpnodeadapter.h
     llhttpsender.h
@@ -227,7 +234,6 @@ if (LL_TESTS)
   include(Tut)
 
   SET(llmessage_TEST_SOURCE_FILES
-    # llhttpclientadapter.cpp
     llmime.cpp
     llnamevalue.cpp
     lltrustedmessageservice.cpp
@@ -243,7 +249,8 @@ if (LL_TESTS)
     ${LLVFS_LIBRARIES}
     ${LLMATH_LIBRARIES}
     ${LLCOMMON_LIBRARIES}
-      ${GOOGLEMOCK_LIBRARIES}
+    ${GOOGLEMOCK_LIBRARIES}
+    ${LLXML_LIBRARIES}
     )
 
   LL_ADD_INTEGRATION_TEST(

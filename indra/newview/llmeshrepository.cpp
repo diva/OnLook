@@ -35,7 +35,6 @@
 #include "llappviewer.h"
 #include "llbufferstream.h"
 #include "llcallbacklist.h"
-#include "llcurlrequest.h"
 #include "lldatapacker.h"
 #include "llfasttimer.h"
 #if MESH_IMPORT
@@ -66,6 +65,7 @@
 #include "llinventorymodel.h"
 #include "llfoldertype.h"
 #include "llviewerparcelmgr.h"
+#include "aicurl.h"
 
 #include "boost/lexical_cast.hpp"
 #ifndef LL_WINDOWS
@@ -73,6 +73,15 @@
 #endif
 
 #include <queue>
+
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy meshHeaderResponder_timeout;
+extern AIHTTPTimeoutPolicy meshLODResponder_timeout;
+extern AIHTTPTimeoutPolicy meshSkinInfoResponder_timeout;
+extern AIHTTPTimeoutPolicy meshDecompositionResponder_timeout;
+extern AIHTTPTimeoutPolicy meshPhysicsShapeResponder_timeout;
+extern AIHTTPTimeoutPolicy wholeModelFeeResponder_timeout;
+extern AIHTTPTimeoutPolicy wholeModelUploadResponder_timeout;
 
 LLMeshRepository gMeshRepo;
 
@@ -201,7 +210,7 @@ S32 LLMeshRepoThread::sActiveHeaderRequests = 0;
 S32 LLMeshRepoThread::sActiveLODRequests = 0;
 U32	LLMeshRepoThread::sMaxConcurrentRequests = 1;
 
-class LLMeshHeaderResponder : public LLCurl::Responder
+class LLMeshHeaderResponder : public LLHTTPClient::ResponderWithCompleted
 {
 public:
 	LLVolumeParams mMeshParams;
@@ -221,9 +230,10 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshHeaderResponder_timeout; }
 };
 
-class LLMeshLODResponder : public LLCurl::Responder
+class LLMeshLODResponder : public LLHTTPClient::ResponderWithCompleted
 {
 public:
 	LLVolumeParams mMeshParams;
@@ -246,9 +256,10 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshLODResponder_timeout; }
 };
 
-class LLMeshSkinInfoResponder : public LLCurl::Responder
+class LLMeshSkinInfoResponder : public LLHTTPClient::ResponderWithCompleted
 {
 public:
 	LLUUID mMeshID;
@@ -264,9 +275,10 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshSkinInfoResponder_timeout; }
 };
 
-class LLMeshDecompositionResponder : public LLCurl::Responder
+class LLMeshDecompositionResponder : public LLHTTPClient::ResponderWithCompleted
 {
 public:
 	LLUUID mMeshID;
@@ -282,9 +294,10 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshDecompositionResponder_timeout; }
 };
 
-class LLMeshPhysicsShapeResponder : public LLCurl::Responder
+class LLMeshPhysicsShapeResponder : public LLHTTPClient::ResponderWithCompleted
 {
 public:
 	LLUUID mMeshID;
@@ -300,6 +313,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshPhysicsShapeResponder_timeout; }
 };
 
 #if MESH_IMPORT
@@ -352,7 +366,7 @@ void log_upload_error(S32 status, const LLSD& content, std::string stage, std::s
 	}
 }
 
-class LLWholeModelFeeResponder: public LLCurl::Responder
+class LLWholeModelFeeResponder: public LLHTTPClient::ResponderWithCompleted
 {
 	LLMeshUploadThread* mThread;
 	LLSD mModelData;
@@ -403,9 +417,10 @@ public:
 		}
 	}
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return wholeModelFeeResponder_timeout; }
 };
 
-class LLWholeModelUploadResponder: public LLCurl::Responder
+class LLWholeModelUploadResponder: public LLHTTPClient::ResponderWithCompleted
 {
 	LLMeshUploadThread* mThread;
 	LLSD mModelData;
@@ -459,6 +474,8 @@ public:
 			}
 		}
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return wholeModelUploadResponder_timeout; }
 };
 #endif //MESH_IMPORT
 
@@ -482,7 +499,6 @@ LLMeshRepoThread::~LLMeshRepoThread()
 
 void LLMeshRepoThread::run()
 {
-	mCurlRequest = new AICurlInterface::Request;
 #if MESH_IMPORT
 	LLCDResult res = LLConvexDecomposition::initThread();
 	if (res != LLCD_OK)
@@ -637,9 +653,6 @@ void LLMeshRepoThread::run()
 		llwarns << "convex decomposition unable to be quit" << llendl;
 	}
 #endif //MESH_IMPORT
-
-	delete mCurlRequest;
-	mCurlRequest = NULL;
 }
 
 void LLMeshRepoThread::loadMeshSkinInfo(const LLUUID& mesh_id)
@@ -766,15 +779,13 @@ bool LLMeshRepoThread::fetchMeshSkinInfo(const LLUUID& mesh_id)
 			}
 
 			//reading from VFS failed for whatever reason, fetch from sim
-			std::vector<std::string> headers;
-			headers.push_back("Accept: application/octet-stream");
+			AIHTTPHeaders headers("Accept", "application/octet-stream");
 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{				
-				// This might throw AICurlNoEasyHandle.
-				mCurlRequest->getByteRange(http_url, headers, offset, size,
-										   new LLMeshSkinInfoResponder(mesh_id, offset, size));
+				LLHTTPClient::getByteRange(http_url, offset, size,
+											new LLMeshSkinInfoResponder(mesh_id, offset, size), headers);
 				LLMeshRepository::sHTTPRequestCount++;
 			}
 		}
@@ -841,15 +852,14 @@ bool LLMeshRepoThread::fetchMeshDecomposition(const LLUUID& mesh_id)
 			}
 
 			//reading from VFS failed for whatever reason, fetch from sim
-			std::vector<std::string> headers;
-			headers.push_back("Accept: application/octet-stream");
+			AIHTTPHeaders headers("Accept", "application/octet-stream");
 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{				
 				// This might throw AICurlNoEasyHandle.
-				mCurlRequest->getByteRange(http_url, headers, offset, size,
-										   new LLMeshDecompositionResponder(mesh_id, offset, size));
+				LLHTTPClient::getByteRange(http_url, offset, size,
+											new LLMeshDecompositionResponder(mesh_id, offset, size), headers);
 				LLMeshRepository::sHTTPRequestCount++;
 			}
 		}
@@ -916,15 +926,14 @@ bool LLMeshRepoThread::fetchMeshPhysicsShape(const LLUUID& mesh_id)
 			}
 
 			//reading from VFS failed for whatever reason, fetch from sim
-			std::vector<std::string> headers;
-			headers.push_back("Accept: application/octet-stream");
+			AIHTTPHeaders headers("Accept", "application/octet-stream");
 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{				
 				// This might throw AICurlNoEasyHandle.
-				mCurlRequest->getByteRange(http_url, headers, offset, size,
-										   new LLMeshPhysicsShapeResponder(mesh_id, offset, size));
+			  LLHTTPClient::getByteRange(http_url, offset, size,
+										  new LLMeshPhysicsShapeResponder(mesh_id, offset, size), headers);
 				LLMeshRepository::sHTTPRequestCount++;
 			}
 		}
@@ -966,8 +975,7 @@ bool LLMeshRepoThread::fetchMeshHeader(const LLVolumeParams& mesh_params, U32& c
 	}
 
 	//either cache entry doesn't exist or is corrupt, request header from simulator	
-	std::vector<std::string> headers;
-	headers.push_back("Accept: application/octet-stream");
+	AIHTTPHeaders headers("Accept", "application/octet-stream");
 
 	std::string http_url = constructUrl(mesh_params.getSculptID());
 	if (!http_url.empty())
@@ -976,7 +984,7 @@ bool LLMeshRepoThread::fetchMeshHeader(const LLVolumeParams& mesh_params, U32& c
 		//within the first 4KB
 		//NOTE -- this will break of headers ever exceed 4KB		
 		// This might throw AICurlNoEasyHandle.
-		mCurlRequest->getByteRange(http_url, headers, 0, 4096, new LLMeshHeaderResponder(mesh_params));
+		LLHTTPClient::getByteRange(http_url, 0, 4096, new LLMeshHeaderResponder(mesh_params), headers);
 		LLMeshRepository::sHTTPRequestCount++;
 		count++;
 	}
@@ -1031,15 +1039,14 @@ void LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod, 
 			}
 
 			//reading from VFS failed for whatever reason, fetch from sim
-			std::vector<std::string> headers;
-			headers.push_back("Accept: application/octet-stream");
+			AIHTTPHeaders headers("Accept", "application/octet-stream");
 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{				
 				// This might throw AICurlNoEasyHandle.
-				mCurlRequest->getByteRange(constructUrl(mesh_id), headers, offset, size,
-										   new LLMeshLODResponder(mesh_params, lod, offset, size));
+				LLHTTPClient::getByteRange(constructUrl(mesh_id), offset, size,
+											new LLMeshLODResponder(mesh_params, lod, offset, size), headers);
 				LLMeshRepository::sHTTPRequestCount++;
 				count++;
 			}
@@ -1275,9 +1282,7 @@ LLMeshUploadThread::LLMeshUploadThread(LLMeshUploadThread::instance_list& data, 
 	mUploadSkin = upload_skin;
 	mUploadJoints = upload_joints;
 	mMutex = new LLMutex();
-	mCurlRequest = NULL;
 	mPendingUploads = 0;
-	mFinished = false;
 	mOrigin = gAgent.getPositionAgent();
 	mHost = gAgent.getRegionHost();
 	
@@ -1603,8 +1608,6 @@ void LLMeshUploadThread::generateHulls()
 
 void LLMeshUploadThread::doWholeModelUpload()
 {
-	mCurlRequest = new AICurlInterface::Request();
-
 	if (mWholeModelUploadURL.empty())
 	{
 		llinfos << "unable to upload, fee request failed" << llendl;
@@ -1617,32 +1620,14 @@ void LLMeshUploadThread::doWholeModelUpload()
 		wholeModelToLLSD(full_model_data, true);
 		LLSD body = full_model_data["asset_resources"];
 		dump_llsd_to_file(body,make_dump_name("whole_model_body_",dump_num));
-		LLCurlRequest::headers_t headers;
-		// This might throw AICurlNoEasyHandle.
-		mCurlRequest->post(mWholeModelUploadURL, headers, body,
-						   new LLWholeModelUploadResponder(this, full_model_data, mUploadObserverHandle), mMeshUploadTimeOut);
-		do
-		{
-			mCurlRequest->process();								// FIXME: This function does not exist anymore. The post() gets CPU time from AICurlEasyRequestStateMachine.
-																	// Therefore, if we do not want to continue here unless this upload is done... no wait, that would
-																	// be blocking and we don't want blocking...
-			//sleep for 10ms to prevent eating a whole core
-			apr_sleep(10000);
-		} while (mCurlRequest->getQueued() > 0);
+		LLHTTPClient::post(mWholeModelUploadURL, body,
+						   new LLWholeModelUploadResponder(this, full_model_data, mUploadObserverHandle));
 	}
-
-	delete mCurlRequest;
-	mCurlRequest = NULL;
-
-	// Currently a no-op.
-	mFinished = true;
 }
 
 void LLMeshUploadThread::requestWholeModelFee()
 {
 	dump_num++;
-
-	mCurlRequest = new AICurlInterface::Request;
 
 	generateHulls();
 
@@ -1651,23 +1636,9 @@ void LLMeshUploadThread::requestWholeModelFee()
 	dump_llsd_to_file(model_data,make_dump_name("whole_model_fee_request_",dump_num));
 
 	mPendingUploads++;
-	LLCurlRequest::headers_t headers;
 	// This might throw AICurlNoEasyHandle.
-	mCurlRequest->post(mWholeModelFeeCapability, headers, model_data,
-					   new LLWholeModelFeeResponder(this,model_data, mFeeObserverHandle), mMeshUploadTimeOut);
-
-	do
-	{
-		mCurlRequest->process();
-		//sleep for 10ms to prevent eating a whole core
-		apr_sleep(10000);
-	} while (mCurlRequest->getQueued() > 0);
-
-	delete mCurlRequest;
-	mCurlRequest = NULL;
-
-	// Currently a no-op.
-	mFinished = true;
+	LLHTTPClient::post(mWholeModelFeeCapability, model_data,
+					   new LLWholeModelFeeResponder(this, model_data, mFeeObserverHandle));
 }
 #endif //MESH_IMPORT
 
@@ -1799,7 +1770,7 @@ void LLMeshLODResponder::completedRaw(U32 status, const std::string& reason,
 
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
-	if (status < 200 || status > 400)
+	if (status < 200 || status >= 400)
 	{
 		llwarns << status << ": " << reason << llendl;
 	}
@@ -1853,7 +1824,7 @@ void LLMeshSkinInfoResponder::completedRaw(U32 status, const std::string& reason
 {
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
-	if (status < 200 || status > 400)
+	if (status < 200 || status >= 400)
 	{
 		llwarns << status << ": " << reason << llendl;
 	}
@@ -1907,7 +1878,7 @@ void LLMeshDecompositionResponder::completedRaw(U32 status, const std::string& r
 {
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
-	if (status < 200 || status > 400)
+	if (status < 200 || status >= 400)
 	{
 		llwarns << status << ": " << reason << llendl;
 	}
@@ -1961,7 +1932,7 @@ void LLMeshPhysicsShapeResponder::completedRaw(U32 status, const std::string& re
 {
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
-	if (status < 200 || status > 400)
+	if (status < 200 || status >= 400)
 	{
 		llwarns << status << ": " << reason << llendl;
 	}
@@ -2013,7 +1984,7 @@ void LLMeshHeaderResponder::completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer)
 {
-	if (status < 200 || status > 400)
+	if (status < 200 || status >= 400)
 	{
 		//llwarns
 		//	<< "Header responder failed with status: "

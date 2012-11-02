@@ -36,6 +36,10 @@
 #include "llhttpclient.h"
 #include "llinventory.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy assetUploadResponder_timeout;
+extern AIHTTPTimeoutPolicy newAgentInventoryVariablePriceResponder_timeout;
+
 void on_new_single_inventory_upload_complete(LLAssetType::EType asset_type,
 											 LLInventoryType::EType inventory_type,
 											 const std::string inventory_type_string,
@@ -47,7 +51,7 @@ void on_new_single_inventory_upload_complete(LLAssetType::EType asset_type,
 
 // Abstract class for supporting asset upload
 // via capabilities
-class LLAssetUploadResponder : public LLHTTPClient::Responder
+class LLAssetUploadResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLAssetUploadResponder(const LLSD& post_data,
@@ -59,6 +63,7 @@ public:
 	~LLAssetUploadResponder();
     virtual void error(U32 statusNum, const std::string& reason);
 	virtual void result(const LLSD& content);
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return assetUploadResponder_timeout; }
 	virtual void uploadUpload(const LLSD& content);
 	virtual void uploadComplete(const LLSD& content);
 	virtual void uploadFailure(const LLSD& content);
@@ -91,7 +96,7 @@ public:
 // are needed (such as different confirmation messages, etc.)
 // the functions onApplicationLevelError and showConfirmationDialog.
 class LLNewAgentInventoryVariablePriceResponder :
-	public LLHTTPClient::Responder
+	public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLNewAgentInventoryVariablePriceResponder(
@@ -110,6 +115,7 @@ public:
 		const std::string& reason,
 		const LLSD& content);
 	void result(const LLSD& content);
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return newAgentInventoryVariablePriceResponder_timeout; }
 
 	virtual void onApplicationLevelError(
 		const LLSD& error);

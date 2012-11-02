@@ -179,7 +179,6 @@ LLMemType::DeclareMemType LLMemType::MTYPE_IO_BUFFER("IoBuffer");
 LLMemType::DeclareMemType LLMemType::MTYPE_IO_HTTP_SERVER("IoHttpServer");
 LLMemType::DeclareMemType LLMemType::MTYPE_IO_SD_SERVER("IoSDServer");
 LLMemType::DeclareMemType LLMemType::MTYPE_IO_SD_CLIENT("IoSDClient");
-LLMemType::DeclareMemType LLMemType::MTYPE_IO_URL_REQUEST("IOUrlRequest");
 
 LLMemType::DeclareMemType LLMemType::MTYPE_DIRECTX_INIT("DirectXInit");
 

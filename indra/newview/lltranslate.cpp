@@ -47,7 +47,7 @@ const char* LLTranslate::m_GoogleURL = "http://ajax.googleapis.com/ajax/services
 const char* LLTranslate::m_GoogleLangSpec = "&langpair=";
 float LLTranslate::m_GoogleTimeout = 10;
 
-LLSD LLTranslate::m_Header;
+AIHTTPHeaders LLTranslate::m_Header;
 // These constants are for the GET header.
 const char* LLTranslate::m_AcceptHeader = "Accept";
 const char* LLTranslate::m_AcceptType = "text/plain";
@@ -68,10 +68,10 @@ void LLTranslate::translateMessage(LLHTTPClient::ResponderPtr &result, const std
     std::string user_agent = gCurrentVersion;
 //</edit>
 
-	if (!m_Header.size())
+	if (m_Header.empty())
 	{
-		m_Header.insert(m_AcceptHeader, LLSD(m_AcceptType));
-		m_Header.insert(m_AgentHeader, LLSD(user_agent));
+		m_Header.addHeader(m_AcceptHeader, m_AcceptType);
+		m_Header.addHeader(m_AgentHeader, user_agent);
 	}
 
 	LLHTTPClient::get(url, result, m_Header, m_GoogleTimeout);

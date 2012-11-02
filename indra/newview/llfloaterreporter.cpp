@@ -96,6 +96,9 @@
 
 const U32 INCLUDE_SCREENSHOT  = 0x01 << 0;
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy userReportResponder_timeout;
+
 //-----------------------------------------------------------------------------
 // Globals
 //-----------------------------------------------------------------------------
@@ -855,10 +858,10 @@ public:
 	}
 };
 
-class LLUserReportResponder : public LLHTTPClient::Responder
+class LLUserReportResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
-	LLUserReportResponder(): LLHTTPClient::Responder()  {}
+	LLUserReportResponder() { }
 
 	void error(U32 status, const std::string& reason)
 	{
@@ -870,6 +873,7 @@ public:
 		// we don't care about what the server returns
 		LLUploadDialog::modalUploadFinished();
 	}
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return userReportResponder_timeout; }
 };
 
 void LLFloaterReporter::sendReportViaCaps(std::string url, std::string sshot_url, const LLSD& report)
@@ -884,7 +888,7 @@ void LLFloaterReporter::sendReportViaCaps(std::string url, std::string sshot_url
 	else
 	{
 		// screenshot not wanted or we don't have screenshot cap
-		LLHTTPClient::post(url, report, new LLUserReportResponder());			
+		LLHTTPClient::post(url, report, new LLUserReportResponder);			
 	}
 }
 

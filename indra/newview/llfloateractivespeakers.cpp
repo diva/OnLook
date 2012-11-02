@@ -57,6 +57,11 @@
 
 #include "llavatarname.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy muteVoiceResponder_timeout;
+extern AIHTTPTimeoutPolicy muteTextResponder_timeout;
+extern AIHTTPTimeoutPolicy moderationModeResponder_timeout;
+
 using namespace LLOldEvents;
 
 const F32 SPEAKER_TIMEOUT = 10.f; // seconds of not being on voice channel before removed from list of active speakers
@@ -844,7 +849,7 @@ void LLPanelActiveSpeakers::onModeratorMuteVoice(LLUICtrl* ctrl, void* user_data
 	// ctrl value represents ability to type, so invert
 	data["params"]["mute_info"]["voice"] = !ctrl->getValue();
 
-	class MuteVoiceResponder : public LLHTTPClient::Responder
+	class MuteVoiceResponder : public LLHTTPClient::ResponderIgnoreBody
 	{
 	public:
 		MuteVoiceResponder(const LLUUID& session_id)
@@ -882,6 +887,8 @@ void LLPanelActiveSpeakers::onModeratorMuteVoice(LLUICtrl* ctrl, void* user_data
 			}
 		}
 
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return muteVoiceResponder_timeout; }
+
 	private:
 		LLUUID mSessionID;
 	};
@@ -909,7 +916,7 @@ void LLPanelActiveSpeakers::onModeratorMuteText(LLUICtrl* ctrl, void* user_data)
 	// ctrl value represents ability to type, so invert
 	data["params"]["mute_info"]["text"] = !ctrl->getValue();
 
-	class MuteTextResponder : public LLHTTPClient::Responder
+	class MuteTextResponder : public LLHTTPClient::ResponderIgnoreBody
 	{
 	public:
 		MuteTextResponder(const LLUUID& session_id)
@@ -947,6 +954,8 @@ void LLPanelActiveSpeakers::onModeratorMuteText(LLUICtrl* ctrl, void* user_data)
 			}
 		}
 
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return muteTextResponder_timeout; }
+
 	private:
 		LLUUID mSessionID;
 	};
@@ -981,12 +990,13 @@ void LLPanelActiveSpeakers::onChangeModerationMode(LLUICtrl* ctrl, void* user_da
 		data["params"]["update_info"]["moderated_mode"]["voice"] = true;
 	}
 
-	struct ModerationModeResponder : public LLHTTPClient::Responder
+	struct ModerationModeResponder : public LLHTTPClient::ResponderIgnoreBody
 	{
 		virtual void error(U32 status, const std::string& reason)
 		{
 			llwarns << status << ": " << reason << llendl;
 		}
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return moderationModeResponder_timeout; }
 	};
 
 	LLHTTPClient::post(url, data, new ModerationModeResponder());

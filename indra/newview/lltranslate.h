@@ -37,10 +37,13 @@
 #include "llbufferstream.h"
 #include "json/reader.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy translationReceiver_timeout;
+
 class LLTranslate
 {
 public :
-	class TranslationReceiver: public LLHTTPClient::Responder
+	class TranslationReceiver: public LLHTTPClient::ResponderWithResult
 	{
 	protected:
 		TranslationReceiver(const std::string &fromLang, const std::string &toLang)
@@ -62,6 +65,8 @@ public :
 			LL_WARNS("Translate") << "URL Request error: " << reason << LL_ENDL;
 			handleFailure();
 		}
+
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return translationReceiver_timeout; }
 
 		virtual void completedRaw(
 			U32 status,
@@ -109,7 +114,7 @@ private:
 	static void stringReplaceAll(std::string& context, const std::string& from, const std::string& to);
 	static BOOL parseGoogleTranslate(const std::string result, std::string &translation, std::string &detectedLanguage);
 
-	static LLSD m_Header;
+	static AIHTTPHeaders m_Header;
 	static const char* m_GoogleURL;
 	static const char* m_GoogleLangSpec;
 	static const char* m_AcceptHeader;

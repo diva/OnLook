@@ -60,6 +60,9 @@
 #include "process.h"
 #endif
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy createInventoryCategoryResponder_timeout;
+
 // Increment this if the inventory contents change in a non-backwards-compatible way.
 // For viewers with link items support, former caches are incorrect.
 const S32 LLInventoryModel::sCurrentInvCacheVersion = 2;
@@ -467,7 +470,7 @@ LLUUID LLInventoryModel::findCategoryByName(std::string name)
 	return LLUUID::null;
 }
 
-class LLCreateInventoryCategoryResponder : public LLHTTPClient::Responder
+class LLCreateInventoryCategoryResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLCreateInventoryCategoryResponder(LLInventoryModel* model,
@@ -510,6 +513,8 @@ public:
 		}
 
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return createInventoryCategoryResponder_timeout; }
 
 private:
 	void (*mCallback)(const LLSD&, void*);
@@ -562,14 +567,15 @@ LLUUID LLInventoryModel::createNewCategory(const LLUUID& parent_id,
 		{
 			//Let's use the new capability.
 
-			LLSD request, body;
+//			LLSD request;
+			LLSD body;
 			body["folder_id"] = id;
 			body["parent_id"] = parent_id;
 			body["type"] = (LLSD::Integer) preferred_type;
 			body["name"] = name;
 
-			request["message"] = "CreateInventoryCategory";
-			request["payload"] = body;
+//			request["message"] = "CreateInventoryCategory";
+//			request["payload"] = body;
 
 //			viewer_region->getCapAPI().post(request);
 			LLHTTPClient::post(

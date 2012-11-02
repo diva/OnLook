@@ -18,7 +18,6 @@ include(LLMath)
 include(LLRender)
 include(LLVFS)
 include(LLWindow)
-include(LLXML)
 include(UI)
 
 include_directories(
@@ -28,7 +27,6 @@ include_directories(
     ${LLRENDER_INCLUDE_DIRS}
     ${LLVFS_INCLUDE_DIRS}
     ${LLWINDOW_INCLUDE_DIRS}
-    ${LLXML_INCLUDE_DIRS}
     )
 
 set(llwindow_SOURCE_FILES
