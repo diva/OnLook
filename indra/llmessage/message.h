@@ -233,6 +233,8 @@ class LLMessageSystem : public LLMessageSenderInterface
 private:
 	message_template_name_map_t		mMessageTemplates;
 	message_template_number_map_t		mMessageNumbers;
+	friend class LLFloaterMessageLogItem;
+	friend class LLFloaterMessageLog;
 
 public:
 	S32					mSystemVersionMajor;
@@ -341,7 +343,7 @@ public:
 	bool addCircuitCode(U32 code, const LLUUID& session_id);
 
 	BOOL	poll(F32 seconds); // Number of seconds that we want to block waiting for data, returns if data was received
-	BOOL	checkMessages( S64 frame_count = 0 );
+	BOOL	checkMessages(S64 frame_count = 0);
 	void	processAcks();
 
 	BOOL	isMessageFast(const char *msg);

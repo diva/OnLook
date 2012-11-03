@@ -249,6 +249,7 @@
 #include "hgfloatertexteditor.h"
 #include "llfloatervfs.h"
 #include "llfloatervfsexplorer.h"
+#include "llfloatermessagelog.h"
 #include "shfloatermediaticker.h"
 #include "llpacketring.h"
 // </edit>
@@ -489,7 +490,7 @@ void handle_force_ground_sit(void*);
 void handle_phantom_avatar(void*);
 void handle_hide_typing_notification(void*);
 void handle_close_all_notifications(void*);
-//void handle_open_message_log(void*);
+void handle_open_message_log(void*);
 void handle_edit_ao(void*);
 void handle_local_assets(void*);
 void handle_vfs_explorer(void*);
@@ -818,7 +819,6 @@ void init_menus()
 										(void*)"ReSit"));
 	menu->addSeparator();
 	menu->addChild(new LLMenuItemCallGL(	"Object Area Search", &handle_area_search, NULL));
-	//menu->addChild(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));	
 
 	menu->addChild(new LLMenuItemCallGL(	"Sound Explorer",
 											&handle_sounds_explorer, NULL));
@@ -1088,6 +1088,8 @@ void init_client_menu(LLMenuGL* menu)
 		LLMenuGL* sub = NULL;
 		sub = new LLMenuGL("Network");
 		sub->setCanTearOff(TRUE);
+
+		sub->addChild(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));
 
 		sub->addChild(new LLMenuItemCallGL("Enable Message Log",  
 			&handle_viewer_enable_message_log,  NULL));
@@ -3657,10 +3659,10 @@ void process_grant_godlike_powers(LLMessageSystem* msg, void**)
 
 // <edit>
 
-/*void handle_open_message_log(void*)
+void handle_open_message_log(void*)
 {
 	LLFloaterMessageLog::show();
-}*/
+}
 
 void handle_edit_ao(void*)
 {

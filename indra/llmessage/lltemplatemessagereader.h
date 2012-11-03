@@ -99,7 +99,7 @@ public:
 	virtual void copyToBuilder(LLMessageBuilder&) const;
 
 	BOOL validateMessage(const U8* buffer, S32 buffer_size, 
-						 const LLHost& sender, bool trusted = false);
+						 const LLHost& sender, bool trusted = false, bool custom = false);
 	BOOL readMessage(const U8* buffer, const LLHost& sender);
 
 	bool isTrusted() const;
@@ -112,16 +112,18 @@ private:
 				 S32 size = 0, S32 blocknum = 0, S32 max_size = S32_MAX);
 
 	BOOL decodeTemplate(const U8* buffer, S32 buffer_size,  // inputs
-						LLMessageTemplate** msg_template ); // outputs
+						LLMessageTemplate** msg_template,   // outputs
+						bool custom = false);
 
 	void logRanOffEndOfPacket( const LLHost& host, const S32 where, const S32 wanted );
 
-	BOOL decodeData(const U8* buffer, const LLHost& sender );
+	BOOL decodeData(const U8* buffer, const LLHost& sender, bool custom);
 
 	S32	mReceiveSize;
 	LLMessageTemplate* mCurrentRMessageTemplate;
 	LLMsgData* mCurrentRMessageData;
 	message_template_number_map_t& mMessageNumbers;
+	friend class LLFloaterMessageLogItem;
 };
 
 #endif // LL_LLTEMPLATEMESSAGEREADER_H

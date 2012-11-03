@@ -49,6 +49,7 @@ set(llmessage_SOURCE_FILES
     llmail.cpp
     llmessagebuilder.cpp
     llmessageconfig.cpp
+    llmessagelog.cpp
     llmessagereader.cpp
     llmessagetemplate.cpp
     llmessagetemplateparser.cpp
@@ -62,14 +63,11 @@ set(llmessage_SOURCE_FILES
     llpartdata.cpp
     llproxy.cpp
     llpumpio.cpp
-    llregionpresenceverifier.cpp
     llsdappservices.cpp
     llsdhttpserver.cpp
     llsdmessage.cpp
     llsdmessagebuilder.cpp
     llsdmessagereader.cpp
-    llservicebuilder.cpp
-    llservice.cpp
     llstoredmessage.cpp
     lltemplatemessagebuilder.cpp
     lltemplatemessagedispatcher.cpp
@@ -94,7 +92,6 @@ set(llmessage_SOURCE_FILES
     message_prehash.cpp
     message_string_table.cpp
     net.cpp
-    partsyspacket.cpp
     patch_code.cpp
     patch_dct.cpp
     patch_idct.cpp
@@ -145,6 +142,7 @@ set(llmessage_HEADER_FILES
     llmail.h
     llmessagebuilder.h
     llmessageconfig.h
+    llmessagelog.h
     llmessagereader.h
     llmessagetemplate.h
     llmessagetemplateparser.h
@@ -162,14 +160,11 @@ set(llmessage_HEADER_FILES
     llqueryflags.h
     llregionflags.h
     llregionhandle.h
-    llregionpresenceverifier.h
     llsdappservices.h
     llsdhttpserver.h
     llsdmessage.h
     llsdmessagebuilder.h
     llsdmessagereader.h
-    llservice.h
-    llservicebuilder.h
     llstoredmessage.h
     lltaskname.h
     llteleportflags.h
@@ -197,7 +192,6 @@ set(llmessage_HEADER_FILES
     message.h
     message_prehash.h
     net.h
-    partsyspacket.h
     patch_code.h
     patch_dct.h
     sound_ids.h
@@ -232,7 +226,6 @@ if (LL_TESTS)
     llnamevalue.cpp
     lltrustedmessageservice.cpp
     lltemplatemessagedispatcher.cpp
-      llregionpresenceverifier.cpp
     )
   LL_ADD_PROJECT_UNIT_TESTS(llmessage "${llmessage_TEST_SOURCE_FILES}")
 

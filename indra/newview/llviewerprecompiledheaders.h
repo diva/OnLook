@@ -175,7 +175,6 @@
 #include "message_prehash.h"
 #include "net.h"
 //#include "network.h"
-#include "partsyspacket.h"
 #include "patch_code.h"
 #include "patch_dct.h"
 #include "sound_ids.h"

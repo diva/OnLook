@@ -552,11 +552,11 @@ BOOL LLMessageSystem::checkMessages( S64 frame_count )
 		S32 true_rcv_size = 0;
 
 		U8* buffer = mTrueReceiveBuffer;
-		
+
 		mTrueReceiveSize = mPacketRing->receivePacket(mSocket, (char *)mTrueReceiveBuffer);
 		// If you want to dump all received packets into SecondLife.log, uncomment this
 		//dumpPacketToLog();
-		
+
 		receive_size = mTrueReceiveSize;
 		mLastSender = mPacketRing->getLastSender();
 		mLastReceivingIF = mPacketRing->getLastReceivingInterface();
