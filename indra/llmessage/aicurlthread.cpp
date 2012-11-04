@@ -1411,7 +1411,7 @@ void AICurlThread::run(void)
 		// that libcurl removed file descriptors which we subsequently
 		// didn't handle.
 	  }
-	  multi_handle_w->check_run_count();
+	  multi_handle_w->check_msg_queue();
 	}
   }
   AICurlMultiHandle::destroyInstance();
@@ -1420,7 +1420,7 @@ void AICurlThread::run(void)
 //-----------------------------------------------------------------------------
 // MultiHandle
 
-MultiHandle::MultiHandle(void) : mRunningHandles(0), mTimeout(-1), mReadPollSet(NULL), mWritePollSet(NULL)
+MultiHandle::MultiHandle(void) : mTimeout(-1), mReadPollSet(NULL), mWritePollSet(NULL)
 {
   mReadPollSet = new PollSet;
   mWritePollSet = new PollSet;
@@ -1504,12 +1504,14 @@ int MultiHandle::timer_callback(CURLM* multi, long timeout_ms, void* userp)
 
 CURLMcode MultiHandle::socket_action(curl_socket_t sockfd, int ev_bitmask)
 {
+  int running_handles;
   CURLMcode res;
   do
   {
-    res = check_multi_code(curl_multi_socket_action(mMultiHandle, sockfd, ev_bitmask, &mRunningHandles));
+    res = check_multi_code(curl_multi_socket_action(mMultiHandle, sockfd, ev_bitmask, &running_handles));
   }
   while(res == CURLM_CALL_MULTI_PERFORM);
+  llassert(mAddedEasyRequests.size() >= (size_t)running_handles);
   return res;
 }
 
@@ -1614,42 +1616,38 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
   return res;
 }
 
-void MultiHandle::check_run_count(void)
+void MultiHandle::check_msg_queue(void)
 {
-  llassert(mAddedEasyRequests.size() >= (size_t)mRunningHandles);
-  if (mAddedEasyRequests.size() - (size_t)mRunningHandles > 0)			// There is no need to do this when all easy handles are accounted for.
+  CURLMsg const* msg;
+  int msgs_left;
+  while ((msg = info_read(&msgs_left)))
   {
-	CURLMsg const* msg;
-	int msgs_left;
-	while ((msg = info_read(&msgs_left)))
+	if (msg->msg == CURLMSG_DONE)
 	{
-	  if (msg->msg == CURLMSG_DONE)
+	  CURL* easy = msg->easy_handle;
+	  ThreadSafeBufferedCurlEasyRequest* ptr;
+	  CURLcode rese = curl_easy_getinfo(easy, CURLINFO_PRIVATE, &ptr);
+	  llassert_always(rese == CURLE_OK);
+	  AICurlEasyRequest easy_request(ptr);
+	  llassert(*AICurlEasyRequest_wat(*easy_request) == easy);
+	  // Store result and trigger events for the easy request.
+	  finish_easy_request(easy_request, msg->data.result);
+	  // This invalidates msg, but not easy_request.
+	  CURLMcode res = remove_easy_request(easy_request);
+	  // This should hold, I think, because the handles are obviously ok and
+	  // the only error we could get is when remove_easy_request() was already
+	  // called before (by this thread); but if that was the case then the easy
+	  // handle should not have been be returned by info_read()...
+	  llassert(res == CURLM_OK);
+	  // Nevertheless, if it was already removed then just ignore it.
+	  if (res == CURLM_OK)
 	  {
-		CURL* easy = msg->easy_handle;
-		ThreadSafeBufferedCurlEasyRequest* ptr;
-		CURLcode rese = curl_easy_getinfo(easy, CURLINFO_PRIVATE, &ptr);
-		llassert_always(rese == CURLE_OK);
-		AICurlEasyRequest easy_request(ptr);
-		llassert(*AICurlEasyRequest_wat(*easy_request) == easy);
-		// Store result and trigger events for the easy request.
-		finish_easy_request(easy_request, msg->data.result);
-		// This invalidates msg, but not easy_request.
-		CURLMcode res = remove_easy_request(easy_request);
-		// This should hold, I think, because the handles are obviously ok and
-		// the only error we could get is when remove_easy_request() was already
-		// called before (by this thread); but if that was the case then the easy
-		// handle should not have been be returned by info_read()...
-		llassert(res == CURLM_OK);
-		// Nevertheless, if it was already removed then just ignore it.
-		if (res == CURLM_OK)
-		{
-		}
-		else if (res == -2)
-		{
-		  llwarns << "Curl easy handle returned by curl_multi_info_read() that is not (anymore) in MultiHandle::mAddedEasyRequests!?!" << llendl;
-		}
-		// Destruction of easy_request at this point, causes the CurlEasyRequest to be deleted.
 	  }
+	  else if (res == -2)
+	  {
+		llwarns << "Curl easy handle returned by curl_multi_info_read() that is not (anymore) in MultiHandle::mAddedEasyRequests!?!" << llendl;
+	  }
+	  // Destruction of easy_request at this point, causes the CurlEasyRequest to be deleted.
 	}
   }
 }

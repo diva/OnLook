@@ -273,7 +273,7 @@ class AICurlEasyRequest {
 	// it's not thread-safe in itself.
 	AICurlEasyRequest(AICurlPrivate::BufferedCurlEasyRequestPtr const& ptr) : mBufferedCurlEasyRequest(ptr) { }
 
-	// This one is obviously dangerous. It's for use only in MultiHandle::check_run_count.
+	// This one is obviously dangerous. It's for use only in MultiHandle::check_msg_queue.
 	// See also the long comment in BufferedCurlEasyRequest::finalizeRequest with regard to CURLOPT_PRIVATE.
 	explicit AICurlEasyRequest(AICurlPrivate::ThreadSafeBufferedCurlEasyRequest* ptr) : mBufferedCurlEasyRequest(ptr) { }
 };

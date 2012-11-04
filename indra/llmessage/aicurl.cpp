@@ -1036,7 +1036,7 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
 {
   DoutCurlEntering("CurlEasyRequest::finalizeRequest(\"" << url << "\", " << policy.name() << ", " << (void*)state_machine << ")");
   llassert(!mTimeoutPolicy);		// May only call finalizeRequest once!
-  mResult = CURLE_FAILED_INIT;		// General error code; the final result code is stored here by MultiHandle::check_run_count when msg is CURLMSG_DONE.
+  mResult = CURLE_FAILED_INIT;		// General error code; the final result code is stored here by MultiHandle::check_msg_queue when msg is CURLMSG_DONE.
 #ifdef SHOW_ASSERT
   // Do a sanity check on the headers.
   int content_type_count = 0;
@@ -1063,13 +1063,13 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
   // will be used if the object is deleted [In fact, since this is finalizeRequest() and not addRequest(),
   // incrementing the reference counter would be wrong: if addRequest() is never called then the object is
   // destroyed shortly after and this pointer is never even used.]
-  // This pointer is used in MultiHandle::check_run_count, which means that addRequest() was called and
+  // This pointer is used in MultiHandle::check_msg_queue, which means that addRequest() was called and
   // the reference counter was increased and the object is being kept alive, see the comments above
   // command_queue in aicurlthread.cpp. In fact, this object survived until MultiHandle::add_easy_request
   // was called and is kept alive by MultiHandle::mAddedEasyRequests. The only way to get deleted after
   // that is when MultiHandle::remove_easy_request is called, which first removes the easy handle from
   // the multi handle. So that it's (hopefully) no longer possible that info_read() in
-  // MultiHandle::check_run_count returns this easy handle, after the object is destroyed by deleting
+  // MultiHandle::check_msg_queue returns this easy handle, after the object is destroyed by deleting
   // it from MultiHandle::mAddedEasyRequests.
   setopt(CURLOPT_PRIVATE, get_lockobj());
 }

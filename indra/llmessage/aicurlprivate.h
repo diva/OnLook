@@ -357,7 +357,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// Called by in case of an error.
 	void print_diagnostics(CURLcode code);
 
-	// Called by MultiHandle::check_run_count() to fill info with the transfer info.
+	// Called by MultiHandle::check_msg_queue() to fill info with the transfer info.
 	void getTransferInfo(AITransferInfo* info);
 
 	// If result != CURLE_FAILED_INIT then also info was filled.
