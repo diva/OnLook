@@ -32,7 +32,6 @@
 #include "lluuid.h"
 #include "llviewertexture.h"
 #include "llvolume.h"
-#include "llcurlrequest.h"
 
 #if MESH_IMPORT
 #define LLCONVEXDECOMPINTER_STATIC 1
@@ -246,7 +245,6 @@ public:
 	static S32 sActiveLODRequests;
 	static U32 sMaxConcurrentRequests;
 
-	AICurlInterface::Request* mCurlRequest;
 	LLMutex*		mMutex;
 	LLMutex*		mHeaderMutex;
 	LLCondition*	mSignal;
@@ -413,10 +411,8 @@ public:
 	instance_map mInstance;
 
 	LLMutex*					mMutex;
-	LLCurlRequest* mCurlRequest;
 	S32				mPendingUploads;
 	LLVector3		mOrigin;
-	bool			mFinished;	
 	bool			mUploadTextures;
 	bool			mUploadSkin;
 	bool			mUploadJoints;
@@ -431,7 +427,6 @@ public:
 					   LLHandle<LLWholeModelFeeObserver> fee_observer= (LLHandle<LLWholeModelFeeObserver>()), LLHandle<LLWholeModelUploadObserver> upload_observer = (LLHandle<LLWholeModelUploadObserver>()));
 	~LLMeshUploadThread();
 
-	bool finished() { return mFinished; }
 	virtual void run();
 	void preStart();
 	void discard() ;

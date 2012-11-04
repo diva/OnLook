@@ -95,6 +95,7 @@
 #include "llprimitive.h"
 #include "llnotifications.h"
 #include "llnotificationsutil.h"
+#include "llcurl.h"
 #include <boost/bind.hpp>
 
 #if LL_WINDOWS
@@ -118,6 +119,8 @@
 // <edit>
 #include "lldelayeduidelete.h"
 #include "llbuildnewviewsscheduler.h"
+#include "aicurleasyrequeststatemachine.h"
+#include "aihttptimeoutpolicy.h"
 // </edit>
 // The files below handle dependencies from cleanup.
 #include "llcalc.h"
@@ -592,8 +595,10 @@ bool LLAppViewer::init()
 	//
 	LLFastTimer::reset();
 	
+	// <edit>
 	// We can call this early.
 	LLFrameTimer::global_initialization();
+	// </edit>
 
 	// initialize SSE options
 	LLVector4a::initClass();
@@ -610,13 +615,13 @@ bool LLAppViewer::init()
 
 	initLogging();
 
+	// <edit>
 	// Curl must be initialized before any thread is running.
 	AICurlInterface::initCurl(&AIStateMachine::flush);
 
 	// Logging is initialized. Now it's safe to start the error thread.
 	startErrorThread();
 
-	// <edit>
 	gDeleteScheduler = new LLDeleteScheduler();
 	gBuildNewViewsScheduler = new LLBuildNewViewsScheduler();
 	// </edit>
@@ -637,6 +642,20 @@ bool LLAppViewer::init()
 	LLPrivateMemoryPoolManager::initClass((BOOL)gSavedSettings.getBOOL("MemoryPrivatePoolEnabled"), (U32)gSavedSettings.getU32("MemoryPrivatePoolSize")) ;
 
     mAlloc.setProfilingEnabled(gSavedSettings.getBOOL("MemProfiling"));
+
+	AIStateMachine::setMaxCount(gSavedSettings.getU32("StateMachineMaxTime"));
+
+	AIHTTPTimeoutPolicy::setDefaultCurlTimeout(
+		AIHTTPTimeoutPolicy(
+			"CurlTimeout* Debug Settings",
+			gSavedSettings.getU32("CurlTimeoutDNSLookup"),
+			gSavedSettings.getU32("CurlTimeoutConnect"),
+			gSavedSettings.getU32("CurlTimeoutReplyDelay"),
+			gSavedSettings.getU32("CurlTimeoutLowSpeedTime"),
+			gSavedSettings.getU32("CurlTimeoutLowSpeedLimit"),
+			gSavedSettings.getU32("CurlTimeoutMaxTransaction"),
+			gSavedSettings.getU32("CurlTimeoutMaxTotalDelay")
+		));
 
     initThreads();
 	LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ;
@@ -1026,6 +1045,7 @@ static LLFastTimer::DeclareTimer FTM_PUMP_SERVICE("Service");
 static LLFastTimer::DeclareTimer FTM_SERVICE_CALLBACK("Callback");
 static LLFastTimer::DeclareTimer FTM_AGENT_AUTOPILOT("Autopilot");
 static LLFastTimer::DeclareTimer FTM_AGENT_UPDATE("Update");
+static LLFastTimer::DeclareTimer FTM_STATEMACHINE("State Machine");
 
 bool LLAppViewer::mainLoop()
 {
@@ -1039,7 +1059,6 @@ bool LLAppViewer::mainLoop()
 
 	// Create IO Pump to use for HTTP Requests.
 	gServicePump = new LLPumpIO;
-	LLHTTPClient::setPump(*gServicePump);
 	LLCurl::setCAFile(gDirUtilp->getCAFile());
 	
 	// Note: this is where gLocalSpeakerMgr and gActiveSpeakerMgr used to be instantiated.
@@ -1817,7 +1836,7 @@ bool LLAppViewer::initThreads()
 		LLWatchdog::getInstance()->init(watchdog_killer_callback);
 	}
 
-	AICurlInterface::startCurlThread();
+	AICurlInterface::startCurlThread(gSavedSettings.getU32("CurlConcurrentConnections"), gSavedSettings.getBOOL("NoVerifySSLCert"));
 
 	LLImage::initClass();
 	
@@ -3752,6 +3771,16 @@ void LLAppViewer::idle()
 		{
 			LLAppViewer::instance()->forceQuit();
 		}
+	}
+
+	//////////////////////////////////////
+	//
+	// Run state machines
+	//
+
+	{
+		LLFastTimer t(FTM_STATEMACHINE);
+		AIStateMachine::mainloop();
 	}
 
 	// Must wait until both have avatar object and mute list, so poll

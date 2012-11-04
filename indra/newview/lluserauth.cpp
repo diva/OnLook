@@ -42,8 +42,9 @@
 #include "llappviewer.h"
 #include "llviewerbuild.h"
 #include "llviewercontrol.h"
-#include "llxmlrpctransaction.h"
+#include "llxmlrpcresponder.h"
 #include "llsdutil.h"
+#include "llhttpclient.h"
 #include "stringize.h"
 
 // NOTE: MUST include these after otherincludes since queue gets redefined!?!!
@@ -73,7 +74,6 @@ static const char* PLATFORM_STRING = "Sol";
 
 
 LLUserAuth::LLUserAuth() :
-	mTransaction(NULL),
 	mLastTransferRateBPS(0),
 	mResult(LLSD())
 {
@@ -87,12 +87,10 @@ LLUserAuth::~LLUserAuth()
 
 void LLUserAuth::reset()
 {
-	delete mTransaction;
-	mTransaction = NULL;
+	mResponder = NULL;
 	mResponses.clear();
 	mResult.clear();
 }
-
 
 void LLUserAuth::authenticate(
 	const std::string& auth_uri,
@@ -168,13 +166,11 @@ void LLUserAuth::authenticate(
 	// put the parameters on the request
 	XMLRPC_RequestSetData(request, params);
 
-	mTransaction = new LLXMLRPCTransaction(auth_uri, request);
-	
-	XMLRPC_RequestFree(request, 1);
+	mResponder = new XMLRPCResponder;
+	LLHTTPClient::postXMLRPC(auth_uri, request, mResponder);
 
 	LL_INFOS2("AppInit", "Authentication") << "LLUserAuth::authenticate: uri=" << auth_uri << LL_ENDL;
 }
-
 
 
 // Legacy version of constructor
@@ -258,25 +254,25 @@ void LLUserAuth::authenticate(
 	// put the parameters on the request
 	XMLRPC_RequestSetData(request, params);
 
-	mTransaction = new LLXMLRPCTransaction(auth_uri, request);
+	// Post the XML RPC.
+	mResponder = new XMLRPCResponder;
+	LLHTTPClient::postXMLRPC(auth_uri, request, mResponder);
 	
-	XMLRPC_RequestFree(request, 1);
-
 	LL_INFOS2("AppInit", "Authentication") << "LLUserAuth::authenticate: uri=" << auth_uri << LL_ENDL;
 }
 
 
 LLUserAuth::UserAuthcode LLUserAuth::authResponse()
 {
-	if (!mTransaction)
+	if (!mResponder)
 	{
 		return mAuthResponse;
 	}
 	
-	bool done = mTransaction->is_finished();
+	bool done = mResponder->is_finished();
 
 	if (!done) {
-		if (LLXMLRPCTransaction::StatusDownloading == mTransaction->status(0))
+		if (mResponder->is_downloading())
 		{
 			mAuthResponse = E_DOWNLOADING;
 		}
@@ -284,14 +280,11 @@ LLUserAuth::UserAuthcode LLUserAuth::authResponse()
 		return mAuthResponse;
 	}
 	
-	
-	mLastTransferRateBPS = mTransaction->transferRate();
+	mLastTransferRateBPS = mResponder->transferRate();
+	mErrorMessage = mResponder->reason();
 
-	int result;
-	mTransaction->status(&result);
-	mErrorMessage = mTransaction->statusMessage();
-	
 	// if curl was ok, parse the download area.
+	CURLcode result = mResponder->result_code();
 	switch (result)
 	{
 	case CURLE_OK:
@@ -313,12 +306,12 @@ LLUserAuth::UserAuthcode LLUserAuth::authResponse()
 		mAuthResponse = E_UNHANDLED_ERROR;
 		break;
 	}
-	
+
 	LL_INFOS2("AppInit", "Authentication") << "Processed response: " << result << LL_ENDL;
 
-	delete mTransaction;
-	mTransaction = NULL;
-	
+	// We're done with this data.
+	mResponder = NULL;
+
 	return mAuthResponse;
 }
 
@@ -329,7 +322,7 @@ LLUserAuth::UserAuthcode LLUserAuth::parseResponse()
 	// mOptions. For now, we will only be looking at mResponses, which
 	// will all be string => string pairs.
 	UserAuthcode rv = E_UNHANDLED_ERROR;
-	XMLRPC_REQUEST response = mTransaction->response();
+	XMLRPC_REQUEST response = mResponder->response();
 	if(!response) return rv;
 
 	// clear out any old parsing

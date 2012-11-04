@@ -651,9 +651,10 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 			 LLAssetStorage::LLStoreAssetCallback callback,
 			 S32 expected_upload_cost,
 			 void *userdata)
-{	
+{
 	// Generate the temporary UUID.
 	std::string filename = gDirUtilp->getTempFilename();
+	bool created_temp_file = false;
 	LLTransactionID tid;
 	LLAssetID uuid;
 	
@@ -678,10 +679,25 @@ void upload_new_resource(const std::string& src_filename, std::string name,
  		upload_error(error_message, "NofileExtension", filename, args);
 		return;
 	}
+	else if (codec == IMG_CODEC_J2C)
+	{
+		asset_type = LLAssetType::AT_TEXTURE;
+		if (!LLViewerTextureList::verifyUploadFile(src_filename, codec))
+		{
+			error_message = llformat( "Problem with file %s:\n\n%s\n",
+					src_filename.c_str(), LLImage::getLastError().c_str());
+			args["FILE"] = src_filename;
+			args["ERROR"] = LLImage::getLastError();
+			upload_error(error_message, "ProblemWithFile", filename, args);
+			return;
+		}
+		filename = src_filename;
+	}
 	else if (codec != IMG_CODEC_INVALID)
 	{
 		// It's an image file, the upload procedure is the same for all
 		asset_type = LLAssetType::AT_TEXTURE;
+		created_temp_file = true;
 		if (!LLViewerTextureList::createUploadFile(src_filename, filename, codec))
 		{
 			error_message = llformat( "Problem with file %s:\n\n%s\n",
@@ -700,6 +716,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 		llinfos << "Attempting to encode wav as an ogg file" << llendl;
 
 		encode_result = encode_vorbis_file(src_filename, filename);
+		created_temp_file = true;
 		
 		if (LLVORBISENC_NOERR != encode_result)
 		{
@@ -815,6 +832,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 
                  // copy the file's data segment into another file for uploading	 	
                  LLFILE* out = LLFile::fopen(filename, "wb");		/* Flawfinder: ignore */	
+				 created_temp_file = true;
                  if (out)	 	
                  {	 	
                          while((readbytes = fread(buf, 1, 16384, in)))		/* Flawfinder: ignore */	 	
@@ -852,11 +870,6 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 	else if (exten == "anim" || exten == "animatn")
 	{
 		asset_type = LLAssetType::AT_ANIMATION;
-		filename = src_filename;
-	}
-	else if(exten == "j2k" || exten == "jp2" || exten == "j2c")
-	{
-		asset_type = LLAssetType::AT_TEXTURE;
 		filename = src_filename;
 	}
 	// </edit>
@@ -934,11 +947,10 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 		LLSD args;
 		args["ERROR_MESSAGE"] = error_message;
 		LLNotificationsUtil::add("ErrorMessage", args);
-		if(LLFile::remove(filename) == -1)
-		{
-			lldebugs << "unable to remove temp file" << llendl;
-		}
-		//AIFIXME? LLFilePicker::instance().reset();
+	}
+	if (created_temp_file && LLFile::remove(filename) == -1)
+	{
+		lldebugs << "unable to remove temp file" << llendl;
 	}
 }
 // <edit>

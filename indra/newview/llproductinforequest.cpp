@@ -39,7 +39,10 @@
 #include "lltrans.h"
 #include "llviewerregion.h"
 
-class LLProductInfoRequestResponder : public LLHTTPClient::Responder
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy productInfoRequestResponder_timeout;
+
+class LLProductInfoRequestResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	//If we get back a normal response, handle it here
@@ -54,6 +57,8 @@ public:
 		llwarns << "LLProductInfoRequest::error("
 		<< status << ": " << reason << ")" << llendl;
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return productInfoRequestResponder_timeout; }
 };
 
 LLProductInfoRequestManager::LLProductInfoRequestManager() : mSkuDescriptions()

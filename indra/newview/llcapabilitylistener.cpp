@@ -84,7 +84,7 @@ bool LLCapabilityListener::capListener(const LLSD& request)
     LLSD payload(request["payload"]);
     LLSD::String reply(request["reply"]);
     LLSD::String error(request["error"]);
-    LLSD::Real timeout(request["timeout"]);
+    LLSD::String timeoutpolicy(request["timeoutpolicy"]);
     // If the LLSD doesn't even have a "message" key, we doubt it was intended
     // for this listener.
     if (cap.empty())
@@ -95,24 +95,15 @@ bool LLCapabilityListener::capListener(const LLSD& request)
                                << LL_ENDL;
         return false;               // in case fatal-error function isn't
     }
-    // Establish default timeout. This test relies on LLSD::asReal() returning
-    // exactly 0.0 for an undef value.
-    if (! timeout)
-    {
-        timeout = HTTP_REQUEST_EXPIRY_SECS;
-    }
     // Look up the url for the requested capability name.
     std::string url = mProvider.getCapability(cap);
     if (! url.empty())
     {
+        LLSDMessage::EventResponder* responder =
+            new LLSDMessage::EventResponder(LLEventPumps::instance(), request, mProvider.getDescription(), cap, reply, error);
+        responder->setTimeoutPolicy(timeoutpolicy);
         // This capability is supported by the region to which we're talking.
-        LLHTTPClient::post(url, payload,
-                           new LLSDMessage::EventResponder(LLEventPumps::instance(),
-                                                           request,
-                                                           mProvider.getDescription(),
-                                                           cap, reply, error),
-                           LLSD(),  // headers
-                           timeout);
+        LLHTTPClient::post(url, payload, responder);
     }
     else
     {

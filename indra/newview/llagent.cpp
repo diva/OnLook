@@ -2171,7 +2171,7 @@ void LLAgent::setStartPosition( U32 location_id )
 
     // This awkward idiom warrants explanation.
     // For starters, LLSDMessage::ResponderAdapter is ONLY for testing the new
-    // LLSDMessage functionality with a pre-existing LLHTTPClient::Responder.
+    // LLSDMessage functionality with a pre-existing LLHTTPClient::ResponderWithResult.
     // In new code, define your reply/error methods on the same class as the
     // sending method, bind them to local LLEventPump objects and pass those
     // LLEventPump names in the request LLSD object.
@@ -2188,6 +2188,7 @@ void LLAgent::setStartPosition( U32 location_id )
     request["payload"] = body;
     request["reply"]   = adapter->getReplyName();
     request["error"]   = adapter->getErrorName();
+    request["timeoutpolicy"] = adapter->getTimeoutPolicyName();
 
     gAgent.getRegion()->getCapAPI().post(request);
 

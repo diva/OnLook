@@ -46,6 +46,9 @@
 #include "message.h"
 #include "lltrans.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy eventPollResponder_timeout;
+
 namespace
 {
 	// We will wait RETRY_SECONDS + (errorCount * RETRY_SECONDS_INC) before retrying after an error.
@@ -55,7 +58,7 @@ namespace
 	const F32 EVENT_POLL_ERROR_RETRY_SECONDS_INC = 5.f; // ~ half of a normal timeout.
 	const S32 MAX_EVENT_POLL_HTTP_ERRORS = 10; // ~5 minutes, by the above rules.
 
-	class LLEventPollResponder : public LLHTTPClient::Responder
+	class LLEventPollResponder : public LLHTTPClient::ResponderWithResult
 	{
 	public:
 		
@@ -70,13 +73,10 @@ namespace
 
 		
 		void handleMessage(const LLSD& content);
-		virtual	void error(U32 status, const std::string& reason);
+		virtual void error(U32 status, const std::string& reason);
 		virtual	void result(const LLSD&	content);
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return eventPollResponder_timeout; }
 
-		virtual void completedRaw(U32 status,
-									const std::string& reason,
-									const LLChannelDescriptors& channels,
-									const LLIOPipe::buffer_ptr_t& buffer);
 	private:
 
 		bool	mDone;
@@ -154,24 +154,6 @@ namespace
 		stop();
 		lldebugs <<	"LLEventPollResponder::~Impl <" <<	mCount << "> "
 				 <<	mPollURL <<	llendl;
-	}
-
-	// virtual 
-	void LLEventPollResponder::completedRaw(U32 status,
-									const std::string& reason,
-									const LLChannelDescriptors& channels,
-									const LLIOPipe::buffer_ptr_t& buffer)
-	{
-		if (status == HTTP_BAD_GATEWAY)
-		{
-			// These errors are not parsable as LLSD, 
-			// which LLHTTPClient::Responder::completedRaw will try to do.
-			completed(status, reason, LLSD());
-		}
-		else
-		{
-			LLHTTPClient::Responder::completedRaw(status,reason,channels,buffer);
-		}
 	}
 
 	void LLEventPollResponder::makeRequest()
@@ -291,7 +273,7 @@ LLEventPoll::LLEventPoll(const std::string&	poll_url, const LLHost& sender)
 
 LLEventPoll::~LLEventPoll()
 {
-	LLHTTPClient::Responder* responderp = mImpl.get();
+	LLHTTPClient::ResponderBase* responderp = mImpl.get();
 	LLEventPollResponder* event_poll_responder = dynamic_cast<LLEventPollResponder*>(responderp);
 	if (event_poll_responder) event_poll_responder->stop();
 }

@@ -52,6 +52,10 @@
 #include "llviewerwindow.h"
 #include "llviewerregion.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy startGroupVoteResponder_timeout;
+extern AIHTTPTimeoutPolicy groupProposalBallotResponder_timeout;
+
 class LLPanelGroupVoting::impl
 {
 public:
@@ -680,7 +684,7 @@ void LLPanelGroupVoting::handleFailure(
 	}
 }
 
-class LLStartGroupVoteResponder : public LLHTTPClient::Responder
+class LLStartGroupVoteResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLStartGroupVoteResponder(const LLUUID& group_id)
@@ -705,11 +709,15 @@ public:
 
 		LLPanelGroupVoting::handleFailure(mGroupID);
 	}
+
+	//Return our timeout policy.
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return startGroupVoteResponder_timeout; }
+
 private:
 	LLUUID mGroupID;
 };
 
-class LLGroupProposalBallotResponder : public LLHTTPClient::Responder
+class LLGroupProposalBallotResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLGroupProposalBallotResponder(const LLUUID& group_id)
@@ -735,6 +743,10 @@ public:
 
 		LLPanelGroupVoting::handleFailure(mGroupID);
 	}
+
+	//Return out timeout policy.
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return groupProposalBallotResponder_timeout; }
+
 private:
 	LLUUID mGroupID;
 };
@@ -781,8 +793,7 @@ void LLPanelGroupVoting::impl::sendStartGroupProposal()
 		LLHTTPClient::post(
 			url,
 			body,
-			new LLStartGroupVoteResponder(mGroupID),
-			300);
+			new LLStartGroupVoteResponder(mGroupID));
 	}
 	else
 	{	//DEPRECATED!!!!!!!  This is a fallback just in case our backend cap is not there.  Delete this block ASAP!
@@ -828,8 +839,7 @@ void LLPanelGroupVoting::impl::sendGroupProposalBallot(const std::string& vote)
 		LLHTTPClient::post(
 			url,
 			body,
-			new LLGroupProposalBallotResponder(mGroupID),
-			300);
+			new LLGroupProposalBallotResponder(mGroupID));
 	}
 	else
 	{	//DEPRECATED!!!!!!!  This is a fallback just in case our backend cap is not there.  Delete this block ASAP!

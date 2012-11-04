@@ -83,6 +83,9 @@
 #include "llmemtype.h"
 #include "llpacketring.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy fnPtrResponder_timeout;
+
 // Constants
 //const char* MESSAGE_LOG_FILENAME = "message.log";
 static const F32 CIRCUIT_DUMP_TIMEOUT = 30.f;
@@ -104,7 +107,7 @@ public:
 
 namespace
 {
-	class LLFnPtrResponder : public LLHTTPClient::Responder
+	class LLFnPtrResponder : public LLHTTPClient::ResponderWithResult
 	{
 		LOG_CLASS(LLFnPtrResponder);
 	public:
@@ -132,6 +135,8 @@ namespace
 		{
 			if(NULL != mCallback) mCallback(mCallbackData, LL_ERR_NOERR);
 		}
+
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return fnPtrResponder_timeout; }
 
 	private:
 

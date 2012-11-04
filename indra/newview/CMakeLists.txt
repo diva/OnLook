@@ -27,7 +27,7 @@ include(LLInventory)
 include(LLMath)
 include(LLMessage)
 include(LLPlugin)
-include(AIStateMachine)
+include(StateMachine)
 include(LLPrimitive)
 include(LLRender)
 include(LLUI)
@@ -50,6 +50,7 @@ endif (WINDOWS)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/newview
+    ${STATEMACHINE_INCLUDE_DIRS}
     ${DBUSGLIB_INCLUDE_DIRS}
     ${HUNSPELL_INCLUDE_DIR}
     ${ELFIO_INCLUDE_DIR}
@@ -90,7 +91,6 @@ set(viewer_SOURCE_FILES
     hippogridmanager.cpp
     hippolimits.cpp
     hippopanelgrids.cpp
-    hipporestrequest.cpp
     importtracker.cpp
     jcfloaterareasearch.cpp
     lggdicdownload.cpp
@@ -132,7 +132,6 @@ set(viewer_SOURCE_FILES
     llconfirmationmanager.cpp
     llconsole.cpp
     llcontainerview.cpp
-    llcurlrequest.cpp
     llcurrencyuimanager.cpp
     llcylinder.cpp
     lldaycyclemanager.cpp
@@ -545,7 +544,7 @@ set(viewer_SOURCE_FILES
     llworldmap.cpp
     llworldmipmap.cpp
     llworldmapview.cpp
-    llxmlrpctransaction.cpp
+    llxmlrpcresponder.cpp
     m7wlinterface.cpp
     NACLantispam.cpp
     noise.cpp
@@ -592,7 +591,6 @@ set(viewer_HEADER_FILES
     hippogridmanager.h
     hippolimits.h
     hippopanelgrids.h
-    hipporestrequest.h
     importtracker.h
     jcfloaterareasearch.h
     lggdicdownload.h
@@ -635,7 +633,6 @@ set(viewer_HEADER_FILES
     llconfirmationmanager.h
     llconsole.h
     llcontainerview.h
-    llcurlrequest.h
     llcurrencyuimanager.h
     llcylinder.h
     lldaycyclemanager.h
@@ -1054,7 +1051,7 @@ set(viewer_HEADER_FILES
     llworldmap.h
     llworldmipmap.h
     llworldmapview.h
-    llxmlrpctransaction.h
+    llxmlrpcresponder.h
     m7wlinterface.h
     macmain.h
     NACLantispam.h
@@ -1551,7 +1548,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${LLINVENTORY_LIBRARIES}
     ${LLMESSAGE_LIBRARIES}
     ${LLPLUGIN_LIBRARIES}
-    ${AISTATEMACHINE_LIBRARIES}
+    ${STATEMACHINE_LIBRARIES}
     ${LLPRIMITIVE_LIBRARIES}
     ${LLRENDER_LIBRARIES}
     ${FREETYPE_LIBRARIES}

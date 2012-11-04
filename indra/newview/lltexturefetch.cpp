@@ -52,6 +52,11 @@
 #include "llviewerstats.h"
 #include "llworld.h"
 #include "llstartup.h"
+#include "llbuffer.h"
+
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy HTTPGetResponder_timeout;
+extern AIHTTPTimeoutPolicy lcl_responder_timeout;
 
 //////////////////////////////////////////////////////////////////////////////
 class LLTextureFetchWorker : public LLWorkerClass
@@ -148,7 +153,7 @@ public:
 	// void relese() { --mActiveCount; }
 
 	S32 callbackHttpGet(const LLChannelDescriptors& channels,
-						 const LLIOPipe::buffer_ptr_t& buffer,
+						 const LLHTTPClient::ResponderBase::buffer_ptr_t& buffer,
 						 bool partial, bool success);
 	void callbackCacheRead(bool success, LLImageFormatted* image,
 						   S32 imagesize, BOOL islocal);
@@ -287,8 +292,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////
-
-class HTTPGetResponder : public LLCurl::Responder
+class HTTPGetResponder : public LLHTTPClient::ResponderWithCompleted
 {
 	LOG_CLASS(HTTPGetResponder);
 public:
@@ -300,9 +304,11 @@ public:
 	{
 	}
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return HTTPGetResponder_timeout; }
+
 	virtual void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
-							  const LLIOPipe::buffer_ptr_t& buffer)
+							  const buffer_ptr_t& buffer)
 	{
 		static LLCachedControl<bool> log_to_viewer_log(gSavedSettings,"LogTextureDownloadsToViewerLog");
 		static LLCachedControl<bool> log_to_sim(gSavedSettings,"LogTextureDownloadsToSimulator");
@@ -1317,13 +1323,13 @@ bool LLTextureFetchWorker::doWork(S32 param)
 															 LLImageBase::TYPE_AVATAR_BAKE == mType);
 #endif
 
-				// Will call callbackHttpGet when curl request completes
-				std::vector<std::string> headers;
-				headers.push_back("Accept: image/x-j2c");
 				try
 				{
-					res = mFetcher->mCurlGetRequest->getByteRange(mUrl, headers, offset, mRequestedSize,
-																  new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, offset, true));
+					// Will call callbackHttpGet when curl request completes
+					AIHTTPHeaders headers("Accept", "image/x-j2c");
+					LLHTTPClient::getByteRange(mUrl, offset, mRequestedSize,
+												new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, offset, true), headers);
+					res = true;
 				}
 				catch(AICurlNoEasyHandle const& error)
 				{
@@ -1805,7 +1811,7 @@ bool LLTextureFetchWorker::processSimulatorPackets()
 //////////////////////////////////////////////////////////////////////////////
 
 S32 LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
-										   const LLIOPipe::buffer_ptr_t& buffer,
+										   const LLHTTPClient::ResponderBase::buffer_ptr_t& buffer,
 										   bool partial, bool success)
 {
 	S32 data_size = 0 ;
@@ -1989,8 +1995,7 @@ LLTextureFetch::LLTextureFetch(LLTextureCache* cache, LLImageDecodeThread* image
 	  mImageDecodeThread(imagedecodethread),
 	  mTextureBandwidth(0),
 	  mHTTPTextureBits(0),
-	  mTotalHTTPRequests(0),
-	  mCurlGetRequest(NULL)
+	  mTotalHTTPRequests(0)
 #if HTTP_METRICS
 	  ,mQAMode(qa_mode)
 #endif
@@ -2425,25 +2430,8 @@ void LLTextureFetch::shutDownImageDecodeThread()
 }
 
 // WORKER THREAD
-void LLTextureFetch::startThread()
-{
-	// Construct mCurlGetRequest from Worker Thread
-	mCurlGetRequest = new AICurlInterface::Request;
-}
-
-// WORKER THREAD
-void LLTextureFetch::endThread()
-{
-	// Destroy mCurlGetRequest from Worker Thread
-	delete mCurlGetRequest;
-	mCurlGetRequest = NULL;
-}
-
-// WORKER THREAD
 void LLTextureFetch::threadedUpdate()
 {
-	llassert_always(mCurlGetRequest);
-	
 	// Limit update frequency
 	const F32 PROCESS_TIME = 0.05f; 
 	static LLFrameTimer process_timer;
@@ -3028,7 +3016,7 @@ TFReqSendMetrics::doWork(LLTextureFetch * fetcher)
      * refactoring of the LLQueuedThread usage, these POSTs
      * could be put in a request object and made more reliable.
 	 */
-	class lcl_responder : public LLCurl::Responder
+	class lcl_responder : public LLHTTPClient::ResponderWithResult
 	{
 	public:
 		lcl_responder(LLTextureFetch * fetcher,
@@ -3036,8 +3024,7 @@ TFReqSendMetrics::doWork(LLTextureFetch * fetcher)
                       volatile const S32 & live_sequence,
                       volatile bool & reporting_break,
 					  volatile bool & reporting_started)
-			: LLCurl::Responder(),
-			  mFetcher(fetcher),
+			: mFetcher(fetcher),
               mExpectedSequence(expected_sequence),
               mLiveSequence(live_sequence),
 			  mReportingBreak(reporting_break),
@@ -3071,6 +3058,7 @@ TFReqSendMetrics::doWork(LLTextureFetch * fetcher)
                     mReportingStarted = true;
                 }
 			}
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return lcl_responder_timeout; }
 
 	private:
 		LLTextureFetch * mFetcher;
@@ -3113,9 +3101,7 @@ TFReqSendMetrics::doWork(LLTextureFetch * fetcher)
 
 	if (! mCapsURL.empty())
 	{
-		LLCurlRequest::headers_t headers;
-		fetcher->getCurlRequest().post(mCapsURL,
-									   headers,
+		LLHTTPClient::post(mCapsURL,
 									   merged_llsd,
 									   new lcl_responder(fetcher,
 														 report_sequence,

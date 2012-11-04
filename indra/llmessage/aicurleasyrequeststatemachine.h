@@ -40,7 +40,7 @@
 // Before calling cersm.run() initialize the object (cersm) as follows:
 //
 // AICurlEasyRequest_wat cersm_w(cersm);
-// cersm_w->setopt(...); // etc, see the interface of AICurlPrivate::CurlEasyRequest and it's base class AICurlPrivate::CurlEasyHandle.
+// cersm_w->setopt(...); // etc, see the interface of AICurlPrivate::CurlEasyRequest.
 //
 // When the state machine finishes, call aborted() to check
 // whether or not the statemachine succeeded in fetching
@@ -52,18 +52,22 @@
 // Construction of a AICurlEasyRequestStateMachine might throw AICurlNoEasyHandle.
 class AICurlEasyRequestStateMachine : public AIStateMachine, public AICurlEasyHandleEvents {
   public:
-	AICurlEasyRequestStateMachine(bool buffered);
+	AICurlEasyRequestStateMachine(void);
 
 	// Transparent access.
 	AICurlEasyRequest mCurlEasyRequest;
 
   private:
-	bool mBuffered;		// Argument used for construction of mCurlEasyRequest.
-	bool mAdded;		// Set when the last command to the curl thread was to add the request.
-	bool mTimedOut;		// Set if the expiration timer timed out.
-	bool mFinished;		// Set by the curl thread to signal it finished.
-	bool mHandled;		// Set when we processed the received data.
-	AITimer* mTimer;	// Expiration timer.
+	bool mAdded;						// Set when the last command to the curl thread was to add the request.
+	bool mTimedOut;						// Set if the expiration timer timed out.
+	bool mFinished;						// Set by the curl thread to signal it finished.
+	bool mHandled;						// Set when we processed the received data.
+	AITimer* mTimer;					// Expiration timer.
+	F32 mTotalDelayTimeout;				// The time out value for mTimer.
+
+  public:
+	// Called to set a specific time out, instead of the default one.
+	void setTotalDelayTimeout(F32 totalDelayTimeout);
 
   protected:
 	// AICurlEasyRequest Events.

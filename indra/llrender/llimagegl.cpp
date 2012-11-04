@@ -1196,7 +1196,7 @@ void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 widt
 				intformat = GL_COMPRESSED_ALPHA;
 				break;
 			default:
-				llwarns << "Could not compress format: " << std::hex << intformat << llendl;
+				llwarns << "Could not compress format: " << std::hex << intformat << std::dec << llendl;
 				break;
 		}
 	}

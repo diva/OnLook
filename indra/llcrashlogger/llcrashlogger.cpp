@@ -48,14 +48,20 @@
 #include "llpumpio.h"
 #include "llhttpclient.h"
 #include "llsdserialize.h"
+#include "llcurl.h"
 
 LLPumpIO* gServicePump;
 BOOL gBreak = false;
 BOOL gSent = false;
 
-class LLCrashLoggerResponder : public LLHTTPClient::Responder
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy crashLoggerResponder_timeout;
+
+class LLCrashLoggerResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return crashLoggerResponder_timeout; }
+
 	LLCrashLoggerResponder() 
 	{
 	}
@@ -308,14 +314,14 @@ bool LLCrashLogger::saveCrashBehaviorSetting(S32 crash_behavior)
 	return true;
 }
 
-bool LLCrashLogger::runCrashLogPost(std::string host, LLSD data, std::string msg, int retries, int timeout)
+bool LLCrashLogger::runCrashLogPost(std::string host, LLSD data, std::string msg, int retries)
 {
 	gBreak = false;
 	std::string status_message;
 	for(int i = 0; i < retries; ++i)
 	{
 		status_message = llformat("%s, try %d...", msg.c_str(), i+1);
-		LLHTTPClient::post(host, data, new LLCrashLoggerResponder(), timeout);
+		LLHTTPClient::post(host, data, new LLCrashLoggerResponder);
 		while(!gBreak)
 		{
 			updateApplication(status_message);
@@ -350,12 +356,12 @@ bool LLCrashLogger::sendCrashLogs()
 	// *TODO: Translate
 	if(mCrashHost != "")
 	{
-		sent = runCrashLogPost(mCrashHost, post_data, std::string("Sending to server"), 3, 5);
+		sent = runCrashLogPost(mCrashHost, post_data, std::string("Sending to server"), 3);
 	}
 
 	if(!sent)
 	{
-		sent = runCrashLogPost(mAltCrashHost, post_data, std::string("Sending to alternate server"), 3, 5);
+		sent = runCrashLogPost(mAltCrashHost, post_data, std::string("Sending to alternate server"), 3);
 	}
 	
 	mSentCrashLogs = sent;
@@ -367,6 +373,7 @@ void LLCrashLogger::updateApplication(const std::string& message)
 {
 	gServicePump->pump();
     gServicePump->callback();
+	//FIXME: AIStateMachine::mainloop(); needs CPU cycles. Can't call it from here though, because it uses gSavedSettings which is part of newview.
 }
 
 bool LLCrashLogger::init()
@@ -394,7 +401,6 @@ bool LLCrashLogger::init()
 	}
 
 	gServicePump = new LLPumpIO;
-	LLHTTPClient::setPump(*gServicePump);
 
 	//If we've opened the crash logger, assume we can delete the marker file if it exists	
 	if( gDirUtilp )

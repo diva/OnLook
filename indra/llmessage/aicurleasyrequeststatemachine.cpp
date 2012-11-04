@@ -30,6 +30,7 @@
 
 #include "linden_common.h"
 #include "aicurleasyrequeststatemachine.h"
+#include "aihttptimeoutpolicy.h"
 #include "llcontrol.h"
 
 enum curleasyrequeststatemachine_state_type {
@@ -61,8 +62,8 @@ void AICurlEasyRequestStateMachine::initialize_impl(void)
 {
   {
 	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
-	llassert(curlEasyRequest_w->is_finalized());	// Call finalizeRequest(url) before calling run().
-	curlEasyRequest_w->send_events_to(this);
+	llassert(curlEasyRequest_w->is_finalized());	// Call finalizeRequest() before calling run().
+	curlEasyRequest_w->send_handle_events_to(this);
   }
   mAdded = false;
   mTimedOut = false;
@@ -87,6 +88,9 @@ void AICurlEasyRequestStateMachine::finished(AICurlEasyRequest_wat&)
 // CURL-THREAD
 void AICurlEasyRequestStateMachine::removed_from_multi_handle(AICurlEasyRequest_wat&)
 {
+  llassert(mFinished || mTimedOut);		// If we neither finished nor timed out, then why is this being removed?
+  										// Note that allowing this would cause an assertion later on for removing
+										// a BufferedCurlEasyRequest with a still active Responder.
   set_state(mFinished ? AICurlEasyRequestStateMachine_removed_after_finished : AICurlEasyRequestStateMachine_removed);
 }
 
@@ -116,13 +120,15 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
 	  // 3) AICurlEasyRequestStateMachine_finished (running)
 	  // 4) AICurlEasyRequestStateMachine_removed_after_finished (running)
 
-	  // Set an inactivity timer.
-	  // This shouldn't really be necessary, except in the case of a bug
-	  // in libcurl; but lets be sure and set a timer for inactivity.
-	  static LLCachedControl<F32> CurlRequestTimeOut("CurlRequestTimeOut", 40.f);
-	  mTimer = new AIPersistentTimer;			// Do not delete timer upon expiration.
-	  mTimer->setInterval(CurlRequestTimeOut);
-	  mTimer->run(this, AICurlEasyRequestStateMachine_timedOut, false, false);
+	  if (mTotalDelayTimeout > 0.f)
+	  {
+		// Set an inactivity timer.
+		// This shouldn't really be necessary, except in the case of a bug
+		// in libcurl; but lets be sure and set a timer for inactivity.
+		mTimer = new AIPersistentTimer;			// Do not delete timer upon expiration.
+		mTimer->setInterval(mTotalDelayTimeout);
+		mTimer->run(this, AICurlEasyRequestStateMachine_timedOut, false, false);
+	  }
 	  break;
 	}
 	case AICurlEasyRequestStateMachine_added:
@@ -161,17 +167,16 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
 		// Only do this once.
 		mHandled = true;
 
-		// Stop the timer. Note that it's the main thread that generates timer events,
-		// so we're certain that there will be no time out anymore if we reach this point.
-		mTimer->abort();
+		if (mTimer)
+		{
+		  // Stop the timer. Note that it's the main thread that generates timer events,
+		  // so we're certain that there will be no time out anymore if we reach this point.
+		  mTimer->abort();
+		}
 
 		// The request finished and either data or an error code is available.
-		if (mBuffered)
-		{
-		  AICurlEasyRequest_wat easy_request_w(*mCurlEasyRequest);
-		  AICurlResponderBuffer_wat buffered_easy_request_w(*mCurlEasyRequest);
-		  buffered_easy_request_w->processOutput(easy_request_w);
-		}
+		AICurlEasyRequest_wat easy_request_w(*mCurlEasyRequest);
+		easy_request_w->processOutput();
 	  }
 
 	  if (current_state == AICurlEasyRequestStateMachine_finished)
@@ -187,11 +192,10 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
 	case AICurlEasyRequestStateMachine_removed:
 	{
 	  // The request was removed from the multi handle.
-	  if (mBuffered && mTimedOut)
+	  if (mTimedOut)
 	  {
 		AICurlEasyRequest_wat easy_request_w(*mCurlEasyRequest);
-		AICurlResponderBuffer_wat buffered_easy_request_w(*mCurlEasyRequest);
-		buffered_easy_request_w->timed_out();
+		easy_request_w->timed_out();
 	  }
 
 	  // We're done. If we timed out, abort -- or else the application will
@@ -226,20 +230,30 @@ void AICurlEasyRequestStateMachine::finish_impl(void)
   // Revoke callbacks.
   {
 	AICurlEasyRequest_wat curl_easy_request_w(*mCurlEasyRequest);
-	curl_easy_request_w->send_events_to(NULL);
+	curl_easy_request_w->send_buffer_events_to(NULL);
+	curl_easy_request_w->send_handle_events_to(NULL);
 	curl_easy_request_w->revokeCallbacks();
   }
-  // Note that even if the timer expired, it wasn't deleted because we used AIPersistentTimer; so mTimer is still valid.
-  // Stop the timer, if it's still running.
-  if (!mHandled)
-	mTimer->abort();
+  if (mTimer)
+  {
+	// Note that even if the timer expired, it wasn't deleted because we used AIPersistentTimer; so mTimer is still valid.
+	// Stop the timer, if it's still running.
+	if (!mHandled)
+	  mTimer->abort();
+  }
   // Auto clean up ourselves.
   kill();
 }
 
-AICurlEasyRequestStateMachine::AICurlEasyRequestStateMachine(bool buffered) : mBuffered(buffered), mCurlEasyRequest(buffered)
+AICurlEasyRequestStateMachine::AICurlEasyRequestStateMachine(void) :
+    mTimer(NULL), mTotalDelayTimeout(AIHTTPTimeoutPolicy::getDebugSettingsCurlTimeout().getTotalDelay())
 {
-  Dout(dc::statemachine, "Calling AICurlEasyRequestStateMachine(" << (buffered ? "true" : "false") << ") [" << (void*)this << "] [" << (void*)mCurlEasyRequest.get() << "]");
+  Dout(dc::statemachine, "Calling AICurlEasyRequestStateMachine(void) [" << (void*)this << "] [" << (void*)mCurlEasyRequest.get() << "]");
+}
+
+void AICurlEasyRequestStateMachine::setTotalDelayTimeout(F32 totalDelayTimeout)
+{
+  mTotalDelayTimeout = totalDelayTimeout;
 }
 
 AICurlEasyRequestStateMachine::~AICurlEasyRequestStateMachine()

@@ -33,6 +33,7 @@
 
 #include "aicurl.h"
 #include <vector>
+#include <deque>
 
 #undef AICurlPrivate
 
@@ -59,7 +60,7 @@ class MultiHandle : public CurlMultiHandle
 	~MultiHandle();
 
 	// Add/remove an easy handle to/from a multi session.
-	CURLMcode add_easy_request(AICurlEasyRequest const& easy_request);
+	void add_easy_request(AICurlEasyRequest const& easy_request);
 	CURLMcode remove_easy_request(AICurlEasyRequest const& easy_request, bool as_per_command = false);
 
 	// Reads/writes available data from a particular socket (non-blocking).
@@ -73,14 +74,17 @@ class MultiHandle : public CurlMultiHandle
 
   private:
 	typedef std::set<AICurlEasyRequest, AICurlEasyRequestCompare> addedEasyRequests_type;
-	addedEasyRequests_type mAddedEasyRequests;
-
-	bool mHandleAddedOrRemoved;	// Set when an easy handle was added or removed, reset in check_run_count().
-	int mPrevRunningHandles;	// The last value of mRunningHandles that check_run_count() was called with.
-	int mRunningHandles;		// The last value returned by curl_multi_socket_action.
-	long mTimeOut;				// The last time out in ms as set by the callback CURLMOPT_TIMERFUNCTION.
+	addedEasyRequests_type mAddedEasyRequests;	// All easy requests currently added to the multi handle.
+	int mRunningHandles;						// The last value returned by curl_multi_socket_action.
+	long mTimeout;								// The last timeout in ms as set by the callback CURLMOPT_TIMERFUNCTION.
 
   private:
+	// Store result and trigger events for easy request.
+	void finish_easy_request(AICurlEasyRequest const& easy_request, CURLcode result);
+	// Remove easy request at iter (must exist).
+	// Note that it's possible that a new request from mQueuedRequests is inserted before iter.
+	CURLMcode remove_easy_request(addedEasyRequests_type::iterator const& iter, bool as_per_command);
+
     static int socket_callback(CURL* easy, curl_socket_t s, int action, void* userp, void* socketp);
     static int timer_callback(CURLM* multi, long timeout_ms, void* userp);
 
@@ -89,10 +93,13 @@ class MultiHandle : public CurlMultiHandle
 	int getRunningHandles(void) const { return mRunningHandles; }
 
 	// Returns how long to wait for socket action before calling socket_action(CURL_SOCKET_TIMEOUT, 0), in ms.
-	int getTimeOut(void) const { return mTimeOut; }
+	int getTimeout(void) const { return mTimeout; }
 
 	// This is called before sleeping, after calling (one or more times) socket_action.
 	void check_run_count(void);
+
+	// Called from the main loop every time select() timed out.
+	void handle_stalls(void);
 
   public:
 	//-----------------------------------------------------------------------------
@@ -100,6 +107,10 @@ class MultiHandle : public CurlMultiHandle
 
 	PollSet* mReadPollSet;
 	PollSet* mWritePollSet;
+
+  private:
+	// Temporary throttling hack.
+	std::deque<AICurlEasyRequest> mQueuedRequests;	// Waiting (throttled) requests.
 };
 
 } // namespace curlthread

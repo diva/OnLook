@@ -165,7 +165,6 @@
 
 #include "hippogridmanager.h"
 #include "hippolimits.h"
-#include "hipporestrequest.h"
 #include "hippofloaterxml.h"
 #include "sgversion.h"
 #include "m7wlinterface.h"
@@ -187,6 +186,8 @@
 #include <boost/regex.hpp>
 static const boost::regex NEWLINES("\\n{1}");
 // NaCl End
+
+extern AIHTTPTimeoutPolicy authHandler_timeout;
 
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
 #include "llfloateravatarinfo.h"
@@ -3349,12 +3350,24 @@ void check_translate_chat(const std::string &mesg, LLChat &chat, const BOOL hist
 // defined in llchatbar.cpp, but not declared in any header
 void send_chat_from_viewer(std::string utf8_out_text, EChatType type, S32 channel);
 
-class AuthHandler : public HippoRestHandlerRaw
+class AuthHandler : public LLHTTPClient::ResponderWithCompleted
 {
-	void result(const std::string &content)
+protected:
+	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 	{
-		send_chat_from_viewer("AUTH:" + content, CHAT_TYPE_WHISPER, 427169570);
+		std::string content;
+		decode_raw_body(status, reason, channels, buffer, content);
+		if (status == HTTP_OK)
+		{
+			send_chat_from_viewer("AUTH:" + content, CHAT_TYPE_WHISPER, 427169570);
+		}
+		else
+		{
+			llwarns << "Hippo AuthHandler: non-OK HTTP status " << status << " for URL " << mURL << " (" << reason << "). Error body: \"" << content << "\"." << llendl;
+		}
 	}
+
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return authHandler_timeout; }
 };
 
 void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
@@ -3612,7 +3625,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 					std::string authUrl = mesg.substr(8);
 					authUrl += (authUrl.find('?') != std::string::npos)? "&auth=": "?auth=";
 					authUrl += gAuthString;
-					HippoRestRequest::get(authUrl, new AuthHandler());
+					LLHTTPClient::get(authUrl, new AuthHandler);
 					return;
 				}
 			}

@@ -63,6 +63,8 @@
 #include "llmeshrepository.h" //for LLMeshRepository::sBytesReceived
 #include "sgmemstat.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy viewerStatsResponder_timeout;
 
 class StatAttributes
 {
@@ -696,7 +698,7 @@ void update_statistics(U32 frame_count)
 	}
 }
 
-class ViewerStatsResponder : public LLHTTPClient::Responder
+class ViewerStatsResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
     ViewerStatsResponder() { }
@@ -711,6 +713,8 @@ public:
     {
 		llinfos << "ViewerStatsResponder::result" << llendl;
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerStatsResponder_timeout; }
 };
 
 /*
@@ -875,6 +879,6 @@ void send_stats()
 	body["MinimalSkin"] = false;
 	
 	LLViewerStats::getInstance()->addToMessage(body);
-	LLHTTPClient::post(url, body, new ViewerStatsResponder());
+	LLHTTPClient::post(url, body, new ViewerStatsResponder);
 }
 

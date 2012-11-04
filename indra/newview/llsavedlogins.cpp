@@ -145,6 +145,22 @@ const LLSD LLSavedLoginEntry::encryptPassword(const std::string& password)
 	return pwdata;
 }
 
+bool LLSavedLoginEntry::isSecondLife() const
+{
+	if (!mEntry.has("grid"))
+	{
+		return false;
+	}
+	std::string name = mEntry.get("grid").asString();
+	HippoGridInfo* grid_info = gHippoGridManager->getGrid(name);
+	llassert(grid_info);
+	if (!grid_info)
+	{
+		return name.substr(0, 11) == "Second Life";
+	}
+	return grid_info->isSecondLife();
+}
+
 //---------------------------------------------------------------------------
 // LLSavedLogins methods
 //---------------------------------------------------------------------------
