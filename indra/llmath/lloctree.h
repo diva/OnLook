@@ -37,6 +37,7 @@
 #include "v3math.h"
 #include "llvector4a.h"
 #include <vector>
+#include <boost/pool/pool.hpp>
 
 #if LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
 #define OCT_ERRS LL_ERRS("OctreeErrors")
@@ -57,6 +58,10 @@ extern U32 gOctreeReserveCapacity;
 template <class T> class LLOctreeNode;
 
 #include "lltimer.h"
+
+#define LL_OCTREE_STATS
+#define LL_OCTREE_POOLS
+#ifdef LL_OCTREE_STATS
 class OctreeStats : public LLSingleton<OctreeStats>
 {
 public:
@@ -150,7 +155,7 @@ private:
 	U64 mTotalSize;
 	LLTimer mTotalTimer;
 };
-
+#endif //LL_OCTREE_STATS
 
 template <class T>
 class LLOctreeListener: public LLTreeListener<T>
@@ -223,15 +228,41 @@ public:
 	typedef LLOctreeNode<T>		oct_node;
 	typedef LLOctreeListener<T>	oct_listener;
 
+#ifdef LL_OCTREE_POOLS
+	struct octree_pool_alloc
+	{
+		typedef std::size_t size_type;
+		typedef std::ptrdiff_t difference_type;
+
+		static char * malloc(const std::size_t bytes)
+		{ return (char *)ll_aligned_malloc_16(bytes); }
+		static void free(char * const block)
+		{ ll_aligned_free_16(block); }
+	};
+	static boost::pool<octree_pool_alloc>& getPool(const std::size_t& size)
+	{
+		static boost::pool<octree_pool_alloc> sPool((std::size_t)LL_NEXT_ALIGNED_ADDRESS((char*)size),1200);
+		llassert_always((std::size_t)LL_NEXT_ALIGNED_ADDRESS((char*)size) == sPool.get_requested_size());
+		return sPool;
+	}
+	void* operator new(size_t size)
+	{
+		return getPool(size).malloc();
+	}
+	void operator delete(void* ptr)
+	{
+		getPool(sizeof(LLOctreeNode<T>)).free(ptr);
+	}
+#else
 	void* operator new(size_t size)
 	{
 		return ll_aligned_malloc_16(size);
 	}
-
 	void operator delete(void* ptr)
 	{
 		ll_aligned_free_16(ptr);
 	}
+#endif
 
 	LLOctreeNode(	const LLVector4a& center, 
 					const LLVector4a& size, 
@@ -240,11 +271,14 @@ public:
 	:	mParent((oct_node*)parent), 
 		mOctant(octant) 
 	{ 
+#ifdef LL_OCTREE_STATS
 		OctreeStats::getInstance()->addNode();
-
+#endif
 		if(gOctreeReserveCapacity)
 			mData.reserve(gOctreeReserveCapacity);
+#ifdef LL_OCTREE_STATS
 		OctreeStats::getInstance()->realloc(0,mData.capacity());
+#endif
 		//mData = NULL;
 		//mDataEnd = NULL;
 
@@ -263,8 +297,10 @@ public:
 	}
 
 	virtual ~LLOctreeNode()								
-	{ 
+	{
+#ifdef LL_OCTREE_STATS
 		OctreeStats::getInstance()->removeNode();
+#endif
 		BaseType::destroyListeners(); 
 		
 		//for (U32 i = 0; i < mElementCount; ++i)
@@ -274,7 +310,9 @@ public:
 			mData[i] = NULL;
 		}
 
+#ifdef LL_OCTREE_STATS
 		OctreeStats::getInstance()->free(mData.capacity());
+#endif
 		//free(mData);
 		//mData = NULL;
 		//mDataEnd = NULL;
@@ -465,7 +503,9 @@ public:
 				(data->getBinRadius() > getSize()[0] &&	parent && parent->getElementCount() >= gOctreeMaxCapacity))) 
 			{ //it belongs here
 				/*mElementCount++;
+#ifdef LL_OCTREE_STATS
 				OctreeStats::getInstance()->realloc(mElementCount-1,mElementCount);
+#endif
 				mData = (element_list) realloc(mData, sizeof(LLPointer<T>)*mElementCount);
 
 				//avoid unref on uninitialized memory
@@ -475,11 +515,15 @@ public:
 				mDataEnd = mData + mElementCount;
 				data->setBinIndex(mElementCount-1);*/
 
+#ifdef LL_OCTREE_STATS
 				U32 old_cap = mData.capacity();
+#endif
 				data->setBinIndex(mData.size());
 				mData.push_back(data);
+#ifdef LL_OCTREE_STATS
 				if(old_cap != mData.capacity())
 					OctreeStats::getInstance()->realloc(old_cap,mData.capacity());
+#endif
 				
 				BaseType::insert(data);
 				return true;
@@ -516,7 +560,9 @@ public:
 				if( lt == 0x7 )
 				{
 					/*mElementCount++;
+#ifdef LL_OCTREE_STATS
 					OctreeStats::getInstance()->realloc(mElementCount-1,mElementCount);
+#endif
 					mData = (element_list) realloc(mData, sizeof(LLPointer<T>)*mElementCount);
 
 					//avoid unref on uninitialized memory
@@ -525,11 +571,15 @@ public:
 					mData[mElementCount-1] = data;
 					mDataEnd = mData + mElementCount;
 					data->setBinIndex(mElementCount-1);*/
+#ifdef LL_OCTREE_STATS
 					U32 old_cap = mData.capacity();
+#endif
 					data->setBinIndex(mData.size());
 					mData.push_back(data);
+#ifdef LL_OCTREE_STATS
 					if(old_cap != mData.capacity())
 						OctreeStats::getInstance()->realloc(old_cap,mData.capacity());
+#endif
 					
 					BaseType::insert(data);
 					return true;
@@ -595,14 +645,18 @@ public:
 			}
 
 			mData[mElementCount] = NULL; //needed for unref
+#ifdef LL_OCTREE_STATS
 			OctreeStats::getInstance()->realloc(mElementCount+1,mElementCount);
+#endif
 			mData = (element_list) realloc(mData, sizeof(LLPointer<T>)*mElementCount);
 			mDataEnd = mData+mElementCount;
 		}
 		else
 		{
 			mData[0] = NULL; //needed for unref
+#ifdef LL_OCTREE_STATS
 			OctreeStats::getInstance()->free(1);
+#endif
 			free(mData);
 			mData = NULL;
 			mDataEnd = NULL;
@@ -615,7 +669,9 @@ public:
 				mData[i] = mData[mData.size()-1];
 				mData[i]->setBinIndex(i);
 			}
+#ifdef LL_OCTREE_STATS
 			U32 old_cap = mData.capacity();
+#endif
 			mData.pop_back();
 			if(	mData.size() == gOctreeReserveCapacity || 
 				(mData.size() > gOctreeReserveCapacity && mData.capacity() > gOctreeReserveCapacity + mData.size() - 1 - (mData.size() - gOctreeReserveCapacity - 1) % 4))
@@ -627,8 +683,10 @@ public:
 				std::vector<LLPointer<T> >(mData.begin(), mData.end()).swap(mData);	//Need to confirm this works on OSX..
 #endif
 			}
+#ifdef LL_OCTREE_STATS
 			if(old_cap != mData.capacity())
 				OctreeStats::getInstance()->realloc(old_cap,mData.capacity());
+#endif
 		}
 
 		this->notifyRemoval(data);

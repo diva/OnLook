@@ -226,7 +226,9 @@ void display_stats()
 		F32 fps = gRecentFrameCount / fps_log_freq;
 		llinfos << llformat("FPS: %.02f", fps) << llendl;
 		llinfos << llformat("VBO: %d  glVBO: %d", LLVertexBuffer::sCount, LLVertexBuffer::sGLCount) << llendl;
-		OctreStats::getInstance()->dump();
+#ifdef LL_OCTREE_STATS
+		OctreeStats::getInstance()->dump();
+#endif
 		gRecentFrameCount = 0;
 		gRecentFPSTime.reset();
 	}
