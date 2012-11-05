@@ -45,6 +45,7 @@
 #endif
 
 extern U32 gOctreeMaxCapacity;
+extern U32 gOctreeReserveCapacity;
 #if LL_DEBUG
 #define LL_OCTREE_PARANOIA_CHECK 0
 #else
@@ -54,6 +55,102 @@ extern U32 gOctreeMaxCapacity;
 //#define LL_OCTREE_MAX_CAPACITY 128
 
 template <class T> class LLOctreeNode;
+
+#include "lltimer.h"
+class OctreeStats : public LLSingleton<OctreeStats>
+{
+public:
+	OctreeStats() :
+		mPeriodNodesCreated(0),
+		mPeriodNodesDestroyed(0),
+		mPeriodAllocs(0),
+		mPeriodFrees(0),
+		mPeriodLargestSize(0),
+		mTotalNodes(0),
+		mTotalAllocs(0),
+		mTotalFrees(0),
+		mLargestSize(0),
+		mTotalSize(0)
+	{
+		mTotalTimer.reset();
+		mPeriodTimer.reset();
+	}
+	void addNode()
+	{
+		++mTotalNodes;
+		++mPeriodNodesCreated;
+	}
+	void removeNode()
+	{
+		--mTotalNodes;
+		++mPeriodNodesDestroyed;
+	}
+	void realloc(U32 old_count, U32 new_count)
+	{
+		if(new_count >= old_count)
+			mTotalSize+=new_count-old_count;
+		else
+			mTotalSize-=old_count-new_count;
+		if(mLargestSize < new_count)
+			mLargestSize = new_count;
+		if(mPeriodLargestSize < new_count)
+			mPeriodLargestSize = new_count;
+		++mTotalAllocs;
+		++mPeriodAllocs;
+	}
+	void free(U32 count)
+	{
+		mTotalSize-=count;
+		++mTotalFrees;
+		++mPeriodFrees;
+	}
+	void dump()
+	{
+		llinfos << llformat("Lifetime: Allocs:(+%u|-%u) Allocs/s: (+%lf|-%lf) Nodes: %u AccumSize: %llubytes Avg: %lf LargestSize: %u",
+			mTotalAllocs,
+			mTotalFrees,
+			F64(mTotalAllocs)/mTotalTimer.getElapsedTimeF64(),
+			F64(mTotalFrees)/mTotalTimer.getElapsedTimeF64(),
+			mTotalNodes,
+			mTotalSize*sizeof(LLPointer<LLRefCount>),
+			F64(mTotalSize)/F64(mTotalNodes),
+			mLargestSize
+			) << llendl;
+		llinfos << llformat("Timeslice: Allocs:(+%u|-%u) Allocs/s: (+%lf|-%lf) Nodes:(+%u|-%u) LargestSize: %u",
+			mPeriodAllocs,
+			mPeriodFrees,
+			F64(mPeriodAllocs)/mPeriodTimer.getElapsedTimeF64(),
+			F64(mPeriodFrees)/mPeriodTimer.getElapsedTimeF64(),
+			mPeriodNodesCreated,
+			mPeriodNodesDestroyed,
+			mPeriodLargestSize
+			) << llendl;
+
+		mPeriodNodesCreated=0;
+		mPeriodNodesDestroyed=0;
+		mPeriodAllocs=0;
+		mPeriodFrees=0;
+		mPeriodLargestSize=0;
+		mPeriodTimer.reset();
+	}
+private:
+	//Accumulate per timer update
+	U32 mPeriodNodesCreated;
+	U32 mPeriodNodesDestroyed;
+	U32 mPeriodAllocs;
+	U32 mPeriodFrees;
+	U32 mPeriodLargestSize;
+	LLTimer mPeriodTimer;
+	
+	//Accumulate through entire app lifetime:
+	U32 mTotalNodes;
+	U32 mTotalAllocs;
+	U32 mTotalFrees;
+	U32 mLargestSize;
+	U64 mTotalSize;
+	LLTimer mTotalTimer;
+};
+
 
 template <class T>
 class LLOctreeListener: public LLTreeListener<T>
@@ -115,9 +212,9 @@ public:
 
 	typedef LLOctreeTraveler<T>									oct_traveler;
 	typedef LLTreeTraveler<T>									tree_traveler;
-	typedef LLPointer<T>*										element_list;
-	typedef LLPointer<T>*										element_iter;
-	typedef const LLPointer<T>*									const_element_iter;
+	typedef std::vector<LLPointer<T> >							element_list;
+	typedef typename element_list::iterator						element_iter;
+	typedef typename element_list::const_iterator				const_element_iter;
 	typedef typename std::vector<LLTreeListener<T>*>::iterator	tree_listener_iter;
 	typedef LLOctreeNode<T>**									child_list;
 	typedef LLOctreeNode<T>**									child_iter;
@@ -143,8 +240,13 @@ public:
 	:	mParent((oct_node*)parent), 
 		mOctant(octant) 
 	{ 
-		mData = NULL;
-		mDataEnd = NULL;
+		OctreeStats::getInstance()->addNode();
+
+		if(gOctreeReserveCapacity)
+			mData.reserve(gOctreeReserveCapacity);
+		OctreeStats::getInstance()->realloc(0,mData.capacity());
+		//mData = NULL;
+		//mDataEnd = NULL;
 
 		mCenter = center;
 		mSize = size;
@@ -155,24 +257,27 @@ public:
 			mOctant = ((oct_node*) mParent)->getOctant(mCenter);
 		}
 
-		mElementCount = 0;
+		//mElementCount = 0;
 
 		clearChildren();
 	}
 
 	virtual ~LLOctreeNode()								
 	{ 
+		OctreeStats::getInstance()->removeNode();
 		BaseType::destroyListeners(); 
 		
-		for (U32 i = 0; i < mElementCount; ++i)
+		//for (U32 i = 0; i < mElementCount; ++i)
+		for (U32 i = 0; i < mData.size(); ++i)
 		{
 			mData[i]->setBinIndex(-1);
 			mData[i] = NULL;
 		}
 
-		free(mData);
-		mData = NULL;
-		mDataEnd = NULL;
+		OctreeStats::getInstance()->free(mData.capacity());
+		//free(mData);
+		//mData = NULL;
+		//mDataEnd = NULL;
 
 		for (U32 i = 0; i < getChildCount(); i++)
 		{
@@ -272,14 +377,14 @@ public:
 	void accept(oct_traveler* visitor)				{ visitor->visit(this); }
 	virtual bool isLeaf() const						{ return mChildCount == 0; }
 	
-	U32 getElementCount() const						{ return mElementCount; }
-	bool isEmpty() const							{ return mElementCount == 0; }
+	U32 getElementCount() const						{ return mData.size(); }
+	bool isEmpty() const							{ return mData.size() == 0; }
 	//element_list& getData()							{ return mData; }
 	//const element_list& getData() const				{ return mData; }
-	element_iter getDataBegin()						{ return mData; }
-	element_iter getDataEnd()						{ return mDataEnd; }
-	const_element_iter getDataBegin() const			{ return mData; }
-	const_element_iter getDataEnd() const			{ return mDataEnd; }
+	element_iter getDataBegin()						{ return mData.begin(); }
+	element_iter getDataEnd()						{ return mData.end(); }
+	const_element_iter getDataBegin() const			{ return mData.begin(); }
+	const_element_iter getDataEnd() const			{ return mData.end(); }
 		
 	U32 getChildCount()	const						{ return mChildCount; }
 	oct_node* getChild(U32 index)					{ return mChild[index]; }
@@ -359,7 +464,8 @@ public:
 			if ((getElementCount() < gOctreeMaxCapacity && contains(data->getBinRadius()) ||
 				(data->getBinRadius() > getSize()[0] &&	parent && parent->getElementCount() >= gOctreeMaxCapacity))) 
 			{ //it belongs here
-				mElementCount++;
+				/*mElementCount++;
+				OctreeStats::getInstance()->realloc(mElementCount-1,mElementCount);
 				mData = (element_list) realloc(mData, sizeof(LLPointer<T>)*mElementCount);
 
 				//avoid unref on uninitialized memory
@@ -367,7 +473,14 @@ public:
 
 				mData[mElementCount-1] = data;
 				mDataEnd = mData + mElementCount;
-				data->setBinIndex(mElementCount-1);
+				data->setBinIndex(mElementCount-1);*/
+
+				U32 old_cap = mData.capacity();
+				data->setBinIndex(mData.size());
+				mData.push_back(data);
+				if(old_cap != mData.capacity())
+					OctreeStats::getInstance()->realloc(old_cap,mData.capacity());
+				
 				BaseType::insert(data);
 				return true;
 			}
@@ -402,7 +515,8 @@ public:
 
 				if( lt == 0x7 )
 				{
-					mElementCount++;
+					/*mElementCount++;
+					OctreeStats::getInstance()->realloc(mElementCount-1,mElementCount);
 					mData = (element_list) realloc(mData, sizeof(LLPointer<T>)*mElementCount);
 
 					//avoid unref on uninitialized memory
@@ -410,7 +524,13 @@ public:
 
 					mData[mElementCount-1] = data;
 					mDataEnd = mData + mElementCount;
-					data->setBinIndex(mElementCount-1);
+					data->setBinIndex(mElementCount-1);*/
+					U32 old_cap = mData.capacity();
+					data->setBinIndex(mData.size());
+					mData.push_back(data);
+					if(old_cap != mData.capacity())
+						OctreeStats::getInstance()->realloc(old_cap,mData.capacity());
+					
 					BaseType::insert(data);
 					return true;
 				}
@@ -463,10 +583,10 @@ public:
 	void _remove(T* data, S32 i)
 	{ //precondition -- mElementCount > 0, idx is in range [0, mElementCount)
 		OctreeGuard::checkGuarded(this);
-		mElementCount--;
+		//mElementCount--;
 		data->setBinIndex(-1); 
-		
-		if (mElementCount > 0)
+	
+/*		if (mElementCount > 0)
 		{
 			if (mElementCount != i)
 			{
@@ -475,15 +595,40 @@ public:
 			}
 
 			mData[mElementCount] = NULL; //needed for unref
+			OctreeStats::getInstance()->realloc(mElementCount+1,mElementCount);
 			mData = (element_list) realloc(mData, sizeof(LLPointer<T>)*mElementCount);
 			mDataEnd = mData+mElementCount;
 		}
 		else
 		{
 			mData[0] = NULL; //needed for unref
+			OctreeStats::getInstance()->free(1);
 			free(mData);
 			mData = NULL;
 			mDataEnd = NULL;
+		}*/
+
+		if(mData.size())
+		{
+			if((mData.size()-1)!=i)
+			{
+				mData[i] = mData[mData.size()-1];
+				mData[i]->setBinIndex(i);
+			}
+			U32 old_cap = mData.capacity();
+			mData.pop_back();
+			if(	mData.size() == gOctreeReserveCapacity || 
+				(mData.size() > gOctreeReserveCapacity && mData.capacity() > gOctreeReserveCapacity + mData.size() - 1 - (mData.size() - gOctreeReserveCapacity - 1) % 4))
+			{
+				//Shrink to lowest possible (reserve)+4*i size.. Say reserve is 5, here are [size,capacity] pairs. [10,13],[9,9],[8,9],[7,9],[6,9],[5,5],[4,5],[3,5],[2,5],[1,5],[0,5]
+#ifndef LL_DARWIN
+				mData.shrink_to_fit();
+#else
+				std::vector<LLPointer<T> >(mData.begin(), mData.end()).swap(mData);	//Need to confirm this works on OSX..
+#endif
+			}
+			if(old_cap != mData.capacity())
+				OctreeStats::getInstance()->realloc(old_cap,mData.capacity());
 		}
 
 		this->notifyRemoval(data);
@@ -495,7 +640,8 @@ public:
 		OctreeGuard::checkGuarded(this);
 		S32 i = data->getBinIndex();
 
-		if (i >= 0 && i < (S32)mElementCount)
+		//if (i >= 0 && i < mElementCount)
+		if (i >= 0 && i < (S32)mData.size())
 		{
 			if (mData[i] == data)
 			{ //found it
@@ -539,7 +685,8 @@ public:
 	void removeByAddress(T* data)
 	{
 		OctreeGuard::checkGuarded(this);
-        for (U32 i = 0; i < mElementCount; ++i)
+		//for (U32 i = 0; i < mElementCount; ++i)
+        for (U32 i = 0; i < mData.size(); ++i)
 		{
 			if (mData[i] == data)
 			{ //we have data
@@ -647,8 +794,6 @@ public:
 			listener->handleChildRemoval(this, getChild(index));
 		}
 
-		
-
 		if (destroy)
 		{
 			mChild[index]->destroy();
@@ -720,8 +865,8 @@ protected:
 	U32 mChildCount;
 
 	element_list mData;
-	element_iter mDataEnd;
-	U32 mElementCount;
+	//element_iter mDataEnd;
+	//U32 mElementCount;
 		
 };
 

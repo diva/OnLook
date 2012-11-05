@@ -401,6 +401,7 @@ void LLPipeline::init()
 	refreshCachedSettings();
 
 	gOctreeMaxCapacity = gSavedSettings.getU32("OctreeMaxNodeCapacity");
+	gOctreeReserveCapacity = llmin(gSavedSettings.getU32("OctreeReserveNodeCapacity"),U32(512));
 	sDynamicLOD = gSavedSettings.getBOOL("RenderDynamicLOD");
 	sRenderBump = gSavedSettings.getBOOL("RenderObjectBump");
 	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("ShyotlRenderUseStreamVBO");
@@ -9680,25 +9681,25 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar)
 
 BOOL LLPipeline::hasRenderBatches(const U32 type) const
 {
-	return sCull->getRenderMapSize(type) > 0;
+	return sCull->hasRenderMap(type);
 }
 
-LLCullResult::drawinfo_iterator LLPipeline::beginRenderMap(U32 type)
+LLCullResult::drawinfo_iterator LLPipeline::beginRenderMap(U32 type) const
 {
 	return sCull->beginRenderMap(type);
 }
 
-LLCullResult::drawinfo_iterator LLPipeline::endRenderMap(U32 type)
+LLCullResult::drawinfo_iterator LLPipeline::endRenderMap(U32 type) const
 {
 	return sCull->endRenderMap(type);
 }
 
-LLCullResult::sg_iterator LLPipeline::beginAlphaGroups()
+LLCullResult::sg_iterator LLPipeline::beginAlphaGroups() const
 {
 	return sCull->beginAlphaGroups();
 }
 
-LLCullResult::sg_iterator LLPipeline::endAlphaGroups()
+LLCullResult::sg_iterator LLPipeline::endAlphaGroups() const
 {
 	return sCull->endAlphaGroups();
 }

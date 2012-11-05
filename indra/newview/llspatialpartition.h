@@ -546,95 +546,63 @@ public:
 class LLCullResult 
 {
 public:
-	LLCullResult();
+	LLCullResult() {}
 
-	typedef LLSpatialGroup** sg_list_t;
-	typedef LLDrawable** drawable_list_t;
-	typedef LLSpatialBridge** bridge_list_t;
-	typedef LLDrawInfo** drawinfo_list_t;
+	typedef std::vector<LLSpatialGroup*> sg_list_t;
+	typedef std::vector<LLDrawable*> drawable_list_t;
+	typedef std::vector<LLSpatialBridge*> bridge_list_t;
+	typedef std::vector<LLDrawInfo*> drawinfo_list_t;
 
-	typedef LLSpatialGroup** sg_iterator;
-	typedef LLSpatialBridge** bridge_iterator;
-	typedef LLDrawInfo** drawinfo_iterator;
-	typedef LLDrawable** drawable_iterator;
+	typedef sg_list_t::const_iterator sg_iterator;
+	typedef bridge_list_t::const_iterator bridge_iterator;
+	typedef drawinfo_list_t::const_iterator drawinfo_iterator;
+	typedef drawable_list_t::const_iterator drawable_iterator;
 
 	void clear();
 	
-	sg_iterator beginVisibleGroups();
-	sg_iterator endVisibleGroups();
+	const sg_iterator beginVisibleGroups()			const { return mVisibleGroups.begin(); }
+	const sg_iterator endVisibleGroups()			const { return mVisibleGroups.end(); }
 
-	sg_iterator beginAlphaGroups();
-	sg_iterator endAlphaGroups();
+	const sg_iterator beginAlphaGroups()			const { return mAlphaGroups.begin(); }
+	const sg_iterator endAlphaGroups()				const { return mAlphaGroups.end(); }
+	const sg_list_t::iterator beginAlphaGroups()		  { return mAlphaGroups.begin(); }
+	const sg_list_t::iterator endAlphaGroups()			  { return mAlphaGroups.end(); }
 
-	bool hasOcclusionGroups() { return mOcclusionGroupsSize > 0; }
-	sg_iterator beginOcclusionGroups();
-	sg_iterator endOcclusionGroups();
+	bool hasOcclusionGroups()						const {  return !mOcclusionGroups.empty(); }
+	const sg_iterator beginOcclusionGroups()		const { return mOcclusionGroups.begin(); }
+	const sg_iterator endOcclusionGroups()			const { return mOcclusionGroups.end(); }
 
-	sg_iterator beginDrawableGroups();
-	sg_iterator endDrawableGroups();
+	const sg_iterator beginDrawableGroups()			const { return mDrawableGroups.begin(); }
+	const sg_iterator endDrawableGroups()			const { return mDrawableGroups.end(); }
 
-	drawable_iterator beginVisibleList();
-	drawable_iterator endVisibleList();
+	const drawable_iterator beginVisibleList()		const { return mVisibleList.begin(); }
+	const drawable_iterator endVisibleList()		const { return mVisibleList.end(); }
 
-	bridge_iterator beginVisibleBridge();
-	bridge_iterator endVisibleBridge();
+	const bridge_iterator beginVisibleBridge()		const { return mVisibleBridge.begin(); }
+	const bridge_iterator endVisibleBridge()		const { return mVisibleBridge.end(); }
 
-	drawinfo_iterator beginRenderMap(U32 type);
-	drawinfo_iterator endRenderMap(U32 type);
+	bool hasRenderMap(U32 type)						const { return !mRenderMap[type].empty(); }
+	const drawinfo_iterator beginRenderMap(U32 type)const { return mRenderMap[type].begin(); }
+	const drawinfo_iterator endRenderMap(U32 type)	const { return mRenderMap[type].end(); }
 
-	void pushVisibleGroup(LLSpatialGroup* group);
-	void pushAlphaGroup(LLSpatialGroup* group);
-	void pushOcclusionGroup(LLSpatialGroup* group);
-	void pushDrawableGroup(LLSpatialGroup* group);
-	void pushDrawable(LLDrawable* drawable);
-	void pushBridge(LLSpatialBridge* bridge);
-	void pushDrawInfo(U32 type, LLDrawInfo* draw_info);
-	
-	U32 getVisibleGroupsSize()		{ return mVisibleGroupsSize; }
-	U32	getAlphaGroupsSize()		{ return mAlphaGroupsSize; }
-	U32	getDrawableGroupsSize()		{ return mDrawableGroupsSize; }
-	U32	getVisibleListSize()		{ return mVisibleListSize; }
-	U32	getVisibleBridgeSize()		{ return mVisibleBridgeSize; }
-	U32	getRenderMapSize(U32 type)	{ return mRenderMapSize[type]; }
+	void pushVisibleGroup(LLSpatialGroup* group)		  {  mVisibleGroups.push_back(group); }
+	void pushAlphaGroup(LLSpatialGroup* group)			  {  mAlphaGroups.push_back(group); }
+	void pushOcclusionGroup(LLSpatialGroup* group)		  {  mOcclusionGroups.push_back(group); }
+	void pushDrawableGroup(LLSpatialGroup* group)		  {  mDrawableGroups.push_back(group); }
+	void pushDrawable(LLDrawable* drawable)				  {  mVisibleList.push_back(drawable); }
+	void pushBridge(LLSpatialBridge* bridge)			  {  mVisibleBridge.push_back(bridge); }
+	void pushDrawInfo(U32 type, LLDrawInfo* draw_info)	  {  mRenderMap[type].push_back(draw_info); }
 
 	void assertDrawMapsEmpty();
 
 private:
-
-	void pushBack(void** &head, U32& count, void* val);
-
-	U32					mVisibleGroupsSize;
-	U32					mAlphaGroupsSize;
-	U32					mOcclusionGroupsSize;
-	U32					mDrawableGroupsSize;
-	U32					mVisibleListSize;
-	U32					mVisibleBridgeSize;
-
-	U32					mVisibleGroupsAllocated;
-	U32					mAlphaGroupsAllocated;
-	U32					mOcclusionGroupsAllocated;
-	U32					mDrawableGroupsAllocated;
-	U32					mVisibleListAllocated;
-	U32					mVisibleBridgeAllocated;
-
-	U32					mRenderMapSize[LLRenderPass::NUM_RENDER_TYPES];
-
 	sg_list_t			mVisibleGroups;
-	sg_iterator			mVisibleGroupsEnd;
 	sg_list_t			mAlphaGroups;
-	sg_iterator			mAlphaGroupsEnd;
 	sg_list_t			mOcclusionGroups;
-	sg_iterator			mOcclusionGroupsEnd;
 	sg_list_t			mDrawableGroups;
-	sg_iterator			mDrawableGroupsEnd;
 	drawable_list_t		mVisibleList;
-	drawable_iterator	mVisibleListEnd;
 	bridge_list_t		mVisibleBridge;
-	bridge_iterator		mVisibleBridgeEnd;
 	drawinfo_list_t		mRenderMap[LLRenderPass::NUM_RENDER_TYPES];
-	U32					mRenderMapAllocated[LLRenderPass::NUM_RENDER_TYPES];
-	drawinfo_iterator mRenderMapEnd[LLRenderPass::NUM_RENDER_TYPES];
-
 };
 
 

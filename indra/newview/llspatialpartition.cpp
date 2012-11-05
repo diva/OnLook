@@ -83,6 +83,7 @@ U32 LLSpatialGroup::sNodeCount = 0;
 std::set<GLuint> LLSpatialGroup::sPendingQueries;
 
 U32 gOctreeMaxCapacity;
+U32 gOctreeReserveCapacity;
 
 BOOL LLSpatialGroup::sNoDelete = FALSE;
 
@@ -4508,251 +4509,27 @@ LLVertexBuffer* LLGeometryManager::createVertexBuffer(U32 type_mask, U32 usage)
 	return new LLVertexBuffer(type_mask, usage);
 }
 
-LLCullResult::LLCullResult() 
-{	
-	mVisibleGroupsAllocated = 0;
-	mAlphaGroupsAllocated = 0;
-	mOcclusionGroupsAllocated = 0;
-	mDrawableGroupsAllocated = 0;
-	mVisibleListAllocated = 0;
-	mVisibleBridgeAllocated = 0;
-
-	mVisibleGroups = NULL;
-	mVisibleGroupsEnd = NULL;
-	mAlphaGroups = NULL;
-	mAlphaGroupsEnd = NULL;
-	mOcclusionGroups = NULL;
-	mOcclusionGroupsEnd = NULL;
-	mDrawableGroups = NULL;
-	mDrawableGroupsEnd = NULL;
-	mVisibleList = NULL;
-	mVisibleListEnd = NULL;
-	mVisibleBridge = NULL;
-	mVisibleBridgeEnd = NULL;
-
-	for (U32 i = 0; i < LLRenderPass::NUM_RENDER_TYPES; i++)
-	{
-		mRenderMap[i] = NULL;
-		mRenderMapEnd[i] = NULL;
-		mRenderMapAllocated[i] = 0;
-	}
-
-	clear();
-}
-
-void LLCullResult::pushBack(void**& head, U32& count, void* val)
-{
-	count++;
-	head = (void**) realloc((void*) head, sizeof(void*) * count);
-	head[count-1] = val;
-}
 
 void LLCullResult::clear()
 {
-	mVisibleGroupsSize = 0;
-	mVisibleGroupsEnd = mVisibleGroups;
-
-	mAlphaGroupsSize = 0;
-	mAlphaGroupsEnd = mAlphaGroups;
-
-	mOcclusionGroupsSize = 0;
-	mOcclusionGroupsEnd = mOcclusionGroups;
-
-	mDrawableGroupsSize = 0;
-	mDrawableGroupsEnd = mDrawableGroups;
-
-	mVisibleListSize = 0;
-	mVisibleListEnd = mVisibleList;
-
-	mVisibleBridgeSize = 0;
-	mVisibleBridgeEnd = mVisibleBridge;
-
+	mVisibleGroups.clear();
+	mAlphaGroups.clear();
+	mOcclusionGroups.clear();
+	mDrawableGroups.clear();
+	mVisibleList.clear();
+	mVisibleBridge.clear();
 
 	for (U32 i = 0; i < LLRenderPass::NUM_RENDER_TYPES; i++)
 	{
-		for (U32 j = 0; j < mRenderMapSize[i]; j++)
-		{
-			mRenderMap[i][j] = 0;
-		}
-		mRenderMapSize[i] = 0;
-		mRenderMapEnd[i] = mRenderMap[i];
+		mRenderMap[i].clear();
 	}
 }
-
-LLCullResult::sg_iterator LLCullResult::beginVisibleGroups()
-{
-	return mVisibleGroups;
-}
-
-LLCullResult::sg_iterator LLCullResult::endVisibleGroups()
-{
-	return mVisibleGroupsEnd;
-}
-
-LLCullResult::sg_iterator LLCullResult::beginAlphaGroups()
-{
-	return mAlphaGroups;
-}
-
-LLCullResult::sg_iterator LLCullResult::endAlphaGroups()
-{
-	return mAlphaGroupsEnd;
-}
-
-LLCullResult::sg_iterator LLCullResult::beginOcclusionGroups()
-{
-	return mOcclusionGroups;
-}
-
-LLCullResult::sg_iterator LLCullResult::endOcclusionGroups()
-{
-	return mOcclusionGroupsEnd;
-}
-
-LLCullResult::sg_iterator LLCullResult::beginDrawableGroups()
-{
-	return mDrawableGroups;
-}
-
-LLCullResult::sg_iterator LLCullResult::endDrawableGroups()
-{
-	return mDrawableGroupsEnd;
-}
-
-LLCullResult::drawable_iterator LLCullResult::beginVisibleList()
-{
-	return mVisibleList;
-}
-
-LLCullResult::drawable_iterator LLCullResult::endVisibleList()
-{
-	return mVisibleListEnd;
-}
-
-LLCullResult::bridge_iterator LLCullResult::beginVisibleBridge()
-{
-	return mVisibleBridge;
-}
-
-LLCullResult::bridge_iterator LLCullResult::endVisibleBridge()
-{
-	return mVisibleBridgeEnd;
-}
-
-LLCullResult::drawinfo_iterator LLCullResult::beginRenderMap(U32 type)
-{
-	return mRenderMap[type];
-}
-
-LLCullResult::drawinfo_iterator LLCullResult::endRenderMap(U32 type)
-{
-	return mRenderMapEnd[type];
-}
-
-void LLCullResult::pushVisibleGroup(LLSpatialGroup* group)
-{
-	if (mVisibleGroupsSize < mVisibleGroupsAllocated)
-	{
-		mVisibleGroups[mVisibleGroupsSize] = group;
-	}
-	else
-	{
-		pushBack((void**&) mVisibleGroups, mVisibleGroupsAllocated, (void*) group);
-	}
-	++mVisibleGroupsSize;
-	mVisibleGroupsEnd = mVisibleGroups+mVisibleGroupsSize;
-}
-
-void LLCullResult::pushAlphaGroup(LLSpatialGroup* group)
-{
-	if (mAlphaGroupsSize < mAlphaGroupsAllocated)
-	{
-		mAlphaGroups[mAlphaGroupsSize] = group;
-	}
-	else
-	{
-		pushBack((void**&) mAlphaGroups, mAlphaGroupsAllocated, (void*) group);
-	}
-	++mAlphaGroupsSize;
-	mAlphaGroupsEnd = mAlphaGroups+mAlphaGroupsSize;
-}
-
-void LLCullResult::pushOcclusionGroup(LLSpatialGroup* group)
-{
-	if (mOcclusionGroupsSize < mOcclusionGroupsAllocated)
-	{
-		mOcclusionGroups[mOcclusionGroupsSize] = group;
-	}
-	else
-	{
-		pushBack((void**&) mOcclusionGroups, mOcclusionGroupsAllocated, (void*) group);
-	}
-	++mOcclusionGroupsSize;
-	mOcclusionGroupsEnd = mOcclusionGroups+mOcclusionGroupsSize;
-}
-
-void LLCullResult::pushDrawableGroup(LLSpatialGroup* group)
-{
-	if (mDrawableGroupsSize < mDrawableGroupsAllocated)
-	{
-		mDrawableGroups[mDrawableGroupsSize] = group;
-	}
-	else
-	{
-		pushBack((void**&) mDrawableGroups, mDrawableGroupsAllocated, (void*) group);
-	}
-	++mDrawableGroupsSize;
-	mDrawableGroupsEnd = mDrawableGroups+mDrawableGroupsSize;
-}
-
-void LLCullResult::pushDrawable(LLDrawable* drawable)
-{
-	if (mVisibleListSize < mVisibleListAllocated)
-	{
-		mVisibleList[mVisibleListSize] = drawable;
-	}
-	else
-	{
-		pushBack((void**&) mVisibleList, mVisibleListAllocated, (void*) drawable);
-	}
-	++mVisibleListSize;
-	mVisibleListEnd = mVisibleList+mVisibleListSize;
-}
-
-void LLCullResult::pushBridge(LLSpatialBridge* bridge)
-{
-	if (mVisibleBridgeSize < mVisibleBridgeAllocated)
-	{
-		mVisibleBridge[mVisibleBridgeSize] = bridge;
-	}
-	else
-	{
-		pushBack((void**&) mVisibleBridge, mVisibleBridgeAllocated, (void*) bridge);
-	}
-	++mVisibleBridgeSize;
-	mVisibleBridgeEnd = mVisibleBridge+mVisibleBridgeSize;
-}
-
-void LLCullResult::pushDrawInfo(U32 type, LLDrawInfo* draw_info)
-{
-	if (mRenderMapSize[type] < mRenderMapAllocated[type])
-	{
-		mRenderMap[type][mRenderMapSize[type]] = draw_info;
-	}
-	else
-	{
-		pushBack((void**&) mRenderMap[type], mRenderMapAllocated[type], (void*) draw_info);
-	}
-	++mRenderMapSize[type];
-	mRenderMapEnd[type] = mRenderMap[type] + mRenderMapSize[type];
-}
-
 
 void LLCullResult::assertDrawMapsEmpty()
 {
 	for (U32 i = 0; i < LLRenderPass::NUM_RENDER_TYPES; i++)
 	{
-		if (mRenderMapSize[i] != 0)
+		if (hasRenderMap(i))
 		{
 			llerrs << "Stale LLDrawInfo's in LLCullResult!" << llendl;
 		}

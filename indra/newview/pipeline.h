@@ -299,10 +299,10 @@ public:
 	void setLight(LLDrawable *drawablep, BOOL is_light);
 	
 	BOOL hasRenderBatches(const U32 type) const;
-	LLCullResult::drawinfo_iterator beginRenderMap(U32 type);
-	LLCullResult::drawinfo_iterator endRenderMap(U32 type);
-	LLCullResult::sg_iterator beginAlphaGroups();
-	LLCullResult::sg_iterator endAlphaGroups();
+	LLCullResult::drawinfo_iterator beginRenderMap(U32 type) const;
+	LLCullResult::drawinfo_iterator endRenderMap(U32 type) const;
+	LLCullResult::sg_iterator beginAlphaGroups() const;
+	LLCullResult::sg_iterator endAlphaGroups() const;
 	
 
 	void addTrianglesDrawn(S32 index_count, U32 render_type = LLRender::TRIANGLES);

@@ -51,6 +51,7 @@
 #include "llhudmanager.h"
 #include "llimagebmp.h"
 #include "llimagegl.h"
+#include "lloctree.h"
 #include "llselectmgr.h"
 #include "llsky.h"
 #include "llstartup.h"
@@ -225,6 +226,7 @@ void display_stats()
 		F32 fps = gRecentFrameCount / fps_log_freq;
 		llinfos << llformat("FPS: %.02f", fps) << llendl;
 		llinfos << llformat("VBO: %d  glVBO: %d", LLVertexBuffer::sCount, LLVertexBuffer::sGLCount) << llendl;
+		OctreStats::getInstance()->dump();
 		gRecentFrameCount = 0;
 		gRecentFPSTime.reset();
 	}
