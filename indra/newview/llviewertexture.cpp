@@ -1448,7 +1448,11 @@ void LLViewerFetchedTexture::addToCreateTexture()
 
 		for(U32 i = 0 ; i < mNumFaces ; i++)
 		{
-			mFaceList[i]->dirtyTexture() ;
+			LLFace* facep = mFaceList[i];
+			if(facep)
+			{
+				facep->dirtyTexture() ;
+			}
 		}
 
 		//discard the cached raw image and the saved raw image

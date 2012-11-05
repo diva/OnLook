@@ -108,18 +108,25 @@ LLEnvironmentRequestResponder::LLEnvironmentRequestResponder()
 	if (mID != sCount)
 	{
 		LL_INFOS("WindlightCaps") << "Got superseded by another responder; ignoring..." << LL_ENDL;
-		return;
 	}
-
-	if (unvalidated_content[0]["regionID"].asUUID() != gAgent.getRegion()->getRegionID())
+	else if (!gAgent.getRegion() || gAgent.getRegion()->getRegionID().isNull())
+	{
+		LL_WARNS("WindlightCaps") << "Ignoring responder. Current region is invalid." << LL_ENDL;
+	}
+	else if (unvalidated_content[0]["regionID"].asUUID().isNull())
+	{
+		LL_WARNS("WindlightCaps") << "Ignoring responder. Response from invalid region." << LL_ENDL;
+	}
+	else if (unvalidated_content[0]["regionID"].asUUID() != gAgent.getRegion()->getRegionID())
 	{
 		LL_WARNS("WindlightCaps") << "Not in the region from where this data was received (wanting "
 			<< gAgent.getRegion()->getRegionID() << " but got " << unvalidated_content[0]["regionID"].asUUID()
 			<< ") - ignoring..." << LL_ENDL;
-		return;
 	}
-
-	LLEnvManagerNew::getInstance()->onRegionSettingsResponse(unvalidated_content);
+	else
+	{
+		LLEnvManagerNew::getInstance()->onRegionSettingsResponse(unvalidated_content);
+	}
 }
 /*virtual*/ void LLEnvironmentRequestResponder::error(U32 status, const std::string& reason)
 {

@@ -5944,8 +5944,6 @@ void LLSelectNode::renderOneWireframe(const LLColor4& color)
 		gDebugProgram.bind();
 	}
 
-	static LLCachedControl<U32> mode("OutlineMode",0);
-
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	gGL.pushMatrix();
 	

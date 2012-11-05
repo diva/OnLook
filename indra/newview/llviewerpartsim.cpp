@@ -835,18 +835,15 @@ void LLViewerPartSim::removeLastCreatedSource()
 void LLViewerPartSim::cleanupRegion(LLViewerRegion *regionp)
 {
 	LLMemType mt(LLMemType::MTYPE_PARTICLES);
-	for (group_list_t::iterator i = mViewerPartGroups.begin(); i != mViewerPartGroups.end(); )
-	{
-		group_list_t::iterator iter = i++;
 
-		if ((*iter)->getRegion() == regionp)
+	group_list_t& vec = mViewerPartGroups;
+	for (group_list_t::size_type i = 0;i<vec.size();++i)
+	{
+		if (vec[i]->getRegion() == regionp)
 		{
-			delete *iter;
-			*iter = mViewerPartGroups.back();
-			bool done = (i == mViewerPartGroups.end());
-			mViewerPartGroups.pop_back();
-			if(done)
-				break;
+			delete vec[i];
+			vec[i--] = vec.back();
+			vec.pop_back();
 			//i = mViewerPartGroups.erase(iter);			
 		}
 	}

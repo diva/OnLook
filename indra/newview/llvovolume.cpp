@@ -1114,13 +1114,13 @@ void LLVOVolume::updateFaceFlags()
 {
 	for (S32 i = 0; i < getVolume()->getNumFaces(); i++)
 	{
-		if(mDrawable->getNumFaces() <= i || getNumTEs() <= i)
-			return;
-
 		LLFace *face = mDrawable->getFace(i);
 		if (face)
 		{
-			BOOL fullbright = getTE(i)->getFullbright();
+			LLTextureEntry *entry = getTE(i);
+			if(!entry)
+				continue;
+			BOOL fullbright = entry->getFullbright();
 			face->clearState(LLFace::FULLBRIGHT | LLFace::HUD_RENDER | LLFace::LIGHT);
 
 			if (fullbright || (mMaterial == LL_MCODE_LIGHT))
