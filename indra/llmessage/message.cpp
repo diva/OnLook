@@ -1831,6 +1831,10 @@ void	process_start_ping_check(LLMessageSystem *msgsystem, void** /*user_data*/)
 // Note: this is currently unused. --mark
 void	open_circuit(LLMessageSystem *msgsystem, void** /*user_data*/)
 {
+	llassert_always(false);
+	return;
+
+#if 0
 	U32  ip;
 	U16	 port;
 
@@ -1839,6 +1843,7 @@ void	open_circuit(LLMessageSystem *msgsystem, void** /*user_data*/)
 
 	// By default, OpenCircuit's are untrusted
 	msgsystem->enableCircuit(LLHost(ip, port), FALSE);
+#endif
 }
 
 void	close_circuit(LLMessageSystem *msgsystem, void** /*user_data*/)
