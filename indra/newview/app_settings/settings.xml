@@ -10040,6 +10040,18 @@
     <integer>128</integer>
   </map>
 
+    <key>OctreeReserveNodeCapacity</key>
+    <map>
+      <key>Comment</key>
+      <string>Default number of elements to pre-allocate for in a single octree node</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>4</integer>
+    </map>    
+    
   <key>OctreeStaticObjectSizeFactor</key>
   <map>
     <key>Comment</key>
