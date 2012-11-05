@@ -309,9 +309,15 @@ void LLHTTPClient::ResponderBase::decode_llsd_body(U32 status, std::string const
 #ifdef SHOW_ASSERT
   if (!should_be_llsd)
   {
+	char const* str = ss.str().c_str();
 	// Make sure that the server indeed never returns LLSD as body when the http status is an error.
 	LLSD dummy;
-	bool server_sent_llsd_with_http_error = LLSDSerialize::fromXML(dummy, ss) > 0;
+	bool server_sent_llsd_with_http_error =
+	    strncmp(str, "<!DOCTYPE", 9) &&				// LLSD does never start with "<!"; short circuits 97% of the replies.
+		strncmp(str, "cap not found:", 14) &&		// Most of the other 3%.
+		str[0] &&									// Empty happens too and aint LLSD either.
+		strncmp(str, "Not Found", 9) &&
+		LLSDSerialize::fromXML(dummy, ss) > 0;
 	if (server_sent_llsd_with_http_error)
 	{
 	  llwarns << "The server sent us a response with http status " << status << " and LLSD(!) body: \"" << ss.str() << "\"!" << llendl;
