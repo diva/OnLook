@@ -322,7 +322,7 @@ class WindowsManifest(ViewerManifest):
             self.path("wrap_oal.dll")
             self.end_prefix()
 
-        if self.args['extra_libraries'] != None:
+        if 'extra_libraries' in self.args:
             print self.args['extra_libraries']
             path_list = self.args['extra_libraries'].split('|')
             for path in path_list:
