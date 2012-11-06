@@ -2917,6 +2917,52 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="Rubber">Rubber</string>
 	<string name="Light">Light</string>
 
+	<!-- Avatar Skeleton -->
+	<string name="Chest">Chest</string>
+	<string name="Skull">Skull</string>
+	<string name="Left Shoulder">Left Shoulder</string>
+	<string name="Right Shoulder">Right Shoulder</string>
+	<string name="Left Hand">Left Hand</string>
+	<string name="Right Hand">Right Hand</string>
+	<string name="Left Foot">Left Foot</string>
+	<string name="Right Foot">Right Foot</string>
+	<string name="Spine">Spine</string>
+	<string name="Pelvis">Pelvis</string>
+	<string name="Mouth">Mouth</string>
+	<string name="Chin">Chin</string>
+	<string name="Left Ear">Left Ear</string>
+	<string name="Right Ear">Right Ear</string>
+	<string name="Left Eyeball">Left Eyeball</string>
+	<string name="Right Eyeball">Right Eyeball</string>
+	<string name="Nose">Nose</string>
+	<string name="R Upper Arm">R Upper Arm</string>
+	<string name="R Forearm">R Forearm</string>
+	<string name="L Upper Arm">L Upper Arm</string>
+	<string name="L Forearm">L Forearm</string>
+	<string name="Right Hip">Right Hip</string>
+	<string name="R Upper Leg">R Upper Leg</string>
+	<string name="R Lower Leg">R Lower Leg</string>
+	<string name="Left Hip">Left Hip</string>
+	<string name="L Upper Leg">L Upper Leg</string>
+	<string name="L Lower Leg">L Lower Leg</string>
+	<string name="Stomach">Stomach</string>
+	<string name="Left Pec">Left Pec</string>
+	<string name="Right Pec">Right Pec</string>
+    <string name="Neck">Neck</string>
+    <string name="Root">Root</string>
+	<string name="unsupported point">unsupported point</string>
+	<string name="Invalid Attachment">Invalid Attachment Point</string>
+
+  <!-- HUD Position -->
+	<string name="Center 2">Center 2</string>
+	<string name="Top Right">Top Right</string>
+	<string name="Top">Top</string>
+	<string name="Top Left">Top Left</string>
+	<string name="Center">Center</string>
+	<string name="Bottom Left">Bottom Left</string>
+	<string name="Bottom">Bottom</string>
+	<string name="Bottom Right">Bottom Right</string>
+
 	<!-- compile queue-->
 	<string name="CompileQueueDownloadedCompiling">Downloaded, now compiling</string>
 	<string name="CompileQueueScriptNotFound">Script not found on server.</string>
@@ -2956,6 +3002,9 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="IMParentEstate">parent estate</string>
 	<string name="IMMainland">mainland</string>
 	<string name="IMTeen">teen</string>
+
+    <!-- floater about land -->
+    <string name="Anyone">Anyone</string>
 
 	<!-- floater region info -->
 	<!-- The following will replace variable [ALL_ESTATES] in notifications EstateAllowed*, EstateBanned*, EstateManager* -->
@@ -3696,6 +3745,7 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 	<string name="IM_autoresponded_to">Autoresponse sent to</string>
 	<string name="IM_autoresponse_sent_item">was sent auto-response item</string>
 	<string name="Unnamed">(Unnamed)</string>
+	<string name="inventory_item_offered_to">Inventory item offered to</string>
 	<string name="Saved_message" value="(Saved [LONG_TIMESTAMP]) "/>
 	<string name="PowerUser1">You are bestowed with powers beyond mortal comprehension.</string>
 	<string name="PowerUser2">Use your newfound abilities wisely.</string>
@@ -3813,6 +3863,10 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
   <string name="group_role_officers">Officers</string>
   <string name="group_role_owners">Owners</string>
   <string name="group_member_status_online">Online</string>
+
+  <string name="uploading_abuse_report">Uploading...
+
+Abuse Report</string>
 
   <!-- names for new inventory items-->
   <string name="New Shape">New Shape</string>

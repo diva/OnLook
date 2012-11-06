@@ -5106,6 +5106,7 @@ std::string LLObjectBridge::getLabelSuffix() const
 		{
 			return LLItemBridge::getLabelSuffix() + LLTrans::getString("worn");
 		}
+		bool unsupportedPoint = false; //Unsupported points are given special names, translate them as they're named, not later.
 		std::string attachment_point_name = gAgentAvatarp->getAttachedPointName(mUUID);
 		if (attachment_point_name == LLStringUtil::null) // Error condition, invalid attach point
 		{
@@ -5116,13 +5117,14 @@ std::string LLObjectBridge::getLabelSuffix() const
 			{
 				if((*iter).second.first == mUUID)
 				{
-					attachment_point_name = llformat("unsupported point %d)", (*iter).first);
+					attachment_point_name = llformat((LLTrans::getString("unsupported point")+" %d)").c_str(), (*iter).first);
 				}
 			}
+			unsupportedPoint = attachment_point_name != "Invalid Attachment";
 		}
 		// e.g. "(worn on ...)" / "(attached to ...)"
 		LLStringUtil::format_map_t args;
-		args["[ATTACHMENT_POINT]"] =  attachment_point_name;
+		args["[ATTACHMENT_POINT]"] = unsupportedPoint ? attachment_point_name : LLTrans::getString(attachment_point_name);
 
 		if(gRlvAttachmentLocks.canDetach(getItem()))
 			return LLItemBridge::getLabelSuffix() + LLTrans::getString("WornOnAttachmentPoint", args);

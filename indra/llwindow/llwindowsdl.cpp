@@ -1913,7 +1913,7 @@ void LLWindowSDL::gatherInput()
 				mIsMinimized = (!event.active.gain);
 
 				mCallbacks->handleActivate(this, !mIsMinimized);
-				llinfos << "SDL deiconification state switched to " << BOOL(event.active.gain) << llendl;
+				lldebugs << "SDL deiconification state switched to " << BOOL(event.active.gain) << llendl;
 			}
 			else
 			{
