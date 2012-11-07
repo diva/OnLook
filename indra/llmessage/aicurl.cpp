@@ -90,7 +90,6 @@ enum gSSLlib_type {
 // No locking needed: initialized before threads are created, and subsequently only read.
 gSSLlib_type gSSLlib;
 bool gSetoptParamsNeedDup;
-void (*statemachines_flush_hook)(void);
 
 } // namespace
 
@@ -291,9 +290,9 @@ static unsigned int encoded_version(int major, int minor, int patch)
 namespace AICurlInterface {
 
 // MAIN-THREAD
-void initCurl(void (*flush_hook)())
+void initCurl(void)
 {
-  DoutEntering(dc::curl, "AICurlInterface::initCurl(" << (void*)flush_hook << ")");
+  DoutEntering(dc::curl, "AICurlInterface::initCurl()");
 
   llassert(LLThread::getRunning() == 0);		// We must not call curl_global_init unless we are the only thread.
   CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
@@ -376,9 +375,6 @@ void initCurl(void (*flush_hook)())
 	}
 	llassert_always(!gSetoptParamsNeedDup);		// Might add support later.
   }
-
-  // Called in cleanupCurl.
-  statemachines_flush_hook = flush_hook;
 }
 
 // MAIN-THREAD
@@ -391,8 +387,7 @@ void cleanupCurl(void)
   stopCurlThread();
   if (CurlMultiHandle::getTotalMultiHandles() != 0)
 	llwarns << "Not all CurlMultiHandle objects were destroyed!" << llendl;
-  if (statemachines_flush_hook)
-	(*statemachines_flush_hook)();
+  AIStateMachine::flush();
   Stats::print();
   ssl_cleanup();
 

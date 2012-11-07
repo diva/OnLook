@@ -617,7 +617,7 @@ bool LLAppViewer::init()
 
 	// <edit>
 	// Curl must be initialized before any thread is running.
-	AICurlInterface::initCurl(&AIStateMachine::flush);
+	AICurlInterface::initCurl();
 
 	// Logging is initialized. Now it's safe to start the error thread.
 	startErrorThread();
