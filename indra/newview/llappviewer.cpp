@@ -51,7 +51,7 @@
 #include "llagentwearables.h"
 #include "llwindow.h"
 #include "llviewerstats.h"
-//#include "llmarketplacefunctions.h"
+#include "llmarketplacefunctions.h"
 #include "llmarketplacenotifications.h"
 #include "llmd5.h"
 #include "llmeshrepository.h"
@@ -4090,7 +4090,7 @@ void LLAppViewer::idle()
 	LLViewerMediaFocus::getInstance()->update();
 	
 	// Update marketplace
-	//LLMarketplaceInventoryImporter::update();
+	LLMarketplaceInventoryImporter::update();
 	LLMarketplaceInventoryNotifications::update();
 
 	// objects and camera should be in sync, do LOD calculations now

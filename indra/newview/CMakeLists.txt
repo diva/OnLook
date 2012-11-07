@@ -225,6 +225,7 @@ set(viewer_SOURCE_FILES
     llfloaternotificationsconsole.cpp
     llfloaterobjectiminfo.cpp
     llfloateropenobject.cpp
+    llfloateroutbox.cpp
     llfloaterparcel.cpp
     llfloaterpermissionsmgr.cpp
     llfloaterperms.cpp
@@ -305,6 +306,7 @@ set(viewer_SOURCE_FILES
     llmanipscale.cpp
     llmaniptranslate.cpp
     llmapresponders.cpp
+    llmarketplacefunctions.cpp
     llmarketplacenotifications.cpp
     llmediactrl.cpp
     llmediaremotectrl.cpp
@@ -357,6 +359,7 @@ set(viewer_SOURCE_FILES
     llpanellandoptions.cpp
     llpanellogin.cpp
     llpanelmaininventory.cpp
+    llpanelmarketplaceoutboxinventory.cpp
     llpanelmediahud.cpp
     llpanelmorph.cpp
     llpanelmsgs.cpp
@@ -727,6 +730,7 @@ set(viewer_HEADER_FILES
     llfloaternotificationsconsole.h
     llfloaterobjectiminfo.h
     llfloateropenobject.h
+    llfloateroutbox.h
     llfloaterparcel.h
     llfloaterpermissionsmgr.h
     llfloaterperms.h
@@ -807,6 +811,7 @@ set(viewer_HEADER_FILES
     llmanipscale.h
     llmaniptranslate.h
     llmapresponders.h
+    llmarketplacefunctions.h
     llmarketplacenotifications.h
     llmediactrl.h
     llmediaremotectrl.h
@@ -859,6 +864,7 @@ set(viewer_HEADER_FILES
     llpanellandoptions.h
     llpanellogin.h
     llpanelmaininventory.h
+    llpanelmarketplaceoutboxinventory.h
     llpanelmediahud.h
     llpanelmorph.h
     llpanelmsgs.h

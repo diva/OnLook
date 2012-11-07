@@ -2853,6 +2853,23 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 
 	<!-- inventory -->
 	<string name="InventoryNoMatchingItems">No matching items found in inventory.</string>
+	<string name="MarketplaceURL">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/</string>
+	<string name="MarketplaceURL_CreateStore">http://community.secondlife.com/t5/English-Knowledge-Base/Selling-in-the-Marketplace/ta-p/700193#Section_.4</string>
+	<string name="MarketplaceURL_Dashboard">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/merchants/store/dashboard</string>
+	<string name="MarketplaceURL_Imports">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/merchants/store/imports</string>
+	<string name="MarketplaceURL_LearnMore">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/learn_more</string>
+	<string name="InventoryOutboxNotMerchantTitle">Anyone can sell items on the Marketplace.</string>
+	<string name="InventoryOutboxNotMerchantTooltip"></string>
+	<string name="InventoryOutboxNotMerchant">
+If you'd like to become a merchant, you'll need to
+	</string>
+    <string name="InventoryOutboxNotMerchantSubs">create a Marketplace store.</string>
+	<string name="InventoryOutboxNoItemsTitle">Your outbox is empty.</string>
+	<string name="InventoryOutboxNoItemsTooltip"></string>
+	<string name="InventoryOutboxNoItems">
+Drag folders to this area and click "Send to Marketplace" to list them for sale on the
+	</string>
+    <string name="InventoryOutboxNoItemsSubs">Marketplace.</string>
 
 	<!-- use value="" because they have preceding spaces -->
 	<string name="no_transfer" value=" (no transfer)" />
