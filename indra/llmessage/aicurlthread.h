@@ -33,7 +33,6 @@
 
 #include "aicurl.h"
 #include <vector>
-#include <deque>
 
 #undef AICurlPrivate
 
@@ -103,10 +102,6 @@ class MultiHandle : public CurlMultiHandle
 
 	PollSet* mReadPollSet;
 	PollSet* mWritePollSet;
-
-  private:
-	// Temporary throttling hack.
-	std::deque<AICurlEasyRequest> mQueuedRequests;	// Waiting (throttled) requests.
 };
 
 } // namespace curlthread

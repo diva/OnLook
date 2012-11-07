@@ -1836,7 +1836,9 @@ bool LLAppViewer::initThreads()
 		LLWatchdog::getInstance()->init(watchdog_killer_callback);
 	}
 
-	AICurlInterface::startCurlThread(gSavedSettings.getU32("CurlConcurrentConnections"), gSavedSettings.getBOOL("NoVerifySSLCert"));
+	AICurlInterface::startCurlThread(gSavedSettings.getU32("CurlMaxTotalConcurrentConnections"),
+		                             gSavedSettings.getU32("CurlConcurrentConnectionsPerHost"),
+		                             gSavedSettings.getBOOL("NoVerifySSLCert"));
 
 	LLImage::initClass();
 	

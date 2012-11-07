@@ -34,9 +34,11 @@
 #include <sstream>
 #include "llatomic.h"
 #include "llrefcount.h"
+#include "aicurlperhost.h"
 
 class AIHTTPHeaders;
 class AIHTTPTimeoutPolicy;
+class AICurlEasyRequest;
 class AICurlEasyRequestStateMachine;
 
 namespace AICurlPrivate {
@@ -361,6 +363,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 
 	AIHTTPTimeoutPolicy const* mTimeoutPolicy;
 	std::string mLowercaseHostname;				// Lowercase hostname (canonicalized) extracted from the url.
+	PerHostRequestQueuePtr mPerHostPtr;			// Pointer to the corresponding PerHostRequestQueue.
 	LLPointer<curlthread::HTTPTimeout> mTimeout;// Timeout administration object associated with last created CurlSocketInfo.
 	bool mTimeoutIsOrphan;						// Set to true when mTimeout is not (yet) associated with a CurlSocketInfo.
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
@@ -402,6 +405,11 @@ class CurlEasyRequest : public CurlEasyHandle {
 	inline ThreadSafeBufferedCurlEasyRequest* get_lockobj(void);
 	inline ThreadSafeBufferedCurlEasyRequest const* get_lockobj(void) const;
 
+	// PerHost API.
+	PerHostRequestQueuePtr getPerHostPtr(void);						// (Optionally create and) return a pointer to the unique
+																	// PerHostRequestQueue corresponding to mLowercaseHostname.
+	bool removeFromPerHostQueue(AICurlEasyRequest const&) const;	// Remove this request from the per-host queue, if queued at all.
+																	// Returns true if it was queued.
   protected:
 	// Pass events to parent.
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);

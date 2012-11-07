@@ -58,6 +58,7 @@
 #include "aihttpheaders.h"
 #include "aihttptimeoutpolicy.h"
 #include "aicurleasyrequeststatemachine.h"
+#include "aicurlperhost.h"
 
 //==================================================================================
 // Debug Settings
@@ -880,6 +881,10 @@ CurlEasyRequest::~CurlEasyRequest()
   // be available anymore.
   send_handle_events_to(NULL);
   revokeCallbacks();
+  if (mPerHostPtr)
+  {
+	 PerHostRequestQueue::release(mPerHostPtr);
+  }
   // This wasn't freed yet if the request never finished.
   curl_slist_free_all(mHeaders);
 }
@@ -1078,6 +1083,7 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
 #endif
   setopt(CURLOPT_HTTPHEADER, mHeaders);
   setoptString(CURLOPT_URL, url);
+  llassert(!mPerHostPtr);
   mLowercaseHostname = extract_canonical_hostname(url);
   mTimeoutPolicy = &policy;
   state_machine->setTotalDelayTimeout(policy.getTotalDelay());
@@ -1193,6 +1199,24 @@ void CurlEasyRequest::print_diagnostics(CURLcode code)
 	  mTimeout->print_diagnostics(this);
 	}
   }
+}
+
+PerHostRequestQueuePtr CurlEasyRequest::getPerHostPtr(void)
+{
+  if (!mPerHostPtr)
+  {
+	// mPerHostPtr is really just a speed-up cache.
+	// The reason we can cache it is because mLowercaseHostname is only set
+	// in finalizeRequest which may only be called once: it never changes.
+	mPerHostPtr = PerHostRequestQueue::instance(mLowercaseHostname);
+  }
+  return mPerHostPtr;
+}
+
+bool CurlEasyRequest::removeFromPerHostQueue(AICurlEasyRequest const& easy_request) const
+{
+  // Note that easy_request (must) represent(s) this object; it's just passed for convenience.
+  return mPerHostPtr && PerHostRequestQueue_wat(*mPerHostPtr)->cancel(easy_request);
 }
 
 //-----------------------------------------------------------------------------

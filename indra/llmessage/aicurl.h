@@ -148,7 +148,8 @@ struct Stats {
 // Global functions.
 
 // Called to handle changes in Debug Settings.
-bool handleCurlConcurrentConnections(LLSD const& newvalue);
+bool handleCurlMaxTotalConcurrentConnections(LLSD const& newvalue);
+bool handleCurlConcurrentConnectionsPerHost(LLSD const& newvalue);
 bool handleNoVerifySSLCert(LLSD const& newvalue);
 
 // Called once at start of application (from newview/llappviewer.cpp by main thread (before threads are created)),
@@ -156,7 +157,7 @@ bool handleNoVerifySSLCert(LLSD const& newvalue);
 void initCurl(void);
 
 // Called once at start of application (from LLAppViewer::initThreads), starts AICurlThread.
-void startCurlThread(U32 CurlConcurrentConnections, bool NoVerifySSLCert);
+void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentConnectionsPerHost, bool NoVerifySSLCert);
 
 // Called once at end of application (from newview/llappviewer.cpp by main thread),
 // with purpose to stop curl threads, free curl resources and deinitialize curl.

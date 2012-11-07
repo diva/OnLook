@@ -4205,12 +4205,23 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
-    <key>CurlConcurrentConnections</key>
+    <key>CurlMaxTotalConcurrentConnections</key>
     <map>
       <key>Comment</key>
-      <string>Maximum number of simultaneous curl connections</string>
+      <string>Maximum total number of simultaneous curl connections</string>
       <key>Persist</key>
       <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>64</integer>
+    </map>
+    <key>CurlConcurrentConnectionsPerHost</key>
+    <map>
+      <key>Comment</key>
+      <string>Maximum number of simultaneous curl connections per host</string>
+      <key>Persist</key>
+      <integer>0</integer>
       <key>Type</key>
       <string>U32</string>
       <key>Value</key>
