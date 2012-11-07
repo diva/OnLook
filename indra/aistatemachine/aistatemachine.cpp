@@ -592,7 +592,7 @@ void AIStateMachine::flush(void)
 	AIStateMachine& statemachine(iter->statemachine());
 	if (statemachine.abortable())
 	{
-	  // We can't safely call abort() here for non-running (run() was called, but they we're initialized yet) statemachines,
+	  // We can't safely call abort() here for non-running (run() was called, but they weren't initialized yet) statemachines,
 	  // because that might call kill() which in some cases is undesirable (ie, when it is owned by a partent that will
 	  // also call abort() on it when it is aborted itself).
 	  if (statemachine.running())

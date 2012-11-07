@@ -94,7 +94,7 @@ class HTTPTimeout : public LLRefCount {
 	// Accessor.
 	bool has_stalled(void) const { return mStalled < sClockCount;  }
 
-	// Called from CurlResponderBuffer::processOutput if a timeout occurred.
+	// Called from BufferedCurlEasyRequest::processOutput if a timeout occurred.
 	void print_diagnostics(CurlEasyRequest const* curl_easy_request);
 
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
@@ -444,7 +444,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	//void setBodyLimit(U32 size) { mBodyLimit = size; }
 
     // Post-initialization, set the parent to pass the events to.
-    void send_buffer_events_to(AICurlResponderBufferEvents* target) { mBufferEventsTarget = target; }
+    void send_buffer_events_to(AIBufferedCurlEasyRequestEvents* target) { mBufferEventsTarget = target; }
 
   protected:
 	// Events from this class.
@@ -462,7 +462,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	std::string mReason;								// The "reason" from the same header line.
 	S32 mRequestTransferedBytes;
 	S32 mResponseTransferedBytes;
-	AICurlResponderBufferEvents* mBufferEventsTarget;
+	AIBufferedCurlEasyRequestEvents* mBufferEventsTarget;
 
   public:
 	static LLChannelDescriptors const sChannels;		// Channel object for mInput (channel out()) and mOutput (channel in()).
