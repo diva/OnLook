@@ -111,20 +111,8 @@ class HTTPTimeout : public LLRefCount {
 
 } // namespace curlthread
 
-struct Stats {
-  static LLAtomicU32 easy_calls;
-  static LLAtomicU32 easy_errors;
-  static LLAtomicU32 easy_init_calls;
-  static LLAtomicU32 easy_init_errors;
-  static LLAtomicU32 easy_cleanup_calls;
-  static LLAtomicU32 multi_calls;
-  static LLAtomicU32 multi_errors;
-
- static void print(void);
-};
-
 void handle_multi_error(CURLMcode code);
-inline CURLMcode check_multi_code(CURLMcode code) { Stats::multi_calls++; if (code != CURLM_OK) handle_multi_error(code); return code; }
+inline CURLMcode check_multi_code(CURLMcode code) { AICurlInterface::Stats::multi_calls++; if (code != CURLM_OK) handle_multi_error(code); return code; }
 
 bool curlThreadIsRunning(void);
 void wakeUpCurlThread(void);
@@ -248,7 +236,7 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// Always first call setErrorBuffer()!
 	static inline CURLcode check_easy_code(CURLcode code)
 	{
-	  Stats::easy_calls++;
+	  AICurlInterface::Stats::easy_calls++;
 	  if (code != CURLE_OK)
 		handle_easy_error(code);
 	  return code;
@@ -511,9 +499,11 @@ class ThreadSafeBufferedCurlEasyRequest : public AIThreadSafeSimple<BufferedCurl
 	// Throws AICurlNoEasyHandle.
 	ThreadSafeBufferedCurlEasyRequest(void) : mReferenceCount(0)
         { new (ptr()) BufferedCurlEasyRequest;
-		  Dout(dc::curl, "Creating ThreadSafeBufferedCurlEasyRequest with this = " << (void*)this); }
-	virtual ~ThreadSafeBufferedCurlEasyRequest()
-	    { Dout(dc::curl, "Destructing ThreadSafeBufferedCurlEasyRequest with this = " << (void*)this); }
+		  Dout(dc::curl, "Creating ThreadSafeBufferedCurlEasyRequest with this = " << (void*)this);
+		  AICurlInterface::Stats::ThreadSafeBufferedCurlEasyRequest_count++; }
+	~ThreadSafeBufferedCurlEasyRequest()
+	    { Dout(dc::curl, "Destructing ThreadSafeBufferedCurlEasyRequest with this = " << (void*)this);
+		  --AICurlInterface::Stats::ThreadSafeBufferedCurlEasyRequest_count; }
 
   private:
 	LLAtomicU32 mReferenceCount;

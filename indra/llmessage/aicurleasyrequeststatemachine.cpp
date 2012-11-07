@@ -249,6 +249,7 @@ AICurlEasyRequestStateMachine::AICurlEasyRequestStateMachine(void) :
     mTimer(NULL), mTotalDelayTimeout(AIHTTPTimeoutPolicy::getDebugSettingsCurlTimeout().getTotalDelay())
 {
   Dout(dc::statemachine, "Calling AICurlEasyRequestStateMachine(void) [" << (void*)this << "] [" << (void*)mCurlEasyRequest.get() << "]");
+  AICurlInterface::Stats::AICurlEasyRequestStateMachine_count++;
 }
 
 void AICurlEasyRequestStateMachine::setTotalDelayTimeout(F32 totalDelayTimeout)
@@ -259,5 +260,6 @@ void AICurlEasyRequestStateMachine::setTotalDelayTimeout(F32 totalDelayTimeout)
 AICurlEasyRequestStateMachine::~AICurlEasyRequestStateMachine()
 {
   Dout(dc::statemachine, "Calling ~AICurlEasyRequestStateMachine() [" << (void*)this << "] [" << (void*)mCurlEasyRequest.get() << "]");
+  --AICurlInterface::Stats::AICurlEasyRequestStateMachine_count;
 }
 

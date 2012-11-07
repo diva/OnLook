@@ -1527,7 +1527,7 @@ CURLMsg const* MultiHandle::info_read(int* msgs_in_queue) const
   // never increment Stats::multi_errors. However, lets just increment multi_calls
   // when it certainly wasn't an error...
   if (ret)
-	Stats::multi_calls++;
+	AICurlInterface::Stats::multi_calls++;
   return ret;
 }
 

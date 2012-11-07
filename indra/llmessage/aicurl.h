@@ -127,6 +127,23 @@ class AICurlNoBody : public AICurlError {
 // Things defined in this namespace are called from elsewhere in the viewer code.
 namespace AICurlInterface {
 
+struct Stats {
+  static LLAtomicU32 easy_calls;
+  static LLAtomicU32 easy_errors;
+  static LLAtomicU32 easy_init_calls;
+  static LLAtomicU32 easy_init_errors;
+  static LLAtomicU32 easy_cleanup_calls;
+  static LLAtomicU32 multi_calls;
+  static LLAtomicU32 multi_errors;
+  static LLAtomicU32 AICurlEasyRequest_count;
+  static LLAtomicU32 AICurlEasyRequestStateMachine_count;
+  static LLAtomicU32 BufferedCurlEasyRequest_count;
+  static LLAtomicU32 ResponderBase_count;
+  static LLAtomicU32 ThreadSafeBufferedCurlEasyRequest_count;
+
+ static void print(void);
+};
+
 //-----------------------------------------------------------------------------
 // Global functions.
 
@@ -221,11 +238,14 @@ class AICurlEasyRequest {
 	// 'new' never returned however and neither the constructor nor destructor of mBufferedCurlEasyRequest is called in this case.
 	// This might throw AICurlNoEasyHandle.
 	AICurlEasyRequest(void) :
-	    mBufferedCurlEasyRequest(new AICurlPrivate::ThreadSafeBufferedCurlEasyRequest) { }
+	    mBufferedCurlEasyRequest(new AICurlPrivate::ThreadSafeBufferedCurlEasyRequest) { AICurlInterface::Stats::AICurlEasyRequest_count++; }
 
   public:
+	// Update stats.
+	~AICurlEasyRequest() { --AICurlInterface::Stats::AICurlEasyRequest_count; }
+
 	// Used for storing this object in a standard container (see MultiHandle::add_easy_request).
-	AICurlEasyRequest(AICurlEasyRequest const& orig) : mBufferedCurlEasyRequest(orig.mBufferedCurlEasyRequest) { }
+	AICurlEasyRequest(AICurlEasyRequest const& orig) : mBufferedCurlEasyRequest(orig.mBufferedCurlEasyRequest) { AICurlInterface::Stats::AICurlEasyRequest_count++; }
 
 	// For the rest, only allow read operations.
 	AIThreadSafeSimple<AICurlPrivate::BufferedCurlEasyRequest>& operator*(void) const { llassert(mBufferedCurlEasyRequest.get()); return *mBufferedCurlEasyRequest; }
@@ -271,11 +291,11 @@ class AICurlEasyRequest {
 	// then it's OK to construct a AICurlEasyRequest from it.
 	// Note that the external AICurlPrivate::BufferedCurlEasyRequestPtr needs its own locking, because
 	// it's not thread-safe in itself.
-	AICurlEasyRequest(AICurlPrivate::BufferedCurlEasyRequestPtr const& ptr) : mBufferedCurlEasyRequest(ptr) { }
+	AICurlEasyRequest(AICurlPrivate::BufferedCurlEasyRequestPtr const& ptr) : mBufferedCurlEasyRequest(ptr) { AICurlInterface::Stats::AICurlEasyRequest_count++; }
 
 	// This one is obviously dangerous. It's for use only in MultiHandle::check_msg_queue.
 	// See also the long comment in BufferedCurlEasyRequest::finalizeRequest with regard to CURLOPT_PRIVATE.
-	explicit AICurlEasyRequest(AICurlPrivate::ThreadSafeBufferedCurlEasyRequest* ptr) : mBufferedCurlEasyRequest(ptr) { }
+	explicit AICurlEasyRequest(AICurlPrivate::ThreadSafeBufferedCurlEasyRequest* ptr) : mBufferedCurlEasyRequest(ptr) { AICurlInterface::Stats::AICurlEasyRequest_count++; }
 };
 
 #define AICurlPrivate DONTUSE_AICurlPrivate

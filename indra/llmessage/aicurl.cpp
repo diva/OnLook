@@ -289,6 +289,20 @@ static unsigned int encoded_version(int major, int minor, int patch)
 
 namespace AICurlInterface {
 
+//static
+LLAtomicU32 Stats::easy_calls;
+LLAtomicU32 Stats::easy_errors;
+LLAtomicU32 Stats::easy_init_calls;
+LLAtomicU32 Stats::easy_init_errors;
+LLAtomicU32 Stats::easy_cleanup_calls;
+LLAtomicU32 Stats::multi_calls;
+LLAtomicU32 Stats::multi_errors;
+LLAtomicU32 Stats::AICurlEasyRequest_count;
+LLAtomicU32 Stats::AICurlEasyRequestStateMachine_count;
+LLAtomicU32 Stats::BufferedCurlEasyRequest_count;
+LLAtomicU32 Stats::ResponderBase_count;
+LLAtomicU32 Stats::ThreadSafeBufferedCurlEasyRequest_count;
+
 // MAIN-THREAD
 void initCurl(void)
 {
@@ -417,6 +431,39 @@ void setCAPath(std::string const& path)
   CertificateAuthority_w->path = path;
 }
 
+//static
+void Stats::print(void)
+{
+  int const easy_handles = easy_init_calls - easy_init_errors - easy_cleanup_calls;
+  llinfos_nf << "============ CURL  STATS ============" << llendl;
+  llinfos_nf << "  Curl multi       errors/calls      : " << std::dec << multi_errors << "/" << multi_calls << llendl;
+  llinfos_nf << "  Curl easy        errors/calls      : " << std::dec << easy_errors << "/" << easy_calls << llendl;
+  llinfos_nf << "  curl_easy_init() errors/calls      : " << std::dec << easy_init_errors << "/" << easy_init_calls << llendl;
+  llinfos_nf << "  Current number of curl easy handles: " << std::dec << easy_handles << llendl;
+#ifdef DEBUG_CURLIO
+  llinfos_nf << "  Current number of BufferedCurlEasyRequest objects: " << BufferedCurlEasyRequest_count << llendl;
+  llinfos_nf << "  Current number of ThreadSafeBufferedCurlEasyRequest objects: " << ThreadSafeBufferedCurlEasyRequest_count << llendl;
+  llinfos_nf << "  Current number of AICurlEasyRequest objects: " << AICurlEasyRequest_count << llendl;
+  llinfos_nf << "  Current number of AICurlEasyRequestStateMachine objects: " << AICurlEasyRequestStateMachine_count << llendl;
+#endif
+  llinfos_nf << "  Current number of Responders: " << ResponderBase_count << llendl;
+  llinfos_nf << "========= END OF CURL STATS =========" << llendl;
+  // Leak tests.
+  // There is one easy handle per CurlEasyHandle, and BufferedCurlEasyRequest is derived from that.
+  // It is not allowed to create CurlEasyHandle (or CurlEasyRequest) directly, only by creating a BufferedCurlEasyRequest,
+  // therefore the number of existing easy handles must equal the number of BufferedCurlEasyRequest objects.
+  llassert(easy_handles == BufferedCurlEasyRequest_count);
+  // Even more strict, BufferedCurlEasyRequest may not be created directly either, only as
+  // base class of ThreadSafeBufferedCurlEasyRequest.
+  llassert(BufferedCurlEasyRequest_count == ThreadSafeBufferedCurlEasyRequest_count);
+  // Each AICurlEasyRequestStateMachine is responsible for exactly one easy handle.
+  llassert(easy_handles >= AICurlEasyRequest_count);
+  // Each AICurlEasyRequestStateMachine has one AICurlEasyRequest member.
+  llassert(AICurlEasyRequest_count >= AICurlEasyRequestStateMachine_count);
+  // AIFIXME: is this really always the case? And why?
+  llassert(easy_handles <= ResponderBase_count);
+}
+
 } // namespace AICurlInterface
 //==================================================================================
 
@@ -426,30 +473,12 @@ void setCAPath(std::string const& path)
 
 namespace AICurlPrivate {
 
+using AICurlInterface::Stats;
+
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 // CURLOPT_DEBUGFUNCTION function.
 extern int debug_callback(CURL*, curl_infotype infotype, char* buf, size_t size, void* user_ptr);
 #endif
-
-//static
-LLAtomicU32 Stats::easy_calls;
-LLAtomicU32 Stats::easy_errors;
-LLAtomicU32 Stats::easy_init_calls;
-LLAtomicU32 Stats::easy_init_errors;
-LLAtomicU32 Stats::easy_cleanup_calls;
-LLAtomicU32 Stats::multi_calls;
-LLAtomicU32 Stats::multi_errors;
-
-//static
-void Stats::print(void)
-{
-  llinfos_nf << "============ CURL  STATS ============" << llendl;
-  llinfos_nf << "  Curl multi       errors/calls      : " << std::dec << multi_errors << "/" << multi_calls << llendl;
-  llinfos_nf << "  Curl easy        errors/calls      : " << std::dec << easy_errors << "/" << easy_calls << llendl;
-  llinfos_nf << "  curl_easy_init() errors/calls      : " << std::dec << easy_init_errors << "/" << easy_init_calls << llendl;
-  llinfos_nf << "  Current number of curl easy handles: " << std::dec << (easy_init_calls - easy_init_errors - easy_cleanup_calls) << llendl;
-  llinfos_nf << "========= END OF CURL STATS =========" << llendl;
-}
 
 // THREAD-SAFE
 void handle_multi_error(CURLMcode code) 
@@ -1175,6 +1204,7 @@ LLChannelDescriptors const BufferedCurlEasyRequest::sChannels;
 
 BufferedCurlEasyRequest::BufferedCurlEasyRequest() : mRequestTransferedBytes(0), mResponseTransferedBytes(0), mBufferEventsTarget(NULL)
 {
+  AICurlInterface::Stats::BufferedCurlEasyRequest_count++;
 }
 
 #define llmaybeerrs lllog(LLApp::isRunning() ? LLError::LEVEL_ERROR : LLError::LEVEL_WARN, NULL, NULL, false, true)
@@ -1202,6 +1232,7 @@ BufferedCurlEasyRequest::~BufferedCurlEasyRequest()
 	  timed_out();
 	}
   }
+  --AICurlInterface::Stats::BufferedCurlEasyRequest_count;
 }
 
 void BufferedCurlEasyRequest::timed_out(void)
