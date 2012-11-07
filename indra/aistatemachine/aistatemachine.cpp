@@ -619,12 +619,10 @@ void AIStateMachine::flush(void)
 	  AIReadAccess<csme_type> csme_r(sContinuedStateMachinesAndMainloopEnabled);
 	  add_continued_statemachines(csme_r);
 	}
-	// Kill all state machines.
-	for (active_statemachines_type::iterator iter = active_statemachines.begin(); iter != active_statemachines.end(); ++iter)
-	{
-	  AIStateMachine& statemachine(iter->statemachine());
-	  if (statemachine.running())
-		statemachine.kill();
-	}
   }
+  // At this point all statemachines should be idle.
+  AIReadAccess<csme_type> csme_r(sContinuedStateMachinesAndMainloopEnabled);
+  llinfos << "Current number of continued statemachines: " << csme_r->continued_statemachines.size() << llendl;
+  llinfos << "Current number of active statemachines: " << active_statemachines.size() << llendl;
+  llassert(csme_r->continued_statemachines.empty() && active_statemachines.empty());
 }
