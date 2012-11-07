@@ -105,6 +105,7 @@ LLPrefsAscentChat::LLPrefsAscentChat()
 	childSetCommitCallback("reset_antispam", onCommitResetAS, this);
 	childSetCommitCallback("enable_as", onCommitEnableAS, this);
 	childSetCommitCallback("antispam_checkbox", onCommitDialogBlock, this);
+	childSetCommitCallback("Group Invites", onCommitDialogBlock, this);
 
     childSetCommitCallback("KeywordsOn", onCommitKeywords, this);
     childSetCommitCallback("KeywordsList", onCommitKeywords, this);
@@ -278,15 +279,19 @@ void LLPrefsAscentChat::onCommitEnableAS(LLUICtrl* ctrl, void* user_data)
 void LLPrefsAscentChat::onCommitDialogBlock(LLUICtrl* ctrl, void* user_data)
 {
 	LLPrefsAscentChat* self = (LLPrefsAscentChat*)user_data;
+	self->childSetEnabled("Group Fee Invites", !self->childGetValue("antispam_checkbox").asBoolean() && !self->childGetValue("Group Invites").asBoolean());
 	bool enabled = ctrl->getValue().asBoolean();
-	self->childSetEnabled("Block All Dialogs From", !enabled);
-	self->childSetEnabled("Alerts",                 !enabled);
-	self->childSetEnabled("Friendship Offers",      !enabled);
-	self->childSetEnabled("Group Invites",          !enabled);
-	self->childSetEnabled("Group Notices",          !enabled);
-	self->childSetEnabled("Item Offers",            !enabled);
-	self->childSetEnabled("Scripts",                !enabled);
-	self->childSetEnabled("Teleport Offers",        !enabled);
+	if (ctrl->getName() == "antispam_checkbox")
+	{
+		self->childSetEnabled("Block All Dialogs From", !enabled);
+		self->childSetEnabled("Alerts",                 !enabled);
+		self->childSetEnabled("Friendship Offers",      !enabled);
+		self->childSetEnabled("Group Invites",          !enabled);
+		self->childSetEnabled("Group Notices",          !enabled);
+		self->childSetEnabled("Item Offers",            !enabled);
+		self->childSetEnabled("Scripts",                !enabled);
+		self->childSetEnabled("Teleport Offers",        !enabled);
+	}
 }
 
 //static
@@ -443,6 +448,7 @@ void LLPrefsAscentChat::refresh()
 	childSetEnabled("Alerts",                 !mBlockDialogSpam);
 	childSetEnabled("Friendship Offers",      !mBlockDialogSpam);
 	childSetEnabled("Group Invites",          !mBlockDialogSpam);
+	childSetEnabled("Group Fee Invites",      !mBlockDialogSpam && !mBlockGroupInviteSpam);
 	childSetEnabled("Group Notices",          !mBlockDialogSpam);
 	childSetEnabled("Item Offers",            !mBlockDialogSpam);
 	childSetEnabled("Scripts",                !mBlockDialogSpam);
