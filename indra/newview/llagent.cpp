@@ -1421,7 +1421,7 @@ void LLAgent::setAutoPilotTargetGlobal(const LLVector3d &target_global)
 		LLViewerObject *obj;
 
 		LLWorld::getInstance()->resolveStepHeightGlobal(NULL, target_global, traceEndPt, targetOnGround, groundNorm, &obj);
-		F64 target_height = llmax((F64)gAgentAvatarp->getPelvisToFoot(), target_global.mdV[VZ] - targetOnGround.mdV[VZ]);
+		F64 target_height = llmax((F64)(isAgentAvatarValid() ? gAgentAvatarp->getPelvisToFoot() : 0.0), target_global.mdV[VZ] - targetOnGround.mdV[VZ]);
 
 		// clamp z value of target to minimum height above ground
 		mAutoPilotTargetGlobal.mdV[VZ] = targetOnGround.mdV[VZ] + target_height;
@@ -3674,7 +3674,7 @@ void LLAgent::teleportViaLocation(const LLVector3d& pos_global)
 	LLSimInfo* info = LLWorldMap::getInstance()->simInfoFromHandle(handle);
 	bool calc = gSavedSettings.getBOOL("OptionOffsetTPByAgentHeight");
 	LLVector3 offset = LLVector3(0.f,0.f,0.f);
-	if(calc)
+	if(calc && isAgentAvatarValid())
 		offset += LLVector3(0.f,0.f,gAgentAvatarp->getScale().mV[2] / 2.0);
 	if(regionp && info)
 	{
