@@ -100,7 +100,7 @@ public:
 
 protected:
 
-	std::list<GLuint> mAvailableName;
+	std::queue<GLuint> mAvailableName;	//Use queue, because this usage is FIFO, which queue is desgined for
 	GLuint mCurQuery;
 		
 	virtual GLuint allocateName()
@@ -110,7 +110,7 @@ protected:
 		if (!mAvailableName.empty())
 		{
 			ret = mAvailableName.front();
-			mAvailableName.pop_front();
+			mAvailableName.pop();
 		}
 		else
 		{
@@ -126,7 +126,7 @@ protected:
 		LLSpatialGroup::sPendingQueries.erase(name);
 #endif
 		llassert(std::find(mAvailableName.begin(), mAvailableName.end(), name) == mAvailableName.end());
-		mAvailableName.push_back(name);
+		mAvailableName.push(name);
 	}
 };
 
