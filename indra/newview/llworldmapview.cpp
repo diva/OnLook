@@ -337,15 +337,12 @@ void LLWorldMapView::draw()
 		gGL.matrixMode(LLRender::MM_MODELVIEW);
 
 		// Clear the background alpha to 0
-		gGL.flush();
 		gGL.setColorMask(false, true);
 		gGL.setAlphaRejectSettings(LLRender::CF_GREATER_EQUAL, 0.f);
 		gGL.setSceneBlendType(LLRender::BT_REPLACE);
 		gGL.color4f(0.0f, 0.0f, 0.0f, 0.0f);
 		gl_rect_2d(0, height, width, 0);
 	}
-
-	gGL.flush();
 
 	gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
 	gGL.setColorMask(true, true);
@@ -355,7 +352,6 @@ void LLWorldMapView::draw()
 		drawMipmap(width, height);
 	else
 		drawTiles(width, height);
-	gGL.flush();	
 	LLFontGL* font = LLFontGL::getFontSansSerifSmall();
 
 
@@ -591,6 +587,8 @@ void LLWorldMapView::draw()
 	LLView::draw();
 
 	updateVisibleBlocks();
+
+	gGL.flush();
 } // end draw()
 
 
@@ -693,7 +691,6 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 
 		// Draw map image into RGB
 		//gGL.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		gGL.flush();
 		gGL.setColorMask(true, false);
 		gGL.color4f(1.f, 1.f, 1.f, layer_alpha);
 
@@ -709,7 +706,6 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 		gGL.end();
 
         // draw an alpha of 1 where the sims are visible
-        gGL.flush();
 		gGL.setColorMask(false, true);
 		gGL.color4f(1.f, 1.f, 1.f, 1.f);
 
@@ -725,7 +721,6 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 		gGL.end();
 	}
 
-	gGL.flush();
 	gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
 	gGL.setColorMask(true, true);
 
@@ -915,7 +910,6 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 			if (true /*V3: REGION_FLAGS_NULL_LAYER doesn't exist... (info->getRegionFlags() & REGION_FLAGS_NULL_LAYER) == 0*/)
 			{
 				// draw an alpha of 1 where the sims are visible (except NULL sims)
-				gGL.flush();
 				gGL.setSceneBlendType(LLRender::BT_REPLACE);
 				gGL.setColorMask(false, true);
 				gGL.color4f(1.f, 1.f, 1.f, 1.f);
@@ -928,7 +922,6 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 					gGL.vertex2f(right, top);
 				gGL.end();
 
-				gGL.flush();
 				gGL.setColorMask(true, true);
 			}
 		}
@@ -1040,7 +1033,7 @@ void LLWorldMapView::drawAgents()
 				// Here's how we'd choose the color if info.mID were available but it's not being sent:
 				//LLColor4 color = (agent_count == 1 && is_agent_friend(info.mID)) ? friend_color : avatar_color;
 				drawImageStack(info.getGlobalPosition(), sAvatarSmallImage, agent_count, 3.f, avatar_color);
-		}
+			}
 			LLWorldMap::getInstance()->mNumAgents[handle] = sim_agent_count; // override mNumAgents for this sim
 		}
 		else
@@ -1056,8 +1049,8 @@ void LLWorldMapView::drawAgents()
 				S32 agent_count = (S32)(((num_agents-1) * agents_scale + (num_agents-1) * 0.1f)+.1f) + 1;
 				drawImageStack(region_center, sAvatarSmallImage, agent_count, 3.f, avatar_color);
 			}
-			}
 		}
+	}
 }
 
 
