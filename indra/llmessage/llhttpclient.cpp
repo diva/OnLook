@@ -264,73 +264,76 @@ void LLHTTPClient::get(std::string const& url, LLSD const& query, ResponderPtr r
 
 LLHTTPClient::ResponderBase::ResponderBase(void) : mReferenceCount(0), mCode(CURLE_FAILED_INIT), mFinished(false)
 {
-  DoutEntering(dc::curl, "AICurlInterface::Responder() with this = " << (void*)this);
-  AICurlInterface::Stats::ResponderBase_count++;
+	DoutEntering(dc::curl, "AICurlInterface::Responder() with this = " << (void*)this);
+	AICurlInterface::Stats::ResponderBase_count++;
 }
 
 LLHTTPClient::ResponderBase::~ResponderBase()
 {
-  DoutEntering(dc::curl, "AICurlInterface::ResponderBase::~ResponderBase() with this = " << (void*)this << "; mReferenceCount = " << mReferenceCount);
-  llassert(mReferenceCount == 0);
-  --AICurlInterface::Stats::ResponderBase_count;
+	DoutEntering(dc::curl, "AICurlInterface::ResponderBase::~ResponderBase() with this = " << (void*)this << "; mReferenceCount = " << mReferenceCount);
+	llassert(mReferenceCount == 0);
+	--AICurlInterface::Stats::ResponderBase_count;
 }
 
 void LLHTTPClient::ResponderBase::setURL(std::string const& url)
 {
-  // setURL is called from llhttpclient.cpp (request()), before calling any of the below (of course).
-  // We don't need locking here therefore; it's a case of initializing before use.
-  mURL = url;
+	// setURL is called from llhttpclient.cpp (request()), before calling any of the below (of course).
+	// We don't need locking here therefore; it's a case of initializing before use.
+	mURL = url;
 }
 
 AIHTTPTimeoutPolicy const& LLHTTPClient::ResponderBase::getHTTPTimeoutPolicy(void) const
 {
-  return AIHTTPTimeoutPolicy::getDebugSettingsCurlTimeout();
+	return AIHTTPTimeoutPolicy::getDebugSettingsCurlTimeout();
 }
 
 void LLHTTPClient::ResponderBase::decode_llsd_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, LLSD& content)
 {
-  // If the status indicates success (and we get here) then we expect the body to be LLSD.
-  bool const should_be_llsd = (200 <= status && status < 300);
-  if (should_be_llsd)
-  {
-	LLBufferStream istr(channels, buffer.get());
-	if (LLSDSerialize::fromXML(content, istr) == LLSDParser::PARSE_FAILURE)
+	AICurlInterface::Stats::llsd_body_count++;
+	// If the status indicates success (and we get here) then we expect the body to be LLSD.
+	bool const should_be_llsd = (200 <= status && status < 300);
+	if (should_be_llsd)
 	{
-	  // Unfortunately we can't show the body of the message... I think this is a pretty serious error
-	  // though, so if this ever happens it has to be investigated by making a copy of the buffer
-	  // before serializing it, as is done below.
-	  llwarns << "Failed to deserialize LLSD. " << mURL << " [" << status << "]: " << reason << llendl;
+		LLBufferStream istr(channels, buffer.get());
+		if (LLSDSerialize::fromXML(content, istr) == LLSDParser::PARSE_FAILURE)
+		{
+			// Unfortunately we can't show the body of the message... I think this is a pretty serious error
+			// though, so if this ever happens it has to be investigated by making a copy of the buffer
+			// before serializing it, as is done below.
+			llwarns << "Failed to deserialize LLSD. " << mURL << " [" << status << "]: " << reason << llendl;
+			AICurlInterface::Stats::llsd_body_parse_error++;
+		}
+		// LLSDSerialize::fromXML destructed buffer, we can't initialize content now.
+		return;
 	}
-	// LLSDSerialize::fromXML destructed buffer, we can't initialize content now.
-	return;
-  }
-  // Put the body in content as-is.
-  std::stringstream ss;
-  buffer->writeChannelTo(ss, channels.in());
-  content = ss.str();
+	// Put the body in content as-is.
+	std::stringstream ss;
+	buffer->writeChannelTo(ss, channels.in());
+	content = ss.str();
 #ifdef SHOW_ASSERT
-  if (!should_be_llsd)
-  {
-	char const* str = ss.str().c_str();
-	// Make sure that the server indeed never returns LLSD as body when the http status is an error.
-	LLSD dummy;
-	bool server_sent_llsd_with_http_error =
-	    strncmp(str, "<!DOCTYPE", 9) &&				// LLSD does never start with "<!"; short circuits 97% of the replies.
-		strncmp(str, "cap not found:", 14) &&		// Most of the other 3%.
-		str[0] &&									// Empty happens too and aint LLSD either.
-		strncmp(str, "Not Found", 9) &&
-		LLSDSerialize::fromXML(dummy, ss) > 0;
-	if (server_sent_llsd_with_http_error)
+	if (!should_be_llsd)
 	{
-	  llwarns << "The server sent us a response with http status " << status << " and LLSD(!) body: \"" << ss.str() << "\"!" << llendl;
+		char const* str = ss.str().c_str();
+		// Make sure that the server indeed never returns LLSD as body when the http status is an error.
+		LLSD dummy;
+		bool server_sent_llsd_with_http_error =
+			strncmp(str, "<!DOCTYPE", 9) &&				// LLSD does never start with "<!"; short circuits 97% of the replies.
+			strncmp(str, "cap not found:", 14) &&		// Most of the other 3%.
+			str[0] &&									// Empty happens too and aint LLSD either.
+			strncmp(str, "Not Found", 9) &&
+			LLSDSerialize::fromXML(dummy, ss) > 0;
+		if (server_sent_llsd_with_http_error)
+		{
+			llwarns << "The server sent us a response with http status " << status << " and LLSD(!) body: \"" << ss.str() << "\"!" << llendl;
+		}
+		llassert(!server_sent_llsd_with_http_error);
 	}
-	llassert(!server_sent_llsd_with_http_error);
-  }
 #endif
 }
 
 void LLHTTPClient::ResponderBase::decode_raw_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, std::string& content)
 {
+	AICurlInterface::Stats::raw_body_count++;
 	LLMutexLock lock(buffer->getMutex());
 	LLBufferArray::const_segment_iterator_t const end = buffer->endSegment();
 	for (LLBufferArray::const_segment_iterator_t iter = buffer->beginSegment(); iter != end; ++iter)

@@ -140,8 +140,14 @@ struct Stats {
   static LLAtomicU32 BufferedCurlEasyRequest_count;
   static LLAtomicU32 ResponderBase_count;
   static LLAtomicU32 ThreadSafeBufferedCurlEasyRequest_count;
+  static LLAtomicU32 status_count[100];
+  static LLAtomicU32 llsd_body_count;
+  static LLAtomicU32 llsd_body_parse_error;
+  static LLAtomicU32 raw_body_count;
 
  static void print(void);
+ static U32 status2index(U32 status);
+ static U32 index2status(U32 index);
 };
 
 //-----------------------------------------------------------------------------

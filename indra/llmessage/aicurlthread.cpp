@@ -2043,6 +2043,7 @@ void BufferedCurlEasyRequest::setStatusAndReason(U32 status, std::string const& 
 {
   mStatus = status;
   mReason = reason;
+  AICurlInterface::Stats::status_count[AICurlInterface::Stats::status2index(mStatus)]++;
 }
 
 void BufferedCurlEasyRequest::processOutput(void)

@@ -303,6 +303,21 @@ LLAtomicU32 Stats::AICurlEasyRequestStateMachine_count;
 LLAtomicU32 Stats::BufferedCurlEasyRequest_count;
 LLAtomicU32 Stats::ResponderBase_count;
 LLAtomicU32 Stats::ThreadSafeBufferedCurlEasyRequest_count;
+LLAtomicU32 Stats::status_count[100];
+LLAtomicU32 Stats::llsd_body_count;
+LLAtomicU32 Stats::llsd_body_parse_error;
+LLAtomicU32 Stats::raw_body_count;
+
+U32 Stats::status2index(U32 status)
+{
+  llassert_always(status >= 100 && status < 600 && (status % 100) < 20);	// Max value 519.
+  return (status - 100) / 100 * 20 + status % 100;							// Returns 0..99 (for status 100..519).
+}
+
+U32 Stats::index2status(U32 index)
+{
+  return 100 + (index / 20) * 100 + index % 20;
+}
 
 // MAIN-THREAD
 void initCurl(void)
@@ -448,6 +463,25 @@ void Stats::print(void)
   llinfos_nf << "  Current number of AICurlEasyRequestStateMachine objects: " << AICurlEasyRequestStateMachine_count << llendl;
 #endif
   llinfos_nf << "  Current number of Responders: " << ResponderBase_count << llendl;
+  llinfos_nf << "  Received HTTP bodies   LLSD / LLSD parse errors / non-LLSD: " << llsd_body_count << "/" << llsd_body_parse_error << "/" << raw_body_count << llendl;
+  llinfos_nf << "  Received HTTP status codes: status (count) [...]: ";
+  bool first = true;
+  for (U32 index = 0; index < 100; ++index)
+  {
+	if (status_count[index] > 0)
+	{
+	  if (!first)
+	  {
+		llcont << ", ";
+	  }
+	  else
+	  {
+		first = false;
+	  }
+	  llcont << index2status(index) << " (" << status_count[index] << ')';
+	}
+  }
+  llcont << llendl;
   llinfos_nf << "========= END OF CURL STATS =========" << llendl;
   // Leak tests.
   // There is one easy handle per CurlEasyHandle, and BufferedCurlEasyRequest is derived from that.
