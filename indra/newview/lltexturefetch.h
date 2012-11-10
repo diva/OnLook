@@ -121,7 +121,7 @@ protected:
 	void removeFromNetworkQueue(LLTextureFetchWorker* worker, bool cancel);
 	void addToHTTPQueue(const LLUUID& id);
 	void removeFromHTTPQueue(const LLUUID& id, S32 received_size = 0);
-	void removeRequest(LLTextureFetchWorker* worker, bool cancel);
+	void removeRequest(LLTextureFetchWorker* worker, bool cancel, bool bNeedsLock = true);
 
 	// Overrides from the LLThread tree
 	bool runCondition();

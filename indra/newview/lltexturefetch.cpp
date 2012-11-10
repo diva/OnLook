@@ -2160,27 +2160,19 @@ void LLTextureFetch::deleteRequest(const LLUUID& id, bool cancel)
 {
 	lockQueue() ;
 	LLTextureFetchWorker* worker = getWorkerAfterLock(id);
-	if (worker)
-	{		
-		size_t erased_1 = mRequestMap.erase(worker->mID);
-		unlockQueue() ;
 
-		llassert_always(erased_1 > 0) ;
-
-		removeFromNetworkQueue(worker, cancel);
-		llassert_always(!(worker->getFlags(LLWorkerClass::WCF_DELETE_REQUESTED))) ;
-
-		worker->scheduleDelete();	
-	}
-	else
-	{
-		unlockQueue() ;
-	}
+	removeRequest(worker, cancel, false);
 }
 
-void LLTextureFetch::removeRequest(LLTextureFetchWorker* worker, bool cancel)
+void LLTextureFetch::removeRequest(LLTextureFetchWorker* worker, bool cancel, bool bNeedsLock)
 {
-	lockQueue() ;
+	if(!worker)
+	{
+		return;
+	}
+	
+	if(bNeedsLock)
+		lockQueue() ;
 	size_t erased_1 = mRequestMap.erase(worker->mID);
 	unlockQueue() ;
 
