@@ -39,7 +39,6 @@
 #include <list>
 
 #define LL_MAX_VERTEX_ATTRIB_LOCATION 64
-#define GL_TRANSFORM_FEEDBACK_BUFFER
 
 //============================================================================
 // NOTES
