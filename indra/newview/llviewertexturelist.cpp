@@ -717,11 +717,8 @@ void LLViewerTextureList::clearFetchingRequests()
 	for (image_priority_list_t::iterator iter = mImageList.begin();
 		 iter != mImageList.end(); ++iter)
 	{
-		LLViewerFetchedTexture* image = *iter;
-		if(image->hasFetcher())
-		{
-			image->forceToDeleteRequest() ;
-		}
+		LLViewerFetchedTexture* imagep = *iter;
+		imagep->forceToDeleteRequest() ;
 	}
 }
 
