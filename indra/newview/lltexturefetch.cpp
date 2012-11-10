@@ -2183,6 +2183,23 @@ void LLTextureFetch::removeRequest(LLTextureFetchWorker* worker, bool cancel, bo
 	worker->scheduleDelete();	
 }
 
+void LLTextureFetch::deleteAllRequests()
+{
+	while(1)
+	{
+		lockQueue();
+		if(mRequestMap.empty())
+		{
+			unlockQueue() ;
+			break;
+		}
+
+		LLTextureFetchWorker* worker = mRequestMap.begin()->second;
+
+		removeRequest(worker, true, false);
+	}
+}
+
 S32 LLTextureFetch::getNumRequests() 
 { 
 	lockQueue() ;

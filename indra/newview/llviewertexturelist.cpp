@@ -714,6 +714,8 @@ void LLViewerTextureList::clearFetchingRequests()
 		return;
 	}
 
+	LLAppViewer::getTextureFetch()->deleteAllRequests();
+
 	for (image_priority_list_t::iterator iter = mImageList.begin();
 		 iter != mImageList.end(); ++iter)
 	{
