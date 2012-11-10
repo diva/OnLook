@@ -196,5 +196,16 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+	<key>SHOcclusionFudge</key>
+    <map>
+      <key>Comment</key>
+      <string>Padding added to occlusion bounds. Larger = less aggressive occlusion/less pop-in.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <integer>.25</integer>
+    </map>
   </map>
 </llsd>

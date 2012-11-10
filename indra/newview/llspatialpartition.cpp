@@ -1567,7 +1567,7 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 		// Don't cull hole/edge water, unless RenderWaterVoidCulling is set and we have the GL_ARB_depth_clamp extension.
 		//if ((mSpatialPartition->mDrawableType == LLDrawPool::POOL_VOIDWATER && !gGLManager.mHasDepthClamp) ||
 		//	earlyFail(camera, this))
-		if (earlyFail(camera, this))
+		if (earlyFail(camera, this))	//Returns true if camera is inside this spatial group.
 		{
 			LLFastTimer t(FTM_OCCLUSION_EARLY_FAIL);
 			setOcclusionState(LLSpatialGroup::DISCARD_QUERY);
@@ -1622,9 +1622,12 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 						llassert(shader);
 
 						shader->uniform3fv(LLShaderMgr::BOX_CENTER, 1, mBounds[0].getF32ptr());
-						shader->uniform3f(LLShaderMgr::BOX_SIZE, mBounds[1][0]+SG_OCCLUSION_FUDGE, 
-																 mBounds[1][1]+SG_OCCLUSION_FUDGE, 
-																 mBounds[1][2]+SG_OCCLUSION_FUDGE);
+						//static LLVector4a fudge(SG_OCCLUSION_FUDGE);
+						static LLCachedControl<F32> vel("SHOcclusionFudge",SG_OCCLUSION_FUDGE);
+						LLVector4a fudge(SG_OCCLUSION_FUDGE);
+						static LLVector4a bounds;
+						bounds.setAdd(fudge,mBounds[1]);
+						shader->uniform3fv(LLShaderMgr::BOX_SIZE, 1, bounds.getF32ptr());
 
 						if (!use_depth_clamp && mSpatialPartition->mDrawableType == LLDrawPool::POOL_VOIDWATER)
 						{
@@ -2323,12 +2326,11 @@ BOOL earlyFail(LLCamera* camera, LLSpatialGroup* group)
 		return FALSE;
 	}
 
-	const F32 vel = SG_OCCLUSION_FUDGE*2.f;
-	LLVector4a fudge;
-	fudge.splat(vel);
+	static LLCachedControl<F32> vel("SHOcclusionFudge",SG_OCCLUSION_FUDGE);
+	LLVector4a fudge(vel*2.f);
 
 	const LLVector4a& c = group->mBounds[0];
-	LLVector4a r;
+	static LLVector4a r;
 	r.setAdd(group->mBounds[1], fudge);
 
 	/*if (r.magVecSquared() > 1024.0*1024.0)
