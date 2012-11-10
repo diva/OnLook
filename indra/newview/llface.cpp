@@ -1374,7 +1374,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	
 	static LLCachedControl<bool> use_transform_feedback("RenderUseTransformFeedback", false);
 
-#if 0//#ifdef GL_TRANSFORM_FEEDBACK_BUFFER
+#ifdef GL_TRANSFORM_FEEDBACK_BUFFER
 	if (use_transform_feedback &&
 		gTransformPositionProgram.mProgramObject && //transform shaders are loaded
 		mVertexBuffer->useVBOs() && //target buffer is in VRAM

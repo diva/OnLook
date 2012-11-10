@@ -39,6 +39,7 @@
 #include <list>
 
 #define LL_MAX_VERTEX_ATTRIB_LOCATION 64
+#define GL_TRANSFORM_FEEDBACK_BUFFER
 
 //============================================================================
 // NOTES
@@ -202,15 +203,17 @@ protected:
 	void 	destroyGLIndices();
 	void	updateNumVerts(S32 nverts);
 	void	updateNumIndices(S32 nindices); 
-	bool	useVBOs() const;
 	void	unmapBuffer();
 		
 public:
+
 	LLVertexBuffer(U32 typemask, S32 usage);
 	
 	// map for data access
 	volatile U8*		mapVertexBuffer(S32 type, S32 index, S32 count, bool map_range);
 	volatile U8*		mapIndexBuffer(S32 index, S32 count, bool map_range);
+
+	void bindForFeedback(U32 channel, U32 type, U32 index, U32 count);
 
 	// set for rendering
 	virtual void	setBuffer(U32 data_mask); 	// calls  setupVertexBuffer() if data_mask is not 0
@@ -240,6 +243,7 @@ public:
 	bool getClothWeightStrider(LLStrider<LLVector4>& strider, S32 index=0, S32 count = -1, bool map_range = false);
 	
 
+	bool	useVBOs() const;
 	bool isEmpty() const					{ return mEmpty; }
 	bool isLocked() const					{ return mVertexLocked || mIndexLocked; }
 	S32 getNumVerts() const					{ return mNumVerts; }
