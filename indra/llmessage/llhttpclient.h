@@ -133,6 +133,7 @@ public:
 
 	protected:
 		// AIBufferedCurlEasyRequestEvents
+		// These three events are only actually called for classes that implement a needsHeaders() that returns true.
 
 		// Called when the "HTTP/1.x <status> <reason>" header is received.
 		/*virtual*/ void received_HTTP_header(void)
@@ -167,6 +168,7 @@ public:
 
 	protected:
 		// Derived classes can override this to get the HTML headers that were received, when the message is completed.
+		// Only actually called for classes that implement a needsHeaders() that returns true.
 		virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 		{
 			// The default does nothing.
