@@ -827,8 +827,10 @@ bool LLAppViewer::init()
 	{	
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
+		std::string msg = LLNotifications::instance().getGlobalString("UnsupportedGLRequirements");
+		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
-			LLNotifications::instance().getGlobalString("UnsupportedGLRequirements"),
+			msg,
 			LLStringUtil::null,
 			OSMB_OK);
 		return 0;
@@ -840,8 +842,10 @@ bool LLAppViewer::init()
 	{
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
+		std::string msg = LLNotifications::instance().getGlobalString("UnsupportedCPUSSE2");
+		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
-			LLNotifications::instance().getGlobalString("UnsupportedCPUSSE2"),
+			msg,
 			LLStringUtil::null,
 			OSMB_OK);
 		return 0;
@@ -852,8 +856,10 @@ bool LLAppViewer::init()
 	{
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
+		std::string msg = LNotifications::instance().getGlobalString("UnsupportedCPUSSE2");
+		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
-			LLNotifications::instance().getGlobalString("UnsupportedCPUSSE"),
+			msg,
 			LLStringUtil::null,
 			OSMB_OK);
 		return 0;
