@@ -36,26 +36,39 @@
 #include "llapr.h"
 #include "llscopedvolatileaprpool.h"
 
+LLFastTimer::DeclareTimer FT_WAIT_FOR_SCOPEDLOCK("LLScopedLock");
+
 //---------------------------------------------------------------------
 //
 // LLScopedLock
 //
 LLScopedLock::LLScopedLock(apr_thread_mutex_t* mutex) : mMutex(mutex)
 {
-	if(mutex)
+	mLocked = !!mutex;
+	if (LL_LIKELY(mutex))
 	{
-		if(ll_apr_warn_status(apr_thread_mutex_lock(mMutex)))
+		apr_status_t status = apr_thread_mutex_trylock(mMutex);
+		while (LL_UNLIKELY(status != APR_SUCCESS))
 		{
-			mLocked = false;
+			if (APR_STATUS_IS_EBUSY(status))
+			{
+				if (AIThreadID::in_main_thread_inline())
+				{
+					LLFastTimer ft1(FT_WAIT_FOR_SCOPEDLOCK);
+					status = apr_thread_mutex_lock(mMutex);
+				}
+				else
+				{
+					status = apr_thread_mutex_lock(mMutex);
+				}
+			}
+			else
+			{
+				ll_apr_warn_status(status);
+				mLocked = false;
+				return;
+			}
 		}
-		else
-		{
-			mLocked = true;
-		}
-	}
-	else
-	{
-		mLocked = false;
 	}
 }
 
