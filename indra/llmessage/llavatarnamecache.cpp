@@ -190,6 +190,8 @@ public:
 	LLAvatarNameResponder(const std::vector<LLUUID>& agent_ids)
 	:	mAgentIDs(agent_ids)
 	{ }
+
+	/*virtual*/ bool needsHeaders(void) const { return true; }
 	
 	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{

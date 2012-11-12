@@ -80,9 +80,9 @@ public:
 		  mInitialized(false)
 	{}
 
-	virtual bool needsHeaders(void) const { return true; }
+	/*virtual*/ bool needsHeaders(void) const { return true; }
 
-	virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{
 		std::string media_type;
 		bool content_type_found = headers.getFirstValue("content-type", media_type);
@@ -104,7 +104,7 @@ public:
 		}
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return mimeDiscoveryResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return mimeDiscoveryResponder_timeout; }
 
 	public:
 		viewer_media_t mMediaImpl;
