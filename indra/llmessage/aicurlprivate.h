@@ -34,9 +34,11 @@
 #include <sstream>
 #include "llatomic.h"
 #include "llrefcount.h"
+#include "aicurlperhost.h"
 
 class AIHTTPHeaders;
 class AIHTTPTimeoutPolicy;
+class AICurlEasyRequest;
 class AICurlEasyRequestStateMachine;
 
 namespace AICurlPrivate {
@@ -94,7 +96,7 @@ class HTTPTimeout : public LLRefCount {
 	// Accessor.
 	bool has_stalled(void) const { return mStalled < sClockCount;  }
 
-	// Called from CurlResponderBuffer::processOutput if a timeout occurred.
+	// Called from BufferedCurlEasyRequest::processOutput if a timeout occurred.
 	void print_diagnostics(CurlEasyRequest const* curl_easy_request);
 
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
@@ -111,20 +113,8 @@ class HTTPTimeout : public LLRefCount {
 
 } // namespace curlthread
 
-struct Stats {
-  static LLAtomicU32 easy_calls;
-  static LLAtomicU32 easy_errors;
-  static LLAtomicU32 easy_init_calls;
-  static LLAtomicU32 easy_init_errors;
-  static LLAtomicU32 easy_cleanup_calls;
-  static LLAtomicU32 multi_calls;
-  static LLAtomicU32 multi_errors;
-
- static void print(void);
-};
-
 void handle_multi_error(CURLMcode code);
-inline CURLMcode check_multi_code(CURLMcode code) { Stats::multi_calls++; if (code != CURLM_OK) handle_multi_error(code); return code; }
+inline CURLMcode check_multi_code(CURLMcode code) { AICurlInterface::Stats::multi_calls++; if (code != CURLM_OK) handle_multi_error(code); return code; }
 
 bool curlThreadIsRunning(void);
 void wakeUpCurlThread(void);
@@ -248,7 +238,7 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// Always first call setErrorBuffer()!
 	static inline CURLcode check_easy_code(CURLcode code)
 	{
-	  Stats::easy_calls++;
+	  AICurlInterface::Stats::easy_calls++;
 	  if (code != CURLE_OK)
 		handle_easy_error(code);
 	  return code;
@@ -373,6 +363,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 
 	AIHTTPTimeoutPolicy const* mTimeoutPolicy;
 	std::string mLowercaseHostname;				// Lowercase hostname (canonicalized) extracted from the url.
+	PerHostRequestQueuePtr mPerHostPtr;			// Pointer to the corresponding PerHostRequestQueue.
 	LLPointer<curlthread::HTTPTimeout> mTimeout;// Timeout administration object associated with last created CurlSocketInfo.
 	bool mTimeoutIsOrphan;						// Set to true when mTimeout is not (yet) associated with a CurlSocketInfo.
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
@@ -414,6 +405,11 @@ class CurlEasyRequest : public CurlEasyHandle {
 	inline ThreadSafeBufferedCurlEasyRequest* get_lockobj(void);
 	inline ThreadSafeBufferedCurlEasyRequest const* get_lockobj(void) const;
 
+	// PerHost API.
+	PerHostRequestQueuePtr getPerHostPtr(void);						// (Optionally create and) return a pointer to the unique
+																	// PerHostRequestQueue corresponding to mLowercaseHostname.
+	bool removeFromPerHostQueue(AICurlEasyRequest const&) const;	// Remove this request from the per-host queue, if queued at all.
+																	// Returns true if it was queued.
   protected:
 	// Pass events to parent.
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
@@ -444,7 +440,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	//void setBodyLimit(U32 size) { mBodyLimit = size; }
 
     // Post-initialization, set the parent to pass the events to.
-    void send_buffer_events_to(AICurlResponderBufferEvents* target) { mBufferEventsTarget = target; }
+    void send_buffer_events_to(AIBufferedCurlEasyRequestEvents* target) { mBufferEventsTarget = target; }
 
   protected:
 	// Events from this class.
@@ -462,7 +458,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	std::string mReason;								// The "reason" from the same header line.
 	S32 mRequestTransferedBytes;
 	S32 mResponseTransferedBytes;
-	AICurlResponderBufferEvents* mBufferEventsTarget;
+	AIBufferedCurlEasyRequestEvents* mBufferEventsTarget;
 
   public:
 	static LLChannelDescriptors const sChannels;		// Channel object for mInput (channel out()) and mOutput (channel in()).
@@ -511,9 +507,11 @@ class ThreadSafeBufferedCurlEasyRequest : public AIThreadSafeSimple<BufferedCurl
 	// Throws AICurlNoEasyHandle.
 	ThreadSafeBufferedCurlEasyRequest(void) : mReferenceCount(0)
         { new (ptr()) BufferedCurlEasyRequest;
-		  Dout(dc::curl, "Creating ThreadSafeBufferedCurlEasyRequest with this = " << (void*)this); }
-	virtual ~ThreadSafeBufferedCurlEasyRequest()
-	    { Dout(dc::curl, "Destructing ThreadSafeBufferedCurlEasyRequest with this = " << (void*)this); }
+		  Dout(dc::curl, "Creating ThreadSafeBufferedCurlEasyRequest with this = " << (void*)this);
+		  AICurlInterface::Stats::ThreadSafeBufferedCurlEasyRequest_count++; }
+	~ThreadSafeBufferedCurlEasyRequest()
+	    { Dout(dc::curl, "Destructing ThreadSafeBufferedCurlEasyRequest with this = " << (void*)this);
+		  --AICurlInterface::Stats::ThreadSafeBufferedCurlEasyRequest_count; }
 
   private:
 	LLAtomicU32 mReferenceCount;

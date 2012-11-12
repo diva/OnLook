@@ -33,7 +33,6 @@
 
 #include "aicurl.h"
 #include <vector>
-#include <deque>
 
 #undef AICurlPrivate
 
@@ -81,7 +80,7 @@ class MultiHandle : public CurlMultiHandle
 	// Store result and trigger events for easy request.
 	void finish_easy_request(AICurlEasyRequest const& easy_request, CURLcode result);
 	// Remove easy request at iter (must exist).
-	// Note that it's possible that a new request from mQueuedRequests is inserted before iter.
+	// Note that it's possible that a new request from a PerHostRequestQueue::mQueuedRequests is inserted before iter.
 	CURLMcode remove_easy_request(addedEasyRequests_type::iterator const& iter, bool as_per_command);
 
     static int socket_callback(CURL* easy, curl_socket_t s, int action, void* userp, void* socketp);
@@ -103,10 +102,6 @@ class MultiHandle : public CurlMultiHandle
 
 	PollSet* mReadPollSet;
 	PollSet* mWritePollSet;
-
-  private:
-	// Temporary throttling hack.
-	std::deque<AICurlEasyRequest> mQueuedRequests;	// Waiting (throttled) requests.
 };
 
 } // namespace curlthread

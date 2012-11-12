@@ -182,7 +182,7 @@ private:
 	std::vector<LLUUID> mAgentIDs;
 
 	// Need the headers to look up Expires: and Retry-After:
-	AIHTTPReceivedHeaders mHeaders;
+	virtual bool needsHeaders(void) const { return true; }
 	
 public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return avatarNameResponder_timeout; }
@@ -191,17 +191,10 @@ public:
 	:	mAgentIDs(agent_ids)
 	{ }
 
-	/*virtual*/ bool needsHeaders(void) const { return true; }
-	
-	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
-	{
-		mHeaders = headers;
-	}
-
 	/*virtual*/ void result(const LLSD& content)
 	{
 		// Pull expiration out of headers if available
-		F64 expires = LLAvatarNameCache::nameExpirationFromHeaders(mHeaders);
+		F64 expires = LLAvatarNameCache::nameExpirationFromHeaders(mReceivedHeaders);
 		F64 now = LLFrameTimer::getTotalSeconds();
 
 		LLSD agents = content["agents"];

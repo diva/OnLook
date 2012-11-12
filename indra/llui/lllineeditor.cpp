@@ -352,8 +352,11 @@ void LLLineEditor::setText(const LLStringExplicit &new_text)
 	}
 	setCursor(llmin((S32)mText.length(), getCursor()));
 
-	// Set current history line to end of history.
-	mCurrentHistoryLine = mLineHistory.end() - 1;
+	if (!mLineHistory.empty())
+	{
+		// Set current history line to end of history.
+		mCurrentHistoryLine = mLineHistory.end() - 1;
+	}
 
 	mPrevText = mText;
 }

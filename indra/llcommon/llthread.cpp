@@ -382,9 +382,19 @@ LLCondition::~LLCondition()
 	mAPRCondp = NULL;
 }
 
+LLFastTimer::DeclareTimer FT_WAIT_FOR_CONDITION("LLCondition::wait()");
+
 void LLCondition::wait()
 {
-	apr_thread_cond_wait(mAPRCondp, mAPRMutexp);
+	if (AIThreadID::in_main_thread_inline())
+	{
+		LLFastTimer ft1(FT_WAIT_FOR_CONDITION);
+		apr_thread_cond_wait(mAPRCondp, mAPRMutexp);
+	}
+	else
+	{
+		apr_thread_cond_wait(mAPRCondp, mAPRMutexp);
+	}
 }
 
 void LLCondition::signal()
@@ -409,6 +419,8 @@ bool LLMutexBase::isSelfLocked() const
 	return mLockingThread.equals_current_thread_inline();
 }
 
+LLFastTimer::DeclareTimer FT_WAIT_FOR_MUTEX("LLMutexBase::lock()");
+
 void LLMutexBase::lock() 
 { 
 	if (mLockingThread.equals_current_thread_inline())
@@ -417,7 +429,18 @@ void LLMutexBase::lock()
 		return;
 	}
 
-	apr_thread_mutex_lock(mAPRMutexp);
+	if (APR_STATUS_IS_EBUSY(apr_thread_mutex_trylock(mAPRMutexp)))
+	{
+	  if (AIThreadID::in_main_thread_inline())
+	  {
+		LLFastTimer ft1(FT_WAIT_FOR_MUTEX);
+		apr_thread_mutex_lock(mAPRMutexp);
+	  }
+	  else
+	  {
+		apr_thread_mutex_lock(mAPRMutexp);
+	  }
+	}
 	
 	mLockingThread.reset_inline();
 }
