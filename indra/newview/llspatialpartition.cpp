@@ -125,7 +125,7 @@ protected:
 #if LL_TRACK_PENDING_OCCLUSION_QUERIES
 		LLSpatialGroup::sPendingQueries.erase(name);
 #endif
-		llassert(std::find(mAvailableName.begin(), mAvailableName.end(), name) == mAvailableName.end());
+		//llassert(std::find(mAvailableName.begin(), mAvailableName.end(), name) == mAvailableName.end());
 		mAvailableName.push(name);
 	}
 };

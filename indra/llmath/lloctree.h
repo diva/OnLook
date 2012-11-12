@@ -677,7 +677,10 @@ public:
 				(mData.size() > gOctreeReserveCapacity && mData.capacity() > gOctreeReserveCapacity + mData.size() - 1 - (mData.size() - gOctreeReserveCapacity - 1) % 4))
 			{
 				//Shrink to lowest possible (reserve)+4*i size.. Say reserve is 5, here are [size,capacity] pairs. [10,13],[9,9],[8,9],[7,9],[6,9],[5,5],[4,5],[3,5],[2,5],[1,5],[0,5]
-#ifndef LL_DARWIN
+				//For Windows: We always assume vs2010 or later, which support this c++11 feature with no configuration needed.
+				//For GCC: __cplusplus >= 201103L indicates C++11 support. __GXX_EXPERIMENTAL_CXX0X being set indicates experimental c++0x support. C++11 support replaces C++0x support.
+				//		   std::vector::shrink_to_fit was added to GCCs C++0x implementation in version 4.5.0.
+#if defined(LL_WINDOWS) || __cplusplus >= 201103L || (defined(__GXX_EXPERIMENTAL_CXX0X) && __GNUC_MINOR__ >= 5)
 				mData.shrink_to_fit();
 #else
 				std::vector<LLPointer<T> >(mData.begin(), mData.end()).swap(mData);	//Need to confirm this works on OSX..
