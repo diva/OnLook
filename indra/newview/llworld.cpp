@@ -293,14 +293,14 @@ void LLWorld::removeRegion(const LLHost &host)
 	mActiveRegionList.remove(regionp);
 	mCulledRegionList.remove(regionp);
 	mVisibleRegionList.remove(regionp);
-	
-	delete regionp;
-
-	updateWaterObjects();
 
 	//double check all objects of this region are removed.
 	gObjectList.clearAllMapObjectsInRegion(regionp) ;
 	//llassert_always(!gObjectList.hasMapObjectInRegion(regionp)) ;
+
+	updateWaterObjects();
+
+	delete regionp;
 }
 
 
