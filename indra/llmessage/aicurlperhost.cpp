@@ -105,25 +105,24 @@ void PerHostRequestQueue::removed_from_multi_handle(void)
 
 void PerHostRequestQueue::queue(AICurlEasyRequest const& easy_request)
 {
-  mQueuedRequests.push_back(easy_request);
+  mQueuedRequests.push_back(easy_request.get_ptr());
 }
 
 bool PerHostRequestQueue::cancel(AICurlEasyRequest const& easy_request)
 {
-  std::deque<AICurlEasyRequest>::iterator const end = mQueuedRequests.end();
-  std::deque<AICurlEasyRequest>::iterator cur = std::find(mQueuedRequests.begin(), end, easy_request);
+  queued_request_type::iterator const end = mQueuedRequests.end();
+  queued_request_type::iterator cur = std::find(mQueuedRequests.begin(), end, easy_request.get_ptr());
 
   if (cur == end)
 	return false;		// Not found.
 
-  // We can't use erase because that uses assignment to move elements, which is
-  // private because it isn't thread-safe for AICurlEasyRequest. Therefore, move
-  // the element that we found to the back with swap (could just swap with the
-  // end immediately, but I don't want to break the order in which requests where
-  // added). Swap is also not thread-safe, but OK here because it only touches the
-  // AICurlEasyRequest objects in the deque, and the deque is protected by the
-  // lock on the PerHostRequestQueue object.
-  std::deque<AICurlEasyRequest>::iterator prev = cur;
+  // We can't use erase because that uses assignment to move elements,
+  // because it isn't thread-safe. Therefore, move the element that we found to 
+  // the back with swap (could just swap with the end immediately, but I don't
+  // want to break the order in which requests where added). Swap is also not
+  // thread-safe, but OK here because it only touches the objects in the deque,
+  // and the deque is protected by the lock on the PerHostRequestQueue object.
+  queued_request_type::iterator prev = cur;
   while (++cur != end)
   {
 	prev->swap(*cur);				// This is safe,

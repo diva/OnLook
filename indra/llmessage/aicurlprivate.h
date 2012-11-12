@@ -521,7 +521,7 @@ class ThreadSafeBufferedCurlEasyRequest : public AIThreadSafeSimple<BufferedCurl
 };
 
 // The curl easy request type wrapped in a reference counting pointer.
-typedef boost::intrusive_ptr<AICurlPrivate::ThreadSafeBufferedCurlEasyRequest> BufferedCurlEasyRequestPtr;
+typedef boost::intrusive_ptr<ThreadSafeBufferedCurlEasyRequest> BufferedCurlEasyRequestPtr;
 
 // This class wraps CURLM*'s.
 // It guarantees that a pointer is cleaned up when no longer needed, as required by libcurl.

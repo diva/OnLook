@@ -45,6 +45,10 @@ namespace curlthread { class MultiHandle; }
 
 class PerHostRequestQueue;
 class RefCountedThreadSafePerHostRequestQueue;
+class ThreadSafeBufferedCurlEasyRequest;
+
+// Forward declaration of BufferedCurlEasyRequestPtr (see aicurlprivate.h).
+typedef boost::intrusive_ptr<ThreadSafeBufferedCurlEasyRequest> BufferedCurlEasyRequestPtr;
 
 // PerHostRequestQueue objects are created by the curl thread and destructed by the main thread.
 // We need locking.
@@ -91,7 +95,7 @@ class PerHostRequestQueue {
 	static void purge(void);
 
   private:
-	typedef std::deque<AICurlEasyRequest> queued_request_type;
+	typedef std::deque<BufferedCurlEasyRequestPtr> queued_request_type;
 
 	int mAdded;									// Number of active easy handles with this host.
 	queued_request_type mQueuedRequests;		// Waiting (throttled) requests.
