@@ -42,7 +42,7 @@
 #include "llaudioengine.h" 
 #include "llavatarnamecache.h"
 #include "indra_constants.h"
-#include "lscript_byteformat.h"
+#include "../lscript/lscript_byteformat.h"	//Need LSCRIPTRunTimePermissionBits and SCRIPT_PERMISSION_*
 
 #include "llfloaterbump.h"
 #include "llassetstorage.h"
@@ -2558,8 +2558,25 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		break;
 	case IM_GROUP_INVITATION:
 		{
+			// Read the binary bucket for more information.
+			struct invite_bucket_t
+			{
+				S32 membership_fee;
+				LLUUID role_id;
+			}* invite_bucket;
+
+			// Make sure the binary bucket is the correct size.
+			if (binary_bucket_size != sizeof(invite_bucket_t))
+			{
+				LL_WARNS("Messaging") << "Malformed group invite binary bucket" << LL_ENDL;
+				break;
+			}
+
+			invite_bucket = (struct invite_bucket_t*) &binary_bucket[0];
+			S32 membership_fee = ntohl(invite_bucket->membership_fee);
+
 			// NaCl - Antispam
-			if(antispam || gSavedSettings.getBOOL("AntiSpamGroupInvites"))
+			if(antispam || gSavedSettings.getBOOL("AntiSpamGroupInvites") || (membership_fee > 0 && gSavedSettings.getBOOL("AntiSpamGroupFeeInvites")))
 				return;
 			// NaCl End
 			//if (!is_linden && (is_busy || is_muted))
@@ -2571,22 +2588,6 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			else
 			{
 				LL_INFOS("Messaging") << "Received IM_GROUP_INVITATION message." << LL_ENDL;
-				// Read the binary bucket for more information.
-				struct invite_bucket_t
-				{
-					S32 membership_fee;
-					LLUUID role_id;
-				}* invite_bucket;
-
-				// Make sure the binary bucket is the correct size.
-				if (binary_bucket_size != sizeof(invite_bucket_t))
-				{
-					LL_WARNS("Messaging") << "Malformed group invite binary bucket" << LL_ENDL;
-					break;
-				}
-
-				invite_bucket = (struct invite_bucket_t*) &binary_bucket[0];
-				S32 membership_fee = ntohl(invite_bucket->membership_fee);
 
 				LLSD payload;
 				payload["transaction_id"] = session_id;

@@ -332,7 +332,7 @@ public:
 	void dirtyMesh() { setState(MESH_DIRTY); }
 
 	//octree wrappers to make code more readable
-	element_list& getData() { return mOctreeNode->getData(); }
+	//element_list& getData() { return mOctreeNode->getData(); }
 	element_iter getDataBegin() { return mOctreeNode->getDataBegin(); }
 	element_iter getDataEnd() { return mOctreeNode->getDataEnd(); }
 	U32 getElementCount() const { return mOctreeNode->getElementCount(); }

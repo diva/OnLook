@@ -2921,6 +2921,7 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="CompileQueueDownloadedCompiling">Downloaded, now compiling</string>
 	<string name="CompileQueueScriptNotFound">Script not found on server.</string>
 	<string name="CompileQueueProblemDownloading">Problem downloading</string>
+  <string name="CompileQueueProblemUploading">Sim lacking UpdateScriptTask capabilities. Unable to request recompile</string>
 	<string name="CompileQueueInsufficientPermDownload">Insufficient permissions to download a script.</string>
 	<string name="CompileQueueInsufficientPermFor">Insufficient permissions for</string>
 	<string name="CompileQueueUnknownFailure">Unknown failure to download</string>

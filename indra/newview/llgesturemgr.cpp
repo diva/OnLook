@@ -33,6 +33,7 @@
 #include <algorithm>
 
 // library
+#include "llanimationstates.h"
 #include "llaudioengine.h"
 #include "lldatapacker.h"
 #include "llinventory.h"
@@ -551,6 +552,13 @@ void LLGestureMgr::playGesture(LLMultiGesture* gesture)
 					  || anim_step->mFlags & ANIM_FLAG_STOP
 					  || gAssetStorage->hasLocalAsset(anim_id, LLAssetType::AT_ANIMATION)))
 				{
+					//Singu note: Don't attempt to fetch expressions/emotes.
+					const char* emote_name = gAnimLibrary.animStateToString(anim_id);
+					if(emote_name && strstr(emote_name,"express_")==emote_name)
+					{
+						break;
+					}
+
 					mLoadingAssets.insert(anim_id);
 
 					LLUUID* id = new LLUUID(gAgentID);

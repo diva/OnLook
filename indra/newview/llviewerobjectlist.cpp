@@ -880,11 +880,14 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 	LLMemType mt(LLMemType::MTYPE_OBJECT);
 
 	// Update globals
-	LLViewerObject::setVelocityInterpolate( gSavedSettings.getBOOL("VelocityInterpolate") );
-	LLViewerObject::setPingInterpolate( gSavedSettings.getBOOL("PingInterpolate") );
+	static const LLCachedControl<bool> VelocityInterpolate("VelocityInterpolate");
+	static const LLCachedControl<bool> PingInterpolate("PingInterpolate");
+	LLViewerObject::setVelocityInterpolate( VelocityInterpolate );
+	LLViewerObject::setPingInterpolate( PingInterpolate );
 	
-	F32 interp_time = gSavedSettings.getF32("InterpolationTime");
-	F32 phase_out_time = gSavedSettings.getF32("InterpolationPhaseOut");
+	static LLCachedControl<F32> interp_time("InterpolationTime");
+	static LLCachedControl<F32> phase_out_time("InterpolationPhaseOut");
+
 	if (interp_time < 0.0 || 
 		phase_out_time < 0.0 ||
 		phase_out_time > interp_time)
@@ -896,7 +899,8 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 	LLViewerObject::setPhaseOutUpdateInterpolationTime( interp_time );
 	LLViewerObject::setMaxUpdateInterpolationTime( phase_out_time );
 
-	gAnimateTextures = gSavedSettings.getBOOL("AnimateTextures");
+	static const LLCachedControl<bool> AnimateTextures("AnimateTextures");
+	gAnimateTextures = AnimateTextures;
 
 	// update global timer
 	F32 last_time = gFrameTimeSeconds;

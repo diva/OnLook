@@ -3494,6 +3494,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 		LLFastTimer t(FTM_REBUILD_VOLUME_FACE_LIST);
 
 		//get all the faces into a list
+		OctreeGuard guard(group->mOctreeNode);
 		for (LLSpatialGroup::element_iter drawable_iter = group->getDataBegin(); drawable_iter != group->getDataEnd(); ++drawable_iter)
 		{
 			LLDrawable* drawablep = *drawable_iter;
@@ -3900,6 +3901,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 	if (!LLPipeline::sDelayVBUpdate)
 	{
 		//drawables have been rebuilt, clear rebuild status
+		OctreeGuard guard(group->mOctreeNode);
 		for (LLSpatialGroup::element_iter drawable_iter = group->getDataBegin(); drawable_iter != group->getDataEnd(); ++drawable_iter)
 		{
 			LLDrawable* drawablep = *drawable_iter;
@@ -3940,6 +3942,7 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 		
 		std::set<LLVertexBuffer*> mapped_buffers;
 
+		OctreeGuard guard(group->mOctreeNode);
 		for (LLSpatialGroup::element_iter drawable_iter = group->getDataBegin(); drawable_iter != group->getDataEnd(); ++drawable_iter)
 		{
 			LLDrawable* drawablep = *drawable_iter;
@@ -4012,6 +4015,7 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 				llwarns << "Not all mapped vertex buffers are unmapped!" << llendl ;
 				warningsCount = 1;
 			}
+			OctreeGuard guard(group->mOctreeNode);
 			for (LLSpatialGroup::element_iter drawable_iter = group->getDataBegin(); drawable_iter != group->getDataEnd(); ++drawable_iter)
 			{
 				LLDrawable* drawablep = *drawable_iter;
@@ -4484,6 +4488,7 @@ void LLGeometryManager::addGeometryCount(LLSpatialGroup* group, U32 &vertex_coun
 
 	//for each drawable
 
+	OctreeGuard guard(group->mOctreeNode);
 	for (LLSpatialGroup::element_iter drawable_iter = group->getDataBegin(); drawable_iter != group->getDataEnd(); ++drawable_iter)
 	{
 		LLDrawable* drawablep = *drawable_iter;

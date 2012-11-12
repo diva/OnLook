@@ -81,6 +81,33 @@ public:
 	virtual void traverse(const LLOctreeNode<T>* node);
 };
 
+struct OctreeGuard
+{
+	template <typename T>
+	OctreeGuard(const LLOctreeNode<T>* node)
+		{mNode = (void*)node;getNodes().push_back(this);}
+	~OctreeGuard()
+		{llassert_always(getNodes().back() == this); getNodes().pop_back();}
+	template <typename T>
+	static bool checkGuarded(const LLOctreeNode<T>* node)
+	{
+		for(std::vector<OctreeGuard*>::const_iterator it=getNodes().begin();it != getNodes().end();++it)
+		{
+			if((*it)->mNode == node)
+			{
+				OCT_ERRS << "!!! MANIPULATING OCTREE BRANCH DURING ITERATION !!!" << llendl;
+				return true;
+			}
+		}
+		return false;
+	}
+	static std::vector<OctreeGuard*>& getNodes()
+	{
+		static std::vector<OctreeGuard*> gNodes;
+		return gNodes;
+	}
+	void* mNode;
+};
 template <class T>
 class LLOctreeNode : public LLTreeNode<T>
 {
@@ -246,8 +273,8 @@ public:
 	
 	U32 getElementCount() const						{ return mElementCount; }
 	bool isEmpty() const							{ return mElementCount == 0; }
-	element_list& getData()							{ return mData; }
-	const element_list& getData() const				{ return mData; }
+	//element_list& getData()							{ return mData; }
+	//const element_list& getData() const				{ return mData; }
 	element_iter getDataBegin()						{ return mData; }
 	element_iter getDataEnd()						{ return mDataEnd; }
 	const_element_iter getDataBegin() const			{ return mData; }
@@ -317,6 +344,7 @@ public:
 	
 	virtual bool insert(T* data)
 	{
+		OctreeGuard::checkGuarded(this);
 		if (data == NULL || data->getBinIndex() != -1)
 		{
 			OCT_ERRS << "!!! INVALID ELEMENT ADDED TO OCTREE BRANCH !!!" << llendl;
@@ -433,7 +461,7 @@ public:
 
 	void _remove(T* data, S32 i)
 	{ //precondition -- mElementCount > 0, idx is in range [0, mElementCount)
-
+		OctreeGuard::checkGuarded(this);
 		mElementCount--;
 		data->setBinIndex(-1); 
 		
@@ -463,6 +491,7 @@ public:
 
 	bool remove(T* data)
 	{
+		OctreeGuard::checkGuarded(this);
 		S32 i = data->getBinIndex();
 
 		if (i >= 0 && i < (S32)mElementCount)
@@ -508,6 +537,7 @@ public:
 
 	void removeByAddress(T* data)
 	{
+		OctreeGuard::checkGuarded(this);
         for (U32 i = 0; i < mElementCount; ++i)
 		{
 			if (mData[i] == data)
@@ -527,6 +557,7 @@ public:
 
 	void clearChildren()
 	{
+		OctreeGuard::checkGuarded(this);
 		mChildCount = 0;
 
 		U32* foo = (U32*) mChildMap;
@@ -587,6 +618,7 @@ public:
 			OCT_ERRS <<"Octree node has too many children... why?" << llendl;
 		}
 #endif
+		OctreeGuard::checkGuarded(this);
 
 		mChildMap[child->getOctant()] = mChildCount;
 
@@ -606,6 +638,8 @@ public:
 
 	void removeChild(S32 index, BOOL destroy = FALSE)
 	{
+		OctreeGuard::checkGuarded(this);
+
 		for (U32 i = 0; i < this->getListenerCount(); i++)
 		{
 			oct_listener* listener = getOctListener(i);

@@ -62,6 +62,7 @@ class LLScriptEdCore : public LLPanel, public LLEventTimer
 	friend class LLLiveLSLEditor;
 
 public:
+	static void parseFunctions(const std::string& filename);
 	LLScriptEdCore(
 		const std::string& name,
 		const LLRect& rect,
@@ -169,6 +170,14 @@ private:
 	LLLiveLSLFile*	mLiveFile;
 	LLUUID          mObjectUUID;
 	LLUUID          mItemUUID;
+
+	struct LSLFunctionProps
+	{
+		std::string mName;
+		F32 mSleepTime;
+		bool mGodOnly;
+	};
+	static std::vector<LSLFunctionProps> mParsedFunctions;
 };
 
 

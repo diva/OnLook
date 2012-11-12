@@ -2820,6 +2820,7 @@ void LLPipeline::stateSort(LLCamera& camera, LLCullResult &result)
 		else
 		{
 			group->setVisible();
+			OctreeGuard guard(group->mOctreeNode);
 			for (LLSpatialGroup::element_iter i = group->getDataBegin(); i != group->getDataEnd(); ++i)
 			{
 				markVisible(*i, camera);
@@ -2908,6 +2909,7 @@ void LLPipeline::stateSort(LLSpatialGroup* group, LLCamera& camera)
 	LLMemType mt(LLMemType::MTYPE_PIPELINE_STATE_SORT);
 	if (!sSkipUpdate && group->changeLOD())
 	{
+		OctreeGuard guard(group->mOctreeNode);
 		for (LLSpatialGroup::element_iter i = group->getDataBegin(); i != group->getDataEnd(); ++i)
 		{
 			LLDrawable* drawablep = *i;
@@ -3044,6 +3046,7 @@ void forAllDrawables(LLCullResult::sg_iterator begin,
 {
 	for (LLCullResult::sg_iterator i = begin; i != end; ++i)
 	{
+		OctreeGuard guard((*i)->mOctreeNode);
 		for (LLSpatialGroup::element_iter j = (*i)->getDataBegin(); j != (*i)->getDataEnd(); ++j)
 		{
 			func(*j);	
@@ -6706,7 +6709,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 			{ //combine result based on alpha
 				if (multisample)
 				{
-					mDeferredLight.bindTarget();
+					mDeferredScreen.bindTarget();
 					glViewport(0, 0, mDeferredScreen.getWidth(), mDeferredScreen.getHeight());
 				}
 				else
@@ -6749,7 +6752,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 				if (multisample)
 				{
-					mDeferredLight.flush();
+					mDeferredScreen.flush();
 				}
 			}
 		}
@@ -6757,7 +6760,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 		{
 			if (multisample)
 			{
-				mDeferredLight.bindTarget();
+				mDeferredScreen.bindTarget();
 			}
 			LLGLSLShader* shader = &gDeferredPostNoDoFProgram;
 			
@@ -6785,7 +6788,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 			if (multisample)
 			{
-				mDeferredLight.flush();
+				mDeferredScreen.flush();
 			}
 		}
 
@@ -6806,7 +6809,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 			S32 channel = shader->enableTexture(LLShaderMgr::DEFERRED_DIFFUSE, mDeferredLight.getUsage());
 			if (channel > -1)
 			{
-				mDeferredLight.bindTexture(0, channel);
+				mDeferredScreen.bindTexture(0, channel);
 			}
 						
 			gGL.begin(LLRender::TRIANGLE_STRIP);

@@ -42,6 +42,7 @@ LLRender gGL;
 //Would be best to migrate these to LLMatrix4a and LLVector4a, but that's too divergent right now.
 LL_ALIGN_16(F32	gGLModelView[16]);
 LL_ALIGN_16(F32	gGLLastModelView[16]);
+LL_ALIGN_16(F32 gGLPreviousModelView[16]);
 LL_ALIGN_16(F32 gGLLastProjection[16]);
 LL_ALIGN_16(F32 gGLProjection[16]);
 LL_ALIGN_16(S32	gGLViewport[4]);
