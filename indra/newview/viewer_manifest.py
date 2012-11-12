@@ -205,7 +205,8 @@ class WindowsManifest(ViewerManifest):
             self.end_prefix()
 
         # For use in crash reporting (generates minidumps)
-        self.path("dbghelp.dll")
+        #self.path("dbghelp.dll")
+        #is shipped with windows anyway
 
         # For using FMOD for sound... DJS
         #~if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
