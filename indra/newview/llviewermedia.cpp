@@ -631,13 +631,13 @@ void LLViewerMedia::removeCookie(const std::string &name, const std::string &dom
 }
 
 
-LLSD LLViewerMedia::getHeaders()
+AIHTTPHeaders LLViewerMedia::getHeaders()
 {
-	LLSD headers = LLSD::emptyMap();
-	headers["Accept"] = "*/*";
-	headers["Content-Type"] = "application/xml";
-	headers["Cookie"] = sOpenIDCookie;
-	headers["User-Agent"] = getCurrentUserAgent();
+	AIHTTPHeaders headers;
+	headers.addHeader("Accept", "*/*");
+	headers.addHeader("Content-Type", "application/xml");
+	headers.addHeader("Cookie", sOpenIDCookie);
+	headers.addHeader("User-Agent", getCurrentUserAgent());
 
 	return headers;
 }

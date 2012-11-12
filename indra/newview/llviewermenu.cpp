@@ -139,6 +139,7 @@
 
 #include "llfloatermute.h"
 #include "llfloateropenobject.h"
+#include "llfloateroutbox.h"
 #include "llfloaterpermissionsmgr.h"
 #include "llfloaterperms.h"
 #include "llfloaterpostprocess.h"
@@ -6539,6 +6540,10 @@ class LLShowFloater : public view_listener_t
 		{
 			LLFloaterPerms::toggleInstance(LLSD());
 		}
+		else if (floater_name == "outbox")
+		{
+			LLFloaterOutbox::toggleInstance(LLSD());
+		}
 		return true;
 	}
 };
@@ -6612,6 +6617,10 @@ class LLFloaterVisible : public view_listener_t
 			JCFloaterAreaSearch* instn = JCFloaterAreaSearch::getInstance();
 			if (!instn) new_value = false;
 			else new_value = instn->getVisible();
+		}
+		else if (floater_name == "outbox")
+		{
+			new_value = LLFloaterOutbox::instanceVisible(LLSD());
 		}
 		gMenuHolder->findControl(control_name)->setValue(new_value);
 		return true;

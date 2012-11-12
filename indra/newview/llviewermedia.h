@@ -46,6 +46,7 @@ class LLUUID;
 class LLSD;
 class LLViewerTexture;
 class LLPluginCookieStore;
+class AIHTTPHeaders;
 
 typedef LLPointer<LLViewerMediaImpl> viewer_media_t;
 
@@ -95,7 +96,7 @@ class LLViewerMedia
 	static void openIDSetup(const std::string &openid_url, const std::string &openid_token);
 	static void openIDCookieResponse(const std::string &cookie);
 
-	static LLSD getHeaders();
+	static AIHTTPHeaders getHeaders();
 
 private:
 	static void setOpenIDCookie();

@@ -10,9 +10,10 @@ include(ELFIO)
 if(FMODEX)
   include(FMODEX)
   set(FMOD OFF)
-else(FMODEX)
-  include(FMOD)
 endif(FMODEX)
+if(FMOD)
+  include(FMOD)
+endif(FMOD)
 include(OPENAL)
 include(FindOpenGL)
 include(Hunspell)
@@ -224,6 +225,7 @@ set(viewer_SOURCE_FILES
     llfloaternotificationsconsole.cpp
     llfloaterobjectiminfo.cpp
     llfloateropenobject.cpp
+    llfloateroutbox.cpp
     llfloaterparcel.cpp
     llfloaterpermissionsmgr.cpp
     llfloaterperms.cpp
@@ -304,6 +306,7 @@ set(viewer_SOURCE_FILES
     llmanipscale.cpp
     llmaniptranslate.cpp
     llmapresponders.cpp
+    llmarketplacefunctions.cpp
     llmarketplacenotifications.cpp
     llmediactrl.cpp
     llmediaremotectrl.cpp
@@ -356,6 +359,7 @@ set(viewer_SOURCE_FILES
     llpanellandoptions.cpp
     llpanellogin.cpp
     llpanelmaininventory.cpp
+    llpanelmarketplaceoutboxinventory.cpp
     llpanelmediahud.cpp
     llpanelmorph.cpp
     llpanelmsgs.cpp
@@ -725,6 +729,7 @@ set(viewer_HEADER_FILES
     llfloaternotificationsconsole.h
     llfloaterobjectiminfo.h
     llfloateropenobject.h
+    llfloateroutbox.h
     llfloaterparcel.h
     llfloaterpermissionsmgr.h
     llfloaterperms.h
@@ -805,6 +810,7 @@ set(viewer_HEADER_FILES
     llmanipscale.h
     llmaniptranslate.h
     llmapresponders.h
+    llmarketplacefunctions.h
     llmarketplacenotifications.h
     llmediactrl.h
     llmediaremotectrl.h
@@ -857,6 +863,7 @@ set(viewer_HEADER_FILES
     llpanellandoptions.h
     llpanellogin.h
     llpanelmaininventory.h
+    llpanelmarketplaceoutboxinventory.h
     llpanelmediahud.h
     llpanelmorph.h
     llpanelmsgs.h
@@ -1270,8 +1277,6 @@ if (WINDOWS)
     if (INTEL_MEMOPS_LIBRARY)
       list(APPEND viewer_LIBRARIES ${INTEL_MEMOPS_LIBRARY})
     endif (INTEL_MEMOPS_LIBRARY)
-
-    use_prebuilt_binary(dbghelp)
 endif (WINDOWS)
 
 # Add the xui files. This is handy for searching for xui elements
@@ -1369,13 +1374,10 @@ if (FMOD OR FMODEX)
     set(LLSTARTUP_COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS} -DLL_FMOD")
   endif (FMOD)
 
-  if (DARWIN)
-    if(FMOD)
+  if (DARWIN AND FMOD)
       set(fmodwrapper_SOURCE_FILES fmodwrapper.cpp)
       add_library(fmodwrapper SHARED ${fmodwrapper_SOURCE_FILES})
-      if (FMOD)
-        set(fmodwrapper_needed_LIBRARIES ${FMOD_LIBRARY} ${CARBON_LIBRARY})
-      endif (FMOD)
+      set(fmodwrapper_needed_LIBRARIES ${FMOD_LIBRARY} ${CARBON_LIBRARY})
       set_target_properties(
         fmodwrapper
         PROPERTIES
@@ -1385,11 +1387,7 @@ if (FMOD OR FMODEX)
         )
       set(FMODWRAPPER_LIBRARY fmodwrapper)
       target_link_libraries(fmodwrapper ${fmodwrapper_needed_LIBRARIES})
-    endif(FMOD)
-    if(FMODEX)
-      set(FMODWRAPPER_LIBRARY ${FMODEX_LIBRARY})
-    endif(FMODEX)
-  else (DARWIN)
+  else (DARWIN AND FMOD)
     # fmodwrapper unnecessary on linux or windows, for fmod and fmodex
     if (FMODEX)
        set(FMODWRAPPER_LIBRARY ${FMODEX_LIBRARY})
@@ -1397,7 +1395,7 @@ if (FMOD OR FMODEX)
     if (FMOD)
        set(FMODWRAPPER_LIBRARY ${FMOD_LIBRARY})
     endif (FMOD)
-  endif (DARWIN)
+  endif (DARWIN AND FMOD)
 endif (FMOD OR FMODEX)
 
 set_source_files_properties(llstartup.cpp PROPERTIES COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS}")
@@ -1433,9 +1431,9 @@ set(PACKAGE ${PACKAGE_DEFAULT} CACHE BOOL
 if (WINDOWS)
     if(MSVC10)
         set(release_flags "/MAPRelease/${VIEWER_BINARY_NAME}.map")
-    else()
+    else(MSVC10)
         set(release_flags "/MAP:Release/${VIEWER_BINARY_NAME}.map")
-    endif()
+    endif(MSVC10)
 
     if (FMOD)
         if(MANIFEST_LIBRARIES)

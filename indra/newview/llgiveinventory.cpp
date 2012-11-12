@@ -36,6 +36,7 @@
 #include "llagentdata.h"
 #include "llagentui.h"
 #include "llagentwearables.h"
+#include "llfloaterchat.h" //for addChatHistory
 #include "llfloatertools.h" // for gFloaterTool
 #include "llhudeffecttrail.h"
 #include "llhudmanager.h"
@@ -159,7 +160,7 @@ bool LLGiveInventory::isInventoryGiveAcceptable(const LLInventoryItem* item)
 	return acceptable;
 }
 
-// Static
+// static
 bool LLGiveInventory::isInventoryGroupGiveAcceptable(const LLInventoryItem* item)
 {
 	if(!item) return false;
@@ -286,7 +287,7 @@ void LLGiveInventory::doGiveInventoryCategory(const LLUUID& to_agent,
 		{
 			LLGiveInventory::commitGiveInventoryCategory(to_agent, cat, im_session_id);
 		}
-		else 
+		else
 		{
 			LLSD args;
 			args["COUNT"] = llformat("%d",giveable.countNoCopy());
@@ -305,12 +306,30 @@ void LLGiveInventory::doGiveInventoryCategory(const LLUUID& to_agent,
 //static
 void LLGiveInventory::logInventoryOffer(const LLUUID& to_agent, const LLUUID &im_session_id)
 {
+	// compute id of possible IM session with agent that has "to_agent" id
+	LLUUID session_id = LLIMMgr::computeSessionID(IM_NOTHING_SPECIAL, to_agent);
 	// If this item was given by drag-and-drop into an IM panel, log this action in the IM panel chat.
 	LLSD args;
 	args["user_id"] = to_agent;
 	if (im_session_id.notNull())
 	{
 		gIMMgr->addSystemMessage(im_session_id, "inventory_item_offered", args);
+	}
+	// If this item was given by drag-and-drop on avatar while IM panel was open, log this action in the IM panel chat.
+	else if (gIMMgr->isIMSessionOpen(session_id))
+	{
+		gIMMgr->addSystemMessage(session_id, "inventory_item_offered", args);
+	}
+	// If this item was given by drag-and-drop on avatar while IM panel wasn't open, log this action to IM history.
+	else
+	{
+		std::string full_name;
+		if (gCacheName->getFullName(to_agent, full_name))
+		{
+			LLChat chat(LLTrans::getString("inventory_item_offered_to") + " " + full_name);
+			chat.mSourceType = CHAT_SOURCE_SYSTEM;
+			LLFloaterChat::addChatHistory(chat);
+		}
 	}
 }
 
@@ -380,7 +399,7 @@ void LLGiveInventory::commitGiveInventoryItem(const LLUUID& to_agent,
 		NO_TIMESTAMP,
 		bucket,
 		BUCKET_SIZE);
-	gAgent.sendReliableMessage(); 
+	gAgent.sendReliableMessage();
 	// <edit>
 	if (gSavedSettings.getBOOL("BroadcastViewerEffects"))
 	{

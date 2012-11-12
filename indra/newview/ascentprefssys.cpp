@@ -103,11 +103,18 @@ LLPrefsAscentSys::LLPrefsAscentSys()
 		LLUUID itemid = (LLUUID)gSavedPerAccountSettings.getString("EmeraldBuildPrefs_Item");
 		LLViewerInventoryItem* item = gInventory.getItem(itemid);
 
-		if		(item)				childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + LLTrans::getString(":") + "\n" +item->getName());
-		else if (itemid.isNull())	childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlyNotSet"));
-		else 						childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + "\n" + LLTrans::getString("AnItemNotOnThisAccount"));
+		if (item)
+		{
+			LLStringUtil::format_map_t args;
+			args["[ITEM]"] = item->getName();
+			childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlySetTo", args));
+		}
+		else if (itemid.isNull())
+			childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlyNotSet"));
+		else
+			childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlySetToAnItemNotOnThisAccount"));
 	}
-	else							childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("NotLoggedIn"));
+	else	childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("NotLoggedIn"));
 
 	refreshValues();
     refresh();
@@ -245,10 +252,13 @@ void LLPrefsAscentSys::onCommitTexturePicker(LLUICtrl* ctrl, void* userdata)
 	if(image_ctrl)	gSavedSettings.setString("EmeraldBuildPrefs_Texture", image_ctrl->getImageAssetID().asString());
 }
 
+//static
 void LLPrefsAscentSys::SinguBuildItemDrop(LLViewerInventoryItem* item)
 {
 	gSavedPerAccountSettings.setString("EmeraldBuildPrefs_Item", item->getUUID().asString());
-	sInst->childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlySetTo") + LLTrans::getString(":") + "\n" + item->getName());
+	LLStringUtil::format_map_t args;
+	args["[ITEM]"] = item->getName();
+	sInst->childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlySetTo", args));
 }
 
 void LLPrefsAscentSys::refreshValues()

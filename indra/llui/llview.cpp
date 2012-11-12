@@ -893,6 +893,39 @@ LLView* LLView::childrenHandleHover(S32 x, S32 y, MASK mask)
 	}
 	return NULL;
 }
+
+LLView*	LLView::childFromPoint(S32 x, S32 y, bool recur)
+{
+	if (!getVisible())
+		return NULL;
+
+	BOOST_FOREACH(LLView* viewp, mChildList)
+	{
+		S32 local_x = x - viewp->getRect().mLeft;
+		S32 local_y = y - viewp->getRect().mBottom;
+		if (!viewp->visibleAndContains(local_x, local_y))
+		{
+			continue;
+		}
+		// Here we've found the first (frontmost) visible child at this level
+		// containing the specified point. Is the caller asking us to drill
+		// down and return the innermost leaf child at this point, or just the
+		// top-level child?
+		if (recur)
+		{
+			LLView* leaf(viewp->childFromPoint(local_x, local_y, recur));
+			// Maybe viewp is already a leaf LLView, or maybe it has children
+			// but this particular (x, y) point falls between them. If the
+			// recursive call returns non-NULL, great, use that; else just use
+			// viewp.
+			return leaf? leaf : viewp;
+		}
+		return viewp;
+
+	}
+	return 0;
+}
+
 BOOL LLView::handleKey(KEY key, MASK mask, BOOL called_from_parent)
 {
 	BOOL handled = FALSE;
@@ -1507,7 +1540,7 @@ BOOL LLView::hasChild(const std::string& childname, BOOL recurse) const
 //-----------------------------------------------------------------------------
 // getChildView()
 //-----------------------------------------------------------------------------
-static LLFastTimer::DeclareTimer FTM_FIND_VIEWS("Find Views");
+static LLFastTimer::DeclareTimer FTM_FIND_VIEWS("Find Widgets");
 
 LLView* LLView::getChildView(const std::string& name, BOOL recurse, BOOL create_if_missing) const
 {

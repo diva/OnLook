@@ -45,6 +45,7 @@
 #include "llappviewer.h"
 //#include "llfirstuse.h"
 #include "llfloaterinventory.h"
+#include "llfloateroutbox.h"
 #include "llfocusmgr.h"
 #include "llfolderview.h"
 #include "llgesturemgr.h"
@@ -430,7 +431,7 @@ void show_item_profile(const LLUUID& item_uuid)
 
 void open_outbox()
 {
-	//LLFloaterReg::showInstance("outbox");
+	LLFloaterOutbox::showInstance();
 }
 
 LLUUID create_folder_in_outbox_for_item(LLInventoryItem* item, const LLUUID& destFolderId, S32 operation_id)

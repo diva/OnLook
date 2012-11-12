@@ -839,6 +839,8 @@ P(iamHereVoice);
 P2(inventoryModelFetchDescendentsResponder,		transfer_300s);
 P(inventoryModelFetchItemResponder);
 P(lcl_responder);
+P(MPImportGetResponder);
+P(MPImportPostResponder);
 P(mapLayerResponder);
 P(mediaTypeResponder);
 P(meshDecompositionResponder);

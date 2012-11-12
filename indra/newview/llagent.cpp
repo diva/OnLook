@@ -1845,13 +1845,6 @@ U8 LLAgent::getRenderState()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-static const LLFloaterView::skip_list_t& get_skip_list()
-{
-	static LLFloaterView::skip_list_t skip_list;
-	skip_list.insert(LLFloaterMap::getInstance());
-	return skip_list;
-}
-
 //-----------------------------------------------------------------------------
 // endAnimationUpdateUI()
 //-----------------------------------------------------------------------------
@@ -1884,8 +1877,11 @@ void LLAgent::endAnimationUpdateUI()
 		// Only pop if we have pushed...
 		if (TRUE == mViewsPushed)
 		{
+			LLFloaterView::skip_list_t skip_list;
+			skip_list.insert(LLFloaterMap::getInstance());
+
+			gFloaterView->popVisibleAll(skip_list);
 			mViewsPushed = FALSE;
-			gFloaterView->popVisibleAll(get_skip_list());
 		}
 
 		gAgentCamera.setLookAt(LOOKAT_TARGET_CLEAR);
@@ -1962,6 +1958,7 @@ void LLAgent::endAnimationUpdateUI()
 		// hide menus
 		gMenuBarView->setVisible(FALSE);
 		gStatusBar->setVisibleForMouselook(false);
+
 		LLPanelPathfindingRebakeNavmesh::getInstance()->setVisible(FALSE);
 
 		// clear out camera lag effect
@@ -1978,7 +1975,12 @@ void LLAgent::endAnimationUpdateUI()
 		{
 			(*mMouselookModeInSignal)();
 		}
-		gFloaterView->pushVisibleAll(FALSE, get_skip_list());
+
+		// hide all floaters except the mini map
+
+		LLFloaterView::skip_list_t skip_list;
+		skip_list.insert(LLFloaterMap::getInstance());
+		gFloaterView->pushVisibleAll(FALSE, skip_list);
 
 		if( gMorphView )
 		{
@@ -3488,9 +3490,9 @@ bool LLAgent::teleportCore(bool is_local)
 	// yet if the teleport will succeed.  Look in 
 	// process_teleport_location_reply
 
-	// close the map and find panels so we can see our destination
+	// close the map panel so we can see our destination.
+	// we don't close search floater, see EXT-5840.
 	LLFloaterWorldMap::hide(NULL);
-	LLFloaterDirectory::hide(NULL);
 
 	// hide land floater too - it'll be out of date
 	LLFloaterLand::hideInstance();

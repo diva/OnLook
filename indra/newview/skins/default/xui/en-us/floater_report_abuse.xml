@@ -2,6 +2,9 @@
 <floater can_close="true" can_drag_on_left="false" can_minimize="true"
      can_resize="false" height="590" min_height="100" min_width="100"
      name="floater_report_abuse" title="Report Abuse" width="390">
+    <string name="Screenshot">
+        Screenshot
+    </string>
 	<texture_picker allow_no_texture="true" bottom="-150" default_image_name="None"
 	     follows="left|top" height="114" label="" left="238" mouse_opaque="true"
 	     name="screenshot" width="134" />

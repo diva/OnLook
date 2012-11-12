@@ -46,6 +46,7 @@
 #include "llviewerparcelmgr.h"
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
+#include "lltrans.h"
 
 #include "hippogridmanager.h"
 
@@ -471,7 +472,7 @@ void LLFloaterSellLandUI::doSellLand(void *userdata)
 	// Do a confirmation
 	S32 sale_price = self->childGetValue("price");
 	S32 area = parcel->getArea();
-	std::string authorizedBuyerName = "Anyone";
+	std::string authorizedBuyerName = LLTrans::getString("Anyone");
 	bool sell_to_anyone = true;
 	if ("user" == self->childGetValue("sell_to").asString())
 	{

@@ -2443,7 +2443,6 @@ BOOL LLLineEditor::evaluateFloat()
 {
 	bool success = false;
 	std::string expr = getText();
-	LLStringUtil::toUpper(expr);
 
 	// user deleted the contents, nothing to evaluate -- MC
 	if (expr.empty())

@@ -1912,8 +1912,12 @@ BOOL LLPolySkeletalDistortion::setInfo(LLPolySkeletalDistortionInfo *info)
 //-----------------------------------------------------------------------------
 // apply()
 //-----------------------------------------------------------------------------
+static LLFastTimer::DeclareTimer FTM_POLYSKELETAL_DISTORTION_APPLY("Skeletal Distortion");
+
 void LLPolySkeletalDistortion::apply( ESex avatar_sex )
 {
+	LLFastTimer t(FTM_POLYSKELETAL_DISTORTION_APPLY);
+
         F32 effective_weight = ( getSex() & avatar_sex ) ? mCurWeight : getDefaultWeight();
 
         LLJoint* joint;

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 """\
 @file update_version_files.py
-@brief Update all of the various files in the repository to a new 
+@brief Update all of the various files in the repository to a new
 version number, instead of having to figure it out by hand
 
 $LicenseInfo:firstyear=2006&license=viewergpl$
@@ -96,20 +96,20 @@ Common Uses:
    update_version_files.py --skip-on-branch='^Branch_'
 
    # Update server and viewer version numbers explicitly:
-   update_version_files.py --version=1.18.1.6     
-                               
+   update_version_files.py --version=1.18.1.6
+
    # Update just the viewer version number explicitly:
-   update_version_files.py --viewer --version=1.18.1.6     
+   update_version_files.py --viewer --version=1.18.1.6
 
    # Update just the server build number to the current SVN revision:
    update_version_files.py --server
-                               
+
    # Update the viewer channel
    update_version_files.py --channel="First Look Puppeteering"
-                               
+
    # Update the server channel
    update_version_files.py --server_channel="Het Grid"
-   
+
 """
 def _getstatusoutput(cmd):
     """Return Win32 (status, output) of executing cmd
@@ -304,4 +304,3 @@ def main():
     return 0
 
 main()
-

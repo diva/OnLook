@@ -5,9 +5,9 @@
 #        them into installers for all supported platforms.
 #
 # $LicenseInfo:firstyear=2006&license=viewergpl$
-# 
+#
 # Copyright (c) 2006-2009, Linden Research, Inc.
-# 
+#
 # Second Life Viewer Source Code
 # The source code in this file ("Source Code") is provided by Linden Lab
 # to you under the terms of the GNU General Public License, version 2.0
@@ -15,17 +15,17 @@
 # ("Other License"), formally executed by you and Linden Lab.  Terms of
 # the GPL can be found in doc/GPL-license.txt in this distribution, or
 # online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
-# 
+#
 # There are special exceptions to the terms and conditions of the GPL as
 # it is applied to this Source Code. View the full text of the exception
 # in the file doc/FLOSS-exception.txt in this software distribution, or
 # online at
 # http://secondlifegrid.net/programs/open_source/licensing/flossexception
-# 
+#
 # By copying, modifying or distributing this software, you acknowledge
 # that you have read and understood your obligations described above,
 # and agree to abide by those obligations.
-# 
+#
 # ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
 # WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
 # COMPLETENESS OR PERFORMANCE.
@@ -76,36 +76,36 @@ class ViewerManifest(LLManifest):
 
         # skins
         if self.prefix(src="skins"):
-                self.path("paths.xml")
-                # include the entire textures directory recursively
-                if self.prefix(src="default/textures"):
-                        self.path("*.tga")
-                        self.path("*.j2c")
-                        self.path("*.jpg")
-                        self.path("*.png")
-                        self.path("textures.xml")
-                        self.end_prefix("default/textures")
-                self.path("default/xui/*/*.xml")
-                self.path("Default.xml")
-                self.path("default/*.xml")
-                if self.prefix(src="dark/textures"):
-                        self.path("*.tga")
-                        self.path("*.j2c")
-                        self.path("*.jpg")
-                        self.path("*.png")
-                        self.path("textures.xml")
-                        self.end_prefix("dark/textures")
-                self.path("dark.xml")
-                self.path("dark/*.xml")
-                
-                # Local HTML files (e.g. loading screen)
-                if self.prefix(src="*/html"):
-                        self.path("*.png")
-                        self.path("*/*/*.html")
-                        self.path("*/*/*.gif")
-                        self.end_prefix("*/html")
-                self.end_prefix("skins")
-        
+            self.path("paths.xml")
+            # include the entire textures directory recursively
+            if self.prefix(src="default/textures"):
+                self.path("*.tga")
+                self.path("*.j2c")
+                self.path("*.jpg")
+                self.path("*.png")
+                self.path("textures.xml")
+                self.end_prefix("default/textures")
+            self.path("default/xui/*/*.xml")
+            self.path("Default.xml")
+            self.path("default/*.xml")
+            if self.prefix(src="dark/textures"):
+                self.path("*.tga")
+                self.path("*.j2c")
+                self.path("*.jpg")
+                self.path("*.png")
+                self.path("textures.xml")
+                self.end_prefix("dark/textures")
+            self.path("dark.xml")
+            self.path("dark/*.xml")
+
+            # Local HTML files (e.g. loading screen)
+            if self.prefix(src="*/html"):
+                self.path("*.png")
+                self.path("*/*/*.html")
+                self.path("*/*/*.gif")
+                self.end_prefix("*/html")
+            self.end_prefix("skins")
+
         # Files in the newview/ directory
         self.path("gpu_table.txt")
 
@@ -158,7 +158,7 @@ class ViewerManifest(LLManifest):
         else:
             channel_flags = '--channel "%s"' % self.channel()
 
-        # Deal with settings 
+        # Deal with settings
         if self.default_channel() and self.default_grid():
             setting_flags = ''
         elif self.default_grid():
@@ -167,7 +167,7 @@ class ViewerManifest(LLManifest):
         else:
             setting_flags = '--settings settings_%s_%s.xml'\
                             % (self.grid(), self.channel_lowerword())
-                                                
+
         return " ".join((channel_flags, grid_flags, setting_flags)).strip()
 
 class WindowsManifest(ViewerManifest):
@@ -185,11 +185,11 @@ class WindowsManifest(ViewerManifest):
         self.path(os.path.join(os.pardir,
                                'llplugin', 'slplugin', self.args['configuration'], "SLPlugin.exe"),
                   "SLPlugin.exe")
-        
-      	# need to get the kdu dll from any of the build directories as well
+
+        # need to get the kdu dll from any of the build directories as well
         #~ try:
             #~ self.path(self.find_existing_file('../llkdu/%s/llkdu.dll' % self.args['configuration'],
-                #~ '../../libraries/i686-win32/lib/release/llkdu.dll'), 
+            #~ '../../libraries/i686-win32/lib/release/llkdu.dll'),
                   #~ dst='llkdu.dll')
             #~ pass
         #~ except:
@@ -210,10 +210,10 @@ class WindowsManifest(ViewerManifest):
         # For using FMOD for sound... DJS
         #~if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
             #~try:
-                #~self.path("fmod.dll")
-                #~pass
+            #~self.path("fmod.dll")
+            #~pass
             #~except:
-                #~print "Skipping fmod.dll - not found"
+            #~print "Skipping fmod.dll - not found"
                #~ pass
             #~self.end_prefix()
 
@@ -236,7 +236,7 @@ class WindowsManifest(ViewerManifest):
         if self.prefix(src='../plugins/webkit/%s' % self.args['configuration'], dst="llplugin"):
             self.path("media_plugin_webkit.dll")
             self.end_prefix()
-            
+
         # For WebKit/Qt plugin runtimes
         if self.prefix(src="../../libraries/i686-win32/lib/release", dst="llplugin"):
             self.path("libeay32.dll")
@@ -268,47 +268,47 @@ class WindowsManifest(ViewerManifest):
 
         # Get llcommon and deps. If missing assume static linkage and continue.
         if self.prefix(src=self.args['configuration'], dst=""):
-          try:
-            self.path('llcommon.dll')
-          except RuntimeError, err:
-            print err.message
-            print "Skipping llcommon.dll (assuming llcommon was linked statically)"
-          self.end_prefix()
+            try:
+                self.path('llcommon.dll')
+            except RuntimeError, err:
+                print err.message
+                print "Skipping llcommon.dll (assuming llcommon was linked statically)"
+            self.end_prefix()
         if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
-          self.path("libeay32.dll")
-          self.path("ssleay32.dll")
-          try:
-            self.path('libapr-1.dll')
-            self.path('libaprutil-1.dll')
-            self.path('libapriconv-1.dll')
-          except RuntimeError, err:
-            pass
-          self.end_prefix()
-        
+            self.path("libeay32.dll")
+            self.path("ssleay32.dll")
+            try:
+                self.path('libapr-1.dll')
+                self.path('libaprutil-1.dll')
+                self.path('libapriconv-1.dll')
+            except RuntimeError, err:
+                pass
+            self.end_prefix()
+
         # For google-perftools tcmalloc allocator.
         self.path("../../libraries/i686-win32/lib/release/libtcmalloc_minimal.dll", dst="libtcmalloc_minimal.dll")
-        
+
         try:
-          if self.prefix("../../libraries/i686-win32/lib/release/msvcrt", dst=""):
-            self.path("*.dll")
-            self.path("*.manifest")
-            self.end_prefix()
+            if self.prefix("../../libraries/i686-win32/lib/release/msvcrt", dst=""):
+                self.path("*.dll")
+                self.path("*.manifest")
+                self.end_prefix()
         except:
-          pass
-        
-        
+            pass
+
+
         # These need to be installed as a SxS assembly, currently a 'private' assembly.
         # See http://msdn.microsoft.com/en-us/library/ms235291(VS.80).aspx
         #~ if self.prefix(src=self.args['configuration'], dst=""):
-            #~ if self.args['configuration'] == 'Debug':
-                #~ self.path("msvcr80d.dll")
-                #~ self.path("msvcp80d.dll")
-                #~ self.path("Microsoft.VC80.DebugCRT.manifest")
-            #~ else:
-                #~ self.path("msvcr80.dll")
-                #~ self.path("msvcp80.dll")
-                #~ self.path("Microsoft.VC80.CRT.manifest")
-            #~ self.end_prefix()
+                #~ if self.args['configuration'] == 'Debug':
+            #~ self.path("msvcr80d.dll")
+            #~ self.path("msvcp80d.dll")
+            #~ self.path("Microsoft.VC80.DebugCRT.manifest")
+                #~ else:
+            #~ self.path("msvcr80.dll")
+            #~ self.path("msvcp80.dll")
+            #~ self.path("Microsoft.VC80.CRT.manifest")
+                #~ self.end_prefix()
 
         # The config file name needs to match the exe's name.
         #~ self.path(src="%s/secondlife-bin.exe.config" % self.args['configuration'], dst=self.final_exe() + ".config")
@@ -432,16 +432,16 @@ class WindowsManifest(ViewerManifest):
         # We use the Unicode version of NSIS, available from
         # http://www.scratchpaper.com/
         try:
-          import _winreg as reg
-          NSIS_path = reg.QueryValue(reg.HKEY_LOCAL_MACHINE, r"SOFTWARE\NSIS\Unicode") + '\\makensis.exe'
-          self.run_command('"' + proper_windows_path(NSIS_path) + '" ' + self.dst_path_of(tempfile))
+            import _winreg as reg
+            NSIS_path = reg.QueryValue(reg.HKEY_LOCAL_MACHINE, r"SOFTWARE\NSIS\Unicode") + '\\makensis.exe'
+            self.run_command('"' + proper_windows_path(NSIS_path) + '" ' + self.dst_path_of(tempfile))
         except:
-          try:
-            NSIS_path = os.environ['ProgramFiles'] + '\\NSIS\\Unicode\\makensis.exe'
-            self.run_command('"' + proper_windows_path(NSIS_path) + '" ' + self.dst_path_of(tempfile))
-          except:
-            NSIS_path = os.environ['ProgramFiles(X86)'] + '\\NSIS\\Unicode\\makensis.exe'
-            self.run_command('"' + proper_windows_path(NSIS_path) + '" ' + self.dst_path_of(tempfile))
+            try:
+                NSIS_path = os.environ['ProgramFiles'] + '\\NSIS\\Unicode\\makensis.exe'
+                self.run_command('"' + proper_windows_path(NSIS_path) + '" ' + self.dst_path_of(tempfile))
+            except:
+                NSIS_path = os.environ['ProgramFiles(X86)'] + '\\NSIS\\Unicode\\makensis.exe'
+                self.run_command('"' + proper_windows_path(NSIS_path) + '" ' + self.dst_path_of(tempfile))
         # self.remove(self.dst_path_of(tempfile))
         # If we're on a build machine, sign the code using our Authenticode certificate. JC
         sign_py = os.path.expandvars("{SIGN_PY}")
@@ -479,7 +479,7 @@ class DarwinManifest(ViewerManifest):
                 self.path("featuretable_mac.txt")
                 self.path("SecondLife.nib")
 
-   			  # SG:TODO
+                          # SG:TODO
                 self.path("../newview/res/singularity.icns", dst="singularity.icns")
 
                 # Translations
@@ -507,8 +507,8 @@ class DarwinManifest(ViewerManifest):
                 self.path("vivox-runtime/universal-darwin/libvivoxsdk.dylib", "libvivoxsdk.dylib")
                 self.path("vivox-runtime/universal-darwin/SLVoice", "SLVoice")
 
-		self.path("../llcommon/" + self.args['configuration'] + "/libllcommon.dylib", "libllcommon.dylib")
-                
+                self.path("../llcommon/" + self.args['configuration'] + "/libllcommon.dylib", "libllcommon.dylib")
+
                 libfile = "lib%s.dylib"
                 libdir = "../../libraries/universal-darwin/lib/release"
 
@@ -535,14 +535,14 @@ class DarwinManifest(ViewerManifest):
 
                 # our apps
                 try:
-                  self.path("../mac_crash_logger/" + self.args['configuration'] + "/mac-crash-logger.app", "mac-crash-logger.app")
-                  self.path("../mac_updater/" + self.args['configuration'] + "/mac-updater.app", "mac-updater.app")
+                    self.path("../mac_crash_logger/" + self.args['configuration'] + "/mac-crash-logger.app", "mac-crash-logger.app")
+                    self.path("../mac_updater/" + self.args['configuration'] + "/mac-updater.app", "mac-updater.app")
                 except:
-                	pass
+                    pass
 
                 # plugin launcher
                 self.path("../llplugin/slplugin/" + self.args['configuration'] + "/SLPlugin.app", "SLPlugin.app")
-                
+
                 # dependencies on shared libs
                 mac_crash_logger_res_path = self.dst_path_of("mac-crash-logger.app/Contents/Resources")
                 slplugin_res_path = self.dst_path_of("SLPlugin.app/Contents/Resources")
@@ -567,7 +567,7 @@ class DarwinManifest(ViewerManifest):
                     self.path("../plugins/webkit/" + self.args['configuration'] + "/media_plugin_webkit.dylib", "media_plugin_webkit.dylib")
                     self.path("../../libraries/universal-darwin/lib/release/libllqtwebkit.dylib", "libllqtwebkit.dylib")
 
-                    self.end_prefix("llplugin")              
+                    self.end_prefix("llplugin")
 
                 # command line arguments for connecting to the proper grid
                 self.put_in_file(self.flags_list(), 'arguments.txt')
@@ -581,14 +581,14 @@ class DarwinManifest(ViewerManifest):
         # arguments yields a slightly smaller binary but makes crash logs mostly useless.
         # This may be desirable for the final release.  Or not.
         if self.buildtype().lower()=='release':
-            if ("package" in self.args['actions'] or 
+            if ("package" in self.args['actions'] or
                 "unpacked" in self.args['actions']):
                 self.run_command('strip -S "%(viewer_binary)s"' %
                                  { 'viewer_binary' : self.dst_path_of('Contents/MacOS/'+self.app_name())})
 
     def app_name(self):
         return "Singularity"
-        
+
     def info_plist_name(self):
         return "Info-Singularity.plist"
 
@@ -638,14 +638,14 @@ class DarwinManifest(ViewerManifest):
         # one for release candidate and one for first look. Any other channels
         # will use the release .DS_Store, and will look broken.
         # - Ambroff 2008-08-20
-		# Added a .DS_Store for snowglobe - Merov 2009-06-17
-		
-		# We have a single branded installer for all snowglobe channels so snowglobe logic is a bit different
+                # Added a .DS_Store for snowglobe - Merov 2009-06-17
+
+                # We have a single branded installer for all snowglobe channels so snowglobe logic is a bit different
         if (self.app_name()=="Snowglobe"):
             dmg_template = os.path.join ('installers', 'darwin', 'snowglobe-dmg')
         else:
             dmg_template = os.path.join(
-                'installers', 
+                'installers',
                 'darwin',
                 '%s-dmg' % "".join(self.channel_unique().split()).lower())
 
@@ -686,7 +686,7 @@ class LinuxManifest(ViewerManifest):
     def construct(self):
         super(LinuxManifest, self).construct()
         self.path("licenses-linux.txt","licenses.txt")
-        
+
         self.path("res/"+self.icon_name(),self.icon_name())
         if self.prefix("linux_tools", dst=""):
             self.path("client-readme.txt","README-linux.txt")
@@ -728,7 +728,7 @@ class LinuxManifest(ViewerManifest):
 
     def binary_name(self):
         return 'singularity-do-not-run-directly'
-    
+
     def icon_name(self):
         return "singularity_icon.png"
 
@@ -826,12 +826,12 @@ class Linux_i686Manifest(LinuxManifest):
 
             # Vivox runtimes
             if self.prefix(src="vivox-runtime/i686-linux", dst="bin"):
-                    self.path("SLVoice")
-                    self.end_prefix()
+                self.path("SLVoice")
+                self.end_prefix()
             if self.prefix(src="vivox-runtime/i686-linux", dst="lib"):
-                    self.path("libortp.so")
-                    self.path("libvivoxsdk.so")
-                    self.end_prefix("lib")
+                self.path("libortp.so")
+                self.path("libvivoxsdk.so")
+                self.end_prefix("lib")
 
 
 class Linux_x86_64Manifest(LinuxManifest):

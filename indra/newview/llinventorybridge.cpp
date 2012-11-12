@@ -1,4 +1,4 @@
-/** 
+/**
  * @file llinventorybridge.cpp
  * @brief Implementation of the Inventory-Folder-View-Bridge classes.
  *
@@ -34,49 +34,47 @@
 
 #include <utility> // for std::pair<>
 
-#include "llinventorypanel.h"
 #include "llinventorybridge.h"
-#include "llinventorydefines.h"
-#include "llinventoryfunctions.h"
-#include "llinventoryicon.h"
-#include "llinventorymodelbackgroundfetch.h"
-
-#include "lltrans.h"
 
 #include "message.h"
 
-#include "llagent.h"
-#include "llagentwearables.h"
-#include "llappearancemgr.h"
-#include "llattachmentsmgr.h"
-#include "llagentcamera.h"
-#include "llcallingcard.h"
 #include "llcheckboxctrl.h"		// for radio buttons
 #include "llradiogroup.h"
 #include "llspinctrl.h"
 #include "lltextbox.h"
 #include "llui.h"
-#include "llviewerfoldertype.h"
+#include "lluictrlfactory.h"
 
-#include "llviewercontrol.h"
+#include "llagent.h"
+#include "llagentcamera.h"
+#include "llagentwearables.h"
+#include "llappearancemgr.h"
+#include "llattachmentsmgr.h"
+#include "llcallingcard.h"
 #include "llfirstuse.h"
 #include "llfloateravatarinfo.h"
 #include "llfloaterchat.h"
 #include "llfloatercustomize.h"
 #include "llfloaterinventory.h"
+#include "llfloateropenobject.h"
 #include "llfloaterproperties.h"
-
 #include "llfloaterworldmap.h"
 #include "llfocusmgr.h"
 #include "llfolderview.h"
 #include "llgesturemgr.h"
 #include "llgiveinventory.h" 
 #include "lliconctrl.h"
-#include "llinventorymodel.h"
+#include "llimview.h"
 #include "llinventoryclipboard.h"
+#include "llinventorydefines.h"
+#include "llinventoryfunctions.h"
+#include "llinventoryicon.h"
+#include "llinventorymodel.h"
+#include "llinventorymodelbackgroundfetch.h"
+#include "llinventorypanel.h"
 #include "lllineeditor.h"
+#include "llmarketplacefunctions.h"
 #include "llmenugl.h"
-//#include "llmarketplacefunctions.h"
 #include "llnotifications.h"
 #include "llnotificationsutil.h"
 #include "llpreviewanim.h"
@@ -87,27 +85,25 @@
 #include "llpreviewsound.h"
 #include "llpreviewtexture.h"
 #include "llresmgr.h"
+#include "llselectmgr.h"
 #include "llscrollcontainer.h"
-#include "llimview.h"
-#include "llviewerassettype.h"
-#include "llfoldertype.h"
 #include "lltooldraganddrop.h"
-
-#include "llviewertexturelist.h"
+#include "lltabcontainer.h"
+#include "lltrans.h"
+#include "llviewerassettype.h"
+#include "llviewercontrol.h"
+#include "llviewerfoldertype.h"
 #include "llviewerinventory.h"
-
+#include "llviewermessage.h"
 #include "llviewerobjectlist.h"
-
+#include "llviewerregion.h"
+#include "llviewertexturelist.h"
 #include "llviewerwindow.h"
 #include "llvoavatar.h"
+#include "llfoldertype.h"
 #include "llwearable.h"
 #include "llwearablelist.h"
-#include "llviewermessage.h" 
-#include "llviewerregion.h"
-#include "lltabcontainer.h"
-#include "lluictrlfactory.h"
-#include "llselectmgr.h"
-#include "llfloateropenobject.h"
+
 // <edit>
 #include "llappviewer.h" // System Folders
 #include "llfloateranimpreview.h" // for reuploads
@@ -133,7 +129,7 @@
 
 // Marketplace outbox current disabled
 #define ENABLE_MERCHANT_OUTBOX_CONTEXT_MENU	1
-#define ENABLE_MERCHANT_SEND_TO_MARKETPLACE_CONTEXT_MENU 0
+#define ENABLE_MERCHANT_SEND_TO_MARKETPLACE_CONTEXT_MENU 1
 #define BLOCK_WORN_ITEMS_IN_OUTBOX 1
 
 bool InventoryLinksEnabled()
@@ -270,7 +266,7 @@ LLInvFVBridge::LLInvFVBridge(LLInventoryPanel* inventory,
 
 const std::string& LLInvFVBridge::getName() const
 {
-	LLInventoryObject* obj = getInventoryObject();
+	const LLInventoryObject* obj = getInventoryObject();
 	if(obj)
 	{
 		return obj->getName();
@@ -354,7 +350,7 @@ void LLInvFVBridge::removeBatch(LLDynamicArray<LLFolderViewEventListener*>& batc
 	S32 count = batch.count();
 	S32 i,j;
 	for(i = 0; i < count; ++i)
-	{	
+	{
 		bridge = (LLInvFVBridge*)(batch.get(i));
 		if(!bridge || !bridge->isItemRemovable()) continue;
 		item = (LLViewerInventoryItem*)model->getItem(bridge->getUUID());
@@ -367,7 +363,7 @@ void LLInvFVBridge::removeBatch(LLDynamicArray<LLFolderViewEventListener*>& batc
 		}
 	}
 	for(i = 0; i < count; ++i)
-	{		
+	{
 		bridge = (LLInvFVBridge*)(batch.get(i));
 		if(!bridge || !bridge->isItemRemovable()) continue;
 		cat = (LLViewerInventoryCategory*)model->getCategory(bridge->getUUID());
@@ -778,7 +774,7 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
 		}
 	}
 
-	// Don't allow items to be pasted directly into the COF.
+	// Don't allow items to be pasted directly into the COF or the inbox/outbox
 	if (!isCOFFolder() && !isInboxFolder() && !isOutboxFolder())
 	{
 		items.push_back(std::string("Paste"));
@@ -861,7 +857,7 @@ void LLInvFVBridge::addTrashContextMenuOptions(menuentry_vec_t &items,
 	items.push_back(std::string("Purge Item"));
 	if (!isItemRemovable())
 	{
-		disabled_items.push_back(std::string("Purge Item"));	
+		disabled_items.push_back(std::string("Purge Item"));
 	}
 	items.push_back(std::string("Restore Item"));
 }
@@ -945,7 +941,7 @@ BOOL LLInvFVBridge::startDrag(EDragAndDropType* type, LLUUID* id) const
 		{
 			return FALSE;
 		}
-		
+
 		*id = obj->getUUID();
 		//object_ids.put(obj->getUUID());
 
@@ -1148,8 +1144,8 @@ LLInvFVBridge* LLInvFVBridge::createBridge(LLAssetType::EType asset_type,
 			new_listener = new LLItemBridge(inventory, root, uuid);
 			break;
 
-	case LLAssetType::AT_OBJECT:
-		if(!(inv_type == LLInventoryType::IT_OBJECT || inv_type == LLInventoryType::IT_ATTACHMENT) 
+		case LLAssetType::AT_OBJECT:
+			if(!(inv_type == LLInventoryType::IT_OBJECT || inv_type == LLInventoryType::IT_ATTACHMENT)
 			|| inv_type == LLInventoryType::IT_TEXTURE )	//There's an abundance of objects in inv that have texture (0) as their inv type, right out of unpack. 
 															//May have been bug either in an old client, or server version. Either way... it causes a lot of spam over something ultimately harmless.
 			{
@@ -1242,7 +1238,7 @@ LLInvFVBridge* LLInvFVBridge::createBridge(LLAssetType::EType asset_type,
 void LLInvFVBridge::purgeItem(LLInventoryModel *model, const LLUUID &uuid)
 {
 	LLInventoryCategory* cat = model->getCategory(uuid);
-	if(cat)
+	if (cat)
 	{
 		model->purgeDescendentsOf(uuid);
 		model->notifyObservers();
@@ -1311,10 +1307,10 @@ bool LLInvFVBridge::canListOnMarketplaceNow() const
 	bool can_list = true;
 
 	// Do not allow listing while import is in progress
-	/*if (LLMarketplaceInventoryImporter::instanceExists())
+	if (LLMarketplaceInventoryImporter::instanceExists())
 	{
 		can_list = !LLMarketplaceInventoryImporter::instance().isImportInProgress();
-	}*/
+	}
 	
 	const LLInventoryObject* obj = getInventoryObject();
 	can_list &= (obj != NULL);
@@ -2861,10 +2857,11 @@ void LLFolderBridge::performAction(LLInventoryModel* model, std::string action)
 	{
 		llinfos << "Send to marketplace action!" << llendl;
 
-		LLInventoryCategory * cat = gInventory.getCategory(mUUID);
+		/*LLInventoryCategory * cat = gInventory.getCategory(mUUID);
 		if (!cat) return;
 		
-		send_to_marketplace(cat);
+		send_to_marketplace(cat);*/
+		LLMarketplaceInventoryImporter::instance().triggerImport();
 	}
 #endif // ENABLE_MERCHANT_SEND_TO_MARKETPLACE_CONTEXT_MENU
 }
@@ -3028,13 +3025,55 @@ void LLFolderBridge::pasteFromClipboard()
 	if(model && isClipboardPasteable())
 	{
 		const LLUUID &current_outfit_id = model->findCategoryUUIDForType(LLFolderType::FT_CURRENT_OUTFIT, false);
+		const LLUUID &outbox_id = model->findCategoryUUIDForType(LLFolderType::FT_OUTBOX, false);
 		const BOOL move_is_into_current_outfit = (mUUID == current_outfit_id);
 		const BOOL move_is_into_outfit = (getCategory() && getCategory()->getPreferredType()==LLFolderType::FT_OUTFIT);
-
-		const LLUUID parent_id(mUUID);
+		const BOOL move_is_into_outbox = model->isObjectDescendentOf(mUUID, outbox_id);
 
 		LLDynamicArray<LLUUID> objects;
 		LLInventoryClipboard::instance().retrieve(objects);
+
+		if (move_is_into_outbox)
+		{
+			LLFolderViewItem * outbox_itemp = mRoot->getItemByID(mUUID);
+
+			if (outbox_itemp)
+			{
+				//LLToolDragAndDrop::instance().setCargoCount(objects.size());
+
+				BOOL can_list = TRUE;
+
+				for (LLDynamicArray<LLUUID>::const_iterator iter = objects.begin();
+					(iter != objects.end()) && (can_list == TRUE);
+					++iter)
+				{
+					const LLUUID& item_id = (*iter);
+					LLInventoryItem *item = model->getItem(item_id);
+
+					if (item)
+					{
+						MASK mask = 0x0;
+						BOOL drop = FALSE;
+						EDragAndDropType cargo_type = LLViewerAssetType::lookupDragAndDropType(item->getActualType());
+						void * cargo_data = (void *) item;
+						//std::string tooltip_msg;
+
+						can_list = outbox_itemp->getListener()->dragOrDrop(mask, drop, cargo_type, cargo_data/*, tooltip_msg*/);
+					}
+				}
+
+				//LLToolDragAndDrop::instance().resetCargoCount();
+
+				if (can_list == FALSE)
+				{
+					// Notify user of failure somehow -- play error sound?  modal dialog?
+					return;
+				}
+			}
+		}
+
+		const LLUUID parent_id(mUUID);
+
 		for (LLDynamicArray<LLUUID>::const_iterator iter = objects.begin();
 			 iter != objects.end();
 			 ++iter)
@@ -5106,6 +5145,7 @@ std::string LLObjectBridge::getLabelSuffix() const
 		{
 			return LLItemBridge::getLabelSuffix() + LLTrans::getString("worn");
 		}
+		bool unsupportedPoint = false; //Unsupported points are given special names, translate them as they're named, not later.
 		std::string attachment_point_name = gAgentAvatarp->getAttachedPointName(mUUID);
 		if (attachment_point_name == LLStringUtil::null) // Error condition, invalid attach point
 		{
@@ -5116,13 +5156,14 @@ std::string LLObjectBridge::getLabelSuffix() const
 			{
 				if((*iter).second.first == mUUID)
 				{
-					attachment_point_name = llformat("unsupported point %d)", (*iter).first);
+					attachment_point_name = llformat((LLTrans::getString("unsupported point")+" %d)").c_str(), (*iter).first);
 				}
 			}
+			unsupportedPoint = attachment_point_name != "Invalid Attachment";
 		}
 		// e.g. "(worn on ...)" / "(attached to ...)"
 		LLStringUtil::format_map_t args;
-		args["[ATTACHMENT_POINT]"] =  attachment_point_name;
+		args["[ATTACHMENT_POINT]"] = unsupportedPoint ? attachment_point_name : LLTrans::getString(attachment_point_name);
 
 		if(gRlvAttachmentLocks.canDetach(getItem()))
 			return LLItemBridge::getLabelSuffix() + LLTrans::getString("WornOnAttachmentPoint", args);
