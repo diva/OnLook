@@ -132,8 +132,8 @@ public:
 class LLView 
 :	public LLMouseHandler,			// handles mouse events
 	public LLFocusableElement,		// handles keyboard events
-	public LLMortician				// lazy deletion
-	//public LLHandleProvider<LLView>	// passes out weak references to self
+	public LLMortician,				// lazy deletion
+	public LLHandleProvider<LLView>	// passes out weak references to self
 {
 public:
 	struct Follows : public LLInitParam::ChoiceBlock<Follows>
@@ -343,8 +343,6 @@ public:
 	void			pushVisible(BOOL visible)	{ mLastVisible = mVisible; setVisible(visible); }
 	void			popVisible()				{ setVisible(mLastVisible); }
 	BOOL			getLastVisible()	const	{ return mLastVisible; }
-
-	LLHandle<LLView>	getHandle()				{ mHandle.bind(this); return mHandle; }
 
 	U32			getFollows() const				{ return mReshapeFlags; }
 	BOOL		followsLeft() const				{ return mReshapeFlags & FOLLOWS_LEFT; }
@@ -678,7 +676,6 @@ private:
 	BOOL		mIsFocusRoot;
 	BOOL		mUseBoundingRect; // hit test against bounding rectangle that includes all child elements
 
-	LLRootHandle<LLView> mHandle;
 	BOOL		mLastVisible;
 
 	S32			mNextInsertionOrdinal;

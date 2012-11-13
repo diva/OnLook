@@ -227,7 +227,7 @@ public:
 	void			clearSnapTarget() { mSnappedTo.markDead(); }
 	LLHandle<LLFloater>	getSnapTarget() const { return mSnappedTo; }
 
-	LLHandle<LLFloater> getHandle() const { return mHandle; }
+	LLHandle<LLFloater> getHandle() const { return getDerivedHandle<LLFloater>(); }
 
 	// Return a closeable floater, if any, given the current focus.
 	static LLFloater* getClosableFloaterFromFocus(); 
@@ -331,7 +331,6 @@ private:
 	S32				mPreviousMinimizedLeft;
 	
 	LLFloaterNotificationContext* mNotificationContext;
-	LLRootHandle<LLFloater>		mHandle;	
 };
 
 /////////////////////////////////////////////////////////////

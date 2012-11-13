@@ -136,7 +136,7 @@ public:
 
 	void			setCtrlsEnabled(BOOL b);
 
-	LLHandle<LLPanel>	getHandle() const { return mPanelHandle; }
+	LLHandle<LLPanel>	getHandle() const { return getDerivedHandle<LLPanel>(); }
 
 	const LLCallbackMap::map_t& getFactoryMap() const { return mFactoryMap; }
 
@@ -246,7 +246,6 @@ private:
 	LLViewBorder*	mBorder;
 	LLButton*		mDefaultBtn;
 	std::string		mLabel;
-	LLRootHandle<LLPanel> mPanelHandle;
 
 	typedef std::map<std::string, std::string> ui_string_map_t;
 	ui_string_map_t	mUIStrings;

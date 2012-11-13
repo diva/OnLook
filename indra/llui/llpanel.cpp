@@ -80,7 +80,6 @@ void LLPanel::init()
 	mDefaultBtn = NULL;
 	setIsChrome(FALSE); //is this a decorator to a live window or a form?
 
-	mPanelHandle.bind(this);
 	setTabStop(FALSE);
 	mVisibleSignal = NULL;
 }

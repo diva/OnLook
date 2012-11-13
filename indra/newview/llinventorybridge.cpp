@@ -263,7 +263,7 @@ LLInvFVBridge::LLInvFVBridge(LLInventoryPanel* inventory,
 	mInvType(LLInventoryType::IT_NONE),
 	mIsLink(FALSE)
 {
-	mInventoryPanel = inventory->getHandle();
+	mInventoryPanel = inventory->getInventoryPanelHandle();
 	const LLInventoryObject* obj = getInventoryObject();
 	mIsLink = obj && obj->getIsLinkType();
 }
@@ -973,7 +973,7 @@ LLInventoryObject* LLInvFVBridge::getInventoryObject() const
 
 LLInventoryModel* LLInvFVBridge::getInventoryModel() const
 {
-	LLInventoryPanel* panel = dynamic_cast<LLInventoryPanel*>(mInventoryPanel.get());
+	LLInventoryPanel* panel = mInventoryPanel.get();
 	return panel ? panel->getModel() : NULL;
 }
 
@@ -1937,7 +1937,7 @@ BOOL LLFolderBridge::isItemRemovable() const
 		return FALSE;
 	}
 
-	LLInventoryPanel* panel = dynamic_cast<LLInventoryPanel*>(mInventoryPanel.get());
+	LLInventoryPanel* panel = mInventoryPanel.get();
 	LLFolderViewFolder* folderp = dynamic_cast<LLFolderViewFolder*>(panel ? panel->getRootFolder()->getItemByID(mUUID) : NULL);
 	if (folderp)
 	{
@@ -3200,7 +3200,7 @@ void LLFolderBridge::buildContextMenuBaseOptions(U32 flags)
 		// Not sure what the right thing is to do here.
 		if (!isCOFFolder() && cat && (cat->getPreferredType() != LLFolderType::FT_OUTFIT))
 		{
-			LLInventoryPanel* panel = dynamic_cast<LLInventoryPanel*>(mInventoryPanel.get());
+			LLInventoryPanel* panel = mInventoryPanel.get();
 			if(panel && !panel->getFilterWorn())
 			if (!isInboxFolder() && !isOutboxFolder()) // don't allow creation in inbox or outbox
 			{
@@ -3481,7 +3481,7 @@ void LLFolderBridge::createNewCategory(void* user_data)
 {
 	LLFolderBridge* bridge = (LLFolderBridge*)user_data;
 	if(!bridge) return;
-	LLInventoryPanel* panel = dynamic_cast<LLInventoryPanel*>(bridge->mInventoryPanel.get());
+	LLInventoryPanel* panel = bridge->mInventoryPanel.get();
 	if (!panel) return;
 	LLInventoryModel* model = panel->getModel();
 	if(!model) return;
@@ -3675,7 +3675,7 @@ void LLFolderBridge::dropToFavorites(LLInventoryItem* inv_item)
 	// use callback to rearrange favorite landmarks after adding
 	// to have new one placed before target (on which it was dropped). See EXT-4312.
 	LLPointer<AddFavoriteLandmarkCallback> cb = new AddFavoriteLandmarkCallback();
-	LLInventoryPanel* panel = dynamic_cast<LLInventoryPanel*>(mInventoryPanel.get());
+	LLInventoryPanel* panel = mInventoryPanel.get();
 	LLFolderViewItem* drag_over_item = panel ? panel->getRootFolder()->getDraggingOverItem() : NULL;
 	if (drag_over_item && drag_over_item->getListener())
 	{
@@ -3723,6 +3723,9 @@ BOOL LLFolderBridge::dragItemIntoFolder(LLInventoryItem* inv_item,
 	if(!model || !inv_item) return FALSE;
 	if(!isAgentInventory()) return FALSE; // cannot drag into library
 	if (!isAgentAvatarValid()) return FALSE;
+
+	LLInventoryPanel* destination_panel = mInventoryPanel.get();
+	if (!destination_panel) return false;
 
 	const LLUUID &current_outfit_id = model->findCategoryUUIDForType(LLFolderType::FT_CURRENT_OUTFIT, false);
 	const LLUUID &favorites_id = model->findCategoryUUIDForType(LLFolderType::FT_FAVORITE, false);
@@ -3855,6 +3858,15 @@ BOOL LLFolderBridge::dragItemIntoFolder(LLInventoryItem* inv_item,
 			}
 		}
 
+		LLInventoryPanel* active_panel = LLInventoryPanel::getActiveInventoryPanel(FALSE);
+
+		// Check whether the item being dragged from active inventory panel
+		if (accept && active_panel)
+		{
+			LLFolderView* active_folder_view = active_panel->getRootFolder();
+			if (!active_folder_view) return false;
+		}
+
 		if(accept && drop)
 		{
 			if (inv_item->getType() == LLAssetType::AT_GESTURE
@@ -3864,14 +3876,9 @@ BOOL LLFolderBridge::dragItemIntoFolder(LLInventoryItem* inv_item,
 			}
 			// If an item is being dragged between windows, unselect everything in the active window 
 			// so that we don't follow the selection to its new location (which is very annoying).
-			LLInventoryPanel *active_panel = LLInventoryPanel::getActiveInventoryPanel(FALSE);
-			if (active_panel)
+			if (active_panel && (destination_panel != active_panel))
 			{
-				LLInventoryPanel* panel = dynamic_cast<LLInventoryPanel*>(mInventoryPanel.get());
-				if (active_panel && (panel != active_panel))
-				{
 					active_panel->unSelectAll();
-				}
 			}
 
 			// FAVORITES folder
@@ -4032,6 +4039,15 @@ BOOL LLFolderBridge::dragItemIntoFolder(LLInventoryItem* inv_item,
 			else if (move_is_into_favorites || move_is_into_landmarks)
 			{
 				accept = can_move_to_landmarks(inv_item);
+			}
+
+			LLInventoryPanel* active_panel = LLInventoryPanel::getActiveInventoryPanel(FALSE);
+
+			// Check whether the item being dragged from the library
+			if (accept && active_panel)
+			{
+				LLFolderView* active_folder_view = active_panel->getRootFolder();
+				if (!active_folder_view) return false;
 			}
 
 			if (accept && drop)
@@ -4436,7 +4452,7 @@ LLCallingCardBridge::~LLCallingCardBridge()
 
 void LLCallingCardBridge::refreshFolderViewItem()
 {
-	LLInventoryPanel* panel = dynamic_cast<LLInventoryPanel*>(mInventoryPanel.get());
+	LLInventoryPanel* panel = mInventoryPanel.get();
 	LLFolderViewItem* itemp = panel ? panel->getRootFolder()->getItemByID(mUUID) : NULL;
 	if (itemp)
 	{
