@@ -694,6 +694,18 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>1</integer>
 	</map>
+    <key>MarketImporterUpdateFreq</key>
+    <map>
+      <key>Comment</key>
+      <string>How fast, in seconds, the Merchant Outbox will update through all phases
+This should be as low as possible, but too low may break functionality</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>60.0</real>
+    </map>
     <key>ResetFocusOnSelfClick</key>
 		<map>
 		<key>Comment</key>
