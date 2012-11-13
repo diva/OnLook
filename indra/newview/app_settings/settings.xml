@@ -9,6 +9,17 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+	<key>SGIgnoreSimulatorCameraConstraints</key>
+	<map>
+	  <key>Comment</key>
+	  <string>Don't let the simulator push your camera around</string>
+	  <key>Persist</key>
+	  <integer>1</integer>
+	  <key>Type</key>
+	  <string>Boolean</string>
+	  <key>Value</key>
+	  <integer>0</integer>
+	</map>
 	<key>SGAllowRiggedMeshSelection</key>
 	<map>
 	  <key>Comment</key>
