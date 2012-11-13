@@ -144,7 +144,7 @@ class AIHTTPTimeoutPolicyBase : public AIHTTPTimeoutPolicy {
 		AIHTTPTimeoutPolicy(NULL, dns_lookup_grace, subsequent_connects, reply_delay, low_speed_time, low_speed_limit, curl_transaction, total_delay) { }
 
 	// Derive base from base.
-	AIHTTPTimeoutPolicyBase(AIHTTPTimeoutPolicyBase& rhs, PolicyOp const& op = PolicyOp()) : AIHTTPTimeoutPolicy(rhs) { op.perform(this); }
+	AIHTTPTimeoutPolicyBase(AIHTTPTimeoutPolicyBase& rhs, PolicyOp const& op) : AIHTTPTimeoutPolicy(rhs) { op.perform(this); }
 
 	// Called for every derived policy.
 	void derived(AIHTTPTimeoutPolicy* derived) { mDerived.push_back(derived); }
@@ -631,24 +631,32 @@ AIHTTPTimeoutPolicyBase AIHTTPTimeoutPolicy::sDebugSettingsCurlTimeout(
 		AITP_default_maximum_curl_transaction,
 		AITP_default_maximum_total_delay);
 
+// Note: Broken compiler doesn't allow as to use temporaries for the Operator ojects,
+// so they are instantiated separately.
+
 // This used to be '5 seconds'.
+Transaction transactionOp5s(5);
 AIHTTPTimeoutPolicyBase transfer_5s(AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout(),
-	Transaction(5)
+	transactionOp5s
 	);
 
 // This used to be '18 seconds'.
+Transaction transactionOp18s(18);
 AIHTTPTimeoutPolicyBase transfer_18s(AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout(),
-	Transaction(18)
+	transactionOp18s
 	);
 
 // This used to be '300 seconds'. We derive this from the hardcoded result so users can't mess with it.
+Transaction transactionOp300s(300);
 AIHTTPTimeoutPolicyBase transfer_300s(HTTPTimeoutPolicy_default,
-	Transaction(300)
+	transactionOp300s
 	);
 
 // This used to be a call to setopt(CURLOPT_CONNECTTIMEOUT, 40L) with the remark 'Be a little impatient about establishing connections.'
+Connect connectOp40s(40);
 AIHTTPTimeoutPolicyBase connect_40s(AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout(),
-	Connect(40));
+	connectOp40s
+	);
 
 // End of policy definitions.
 //=======================================================================================================
