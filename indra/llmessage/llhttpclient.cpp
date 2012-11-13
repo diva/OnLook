@@ -231,7 +231,7 @@ void LLHTTPClient::getByteRange(std::string const& url, S32 offset, S32 bytes, R
     request(url, LLURLRequest::HTTP_GET, NULL, responder, headers);
 }
 
-void LLHTTPClient::head(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::head(std::string const& url, ResponderHeadersOnly* responder, AIHTTPHeaders& headers)
 {
 	request(url, LLURLRequest::HTTP_HEAD, NULL, responder, headers);
 }
@@ -241,7 +241,7 @@ void LLHTTPClient::get(std::string const& url, ResponderPtr responder, AIHTTPHea
 	request(url, LLURLRequest::HTTP_GET, NULL, responder, headers);
 }
 
-void LLHTTPClient::getHeaderOnly(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::getHeaderOnly(std::string const& url, ResponderHeadersOnly* responder, AIHTTPHeaders& headers)
 {
 	request(url, LLURLRequest::HTTP_HEAD, NULL, responder, headers);
 }

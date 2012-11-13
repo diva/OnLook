@@ -212,7 +212,6 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 		switch(mAction)
 		{
 		case HTTP_HEAD:
-			curlEasyRequest_w->setopt(CURLOPT_HEADER, 1);
 			curlEasyRequest_w->setopt(CURLOPT_NOBODY, 1);
 			curlEasyRequest_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
 			rv = true;

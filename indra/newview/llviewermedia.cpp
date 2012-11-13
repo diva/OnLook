@@ -71,7 +71,7 @@ const int RIGHT_BUTTON = 1;
 ///////////////////////////////////////////////////////////////////////////////
 // Helper class that tries to download a URL from a web site and calls a method
 // on the Panel Land Media and to discover the MIME type
-class LLMimeDiscoveryResponder : public LLHTTPClient::ResponderIgnoreBody
+class LLMimeDiscoveryResponder : public LLHTTPClient::ResponderHeadersOnly
 {
 LOG_CLASS(LLMimeDiscoveryResponder);
 public:
@@ -80,16 +80,21 @@ public:
 		  mInitialized(false)
 	{}
 
-	/*virtual*/ bool needsHeaders(void) const { return true; }
-
 	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{
-		std::string media_type;
-		bool content_type_found = headers.getFirstValue("content-type", media_type);
-		llassert_always(content_type_found);
-		std::string::size_type idx1 = media_type.find_first_of(";");
-		std::string mime_type = media_type.substr(0, idx1);
-		completeAny(status, mime_type);
+		if (200 <= status && status < 300)
+		{
+			std::string media_type;
+			if (headers.getFirstValue("content-type", media_type))
+			{
+				std::string::size_type idx1 = media_type.find_first_of(";");
+				std::string mime_type = media_type.substr(0, idx1);
+				completeAny(status, mime_type);
+				return;
+			}
+			llwarns << "LLMimeDiscoveryResponder::completedHeaders: OK HTTP status (" << status << ") but no Content-Type! Received headers: " << headers << llendl;
+		}
+		completeAny(status, "none/none");
 	}
 
 	void completeAny(U32 status, const std::string& mime_type)
