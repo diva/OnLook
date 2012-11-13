@@ -645,8 +645,8 @@ bool LLAppViewer::init()
 
 	AIStateMachine::setMaxCount(gSavedSettings.getU32("StateMachineMaxTime"));
 
-	AIHTTPTimeoutPolicy::setDefaultCurlTimeout(
-		AIHTTPTimeoutPolicy(
+	{
+		AIHTTPTimeoutPolicy policy_tmp(
 			"CurlTimeout* Debug Settings",
 			gSavedSettings.getU32("CurlTimeoutDNSLookup"),
 			gSavedSettings.getU32("CurlTimeoutConnect"),
@@ -655,7 +655,9 @@ bool LLAppViewer::init()
 			gSavedSettings.getU32("CurlTimeoutLowSpeedLimit"),
 			gSavedSettings.getU32("CurlTimeoutMaxTransaction"),
 			gSavedSettings.getU32("CurlTimeoutMaxTotalDelay")
-		));
+			);
+		AIHTTPTimeoutPolicy::setDefaultCurlTimeout(policy_tmp);
+	}
 
     initThreads();
 	LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ;

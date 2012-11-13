@@ -110,7 +110,7 @@ struct AIHTTPReceivedHeadersCharCompare {
 struct AIHTTPReceivedHeadersCompare {
   bool operator()(std::string const& h1, std::string const& h2) const
   {
-	static AIHTTPReceivedHeadersCharCompare const predicate;
+	static AIHTTPReceivedHeadersCharCompare predicate;
 	return std::lexicographical_compare(h1.begin(), h1.end(), h2.begin(), h2.end(), predicate);
   }
 };
