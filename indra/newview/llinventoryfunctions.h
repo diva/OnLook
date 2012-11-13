@@ -57,6 +57,8 @@ void show_item_profile(const LLUUID& item_uuid);
 
 void rename_category(LLInventoryModel* model, const LLUUID& cat_id, const std::string& new_name);
 
+void copy_inventory_category(LLInventoryModel* model, LLViewerInventoryCategory* cat, const LLUUID& parent_id, const LLUUID& root_copy_id = LLUUID::null);
+
 // Generates a string containing the path to the item specified by item_id.
 void append_path(const LLUUID& id, std::string& path);
 
@@ -348,11 +350,10 @@ public:
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLFindWearables
+// Class LLFindWearablesEx
 //
 // Collects wearables based on given criteria.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 class LLFindWearablesEx : public LLInventoryCollectFunctor
 {
 public:
@@ -414,6 +415,7 @@ public:
  *******************************************************************************/
 class LLFolderViewItem;
 class LLFolderViewFolder;
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLFolderViewFunctor
 //

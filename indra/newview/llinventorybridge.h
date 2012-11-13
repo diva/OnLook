@@ -45,7 +45,7 @@ class LLViewerJointAttachment;
 typedef std::vector<std::string> menuentry_vec_t;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLInvFVBridge (& it's derived classes)
+// Class LLInvFVBridge (& its derived classes)
 //
 // Short for Inventory-Folder-View-Bridge. This is an
 // implementation class to be able to view inventory items.
@@ -105,7 +105,7 @@ public:
 	virtual void removeBatch(LLDynamicArray<LLFolderViewEventListener*>& batch);
 	virtual void move(LLFolderViewEventListener* new_parent_bridge) {}
 	virtual BOOL isItemCopyable() const { return FALSE; }
-	virtual BOOL copyToClipboard() const { return FALSE; }
+	virtual BOOL copyToClipboard() const;
 	virtual void cutToClipboard();
 	virtual BOOL isClipboardPasteable() const;
 	virtual BOOL isClipboardPasteableAsLink() const;
@@ -212,11 +212,10 @@ public:
 	virtual BOOL renameItem(const std::string& new_name);
 	virtual BOOL removeItem();
 	virtual BOOL isItemCopyable() const;
-	virtual BOOL copyToClipboard() const;
 	virtual BOOL hasChildren() const { return FALSE; }
 	virtual BOOL isUpToDate() const { return TRUE; }
 
-    static void showFloaterImagePreview(LLInventoryItem* item, AIFilePicker* filepicker);
+	static void showFloaterImagePreview(LLInventoryItem* item, AIFilePicker* filepicker);
 
 	/*virtual*/ void clearDisplayName() { mDisplayName.clear(); }
 
@@ -240,8 +239,10 @@ public:
 		mCallingCards(FALSE),
 		mWearables(FALSE)
 	{}
+
 	BOOL dragItemIntoFolder(LLInventoryItem* inv_item, BOOL drop);
 	BOOL dragCategoryIntoFolder(LLInventoryCategory* inv_category, BOOL drop);
+
 	virtual void performAction(LLInventoryModel* model, std::string action);
 	virtual void openItem();
 	virtual void closeItem();
@@ -274,7 +275,6 @@ public:
 	virtual BOOL isItemCopyable() const;
 	virtual BOOL isClipboardPasteable() const;
 	virtual BOOL isClipboardPasteableAsLink() const;
-	virtual BOOL copyToClipboard() const;
 	
 	static void createWearable(LLFolderBridge* bridge, LLWearableType::EType type);
 
@@ -639,6 +639,7 @@ public:
 		const LLUUID& uuid,
 		U32 flags = 0x00) const;
 };
+
 void rez_attachment(LLViewerInventoryItem* item, 
 					LLViewerJointAttachment* attachment,
 					bool replace = false);
