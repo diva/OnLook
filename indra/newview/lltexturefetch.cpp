@@ -1908,6 +1908,7 @@ S32 LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
 				// *TODO: This shouldn't be happening any more
 				llwarns << "data_size = " << data_size << " > requested: " << mRequestedSize << llendl;
 				mHaveAllData = TRUE;
+				mRequestedOffset = 0;
 				llassert_always(mDecodeHandle == 0);
 				mFormattedImage = NULL; // discard any previous data we had
 			}
