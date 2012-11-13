@@ -1316,9 +1316,8 @@ bool LLTextureFetchWorker::doWork(S32 param)
 					}
 				}
 			}
-			mRequestedSize = mDesiredSize;
+			mRequestedSize = mDesiredSize - cur_size;
 			mRequestedDiscard = mDesiredDiscard;
-			mRequestedSize -= cur_size;
 			mRequestedOffset = cur_size;
 			
 			bool res = false;
@@ -1919,7 +1918,7 @@ S32 LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
 			// so presumably we have all of it
 			mHaveAllData = TRUE;
 		}
-		mRequestedSize = llmin(data_size, mRequestedSize);
+		mRequestedSize = data_size;
 	}
 	else
 	{
