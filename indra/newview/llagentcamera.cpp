@@ -1844,7 +1844,10 @@ LLVector3d LLAgentCamera::calcCameraPositionTargetGlobal(BOOL *hit_limit)
 				local_camera_offset = gAgent.getFrameAgent().rotateToAbsolute( local_camera_offset );
 			}
 
-			if (!mCameraCollidePlane.isExactlyZero() && (!isAgentAvatarValid() || !gAgentAvatarp->isSitting()))
+			if ( !mCameraCollidePlane.isExactlyZero()
+				 && !gSavedSettings.getBOOL("SGIgnoreSimulatorCameraConstraints")
+				 && isAgentAvatarValid()
+				 && !gAgentAvatarp->isSitting())
 			{
 				LLVector3 plane_normal;
 				plane_normal.setVec(mCameraCollidePlane.mV);
