@@ -624,7 +624,7 @@ static LLFastTimer::DeclareTimer FTM_IMAGE_MEDIA("Media");
 void LLViewerTextureList::updateImages(F32 max_time)
 {
 	static BOOL cleared = FALSE;
-	if(gAgent.getTeleportState() != LLAgent::TELEPORT_NONE)
+	if(gAgent.getTeleportState() != LLAgent::TELEPORT_NONE && gAgent.getTeleportState() != LLAgent::TELEPORT_LOCAL )
 	{
 		if(!cleared)
 		{
