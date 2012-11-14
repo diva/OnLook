@@ -1222,19 +1222,6 @@ void CurlEasyRequest::removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy
 	mHandleEventsTarget->removed_from_multi_handle(curl_easy_request_w);
 }
 
-void CurlEasyRequest::print_diagnostics(CURLcode code)
-{
-  if (code == CURLE_OPERATION_TIMEDOUT)
-  {
-	// mTimeout SHOULD always be set, but I see no reason not to test it, as
-	// this is far from the code that guaranteeds that it is set.
-	if (mTimeout)
-	{
-	  mTimeout->print_diagnostics(this);
-	}
-  }
-}
-
 PerHostRequestQueuePtr CurlEasyRequest::getPerHostPtr(void)
 {
   if (!mPerHostPtr)
@@ -1312,6 +1299,25 @@ void BufferedCurlEasyRequest::resetState(void)
 
   mOutput.reset();
   mInput.reset();
+}
+
+void BufferedCurlEasyRequest::print_diagnostics(CURLcode code)
+{
+  char* eff_url;
+  getinfo(CURLINFO_EFFECTIVE_URL, &eff_url);
+  if (code == CURLE_OPERATION_TIMEDOUT)
+  {
+	// mTimeout SHOULD always be set, but I see no reason not to test it, as
+	// this is far from the code that guaranteeds that it is set.
+	if (mTimeout)
+	{
+	  mTimeout->print_diagnostics(this, eff_url);
+	}
+  }
+  else
+  {
+	llwarns << "Curl returned error code " << code << " (" << curl_easy_strerror(code) << ") for HTTP request to \"" << eff_url << "\"." << llendl;
+  }
 }
 
 ThreadSafeBufferedCurlEasyRequest* BufferedCurlEasyRequest::get_lockobj(void)

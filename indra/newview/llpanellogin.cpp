@@ -168,7 +168,7 @@ std::string gFullName;
 
 // helper class that trys to download a URL from a web site and calls a method 
 // on parent class indicating if the web server is working or not
-class LLIamHereLogin : public LLHTTPClient::ResponderWithCompleted
+class LLIamHereLogin : public LLHTTPClient::ResponderHeadersOnly
 {
 	private:
 		LLIamHereLogin( LLPanelLogin* parent ) :
@@ -188,10 +188,7 @@ class LLIamHereLogin : public LLHTTPClient::ResponderWithCompleted
 			mParent = parentIn;
 		};
 
-		// We don't actually expect LLSD back, so need to override completedRaw
-		virtual void completedRaw(U32 status, const std::string& reason,
-								  const LLChannelDescriptors& channels,
-								  const LLIOPipe::buffer_ptr_t& buffer)
+		/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 		{
 			if (mParent)
 			{
@@ -887,7 +884,7 @@ void LLPanelLogin::refreshLoginPage()
 
 	std::string login_page = gHippoGridManager->getConnectedGrid()->getLoginPage();
 	if (!login_page.empty()) {
-		LLHTTPClient::head(login_page, gResponsePtr);
+		LLHTTPClient::head(login_page, gResponsePtr.get());
 	} else {
 		sInstance->setSiteIsAlive(false);
 	}

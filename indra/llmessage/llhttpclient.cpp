@@ -136,7 +136,7 @@ class FileInjector : public Injector
 
 	/*virtual*/ U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer)
 	{
-		llifstream fstream(mFilename, std::iostream::binary | std::iostream::out);
+		llifstream fstream(mFilename, std::ios::binary);
 		if (!fstream.is_open())
 		  throw AICurlNoBody(llformat("Failed to open \"%s\".", mFilename.c_str()));
 		LLBufferStream ostream(channels, buffer.get());
@@ -149,7 +149,8 @@ class FileInjector : public Injector
 #endif
 		while (fstream)
 		{
-			std::streamsize len = fstream.readsome(tmpbuf, sizeof(tmpbuf));
+			fstream.read(tmpbuf, sizeof(tmpbuf));
+			std::streamsize len = fstream.gcount();
 			if (len > 0)
 			{
 				ostream.write(tmpbuf, len);
@@ -158,6 +159,8 @@ class FileInjector : public Injector
 #endif
 			}
 		}
+		if (fstream.bad())
+		  throw AICurlNoBody(llformat("An error occured while reading \"%s\".", mFilename.c_str()));
 		fstream.close();
 		ostream << std::flush;
 		llassert(total_len == file_size && total_len == ostream.count_out());
@@ -231,7 +234,7 @@ void LLHTTPClient::getByteRange(std::string const& url, S32 offset, S32 bytes, R
     request(url, LLURLRequest::HTTP_GET, NULL, responder, headers);
 }
 
-void LLHTTPClient::head(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::head(std::string const& url, ResponderHeadersOnly* responder, AIHTTPHeaders& headers)
 {
 	request(url, LLURLRequest::HTTP_HEAD, NULL, responder, headers);
 }
@@ -241,7 +244,7 @@ void LLHTTPClient::get(std::string const& url, ResponderPtr responder, AIHTTPHea
 	request(url, LLURLRequest::HTTP_GET, NULL, responder, headers);
 }
 
-void LLHTTPClient::getHeaderOnly(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::getHeaderOnly(std::string const& url, ResponderHeadersOnly* responder, AIHTTPHeaders& headers)
 {
 	request(url, LLURLRequest::HTTP_HEAD, NULL, responder, headers);
 }
@@ -290,6 +293,13 @@ AIHTTPTimeoutPolicy const& LLHTTPClient::ResponderBase::getHTTPTimeoutPolicy(voi
 void LLHTTPClient::ResponderBase::decode_llsd_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, LLSD& content)
 {
 	AICurlInterface::Stats::llsd_body_count++;
+	if (status == HTTP_INTERNAL_ERROR)
+	{
+		// In case of an internal error (ie, a curl error), a description of the (curl) error is the best we can do.
+		// In any case, the body if anything was received at all, can not be relied upon.
+	    content = reason;
+		return;
+	}
 	// If the status indicates success (and we get here) then we expect the body to be LLSD.
 	bool const should_be_llsd = (200 <= status && status < 300);
 	if (should_be_llsd)
@@ -334,6 +344,13 @@ void LLHTTPClient::ResponderBase::decode_llsd_body(U32 status, std::string const
 void LLHTTPClient::ResponderBase::decode_raw_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, std::string& content)
 {
 	AICurlInterface::Stats::raw_body_count++;
+	if (status == HTTP_INTERNAL_ERROR)
+	{
+		// In case of an internal error (ie, a curl error), a description of the (curl) error is the best we can do.
+		// In any case, the body if anything was received at all, can not be relied upon.
+	    content = reason;
+		return;
+	}
 	LLMutexLock lock(buffer->getMutex());
 	LLBufferArray::const_segment_iterator_t const end = buffer->endSegment();
 	for (LLBufferArray::const_segment_iterator_t iter = buffer->beginSegment(); iter != end; ++iter)

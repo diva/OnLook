@@ -1971,9 +1971,102 @@ void HTTPTimeout::done(AICurlEasyRequest_wat const& curlEasyRequest_w, CURLcode 
   DoutCurl("done: mStalled set to -1");
 }
 
-void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request)
+void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, char const* eff_url)
 {
-  llwarns << "Request to " << curl_easy_request->getLowercaseHostname() << " timed out for " << curl_easy_request->getTimeoutPolicy()->name() << llendl;
+  llwarns << "Request to \"" << curl_easy_request->getLowercaseHostname() << "\" timed out for " << curl_easy_request->getTimeoutPolicy()->name() << llendl;
+  llinfos << "Effective URL: \"" << eff_url << "\"." << llendl;
+  double namelookup_time, connect_time, appconnect_time, pretransfer_time, starttransfer_time;
+  curl_easy_request->getinfo(CURLINFO_NAMELOOKUP_TIME, &namelookup_time);
+  curl_easy_request->getinfo(CURLINFO_CONNECT_TIME, &connect_time);
+  curl_easy_request->getinfo(CURLINFO_APPCONNECT_TIME, &appconnect_time);
+  curl_easy_request->getinfo(CURLINFO_PRETRANSFER_TIME, &pretransfer_time);
+  curl_easy_request->getinfo(CURLINFO_STARTTRANSFER_TIME, &starttransfer_time);
+  if (namelookup_time == 0)
+  {
+	llwarns << "Huh? Curl returned CURLE_OPERATION_TIMEDOUT, but DNS lookup did not occur according to timings. Expected CURLE_COULDNT_RESOLVE_PROXY or CURLE_COULDNT_RESOLVE_HOST!" << llendl;
+	llassert(connect_time == 0);
+	llassert(appconnect_time == 0);
+	llassert(pretransfer_time == 0);
+	llassert(starttransfer_time == 0);
+	// Fatal error for diagnostics.
+	return;
+  }
+  // If namelookup_time is less than 500 microseconds, then it's very likely just a DNS cache lookup.
+  else if (namelookup_time < 500e-6)
+  {
+	llinfos << "Hostname was still in DNS cache." << llendl;
+  }
+  else
+  {
+	llwarns << "DNS lookup of " << curl_easy_request->getLowercaseHostname() << " took " << namelookup_time << " seconds." << llendl;
+  }
+  if (connect_time == 0)
+  {
+	llwarns << "Huh? Curl returned CURLE_OPERATION_TIMEDOUT, but connection did not occur according to timings. Expected CURLE_COULDNT_CONNECT!" << llendl;
+	llassert(appconnect_time == 0);
+	llassert(pretransfer_time == 0);
+	llassert(starttransfer_time == 0);
+	// Fatal error for diagnostics.
+	return;
+  }
+  // If connect_time is almost equal to namelookup_time, then it was just set because it was already connected.
+  if (connect_time - namelookup_time <= 1e-6)
+  {
+	llinfos << "The socket was already connected (to remote or proxy)." << llendl;
+	if (appconnect_time == 0)
+	{
+	  llwarns << "The SSL/TLS handshake never occurred according to the timings!" << llendl;
+	  return;
+	}
+	// If appconnect_time is almost equal to connect_time, then it was just set because this is a connection re-use.
+	if (appconnect_time - connect_time <= 1e-6)
+	{
+	  llinfos << "Connection with HTTP server was already established; this was a re-used connection." << llendl;
+	}
+	else
+	{
+	  llinfos << "SSL/TLS handshake with HTTP server took " << (appconnect_time - connect_time) << " seconds." << llendl;
+	}
+  }
+  else
+  {
+	llinfos << "Socket connected to remote host (or proxy) in " << (connect_time - namelookup_time) << " seconds." << llendl;
+	if (appconnect_time == 0)
+	{
+	  llwarns << "The SSL/TLS handshake never occurred according to the timings!" << llendl;
+	  return;
+	}
+	llinfos << "SSL/TLS handshake with HTTP server took " << (appconnect_time - connect_time) << " seconds." << llendl;
+  }
+  if (pretransfer_time == 0)
+  {
+	llwarns << "The transfer never happened because there was too much in the pipeline (apparently)." << llendl;
+	return;
+  }
+  else if (pretransfer_time - appconnect_time >= 1e-6)
+  {
+	llinfos << "Apparently there was a delay, due to waits in line for the pipeline, of " << (pretransfer_time - appconnect_time) << " seconds before the transfer began." << llendl;
+  }
+  if (starttransfer_time == 0)
+  {
+	llwarns << "No data was ever received from the server according to the timings." << llendl;
+  }
+  else
+  {
+	llinfos << "The time it took to send the request to the server plus the time it took before the server started to reply was " << (starttransfer_time - pretransfer_time) << " seconds." << llendl;
+  }
+  if (mNothingReceivedYet)
+  {
+	llinfos << "No data at all was actually received from the server." << llendl;
+  }
+  if (mUploadFinished)
+  {
+	llinfos << "The request upload finished successfully." << llendl;
+  }
+  if (mLastSecond > 0 && mLowSpeedOn)
+  {
+	llinfos << "The " << (mNothingReceivedYet ? "upload" : "download") << " did last " << mLastSecond << " second" << ((mLastSecond == 1) ? "" : "s") << ", before it timed out." << llendl;
+  }
 }
 
 } // namespace curlthread

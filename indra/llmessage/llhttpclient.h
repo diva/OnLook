@@ -183,6 +183,39 @@ public:
 																// This function must delete the ResponderBase object when the reference count reaches zero.
 	};
 
+	// Responders derived from this base class should use HTTPClient::head or HTTPClient::getHeaderOnly.
+	// That will set the curl option CURLOPT_NOBODY so that only headers are received.
+	class ResponderHeadersOnly : public ResponderBase {
+	private:
+		/*virtual*/ bool needsHeaders(void) const { return true; }
+
+	protected:
+		// ResponderBase event
+
+		// The responder finished. Do not override this function in derived classes; override completedRaw instead.
+		/*virtual*/ void finished(CURLcode code, U32 http_status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+		{
+			mCode = code;
+			// Allow classes derived from ResponderHeadersOnly to override completedHeaders.
+			completedHeaders(http_status, reason, mReceivedHeaders);
+			mFinished = true;
+		}
+
+	protected:
+#ifdef SHOW_ASSERT
+		// Responders derived from this class must override completedHeaders.
+		// They may not attempt to override any of the virual functions defined by ResponderBase.
+		// Define those functions here with different parameters in order to cause a compile
+		// warning when a class accidently tries to override them.
+		enum YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS { };
+		virtual void completedRaw(YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS) { }
+		virtual void completed(YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS) { }
+		virtual void result(YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS) { }
+		virtual void errorWithContent(YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS) { }
+		virtual void error(YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS) { }
+#endif
+	};
+
 	/**
 	 * @class ResponderWithCompleted
 	 * @brief Base class for Responders that implement completed, or completedRaw if the response is not LLSD.
@@ -195,8 +228,8 @@ public:
 		/*virtual*/ void finished(CURLcode code, U32 http_status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 		{
 			mCode = code;
-			// Allow classes derived from ResponderBase to override completedRaw
-			// (if not they should override completed or be derived from Responder instead).
+			// Allow classes derived from ResponderWithCompleted to override completedRaw
+			// (if not they should override completed or be derived from ResponderWithResult instead).
 			completedRaw(http_status, reason, channels, buffer);
 			mFinished = true;
 		}
@@ -324,8 +357,8 @@ public:
 
 	/** @name non-blocking API */
 	//@{
-	static void head(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void head(std::string const& url, ResponderPtr responder)
+	static void head(std::string const& url, ResponderHeadersOnly* responder, AIHTTPHeaders& headers);
+	static void head(std::string const& url, ResponderHeadersOnly* responder)
 	    { AIHTTPHeaders headers; head(url, responder, headers); }
 
 	static void getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers);
@@ -344,8 +377,8 @@ public:
 	static void put(std::string const& url, LLSD const& body, ResponderPtr responder)
 	    { AIHTTPHeaders headers; put(url, body, responder, headers); }
 
-	static void getHeaderOnly(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void getHeaderOnly(std::string const& url, ResponderPtr responder)
+	static void getHeaderOnly(std::string const& url, ResponderHeadersOnly* responder, AIHTTPHeaders& headers);
+	static void getHeaderOnly(std::string const& url, ResponderHeadersOnly* responder)
 	    { AIHTTPHeaders headers; getHeaderOnly(url, responder, headers); }
 
 	static void post(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers);
