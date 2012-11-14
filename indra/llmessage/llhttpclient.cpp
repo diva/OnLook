@@ -290,6 +290,13 @@ AIHTTPTimeoutPolicy const& LLHTTPClient::ResponderBase::getHTTPTimeoutPolicy(voi
 void LLHTTPClient::ResponderBase::decode_llsd_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, LLSD& content)
 {
 	AICurlInterface::Stats::llsd_body_count++;
+	if (status == HTTP_INTERNAL_ERROR)
+	{
+		// In case of an internal error (ie, a curl error), a description of the (curl) error is the best we can do.
+		// In any case, the body if anything was received at all, can not be relied upon.
+	    content = reason;
+		return;
+	}
 	// If the status indicates success (and we get here) then we expect the body to be LLSD.
 	bool const should_be_llsd = (200 <= status && status < 300);
 	if (should_be_llsd)
@@ -334,6 +341,13 @@ void LLHTTPClient::ResponderBase::decode_llsd_body(U32 status, std::string const
 void LLHTTPClient::ResponderBase::decode_raw_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, std::string& content)
 {
 	AICurlInterface::Stats::raw_body_count++;
+	if (status == HTTP_INTERNAL_ERROR)
+	{
+		// In case of an internal error (ie, a curl error), a description of the (curl) error is the best we can do.
+		// In any case, the body if anything was received at all, can not be relied upon.
+	    content = reason;
+		return;
+	}
 	LLMutexLock lock(buffer->getMutex());
 	LLBufferArray::const_segment_iterator_t const end = buffer->endSegment();
 	for (LLBufferArray::const_segment_iterator_t iter = buffer->beginSegment(); iter != end; ++iter)
