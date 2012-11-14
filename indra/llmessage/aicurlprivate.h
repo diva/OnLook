@@ -97,7 +97,7 @@ class HTTPTimeout : public LLRefCount {
 	bool has_stalled(void) const { return mStalled < sClockCount;  }
 
 	// Called from BufferedCurlEasyRequest::processOutput if a timeout occurred.
-	void print_diagnostics(CurlEasyRequest const* curl_easy_request);
+	void print_diagnostics(CurlEasyRequest const* curl_easy_request, char const* eff_url);
 
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 	void* get_lockobj(void) const { return mLockObj; }
@@ -344,9 +344,6 @@ class CurlEasyRequest : public CurlEasyHandle {
 	  finished(curl_easy_request_w);
 	}
 
-	// Called by in case of an error.
-	void print_diagnostics(CURLcode code);
-
 	// Called by MultiHandle::check_msg_queue() to fill info with the transfer info.
 	void getTransferInfo(AITransferInfo* info);
 
@@ -356,7 +353,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// For debugging purposes.
 	void print_curl_timings(void) const;
 
-  private:
+  protected:
 	curl_slist* mHeaders;
 	AICurlEasyHandleEvents* mHandleEventsTarget;
 	CURLcode mResult;		//AIFIXME: this does not belong in the request object, but belongs in the response object.
@@ -477,6 +474,9 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 
 	// Called from curlHeaderCallback.
 	void setStatusAndReason(U32 status, std::string const& reason);
+
+	// Called from processOutput by in case of an error.
+	void print_diagnostics(CURLcode code);
 
   public:
 	// Return pointer to the ThreadSafe (wrapped) version of this object.
