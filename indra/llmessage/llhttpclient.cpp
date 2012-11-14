@@ -159,6 +159,8 @@ class FileInjector : public Injector
 #endif
 			}
 		}
+		if (fstream.bad())
+		  throw AICurlNoBody(llformat("An error occured while reading \"%s\".", mFilename.c_str()));
 		fstream.close();
 		ostream << std::flush;
 		llassert(total_len == file_size && total_len == ostream.count_out());
