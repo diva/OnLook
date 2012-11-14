@@ -2168,11 +2168,13 @@ void LLTextureFetch::removeRequest(LLTextureFetchWorker* worker, bool cancel, bo
 {
 	if(!worker)
 	{
+		if(!bNeedsLock)
+			unlockQueue() ;
 		return;
 	}
-	
 	if(bNeedsLock)
 		lockQueue() ;
+
 	size_t erased_1 = mRequestMap.erase(worker->mID);
 	unlockQueue() ;
 
