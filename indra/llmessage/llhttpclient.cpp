@@ -136,7 +136,7 @@ class FileInjector : public Injector
 
 	/*virtual*/ U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer)
 	{
-		llifstream fstream(mFilename, std::iostream::binary | std::iostream::out);
+		llifstream fstream(mFilename, std::ios::binary);
 		if (!fstream.is_open())
 		  throw AICurlNoBody(llformat("Failed to open \"%s\".", mFilename.c_str()));
 		LLBufferStream ostream(channels, buffer.get());
@@ -149,7 +149,8 @@ class FileInjector : public Injector
 #endif
 		while (fstream)
 		{
-			std::streamsize len = fstream.readsome(tmpbuf, sizeof(tmpbuf));
+			fstream.read(tmpbuf, sizeof(tmpbuf));
+			std::streamsize len = fstream.gcount();
 			if (len > 0)
 			{
 				ostream.write(tmpbuf, len);
