@@ -538,6 +538,7 @@ set(viewer_SOURCE_FILES
     llwearablelist.cpp
     llwearabletype.cpp
     llweb.cpp
+    llwebprofile.cpp
     llwind.cpp
     llwlanimator.cpp
     llwldaycycle.cpp
@@ -1047,6 +1048,7 @@ set(viewer_HEADER_FILES
     llwearablelist.h
     llwearabletype.h
     llweb.h
+    llwebprofile.h
     llwind.h
     llwindebug.h
     llwlanimator.h
