@@ -327,6 +327,18 @@ void LLInvFVBridge::cutToClipboard()
 		LLInventoryClipboard::instance().cut(mUUID);
 	}
 }
+
+BOOL LLInvFVBridge::copyToClipboard() const
+{
+	const LLInventoryObject* obj = gInventory.getObject(mUUID);
+	if (obj && isItemCopyable())
+	{
+		LLInventoryClipboard::instance().add(mUUID);
+		return true;
+	}
+	return FALSE;
+}
+
 // *TODO: make sure this does the right thing
 void LLInvFVBridge::showProperties()
 {
@@ -566,8 +578,7 @@ BOOL LLInvFVBridge::isClipboardPasteable() const
 		return FALSE;
 	}
 
-	const LLUUID &agent_id = gAgent.getID();
-
+	LLInventoryPanel* panel = dynamic_cast<LLInventoryPanel*>(mInventoryPanel.get());
 	LLDynamicArray<LLUUID> objects;
 	LLInventoryClipboard::instance().retrieve(objects);
 	S32 count = objects.count();
@@ -575,21 +586,21 @@ BOOL LLInvFVBridge::isClipboardPasteable() const
 	{
 		const LLUUID &item_id = objects.get(i);
 
-		// Can't paste folders
+		// Folders are pasteable if all items in there are copyable
 		const LLInventoryCategory *cat = model->getCategory(item_id);
 		if (cat)
 		{
-			return FALSE;
+			LLFolderBridge cat_br(panel, mRoot, item_id);
+			if (!cat_br.isItemCopyable())
+				return FALSE;
+			// Skip to the next item in the clipboard
+			continue;
 		}
 
-		const LLInventoryItem *item = model->getItem(item_id);
-		if (item)
-		{
-			if (!item->getPermissions().allowCopyBy(agent_id))
-			{
-				return FALSE;
-			}
-		}
+		// Each item must be copyable to be pasteable
+		LLItemBridge item_br(panel, mRoot, item_id);
+		if (!item_br.isItemCopyable())
+			return FALSE;
 	}
 	return TRUE;
 }
@@ -919,7 +930,7 @@ void LLInvFVBridge::addOutboxContextMenuOptions(U32 flags,
 		items.push_back(std::string("Marketplace Separator"));
 		items.push_back(std::string("Marketplace Send"));
 		
-		if ((flags & FIRST_SELECTED_ITEM) == 0)
+		if (!canListOnMarketplaceNow() || (flags & FIRST_SELECTED_ITEM) == 0)
 		{
 			disabled_items.push_back(std::string("Marketplace Send"));
 		}
@@ -1855,16 +1866,6 @@ BOOL LLItemBridge::isItemCopyable() const
 	return FALSE;
 }
 
-BOOL LLItemBridge::copyToClipboard() const
-{
-	if(isItemCopyable())
-	{
-		LLInventoryClipboard::instance().add(mUUID);
-		return TRUE;
-	}
-	return FALSE;
-}
-
 LLViewerInventoryItem* LLItemBridge::getItem() const
 {
 	LLViewerInventoryItem* item = NULL;
@@ -1963,18 +1964,36 @@ BOOL LLFolderBridge::isUpToDate() const
 
 BOOL LLFolderBridge::isItemCopyable() const
 {
-	// Can copy folders to paste-as-link, but not for straight paste.
-	return InventoryLinksEnabled();
-}
+	// Folders are copyable if items in them are, recursively, copyable.
 
-BOOL LLFolderBridge::copyToClipboard() const
-{
-	if(isItemCopyable())
+	// Get the content of the folder
+	LLInventoryModel::cat_array_t* cat_array;
+	LLInventoryModel::item_array_t* item_array;
+	gInventory.getDirectDescendentsOf(mUUID,cat_array,item_array);
+
+	LLInventoryPanel* panel = dynamic_cast<LLInventoryPanel*>(mInventoryPanel.get());
+
+	// Check the items
+	LLInventoryModel::item_array_t item_array_copy = *item_array;
+	for (LLInventoryModel::item_array_t::iterator iter = item_array_copy.begin(); iter != item_array_copy.end(); iter++)
 	{
-		LLInventoryClipboard::instance().add(mUUID);
-		return TRUE;
+		LLInventoryItem* item = *iter;
+		LLItemBridge item_br(panel, mRoot, item->getUUID());
+		if (!item_br.isItemCopyable())
+			return FALSE;
 	}
-	return FALSE;
+
+	// Check the folders
+	LLInventoryModel::cat_array_t cat_array_copy = *cat_array;
+	for (LLInventoryModel::cat_array_t::iterator iter = cat_array_copy.begin(); iter != cat_array_copy.end(); iter++)
+	{
+		LLViewerInventoryCategory* category = *iter;
+		LLFolderBridge cat_br(panel, mRoot, category->getUUID());
+		if (!cat_br.isItemCopyable())
+			return FALSE;
+	}
+
+	return TRUE;
 }
 
 BOOL LLFolderBridge::isClipboardPasteable() const
@@ -3026,6 +3045,7 @@ void LLFolderBridge::pasteFromClipboard()
 	{
 		const LLUUID &current_outfit_id = model->findCategoryUUIDForType(LLFolderType::FT_CURRENT_OUTFIT, false);
 		const LLUUID &outbox_id = model->findCategoryUUIDForType(LLFolderType::FT_OUTBOX, false);
+
 		const BOOL move_is_into_current_outfit = (mUUID == current_outfit_id);
 		const BOOL move_is_into_outfit = (getCategory() && getCategory()->getPreferredType()==LLFolderType::FT_OUTFIT);
 		const BOOL move_is_into_outbox = model->isObjectDescendentOf(mUUID, outbox_id);
@@ -3080,7 +3100,8 @@ void LLFolderBridge::pasteFromClipboard()
 		{
 			const LLUUID& item_id = (*iter);
 			LLInventoryItem *item = model->getItem(item_id);
-			if (item)
+			LLInventoryObject *obj = model->getObject(item_id);
+			if (obj)
 			{
 				if (move_is_into_current_outfit || move_is_into_outfit)
 				{
@@ -3091,28 +3112,53 @@ void LLFolderBridge::pasteFromClipboard()
 				}
 				else if(LLInventoryClipboard::instance().isCutMode())
 				{
-					// move_inventory_item() is not enough,
-					//we have to update inventory locally too
-					LLViewerInventoryItem* viitem = dynamic_cast<LLViewerInventoryItem*>(item);
-					llassert(viitem);
-					if (viitem)
+					// Do a move to "paste" a "cut"
+					// move_inventory_item() is not enough, as we have to update inventory locally too
+					if (LLAssetType::AT_CATEGORY == obj->getType())
 					{
-						changeItemParent(model, viitem, parent_id, FALSE);
+						LLViewerInventoryCategory* vicat = (LLViewerInventoryCategory *) model->getCategory(item_id);
+						llassert(vicat);
+						if (vicat)
+						{
+							changeCategoryParent(model, vicat, parent_id, FALSE);
+						}
+					}
+					else
+					{
+						LLViewerInventoryItem* viitem = dynamic_cast<LLViewerInventoryItem*>(item);
+						llassert(viitem);
+						if (viitem)
+						{
+							changeItemParent(model, viitem, parent_id, FALSE);
+						}
 					}
 				}
 				else
 				{
-					copy_inventory_item(
-						gAgent.getID(),
-						item->getPermissions().getOwner(),
-					item->getUUID(),
-					parent_id,
-					std::string(),
-					LLPointer<LLInventoryCallback>(NULL));
+					// Do a "copy" to "paste" a regular copy clipboard
+					if (LLAssetType::AT_CATEGORY == obj->getType())
+					{
+						LLViewerInventoryCategory* vicat = (LLViewerInventoryCategory *) model->getCategory(item_id);
+						llassert(vicat);
+						if (vicat)
+						{
+							copy_inventory_category(model, vicat, parent_id);
+						}
+					}
+					else
+					{
+						copy_inventory_item(
+							gAgent.getID(),
+							item->getPermissions().getOwner(),
+						item->getUUID(),
+						parent_id,
+						std::string(),
+						LLPointer<LLInventoryCallback>(NULL));
+					}
+				}
 			}
 		}
 	}
-}
 }
 
 void LLFolderBridge::pasteLinkFromClipboard()
@@ -3121,8 +3167,17 @@ void LLFolderBridge::pasteLinkFromClipboard()
 	if(model)
 	{
 		const LLUUID &current_outfit_id = model->findCategoryUUIDForType(LLFolderType::FT_CURRENT_OUTFIT, false);
+		const LLUUID &outbox_id = model->findCategoryUUIDForType(LLFolderType::FT_OUTBOX, false);
+
 		const BOOL move_is_into_current_outfit = (mUUID == current_outfit_id);
 		const BOOL move_is_into_outfit = (getCategory() && getCategory()->getPreferredType()==LLFolderType::FT_OUTFIT);
+		const BOOL move_is_into_outbox = model->isObjectDescendentOf(mUUID, outbox_id);
+
+		if (move_is_into_outbox)
+		{
+			// Notify user of failure somehow -- play error sound?  modal dialog?
+			return;
+		}
 
 		const LLUUID parent_id(mUUID);
 
