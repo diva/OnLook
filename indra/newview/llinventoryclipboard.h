@@ -64,7 +64,11 @@ public:
 
 	// returns true if the clipboard has something pasteable in it.
 	BOOL hasContents() const;
+	// returns true if the input object uuid is on the clipboard
+	bool isOnClipboard(const LLUUID& object) const;
+
 	bool isCutMode() const { return mCutMode; }
+	void setCutMode(bool mode) { mCutMode = mode; }
 
 protected:
 	static LLInventoryClipboard sInstance;

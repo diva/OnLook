@@ -39,6 +39,7 @@
 #include "llviewerfoldertype.h"
 #include "llagentwearables.h"
 #include "llvoavatarself.h"
+#include "llinventoryclipboard.h"
 
 // linden library includes
 #include "lltrans.h"
@@ -88,17 +89,19 @@ LLInventoryFilter::~LLInventoryFilter()
 {
 }
 
-BOOL LLInventoryFilter::check(LLFolderViewItem* item) 
+BOOL LLInventoryFilter::check(LLFolderViewItem* item)
 {
-	// If it's a folder and we're showing all folders, return TRUE automatically.
+	// Clipboard cut items are *always* filtered so we need this value upfront
+	const LLFolderViewEventListener* listener = item->getListener();
+	const LLUUID item_id = listener ? listener->getUUID() : LLUUID::null;
+	const bool passed_clipboard = item_id.notNull() ? checkAgainstClipboard(item_id) : true;
+
+	// If it's a folder and we're showing all folders, return automatically.
 	const BOOL is_folder = (dynamic_cast<const LLFolderViewFolder*>(item) != NULL);
 	if (is_folder && (mFilterOps.mShowFolderState == LLInventoryFilter::SHOW_ALL_FOLDERS))
 	{
-		return TRUE;
+		return passed_clipboard;
 	}
-
-	const LLFolderViewEventListener* listener = item->getListener();
-	const LLUUID item_id = listener ? listener->getUUID() : LLUUID::null;
 
 	mSubStringMatchOffset = mFilterSubString.size() ? item->getSearchableLabel().find(mFilterSubString) : std::string::npos;
 
@@ -109,23 +112,41 @@ BOOL LLInventoryFilter::check(LLFolderViewItem* item)
 	const BOOL passed = (passed_filtertype &&
 						 passed_permissions &&
 						 passed_filterlink &&
+						 passed_clipboard &&
 						 passed_wearable &&
 						 (mFilterSubString.size() == 0 || mSubStringMatchOffset != std::string::npos));
 
 	return passed;
 }
 
-bool LLInventoryFilter::checkFolder(const LLFolderViewFolder* folder)
+bool LLInventoryFilter::checkFolder(const LLFolderViewFolder* folder) const
 {
-	// we're showing all folders, overriding filter
-	if (mFilterOps.mShowFolderState == LLInventoryFilter::SHOW_ALL_FOLDERS)
+	if (!folder)
 	{
-		return true;
+		llwarns << "The filter can not be checked on an invalid folder." << llendl;
+		llassert(false); // crash in development builds
+		return false;
 	}
 
 	const LLFolderViewEventListener* listener = folder->getListener();
+	if (!listener)
+	{
+		llwarns << "Folder view event listener not found." << llendl;
+		llassert(false); // crash in development builds
+		return false;
+	}
+
 	const LLUUID folder_id = listener->getUUID();
 	
+	// Always check against the clipboard
+	const BOOL passed_clipboard = checkAgainstClipboard(folder_id);
+
+	// we're showing all folders, overriding filter
+	if (mFilterOps.mShowFolderState == LLInventoryFilter::SHOW_ALL_FOLDERS)
+	{
+		return passed_clipboard;
+	}
+
 	if (mFilterOps.mFilterTypes & FILTERTYPE_CATEGORY)
 	{
 		// Can only filter categories for items in your inventory
@@ -138,7 +159,7 @@ bool LLInventoryFilter::checkFolder(const LLFolderViewFolder* folder)
 			return false;
 	}
 
-	return true;
+	return passed_clipboard;
 }
 
 BOOL LLInventoryFilter::checkAgainstFilterType(const LLFolderViewItem* item) const
@@ -232,6 +253,30 @@ BOOL LLInventoryFilter::checkAgainstFilterType(const LLFolderViewItem* item) con
 	}
 	
 	return TRUE;
+}
+
+// Items and folders that are on the clipboard or, recursively, in a folder which
+// is on the clipboard must be filtered out if the clipboard is in the "cut" mode.
+bool LLInventoryFilter::checkAgainstClipboard(const LLUUID& object_id) const
+{
+	if (LLInventoryClipboard::instance().isCutMode())
+	{
+		LLUUID current_id = object_id;
+		LLInventoryObject *current_object = gInventory.getObject(object_id);
+		while (current_id.notNull() && current_object)
+		{
+			if (LLInventoryClipboard::instance().isOnClipboard(current_id))
+			{
+				return false;
+			}
+			current_id = current_object->getParentUUID();
+			if (current_id.notNull())
+			{
+				current_object = gInventory.getObject(current_id);
+			}
+		}
+	}
+	return true;
 }
 
 BOOL LLInventoryFilter::checkAgainstPermissions(const LLFolderViewItem* item) const
