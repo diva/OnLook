@@ -46,7 +46,7 @@ static std::string getMarketplaceDomain()
 	std::string domain = "secondlife.com";
 	if (gHippoGridManager->getCurrentGrid()->isSecondLife())
 	{
-		if (!LLViewerLogin::getInstance()->isInProductionGrid())
+		if (!gHippoGridManager->getConnectedGrid()->isInProductionGrid())
 		{
 			domain = "secondlife.aditi.lindenlab.com";
 		}

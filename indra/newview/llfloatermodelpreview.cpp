@@ -455,7 +455,7 @@ BOOL LLFloaterModelPreview::postBuild()
 	std::string validate_url;
 	if (gHippoGridManager->getCurrentGrid()->isSecondLife())
 	{
-		if (LLViewerLogin::getInstance()->isInProductionGrid())
+		if (gHippoGridManager->getConnectedGrid()->isInProductionGrid())
 		{
 			validate_url = "http://secondlife.com/my/account/mesh.php";
 		}

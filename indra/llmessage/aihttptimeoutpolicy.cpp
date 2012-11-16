@@ -889,6 +889,7 @@ P(viewerStatsResponder);
 P(viewerVoiceAccountProvisionResponder);
 P(voiceCallCapResponder);
 P(voiceClientCapResponder);
+P(webProfileResponders);
 P(wholeModelFeeResponder);
 P(wholeModelUploadResponder);
 P2(XMLRPCResponder,								connect_40s);

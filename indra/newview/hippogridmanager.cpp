@@ -51,6 +51,7 @@ HippoGridInfo::HippoGridInfo(const std::string& gridName) :
 	mGridMessage(""),
 	mXmlState(XML_VOID),
 	mVoiceConnector("SLVoice"),
+	mIsInProductionGrid(false),
 	mRenderCompat(true),
 	mInvLinks(false),
 	mAutoUpdate(false),
@@ -78,6 +79,12 @@ bool HippoGridInfo::isOpenSimulator() const
 bool HippoGridInfo::isSecondLife() const
 {
 	return (mPlatform == HippoGridInfo::PLATFORM_SECONDLIFE);
+}
+
+bool HippoGridInfo::isInProductionGrid() const
+{
+	llassert(mPlatform == HippoGridInfo::PLATFORM_SECONDLIFE);
+	return mIsInProductionGrid;
 }
 
 const std::string& HippoGridInfo::getGridName() const
@@ -211,6 +218,7 @@ void HippoGridInfo::setGridName(const std::string& gridName)
 	{
 		setGridNick(gridName);
 	}*/
+	mIsInProductionGrid = gridName == "secondlife";
 }
 
 void HippoGridInfo::setGridNick(std::string gridNick)

@@ -17,7 +17,7 @@ endif(FMOD)
 include(OPENAL)
 include(FindOpenGL)
 include(Hunspell)
-#include(JsonCpp)
+include(JsonCpp)
 include(LLAddBuildTest)
 include(LLAudio)
 include(LLCharacter)
@@ -370,6 +370,7 @@ set(viewer_SOURCE_FILES
     llpanelpermissions.cpp
     llpanelpick.cpp
     llpanelplace.cpp
+    llpanelprofile.cpp
     llpanelskins.cpp
     llpanelvolume.cpp
     llpanelweb.cpp
@@ -875,6 +876,7 @@ set(viewer_HEADER_FILES
     llpanelpermissions.h
     llpanelpick.h
     llpanelplace.h
+    llpanelprofile.h
     llpanelskins.h
     llpanelvolume.h
     llpanelweb.h

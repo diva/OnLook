@@ -35,11 +35,15 @@
 #include "llplugincookiestore.h"
 
 // newview
-#include "llpanelprofile.h" // for getProfileURL(). FIXME: move the method to LLAvatarActions
+#include "llpanelprofile.h"		// <edit>getProfileURL (this is the original location LL put it).</edit>
 #include "llviewermedia.h" // FIXME: don't use LLViewerMedia internals
 
 // third-party
-#include "reader.h" // JSON
+#ifdef LL_STANDALONE
+#include <json/reader.h>	// JSONCPP
+#else
+#include "reader.h"			// prebuilt jsoncpp is wrongly packaged.
+#endif
 
 /*
  * Workflow:
@@ -57,7 +61,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LLWebProfileResponders::ConfigResponder
 
-class LLWebProfileResponders::ConfigResponder : public LLHTTPClient::Responder
+extern AIHTTPTimeoutPolicy webProfileResponders_timeout;
+
+class LLWebProfileResponders::ConfigResponder : public LLHTTPClient::ResponderWithCompleted
 {
 	LOG_CLASS(LLWebProfileResponders::ConfigResponder);
 
@@ -71,7 +77,7 @@ public:
 		U32 status,
 		const std::string& reason,
 		const LLChannelDescriptors& channels,
-		const LLIOPipe::buffer_ptr_t& buffer)
+		const buffer_ptr_t& buffer)
 	{
 		LLBufferStream istr(channels, buffer.get());
 		std::stringstream strstrm;
@@ -116,13 +122,16 @@ public:
 		LLWebProfile::post(mImagep, config, upload_url);
 	}
 
+protected:
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return webProfileResponders_timeout; }
+
 private:
 	LLPointer<LLImageFormatted> mImagep;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 // LLWebProfilePostImageRedirectResponder
-class LLWebProfileResponders::PostImageRedirectResponder : public LLHTTPClient::Responder
+class LLWebProfileResponders::PostImageRedirectResponder : public LLHTTPClient::ResponderWithCompleted
 {
 	LOG_CLASS(LLWebProfileResponders::PostImageRedirectResponder);
 
@@ -131,7 +140,7 @@ public:
 		U32 status,
 		const std::string& reason,
 		const LLChannelDescriptors& channels,
-		const LLIOPipe::buffer_ptr_t& buffer)
+		const buffer_ptr_t& buffer)
 	{
 		if (status != 200)
 		{
@@ -149,6 +158,9 @@ public:
 		LLWebProfile::reportImageUploadStatus(true);
 	}
 
+protected:
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return webProfileResponders_timeout; }
+
 private:
 	LLPointer<LLImageFormatted> mImagep;
 };
@@ -156,11 +168,13 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 // LLWebProfileResponders::PostImageResponder
-class LLWebProfileResponders::PostImageResponder : public LLHTTPClient::Responder
+class LLWebProfileResponders::PostImageResponder : public LLHTTPClient::ResponderWithCompleted
 {
 	LOG_CLASS(LLWebProfileResponders::PostImageResponder);
 
 public:
+	/*virtual*/ bool needsHeaders(void) const { return true; }
+
 	/*virtual*/ void completedHeader(U32 status, const std::string& reason, const LLSD& content)
 	{
 		// Viewer seems to fail to follow a 303 redirect on POST request
@@ -168,8 +182,10 @@ public:
 		// Handle it manually.
 		if (status == 303)
 		{
-			LLSD headers = LLViewerMedia::getHeaders();
-			headers["Cookie"] = LLWebProfile::getAuthCookie();
+			AIHTTPHeaders headers;
+			headers.addHeader("Accept", "*/*");
+			headers.addHeader("Cookie", LLWebProfile::getAuthCookie());
+			headers.addHeader("User-Agent", LLViewerMedia::getCurrentUserAgent());
 			const std::string& redir_url = content["location"];
 			LL_DEBUGS("Snapshots") << "Got redirection URL: " << redir_url << llendl;
 			LLHTTPClient::get(redir_url, new LLWebProfileResponders::PostImageRedirectResponder, headers);
@@ -185,9 +201,12 @@ public:
 	// Override just to suppress warnings.
 	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
-							  const LLIOPipe::buffer_ptr_t& buffer)
+							  const buffer_ptr_t& buffer)
 	{
 	}
+
+protected:
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return webProfileResponders_timeout; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -205,8 +224,10 @@ void LLWebProfile::uploadImage(LLPointer<LLImageFormatted> image, const std::str
 	config_url += "&add_loc=" + std::string(add_location ? "1" : "0");
 
 	LL_DEBUGS("Snapshots") << "Requesting " << config_url << llendl;
-	LLSD headers = LLViewerMedia::getHeaders();
-	headers["Cookie"] = getAuthCookie();
+	AIHTTPHeaders headers;
+	headers.addHeader("Accept", "*/*");
+	headers.addHeader("Cookie", LLWebProfile::getAuthCookie());
+	headers.addHeader("User-Agent", LLViewerMedia::getCurrentUserAgent());
 	LLHTTPClient::get(config_url, new LLWebProfileResponders::ConfigResponder(image), headers);
 }
 
@@ -229,9 +250,11 @@ void LLWebProfile::post(LLPointer<LLImageFormatted> image, const LLSD& config, c
 
 	const std::string boundary = "----------------------------0123abcdefab";
 
-	LLSD headers = LLViewerMedia::getHeaders();
-	headers["Cookie"] = getAuthCookie();
-	headers["Content-Type"] = "multipart/form-data; boundary=" + boundary;
+	AIHTTPHeaders headers;
+	headers.addHeader("Accept", "*/*");
+	headers.addHeader("Cookie", LLWebProfile::getAuthCookie());
+	headers.addHeader("User-Agent", LLViewerMedia::getCurrentUserAgent());
+	headers.addHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
 
 	std::ostringstream body;
 
@@ -280,7 +303,7 @@ void LLWebProfile::post(LLPointer<LLImageFormatted> image, const LLSD& config, c
 
 	// postRaw() takes ownership of the buffer and releases it later.
 	size_t size = body.str().size();
-	U8 *data = new U8[size];
+	char* data = new char [size];
 	memcpy(data, body.str().data(), size);
 
 	// Send request, successful upload will trigger posting metadata.
