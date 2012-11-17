@@ -218,7 +218,6 @@ void HippoGridInfo::setGridName(const std::string& gridName)
 	{
 		setGridNick(gridName);
 	}*/
-	mIsInProductionGrid = gridName == "secondlife";
 }
 
 void HippoGridInfo::setGridNick(std::string gridNick)
@@ -228,12 +227,20 @@ void HippoGridInfo::setGridNick(std::string gridNick)
 	{
 		setGridName(gridNick);
 	}
+	if(gridNick == "secondlife")
+	{
+		mIsInProductionGrid = true;
+	}
 }
 
 void HippoGridInfo::setLoginUri(const std::string& loginUri)
 {
 	std::string uri = loginUri;
 	mLoginUri = sanitizeUri(uri);
+	if (utf8str_tolower(LLURI(uri).hostName()) == "login.agni.lindenlab.com")
+	{
+		mIsInProductionGrid = true;
+	}
 }
 
 void HippoGridInfo::setLoginPage(const std::string& loginPage)

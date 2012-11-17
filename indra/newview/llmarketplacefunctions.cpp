@@ -41,24 +41,54 @@
 // Helpers
 //
 
+static std::string getLoginUriDomain()
+{
+	LLURI uri(gHippoGridManager->getConnectedGrid()->getLoginUri());
+	std::string hostname = uri.hostName();	// Ie, "login.<gridid>.lindenlab.com"
+	if (hostname.substr(0, 6) == "login.")
+	{
+		hostname = hostname.substr(6);		// "<gridid>.lindenlab.com"
+	}
+	return hostname;
+}
+
+// Apart from well-known cases, in general this function returns the domain of the loginUri (with the "login." stripped off).
+// This should be correct for all SL BETA grids, assuming they have the form of "login.<gridId>.lindenlab.com", in which
+// case it returns "<gridId>.lindenlab.com".
+//
+// Well-known cases that deviate from this:
+// agni      --> "secondlife.com"
+// damballah --> "secondlife-staging.com"
+//
 static std::string getMarketplaceDomain()
 {
-	std::string domain = "secondlife.com";
+	std::string domain;
 	if (gHippoGridManager->getCurrentGrid()->isSecondLife())
 	{
-		if (!gHippoGridManager->getConnectedGrid()->isInProductionGrid())
+		if (gHippoGridManager->getConnectedGrid()->isInProductionGrid())
 		{
-			domain = "secondlife.aditi.lindenlab.com";
+			domain = "secondlife.com";		// agni
+		}
+		else
+		{
+			// SecondLife(tm) BETA grid.
+			// Using the login URI is a bit of a kludge, but it's the best we've got at the moment.
+			domain = utf8str_tolower(getLoginUriDomain());				// <gridid>.lindenlab.com; ie, "aditi.lindenlab.com".
+			std::string::size_type len = domain.length();
+			llassert(len > 14 && domain.substr(len - 14) == ".lindenlab.com");
+			if (domain == "damballah.lindenlab.com")
+			{
+				domain = "secondlife-staging.com";
+			}
 		}
 	}
 	else
 	{
 		// TODO: Find out if OpenSim, and Avination adopted any outbox stuffs, if so code HippoGridManager for this
 		// Aurora grid has not.
-		// For now, reset domain on other grids, so we don't harass LL web services.
-		domain = ""; //gHippoGridManager->getCurrentGrid()->getMarketPlaceDomain();
+		// For now, set domain on other grids to the loginUri domain, so we don't harass LL web services.
+		domain = getLoginUriDomain(); //gHippoGridManager->getCurrentGrid()->getMarketPlaceDomain();
 	}
-
 	return domain;
 }
 
