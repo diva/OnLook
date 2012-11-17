@@ -1148,12 +1148,16 @@ void CurlEasyRequest::set_timeout_opts(void)
   setopt(CURLOPT_TIMEOUT, mTimeoutPolicy->getCurlTransaction());
 }
 
-void CurlEasyRequest::create_timeout_object(ThreadSafeBufferedCurlEasyRequest* lockobj)
+void CurlEasyRequest::create_timeout_object(void)
 {
+  ThreadSafeBufferedCurlEasyRequest* lockobj = NULL;
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+  lockobj = static_cast<BufferedCurlEasyRequest*>(this)->get_lockobj();
+#endif
   mTimeout = new curlthread::HTTPTimeout(mTimeoutPolicy, lockobj);
 }
 
-LLPointer<curlthread::HTTPTimeout>& CurlEasyRequest::get_timeout_object(ThreadSafeBufferedCurlEasyRequest* lockobj)
+LLPointer<curlthread::HTTPTimeout>& CurlEasyRequest::get_timeout_object(void)
 {
   if (mTimeoutIsOrphan)
   {
@@ -1162,7 +1166,7 @@ LLPointer<curlthread::HTTPTimeout>& CurlEasyRequest::get_timeout_object(ThreadSa
   }
   else
   {
-	create_timeout_object(lockobj);
+	create_timeout_object();
   }
   return mTimeout;
 }
