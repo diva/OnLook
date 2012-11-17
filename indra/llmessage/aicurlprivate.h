@@ -376,7 +376,8 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// This creates mTimeout (unless mTimeoutIsOrphan is set in which case it adopts the orphan).
 	LLPointer<curlthread::HTTPTimeout>& get_timeout_object(ThreadSafeBufferedCurlEasyRequest* lockobj);
 	// Accessor for mTimeout with optional creation of orphaned object (if lockobj != NULL).
-	LLPointer<curlthread::HTTPTimeout>& httptimeout(ThreadSafeBufferedCurlEasyRequest* lockobj = NULL) { if (lockobj && !mTimeout) create_timeout_object(lockobj); return mTimeout; }
+	LLPointer<curlthread::HTTPTimeout>& httptimeout(ThreadSafeBufferedCurlEasyRequest* lockobj = NULL)
+	    { if (lockobj && !mTimeout) { create_timeout_object(lockobj); mTimeoutIsOrphan = true; } return mTimeout; }
 	// Return true if no data has been received on the latest socket (if any) for too long.
 	bool has_stalled(void) const { return mTimeout && mTimeout->has_stalled(); }
 

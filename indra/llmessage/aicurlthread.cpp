@@ -2284,7 +2284,7 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 
   char const* const header_line = static_cast<char const*>(data);
   size_t const header_len = size * nmemb;
-  if (self_w->httptimeout()->data_received(header_len))	// Update timeout administration.
+  if (self_w->httptimeout(lockobj)->data_received(header_len))	// Update timeout administration.
   {
 	// Transfer timed out. Return 0 which will abort with error CURLE_WRITE_ERROR.
 	return 0;
