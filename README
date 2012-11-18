@@ -9,15 +9,30 @@
 Sin-gu-la-ri-ty (noun) - a distinctive feature, a uniqueness; a point at which
 continuity breaks up; a point in history at which machine becomes smarter than 
 humanity and/or fuses with it indivisively; or simply a cool sounding word with 
-my initials in it :)
+the initials S.G. in it :)
 	
-Singularity Viewer is a Second Life protocol compatible client application. It
-can be used to access Second LIfe service as well as a number of other such as
-those based upon OpenSim plattform. It is directly based upon source code of 
-Ascent Viewer by Balseraph Software Group, which is in turn based upon source 
-code released by Linden Lab, with contributions from various sources.
+Singularity Viewer is a SecondLife(tm) protocol compatible client application.
+It can be used to access SecondLife services as well as a number of others such
+as those based upon the OpenSim platform.
+
+Singulariy is maintained by a small group of volunteers who can be contacted
+both, in-world (SingularityViewer group) as well on IRC (#SingularityViewer
+@ FreeNode). Bug requests and features requests can be submitted through our
+Issue Tracket (http://code.google.com/p/singularity-viewer/issues/list or from
+the viewer menu: Help --> Bug Reporting --> Singularity Issue Tracker...)
+
 
 As this Readme grows out of date, please refer to 
 
 	http://www.singularityviewer.org/about
+
+
+00000000011111111112222222222333333333344444444445555555555666666666677777777778
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+
+History
+
+The Singularity viewer was started by Siana Gearz in November 2010 by forking it
+of the Ascent Viewer, by Balseraph Software Group, which in turn was based upon
+source code released by Linden Lab.
 
