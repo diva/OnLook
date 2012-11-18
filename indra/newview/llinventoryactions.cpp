@@ -124,7 +124,7 @@ bool doToSelected(LLFolderView* folder, std::string action)
 		return true;
 	}
 
-	if ("copy" == action)
+	if ("copy" == action || "cut" == action)
 	{	
 		LLInventoryClipboard::instance().reset();
 	}

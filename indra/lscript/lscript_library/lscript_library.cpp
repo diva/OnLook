@@ -703,15 +703,15 @@ void LLScriptLibrary::init()
 	addFunction(10.f, 0.f, dummy_func, "aaGetLastOwner", "s", NULL);
 	addFunction(10.f, 0.f, dummy_func, "aaSayDistance", NULL, "ifs");
 	addFunction(10.f, 0.f, dummy_func, "aaSayTo", NULL, "ss");
-	addFunction(10.f, 0.f, dummy_func, "aaGetWalkDisabled ", "i", "s");
+	addFunction(10.f, 0.f, dummy_func, "aaGetWalkDisabled", "i", "s");
 	addFunction(10.f, 0.f, dummy_func, "aaSetWalkDisabled", NULL, "si");
-	addFunction(10.f, 0.f, dummy_func, "aaGetFlyDisabled ", "i", "s");
+	addFunction(10.f, 0.f, dummy_func, "aaGetFlyDisabled", "i", "s");
 	addFunction(10.f, 0.f, dummy_func, "aaSetFlyDisabled", NULL, "sf");
-	addFunction(10.f, 0.f, dummy_func, "aaAvatarFullName2Key ", "s", "s");
+	addFunction(10.f, 0.f, dummy_func, "aaAvatarFullName2Key", "s", "s");
 	addFunction(10.f, 0.f, dummy_func, "aaRaiseError", NULL, "s");
-	addFunction(10.f, 0.f, dummy_func, "aaGetText ", "s", NULL);
-	addFunction(10.f, 0.f, dummy_func, "aaGetTextColor ", "r", NULL);
-	addFunction(10.f, 0.f, dummy_func, "aaSetEnv ", NULL, "sl");
+	addFunction(10.f, 0.f, dummy_func, "aaGetText", "s", NULL);
+	addFunction(10.f, 0.f, dummy_func, "aaGetTextColor", "r", NULL);
+	addFunction(10.f, 0.f, dummy_func, "aaSetEnv", NULL, "sl");
 	addFunction(10.f, 0.f, dummy_func, "aaGetIsInfiniteRegion", "i", NULL);
 // botFunctions   Aurora-Sim ONLY
 	addFunction(10.f, 0.f, dummy_func, "botGetWaitingTime", "v", "i");

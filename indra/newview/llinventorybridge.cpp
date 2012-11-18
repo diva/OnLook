@@ -319,7 +319,6 @@ BOOL LLInvFVBridge::isLink() const
 /**
  * @brief Adds this item into clipboard storage
  */
-//Unused.
 void LLInvFVBridge::cutToClipboard()
 {
 	if(isItemMovable())
@@ -568,6 +567,7 @@ void LLInvFVBridge::removeBatchNoCheck(LLDynamicArray<LLFolderViewEventListener*
 
 BOOL LLInvFVBridge::isClipboardPasteable() const
 {
+	// Return FALSE on degenerated cases: empty clipboard, no inventory, no agent
 	if (!LLInventoryClipboard::instance().hasContents() || !isAgentInventory())
 	{
 		return FALSE;
@@ -578,6 +578,13 @@ BOOL LLInvFVBridge::isClipboardPasteable() const
 		return FALSE;
 	}
 
+	// In cut mode, whatever is on the clipboard is always pastable
+	if (LLInventoryClipboard::instance().isCutMode())
+	{
+		return TRUE;
+	}
+
+	// In normal mode, we need to check each element of the clipboard to know if we can paste or not
 	LLInventoryPanel* panel = dynamic_cast<LLInventoryPanel*>(mInventoryPanel.get());
 	LLDynamicArray<LLUUID> objects;
 	LLInventoryClipboard::instance().retrieve(objects);
@@ -770,6 +777,12 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
 			if (!isItemCopyable())
 			{
 				disabled_items.push_back(std::string("Copy"));
+			}
+
+			items.push_back(std::string("Cut"));
+			if (!isItemMovable() || !isItemRemovable())
+			{
+				disabled_items.push_back(std::string("Cut"));
 			}
 
 			if (canListOnMarketplace())
@@ -1434,6 +1447,12 @@ void LLItemBridge::performAction(LLInventoryModel* model, std::string action)
 		gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(buffer));
 		return;
 	}
+	else if ("cut" == action)
+	{
+		cutToClipboard();
+		LLFolderView::removeCutItems();
+		return;
+	}
 	else if ("copy" == action)
 	{
 		copyToClipboard();
@@ -1441,7 +1460,6 @@ void LLItemBridge::performAction(LLInventoryModel* model, std::string action)
 	}
 	else if ("paste" == action)
 	{
-		// Single item only
 		LLInventoryItem* itemp = model->getItem(mUUID);
 		if (!itemp) return;
 
@@ -2826,6 +2844,12 @@ void LLFolderBridge::performAction(LLInventoryModel* model, std::string action)
 		modifyOutfit(TRUE);
 		return;
 	}
+	else if ("cut" == action)
+	{
+		cutToClipboard();
+		LLFolderView::removeCutItems();
+		return;
+	}
 	else if ("copy" == action)
 	{
 		copyToClipboard();
@@ -3099,6 +3123,7 @@ void LLFolderBridge::pasteFromClipboard()
 			 ++iter)
 		{
 			const LLUUID& item_id = (*iter);
+
 			LLInventoryItem *item = model->getItem(item_id);
 			LLInventoryObject *obj = model->getObject(item_id);
 			if (obj)
@@ -3158,6 +3183,8 @@ void LLFolderBridge::pasteFromClipboard()
 				}
 			}
 		}
+		// Change mode to copy for next paste
+		LLInventoryClipboard::instance().setCutMode(false);
 	}
 }
 
@@ -3220,6 +3247,7 @@ void LLFolderBridge::pasteLinkFromClipboard()
 					LLPointer<LLInventoryCallback>(NULL));
 			}
 		}
+		//Singu Note: Don't setCutMode(false) here, we can link now but real paste later.
 	}
 }
 

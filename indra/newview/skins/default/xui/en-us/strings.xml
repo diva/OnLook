@@ -2676,7 +2676,7 @@ aaSayTo(key userID, string text)
 Where userID = avatar key, text = string msg.  Similar to llOwnerSay but can be directly targeted to an avatar.
 (Aurora-Sim only)
 	</string>
-	<string name="LSLTipText_aaGetWalkDisabled ">
+	<string name="LSLTipText_aaGetWalkDisabled">
 aaGetWalkDisabled(key ID)
 Returns integer of TRUE or FALSE for specifid ID.  Where ID = avatar uuid.
 (Aurora-Sim only)
@@ -2686,7 +2686,7 @@ aaSetWalkDisabled(key ID, integer Value)
 Where ID = avatar uuid, Value = TRUE or FALSE. If PERMISSION_COMBAT is accepted, this disables walk, forcing avatar to fly.
 (Aurora-Sim only)
 	</string>
-	<string name="LSLTipText_aaGetFlyDisabled ">
+	<string name="LSLTipText_aaGetFlyDisabled">
 aaGetFlyDisabled(key ID)
 Returns integer of TRUE or FALSE for specifid ID. Where ID = avatar uuid.
 (Aurora-Sim only)
@@ -2696,7 +2696,7 @@ aaSetFlyDisabled(key ID, integer Value)
 Where ID = avatar uuid, Value = TRUE or FALSE. If PERMISSION_COMBAT is accepted, this disables flying, forcing avatar to walk.
 (Aurora-Sim only)
 	</string>
-	<string name="LSLTipText_aaAvatarFullName2Key ">
+	<string name="LSLTipText_aaAvatarFullName2Key">
 aaAvatarFullName2Key(string FullName)
 Returns the avatar uuid from their fullname.  Where FullName = "Firstname Lastname”.
 (Aurora-Sim only)
@@ -2706,17 +2706,17 @@ aaRaiseError(string message)
 Allows you to have errors that end the execution of the event and fire another event in the script.
 (Aurora-Sim only)
 	</string>
-	<string name="LSLTipText_aaGetText ">
+	<string name="LSLTipText_aaGetText">
 aaGetText()
 Returns a string of the hover text of an object.
 (Aurora-Sim only)
 	</string>
-	<string name="LSLTipText_aaGetTextColor ">
+	<string name="LSLTipText_aaGetTextColor">
 aaGetTextColor()
 Returns the hovertext color in rotation. Use Ex: rotation color = aaGetTextColor() to separate color.x, color.y, color.z, color.s  Where s = value of alpha in llSetText.
 (Aurora-Sim only)
 	</string>
-	<string name="LSLTipText_aaSetEnv ">
+	<string name="LSLTipText_aaSetEnv">
 aaSetEnv(string EnvName, list Value)
 Sets environment values.  Where EnvName = ENABLE_GRAVITY, GRAVITY_FORCE_X, GRAVITY_FORCE_Y, GRAVITY_FORCE_Z, ADD_GRAVITY_POINT, ADD_GRAVITY_FORCE, START_TIME_REVERSAL_SAVING,
 STOP_TIME_REVERSAL_SAVING, START_TIME_REVERSAL, STOP_TIME_REVERSAL.

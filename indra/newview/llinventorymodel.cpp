@@ -30,6 +30,7 @@
 #include "llagent.h"
 #include "llagentwearables.h"
 #include "llappearancemgr.h"
+#include "llinventoryclipboard.h"
 #include "llinventorypanel.h"
 #include "llinventorybridge.h"
 #include "llinventoryfunctions.h"
@@ -1249,47 +1250,80 @@ void LLInventoryModel::purgeDescendentsOf(const LLUUID& id)
 	LLPointer<LLViewerInventoryCategory> cat = getCategory(id);
 	if(cat.notNull())
 	{
-		// do the cache accounting
-		llinfos << "LLInventoryModel::purgeDescendentsOf " << cat->getName()
-				<< llendl;
-		S32 descendents = cat->getDescendentCount();
-		if(descendents > 0)
+		if (LLInventoryClipboard::instance().hasContents() && LLInventoryClipboard::instance().isCutMode())
 		{
-			LLCategoryUpdate up(id, -descendents);
-			accountForUpdate(up);
+			// Something on the clipboard is in "cut mode" and needs to be preserved
+			llinfos << "LLInventoryModel::purgeDescendentsOf " << cat->getName()
+			<< " iterate and purge non hidden items" << llendl;
+			cat_array_t* categories;
+			item_array_t* items;
+			// Get the list of direct descendants in tha categoy passed as argument
+			getDirectDescendentsOf(id, categories, items);
+			std::vector<LLUUID> list_uuids;
+			// Make a unique list with all the UUIDs of the direct descendants (items and categories are not treated differently)
+			// Note: we need to do that shallow copy as purging things will invalidate the categories or items lists
+			for (cat_array_t::const_iterator it = categories->begin(); it != categories->end(); ++it)
+			{
+				list_uuids.push_back((*it)->getUUID());
+			}
+			for (item_array_t::const_iterator it = items->begin(); it != items->end(); ++it)
+			{
+				list_uuids.push_back((*it)->getUUID());
+			}
+			// Iterate through the list and only purge the UUIDs that are not on the clipboard
+			for (std::vector<LLUUID>::const_iterator it = list_uuids.begin(); it != list_uuids.end(); ++it)
+			{
+				if (!LLInventoryClipboard::instance().isOnClipboard(*it))
+				{
+					purgeObject(*it);
+				}
+			}
 		}
-
-		// we know that descendent count is 0, aide since the
-		// accounting may actually not do an update, we should force
-		// it here.
-		cat->setDescendentCount(0);
-
-		// send it upstream
-		LLMessageSystem* msg = gMessageSystem;
-		msg->newMessage("PurgeInventoryDescendents");
-		msg->nextBlock("AgentData");
-		msg->addUUID("AgentID", gAgent.getID());
-		msg->addUUID("SessionID", gAgent.getSessionID());
-		msg->nextBlock("InventoryData");
-		msg->addUUID("FolderID", id);
-		gAgent.sendReliableMessage();
-
-		// unceremoniously remove anything we have locally stored.
-		cat_array_t categories;
-		item_array_t items;
-		collectDescendents(id,
-						   categories,
-						   items,
-						   INCLUDE_TRASH);
-		S32 count = items.count();
-		for(S32 i = 0; i < count; ++i)
+		else
 		{
-			deleteObject(items.get(i)->getUUID());
-		}
-		count = categories.count();
-		for(S32 i = 0; i < count; ++i)
-		{
-			deleteObject(categories.get(i)->getUUID());
+			// Fast purge
+			// do the cache accounting
+			llinfos << "LLInventoryModel::purgeDescendentsOf " << cat->getName()
+					<< llendl;
+			S32 descendents = cat->getDescendentCount();
+			if(descendents > 0)
+			{
+				LLCategoryUpdate up(id, -descendents);
+				accountForUpdate(up);
+			}
+
+			// we know that descendent count is 0, however since the
+			// accounting may actually not do an update, we should force
+			// it here.
+			cat->setDescendentCount(0);
+
+			// send it upstream
+			LLMessageSystem* msg = gMessageSystem;
+			msg->newMessage("PurgeInventoryDescendents");
+			msg->nextBlock("AgentData");
+			msg->addUUID("AgentID", gAgent.getID());
+			msg->addUUID("SessionID", gAgent.getSessionID());
+			msg->nextBlock("InventoryData");
+			msg->addUUID("FolderID", id);
+			gAgent.sendReliableMessage();
+
+			// unceremoniously remove anything we have locally stored.
+			cat_array_t categories;
+			item_array_t items;
+			collectDescendents(id,
+							   categories,
+							   items,
+							   INCLUDE_TRASH);
+			S32 count = items.count();
+			for(S32 i = 0; i < count; ++i)
+			{
+				deleteObject(items.get(i)->getUUID());
+			}
+			count = categories.count();
+			for(S32 i = 0; i < count; ++i)
+			{
+				deleteObject(categories.get(i)->getUUID());
+			}
 		}
 	}
 }
@@ -2908,7 +2942,7 @@ void LLInventoryModel::processBulkUpdateInventory(LLMessageSystem* msg, void**)
 	{
 		LLPointer<LLViewerInventoryCategory> tfolder = new LLViewerInventoryCategory(gAgent.getID());
 		tfolder->unpackMessage(msg, _PREHASH_FolderData, i);
-		//llinfos << "unpaked folder '" << tfolder->getName() << "' ("
+		//llinfos << "unpacked folder '" << tfolder->getName() << "' ("
 		//		<< tfolder->getUUID() << ") in " << tfolder->getParentUUID()
 		//		<< llendl;
 		if(tfolder->getUUID().notNull())
@@ -2964,7 +2998,7 @@ void LLInventoryModel::processBulkUpdateInventory(LLMessageSystem* msg, void**)
 	{
 		LLPointer<LLViewerInventoryItem> titem = new LLViewerInventoryItem;
 		titem->unpackMessage(msg, _PREHASH_ItemData, i);
-		//llinfos << "unpaked item '" << titem->getName() << "' in "
+		//llinfos << "unpacked item '" << titem->getName() << "' in "
 		//		<< titem->getParentUUID() << llendl;
 		U32 callback_id;
 		msg->getU32Fast(_PREHASH_ItemData, _PREHASH_CallbackID, callback_id);
@@ -3261,6 +3295,30 @@ void LLInventoryModel::removeCategory(const LLUUID& category_id)
 		}
 	}
 }
+
+void LLInventoryModel::removeObject(const LLUUID& object_id)
+{
+	LLInventoryObject* obj = getObject(object_id);
+	if (dynamic_cast<LLViewerInventoryItem*>(obj))
+	{
+		removeItem(object_id);
+	}
+	else if (dynamic_cast<LLViewerInventoryCategory*>(obj))
+	{
+		removeCategory(object_id);
+	}
+	else if (obj)
+	{
+		LL_WARNS("Inventory") << "object ID " << object_id
+							  << " is an object of unrecognized class "
+							  << typeid(*obj).name() << LL_ENDL;
+	}
+	else
+	{
+		LL_WARNS("Inventory") << "object ID " << object_id << " not found" << LL_ENDL;
+	}
+}
+
 const LLUUID &LLInventoryModel::getRootFolderID() const
 {
 	return mRootFolderID;
