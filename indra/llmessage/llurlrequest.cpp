@@ -85,11 +85,6 @@ LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string cons
 
 void LLURLRequest::initialize_impl(void)
 {
-	if (mHeaders.hasHeader("Cookie"))
-	{
-		allowCookies();
-	}
-
 	// If the header is "Pragma" with no value, the caller intends to
 	// force libcurl to drop the Pragma header it so gratuitously inserts.
 	// Before inserting the header, force libcurl to not use the proxy.
@@ -198,12 +193,6 @@ void LLURLRequest::useProxy(const std::string &proxy)
     curlEasyRequest_w->setoptString(CURLOPT_PROXY, proxy);
 }
 #endif
-
-void LLURLRequest::allowCookies()
-{
-	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
-	curlEasyRequest_w->setoptString(CURLOPT_COOKIEFILE, "");
-}
 
 bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 {
