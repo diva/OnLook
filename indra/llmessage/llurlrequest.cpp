@@ -100,7 +100,7 @@ void LLURLRequest::initialize_impl(void)
 		// but if they did not specify a Content-Type, then ask the injector.
 		mHeaders.addHeader("Content-Type", mBody->contentType(), AIHTTPHeaders::keep_existing_header);
 	}
-	else
+	else if (mAction != HTTP_HEAD)
 	{
 		// Check to see if we have already set Accept or not. If no one
 		// set it, set it to application/llsd+xml since that's what we
