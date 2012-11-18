@@ -202,13 +202,11 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 		{
 		case HTTP_HEAD:
 			curlEasyRequest_w->setopt(CURLOPT_NOBODY, 1);
-			curlEasyRequest_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
 			rv = true;
 			break;
 
 		case HTTP_GET:
 			curlEasyRequest_w->setopt(CURLOPT_HTTPGET, 1);
-			curlEasyRequest_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
 
 			// Set Accept-Encoding to allow response compression
 			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, mNoCompression ? "identity" : "");

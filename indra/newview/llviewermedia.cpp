@@ -168,6 +168,7 @@ public:
 	{
 	}
 
+	/* virtual */ bool followRedir(void) const { return true; }
 	/* virtual */ bool needsHeaders(void) const { return true; }
 
 	/* virtual */ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
