@@ -3515,8 +3515,12 @@ bool LLAgent::teleportCore(bool is_local)
 		gTeleportDisplay = TRUE;
 		gAgent.setTeleportState( LLAgent::TELEPORT_START );
 
-		//release geometry from old location
-		gPipeline.resetVertexBuffers();
+		/*static const LLCachedControl<bool> hide_tp_screen("AscentDisableTeleportScreens",false);
+		if(!hide_tp_screen)
+		{
+			//release geometry from old location
+			gPipeline.resetVertexBuffers();
+		}*/
 
 		if (gSavedSettings.getBOOL("SpeedRez"))
 		{

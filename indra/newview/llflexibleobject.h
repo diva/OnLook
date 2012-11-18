@@ -76,6 +76,7 @@ private:
 	S32 mInstanceIndex;
 
 	public:
+		static void resetTimers() { memset(&sUpdateDelay[0], 0, sizeof(S32)*sUpdateDelay.size()); }
 		static void updateClass();
 
 		LLVolumeImplFlexible(LLViewerObject* volume, LLFlexibleObjectData* attributes);

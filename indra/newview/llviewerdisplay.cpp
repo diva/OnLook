@@ -422,6 +422,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			gAgent.setTeleportMessage(std::string());
 		}
 
+		static const LLCachedControl<bool> hide_tp_screen("AscentDisableTeleportScreens",false);
 		const std::string& message = gAgent.getTeleportMessage();
 		switch( gAgent.getTeleportState() )
 		{
@@ -429,11 +430,13 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			// Transition to REQUESTED.  Viewer has sent some kind
 			// of TeleportRequest to the source simulator
 			gTeleportDisplayTimer.reset();
-			if(!gSavedSettings.getBOOL("AscentDisableTeleportScreens"))gViewerWindow->setShowProgress(TRUE);
+			if(!hide_tp_screen)
+				gViewerWindow->setShowProgress(TRUE);
 			gViewerWindow->setProgressPercent(0);
 			gAgent.setTeleportState( LLAgent::TELEPORT_REQUESTED );
 			gAgent.setTeleportMessage(
 				LLAgent::sTeleportProgressMessages["requesting"]);
+			gViewerWindow->setProgressString(LLAgent::sTeleportProgressMessages["requesting"]);
 			break;
 
 		case LLAgent::TELEPORT_REQUESTED:
@@ -457,14 +460,15 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			gAgent.setTeleportMessage(
 				LLAgent::sTeleportProgressMessages["arriving"]);
 			gTextureList.mForceResetTextureStats = TRUE;
-			if(!gSavedSettings.getBOOL("AscentDisableTeleportScreens"))gAgentCamera.resetView(TRUE, TRUE);
+			if(!hide_tp_screen)
+				gAgentCamera.resetView(TRUE, TRUE);
 			break;
 
 		case LLAgent::TELEPORT_ARRIVING:
 			// Make the user wait while content "pre-caches"
 			{
 				F32 arrival_fraction = (gTeleportArrivalTimer.getElapsedTimeF32() / TELEPORT_ARRIVAL_DELAY);
-				if( arrival_fraction > 1.f || gSavedSettings.getBOOL("AscentDisableTeleportScreens"))
+				if( arrival_fraction > 1.f || hide_tp_screen)
 				{
 					arrival_fraction = 1.f;
 					LLFirstUse::useTeleport();
