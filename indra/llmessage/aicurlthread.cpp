@@ -775,7 +775,7 @@ CurlSocketInfo::CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socke
   // CurlSocketInfo objects for a request and we need upload_finished() to be called on the HTTPTimeout
   // object related to THIS CurlSocketInfo.
   AICurlEasyRequest_wat easy_request_w(*lockobj);
-  mTimeout = easy_request_w->get_timeout_object(lockobj);
+  mTimeout = easy_request_w->get_timeout_object();
 }
 
 CurlSocketInfo::~CurlSocketInfo()
@@ -1971,6 +1971,10 @@ void HTTPTimeout::done(AICurlEasyRequest_wat const& curlEasyRequest_w, CURLcode 
   DoutCurl("done: mStalled set to -1");
 }
 
+// Libcurl uses GetTickCount on windows, with a resolution of 10 to 16 ms.
+// As a result, we can not assume that namelookup_time == 0 has a special meaning.
+#define LOWRESTIMER LL_WINDOWS
+
 void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, char const* eff_url)
 {
   llwarns << "Request to \"" << curl_easy_request->getLowercaseHostname() << "\" timed out for " << curl_easy_request->getTimeoutPolicy()->name() << llendl;
@@ -1981,8 +1985,15 @@ void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, ch
   curl_easy_request->getinfo(CURLINFO_APPCONNECT_TIME, &appconnect_time);
   curl_easy_request->getinfo(CURLINFO_PRETRANSFER_TIME, &pretransfer_time);
   curl_easy_request->getinfo(CURLINFO_STARTTRANSFER_TIME, &starttransfer_time);
-  if (namelookup_time == 0)
+  if (namelookup_time == 0
+#if LOWRESTIMER
+	  && connect_time == 0
+#endif
+	  )
   {
+#if LOWRESTIMER
+	llinfos << "Hostname seems to have been still in the DNS cache." << llendl;
+#else
 	llwarns << "Huh? Curl returned CURLE_OPERATION_TIMEDOUT, but DNS lookup did not occur according to timings. Expected CURLE_COULDNT_RESOLVE_PROXY or CURLE_COULDNT_RESOLVE_HOST!" << llendl;
 	llassert(connect_time == 0);
 	llassert(appconnect_time == 0);
@@ -1990,17 +2001,26 @@ void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, ch
 	llassert(starttransfer_time == 0);
 	// Fatal error for diagnostics.
 	return;
+#endif
   }
   // If namelookup_time is less than 500 microseconds, then it's very likely just a DNS cache lookup.
   else if (namelookup_time < 500e-6)
   {
+#if LOWRESTIMER
+	llinfos << "Hostname was most likely still in DNS cache (or lookup occured in under ~10ms)." << llendl;
+#else
 	llinfos << "Hostname was still in DNS cache." << llendl;
+#endif
   }
   else
   {
-	llwarns << "DNS lookup of " << curl_easy_request->getLowercaseHostname() << " took " << namelookup_time << " seconds." << llendl;
+	llinfos << "DNS lookup of " << curl_easy_request->getLowercaseHostname() << " took " << namelookup_time << " seconds." << llendl;
   }
-  if (connect_time == 0)
+  if (connect_time == 0
+#if LOWRESTIMER
+	  && namelookup_time > 0		// connect_time, when set, is namelookup_time + something.
+#endif
+	  )
   {
 	llwarns << "Huh? Curl returned CURLE_OPERATION_TIMEDOUT, but connection did not occur according to timings. Expected CURLE_COULDNT_CONNECT!" << llendl;
 	llassert(appconnect_time == 0);
@@ -2010,16 +2030,21 @@ void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, ch
 	return;
   }
   // If connect_time is almost equal to namelookup_time, then it was just set because it was already connected.
-  if (connect_time - namelookup_time <= 1e-6)
+  if (connect_time - namelookup_time <= 1e-5)
   {
+#if LOWRESTIMER		// Assuming 10ms resolution.
+	llinfos << "The socket was most likely already connected (or you connected to a proxy with a connect time of under ~10 ms)." << llendl;
+#else
 	llinfos << "The socket was already connected (to remote or proxy)." << llendl;
+#endif
+	// I'm assuming that the SSL/TLS handshake can be measured with a low res timer.
 	if (appconnect_time == 0)
 	{
 	  llwarns << "The SSL/TLS handshake never occurred according to the timings!" << llendl;
 	  return;
 	}
 	// If appconnect_time is almost equal to connect_time, then it was just set because this is a connection re-use.
-	if (appconnect_time - connect_time <= 1e-6)
+	if (appconnect_time - connect_time <= 1e-5)
 	{
 	  llinfos << "Connection with HTTP server was already established; this was a re-used connection." << llendl;
 	}
@@ -2043,7 +2068,7 @@ void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, ch
 	llwarns << "The transfer never happened because there was too much in the pipeline (apparently)." << llendl;
 	return;
   }
-  else if (pretransfer_time - appconnect_time >= 1e-6)
+  else if (pretransfer_time - appconnect_time >= 1e-5)
   {
 	llinfos << "Apparently there was a delay, due to waits in line for the pipeline, of " << (pretransfer_time - appconnect_time) << " seconds before the transfer began." << llendl;
   }
@@ -2234,11 +2259,8 @@ size_t BufferedCurlEasyRequest::curlReadCallback(char* data, size_t size, size_t
   S32 bytes = size * nmemb;		// The maximum amount to read.
   self_w->mLastRead = self_w->getInput()->readAfter(sChannels.out(), self_w->mLastRead, (U8*)data, bytes);
   self_w->mRequestTransferedBytes += bytes;		// Accumulate data sent to the server.
-  // Timeout administration. Note that it can happen that we get here
-  // before the socket callback has been called, because the silly libcurl
-  // writes headers without informing us. In that case it's OK to create
-  // the Timeout object on the fly, so pass lockobj.
-  if (self_w->httptimeout(lockobj)->data_sent(bytes))
+  // Timeout administration.
+  if (self_w->httptimeout()->data_sent(bytes))
   {
 	// Transfer timed out. Return CURL_READFUNC_ABORT which will abort with error CURLE_ABORTED_BY_CALLBACK.
 	return CURL_READFUNC_ABORT;

@@ -9116,7 +9116,7 @@ This should be as low as possible, but too low may break functionality</string>
     <key>NoVerifySSLCert</key>
     <map>
       <key>Comment</key>
-      <string>Do not verify SSL peers</string>
+      <string>Do not verify SSL certificates. WARNING: Setting this to TRUE allows anyone to impersonate the server and intercept your data (man in the middle attack).</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
