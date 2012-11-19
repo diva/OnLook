@@ -1065,6 +1065,10 @@ void AICurlThread::wakeup_thread(void)
   DoutEntering(dc::curl, "AICurlThread::wakeup_thread");
   llassert(is_main_thread());
 
+  // If we are already exiting the viewer then return immediately.
+  if (!mRunning)
+	return;
+
   // Try if curl thread is still awake and if so, pass the new commands directly.
   if (mWakeUpMutex.tryLock())
   {
@@ -2148,10 +2152,14 @@ void stopCurlThread(void)
 	  ms_sleep(10);
 	}
 	Dout(dc::curl, "Curl thread" << (curlThreadIsRunning() ? " not" : "") << " stopped after " << ((100 - count) * 10) << "ms.");
-	// Clear the command queue, for a cleaner cleanup.
+  }
+}
+
+void clearCommandQueue(void)
+{
+	// Clear the command queue now in order to avoid the global deinitialization order fiasco.
 	command_queue_wat command_queue_w(command_queue);
 	command_queue_w->clear();
-  }
 }
 
 //-----------------------------------------------------------------------------
