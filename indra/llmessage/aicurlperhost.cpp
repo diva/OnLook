@@ -56,12 +56,17 @@ PerHostRequestQueuePtr PerHostRequestQueue::instance(std::string const& hostname
 //static
 void PerHostRequestQueue::release(PerHostRequestQueuePtr& instance)
 {
-  if (instance->lastone())
+  if (instance->exactly_two_left())		// Being 'instance' and the one in sInstanceMap.
   {
+	// The viewer can be have left main() we can't access the global sInstanceMap anymore.
+	if (LLApp::isStopped())
+	{
+	  return;
+	}
 	instance_map_wat instance_map_w(sInstanceMap);
-	// It is possible that 'lastone' is not up to date anymore.
+	// It is possible that 'exactly_two_left' is not up to date anymore.
 	// Therefore, recheck the condition now that we have locked sInstanceMap.
-	if (!instance->lastone())
+	if (!instance->exactly_two_left())
 	{
 	  // Some other thread added this host in the meantime.
 	  return;
