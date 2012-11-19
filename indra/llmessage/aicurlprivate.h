@@ -119,6 +119,7 @@ inline CURLMcode check_multi_code(CURLMcode code) { AICurlInterface::Stats::mult
 bool curlThreadIsRunning(void);
 void wakeUpCurlThread(void);
 void stopCurlThread(void);
+void clearCommandQueue(void);
 
 #define DECLARE_SETOPT(param_type) \
 	  CURLcode setopt(CURLoption option, param_type parameter)
