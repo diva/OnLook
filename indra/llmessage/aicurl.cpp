@@ -492,8 +492,6 @@ void Stats::print(void)
   // Even more strict, BufferedCurlEasyRequest may not be created directly either, only as
   // base class of ThreadSafeBufferedCurlEasyRequest.
   llassert(BufferedCurlEasyRequest_count == ThreadSafeBufferedCurlEasyRequest_count);
-  // Each AICurlEasyRequestStateMachine is responsible for exactly one easy handle.
-  llassert(easy_handles >= AICurlEasyRequest_count);
   // Each AICurlEasyRequestStateMachine has one AICurlEasyRequest member.
   llassert(AICurlEasyRequest_count >= AICurlEasyRequestStateMachine_count);
   // AIFIXME: is this really always the case? And why?
