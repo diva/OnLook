@@ -1613,7 +1613,9 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
   ThreadSafeBufferedCurlEasyRequest* lockobj = iter->get_ptr().get();
 #endif
   mAddedEasyRequests.erase(iter);
+#if CWDEBUG
   Dout(dc::curl, "MultiHandle::remove_easy_request: Removed AICurlEasyRequest " << (void*)lockobj << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
+#endif
 
   // Attempt to add a queued request, if any.
   PerHostRequestQueue_wat(*per_host)->add_queued_to(this);
@@ -2361,10 +2363,10 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 int debug_callback(CURL*, curl_infotype infotype, char* buf, size_t size, void* user_ptr)
 {
+  BufferedCurlEasyRequest* request = (BufferedCurlEasyRequest*)user_ptr;
+
 #ifdef CWDEBUG
   using namespace ::libcwd;
-
-  BufferedCurlEasyRequest* request = (BufferedCurlEasyRequest*)user_ptr;
   std::ostringstream marker;
   marker << (void*)request->get_lockobj();
   libcw_do.push_marker();
