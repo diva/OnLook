@@ -77,6 +77,7 @@
 #include "llvoavatarself.h"
 #include "llworld.h"
 #include "llworldmap.h"
+#include "llworldmapmessage.h"
 
 //Misc non-standard includes
 #include "llurldispatcher.h"
@@ -3688,7 +3689,7 @@ void LLAgent::teleportViaLocation(const LLVector3d& pos_global)
 			(F32)(pos_global.mdV[VY] - region_origin.mdV[VY]),
 			(F32)(pos_global.mdV[VZ]));
 		pos_local += offset;
-		teleportRequest(info->getHandle(), pos_local);
+		teleportRequest(handle, pos_local);
 	}
 	else if(regionp && 
 		teleportCore(regionp->getHandle() == to_region_handle_global((F32)pos_global.mdV[VX], (F32)pos_global.mdV[VY])))
@@ -3737,10 +3738,6 @@ void LLAgent::teleportViaLocationLookAt(const LLVector3d& pos_global)
 	mbTeleportKeepsLookAt = true;
 	gAgentCamera.setFocusOnAvatar(FALSE, ANIMATE);	// detach camera form avatar, so it keeps direction
 	U64 region_handle = to_region_handle(pos_global);
-	LLSimInfo* simInfo = LLWorldMap::instance().simInfoFromHandle(region_handle);
-	if(simInfo)
-		region_handle = simInfo->getHandle();
-
 	LLVector3 pos_local = (LLVector3)(pos_global - from_region_handle(region_handle));
 	teleportRequest(region_handle, pos_local, getTeleportKeepsLookAt());
 }
@@ -4180,7 +4177,7 @@ void LLAgent::showLureDestination(const std::string fromname, const int global_x
 	{
 		U16 grid_x = (U16)(global_x / REGION_WIDTH_UNITS);
 		U16 grid_y = (U16)(global_y / REGION_WIDTH_UNITS);
-		LLWorldMap::getInstance()->sendMapBlockRequest(grid_x, grid_y, grid_x, grid_y, true); //Will call onFoundLureDestination on response
+		LLWorldMapMessage::getInstance()->sendMapBlockRequest(grid_x, grid_y, grid_x, grid_y, true); //Will call onFoundLureDestination on response
 	}
 }
 

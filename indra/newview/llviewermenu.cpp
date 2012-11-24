@@ -3596,7 +3596,6 @@ void set_god_level(U8 god_level)
 
 	// God mode changes region visibility
 	LLWorldMap::getInstance()->reset();
-	LLWorldMap::getInstance()->setCurrentLayer(0);
 
 	// inventory in items may change in god mode
 	gObjectList.dirtyAllObjectInventory();

@@ -111,29 +111,26 @@ public:
 
 	// teleport to the tracked item, if there is one
 	void			teleport();
+	void			onChangeMaturity();
 
-protected:
-	static void		onPanBtn( void* userdata );
-
-	static void		onGoHome(void* data);
+protected:	
+	void			onGoHome();
 
 	static void		onLandmarkComboPrearrange( LLUICtrl* ctrl, void* data );
-	static void		onLandmarkComboCommit( LLUICtrl* ctrl, void* data );
+	void			onLandmarkComboCommit();
 
 	static void		onAvatarComboPrearrange( LLUICtrl* ctrl, void* data );
-	static void		onAvatarComboCommit( LLUICtrl* ctrl, void* data );
+	void		    onAvatarComboCommit();
 
 	static void		onComboTextEntry( LLLineEditor* ctrl, void* data );
 	static void		onSearchTextEntry( LLLineEditor* ctrl, void* data );
 
-	static void		onClearBtn(void*);
-	static void		onFlyBtn(void*);
-	static void		onClickTeleportBtn(void*);
-	static void		onShowTargetBtn(void*);
-	static void		onShowAgentBtn(void*);
-	static void		onCopySLURL(void*);
-
-	static void		onCheckEvents(LLUICtrl* ctrl, void*);
+	void			onClearBtn();
+	void			onClickTeleportBtn();
+	static void		onClickTeleportBtn_static(void* data) {((LLFloaterWorldMap*)data)->onClickTeleportBtn();};
+	void			onShowTargetBtn();
+	void			onShowAgentBtn();
+	void			onCopySLURL();
 
 	void			centerOnTarget(BOOL animate);
 	void			updateLocation();
@@ -142,7 +139,6 @@ protected:
 	void			fly();
 
 	void			buildLandmarkIDLists();
-	static void		onGoToLandmarkDialog(S32 option,void* userdata);
 	void			flyToLandmark();
 	void			teleportToLandmark();
 	void			setLandmarkVisited();
@@ -152,24 +148,28 @@ protected:
 	void			teleportToAvatar();
 
 	void			updateSearchEnabled();
-	void			onLocationFocusChanged( LLFocusableElement* focus );
-	static void		onLocationCommit( void* userdata );
-	static void		onCommitLocation( LLUICtrl* ctrl, void* userdata );
-	static void		onCommitSearchResult( LLUICtrl* ctrl, void* userdata );
+	void			onLocationFocusChanged( LLFocusableElement* ctrl );
+	void		    onLocationCommit();
+	void			onCoordinatesCommit();
+	void		    onCommitSearchResult();
 
 	void			cacheLandmarkPosition();
 
-protected:
-	LLPanel*			mPanel;		// Panel displaying the map	
+private:
+	LLPanel*			mPanel;		// Panel displaying the map
 	
 	// Sets sMapScale, in pixels per region
 	F32						mCurZoomVal;
-	F32						mCurZoomValInterpolationStart;	// Used during mZoomTimer interpolation.
 	LLFrameTimer			mZoomTimer;
+
+	// update display of teleport destination coordinates - pos is in global coordinates
+	void updateTeleportCoordsDisplay( const LLVector3d& pos );
+
+	// enable/disable teleport destination coordinates 
+	void enableTeleportCoordsDisplay( bool enabled );
 
 	LLDynamicArray<LLUUID>	mLandmarkAssetIDList;
 	LLDynamicArray<LLUUID>	mLandmarkItemIDList;
-	BOOL					mHasLandmarkPosition;
 
 	static const LLUUID	sHomeID;
 
@@ -178,9 +178,12 @@ protected:
 	LLFriendObserver* mFriendObserver;
 
 	std::string				mCompletingRegionName;
+	// Local position from trackURL() request, used to select final
+	// position once region lookup complete.
+	LLVector3				mCompletingRegionPos;
+
 	std::string				mLastRegionName;
 	BOOL					mWaitingForTracker;
-	BOOL					mExactMatch;
 
 	BOOL					mIsClosing;
 	BOOL					mSetToUserPosition;
@@ -190,6 +193,10 @@ protected:
 	std::string				mTrackedSimName;
 	std::string				mTrackedAvatarName;
 	std::string				mSLURL;
+
+	LLCtrlListInterface *	mListFriendCombo;
+	LLCtrlListInterface *	mListLandmarkCombo;
+	LLCtrlListInterface *	mListSearchResults;
 };
 
 extern LLFloaterWorldMap* gFloaterWorldMap;

@@ -123,6 +123,7 @@
 
 	<!-- Indicates something is being loaded. Maybe should be merged with RetrievingData -->
 	<string name="LoadingData">Loading...</string>
+	<string name="InvalidLocation">Invalid Location</string>
 
 
 	<!-- namecache -->

@@ -172,7 +172,7 @@
 	     tool_tip="Copies current location as SLURL to be used on the web."
 	     width="222" />
 	<slider bottom="-697" can_edit_text="false" decimal_digits="3" follows="right|bottom"
-	     height="16" increment="0.2" initial_val="48.5029" label="Zoom" left="-230"
+	     height="16" increment="0.2" initial_val="-2" label="Zoom" left="-230"
 	     max_val="0" min_val="-8" mouse_opaque="true" name="zoom slider"
 	     show_text="false" value="48.5029" width="222" />
 </floater>
