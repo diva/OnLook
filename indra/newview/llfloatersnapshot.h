@@ -57,6 +57,7 @@ public:
 	/*virtual*/ void draw();
 	/*virtual*/ void onClose(bool app_quitting);
 	/*virtual*/ void onOpen();
+	/*virtual*/ BOOL handleKeyHere(KEY key, MASK mask);
 
 	static void show(void*);
 	static void hide(void*);

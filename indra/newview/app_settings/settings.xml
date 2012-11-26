@@ -13431,6 +13431,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>SnapshotLayerType</key>
+    <map>
+      <key>Comment</key>
+      <string>Save snapshots in this format (0 = Colors, 1 = Depth)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>SnapshotLocalLastResolution</key>
     <map>
       <key>Comment</key>

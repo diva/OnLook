@@ -4099,6 +4099,13 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 {
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
 
+	// Frozen!
+	if (areAnimationsPaused())
+	{
+		updateMotions(LLCharacter::NORMAL_UPDATE);		// This is necessary to get unpaused again.
+		return FALSE;
+	}
+
 	// clear debug text
 	mDebugText.clear();
 	if (LLVOAvatar::sShowAnimationDebug)

@@ -4286,24 +4286,24 @@ BOOL LLViewerWindow::thumbnailSnapshot(LLImageRaw *raw, S32 preview_width, S32 p
 }
 
 // Saves the image from the screen to the specified filename and path.
-BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_height, 
-								 BOOL keep_window_aspect, BOOL is_texture, BOOL show_ui, BOOL do_rebuild, ESnapshotType type, S32 max_size, F32 supersample)
+S32 LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_height, 
+								 BOOL keep_window_aspect, BOOL /*is_texture*/, BOOL show_ui, BOOL do_rebuild, ESnapshotType type, S32 max_size, F32 supersample)
 {
 	if (!raw)
 	{
-		return FALSE;
+		return 0;
 	}
 	//check if there is enough memory for the snapshot image
 	if(LLPipeline::sMemAllocationThrottled)
 	{
-		return FALSE ; //snapshot taking is disabled due to memory restriction.
+		return 0; //snapshot taking is disabled due to memory restriction.
 	}
 	if(image_width * image_height > (1 << 22)) //if snapshot image is larger than 2K by 2K
 	{
 		if(!LLMemory::tryToAlloc(NULL, image_width * image_height * 3))
 		{
 			llwarns << "No enough memory to take the snapshot with size (w : h): " << image_width << " : " << image_height << llendl ;
-			return FALSE ; //there is no enough memory for taking this snapshot.
+			return 0; //there is no enough memory for taking this snapshot.
 		}
 	}
 
@@ -4331,17 +4331,15 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 	// Copy screen to a buffer
 	// crop sides or top and bottom, if taking a snapshot of different aspect ratio
 	// from window
-	LLRect window_rect = show_ui ? getWindowRectRaw() : getWorldViewRectRaw(); 
+	LLRect const window_rect = show_ui ? getWindowRectRaw() : getWorldViewRectRaw(); 
 
-	S32 snapshot_width = window_rect.getWidth();
-	S32 snapshot_height = window_rect.getHeight();
+	S32 const window_width = window_rect.getWidth();
+	S32 const window_height = window_rect.getHeight();
+
 	// SNAPSHOT
-	S32 window_width = snapshot_width;
-	S32 window_height = snapshot_height;	
-	
-
+	S32 snapshot_width = window_width;
+	S32 snapshot_height = window_height;
 	F32 scale_factor = 1.0f ;
-	
 	bool is_tiling = false; 
 
 	//fbo method no longer supported. Good riddance
@@ -4409,6 +4407,7 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 				snapshot_width = (S32)(ratio * image_width) ;
 				snapshot_height = (S32)(ratio * image_height) ;
 				scale_factor = llmax(1.0f, 1.0f / ratio) ;	
+				Dout(dc::warning, "USING TILING FOR SNAPSHOT!");
 				is_tiling = true;
 			}
 		}
@@ -4420,10 +4419,11 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 
 	S32 image_buffer_x = llfloor(snapshot_width*scale_factor) ;
 	S32 image_buffer_y = llfloor(snapshot_height*scale_factor) ;
+	S32 max_image_buffer = llmax(image_buffer_x, image_buffer_y);
 #if 1//SHY_MOD // screenshot improvement
 	if(internal_scale <= 1.f) //If supersampling... Don't care about max_size.
 #endif //shy_mod
-	if(image_buffer_x > max_size || image_buffer_y > max_size) //boundary check to avoid memory overflow
+	if(max_image_buffer > max_size) //boundary check to avoid memory overflow
 	{
 		scale_factor *= llmin((F32)max_size / image_buffer_x, (F32)max_size / image_buffer_y) ;
 		image_buffer_x = llfloor(snapshot_width*scale_factor) ;
@@ -4435,11 +4435,11 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 	}
 	else
 	{
-		return FALSE ;
+		return 0;
 	}
 	if(raw->isBufferInvalid())
 	{
-		return FALSE ;
+		return 0;
 	}
 
 	BOOL high_res = scale_factor > 1.f;
@@ -4591,11 +4591,11 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 	
 #if 1//SHY_MOD // screenshot improvement
 	if(raw->isBufferInvalid()) //Just checking!
-		return FALSE;
+		return 0;
 	if(internal_scale != 1.f)  //Scale down our render to the desired dimensions.
 		raw->scale( image_width/internal_scale, image_height/internal_scale );	
 	if(raw->isBufferInvalid()) //Just checking!
-		return FALSE;
+		return 0;
 #endif //shy_mod
 
 	setCursor(UI_CURSOR_ARROW);
@@ -4615,7 +4615,7 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 		send_agent_resume();
 	}
 
-	return ret;
+	return ret ? max_image_buffer : 0;
 }
 
 void LLViewerWindow::destroyWindow()
