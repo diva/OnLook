@@ -167,6 +167,9 @@ public:
 	LLFloaterPostcard* savePostcard();
 	void saveTexture();
 	void saveLocal();
+	void saveLocalDone(bool success);
+	void close(LLFloaterSnapshot* view);
+	void doCloseAfterSave();
 
 	BOOL setThumbnailImageSize() ;
 	void generateThumbnailImage(BOOL force_update = FALSE) ;
@@ -221,6 +224,10 @@ private:
 	LLQuaternion				mCameraRot;
 	BOOL						mSnapshotActive;
 	LLViewerWindow::ESnapshotType mSnapshotBufferType;
+
+	bool						mCallbackHappened;
+	bool						mSaveLocalSuccessful;
+	LLFloaterSnapshot*			mCloseCalled;
 
 public:
 	static std::set<LLSnapshotLivePreview*> sList;
@@ -1116,13 +1123,61 @@ void LLSnapshotLivePreview::saveTexture()
 
 void LLSnapshotLivePreview::saveLocal()
 {
-	gViewerWindow->saveImageNumbered(mFormattedImage);
+	mCallbackHappened = false;
+	mSaveLocalSuccessful = false;
+	mCloseCalled = NULL;
+	gViewerWindow->saveImageNumbered(mFormattedImage);	// This calls saveLocalDone() immediately, or later.
+}
 
-	// Relinquish image memory. Save button will be disabled as a side-effect.
-	mFormattedImage = NULL;
-	mFormattedDataSize = 0;
-	updateSnapshot(FALSE, FALSE);
-	addUsedBy(SNAPSHOT_LOCAL);
+void LLSnapshotLivePreview::close(LLFloaterSnapshot* view)
+{
+	if (getSnapshotType() != LLSnapshotLivePreview::SNAPSHOT_LOCAL)
+	{
+		view->close();
+	}
+	else
+	{
+		mCloseCalled = view;
+		if (mCallbackHappened)
+		{
+			doCloseAfterSave();
+		}
+		else
+		{
+			view->setEnabled(FALSE);
+		}
+	}
+}
+
+void LLSnapshotLivePreview::saveLocalDone(bool success)
+{
+	mCallbackHappened = true;
+	mSaveLocalSuccessful = success;
+	if (success)
+	{
+		// Disable Save button.
+		addUsedBy(LLSnapshotLivePreview::SNAPSHOT_LOCAL);
+	}
+	if (mCloseCalled)
+	{
+		doCloseAfterSave();
+	}
+}
+
+void LLSnapshotLivePreview::doCloseAfterSave()
+{
+	if (mSaveLocalSuccessful)
+	{
+		// Relinquish image memory.
+		mFormattedImage = NULL;
+		mFormattedDataSize = 0;
+		updateSnapshot(FALSE, FALSE);
+		mCloseCalled->close();
+	}
+	else
+	{
+		mCloseCalled->setEnabled(TRUE);
+	}
 }
 
 ///----------------------------------------------------------------------------
@@ -1600,6 +1655,17 @@ void LLFloaterSnapshot::Impl::onCommitSave(LLUICtrl* ctrl, void* data)
 	onClickKeep(data);
 }
 
+// Called from LLViewerWindow::saveImageNumbered, LLViewerWindow::saveImageNumbered_continued1 and LLViewerWindow::saveImageNumbered_continued2.
+//static
+void LLFloaterSnapshot::saveLocalDone(bool success)
+{
+	LLSnapshotLivePreview* previewp = LLFloaterSnapshot::Impl::getPreviewView(sInstance);
+	if (previewp)
+	{
+		previewp->saveLocalDone(success);
+	}
+}
+
 // static
 void LLFloaterSnapshot::Impl::onClickKeep(void* data)
 {
@@ -1635,7 +1701,7 @@ void LLFloaterSnapshot::Impl::onClickKeep(void* data)
 
 		if (gSavedSettings.getBOOL("CloseSnapshotOnKeep"))
 		{
-			view->close();
+			previewp->close(view);
 		}
 		else
 		{

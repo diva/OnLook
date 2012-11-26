@@ -67,6 +67,8 @@ public:
 	static S32  getUIWinHeightShort() {return sUIWinHeightShort ;}
 	static S32  getUIWinWidth()       {return sUIWinWidth ;}
 
+	static void saveLocalDone(bool success);
+
 private:
 	class Impl;
 	Impl& impl;
