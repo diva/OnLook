@@ -1229,7 +1229,6 @@ public:
 	static void setResolution(LLFloaterSnapshot* floater, const std::string& comboname, bool update_controls = true);
 	static void updateControls(LLFloaterSnapshot* floater);
 	static void updateLayout(LLFloaterSnapshot* floater);
-	static void updateResolutionTextEntry(LLFloaterSnapshot* floater);
 
 	static LLHandle<LLView> sPreviewHandle;
 	static BOOL         sAspectRatioCheckOff ;
@@ -1297,7 +1296,7 @@ LLFloaterSnapshot::ESnapshotFormat LLFloaterSnapshot::Impl::getFormatIndex(LLFlo
 void LLFloaterSnapshot::Impl::setResolution(LLFloaterSnapshot* floater, const std::string& comboname, bool update_controls)
 {
 	LLComboBox* combo = floater->getChild<LLComboBox>(comboname);
-		combo->setVisible(TRUE);
+	combo->setVisible(TRUE);
 	updateResolution(combo, floater, update_controls); // to sync spinners with combo
 }
 
@@ -1463,11 +1462,8 @@ void LLFloaterSnapshot::Impl::updateControls(LLFloaterSnapshot* floater)
 		  case  LLSnapshotLivePreview::SNAPSHOT_LOCAL:
 			setResolution(floater, "local_size_combo", false);
 			break;
-		  default:
-			break;
 		}
 	}
-	updateResolutionTextEntry(floater);
 
 	floater->getChild<LLComboBox>("local_format_combo")->selectNthItem(shot_format);
 
@@ -1541,31 +1537,6 @@ void LLFloaterSnapshot::Impl::updateControls(LLFloaterSnapshot* floater)
 	if (previewp)
 	{
 		previewp->showFreezeFrameSnapshot(up_to_date);
-	}
-}
-
-// static
-void LLFloaterSnapshot::Impl::updateResolutionTextEntry(LLFloaterSnapshot* floater)
-{
-	LLSpinCtrl* width_spinner = floater->getChild<LLSpinCtrl>("snapshot_width");
-	LLSpinCtrl* height_spinner = floater->getChild<LLSpinCtrl>("snapshot_height");
-
-	if (gSavedSettings.getS32("LastSnapshotType") == LLSnapshotLivePreview::SNAPSHOT_TEXTURE ||
-		gSavedSettings.getBOOL("RenderUIInSnapshot") ||
-		gSavedSettings.getBOOL("RenderHUDInSnapshot"))
-	{
-		// Disable without making label gray.
-		width_spinner->setAllowEdit(FALSE);
-		width_spinner->setIncrement(0);
-		height_spinner->setAllowEdit(FALSE);
-		height_spinner->setIncrement(0);
-	}
-	else
-	{
-		width_spinner->setAllowEdit(TRUE);
-		width_spinner->setIncrement(32);
-		height_spinner->setAllowEdit(TRUE);
-		height_spinner->setIncrement(32);
 	}
 }
 
@@ -2087,6 +2058,7 @@ void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool 
 		
 		if(view->childGetValue("snapshot_width").asInteger() != width || view->childGetValue("snapshot_height").asInteger() != height)
 		{
+			Dout(dc::notice, "LLFloaterSnapshot::Impl::updateResolution: set width, height to " << width << ", " << height);
 			view->childSetValue("snapshot_width", width);
 			view->childSetValue("snapshot_height", height);
 		}
@@ -2104,6 +2076,30 @@ void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool 
 				updateControls(view);
 			}
 		}
+	}
+
+	// Set whether or not the spinners can be changed.
+
+	LLSpinCtrl* width_spinner = view->getChild<LLSpinCtrl>("snapshot_width");
+	LLSpinCtrl* height_spinner = view->getChild<LLSpinCtrl>("snapshot_height");
+
+	if ((gSavedSettings.getS32("LastSnapshotType") == LLSnapshotLivePreview::SNAPSHOT_TEXTURE &&
+		combobox->getCurrentIndex() != combobox->getItemCount() - 1) ||
+		gSavedSettings.getBOOL("RenderUIInSnapshot") ||
+		gSavedSettings.getBOOL("RenderHUDInSnapshot"))
+	{
+		// Disable without making label gray.
+		width_spinner->setAllowEdit(FALSE);
+		width_spinner->setIncrement(0);
+		height_spinner->setAllowEdit(FALSE);
+		height_spinner->setIncrement(0);
+	}
+	else
+	{
+		width_spinner->setAllowEdit(TRUE);
+		width_spinner->setIncrement(32);
+		height_spinner->setAllowEdit(TRUE);
+		height_spinner->setIncrement(32);
 	}
 }
 
@@ -2256,6 +2252,7 @@ BOOL LLFloaterSnapshot::Impl::checkImageSize(LLSnapshotLivePreview* previewp, S3
 //static
 void LLFloaterSnapshot::Impl::resetSnapshotSizeOnUI(LLFloaterSnapshot *view, S32 width, S32 height)
 {
+	DoutEntering(dc::notice, "LLFloaterSnapshot::Impl::resetSnapshotSizeOnUI(" << width << ", " << height << ")");
 	view->getChild<LLSpinCtrl>("snapshot_width")->forceSetValue(width);
 	view->getChild<LLSpinCtrl>("snapshot_height")->forceSetValue(height);
 	gSavedSettings.setS32(lastSnapshotWidthName(), width);
@@ -2399,6 +2396,7 @@ BOOL LLFloaterSnapshot::postBuild()
 	childSetValue("layer_types", "colors");
 	childSetEnabled("layer_types", FALSE);
 
+	Dout(dc::notice, "LLFloaterSnapshot::postBuild: setting width, height to " << gSavedSettings.getS32(lastSnapshotWidthName()) << ", " << gSavedSettings.getS32(lastSnapshotHeightName()));
 	childSetValue("snapshot_width", gSavedSettings.getS32(lastSnapshotWidthName()));
 	childSetValue("snapshot_height", gSavedSettings.getS32(lastSnapshotHeightName()));
 
