@@ -118,7 +118,7 @@ class PerHostRequestQueue {
 class RefCountedThreadSafePerHostRequestQueue : public threadsafe_PerHostRequestQueue {
   public:
 	RefCountedThreadSafePerHostRequestQueue(void) : mReferenceCount(0) { }
-	bool lastone(void) const { llassert(mReferenceCount >= 2); return mReferenceCount == 2; }
+	bool exactly_two_left(void) const { return mReferenceCount == 2; }
 
   private:
 	// Used by PerHostRequestQueuePtr. Object is deleted when reference count reaches zero.

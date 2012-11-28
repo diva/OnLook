@@ -119,6 +119,7 @@ inline CURLMcode check_multi_code(CURLMcode code) { AICurlInterface::Stats::mult
 bool curlThreadIsRunning(void);
 void wakeUpCurlThread(void);
 void stopCurlThread(void);
+void clearCommandQueue(void);
 
 #define DECLARE_SETOPT(param_type) \
 	  CURLcode setopt(CURLoption option, param_type parameter)
@@ -316,7 +317,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	static CURLcode curlCtxCallback(CURL* curl, void* sslctx, void* parm);
 
 	// Called from get_timeout_object and httptimeout.
-	void create_timeout_object(ThreadSafeBufferedCurlEasyRequest* lockobj);
+	void create_timeout_object(void);
 
   public:
 	// Set default options that we want applied to all curl easy handles.
@@ -374,9 +375,9 @@ class CurlEasyRequest : public CurlEasyHandle {
 	std::string const& getLowercaseHostname(void) const { return mLowercaseHostname; }
 	// Called by CurlSocketInfo to allow access to the last (after a redirect) HTTPTimeout object related to this request.
 	// This creates mTimeout (unless mTimeoutIsOrphan is set in which case it adopts the orphan).
-	LLPointer<curlthread::HTTPTimeout>& get_timeout_object(ThreadSafeBufferedCurlEasyRequest* lockobj);
+	LLPointer<curlthread::HTTPTimeout>& get_timeout_object(void);
 	// Accessor for mTimeout with optional creation of orphaned object (if lockobj != NULL).
-	LLPointer<curlthread::HTTPTimeout>& httptimeout(ThreadSafeBufferedCurlEasyRequest* lockobj = NULL) { if (lockobj && !mTimeout) create_timeout_object(lockobj); return mTimeout; }
+	LLPointer<curlthread::HTTPTimeout>& httptimeout(void) { if (!mTimeout) { create_timeout_object(); mTimeoutIsOrphan = true; } return mTimeout; }
 	// Return true if no data has been received on the latest socket (if any) for too long.
 	bool has_stalled(void) const { return mTimeout && mTimeout->has_stalled(); }
 
