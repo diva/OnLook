@@ -129,7 +129,7 @@ namespace LLAvatarNameCache
 	// Erase expired names from cache
 	void eraseUnrefreshed();
 
-	bool expirationFromCacheControl(LLSD headers, F64 *expires);
+	bool expirationFromCacheControl(AIHTTPReceivedHeaders const& headers, F64* expires);
 }
 
 /* Sample response:
@@ -171,7 +171,10 @@ namespace LLAvatarNameCache
 </llsd>
 */
 
-class LLAvatarNameResponder : public LLHTTPClient::Responder
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy avatarNameResponder_timeout;
+
+class LLAvatarNameResponder : public LLHTTPClient::ResponderWithResult
 {
 private:
 	// need to store agent ids that are part of this request in case of
@@ -179,24 +182,19 @@ private:
 	std::vector<LLUUID> mAgentIDs;
 
 	// Need the headers to look up Expires: and Retry-After:
-	LLSD mHeaders;
+	virtual bool needsHeaders(void) const { return true; }
 	
 public:
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return avatarNameResponder_timeout; }
+
 	LLAvatarNameResponder(const std::vector<LLUUID>& agent_ids)
-	:	mAgentIDs(agent_ids),
-		mHeaders()
+	:	mAgentIDs(agent_ids)
 	{ }
-	
-	/*virtual*/ void completedHeader(U32 status, const std::string& reason, 
-		const LLSD& headers)
-	{
-		mHeaders = headers;
-	}
 
 	/*virtual*/ void result(const LLSD& content)
 	{
 		// Pull expiration out of headers if available
-		F64 expires = LLAvatarNameCache::nameExpirationFromHeaders(mHeaders);
+		F64 expires = LLAvatarNameCache::nameExpirationFromHeaders(mReceivedHeaders);
 		F64 now = LLFrameTimer::getTotalSeconds();
 
 		LLSD agents = content["agents"];
@@ -788,43 +786,33 @@ void LLAvatarNameCache::insert(const LLUUID& agent_id, const LLAvatarName& av_na
 	sCache[agent_id] = av_name;
 }
 
-F64 LLAvatarNameCache::nameExpirationFromHeaders(LLSD headers)
+F64 LLAvatarNameCache::nameExpirationFromHeaders(AIHTTPReceivedHeaders const& headers)
 {
-	F64 expires = 0.0;
-	if (expirationFromCacheControl(headers, &expires))
-	{
-		return expires;
-	}
-	else
-	{
-		// With no expiration info, default to an hour
-		const F64 DEFAULT_EXPIRES = 60.0 * 60.0;
-		F64 now = LLFrameTimer::getTotalSeconds();
-		return now + DEFAULT_EXPIRES;
-	}
+	F64 expires;
+	expirationFromCacheControl(headers, &expires);
+	return expires;
 }
 
-bool LLAvatarNameCache::expirationFromCacheControl(LLSD headers, F64 *expires)
+bool LLAvatarNameCache::expirationFromCacheControl(AIHTTPReceivedHeaders const& headers, F64* expires)
 {
 	bool fromCacheControl = false;
+	S32 max_age = 3600;	// With no expiration info, default to an hour.
 	F64 now = LLFrameTimer::getTotalSeconds();
 	// Allow the header to override the default
-	LLSD cache_control_header = headers["cache-control"];
-	if (cache_control_header.isDefined())
+	std::string cache_control;
+	if (headers.getFirstValue("cache-control", cache_control))
 	{
-		S32 max_age = 0;
-		std::string cache_control = cache_control_header.asString();
 		if (max_age_from_cache_control(cache_control, &max_age))
 		{
-			*expires = now + (F64)max_age;
 			fromCacheControl = true;
 		}
 	}
+	*expires = now + (F64)max_age;
 	LL_DEBUGS("AvNameCache")
 		<< ( fromCacheControl ? "expires based on cache control " : "default expiration " )
 		<< "in " << *expires - now << " seconds"
 		<< LL_ENDL;
-	
+
 	return fromCacheControl;
 }
 

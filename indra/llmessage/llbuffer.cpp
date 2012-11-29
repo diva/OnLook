@@ -377,7 +377,7 @@ LLBufferArray::segment_iterator_t LLBufferArray::splitAfter(U8* address)
 	// We have the location and the segment.
 	U8* base = (*it).data();
 	S32 size = (*it).size();
-	if(address == (base + size))
+	if(address == (base + size - 1))
 	{
 		// No need to split, since this is the last byte of the
 		// segment. We do not want to have zero length segments, since
@@ -393,12 +393,26 @@ LLBufferArray::segment_iterator_t LLBufferArray::splitAfter(U8* address)
 	mSegments.insert(it, segment2);
 	return rv;
 }
-							   
+
+//mMutexp should be locked before calling this.
+LLBufferArray::const_segment_iterator_t LLBufferArray::beginSegment() const
+{
+	ASSERT_LLBUFFERARRAY_MUTEX_LOCKED
+	return mSegments.begin();
+}
+
 //mMutexp should be locked before calling this.
 LLBufferArray::segment_iterator_t LLBufferArray::beginSegment()
 {
 	ASSERT_LLBUFFERARRAY_MUTEX_LOCKED
 	return mSegments.begin();
+}
+
+//mMutexp should be locked before calling this.
+LLBufferArray::const_segment_iterator_t LLBufferArray::endSegment() const
+{
+	ASSERT_LLBUFFERARRAY_MUTEX_LOCKED
+	return mSegments.end();
 }
 
 //mMutexp should be locked before calling this.
@@ -634,6 +648,20 @@ U8* LLBufferArray::readAfter(
 		++it;
 	}
 	return rv;
+}
+
+void LLBufferArray::writeChannelTo(std::ostream& ostr, S32 channel) const
+{
+	LLMemType m1(LLMemType::MTYPE_IO_BUFFER);
+	LLMutexLock lock(mMutexp) ;
+	const_segment_iterator_t const end = mSegments.end();
+	for (const_segment_iterator_t it = mSegments.begin(); it != end; ++it)
+	{
+		if (it->isOnChannel(channel))
+		{
+			ostr.write((char*)it->data(), it->size());
+		}
+	}
 }
 
 U8* LLBufferArray::seek(

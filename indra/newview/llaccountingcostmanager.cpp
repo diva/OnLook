@@ -30,12 +30,15 @@
 #include "llcurl.h"
 #include "llhttpclient.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy accountingCostResponder_timeout;
+
 //===============================================================================
 LLAccountingCostManager::LLAccountingCostManager()
 {	
 }
 //===============================================================================
-class LLAccountingCostResponder : public LLCurl::Responder
+class LLAccountingCostResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLAccountingCostResponder( const LLSD& objectIDs )
@@ -85,6 +88,8 @@ public:
 		clearPendingRequests();
 	}
 	
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return accountingCostResponder_timeout; }
+
 private:
 	//List of posted objects
 	LLSD mObjectIDs;

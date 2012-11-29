@@ -572,7 +572,7 @@ bool LLSelectMgr::linkObjects()
 	}
 
 	S32 object_count = LLSelectMgr::getInstance()->getSelection()->getObjectCount();
-	if (object_count > MAX_CHILDREN_PER_TASK + 1)
+	if (gHippoGridManager->getConnectedGrid()->isSecondLife() && (object_count > MAX_CHILDREN_PER_TASK + 1))
 	{
 		LLSD args;
 		args["COUNT"] = llformat("%d", object_count);

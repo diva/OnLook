@@ -54,6 +54,7 @@ set(cmake_SOURCE_FILES
     LLMessage.cmake
     LLPlugin.cmake
     LLPrimitive.cmake
+    LLQtWebkit.cmake
     LLRender.cmake
     LLScene.cmake
     LLUI.cmake
@@ -70,6 +71,7 @@ set(cmake_SOURCE_FILES
     PNG.cmake
     Python.cmake
     Prebuilt.cmake
+    Qt4.cmake
     RunBuildTest.cmake
     TemplateCheck.cmake
     Tut.cmake

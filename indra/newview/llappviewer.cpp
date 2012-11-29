@@ -51,7 +51,7 @@
 #include "llagentwearables.h"
 #include "llwindow.h"
 #include "llviewerstats.h"
-//#include "llmarketplacefunctions.h"
+#include "llmarketplacefunctions.h"
 #include "llmarketplacenotifications.h"
 #include "llmd5.h"
 #include "llmeshrepository.h"
@@ -95,6 +95,7 @@
 #include "llprimitive.h"
 #include "llnotifications.h"
 #include "llnotificationsutil.h"
+#include "llcurl.h"
 #include <boost/bind.hpp>
 
 #if LL_WINDOWS
@@ -118,6 +119,8 @@
 // <edit>
 #include "lldelayeduidelete.h"
 #include "llbuildnewviewsscheduler.h"
+#include "aicurleasyrequeststatemachine.h"
+#include "aihttptimeoutpolicy.h"
 // </edit>
 // The files below handle dependencies from cleanup.
 #include "llcalc.h"
@@ -315,10 +318,10 @@ BOOL gLogoutInProgress = FALSE;
 // Internal globals... that should be removed.
 static std::string gArgs;
 
-const std::string MARKER_FILE_NAME("SecondLife.exec_marker");
-const std::string ERROR_MARKER_FILE_NAME("SecondLife.error_marker");
-const std::string LLERROR_MARKER_FILE_NAME("SecondLife.llerror_marker");
-const std::string LOGOUT_MARKER_FILE_NAME("SecondLife.logout_marker");
+const std::string MARKER_FILE_NAME("Singularity.exec_marker");
+const std::string ERROR_MARKER_FILE_NAME("Singularity.error_marker");
+const std::string LLERROR_MARKER_FILE_NAME("Singularity.llerror_marker");
+const std::string LOGOUT_MARKER_FILE_NAME("Singularity.logout_marker");
 static BOOL gDoDisconnect = FALSE;
 // <edit>
 //static BOOL gBusyDisconnect = FALSE;
@@ -592,8 +595,10 @@ bool LLAppViewer::init()
 	//
 	LLFastTimer::reset();
 	
+	// <edit>
 	// We can call this early.
 	LLFrameTimer::global_initialization();
+	// </edit>
 
 	// initialize SSE options
 	LLVector4a::initClass();
@@ -610,13 +615,13 @@ bool LLAppViewer::init()
 
 	initLogging();
 
+	// <edit>
 	// Curl must be initialized before any thread is running.
-	AICurlInterface::initCurl(&AIStateMachine::flush);
+	AICurlInterface::initCurl();
 
 	// Logging is initialized. Now it's safe to start the error thread.
 	startErrorThread();
 
-	// <edit>
 	gDeleteScheduler = new LLDeleteScheduler();
 	gBuildNewViewsScheduler = new LLBuildNewViewsScheduler();
 	// </edit>
@@ -637,6 +642,22 @@ bool LLAppViewer::init()
 	LLPrivateMemoryPoolManager::initClass((BOOL)gSavedSettings.getBOOL("MemoryPrivatePoolEnabled"), (U32)gSavedSettings.getU32("MemoryPrivatePoolSize")) ;
 
     mAlloc.setProfilingEnabled(gSavedSettings.getBOOL("MemProfiling"));
+
+	AIStateMachine::setMaxCount(gSavedSettings.getU32("StateMachineMaxTime"));
+
+	{
+		AIHTTPTimeoutPolicy policy_tmp(
+			"CurlTimeout* Debug Settings",
+			gSavedSettings.getU32("CurlTimeoutDNSLookup"),
+			gSavedSettings.getU32("CurlTimeoutConnect"),
+			gSavedSettings.getU32("CurlTimeoutReplyDelay"),
+			gSavedSettings.getU32("CurlTimeoutLowSpeedTime"),
+			gSavedSettings.getU32("CurlTimeoutLowSpeedLimit"),
+			gSavedSettings.getU32("CurlTimeoutMaxTransaction"),
+			gSavedSettings.getU32("CurlTimeoutMaxTotalDelay")
+			);
+		AIHTTPTimeoutPolicy::setDefaultCurlTimeout(policy_tmp);
+	}
 
     initThreads();
 	LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ;
@@ -1020,6 +1041,8 @@ void LLAppViewer::checkMemory()
 
 static LLFastTimer::DeclareTimer FTM_MESSAGES("System Messages");
 static LLFastTimer::DeclareTimer FTM_SLEEP("Sleep");
+static LLFastTimer::DeclareTimer FTM_YIELD("Yield");
+
 static LLFastTimer::DeclareTimer FTM_TEXTURE_CACHE("Texture Cache");
 static LLFastTimer::DeclareTimer FTM_DECODE("Image Decode");
 static LLFastTimer::DeclareTimer FTM_VFS("VFS Thread");
@@ -1032,6 +1055,7 @@ static LLFastTimer::DeclareTimer FTM_PUMP_SERVICE("Service");
 static LLFastTimer::DeclareTimer FTM_SERVICE_CALLBACK("Callback");
 static LLFastTimer::DeclareTimer FTM_AGENT_AUTOPILOT("Autopilot");
 static LLFastTimer::DeclareTimer FTM_AGENT_UPDATE("Update");
+static LLFastTimer::DeclareTimer FTM_STATEMACHINE("State Machine");
 
 bool LLAppViewer::mainLoop()
 {
@@ -1045,7 +1069,6 @@ bool LLAppViewer::mainLoop()
 
 	// Create IO Pump to use for HTTP Requests.
 	gServicePump = new LLPumpIO;
-	LLHTTPClient::setPump(*gServicePump);
 	LLCurl::setCAFile(gDirUtilp->getCAFile());
 	
 	// Note: this is where gLocalSpeakerMgr and gActiveSpeakerMgr used to be instantiated.
@@ -1087,7 +1110,7 @@ bool LLAppViewer::mainLoop()
 				LLFastTimer t2(FTM_MESSAGES);
 				gViewerWindow->getWindow()->processMiscNativeEvents();
 			}
-			
+		
 			pingMainloopTimeout("Main:GatherInput");
 			
 			if (gViewerWindow)
@@ -1210,6 +1233,7 @@ bool LLAppViewer::mainLoop()
 				// yield some time to the os based on command line option
 				if(mYieldTime >= 0)
 				{
+					LLFastTimer t(FTM_YIELD);
 					ms_sleep(mYieldTime);
 				}
 
@@ -1823,7 +1847,9 @@ bool LLAppViewer::initThreads()
 		LLWatchdog::getInstance()->init(watchdog_killer_callback);
 	}
 
-	AICurlInterface::startCurlThread();
+	AICurlInterface::startCurlThread(gSavedSettings.getU32("CurlMaxTotalConcurrentConnections"),
+		                             gSavedSettings.getU32("CurlConcurrentConnectionsPerHost"),
+		                             gSavedSettings.getBOOL("NoVerifySSLCert"));
 
 	LLImage::initClass();
 	
@@ -1872,15 +1898,15 @@ bool LLAppViewer::initLogging()
 	
 	// Remove the last ".old" log file.
 	std::string old_log_file = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,
-							     "SecondLife.old");
+							     "Singularity.old");
 	LLFile::remove(old_log_file);
 
 	// Rename current log file to ".old"
 	std::string log_file = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,
-							     "SecondLife.log");
+							     "Singularity.log");
 	LLFile::rename(log_file, old_log_file);
 
-	// Set the log file to SecondLife.log
+	// Set the log file to Singularity.log
 
 	LLError::logToFile(log_file);
 
@@ -2934,10 +2960,10 @@ void LLAppViewer::initMarkerFile()
 	LL_DEBUGS("MarkerFile") << "Checking marker file for lock..." << LL_ENDL;
 
 	//We've got 4 things to test for here
-	// - Other Process Running (SecondLife.exec_marker present, locked)
-	// - Freeze (SecondLife.exec_marker present, not locked)
-	// - LLError Crash (SecondLife.llerror_marker present)
-	// - Other Crash (SecondLife.error_marker present)
+	// - Other Process Running (Singularity.exec_marker present, locked)
+	// - Freeze (Singularity.exec_marker present, not locked)
+	// - LLError Crash (Singularity.llerror_marker present)
+	// - Other Crash (Singularity.error_marker present)
 	// These checks should also remove these files for the last 2 cases if they currently exist
 
 	//LLError/Error checks. Only one of these should ever happen at a time.
@@ -3760,6 +3786,16 @@ void LLAppViewer::idle()
 		}
 	}
 
+	//////////////////////////////////////
+	//
+	// Run state machines
+	//
+
+	{
+		LLFastTimer t(FTM_STATEMACHINE);
+		AIStateMachine::mainloop();
+	}
+
 	// Must wait until both have avatar object and mute list, so poll
 	// here.
 	request_initial_instant_messages();
@@ -4099,7 +4135,7 @@ void LLAppViewer::idle()
 	LLViewerMediaFocus::getInstance()->update();
 	
 	// Update marketplace
-	//LLMarketplaceInventoryImporter::update();
+	LLMarketplaceInventoryImporter::update();
 	LLMarketplaceInventoryNotifications::update();
 
 	// objects and camera should be in sync, do LOD calculations now

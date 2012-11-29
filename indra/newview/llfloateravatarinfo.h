@@ -47,7 +47,6 @@
 class LLAvatarName;
 class LLButton;
 class LLCheckBoxCtrl;
-class LLDropTarget;
 class LLInventoryItem;
 class LLLineEditor;
 class LLMessageSystem;

@@ -26,7 +26,9 @@
  * @endcond
  */
 #include "linden_common.h"
+
 #include "llqtwebkit.h"
+
 #include "indra_constants.h" // for indra keyboard codes
 
 #include "lltimer.h"

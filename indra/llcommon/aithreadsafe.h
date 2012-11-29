@@ -329,14 +329,14 @@ struct AIReadAccessConst
 	};
 
 	//! Construct a AIReadAccessConst from a constant AIThreadSafe.
-	AIReadAccessConst(AIThreadSafe<T> const& wrapper)
+	AIReadAccessConst(AIThreadSafe<T> const& wrapper, bool high_priority = false)
 		: mWrapper(const_cast<AIThreadSafe<T>&>(wrapper)),
 		  mState(readlocked)
 #if AI_NEED_ACCESS_CC
 		  ,	mIsCopyConstructed(false)
 #endif
 		{
-			mWrapper.mRWLock.rdlock();
+			mWrapper.mRWLock.rdlock(high_priority);
 		}
 
 	//! Destruct the AI*Access object.
@@ -393,7 +393,7 @@ struct AIReadAccess : public AIReadAccessConst<T>
 	using AIReadAccessConst<T>::readlocked;
 
 	//! Construct a AIReadAccess from a non-constant AIThreadSafe.
-	AIReadAccess(AIThreadSafe<T>& wrapper) : AIReadAccessConst<T>(wrapper, readlocked) { this->mWrapper.mRWLock.rdlock(); }
+	AIReadAccess(AIThreadSafe<T>& wrapper, bool high_priority = false) : AIReadAccessConst<T>(wrapper, readlocked) { this->mWrapper.mRWLock.rdlock(high_priority); }
 
 protected:
 	//! Constructor used by AIWriteAccess.

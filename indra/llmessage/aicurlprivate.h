@@ -33,34 +33,96 @@
 
 #include <sstream>
 #include "llatomic.h"
+#include "llrefcount.h"
+#include "aicurlperhost.h"
+
+class AIHTTPHeaders;
+class AIHTTPTimeoutPolicy;
+class AICurlEasyRequest;
+class AICurlEasyRequestStateMachine;
 
 namespace AICurlPrivate {
-namespace curlthread { class MultiHandle; }
 
-struct Stats {
-  static LLAtomicU32 easy_calls;
-  static LLAtomicU32 easy_errors;
-  static LLAtomicU32 easy_init_calls;
-  static LLAtomicU32 easy_init_errors;
-  static LLAtomicU32 easy_cleanup_calls;
-  static LLAtomicU32 multi_calls;
-  static LLAtomicU32 multi_errors;
+class CurlEasyRequest;
+class ThreadSafeBufferedCurlEasyRequest;
 
- static void print(void);
+namespace curlthread {
+  
+class MultiHandle;
+
+// A class that keeps track of timeout administration per connection.
+class HTTPTimeout : public LLRefCount {
+  private:
+	AIHTTPTimeoutPolicy const* mPolicy;			// A pointer to the used timeout policy.
+	std::vector<U32> mBuckets;					// An array with the number of bytes transfered in each second.
+	U16 mBucket;								// The bucket corresponding to mLastSecond.
+	bool mNothingReceivedYet;					// Set when created, reset when the HTML reply header from the server is received.
+	bool mLowSpeedOn;							// Set while uploading or downloading data.
+	bool mUploadFinished;						// Used to keep track of whether upload_finished was called yet.
+	S32 mLastSecond;							// The time at which lowspeed() was last called, in seconds since mLowSpeedClock.
+	U32 mTotalBytes;							// The sum of all bytes in mBuckets.
+	U64 mLowSpeedClock;							// Clock count at which low speed detection (re)started.
+	U64 mStalled;								// The clock count at which this transaction is considered to be stalling if nothing is transfered anymore.
+  public:
+	static F64 const sClockWidth;				// Time between two clock ticks in seconds.
+	static U64 sClockCount;						// Clock count used as 'now' during one loop of the main loop.
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+	ThreadSafeBufferedCurlEasyRequest* mLockObj;
+#endif
+
+  public:
+	HTTPTimeout(AIHTTPTimeoutPolicy const* policy, ThreadSafeBufferedCurlEasyRequest* lock_obj) :
+		mPolicy(policy), mNothingReceivedYet(true), mLowSpeedOn(false), mUploadFinished(false), mStalled((U64)-1)
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+		, mLockObj(lock_obj)
+#endif
+		{ }
+
+	// Called after sending all headers, when body data is written the first time.
+	void connected(void);
+
+	// Called when everything we had to send to the server has been sent.
+	void upload_finished(void);
+
+	// Called when data is sent. Returns true if transfer timed out.
+	bool data_sent(size_t n);
+
+	// Called when data is received. Returns true if transfer timed out.
+	bool data_received(size_t n);
+
+	// Called immediately before done() after curl finished, with code.
+	void done(AICurlEasyRequest_wat const& curlEasyRequest_w, CURLcode code);
+
+	// Accessor.
+	bool has_stalled(void) const { return mStalled < sClockCount;  }
+
+	// Called from BufferedCurlEasyRequest::processOutput if a timeout occurred.
+	void print_diagnostics(CurlEasyRequest const* curl_easy_request, char const* eff_url);
+
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+	void* get_lockobj(void) const { return mLockObj; }
+#endif
+
+  private:
+	// (Re)start low speed transer rate detection.
+	void reset_lowspeed(void);
+
+	// Common low speed detection, Called from data_sent or data_received.
+	bool lowspeed(size_t bytes);
 };
 
+} // namespace curlthread
+
 void handle_multi_error(CURLMcode code);
-inline CURLMcode check_multi_code(CURLMcode code) { Stats::multi_calls++; if (code != CURLM_OK) handle_multi_error(code); return code; }
+inline CURLMcode check_multi_code(CURLMcode code) { AICurlInterface::Stats::multi_calls++; if (code != CURLM_OK) handle_multi_error(code); return code; }
 
 bool curlThreadIsRunning(void);
 void wakeUpCurlThread(void);
 void stopCurlThread(void);
-
-class ThreadSafeCurlEasyRequest;
-class ThreadSafeBufferedCurlEasyRequest;
+void clearCommandQueue(void);
 
 #define DECLARE_SETOPT(param_type) \
-	CURLcode setopt(CURLoption option, param_type parameter)
+	  CURLcode setopt(CURLoption option, param_type parameter)
 
 // This class wraps CURL*'s.
 // It guarantees that a pointer is cleaned up when no longer needed, as required by libcurl.
@@ -112,20 +174,20 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 
 	// Extract information from a curl handle.
   private:
-	CURLcode getinfo_priv(CURLINFO info, void* data);
+	CURLcode getinfo_priv(CURLINFO info, void* data) const;
   public:
 	// The rest are inlines to provide some type-safety.
-	CURLcode getinfo(CURLINFO info, char** data) { return getinfo_priv(info, data); }
-	CURLcode getinfo(CURLINFO info, curl_slist** data) { return getinfo_priv(info, data); }
-	CURLcode getinfo(CURLINFO info, double* data) { return getinfo_priv(info, data); }
-	CURLcode getinfo(CURLINFO info, long* data) { return getinfo_priv(info, data); }
+	CURLcode getinfo(CURLINFO info, char** data) const { return getinfo_priv(info, data); }
+	CURLcode getinfo(CURLINFO info, curl_slist** data) const { return getinfo_priv(info, data); }
+	CURLcode getinfo(CURLINFO info, double* data) const { return getinfo_priv(info, data); }
+	CURLcode getinfo(CURLINFO info, long* data) const { return getinfo_priv(info, data); }
 #ifdef __LP64__	// sizeof(long) > sizeof(int) ?
 	// Overload for integer types that are too small (libcurl demands a long).
-	CURLcode getinfo(CURLINFO info, S32* data) { long ldata; CURLcode res = getinfo_priv(info, &ldata); *data = static_cast<S32>(ldata); return res; }
-	CURLcode getinfo(CURLINFO info, U32* data) { long ldata; CURLcode res = getinfo_priv(info, &ldata); *data = static_cast<U32>(ldata); return res; }
+	CURLcode getinfo(CURLINFO info, S32* data) const { long ldata; CURLcode res = getinfo_priv(info, &ldata); *data = static_cast<S32>(ldata); return res; }
+	CURLcode getinfo(CURLINFO info, U32* data) const { long ldata; CURLcode res = getinfo_priv(info, &ldata); *data = static_cast<U32>(ldata); return res; }
 #else			// sizeof(long) == sizeof(int)
-	CURLcode getinfo(CURLINFO info, S32* data) { return getinfo_priv(info, reinterpret_cast<long*>(data)); }
-	CURLcode getinfo(CURLINFO info, U32* data) { return getinfo_priv(info, reinterpret_cast<long*>(data)); }
+	CURLcode getinfo(CURLINFO info, S32* data) const { return getinfo_priv(info, reinterpret_cast<long*>(data)); }
+	CURLcode getinfo(CURLINFO info, U32* data) const { return getinfo_priv(info, reinterpret_cast<long*>(data)); }
 #endif
 
 	// Perform a file transfer (blocking).
@@ -142,7 +204,7 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
   private:
 	CURL* mEasyHandle;
 	CURLM* mActiveMultiHandle;
-	char* mErrorBuffer;
+	mutable char* mErrorBuffer;
 	AIPostFieldPtr mPostField;		// This keeps the POSTFIELD data alive for as long as the easy handle exists.
 	bool mQueuedForRemoval;			// Set if the easy handle is (probably) added to the multi handle, but is queued for removal.
 #ifdef SHOW_ASSERT
@@ -160,10 +222,6 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// Returns true if this easy handle was added to a curl multi handle.
 	bool active(void) const { return mActiveMultiHandle; }
 
-	// If there was an error code as result, then this returns a human readable error string.
-	// Only valid when setErrorBuffer was called and the curl_easy function returned an error.
-	std::string getErrorString(void) const { return mErrorBuffer ? mErrorBuffer : "(null)"; }
-
 	// Returns true when it is expected that the parent will revoke callbacks before the curl
 	// easy handle is removed from the multi handle; that usually happens when an external
 	// error demands termination of the request (ie, an expiration).
@@ -174,14 +232,14 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 
   private:
 	// Call this prior to every curl_easy function whose return value is passed to check_easy_code.
-	void setErrorBuffer(void);
+	void setErrorBuffer(void) const;
 
 	static void handle_easy_error(CURLcode code);
 
 	// Always first call setErrorBuffer()!
 	static inline CURLcode check_easy_code(CURLcode code)
 	{
-	  Stats::easy_calls++;
+	  AICurlInterface::Stats::easy_calls++;
 	  if (code != CURLE_OK)
 		handle_easy_error(code);
 	  return code;
@@ -203,23 +261,23 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 // to set the options on a curl easy handle.
 //
 // Calling sendRequest() will then connect to the given URL and perform
-// the data exchange. If an error occurs related to this handle, it can
-// be read by calling getErrorString().
+// the data exchange. Use getResult() to determine if an error occurred.
 //
 // Note that the life cycle of a CurlEasyRequest is controlled by AICurlEasyRequest:
-// a CurlEasyRequest is only ever created as base class of a ThreadSafeCurlEasyRequest,
+// a CurlEasyRequest is only ever created as base class of a ThreadSafeBufferedCurlEasyRequest,
 // which is only created by creating a AICurlEasyRequest. When the last copy of such
-// AICurlEasyRequest is deleted, then also the ThreadSafeCurlEasyRequest is deleted
+// AICurlEasyRequest is deleted, then also the ThreadSafeBufferedCurlEasyRequest is deleted
 // and the CurlEasyRequest destructed.
 class CurlEasyRequest : public CurlEasyHandle {
   private:
-	void setPost_raw(S32 size, char const* data);
+	void setPost_raw(U32 size, char const* data);
   public:
-	void setPost(S32 size) { setPost_raw(size, NULL); }
-	void setPost(AIPostFieldPtr const& postdata, S32 size);
-	void setPost(char const* data, S32 size) { setPost(new AIPostField(data), size); }
+	void setPost(U32 size) { setPost_raw(size, NULL); }
+	void setPost(AIPostFieldPtr const& postdata, U32 size);
+	void setPost(char const* data, U32 size) { setPost(new AIPostField(data), size); }
 	void setoptString(CURLoption option, std::string const& value);
 	void addHeader(char const* str);
+	void addHeaders(AIHTTPHeaders const& headers);
 
   private:
 	// Callback stubs.
@@ -246,15 +304,20 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// Call this if the set callbacks are about to be invalidated.
 	void revokeCallbacks(void);
 
+  protected:
 	// Reset everything to the state it was in when this object was just created.
+	// Called by BufferedCurlEasyRequest::resetState.
 	void resetState(void);
 
   private:
 	// Called from applyDefaultOptions.
 	void applyProxySettings(void);
 
-	// Used in applyProxySettings.
+	// Used in applyDefaultOptions.
 	static CURLcode curlCtxCallback(CURL* curl, void* sslctx, void* parm);
+
+	// Called from get_timeout_object and httptimeout.
+	void create_timeout_object(void);
 
   public:
 	// Set default options that we want applied to all curl easy handles.
@@ -262,46 +325,89 @@ class CurlEasyRequest : public CurlEasyHandle {
 
 	// Prepare the request for adding it to a multi session, or calling perform.
 	// This actually adds the headers that were collected with addHeader.
-	void finalizeRequest(std::string const& url);
+	void finalizeRequest(std::string const& url, AIHTTPTimeoutPolicy const& policy, AICurlEasyRequestStateMachine* state_machine);
 
-	// Store result code that is returned by getResult.
-	void store_result(CURLcode result) { mResult = result; }
+	// Last second initialization. Called from MultiHandle::add_easy_request.
+	void set_timeout_opts(void);
 
-	// Called when the curl easy handle is done.
-	void done(AICurlEasyRequest_wat& curl_easy_request_w) { finished(curl_easy_request_w); }
+  public:
+	// Called by MultiHandle::finish_easy_request() to store result code that is returned by getResult.
+	void storeResult(CURLcode result) { mResult = result; }
 
-	// Fill info with the transfer info.
-	void getTransferInfo(AICurlInterface::TransferInfo* info);
+	// Called by MultiHandle::finish_easy_request() when the curl easy handle is done.
+	void done(AICurlEasyRequest_wat& curl_easy_request_w, CURLcode result)
+	{
+	  if (mTimeout)
+	  {
+		// Update timeout administration.
+		mTimeout->done(curl_easy_request_w, result);
+	  }
+	  finished(curl_easy_request_w);
+	}
+
+	// Called by MultiHandle::check_msg_queue() to fill info with the transfer info.
+	void getTransferInfo(AITransferInfo* info);
 
 	// If result != CURLE_FAILED_INIT then also info was filled.
-	void getResult(CURLcode* result, AICurlInterface::TransferInfo* info = NULL);
+	void getResult(CURLcode* result, AITransferInfo* info = NULL);
 
-  private:
+	// For debugging purposes.
+	void print_curl_timings(void) const;
+
+  protected:
 	curl_slist* mHeaders;
-	bool mRequestFinalized;
-	AICurlEasyHandleEvents* mEventsTarget;
-	CURLcode mResult;
+	AICurlEasyHandleEvents* mHandleEventsTarget;
+	CURLcode mResult;		//AIFIXME: this does not belong in the request object, but belongs in the response object.
 
-  private:
-	// This class may only be created by constructing a ThreadSafeCurlEasyRequest.
-	friend class ThreadSafeCurlEasyRequest;
+	AIHTTPTimeoutPolicy const* mTimeoutPolicy;
+	std::string mLowercaseHostname;				// Lowercase hostname (canonicalized) extracted from the url.
+	PerHostRequestQueuePtr mPerHostPtr;			// Pointer to the corresponding PerHostRequestQueue.
+	LLPointer<curlthread::HTTPTimeout> mTimeout;// Timeout administration object associated with last created CurlSocketInfo.
+	bool mTimeoutIsOrphan;						// Set to true when mTimeout is not (yet) associated with a CurlSocketInfo.
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+  public:
+	bool mDebugIsHeadOrGetMethod;
+#endif
+
+  public:
+	// These two are only valid after finalizeRequest.
+	AIHTTPTimeoutPolicy const* getTimeoutPolicy(void) const { return mTimeoutPolicy; }
+	std::string const& getLowercaseHostname(void) const { return mLowercaseHostname; }
+	// Called by CurlSocketInfo to allow access to the last (after a redirect) HTTPTimeout object related to this request.
+	// This creates mTimeout (unless mTimeoutIsOrphan is set in which case it adopts the orphan).
+	LLPointer<curlthread::HTTPTimeout>& get_timeout_object(void);
+	// Accessor for mTimeout with optional creation of orphaned object (if lockobj != NULL).
+	LLPointer<curlthread::HTTPTimeout>& httptimeout(void) { if (!mTimeout) { create_timeout_object(); mTimeoutIsOrphan = true; } return mTimeout; }
+	// Return true if no data has been received on the latest socket (if any) for too long.
+	bool has_stalled(void) const { return mTimeout && mTimeout->has_stalled(); }
+
+  protected:
+	// This class may only be created as base class of BufferedCurlEasyRequest.
 	// Throws AICurlNoEasyHandle.
-	CurlEasyRequest(void) :
-	    mHeaders(NULL), mRequestFinalized(false), mEventsTarget(NULL), mResult(CURLE_FAILED_INIT)
-      { applyDefaultOptions(); }
+	CurlEasyRequest(void) : mHeaders(NULL), mHandleEventsTarget(NULL), mResult(CURLE_FAILED_INIT), mTimeoutPolicy(NULL), mTimeoutIsOrphan(false)
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+		, mDebugIsHeadOrGetMethod(false)
+#endif
+		{ applyDefaultOptions(); }
   public:
 	~CurlEasyRequest();
 
   public:
 	// Post-initialization, set the parent to pass the events to.
-	void send_events_to(AICurlEasyHandleEvents* target) { mEventsTarget = target; }
+	void send_handle_events_to(AICurlEasyHandleEvents* target) { mHandleEventsTarget = target; }
 
 	// For debugging purposes
-	bool is_finalized(void) const { return mRequestFinalized; }
+	bool is_finalized(void) const { return mTimeoutPolicy; }
 
 	// Return pointer to the ThreadSafe (wrapped) version of this object.
-	ThreadSafeCurlEasyRequest* get_lockobj(void);
+	inline ThreadSafeBufferedCurlEasyRequest* get_lockobj(void);
+	inline ThreadSafeBufferedCurlEasyRequest const* get_lockobj(void) const;
 
+	// PerHost API.
+	PerHostRequestQueuePtr getPerHostPtr(void);						// (Optionally create and) return a pointer to the unique
+																	// PerHostRequestQueue corresponding to mLowercaseHostname.
+	bool removeFromPerHostQueue(AICurlEasyRequest const&) const;	// Remove this request from the per-host queue, if queued at all.
+																	// Returns true if it was queued.
   protected:
 	// Pass events to parent.
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
@@ -309,47 +415,48 @@ class CurlEasyRequest : public CurlEasyHandle {
 	/*virtual*/ void removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
 };
 
-// Buffers used by the AICurlInterface::Request API.
-// Curl callbacks write into and read from these buffers.
-// The interface with the rest of the code is through AICurlInterface::Responder.
-//
-// The lifetime of a CurlResponderBuffer is slightly shorter than its
-// associated CurlEasyRequest; this class can only be created as base class
-// of ThreadSafeBufferedCurlEasyRequest, and is therefore constructed after
-// the construction of the associated CurlEasyRequest and destructed before it.
-// Hence, it's safe to use get_lockobj() and through that access the CurlEasyRequest
-// object at all times.
-//
-// A CurlResponderBuffer is thus created when a ThreadSafeBufferedCurlEasyRequest
-// is created which only happens by creating a AICurlEasyRequest(true) instance,
-// and when the last AICurlEasyRequest is deleted, then the ThreadSafeBufferedCurlEasyRequest
-// is deleted and the CurlResponderBuffer destructed.
-class CurlResponderBuffer : protected AICurlEasyHandleEvents {
+// This class adds input/output buffers to the request and hooks up the libcurl callbacks to use those buffers.
+// Received data is partially decoded and made available through various member functions.
+class BufferedCurlEasyRequest : public CurlEasyRequest {
   public:
-	void resetState(AICurlEasyRequest_wat& curl_easy_request_w);
-	void prepRequest(AICurlEasyRequest_wat& buffered_curl_easy_request_w, std::vector<std::string> const& headers, AICurlInterface::ResponderPtr responder, S32 time_out = 0, bool post = false);
+	// The type of the used buffers.
+	typedef boost::shared_ptr<LLBufferArray> buffer_ptr_t;
 
-	LLIOPipe::buffer_ptr_t& getInput(void) { return mInput; }
-	std::stringstream& getHeaderOutput(void) { return mHeaderOutput; }
-	LLIOPipe::buffer_ptr_t& getOutput(void) { return mOutput; }
+	void resetState(void);
+	void prepRequest(AICurlEasyRequest_wat& buffered_curl_easy_request_w, AIHTTPHeaders const& headers, LLHTTPClient::ResponderPtr responder);
 
-	// Called if libcurl doesn't deliver within CurlRequestTimeOut seconds.
+	buffer_ptr_t& getInput(void) { return mInput; }
+	buffer_ptr_t& getOutput(void) { return mOutput; }
+
+	// Called if libcurl doesn't deliver within AIHTTPTimeoutPolicy::mMaximumTotalDelay seconds.
 	void timed_out(void);
 
 	// Called after removed_from_multi_handle was called.
-	void processOutput(AICurlEasyRequest_wat& curl_easy_request_w);
+	void processOutput(void);
+
+	// Do not write more than this amount.
+	//void setBodyLimit(U32 size) { mBodyLimit = size; }
+
+    // Post-initialization, set the parent to pass the events to.
+    void send_buffer_events_to(AIBufferedCurlEasyRequestEvents* target) { mBufferEventsTarget = target; }
 
   protected:
-	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
-	/*virtual*/ void finished(AICurlEasyRequest_wat& curl_easy_request_w);
-	/*virtual*/ void removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
+	// Events from this class.
+	/*virtual*/ void received_HTTP_header(void);
+	/*virtual*/ void received_header(std::string const& key, std::string const& value);
+	/*virtual*/ void completed_headers(U32 status, std::string const& reason, AITransferInfo* info);
 
   private:
-	LLIOPipe::buffer_ptr_t mInput;
+	buffer_ptr_t mInput;
 	U8* mLastRead;										// Pointer into mInput where we last stopped reading (or NULL to start at the beginning).
-	std::stringstream mHeaderOutput;
-	LLIOPipe::buffer_ptr_t mOutput;
-	AICurlInterface::ResponderPtr mResponder;
+	buffer_ptr_t mOutput;
+	LLHTTPClient::ResponderPtr mResponder;
+	//U32 mBodyLimit;									// From the old LLURLRequestDetail::mBodyLimit, but never used.
+	U32 mStatus;										// HTTP status, decoded from the first header line.
+	std::string mReason;								// The "reason" from the same header line.
+	S32 mRequestTransferedBytes;
+	S32 mResponseTransferedBytes;
+	AIBufferedCurlEasyRequestEvents* mBufferEventsTarget;
 
   public:
 	static LLChannelDescriptors const sChannels;		// Channel object for mInput (channel out()) and mOutput (channel in()).
@@ -357,64 +464,65 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
   private:
 	// This class may only be created by constructing a ThreadSafeBufferedCurlEasyRequest.
 	friend class ThreadSafeBufferedCurlEasyRequest;
-	CurlResponderBuffer(void);
+	BufferedCurlEasyRequest(void);
   public:
-	~CurlResponderBuffer();
+	~BufferedCurlEasyRequest();
 
   private:
     static size_t curlWriteCallback(char* data, size_t size, size_t nmemb, void* user_data);
     static size_t curlReadCallback(char* data, size_t size, size_t nmemb, void* user_data);
     static size_t curlHeaderCallback(char* data, size_t size, size_t nmemb, void* user_data);
 
+	// Called from curlHeaderCallback.
+	void setStatusAndReason(U32 status, std::string const& reason);
+
+	// Called from processOutput by in case of an error.
+	void print_diagnostics(CURLcode code);
+
   public:
 	// Return pointer to the ThreadSafe (wrapped) version of this object.
 	ThreadSafeBufferedCurlEasyRequest* get_lockobj(void);
+	ThreadSafeBufferedCurlEasyRequest const* get_lockobj(void) const;
 
 	// Return true when prepRequest was already called and the object has not been
 	// invalidated as a result of calling timed_out().
 	bool isValid(void) const { return mResponder; }
 };
 
-// This class wraps CurlEasyRequest for thread-safety and adds a reference counter so we can
+inline ThreadSafeBufferedCurlEasyRequest* CurlEasyRequest::get_lockobj(void)
+{
+  return static_cast<BufferedCurlEasyRequest*>(this)->get_lockobj();
+}
+
+inline ThreadSafeBufferedCurlEasyRequest const* CurlEasyRequest::get_lockobj(void) const
+{
+  return static_cast<BufferedCurlEasyRequest const*>(this)->get_lockobj();
+}
+
+// This class wraps BufferedCurlEasyRequest for thread-safety and adds a reference counter so we can
 // copy it around cheaply and it gets destructed automatically when the last instance is deleted.
 // It guarantees that the CURL* handle is never used concurrently, which is not allowed by libcurl.
 // As AIThreadSafeSimpleDC contains a mutex, it cannot be copied. Therefore we need a reference counter for this object.
-class ThreadSafeCurlEasyRequest : public AIThreadSafeSimple<CurlEasyRequest> {
+class ThreadSafeBufferedCurlEasyRequest : public AIThreadSafeSimple<BufferedCurlEasyRequest> {
   public:
 	// Throws AICurlNoEasyHandle.
-	ThreadSafeCurlEasyRequest(void) : mReferenceCount(0)
-        { new (ptr()) CurlEasyRequest;
-		  Dout(dc::curl, "Creating ThreadSafeCurlEasyRequest with this = " << (void*)this); }
-	virtual ~ThreadSafeCurlEasyRequest()
-	    { Dout(dc::curl, "Destructing ThreadSafeCurlEasyRequest with this = " << (void*)this); }
-
-	// Returns true if this is a base class of ThreadSafeBufferedCurlEasyRequest.
-	virtual bool isBuffered(void) const { return false; }
+	ThreadSafeBufferedCurlEasyRequest(void) : mReferenceCount(0)
+        { new (ptr()) BufferedCurlEasyRequest;
+		  Dout(dc::curl, "Creating ThreadSafeBufferedCurlEasyRequest with this = " << (void*)this);
+		  AICurlInterface::Stats::ThreadSafeBufferedCurlEasyRequest_count++; }
+	~ThreadSafeBufferedCurlEasyRequest()
+	    { Dout(dc::curl, "Destructing ThreadSafeBufferedCurlEasyRequest with this = " << (void*)this);
+		  --AICurlInterface::Stats::ThreadSafeBufferedCurlEasyRequest_count; }
 
   private:
 	LLAtomicU32 mReferenceCount;
 
-	friend void intrusive_ptr_add_ref(ThreadSafeCurlEasyRequest* p);	// Called by boost::intrusive_ptr when a new copy of a boost::intrusive_ptr<ThreadSafeCurlEasyRequest> is made.
-	friend void intrusive_ptr_release(ThreadSafeCurlEasyRequest* p);	// Called by boost::intrusive_ptr when a boost::intrusive_ptr<ThreadSafeCurlEasyRequest> is destroyed.
-};
-
-// Same as the above but adds a CurlResponderBuffer. The latter has its own locking in order to
-// allow casting the underlying CurlEasyRequest to ThreadSafeCurlEasyRequest, independent of
-// what class it is part of: ThreadSafeCurlEasyRequest or ThreadSafeBufferedCurlEasyRequest.
-// The virtual destructor of ThreadSafeCurlEasyRequest allows to treat each easy handle transparently
-// as a ThreadSafeCurlEasyRequest object, or optionally dynamic_cast it to a ThreadSafeBufferedCurlEasyRequest.
-// Note: the order of these base classes is important: AIThreadSafeSimple<CurlResponderBuffer> is now
-// destructed before ThreadSafeCurlEasyRequest is.
-class ThreadSafeBufferedCurlEasyRequest : public ThreadSafeCurlEasyRequest, public AIThreadSafeSimple<CurlResponderBuffer> {
-  public:
-	// Throws AICurlNoEasyHandle.
-	ThreadSafeBufferedCurlEasyRequest(void) { new (AIThreadSafeSimple<CurlResponderBuffer>::ptr()) CurlResponderBuffer; }
-
-	/*virtual*/ bool isBuffered(void) const { return true; }
+	friend void intrusive_ptr_add_ref(ThreadSafeBufferedCurlEasyRequest* p);	// Called by boost::intrusive_ptr when a new copy of a boost::intrusive_ptr<ThreadSafeBufferedCurlEasyRequest> is made.
+	friend void intrusive_ptr_release(ThreadSafeBufferedCurlEasyRequest* p);	// Called by boost::intrusive_ptr when a boost::intrusive_ptr<ThreadSafeBufferedCurlEasyRequest> is destroyed.
 };
 
 // The curl easy request type wrapped in a reference counting pointer.
-typedef boost::intrusive_ptr<AICurlPrivate::ThreadSafeCurlEasyRequest> CurlEasyRequestPtr;
+typedef boost::intrusive_ptr<ThreadSafeBufferedCurlEasyRequest> BufferedCurlEasyRequestPtr;
 
 // This class wraps CURLM*'s.
 // It guarantees that a pointer is cleaned up when no longer needed, as required by libcurl.

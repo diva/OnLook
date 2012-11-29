@@ -331,7 +331,9 @@ BOOL LLFloaterAO::postBuild()
 		LLViewerInventoryItem* itemimport = gInventory.getItem(itemidimport);
 		if(itemimport)
 		{
-			childSetValue("ao_nc_text", LLTrans::getString("CurrentlySetTo") + LLTrans::getString(":") + " " +itemimport->getName());
+			LLStringUtil::format_map_t args;
+			args["[ITEM]"] = itemimport->getName();
+			childSetValue("ao_nc_text", LLTrans::getString("CurrentlySetTo", args));
 		}
 		else if(itemidimport.isNull())
 		{
@@ -339,7 +341,7 @@ BOOL LLFloaterAO::postBuild()
 		}
 		else
 		{
-			childSetValue("ao_nc_text", LLTrans::getString("CurrentlySetTo") + " " + LLTrans::getString("AnItemNotOnThisAccount"));
+			childSetValue("ao_nc_text", LLTrans::getString("CurrentlySetToAnItemNotOnThisAccount"));
 		}
 	}
 	else
@@ -795,7 +797,9 @@ void LLFloaterAO::setCurrentStandId(const LLUUID& id)
 void LLFloaterAO::AOItemDrop(LLViewerInventoryItem* item)
 {
 	gSavedPerAccountSettings.setString("AOConfigNotecardID", item->getUUID().asString());
-	sInstance->childSetValue("ao_nc_text", LLTrans::getString("CurrentlySetTo") + LLTrans::getString(":") + " " +item->getName());
+	LLStringUtil::format_map_t args;
+	args["[ITEM]"] = item->getName();
+	sInstance->childSetValue("ao_nc_text", LLTrans::getString("CurrentlySetTo", args));
 }
 
 LLUUID LLFloaterAO::GetAnimID(const LLUUID& id)

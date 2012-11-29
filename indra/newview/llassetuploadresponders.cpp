@@ -192,8 +192,7 @@ void on_new_single_inventory_upload_complete(
 LLAssetUploadResponder::LLAssetUploadResponder(const LLSD &post_data,
 											   const LLUUID& vfile_id,
 											   LLAssetType::EType asset_type)
-:	LLHTTPClient::Responder(),
-	mPostData(post_data),
+:	mPostData(post_data),
 	mVFileID(vfile_id),
 	mAssetType(asset_type)
 {
@@ -210,8 +209,7 @@ LLAssetUploadResponder::LLAssetUploadResponder(
 	const LLSD &post_data,
 											   const std::string& file_name, 
 											   LLAssetType::EType asset_type)
-:	LLHTTPClient::Responder(),
-	mPostData(post_data),
+:	mPostData(post_data),
 	mFileName(file_name),
 	mAssetType(asset_type)
 {

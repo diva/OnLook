@@ -392,11 +392,9 @@ public:
 	void	setShape(const LLRect& new_rect, bool by_user = false);
 	virtual LLView*	findSnapRect(LLRect& new_rect, const LLCoordGL& mouse_dir, LLView::ESnapType snap_type, S32 threshold, S32 padding = 0);
 	virtual LLView*	findSnapEdge(S32& new_edge_val, const LLCoordGL& mouse_dir, ESnapEdge snap_edge, ESnapType snap_type, S32 threshold, S32 padding = 0);
-
 	virtual BOOL	canSnapTo(const LLView* other_view);
-
 	virtual void	setSnappedTo(const LLView* snap_view);
-	
+
 	// inherited from LLFocusableElement
 	/* virtual */ BOOL	handleKey(KEY key, MASK mask, BOOL called_from_parent);
 	/* virtual */ BOOL	handleUnicodeChar(llwchar uni_char, BOOL called_from_parent);
@@ -476,12 +474,15 @@ public:
 	/*virtual*/ BOOL	handleRightMouseDown(S32 x, S32 y, MASK mask);
 	/*virtual*/ BOOL	handleRightMouseUp(S32 x, S32 y, MASK mask);	
 	/*virtual*/ BOOL	handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sticky_rect); // Display mToolTipMsg if no child handles it.
+
 	/*virtual*/ const std::string& getName() const;
 	/*virtual*/ void	onMouseCaptureLost();
 	/*virtual*/ BOOL	hasMouseCapture();
 	/*virtual*/ BOOL isView(); // Hack to support LLFocusMgr
 	/*virtual*/ void	screenPointToLocal(S32 screen_x, S32 screen_y, S32* local_x, S32* local_y) const;
 	/*virtual*/ void	localPointToScreen(S32 local_x, S32 local_y, S32* screen_x, S32* screen_y) const;
+
+	virtual		LLView*	childFromPoint(S32 x, S32 y, bool recur=false);
 
 	template <class T> T* findChild(const std::string& name)
 	{

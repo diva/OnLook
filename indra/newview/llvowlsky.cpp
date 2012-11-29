@@ -354,6 +354,7 @@ BOOL LLVOWLSky::updateGeometry(LLDrawable * drawable)
 		llinfos << "WL Skydome strips in " << strips_segments << " batches." << llendl;
 
 		mStripsVerts.resize(strips_segments, NULL);
+
 		LLTimer timer;
 		timer.start();
 

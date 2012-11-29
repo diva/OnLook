@@ -38,6 +38,10 @@
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy inventoryModelFetchDescendentsResponder_timeout;
+extern AIHTTPTimeoutPolicy inventoryModelFetchItemResponder_timeout;
+
 const F32 MAX_TIME_FOR_SINGLE_FETCH = 10.f;
 const S32 MAX_FETCH_RETRIES = 10;
 
@@ -374,6 +378,7 @@ public:
 	LLInventoryModelFetchItemResponder(const LLSD& request_sd) : LLInventoryModel::fetchInventoryResponder(request_sd) {};
 	void result(const LLSD& content);			
 	void error(U32 status, const std::string& reason);
+	AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return inventoryModelFetchItemResponder_timeout; }
 };
 
 void LLInventoryModelFetchItemResponder::result( const LLSD& content )
@@ -388,8 +393,7 @@ void LLInventoryModelFetchItemResponder::error( U32 status, const std::string& r
 	LLInventoryModelBackgroundFetch::instance().incrFetchCount(-1);
 }
 
-
-class LLInventoryModelFetchDescendentsResponder: public LLHTTPClient::Responder
+class LLInventoryModelFetchDescendentsResponder: public LLHTTPClient::ResponderWithResult
 {
 	public:
 	LLInventoryModelFetchDescendentsResponder(const LLSD& request_sd, uuid_vec_t recursive_cats) : 
@@ -399,6 +403,8 @@ class LLInventoryModelFetchDescendentsResponder: public LLHTTPClient::Responder
 	//LLInventoryModelFetchDescendentsResponder() {};
 	void result(const LLSD& content);
 	void error(U32 status, const std::string& reason);
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return inventoryModelFetchDescendentsResponder_timeout; }
+
 protected:
 	BOOL getIsRecursive(const LLUUID& cat_id) const;
 private:
@@ -699,14 +705,14 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 			if (folder_request_body["folders"].size())
 			{
 				LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body, recursive_cats);
-				LLHTTPClient::post(url, folder_request_body, fetcher, 300.0);
+				LLHTTPClient::post(url, folder_request_body, fetcher);
 			}
 			if (folder_request_body_lib["folders"].size())
 			{
 				std::string url_lib = gAgent.getRegion()->getCapability("FetchLibDescendents2");
 
 				LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body_lib, recursive_cats);
-				LLHTTPClient::post(url_lib, folder_request_body_lib, fetcher, 300.0);
+				LLHTTPClient::post(url_lib, folder_request_body_lib, fetcher);
 			}
 		}
 		if (item_count)

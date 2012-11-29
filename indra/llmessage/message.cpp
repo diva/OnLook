@@ -83,6 +83,9 @@
 #include "llmemtype.h"
 #include "llpacketring.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy fnPtrResponder_timeout;
+
 // Constants
 //const char* MESSAGE_LOG_FILENAME = "message.log";
 static const F32 CIRCUIT_DUMP_TIMEOUT = 30.f;
@@ -104,7 +107,7 @@ public:
 
 namespace
 {
-	class LLFnPtrResponder : public LLHTTPClient::Responder
+	class LLFnPtrResponder : public LLHTTPClient::ResponderWithResult
 	{
 		LOG_CLASS(LLFnPtrResponder);
 	public:
@@ -132,6 +135,8 @@ namespace
 		{
 			if(NULL != mCallback) mCallback(mCallbackData, LL_ERR_NOERR);
 		}
+
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return fnPtrResponder_timeout; }
 
 	private:
 
@@ -552,11 +557,11 @@ BOOL LLMessageSystem::checkMessages( S64 frame_count )
 		S32 true_rcv_size = 0;
 
 		U8* buffer = mTrueReceiveBuffer;
-		
+
 		mTrueReceiveSize = mPacketRing->receivePacket(mSocket, (char *)mTrueReceiveBuffer);
 		// If you want to dump all received packets into SecondLife.log, uncomment this
 		//dumpPacketToLog();
-		
+
 		receive_size = mTrueReceiveSize;
 		mLastSender = mPacketRing->getLastSender();
 		mLastReceivingIF = mPacketRing->getLastReceivingInterface();
@@ -1826,6 +1831,10 @@ void	process_start_ping_check(LLMessageSystem *msgsystem, void** /*user_data*/)
 // Note: this is currently unused. --mark
 void	open_circuit(LLMessageSystem *msgsystem, void** /*user_data*/)
 {
+	llassert_always(false);
+	return;
+
+#if 0
 	U32  ip;
 	U16	 port;
 
@@ -1834,6 +1843,7 @@ void	open_circuit(LLMessageSystem *msgsystem, void** /*user_data*/)
 
 	// By default, OpenCircuit's are untrusted
 	msgsystem->enableCircuit(LLHost(ip, port), FALSE);
+#endif
 }
 
 void	close_circuit(LLMessageSystem *msgsystem, void** /*user_data*/)

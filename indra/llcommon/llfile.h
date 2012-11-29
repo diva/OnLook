@@ -227,7 +227,7 @@ public:
 #endif
 
 /**
- * @breif filesize helpers.
+ * @brief filesize helpers.
  *
  * The file size helpers are not considered particularly efficient,
  * and should only be used for config files and the like -- not in a

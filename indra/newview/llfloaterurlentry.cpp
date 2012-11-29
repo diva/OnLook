@@ -45,12 +45,15 @@
 #include "llviewerwindow.h"
 #include "llhttpclient.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy mediaTypeResponder_timeout;
+
 static LLFloaterURLEntry* sInstance = NULL;
 
 // Move this to its own file.
 // helper class that tries to download a URL from a web site and calls a method
 // on the Panel Land Media and to discover the MIME type
-class LLMediaTypeResponder : public LLHTTPClient::Responder
+class LLMediaTypeResponder : public LLHTTPClient::ResponderHeadersOnly
 {
 public:
 	LLMediaTypeResponder( const LLHandle<LLFloater> parent ) :
@@ -59,17 +62,20 @@ public:
 
 	  LLHandle<LLFloater> mParent;
 
-
-	  virtual void completedHeader(U32 status, const std::string& reason, const LLSD& content)
+	  virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	  {
-		  std::string media_type = content["content-type"].asString();
-		  std::string::size_type idx1 = media_type.find_first_of(";");
-		  std::string mime_type = media_type.substr(0, idx1);
-		  completeAny(status, mime_type);
-	  }
-
-	  virtual void error( U32 status, const std::string& reason )
-	  {
+		  if (200 <= status && status < 300)
+		  {
+			  std::string media_type;
+			  if (headers.getFirstValue("content-type", media_type))
+			  {
+				  std::string::size_type idx1 = media_type.find_first_of(";");
+				  std::string mime_type = media_type.substr(0, idx1);
+				  completeAny(status, mime_type);
+				  return;
+			  }
+			  llwarns << "LLMediaTypeResponder::completedHeaders: OK HTTP status (" << status << ") but no Content-Type! Received headers: " << headers << llendl;
+		  }
 		  completeAny(status, "none/none");
 	  }
 
@@ -82,6 +88,8 @@ public:
 		  if ( floater_url_entry )
 			  floater_url_entry->headerFetchComplete( status, resolved_mime_type );
 	  }
+
+	  virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return mediaTypeResponder_timeout; }
 };
 
 //-----------------------------------------------------------------------------

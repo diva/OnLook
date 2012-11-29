@@ -181,8 +181,8 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 	U32 iindex = 0;
 	U32 jindex = 0;
 	from_region_handle(region_handle, &iindex, &jindex);
- 	S32 x = (S32)(iindex/mWidth);
- 	S32 y = (S32)(jindex/mWidth);
+	S32 x = (S32)(iindex/mWidth);
+	S32 y = (S32)(jindex/mWidth);
 	llinfos << "Adding new region (" << x << ":" << y << ")" << llendl;
 	llinfos << "Host: " << host << llendl;
 
@@ -293,14 +293,14 @@ void LLWorld::removeRegion(const LLHost &host)
 	mActiveRegionList.remove(regionp);
 	mCulledRegionList.remove(regionp);
 	mVisibleRegionList.remove(regionp);
-	
-	delete regionp;
-
-	updateWaterObjects();
 
 	//double check all objects of this region are removed.
 	gObjectList.clearAllMapObjectsInRegion(regionp) ;
 	//llassert_always(!gObjectList.hasMapObjectInRegion(regionp)) ;
+
+	updateWaterObjects();
+
+	delete regionp;
 }
 
 
@@ -606,13 +606,13 @@ void LLWorld::updateVisibilities()
 {
 	F32 cur_far_clip = LLViewerCamera::getInstance()->getFar();
 
-	// Go through the culled list and check for visible regions
+	// Go through the culled list and check for visible regions (region is visible if land is visible)
 	for (region_list_t::iterator iter = mCulledRegionList.begin();
 			iter != mCulledRegionList.end(); )
 	{
 		region_list_t::iterator curiter = iter++;
 		LLViewerRegion* regionp = *curiter;
-                
+
 		LLSpatialPartition* part = regionp->getSpatialPartition(LLViewerRegion::PARTITION_TERRAIN);
 		if (part)
 		{
@@ -623,8 +623,8 @@ void LLWorld::updateVisibilities()
 				mVisibleRegionList.push_back(regionp);
 			}
 		}
-    }
-        
+	}
+
 	// Update all of the visible regions 
 	for (region_list_t::iterator iter = mVisibleRegionList.begin();
 		 iter != mVisibleRegionList.end(); )
@@ -636,7 +636,7 @@ void LLWorld::updateVisibilities()
 			continue;
 		}
 
-    	LLSpatialPartition* part = regionp->getSpatialPartition(LLViewerRegion::PARTITION_TERRAIN);
+		LLSpatialPartition* part = regionp->getSpatialPartition(LLViewerRegion::PARTITION_TERRAIN);
 		if (part)
 		{
 			LLSpatialGroup* group = (LLSpatialGroup*) part->mOctree->getListener(0);
@@ -1254,9 +1254,11 @@ void LLWorld::disconnectRegions()
 	}
 }
 
+static LLFastTimer::DeclareTimer FTM_ENABLE_SIMULATOR("Enable Sim");
 
 void process_enable_simulator(LLMessageSystem *msg, void **user_data)
 {
+	LLFastTimer t(FTM_ENABLE_SIMULATOR);
 	// enable the appropriate circuit for this simulator and 
 	// add its values into the gSimulator structure
 	U64		handle;
@@ -1415,15 +1417,13 @@ void send_agent_resume()
 
 static LLVector3d unpackLocalToGlobalPosition(U32 compact_local, const LLVector3d& region_origin)
 {
-    LLVector3d pos_global(region_origin);
-    LLVector3d pos_local;
+	LLVector3d pos_local;
 
-    pos_local.mdV[VZ] = (compact_local & 0xFFU) * 4;
-    pos_local.mdV[VY] = (compact_local >> 8) & 0xFFU;
-    pos_local.mdV[VX] = (compact_local >> 16) & 0xFFU;
+	pos_local.mdV[VZ] = (compact_local & 0xFFU) * 4;
+	pos_local.mdV[VY] = (compact_local >> 8) & 0xFFU;
+	pos_local.mdV[VX] = (compact_local >> 16) & 0xFFU;
 
-    pos_global += pos_local;
-    return pos_global;
+	return region_origin + pos_local;
 }
 
 void LLWorld::getAvatars(std::vector<LLUUID>* avatar_ids, std::vector<LLVector3d>* positions, const LLVector3d& relative_to, F32 radius) const
@@ -1478,7 +1478,7 @@ void LLWorld::getAvatars(std::vector<LLUUID>* avatar_ids, std::vector<LLVector3d
 			{
 				LLUUID uuid = regionp->mMapAvatarIDs.get(i);
 				// if this avatar doesn't already exist in the list, add it
-				if(uuid.notNull() && avatar_ids!=NULL && std::find(avatar_ids->begin(), avatar_ids->end(), uuid) == avatar_ids->end())
+				if(uuid.notNull() && avatar_ids != NULL && std::find(avatar_ids->begin(), avatar_ids->end(), uuid) == avatar_ids->end())
 				{
 					if(positions != NULL)
 					{

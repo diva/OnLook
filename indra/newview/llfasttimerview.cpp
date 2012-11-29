@@ -1146,7 +1146,7 @@ void LLFastTimerView::exportCharts(const std::string& base, const std::string& t
 	{ //read base log into memory
 		S32 i = 0;
 		std::ifstream is(base.c_str());
-		while (!is.eof() && LLSDSerialize::fromXML(cur, is))
+		while (!is.eof() && LLSDSerialize::fromXML(cur, is) > 0)
 		{
 			base_data[i++] = cur;
 		}
@@ -1159,7 +1159,7 @@ void LLFastTimerView::exportCharts(const std::string& base, const std::string& t
 	{ //read current log into memory
 		S32 i = 0;
 		std::ifstream is(target.c_str());
-		while (!is.eof() && LLSDSerialize::fromXML(cur, is))
+		while (!is.eof() && LLSDSerialize::fromXML(cur, is) > 0)
 		{
 			cur_data[i++] = cur;
 
@@ -1450,7 +1450,7 @@ LLSD LLFastTimerView::analyzePerformanceLogDefault(std::istream& is)
 	stats_map_t time_stats;
 	stats_map_t sample_stats;
 
-	while (!is.eof() && LLSDSerialize::fromXML(cur, is))
+	while (!is.eof() && LLSDSerialize::fromXML(cur, is) > 0)
 	{
 		for (LLSD::map_iterator iter = cur.beginMap(); iter != cur.endMap(); ++iter)
 		{

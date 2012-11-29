@@ -22,13 +22,11 @@ include_directories(
     )
 
 set(llimage_SOURCE_FILES
-     aes.cpp
     llimagebmp.cpp
     llimage.cpp
     llimagedxt.cpp
     llimagej2c.cpp
     llimagejpeg.cpp
-    llimagemetadatareader.cpp
     llimagepng.cpp
     llimagetga.cpp
     llimageworker.cpp
@@ -37,13 +35,11 @@ set(llimage_SOURCE_FILES
 
 set(llimage_HEADER_FILES
     CMakeLists.txt
-     aes.h
     llimage.h
     llimagebmp.h
     llimagedxt.h
     llimagej2c.h
     llimagejpeg.h
-    llimagemetadatareader.h
     llimagepng.h
     llimagetga.h
     llimageworker.h

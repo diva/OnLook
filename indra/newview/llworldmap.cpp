@@ -437,7 +437,7 @@ void LLWorldMap::sendMapLayerRequest()
 		LLSD body;
 		body["Flags"] = (LLSD::Integer)flags;
 		//llinfos << "LLWorldMap::sendMapLayerRequest via capability" << llendl;
-		LLHTTPClient::post(url, body, new LLMapLayerResponder());
+		LLHTTPClient::post(url, body, new LLMapLayerResponder);
 	}
 	else
 	{

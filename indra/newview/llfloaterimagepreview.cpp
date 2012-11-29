@@ -38,6 +38,7 @@
 #include "llimagetga.h"
 #include "llimagejpeg.h"
 #include "llimagepng.h"
+#include "llimagej2c.h"
 
 #include "llagent.h"
 #include "llbutton.h"
@@ -418,6 +419,21 @@ bool LLFloaterImagePreview::loadImage(const std::string& src_filename)
 			}
 			
 			if (!png_image->decode(raw_image, 0.0f))
+			{
+				return false;
+			}
+		}
+		break;
+	case IMG_CODEC_J2C:
+		{
+			LLPointer<LLImageJ2C> j2c_image = new LLImageJ2C;
+
+			if (!j2c_image->load(src_filename))
+			{
+				return false;
+			}
+			
+			if (!j2c_image->decode(raw_image, 0.0f))
 			{
 				return false;
 			}

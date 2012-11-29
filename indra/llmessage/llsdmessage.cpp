@@ -45,6 +45,7 @@
 #include "llhost.h"
 #include "message.h"
 #include "llsdutil.h"
+#include "aihttptimeoutpolicy.h"
 
 // Declare a static LLSDMessage instance to ensure that we have a listener as
 // soon as someone tries to post on our canonical LLEventPump name.
@@ -62,13 +63,15 @@ LLSDMessage::LLSDMessage():
 
 bool LLSDMessage::httpListener(const LLSD& request)
 {
+    llassert(false);	// This function is never called. --Aleric
+
     // Extract what we want from the request object. We do it all up front
     // partly to document what we expect.
     LLSD::String url(request["url"]);
     LLSD payload(request["payload"]);
     LLSD::String reply(request["reply"]);
     LLSD::String error(request["error"]);
-    LLSD::Real timeout(request["timeout"]);
+    LLSD::String timeoutpolicy(request["timeoutpolicy"]);
     // If the LLSD doesn't even have a "url" key, we doubt it was intended for
     // this listener.
     if (url.empty())
@@ -77,19 +80,23 @@ bool LLSDMessage::httpListener(const LLSD& request)
         out << "request event without 'url' key to '" << mEventPump.getName() << "'";
         throw ArgError(out.str());
     }
-    // Establish default timeout. This test relies on LLSD::asReal() returning
-    // exactly 0.0 for an undef value.
-    if (! timeout)
-    {
-        timeout = HTTP_REQUEST_EXPIRY_SECS;
-    }
-    LLHTTPClient::post(url, payload,
-                       new LLSDMessage::EventResponder(LLEventPumps::instance(),
-                                                       request,
-                                                       url, "POST", reply, error),
-                       LLSD(),      // headers
-                       (F32)timeout);
+	LLSDMessage::EventResponder* responder =
+		new LLSDMessage::EventResponder(LLEventPumps::instance(), request, url, "POST", reply, error);
+	responder->setTimeoutPolicy(timeoutpolicy);
+    LLHTTPClient::post(url, payload, responder);
     return false;
+}
+
+LLSDMessage::EventResponder::EventResponder(LLEventPumps& pumps, LLSD const& request, std::string const& target,
+	                           std::string const& message, std::string const& replyPump, std::string const& errorPump) :
+	mPumps(pumps), mReqID(request), mTarget(target), mMessage(message), mReplyPump(replyPump), mErrorPump(errorPump),
+	mHTTPTimeoutPolicy(AIHTTPTimeoutPolicy::getTimeoutPolicyByName(std::string()))
+{
+}
+
+void LLSDMessage::EventResponder::setTimeoutPolicy(std::string const& name)
+{
+	mHTTPTimeoutPolicy = AIHTTPTimeoutPolicy::getTimeoutPolicyByName(name);
 }
 
 void LLSDMessage::EventResponder::result(const LLSD& data)
@@ -121,6 +128,7 @@ void LLSDMessage::EventResponder::errorWithContent(U32 status, const std::string
         LLSD info(mReqID.makeResponse());
         info["target"]  = mTarget;
         info["message"] = mMessage;
+        info["code"] = mCode;
         info["status"]  = LLSD::Integer(status);
         info["reason"]  = reason;
         info["content"] = content;
@@ -137,7 +145,7 @@ void LLSDMessage::EventResponder::errorWithContent(U32 status, const std::string
     }
 }
 
-LLSDMessage::ResponderAdapter::ResponderAdapter(LLHTTPClient::ResponderPtr responder,
+LLSDMessage::ResponderAdapter::ResponderAdapter(LLHTTPClient::ResponderWithResult* responder,
                                                 const std::string& name):
     mResponder(responder),
     mReplyPump(name + ".reply", true), // tweak name for uniqueness
@@ -147,15 +155,25 @@ LLSDMessage::ResponderAdapter::ResponderAdapter(LLHTTPClient::ResponderPtr respo
     mErrorPump.listen("self", boost::bind(&ResponderAdapter::listener, this, _1, false));
 }
 
+std::string LLSDMessage::ResponderAdapter::getTimeoutPolicyName(void) const
+{
+  return mResponder->getHTTPTimeoutPolicy().name();
+}
+
 bool LLSDMessage::ResponderAdapter::listener(const LLSD& payload, bool success)
 {
+    LLHTTPClient::ResponderWithResult* responder = dynamic_cast<LLHTTPClient::ResponderWithResult*>(mResponder.get());
+    // If this assertion fails then ResponderAdapter has been used for a ResponderWithCompleted derived class,
+    // which is not allowed because ResponderAdapter can only work for classes derived from Responder that
+    // implement result() and errorWithContent (or just error).
+    llassert_always(responder);
     if (success)
     {
-        mResponder->pubResult(payload);
+        responder->pubResult(payload);
     }
     else
     {
-        mResponder->pubErrorWithContent(payload["status"].asInteger(), payload["reason"], payload["content"]);
+        responder->pubErrorWithContent((CURLcode)payload["code"].asInteger(), payload["status"].asInteger(), payload["reason"], payload["content"]);
     }
 
     /*---------------- MUST BE LAST STATEMENT BEFORE RETURN ----------------*/

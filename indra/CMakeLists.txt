@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 2.6.2 FATAL_ERROR)
 cmake_policy(SET CMP0003 OLD)
 
 set(ROOT_PROJECT_NAME "Singularity" CACHE STRING
-    "The root project/makefile/solution name. Defaults to SecondLife.")
+    "The root project/makefile/solution name. Defaults to Singularity.")
 project(${ROOT_PROJECT_NAME})
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
@@ -46,6 +46,7 @@ endif(NOT STANDALONE)
 add_custom_target(prepare DEPENDS ${prepare_depends})
 
 add_subdirectory(cmake)
+add_subdirectory(${LIBS_OPEN_PREFIX}aistatemachine)
 add_subdirectory(${LIBS_OPEN_PREFIX}llaudio)
 add_subdirectory(${LIBS_OPEN_PREFIX}llcharacter)
 add_subdirectory(${LIBS_OPEN_PREFIX}llcommon)
@@ -60,6 +61,10 @@ add_subdirectory(${LIBS_OPEN_PREFIX}llrender)
 add_subdirectory(${LIBS_OPEN_PREFIX}llvfs)
 add_subdirectory(${LIBS_OPEN_PREFIX}llwindow)
 add_subdirectory(${LIBS_OPEN_PREFIX}llxml)
+
+if(STANDALONE)
+  add_subdirectory(${LIBS_OPEN_PREFIX}llqtwebkit)
+endif(STANDALONE)
 
 if (EXISTS ${LIBS_CLOSED_DIR}llkdu AND NOT STANDALONE)
   add_subdirectory(${LIBS_CLOSED_PREFIX}llkdu)

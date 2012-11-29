@@ -13,5 +13,5 @@ fi
 RUN_PATH=`dirname "$0" || echo .`
 cd "${RUN_PATH}"
 
-exec ./snowglobe -url \'"${URL}"\'
+exec ./singularity -url \'"${URL}"\'
 

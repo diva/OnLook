@@ -54,6 +54,8 @@
 #include "llvfile.h"
 #include "message.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy iamHere_timeout;
 
 // static 
 LLFloaterTOS* LLFloaterTOS::sInstance = NULL;
@@ -90,7 +92,7 @@ LLFloaterTOS::LLFloaterTOS(ETOSType type, const std::string & message)
 
 // helper class that trys to download a URL from a web site and calls a method 
 // on parent class indicating if the web server is working or not
-class LLIamHere : public LLHTTPClient::Responder
+class LLIamHere : public LLHTTPClient::ResponderWithResult
 {
 	private:
 		LLIamHere( LLFloaterTOS* parent ) :
@@ -128,6 +130,8 @@ class LLIamHere : public LLHTTPClient::Responder
 				mParent->setSiteIsAlive( alive );
 			}
 		};
+
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return iamHere_timeout; }
 };
 
 // this is global and not a class member to keep crud out of the header file

@@ -2507,13 +2507,13 @@ void LLPanelObject::onPasteParams(void* user_data)
 void LLPanelObject::onLinkObj(void* user_data)
 {
 	llinfos << "Attempting link." << llendl;
-	LLSelectMgr::getInstance()->sendLink();
+	LLSelectMgr::getInstance()->linkObjects();
 }
 
 void LLPanelObject::onUnlinkObj(void* user_data)
 {
 	llinfos << "Attempting unlink." << llendl;
-	LLSelectMgr::getInstance()->sendDelink();
+	LLSelectMgr::getInstance()->unlinkObjects();
 }
 
 void LLPanelObject::onPastePos(void* user_data)

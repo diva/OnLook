@@ -49,6 +49,8 @@
 namespace debug {
 
 #if CWDEBUG_LOCATION
+ll_thread_local size_t BackTrace::S_number;
+
 void BackTrace::dump_backtrace(void) const
 {
   for (int frame = 0; frame < frames(); ++frame)
@@ -67,6 +69,67 @@ void BackTrace::dump_backtrace(void) const
       Dout(dc::finish, mangled_function_name);
   }
 }
+
+void BackTraces::store_trace(size_t trace)
+{
+  mBackTraces.push_back(trace);
+}
+
+void BackTraces::remove_trace(size_t trace)
+{
+  trace_container_type::iterator iter = mBackTraces.begin();
+  while (iter != mBackTraces.end())
+  {
+	if (*iter == trace)
+	{
+	  *iter = mBackTraces.back();
+	  mBackTraces.pop_back();
+	  return;
+	}
+    ++iter;
+  }
+  DoutFatal(dc::core, "Trace doesn't exist!");
+}
+
+void BackTraces::dump(void) const
+{
+  Dout(dc::backtrace|continued_cf, "Dump for (BackTraces*)" << (void*)this << " (" << mBackTraces.size() << " backtraces): ");
+  for (trace_container_type::const_iterator iter = mBackTraces.begin(); iter != mBackTraces.end(); ++iter)
+  {
+	Dout(dc::continued|nonewline_cf, *iter << ' ');
+  }
+  Dout(dc::finish, "");
+}
+
+BackTraceTracker::BackTraceTracker(BackTraces* back_traces) : mBackTraces(back_traces)
+{
+  BACKTRACE;
+  mTrace = BackTrace::S_number;
+  mBackTraces->store_trace(mTrace);
+}
+
+BackTraceTracker::~BackTraceTracker()
+{
+  mBackTraces->remove_trace(mTrace);
+}
+
+BackTraceTracker::BackTraceTracker(BackTraceTracker const& orig) : mBackTraces(orig.mBackTraces)
+{
+  BACKTRACE;
+  mTrace = BackTrace::S_number;
+  mBackTraces->store_trace(mTrace);
+}
+
+BackTraceTracker& BackTraceTracker::operator=(BackTraceTracker const& orig)
+{
+  mBackTraces->remove_trace(mTrace);
+  mBackTraces = orig.mBackTraces;
+  BACKTRACE;
+  mTrace = BackTrace::S_number;
+  mBackTraces->store_trace(mTrace);
+  return *this;
+}
+
 #endif // CWDEBUG_LOCATION
 
 #if CWDEBUG_ALLOC && CWDEBUG_LOCATION

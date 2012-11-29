@@ -1103,7 +1103,7 @@ void LLObjectBackup::primUpdate(LLViewerObject* object)
 			// Now link
 			LLSelectMgr::getInstance()->deselectAll();
 			LLSelectMgr::getInstance()->selectObjectAndFamily(mToSelect, true);
-			LLSelectMgr::getInstance()->sendLink();
+			LLSelectMgr::getInstance()->linkObjects();
 			LLViewerObject* root = mToSelect.back();
 			root->setRotation(mRootRot);
 		}

@@ -37,6 +37,10 @@
 #include "llviewerregion.h"
 #include "lluictrlfactory.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy asyncConsoleResponder_timeout;
+extern AIHTTPTimeoutPolicy consoleResponder_timeout;
+
 // Two versions of the sim console API are supported.
 //
 // SimConsole capability (deprecated):
@@ -72,7 +76,8 @@ namespace
 	// This responder handles the initial response. Unless error() is called
 	// we assume that the simulator has received our request. Error will be
 	// called if this request times out.
-	class AsyncConsoleResponder : public LLHTTPClient::Responder
+	//
+	class AsyncConsoleResponder : public LLHTTPClient::ResponderIgnoreBody
 	{
 	public:
 		/* virtual */
@@ -80,9 +85,10 @@ namespace
 		{
 			sConsoleReplySignal(UNABLE_TO_SEND_COMMAND);
 		}
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return asyncConsoleResponder_timeout; }
 	};
 
-	class ConsoleResponder : public LLHTTPClient::Responder
+	class ConsoleResponder : public LLHTTPClient::ResponderWithResult
 	{
 	public:
 		ConsoleResponder(LLTextEditor *output) : mOutput(output)
@@ -110,11 +116,14 @@ namespace
 			}
 		}
 
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return consoleResponder_timeout; }
+
 		LLTextEditor * mOutput;
 	};
 
 	// This handles responses for console commands sent via the asynchronous
 	// API.
+
 	class ConsoleResponseNode : public LLHTTPNode
 	{
 	public:

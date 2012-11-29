@@ -59,6 +59,11 @@
 #include "llfloateravatarinfo.h"	// for getProfileURL() function
 //#include "viewerversion.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy mimeDiscoveryResponder_timeout;
+extern AIHTTPTimeoutPolicy viewerMediaOpenIDResponder_timeout;
+extern AIHTTPTimeoutPolicy viewerMediaWebProfileResponder_timeout;
+
 // Merov: Temporary definitions while porting the new viewer media code to Snowglobe
 const int LEFT_BUTTON  = 0;
 const int RIGHT_BUTTON = 1;
@@ -66,7 +71,7 @@ const int RIGHT_BUTTON = 1;
 ///////////////////////////////////////////////////////////////////////////////
 // Helper class that tries to download a URL from a web site and calls a method
 // on the Panel Land Media and to discover the MIME type
-class LLMimeDiscoveryResponder : public LLHTTPClient::Responder
+class LLMimeDiscoveryResponder : public LLHTTPClient::ResponderHeadersOnly
 {
 LOG_CLASS(LLMimeDiscoveryResponder);
 public:
@@ -75,14 +80,21 @@ public:
 		  mInitialized(false)
 	{}
 
-
-
-	virtual void completedHeader(U32 status, const std::string& reason, const LLSD& content)
+	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{
-		std::string media_type = content["content-type"].asString();
-		std::string::size_type idx1 = media_type.find_first_of(";");
-		std::string mime_type = media_type.substr(0, idx1);
-		completeAny(status, mime_type);
+		if (200 <= status && status < 300)
+		{
+			std::string media_type;
+			if (headers.getFirstValue("content-type", media_type))
+			{
+				std::string::size_type idx1 = media_type.find_first_of(";");
+				std::string mime_type = media_type.substr(0, idx1);
+				completeAny(status, mime_type);
+				return;
+			}
+			llwarns << "LLMimeDiscoveryResponder::completedHeaders: OK HTTP status (" << status << ") but no Content-Type! Received headers: " << headers << llendl;
+		}
+		completeAny(status, "none/none");
 	}
 
 	void completeAny(U32 status, const std::string& mime_type)
@@ -97,12 +109,14 @@ public:
 		}
 	}
 
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return mimeDiscoveryResponder_timeout; }
+
 	public:
 		viewer_media_t mMediaImpl;
 		bool mInitialized;
 };
 
-class LLViewerMediaOpenIDResponder : public LLHTTPClient::Responder
+class LLViewerMediaOpenIDResponder : public LLHTTPClient::ResponderWithCompleted
 {
 LOG_CLASS(LLViewerMediaOpenIDResponder);
 public:
@@ -114,13 +128,18 @@ public:
 	{
 	}
 
-	/* virtual */ void completedHeader(U32 status, const std::string& reason, const LLSD& content)
+	/* virtual */ bool needsHeaders(void) const { return true; }
+
+	/* virtual */ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{
 		LL_DEBUGS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
-		LL_DEBUGS("MediaAuth") << content << LL_ENDL;
-		std::string cookie = content["set-cookie"].asString();
-		
-		LLViewerMedia::openIDCookieResponse(cookie);
+		LL_DEBUGS("MediaAuth") << headers << LL_ENDL;
+		AIHTTPReceivedHeaders::range_type cookies;
+		if (headers.getValues("set-cookie", cookies))
+		{
+			for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
+				LLViewerMedia::openIDCookieResponse(cookie->second);
+		}
 	}
 
 	/* virtual */ void completedRaw(
@@ -133,9 +152,10 @@ public:
 		// We don't care about the content of the response, only the set-cookie header.
 	}
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerMediaOpenIDResponder_timeout; }
 };
 
-class LLViewerMediaWebProfileResponder : public LLHTTPClient::Responder
+class LLViewerMediaWebProfileResponder : public LLHTTPClient::ResponderWithCompleted
 {
 LOG_CLASS(LLViewerMediaWebProfileResponder);
 public:
@@ -148,17 +168,22 @@ public:
 	{
 	}
 
-	/* virtual */ void completedHeader(U32 status, const std::string& reason, const LLSD& content)
+	/* virtual */ bool needsHeaders(void) const { return true; }
+
+	/* virtual */ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{
-		LL_WARNS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
-		LL_WARNS("MediaAuth") << content << LL_ENDL;
+		LL_INFOS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
+		LL_INFOS("MediaAuth") << headers << LL_ENDL;
 
-		std::string cookie = content["set-cookie"].asString();
-
-		LLViewerMedia::getCookieStore()->setCookiesFromHost(cookie, mHost);
+		AIHTTPReceivedHeaders::range_type cookies;
+		if (headers.getValues("set-cookie", cookies))
+		{
+			for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
+			  LLViewerMedia::getCookieStore()->setCookiesFromHost(cookie->second, mHost);
+		}
 	}
 
-	 void completedRaw(
+	void completedRaw(
 		U32 status,
 		const std::string& reason,
 		const LLChannelDescriptors& channels,
@@ -167,6 +192,8 @@ public:
 		// This is just here to disable the default behavior (attempting to parse the response as llsd).
 		// We don't care about the content of the response, only the set-cookie header.
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerMediaWebProfileResponder_timeout; }
 
 	std::string mHost;
 };
@@ -609,13 +636,13 @@ void LLViewerMedia::removeCookie(const std::string &name, const std::string &dom
 }
 
 
-LLSD LLViewerMedia::getHeaders()
+AIHTTPHeaders LLViewerMedia::getHeaders()
 {
-	LLSD headers = LLSD::emptyMap();
-	headers["Accept"] = "*/*";
-	headers["Content-Type"] = "application/xml";
-	headers["Cookie"] = sOpenIDCookie;
-	headers["User-Agent"] = getCurrentUserAgent();
+	AIHTTPHeaders headers;
+	headers.addHeader("Accept", "*/*");
+	headers.addHeader("Content-Type", "application/xml");
+	headers.addHeader("Cookie", sOpenIDCookie);
+	headers.addHeader("User-Agent", getCurrentUserAgent());
 
 	return headers;
 }
@@ -652,10 +679,10 @@ void LLViewerMedia::setOpenIDCookie()
 		getCookieStore()->setCookiesFromHost(sOpenIDCookie, authority.substr(host_start, host_end - host_start));
 
 		// Do a web profile get so we can store the cookie 
-		LLSD headers = LLSD::emptyMap();
-		headers["Accept"] = "*/*";
-		headers["Cookie"] = sOpenIDCookie;
-		headers["User-Agent"] = getCurrentUserAgent();
+		AIHTTPHeaders headers;
+		headers.addHeader("Accept", "*/*");
+		headers.addHeader("Cookie", sOpenIDCookie);
+		headers.addHeader("User-Agent", getCurrentUserAgent());
 
 		std::string profile_url = getProfileURL("");
 		LLURL raw_profile_url( profile_url.c_str() );
@@ -683,18 +710,18 @@ void LLViewerMedia::openIDSetup(const std::string &openid_url, const std::string
 	// We shouldn't ever do this twice, but just in case this code gets repurposed later, clear existing cookies.
 	sOpenIDCookie.clear();
 
-	LLSD headers = LLSD::emptyMap();
+	AIHTTPHeaders headers;
 	// Keep LLHTTPClient from adding an "Accept: application/llsd+xml" header
-	headers["Accept"] = "*/*";
+	headers.addHeader("Accept", "*/*");
 	// and use the expected content-type for a post, instead of the LLHTTPClient::postRaw() default of "application/octet-stream"
-	headers["Content-Type"] = "application/x-www-form-urlencoded";
+	headers.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
 	// postRaw() takes ownership of the buffer and releases it later, so we need to allocate a new buffer here.
 	size_t size = openid_token.size();
-	U8 *data = new U8[size];
+	char* data = new char[size];
 	memcpy(data, openid_token.data(), size);
 
-	LLHTTPClient::postRaw( 
+	LLHTTPClient::postRaw(
 		openid_url, 
 		data, 
 		size, 

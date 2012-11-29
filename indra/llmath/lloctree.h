@@ -41,6 +41,7 @@
 
 #if LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
 #define OCT_ERRS LL_ERRS("OctreeErrors")
+#define OCTREE_GUARD_CHECK
 #else
 #define OCT_ERRS LL_WARNS("OctreeErrors")
 #endif
@@ -183,6 +184,7 @@ public:
 	virtual void traverse(const LLOctreeNode<T>* node);
 };
 
+#ifdef OCTREE_GUARD_CHECK
 struct OctreeGuard
 {
 	template <typename T>
@@ -210,6 +212,18 @@ struct OctreeGuard
 	}
 	void* mNode;
 };
+#else
+struct OctreeGuard
+{
+	template <typename T>
+	OctreeGuard(const LLOctreeNode<T>* node) {}
+	~OctreeGuard() {}
+	template <typename T>
+	static bool checkGuarded(const LLOctreeNode<T>* node) {return false;}
+};
+#endif
+
+
 template <class T>
 class LLOctreeNode : public LLTreeNode<T>
 {

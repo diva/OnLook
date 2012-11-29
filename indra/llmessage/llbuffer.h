@@ -306,7 +306,7 @@ public:
 	typedef std::list<LLSegment> segment_list_t;
 	typedef segment_list_t::const_iterator const_segment_iterator_t;
 	typedef segment_list_t::iterator segment_iterator_t;
-	enum { npos = 0xffffffff };
+	static size_t const npos = (size_t)-1;		// (U8*)npos is used as a magic address.
 
 	LLBufferArray();
 	~LLBufferArray();
@@ -495,6 +495,7 @@ public:
 	 * @return Returns the segment if there is one.
 	 */
 	segment_iterator_t beginSegment();
+	const_segment_iterator_t beginSegment() const;
 
 	/** 
 	 * @brief Get the one-past-the-end segment in the buffer array
@@ -502,6 +503,7 @@ public:
 	 * @return Returns the iterator for an invalid segment location.
 	 */
 	segment_iterator_t endSegment();
+	const_segment_iterator_t endSegment() const;
 
 	/** 
 	 * @brief Get the segment which holds the given address.
@@ -589,6 +591,12 @@ public:
 	*/
 	void setThreaded(bool threaded);
 	//@}
+
+	/**
+	 * @brief Read channel channel of LLBufferArray and write it to ostr.
+	 * This is a Singularity extension.
+	 */
+	void writeChannelTo(std::ostream& ostr, S32 channel) const;
 
 protected:
 	/** 

@@ -49,8 +49,10 @@
 #include "llbufferstream.h"
 
 class lggDicDownloadFloater;
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy emeraldDicDownloader_timeout;
 
-class EmeraldDicDownloader : public LLHTTPClient::Responder
+class EmeraldDicDownloader : public LLHTTPClient::ResponderWithCompleted
 {
 public:
 	EmeraldDicDownloader(lggDicDownloadFloater* spanel, std::string sname);
@@ -59,7 +61,8 @@ public:
 		U32 status,
 		const std::string& reason,
 		const LLChannelDescriptors& channels,
-		const LLIOPipe::buffer_ptr_t& buffer);
+		const buffer_ptr_t& buffer);
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return emeraldDicDownloader_timeout; }
 private:
 	lggDicDownloadFloater* panel;
 	std::string name;
@@ -163,7 +166,7 @@ EmeraldDicDownloader::EmeraldDicDownloader(lggDicDownloadFloater* spanel, std::s
 }
 
 
-void EmeraldDicDownloader::completedRaw(U32 status, const std::string& reason, const LLChannelDescriptors& channels, const LLIOPipe::buffer_ptr_t& buffer)
+void EmeraldDicDownloader::completedRaw(U32 status, const std::string& reason, const LLChannelDescriptors& channels, const buffer_ptr_t& buffer)
 {
 	if (status < 200 || status >= 300)
 	{

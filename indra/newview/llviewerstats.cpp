@@ -63,6 +63,8 @@
 #include "llmeshrepository.h" //for LLMeshRepository::sBytesReceived
 #include "sgmemstat.h"
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy viewerStatsResponder_timeout;
 
 class StatAttributes
 {
@@ -669,14 +671,15 @@ void update_statistics(U32 frame_count)
 	gObjectBits = 0;
 //	gDecodedBits = 0;
 
-	// Only update texture stats ones per second so that they are less noisy
+	//Update bandwidth stats often because texture fetch relies on them.
 	{
-		static const F32 texture_stats_freq = 10.f;
+		static const F32 texture_stats_freq = 0.1f;
 		static LLFrameTimer texture_stats_timer;
 		if (texture_stats_timer.getElapsedTimeF32() >= texture_stats_freq)
 		{
 			LLViewerStats::getInstance()->mTextureKBitStat.addValue(LLViewerTextureList::sTextureBits/1024.f);
 			LLViewerStats::getInstance()->mTexturePacketsStat.addValue(LLViewerTextureList::sTexturePackets);
+			LLAppViewer::getTextureFetch()->setTextureBandwidth(LLViewerTextureList::sTextureBits/1024.f/texture_stats_timer.getElapsedTimeF32());
 			gTotalTextureBytes += LLViewerTextureList::sTextureBits / 8;
 			LLViewerTextureList::sTextureBits = 0;
 			LLViewerTextureList::sTexturePackets = 0;
@@ -695,7 +698,7 @@ void update_statistics(U32 frame_count)
 	}
 }
 
-class ViewerStatsResponder : public LLHTTPClient::Responder
+class ViewerStatsResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
     ViewerStatsResponder() { }
@@ -710,6 +713,8 @@ public:
     {
 		llinfos << "ViewerStatsResponder::result" << llendl;
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerStatsResponder_timeout; }
 };
 
 /*
@@ -874,6 +879,6 @@ void send_stats()
 	body["MinimalSkin"] = false;
 	
 	LLViewerStats::getInstance()->addToMessage(body);
-	LLHTTPClient::post(url, body, new ViewerStatsResponder());
+	LLHTTPClient::post(url, body, new ViewerStatsResponder);
 }
 

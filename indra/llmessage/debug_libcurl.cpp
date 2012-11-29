@@ -249,7 +249,7 @@ std::ostream& operator<<(std::ostream& os, CURLoption option)
 	CASEPRINT(CURLOPT_LOW_SPEED_TIME);
 	CASEPRINT(CURLOPT_RESUME_FROM);
 	CASEPRINT(CURLOPT_COOKIE);
-	CASEPRINT(CURLOPT_RTSPHEADER);
+	CASEPRINT(CURLOPT_HTTPHEADER);
 	CASEPRINT(CURLOPT_HTTPPOST);
 	CASEPRINT(CURLOPT_SSLCERT);
 	CASEPRINT(CURLOPT_KEYPASSWD);
@@ -548,7 +548,7 @@ char* debug_curl_easy_escape(CURL* curl, char* url, int length)
 {
   char* ret;
   ret = curl_easy_escape(curl, url, length);
-  Dout(dc::curl, "curl_easy_escape(" << curl << ", \"" << url << "\", " << length << ") = \"" << ret << '"');
+  Dout(dc::curl, "curl_easy_escape(" << (AICURL*)curl << ", \"" << url << "\", " << length << ") = \"" << ret << '"');
   return ret;
 }
 
@@ -569,23 +569,23 @@ CURLcode debug_curl_easy_getinfo(CURL* curl, CURLINFO info, ...)
   ret = curl_easy_getinfo(curl, info, param.some_ptr);
   if (info == CURLINFO_PRIVATE)
   {
-	Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", 0x" << std::hex << (size_t)param.some_ptr << std::dec << ") = " << ret);
+	Dout(dc::curl, "curl_easy_getinfo(" << (AICURL*)curl << ", " << info << ", 0x" << std::hex << (size_t)param.some_ptr << std::dec << ") = " << ret);
   }
   else
   {
 	switch((info & CURLINFO_TYPEMASK))
 	{
 	  case CURLINFO_STRING:
-		Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", (char**){ \"" << (ret == CURLE_OK ? *param.char_ptr : " <unchanged> ") << "\" }) = " << ret);
+		Dout(dc::curl, "curl_easy_getinfo(" << (AICURL*)curl << ", " << info << ", (char**){ \"" << (ret == CURLE_OK ? *param.char_ptr : " <unchanged> ") << "\" }) = " << ret);
 		break;
 	  case CURLINFO_LONG:
-		Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", (long*){ " << (ret == CURLE_OK ? *param.long_ptr : 0L) << "L }) = " << ret);
+		Dout(dc::curl, "curl_easy_getinfo(" << (AICURL*)curl << ", " << info << ", (long*){ " << (ret == CURLE_OK ? *param.long_ptr : 0L) << "L }) = " << ret);
 		break;
 	  case CURLINFO_DOUBLE:
-		Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", (double*){" << (ret == CURLE_OK ? *param.double_ptr : 0.) << "}) = " << ret);
+		Dout(dc::curl, "curl_easy_getinfo(" << (AICURL*)curl << ", " << info << ", (double*){" << (ret == CURLE_OK ? *param.double_ptr : 0.) << "}) = " << ret);
 		break;
 	  case CURLINFO_SLIST:
-		Dout(dc::curl, "curl_easy_getinfo(" << curl << ", " << info << ", (curl_slist**){ " << (ret == CURLE_OK ? **param.curl_slist_ptr : unchanged_slist) << " }) = " << ret);
+		Dout(dc::curl, "curl_easy_getinfo(" << (AICURL*)curl << ", " << info << ", (curl_slist**){ " << (ret == CURLE_OK ? **param.curl_slist_ptr : unchanged_slist) << " }) = " << ret);
 		break;
 	}
   }
@@ -624,7 +624,7 @@ void debug_curl_easy_reset(CURL* handle)
 
 CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 {
-  CURLcode ret;
+  CURLcode ret = CURLE_UNKNOWN_OPTION;	// Suppress compiler warning.
   va_list ap;
   union param_type {
 	long along;
@@ -702,7 +702,11 @@ CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 		{
 		  LibcwDoutStream << "NULL";
 		}
-		LibcwDoutStream << "](" << (is_postfield ? postfieldsize : size) << " bytes))";
+		LibcwDoutStream << "]";
+		if (str)
+		{
+		  LibcwDoutStream << "(" << (is_postfield ? postfieldsize : size) << " bytes))";
+		}
 	  }
 	  else
 	  {
@@ -755,7 +759,7 @@ char* debug_curl_easy_unescape(CURL* curl, char* url, int inlength, int* outleng
 {
   char* ret;
   ret = curl_easy_unescape(curl, url, inlength, outlength);
-  Dout(dc::curl, "curl_easy_unescape(" << curl << ", \"" << url << "\", " << inlength << ", " << ((ret && outlength) ? *outlength : 1) << ") = \"" << ret << '"');
+  Dout(dc::curl, "curl_easy_unescape(" << (AICURL*)curl << ", \"" << url << "\", " << inlength << ", " << ((ret && outlength) ? *outlength : 1) << ") = \"" << ret << '"');
   return ret;
 }
 
@@ -837,7 +841,7 @@ CURLMcode debug_curl_multi_remove_handle(CURLM* multi_handle, CURL* easy_handle)
 
 CURLMcode debug_curl_multi_setopt(CURLM* multi_handle, CURLMoption option, ...)
 {
-  CURLMcode ret;
+  CURLMcode ret = CURLM_UNKNOWN_OPTION;	// Suppress compiler warning.
   va_list ap;
   union param_type {
 	long along;

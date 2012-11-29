@@ -68,6 +68,7 @@ class LLViewerTextureList
 	
 public:
 	static BOOL createUploadFile(const std::string& filename, const std::string& out_filename, const U8 codec);
+	static BOOL verifyUploadFile(const std::string& out_filename, const U8 codec);
 	static LLPointer<LLImageJ2C> convertToUploadFile(LLPointer<LLImageRaw> raw_image);
 	static void processImageNotInDatabase( LLMessageSystem *msg, void **user_data );
 	static S32 calcMaxTextureRAM();

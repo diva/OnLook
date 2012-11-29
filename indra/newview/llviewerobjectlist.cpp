@@ -96,6 +96,10 @@ extern ImportTracker gImportTracker;
 
 void dialog_refresh_all();
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy objectCostResponder_timeout;
+extern AIHTTPTimeoutPolicy physicsFlagsResponder_timeout;
+
 #define CULL_VIS
 //#define ORPHAN_SPAM
 //#define IGNORE_DEAD
@@ -688,7 +692,7 @@ void LLViewerObjectList::updateApparentAngles(LLAgent &agent)
 	LLVOAvatar::cullAvatarsByPixelArea();
 }
 
-class LLObjectCostResponder : public LLCurl::Responder
+class LLObjectCostResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLObjectCostResponder(const LLSD& object_ids)
@@ -772,12 +776,13 @@ public:
 		}
 	}
 
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return objectCostResponder_timeout; }
+
 private:
 	LLSD mObjectIDs;
 };
 
-
-class LLPhysicsFlagsResponder : public LLCurl::Responder
+class LLPhysicsFlagsResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLPhysicsFlagsResponder(const LLSD& object_ids)
@@ -867,6 +872,8 @@ public:
 			}
 		}
 	}
+
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return physicsFlagsResponder_timeout; }
 
 private:
 	LLSD mObjectIDs;
@@ -2130,8 +2137,8 @@ void LLViewerObjectList::findOrphans(LLViewerObject* objectp, U32 ip, U32 port)
 			llinfos << "Agent: " << objectp->getPositionAgent() << llendl;
 			addDebugBeacon(objectp->getPositionAgent(),"");
 #endif
-            gPipeline.markMoved(objectp->mDrawable);                
-            objectp->setChanged(LLXform::MOVED | LLXform::SILHOUETTE);
+			gPipeline.markMoved(objectp->mDrawable);                
+			objectp->setChanged(LLXform::MOVED | LLXform::SILHOUETTE);
 
 			// Flag the object as no longer orphaned
 			childp->mOrphaned = FALSE;

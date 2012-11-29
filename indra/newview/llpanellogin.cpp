@@ -95,6 +95,9 @@
 
 #define USE_VIEWER_AUTH 0
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy iamHereLogin_timeout;
+
 const S32 BLACK_BORDER_HEIGHT = 160;
 const S32 MAX_PASSWORD = 16;
 
@@ -111,7 +114,7 @@ static bool nameSplit(const std::string& full, std::string& first, std::string& 
 	if (fragments.size() == 1)
 	{
 		if (gHippoGridManager->getConnectedGrid()->isSecondLife())
-			last = "resident";
+			last = "Resident";
 		else
 			last = "";
 	}
@@ -120,8 +123,8 @@ static bool nameSplit(const std::string& full, std::string& first, std::string& 
 	return (fragments.size() <= 2);
 }
 
-static std::string nameJoin(const std::string& first,const std::string& last) {
-	if (last.empty() || boost::algorithm::iequals(last, "resident"))
+static std::string nameJoin(const std::string& first,const std::string& last, bool strip_resident) {
+	if (last.empty() || (strip_resident && boost::algorithm::iequals(last, "Resident")))
 		return first;
 	else {
 		if(std::islower(last[0]))
@@ -131,15 +134,15 @@ static std::string nameJoin(const std::string& first,const std::string& last) {
 	}
 }
 
-static std::string getDisplayString(const std::string& first, const std::string& last, const std::string& grid) {
+static std::string getDisplayString(const std::string& first, const std::string& last, const std::string& grid, bool is_secondlife) {
 	if(grid == gHippoGridManager->getDefaultGridNick())
-		return nameJoin(first, last);
+		return nameJoin(first, last, is_secondlife);
 	else
-		return nameJoin(first, last) + " (" + grid + ")";
+		return nameJoin(first, last, is_secondlife) + " (" + grid + ")";
 }
 
 static std::string getDisplayString(const LLSavedLoginEntry& entry) {
-	return getDisplayString(entry.getFirstName(), entry.getLastName(), entry.getGrid());
+	return getDisplayString(entry.getFirstName(), entry.getLastName(), entry.getGrid(), entry.isSecondLife());
 }
 
 class LLLoginRefreshHandler : public LLCommandHandler
@@ -165,7 +168,7 @@ std::string gFullName;
 
 // helper class that trys to download a URL from a web site and calls a method 
 // on parent class indicating if the web server is working or not
-class LLIamHereLogin : public LLHTTPClient::Responder
+class LLIamHereLogin : public LLHTTPClient::ResponderHeadersOnly
 {
 	private:
 		LLIamHereLogin( LLPanelLogin* parent ) :
@@ -185,25 +188,15 @@ class LLIamHereLogin : public LLHTTPClient::Responder
 			mParent = parentIn;
 		};
 
-		// We don't actually expect LLSD back, so need to override completedRaw
-		virtual void completedRaw(U32 status, const std::string& reason,
-								  const LLChannelDescriptors& channels,
-								  const LLIOPipe::buffer_ptr_t& buffer)
+		/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 		{
-			completed(status, reason, LLSD()); // will call result() or error()
+			if (mParent)
+			{
+				mParent->setSiteIsAlive(200 <= status && status < 300);
+			}
 		}
-	
-		virtual void result( const LLSD& content )
-		{
-			if ( mParent )
-				mParent->setSiteIsAlive( true );
-		};
 
-		virtual void error( U32 status, const std::string& reason )
-		{
-			if ( mParent )
-				mParent->setSiteIsAlive( false );
-		};
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return iamHereLogin_timeout; }
 };
 
 // this is global and not a class member to keep crud out of the header file
@@ -665,8 +658,7 @@ void LLPanelLogin::show(const LLRect &rect,
 // static
 void LLPanelLogin::setFields(const std::string& firstname,
 			     const std::string& lastname,
-			     const std::string& password,
-			     const LLSavedLogins& login_history)
+			     const std::string& password)
 {
 	if (!sInstance)
 	{
@@ -677,7 +669,7 @@ void LLPanelLogin::setFields(const std::string& firstname,
 	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("name_combo");
 
 	llassert_always(firstname.find(' ') == std::string::npos);
-	login_combo->setLabel(nameJoin(firstname, lastname));
+	login_combo->setLabel(nameJoin(firstname, lastname, false));
 
 	// Max "actual" password length is 16 characters.
 	// Hex digests are always 32 characters.
@@ -714,7 +706,7 @@ void LLPanelLogin::setFields(const LLSavedLoginEntry& entry, bool takeFocus)
 	}
 
 	LLCheckBoxCtrl* remember_pass_check = sInstance->getChild<LLCheckBoxCtrl>("remember_check");
-	std::string fullname = nameJoin(entry.getFirstName(), entry.getLastName()); 
+	std::string fullname = nameJoin(entry.getFirstName(), entry.getLastName(), entry.isSecondLife()); 
 	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("name_combo");
 	login_combo->setTextEntry(fullname);
 	login_combo->resetTextDirty();
@@ -892,7 +884,7 @@ void LLPanelLogin::refreshLoginPage()
 
 	std::string login_page = gHippoGridManager->getConnectedGrid()->getLoginPage();
 	if (!login_page.empty()) {
-		LLHTTPClient::head(login_page, gResponsePtr);
+		LLHTTPClient::head(login_page, gResponsePtr.get());
 	} else {
 		sInstance->setSiteIsAlive(false);
 	}

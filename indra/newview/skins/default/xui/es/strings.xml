@@ -1837,8 +1837,8 @@ Returns a key that is the UUID of the user seated on the prim.
 
 	<!-- Strings needed by drop targets -->
 	<string name="CurrentlyNotSet">No definido actualmente </string>
-	<string name="CurrentlySetTo">Actualmente definido a</string>
-	<string name="AnItemNotOnThisAccount">Un artículo no está en esta cuenta</string>
+	<string name="CurrentlySetTo">Actualmente definido a: [ITEM]</string>
+	<string name="CurrentlySetToAnItemNotOnThisAccount">Actualmente definido a un artículo no está en esta cuenta</string>
 	<string name="NotLoggedIn">Desconectado</string>
 
 	<!-- Avatar busy/away mode -->

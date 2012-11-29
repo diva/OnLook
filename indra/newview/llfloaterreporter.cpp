@@ -32,19 +32,19 @@
 
 #include "llviewerprecompiledheaders.h"
 
-#include <sstream>
-
 // self include
 #include "llfloaterreporter.h"
+
+#include <sstream>
 
 // linden library includes
 #include "llassetstorage.h"
 #include "llcachename.h"
 #include "llfontgl.h"
 #include "llgl.h"			// for renderer
+#include "llimagej2c.h"
 #include "llinventory.h"
 #include "llnotificationsutil.h"
-#include "llimagej2c.h"
 #include "llstring.h"
 #include "llsys.h"
 #include "sgversion.h"
@@ -86,6 +86,8 @@
 
 #include "llassetuploadresponders.h"
 
+#include "lltrans.h"
+
 // <edit>
 #include "llviewercontrol.h"
 // </edit>
@@ -95,6 +97,9 @@
 // [/RLVa:KB]
 
 const U32 INCLUDE_SCREENSHOT  = 0x01 << 0;
+
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy userReportResponder_timeout;
 
 //-----------------------------------------------------------------------------
 // Globals
@@ -394,6 +399,7 @@ void LLFloaterReporter::callbackAvatarID(const std::vector<std::string>& names, 
 	};
 }
 
+
 // static
 void LLFloaterReporter::onClickSend(void *userdata)
 {
@@ -440,7 +446,7 @@ void LLFloaterReporter::onClickSend(void *userdata)
 			}
 		}
 
-		LLUploadDialog::modalUploadDialog("Uploading...\n\nReport");
+		LLUploadDialog::modalUploadDialog(LLTrans::getString("uploading_abuse_report"));
 		// *TODO don't upload image if checkbox isn't checked
 		std::string url = gAgent.getRegion()->getCapability("SendUserReport");
 		std::string sshot_url = gAgent.getRegion()->getCapability("SendUserReportWithScreenshot");
@@ -581,7 +587,7 @@ void LLFloaterReporter::showFromObject(const LLUUID& object_id)
 }
 
 
-// static 
+// static
 LLFloaterReporter* LLFloaterReporter::getReporter(EReportType report_type)
 {
 	LLFloaterReporter *self = NULL;
@@ -855,10 +861,10 @@ public:
 	}
 };
 
-class LLUserReportResponder : public LLHTTPClient::Responder
+class LLUserReportResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
-	LLUserReportResponder(): LLHTTPClient::Responder()  {}
+	LLUserReportResponder() { }
 
 	void error(U32 status, const std::string& reason)
 	{
@@ -870,6 +876,7 @@ public:
 		// we don't care about what the server returns
 		LLUploadDialog::modalUploadFinished();
 	}
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return userReportResponder_timeout; }
 };
 
 void LLFloaterReporter::sendReportViaCaps(std::string url, std::string sshot_url, const LLSD& report)
@@ -884,7 +891,7 @@ void LLFloaterReporter::sendReportViaCaps(std::string url, std::string sshot_url
 	else
 	{
 		// screenshot not wanted or we don't have screenshot cap
-		LLHTTPClient::post(url, report, new LLUserReportResponder());			
+		LLHTTPClient::post(url, report, new LLUserReportResponder);			
 	}
 }
 
@@ -943,7 +950,7 @@ void LLFloaterReporter::takeScreenshot()
 	{
 		texture->setImageAssetID(mResourceDatap->mAssetInfo.mUuid);
 		texture->setDefaultImageAssetID(mResourceDatap->mAssetInfo.mUuid);
-		texture->setCaption(std::string("Screenshot"));
+		texture->setCaption(getString("Screenshot"));
 	}
 
 }

@@ -118,6 +118,17 @@ protected:
 	//virtual streamsize xsputn(char* src, streamsize length);
 	//@}
 
+public:
+	/*
+	 * @brief Return number of bytes in input channel.
+	 */
+	S32 count_in(void) const { return mBuffer->count(mChannels.in()); }
+
+	/*
+	 * @brief Return number of bytes in output channel.
+	 */
+	S32 count_out(void) const { return mBuffer->count(mChannels.out()); }
+
 protected:
 	// This channels we are working on.
 	LLChannelDescriptors mChannels;
@@ -143,6 +154,9 @@ public:
 		const LLChannelDescriptors& channels,
 		LLBufferArray* buffer);
 	~LLBufferStream();
+
+	S32 count_in(void) const { return mStreamBuf.count_in(); }
+	S32 count_out(void) const { return mStreamBuf.count_out(); }
 
 protected:
 	LLBufferStreamBuf mStreamBuf;

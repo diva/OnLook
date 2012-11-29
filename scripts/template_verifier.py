@@ -78,8 +78,8 @@ from indra.ipc import tokenstream
 from indra.ipc import llmessage
 
 def getstatusall(command):
-    """ Like commands.getstatusoutput, but returns stdout and 
-    stderr separately(to get around "killed by signal 15" getting 
+    """ Like commands.getstatusoutput, but returns stdout and
+    stderr separately(to get around "killed by signal 15" getting
     included as part of the file).  Also, works on Windows."""
     (input, out, err) = os.popen3(command, 't')
     status = input.close() # send no input to the command
@@ -103,7 +103,7 @@ MESSAGE_TEMPLATE = 'message_template.msg'
 PRODUCTION_ACCEPTABLE = (compatibility.Same, compatibility.Newer)
 DEVELOPMENT_ACCEPTABLE = (
     compatibility.Same, compatibility.Newer,
-    compatibility.Older, compatibility.Mixed)	
+    compatibility.Older, compatibility.Mixed)
 
 MAX_MASTER_AGE = 60 * 60 * 4   # refresh master cache every 4 hours
 
@@ -146,7 +146,7 @@ def fetch(url):
         return open(file_name).read()
     else:
         # *FIX: this doesn't throw an exception for a 404, and oddly enough the sl.com 404 page actually gets parsed successfully
-        return ''.join(urllib.urlopen(url).readlines())   
+        return ''.join(urllib.urlopen(url).readlines())
 
 def cache_master(master_url):
     """Using the url for the master, updates the local cache, and returns an url to the local cache."""
@@ -251,7 +251,7 @@ http://wiki.secondlife.com/wiki/Template_verifier.py
     elif len(args) == 1:
         master_url = None
         current_filename = args[0]
-        print "master:", options.master_url 
+        print "master:", options.master_url
         print "current:", current_filename
         current_url = 'file://%s' % current_filename
     # nothing specified, use defaults for everything
@@ -263,7 +263,7 @@ http://wiki.secondlife.com/wiki/Template_verifier.py
 
     if master_url is None:
         master_url = options.master_url
-        
+
     if current_url is None:
         current_filename = local_template_filename()
         print "master:", options.master_url
@@ -291,7 +291,7 @@ http://wiki.secondlife.com/wiki/Template_verifier.py
             print "Syntax-checking the local template ONLY, no compatibility check is being run."
             print "Cause: %s\n\n" % e
             return 0
-        
+
     acceptable, compat = compare(
         master_parsed, current_parsed, options.mode)
 
@@ -308,5 +308,3 @@ http://wiki.secondlife.com/wiki/Template_verifier.py
 
 if __name__ == '__main__':
     sys.exit(run(sys.argv[1:]))
-
-

@@ -44,6 +44,7 @@
 #include "llscrollcontainer.h"
 #include "llviewerassettype.h"
 #include "llpanelmaininventory.h"
+#include "llpanelmarketplaceoutboxinventory.h"
 
 #include "llsdserialize.h"
 
@@ -130,6 +131,7 @@ void LLInvPanelComplObserver::done()
 
 LLInventoryPanel::LLInventoryPanel(const std::string& name,
 								    const std::string& sort_order_setting,
+									const std::string& start_folder,
 									const LLRect& rect,
 									LLInventoryModel* inventory,
 									BOOL allow_multi_select,
@@ -140,6 +142,7 @@ LLInventoryPanel::LLInventoryPanel(const std::string& name,
 	mFolderRoot(NULL),
 	mScroller(NULL),
 	mSortOrderSetting(sort_order_setting),
+	mStartFolder(start_folder),
 	mInventory(inventory),
 	mAllowMultiSelect(allow_multi_select),
 	mViewsInitialized(false),
@@ -154,12 +157,38 @@ LLInventoryPanel::LLInventoryPanel(const std::string& name,
 
 void LLInventoryPanel::buildFolderView()
 {
+	// Determine the root folder in case specified, and
+	// build the views starting with that folder.
+
+	//std::string start_folder_name(params.start_folder());
+
+	const LLFolderType::EType preferred_type = LLViewerFolderType::lookupTypeFromNewCategoryName(mStartFolder);
+
+	LLUUID root_id;
+
+	if ("LIBRARY" == mStartFolder)
+	{
+		root_id = gInventory.getLibraryRootFolderID();
+	}
+	else
+	{
+		root_id = (preferred_type != LLFolderType::FT_NONE)
+				? gInventory.findCategoryUUIDForType(preferred_type, false, false)
+				: LLUUID::null;
+	}
+
+	if ((root_id == LLUUID::null) && !mStartFolder.empty())
+	{
+		llwarns << "No category found that matches start_folder: " << mStartFolder << llendl;
+		root_id = LLUUID::generateNewID();
+	}
+
 	LLInvFVBridge* new_listener = mInvFVBridgeBuilder->createBridge(LLAssetType::AT_CATEGORY,
 													LLAssetType::AT_CATEGORY,
 													LLInventoryType::IT_CATEGORY,
 													this,
 													NULL,
-													LLUUID::null);
+													root_id);
 													
 	mFolderRoot = createFolderView(new_listener, true/*params.use_label_suffix()*/);
 }
@@ -247,6 +276,7 @@ class LLInventoryRecentItemsPanel : public LLInventoryPanel
 public:
 	LLInventoryRecentItemsPanel(const std::string& name,
 								    const std::string& sort_order_setting,
+								    const std::string& start_folder,
 									const LLRect& rect,
 									LLInventoryModel* inventory,
 									BOOL allow_multi_select,
@@ -270,12 +300,19 @@ LLView* LLInventoryPanel::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 	std::string sort_order(INHERIT_SORT_ORDER);
 	node->getAttributeString("sort_order", sort_order);
 
-	if(name != "Recent Items")
-		panel = new LLInventoryPanel(name, sort_order,
+	std::string start_folder;
+	node->getAttributeString("start_folder", start_folder);
+
+	if(name == "Recent Items")
+		panel = new LLInventoryRecentItemsPanel(name, sort_order, start_folder,
+								 rect, &gInventory,
+								 allow_multi_select, parent);
+	else if(name == "panel_outbox_inventory")
+		panel = new LLOutboxInventoryPanel(name, sort_order, start_folder,
 								 rect, &gInventory,
 								 allow_multi_select, parent);
 	else
-		panel = new LLInventoryRecentItemsPanel(name, sort_order,
+		panel = new LLInventoryPanel(name, sort_order, start_folder,
 								 rect, &gInventory,
 								 allow_multi_select, parent);
 
@@ -1058,11 +1095,12 @@ static const LLRecentInventoryBridgeBuilder RECENT_ITEMS_BUILDER;
 
 LLInventoryRecentItemsPanel:: LLInventoryRecentItemsPanel(const std::string& name,
 						    		const std::string& sort_order_setting,
+									const std::string& start_folder,
 									const LLRect& rect,
 									LLInventoryModel* inventory,
 									BOOL allow_multi_select,
-									LLView *parent_view) : 
-									LLInventoryPanel(name, sort_order_setting,rect,inventory,allow_multi_select,parent_view)
+									LLView *parent_view) :
+									LLInventoryPanel(name, sort_order_setting, start_folder,rect,inventory,allow_multi_select,parent_view)
 {
 	mInvFVBridgeBuilder = &RECENT_ITEMS_BUILDER;	
 }

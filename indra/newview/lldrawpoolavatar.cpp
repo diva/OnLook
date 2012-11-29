@@ -99,7 +99,6 @@ S32 AVATAR_OFFSET_TEX0 = 32;
 S32 AVATAR_OFFSET_TEX1 = 40;
 S32 AVATAR_VERTEX_BYTES = 48;
 
-
 BOOL gAvatarEmbossBumpMap = FALSE;
 static BOOL sRenderingSkinned = FALSE;
 S32 normal_channel = -1;
@@ -1041,7 +1040,6 @@ void LLDrawPoolAvatar::endDeferredSkinned()
 }
 
 static LLFastTimer::DeclareTimer FTM_RENDER_AVATARS("renderAvatars");
-
 
 void LLDrawPoolAvatar::renderAvatars(LLVOAvatar* single_avatar, S32 pass)
 {

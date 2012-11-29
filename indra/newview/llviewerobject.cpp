@@ -1776,7 +1776,7 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 						static std::map<LLUUID,bool> state_map;
 						std::map<LLUUID,bool>::iterator it = state_map.find(getID());
 						 
-						if(it == state_map.end() || (!it->second && sent_parentp))
+						if(it != state_map.end() && (!it->second && sent_parentp))
 						{
 							it->second = sent_parentp != NULL;
 							LL_INFOS("Attachment") << getID() << " ("<<getAttachmentPointName()<<") has " << (sent_parentp ? "" : "no ") << "parent." << llendl;
