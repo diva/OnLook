@@ -1265,11 +1265,7 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 						mText->setString(mHudTextString);
 					}
 	
-					if (mDrawable.notNull())
-					{
-						setChanged(MOVED | SILHOUETTE);
-						gPipeline.markMoved(mDrawable, FALSE); // undamped
-					}
+					setChanged(MOVED | SILHOUETTE);
 				}
 				else if (mText.notNull())
 				{
