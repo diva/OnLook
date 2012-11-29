@@ -495,7 +495,7 @@ void Stats::print(void)
   // Each AICurlEasyRequestStateMachine has one AICurlEasyRequest member.
   llassert(AICurlEasyRequest_count >= AICurlEasyRequestStateMachine_count);
   // AIFIXME: is this really always the case? And why?
-  llassert(easy_handles <= ResponderBase_count);
+  llassert(easy_handles <= S32(ResponderBase_count));
 }
 
 } // namespace AICurlInterface

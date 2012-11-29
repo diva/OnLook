@@ -1844,8 +1844,9 @@ LLVector3d LLAgentCamera::calcCameraPositionTargetGlobal(BOOL *hit_limit)
 				local_camera_offset = gAgent.getFrameAgent().rotateToAbsolute( local_camera_offset );
 			}
 
+			static const LLCachedControl<bool> sg_ignore_sim_cam_consts("SGIgnoreSimulatorCameraConstraints",false);
 			if ( !mCameraCollidePlane.isExactlyZero()
-				 && !gSavedSettings.getBOOL("SGIgnoreSimulatorCameraConstraints")
+				 && !sg_ignore_sim_cam_consts
 				 && isAgentAvatarValid()
 				 && !gAgentAvatarp->isSitting())
 			{

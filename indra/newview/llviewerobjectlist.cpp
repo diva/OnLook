@@ -1471,7 +1471,7 @@ void LLViewerObjectList::updateActive(LLViewerObject *objectp)
 			}
 			else
 			{
-				llassert(idx < mActiveObjects.size());
+				llassert(idx < (S32)mActiveObjects.size());
 				llassert(mActiveObjects[idx] == objectp);
 
 				if (idx >= (S32)mActiveObjects.size() ||
