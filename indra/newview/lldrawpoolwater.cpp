@@ -392,9 +392,7 @@ void LLDrawPoolWater::renderOpaqueLegacyWater()
 			if(sRefetch)
 			{
 				sRefetch = false;
-				gTextureList.deleteImage(gTextureList.findImage( mOpaqueWaterImagep->getID() ));
-				mOpaqueWaterImagep = NULL;
-				mOpaqueWaterImagep = LLViewerTextureManager::getFetchedTexture(OPAQUE_WATER_TEXTURE);
+				((LLViewerFetchedTexture*)mOpaqueWaterImagep.get())->forceRefetch();
 			}
 			else
 				mOpaqueWaterImagep = mWaterImagep;

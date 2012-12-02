@@ -1333,6 +1333,30 @@ void LLViewerFetchedTexture::cleanup()
 	mSavedRawDiscardLevel = -1;
 }
 
+void LLViewerFetchedTexture::forceRefetch()
+{
+	bool needs_aux = mNeedsAux;
+	bool save_raw = mForceToSaveRawImage;
+	S32 raw_discard = mDesiredSavedRawDiscardLevel;
+	F32 raw_time = mKeptSavedRawImageTime;
+	callback_list_t callback_list = mLoadedCallbackList;
+	mLoadedCallbackList.clear();
+	LLAppViewer::getTextureFetch()->deleteRequest(getID(), true);
+	if(mGLTexturep)
+		mGLTexturep->forceToInvalidateGLTexture();
+	init(false);
+	mRawImage = NULL;
+	mAuxRawImage = NULL;
+	if(save_raw)
+		forceToSaveRawImage(raw_discard,raw_time);
+	for(callback_list_t::iterator iter = callback_list.begin();
+			iter != callback_list.end(); ++iter)
+	{
+		LLLoadedCallbackEntry *entryp = *iter;
+		setLoadedCallback(entryp->mCallback,entryp->mDesiredDiscard,entryp->mNeedsImageRaw,needs_aux,entryp->mUserData,entryp->mSourceCallbackList,entryp->mPaused);
+	}
+}
+
 void LLViewerFetchedTexture::setForSculpt()
 {
 	static const S32 MAX_INTERVAL = 8 ; //frames
