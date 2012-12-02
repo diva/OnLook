@@ -25,6 +25,8 @@
 	<check_box bottom="-195" height="16" initial_value="false" label="Use resolution independent scale" left="101" name="ui_auto_scale"/>
 	<spinner bottom="-220" decimal_digits="0" height="16" increment="1" initial_val="300" label="Away Timeout:" label_width="91" left="10" max_val="600" min_val="0" name="afk_timeout_spinner" width="137"/>
 	<check_box bottom="-257" height="16" initial_value="false" label="Notify when in-world currency is spent or received" left="10" name="notify_money_change_checkbox"/>
+	<check_box bottom="-257" height="16" initial_value="false" label="Notify when in-world currency is exchanged" left="10" name="notify_money_change_checkbox"/>
+	<check_box bottom="-257" height="16" label="without filling up the corner" left="245" name="no_transaction_clutter_checkbox" tool_tip="Still present the notifications, but have them pop up in the bottom right momentarily, then leave, so the transaction draws attention but doesn't get in the way."/>
 	<text bottom="-291" height="10" left="10" name="maturity_desired_label">Rating:</text>
 	<text bottom="-291" height="10" left="101" name="maturity_desired_prompt">I want to access content rated:</text>
 	<combo_box bottom="-297" follows="left|top" height="18" left="267" name="maturity_desired_combobox" width="120" control_name="PreferredMaturity">
