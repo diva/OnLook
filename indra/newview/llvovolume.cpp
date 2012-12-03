@@ -3063,6 +3063,7 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 
 		LLVector4a* pos = dst_face.mPositions;
 
+		if( pos && dst_face.mExtents )
 		{
 			LLFastTimer t(FTM_SKIN_RIGGED);
 

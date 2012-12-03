@@ -1861,8 +1861,6 @@ void LLVOAvatar::onShift(const LLVector4a& shift_vector)
 	const LLVector3& shift = reinterpret_cast<const LLVector3&>(shift_vector);
 	mLastAnimExtents[0] += shift;
 	mLastAnimExtents[1] += shift;
-	mNeedsImpostorUpdate = TRUE;
-	mNeedsAnimUpdate = TRUE;
 }
 
 void LLVOAvatar::updateSpatialExtents(LLVector4a& newMin, LLVector4a &newMax)
@@ -5243,7 +5241,20 @@ void LLVOAvatar::updateTextures()
 		LLWearableType::EType wearable_type = LLVOAvatarDictionary::getTEWearableType((ETextureIndex)texture_index);
 		U32 num_wearables = gAgentWearables.getWearableCount(wearable_type);
 		const LLTextureEntry *te = getTE(texture_index);
-		const F32 texel_area_ratio = fabs(te->mScaleS * te->mScaleT);
+
+		// getTE can return 0.
+		// Not sure yet why it does, but of course it crashes when te->mScale? gets used.
+		// Put safeguard in place so this corner case get better handling and does not result in a crash.
+		F32 texel_area_ratio = 1.0f;
+		if( te )
+		{
+			texel_area_ratio = fabs(te->mScaleS * te->mScaleT);
+		}
+		else
+		{
+			llwarns << "getTE( " << texture_index << " ) returned 0" <<llendl;
+		}
+
 		LLViewerFetchedTexture *imagep = NULL;
 		for (U32 wearable_index = 0; wearable_index < num_wearables; wearable_index++)
 		{
@@ -9744,17 +9755,14 @@ BOOL LLVOAvatar::isTextureDefined(LLVOAvatarDefines::ETextureIndex te, U32 index
 		return FALSE;
 	}
 
-	LLViewerTexture* img = getImage(te, index);
-	if(img)
+	if( !getImage( te, index ) )
 	{
-		return (img->getID() != IMG_DEFAULT_AVATAR &&
-		        img->getID() != IMG_DEFAULT);
-	}
-	else
-	{
-		llwarns << "Image doesn't exist" << llendl;
+		llwarns << "getImage( " << te << ", " << index << " ) returned 0" << llendl;
 		return FALSE;
 	}
+
+	return (getImage(te, index)->getID() != IMG_DEFAULT_AVATAR && 
+			getImage(te, index)->getID() != IMG_DEFAULT);
 }
 
 //virtual

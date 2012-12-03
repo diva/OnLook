@@ -2308,11 +2308,25 @@ void LLVOAvatarSelf::setNewBakedTexture( ETextureIndex te, const LLUUID& uuid )
 			if (isAllLocalTextureDataFinal())
 			{
 				LLNotificationsUtil::add("AvatarRezSelfBakedDoneNotification",args);
+				LL_DEBUGS("Avatar") << "REZTIME: [ " << (U32)mDebugExistenceTimer.getElapsedTimeF32()
+						<< "sec ]"
+						<< avString() 
+						<< "RuthTimer " << (U32)mRuthDebugTimer.getElapsedTimeF32()
+						<< " SelfLoadTimer " << (U32)mDebugSelfLoadTimer.getElapsedTimeF32()
+						<< " Notification " << "AvatarRezSelfBakedDoneNotification"
+						<< llendl;
 			}
 			else
 			{
 				args["STATUS"] = debugDumpAllLocalTextureDataInfo();
 				LLNotificationsUtil::add("AvatarRezSelfBakedUpdateNotification",args);
+				LL_DEBUGS("Avatar") << "REZTIME: [ " << (U32)mDebugExistenceTimer.getElapsedTimeF32()
+						<< "sec ]"
+						<< avString() 
+						<< "RuthTimer " << (U32)mRuthDebugTimer.getElapsedTimeF32()
+						<< " SelfLoadTimer " << (U32)mDebugSelfLoadTimer.getElapsedTimeF32()
+						<< " Notification " << "AvatarRezSelfBakedUpdateNotification"
+						<< llendl;
 			}
 		}
 
@@ -2320,6 +2334,7 @@ void LLVOAvatarSelf::setNewBakedTexture( ETextureIndex te, const LLUUID& uuid )
 	}
 }
 
+// FIXME: This is not called consistently. Something may be broken.
 void LLVOAvatarSelf::outputRezDiagnostics() const
 {
 	if(!gSavedSettings.getBOOL("DebugAvatarLocalTexLoadedTime"))
@@ -2328,11 +2343,11 @@ void LLVOAvatarSelf::outputRezDiagnostics() const
 	}
 
 	const F32 final_time = mDebugSelfLoadTimer.getElapsedTimeF32();
-	llinfos << "REZTIME: Myself rez stats:" << llendl;
-	llinfos << "\t Time from avatar creation to load wearables: " << (S32)mDebugTimeWearablesLoaded << llendl;
-	llinfos << "\t Time from avatar creation to de-cloud: " << (S32)mDebugTimeAvatarVisible << llendl;
-	llinfos << "\t Time from avatar creation to de-cloud for others: " << (S32)final_time << llendl;
-	llinfos << "\t Load time for each texture: " << llendl;
+	LL_DEBUGS("Avatar") << "REZTIME: Myself rez stats:" << llendl;
+	LL_DEBUGS("Avatar") << "\t Time from avatar creation to load wearables: " << (S32)mDebugTimeWearablesLoaded << llendl;
+	LL_DEBUGS("Avatar") << "\t Time from avatar creation to de-cloud: " << (S32)mDebugTimeAvatarVisible << llendl;
+	LL_DEBUGS("Avatar") << "\t Time from avatar creation to de-cloud for others: " << (S32)final_time << llendl;
+	LL_DEBUGS("Avatar") << "\t Load time for each texture: " << llendl;
 	for (U32 i = 0; i < LLVOAvatarDefines::TEX_NUM_INDICES; ++i)
 	{
 		std::stringstream out;
@@ -2356,12 +2371,14 @@ void LLVOAvatarSelf::outputRezDiagnostics() const
 
 		// Don't print out non-existent textures.
 		if (j != 0)
-			llinfos << out.str() << llendl;
+		{
+			LL_DEBUGS("Avatar") << out.str() << LL_ENDL;
+		}
 	}
-	llinfos << "\t Time points for each upload (start / finish)" << llendl;
+	LL_DEBUGS("Avatar") << "\t Time points for each upload (start / finish)" << llendl;
 	for (U32 i = 0; i < LLVOAvatarDefines::BAKED_NUM_INDICES; ++i)
 	{
-		llinfos << "\t\t (" << i << ") \t" << (S32)mDebugBakedTextureTimes[i][0] << " / " << (S32)mDebugBakedTextureTimes[i][1] << llendl;
+		LL_DEBUGS("Avatar") << "\t\t (" << i << ") \t" << (S32)mDebugBakedTextureTimes[i][0] << " / " << (S32)mDebugBakedTextureTimes[i][1] << llendl;
 	}
 
 	for (LLVOAvatarDefines::LLVOAvatarDictionary::BakedTextures::const_iterator baked_iter = LLVOAvatarDefines::LLVOAvatarDictionary::getInstance()->getBakedTextures().begin();
@@ -2373,15 +2390,16 @@ void LLVOAvatarSelf::outputRezDiagnostics() const
 		if (!layerset) continue;
 		const LLTexLayerSetBuffer *layerset_buffer = layerset->getComposite();
 		if (!layerset_buffer) continue;
-		llinfos << layerset_buffer->dumpTextureInfo() << llendl;
+		LL_DEBUGS("Avatar") << layerset_buffer->dumpTextureInfo() << llendl;
 	}
 }
 
 void LLVOAvatarSelf::outputRezTiming(const std::string& msg) const
 {
-	LL_DEBUGS("Avatar Rez")
+	LL_INFOS("Avatar")
+		<< avString()
 		<< llformat("%s. Time from avatar creation: %.2f", msg.c_str(), mDebugSelfLoadTimer.getElapsedTimeF32())
-		<< llendl;
+		<< LL_ENDL;
 }
 
 void LLVOAvatarSelf::reportAvatarRezTime() const
