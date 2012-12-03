@@ -11,7 +11,7 @@
         label="Offset TP target by half agent height" tool_tip="Tries to aim the TP so that your feet land at the point you're aiming for." name="offset_teleport_check"/>
       <check_box left="10" bottom_delta="-20" control_name="PreviewAnimInWorld" follows="top" initial_value="false"
         label="Preview animations on the avatar instead on a dummy before uploading" tool_tip="The Animation upload window will play animations on your avatar when previewing them." name="preview_anim_in_world_check"/>
-      <check_box bottom_delta="-20" control_name="SaveScriptsAsMono" follows="left|top" initial_value="true"
+      <check_box bottom_delta="-20" control_name="SaveInventoryScriptsAsMono" follows="left|top" initial_value="true"
         label="Save scripts in inventory as Mono scripts instead of LSL2" tool_tip="Scripts will automatically be compiled in Mono when saving - Usually only possible when placed in an object." name="save_scripts_as_mono_check"/>
       <check_box bottom_delta="-20" control_name="AscentAlwaysRezInGroup" follows="left|top" initial_value="true"
         label="Always rez objects as land group when available" tool_tip="Rez objects with the same group that the object is being rezzed on has, regardless of your active tag." name="always_rez_in_group_check"/>
