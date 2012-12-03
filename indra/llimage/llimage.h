@@ -114,6 +114,8 @@ public:
 	virtual void deleteData();
 	virtual U8* allocateData(S32 size = -1);
 	virtual U8* reallocateData(S32 size = -1);
+	static void deleteData(U8* data) { FREE_MEM(sPrivatePoolp, data); }
+	U8* release() { U8* data = mData; mData = NULL; mDataSize = 0; return data; }	// Same as deleteData(), but returns old data. Call deleteData(old_data) to free it.
 
 	virtual void dump();
 	virtual void sanityCheck();
@@ -180,7 +182,7 @@ public:
 
 	/*virtual*/ void deleteData();
 	/*virtual*/ U8* allocateData(S32 size = -1);
-	/*virtual*/ U8* reallocateData(S32 size);
+	/*virtual*/ U8* reallocateData(S32 size = -1);
 	
 	BOOL resize(U16 width, U16 height, S8 components);
 
@@ -287,7 +289,7 @@ public:
 	// LLImageBase
 	/*virtual*/ void deleteData();
 	/*virtual*/ U8* allocateData(S32 size = -1);
-	/*virtual*/ U8* reallocateData(S32 size);
+	/*virtual*/ U8* reallocateData(S32 size = -1);
 	
 	/*virtual*/ void dump();
 	/*virtual*/ void sanityCheck();

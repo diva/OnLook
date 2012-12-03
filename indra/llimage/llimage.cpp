@@ -206,6 +206,19 @@ U8* LLImageBase::allocateData(S32 size)
 // virtual
 U8* LLImageBase::reallocateData(S32 size)
 {
+	if (size == -1)
+	{
+		size = mWidth * mHeight * mComponents;
+		if (size <= 0)
+		{
+			llerrs << llformat("LLImageBase::reallocateData called with bad dimensions: %dx%dx%d", mWidth, mHeight, (S32)mComponents) << llendl;
+		}
+	}
+	else if (size <= 0 || (size > 4096 * 4096 * 16 && !mAllowOverSize))
+	{
+		llerrs << "LLImageBase::reallocateData: bad size: " << size << llendl;
+	}
+
 	if(mData && (mDataSize == size))
 		return mData;
 
@@ -943,76 +956,66 @@ BOOL LLImageRaw::scale( S32 new_width, S32 new_height, BOOL scale_image_data )
 		return TRUE;  // Nothing to do.
 	}
 
-	// Reallocate the data buffer.
+	U8* old_buffer = NULL;
+	U8* new_buffer;
+	S32 const old_width_bytes = old_width * getComponents();
+	S32 const new_width_bytes = new_width * getComponents();
+	S32 const min_height = llmin(old_height, new_height);
+	S32 const min_width_bytes = llmin(old_width_bytes, new_width_bytes);
 
 	if (scale_image_data)
 	{
-		// Vertical
-		S32 temp_data_size = old_width * new_height * getComponents();
-		llassert_always(temp_data_size > 0);
-		U8* temp_buffer = new (std::nothrow) U8[ temp_data_size ];
-		if (!temp_buffer )
+		if (new_height != old_height)
 		{
-			llerrs << "Out of memory in LLImageRaw::scale()" << llendl;
-			return FALSE;
+			// Resize vertically.
+			old_buffer = LLImageBase::release();
+			new_buffer = allocateDataSize(old_width, new_height, getComponents());
+			for (S32 col = 0; col < old_width; ++col)
+			{
+				copyLineScaled(old_buffer + getComponents() * col, new_buffer + getComponents() * col, old_height, new_height, old_width, old_width);
+			}
+			LLImageBase::deleteData(old_buffer);
 		}
-		for( S32 col = 0; col < old_width; col++ )
+		if (new_width != old_width)
 		{
-			copyLineScaled( getData() + (getComponents() * col), temp_buffer + (getComponents() * col), old_height, new_height, old_width, old_width );
+			// Resize horizontally.
+			old_buffer = LLImageBase::release();
+			new_buffer = allocateDataSize(new_width, new_height, getComponents());
+			for (S32 row = 0; row < new_height; ++row)
+			{
+				copyLineScaled(old_buffer + old_width_bytes * row, new_buffer + new_width_bytes * row, old_width, new_width, 1, 1);
+			}
+			LLImageBase::deleteData(old_buffer);
 		}
-
-		deleteData();
-
-		U8* new_buffer = allocateDataSize(new_width, new_height, getComponents());
-
-		// Horizontal
-		for( S32 row = 0; row < new_height; row++ )
-		{
-			copyLineScaled( temp_buffer + (getComponents() * old_width * row), new_buffer + (getComponents() * new_width * row), old_width, new_width, 1, 1 );
-		}
-
-		// Clean up
-		delete[] temp_buffer;
 	}
 	else
 	{
-		// copy	out	existing image data
-		S32	temp_data_size = old_width * old_height	* getComponents();
-		U8*	temp_buffer	= new (std::nothrow) U8[ temp_data_size ];
-		if (!temp_buffer)
+		if (new_width == old_width)
 		{
-			llwarns << "Out of memory in LLImageRaw::scale: old (w, h, c) = (" << old_width << ", " << old_height << ", " << (S32)getComponents() << 
-				") ; new (w, h, c) = (" << new_width << ", " << new_height << ", " << (S32)getComponents() << ")" << llendl;			
-
-			return FALSE ;
+			setSize(new_width, new_height, getComponents());
+			new_buffer = reallocateData();
 		}
-		memcpy(temp_buffer,	getData(), temp_data_size);	/* Flawfinder: ignore */
-
-		// allocate	new	image data,	will delete	old	data
-		U8*	new_buffer = allocateDataSize(new_width, new_height, getComponents());
-
-		for( S32 row = 0; row <	new_height;	row++ )
+		else
 		{
-			if (row	< old_height)
+			old_buffer = LLImageBase::release();
+			new_buffer = allocateDataSize(new_width, new_height, getComponents());
+			for (S32 row = 0; row <	min_height; ++row)
 			{
-				memcpy(new_buffer +	(new_width * row * getComponents()), temp_buffer + (old_width *	row	* getComponents()),	getComponents()	* llmin(old_width, new_width));	/* Flawfinder: ignore */
-				if (old_width <	new_width)
+				memcpy(new_buffer +	row * new_width_bytes, old_buffer + row * old_width_bytes, min_width_bytes);
+				if (new_width_bytes > old_width_bytes)
 				{
-					// pad out rest	of row with	black
-					memset(new_buffer +	(getComponents() * ((new_width * row) +	old_width)), 0,	getComponents()	* (new_width - old_width));
+					// Pad out rest	of row with	black.
+					memset(new_buffer +	new_width_bytes * row + old_width_bytes, 0, new_width_bytes - old_width_bytes);
 				}
 			}
-			else
-			{
-				// pad remaining rows with black
-				memset(new_buffer +	(new_width * row * getComponents()), 0,	new_width *	getComponents());
-			}
+			LLImageBase::deleteData(old_buffer);
 		}
-
-		// Clean up
-		delete[] temp_buffer;
+		if (new_height > old_height)
+		{
+			// Pad remaining rows with black.
+			memset(new_buffer +	new_width_bytes * min_height, 0, new_width_bytes * (new_height - old_height));
+		}
 	}
-
 	return TRUE ;
 }
 

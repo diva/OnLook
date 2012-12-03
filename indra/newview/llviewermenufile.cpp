@@ -527,6 +527,7 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 
 		S32 width = gViewerWindow->getWindowDisplayWidth();
 		S32 height = gViewerWindow->getWindowDisplayHeight();
+		F32 ratio = (F32)width / height;
 
 		F32 supersample = 1.f;
 		if (gSavedSettings.getBOOL("HighResSnapshot"))
@@ -546,7 +547,7 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 		if (gViewerWindow->rawSnapshot(raw,
 									   width,
 									   height,
-									   TRUE,
+									   ratio,
 									   FALSE,
 									   gSavedSettings.getBOOL("RenderUIInSnapshot"),
 									   FALSE,

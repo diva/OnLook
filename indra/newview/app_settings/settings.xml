@@ -7865,17 +7865,6 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
         <integer>64</integer>
 	  </map>
-    <key>KeepAspectForSnapshot</key>
-    <map>
-      <key>Comment</key>
-      <string>Use full window when taking snapshot, regardless of requested image size</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
     <key>LandBrushSize</key>
     <map>
       <key>Comment</key>
@@ -8046,6 +8035,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <string>0.0.0</string>
     </map>
+    <key>LastSnapshotToFeedAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>The aspect ratio spinner value for snapshots uploaded to my.secondlife.com</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <integer>1.33333</integer>
+    </map>
     <key>LastSnapshotToFeedHeight</key>
     <map>
       <key>Comment</key>
@@ -8067,6 +8067,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <string>S32</string>
       <key>Value</key>
       <integer>700</integer>
+    </map>
+    <key>LastSnapshotToEmailAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>The aspect ratio spinner value for snapshots sent by email</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <integer>0</integer>
     </map>
     <key>LastSnapshotToEmailHeight</key>
     <map>
@@ -8090,6 +8101,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>1024</integer>
     </map>
+    <key>LastSnapshotToDiskAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>The aspect ratio spinner value for snapshots written to disk</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>LastSnapshotToDiskHeight</key>
     <map>
       <key>Comment</key>
@@ -8111,6 +8133,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <string>S32</string>
       <key>Value</key>
       <integer>1024</integer>
+    </map>
+    <key>LastSnapshotToInventoryAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>The aspect ratio spinner value for snapshots uploaded to inventory</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <integer>0</integer>
     </map>
     <key>LastSnapshotToInventoryHeight</key>
     <map>
@@ -13409,6 +13442,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>SnapshotFeedLastAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>Take next feed snapshot at this aspect</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>SnapshotFeedLastResolution</key>
     <map>
       <key>Comment</key>
@@ -13442,12 +13486,34 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>SnapshotLocalLastAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>Take next local snapshot at this aspect</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>SnapshotLocalLastResolution</key>
     <map>
       <key>Comment</key>
       <string>Take next local snapshot at this resolution</string>
       <key>Persist</key>
       <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>SnapshotPostcardLastAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>Take next postcard snapshot at this aspect</string>
+      <key>Persist</key>
+      <integer>0</integer>
       <key>Type</key>
       <string>S32</string>
       <key>Value</key>
@@ -13474,6 +13540,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <string>S32</string>
       <key>Value</key>
       <integer>75</integer>
+    </map>
+    <key>SnapshotTextureLastAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>Take next texture snapshot at this aspect</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
     </map>
     <key>SnapshotTextureLastResolution</key>
     <map>

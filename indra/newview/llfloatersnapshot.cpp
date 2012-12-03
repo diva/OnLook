@@ -87,8 +87,8 @@
 ///----------------------------------------------------------------------------
 /// Local function declarations, constants, enums, and typedefs
 ///----------------------------------------------------------------------------
-S32 LLFloaterSnapshot::sUIWinHeightLong = 585 ;
-S32 LLFloaterSnapshot::sUIWinHeightShort = LLFloaterSnapshot::sUIWinHeightLong - 250 ;
+S32 LLFloaterSnapshot::sUIWinHeightLong = 629 ;
+S32 LLFloaterSnapshot::sUIWinHeightShort = LLFloaterSnapshot::sUIWinHeightLong - 270 ;
 S32 LLFloaterSnapshot::sUIWinWidth = 219 ;
 S32 const THUMBHEIGHT = 159;
 
@@ -136,6 +136,8 @@ public:
 	
 	void setSize(S32 w, S32 h);
 	void getSize(S32& w, S32& h) const;
+	void setAspect(F32 a);
+	F32 getAspect() const;
 	void getUsedSize(S32& w, S32& h) const;
 	S32 getDataSize() const { return mFormattedDataSize; }
 	void setMaxImageSize(S32 size) ;
@@ -143,7 +145,6 @@ public:
 	
 	ESnapshotType getSnapshotType() const { return mSnapshotType; }
 	LLFloaterSnapshot::ESnapshotFormat getSnapshotFormat() const { return mSnapshotFormat; }
-	BOOL rawSnapshotUsesTiling(F32 supersample = 1.f) const;
 	BOOL getSnapshotUpToDateExceptForSize() const;
 	BOOL getSnapshotUpToDate() const;
 	BOOL isSnapshotActive() { return mSnapshotActive; }
@@ -154,8 +155,8 @@ public:
 	BOOL getThumbnailUpToDate() const { return mThumbnailUpToDate ;}
 	bool getShowFreezeFrameSnapshot() const { return mShowFreezeFrameSnapshot; }
 	LLViewerTexture* getCurrentImage();
-	LLRect getImageRect();
 	BOOL isImageScaled();
+	char const* aspectComboName() const;
 	
 	void setSnapshotType(ESnapshotType type) { mSnapshotType = type; }
 	void setSnapshotFormat(LLFloaterSnapshot::ESnapshotFormat type) { mSnapshotFormat = type; }
@@ -187,6 +188,7 @@ private:
 	S32							mHeight[2];
 	BOOL						mImageScaled[2];
 	S32                         mMaxImageSize ;
+	F32							mAspectRatio;
 	
 	//thumbnail image
 	LLPointer<LLViewerTexture>	mThumbnailImage ;
@@ -213,7 +215,7 @@ private:
 	LLFloaterSnapshot::ESnapshotFormat	mSnapshotFormat;
 	S32							mUpToDateWidth;
 	S32							mUpToDateHeight;
-	BOOL						mUpToDateUsesTiling;
+	F32							mUpToDateAspectRatio;
 	BOOL						mUpToDateRenderUI;
 	BOOL						mUpToDateRenderHUD;
 	LLViewerWindow::ESnapshotType mUpToDateBufferType;
@@ -231,7 +233,6 @@ private:
 
 public:
 	static std::set<LLSnapshotLivePreview*> sList;
-	BOOL                        mKeepAspectRatio ;
 };
 
 void LLSnapshotLivePreview::setSnapshotBufferType(LLFloaterSnapshot* floater, LLViewerWindow::ESnapshotType type)
@@ -248,32 +249,9 @@ void LLSnapshotLivePreview::setSnapshotBufferType(LLFloaterSnapshot* floater, LL
 	}
 }
 
-// *Currently* LLViewerWindow::rawSnapshot does the exact same thing whether or not
-// mKeepAspectRatio is set or not, except for maybe turning on tiling. This function
-// determines if that will happen.
-BOOL LLSnapshotLivePreview::rawSnapshotUsesTiling(F32 supersample) const
-{
-	// Assume the width used is the same as last time. Note that when we
-	// get here via getSnapshotUpToDate() or rawSnapshot() then these are
-	// just mWidth[0] and mHeight[0].
-	S32 image_width = mUpToDateWidth;
-	S32 image_height = mUpToDateHeight;
-	// Use same code here as rawSnapshot to determine if tiling will be used.
-    LLRect const window_rect =  gSavedSettings.getBOOL("RenderUIInSnapshot") ? gViewerWindow->getWindowRectRaw() : gViewerWindow->getWorldViewRectRaw();
-#if 1//SHY_MOD // screenshot improvement
-	F32 internal_scale = llmin(llmax(supersample,1.f),3.f);
-	// render at specified internal resolution. >1 results in supersampling.
-	image_height *= internal_scale;
-	image_width *= internal_scale;
-#endif //shy_mod
-	return mKeepAspectRatio &&
-	       (image_width > window_rect.getWidth() ||
-	        image_height > window_rect.getHeight());
-}
-
 BOOL LLSnapshotLivePreview::getSnapshotUpToDateExceptForSize() const
 {
-	return mUpToDateUsesTiling == rawSnapshotUsesTiling() &&
+	return mUpToDateAspectRatio == mAspectRatio &&
 		   mUpToDateRenderUI == gSavedSettings.getBOOL("RenderUIInSnapshot") &&
 		   mUpToDateRenderHUD == gSavedSettings.getBOOL("RenderHUDInSnapshot") &&
 		   mUpToDateBufferType == mSnapshotBufferType &&
@@ -308,7 +286,7 @@ LLSnapshotLivePreview::LLSnapshotLivePreview (const LLRect& rect) :
 	mSnapshotFormat(LLFloaterSnapshot::ESnapshotFormat(gSavedSettings.getS32("SnapshotFormat"))),
 	mUpToDateWidth(0),
 	mUpToDateHeight(0),
-	mUpToDateUsesTiling(FALSE),
+	mUpToDateAspectRatio(1.0),
 	mUpToDateRenderUI(FALSE),
 	mUpToDateRenderHUD(FALSE),
 	mUpToDateBufferType(LLViewerWindow::SNAPSHOT_TYPE_COLOR),
@@ -333,7 +311,6 @@ LLSnapshotLivePreview::LLSnapshotLivePreview (const LLRect& rect) :
 	mImageScaled[1] = FALSE;
 
 	mMaxImageSize = MAX_SNAPSHOT_IMAGE_SIZE ;
-	mKeepAspectRatio = gSavedSettings.getBOOL("KeepAspectForSnapshot") ;
 	mThumbnailUpdateLock = FALSE ;
 	mThumbnailUpToDate   = FALSE ;
 	updateSnapshot(TRUE,TRUE); //To initialize mImageRect to correct values
@@ -368,11 +345,6 @@ LLViewerTexture* LLSnapshotLivePreview::getCurrentImage()
 	return mViewerImage[0];
 }
 
-LLRect LLSnapshotLivePreview::getImageRect()
-{
-	return mImageRect[0];
-}
-
 BOOL LLSnapshotLivePreview::isImageScaled()
 {
 	return mImageScaled[0];
@@ -384,7 +356,6 @@ void LLSnapshotLivePreview::showFreezeFrameSnapshot(bool show)
 	// If we stop to show the fullscreen "freeze frame" snapshot, play the "fall away" animation.
 	if (mShowFreezeFrameSnapshot && !show)
 	{
-		Dout(dc::notice, "Starting Fall Animation.");
 		mViewerImage[1] = mViewerImage[0];
 		mImageScaled[1] = mImageScaled[0];
 		mImageRect[1] = mImageRect[0];
@@ -402,27 +373,23 @@ void LLSnapshotLivePreview::updateSnapshot(BOOL new_snapshot, BOOL new_thumbnail
 	LLRect& rect = mImageRect[0];
 	rect.set(0, getRect().getHeight(), getRect().getWidth(), 0);
 
-	F32 image_aspect_ratio = ((F32)mWidth[0]) / ((F32)mHeight[0]);
 	F32 window_aspect_ratio = ((F32)getRect().getWidth()) / ((F32)getRect().getHeight());
 
-	if (mKeepAspectRatio)
+	if (mAspectRatio > window_aspect_ratio)
 	{
-		if (image_aspect_ratio > window_aspect_ratio)
-		{
-			// trim off top and bottom
-			S32 height_diff = getRect().getHeight() - llround((F32)getRect().getWidth() / image_aspect_ratio); 
-			S32 half_height_diff = height_diff / 2;
-			rect.mBottom += half_height_diff;
-			rect.mTop -= height_diff - half_height_diff;
-		}
-		else if (image_aspect_ratio < window_aspect_ratio)
-		{
-			// trim off left and right
-			S32 width_diff = getRect().getWidth() - llround((F32)getRect().getHeight() * image_aspect_ratio); 
-			S32 half_width_diff = width_diff / 2;
-			rect.mLeft += half_width_diff;
-			rect.mRight -= width_diff - half_width_diff;
-		}
+		// trim off top and bottom
+		S32 height_diff = llround(getRect().getHeight() - (F32)getRect().getWidth() / mAspectRatio);
+		S32 half_height_diff = llround((getRect().getHeight() - (F32)getRect().getWidth() / mAspectRatio) * 0.5);
+		rect.mBottom += half_height_diff;
+		rect.mTop -= height_diff - half_height_diff;
+	}
+	else if (mAspectRatio < window_aspect_ratio)
+	{
+		// trim off left and right
+		S32 width_diff = llround(getRect().getWidth() - (F32)getRect().getHeight() * mAspectRatio);
+		S32 half_width_diff = llround((getRect().getWidth() - (F32)getRect().getHeight() * mAspectRatio) * 0.5f);
+		rect.mLeft += half_width_diff;
+		rect.mRight -= width_diff - half_width_diff;
 	}
 
 	mShineAnimTimer.stop();
@@ -449,41 +416,34 @@ void LLSnapshotLivePreview::setSnapshotQuality(S32 quality)
 
 void LLSnapshotLivePreview::drawPreviewRect(S32 offset_x, S32 offset_y)
 {
-	F32 line_width ; 
-	glGetFloatv(GL_LINE_WIDTH, &line_width) ;
-	glLineWidth(2.0f * line_width) ;
-	LLColor4 color(0.0f, 0.0f, 0.0f, 1.0f) ;
-	gl_rect_2d( mPreviewRect.mLeft + offset_x, mPreviewRect.mTop + offset_y,
-				mPreviewRect.mRight + offset_x, mPreviewRect.mBottom + offset_y, color, FALSE ) ;
-	glLineWidth(line_width) ;
-
 	// Draw two alpha rectangles to cover areas outside of the snapshot image.
-	if(!mKeepAspectRatio)
+	LLColor4 alpha_color(0.5f, 0.5f, 0.5f, 0.8f);
+	if (mThumbnailWidth > mPreviewRect.getWidth())
 	{
-		LLColor4 alpha_color(0.5f, 0.5f, 0.5f, 0.8f) ;
-		S32 dwl = 0, dwr = 0 ;
-		if(mThumbnailWidth > mPreviewRect.getWidth())
-		{
-			dwl = (mThumbnailWidth - mPreviewRect.getWidth()) >> 1 ;
-			dwr = mThumbnailWidth - mPreviewRect.getWidth() - dwl ;
-
-			gl_rect_2d(mPreviewRect.mLeft + offset_x - dwl, mPreviewRect.mTop + offset_y,
-				mPreviewRect.mLeft + offset_x, mPreviewRect.mBottom + offset_y, alpha_color, TRUE ) ;
-			gl_rect_2d( mPreviewRect.mRight + offset_x, mPreviewRect.mTop + offset_y,
-				mPreviewRect.mRight + offset_x + dwr, mPreviewRect.mBottom + offset_y, alpha_color, TRUE ) ;
-		}
-
-		if(mThumbnailHeight > mPreviewRect.getHeight())
-		{
-			S32 dh = (mThumbnailHeight - mPreviewRect.getHeight()) >> 1 ;
-			gl_rect_2d(mPreviewRect.mLeft + offset_x - dwl, mPreviewRect.mBottom + offset_y ,
-				mPreviewRect.mRight + offset_x + dwr, mPreviewRect.mBottom + offset_y - dh, alpha_color, TRUE ) ;
-
-			dh = mThumbnailHeight - mPreviewRect.getHeight() - dh ;
-			gl_rect_2d( mPreviewRect.mLeft + offset_x - dwl, mPreviewRect.mTop + offset_y + dh,
-				mPreviewRect.mRight + offset_x + dwr, mPreviewRect.mTop + offset_y, alpha_color, TRUE ) ;
-		}
+		gl_rect_2d(                      offset_x,                        offset_y,
+				   mPreviewRect.mLeft  + offset_x, mThumbnailHeight     + offset_y,
+				   alpha_color, TRUE);
+		gl_rect_2d(mPreviewRect.mRight + offset_x,                        offset_y,
+				   mThumbnailWidth     + offset_x, mThumbnailHeight     + offset_y,
+				   alpha_color, TRUE);
 	}
+	if (mThumbnailHeight > mPreviewRect.getHeight())
+	{
+		gl_rect_2d(                      offset_x,                        offset_y,
+				   mThumbnailWidth     + offset_x, mPreviewRect.mBottom + offset_y,
+				   alpha_color, TRUE);
+		gl_rect_2d(                      offset_x, mPreviewRect.mTop    + offset_y,
+				   mThumbnailWidth     + offset_x, mThumbnailHeight     + offset_y,
+				   alpha_color, TRUE);
+	}
+	// Draw border around captured part.
+	F32 line_width; 
+	glGetFloatv(GL_LINE_WIDTH, &line_width);
+	glLineWidth(2.0f * line_width);
+	gl_rect_2d( mPreviewRect.mLeft  + offset_x, mPreviewRect.mTop    + offset_y,
+				mPreviewRect.mRight + offset_x, mPreviewRect.mBottom + offset_y,
+				LLColor4::black, FALSE);
+	glLineWidth(line_width);
 }
 
 //called when the frame is frozen.
@@ -715,33 +675,19 @@ BOOL LLSnapshotLivePreview::setThumbnailImageSize()
 	}
 
 	S32 left = 0 , top = mThumbnailHeight, right = mThumbnailWidth, bottom = 0 ;
-	if(!mKeepAspectRatio)
+	F32 ratio = mAspectRatio * window_height / window_width;
+	if(ratio > 1.f)
 	{
-		F32 ratio_x = (F32)mWidth[0] / window_width ;
-		F32 ratio_y = (F32)mHeight[0] / window_height ;
-
-		//if(mWidth[0] > window_width ||
-		//	mHeight[0] > window_height )
-		{
-			if(ratio_x > ratio_y)
-			{
-				top = (S32)(top * ratio_y / ratio_x) ;
-			}
-			else
-			{
-				right = (S32)(right * ratio_x / ratio_y) ;
-			}			
-		}
-		//else
-		//{
-		//	right = (S32)(right * ratio_x) ;
-		//	top = (S32)(top * ratio_y) ;
-		//}
-		left = (S32)((mThumbnailWidth - right) * 0.5f) ;
-		bottom = (S32)((mThumbnailHeight - top) * 0.5f) ;
-		top += bottom ;
-		right += left ;
+		top = llround(top / ratio);
 	}
+	else
+	{
+		right = llround(right * ratio);
+	}			
+	left = (mThumbnailWidth - right + 1) / 2;
+	bottom = (mThumbnailHeight - top + 1) / 2;
+	top += bottom ;
+	right += left ;
 	mPreviewRect.set(left - 1, top + 1, right + 1, bottom - 1) ;
 
 	return TRUE ;
@@ -781,9 +727,9 @@ void LLSnapshotLivePreview::generateThumbnailImage(BOOL force_update)
 
 	LLPointer<LLImageRaw> raw = NULL ;
 	S32 w , h ;
-	w = get_lower_power_two(mThumbnailWidth, 512) * 2 ;
-	h = get_lower_power_two(mThumbnailHeight, 512) * 2 ;
-
+	// Set w, h to the nearest power of two that is larger or equal to mThumbnailWidth, mThumbnailHeight (but never more than 1024).
+	w = get_lower_power_two(mThumbnailWidth - 1, 512) * 2 ;		// -1 so that w becomes mThumbnailWidth if it is a power of 2, instead of 2 * mThumbnailWidth.
+	h = get_lower_power_two(mThumbnailHeight - 1, 512) * 2 ;
 	{
 		raw = new LLImageRaw ;
 		if(!gViewerWindow->thumbnailSnapshot(raw,
@@ -800,6 +746,7 @@ void LLSnapshotLivePreview::generateThumbnailImage(BOOL force_update)
 	{
 		mThumbnailImage = LLViewerTextureManager::getLocalTexture(raw.get(), FALSE); 		
 		mThumbnailUpToDate = TRUE ;
+		Dout(dc::notice, "thumbnailSnapshot(" << w << ", " << h << ", ...) returns " << raw->getWidth() << ", " << raw->getHeight());
 	}
 
 	//unlock updating
@@ -853,7 +800,6 @@ BOOL LLSnapshotLivePreview::onIdle( void* snapshot_preview )
 	}
 
 	previewp->setVisible(FALSE);
-	Dout(dc::notice, "[1] preview DISabled (" << (void*)previewp);
 	previewp->setEnabled(FALSE);
 	
 	previewp->getWindow()->incBusyCount();
@@ -866,18 +812,18 @@ BOOL LLSnapshotLivePreview::onIdle( void* snapshot_preview )
 	previewp->mManualSizeOverride = 0;
 
 	// Remember with what parameters this snapshot was taken.
-	previewp->mUpToDateWidth = previewp->mWidth[0];			// These two must be set BEFORE calling rawSnapshotUsesTiling().
+	previewp->mUpToDateWidth = previewp->mWidth[0];
 	previewp->mUpToDateHeight = previewp->mHeight[0];
 	previewp->mUpToDateRenderUI = gSavedSettings.getBOOL("RenderUIInSnapshot");
 	previewp->mUpToDateRenderHUD = gSavedSettings.getBOOL("RenderHUDInSnapshot");
 	previewp->mUpToDateBufferType = previewp->mSnapshotBufferType;
-	previewp->mUpToDateUsesTiling = previewp->rawSnapshotUsesTiling();
+	previewp->mUpToDateAspectRatio = previewp->mAspectRatio;
 
 	if((previewp->mUpToDateMaxImageSize = gViewerWindow->rawSnapshot(
 							previewp->mPreviewImage,
 							previewp->mUpToDateWidth,
 							previewp->mUpToDateHeight,
-							previewp->mKeepAspectRatio,
+							previewp->mUpToDateAspectRatio,
 							previewp->getSnapshotType() == LLSnapshotLivePreview::SNAPSHOT_TEXTURE,		// UNUSED
 							previewp->mUpToDateRenderUI,
 							FALSE,
@@ -1000,22 +946,17 @@ BOOL LLSnapshotLivePreview::onIdle( void* snapshot_preview )
 	}
 	previewp->getWindow()->decBusyCount();
 	// only show fullscreen preview when in freeze frame mode
-	Dout(dc::notice, "Preview setVisible(" << gSavedSettings.getBOOL("FreezeTime") << ")");
 	previewp->setVisible(gSavedSettings.getBOOL("FreezeTime"));
 	previewp->mSnapshotDelayTimer.stop();
 	previewp->mSnapshotActive = FALSE;
-
-	if(!previewp->getThumbnailUpToDate())
-	{
-		previewp->generateThumbnailImage() ;
-	}
+	previewp->mThumbnailUpToDate = FALSE;
+	previewp->generateThumbnailImage() ;
 
 	return TRUE;
 }
 
 void LLSnapshotLivePreview::setSize(S32 w, S32 h)
 {
-	Dout(dc::notice, "LLSnapshotLivePreview::setSize(" << w << ", " << h << ")");
 	mWidth[0] = w;
 	mHeight[0] = h;
 }
@@ -1024,6 +965,16 @@ void LLSnapshotLivePreview::getSize(S32& w, S32& h) const
 {
 	w = mWidth[0];
 	h = mHeight[0];
+}
+
+void LLSnapshotLivePreview::setAspect(F32 a)
+{
+	mAspectRatio = a;
+}
+
+F32 LLSnapshotLivePreview::getAspect() const
+{
+	return mAspectRatio;
 }
 
 void LLSnapshotLivePreview::getUsedSize(S32& w, S32& h) const
@@ -1210,35 +1161,37 @@ public:
 	static void onClickUICheck(LLUICtrl *ctrl, void* data);
 	static void onClickHUDCheck(LLUICtrl *ctrl, void* data);
 	static void onClickKeepOpenCheck(LLUICtrl *ctrl, void* data);
-	static void onClickKeepAspectCheck(LLUICtrl *ctrl, void* data);
 	static void onCommitQuality(LLUICtrl* ctrl, void* data);
 	static void onCommitFeedResolution(LLUICtrl* ctrl, void* data);
 	static void onCommitPostcardResolution(LLUICtrl* ctrl, void* data);
 	static void onCommitTextureResolution(LLUICtrl* ctrl, void* data);
 	static void onCommitLocalResolution(LLUICtrl* ctrl, void* data);
-	static void updateResolution(LLUICtrl* ctrl, void* data, bool update_controls = true);
+	static void onCommitFeedAspect(LLUICtrl* ctrl, void* data);
+	static void onCommitPostcardAspect(LLUICtrl* ctrl, void* data);
+	static void onCommitTextureAspect(LLUICtrl* ctrl, void* data);
+	static void onCommitLocalAspect(LLUICtrl* ctrl, void* data);
+	static void updateResolution(LLUICtrl* ctrl, void* data);
+	static void updateAspect(LLUICtrl* ctrl, void* data);
 	static void onCommitFreezeFrame(LLUICtrl* ctrl, void* data);
 	static void onCommitLayerTypes(LLUICtrl* ctrl, void*data);
 	static void onCommitSnapshotType(LLUICtrl* ctrl, void* data);
 	static void onCommitSnapshotFormat(LLUICtrl* ctrl, void* data);
 	static void onCommitCustomResolution(LLUICtrl *ctrl, void* data);
-	static void resetSnapshotSizeOnUI(LLFloaterSnapshot *view, S32 width, S32 height) ;
-	static BOOL checkImageSize(LLSnapshotLivePreview* previewp, S32& width, S32& height, BOOL isWidthChanged, S32 max_value);
+	static void onCommitCustomAspect(LLUICtrl *ctrl, void* data);
 
 	static LLSnapshotLivePreview* getPreviewView(LLFloaterSnapshot *floater);
-	static void setResolution(LLFloaterSnapshot* floater, const std::string& comboname, bool update_controls = true);
+	static void setResolution(LLFloaterSnapshot* floater, const std::string& comboname);
+	static void setAspect(LLFloaterSnapshot* floater, const std::string& comboname);
 	static void updateControls(LLFloaterSnapshot* floater);
 	static void updateLayout(LLFloaterSnapshot* floater);
 
 	static LLHandle<LLView> sPreviewHandle;
-	static BOOL         sAspectRatioCheckOff ;
 	
 private:
 	static LLSnapshotLivePreview::ESnapshotType getTypeIndex(LLFloaterSnapshot* floater);
 	static ESnapshotFormat getFormatIndex(LLFloaterSnapshot* floater);
 	static void comboSetCustom(LLFloaterSnapshot *floater, const std::string& comboname);
 	static void checkAutoSnapshot(LLSnapshotLivePreview* floater, BOOL update_thumbnail = FALSE);
-	static void checkAspectRatio(LLFloaterSnapshot *view, S32 index) ;
 
 public:
 	std::vector<LLAnimPauseRequest> mAvatarPauseHandles;
@@ -1248,9 +1201,6 @@ public:
 
 // static
 LLHandle<LLView> LLFloaterSnapshot::Impl::sPreviewHandle;
-
-//static 
-BOOL LLFloaterSnapshot::Impl::sAspectRatioCheckOff = FALSE ;
 
 // static
 LLSnapshotLivePreview* LLFloaterSnapshot::Impl::getPreviewView(LLFloaterSnapshot *floater)
@@ -1293,11 +1243,19 @@ LLFloaterSnapshot::ESnapshotFormat LLFloaterSnapshot::Impl::getFormatIndex(LLFlo
 }
 
 // static
-void LLFloaterSnapshot::Impl::setResolution(LLFloaterSnapshot* floater, const std::string& comboname, bool update_controls)
+void LLFloaterSnapshot::Impl::setResolution(LLFloaterSnapshot* floater, const std::string& comboname)
 {
 	LLComboBox* combo = floater->getChild<LLComboBox>(comboname);
 	combo->setVisible(TRUE);
-	updateResolution(combo, floater, update_controls); // to sync spinners with combo
+	updateResolution(combo, floater);	// to sync spinners with combo
+}
+
+// static
+void LLFloaterSnapshot::Impl::setAspect(LLFloaterSnapshot* floater, const std::string& comboname)
+{
+	LLComboBox* combo = floater->getChild<LLComboBox>(comboname);
+	combo->setVisible(TRUE);
+	updateAspect(combo, floater); 		// to sync spinner with combo
 }
 
 //static 
@@ -1309,19 +1267,25 @@ void LLFloaterSnapshot::Impl::updateLayout(LLFloaterSnapshot* floaterp)
 
 	if(!gSavedSettings.getBOOL("AdvanceSnapshot")) //set to original window resolution
 	{
-		checkAspectRatio(floaterp, 0);	// 0 means current window size.
-
 		floaterp->getChild<LLComboBox>("feed_size_combo")->setCurrentByIndex(0);
 		gSavedSettings.setS32("SnapshotFeedLastResolution", 0);
+		floaterp->getChild<LLComboBox>("feed_aspect_combo")->setCurrentByIndex(0);	// 4:3
+		gSavedSettings.setS32("SnapshotFeedLastAspect", 0);
 
 		floaterp->getChild<LLComboBox>("postcard_size_combo")->setCurrentByIndex(0);
 		gSavedSettings.setS32("SnapshotPostcardLastResolution", 0);
+		floaterp->getChild<LLComboBox>("postcard_aspect_combo")->setCurrentByIndex(0);	// Default (current window)
+		gSavedSettings.setS32("SnapshotPostcardLastAspect", 0);
 
 		floaterp->getChild<LLComboBox>("texture_size_combo")->setCurrentByIndex(0);
 		gSavedSettings.setS32("SnapshotTextureLastResolution", 0);
+		floaterp->getChild<LLComboBox>("texture_aspect_combo")->setCurrentByIndex(0);	// Current window
+		gSavedSettings.setS32("SnapshotTextureLastAspect", 0);
 
 		floaterp->getChild<LLComboBox>("local_size_combo")->setCurrentByIndex(0);
 		gSavedSettings.setS32("SnapshotLocalLastResolution", 0);
+		floaterp->getChild<LLComboBox>("local_aspect_combo")->setCurrentByIndex(0);		// Current window
+		gSavedSettings.setS32("SnapshotLocalLastAspect", 0);
 
 		LLSnapshotLivePreview* previewp = getPreviewView(floaterp);
 		S32 w, h;
@@ -1345,7 +1309,6 @@ void LLFloaterSnapshot::Impl::updateLayout(LLFloaterSnapshot* floaterp)
 		if (previewp)
 		{
 			previewp->setVisible(TRUE);
-			Dout(dc::notice, "[1] preview ENabled (" << (void*)previewp);
 			previewp->setEnabled(TRUE);
 		}
 
@@ -1374,7 +1337,6 @@ void LLFloaterSnapshot::Impl::updateLayout(LLFloaterSnapshot* floaterp)
 		if (previewp)
 		{
 			previewp->setVisible(FALSE);
-			Dout(dc::notice, "[2] preview DISabled (" << (void*)previewp);
 			previewp->setEnabled(FALSE);
 		}
 
@@ -1431,9 +1393,13 @@ void LLFloaterSnapshot::Impl::updateControls(LLFloaterSnapshot* floater)
 	ESnapshotFormat shot_format = (ESnapshotFormat)gSavedSettings.getS32("SnapshotFormat");
 
 	floater->childSetVisible("feed_size_combo", FALSE);
+	floater->childSetVisible("feed_aspect_combo", FALSE);
 	floater->childSetVisible("postcard_size_combo", FALSE);
+	floater->childSetVisible("postcard_aspect_combo", FALSE);
 	floater->childSetVisible("texture_size_combo", FALSE);
+	floater->childSetVisible("texture_aspect_combo", FALSE);
 	floater->childSetVisible("local_size_combo", FALSE);
+	floater->childSetVisible("local_aspect_combo", FALSE);
 
 	LLSnapshotLivePreview* previewp = getPreviewView(floater);
 	if (previewp)
@@ -1451,16 +1417,20 @@ void LLFloaterSnapshot::Impl::updateControls(LLFloaterSnapshot* floater)
 		switch(shot_type)
 		{
 		  case LLSnapshotLivePreview::SNAPSHOT_FEED:
-			setResolution(floater, "feed_size_combo", false);
+			setResolution(floater, "feed_size_combo");
+			setAspect(floater, "feed_aspect_combo");
 			break;
 		  case LLSnapshotLivePreview::SNAPSHOT_POSTCARD:
-			setResolution(floater, "postcard_size_combo", false);
+			setResolution(floater, "postcard_size_combo");
+			setAspect(floater, "postcard_aspect_combo");
 			break;
 		  case LLSnapshotLivePreview::SNAPSHOT_TEXTURE:
-			setResolution(floater, "texture_size_combo", false);			
+			setResolution(floater, "texture_size_combo");			
+			setAspect(floater, "texture_aspect_combo");			
 			break;
 		  case  LLSnapshotLivePreview::SNAPSHOT_LOCAL:
-			setResolution(floater, "local_size_combo", false);
+			setResolution(floater, "local_size_combo");
+			setAspect(floater, "local_aspect_combo");
 			break;
 		}
 	}
@@ -1471,7 +1441,6 @@ void LLFloaterSnapshot::Impl::updateControls(LLFloaterSnapshot* floater)
 	floater->childSetVisible("send_btn",			shot_type == LLSnapshotLivePreview::SNAPSHOT_POSTCARD);
 	floater->childSetVisible("feed_btn",			shot_type == LLSnapshotLivePreview::SNAPSHOT_FEED);
 	floater->childSetVisible("save_btn",			shot_type == LLSnapshotLivePreview::SNAPSHOT_LOCAL);
-	floater->childSetEnabled("keep_aspect_check",	shot_type != LLSnapshotLivePreview::SNAPSHOT_TEXTURE && !sAspectRatioCheckOff);
 	floater->childSetEnabled("layer_types",			shot_type == LLSnapshotLivePreview::SNAPSHOT_LOCAL);
 
 	BOOL is_local = shot_type == LLSnapshotLivePreview::SNAPSHOT_LOCAL;
@@ -1483,13 +1452,14 @@ void LLFloaterSnapshot::Impl::updateControls(LLFloaterSnapshot* floater)
 	floater->childSetVisible("more_btn", !is_advance); // the only item hidden in advanced mode
 	floater->childSetVisible("less_btn",				is_advance);
 	floater->childSetVisible("type_label2",				is_advance);
+	floater->childSetVisible("type_label3",				is_advance);
 	floater->childSetVisible("format_label",			is_advance && is_local);
 	floater->childSetVisible("local_format_combo",		is_advance && is_local);
 	floater->childSetVisible("layer_types",				is_advance);
 	floater->childSetVisible("layer_type_label",		is_advance);
 	floater->childSetVisible("snapshot_width",			is_advance);
 	floater->childSetVisible("snapshot_height",			is_advance);
-	floater->childSetVisible("keep_aspect_check",		is_advance);
+	floater->childSetVisible("aspect_ratio",			is_advance);
 	floater->childSetVisible("ui_check",				is_advance);
 	floater->childSetVisible("hud_check",				is_advance);
 	floater->childSetVisible("keep_open_check",			is_advance);
@@ -1614,6 +1584,62 @@ void LLFloaterSnapshot::Impl::onCommitLocalResolution(LLUICtrl* ctrl, void* data
 		previewp->addManualOverride(LLSnapshotLivePreview::SNAPSHOT_LOCAL);
 	}
 	updateResolution(ctrl, data);
+}
+
+// static
+void LLFloaterSnapshot::Impl::onCommitFeedAspect(LLUICtrl* ctrl, void* data)
+{
+	LLComboBox* combobox = (LLComboBox*)ctrl;
+	gSavedSettings.setS32("SnapshotFeedLastAspect", combobox->getCurrentIndex());
+	LLFloaterSnapshot *view = (LLFloaterSnapshot *)data;
+	LLSnapshotLivePreview* previewp = getPreviewView(view);
+	if (previewp && previewp->isUsed())
+	{
+		previewp->addManualOverride(LLSnapshotLivePreview::SNAPSHOT_FEED);
+	}
+	updateAspect(ctrl, data);
+}
+
+// static
+void LLFloaterSnapshot::Impl::onCommitPostcardAspect(LLUICtrl* ctrl, void* data)
+{
+	LLComboBox* combobox = (LLComboBox*)ctrl;
+	gSavedSettings.setS32("SnapshotPostcardLastAspect", combobox->getCurrentIndex());
+	LLFloaterSnapshot *view = (LLFloaterSnapshot *)data;
+	LLSnapshotLivePreview* previewp = getPreviewView(view);
+	if (previewp && previewp->isUsed())
+	{
+		previewp->addManualOverride(LLSnapshotLivePreview::SNAPSHOT_POSTCARD);
+	}
+	updateAspect(ctrl, data);
+}
+
+// static
+void LLFloaterSnapshot::Impl::onCommitTextureAspect(LLUICtrl* ctrl, void* data)
+{
+	LLComboBox* combobox = (LLComboBox*)ctrl;
+	gSavedSettings.setS32("SnapshotTextureLastAspect", combobox->getCurrentIndex());
+	LLFloaterSnapshot *view = (LLFloaterSnapshot *)data;
+	LLSnapshotLivePreview* previewp = getPreviewView(view);
+	if (previewp && previewp->isUsed())
+	{
+		previewp->addManualOverride(LLSnapshotLivePreview::SNAPSHOT_TEXTURE);
+	}
+	updateAspect(ctrl, data);
+}
+
+// static
+void LLFloaterSnapshot::Impl::onCommitLocalAspect(LLUICtrl* ctrl, void* data)
+{
+	LLComboBox* combobox = (LLComboBox*)ctrl;
+	gSavedSettings.setS32("SnapshotLocalLastAspect", combobox->getCurrentIndex());
+	LLFloaterSnapshot *view = (LLFloaterSnapshot *)data;
+	LLSnapshotLivePreview* previewp = getPreviewView(view);
+	if (previewp && previewp->isUsed())
+	{
+		previewp->addManualOverride(LLSnapshotLivePreview::SNAPSHOT_LOCAL);
+	}
+	updateAspect(ctrl, data);
 }
 
 // static
@@ -1790,35 +1816,6 @@ void LLFloaterSnapshot::Impl::onClickKeepOpenCheck(LLUICtrl* ctrl, void* data)
 }
 
 // static
-void LLFloaterSnapshot::Impl::onClickKeepAspectCheck(LLUICtrl* ctrl, void* data)
-{
-	LLCheckBoxCtrl *check = (LLCheckBoxCtrl *)ctrl;
-	gSavedSettings.setBOOL( "KeepAspectForSnapshot", check->get() );
-	
-	LLFloaterSnapshot *view = (LLFloaterSnapshot *)data;
-	if (view)
-	{
-		LLSnapshotLivePreview* previewp = getPreviewView(view) ;
-		if(previewp)
-		{
-			previewp->mKeepAspectRatio = gSavedSettings.getBOOL("KeepAspectForSnapshot") ;
-
-			S32 w, h ;
-			previewp->getSize(w, h) ;
-			if(checkImageSize(previewp, w, h, TRUE, previewp->getMaxImageSize()))
-			{
-				resetSnapshotSizeOnUI(view, w, h) ;
-				previewp->setSize(w, h) ;
-				updateControls(view);
-			}
-
-			previewp->updateSnapshot(FALSE, TRUE);
-			checkAutoSnapshot(previewp, TRUE);
-		}
-	}
-}
-
-// static
 void LLFloaterSnapshot::Impl::onCommitQuality(LLUICtrl* ctrl, void* data)
 {
 	LLSliderCtrl* slider = (LLSliderCtrl*)ctrl;
@@ -1848,52 +1845,6 @@ void LLFloaterSnapshot::Impl::onCommitFreezeFrame(LLUICtrl* ctrl, void* data)
 	updateLayout(view);
 }
 
-// static
-void LLFloaterSnapshot::Impl::checkAspectRatio(LLFloaterSnapshot *view, S32 index)
-{
-	LLSnapshotLivePreview *previewp = getPreviewView(view) ;
-
-	if(0 == index) //current window size
-	{
-		sAspectRatioCheckOff = TRUE ;
-		view->childSetEnabled("keep_aspect_check", FALSE) ;
-		view->childSetValue("keep_aspect_check", TRUE);
-
-		if(previewp)
-		{
-			previewp->mKeepAspectRatio = TRUE ;
-		}
-	}
-	else if(-1 == index) //custom
-	{
-		sAspectRatioCheckOff = FALSE ;
-		//if(LLSnapshotLivePreview::SNAPSHOT_TEXTURE != gSavedSettings.getS32("LastSnapshotType"))
-		{
-			bool custom_keep_aspect_ratio = gSavedSettings.getBOOL("KeepAspectForSnapshot");
-			view->childSetEnabled("keep_aspect_check", TRUE) ;
-			view->childSetValue("keep_aspect_check", custom_keep_aspect_ratio);
-
-			if(previewp)
-			{
-				previewp->mKeepAspectRatio = custom_keep_aspect_ratio;
-			}
-		}
-	}
-	else
-	{
-		sAspectRatioCheckOff = TRUE ;
-		view->childSetEnabled("keep_aspect_check", FALSE) ;
-		view->childSetValue("keep_aspect_check", FALSE);
-
-		if(previewp)
-		{
-			previewp->mKeepAspectRatio = FALSE ;
-		}
-	}
-
-	return ;
-}
-
 static std::string lastSnapshotWidthName()
 {
 	switch(gSavedSettings.getS32("LastSnapshotType"))
@@ -1904,6 +1855,7 @@ static std::string lastSnapshotWidthName()
 	default:                                       return "LastSnapshotToDiskWidth";
 	}
 }
+
 static std::string lastSnapshotHeightName()
 {
 	switch(gSavedSettings.getS32("LastSnapshotType"))
@@ -1915,8 +1867,19 @@ static std::string lastSnapshotHeightName()
 	}
 }
 
+static std::string lastSnapshotAspectName()
+{
+	switch(gSavedSettings.getS32("LastSnapshotType"))
+	{
+	case LLSnapshotLivePreview::SNAPSHOT_FEED:     return "LastSnapshotToFeedAspect";
+	case LLSnapshotLivePreview::SNAPSHOT_POSTCARD: return "LastSnapshotToEmailAspect";
+	case LLSnapshotLivePreview::SNAPSHOT_TEXTURE:  return "LastSnapshotToInventoryAspect";
+	default:                                       return "LastSnapshotToDiskAspect";
+	}
+}
+
 // static
-void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool update_controls)
+void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data)
 {
 	LLComboBox* combobox = (LLComboBox*)ctrl;
 	LLFloaterSnapshot *view = (LLFloaterSnapshot *)data;
@@ -1931,47 +1894,53 @@ void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool 
 	LLSnapshotLivePreview* previewp = getPreviewView(view);
 	LLSnapshotLivePreview::ESnapshotType shot_type = (LLSnapshotLivePreview::ESnapshotType)gSavedSettings.getS32("LastSnapshotType");
 
+#if 0 // AIFIXME
 	bool up_to_date_now = false;
 	bool up_to_date_after_toggling = false;
 	if (previewp && previewp->isUsed() && !previewp->isOverriddenBy(shot_type))
 	{
 		up_to_date_now = previewp->getSnapshotUpToDateExceptForSize();
-		previewp->mKeepAspectRatio = !previewp->mKeepAspectRatio;
+		previewp->mScaleInsteadOfCrop = !previewp->mScaleInsteadOfCrop;
 		up_to_date_after_toggling = previewp->getSnapshotUpToDateExceptForSize();
-		previewp->mKeepAspectRatio = !previewp->mKeepAspectRatio;
+		previewp->mScaleInsteadOfCrop = !previewp->mScaleInsteadOfCrop;
 	}
 	if (up_to_date_now || up_to_date_after_toggling)
 	{
-		// need_keep_aspect is set when mKeepAspectRatio makes a difference.
+		// need_keep_aspect is set when mScaleInsteadOfCrop makes a difference.
 		bool need_keep_aspect = up_to_date_now != up_to_date_after_toggling;
 
-		// Force the size, and possibly mKeepAspectRatio, to be the one of the existing snapshot.
+		// Force the size, and possibly mScaleInsteadOfCrop, to be the one of the existing snapshot.
 		previewp->getUsedSize(used_w, used_h);
-		LLComboBox* combo_box = NULL;
+		LLComboBox* size_combo_box = NULL;
+		LLComboBox* aspect_combo_box = NULL;
 		switch(shot_type)
 		{
 			case LLSnapshotLivePreview::SNAPSHOT_FEED:
-				combo_box = view->getChild<LLComboBox>("feed_size_combo");
+				size_combo_box = view->getChild<LLComboBox>("feed_size_combo");
+				aspect_combo_box = view->getChild<LLComboBox>("feed_aspect_combo");
 				break;
 			case LLSnapshotLivePreview::SNAPSHOT_POSTCARD:
-				combo_box = view->getChild<LLComboBox>("postcard_size_combo");
+				size_combo_box = view->getChild<LLComboBox>("postcard_size_combo");
+				aspect_combo_box = view->getChild<LLComboBox>("postcard_aspect_combo");
 				break;
 			case LLSnapshotLivePreview::SNAPSHOT_TEXTURE:
-				combo_box = view->getChild<LLComboBox>("texture_size_combo");
+				size_combo_box = view->getChild<LLComboBox>("texture_size_combo");
+				aspect_combo_box = view->getChild<LLComboBox>("texture_aspect_combo");
 				break;
 			case LLSnapshotLivePreview::SNAPSHOT_LOCAL:
-				combo_box = view->getChild<LLComboBox>("local_size_combo");
+				size_combo_box = view->getChild<LLComboBox>("local_size_combo");
+				aspect_combo_box = view->getChild<LLComboBox>("local_aspect_combo");
 				break;
 		}
 		S32 index = 0;
 		bool keep_aspect = true;
-		bool needed_keep_aspect = up_to_date_now ? previewp->mKeepAspectRatio : !previewp->mKeepAspectRatio;	// Only valid if need_keep_aspect is true.
-		S32 const custom = combo_box->getItemCount() - 1;
+		bool needed_keep_aspect = up_to_date_now ? previewp->mScaleInsteadOfCrop : !previewp->mScaleInsteadOfCrop;	// Only valid if need_keep_aspect is true.
+		S32 const custom = size_combo_box->getItemCount() - (shot_type == LLSnapshotLivePreview::SNAPSHOT_TEXTURE ? 0 : 1);	// Texture does not end on 'Custom'.
 		while (index < custom)
 		{
 			if (!need_keep_aspect || keep_aspect == needed_keep_aspect)
 			{
-				combo_box->setCurrentByIndex(index);
+				size_combo_box->setCurrentByIndex(index);
 				std::string sdstring = combobox->getSelectedValue();
 				LLSD sdres;
 				std::stringstream sstream(sdstring);
@@ -1985,7 +1954,6 @@ void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool 
 				}
 				if (width == used_w && height == used_h)
 				{
-					Dout(dc::notice, "Selected entry " << index << " with size " << width << "x" << height);
 					break;
 				}
 			}
@@ -1994,22 +1962,25 @@ void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool 
 		}
 		if (index == custom)
 		{
-			combo_box->setCurrentByIndex(index);
-			Dout(dc::notice, "Selected entry Custom");
+			size_combo_box->setCurrentByIndex(index);
 			if (need_keep_aspect)
 			{
-				// Change mKeepAspectRatio to needed_keep_aspect.
+				// Change mScaleInsteadOfCrop to needed_keep_aspect.
 				gSavedSettings.setBOOL("KeepAspectForSnapshot", needed_keep_aspect);
-				checkAspectRatio(view, -1);	// -1 means custom.
 			}
 		}
 	}
 	else
+#endif
 	{
 	    view->getChild<LLComboBox>("feed_size_combo")->selectNthItem(gSavedSettings.getS32("SnapshotFeedLastResolution"));
+	    view->getChild<LLComboBox>("feed_aspect_combo")->selectNthItem(gSavedSettings.getS32("SnapshotFeedLastAspect"));
 	    view->getChild<LLComboBox>("postcard_size_combo")->selectNthItem(gSavedSettings.getS32("SnapshotPostcardLastResolution"));
+	    view->getChild<LLComboBox>("postcard_aspect_combo")->selectNthItem(gSavedSettings.getS32("SnapshotPostcardLastAspect"));
 	    view->getChild<LLComboBox>("texture_size_combo")->selectNthItem(gSavedSettings.getS32("SnapshotTextureLastResolution"));
+	    view->getChild<LLComboBox>("texture_aspect_combo")->selectNthItem(gSavedSettings.getS32("SnapshotTextureLastAspect"));
 	    view->getChild<LLComboBox>("local_size_combo")->selectNthItem(gSavedSettings.getS32("SnapshotLocalLastResolution"));
+	    view->getChild<LLComboBox>("local_aspect_combo")->selectNthItem(gSavedSettings.getS32("SnapshotLocalLastAspect"));
 	}
 
 	std::string sdstring = combobox->getSelectedValue();
@@ -2031,7 +2002,7 @@ void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool 
 		}
 		else if (width == -1 || height == -1)
 		{
-			if (previewp->isUsed())
+			if (previewp->isUsed() && used_w != 0 && used_h != 0)
 			{
 				previewp->setSize(used_w, used_h);
 			}
@@ -2047,34 +2018,12 @@ void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool 
 			previewp->setSize(width, height);
 		}
 
-		checkAspectRatio(view, width) ;
-
 		previewp->getSize(width, height);
 	
-		if(checkImageSize(previewp, width, height, TRUE, previewp->getMaxImageSize()))
-		{
-			resetSnapshotSizeOnUI(view, width, height) ;
-		}
-		
 		if(view->childGetValue("snapshot_width").asInteger() != width || view->childGetValue("snapshot_height").asInteger() != height)
 		{
-			Dout(dc::notice, "LLFloaterSnapshot::Impl::updateResolution: set width, height to " << width << ", " << height);
 			view->childSetValue("snapshot_width", width);
 			view->childSetValue("snapshot_height", height);
-		}
-
-		if(original_width != width || original_height != height)
-		{
-			previewp->setSize(width, height);
-
-			// hide old preview as the aspect ratio could be wrong
-			checkAutoSnapshot(previewp, FALSE);
-			getPreviewView(view)->updateSnapshot(FALSE, TRUE);
-
-			if (update_controls)
-			{
-				updateControls(view);
-			}
 		}
 	}
 
@@ -2083,8 +2032,7 @@ void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool 
 	LLSpinCtrl* width_spinner = view->getChild<LLSpinCtrl>("snapshot_width");
 	LLSpinCtrl* height_spinner = view->getChild<LLSpinCtrl>("snapshot_height");
 
-	if ((gSavedSettings.getS32("LastSnapshotType") == LLSnapshotLivePreview::SNAPSHOT_TEXTURE &&
-		combobox->getCurrentIndex() != combobox->getItemCount() - 1) ||
+	if (gSavedSettings.getS32("LastSnapshotType") == LLSnapshotLivePreview::SNAPSHOT_TEXTURE ||
 		gSavedSettings.getBOOL("RenderUIInSnapshot") ||
 		gSavedSettings.getBOOL("RenderHUDInSnapshot"))
 	{
@@ -2100,6 +2048,65 @@ void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool 
 		width_spinner->setIncrement(32);
 		height_spinner->setAllowEdit(TRUE);
 		height_spinner->setIncrement(32);
+	}
+}
+
+// static
+void LLFloaterSnapshot::Impl::updateAspect(LLUICtrl* ctrl, void* data)
+{
+	LLComboBox* combobox = (LLComboBox*)ctrl;
+	LLFloaterSnapshot *view = (LLFloaterSnapshot *)data;
+		
+	if (!view || !combobox)
+	{
+		return;
+	}
+
+	LLSnapshotLivePreview* previewp = getPreviewView(view);
+	//LLSnapshotLivePreview::ESnapshotType shot_type = (LLSnapshotLivePreview::ESnapshotType)gSavedSettings.getS32("LastSnapshotType");
+
+	view->getChild<LLComboBox>("feed_aspect_combo")->selectNthItem(gSavedSettings.getS32("SnapshotFeedLastAspect"));
+	view->getChild<LLComboBox>("postcard_aspect_combo")->selectNthItem(gSavedSettings.getS32("SnapshotPostcardLastAspect"));
+	view->getChild<LLComboBox>("texture_aspect_combo")->selectNthItem(gSavedSettings.getS32("SnapshotTextureLastAspect"));
+	view->getChild<LLComboBox>("local_aspect_combo")->selectNthItem(gSavedSettings.getS32("SnapshotLocalLastAspect"));
+
+	std::string sdstring = combobox->getSelectedValue();
+	std::stringstream sstream;
+	sstream << sdstring;
+	F32 aspect;
+	sstream >> aspect;
+
+	if (aspect == -1)		// Custom
+	{
+		aspect = gSavedSettings.getF32(lastSnapshotAspectName());
+	}
+	if (aspect == 0)		// Current window
+	{
+		aspect = (F32)gViewerWindow->getWindowDisplayWidth() / gViewerWindow->getWindowDisplayHeight();
+	}
+
+	LLSpinCtrl* aspect_spinner = view->getChild<LLSpinCtrl>("aspect_ratio");
+
+	// Sync the spinner and cache value.
+	aspect_spinner->set(aspect);
+	if (previewp)
+	{
+		previewp->setAspect(aspect);
+		checkAutoSnapshot(previewp, TRUE);
+	}
+
+	// Set whether or not the spinners can be changed.
+	if (gSavedSettings.getBOOL("RenderUIInSnapshot") ||
+		gSavedSettings.getBOOL("RenderHUDInSnapshot"))
+	{
+		// Disable without making label gray.
+		aspect_spinner->setAllowEdit(FALSE);
+		aspect_spinner->setIncrement(0);
+	}
+	else
+	{
+		aspect_spinner->setAllowEdit(TRUE);
+		aspect_spinner->setIncrement(llmax(0.01f, lltrunc(aspect) / 100.0f));
 	}
 }
 
@@ -2156,107 +2163,26 @@ void LLFloaterSnapshot::Impl::comboSetCustom(LLFloaterSnapshot* floater, const s
 	{
 		gSavedSettings.setS32("SnapshotPostcardLastResolution", combo->getCurrentIndex());
 	}
-	else if(comboname == "texture_size_combo") 
-	{
-		gSavedSettings.setS32("SnapshotTextureLastResolution", combo->getCurrentIndex());
-	}
 	else if(comboname == "local_size_combo") 
 	{
 		gSavedSettings.setS32("SnapshotLocalLastResolution", combo->getCurrentIndex());
 	}
-
-	checkAspectRatio(floater, -1); // -1 means custom
-}
-
-
-
-//static
-BOOL LLFloaterSnapshot::Impl::checkImageSize(LLSnapshotLivePreview* previewp, S32& width, S32& height, BOOL isWidthChanged, S32 max_value)
-{
-	S32 w = width ;
-	S32 h = height ;
-
-	//if texture, ignore aspect ratio setting, round image size to power of 2.
-#if 0 // Don't round texture sizes; textures are commonly stretched in world, profiles, etc and need to be "squashed" during upload, not cropped here
-	if(LLSnapshotLivePreview::SNAPSHOT_TEXTURE == gSavedSettings.getS32("LastSnapshotType"))
+	else if(comboname == "feed_aspect_combo")
 	{
-		if(width > max_value)
-		{
-			width = max_value ;
-		}
-		if(height > max_value)
-		{
-			height = max_value ;
-		}
-
-		//round to nearest power of 2 based on the direction of movement
-		// i.e. higher power of two if increasing texture resolution
-		if(gSavedSettings.getS32("LastSnapshotToInventoryWidth") < width ||
-			gSavedSettings.getS32("LastSnapshotToInventoryHeight") < height)
-		{
-			// Up arrow pressed
-			width = get_next_power_two(width, MAX_TEXTURE_SIZE) ;
-			height = get_next_power_two(height, MAX_TEXTURE_SIZE) ;
-		}
-		else
-		{
-			// Down or no change
-			width = get_lower_power_two(width, MAX_TEXTURE_SIZE) ;
-			height = get_lower_power_two(height, MAX_TEXTURE_SIZE) ;
-		}
+		gSavedSettings.setS32("SnapshotFeedLastAspect", combo->getCurrentIndex());
 	}
-	else
-#endif
-	if(previewp && previewp->mKeepAspectRatio)
+	else if(comboname == "postcard_aspect_combo") 
 	{
-		if(gViewerWindow->getWindowDisplayWidth() < 1 || gViewerWindow->getWindowDisplayHeight() < 1)
-		{
-			return FALSE ;
-		}
-
-		//aspect ratio of the current window
-		F32 aspect_ratio = (F32)gViewerWindow->getWindowDisplayWidth() / gViewerWindow->getWindowDisplayHeight() ;
-
-		//change another value proportionally
-		if(isWidthChanged)
-		{
-			height = (S32)(width / aspect_ratio) ;
-		}
-		else
-		{
-			width = (S32)(height * aspect_ratio) ;
-		}
-
-		//bound w/h by the max_value
-		if(width > max_value || height > max_value)
-		{
-			if(width > height)
-			{
-				width = max_value ;
-				height = (S32)(width / aspect_ratio) ;
-			}
-			else
-			{
-				height = max_value ;
-				width = (S32)(height * aspect_ratio) ;
-			}
-		}
+		gSavedSettings.setS32("SnapshotPostcardLastAspect", combo->getCurrentIndex());
 	}
-	else
+	else if(comboname == "texture_aspect_combo") 
 	{
+		gSavedSettings.setS32("SnapshotTextureLastAspect", combo->getCurrentIndex());
 	}
-
-	return (w != width || h != height) ;
-}
-
-//static
-void LLFloaterSnapshot::Impl::resetSnapshotSizeOnUI(LLFloaterSnapshot *view, S32 width, S32 height)
-{
-	DoutEntering(dc::notice, "LLFloaterSnapshot::Impl::resetSnapshotSizeOnUI(" << width << ", " << height << ")");
-	view->getChild<LLSpinCtrl>("snapshot_width")->forceSetValue(width);
-	view->getChild<LLSpinCtrl>("snapshot_height")->forceSetValue(height);
-	gSavedSettings.setS32(lastSnapshotWidthName(), width);
-	gSavedSettings.setS32(lastSnapshotHeightName(), height);
+	else if(comboname == "local_aspect_combo") 
+	{
+		gSavedSettings.setS32("SnapshotLocalLastAspect", combo->getCurrentIndex());
+	}
 }
 
 //static
@@ -2265,8 +2191,8 @@ void LLFloaterSnapshot::Impl::onCommitCustomResolution(LLUICtrl *ctrl, void* dat
 	LLFloaterSnapshot *view = (LLFloaterSnapshot *)data;		
 	if (view)
 	{
-		S32 w = llfloor((F32)view->childGetValue("snapshot_width").asReal());
-		S32 h = llfloor((F32)view->childGetValue("snapshot_height").asReal());
+		S32 w = llround(view->childGetValue("snapshot_width").asReal(), 1.0);
+		S32 h = llround(view->childGetValue("snapshot_height").asReal(), 1.0);
 
 		LLSnapshotLivePreview* previewp = getPreviewView(view);
 		if (previewp)
@@ -2276,50 +2202,66 @@ void LLFloaterSnapshot::Impl::onCommitCustomResolution(LLUICtrl *ctrl, void* dat
 			
 			if (w != curw || h != curh)
 			{
-				BOOL update_ = FALSE ;
-				//if to upload a snapshot, process spinner input in a special way.
-#if 0  // Don't round texture sizes; textures are commonly stretched in world, profiles, etc and need to be "squashed" during upload, not cropped here
-				if(LLSnapshotLivePreview::SNAPSHOT_TEXTURE == gSavedSettings.getS32("LastSnapshotType"))
-				{
-					S32 spinner_increment = (S32)((LLSpinCtrl*)ctrl)->getIncrement() ;
-					S32 dw = w - curw ;
-					S32 dh = h - curh ;
-					dw = (dw == spinner_increment) ? 1 : ((dw == -spinner_increment) ? -1 : 0) ;
-					dh = (dh == spinner_increment) ? 1 : ((dh == -spinner_increment) ? -1 : 0) ;
-
-					if(dw)
-					{
-						w = (dw > 0) ? curw << dw : curw >> -dw ;
-						update_ = TRUE ;
-					}
-					if(dh)
-					{
-						h = (dh > 0) ? curh << dh : curh >> -dh ;
-						update_ = TRUE ;
-					}
-				}
-#endif
 				previewp->setMaxImageSize((S32)((LLSpinCtrl *)ctrl)->getMaxValue()) ;
-				
-				// Check image size changes the value of height and width
-				if(checkImageSize(previewp, w, h, w != curw, previewp->getMaxImageSize())
-					|| update_)
-				{
-					resetSnapshotSizeOnUI(view, w, h) ;
-				}
-
 				previewp->setSize(w,h);
 				checkAutoSnapshot(previewp, FALSE);
 				previewp->updateSnapshot(FALSE, TRUE);
 				comboSetCustom(view, "feed_size_combo");
 				comboSetCustom(view, "postcard_size_combo");
-				comboSetCustom(view, "texture_size_combo");
 				comboSetCustom(view, "local_size_combo");
 			}
 		}
 
 		gSavedSettings.setS32(lastSnapshotWidthName(), w);
 		gSavedSettings.setS32(lastSnapshotHeightName(), h);
+
+		updateControls(view);
+	}
+}
+
+char const* LLSnapshotLivePreview::aspectComboName() const
+{
+	char const* result;
+	switch(mSnapshotType)
+	{
+		case SNAPSHOT_FEED:
+			result = "feed_aspect_combo";
+			break;
+		case SNAPSHOT_POSTCARD:
+			result = "postcard_aspect_combo";
+			break;
+		case SNAPSHOT_TEXTURE:
+			result = "texture_aspect_combo";
+			break;
+		case SNAPSHOT_LOCAL:
+			result = "local_aspect_combo";
+			break;
+	}
+	return result;
+}
+
+//static
+void LLFloaterSnapshot::Impl::onCommitCustomAspect(LLUICtrl *ctrl, void* data)
+{
+	LLFloaterSnapshot *view = (LLFloaterSnapshot *)data;		
+	if (view)
+	{
+		F32 a = view->childGetValue("aspect_ratio").asReal();
+
+		LLSnapshotLivePreview* previewp = getPreviewView(view);
+		if (previewp)
+		{
+			F32 cura = previewp->getAspect();
+			
+			if (a != cura)
+			{
+				previewp->setAspect(a);
+				previewp->updateSnapshot(FALSE, TRUE);
+				comboSetCustom(view, previewp->aspectComboName());
+			}
+		}
+
+		gSavedSettings.setF32(lastSnapshotAspectName(), a);
 
 		updateControls(view);
 	}
@@ -2380,6 +2322,8 @@ BOOL LLFloaterSnapshot::postBuild()
 	childSetCommitCallback("snapshot_width", Impl::onCommitCustomResolution, this);
 	childSetCommitCallback("snapshot_height", Impl::onCommitCustomResolution, this);
 
+	childSetCommitCallback("aspect_ratio", Impl::onCommitCustomAspect, this);
+
 	childSetCommitCallback("ui_check", Impl::onClickUICheck, this);
 	childSetValue("ui_check", gSavedSettings.getBOOL("RenderUIInSnapshot"));
 
@@ -2389,14 +2333,10 @@ BOOL LLFloaterSnapshot::postBuild()
 	childSetCommitCallback("keep_open_check", Impl::onClickKeepOpenCheck, this);
 	childSetValue("keep_open_check", !gSavedSettings.getBOOL("CloseSnapshotOnKeep"));
 
-	childSetCommitCallback("keep_aspect_check", Impl::onClickKeepAspectCheck, this);
-	childSetValue("keep_aspect_check", gSavedSettings.getBOOL("KeepAspectForSnapshot"));
-
 	childSetCommitCallback("layer_types", Impl::onCommitLayerTypes, this);
 	childSetValue("layer_types", "colors");
 	childSetEnabled("layer_types", FALSE);
 
-	Dout(dc::notice, "LLFloaterSnapshot::postBuild: setting width, height to " << gSavedSettings.getS32(lastSnapshotWidthName()) << ", " << gSavedSettings.getS32(lastSnapshotHeightName()));
 	childSetValue("snapshot_width", gSavedSettings.getS32(lastSnapshotWidthName()));
 	childSetValue("snapshot_height", gSavedSettings.getS32(lastSnapshotHeightName()));
 
@@ -2412,6 +2352,11 @@ BOOL LLFloaterSnapshot::postBuild()
 	childSetCommitCallback("texture_size_combo", Impl::onCommitTextureResolution, this);
 	childSetCommitCallback("local_size_combo", Impl::onCommitLocalResolution, this);
 
+	childSetCommitCallback("feed_aspect_combo", Impl::onCommitFeedAspect, this);
+	childSetCommitCallback("postcard_aspect_combo", Impl::onCommitPostcardAspect, this);
+	childSetCommitCallback("texture_aspect_combo", Impl::onCommitTextureAspect, this);
+	childSetCommitCallback("local_aspect_combo", Impl::onCommitLocalAspect, this);
+
 	// create preview window
 	LLRect full_screen_rect = sInstance->getRootView()->getRect();
 	LLSnapshotLivePreview* previewp = new LLSnapshotLivePreview(full_screen_rect);
@@ -2420,15 +2365,13 @@ BOOL LLFloaterSnapshot::postBuild()
 	sInstance->getRootView()->addChild(previewp);
 	sInstance->getRootView()->addChild(gSnapshotFloaterView);
 
-	// <edit>
 	gSavedSettings.setBOOL("TemporaryUpload",FALSE);
-        childSetValue("temp_check",FALSE);
-	// </edit>
+	childSetValue("temp_check",FALSE);
 
 	Impl::sPreviewHandle = previewp->getHandle();
 
 	impl.updateControls(this);
-	
+
 	return TRUE;
 }
 
@@ -2448,10 +2391,17 @@ void LLFloaterSnapshot::draw()
 	{		
 		if(previewp->getThumbnailImage())
 		{
-			S32 offset_x = (getRect().getWidth() - previewp->getThumbnailWidth()) / 2 + 1;
-			S32 offset_y = getRect().getHeight() - (THUMBHEIGHT + previewp->getThumbnailHeight()) / 2  - 4;
+			// getRect() includes shadows and the title bar, therefore the real corners are as follows:
+			S32 const left = 1;
+			S32 const right = getRect().getWidth() - 1;
+			S32 const top = getRect().getHeight() - 17;
+			S32 const bottom = top - THUMBHEIGHT;
+			// The offset needed to center the thumbnail is: center - thumbnailSize/2 =
+			S32 offset_x = (left + right - previewp->getThumbnailWidth()) / 2;
+			S32 offset_y = (bottom + top - previewp->getThumbnailHeight()) / 2;
 
 			gGL.matrixMode(LLRender::MM_MODELVIEW);
+			gl_rect_2d(left, top, right, bottom, LLColor4::grey4, true);
 			gl_draw_scaled_image(offset_x, offset_y, 
 					previewp->getThumbnailWidth(), previewp->getThumbnailHeight(), 
 					previewp->getThumbnailImage(), LLColor4::white);	

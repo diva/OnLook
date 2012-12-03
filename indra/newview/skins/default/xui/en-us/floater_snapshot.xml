@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater bottom="-300" can_close="true" can_drag_on_left="false" can_minimize="false"
-     can_resize="false" follows="left|top" height="566" name="Snapshot"
+     can_resize="false" follows="left|top" height="629" name="Snapshot"
      rect_control="FloaterSnapshotRect" title="Snapshot Preview" width="219">
-	<text bottom="-177" right="-6" height="25" name="file_size_label" halign="right" width="120">
+	<text bottom="-201" right="-6" height="25" name="file_size_label" halign="right" width="120">
 		File size: [SIZE] KB
 	</text>
-	<text bottom="-171" height="15" left="10" name="type_label" halign="left">
-		Destination
+	<text bottom="-195" height="15" left="10" name="type_label" halign="left">
+		Target
 	</text>
 	<radio_group bottom_delta="-79" follows="left|top" height="79" label="Snapshot type"
 	     left="10" name="snapshot_type_radio" width="200">
@@ -18,7 +18,7 @@
 		</radio_item>
 		<radio_item bottom="-57" height="16" name="texture">
 			Save to my inventory ([UPLOADFEE])
-    </radio_item>
+		</radio_item>
 		<radio_item bottom="-76" height="16" name="local">
 			Save to my hard drive
 		</radio_item>
@@ -49,7 +49,7 @@
 	     tool_tip="Advanced Options. Default uses current window size." width="80" />
 	<text bottom_delta="-20" follows="top|left" height="15" left="10" name="type_label2"
 	     width="115">
-	Size
+	Target size
   </text>
   <text bottom_delta="0" follows="top|left" height="15" left="130" name="format_label"
        width="70">
@@ -105,20 +105,32 @@
 	</combo_box>
 	<combo_box bottom_delta="0" follows="left|top" height="20" label="Resolution" left="10"
 	     name="texture_size_combo" width="115">
-		<combo_item name="CurrentWindow" value="[i0,i0]">
-			Current Window
+		<combo_item name="128x128" value="[i128,i128]">
+			128x128 (1:1)
 		</combo_item>
-		<combo_item name="Small(128x128)" value="[i128,i128]">
-			Small (128x128)
+		<combo_item name="256x256" value="[i256,i256]">
+			256x256 (1:1)
 		</combo_item>
-		<combo_item name="Medium(256x256)" value="[i256,i256]">
-			Medium (256x256)
+		<combo_item name="512x512" value="[i512,i512]">
+			512x512 (1:1)
 		</combo_item>
-		<combo_item name="Large(512x512)" value="[i512,i512]">
-			Large (512x512)
+		<combo_item name="256x128" value="[i256,i128]">
+			256x128 (2:1)
 		</combo_item>
-		<combo_item name="Custom" value="[i-1,i-1]">
-			Custom
+		<combo_item name="512x256" value="[i512,i256]">
+			512x256 (2:1)
+		</combo_item>
+		<combo_item name="128x256" value="[i128,i256]">
+			128x256 (1:2)
+		</combo_item>
+		<combo_item name="256x512" value="[i256,i512]">
+			256x512 (1:2)
+		</combo_item>
+		<combo_item name="512x128" value="[i512,i128]">
+			512x128 (4:1)
+		</combo_item>
+		<combo_item name="128x512" value="[i128,i512]">
+			128x512 (1:4)
 		</combo_item>
 	</combo_box>
 	<combo_box bottom_delta="0" follows="left|top" height="20" label="Resolution" left="10"
@@ -173,9 +185,93 @@
 	<spinner bottom_delta="0" decimal_digits="0" follows="left|top" height="20"
 	     increment="32" label="Height" label_width="35" left="110" max_val="6016"
 	     min_val="32" name="snapshot_height" width="95" allow_text_entry="false"/>
-	<check_box bottom_delta="-20" follows="left|top" label="Constrain Proportions" left="10"
-	     name="keep_aspect_check" />
-	<slider bottom_delta="-20" decimal_digits="0" follows="left|top" height="15"
+	<text bottom_delta="-18" follows="top|left" height="15" left="10" name="type_label3"
+	     width="115">
+		Target aspect ratio
+	</text>
+	<combo_box bottom_delta="-22" follows="left|top" height="20" label="Aspect" left="10"
+	     name="feed_aspect_combo" width="115">
+		<combo_item name="4:3" value="1.33333">
+			4:3
+		</combo_item>
+		<combo_item name="Custom" value="-1">
+			Custom
+		</combo_item>
+	</combo_box>
+	<combo_box bottom_delta="0" follows="left|top" height="20" label="Aspect" left="10"
+	     name="postcard_aspect_combo" width="115">
+		<combo_item name="4:3" value="0">
+			Default
+		</combo_item>
+		<combo_item name="Custom" value="-1">
+			Custom
+		</combo_item>
+	</combo_box>
+	<combo_box bottom_delta="0" follows="left|top" height="20" label="Aspect" left="10"
+	     name="texture_aspect_combo" width="115">
+		<combo_item name="CurrentWindow" value="0">
+			Current Window
+		</combo_item>
+		<combo_item name="1:1" value="1">
+			1:1
+		</combo_item>
+		<combo_item name="4:3" value="1.33333">
+			4:3 (profile &amp; feed)
+		</combo_item>
+		<combo_item name="10:7" value="1.42857">
+			10:7
+		</combo_item>
+		<combo_item name="3:2" value="1.5">
+			3:2
+		</combo_item>
+		<combo_item name="16:10" value="1.6">
+			16:10
+		</combo_item>
+		<combo_item name="16:9" value="1.77778">
+			16:9
+		</combo_item>
+		<combo_item name="2:1" value="2">
+			2:1
+		</combo_item>
+		<combo_item name="Custom" value="-1">
+			Custom
+		</combo_item>
+	</combo_box>
+	<combo_box bottom_delta="0" follows="left|top" height="20" label="Aspect" left="10"
+	     name="local_aspect_combo" width="115">
+		<combo_item name="CurrentWindow" value="[i0,i0]">
+			Current Window
+		</combo_item>
+		<combo_item name="1:1" value="1">
+			1:1
+		</combo_item>
+		<combo_item name="4:3" value="1.33333">
+			4:3 (profile &amp; feed)
+		</combo_item>
+		<combo_item name="10:7" value="1.42857">
+			10:7
+		</combo_item>
+		<combo_item name="3:2" value="1.5">
+			3:2
+		</combo_item>
+		<combo_item name="16:10" value="1.6">
+			16:10
+		</combo_item>
+		<combo_item name="16:9" value="1.77778">
+			16:9
+		</combo_item>
+		<combo_item name="2:1" value="2">
+			2:1
+		</combo_item>
+		<combo_item name="Custom" value="-1">
+			Custom
+		</combo_item>
+	</combo_box>
+	<spinner bottom_delta="0" decimal_digits="5" follows="left|top" height="20"
+	     increment="0.01" label="" left="130" max_val="32"
+	     min_val="0.03125" name="aspect_ratio" width="64" allow_text_entry="false"/>
+    <text bottom_delta="10" left="196">:1</text>
+	<slider bottom_delta="-30" decimal_digits="0" follows="left|top" height="15"
 	     increment="1" initial_val="75" label="Image Quality" left="10"
 	     max_val="100" min_val="0" name="image_quality_slider" width="210" />
 	<text bottom_delta="-28" follows="left|top" height="20" left="10"
