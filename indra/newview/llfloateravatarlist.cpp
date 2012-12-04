@@ -482,7 +482,7 @@ void LLFloaterAvatarList::updateAvatarList()
 				//duped for lower section
 				if (name.empty() || (name.compare(" ") == 0))// || (name.compare(gCacheName->getDefaultName()) == 0))
 				{
-					if (!gCacheName->getFullName(avid, name)) //seems redudant with LLAvatarNameCache::get above...
+					if (!gCacheName->getFullName(avid, name)) //seems redudant with LLAvatarNameCache::getPNSName above...
 					{
 						continue;
 					}
@@ -521,7 +521,7 @@ void LLFloaterAvatarList::updateAvatarList()
 					continue;
 				}
 
-				if (!gCacheName->getFullName(avid, name))
+				if (!LLAvatarNameCache::getPNSName(avid, name))
 				{
 					//name = gCacheName->getDefaultName();
 					continue; //prevent (Loading...)
@@ -949,7 +949,7 @@ void LLFloaterAvatarList::onClickIM(void* userdata)
 			LLUUID agent_id = ids[0];
 
 			std::string avatar_name;
-			if (LLAvatarNameCache::getPNSName(agent_id, avatar_name))
+			if (gCacheName->getFullName(agent_id, avatar_name))
 			{
 				gIMMgr->setFloaterOpen(TRUE);
 				gIMMgr->addSession(avatar_name,IM_NOTHING_SPECIAL,agent_id);
@@ -1101,7 +1101,7 @@ BOOL LLFloaterAvatarList::handleKeyHere(KEY key, MASK mask)
 				LLUUID agent_id = ids[0];
 
 				std::string avatar_name;
-				if (LLAvatarNameCache::getPNSName(agent_id, avatar_name))
+				if (gCacheName->getFullName(agent_id, avatar_name))
 				{
 					gIMMgr->setFloaterOpen(TRUE);
 					gIMMgr->addSession(avatar_name,IM_NOTHING_SPECIAL,agent_id);

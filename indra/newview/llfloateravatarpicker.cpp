@@ -33,21 +33,21 @@
 
 #include "llfloateravatarpicker.h"
 
-#include "message.h"
-
 #include "llagent.h"
+#include "llavatarnamecache.h"
 #include "llbutton.h"
 #include "llfocusmgr.h"
 #include "llfoldervieweventlistener.h"
-#include "llinventorypanel.h"
-#include "llinventorymodel.h"
 #include "llinventoryfunctions.h"
+#include "llinventorymodel.h"
+#include "llinventorypanel.h"
 #include "lllineeditor.h"
 #include "llscrolllistctrl.h"
 #include "lltextbox.h"
 #include "lluictrlfactory.h"
 #include "llviewercontrol.h"
 #include "llworld.h"
+#include "message.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -323,7 +323,7 @@ void LLFloaterAvatarPicker::populateNearMe()
 		LLSD element;
 		element["id"] = av; // value
 		std::string fullname;
-		if(!gCacheName->getFullName(av, fullname))
+		if(!LLAvatarNameCache::getPNSName(av, fullname))
 		{
 			element["columns"][0]["value"] = LLCacheName::getDefaultName();
 			all_loaded = FALSE;

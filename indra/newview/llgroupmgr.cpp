@@ -1889,10 +1889,15 @@ void LLGroupMgr::sendGroupMemberEjects(const LLUUID& group_id,
 }
 
 
+class AIHTTPTimeoutPolicy;
+extern AIHTTPTimeoutPolicy groupMemberDataResponder_timeout;
+
 // Responder class for capability group management
-class GroupMemberDataResponder : public LLHTTPClient::Responder
-{	//Singu: TODO: make this comply with CT3 standards and compile
+class GroupMemberDataResponder : public LLHTTPClient::ResponderWithResult
+{
 public:
+	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return groupMemberDataResponder_timeout; }
+
 	GroupMemberDataResponder() {}
 	virtual ~GroupMemberDataResponder() {}
 	virtual void result(const LLSD& pContent);
@@ -1951,9 +1956,7 @@ void LLGroupMgr::sendCapGroupMembersRequest(const LLUUID& group_id)
 
 	LLHTTPClient::ResponderPtr grp_data_responder = new GroupMemberDataResponder();
 
-	//Singu: TODO: make this timeout after 5 minutes somehow.. AIHTTPTimeoutPolicy?
 	// This could take a while to finish, timeout after 5 minutes.
-	//LLHTTPClient::post(cap_url, body, grp_data_responder, LLSD(), 300);
 	LLHTTPClient::post(cap_url, body, grp_data_responder);
 
 	mLastGroupMembersRequestFrame = gFrameCount;

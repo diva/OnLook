@@ -34,6 +34,7 @@
 #include "llpanelgroupinvite.h"
 
 #include "llagent.h"
+#include "llavatarnamecache.h"
 #include "llfloateravatarpicker.h"
 #include "llbutton.h"
 #include "llcombobox.h"
@@ -393,7 +394,7 @@ void LLPanelGroupInvite::addUsers(std::vector<LLUUID>& agent_ids)
 	for (S32 i = 0; i < (S32)agent_ids.size(); i++)
 	{
 		std::string name;
-		if(gCacheName->getFullName(agent_ids[i], name))
+		if(LLAvatarNameCache::getPNSName(agent_ids[i], name))
 			names.push_back(name);
 	}
 	mImplementation->addUsers(names, agent_ids);

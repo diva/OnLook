@@ -1621,7 +1621,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("SendUserReportWithScreenshot");
 	capabilityNames.append("ServerReleaseNotes");
 	capabilityNames.append("SetDisplayName");
-	capabilityNames.append("SimConsole"); //Singu: TODO: Removed by Baker, find out if sim console will work without this.
+	capabilityNames.append("SimConsole"); //Singu Note: Removed by Baker, sim console won't work without this.
 	capabilityNames.append("SimConsoleAsync");
 	capabilityNames.append("SimulatorFeatures");
 	capabilityNames.append("StartGroupProposal");

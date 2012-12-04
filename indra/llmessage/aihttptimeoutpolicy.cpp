@@ -838,6 +838,7 @@ P(estateChangeInfoResponder);
 P(eventPollResponder);
 P(fetchInventoryResponder);
 P(fnPtrResponder);
+P2(groupMemberDataResponder,					transfer_300s);
 P2(groupProposalBallotResponder,				transfer_300s);
 P(homeLocationResponder);
 P(HTTPGetResponder);

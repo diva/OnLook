@@ -679,6 +679,8 @@ bool LLAvatarNameCache::getPNSName(const LLUUID& agent_id, std::string& name)
 		}
 		return true;
 	}
+	if (gCacheName->getFullName(agent_id, name)) //We've failed, try to get the legacy name anyway
+		return false; //Legacy name is still a failure, it's not a PNSName, afterall.
 	return false;
 }
 
