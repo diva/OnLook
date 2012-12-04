@@ -24,12 +24,12 @@
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
-
 #include "linden_common.h"
 
 #include "llavatarnamecache.h"
 
 #include "llcachename.h"		// we wrap this system
+#include "llcontrol.h"		// For LLCachedControl
 #include "llframetimer.h"
 #include "llhttpclient.h"
 #include "llsd.h"
@@ -619,7 +619,6 @@ bool LLAvatarNameCache::get(const LLUUID& agent_id, LLAvatarName *av_name)
 		// ...only do immediate lookups when cache is running
 		if (useDisplayNames())
 		{
-			  
 			// ...use display names cache
 			std::map<LLUUID,LLAvatarName>::iterator it = sCache.find(agent_id);
 			if (it != sCache.end())
@@ -661,6 +660,25 @@ bool LLAvatarNameCache::get(const LLUUID& agent_id, LLAvatarName *av_name)
 		sAskQueue.insert(agent_id);
 	}
 
+	return false;
+}
+
+// Return true when name has been set to Phoenix Name System Name, if not return false.
+bool LLAvatarNameCache::getPNSName(const LLUUID& agent_id, std::string& name)
+{
+	static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
+	LLAvatarName avatar_name;
+	if (LLAvatarNameCache::get(agent_id, &avatar_name))
+	{
+		switch (phoenix_name_system)
+		{
+			case 0 : name = avatar_name.getLegacyName(); break;
+			case 1 : name = avatar_name.getCompleteName(); break;
+			case 2 : name = avatar_name.mDisplayName; break;
+			default : name = avatar_name.getLegacyName(); break;
+		}
+		return true;
+	}
 	return false;
 }
 

@@ -102,41 +102,18 @@ LLSpeaker::LLSpeaker(const LLUUID& id, const std::string& name, const ESpeakerTy
 
 void LLSpeaker::lookupName()
 {
-    // [Ansariel: Display name support]
-	LLAvatarNameCache::get(mID, boost::bind(&LLSpeaker::onAvatarNameLookup, _1, _2, new LLHandle<LLSpeaker>(getHandle())));
-    // [/Ansariel: Display name support]
-}
+	LLAvatarNameCache::getPNSName(mID, mDisplayName);
 
-//static
-// [Ansariel: Display name support]
-void LLSpeaker::onAvatarNameLookup(const LLUUID& id, const LLAvatarName& avatar_name, void* user_data)
-// [/Ansariel: Display name support]
-{
-	LLSpeaker* speaker_ptr = ((LLHandle<LLSpeaker>*)user_data)->get();
-	delete (LLHandle<LLSpeaker>*)user_data;
-
-	if (speaker_ptr)
-	{
-        // [Ansariel: Display name support]
-		switch (gSavedSettings.getS32("PhoenixNameSystem"))
-		{
-			case 0 : speaker_ptr->mDisplayName = avatar_name.getLegacyName(); break;
-			case 1 : speaker_ptr->mDisplayName = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-			case 2 : speaker_ptr->mDisplayName = avatar_name.mDisplayName; break;
-			default : speaker_ptr->mDisplayName = avatar_name.getLegacyName(); break;
-		}
-
-		// Also set the legacy name. We will need it to initiate a new
-		// IM session.
-		speaker_ptr->mLegacyName = LLCacheName::cleanFullName(avatar_name.getLegacyName());
-	    // [/Ansariel: Display name support]
+	// Also set the legacy name. We will need it to initiate a new
+	// IM session.
+	gCacheName->getFullName(mID, mLegacyName);
+	mLegacyName = LLCacheName::cleanFullName(mLegacyName);
 
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g) | Added: RLVa-1.0.0g
-		// TODO-RLVa: this seems to get called per frame which is very likely an LL bug that will eventuall get fixed
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
-			speaker_ptr->mDisplayName = RlvStrings::getAnonym(speaker_ptr->mDisplayName);
+	// TODO-RLVa: this seems to get called per frame which is very likely an LL bug that will eventually get fixed
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
+		mDisplayName = RlvStrings::getAnonym(mDisplayName);
 // [/RLVa:KB]
-	}
 }
 
 LLSpeakerTextModerationEvent::LLSpeakerTextModerationEvent(LLSpeaker* source)

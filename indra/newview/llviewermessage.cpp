@@ -3633,29 +3633,11 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			}
 		}
 
-
-		// [Ansariel/Henri: Display name support]
 		if (chatter && chatter->isAvatar())
 		{
-			if (LLAvatarNameCache::useDisplayNames())
-			{
-				LLAvatarName avatar_name;
-				if (LLAvatarNameCache::get(from_id, &avatar_name))
-				{
-					static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-					if (phoenix_name_system == 2 || (phoenix_name_system == 1 && avatar_name.mIsDisplayNameDefault))
-					{
-						from_name = avatar_name.mDisplayName;
-					}
-					else
-					{
-						from_name = avatar_name.getCompleteName();
-					}
-				}
+			if (LLAvatarNameCache::getPNSName(from_id, from_name))
 				chat.mFromName = from_name;
-			}
 		}
-		// [/Ansariel/Henri: Display name support]
 
 		BOOL visible_in_chat_bubble = FALSE;
 		std::string verb;
@@ -5833,7 +5815,6 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 		return;
 	}
 
-	static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
 	std::string source_slurl;
 	if (is_source_group)
 	{
@@ -5841,17 +5822,7 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 	}
 	else
 	{
-		LLAvatarName avatar_name;
-		if (LLAvatarNameCache::get(source_id, &avatar_name))
-		{
-			switch (phoenix_name_system)
-			{
-				case 0 : source_slurl = avatar_name.getLegacyName(); break;
-				case 1 : source_slurl = avatar_name.getCompleteName(); break;
-				case 2 : source_slurl = avatar_name.mDisplayName; break;
-				default : source_slurl = avatar_name.getLegacyName(); break;
-			}
-		}
+		LLAvatarNameCache::getPNSName(source_id, source_slurl);
 	}
 
 	std::string dest_slurl;
@@ -5861,17 +5832,7 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 	}
 	else
 	{
-		LLAvatarName avatar_name;
-		if (LLAvatarNameCache::get(dest_id, &avatar_name))
-		{
-			switch (phoenix_name_system)
-			{
-				case 0 : dest_slurl = avatar_name.getLegacyName(); break;
-				case 1 : dest_slurl = avatar_name.getCompleteName(); break;
-				case 2 : dest_slurl = avatar_name.mDisplayName; break;
-				default : dest_slurl = avatar_name.getLegacyName(); break;
-			}
-		}
+		LLAvatarNameCache::getPNSName(dest_id, dest_slurl);
 	}
 
 	std::string reason =

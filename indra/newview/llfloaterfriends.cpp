@@ -44,10 +44,7 @@
 #include "llagent.h"
 #include "llappviewer.h"	// for gLastVersionChannel
 
-// [Ansariel: Display name support]
-#include "llavatarname.h"
 #include "llavatarnamecache.h"
-// [/Ansariel: Display name support]
 
 #include "llfloateravatarpicker.h"
 #include "llviewerwindow.h"
@@ -421,26 +418,8 @@ BOOL LLPanelFriends::addFriend(const LLUUID& agent_id)
 	bool isOnline = relationInfo->isOnline();
 
 	std::string fullname;
-	// [Ansariel: Display name support]
-	//BOOL have_name = gCacheName->getFullName(agent_id, fullname);
-	LLAvatarName avatar_name;
-	BOOL have_name;
-	if (LLAvatarNameCache::get(agent_id, &avatar_name))
-	{
-		static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-		switch (phoenix_name_system)
-		{
-			case 0 : fullname = avatar_name.getLegacyName(); break;
-			case 1 : fullname = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-			case 2 : fullname = avatar_name.mDisplayName; break;
-			default : fullname = avatar_name.getCompleteName(); break;
-		}
+	BOOL have_name = LLAvatarNameCache::getPNSName(agent_id, fullname);
 
-		have_name = TRUE;
-	}
-	else have_name = FALSE;
-	// [/Ansariel: Display name support]
-	
 	LLSD element;
 	element["id"] = agent_id;
 	LLSD& friend_column = element["columns"][LIST_FRIEND_NAME];
@@ -520,26 +499,8 @@ BOOL LLPanelFriends::updateFriendItem(const LLUUID& agent_id, const LLRelationsh
 	bool isOnlineSIP = LLVoiceClient::getInstance()->isOnlineSIP(itemp->getUUID());
 	bool isOnline = info->isOnline();
 
-	std::string fullname;	
-	// [Ansariel: Display name support]
-	//BOOL have_name = gCacheName->getFullName(agent_id, fullname);
-	LLAvatarName avatar_name;
-	BOOL have_name;
-	if (LLAvatarNameCache::get(agent_id, &avatar_name))
-	{
-		static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-		switch (phoenix_name_system)
-		{
-			case 0 : fullname = avatar_name.getLegacyName(); break;
-			case 1 : fullname = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-			case 2 : fullname = avatar_name.mDisplayName; break;
-			default : fullname = avatar_name.getCompleteName(); break;
-		}
-
-		have_name = TRUE;
-	}
-	else have_name = FALSE;
-	// [/Ansariel: Display name support]
+	std::string fullname;
+	BOOL have_name = LLAvatarNameCache::getPNSName(agent_id, fullname);
 
 	// Name of the status icon to use
 	std::string statusIcon;
@@ -892,20 +853,12 @@ void LLPanelFriends::onClickIM(void* user_data)
 		{
 			LLUUID agent_id = ids[0];
 			const LLRelationship* info = LLAvatarTracker::instance().getBuddyInfo(agent_id);
-			// [Ansariel: Display name support]
-			//std::string fullname;
-			//if(info && gCacheName->getFullName(agent_id, fullname))
-			//{
-			//	gIMMgr->setFloaterOpen(TRUE);
-			//	gIMMgr->addSession(fullname, IM_NOTHING_SPECIAL, agent_id);
-			//}
-			LLAvatarName avatar_name;
-			if (info && LLAvatarNameCache::get(agent_id, &avatar_name))
+			std::string fullname;
+			if(info && gCacheName->getFullName(agent_id, fullname))
 			{
 				gIMMgr->setFloaterOpen(TRUE);
-				gIMMgr->addSession(LLCacheName::cleanFullName(avatar_name.getLegacyName()),IM_NOTHING_SPECIAL,agent_id);
+				gIMMgr->addSession(fullname, IM_NOTHING_SPECIAL, agent_id);
 			}
-			// [/Ansariel: Display name support]
 		}
 		else
 		{
@@ -1022,30 +975,9 @@ void LLPanelFriends::onClickRemove(void* user_data)
 		if(ids.size() == 1)
 		{
 			LLUUID agent_id = ids[0];
-			// [Ansariel: Display name support]
-			//std::string first, last;
-			//if(gCacheName->getName(agent_id, first, last))
-			//{
-			//	args["FIRST_NAME"] = first;
-			//	args["LAST_NAME"] = last;	
-			//}
-
-			LLAvatarName avatar_name;
-			if (LLAvatarNameCache::get(agent_id, &avatar_name))
-			{
-				std::string fullname;
-				static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-				switch (phoenix_name_system)
-				{
-					case 0 : fullname = avatar_name.getLegacyName(); break;
-					case 1 : fullname = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-					case 2 : fullname = avatar_name.mDisplayName; break;
-					default : fullname = avatar_name.getCompleteName(); break;
-				}
-				
+			std::string fullname;
+			if (LLAvatarNameCache::getPNSName(agent_id, fullname))
 				args["NAME"] = fullname;
-			}
-			// [/Ansariel: Display name support]
 		}
 		else
 		{
@@ -1289,28 +1221,9 @@ void LLPanelFriends::confirmModifyRights(rights_map_t& ids, EGrantRevoke command
 		if(ids.size() == 1)
 		{
 			LLUUID agent_id = ids.begin()->first;
-			//std::string first, last;
-			//if(gCacheName->getName(agent_id, first, last))
-			//{
-			//	args["FIRST_NAME"] = first;
-			//	args["LAST_NAME"] = last;	
-			//}
-
-			LLAvatarName avatar_name;
-			if (LLAvatarNameCache::get(agent_id, &avatar_name))
-			{
-				std::string fullname;
-				static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-				switch (phoenix_name_system)
-				{
-					case 0 : fullname = avatar_name.getLegacyName(); break;
-					case 1 : fullname = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-					case 2 : fullname = avatar_name.mDisplayName; break;
-					default : fullname = avatar_name.getCompleteName(); break;
-				}
-				
+			std::string fullname;
+			if (LLAvatarNameCache::getPNSName(agent_id, fullname))
 				args["NAME"] = fullname;
-			}
 
 			if (command == GRANT)
 			{

@@ -167,21 +167,9 @@ void LLPanelAvatarSecondLife::updatePartnerName()
 {
 	if (mPartnerID.notNull())
 	{
-		// [Ansariel: Display name support]
-		LLAvatarName avatar_name;
-		if (LLAvatarNameCache::get(mPartnerID, &avatar_name))
-		{
-			std::string name;
-			switch (gSavedSettings.getS32("PhoenixNameSystem"))
-			{
-				case 0 : name = avatar_name.getLegacyName(); break;
-				case 1 : name = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-				case 2 : name = avatar_name.mDisplayName; break;
-				default : name = avatar_name.getLegacyName(); break;
-			}
+		std::string name;
+		if (LLAvatarNameCache::getPNSName(mPartnerID, name))
 			childSetTextArg("partner_edit", "[NAME]", name);
-		}
-		// [/Ansariel: Display name support]
 		childSetEnabled("partner_info", TRUE);
 	}
 }
@@ -202,9 +190,7 @@ void LLPanelAvatarSecondLife::clearControls()
 	childSetValue("born", "");
 	childSetValue("acct", "");
 
-	// [Ansariel: Display name support]
 	childSetTextArg("partner_edit", "[NAME]", LLStringUtil::null);
-	// [/Ansariel: Display name support]
 
 	mPartnerID = LLUUID::null;
 	
