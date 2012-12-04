@@ -648,7 +648,7 @@ void LLPanelDirBrowser::processDirPlacesReply(LLMessageSystem* msg, void**)
 		std::string buffer = llformat("%.0f", (F64)dwell);
 		row["columns"][3]["column"] = "dwell";
 		row["columns"][3]["value"] = buffer;
-		row["columns"][3]["font"] = "SANSSERIFSMALL";
+		row["columns"][3]["font"] = "SANSSERIF_SMALL";
 
 		list->addElement(row);
 		self->mResultsContents[parcel_id.asString()] = content;
@@ -792,11 +792,11 @@ void LLPanelDirBrowser::processDirEventsReply(LLMessageSystem* msg, void**)
 
 		row["columns"][2]["column"] = "date";
 		row["columns"][2]["value"] = date;
-		row["columns"][2]["font"] = "SANSSERIFSMALL";
+		row["columns"][2]["font"] = "SANSSERIF_SMALL";
 
 		row["columns"][3]["column"] = "time";
 		row["columns"][3]["value"] = llformat("%u", unix_time);
-		row["columns"][3]["font"] = "SANSSERIFSMALL";
+		row["columns"][3]["font"] = "SANSSERIF_SMALL";
 
 		list->addElement(row, ADD_SORTED);
 
@@ -879,7 +879,7 @@ void LLPanelDirBrowser::processDirGroupsReply(LLMessageSystem* msg, void**)
 
 		row["columns"][2]["column"] = "members";
 		row["columns"][2]["value"] = members;
-		row["columns"][2]["font"] = "SANSSERIFSMALL";
+		row["columns"][2]["font"] = "SANSSERIF_SMALL";
 
 		row["columns"][3]["column"] = "score";
 		row["columns"][3]["value"] = search_order;
@@ -1069,12 +1069,12 @@ void LLPanelDirBrowser::processDirLandReply(LLMessageSystem *msg, void**)
 		}
 		row["columns"][3]["column"] = "price";
 		row["columns"][3]["value"] = buffer;
-		row["columns"][3]["font"] = "SANSSERIFSMALL";
+		row["columns"][3]["font"] = "SANSSERIF_SMALL";
 
 		buffer = llformat("%d", actual_area);
 		row["columns"][4]["column"] = "area";
 		row["columns"][4]["value"] = buffer;
-		row["columns"][4]["font"] = "SANSSERIFSMALL";
+		row["columns"][4]["font"] = "SANSSERIF_SMALL";
 
 		if (!auction)
 		{
@@ -1091,19 +1091,19 @@ void LLPanelDirBrowser::processDirLandReply(LLMessageSystem *msg, void**)
 			buffer = llformat("%.1f", price_per_meter);
 			row["columns"][5]["column"] = "per_meter";
 			row["columns"][5]["value"] = buffer;
-			row["columns"][5]["font"] = "SANSSERIFSMALL";
+			row["columns"][5]["font"] = "SANSSERIF_SMALL";
 		}
 		else
 		{
 			// Auctions start at L$1 per meter
 			row["columns"][5]["column"] = "per_meter";
 			row["columns"][5]["value"] = "1.0";
-			row["columns"][5]["font"] = "SANSSERIFSMALL";
+			row["columns"][5]["font"] = "SANSSERIF_SMALL";
 		}
 
 		row["columns"][6]["column"] = "landtype";
 		row["columns"][6]["value"] = land_type;
-		row["columns"][6]["font"] = "SANSSERIFSMALL";
+		row["columns"][6]["font"] = "SANSSERIF_SMALL";
 
 		list->addElement(row);
 		self->mResultsContents[parcel_id.asString()] = content;
@@ -1138,7 +1138,7 @@ void LLPanelDirBrowser::addClassified(LLCtrlListInterface *list, const LLUUID& p
 
 	row["columns"][2]["column"] = "price";
 	row["columns"][2]["value"] = price_for_listing;
-	row["columns"][2]["font"] = "SANSSERIFSMALL";
+	row["columns"][2]["font"] = "SANSSERIF_SMALL";
 
 	list->addElement(row);
 }

@@ -790,7 +790,7 @@ void LLPanelGroupSubTab::buildActionCategory(LLScrollListCtrl* ctrl,
 
 			row["columns"][column_index]["column"] = "action";
 			row["columns"][column_index]["value"] = (*ra_it)->mDescription;
-			row["columns"][column_index]["font"] = "SANSSERIFSMALL";
+			row["columns"][column_index]["font"] = "SANSSERIF_SMALL";
 
 			LLScrollListItem* item = ctrl->addElement(row, ADD_BOTTOM, (*ra_it));
 
@@ -1679,7 +1679,7 @@ void LLPanelGroupMembersSubTab::updateMembers()
 
 			row["columns"][2]["column"] = "online";
 			row["columns"][2]["value"] = mMemberProgress->second->getOnlineStatus();
-			row["columns"][2]["font"] = "SANSSERIFSMALL";
+			row["columns"][2]["font"] = "SANSSERIF_SMALL";
 
 			mMembersList->addElement(row);//, ADD_SORTED);
 			mHasMatch = TRUE;
