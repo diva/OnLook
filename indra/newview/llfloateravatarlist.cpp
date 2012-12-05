@@ -354,7 +354,7 @@ BOOL LLFloaterAvatarList::postBuild()
 	mAvatarList->setCommitOnSelectionChange(TRUE);
 	mAvatarList->setCallbackUserData(this);
 	mAvatarList->setCommitCallback(onSelectName);
-	mAvatarList->setDoubleClickCallback(onClickFocus);
+	mAvatarList->setDoubleClickCallback(boost::bind(&LLFloaterAvatarList::onClickFocus,this));
 	refreshAvatarList();
 
 	gIdleCallbacks.addFunction(LLFloaterAvatarList::callbackIdle);

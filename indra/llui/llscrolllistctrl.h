@@ -385,6 +385,7 @@ class LLScrollListCtrl : public LLUICtrl, public LLEditMenuHandler,
 	public LLCtrlListInterface, public LLCtrlScrollInterface
 {
 public:
+	typedef boost::function<void (void)> callback_t;
 	LLScrollListCtrl(
 		const std::string& name,
 		const LLRect& rect,
@@ -466,9 +467,11 @@ public:
 	void			deselectAllItems(BOOL no_commit_on_change = FALSE);	// by default, go ahead and commit on selection change
 
 	void			highlightNthItem( S32 index );
-	void			setDoubleClickCallback( void (*cb)(void*) ) { mOnDoubleClickCallback = cb; }
-	void			setMaximumSelectCallback( void (*cb)(void*) ) { mOnMaximumSelectCallback = cb; }
-	void			setSortChangedCallback( void (*cb)(void*) ) { mOnSortChangedCallback = cb; }
+	void			setDoubleClickCallback( callback_t cb ) { mOnDoubleClickCallback = cb; }
+	void			setMaximumSelectCallback( callback_t cb ) { mOnMaximumSelectCallback = cb; }
+	void			setSortChangedCallback( callback_t cb ) { mOnSortChangedCallback = cb; }
+	// Convenience function; *TODO: replace with setter above + boost::bind() in calling code
+	void			setDoubleClickCallback( boost::function<void (void* userdata)> cb, void* userdata) { mOnDoubleClickCallback = boost::bind(cb, userdata); }
 
 	void			swapWithNext(S32 index);
 	void			swapWithPrevious(S32 index);
@@ -700,9 +703,9 @@ private:
 	LLColor4		mDefaultListTextColor;
 
 	S32				mBorderThickness;
-	void			(*mOnDoubleClickCallback)(void* userdata);
-	void			(*mOnMaximumSelectCallback)(void* userdata );
-	void			(*mOnSortChangedCallback)(void* userdata);
+	callback_t		mOnDoubleClickCallback;
+	callback_t 		mOnMaximumSelectCallback;
+	callback_t 		mOnSortChangedCallback;
 
 	S32				mHighlightedItem;
 	class LLViewBorder*	mBorder;

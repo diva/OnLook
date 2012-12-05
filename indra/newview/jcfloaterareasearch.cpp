@@ -88,8 +88,7 @@ void JCFloaterAreaSearch::close(bool app)
 BOOL JCFloaterAreaSearch::postBuild()
 {
 	mResultList = getChild<LLScrollListCtrl>("result_list");
-	mResultList->setCallbackUserData(this);
-	mResultList->setDoubleClickCallback(onDoubleClick);
+	mResultList->setDoubleClickCallback(onDoubleClick,this);
 	mResultList->sortByColumn("Name", TRUE);
 
 	mCounterText = getChild<LLTextBox>("counter");

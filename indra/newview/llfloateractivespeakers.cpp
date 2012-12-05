@@ -333,10 +333,10 @@ BOOL LLPanelActiveSpeakers::postBuild()
 
 	mSpeakerList = getChild<LLScrollListCtrl>("speakers_list");
 	mSpeakerList->sortByColumn(sort_column, sort_ascending);
-	mSpeakerList->setDoubleClickCallback(onDoubleClickSpeaker);
+	mSpeakerList->setDoubleClickCallback(boost::bind(&onDoubleClickSpeaker,this));
 	mSpeakerList->setCommitOnSelectionChange(TRUE);
 	mSpeakerList->setCommitCallback(onSelectSpeaker);
-	mSpeakerList->setSortChangedCallback(onSortChanged);
+	mSpeakerList->setSortChangedCallback(boost::bind(&LLPanelActiveSpeakers::onSortChanged,this));
 	mSpeakerList->setCallbackUserData(this);
 
 	mMuteTextCtrl = getChild<LLUICtrl>("mute_text_btn");

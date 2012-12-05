@@ -369,7 +369,7 @@ BOOL LLPanelFriends::postBuild()
 	mFriendsList->setCommitOnSelectionChange(TRUE);
 	childSetCommitCallback("friend_list", onSelectName, this);
 	childSetCommitCallback("buddy_group_combobox", onChangeContactGroup, this);
-	childSetDoubleClickCallback("friend_list", onClickIM);
+	mFriendsList->setDoubleClickCallback(onClickIM, this);
 
 	// <dogmode>
 	// Contact search and group system.

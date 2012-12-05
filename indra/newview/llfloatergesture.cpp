@@ -114,8 +114,9 @@ BOOL LLFloaterGesture::postBuild()
 	
 	setTitle(label);
 
-	childSetCommitCallback("gesture_list", onCommitList, this);
-	childSetDoubleClickCallback("gesture_list", onClickPlay);
+	LLScrollListCtrl* gesture_list = getChild<LLScrollListCtrl>("avatar_list");
+	gesture_list->setCommitCallback(boost::bind(&LLFloaterGesture::onCommitList,this));
+	gesture_list->setDoubleClickCallback(boost::bind(&LLFloaterGesture::onClickPlay,this));
 
 	childSetAction("inventory_btn", onClickInventory, this);
 

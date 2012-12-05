@@ -220,12 +220,8 @@ BOOL LLFloaterWorldMap::postBuild()
 	location_editor->setKeystrokeCallback( onSearchTextEntry );
 	
 	LLScrollListCtrl* search_results = getChild<LLScrollListCtrl>("search_results");
-	search_results->setDoubleClickCallback(&LLFloaterWorldMap::onClickTeleportBtn_static);
-	search_results->setCallbackUserData(this);
+	search_results->setDoubleClickCallback(boost::bind(&LLFloaterWorldMap::onClickTeleportBtn,this));
 	mListSearchResults = dynamic_cast<LLCtrlListInterface *>(search_results);
-
-
-
 
 	LLComboBox *landmark_combo = getChild<LLComboBox>( "landmark combo");
 

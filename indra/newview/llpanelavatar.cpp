@@ -582,11 +582,10 @@ BOOL LLPanelAvatarSecondLife::postBuild(void)
 	childSetAction("Offer Teleport...", LLPanelAvatar::onClickOfferTeleport, 
 		getPanelAvatar() );
 
-	childSetDoubleClickCallback("groups", onDoubleClickGroup, this );
+	getChild<LLScrollListCtrl>("groups")->setDoubleClickCallback(boost::bind(&LLPanelAvatarSecondLife::onDoubleClickGroup,this));
 	
 	childSetAction("bigimg", onClickImage, this);
 	
-
 	getChild<LLTextureCtrl>("img")->setFallbackImageName("default_profile_picture.j2c");
 
 	return TRUE;

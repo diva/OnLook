@@ -1579,11 +1579,9 @@ BOOL LLPanelGroupVoting::postBuild()
 	//associate callbacks
 	if ( success )
 	{
-		mImpl->mProposals->setDoubleClickCallback(impl::onDoubleClickProposal);
-		mImpl->mProposals->setCallbackUserData(mImpl);
+		mImpl->mProposals->setDoubleClickCallback(boost::bind(&LLPanelGroupVoting::impl::onDoubleClickProposal,mImpl));
 
-		mImpl->mVotesHistory->setDoubleClickCallback(impl::onDoubleClickHistoryItem);
-		mImpl->mVotesHistory->setCallbackUserData(mImpl);
+		mImpl->mVotesHistory->setDoubleClickCallback(boost::bind(&LLPanelGroupVoting::impl::onDoubleClickHistoryItem,mImpl));
 
 		mImpl->mBtnAbstain->setClickedCallback(boost::bind(&impl::onClickAbstain,mImpl));
 

@@ -136,8 +136,7 @@ BOOL LLFloaterGroupPicker::postBuild()
 
 	setDefaultBtn("OK");
 
-	childSetDoubleClickCallback("group list", onBtnOK);
-	childSetUserData("group list", this);
+	group_list->setDoubleClickCallback(boost::bind(&LLFloaterGroupPicker::onBtnOK,this));
 
 	childEnable("OK");
 
@@ -222,7 +221,8 @@ BOOL LLPanelGroups::postBuild()
 	const std::string none_text = getString("none");
 	LLScrollListCtrl *group_list = getChild<LLScrollListCtrl>("group list");
 	init_group_list(group_list, gAgent.getGroupID(), none_text);
-	group_list->setSortChangedCallback(onGroupSortChanged); //Force 'none' to always be first entry.
+	group_list->setSortChangedCallback(boost::bind(&onGroupSortChanged,this)); //Force 'none' to always be first entry.
+	group_list->setDoubleClickCallback(boost::bind(&LLPanelGroups::onBtnIM,this));
 
 	childSetAction("Activate", onBtnActivate, this);
 
@@ -241,9 +241,6 @@ BOOL LLPanelGroups::postBuild()
 	childSetAction("Titles...", onBtnTitles, this);
 
 	setDefaultBtn("IM");
-
-	childSetDoubleClickCallback("group list", onBtnIM);
-	childSetUserData("group list", this);
 
 	reset();
 

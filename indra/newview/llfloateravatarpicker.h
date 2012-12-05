@@ -56,7 +56,7 @@ private:
 
 	static void editKeystroke(class LLLineEditor* caller, void* user_data);
 
-	static void onBtnFind(void* userdata);
+	void onBtnFind();
 	static void onBtnSelect(void* userdata);
 	static void onBtnRefresh(void* userdata);
 	static void onRangeAdjust(LLUICtrl* source, void* data);

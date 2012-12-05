@@ -75,15 +75,16 @@ void LLFloaterExploreSounds::close(bool app_quitting)
 
 BOOL LLFloaterExploreSounds::postBuild(void)
 {
-	childSetDoubleClickCallback("sound_list", handle_play_locally, this);
+	LLScrollListCtrl* soundlist = getChild<LLScrollListCtrl>("sound_list");
+	soundlist->setDoubleClickCallback(boost::bind(&LLFloaterExploreSounds::handle_play_locally,this));
+	soundlist->sortByColumn("playing", TRUE);
 
 	childSetAction("play_locally_btn", handle_play_locally, this);
 	childSetAction("look_at_btn", handle_look_at, this);
 	childSetAction("stop_btn", handle_stop, this);
 	childSetAction("bl_btn", blacklistSound, this);
 
-	LLScrollListCtrl* list = getChild<LLScrollListCtrl>("sound_list");
-	list->sortByColumn("playing", TRUE);
+
 	return TRUE;
 }
 

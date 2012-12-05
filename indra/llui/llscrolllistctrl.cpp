@@ -2050,7 +2050,7 @@ BOOL LLScrollListCtrl::selectItemAt(S32 x, S32 y, MASK mask)
 						{
 							if(mOnMaximumSelectCallback)
 							{
-								mOnMaximumSelectCallback(mCallbackUserData);
+								mOnMaximumSelectCallback();
 							}
 							break;
 						}
@@ -2088,7 +2088,7 @@ BOOL LLScrollListCtrl::selectItemAt(S32 x, S32 y, MASK mask)
 					{
 						if(mOnMaximumSelectCallback)
 						{
-							mOnMaximumSelectCallback(mCallbackUserData);
+							mOnMaximumSelectCallback();
 						}
 					}
 				}
@@ -2181,7 +2181,7 @@ BOOL LLScrollListCtrl::handleDoubleClick(S32 x, S32 y, MASK mask)
 		{
 			if( mCanSelect && mOnDoubleClickCallback )
 			{
-				mOnDoubleClickCallback( mCallbackUserData );
+				mOnDoubleClickCallback();
 			}
 		}
 	}
@@ -3320,7 +3320,7 @@ void LLScrollListCtrl::onClickColumn(void *userdata)
 
 	if (parent->mOnSortChangedCallback)
 	{
-		parent->mOnSortChangedCallback(parent->getCallbackUserData());
+		parent->mOnSortChangedCallback();
 	}
 }
 

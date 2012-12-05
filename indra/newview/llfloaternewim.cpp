@@ -60,8 +60,7 @@ BOOL LLFloaterNewIM::postBuild()
 		mSelectionList = getChild<LLNameListCtrl>("user_list");
 		if (mSelectionList)
 		{
-			mSelectionList->setDoubleClickCallback(&LLFloaterNewIM::onStart);
-			mSelectionList->setCallbackUserData(this);
+			mSelectionList->setDoubleClickCallback(boost::bind(&LLFloaterNewIM::onStart,this));
 		}
 		else
 		{

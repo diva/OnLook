@@ -765,19 +765,6 @@ void LLPanel::childSetCommitCallback(const std::string& id, void (*cb)(LLUICtrl*
 	}
 }
 
-void LLPanel::childSetDoubleClickCallback(const std::string& id, void (*cb)(void*), void *userdata )
-{
-	LLUICtrl* child = getChild<LLUICtrl>(id, true);
-	if (child)
-	{
-		child->setDoubleClickCallback(cb);
-		if (userdata)
-		{
-			child->setCallbackUserData(userdata);
-		}
-	}
-}
-
 void LLPanel::childSetValidate(const std::string& id, BOOL (*cb)(LLUICtrl*, void*))
 {
 	LLUICtrl* child = getChild<LLUICtrl>(id, true);
@@ -962,12 +949,21 @@ void LLPanel::childSetWrappedText(const std::string& id, const std::string& text
 	}
 }
 
-void LLPanel::childSetAction(const std::string& id, void(*function)(void*), void* value)
+void LLPanel::childSetAction(const std::string& id, boost::function<void(void*)> function, void* value)
 {
 	LLButton* button = getChild<LLButton>(id);
 	if (button)
 	{
 		button->setClickedCallback(function, value);
+	}
+}
+
+void LLPanel::childSetAction(const std::string& id, const commit_signal_t::slot_type& function)
+{
+	LLButton* button = getChild<LLButton>(id);
+	if (button)
+	{
+		button->setClickedCallback(function);
 	}
 }
 

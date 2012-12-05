@@ -156,8 +156,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mListVisibleMembers = getChild<LLNameListCtrl>("visible_members", recurse);
 	if (mListVisibleMembers)
 	{
-		mListVisibleMembers->setDoubleClickCallback(&LLPanelGroupGeneral::openProfile);
-		mListVisibleMembers->setCallbackUserData(this);
+		mListVisibleMembers->setDoubleClickCallback(boost::bind(&LLPanelGroupGeneral::openProfile,this));
 	}
 
 	// Options

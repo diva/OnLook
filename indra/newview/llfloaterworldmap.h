@@ -127,7 +127,6 @@ protected:
 
 	void			onClearBtn();
 	void			onClickTeleportBtn();
-	static void		onClickTeleportBtn_static(void* data) {((LLFloaterWorldMap*)data)->onClickTeleportBtn();};
 	void			onShowTargetBtn();
 	void			onShowAgentBtn();
 	void			onCopySLURL();

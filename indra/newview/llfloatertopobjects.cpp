@@ -92,12 +92,13 @@ LLFloaterTopObjects::~LLFloaterTopObjects()
 // virtual
 BOOL LLFloaterTopObjects::postBuild()
 {
-	childSetCommitCallback("objects_list", onCommitObjectsList, this);
-	childSetDoubleClickCallback("objects_list", onDoubleClickObjectsList);
-	childSetFocus("objects_list");
+
 	LLScrollListCtrl *objects_list = getChild<LLScrollListCtrl>("objects_list");
 	if (objects_list)
 	{
+		objects_list->setCommitCallback(boost::bind(&LLFloaterTopObjects::onCommitObjectsList,_1,this));
+		objects_list->setDoubleClickCallback(boost::bind(&LLFloaterTopObjects::onDoubleClickObjectsList,this));
+		objects_list->setFocus(true);
 		objects_list->setCommitOnSelectionChange(TRUE);
 	}
 

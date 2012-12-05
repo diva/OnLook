@@ -434,8 +434,8 @@ BOOL LLPreviewGesture::postBuild()
 
 	list = getChild<LLScrollListCtrl>("library_list");
 	list->setCommitCallback(onCommitLibrary);
-	list->setDoubleClickCallback(onClickAdd);
 	list->setCallbackUserData(this);
+	list->setDoubleClickCallback(boost::bind(&LLPreviewGesture::onClickAdd,this));
 	mLibraryList = list;
 
 	btn = getChild<LLButton>( "add_btn");
@@ -527,12 +527,10 @@ BOOL LLPreviewGesture::postBuild()
 
 	btn = getChild<LLButton>( "save_btn");
 	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickSave,this));
-	btn->setCallbackUserData(this);
 	mSaveBtn = btn;
 
 	btn = getChild<LLButton>( "preview_btn");
 	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickPreview,this));
-	btn->setCallbackUserData(this);
 	mPreviewBtn = btn;
 
 

@@ -103,7 +103,6 @@ public:
 	// Default to no-op:
 	virtual void	onTabInto();
 	virtual void	clear();
-	virtual	void	setDoubleClickCallback( void (*cb)(void*) );
 	virtual void	setColor(const LLColor4& color);
 	virtual void	setAlpha(F32 alpha);
 	virtual void	setMinValue(LLSD min_value);

@@ -108,23 +108,25 @@ BOOL LLFloaterAvatarPicker::postBuild()
 	childSetKeystrokeCallback("Edit", editKeystroke, this);
 	childSetKeystrokeCallback("EditUUID", editKeystroke, this);
 
-	childSetAction("Find", onBtnFind, this);
-	childDisable("Find");
-	childSetAction("Refresh", onBtnRefresh, this);
-	childSetCommitCallback("near_me_range", onRangeAdjust, this);
+	childSetAction("Find", boost::bind(&LLFloaterAvatarPicker::onBtnFind, this));
+	getChildView("Find")->setEnabled(FALSE);
+	childSetAction("Refresh", boost::bind(&LLFloaterAvatarPicker::onBtnRefresh, this));
+	getChild<LLUICtrl>("near_me_range")->setCommitCallback(boost::bind(&LLFloaterAvatarPicker::onRangeAdjust, _1, this));
 
-	childSetDoubleClickCallback("SearchResults", onBtnSelect);
-	childSetDoubleClickCallback("NearMe", onBtnSelect);
-	childSetCommitCallback("SearchResults", onList, this);
-	childSetCommitCallback("NearMe", onList, this);
-	childDisable("SearchResults");
+	LLScrollListCtrl* searchresults = getChild<LLScrollListCtrl>("SearchResults");
+	searchresults->setDoubleClickCallback( boost::bind(&LLFloaterAvatarPicker::onBtnSelect, this));
+	searchresults->setCommitCallback(boost::bind(&LLFloaterAvatarPicker::onList, _1, this));
+	getChildView("SearchResults")->setEnabled(FALSE);
 
-	childSetAction("Select", onBtnSelect, this);
-	childDisable("Select");
+	LLScrollListCtrl* nearme = getChild<LLScrollListCtrl>("NearMe");
+	nearme->setDoubleClickCallback(boost::bind(&LLFloaterAvatarPicker::onBtnSelect, this));
+	nearme->setCommitCallback(boost::bind(&LLFloaterAvatarPicker::onList, _1, this));
 
-	childSetAction("Cancel", onBtnClose, this);
+	childSetAction("Select", boost::bind(&LLFloaterAvatarPicker::onBtnSelect, this));
+	getChildView("Select")->setEnabled(FALSE);
+	childSetAction("Cancel", boost::bind(&LLFloaterAvatarPicker::onBtnClose, this));
 
-	childSetFocus("Edit");
+	getChild<LLUICtrl>("Edit")->setFocus(TRUE);
 
 	LLPanel* search_panel = getChild<LLPanel>("SearchPanel");
 	if (search_panel)
@@ -162,10 +164,9 @@ LLFloaterAvatarPicker::~LLFloaterAvatarPicker()
 	sInstance = NULL;
 }
 
-void LLFloaterAvatarPicker::onBtnFind(void* userdata)
+void LLFloaterAvatarPicker::onBtnFind()
 {
-	LLFloaterAvatarPicker* self = (LLFloaterAvatarPicker*)userdata;
-	if(self) self->find();
+	find();
 }
 
 static void getSelectedAvatarData(const LLScrollListCtrl* from, std::vector<std::string>& avatar_names, std::vector<LLUUID>& avatar_ids)

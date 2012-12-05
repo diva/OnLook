@@ -890,11 +890,10 @@ BOOL LLPanelGroupMembersSubTab::postBuildSubTab(LLView* root)
 	if (!mMembersList || !mAssignedRolesList || !mAllowedActionsList) return FALSE;
 
 	// We want to be notified whenever a member is selected.
-	mMembersList->setCallbackUserData(this);
 	mMembersList->setCommitOnSelectionChange(TRUE);
-	mMembersList->setCommitCallback(onMemberSelect);
+	mMembersList->setCommitCallback(boost::bind(&LLPanelGroupMembersSubTab::onMemberSelect,_1,this));
 	// Show the member's profile on double click.
-	mMembersList->setDoubleClickCallback(onMemberDoubleClick);
+	mMembersList->setDoubleClickCallback(boost::bind(&LLPanelGroupMembersSubTab::onMemberDoubleClick,this));
 
 	LLButton* button = parent->getChild<LLButton>("member_invite", recurse);
 	if ( button )
