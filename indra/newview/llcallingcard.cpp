@@ -99,6 +99,11 @@ const F32 OFFLINE_SECONDS = FIND_FREQUENCY + 8.0f;
 // static
 LLAvatarTracker LLAvatarTracker::sInstance;
 
+static void on_avatar_name_cache_notify(const LLUUID& agent_id,
+										const LLAvatarName& av_name,
+										bool online,
+										LLSD payload);
+
 ///----------------------------------------------------------------------------
 /// Class LLAvatarTracker
 ///----------------------------------------------------------------------------
@@ -706,28 +711,40 @@ void LLAvatarTracker::processNotify(LLMessageSystem* msg, bool online)
 		if(chat_notify)
 		{
 			// Look up the name of this agent for the notification
-			std::string name;
-			LLSD args;
-			if (LLAvatarNameCache::getPNSName(agent_id, name))
-				args["NAME"] = name;
-
-			// Popup a notify box with online status of this agent
-			LLNotificationPtr notification = LLNotificationsUtil::add(online ? "FriendOnline" : "FriendOffline", args, payload);
-
-			// If there's an open IM session with this agent, send a notification there too.
-			LLUUID session_id = LLIMMgr::computeSessionID(IM_NOTHING_SPECIAL, agent_id);
-			LLFloaterIMPanel *floater = gIMMgr->findFloaterBySession(session_id);
-			if (floater)
-			{
-				std::string notifyMsg = notification->getMessage();
-				if (!notifyMsg.empty())
-					floater->addHistoryLine(notifyMsg,gSavedSettings.getColor4("SystemChatColor"));
-			}
+			LLAvatarNameCache::get(agent_id,
+				boost::bind(&on_avatar_name_cache_notify,
+					_1, _2, online, payload));
 		}
 
 		mModifyMask |= LLFriendObserver::ONLINE;
 		instance().notifyObservers();
 		gInventory.notifyObservers();
+	}
+}
+
+static void on_avatar_name_cache_notify(const LLUUID& agent_id,
+										const LLAvatarName& av_name,
+										bool online,
+										LLSD payload)
+{
+	// Popup a notify box with online status of this agent
+	// Use display name only because this user is your friend
+	std::string name;
+	LLAvatarNameCache::getPNSName(av_name, name);
+	LLSD args;
+	args["NAME"] = name;
+
+	// Popup a notify box with online status of this agent
+	LLNotificationPtr notification = LLNotificationsUtil::add(online ? "FriendOnline" : "FriendOffline", args, payload);
+
+	// If there's an open IM session with this agent, send a notification there too.
+	LLUUID session_id = LLIMMgr::computeSessionID(IM_NOTHING_SPECIAL, agent_id);
+	LLFloaterIMPanel *floater = gIMMgr->findFloaterBySession(session_id);
+	if (floater)
+	{
+		std::string notifyMsg = notification->getMessage();
+		if (!notifyMsg.empty())
+			floater->addHistoryLine(notifyMsg,gSavedSettings.getColor4("SystemChatColor"));
 	}
 }
 

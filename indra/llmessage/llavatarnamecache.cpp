@@ -666,22 +666,24 @@ bool LLAvatarNameCache::get(const LLUUID& agent_id, LLAvatarName *av_name)
 // Return true when name has been set to Phoenix Name System Name, if not return false.
 bool LLAvatarNameCache::getPNSName(const LLUUID& agent_id, std::string& name)
 {
-	static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
 	LLAvatarName avatar_name;
-	if (LLAvatarNameCache::get(agent_id, &avatar_name))
+	if (get(agent_id, &avatar_name))
+		getPNSName(avatar_name, name);
+	else return false;
+	return true;
+}
+
+// get() with callback compatible version of getPNSName
+void LLAvatarNameCache::getPNSName(const LLAvatarName& avatar_name, std::string& name)
+{
+	static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
+	switch (phoenix_name_system)
 	{
-		switch (phoenix_name_system)
-		{
-			case 0 : name = avatar_name.getLegacyName(); break;
-			case 1 : name = avatar_name.getCompleteName(); break;
-			case 2 : name = avatar_name.mDisplayName; break;
-			default : name = avatar_name.getLegacyName(); break;
-		}
-		return true;
+		case 0 : name = avatar_name.getLegacyName(); break;
+		case 1 : name = avatar_name.getCompleteName(); break;
+		case 2 : name = avatar_name.mDisplayName; break;
+		default : name = avatar_name.getLegacyName(); break;
 	}
-	if (gCacheName->getFullName(agent_id, name)) //We've failed, try to get the legacy name anyway
-		return false; //Legacy name is still a failure, it's not a PNSName, afterall.
-	return false;
 }
 
 void LLAvatarNameCache::fireSignal(const LLUUID& agent_id,
