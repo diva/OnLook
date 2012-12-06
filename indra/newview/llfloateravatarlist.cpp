@@ -353,7 +353,7 @@ BOOL LLFloaterAvatarList::postBuild()
 	mAvatarList->sortByColumn("distance", TRUE);
 	mAvatarList->setCommitOnSelectionChange(TRUE);
 	mAvatarList->setCallbackUserData(this);
-	mAvatarList->setCommitCallback(onSelectName);
+	mAvatarList->setCommitCallback(boost::bind(&LLFloaterAvatarList::onSelectName,this));
 	mAvatarList->setDoubleClickCallback(boost::bind(&LLFloaterAvatarList::onClickFocus,this));
 	refreshAvatarList();
 
@@ -1753,21 +1753,19 @@ void LLFloaterAvatarList::onClickTeleport(void* userdata)
 	}
 }
 
-void LLFloaterAvatarList::onSelectName(LLUICtrl*, void* userdata)
+void LLFloaterAvatarList::onSelectName()
 {
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-
-	LLScrollListItem* item = self->mAvatarList->getFirstSelected();
+	LLScrollListItem* item = mAvatarList->getFirstSelected();
 	if (item)
 	{
 		LLUUID agent_id = item->getUUID();
-		LLAvatarListEntry* entry = self->getAvatarEntry(agent_id);
+		LLAvatarListEntry* entry = getAvatarEntry(agent_id);
 		if (entry)
 		{
 			BOOL enabled = entry->isDrawn();
-			self->childSetEnabled("focus_btn", enabled);
-			self->childSetEnabled("prev_in_list_btn", enabled);
-			self->childSetEnabled("next_in_list_btn", enabled);
+			childSetEnabled("focus_btn", enabled);
+			childSetEnabled("prev_in_list_btn", enabled);
+			childSetEnabled("next_in_list_btn", enabled);
 		}
 	}
 }

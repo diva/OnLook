@@ -118,18 +118,16 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mInsignia = getChild<LLTextureCtrl>("insignia", recurse);
 	if (mInsignia)
 	{
-		mInsignia->setCommitCallback(onCommitAny);
-		mInsignia->setCallbackUserData(this);
+		mInsignia->setCommitCallback(boost::bind(&LLPanelGroupGeneral::onCommitAny,this));
 		mDefaultIconID = mInsignia->getImageAssetID();
 	}
 	
 	mEditCharter = getChild<LLTextEditor>("charter", recurse);
 	if(mEditCharter)
 	{
-		mEditCharter->setCommitCallback(onCommitAny);
+		mEditCharter->setCommitCallback(boost::bind(&LLPanelGroupGeneral::onCommitAny,this));
 		mEditCharter->setFocusReceivedCallback(boost::bind(&LLPanelGroupGeneral::onFocusEdit, this));
 		mEditCharter->setFocusChangedCallback(boost::bind(&LLPanelGroupGeneral::onFocusEdit, this));
-		mEditCharter->setCallbackUserData(this);
 	}
 
 	mBtnJoinGroup = getChild<LLButton>("join_button", recurse);
@@ -163,16 +161,14 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mCtrlShowInGroupList = getChild<LLCheckBoxCtrl>("show_in_group_list", recurse);
 	if (mCtrlShowInGroupList)
 	{
-		mCtrlShowInGroupList->setCommitCallback(&LLPanelGroupGeneral::onCommitAny);
-		mCtrlShowInGroupList->setCallbackUserData(this);
+		mCtrlShowInGroupList->setCommitCallback(boost::bind(&LLPanelGroupGeneral::onCommitAny,this));
 	}
 
 	mComboMature = getChild<LLComboBox>("group_mature_check", recurse);	
 	if(mComboMature)
 	{
 		mComboMature->setCurrentByIndex(0);
-		mComboMature->setCommitCallback(onCommitAny);
-		mComboMature->setCallbackUserData(this);
+		mComboMature->setCommitCallback(boost::bind(&LLPanelGroupGeneral::onCommitAny,this));
 		if (gAgent.isTeen())
 		{
 			// Teens don't get to set mature flag. JC
@@ -183,23 +179,20 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mCtrlOpenEnrollment = getChild<LLCheckBoxCtrl>("open_enrollement", recurse);
 	if (mCtrlOpenEnrollment)
 	{
-		mCtrlOpenEnrollment->setCommitCallback(onCommitAny);
-		mCtrlOpenEnrollment->setCallbackUserData(this);
+		mCtrlOpenEnrollment->setCommitCallback(boost::bind(&LLPanelGroupGeneral::onCommitAny,this));
 	}
 
 	mCtrlEnrollmentFee = getChild<LLCheckBoxCtrl>("check_enrollment_fee", recurse);
 	if (mCtrlEnrollmentFee)
 	{
 		mCtrlEnrollmentFee->setLabelArg("[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
-		mCtrlEnrollmentFee->setCommitCallback(onCommitEnrollment);
-		mCtrlEnrollmentFee->setCallbackUserData(this);
+		mCtrlEnrollmentFee->setCommitCallback(boost::bind(&LLPanelGroupGeneral::onCommitEnrollment,this));
 	}
 
 	mSpinEnrollmentFee = getChild<LLSpinCtrl>("spin_enrollment_fee", recurse);
 	if (mSpinEnrollmentFee)
 	{
-		mSpinEnrollmentFee->setCommitCallback(onCommitAny);
-		mSpinEnrollmentFee->setCallbackUserData(this);
+		mSpinEnrollmentFee->setCommitCallback(boost::bind(&LLPanelGroupGeneral::onCommitAny,this));
 		mSpinEnrollmentFee->setPrecision(0);
 		mSpinEnrollmentFee->resetDirty();
 	}
@@ -215,8 +208,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mCtrlReceiveNotices = getChild<LLCheckBoxCtrl>("receive_notices", recurse);
 	if (mCtrlReceiveNotices)
 	{
-		mCtrlReceiveNotices->setCommitCallback(onCommitUserOnly);
-		mCtrlReceiveNotices->setCallbackUserData(this);
+		mCtrlReceiveNotices->setCommitCallback(boost::bind(&LLPanelGroupGeneral::onCommitUserOnly,this));
 		mCtrlReceiveNotices->set(accept_notices);
 		mCtrlReceiveNotices->setEnabled(data.mID.notNull());
 		mCtrlReceiveNotices->resetDirty();
@@ -225,8 +217,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mCtrlReceiveChat = getChild<LLCheckBoxCtrl>("receive_chat", recurse);
 	if (mCtrlReceiveChat)
 	{
-		mCtrlReceiveChat->setCommitCallback(onCommitUserOnly);
-		mCtrlReceiveChat->setCallbackUserData(this);
+		mCtrlReceiveChat->setCommitCallback(boost::bind(&LLPanelGroupGeneral::onCommitUserOnly,this));
 		mCtrlReceiveChat->set(!gIMMgr->getIgnoreGroup(mGroupID));
 		mCtrlReceiveChat->setEnabled(mGroupID.notNull());
 		mCtrlReceiveChat->resetDirty();
@@ -235,8 +226,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mCtrlListGroup = getChild<LLCheckBoxCtrl>("list_groups_in_profile", recurse);
 	if (mCtrlListGroup)
 	{
-		mCtrlListGroup->setCommitCallback(onCommitUserOnly);
-		mCtrlListGroup->setCallbackUserData(this);
+		mCtrlListGroup->setCommitCallback(boost::bind(&LLPanelGroupGeneral::onCommitUserOnly,this));
 		mCtrlListGroup->set(list_in_profile);
 		mCtrlListGroup->setEnabled(data.mID.notNull());
 		mCtrlListGroup->resetDirty();
@@ -247,8 +237,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mComboActiveTitle = getChild<LLComboBox>("active_title", recurse);
 	if (mComboActiveTitle)
 	{
-		mComboActiveTitle->setCommitCallback(onCommitTitle);
-		mComboActiveTitle->setCallbackUserData(this);
+		mComboActiveTitle->setCommitCallback(boost::bind(&LLPanelGroupGeneral::onCommitTitle,this));
 		mComboActiveTitle->resetDirty();
 	}
 
@@ -283,60 +272,54 @@ void LLPanelGroupGeneral::onFocusEdit()
 	notifyObservers();
 }
 
-void LLPanelGroupGeneral::onCommitAny(LLUICtrl* ctrl, void* data)
+void LLPanelGroupGeneral::onCommitAny()
 {
-	LLPanelGroupGeneral* self = (LLPanelGroupGeneral*)data;
-	self->updateChanged();
-	self->notifyObservers();
+	updateChanged();
+	notifyObservers();
 }
 
 // static
-void LLPanelGroupGeneral::onCommitUserOnly(LLUICtrl* ctrl, void* data)
+void LLPanelGroupGeneral::onCommitUserOnly()
 {
-	LLPanelGroupGeneral* self = (LLPanelGroupGeneral*)data;
-	self->mChanged = TRUE;
-	self->notifyObservers();
+	mChanged = TRUE;
+	notifyObservers();
 }
 
 
-// static
-void LLPanelGroupGeneral::onCommitEnrollment(LLUICtrl* ctrl, void* data)
+void LLPanelGroupGeneral::onCommitEnrollment()
 {
-	onCommitAny(ctrl, data);
+	onCommitAny();
 
-	LLPanelGroupGeneral* self = (LLPanelGroupGeneral*)data;
 	// Make sure both enrollment related widgets are there.
-	if (!self->mCtrlEnrollmentFee || !self->mSpinEnrollmentFee)
+	if (!mCtrlEnrollmentFee || !mSpinEnrollmentFee)
 	{
 		return;
 	}
 
 	// Make sure the agent can change enrollment info.
-	if (!gAgent.hasPowerInGroup(self->mGroupID,GP_MEMBER_OPTIONS)
-		|| !self->mAllowEdit)
+	if (!gAgent.hasPowerInGroup(mGroupID,GP_MEMBER_OPTIONS)
+		|| !mAllowEdit)
 	{
 		return;
 	}
 
-	if (self->mCtrlEnrollmentFee->get())
+	if (mCtrlEnrollmentFee->get())
 	{
-		self->mSpinEnrollmentFee->setEnabled(TRUE);
+		mSpinEnrollmentFee->setEnabled(TRUE);
 	}
 	else
 	{
-		self->mSpinEnrollmentFee->setEnabled(FALSE);
-		self->mSpinEnrollmentFee->set(0);
+		mSpinEnrollmentFee->setEnabled(FALSE);
+		mSpinEnrollmentFee->set(0);
 	}
 }
 
-// static
-void LLPanelGroupGeneral::onCommitTitle(LLUICtrl* ctrl, void* data)
+void LLPanelGroupGeneral::onCommitTitle()
 {
-	LLPanelGroupGeneral* self = (LLPanelGroupGeneral*)data;
-	if (self->mGroupID.isNull() || !self->mAllowEdit) return;
-	LLGroupMgr::getInstance()->sendGroupTitleUpdate(self->mGroupID,self->mComboActiveTitle->getCurrentID());
-	self->update(GC_TITLES);
-	self->mComboActiveTitle->resetDirty();
+	if (mGroupID.isNull() || !mAllowEdit) return;
+	LLGroupMgr::getInstance()->sendGroupTitleUpdate(mGroupID,mComboActiveTitle->getCurrentID());
+	update(GC_TITLES);
+	mComboActiveTitle->resetDirty();
 }
 
 // static

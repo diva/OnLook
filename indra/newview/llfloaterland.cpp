@@ -1125,7 +1125,7 @@ BOOL LLPanelLandObjects::postBuild()
 
 	mOwnerList = getChild<LLNameListCtrl>("owner list");
 	mOwnerList->sortByColumnIndex(3, FALSE);
-	childSetCommitCallback("owner list", onCommitList, this);
+	mOwnerList->setCommitCallback(boost::bind(&LLPanelLandObjects::onCommitList,this));
 	mOwnerList->setDoubleClickCallback(boost::bind(&LLPanelLandObjects::onDoubleClickOwner, this));
 
 	return TRUE;
@@ -1621,16 +1621,13 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 	}
 }
 
-// static
-void LLPanelLandObjects::onCommitList(LLUICtrl* ctrl, void* data)
+void LLPanelLandObjects::onCommitList()
 {
-	LLPanelLandObjects* self = (LLPanelLandObjects*)data;
-
-	if (FALSE == self->mOwnerList->getCanSelect())
+	if (FALSE == mOwnerList->getCanSelect())
 	{
 		return;
 	}
-	LLScrollListItem *item = self->mOwnerList->getFirstSelected();
+	LLScrollListItem *item = mOwnerList->getFirstSelected();
 	if (item)
 	{
 		// Look up the selected name, for future dialog box use.
@@ -1641,19 +1638,19 @@ void LLPanelLandObjects::onCommitList(LLUICtrl* ctrl, void* data)
 			return;
 		}
 		// Is this a group?
-		self->mSelectedIsGroup = cell->getValue().asString() == OWNER_GROUP;
+		mSelectedIsGroup = cell->getValue().asString() == OWNER_GROUP;
 		cell = item->getColumn(2);
-		self->mSelectedName = cell->getValue().asString();
+		mSelectedName = cell->getValue().asString();
 		cell = item->getColumn(3);
-		self->mSelectedCount = atoi(cell->getValue().asString().c_str());
+		mSelectedCount = atoi(cell->getValue().asString().c_str());
 
 		// Set the selection, and enable the return button.
-		self->mSelectedOwners.clear();
-		self->mSelectedOwners.insert(item->getUUID());
-		self->mBtnReturnOwnerList->setEnabled(TRUE);
+		mSelectedOwners.clear();
+		mSelectedOwners.insert(item->getUUID());
+		mBtnReturnOwnerList->setEnabled(TRUE);
 
 		// Highlight this user's objects
-		clickShowCore(self, RT_LIST, &(self->mSelectedOwners));
+		clickShowCore(this, RT_LIST, &(mSelectedOwners));
 	}
 }
 

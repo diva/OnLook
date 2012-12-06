@@ -274,7 +274,7 @@ public:
 
 	static void onDoubleClickOwner(void*);	
 
-	static void onCommitList(LLUICtrl* ctrl, void* data);
+	void onCommitList();
 	static void onLostFocus(LLFocusableElement* caller, void* user_data);
 	static void onCommitClean(LLUICtrl* caller, void* user_data);
 	static void processParcelObjectOwnersReply(LLMessageSystem *msg, void **);

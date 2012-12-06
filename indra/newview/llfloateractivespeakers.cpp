@@ -335,7 +335,7 @@ BOOL LLPanelActiveSpeakers::postBuild()
 	mSpeakerList->sortByColumn(sort_column, sort_ascending);
 	mSpeakerList->setDoubleClickCallback(boost::bind(&onDoubleClickSpeaker,this));
 	mSpeakerList->setCommitOnSelectionChange(TRUE);
-	mSpeakerList->setCommitCallback(onSelectSpeaker);
+	mSpeakerList->setCommitCallback(boost::bind(&LLPanelActiveSpeakers::handleSpeakerSelect,this));
 	mSpeakerList->setSortChangedCallback(boost::bind(&LLPanelActiveSpeakers::onSortChanged,this));
 	mSpeakerList->setCallbackUserData(this);
 
@@ -812,14 +812,6 @@ void LLPanelActiveSpeakers::onDoubleClickSpeaker(void* user_data)
 		gIMMgr->addSession(speakerp->mLegacyName, IM_NOTHING_SPECIAL, speaker_id);
 	}
 }
-
-//static
-void LLPanelActiveSpeakers::onSelectSpeaker(LLUICtrl* source, void* user_data)
-{
-	LLPanelActiveSpeakers* panelp = (LLPanelActiveSpeakers*)user_data;
-	panelp->handleSpeakerSelect();
-}
-
 
 //static
 void LLPanelActiveSpeakers::onSortChanged(void* user_data)

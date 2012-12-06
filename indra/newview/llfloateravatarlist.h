@@ -290,7 +290,7 @@ private:
 	static void callbackEjectFromEstate(const LLSD& notification, const LLSD& response);
 	static void callbackBanFromEstate(const LLSD& notification, const LLSD& response);
 
-	static void onSelectName(LLUICtrl*, void *userdata);
+	static void onSelectName();
 
 	static void onCommitUpdateRate(LLUICtrl*, void *userdata);
 	static void onClickSendKeys(void *userdata);

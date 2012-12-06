@@ -169,7 +169,7 @@ void LLFloaterGesture::show()
 	self->mSelectedID = LLUUID::null;
 
 	// Update button labels
-	onCommitList(NULL, self);
+	self->onCommitList();
 	self->open();	/*Flawfinder: ignore*/
 }
 
@@ -214,7 +214,7 @@ void LLFloaterGesture::refreshAll()
 		}
 
 		// Update button labels
-		onCommitList(NULL, sInstance);
+		sInstance->onCommitList();
 	}
 }
 
@@ -405,22 +405,19 @@ void LLFloaterGesture::onClickEdit(void* data)
 	}
 }
 
-// static
-void LLFloaterGesture::onCommitList(LLUICtrl* ctrl, void* data)
+void LLFloaterGesture::onCommitList()
 {
-	LLFloaterGesture* self = (LLFloaterGesture*)data;
+	const LLUUID& item_id = childGetValue("gesture_list").asUUID();
 
-	const LLUUID& item_id = self->childGetValue("gesture_list").asUUID();
-
-	self->mSelectedID = item_id;
+	mSelectedID = item_id;
 	if (LLGestureMgr::instance().isGesturePlaying(item_id))
 	{
-		self->childSetVisible("play_btn", false);
-		self->childSetVisible("stop_btn", true);
+		childSetVisible("play_btn", false);
+		childSetVisible("stop_btn", true);
 	}
 	else
 	{
-		self->childSetVisible("play_btn", true);
-		self->childSetVisible("stop_btn", false);
+		childSetVisible("play_btn", true);
+		childSetVisible("stop_btn", false);
 	}
 }

@@ -126,7 +126,7 @@ class LLFloaterColorPicker
 		static void onClickPipette ( void* data );
 		static void onTextCommit ( LLUICtrl* ctrl, void* data );
 		static void onHexCommit ( LLUICtrl* ctrl, void* data );
-		static void onImmediateCheck ( LLUICtrl* ctrl, void* data );
+		void onImmediateCheck();
 		static void onColorSelect( const LLTextureEntry& te, void *data );
 	private:
 		// turns on or off text entry commit call backs

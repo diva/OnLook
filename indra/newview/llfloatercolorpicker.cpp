@@ -238,8 +238,7 @@ postBuild()
 
 	mApplyImmediateCheck = getChild<LLCheckBoxCtrl>("apply_immediate");
 	mApplyImmediateCheck->set(gSavedSettings.getBOOL("ApplyColorImmediately"));
-	mApplyImmediateCheck->setCommitCallback(onImmediateCheck);
-	mApplyImmediateCheck->setCallbackUserData(this);
+	mApplyImmediateCheck->setCommitCallback(boost::bind(&LLFloaterColorPicker::onImmediateCheck,this));
 
 	childSetCommitCallback("rspin", onTextCommit, (void*)this );
 	childSetCommitCallback("gspin", onTextCommit, (void*)this );
@@ -500,17 +499,13 @@ onTextCommit ( LLUICtrl* ctrl, void* data )
 	}
 }
 
-void LLFloaterColorPicker::onImmediateCheck( LLUICtrl* ctrl, void* data)
+void LLFloaterColorPicker::onImmediateCheck()
 {
-	LLFloaterColorPicker* self = ( LLFloaterColorPicker* )data;
-	if (self)
-	{
-		gSavedSettings.setBOOL("ApplyColorImmediately", self->mApplyImmediateCheck->get());
+	gSavedSettings.setBOOL("ApplyColorImmediately", mApplyImmediateCheck->get());
 
-		if (self->mApplyImmediateCheck->get())
-		{
-			LLColorSwatchCtrl::onColorChanged ( self->getSwatch (), LLColorSwatchCtrl::COLOR_CHANGE );
-		}
+	if (mApplyImmediateCheck->get())
+	{
+		LLColorSwatchCtrl::onColorChanged ( getSwatch(), LLColorSwatchCtrl::COLOR_CHANGE );
 	}
 }
 

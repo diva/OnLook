@@ -367,7 +367,7 @@ BOOL LLPanelFriends::postBuild()
 {
 	mFriendsList = getChild<LLScrollListCtrl>("friend_list");
 	mFriendsList->setCommitOnSelectionChange(TRUE);
-	childSetCommitCallback("friend_list", onSelectName, this);
+	mFriendsList->setCommitCallback(onSelectName, this);
 	childSetCommitCallback("buddy_group_combobox", onChangeContactGroup, this);
 	mFriendsList->setDoubleClickCallback(onClickIM, this);
 
