@@ -38,11 +38,12 @@
 #include "llpanelprofile.h"		// <edit>getProfileURL (this is the original location LL put it).</edit>
 #include "llviewermedia.h" // FIXME: don't use LLViewerMedia internals
 
-// third-party
-#ifdef LL_STANDALONE
-#include <json/reader.h>	// JSONCPP
+// third-party JSONCPP
+#if !defined(LL_STANDALONE) && defined(LINUX64)
+// The prebuilt linux64 package is packaged wrongly.
+#include <jsoncpp/reader.h>	// JSONCPP
 #else
-#include "reader.h"			// prebuilt jsoncpp is wrongly packaged.
+#include <json/reader.h>	// JSONCPP
 #endif
 
 /*
