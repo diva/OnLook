@@ -2803,18 +2803,18 @@ void LLAgentCamera::lookAtLastChat()
 }
 
 //Pulled implementation out of lookAtLastChat and adapted to work for for general objects
-void LLAgentCamera::lookAtObject(const LLUUID &object_id, bool self)
+bool LLAgentCamera::lookAtObject(const LLUUID &object_id, bool self)
 {
 	// Block if camera is animating or not in normal third person camera mode
 	if (mCameraAnimating || !cameraThirdPerson())
 	{
-		return;
+		return false;
 	}
 
 	LLViewerObject *chatter = gObjectList.findObject(object_id);
 	if (!chatter)
 	{
-		return;
+		return false;
 	}
 
 	LLVector3 delta_pos;
@@ -2845,7 +2845,7 @@ void LLAgentCamera::lookAtObject(const LLUUID &object_id, bool self)
 		new_camera_pos += left * 0.3f;
 		new_camera_pos += up * 0.2f;
 
-		//setFocusOnAvatar(FALSE, FALSE);
+		setFocusOnAvatar(FALSE, FALSE);
 
 		if (chatter_av->mHeadp)
 		{
@@ -2863,7 +2863,6 @@ void LLAgentCamera::lookAtObject(const LLUUID &object_id, bool self)
 			else
 				mCameraFocusOffsetTarget.setVec(radius, radius, 0.f);
 		}
-		setFocusOnAvatar(FALSE, TRUE);
 	}
 	else
 	{
@@ -2883,17 +2882,15 @@ void LLAgentCamera::lookAtObject(const LLUUID &object_id, bool self)
 		new_camera_pos += left * 0.3f;
 		new_camera_pos += up * 0.2f;
 
-		//setFocusOnAvatar(FALSE, FALSE);
-		
+		setFocusOnAvatar(FALSE, FALSE);
 
 		setFocusGlobal(chatter->getPositionGlobal(), object_id);
 		if(self)
 			mCameraFocusOffsetTarget = gAgent.getPosGlobalFromAgent(new_camera_pos) - chatter->getPositionGlobal();
 		else
 			mCameraFocusOffsetTarget.setVec(radius, radius, 0.f);
-
-		setFocusOnAvatar(FALSE, TRUE);
 	}
+	return true;
 }
 
 

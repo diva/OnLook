@@ -52,7 +52,7 @@
 #include <string.h>
 
 #include <map>
-
+#include <boost/foreach.hpp>
 
 #include "llworld.h"
 #include "llsdutil.h"
@@ -137,10 +137,11 @@ void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool
 }
 
 LLAvatarListEntry::LLAvatarListEntry(const LLUUID& id, const std::string &name, const LLVector3d &position) :
-		mID(id), mName(name), mPosition(position), mDrawPosition(), mMarked(FALSE), mFocused(FALSE),
+		mID(id), mName(name), mPosition(position), mDrawPosition(), mMarked(false), mFocused(false),
 		mUpdateTimer(), mFrame(gFrameCount), mInSimFrame(U32_MAX), mInDrawFrame(U32_MAX),
 		mInChatFrame(U32_MAX), mInShoutFrame(U32_MAX),
-		mActivityType(ACTIVITY_NEW), mActivityTimer()
+		mActivityType(ACTIVITY_NEW), mActivityTimer(),
+		mIsInList(false)
 {
 }
 
@@ -220,12 +221,12 @@ bool LLAvatarListEntry::getAlive()
 	return ((current - mFrame) <= 2);
 }
 
-F32 LLAvatarListEntry::getEntryAgeSeconds()
+F32 LLAvatarListEntry::getEntryAgeSeconds() const
 {
 	return mUpdateTimer.getElapsedTimeF32();
 }
 
-BOOL LLAvatarListEntry::isDead()
+bool LLAvatarListEntry::isDead() const
 {
 	return getEntryAgeSeconds() > DEAD_KEEP_TIME;
 }
@@ -239,7 +240,7 @@ void LLAvatarListEntry::setActivity(ACTIVITY_TYPE activity)
 	}
 }
 
-LLAvatarListEntry::ACTIVITY_TYPE LLAvatarListEntry::getActivity()
+const LLAvatarListEntry::ACTIVITY_TYPE LLAvatarListEntry::getActivity()
 {
 	if ( mActivityTimer.getElapsedTimeF32() > ACTIVITY_TIMEOUT )
 	{
@@ -250,10 +251,14 @@ LLAvatarListEntry::ACTIVITY_TYPE LLAvatarListEntry::getActivity()
 	return mActivityType;
 }
 
-LLFloaterAvatarList::LLFloaterAvatarList() :  LLFloater(std::string("radar"))
+LLFloaterAvatarList::LLFloaterAvatarList() :  LLFloater(std::string("radar")), 
+	mTracking(false),
+	mUpdate(true),
+	mDirtyAvatarSorting(false),
+	mUpdateRate(gSavedSettings.getU32("RadarUpdateRate") * 3 + 3),
+	mAvatarList(NULL)
 {
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_radar.xml");
-	mUpdateRate = gSavedSettings.getU32("RadarUpdateRate") * 3 + 3;
 }
 
 LLFloaterAvatarList::~LLFloaterAvatarList()
@@ -315,46 +320,46 @@ void LLFloaterAvatarList::onClose(bool app_quitting)
 	}
 }
 
+void cmd_profile(const LLAvatarListEntry* entry);
+void cmd_toggle_mark(LLAvatarListEntry* entry);
+void cmd_ar(const LLAvatarListEntry* entry);
+void cmd_teleport(const LLAvatarListEntry* entry);
 BOOL LLFloaterAvatarList::postBuild()
 {
-	// Default values
-	mTracking = FALSE;
-	mUpdate = TRUE;
-
 	// Set callbacks
-	childSetAction("profile_btn", onClickProfile, this);
-	childSetAction("im_btn", onClickIM, this);
-	childSetAction("offer_btn", onClickTeleportOffer, this);
-	childSetAction("track_btn", onClickTrack, this);
-	childSetAction("mark_btn", onClickMark, this);
-	childSetAction("focus_btn", onClickFocus, this);
-	childSetAction("prev_in_list_btn", onClickPrevInList, this);
-	childSetAction("next_in_list_btn", onClickNextInList, this);
-	childSetAction("prev_marked_btn", onClickPrevMarked, this);
-	childSetAction("next_marked_btn", onClickNextMarked, this);
+	childSetAction("profile_btn", boost::bind(&LLFloaterAvatarList::doCommand, this, &cmd_profile, false));
+	childSetAction("im_btn", boost::bind(&LLFloaterAvatarList::onClickIM, this));
+	childSetAction("offer_btn", boost::bind(&LLFloaterAvatarList::onClickTeleportOffer, this));
+	childSetAction("track_btn", boost::bind(&LLFloaterAvatarList::onClickTrack, this));
+	childSetAction("mark_btn", boost::bind(&LLFloaterAvatarList::doCommand, this, &cmd_toggle_mark, false));
+	childSetAction("focus_btn", boost::bind(&LLFloaterAvatarList::onClickFocus, this));
+	childSetAction("prev_in_list_btn", boost::bind(&LLFloaterAvatarList::focusOnPrev, this, FALSE));
+	childSetAction("next_in_list_btn", boost::bind(&LLFloaterAvatarList::focusOnNext, this, FALSE));
+	childSetAction("prev_marked_btn", boost::bind(&LLFloaterAvatarList::focusOnPrev, this, TRUE));
+	childSetAction("next_marked_btn", boost::bind(&LLFloaterAvatarList::focusOnNext, this, TRUE));
 
-	childSetAction("get_key_btn", onClickGetKey, this);
+	childSetAction("get_key_btn", boost::bind(&LLFloaterAvatarList::onClickGetKey, this));
 
-	childSetAction("freeze_btn", onClickFreeze, this);
-	childSetAction("eject_btn", onClickEject, this);
-	childSetAction("mute_btn", onClickMute, this);
-	childSetAction("ar_btn", onClickAR, this);
-	childSetAction("teleport_btn", onClickTeleport, this);
-	childSetAction("estate_eject_btn", onClickEjectFromEstate, this);
-	childSetAction("estate_ban_btn", onClickBanFromEstate, this);
+	childSetAction("freeze_btn", boost::bind(&LLFloaterAvatarList::onClickFreeze, this));
+	childSetAction("eject_btn", boost::bind(&LLFloaterAvatarList::onClickEject, this));
+	childSetAction("mute_btn", boost::bind(&LLFloaterAvatarList::onClickMute, this));
+	childSetAction("ar_btn", boost::bind(&LLFloaterAvatarList::doCommand, this, &cmd_ar, true));
+	childSetAction("teleport_btn", boost::bind(&LLFloaterAvatarList::doCommand, this, &cmd_teleport, true));
+	childSetAction("estate_eject_btn", boost::bind(&LLFloaterAvatarList::onClickEjectFromEstate, this));
+	childSetAction("estate_ban_btn",boost::bind(&LLFloaterAvatarList:: onClickBanFromEstate, this));
 
-	childSetAction("send_keys_btn", onClickSendKeys, this);
+	childSetAction("send_keys_btn", boost::bind(&LLFloaterAvatarList::sendKeys, this));
 
 	getChild<LLRadioGroup>("update_rate")->setSelectedIndex(gSavedSettings.getU32("RadarUpdateRate"));
-	childSetCommitCallback("update_rate", onCommitUpdateRate, this);
+	getChild<LLRadioGroup>("update_rate")->setCommitCallback(boost::bind(&LLFloaterAvatarList::onCommitUpdateRate, this));
 
 	// Get a pointer to the scroll list from the interface
 	mAvatarList = getChild<LLScrollListCtrl>("avatar_list");
 	mAvatarList->sortByColumn("distance", TRUE);
 	mAvatarList->setCommitOnSelectionChange(TRUE);
-	mAvatarList->setCallbackUserData(this);
 	mAvatarList->setCommitCallback(boost::bind(&LLFloaterAvatarList::onSelectName,this));
 	mAvatarList->setDoubleClickCallback(boost::bind(&LLFloaterAvatarList::onClickFocus,this));
+	mAvatarList->setSortChangedCallback(boost::bind(&LLFloaterAvatarList::onAvatarSortingChanged,this));
 	refreshAvatarList();
 
 	gIdleCallbacks.addFunction(LLFloaterAvatarList::callbackIdle);
@@ -438,9 +443,9 @@ void LLFloaterAvatarList::updateAvatarList()
 		sorted_avatar_ids = avatar_ids;
 		std::sort(sorted_avatar_ids.begin(), sorted_avatar_ids.end());
 
-		for (std::vector<LLCharacter*>::const_iterator iter = LLCharacter::sInstances.begin(); iter != LLCharacter::sInstances.end(); ++iter)
+		BOOST_FOREACH(std::vector<LLCharacter*>::value_type& iter, LLCharacter::sInstances)
 		{
-			LLUUID avid = (*iter)->getID();
+			LLUUID avid = iter->getID();
 
 			if (!std::binary_search(sorted_avatar_ids.begin(), sorted_avatar_ids.end(), avid))
 			{
@@ -512,12 +517,13 @@ void LLFloaterAvatarList::updateAvatarList()
 					continue;
 				}
 
-				if (mAvatars.count(avid) > 0)
+				LLAvatarListEntry* entry = getAvatarEntry(avid);
+				if (entry)
 				{
 					// Avatar already in list, update position
 					F32 dist = (F32)(position - mypos).magVec();
-					mAvatars[avid].setPosition(position, (avatarp->getRegion() == gAgent.getRegion()), true, dist < 20.0, dist < 100.0);
-					if(avatarp->isTyping())mAvatars[avid].setActivity(LLAvatarListEntry::ACTIVITY_TYPING);
+					entry->setPosition(position, (avatarp->getRegion() == gAgent.getRegion()), true, dist < 20.0, dist < 100.0);
+					if(avatarp->isTyping())entry->setActivity(LLAvatarListEntry::ACTIVITY_TYPING);
 				}
 				else
 				{
@@ -525,7 +531,7 @@ void LLFloaterAvatarList::updateAvatarList()
 					LLAvatarListEntry entry(avid, name, position);
 					if(announce && avatarp->getRegion() == gAgent.getRegion())
 						announce_keys.push(avid);
-					mAvatars[avid] = entry;
+					mAvatars.push_back(entry);
 				}
 			}
 			else
@@ -545,18 +551,19 @@ void LLFloaterAvatarList::updateAvatarList()
 					continue; //prevent (Loading...)
 				}
 
-				if (mAvatars.count(avid) > 0)
+				LLAvatarListEntry* entry = getAvatarEntry(avid);
+				if (entry)
 				{
 					// Avatar already in list, update position
 					F32 dist = (F32)(position - mypos).magVec();
-					mAvatars[avid].setPosition(position, gAgent.getRegion()->pointInRegionGlobal(position), false, dist < 20.0, dist < 100.0);
+					entry->setPosition(position, gAgent.getRegion()->pointInRegionGlobal(position), false, dist < 20.0, dist < 100.0);
 				}
 				else
 				{
 					LLAvatarListEntry entry(avid, name, position);
 					if(announce && gAgent.getRegion()->pointInRegionGlobal(position))
 						announce_keys.push(avid);
-					mAvatars[avid] = entry;
+					mAvatars.push_back(entry);
 				}
 			}
 		}
@@ -618,28 +625,39 @@ void LLFloaterAvatarList::updateAvatarList()
 void LLFloaterAvatarList::expireAvatarList()
 {
 //	llinfos << "radar: expiring" << llendl;
-	std::map<LLUUID, LLAvatarListEntry>::iterator iter;
-	std::queue<LLUUID> delete_queue;
-	bool alive;
-
-	for (iter = mAvatars.begin(); iter != mAvatars.end(); iter++)
+	for(av_list_t::iterator it = mAvatars.begin(); it != mAvatars.end();)
 	{
-		LLAvatarListEntry *entry = &iter->second;
-
-		alive = entry->getAlive();
-
-		if (entry->isDead())
+		if(!it->isDead())
+			(it++)->getAlive();
+		else
 		{
-			//llinfos << "radar: expiring avatar " << entry->getName() << llendl;
-			LLUUID av_id = entry->getID();
-			delete_queue.push(av_id);
+			std::swap(*it,mAvatars.back());
+			mAvatars.pop_back();
+			if(!mAvatars.size())
+				return;
 		}
 	}
+}
 
-	while (!delete_queue.empty())
+void LLFloaterAvatarList::updateAvatarSorting()
+{
+	if(mDirtyAvatarSorting)
 	{
-		mAvatars.erase(delete_queue.front());
-		delete_queue.pop();
+		mDirtyAvatarSorting = false;
+		if(mAvatars.size() <= 1) //Nothing to sort.
+			return;
+		const std::vector<LLScrollListItem*> list = mAvatarList->getAllData();
+		av_list_t::iterator insert_it = mAvatars.begin();
+		for(std::vector<LLScrollListItem*>::const_iterator it=list.begin();it!=list.end();++it)
+		{
+			av_list_t::iterator av_it = std::find_if(mAvatars.begin(),mAvatars.end(),LLAvatarListEntry::uuidMatch((*it)->getUUID()));
+			if(av_it!=mAvatars.end())
+			{
+				std::iter_swap(insert_it++,av_it);
+				if(insert_it+1 == mAvatars.end()) //We've ran out of elements to sort
+					return;
+			}
+		}
 	}
 }
 
@@ -666,25 +684,24 @@ void LLFloaterAvatarList::refreshAvatarList()
 	posagent.setVec(gAgent.getPositionAgent());
 	LLVector3d simpos = mypos - posagent;
 
-	std::map<LLUUID, LLAvatarListEntry>::iterator iter;
-	for (iter = mAvatars.begin(); iter != mAvatars.end(); iter++)
+	BOOST_FOREACH(av_list_t::value_type& entry, mAvatars)
 	{
 		LLSD element;
 		LLUUID av_id;
 		std::string av_name;
 
-		LLAvatarListEntry* entry = &iter->second;
-
 		// Skip if avatar hasn't been around
-		if (entry->isDead())
+		if (entry.isDead())
 		{
 			continue;
 		}
 
-		av_id = entry->getID();
-		av_name = entry->getName().c_str();
+		entry.setInList();
 
-		LLVector3d position = entry->getPosition();
+		av_id = entry.getID();
+		av_name = entry.getName().c_str();
+
+		LLVector3d position = entry.getPosition();
 		BOOL UnknownAltitude = false;
 
 		LLVector3d delta = position - mypos;
@@ -720,7 +737,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 		element["columns"][LIST_MARK]["column"] = "marked";
 		element["columns"][LIST_MARK]["type"] = "text";
-		if (entry->isMarked())
+		if (entry.isMarked())
 		{
 			element["columns"][LIST_MARK]["value"] = "X";
 			element["columns"][LIST_MARK]["color"] = LLColor4::blue.getValue();
@@ -734,7 +751,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		element["columns"][LIST_AVATAR_NAME]["column"] = "avatar_name";
 		element["columns"][LIST_AVATAR_NAME]["type"] = "text";
 		element["columns"][LIST_AVATAR_NAME]["value"] = av_name;
-		if (entry->isFocused())
+		if (entry.isFocused())
 		{
 			element["columns"][LIST_AVATAR_NAME]["font-style"] = "BOLD";
 		}
@@ -742,7 +759,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		//<edit> custom colors for certain types of avatars!
 		//Changed a bit so people can modify them in settings. And since they're colors, again it's possibly account-based. Starting to think I need a function just to determine that. - HgB
 		//element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapAvatar" ).getValue();
-		LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(entry->getPosition());
+		LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(entry.getPosition());
 		LLUUID estate_owner = LLUUID::null;
 		if(parent_estate && parent_estate->isAlive())
 		{
@@ -793,7 +810,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		if (UnknownAltitude)
 		{
 			strcpy(temp, "?");
-			if (entry->isDrawn())
+			if (entry.isDrawn())
 			{
 				color = sRadarTextDrawDist;
 			}
@@ -814,7 +831,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 			}
 			else
 			{
-				if (entry->isDrawn())
+				if (entry.isDrawn())
 				{
 					color = sRadarTextDrawDist;
 				}
@@ -872,7 +889,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		element["columns"][LIST_ACTIVITY]["type"] = "icon";
 
 		std::string activity_icon = "";
-		switch(entry->getActivity())
+		switch(entry.getActivity())
 		{
 		case LLAvatarListEntry::ACTIVITY_MOVING:
 			activity_icon = "inv_item_animation.tga";
@@ -947,18 +964,17 @@ void LLFloaterAvatarList::refreshAvatarList()
 	mAvatarList->sortItems();
 	mAvatarList->selectMultiple(selected);
 	mAvatarList->setScrollPos(scrollpos);
+	
+	mDirtyAvatarSorting = true;
 
 //	llinfos << "radar refresh: done" << llendl;
 
 }
 
-// static
-void LLFloaterAvatarList::onClickIM(void* userdata)
+void LLFloaterAvatarList::onClickIM()
 {
 	//llinfos << "LLFloaterFriends::onClickIM()" << llendl;
-	LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
-
-	LLDynamicArray<LLUUID> ids = self->mAvatarList->getSelectedIDs();
+	LLDynamicArray<LLUUID> ids = mAvatarList->getSelectedIDs();
 	if (ids.size() > 0)
 	{
 		if (ids.size() == 1)
@@ -986,42 +1002,34 @@ void LLFloaterAvatarList::onClickIM(void* userdata)
 	}
 }
 
-void LLFloaterAvatarList::onClickTeleportOffer(void* userdata)
+void LLFloaterAvatarList::onClickTeleportOffer()
 {
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-
-	LLDynamicArray<LLUUID> ids = self->mAvatarList->getSelectedIDs();
+	LLDynamicArray<LLUUID> ids = mAvatarList->getSelectedIDs();
 	if (ids.size() > 0)
 	{
 		handle_lure(ids);
 	}
 }
 
-void LLFloaterAvatarList::onClickTrack(void* userdata)
+void LLFloaterAvatarList::onClickTrack()
 {
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-
-	LLScrollListItem* item = self->mAvatarList->getFirstSelected();
+	LLScrollListItem* item = mAvatarList->getFirstSelected();
 	if (!item) return;
 
 	LLUUID agent_id = item->getUUID();
 
-	if (self->mTracking && self->mTrackedAvatar == agent_id) {
+	if (mTracking && mTrackedAvatar == agent_id)
+	{
 		LLTracker::stopTracking(NULL);
-		self->mTracking = FALSE;
+		mTracking = FALSE;
 	}
 	else
 	{
-		self->mTracking = TRUE;
-		self->mTrackedAvatar = agent_id;
+		mTracking = TRUE;
+		mTrackedAvatar = agent_id;
 //		trackAvatar only works for friends allowing you to see them on map...
 //		LLTracker::trackAvatar(agent_id, self->mAvatars[agent_id].getName());
-		std::string name = self->mAvatars[agent_id].getName();
-		if (!self->mUpdate)
-		{
-			name += "\n(last known position)";
-		}
-		LLTracker::trackLocation(self->mAvatars[agent_id].getPosition(), name, name);
+		trackAvatar(getAvatarEntry(mTrackedAvatar));
 	}
 }
 
@@ -1031,15 +1039,12 @@ void LLFloaterAvatarList::refreshTracker()
 
 	if (LLTracker::isTracking(NULL))
 	{
-		LLVector3d pos = mAvatars[mTrackedAvatar].getPosition();
-		if (pos != LLTracker::getTrackedPositionGlobal())
+		if(LLAvatarListEntry* entry = getAvatarEntry(mTrackedAvatar))
 		{
-			std::string name = mAvatars[mTrackedAvatar].getName();
-			if (!mUpdate)
+			if (entry->getPosition() != LLTracker::getTrackedPositionGlobal())
 			{
-				name += "\n(last known position)";
+				trackAvatar(entry);
 			}
-			LLTracker::trackLocation(pos, name, name);
 		}
 	}
 	else
@@ -1050,6 +1055,17 @@ void LLFloaterAvatarList::refreshTracker()
 	}
 }
 
+void LLFloaterAvatarList::trackAvatar(const LLAvatarListEntry* entry)
+{
+	if(!entry) return;
+	std::string name = entry->getName();
+	if (!mUpdate)
+	{
+		name += "\n(last known position)";
+	}
+	LLTracker::trackLocation(entry->getPosition(), name, name);
+}
+
 LLAvatarListEntry * LLFloaterAvatarList::getAvatarEntry(LLUUID avatar)
 {
 	if (avatar.isNull())
@@ -1057,32 +1073,11 @@ LLAvatarListEntry * LLFloaterAvatarList::getAvatarEntry(LLUUID avatar)
 		return NULL;
 	}
 
-	std::map<LLUUID, LLAvatarListEntry>::iterator iter;
-
-	iter = mAvatars.find(avatar);
-	if (iter == mAvatars.end())
-	{
+	av_list_t::iterator iter = std::find_if(mAvatars.begin(),mAvatars.end(),LLAvatarListEntry::uuidMatch(avatar));
+	if(iter != mAvatars.end())
+		return &(*iter);
+	else
 		return NULL;
-	}
-
-	return &iter->second;	
-}
-
-//static
-void LLFloaterAvatarList::onClickMark(void* userdata)
-{
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-	LLDynamicArray<LLUUID> ids = self->mAvatarList->getSelectedIDs();
-
-	for (LLDynamicArray<LLUUID>::iterator itr = ids.begin(); itr != ids.end(); ++itr)
-	{
-		LLUUID avid = *itr;
-		LLAvatarListEntry* entry = self->getAvatarEntry(avid);
-		if (entry != NULL)
-		{
-			entry->toggleMark();
-		}
-	}
 }
 
 BOOL LLFloaterAvatarList::handleKeyHere(KEY key, MASK mask)
@@ -1094,8 +1089,7 @@ BOOL LLFloaterAvatarList::handleKeyHere(KEY key, MASK mask)
 		LLUUID agent_id = item->getUUID();
 		if (( KEY_RETURN == key ) && (MASK_NONE == mask))
 		{
-			self->mFocusedAvatar = agent_id;
-			self->focusOnCurrent();
+			self->setFocusAvatar(agent_id);
 			return TRUE;
 		}
 		else if (( KEY_RETURN == key ) && (MASK_CONTROL == mask))
@@ -1142,143 +1136,73 @@ BOOL LLFloaterAvatarList::handleKeyHere(KEY key, MASK mask)
 	return LLPanel::handleKeyHere(key, mask);
 }
 
-void LLFloaterAvatarList::onClickFocus(void* userdata)
+void LLFloaterAvatarList::onClickFocus()
 {
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-
-	LLScrollListItem* item = self->mAvatarList->getFirstSelected();
+	LLScrollListItem* item = mAvatarList->getFirstSelected();
 	if (item)
 	{
-		self->mFocusedAvatar = item->getUUID();
-		self->focusOnCurrent();
+		setFocusAvatar(item->getUUID());
 	}
 }
 
 void LLFloaterAvatarList::removeFocusFromAll()
 {
-	std::map<LLUUID, LLAvatarListEntry>::iterator iter;
-
-	for (iter = mAvatars.begin(); iter != mAvatars.end(); iter++)
+	BOOST_FOREACH(av_list_t::value_type& entry, mAvatars)
 	{
-		LLAvatarListEntry* entry = &iter->second;
-		entry->setFocus(FALSE);
+		entry.setFocus(FALSE);
 	}
 }
 
-void LLFloaterAvatarList::focusOnCurrent()
+void LLFloaterAvatarList::setFocusAvatar(const LLUUID& id)
 {
-	std::map<LLUUID, LLAvatarListEntry>::iterator iter;
-	LLAvatarListEntry* entry;
-
-	if (mAvatars.size() == 0)
+	av_list_t::iterator iter = std::find_if(mAvatars.begin(),mAvatars.end(),LLAvatarListEntry::uuidMatch(id));
+	if(iter != mAvatars.end())
 	{
-		return;
+		if(!gAgentCamera.lookAtObject(id, false))
+			return;
+		removeFocusFromAll();
+		iter->setFocus(TRUE);
 	}
+}
 
-	for (iter = mAvatars.begin(); iter != mAvatars.end(); iter++)
+template<typename T>
+void decrement_focus_target(T begin, T end, BOOL marked_only)
+{
+	T iter = begin;
+	while(iter != end && !iter->isFocused()) ++iter;
+	if(iter == end)
+		return;
+	T prev_iter = iter;
+	while(prev_iter != begin)
 	{
-		entry = &iter->second;
-
-		if (entry->isDead())
-			continue;
-
-		if (entry->getID() == mFocusedAvatar)
+		LLAvatarListEntry& entry = *(--prev_iter);
+		if(entry.isInList() && (entry.isMarked() || !marked_only) && gAgentCamera.lookAtObject(entry.getID(), false))
 		{
-			removeFocusFromAll();
-			entry->setFocus(TRUE);
-			gAgentCamera.lookAtObject(mFocusedAvatar, false);
+			iter->setFocus(FALSE);
+			prev_iter->setFocus(TRUE);
+			gAgentCamera.lookAtObject(prev_iter->getID(), false);
 			return;
 		}
 	}
+	gAgentCamera.lookAtObject(iter->getID(), false);
 }
 
 void LLFloaterAvatarList::focusOnPrev(BOOL marked_only)
 {
-	std::map<LLUUID, LLAvatarListEntry>::iterator iter;
-	LLAvatarListEntry* prev = NULL;
-	LLAvatarListEntry* entry;
-
-	if (mAvatars.size() == 0)
-	{
-		return;
-	}
-
-	for (iter = mAvatars.begin(); iter != mAvatars.end(); iter++)
-	{
-		entry = &iter->second;
-
-		if (entry->isDead())
-			continue;
-
-		if (prev != NULL && entry->getID() == mFocusedAvatar)
-		{
-			break;
-		}
-
-		if ((!marked_only && entry->isDrawn()) || entry->isMarked())
-		{
-			prev = entry;
-		}
-	}
-
-	if (prev != NULL)
-	{
-		removeFocusFromAll();
-		prev->setFocus(TRUE);
-		mFocusedAvatar = prev->getID();
-		gAgentCamera.lookAtObject(mFocusedAvatar, false);
-	}
+	updateAvatarSorting();
+	decrement_focus_target(mAvatars.begin(), mAvatars.end(), marked_only);
 }
 
 void LLFloaterAvatarList::focusOnNext(BOOL marked_only)
 {
-	std::map<LLUUID, LLAvatarListEntry>::iterator iter;
-	BOOL found = FALSE;
-	LLAvatarListEntry* next = NULL;
-	LLAvatarListEntry* entry;
-
-	if (mAvatars.size() == 0)
-	{
-		return;
-	}
-
-	for (iter = mAvatars.begin(); iter != mAvatars.end(); iter++)
-	{
-		entry = &iter->second;
-
-		if (entry->isDead())
-			continue;
-
-		if (next == NULL && ((!marked_only && entry->isDrawn()) || entry->isMarked()))
-		{
-			next = entry;
-		}
-
-		if (found && ((!marked_only && entry->isDrawn()) || entry->isMarked()))
-		{
-			next = entry;
-			break;
-		}
-
-		if (entry->getID() == mFocusedAvatar)
-		{
-			found = TRUE;
-		} 
-	}
-
-	if (next != NULL)
-	{
-		removeFocusFromAll();
-		next->setFocus(TRUE);
-		mFocusedAvatar = next->getID();
-		gAgentCamera.lookAtObject(mFocusedAvatar, false);
-	}
+	updateAvatarSorting();
+	decrement_focus_target(mAvatars.rbegin(), mAvatars.rend(), marked_only);
 }
 
 /*static*/
 void LLFloaterAvatarList::lookAtAvatar(LLUUID &uuid)
 { // twisted laws
-	LLViewerObject* voavatar = gObjectList.findObject(uuid);
+	LLVOAvatar* voavatar = gObjectList.findAvatar(uuid);
 	if(voavatar && voavatar->isAvatar())
 	{
 		gAgentCamera.setFocusOnAvatar(FALSE, FALSE);
@@ -1291,39 +1215,9 @@ void LLFloaterAvatarList::lookAtAvatar(LLUUID &uuid)
 	}
 }
 
-//static
-void LLFloaterAvatarList::onClickPrevInList(void* userdata)
+void LLFloaterAvatarList::onClickGetKey()
 {
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-	self->focusOnPrev(FALSE);
-}
-
-//static
-void LLFloaterAvatarList::onClickNextInList(void* userdata)
-{
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-	self->focusOnNext(FALSE);
-}
-
-//static
-void LLFloaterAvatarList::onClickPrevMarked(void* userdata)
-{
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-	self->focusOnPrev(TRUE);
-}
-
-//static
-void LLFloaterAvatarList::onClickNextMarked(void* userdata)
-{
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-	self->focusOnNext(TRUE);
-}
-
-//static
-void LLFloaterAvatarList::onClickGetKey(void *userdata)
-{
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-	LLScrollListItem* item = self->mAvatarList->getFirstSelected();
+	LLScrollListItem* item = mAvatarList->getFirstSelected();
 
 	if (NULL == item) return;
 
@@ -1334,7 +1228,7 @@ void LLFloaterAvatarList::onClickGetKey(void *userdata)
 
 	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
 }
-//static
+
 void LLFloaterAvatarList::sendKeys()
 {
 	LLViewerRegion* regionp = gAgent.getRegion();
@@ -1432,11 +1326,6 @@ bool LLFloaterAvatarList::onConfirmRadarChatKeys(const LLSD& notification, const
 	}
 	return false;
 }
-//static
-void LLFloaterAvatarList::onClickSendKeys(void *userdata)
-{
-	LLFloaterAvatarList::getInstance()->sendKeys();
-}
 
 static void send_freeze(const LLUUID& avatar_id, bool freeze)
 {
@@ -1521,46 +1410,44 @@ static void send_estate_message(
 	msg->sendReliable(gAgent.getRegion()->getHost());
 }
 
-static void cmd_freeze(const LLUUID& avatar, const std::string& name)      { send_freeze(avatar, true); }
-static void cmd_unfreeze(const LLUUID& avatar, const std::string& name)    { send_freeze(avatar, false); }
-static void cmd_eject(const LLUUID& avatar, const std::string& name)       { send_eject(avatar, false); }
-static void cmd_ban(const LLUUID& avatar, const std::string& name)         { send_eject(avatar, true); }
-static void cmd_profile(const LLUUID& avatar, const std::string& name)     { LLFloaterAvatarInfo::showFromDirectory(avatar); }
-static void cmd_estate_eject(const LLUUID& avatar, const std::string& name){ send_estate_message("teleporthomeuser", avatar); }
-static void cmd_estate_ban(const LLUUID &avatar, const std::string &name)  { LLPanelEstateInfo::sendEstateAccessDelta(ESTATE_ACCESS_BANNED_AGENT_ADD | ESTATE_ACCESS_ALLOWED_AGENT_REMOVE | ESTATE_ACCESS_NO_REPLY, avatar); }
+static void cmd_append_names(const LLAvatarListEntry* entry, std::string &str, std::string &sep)
+															{ if(!str.empty())str.append(sep);str.append(entry->getName()); }
+static void cmd_toggle_mark(LLAvatarListEntry* entry)		{ entry->toggleMark(); }
+static void cmd_ar(const LLAvatarListEntry* entry)			{ LLFloaterReporter::showFromObject(entry->getID()); }
+static void cmd_profile(const LLAvatarListEntry* entry)		{ LLFloaterAvatarInfo::showFromDirectory(entry->getID()); }
+static void cmd_teleport(const LLAvatarListEntry* entry)	{ gAgent.teleportViaLocation(entry->getPosition()); }
+static void cmd_freeze(const LLAvatarListEntry* entry)		{ send_freeze(entry->getID(), true); }
+static void cmd_unfreeze(const LLAvatarListEntry* entry)	{ send_freeze(entry->getID(), false); }
+static void cmd_eject(const LLAvatarListEntry* entry)		{ send_eject(entry->getID(), false); }
+static void cmd_ban(const LLAvatarListEntry* entry)			{ send_eject(entry->getID(), true); }
+static void cmd_estate_eject(const LLAvatarListEntry* entry){ send_estate_message("teleporthomeuser", entry->getID()); }
+static void cmd_estate_ban(const LLAvatarListEntry* entry)	{ LLPanelEstateInfo::sendEstateAccessDelta(ESTATE_ACCESS_BANNED_AGENT_ADD | ESTATE_ACCESS_ALLOWED_AGENT_REMOVE | ESTATE_ACCESS_NO_REPLY, entry->getID()); }
 
-void LLFloaterAvatarList::doCommand(void (*func)(const LLUUID& avatar, const std::string& name))
+void LLFloaterAvatarList::doCommand(avlist_command_t func, bool single/*=false*/)
 {
-	LLDynamicArray<LLUUID> ids = mAvatarList->getSelectedIDs();
-
+	LLDynamicArray<LLUUID> ids;
+	if(!single)
+		ids = mAvatarList->getSelectedIDs();
+	else
+		ids.put(getSelectedID());
 	for (LLDynamicArray<LLUUID>::iterator itr = ids.begin(); itr != ids.end(); ++itr)
 	{
-		LLUUID avid = *itr;
+		LLUUID& avid = *itr;
+		if(avid.isNull())
+			continue;
 		LLAvatarListEntry* entry = getAvatarEntry(avid);
 		if (entry != NULL)
 		{
 			llinfos << "Executing command on " << entry->getName() << llendl;
-			func(avid, entry->getName());
+			func(entry);
 		}
 	}
 }
 
 std::string LLFloaterAvatarList::getSelectedNames(const std::string& separator)
 {
-	std::string ret = "";
-
-	LLDynamicArray<LLUUID> ids = mAvatarList->getSelectedIDs();
-	for (LLDynamicArray<LLUUID>::iterator itr = ids.begin(); itr != ids.end(); ++itr)
-	{
-		LLUUID avid = *itr;
-		LLAvatarListEntry* entry = getAvatarEntry(avid);
-		if (entry != NULL)
-		{
-			if (!ret.empty()) ret += separator;
-			ret += entry->getName();
-		}
-	}
-
+	std::string ret;
+	doCommand(boost::bind(&cmd_append_names,_1,ref(ret),separator));
 	return ret;
 }
 
@@ -1585,6 +1472,9 @@ LLUUID LLFloaterAvatarList::getSelectedID()
 //static 
 void LLFloaterAvatarList::callbackFreeze(const LLSD& notification, const LLSD& response)
 {
+	if(!instanceExists())
+		return;
+
 	S32 option = LLNotification::getSelectedOption(notification, response);
 
 	if (option == 0)
@@ -1600,6 +1490,9 @@ void LLFloaterAvatarList::callbackFreeze(const LLSD& notification, const LLSD& r
 //static 
 void LLFloaterAvatarList::callbackEject(const LLSD& notification, const LLSD& response)
 {
+	if(!instanceExists())
+		return;
+
 	S32 option = LLNotification::getSelectedOption(notification, response);
 
 	if (option == 0)
@@ -1615,6 +1508,9 @@ void LLFloaterAvatarList::callbackEject(const LLSD& notification, const LLSD& re
 //static 
 void LLFloaterAvatarList::callbackEjectFromEstate(const LLSD& notification, const LLSD& response)
 {
+	if(!instanceExists())
+		return;
+
 	S32 option = LLNotification::getSelectedOption(notification, response);
 
 	if (option == 0)
@@ -1626,6 +1522,9 @@ void LLFloaterAvatarList::callbackEjectFromEstate(const LLSD& notification, cons
 //static
 void LLFloaterAvatarList::callbackBanFromEstate(const LLSD& notification, const LLSD& response)
 {
+	if(!instanceExists())
+		return;
+
 	S32 option = LLNotification::getSelectedOption(notification, response);
 
 	if (option == 0)
@@ -1648,29 +1547,25 @@ void LLFloaterAvatarList::callbackIdle(void* userdata)
 	}
 }
 
-void LLFloaterAvatarList::onClickFreeze(void* userdata)
+void LLFloaterAvatarList::onClickFreeze()
 {
 	LLSD args;
 	LLSD payload;
-	args["AVATAR_NAME"] = ((LLFloaterAvatarList*)userdata)->getSelectedNames();
+	args["AVATAR_NAME"] = getSelectedNames();
 	LLNotificationsUtil::add("FreezeAvatarFullname", args, payload, callbackFreeze);
 }
 
-//static
-void LLFloaterAvatarList::onClickEject(void* userdata)
+void LLFloaterAvatarList::onClickEject()
 {
 	LLSD args;
 	LLSD payload;
-	args["AVATAR_NAME"] = ((LLFloaterAvatarList*)userdata)->getSelectedNames();
+	args["AVATAR_NAME"] = getSelectedNames();
 	LLNotificationsUtil::add("EjectAvatarFullname", args, payload, callbackEject);
 }
 
-//static
-void LLFloaterAvatarList::onClickMute(void* userdata)
+void LLFloaterAvatarList::onClickMute()
 {
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-
-	LLDynamicArray<LLUUID> ids = self->mAvatarList->getSelectedIDs();
+	LLDynamicArray<LLUUID> ids = mAvatarList->getSelectedIDs();
 	if (ids.size() > 0)
 	{
 		for (LLDynamicArray<LLUUID>::iterator itr = ids.begin(); itr != ids.end(); ++itr)
@@ -1695,62 +1590,25 @@ void LLFloaterAvatarList::onClickMute(void* userdata)
 	}
 }
 
-//static
-void LLFloaterAvatarList::onClickEjectFromEstate(void* userdata)
+void LLFloaterAvatarList::onClickEjectFromEstate()
 {
 	LLSD args;
 	LLSD payload;
-	args["EVIL_USER"] = ((LLFloaterAvatarList*)userdata)->getSelectedNames();
+	args["EVIL_USER"] = getSelectedNames();
 	LLNotificationsUtil::add("EstateKickUser", args, payload, callbackEjectFromEstate);
 }
 
-//static
-void LLFloaterAvatarList::onClickBanFromEstate(void* userdata)
+void LLFloaterAvatarList::onClickBanFromEstate()
 {
 	LLSD args;
 	LLSD payload;
-	args["EVIL_USER"] = ((LLFloaterAvatarList*)userdata)->getSelectedNames();
+	args["EVIL_USER"] = getSelectedNames();
 	LLNotificationsUtil::add("EstateBanUser", args, payload, callbackBanFromEstate);
 }
 
-//static
-void LLFloaterAvatarList::onClickAR(void* userdata)
+void LLFloaterAvatarList::onAvatarSortingChanged()
 {
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-	LLScrollListItem* item = self->mAvatarList->getFirstSelected();
-	if (item)
-	{
-		LLUUID agent_id = item->getUUID();
-		LLAvatarListEntry* entry = self->getAvatarEntry(agent_id);
-		if (entry)
-		{
-			LLFloaterReporter::showFromObject(entry->getID());
-		}
-	}
-}
-
-// static
-void LLFloaterAvatarList::onClickProfile(void* userdata)
-{
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-	self->doCommand(cmd_profile);
-}
-
-//static
-void LLFloaterAvatarList::onClickTeleport(void* userdata)
-{
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-	LLScrollListItem* item = self->mAvatarList->getFirstSelected();
-	if (item)
-	{
-		LLUUID agent_id = item->getUUID();
-		LLAvatarListEntry* entry = self->getAvatarEntry(agent_id);
-		if (entry)
-		{
-//			llinfos << "Trying to teleport to " << entry->getName() << " at " << entry->getPosition() << llendl;
-			gAgent.teleportViaLocation(entry->getPosition());
-		}
-	}
+	mDirtyAvatarSorting = true;
 }
 
 void LLFloaterAvatarList::onSelectName()
@@ -1770,9 +1628,7 @@ void LLFloaterAvatarList::onSelectName()
 	}
 }
 
-void LLFloaterAvatarList::onCommitUpdateRate(LLUICtrl*, void* userdata)
+void LLFloaterAvatarList::onCommitUpdateRate()
 {
-	LLFloaterAvatarList* self = (LLFloaterAvatarList*)userdata;
-
-	self->mUpdateRate = gSavedSettings.getU32("RadarUpdateRate") * 3 + 3;
+	mUpdateRate = gSavedSettings.getU32("RadarUpdateRate") * 3 + 3;
 }
