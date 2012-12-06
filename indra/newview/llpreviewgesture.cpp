@@ -123,7 +123,7 @@ LLPreviewGesture* LLPreviewGesture::show(const std::string& title, const LLUUID&
 	LLPreviewGesture* preview = (LLPreviewGesture*)LLPreview::find(item_id);
 	if (preview)
 	{
-		previewp->open();   /*Flawfinder: ignore*/
+		preview->open();   /*Flawfinder: ignore*/
 	}
 	else
 	{
@@ -140,7 +140,7 @@ LLPreviewGesture* LLPreviewGesture::show(const std::string& title, const LLUUID&
 		LLMultiFloater* hostp = preview->getHost();
 		if (hostp == NULL)
 		{
-			LLRect r = self->getRect();
+			LLRect r = preview->getRect();
 			LLRect screen = gFloaterView->getRect();
 			r.setLeftTopAndSize(0, screen.getHeight(), r.getWidth(), r.getHeight());
 			preview->setRect(r);
@@ -928,13 +928,13 @@ void LLPreviewGesture::onLoadComplete(LLVFS *vfs,
 			LLVFile file(vfs, asset_uuid, type, LLVFile::READ);
 			S32 size = file.getSize();
 
-			char* buffer = new char[size+1];
-			file.read((U8*)buffer, size);		/*Flawfinder: ignore*/
+			std::vector<char> buffer(size+1);
+			file.read((U8*)&buffer[0], size);
 			buffer[size] = '\0';
 
 			LLMultiGesture* gesture = new LLMultiGesture();
 
-			LLDataPackerAsciiBuffer dp(buffer, size+1);
+			LLDataPackerAsciiBuffer dp(&buffer[0], size+1);
 			BOOL ok = gesture->deserialize(dp);
 
 			if (ok)
@@ -955,9 +955,6 @@ void LLPreviewGesture::onLoadComplete(LLVFS *vfs,
 
 			delete gesture;
 			gesture = NULL;
-
-			delete [] buffer;
-			buffer = NULL;
 
 			self->mAssetStatus = PREVIEW_ASSET_LOADED;
 		}
@@ -1526,7 +1523,7 @@ void LLPreviewGesture::onCommitWait()
 	if (!step_item) return;
 
 	LLGestureStep* step = (LLGestureStep*)step_item->getUserdata();
-	if (getType() != STEP_WAIT) return;
+	if (step->getType() != STEP_WAIT) return;
 
 	LLGestureStepWait* wait_step = (LLGestureStepWait*)step;
 	U32 flags = 0x0;
