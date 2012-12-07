@@ -1299,9 +1299,20 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 
 void LLFloaterIMPanel::lookupName()
 {
-	std::string title;
-	if (LLAvatarNameCache::getPNSName(mOtherParticipantUUID, title))
-		setTitle(title);
+	LLAvatarNameCache::get(mOtherParticipantUUID, boost::bind(&LLFloaterIMPanel::onAvatarNameLookup, _1, _2, this));
+}
+
+//static
+void LLFloaterIMPanel::onAvatarNameLookup(const LLUUID&, const LLAvatarName& avatar_name, void* data)
+{
+	LLFloaterIMPanel* self = (LLFloaterIMPanel*)data;
+
+	if (self && sFloaterIMPanels.count(self) != 0)
+	{
+		std::string title;
+		LLAvatarNameCache::getPNSName(avatar_name, title);
+		self->setTitle(title);
+	}
 }
 
 LLFloaterIMPanel::~LLFloaterIMPanel()

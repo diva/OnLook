@@ -70,6 +70,8 @@ const LLColor4 INACTIVE_COLOR(0.3f, 0.3f, 0.3f, 0.5f);
 const LLColor4 ACTIVE_COLOR(0.5f, 0.5f, 0.5f, 1.f);
 const F32 TYPING_ANIMATION_FPS = 2.5f;
 
+static void on_avatar_name_lookup(const LLUUID&, const LLAvatarName& avatar_name, std::string& mDisplayName);
+
 LLSpeaker::LLSpeaker(const LLUUID& id, const std::string& name, const ESpeakerType type) : 
 	mStatus(LLSpeaker::STATUS_TEXT_ONLY),
 	mLastSpokeTime(0.f), 
@@ -102,13 +104,17 @@ LLSpeaker::LLSpeaker(const LLUUID& id, const std::string& name, const ESpeakerTy
 
 void LLSpeaker::lookupName()
 {
-	LLAvatarNameCache::getPNSName(mID, mDisplayName);
+	LLAvatarNameCache::get(mID, boost::bind(&on_avatar_name_lookup, _1, _2, boost::ref(mDisplayName)));
 
 	// Also set the legacy name. We will need it to initiate a new
 	// IM session.
 	gCacheName->getFullName(mID, mLegacyName);
 	mLegacyName = LLCacheName::cleanFullName(mLegacyName);
+}
 
+static void on_avatar_name_lookup(const LLUUID&, const LLAvatarName& avatar_name, std::string& mDisplayName)
+{
+	LLAvatarNameCache::getPNSName(avatar_name, mDisplayName);
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g) | Added: RLVa-1.0.0g
 	// TODO-RLVa: this seems to get called per frame which is very likely an LL bug that will eventually get fixed
 	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
