@@ -83,6 +83,7 @@ typedef enum e_radar_alert_type
 
 void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool entering)
 {
+	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) return; //RLVa:LF Don't announce people are around when blind, that cheats the system.
 	static LLCachedControl<bool> radar_chat_alerts(gSavedSettings, "RadarChatAlerts");
 	if (!radar_chat_alerts) return;
 	static LLCachedControl<bool> radar_alert_sim(gSavedSettings, "RadarAlertSim");
