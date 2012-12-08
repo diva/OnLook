@@ -162,8 +162,9 @@ void main()
 	//spec *= shadow;
 	//color.rgb += spec * specular;
 	
-	//color.rgb = atmosTransport(color.rgb);
-	//color.rgb = scaleSoftClip(color.rgb);
+	color.rgb = atmosTransport(color.rgb);
+	color.rgb = scaleSoftClip(color.rgb);
+
 	//color.a = spec * sunAngle2;
 
 	//wavef.z *= 0.1f;

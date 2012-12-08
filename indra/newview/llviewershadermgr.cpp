@@ -1293,7 +1293,9 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 	{
 		// load water shader
 		gDeferredWaterProgram.mName = "Deferred Water Shader";
+		gDeferredWaterProgram.mFeatures.atmosphericHelpers = true;
 		gDeferredWaterProgram.mFeatures.calculatesAtmospherics = true;
+		gDeferredWaterProgram.mFeatures.hasAtmospherics = true;
 		gDeferredWaterProgram.mFeatures.hasGamma = true;
 		gDeferredWaterProgram.mFeatures.hasTransport = true;
 		gDeferredWaterProgram.mShaderFiles.clear();
