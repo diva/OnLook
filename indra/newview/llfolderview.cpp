@@ -429,7 +429,7 @@ void LLFolderView::setOpenArrangeRecursively(BOOL openitem, ERecurseType recurse
 
 static LLFastTimer::DeclareTimer FTM_ARRANGE("Arrange");
 
-// This view grows and shinks to enclose all of its children items and folders.
+// This view grows and shrinks to enclose all of its children items and folders.
 S32 LLFolderView::arrange( S32* unused_width, S32* unused_height, S32 filter_generation )
 {
 	if(!mScrollContainer)
@@ -1049,6 +1049,24 @@ bool isDescendantOfASelectedItem(LLFolderViewItem* item, const std::vector<LLFol
 	return false;
 }
 
+// static
+void LLFolderView::removeCutItems()
+{
+	// There's no item in "cut" mode on the clipboard -> exit
+	if (!LLInventoryClipboard::instance().isCutMode())
+		return;
+
+	// Get the list of clipboard item uuids and iterate through them
+	LLDynamicArray<LLUUID> objects;
+	LLInventoryClipboard::instance().retrieve(objects);
+	for (LLDynamicArray<LLUUID>::const_iterator iter = objects.begin();
+		 iter != objects.end();
+		 ++iter)
+	{
+		gInventory.removeObject(*iter);
+	}
+}
+
 void LLFolderView::removeSelectedItems( void )
 {
 	if(getVisible() && getEnabled())
@@ -1385,6 +1403,7 @@ void LLFolderView::cut()
 				listener->cutToClipboard();
 			}
 		}
+		LLFolderView::removeCutItems();
 	}
 	mSearchString.clear();
 }
@@ -2015,7 +2034,7 @@ void LLFolderView::scrollToShowSelection()
 	}
 }
 
-// If the parent is scroll containter, scroll it to make the selection
+// If the parent is scroll container, scroll it to make the selection
 // is maximally visible.
 void LLFolderView::scrollToShowItem(LLFolderViewItem* item, const LLRect& constraint_rect)
 {
@@ -2165,7 +2184,7 @@ void LLFolderView::doIdle()
 	mNeedsAutoSelect = filter_modified_and_active &&
 							!(gFocusMgr.childHasKeyboardFocus(this) || gFocusMgr.getMouseCapture());
 	
-	// filter to determine visiblity before arranging
+	// filter to determine visibility before arranging
 	filterFromRoot();
 
 	// automatically show matching items, and select first one

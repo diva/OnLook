@@ -118,10 +118,11 @@ public:
 	// + Execution And Results
 	// +-------------------------------------------------------------------+
 	BOOL 				check(LLFolderViewItem* item);
-	bool				checkFolder(const LLFolderViewFolder* folder);
+	bool				checkFolder(const LLFolderViewFolder* folder) const;
 	BOOL 				checkAgainstFilterType(const LLFolderViewItem* item) const;
 	BOOL 				checkAgainstPermissions(const LLFolderViewItem* item) const;
 	BOOL 				checkAgainstFilterLinks(const LLFolderViewItem* item) const;
+	bool				checkAgainstClipboard(const LLUUID& object_id) const;
 
 	std::string::size_type getStringMatchOffset() const;
 
@@ -171,9 +172,9 @@ public:
 	S32 				getMinRequiredGeneration() const;
 	S32 				getMustPassGeneration() const;
 
-
-
-
+	// +-------------------------------------------------------------------+
+	// + Conversion
+	// +-------------------------------------------------------------------+
 	void toLLSD(LLSD& data) const;
 	void fromLLSD(LLSD& data);
 
