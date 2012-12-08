@@ -854,6 +854,7 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 
 			LLSD row;
 			row["columns"][0]["value"] = pending.str();
+			row["columns"][0]["column"] = "name";
 
 			mListVisibleMembers->setEnabled(FALSE);
 			mListVisibleMembers->addElement(row);
@@ -918,7 +919,7 @@ void LLPanelGroupGeneral::updateMembers()
 		sSDTime += sd_timer.getElapsedTimeF32();
 
 		element_timer.reset();
-		mListVisibleMembers->addElement(row);//, ADD_SORTED);
+		mListVisibleMembers->addNameItem(row);
 		sElementTime += element_timer.getElapsedTimeF32();
 	}
 	sAllTime += all_timer.getElapsedTimeF32();

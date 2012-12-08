@@ -610,7 +610,7 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 	}
 
 	// we potentially modified the sort order by touching the list items
-	mSpeakerList->setSorted(FALSE);
+	mSpeakerList->setNeedsSort();
 
 	LLPointer<LLSpeaker> selected_speakerp = mSpeakerMgr->findSpeaker(selected_id);
 	// update UI for selected participant

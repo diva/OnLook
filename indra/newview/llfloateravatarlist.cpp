@@ -631,9 +631,9 @@ void LLFloaterAvatarList::expireAvatarList()
 			(it++)->getAlive();
 		else
 		{
-			std::swap(*it,mAvatars.back());
+			*it = mAvatars.back();
 			mAvatars.pop_back();
-			if(!mAvatars.size())
+			if(mAvatars.empty())
 				return;
 		}
 	}
@@ -674,7 +674,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 	// We rebuild the list fully each time it's refreshed
 	// The assumption is that it's faster to refill it and sort than
 	// to rebuild the whole list.
-	LLDynamicArray<LLUUID> selected = mAvatarList->getSelectedIDs();
+	uuid_vec_t selected = mAvatarList->getSelectedIDs();
 	S32 scrollpos = mAvatarList->getScrollPos();
 
 	mAvatarList->deleteAllItems();
@@ -961,7 +961,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 	}
 
 	// finish
-	mAvatarList->sortItems();
+	mAvatarList->updateSort();
 	mAvatarList->selectMultiple(selected);
 	mAvatarList->setScrollPos(scrollpos);
 	
@@ -974,8 +974,8 @@ void LLFloaterAvatarList::refreshAvatarList()
 void LLFloaterAvatarList::onClickIM()
 {
 	//llinfos << "LLFloaterFriends::onClickIM()" << llendl;
-	LLDynamicArray<LLUUID> ids = mAvatarList->getSelectedIDs();
-	if (ids.size() > 0)
+	const uuid_vec_t ids = mAvatarList->getSelectedIDs();
+	if (!ids.empty())
 	{
 		if (ids.size() == 1)
 		{
@@ -1004,7 +1004,7 @@ void LLFloaterAvatarList::onClickIM()
 
 void LLFloaterAvatarList::onClickTeleportOffer()
 {
-	LLDynamicArray<LLUUID> ids = mAvatarList->getSelectedIDs();
+	uuid_vec_t ids = mAvatarList->getSelectedIDs();
 	if (ids.size() > 0)
 	{
 		handle_lure(ids);
@@ -1106,7 +1106,7 @@ BOOL LLFloaterAvatarList::handleKeyHere(KEY key, MASK mask)
 
 	if (( KEY_RETURN == key ) && (MASK_SHIFT == mask))
 	{
-		LLDynamicArray<LLUUID> ids = self->mAvatarList->getSelectedIDs();
+		uuid_vec_t ids = self->mAvatarList->getSelectedIDs();
 		if (ids.size() > 0)
 		{
 			if (ids.size() == 1)
@@ -1425,12 +1425,12 @@ static void cmd_estate_ban(const LLAvatarListEntry* entry)	{ LLPanelEstateInfo::
 
 void LLFloaterAvatarList::doCommand(avlist_command_t func, bool single/*=false*/)
 {
-	LLDynamicArray<LLUUID> ids;
+	uuid_vec_t ids;
 	if(!single)
 		ids = mAvatarList->getSelectedIDs();
 	else
-		ids.put(getSelectedID());
-	for (LLDynamicArray<LLUUID>::iterator itr = ids.begin(); itr != ids.end(); ++itr)
+		ids.push_back(getSelectedID());
+	for (uuid_vec_t::iterator itr = ids.begin(); itr != ids.end(); ++itr)
 	{
 		LLUUID& avid = *itr;
 		if(avid.isNull())
@@ -1565,10 +1565,10 @@ void LLFloaterAvatarList::onClickEject()
 
 void LLFloaterAvatarList::onClickMute()
 {
-	LLDynamicArray<LLUUID> ids = mAvatarList->getSelectedIDs();
+	uuid_vec_t ids = mAvatarList->getSelectedIDs();
 	if (ids.size() > 0)
 	{
-		for (LLDynamicArray<LLUUID>::iterator itr = ids.begin(); itr != ids.end(); ++itr)
+		for (uuid_vec_t::iterator itr = ids.begin(); itr != ids.end(); ++itr)
 		{
 			LLUUID agent_id = *itr;
 

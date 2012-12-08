@@ -1615,7 +1615,7 @@ void LLPanelGroupMembersSubTab::update(LLGroupChange gc)
 			retrieved << "Retrieving role member mappings...";
 		}
 		mMembersList->setEnabled(FALSE);
-		mMembersList->addCommentText(retrieved.str());
+		mMembersList->setCommentText(retrieved.str());
 	}
 }
 
@@ -1680,7 +1680,7 @@ void LLPanelGroupMembersSubTab::updateMembers()
 			row["columns"][2]["value"] = mMemberProgress->second->getOnlineStatus();
 			row["columns"][2]["font"] = "SANSSERIF_SMALL";
 
-			mMembersList->addElement(row);//, ADD_SORTED);
+			mMembersList->addNameItem(row);
 			mHasMatch = TRUE;
 		}
 	}
@@ -1694,7 +1694,7 @@ void LLPanelGroupMembersSubTab::updateMembers()
 		else
 		{
 			mMembersList->setEnabled(FALSE);
-			mMembersList->addCommentText(std::string("No match."));
+			mMembersList->setCommentText(std::string("No match."));
 		}
 	}
 	else

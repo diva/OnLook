@@ -320,7 +320,7 @@ void LLPanelAvatarSecondLife::processProperties(void* data, EAvatarProcessorType
 //			}
 			if (0 == pAvatarGroups->group_list.size())
 			{
-				group_list->addCommentText(getString("None"));
+				group_list->setCommentText(getString("None"));
 			}
 
 			for(LLAvatarGroups::group_list_t::const_iterator it = pAvatarGroups->group_list.begin();

@@ -234,7 +234,7 @@ void JCFloaterAreaSearch::results()
 	if (!(sInstance->getVisible())) return;
 	if (sRequested > 0 && sInstance->mLastUpdateTimer.getElapsedTimeF32() < min_refresh_interval) return;
 	//llinfos << "results()" << llendl;
-	LLDynamicArray<LLUUID> selected = sInstance->mResultList->getSelectedIDs();
+	uuid_vec_t selected = sInstance->mResultList->getSelectedIDs();
 	S32 scrollpos = sInstance->mResultList->getScrollPos();
 	sInstance->mResultList->deleteAllItems();
 	S32 i;
@@ -302,7 +302,7 @@ void JCFloaterAreaSearch::results()
 		}
 	}
 
-	sInstance->mResultList->sortItems();
+	sInstance->mResultList->updateSort();
 	sInstance->mResultList->selectMultiple(selected);
 	sInstance->mResultList->setScrollPos(scrollpos);
 	sInstance->mCounterText->setText(llformat("%d listed/%d pending/%d total", sInstance->mResultList->getItemCount(), sRequested, sObjectDetails.size()));

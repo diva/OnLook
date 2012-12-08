@@ -619,11 +619,11 @@ BOOL LLFloaterInventoryBackup::postBuild(void)
 		status_column["column"] = "status";
 		status_column["value"] = "Pending";
 
-		LLScrollListItem* scroll_itemp = list->addElement(element, ADD_BOTTOM);
+		/*LLScrollListItem* scroll_itemp = */list->addElement(element, ADD_BOTTOM);
 		
 		//hack to stop crashing
-		LLScrollListIcon* icon = (LLScrollListIcon*)scroll_itemp->getColumn(LIST_TYPE);
-		icon->setClickCallback(NULL, NULL);
+		//LLScrollListIcon* icon = (LLScrollListIcon*)scroll_itemp->getColumn(LIST_TYPE);
+		//icon->setClickCallback(NULL);
 	}
 
 	// Setup and go!

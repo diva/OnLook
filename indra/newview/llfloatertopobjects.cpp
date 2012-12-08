@@ -250,7 +250,7 @@ void LLFloaterTopObjects::handleReply(LLMessageSystem *msg, void** data)
 
 	if (total_count == 0 && list->getItemCount() == 0)
 	{
-		list->addCommentText(getString("none_descriptor"));
+		list->setCommentText(getString("none_descriptor"));
 	}
 	else
 	{

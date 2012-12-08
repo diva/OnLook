@@ -676,7 +676,7 @@ BOOL LLPanelGroupLandMoney::postBuild()
 	{
 		if ( mImplementationp->mGroupParcelsp )
 		{
-			mImplementationp->mGroupParcelsp->addCommentText(
+			mImplementationp->mGroupParcelsp->setCommentText(
 							mImplementationp->mCantViewParcelsText);
 			mImplementationp->mGroupParcelsp->setEnabled(FALSE);
 		}

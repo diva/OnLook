@@ -166,13 +166,7 @@ BOOL LLFloaterExploreSounds::tick()
 
 	// Save scroll pos and selection so they can be restored
 	S32 scroll_pos = list->getScrollPos();
-	LLDynamicArray<LLUUID> selected_ids;
-	std::vector<LLScrollListItem*> selected_items = list->getAllSelected();
-	std::vector<LLScrollListItem*>::iterator selection_iter = selected_items.begin();
-	std::vector<LLScrollListItem*>::iterator selection_end = selected_items.end();
-	for(; selection_iter != selection_end; ++selection_iter)
-		selected_ids.push_back((*selection_iter)->getUUID());
-
+	uuid_vec_t selected_ids = list->getSelectedIDs();
 	list->clearRows();
 
 	std::list<LLUUID> unique_asset_list;

@@ -916,19 +916,19 @@ void LLPanelGroupVoting::impl::addPendingActiveScrollListItem(unsigned int curre
 			<< current
 			<< "\\" << expected  << ")";
 
-	mProposals->addCommentText(pending.str());
+	mProposals->setCommentText(pending.str());
 }
 
 void LLPanelGroupVoting::impl::addNoActiveScrollListItem(EAddPosition pos)
 {
 	// *TODO: translate
-	mProposals->addCommentText(std::string("There are currently no active proposals"), pos);
+	mProposals->setCommentText(std::string("There are currently no active proposals"));
 }
 
 void LLPanelGroupVoting::impl::addNoHistoryScrollListItem(EAddPosition pos)
 {
 	// *TODO: translate
-	mVotesHistory->addCommentText(std::string("There are currently no archived proposals"), pos);
+	mVotesHistory->setCommentText(std::string("There are currently no archived proposals"));
 }
 
 void LLPanelGroupVoting::impl::addPendingHistoryScrollListItem(unsigned int current,
@@ -941,7 +941,7 @@ void LLPanelGroupVoting::impl::addPendingHistoryScrollListItem(unsigned int curr
 			<< current
 			<< "\\" << expected  << ")";
 
-	mVotesHistory->addCommentText(pending.str());
+	mVotesHistory->setCommentText(pending.str());
 }
 																		
 

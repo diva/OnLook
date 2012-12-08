@@ -41,7 +41,7 @@
 #include "llviewmodel.h"		// *TODO move dependency to .cpp file
 
 class LLUICtrl
-: public LLView
+: public LLView 
 {
 public:
 	typedef boost::function<void (LLUICtrl* ctrl, const LLSD& param)> commit_callback_t;

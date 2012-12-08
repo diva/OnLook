@@ -307,7 +307,6 @@ bool process_login_success_response(std::string &password);
 
 void callback_cache_name(const LLUUID& id, const std::string& full_name, bool is_group)
 {
-	LLNameListCtrl::refreshAll(id, full_name);
 	LLNameBox::refreshAll(id, full_name, is_group);
 	LLNameEditor::refreshAll(id, full_name, is_group);
 

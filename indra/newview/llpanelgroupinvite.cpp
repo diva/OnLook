@@ -138,9 +138,10 @@ void LLPanelGroupInvite::impl::addUsers(const std::vector<std::string>& names,
 		//add the name to the names list
 		LLSD row;
 		row["id"] = id;
+		row["columns"][0]["column"] = "name";
 		row["columns"][0]["value"] = name;
 
-		mInvitees->addElement(row);
+		mInvitees->addNameItem(row);
 	}
 }
 

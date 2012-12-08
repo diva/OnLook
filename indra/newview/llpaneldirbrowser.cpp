@@ -212,7 +212,7 @@ void LLPanelDirBrowser::updateResultCount()
 		// add none found response
 		if (list->getItemCount() == 0)
 		{
-			list->addCommentText(LLTrans::getString("NoneFound"));
+			list->setCommentText(LLTrans::getString("NoneFound"));
 			list->operateOnAll(LLCtrlListInterface::OP_DESELECT);
 		}
 	}
@@ -1222,7 +1222,7 @@ void LLPanelDirBrowser::setupNewSearch()
 
 	// ready the list for results
 	list->operateOnAll(LLCtrlListInterface::OP_DELETE);
-	list->addCommentText(LLTrans::getString("Searching"));
+	list->setCommentText(LLTrans::getString("Searching"));
 	childDisable("results");
 
 	mResultsReceived = 0;

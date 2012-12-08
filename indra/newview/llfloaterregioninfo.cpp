@@ -3200,7 +3200,8 @@ bool LLDispatchSetEstateAccess::operator()(
 
 		if (allowed_agent_name_list)
 		{
-			//allowed_agent_name_list->deleteAllItems();
+			// Don't sort these as we add them, sort them when we are done.
+			allowed_agent_name_list->clearSortOrder();
 			for (S32 i = 0; i < num_allowed_agents && i < ESTATE_MAX_ACCESS_IDS; i++)
 			{
 				LLUUID id;
@@ -3208,7 +3209,7 @@ bool LLDispatchSetEstateAccess::operator()(
 				allowed_agent_name_list->addNameItem(id);
 			}
 			panel->childSetEnabled("remove_allowed_avatar_btn", allowed_agent_name_list->getFirstSelected() ? TRUE : FALSE);
-			allowed_agent_name_list->sortByColumnIndex(0, TRUE);
+			allowed_agent_name_list->sortByName(TRUE);
 		}
 	}
 
@@ -3225,6 +3226,8 @@ bool LLDispatchSetEstateAccess::operator()(
 
 		if (allowed_group_name_list)
 		{
+			// Don't sort these as we add them, sort them when we are done.
+			allowed_group_name_list->clearSortOrder();
 			allowed_group_name_list->deleteAllItems();
 			for (S32 i = 0; i < num_allowed_groups && i < ESTATE_MAX_GROUP_IDS; i++)
 			{
@@ -3233,7 +3236,7 @@ bool LLDispatchSetEstateAccess::operator()(
 				allowed_group_name_list->addGroupNameItem(id);
 			}
 			panel->childSetEnabled("remove_allowed_group_btn", allowed_group_name_list->getFirstSelected() ? TRUE : FALSE);
-			allowed_group_name_list->sortByColumnIndex(0, TRUE);
+			allowed_group_name_list->sortByName(TRUE);
 		}
 	}
 
@@ -3257,7 +3260,9 @@ bool LLDispatchSetEstateAccess::operator()(
 
 		if (banned_agent_name_list)
 		{
-			//banned_agent_name_list->deleteAllItems();
+			// Don't sort these as we add them, sort them when we are done.
+			banned_agent_name_list->clearSortOrder();
+
 			for (S32 i = 0; i < num_banned_agents && i < ESTATE_MAX_ACCESS_IDS; i++)
 			{
 				LLUUID id;
@@ -3265,7 +3270,7 @@ bool LLDispatchSetEstateAccess::operator()(
 				banned_agent_name_list->addNameItem(id);
 			}
 			panel->childSetEnabled("remove_banned_avatar_btn", banned_agent_name_list->getFirstSelected() ? TRUE : FALSE);
-			banned_agent_name_list->sortByColumnIndex(0, TRUE);
+			banned_agent_name_list->sortByName(TRUE);
 		}
 	}
 
@@ -3280,6 +3285,9 @@ bool LLDispatchSetEstateAccess::operator()(
 			panel->getChild<LLNameListCtrl>("estate_manager_name_list");
 		if (estate_manager_name_list)
 		{	
+			// Don't sort these as we add them, sort them when we are done.
+			estate_manager_name_list->clearSortOrder();
+
 			estate_manager_name_list->deleteAllItems();		// Clear existing entries
 
 			// There should be only ESTATE_MAX_MANAGERS people in the list, but if the database gets more (SL-46107) don't 
@@ -3292,7 +3300,7 @@ bool LLDispatchSetEstateAccess::operator()(
 				estate_manager_name_list->addNameItem(id);
 			}
 			panel->childSetEnabled("remove_estate_manager_btn", estate_manager_name_list->getFirstSelected() ? TRUE : FALSE);
-			estate_manager_name_list->sortByColumnIndex(0, TRUE);
+			estate_manager_name_list->sortByName(TRUE);
 		}
 	}
 

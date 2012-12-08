@@ -1593,7 +1593,7 @@ void LLFloaterWorldMap::updateSims(bool found_null_sim)
 	else
 	{
 		// if we found nothing, say "none"
-		list->addCommentText(LLTrans::getString("worldmap_results_none_found"));
+		list->setCommentText(LLTrans::getString("worldmap_results_none_found"));
 		list->operateOnAll(LLCtrlListInterface::OP_DESELECT);
 	}
 }
