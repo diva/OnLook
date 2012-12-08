@@ -229,8 +229,6 @@ bool LLTexUnit::bind(LLTexture* texture, bool for_rendering, bool forceBind)
 	stop_glerror();
 	if (mIndex < 0) return false;
 
-	gGL.flush();
-
 	LLImageGL* gl_tex = NULL ;
 	if (texture == NULL || !(gl_tex = texture->getGLTexture()))
 	{
@@ -258,6 +256,7 @@ bool LLTexUnit::bind(LLTexture* texture, bool for_rendering, bool forceBind)
 	}
 	if ((mCurrTexture != gl_tex->getTexName()) || forceBind)
 	{
+		gGL.flush();
 		activate();
 		enable(gl_tex->getTarget());
 		mCurrTexture = gl_tex->getTexName();
