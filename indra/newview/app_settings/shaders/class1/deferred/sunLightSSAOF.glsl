@@ -65,8 +65,6 @@ vec4 getPosition(vec2 pos_screen)
 //calculate decreases in ambient lighting when crowded out (SSAO)
 float calcAmbientOcclusion(vec4 pos, vec3 norm)
 {
-	float ret = 1.0;
-	
 	vec2 kern[8];
 	// exponentially (^2) distant occlusion samples spread around origin
 	kern[0] = vec2(-1.0, 0.0) * 0.125*0.125;
@@ -82,36 +80,39 @@ float calcAmbientOcclusion(vec4 pos, vec3 norm)
 	vec3 pos_world = pos.xyz;
 	vec2 noise_reflect = texture2D(noiseMap, vary_fragcoord.xy/128.0).xy;
 		
+	// We treat the first sample as the origin, which definitely doesn't obscure itself thanks to being visible for sampling in the first place.
+	float points = 1.0;
 	float angle_hidden = 0.0;
-	int points = 0;
-		
-	float scale = min(ssao_radius / -pos_world.z, ssao_max_radius);
-		
-	// it was found that keeping # of samples a constant was the fastest, probably due to compiler optimizations unrolling?)
+			
+	// use a kernel scale that diminishes with distance.
+	// a scale of less than 32 is just wasting good samples, though.
+	float scale = max(32.0, min(ssao_radius / -pos.z, ssao_max_radius));
+	
+	// it was found that keeping # of samples a constant was the fastest, probably due to compiler optimizations (unrolling?)
 	for (int i = 0; i < 8; i++)
 	{
 		vec2 samppos_screen = pos_screen + scale * reflect(kern[i], noise_reflect);
-		vec3 samppos_world = getPosition(samppos_screen).xyz; 
-			
-		vec3 diff = pos_world - samppos_world;
-		float dist2 = dot(diff, diff);
-			
-		// assume each sample corresponds to an occluding sphere with constant radius, constant x-sectional area
-		// --> solid angle shrinking by the square of distance
-		//radius is somewhat arbitrary, can approx with just some constant k * 1 / dist^2
-		//(k should vary inversely with # of samples, but this is taken care of later)
-			
-		angle_hidden = angle_hidden + float(dot((samppos_world - 0.05*norm - pos_world), norm) > 0.0) * min(1.0/dist2, ssao_factor_inv);
-			
-		// 'blocked' samples (significantly closer to camera relative to pos_world) are "no data", not "no occlusion" 
-		points = points + int(diff.z > -1.0);
+		vec3 samppos_world = getPosition(samppos_screen).xyz; 	
+	
+		vec3 diff = samppos_world - pos.xyz;
+	
+		if (diff.z < ssao_factor && diff.z != 0.0)
+		{
+			float dist = length(diff);
+			float angrel = max(0.0, dot(norm.xyz, diff/dist));
+			float distrel = 1.0/(1.0+dist*dist);
+			float samplehidden = min(angrel, distrel);
+	
+			angle_hidden += (samplehidden);
+			points += 1.0;
+	    }
 	}
 		
-	angle_hidden = min(ssao_factor*angle_hidden/float(points), 1.0);
-		
-	ret = (1.0 - (float(points != 0) * angle_hidden));
-	
-	return min(ret, 1.0);
+	angle_hidden /= points;
+
+	float rtn = (1.0 - angle_hidden);
+
+	return (rtn * rtn);
 }
 
 vec3 unpack(vec2 tc)

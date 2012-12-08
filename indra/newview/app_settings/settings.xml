@@ -10536,7 +10536,7 @@ Found in Advanced->Rendering->Info Displays</string>
     <key>Type</key>
     <string>F32</string>
     <key>Value</key>
-    <real>500.0</real>
+    <real>1500.0</real>
   </map>
   <key>RenderSSAOMaxScale</key>
   <map>
@@ -10547,7 +10547,7 @@ Found in Advanced->Rendering->Info Displays</string>
     <key>Type</key>
     <string>U32</string>
     <key>Value</key>
-    <integer>200</integer>
+    <integer>250</integer>
   </map>
   <key>RenderSSAOFactor</key>
   <map>
@@ -10558,19 +10558,19 @@ Found in Advanced->Rendering->Info Displays</string>
     <key>Type</key>
     <string>F32</string>
     <key>Value</key>
-    <real>0.30</real>
+    <real>5.0</real>
   </map>
   <key>RenderSSAOEffect</key>
   <map>
     <key>Comment</key>
-    <string>Multiplier for (1) value and (2) saturation (HSV definition), for areas which are totally occluded.  Blends with original color for partly-occluded areas.  (Third component is unused.)</string>
+    <string>Multiplier for (1) value for areas which are totally occluded.  Blends with original color for partly-occluded areas.  (Third component is unused.)</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
     <string>Vector3</string>
     <key>Value</key>
     <array>
-      <real>0.80</real>
+      <real>0.50</real>
       <real>1.00</real>
       <real>0.00</real>
     </array>
@@ -11157,7 +11157,7 @@ Found in Advanced->Rendering->Info Displays</string>
     <string>Vector3</string>
     <key>Value</key>
     <array>
-      <real>3.0</real>
+      <real>1.0</real>
       <real>2.0</real>
       <real>0.0</real>
     </array>
@@ -11172,7 +11172,7 @@ Found in Advanced->Rendering->Info Displays</string>
     <key>Type</key>
     <string>F32</string>
     <key>Value</key>
-    <real>1.4</real>
+    <real>3.0</real>
   </map>
   <key>RenderShadowBlurSamples</key>
   <map>
