@@ -294,13 +294,3 @@ LLPreview::EAssetStatus LLFloaterAvatarInfo::getAssetStatus()
 	}
 	return mAssetStatus;
 }
-
-std::string getProfileURL(const std::string& agent_name)
-{
-	std::string url = gSavedSettings.getString("WebProfileURL");
-	LLSD subs;
-	subs["AGENT_NAME"] = agent_name;
-	url = LLWeb::expandURLSubstitutions(url,subs);
-	LLStringUtil::toLower(url);
-	return url;
-}

@@ -408,7 +408,7 @@ public:
 		}
 	}
 	
-	virtual bool followRedir()
+	/*virtual*/ bool followRedir() const
 	{
 		return mFollowRedir;
 	}

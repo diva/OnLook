@@ -1347,11 +1347,22 @@ void BufferedCurlEasyRequest::prepRequest(AICurlEasyRequest_wat& curl_easy_reque
   curl_easy_request_w->setReadCallback(&curlReadCallback, lockobj);
   curl_easy_request_w->setHeaderCallback(&curlHeaderCallback, lockobj);
 
+  bool allow_cookies = headers.hasHeader("Cookie");
   // Allow up to ten redirects.
   if (responder->followRedir())
   {
 	curl_easy_request_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_request_w->setopt(CURLOPT_MAXREDIRS, HTTP_REDIRECTS_DEFAULT);
+	// This is needed (at least) for authentication after temporary redirection
+	// to id.secondlife.com for marketplace.secondlife.com.
+	allow_cookies = true;
+  }
+  if (allow_cookies)
+  {
+	// Given an empty or non-existing file or by passing the empty string (""),
+	// this option will enable cookies for this curl handle, making it understand
+	// and parse received cookies and then use matching cookies in future requests.
+	curl_easy_request_w->setopt(CURLOPT_COOKIEFILE, "");
   }
 
   // Keep responder alive.
