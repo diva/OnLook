@@ -60,7 +60,7 @@ template <class T> class LLOctreeNode;
 
 #include "lltimer.h"
 
-#define LL_OCTREE_STATS
+//#define LL_OCTREE_STATS
 #define LL_OCTREE_POOLS
 #ifdef LL_OCTREE_STATS
 class OctreeStats : public LLSingleton<OctreeStats>
