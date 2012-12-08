@@ -820,6 +820,7 @@ P(accountingCostResponder);
 P(agentStateResponder);
 P(assetUploadResponder);
 P(asyncConsoleResponder);
+P(avatarPickerResponder);
 P(authHandler);
 P(avatarNameResponder);
 P2(baseCapabilitiesComplete,					transfer_18s);

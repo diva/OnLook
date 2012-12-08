@@ -383,10 +383,10 @@ public:
 	static void onCommitPublicAccess(LLUICtrl* ctrl, void *userdata);
 	static void onCommitAny(LLUICtrl* ctrl, void *userdata);
 	static void onClickAddAccess(void*);
-	static void callbackAvatarCBAccess(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* userdata);
+	void callbackAvatarCBAccess(const uuid_vec_t& ids);
 	static void onClickRemoveAccess(void*);
 	static void onClickAddBanned(void*);
-	static void callbackAvatarCBBanned(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* userdata);
+	void callbackAvatarCBBanned(const uuid_vec_t& ids);
 	static void onClickRemoveBanned(void*);
 
 	virtual BOOL postBuild();

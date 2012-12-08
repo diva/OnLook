@@ -71,10 +71,11 @@ namespace LLAvatarNameCache
 		void (const LLUUID& agent_id, const LLAvatarName& av_name)>
 			callback_signal_t;
 	typedef callback_signal_t::slot_type callback_slot_t;
+	typedef boost::signals2::connection callback_connection_t;
 
 	// Fetches name information and calls callback.
 	// If name information is in cache, callback will be called immediately.
-	void get(const LLUUID& agent_id, callback_slot_t slot);
+	callback_connection_t get(const LLUUID& agent_id, callback_slot_t slot);
 
 	// Allow display names to be explicitly disabled for testing.
 	void setUseDisplayNames(bool use);
@@ -89,10 +90,6 @@ namespace LLAvatarNameCache
 
     /// Provide some fallback for agents that return errors
 	void handleAgentError(const LLUUID& agent_id);
-
-	// Force a re-fetch of the most recent data, but keep the current
-	// data in cache
-	void fetch(const LLUUID& agent_id);
 
 	void insert(const LLUUID& agent_id, const LLAvatarName& av_name);
 

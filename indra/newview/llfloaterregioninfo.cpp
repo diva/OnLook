@@ -258,7 +258,8 @@ void LLFloaterRegionInfo::requestRegionInfo()
 void LLFloaterRegionInfo::processEstateOwnerRequest(LLMessageSystem* msg,void**)
 {
 	static LLDispatcher dispatch;
-	if(!findInstance())
+	LLFloaterRegionInfo* floater = findInstance();
+	if(!floater)
 	{
 		return;
 	}
@@ -268,7 +269,7 @@ void LLFloaterRegionInfo::processEstateOwnerRequest(LLMessageSystem* msg,void**)
 		LLPanelEstateInfo::initDispatch(dispatch);
 	}
 
-	LLTabContainer* tab = findInstance()->getChild<LLTabContainer>("region_panels");
+	LLTabContainer* tab = floater->getChild<LLTabContainer>("region_panels");
 	LLPanelEstateInfo* panel = (LLPanelEstateInfo*)tab->getChild<LLPanel>("Estate");
 
 	// unpack the message
@@ -285,8 +286,7 @@ void LLFloaterRegionInfo::processEstateOwnerRequest(LLMessageSystem* msg,void**)
 	//dispatch the message
 	dispatch.dispatch(request, invoice, strings);
 
-	LLViewerRegion* region = gAgent.getRegion();
-	panel->updateControls(region);
+	panel->updateControls(gAgent.getRegion());
 }
 
 
@@ -296,12 +296,18 @@ void LLFloaterRegionInfo::processRegionInfo(LLMessageSystem* msg)
 	LLPanel* panel;
 
 	llinfos << "LLFloaterRegionInfo::processRegionInfo" << llendl;
-	if(!findInstance())
+	LLFloaterRegionInfo* floater = findInstance();
+	if(!floater)
 	{
 		return;
 	}
+	// We need to re-request environment setting here,
+	// otherwise after we apply (send) updated region settings we won't get them back,
+	// so our environment won't be updated.
+	// This is also the way to know about externally changed region environment.
+	LLEnvManagerNew::instance().requestRegionSettings();
 	
-	LLTabContainer* tab = findInstance()->getChild<LLTabContainer>("region_panels");
+	LLTabContainer* tab = floater->getChild<LLTabContainer>("region_panels");
 
 	LLViewerRegion* region = gAgent.getRegion();
 	BOOL allow_modify = gAgent.isGodlike() || (region && region->canManageEstate());
@@ -389,7 +395,7 @@ void LLFloaterRegionInfo::processRegionInfo(LLMessageSystem* msg)
 	panel->childSetEnabled("sun_hour_slider", allow_modify && !use_estate_sun);
 	panel->setCtrlsEnabled(allow_modify);
 
-	getInstance()->refreshFromRegion( gAgent.getRegion() );
+	floater->refreshFromRegion( gAgent.getRegion() );
 }
 
 // static
@@ -414,6 +420,11 @@ LLPanelEstateCovenant* LLFloaterRegionInfo::getPanelCovenant()
 
 void LLFloaterRegionInfo::refreshFromRegion(LLViewerRegion* region)
 {
+	if (!region)
+	{
+		return; 
+	}
+
 	// call refresh from region on all panels
 	std::for_each(
 		mInfoPanels.begin(),
@@ -632,18 +643,18 @@ void LLPanelRegionGeneralInfo::onClickKick(void* userdata)
 	// this depends on the grandparent view being a floater
 	// in order to set up floater dependency
 	LLFloater* parent_floater = gFloaterView->getParentFloater(panelp);
-	LLFloater* child_floater = LLFloaterAvatarPicker::show(onKickCommit, userdata, FALSE, TRUE);
-	parent_floater->addDependentFloater(child_floater);
+	LLFloater* child_floater = LLFloaterAvatarPicker::show(boost::bind(&LLPanelRegionGeneralInfo::onKickCommit, panelp, _1), FALSE, TRUE);
+	if (child_floater)
+	{
+		parent_floater->addDependentFloater(child_floater);
+	}
 }
 
-// static
-void LLPanelRegionGeneralInfo::onKickCommit(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* userdata)
+void LLPanelRegionGeneralInfo::onKickCommit(const uuid_vec_t& ids)
 {
-	if (names.empty() || ids.empty()) return;
+	if (ids.empty()) return;
 	if(ids[0].notNull())
 	{
-		LLPanelRegionGeneralInfo* self = (LLPanelRegionGeneralInfo*)userdata;
-		if(!self) return;
 		strings_t strings;
 		// [0] = our agent id
 		// [1] = target agent id
@@ -655,7 +666,7 @@ void LLPanelRegionGeneralInfo::onKickCommit(const std::vector<std::string>& name
 		strings.push_back(strings_t::value_type(buffer));
 
 		LLUUID invoice(LLFloaterRegionInfo::getLastInvoice());
-		self->sendEstateOwnerMessage(gMessageSystem, "teleporthomeuser", invoice, strings);
+		sendEstateOwnerMessage(gMessageSystem, "teleporthomeuser", invoice, strings);
 	}
 }
 
@@ -886,17 +897,15 @@ BOOL LLPanelRegionDebugInfo::sendUpdate()
 
 void LLPanelRegionDebugInfo::onClickChooseAvatar(void* data)
 {
-	LLFloaterAvatarPicker::show(callbackAvatarID, data, FALSE, TRUE);
+	LLFloaterAvatarPicker::show(boost::bind(&LLPanelRegionDebugInfo::callbackAvatarID, (LLPanelRegionDebugInfo*)data, _1, _2), FALSE, TRUE);
 }
 
-// static
-void LLPanelRegionDebugInfo::callbackAvatarID(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* data)
+void LLPanelRegionDebugInfo::callbackAvatarID(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names)
 {
-	LLPanelRegionDebugInfo* self = (LLPanelRegionDebugInfo*) data;
 	if (ids.empty() || names.empty()) return;
-	self->mTargetAvatar = ids[0];
-	self->childSetValue("target_avatar_name", LLSD(names[0]));
-	self->refreshFromRegion( gAgent.getRegion() );
+	mTargetAvatar = ids[0];
+	childSetValue("target_avatar_name", LLSD(names[0].getCompleteName()));
+	refreshFromRegion( gAgent.getRegion() );
 }
 
 // static
@@ -1615,35 +1624,35 @@ void LLPanelEstateInfo::onClickKickUser(void *user_data)
 	// this depends on the grandparent view being a floater
 	// in order to set up floater dependency
 	LLFloater* parent_floater = gFloaterView->getParentFloater(panelp);
-	LLFloater* child_floater = LLFloaterAvatarPicker::show(LLPanelEstateInfo::onKickUserCommit, user_data, FALSE, TRUE);
+	LLFloater* child_floater = LLFloaterAvatarPicker::show(boost::bind(&LLPanelEstateInfo::onKickUserCommit, panelp, _1, _2), FALSE, TRUE);
+	if (child_floater)
+	{
+		parent_floater->addDependentFloater(child_floater);
+	}
 	parent_floater->addDependentFloater(child_floater);
 }
 
-void LLPanelEstateInfo::onKickUserCommit(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* userdata)
+void LLPanelEstateInfo::onKickUserCommit(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names)
 {
 	if (names.empty() || ids.empty()) return;
 	
 	//check to make sure there is one valid user and id
-	if( (ids[0].isNull()) ||
-		(names[0].length() == 0) )
+	if( ids[0].isNull() )
 	{
 		return;
 	}
 
-	LLPanelEstateInfo* self = (LLPanelEstateInfo*)userdata;
-	if(!self) return;
-
 	//keep track of what user they want to kick and other misc info
 	LLKickFromEstateInfo *kick_info = new LLKickFromEstateInfo();
-	kick_info->mEstatePanelp = self;
+	kick_info->mEstatePanelp = this;
 	kick_info->mAgentID     = ids[0];
 
 	//Bring up a confirmation dialog
 	LLSD args;
-	args["EVIL_USER"] = names[0];
+	args["EVIL_USER"] = names[0].getCompleteName();
 	LLSD payload;
 	payload["agent_id"] = ids[0];
-	LLNotificationsUtil::add("EstateKickUser", args, payload, boost::bind(&LLPanelEstateInfo::kickUserConfirm, self, _1, _2));
+	LLNotificationsUtil::add("EstateKickUser", args, payload, boost::bind(&LLPanelEstateInfo::kickUserConfirm, this, _1, _2));
 
 }
 
@@ -1808,14 +1817,13 @@ bool LLPanelEstateInfo::accessAddCore2(const LLSD& notification, const LLSD& res
 
 	LLEstateAccessChangeInfo* change_info = new LLEstateAccessChangeInfo(notification["payload"]);
 	// avatar picker yes multi-select, yes close-on-select
-	LLFloaterAvatarPicker::show(accessAddCore3, (void*)change_info, TRUE, TRUE);
+	LLFloaterAvatarPicker::show(boost::bind(&LLPanelEstateInfo::accessAddCore3, _1, change_info), TRUE, TRUE);
 	return false;
 }
 
 // static
-void LLPanelEstateInfo::accessAddCore3(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* data)
+void LLPanelEstateInfo::accessAddCore3(const uuid_vec_t& ids, LLEstateAccessChangeInfo* change_info)
 {
-	LLEstateAccessChangeInfo* change_info = (LLEstateAccessChangeInfo*)data;
 	if (!change_info) return;
 	if (ids.empty()) 
 	{
@@ -2063,7 +2071,6 @@ void LLPanelEstateInfo::updateControls(LLViewerRegion* region)
 	BOOL owner = (region && (region->getOwner() == gAgent.getID()));
 	BOOL manager = (region && region->isEstateManager());
 	setCtrlsEnabled(god || owner || manager);
-	
 	childDisable("apply_btn");
 	childSetEnabled("add_allowed_avatar_btn",		god || owner || manager);
 	childSetEnabled("remove_allowed_avatar_btn",	god || owner || manager);
@@ -2313,13 +2320,20 @@ void LLPanelEstateInfo::getEstateOwner()
 class LLEstateChangeInfoResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
-	LLEstateChangeInfoResponder(void* userdata) : mpPanel((LLPanelEstateInfo*)userdata) {};
+	LLEstateChangeInfoResponder(LLPanelEstateInfo* panel)
+	{
+		mpPanel = panel->getHandle();
+	}
 	
 	// if we get a normal response, handle it here
 	virtual void result(const LLSD& content)
 	{
+		LL_INFOS("Windlight") << "Successfully committed estate info" << llendl;
+
 	    // refresh the panel from the database
-		mpPanel->refresh();
+		LLPanelEstateInfo* panel = dynamic_cast<LLPanelEstateInfo*>(mpPanel.get());
+		if (panel)
+			panel->refresh();
 	}
 	
 	// if we get an error response
@@ -2332,7 +2346,7 @@ public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return estateChangeInfoResponder_timeout; }
 
 private:
-	LLPanelEstateInfo* mpPanel;
+	LLHandle<LLPanel> mpPanel;
 };
 
 // tries to send estate info using a cap; returns true if it succeeded
@@ -2370,7 +2384,7 @@ bool LLPanelEstateInfo::commitEstateInfoCaps()
 	body["owner_abuse_email"] = childGetValue("abuse_email_address").asString();
 
 	// we use a responder so that we can re-get the data after committing to the database
-	LLHTTPClient::post(url, body, new LLEstateChangeInfoResponder((void*)this));
+	LLHTTPClient::post(url, body, new LLEstateChangeInfoResponder(this));
     return true;
 }
 
