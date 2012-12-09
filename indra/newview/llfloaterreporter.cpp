@@ -378,24 +378,21 @@ void LLFloaterReporter::onClickSelectAbuser(void *userdata)
 {
 	LLFloaterReporter *self = (LLFloaterReporter *)userdata;
 
-	gFloaterView->getParentFloater(self)->addDependentFloater(LLFloaterAvatarPicker::show(callbackAvatarID, userdata, FALSE, TRUE ));
+	gFloaterView->getParentFloater(self)->addDependentFloater(LLFloaterAvatarPicker::show(boost::bind(&LLFloaterReporter::callbackAvatarID, self, _1, _2), FALSE, TRUE ));
 }
 
-// static
-void LLFloaterReporter::callbackAvatarID(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* data)
+void LLFloaterReporter::callbackAvatarID(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names)
 {
-	LLFloaterReporter* self = (LLFloaterReporter*) data;
-
 	if (ids.empty() || names.empty()) return;
 
 	// this should never be called in a bug report but here for safety.
-	if ( self->mReportType != BUG_REPORT )
+	if ( mReportType != BUG_REPORT )
 	{
-		self->childSetText("abuser_name_edit", names[0] );
+		childSetText("abuser_name_edit", names[0].getCompleteName() );
 		
-		self->mAbuserID = ids[0];
+		mAbuserID = ids[0];
 
-		self->refresh();
+		refresh();
 	};
 }
 

@@ -30,7 +30,7 @@
         tool_tip="L&#x27;animation est jou&#xE9;e avec votre avatar avant d&#x27;&#xEA;tre t&#xE9;l&#xE9;charg&#xE9;e."
         mouse_opaque="true" name="preview_anim_in_world_check" radio_style="false"
         width="400" />
-      <check_box bottom_delta="-20" control_name="SaveScriptsAsMono" enabled="false"
+      <check_box bottom_delta="-20" control_name="SaveInventoryScriptsAsMono" enabled="false"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
         label="Enregistrer les scripts syst&#xE9;matiquement en Mono" left="10"
         tool_tip="Compile les scripts en Mono quand cela est possible."

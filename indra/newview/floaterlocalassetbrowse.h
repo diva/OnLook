@@ -236,13 +236,13 @@ private:
 	static void onClickUpload(void* userdata);
 
 	// ScrollList callback declarations
-	static void onChooseBitmapList(LLUICtrl* ctrl, void* userdata);
+	void onChooseBitmapList();
 
 	// Checkbox callback declarations
-	static void onClickUpdateChkbox(LLUICtrl* ctrl, void* userdata);
+	void onClickUpdateChkbox();
 
 	// Combobox type select
-	static void onCommitTypeCombo(LLUICtrl* ctrl, void* userdata);
+	void onCommitTypeCombo();
 
 	// Widgets
 	LLButton* mAddBtn;

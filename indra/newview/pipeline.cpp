@@ -142,6 +142,8 @@ void check_stack_depth(S32 stack_depth)
 //#define DEBUG_INDICES
 #endif
 
+bool gShiftFrame = false;
+
 const F32 BACKLIGHT_DAY_MAGNITUDE_AVATAR = 0.2f;
 const F32 BACKLIGHT_NIGHT_MAGNITUDE_AVATAR = 0.1f;
 const F32 BACKLIGHT_DAY_MAGNITUDE_OBJECT = 0.1f;
@@ -345,8 +347,9 @@ void validate_framebuffer_object();
 
 bool addDeferredAttachments(LLRenderTarget& target)
 {
+	static const LLCachedControl<bool> SHPrecisionDeferredNormals("SHPrecisionDeferredNormals",false);
 	return target.addColorAttachment(GL_RGBA) && //specular
-			target.addColorAttachment(GL_RGBA); //normal+z	
+			target.addColorAttachment(SHPrecisionDeferredNormals ? GL_RGB10_A2 : GL_RGBA); //normal+z
 }
 
 LLPipeline::LLPipeline() :
@@ -403,6 +406,7 @@ void LLPipeline::init()
 	refreshCachedSettings();
 
 	gOctreeMaxCapacity = gSavedSettings.getU32("OctreeMaxNodeCapacity");
+	gOctreeReserveCapacity = llmin(gSavedSettings.getU32("OctreeReserveNodeCapacity"),U32(512));
 	sDynamicLOD = gSavedSettings.getBOOL("RenderDynamicLOD");
 	sRenderBump = gSavedSettings.getBOOL("RenderObjectBump");
 	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("ShyotlRenderUseStreamVBO");
@@ -547,6 +551,7 @@ void LLPipeline::cleanup()
 	mInitialized = FALSE;
 
 	mDeferredVB = NULL;
+	mCubeVB = NULL;
 }
 
 //============================================================================
@@ -1456,6 +1461,22 @@ void LLPipeline::unlinkDrawable(LLDrawable *drawable)
 
 }
 
+//static
+void LLPipeline::removeMutedAVsLights(LLVOAvatar* muted_avatar)
+{
+	LLFastTimer t(FTM_REMOVE_FROM_LIGHT_SET);
+	for (light_set_t::iterator iter = gPipeline.mNearbyLights.begin();
+		 iter != gPipeline.mNearbyLights.end();)
+	{
+		if (iter->drawable->getVObj()->isAttachment() && iter->drawable->getVObj()->getAvatar() == muted_avatar)
+		{
+			gPipeline.mLights.erase(iter->drawable);
+			gPipeline.mNearbyLights.erase(iter++);
+		}
+		else ++iter;
+	}
+}
+
 U32 LLPipeline::addObject(LLViewerObject *vobj)
 {
 	llassert_always(vobj);
@@ -1643,6 +1664,10 @@ void LLPipeline::updateMovedList(LLDrawable::drawable_vector_t& moved_list)
 		drawablep->clearState(LLDrawable::EARLY_MOVE | LLDrawable::MOVE_UNDAMPED);
 		if (done)
 		{
+			if (drawablep->isRoot())
+			{
+				drawablep->makeStatic();
+			}
 			drawablep->clearState(LLDrawable::ON_MOVE_LIST);
 			if (drawablep->isState(LLDrawable::ANIMATED_CHILD))
 			{ //will likely not receive any future world matrix updates
@@ -1775,6 +1800,7 @@ void LLPipeline::grabReferences(LLCullResult& result)
 void LLPipeline::clearReferences()
 {
 	sCull = NULL;
+	mGroupSaveQ1.clear();
 }
 
 void check_references(LLSpatialGroup* group, LLDrawable* drawable)
@@ -2337,6 +2363,65 @@ void LLPipeline::updateGL()
 	}*/
 }
 
+void LLPipeline::clearRebuildGroups()
+{
+	LLSpatialGroup::sg_vector_t	hudGroups;
+
+	mGroupQ1Locked = true;
+	// Iterate through all drawables on the priority build queue,
+	for (LLSpatialGroup::sg_vector_t::iterator iter = mGroupQ1.begin();
+		 iter != mGroupQ1.end(); ++iter)
+	{
+		LLSpatialGroup* group = *iter;
+
+		// If the group contains HUD objects, save the group
+		if (group->isHUDGroup())
+		{
+			hudGroups.push_back(group);
+		}
+		// Else, no HUD objects so clear the build state
+		else
+		{
+			group->clearState(LLSpatialGroup::IN_BUILD_Q1);
+		}
+	}
+
+	// Clear the group
+	//mGroupQ1.clear();	//Assign already clears...
+
+	// Copy the saved HUD groups back in
+	mGroupQ1.assign(hudGroups.begin(), hudGroups.end());
+	mGroupQ1Locked = false;
+
+	// Clear the HUD groups
+	hudGroups.clear();
+
+	mGroupQ2Locked = true;
+	for (LLSpatialGroup::sg_vector_t::iterator iter = mGroupQ2.begin();
+		 iter != mGroupQ2.end(); ++iter)
+	{
+		LLSpatialGroup* group = *iter;
+
+		// If the group contains HUD objects, save the group
+		if (group->isHUDGroup())
+		{
+			hudGroups.push_back(group);
+		}
+		// Else, no HUD objects so clear the build state
+		else
+		{
+			group->clearState(LLSpatialGroup::IN_BUILD_Q2);
+		}
+	}	
+
+	// Clear the group
+	//mGroupQ2.clear(); //Assign already clears...
+
+	// Copy the saved HUD groups back in
+	mGroupQ2.assign(hudGroups.begin(), hudGroups.end());
+	mGroupQ2Locked = false;
+}
+
 static LLFastTimer::DeclareTimer FTM_REBUILD_PRIORITY_GROUPS("Rebuild Priority Groups");
 
 void LLPipeline::rebuildPriorityGroups()
@@ -2359,6 +2444,7 @@ void LLPipeline::rebuildPriorityGroups()
 		group->clearState(LLSpatialGroup::IN_BUILD_Q1);
 	}
 
+	mGroupSaveQ1 = mGroupQ1;
 	mGroupQ1.clear();
 	mGroupQ1Locked = false;
 
@@ -5037,38 +5123,34 @@ void LLPipeline::calcNearbyLights(LLCamera& camera)
 		F32 max_dist = LIGHT_MAX_RADIUS * 4.f; // ignore enitrely lights > 4 * max light rad
 		
 		// UPDATE THE EXISTING NEARBY LIGHTS
-		if (!LLPipeline::sSkipUpdate)
+		light_set_t cur_nearby_lights;
+		for (light_set_t::iterator iter = mNearbyLights.begin();
+			iter != mNearbyLights.end(); iter++)
 		{
-			light_set_t cur_nearby_lights;
-			for (light_set_t::iterator iter = mNearbyLights.begin();
-				iter != mNearbyLights.end(); iter++)
+			const Light* light = &(*iter);
+			LLDrawable* drawable = light->drawable;
+			LLVOVolume* volight = drawable->getVOVolume();
+			if (!volight || !drawable->isState(LLDrawable::LIGHT))
 			{
-				const Light* light = &(*iter);
-				LLDrawable* drawable = light->drawable;
-				LLVOVolume* volight = drawable->getVOVolume();
-				if (!volight || !drawable->isState(LLDrawable::LIGHT))
-				{
-					setLight(drawable,false);	//remove from mLight list
-					drawable->clearState(LLDrawable::NEARBY_LIGHT);
-					continue;
-				}
-				if (light->fade <= -LIGHT_FADE_TIME)
-				{
-					drawable->clearState(LLDrawable::NEARBY_LIGHT);
-					continue;
-				}
-				if (!sRenderAttachedLights && volight && volight->isAttachment())
-				{
-					drawable->clearState(LLDrawable::NEARBY_LIGHT);
-					continue;
-				}
-
-				F32 dist = calc_light_dist(volight, cam_pos, max_dist);
-				cur_nearby_lights.insert(Light(drawable, dist, light->fade));
+				drawable->clearState(LLDrawable::NEARBY_LIGHT);
+				continue;
 			}
-			mNearbyLights = cur_nearby_lights;
+			if (light->fade <= -LIGHT_FADE_TIME)
+			{
+				drawable->clearState(LLDrawable::NEARBY_LIGHT);
+				continue;
+			}
+			if (!sRenderAttachedLights && volight && volight->isAttachment())
+			{
+				drawable->clearState(LLDrawable::NEARBY_LIGHT);
+				continue;
+			}
+
+			F32 dist = calc_light_dist(volight, cam_pos, max_dist);
+			cur_nearby_lights.insert(Light(drawable, dist, light->fade));
 		}
-		
+		mNearbyLights = cur_nearby_lights;
+				
 		// FIND NEW LIGHTS THAT ARE IN RANGE
 		light_set_t new_nearby_lights;
 		for (LLDrawable::drawable_set_t::iterator iter = mLights.begin();
@@ -6159,7 +6241,8 @@ void LLPipeline::resetVertexBuffers(LLDrawable* drawable)
 }
 
 void LLPipeline::resetVertexBuffers()
-{	mResetVertexBuffers = true;
+{
+	mResetVertexBuffers = true;
 }
 
 static LLFastTimer::DeclareTimer FTM_RESET_VB("Reset VB");
@@ -6199,6 +6282,8 @@ void LLPipeline::doResetVertexBuffers()
 
 	if(LLPostProcess::instanceExists())
 		LLPostProcess::getInstance()->destroyGL();
+
+	LLVOPartGroup::destroyGL();
 
 	LLVertexBuffer::cleanupClass();
 	
@@ -7217,14 +7302,7 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, U32 n
 	shader.uniform1f(LLShaderMgr::DEFERRED_SSAO_FACTOR_INV, 1.0/ssao_factor);
 
 	LLVector3 ssao_effect = RenderSSAOEffect;
-	F32 matrix_diag = (ssao_effect[0] + 2.0*ssao_effect[1])/3.0;
-	F32 matrix_nondiag = (ssao_effect[0] - ssao_effect[1])/3.0;
-	// This matrix scales (proj of color onto <1/rt(3),1/rt(3),1/rt(3)>) by
-	// value factor, and scales remainder by saturation factor
-	F32 ssao_effect_mat[] = {	matrix_diag, matrix_nondiag, matrix_nondiag,
-								matrix_nondiag, matrix_diag, matrix_nondiag,
-								matrix_nondiag, matrix_nondiag, matrix_diag};
-	shader.uniformMatrix3fv(LLShaderMgr::DEFERRED_SSAO_EFFECT_MAT, 1, GL_FALSE, ssao_effect_mat);
+	shader.uniform1f(LLShaderMgr::DEFERRED_SSAO_EFFECT, ssao_effect[0]);
 
 	F32 shadow_offset_error = 1.f + RenderShadowOffsetError * fabsf(LLViewerCamera::getInstance()->getOrigin().mV[2]);
 	F32 shadow_bias_error = 1.f + RenderShadowBiasError * fabsf(LLViewerCamera::getInstance()->getOrigin().mV[2]);
@@ -7774,10 +7852,10 @@ void LLPipeline::renderDeferredLighting()
 		pushRenderTypeMask();
 		andRenderTypeMask(LLPipeline::RENDER_TYPE_ALPHA,
 						 LLPipeline::RENDER_TYPE_FULLBRIGHT,
-						 LLPipeline::RENDER_TYPE_VOLUME,
+						 //LLPipeline::RENDER_TYPE_VOLUME,
 						 LLPipeline::RENDER_TYPE_GLOW,
 						 LLPipeline::RENDER_TYPE_BUMP,
-						 LLPipeline::RENDER_TYPE_PASS_SIMPLE,
+						 /*LLPipeline::RENDER_TYPE_PASS_SIMPLE,	//These aren't used.
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA,
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA_MASK,
 						 LLPipeline::RENDER_TYPE_PASS_BUMP,
@@ -7789,7 +7867,7 @@ void LLPipeline::renderDeferredLighting()
 						 LLPipeline::RENDER_TYPE_PASS_GRASS,
 						 LLPipeline::RENDER_TYPE_PASS_SHINY,
 						 LLPipeline::RENDER_TYPE_PASS_INVISIBLE,
-						 LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY,
+						 LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY,*/
 						 LLPipeline::RENDER_TYPE_AVATAR,
 						 END_RENDER_TYPES);
 		
@@ -9682,25 +9760,25 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar)
 
 BOOL LLPipeline::hasRenderBatches(const U32 type) const
 {
-	return sCull->getRenderMapSize(type) > 0;
+	return sCull->hasRenderMap(type);
 }
 
-LLCullResult::drawinfo_iterator LLPipeline::beginRenderMap(U32 type)
+LLCullResult::drawinfo_iterator LLPipeline::beginRenderMap(U32 type) const
 {
 	return sCull->beginRenderMap(type);
 }
 
-LLCullResult::drawinfo_iterator LLPipeline::endRenderMap(U32 type)
+LLCullResult::drawinfo_iterator LLPipeline::endRenderMap(U32 type) const
 {
 	return sCull->endRenderMap(type);
 }
 
-LLCullResult::sg_iterator LLPipeline::beginAlphaGroups()
+LLCullResult::sg_iterator LLPipeline::beginAlphaGroups() const
 {
 	return sCull->beginAlphaGroups();
 }
 
-LLCullResult::sg_iterator LLPipeline::endAlphaGroups()
+LLCullResult::sg_iterator LLPipeline::endAlphaGroups() const
 {
 	return sCull->endAlphaGroups();
 }

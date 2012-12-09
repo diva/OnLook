@@ -37,6 +37,7 @@
 #include "llmutelist.h"
 #include <vector>
 
+class LLAvatarName;
 class LLButton;
 class LLLineEditor;
 class LLMessageSystem;
@@ -68,7 +69,7 @@ private:
 	static void onClickRemove(void *data);
 	static void onClickPick(void *data);
 	static void onSelectName(LLUICtrl* caller, void *data);
-	static void onPickUser(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* user_data);
+	void onPickUser(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names);
 	static void onClickMuteByName(void*);
 	static void callbackMuteByName(const std::string& text, void*);
 

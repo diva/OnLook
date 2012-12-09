@@ -37,17 +37,26 @@
 
 #include "llscrolllistctrl.h"
 
+class LLAvatarName;
 
 class LLNameListCtrl
-:	public LLScrollListCtrl
+:	public LLScrollListCtrl, public LLInstanceTracker<LLNameListCtrl>
 {
 public:
+	typedef enum e_name_type
+	{
+		INDIVIDUAL,
+		GROUP,
+		SPECIAL
+	} ENameType;
+
 	LLNameListCtrl(const std::string& name,
 				   const LLRect& rect,
 				   LLUICtrlCallback callback,
 				   void* userdata,
 				   BOOL allow_multiple_selection,
 				   BOOL draw_border = TRUE,
+				   bool draw_heading = false,
 				   S32 name_column_index = 0,
 				   const std::string& tooltip = LLStringUtil::null);
 	virtual ~LLNameListCtrl();
@@ -57,36 +66,38 @@ public:
 
 	// Add a user to the list by name.  It will be added, the name 
 	// requested from the cache, and updated as necessary.
-	BOOL addNameItem(const LLUUID& agent_id, EAddPosition pos = ADD_BOTTOM,
+	LLScrollListItem* addNameItem(const LLUUID& agent_id, EAddPosition pos = ADD_BOTTOM,
 					 BOOL enabled = TRUE, std::string const& suffix = LLStringUtil::null);
-	BOOL addNameItem(LLScrollListItem* item, EAddPosition pos = ADD_BOTTOM);
+	LLScrollListItem* addNameItem(LLSD& item, EAddPosition pos = ADD_BOTTOM);
 
-	virtual LLScrollListItem* addElement(const LLSD& value, EAddPosition pos = ADD_BOTTOM, void* userdata = NULL);
+	/*virtual*/ LLScrollListItem* addElement(const LLSD& element, EAddPosition pos = ADD_BOTTOM, void* userdata = NULL);
+	LLScrollListItem* addNameItemRow(const LLSD& value, EAddPosition pos = ADD_BOTTOM, void* userdata = NULL);
 
 	// Add a user to the list by name.  It will be added, the name 
 	// requested from the cache, and updated as necessary.
 	void addGroupNameItem(const LLUUID& group_id, EAddPosition pos = ADD_BOTTOM,
 						  BOOL enabled = TRUE);
-	void addGroupNameItem(LLScrollListItem* item, EAddPosition pos = ADD_BOTTOM);
+	
+	void addGroupNameItem(LLSD& item, EAddPosition pos = ADD_BOTTOM);
 
 
 	void removeNameItem(const LLUUID& agent_id);
 
-	void refresh(const LLUUID& agent_id, const std::string& full_name);
-
-	static void refreshAll(const LLUUID& id, const std::string& full_name);
-
-	virtual BOOL	handleDragAndDrop(S32 x, S32 y, MASK mask,
+	// LLView interface
+	/*virtual*/ BOOL	handleDragAndDrop(S32 x, S32 y, MASK mask,
 									  BOOL drop, EDragAndDropType cargo_type, void *cargo_data,
 									  EAcceptance *accept,
 									  std::string& tooltip_msg);
 
 	void setAllowCallingCardDrop(BOOL b) { mAllowCallingCardDrop = b; }
 
+	void sortByName(BOOL ascending);
 private:
 	static std::set<LLNameListCtrl*> sInstances;
+	void onAvatarNameCache(const LLUUID& agent_id, const LLAvatarName& av_name, LLHandle<LLScrollListItem> item);
 	S32    	 mNameColumnIndex;
 	BOOL	 mAllowCallingCardDrop;
+	bool			mShortNames;  // display name only, no SLID
 };
 
 #endif

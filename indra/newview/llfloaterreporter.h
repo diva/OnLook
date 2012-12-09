@@ -38,6 +38,7 @@
 #include "lluuid.h"
 #include "v3math.h"
 
+class LLAvatarName;
 class LLMessageSystem;
 class LLViewerTexture;
 class LLInventoryItem;
@@ -126,7 +127,7 @@ private:
 	void setPosBox(const LLVector3d &pos);
 	void enableControls(BOOL own_avatar);
 	void getObjectInfo(const LLUUID& object_id);
-	static void callbackAvatarID(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* data);
+	void callbackAvatarID(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names);
 
 private:
 	EReportType		mReportType;

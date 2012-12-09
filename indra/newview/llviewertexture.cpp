@@ -1330,6 +1330,31 @@ void LLViewerFetchedTexture::cleanup()
 	mCachedRawDiscardLevel = -1 ;
 	mCachedRawImageReady = FALSE ;
 	mSavedRawImage = NULL ;
+	mSavedRawDiscardLevel = -1;
+}
+
+void LLViewerFetchedTexture::forceRefetch()
+{
+	bool needs_aux = mNeedsAux;
+	bool save_raw = mForceToSaveRawImage;
+	S32 raw_discard = mDesiredSavedRawDiscardLevel;
+	F32 raw_time = mKeptSavedRawImageTime;
+	callback_list_t callback_list = mLoadedCallbackList;
+	mLoadedCallbackList.clear();
+	LLAppViewer::getTextureFetch()->deleteRequest(getID(), true);
+	if(mGLTexturep)
+		mGLTexturep->forceToInvalidateGLTexture();
+	init(false);
+	mRawImage = NULL;
+	mAuxRawImage = NULL;
+	if(save_raw)
+		forceToSaveRawImage(raw_discard,raw_time);
+	for(callback_list_t::iterator iter = callback_list.begin();
+			iter != callback_list.end(); ++iter)
+	{
+		LLLoadedCallbackEntry *entryp = *iter;
+		setLoadedCallback(entryp->mCallback,entryp->mDesiredDiscard,entryp->mNeedsImageRaw,needs_aux,entryp->mUserData,entryp->mSourceCallbackList,entryp->mPaused);
+	}
 }
 
 void LLViewerFetchedTexture::setForSculpt()
@@ -1337,9 +1362,10 @@ void LLViewerFetchedTexture::setForSculpt()
 	static const S32 MAX_INTERVAL = 8 ; //frames
 
 	mForSculpt = TRUE ;
-	if(isForSculptOnly() && !getBoundRecently())
+	if(isForSculptOnly() && hasGLTexture() && !getBoundRecently())
 	{
 		destroyGLTexture() ; //sculpt image does not need gl texture.
+		mTextureState = ACTIVE;
 	}
 	checkCachedRawSculptImage() ;
 	setMaxVirtualSizeResetInterval(MAX_INTERVAL) ;
@@ -1446,7 +1472,11 @@ void LLViewerFetchedTexture::addToCreateTexture()
 
 		for(U32 i = 0 ; i < mNumFaces ; i++)
 		{
-			mFaceList[i]->dirtyTexture() ;
+			LLFace* facep = mFaceList[i];
+			if(facep)
+			{
+				facep->dirtyTexture() ;
+			}
 		}
 
 		//discard the cached raw image and the saved raw image

@@ -56,6 +56,7 @@ public:
 	};
 	
 	LLDynamicArray(S32 size=0) : std::vector<Type>(size) { if (size < BlockSize) std::vector<Type>::reserve(BlockSize); }
+	LLDynamicArray(const std::vector<Type>& copy) : std::vector<Type>(copy) {}
 
 	void reset() { std::vector<Type>::clear(); }
 

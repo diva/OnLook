@@ -116,6 +116,22 @@ float pcfShadow(sampler2DShadow shadowMap, vec4 stc, float scl, vec2 pos_screen)
         return shadow*0.2;
 }
 
+vec4 unpack(vec2 tc)
+{
+	vec4 norm  = texture2DRect(normalMap, tc).xyzw;
+//#define PACK_NORMALS
+#ifdef PACK_NORMALS
+	norm.xy = (norm.xy*4.0)-2.0;
+	float prod = dot(norm.xy,norm.xy);
+	norm.xy *= sqrt(1.0-prod*.25);
+	norm.z = 1.0-prod*.5;
+#else
+	norm.xyz = norm.xyz*2.0-1.0;
+#endif
+	norm.w *= norm.z; 
+	return norm;
+}
+
 void main() 
 {
 	vec2 pos_screen = vary_fragcoord.xy;
@@ -124,8 +140,7 @@ void main()
 	
 	vec4 pos = getPosition(pos_screen);
 	
-	vec4 nmap4 = texture2DRect(normalMap, pos_screen);
-	nmap4 = vec4((nmap4.xy-0.5)*2.0,nmap4.z,nmap4.w); // unpack norm
+	vec4 nmap4 = unpack(pos_screen); // unpack norm
 	float displace = nmap4.w;
 	vec3 norm = nmap4.xyz;
 	

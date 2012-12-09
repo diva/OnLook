@@ -148,7 +148,6 @@ LLFloater::LLFloater() :
 		mResizeHandle[i] = NULL;
 	}
 	mDragHandle = NULL;
-	mHandle.bind(this);
 	mNotificationContext = new LLFloaterNotificationContext(getHandle());
 }
 
@@ -222,7 +221,6 @@ void LLFloater::initFloater(const std::string& title,
 					 BOOL resizable, S32 min_width, S32 min_height,
 					 BOOL drag_on_left, BOOL minimizable, BOOL close_btn)
 {
-	mHandle.bind(this);
 	mNotificationContext = new LLFloaterNotificationContext(getHandle());
 
 	// Init function can be called more than once, so clear out old data.
@@ -422,7 +420,7 @@ void LLFloater::initFloater(const std::string& title,
 	setVisible(FALSE);
 
 	// add self to handle->floater map
-	sFloaterMap[mHandle] = this;
+	sFloaterMap[getHandle()] = this;
 
 	if (!getParent())
 	{
@@ -483,7 +481,7 @@ LLFloater::~LLFloater()
 	// correct, non-minimized positions.
 	setMinimized( FALSE );
 
-	sFloaterMap.erase(mHandle);
+	sFloaterMap.erase(getHandle());
 
 	delete mDragHandle;
 	for (S32 i = 0; i < 4; i++) 

@@ -660,6 +660,10 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		}
 	}
 
+	static const LLCachedControl<bool> SHPackDeferredNormals("SHPackDeferredNormals",false);
+	if(SHPackDeferredNormals)
+		text[count++] = strdup("#define PACK_NORMALS\n");
+
 	//copy preprocessor definitions into buffer
 	for (std::map<std::string,std::string>::iterator iter = mDefinitions.begin(); iter != mDefinitions.end(); ++iter)
 	{
@@ -1116,7 +1120,7 @@ void LLShaderMgr::initAttribsAndUniforms()
 	mReservedUniforms.push_back("ssao_max_radius");
 	mReservedUniforms.push_back("ssao_factor");
 	mReservedUniforms.push_back("ssao_factor_inv");
-	mReservedUniforms.push_back("ssao_effect_mat");
+	mReservedUniforms.push_back("ssao_effect");
 	mReservedUniforms.push_back("screen_res");
 	mReservedUniforms.push_back("near_clip");
 	mReservedUniforms.push_back("shadow_offset");

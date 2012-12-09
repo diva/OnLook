@@ -1293,7 +1293,9 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 	{
 		// load water shader
 		gDeferredWaterProgram.mName = "Deferred Water Shader";
+		gDeferredWaterProgram.mFeatures.atmosphericHelpers = true;
 		gDeferredWaterProgram.mFeatures.calculatesAtmospherics = true;
+		gDeferredWaterProgram.mFeatures.hasAtmospherics = true;
 		gDeferredWaterProgram.mFeatures.hasGamma = true;
 		gDeferredWaterProgram.mFeatures.hasTransport = true;
 		gDeferredWaterProgram.mShaderFiles.clear();
@@ -2396,7 +2398,7 @@ BOOL LLViewerShaderMgr::loadShadersAvatar()
 
 	if (success)
 	{
-		gAvatarEyeballProgram.mName = "Avatar Eyeball Program";
+		/*gAvatarEyeballProgram.mName = "Avatar Eyeball Program";
 		gAvatarEyeballProgram.mFeatures.calculatesLighting = true;
 		gAvatarEyeballProgram.mFeatures.isSpecular = true;
 		gAvatarEyeballProgram.mFeatures.calculatesAtmospherics = true;
@@ -2409,7 +2411,7 @@ BOOL LLViewerShaderMgr::loadShadersAvatar()
 		gAvatarEyeballProgram.mShaderFiles.push_back(make_pair("avatar/eyeballV.glsl", GL_VERTEX_SHADER_ARB));
 		gAvatarEyeballProgram.mShaderFiles.push_back(make_pair("avatar/eyeballF.glsl", GL_FRAGMENT_SHADER_ARB));
 		gAvatarEyeballProgram.mShaderLevel = mVertexShaderLevel[SHADER_AVATAR];
-		success = gAvatarEyeballProgram.createShader(NULL, NULL);
+		success = gAvatarEyeballProgram.createShader(NULL, NULL);*/
 	}
 
 	if( !success )

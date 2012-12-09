@@ -351,16 +351,20 @@ void LLDrawPoolFullbright::beginPostDeferredPass(S32 pass)
 void LLDrawPoolFullbright::renderPostDeferred(S32 pass)
 {
 	LLFastTimer t(FTM_RENDER_FULLBRIGHT);
-	
+	gGL.setColorMask(true, true);
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);
+
 	U32 fullbright_mask = LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_COLOR | LLVertexBuffer::MAP_TEXTURE_INDEX;
 	pushBatches(LLRenderPass::PASS_FULLBRIGHT, fullbright_mask, TRUE, TRUE);
+	
+	gGL.setColorMask(true, false);
 }
 
 void LLDrawPoolFullbright::endPostDeferredPass(S32 pass)
 {
 	gDeferredFullbrightProgram.unbind();
 	LLRenderPass::endRenderPass(pass);
+
 }
 
 void LLDrawPoolFullbright::beginRenderPass(S32 pass)

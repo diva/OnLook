@@ -37,6 +37,7 @@
 
 #include "llfloaterland.h"
 
+#include "llavatarnamecache.h"
 #include "llcachename.h"
 #include "llfocusmgr.h"
 #include "llnotificationsutil.h"
@@ -653,20 +654,26 @@ void LLPanelLandGeneral::refresh()
 		S32 area;
 		S32 claim_price;
 		S32 rent_price;
-		F32 dwell;
+		F32 dwell = DWELL_NAN;
 		LLViewerParcelMgr::getInstance()->getDisplayInfo(&area,
 								 &claim_price,
 								 &rent_price,
 								 &for_sale,
 								 &dwell);
-
 		// Area
 		LLUIString price = getString("area_size_text");
 		price.setArg("[AREA]", llformat("%d",area));    
 		mTextPriceLabel->setText(getString("area_text"));
 		mTextPrice->setText(price.getString());
 
-		mTextDwell->setText(llformat("%.0f", dwell));
+		if (dwell == DWELL_NAN)
+		{
+			mTextDwell->setText(LLTrans::getString("LoadingData"));
+		}
+		else
+		{
+			mTextDwell->setText(llformat("%.0f", dwell));
+		}
 
 		if (for_sale)
 		{
@@ -1125,8 +1132,8 @@ BOOL LLPanelLandObjects::postBuild()
 
 	mOwnerList = getChild<LLNameListCtrl>("owner list");
 	mOwnerList->sortByColumnIndex(3, FALSE);
-	childSetCommitCallback("owner list", onCommitList, this);
-	mOwnerList->setDoubleClickCallback(onDoubleClickOwner);
+	mOwnerList->setCommitCallback(boost::bind(&LLPanelLandObjects::onCommitList,this));
+	mOwnerList->setDoubleClickCallback(boost::bind(&LLPanelLandObjects::onDoubleClickOwner, this));
 
 	return TRUE;
 }
@@ -1499,7 +1506,7 @@ void LLPanelLandObjects::onClickRefresh(void* userdata)
 
 	// ready the list for results
 	self->mOwnerList->deleteAllItems();
-	self->mOwnerList->addCommentText(LLTrans::getString("Searching"));
+	self->mOwnerList->setCommentText(LLTrans::getString("Searching"));
 	self->mOwnerList->setEnabled(FALSE);
 	self->mFirstReply = TRUE;
 
@@ -1526,8 +1533,6 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 		return;
 	}
 	
-	const LLFontGL* FONT = LLFontGL::getFontSansSerif();
-
 	// Extract all of the owners.
 	S32 rows = msg->getNumberOfBlocksFast(_PREHASH_Data);
 	//uuid_list_t return_ids;
@@ -1568,44 +1573,64 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 
 		BOOL in_sim = (std::find(avatar_ids.begin(), avatar_ids.end(), owner_id) != avatar_ids.end());
 
-		LLScrollListItem *row = new LLScrollListItem( TRUE, NULL, owner_id);
+		LLSD item;
+		item["id"] = owner_id;
+		LLSD& row = item["columns"];
+		LLSD icon_column;
+		LLSD status_column;
+		icon_column["type"] = "icon";
+		icon_column["column"] = "type";
+		status_column["font"] = "SANSSERIF";
+		status_column["column"] = "online_status";
+
 		if (is_group_owned)
 		{
-			row->addColumn(self->mIconGroup);
-			row->addColumn(OWNER_GROUP, FONT);
+			icon_column["value"] = self->mIconGroup->getName();
+			status_column["value"] = OWNER_GROUP;
 		}
 		else if (in_sim)
 		{
-			row->addColumn(self->mIconAvatarInSim);
-			row->addColumn(OWNER_INSIM, FONT);
+			icon_column["value"] = self->mIconAvatarInSim->getName();
+			status_column["value"] = OWNER_INSIM;
 		}
 		else if (is_online)
 		{
-			row->addColumn(self->mIconAvatarOnline);
-			row->addColumn(OWNER_ONLINE, FONT);
+			icon_column["value"] = self->mIconAvatarOnline->getName();
+			status_column["value"] = OWNER_ONLINE;
 		}
 		else  // offline
 		{
-			row->addColumn(self->mIconAvatarOffline);
-			row->addColumn(OWNER_OFFLINE, FONT);
+			icon_column["value"] = self->mIconAvatarOffline->getName();
+			status_column["value"] = OWNER_OFFLINE;
 		}
+		row.append(icon_column);
+		row.append(status_column);
+
 		// Placeholder for name.
-		row->addColumn(LLStringUtil::null, FONT);
+		LLAvatarName av_name;
+		LLAvatarNameCache::get(owner_id, &av_name);
+		LLSD name_column;
+		name_column["value"] = av_name.getCompleteName();
+		name_column["font"] = "SANSSERIF";
+		name_column["column"] = "name";
+		row.append(name_column);
 
-		object_count_str = llformat("%d", object_count);
-		row->addColumn(object_count_str, FONT);
+		LLSD count_column;
+		count_column["value"] = llformat("%d", object_count);
+		count_column["font"] = "SANSSERIF";
+		count_column["column"] = "count";
+		row.append(count_column);
 		
-		row->addColumn(formatted_time((time_t)most_recent_time), FONT);
+		LLSD time_column;
+		time_column["value"] = formatted_time((time_t)most_recent_time);
+		time_column["font"] = "SANSSERIF";
+		time_column["column"] = "mostrecent";
+		row.append(time_column);
 
-
-		if (is_group_owned)
-		{
+		if(	is_group_owned )
 			self->mOwnerList->addGroupNameItem(row, ADD_BOTTOM);
-		}
 		else
-		{
 			self->mOwnerList->addNameItem(row, ADD_BOTTOM);
-		}
 
 		lldebugs << "object owner " << owner_id << " (" << (is_group_owned ? "group" : "agent")
 				<< ") owns " << object_count << " objects." << llendl;
@@ -1613,7 +1638,7 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 	// check for no results
 	if (0 == self->mOwnerList->getItemCount())
 	{
-		self->mOwnerList->addCommentText(LLTrans::getString("NoneFound"));
+		self->mOwnerList->setCommentText(LLTrans::getString("NoneFound"));
 	}
 	else
 	{
@@ -1621,16 +1646,13 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 	}
 }
 
-// static
-void LLPanelLandObjects::onCommitList(LLUICtrl* ctrl, void* data)
+void LLPanelLandObjects::onCommitList()
 {
-	LLPanelLandObjects* self = (LLPanelLandObjects*)data;
-
-	if (FALSE == self->mOwnerList->getCanSelect())
+	if (FALSE == mOwnerList->getCanSelect())
 	{
 		return;
 	}
-	LLScrollListItem *item = self->mOwnerList->getFirstSelected();
+	LLScrollListItem *item = mOwnerList->getFirstSelected();
 	if (item)
 	{
 		// Look up the selected name, for future dialog box use.
@@ -1641,19 +1663,19 @@ void LLPanelLandObjects::onCommitList(LLUICtrl* ctrl, void* data)
 			return;
 		}
 		// Is this a group?
-		self->mSelectedIsGroup = cell->getValue().asString() == OWNER_GROUP;
+		mSelectedIsGroup = cell->getValue().asString() == OWNER_GROUP;
 		cell = item->getColumn(2);
-		self->mSelectedName = cell->getValue().asString();
+		mSelectedName = cell->getValue().asString();
 		cell = item->getColumn(3);
-		self->mSelectedCount = atoi(cell->getValue().asString().c_str());
+		mSelectedCount = atoi(cell->getValue().asString().c_str());
 
 		// Set the selection, and enable the return button.
-		self->mSelectedOwners.clear();
-		self->mSelectedOwners.insert(item->getUUID());
-		self->mBtnReturnOwnerList->setEnabled(TRUE);
+		mSelectedOwners.clear();
+		mSelectedOwners.insert(item->getUUID());
+		mBtnReturnOwnerList->setEnabled(TRUE);
 
 		// Highlight this user's objects
-		clickShowCore(self, RT_LIST, &(self->mSelectedOwners));
+		clickShowCore(this, RT_LIST, &(mSelectedOwners));
 	}
 }
 
@@ -2442,7 +2464,11 @@ void LLPanelLandAccess::refresh()
 		childSetLabelArg("GroupCheck", "[GROUP]", group_name );
 		
 		// Allow list
+		if (mListAccess)
 		{
+			// Clear the sort order so we don't re-sort on every add.
+			mListAccess->clearSortOrder();
+			mListAccess->deleteAllItems();
 			S32 count = parcel->mAccessList.size();
 			childSetToolTipArg("AccessList", "[LISTED]", llformat("%d",count));
 			childSetToolTipArg("AccessList", "[MAX]", llformat("%d",PARCEL_MAX_ACCESS_LIST));
@@ -2478,13 +2504,17 @@ void LLPanelLandAccess::refresh()
 					}
 					suffix.append(" " + getString("remaining") + ")");
 				}
-				if (mListAccess)
-					mListAccess->addNameItem(entry.mID, ADD_SORTED, TRUE, suffix);
+				mListAccess->addNameItem(entry.mID, ADD_SORTED, TRUE, suffix);
 			}
+			mListAccess->sortByName(TRUE);
 		}
 		
 		// Ban List
+		if(mListBanned)
 		{
+			// Clear the sort order so we don't re-sort on every add.
+			mListBanned->clearSortOrder();
+			mListBanned->deleteAllItems();
 			S32 count = parcel->mBanList.size();
 
 			childSetToolTipArg("BannedList", "[LISTED]", llformat("%d",count));
@@ -2523,6 +2553,7 @@ void LLPanelLandAccess::refresh()
 				}
 				mListBanned->addNameItem(entry.mID, ADD_SORTED, TRUE, suffix);
 			}
+			mListBanned->sortByName(TRUE);
 		}
 
 		if(parcel->getRegionDenyAnonymousOverride())
@@ -2790,23 +2821,21 @@ void LLPanelLandAccess::onClickAddAccess(void* data)
 	LLPanelLandAccess* panelp = (LLPanelLandAccess*)data;
 	if (panelp)
 	{
-		gFloaterView->getParentFloater(panelp)->addDependentFloater(LLFloaterAvatarPicker::show(callbackAvatarCBAccess, data) );
+		gFloaterView->getParentFloater(panelp)->addDependentFloater(LLFloaterAvatarPicker::show(boost::bind(&LLPanelLandAccess::callbackAvatarCBAccess, panelp, _1)));
 	}
 }
 
-// static
-void LLPanelLandAccess::callbackAvatarCBAccess(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* userdata)
+void LLPanelLandAccess::callbackAvatarCBAccess(const uuid_vec_t& ids)
 {
-	LLPanelLandAccess* panelp = (LLPanelLandAccess*)userdata;
-	if (!names.empty() && !ids.empty())
+	if (!ids.empty())
 	{
 		LLUUID id = ids[0];
-		LLParcel* parcel = panelp->mParcel->getParcel();
+		LLParcel* parcel = mParcel->getParcel();
 		if (parcel)
 		{
 			parcel->addToAccessList(id, 0);
 			LLViewerParcelMgr::getInstance()->sendParcelAccessListUpdate(AL_ACCESS);
-			panelp->refresh();
+			refresh();
 		}
 	}
 }
@@ -2838,22 +2867,20 @@ void LLPanelLandAccess::onClickRemoveAccess(void* data)
 void LLPanelLandAccess::onClickAddBanned(void* data)
 {
 	LLPanelLandAccess* panelp = (LLPanelLandAccess*)data;
-	gFloaterView->getParentFloater(panelp)->addDependentFloater(LLFloaterAvatarPicker::show(callbackAvatarCBBanned, data) );
+	gFloaterView->getParentFloater(panelp)->addDependentFloater(LLFloaterAvatarPicker::show(boost::bind(&LLPanelLandAccess::callbackAvatarCBBanned, panelp, _1)));
 }
 
-// static
-void LLPanelLandAccess::callbackAvatarCBBanned(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* userdata)
+void LLPanelLandAccess::callbackAvatarCBBanned(const uuid_vec_t& ids)
 {
-	LLPanelLandAccess* panelp = (LLPanelLandAccess*)userdata;
-	if (!names.empty() && !ids.empty())
+	if (!ids.empty())
 	{
 		LLUUID id = ids[0];
-		LLParcel* parcel = panelp->mParcel->getParcel();
+		LLParcel* parcel = mParcel->getParcel();
 		if (parcel)
 		{
 			parcel->addToBanList(id, 0);
 			LLViewerParcelMgr::getInstance()->sendParcelAccessListUpdate(AL_BAN);
-			panelp->refresh();
+			refresh();
 		}
 	}
 }

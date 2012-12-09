@@ -57,7 +57,7 @@ const BOOL BORDER_NO = FALSE;
  * With or without border,
  * Can contain LLUICtrls.
  */
-class LLPanel : public LLUICtrl, public boost::signals2::trackable
+class LLPanel : public LLUICtrl
 {
 public:
 
@@ -136,7 +136,7 @@ public:
 
 	void			setCtrlsEnabled(BOOL b);
 
-	LLHandle<LLPanel>	getHandle() const { return mPanelHandle; }
+	LLHandle<LLPanel>	getHandle() const { return getDerivedHandle<LLPanel>(); }
 
 	const LLCallbackMap::map_t& getFactoryMap() const { return mFactoryMap; }
 
@@ -170,7 +170,6 @@ public:
 	BOOL childHasFocus(const std::string& id);
 	
 	void childSetCommitCallback(const std::string& id, void (*cb)(LLUICtrl*, void*), void* userdata = NULL );
-	void childSetDoubleClickCallback(const std::string& id, void (*cb)(void*), void* userdata = NULL );
 	void childSetValidate(const std::string& id, BOOL (*cb)(LLUICtrl*, void*) );
 	void childSetUserData(const std::string& id, void* userdata);
 
@@ -211,7 +210,8 @@ public:
 	void childSetPrevalidate(const std::string& id, BOOL (*func)(const LLWString &) );
 
 	// LLButton
-	void childSetAction(const std::string& id, void(*function)(void*), void* value);
+	void childSetAction(const std::string& id, boost::function<void(void*)> function, void* value);
+	void childSetAction(const std::string& id, const commit_signal_t::slot_type& function);
 	void childSetActionTextbox(const std::string& id, void(*function)(void*), void* value = NULL);
 	void childSetControlName(const std::string& id, const std::string& control_name);
 
@@ -246,7 +246,6 @@ private:
 	LLViewBorder*	mBorder;
 	LLButton*		mDefaultBtn;
 	std::string		mLabel;
-	LLRootHandle<LLPanel> mPanelHandle;
 
 	typedef std::map<std::string, std::string> ui_string_map_t;
 	ui_string_map_t	mUIStrings;

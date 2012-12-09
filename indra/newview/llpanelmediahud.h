@@ -55,7 +55,8 @@ public:
 	void nextZoomLevel();
 	void resetZoomLevel() { mCurrentZoom = ZOOM_NONE; }
 
-	LLHandle<LLPanelMediaHUD>	getHandle() const { return mPanelHandle; }
+	LLHandle<LLPanelMediaHUD>	getHandle() const { return getDerivedHandle<LLPanelMediaHUD>(); }
+
 	void setMediaImpl(viewer_media_t media_impl) { mMediaImpl = media_impl; }
 
 
@@ -105,7 +106,6 @@ private:
 	F32 mMouseInactiveTime;
 	F32 mControlFadeTime;
 	viewer_media_t mMediaImpl;
-	LLRootHandle<LLPanelMediaHUD> mPanelHandle;
 };
 
 #endif // LL_PANELMEDIAHUD_H

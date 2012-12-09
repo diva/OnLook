@@ -127,8 +127,7 @@ BOOL HBFloaterGroupTitles::postBuild()
 	{
 		return FALSE;
 	}
-	mTitlesList->setCallbackUserData(this);
-	mTitlesList->setDoubleClickCallback(onActivate);
+	mTitlesList->setDoubleClickCallback(boost::bind(&HBFloaterGroupTitles::onActivate,this));
 	childSetAction("activate", onActivate, this);
 	update_titles_list(this);
 	return TRUE;
