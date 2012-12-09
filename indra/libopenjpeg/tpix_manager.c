@@ -90,7 +90,7 @@ int write_tpixfaix( int coff, int compno, opj_codestream_info_t cstr_info, int j
 
   num_max_tile_parts = get_num_max_tile_parts( cstr_info);
 
-  if( j2klen > pow( 2, 32)){
+  if( j2klen > pow( 2.0, 32)){
     size_of_coding =  8;
     version = num_max_tile_parts == 1 ? 1:3;
   }

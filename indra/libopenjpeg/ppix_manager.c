@@ -96,7 +96,7 @@ int write_ppixfaix( int coff, int compno, opj_codestream_info_t cstr_info, opj_b
   packet.end_pos = packet.end_ph_pos = packet.start_pos = -1;
   (void)EPHused; /* unused ? */
 
-  if( j2klen > pow( 2, 32)){
+  if( j2klen > pow( 2.0, 32)){
     size_of_coding =  8;
     version = 1;
   }
