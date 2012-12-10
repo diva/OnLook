@@ -585,7 +585,7 @@ public:
 	LLRenderTarget				mWaterDis;
 
 	//texture for making the glow
-	LLRenderTarget				mGlow[3];
+	LLRenderTarget				mGlow[2];
 
 	//noise map
 	U32					mNoiseMap;
