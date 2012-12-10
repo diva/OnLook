@@ -71,7 +71,7 @@ void LLStyle::drawControl(ControlElement element, const QStyleOption *option, QP
 			QPlastiqueStyle::drawControl(element, &localOption, painter, widget);	
 			return;
 		}
-
+	default:
 	break;
 	}
 	

@@ -70,9 +70,6 @@ std::map<const LLUUID, LLFloaterGroupPicker*> LLFloaterGroupPicker::sInstances;
 // helper functions
 void init_group_list(LLScrollListCtrl* ctrl, const LLUUID& highlight_id, const std::string& none_text, U64 powers_mask = GP_ALL_POWERS);
 
-//callbacks
-void onGroupSortChanged(void* user_data);
-
 ///----------------------------------------------------------------------------
 /// Class LLFloaterGroupPicker
 ///----------------------------------------------------------------------------
@@ -128,7 +125,8 @@ BOOL LLFloaterGroupPicker::postBuild()
 {
 
 	const std::string none_text = getString("none");
-	init_group_list(getChild<LLScrollListCtrl>("group list"), gAgent.getGroupID(), none_text, mPowersMask);
+	LLScrollListCtrl* group_list = getChild<LLScrollListCtrl>("group list");
+	init_group_list(group_list, gAgent.getGroupID(), none_text, mPowersMask);
 
 	childSetAction("OK", onBtnOK, this);
 
@@ -136,8 +134,7 @@ BOOL LLFloaterGroupPicker::postBuild()
 
 	setDefaultBtn("OK");
 
-	childSetDoubleClickCallback("group list", onBtnOK);
-	childSetUserData("group list", this);
+	group_list->setDoubleClickCallback(boost::bind(&LLFloaterGroupPicker::onBtnOK,this));
 
 	childEnable("OK");
 
@@ -214,15 +211,15 @@ void LLPanelGroups::reset()
 
 BOOL LLPanelGroups::postBuild()
 {
-	childSetCommitCallback("group list", onGroupList, this);
-
 	childSetTextArg("groupcount", "[COUNT]", llformat("%d",gAgent.mGroups.count()));
 	childSetTextArg("groupcount", "[MAX]", llformat("%d", gHippoLimits->getMaxAgentGroups()));
 
 	const std::string none_text = getString("none");
 	LLScrollListCtrl *group_list = getChild<LLScrollListCtrl>("group list");
 	init_group_list(group_list, gAgent.getGroupID(), none_text);
-	group_list->setSortChangedCallback(onGroupSortChanged); //Force 'none' to always be first entry.
+	group_list->setCommitCallback(boost::bind(&LLPanelGroups::onGroupList,this));
+	group_list->setSortChangedCallback(boost::bind(&LLPanelGroups::onGroupSortChanged,this)); //Force 'none' to always be first entry.
+	group_list->setDoubleClickCallback(boost::bind(&LLPanelGroups::onBtnIM,this));
 
 	childSetAction("Activate", onBtnActivate, this);
 
@@ -241,9 +238,6 @@ BOOL LLPanelGroups::postBuild()
 	childSetAction("Titles...", onBtnTitles, this);
 
 	setDefaultBtn("IM");
-
-	childSetDoubleClickCallback("group list", onBtnIM);
-	childSetUserData("group list", this);
 
 	reset();
 
@@ -478,15 +472,20 @@ bool LLPanelGroups::callbackLeaveGroup(const LLSD& notification, const LLSD& res
 	return false;
 }
 
-void LLPanelGroups::onGroupList(LLUICtrl* ctrl, void* userdata)
+void LLPanelGroups::onGroupSortChanged()
 {
-	LLPanelGroups *self = (LLPanelGroups*)userdata;
-	if(!self)
+	LLScrollListCtrl *group_list = getChild<LLScrollListCtrl>("group list");
+	if(!group_list)
 		return;
 
-	self->enableButtons();
+	group_list->moveToFront(group_list->getItemIndex(LLUUID::null));
+}
 
-	LLScrollListCtrl *group_list = (LLScrollListCtrl*)self->getChild<LLScrollListCtrl>("group list");
+void LLPanelGroups::onGroupList()
+{
+	enableButtons();
+
+	LLScrollListCtrl *group_list = getChild<LLScrollListCtrl>("group list");
 	if(!group_list)
 		return;
 
@@ -559,18 +558,6 @@ LLSD create_group_element(const LLGroupData *group_datap, const LLUUID &active_g
 	notice_column["value"] = enabled && group_datap->mAcceptNotices;
 
 	return element;
-}
-
-void onGroupSortChanged(void* user_data)
-{
-	LLPanelGroups *panel = (LLPanelGroups*)user_data;
-	if(!panel)
-		return;
-	LLScrollListCtrl *group_list = (LLScrollListCtrl*)panel->getChild<LLScrollListCtrl>("group list");
-	if(!group_list)
-		return;
-
-	group_list->moveToFront(group_list->getItemIndex(LLUUID::null));
 }
 
 void init_group_list(LLScrollListCtrl* ctrl, const LLUUID& highlight_id, const std::string& none_text, U64 powers_mask)

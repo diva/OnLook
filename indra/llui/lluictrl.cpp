@@ -527,10 +527,6 @@ BOOL LLUICtrl::getTentative() const
 	return mTentative; 
 }
 
-// virtual
-void LLUICtrl::setDoubleClickCallback( void (*cb)(void*) )				
-{ 
-}
 
 // virtual
 void LLUICtrl::setColor(const LLColor4& color)							

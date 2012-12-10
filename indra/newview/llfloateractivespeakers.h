@@ -227,7 +227,6 @@ public:
 	static void onVolumeChange(LLUICtrl* source, void* user_data);
 	static void onClickProfile(void* user_data);
 	static void onDoubleClickSpeaker(void* user_data);
-	static void onSelectSpeaker(LLUICtrl* source, void* user_data);
 	static void onSortChanged(void* user_data);
 	static void	onModeratorMuteVoice(LLUICtrl* ctrl, void* user_data);
 	static void	onModeratorMuteText(LLUICtrl* ctrl, void* user_data);

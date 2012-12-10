@@ -53,6 +53,8 @@
 #include "pipeline.h"
 #include "llviewershadermgr.h"
 #include "llwaterparammanager.h"
+#include "llappviewer.h"
+#include "lltexturecache.h"
 
 const LLUUID TRANSPARENT_WATER_TEXTURE("2bfd3884-7e27-69b9-ba3a-3e673f680004");
 const LLUUID OPAQUE_WATER_TEXTURE("43c32285-d658-1793-c123-bf86315de055");
@@ -260,8 +262,11 @@ void LLDrawPoolWater::render(S32 pass)
 		{
 			continue;
 		}
-		gGL.getTexUnit(0)->bind(face->getTexture());
-		face->renderIndexed();
+		if(face->getTexture() && face->getTexture()->hasGLTexture())
+		{
+			gGL.getTexUnit(0)->bind(face->getTexture());
+			face->renderIndexed();
+		}
 	}
 
 	// Now, disable texture coord generation on texture state 1
@@ -367,6 +372,32 @@ void LLDrawPoolWater::renderOpaqueLegacyWater()
 
 	gPipeline.disableLights();
 
+	//Singu note: This is a hack around bizarre opensim behavior. The opaque water texture we get is pure white and only has one channel.
+	// This behavior is clearly incorrect, so we try to detect that case, purge it from the cache, and try to re-fetch the texture.
+	// If the re-fetched texture is still invalid, or doesn't exist, we use transparent water, which is fine since alphablend is unset.
+	// The current logic for refetching is crude here, and probably wont work if, say, a prim were to also have the texture for some reason,
+	// however it works well enough otherwise, and is much cleaner than diving into LLTextureList, LLViewerFetchedTexture, and LLViewerTexture.
+	// Perhaps a proper reload mechanism could be done if we ever add user-level texture reloading, but until then it's not a huge priority.
+	// Failing to fully refetch will just give us the same invalid texture we started with, which will result in the fallback texture being used.
+	if(mOpaqueWaterImagep != mWaterImagep)
+	{
+		if(mOpaqueWaterImagep->isMissingAsset())
+		{
+			mOpaqueWaterImagep = mWaterImagep;
+		}
+		else if(mOpaqueWaterImagep->hasGLTexture() && mOpaqueWaterImagep->getComponents() < 3)
+		{
+			LLAppViewer::getTextureCache()->removeFromCache(mOpaqueWaterImagep->getID());
+			static bool sRefetch = true;
+			if(sRefetch)
+			{
+				sRefetch = false;
+				((LLViewerFetchedTexture*)mOpaqueWaterImagep.get())->forceRefetch();
+			}
+			else
+				mOpaqueWaterImagep = mWaterImagep;
+		}
+	}
 	mOpaqueWaterImagep->addTextureStats(1024.f*1024.f);
 
 	// Activate the texture binding and bind one
@@ -380,8 +411,8 @@ void LLDrawPoolWater::renderOpaqueLegacyWater()
 	{
 		glEnable(GL_TEXTURE_GEN_S); //texture unit 0
 		glEnable(GL_TEXTURE_GEN_T); //texture unit 0
-		glTexGenf(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-		glTexGenf(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
 	}
 
 	// Use the fact that we know all water faces are the same size
@@ -674,7 +705,7 @@ void LLDrawPoolWater::shade()
 			}
 
 			LLVOWater* water = (LLVOWater*) face->getViewerObject();
-			if(diffTex > -1 && face->getTexture()->hasGLTexture())
+			if(diffTex > -1 && face->getTexture() && face->getTexture()->hasGLTexture())
 				gGL.getTexUnit(diffTex)->bind(face->getTexture());
 
 			sNeedsReflectionUpdate = TRUE;

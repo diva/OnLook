@@ -86,16 +86,17 @@ public:
 	LLVector3d		viewPosToGlobal(S32 x,S32 y);
 
 	virtual void	draw();
-	void			drawTiles(S32 width, S32 height);
-	void			drawGenericItems(const LLWorldMap::item_info_list_t& items, LLUIImagePtr image);
+	void			drawLegacyBackgroundLayers(S32 width, S32 height);	//draw legacy background 'layer' tiles. Only available on official grids, I believe.
+	F32				drawLegacySimTile(LLSimInfo& sim_info, S32 left, S32 top, S32 right, S32 bottom);	//draw legacy sim texture (provided in MapBlockReply message).
+	void			drawGenericItems(const LLSimInfo::item_info_list_t& items, LLUIImagePtr image);
 	void			drawGenericItem(const LLItemInfo& item, LLUIImagePtr image);
 	void			drawImage(const LLVector3d& global_pos, LLUIImagePtr image, const LLColor4& color = LLColor4::white);
 	void			drawImageStack(const LLVector3d& global_pos, LLUIImagePtr image, U32 count, F32 offset, const LLColor4& color);
 	void			drawAgents();
-	void			drawEvents();
+	void			drawItems();
 	void			drawFrustum();
 	void			drawMipmap(S32 width, S32 height);
-	bool			drawMipmapLevel(S32 width, S32 height, S32 level, bool load = true);		
+	bool			drawMipmapLevel(S32 width, S32 height, S32 level, bool load = true);
 
 	static void		cleanupTextures();
 
@@ -119,7 +120,7 @@ public:
 										S32 overlap );
 	static void		drawAvatar(	F32 x_pixels, 
 								F32 y_pixels, 
-								LLColor4 color,
+								const LLColor4& color,
 								F32 relative_z = 0.f,
 								F32 dot_radius = 3.f);
 	static void		drawIconName(F32 x_pixels, 
@@ -132,9 +133,7 @@ public:
 	static void		clearLastClick() { sHandledLastClick = FALSE; }
 
 	// if the view changes, download additional sim info as needed
-	// return value is number of blocks newly requested.
-	U32				updateBlock(S32 block_x, S32 block_y);
-	U32				updateVisibleBlocks();
+	void			updateVisibleBlocks();
 
 protected:
 	void			setDirectionPos( LLTextBox* text_box, F32 rotation );
@@ -161,8 +160,6 @@ public:
 	static LLUIImagePtr	sForSaleImage;
 	static LLUIImagePtr	sForSaleAdultImage;
 
-	static F32		sThresholdA;
-	static F32		sThresholdB;
 	static F32		sPixelsPerMeter;		// world meters to map pixels
 
 	static F32		sMapScale;				// scale = size of a region in pixels
@@ -202,6 +199,9 @@ public:
 	handle_list_t mVisibleRegions; // set every frame
 
 	static std::map<std::string,std::string> sStringsMap;
+
+private:
+	void drawTileOutline(S32 level, F32 top, F32 left, F32 bottom, F32 right);
 };
 
 #endif

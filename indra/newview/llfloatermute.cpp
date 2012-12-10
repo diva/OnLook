@@ -43,6 +43,7 @@
 
 // project include
 #include "llagent.h"
+#include "llavatarnamecache.h"
 #include "llfloateravatarpicker.h"
 #include "llbutton.h"
 #include "lllineeditor.h"
@@ -314,22 +315,20 @@ void LLFloaterMute::onClickPick(void *data)
 	LLFloaterMute* floaterp = (LLFloaterMute*)data;
 	const BOOL allow_multiple = FALSE;
 	const BOOL close_on_select = TRUE;
-	LLFloaterAvatarPicker* picker = LLFloaterAvatarPicker::show(onPickUser, data, allow_multiple, close_on_select);
+	LLFloaterAvatarPicker* picker = LLFloaterAvatarPicker::show(boost::bind(&LLFloaterMute::onPickUser, floaterp, _1, _2), allow_multiple, close_on_select);
 	floaterp->addDependentFloater(picker);
 }
 
 //-----------------------------------------------------------------------------
 // onPickUser()
 //-----------------------------------------------------------------------------
-void LLFloaterMute::onPickUser(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* user_data)
+void LLFloaterMute::onPickUser(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names)
 {
-	LLFloaterMute* floaterp = (LLFloaterMute*)user_data;
-	if (!floaterp) return;
 	if (names.empty() || ids.empty()) return;
 
-	LLMute mute(ids[0], names[0], LLMute::AGENT);
+	LLMute mute(ids[0], names[0].getLegacyName(), LLMute::AGENT);
 	LLMuteList::getInstance()->add(mute);
-	floaterp->updateButtons();
+	updateButtons();
 }
 
 

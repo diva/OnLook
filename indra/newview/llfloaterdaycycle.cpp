@@ -156,7 +156,7 @@ void LLFloaterDayCycle::initCallbacks(void)
 	childSetAction("DayCycleSavePreset", onSavePreset, comboBox);
 	childSetAction("DayCycleDeletePreset", onDeletePreset, comboBox);
 
-	comboBox->setCommitCallback(onChangePresetName);
+	comboBox->setCommitCallback(boost::bind(&LLFloaterDayCycle::onChangePresetName,_1));
 
 
 	childSetAction("WLAddKey", onAddKey, NULL);
@@ -478,7 +478,7 @@ bool LLFloaterDayCycle::newPromptCallback(const LLSD& notification, const LLSD& 
 }
 
 
-void LLFloaterDayCycle::onChangePresetName(LLUICtrl* ctrl, void * userData)
+void LLFloaterDayCycle::onChangePresetName(LLUICtrl* ctrl)
 {
 	LLComboBox * combo_box = static_cast<LLComboBox*>(ctrl);
 

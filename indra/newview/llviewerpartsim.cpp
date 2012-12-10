@@ -710,7 +710,9 @@ void LLViewerPartSim::updateSimulation()
 
 		if (mViewerPartSources[i]->isDead())
 		{
-			mViewerPartSources.erase(mViewerPartSources.begin() + i);
+			mViewerPartSources[i] = mViewerPartSources.back();
+			mViewerPartSources.pop_back();
+			//mViewerPartSources.erase(mViewerPartSources.begin() + i);
 			count--;
 			i+=deldir;
 		}
@@ -727,7 +729,7 @@ void LLViewerPartSim::updateSimulation()
 		LLViewerObject* vobj = mViewerPartGroups[i]->mVOPartGroupp;
 
 		S32 visirate = 1;
-		if (vobj)
+		if (vobj && vobj->mDrawable.notNull())
 		{
 			LLSpatialGroup* group = vobj->mDrawable->getSpatialGroup();
 			if (group && !group->isVisible()) // && !group->isState(LLSpatialGroup::OBJECT_DIRTY))
@@ -738,7 +740,7 @@ void LLViewerPartSim::updateSimulation()
 
 		if ((LLDrawable::getCurrentFrame()+mViewerPartGroups[i]->mID)%visirate == 0)
 		{
-			if (vobj)
+			if (vobj && vobj->mDrawable.notNull())
 			{
 				gPipeline.markRebuild(vobj->mDrawable, LLDrawable::REBUILD_ALL, TRUE);
 			}
@@ -747,7 +749,9 @@ void LLViewerPartSim::updateSimulation()
 			if (!mViewerPartGroups[i]->getCount())
 			{
 				delete mViewerPartGroups[i];
-				mViewerPartGroups.erase(mViewerPartGroups.begin() + i);
+				mViewerPartGroups[i] = mViewerPartGroups.back();
+				mViewerPartGroups.pop_back();
+				//mViewerPartGroups.erase(mViewerPartGroups.begin() + i);
 				i--;
 				count--;
 			}
@@ -831,14 +835,16 @@ void LLViewerPartSim::removeLastCreatedSource()
 void LLViewerPartSim::cleanupRegion(LLViewerRegion *regionp)
 {
 	LLMemType mt(LLMemType::MTYPE_PARTICLES);
-	for (group_list_t::iterator i = mViewerPartGroups.begin(); i != mViewerPartGroups.end(); )
-	{
-		group_list_t::iterator iter = i++;
 
-		if ((*iter)->getRegion() == regionp)
+	group_list_t& vec = mViewerPartGroups;
+	for (group_list_t::size_type i = 0;i<vec.size();++i)
+	{
+		if (vec[i]->getRegion() == regionp)
 		{
-			delete *iter;
-			i = mViewerPartGroups.erase(iter);			
+			delete vec[i];
+			vec[i--] = vec.back();
+			vec.pop_back();
+			//i = mViewerPartGroups.erase(iter);			
 		}
 	}
 }

@@ -32,13 +32,16 @@
 
 #include "llviewerprecompiledheaders.h"
 
+#include "llnamelistctrl.h"
+
 #include <boost/tokenizer.hpp>
 
-#include "llnamelistctrl.h"
+#include "llavatarnamecache.h"
 
 #include "llcachename.h"
 #include "llagent.h"
 #include "llinventory.h"
+#include "lltrans.h"
 
 static LLRegisterWidget<LLNameListCtrl> r("name_list");
 
@@ -51,12 +54,14 @@ LLNameListCtrl::LLNameListCtrl(const std::string& name,
 							   void* userdata,
 							   BOOL allow_multiple_selection,
 							   BOOL draw_border,
+							   bool draw_heading,
 							   S32 name_column_index,
 							   const std::string& tooltip)
 :	LLScrollListCtrl(name, rect, cb, userdata, allow_multiple_selection,
-					 draw_border),
+					 draw_border,draw_heading),
 	mNameColumnIndex(name_column_index),
-	mAllowCallingCardDrop(FALSE)
+	mAllowCallingCardDrop(FALSE),
+	mShortNames(FALSE)
 {
 	setToolTip(tooltip);
 	LLNameListCtrl::sInstances.insert(this);
@@ -71,19 +76,22 @@ LLNameListCtrl::~LLNameListCtrl()
 
 
 // public
-BOOL LLNameListCtrl::addNameItem(const LLUUID& agent_id, EAddPosition pos,
-								 BOOL enabled, std::string const& suffix)
+LLScrollListItem* LLNameListCtrl::addNameItem(const LLUUID& agent_id, EAddPosition pos,
+								 BOOL enabled, const std::string& suffix)
 {
 	//llinfos << "LLNameListCtrl::addNameItem " << agent_id << llendl;
 
-	std::string fullname;
-	BOOL result = gCacheName->getFullName(agent_id, fullname);
-
-	fullname.append(suffix);
-
-	addStringUUIDItem(fullname, agent_id, pos, enabled);
-
-	return result;
+	LLSD item;
+	item["id"] = agent_id;
+	item["enabled"] = enabled;
+	item["target"] = INDIVIDUAL;
+	item["suffix"] = suffix;
+	LLSD& column = item["columns"][0];
+	column["value"] = "";
+	column["font"] = "SANSSERIF";
+	column["column"] = "name";
+	
+	return addNameItemRow(item, pos);
 }
 
 // virtual, public
@@ -134,79 +142,99 @@ BOOL LLNameListCtrl::handleDragAndDrop(
 	return handled;
 }
 
+
 // public
 void LLNameListCtrl::addGroupNameItem(const LLUUID& group_id, EAddPosition pos,
 									  BOOL enabled)
 {
-	//llinfos << "LLNameListCtrl::addGroupNameItem " << group_id << llendl;
-	std::string group_name;
-	gCacheName->getGroupName(group_id, group_name);
-	addStringUUIDItem(group_name, group_id, pos, enabled);
+	LLSD item;
+	item["id"] = group_id;
+	item["enabled"] = enabled;
+	item["target"] = GROUP;
+	LLSD& column = item["columns"][0];
+	column["value"] = "";
+	column["font"] = "SANSSERIF";
+	column["column"] = "name";
+
+	addNameItemRow(item, pos);
 }
 
 // public
-void LLNameListCtrl::addGroupNameItem(LLScrollListItem* item, EAddPosition pos)
-					
+void LLNameListCtrl::addGroupNameItem(LLSD& item, EAddPosition pos)
 {
-	//llinfos << "LLNameListCtrl::addGroupNameItem " << item->getUUID() << llendl;
-
-	std::string group_name;
-	gCacheName->getGroupName(item->getUUID(), group_name);
-
-	LLScrollListCell* cell = (LLScrollListCell*)item->getColumn(mNameColumnIndex);
-	((LLScrollListText*)cell)->setText( std::string(group_name) );
-
-	addItem(item, pos);
+	item["target"] = GROUP;
+	addNameItemRow(item, pos);
 }
 
-BOOL LLNameListCtrl::addNameItem(LLScrollListItem* item, EAddPosition pos)
+LLScrollListItem* LLNameListCtrl::addNameItem(LLSD& item, EAddPosition pos)
 {
-	//llinfos << "LLNameListCtrl::addNameItem " << item->getUUID() << llendl;
-
-	std::string fullname;
-	BOOL result = gCacheName->getFullName(item->getUUID(), fullname);
-
-	LLScrollListCell* cell = (LLScrollListCell*)item->getColumn(mNameColumnIndex);
-	((LLScrollListText*)cell)->setText( fullname );
-
-	addItem(item, pos);
-
-	// this column is resizable
-	LLScrollListColumn* columnp = getColumn(mNameColumnIndex);
-	if (columnp && columnp->mHeader)
-	{
-		columnp->mHeader->setHasResizableElement(TRUE);
-	}
-
-	return result;
+	item["target"] = INDIVIDUAL;
+	return addNameItemRow(item, pos);
 }
 
 LLScrollListItem* LLNameListCtrl::addElement(const LLSD& value, EAddPosition pos, void* userdata)
 {
+	return addNameItemRow(value, pos, userdata);
+}
+LLScrollListItem* LLNameListCtrl::addNameItemRow(const LLSD& value, EAddPosition pos, void* userdata)
+{
+
 	LLScrollListItem* item = LLScrollListCtrl::addElement(value, pos, userdata);
+	if (!item) return NULL;
+
+	LLUUID id = item->getUUID();
 
 	// use supplied name by default
 	std::string fullname = value["name"].asString();
-	if (value["target"].asString() == "GROUP")
+	switch(value["target"].asInteger())
 	{
-		gCacheName->getGroupName(item->getUUID(), fullname);
+	case GROUP:
+		gCacheName->getGroupName(id, fullname);
 		// fullname will be "nobody" if group not found
-	}
-	else if (value["target"].asString() == "SPECIAL")
-	{
+		break;
+	case SPECIAL:
 		// just use supplied name
-	}
-	else // normal resident
+		break;
+	case INDIVIDUAL:
 	{
-		std::string name;
-		if (gCacheName->getFullName(item->getUUID(), name))
+		LLAvatarName av_name;
+		if (id.isNull())
 		{
-			fullname = name;
+			fullname = LLTrans::getString("AvatarNameNobody");
 		}
+		else if (LLAvatarNameCache::get(id, &av_name))
+		{
+			if (mShortNames)
+				fullname = av_name.mDisplayName;
+			else
+				fullname = av_name.getCompleteName();
+		}
+		else
+		{
+			fullname = " ( " + LLTrans::getString("LoadingData") + " ) ";
+			// ...schedule a callback
+			LLAvatarNameCache::get(id,
+				boost::bind(&LLNameListCtrl::onAvatarNameCache,
+					this, _1, _2, item->getHandle()));
+		}
+			break;
+		}
+	default:
+		break;
 	}
 	
-	LLScrollListCell* cell = (LLScrollListCell*)item->getColumn(mNameColumnIndex);
-	((LLScrollListText*)cell)->setText( fullname );
+	// Append optional suffix.
+	std::string suffix = value["suffix"];
+	if(!suffix.empty())
+	{
+		fullname.append(suffix);
+	}
+
+	LLScrollListCell* cell = item->getColumn(mNameColumnIndex);
+	if (cell && !fullname.empty() && cell->getValue().asString().empty())
+	{
+		cell->setValue(fullname);
+	}
 
 	dirtyColumns();
 
@@ -223,54 +251,53 @@ LLScrollListItem* LLNameListCtrl::addElement(const LLSD& value, EAddPosition pos
 // public
 void LLNameListCtrl::removeNameItem(const LLUUID& agent_id)
 {
-	BOOL item_exists = selectByID( agent_id );
-	if(item_exists)
+	// Find the item specified with agent_id.
+	S32 idx = -1;
+	for (item_list::iterator it = getItemList().begin(); it != getItemList().end(); it++)
 	{
-		S32 index = getItemIndex(getFirstSelected());
-		if(index >= 0)
+		LLScrollListItem* item = *it;
+		if (item->getUUID() == agent_id)
 		{
-			deleteSingleItem(index);
+			idx = getItemIndex(item);
+			break;
 		}
+	}
+
+	// Remove it.
+	if (idx >= 0)
+	{
+		selectNthItem(idx); // not sure whether this is needed, taken from previous implementation
+		deleteSingleItem(idx);
 	}
 }
 
-// public
-void LLNameListCtrl::refresh(const LLUUID& agent_id, const std::string& full_name)
+void LLNameListCtrl::onAvatarNameCache(const LLUUID& agent_id,
+									   const LLAvatarName& av_name,
+									   LLHandle<LLScrollListItem> item)
 {
-	//llinfos << "LLNameListCtrl::refresh " << id << " '" << first << " "
-	//	<< last << "'" << llendl;
+	std::string name;
+	if (mShortNames)
+		name = av_name.mDisplayName;
+	else
+		name = av_name.getCompleteName();
 
-
-	// TODO: scan items for that ID, fix if necessary
-	item_list::iterator iter;
-	for (iter = getItemList().begin(); iter != getItemList().end(); iter++)
+	LLScrollListItem* list_item = item.get();
+	if (list_item && list_item->getUUID() == agent_id)
 	{
-		LLScrollListItem* item = *iter;
-		if (item->getUUID() == agent_id)
+		LLScrollListCell* cell = list_item->getColumn(mNameColumnIndex);
+		if (cell)
 		{
-			LLScrollListCell* cell = (LLScrollListCell*)item->getColumn(mNameColumnIndex);
-			if (cell)
-			{
-				((LLScrollListText*)cell)->setText( full_name );
-			}
+			cell->setValue(name);
+			setNeedsSort();
 		}
 	}
 
 	dirtyColumns();
 }
 
-
-// static
-void LLNameListCtrl::refreshAll(const LLUUID& id, const std::string& full_name)
+void LLNameListCtrl::sortByName(BOOL ascending)
 {
-	std::set<LLNameListCtrl*>::iterator it;
-	for (it = LLNameListCtrl::sInstances.begin();
-		 it != LLNameListCtrl::sInstances.end();
-		 ++it)
-	{
-		LLNameListCtrl* ctrl = *it;
-		ctrl->refresh(id, full_name);
-	}
+	sortByColumnIndex(mNameColumnIndex,ascending);
 }
 
 // virtual
@@ -320,9 +347,9 @@ LLView* LLNameListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 				   NULL,
 				   multi_select,
 				   draw_border,
-				   name_column_index);
-
-	name_list->setDisplayHeading(draw_heading);
+				   draw_heading,
+				   name_column_index
+				   );
 	if (node->hasAttribute("heading_height"))
 	{
 		S32 heading_height;
@@ -439,7 +466,7 @@ LLView* LLNameListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 	while(token_iter != tokens.end())
 	{
 		const std::string& line = *token_iter;
-		name_list->addCommentText(line);
+		name_list->setCommentText(line);
 		++token_iter;
 	}
 

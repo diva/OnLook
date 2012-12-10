@@ -31,10 +31,10 @@
 			1440x900
 		</combo_item>
 		<combo_item name="1600x900">
-			1600x900 (HD+)
-		</combo_item>
-		<combo_item name="1680×1050">
-			1680×1050
+      1600x900 (HD+)
+    </combo_item>
+		<combo_item name="1680x1050">
+			1680x1050
 		</combo_item>
 		<combo_item name="1440x1080">
 			1440x1080 (HDV1080)
@@ -42,8 +42,8 @@
 		<combo_item name="1920x1080">
 			1920x1080 (Full-HD)
 		</combo_item>
-		<combo_item name="2560×1440">
-			2560×1440
+		<combo_item name="2560x1440">
+			2560x1440
 		</combo_item>		
 	</combo_box>
 	<text name="DisplayResLabel">

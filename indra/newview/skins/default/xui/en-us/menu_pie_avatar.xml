@@ -46,6 +46,9 @@
 			<menu_item_call enabled="true" label="Derender" mouse_opaque="true" name="Derender">
 				<on_click function="Object.DERENDER" />
 			</menu_item_call>
+      <menu_item_call enabled="true" label="Reload" mouse_opaque="true" name="Reload Textures">
+        <on_click function="Avatar.ReloadTextures" />
+      </menu_item_call>
 		</pie_menu>
 		<menu_item_call enabled="false" label="Eject..." mouse_opaque="true" name="Eject...">
 			<on_click function="Avatar.Eject" />

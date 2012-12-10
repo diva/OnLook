@@ -208,7 +208,7 @@ BOOL LLFloaterScriptQueue::start()
 	buffer = getString ("Starting", args);
 
 	LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
-	list->addCommentText(buffer);
+	list->setCommentText(buffer);
 
 	return nextObject();
 }
@@ -244,7 +244,7 @@ BOOL LLFloaterScriptQueue::nextObject()
 		LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
 
 		mDone = TRUE;
-		list->addCommentText(getString("Done"));
+		list->setCommentText(getString("Done"));
 		childSetEnabled("close",TRUE);
 	}
 	return successful_start;
@@ -325,7 +325,7 @@ LLFloaterCompileQueue* LLFloaterCompileQueue::create(BOOL mono)
 			}
 
 			LLScrollListCtrl* list = queue->getChild<LLScrollListCtrl>("queue output");
-			list->addCommentText(message.c_str());
+			list->setCommentText(message.c_str());
 		}
 		
 	private:
@@ -520,7 +520,7 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 	if(queue && (buffer.size() > 0)) 
 	{
 		LLScrollListCtrl* list = queue->getChild<LLScrollListCtrl>("queue output");
-		list->addCommentText(buffer);
+		list->setCommentText(buffer);
 	}
 	delete data;
 }
@@ -707,7 +707,7 @@ void LLFloaterResetQueue::handleInventory(LLViewerObject* viewer_obj,
 				LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
 				std::string buffer;
 				buffer = getString("Resetting") + LLTrans::getString(":") + " " + item->getName();
-				list->addCommentText(buffer);
+				list->setCommentText(buffer);
 				LLMessageSystem* msg = gMessageSystem;
 				msg->newMessageFast(_PREHASH_ScriptReset);
 				msg->nextBlockFast(_PREHASH_AgentData);
@@ -769,7 +769,7 @@ void LLFloaterRunQueue::handleInventory(LLViewerObject* viewer_obj,
 				LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
 				std::string buffer;
 				buffer = getString("Running") + LLTrans::getString(":") + " " + item->getName();
-				list->addCommentText(buffer);
+				list->setCommentText(buffer);
 
 				LLMessageSystem* msg = gMessageSystem;
 				msg->newMessageFast(_PREHASH_SetScriptRunning);
@@ -833,7 +833,7 @@ void LLFloaterNotRunQueue::handleInventory(LLViewerObject* viewer_obj,
 				LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
 				std::string buffer;
 				buffer = getString("NotRunning") + LLTrans::getString(":") + " " + item->getName();
-				list->addCommentText(buffer);
+				list->setCommentText(buffer);
 	
 				LLMessageSystem* msg = gMessageSystem;
 				msg->newMessageFast(_PREHASH_SetScriptRunning);

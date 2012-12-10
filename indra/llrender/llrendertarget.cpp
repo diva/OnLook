@@ -813,7 +813,6 @@ bool LLMultisampleBuffer::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth
 			{
 				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, mDepth);			
 			}
-			check_framebuffer_status();
 		}
 		
 		stop_glerror();

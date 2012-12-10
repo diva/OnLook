@@ -116,30 +116,30 @@ protected:
 	static std::string getLabel(std::vector<std::string> labels);
 	static void updateLabel(LLScrollListItem* item);
 
-	static void onCommitSetDirty(LLUICtrl* ctrl, void* data);
-	static void onCommitLibrary(LLUICtrl* ctrl, void* data);
-	static void onCommitStep(LLUICtrl* ctrl, void* data);
-	static void onCommitAnimation(LLUICtrl* ctrl, void* data);
-	static void onCommitSound(LLUICtrl* ctrl, void* data);
-	static void onCommitChat(LLUICtrl* ctrl, void* data);
-	static void onCommitWait(LLUICtrl* ctrl, void* data);
-	static void onCommitWaitTime(LLUICtrl* ctrl, void* data);
+	void onCommitSetDirty();
+	void onCommitLibrary();
+	void onCommitStep();
+	void onCommitAnimation();
+	void onCommitSound();
+	void onCommitChat();
+	void onCommitWait();
+	void onCommitWaitTime();
 
-	static void onCommitAnimationTrigger(LLUICtrl* ctrl, void *data);
+	void onCommitAnimationTrigger();
 
 	// Handy function to commit each keystroke
 	static void onKeystrokeCommit(LLLineEditor* caller, void* data);
 
-	static void onClickAdd(void* data);
-	static void onClickUp(void* data);
-	static void onClickDown(void* data);
-	static void onClickDelete(void* data);
+	void onClickAdd();
+	void onClickUp();
+	void onClickDown();
+	void onClickDelete();
 
-	static void onCommitActive(LLUICtrl* ctrl, void* data);
-	static void onClickSave(void* data);
-	static void onClickPreview(void* data);
+	void onCommitActive();
+	void onClickSave();
+	void onClickPreview();
 
-	static void onDonePreview(LLMultiGesture* gesture, void* data);
+	void onDonePreview(LLMultiGesture* gesture);
 
 	virtual const char *getTitleName() const { return "Gesture"; }
 

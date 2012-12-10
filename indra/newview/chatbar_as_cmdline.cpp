@@ -300,8 +300,6 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					if(LLUUID::parseUUID(avatarKey, &tempUUID))
 					{
 						char buffer[DB_IM_MSG_BUF_SIZE * 2];  /* Flawfinder: ignore */
-						LLDynamicArray<LLUUID> ids;
-						ids.push_back(tempUUID);
 						std::string tpMsg="Join me!";
 						LLMessageSystem* msg = gMessageSystem;
 						msg->newMessageFast(_PREHASH_StartLure);
@@ -312,11 +310,8 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 						msg->addU8Fast(_PREHASH_LureType, (U8)0); 
 
 						msg->addStringFast(_PREHASH_Message, tpMsg);
-						for(LLDynamicArray<LLUUID>::iterator itr = ids.begin(); itr != ids.end(); ++itr)
-						{
-							msg->nextBlockFast(_PREHASH_TargetData);
-							msg->addUUIDFast(_PREHASH_TargetID, *itr);
-						}
+						msg->nextBlockFast(_PREHASH_TargetData);
+						msg->addUUIDFast(_PREHASH_TargetID, tempUUID);
 						gAgent.sendReliableMessage();
 						snprintf(buffer,sizeof(buffer),"Offered TP to key %s",tempUUID.asString().c_str());
 						cmdline_printchat(std::string(buffer));

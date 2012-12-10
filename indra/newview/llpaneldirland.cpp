@@ -111,7 +111,7 @@ BOOL LLPanelDirLand::postBuild()
 	LLScrollListCtrl* results = getChild<LLScrollListCtrl>("results");
 	if (results)
 	{
-		results->setSortChangedCallback(onClickSort);
+		results->setSortChangedCallback(boost::bind(&LLPanelDirLand::onClickSort,this));
 		results->sortByColumn(mCurrentSortColumn,mCurrentSortAscending);
 		
 		LLStringUtil::format_map_t args;

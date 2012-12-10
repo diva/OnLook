@@ -971,7 +971,7 @@ void LLFastTimerView::draw()
 				gGL.color4f(col[0], col[1], col[2], alpha);				
 				gGL.begin(LLRender::TRIANGLE_STRIP);
 				for (U32 j = llmax(0, LLFastTimer::NamedTimer::HISTORY_NUM - LLFastTimer::getLastFrameIndex());
-					j < LLFastTimer::NamedTimer::HISTORY_NUM;
+					j < (U32)LLFastTimer::NamedTimer::HISTORY_NUM;
 					j++)
 				{
 					U64 ticks = idp->getHistoricalCount(j);

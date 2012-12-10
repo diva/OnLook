@@ -191,6 +191,7 @@
 #include "llwind.h"
 #include "llworld.h"
 #include "llworldmap.h"
+#include "llworldmapmessage.h"
 #include "llxfermanager.h"
 #include "pipeline.h"
 #include "llappviewer.h"
@@ -306,7 +307,6 @@ bool process_login_success_response(std::string &password);
 
 void callback_cache_name(const LLUUID& id, const std::string& full_name, bool is_group)
 {
-	LLNameListCtrl::refreshAll(id, full_name);
 	LLNameBox::refreshAll(id, full_name, is_group);
 	LLNameEditor::refreshAll(id, full_name, is_group);
 
@@ -3394,8 +3394,8 @@ void register_viewer_callbacks(LLMessageSystem* msg)
 	msg->setHandlerFunc("AvatarPickerReply", LLFloaterAvatarPicker::processAvatarPickerReply);
 
 	msg->setHandlerFunc("MapLayerReply", LLWorldMap::processMapLayerReply);
-	msg->setHandlerFunc("MapBlockReply", LLWorldMap::processMapBlockReply);
-	msg->setHandlerFunc("MapItemReply", LLWorldMap::processMapItemReply);
+	msg->setHandlerFunc("MapBlockReply", LLWorldMapMessage::processMapBlockReply);
+	msg->setHandlerFunc("MapItemReply", LLWorldMapMessage::processMapItemReply);
 
 	msg->setHandlerFunc("EventInfoReply", LLPanelEvent::processEventInfoReply);
 	msg->setHandlerFunc("PickInfoReply", &LLAvatarPropertiesProcessor::processPickInfoReply);

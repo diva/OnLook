@@ -68,10 +68,10 @@ public:
 
 private:
 	void onFocusEdit();
-	static void onCommitAny(LLUICtrl* ctrl, void* data);
-	static void onCommitUserOnly(LLUICtrl* ctrl, void* data);
-	static void onCommitTitle(LLUICtrl* ctrl, void* data);
-	static void onCommitEnrollment(LLUICtrl* ctrl, void* data);
+	void onCommitAny();
+	void onCommitUserOnly();
+	void onCommitTitle();
+	void onCommitEnrollment();
 	static void onClickJoin(void* userdata);
 	static void onClickInfo(void* userdata);
 	static void onReceiveNotices(LLUICtrl* ctrl, void* data);

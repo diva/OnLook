@@ -117,7 +117,7 @@ public:
 	static bool newPromptCallback(const LLSD& notification, const LLSD& response);
 
 	/// what to do when you change the preset name
-	static void onChangePresetName(LLUICtrl* ctrl, void* userData);
+	static void onChangePresetName(LLUICtrl* ctrl);
 
 	/// toggle for Linden time
 	static void onUseLindenTime(void* userData);

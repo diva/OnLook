@@ -69,6 +69,20 @@ vec4 getPosition(vec2 pos_screen)
 	return pos;
 }
 
+vec3 unpack(vec2 tc)
+{
+//#define PACK_NORMALS
+#ifdef PACK_NORMALS
+	vec2 enc = texture2DRect(normalMap, tc).xy;
+	enc = enc*4.0-2.0;
+	float prod = dot(enc,enc);
+	return vec3(enc*sqrt(1.0-prod*.25),1.0-prod*.5);
+#else
+	vec3 norm = texture2DRect(normalMap, tc).xyz;
+	return norm*2.0-1.0;
+#endif
+}
+
 void main() 
 {
 	vec2 frag = (vary_fragcoord.xy*0.5+0.5)*screen_res;
@@ -78,9 +92,8 @@ void main()
 		discard;
 	}
 	
-	vec3 norm = texture2DRect(normalMap, frag.xy).xyz;
-	norm = vec3((norm.xy-0.5)*2.0,norm.z); // unpack norm
-	norm = normalize(norm);
+	vec3 norm = unpack(frag.xy); // unpack norm
+	//norm = normalize(norm); // may be superfluous
 	vec4 spec = texture2DRect(specularRect, frag.xy);
 	vec3 diff = texture2DRect(diffuseRect, frag.xy).rgb;
 	float noise = texture2D(noiseMap, frag.xy/128.0).b;

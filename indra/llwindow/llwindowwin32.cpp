@@ -866,7 +866,9 @@ BOOL LLWindowWin32::setPosition(const LLCoordScreen position)
 		return FALSE;
 	}
 	getSize(&size);
+
 	moveWindow(position, size);
+
 	return TRUE;
 }
 
@@ -881,6 +883,7 @@ BOOL LLWindowWin32::setSize(const LLCoordScreen size)
 	}
 
 	moveWindow(position, size);
+
 	return TRUE;
 }
 
@@ -1655,6 +1658,23 @@ void LLWindowWin32::moveWindow( const LLCoordScreen& position, const LLCoordScre
 
 	// THIS CAUSES DEV-15484 and DEV-15949 
 	//ShowWindow(mWindowHandle, SW_RESTORE);
+
+	// Singu note: Attempt at fixing this in a different way. Keep an eye out for regression. DEV-15484 showed graphical corruption, especially on impostors.
+	LLCoordScreen old_pos;
+	LLCoordScreen old_size;
+	getSize(&old_size);
+	getPosition(&old_pos);
+	if(position != old_pos || size != old_size)
+	{
+		WINDOWPLACEMENT placement;
+		placement.length = sizeof(WINDOWPLACEMENT);
+		if(GetWindowPlacement(mWindowHandle, &placement))
+		{
+			placement.showCmd = SW_NORMAL;
+			SetWindowPlacement(mWindowHandle, &placement);
+		}
+	}
+
 	// NOW we can call MoveWindow
 	MoveWindow(mWindowHandle, position.mX, position.mY, size.mX, size.mY, TRUE);
 }

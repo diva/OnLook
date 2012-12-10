@@ -75,15 +75,16 @@ void LLFloaterExploreSounds::close(bool app_quitting)
 
 BOOL LLFloaterExploreSounds::postBuild(void)
 {
-	childSetDoubleClickCallback("sound_list", handle_play_locally, this);
+	LLScrollListCtrl* soundlist = getChild<LLScrollListCtrl>("sound_list");
+	soundlist->setDoubleClickCallback(boost::bind(&LLFloaterExploreSounds::handle_play_locally,this));
+	soundlist->sortByColumn("playing", TRUE);
 
 	childSetAction("play_locally_btn", handle_play_locally, this);
 	childSetAction("look_at_btn", handle_look_at, this);
 	childSetAction("stop_btn", handle_stop, this);
 	childSetAction("bl_btn", blacklistSound, this);
 
-	LLScrollListCtrl* list = getChild<LLScrollListCtrl>("sound_list");
-	list->sortByColumn("playing", TRUE);
+
 	return TRUE;
 }
 
@@ -165,13 +166,7 @@ BOOL LLFloaterExploreSounds::tick()
 
 	// Save scroll pos and selection so they can be restored
 	S32 scroll_pos = list->getScrollPos();
-	LLDynamicArray<LLUUID> selected_ids;
-	std::vector<LLScrollListItem*> selected_items = list->getAllSelected();
-	std::vector<LLScrollListItem*>::iterator selection_iter = selected_items.begin();
-	std::vector<LLScrollListItem*>::iterator selection_end = selected_items.end();
-	for(; selection_iter != selection_end; ++selection_iter)
-		selected_ids.push_back((*selection_iter)->getUUID());
-
+	uuid_vec_t selected_ids = list->getSelectedIDs();
 	list->clearRows();
 
 	std::list<LLUUID> unique_asset_list;

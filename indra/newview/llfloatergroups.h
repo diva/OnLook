@@ -103,7 +103,8 @@ protected:
 	// highlight_id is a group id to highlight
 	void enableButtons();
 
-	static void onGroupList(LLUICtrl* ctrl, void* userdata);
+	void onGroupSortChanged();
+	void onGroupList();
 	static void onBtnCreate(void* userdata);
 	static void onBtnActivate(void* userdata);
 	static void onBtnInfo(void* userdata);

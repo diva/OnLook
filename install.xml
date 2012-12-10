@@ -729,9 +729,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>a06ab38628ab7b53b8f3326cd942a6a8</string>
+            <string>4f87662add231b9d4b6c1e5c63560db4</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/jsoncpp-svn-r69-linux64-20090922.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/jsoncpp-0.5.0-linux64-20121208.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>

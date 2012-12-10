@@ -205,7 +205,7 @@ void LLDrawPoolAlpha::endRenderPass( S32 pass )
 	LLFastTimer t(FTM_RENDER_ALPHA);
 	LLRenderPass::endRenderPass(pass);
 
-	if(gPipeline.canUseWindLightShaders()) 
+	if(mVertexShaderLevel > 0) 
 	{
 		LLGLSLShader::bindNoShader();
 	}

@@ -381,27 +381,29 @@ void LLNetMap::draw()
 		LLWorld::getInstance()->getAvatars(&avatar_ids, &positions);
 		for(U32 i=0; i<avatar_ids.size(); i++)
 		{
+			const LLUUID &id = avatar_ids[i];
+			const LLVector3d& pos = positions[i];
 			LLColor4 avColor = standard_color;
 			// TODO: it'd be very cool to draw these in sorted order from lowest Z to highest.
 			// just be careful to sort the avatar IDs along with the positions. -MG
-			pos_map = globalPosToView(positions[i], rotate_map);
-			if (positions[i].mdV[VZ] == 0.f)
+			pos_map = globalPosToView(pos, rotate_map);
+			if (pos.mdV[VZ] == 0.f)
 			{
 				pos_map.mV[VZ] = 16000.f;
 			}
 			std::string avName;
 
-			gCacheName->getFullName(avatar_ids[i], avName);
-			if(LLMuteList::getInstance()->isMuted(avatar_ids[i]))
+			gCacheName->getFullName(id, avName);
+			if(LLMuteList::getInstance()->isMuted(id))
 			{
 				avColor = muted_color;
 			}
 
-			LLViewerRegion* avatar_region = LLWorld::getInstance()->getRegionFromPosGlobal(positions[i]);
+			LLViewerRegion* avatar_region = LLWorld::getInstance()->getRegionFromPosGlobal(pos);
 			LLUUID estate_owner = avatar_region? avatar_region->getOwner() : LLUUID::null;
 
 			// MOYMOD Minimap custom av colors.
-			boost::unordered_map<const LLUUID,LLColor4>::const_iterator it = mm_MarkerColors.find(avatar_ids[i]);
+			boost::unordered_map<const LLUUID,LLColor4>::const_iterator it = mm_MarkerColors.find(id);
 			if(it != mm_MarkerColors.end())
 			{
 				avColor = it->second;
@@ -412,12 +414,12 @@ void LLNetMap::draw()
 				avColor = linden_color;
 			}
 			//check if they are an estate owner at their current position
-			else if(estate_owner.notNull() && avatar_ids[i] == estate_owner)
+			else if(estate_owner.notNull() && id == estate_owner)
 			{
 				avColor = em_color;
 			}
 			//without these dots, SL would suck.
-			else if(is_agent_friend(avatar_ids[i]))
+			else if(is_agent_friend(id))
 			{
 				avColor = friend_color;
 			}
@@ -432,8 +434,8 @@ void LLNetMap::draw()
 			if(dist_to_cursor < min_pick_dist && dist_to_cursor < closest_dist)
 			{
 				closest_dist = dist_to_cursor;
-				mClosestAgentToCursor = avatar_ids[i];
-				mClosestAgentPosition = positions[i];
+				mClosestAgentToCursor = id;
+				mClosestAgentPosition = pos;
 			}
 		}
 

@@ -67,6 +67,20 @@ vec4 getPosition(vec2 pos_screen)
 	return pos;
 }
 
+vec3 unpack(vec2 tc)
+{
+//#define PACK_NORMALS
+#ifdef PACK_NORMALS
+	vec2 enc = texture2DRect(normalMap, tc).xy;
+	enc = enc*4.0-2.0;
+	float prod = dot(enc,enc);
+	return vec3(enc*sqrt(1.0-prod*.25),1.0-prod*.5);
+#else
+	vec3 norm = texture2DRect(normalMap, tc).xyz;
+	return norm*2.0-1.0;
+#endif
+}
+
 void main() 
 {
 	vec4 frag = vary_fragcoord;
@@ -83,15 +97,14 @@ void main()
 		discard;
 	}
 	
-	vec3 norm = texture2DRect(normalMap, frag.xy).xyz;
-	norm = vec3((norm.xy-0.5)*2.0,norm.z); // unpack norm
+	vec3 norm = unpack(frag.xy); // unpack norm
 	float da = dot(norm, lv);
 	if (da < 0.0)
 	{
 		discard;
 	}
 	
-	norm = normalize(norm);
+	//norm = normalize(norm); // may be superfluous
 	lv = normalize(lv);
 	da = dot(norm, lv);
 	
