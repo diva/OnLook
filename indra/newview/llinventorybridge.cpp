@@ -816,10 +816,14 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
 	if (!isCOFFolder() && !isInboxFolder() && !isOutboxFolder())
 	{
 		items.push_back(std::string("Paste"));
+		// Paste as copy if we have links.
+		if (InventoryLinksEnabled() && !LLInventoryClipboard::instance().isCutMode())
+			items.push_back(std::string("Paste As Copy"));
 	}
 	if (!isClipboardPasteable() || ((flags & FIRST_SELECTED_ITEM) == 0))
 	{
 		disabled_items.push_back(std::string("Paste"));
+		disabled_items.push_back(std::string("Paste As Copy"));
 	}
 
 	if(InventoryLinksEnabled())
@@ -1481,6 +1485,18 @@ void LLItemBridge::performAction(LLInventoryModel* model, std::string action)
 		if (!folder_view_itemp) return;
 
 		folder_view_itemp->getListener()->pasteFromClipboard();
+		return;
+	}
+	else if ("paste_copies" == action)
+	{
+		// Single item only
+		LLInventoryItem* itemp = model->getItem(mUUID);
+		if (!itemp) return;
+
+		LLFolderViewItem* folder_view_itemp = mRoot->getItemByID(itemp->getParentUUID());
+		if (!folder_view_itemp) return;
+
+		folder_view_itemp->getListener()->pasteFromClipboard(true);
 		return;
 	}
 	else if ("paste_link" == action)
@@ -2854,6 +2870,11 @@ void LLFolderBridge::performAction(LLInventoryModel* model, std::string action)
 		pasteFromClipboard();
 		return;
 	}
+	else if ("paste_copies" == action)
+	{
+		pasteFromClipboard(true);
+		return;
+	}
 	else if ("paste_link" == action)
 	{
 		pasteLinkFromClipboard();
@@ -3092,7 +3113,7 @@ bool LLFolderBridge::removeItemResponse(const LLSD& notification, const LLSD& re
 	return FALSE;
 }
 
-void LLFolderBridge::pasteFromClipboard()
+void LLFolderBridge::pasteFromClipboard(bool only_copies)
 {
 	LLInventoryModel* model = getInventoryModel();
 	if(model && isClipboardPasteable())
@@ -3165,7 +3186,7 @@ void LLFolderBridge::pasteFromClipboard()
 						dropToOutfit(item, move_is_into_current_outfit);
 					}
 				}
-				else if(LLInventoryClipboard::instance().isCutMode())
+				else if (!only_copies && LLInventoryClipboard::instance().isCutMode())
 				{
 					// Do a move to "paste" a "cut"
 					// move_inventory_item() is not enough, as we have to update inventory locally too
@@ -3190,6 +3211,11 @@ void LLFolderBridge::pasteFromClipboard()
 				}
 				else
 				{
+					if (only_copies)
+					{
+						item = model->getLinkedItem(item_id);
+						obj = model->getObject(item->getUUID());
+					}
 					// Do a "copy" to "paste" a regular copy clipboard
 					if (LLAssetType::AT_CATEGORY == obj->getType())
 					{
@@ -3201,7 +3227,7 @@ void LLFolderBridge::pasteFromClipboard()
 						}
 					}
 // [SL:KB] - Patch: Inventory-Links | Checked: 2010-04-12 (Catznip-2.2.0a) | Added: Catznip-2.0.0a
-					else if (LLAssetType::lookupIsLinkType(item->getActualType()))
+					else if (!only_copies && LLAssetType::lookupIsLinkType(item->getActualType()))
 					{
 						link_inventory_item(
 							gAgent.getID(),
