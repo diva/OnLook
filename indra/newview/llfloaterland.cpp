@@ -1628,9 +1628,9 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 		row.append(time_column);
 
 		if(	is_group_owned )
-			self->mOwnerList->addGroupNameItem(row, ADD_BOTTOM);
+			self->mOwnerList->addGroupNameItem(item, ADD_BOTTOM);
 		else
-			self->mOwnerList->addNameItem(row, ADD_BOTTOM);
+			self->mOwnerList->addNameItem(item, ADD_BOTTOM);
 
 		lldebugs << "object owner " << owner_id << " (" << (is_group_owned ? "group" : "agent")
 				<< ") owns " << object_count << " objects." << llendl;
