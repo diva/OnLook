@@ -45,7 +45,7 @@
 
 /*static*/ F32 LLVolumeImplFlexible::sUpdateFactor = 1.0f;
 std::vector<LLVolumeImplFlexible*> LLVolumeImplFlexible::sInstanceList;
-std::vector<S32> LLVolumeImplFlexible::sUpdateDelay;
+std::vector<U32> LLVolumeImplFlexible::sUpdateDelay;
 
 static LLFastTimer::DeclareTimer FTM_FLEXIBLE_REBUILD("Rebuild");
 static LLFastTimer::DeclareTimer FTM_DO_FLEXIBLE_UPDATE("Update");
@@ -96,14 +96,13 @@ LLVolumeImplFlexible::~LLVolumeImplFlexible()
 //static
 void LLVolumeImplFlexible::updateClass()
 {
-	std::vector<S32>::iterator delay_iter = sUpdateDelay.begin();
+	std::vector<U32>::iterator delay_iter = sUpdateDelay.begin();
 
 	for (std::vector<LLVolumeImplFlexible*>::iterator iter = sInstanceList.begin();
 			iter != sInstanceList.end();
 			++iter)
 	{
-		--(*delay_iter);
-		if (*delay_iter <= 0)
+		if(!*delay_iter || !--*delay_iter)
 		{
 			(*iter)->doIdleUpdate();
 		}
@@ -360,6 +359,7 @@ void LLVolumeImplFlexible::doIdleUpdate()
 				F32 pixel_area = mVO->getPixelArea();
 
 				U32 update_period = (U32) (LLViewerCamera::getInstance()->getScreenPixelArea()*0.01f/(pixel_area*(sUpdateFactor+1.f)))+1;
+				update_period = llclamp(update_period,1U,(U32)llmax((U32)llceil(gFPSClamped*2.f),32U));
 
 				if	(visible)
 				{
@@ -380,7 +380,7 @@ void LLVolumeImplFlexible::doIdleUpdate()
 
 						if ((LLDrawable::getCurrentFrame()+id)%update_period == 0)
 						{
-							sUpdateDelay[mInstanceIndex] = (S32) update_period-1;
+							sUpdateDelay[mInstanceIndex] = update_period-1;
 
 							updateRenderRes();
 
@@ -390,7 +390,7 @@ void LLVolumeImplFlexible::doIdleUpdate()
 				}
 				else
 				{
-					sUpdateDelay[mInstanceIndex] = (S32) update_period;
+					sUpdateDelay[mInstanceIndex] = update_period;
 				}
 			}
 		}
