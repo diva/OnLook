@@ -108,6 +108,7 @@ public:
 	virtual BOOL copyToClipboard() const;
 	virtual void cutToClipboard();
 	virtual BOOL isClipboardPasteable() const;
+	bool isClipboardPasteableAsCopy() const;
 	virtual BOOL isClipboardPasteableAsLink() const;
 	virtual void pasteFromClipboard(bool only_copies = false) {}
 	virtual void pasteLinkFromClipboard() {}

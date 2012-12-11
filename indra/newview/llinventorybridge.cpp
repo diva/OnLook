@@ -612,6 +612,48 @@ BOOL LLInvFVBridge::isClipboardPasteable() const
 	return TRUE;
 }
 
+bool LLInvFVBridge::isClipboardPasteableAsCopy() const
+{
+	// In cut mode, we don't paste copies.
+	if (LLInventoryClipboard::instance().isCutMode())
+	{
+		return false;
+	}
+
+	LLInventoryModel* model = getInventoryModel();
+	if (!model)
+	{
+		return false;
+	}
+
+	// In copy mode, we need to check each element of the clipboard to know if it's a link
+	LLInventoryPanel* panel = dynamic_cast<LLInventoryPanel*>(mInventoryPanel.get());
+	LLDynamicArray<LLUUID> objects;
+	LLInventoryClipboard::instance().retrieve(objects);
+	const S32 count = objects.count();
+	for(S32 i = 0; i < count; i++)
+	{
+		const LLUUID &item_id = objects.get(i);
+
+		// Folders may be links
+		const LLInventoryCategory *cat = model->getCategory(item_id);
+		if (cat)
+		{
+			const LLFolderBridge cat_br(panel, mRoot, item_id);
+			if (cat_br.isLink())
+				return true;
+			// Skip to the next item in the clipboard
+			continue;
+		}
+
+		// May be link item
+		const LLItemBridge item_br(panel, mRoot, item_id);
+		if (item_br.isLink())
+			return true;
+	}
+	return false;
+}
+
 BOOL LLInvFVBridge::isClipboardPasteableAsLink() const
 {
 	if (!InventoryLinksEnabled())
@@ -817,7 +859,7 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
 	{
 		items.push_back(std::string("Paste"));
 		// Paste as copy if we have links.
-		if (InventoryLinksEnabled() && !LLInventoryClipboard::instance().isCutMode())
+		if (InventoryLinksEnabled() && isClipboardPasteableAsCopy())
 			items.push_back(std::string("Paste As Copy"));
 	}
 	if (!isClipboardPasteable() || ((flags & FIRST_SELECTED_ITEM) == 0))
