@@ -1432,7 +1432,6 @@ bool idle_startup()
 			LL_DEBUGS("AppInit") << "downloading..." << LL_ENDL;
 			return FALSE;
 		}
-		Debug(if (gCurlIo) dc::curlio.off());		// Login succeeded: restore dc::curlio to original state.
 		LLStartUp::setStartupState( STATE_LOGIN_PROCESS_RESPONSE );
 		progress += 0.01f;
 		set_startup_status(progress, LLTrans::getString("LoginProcessingResponse"), auth_message);
@@ -1469,6 +1468,7 @@ bool idle_startup()
 			{
 				// Yay, login!
 				successful_login = true;
+				Debug(if (gCurlIo) dc::curlio.off());		// Login succeeded: restore dc::curlio to original state.
 			}
 			else
 			{
@@ -1548,13 +1548,12 @@ bool idle_startup()
 				}
 			}
 			break;
-		case LLUserAuth::E_COULDNT_RESOLVE_HOST:
-		case LLUserAuth::E_SSL_PEER_CERTIFICATE:
-		case LLUserAuth::E_UNHANDLED_ERROR:
-		case LLUserAuth::E_SSL_CACERT:
-		case LLUserAuth::E_SSL_CONNECT_ERROR:
 		default:
-			if (LLViewerLogin::getInstance()->tryNextURI())
+		  {
+			static int http_failures = 0;
+			http_failures = (error == LLUserAuth::E_HTTP_SERVER_ERROR) ? http_failures + 1 : 0;
+			if ((error == LLUserAuth::E_HTTP_SERVER_ERROR && http_failures <= 3) ||
+				LLViewerLogin::getInstance()->tryNextURI())
 			{
 				static int login_attempt_number = 0;
 				std::ostringstream s;
@@ -1569,6 +1568,7 @@ bool idle_startup()
 				emsg << "Unable to connect to " << gHippoGridManager->getCurrentGrid()->getGridName() << ".\n";
 				emsg << LLUserAuth::getInstance()->errorMessage();
 			}
+		  }
 			break;
 		}
 
