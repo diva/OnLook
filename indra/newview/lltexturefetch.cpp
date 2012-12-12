@@ -1282,7 +1282,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 		{
 			//NOTE:
 			//control the number of the http requests issued for:
-			//1, not openning too many file descriptors at the same time;
+			//1, not opening too many file descriptors at the same time;
 			//2, control the traffic of http so udp gets bandwidth.
 			//
 			static const LLCachedControl<U32> max_http_requests("HTTPMaxRequests", 32);

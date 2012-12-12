@@ -123,20 +123,20 @@ static void t1_enc_refpass_step(
 /**
 Decode refinement pass
 */
-static void INLINE t1_dec_refpass_step_raw(
+static INLINE void t1_dec_refpass_step_raw(
 		opj_t1_t *t1,
 		flag_t *flagsp,
 		int *datap,
 		int poshalf,
 		int neghalf,
 		int vsc);
-static void INLINE t1_dec_refpass_step_mqc(
+static INLINE void t1_dec_refpass_step_mqc(
 		opj_t1_t *t1,
 		flag_t *flagsp,
 		int *datap,
 		int poshalf,
 		int neghalf);
-static void INLINE t1_dec_refpass_step_mqc_vsc(
+static INLINE void t1_dec_refpass_step_mqc_vsc(
 		opj_t1_t *t1,
 		flag_t *flagsp,
 		int *datap,
@@ -240,6 +240,7 @@ Encode 1 code-block
 @param stepsize
 @param cblksty Code-block style
 @param numcomps
+@param mct
 @param tile
 */
 static void t1_encode_cblk(
@@ -381,8 +382,9 @@ static INLINE void t1_dec_sigpass_step_raw(
 		int vsc)
 {
 	int v, flag;
-	
 	opj_raw_t *raw = t1->raw;	/* RAW component */
+	
+	OPJ_ARG_NOT_USED(orient);
 	
 	flag = vsc ? ((*flagsp) & (~(T1_SIG_S | T1_SIG_SE | T1_SIG_SW | T1_SGN_S))) : (*flagsp);
 	if ((flag & T1_SIG_OTH) && !(flag & (T1_SIG | T1_VISIT))) {
@@ -822,8 +824,9 @@ static void t1_dec_clnpass_step_partial(
 		int oneplushalf)
 {
 	int v, flag;
-	
 	opj_mqc_t *mqc = t1->mqc;	/* MQC component */
+	
+	OPJ_ARG_NOT_USED(orient);
 	
 	flag = *flagsp;
 	mqc_setcurctx(mqc, t1_getctxno_sc(flag));
@@ -1088,34 +1091,21 @@ static double t1_getwmsedec(
 		int numcomps,
 		int mct)
 {
-	double w1 = 1, w2, wmsedec;
-	
-	// Prevent running an MCT on more than 3 components. NB openjpeg v2.0 will support this via
-	// custom MCT tables that can be passed as encode parameters, 1.3 cannot support this as it
-	// uses a static table of 3 entries and there for can only cope with 3 components with out an
-	// array overflow
-
-	if(numcomps==3) {
-	        if (qmfbid == 1) {
-			w1 = (numcomps > 1) ? mct_getnorm(compno) : 1.0;
-		} else {
-			w1 = (numcomps > 1) ? mct_getnorm_real(compno) : 1.0;	
-		}
-	}	
-
+	double w1, w2, wmsedec;
 	if (qmfbid == 1) {
+		w1 = (mct && numcomps==3) ? mct_getnorm(compno) : 1.0;
 		w2 = dwt_getnorm(level, orient);
 	} else {			/* if (qmfbid == 0) */
+		w1 = (mct && numcomps==3) ? mct_getnorm_real(compno) : 1.0;
 		w2 = dwt_getnorm_real(level, orient);
 	}
-
 	wmsedec = w1 * w2 * stepsize * (1 << bpno);
 	wmsedec *= wmsedec * nmsedec / 8192.0;
 	
 	return wmsedec;
 }
 
-static bool allocate_buffers(
+static opj_bool allocate_buffers(
 		opj_t1_t *t1,
 		int w,
 		int h)
@@ -1127,7 +1117,7 @@ static bool allocate_buffers(
 		opj_aligned_free(t1->data);
 		t1->data = (int*) opj_aligned_malloc(datasize * sizeof(int));
 		if(!t1->data){
-			return false;
+			return OPJ_FALSE;
 		}
 		t1->datasize=datasize;
 	}
@@ -1140,7 +1130,7 @@ static bool allocate_buffers(
 		opj_aligned_free(t1->flags);
 		t1->flags = (flag_t*) opj_aligned_malloc(flagssize * sizeof(flag_t));
 		if(!t1->flags){
-			return false;
+			return OPJ_FALSE;
 		}
 		t1->flagssize=flagssize;
 	}
@@ -1149,7 +1139,7 @@ static bool allocate_buffers(
 	t1->w=w;
 	t1->h=h;
 
-	return true;
+	return OPJ_TRUE;
 }
 
 /** mod fixed_quality */
@@ -1425,6 +1415,7 @@ void t1_encode_cblks(
 
 			for (bandno = 0; bandno < res->numbands; ++bandno) {
 				opj_tcd_band_t* restrict band = &res->bands[bandno];
+        int bandconst = 8192 * 8192 / ((int) floor(band->stepsize * 8192));
 
 				for (precno = 0; precno < res->pw * res->ph; ++precno) {
 					opj_tcd_precinct_t *prc = &band->precincts[precno];
@@ -1475,7 +1466,7 @@ void t1_encode_cblks(
 									datap[(j * cblk_w) + i] =
 										fix_mul(
 										tmp,
-										8192 * 8192 / ((int) floor(band->stepsize * 8192))) >> (11 - T1_NMSEDEC_FRACBITS);
+										bandconst) >> (11 - T1_NMSEDEC_FRACBITS);
 								}
 							}
 						}
@@ -1586,6 +1577,7 @@ void t1_decode_cblks(
 					opj_free(cblk->segs);
 				} /* cblkno */
 				opj_free(precinct->cblks.dec);
+                precinct->cblks.dec = NULL;
 			} /* precno */
 		} /* bandno */
 	} /* resno */

@@ -320,10 +320,10 @@ void LLFloaterAvatarList::onClose(bool app_quitting)
 	}
 }
 
-void cmd_profile(const LLAvatarListEntry* entry);
-void cmd_toggle_mark(LLAvatarListEntry* entry);
-void cmd_ar(const LLAvatarListEntry* entry);
-void cmd_teleport(const LLAvatarListEntry* entry);
+static void cmd_profile(const LLAvatarListEntry* entry);
+static void cmd_toggle_mark(LLAvatarListEntry* entry);
+static void cmd_ar(const LLAvatarListEntry* entry);
+static void cmd_teleport(const LLAvatarListEntry* entry);
 BOOL LLFloaterAvatarList::postBuild()
 {
 	// Set callbacks
@@ -1447,7 +1447,7 @@ void LLFloaterAvatarList::doCommand(avlist_command_t func, bool single/*=false*/
 std::string LLFloaterAvatarList::getSelectedNames(const std::string& separator)
 {
 	std::string ret;
-	doCommand(boost::bind(&cmd_append_names,_1,ref(ret),separator));
+	doCommand(boost::bind(&cmd_append_names,_1,boost::ref(ret),separator));
 	return ret;
 }
 

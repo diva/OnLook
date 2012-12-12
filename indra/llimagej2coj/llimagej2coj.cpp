@@ -1,4 +1,4 @@
-/** 
+/**
  * @file llimagej2coj.cpp
  * @brief This is an implementation of JPEG2000 encode/decode using OpenJPEG.
  *
@@ -35,9 +35,7 @@
 
 const char* fallbackEngineInfoLLImageJ2CImpl()
 {
-	static std::string version_string =
-		std::string("OpenJPEG: " OPENJPEG_VERSION ", Runtime: ")
-		+ opj_version();
+	static std::string version_string = std::string("OpenJPEG: ") + opj_version();
 	return version_string.c_str();
 }
 
@@ -186,7 +184,15 @@ BOOL LLImageJ2COJ::decodeImpl(LLImageJ2C &base, LLImageRaw &raw_image, F32 decod
 		{
 			opj_image_destroy(image);
 		}
-
+#if 0
+		std::stringstream filename;
+		filename << "err" << (int)base.getRawDiscardLevel() << "_" << rand() << ".jp2";
+		FILE* file = fopen(filename.str().c_str(), "wb");
+		if (file) {
+			fwrite(base.getData(), base.getDataSize(), 1, file);
+			fclose(file);
+		}
+#endif
 		base.decodeFailed();
 		return TRUE; // done
 	}

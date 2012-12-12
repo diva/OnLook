@@ -39,12 +39,7 @@
 #include "llviewermedia.h" // FIXME: don't use LLViewerMedia internals
 
 // third-party JSONCPP
-#if !defined(LL_STANDALONE) && defined(LINUX64)
-// The prebuilt linux64 package is packaged wrongly.
-#include <jsoncpp/reader.h>	// JSONCPP
-#else
 #include <json/reader.h>	// JSONCPP
-#endif
 
 /*
  * Workflow:
