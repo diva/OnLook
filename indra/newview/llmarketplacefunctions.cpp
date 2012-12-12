@@ -74,8 +74,7 @@ static std::string getMarketplaceDomain()
 			// SecondLife(tm) BETA grid.
 			// Using the login URI is a bit of a kludge, but it's the best we've got at the moment.
 			domain = utf8str_tolower(getLoginUriDomain());				// <gridid>.lindenlab.com; ie, "aditi.lindenlab.com".
-			std::string::size_type len = domain.length();
-			llassert(len > 14 && domain.substr(len - 14) == ".lindenlab.com");
+			llassert(domain.length() > 14 && domain.substr(domain.length() - 14) == ".lindenlab.com");
 			if (domain == "damballah.lindenlab.com")
 			{
 				domain = "secondlife-staging.com";

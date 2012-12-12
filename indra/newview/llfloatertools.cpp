@@ -277,6 +277,8 @@ BOOL	LLFloaterTools::postBuild()
 	mComboGridMode			= getChild<LLComboBox>("combobox grid mode");
 	childSetCommitCallback("combobox grid mode",commit_grid_mode, this);
 
+	mCheckShowHighlight = getChild<LLCheckBoxCtrl>("checkbox show highlight");
+	mCheckActualRoot = getChild<LLCheckBoxCtrl>("checkbox actual root");
 	//
 	// Create Buttons
 	//
@@ -382,6 +384,8 @@ LLFloaterTools::LLFloaterTools()
 	mCheckStretchUniform(NULL),
 	mCheckStretchTexture(NULL),
 	mCheckLimitDrag(NULL),
+	mCheckShowHighlight(NULL),
+	mCheckActualRoot(NULL),
 
 	mBtnRotateLeft(NULL),
 	mBtnRotateReset(NULL),
@@ -712,6 +716,8 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 	if (mCheckStretchUniform) mCheckStretchUniform->setVisible( edit_visible );
 	if (mCheckStretchTexture) mCheckStretchTexture->setVisible( edit_visible );
 	if (mCheckLimitDrag) mCheckLimitDrag->setVisible( edit_visible );
+	if (mCheckShowHighlight) mCheckShowHighlight->setVisible(edit_visible);
+	if (mCheckActualRoot) mCheckActualRoot->setVisible(edit_visible);
 
 	// Create buttons
 	BOOL create_visible = (tool == LLToolCompCreate::getInstance());

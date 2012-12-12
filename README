@@ -18,7 +18,7 @@ as those based upon the OpenSim platform.
 Singulariy is maintained by a small group of volunteers who can be contacted
 both, in-world (SingularityViewer group) as well on IRC (#SingularityViewer
 @ FreeNode). Bug requests and features requests can be submitted through our
-Issue Tracket (http://code.google.com/p/singularity-viewer/issues/list or from
+Issue Tracker (http://code.google.com/p/singularity-viewer/issues/list or from
 the viewer menu: Help --> Bug Reporting --> Singularity Issue Tracker...)
 
 
@@ -33,6 +33,6 @@ As this Readme grows out of date, please refer to
 History
 
 The Singularity viewer was started by Siana Gearz in November 2010 by forking it
-of the Ascent Viewer, by Balseraph Software Group, which in turn was based upon
-source code released by Linden Lab.
+from the Ascent Viewer, by Balseraph Software Group, which in turn was based upon
+source code modified from the snowglobe source code released by Linden Lab.
 

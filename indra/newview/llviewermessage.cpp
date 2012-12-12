@@ -213,6 +213,7 @@ extern bool gShiftFrame;
 // function prototypes
 bool check_offer_throttle(const std::string& from_name, bool check_only);
 void callbackCacheEstateOwnerName(const LLUUID& id, const std::string& full_name,  bool is_group);
+static void process_money_balance_reply_extended(LLMessageSystem* msg);
 
 //inventory offer throttle globals
 LLFrameTimer gThrottleTimer;
@@ -3633,29 +3634,11 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			}
 		}
 
-
-		// [Ansariel/Henri: Display name support]
 		if (chatter && chatter->isAvatar())
 		{
-			if (LLAvatarNameCache::useDisplayNames())
-			{
-				LLAvatarName avatar_name;
-				if (LLAvatarNameCache::get(from_id, &avatar_name))
-				{
-					static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-					if (phoenix_name_system == 2 || (phoenix_name_system == 1 && avatar_name.mIsDisplayNameDefault))
-					{
-						from_name = avatar_name.mDisplayName;
-					}
-					else
-					{
-						from_name = avatar_name.getCompleteName();
-					}
-				}
+			if (LLAvatarNameCache::getPNSName(from_id, from_name))
 				chat.mFromName = from_name;
-			}
 		}
-		// [/Ansariel/Henri: Display name support]
 
 		BOOL visible_in_chat_bubble = FALSE;
 		std::string verb;
@@ -5706,20 +5689,20 @@ void process_money_balance_reply( LLMessageSystem* msg, void** )
 		gStatusBar->setLandCredit(credit);
 		gStatusBar->setLandCommitted(committed);
 	}
-	static std::deque<LLUUID> recent;
-	if(!desc.empty() && gSavedSettings.getBOOL("NotifyMoneyChange")
-	   && (std::find(recent.rbegin(), recent.rend(), tid) == recent.rend()))
-	{
-		// Make the user confirm the transaction, since they might
-		// have missed something during an event.
-		// *TODO:translate
-		LLSD args;
-		args["MESSAGE"] = desc;
-		LLNotificationsUtil::add("SystemMessage", args);
 
-		// Also send notification to chat -- MC
-		LLChat chat(desc);
-		LLFloaterChat::addChat(desc);
+	if (desc.empty()
+		|| !gSavedSettings.getBOOL("NotifyMoneyChange"))
+	{
+		// ...nothing to display
+		return;
+	}
+
+	// Suppress duplicate messages about the same transaction
+	static std::deque<LLUUID> recent;
+	if (std::find(recent.rbegin(), recent.rend(), tid) != recent.rend())
+	{
+		return;
+	}
 
 		// Once the 'recent' container gets large enough, chop some
 		// off the beginning.
@@ -5732,6 +5715,215 @@ void process_money_balance_reply( LLMessageSystem* msg, void** )
 		}
 		//LL_DEBUGS("Messaging") << "Pushing back transaction " << tid << LL_ENDL;
 		recent.push_back(tid);
+
+	if (msg->has("TransactionInfo"))
+	{
+		// ...message has extended info for localization
+		process_money_balance_reply_extended(msg);
+	}
+	else
+	{
+		// Only old dev grids will not supply the TransactionInfo block,
+		// so we can just use the hard-coded English string.
+		LLSD args;
+		args["MESSAGE"] = desc;
+		LLNotificationsUtil::add("SystemMessage", args);
+
+		// Also send notification to chat -- MC
+		LLChat chat(desc);
+		LLFloaterChat::addChat(desc);
+	}
+}
+
+static std::string reason_from_transaction_type(S32 transaction_type,
+												const std::string& item_desc)
+{
+	// *NOTE: The keys for the reason strings are unusual because
+	// an earlier version of the code used English language strings
+	// extracted from hard-coded server English descriptions.
+	// Keeping them so we don't have to re-localize them.
+	switch (transaction_type)
+	{
+		case TRANS_OBJECT_SALE:
+		{
+			LLStringUtil::format_map_t arg;
+			arg["ITEM"] = item_desc;
+			return LLTrans::getString("for item", arg);
+		}
+		case TRANS_LAND_SALE:
+			return LLTrans::getString("for a parcel of land");
+
+		case TRANS_LAND_PASS_SALE:
+			return LLTrans::getString("for a land access pass");
+
+		case TRANS_GROUP_LAND_DEED:
+			return LLTrans::getString("for deeding land");
+
+		case TRANS_GROUP_CREATE:
+			return LLTrans::getString("to create a group");
+
+		case TRANS_GROUP_JOIN:
+			return LLTrans::getString("to join a group");
+
+		case TRANS_UPLOAD_CHARGE:
+			return LLTrans::getString("to upload");
+
+		case TRANS_CLASSIFIED_CHARGE:
+			return LLTrans::getString("to publish a classified ad");
+
+		// These have no reason to display, but are expected and should not
+		// generate warnings
+		case TRANS_GIFT:
+		case TRANS_PAY_OBJECT:
+		case TRANS_OBJECT_PAYS:
+			return std::string();
+
+		default:
+			llwarns << "Unknown transaction type "
+				<< transaction_type << llendl;
+			return std::string();
+	}
+}
+
+static void process_money_balance_reply_extended(LLMessageSystem* msg)
+{
+	// Added in server 1.40 and viewer 2.1, support for localization
+	// and agent ids for name lookup.
+	S32 transaction_type = 0;
+	LLUUID source_id;
+	BOOL is_source_group = false;
+	LLUUID dest_id;
+	BOOL is_dest_group = false;
+	S32 amount = 0;
+	std::string item_description;
+	BOOL success = false;
+
+	msg->getS32("TransactionInfo", "TransactionType", transaction_type);
+	msg->getUUID("TransactionInfo", "SourceID", source_id);
+	msg->getBOOL("TransactionInfo", "IsSourceGroup", is_source_group);
+	msg->getUUID("TransactionInfo", "DestID", dest_id);
+	msg->getBOOL("TransactionInfo", "IsDestGroup", is_dest_group);
+	msg->getS32("TransactionInfo", "Amount", amount);
+	msg->getString("TransactionInfo", "ItemDescription", item_description);
+	msg->getBOOL("MoneyData", "TransactionSuccess", success);
+	LL_INFOS("Money") << "MoneyBalanceReply source " << source_id
+		<< " dest " << dest_id
+		<< " type " << transaction_type
+		<< " item " << item_description << LL_ENDL;
+
+	if (source_id.isNull() && dest_id.isNull())
+	{
+		// this is a pure balance update, no notification required
+		return;
+	}
+
+	std::string source_slurl;
+	if (is_source_group)
+	{
+		gCacheName->getGroupName(source_id, source_slurl);
+	}
+	else
+	{
+		LLAvatarNameCache::getPNSName(source_id, source_slurl);
+	}
+
+	std::string dest_slurl;
+	if (is_dest_group)
+	{
+		gCacheName->getGroupName(dest_id, dest_slurl);
+	}
+	else
+	{
+		LLAvatarNameCache::getPNSName(dest_id, dest_slurl);
+	}
+
+	std::string reason =
+		reason_from_transaction_type(transaction_type, item_description);
+
+	LLStringUtil::format_map_t args;
+	args["REASON"] = reason; // could be empty
+	args["AMOUNT"] = llformat("%d", amount);
+
+	// Need to delay until name looked up, so need to know whether or not
+	// is group
+	bool is_name_group = false;
+	LLUUID name_id;
+	std::string message;
+	static LLCachedControl<bool> no_transaction_clutter("LiruNoTransactionClutter", false);
+	std::string notification = no_transaction_clutter ? "Payment" : "SystemMessage";
+	LLSD final_args;
+	LLSD payload;
+
+	bool you_paid_someone = (source_id == gAgentID);
+	if (you_paid_someone)
+	{
+		args["NAME"] = dest_slurl;
+		is_name_group = is_dest_group;
+		name_id = dest_id;
+		if (!reason.empty())
+		{
+			if (dest_id.notNull())
+			{
+				message = success ? LLTrans::getString("you_paid_ldollars", args) :
+									LLTrans::getString("you_paid_failure_ldollars", args);
+			}
+			else
+			{
+				// transaction fee to the system, eg, to create a group
+				message = success ? LLTrans::getString("you_paid_ldollars_no_name", args) :
+									LLTrans::getString("you_paid_failure_ldollars_no_name", args);
+			}
+		}
+		else
+		{
+			if (dest_id.notNull())
+			{
+				message = success ? LLTrans::getString("you_paid_ldollars_no_reason", args) :
+									LLTrans::getString("you_paid_failure_ldollars_no_reason", args);
+			}
+			else
+			{
+				// no target, no reason, you just paid money
+				message = success ? LLTrans::getString("you_paid_ldollars_no_info", args) :
+									LLTrans::getString("you_paid_failure_ldollars_no_info", args);
+			}
+		}
+		final_args["MESSAGE"] = message;
+	}
+	else
+	{
+		// ...someone paid you
+		args["NAME"] = source_slurl;
+		is_name_group = is_source_group;
+		name_id = source_id;
+		if (!reason.empty())
+		{
+			message = LLTrans::getString("paid_you_ldollars", args);
+		}
+		else
+		{
+			message = LLTrans::getString("paid_you_ldollars_no_reason", args);
+		}
+		final_args["MESSAGE"] = message;
+
+		// make notification loggable
+		payload["from_id"] = source_id;
+	}
+
+	// Despite using SLURLs, wait until the name is available before
+	// showing the notification, otherwise the UI layout is strange and
+	// the user sees a "Loading..." message
+	if (is_name_group)
+	{
+		gCacheName->getGroup(name_id,
+						boost::bind(&LLNotificationsUtil::add,
+									notification, final_args, payload));
+	}
+	else
+	{
+		LLAvatarNameCache::get(name_id,
+						boost::bind(&LLNotificationsUtil::add,
+									notification, final_args, payload));
 	}
 }
 

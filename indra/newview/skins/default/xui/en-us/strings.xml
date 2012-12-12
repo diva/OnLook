@@ -3873,9 +3873,27 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
   <string name="Home position set.">Home position set.</string>
 
   <!-- Financial operations strings -->
-  <string name="this_costs">This costs [CURRENCY]</string>
+  <string name="paid_you_ldollars">[NAME] paid you L$[AMOUNT] [REASON].</string>
+  <string name="paid_you_ldollars_no_reason">[NAME] paid you L$[AMOUNT].</string>
+  <string name="you_paid_ldollars">You paid [NAME] L$[AMOUNT] [REASON].</string>
+  <string name="you_paid_ldollars_no_info">You paid L$[AMOUNT].</string>
+  <string name="you_paid_ldollars_no_reason">You paid [NAME] L$[AMOUNT].</string>
+  <string name="you_paid_ldollars_no_name">You paid L$[AMOUNT] [REASON].</string>
+  <string name="you_paid_failure_ldollars">You failed to pay [NAME] L$[AMOUNT] [REASON].</string>
+  <string name="you_paid_failure_ldollars_no_info">You failed to pay L$[AMOUNT].</string>
+  <string name="you_paid_failure_ldollars_no_reason">You failed to pay [NAME] L$[AMOUNT].</string>
+  <string name="you_paid_failure_ldollars_no_name">You failed to pay L$[AMOUNT] [REASON].</string>
+  <string name="for item">for [ITEM]</string>
+  <string name="for a parcel of land">for a parcel of land</string>
+  <string name="for a land access pass">for a land access pass</string>
+  <string name="for deeding land">for deeding land</string>
+  <string name="to create a group">to create a group</string>
+  <string name="to join a group">to join a group</string>
+  <string name="to upload">to upload</string>
+  <string name="to publish a classified ad">to publish a classified ad</string>
 
   <string name="giving">Giving [CURRENCY]</string>
+  <string name="this_costs">This costs [CURRENCY]</string>
 
   <string name="group_role_everyone">Everyone</string>
   <string name="group_role_officers">Officers</string>

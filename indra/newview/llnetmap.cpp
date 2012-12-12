@@ -629,37 +629,11 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rec
 	{
 		msg.assign("");
 		std::string fullname;
-		if(mClosestAgentToCursor.notNull() && gCacheName->getFullName(mClosestAgentToCursor, fullname))
+		if(mClosestAgentToCursor.notNull() && LLAvatarNameCache::getPNSName(mClosestAgentToCursor, fullname))
 		{
 			//msg.append(fullname);
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.0b
-            // [Ansariel: Display name support]
-			// msg.append( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? fullname : RlvStrings::getAnonym(fullname) );
-            if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
-            {
-                msg.append(RlvStrings::getAnonym(fullname));
-            }
-            else
-            {
-				if (LLAvatarNameCache::useDisplayNames())
-    			{
-					LLAvatarName avatar_name;
-					if (LLAvatarNameCache::get(mClosestAgentToCursor, &avatar_name))
-					{
-						static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-						if (phoenix_name_system == 2 || (phoenix_name_system == 1 && avatar_name.mIsDisplayNameDefault))
-						{
-							fullname = avatar_name.mDisplayName;
-						}
-						else
-						{
-							fullname = avatar_name.getCompleteName(true);
-						}
-					}
-				}
-                msg.append(fullname);
-            }
-            // [/Ansariel: Display name support]
+			msg.append( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? fullname : RlvStrings::getAnonym(fullname) );
 // [/RLVa:KB]
 			msg.append("\n");
 

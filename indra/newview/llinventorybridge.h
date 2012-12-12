@@ -108,8 +108,9 @@ public:
 	virtual BOOL copyToClipboard() const;
 	virtual void cutToClipboard();
 	virtual BOOL isClipboardPasteable() const;
+	bool isClipboardPasteableAsCopy() const;
 	virtual BOOL isClipboardPasteableAsLink() const;
-	virtual void pasteFromClipboard() {}
+	virtual void pasteFromClipboard(bool only_copies = false) {}
 	virtual void pasteLinkFromClipboard() {}
 	void getClipboardEntries(bool show_asset_id, menuentry_vec_t &items, 
 							 menuentry_vec_t &disabled_items, U32 flags);
@@ -261,7 +262,7 @@ public:
 	BOOL removeSystemFolder();
 	bool removeItemResponse(const LLSD& notification, const LLSD& response);
 
-	virtual void pasteFromClipboard();
+	virtual void pasteFromClipboard(bool only_copies = false);
 	virtual void pasteLinkFromClipboard();
 	virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
 	virtual BOOL hasChildren() const;

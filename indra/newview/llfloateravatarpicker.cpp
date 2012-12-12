@@ -33,24 +33,26 @@
 
 #include "llfloateravatarpicker.h"
 
-#include "message.h"
-
+// Viewer includes
 #include "llagent.h"
-#include "llbutton.h"
-#include "llcachename.h"
 #include "llfocusmgr.h"
 #include "llfoldervieweventlistener.h"
-#include "llinventorypanel.h"
-#include "llinventorymodel.h"
 #include "llinventoryfunctions.h"
+#include "llinventorymodel.h"
+#include "llinventorypanel.h"
+#include "llviewercontrol.h"
+#include "llviewerregion.h"
+#include "llworld.h"
+
+// Linden libraries
 #include "llavatarnamecache.h"	// IDEVO
+#include "llbutton.h"
+#include "llcachename.h"
 #include "lllineeditor.h"
 #include "llscrolllistctrl.h"
 #include "lltextbox.h"
 #include "lluictrlfactory.h"
-#include "llviewercontrol.h"
-#include "llworld.h"
-#include "llviewerregion.h"
+#include "message.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"

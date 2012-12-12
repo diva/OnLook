@@ -693,6 +693,17 @@
       <key>Value</key>
       <integer>0</integer>
 	</map>
+    <key>LiruNoTransactionClutter</key>
+    <map>
+      <key>Comment</key>
+	  <string>Use notifytips for transactions instead of notifys, this way they do not collect in the top right of the screen.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+	  <integer>0</integer>
+	</map>
     <key>LiruSensibleARC</key>
     <map>
       <key>Comment</key>

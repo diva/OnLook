@@ -83,6 +83,7 @@ typedef enum e_radar_alert_type
 
 void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool entering)
 {
+	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) return; //RLVa:LF Don't announce people are around when blind, that cheats the system.
 	static LLCachedControl<bool> radar_chat_alerts(gSavedSettings, "RadarChatAlerts");
 	if (!radar_chat_alerts) return;
 	static LLCachedControl<bool> radar_alert_sim(gSavedSettings, "RadarAlertSim");
@@ -462,8 +463,6 @@ void LLFloaterAvatarList::updateAvatarList()
 		for (i = 0; i < count; ++i)
 		{
 			std::string name;
-			std::string first;
-			std::string last;
 			const LLUUID &avid = avatar_ids[i];
 
 			LLVector3d position;
@@ -483,29 +482,13 @@ void LLFloaterAvatarList::updateAvatarList()
 				position = gAgent.getPosGlobalFromAgent(avatarp->getCharacterPosition());
 				name = avatarp->getFullname();
 
-				// [Ansariel: Display name support]
-				LLAvatarName avatar_name;
-				if (LLAvatarNameCache::get(avatarp->getID(), &avatar_name))
-				{
-				    static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-					switch (phoenix_name_system)
-					{
-						case 0 : name = avatar_name.getLegacyName(); break;
-						case 1 : name = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-						case 2 : name = avatar_name.mDisplayName; break;
-						default : name = avatar_name.getLegacyName(); break;
-					}
-
-					first = avatar_name.mLegacyFirstName;
-					last = avatar_name.mLegacyLastName;
-				}
-				else continue;
-				// [/Ansariel: Display name support]
+				if (!LLAvatarNameCache::getPNSName(avatarp->getID(), name))
+					continue;
 
 				//duped for lower section
 				if (name.empty() || (name.compare(" ") == 0))// || (name.compare(gCacheName->getDefaultName()) == 0))
 				{
-					if (!gCacheName->getFullName(avid, name)) //seems redudant with LLAvatarNameCache::get above...
+					if (!gCacheName->getFullName(avid, name)) //seems redudant with LLAvatarNameCache::getPNSName above...
 					{
 						continue;
 					}
@@ -545,7 +528,7 @@ void LLFloaterAvatarList::updateAvatarList()
 					continue;
 				}
 
-				if (!gCacheName->getFullName(avid, name))
+				if (!LLAvatarNameCache::getPNSName(avid, name))
 				{
 					//name = gCacheName->getDefaultName();
 					continue; //prevent (Loading...)
@@ -982,14 +965,12 @@ void LLFloaterAvatarList::onClickIM()
 			// Single avatar
 			LLUUID agent_id = ids[0];
 
-			// [Ansariel: Display name support]
-			LLAvatarName avatar_name;
-			if (LLAvatarNameCache::get(agent_id, &avatar_name))
+			std::string avatar_name;
+			if (gCacheName->getFullName(agent_id, avatar_name))
 			{
 				gIMMgr->setFloaterOpen(TRUE);
-				gIMMgr->addSession(LLCacheName::cleanFullName(avatar_name.getLegacyName()),IM_NOTHING_SPECIAL,agent_id);
+				gIMMgr->addSession(avatar_name,IM_NOTHING_SPECIAL,agent_id);
 			}
-			// [Ansariel: Display name support]
 		}
 		else
 		{
@@ -1114,14 +1095,12 @@ BOOL LLFloaterAvatarList::handleKeyHere(KEY key, MASK mask)
 				// Single avatar
 				LLUUID agent_id = ids[0];
 
-				// [Ansariel: Display name support]
-				LLAvatarName avatar_name;
-				if (LLAvatarNameCache::get(agent_id, &avatar_name))
+				std::string avatar_name;
+				if (gCacheName->getFullName(agent_id, avatar_name))
 				{
 					gIMMgr->setFloaterOpen(TRUE);
-					gIMMgr->addSession(LLCacheName::cleanFullName(avatar_name.getLegacyName()),IM_NOTHING_SPECIAL,agent_id);
+					gIMMgr->addSession(avatar_name,IM_NOTHING_SPECIAL,agent_id);
 				}
-				// [Ansariel: Display name support]
 			}
 			else
 			{
