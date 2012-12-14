@@ -548,7 +548,6 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 									   width,
 									   height,
 									   ratio,
-									   FALSE,
 									   gSavedSettings.getBOOL("RenderUIInSnapshot"),
 									   FALSE,
 									   LLViewerWindow::SNAPSHOT_TYPE_COLOR,

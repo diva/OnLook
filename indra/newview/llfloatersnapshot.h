@@ -47,7 +47,8 @@ public:
 	{
 		SNAPSHOT_FORMAT_PNG,
 		SNAPSHOT_FORMAT_JPEG,
-		SNAPSHOT_FORMAT_BMP
+		SNAPSHOT_FORMAT_BMP,
+		SNAPSHOT_FORMAT_J2C
 	} ESnapshotFormat;
 
 	LLFloaterSnapshot();
@@ -68,6 +69,7 @@ public:
 	static S32  getUIWinWidth()       {return sUIWinWidth ;}
 
 	static void saveLocalDone(bool success);
+	static void saveFeedDone(bool success);
 
 private:
 	class Impl;

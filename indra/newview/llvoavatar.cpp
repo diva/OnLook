@@ -994,12 +994,19 @@ static F32 calc_bouncy_animation(F32 x);
 static U32 calc_shame(LLVOVolume* volume, std::set<LLUUID> &textures);
 
 //-----------------------------------------------------------------------------
+// Debug setting caches.
+//-----------------------------------------------------------------------------
+static LLCachedControl<bool> const freeze_time("FreezeTime", false);
+static LLCachedControl<bool> const render_unloaded_avatar("RenderUnloadedAvatar", false);
+
+//-----------------------------------------------------------------------------
 // LLVOAvatar()
 //-----------------------------------------------------------------------------
 LLVOAvatar::LLVOAvatar(const LLUUID& id,
 					   const LLPCode pcode,
 					   LLViewerRegion* regionp) :
 	LLViewerObject(id, pcode, regionp),
+	LLCharacter(freeze_time),
 	mIsDummy(FALSE),
 	mSpecialRenderMode(0),
 	mAttachmentGeometryBytes(0),
@@ -1045,7 +1052,7 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mSupportsAlphaLayers(FALSE),
 	mLoadedCallbacksPaused(FALSE),
 	mHasPelvisOffset( FALSE ),
-	mRenderUnloadedAvatar(LLCachedControl<bool>(gSavedSettings, "RenderUnloadedAvatar")),
+	mRenderUnloadedAvatar(render_unloaded_avatar),
 	mLastRezzedStatus(-1),
 	mFirstSetActualBoobGravRan( false ),
 	mSupportsPhysics( false ),
@@ -2867,6 +2874,11 @@ BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 	}
 
  	if (!(gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_AVATAR)))
+	{
+		return TRUE;
+	}
+
+	if (mFreezeTimeHidden)
 	{
 		return TRUE;
 	}

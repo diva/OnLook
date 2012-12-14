@@ -177,6 +177,7 @@ public:
 	LLImageRaw();
 	LLImageRaw(U16 width, U16 height, S8 components);
 	LLImageRaw(U8 *data, U16 width, U16 height, S8 components);
+	LLImageRaw(LLImageRaw const* src, U16 width, U16 height, U16 crop_offset, bool crop_vertically);
 	// Construct using createFromFile (used by tools)
 	//LLImageRaw(const std::string& filename, bool j2c_lowest_mip_only = false);
 
@@ -196,7 +197,8 @@ public:
 
 	void expandToPowerOfTwo(S32 max_dim = MAX_IMAGE_SIZE, BOOL scale_image = TRUE);
 	void contractToPowerOfTwo(S32 max_dim = MAX_IMAGE_SIZE, BOOL scale_image = TRUE);
-	void biasedScaleToPowerOfTwo(S32 max_dim = MAX_IMAGE_SIZE);
+	void biasedScaleToPowerOfTwo(S32 target_width, S32 target_height, S32 max_dim = MAX_IMAGE_SIZE);
+	void biasedScaleToPowerOfTwo(S32 max_dim = MAX_IMAGE_SIZE) { biasedScaleToPowerOfTwo(getWidth(), getHeight(), max_dim); }
 	BOOL scale( S32 new_width, S32 new_height, BOOL scale_image = TRUE );
 	//BOOL scaleDownWithoutBlending( S32 new_width, S32 new_height) ;
 

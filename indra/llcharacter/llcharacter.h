@@ -62,7 +62,7 @@ class LLCharacter
 {
 public:
 	// Constructor
-	LLCharacter();
+	LLCharacter(bool freeze_time);
 
 	// Destructor
 	virtual ~LLCharacter();
@@ -277,6 +277,8 @@ public:
 	static std::vector< LLCharacter* > sInstances;
 	static BOOL sAllowInstancesChange ; //debug use
 
+	void			resetFreezeTimeHidden()	{ mFreezeTimeHidden = false; }
+
 protected:
 	LLMotionController	mMotionController;
 
@@ -288,6 +290,7 @@ protected:
 	U32					mAppearanceSerialNum;
 	U32					mSkeletonSerialNum;
 	LLAnimPauseRequest	mPauseRequest;
+	bool				mFreezeTimeHidden;		// True when this object was created during snapshot FreezeTime mode, and that mode is STILL active.
 
 private:
 	// visual parameter stuff

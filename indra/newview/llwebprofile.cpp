@@ -124,6 +124,7 @@ public:
 
 protected:
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return webProfileResponders_timeout; }
+	/*virtual*/ bool followRedir(void) const { return true; }
 
 private:
 	LLPointer<LLImageFormatted> mImagep;
@@ -160,6 +161,7 @@ public:
 
 protected:
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return webProfileResponders_timeout; }
+	/*virtual*/ bool followRedir(void) const { return true; }
 
 private:
 	LLPointer<LLImageFormatted> mImagep;
@@ -207,6 +209,7 @@ public:
 
 protected:
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return webProfileResponders_timeout; }
+	/*virtual*/ bool followRedir(void) const { return true; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

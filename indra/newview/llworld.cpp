@@ -682,6 +682,12 @@ void LLWorld::updateRegions(F32 max_update_time)
 
 void LLWorld::updateParticles()
 {
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
+	if (freeze_time)
+	{
+		// don't move particles in snapshot mode
+		return;
+	}
 	LLViewerPartSim::getInstance()->updateSimulation();
 }
 

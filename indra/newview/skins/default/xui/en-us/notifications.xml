@@ -407,6 +407,13 @@ There was a problem uploading the auction snapshot due to the following reason: 
 
   <notification
    icon="alertmodal.tga"
+   name="UploadSnapshotFail"
+   type="alertmodal">
+There was a problem uploading the snapshot due to the following reason: [REASON]
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="UnableToViewContentsMoreThanOne"
    type="alertmodal">
 Unable to view the contents of more than one item at a time.

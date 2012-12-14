@@ -902,7 +902,7 @@ void LLFloaterReporter::takeScreenshot()
 
 	LLPointer<LLImageRaw> raw = new LLImageRaw;
 	// Warning: This crops left and right in case of wide-screen monitor:
-	if( !gViewerWindow->rawSnapshot(raw, IMAGE_WIDTH, IMAGE_HEIGHT, (F32)IMAGE_WIDTH / IMAGE_HEIGHT, FALSE, TRUE, FALSE))
+	if( !gViewerWindow->rawSnapshot(raw, IMAGE_WIDTH, IMAGE_HEIGHT, (F32)IMAGE_WIDTH / IMAGE_HEIGHT, TRUE, FALSE))
 	{
 		llwarns << "Unable to take screenshot" << llendl;
 		return;

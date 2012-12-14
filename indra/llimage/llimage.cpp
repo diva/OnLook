@@ -313,6 +313,32 @@ LLImageRaw::LLImageRaw(U8 *data, U16 width, U16 height, S8 components)
 	++sRawImageCount;
 }
 
+LLImageRaw::LLImageRaw(LLImageRaw const* src, U16 width, U16 height, U16 crop_offset, bool crop_vertically) : mCacheEntries(0)
+{
+	mMemType = LLMemType::MTYPE_IMAGERAW;
+	llassert_always(src);
+	S8 const components = src->getComponents();
+	U8 const* const data = src->getData();
+	if (allocateDataSize(width, height, components))
+	{
+		if (crop_vertically)
+		{
+			llassert_always(width == src->getWidth());
+			memcpy(getData(), data + width * crop_offset * components, width * height * components);
+		}
+		else
+		{
+			llassert_always(height == src->getHeight());
+			U16 const src_width = src->getWidth();
+			for (U16 row = 0; row < height; ++row)
+			{
+				memcpy(getData() + width * row * components, data + (src_width * row + crop_offset) * components, width * components);
+			}
+		}
+	}
+	++sRawImageCount;
+}
+
 /*LLImageRaw::LLImageRaw(const std::string& filename, bool j2c_lowest_mip_only)
 	: LLImageBase(), mCacheEntries(0)
 {
@@ -529,7 +555,7 @@ void LLImageRaw::contractToPowerOfTwo(S32 max_dim, BOOL scale_image)
 	scale( new_width, new_height, scale_image );
 }
 
-void LLImageRaw::biasedScaleToPowerOfTwo(S32 max_dim)
+void LLImageRaw::biasedScaleToPowerOfTwo(S32 target_width, S32 target_height, S32 max_dim)
 {
 	// Strong bias towards rounding down (to save bandwidth)
 	// No bias would mean THRESHOLD == 1.5f;
@@ -538,22 +564,22 @@ void LLImageRaw::biasedScaleToPowerOfTwo(S32 max_dim)
 	// Find new sizes
 	S32 larger_w = max_dim;	// 2^n >= mWidth
 	S32 smaller_w = max_dim;	// 2^(n-1) <= mWidth
-	while( (smaller_w > getWidth()) && (smaller_w > MIN_IMAGE_SIZE) )
+	while( (smaller_w > target_width) && (smaller_w > MIN_IMAGE_SIZE) )
 	{
 		larger_w = smaller_w;
 		smaller_w >>= 1;
 	}
-	S32 new_width = ( (F32)getWidth() / smaller_w > THRESHOLD ) ? larger_w : smaller_w;
+	S32 new_width = ( (F32)target_width / smaller_w > THRESHOLD ) ? larger_w : smaller_w;
 
 
 	S32 larger_h = max_dim;	// 2^m >= mHeight
 	S32 smaller_h = max_dim;	// 2^(m-1) <= mHeight
-	while( (smaller_h > getHeight()) && (smaller_h > MIN_IMAGE_SIZE) )
+	while( (smaller_h > target_height) && (smaller_h > MIN_IMAGE_SIZE) )
 	{
 		larger_h = smaller_h;
 		smaller_h >>= 1;
 	}
-	S32 new_height = ( (F32)getHeight() / smaller_h > THRESHOLD ) ? larger_h : smaller_h;
+	S32 new_height = ( (F32)target_height / smaller_h > THRESHOLD ) ? larger_h : smaller_h;
 
 
 	scale( new_width, new_height );

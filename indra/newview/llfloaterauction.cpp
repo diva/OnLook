@@ -181,7 +181,7 @@ void LLFloaterAuction::onClickSnapshot(void* data)
 											  gViewerWindow->getWindowWidth(),
 											  gViewerWindow->getWindowHeight(),
 											  (F32)gViewerWindow->getWindowWidth() / gViewerWindow->getWindowHeight(),
-											  FALSE, FALSE, FALSE);
+											  FALSE, FALSE);
 	gForceRenderLandFence = FALSE;
 
 	if (success)

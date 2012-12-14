@@ -475,7 +475,7 @@ void LLWLParamManager::propagateParameters(void)
 void LLWLParamManager::update(LLViewerCamera * cam)
 {
 	LLFastTimer ftm(FTM_UPDATE_WLPARAM);
-	
+
 	// update clouds, sun, and general
 	mCurParams.updateCloudScrolling();
 	
