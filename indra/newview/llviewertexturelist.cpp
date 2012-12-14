@@ -636,6 +636,7 @@ void LLViewerTextureList::updateImages(F32 max_time)
 	{
 		if(!cleared)
 		{
+			llinfos << "Flushing upon teleport." << llendl;
 			clearFetchingRequests();
 			//gPipeline.clearRebuildGroups() really doesn't belong here... but since it is here, do a few other needed things too.
 			gPipeline.clearRebuildGroups();
