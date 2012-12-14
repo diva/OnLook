@@ -624,7 +624,7 @@ void debug_curl_easy_reset(CURL* handle)
 
 CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 {
-  CURLcode ret = CURLE_UNKNOWN_OPTION;	// Suppress compiler warning.
+  CURLcode ret = CURLE_OBSOLETE50;	// Suppress compiler warning.
   va_list ap;
   union param_type {
 	long along;
