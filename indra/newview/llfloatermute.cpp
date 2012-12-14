@@ -48,13 +48,15 @@
 #include "llbutton.h"
 #include "lllineeditor.h"
 #include "llmutelist.h"
+#include "llnamelistctrl.h"
 #include "llresizehandle.h"
-#include "llscrolllistctrl.h"
 #include "lltextbox.h"
 #include "llviewertexteditor.h"
 #include "llviewerwindow.h"
 #include "lluictrlfactory.h"
 #include "llfocusmgr.h"
+
+#include <boost/lexical_cast.hpp>
 
 //
 // Constants
@@ -209,7 +211,12 @@ BOOL LLFloaterMute::postBuild()
 	childSetAction("Mute object by name...", onClickMuteByName, this);
 	childSetAction("Unmute", onClickRemove, this);
 
-	mMuteList = getChild<LLScrollListCtrl>("mutes");
+	mAvatarIcon = LLUI::getUIImage("icon_avatar_offline.tga");
+	mObjectIcon = LLUI::getUIImage("inv_item_object.tga");
+	mGroupIcon	= LLUI::getUIImage("icon_group.tga");
+	mNameIcon	= LLUI::getUIImage("icon_name.tga");
+
+	mMuteList = getChild<LLNameListCtrl>("mutes");
 	mMuteList->setCommitOnSelectionChange(TRUE);
 
 	LLMuteList::getInstance()->addObserver(this);
@@ -231,16 +238,63 @@ LLFloaterMute::~LLFloaterMute()
 //-----------------------------------------------------------------------------
 void LLFloaterMute::refreshMuteList()
 {
+	uuid_vec_t selected = mMuteList->getSelectedIDs();
+	S32 scrollpos = mMuteList->getScrollPos();
+
 	mMuteList->deleteAllItems();
+	mMuteDict.clear();
 
 	std::vector<LLMute> mutes = LLMuteList::getInstance()->getMutes();
 	std::vector<LLMute>::iterator it;
+	U32 count = 0;
 	for (it = mutes.begin(); it != mutes.end(); ++it)
 	{
-		std::string display_name = it->getDisplayName();
-		mMuteList->addStringUUIDItem(display_name, it->mID);
-	}
+		std::string display_name = it->mName;
+		LLSD element;
+		LLUUID entry_id;
+		if(it->mType == LLMute::GROUP || it->mType == LLMute::AGENT)
+			entry_id = it->mID;
+		else
+			entry_id.generate(boost::lexical_cast<std::string>( count++ ));
+		mMuteDict.insert(std::make_pair(entry_id,*it));
+		element["id"] = entry_id;
+		element["name"] = display_name;
 
+		LLSD& name_column = element["columns"][1];
+		name_column["column"] = "name";
+		name_column["type"] = "text";
+		name_column["value"] = "";
+
+		LLSD& icon_column = element["columns"][0];
+		icon_column["column"] = "icon";
+		icon_column["type"] = "icon";
+
+		switch(it->mType)
+		{
+		case LLMute::GROUP:
+			icon_column["value"] = mGroupIcon->getName();
+			element["target"] = LLNameListCtrl::GROUP;
+			break;
+		case LLMute::AGENT:
+			icon_column["value"] = mAvatarIcon->getName();
+			element["target"] = LLNameListCtrl::INDIVIDUAL;
+			break;
+		case LLMute::OBJECT:
+			icon_column["value"] = mObjectIcon->getName();
+			element["target"] = LLNameListCtrl::SPECIAL;
+			break;
+		case LLMute::BY_NAME:
+		default:
+			icon_column["value"] = mNameIcon->getName();
+			element["target"] = LLNameListCtrl::SPECIAL;
+
+			break;
+		}
+		mMuteList->addNameItemRow(element);
+	}
+	mMuteList->updateSort();
+	mMuteList->selectMultiple(selected);
+	mMuteList->setScrollPos(scrollpos);
 	updateButtons();
 }
 
@@ -282,17 +336,22 @@ void LLFloaterMute::onClickRemove(void *data)
 {
 	LLFloaterMute* floater = (LLFloaterMute *)data;
 
-	std::string name = floater->mMuteList->getSelectedItemLabel();
-	LLUUID id = floater->mMuteList->getStringUUIDSelectedItem();
-	LLMute mute(id);
-	mute.setFromDisplayName(name);
-	// now mute.mName has the suffix trimmed off
-	
 	S32 last_selected = floater->mMuteList->getFirstSelectedIndex();
-	if (LLMuteList::getInstance()->remove(mute))
+	bool removed = false;
+	const std::vector<LLScrollListItem*> items = floater->mMuteList->getAllSelected();
+	for(std::vector<LLScrollListItem*>::const_iterator it = items.begin(); it != items.end(); ++it)
+	{
+		std::map<LLUUID,LLMute>::iterator mute_it = floater->mMuteDict.find((*it)->getUUID());
+		if(mute_it != floater->mMuteDict.end() && LLMuteList::getInstance()->remove(mute_it->second))
+		{
+			floater->mMuteDict.erase(mute_it);
+			removed = true;
+		}
+	}
+
+	if (removed)
 	{
 		// Above removals may rebuild this dialog.
-		
 		if (last_selected == floater->mMuteList->getItemCount())
 		{
 			// we were on the last item, so select the last item again
@@ -303,8 +362,12 @@ void LLFloaterMute::onClickRemove(void *data)
 			// else select the item after the last item previously selected
 			floater->mMuteList->selectNthItem(last_selected);
 		}
+		floater->mMuteList->setNeedsSort();
+		floater->mMuteList->updateSort();
+		floater->updateButtons();
 	}
-	floater->updateButtons();
+
+
 }
 
 //-----------------------------------------------------------------------------
