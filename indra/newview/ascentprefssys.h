@@ -59,7 +59,7 @@ protected:
         BOOL mResetCameraAfterTP;
         BOOL mOffsetTPByUserHeight;
     BOOL mPreviewAnimInWorld;
-//    BOOL mSaveScriptsAsMono;
+    BOOL mSaveScriptsAsMono;
     BOOL mAlwaysRezInGroup;
     BOOL mBuildAlwaysEnabled;
     BOOL mAlwaysShowFly;

@@ -869,16 +869,16 @@ class Linux_x86_64Manifest(LinuxManifest):
 
             self.end_prefix("lib64")
 
-            # Vivox runtimes and libs
-            if self.prefix(src="vivox-runtime/i686-linux", dst="bin"):
-                self.path("SLVoice")
-                self.end_prefix("bin")
+        # Vivox runtimes and libs
+        if self.prefix(src="vivox-runtime/i686-linux", dst="bin"):
+            self.path("SLVoice")
+            self.end_prefix("bin")
 
-            if self.prefix(src="vivox-runtime/i686-linux", dst="lib32"):
-                #self.path("libalut.so")
-                self.path("libortp.so")
-                self.path("libvivoxsdk.so")
-                self.end_prefix("lib32")
+        if self.prefix(src="vivox-runtime/i686-linux", dst="lib32"):
+            #self.path("libalut.so")
+            self.path("libortp.so")
+            self.path("libvivoxsdk.so")
+            self.end_prefix("lib32")
 
         # 32bit libs needed for voice
         if self.prefix("../../libraries/x86_64-linux/lib/release/32bit-compat", dst="lib32"):

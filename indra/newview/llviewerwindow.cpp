@@ -1467,7 +1467,7 @@ LLViewerWindow::LLViewerWindow(
 	mIgnoreActivate( FALSE ),
 	mHoverPick(),
 	mResDirty(false),
-	mStatesDirty(false),
+	//mStatesDirty(false),	//Singu Note: No longer needed. State update is now in restoreGL.
 	mIsFullscreenChecked(false),
 	mCurrResolutionIndex(0)
 {
@@ -4103,10 +4103,14 @@ void LLViewerWindow::movieSize(S32 new_width, S32 new_height)
 		BOOL disable_sync = gSavedSettings.getBOOL("DisableVerticalSync");
 		if (gViewerWindow->mWindow->getFullscreen())
 		{
+			LLGLState::checkStates();
+			LLGLState::checkTextureChannels();
 			gViewerWindow->changeDisplaySettings(FALSE, 
 												new_size, 
 												disable_sync, 
 												TRUE);
+			LLGLState::checkStates();
+			LLGLState::checkTextureChannels();
 		}
 		else
 		{
@@ -4881,6 +4885,7 @@ void LLViewerWindow::restoreGL(const std::string& progress_message)
 		gGLManager.mIsDisabled = FALSE;
 		
 		initGLDefaults();
+		gGL.refreshState();	//Singu Note: Call immediately. Cached states may have prevented initGLDefaults from actually applying changes.
 		LLGLState::restoreGL();
 		gTextureList.restoreGL();
 
@@ -4976,12 +4981,15 @@ void LLViewerWindow::requestResolutionUpdate(bool fullscreen_checked)
 
 BOOL LLViewerWindow::checkSettings()
 {
-	if (mStatesDirty)
+	//Singu Note: Don't do the following.
+	//setShaders is already called in restoreGL(), and gGL.refreshState() is too as to maintain blend states.
+	//This maintaining of blend states is needed for LLGLState::checkStates() to not error out.
+	/*if (mStatesDirty)
 	{
 		gGL.refreshState();
 		LLViewerShaderMgr::instance()->setShaders();
 		mStatesDirty = false;
-	}
+	}*/
 	
 	// We want to update the resolution AFTER the states getting refreshed not before.
 	if (mResDirty)
@@ -5028,10 +5036,8 @@ BOOL LLViewerWindow::checkSettings()
 								  desired_screen_size,
 								  gSavedSettings.getBOOL("DisableVerticalSync"),
 								  mShowFullscreenProgress);
-
 			LLGLState::checkStates();
 			LLGLState::checkTextureChannels();
-			mStatesDirty = true;
 			return TRUE;
 		}
 	}
@@ -5040,12 +5046,15 @@ BOOL LLViewerWindow::checkSettings()
 		if(is_fullscreen)
 		{
 			// Changing to windowed mode.
+			LLGLState::checkStates();
+			LLGLState::checkTextureChannels();
 			changeDisplaySettings(FALSE, 
 								  LLCoordScreen(gSavedSettings.getS32("WindowWidth"),
 												gSavedSettings.getS32("WindowHeight")),
 								  TRUE,
 								  mShowFullscreenProgress);
-			mStatesDirty = true;
+			LLGLState::checkStates();
+			LLGLState::checkTextureChannels();
 			return TRUE;
 		}
 	}
@@ -5113,24 +5122,33 @@ BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, 
 	mIgnoreActivate = TRUE;
 	LLCoordScreen old_size;
 	LLCoordScreen old_pos;
+	LLCoordScreen new_pos;
 	mWindow->getSize(&old_size);
 	BOOL got_position = mWindow->getPosition(&old_pos);
 
-	if (!old_fullscreen && fullscreen && got_position)
+	//Singu Note: ALWAYS Save old values if we can.
+	if(!old_fullscreen && !mWindow->getMaximized() && got_position)
 	{
-		// switching from windowed to fullscreen, so save window position
+		//Always save the current position if we can
 		gSavedSettings.setS32("WindowX", old_pos.mX);
 		gSavedSettings.setS32("WindowY", old_pos.mY);
+	}
+
+	//Singu Note: Try to feed switchcontext a posp pointer right off the bat. Looks less clunky on systems that implemented it.
+	if (!fullscreen && !mWindow->getMaximized())
+	{
+		new_pos.mX = gSavedSettings.getS32("WindowX");
+		new_pos.mY = gSavedSettings.getS32("WindowY");
 	}
 	
 	mWindow->setFSAASamples(fsaa);
 
-	result_first_try = mWindow->switchContext(fullscreen, size, disable_vsync);
+	result_first_try = mWindow->switchContext(fullscreen, size, disable_vsync, &new_pos);
 	if (!result_first_try)
 	{
 		// try to switch back
 		mWindow->setFSAASamples(old_fsaa);
-		result_second_try = mWindow->switchContext(old_fullscreen, old_size, disable_vsync);
+		result_second_try = mWindow->switchContext(old_fullscreen, old_size, disable_vsync, &new_pos);
 
 		if (!result_second_try)
 		{
@@ -5183,10 +5201,7 @@ BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, 
 		}
 		else
 		{
-			S32 windowX = gSavedSettings.getS32("WindowX");
-			S32 windowY = gSavedSettings.getS32("WindowY");
-
-			mWindow->setPosition(LLCoordScreen ( windowX, windowY ) );
+			mWindow->setPosition(new_pos);
 		}
 	}
 
@@ -5195,6 +5210,7 @@ BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, 
 	mWantFullscreen = mWindow->getFullscreen();
 	mShowFullscreenProgress = FALSE;
 	
+	//mStatesDirty = true;  //Singu Note: No longer needed. State update is now in restoreGL.
 	return success;
 }
 

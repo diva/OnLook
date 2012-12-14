@@ -35,6 +35,7 @@
 #include "llpanel.h"
 #include "lluuid.h"
 
+class LLAvatarName;
 class LLPanelGroupInvite
 : public LLPanel
 {
@@ -42,7 +43,11 @@ public:
 	LLPanelGroupInvite(const std::string& name, const LLUUID& group_id);
 	~LLPanelGroupInvite();
 	
-	void addUsers(std::vector<LLUUID>& agent_ids);
+	void addUsers(uuid_vec_t& agent_ids);
+	/**
+	 * this callback is being used to add a user whose fullname isn't been loaded before invoking of addUsers().
+	 */  
+	void addUserCallback(const LLUUID& id, const LLAvatarName& av_name);
 	void clear();
 	void update();
 

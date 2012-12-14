@@ -1572,16 +1572,21 @@ void LLDrawPoolInvisible::render(S32 pass)
 		gOcclusionProgram.unbind();
 	}
 
-	if (gPipeline.hasRenderBatches(LLRenderPass::PASS_INVISI_SHINY))
+	/*if (gPipeline.hasRenderBatches(LLRenderPass::PASS_INVISI_SHINY)) // invisible (deprecated)
 	{
 		beginShiny(true);
 		renderShiny(true);
 		endShiny(true);
-	}
+	}*/
 }
 
 void LLDrawPoolInvisible::beginDeferredPass(S32 pass)
 {
+	static const LLCachedControl<bool> enable("SianaRenderDeferredInvisiprim");
+	if (!enable)
+	{
+	    return;
+	}
 	beginRenderPass(pass);
 }
 
@@ -1593,7 +1598,8 @@ void LLDrawPoolInvisible::endDeferredPass( S32 pass )
 void LLDrawPoolInvisible::renderDeferred( S32 pass )
 { //render invisiprims; this doesn't work becaue it also blocks all the post-deferred stuff
 	static const LLCachedControl<bool> enable("SianaRenderDeferredInvisiprim");
-	if (!enable) {
+	if (!enable)
+	{
 	    return;
 	}
 
@@ -1610,10 +1616,10 @@ void LLDrawPoolInvisible::renderDeferred( S32 pass )
 	
 	gOcclusionProgram.unbind();
 
-	if (gPipeline.hasRenderBatches(LLRenderPass::PASS_INVISI_SHINY))
+	/*if (gPipeline.hasRenderBatches(LLRenderPass::PASS_INVISI_SHINY)) // invisible (deprecated)
 	{
 		beginShiny(true);
 		renderShiny(true);
 		endShiny(true);
-	}
+	}*/
 }

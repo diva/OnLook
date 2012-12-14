@@ -78,8 +78,6 @@ LLPanelMediaHUD::LLPanelMediaHUD(viewer_media_t media_impl)
 	mFadeTimer.stop();
 	mCurrentZoom = ZOOM_NONE;
 	mScrollState = SCROLL_NONE;
-
-	mPanelHandle.bind(this);
 }
 LLPanelMediaHUD::~LLPanelMediaHUD()
 {

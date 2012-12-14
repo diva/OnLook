@@ -65,6 +65,8 @@
 #include "pipeline.h"
 #include "llappviewer.h"
 #include "llagent.h"
+#include "llviewerdisplay.h"
+#include "llflexibleobject.h"
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -623,11 +625,28 @@ static LLFastTimer::DeclareTimer FTM_IMAGE_MEDIA("Media");
 
 void LLViewerTextureList::updateImages(F32 max_time)
 {
-	if(gAgent.getTeleportState() != LLAgent::TELEPORT_NONE)
+	static BOOL cleared = FALSE;
+	static const LLCachedControl<bool> hide_tp_screen("AscentDisableTeleportScreens",false);
+
+	//Can't check gTeleportDisplay due to a process_teleport_local(), which sets it to true for local teleports... so:
+	// Do this case if IS teleporting but NOT local teleporting, AND either the TP screen is set to appear OR we just entered the sim (TELEPORT_START_ARRIVAL)
+	if(gAgent.getTeleportState() != LLAgent::TELEPORT_NONE && gAgent.getTeleportState() != LLAgent::TELEPORT_LOCAL &&
+		(!hide_tp_screen || gAgent.getTeleportState() == LLAgent::TELEPORT_START_ARRIVAL))
 	{
-		clearFetchingRequests();
+		if(!cleared)
+		{
+			clearFetchingRequests();
+			//gPipeline.clearRebuildGroups() really doesn't belong here... but since it is here, do a few other needed things too.
+			gPipeline.clearRebuildGroups();
+			gPipeline.resetVertexBuffers();
+			LLVolumeImplFlexible::resetTimers();
+			cleared = TRUE;
+		}
 		return;
 	}
+	cleared = FALSE;
+
+	LLAppViewer::getTextureFetch()->setTextureBandwidth(LLViewerStats::getInstance()->mTextureKBitStat.getMeanPerSec());
 
 	S32 global_raw_memory;
 	{
@@ -705,14 +724,13 @@ void LLViewerTextureList::clearFetchingRequests()
 		return;
 	}
 
+	LLAppViewer::getTextureFetch()->deleteAllRequests();
+
 	for (image_priority_list_t::iterator iter = mImageList.begin();
 		 iter != mImageList.end(); ++iter)
 	{
-		LLViewerFetchedTexture* image = *iter;
-		if(image->hasFetcher())
-		{
-			image->forceToDeleteRequest() ;
-		}
+		LLViewerFetchedTexture* imagep = *iter;
+		imagep->forceToDeleteRequest() ;
 	}
 }
 

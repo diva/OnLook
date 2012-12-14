@@ -792,7 +792,7 @@ void LLGestureMgr::update()
 
 			if (gesture->mDoneCallback)
 			{
-				gesture->mDoneCallback(gesture, gesture->mCallbackData);
+				gesture->mDoneCallback(gesture);
 
 				// callback might have deleted gesture, can't
 				// rely on this pointer any more
@@ -1299,7 +1299,7 @@ void LLGestureMgr::stopGesture(LLMultiGesture* gesture)
 
 	if (gesture->mDoneCallback)
 	{
-		gesture->mDoneCallback(gesture, gesture->mCallbackData);
+		gesture->mDoneCallback(gesture);
 
 		// callback might have deleted gesture, can't
 		// rely on this pointer any more

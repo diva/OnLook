@@ -149,6 +149,12 @@ BOOL LLFloaterOutbox::postBuild()
 	mImportButton = getChild<LLButton>("outbox_import_btn");
 	mImportButton->setCommitCallback(boost::bind(&LLFloaterOutbox::onImportButtonClicked, this));
 
+	//
+	// Set up the outbox inventory view
+	//
+
+	mOutboxInventoryPanel = getChild<LLInventoryPanel>("panel_outbox_inventory");
+
 	mOutboxTopLevelDropZone = getChild<LLPanel>("outbox_generic_drag_target");
 
 	LLFocusableElement::setFocusReceivedCallback(boost::bind(&LLFloaterOutbox::onFocusReceived, this));
@@ -238,12 +244,6 @@ void LLFloaterOutbox::setupOutbox(const LLUUID& outboxId)
 	gInventory.addObserver(mCategoriesObserver);
 
 	mCategoriesObserver->addCategory(mOutboxId, boost::bind(&LLFloaterOutbox::onOutboxChanged, this));
-
-	//
-	// Set up the outbox inventory view
-	//
-
-	mOutboxInventoryPanel = getChild<LLInventoryPanel>("panel_outbox_inventory");
 
 	llassert(mOutboxInventoryPanel);
 

@@ -104,6 +104,12 @@ BOOL LLInventoryClipboard::hasContents() const
 	return (mObjects.count() > 0);
 }
 
+// returns true if the input uuid is in the list of clipboard objects.
+bool LLInventoryClipboard::isOnClipboard(const LLUUID& object) const
+{
+	std::vector<LLUUID>::const_iterator iter = std::find(mObjects.begin(), mObjects.end(), object);
+	return (iter != mObjects.end());
+}
 
 ///----------------------------------------------------------------------------
 /// Local function definitions

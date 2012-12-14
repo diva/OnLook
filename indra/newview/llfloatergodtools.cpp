@@ -46,6 +46,7 @@
 
 #include "llagent.h"
 #include "llalertdialog.h"
+#include "llavatarnamecache.h"
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
 #include "llcombobox.h"
@@ -1264,7 +1265,7 @@ void LLPanelObjectTools::onClickSet(void* data)
 {
 	LLPanelObjectTools* panelp = (LLPanelObjectTools*) data;
 	// grandparent is a floater, which can have a dependent
-	gFloaterView->getParentFloater(panelp)->addDependentFloater(LLFloaterAvatarPicker::show(callbackAvatarID, data));
+	gFloaterView->getParentFloater(panelp)->addDependentFloater(LLFloaterAvatarPicker::show(boost::bind(&LLPanelObjectTools::callbackAvatarID, panelp, _1, _2)));
 }
 
 void LLPanelObjectTools::onClickSetBySelection(void* data)
@@ -1288,14 +1289,12 @@ void LLPanelObjectTools::onClickSetBySelection(void* data)
 	panelp->childSetValue("target_avatar_name", name);
 }
 
-// static
-void LLPanelObjectTools::callbackAvatarID(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* data)
+void LLPanelObjectTools::callbackAvatarID(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names)
 {
-	LLPanelObjectTools* object_tools = (LLPanelObjectTools*) data;
 	if (ids.empty() || names.empty()) return;
-	object_tools->mTargetAvatar = ids[0];
-	object_tools->childSetValue("target_avatar_name", names[0]);
-	object_tools->refresh();
+	mTargetAvatar = ids[0];
+	childSetValue("target_avatar_name", names[0].getCompleteName());
+	refresh();
 }
 
 // static

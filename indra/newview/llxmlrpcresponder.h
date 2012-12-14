@@ -99,6 +99,8 @@ private:
 	XMLRPC_REQUEST mResponse;
 
 public:
+	XMLRPCResponder(void) : mBufferSize(0), mReceivedHTTPHeader(false), mResponse(NULL) { }
+
 	// Accessors.
 	F64 transferRate(void) const;
 	bool is_downloading(void) const { return mReceivedHTTPHeader; }

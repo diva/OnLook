@@ -74,7 +74,7 @@ protected:
 	static void onClickEdit(void* data);
 	static void onClickPlay(void* data);
 	static void onClickNew(void* data);
-	static void onCommitList(LLUICtrl* ctrl, void* data);
+	void onCommitList();
 
 protected:
 	LLUUID mSelectedID;

@@ -1089,14 +1089,17 @@ void LLToolDragAndDrop::dropTextureAllFaces(LLViewerObject* hit_obj,
 	{
 		return;
 	}
-	LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture(asset_id);
+	//LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture(asset_id);
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_EDIT_TEXTURE_COUNT );
 	S32 num_faces = hit_obj->getNumTEs();
 	for( S32 face = 0; face < num_faces; face++ )
 	{
 
 		// update viewer side image in anticipation of update from simulator
-		hit_obj->setTEImage(face, image);
+		//hit_obj->setTEImage(face, image);
+		hit_obj->setTETexture(face, asset_id);	//Singu note: setTETexture will allow the real id to be passed to LLPrimitive::setTETexture,
+												// even if it's null. setTEImage would actually pass down IMG_DEFAULT under such a case,
+												// which we don't want.
 		dialog_refresh_all();
 	}
 	// send the update to the simulator
@@ -1157,9 +1160,12 @@ void LLToolDragAndDrop::dropTextureOneFace(LLViewerObject* hit_obj,
 		return;
 	}
 	// update viewer side image in anticipation of update from simulator
-	LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture(asset_id);
+	//LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture(asset_id);
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_EDIT_TEXTURE_COUNT );
-	hit_obj->setTEImage(hit_face, image);
+	//hit_obj->setTEImage(hit_face, image);
+	hit_obj->setTETexture(hit_face, asset_id);	//Singu note: setTETexture will allow the real id to be passed to LLPrimitive::setTETexture,
+												// even if it's null. setTEImage would actually pass down IMG_DEFAULT under such a case,
+												// which we don't want.										
 	dialog_refresh_all();
 
 	// send the update to the simulator

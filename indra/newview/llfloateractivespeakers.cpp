@@ -333,10 +333,10 @@ BOOL LLPanelActiveSpeakers::postBuild()
 
 	mSpeakerList = getChild<LLScrollListCtrl>("speakers_list");
 	mSpeakerList->sortByColumn(sort_column, sort_ascending);
-	mSpeakerList->setDoubleClickCallback(onDoubleClickSpeaker);
+	mSpeakerList->setDoubleClickCallback(boost::bind(&onDoubleClickSpeaker,this));
 	mSpeakerList->setCommitOnSelectionChange(TRUE);
-	mSpeakerList->setCommitCallback(onSelectSpeaker);
-	mSpeakerList->setSortChangedCallback(onSortChanged);
+	mSpeakerList->setCommitCallback(boost::bind(&LLPanelActiveSpeakers::handleSpeakerSelect,this));
+	mSpeakerList->setSortChangedCallback(boost::bind(&LLPanelActiveSpeakers::onSortChanged,this));
 	mSpeakerList->setCallbackUserData(this);
 
 	mMuteTextCtrl = getChild<LLUICtrl>("mute_text_btn");
@@ -610,7 +610,7 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 	}
 
 	// we potentially modified the sort order by touching the list items
-	mSpeakerList->setSorted(FALSE);
+	mSpeakerList->setNeedsSort();
 
 	LLPointer<LLSpeaker> selected_speakerp = mSpeakerMgr->findSpeaker(selected_id);
 	// update UI for selected participant
@@ -812,14 +812,6 @@ void LLPanelActiveSpeakers::onDoubleClickSpeaker(void* user_data)
 		gIMMgr->addSession(speakerp->mLegacyName, IM_NOTHING_SPECIAL, speaker_id);
 	}
 }
-
-//static
-void LLPanelActiveSpeakers::onSelectSpeaker(LLUICtrl* source, void* user_data)
-{
-	LLPanelActiveSpeakers* panelp = (LLPanelActiveSpeakers*)user_data;
-	panelp->handleSpeakerSelect();
-}
-
 
 //static
 void LLPanelActiveSpeakers::onSortChanged(void* user_data)

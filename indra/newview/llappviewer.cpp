@@ -507,7 +507,7 @@ static void settings_to_globals()
 	gAllowIdleAFK = gSavedSettings.getBOOL("AllowIdleAFK");
 	gAllowTapTapHoldRun = gSavedSettings.getBOOL("AllowTapTapHoldRun");
 	gShowObjectUpdates = gSavedSettings.getBOOL("ShowObjectUpdates");
-	LLWorldMapView::sMapScale = gSavedSettings.getF32("MapScale");
+	LLWorldMapView::sMapScale =  llmax(.1f,gSavedSettings.getF32("MapScale"));
 	LLHoverView::sShowHoverTips = gSavedSettings.getBOOL("ShowHoverTips");
 }
 
@@ -848,8 +848,10 @@ bool LLAppViewer::init()
 	{	
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
+		std::string msg = LLNotifications::instance().getGlobalString("UnsupportedGLRequirements");
+		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
-			LLNotifications::instance().getGlobalString("UnsupportedGLRequirements"),
+			msg,
 			LLStringUtil::null,
 			OSMB_OK);
 		return 0;
@@ -861,8 +863,10 @@ bool LLAppViewer::init()
 	{
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
+		std::string msg = LLNotifications::instance().getGlobalString("UnsupportedCPUSSE2");
+		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
-			LLNotifications::instance().getGlobalString("UnsupportedCPUSSE2"),
+			msg,
 			LLStringUtil::null,
 			OSMB_OK);
 		return 0;
@@ -873,8 +877,10 @@ bool LLAppViewer::init()
 	{
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
+		std::string msg = LNotifications::instance().getGlobalString("UnsupportedCPUSSE2");
+		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
-			LLNotifications::instance().getGlobalString("UnsupportedCPUSSE"),
+			msg,
 			LLStringUtil::null,
 			OSMB_OK);
 		return 0;
@@ -3948,6 +3954,12 @@ void LLAppViewer::idle()
 	}
 	
 	if (gDisconnected)
+    {
+		return;
+    }
+
+	static const LLCachedControl<bool> hide_tp_screen("AscentDisableTeleportScreens",false);
+	if (!hide_tp_screen && gAgent.getTeleportState() != LLAgent::TELEPORT_NONE && gAgent.getTeleportState() != LLAgent::TELEPORT_LOCAL)
     {
 		return;
     }

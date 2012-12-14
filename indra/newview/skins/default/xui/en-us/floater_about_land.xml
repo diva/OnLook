@@ -773,7 +773,7 @@ Only large parcels can be listed in search.
 			     mouse_opaque="true" name="Snapshot:" v_pad="0" width="278">
 				Snapshot:
 			</text>
-			<texture_picker allow_no_texture="false" bottom="-349" can_apply_immediately="false"
+			<texture_picker allow_no_texture="true" bottom="-349" can_apply_immediately="false"
 			     default_image_name="" enabled="true" follows="left|top" height="135"
 			     label="" left="10" mouse_opaque="true" name="snapshot_ctrl"
 			     tool_tip="Click to choose a picture" width="180" />

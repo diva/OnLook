@@ -208,6 +208,7 @@ static const U32 LLREQUEST_PERMISSION_THROTTLE_LIMIT	= 5;     // requests
 static const F32 LLREQUEST_PERMISSION_THROTTLE_INTERVAL	= 10.0f; // seconds
 
 extern BOOL gDebugClicks;
+extern bool gShiftFrame;
 
 // function prototypes
 bool check_offer_throttle(const std::string& from_name, bool check_only);
@@ -4221,6 +4222,7 @@ void process_avatar_init_complete(LLMessageSystem* msg, void**)
 
 void process_agent_movement_complete(LLMessageSystem* msg, void**)
 {
+	gShiftFrame = true;
 	gAgentMovementCompleted = true;
 
 	LLUUID agent_id;
@@ -7044,40 +7046,35 @@ void process_script_dialog(LLMessageSystem* msg, void**)
 	}
 	else
 	{
-	for (i = 1; i < button_count; i++)
-	{
-		std::string tdesc;
-		msg->getString("Buttons", "ButtonLabel", tdesc, i);
-		form.addElement("button", std::string(tdesc));
-	}
+		for (i = 1; i < button_count; i++)
+		{
+			std::string tdesc;
+			msg->getString("Buttons", "ButtonLabel", tdesc, i);
+			form.addElement("button", std::string(tdesc));
+		}
 	}
 
 	LLSD args;
 	args["TITLE"] = object_name;
 	args["MESSAGE"] = message;
-	// <edit>
 	args["CHANNEL"] = chat_channel;
-	// </edit>
 	LLNotificationPtr notification;
-	if (!first_name.empty())
+	bool const is_group = first_name.empty();
+	char const* name = (is_group && !is_text_box) ? "GROUPNAME" : "NAME";
+	args[name] = is_group ? last_name : LLCacheName::buildFullName(first_name, last_name);
+	if (is_text_box)
 	{
-		args["NAME"] = LLCacheName::buildFullName(first_name, last_name);
-
-		if (is_text_box)
-		{
-			args["DEFAULT"] = default_text;
-			payload["textbox"] = "true";
-			LLNotificationsUtil::add("ScriptTextBoxDialog", args, payload, callback_script_dialog);
-		}
-		else
-		{
+		args["DEFAULT"] = default_text;
+		payload["textbox"] = "true";
+		LLNotificationsUtil::add("ScriptTextBoxDialog", args, payload, callback_script_dialog);
+	}
+	else if (!first_name.empty())
+	{
 		notification = LLNotifications::instance().add(
 			LLNotification::Params("ScriptDialog").substitutions(args).payload(payload).form_elements(form.asLLSD()));
 	}
-	}
 	else
 	{
-		args["GROUPNAME"] = last_name;
 		notification = LLNotifications::instance().add(
 			LLNotification::Params("ScriptDialogGroup").substitutions(args).payload(payload).form_elements(form.asLLSD()));
 	}

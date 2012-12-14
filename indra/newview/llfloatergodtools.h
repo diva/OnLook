@@ -41,6 +41,7 @@
 #include "llpanel.h"
 #include <vector>
 
+class LLAvatarName;
 class LLButton;
 class LLCheckBoxCtrl;
 class LLComboBox;
@@ -237,7 +238,7 @@ public:
 	static void onChangeAnything(LLUICtrl* ctrl, void* data);
 	static void onApplyChanges(void* data);
 	static void onClickSet(void* data);
-	static void callbackAvatarID(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* data);
+	void callbackAvatarID(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names);
 	static void onClickDeletePublicOwnedBy(void* data);
 	static void onClickDeleteAllScriptedOwnedBy(void* data);
 	static void onClickDeleteAllOwnedBy(void* data);

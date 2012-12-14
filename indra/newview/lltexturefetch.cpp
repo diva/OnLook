@@ -1282,7 +1282,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 		{
 			//NOTE:
 			//control the number of the http requests issued for:
-			//1, not openning too many file descriptors at the same time;
+			//1, not opening too many file descriptors at the same time;
 			//2, control the traffic of http so udp gets bandwidth.
 			//
 			static const LLCachedControl<U32> max_http_requests("HTTPMaxRequests", 32);
@@ -2223,27 +2223,21 @@ void LLTextureFetch::deleteRequest(const LLUUID& id, bool cancel)
 {
 	lockQueue() ;
 	LLTextureFetchWorker* worker = getWorkerAfterLock(id);
-	if (worker)
-	{		
-		size_t erased_1 = mRequestMap.erase(worker->mID);
-		unlockQueue() ;
 
-		llassert_always(erased_1 > 0) ;
-
-		removeFromNetworkQueue(worker, cancel);
-		llassert_always(!(worker->getFlags(LLWorkerClass::WCF_DELETE_REQUESTED))) ;
-
-		worker->scheduleDelete();	
-	}
-	else
-	{
-		unlockQueue() ;
-	}
+	removeRequest(worker, cancel, false);
 }
 
-void LLTextureFetch::removeRequest(LLTextureFetchWorker* worker, bool cancel)
+void LLTextureFetch::removeRequest(LLTextureFetchWorker* worker, bool cancel, bool bNeedsLock)
 {
-	lockQueue() ;
+	if(!worker)
+	{
+		if(!bNeedsLock)
+			unlockQueue() ;
+		return;
+	}
+	if(bNeedsLock)
+		lockQueue() ;
+
 	size_t erased_1 = mRequestMap.erase(worker->mID);
 	unlockQueue() ;
 
@@ -2252,6 +2246,23 @@ void LLTextureFetch::removeRequest(LLTextureFetchWorker* worker, bool cancel)
 	llassert_always(!(worker->getFlags(LLWorkerClass::WCF_DELETE_REQUESTED))) ;
 
 	worker->scheduleDelete();	
+}
+
+void LLTextureFetch::deleteAllRequests()
+{
+	while(1)
+	{
+		lockQueue();
+		if(mRequestMap.empty())
+		{
+			unlockQueue() ;
+			break;
+		}
+
+		LLTextureFetchWorker* worker = mRequestMap.begin()->second;
+
+		removeRequest(worker, true, false);
+	}
 }
 
 S32 LLTextureFetch::getNumRequests() 

@@ -67,8 +67,8 @@ class LLTextBox;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLFolderView
 //
-// Th LLFolderView represents the root level folder view object. It
-// manages the screen region of the folder view.
+// The LLFolderView represents the root level folder view object.
+// It manages the screen region of the folder view.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class LLFolderView : public LLFolderViewFolder, public LLEditMenuHandler
@@ -160,6 +160,7 @@ public:
 
 	// Deletion functionality
  	void removeSelectedItems();
+	static void removeCutItems();
 
 	// Open the selected item
 	void openSelectedItems( void );
@@ -320,7 +321,7 @@ protected:
 
 	/**
 	 * Is used to determine if we need to cut text In LLFolderViewItem to avoid horizontal scroll.
-	 * NOTE: For now it uses only to cut LLFolderViewItem::mLabel text to be used for Landmarks in Places Panel.
+	 * NOTE: For now it's used only to cut LLFolderViewItem::mLabel text for Landmarks in Places Panel.
 	 */
 	bool							mUseEllipses; // See EXT-719
 

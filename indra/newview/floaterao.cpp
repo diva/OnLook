@@ -356,9 +356,9 @@ BOOL LLFloaterAO::postBuild()
 	childSetAction("newcard",onClickNewCard,this);
 	childSetAction("prevstand",onClickPrevStand,this);
 	childSetAction("nextstand",onClickNextStand,this);
-	childSetCommitCallback("AOEnabled",onClickToggleAO);
-	childSetCommitCallback("AOSitsEnabled",onClickToggleSits);
-	childSetCommitCallback("standtime",onSpinnerCommit);
+	getChild<LLComboBox>("AOEnabled")->setCommitCallback(boost::bind(&LLFloaterAO::onClickToggleAO));
+	getChild<LLComboBox>("AOSitsEnabled")->setCommitCallback(boost::bind(&LLFloaterAO::onClickToggleSits));
+	getChild<LLComboBox>("standtime")->setCommitCallback(boost::bind(&LLFloaterAO::onSpinnerCommit,_1));
 	mcomboBox_stands = getChild<LLComboBox>("stands");
 	mcomboBox_walks = getChild<LLComboBox>("walks");
 	mcomboBox_runs = getChild<LLComboBox>("runs");
@@ -376,28 +376,28 @@ BOOL LLFloaterAO::postBuild()
 	mcomboBox_lands = getChild<LLComboBox>("lands");
 	mcomboBox_standups = getChild<LLComboBox>("standups");
 	mcomboBox_prejumps = getChild<LLComboBox>("prejumps");
-	getChild<LLComboBox>("stands")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("walks")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("runs")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("jumps")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("sits")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("gsits")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("crouchs")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("cwalks")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("falls")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("hovers")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("flys")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("flyslows")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("flyups")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("flydowns")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("lands")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("standups")->setCommitCallback(onComboBoxCommit);
-	getChild<LLComboBox>("prejumps")->setCommitCallback(onComboBoxCommit);
+	getChild<LLComboBox>("stands")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("walks")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("runs")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("jumps")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("sits")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("gsits")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("crouchs")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("cwalks")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("falls")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("hovers")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("flys")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("flyslows")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("flyups")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("flydowns")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("lands")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("standups")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
+	getChild<LLComboBox>("prejumps")->setCommitCallback(boost::bind(&LLFloaterAO::onComboBoxCommit,_1));
 
 	return TRUE;
 }
 
-void LLFloaterAO::onSpinnerCommit(LLUICtrl* ctrl, void* userdata)
+void LLFloaterAO::onSpinnerCommit(LLUICtrl* ctrl)
 {
 	LLSpinCtrl* spin = (LLSpinCtrl*) ctrl;
 	if(spin)
@@ -409,7 +409,7 @@ void LLFloaterAO::onSpinnerCommit(LLUICtrl* ctrl, void* userdata)
 	}
 }
 
-void LLFloaterAO::onComboBoxCommit(LLUICtrl* ctrl, void* userdata)
+void LLFloaterAO::onComboBoxCommit(LLUICtrl* ctrl)
 {
 	LLComboBox* box = (LLComboBox*)ctrl;
 	if(box)
@@ -727,12 +727,12 @@ void LLFloaterAO::onClickLess(void* data)
 	updateLayout(sInstance);
 }
 
-void LLFloaterAO::onClickToggleAO(LLUICtrl *, void*)
+void LLFloaterAO::onClickToggleAO()
 {
 	run();
 }
 
-void LLFloaterAO::onClickToggleSits(LLUICtrl *, void*)
+void LLFloaterAO::onClickToggleSits()
 {
 	run();
 }
