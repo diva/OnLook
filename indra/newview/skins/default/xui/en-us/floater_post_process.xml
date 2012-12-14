@@ -236,7 +236,7 @@
       <slider bottom_delta="-35" can_edit_text="true"
 				decimal_digits="3" follows="left"
 				height="18" increment=".05" initial_val="1" label="" left="14"
-				max_val="10" min_val="0" mouse_opaque="true"
+				max_val="10" min_val="0" mouse_opaque="true" val_width="35"
 				name="vignette_desaturation" show_text="true" value="0" width="200" />
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
         bottom_delta="-21" drop_shadow_visible="true" follows="left|top|right"
@@ -248,7 +248,7 @@
       <slider bottom_delta="-35" can_edit_text="true"
 				decimal_digits="3" follows="left"
 				height="18" increment="0.0005" initial_val=".01" label="" left="14"
-				max_val=".1" min_val="0" mouse_opaque="true"
+				max_val=".1" min_val="0" mouse_opaque="true" val_width="35"
 				name="vignette_chromatic_aberration" show_text="true" value="0" width="200" />
     </panel>
 		<!--<panel border="true" bottom="-180" follows="left|top|right|bottom" height="400"
