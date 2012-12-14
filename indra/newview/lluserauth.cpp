@@ -323,7 +323,16 @@ LLUserAuth::UserAuthcode LLUserAuth::parseResponse()
 	// will all be string => string pairs.
 	UserAuthcode rv = E_UNHANDLED_ERROR;
 	XMLRPC_REQUEST response = mResponder->response();
-	if(!response) return rv;
+	if(!response)
+	{
+		U32 status = mResponder->http_status();
+		// Is it an HTTP error?
+		if (!(200 <= status && status < 400))
+		{
+			rv = E_HTTP_SERVER_ERROR;
+		}
+		return rv;
+	}
 
 	// clear out any old parsing
 	mResponses.clear();

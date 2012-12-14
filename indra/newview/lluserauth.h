@@ -88,6 +88,7 @@ public:
 		E_SSL_PEER_CERTIFICATE,
 		E_SSL_CACERT,
 		E_SSL_CONNECT_ERROR,
+		E_HTTP_SERVER_ERROR,
 		E_UNHANDLED_ERROR,
 		E_LAST						// never use!
 	} UserAuthcode;
