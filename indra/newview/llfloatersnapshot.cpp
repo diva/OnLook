@@ -2645,6 +2645,12 @@ BOOL LLFloaterSnapshot::postBuild()
 	return TRUE;
 }
 
+LLRect LLFloaterSnapshot::getThumbnailAreaRect()
+{
+	// getRect() includes shadows and the title bar, therefore the real corners are as follows:
+	return LLRect(1, getRect().getHeight() - 17, getRect().getWidth() - 1, getRect().getHeight() - 17 - THUMBHEIGHT);
+}
+
 void LLFloaterSnapshot::draw()
 {
 	LLSnapshotLivePreview* previewp = impl.getPreviewView(this);
@@ -2661,17 +2667,13 @@ void LLFloaterSnapshot::draw()
 	{		
 		if(previewp->getThumbnailImage())
 		{
-			// getRect() includes shadows and the title bar, therefore the real corners are as follows:
-			S32 const left = 1;
-			S32 const right = getRect().getWidth() - 1;
-			S32 const top = getRect().getHeight() - 17;
-			S32 const bottom = top - THUMBHEIGHT;
+			LLRect const thumb_area = getThumbnailAreaRect();
 			// The offset needed to center the thumbnail is: center - thumbnailSize/2 =
-			S32 offset_x = (left + right - previewp->getThumbnailWidth()) / 2;
-			S32 offset_y = (bottom + top - previewp->getThumbnailHeight()) / 2;
+			S32 offset_x = (thumb_area.mLeft + thumb_area.mRight - previewp->getThumbnailWidth()) / 2;
+			S32 offset_y = (thumb_area.mBottom + thumb_area.mTop - previewp->getThumbnailHeight()) / 2;
 
 			gGL.matrixMode(LLRender::MM_MODELVIEW);
-			gl_rect_2d(left, top, right, bottom, LLColor4::grey4, true);
+			gl_rect_2d(thumb_area, LLColor4::grey4, true);
 			gl_draw_scaled_image(offset_x, offset_y, 
 					previewp->getThumbnailWidth(), previewp->getThumbnailHeight(), 
 					previewp->getThumbnailImage(), LLColor4::white);	
@@ -2776,6 +2778,34 @@ BOOL LLFloaterSnapshot::handleKeyHere(KEY key, MASK mask)
 	return LLFloater::handleKeyHere(key, mask);
 }
 
+BOOL LLFloaterSnapshot::handleMouseDown(S32 x, S32 y, MASK mask)
+{
+	if (mask == MASK_NONE)
+	{
+		LLRect thumb_area = getThumbnailAreaRect();
+		if (thumb_area.pointInRect(x, y))
+		{
+			return TRUE;
+		}
+	}
+	return LLFloater::handleMouseDown(x, y, mask);
+}
+
+BOOL LLFloaterSnapshot::handleMouseUp(S32 x, S32 y, MASK mask)
+{
+	if (mask == MASK_NONE)
+	{
+		// In FreezeTime mode, show preview again (after user pressed ESC) when
+		// clicking on the thumbnail area.
+		LLRect thumb_area = getThumbnailAreaRect();
+		if (thumb_area.pointInRect(x, y))
+		{
+			impl.updateControls(this);
+			return TRUE;
+		}
+	}
+	return LLFloater::handleMouseUp(x, y, mask);
+}
 
 ///----------------------------------------------------------------------------
 /// Class LLSnapshotFloaterView

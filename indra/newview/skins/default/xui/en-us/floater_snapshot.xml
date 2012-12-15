@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater bottom="-300" can_close="true" can_drag_on_left="false" can_minimize="false"
-     can_resize="false" follows="left|top" height="629" name="Snapshot"
+     can_resize="false" follows="left|top" height="629" name="Snapshot" 
      rect_control="FloaterSnapshotRect" title="Snapshot Preview" width="219">
 	<text bottom="-201" right="-6" height="25" name="file_size_label" halign="right" width="120">
 		File size: [SIZE] KB

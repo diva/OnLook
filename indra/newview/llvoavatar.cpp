@@ -2878,7 +2878,7 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 
 	if (mFreezeTimeHidden)
 	{
-		return TRUE;
+		return;
 	}
 
 	checkTextureLoading() ;
