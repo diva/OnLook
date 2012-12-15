@@ -358,6 +358,8 @@ private:
 	S32				mVisualComplexity;
 	LLFrameTimer	mFullyLoadedTimer;
 	LLFrameTimer	mRuthTimer;
+	bool			mFreezeTimeHidden;		// True when this object was created during snapshot FreezeTime mode, and that mode is STILL active.
+	bool			mFreezeTimeDead;		// True when the avatar was marked dead (ie, TP-ed away) while in FreezeTime mode.
 protected:
 	LLFrameTimer    mInvisibleTimer;
 	
@@ -453,6 +455,7 @@ private:
 public:
 	U32 		renderImpostor(LLColor4U color = LLColor4U(255,255,255,255), S32 diffuse_channel = 0);
 	bool		isVisuallyMuted() const;
+	void		resetFreezeTime();
 
 	U32 		renderRigid();
 	U32 		renderSkinned(EAvatarRenderPass pass);

@@ -50,7 +50,7 @@ BOOL LLCharacter::sAllowInstancesChange = TRUE ;
 // LLCharacter()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLCharacter::LLCharacter(bool freeze_time)
+LLCharacter::LLCharacter()
 	: 
 	mPreferredPelvisHeight( 0.f ),
 	mSex( SEX_FEMALE ),
@@ -62,7 +62,6 @@ LLCharacter::LLCharacter(bool freeze_time)
 
 	mMotionController.setCharacter( this );
 	mPauseRequest = new LLPauseRequestHandle();
-	mFreezeTimeHidden = freeze_time;
 }
 
 

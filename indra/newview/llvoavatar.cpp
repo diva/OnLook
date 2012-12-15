@@ -1006,12 +1006,13 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 					   const LLPCode pcode,
 					   LLViewerRegion* regionp) :
 	LLViewerObject(id, pcode, regionp),
-	LLCharacter(freeze_time),
 	mIsDummy(FALSE),
 	mSpecialRenderMode(0),
 	mAttachmentGeometryBytes(0),
 	mAttachmentSurfaceArea(0.f),
 	mTurning(FALSE),
+	mFreezeTimeHidden(freeze_time),
+	mFreezeTimeDead(false),
 	mPelvisToFoot(0.f),
 	mLastSkeletonSerialNum( 0 ),
 	mHeadOffset(),
@@ -1236,6 +1237,13 @@ LLVOAvatar::~LLVOAvatar()
 
 void LLVOAvatar::markDead()
 {
+	static const LLCachedControl<bool> freeze_time("FreezeTime", false);
+	if (freeze_time && !mFreezeTimeHidden)
+	{
+		// Delay the call to this function until FreezeTime is reset, otherwise avatars disappear from the frozen scene.
+		mFreezeTimeDead = true;
+		return;
+	}
 	if (mNameText)
 	{
 		mNameText->markDead();
@@ -4097,6 +4105,16 @@ bool LLVOAvatar::isVisuallyMuted() const
 	return LLMuteList::getInstance()->isMuted(getID()) ||
 			(mAttachmentGeometryBytes > max_attachment_bytes && max_attachment_bytes > 0) ||
 			(mAttachmentSurfaceArea > max_attachment_area && max_attachment_area > 0.f);
+}
+
+void LLVOAvatar::resetFreezeTime()
+{
+	bool dead = mFreezeTimeDead;
+	mFreezeTimeHidden = mFreezeTimeDead = false;
+	if (dead)
+	{
+		markDead();
+	}
 }
 
 //------------------------------------------------------------------------
@@ -7572,7 +7590,7 @@ void LLVOAvatar::updateRuthTimer(bool loading)
 		return;
 	}
 
-	if (mPreviousFullyLoaded)
+	if (mPreviousFullyLoaded || mFreezeTimeHidden)
 	{
 		mRuthTimer.reset();
 		debugAvatarRezTime("AvatarRezCloudNotification","became cloud");

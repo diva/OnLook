@@ -71,6 +71,7 @@
 #include "lltoolmgr.h"
 #include "llworld.h"
 #include "llagentui.h"
+#include "llvoavatar.h"
 
 #include "llgl.h"
 #include "llglheaders.h"
@@ -1523,16 +1524,14 @@ void LLFloaterSnapshot::Impl::updateLayout(LLFloaterSnapshot* floaterp)
 			previewp->setEnabled(TRUE);
 		}
 
-		//RN: freeze all avatars
-		LLCharacter* avatarp;
+		// Freeze all avatars.
 		for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
 			iter != LLCharacter::sInstances.end(); ++iter)
 		{
-			avatarp = *iter;
-			sInstance->impl.mAvatarPauseHandles.push_back(avatarp->requestPause());
+			sInstance->impl.mAvatarPauseHandles.push_back((*iter)->requestPause());
 		}
 
-		// freeze everything else
+		// Freeze everything else.
 		gSavedSettings.setBOOL("FreezeTime", TRUE);
 
 		if (LLToolMgr::getInstance()->getCurrentToolset() != gCameraToolset)
@@ -1551,15 +1550,17 @@ void LLFloaterSnapshot::Impl::updateLayout(LLFloaterSnapshot* floaterp)
 			previewp->setEnabled(FALSE);
 		}
 
-		//RN: thaw all avatars
-		sInstance->impl.mAvatarPauseHandles.clear();
+		// Thaw everything except avatars.
+		gSavedSettings.setBOOL("FreezeTime", FALSE);
+
+		// Thaw all avatars.
+		LLVOAvatar* avatarp;
 		for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin(); iter != LLCharacter::sInstances.end(); ++iter)
 		{
-			(*iter)->resetFreezeTimeHidden();
+			avatarp = static_cast<LLVOAvatar*>(*iter);
+			avatarp->resetFreezeTime();
 		}
-
-		// thaw everything else
-		gSavedSettings.setBOOL("FreezeTime", FALSE);
+		sInstance->impl.mAvatarPauseHandles.clear();
 
 		// restore last tool (e.g. pie menu, etc)
 		if (sInstance->impl.mLastToolset)
