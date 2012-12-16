@@ -266,6 +266,22 @@ An error occurred while updating [APP_NAME]. Please download the latest version 
 
   <notification
    icon="alertmodal.tga"
+   name="EmptyFirstNameMessage"
+   type="alertmodal">
+[GRIDNAME] requires a non-empty first name to login.
+Please try again.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="EmptyLastNameMessage"
+   type="alertmodal">
+[GRIDNAME] requires a non-empty last name to login.
+Please try again.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="LoginFailedNoNetwork"
    type="alertmodal">
 Could not connect to the [SECOND_LIFE_GRID].

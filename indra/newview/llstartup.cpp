@@ -978,6 +978,15 @@ bool idle_startup()
 			LL_INFOS("AppInit") << "Attempting login as: " << firstname << " " << lastname << LL_ENDL;
 			gDebugInfo["LoginName"] = firstname + " " + lastname;	
 		}
+		else
+		{
+			// User tried to login on a non-SecondLife grid with an empty lastname.
+			LLSD subs;
+			subs["GRIDNAME"] = gHippoGridManager->getConnectedGrid()->getGridName();
+			LLNotificationsUtil::add(firstname.empty() ? "EmptyFirstNameMessage" : "EmptyLastNameMessage", subs);
+			LLStartUp::setStartupState(STATE_LOGIN_SHOW);
+			return FALSE;
+		}
 
 		LLScriptEdCore::parseFunctions("lsl_functions_sl.xml");	//Singu Note: This parsing function essentially replaces the entirety of the lscript_library library
 		
