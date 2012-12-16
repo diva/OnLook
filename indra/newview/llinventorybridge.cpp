@@ -854,21 +854,26 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
 		}
 	}
 
+	bool paste_as_copy = false; // If Paste As Copy is on the menu, Paste As Link will always show up disabled, so don't bother.
 	// Don't allow items to be pasted directly into the COF or the inbox/outbox
 	if (!isCOFFolder() && !isInboxFolder() && !isOutboxFolder())
 	{
 		items.push_back(std::string("Paste"));
 		// Paste as copy if we have links.
 		if (InventoryLinksEnabled() && isClipboardPasteableAsCopy())
+		{
 			items.push_back(std::string("Paste As Copy"));
+			paste_as_copy = true;
+		}
 	}
 	if (!isClipboardPasteable() || ((flags & FIRST_SELECTED_ITEM) == 0))
 	{
 		disabled_items.push_back(std::string("Paste"));
 		disabled_items.push_back(std::string("Paste As Copy"));
+		paste_as_copy = false;
 	}
 
-	if(InventoryLinksEnabled())
+	if (!paste_as_copy && InventoryLinksEnabled())
 	{
 		items.push_back(std::string("Paste As Link"));
 		if (!isClipboardPasteableAsLink() || (flags & FIRST_SELECTED_ITEM) == 0)
