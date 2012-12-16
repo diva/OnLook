@@ -537,11 +537,11 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 	if (!is_link && is_obj_modify && can_agent_manipulate)
 	{
 		childSetEnabled("GroupLabel",       true);
-		childSetEnabled("CheckGroupCopy",owner_mask & PERM_TRANSFER);
+		childSetEnabled("CheckGroupCopy", (owner_mask & (PERM_TRANSFER|PERM_COPY)) == (PERM_TRANSFER|PERM_COPY));
 		childSetEnabled("CheckGroupMod", owner_mask & PERM_MODIFY);
 		childSetEnabled("CheckGroupMove",   true);
 		childSetEnabled("EveryoneLabel",    true);
-		childSetEnabled("CheckEveryoneCopy",(owner_mask & PERM_COPY) && (owner_mask & PERM_TRANSFER));
+		childSetEnabled("CheckEveryoneCopy", (owner_mask & (PERM_TRANSFER|PERM_COPY)) == (PERM_TRANSFER|PERM_COPY));
 		childSetEnabled("CheckEveryoneMove",true);
 	}
 	else
@@ -551,7 +551,7 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 		childSetEnabled("CheckGroupMod",    false);
 		childSetEnabled("CheckGroupMove",   false);
 		childSetEnabled("EveryoneLabel",    false);
-		childSetEnabled("CheckEveryoneCopy",FALSE);
+		childSetEnabled("CheckEveryoneCopy",false);
 		childSetEnabled("CheckEveryoneMove",false);
 	}
 
