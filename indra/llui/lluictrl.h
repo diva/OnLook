@@ -37,11 +37,13 @@
 #include "llview.h"
 #include "llrect.h"
 #include "llsd.h"
+#include <boost/function.hpp>
+#include <boost/signals2.hpp>
 
 #include "llviewmodel.h"		// *TODO move dependency to .cpp file
 
 class LLUICtrl
-: public LLView 
+: public LLView, public boost::signals2::trackable
 {
 public:
 	typedef boost::function<void (LLUICtrl* ctrl, const LLSD& param)> commit_callback_t;
