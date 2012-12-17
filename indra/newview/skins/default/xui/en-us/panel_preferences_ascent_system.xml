@@ -9,6 +9,7 @@
 		label="Reset camera after teleporting" tool_tip="Centers the camera behind you after a local teleport." name="center_after_teleport_check"/>
       <check_box bottom_delta="-20" control_name="OptionOffsetTPByAgentHeight" follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
         label="Offset TP target by half agent height" tool_tip="Tries to aim the TP so that your feet land at the point you're aiming for." name="offset_teleport_check"/>
+      <check_box left="10" follows="top" bottom_delta="-20" control_name="LiruFlyAfterTeleport" name="fly_after_tp" label="Always fly after teleports" tool_tip="Avoid those falls from great heights by automatically flying after teleporting in."/>
       <check_box left="10" bottom_delta="-20" control_name="PreviewAnimInWorld" follows="top" initial_value="false"
         label="Preview animations on the avatar instead on a dummy before uploading" tool_tip="The Animation upload window will play animations on your avatar when previewing them." name="preview_anim_in_world_check"/>
       <check_box bottom_delta="-20" control_name="SaveInventoryScriptsAsMono" follows="left|top" initial_value="true"

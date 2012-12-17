@@ -6844,8 +6844,9 @@ void process_teleport_local(LLMessageSystem *msg,void**)
 		}
 	}
 
+	static LLCachedControl<bool> fly_after_tp(gSavedSettings, "LiruFlyAfterTeleport");
 	// Sim tells us whether the new position is off the ground
-	if (teleport_flags & TELEPORT_FLAGS_IS_FLYING)
+	if (fly_after_tp || (teleport_flags & TELEPORT_FLAGS_IS_FLYING))
 	{
 		gAgent.setFlying(TRUE);
 	}
