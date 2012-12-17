@@ -5347,9 +5347,10 @@ void LLObjectBridge::performAction(LLInventoryModel* model, std::string action)
 
 void LLObjectBridge::openItem()
 {
+	static LLCachedControl<bool> add(gSavedSettings, "LiruAddNotReplace");
 	// object double-click action is to wear/unwear object
 	performAction(getInventoryModel(),
-		      get_is_item_worn(mUUID) ? "detach" : "attach");
+		      get_is_item_worn(mUUID) ? "detach" : (add ? "wear_add" : "attach"));
 }
 
 std::string LLObjectBridge::getLabelSuffix() const
@@ -6803,10 +6804,11 @@ void LLWearableBridgeAction::wearOnAvatar()
 {
 	// TODO: investigate wearables may not be loaded at this point EXT-8231
 
+	static LLCachedControl<bool> add(gSavedSettings, "LiruAddNotReplace");
 	LLViewerInventoryItem* item = getItem();
 	if(item)
 	{
-		LLAppearanceMgr::instance().wearItemOnAvatar(item->getUUID(), true, true);
+		LLAppearanceMgr::instance().wearItemOnAvatar(item->getUUID(), true, !add);
 	}
 }
 

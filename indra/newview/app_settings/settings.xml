@@ -693,6 +693,17 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>LiruAddNotReplace</key>
+    <map>
+      <key>Comment</key>
+      <string>Add clothing and attachments instead of having them replace the currently worn or attached item at their destination.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>LiruFlyAfterTeleport</key>
     <map>
       <key>Comment</key>
