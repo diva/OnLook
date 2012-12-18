@@ -6808,7 +6808,10 @@ void LLWearableBridgeAction::wearOnAvatar()
 	LLViewerInventoryItem* item = getItem();
 	if(item)
 	{
-		LLAppearanceMgr::instance().wearItemOnAvatar(item->getUUID(), true, !add);
+		if (get_is_item_worn(item))
+			LLAppearanceMgr::instance().removeItemFromAvatar(item->getUUID());
+		else
+			LLAppearanceMgr::instance().wearItemOnAvatar(item->getUUID(), true, !add);
 	}
 }
 
