@@ -11,6 +11,7 @@
 //
 //
 #include "llavatarname.h"
+#include "llavatarpropertiesprocessor.h"
 #include "llfloater.h"
 #include "llfloaterreporter.h"
 #include "lluuid.h"
@@ -29,7 +30,8 @@ class LLFloaterAvatarList;
  * Instances are kept in a map<LLAvatarListEntry>. We keep track of the
  * frame where the avatar was last seen.
  */
-class LLAvatarListEntry {
+class LLAvatarListEntry : public LLAvatarPropertiesObserver
+{
 
 public:
 
@@ -52,6 +54,10 @@ enum ACTIVITY_TYPE
 	 * @param position Avatar's current position
 	 */
 	LLAvatarListEntry(const LLUUID& id = LLUUID::null, const std::string &name = "", const LLVector3d &position = LLVector3d::zero);
+	~LLAvatarListEntry();
+
+	// Get properties, such as age and other niceties displayed on profiles.
+	/*virtual*/ void processProperties(void* data, EAvatarProcessorType type);
 
 	/**
 	 * Update world position.
@@ -78,6 +84,7 @@ enum ACTIVITY_TYPE
 	 * @brief Returns the name of the avatar
 	 */
 	const std::string&  getName() const { return mName; }
+	const time_t& getTime() const { return mTime; }
 
 	/**
 	 * @brief Returns the ID of the avatar
@@ -132,11 +139,14 @@ private:
 
 	LLUUID mID;
 	std::string mName;
+	time_t mTime;
 	LLVector3d mPosition;
 	LLVector3d mDrawPosition;
 	bool mMarked;
 	bool mFocused;
 	bool mIsInList;
+	bool mAgeAlert;
+	int mAge;
 
 	/**
 	 * @brief Timer to keep track of whether avatars are still there
@@ -202,6 +212,9 @@ public:
 
 	static void showInstance();
 
+	// Decides which user-chosen columns to show and hide.
+	void assessColumns();
+
 	/**
 	 * @brief Updates the internal avatar list with the currently present avatars.
 	 */
@@ -245,6 +258,8 @@ private:
 		LIST_POSITION,
 		LIST_ALTITUDE,
 		LIST_ACTIVITY,
+		LIST_AGE,
+		LIST_TIME,
 		LIST_CLIENT,
 	};
 
