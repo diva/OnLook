@@ -32,7 +32,6 @@
 
 
 #include "llviewerprecompiledheaders.h"
-#include <boost/filesystem.hpp>	//First, because glh_linear #defines equivalent.. which boost uses internally
 
 #include "llfeaturemanager.h"
 #include "llviewershadermgr.h"
@@ -306,18 +305,6 @@ void LLViewerShaderMgr::setShaders()
 	if (!gPipeline.mInitialized || !sInitialized || reentrance || sSkipReload)
 	{
 		return;
-	}
-
-	{
-		const std::string dumpdir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,"shader_dump")+gDirUtilp->getDirDelimiter();
-		try 
-		{
-			boost::filesystem::remove_all(dumpdir);
-		}
-		catch(const boost::filesystem::filesystem_error& e)
-		{
-			llinfos << "boost::filesystem::remove_all(\""+dumpdir+"\") failed: '" + e.code().message() + "'" << llendl;
-		}
 	}
 
 	LLGLSLShader::sIndexedTextureChannels = llmax(llmin(gGLManager.mNumTextureImageUnits, (S32) gSavedSettings.getU32("RenderMaxTextureIndex")), 1);
