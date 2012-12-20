@@ -60,6 +60,7 @@
 #include "llfloatercustomize.h"
 
 #include "llwearablelist.h"
+#include "llinventoryicon.h"
 
 // subparts of the UI for focus, camera position, etc.
 enum ESubpart {
@@ -102,7 +103,7 @@ enum ESubpart {
         SUBPART_PHYSICS_ADVANCED,
  };
 
-using namespace LLVOAvatarDefines;
+using namespace LLAvatarAppearanceDefines;
 
 typedef std::vector<ESubpart> subpart_vec_t;
 
@@ -707,11 +708,11 @@ BOOL LLPanelEditWearable::postBuild()
 
 	childSetAction("Revert", &LLPanelEditWearable::onRevertButtonClicked, (void*)this );
 
-        configureAlphaCheckbox(LLVOAvatarDefines::TEX_LOWER_ALPHA, "lower alpha texture invisible");
-        configureAlphaCheckbox(LLVOAvatarDefines::TEX_UPPER_ALPHA, "upper alpha texture invisible");
-        configureAlphaCheckbox(LLVOAvatarDefines::TEX_HEAD_ALPHA, "head alpha texture invisible");
-        configureAlphaCheckbox(LLVOAvatarDefines::TEX_EYES_ALPHA, "eye alpha texture invisible");
-        configureAlphaCheckbox(LLVOAvatarDefines::TEX_HAIR_ALPHA, "hair alpha texture invisible");
+        configureAlphaCheckbox(LLAvatarAppearanceDefines::TEX_LOWER_ALPHA, "lower alpha texture invisible");
+        configureAlphaCheckbox(LLAvatarAppearanceDefines::TEX_UPPER_ALPHA, "upper alpha texture invisible");
+        configureAlphaCheckbox(LLAvatarAppearanceDefines::TEX_HEAD_ALPHA, "head alpha texture invisible");
+        configureAlphaCheckbox(LLAvatarAppearanceDefines::TEX_EYES_ALPHA, "eye alpha texture invisible");
+        configureAlphaCheckbox(LLAvatarAppearanceDefines::TEX_HAIR_ALPHA, "hair alpha texture invisible");
 	
         {
                 const LLEditWearableDictionary::WearableEntry *wearable_entry = LLEditWearableDictionary::getInstance()->getWearable(mType);
@@ -1518,7 +1519,7 @@ void LLPanelEditWearable::buildParamList(LLScrollingPanelList *panel_list, value
 	}
 }
 	
-void LLPanelEditWearable::configureAlphaCheckbox(LLVOAvatarDefines::ETextureIndex te, const std::string& name)
+void LLPanelEditWearable::configureAlphaCheckbox(LLAvatarAppearanceDefines::ETextureIndex te, const std::string& name)
 {
         LLCheckBoxCtrl* checkbox = getChild<LLCheckBoxCtrl>(name, true, false);
 		if(checkbox)
@@ -1529,7 +1530,7 @@ void LLPanelEditWearable::configureAlphaCheckbox(LLVOAvatarDefines::ETextureInde
 		}
 }
 
-void LLPanelEditWearable::onInvisibilityCommit(LLCheckBoxCtrl* checkbox_ctrl, LLVOAvatarDefines::ETextureIndex te)
+void LLPanelEditWearable::onInvisibilityCommit(LLCheckBoxCtrl* checkbox_ctrl, LLAvatarAppearanceDefines::ETextureIndex te)
 {
         if (!checkbox_ctrl) return;
         if (!getWearable()) return;
@@ -1572,7 +1573,7 @@ void LLPanelEditWearable::updateAlphaCheckboxes()
         for(string_texture_index_map_t::iterator iter = mAlphaCheckbox2Index.begin();
                 iter != mAlphaCheckbox2Index.end(); ++iter )
         {
-                LLVOAvatarDefines::ETextureIndex te = (LLVOAvatarDefines::ETextureIndex)iter->second;
+                LLAvatarAppearanceDefines::ETextureIndex te = (LLAvatarAppearanceDefines::ETextureIndex)iter->second;
                 LLCheckBoxCtrl* ctrl = getChild<LLCheckBoxCtrl>(iter->first, true, false);
                 if (ctrl)
                 {
@@ -1590,7 +1591,7 @@ void LLPanelEditWearable::initPreviousAlphaTextures()
         initPreviousAlphaTextureEntry(TEX_LOWER_ALPHA);
 }
 
-void LLPanelEditWearable::initPreviousAlphaTextureEntry(LLVOAvatarDefines::ETextureIndex te)
+void LLPanelEditWearable::initPreviousAlphaTextureEntry(LLAvatarAppearanceDefines::ETextureIndex te)
 {
 	if(!getWearable())
 		return;

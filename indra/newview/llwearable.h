@@ -35,6 +35,7 @@
 #include "llwearabletype.h"
 #include "llfile.h"
 #include "lllocaltextureobject.h"
+#include "llavatarappearancedefines.h"
 
 class LLViewerInventoryItem;
 class LLVisualParam;
@@ -82,6 +83,7 @@ public:
 	LLAssetType::EType			getAssetType() const;
 	S32							getDefinitionVersion() const { return mDefinitionVersion; }
 	void						setDefinitionVersion( S32 new_version ) { mDefinitionVersion = new_version; }
+	virtual const LLUUID		getDefaultTextureImageID(LLAvatarAppearanceDefines::ETextureIndex index);
 
 public:
 	typedef std::vector<LLVisualParam*> visual_param_vec_t;

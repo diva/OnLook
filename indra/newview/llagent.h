@@ -42,7 +42,7 @@
 #include "llagentdata.h" 			// gAgentID, gAgentSessionID
 #include "llcharacter.h"
 #include "llcoordframe.h"			// for mFrameAgent
-#include "llvoavatardefines.h"
+#include "llavatarappearancedefines.h"
 #include "llviewerinventory.h"
 #include "llinventorymodel.h"
 #include "v3dmath.h"
@@ -887,7 +887,7 @@ private:
 	S32				mNumPendingQueries;
 	S32				mWearablesCacheQueryID; //mTextureCacheQueryID;
 	U32				mUpdateSerialNum; //mAgentWearablesUpdateSerialNum
-	S32		    	mActiveCacheQueries[LLVOAvatarDefines::BAKED_NUM_INDICES];
+	S32		    	mActiveCacheQueries[LLAvatarAppearanceDefines::BAKED_NUM_INDICES];
 };
 
 extern LLAgentQueryManager gAgentQueryManager;

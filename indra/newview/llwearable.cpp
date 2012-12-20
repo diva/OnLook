@@ -43,11 +43,11 @@
 #include "llvisualparam.h"
 #include "llvoavatar.h"
 #include "llvoavatarself.h"
-#include "llvoavatardefines.h"
+#include "llavatarappearancedefines.h"
 #include "llwearable.h"
 #include "llviewercontrol.h"
 
-using namespace LLVOAvatarDefines;
+using namespace LLAvatarAppearanceDefines;
 
 // static
 S32 LLWearable::sCurrentDefinitionVersion = 1;
@@ -58,7 +58,7 @@ class LLOverrideBakedTextureUpdate
 public:
 	LLOverrideBakedTextureUpdate(bool temp_state)
 	{
-		U32 num_bakes = (U32) LLVOAvatarDefines::BAKED_NUM_INDICES;
+		U32 num_bakes = (U32) LLAvatarAppearanceDefines::BAKED_NUM_INDICES;
 		for( U32 index = 0; index < num_bakes; ++index )
 		{
 			composite_enabled[index] = gAgentAvatarp->isCompositeUpdateEnabled(index);
@@ -68,14 +68,14 @@ public:
 
 	~LLOverrideBakedTextureUpdate()
 	{
-		U32 num_bakes = (U32)LLVOAvatarDefines::BAKED_NUM_INDICES;		
+		U32 num_bakes = (U32)LLAvatarAppearanceDefines::BAKED_NUM_INDICES;		
 		for( U32 index = 0; index < num_bakes; ++index )
 		{
 			gAgentAvatarp->setCompositeUpdatesEnabled(index, composite_enabled[index]);
 		}
 	}
 private:
-	bool composite_enabled[LLVOAvatarDefines::BAKED_NUM_INDICES];
+	bool composite_enabled[LLAvatarAppearanceDefines::BAKED_NUM_INDICES];
 };
 
 // Private local functions
@@ -117,6 +117,19 @@ LLAssetType::EType LLWearable::getAssetType() const
 	return LLWearableType::getAssetType(mType);
 }
 
+const LLUUID LLWearable::getDefaultTextureImageID(LLAvatarAppearanceDefines::ETextureIndex index)
+{
+	const LLAvatarAppearanceDictionary::TextureEntry *texture_dict = LLAvatarAppearanceDictionary::getInstance()->getTexture(index);
+	const std::string &default_image_name = texture_dict->mDefaultImageName;
+	if (default_image_name == "")
+	{
+		return IMG_DEFAULT_AVATAR;
+	}
+	else
+	{
+		return LLUUID(gSavedSettings.getString(default_image_name));
+	}
+}
 
 // reX: new function
 BOOL LLWearable::FileExportParams( FILE* file )
@@ -484,7 +497,7 @@ BOOL LLWearable::importFile( LLFILE* file )
 
 		if(gSavedSettings.getBOOL("DebugAvatarLocalTexLoadedTime"))
 		{
-			image->setLoadedCallback(LLVOAvatarSelf::debugOnTimingLocalTexLoaded,0,TRUE,FALSE, new LLVOAvatarSelf::LLAvatarTexData(id, (LLVOAvatarDefines::ETextureIndex)te), NULL);
+			image->setLoadedCallback(LLVOAvatarSelf::debugOnTimingLocalTexLoaded,0,TRUE,FALSE, new LLVOAvatarSelf::LLAvatarTexData(id, (LLAvatarAppearanceDefines::ETextureIndex)te), NULL);
 		}
 		LLUUID textureid(text_buffer);
 		mTEMap[te] = new LLLocalTextureObject(image, textureid);
@@ -540,7 +553,7 @@ BOOL LLWearable::isOldVersion() const
 	S32 te_count = 0;
 	for( S32 te = 0; te < TEX_NUM_INDICES; te++ )
 	{
-		if (LLVOAvatarDictionary::getTEWearableType((ETextureIndex) te) == mType)
+		if (LLAvatarAppearanceDictionary::getTEWearableType((ETextureIndex) te) == mType)
 		{
 			te_count++;
 			if( !is_in_map(mTEMap, te ) )
@@ -594,7 +607,7 @@ BOOL LLWearable::isDirty() const
 
 	for( S32 te = 0; te < TEX_NUM_INDICES; te++ )
 	{
-		if (LLVOAvatarDictionary::getTEWearableType((ETextureIndex) te) == mType)
+		if (LLAvatarAppearanceDictionary::getTEWearableType((ETextureIndex) te) == mType)
 		{
 			te_map_t::const_iterator current_iter = mTEMap.find(te);
 			if(current_iter != mTEMap.end())
@@ -640,9 +653,9 @@ void LLWearable::setTexturesToDefaults()
 {
 	for( S32 te = 0; te < TEX_NUM_INDICES; te++ )
 	{
-		if (LLVOAvatarDictionary::getTEWearableType((ETextureIndex) te) == mType)
+		if (LLAvatarAppearanceDictionary::getTEWearableType((ETextureIndex) te) == mType)
 		{
-			LLUUID id = LLVOAvatarDictionary::getDefaultTextureImageID((ETextureIndex) te);
+			LLUUID id = getDefaultTextureImageID((ETextureIndex) te);
 			LLViewerFetchedTexture * image = LLViewerTextureManager::getFetchedTexture( id );
 			if( mTEMap.find(te) == mTEMap.end() )
 			{
@@ -684,7 +697,7 @@ void LLWearable::writeToAvatar()
 	// Pull texture entries
 	for( S32 te = 0; te < TEX_NUM_INDICES; te++ )
 	{
-		if (LLVOAvatarDictionary::getTEWearableType((ETextureIndex) te) == mType)
+		if (LLAvatarAppearanceDictionary::getTEWearableType((ETextureIndex) te) == mType)
 		{
 			te_map_t::const_iterator iter = mTEMap.find(te);
 			LLUUID image_id;
@@ -694,7 +707,7 @@ void LLWearable::writeToAvatar()
 			}
 			else
 			{	
-				image_id = LLVOAvatarDictionary::getDefaultTextureImageID((ETextureIndex) te);
+				image_id = getDefaultTextureImageID((ETextureIndex) te);
 			}
 			LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture( image_id, TRUE, LLViewerTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE );
 			// MULTI-WEARABLE: assume index 0 will be used when writing to avatar. TODO: eliminate the need for this.
@@ -782,7 +795,7 @@ void LLWearable::copyDataFrom(const LLWearable* src)
 	// Deep copy of mTEMap (copies only those tes that are current, filling in defaults where needed)
 	for( S32 te = 0; te < TEX_NUM_INDICES; te++ )
 	{
-		if (LLVOAvatarDictionary::getTEWearableType((ETextureIndex) te) == mType)
+		if (LLAvatarAppearanceDictionary::getTEWearableType((ETextureIndex) te) == mType)
 		{
 			te_map_t::const_iterator iter = src->mTEMap.find(te);
 			LLUUID image_id;
@@ -798,7 +811,7 @@ void LLWearable::copyDataFrom(const LLWearable* src)
 			}
 			else
 			{
-				image_id = LLVOAvatarDictionary::getDefaultTextureImageID((ETextureIndex) te);
+				image_id = getDefaultTextureImageID((ETextureIndex) te);
 				image = LLViewerTextureManager::getFetchedTexture( image_id );
 				mTEMap[te] = new LLLocalTextureObject(image, image_id);
 				mSavedTEMap[te] = new LLLocalTextureObject(image, image_id);
@@ -944,7 +957,7 @@ LLColor4 LLWearable::getClothesColor(S32 te) const
 {
 	LLColor4 color;
 	U32 param_name[3];
-	if( LLVOAvatar::teToColorParams( (LLVOAvatarDefines::ETextureIndex)te, param_name ) )
+	if( LLVOAvatar::teToColorParams( (LLAvatarAppearanceDefines::ETextureIndex)te, param_name ) )
 	{
 		for( U8 index = 0; index < 3; index++ )
 		{
@@ -957,7 +970,7 @@ LLColor4 LLWearable::getClothesColor(S32 te) const
 void LLWearable::setClothesColor( S32 te, const LLColor4& new_color, BOOL upload_bake )
 {
 	U32 param_name[3];
-	if( LLVOAvatar::teToColorParams( (LLVOAvatarDefines::ETextureIndex)te, param_name ) )
+	if( LLVOAvatar::teToColorParams( (LLAvatarAppearanceDefines::ETextureIndex)te, param_name ) )
 	{
 		for( U8 index = 0; index < 3; index++ )
 		{
@@ -1066,7 +1079,7 @@ void LLWearable::syncImages(te_map_t &src, te_map_t &dst)
 	// Deep copy of src (copies only those tes that are current, filling in defaults where needed)
 	for( S32 te = 0; te < TEX_NUM_INDICES; te++ )
 	{
-		if (LLVOAvatarDictionary::getTEWearableType((ETextureIndex) te) == mType)
+		if (LLAvatarAppearanceDictionary::getTEWearableType((ETextureIndex) te) == mType)
 		{
 			te_map_t::const_iterator iter = src.find(te);
 			LLUUID image_id;
@@ -1082,7 +1095,7 @@ void LLWearable::syncImages(te_map_t &src, te_map_t &dst)
 			else
 			{
 				// there is no Local Texture Object in the source image map. Get defaults values for populating the destination image map.
-				image_id = LLVOAvatarDictionary::getDefaultTextureImageID((ETextureIndex) te);
+				image_id = getDefaultTextureImageID((ETextureIndex) te);
 				image = LLViewerTextureManager::getFetchedTexture( image_id );
 			}
 
@@ -1166,7 +1179,7 @@ void LLWearable::pullCrossWearableValues()
 	mTEMap.clear();
 	for( S32 te = 0; te < TEX_NUM_INDICES; te++ )
 	{
-		if( LLVOAvatarDictionary::getTEWearableType((ETextureIndex) te ) == mType )
+		if( LLAvatarAppearanceDictionary::getTEWearableType((ETextureIndex) te ) == mType )
 		{
 			LLViewerTexture* image = avatar->getTEImage( te );
 			if( image )

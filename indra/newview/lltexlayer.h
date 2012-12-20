@@ -29,7 +29,7 @@
 
 #include <deque>
 #include "lldynamictexture.h"
-#include "llvoavatardefines.h"
+#include "llavatarappearancedefines.h"
 #include "lltexlayerparams.h"
 
 class LLVOAvatar;
@@ -43,6 +43,7 @@ class LLTexLayerInfo;
 class LLTexLayerSetBuffer;
 class LLWearable;
 class LLViewerVisualParam;
+class LLLocalTextureObject;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // LLTexLayerInterface
@@ -207,13 +208,13 @@ public:
 	BOOL						isMorphValid() const;
 	void						invalidateMorphMasks();
 	LLTexLayerInterface*		findLayerByName(const std::string& name);
-	void						cloneTemplates(LLLocalTextureObject *lto, LLVOAvatarDefines::ETextureIndex tex_index, LLWearable* wearable);
+	void						cloneTemplates(LLLocalTextureObject *lto, LLAvatarAppearanceDefines::ETextureIndex tex_index, LLWearable* wearable);
 	
 	LLVOAvatarSelf*		    	getAvatar()	const 			{ return mAvatar; }
 	const std::string			getBodyRegionName() const;
 	BOOL						hasComposite() const 		{ return (mComposite.notNull()); }
-	LLVOAvatarDefines::EBakedTextureIndex getBakedTexIndex() { return mBakedTexIndex; }
-	void						setBakedTexIndex(LLVOAvatarDefines::EBakedTextureIndex index) { mBakedTexIndex = index; }
+	LLAvatarAppearanceDefines::EBakedTextureIndex getBakedTexIndex() { return mBakedTexIndex; }
+	void						setBakedTexIndex(LLAvatarAppearanceDefines::EBakedTextureIndex index) { mBakedTexIndex = index; }
 	BOOL						isVisible() const 			{ return mIsVisible; }
 
 	static BOOL					sHasCaches;
@@ -227,7 +228,7 @@ private:
 	BOOL						mUpdatesEnabled;
 	BOOL						mIsVisible;
 
-	LLVOAvatarDefines::EBakedTextureIndex mBakedTexIndex;
+	LLAvatarAppearanceDefines::EBakedTextureIndex mBakedTexIndex;
 	const LLTexLayerSetInfo* 	mInfo;
 };
 

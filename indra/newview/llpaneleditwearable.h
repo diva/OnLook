@@ -30,7 +30,7 @@
 #include "llpanel.h"
 #include "llscrollingpanellist.h"
 #include "llmodaldialog.h"
-#include "llvoavatardefines.h"
+#include "llavatarappearancedefines.h"
 #include "llwearabletype.h"
 
 class LLAccordionCtrl;
@@ -47,7 +47,7 @@ class LLLineEditor;
 class LLSubpart;
 class LLWearableSaveAsDialog;
 
-using namespace LLVOAvatarDefines;
+using namespace LLAvatarAppearanceDefines;
 
 class LLPanelEditWearable : public LLPanel
 {
@@ -112,20 +112,20 @@ public:
 	void				onTexturePickerCommit(const LLUICtrl*);
 	
 	//alpha mask checkboxes
-	void configureAlphaCheckbox(LLVOAvatarDefines::ETextureIndex te, const std::string& name);
-	void onInvisibilityCommit(LLCheckBoxCtrl* checkbox_ctrl, LLVOAvatarDefines::ETextureIndex te);
+	void configureAlphaCheckbox(LLAvatarAppearanceDefines::ETextureIndex te, const std::string& name);
+	void onInvisibilityCommit(LLCheckBoxCtrl* checkbox_ctrl, LLAvatarAppearanceDefines::ETextureIndex te);
 	void updateAlphaCheckboxes();
 	void initPreviousAlphaTextures();
-	void initPreviousAlphaTextureEntry(LLVOAvatarDefines::ETextureIndex te);
+	void initPreviousAlphaTextureEntry(LLAvatarAppearanceDefines::ETextureIndex te);
 	
 private:
 
 	LLWearableType::EType		mType;
 	BOOL				mCanTakeOff;
-	typedef std::map<std::string, LLVOAvatarDefines::ETextureIndex> string_texture_index_map_t;
+	typedef std::map<std::string, LLAvatarAppearanceDefines::ETextureIndex> string_texture_index_map_t;
 	string_texture_index_map_t mAlphaCheckbox2Index;
 
-	typedef std::map<LLVOAvatarDefines::ETextureIndex, LLUUID> s32_uuid_map_t;
+	typedef std::map<LLAvatarAppearanceDefines::ETextureIndex, LLUUID> s32_uuid_map_t;
 	s32_uuid_map_t mPreviousAlphaTexture;
 	U32					mCurrentSubpart;
 	U32					mCurrentIndex;

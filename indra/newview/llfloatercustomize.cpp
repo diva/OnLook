@@ -83,7 +83,7 @@
 #include "statemachine/aifilepicker.h"
 #include "hippogridmanager.h"
 
-using namespace LLVOAvatarDefines;
+using namespace LLAvatarAppearanceDefines;
 
 // *TODO:translate : The ui xml for this really needs to be integrated with the appearance paramaters
 

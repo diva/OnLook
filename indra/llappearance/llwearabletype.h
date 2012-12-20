@@ -29,8 +29,15 @@
 
 #include "llassettype.h"
 #include "lldictionary.h"
-#include "llinventoryicon.h"
+#include "llinventorytype.h"
 #include "llsingleton.h"
+
+class LLTranslationBridge
+{
+public:
+	virtual std::string getString(const std::string &xml_desc) = 0;
+};
+
 
 class LLWearableType
 {
@@ -59,12 +66,15 @@ public:
 		WT_NONE		  = -1,
 	};
 
+	static void			initClass(LLTranslationBridge* trans); // initializes static members
+	static void			cleanupClass(); // initializes static members
+
 	static const std::string& 			getTypeName(EType type);
 	static const std::string& 			getTypeDefaultNewName(EType type);
 	static const std::string& 			getTypeLabel(EType type);
 	static LLAssetType::EType 			getAssetType(EType type);
 	static EType 						typeNameToType(const std::string& type_name);
-	static LLInventoryIcon::EIconName 	getIconName(EType type);
+	static LLInventoryType::EIconName 	getIconName(EType type);
 	static BOOL 						getDisableCameraSwitch(EType type);
 	static BOOL 						getAllowMultiwear(EType type);
 

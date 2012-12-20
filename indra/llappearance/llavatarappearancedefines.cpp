@@ -2,50 +2,43 @@
  * @file llvoavatar.cpp
  * @brief Implementation of LLVOAvatar class which is a derivation fo LLViewerObject
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
-#include "llviewerprecompiledheaders.h"
-#include "llvoavatardefines.h"
-#include "llviewercontrol.h" // gSavedSettings
+#include "linden_common.h"
+#include "llavatarappearancedefines.h"
 
-const S32 LLVOAvatarDefines::SCRATCH_TEX_WIDTH = 512;
-const S32 LLVOAvatarDefines::SCRATCH_TEX_HEIGHT = 512;
-const S32 LLVOAvatarDefines::IMPOSTOR_PERIOD = 2;
+const S32 LLAvatarAppearanceDefines::SCRATCH_TEX_WIDTH = 512;
+const S32 LLAvatarAppearanceDefines::SCRATCH_TEX_HEIGHT = 512;
+const S32 LLAvatarAppearanceDefines::IMPOSTOR_PERIOD = 2;
 
-using namespace LLVOAvatarDefines;
+using namespace LLAvatarAppearanceDefines;
 
 /*********************************************************************************
  * Edit this function to add/remove/change textures and mesh definitions for avatars.
  * If these are changed, they MUST be changed in floater_avatar_textures.xml as well!
  */
 
-LLVOAvatarDictionary::Textures::Textures()
+LLAvatarAppearanceDictionary::Textures::Textures()
 {
 	addEntry(TEX_HEAD_BODYPAINT,              new TextureEntry("head_bodypaint",   TRUE,  BAKED_NUM_INDICES, "",                          LLWearableType::WT_SKIN));
 	addEntry(TEX_UPPER_SHIRT,                 new TextureEntry("upper_shirt",      TRUE,  BAKED_NUM_INDICES, "UIImgDefaultShirtUUID",     LLWearableType::WT_SHIRT));
@@ -81,7 +74,7 @@ LLVOAvatarDictionary::Textures::Textures()
 	addEntry(TEX_SKIRT_BAKED,                 new TextureEntry("skirt-baked",      FALSE, BAKED_SKIRT));
 }
 
-LLVOAvatarDictionary::BakedTextures::BakedTextures()
+LLAvatarAppearanceDictionary::BakedTextures::BakedTextures()
 {
 	// Baked textures
 	addEntry(BAKED_HEAD,       new BakedEntry(TEX_HEAD_BAKED,  
@@ -117,36 +110,36 @@ LLVOAvatarDictionary::BakedTextures::BakedTextures()
 											  2, LLWearableType::WT_HAIR, LLWearableType::WT_ALPHA));
 }
 
-LLVOAvatarDictionary::Meshes::Meshes()
+LLAvatarAppearanceDictionary::MeshEntries::MeshEntries()
 {
-	// Meshes
-	addEntry(MESH_ID_HAIR,             new MeshEntry(BAKED_HAIR,  "hairMesh",         6, LLViewerJoint::PN_4));
-	addEntry(MESH_ID_HEAD,             new MeshEntry(BAKED_HEAD,  "headMesh",         5, LLViewerJoint::PN_5));
-	addEntry(MESH_ID_EYELASH,          new MeshEntry(BAKED_HEAD,  "eyelashMesh",      1, LLViewerJoint::PN_0)); // no baked mesh associated currently
-	addEntry(MESH_ID_UPPER_BODY,       new MeshEntry(BAKED_UPPER, "upperBodyMesh",    5, LLViewerJoint::PN_1));
-	addEntry(MESH_ID_LOWER_BODY,       new MeshEntry(BAKED_LOWER, "lowerBodyMesh",    5, LLViewerJoint::PN_2));
-	addEntry(MESH_ID_EYEBALL_LEFT,     new MeshEntry(BAKED_EYES,  "eyeBallLeftMesh",  2, LLViewerJoint::PN_3));
-	addEntry(MESH_ID_EYEBALL_RIGHT,    new MeshEntry(BAKED_EYES,  "eyeBallRightMesh", 2, LLViewerJoint::PN_3));
-	addEntry(MESH_ID_SKIRT,            new MeshEntry(BAKED_SKIRT, "skirtMesh",        5, LLViewerJoint::PN_5));
+	// MeshEntries
+	addEntry(MESH_ID_HAIR,             new MeshEntry(BAKED_HAIR,  "hairMesh",         6, PN_4));
+	addEntry(MESH_ID_HEAD,             new MeshEntry(BAKED_HEAD,  "headMesh",         5, PN_5));
+	addEntry(MESH_ID_EYELASH,          new MeshEntry(BAKED_HEAD,  "eyelashMesh",      1, PN_0)); // no baked mesh associated currently
+	addEntry(MESH_ID_UPPER_BODY,       new MeshEntry(BAKED_UPPER, "upperBodyMesh",    5, PN_1));
+	addEntry(MESH_ID_LOWER_BODY,       new MeshEntry(BAKED_LOWER, "lowerBodyMesh",    5, PN_2));
+	addEntry(MESH_ID_EYEBALL_LEFT,     new MeshEntry(BAKED_EYES,  "eyeBallLeftMesh",  2, PN_3));
+	addEntry(MESH_ID_EYEBALL_RIGHT,    new MeshEntry(BAKED_EYES,  "eyeBallRightMesh", 2, PN_3));
+	addEntry(MESH_ID_SKIRT,            new MeshEntry(BAKED_SKIRT, "skirtMesh",        5, PN_5));
 }
 
 /*
  *
  *********************************************************************************/
 
-LLVOAvatarDictionary::LLVOAvatarDictionary()
+LLAvatarAppearanceDictionary::LLAvatarAppearanceDictionary()
 {
 	createAssociations();
 }
 
 //virtual 
-LLVOAvatarDictionary::~LLVOAvatarDictionary()
+LLAvatarAppearanceDictionary::~LLAvatarAppearanceDictionary()
 {
 }
 
 // Baked textures are composites of textures; for each such composited texture,
 // map it to the baked texture.
-void LLVOAvatarDictionary::createAssociations()
+void LLAvatarAppearanceDictionary::createAssociations()
 {
 	for (BakedTextures::const_iterator iter = mBakedTextures.begin(); iter != mBakedTextures.end(); iter++)
 	{
@@ -167,7 +160,7 @@ void LLVOAvatarDictionary::createAssociations()
 		
 }
 
-LLVOAvatarDictionary::TextureEntry::TextureEntry(const std::string &name, 
+LLAvatarAppearanceDictionary::TextureEntry::TextureEntry(const std::string &name, 
 																	 bool is_local_texture, 
 																	 EBakedTextureIndex baked_texture_index,
 																	 const std::string &default_image_name,
@@ -182,17 +175,17 @@ LLVOAvatarDictionary::TextureEntry::TextureEntry(const std::string &name,
 {
 }
 
-LLVOAvatarDictionary::MeshEntry::MeshEntry(EBakedTextureIndex baked_index, 
+LLAvatarAppearanceDictionary::MeshEntry::MeshEntry(EBakedTextureIndex baked_index, 
 										   const std::string &name, 
 										   U8 level,
-										   LLViewerJoint::PickName pick) :
+										   LLJointPickName pick) :
 	LLDictionaryEntry(name),
 	mBakedID(baked_index),
 	mLOD(level),
 	mPickName(pick)
 {
 }
-LLVOAvatarDictionary::BakedEntry::BakedEntry(ETextureIndex tex_index, 
+LLAvatarAppearanceDictionary::BakedEntry::BakedEntry(ETextureIndex tex_index, 
 											 const std::string &name, 
 											 const std::string &hash_name,
 											 U32 num_local_textures,
@@ -223,18 +216,18 @@ LLVOAvatarDictionary::BakedEntry::BakedEntry(ETextureIndex tex_index,
 }
 
 // static
-ETextureIndex LLVOAvatarDictionary::bakedToLocalTextureIndex(EBakedTextureIndex index)
+ETextureIndex LLAvatarAppearanceDictionary::bakedToLocalTextureIndex(EBakedTextureIndex index)
 {
-	return LLVOAvatarDictionary::getInstance()->getBakedTexture(index)->mTextureIndex;
+	return LLAvatarAppearanceDictionary::getInstance()->getBakedTexture(index)->mTextureIndex;
 }
 
 //static 
-EBakedTextureIndex LLVOAvatarDictionary::findBakedByRegionName(std::string name)
+EBakedTextureIndex LLAvatarAppearanceDictionary::findBakedByRegionName(std::string name)
 {
 	U8 index = 0;
 	while (index < BAKED_NUM_INDICES)
 	{
-		const BakedEntry *be = LLVOAvatarDictionary::getInstance()->getBakedTexture((EBakedTextureIndex) index);
+		const BakedEntry *be = LLAvatarAppearanceDictionary::getInstance()->getBakedTexture((EBakedTextureIndex) index);
 		if (be && be->mName.compare(name) == 0)
 		{
 			// baked texture found
@@ -246,23 +239,8 @@ EBakedTextureIndex LLVOAvatarDictionary::findBakedByRegionName(std::string name)
 	return BAKED_NUM_INDICES;
 }
 
-//static
-const LLUUID LLVOAvatarDictionary::getDefaultTextureImageID(ETextureIndex index)
-{
-	const TextureEntry *texture_dict = getInstance()->getTexture(index);
-	const std::string &default_image_name = texture_dict->mDefaultImageName;
-	if (default_image_name == "")
-	{
-		return IMG_DEFAULT_AVATAR;
-	}
-	else
-	{
-		return LLUUID(gSavedSettings.getString(default_image_name));
-	}
-}
-
 // static
-LLWearableType::EType LLVOAvatarDictionary::getTEWearableType(ETextureIndex index )
+LLWearableType::EType LLAvatarAppearanceDictionary::getTEWearableType(ETextureIndex index )
 {
 	return getInstance()->getTexture(index)->mWearableType;
 }

@@ -584,6 +584,15 @@ LLAppViewer::~LLAppViewer()
 	removeMarkerFile();
 }
 
+class LLUITranslationBridge : public LLTranslationBridge
+{
+public:
+	virtual std::string getString(const std::string &xml_desc)
+	{
+		return LLTrans::getString(xml_desc);
+	}
+};
+
 bool LLAppViewer::init()
 {
 	//
@@ -595,6 +604,10 @@ bool LLAppViewer::init()
 	//
 	LLFastTimer::reset();
 	
+	// initialize LLWearableType translation bridge.
+	// Memory will be cleaned up in ::cleanupClass()
+	LLWearableType::initClass(new LLUITranslationBridge());
+
 	// <edit>
 	// We can call this early.
 	LLFrameTimer::global_initialization();

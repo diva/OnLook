@@ -3,43 +3,38 @@
  * @brief Declaration of LLVOAvatar class which is a derivation fo
  * LLViewerObject
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
-#ifndef LLVOAVATAR_DEFINES_H
-#define LLVOAVATAR_DEFINES_H
+#ifndef LL_AVATARAPPEARANCE_DEFINES_H
+#define LL_AVATARAPPEARANCE_DEFINES_H
 
 #include <vector>
-#include "llwearable.h"
-#include "llviewerjoint.h"
+#include "lljointpickname.h"
 #include "lldictionary.h"
+#include "llwearabletype.h"
+#include "lluuid.h"
 
-namespace LLVOAvatarDefines
+namespace LLAvatarAppearanceDefines
 {
 
 extern const S32 SCRATCH_TEX_WIDTH;
@@ -51,6 +46,7 @@ extern const S32 IMPOSTOR_PERIOD;
 //--------------------------------------------------------------------
 enum ETextureIndex
 {
+	TEX_INVALID = -1,
 	TEX_HEAD_BODYPAINT = 0,
 	TEX_UPPER_SHIRT,
 	TEX_LOWER_PANTS,
@@ -117,21 +113,21 @@ typedef std::vector<EMeshIndex> mesh_vec_t;
 typedef std::vector<LLWearableType::EType> wearables_vec_t;
 
 //------------------------------------------------------------------------
-// LLVOAvatarDictionary
+// LLAvatarAppearanceDictionary
 // 
 // Holds dictionary static entries for textures, baked textures, meshes, etc.; i.e.
 // information that is common to all avatars.
 // 
 // This holds const data - it is initialized once and the contents never change after that.
 //------------------------------------------------------------------------
-class LLVOAvatarDictionary : public LLSingleton<LLVOAvatarDictionary>
+class LLAvatarAppearanceDictionary : public LLSingleton<LLAvatarAppearanceDictionary>
 {
 	//--------------------------------------------------------------------
 	// Constructors and Destructors
 	//--------------------------------------------------------------------
 public:
-	LLVOAvatarDictionary();
-	virtual ~LLVOAvatarDictionary();
+	LLAvatarAppearanceDictionary();
+	virtual ~LLAvatarAppearanceDictionary();
 private:
 	void createAssociations();
 	
@@ -170,22 +166,22 @@ public:
 	struct MeshEntry : public LLDictionaryEntry
 	{
 		MeshEntry(EBakedTextureIndex baked_index, 
-							const std::string &name, 
-							U8 level,
-							LLViewerJoint::PickName pick);
+				  const std::string &name, // names of mesh types as they are used in avatar_lad.xml
+				  U8 level,
+				  LLJointPickName pick);
 		// Levels of Detail for each mesh.  Must match levels of detail present in avatar_lad.xml
         // Otherwise meshes will be unable to be found, or levels of detail will be ignored
-		const U8 mLOD;
-		const EBakedTextureIndex mBakedID;
-		const LLViewerJoint::PickName mPickName;
+		const U8 						mLOD;
+		const EBakedTextureIndex 		mBakedID;
+		const LLJointPickName 	mPickName;
 	};
 
-	struct Meshes : public LLDictionary<EMeshIndex, MeshEntry>
+	struct MeshEntries : public LLDictionary<EMeshIndex, MeshEntry>
 	{
-		Meshes();
-	} mMeshes;
-	const MeshEntry*		getMesh(EMeshIndex index) const { return mMeshes.lookup(index); }
-	const Meshes&			getMeshes() const { return mMeshes; }
+		MeshEntries();
+	} mMeshEntries;
+	const MeshEntry*		getMeshEntry(EMeshIndex index) const { return mMeshEntries.lookup(index); }
+	const MeshEntries&		getMeshEntries() const { return mMeshEntries; }
 
 	//--------------------------------------------------------------------
 	// Baked Textures
@@ -222,13 +218,11 @@ public:
 	// find a baked texture index based on its name
 	static EBakedTextureIndex 	findBakedByRegionName(std::string name);
 
-	static const LLUUID			getDefaultTextureImageID(ETextureIndex index);
-
 	// Given a texture entry, determine which wearable type owns it.
 	static LLWearableType::EType 		getTEWearableType(ETextureIndex index);
 
-}; // End LLVOAvatarDictionary
+}; // End LLAvatarAppearanceDictionary
 
-} // End namespace LLVOAvatarDefines
+} // End namespace LLAvatarAppearanceDefines
 
-#endif
+#endif //LL_AVATARAPPEARANCE_DEFINES_H

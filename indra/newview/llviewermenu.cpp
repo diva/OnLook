@@ -271,7 +271,7 @@
 #include "hippogridmanager.h"
 
 using namespace LLOldEvents;
-using namespace LLVOAvatarDefines;
+using namespace LLAvatarAppearanceDefines;
 void init_client_menu(LLMenuGL* menu);
 void init_server_menu(LLMenuGL* menu);
 
@@ -2316,13 +2316,13 @@ class LLAvatarReloadTextures : public view_listener_t
 		{
 			LLAvatarPropertiesProcessor::getInstance()->sendAvatarTexturesRequest(avatar->getID());
 			LLTextureReloader texture_list;
-			for (U32 i = 0; i < LLVOAvatarDefines::TEX_NUM_INDICES; ++i)
+			for (U32 i = 0; i < LLAvatarAppearanceDefines::TEX_NUM_INDICES; ++i)
 			{
 				if (LLVOAvatar::isIndexLocalTexture((ETextureIndex)i))
 				{
 					if(avatar->isSelf())
 					{
-						LLWearableType::EType wearable_type = LLVOAvatarDictionary::getTEWearableType((ETextureIndex)i);
+						LLWearableType::EType wearable_type = LLAvatarAppearanceDictionary::getTEWearableType((ETextureIndex)i);
 						U32 num_wearables = gAgentWearables.getWearableCount(wearable_type);
 						for (U32 wearable_index = 0; wearable_index < num_wearables; wearable_index++)
 						{

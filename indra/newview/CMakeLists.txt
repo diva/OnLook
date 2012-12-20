@@ -44,6 +44,7 @@ include(UI)
 include(LLKDU)
 include(ViewerMiscLibs)
 include(ViewerArtwork.cmake)
+include(LLAppearance)
 
 if (WINDOWS)
     include(CopyWinLibs)
@@ -70,6 +71,7 @@ include_directories(
     ${LLVFS_INCLUDE_DIRS}
     ${LLWINDOW_INCLUDE_DIRS}
     ${LLXML_INCLUDE_DIRS}
+    ${LLAPPEARANCE_INCLUDE_DIRS}
 #    ${LSCRIPT_INCLUDE_DIRS}
 #    ${LSCRIPT_INCLUDE_DIRS}/lscript_compile
     )
@@ -515,7 +517,6 @@ set(viewer_SOURCE_FILES
     llvlcomposition.cpp
     llvlmanager.cpp
     llvoavatar.cpp
-    llvoavatardefines.cpp
     llvoavatarself.cpp
     llvocache.cpp
     llvoclouds.cpp
@@ -537,7 +538,6 @@ set(viewer_SOURCE_FILES
     llwaterparamset.cpp
     llwearable.cpp
     llwearablelist.cpp
-    llwearabletype.cpp
     llweb.cpp
     llwebprofile.cpp
     llwind.cpp
@@ -1026,7 +1026,6 @@ set(viewer_HEADER_FILES
     llvlcomposition.h
     llvlmanager.h
     llvoavatar.h
-    llvoavatardefines.h
     llvoavatarself.h
     llvocache.h
     llvoclouds.h
@@ -1049,7 +1048,6 @@ set(viewer_HEADER_FILES
     llwaterparamset.h
     llwearable.h
     llwearablelist.h
-    llwearabletype.h
     llweb.h
     llwebprofile.h
     llwind.h
@@ -1582,6 +1580,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${XMLRPCEPI_LIBRARIES}
     ${ELFIO_LIBRARIES}
     ${HUNSPELL_LIBRARY}
+    ${LLAPPEARANCE_LIBRARIES}
     )
 
 if (LINUX)

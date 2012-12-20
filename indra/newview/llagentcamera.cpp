@@ -55,7 +55,7 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
-using namespace LLVOAvatarDefines;
+using namespace LLAvatarAppearanceDefines;
 
 extern LLMenuBarGL* gMenuBarView;
 
