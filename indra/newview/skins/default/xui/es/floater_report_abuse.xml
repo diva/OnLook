@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="floater_report_abuse" title="Reportar Abuso">
+    <string name="Screenshot">
+        Captura de Pantalla
+    </string>
 	<texture_picker label="" name="screenshot"/>
 	<check_box label="Incluir captura" name="screen_check"/>
 	<text name="reporter_title">
@@ -41,7 +44,7 @@
 			Seleccionar categoría
 		</combo_item>
 		<combo_item name="Age__Age_play">
-			Edad > Jugar a se niño
+			Edad > Jugar a ser niño
 		</combo_item>
 		<combo_item name="Age__Adult_resident_on_Teen_Second_Life">
 			Edad > Residente adulto en Teen Second Life
@@ -78,7 +81,7 @@
 			Alterar la Paz > Objetos basura
 		</combo_item>
 		<combo_item name="Disturbing_the_peace__Repetitive_spam">
-			Alterar la Paz > Spam (Mensajes no solicitados) repetitivo
+			Alterar la Paz > Spam (Mensajes no solicitados) reiterado
 		</combo_item>
 		<combo_item name="Disturbing_the_peace__Unwanted_advert_spam">
 			Alterar la Paz > Publicidad no deseada
@@ -96,7 +99,7 @@
 			Fraude > US$
 		</combo_item>
 		<combo_item name="Ridiculous3">
-			Freud > Un usuario a manifestado interes en su madre
+			Freud > Un usuario ha manifestado interes en su madre
 		</combo_item>
 		<combo_item name="Harassment__Advert_farms___visual_spam">
 			Acoso > Anuncios múltiples / spam visual
@@ -117,7 +120,7 @@
 			Acoso > Abuso verbal
 		</combo_item>
 		<combo_item name="Ridiculous1">
-			Acoso > El usuario se lame los dedos y me toca
+			Acoso > El usuario se lame los dedos y luego me toca
 		</combo_item>
 		<combo_item name="Indecency__Broadly_offensive_content_or_conduct">
 			Indecencia > En general, contenido o conducta ofensivos

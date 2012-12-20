@@ -1,98 +1,35 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <pie_menu name="Self Pie">
-	<menu_item_call label="Perfil..." name="Profile...">
-		<on_click function="ShowAgentProfile" userdata="agent" />
-	</menu_item_call>
-	<menu_item_call label="Grupos..." name="Groups...">
-		<on_click function="ShowAgentGroups" userdata="agent" />
-	</menu_item_call>
+	<menu_item_call label="Perfil..." name="Profile..."/>
+	<menu_item_call label="Grupos..." name="Groups..."/>
 	<pie_menu label="Quitarse &gt;" name="Take Off &gt;">
 		<pie_menu  label="Ropa &gt;" name="Clothes &gt;">
-			<menu_item_call label="Camisa" name="Shirt">
-				<on_click function="Edit.TakeOff" userdata="shirt" />
-				<on_enable function="Edit.EnableTakeOff" userdata="shirt" />
-			</menu_item_call>
-			<menu_item_call label="Pantalones" name="Pants" >
-				<on_click function="Edit.TakeOff" userdata="pants" />
-				<on_enable function="Edit.EnableTakeOff" userdata="pants" />
-			</menu_item_call>
-			<menu_item_call label="Zapatos"  name="Shoes" >
-				<on_click function="Edit.TakeOff" userdata="shoes" />
-				<on_enable function="Edit.EnableTakeOff" userdata="shoes" />
-			</menu_item_call>
-			<menu_item_call blabel="Calcetines" name="Socks" >
-				<on_click function="Edit.TakeOff" userdata="socks" />
-				<on_enable function="Edit.EnableTakeOff" userdata="socks" />
-			</menu_item_call>
-			<menu_item_call label="Chaqueta" name="Jacket" >
-				<on_click function="Edit.TakeOff" userdata="jacket" />
-				<on_enable function="Edit.EnableTakeOff" userdata="jacket" />
-			</menu_item_call>
-			<menu_item_call label="Guantes" name="Gloves" >
-				<on_click function="Edit.TakeOff" userdata="gloves" />
-				<on_enable function="Edit.EnableTakeOff" userdata="gloves" />
-			</menu_item_call>
+			<menu_item_call label="Camisa" name="Shirt"/>
+			<menu_item_call label="Pantalones" name="Pants"/>
+			<menu_item_call label="Zapatos"  name="Shoes"/>
+			<menu_item_call label="Calcetines" name="Socks"/>
+			<menu_item_call label="Chaqueta" name="Jacket"/>
+			<menu_item_call label="Guantes" name="Gloves"/>
 			<pie_menu label="Más &gt;" name="More &gt;">
-				<menu_item_call label="Camiseta" name="Self Undershirt" >
-					<on_click function="Edit.TakeOff" userdata="undershirt" />
-					<on_enable function="Edit.EnableTakeOff" userdata="undershirt" />
-				</menu_item_call>
-				<menu_item_separator />
-				<menu_item_call label="Toda la ropa" name="All Clothes" >
-					<on_click function="Edit.TakeOff" userdata="all" />
-				</menu_item_call>
-				<menu_item_call label="Tatuaje" name="Self Tattoo" >
-					<on_click function="Edit.TakeOff" userdata="tattoo" />
-					<on_enable function="Edit.EnableTakeOff" userdata="tattoo" />
-				</menu_item_call>
-				<menu_item_call label="Alfa" name="Self Alpha" >
-					<on_click function="Edit.TakeOff" userdata="alpha" />
-					<on_enable function="Edit.EnableTakeOff" userdata="alpha" />
-				</menu_item_call>
-				<menu_item_call label="Ropa Interior" name="Self Underpants" >
-					<on_click function="Edit.TakeOff" userdata="underpants" />
-					<on_enable function="Edit.EnableTakeOff" userdata="underpants" />
-				</menu_item_call>
-        <menu_item_call label="Física" name="Self Physics" >
-          <on_click function="Edit.TakeOff" userdata="physics" />
-          <on_enable function="Edit.EnableTakeOff" userdata="physics" />
-        </menu_item_call>
+				<menu_item_call label="Camiseta" name="Self Undershirt"/>
+				<menu_item_call label="Toda la ropa" name="All Clothes"/>
+				<menu_item_call label="Tatuaje" name="Self Tattoo"/>
+				<menu_item_call label="Alfa" name="Self Alpha"/>
+				<menu_item_call label="Ropa Interior" name="Self Underpants"/>
+				<menu_item_call label="Física" name="Self Physics"/>
 			</pie_menu>
-			<menu_item_call label="Falda" name="Skirt" >
-				<on_click function="Edit.TakeOff" userdata="skirt" />
-				<on_enable function="Edit.EnableTakeOff" userdata="skirt" />
-			</menu_item_call>
+			<menu_item_call label="Falda" name="Skirt"/>
 		</pie_menu>
-		<pie_menu label="HUD &gt;" name="Object Detach HUD" />
-		<menu_item_separator />
+		<pie_menu label="HUD &gt;" name="Object Detach HUD"/>
 		<pie_menu enabled="true" label="Quitar &gt;" name="Object Detach" />
-		<menu_item_separator />
-		<menu_item_call label="Quitar todo" name="Detach All">
-			<on_click function="Self.RemoveAllAttachments" userdata="" />
-			<on_enable function="Self.EnableRemoveAllAttachments" />
-		</menu_item_call>
+		<menu_item_call label="Quitar todo" name="Detach All"/>
 	</pie_menu>
-  <pie_menu label="Herramientas &gt;" name="Tools &gt;">
-	  <menu_item_call label="Animaciones..." name="Anims..." >
-		  <on_click function="Avatar.Anims" />
-	  </menu_item_call>
-	  <menu_item_call label="S. Count" name="ScriptCount">
-		  <on_click function="Object.ScriptCount" />
-		  <on_visible function="Object.VisibleScriptCount" />
-	  </menu_item_call>
-    <menu_item_call label="Depurar..." name="Debug Layers">
-      <on_click function="Avatar.Debug" />
-    </menu_item_call>
-    <menu_item_call label="Copiar UUID" name="CopyUUID">
-      <on_click function="Avatar.CopyUUID" />
-    </menu_item_call>
-  </pie_menu>
-  <menu_item_separator />
-	<menu_item_call label="Gestos..." name="Gestures...">
-		<on_click function="ShowFloater" userdata="gestures" />
-	</menu_item_call>
-	<menu_item_call label="Apariencia..." name="Appearance...">
-		<on_click function="ShowFloater" userdata="appearance" />
-		<on_enable function="Edit.EnableCustomizeAvatar" />
-	</menu_item_call>
+	<pie_menu label="Herramientas &gt;" name="Tools &gt;">
+		<menu_item_call label="Animaciones..." name="Anims..."/>
+		<menu_item_call label="Contar Scripts" name="ScriptCount"/>
+		<menu_item_call label="Depurar..." name="Debug Layers"/>
+		<menu_item_call label="Copiar UUID" name="CopyUUID"/>
+	</pie_menu>
+	<menu_item_call label="Gestos..." name="Gestures..."/>
+	<menu_item_call label="Apariencia..." name="Appearance..."/>
 </pie_menu>
