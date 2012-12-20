@@ -27,17 +27,17 @@
 //-----------------------------------------------------------------------------
 // Header Files
 //-----------------------------------------------------------------------------
-#include "llviewerprecompiledheaders.h"
+#include "llpreprocessor.h"
 #include "llerrorlegacy.h"
 //#include "llcommon.h"
 //#include "llmemory.h"
 #include "llavatarappearance.h"
-#include "llviewerjoint.h"
+#include "llavatarjoint.h"
 #include "llpolymorph.h"
 //#include "llviewercontrol.h"
 //#include "llxmltree.h"
 //#include "llvoavatar.h"
-#include "llwearable.h"
+//#include "llwearable.h"
 //#include "lldir.h"
 //#include "llvolume.h"
 //#include "llendianswizzle.h"
@@ -155,7 +155,7 @@ BOOL LLPolySkeletalDistortion::setInfo(LLPolySkeletalDistortionInfo *info)
                 for (LLJoint::child_list_t::iterator iter = joint->mChildren.begin();
                      iter != joint->mChildren.end(); ++iter)
                 {
-                        LLViewerJoint* child_joint = (LLViewerJoint*)(*iter);
+                        LLAvatarJoint* child_joint = (LLAvatarJoint*)(*iter);
                         if (child_joint->inheritScale())
                         {
                                 LLVector3 childDeformation = LLVector3(child_joint->getScale());

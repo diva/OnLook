@@ -33,9 +33,9 @@ set(llappearance_SOURCE_FILES
     #llavatarjointmesh.cpp
     #lldriverparam.cpp
     #lllocaltextureobject.cpp
-    #llpolyskeletaldistortion.cpp
-    #llpolymesh.cpp
-    #llpolymorph.cpp
+    llpolyskeletaldistortion.cpp
+    llpolymesh.cpp
+    llpolymorph.cpp
     #lltexglobalcolor.cpp
     #lltexlayer.cpp
     #lltexlayerparams.cpp
@@ -51,14 +51,14 @@ set(llappearance_HEADER_FILES
     CMakeLists.txt
 
     llavatarappearance.h
-    #llavatarjoint.h
+    llavatarjoint.h
     #llavatarjointmesh.h
     #lldriverparam.h
     lljointpickname.h
     #lllocaltextureobject.h
-    #llpolyskeletaldistortion.h
-    #llpolymesh.h
-    #llpolymorph.h
+    llpolyskeletaldistortion.h
+    llpolymesh.h
+    llpolymorph.h
     #lltexglobalcolor.h
     #lltexlayer.h
     #lltexlayerparams.h

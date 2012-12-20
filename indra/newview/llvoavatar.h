@@ -918,6 +918,9 @@ private:
 public:
   	S32			mNumCollisionVolumes;
 	LLViewerJointCollisionVolume* mCollisionVolumes;
+	virtual S32 getNumCollisionVolumes() { return mNumCollisionVolumes; }
+	virtual LLAvatarJointCollisionVolume* getCollisionVolume(S32 i) { return (LLAvatarJointCollisionVolume*)&mCollisionVolumes[i]; }
+
 protected:
 	virtual BOOL		allocateCollisionVolumes(U32 num);
 

@@ -42,6 +42,7 @@ class LLWearableData;
 class LLAvatarBoneInfo;
 class LLAvatarSkeletonInfo;
 class LLPolyMeshSharedData;
+class LLAvatarJointCollisionVolume;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // LLAvatarAppearance
@@ -264,6 +265,10 @@ public:
 public:
 	virtual LLColor4		getGlobalColor(const std::string& color_name ) const = 0;
 	virtual void	onGlobalColorChanged(const LLTexGlobalColor* global_color, BOOL upload_bake) = 0;
+
+	virtual S32 getNumCollisionVolumes() = 0;
+	virtual LLAvatarJointCollisionVolume* getCollisionVolume(S32 i) = 0;
+
 protected:
 	//LLTexGlobalColor* mTexSkinColor;
 	//LLTexGlobalColor* mTexHairColor;

@@ -389,9 +389,6 @@ set(viewer_SOURCE_FILES
     llpathfindingobjectlist.cpp
     llphysicsmotion.cpp
     llphysicsshapebuilderutil.cpp
-    llpolymesh.cpp
-    llpolymorph.cpp
-    llpolyskeletaldistortion.cpp
     llprefschat.cpp
     llprefsim.cpp
     llprefsvoice.cpp
@@ -895,9 +892,6 @@ set(viewer_HEADER_FILES
     llpathfindingobjectlist.h
     llphysicsmotion.h
     llphysicsshapebuilderutil.h
-    llpolymesh.h
-    llpolymorph.h
-    llpolyskeletaldistortion.h
     llprefschat.h
     llprefsim.h
     llprefsvoice.h

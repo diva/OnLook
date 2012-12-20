@@ -27,25 +27,24 @@
 //-----------------------------------------------------------------------------
 // Header Files
 //-----------------------------------------------------------------------------
-#include "llviewerprecompiledheaders.h"
-
+#include "linden_common.h"
+#include "llpolymesh.h"
 #include "llfasttimer.h"
 #include "llmemory.h"
 
-#include "llviewercontrol.h"
+//#include "llviewercontrol.h"
 #include "llxmltree.h"
-#include "llvoavatar.h"
-#include "llwearable.h"
+#include "llavatarappearance.h"
+//#include "llwearable.h"
 #include "lldir.h"
 #include "llvolume.h"
 #include "llendianswizzle.h"
 
-#include "llpolymesh.h"
 
 #define HEADER_ASCII "Linden Mesh 1.0"
 #define HEADER_BINARY "Linden Binary Mesh 1.0"
 
-extern LLControlGroup gSavedSettings;                           // read only
+//extern LLControlGroup gSavedSettings;                           // read only
 
 LLPolyMorphData *clone_morph_param_duplicate(const LLPolyMorphData *src_data,
 					     const std::string &name);
@@ -1492,7 +1491,7 @@ BOOL LLPolyMesh::setSharedFromCurrent()
 	std::vector< LLCharacter* >::iterator avatar_it;
 	for(avatar_it = LLCharacter::sInstances.begin(); avatar_it != LLCharacter::sInstances.end(); ++avatar_it)
 	{
-		LLVOAvatar* avatarp = (LLVOAvatar*)*avatar_it;
+		LLAvatarAppearance* avatarp = (LLAvatarAppearance*)*avatar_it;
 		LLPolyMesh* mesh = avatarp->getMesh(mSharedData);
 		if (mesh)
 		{

@@ -27,15 +27,16 @@
 //-----------------------------------------------------------------------------
 // Header Files
 //-----------------------------------------------------------------------------
-#include "llviewerprecompiledheaders.h"
 
 #include "llpolymorph.h"
-#include "llpolymesh.h"
 #include "llavatarappearance.h"
-#include "llwearable.h"
+#include "llavatarjoint.h"
+//#include "llwearable.h"
 #include "llxmltree.h"
 #include "llendianswizzle.h"
-#include "llvoavatar.h"
+//#include "llvoavatar.h"
+#include "llpolymesh.h"
+#include "v2math.h"
 
 //#include "../tools/imdebug/imdebug.h"
 
@@ -635,16 +636,18 @@ BOOL LLPolyMorphTarget::setInfo(LLPolyMorphTargetInfo* info)
 	mID = info->mID;
 	setWeight(getDefaultWeight(), FALSE );
 
-	LLVOAvatar* avatarp = (LLVOAvatar*)mMesh->getAvatar();
+	LLAvatarAppearance* avatarp = mMesh->getAvatar();
 	LLPolyMorphTargetInfo::volume_info_list_t::iterator iter;
 	for (iter = getInfo()->mVolumeInfoList.begin(); iter != getInfo()->mVolumeInfoList.end(); iter++)
 	{
 		LLPolyVolumeMorphInfo *volume_info = &(*iter);
-		for (S32 i = 0; i < avatarp->mNumCollisionVolumes; i++)
+		S32 volumes = avatarp->getNumCollisionVolumes();
+		for (S32 i = 0; i < volumes; i++)
 		{
-			if (avatarp->mCollisionVolumes[i].getName() == volume_info->mName)
+			LLAvatarJointCollisionVolume* vol = avatarp->getCollisionVolume(i);
+			if (vol->getName() == volume_info->mName)
 			{
-				mVolumeMorphs.push_back(LLPolyVolumeMorph(&avatarp->mCollisionVolumes[i],
+				mVolumeMorphs.push_back(LLPolyVolumeMorph(vol,
 														  volume_info->mScale,
 														  volume_info->mPos));
 				break;
