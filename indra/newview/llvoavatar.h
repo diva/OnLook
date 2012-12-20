@@ -58,6 +58,8 @@
 #include "emeraldboobutils.h"
 #include "llavatarname.h"
 
+#include "llavatarappearance.h"
+
 extern const LLUUID ANIM_AGENT_BODY_NOISE;
 extern const LLUUID ANIM_AGENT_BREATHE_ROT;
 extern const LLUUID ANIM_AGENT_PHYSICS_MOTION;
@@ -76,7 +78,8 @@ class LLHUDNameTag;
 class LLHUDEffectSpiral;
 class LLTexGlobalColor;
 class LLVOAvatarBoneInfo;
-class LLVOAvatarSkeletonInfo;
+class LLAvatarSkeletonInfo;
+class LLPolySkeletalDistortionInfo;
 
 class SHClientTagMgr : public LLSingleton<SHClientTagMgr>, public boost::signals2::trackable
 {
@@ -123,7 +126,7 @@ private:
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class LLVOAvatar :
 	public LLViewerObject,
-	public LLCharacter,
+	public LLAvatarAppearance,
 	public boost::signals2::trackable
 {
 	LOG_CLASS(LLVOAvatar);
@@ -241,7 +244,6 @@ public:
 	void					resetJointPositions( void );
 	void					resetJointPositionsToDefault( void );
 	void					resetSpecificJointPosition( const std::string& name );
-	virtual const char*		getAnimationPrefix() { return "avatar"; }
 	virtual const LLUUID&   getID() const;
 	virtual LLVector3		getVolumePos(S32 joint_index, LLVector3& volume_offset);
 	virtual LLJoint*		findCollisionVolume(U32 volume_id);
@@ -268,7 +270,7 @@ public:
 
 public:
 	virtual bool 	isSelf() const { return false; } // True if this avatar is for this viewer's agent
-	bool			isBuilt() const { return mIsBuilt; }
+	virtual bool	isBuilt() const { return mIsBuilt; }
 
 private: //aligned members
 	LL_ALIGN_16(LLVector4a	mImpostorExtents[2]);
@@ -372,7 +374,7 @@ protected:
 
 public:
 	void				updateHeadOffset();
-	F32					getPelvisToFoot() const { return mPelvisToFoot; }
+	virtual F32			getPelvisToFoot() const { return mPelvisToFoot; }
 	void				setPelvisOffset( bool hasOffset, const LLVector3& translation, F32 offset ) ;
 	bool				hasPelvisOffset( void ) { return mHasPelvisOffset; }
 	void				postPelvisSetRecalc( void );
@@ -390,13 +392,13 @@ public:
 	typedef std::map<std::string, LLJoint*> joint_map_t;
 	joint_map_t			mJointMap;
 
-protected:
+public:
 	static BOOL			parseSkeletonFile(const std::string& filename);
-	void				buildCharacter();
+	virtual void		buildCharacter();
 	virtual BOOL		loadAvatar();
 
 	BOOL				setupBone(const LLVOAvatarBoneInfo* info, LLViewerJoint* parent, S32 &current_volume_num, S32 &current_joint_num);
-	BOOL				buildSkeleton(const LLVOAvatarSkeletonInfo *info);
+	virtual BOOL		buildSkeleton(const LLAvatarSkeletonInfo *info);
 private:
 	BOOL				mIsBuilt; // state of deferred character building
 	S32					mNumJoints;
@@ -482,7 +484,7 @@ private:
 	//--------------------------------------------------------------------
 public:
 	BOOL 		morphMaskNeedsUpdate(LLAvatarAppearanceDefines::EBakedTextureIndex index = LLAvatarAppearanceDefines::BAKED_NUM_INDICES);
-	void 		addMaskedMorph(LLAvatarAppearanceDefines::EBakedTextureIndex index, LLPolyMorphTarget* morph_target, BOOL invert, std::string layer);
+	virtual void 		addMaskedMorph(LLAvatarAppearanceDefines::EBakedTextureIndex index, LLVisualParam* morph_target, BOOL invert, std::string layer);
 	void 		applyMorphMask(U8* tex_data, S32 width, S32 height, S32 num_components, LLAvatarAppearanceDefines::EBakedTextureIndex index = LLAvatarAppearanceDefines::BAKED_NUM_INDICES);
 
 	//--------------------------------------------------------------------
@@ -668,7 +670,7 @@ public:
 private:
 	static const LLAvatarAppearanceDefines::LLAvatarAppearanceDictionary *getDictionary() { return sAvatarDictionary; }
 	static LLAvatarAppearanceDefines::LLAvatarAppearanceDictionary* sAvatarDictionary;
-	static LLVOAvatarSkeletonInfo* 					sAvatarSkeletonInfo;
+	static LLAvatarSkeletonInfo* 					sAvatarSkeletonInfo;
 	static LLVOAvatarXmlInfo* 						sAvatarXmlInfo;
 
 	//--------------------------------------------------------------------
@@ -690,15 +692,15 @@ private:
  **/
 
 public:
-	void 			updateMeshTextures();
+	virtual void 			updateMeshTextures();
 	void 			updateSexDependentLayerSets(BOOL upload_bake);
-	void 			dirtyMesh(); // Dirty the avatar mesh
+	virtual void 			dirtyMesh(); // Dirty the avatar mesh
 	void 			updateMeshData();
 protected:
 	void 			releaseMeshData();
 	virtual void 	restoreMeshData();
 private:
-	void 			dirtyMesh(S32 priority); // Dirty the avatar mesh, with priority
+	virtual void 			dirtyMesh(S32 priority); // Dirty the avatar mesh, with priority
 	S32 			mDirtyMesh; // 0 -- not dirty, 1 -- morphed, 2 -- LOD
 	BOOL			mMeshTexturesDirty;
 
@@ -726,7 +728,7 @@ public:
 	void 			processAvatarAppearance(LLMessageSystem* mesgsys);
 	void 			hideSkirt();
 	void			startAppearanceAnimation();
-	LLPolyMesh*		getMesh(LLPolyMeshSharedData* shared_data);
+	virtual LLPolyMesh*		getMesh(LLPolyMeshSharedData* shared_data);
 	
 	//--------------------------------------------------------------------
 	// Appearance morphing
@@ -748,16 +750,16 @@ public:
 	// Clothing colors (convenience functions to access visual parameters)
 	//--------------------------------------------------------------------
 public:
-	void			setClothesColor(LLAvatarAppearanceDefines::ETextureIndex te, const LLColor4& new_color, BOOL upload_bake);
-	LLColor4		getClothesColor(LLAvatarAppearanceDefines::ETextureIndex te);
+	virtual void			setClothesColor(LLAvatarAppearanceDefines::ETextureIndex te, const LLColor4& new_color, BOOL upload_bake);
+	virtual LLColor4		getClothesColor(LLAvatarAppearanceDefines::ETextureIndex te);
 	static BOOL			teToColorParams(LLAvatarAppearanceDefines::ETextureIndex te, U32 *param_name);
 
 	//--------------------------------------------------------------------
 	// Global colors
 	//--------------------------------------------------------------------
 public:
-	LLColor4		getGlobalColor(const std::string& color_name ) const;
-	void			onGlobalColorChanged(const LLTexGlobalColor* global_color, BOOL upload_bake);
+	virtual LLColor4		getGlobalColor(const std::string& color_name ) const;
+	virtual void			onGlobalColorChanged(const LLTexGlobalColor* global_color, BOOL upload_bake);
 private:
 	LLTexGlobalColor* mTexSkinColor;
 	LLTexGlobalColor* mTexHairColor;
@@ -917,7 +919,7 @@ public:
   	S32			mNumCollisionVolumes;
 	LLViewerJointCollisionVolume* mCollisionVolumes;
 protected:
-	BOOL		allocateCollisionVolumes(U32 num);
+	virtual BOOL		allocateCollisionVolumes(U32 num);
 
 	//--------------------------------------------------------------------
 	// Dimensions
@@ -928,7 +930,7 @@ public:
 	void 		resolveRayCollisionAgent(const LLVector3d start_pt, const LLVector3d end_pt, LLVector3d &out_pos, LLVector3 &out_norm);
 	void 		slamPosition(); // Slam position to transmitted position (for teleport);
 protected:
-	void 		computeBodySize();
+	virtual void computeBodySize();
 
 	//--------------------------------------------------------------------
 	// Material being stepped on

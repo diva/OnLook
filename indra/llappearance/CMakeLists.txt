@@ -50,7 +50,7 @@ set(llappearance_SOURCE_FILES
 set(llappearance_HEADER_FILES
     CMakeLists.txt
 
-    #llavatarappearance.h
+    llavatarappearance.h
     #llavatarjoint.h
     #llavatarjointmesh.h
     #lldriverparam.h

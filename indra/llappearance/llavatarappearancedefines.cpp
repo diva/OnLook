@@ -66,12 +66,12 @@ LLAvatarAppearanceDictionary::Textures::Textures()
 	addEntry(TEX_UPPER_TATTOO,                new TextureEntry("upper_tattoo",     TRUE,  BAKED_NUM_INDICES, "",     LLWearableType::WT_TATTOO));
 	addEntry(TEX_LOWER_TATTOO,                new TextureEntry("lower_tattoo",     TRUE,  BAKED_NUM_INDICES, "",     LLWearableType::WT_TATTOO));
 
-	addEntry(TEX_HEAD_BAKED,                  new TextureEntry("head-baked",       FALSE, BAKED_HEAD));
-	addEntry(TEX_UPPER_BAKED,                 new TextureEntry("upper-baked",      FALSE, BAKED_UPPER));
-	addEntry(TEX_LOWER_BAKED,                 new TextureEntry("lower-baked",      FALSE, BAKED_LOWER));
-	addEntry(TEX_EYES_BAKED,                  new TextureEntry("eyes-baked",       FALSE, BAKED_EYES));
-	addEntry(TEX_HAIR_BAKED,                  new TextureEntry("hair-baked",       FALSE, BAKED_HAIR));
-	addEntry(TEX_SKIRT_BAKED,                 new TextureEntry("skirt-baked",      FALSE, BAKED_SKIRT));
+	addEntry(TEX_HEAD_BAKED,                  new TextureEntry("head-baked",       FALSE, BAKED_HEAD, "head"));
+	addEntry(TEX_UPPER_BAKED,                 new TextureEntry("upper-baked",      FALSE, BAKED_UPPER, "upper"));
+	addEntry(TEX_LOWER_BAKED,                 new TextureEntry("lower-baked",      FALSE, BAKED_LOWER, "lower"));
+	addEntry(TEX_EYES_BAKED,                  new TextureEntry("eyes-baked",       FALSE, BAKED_EYES, "eyes"));
+	addEntry(TEX_HAIR_BAKED,                  new TextureEntry("hair-baked",       FALSE, BAKED_HAIR, "hair"));
+	addEntry(TEX_SKIRT_BAKED,                 new TextureEntry("skirt-baked",      FALSE, BAKED_SKIRT, "skirt"));
 }
 
 LLAvatarAppearanceDictionary::BakedTextures::BakedTextures()
@@ -232,6 +232,28 @@ EBakedTextureIndex LLAvatarAppearanceDictionary::findBakedByRegionName(std::stri
 		{
 			// baked texture found
 			return (EBakedTextureIndex) index;
+		}
+		index++;
+	}
+	// baked texture could not be found
+	return BAKED_NUM_INDICES;
+}
+
+// static 
+EBakedTextureIndex LLAvatarAppearanceDictionary::findBakedByImageName(std::string name)
+{
+	U8 index = 0;
+	while (index < BAKED_NUM_INDICES)
+	{
+		const BakedEntry *be = LLAvatarAppearanceDictionary::getInstance()->getBakedTexture((EBakedTextureIndex) index);
+		if (be)
+		{
+			const TextureEntry *te = LLAvatarAppearanceDictionary::getInstance()->getTexture(be->mTextureIndex);
+			if (te && te->mDefaultImageName.compare(name) == 0)
+			{
+				// baked texture found
+				return (EBakedTextureIndex) index;
+			}
 		}
 		index++;
 	}

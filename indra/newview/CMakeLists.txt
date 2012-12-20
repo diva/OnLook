@@ -391,6 +391,7 @@ set(viewer_SOURCE_FILES
     llphysicsshapebuilderutil.cpp
     llpolymesh.cpp
     llpolymorph.cpp
+    llpolyskeletaldistortion.cpp
     llprefschat.cpp
     llprefsim.cpp
     llprefsvoice.cpp
@@ -896,6 +897,7 @@ set(viewer_HEADER_FILES
     llphysicsshapebuilderutil.h
     llpolymesh.h
     llpolymorph.h
+    llpolyskeletaldistortion.h
     llprefschat.h
     llprefsim.h
     llprefsvoice.h

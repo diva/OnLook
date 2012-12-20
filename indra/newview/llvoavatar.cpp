@@ -107,6 +107,7 @@
 #include "llcachename.h"
 #include "floaterao.h"
 #include "llsdutil.h"
+#include "llpolyskeletaldistortion.h"
 
 #include "llfloaterexploreanimations.h"
 #include "aihttptimeoutpolicy.h"
@@ -247,7 +248,7 @@ struct LLTextureMaskData
 class LLVOAvatarBoneInfo
 {
 	friend class LLVOAvatar;
-	friend class LLVOAvatarSkeletonInfo;
+	friend class LLAvatarSkeletonInfo;
 public:
 	LLVOAvatarBoneInfo() : mIsJoint(FALSE) {}
 	~LLVOAvatarBoneInfo()
@@ -268,16 +269,16 @@ private:
 };
 
 //------------------------------------------------------------------------
-// LLVOAvatarSkeletonInfo
+// LLAvatarSkeletonInfo
 // Overall avatar skeleton
 //------------------------------------------------------------------------
-class LLVOAvatarSkeletonInfo
+class LLAvatarSkeletonInfo
 {
 	friend class LLVOAvatar;
 public:
-	LLVOAvatarSkeletonInfo() :
+	LLAvatarSkeletonInfo() :
 		mNumBones(0), mNumCollisionVolumes(0) {}
-	~LLVOAvatarSkeletonInfo()
+	~LLAvatarSkeletonInfo()
 	{
 		std::for_each(mBoneInfoList.begin(), mBoneInfoList.end(), DeletePointer());
 	}
@@ -939,7 +940,7 @@ void SHClientTagMgr::clearAvatarTag(const LLVOAvatar* pAvatar)
 //-----------------------------------------------------------------------------
 LLXmlTree LLVOAvatar::sXMLTree;
 LLXmlTree LLVOAvatar::sSkeletonXMLTree;
-LLVOAvatarSkeletonInfo* LLVOAvatar::sAvatarSkeletonInfo = NULL;
+LLAvatarSkeletonInfo* LLVOAvatar::sAvatarSkeletonInfo = NULL;
 LLVOAvatar::LLVOAvatarXmlInfo* LLVOAvatar::sAvatarXmlInfo = NULL;
 LLAvatarAppearanceDictionary *LLVOAvatar::sAvatarDictionary = NULL;
 S32 LLVOAvatar::sFreezeCounter = 0;
@@ -1620,7 +1621,7 @@ void LLVOAvatar::initClass()
 	{ //this can happen if a login attempt failed
 		delete sAvatarSkeletonInfo;
 	}
-	sAvatarSkeletonInfo = new LLVOAvatarSkeletonInfo;
+	sAvatarSkeletonInfo = new LLAvatarSkeletonInfo;
 	if (!sAvatarSkeletonInfo->parseXml(sSkeletonXMLTree.getRoot()))
 	{
 		llerrs << "Error parsing skeleton XML file: " << skeleton_path << llendl;
@@ -2249,7 +2250,7 @@ BOOL LLVOAvatar::setupBone(const LLVOAvatarBoneInfo* info, LLViewerJoint* parent
 //-----------------------------------------------------------------------------
 // buildSkeleton()
 //-----------------------------------------------------------------------------
-BOOL LLVOAvatar::buildSkeleton(const LLVOAvatarSkeletonInfo *info)
+BOOL LLVOAvatar::buildSkeleton(const LLAvatarSkeletonInfo *info)
 {
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
 	
@@ -2279,7 +2280,7 @@ BOOL LLVOAvatar::buildSkeleton(const LLVOAvatarSkeletonInfo *info)
 
 	S32 current_joint_num = 0;
 	S32 current_volume_num = 0;
-	LLVOAvatarSkeletonInfo::bone_info_list_t::const_iterator iter;
+	LLAvatarSkeletonInfo::bone_info_list_t::const_iterator iter;
 	for (iter = info->mBoneInfoList.begin(); iter != info->mBoneInfoList.end(); ++iter)
 	{
 		LLVOAvatarBoneInfo *info = *iter;
@@ -7845,11 +7846,11 @@ void LLVOAvatar::clearChat()
 }
 
 // adds a morph mask to the appropriate baked texture structure
-void LLVOAvatar::addMaskedMorph(EBakedTextureIndex index, LLPolyMorphTarget* morph_target, BOOL invert, std::string layer)
+void LLVOAvatar::addMaskedMorph(EBakedTextureIndex index, LLVisualParam* morph_target, BOOL invert, std::string layer)
 {
 	if (index < BAKED_NUM_INDICES)
 	{
-		LLMaskedMorph *morph = new LLMaskedMorph(morph_target, invert, layer);
+		LLMaskedMorph *morph = new LLMaskedMorph((LLPolyMorphTarget*)morph_target, invert, layer);
 		mBakedTextureDatas[index].mMaskedMorphs.push_front(morph);
 	}
 }
@@ -8973,9 +8974,9 @@ BOOL LLVOAvatarBoneInfo::parseXml(LLXmlTreeNode* node)
 }
 
 //-----------------------------------------------------------------------------
-// LLVOAvatarSkeletonInfo::parseXml()
+// LLAvatarSkeletonInfo::parseXml()
 //-----------------------------------------------------------------------------
-BOOL LLVOAvatarSkeletonInfo::parseXml(LLXmlTreeNode* node)
+BOOL LLAvatarSkeletonInfo::parseXml(LLXmlTreeNode* node)
 {
 	static LLStdStringHandle num_bones_string = LLXmlTree::addAttributeString("num_bones");
 	if (!node->getFastAttributeS32(num_bones_string, mNumBones))

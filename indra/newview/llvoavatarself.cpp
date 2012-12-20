@@ -232,7 +232,7 @@ BOOL LLVOAvatarSelf::loadAvatarSelf()
 	return success;
 }
 
-BOOL LLVOAvatarSelf::buildSkeletonSelf(const LLVOAvatarSkeletonInfo *info)
+BOOL LLVOAvatarSelf::buildSkeletonSelf(const LLAvatarSkeletonInfo *info)
 {
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
 

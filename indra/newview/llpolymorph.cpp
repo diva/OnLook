@@ -30,10 +30,12 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "llpolymorph.h"
-#include "llvoavatar.h"
+#include "llpolymesh.h"
+#include "llavatarappearance.h"
 #include "llwearable.h"
 #include "llxmltree.h"
 #include "llendianswizzle.h"
+#include "llvoavatar.h"
 
 //#include "../tools/imdebug/imdebug.h"
 
@@ -462,7 +464,7 @@ BOOL LLPolyMorphData::setMorphFromMesh(LLPolyMesh *morph)
 	std::vector< LLCharacter* >::iterator avatar_it;
 	for(avatar_it = LLCharacter::sInstances.begin(); avatar_it != LLCharacter::sInstances.end(); ++avatar_it)
 	{
-		LLVOAvatar* avatarp = (LLVOAvatar*)*avatar_it;
+		LLAvatarAppearance* avatarp = (LLAvatarAppearance*)*avatar_it;
 
 		LLPolyMorphTarget* param = (LLPolyMorphTarget*) avatarp->getVisualParam(mName.c_str());
 		if (!param)
@@ -633,7 +635,7 @@ BOOL LLPolyMorphTarget::setInfo(LLPolyMorphTargetInfo* info)
 	mID = info->mID;
 	setWeight(getDefaultWeight(), FALSE );
 
-	LLVOAvatar* avatarp = mMesh->getAvatar();
+	LLVOAvatar* avatarp = (LLVOAvatar*)mMesh->getAvatar();
 	LLPolyMorphTargetInfo::volume_info_list_t::iterator iter;
 	for (iter = getInfo()->mVolumeInfoList.begin(); iter != getInfo()->mVolumeInfoList.end(); iter++)
 	{
