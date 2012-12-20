@@ -21,14 +21,13 @@
 			<button name="offer_btn" label="Ofrecer TP" tool_tip="Ofrecer Teleporte"/>
 			<button name="teleport_btn" label="TP a" tool_tip="Teleportarse a la posición del avatar"/>			
 			<!-- lower middle row-->
-			<button name="mark_btn" label="(No)Marcar" tool_tip="Marca/Desmarca a este avatar de la lista"/>
+			<button name="mark_btn" label="(Des)Marcar" tool_tip="Marca/Desmarca a este avatar de la lista"/>
 			<button name="prev_marked_btn" label="Marcado Ant." tool_tip="Enfoca la cámara en el avatar marcado previo de la lista"/>
 			<button name="next_marked_btn" label="Marcado Sig." tool_tip="Enfoca la cámara en el avatar marcado siguiente de la lista"/>
 			<!-- lower row-->
 			<button name="focus_btn" label="Foco" tool_tip="Enfoca la cámara en este avatar de la lista"/>
 			<button name="prev_in_list_btn" label="Anterior" tool_tip="Enfoca la cámara en el anterior avatar de la lista"/>
 			<button name="next_in_list_btn" label="Siguiente" tool_tip="Enfoca la cámara en el siguiente avatar de la lista"/>
-
 		</panel>
 
 		<panel label="Alertas" name="alerts_tab">
@@ -44,15 +43,15 @@
 		</panel>
 
 		<panel label="Moderación" name="land_tab">
-			
 			<!-- Upper row -->
 			<button name="mute_btn" label="(No)Ignorar" tool_tip="Ignorar o dejar de ignorar a este avatar (los nombre de los avatares ignorados se resaltan en rojo en la lista)."/>
 			<button name="freeze_btn" label="Congelar" tool_tip="Congelar al avatar, para evitar que se pueda mover"/>
-			<button name="ar_btn" label="AR" tool_tip="Enviar un Reporte de Abuso sobre este avatar"/>
+			<button name="ar_btn" label="Denunciar" tool_tip="Enviar un Reporte de Abuso sobre este avatar"/>
 			<!-- Lower row -->
 			<button name="eject_btn" label="Expulsar" tool_tip="Expulsar a este avatar de la parcela"/>
-			
 			<button name="estate_eject_btn" label="Expulsar del Estado" tool_tip="Expulsar a este avatar del estado"/>
+			<!-- Lowest row -->
+			<button name="estate_ban_btn" label="Expulsar y Prohibir en el Estado" tool_tip="Expulsa y prohibe en el Estado a este avatar"/>			
 		</panel>
 
 		<panel label="Opciones" name="options_tab">
@@ -76,12 +75,10 @@
 			<button name="send_keys_btn" label="Anunciar Ahora" tool_tip="Envia todas las keys al HUD ahora"/>
 		</panel>
 	</tab_container>
-	<string name="template">[NAME] [ACTION] [RANGE].</string>
-	<!-- [ACTION] -->
+	<!-- [ACTION] -->	
 	<string name="has_entered">ha entrado en</string>
 	<string name="has_left">se ha retirado de</string>
-	<!-- [RANGE] -->
-	<string name="the_sim">el sim</string>
+	<string name="the_sim">este sim</string>
 	<string name="draw_distance">la distancia de dibujo</string>
 	<string name="shout_range">la distancia de grito</string>
 	<string name="chat_range">la distancia de chat</string>	

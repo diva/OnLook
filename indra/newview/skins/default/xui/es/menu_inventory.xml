@@ -49,8 +49,10 @@
 	<menu_item_call name="Copy Asset UUID" label="Copiar Asset UUID"/>
 	<menu_item_call name="Reupload..." label="Resubir..."/>
 	<menu_item_call name="Acquire Asset ID" label="Adquirir Asset ID"/>
+	<menu_item_call name="Cut" label="Cortar"/>
 	<menu_item_call name="Copy" label="Copiar"/>
 	<menu_item_call name="Paste" label="Pegar"/>
+	<menu_item_call name="Paste As Copy" label="Pegar como Copia"/>	
 	<menu_item_call name="Paste As Link" label="Pegar como Link"/>
 	<menu_item_call name="Restore to Last Position" label="Restaurar en el mundo"/>
 	<menu_item_call name="Remove Link" label="Borrar Link"/>
@@ -78,7 +80,7 @@
 	<menu_item_call name="Detach From Yourself" label="Quitarse"/>
 	<menu_item_call name="Wearable Edit" label="Editar"/>
 	<menu_item_call name="Take Off" label="Quitarse"/>
-	<menu_item_call name="Merchant Copy" label="Copiar al Merchant Outbox"/>
-	<menu_item_call name="Marketplace Send" label="Enviar a Marketplace"/>
+	<menu_item_call name="Merchant Copy" label="Copiar al Buzón de Salida del Comerciante"/>
+	<menu_item_call name="Marketplace Send" label="Enviar al Mercado en Línea"/>
 	<menu_item_call name="--no options--" label="--sin opciones--"/>
 </menu>

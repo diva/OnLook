@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Sistema" name="ascsys">
 	<tab_container label="Sistema Singularity" name="Ascent System">
+		<!-- =================================== -->
 		<panel label="General" name="User Interface">
 			<check_box label="Habilitar Teleport con doble click" tool_tip="Haciendo doble click en un objeto o persona te transportará hacia su ubicación." name="double_click_teleport_check"/>
 			<check_box label="Reiniciar la Cámara luego de Teleportar" tool_tip="Centra la cámara detrás tuyo luego de un teleport." name="center_after_teleport_check"/>
 			<check_box label="Desplazar destino TP a mitad de la altura del agente" tool_tip="Intenta apuntar el TP de modo que tus pies se apoyen en la tierra del punto al que estás apuntando." name="offset_teleport_check"/>
+			<check_box name="fly_after_tp" label="Siempre volar después de un Teleport" tool_tip="Evita la caída desde grandes alturas haciendo que el avatar automáticamente vuele después de un Teleport."/>			
 			<check_box label="Vista Previa de Animaciones en el avatar en vez del maniquí antes de usar" tool_tip="La ventana de subida de Animaciones ejecutará las animaciones en tu avatar cuando ejecutes la vista previa." name="preview_anim_in_world_check"/>
 			<check_box label="Guardar los Scripts en el inventario como Mono en vez de LSL2" tool_tip="Los Scripts serán compilados automáticamente en Mono al guardarlos - Normalmente es sólo posible cuando están dentro de un objeto." name="save_scripts_as_mono_check"/>
 			<check_box label="Siempre rezear objetos con el grupo del terreno, cuando esté disponible" tool_tip="Rezear objetos con el mismo grupo del terreno sin importar tu grupo activo en el momento." name="always_rez_in_group_check"/>
@@ -25,6 +27,7 @@
 				segundos
 			</text>
 		</panel>
+		<!-- ====================================== -->
 		<panel label="Línea de Comandos" name="Command Line">
 			<check_box label="Activar uso de la barra de chat como línea de comandos" name="chat_cmd_toggle"/>
 			<text name="cmd_line_text_2">
@@ -75,17 +78,20 @@
 				Cambiar falso estado Aussente (uso: cmd)
 			</text>
 		</panel>
+		<!-- ===================================== -->
 		<panel label="Seguridad" name="Security">
 			<check_box label="Transmitir efectos del Visor (No incluye rayos)" name="broadcast_viewer_effects"/>
 			<check_box label="Desactivar Apuntar a... y Rayos" tool_tip="No apunta hacia ni muestra tus rayos de edición cuando seleccionas un objeto." name="disable_point_at_and_beams_check"/>
 			<check_box label="No mirar hacia los Objetos (anula ShowLookAt)" tool_tip="Apaga la tansmisión de los giros de cabeza y rayos lookat propios." name="private_look_at_check"/>
 			<check_box label="Mostrar las balizas LookAt de los demás" tool_tip="Te muestra hacia donde miran los demas." name="show_look_at_check"/>
+      <check_box label="Quitarse automáticamente el Bridge LSL" tool_tip="Quitar automáticamente el Bridge LSL de los visores Phoenix o Firestorm." name="detach_bridge"/>			
 			<check_box label="Captura silenciosa a Disco" tool_tip="Anula el sonido de la cámara y el alerta a los demás cuando realizas una captura al disco de tu PC" name="quiet_snapshots_check"/>
 			<check_box label="Al pararse, revoca el permiso de los objetos en los cuales estuvo sentado tu avatar" tool_tip="Los objetos retienen, generalmente, el permiso para tomar control y ejecutar animaciones hasta que se reinician u otro usuario le cede permisos. Activando esta opción te aseguras que los permisos serán revocados inmediatamente." name="revoke_perms_on_stand_up_check"/>
 			<check_box label="Desactivar click del ratón para sentarse en los objetos" tool_tip="Algunas herramientas de griefer se basan en forzarte o engañarte para que hagas click en un objeto el cual te hará sentar, dándole automáticamente al objeto permisos para ejecutar una animación entre de otras cosas. Esta opción desactivará la función llSitTarget - Esto significa que deberás seleccionar la opción 'Sentarse' en las bolas de animación o muebles." name="disable_click_sit_check"/>
 			<check_box label="Mostrar cambios del Total de Scripts en Ejecución:" name="totalscriptjumps" tool_tip="Muestra los cambios en la cuenta total de scritps en tu región, dependiendo del umbral que selecciones a la derecha."/>
 			<spinner left_delta="350" name="ScriptJumpCount" tool_tip="Umbral para el mensaje de salto de scripts [Predeterminado: 100]"/>
 		</panel>
+		<!-- ======================================== -->
 		<panel label="Construcción" name="Building">
 			<text name="text_box6">
 				Punto de Pivote
@@ -94,18 +100,15 @@
 			<spinner label="Pos. Y" name="Y pos"/>
 			<spinner label="Pos. Z" name="Z pos"/>
 			<check_box label="Los valores son en porcentaje" tool_tip="Los ajuste predeterminados se expresan en porcentajes y cada eje se ajusta en 50" name="EmPivotPercToggle"/>
-			<check_box label="Activar resaltado de prims seleccionados" name="EmBuildPrefsRenderHighlight_toggle" />
-			<check_box label="Mostrar Ejes en la posición del Prim Base" tool_tip="El comportamiento por defecto es mostrar el eje en el centro del conjunto de prims. Si está activado, el eje se muestra en la prim raíz del conjunto de enlaces." name="EmBuildPrefsActualRoot_toggle"/>
-			<text name="text_box7">
-				Permitir sig. propietario:
+			<text name="Dimensions">
+				Medidas
+			</text>			
+			<spinner label="Tam.X" name="X size"/>
+			<spinner label="Tam. Y" name="Y size"/>
+			<spinner label="Tam.Z" name="Z size"/>					
+			<text left_delta="46" name="Material">
+				Material:
 			</text>
-			<check_box label="Permiso de Copia" tool_tip="El próximo propietario puede realizar copias de las creaciones" name="next_owner_copy"/>
-			<check_box label="Permiso de Modific." tool_tip="El próximo propietario puede editar y modificar las creaciones" name="next_owner_modify"/>
-			<check_box label="Permiso de Transf." tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer" control_name="NextOwnerTransfer"/>
-			<texture_picker label="     Textura" name="texture control" tool_tip="Pulsa para seleccionar una textura"/>
-			<check_box label="Fantasma" name="EmPhantomToggle"/>
-			<check_box label="Físico" name="EmPhysicalToggle"/>
-			<check_box label="Temporal" name="EmTemporaryToggle"/>
 			<combo_box name="material">
 				<combo_item name="Stone">
 					Piedra
@@ -129,6 +132,16 @@
 					Caucho
 				</combo_item>
 			</combo_box>
+			<text name="text_box7">
+				Permitir sig. propietario:
+			</text>
+			<check_box label="Permiso de Copia" tool_tip="El próximo propietario puede realizar copias de las creaciones" name="next_owner_copy"/>
+			<check_box label="Permiso de Modific." tool_tip="El próximo propietario puede editar y modificar las creaciones" name="next_owner_modify"/>
+			<check_box label="Permiso de Transf." tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer" control_name="NextOwnerTransfer"/>			
+			<check_box label="Fantasma" name="EmPhantomToggle"/>
+			<check_box label="Físico" name="EmPhysicalToggle"/>
+			<check_box label="Temporal" name="EmTemporaryToggle"/>	
+			<texture_picker label="     Textura" name="texture control" tool_tip="Pulsa para seleccionar una textura"/>			
 			<color_swatch label="      Color" name="colorswatch" tool_tip="Pulsa para abrir el selector de color"/>
 			<spinner label="Alfa" name="alpha" />
 			<spinner label="Brillo" name="glow"/>
@@ -136,7 +149,7 @@
 			<text name="shine" follows="top">
 				Brillar
 			</text>
-			<combo_box label="Brillo" name="combobox shininess" tool_tip="Fijar la intensidad de brillo para el objeto">
+			<combo_box name="combobox shininess" tool_tip="Fijar la intensidad de brillo para el objeto">
 				<combo_item name="None">
 					Ninguno
 				</combo_item>
@@ -158,9 +171,8 @@
 				Fijado Actualmente:
 ITEM
 			</text>
-			<spinner label="Tam.X" name="X size"/>
-			<spinner label="Tam. Y" name="Y size"/>
-			<spinner label="Tam.Z" name="Z size"/>					
+			<check_box label="Activar resaltado de prims seleccionados" name="EmBuildPrefsRenderHighlight_toggle" />
+			<check_box label="Mostrar Ejes en la posición del Prim Base" tool_tip="El comportamiento por defecto es mostrar el eje en el centro del conjunto de prims. Si está activado, el eje se muestra en la prim raíz del conjunto de enlaces." name="EmBuildPrefsActualRoot_toggle"/>			
 		</panel>
 	</tab_container>
 </panel>
