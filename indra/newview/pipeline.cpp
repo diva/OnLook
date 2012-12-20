@@ -931,15 +931,25 @@ void LLPipeline::createGLBuffers()
 	GLuint resX = gViewerWindow->getWorldViewWidthRaw();
 	GLuint resY = gViewerWindow->getWorldViewHeightRaw();
 	
+
+
 	if (LLPipeline::sRenderGlow)
 	{ //screen space glow buffers
 		const U32 glow_res = llmax(1, 
 			llmin(512, 1 << gSavedSettings.getS32("RenderGlowResolutionPow")));
 
+		glClearColor(0,0,0,0);
+		gGL.setColorMask(true, true);
 		for (U32 i = 0; i < 2; i++)
 		{
-			mGlow[i].allocate(512,glow_res,GL_RGBA,FALSE,FALSE);
+			if(mGlow[i].allocate(512,glow_res,GL_RGBA,FALSE,FALSE))
+			{
+				mGlow[i].bindTarget();
+				mGlow[i].clear();
+				mGlow[i].unbindTarget();
+			}
 		}
+
 
 		allocateScreenBuffer(resX,resY);
 
