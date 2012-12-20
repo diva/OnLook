@@ -1093,6 +1093,15 @@ BOOL LLScrollListCtrl::addItem( LLScrollListItem* item, EAddPosition pos, BOOL r
 			addColumn(new_column);
 		}
 
+		S32 num_cols = item->getNumColumns();
+		S32 i = 0;
+		for (LLScrollListCell* cell = item->getColumn(i); i < num_cols; cell = item->getColumn(++i))
+		{
+			if (i >= (S32)mColumnsIndexed.size()) break;
+
+			cell->setWidth(mColumnsIndexed[i]->getWidth());
+		}
+
 		updateLineHeightInsert(item);
 
 		updateLayout();
@@ -3898,7 +3907,11 @@ LLScrollColumnHeader::~LLScrollColumnHeader()
 
 void LLScrollColumnHeader::draw()
 {
-	BOOL draw_arrow = !mColumn->mLabel.empty() && mColumn->mParentCtrl->isSorted() && mColumn->mParentCtrl->getSortColumnName() == mColumn->mSortingColumn;
+	std::string sort_column = mColumn->mParentCtrl->getSortColumnName();
+	BOOL draw_arrow = !mColumn->mLabel.empty() 
+			&& mColumn->mParentCtrl->isSorted()
+			// check for indirect sorting column as well as column's sorting name
+			&& (sort_column == mColumn->mSortingColumn || sort_column == mColumn->mName);
 
 	BOOL is_ascending = mColumn->mParentCtrl->getSortAscending();
 	mButton->setImageOverlay(is_ascending ? "up_arrow.tga" : "down_arrow.tga", LLFontGL::RIGHT, draw_arrow ? LLColor4::white : LLColor4::transparent);
@@ -4014,6 +4027,7 @@ BOOL LLScrollColumnHeader::handleDoubleClick(S32 x, S32 y, MASK mask)
 	if (canResize() && mResizeBar->getRect().pointInRect(x, y))
 	{
 		// reshape column to max content width
+		mColumn->mParentCtrl->calcMaxContentWidth();
 		LLRect column_rect = getRect();
 		column_rect.mRight = column_rect.mLeft + mColumn->mMaxContentWidth;
 		setShape(column_rect,true);
@@ -4308,6 +4322,7 @@ void LLScrollColumnHeader::handleReshape(const LLRect& new_rect, bool by_user)
 		// tell scroll list to layout columns again
 		// do immediate update to get proper feedback to resize handle
 		// which needs to know how far the resize actually went
+		mColumn->mParentCtrl->dirtyColumns();	//Must flag as dirty, else updateColumns will probably be a noop.
 		mColumn->mParentCtrl->updateColumns();
 	}
 }

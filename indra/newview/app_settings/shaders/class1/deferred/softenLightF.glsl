@@ -332,10 +332,11 @@ void main()
 		col = atmosLighting(col);
 		col = scaleSoftClip(col);
 
-		col = mix(col.rgb, diffuse.rgb, diffuse.a);
+		col = mix(col, diffuse.rgb, diffuse.a);
 	}
 	else
 	{
+		bloom = spec.r;
 		col = diffuse.rgb;
 	}
 

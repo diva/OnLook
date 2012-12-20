@@ -297,14 +297,13 @@ void main()
 	float da = max(dot(norm.xyz, sun_dir.xyz), 0.0);
 	
 	vec4 diffuse = texture2DRect(diffuseRect, tc);
+	vec4 spec = texture2DRect(specularRect, vary_fragcoord.xy);
 
 	vec3 col;
 	float bloom = 0.0;
 
 	if (diffuse.a < 0.9)
 	{
-		vec4 spec = texture2DRect(specularRect, vary_fragcoord.xy);
-		
 		vec2 scol_ambocc = texture2DRect(lightMap, vary_fragcoord.xy).rg;
 		float scol = max(scol_ambocc.r, diffuse.a); 
 		float ambocc = scol_ambocc.g;
@@ -344,6 +343,7 @@ void main()
 	}
 	else
 	{
+		bloom = spec.r;
 		col = diffuse.rgb;
 	}
 		

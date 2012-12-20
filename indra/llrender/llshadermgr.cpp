@@ -25,6 +25,7 @@
  */
 
 #include "linden_common.h"
+#include <boost/filesystem.hpp>	//First, because glh_linear #defines equivalent.. which boost uses internally
 
 #include "llshadermgr.h"
 
@@ -53,6 +54,17 @@ LLShaderMgr * LLShaderMgr::sInstance = NULL;
 
 LLShaderMgr::LLShaderMgr()
 {
+	{
+		const std::string dumpdir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,"shader_dump")+gDirUtilp->getDirDelimiter();
+		try 
+		{
+			boost::filesystem::remove_all(dumpdir);
+		}
+		catch(const boost::filesystem::filesystem_error& e)
+		{
+			llinfos << "boost::filesystem::remove_all(\""+dumpdir+"\") failed: '" + e.code().message() + "'" << llendl;
+		}
+	}
 }
 
 
