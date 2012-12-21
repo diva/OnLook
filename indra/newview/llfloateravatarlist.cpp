@@ -1034,7 +1034,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		if (entry.mAge > -1)
 		{
 			static LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");
-			if (entry.mAge < sAvatarAgeAlertDays)
+			if ((U32)entry.mAge < sAvatarAgeAlertDays)
 			{
 				color = sRadarTextYoung;
 				if (!entry.mAgeAlert) //Only announce age once per entry.
