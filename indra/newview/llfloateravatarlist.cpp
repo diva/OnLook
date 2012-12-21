@@ -52,6 +52,7 @@
 #include <string.h>
 
 #include <map>
+#include <boost/date_time.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -177,17 +178,10 @@ void LLAvatarListEntry::processProperties(void* data, EAvatarProcessorType type)
 		const LLAvatarData* pAvatarData = static_cast<const LLAvatarData*>(data);
 		if (pAvatarData && (pAvatarData->avatar_id != LLUUID::null))
 		{
-			//Chalice - Show avatar age in days.
+			using namespace boost::gregorian;
 			int year, month, day;
 			sscanf(pAvatarData->born_on.c_str(),"%d/%d/%d",&month,&day,&year);
-			time_t now = time(NULL);
-			struct tm * timeinfo;
-			timeinfo=localtime(&now);
-			timeinfo->tm_mon = --month;
-			timeinfo->tm_year = year - 1900;
-			timeinfo->tm_mday = day;
-			time_t birth = mktime(timeinfo);
-			mAge = difftime(now,birth) / (60*60*24);
+			mAge = (day_clock::local_day() - date(year, month, day)).days();
 			// If one wanted more information that gets displayed on profiles to be displayed, here would be the place to do it.
 		}
 	}
