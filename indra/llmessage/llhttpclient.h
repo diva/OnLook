@@ -66,6 +66,11 @@ struct AIBufferedCurlEasyRequestEvents {
 	virtual void completed_headers(U32 status, std::string const& reason, AITransferInfo* info) = 0;	// Transaction completed.
 };
 
+enum EKeepAlive {
+  no_keep_alive = 0,
+  keep_alive
+};
+
 class LLHTTPClient {
 public:
 
@@ -162,6 +167,9 @@ public:
 		// A derived class should return true if curl should follow redirections.
 		// The default is not to follow redirections.
 		virtual bool followRedir(void) const { return false; }
+
+		// If this function returns false then we generate an error when a redirect status (300..399) is received.
+		virtual bool redirect_status_ok(void) const { return followRedir(); }
 
 		// Timeout policy to use.
 		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const = 0;
@@ -382,31 +390,31 @@ public:
 	static void getHeaderOnly(std::string const& url, ResponderHeadersOnly* responder)
 	    { AIHTTPHeaders headers; getHeaderOnly(url, responder, headers); }
 
-	static void post(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void post(std::string const& url, LLSD const& body, ResponderPtr responder)
-	    { AIHTTPHeaders headers; post(url, body, responder, headers); }
+	static void post(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive = keep_alive);
+	static void post(std::string const& url, LLSD const& body, ResponderPtr responder, EKeepAlive keepalive = keep_alive)
+	    { AIHTTPHeaders headers; post(url, body, responder, headers, keepalive); }
 
 	/** Takes ownership of request and deletes it when sent */
-	static void postXMLRPC(std::string const& url, XMLRPC_REQUEST request, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void postXMLRPC(std::string const& url, XMLRPC_REQUEST request, ResponderPtr responder)
-	    { AIHTTPHeaders headers; postXMLRPC(url, request, responder, headers); }
+	static void postXMLRPC(std::string const& url, XMLRPC_REQUEST request, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive = keep_alive);
+	static void postXMLRPC(std::string const& url, XMLRPC_REQUEST request, ResponderPtr responder, EKeepAlive keepalive = keep_alive)
+	    { AIHTTPHeaders headers; postXMLRPC(url, request, responder, headers, keepalive); }
 
-	static void postXMLRPC(std::string const& url, char const* method, XMLRPC_VALUE value, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void postXMLRPC(std::string const& url, char const* method, XMLRPC_VALUE value, ResponderPtr responder)
-	    { AIHTTPHeaders headers; postXMLRPC(url, method, value, responder, headers); }
+	static void postXMLRPC(std::string const& url, char const* method, XMLRPC_VALUE value, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive = keep_alive);
+	static void postXMLRPC(std::string const& url, char const* method, XMLRPC_VALUE value, ResponderPtr responder, EKeepAlive keepalive = keep_alive)
+	    { AIHTTPHeaders headers; postXMLRPC(url, method, value, responder, headers, keepalive); }
 
 	/** Takes ownership of data and deletes it when sent */
-	static void postRaw(std::string const& url, const char* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void postRaw(std::string const& url, const char* data, S32 size, ResponderPtr responder)
-	    { AIHTTPHeaders headers; postRaw(url, data, size, responder, headers); }
+	static void postRaw(std::string const& url, const char* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive = keep_alive);
+	static void postRaw(std::string const& url, const char* data, S32 size, ResponderPtr responder, EKeepAlive keepalive = keep_alive)
+	    { AIHTTPHeaders headers; postRaw(url, data, size, responder, headers, keepalive); }
 
-	static void postFile(std::string const& url, std::string const& filename, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void postFile(std::string const& url, std::string const& filename, ResponderPtr responder)
-	    { AIHTTPHeaders headers; postFile(url, filename, responder, headers); }
+	static void postFile(std::string const& url, std::string const& filename, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive = keep_alive);
+	static void postFile(std::string const& url, std::string const& filename, ResponderPtr responder, EKeepAlive keepalive = keep_alive)
+	    { AIHTTPHeaders headers; postFile(url, filename, responder, headers, keepalive); }
 
-	static void postFile(std::string const& url, const LLUUID& uuid, LLAssetType::EType asset_type, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void postFile(std::string const& url, const LLUUID& uuid, LLAssetType::EType asset_type, ResponderPtr responder)
-	    { AIHTTPHeaders headers; postFile(url, uuid, asset_type, responder, headers); }
+	static void postFile(std::string const& url, const LLUUID& uuid, LLAssetType::EType asset_type, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive = keep_alive);
+	static void postFile(std::string const& url, const LLUUID& uuid, LLAssetType::EType asset_type, ResponderPtr responder, EKeepAlive keepalive = keep_alive)
+	    { AIHTTPHeaders headers; postFile(url, uuid, asset_type, responder, headers, keepalive); }
 
 	static void del(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers);
 	static void del(std::string const& url, ResponderPtr responder)

@@ -75,6 +75,8 @@ public:
 	static void saveLocalDone(bool success);
 	static void saveFeedDone(bool success);
 
+	static void updateControls();
+
 private:
 	class Impl;
 	Impl& impl;

@@ -2174,7 +2174,7 @@ void BufferedCurlEasyRequest::setStatusAndReason(U32 status, std::string const& 
   AICurlInterface::Stats::status_count[AICurlInterface::Stats::status2index(mStatus)]++;
 
   // Sanity check. If the server replies with a redirect status then we better have that option turned on!
-  if ((status >= 300 && status < 400) && mResponder && !mResponder->followRedir())
+  if ((status >= 300 && status < 400) && mResponder && !mResponder->redirect_status_ok())
   {
 	llerrs << "Received " << status << " (" << reason << ") for responder \"" << mTimeoutPolicy->name() << "\" which has no followRedir()!" << llendl;
   }

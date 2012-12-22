@@ -53,11 +53,11 @@
 	<button bottom_delta="-22" follows="left|top" font="SansSerifSmall" halign="center"
 	     height="20" label="Advanced&gt;&gt;" left="10"
 	     mouse_opaque="true" name="more_btn" scale_image="TRUE"
-	     tool_tip="Advanced Options. Default uses current window size." width="72" />
+	     tool_tip="Advanced Options. Default uses current window size (500x375 for profile feed)." width="72" />
 	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" halign="center"
 	     height="20" label="&lt;&lt;Default" left_delta="0"
 	     mouse_opaque="true" name="less_btn" scale_image="TRUE"
-	     tool_tip="Advanced Options. Default uses current window size." width="72" />
+	     tool_tip="Advanced Options. Default uses current window size (500x375 for profile feed)." width="72" />
 	<slider bottom_delta="0" decimal_digits="0" follows="left|top" height="15"
 	     increment="1" initial_val="75" left="80"
 	     max_val="100" min_val="0" name="image_quality_slider" width="150" />
@@ -69,23 +69,23 @@
 		<combo_item name="CurrentWindow" value="[i0,i0]">
 			Current Window
 		</combo_item>
-		<combo_item name="640x480" value="[i640,i480]">
-			640x480
+		<combo_item name="500x500" value="[i500,i500]">
+			500x500 (1:1)
 		</combo_item>
-		<combo_item name="700x525" value="[i700,i525]">
-			700x525 (prefered)
+		<combo_item name="500x375" value="[i500,i375]">
+			500x375 (4:3)
 		</combo_item>
-		<combo_item name="800x600" value="[i800,i600]">
-			800x600 (resized)
+		<combo_item name="500x350" value="[i500,i350]">
+			500x350 (10:7)
 		</combo_item>
-		<combo_item name="1024x768" value="[i1024,i768]">
-			1024x768 (resized)
+		<combo_item name="500x313" value="[i500,i313]">
+			500x313 (16:10)
 		</combo_item>
-		<combo_item name="1280x960" value="[i1280,i960]">
-			1280x960 (resized)
+		<combo_item name="500x281" value="[i500,i281]">
+			500x281 (16:9)
 		</combo_item>
-		<combo_item name="1600x1200" value="[i1600,i1200]">
-			1600x1200 (resized)
+		<combo_item name="500x250" value="[i500,i250]">
+			500x250 (2:1)
 		</combo_item>
 		<combo_item name="Custom" value="[i-1,i-1]">
 			Custom
@@ -114,26 +114,26 @@
 	</combo_box>
 	<combo_box bottom_delta="0" follows="left|top" height="20" label="Resolution" left="10"
 	     name="texture_size_combo" width="115">
-		<combo_item name="128x128" value="[i128,i128]">
-			128x128 (1:1)
+		<combo_item name="512x512" value="[i512,i512]">
+			512x512 (1:1)
 		</combo_item>
 		<combo_item name="256x256" value="[i256,i256]">
 			256x256 (1:1)
 		</combo_item>
-		<combo_item name="512x512" value="[i512,i512]">
-			512x512 (1:1)
-		</combo_item>
-		<combo_item name="256x128" value="[i256,i128]">
-			256x128 (2:1)
+		<combo_item name="128x128" value="[i128,i128]">
+			128x128 (1:1)
 		</combo_item>
 		<combo_item name="512x256" value="[i512,i256]">
 			512x256 (2:1)
 		</combo_item>
-		<combo_item name="128x256" value="[i128,i256]">
-			128x256 (1:2)
+		<combo_item name="256x128" value="[i256,i128]">
+			256x128 (2:1)
 		</combo_item>
 		<combo_item name="256x512" value="[i256,i512]">
 			256x512 (1:2)
+		</combo_item>
+		<combo_item name="128x256" value="[i128,i256]">
+			128x256 (1:2)
 		</combo_item>
 		<combo_item name="512x128" value="[i512,i128]">
 			512x128 (4:1)
@@ -187,8 +187,8 @@
 	</text>
 	<combo_box bottom_delta="-22" follows="left|top" height="20" label="Aspect" left="10"
 	     name="feed_aspect_combo" width="115">
-		<combo_item name="4:3" value="1.33333">
-			4:3
+		<combo_item name="Default" value="-2">
+			Default
 		</combo_item>
 		<combo_item name="Custom" value="-1">
 			Custom
@@ -212,7 +212,7 @@
 			1:1
 		</combo_item>
 		<combo_item name="4:3" value="1.33333">
-			4:3 (profile &amp; feed)
+			4:3 (profile)
 		</combo_item>
 		<combo_item name="10:7" value="1.42857">
 			10:7
@@ -245,7 +245,7 @@
 			1:1
 		</combo_item>
 		<combo_item name="4:3" value="1.33333">
-			4:3 (profile &amp; feed)
+			4:3 (profile)
 		</combo_item>
 		<combo_item name="10:7" value="1.42857">
 			10:7
@@ -269,7 +269,7 @@
 	<spinner bottom_delta="0" decimal_digits="5" follows="left|top" height="20"
 	     increment="0.01" label="" left="130" max_val="32"
 	     min_val="0.03125" name="aspect_ratio" width="64" allow_text_entry="false"/>
-    <text bottom_delta="-10" left="196">:1</text>
+    <text bottom_delta="-20" height="20" left="196" name="aspect_one_label">:1</text>
 	<text bottom_delta="-20" follows="left|top" height="20" left="15"
 	     name="layer_type_label" width="50">
 		Capture:

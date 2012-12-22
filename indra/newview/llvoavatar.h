@@ -341,6 +341,7 @@ public:
 	BOOL			hasGray() const; 
 	S32				getRezzedStatus() const; // 0 = cloud, 1 = gray, 2 = fully textured.
 	void			updateRezzedStatusTimers();
+	bool			isFrozenDead() const { return mFreezeTimeDead; }
 
 	S32				mLastRezzedStatus;
 protected:

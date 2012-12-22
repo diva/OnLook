@@ -270,11 +270,11 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 // and the CurlEasyRequest destructed.
 class CurlEasyRequest : public CurlEasyHandle {
   private:
-	void setPost_raw(U32 size, char const* data);
+	void setPost_raw(U32 size, char const* data, bool keepalive);
   public:
-	void setPost(U32 size) { setPost_raw(size, NULL); }
-	void setPost(AIPostFieldPtr const& postdata, U32 size);
-	void setPost(char const* data, U32 size) { setPost(new AIPostField(data), size); }
+	void setPost(U32 size, bool keepalive = true) { setPost_raw(size, NULL, keepalive); }
+	void setPost(AIPostFieldPtr const& postdata, U32 size, bool keepalive = true);
+	void setPost(char const* data, U32 size, bool keepalive = true) { setPost(new AIPostField(data), size, keepalive); }
 	void setoptString(CURLoption option, std::string const& value);
 	void addHeader(char const* str);
 	void addHeaders(AIHTTPHeaders const& headers);

@@ -201,6 +201,7 @@ static void request(
 	Injector* body_injector,
 	LLHTTPClient::ResponderPtr responder,
 	AIHTTPHeaders& headers,
+	EKeepAlive keepalive = keep_alive,
 	bool is_auth = false,
 	bool no_compression = false)
 {
@@ -213,7 +214,7 @@ static void request(
 	LLURLRequest* req;
 	try
 	{
-		req = new LLURLRequest(method, url, body_injector, responder, headers, is_auth, no_compression);
+		req = new LLURLRequest(method, url, body_injector, responder, headers, keepalive, is_auth, no_compression);
 	}
 	catch(AICurlNoEasyHandle& error)
 	{
@@ -657,17 +658,17 @@ void LLHTTPClient::put(std::string const& url, LLSD const& body, ResponderPtr re
 	request(url, LLURLRequest::HTTP_PUT, new LLSDInjector(body), responder, headers);
 }
 
-void LLHTTPClient::post(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::post(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive)
 {
-	request(url, LLURLRequest::HTTP_POST, new LLSDInjector(body), responder, headers);
+	request(url, LLURLRequest::HTTP_POST, new LLSDInjector(body), responder, headers, keepalive);
 }
 
-void LLHTTPClient::postXMLRPC(std::string const& url, XMLRPC_REQUEST xmlrpc_request, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::postXMLRPC(std::string const& url, XMLRPC_REQUEST xmlrpc_request, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive)
 {
-  	request(url, LLURLRequest::HTTP_POST, new XMLRPCInjector(xmlrpc_request), responder, headers, true, false);		// Does use compression.
+  	request(url, LLURLRequest::HTTP_POST, new XMLRPCInjector(xmlrpc_request), responder, headers, keepalive, true, false);		// Does use compression.
 }
 
-void LLHTTPClient::postXMLRPC(std::string const& url, char const* method, XMLRPC_VALUE value, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::postXMLRPC(std::string const& url, char const* method, XMLRPC_VALUE value, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive)
 {
 	XMLRPC_REQUEST xmlrpc_request = XMLRPC_RequestNew();
 	XMLRPC_RequestSetMethodName(xmlrpc_request, method);
@@ -675,22 +676,22 @@ void LLHTTPClient::postXMLRPC(std::string const& url, char const* method, XMLRPC
 	XMLRPC_RequestSetData(xmlrpc_request, value);
 	// XMLRPCInjector takes ownership of xmlrpc_request and will free it when done.
 	// LLURLRequest takes ownership of the XMLRPCInjector object and will free it when done.
-  	request(url, LLURLRequest::HTTP_POST, new XMLRPCInjector(xmlrpc_request), responder, headers, true, true);		// Does not use compression.
+  	request(url, LLURLRequest::HTTP_POST, new XMLRPCInjector(xmlrpc_request), responder, headers, keepalive, true, true);		// Does not use compression.
 }
 
-void LLHTTPClient::postRaw(std::string const& url, char const* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::postRaw(std::string const& url, char const* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive)
 {
-	request(url, LLURLRequest::HTTP_POST, new RawInjector(data, size), responder, headers);
+	request(url, LLURLRequest::HTTP_POST, new RawInjector(data, size), responder, headers, keepalive);
 }
 
-void LLHTTPClient::postFile(std::string const& url, std::string const& filename, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::postFile(std::string const& url, std::string const& filename, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive)
 {
-	request(url, LLURLRequest::HTTP_POST, new FileInjector(filename), responder, headers);
+	request(url, LLURLRequest::HTTP_POST, new FileInjector(filename), responder, headers, keepalive);
 }
 
-void LLHTTPClient::postFile(std::string const& url, LLUUID const& uuid, LLAssetType::EType asset_type, ResponderPtr responder, AIHTTPHeaders& headers)
+void LLHTTPClient::postFile(std::string const& url, LLUUID const& uuid, LLAssetType::EType asset_type, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive)
 {
-	request(url, LLURLRequest::HTTP_POST, new VFileInjector(uuid, asset_type), responder, headers);
+	request(url, LLURLRequest::HTTP_POST, new VFileInjector(uuid, asset_type), responder, headers, keepalive);
 }
 
 // static
