@@ -1052,9 +1052,9 @@ void LLFloaterAvatarList::refreshAvatarList()
 		element["columns"][LIST_AGE]["color"] = color.getValue();
 
 		int dur = difftime(time(NULL), entry.getTime());
-		int hours = dur / 360;
-		int mins = (dur % 360) / 60;
-		int secs = (dur % 360) % 60;
+		int hours = dur / 3600;
+		int mins = (dur % 3600) / 60;
+		int secs = (dur % 3600) % 60;
 
 		element["columns"][LIST_TIME]["column"] = "time";
 		element["columns"][LIST_TIME]["type"] = "text";
