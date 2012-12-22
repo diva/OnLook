@@ -43,7 +43,7 @@ set(llappearance_SOURCE_FILES
     #llwearable.cpp
     #llwearabledata.cpp
     llwearabletype.cpp
-    #llviewervisualparam.cpp
+    llviewervisualparam.cpp
     llavatarappearancedefines.cpp
     )
     
@@ -66,7 +66,7 @@ set(llappearance_HEADER_FILES
     #llwearable.h
     #llwearabledata.h
     llwearabletype.h
-    #llviewervisualparam.h
+    llviewervisualparam.h
     llavatarappearancedefines.h
     )
 

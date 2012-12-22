@@ -510,7 +510,6 @@ set(viewer_SOURCE_FILES
     llviewertextureanim.cpp
     llviewertexturelist.cpp
     llviewerthrottle.cpp
-    llviewervisualparam.cpp
     llviewerwindow.cpp
     llvlcomposition.cpp
     llvlmanager.cpp
@@ -1017,7 +1016,6 @@ set(viewer_HEADER_FILES
     llviewertextureanim.h
     llviewertexturelist.h
     llviewerthrottle.h
-    llviewervisualparam.h
     llviewerwindow.h
     llvlcomposition.h
     llvlmanager.h
