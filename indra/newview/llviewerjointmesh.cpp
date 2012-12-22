@@ -110,7 +110,7 @@ BOOL LLSkinJoint::setupSkinJoint( LLViewerJoint *joint)
 	while (joint)
 	{
 		rootSkinOffset += joint->getSkinOffset();
-		joint = (LLViewerJoint*)joint->getParent();
+		joint = dynamic_cast<LLViewerJoint*>(joint->getParent());
 	}
 
 	mRootToJointSkinOffset = -rootSkinOffset;
@@ -302,7 +302,7 @@ void LLViewerJointMesh::setMesh( LLPolyMesh *mesh )
 		for (jn = 0; jn < numJointNames; jn++)
 		{
 			//llinfos << "Setting up joint " << jointNames[jn] << llendl;
-			LLViewerJoint* joint = (LLViewerJoint*)(getRoot()->findJoint(jointNames[jn]) );
+			LLViewerJoint* joint = dynamic_cast<LLViewerJoint*>(getRoot()->findJoint(jointNames[jn]) );
 			mSkinJoints[jn].setupSkinJoint( joint );
 		}
 	}
@@ -310,7 +310,7 @@ void LLViewerJointMesh::setMesh( LLPolyMesh *mesh )
 	// setup joint array
 	if (!mMesh->isLOD())
 	{
-		setupJoint((LLViewerJoint*)getRoot());
+		setupJoint(dynamic_cast<LLViewerJoint*>(getRoot()));
 	}
 
 //	llinfos << "joint render entries: " << mMesh->mJointRenderData.count() << llendl;
@@ -361,7 +361,7 @@ void LLViewerJointMesh::setupJoint(LLViewerJoint* current_joint)
 	for (LLJoint::child_list_t::iterator iter = current_joint->mChildren.begin();
 		 iter != current_joint->mChildren.end(); ++iter)
 	{
-		LLViewerJoint* child_joint = (LLViewerJoint*)(*iter);
+		LLViewerJoint* child_joint = dynamic_cast<LLViewerJoint*>(*iter);
 		setupJoint(child_joint);
 	}
 }

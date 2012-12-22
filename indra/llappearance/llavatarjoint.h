@@ -34,7 +34,7 @@
 #include "lljointpickname.h"
 
 class LLFace;
-class LLAvatarJointMesh;
+class LLViewerJointMesh;
 
 extern const F32 DEFAULT_AVATAR_JOINT_LOD;
 
@@ -45,7 +45,7 @@ class LLAvatarJoint :
 	public LLJoint
 {
 public:
-	/*LLAvatarJoint();
+	LLAvatarJoint();
 	LLAvatarJoint(S32 joint_num);
 	// *TODO: Only used for LLVOAvatarSelf::mScreenp.  *DOES NOT INITIALIZE mResetAfterRestoreOldXform*
 	LLAvatarJoint(const std::string &name, LLJoint *parent = NULL);
@@ -59,12 +59,12 @@ public:
 
 	// Returns true if this object is transparent.
 	// This is used to determine in which order to draw objects.
-	virtual BOOL isTransparent() { return mIsTransparent; }*/
+	virtual BOOL isTransparent() { return mIsTransparent; }
 
 	// Returns true if this object should inherit scale modifiers from its immediate parent
-	virtual BOOL inheritScale() = 0;
+	virtual BOOL inheritScale() { return FALSE; }
 
-	/*enum Components
+	enum Components
 	{
 		SC_BONE		= 1,
 		SC_JOINT	= 2,
@@ -118,21 +118,21 @@ protected:
 	F32			mMinPixelArea;
 	LLJointPickName	mPickName;
 	BOOL		mVisible;
-	S32			mMeshID;*/
+	S32			mMeshID;
 };
 
 class LLAvatarJointCollisionVolume : public LLAvatarJoint
 {
 public:
-	LLAvatarJointCollisionVolume() {};
+	LLAvatarJointCollisionVolume();
 	virtual ~LLAvatarJointCollisionVolume() {};
 
-	//*virtual*/ BOOL inheritScale() { return TRUE; }
-	//*virtual*/ U32 render( F32 pixelArea, BOOL first_pass = TRUE, BOOL is_dummy = FALSE )  = 0;
+	/*virtual*/ BOOL inheritScale() { return TRUE; }
+	/*virtual*/ U32 render( F32 pixelArea, BOOL first_pass = TRUE, BOOL is_dummy = FALSE );
 
-	virtual void renderCollision() = 0;
+	void renderCollision();
 
-	virtual LLVector3 getVolumePos(LLVector3 &offset) = 0;
+	LLVector3 getVolumePos(LLVector3 &offset);
 };
 
 #endif // LL_LLAVATARJOINT_H

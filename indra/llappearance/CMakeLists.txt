@@ -29,7 +29,7 @@ include_directories(
 
 set(llappearance_SOURCE_FILES
     #llavatarappearance.cpp
-    #llavatarjoint.cpp
+    llavatarjoint.cpp
     #llavatarjointmesh.cpp
     #lldriverparam.cpp
     #lllocaltextureobject.cpp

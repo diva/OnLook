@@ -685,7 +685,7 @@ void LLImagePreviewAvatar::setPreviewTarget(const std::string& joint_name, const
 	}
 	mDummyAvatar->mRoot.setVisible(FALSE, TRUE);
 
-	mTargetMesh = (LLViewerJointMesh*)mDummyAvatar->mRoot.findJoint(mesh_name);
+	mTargetMesh = dynamic_cast<LLViewerJointMesh*>(mDummyAvatar->mRoot.findJoint(mesh_name));
 	mTargetMesh->setTestTexture(mTextureName);
 	mTargetMesh->setVisible(TRUE, FALSE);
 	mCameraDistance = distance;
@@ -702,7 +702,7 @@ void LLImagePreviewAvatar::clearPreviewTexture(const std::string& mesh_name)
 {
 	if (mDummyAvatar)
 	{
-		LLViewerJointMesh *mesh = (LLViewerJointMesh*)mDummyAvatar->mRoot.findJoint(mesh_name);
+		LLViewerJointMesh *mesh = dynamic_cast<LLViewerJointMesh*>(mDummyAvatar->mRoot.findJoint(mesh_name));
 		// clear out existing test mesh
 		if (mesh)
 		{

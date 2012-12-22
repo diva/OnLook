@@ -241,7 +241,6 @@ public:
 	virtual LLJoint*		getJoint(const std::string &name);
 	virtual LLJoint*     	getRootJoint() { return &mRoot; }
 
-	void					resetJointPositions( void );
 	void					resetJointPositionsToDefault( void );
 	void					resetSpecificJointPosition( const std::string& name );
 	virtual const LLUUID&   getID() const;
@@ -400,9 +399,10 @@ public:
 	BOOL				setupBone(const LLVOAvatarBoneInfo* info, LLViewerJoint* parent, S32 &current_volume_num, S32 &current_joint_num);
 	virtual BOOL		buildSkeleton(const LLAvatarSkeletonInfo *info);
 private:
+	typedef std::vector<LLViewerJoint*> avatar_joint_list_t;
 	BOOL				mIsBuilt; // state of deferred character building
 	S32					mNumJoints;
-	LLViewerJoint*		mSkeleton;
+	avatar_joint_list_t		mSkeleton;
 	
 	//--------------------------------------------------------------------
 	// Pelvis height adjustment members.
@@ -417,24 +417,24 @@ private:
 	// Cached pointers to well known joints
 	//--------------------------------------------------------------------
 public:
-	LLViewerJoint* 		mPelvisp;
-	LLViewerJoint* 		mTorsop;
-	LLViewerJoint* 		mChestp;
-	LLViewerJoint* 		mNeckp;
-	LLViewerJoint* 		mHeadp;
-	LLViewerJoint* 		mSkullp;
-	LLViewerJoint* 		mEyeLeftp;
-	LLViewerJoint* 		mEyeRightp;
-	LLViewerJoint* 		mHipLeftp;
-	LLViewerJoint* 		mHipRightp;
-	LLViewerJoint* 		mKneeLeftp;
-	LLViewerJoint* 		mKneeRightp;
-	LLViewerJoint* 		mAnkleLeftp;
-	LLViewerJoint* 		mAnkleRightp;
-	LLViewerJoint* 		mFootLeftp;
-	LLViewerJoint* 		mFootRightp;
-	LLViewerJoint* 		mWristLeftp;
-	LLViewerJoint* 		mWristRightp;
+	LLJoint* 		mPelvisp;
+	LLJoint* 		mTorsop;
+	LLJoint* 		mChestp;
+	LLJoint* 		mNeckp;
+	LLJoint* 		mHeadp;
+	LLJoint* 		mSkullp;
+	LLJoint* 		mEyeLeftp;
+	LLJoint* 		mEyeRightp;
+	LLJoint* 		mHipLeftp;
+	LLJoint* 		mHipRightp;
+	LLJoint* 		mKneeLeftp;
+	LLJoint* 		mKneeRightp;
+	LLJoint* 		mAnkleLeftp;
+	LLJoint* 		mAnkleRightp;
+	LLJoint* 		mFootLeftp;
+	LLJoint* 		mFootRightp;
+	LLJoint* 		mWristLeftp;
+	LLJoint* 		mWristRightp;
 
 	//--------------------------------------------------------------------
 	// XML parse tree
@@ -706,7 +706,7 @@ private:
 
 	typedef std::multimap<std::string, LLPolyMesh*> polymesh_map_t;
 	polymesh_map_t 									mMeshes;
-	std::vector<LLViewerJoint *> 					mMeshLOD;
+	avatar_joint_list_t 					mMeshLOD;
 
 	//--------------------------------------------------------------------
 	// Destroy invisible mesh
@@ -917,9 +917,9 @@ private:
 	//--------------------------------------------------------------------
 public:
   	S32			mNumCollisionVolumes;
-	LLViewerJointCollisionVolume* mCollisionVolumes;
+	LLAvatarJointCollisionVolume* mCollisionVolumes;
 	virtual S32 getNumCollisionVolumes() { return mNumCollisionVolumes; }
-	virtual LLAvatarJointCollisionVolume* getCollisionVolume(S32 i) { return (LLAvatarJointCollisionVolume*)&mCollisionVolumes[i]; }
+	virtual LLAvatarJointCollisionVolume* getCollisionVolume(S32 i) { return &mCollisionVolumes[i]; }
 
 protected:
 	virtual BOOL		allocateCollisionVolumes(U32 num);

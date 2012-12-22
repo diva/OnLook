@@ -1084,7 +1084,6 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mIsBuilt = FALSE;
 
 	mNumJoints = 0;
-	mSkeleton = NULL;
 
 	mNumCollisionVolumes = 0;
 	mCollisionVolumes = NULL;
@@ -1179,7 +1178,9 @@ LLVOAvatar::~LLVOAvatar()
 	mRoot.removeAllChildren();
 	mJointMap.clear();
 
-	deleteAndClearArray(mSkeleton);
+	std::for_each(mSkeleton.begin(), mSkeleton.end(), DeletePointer());
+	mSkeleton.clear();
+
 	deleteAndClearArray(mCollisionVolumes);
 
 	mNumJoints = 0;
@@ -1207,11 +1208,11 @@ LLVOAvatar::~LLVOAvatar()
 	std::for_each(mMeshes.begin(), mMeshes.end(), DeletePairedPointer());
 	mMeshes.clear();
 
-	for (std::vector<LLViewerJoint*>::iterator jointIter = mMeshLOD.begin();
+	for (avatar_joint_list_t::iterator jointIter = mMeshLOD.begin();
 		 jointIter != mMeshLOD.end(); 
 		 ++jointIter)
 	{
-		LLViewerJoint* joint = (LLViewerJoint *) *jointIter;
+		LLViewerJoint* joint = dynamic_cast<LLViewerJoint *>(*jointIter);
 		std::for_each(joint->mMeshParts.begin(), joint->mMeshParts.end(), DeletePointer());
 		joint->mMeshParts.clear();
 	}
@@ -1274,7 +1275,7 @@ BOOL LLVOAvatar::isFullyTextured() const
 		avatar_joint_mesh_list_t::iterator meshIter = joint->mMeshParts.begin();
 		if (meshIter != joint->mMeshParts.end())
 		{
-			LLViewerJointMesh *mesh = (LLViewerJointMesh *) *meshIter;
+			LLViewerJointMesh *mesh = (LLViewerJointMesh*)*meshIter;
 			if (!mesh)
 			{
 				continue; // nonexistent mesh OK
@@ -2191,7 +2192,7 @@ BOOL LLVOAvatar::setupBone(const LLVOAvatarBoneInfo* info, LLViewerJoint* parent
 
 	if (info->mIsJoint)
 	{
-		joint = (LLViewerJoint*)getCharacterJoint(joint_num);
+		joint = dynamic_cast<LLViewerJoint*>(getCharacterJoint(joint_num));
 		if (!joint)
 		{
 			llwarns << "Too many bones" << llendl;
@@ -2390,24 +2391,24 @@ void LLVOAvatar::buildCharacter()
 	//-------------------------------------------------------------------------
 	// initialize "well known" joint pointers
 	//-------------------------------------------------------------------------
-	mPelvisp		= (LLViewerJoint*)mRoot.findJoint("mPelvis");
-	mTorsop			= (LLViewerJoint*)mRoot.findJoint("mTorso");
-	mChestp			= (LLViewerJoint*)mRoot.findJoint("mChest");
-	mNeckp			= (LLViewerJoint*)mRoot.findJoint("mNeck");
-	mHeadp			= (LLViewerJoint*)mRoot.findJoint("mHead");
-	mSkullp			= (LLViewerJoint*)mRoot.findJoint("mSkull");
-	mHipLeftp		= (LLViewerJoint*)mRoot.findJoint("mHipLeft");
-	mHipRightp		= (LLViewerJoint*)mRoot.findJoint("mHipRight");
-	mKneeLeftp		= (LLViewerJoint*)mRoot.findJoint("mKneeLeft");
-	mKneeRightp		= (LLViewerJoint*)mRoot.findJoint("mKneeRight");
-	mAnkleLeftp		= (LLViewerJoint*)mRoot.findJoint("mAnkleLeft");
-	mAnkleRightp	= (LLViewerJoint*)mRoot.findJoint("mAnkleRight");
-	mFootLeftp		= (LLViewerJoint*)mRoot.findJoint("mFootLeft");
-	mFootRightp		= (LLViewerJoint*)mRoot.findJoint("mFootRight");
-	mWristLeftp		= (LLViewerJoint*)mRoot.findJoint("mWristLeft");
-	mWristRightp	= (LLViewerJoint*)mRoot.findJoint("mWristRight");
-	mEyeLeftp		= (LLViewerJoint*)mRoot.findJoint("mEyeLeft");
-	mEyeRightp		= (LLViewerJoint*)mRoot.findJoint("mEyeRight");
+	mPelvisp		= mRoot.findJoint("mPelvis");
+	mTorsop			= mRoot.findJoint("mTorso");
+	mChestp			= mRoot.findJoint("mChest");
+	mNeckp			= mRoot.findJoint("mNeck");
+	mHeadp			= mRoot.findJoint("mHead");
+	mSkullp			= mRoot.findJoint("mSkull");
+	mHipLeftp		= mRoot.findJoint("mHipLeft");
+	mHipRightp		= mRoot.findJoint("mHipRight");
+	mKneeLeftp		= mRoot.findJoint("mKneeLeft");
+	mKneeRightp		= mRoot.findJoint("mKneeRight");
+	mAnkleLeftp		= mRoot.findJoint("mAnkleLeft");
+	mAnkleRightp	= mRoot.findJoint("mAnkleRight");
+	mFootLeftp		= mRoot.findJoint("mFootLeft");
+	mFootRightp		= mRoot.findJoint("mFootRight");
+	mWristLeftp		= mRoot.findJoint("mWristLeft");
+	mWristRightp	= mRoot.findJoint("mWristRight");
+	mEyeLeftp		= mRoot.findJoint("mEyeLeft");
+	mEyeRightp		= mRoot.findJoint("mEyeRight");
 
 	//-------------------------------------------------------------------------
 	// Make sure "well known" pointers exist
@@ -5916,19 +5917,6 @@ LLJoint *LLVOAvatar::getJoint( const std::string &name )
 }
 
 //-----------------------------------------------------------------------------
-// resetJointPositions
-//-----------------------------------------------------------------------------
-void LLVOAvatar::resetJointPositions( void )
-{
-	for(S32 i = 0; i < (S32)mNumJoints; ++i)
-	{
-		mSkeleton[i].restoreOldXform();
-		mSkeleton[i].setId( LLUUID::null );
-	}
-	mHasPelvisOffset = false;
-	mPelvisFixup	 = mLastPelvisFixup;
-}
-//-----------------------------------------------------------------------------
 // resetSpecificJointPosition
 //-----------------------------------------------------------------------------
 void LLVOAvatar::resetSpecificJointPosition( const std::string& name )
@@ -6102,17 +6090,17 @@ LLVector3	LLVOAvatar::getPosAgentFromGlobal(const LLVector3d &position)
 //-----------------------------------------------------------------------------
 BOOL LLVOAvatar::allocateCharacterJoints( U32 num )
 {
-	deleteAndClearArray(mSkeleton);
+	std::for_each(mSkeleton.begin(), mSkeleton.end(), DeletePointer());
+	mSkeleton.clear();
 	mNumJoints = 0;
 
-	mSkeleton = new LLViewerJoint[num];
-	
 	for(S32 joint_num = 0; joint_num < (S32)num; joint_num++)
 	{
-		mSkeleton[joint_num].setJointNum(joint_num);
+		mSkeleton.push_back(new LLViewerJoint(joint_num));
 	}
 
-	if (!mSkeleton)
+
+	if (mSkeleton.empty() || !mSkeleton[0])
 	{
 		return FALSE;
 	}
@@ -6129,7 +6117,7 @@ BOOL LLVOAvatar::allocateCollisionVolumes( U32 num )
 	deleteAndClearArray(mCollisionVolumes);
 	mNumCollisionVolumes = 0;
 
-	mCollisionVolumes = new LLViewerJointCollisionVolume[num];
+	mCollisionVolumes = new LLAvatarJointCollisionVolume[num];
 	if (!mCollisionVolumes)
 	{
 		return FALSE;
@@ -6307,13 +6295,13 @@ BOOL LLVOAvatar::loadAvatar()
 //-----------------------------------------------------------------------------
 BOOL LLVOAvatar::loadSkeletonNode ()
 {
-	mRoot.addChild( &mSkeleton[0] );
+	mRoot.addChild( mSkeleton[0] );
 
 	for (std::vector<LLViewerJoint *>::iterator iter = mMeshLOD.begin();
 		 iter != mMeshLOD.end(); 
 		 ++iter)
 	{
-		LLViewerJoint *joint = (LLViewerJoint *) *iter;
+		LLAvatarJoint *joint = *iter;
 		joint->mUpdateXform = FALSE;
 		joint->setMeshesToChildren();
 	}
@@ -6325,19 +6313,19 @@ BOOL LLVOAvatar::loadSkeletonNode ()
 	mRoot.addChild(mMeshLOD[MESH_ID_SKIRT]);
 	mRoot.addChild(mMeshLOD[MESH_ID_HEAD]);
 
-	LLViewerJoint *skull = (LLViewerJoint*)mRoot.findJoint("mSkull");
+	LLAvatarJoint *skull = (LLAvatarJoint*)mRoot.findJoint("mSkull");
 	if (skull)
 	{
 		skull->addChild(mMeshLOD[MESH_ID_HAIR] );
 	}
 
-	LLViewerJoint *eyeL = (LLViewerJoint*)mRoot.findJoint("mEyeLeft");
+	LLAvatarJoint *eyeL = (LLAvatarJoint*)mRoot.findJoint("mEyeLeft");
 	if (eyeL)
 	{
 		eyeL->addChild( mMeshLOD[MESH_ID_EYEBALL_LEFT] );
 	}
 
-	LLViewerJoint *eyeR = (LLViewerJoint*)mRoot.findJoint("mEyeRight");
+	LLAvatarJoint *eyeR = (LLAvatarJoint*)mRoot.findJoint("mEyeRight");
 	if (eyeR)
 	{
 		eyeR->addChild( mMeshLOD[MESH_ID_EYEBALL_RIGHT] );
