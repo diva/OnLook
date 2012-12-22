@@ -247,6 +247,46 @@
    <map/>
    <key>osNpcWhisper</key>
    <map/>
+   <key>osForceAttachToAvatar</key>
+   <map/>
+   <key>osForceAttachToAvatarFromInventory</key>
+   <map/>
+   <key>osForceAttachToOtherAvatarFromInventory</key>
+   <map/>
+   <key>osNpcTouch</key>
+   <map/>
+   <key>osNpcTouch</key>
+   <map/>
+   <key>osIsUUID</key>
+   <map/>
+   <key>osMin</key>
+   <map/>
+   <key>osMax</key>
+   <map/>
+   <key>osMax</key>
+   <map/>
+   <key>osGetRezzingObject</key>
+   <map/>
+   <key>osGetHealth</key>
+   <map/>
+   <key>osSetContentType</key>
+   <map/>
+   <key>osGetNumberOfAttachments</key>
+   <map/>
+   <key>osMessageAttachments</key>
+   <map/>
+   <key>osDropAttachments</key>
+   <map/>
+   <key>osDropAttachmentsAt</key>
+   <map/>
+   <key>osForceDropAttachments</key>
+   <map/>
+   <key>osForceDropAttachmentsAt</key>
+   <map/>
+   <key>osListenRegex</key>
+   <map/>
+   <key>osRegexIsMatch</key>
+   <map/>
 
 <!-- OSSL Functions Aurora-Sim Unique -->
    <key>osReturnObject</key>
@@ -333,6 +373,24 @@
    <key>aaSetEnv</key>
    <map/>
    <key>aaGetIsInfiniteRegion</key>
+   <map/>
+   <key>aaSetCharacterStat</key>
+   <map/>
+   <key>aaAllRegionInstanceSay</key>
+   <map/>
+   <key>aaWindlightGetDayCycle</key>
+   <map/>
+   <key>aaWindlightAddDayCycleFrame</key>
+   <map/>
+   <key>aaWindlightRemoveDayCycleFrame</key>
+   <map/>
+   <key>aaWindlightSetScene</key>
+   <map/>
+   <key>aaWindlightGetScene</key>
+   <map/>
+   <key>aaWindlightGetSceneIsStatic</key>
+   <map/>
+   <key>aaWindlightGetSceneDayCycleKeyFrameCount</key>
    <map/>
 <!-- botFunctions   Aurora-Sim ONLY -->
    <key>botGetWaitingTime</key>
