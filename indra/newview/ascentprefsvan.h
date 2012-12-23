@@ -59,6 +59,7 @@ protected:
     BOOL mShowLogScreens;
 	bool mDisableChatAnimation;
 	bool mAddNotReplace;
+	bool mTurnAround;
     //Tags\Colors
     BOOL mAscentUseTag;
     std::string mReportClientUUID;
