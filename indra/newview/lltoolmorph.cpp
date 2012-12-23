@@ -205,15 +205,15 @@ BOOL LLVisualParamHint::render()
 	const std::string& cam_target_mesh_name = mVisualParam->getCameraTargetName();
 	if( !cam_target_mesh_name.empty() )
 	{
-		cam_target_joint = (LLViewerJointMesh*)gAgentAvatarp->getJoint( cam_target_mesh_name );
+		cam_target_joint = dynamic_cast<LLViewerJointMesh*>(gAgentAvatarp->getJoint( cam_target_mesh_name ));
 	}
 	if( !cam_target_joint )
 	{
-		cam_target_joint = (LLViewerJointMesh*)gMorphView->getCameraTargetJoint();
+		cam_target_joint = dynamic_cast<LLViewerJointMesh*>(gMorphView->getCameraTargetJoint());
 	}
 	if( !cam_target_joint )
 	{
-		cam_target_joint = (LLViewerJointMesh*)gAgentAvatarp->getJoint("mHead");
+		cam_target_joint = dynamic_cast<LLViewerJointMesh*>(gAgentAvatarp->getJoint("mHead"));
 	}
 
 	LLQuaternion avatar_rotation;
