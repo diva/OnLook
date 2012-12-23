@@ -4335,7 +4335,8 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 			}
 			LLVector3 velDir = getVelocity();
 			velDir.normalize();
-			if ( mSignaledAnimations.find(ANIM_AGENT_WALK) != mSignaledAnimations.end())
+			static LLCachedControl<bool> TurnAround("TurnAroundWhenWalkingBackwards");
+			if (!TurnAround && (mSignaledAnimations.find(ANIM_AGENT_WALK) != mSignaledAnimations.end()))
 			{
 				F32 vpD = velDir * primDir;
 				if (vpD < -0.5f)
