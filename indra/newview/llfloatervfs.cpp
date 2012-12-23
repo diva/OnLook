@@ -275,7 +275,7 @@ void LLFloaterVFS::onClickAdd_continued(void* user_data, AIFilePicker* filepicke
 					return;
 				}
 				LLPointer<LLViewerFetchedTexture> imagep = new LLViewerFetchedTexture(asset_id);
-				imagep->createGLTexture(0, image_raw, 0, TRUE, LLViewerTexture::BOOST_NONE);
+				imagep->createGLTexture(0, image_raw, 0, TRUE, LLGLTexture::BOOST_NONE);
 				gTextureList.addImage(imagep);
 			}
 			else

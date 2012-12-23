@@ -52,6 +52,7 @@ set(llrender_HEADER_FILES
     llglheaders.h
     llglslshader.h
     llglstates.h
+    llgltexture.h
     llgltypes.h
     llimagegl.h
     llpostprocess.h

@@ -1593,7 +1593,7 @@ void LLSelectMgr::selectionSetImage(const LLUUID& imageid)
 				// Texture picker defaults aren't inventory items
 				// * Don't need to worry about permissions for them
 				// * Can just apply the texture and be done with it.
-				//objectp->setTEImage(te, LLViewerTextureManager::getFetchedTexture(mImageID, TRUE, LLViewerTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE));
+				//objectp->setTEImage(te, LLViewerTextureManager::getFetchedTexture(mImageID, TRUE, LLGLTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE));
 				objectp->setTETexture(te, mImageID);	//Singu note: setTETexture will allow the real id to be passed to LLPrimitive::setTETexture,
 														// even if it's null. setTEImage would actually pass down IMG_DEFAULT under such a case,
 														// which we don't want.
@@ -1759,7 +1759,7 @@ BOOL LLSelectMgr::selectionRevertTextures()
 					}
 					else
 					{
-						//object->setTEImage(te, LLViewerTextureManager::getFetchedTexture(id, TRUE, LLViewerTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE));
+						//object->setTEImage(te, LLViewerTextureManager::getFetchedTexture(id, TRUE, LLGLTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE));
 						object->setTETexture(te, id);	//Singu note: setTETexture will allow the real id to be passed to LLPrimitive::setTETexture,
 														// even if it's null. setTEImage would actually pass down IMG_DEFAULT under such a case,
 														// which we don't want.
@@ -5197,7 +5197,7 @@ void LLSelectMgr::updateSilhouettes()
 
 	if (!mSilhouetteImagep)
 	{
-		mSilhouetteImagep = LLViewerTextureManager::getFetchedTextureFromFile("silhouette.j2c", TRUE, LLViewerTexture::BOOST_UI);
+		mSilhouetteImagep = LLViewerTextureManager::getFetchedTextureFromFile("silhouette.j2c", TRUE, LLGLTexture::BOOST_UI);
 	}
 
 	mHighlightedObjects->cleanupNodes();

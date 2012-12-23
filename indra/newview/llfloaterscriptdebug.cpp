@@ -129,7 +129,7 @@ void LLFloaterScriptDebug::addScriptLine(const std::string &utf8mesg, const std:
 
 	if (objectp)
 	{
-		objectp->setIcon(LLViewerTextureManager::getFetchedTextureFromFile("script_error.j2c", TRUE, LLViewerTexture::BOOST_UI));
+		objectp->setIcon(LLViewerTextureManager::getFetchedTextureFromFile("script_error.j2c", TRUE, LLGLTexture::BOOST_UI));
 		floater_label = llformat("%s(%.2f, %.2f)", user_name.c_str(), objectp->getPositionRegion().mV[VX], objectp->getPositionRegion().mV[VY]);
 	}
 	else

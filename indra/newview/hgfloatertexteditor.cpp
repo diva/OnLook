@@ -142,7 +142,7 @@ void HGFloaterTextEditor::imageCallback(BOOL success,
 	}
 	else
 	{
-		src_vi->setBoostLevel(LLViewerTexture::BOOST_UI);
+		src_vi->setBoostLevel(LLGLTexture::BOOST_UI);
 	}
 }
 

@@ -2,39 +2,32 @@
  * @file llviewertexture.h
  * @brief Object for managing images and their textures
  *
- * $LicenseInfo:firstyear=2000&license=viewergpl$
- * 
- * Copyright (c) 2000-2010, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2000&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlife.com/developers/opensource/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlife.com/developers/opensource/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
- * 
  */
 
 #ifndef LL_LLVIEWERTEXTURE_H					
 #define LL_LLVIEWERTEXTURE_H
 
-#include "lltexture.h"
+#include "llgltexture.h"
 #include "lltimer.h"
 #include "llframetimer.h"
 #include "llhost.h"
@@ -97,14 +90,9 @@ public:
 
 class LLTextureBar;
 
-class LLViewerTexture : public LLTexture
+class LLViewerTexture : public LLGLTexture
 {
 public:
-	enum
-	{
-		MAX_IMAGE_SIZE_DEFAULT = 1024,
-		INVALID_DISCARD_LEVEL = 0x7fff
-	};
 	enum
 	{
 		LOCAL_TEXTURE,		
@@ -116,38 +104,6 @@ public:
 		INVALID_TEXTURE_TYPE
 	};
 
-	enum EBoostLevel
-	{
-		BOOST_NONE 			= 0,
-		BOOST_AVATAR_BAKED	,
-		BOOST_AVATAR		,
-		BOOST_CLOUDS		,
-		BOOST_SCULPTED      ,
-		
-		BOOST_HIGH 			= 10,
-		BOOST_BUMP          ,
-		BOOST_TERRAIN		, // has to be high priority for minimap / low detail
-		BOOST_SELECTED		,		
-		BOOST_AVATAR_BAKED_SELF	,
-		BOOST_AVATAR_SELF	, // needed for baking avatar
-		BOOST_SUPER_HIGH    , //textures higher than this need to be downloaded at the required resolution without delay.
-		BOOST_HUD			,
-		BOOST_ICON			,
-		BOOST_UI			,
-		BOOST_PREVIEW		,
-		BOOST_MAP			,
-		BOOST_MAP_VISIBLE	,		
-		BOOST_MAX_LEVEL,
-
-		//other texture Categories
-		LOCAL = BOOST_MAX_LEVEL,
-		AVATAR_SCRATCH_TEX,
-		DYNAMIC_TEX,
-		MEDIA,
-		//ATLAS,
-		OTHER,
-		MAX_GL_IMAGE_CATEGORY
-	};
 	static S32 getTotalNumOfCategories() ;
 	static S32 getIndexFromCategory(S32 category) ;
 	static S32 getCategoryFromIndex(S32 index) ;
@@ -312,14 +268,6 @@ protected:
 	LLViewerMediaTexture* mParcelMedia ;
 
 protected:
-	typedef enum 
-	{
-		DELETED = 0,         //removed from memory
-		DELETION_CANDIDATE,  //ready to be removed from memory
-		INACTIVE,            //not be used for the last certain period (i.e., 30 seconds).
-		ACTIVE,              //just being used, can become inactive if not being used for a certain time (10 seconds).
-		NO_DELETE = 99       //stay in memory, can not be removed.
-	} LLGLTextureState;
 	LLGLTextureState  mTextureState ;
 
 	static F32 sTexelPixelRatio;
@@ -744,7 +692,7 @@ public:
 
 	static LLViewerFetchedTexture* getFetchedTexture(const LLUUID &image_id,									 
 									 BOOL usemipmap = TRUE,
-									 LLViewerTexture::EBoostLevel boost_priority = LLViewerTexture::BOOST_NONE,		// Get the requested level immediately upon creation.
+									 LLGLTexture::EBoostLevel boost_priority = LLGLTexture::BOOST_NONE,		// Get the requested level immediately upon creation.
 									 S8 texture_type = LLViewerTexture::FETCHED_TEXTURE,
 									 LLGLint internal_format = 0,
 									 LLGLenum primary_format = 0,
@@ -753,7 +701,7 @@ public:
 	
 	static LLViewerFetchedTexture* getFetchedTextureFromFile(const std::string& filename,									 
 									 BOOL usemipmap = TRUE,
-									 LLViewerTexture::EBoostLevel boost_priority = LLViewerTexture::BOOST_NONE,
+									 LLGLTexture::EBoostLevel boost_priority = LLGLTexture::BOOST_NONE,
 									 S8 texture_type = LLViewerTexture::FETCHED_TEXTURE,
 									 LLGLint internal_format = 0,
 									 LLGLenum primary_format = 0,
@@ -762,7 +710,7 @@ public:
 
 	static LLViewerFetchedTexture* getFetchedTextureFromUrl(const std::string& url,									 
 									 BOOL usemipmap = TRUE,
-									 LLViewerTexture::EBoostLevel boost_priority = LLViewerTexture::BOOST_NONE,
+									 LLGLTexture::EBoostLevel boost_priority = LLGLTexture::BOOST_NONE,
 									 S8 texture_type = LLViewerTexture::FETCHED_TEXTURE,
 									 LLGLint internal_format = 0,
 									 LLGLenum primary_format = 0,

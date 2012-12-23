@@ -63,7 +63,7 @@ LLVOClouds::LLVOClouds(const LLUUID &id, const LLPCode pcode, LLViewerRegion *re
 	mbCanSelect = FALSE;
 	setNumTEs(1);
 	LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture(gCloudTextureID);
-	image->setBoostLevel(LLViewerTexture::BOOST_CLOUDS);
+	image->setBoostLevel(LLGLTexture::BOOST_CLOUDS);
 	setTEImage(0, image);
 }
 
