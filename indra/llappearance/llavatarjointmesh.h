@@ -112,7 +112,7 @@ public:
 	// Sets layer set responsible for a dynamic shape texture (takes precedence over normal texture)
 	void setLayerSet( LLTexLayerSet* layer_set );
 
-	virtual BOOL hasComposite() const = 0;
+	BOOL hasComposite() const;
 
 	// Gets the poly mesh
 	LLPolyMesh *getMesh();

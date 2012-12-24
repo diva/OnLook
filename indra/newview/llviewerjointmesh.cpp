@@ -42,7 +42,7 @@
 #include "llface.h"
 #include "llgldbg.h"
 #include "llglheaders.h"
-#include "lltexlayer.h"
+#include "llviewertexlayer.h"
 #include "llviewercamera.h"
 #include "llviewercontrol.h"
 #include "llviewertexturelist.h"
@@ -255,7 +255,7 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 	llassert( !(mTexture.notNull() && mLayerSet) );  // mutually exclusive
 
 	LLTexUnit::eTextureAddressMode old_mode = LLTexUnit::TAM_WRAP;
-	LLTexLayerSet *layerset = mLayerSet;
+	LLViewerTexLayerSet *layerset = dynamic_cast<LLViewerTexLayerSet*>(mLayerSet);
 	if (mTestImageName)
 	{
 		gGL.getTexUnit(diffuse_channel)->bindManual(LLTexUnit::TT_TEXTURE, mTestImageName);
@@ -274,7 +274,7 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 	{
 		if(	layerset->hasComposite() )
 		{
-			gGL.getTexUnit(diffuse_channel)->bind(layerset->getComposite());
+			gGL.getTexUnit(diffuse_channel)->bind(layerset->getViewerComposite());
 		}
 		else
 		{
@@ -561,11 +561,6 @@ void LLViewerJointMesh::dump()
 	{
 		llinfos << "Usable LOD " << mName << llendl;
 	}
-}
-
-BOOL LLViewerJointMesh::hasComposite() const
-{
-	return (mLayerSet && mLayerSet->hasComposite());
 }
 
 // End

@@ -27,7 +27,7 @@
 
 #include "lllocaltextureobject.h"
 
-#include "lltexlayer.h"
+#include "llviewertexlayer.h"
 #include "llviewertexture.h"
 #include "lltextureentry.h"
 #include "lluuid.h"

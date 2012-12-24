@@ -24,6 +24,7 @@
  * $/LicenseInfo$
  */
 
+#include "linden_common.h"
 #include "lltexturemanagerbridge.h"
 
 // Define a null texture manager bridge.  Applications must provide their own bridge implementaton.

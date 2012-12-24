@@ -36,7 +36,7 @@
 class LLDrawable;
 class LLFace;
 class LLCharacter;
-class LLTexLayerSet;
+class LLViewerTexLayerSet;
 
 //-----------------------------------------------------------------------------
 // class LLViewerJointMesh
@@ -67,8 +67,6 @@ public:
 	/*virtual*/ void dump();
 
 	/*virtual*/ BOOL isAnimatable() const { return FALSE; }
-	
-	/*virtual*/ BOOL hasComposite() const; //TO-DO: remove when texlayer is migrated to llappearance
 
 private:
 

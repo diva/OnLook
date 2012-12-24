@@ -95,7 +95,7 @@ public:
 	/*virtual*/ void 		requestStopMotion(LLMotion* motion);
 	/*virtual*/ LLJoint*	getJoint(const std::string &name);
 	
-	/*virtual*/ BOOL setVisualParamWeight(LLVisualParam *which_param, F32 weight, BOOL upload_bake = FALSE );
+	/*virtual*/ BOOL setVisualParamWeight(const LLVisualParam *which_param, F32 weight, BOOL upload_bake = FALSE );
 	/*virtual*/ BOOL setVisualParamWeight(const char* param_name, F32 weight, BOOL upload_bake = FALSE );
 	/*virtual*/ BOOL setVisualParamWeight(S32 index, F32 weight, BOOL upload_bake = FALSE );
 	/*virtual*/ void updateVisualParams();
@@ -109,7 +109,7 @@ public:
 
 private:
 	// helper function. Passed in param is assumed to be in avatar's parameter list.
-	BOOL setParamWeight(LLViewerVisualParam *param, F32 weight, BOOL upload_bake = FALSE );
+	BOOL setParamWeight(const LLViewerVisualParam *param, F32 weight, BOOL upload_bake = FALSE );
 
 
 
@@ -195,8 +195,8 @@ public:
 	/*virtual*/ bool	hasPendingBakedUploads() const;
 	S32					getLocalDiscardLevel(LLAvatarAppearanceDefines::ETextureIndex type, U32 index) const;
 	bool				areTexturesCurrent() const;
-	BOOL				isLocalTextureDataAvailable(const LLTexLayerSet* layerset) const;
-	BOOL				isLocalTextureDataFinal(const LLTexLayerSet* layerset) const;
+	BOOL				isLocalTextureDataAvailable(const LLViewerTexLayerSet* layerset) const;
+	BOOL				isLocalTextureDataFinal(const LLViewerTexLayerSet* layerset) const;
 	BOOL				isBakedTextureFinal(const LLAvatarAppearanceDefines::EBakedTextureIndex index) const;
 	// If you want to check all textures of a given type, pass gAgentWearables.getWearableCount() for index
 	/*virtual*/ BOOL    isTextureDefined(LLAvatarAppearanceDefines::ETextureIndex type, U32 index) const;
@@ -231,13 +231,13 @@ private:
 	// Baked textures
 	//--------------------------------------------------------------------
 public:
-	LLAvatarAppearanceDefines::ETextureIndex getBakedTE(const LLTexLayerSet* layerset ) const;
+	LLAvatarAppearanceDefines::ETextureIndex getBakedTE(const LLViewerTexLayerSet* layerset ) const;
 	void				setNewBakedTexture(LLAvatarAppearanceDefines::EBakedTextureIndex i, const LLUUID &uuid);
 	void				setNewBakedTexture(LLAvatarAppearanceDefines::ETextureIndex i, const LLUUID& uuid);
 	void				setCachedBakedTexture(LLAvatarAppearanceDefines::ETextureIndex i, const LLUUID& uuid);
 	void				forceBakeAllTextures(bool slam_for_debug = false);
 	static void			processRebakeAvatarTextures(LLMessageSystem* msg, void**);
-	BOOL				isUsingBakedTextures() const; // e.g. false if in appearance edit mode
+	virtual bool		isUsingBakedTextures() const; // e.g. false if in appearance edit mode
 protected:
 	/*virtual*/ void	removeMissingBakedTextures();
 
@@ -248,8 +248,8 @@ public:
 	void 				requestLayerSetUploads();
 	void				requestLayerSetUpload(LLAvatarAppearanceDefines::EBakedTextureIndex i);
 	void				requestLayerSetUpdate(LLAvatarAppearanceDefines::ETextureIndex i);
-	LLTexLayerSet*		getLayerSet(LLAvatarAppearanceDefines::ETextureIndex index) const;
-	LLTexLayerSet* 		getLayerSet(LLAvatarAppearanceDefines::EBakedTextureIndex baked_index) const;
+	LLViewerTexLayerSet* getLayerSet(LLAvatarAppearanceDefines::EBakedTextureIndex baked_index) const;
+	LLViewerTexLayerSet* getLayerSet(LLAvatarAppearanceDefines::ETextureIndex index) const;
 	
 	//--------------------------------------------------------------------
 	// Composites
@@ -389,8 +389,8 @@ public:
 
 	BOOL					isAllLocalTextureDataFinal() const;
 
-	const LLTexLayerSet*  	debugGetLayerSet(LLAvatarAppearanceDefines::EBakedTextureIndex index) const { return mBakedTextureDatas[index].mTexLayerSet; }
-	const std::string		debugDumpLocalTextureDataInfo(const LLTexLayerSet* layerset) const; // Lists out state of this particular baked texture layer
+	const LLViewerTexLayerSet*	debugGetLayerSet(LLAvatarAppearanceDefines::EBakedTextureIndex index) const { return (LLViewerTexLayerSet*)(mBakedTextureDatas[index].mTexLayerSet); }
+	const std::string		debugDumpLocalTextureDataInfo(const LLViewerTexLayerSet* layerset) const; // Lists out state of this particular baked texture layer
 	const std::string		debugDumpAllLocalTextureDataInfo() const; // Lists out which baked textures are at highest LOD
 private:
 	LLFrameTimer    		mDebugSelfLoadTimer;

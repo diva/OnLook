@@ -34,7 +34,7 @@
 #include "lljointpickname.h"
 
 class LLFace;
-class LLViewerJointMesh;
+class LLAvatarJointMesh;
 
 extern const F32 DEFAULT_AVATAR_JOINT_LOD;
 

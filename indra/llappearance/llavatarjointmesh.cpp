@@ -260,10 +260,10 @@ void LLAvatarJointMesh::setLayerSet( LLTexLayerSet* layer_set )
 	}
 }
 
-/*BOOL LLAvatarJointMesh::hasComposite() const
+BOOL LLAvatarJointMesh::hasComposite() const
 {
 	return (mLayerSet && mLayerSet->hasComposite());
-}*/
+}
 
 
 //--------------------------------------------------------------------

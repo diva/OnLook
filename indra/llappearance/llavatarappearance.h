@@ -29,11 +29,11 @@
 
 #include "llcharacter.h"
 #include "llavatarappearancedefines.h"
-//#include "llavatarjointmesh.h"
+#include "llavatarjointmesh.h"
 //#include "lldriverparam.h"
-//#include "lltexlayer.h"
-//#include "llviewervisualparam.h"
-//#include "llxmltree.h"
+#include "lltexlayer.h"
+#include "llviewervisualparam.h"
+#include "llxmltree.h"
 
 class LLTexLayerSet;
 class LLTexGlobalColor;
@@ -43,6 +43,7 @@ class LLAvatarBoneInfo;
 class LLAvatarSkeletonInfo;
 class LLPolyMeshSharedData;
 class LLAvatarJointCollisionVolume;
+class LLTexLayerSet;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // LLAvatarAppearance
@@ -104,8 +105,10 @@ public:
  **                    STATE
  **/
 public:
-	//virtual bool 	isSelf() const { return false; } // True if this avatar is for this viewer's agent
-	//virtual BOOL	isValid() const;
+	virtual bool 	isSelf() const = 0;// True if this avatar is for this viewer's agent
+	//virtual BOOL	isValid() const = 0;
+	virtual bool	isAgent() const = 0;
+	virtual bool	isUsingBakedTextures() const {return false;}
 	//virtual BOOL	isUsingServerBakes() const = 0;
 	//virtual BOOL	isUsingLocalAppearance() const = 0;
 	//virtual BOOL	isEditingAppearance() const = 0;

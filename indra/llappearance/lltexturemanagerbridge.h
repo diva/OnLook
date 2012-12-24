@@ -27,11 +27,10 @@
 #ifndef LL_TEXTUREMANAGERBRIDGE_H
 #define LL_TEXTUREMANAGERBRIDGE_H
 
-#include "linden_common.h"
 #include "llavatarappearancedefines.h"
 #include "llpointer.h"
+#include "llgltexture.h"
 
-class LLGLTexture;
 // Abstract bridge interface
 class LLTextureManagerBridge
 {

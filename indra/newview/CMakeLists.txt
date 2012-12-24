@@ -423,8 +423,6 @@ set(viewer_SOURCE_FILES
     llsurface.cpp
     llsurfacepatch.cpp
     lltexglobalcolor.cpp
-    lltexlayer.cpp
-    lltexlayerparams.cpp
     lltexturecache.cpp
     lltexturectrl.cpp
     lltexturefetch.cpp
@@ -505,6 +503,7 @@ set(viewer_SOURCE_FILES
     llviewershadermgr.cpp
     llviewerstats.cpp
     llviewerstatsrecorder.cpp
+    llviewertexlayer.cpp
     llviewertexteditor.cpp
     llviewertexture.cpp
     llviewertextureanim.cpp
@@ -927,8 +926,6 @@ set(viewer_HEADER_FILES
     llsurfacepatch.h
     lltable.h
     lltexglobalcolor.h
-    lltexlayer.h
-    lltexlayerparams.h
     lltexturecache.h
     lltexturectrl.h
     lltexturefetch.h
@@ -1011,6 +1008,7 @@ set(viewer_HEADER_FILES
     llviewershadermgr.h
     llviewerstats.h
     llviewerstatsrecorder.h
+    llviewertexlayer.h
     llviewertexteditor.h
     llviewertexture.h
     llviewertextureanim.h

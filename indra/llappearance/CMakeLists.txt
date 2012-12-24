@@ -37,8 +37,8 @@ set(llappearance_SOURCE_FILES
     llpolymesh.cpp
     llpolymorph.cpp
     #lltexglobalcolor.cpp
-    #lltexlayer.cpp
-    #lltexlayerparams.cpp
+    lltexlayer.cpp
+    lltexlayerparams.cpp
     lltexturemanagerbridge.cpp
     #llwearable.cpp
     #llwearabledata.cpp
@@ -60,8 +60,8 @@ set(llappearance_HEADER_FILES
     llpolymesh.h
     llpolymorph.h
     #lltexglobalcolor.h
-    #lltexlayer.h
-    #lltexlayerparams.h
+    lltexlayer.h
+    lltexlayerparams.h
     lltexturemanagerbridge.h
     #llwearable.h
     #llwearabledata.h

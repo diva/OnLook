@@ -26,7 +26,7 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llagent.h"
-#include "lltexlayer.h"
+#include "llviewertexlayer.h"
 #include "llvoavatar.h"
 #include "llwearable.h"
 #include "lltexglobalcolor.h"
@@ -105,7 +105,7 @@ LLTexParamGlobalColor::LLTexParamGlobalColor(LLTexGlobalColor* tex_global_color)
 
 void LLTexParamGlobalColor::onGlobalColorChanged(bool upload_bake)
 {
-	mAvatar->onGlobalColorChanged(mTexGlobalColor, upload_bake);
+	mAvatarAppearance->onGlobalColorChanged(mTexGlobalColor, upload_bake);
 }
 
 //-----------------------------------------------------------------------------

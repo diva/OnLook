@@ -46,6 +46,7 @@
 #include "llavatarappearancedefines.h"
 #include "llwearable.h"
 #include "llviewercontrol.h"
+#include "llviewertexlayer.h"
 
 using namespace LLAvatarAppearanceDefines;
 
@@ -1037,7 +1038,7 @@ BOOL LLWearable::isOnTop() const
 
 void LLWearable::createLayers(S32 te)
 {
-	LLTexLayerSet *layer_set = gAgentAvatarp->getLayerSet((ETextureIndex)te);
+	LLViewerTexLayerSet *layer_set = dynamic_cast<LLViewerTexLayerSet*>(gAgentAvatarp->getLayerSet((ETextureIndex)te));
 	if (layer_set)
 	{
 		layer_set->cloneTemplates(mTEMap[te], (ETextureIndex)te, this);

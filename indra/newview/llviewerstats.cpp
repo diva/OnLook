@@ -62,6 +62,7 @@
 #include "llviewernetwork.h"
 #include "llmeshrepository.h" //for LLMeshRepository::sBytesReceived
 #include "sgmemstat.h"
+#include "llviewertexlayer.h"
 
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy viewerStatsResponder_timeout;
@@ -525,7 +526,7 @@ void output_statistics(void*)
 	llinfos << "Avatar Memory (partly overlaps with above stats):" << llendl;
 	LLTexLayerStaticImageList::getInstance()->dumpByteCount();
 	LLVOAvatarSelf::dumpScratchTextureByteCount();
-	LLTexLayerSetBuffer::dumpTotalByteCount();
+	LLViewerTexLayerSetBuffer::dumpTotalByteCount();
 	LLVOAvatarSelf::dumpTotalLocalTextureByteCount();
 	LLTexLayerParamAlpha::dumpCacheByteCount();
 	LLVOAvatar::dumpBakedStatus();

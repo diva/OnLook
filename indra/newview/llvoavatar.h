@@ -1,38 +1,32 @@
 /**
  * @file llvoavatar.h
- * @brief Declaration of LLVOAvatar class which is a derivation fo
+ * @brief Declaration of LLVOAvatar class which is a derivation of
  * LLViewerObject
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
-#ifndef LL_LLVOAVATAR_H
-#define LL_LLVOAVATAR_H
+#ifndef LL_VOAVATAR_H
+#define LL_VOAVATAR_H
 
 #include <map>
 #include <deque>
@@ -42,6 +36,7 @@
 #include <boost/signals2.hpp>
 
 #include "imageids.h"			// IMG_INVISIBLE
+#include "llavatarappearance.h"
 #include "llchat.h"
 #include "lldrawpoolalpha.h"
 #include "llviewerobject.h"
@@ -53,12 +48,11 @@
 #include "llavatarappearancedefines.h"
 #include "lltexglobalcolor.h"
 #include "lldriverparam.h"
+#include "llviewertexlayer.h"
 #include "material_codes.h"		// LL_MCODE_END
 
 #include "emeraldboobutils.h"
 #include "llavatarname.h"
-
-#include "llavatarappearance.h"
 
 extern const LLUUID ANIM_AGENT_BODY_NOISE;
 extern const LLUUID ANIM_AGENT_BREATHE_ROT;
@@ -125,8 +119,8 @@ private:
 // 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class LLVOAvatar :
-	public LLViewerObject,
 	public LLAvatarAppearance,
+	public LLViewerObject,
 	public boost::signals2::trackable
 {
 	LOG_CLASS(LLVOAvatar);
@@ -167,6 +161,9 @@ protected:
 /**                    Initialization
  **                                                                            **
  *******************************************************************************/
+
+	/*virtual*/ bool isAgent() const;
+	
 
 /********************************************************************************
  **                                                                            **
@@ -401,7 +398,6 @@ public:
 private:
 	typedef std::vector<LLViewerJoint*> avatar_joint_list_t;
 	BOOL				mIsBuilt; // state of deferred character building
-	S32					mNumJoints;
 	avatar_joint_list_t		mSkeleton;
 	
 	//--------------------------------------------------------------------
@@ -606,18 +602,19 @@ protected:
 	static void		onBakedTextureLoaded(BOOL success, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata);
 	virtual void	removeMissingBakedTextures();
 	void			useBakedTexture(const LLUUID& id);
+	LLViewerTexLayerSet*  getTexLayerSet(const U32 index) const { return dynamic_cast<LLViewerTexLayerSet*>(mBakedTextureDatas[index].mTexLayerSet);	}
 
 	typedef std::deque<LLMaskedMorph *> 	morph_list_t;
 	struct BakedTextureData
 	{
-		LLUUID								mLastTextureIndex;
+		LLUUID								mLastTextureID;
 		LLTexLayerSet* 						mTexLayerSet; // Only exists for self
 		bool								mIsLoaded;
 		bool								mIsUsed;
 		LLAvatarAppearanceDefines::ETextureIndex 	mTextureIndex;
 		U32									mMaskTexName;
 		// Stores pointers to the joint meshes that this baked texture deals with
-		std::vector< LLViewerJointMesh * > 	mMeshes;  // std::vector<LLViewerJointMesh> mJoints[i]->mMeshParts
+		avatar_joint_mesh_list_t 			mJointMeshes;  // std::vector<LLAvatarJointMesh> mJoints[i]->mMeshParts
 		morph_list_t						mMaskedMorphs;
 	};
 	typedef std::vector<BakedTextureData> 	bakedtexturedata_vec_t;
@@ -701,6 +698,7 @@ protected:
 	virtual void 	restoreMeshData();
 private:
 	virtual void 			dirtyMesh(S32 priority); // Dirty the avatar mesh, with priority
+	LLViewerJoint*	getViewerJoint(S32 idx);
 	S32 			mDirtyMesh; // 0 -- not dirty, 1 -- morphed, 2 -- LOD
 	BOOL			mMeshTexturesDirty;
 
@@ -1258,4 +1256,4 @@ extern const S32 MAX_TEXTURE_VIRTURE_SIZE_RESET_INTERVAL;
 
 extern const U32 EMERALD_BOOB_SIZE_PARAM;		//"Breast Size"
 extern const U32 EMERALD_BOOB_GRAVITY_PARAM;	//"Breast_Gravity"
-#endif // LL_VO_AVATAR_H
+#endif // LL_VOAVATAR_H

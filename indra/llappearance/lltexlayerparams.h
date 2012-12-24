@@ -27,16 +27,26 @@
 #ifndef LL_LLTEXLAYERPARAMS_H
 #define LL_LLTEXLAYERPARAMS_H
 
+#include "llpointer.h"
+#include "v4color.h"
 #include "llviewervisualparam.h"
 
+class LLAvatarAppearance;
 class LLImageRaw;
 class LLImageTGA;
 class LLTexLayer;
 class LLTexLayerInterface;
-class LLViewerTexture;
-class LLVOAvatar;
+class LLGLTexture;
 class LLWearable;
+class LLTexLayerSet;
 
+class LLTexLayerInterfaceTMP
+{
+public:
+	virtual const LLTexLayerSet* const getTexLayerSet() const = 0;
+	virtual LLTexLayerSet* const 	getTexLayerSet() = 0;
+	virtual void						invalidateMorphMasks() = 0;
+};
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // LLTexLayerParam
 // 
@@ -44,14 +54,14 @@ class LLWearable;
 class LLTexLayerParam : public LLViewerVisualParam
 {
 public: 
-	LLTexLayerParam(LLTexLayerInterface *layer);
-	LLTexLayerParam(LLVOAvatar *avatar);
-	/*virtual*/ BOOL setInfo(LLViewerVisualParamInfo *info, BOOL add_to_avatar  );
+	LLTexLayerParam(LLTexLayerInterfaceTMP *layer);
+	LLTexLayerParam(LLAvatarAppearance *appearance);
+	/*virtual*/ BOOL setInfo(LLViewerVisualParamInfo *info, BOOL add_to_appearance);
 	/*virtual*/ LLViewerVisualParam* cloneParam(LLWearable* wearable) const = 0;
 
 protected:
-	LLTexLayerInterface*	mTexLayer;
-	LLVOAvatar*             mAvatar;
+	LLTexLayerInterfaceTMP*	mTexLayer;
+	LLAvatarAppearance*		mAvatarAppearance;
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -61,8 +71,8 @@ protected:
 class LLTexLayerParamAlpha : public LLTexLayerParam
 {
 public:
-	LLTexLayerParamAlpha( LLTexLayerInterface* layer );
-	LLTexLayerParamAlpha( LLVOAvatar* avatar );
+	LLTexLayerParamAlpha( LLTexLayerInterfaceTMP* layer );
+	LLTexLayerParamAlpha( LLAvatarAppearance* appearance );
 	/*virtual*/ ~LLTexLayerParamAlpha();
 
 	/*virtual*/ LLViewerVisualParam* cloneParam(LLWearable* wearable = NULL) const;
@@ -99,7 +109,7 @@ public:
 	BOOL					getMultiplyBlend() const;
 
 private:
-	LLPointer<LLViewerTexture>	mCachedProcessedTexture;
+	LLPointer<LLGLTexture>	mCachedProcessedTexture;
 	LLPointer<LLImageTGA>	mStaticImageTGA;
 	LLPointer<LLImageRaw>	mStaticImageRaw;
 	BOOL					mNeedsCreateTexture;
@@ -149,8 +159,8 @@ public:
 		OP_COUNT = 3 // Number of operations
 	};
 
-	LLTexLayerParamColor( LLTexLayerInterface* layer );
-	LLTexLayerParamColor( LLVOAvatar* avatar );
+	LLTexLayerParamColor( LLTexLayerInterfaceTMP* layer );
+	LLTexLayerParamColor( LLAvatarAppearance* appearance );
 	/* virtual */ ~LLTexLayerParamColor();
 
 	void* operator new(size_t size)

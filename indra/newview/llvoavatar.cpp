@@ -994,6 +994,8 @@ EmeraldGlobalBoobConfig LLVOAvatar::sBoobConfig;
 static F32 calc_bouncy_animation(F32 x);
 static U32 calc_shame(LLVOVolume* volume, std::set<LLUUID> &textures);
 
+bool LLVOAvatar::isAgent() const { return gAgentAvatarp == this && gAgentAvatarp && getRegion() != NULL &&	!gAgentAvatarp->isDead(); };
+
 //-----------------------------------------------------------------------------
 // LLVOAvatar()
 //-----------------------------------------------------------------------------
@@ -1069,7 +1071,7 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mBakedTextureDatas.resize(BAKED_NUM_INDICES);
 	for (U32 i = 0; i < mBakedTextureDatas.size(); i++ )
 	{
-		mBakedTextureDatas[i].mLastTextureIndex = IMG_DEFAULT_AVATAR;
+		mBakedTextureDatas[i].mLastTextureID = IMG_DEFAULT_AVATAR;
 		mBakedTextureDatas[i].mTexLayerSet = NULL;
 		mBakedTextureDatas[i].mIsLoaded = false;
 		mBakedTextureDatas[i].mIsUsed = false;
@@ -1082,8 +1084,6 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mHeadp = NULL;
 
 	mIsBuilt = FALSE;
-
-	mNumJoints = 0;
 
 	mNumCollisionVolumes = 0;
 	mCollisionVolumes = NULL;
@@ -1183,12 +1183,10 @@ LLVOAvatar::~LLVOAvatar()
 
 	deleteAndClearArray(mCollisionVolumes);
 
-	mNumJoints = 0;
-
 	for (U32 i = 0; i < mBakedTextureDatas.size(); i++)
 	{
 		deleteAndClear(mBakedTextureDatas[i].mTexLayerSet);
-		mBakedTextureDatas[i].mMeshes.clear();
+		mBakedTextureDatas[i].mJointMeshes.clear();
 
 		for (morph_list_t::iterator iter2 = mBakedTextureDatas[i].mMaskedMorphs.begin();
 			 iter2 != mBakedTextureDatas[i].mMaskedMorphs.end(); iter2++)
@@ -1533,7 +1531,7 @@ void LLVOAvatar::resetImpostors()
 // static
 void LLVOAvatar::deleteCachedImages(bool clearAll)
 {	
-	if (LLTexLayerSet::sHasCaches)
+	if (LLViewerTexLayerSet::sHasCaches)
 	{
 		lldebugs << "Deleting layer set caches" << llendl;
 		for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
@@ -1542,7 +1540,7 @@ void LLVOAvatar::deleteCachedImages(bool clearAll)
 			LLVOAvatar* inst = (LLVOAvatar*) *iter;
 			inst->deleteLayerSetCaches(clearAll);
 		}
-		LLTexLayerSet::sHasCaches = FALSE;
+		LLViewerTexLayerSet::sHasCaches = FALSE;
 	}
 	LLVOAvatarSelf::deleteScratchTextures();
 	LLTexLayerStaticImageList::getInstance()->deleteCachedImages();
@@ -1738,7 +1736,7 @@ void LLVOAvatar::initInstance(void)
 			 ++iter)
 		{
 			LLViewerJointMesh* mesh = (LLViewerJointMesh*) *iter;
-			mBakedTextureDatas[(int)baked_texture_index].mMeshes.push_back(mesh);
+			mBakedTextureDatas[(int)baked_texture_index].mJointMeshes.push_back(mesh);
 		}
 	}
 
@@ -2495,11 +2493,11 @@ void LLVOAvatar::releaseMeshData()
 	//llinfos << "Releasing" << llendl;
 
 	// cleanup mesh data
-	for (std::vector<LLViewerJoint*>::iterator iter = mMeshLOD.begin();
+	for (avatar_joint_list_t::iterator iter = mMeshLOD.begin();
 		 iter != mMeshLOD.end(); 
 		 ++iter)
 	{
-		LLViewerJoint* joint = (LLViewerJoint*) *iter;
+		LLAvatarJoint* joint = (*iter);
 		joint->setValid(FALSE, TRUE);
 	}
 
@@ -2589,7 +2587,11 @@ void LLVOAvatar::updateMeshData()
 				last_v_num = num_vertices ;
 				last_i_num = num_indices ;
 
-				mMeshLOD[part_index++]->updateFaceSizes(num_vertices, num_indices, mAdjustedPixelArea);
+				LLViewerJoint* part_mesh = getViewerJoint(part_index++);
+				if (part_mesh)
+				{
+					part_mesh->updateFaceSizes(num_vertices, num_indices, mAdjustedPixelArea);
+				}
 			}
 			if(num_vertices < 1)//skip empty meshes
 			{
@@ -2663,7 +2665,11 @@ void LLVOAvatar::updateMeshData()
 					rigid = true;
 				}
 				
-				mMeshLOD[k]->updateFaceData(facep, mAdjustedPixelArea, k == MESH_ID_HAIR, terse_update && !rigid);
+				LLViewerJoint* mesh = getViewerJoint(k);
+				if (mesh)
+				{
+					mesh->updateFaceData(facep, mAdjustedPixelArea, k == MESH_ID_HAIR, terse_update && !rigid);
+				}
 			}
 
 			stop_glerror();
@@ -4834,19 +4840,44 @@ U32 LLVOAvatar::renderSkinned(EAvatarRenderPass pass)
 		if (mNeedsSkin)
 		{
 			//generate animated mesh
-			mMeshLOD[MESH_ID_LOWER_BODY]->updateJointGeometry();
-			mMeshLOD[MESH_ID_UPPER_BODY]->updateJointGeometry();
+			LLViewerJoint* lower_mesh = getViewerJoint(MESH_ID_LOWER_BODY);
+			LLViewerJoint* upper_mesh = getViewerJoint(MESH_ID_UPPER_BODY);
+			LLViewerJoint* skirt_mesh = getViewerJoint(MESH_ID_SKIRT);
+			LLViewerJoint* eyelash_mesh = getViewerJoint(MESH_ID_EYELASH);
+			LLViewerJoint* head_mesh = getViewerJoint(MESH_ID_HEAD);
+			LLViewerJoint* hair_mesh = getViewerJoint(MESH_ID_HAIR);
+
+			if(upper_mesh)
+			{
+				upper_mesh->updateJointGeometry();
+			}
+			if (lower_mesh)
+			{
+				lower_mesh->updateJointGeometry();
+			}
 
 			if( isWearingWearableType( LLWearableType::WT_SKIRT ) )
 			{
-				mMeshLOD[MESH_ID_SKIRT]->updateJointGeometry();
+				if(skirt_mesh)
+				{
+					skirt_mesh->updateJointGeometry();
+				}
 			}
 
 			if (!isSelf() || gAgent.needsRenderHead() || LLPipeline::sShadowRender)
 			{
-				mMeshLOD[MESH_ID_EYELASH]->updateJointGeometry();
-				mMeshLOD[MESH_ID_HEAD]->updateJointGeometry();
-				mMeshLOD[MESH_ID_HAIR]->updateJointGeometry();
+				if(eyelash_mesh)
+				{
+					eyelash_mesh->updateJointGeometry();
+				}
+				if(head_mesh)
+				{
+					head_mesh->updateJointGeometry();
+				}
+				if(hair_mesh)
+				{
+					hair_mesh->updateJointGeometry();
+				}
 			}
 			mNeedsSkin = FALSE;
 			mLastSkinTime = gFrameTimeSeconds;
@@ -4963,19 +4994,31 @@ U32 LLVOAvatar::renderSkinned(EAvatarRenderPass pass)
 			{
 				if (isTextureVisible(TEX_HEAD_BAKED) || mIsDummy)
 				{
-					num_indices += mMeshLOD[MESH_ID_HEAD]->render(mAdjustedPixelArea, TRUE, mIsDummy || is_muted);
+					LLViewerJoint* head_mesh = getViewerJoint(MESH_ID_HEAD);
+					if (head_mesh)
+					{
+						num_indices += head_mesh->render(mAdjustedPixelArea, TRUE, mIsDummy);
+					}
 					first_pass = FALSE;
 				}
 			}
 			if (isTextureVisible(TEX_UPPER_BAKED) || mIsDummy)
 			{
-				num_indices += mMeshLOD[MESH_ID_UPPER_BODY]->render(mAdjustedPixelArea, first_pass, mIsDummy || is_muted);
+				LLViewerJoint* upper_mesh = getViewerJoint(MESH_ID_UPPER_BODY);
+				if (upper_mesh)
+				{
+					num_indices += upper_mesh->render(mAdjustedPixelArea, first_pass, mIsDummy);
+				}
 				first_pass = FALSE;
 			}
 			
 			if (isTextureVisible(TEX_LOWER_BAKED) || mIsDummy)
 			{
-				num_indices += mMeshLOD[MESH_ID_LOWER_BODY]->render(mAdjustedPixelArea, first_pass, mIsDummy || is_muted);
+				LLViewerJoint* lower_mesh = getViewerJoint(MESH_ID_LOWER_BODY);
+				if (lower_mesh)
+				{
+					num_indices += lower_mesh->render(mAdjustedPixelArea, first_pass, mIsDummy);
+				}
 				first_pass = FALSE;
 			}
 		}
@@ -5008,7 +5051,11 @@ U32 LLVOAvatar::renderTransparent(BOOL first_pass)
 	if( isWearingWearableType( LLWearableType::WT_SKIRT ) && (mIsDummy || isTextureVisible(TEX_SKIRT_BAKED)) )
 	{
 		gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.25f);
-		num_indices += mMeshLOD[MESH_ID_SKIRT]->render(mAdjustedPixelArea, FALSE);
+		LLViewerJoint* skirt_mesh = getViewerJoint(MESH_ID_SKIRT);
+		if (skirt_mesh)
+		{
+			num_indices += skirt_mesh->render(mAdjustedPixelArea, FALSE);
+		}
 		first_pass = FALSE;
 		gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
 	}
@@ -5022,14 +5069,23 @@ U32 LLVOAvatar::renderTransparent(BOOL first_pass)
 		
 		if (isTextureVisible(TEX_HEAD_BAKED))
 		{
-			num_indices += mMeshLOD[MESH_ID_EYELASH]->render(mAdjustedPixelArea, first_pass, mIsDummy);
+			LLViewerJoint* eyelash_mesh = getViewerJoint(MESH_ID_EYELASH);
+			if (eyelash_mesh)
+			{
+				num_indices += eyelash_mesh->render(mAdjustedPixelArea, first_pass, mIsDummy);
+			}
 			first_pass = FALSE;
 		}
 		// Can't test for baked hair being defined, since that won't always be the case (not all viewers send baked hair)
 		// TODO: 1.25 will be able to switch this logic back to calling isTextureVisible();
-		if (getImage(TEX_HAIR_BAKED, 0)->getID() != IMG_INVISIBLE || LLDrawPoolAlpha::sShowDebugAlpha)
+		if ( getImage(TEX_HAIR_BAKED, 0) && 
+		     getImage(TEX_HAIR_BAKED, 0)->getID() != IMG_INVISIBLE || LLDrawPoolAlpha::sShowDebugAlpha)		
 		{
-			num_indices += mMeshLOD[MESH_ID_HAIR]->render(mAdjustedPixelArea, first_pass, mIsDummy);
+			LLViewerJoint* hair_mesh = getViewerJoint(MESH_ID_HAIR);
+			if (hair_mesh)
+			{
+				num_indices += hair_mesh->render(mAdjustedPixelArea, first_pass, mIsDummy);
+			}
 			first_pass = FALSE;
 		}
 		if (LLPipeline::sImpostorRender)
@@ -5071,10 +5127,18 @@ U32 LLVOAvatar::renderRigid()
 		gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.5f);
 	}
 
-	if (isTextureVisible(TEX_EYES_BAKED) || mIsDummy)
+	if (isTextureVisible(TEX_EYES_BAKED)  || mIsDummy)
 	{
-		num_indices += mMeshLOD[MESH_ID_EYEBALL_LEFT]->render(mAdjustedPixelArea, TRUE, mIsDummy);
-		num_indices += mMeshLOD[MESH_ID_EYEBALL_RIGHT]->render(mAdjustedPixelArea, TRUE, mIsDummy);
+		LLViewerJoint* eyeball_left = getViewerJoint(MESH_ID_EYEBALL_LEFT);
+		LLViewerJoint* eyeball_right = getViewerJoint(MESH_ID_EYEBALL_RIGHT);
+		if (eyeball_left)
+		{
+			num_indices += eyeball_left->render(mAdjustedPixelArea, TRUE, mIsDummy);
+		}
+		if(eyeball_right)
+		{
+			num_indices += eyeball_right->render(mAdjustedPixelArea, TRUE, mIsDummy);
+		}
 	}
 
 	if (should_alpha_mask && !LLGLSLShader::sNoFixedFunction)
@@ -5381,7 +5445,7 @@ void LLVOAvatar::addBakedTextureStats( LLViewerFetchedTexture* imagep, F32 pixel
 	mMinPixelArea = llmin(pixel_area, mMinPixelArea);	
 	imagep->addTextureStats(pixel_area / texel_area_ratio);
 	imagep->setBoostLevel(boost_level);
-
+	
 	if(boost_level != LLGLTexture::BOOST_AVATAR_BAKED_SELF)
 	{
 		imagep->setAdditionalDecodePriority(ADDITIONAL_PRI) ;
@@ -5943,16 +6007,17 @@ void LLVOAvatar::resetSpecificJointPosition( const std::string& name )
 //-----------------------------------------------------------------------------
 void LLVOAvatar::resetJointPositionsToDefault( void )
 {
-
 	//Subsequent joints are relative to pelvis
-	for( S32 i = 0; i < (S32)mNumJoints; ++i )
+	avatar_joint_list_t::iterator iter = mSkeleton.begin();
+	avatar_joint_list_t::iterator end  = mSkeleton.end();
+	for (; iter != end; ++iter)
 	{
-		LLJoint* pJoint = (LLJoint*)&mSkeleton[i];
+		LLJoint* pJoint = (*iter);
 		if ( pJoint->doesJointNeedToBeReset() )
 		{
-
 			pJoint->setId( LLUUID::null );
 			//restore joints to default positions, however skip over the pelvis
+			// *TODO: How does this pointer check skip over pelvis?
 			if ( pJoint )
 			{
 				pJoint->restoreOldXform();
@@ -6092,7 +6157,6 @@ BOOL LLVOAvatar::allocateCharacterJoints( U32 num )
 {
 	std::for_each(mSkeleton.begin(), mSkeleton.end(), DeletePointer());
 	mSkeleton.clear();
-	mNumJoints = 0;
 
 	for(S32 joint_num = 0; joint_num < (S32)num; joint_num++)
 	{
@@ -6105,7 +6169,6 @@ BOOL LLVOAvatar::allocateCharacterJoints( U32 num )
 		return FALSE;
 	}
 
-	mNumJoints = num;
 	return TRUE;
 }
 
@@ -6133,12 +6196,12 @@ BOOL LLVOAvatar::allocateCollisionVolumes( U32 num )
 //-----------------------------------------------------------------------------
 LLJoint *LLVOAvatar::getCharacterJoint( U32 num )
 {
-	if ((S32)num >= mNumJoints
+	if ((S32)num >= mSkeleton.size()
 	    || (S32)num < 0)
 	{
 		return NULL;
 	}
-	return (LLJoint*)&mSkeleton[num];
+	return mSkeleton[num];
 }
 
 //-----------------------------------------------------------------------------
@@ -6767,6 +6830,15 @@ void LLVOAvatar::dirtyMesh(S32 priority)
 {
 	mDirtyMesh = llmax(mDirtyMesh, priority);
 }
+
+//-----------------------------------------------------------------------------
+// getViewerJoint()
+//-----------------------------------------------------------------------------
+LLViewerJoint*	LLVOAvatar::getViewerJoint(S32 idx)
+{
+	return dynamic_cast<LLViewerJoint*>(mMeshLOD[idx]);
+}
+
 //-----------------------------------------------------------------------------
 // hideSkirt()
 //-----------------------------------------------------------------------------
@@ -7441,9 +7513,15 @@ void LLVOAvatar::onGlobalColorChanged(const LLTexGlobalColor* global_color, BOOL
 		if (!isTextureDefined(mBakedTextureDatas[BAKED_HAIR].mTextureIndex))
 		{
 			LLColor4 color = mTexHairColor->getColor();
-			for (U32 i = 0; i < mBakedTextureDatas[BAKED_HAIR].mMeshes.size(); i++)
+			avatar_joint_mesh_list_t::iterator iter = mBakedTextureDatas[BAKED_HAIR].mJointMeshes.begin();
+			avatar_joint_mesh_list_t::iterator end  = mBakedTextureDatas[BAKED_HAIR].mJointMeshes.end();
+			for (; iter != end; ++iter)
 			{
-				mBakedTextureDatas[BAKED_HAIR].mMeshes[i]->setColor( color.mV[VX], color.mV[VY], color.mV[VZ], color.mV[VW] );
+				LLAvatarJointMesh* mesh = (*iter);
+				if (mesh)
+				{
+					mesh->setColor( color );
+				}
 			}
 		}
 	} 
@@ -7628,7 +7706,9 @@ void LLVOAvatar::updateMeshTextures()
 		const LLViewerTexture* te_image = getImage(i, 0);
 		if(!te_image || te_image->getID().isNull() || (te_image->getID() == IMG_DEFAULT))
 		{
-			setImage(i, LLViewerTextureManager::getFetchedTexture(i == TEX_HAIR ? IMG_DEFAULT : IMG_DEFAULT_AVATAR), 0); // IMG_DEFAULT_AVATAR = a special texture that's never rendered.
+			// IMG_DEFAULT_AVATAR = a special texture that's never rendered.
+			const LLUUID& image_id = (i == TEX_HAIR ? IMG_DEFAULT : IMG_DEFAULT_AVATAR);
+			setImage(i, LLViewerTextureManager::getFetchedTexture(image_id), 0); 
 		}
 	}
 
@@ -7651,30 +7731,32 @@ void LLVOAvatar::updateMeshTextures()
 	for (U32 i=0; i < mBakedTextureDatas.size(); i++)
 	{
 		is_layer_baked[i] = isTextureDefined(mBakedTextureDatas[i].mTextureIndex);
-
+		LLViewerTexLayerSet* layerset = NULL;
+		bool layerset_invalid = false;
 		if (!other_culled)
 		{
 			// When an avatar is changing clothes and not in Appearance mode,
-			// use the last-known good baked texture until it finish the first
+			// use the last-known good baked texture until it finishes the first
 			// render of the new layerset.
-			const BOOL layerset_invalid = mBakedTextureDatas[i].mTexLayerSet 
-										  && ( !mBakedTextureDatas[i].mTexLayerSet->getComposite()->isInitialized()
-										  || !mBakedTextureDatas[i].mTexLayerSet->isLocalTextureDataAvailable() );
+			layerset = getTexLayerSet(i);
+			layerset_invalid = layerset && ( !layerset->getViewerComposite()->isInitialized()
+											 || !layerset->isLocalTextureDataAvailable() );
 			use_lkg_baked_layer[i] = (!is_layer_baked[i] 
-									  && (mBakedTextureDatas[i].mLastTextureIndex != IMG_DEFAULT_AVATAR) 
+									  && (mBakedTextureDatas[i].mLastTextureID != IMG_DEFAULT_AVATAR) 
 									  && layerset_invalid);
 			if (use_lkg_baked_layer[i])
 			{
-				mBakedTextureDatas[i].mTexLayerSet->setUpdatesEnabled(TRUE);
+				layerset->setUpdatesEnabled(TRUE);
 			}
 		}
 		else
 		{
 			use_lkg_baked_layer[i] = (!is_layer_baked[i]
-									  && mBakedTextureDatas[i].mLastTextureIndex != IMG_DEFAULT_AVATAR);
-			if (mBakedTextureDatas[i].mTexLayerSet)
+									  && mBakedTextureDatas[i].mLastTextureID != IMG_DEFAULT_AVATAR);
+			layerset = getTexLayerSet(i);
+			if (layerset)
 			{
-				mBakedTextureDatas[i].mTexLayerSet->destroyComposite();
+				layerset->destroyComposite();
 			}
 		}
 
@@ -7692,27 +7774,40 @@ void LLVOAvatar::updateMeshTextures()
 	
 	for (U32 i=0; i < mBakedTextureDatas.size(); i++)
 	{
+		LLViewerTexLayerSet* layerset = getTexLayerSet(i);
 		if (use_lkg_baked_layer[i] && !self_customizing )
 		{
-			LLViewerFetchedTexture* baked_img = LLViewerTextureManager::getFetchedTextureFromHost( mBakedTextureDatas[i].mLastTextureIndex, target_host );
+			LLViewerFetchedTexture* baked_img = LLViewerTextureManager::getFetchedTextureFromHost( mBakedTextureDatas[i].mLastTextureID, target_host );
 			mBakedTextureDatas[i].mIsUsed = TRUE;
-			for (U32 k=0; k < mBakedTextureDatas[i].mMeshes.size(); k++)
+			
+			avatar_joint_mesh_list_t::iterator iter = mBakedTextureDatas[i].mJointMeshes.begin();
+			avatar_joint_mesh_list_t::iterator end  = mBakedTextureDatas[i].mJointMeshes.end();
+			for (; iter != end; ++iter)
 			{
-				mBakedTextureDatas[i].mMeshes[k]->setTexture( baked_img );
+				LLAvatarJointMesh* mesh = (*iter);
+				if (mesh)
+				{
+					mesh->setTexture( baked_img );
+				}
 			}
 		}
 		else if (!self_customizing && is_layer_baked[i])
 		{
-			LLViewerFetchedTexture* baked_img = LLViewerTextureManager::staticCastToFetchedTexture(getImage( mBakedTextureDatas[i].mTextureIndex, 0 ), TRUE) ;
-			if( baked_img->getID() == mBakedTextureDatas[i].mLastTextureIndex )
+			LLViewerFetchedTexture* baked_img =
+				LLViewerTextureManager::staticCastToFetchedTexture(
+					getImage( mBakedTextureDatas[i].mTextureIndex, 0 ), TRUE) ;
+			if( baked_img->getID() == mBakedTextureDatas[i].mLastTextureID )
 			{
-				// Even though the file may not be finished loading, we'll consider it loaded and use it (rather than doing compositing).
+				// Even though the file may not be finished loading,
+				// we'll consider it loaded and use it (rather than
+				// doing compositing).
 				useBakedTexture( baked_img->getID() );
 			}
 			else
 			{
 				mBakedTextureDatas[i].mIsLoaded = FALSE;
-				if ( (baked_img->getID() != IMG_INVISIBLE) && ((i == BAKED_HEAD) || (i == BAKED_UPPER) || (i == BAKED_LOWER)) )
+				if ( (baked_img->getID() != IMG_INVISIBLE) &&
+					 ((i == BAKED_HEAD) || (i == BAKED_UPPER) || (i == BAKED_LOWER)) )
 				{			
 					baked_img->setLoadedCallback(onBakedTextureMasksLoaded, MORPH_MASK_REQUESTED_DISCARD, TRUE, TRUE, new LLTextureMaskData( mID ), 
 						src_callback_list, paused);	
@@ -7721,16 +7816,25 @@ void LLVOAvatar::updateMeshTextures()
 					src_callback_list, paused );
 			}
 		}
-		else if (mBakedTextureDatas[i].mTexLayerSet 
+		else if (layerset 
 				 && !other_culled) 
 		{
-			mBakedTextureDatas[i].mTexLayerSet->createComposite();
-			mBakedTextureDatas[i].mTexLayerSet->setUpdatesEnabled( TRUE );
+
+			layerset->createComposite();
+			layerset->setUpdatesEnabled( TRUE );
 			mBakedTextureDatas[i].mIsUsed = FALSE;
-			for (U32 k=0; k < mBakedTextureDatas[i].mMeshes.size(); k++)
+
+			avatar_joint_mesh_list_t::iterator iter = mBakedTextureDatas[i].mJointMeshes.begin();
+			avatar_joint_mesh_list_t::iterator end  = mBakedTextureDatas[i].mJointMeshes.end();
+			for (; iter != end; ++iter)
 			{
-				mBakedTextureDatas[i].mMeshes[k]->setLayerSet( mBakedTextureDatas[i].mTexLayerSet );
+				LLAvatarJointMesh* mesh = (*iter);
+				if (mesh)
+				{
+					mesh->setLayerSet( layerset );
+				}
 			}
+
 		}
 	}
 
@@ -7741,15 +7845,22 @@ void LLVOAvatar::updateMeshTextures()
 	{
 		const LLColor4 color = mTexHairColor ? mTexHairColor->getColor() : LLColor4(1,1,1,1);
 		LLViewerTexture* hair_img = getImage( TEX_HAIR, 0 );
-		for (U32 i = 0; i < mBakedTextureDatas[BAKED_HAIR].mMeshes.size(); i++)
+		avatar_joint_mesh_list_t::iterator iter = mBakedTextureDatas[BAKED_HAIR].mJointMeshes.begin();
+		avatar_joint_mesh_list_t::iterator end  = mBakedTextureDatas[BAKED_HAIR].mJointMeshes.end();
+		for (; iter != end; ++iter)
 		{
-			mBakedTextureDatas[BAKED_HAIR].mMeshes[i]->setColor( color.mV[VX], color.mV[VY], color.mV[VZ], color.mV[VW] );
-			mBakedTextureDatas[BAKED_HAIR].mMeshes[i]->setTexture( hair_img );
+			LLAvatarJointMesh* mesh = (*iter);
+			if (mesh)
+			{
+				mesh->setColor( color );
+				mesh->setTexture( hair_img );
+			}
 		}
 	} 
 	
 	
-	for (LLAvatarAppearanceDictionary::BakedTextures::const_iterator baked_iter = LLAvatarAppearanceDictionary::getInstance()->getBakedTextures().begin();
+	for (LLAvatarAppearanceDictionary::BakedTextures::const_iterator baked_iter =
+			 LLAvatarAppearanceDictionary::getInstance()->getBakedTextures().begin();
 		 baked_iter != LLAvatarAppearanceDictionary::getInstance()->getBakedTextures().end();
 		 ++baked_iter)
 	{
@@ -7855,7 +7966,7 @@ BOOL LLVOAvatar::morphMaskNeedsUpdate(LLAvatarAppearanceDefines::EBakedTextureIn
 	{
 		if (isSelf())
 		{
-			LLTexLayerSet *layer_set = mBakedTextureDatas[index].mTexLayerSet;
+			LLViewerTexLayerSet *layer_set = getTexLayerSet(index);
 			if (layer_set)
 			{
 				return !layer_set->isMorphValid();
@@ -8216,7 +8327,7 @@ void LLVOAvatar::onFirstTEMessageReceived()
 			if (layer_baked)
 			{
 				LLViewerFetchedTexture* image = LLViewerTextureManager::staticCastToFetchedTexture(getImage( mBakedTextureDatas[i].mTextureIndex, 0 ), TRUE) ;
-				mBakedTextureDatas[i].mLastTextureIndex = image->getID();
+				mBakedTextureDatas[i].mLastTextureID = image->getID();
 				// If we have more than one texture for the other baked layers, we'll want to call this for them too.
 				if ( (image->getID() != IMG_INVISIBLE) && ((i == BAKED_HEAD) || (i == BAKED_UPPER) || (i == BAKED_LOWER)) )
 				{
@@ -8317,11 +8428,11 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 	for (U8 baked_index = 0; baked_index < mBakedTextureDatas.size(); baked_index++)
 	{
 		if (!isTextureDefined(mBakedTextureDatas[baked_index].mTextureIndex)
-			&& mBakedTextureDatas[baked_index].mLastTextureIndex != IMG_DEFAULT
+			&& mBakedTextureDatas[baked_index].mLastTextureID != IMG_DEFAULT
 			&& baked_index != BAKED_SKIRT)
 		{
 			setTEImage(mBakedTextureDatas[baked_index].mTextureIndex,
-				 	LLViewerTextureManager::getFetchedTexture(mBakedTextureDatas[baked_index].mLastTextureIndex, TRUE, LLGLTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE));
+				 	LLViewerTextureManager::getFetchedTexture(mBakedTextureDatas[baked_index].mLastTextureID, TRUE, LLGLTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE));
 		}
 	}
 
@@ -8654,17 +8765,26 @@ void LLVOAvatar::useBakedTexture( const LLUUID& id )
 		{
 			LL_DEBUGS("Avatar") << avString() << " i " << i << " id " << id << LL_ENDL;
 			mBakedTextureDatas[i].mIsLoaded = true;
-			mBakedTextureDatas[i].mLastTextureIndex = id;
+			mBakedTextureDatas[i].mLastTextureID = id;
 			mBakedTextureDatas[i].mIsUsed = true;
-			for (U32 k = 0; k < mBakedTextureDatas[i].mMeshes.size(); k++)
 			{
-				mBakedTextureDatas[i].mMeshes[k]->setTexture( image_baked );
+				avatar_joint_mesh_list_t::iterator iter = mBakedTextureDatas[i].mJointMeshes.begin();
+				avatar_joint_mesh_list_t::iterator end  = mBakedTextureDatas[i].mJointMeshes.end();
+				for (; iter != end; ++iter)
+				{
+					LLAvatarJointMesh* mesh = (*iter);
+					if (mesh)
+					{
+						mesh->setTexture( image_baked );
+					}
+				}
 			}
 			if (mBakedTextureDatas[i].mTexLayerSet)
 			{
 				//mBakedTextureDatas[i].mTexLayerSet->destroyComposite();
 			}
-			const LLAvatarAppearanceDictionary::BakedEntry *baked_dict = LLAvatarAppearanceDictionary::getInstance()->getBakedTexture((EBakedTextureIndex)i);
+			const LLAvatarAppearanceDictionary::BakedEntry *baked_dict =
+				LLAvatarAppearanceDictionary::getInstance()->getBakedTexture((EBakedTextureIndex)i);
 			for (texture_vec_t::const_iterator local_tex_iter = baked_dict->mLocalTextures.begin();
 				 local_tex_iter != baked_dict->mLocalTextures.end();
 				 ++local_tex_iter)
@@ -8677,9 +8797,15 @@ void LLVOAvatar::useBakedTexture( const LLUUID& id )
 			// This is paired with similar code in updateMeshTextures that sets hair mesh color.
 			if (i == BAKED_HAIR)
 			{
-				for (U32 i = 0; i < mBakedTextureDatas[BAKED_HAIR].mMeshes.size(); i++)
+				avatar_joint_mesh_list_t::iterator iter = mBakedTextureDatas[i].mJointMeshes.begin();
+				avatar_joint_mesh_list_t::iterator end  = mBakedTextureDatas[i].mJointMeshes.end();
+				for (; iter != end; ++iter)
 				{
-					mBakedTextureDatas[BAKED_HAIR].mMeshes[i]->setColor( 1.f, 1.f, 1.f, 1.f );
+					LLAvatarJointMesh* mesh = (*iter);
+					if (mesh)
+					{
+						mesh->setColor( LLColor4::white );
+					}
 				}
 			}
 		}

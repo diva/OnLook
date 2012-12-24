@@ -34,7 +34,6 @@
 //#include "llwearable.h"
 #include "llxmltree.h"
 #include "llendianswizzle.h"
-//#include "llvoavatar.h"
 #include "llpolymesh.h"
 #include "v2math.h"
 

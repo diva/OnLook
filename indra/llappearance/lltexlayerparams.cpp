@@ -24,27 +24,29 @@
  * $/LicenseInfo$
  */
 
-#include "llviewerprecompiledheaders.h"
+#include "linden_common.h"
 
 #include "lltexlayerparams.h"
 
-#include "llagentcamera.h"
+#include "llavatarappearance.h"
 #include "llimagetga.h"
+#include "llquantize.h"
 #include "lltexlayer.h"
-#include "llvoavatarself.h"
-#include "llwearable.h"
-#include "llui.h"
+#include "lltexturemanagerbridge.h"
+//#include "llui.h"
+//#include "llwearable.h"
+#include "llgltexture.h"
 
 //-----------------------------------------------------------------------------
 // LLTexLayerParam
 //-----------------------------------------------------------------------------
-LLTexLayerParam::LLTexLayerParam(LLTexLayerInterface *layer) :
+LLTexLayerParam::LLTexLayerParam(LLTexLayerInterfaceTMP *layer) :
 	mTexLayer(layer),
-	mAvatar(NULL)
+	mAvatarAppearance(NULL)
 {
 	if (mTexLayer != NULL)
 	{
-		mAvatar = mTexLayer->getTexLayerSet()->getAvatar();
+		mAvatarAppearance = mTexLayer->getTexLayerSet()->getAvatarAppearance();
 	}
 	else
 	{
@@ -52,20 +54,20 @@ LLTexLayerParam::LLTexLayerParam(LLTexLayerInterface *layer) :
 	}
 }
 
-LLTexLayerParam::LLTexLayerParam(LLVOAvatar *avatar) :
-	mTexLayer(NULL)
+LLTexLayerParam::LLTexLayerParam(LLAvatarAppearance *appearance) :
+	mTexLayer(NULL),
+	mAvatarAppearance(appearance)
 {
-	mAvatar = avatar;
 }
 
 
-BOOL LLTexLayerParam::setInfo(LLViewerVisualParamInfo *info, BOOL add_to_avatar  )
-{	
+BOOL LLTexLayerParam::setInfo(LLViewerVisualParamInfo *info, BOOL add_to_appearance)
+{
 	LLViewerVisualParam::setInfo(info);
 
-	if (add_to_avatar)
+	if (add_to_appearance)
 	{
-		mAvatar->addVisualParam( this);
+		mAvatarAppearance->addVisualParam( this);
 	}
 
 	return TRUE;
@@ -96,7 +98,7 @@ void LLTexLayerParamAlpha::getCacheByteCount(S32* gl_bytes)
 		 iter != sInstances.end(); iter++)
 	{
 		LLTexLayerParamAlpha* instance = *iter;
-		LLViewerTexture* tex = instance->mCachedProcessedTexture;
+		LLGLTexture* tex = instance->mCachedProcessedTexture;
 		if (tex)
 		{
 			S32 bytes = (S32)tex->getWidth() * tex->getHeight() * tex->getComponents();
@@ -109,7 +111,7 @@ void LLTexLayerParamAlpha::getCacheByteCount(S32* gl_bytes)
 	}
 }
 
-LLTexLayerParamAlpha::LLTexLayerParamAlpha(LLTexLayerInterface* layer) :
+LLTexLayerParamAlpha::LLTexLayerParamAlpha(LLTexLayerInterfaceTMP* layer) :
 	LLTexLayerParam(layer),
 	mCachedProcessedTexture(NULL),
 	mNeedsCreateTexture(FALSE),
@@ -120,8 +122,8 @@ LLTexLayerParamAlpha::LLTexLayerParamAlpha(LLTexLayerInterface* layer) :
 	sInstances.push_front(this);
 }
 
-LLTexLayerParamAlpha::LLTexLayerParamAlpha(LLVOAvatar* avatar) :
-	LLTexLayerParam(avatar),
+LLTexLayerParamAlpha::LLTexLayerParamAlpha(LLAvatarAppearance* appearance) :
+	LLTexLayerParam(appearance),
 	mCachedProcessedTexture(NULL),
 	mNeedsCreateTexture(FALSE),
 	mStaticImageInvalid(FALSE),
@@ -173,13 +175,14 @@ void LLTexLayerParamAlpha::setWeight(F32 weight, BOOL upload_bake)
 	{
 		mCurWeight = new_weight;
 
-		if ((mAvatar->getSex() & getSex()) && (mAvatar->isSelf() && !mIsDummy)) // only trigger a baked texture update if we're changing a wearable's visual param.
+		if ((mAvatarAppearance->getSex() & getSex()) &&
+			(mAvatarAppearance->isSelf() && !mIsDummy)) // only trigger a baked texture update if we're changing a wearable's visual param.
 		{
-			if (isAgentAvatarValid() && !gAgentAvatarp->isUsingBakedTextures())
+			if (mAvatarAppearance->isAgent() && !mAvatarAppearance->isUsingBakedTextures())
 			{
 				upload_bake = FALSE;
 			}
-			mAvatar->invalidateComposite(mTexLayer->getTexLayerSet(), upload_bake);
+			mAvatarAppearance->invalidateComposite(mTexLayer->getTexLayerSet(), upload_bake);
 			mTexLayer->invalidateMorphMasks();
 		}
 	}
@@ -218,11 +221,11 @@ BOOL LLTexLayerParamAlpha::getSkip() const
 		return TRUE;
 	}
 
-	const LLVOAvatar *avatar = mTexLayer->getTexLayerSet()->getAvatar();
+	const LLAvatarAppearance *appearance = mTexLayer->getTexLayerSet()->getAvatarAppearance();
 
 	if (((LLTexLayerParamAlphaInfo *)getInfo())->mSkipIfZeroWeight)
 	{
-		F32 effective_weight = (avatar->getSex() & getSex()) ? mCurWeight : getDefaultWeight();
+		F32 effective_weight = (appearance->getSex() & getSex()) ? mCurWeight : getDefaultWeight();
 		if (is_approx_zero(effective_weight)) 
 		{
 			return TRUE;
@@ -230,17 +233,20 @@ BOOL LLTexLayerParamAlpha::getSkip() const
 	}
 
 	LLWearableType::EType type = (LLWearableType::EType)getWearableType();
-	if ((type != LLWearableType::WT_INVALID) && !avatar->isWearingWearableType(type))
+	if ((type != LLWearableType::WT_INVALID) && !appearance->isWearingWearableType(type))
 	{
 		return TRUE;
 	}
 
 	return FALSE;
 }
+void gl_rect_2d_simple_tex( S32 width, S32 height );
+void gl_rect_2d_simple( S32 width, S32 height );
 
-
+static LLFastTimer::DeclareTimer FTM_TEX_LAYER_PARAM_ALPHA("alpha render");
 BOOL LLTexLayerParamAlpha::render(S32 x, S32 y, S32 width, S32 height)
 {
+	LLFastTimer t(FTM_TEX_LAYER_PARAM_ALPHA);
 	BOOL success = TRUE;
 
 	if (!mTexLayer)
@@ -248,7 +254,7 @@ BOOL LLTexLayerParamAlpha::render(S32 x, S32 y, S32 width, S32 height)
 		return success;
 	}
 
-	F32 effective_weight = (mTexLayer->getTexLayerSet()->getAvatar()->getSex() & getSex()) ? mCurWeight : getDefaultWeight();
+	F32 effective_weight = (mTexLayer->getTexLayerSet()->getAvatarAppearance()->getSex() & getSex()) ? mCurWeight : getDefaultWeight();
 	BOOL weight_changed = effective_weight != mCachedEffectiveWeight;
 	if (getSkip())
 	{
@@ -290,12 +296,12 @@ BOOL LLTexLayerParamAlpha::render(S32 x, S32 y, S32 width, S32 height)
 			(mCachedProcessedTexture->getHeight() != image_tga_height) ||
 			(weight_changed))
 		{
-//			llinfos << "Building Cached Alpha: " << mName << ": (" << mStaticImageRaw->getWidth() << ", " << mStaticImageRaw->getHeight() << ") " << effective_weight << llendl;
 			mCachedEffectiveWeight = effective_weight;
 
 			if (!mCachedProcessedTexture)
 			{
-				mCachedProcessedTexture = LLViewerTextureManager::getLocalTexture(image_tga_width, image_tga_height, 1, FALSE);
+				llassert(gTextureManagerBridgep);
+				mCachedProcessedTexture = gTextureManagerBridgep->getLocalTexture(image_tga_width, image_tga_height, 1, FALSE);
 
 				// We now have something in one of our caches
 				LLTexLayerSet::sHasCaches |= mCachedProcessedTexture ? TRUE : FALSE;
@@ -308,6 +314,7 @@ BOOL LLTexLayerParamAlpha::render(S32 x, S32 y, S32 width, S32 height)
 			mStaticImageRaw = new LLImageRaw;
 			mStaticImageTGA->decodeAndProcess(mStaticImageRaw, info->mDomain, effective_weight);
 			mNeedsCreateTexture = TRUE;			
+			lldebugs << "Built Cached Alpha: " << info->mStaticImageFileName << ": (" << mStaticImageRaw->getWidth() << ", " << mStaticImageRaw->getHeight() << ") " << "Domain: " << info->mDomain << " Weight: " << effective_weight << llendl;
 		}
 
 		if (mCachedProcessedTexture)
@@ -332,7 +339,7 @@ BOOL LLTexLayerParamAlpha::render(S32 x, S32 y, S32 width, S32 height)
 
 		// Don't keep the cache for other people's avatars
 		// (It's not really a "cache" in that case, but the logic is the same)
-		if (!mAvatar->isSelf())
+		if (!mAvatarAppearance->isSelf())
 		{
 			mCachedProcessedTexture = NULL;
 		}
@@ -396,14 +403,14 @@ BOOL LLTexLayerParamAlphaInfo::parseXml(LLXmlTreeNode* node)
 
 
 
-LLTexLayerParamColor::LLTexLayerParamColor(LLTexLayerInterface* layer) :
+LLTexLayerParamColor::LLTexLayerParamColor(LLTexLayerInterfaceTMP* layer) :
 	LLTexLayerParam(layer),
 	mAvgDistortionVec(1.f, 1.f, 1.f)
 {
 }
 
-LLTexLayerParamColor::LLTexLayerParamColor(LLVOAvatar *avatar) :
-	LLTexLayerParam(avatar),
+LLTexLayerParamColor::LLTexLayerParamColor(LLAvatarAppearance *appearance) :
+	LLTexLayerParam(appearance),
 	mAvgDistortionVec(1.f, 1.f, 1.f)
 {
 }
@@ -425,7 +432,7 @@ LLColor4 LLTexLayerParamColor::getNetColor() const
 	
 	llassert(info->mNumColors >= 1);
 
-	F32 effective_weight = (mAvatar && (mAvatar->getSex() & getSex())) ? mCurWeight : getDefaultWeight();
+	F32 effective_weight = (mAvatarAppearance && (mAvatarAppearance->getSex() & getSex())) ? mCurWeight : getDefaultWeight();
 
 	S32 index_last = info->mNumColors - 1;
 	F32 scaled_weight = effective_weight * index_last;
@@ -470,12 +477,12 @@ void LLTexLayerParamColor::setWeight(F32 weight, BOOL upload_bake)
 			return;
 		}
 
-		if ((mAvatar->getSex() & getSex()) && (mAvatar->isSelf() && !mIsDummy)) // only trigger a baked texture update if we're changing a wearable's visual param.
+		if ((mAvatarAppearance->getSex() & getSex()) && (mAvatarAppearance->isSelf() && !mIsDummy)) // only trigger a baked texture update if we're changing a wearable's visual param.
 		{
 			onGlobalColorChanged(upload_bake);
 			if (mTexLayer)
 			{
-				mAvatar->invalidateComposite(mTexLayer->getTexLayerSet(), upload_bake);
+				mAvatarAppearance->invalidateComposite(mTexLayer->getTexLayerSet(), upload_bake);
 			}
 		}
 

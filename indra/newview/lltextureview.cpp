@@ -39,7 +39,7 @@
 
 #include "llappviewer.h"
 #include "llselectmgr.h"
-#include "lltexlayer.h"
+#include "llviewertexlayer.h"
 #include "lltexturecache.h"
 #include "lltexturefetch.h"
 #include "llviewercontrol.h"
@@ -422,9 +422,9 @@ void LLAvatarTexBar::draw()
 		 ++baked_iter)
 	{
 		const LLAvatarAppearanceDefines::EBakedTextureIndex baked_index = baked_iter->first;
-		const LLTexLayerSet *layerset = avatarp->debugGetLayerSet(baked_index);
+		const LLViewerTexLayerSet *layerset = dynamic_cast<const LLViewerTexLayerSet*>(avatarp->debugGetLayerSet(baked_index));
 		if (!layerset) continue;
-		const LLTexLayerSetBuffer *layerset_buffer = layerset->getComposite();
+		const LLViewerTexLayerSetBuffer *layerset_buffer = layerset->getViewerComposite();
 		if (!layerset_buffer) continue;
 
 		LLColor4 text_color = LLColor4::white;
