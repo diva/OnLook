@@ -1108,6 +1108,17 @@ void LLFloaterAvatarList::refreshAvatarList()
 	
 	mDirtyAvatarSorting = true;
 
+	if (mAvatars.empty())
+		setTitle(getString("Title"));
+	else if (mAvatars.size() == 1)
+		setTitle(getString("TitleOneAvatar"));
+	else
+	{
+		LLStringUtil::format_map_t args;
+		args["[COUNT]"] = boost::lexical_cast<std::string>(mAvatars.size());
+		setTitle(getString("TitleWithCount", args));
+	}
+
 //	llinfos << "radar refresh: done" << llendl;
 
 }

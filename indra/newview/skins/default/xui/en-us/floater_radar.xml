@@ -2,6 +2,9 @@
 <floater name="radar" title="Radar"
 	can_resize="true" can_minimize="true" can_close="true" can_drag_on_left="false"
 	rect_control="FloaterRadarRect" min_width="300"	min_height="300">
+	<string name="Title">Radar</string>
+	<string name="TitleOneAvatar">Radar (1 Avatar)</string>
+	<string name="TitleWithCount">Radar ([COUNT] Avatars)</string>
 
 	<scroll_list name="avatar_list"
 		    left="10" right="-10" top="-20" bottom="140" can_resize="true"
