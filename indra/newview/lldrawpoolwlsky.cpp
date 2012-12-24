@@ -327,7 +327,7 @@ void LLDrawPoolWLSky::renderDeferred(S32 pass)
 	LLGLDepthTest depth(GL_TRUE, GL_FALSE);
 	LLGLDisable clip(GL_CLIP_PLANE0);
 
-	gGL.setColorMask(true, false);
+	gGL.setColorMask(true, false);	//Just in case.
 
 	LLGLSquashToFarClip far_clip(glh_get_current_projection());
 
@@ -355,8 +355,6 @@ void LLDrawPoolWLSky::renderDeferred(S32 pass)
 
 	renderSkyClouds(camHeightLocal);
 
-	gGL.setColorMask(true, true);
-
 	//gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
 }
@@ -377,7 +375,7 @@ void LLDrawPoolWLSky::render(S32 pass)
 
 	LLGLSquashToFarClip far_clip(glh_get_current_projection());
 
-	gGL.setColorMask(true, false);
+	gGL.setColorMask(true, false); //Just in case.
 
 	renderSkyHaze(camHeightLocal);
 
@@ -406,8 +404,6 @@ void LLDrawPoolWLSky::render(S32 pass)
 	renderSkyClouds(camHeightLocal);
 
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-
-	gGL.setColorMask(true, true);
 }
 
 void LLDrawPoolWLSky::prerender()
