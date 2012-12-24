@@ -71,6 +71,16 @@ enum EKeepAlive {
   keep_alive
 };
 
+#ifdef DEBUG_CURLIO
+enum EDebugCurl {
+  debug_off = 0,
+  debug_on
+};
+#define DEBUG_CURLIO_PARAM(p) ,p
+#else
+#define DEBUG_CURLIO_PARAM(p)
+#endif
+
 class LLHTTPClient {
 public:
 
@@ -366,59 +376,59 @@ public:
 
 	/** @name non-blocking API */
 	//@{
-	static void head(std::string const& url, ResponderHeadersOnly* responder, AIHTTPHeaders& headers);
-	static void head(std::string const& url, ResponderHeadersOnly* responder)
-	    { AIHTTPHeaders headers; head(url, responder, headers); }
+	static void head(std::string const& url, ResponderHeadersOnly* responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
+	static void head(std::string const& url, ResponderHeadersOnly* responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
+	    { AIHTTPHeaders headers; head(url, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }
 
-	static void getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder)
-	    { AIHTTPHeaders headers; getByteRange(url, offset, bytes, responder, headers); }
+	static void getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
+	static void getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
+	    { AIHTTPHeaders headers; getByteRange(url, offset, bytes, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }
 
-	static void get(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void get(std::string const& url, ResponderPtr responder)
-	    { AIHTTPHeaders headers; get(url, responder, headers); }
+	static void get(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
+	static void get(std::string const& url, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
+	    { AIHTTPHeaders headers; get(url, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }
 
-	static void get(std::string const& url, LLSD const& query, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void get(std::string const& url, LLSD const& query, ResponderPtr responder)
-	    { AIHTTPHeaders headers; get(url, query, responder, headers); }
+	static void get(std::string const& url, LLSD const& query, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
+	static void get(std::string const& url, LLSD const& query, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
+	    { AIHTTPHeaders headers; get(url, query, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }
 
-	static void put(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void put(std::string const& url, LLSD const& body, ResponderPtr responder)
-	    { AIHTTPHeaders headers; put(url, body, responder, headers); }
+	static void put(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
+	static void put(std::string const& url, LLSD const& body, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
+	    { AIHTTPHeaders headers; put(url, body, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }
 
-	static void getHeaderOnly(std::string const& url, ResponderHeadersOnly* responder, AIHTTPHeaders& headers);
-	static void getHeaderOnly(std::string const& url, ResponderHeadersOnly* responder)
-	    { AIHTTPHeaders headers; getHeaderOnly(url, responder, headers); }
+	static void getHeaderOnly(std::string const& url, ResponderHeadersOnly* responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
+	static void getHeaderOnly(std::string const& url, ResponderHeadersOnly* responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
+	    { AIHTTPHeaders headers; getHeaderOnly(url, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }
 
-	static void post(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive = keep_alive);
-	static void post(std::string const& url, LLSD const& body, ResponderPtr responder, EKeepAlive keepalive = keep_alive)
-	    { AIHTTPHeaders headers; post(url, body, responder, headers, keepalive); }
+	static void post(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off), EKeepAlive keepalive = keep_alive);
+	static void post(std::string const& url, LLSD const& body, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off), EKeepAlive keepalive = keep_alive)
+	    { AIHTTPHeaders headers; post(url, body, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive); }
 
 	/** Takes ownership of request and deletes it when sent */
-	static void postXMLRPC(std::string const& url, XMLRPC_REQUEST request, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive = keep_alive);
-	static void postXMLRPC(std::string const& url, XMLRPC_REQUEST request, ResponderPtr responder, EKeepAlive keepalive = keep_alive)
-	    { AIHTTPHeaders headers; postXMLRPC(url, request, responder, headers, keepalive); }
+	static void postXMLRPC(std::string const& url, XMLRPC_REQUEST request, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off), EKeepAlive keepalive = keep_alive);
+	static void postXMLRPC(std::string const& url, XMLRPC_REQUEST request, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off), EKeepAlive keepalive = keep_alive)
+	    { AIHTTPHeaders headers; postXMLRPC(url, request, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive); }
 
-	static void postXMLRPC(std::string const& url, char const* method, XMLRPC_VALUE value, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive = keep_alive);
-	static void postXMLRPC(std::string const& url, char const* method, XMLRPC_VALUE value, ResponderPtr responder, EKeepAlive keepalive = keep_alive)
-	    { AIHTTPHeaders headers; postXMLRPC(url, method, value, responder, headers, keepalive); }
+	static void postXMLRPC(std::string const& url, char const* method, XMLRPC_VALUE value, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off), EKeepAlive keepalive = keep_alive);
+	static void postXMLRPC(std::string const& url, char const* method, XMLRPC_VALUE value, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off), EKeepAlive keepalive = keep_alive)
+	    { AIHTTPHeaders headers; postXMLRPC(url, method, value, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive); }
 
 	/** Takes ownership of data and deletes it when sent */
-	static void postRaw(std::string const& url, const char* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive = keep_alive);
-	static void postRaw(std::string const& url, const char* data, S32 size, ResponderPtr responder, EKeepAlive keepalive = keep_alive)
-	    { AIHTTPHeaders headers; postRaw(url, data, size, responder, headers, keepalive); }
+	static void postRaw(std::string const& url, const char* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off), EKeepAlive keepalive = keep_alive);
+	static void postRaw(std::string const& url, const char* data, S32 size, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off), EKeepAlive keepalive = keep_alive)
+	    { AIHTTPHeaders headers; postRaw(url, data, size, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive); }
 
-	static void postFile(std::string const& url, std::string const& filename, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive = keep_alive);
-	static void postFile(std::string const& url, std::string const& filename, ResponderPtr responder, EKeepAlive keepalive = keep_alive)
-	    { AIHTTPHeaders headers; postFile(url, filename, responder, headers, keepalive); }
+	static void postFile(std::string const& url, std::string const& filename, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off), EKeepAlive keepalive = keep_alive);
+	static void postFile(std::string const& url, std::string const& filename, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off), EKeepAlive keepalive = keep_alive)
+	    { AIHTTPHeaders headers; postFile(url, filename, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive); }
 
-	static void postFile(std::string const& url, const LLUUID& uuid, LLAssetType::EType asset_type, ResponderPtr responder, AIHTTPHeaders& headers, EKeepAlive keepalive = keep_alive);
-	static void postFile(std::string const& url, const LLUUID& uuid, LLAssetType::EType asset_type, ResponderPtr responder, EKeepAlive keepalive = keep_alive)
-	    { AIHTTPHeaders headers; postFile(url, uuid, asset_type, responder, headers, keepalive); }
+	static void postFile(std::string const& url, const LLUUID& uuid, LLAssetType::EType asset_type, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off), EKeepAlive keepalive = keep_alive);
+	static void postFile(std::string const& url, const LLUUID& uuid, LLAssetType::EType asset_type, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off), EKeepAlive keepalive = keep_alive)
+	    { AIHTTPHeaders headers; postFile(url, uuid, asset_type, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive); }
 
-	static void del(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void del(std::string const& url, ResponderPtr responder)
-	    { AIHTTPHeaders headers; del(url, responder, headers); }
+	static void del(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
+	static void del(std::string const& url, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
+	    { AIHTTPHeaders headers; del(url, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }
 
 		///< sends a DELETE method, but we can't call it delete in c++
 	
@@ -431,9 +441,9 @@ public:
 	 * @param headers A map of key:value headers to pass to the request
 	 * @param timeout The number of seconds to give the server to respond.
 	 */
-	static void move(std::string const& url, std::string const& destination, ResponderPtr responder, AIHTTPHeaders& headers);
-	static void move(std::string const& url, std::string const& destination, ResponderPtr responder)
-	    { AIHTTPHeaders headers; move(url, destination, responder, headers); }
+	static void move(std::string const& url, std::string const& destination, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
+	static void move(std::string const& url, std::string const& destination, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
+	    { AIHTTPHeaders headers; move(url, destination, responder, headers, debug); }
 
 	//@}
 
@@ -443,7 +453,7 @@ public:
 	 * @param url the complete serialized (and escaped) url to get
 	 * @return An LLSD of { 'status':status, 'body':payload }
 	 */
-	static LLSD blockingGet(std::string const& url);
+	static LLSD blockingGet(std::string const& url/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
 
 	/**
 	 * @brief Blocking HTTP GET that returns the raw body.
@@ -452,7 +462,7 @@ public:
 	 * @param result the target string to write the body to
 	 * @return HTTP status
 	 */
-	static U32 blockingGetRaw(const std::string& url, std::string& result);
+	static U32 blockingGetRaw(const std::string& url, std::string& result/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
 
 	/**
 	 * @brief Blocking HTTP POST that returns an LLSD map of status and body.
@@ -461,7 +471,7 @@ public:
 	 * @param body the LLSD post body
 	 * @return An LLSD of { 'status':status (an int), 'body':payload (an LLSD) }
 	 */
-	static LLSD blockingPost(std::string const& url, LLSD const& body);
+	static LLSD blockingPost(std::string const& url, LLSD const& body/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
 };
 
 #endif // LL_LLHTTPCLIENT_H

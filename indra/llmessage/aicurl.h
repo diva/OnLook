@@ -271,6 +271,11 @@ class AICurlEasyRequest {
 	// Queue a command to remove this request from the multi session (or cancel a queued command to add it).
 	void removeRequest(void);
 
+#ifdef DEBUG_CURLIO
+	// Turn on/off debug output.
+	void debug(bool debug) { AICurlEasyRequest_wat(*mBufferedCurlEasyRequest)->debug(debug); }
+#endif
+
   private:
 	// The actual pointer to the ThreadSafeBufferedCurlEasyRequest instance.
 	AICurlPrivate::BufferedCurlEasyRequestPtr mBufferedCurlEasyRequest;

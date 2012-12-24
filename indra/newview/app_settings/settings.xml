@@ -6490,6 +6490,22 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
       </array>
     </map>
+    <key>FloaterOutboxRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for merchant outbox window</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+		<integer>0</integer>
+		<integer>342</integer>
+		<integer>310</integer>
+		<integer>52</integer>
+      </array>
+    </map>
     <key>FloaterPayRectB</key>
     <map>
       <key>Comment</key>

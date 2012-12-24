@@ -545,6 +545,9 @@ void CurlEasyHandle::handle_easy_error(CURLcode code)
 
 // Throws AICurlNoEasyHandle.
 CurlEasyHandle::CurlEasyHandle(void) : mActiveMultiHandle(NULL), mErrorBuffer(NULL), mQueuedForRemoval(false)
+#ifdef DEBUG_CURLIO
+	, mDebug(false)
+#endif
 #ifdef SHOW_ASSERT
 	, mRemovedPerCommand(true)
 #endif
@@ -588,6 +591,12 @@ CurlEasyHandle::~CurlEasyHandle()
   llassert(!mActiveMultiHandle);
   curl_easy_cleanup(mEasyHandle);
   Stats::easy_cleanup_calls++;
+#ifdef DEBUG_CURLIO
+  if (mDebug)
+  {
+	debug_curl_remove_easy(mEasyHandle);
+  }
+#endif
 }
 
 //static

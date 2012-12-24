@@ -207,6 +207,7 @@ extern CWD_API channel_ct statemachine;
 extern CWD_API channel_ct caps;
 extern CWD_API channel_ct curl;
 extern CWD_API channel_ct curlio;
+extern CWD_API channel_ct curltr;
 
 #endif
 

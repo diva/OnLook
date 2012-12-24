@@ -1822,7 +1822,7 @@ bool HTTPTimeout::data_received(size_t n)
 //                                                    | | |       |   |      |                 |  |   |     |    |  | |   |
 bool HTTPTimeout::lowspeed(size_t bytes)
 {
-  DoutCurlEntering("HTTPTimeout::lowspeed(" << bytes << ")");
+  //DoutCurlEntering("HTTPTimeout::lowspeed(" << bytes << ")");		commented out... too spammy for normal use.
 
   // The algorithm to determine if we timed out if different from how libcurls CURLOPT_LOW_SPEED_TIME works.
   //
@@ -2367,14 +2367,25 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 }
 
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
-int debug_callback(CURL*, curl_infotype infotype, char* buf, size_t size, void* user_ptr)
+int debug_callback(CURL* handle, curl_infotype infotype, char* buf, size_t size, void* user_ptr)
 {
   BufferedCurlEasyRequest* request = (BufferedCurlEasyRequest*)user_ptr;
+  if (infotype == CURLINFO_HEADER_OUT && size >= 5 && (strncmp(buf, "GET ", 4) == 0 || strncmp(buf, "HEAD ", 5) == 0))
+  {
+	request->mDebugIsHeadOrGetMethod = true;
+  }
+
+#ifdef DEBUG_CURLIO
+  if (!debug_curl_print_debug(handle))
+  {
+	return 0;
+  }
+#endif
 
 #ifdef CWDEBUG
   using namespace ::libcwd;
   std::ostringstream marker;
-  marker << (void*)request->get_lockobj();
+  marker << (void*)request->get_lockobj() << ' ';
   libcw_do.push_marker();
   libcw_do.marker().assign(marker.str().data(), marker.str().size());
   if (!debug::channels::dc::curlio.is_on())
@@ -2398,8 +2409,6 @@ int debug_callback(CURL*, curl_infotype infotype, char* buf, size_t size, void* 
 	  break;
 	case CURLINFO_HEADER_OUT:
 	  LibcwDoutStream << "H< ";
-	  if (size >= 5 && (strncmp(buf, "GET ", 4) == 0 || strncmp(buf, "HEAD ", 5) == 0))
-		request->mDebugIsHeadOrGetMethod = true;
 	  break;
 	case CURLINFO_DATA_IN:
 	  LibcwDoutStream << "D> ";

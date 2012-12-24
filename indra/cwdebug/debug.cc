@@ -236,8 +236,9 @@ void stop_recording_backtraces(void)
       channel_ct backtrace DDCN("BACKTRACE");	//!< This debug channel is used for backtraces.
       channel_ct statemachine DDCN("STATEMACHINE");	//!< This debug channel is used for output related to class AIStateMachine.
       channel_ct caps DDCN("CAPS");		//!< This debug channel is used for output related to Capabilities.
-      channel_ct curl DDCN("CURL");		//!< This debug channel is used for output related to Curl.
-      channel_ct curlio DDCN("CURLIO");	//!< This debug channel is used to print debug output of libcurl.
+      channel_ct curl DDCN("CURL");		//!< This debug channel is used for output related to AICurl.
+      channel_ct curlio DDCN("CURLIO");	//!< This debug channel is used to print debug output of libcurl. This includes all HTTP network traffic.
+      channel_ct curltr DDCN("CURLTR");	//!< This debug channel is used to print libcurl API calls.
 
     } // namespace dc
   } // namespace DEBUGCHANNELS

@@ -201,12 +201,19 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// In case it's added after being removed.
 	void add_queued(void) { mQueuedForRemoval = false; }
 
+#ifdef DEBUG_CURLIO
+	void debug(bool debug) { if (mDebug) debug_curl_remove_easy(mEasyHandle); if (debug) debug_curl_add_easy(mEasyHandle); mDebug = debug; }
+#endif
+
   private:
 	CURL* mEasyHandle;
 	CURLM* mActiveMultiHandle;
 	mutable char* mErrorBuffer;
 	AIPostFieldPtr mPostField;		// This keeps the POSTFIELD data alive for as long as the easy handle exists.
 	bool mQueuedForRemoval;			// Set if the easy handle is (probably) added to the multi handle, but is queued for removal.
+#ifdef DEBUG_CURLIO
+	bool mDebug;
+#endif
 #ifdef SHOW_ASSERT
   public:
 	bool mRemovedPerCommand;		// Set if mActiveMultiHandle was reset as per command from the main thread.

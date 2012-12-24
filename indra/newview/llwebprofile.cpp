@@ -306,7 +306,7 @@ void LLWebProfile::post(LLPointer<LLImageFormatted> image, const LLSD& config, c
 	memcpy(data + body_size + image->getDataSize(), footer.str().data(), footer_size);
 
 	// Send request, successful upload will trigger posting metadata.
-	LLHTTPClient::postRaw(url, data, size, new LLWebProfileResponders::PostImageResponder(), headers, no_keep_alive);
+	LLHTTPClient::postRaw(url, data, size, new LLWebProfileResponders::PostImageResponder(), headers/*,*/ DEBUG_CURLIO_PARAM(debug_off), no_keep_alive);
 }
 
 // static
