@@ -5385,7 +5385,10 @@ void process_avatar_sit_response(LLMessageSystem *mesgsys, void **user_data)
 	gAgentCamera.setForceMouselook(force_mouselook);
 	// Forcing turning off flying here to prevent flying after pressing "Stand"
 	// to stand up from an object. See EXT-1655.
-	gAgent.setFlying(FALSE);
+	// Unless the user wants to.
+	static LLCachedControl<bool> ContinueFlying("LiruContinueFlyingOnUnsit");
+	if (!ContinueFlying)
+		gAgent.setFlying(FALSE);
 
 	LLViewerObject* object = gObjectList.findObject(sitObjectID);
 	if (object)

@@ -704,6 +704,17 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>LiruContinueFlyingOnUnsit</key>
+    <map>
+      <key>Comment</key>
+      <string>Fly after standing up, if you were flying when you sat down</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>LiruFlyAfterTeleport</key>
     <map>
       <key>Comment</key>
