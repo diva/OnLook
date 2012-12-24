@@ -470,6 +470,12 @@ void LLViewerShaderMgr::setShaders()
 			if (loaded)
 			{
 				loaded = loadTransformShaders();
+				if(!loaded)	//Failed to load. Just wipe all transformfeedback shaders and continue like nothing happened.
+				{
+					mVertexShaderLevel[SHADER_TRANSFORM] = 0;
+					unloadShaderClass(SHADER_TRANSFORM);
+					loaded = true;
+				}
 			}
 
 			if (loaded)
