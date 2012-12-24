@@ -30,7 +30,7 @@ include_directories(
 set(llappearance_SOURCE_FILES
     #llavatarappearance.cpp
     llavatarjoint.cpp
-    #llavatarjointmesh.cpp
+    llavatarjointmesh.cpp
     #lldriverparam.cpp
     #lllocaltextureobject.cpp
     llpolyskeletaldistortion.cpp
@@ -52,7 +52,7 @@ set(llappearance_HEADER_FILES
 
     llavatarappearance.h
     llavatarjoint.h
-    #llavatarjointmesh.h
+    llavatarjointmesh.h
     #lldriverparam.h
     lljointpickname.h
     #lllocaltextureobject.h

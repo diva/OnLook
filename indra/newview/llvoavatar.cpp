@@ -1280,11 +1280,11 @@ BOOL LLVOAvatar::isFullyTextured() const
 			{
 				continue; // nonexistent mesh OK
 			}
-			if (mesh->mTexture.notNull() && mesh->mTexture->hasGLTexture())
+			if (mesh->hasGLTexture())
 			{
 				continue; // Mesh exists and has a baked texture.
 			}
-			if (mesh->mLayerSet && mesh->mLayerSet->hasComposite())
+			if (mesh->hasComposite())
 			{
 				continue; // Mesh exists and has a composite texture.
 			}
