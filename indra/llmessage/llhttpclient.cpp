@@ -367,6 +367,22 @@ void LLHTTPClient::ResponderBase::decode_raw_body(U32 status, std::string const&
 	}
 }
 
+std::string const& LLHTTPClient::ResponderBase::get_cookie(std::string const& key)
+{
+	AIHTTPReceivedHeaders::range_type cookies;
+	mReceivedHeaders.getValues("set-cookie", cookies);
+	for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
+	{
+		if (key == cookie->second.substr(0, cookie->second.find('=')))
+		{
+			return cookie->second;
+		}
+	}
+	// Not found.
+	static std::string empty_dummy;
+	return empty_dummy;
+}
+
 // Called with HTML body.
 // virtual
 void LLHTTPClient::ResponderWithCompleted::completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)

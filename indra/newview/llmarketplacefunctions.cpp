@@ -200,12 +200,19 @@ namespace LLMarketplaceImport
 		/*virtual*/ bool followRedir(void) const { return true; }
 		/*virtual*/ bool needsHeaders(void) const { return true; }
 
-		void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+		/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 		{
-			std::string set_cookie_string;
-			if (headers.getFirstValue("set-cookie", set_cookie_string) && !set_cookie_string.empty())
+			if (status == HTTP_OK)
 			{
-				sMarketplaceCookie = set_cookie_string;
+				std::string value = get_cookie("_slm_session");
+				if (!value.empty())
+				{
+					sMarketplaceCookie = value;
+				}
+				else if (sMarketplaceCookie.empty())
+				{
+					llwarns << "No such cookie \"_slm_session\" received!" << llendl;
+				}
 			}
 		}
 

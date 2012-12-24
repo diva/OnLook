@@ -141,12 +141,7 @@ public:
 	{
 		LL_DEBUGS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
 		LL_DEBUGS("MediaAuth") << headers << LL_ENDL;
-		AIHTTPReceivedHeaders::range_type cookies;
-		if (headers.getValues("set-cookie", cookies))
-		{
-			for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
-				LLViewerMedia::openIDCookieResponse(cookie->second);
-		}
+		LLViewerMedia::openIDCookieResponse(get_cookie("agni_sl_session_id"));
 	}
 
 	/* virtual */ void completedRaw(
@@ -190,30 +185,22 @@ public:
 			for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
 			{
 			  LLViewerMedia::getCookieStore()->setCookiesFromHost(cookie->second, mHost);
-			  // The should be only one set-cookie header, and the key should be '_my_secondlife_session'.
-			  // However, lets be a little more flexible. We look for the first header with a key that
-			  // contains the string 'session'.
+
 			  std::string key = cookie->second.substr(0, cookie->second.find('='));
-			  if (key.find("session") != std::string::npos)
+			  if (key == "_my_secondlife_session")
 			  {
 				// Set cookie for snapshot publishing.
 				std::string auth_cookie = cookie->second.substr(0, cookie->second.find(";")); // strip path
-				if (found)
-				{
-				  llwarns << "LLViewerMediaWebProfileResponder received more than one *session* cookie!?!" << llendl;
-				}
-				else
-				{
-				  LL_INFOS("MediaAuth") << "Setting openID auth cookie \"" << auth_cookie << "\"." << LL_ENDL;
-				  LLWebProfile::setAuthCookie(auth_cookie);
-				  found = true;
-				}
+				LL_INFOS("MediaAuth") << "Setting openID auth cookie \"" << auth_cookie << "\"." << LL_ENDL;
+				LLWebProfile::setAuthCookie(auth_cookie);
+				found = true;
+				break;
 			  }
 			}
 		}
 		if (!found)
 		{
-			llwarns << "LLViewerMediaWebProfileResponder did not receive a session ID cookie! OpenID authentications will fail!" << llendl;
+			llwarns << "LLViewerMediaWebProfileResponder did not receive a session ID cookie \"_my_secondlife_session\"! OpenID authentications will fail!" << llendl;
 		}
 	}
 

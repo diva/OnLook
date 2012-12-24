@@ -155,7 +155,16 @@ public:
 		{
 			// It's possible that this page was moved (302), so we already saw headers
 			// from the 302 page and are starting over on the new page now.
-			mReceivedHeaders.clear();
+			// Erase all headers EXCEPT the cookies.
+			AIHTTPReceivedHeaders set_cookie_headers;
+			AIHTTPReceivedHeaders::range_type cookies;
+			mReceivedHeaders.getValues("set-cookie", cookies);
+			for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
+			{
+				set_cookie_headers.addHeader(cookie->first, cookie->second);
+			}
+			// Replace headers with just the cookie headers.
+			mReceivedHeaders.swap(set_cookie_headers);
 		}
 
 		// Called for all remaining headers.
@@ -169,6 +178,9 @@ public:
 		{
 			completedHeaders(status, reason, mReceivedHeaders);
 		}
+
+		// Extract cookie 'key' from mReceivedHeaders and return the string 'key=value', or an empty string if key does not exists.
+		std::string const& get_cookie(std::string const& key);
 
 	public:
 		// Derived classes that implement completed_headers()/completedHeaders() should return true here.
