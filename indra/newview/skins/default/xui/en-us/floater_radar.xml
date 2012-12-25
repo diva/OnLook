@@ -2,6 +2,9 @@
 <floater name="radar" title="Radar"
 	can_resize="true" can_minimize="true" can_close="true" can_drag_on_left="false"
 	rect_control="FloaterRadarRect" min_width="300"	min_height="300">
+	<string name="Title">Radar</string>
+	<string name="TitleOneAvatar">Radar (1 Avatar)</string>
+	<string name="TitleWithCount">Radar ([COUNT] Avatars)</string>
 
 	<scroll_list name="avatar_list"
 		    left="10" right="-10" top="-20" bottom="140" can_resize="true"
@@ -14,11 +17,13 @@
 		<column name="position" label="Pos." width="60" tool_tip="Position (X, Y) within this sim, or general direction (cardinal point) for outside sims"/>
 		<column name="altitude" label="Alt." width="48" tool_tip="Altitude"/>
     <column name="activity" label="Act." width="24" tool_tip="Activity"/>
+		<column name="age" label="Age" width="45" tool_tip="Age"/>
+		<column name="time" label="Time" width="52" tool_tip="Time since arrival in the sim."/>
     <column name="client" label="Client" width="80" dynamicwidth="true" tool_tip="Client the avatar is possibly using"/>
 	</scroll_list>
 
 	<tab_container border="false" bottom_delta="-130" height="120" left="6" mouse_opaque="false"
-		       name="actions_tab_container" tab_position="top" follows="left|right|bottom">
+		       name="actions_tab_container" tab_position="top" tab_min_width="0" follows="left|right|bottom">
 		<panel border="true" bottom_delta="-130" follows="left|top|right|bottom" height="255"
 		       label="Avatar" left="1" mouse_opaque="true"
 		     name="actions_tab" width="398">
@@ -337,7 +342,33 @@
 			       follows="bottom|left"
 			       />
 		</panel>
+
+		<panel border="true" bottom_delta="-150" follows="left|top|right|bottom" height="255"
+		       label="Extras" left="1" mouse_opaque="true" name="extras_tab" width="398">
+			<check_box label="Avatar Age Alert" left_delta="5" bottom="80" name="agealert"
+				width="200" follows="bottom|left" control_name="RadarAlertAge" tool_tip="Enable Avatar Age Alert" />
+			<spinner bottom_delta="-1" decimal_digits="0" follows="bottom|left" height="16"
+				left_delta="120" increment="1" initial_val="3" min_val="0" max_val="9999"
+				name="AgeAlertDays" label="Age Threshold" label_width="80"
+				tool_tip="The minimum amount of days an avatar can have spent on the grid without triggering an alert" width="130" control_name="AvatarAgeAlertDays" />
+			<text follows="bottom|left" left="2" name="hide_columns">Hide columns:</text>
+				<check_box follows="bottom|left" bottom_delta="-25" left="5" control_name="RadarColumnMarkHidden" name="hide_mark" label="Mark"/>
+				<check_box follows="bottom|left" bottom_delta="0" left_delta="70" control_name="RadarColumnPositionHidden" name="hide_pos" label="Pos." tool_tip="Position"/>
+				<check_box follows="bottom|left" bottom_delta="0" left_delta="70" control_name="RadarColumnAltitudeHidden" name="hide_alt" label="Alt." tool_tip="Altitude"/>
+				<check_box follows="bottom|left" bottom_delta="-20" left="5" control_name="RadarColumnActivityHidden" name="hide_act" label="Act." tool_tip="Activity"/>
+				<check_box follows="bottom|left" bottom_delta="0" left_delta="70" control_name="RadarColumnAgeHidden" name="hide_age" label="Age"/>
+				<check_box follows="bottom|left" bottom_delta="0" left_delta="70" control_name="RadarColumnTimeHidden" name="hide_time" label="Time"/>
+				<check_box follows="bottom|left" bottom_delta="0" left_delta="70" control_name="RadarColumnClientHidden" name="hide_client" label="Client"/>
+		</panel>
 	</tab_container>
+	<string name="Moving">Moving</string>
+	<string name="Playing a gesture">Playing a gesture</string>
+	<string name="Playing a sound">Playing a sound</string>
+	<string name="Rezzing objects">Rezzing objects</string>
+	<string name="Creating particles">Creating particles</string>
+	<string name="Just arrived">Just arrived</string>
+	<string name="Typing">Typing</string>
+	<string name="has_triggered_your_avatar_age_alert">has triggered your avatar age alert</string>
 	<string name="template">[NAME] [ACTION] [RANGE].</string>
 	<!-- [ACTION] -->
 	<string name="has_entered">has entered</string>

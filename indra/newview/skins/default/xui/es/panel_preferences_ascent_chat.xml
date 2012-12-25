@@ -94,10 +94,12 @@
 			<check_box label="Alertas" name="Alerts"/>
 			<check_box label="Ofertas de Amistad" name="Friendship Offers"/>
 			<check_box label="Invitación a Grupos" name="Group Invites"/>
-			<check_box label="Avisos de Grupos" name="Group Notices"/>
+			<check_box control_name="AntiSpamGroupFeeInvites" label="Invit. Grupos c/Pago" name="Group Fee Invites"/>			
 			<check_box label="Oferta de Ítems" name="Item Offers"/>
 			<check_box label="Scripts" name="Scripts"/>
 			<check_box label="Ofertas de Teleporte" name="Teleport Offers"/>
+			<check_box label="Avisos de Grupos" name="Group Notices"/>
+			<check_box control_name="EnableGestureSounds" label="Habilitar Sonidos de Gestos" name="Enable Gesture Sounds"/>
 		</panel>
 		<!-- ============================= -->
 		<panel label="Opciones de Texto" name="TextOptions">

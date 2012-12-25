@@ -9,16 +9,17 @@
 	<text name="unknown">
 		Medidas: [DIMENSIONS]
 	</text>
-	<button label="Predeterminda" label_selected="Predeterminada" name="Default"/>
+	<button label="Predeterminada" label_selected="Predeterminada" name="Default"/>
 	<button label="Alfa" label_selected="Alfa" name="Alpha"/>
 	<button label="Blanca" label_selected="Blanca" name="Blank"/>
 	<button label="Invisible" label_selected="Invisible" name="Invisible"/>
+	<button label="Ninguna" label_selected="Ninguna" name="None"/>	
 	<check_box label="Mostrar Carpetas" name="show_folders_check"/>
 	<check_box label="Aplicar inmediatamente" name="apply_immediate_check"/>
 	<button label="" label_selected="" name="Pipette"/>
 	<button label="Cancelar" label_selected="Cancelar" name="Cancel"/>
 	<button label="Seleccionar" label_selected="Seleccionar" name="Select"/>
-	<button label="Aplciar UUID" label_selected="Aplicar UUID" name="ApplyUUID"/>
+	<button label="Aplicar UUID" label_selected="Aplicar UUID" name="ApplyUUID"/>
 	<string name="pick title">
 		Seleccionar:
 	</string>

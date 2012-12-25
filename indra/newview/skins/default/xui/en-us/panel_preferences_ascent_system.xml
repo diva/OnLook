@@ -5,36 +5,38 @@
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="General" name="User Interface">
       <check_box left="10" bottom_delta="-25" control_name="DoubleClickTeleport" follows="top" initial_value="false"
         label="Enable teleporting via double-click in-world" tool_tip="Double-clicking on an object/person will teleport you to that location." name="double_click_teleport_check"/>
-	<check_box left="20" bottom_delta="-20" control_name="OptionRotateCamAfterLocalTP" follows="top" initial_value="false"
+	<check_box left="20" bottom_delta="-18" control_name="OptionRotateCamAfterLocalTP" follows="top" initial_value="false"
 		label="Reset camera after teleporting" tool_tip="Centers the camera behind you after a local teleport." name="center_after_teleport_check"/>
-      <check_box bottom_delta="-20" control_name="OptionOffsetTPByAgentHeight" follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+      <check_box bottom_delta="-18" control_name="OptionOffsetTPByAgentHeight" follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
         label="Offset TP target by half agent height" tool_tip="Tries to aim the TP so that your feet land at the point you're aiming for." name="offset_teleport_check"/>
-      <check_box left="10" bottom_delta="-20" control_name="PreviewAnimInWorld" follows="top" initial_value="false"
+      <check_box left="10" follows="top" bottom_delta="-18" control_name="LiruFlyAfterTeleport" name="fly_after_tp" label="Always fly after teleports" tool_tip="Avoid those falls from great heights by automatically flying after teleporting in."/>
+      <check_box left="10" follows="top" bottom_delta="-18" control_name="LiruContinueFlyingOnUnsit" name="continue_flying" label="Continue flying upon standing" tool_tip="Keeps your Fly state the same as when you sat down, so you continue to fly or not when you stand up. Useful for birds, fairies, or those who just wish to make a dramatic leap from their chairs."/>
+      <check_box left="10" bottom_delta="-18" control_name="PreviewAnimInWorld" follows="top" initial_value="false"
         label="Preview animations on the avatar instead on a dummy before uploading" tool_tip="The Animation upload window will play animations on your avatar when previewing them." name="preview_anim_in_world_check"/>
-      <check_box bottom_delta="-20" control_name="SaveInventoryScriptsAsMono" follows="left|top" initial_value="true"
+      <check_box bottom_delta="-18" control_name="SaveInventoryScriptsAsMono" follows="left|top" initial_value="true"
         label="Save scripts in inventory as Mono scripts instead of LSL2" tool_tip="Scripts will automatically be compiled in Mono when saving - Usually only possible when placed in an object." name="save_scripts_as_mono_check"/>
-      <check_box bottom_delta="-20" control_name="AscentAlwaysRezInGroup" follows="left|top" initial_value="true"
+      <check_box bottom_delta="-18" control_name="AscentAlwaysRezInGroup" follows="left|top" initial_value="true"
         label="Always rez objects as land group when available" tool_tip="Rez objects with the same group that the object is being rezzed on has, regardless of your active tag." name="always_rez_in_group_check"/>
-      <check_box bottom_delta="-20" control_name="AscentBuildAlwaysEnabled" follows="left|top" initial_value="true"
+      <check_box bottom_delta="-18" control_name="AscentBuildAlwaysEnabled" follows="left|top" initial_value="true"
         label="Always show Build as enabled" tool_tip="Allows you to use the Build menu without having to be tricky about it. May not mean you can actually build there." name="always_build_check"/>
-      <check_box bottom_delta="-20" control_name="AscentFlyAlwaysEnabled" follows="left|top" initial_value="true"
+      <check_box bottom_delta="-18" control_name="AscentFlyAlwaysEnabled" follows="left|top" initial_value="true"
         label="Always allow Fly" tool_tip="Lets you fly in locations you shouldn't be allowed to. Use at your own risk - Just because you can doesn't mean you should." name="always_fly_check"/>
-      <check_box bottom_delta="-20" control_name="AscentDisableMinZoomDist" follows="left|top" initial_value="true"
+      <check_box bottom_delta="-18" control_name="AscentDisableMinZoomDist" follows="left|top" initial_value="true"
         label="Disable camera minimum distance" tool_tip="Allows the camera to get reeeaaally close to things." name="disable_camera_zoom_check"/>
-      <check_box bottom_delta="-20" follows="left|top" initial_value="true"
+      <check_box bottom_delta="-18" follows="left|top" initial_value="true"
         label="Enable Power User functionality" tool_tip="Adds features deemed too dangerous for normal use. These features can wreak havoc or do bad things if misused - Mostly to yourself or your belongings. If you're sure, activate the checkbox below as well." name="power_user_check"/>
-      <check_box bottom_delta="-20" enabled="true" follows="top" left="20" initial_value="true"
+      <check_box bottom_delta="-18" enabled="true" follows="top" left="20" initial_value="true"
         label="Confirm Power User functionality" tool_tip="Confirms Power User activation. Turn this on at your own risk, and use any features it enables responsibly. Singularity devs won't replace anything you break. We recommend having a backup copy of anything to be victim to these powers. Unlike most checkboxes, you must click Apply or OK before this will activate." name="power_user_confirm_check"/>
-      <check_box bottom_delta="-20" control_name="AscentUseSystemFolder" follows="top" left="10" initial_value="true"
+      <check_box bottom_delta="-18" control_name="AscentUseSystemFolder" follows="top" left="10" initial_value="true"
         label="Enable Ascent System Inventory (Requires Restart)" tool_tip="Creates a new folder in the inventory for storing settings files and non-permanent assets." name="system_folder_check"/>
-      <check_box bottom_delta="-20" control_name="AscentSystemTemporary" follows="top" left="20" initial_value="false"
+      <check_box bottom_delta="-18" control_name="AscentSystemTemporary" follows="top" left="20" initial_value="false"
         label="Temporary uploads go in the System Asset folder." tool_tip="Puts temporary uploads in the Asset folder which separates them from actual uploads, making them easier to find." name="temp_in_system_check"/>
-      <check_box bottom_delta="-20" control_name="FetchInventoryOnLogin" follows="top" left="10" initial_value="true"
+      <check_box bottom_delta="-18" control_name="FetchInventoryOnLogin" follows="top" left="10" initial_value="true"
         label="Automatically fetch the inventory in the background after login" tool_tip="Inventory will preload when you log in, so you don't have to wait for it to load when doing an initial search." name="fetch_inventory_on_login_check"/>
-      <check_box bottom_delta="-20" control_name="WindEnabled" follows="left|top" initial_value="false" label="Enable Wind Effects" name="enable_wind"/>
-      <check_box bottom_delta="-20" control_name="CloudsEnabled" follows="left|top" initial_value="true" label="Enable Clouds" name="enable_clouds"/>
-      <check_box bottom_delta="-20" left_delta="10" control_name="SkyUseClassicClouds" follows="top" initial_value="true" label="Enable Classic Clouds" name="enable_classic_clouds"/>
-      <check_box bottom_delta="-20" left_delta="-10" control_name="SpeedRez" follows="top" initial_value="false" label="Enable speed-rezzing via draw distance stepping" name="speed_rez_check" tool_tip="When active, this will progressively increase your draw distance, which allows closer objects/people to rez first."/>
+      <check_box bottom_delta="-18" control_name="WindEnabled" follows="left|top" initial_value="false" label="Enable Wind Effects" name="enable_wind"/>
+      <check_box bottom_delta="-18" control_name="CloudsEnabled" follows="left|top" initial_value="true" label="Enable Clouds" name="enable_clouds"/>
+      <check_box bottom_delta="-18" left_delta="10" control_name="SkyUseClassicClouds" follows="top" initial_value="true" label="Enable Classic Clouds" name="enable_classic_clouds"/>
+      <check_box bottom_delta="-18" left_delta="-10" control_name="SpeedRez" follows="top" initial_value="false" label="Enable speed-rezzing via draw distance stepping" name="speed_rez_check" tool_tip="When active, this will progressively increase your draw distance, which allows closer objects/people to rez first."/>
       <spinner bottom_delta="-20" left="30" control_name="SpeedRezInterval" decimal_digits="0" follows="top" height="16" width="230"
         label="Draw distance stepping interval:" label_width="180" max_val="60" min_val="5" initial_val="20" increment="5" name="speed_rez_interval" />
       <text bottom_delta="0" left_delta="235" follows="left|top" height="16" name="speed_rez_seconds">seconds</text>

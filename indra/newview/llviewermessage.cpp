@@ -5385,7 +5385,10 @@ void process_avatar_sit_response(LLMessageSystem *mesgsys, void **user_data)
 	gAgentCamera.setForceMouselook(force_mouselook);
 	// Forcing turning off flying here to prevent flying after pressing "Stand"
 	// to stand up from an object. See EXT-1655.
-	gAgent.setFlying(FALSE);
+	// Unless the user wants to.
+	static LLCachedControl<bool> ContinueFlying("LiruContinueFlyingOnUnsit");
+	if (!ContinueFlying)
+		gAgent.setFlying(FALSE);
 
 	LLViewerObject* object = gObjectList.findObject(sitObjectID);
 	if (object)
@@ -6844,8 +6847,9 @@ void process_teleport_local(LLMessageSystem *msg,void**)
 		}
 	}
 
+	static LLCachedControl<bool> fly_after_tp(gSavedSettings, "LiruFlyAfterTeleport");
 	// Sim tells us whether the new position is off the ground
-	if (teleport_flags & TELEPORT_FLAGS_IS_FLYING)
+	if (fly_after_tp || (teleport_flags & TELEPORT_FLAGS_IS_FLYING))
 	{
 		gAgent.setFlying(TRUE);
 	}

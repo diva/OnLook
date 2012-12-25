@@ -89,6 +89,7 @@
 
 
 #include <iosfwd>
+#include <boost/date_time.hpp>
 
 
 
@@ -269,23 +270,15 @@ void LLPanelAvatarSecondLife::processProperties(void* data, EAvatarProcessorType
 
 			getChild<LLTextureCtrl>("img")->setImageAssetID(pAvatarData->image_id);
 
-			//Chalice - Show avatar age in days.
-			int year, month, day;
-			sscanf(pAvatarData->born_on.c_str(),"%d/%d/%d",&month,&day,&year);
-			time_t now = time(NULL);
-			struct tm * timeinfo;
-			timeinfo=localtime(&now);
-			timeinfo->tm_mon = --month;
-			timeinfo->tm_year = year - 1900;
-			timeinfo->tm_mday = day;
-			time_t birth = mktime(timeinfo);
-			std::stringstream NumberString;
-			NumberString << (difftime(now,birth) / (60*60*24));
-			std::string born_on = pAvatarData->born_on;
-			born_on += " (";
-			born_on += NumberString.str();
-			born_on += ")";
-			childSetValue("born", born_on);
+			// Show avatar age in days.
+			{
+				using namespace boost::gregorian;
+				int year, month, day;
+				sscanf(pAvatarData->born_on.c_str(),"%d/%d/%d",&month,&day,&year);
+				std::ostringstream born_on;
+				born_on << pAvatarData->born_on << " (" << day_clock::local_day() - date(year, month, day) << ")";
+				childSetValue("born", born_on.str());
+			}
 
 			bool allow_publish = (pAvatarData->flags & AVATAR_ALLOW_PUBLISH);
 			childSetValue("allow_publish", allow_publish);

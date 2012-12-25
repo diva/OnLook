@@ -18,6 +18,12 @@ residentes'.
 	<string name="confirm_invite_owner_str">
 		¿Estás seguro de que quieres invitar a un nuevo propietario/s? ¡Esta acción es permanente!
 	</string>
+	<string name="already_in_group">
+		Algunos de los residentes que has seleccionado ya están en el grupo y no se les ha enviado la invitación.
+	<string>
+	<string name="invite_selection_too_large">
+		No se han enviado las invitaciones al grupo: Demasiados residentes seleccionados. Las invitaciones al Grupo están limitadas a 100 por envío.
+	<string>	
 	<string name="loading">
 		(cargando...)
 	</string>

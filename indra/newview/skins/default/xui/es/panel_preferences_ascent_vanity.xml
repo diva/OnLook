@@ -2,11 +2,12 @@
 <panel label="Vanity" name="ascvan">
 	<tab_container label="Singularity Vanity" name="Ascent Vanity">
 		<panel label="Principal  (General)" name="General">
-			<check_box label="Cuando se aplicable, guardar Ajustes Vaninty por cuenta." tool_tip="Guarda ajustes individuales por cuenta, permitiendo una mas fácil personalización de Alts." name="use_account_settings_check"/>
-			<check_box label="Ocultar pantalla de progreso de Telerport" tool_tip="Activado, el visor ocultará la pantalla de progreso de Teleportación, pemitiendo leer MIs.." name="disable_tp_screen_check"/>
-			<check_box label="Reproducir sonidos de teleport cuando al cambiar de sim" tool_tip="El Visor reproducirá el sonido de trnasportación al hacer un teleport." name="tp_sound_check"/>
-			<check_box label="Ocultar la pantalla de inicio/cierre de sesión" tool_tip="Marcadao, el visor ocultará la pantalla de progreso de inicio/cierre de sesión." name="disable_logout_screen_check"/>
-			<check_box label="Desactivar animaciones de chat, susurro y gritos" tool_tip="Quiar las animaciones de tu avatar. El efecto es visible para todos" name="disable_chat_animation"/>
+			<check_box label="Cuando sea aplicable, guardar Ajustes Vanity por cuenta." tool_tip="Guarda ajustes individuales por cuenta, permitiendo una mas fácil personalización de Alts." name="use_account_settings_check"/>
+			<check_box label="Ocultar pantalla de progreso de Teleport" tool_tip="Activado, el visor ocultará la pantalla de progreso de Teleportación, pemitiendo leer MIs.." name="disable_tp_screen_check"/>
+			<check_box label="Reproducir sonidos de teleport al cambiar de sim" tool_tip="El Visor reproducirá el sonido de trnasportación al hacer un teleport." name="tp_sound_check"/>
+			<check_box label="Ocultar la pantalla de inicio/cierre de sesión" tool_tip="Marcado, el visor ocultará la pantalla de progreso de inicio/cierre de sesión." name="disable_logout_screen_check"/>
+			<check_box label="Desactivar animaciones de chat, susurro y gritos" tool_tip="Quitar las animaciones de tu avatar. El efecto es visible para todos" name="disable_chat_animation"/>
+			<check_box label="Añadir ropa y objetos vestibles en vez de reemplazarlos" tool_tip="Cuando hagas doble click o presiones la tecla Entrar sobre ropas u objetos para vestir en tu inventario, los objetos seleccionados se agregarán a tu vestuario en vez de reemplazar a los que tengas vestidos en la misma ubicación" name="add_not_replace"/>			
 		</panel>
 		<panel label="Tags/Colores" name="TagsColors">
 			<!-- Client tag options -->
