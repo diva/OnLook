@@ -2060,99 +2060,144 @@ Se cambiarán miles de regiones, y se provocará un colapso en el espacio del se
 		¿Estás seguro de que quieres cambiar el contrato del Estado?
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
 	</notification>
-	
 	<notification name="RegionEntryAccessBlocked">
-		No estás autorizado en esa región por tu nivel de calificación. Puede deberse a que no hay información validada de tu edad.
-
-Por favor, comprueba que tienes instalado el último visor, y ve a la Base de Conocimientos para más detalles sobre el acceso a zonas con este nivel de calificación.
-    <usetemplate
-     name="okbutton"
-     yestext="OK"/>
+		Tus preferencias de contenido actuales te impiden visitar la región que has seleccionado.  Puedes cambiar las preferencias en Editar &gt; Preferencias &gt; General.
+		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
-	
-	<notification name="RegionEntryAccessBlocked_KB">
-		No estás autorizado en esa región por tu nivel de calificación. 
+	<notification name="RegionEntryAccessBlocked_AdultsOnlyContent">
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], que solo es accesible para los adultos.
 
 ¿Quieres ir a la Base de Conocimientos para aprender más sobre el nivel de calificación?
 		<url name="url">
-			https://support.secondlife.com/ics/support/default.asp?deptID=4417&amp;task=knowledge&amp;questionID=6010
+			http://wiki.secondlife.com/wiki/Linden_Lab_Official:Maturity_ratings:_an_overview
 		</url>
-		<usetemplate name="okcancelignore" yestext="Ir a la Base de Conocimientos" notext="Cerrar" ignoretext="Cuando la entrada a la región está bloqueada por el nivel de calificación"/>
+		<usetemplate ignoretext="Paso a otra región: la región que intentas visitar tiene un contenido solo accesible para los adultos." name="okcancelignore" notext="Cerrar" yestext="Ir a la Base de Conocimientos"/>
 	</notification>
 	
 	<notification name="RegionEntryAccessBlocked_Notify">
-		No estás autorizado en esa región por tu nivel de calificación.
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos.
 	</notification>
-	
+	<notification name="RegionEntryAccessBlocked_NotifyAdultsOnly">
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], que solo es accesible para los adultos.
+	</notification>
 	<notification name="RegionEntryAccessBlocked_Change">
-		No estás autorizado en esa región por tu nivel de calificación..
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos.
 
 Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de calificación y poder entrar. Desde ese momento, podrás buscar y acceder a contenido [REGIONMATURITY]. Si más adelante quieres deshacer esta configuración, ve a Editar &gt; Preferencias... &gt; General.
 		<form name="form">
-			<button name="OK" text="Cambiar preferencia"/>
+			<button name="OK" text="Cambiar preferencias"/>
+			<button default="true" name="Cancel" text="Cancelar"/>
+			<ignore name="ignore" text="Cuando paso a otra región: tus preferencias de contenido no te permiten visitar la región que has seleccionado."/>
+		</form>
+	</notification>
+	<notification name="RegionEntryAccessBlocked_PreferencesOutOfSync">
+		Estamos experimentando dificultades técnicas con el teleporte porque tus preferencias no están sincronizadas con el servidor.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked">
+		Tus preferencias de contenido actuales te impiden visitar la región que has seleccionado. Puedes cambiar las preferencias en Editar &gt; Preferencias &gt; General.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_AdultsOnlyContent">
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], que solo es accesible para los adultos.
+	
+¿Quieres ir a la Base de Conocimientos para aprender más sobre el nivel de calificación?
+		<url name="url">
+			http://wiki.secondlife.com/wiki/Linden_Lab_Official:Maturity_ratings:_an_overview
+		</url>
+		<usetemplate ignoretext="Cuando teletransportarse: la región que intentas visitar tiene un contenido solo accesible para los adultos." name="okcancelignore" notext="Cerrar" yestext="Ir a la Base de Conocimientos"/>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_Notify">
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos.
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_NotifyAdultsOnly">
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], que solo es accesible para los adultos.
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_ChangeAndReTeleport">
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos. Podemos cambiar tus preferencias y proceder a teleportarte o bien tú puedes cancelar el teleporte.
+		<form name="form">
+			<button name="OK" text="Cambiar y continuar"/>
 			<button name="Cancel" text="Cancelar"/>
-			<ignore name="ignore" text="Cuando la entrada a la región está bloqueada por la preferencia del nivel de calificación"/>
+			<ignore name="ignore" text="Cuando teletransportarse (reiniciable): tus preferencias de contenido no te permiten visitar la región que has seleccionado."/>
+		</form>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_Change">
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos. Puedes cambiar tus preferencias o bien cancelar el teleporte. Después de cambiar tus preferencias, intenta teleportarte otra vez.
+		<form name="form">
+			<button name="OK" text="Cambiar preferencias"/>
+			<button name="Cancel" text="Cancelar"/>
+			<ignore name="ignore" text="Cuando teletransportarse (no reiniciable): tus preferencias de contenido no te permiten visitar la región que has seleccionado."/>
+		</form>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_PreferencesOutOfSync">
+		Estamos experimentando dificultades técnicas con el teleporte porque tus preferencias no están sincronizadas con el servidor.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="PreferredMaturityChanged">
+		No recibirás más notificaciones cuando vayas a visitar una región con un contenido [RATING]. En el futuro, puedes cambiar tus preferencias de contenido en Editar &gt; Preferencias &gt; General en la barra de menús.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="MaturityChangeError">
+		En este momento no se pueden cambiar tus preferencias para ver el contenido [PREFERRED_MATURITY].  Tus preferencias se han restablecido para que puedas ver el contenido [ACTUAL_MATURITY]. Si deseas cambiar las preferencias otra vez, en la barra de menús, selecciona Editar &gt; Preferencias &gt; General.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="LandClaimAccessBlocked">
+		Tus preferencias actuales de calificación de contenido te impiden reclamar el terreno que has seleccionado. Puedes cambiar las preferencias en Editar &gt; Preferencias &gt; General.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="LandClaimAccessBlocked_AdultsOnlyContent">
+		Solo los adultos pueden reclamar este terreno.
+
+¿Quieres ir a la Base de Conocimientos para más información sobre el nivel de calificación?
+		<url name="url">
+			http://wiki.secondlife.com/wiki/Linden_Lab_Official:Maturity_ratings:_an_overview
+		</url>
+		<usetemplate ignoretext="Cuando solo adultos pueden reclamar este terreno." name="okcancelignore" notext="Cerrar" yestext="Ir a la Base de Conocimientos"/>
+	</notification>
+	<notification name="LandClaimAccessBlocked_Notify">
+		El terreno que intentas reclamar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos.
+	</notification>
+	<notification name="LandClaimAccessBlocked_NotifyAdultsOnly">
+		El terreno que intentas reclamar tiene un contenido [REGIONMATURITY], que solo es accesible para los adultos.
+	</notification>
+	<notification name="LandClaimAccessBlocked_Change">
+		El terreno que intentas reclamar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos. Podemos cambiar tus preferencias y después puedes volver a intentar reclamar el terreno.
+		<form name="form">
+			<button name="OK" text="Cambiar preferencias"/>
+			<button name="Cancel" text="Cancelar"/>
+			<ignore name="ignore" text="Cuando tus preferencias de contenido no te permiten reclamar el terreno que has seleccionado."/>
+		</form>
+	</notification>
+	<notification name="LandBuyAccessBlocked">
+		Tus preferencias actuales de calificación de contenido te impiden comprar el terreno que has seleccionado. Puedes cambiar las preferencias en Editar &gt; Preferencias &gt; General.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="LandBuyAccessBlocked_AdultsOnlyContent">
+		Solo los adultos pueden comprar este terreno.
+
+¿Quieres ir a la Base de Conocimientos para más información sobre el nivel de calificación?
+		<url name="url">
+			http://wiki.secondlife.com/wiki/Linden_Lab_Official:Maturity_ratings:_an_overview
+		</url>
+		<usetemplate ignoretext="Solo los adultos pueden comprar este terreno." name="okcancelignore" notext="Cerrar" yestext="Ir a la Base de Conocimientos"/>
+	</notification>
+	<notification name="LandBuyAccessBlocked_Notify">
+		El terreno que intentas comprar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos.
+	</notification>
+	<notification name="LandBuyAccessBlocked_NotifyAdultsOnly">
+		El terreno que intentas comprar tiene un contenido [REGIONMATURITY], que solo es accesible para los adultos.
+	</notification>
+	<notification name="LandBuyAccessBlocked_Change">
+		El terreno que intentas comprar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos. Podemos cambiar tus preferencias y después puedes volver a intentar comprar el terreno.
+		<form name="form">
+			<button name="OK" text="Cambiar preferencias"/>
+			<button name="Cancel" text="Cancelar"/>
+			<ignore name="ignore" text="Cuando tus preferencias de contenido no te permiten comprar el terreno que has seleccionado."/>
 		</form>
 	</notification>
 	
-	<notification name="LandClaimAccessBlocked">
-		No puedes reclamar este terreno por tu nivel de calificación. Puede deberse a que no hay información validada de tu edad.
-
-Por favor, comprueba que tienes instalado el último visor, y ve a la Base de Conocimientos para más detalles sobre el acceso a zonas con este nivel de calificación.
-		<usetemplate name="okbutton" yestext="OK"/>
-	</notification>
-	
-	<notification name="LandClaimAccessBlocked_KB">
-		No puedes reclamar este terreno por tu nivel de calificación. 
-
-¿Quieres ir a la Base de Conocimientos para más información sobre el nivel de calificación?
-		<url name="url">
-			https://support.secondlife.com/ics/support/default.asp?deptID=4417&amp;task=knowledge&amp;questionID=6010
-		</url>
-		<usetemplate name="okcancelignore" yestext="Ir a la Base de Conocimientos" notext="Cerrar" ignoretext="Cuando el reclamar terreno está bloqueado por el nivel de calificación"/>
-	</notification>
-	
-	<notification name="LandClaimAccessBlocked_Notify">
-		Por tu nivel de calificación, No puedes reclamar este terreno.
-	</notification>
-	
-	<notification name="LandClaimAccessBlocked_Change">
-		No puedes reclamar este terreno por tus preferencias de nivel de calificación.
-
-Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de calificación y poder entrar. Desde ese momento, podrás buscar y acceder a contenido [REGIONMATURITY]. Si más adelante quieres deshacer esta configuración, ve a Editar &gt; Preferencias... &gt; General..
-		<usetemplate name="okcancelignore" yestext="Cambiar preferencia" notext="Cerrar" ignoretext="Cuando el reclamar terreno está bloqueado por la preferencia del nivel de calificación"/>
-	</notification>
-	
-	<notification name="LandBuyAccessBlocked">
-		No puedes comprar este terreno por tu nivel de calificación. Puede deberse a que no hay información validada de tu edad.
-
-Por favor, compruebs que tienes instalado el último visor, y ve a la Base de Conocimientos para más detalles sobre el acceso a zonas con este nivel de calificación.
-		<usetemplate name="okbutton" yestext="OK"/>
-	</notification>
-	
-	<notification name="LandBuyAccessBlocked_KB">
-		No puedes comprar este terreno por tus preferencias de nivel de calificación. 
-
-¿Quieres ir a la Base de Conocimientos para más información sobre el nivel de calificación?
-		<url name="url">
-			https://support.secondlife.com/ics/support/default.asp?deptID=4417&amp;task=knowledge&amp;questionID=6010
-		</url>
-		<usetemplate name="okcancelignore" yestext="Ir a la Base de Conocimientos" notext="Cerrar" ignoretext="Cuando la compra de terreno está bloqueada por el nivel de calificación"/>
-	</notification>
-	
-	<notification name="LandBuyAccessBlocked_Notify">
-		No puedes comprar este terreno por tu nivel de calificación.
-	</notification>
-	
-	<notification name="LandBuyAccessBlocked_Change">
-		No puedes comprar este terreno por tus preferencias de nivel de calificación.
-
-Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de calificación y poder entrar. Desde ese momento, podrás buscar y acceder a contenido [REGIONMATURITY]. Si más adelante quieres deshacer esta configuración, ve a Editar &gt; Preferencias... &gt; General.
-		<usetemplate name="okcancelignore" yestext="Cambiar preferencia" notext="Cerrar" ignoretext="Cuando la compra de terreno está bloqueada por la preferencia del nivel de calificación"/>
-	</notification>
-	
 	<notification name="TooManyPrimsSelected">
-		"Hay seleccionadas demasiadas primitivas. Por favor, selecciona [MAX_PRIM_COUNT] o menos, y reinténtalo"
+		Hay seleccionadas demasiadas primitivas. Por favor, selecciona [MAX_PRIM_COUNT] o menos, y reinténtalo
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	
@@ -2614,7 +2659,7 @@ Dado que estos objetos tienen scripts, moverlos a tu inventario puede provocar u
 	
 	<notification name="ConfirmQuit">
 		¿Estás seguro de que quieres salir?
-		<usetemplate ignoretext="Cuando esté saliendo de Second Life." name="okcancelignore" notext="Continuar" yestext="Salir"/>
+		<usetemplate ignoretext="Cuando esté saliendo de [APP_NAME]." name="okcancelignore" notext="Continuar" yestext="Salir"/>
 	</notification>
 	
 	<notification name="HelpReportAbuseEmailLL">
@@ -2699,9 +2744,9 @@ Aportar una descripción precisa nos ayuda a clasificar y procesar los informes 
 
 Parece que estás denunciando una violación de la propiedad intelectual. Por favor, asegúrate de que tu denuncia es correcta.
 
-(1) El proceso de la denuncia. Debes enviar una denuncia de infracción si crees que un Residente está violando el sistema de permisos de [SECOND_LIFE], por ejemplo, usando un CopyBot u otras herramientas parecidas para copiar, infringiendo los derechos de propiedad intelectual. El Equipo de Infracciones (Abuse Team) investiga y lleva a cabo las acciones disciplinarias apropiadas ante toda acción que viole las las Normas de la Comunidad de [SECOND_LIFE] o las Condiciones del Servicio. Sin embargo, el Equipo de Infracciones ni gestiona ni responde a las solicitudes de eliminar contenidos del mundo de Second Life.
+(1) El proceso de la denuncia. Debes enviar una denuncia de infracción si crees que un Residente está violando el sistema de permisos de [SECOND_LIFE], por ejemplo, usando un CopyBot u otras herramientas parecidas para copiar, infringiendo los derechos de propiedad intelectual. El Equipo de Infracciones (Abuse Team) investiga y lleva a cabo las acciones disciplinarias apropiadas ante toda acción que viole las las Normas de la Comunidad de [SECOND_LIFE] o las Condiciones del Servicio. Sin embargo, el Equipo de Infracciones ni gestiona ni responde a las solicitudes de eliminar contenidos del mundo de [SECOND_LIFE].
 
-(2) El DMCA o Proceso de Eliminación de Contenido. Para solicitar que se elimine algún contenido de Second Life, DEBES enviar una notificación válida de infracción tal y como se explica en nuestra DMCA Policy en http://secondlife.com/corporate/dmca.php.
+(2) El DMCA o Proceso de Eliminación de Contenido. Para solicitar que se elimine algún contenido de [SECOND_LIFE], DEBES enviar una notificación válida de infracción tal y como se explica en nuestra DMCA Policy en http://secondlife.com/corporate/dmca.php.
 
 Si todavía quieres seguir con el proceso de infracción, por favor, cierra esta ventana y termina de enviar tu denuncia. En concreto, debes seleccionar la categoría &apos;CopyBot o Programa para saltarse los permisos&apos;.
 
@@ -3070,7 +3115,9 @@ Pero, vaya, diviértete si quieres.
 		</url>
 		<usetemplate ignoretext="Advertir de la falta de la verificación de edad" name="okcancelignore" notext="No" yestext="Sí"/>
 	</notification>
-	
+	<notification name="NotAgeVerified_Notify">	
+		Pour que vous puissiez accéder à cette parcelle, votre âge doit être vérifié.
+	</notification>
 	<notification name="Cannot enter parcel: no payment info on file">
 		Antes de que puedas acceder a esta parcela, se requiere que tengas archivada tu información de pago.
 ¿Quieres visitar la web de Second Life para actualizar esto?
