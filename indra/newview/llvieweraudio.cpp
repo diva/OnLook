@@ -253,8 +253,11 @@ void audio_update_wind(bool force_update)
 			// which is sufficient to completely turn off or turn on wind noise
 			volume_delta = 1.f;
 		}
-		// mute wind entirely when the user asked
-		if (gSavedSettings.getBOOL("MuteWind"))
+
+		static LLCachedControl<bool> MuteWind("MuteWind");
+		static LLCachedControl<bool> ContinueFlying("LiruContinueFlyingOnUnsit");
+		// mute wind entirely when the user asked or when the user is seated, but flying
+		if (MuteWind || (ContinueFlying && gAgentAvatarp&& gAgentAvatarp->isSitting()))
 		{
 			// volume decreases by itself
 			gAudiop->mMaxWindGain = 0.f;

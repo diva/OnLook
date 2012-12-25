@@ -100,7 +100,8 @@
   <texture name="icon_place.tga"/>
   <texture name="icon_popular.tga"/>
   <texture name="icon_top_pick.tga"/>
-
+  <texture name="icon_name.tga"/>
+  
   <texture name="inv_folder_animation.tga"/>
   <texture name="inv_folder_bodypart.tga"/>
   <texture name="inv_folder_callingcard.tga"/>

@@ -130,6 +130,8 @@ public:
 	LLScrollableContainerView* getScrollableContainer() { return mScroller; }
 	
 	void onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action);
+	
+	LLHandle<LLInventoryPanel> getInventoryPanelHandle() const { return getDerivedHandle<LLInventoryPanel>(); }
 	// DEBUG ONLY:
 	static void dumpSelectionInformation(void* user_data);
 

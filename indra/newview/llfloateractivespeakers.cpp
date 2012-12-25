@@ -70,6 +70,8 @@ const LLColor4 INACTIVE_COLOR(0.3f, 0.3f, 0.3f, 0.5f);
 const LLColor4 ACTIVE_COLOR(0.5f, 0.5f, 0.5f, 1.f);
 const F32 TYPING_ANIMATION_FPS = 2.5f;
 
+static void on_avatar_name_lookup(const LLUUID&, const LLAvatarName& avatar_name, std::string& mDisplayName);
+
 LLSpeaker::LLSpeaker(const LLUUID& id, const std::string& name, const ESpeakerType type) : 
 	mStatus(LLSpeaker::STATUS_TEXT_ONLY),
 	mLastSpokeTime(0.f), 
@@ -102,41 +104,22 @@ LLSpeaker::LLSpeaker(const LLUUID& id, const std::string& name, const ESpeakerTy
 
 void LLSpeaker::lookupName()
 {
-    // [Ansariel: Display name support]
-	LLAvatarNameCache::get(mID, boost::bind(&LLSpeaker::onAvatarNameLookup, _1, _2, new LLHandle<LLSpeaker>(getHandle())));
-    // [/Ansariel: Display name support]
+	LLAvatarNameCache::get(mID, boost::bind(&on_avatar_name_lookup, _1, _2, boost::ref(mDisplayName)));
+
+	// Also set the legacy name. We will need it to initiate a new
+	// IM session.
+	gCacheName->getFullName(mID, mLegacyName);
+	mLegacyName = LLCacheName::cleanFullName(mLegacyName);
 }
 
-//static
-// [Ansariel: Display name support]
-void LLSpeaker::onAvatarNameLookup(const LLUUID& id, const LLAvatarName& avatar_name, void* user_data)
-// [/Ansariel: Display name support]
+static void on_avatar_name_lookup(const LLUUID&, const LLAvatarName& avatar_name, std::string& mDisplayName)
 {
-	LLSpeaker* speaker_ptr = ((LLHandle<LLSpeaker>*)user_data)->get();
-	delete (LLHandle<LLSpeaker>*)user_data;
-
-	if (speaker_ptr)
-	{
-        // [Ansariel: Display name support]
-		switch (gSavedSettings.getS32("PhoenixNameSystem"))
-		{
-			case 0 : speaker_ptr->mDisplayName = avatar_name.getLegacyName(); break;
-			case 1 : speaker_ptr->mDisplayName = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-			case 2 : speaker_ptr->mDisplayName = avatar_name.mDisplayName; break;
-			default : speaker_ptr->mDisplayName = avatar_name.getLegacyName(); break;
-		}
-
-		// Also set the legacy name. We will need it to initiate a new
-		// IM session.
-		speaker_ptr->mLegacyName = LLCacheName::cleanFullName(avatar_name.getLegacyName());
-	    // [/Ansariel: Display name support]
-
+	LLAvatarNameCache::getPNSName(avatar_name, mDisplayName);
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g) | Added: RLVa-1.0.0g
-		// TODO-RLVa: this seems to get called per frame which is very likely an LL bug that will eventuall get fixed
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
-			speaker_ptr->mDisplayName = RlvStrings::getAnonym(speaker_ptr->mDisplayName);
+	// TODO-RLVa: this seems to get called per frame which is very likely an LL bug that will eventually get fixed
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
+		mDisplayName = RlvStrings::getAnonym(mDisplayName);
 // [/RLVa:KB]
-	}
 }
 
 LLSpeakerTextModerationEvent::LLSpeakerTextModerationEvent(LLSpeaker* source)
@@ -333,10 +316,10 @@ BOOL LLPanelActiveSpeakers::postBuild()
 
 	mSpeakerList = getChild<LLScrollListCtrl>("speakers_list");
 	mSpeakerList->sortByColumn(sort_column, sort_ascending);
-	mSpeakerList->setDoubleClickCallback(onDoubleClickSpeaker);
+	mSpeakerList->setDoubleClickCallback(boost::bind(&onDoubleClickSpeaker,this));
 	mSpeakerList->setCommitOnSelectionChange(TRUE);
-	mSpeakerList->setCommitCallback(onSelectSpeaker);
-	mSpeakerList->setSortChangedCallback(onSortChanged);
+	mSpeakerList->setCommitCallback(boost::bind(&LLPanelActiveSpeakers::handleSpeakerSelect,this));
+	mSpeakerList->setSortChangedCallback(boost::bind(&LLPanelActiveSpeakers::onSortChanged,this));
 	mSpeakerList->setCallbackUserData(this);
 
 	mMuteTextCtrl = getChild<LLUICtrl>("mute_text_btn");
@@ -610,7 +593,7 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 	}
 
 	// we potentially modified the sort order by touching the list items
-	mSpeakerList->setSorted(FALSE);
+	mSpeakerList->setNeedsSort();
 
 	LLPointer<LLSpeaker> selected_speakerp = mSpeakerMgr->findSpeaker(selected_id);
 	// update UI for selected participant
@@ -812,14 +795,6 @@ void LLPanelActiveSpeakers::onDoubleClickSpeaker(void* user_data)
 		gIMMgr->addSession(speakerp->mLegacyName, IM_NOTHING_SPECIAL, speaker_id);
 	}
 }
-
-//static
-void LLPanelActiveSpeakers::onSelectSpeaker(LLUICtrl* source, void* user_data)
-{
-	LLPanelActiveSpeakers* panelp = (LLPanelActiveSpeakers*)user_data;
-	panelp->handleSpeakerSelect();
-}
-
 
 //static
 void LLPanelActiveSpeakers::onSortChanged(void* user_data)

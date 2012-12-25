@@ -646,6 +646,12 @@ AIHTTPTimeoutPolicyBase transfer_18s(AIHTTPTimeoutPolicyBase::getDebugSettingsCu
 	transactionOp18s
 	);
 
+// This used to be '30 seconds'.
+Transaction transactionOp30s(30);
+AIHTTPTimeoutPolicyBase transfer_30s(AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout(),
+	transactionOp30s
+	);
+
 // This used to be '300 seconds'. We derive this from the hardcoded result so users can't mess with it.
 Transaction transactionOp300s(300);
 AIHTTPTimeoutPolicyBase transfer_300s(HTTPTimeoutPolicy_default,
@@ -820,6 +826,7 @@ P(accountingCostResponder);
 P(agentStateResponder);
 P(assetUploadResponder);
 P(asyncConsoleResponder);
+P(avatarPickerResponder);
 P(authHandler);
 P(avatarNameResponder);
 P2(baseCapabilitiesComplete,					transfer_18s);
@@ -838,6 +845,7 @@ P(estateChangeInfoResponder);
 P(eventPollResponder);
 P(fetchInventoryResponder);
 P(fnPtrResponder);
+P2(groupMemberDataResponder,					transfer_300s);
 P2(groupProposalBallotResponder,				transfer_300s);
 P(homeLocationResponder);
 P(HTTPGetResponder);
@@ -850,6 +858,7 @@ P(lcl_responder);
 P(MPImportGetResponder);
 P(MPImportPostResponder);
 P(mapLayerResponder);
+P(maturityPreferences,							transfer_30s);
 P(mediaTypeResponder);
 P(meshDecompositionResponder);
 P(meshHeaderResponder);
@@ -889,6 +898,7 @@ P(viewerStatsResponder);
 P(viewerVoiceAccountProvisionResponder);
 P(voiceCallCapResponder);
 P(voiceClientCapResponder);
+P(webProfileResponders);
 P(wholeModelFeeResponder);
 P(wholeModelUploadResponder);
 P2(XMLRPCResponder,								connect_40s);

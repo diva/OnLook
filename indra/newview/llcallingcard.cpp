@@ -638,22 +638,11 @@ void LLAvatarTracker::processChange(LLMessageSystem* msg)
 			{
 				if((mBuddyInfo[agent_id]->getRightsGrantedFrom() ^  new_rights) & LLRelationship::GRANT_MODIFY_OBJECTS)
 				{
-					std::string first, last;
 					std::string fullname;
 					LLSD args;
-					LLAvatarName avatar_name;
-					if (LLAvatarNameCache::get(agent_id, &avatar_name))
-					{
-						switch (gSavedSettings.getS32("PhoenixNameSystem"))
-						{
-							case 0 : fullname = avatar_name.getLegacyName(); break;
-							case 1 : fullname = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-							case 2 : fullname = avatar_name.mDisplayName; break;
-							default : fullname = avatar_name.getCompleteName(); break;
-						}
+					if (LLAvatarNameCache::getPNSName(agent_id, fullname))
 						args["NAME"] = fullname;
-					}
-					
+
 					LLSD payload;
 					payload["from_id"] = agent_id;
 					if(LLRelationship::GRANT_MODIFY_OBJECTS & new_rights)
@@ -740,15 +729,11 @@ static void on_avatar_name_cache_notify(const LLUUID& agent_id,
 {
 	// Popup a notify box with online status of this agent
 	// Use display name only because this user is your friend
+	std::string name;
+	LLAvatarNameCache::getPNSName(av_name, name);
 	LLSD args;
-	switch (gSavedSettings.getS32("PhoenixNameSystem"))
-	{
-		case 0 : args["NAME"] = av_name.getLegacyName(); break;
-		case 1 : args["NAME"] = (av_name.mIsDisplayNameDefault ? av_name.mDisplayName : av_name.getCompleteName()); break;
-		case 2 : args["NAME"] = av_name.mDisplayName; break;
-		default : args["NAME"] = av_name.getCompleteName(); break;
-	}
-	
+	args["NAME"] = name;
+
 	// Popup a notify box with online status of this agent
 	LLNotificationPtr notification = LLNotificationsUtil::add(online ? "FriendOnline" : "FriendOffline", args, payload);
 

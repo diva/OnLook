@@ -81,7 +81,7 @@ void main()
 	pos.w = 1.0;
 	pos = modelview_matrix*pos;
 	
-	calcAtmospherics(pos.xyz);
+	calcAtmospherics(view.xyz);
 	
 	
 	//pass wave parameters to pixel shader

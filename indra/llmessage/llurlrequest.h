@@ -84,11 +84,6 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	/*virtual*/ ~LLURLRequest() { }
 
   public:
-	/**
-	 * @brief Turn on cookie handling for this request with CURLOPT_COOKIEFILE.
-	 */
-	void allowCookies(void);
-
     /**
      * @ brief Turn off (or on) the CURLOPT_PROXY header.
      */

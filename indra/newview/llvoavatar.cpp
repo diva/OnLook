@@ -1861,8 +1861,6 @@ void LLVOAvatar::onShift(const LLVector4a& shift_vector)
 	const LLVector3& shift = reinterpret_cast<const LLVector3&>(shift_vector);
 	mLastAnimExtents[0] += shift;
 	mLastAnimExtents[1] += shift;
-	mNeedsImpostorUpdate = TRUE;
-	mNeedsAnimUpdate = TRUE;
 }
 
 void LLVOAvatar::updateSpatialExtents(LLVector4a& newMin, LLVector4a &newMax)
@@ -2855,7 +2853,7 @@ void LLVOAvatar::dumpAnimationState()
 //------------------------------------------------------------------------
 // idleUpdate()
 //------------------------------------------------------------------------
-BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
+void LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 {
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
 	LLFastTimer t(FTM_AVATAR_UPDATE);
@@ -2863,12 +2861,12 @@ BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 	if (isDead())
 	{
 		llinfos << "Warning!  Idle on dead avatar" << llendl;
-		return TRUE;
-	}
+		return;
+	}	
 
  	if (!(gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_AVATAR)))
 	{
-		return TRUE;
+		return;
 	}
 
 	checkTextureLoading() ;
@@ -2937,7 +2935,7 @@ BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 
 	if (gNoRender)
 	{
-		return TRUE;
+		return;
 	}
 
 	idleUpdateVoiceVisualizer( voice_enabled );
@@ -2954,8 +2952,6 @@ BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 
 	idleUpdateNameTag( root_pos_last );
 	idleUpdateRenderCost();
-
-	return TRUE;
 }
 
 void LLVOAvatar::idleUpdateVoiceVisualizer(bool voice_enabled)
@@ -3135,7 +3131,7 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 
 	if (isImpostor() && !mNeedsImpostorUpdate)
 	{
-		LLVector4a ext[2];
+		LL_ALIGN_16(LLVector4a ext[2]);
 		F32 distance;
 		LLVector3 angle;
 
@@ -3755,8 +3751,8 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 
 		static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
 
-		bool show_display_names = phoenix_name_system > 0;
-		bool show_usernames = phoenix_name_system < 2;
+		bool show_display_names = phoenix_name_system == 1 || phoenix_name_system == 2;
+		bool show_usernames = phoenix_name_system != 2;
 		if (show_display_names && LLAvatarNameCache::useDisplayNames())
 		{
 			LLAvatarName av_name;
@@ -4339,7 +4335,8 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 			}
 			LLVector3 velDir = getVelocity();
 			velDir.normalize();
-			if ( mSignaledAnimations.find(ANIM_AGENT_WALK) != mSignaledAnimations.end())
+			static LLCachedControl<bool> TurnAround("TurnAroundWhenWalkingBackwards");
+			if (!TurnAround && (mSignaledAnimations.find(ANIM_AGENT_WALK) != mSignaledAnimations.end()))
 			{
 				F32 vpD = velDir * primDir;
 				if (vpD < -0.5f)
@@ -5245,7 +5242,20 @@ void LLVOAvatar::updateTextures()
 		LLWearableType::EType wearable_type = LLVOAvatarDictionary::getTEWearableType((ETextureIndex)texture_index);
 		U32 num_wearables = gAgentWearables.getWearableCount(wearable_type);
 		const LLTextureEntry *te = getTE(texture_index);
-		const F32 texel_area_ratio = fabs(te->mScaleS * te->mScaleT);
+
+		// getTE can return 0.
+		// Not sure yet why it does, but of course it crashes when te->mScale? gets used.
+		// Put safeguard in place so this corner case get better handling and does not result in a crash.
+		F32 texel_area_ratio = 1.0f;
+		if( te )
+		{
+			texel_area_ratio = fabs(te->mScaleS * te->mScaleT);
+		}
+		else
+		{
+			llwarns << "getTE( " << texture_index << " ) returned 0" <<llendl;
+		}
+
 		LLViewerFetchedTexture *imagep = NULL;
 		for (U32 wearable_index = 0; wearable_index < num_wearables; wearable_index++)
 		{
@@ -7641,7 +7651,7 @@ void LLVOAvatar::updateMeshTextures()
 	if(!isSelf())
 	{
 		src_callback_list = &mCallbackTextureList ;
-		paused = mLoadedCallbacksPaused ;
+		paused = !isVisible();
 	}
 
 	std::vector<BOOL> is_layer_baked;
@@ -8206,7 +8216,7 @@ void LLVOAvatar::onFirstTEMessageReceived()
 		if(!isSelf())
 		{
 			src_callback_list = &mCallbackTextureList ;
-			paused = mLoadedCallbacksPaused ;
+			paused = !isVisible();
 		}
 
 		for (U32 i = 0; i < mBakedTextureDatas.size(); i++)
@@ -8824,6 +8834,9 @@ void LLVOAvatar::cullAvatarsByPixelArea()
 		}
 	}
 
+	// runway - this doesn't detect gray/grey state.
+	// think we just need to be checking self av since it's the only
+	// one with lltexlayer stuff.
 	S32 grey_avatars = 0;
 	if (LLVOAvatar::areAllNearbyInstancesBaked(grey_avatars))
 	{
@@ -9743,17 +9756,14 @@ BOOL LLVOAvatar::isTextureDefined(LLVOAvatarDefines::ETextureIndex te, U32 index
 		return FALSE;
 	}
 
-	LLViewerTexture* img = getImage(te, index);
-	if(img)
+	if( !getImage( te, index ) )
 	{
-		return (img->getID() != IMG_DEFAULT_AVATAR &&
-		        img->getID() != IMG_DEFAULT);
-	}
-	else
-	{
-		llwarns << "Image doesn't exist" << llendl;
+		llwarns << "getImage( " << te << ", " << index << " ) returned 0" << llendl;
 		return FALSE;
 	}
+
+	return (getImage(te, index)->getID() != IMG_DEFAULT_AVATAR && 
+			getImage(te, index)->getID() != IMG_DEFAULT);
 }
 
 //virtual

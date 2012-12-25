@@ -30,7 +30,7 @@ uniform int texture_index_in;
 ATTRIBUTE vec3 position;
 
 VARYING vec3 position_out;
-VARYING int texture_index_out;
+VARYING_FLAT int texture_index_out;
 
 void main()
 {

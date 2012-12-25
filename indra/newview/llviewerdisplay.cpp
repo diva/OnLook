@@ -51,6 +51,7 @@
 #include "llhudmanager.h"
 #include "llimagebmp.h"
 #include "llimagegl.h"
+#include "lloctree.h"
 #include "llselectmgr.h"
 #include "llsky.h"
 #include "llstartup.h"
@@ -89,6 +90,8 @@
 #include "rlvhandler.h"
 #include "rlvlocks.h"
 // [/RLVa:KB]
+
+extern bool gShiftFrame;
 
 LLPointer<LLViewerTexture> gDisconnectedImagep = NULL;
 
@@ -223,6 +226,9 @@ void display_stats()
 		F32 fps = gRecentFrameCount / fps_log_freq;
 		llinfos << llformat("FPS: %.02f", fps) << llendl;
 		llinfos << llformat("VBO: %d  glVBO: %d", LLVertexBuffer::sCount, LLVertexBuffer::sGLCount) << llendl;
+#ifdef LL_OCTREE_STATS
+		OctreeStats::getInstance()->dump();
+#endif
 		gRecentFrameCount = 0;
 		gRecentFPSTime.reset();
 	}
@@ -318,6 +324,11 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 	}
 
 	gViewerWindow->checkSettings();
+
+	if(gWindowResized)  //Singu Note: gViewerWindow->checkSettings() can call LLViewerWindow::reshape(). If it has then skip this frame.
+	{
+		return;
+	}
 	
 	{
 		LLFastTimer ftm(FTM_PICK);
@@ -411,18 +422,30 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			gAgent.setTeleportMessage(std::string());
 		}
 
+		static const LLCachedControl<bool> hide_tp_screen("AscentDisableTeleportScreens",false);
 		const std::string& message = gAgent.getTeleportMessage();
 		switch( gAgent.getTeleportState() )
 		{
+		case LLAgent::TELEPORT_PENDING:
+			gTeleportDisplayTimer.reset();
+			if(!hide_tp_screen)
+				gViewerWindow->setShowProgress(TRUE);
+			gViewerWindow->setProgressPercent(llmin(teleport_percent, 0.0f));
+			gAgent.setTeleportMessage(LLAgent::sTeleportProgressMessages["pending"]);
+			gViewerWindow->setProgressString(LLAgent::sTeleportProgressMessages["pending"]);
+			break;
+
 		case LLAgent::TELEPORT_START:
 			// Transition to REQUESTED.  Viewer has sent some kind
 			// of TeleportRequest to the source simulator
 			gTeleportDisplayTimer.reset();
-			if(!gSavedSettings.getBOOL("AscentDisableTeleportScreens"))gViewerWindow->setShowProgress(TRUE);
-			gViewerWindow->setProgressPercent(0);
+			if(!hide_tp_screen)
+				gViewerWindow->setShowProgress(TRUE);
+			gViewerWindow->setProgressPercent(llmin(teleport_percent, 0.0f));
 			gAgent.setTeleportState( LLAgent::TELEPORT_REQUESTED );
 			gAgent.setTeleportMessage(
 				LLAgent::sTeleportProgressMessages["requesting"]);
+			gViewerWindow->setProgressString(LLAgent::sTeleportProgressMessages["requesting"]);
 			break;
 
 		case LLAgent::TELEPORT_REQUESTED:
@@ -446,14 +469,15 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			gAgent.setTeleportMessage(
 				LLAgent::sTeleportProgressMessages["arriving"]);
 			gTextureList.mForceResetTextureStats = TRUE;
-			if(!gSavedSettings.getBOOL("AscentDisableTeleportScreens"))gAgentCamera.resetView(TRUE, TRUE);
+			if(!hide_tp_screen)
+				gAgentCamera.resetView(TRUE, TRUE);
 			break;
 
 		case LLAgent::TELEPORT_ARRIVING:
 			// Make the user wait while content "pre-caches"
 			{
 				F32 arrival_fraction = (gTeleportArrivalTimer.getElapsedTimeF32() / TELEPORT_ARRIVAL_DELAY);
-				if( arrival_fraction > 1.f || gSavedSettings.getBOOL("AscentDisableTeleportScreens"))
+				if( arrival_fraction > 1.f || hide_tp_screen)
 				{
 					arrival_fraction = 1.f;
 					LLFirstUse::useTeleport();
@@ -1109,6 +1133,8 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 	display_stats();
 				
 	LLAppViewer::instance()->pingMainloopTimeout("Display:Done");
+
+	gShiftFrame = false;
 }
 
 void render_hud_attachments()

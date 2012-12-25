@@ -124,8 +124,8 @@ public:
 		if (end_y < mBottom) clip_y = end_y - mBottom;
 		// clip_? and delta_? should have same sign, since starting point is in rect
 		// so ratios will be positive
-		F32 ratio_x = ((F32)clip_x / (F32)delta_x);
-		F32 ratio_y = ((F32)clip_y / (F32)delta_y);
+		F32 ratio_x = delta_x ? ((F32)clip_x / (F32)delta_x) : 0.f;
+		F32 ratio_y = delta_y ? ((F32)clip_y / (F32)delta_y) : 0.f;
 		if (ratio_x > ratio_y)
 		{
 			// clip along x direction

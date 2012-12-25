@@ -72,7 +72,10 @@
 				<menu_item_call enabled="false" hidden="false" label="Export" mouse_opaque="true" name="Export">
 						<on_click function="Object.Export" />
 						<on_enable function="Object.EnableExport" />
-				</menu_item_call>				
+				</menu_item_call>
+        <menu_item_call enabled="true" label="Reload" mouse_opaque="true" name="Reload Textures">
+          <on_click function="Object.ReloadTextures" />
+        </menu_item_call>
 			</pie_menu>
 			<menu_item_call enabled="false" label="Mute" mouse_opaque="true" name="Object Mute">
 				<on_click function="Object.Mute" />

@@ -39,6 +39,17 @@ VARYING vec3 vary_normal;
 VARYING vec4 vary_texcoord0;
 VARYING vec4 vary_texcoord1;
 
+vec3 pack(vec3 norm)
+{
+//#define PACK_NORMALS
+#ifdef PACK_NORMALS
+	float p = sqrt(8.0*norm.z+8.0);
+	return vec3(norm.xy/p + 0.5, 0.0);
+#else
+	return norm.xyz*0.5+0.5;
+#endif
+}
+
 void main()
 {
 	/// Note: This should duplicate the blending functionality currently used for the terrain rendering.
@@ -56,6 +67,6 @@ void main()
 	frag_data[0] = vec4(outColor.rgb, 0.0);
 	frag_data[1] = vec4(0,0,0,0);
 	vec3 nvn = normalize(vary_normal);
-	frag_data[2] = vec4(nvn.xy * 0.5 + 0.5, nvn.z, 0.0);
+	frag_data[2] = vec4(pack(nvn),0.0);
 }
 

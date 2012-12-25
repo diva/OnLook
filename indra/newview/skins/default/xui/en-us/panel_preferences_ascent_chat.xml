@@ -87,6 +87,7 @@
       <check_box control_name="AntiSpamScripts" height="16" label="Scripts" name="Scripts" bottom_delta="0" left_delta="120"/>
       <check_box control_name="AntiSpamTeleports" height="16" label="Teleport Offers" name="Teleport Offers" bottom_delta="0" left_delta="120"/>
       <check_box control_name="AntiSpamGroupNotices" height="16" label="Group Notices" name="Group Notices" bottom_delta="0" left_delta="120"/>
+      <check_box control_name="EnableGestureSounds" label="Enable Gesture Sounds" name="Enable Gesture Sounds" left="3" bottom_delta="-20"/>
     </panel>
 
     <panel border="true" bottom="-580" height="525" label="Text Options" left="1" name="TextOptions" width="418">

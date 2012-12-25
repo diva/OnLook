@@ -92,13 +92,13 @@ void PerHostRequestQueue::release(PerHostRequestQueuePtr& instance)
 
 bool PerHostRequestQueue::throttled() const
 {
-  llassert(mAdded <= curl_concurrent_connections_per_host);
-  return mAdded == curl_concurrent_connections_per_host;
+  llassert(mAdded <= int(curl_concurrent_connections_per_host));
+  return mAdded == int(curl_concurrent_connections_per_host);
 }
 
 void PerHostRequestQueue::added_to_multi_handle(void)
 {
-  llassert(mAdded < curl_concurrent_connections_per_host);
+  llassert(mAdded < int(curl_concurrent_connections_per_host));
   ++mAdded;
 }
 

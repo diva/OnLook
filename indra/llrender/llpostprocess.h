@@ -38,57 +38,48 @@
 #include "llrendertarget.h"
 
 class LLSD;
+class LLGLSLShader;
 
 typedef enum _QuadType {
-	QUAD_NONE,
 	QUAD_NORMAL,
 	QUAD_NOISE
 } QuadType;
 
 //LLPostProcessShader is an attempt to encapsulate the shaders a little better.
-class LLPostProcessShader : public LLRefCount //Abstract. PostProcess shaders derive off of this common base.
+class IPostProcessShader //Abstract. PostProcess shaders derive off of this common base.
 {
 protected:
 	//LLShaderSetting is used to associate key names to member variables to avoid LLSD lookups when drawing.
 	//It also facilitates automating the assigning of defaults to, as well as parsing from, the effects LLSD list.
 	//This replaces the entire old PostProcessTweaks structure. More will be done in the future to move into a more
 	//xml-driven configuration.
-	struct LLShaderSettingBase
+	struct IShaderSettingBase
 	{
-		LLShaderSettingBase(const char* name) : mSettingName(name) {}
-		const char* mSettingName;							//LLSD key names as found in postprocesseffects.xml. eg 'contrast_base'
-		virtual LLSD getDefaultValue() = 0;					//Converts the member variable as an LLSD. Used to set defaults absent in postprocesseffects.xml
+		virtual ~IShaderSettingBase() {}					//virtual dtor.
+		virtual const std::string& getName() const = 0;		//Returns the name of this setting
+		virtual LLSD getDefaultValue() const = 0;			//Converts the member variable as an LLSD. Used to set defaults absent in postprocesseffects.xml
 		virtual void setValue(const LLSD& value) = 0;		//Connects the LLSD element to the member variable. Used when loading effects (such as default)
 	};
-	template<typename T>
-	struct LLShaderSetting : public LLShaderSettingBase
-	{
-		LLShaderSetting(const char* setting_name, T def) : LLShaderSettingBase(setting_name), mValue(def), mDefault(def) {}
-		T mValue;												//The member variable mentioned above.
-		T mDefault;												//Set via ctor. Value is inserted into the defaults LLSD list if absent from postprocesseffects.xml
-		LLSD getDefaultValue() { return mDefault; }				//See LLShaderSettingBase::getDefaultValue
-		void setValue(const LLSD& value) { mValue = value; }	//See LLShaderSettingBase::setValue
-		operator T() { return mValue; }							//Typecast operator overload so this object can be handled as if it was whatever T represents.
-	};
-	std::vector<LLShaderSettingBase*> mSettings;	//Contains a list of all the 'settings' this shader uses. Manually add via push_back in ctor.
 public:
-	virtual ~LLPostProcessShader() {};
-	virtual bool isEnabled() = 0;		//Returning false avoids bind/draw/unbind calls. If no shaders are enabled, framebuffer copying is skipped.
-	virtual S32 getColorChannel() = 0;	//If color buffer is used in this shader returns > -1 to cue LLPostProcess on copying it from the framebuffer. 
-	virtual S32 getDepthChannel() = 0;	//If depth buffer is used in this shader returns > -1 to cue LLPostProcess on copying it from the framebuffer.
-	virtual QuadType bind() = 0;		//Bind shader and textures, set up attribs. Returns the 'type' of quad to be drawn.
+	virtual ~IPostProcessShader() {}			//virtual dtor.
+	virtual bool isEnabled()		const = 0;	//Returning false avoids bind/draw/unbind calls. If no shaders are enabled, framebuffer copying is skipped.
+	virtual S32 getColorChannel()	const = 0;	//If color buffer is used in this shader returns > -1 to cue LLPostProcess on copying it from the framebuffer. 
+	virtual S32 getDepthChannel()	const = 0;	//If depth buffer is used in this shader returns > -1 to cue LLPostProcess on copying it from the framebuffer.
+	virtual void bindShader() = 0;
+	virtual void unbindShader() = 0;
+	virtual LLGLSLShader& getShader() = 0;
+
+	virtual QuadType preDraw() = 0;		//Bind shader and textures, set up attribs. Returns the 'type' of quad to be drawn.
 	virtual bool draw(U32 pass) = 0;	//returning false means finished. Used to update per-pass attributes and such. LLPostProcess will call
 										//drawOrthoQuad when this returns true, increment pass, then call this again, and keep repeating this until false is returned.
-	virtual void unbind() = 0;			//Unbind shader and textures.
+	virtual void postDraw() = 0;		//Done drawing..
 
-	LLSD getDefaults();							//Returns a full LLSD kvp list filled with default values.
-	void loadSettings(const LLSD& settings);	//Parses the effects LLSD list and sets the member variables linked to them (via LLShaderSetting::setValue())
+	virtual LLSD getDefaults() = 0;							//Returns a full LLSD kvp list filled with default values.
+	virtual void loadSettings(const LLSD& settings) = 0;	//Parses the effects LLSD list and sets the member variables linked to them (via LLShaderSetting::setValue())
+	virtual void addSetting(IShaderSettingBase& setting) = 0;
 };
 
-//LLVector4 does not implicitly convert to and from LLSD, so template specilizations are necessary.
-template<> LLSD LLPostProcessShader::LLShaderSetting<LLVector4>::getDefaultValue();
-template<> void LLPostProcessShader::LLShaderSetting<LLVector4>::setValue(const LLSD& value);
-
+class LLPostProcessShader;
 class LLPostProcess : public LLSingleton<LLPostProcess>
 {
 private:

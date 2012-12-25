@@ -52,9 +52,20 @@ const F32 OGL_TO_CFR_ROTATION[16] = {  0.f,  0.f, -1.f,  0.f, 	// -Z becomes X
 const BOOL FOR_SELECTION = TRUE;
 const BOOL NOT_FOR_SELECTION = FALSE;
 
+
+LL_ALIGN_PREFIX(16)
 class LLViewerCamera : public LLCamera, public LLSingleton<LLViewerCamera>
 {
 public:
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
 
 	typedef enum
 	{
@@ -138,6 +149,7 @@ protected:
 	S16					mZoomSubregion;
 
 public:
-};
+} LL_ALIGN_POSTFIX(16);
+
 
 #endif // LL_LLVIEWERCAMERA_H

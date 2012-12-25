@@ -636,18 +636,18 @@ void LLFloaterMessageLog::refreshNetList()
 		{
 			LLScrollListIcon* icon = (LLScrollListIcon*)scroll_itemp->getColumn(1);
 			icon->setValue("icon_net_close_circuit.tga");
-			icon->setClickCallback(onClickCloseCircuit, itemp);
+			icon->setClickCallback(boost::bind(&LLFloaterMessageLog::onClickCloseCircuit, itemp));
 		}
 		else
 		{
 			LLScrollListIcon* icon = (LLScrollListIcon*)scroll_itemp->getColumn(1);
 			icon->setValue("icon_net_close_circuit_gray.tga");
-			icon->setClickCallback(NULL, NULL);
+			//icon->setClickCallback(NULL);
 		}
 		// Event queue isn't even supported yet... FIXME
 		LLScrollListIcon* icon = (LLScrollListIcon*)scroll_itemp->getColumn(2);
 		icon->setValue("icon_net_close_eventpoll_gray.tga");
-		icon->setClickCallback(NULL, NULL);
+		//icon->setClickCallback(NULL);
 	}
 	if(selected_id.notNull()) scrollp->selectByID(selected_id);
 	if(scroll_pos < scrollp->getItemCount()) scrollp->setScrollPos(scroll_pos);

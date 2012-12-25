@@ -544,7 +544,7 @@ void LLPanelFace::getState()
 
 		bool identical;
 		LLTextureCtrl*	texture_ctrl = getChild<LLTextureCtrl>("texture control");
-		
+		texture_ctrl->setFallbackImageName( "" );	//Singu Note: Don't show the 'locked' image when the texid is null.
 		// Texture
 		{
 			LLUUID id;
@@ -552,8 +552,14 @@ void LLPanelFace::getState()
 			{
 				LLUUID get(LLViewerObject* object, S32 te)
 				{
-					LLViewerTexture* image = object->getTEImage(te);
+					//LLViewerTexture* image = object->getTEImage(te);
+					LLTextureEntry* image = object->getTE(te);	//Singu Note: Use this instead of the above.
+																//The above actually returns LLViewerFetchedTexture::sDefaultImagep when
+																//the texture id is null, which gives us IMG_DEFAULT, not LLUUID::null
+																//Such behavior prevents the 'None' button from ever greying out in the face panel.
 					return image ? image->getID() : LLUUID::null;
+					
+					
 				}
 			} func;
 			identical = LLSelectMgr::getInstance()->getSelection()->getSelectedTEValue( &func, id );

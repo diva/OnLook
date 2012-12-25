@@ -262,39 +262,16 @@ void LLHoverView::updateText()
 				else
 				{
 // [/RLVa:KB]
-
-                    // [Ansariel: Display name support]
-    				std::string complete_name = firstname->getString();
-    				complete_name += " ";
-    				complete_name += lastname->getString();
-
-    				if (LLAvatarNameCache::useDisplayNames())
-    				{
-    					LLAvatarName avatar_name;
-    					if (LLAvatarNameCache::get(hit_object->getID(), &avatar_name))
-    					{
-							static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-    						if (phoenix_name_system == 2 || (phoenix_name_system == 1 && avatar_name.mIsDisplayNameDefault))
-    						{
-    							complete_name = avatar_name.mDisplayName;
-    						}
-    						else
-    						{
-    							complete_name = avatar_name.getCompleteName();
-    						}
-    					}
-    				}
-					// [/Ansariel: Display name support]
+					std::string complete_name;
+					if (!LLAvatarNameCache::getPNSName(hit_object->getID(), complete_name))
+						complete_name = firstname->getString() + std::string(" ") + lastname->getString();
 
 					if (title)
 					{
 						line.append(title->getString());
 						line.append(1, ' ');
 					}
-					
-					// [Ansariel: Display name support]
 					line += complete_name;
-					// [/Ansariel: Display name support]
 					
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
 				}
@@ -347,27 +324,13 @@ void LLHoverView::updateText()
 					std::string name;
 					if (!nodep->mPermissions->isGroupOwned())
 					{
-						// [Ansariel: Display name support]
-						LLAvatarName avatar_name;
-						// [/Ansariel: Display name support]
 						owner = nodep->mPermissions->getOwner();
 						if (LLUUID::null == owner)
 						{
 							line.append(LLTrans::getString("TooltipPublic"));
 						}
-						// [Ansariel: Display name support]
-						//else if(gCacheName->getFullName(owner, name))
-						else if (LLAvatarNameCache::get(owner, &avatar_name))
+						else if(LLAvatarNameCache::getPNSName(owner, name))
 						{
-							static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-							switch (phoenix_name_system)
-							{
-								case 0 : name = avatar_name.getCompleteName(); break;
-								case 1 : name = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-								case 2 : name = avatar_name.mDisplayName; break;
-								default : name = avatar_name.getCompleteName(); break;
-							}
-						// [/Ansariel: Display name support]
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
 							if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 							{

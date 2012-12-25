@@ -198,6 +198,10 @@
 	     name="Paste" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="paste" />
 	</menu_item_call>
+	<menu_item_call bottom_delta="-18" height="18" label="Paste As Copy" left="0" mouse_opaque="true"
+	     name="Paste As Copy" width="128">
+		<on_click filter="" function="Inventory.DoToSelected" userdata="paste_copies" />
+	</menu_item_call>
 	<menu_item_call bottom_delta="-18" height="18" label="Paste As Link" left="0" mouse_opaque="true"
 	     name="Paste As Link" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="paste_link" />

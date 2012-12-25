@@ -45,7 +45,9 @@
 	<check_box label="Estirar ambos lados" name="checkbox uniform"/>
 	<check_box label="Estirar Texturas" name="checkbox stretch textures"/>
 	<check_box label="Limitar dist. Arrastre" name="checkbox limit drag distance"/>
-	<check_box label="Usar Cuadrícula" name="checkbox snap to grid"/>
+	<check_box label="Editar Ejes Raíz" name="checkbox actual root"/>
+	<check_box label="Mostrar Resaltado" name="checkbox show highlight"/>
+	<check_box label="Usar Cuadrícula" name="checkbox snap to grid"/>	
 	<button label="Opciones..." label_selected="Opciones..." name="Options..."/>
 
 <!-- Help text -->
@@ -245,10 +247,10 @@
 				No puedes modificar estos objetos.
 			</string>
 			<string name="text modify info 5">
-				You can't modify this object across a region boundary
+				No puedes modificar este objeto a través de un límite de región
 			</string>
 			<string name="text modify info 6">
-				You can't modify these objects across a region boundary
+				No puedes modificar estos objetos a través de un límite de región
 			</string>			
 			<string name="text modify warning">
 				Debes seleccionar todo el objeto para definir los permisos.
@@ -273,8 +275,8 @@
 <!-- Object sub-tab -->
 
 		<panel label="Objeto" name="Object">
-			<button label="Enlazar" name="link_obj"  tool_tip="Él llega a la ciudad..."/>
-			<button label="Desenlazar" name="unlink_obj" tool_tip="Deselnzar el conjunto enlazado"/>
+			<button label="Enlazar" name="link_obj"  tool_tip="Él llega a la ciudad... (Enlazar seleccionados)"/>
+			<button label="Desenlazar" name="unlink_obj" tool_tip="Desenlazar el conjunto enlazado"/>
 			<check_box label="Bloqueado" name="checkbox locked" tool_tip="Previene que el objeto sea movido o borrado. Suele ser útil mientras se construye, para prevenir que se modifique sin querer."/>
 			<check_box label="Material" name="Physical Checkbox Ctrl" tool_tip="Permite que el objeto pueda ser empujado y le afecte la gravedad."/>
 			<check_box label="Temporal" name="Temporary Checkbox Ctrl" tool_tip="Hace que el objeto se borre 1 minuto después de su creación."/>
@@ -393,7 +395,7 @@
 					Prisma de Prueba
 				</combo_item>
 				<combo_item name="Test Hemicylinder">
-					Hemicilindro de Prueba
+					Semicilindro de Prueba
 				</combo_item>
 			</combo_box>
 			<text name="text cut">
@@ -464,8 +466,8 @@
 			<text name="text revolutions">
 				Giros
 			</text>
-			<texture_picker label="Textura para Sculpt" name="sculpt texture control" tool_tip="Pulsa aquí para elegir una imagenClick to choose a picture"/>
-			<check_box label="Espejo" name="sculpt mirror control" tool_tip="Girar el prim sculpt sobre el eje X."/>
+			<texture_picker label="Textura para Sculpt" name="sculpt texture control" tool_tip="Pulsa aquí para elegir una imagen"/>
+			<check_box label="Espejar" name="sculpt mirror control" tool_tip="Girar el prim sculpt sobre el eje X."/>
 			<check_box label="Dentro-Fuera" name="sculpt invert control" tool_tip="Invertir los valores de los prims sculpted, haciendo aparecer fuera lo de dentro."/>
 			<text name="label sculpt type">
 				Tipo de Unión
@@ -507,15 +509,15 @@
 			<text name="edit_object">
 				Editar Características del Objeto
 			</text>
-			<check_box label="Flexibilidad" name="Flexible1D Checkbox Ctrl" tool_tip="Permite que el objeto sea flexible en el eje Z . (Sólo del lado del Client"/>
+			<check_box label="Flexibilidad" name="Flexible1D Checkbox Ctrl" tool_tip="Permite que el objeto sea flexible en el eje Z . (Sólo del lado del Cliente"/>
 			<spinner label="Blandura" name="FlexNumSections"/>
 			<spinner label="Gravedad" name="FlexGravity"/>
 			<spinner label="Fricción" name="FlexFriction"/>
 			<spinner label="Viento" name="FlexWind"/>
 			<spinner label="Tensión" name="FlexTension"/>
-			<spinner label="Fuerza en X" name="FlexForceX"/>
-			<spinner label="Fuerza en Y" name="FlexForceY"/>
-			<spinner label="Fuerza en Z" name="FlexForceZ"/>
+			<spinner label="Fuerza X" name="FlexForceX"/>
+			<spinner label="Fuerza Y" name="FlexForceY"/>
+			<spinner label="Fuerza Z" name="FlexForceZ"/>
 			<check_box label="Luz" name="Light Checkbox Ctrl" tool_tip="Hace que el objeto emita luz"/>
 			<text name="label color">
 				Color
@@ -526,11 +528,11 @@
 			<color_swatch label="" name="colorswatch" tool_tip="Pulsa aqui para abrir el selector de color"/>
 			
 			<texture_picker label="" name="light texture control" tool_tip="Pulsa para escoger una proyección de imagen (sólo tiene efecto con el renderizado diferido activado"/>
-			<spinner label="Intensidad" name="Light Intensity"/>
-			<spinner label="CDV" name="Luz CDV" />
-			<spinner label="Radio" name="Light Radius"/>
+			<spinner label="Intensidad" name="Light Intensity" label_width="55"/>
+			<spinner label="CDV" name="Light FOV"/>
+			<spinner label="Radio" name="Light Radius" label_width="55/>
 			<spinner label="Visión" name="Light Focus"/>
-			<spinner label="Atenuación" name="Light Falloff"/>
+			<spinner label="Atenuación" name="Light Falloff" label_width="55/>
 			<spinner label="Ambiente" name="Light Ambiance"/>
 			<text name="label physicsshapetype">
                 Tipo de Forma Física:
@@ -676,7 +678,7 @@
 				Parámetros 
 de Textura
 			</text>
-			<button label="Copiar" tool_tip="Copiar Parámetros de Textura al Portapapeles"/>
+			<button label="Copiar" name="copytextures" tool_tip="Copiar Parámetros de Textura al Portapapeles"/>
 	  		<button label="Pegar" name="pastetextures" tool_tip="Pegar Parámetros de Textura desde el Portapapeles"/>
     	</panel>
     	<panel label="Contenido" name="Contents">

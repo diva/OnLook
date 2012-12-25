@@ -60,8 +60,7 @@ BOOL LLFloaterNewIM::postBuild()
 		mSelectionList = getChild<LLNameListCtrl>("user_list");
 		if (mSelectionList)
 		{
-			mSelectionList->setDoubleClickCallback(&LLFloaterNewIM::onStart);
-			mSelectionList->setCallbackUserData(this);
+			mSelectionList->setDoubleClickCallback(boost::bind(&LLFloaterNewIM::onStart,this));
 		}
 		else
 		{
@@ -93,7 +92,7 @@ void LLFloaterNewIM::addSpecial(const LLUUID& uuid, const std::string& name,
 	LLSD row;
 	row["id"] = uuid;
 	row["name"] = name;
-	row["target"] = "SPECIAL";
+	row["target"] = LLNameListCtrl::SPECIAL;
 	row["columns"][0]["value"] = name;
 	row["columns"][0]["width"] = COL_1_WIDTH;
 	row["columns"][0]["font"] = "SANSSERIF";
@@ -114,7 +113,7 @@ void LLFloaterNewIM::addGroup(const LLUUID& uuid, void* data, BOOL bold, BOOL on
 {
 	LLSD row;
 	row["id"] = uuid;
-	row["target"] = "GROUP";
+	row["target"] = LLNameListCtrl::GROUP;
 	row["columns"][0]["value"] = ""; // name will be looked up
 	row["columns"][0]["width"] = COL_1_WIDTH;
 	row["columns"][0]["font"] = "SANSSERIF";
@@ -133,12 +132,10 @@ void LLFloaterNewIM::addGroup(const LLUUID& uuid, void* data, BOOL bold, BOOL on
 
 void LLFloaterNewIM::addAgent(const LLUUID& uuid, void* data, BOOL online)
 {
-	std::string fullname;
-	gCacheName->getFullName(uuid, fullname);
-
 	LLSD row;
 	row["id"] = uuid;
-	row["columns"][0]["value"] = fullname;
+	row["target"] = LLNameListCtrl::INDIVIDUAL;
+	row["columns"][0]["value"] = "";
 	row["columns"][0]["width"] = COL_1_WIDTH;
 	row["columns"][0]["font"] = "SANSSERIF";
 	row["columns"][0]["font-style"] = online ? "BOLD" : "NORMAL";

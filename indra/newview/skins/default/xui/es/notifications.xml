@@ -104,9 +104,9 @@ Puedes escoger aceptar o denegar el dominio correspondiente o el script en el mu
 	</notification>  
 	
 	<notification functor="GenericAcknowledge" label="Mensaje de alerta desconocida" name="MissingAlert">
-		Esta versión de [APP_NAME] no sabe como mostrar el mensaje de alerta que has recibido. Por favor verifica que tienes instalada la última versión de [APP_NAME].
+		Esta versión de [APP_NAME] no sabe como mostrar el mensaje de alerta que ha recibido. Por favor verifica que tienes instalada la última versión de [APP_NAME].
 
-Detalles de error: El alerta llamado &apos;[_NAME]&apos; no ha sido encontado en notifications.xml.
+Detalles del error: El alerta llamado &apos;[_NAME]&apos; no ha sido encontado en notifications.xml.
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	
@@ -159,7 +159,7 @@ Asegurate que tu conexión a internet funciona correctamente.
 	</notification>
 	
 	<notification name="ConfirmNoCopyToOutbox" type="alertmodal">
-		No tienes permisos para copiar uno o más ítems al Merchant Outbox. Puedes moverlos o dejarlos fuera.
+		No tienes permisos para copiar uno o más ítems al Buzón de Salida de Comerciante. Puedes moverlos o dejarlos fuera.
 		<usetemplate name="okcancelbuttons" notext="No mover ítem(s)" yestext="Mover ítem(s)"/>
 	</notification>
 	
@@ -183,7 +183,7 @@ Todas las carpetas ha sido enviadas satisfactoriamente al Marketplace.
 
 Ha habido errores al enviar algunas carpetas al Markeplace. Estas carpetas aún están en tu Merchant Outbox.
 
-Mira en el  [log de errores [[MARKETPLACE_IMPORTS_URL]] para mayor información.
+Mira en el [log de errores [[MARKETPLACE_IMPORTS_URL]] para mayor información.
 
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
@@ -554,7 +554,7 @@ La carpeta del vestuario contiene ítems que no son partes del cuerpo, u objetos
 		No puedes vestirse ropas o partes del cuerpo que están en la Papelera
 	</notification>
 	
-	<notification name="MaxAttachmentsOnOutfit" type="alertmodal">
+	<notification name="MaxAttachmentsOnOutfit">
 		No se pudo adjuntar el objeto.
 Se ha excedido el límite de [MAX_ATTACHMENTS] objetos adjuntos. Por favor quitate un objeto primero.		
 	</notification>	
@@ -870,7 +870,11 @@ todos los objetos.
 
 Por favor, asegúrate de que no hay ninguno bloqueado, y de que eres el propietario de todos.
 	</notification>
-	
+
+	<notification name="CannotLinkPermanent">
+		Los objetos no pueden ser enlazados cuando cruzan los límites entre regiones.
+	</notification>
+  
 	<notification name="CannotLinkDifferentOwners">
 		Imposible enlazarlos, porque hay objetos de distintos propietarios.
 
@@ -1897,7 +1901,58 @@ Se ocultará el chat y los mensajes instantáneos. Los mensajes instantáneos re
 			<button name="Cancel" text="Cancelar"/>
 		</form>
 	</notification>
+
+	<notification name="SetDisplayNameSuccess">
+		¡Hola [DISPLAY_NAME]!
+
+		Tal como en la vida real, le toma a todos un tiempo aprender un nuevo nombre. Por favor, espera varios días para que se refleje [http://wiki.secondlife.com/wiki/Setting_your_display_name your name to update] en objetos, scripts, búsqueda, etc.
+	</notification>
 	
+	<notification name="SetDisplayNameBlocked">
+		Lo sentimos, pero no puedes cambiar tu Nombre a Mostrar. Si crees que esto es un error, por favor, contacta con el soporte.
+	</notification>
+	
+	<notification name="SetDisplayNameFailedLength">
+		Lo sentimos, ese nombre es demasiado largo. Los Nombres a Mostrar deben tener un máximo de [LENGTH] caracteres.
+
+		Por favor, intenta con un nombre más corto.
+	</notification>
+	
+	<notification name="SetDisplayNameFailedGeneric">
+		Lo sentimos, no podemos configurar tu Nombre a Mostrar. Por favor, intenta nuevamente más tarde.
+	</notification>
+	
+	<notification name="SetDisplayNameMismatch">
+		Los Nombre a Mostrar que has ingresado no concuerdan. Por favor, ingrésalos de nuevo.
+	</notification>
+	
+	<!-- *NOTE: This should never happen -->
+	<notification name="AgentDisplayNameUpdateThresholdExceeded">
+		Lo sentimos, has esperado demasiado tiempo para cambiar tu Nombre a Mostrar.
+
+Consulta http://wiki.secondlife.com/wiki/Setting_your_display_name
+
+Por favor, inténtalo nuevamente más tarde.
+	</notification>
+	
+	<notification name="AgentDisplayNameSetBlocked">
+		Lo sentimos, no podemos configurar el nombre solicitado debido a que contiene una palabra prohibida.
+
+Por favor, intenta con un nombre diferente.
+	</notification>
+	
+	<notification name="AgentDisplayNameSetInvalidUnicode">
+		El Nombre a Mostrar que deseas definir contiene caracteres inválidos.
+	</notification>
+	
+	<notification name="AgentDisplayNameSetOnlyPunctuation">
+		Tu Nombre a Mostrar debe contener letras y no signos de puntuación.
+	</notification>
+	
+	<notification name="DisplayNameUpdate">
+		[OLD_NAME] ([SLID]) es conocido ahora como [NEW_NAME].
+	</notification>
+
 	<notification name="OfferTeleport">
 		¿Ofrecer teleporte a tu posición con este mensaje?
 		<form name="form">
@@ -1987,111 +2042,162 @@ Se cambiarán miles de regiones, y se provocará un colapso en el espacio del se
 	</notification>
 	
 	<notification label="Seleccionar el estado" name="EstateManagerRemove">
-		¿Remover Administrador del Estado sólo para este estado o para [ALL_ESTATES]?
+		¿Remover Administrador del Estado sólo para este Estado o para [ALL_ESTATES]?
 		<usetemplate canceltext="Cancelar" name="yesnocancelbuttons" notext="Todos los estados" yestext="Este estado"/>
 	</notification>
 	
 	<notification label="Confirmar la expulsión" name="EstateKickUser">
-		¿Expulsar a [EVIL_USER] de este estado?
+		¿Expulsar a [EVIL_USER] de este Estado?
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+	</notification>
+
+	<notification label="Confirmar Expulsar y Prohibir" name="EstateBanUser">
+		¿Expulsar y Prohibir a [EVIL_USER] de este Estado?
+		<usetemplate name="okcancelbuttons" notext="Cancel" yestext="OK"/>
 	</notification>
 	
 	<notification name="EstateChangeCovenant">
-		¿Estás seguro de que quieres cambiar el contrato del estado?
+		¿Estás seguro de que quieres cambiar el contrato del Estado?
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
 	</notification>
-	
 	<notification name="RegionEntryAccessBlocked">
-		No estás autorizado en esa región por tu nivel de calificación. Puede deberse a que no hay información validada de tu edad.
-
-Por favor, comprueba que tienes instalado el último visor, y ve a la Base de Conocimientos para más detalles sobre el acceso a zonas con este nivel de calificación.
-    <usetemplate
-     name="okbutton"
-     yestext="OK"/>
+		Tus preferencias de contenido actuales te impiden visitar la región que has seleccionado.  Puedes cambiar las preferencias en Editar &gt; Preferencias &gt; General.
+		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
-	
-	<notification name="RegionEntryAccessBlocked_KB">
-		No estás autorizado en esa región por tu nivel de calificación. 
+	<notification name="RegionEntryAccessBlocked_AdultsOnlyContent">
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], que solo es accesible para los adultos.
 
 ¿Quieres ir a la Base de Conocimientos para aprender más sobre el nivel de calificación?
 		<url name="url">
-			https://support.secondlife.com/ics/support/default.asp?deptID=4417&amp;task=knowledge&amp;questionID=6010
+			http://wiki.secondlife.com/wiki/Linden_Lab_Official:Maturity_ratings:_an_overview
 		</url>
-		<usetemplate name="okcancelignore" yestext="Ir a la Base de Conocimientos" notext="Cerrar" ignoretext="Cuando la entrada a la región está bloqueada por el nivel de calificación"/>
+		<usetemplate ignoretext="Paso a otra región: la región que intentas visitar tiene un contenido solo accesible para los adultos." name="okcancelignore" notext="Cerrar" yestext="Ir a la Base de Conocimientos"/>
 	</notification>
 	
 	<notification name="RegionEntryAccessBlocked_Notify">
-		No estás autorizado en esa región por tu nivel de calificación.
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos.
 	</notification>
-	
+	<notification name="RegionEntryAccessBlocked_NotifyAdultsOnly">
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], que solo es accesible para los adultos.
+	</notification>
 	<notification name="RegionEntryAccessBlocked_Change">
-		No estás autorizado en esa región por tu nivel de calificación..
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos.
 
 Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de calificación y poder entrar. Desde ese momento, podrás buscar y acceder a contenido [REGIONMATURITY]. Si más adelante quieres deshacer esta configuración, ve a Editar &gt; Preferencias... &gt; General.
 		<form name="form">
-			<button name="OK" text="Cambiar preferencia"/>
+			<button name="OK" text="Cambiar preferencias"/>
+			<button default="true" name="Cancel" text="Cancelar"/>
+			<ignore name="ignore" text="Cuando paso a otra región: tus preferencias de contenido no te permiten visitar la región que has seleccionado."/>
+		</form>
+	</notification>
+	<notification name="RegionEntryAccessBlocked_PreferencesOutOfSync">
+		Estamos experimentando dificultades técnicas con el teleporte porque tus preferencias no están sincronizadas con el servidor.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked">
+		Tus preferencias de contenido actuales te impiden visitar la región que has seleccionado. Puedes cambiar las preferencias en Editar &gt; Preferencias &gt; General.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_AdultsOnlyContent">
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], que solo es accesible para los adultos.
+	
+¿Quieres ir a la Base de Conocimientos para aprender más sobre el nivel de calificación?
+		<url name="url">
+			http://wiki.secondlife.com/wiki/Linden_Lab_Official:Maturity_ratings:_an_overview
+		</url>
+		<usetemplate ignoretext="Cuando teletransportarse: la región que intentas visitar tiene un contenido solo accesible para los adultos." name="okcancelignore" notext="Cerrar" yestext="Ir a la Base de Conocimientos"/>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_Notify">
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos.
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_NotifyAdultsOnly">
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], que solo es accesible para los adultos.
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_ChangeAndReTeleport">
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos. Podemos cambiar tus preferencias y proceder a teleportarte o bien tú puedes cancelar el teleporte.
+		<form name="form">
+			<button name="OK" text="Cambiar y continuar"/>
 			<button name="Cancel" text="Cancelar"/>
-			<ignore name="ignore" text="Cuando la entrada a la región está bloqueada por la preferencia del nivel de calificación"/>
+			<ignore name="ignore" text="Cuando teletransportarse (reiniciable): tus preferencias de contenido no te permiten visitar la región que has seleccionado."/>
+		</form>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_Change">
+		La región que intentas visitar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos. Puedes cambiar tus preferencias o bien cancelar el teleporte. Después de cambiar tus preferencias, intenta teleportarte otra vez.
+		<form name="form">
+			<button name="OK" text="Cambiar preferencias"/>
+			<button name="Cancel" text="Cancelar"/>
+			<ignore name="ignore" text="Cuando teletransportarse (no reiniciable): tus preferencias de contenido no te permiten visitar la región que has seleccionado."/>
+		</form>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_PreferencesOutOfSync">
+		Estamos experimentando dificultades técnicas con el teleporte porque tus preferencias no están sincronizadas con el servidor.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="PreferredMaturityChanged">
+		No recibirás más notificaciones cuando vayas a visitar una región con un contenido [RATING]. En el futuro, puedes cambiar tus preferencias de contenido en Editar &gt; Preferencias &gt; General en la barra de menús.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="MaturityChangeError">
+		En este momento no se pueden cambiar tus preferencias para ver el contenido [PREFERRED_MATURITY].  Tus preferencias se han restablecido para que puedas ver el contenido [ACTUAL_MATURITY]. Si deseas cambiar las preferencias otra vez, en la barra de menús, selecciona Editar &gt; Preferencias &gt; General.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="LandClaimAccessBlocked">
+		Tus preferencias actuales de calificación de contenido te impiden reclamar el terreno que has seleccionado. Puedes cambiar las preferencias en Editar &gt; Preferencias &gt; General.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="LandClaimAccessBlocked_AdultsOnlyContent">
+		Solo los adultos pueden reclamar este terreno.
+
+¿Quieres ir a la Base de Conocimientos para más información sobre el nivel de calificación?
+		<url name="url">
+			http://wiki.secondlife.com/wiki/Linden_Lab_Official:Maturity_ratings:_an_overview
+		</url>
+		<usetemplate ignoretext="Cuando solo adultos pueden reclamar este terreno." name="okcancelignore" notext="Cerrar" yestext="Ir a la Base de Conocimientos"/>
+	</notification>
+	<notification name="LandClaimAccessBlocked_Notify">
+		El terreno que intentas reclamar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos.
+	</notification>
+	<notification name="LandClaimAccessBlocked_NotifyAdultsOnly">
+		El terreno que intentas reclamar tiene un contenido [REGIONMATURITY], que solo es accesible para los adultos.
+	</notification>
+	<notification name="LandClaimAccessBlocked_Change">
+		El terreno que intentas reclamar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos. Podemos cambiar tus preferencias y después puedes volver a intentar reclamar el terreno.
+		<form name="form">
+			<button name="OK" text="Cambiar preferencias"/>
+			<button name="Cancel" text="Cancelar"/>
+			<ignore name="ignore" text="Cuando tus preferencias de contenido no te permiten reclamar el terreno que has seleccionado."/>
+		</form>
+	</notification>
+	<notification name="LandBuyAccessBlocked">
+		Tus preferencias actuales de calificación de contenido te impiden comprar el terreno que has seleccionado. Puedes cambiar las preferencias en Editar &gt; Preferencias &gt; General.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="LandBuyAccessBlocked_AdultsOnlyContent">
+		Solo los adultos pueden comprar este terreno.
+
+¿Quieres ir a la Base de Conocimientos para más información sobre el nivel de calificación?
+		<url name="url">
+			http://wiki.secondlife.com/wiki/Linden_Lab_Official:Maturity_ratings:_an_overview
+		</url>
+		<usetemplate ignoretext="Solo los adultos pueden comprar este terreno." name="okcancelignore" notext="Cerrar" yestext="Ir a la Base de Conocimientos"/>
+	</notification>
+	<notification name="LandBuyAccessBlocked_Notify">
+		El terreno que intentas comprar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos.
+	</notification>
+	<notification name="LandBuyAccessBlocked_NotifyAdultsOnly">
+		El terreno que intentas comprar tiene un contenido [REGIONMATURITY], que solo es accesible para los adultos.
+	</notification>
+	<notification name="LandBuyAccessBlocked_Change">
+		El terreno que intentas comprar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos. Podemos cambiar tus preferencias y después puedes volver a intentar comprar el terreno.
+		<form name="form">
+			<button name="OK" text="Cambiar preferencias"/>
+			<button name="Cancel" text="Cancelar"/>
+			<ignore name="ignore" text="Cuando tus preferencias de contenido no te permiten comprar el terreno que has seleccionado."/>
 		</form>
 	</notification>
 	
-	<notification name="LandClaimAccessBlocked">
-		No puedes reclamar este terreno por tu nivel de calificación. Puede deberse a que no hay información validada de tu edad.
-
-Por favor, comprueba que tienes instalado el último visor, y ve a la Base de Conocimientos para más detalles sobre el acceso a zonas con este nivel de calificación.
-		<usetemplate name="okbutton" yestext="OK"/>
-	</notification>
-	
-	<notification name="LandClaimAccessBlocked_KB">
-		No puedes reclamar este terreno por tu nivel de calificación. 
-
-¿Quieres ir a la Base de Conocimientos para más información sobre el nivel de calificación?
-		<url name="url">
-			https://support.secondlife.com/ics/support/default.asp?deptID=4417&amp;task=knowledge&amp;questionID=6010
-		</url>
-		<usetemplate name="okcancelignore" yestext="Ir a la Base de Conocimientos" notext="Cerrar" ignoretext="Cuando el reclamar terreno está bloqueado por el nivel de calificación"/>
-	</notification>
-	
-	<notification name="LandClaimAccessBlocked_Notify">
-		Por tu nivel de calificación, No puedes reclamar este terreno.
-	</notification>
-	<notification name="LandClaimAccessBlocked_Change">
-		No puedes reclamar este terreno por tus preferencias de nivel de calificación.
-
-Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de calificación y poder entrar. Desde ese momento, podrás buscar y acceder a contenido [REGIONMATURITY]. Si más adelante quieres deshacer esta configuración, ve a Editar &gt; Preferencias... &gt; General..
-		<usetemplate name="okcancelignore" yestext="Cambiar preferencia" notext="Cerrar" ignoretext="Cuando el reclamar terreno está bloqueado por la preferencia del nivel de calificación"/>
-	</notification>
-	
-	<notification name="LandBuyAccessBlocked">
-		No puedes comprar este terreno por tu nivel de calificación. Puede deberse a que no hay información validada de tu edad.
-
-Por favor, compruebs que tienes instalado el último visor, y ve a la Base de Conocimientos para más detalles sobre el acceso a zonas con este nivel de calificación.
-		<usetemplate name="okbutton" yestext="OK"/>
-	</notification>
-	
-	<notification name="LandBuyAccessBlocked_KB">
-		No puedes comprar este terreno por tus preferencias de nivel de calificación. 
-
-¿Quieres ir a la Base de Conocimientos para más información sobre el nivel de calificación?
-		<url name="url">
-			https://support.secondlife.com/ics/support/default.asp?deptID=4417&amp;task=knowledge&amp;questionID=6010
-		</url>
-		<usetemplate name="okcancelignore" yestext="Ir a la Base de Conocimientos" notext="Cerrar" ignoretext="Cuando la compra de terreno está bloqueada por el nivel de calificación"/>
-	</notification>
-	
-	<notification name="LandBuyAccessBlocked_Notify">
-		No puedes comprar este terreno por tu nivel de calificación.
-	</notification>
-	
-	<notification name="LandBuyAccessBlocked_Change">
-		No puedes comprar este terreno por tus preferencias de nivel de calificación.
-
-Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de calificación y poder entrar. Desde ese momento, podrás buscar y acceder a contenido [REGIONMATURITY]. Si más adelante quieres deshacer esta configuración, ve a Editar &gt; Preferencias... &gt; General.
-		<usetemplate name="okcancelignore" yestext="Cambiar preferencia" notext="Cerrar" ignoretext="Cuando la compra de terreno está bloqueada por la preferencia del nivel de calificación"/>
-	</notification>
-	
 	<notification name="TooManyPrimsSelected">
-		"Hay seleccionadas demasiadas primitivas. Por favor, selecciona [MAX_PRIM_COUNT] o menos, y reinténtalo"
+		Hay seleccionadas demasiadas primitivas. Por favor, selecciona [MAX_PRIM_COUNT] o menos, y reinténtalo
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	
@@ -2518,7 +2624,7 @@ Has actualizado la posición de este Destacado, pero los otros detalles permanec
 		Has elegido ítems &apos;no copiables&apos; de tu inventario. Esos ítems se moverán a tu inventario, no se copiarán.
 Dado que estos objetos tienen scripts, moverlos a tu inventario puede provocar un mal funcionamiento del script.
 
-¿Mover el/los ítem/s del inventario?
+¿Mover el/los ítem(s) del inventario?
 		<usetemplate ignoretext="Cuando mueva objetos con script &apos;no copiables&apos; del inventario" name="okcancelignore" notext="Cancelar" yestext="OK"/>
 	</notification>
 	
@@ -2553,7 +2659,7 @@ Dado que estos objetos tienen scripts, moverlos a tu inventario puede provocar u
 	
 	<notification name="ConfirmQuit">
 		¿Estás seguro de que quieres salir?
-		<usetemplate ignoretext="Cuando esté saliendo de Second Life." name="okcancelignore" notext="Continuar" yestext="Salir"/>
+		<usetemplate ignoretext="Cuando esté saliendo de [APP_NAME]." name="okcancelignore" notext="Continuar" yestext="Salir"/>
 	</notification>
 	
 	<notification name="HelpReportAbuseEmailLL">
@@ -2638,9 +2744,9 @@ Aportar una descripción precisa nos ayuda a clasificar y procesar los informes 
 
 Parece que estás denunciando una violación de la propiedad intelectual. Por favor, asegúrate de que tu denuncia es correcta.
 
-(1) El proceso de la denuncia. Debes enviar una denuncia de infracción si crees que un Residente está violando el sistema de permisos de [SECOND_LIFE], por ejemplo, usando un CopyBot u otras herramientas parecidas para copiar, infringiendo los derechos de propiedad intelectual. El Equipo de Infracciones (Abuse Team) investiga y lleva a cabo las acciones disciplinarias apropiadas ante toda acción que viole las las Normas de la Comunidad de [SECOND_LIFE] o las Condiciones del Servicio. Sin embargo, el Equipo de Infracciones ni gestiona ni responde a las solicitudes de eliminar contenidos del mundo de Second Life.
+(1) El proceso de la denuncia. Debes enviar una denuncia de infracción si crees que un Residente está violando el sistema de permisos de [SECOND_LIFE], por ejemplo, usando un CopyBot u otras herramientas parecidas para copiar, infringiendo los derechos de propiedad intelectual. El Equipo de Infracciones (Abuse Team) investiga y lleva a cabo las acciones disciplinarias apropiadas ante toda acción que viole las las Normas de la Comunidad de [SECOND_LIFE] o las Condiciones del Servicio. Sin embargo, el Equipo de Infracciones ni gestiona ni responde a las solicitudes de eliminar contenidos del mundo de [SECOND_LIFE].
 
-(2) El DMCA o Proceso de Eliminación de Contenido. Para solicitar que se elimine algún contenido de Second Life, DEBES enviar una notificación válida de infracción tal y como se explica en nuestra DMCA Policy en http://secondlife.com/corporate/dmca.php.
+(2) El DMCA o Proceso de Eliminación de Contenido. Para solicitar que se elimine algún contenido de [SECOND_LIFE], DEBES enviar una notificación válida de infracción tal y como se explica en nuestra DMCA Policy en http://secondlife.com/corporate/dmca.php.
 
 Si todavía quieres seguir con el proceso de infracción, por favor, cierra esta ventana y termina de enviar tu denuncia. En concreto, debes seleccionar la categoría &apos;CopyBot o Programa para saltarse los permisos&apos;.
 
@@ -3009,7 +3115,9 @@ Pero, vaya, diviértete si quieres.
 		</url>
 		<usetemplate ignoretext="Advertir de la falta de la verificación de edad" name="okcancelignore" notext="No" yestext="Sí"/>
 	</notification>
-	
+	<notification name="NotAgeVerified_Notify">	
+		Pour que vous puissiez accéder à cette parcelle, votre âge doit être vérifié.
+	</notification>
 	<notification name="Cannot enter parcel: no payment info on file">
 		Antes de que puedas acceder a esta parcela, se requiere que tengas archivada tu información de pago.
 ¿Quieres visitar la web de Second Life para actualizar esto?
@@ -3071,6 +3179,7 @@ Ya existe un grid con el mismo nombre.
 	<notification name="Cancelled">
 		Cancelado
 	</notification>
+	
 	<notification name="CancelledSit">
 		Cancelado el sentarse
 	</notification>
@@ -3277,7 +3386,12 @@ Inténtalo seleccionando un trozo más pequeño de terreno.
 	<notification name="SystemMessage">
 		[MESSAGE]
 	</notification>
-	
+
+	<notification name="Payment">
+		<tag>fondos</tag>
+		[MESSAGE]
+	</notification>
+
 	<notification name="EventNotification">
 		Notificación de un evento:
 
@@ -4002,10 +4116,6 @@ Has subido una textura base (baked) de [RESOLUTION] para '[BODYREGION]' después
 		( [EXISTENCE] segundos vivo )
 Has actualizado en forma local una textura base (baked) [RESOLUTION] para '[BODYREGION]' después de [TIME] segundos.
   </notification>
-  
-	<global name="UnsupportedCPU">
-		- La velocidad de tu CPU no cumple los requerimientos mínimos.
-	</global>
 	
 	<notification name="PathfindingLinksets_ChangeToFlexiblePath">
 		El objeto seleccionado afecta al navmesh. Si lo cambias a una ruta flexible se eliminará del navmesh.	
@@ -4013,121 +4123,8 @@ Has actualizado en forma local una textura base (baked) [RESOLUTION] para '[BODY
 		<usetemplate ignoretext="El objeto seleccionado afecta al navmesh. Cambiándolo a una ruta flexible lo eliminará del navmesh." name="okcancelignore" notext="Cancelar" yestext="OK"/>
 	</notification>	
 	
-	<global name="UnsupportedGLRequirements">
-		Parece que no tienes los requerimientos de hardware apropiados para [APP_NAME]. El visor requiere una tarjeta gráfica OpenGL que admita texturas múltiples (&apos;multitexture support&apos;). Si este es el caso, comprueba que tienes los últimos controladores para tu tarjeta gráfica, así como los últimos parches y &apos;service packs&apos; para tu sistema operativo.
-
-Si los problemas persisten, por favor, acude a: http://www.secondlife.com/support
-	</global>
-	
-	<global name="UnsupportedCPUSSE2">
-		Parece que no tienes los requerimientos de hardware apropiados para [APP_NAME]. El visor requiere un CPU que soporte el set de instrucciones SSE2
-	</global>
-	
-	<global name="UnsupportedCPUSSE">
-		Parece que no tienes los requerimientos de hardware apropiados para [APP_NAME]. El visor requiere un CPU que soporte el set de instrucciones SSE
-	</global>	
-	
-	<global name="UnsupportedCPUAmount">
-		796
-	</global>
-	
-	<global name="UnsupportedRAMAmount">
-		510
-	</global>
-	
-	<global name="UnsupportedGPU">
-		- Tu tarjeta gráfica no cumple los requerimientos mínimos.
-	</global>
-	
-	<global name="UnsupportedRAM">
-		- La memoria de tu sistema no cumple los requerimientos mínimos.
-	</global>
-	
-	<global name="PermYes">
-		Sí
-	</global>
-	
-	<global name="PermNo">
-		No
-	</global>
-	
-	<notification name="SetDisplayNameSuccess">
-		¡Hola [DISPLAY_NAME]!
-
-		Tal como en la vida real, le toma a todos un tiempo aprender un nuevo nombre. Por favor, espera varios días para que se refleje [http://wiki.secondlife.com/wiki/Setting_your_display_name your name to update] en objetos, scripts, búsqueda, etc.
-	</notification>
-	
-	<notification name="SetDisplayNameBlocked">
-		Lo sentimos, pero no puedes cambiar tu Nombre a Mostrar. Si crees que esto es un error, por favor, contacta con el soporte.
-	</notification>
-	
-	<notification name="SetDisplayNameFailedLength">
-		Lo sentimos, ese nombre es demasiado largo. Los Nombres a Mostrar deben tener un máximo de [LENGTH] caracteres.
-
-		Por favor, intenta con un nombre más corto.
-	</notification>
-	
-	<notification name="SetDisplayNameFailedGeneric">
-		Lo sentimos, no podemos configurar tu Nombre a Mostrar. Por favor, intenta nuevamente más tarde.
-	</notification>
-	
-	<notification name="SetDisplayNameMismatch">
-		Los Nombre a Mostrar que has ingresado no concuerdan. Por favor, ingrésalos de nuevo.
-	</notification>
-	
-	<!-- *NOTE: This should never happen -->
-	<notification name="AgentDisplayNameUpdateThresholdExceeded">
-		Lo sentimos, has esperado demasiado tiempo para cambiar tu Nombre a Mostrar.
-
-Consulta http://wiki.secondlife.com/wiki/Setting_your_display_name
-
-Por favor, inténtalo nuevamente más tarde.
-	</notification>
-	
-	<notification name="AgentDisplayNameSetBlocked">
-		Lo sentimos, no podemos configurar el nombre solicitado debido a que contiene una palabra prohibida.
-
-Por favor, intenta con un nombre diferente.
-	</notification>
-	
-	<notification name="AgentDisplayNameSetInvalidUnicode">
-		El Nombre a Mostrar que deseas definir contiene caracteres inválidos.
-	</notification>
-	
-	<notification name="AgentDisplayNameSetOnlyPunctuation">
-		Tu Nombre a Mostrar debe contener letras y no signos de puntuación.
-	</notification>
-	
-	<notification name="DisplayNameUpdate">
-		[OLD_NAME] ([SLID]) es conocido ahora como [NEW_NAME].
-	</notification>
-	
 	<notification name="FirstAO">
 		Para instrucciones, crea una nueva plantilla en el AO. Usa la barra de herramientas para activar/desactivar el AO.
-	</notification>
-	
-	<notification name="BlockedCards">
-		Se ha bloqueado la Tarjeta de Visita de [NAME] ([SOURCE])
-	</notification>
-	
-	<notification name="BlockedDialogs">
-		Se han bloqueado todos los diálogos de los objetos de [NAME]. (Origen: [SOURCE])
-	</notification>
-	
-	<notification name="BlockedGeneralAvatar">
-		Spam bloqueado proveniente del avatar [NAME] ([SOURCE])
-	</notification>
-	
-	<notification name="BlockedGeneralObjects">
-		Spam bloqueado proveniente de objetos propiedad de [OWNER] ([SOURCE])
-	</notification>
-	
-	<notification name="BlockedChatterAvatar">
-	  Se ha bloqueado spam de chat del avatar [NAME] ([SOURCE])
-	</notification>
-	
-	<notification name="BlockedChatterObjects">
-		Se ha bloqueado spam de chat de los objetos propiedad de [OWNER] ([SOURCE])
 	</notification>
 	
 	<notification name="FirstPhysicsWearable">
@@ -4188,6 +4185,59 @@ AVISO: Cada subida cuesta [UPLOADCOST] si no es temporal
 		¿Quieres realizar un subida masiva de los archivos como archivos temporales?
 Sólo se cargarán texturas como temporal en Agni y Aditi.		
 		<usetemplate name="yesnocancelbuttons" notext="Permanente" yestext="Temporal" canceltext="Cancelar"/>
-  </notification>	
+  </notification>
+  
+	<global name="UnsupportedGLRequirements">
+		Parece que no tienes los requerimientos de hardware apropiados para [APP_NAME]. El visor requiere una tarjeta gráfica OpenGL que admita texturas múltiples (&apos;multitexture support&apos;). Si este es el caso, comprueba que tienes los últimos controladores para tu tarjeta gráfica, así como los últimos parches y &apos;service packs&apos; para tu sistema operativo.
+
+Si los problemas persisten, por favor, acude a: http://www.secondlife.com/support
+	</global>
+	
+	<global name="UnsupportedCPUAmount">
+		796
+	</global>
+	
+	<global name="UnsupportedRAMAmount">
+		510
+	</global>
+	
+	<global name="UnsupportedCPU">
+		- La velocidad de tu CPU no cumple los requerimientos mínimos.
+	</global>
+
+	<global name="UnsupportedCPUSSE2">
+		Parece que no tienes los requerimientos de hardware apropiados para [APP_NAME]. El visor requiere un CPU que soporte el set de instrucciones SSE2
+	</global>
+	
+	<global name="UnsupportedCPUSSE">
+		Parece que no tienes los requerimientos de hardware apropiados para [APP_NAME]. El visor requiere un CPU que soporte el set de instrucciones SSE
+	</global>	
+	
+	<global name="UnsupportedGPU">
+		- Tu tarjeta gráfica no cumple los requerimientos mínimos.
+	</global>
+	
+	<global name="UnsupportedRAM">
+		- La memoria de tu sistema no cumple los requerimientos mínimos.
+	</global>
+
+<!-- these are alert strings from server. the name needs to match entire the server string, and needs to be changed
+	whenever the server string changes -->
+	<global name="You can only set your 'Home Location' on your land or at a mainland Infohub.">
+		Si eres propietario de terreno, puedes hacer que éste sea tu ubicación base.
+De otra manera, puedes mirar en el mapa ya buscar lugares marcados como &quot;Infohub&quot;.
+	</global>
+	
+	<global name="You died and have been teleported to your home location">
+		Has muerto y has sido teleportado a tu base.
+	</global>
+
+	<notification name="AntiSpamBlock">
+		AntiSpam: [SOURCE] ha sido bloqueado por espamear [TYPE]s [AMOUNT] veces en [TIME] segundos.
+	</notification>
+
+	<notification name="AntiSpamNewlineFlood">
+		AntiSpam: Se ha bloqueado newline flood de [SOURCE] ( [AMOUNT] newlines).
+	</notification>
 	
 </notifications>

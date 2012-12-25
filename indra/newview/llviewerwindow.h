@@ -449,7 +449,7 @@ protected:
 	class LLDebugText* mDebugText; // Internal class for debug text
 	
 	bool			mResDirty;
-	bool			mStatesDirty;
+	//bool			mStatesDirty;  //Singu Note: No longer needed. State update is now in restoreGL.
 	bool			mIsFullscreenChecked; // Did the user check the fullscreen checkbox in the display settings
 	U32			mCurrResolutionIndex;
 

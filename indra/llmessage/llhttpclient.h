@@ -161,7 +161,7 @@ public:
 
 		// A derived class should return true if curl should follow redirections.
 		// The default is not to follow redirections.
-		virtual bool followRedir(void) { return false; }
+		virtual bool followRedir(void) const { return false; }
 
 		// Timeout policy to use.
 		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const = 0;
@@ -188,6 +188,7 @@ public:
 	class ResponderHeadersOnly : public ResponderBase {
 	private:
 		/*virtual*/ bool needsHeaders(void) const { return true; }
+		/*virtual*/ bool followRedir(void) const { return true; }
 
 	protected:
 		// ResponderBase event

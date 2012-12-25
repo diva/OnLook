@@ -29,7 +29,7 @@ public:
     virtual ~ASFloaterContactGroups();
 
     // by convention, this shows the floater and does instance management
-    static void show(LLDynamicArray<LLUUID> ids);
+    static void show(const uuid_vec_t& ids);
 
 	void populateGroupList();
 	void populateActiveGroupList(LLUUID to_add);
@@ -47,7 +47,7 @@ public:
 private:
     //assuming we just need one, which is typical
     static ASFloaterContactGroups* sInstance;
-	static LLDynamicArray<LLUUID> mSelectedUUIDs;
+	static uuid_vec_t mSelectedUUIDs;
 	static LLSD mContactGroupData;
 };
 

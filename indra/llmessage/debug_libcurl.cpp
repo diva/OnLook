@@ -624,7 +624,7 @@ void debug_curl_easy_reset(CURL* handle)
 
 CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 {
-  CURLcode ret;
+  CURLcode ret = CURLE_UNKNOWN_OPTION;	// Suppress compiler warning.
   va_list ap;
   union param_type {
 	long along;
@@ -841,7 +841,7 @@ CURLMcode debug_curl_multi_remove_handle(CURLM* multi_handle, CURL* easy_handle)
 
 CURLMcode debug_curl_multi_setopt(CURLM* multi_handle, CURLMoption option, ...)
 {
-  CURLMcode ret;
+  CURLMcode ret = CURLM_UNKNOWN_OPTION;	// Suppress compiler warning.
   va_list ap;
   union param_type {
 	long along;
