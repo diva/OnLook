@@ -22,7 +22,7 @@
             <key>md5sum</key>
             <string>5add23ded1a53f57044132cb1aed4950</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/linux64-32bitcompatibilitylibs-20100903_1.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/linux64-32bitcompatibilitylibs-20100903_1.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -41,21 +41,21 @@
             <key>md5sum</key>
             <string>ae21b0ea01ebf778bd08dcc0d4f94039</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glod-1.0pre4-darwin-20110610.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/glod-1.0pre4-darwin-20110610.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>e84769e15f3d48ecbb07fa272c30365e</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glod-1.0pre4-linux-20110611.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/glod-1.0pre4-linux-20110611.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>a6c13213a76658f4ad505b968d54aba3</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glod-1.0pre4-windows-20110610.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/glod-1.0pre4-windows-20110610.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -74,14 +74,14 @@
             <key>md5sum</key>
             <string>7806c04e09f0eb490c108bfab7731b7b</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/SDL-1.2.14-linux-20110309.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/SDL-1.2.14-linux-20110309.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>2d40e76689d6e8c034490c1cbe9a4961</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/SDL-1.2.14-linux-x86_64-20120604.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/SDL-1.2.14-linux-x86_64-20120604.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -96,28 +96,28 @@
             <key>md5sum</key>
             <string>3cae5f0fd8f3dd80a59b450562f781bc</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/apr_suite-1.4.5-darwin-20120715.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/apr_suite-1.4.5-darwin-20120715.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>471db9f761e5ee66b91e0e330e331f68</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/apr_suite-1.4.5-linux-20120618.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/apr_suite-1.4.5-linux-20120618.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>66326975f779213886dbaaf021fa3412</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/apr_suite-1.4.5-linux-x86_64-20120604.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/apr_suite-1.4.5-linux-x86_64-20120604.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>ea394402d4d4af4c5238fe4e35c64389</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/apr_suite-1.4.2-windows-20110504.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/apr_suite-1.4.2-windows-20110504.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -136,28 +136,28 @@
             <key>md5sum</key>
             <string>90b8ec87cab3debaf8da5436dc8f3819</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ares-1.7.1-darwin-20120712.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/ares-1.7.1-darwin-20120712.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>6acb4fde2fe2e02e0a91ae2a2dac166a</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ares-1.7.1-linux-20110310.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/ares-1.7.1-linux-20110310.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>e2bf7c556ce3525cb6ad20f2d4d80cf4</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ares-1.7.5-linux-x86_64-20120605.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/ares-1.7.5-linux-x86_64-20120605.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>e4ab04da7db20ba388f2109e84f0fcda</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/ares-1.7.1-windows-20110504.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/ares-1.7.1-windows-20110504.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -176,28 +176,28 @@
             <key>md5sum</key>
             <string>e859007376f28d699bfea420e44d02e3</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/boost-1.45.0-darwin-20110304.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/boost-1.45.0-darwin-20110304.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>6e71c78873593aea2ec5c68dcfde0167</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/boost-1.45.0-linux-20110604.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/boost-1.45.0-linux-20110604.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>ac6e5b52d5cf13443607c09d8c62b6c5</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/boost-1.48.0-linux-x86_64-20120719.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/boost-1.48.0-linux-x86_64-20120719.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>ba3165f8e51c7a59f55c7464932fbfc1</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/boost-1.45.0-windows-20120704.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/boost-1.45.0-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -216,21 +216,21 @@
             <key>md5sum</key>
             <string>d1af5f9ae7740566a184b9af40af36da</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/colladadom-2.2-darwin-20110420.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-darwin-20110420.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>c8c56c032bc39d174876ab25c72a05d8</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/colladadom-2.2-linux-20110621.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-linux-20110621.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>5c5d071338dcf9d504c2cc2eed8b025a</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/colladadom-2.2-windows-20110413.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-windows-20110413.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -249,28 +249,28 @@
             <key>md5sum</key>
             <string>3f2763221bd366242865414112678570</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/curl-7.21.1-darwin-20110316.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/curl-7.21.1-darwin-20110316.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>f35a301aa5e058b3fb15e69b984a0534</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/curl-7.21.1-linux-20110316.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/curl-7.21.1-linux-20110316.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>f6d0f7a6151c1b5a2633679126fbefb0</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/curl-7.24.0-linux-x86_64-20120605.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/curl-7.24.0-linux-x86_64-20120605.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>60ed73408c4050ff9c96f26771fd6b46</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/curl-7.21.1-windows-20110504.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/curl-7.21.1-windows-20110504.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -289,14 +289,14 @@
             <key>md5sum</key>
             <string>3262d0a90b93c81e6fb650beb88cbdbb</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/db-5.1.25-linux-20110309.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/db-5.1.25-linux-20110309.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>894f6a09e581bcf4a2c36f8f66379704</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/db-5.1.25-Linux-x86_64-20110807.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/db-5.1.25-Linux-x86_64-20110807.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -315,14 +315,14 @@
             <key>md5sum</key>
             <string>e4a22c3401a0f938ee0a6a2becfa7840</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/dbus_glib-0.76-linux-20110310.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/dbus_glib-0.76-linux-20110310.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>3751294773dff647b3493764dc6539dc</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/dbus_glib-0.76-linux64-20110310.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/dbus_glib-0.76-linux64-20110310.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -337,14 +337,14 @@
             <key>md5sum</key>
             <string>fb4e8f07c7f3e86cc8baa73f8c02f777</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/elfio-1.0.3-linux-20080812.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/elfio-1.0.3-linux-20080812.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>d826535e096d707ef1a2783ce66ad2f9</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/elfio-1.0.3-linux64-20091129.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/elfio-1.0.3-linux64-20091129.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -363,28 +363,28 @@
             <key>md5sum</key>
             <string>4dc2d4b3890b981f284f5da8f810dc93</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/expat-2.0.1-darwin-20110218.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/expat-2.0.1-darwin-20110218.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>1a5b715652a5162145c18525196f7419</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/expat-2.0.1-linux-20110219.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/expat-2.0.1-linux-20110219.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>58d7d0a12984cd57822c709d51ee18f7</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/expat-2.0.1-linux-x86_64-20120530.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/expat-2.0.1-linux-x86_64-20120530.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>5aff9e0f0e1ba7ada2f118f92139f759</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/expat-2.0.1-windows-20110215.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/expat-2.0.1-windows-20110215.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -399,14 +399,14 @@
             <key>md5sum</key>
             <string>2f88d7924fb9fcc93e44139f0fe4880a</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/fontconfig-2.8.0-linux-20110311.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/fontconfig-2.8.0-linux-20110311.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>1736c637f7ae184fa94b3eb2c0e5f5da</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/fontconfig-2.8.0-linux-x86_64-20120531.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/fontconfig-2.8.0-linux-x86_64-20120531.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -425,7 +425,7 @@
             <key>md5sum</key>
             <string>74758efd7fc6246f704ea702c4b3e310</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/freeglut-2.6.0-windows-20110214.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/freeglut-2.6.0-windows-20110214.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -444,28 +444,28 @@
             <key>md5sum</key>
             <string>8acd5ccfa8134833a98401b11394930d</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/freetype-2.4.4-darwin-20110307.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/freetype-2.4.4-darwin-20110307.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>155c50560099db8a37540c50d9ee48d0</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/freetype-2.3.11-linux-20091103_1.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/freetype-2.3.11-linux-20091103_1.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>9513c22a343369043536514bc87e5801</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/freetype-2.3.11-linux-x86_64-20120616.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/freetype-2.3.11-linux-x86_64-20120616.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>fcb8ec727e72e2b8ae766d8af78f12ea</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/freetype-2.4.4-windows-20110218.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/freetype-2.4.4-windows-20110218.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -484,21 +484,21 @@
             <key>md5sum</key>
             <string>b94a97e60b37afee73f5525cd07ba959</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glext-82-win32-linux.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/glext-82-win32-linux.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>b94a97e60b37afee73f5525cd07ba959</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glext-82-win32-linux.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/glext-82-win32-linux.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>b94a97e60b37afee73f5525cd07ba959</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glext-82-win32-linux.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/glext-82-win32-linux.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -515,14 +515,14 @@
             <key>md5sum</key>
             <string>bc5bf517ada0a3a1036e7e193884db79</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glib-2.20.5-linux32-20100529.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/glib-2.20.5-linux32-20100529.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>36575a2975f9ef70281a3062867bd2f8</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glib-2.25.17-linux-x86_64-20120422.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/glib-2.25.17-linux-x86_64-20120422.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -537,14 +537,14 @@
             <key>md5sum</key>
             <string>f7aa89ac04607d52b11d5ca46b5e75e6</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glui-2.36-darwin-20110309.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/glui-2.36-darwin-20110309.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>eeec9982df843043a18748276bbf39ce</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glui-2.36-windows-20110214.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/glui-2.36-windows-20110214.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -563,14 +563,14 @@
             <key>md5sum</key>
             <string>c3e754fbff965bcc036d5c76f587e6be</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/google-perftools-1.8.3-linux-20120703.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google-perftools-1.8.3-linux-20120703.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>82b85cce650e7409fc165bc730e2ad7a</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/gperftools-2.0-svn-windows-20120830.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/gperftools-2.0-svn-windows-20120830.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -585,14 +585,14 @@
             <key>md5sum</key>
             <string>5e6564f5102e3112781e3017c93e762f</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/gstreamer-0.10.24-linux-20091125.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/gstreamer-0.10.24-linux-20091125.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>37541c812162f009f50e3749220fb782</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/gstreamer-0.10.28-linux-x86_64-20120608.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/gstreamer-0.10.28-linux-x86_64-20120608.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -611,14 +611,14 @@
             <key>md5sum</key>
             <string>e0eec19274dba0b58f5a1679d71f4204</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/gtk-etc-linux-20101106.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/gtk-etc-linux-20101106.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>1b69a92d684a1b8208aa1d227d8d1bdf</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/gtk_etc-0.0.1-linux-x86_64-20120609.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/gtk_etc-0.0.1-linux-x86_64-20120609.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -637,28 +637,28 @@
             <key>md5sum</key>
             <string>6d103995df9f1e97d06ecc20704c30f6</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libhunspell-1.3.2-darwin-20120616.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libhunspell-1.3.2-darwin-20120616.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>bc470ff6673553c5580ccb47958d7789</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libhunspell-1.3.2-linux-20120616.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libhunspell-1.3.2-linux-20120616.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>889d6abceda50f12d0f22c1310844c4b</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libhunspell-1.3.2-linux-x86_64-20120708.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libhunspell-1.3.2-linux-x86_64-20120708.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>bbaf7035a4a5b59153f18bca1d8fa107</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/hunspell-windows-20120704.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/hunspell-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -677,28 +677,28 @@
             <key>md5sum</key>
             <string>6505f9e93ac0f7595df8dd566f49c298</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jpeglib-8c-darwin-20120712.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/jpeglib-8c-darwin-20120712.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>e6a47cfe0a7610c57eb8c7cb4136ca09</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jpeglib-8c-linux-20110323.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/jpeglib-8c-linux-20110323.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>7f2e1c0ea2f589c4888ec7f5a214af88</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jpeglib-7-linux-x86_64-20120531b.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/jpeglib-7-linux-x86_64-20120531b.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>d28938e6930bf48584e332f764208822</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jpeglib-8c-windows-20120704.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/jpeglib-8c-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -717,28 +717,28 @@
             <key>md5sum</key>
             <string>70e7a004114983a68d701a83c5d4315c</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jsoncpp-0.5.0-darwin-20110131.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/jsoncpp-0.5.0-darwin-20110131.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>85f4be144b34bfc84976c9018192a266</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jsoncpp-0.5.0-linux-20120708.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/jsoncpp-0.5.0-linux-20120708.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>4f87662add231b9d4b6c1e5c63560db4</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/jsoncpp-0.5.0-linux64-20121208.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/jsoncpp-0.5.0-linux64-20121208.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>8aa2d47182e93cbc856517309fe11dc7</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jsoncpp-0.5.0-windows-20120704.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/jsoncpp-0.5.0-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -757,28 +757,28 @@
             <key>md5sum</key>
             <string>80506ac813e36a51a5beadf3d08b2b81</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libpng-1.5.1-darwin-20110222.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libpng-1.5.1-darwin-20110222.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>7953ff3422fb0f84c1c713db0b1aa9ca</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libpng-1.5.1-linux-20110223.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libpng-1.5.1-linux-20110223.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>ec833cfbfce8a818158e289a6c21ad72</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libpng-1.5.10-linux-x86_64-20120420.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libpng-1.5.10-linux-x86_64-20120420.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>a698200d34d20b53fe72fb53fc1c6dcf</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libpng-1.5.2-windows-20120704.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libpng-1.5.2-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -797,14 +797,14 @@
             <key>md5sum</key>
             <string>ab4f25d8a2a30516cc77c47664bdf75f</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libuuid-1.6.2-linux-20110315.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libuuid-1.6.2-linux-20110315.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>dc25f523bd0505bbd03fb2b277299b13</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/uuid-1.6.2-linux-x86_64-20120601.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/uuid-1.6.2-linux-x86_64-20120601.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -819,14 +819,14 @@
             <key>md5sum</key>
             <string>899ff969b1a82a6eea6b3ec85185942f</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libxml-2.6.24-linux-20101013.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libxml-2.6.24-linux-20101013.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>9bf2223e26eb4d659fe8e9283bfe73a2</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libxml2-2.7.8-linux-x86_64-20120420.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libxml2-2.7.8-linux-x86_64-20120420.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -841,28 +841,28 @@
             <key>md5sum</key>
             <string>9bedf2f283e899652a5e7ac6ea3d6a08</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/llqtwebkit-4.7.1-darwin-20120228.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/llqtwebkit-4.7.1-darwin-20120228.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>307fdcc100ba95cfb12f35aab4fd0d08</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/llqtwebkit-4.7.1-linux-20120228.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/llqtwebkit-4.7.1-linux-20120228.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>c6f662eaa9aeaf03f73779393640f386</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/llqtwebkit-linux-x86_64-20120716.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/llqtwebkit-linux-x86_64-20120716.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>ccb96fa1260ef6c3060d407b8c6b3972</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/llqtwebkit-4.7.1-windows-20120228.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/llqtwebkit-4.7.1-windows-20120228.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -881,14 +881,14 @@
             <key>md5sum</key>
             <string>a816df4887085fb0f0d301336d87cd70</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/mesa-7.0-linux-20100930.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/mesa-7.0-linux-20100930.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>56630977f9261bd82039b0da08a0685c</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/mesa-6.2.1-linux64-20081016.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/mesa-6.2.1-linux64-20081016.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -907,28 +907,28 @@
             <key>md5sum</key>
             <string>0cd7114c04ba7ac0a824f9f4cead4b39</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libndofdev-0.1-darwin-20110308.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libndofdev-0.1-darwin-20110308.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>c366f71de80a56c7336c5166520b40a5</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ndofdev-linux32-0.3.1_1-20100817.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/ndofdev-linux32-0.3.1_1-20100817.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>d2a9640c34a9a2848ba9fc63146bdce4</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libndofdev-0.3.1-linux-x86_64-20120604.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libndofdev-0.3.1-linux-x86_64-20120604.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>f897874709ed6d0ef06db3730b3eea7d</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libndofdev-windows-20120704.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libndofdev-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -947,28 +947,28 @@
             <key>md5sum</key>
             <string>600c6e3776f9c91068aef43c76eca501</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ogg_vorbis-1.2.2-1.3.2-darwin-20110510.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/ogg_vorbis-1.2.2-1.3.2-darwin-20110510.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>5317c7859cfa24d4e9114ac0411b2cc6</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ogg_vorbis-1.2.2-1.3.2-linux-20110511.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/ogg_vorbis-1.2.2-1.3.2-linux-20110511.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>50d232fcf120f85bf259d1b93aa767a7</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ogg_vorbis-1.2.2-1.3.2-linux-x86_64-20120604.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/ogg_vorbis-1.2.2-1.3.2-linux-x86_64-20120604.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>3339ac49f5986068e7fa17b6655b9f9b</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ogg_vorbis-1.2.2-1.3.2-windows-20110510.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/ogg_vorbis-1.2.2-1.3.2-windows-20110510.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -983,28 +983,28 @@
             <key>md5sum</key>
             <string>1acdf58efa7a728fd390a710c659ec65</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openssl-1.0.0g-darwin-20120712.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/openssl-1.0.0g-darwin-20120712.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>c57c14353e07e45c0f168313f26ace8e</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openssl-1.0.0g-linux-20120207.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/openssl-1.0.0g-linux-20120207.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>e4d434731ad8280e85f5177da8d8ed3a</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openssl-1.0.0g-linux-x86_64-20120605.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/openssl-1.0.0g-linux-x86_64-20120605.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>30062b843657b745ab297bb674ac0b6e</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openssl-1.0.0g-windows-20120207.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/openssl-1.0.0g-windows-20120207.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -1023,21 +1023,21 @@
             <key>md5sum</key>
             <string>0b257146f1a05dcae1ca2e0d79330e6b</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openal-linux-20120202.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/openal-linux-20120202.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>843758dffdb98db9523a65fab6e136e3</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openal-1.14-1.1.0-linux-x86_64-20120605.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/openal-1.14-1.1.0-linux-x86_64-20120605.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>e75f1529adcaa6e508d1725f59d93a16</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openal-1.12.854-1.1.0-windows-20110301.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/openal-1.12.854-1.1.0-windows-20110301.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -1056,14 +1056,14 @@
             <key>md5sum</key>
             <string>fca72d132adfe24a7a057ad21b9915eb</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/pcre-7.6-darwin-20110504.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/pcre-7.6-darwin-20110504.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>3372b361e916df8981cb3bd7393b0353</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/pcre-7.6-linux-20110504.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/pcre-7.6-linux-20110504.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -1082,14 +1082,14 @@
             <key>md5sum</key>
             <string>6c7325be47ddce71a3fbbd24621f86e1</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/linux-pulse-headers-0.9.14_1.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/linux-pulse-headers-0.9.14_1.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>736693c3f82458baee10e3eb37bc87df</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/linux64-pulse-headers-0.9.14.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/linux64-pulse-headers-0.9.14.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -1108,7 +1108,7 @@
             <key>md5sum</key>
             <string>a1b8a118ba9df1f2a73f6aafa7980e83</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/tut-2008-11-30-common-20081208.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/tut-2008-11-30-common-20081208.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -1125,28 +1125,28 @@
             <key>md5sum</key>
             <string>8675b5eedef038b514338b17f0e55961</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/vivox-2.1.3010.6270-darwin-20090309.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/vivox-2.1.3010.6270-darwin-20090309.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>01573510dce7f380f44e561ef2f3dd9f</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/vivox-2.1.3010.6270-linux-20090309.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/vivox-2.1.3010.6270-linux-20090309.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>01573510dce7f380f44e561ef2f3dd9f</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/vivox-2.1.3010.6270-linux-20090309.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/vivox-2.1.3010.6270-linux-20090309.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>752daa90e07c05202d1f76980cb955eb</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/vivox-2.1.3010.6270-windows-20090309.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/vivox-2.1.3010.6270-windows-20090309.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -1165,28 +1165,28 @@
             <key>md5sum</key>
             <string>0d99f62811a2ae181ccb56536134ba7c</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/xmlrpc_epi-0.54.1-darwin-20110307.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/xmlrpc_epi-0.54.1-darwin-20110307.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>d3b9f85ce4a04cd4c319a202c6367b2d</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/xmlrpc_epi-0.54.1-linux-20110314.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/xmlrpc_epi-0.54.1-linux-20110314.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>1caff2e120fac6e73cc0c60d6635d527</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/xmlrpc_epi-0.54.1-linux-x86_64-20120531.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/xmlrpc_epi-0.54.1-linux-x86_64-20120531.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>0d208a90f378284e27138c22e8c15f10</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/xmlrpc_epi-0.54.1-windows-20120704.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/xmlrpc_epi-0.54.1-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -1205,28 +1205,28 @@
             <key>md5sum</key>
             <string>7daee7ada1bcc90fa367775f04e9950a</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/zlib-1.2.5-darwin-20110211.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/zlib-1.2.5-darwin-20110211.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>c2707c0214bd0d58b35c77fa351f8cb0</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/zlib-1.2.5-linux-20110314.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/zlib-1.2.5-linux-20110314.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>367cb642f1471f85f1094827ac960dbe</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/zlib-1.2.6-linux-x86_64-20120419.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/zlib-1.2.6-linux-x86_64-20120419.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>d76dad53f2984827db98fd9d62232ab2</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/zlib-1.2.5-windows-20120704.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/zlib-1.2.5-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
