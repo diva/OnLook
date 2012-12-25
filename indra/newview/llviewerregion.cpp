@@ -1925,5 +1925,10 @@ bool LLViewerRegion::meshRezEnabled() const
 		return (mSimulatorFeatures.has("MeshRezEnabled") &&
 				mSimulatorFeatures["MeshRezEnabled"].asBoolean());
 	}
+
+bool LLViewerRegion::dynamicPathfindingEnabled() const
+{
+	return ( mSimulatorFeatures.has("DynamicPathfindingEnabled") &&
+			 mSimulatorFeatures["DynamicPathfindingEnabled"].asBoolean());
 }
 
