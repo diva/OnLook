@@ -858,7 +858,7 @@ P(lcl_responder);
 P(MPImportGetResponder);
 P(MPImportPostResponder);
 P(mapLayerResponder);
-P(maturityPreferences,							transfer_30s);
+P2(maturityPreferences,							transfer_30s);
 P(mediaTypeResponder);
 P(meshDecompositionResponder);
 P(meshHeaderResponder);
