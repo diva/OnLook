@@ -151,7 +151,7 @@
 <RadarTextChatRange value="255, 66, 66, 128"/>
 <RadarTextShoutRange value="255, 255, 66, 128"/>
 <RadarTextDrawDist value="66, 153, 66, 128"/>
-<RadarTextYoung value="255, 0, 0, 255"/>
+<RadarTextYoung value="255, 66, 66, 255"/>
 
 <!-- SPEAKERS -->
 <SpeakersInactive value="76, 76, 76, 255"/>
