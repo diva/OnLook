@@ -135,6 +135,7 @@ public:
 
 	U32 typeToMask(ESnapshotType type) const { return 1 << type; }
 	void addUsedBy(ESnapshotType type) { mUsedBy |= typeToMask(type); }
+	void delUsedBy(ESnapshotType type) { mUsedBy &= ~typeToMask(type); }
 	bool isUsedBy(ESnapshotType type) const { return (mUsedBy & typeToMask(type)) != 0; }
 	bool isUsed(void) const { return mUsedBy; }
 	void addManualOverride(ESnapshotType type) { mManualSizeOverride |= typeToMask(type); }
@@ -179,11 +180,11 @@ public:
 	void saveFeed(std::string const& caption, bool add_location);
 	LLFloaterPostcard* savePostcard();
 	void saveTexture();
-	void saveTextureDone(bool success);
+	void saveTextureDone(bool success, LLPointer<LLImageFormatted> const& formatted_image);
 	static void saveTextureDone(LLUUID const& asset_id, void* user_data, S32 status,  LLExtStat ext_status);
 	void saveLocal();
-	void saveLocalDone(bool success);
-	void saveFeedDone(bool success);
+	void saveLocalDone(bool success, LLPointer<LLImageFormatted> const& formatted_image);
+	void saveFeedDone(bool success, LLPointer<LLImageFormatted> const& formatted_image);
 	void close(LLFloaterSnapshot* view);
 	void doCloseAfterSave();
 
@@ -1187,12 +1188,13 @@ LLFloaterFeed* LLSnapshotLivePreview::getCaptionAndSaveFeed()
 	mCallbackHappened = false;
 	mSaveSuccessful = false;
 	mCloseCalled = NULL;
+	addUsedBy(LLSnapshotLivePreview::SNAPSHOT_FEED);
 
 	if (mFullScreenPreviewTexture.isNull())
 	{
 		// This should never happen!
 		llwarns << "The snapshot image has not been generated!" << llendl;
-		saveFeedDone(false);
+		saveFeedDone(false, mFormattedImage);
 		return NULL;
 	}
 
@@ -1205,7 +1207,7 @@ LLFloaterFeed* LLSnapshotLivePreview::getCaptionAndSaveFeed()
 	if (!png)
 	{
 		llwarns << "Formatted image not a PNG" << llendl;
-		saveFeedDone(false);
+		saveFeedDone(false, mFormattedImage);
 		return NULL;
 	}
 
@@ -1219,7 +1221,7 @@ LLFloaterFeed* LLSnapshotLivePreview::getCaptionAndSaveFeed()
 void LLSnapshotLivePreview::saveFeed(std::string const& caption, bool add_location)
 {
 	DoutEntering(dc::notice, "LLSnapshotLivePreview::saveFeed()");
-	LLWebProfile::setImageUploadResultCallback(boost::bind(&LLFloaterSnapshot::saveFeedDone, _1));
+	LLWebProfile::setImageUploadResultCallback(boost::bind(&LLFloaterSnapshot::saveFeedDone, _1, mFormattedImage));
 	LLWebProfile::uploadImage(mFormattedImage, caption, add_location);
 }
 
@@ -1252,11 +1254,19 @@ LLFloaterPostcard* LLSnapshotLivePreview::savePostcard()
 	return floater;
 }
 
+class saveTextureUserData {
+public:
+	saveTextureUserData(LLSnapshotLivePreview* self, LLPointer<LLImageFormatted> const& formatted_image) : mSelf(self), mFormattedImage(formatted_image) { }
+	LLSnapshotLivePreview* mSelf;
+	LLPointer<LLImageFormatted> mFormattedImage;
+};
+
 void LLSnapshotLivePreview::saveTexture()
 {
 	mCallbackHappened = false;
 	mSaveSuccessful = false;
 	mCloseCalled = NULL;
+	addUsedBy(LLSnapshotLivePreview::SNAPSHOT_TEXTURE);
 
 	// gen a new uuid for this asset
 	LLTransactionID tid;
@@ -1280,7 +1290,7 @@ void LLSnapshotLivePreview::saveTexture()
 				LLFloaterPerms::getGroupPerms(), // that is more permissive than other uploads
 				LLFloaterPerms::getEveryonePerms(),
 				"Snapshot : " + pos_string,
-				callback, expected_upload_cost, this);
+				callback, expected_upload_cost, new saveTextureUserData(this, mFormattedImage));
 
 	gViewerWindow->playSnapshotAnimAndSound();
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_SNAPSHOT_COUNT );
@@ -1291,6 +1301,7 @@ void LLSnapshotLivePreview::saveLocal()
 	mCallbackHappened = false;
 	mSaveSuccessful = false;
 	mCloseCalled = NULL;
+	addUsedBy(LLSnapshotLivePreview::SNAPSHOT_LOCAL);
 	gViewerWindow->saveImageNumbered(mFormattedImage);	// This calls saveLocalDone() immediately, or later.
 }
 
@@ -1316,14 +1327,24 @@ void LLSnapshotLivePreview::close(LLFloaterSnapshot* view)
 	}
 }
 
-void LLSnapshotLivePreview::saveFeedDone(bool success)
+void LLSnapshotLivePreview::saveFeedDone(bool success, LLPointer<LLImageFormatted> const& formatted_image)
 {
+	if (formatted_image.get() != mFormattedImage.get())
+	{
+		// The snapshot was already replaced, so this callback has nothing to do with us anymore.
+		if (!success)
+		{
+			llwarns << "Permanent failure to upload snapshot" << llendl;
+		}
+		return;
+	}
+
 	mCallbackHappened = true;
 	mSaveSuccessful = success;
-	if (success)
+	if (!success)
 	{
-		// Disable Upload button.
-		addUsedBy(LLSnapshotLivePreview::SNAPSHOT_FEED);
+		// Enable Upload button.
+		delUsedBy(LLSnapshotLivePreview::SNAPSHOT_FEED);
 	}
 	if (mCloseCalled)
 	{
@@ -1331,14 +1352,24 @@ void LLSnapshotLivePreview::saveFeedDone(bool success)
 	}
 }
 
-void LLSnapshotLivePreview::saveTextureDone(bool success)
+void LLSnapshotLivePreview::saveTextureDone(bool success, LLPointer<LLImageFormatted> const& formatted_image)
 {
+	if (formatted_image.get() != mFormattedImage.get())
+	{
+		// The snapshot was already replaced, so this callback has nothing to do with us anymore.
+		if (!success)
+		{
+			llwarns << "Permanent failure to upload texture" << llendl;
+		}
+		return;
+	}
+
 	mCallbackHappened = true;
 	mSaveSuccessful = success;
-	if (success)
+	if (!success)
 	{
-		// Disable Upload button.
-		addUsedBy(LLSnapshotLivePreview::SNAPSHOT_TEXTURE);
+		// Enable Upload button.
+		delUsedBy(LLSnapshotLivePreview::SNAPSHOT_TEXTURE);
 	}
 	if (mCloseCalled)
 	{
@@ -1349,7 +1380,6 @@ void LLSnapshotLivePreview::saveTextureDone(bool success)
 //static
 void LLSnapshotLivePreview::saveTextureDone(LLUUID const& asset_id, void* user_data, S32 status, LLExtStat ext_status)
 {
-	LLSnapshotLivePreview* self = (LLSnapshotLivePreview*)user_data;
 	bool success = status != LL_ERR_NOERR;
 	if (!success)
 	{
@@ -1357,17 +1387,29 @@ void LLSnapshotLivePreview::saveTextureDone(LLUUID const& asset_id, void* user_d
 		args["REASON"] = std::string(LLAssetStorage::getErrorString(status));
 		LLNotificationsUtil::add("UploadSnapshotFail", args);
 	}
-	self->saveTextureDone(success);
+	saveTextureUserData* data = (saveTextureUserData*)user_data;
+	data->mSelf->saveTextureDone(success, data->mFormattedImage);
+	delete data;
 }
 
-void LLSnapshotLivePreview::saveLocalDone(bool success)
+void LLSnapshotLivePreview::saveLocalDone(bool success, LLPointer<LLImageFormatted> const& formatted_image)
 {
+	if (formatted_image.get() != mFormattedImage.get())
+	{
+		// The snapshot was already replaced, so this callback has nothing to do with us anymore.
+		if (!success)
+		{
+			llwarns << "Permanent failure to save snapshot." << llendl;
+		}
+		return;
+	}
+
 	mCallbackHappened = true;
 	mSaveSuccessful = success;
-	if (success)
+	if (!success)
 	{
-		// Disable Save button.
-		addUsedBy(LLSnapshotLivePreview::SNAPSHOT_LOCAL);
+		// Enable Save button.
+		delUsedBy(LLSnapshotLivePreview::SNAPSHOT_LOCAL);
 	}
 	if (mCloseCalled)
 	{
@@ -1909,22 +1951,22 @@ void LLFloaterSnapshot::Impl::onCommitSave(LLUICtrl* ctrl, void* data)
 
 // Called from LLViewerWindow::saveImageNumbered, LLViewerWindow::saveImageNumbered_continued1 and LLViewerWindow::saveImageNumbered_continued2.
 //static
-void LLFloaterSnapshot::saveLocalDone(bool success)
+void LLFloaterSnapshot::saveLocalDone(bool success, LLPointer<LLImageFormatted> const& formatted_image)
 {
 	LLSnapshotLivePreview* previewp = LLFloaterSnapshot::Impl::getPreviewView(sInstance);
 	if (previewp)
 	{
-		previewp->saveLocalDone(success);
+		previewp->saveLocalDone(success, formatted_image);
 	}
 }
 
 //static
-void LLFloaterSnapshot::saveFeedDone(bool success)
+void LLFloaterSnapshot::saveFeedDone(bool success, LLPointer<LLImageFormatted> const& formatted_image)
 {
 	LLSnapshotLivePreview* previewp = LLFloaterSnapshot::Impl::getPreviewView(sInstance);
 	if (previewp)
 	{
-		previewp->saveFeedDone(success);
+		previewp->saveFeedDone(success, formatted_image);
 	}
 }
 

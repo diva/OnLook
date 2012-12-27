@@ -3990,7 +3990,7 @@ void LLViewerWindow::saveImageNumbered(LLPointer<LLImageFormatted> image)
 {
 	if (!image)
 	{
-		LLFloaterSnapshot::saveLocalDone(false);
+		LLFloaterSnapshot::saveLocalDone(false, image);
 		return;
 	}
 
@@ -4041,7 +4041,7 @@ void LLViewerWindow::saveImageNumbered_continued1(LLPointer<LLImageFormatted> im
 	}
 	else
 	{
-		LLFloaterSnapshot::saveLocalDone(false);
+		LLFloaterSnapshot::saveLocalDone(false, image);
 	}
 }
 
@@ -4069,11 +4069,11 @@ void LLViewerWindow::saveImageNumbered_continued2(LLPointer<LLImageFormatted> im
 	if (image->save(filepath))
 	{
 		playSnapshotAnimAndSound();
-		LLFloaterSnapshot::saveLocalDone(true);
+		LLFloaterSnapshot::saveLocalDone(true, image);
 	}
 	else
 	{
-		LLFloaterSnapshot::saveLocalDone(false);
+		LLFloaterSnapshot::saveLocalDone(false, image);
 	}
 }
 
