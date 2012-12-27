@@ -455,7 +455,7 @@ public:
 	 */
 	static void move(std::string const& url, std::string const& destination, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
 	static void move(std::string const& url, std::string const& destination, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
-	    { AIHTTPHeaders headers; move(url, destination, responder, headers, debug); }
+	    { AIHTTPHeaders headers; move(url, destination, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }
 
 	//@}
 
