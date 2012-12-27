@@ -6586,6 +6586,22 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>400</integer>
       </array>
     </map>
+    <key>FloaterSnapshotFeedRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for snapshot feed window</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>200</integer>
+        <integer>200</integer>
+        <integer>400</integer>
+      </array>
+    </map>
     <key>FloaterSoundsRect</key>
     <map>
       <key>Comment</key>

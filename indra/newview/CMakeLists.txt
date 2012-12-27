@@ -241,6 +241,7 @@ set(viewer_SOURCE_FILES
     llfloatersellland.cpp
     llfloatersettingsdebug.cpp
     llfloatersnapshot.cpp
+    llfloaterfeed.cpp
     llfloaterstats.cpp
     llfloatertelehub.cpp
     llfloaterteleporthistory.cpp
@@ -748,6 +749,7 @@ set(viewer_HEADER_FILES
     llfloatersellland.h
     llfloatersettingsdebug.h
     llfloatersnapshot.h
+    llfloaterfeed.h
     llfloaterstats.h
     llfloatertelehub.h
     llfloaterteleporthistory.h

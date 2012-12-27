@@ -65,6 +65,7 @@
 #include "llwindow.h"
 #include "llviewermenufile.h"	// upload_new_resource()
 #include "llfloaterpostcard.h"
+#include "llfloaterfeed.h"
 #include "llcheckboxctrl.h"
 #include "llradiogroup.h"
 #include "lltoolfocus.h"
@@ -174,7 +175,8 @@ public:
 	void setSnapshotBufferType(LLFloaterSnapshot* floater, LLViewerWindow::ESnapshotType type);
 	void showFreezeFrameSnapshot(bool show);
 	void updateSnapshot(BOOL new_snapshot, BOOL new_thumbnail = FALSE, F32 delay = 0.f);
-	void saveFeed();
+	LLFloaterFeed* getCaptionAndSaveFeed();
+	void saveFeed(std::string const& caption, bool add_location);
 	LLFloaterPostcard* savePostcard();
 	void saveTexture();
 	void saveTextureDone(bool success);
@@ -1180,17 +1182,43 @@ void LLSnapshotLivePreview::getRawSize(S32& w, S32& h) const
 	h = mRawSnapshotHeight;
 }
 
-void LLSnapshotLivePreview::saveFeed()
+LLFloaterFeed* LLSnapshotLivePreview::getCaptionAndSaveFeed()
 {
-	DoutEntering(dc::notice, "LLSnapshotLivePreview::saveFeed()");
-
 	mCallbackHappened = false;
 	mSaveSuccessful = false;
 	mCloseCalled = NULL;
 
-	std::string caption = "This is a test caption.";
-	bool add_location = true;
+	if (mFullScreenPreviewTexture.isNull())
+	{
+		// This should never happen!
+		llwarns << "The snapshot image has not been generated!" << llendl;
+		saveFeedDone(false);
+		return NULL;
+	}
 
+	// Calculate and pass in image scale in case image data only uses portion of viewerimage buffer.
+	F32 uv_width = mFullScreenPreviewTextureNeedsScaling ? llmin((F32)mFormattedWidth / (F32)mFullScreenPreviewTexture->getWidth(), 1.f) : 1.f;
+	F32 uv_height = mFullScreenPreviewTextureNeedsScaling ? llmin((F32)mFormattedHeight / (F32)mFullScreenPreviewTexture->getHeight(), 1.f) : 1.f;
+	LLVector2 image_scale(uv_width, uv_height);
+
+	LLImagePNG* png = dynamic_cast<LLImagePNG*>(mFormattedImage.get());
+	if (!png)
+	{
+		llwarns << "Formatted image not a PNG" << llendl;
+		saveFeedDone(false);
+		return NULL;
+	}
+
+	LLFloaterFeed* floater = LLFloaterFeed::showFromSnapshot(png, mFullScreenPreviewTexture, image_scale, mPosTakenGlobal);
+
+	//updateSnapshot(FALSE, FALSE);
+
+	return floater;
+}
+
+void LLSnapshotLivePreview::saveFeed(std::string const& caption, bool add_location)
+{
+	DoutEntering(dc::notice, "LLSnapshotLivePreview::saveFeed()");
 	LLWebProfile::setImageUploadResultCallback(boost::bind(&LLFloaterSnapshot::saveFeedDone, _1));
 	LLWebProfile::uploadImage(mFormattedImage, caption, add_location);
 }
@@ -1910,7 +1938,15 @@ void LLFloaterSnapshot::Impl::onClickKeep(void* data)
 	{
 		if (previewp->getSnapshotType() == LLSnapshotLivePreview::SNAPSHOT_FEED)
 		{
-			previewp->saveFeed();
+			LLFloaterFeed* floater = previewp->getCaptionAndSaveFeed();
+			// If still in snapshot mode, put feed floater in snapshot floaterview
+			// and link it to snapshot floater.
+			if (floater && !gSavedSettings.getBOOL("CloseSnapshotOnKeep"))
+			{
+				gFloaterView->removeChild(floater);
+				gSnapshotFloaterView->addChild(floater);
+				view->addDependentFloater(floater, FALSE);
+			}
 		}
 		else if (previewp->getSnapshotType() == LLSnapshotLivePreview::SNAPSHOT_POSTCARD)
 		{
