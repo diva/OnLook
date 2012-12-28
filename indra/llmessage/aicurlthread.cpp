@@ -838,6 +838,9 @@ class AICurlThread : public LLThread
 	// MAIN-THREAD
 	void stop_thread(void) { mRunning = false; wakeup_thread(); }
 
+	// MAIN-THREAD
+	apr_status_t join_thread(void);
+
   protected:
 	virtual void run(void);
 	void wakeup(AICurlMultiHandle_wat const& multi_handle_w);
@@ -1108,6 +1111,17 @@ void AICurlThread::wakeup_thread(void)
   }
   llassert_always(len == 1);
 #endif
+}
+
+apr_status_t AICurlThread::join_thread(void)
+{
+	apr_status_t retval = APR_SUCCESS;
+	if (sInstance)
+	{
+		apr_thread_join(&retval, sInstance->mAPRThreadp);
+		delete sInstance;
+	}
+	return retval;
 }
 
 void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
@@ -2148,12 +2162,22 @@ void stopCurlThread(void)
   if (AICurlThread::sInstance)
   {
 	AICurlThread::sInstance->stop_thread();
-	int count = 101;
+	int count = 401;
 	while(--count && !AICurlThread::sInstance->isStopped())
 	{
 	  ms_sleep(10);
 	}
-	Dout(dc::curl, "Curl thread" << (curlThreadIsRunning() ? " not" : "") << " stopped after " << ((100 - count) * 10) << "ms.");
+	if (AICurlThread::sInstance->isStopped())
+	{
+	  // isStopped() returns true somewhere at the end of run(),
+	  // but that doesn't mean the thread really stopped: it still
+	  // needs to destroy it's static variables.
+	  // If we don't join here, then there is a chance that the
+	  // curl thread will crash when using globals that we (the
+	  // main thread) will have destroyed before it REALLY finished.
+	  AICurlThread::sInstance->join_thread();	// Wait till it is REALLY done.
+	}
+	llinfos << "Curl thread" << (curlThreadIsRunning() ? " not" : "") << " stopped after " << ((400 - count) * 10) << "ms." << llendl;
   }
 }
 
