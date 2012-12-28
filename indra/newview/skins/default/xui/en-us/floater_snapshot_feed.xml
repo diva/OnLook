@@ -3,32 +3,20 @@
  can_minimize="false"
  title="Post to My Profile Feed"
  height="380"
- width="480"
+ width="370"
  layout="topleft"
  name="floater_snapshot_profile"
  rect_control="FloaterSnapshotFeedRect">
-    <text
-     length="1"
-	 follows="top|left"
-     top="-180"
-     font="SansSerif"
-     height="16"
-     layout="topleft"
-     left="10"
-     name="caption_label"
-     right="-10"
-     type="string">
-     Enter text to post below:
-    </text>
     <text_editor
-     follows="all"
-     height="155"
-     layout="topleft"
+     follows="bottom|left"
+     bottom="40"
+     hide_scrollbar="true"
      length="1"
      max_length="700"
      name="caption"
+     top="-180"
+     left="10"
      right="-10"
-	 bottom_delta="30"
      type="string"
      word_wrap="true"/>
     <check_box

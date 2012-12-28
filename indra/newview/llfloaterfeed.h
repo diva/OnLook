@@ -34,45 +34,29 @@
 
 #include "llfloater.h"			// LLFloater
 #include "v2math.h"				// LLVector2
-#include "v3dmath.h"			// LLVector3d
 #include "llpointer.h"			// LLPointer
-#include "llextendedstatus.h"	// LLExtStat
 
 class LLImagePNG;
 class LLViewerTexture;
-class LLUUID;
-class LLFocusableElement;
-class LLTextEditor;
-class LLSD;
 
 class LLFloaterFeed : public LLFloater
 {
 public:
-	LLFloaterFeed(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& img_scale, LLVector3d const& pos_taken_global);
+	LLFloaterFeed(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& img_scale);
 	virtual ~LLFloaterFeed();
 
-	virtual BOOL postBuild(void);
-	virtual void draw(void);
+	/*virtual*/ BOOL postBuild();
+	/*virtual*/ void draw();
 
-	static LLFloaterFeed* showFromSnapshot(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& img_scale, LLVector3d const& pos_taken_global);
+	static LLFloaterFeed* showFromSnapshot(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& img_scale);
 
-	static void onClickCancel(void* data);
-	static void onClickSend(void* data);
-
-	static void uploadCallback(LLUUID const& asset_id, void* user_data, S32 result, LLExtStat ext_status);
-
-	void onMsgFormFocusRecieved(LLFocusableElement* receiver, LLTextEditor* msg_form);
-	bool missingSubjMsgAlertCallback(LLSD const& notification, LLSD const& response);
-
-	void sendFeed(void);
+	void onClickCancel();
+	void onClickPost();
 
 protected:
-	
 	LLPointer<LLImagePNG> mPNGImage;
 	LLPointer<LLViewerTexture> mViewerImage;
-	LLVector2 mImageScale;
-	LLVector3d mPosTakenGlobal;
-	bool mHasFirstMsgFocus;
+	const LLVector2 mImageScale;
 };
 
 #endif // LL_LLFLOATERFEED_H

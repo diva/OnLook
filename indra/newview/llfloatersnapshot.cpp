@@ -83,7 +83,6 @@
 #include "llnotificationsutil.h"
 #include "llvfile.h"
 #include "llvfs.h"
-#include "llwebprofile.h"
 
 #include "hippogridmanager.h"
 
@@ -177,7 +176,6 @@ public:
 	void showFreezeFrameSnapshot(bool show);
 	void updateSnapshot(BOOL new_snapshot, BOOL new_thumbnail = FALSE, F32 delay = 0.f);
 	LLFloaterFeed* getCaptionAndSaveFeed();
-	void saveFeed(std::string const& caption, bool add_location);
 	LLFloaterPostcard* savePostcard();
 	void saveTexture();
 	void saveTextureDone(bool success, LLPointer<LLImageFormatted> const& formatted_image);
@@ -969,6 +967,9 @@ void LLSnapshotLivePreview::generateFormattedAndFullscreenPreview(bool delayed)
 	  case SNAPSHOT_LOCAL:
 		format = mSnapshotFormat;
 		break;
+	  default:
+		format = mSnapshotFormat;
+		break;
 	}
 
 	if (mFormattedImage &&
@@ -1211,18 +1212,11 @@ LLFloaterFeed* LLSnapshotLivePreview::getCaptionAndSaveFeed()
 		return NULL;
 	}
 
-	LLFloaterFeed* floater = LLFloaterFeed::showFromSnapshot(png, mFullScreenPreviewTexture, image_scale, mPosTakenGlobal);
+	LLFloaterFeed* floater = LLFloaterFeed::showFromSnapshot(png, mFullScreenPreviewTexture, image_scale);
 
 	//updateSnapshot(FALSE, FALSE);
 
 	return floater;
-}
-
-void LLSnapshotLivePreview::saveFeed(std::string const& caption, bool add_location)
-{
-	DoutEntering(dc::notice, "LLSnapshotLivePreview::saveFeed()");
-	LLWebProfile::setImageUploadResultCallback(boost::bind(&LLFloaterSnapshot::saveFeedDone, _1, mFormattedImage));
-	LLWebProfile::uploadImage(mFormattedImage, caption, add_location);
 }
 
 LLFloaterPostcard* LLSnapshotLivePreview::savePostcard()
@@ -2693,6 +2687,9 @@ char const* LLSnapshotLivePreview::aspectComboName() const
 			break;
 		case SNAPSHOT_LOCAL:
 			result = "local_aspect_combo";
+			break;
+		default:
+			result= "";
 			break;
 	}
 	return result;
