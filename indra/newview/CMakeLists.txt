@@ -196,8 +196,9 @@ set(viewer_SOURCE_FILES
     llfloaterevent.cpp
     llfloaterexploreanimations.cpp
     llfloaterexploresounds.cpp
-    llfloaterfriends.cpp
+    llfloaterfeed.cpp
     llfloaterfonttest.cpp
+    llfloaterfriends.cpp
     llfloatergesture.cpp
     llfloatergodtools.cpp
     llfloatergroupinfo.cpp
@@ -241,7 +242,6 @@ set(viewer_SOURCE_FILES
     llfloatersellland.cpp
     llfloatersettingsdebug.cpp
     llfloatersnapshot.cpp
-    llfloaterfeed.cpp
     llfloaterstats.cpp
     llfloatertelehub.cpp
     llfloaterteleporthistory.cpp
@@ -704,6 +704,7 @@ set(viewer_HEADER_FILES
     llfloaterexploreanimations.h
     llfloaterexploresounds.h
     llfloaterevent.h
+    llfloaterfeed.h
     llfloaterfonttest.h
     llfloaterfriends.h
     llfloatergesture.h
@@ -749,7 +750,6 @@ set(viewer_HEADER_FILES
     llfloatersellland.h
     llfloatersettingsdebug.h
     llfloatersnapshot.h
-    llfloaterfeed.h
     llfloaterstats.h
     llfloatertelehub.h
     llfloaterteleporthistory.h

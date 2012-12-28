@@ -35,87 +35,46 @@
 
 #include "llfloaterfeed.h"
 
-#include "llfontgl.h"
-#include "llsys.h"
-#include "llgl.h"
-#include "v3dmath.h"
-#include "lldir.h"
-
-#include "llagent.h"
-#include "llui.h"
-#include "lllineeditor.h"
-#include "llviewertexteditor.h"
-#include "llbutton.h"
-#include "llnotificationsutil.h"
-#include "llviewercontrol.h"
-#include "llviewernetwork.h"
-#include "lluictrlfactory.h"
-#include "lluploaddialog.h"
-#include "llviewerstats.h"
-#include "llviewerwindow.h"
-#include "llstatusbar.h"
-#include "llviewerregion.h"
-#include "lleconomy.h"
-#include "lltrans.h"
-
-#include "llgl.h"
-#include "llglheaders.h"
+#include "llfloatersnapshot.h"
 #include "llimagepng.h"
-#include "llimagej2c.h"
-#include "llvfile.h"
-#include "llvfs.h"
+#include "llnotificationsutil.h"
+#include "lluictrlfactory.h"
+#include "llviewertexture.h"
+#include "llviewerwindow.h"
+#include "llwebprofile.h"
 
-#include "llassetuploadresponders.h"
-
-#include "hippogridmanager.h"
+#include <boost/bind.hpp>
 
 ///----------------------------------------------------------------------------
 /// Class LLFloaterFeed
 ///----------------------------------------------------------------------------
 
-LLFloaterFeed::LLFloaterFeed(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& img_scale, LLVector3d const& pos_taken_global) :
-    LLFloater(std::string("Feed Floater")),
-	mPNGImage(png), mViewerImage(img), mImageScale(img_scale), mPosTakenGlobal(pos_taken_global), mHasFirstMsgFocus(false)
+LLFloaterFeed::LLFloaterFeed(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& img_scale) : 
+	LLFloater(std::string("Feed Floater")),
+	mPNGImage(png), mViewerImage(img), mImageScale(img_scale)
 {
 }
 
 // Destroys the object
 LLFloaterFeed::~LLFloaterFeed()
 {
-  mPNGImage = NULL;
+	mPNGImage = NULL;
 }
 
 BOOL LLFloaterFeed::postBuild()
 {
-  childSetAction("cancel_btn", onClickCancel, this);
-  childSetAction("send_btn", onClickSend, this);
+	getChild<LLUICtrl>("cancel_btn")->setCommitCallback(boost::bind(&LLFloaterFeed::onClickCancel, this));
+	getChild<LLUICtrl>("post_btn")->setCommitCallback(boost::bind(&LLFloaterFeed::onClickPost, this));
 
-  childDisable("from_form");
-
-  std::string name_string;
-  gAgent.buildFullname(name_string);
-  childSetValue("name_form", LLSD(name_string));
-
-  LLTextEditor* MsgField = getChild<LLTextEditor>("msg_form");
-  if (MsgField)
-  {
-	MsgField->setWordWrap(TRUE);
-
-	// For the first time a user focusess to .the msg box, all text will be selected.
-	MsgField->setFocusChangedCallback(boost::bind(&LLFloaterFeed::onMsgFormFocusRecieved, this, _1, MsgField));
-  }
-  
-  childSetFocus("to_form", TRUE);
-
-  return TRUE;
+	return true;
 }
 
 // static
-LLFloaterFeed* LLFloaterFeed::showFromSnapshot(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& image_scale, LLVector3d const& pos_taken_global)
+LLFloaterFeed* LLFloaterFeed::showFromSnapshot(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& image_scale)
 {
   // Take the images from the caller
   // It's now our job to clean them up
-  LLFloaterFeed* instance = new LLFloaterFeed(png, img, image_scale, pos_taken_global);
+  LLFloaterFeed* instance = new LLFloaterFeed(png, img, image_scale);
 
   LLUICtrlFactory::getInstance()->buildFloater(instance, "floater_snapshot_feed.xml");
 
@@ -174,66 +133,37 @@ void LLFloaterFeed::draw(void)
   }
 }
 
-// static
-void LLFloaterFeed::onClickCancel(void* data)
+void LLFloaterFeed::onClickCancel()
 {
-  if (data)
-  {
-	LLFloaterFeed* self = (LLFloaterFeed*)data;
-
-	self->close(false);
-  }
+	close(false);
 }
 
-// static
-void LLFloaterFeed::onClickSend(void* data)
+void LLFloaterFeed::onClickPost()
 {
-  if (data)
-  {
-	LLFloaterFeed* self = (LLFloaterFeed*)data;
-
-	std::string from(self->childGetValue("from_form").asString());
-	std::string to(self->childGetValue("to_form").asString());
-	
-	if (self->mPNGImage.notNull())
+	if (mPNGImage.notNull())
 	{
-	  self->sendFeed();
+		static LLCachedControl<bool> add_location("SnapshotFeedAddLocation");
+		const std::string caption = childGetValue("caption").asString();
+		LLWebProfile::setImageUploadResultCallback(boost::bind(&LLFloaterSnapshot::saveFeedDone, _1, mPNGImage));
+		LLWebProfile::uploadImage(mPNGImage, caption, add_location);
+
+		// give user feedback of the event
+		gViewerWindow->playSnapshotAnimAndSound();
+
+		// don't destroy the window until the upload is done
+		// this way we keep the information in the form
+		setVisible(FALSE);
+
+		// remove any dependency on snapshot floater
+		// so we outlive it during the upload.
+		LLFloater* dependee = getDependee();
+		if (dependee)
+		{
+			dependee->removeDependentFloater(this);
+		}
 	}
 	else
 	{
-	  LLNotificationsUtil::add("ErrorProcessingSnapshot");
+		LLNotificationsUtil::add("ErrorProcessingSnapshot");
 	}
-  }
-}
-
-void LLFloaterFeed::onMsgFormFocusRecieved(LLFocusableElement* receiver, LLTextEditor* msg_form)
-{
-  if (msg_form && msg_form == receiver && msg_form->hasFocus() && !(mHasFirstMsgFocus))
-  {
-	mHasFirstMsgFocus = true;
-	msg_form->setText(LLStringUtil::null);
-  }
-}
-
-void LLFloaterFeed::sendFeed(void)
-{
-  // upload the image
-  // DO THE UPLOAD HERE
-  
-  // give user feedback of the event
-  gViewerWindow->playSnapshotAnimAndSound();
-  LLUploadDialog::modalUploadDialog(getString("upload_message"));
-
-  // don't destroy the window until the upload is done
-  // this way we keep the information in the form
-  setVisible(FALSE);
-
-  // also remove any dependency on another floater
-  // so that we can be sure to outlive it while we
-  // need to.
-  LLFloater* dependee = getDependee();
-  if (dependee)
-  {
-	dependee->removeDependentFloater(this);
-  }
 }
