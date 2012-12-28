@@ -824,8 +824,6 @@ void LLFloaterAvatarList::refreshAvatarList()
 			continue;
 		}
 
-		//Request properties here, so we'll have them later on when we need them
-
 
 		element["id"] = av_id;
 
