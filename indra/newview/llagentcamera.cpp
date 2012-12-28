@@ -2523,9 +2523,10 @@ void LLAgentCamera::setFocusObject(LLViewerObject* object)
 //-----------------------------------------------------------------------------
 void LLAgentCamera::setFocusGlobal(const LLPickInfo& pick)
 {
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
 	LLViewerObject* objectp = gObjectList.findObject(pick.mObjectID);
 
-	if (objectp)
+	if (objectp && !freeze_time)
 	{
 		// focus on object plus designated offset
 		// which may or may not be same as pick.mPosGlobal
