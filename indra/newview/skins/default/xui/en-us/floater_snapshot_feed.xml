@@ -26,6 +26,7 @@
      layout="topleft"
      left_delta="0"
      name="add_location_cb"
+     control_name="SnapshotFeedAddLocation"
      bottom_delta="-25" />
     <button
      follows="right|bottom"
