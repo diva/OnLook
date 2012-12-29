@@ -49,9 +49,9 @@
 /// Class LLFloaterFeed
 ///----------------------------------------------------------------------------
 
-LLFloaterFeed::LLFloaterFeed(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& img_scale) : 
+LLFloaterFeed::LLFloaterFeed(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& img_scale, int index) : 
 	LLFloater(std::string("Feed Floater")),
-	mPNGImage(png), mViewerImage(img), mImageScale(img_scale)
+	mPNGImage(png), mViewerImage(img), mImageScale(img_scale), mSnapshotIndex(index)
 {
 }
 
@@ -70,11 +70,11 @@ BOOL LLFloaterFeed::postBuild()
 }
 
 // static
-LLFloaterFeed* LLFloaterFeed::showFromSnapshot(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& image_scale)
+LLFloaterFeed* LLFloaterFeed::showFromSnapshot(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& image_scale, int index)
 {
   // Take the images from the caller
   // It's now our job to clean them up
-  LLFloaterFeed* instance = new LLFloaterFeed(png, img, image_scale);
+  LLFloaterFeed* instance = new LLFloaterFeed(png, img, image_scale, index);
 
   LLUICtrlFactory::getInstance()->buildFloater(instance, "floater_snapshot_feed.xml");
 
@@ -135,7 +135,15 @@ void LLFloaterFeed::draw(void)
 
 void LLFloaterFeed::onClickCancel()
 {
+	// Return false on cancel, to enable the upload button again.
+	LLFloaterSnapshot::saveFeedDone(false, mSnapshotIndex);
 	close(false);
+}
+
+void LLFloaterFeed::onClose(bool app_quitting)
+{
+	LLFloaterSnapshot::saveFeedDone(false, mSnapshotIndex);
+	destroy();
 }
 
 void LLFloaterFeed::onClickPost()

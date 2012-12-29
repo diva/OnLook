@@ -72,8 +72,9 @@ public:
 	static S32  getUIWinHeightShort() {return sUIWinHeightShort ;}
 	static S32  getUIWinWidth()       {return sUIWinWidth ;}
 
-	static void saveLocalDone(bool success, LLPointer<LLImageFormatted> const& formatted_image);
-	static void saveFeedDone(bool success, LLPointer<LLImageFormatted> const& formatted_image);
+	static void saveLocalDone(bool success, int index);
+	static void saveFeedDone(bool success, int index);
+	static void savePostcardDone(bool success, int index);
 
 	static void updateControls();
 

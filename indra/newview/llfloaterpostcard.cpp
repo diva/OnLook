@@ -67,6 +67,7 @@
 #include "llassetuploadresponders.h"
 
 #include "hippogridmanager.h"
+#include "llfloatersnapshot.h"
 
 #if LL_MSVC
 #pragma warning( disable       : 4265 )	// "class has virtual functions, but destructor is not virtual"
@@ -84,13 +85,14 @@ LLFloaterPostcard::instance_list_t LLFloaterPostcard::sInstances;
 /// Class LLFloaterPostcard
 ///----------------------------------------------------------------------------
 
-LLFloaterPostcard::LLFloaterPostcard(LLImageJPEG* jpeg, LLViewerTexture *img, const LLVector2& img_scale, const LLVector3d& pos_taken_global)
+LLFloaterPostcard::LLFloaterPostcard(LLImageJPEG* jpeg, LLViewerTexture *img, const LLVector2& img_scale, const LLVector3d& pos_taken_global, int index)
 :	LLFloater(std::string("Postcard Floater")),
 	mJPEGImage(jpeg),
 	mViewerImage(img),
 	mImageScale(img_scale),
 	mPosTakenGlobal(pos_taken_global),
-	mHasFirstMsgFocus(false)
+	mHasFirstMsgFocus(false),
+	mSnapshotIndex(index)
 {
 	init();
 }
@@ -146,11 +148,11 @@ BOOL LLFloaterPostcard::postBuild()
 
 
 // static
-LLFloaterPostcard* LLFloaterPostcard::showFromSnapshot(LLImageJPEG *jpeg, LLViewerTexture *img, const LLVector2 &image_scale, const LLVector3d& pos_taken_global)
+LLFloaterPostcard* LLFloaterPostcard::showFromSnapshot(LLImageJPEG *jpeg, LLViewerTexture *img, const LLVector2 &image_scale, const LLVector3d& pos_taken_global, int index)
 {
 	// Take the images from the caller
 	// It's now our job to clean them up
-	LLFloaterPostcard *instance = new LLFloaterPostcard(jpeg, img, image_scale, pos_taken_global);
+	LLFloaterPostcard *instance = new LLFloaterPostcard(jpeg, img, image_scale, pos_taken_global, index);
 
 	LLUICtrlFactory::getInstance()->buildFloater(instance, "floater_postcard.xml");
 
@@ -221,25 +223,47 @@ void LLFloaterPostcard::onClickCancel(void* data)
 	if (data)
 	{
 		LLFloaterPostcard *self = (LLFloaterPostcard *)data;
-
+		LLFloaterSnapshot::savePostcardDone(false, self->mSnapshotIndex);
 		self->close(false);
 	}
 }
 
+void LLFloaterPostcard::onClose(bool app_quitting)
+{
+	LLFloaterSnapshot::savePostcardDone(false, mSnapshotIndex);
+	destroy();
+}
+
 class LLSendPostcardResponder : public LLAssetUploadResponder
 {
+private:
+	int mSnapshotIndex;
+
 public:
 	LLSendPostcardResponder(const LLSD &post_data,
 							const LLUUID& vfile_id,
-							LLAssetType::EType asset_type):
-	    LLAssetUploadResponder(post_data, vfile_id, asset_type)
+							LLAssetType::EType asset_type,
+							int index) :
+	    LLAssetUploadResponder(post_data, vfile_id, asset_type),
+		mSnapshotIndex(index)
 	{	
 	}
 	// *TODO define custom uploadFailed here so it's not such a generic message
-	void uploadComplete(const LLSD& content)
+	/*virtual*/ void uploadComplete(const LLSD& content)
 	{
 		// we don't care about what the server returns from this post, just clean up the UI
 		LLUploadDialog::modalUploadFinished();
+		LLFloaterSnapshot::savePostcardDone(true, mSnapshotIndex);
+	}
+	/*virtual*/ void uploadFailure(const LLSD& content)
+	{
+		LLAssetUploadResponder::uploadFailure(content);
+		LLFloaterSnapshot::savePostcardDone(false, mSnapshotIndex);
+	}
+	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	{
+		LLAssetUploadResponder::error(statusNum, reason);
+		LLFloaterSnapshot::savePostcardDone(false, mSnapshotIndex);
 	}
 };
 
@@ -292,6 +316,8 @@ void LLFloaterPostcard::uploadCallback(const LLUUID& asset_id, void *user_data, 
 	
 	LLUploadDialog::modalUploadFinished();
 	
+	LLFloaterSnapshot::savePostcardDone(!result, self->mSnapshotIndex);
+
 	if (result)
 	{
 		LLSD args;
@@ -396,7 +422,7 @@ void LLFloaterPostcard::sendPostcard()
 		body["name"] = childGetValue("name_form").asString();
 		body["subject"] = childGetValue("subject_form").asString();
 		body["msg"] = childGetValue("msg_form").asString();
-		LLHTTPClient::post(url, body, new LLSendPostcardResponder(body, mAssetID, LLAssetType::AT_IMAGE_JPEG));
+		LLHTTPClient::post(url, body, new LLSendPostcardResponder(body, mAssetID, LLAssetType::AT_IMAGE_JPEG, mSnapshotIndex));
 	} 
 	else
 	{

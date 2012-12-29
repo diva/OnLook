@@ -3986,11 +3986,11 @@ BOOL LLViewerWindow::mousePointOnLandGlobal(const S32 x, const S32 y, LLVector3d
 }
 
 // Saves an image to the harddrive as "SnapshotX" where X >= 1.
-void LLViewerWindow::saveImageNumbered(LLPointer<LLImageFormatted> image)
+void LLViewerWindow::saveImageNumbered(LLPointer<LLImageFormatted> image, int index)
 {
 	if (!image)
 	{
-		LLFloaterSnapshot::saveLocalDone(false, image);
+		LLFloaterSnapshot::saveLocalDone(false, index);
 		return;
 	}
 
@@ -4019,15 +4019,15 @@ void LLViewerWindow::saveImageNumbered(LLPointer<LLImageFormatted> image)
 		// pick a directory in which to save
 		AIFilePicker* filepicker = AIFilePicker::create();				// Deleted in LLViewerWindow::saveImageNumbered_continued1
 		filepicker->open(proposed_name, pick_type, "", "snapshot");
-		filepicker->run(boost::bind(&LLViewerWindow::saveImageNumbered_continued1, this, image, extension, filepicker));
+		filepicker->run(boost::bind(&LLViewerWindow::saveImageNumbered_continued1, this, image, extension, filepicker, index));
 		return;
 	}
 
 	// LLViewerWindow::sSnapshotBaseName and LLViewerWindow::sSnapshotDir already known. Go straight to saveImageNumbered_continued2.
-	saveImageNumbered_continued2(image, extension);
+	saveImageNumbered_continued2(image, extension, index);
 }
 
-void LLViewerWindow::saveImageNumbered_continued1(LLPointer<LLImageFormatted> image, std::string const& extension, AIFilePicker* filepicker)
+void LLViewerWindow::saveImageNumbered_continued1(LLPointer<LLImageFormatted> image, std::string const& extension, AIFilePicker* filepicker, int index)
 {
 	if (filepicker->hasFilename())
 	{
@@ -4037,15 +4037,15 @@ void LLViewerWindow::saveImageNumbered_continued1(LLPointer<LLImageFormatted> im
 		LLViewerWindow::sSnapshotBaseName = gDirUtilp->getBaseFileName(filepath, true);
 		LLViewerWindow::sSnapshotDir = gDirUtilp->getDirName(filepath);
 
-		saveImageNumbered_continued2(image, extension);
+		saveImageNumbered_continued2(image, extension, index);
 	}
 	else
 	{
-		LLFloaterSnapshot::saveLocalDone(false, image);
+		LLFloaterSnapshot::saveLocalDone(false, index);
 	}
 }
 
-void LLViewerWindow::saveImageNumbered_continued2(LLPointer<LLImageFormatted> image, std::string const& extension)
+void LLViewerWindow::saveImageNumbered_continued2(LLPointer<LLImageFormatted> image, std::string const& extension, int index)
 {
 	// Look for an unused file name
 	std::string filepath;
@@ -4069,11 +4069,11 @@ void LLViewerWindow::saveImageNumbered_continued2(LLPointer<LLImageFormatted> im
 	if (image->save(filepath))
 	{
 		playSnapshotAnimAndSound();
-		LLFloaterSnapshot::saveLocalDone(true, image);
+		LLFloaterSnapshot::saveLocalDone(true, index);
 	}
 	else
 	{
-		LLFloaterSnapshot::saveLocalDone(false, image);
+		LLFloaterSnapshot::saveLocalDone(false, index);
 	}
 }
 

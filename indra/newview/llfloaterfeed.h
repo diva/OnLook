@@ -42,13 +42,14 @@ class LLViewerTexture;
 class LLFloaterFeed : public LLFloater
 {
 public:
-	LLFloaterFeed(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& img_scale);
+	LLFloaterFeed(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& img_scale, int index);
 	virtual ~LLFloaterFeed();
 
+	/*virtual*/ void onClose(bool app_quitting);
 	/*virtual*/ BOOL postBuild();
 	/*virtual*/ void draw();
 
-	static LLFloaterFeed* showFromSnapshot(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& img_scale);
+	static LLFloaterFeed* showFromSnapshot(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& img_scale, int index);
 
 	void onClickCancel();
 	void onClickPost();
@@ -56,7 +57,8 @@ public:
 protected:
 	LLPointer<LLImagePNG> mPNGImage;
 	LLPointer<LLViewerTexture> mViewerImage;
-	const LLVector2 mImageScale;
+	LLVector2 const mImageScale;
+	int mSnapshotIndex;
 };
 
 #endif // LL_LLFLOATERFEED_H
