@@ -162,10 +162,6 @@ public:
 
 LLLoginRefreshHandler gLoginRefreshHandler;
 
-// <edit>
-std::string gFullName;
-// </edit>
-
 // helper class that trys to download a URL from a web site and calls a method 
 // on parent class indicating if the web server is working or not
 class LLIamHereLogin : public LLHTTPClient::ResponderHeadersOnly
