@@ -176,7 +176,7 @@ void LLPrefsAscentVan::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 // Store current settings for cancel
 void LLPrefsAscentVan::refreshValues()
 {
-    //General --------------------------------------------------------------------------------
+    //Main -----------------------------------------------------------------------------------
     mUseAccountSettings		= gSavedSettings.getBOOL("AscentStoreSettingsPerAccount");
     mShowTPScreen			= !gSavedSettings.getBOOL("AscentDisableTeleportScreens");
     mPlayTPSound			= gSavedSettings.getBOOL("OptionPlayTpSound");
@@ -184,6 +184,7 @@ void LLPrefsAscentVan::refreshValues()
 	mDisableChatAnimation   = gSavedSettings.getBOOL("SGDisableChatAnimation");
 	mAddNotReplace = gSavedSettings.getBOOL("LiruAddNotReplace");
 	mTurnAround = gSavedSettings.getBOOL("TurnAroundWhenWalkingBackwards");
+	mAnnounceSnapshots = gSavedSettings.getBOOL("AnnounceStreamMetadata");
 	mAnnounceStreamMetadata = gSavedSettings.getBOOL("AnnounceStreamMetadata");
 
     //Tags\Colors ----------------------------------------------------------------------------
@@ -224,7 +225,7 @@ void LLPrefsAscentVan::refreshValues()
 // Update controls based on current settings
 void LLPrefsAscentVan::refresh()
 {
-    //General --------------------------------------------------------------------------------
+    //Main -----------------------------------------------------------------------------------
 
     //Tags\Colors ----------------------------------------------------------------------------
     LLComboBox* combo = getChild<LLComboBox>("tag_spoofing_combobox");
@@ -253,7 +254,7 @@ void LLPrefsAscentVan::refresh()
 // Reset settings to local copy
 void LLPrefsAscentVan::cancel()
 {
-    //General --------------------------------------------------------------------------------
+    //Main -----------------------------------------------------------------------------------
     gSavedSettings.setBOOL("AscentStoreSettingsPerAccount", mUseAccountSettings);
     gSavedSettings.setBOOL("AscentDisableTeleportScreens", !mShowTPScreen);
     gSavedSettings.setBOOL("OptionPlayTpSound",             mPlayTPSound);
@@ -261,6 +262,7 @@ void LLPrefsAscentVan::cancel()
 	gSavedSettings.setBOOL("SGDisableChatAnimation",		mDisableChatAnimation);
 	gSavedSettings.setBOOL("LiruAddNotReplace", mAddNotReplace);
 	gSavedSettings.setBOOL("TurnAroundWhenWalkingBackwards", mTurnAround);
+	gSavedSettings.setBOOL("AnnounceSnapshots", mAnnounceSnapshots);
 	gSavedSettings.setBOOL("AnnounceStreamMetadata", mAnnounceStreamMetadata);
 
     //Tags\Colors ----------------------------------------------------------------------------

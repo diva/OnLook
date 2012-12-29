@@ -52,7 +52,7 @@ protected:
     static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
     static void onCommitTextModified(LLUICtrl* ctrl, void* userdata);
     static void onManualClientUpdate(void* data);
-    //General
+    //Main
     BOOL mUseAccountSettings;
     BOOL mShowTPScreen;
     BOOL mPlayTPSound;
@@ -60,6 +60,7 @@ protected:
 	bool mDisableChatAnimation;
 	bool mAddNotReplace;
 	bool mTurnAround;
+	bool mAnnounceSnapshots;
 	bool mAnnounceStreamMetadata;
     //Tags\Colors
     BOOL mAscentUseTag;
