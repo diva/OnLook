@@ -269,7 +269,7 @@
 	<spinner bottom_delta="0" decimal_digits="5" follows="left|top" height="20"
 	     increment="0.01" label="" left="130" max_val="32"
 	     min_val="0.03125" name="aspect_ratio" width="64" allow_text_entry="false"/>
-    <text bottom_delta="-20" height="20" left="196" name="aspect_one_label">:1</text>
+    <text bottom_delta="-10" height="20" left="196" name="aspect_one_label">:1</text>
 	<text bottom_delta="-20" follows="left|top" height="20" left="15"
 	     name="layer_type_label" width="50">
 		Capture:
