@@ -60,6 +60,7 @@ protected:
 	bool mDisableChatAnimation;
 	bool mAddNotReplace;
 	bool mTurnAround;
+	bool mAnnounceStreamMetadata;
     //Tags\Colors
     BOOL mAscentUseTag;
     std::string mReportClientUUID;

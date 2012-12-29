@@ -36,6 +36,8 @@
 #include "ascentprefsvan.h"
 
 //project includes
+#include "llaudioengine.h" //For gAudiop
+#include "llstreamingaudio.h" //For LLStreamingAudioInterface
 #include "llcolorswatch.h"
 #include "llvoavatarself.h"
 #include "llagent.h"
@@ -53,6 +55,8 @@
 LLPrefsAscentVan::LLPrefsAscentVan()
 {
     LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_vanity.xml");
+
+	childSetVisible("announce_streaming_metadata", gAudiop && gAudiop->getStreamingAudioImpl() && gAudiop->getStreamingAudioImpl()->supportsMetaData());
 
     childSetCommitCallback("tag_spoofing_combobox", onCommitClientTag, this);
 
@@ -180,6 +184,7 @@ void LLPrefsAscentVan::refreshValues()
 	mDisableChatAnimation   = gSavedSettings.getBOOL("SGDisableChatAnimation");
 	mAddNotReplace = gSavedSettings.getBOOL("LiruAddNotReplace");
 	mTurnAround = gSavedSettings.getBOOL("TurnAroundWhenWalkingBackwards");
+	mAnnounceStreamMetadata = gSavedSettings.getBOOL("AnnounceStreamMetadata");
 
     //Tags\Colors ----------------------------------------------------------------------------
     mAscentUseTag           = gSavedSettings.getBOOL("AscentUseTag");
@@ -256,6 +261,7 @@ void LLPrefsAscentVan::cancel()
 	gSavedSettings.setBOOL("SGDisableChatAnimation",		mDisableChatAnimation);
 	gSavedSettings.setBOOL("LiruAddNotReplace", mAddNotReplace);
 	gSavedSettings.setBOOL("TurnAroundWhenWalkingBackwards", mTurnAround);
+	gSavedSettings.setBOOL("AnnounceStreamMetadata", mAnnounceStreamMetadata);
 
     //Tags\Colors ----------------------------------------------------------------------------
     gSavedSettings.setBOOL("AscentUseTag",               mAscentUseTag);
