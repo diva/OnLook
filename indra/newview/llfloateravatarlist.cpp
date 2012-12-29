@@ -52,7 +52,9 @@
 #include <string.h>
 
 #include <map>
+#include <boost/date_time.hpp>
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "llworld.h"
 #include "llsdutil.h"
@@ -79,20 +81,24 @@ typedef enum e_radar_alert_type
 	ALERT_TYPE_DRAW = 2,
 	ALERT_TYPE_SHOUTRANGE = 4,
 	ALERT_TYPE_CHATRANGE = 8,
+	ALERT_TYPE_AGE = 16,
 } ERadarAlertType;
 
 void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool entering)
 {
+	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) return; //RLVa:LF Don't announce people are around when blind, that cheats the system.
 	static LLCachedControl<bool> radar_chat_alerts(gSavedSettings, "RadarChatAlerts");
 	if (!radar_chat_alerts) return;
 	static LLCachedControl<bool> radar_alert_sim(gSavedSettings, "RadarAlertSim");
 	static LLCachedControl<bool> radar_alert_draw(gSavedSettings, "RadarAlertDraw");
 	static LLCachedControl<bool> radar_alert_shout_range(gSavedSettings, "RadarAlertShoutRange");
 	static LLCachedControl<bool> radar_alert_chat_range(gSavedSettings, "RadarAlertChatRange");
+	static LLCachedControl<bool> radar_alert_age(gSavedSettings, "RadarAlertAge");
 	static LLCachedControl<bool> radar_chat_keys(gSavedSettings, "RadarChatKeys");
 
 	LLFloaterAvatarList* self = LLFloaterAvatarList::getInstance();
 	LLStringUtil::format_map_t args;
+	args["[NAME]"] = name;
 	switch(type)
 	{
 		case ALERT_TYPE_SIM:
@@ -122,10 +128,21 @@ void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool
 				args["[RANGE]"] = self->getString("chat_range");
 			}
 			break;
+
+		case ALERT_TYPE_AGE:
+			if (radar_alert_age)
+			{
+				LLChat chat;
+				chat.mFromName = name;
+				chat.mText = name + " " + self->getString("has_triggered_your_avatar_age_alert") + ".";
+				chat.mURL = llformat("secondlife:///app/agent/%s/about",key.asString().c_str());
+				chat.mSourceType = CHAT_SOURCE_SYSTEM;
+				LLFloaterChat::addChat(chat);
+			}
+			break;
 	}
 	if (args.find("[RANGE]") != args.end())
 	{
-		args["[NAME]"] = name;
 		args["[ACTION]"] = self->getString(entering ? "has_entered" : "has_left");
 		LLChat chat;
 		chat.mText = self->getString("template", args);
@@ -141,8 +158,33 @@ LLAvatarListEntry::LLAvatarListEntry(const LLUUID& id, const std::string &name, 
 		mUpdateTimer(), mFrame(gFrameCount), mInSimFrame(U32_MAX), mInDrawFrame(U32_MAX),
 		mInChatFrame(U32_MAX), mInShoutFrame(U32_MAX),
 		mActivityType(ACTIVITY_NEW), mActivityTimer(),
-		mIsInList(false)
+		mIsInList(false), mAge(-1), mAgeAlert(false), mTime(time(NULL))
 {
+	if (mID.notNull())
+		LLAvatarPropertiesProcessor::getInstance()->addObserver(mID, this);
+}
+
+LLAvatarListEntry::~LLAvatarListEntry()
+{
+	if (mID.notNull())
+		LLAvatarPropertiesProcessor::getInstance()->removeObserver(mID, this);
+}
+
+// virtual
+void LLAvatarListEntry::processProperties(void* data, EAvatarProcessorType type)
+{
+	if(type == APT_PROPERTIES)
+	{
+		const LLAvatarData* pAvatarData = static_cast<const LLAvatarData*>(data);
+		if (pAvatarData && (pAvatarData->avatar_id != LLUUID::null))
+		{
+			using namespace boost::gregorian;
+			int year, month, day;
+			sscanf(pAvatarData->born_on.c_str(),"%d/%d/%d",&month,&day,&year);
+			mAge = (day_clock::local_day() - date(year, month, day)).days();
+			// If one wanted more information that gets displayed on profiles to be displayed, here would be the place to do it.
+		}
+	}
 }
 
 void LLAvatarListEntry::setPosition(LLVector3d position, bool this_sim, bool drawn, bool chatrange, bool shoutrange)
@@ -353,6 +395,13 @@ BOOL LLFloaterAvatarList::postBuild()
 	getChild<LLRadioGroup>("update_rate")->setSelectedIndex(gSavedSettings.getU32("RadarUpdateRate"));
 	getChild<LLRadioGroup>("update_rate")->setCommitCallback(boost::bind(&LLFloaterAvatarList::onCommitUpdateRate, this));
 
+	getChild<LLCheckboxCtrl>("hide_mark")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	getChild<LLCheckboxCtrl>("hide_pos")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	getChild<LLCheckboxCtrl>("hide_alt")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	getChild<LLCheckboxCtrl>("hide_act")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	getChild<LLCheckboxCtrl>("hide_age")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	getChild<LLCheckboxCtrl>("hide_time")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+
 	// Get a pointer to the scroll list from the interface
 	mAvatarList = getChild<LLScrollListCtrl>("avatar_list");
 	mAvatarList->sortByColumn("distance", TRUE);
@@ -364,18 +413,67 @@ BOOL LLFloaterAvatarList::postBuild()
 
 	gIdleCallbacks.addFunction(LLFloaterAvatarList::callbackIdle);
 
-	if(gHippoGridManager->getConnectedGrid()->isSecondLife()){
-		LLScrollListCtrl* list = getChild<LLScrollListCtrl>("avatar_list");
-		list->getColumn(LIST_AVATAR_NAME)->setWidth(0);
-		list->getColumn(LIST_CLIENT)->setWidth(0);
-		list->getColumn(LIST_CLIENT)->mDynamicWidth = FALSE;
-		list->getColumn(LIST_CLIENT)->mRelWidth = 0;
-		list->getColumn(LIST_AVATAR_NAME)->mDynamicWidth = TRUE;
-		list->getColumn(LIST_AVATAR_NAME)->mRelWidth = -1;
-		list->updateLayout();
-	}
+	assessColumns();
+
+	if(gHippoGridManager->getConnectedGrid()->isSecondLife())
+		childSetVisible("hide_client", false);
+	else
+		getChild<LLCheckboxCtrl>("hide_client")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
 
 	return TRUE;
+}
+
+void col_helper(const bool hide, const std::string width_ctrl_name, LLScrollListColumn* col)
+{
+	// Brief Explanation:
+	// Check if we want the column hidden, and if it's still showing. If so, hide it, but save its width.
+	// Otherwise, if we don't want it hidden, but it is, unhide it to the saved width.
+	// We only store width of columns when hiding here for the purpose of hiding and unhiding.
+	const int width = col->getWidth();
+
+	if (hide && width)
+	{
+		gSavedSettings.setS32(width_ctrl_name, width);
+		col->setWidth(0);
+	}
+	else if(!hide && !width)
+	{
+		llinfos << "We got into the setter!!" << llendl;
+		col->setWidth(gSavedSettings.getS32(width_ctrl_name));
+	}
+}
+
+void LLFloaterAvatarList::assessColumns()
+{
+	static LLCachedControl<bool> hide_mark(gSavedSettings, "RadarColumnMarkHidden");
+	col_helper(hide_mark, "RadarColumnMarkWidth", mAvatarList->getColumn(LIST_MARK));
+
+	static LLCachedControl<bool> hide_pos(gSavedSettings, "RadarColumnPositionHidden");
+	col_helper(hide_pos, "RadarColumnPositionWidth", mAvatarList->getColumn(LIST_POSITION));
+
+	static LLCachedControl<bool> hide_alt(gSavedSettings, "RadarColumnAltitudeHidden");
+	col_helper(hide_alt, "RadarColumnAltitudeWidth", mAvatarList->getColumn(LIST_ALTITUDE));
+
+	static LLCachedControl<bool> hide_act(gSavedSettings, "RadarColumnActivityHidden");
+	col_helper(hide_act, "RadarColumnActivityWidth", mAvatarList->getColumn(LIST_ACTIVITY));
+
+	static LLCachedControl<bool> hide_age(gSavedSettings, "RadarColumnAgeHidden");
+	col_helper(hide_age, "RadarColumnAgeWidth", mAvatarList->getColumn(LIST_AGE));
+
+	static LLCachedControl<bool> hide_time(gSavedSettings, "RadarColumnTimeHidden");
+	col_helper(hide_time, "RadarColumnTimeWidth", mAvatarList->getColumn(LIST_TIME));
+
+	static LLCachedControl<bool> hide_client(gSavedSettings, "RadarColumnClientHidden");
+	if (gHippoGridManager->getConnectedGrid()->isSecondLife() || hide_client){
+		mAvatarList->getColumn(LIST_AVATAR_NAME)->setWidth(0);
+		mAvatarList->getColumn(LIST_CLIENT)->setWidth(0);
+		mAvatarList->getColumn(LIST_CLIENT)->mDynamicWidth = FALSE;
+		mAvatarList->getColumn(LIST_CLIENT)->mRelWidth = 0;
+		mAvatarList->getColumn(LIST_AVATAR_NAME)->mDynamicWidth = TRUE;
+		mAvatarList->getColumn(LIST_AVATAR_NAME)->mRelWidth = -1;
+	}
+
+	mAvatarList->updateLayout();
 }
 
 void updateParticleActivity(LLDrawable *drawablep)
@@ -462,8 +560,6 @@ void LLFloaterAvatarList::updateAvatarList()
 		for (i = 0; i < count; ++i)
 		{
 			std::string name;
-			std::string first;
-			std::string last;
 			const LLUUID &avid = avatar_ids[i];
 
 			LLVector3d position;
@@ -483,29 +579,13 @@ void LLFloaterAvatarList::updateAvatarList()
 				position = gAgent.getPosGlobalFromAgent(avatarp->getCharacterPosition());
 				name = avatarp->getFullname();
 
-				// [Ansariel: Display name support]
-				LLAvatarName avatar_name;
-				if (LLAvatarNameCache::get(avatarp->getID(), &avatar_name))
-				{
-				    static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-					switch (phoenix_name_system)
-					{
-						case 0 : name = avatar_name.getLegacyName(); break;
-						case 1 : name = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-						case 2 : name = avatar_name.mDisplayName; break;
-						default : name = avatar_name.getLegacyName(); break;
-					}
-
-					first = avatar_name.mLegacyFirstName;
-					last = avatar_name.mLegacyLastName;
-				}
-				else continue;
-				// [/Ansariel: Display name support]
+				if (!LLAvatarNameCache::getPNSName(avatarp->getID(), name))
+					continue;
 
 				//duped for lower section
 				if (name.empty() || (name.compare(" ") == 0))// || (name.compare(gCacheName->getDefaultName()) == 0))
 				{
-					if (!gCacheName->getFullName(avid, name)) //seems redudant with LLAvatarNameCache::get above...
+					if (!gCacheName->getFullName(avid, name)) //seems redudant with LLAvatarNameCache::getPNSName above...
 					{
 						continue;
 					}
@@ -545,7 +625,7 @@ void LLFloaterAvatarList::updateAvatarList()
 					continue;
 				}
 
-				if (!gCacheName->getFullName(avid, name))
+				if (!LLAvatarNameCache::getPNSName(avid, name))
 				{
 					//name = gCacheName->getDefaultName();
 					continue; //prevent (Loading...)
@@ -733,6 +813,10 @@ void LLFloaterAvatarList::refreshAvatarList()
 			continue;
 		}
 
+		//Request properties here, so we'll have them later on when we need them
+		LLAvatarPropertiesProcessor::getInstance()->addObserver(entry.mID, &entry);
+		LLAvatarPropertiesProcessor::getInstance()->sendAvatarPropertiesRequest(entry.mID);
+
 		element["id"] = av_id;
 
 		element["columns"][LIST_MARK]["column"] = "marked";
@@ -772,6 +856,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		static LLCachedControl<LLColor4> sRadarTextChatRange(gColors, "RadarTextChatRange");
 		static LLCachedControl<LLColor4> sRadarTextShoutRange(gColors, "RadarTextShoutRange");
 		static LLCachedControl<LLColor4> sRadarTextDrawDist(gColors, "RadarTextDrawDist");
+		static LLCachedControl<LLColor4> sRadarTextYoung(gColors, "RadarTextYoung");
 		LLColor4 name_color = sDefaultListText;
 
 		//Lindens are always more Linden than your friend, make that take precedence
@@ -889,28 +974,50 @@ void LLFloaterAvatarList::refreshAvatarList()
 		element["columns"][LIST_ACTIVITY]["type"] = "icon";
 
 		std::string activity_icon = "";
+		std::string activity_tip = "";
 		switch(entry.getActivity())
 		{
 		case LLAvatarListEntry::ACTIVITY_MOVING:
-			activity_icon = "inv_item_animation.tga";
+			{
+				activity_icon = "inv_item_animation.tga";
+				activity_tip = getString("Moving");
+			}
 			break;
 		case LLAvatarListEntry::ACTIVITY_GESTURING:
-			activity_icon = "inv_item_gesture.tga";
+			{
+				activity_icon = "inv_item_gesture.tga";
+				activity_tip = getString("Playing a gesture");
+			}
 			break;
 		case LLAvatarListEntry::ACTIVITY_SOUND:
-			activity_icon = "inv_item_sound.tga";
+			{
+				activity_icon = "inv_item_sound.tga";
+				activity_tip = getString("Playing a sound");
+			}
 			break;
 		case LLAvatarListEntry::ACTIVITY_REZZING:
-			activity_icon = "ff_edit_theirs.tga";
+			{
+				activity_icon = "ff_edit_theirs.tga";
+				activity_tip = getString("Rezzing objects");
+			}
 			break;
 		case LLAvatarListEntry::ACTIVITY_PARTICLES:
-			activity_icon = "particles_scan.tga";
+			{
+				activity_icon = "particles_scan.tga";
+				activity_tip = getString("Creating particles");
+			}
 			break;
 		case LLAvatarListEntry::ACTIVITY_NEW:
-			activity_icon = "avatar_new.tga";
+			{
+				activity_icon = "avatar_new.tga";
+				activity_tip = getString("Just arrived");
+			}
 			break;
 		case LLAvatarListEntry::ACTIVITY_TYPING:
-			activity_icon = "avatar_typing.tga";
+			{
+				activity_icon = "avatar_typing.tga";
+				activity_tip = getString("Typing");
+			}
 			break;
 		default:
 			break;
@@ -918,6 +1025,40 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 		element["columns"][LIST_ACTIVITY]["value"] = activity_icon;//icon_image_id; //"icn_active-speakers-dot-lvl0.tga";
 		//element["columns"][LIST_AVATAR_ACTIVITY]["color"] = icon_color.getValue();
+		element["columns"][LIST_ACTIVITY]["tool_tip"] = activity_tip;
+
+		element["columns"][LIST_AGE]["column"] = "age";
+		element["columns"][LIST_AGE]["type"] = "text";
+		color = sDefaultListText;
+		std::string age = boost::lexical_cast<std::string>(entry.mAge);
+		if (entry.mAge > -1)
+		{
+			static LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");
+			if ((U32)entry.mAge < sAvatarAgeAlertDays)
+			{
+				color = sRadarTextYoung;
+				if (!entry.mAgeAlert) //Only announce age once per entry.
+				{
+					entry.mAgeAlert = true;
+					chat_avatar_status(entry.getName().c_str(), av_id, ALERT_TYPE_AGE, true);
+				}
+			}
+		}
+		else
+		{
+			age = "?";
+		}
+		element["columns"][LIST_AGE]["value"] = age;
+		element["columns"][LIST_AGE]["color"] = color.getValue();
+
+		int dur = difftime(time(NULL), entry.getTime());
+		int hours = dur / 3600;
+		int mins = (dur % 3600) / 60;
+		int secs = (dur % 3600) % 60;
+
+		element["columns"][LIST_TIME]["column"] = "time";
+		element["columns"][LIST_TIME]["type"] = "text";
+		element["columns"][LIST_TIME]["value"] = llformat("%d:%02d:%02d", hours, mins, secs);
 
 		element["columns"][LIST_CLIENT]["column"] = "client";
 		element["columns"][LIST_CLIENT]["type"] = "text";
@@ -967,6 +1108,17 @@ void LLFloaterAvatarList::refreshAvatarList()
 	
 	mDirtyAvatarSorting = true;
 
+	if (mAvatars.empty())
+		setTitle(getString("Title"));
+	else if (mAvatars.size() == 1)
+		setTitle(getString("TitleOneAvatar"));
+	else
+	{
+		LLStringUtil::format_map_t args;
+		args["[COUNT]"] = boost::lexical_cast<std::string>(mAvatars.size());
+		setTitle(getString("TitleWithCount", args));
+	}
+
 //	llinfos << "radar refresh: done" << llendl;
 
 }
@@ -982,14 +1134,12 @@ void LLFloaterAvatarList::onClickIM()
 			// Single avatar
 			LLUUID agent_id = ids[0];
 
-			// [Ansariel: Display name support]
-			LLAvatarName avatar_name;
-			if (LLAvatarNameCache::get(agent_id, &avatar_name))
+			std::string avatar_name;
+			if (gCacheName->getFullName(agent_id, avatar_name))
 			{
 				gIMMgr->setFloaterOpen(TRUE);
-				gIMMgr->addSession(LLCacheName::cleanFullName(avatar_name.getLegacyName()),IM_NOTHING_SPECIAL,agent_id);
+				gIMMgr->addSession(avatar_name,IM_NOTHING_SPECIAL,agent_id);
 			}
-			// [Ansariel: Display name support]
 		}
 		else
 		{
@@ -1114,14 +1264,12 @@ BOOL LLFloaterAvatarList::handleKeyHere(KEY key, MASK mask)
 				// Single avatar
 				LLUUID agent_id = ids[0];
 
-				// [Ansariel: Display name support]
-				LLAvatarName avatar_name;
-				if (LLAvatarNameCache::get(agent_id, &avatar_name))
+				std::string avatar_name;
+				if (gCacheName->getFullName(agent_id, avatar_name))
 				{
 					gIMMgr->setFloaterOpen(TRUE);
-					gIMMgr->addSession(LLCacheName::cleanFullName(avatar_name.getLegacyName()),IM_NOTHING_SPECIAL,agent_id);
+					gIMMgr->addSession(avatar_name,IM_NOTHING_SPECIAL,agent_id);
 				}
-				// [Ansariel: Display name support]
 			}
 			else
 			{

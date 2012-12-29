@@ -72,11 +72,11 @@ class LLVolumeImplFlexible : public LLVolumeInterface
 {
 private:
 	static std::vector<LLVolumeImplFlexible*> sInstanceList;
-	static std::vector<S32> sUpdateDelay;
+	static std::vector<U32> sUpdateDelay;
 	S32 mInstanceIndex;
 
 	public:
-		static void resetTimers() { memset(&sUpdateDelay[0], 0, sizeof(S32)*sUpdateDelay.size()); }
+		static void resetTimers() { sUpdateDelay.assign(sUpdateDelay.size(),0); }
 		static void updateClass();
 
 		LLVolumeImplFlexible(LLViewerObject* volume, LLFlexibleObjectData* attributes);

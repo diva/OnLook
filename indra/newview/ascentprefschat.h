@@ -104,6 +104,7 @@ protected:
     BOOL mSoundMulti;
     U32  mNewLines;
     U32  mPreloadMulti;
+	bool mEnableGestureSounds;
 
     //Text Options ------------------------------------------------------------------------
     BOOL mSpellDisplay;

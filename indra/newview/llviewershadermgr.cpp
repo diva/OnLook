@@ -32,7 +32,6 @@
 
 
 #include "llviewerprecompiledheaders.h"
-#include <boost/filesystem.hpp>	//First, because glh_linear #defines equivalent.. which boost uses internally
 
 #include "llfeaturemanager.h"
 #include "llviewershadermgr.h"
@@ -172,7 +171,8 @@ LLGLSLShader			gPostNightVisionProgram(LLViewerShaderMgr::SHADER_EFFECT);	//Not 
 LLGLSLShader			gPostGaussianBlurProgram(LLViewerShaderMgr::SHADER_EFFECT);	//Not in mShaderList
 LLGLSLShader			gPostPosterizeProgram(LLViewerShaderMgr::SHADER_EFFECT);	//Not in mShaderList
 LLGLSLShader			gPostMotionBlurProgram(LLViewerShaderMgr::SHADER_EFFECT);	//Not in mShaderList
- 
+LLGLSLShader			gPostVignetteProgram(LLViewerShaderMgr::SHADER_EFFECT);		//Not in mShaderList
+
  // Deferred rendering shaders
 LLGLSLShader			gDeferredImpostorProgram(LLViewerShaderMgr::SHADER_DEFERRED);
 LLGLSLShader			gDeferredWaterProgram(LLViewerShaderMgr::SHADER_DEFERRED); //calculatesAtmospherics
@@ -305,18 +305,6 @@ void LLViewerShaderMgr::setShaders()
 	if (!gPipeline.mInitialized || !sInitialized || reentrance || sSkipReload)
 	{
 		return;
-	}
-
-	{
-		const std::string dumpdir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,"shader_dump")+gDirUtilp->getDirDelimiter();
-		try 
-		{
-			boost::filesystem::remove_all(dumpdir);
-		}
-		catch(const boost::filesystem::filesystem_error& e)
-		{
-			llinfos << "boost::filesystem::remove_all(\""+dumpdir+"\") failed: '" + e.code().message() + "'" << llendl;
-		}
 	}
 
 	LLGLSLShader::sIndexedTextureChannels = llmax(llmin(gGLManager.mNumTextureImageUnits, (S32) gSavedSettings.getU32("RenderMaxTextureIndex")), 1);
@@ -482,6 +470,12 @@ void LLViewerShaderMgr::setShaders()
 			if (loaded)
 			{
 				loaded = loadTransformShaders();
+				if(!loaded)	//Failed to load. Just wipe all transformfeedback shaders and continue like nothing happened.
+				{
+					mVertexShaderLevel[SHADER_TRANSFORM] = 0;
+					unloadShaderClass(SHADER_TRANSFORM);
+					loaded = true;
+				}
 			}
 
 			if (loaded)
@@ -908,7 +902,6 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 		shaderUniforms.push_back("contrast");
 		shaderUniforms.push_back("contrastBase");
 		shaderUniforms.push_back("saturation");
-		shaderUniforms.push_back("lumWeights");
 
 		gPostColorFilterProgram.mName = "Color Filter Shader (Post)";
 		gPostColorFilterProgram.mShaderFiles.clear();
@@ -929,7 +922,6 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 		shaderUniforms.reserve(3);
 		shaderUniforms.push_back("brightMult");
 		shaderUniforms.push_back("noiseStrength");
-		shaderUniforms.push_back("lumWeights");
 
 		gPostNightVisionProgram.mName = "Night Vision Shader (Post)";
 		gPostNightVisionProgram.mShaderFiles.clear();
@@ -998,6 +990,26 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 			gPostMotionBlurProgram.uniform1i("tex1", 1);
 		}
 	}
+
+	{
+		vector<string> shaderUniforms;
+		shaderUniforms.reserve(3);
+		shaderUniforms.push_back("vignette_darkness");
+		shaderUniforms.push_back("vignette_radius");
+		shaderUniforms.push_back("screen_res");
+
+		gPostVignetteProgram.mName = "Vignette Shader (Post)";
+		gPostVignetteProgram.mShaderFiles.clear();
+		gPostVignetteProgram.mShaderFiles.push_back(make_pair("effects/VignetteF.glsl", GL_FRAGMENT_SHADER_ARB));
+		gPostVignetteProgram.mShaderFiles.push_back(make_pair("interface/onetexturenocolorV.glsl", GL_VERTEX_SHADER_ARB));
+		gPostVignetteProgram.mShaderLevel = mVertexShaderLevel[SHADER_EFFECT];
+		if(gPostVignetteProgram.createShader(NULL, &shaderUniforms))
+		{
+			gPostVignetteProgram.bind();
+			gPostVignetteProgram.uniform1i("tex0", 0);
+		}
+	}
+
 	#endif
 
 	return success;
@@ -1495,12 +1507,14 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 	if (success)
 	{
 		gDeferredStarProgram.mName = "Deferred Star Program";
+		vector<string> shaderUniforms(mWLUniforms);
+		shaderUniforms.push_back("custom_alpha");
 		gDeferredStarProgram.mShaderFiles.clear();
 		gDeferredStarProgram.mShaderFiles.push_back(make_pair("deferred/starsV.glsl", GL_VERTEX_SHADER_ARB));
 		gDeferredStarProgram.mShaderFiles.push_back(make_pair("deferred/starsF.glsl", GL_FRAGMENT_SHADER_ARB));
 		gDeferredStarProgram.mShaderLevel = mVertexShaderLevel[SHADER_DEFERRED];
 		gDeferredStarProgram.mShaderGroup = LLGLSLShader::SG_SKY;
-		success = gDeferredStarProgram.createShader(NULL, &mWLUniforms);
+		success = gDeferredStarProgram.createShader(NULL, &shaderUniforms);
 	}
 
 	if (success)

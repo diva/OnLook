@@ -899,12 +899,6 @@ void LLFloaterWorldMap::buildAvatarIDList()
 		list->operateOnSelection(LLCtrlListInterface::OP_DELETE);
 	}
 
-	LLSD default_column;
-	default_column["name"] = "friend name";
-	default_column["label"] = "Friend Name";
-	default_column["width"] = 500;
-	list->addColumn(default_column);
-
 	// Get all of the calling cards for avatar that are currently online
 	LLCollectMappableBuddies collector;
 	LLAvatarTracker::instance().applyFunctor(collector);

@@ -178,6 +178,8 @@
       <boolean>0</boolean>
       <key>enable_motionblur</key>
       <boolean>0</boolean>
+      <key>enable_vignette</key>
+      <boolean>0</boolean>
 			<key>gauss_blur_passes</key>
 			<integer>2</integer>
 			<key>extract_high</key>
@@ -194,6 +196,16 @@
       <real>10</real>
       <key>blur_strength</key>
       <real>10</real>
+      <key>vignette_strength</key>
+      <real>0.85</real>
+      <key>vignette_radius</key>
+      <real>0.7</real>
+      <key>vignette_darkness</key>
+      <real>1.0</real>
+      <key>vignette_desaturation</key>
+      <real>1.0</real>
+      <key>vignette_chromatic_aberration</key>
+      <real>0.01</real>
     </map>
 	</map>
 </llsd>

@@ -3771,8 +3771,8 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 
 		static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
 
-		bool show_display_names = phoenix_name_system > 0;
-		bool show_usernames = phoenix_name_system < 2;
+		bool show_display_names = phoenix_name_system == 1 || phoenix_name_system == 2;
+		bool show_usernames = phoenix_name_system != 2;
 		if (show_display_names && LLAvatarNameCache::useDisplayNames())
 		{
 			LLAvatarName av_name;
@@ -4372,7 +4372,8 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 			}
 			LLVector3 velDir = getVelocity();
 			velDir.normalize();
-			if ( mSignaledAnimations.find(ANIM_AGENT_WALK) != mSignaledAnimations.end())
+			static LLCachedControl<bool> TurnAround("TurnAroundWhenWalkingBackwards");
+			if (!TurnAround && (mSignaledAnimations.find(ANIM_AGENT_WALK) != mSignaledAnimations.end()))
 			{
 				F32 vpD = velDir * primDir;
 				if (vpD < -0.5f)

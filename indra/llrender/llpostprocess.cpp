@@ -49,12 +49,63 @@ extern LLGLSLShader			gPostNightVisionProgram;
 extern LLGLSLShader			gPostGaussianBlurProgram;
 extern LLGLSLShader			gPostPosterizeProgram;
 extern LLGLSLShader			gPostMotionBlurProgram;
+extern LLGLSLShader			gPostVignetteProgram;
 
 static const unsigned int NOISE_SIZE = 512;
 
 static const char * const XML_FILENAME = "postprocesseffects.xml";
 
-template<> LLSD LLPostProcessShader::LLShaderSetting<LLVector4>::getDefaultValue()
+class LLPostProcessShader : public IPostProcessShader, public LLRefCount
+{
+public:
+	LLPostProcessShader(const std::string& enable_name, LLGLSLShader& shader, bool enabled = false) :
+		mShader(shader), mEnabled(enable_name,enabled)
+	{
+		addSetting(mEnabled);
+	}
+	/*virtual*/	bool isEnabled()					const	{return mShader.mProgramObject && mEnabled;}
+	/*virtual*/ void bindShader()							{mShader.bind();}
+	/*virtual*/ void unbindShader()							{mShader.unbind();}
+	/*virtual*/ LLGLSLShader& getShader()					{return mShader;}
+
+	/*virtual*/ LLSD getDefaults();							//See IPostProcessShader::getDefaults
+	/*virtual*/ void loadSettings(const LLSD& settings);	//See IPostProcessShader::loadSettings
+	/*virtual*/ void addSetting(IShaderSettingBase& setting) { mSettings.push_back(&setting); }
+protected:
+	template<typename T>
+	struct LLShaderSetting : public IShaderSettingBase
+	{
+		LLShaderSetting(const std::string& name, T def) : 
+			mValue(def), mDefault(def), mSettingName(name) {}
+		operator T()								const	{ return mValue; }
+		T get()										const	{ return mValue; }
+		/*virtual*/ const std::string& getName()	const	{ return mSettingName; }	//See LLShaderSettingBase::getName
+		/*virtual*/ LLSD getDefaultValue()			const	{ return mDefault; }		//See LLShaderSettingBase::getDefaultValue
+		/*virtual*/ void setValue(const LLSD& value)		{ mValue = value; }			//See LLShaderSettingBase::setValue	
+	private:
+		const std::string mSettingName;		//LLSD key names as found in postprocesseffects.xml. eg 'contrast_base'
+		T mValue;							//The member variable mentioned above.
+		T mDefault;							//Set via ctor. Value is inserted into the defaults LLSD list if absent from postprocesseffects.xml
+	};
+private:
+	std::vector<IShaderSettingBase*> mSettings;	//Contains a list of all the 'settings' this shader uses. Manually add via push_back in ctor.
+	LLGLSLShader& mShader;
+	LLShaderSetting<bool> mEnabled;
+};
+
+//helpers
+class LLPostProcessSinglePassColorShader : public LLPostProcessShader
+{
+public:
+	LLPostProcessSinglePassColorShader(const std::string& enable_name, LLGLSLShader& shader, bool enabled = false) :
+		LLPostProcessShader(enable_name, shader, enabled) {}
+	/*virtual*/ S32 getColorChannel()	const	{return 0;}
+	/*virtual*/ S32 getDepthChannel()	const	{return -1;}
+	/*virtual*/ bool draw(U32 pass)				{return pass == 1;}
+	/*virtual*/ void postDraw()					{}
+};
+
+template<> LLSD LLPostProcessShader::LLShaderSetting<LLVector4>::getDefaultValue() const
 {
 	return mDefault.getValue();
 }
@@ -66,223 +117,181 @@ template<> void LLPostProcessShader::LLShaderSetting<LLVector4>::setValue(const 
 LLSD LLPostProcessShader::getDefaults()
 {
 	LLSD defaults;
-	for(std::vector<LLShaderSettingBase*>::iterator it=mSettings.begin();it!=mSettings.end();++it)
+	for(std::vector<IShaderSettingBase*>::iterator it=mSettings.begin();it!=mSettings.end();++it)
 	{
-		defaults[(*it)->mSettingName]=(*it)->getDefaultValue();
+		defaults[(*it)->getName()]=(*it)->getDefaultValue();
 	}
 	return defaults;
 }
 void LLPostProcessShader::loadSettings(const LLSD& settings)
 {
-	for(std::vector<LLShaderSettingBase*>::iterator it=mSettings.begin();it!=mSettings.end();++it)
+	for(std::vector<IShaderSettingBase*>::iterator it=mSettings.begin();it!=mSettings.end();++it)
 	{
-		LLSD value = settings[(*it)->mSettingName];
+		LLSD value = settings[(*it)->getName()];
 		(*it)->setValue(value);
 	}
 }
 
-class LLColorFilterShader : public LLPostProcessShader
+class LLColorFilterShader : public LLPostProcessSinglePassColorShader
 {
 private:
-	LLShaderSetting<bool> mEnabled;
 	LLShaderSetting<F32> mGamma, mBrightness, mContrast, mSaturation;
 	LLShaderSetting<LLVector4> mContrastBase;
 public:
-	LLColorFilterShader() :
-		mEnabled("enable_color_filter",false),
+	LLColorFilterShader() : 
+		LLPostProcessSinglePassColorShader("enable_color_filter",gPostColorFilterProgram),
 		mGamma("gamma",1.f),
 		mBrightness("brightness",1.f),
 		mContrast("contrast",1.f),
 		mSaturation("saturation",1.f),
 		mContrastBase("contrast_base",LLVector4(1.f,1.f,1.f,0.5f))
 	{
-		mSettings.push_back(&mEnabled);
-		mSettings.push_back(&mGamma);
-		mSettings.push_back(&mBrightness);
-		mSettings.push_back(&mContrast);
-		mSettings.push_back(&mSaturation);
-		mSettings.push_back(&mContrastBase);
+		addSetting(mGamma);
+		addSetting(mBrightness);
+		addSetting(mContrast);
+		addSetting(mSaturation);
+		addSetting(mContrastBase);
 	}
 
-	bool isEnabled()	{ return mEnabled && gPostColorFilterProgram.mProgramObject; }
-	S32 getColorChannel()	{ return 0; }
-	S32 getDepthChannel()	{ return -1; }
-
-	QuadType bind()
+	/*virtual*/ QuadType preDraw()
 	{
-		if(!isEnabled())
-			return QUAD_NONE;
-
 		/// CALCULATING LUMINANCE (Using NTSC lum weights)
 		/// http://en.wikipedia.org/wiki/Luma_%28video%29
 		static const float LUMINANCE_R = 0.299f;
 		static const float LUMINANCE_G = 0.587f;
 		static const float LUMINANCE_B = 0.114f;
 
-		gPostColorFilterProgram.bind();
+		getShader().uniform1f("gamma", mGamma);
+		getShader().uniform1f("brightness", mBrightness);
+		getShader().uniform1f("contrast", mContrast);
+		float baseI = (mContrastBase.get()[VX] + mContrastBase.get()[VY] + mContrastBase.get()[VZ]) / 3.0f;
+		baseI = mContrastBase.get()[VW] / llmax(baseI,0.001f);
+		float baseR = mContrastBase.get()[VX] * baseI;
+		float baseG = mContrastBase.get()[VY] * baseI;
+		float baseB = mContrastBase.get()[VZ] * baseI;
+		getShader().uniform3fv("contrastBase", 1, LLVector3(baseR, baseG, baseB).mV);
+		getShader().uniform1f("saturation", mSaturation);
 
-		gPostColorFilterProgram.uniform1f("gamma", mGamma);
-		gPostColorFilterProgram.uniform1f("brightness", mBrightness);
-		gPostColorFilterProgram.uniform1f("contrast", mContrast);
-		float baseI = (mContrastBase.mValue[VX] + mContrastBase.mValue[VY] + mContrastBase.mValue[VZ]) / 3.0f;
-		baseI = mContrastBase.mValue[VW] / ((baseI < 0.001f) ? 0.001f : baseI);
-		float baseR = mContrastBase.mValue[VX] * baseI;
-		float baseG = mContrastBase.mValue[VY] * baseI;
-		float baseB = mContrastBase.mValue[VZ] * baseI;
-		gPostColorFilterProgram.uniform3fv("contrastBase", 1, LLVector3(baseR, baseG, baseB).mV);
-		gPostColorFilterProgram.uniform1f("saturation", mSaturation);
-		gPostColorFilterProgram.uniform3fv("lumWeights", 1, LLVector3(LUMINANCE_R, LUMINANCE_G, LUMINANCE_B).mV);
 		return QUAD_NORMAL;
-	}
-	bool draw(U32 pass) {return pass == 1;}
-	void unbind()
-	{
-		gPostColorFilterProgram.unbind();
 	}
 };
 
-class LLNightVisionShader : public LLPostProcessShader
+class LLNightVisionShader : public LLPostProcessSinglePassColorShader
 {
 private:
-	LLShaderSetting<bool> mEnabled;
 	LLShaderSetting<F32> mBrightnessMult, mNoiseStrength;
 public:
 	LLNightVisionShader() : 
-		mEnabled("enable_night_vision",false),
+		LLPostProcessSinglePassColorShader("enable_night_vision",gPostNightVisionProgram),
 		mBrightnessMult("brightness_multiplier",3.f),
 		mNoiseStrength("noise_strength",.4f)
 	{
-		mSettings.push_back(&mEnabled);
-		mSettings.push_back(&mBrightnessMult);
-		mSettings.push_back(&mNoiseStrength);
+		addSetting(mBrightnessMult);
+		addSetting(mNoiseStrength);
 	}
-	bool isEnabled()	{ return mEnabled && gPostNightVisionProgram.mProgramObject; }
-	S32 getColorChannel()	{ return 0; }
-	S32 getDepthChannel()	{ return -1; }
-	QuadType bind()
+	/*virtual*/ QuadType preDraw()
 	{
-		if(!isEnabled())
-			return QUAD_NONE;
-
-		gPostNightVisionProgram.bind();
-
 		LLPostProcess::getInstance()->bindNoise(1);
-	
-		gPostNightVisionProgram.uniform1f("brightMult", mBrightnessMult);
-		gPostNightVisionProgram.uniform1f("noiseStrength", mNoiseStrength);
-		
+
+		getShader().uniform1f("brightMult", mBrightnessMult);
+		getShader().uniform1f("noiseStrength", mNoiseStrength);
+
 		return QUAD_NOISE;
-		
 	}
-	bool draw(U32 pass) {return pass == 1;}
-	void unbind()
+};
+
+class LLPosterizeShader : public LLPostProcessSinglePassColorShader
+{
+private:
+	LLShaderSetting<S32> mNumLayers;
+public:
+	LLPosterizeShader() : LLPostProcessSinglePassColorShader("enable_posterize",gPostPosterizeProgram),
+		mNumLayers("posterize_layers",2)
 	{
-		gPostNightVisionProgram.unbind();
+		addSetting(mNumLayers);
+	}
+	/*virtual*/ QuadType preDraw()
+	{
+		getShader().uniform1i("layerCount", mNumLayers);
+		return QUAD_NORMAL;
+	}
+};
+
+class LLVignetteShader : public LLPostProcessSinglePassColorShader
+{
+private:
+	LLShaderSetting<F32> mStrength, mRadius, mDarkness, mDesaturation, mChromaticAberration;
+public:
+	LLVignetteShader() : LLPostProcessSinglePassColorShader("enable_vignette",gPostVignetteProgram),
+	mStrength("vignette_strength",.85f),
+	mRadius("vignette_radius",.7f),
+	mDarkness("vignette_darkness",1.f),
+	mDesaturation("vignette_desaturation",1.5f),
+	mChromaticAberration("vignette_chromatic_aberration",.05f)
+	{
+		addSetting(mStrength);
+		addSetting(mRadius);
+		addSetting(mDarkness);
+		addSetting(mDesaturation);
+		addSetting(mChromaticAberration);
+	}
+	/*virtual*/ QuadType preDraw()
+	{
+		LLVector2 screen_rect = LLPostProcess::getInstance()->getDimensions();
+		getShader().uniform1f("vignette_strength", mStrength);
+		getShader().uniform1f("vignette_radius", mRadius);
+		getShader().uniform1f("vignette_darkness", mDarkness);
+		getShader().uniform1f("vignette_desaturation", mDesaturation);
+		getShader().uniform1f("vignette_chromatic_aberration", mChromaticAberration);
+		getShader().uniform2fv("screen_res", 1, screen_rect.mV);
+		return QUAD_NORMAL;
 	}
 };
 
 class LLGaussBlurShader : public LLPostProcessShader
 {
 private:
-	LLShaderSetting<bool> mEnabled;
 	LLShaderSetting<S32> mNumPasses;
 	GLint mPassLoc;
 public:
-	LLGaussBlurShader() :
-		mEnabled("enable_gauss_blur",false),
+	LLGaussBlurShader() : LLPostProcessShader("enable_gauss_blur",gPostGaussianBlurProgram),
 		mNumPasses("gauss_blur_passes",2),
 		mPassLoc(0)
 	{
-		mSettings.push_back(&mEnabled);
-		mSettings.push_back(&mNumPasses);
+		addSetting(mNumPasses);
 	}
-	bool isEnabled()	{ return mEnabled && mNumPasses && gPostGaussianBlurProgram.mProgramObject; }
-	S32 getColorChannel()	{ return 0; }
-	S32 getDepthChannel()	{ return -1; }
-	QuadType bind()
+	/*virtual*/ bool isEnabled()		const	{ return LLPostProcessShader::isEnabled() && mNumPasses.get(); }
+	/*virtual*/ S32 getColorChannel()	const	{ return 0; }
+	/*virtual*/ S32 getDepthChannel()	const	{ return -1; }
+	/*virtual*/ QuadType preDraw()
 	{
-		if(!isEnabled())
-			return QUAD_NONE;
-
-		gPostGaussianBlurProgram.bind();
-
-		mPassLoc = gPostGaussianBlurProgram.getUniformLocation("horizontalPass");
-
+		mPassLoc = getShader().getUniformLocation("horizontalPass");
 		return QUAD_NORMAL;
 	}
-	bool draw(U32 pass) 
+	/*virtual*/ bool draw(U32 pass) 
 	{
 		if((S32)pass > mNumPasses*2)
 			return false;
 		glUniform1iARB(mPassLoc, (pass-1) % 2);
 		return true;
 	}
-	void unbind()
-	{
-		gPostGaussianBlurProgram.unbind();
-	}
-};
-
-class LLPosterizeShader : public LLPostProcessShader
-{
-private:
-	LLShaderSetting<bool> mEnabled;
-	LLShaderSetting<S32> mNumLayers;
-public:
-	LLPosterizeShader() :
-		mEnabled("enable_posterize",false),
-		mNumLayers("posterize_layers",2)
-	{
-		mSettings.push_back(&mEnabled);
-		mSettings.push_back(&mNumLayers);
-	}
-	bool isEnabled()	{ return mEnabled && gPostPosterizeProgram.mProgramObject; }
-	S32 getColorChannel()	{ return 0; }
-	S32 getDepthChannel()	{ return -1; }
-	QuadType bind()
-	{
-		if(!isEnabled())
-			return QUAD_NONE;
-
-		gPostPosterizeProgram.bind();
-
-		gPostPosterizeProgram.uniform1i("layerCount", mNumLayers);
-
-		return QUAD_NORMAL;
-	}
-	bool draw(U32 pass) 
-	{
-		return pass == 1;
-	}
-	void unbind()
-	{
-		gPostPosterizeProgram.unbind();
-	}
+	/*virtual*/ void postDraw()					{}
 };
 
 class LLMotionShader : public LLPostProcessShader
 {
 private:
-	LLShaderSetting<bool> mEnabled;
 	LLShaderSetting<S32> mStrength;
 public:
-	LLMotionShader() :
-		mEnabled("enable_motionblur",false),
-		mStrength("blur_strength",false)
+	LLMotionShader() : LLPostProcessShader("enable_motionblur",gPostMotionBlurProgram),
+		mStrength("blur_strength",1)
 	{
-		mSettings.push_back(&mEnabled);
-		mSettings.push_back(&mStrength);
+		addSetting(mStrength);
 	}
-	bool isEnabled()	{ return mEnabled && gPostMotionBlurProgram.mProgramObject; }
-	S32 getColorChannel()	{ return 0; }
-	S32 getDepthChannel()	{ return 1; }
-	QuadType bind()
+	/*virtual*/ S32 getColorChannel()	const	{ return 0; }
+	/*virtual*/ S32 getDepthChannel()	const	{ return 1; }
+	/*virtual*/ QuadType preDraw()
 	{
-		if(!isEnabled())
-		{
-			return QUAD_NONE;
-		}
-
 		glh::matrix4f inv_proj(gGLModelView);
 		inv_proj.mult_left(gGLProjection);
 		inv_proj = inv_proj.inverse();
@@ -291,22 +300,18 @@ public:
 
 		LLVector2 screen_rect = LLPostProcess::getInstance()->getDimensions();
 
-		gPostMotionBlurProgram.bind();
-		gPostMotionBlurProgram.uniformMatrix4fv("prev_proj", 1, GL_FALSE, prev_proj.m);
-		gPostMotionBlurProgram.uniformMatrix4fv("inv_proj", 1, GL_FALSE, inv_proj.m);
-		gPostMotionBlurProgram.uniform2fv("screen_res", 1, screen_rect.mV);
-		gPostMotionBlurProgram.uniform1i("blur_strength", mStrength);
+		getShader().uniformMatrix4fv("prev_proj", 1, GL_FALSE, prev_proj.m);
+		getShader().uniformMatrix4fv("inv_proj", 1, GL_FALSE, inv_proj.m);
+		getShader().uniform2fv("screen_res", 1, screen_rect.mV);
+		getShader().uniform1i("blur_strength", mStrength);
 
 		return QUAD_NORMAL;
 	}
-	bool draw(U32 pass) 
+	/*virtual*/ bool draw(U32 pass) 
 	{
 		return pass == 1;
 	}
-	void unbind()
-	{
-		gPostMotionBlurProgram.unbind();
-	}
+	/*virtual*/ void postDraw()					{}
 };
 
 LLPostProcess::LLPostProcess(void) : 
@@ -320,11 +325,11 @@ LLPostProcess::LLPostProcess(void) :
 					mAllEffectInfo(LLSD::emptyMap())
 {
 	mShaders.push_back(new LLMotionShader());
+	mShaders.push_back(new LLVignetteShader());
 	mShaders.push_back(new LLColorFilterShader());
 	mShaders.push_back(new LLNightVisionShader());
 	mShaders.push_back(new LLGaussBlurShader());
 	mShaders.push_back(new LLPosterizeShader());
-
 
 	/*  Do nothing.  Needs to be updated to use our current shader system, and to work with the move into llrender.*/
 	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight", XML_FILENAME));
@@ -547,20 +552,19 @@ void LLPostProcess::doEffects(void)
 
 void LLPostProcess::applyShaders(void)
 {
-	QuadType quad;
 	bool primary_rendertarget = 1;
 	for(std::list<LLPointer<LLPostProcessShader> >::iterator it=mShaders.begin();it!=mShaders.end();++it)
 	{
-		if((quad = (*it)->bind()) != QUAD_NONE)
+		if((*it)->isEnabled())
 		{
 			S32 color_channel = (*it)->getColorChannel();
 			S32 depth_channel = (*it)->getDepthChannel();
-
 			if(depth_channel >= 0)
 				gGL.getTexUnit(depth_channel)->bindManual(LLTexUnit::TT_RECT_TEXTURE, mDepthTexture);
-
 			U32 pass = 1;
 
+			(*it)->bindShader();
+			QuadType quad = (*it)->preDraw();
 			while((*it)->draw(pass++))
 			{
 				mRenderTarget[!primary_rendertarget].bindTarget();
@@ -573,7 +577,8 @@ void LLPostProcess::applyShaders(void)
 				if(mRenderTarget[0].getFBO())
 					primary_rendertarget = !primary_rendertarget;
 			}
-			(*it)->unbind();
+			(*it)->postDraw();
+			(*it)->unbindShader();
 		}
 	}
 	//Only need to copy to framebuffer if FBOs are supported, else we've already been drawing to the framebuffer to begin with.

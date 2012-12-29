@@ -642,6 +642,18 @@ public:
 
 	// manually call this whenever editing list items in place to flag need for resorting
 	void			setNeedsSort(bool val = true) { mSorted = !val; }
+	void			setNeedsSortColumn(S32 col)
+	{
+		if(!isSorted())return;
+		for(std::vector<std::pair<S32, BOOL> >::iterator it=mSortColumns.begin();it!=mSortColumns.end();++it)
+		{
+			if((*it).first == col)
+			{
+				setNeedsSort();
+				break;
+			}
+		}
+	}
 	void			dirtyColumns(); // some operation has potentially affected column layout or ordering
 
 	boost::signals2::connection setSortCallback(sort_signal_t::slot_type cb )

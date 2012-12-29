@@ -42,7 +42,8 @@ class LLButton;
 class LLLineEditor;
 class LLMessageSystem;
 class LLUUID;
-class LLScrollListCtrl;
+class LLNameListCtrl;
+class LLMute;
 
 class LLFloaterMute
 	:	public LLFloater, public LLMuteListObserver, public LLFloaterSingleton<LLFloaterMute>
@@ -74,7 +75,14 @@ private:
 	static void callbackMuteByName(const std::string& text, void*);
 
 private:
-	LLScrollListCtrl*			mMuteList;
+	LLNameListCtrl*			mMuteList;
+
+	LLPointer<LLUIImage>	mAvatarIcon;	//icon_avatar_offline.tga
+	LLPointer<LLUIImage>	mObjectIcon;	//inv_item_object.tga
+	LLPointer<LLUIImage>	mGroupIcon;		//icon_group.tga
+	LLPointer<LLUIImage>	mNameIcon;		//icon_name.tga
+
+	std::map<LLUUID, LLMute>	mMuteDict;	//Easiest way to associate listitems with LLMute instances without hacking in, say, a hidden column.
 };
 
 

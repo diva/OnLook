@@ -54,7 +54,7 @@ LLPointer<LLImageRaw> LLDrawPoolWLSky::sCloudNoiseRawImage = NULL;
 
 static LLGLSLShader* cloud_shader = NULL;
 static LLGLSLShader* sky_shader = NULL;
-
+static LLGLSLShader* star_shader = NULL;
 
 LLDrawPoolWLSky::LLDrawPoolWLSky(void) :
 	LLDrawPool(POOL_WL_SKY)
@@ -113,6 +113,8 @@ void LLDrawPoolWLSky::beginRenderPass( S32 pass )
 			LLPipeline::sUnderWaterRender ?
 				&gObjectFullbrightNoColorWaterProgram :
 				&gWLCloudProgram;
+
+	star_shader = &gCustomAlphaProgram;
 }
 
 void LLDrawPoolWLSky::endRenderPass( S32 pass )
@@ -123,6 +125,7 @@ void LLDrawPoolWLSky::beginDeferredPass(S32 pass)
 {
 	sky_shader = &gDeferredWLSkyProgram;
 	cloud_shader = &gDeferredWLCloudProgram;
+	star_shader = &gDeferredStarProgram;
 }
 
 void LLDrawPoolWLSky::endDeferredPass(S32 pass)
@@ -182,6 +185,15 @@ void LLDrawPoolWLSky::renderSkyHaze(F32 camHeightLocal) const
 
 void LLDrawPoolWLSky::renderStars(void) const
 {
+	// *NOTE: we divide by two here and GL_ALPHA_SCALE by two below to avoid
+	// clamping and allow the star_alpha param to brighten the stars.
+	bool error;
+	LLColor4 star_alpha(LLColor4::black);
+	star_alpha.mV[3] = LLWLParamManager::getInstance()->mCurParams.getFloat("star_brightness", error) / 2.f;
+	llassert_always(!error);
+	if(star_alpha.mV[3] <= 0)
+		return;
+	
 	LLGLSPipelineSkyBox gls_sky;
 	LLGLEnable blend(GL_BLEND);
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);
@@ -198,26 +210,16 @@ void LLDrawPoolWLSky::renderStars(void) const
 		glPointSize(2.f);
 	}*/
 
-	// *NOTE: we divide by two here and GL_ALPHA_SCALE by two below to avoid
-	// clamping and allow the star_alpha param to brighten the stars.
-	bool error;
-	LLColor4 star_alpha(LLColor4::black);
-	star_alpha.mV[3] = LLWLParamManager::getInstance()->mCurParams.getFloat("star_brightness", error) / 2.f;
-	llassert_always(!error);
-	
+	gGL.pushMatrix();
+	gGL.rotatef(gFrameTimeSeconds*0.01f, 0.f, 0.f, 1.f);
 	// gl_FragColor.rgb = gl_Color.rgb;
 	// gl_FragColor.a = gl_Color.a * star_alpha.a;
 	//New
 	gGL.getTexUnit(0)->bind(gSky.mVOSkyp->getBloomTex());
 
-	gGL.pushMatrix();
-	gGL.rotatef(gFrameTimeSeconds*0.01f, 0.f, 0.f, 1.f);
-	// gl_FragColor.rgb = gl_Color.rgb;
-	// gl_FragColor.a = gl_Color.a * star_alpha.a;
-	if (LLGLSLShader::sNoFixedFunction)
+	if (gPipeline.canUseVertexShaders())
 	{
-		gCustomAlphaProgram.bind();
-		gCustomAlphaProgram.uniform1f("custom_alpha", star_alpha.mV[3]);
+		star_shader->uniform1f("custom_alpha", star_alpha.mV[3]);
 	}
 	else
 	{
@@ -230,11 +232,7 @@ void LLDrawPoolWLSky::renderStars(void) const
 
 	gGL.popMatrix();
 
-	if (LLGLSLShader::sNoFixedFunction)
-	{
-		gCustomAlphaProgram.unbind();
-	}
-	else
+	if (!gPipeline.canUseVertexShaders())
 	{
 		// and disable the combiner states
 		gGL.getTexUnit(0)->setTextureBlendType(LLTexUnit::TB_MULT);
@@ -261,8 +259,15 @@ void LLDrawPoolWLSky::renderSkyClouds(F32 camHeightLocal) const
 
 void LLDrawPoolWLSky::renderHeavenlyBodies()
 {
+	LLColor4 color(gSky.mVOSkyp->getMoon().getInterpColor(), gSky.mVOSkyp->getMoon().getDirection().mV[2]);
+	if (color.mV[VW] <= 0.f)
+		return;
+	
+	color.mV[VW] = llclamp(color.mV[VW]*color.mV[VW]*4.f,0.f,1.f);
+
 	LLGLSPipelineSkyBox gls_skybox;
 	LLGLEnable blend_on(GL_BLEND);
+	gGL.setSceneBlendType(LLRender::BT_ALPHA);
 	gPipeline.disableLights();
 
 #if 0 // when we want to re-add a texture sun disc, here's where to do it.
@@ -279,33 +284,31 @@ void LLDrawPoolWLSky::renderHeavenlyBodies()
 
 	LLFace * face = gSky.mVOSkyp->mFace[LLVOSky::FACE_MOON];
 
-	if (gSky.mVOSkyp->getMoon().getDraw() && face->getGeomCount())
+	if (gSky.mVOSkyp->getMoon().getDraw() && face->getGeomCount() && face->getVertexBuffer())
 	{
 		// *NOTE: even though we already bound this texture above for the
 		// stars register combiners, we bind again here for defensive reasons,
 		// since LLImageGL::bind detects that it's a noop, and optimizes it out.
 		gGL.getTexUnit(0)->bind(face->getTexture());
-		LLColor4 color(gSky.mVOSkyp->getMoon().getInterpColor());
-		F32 a = gSky.mVOSkyp->getMoon().getDirection().mV[2];
-		if (a > 0.f)
-		{
-			a = a*a*4.f;
-		}
-			
-		color.mV[3] = llclamp(a, 0.f, 1.f);
 		
 		if (gPipeline.canUseVertexShaders())
 		{
-			gHighlightProgram.bind();
+			// Okay, so the moon isn't a star, but it's close enough.
+			star_shader->uniform1f("custom_alpha", color.mV[VW]);
+		}
+		else
+		{
+			gGL.getTexUnit(0)->setTextureColorBlend(LLTexUnit::TBO_MULT, LLTexUnit::TBS_TEX_COLOR, LLTexUnit::TBS_VERT_COLOR);
+			gGL.getTexUnit(0)->setTextureAlphaBlend(LLTexUnit::TBO_MULT_X2, LLTexUnit::TBS_CONST_ALPHA, LLTexUnit::TBS_TEX_ALPHA);
+			glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color.mV);
 		}
 
-		LLFacePool::LLOverrideFaceColor color_override(this, color);
+		face->getVertexBuffer()->setBuffer(LLDrawPoolWLSky::STAR_VERTEX_DATA_MASK);
+		face->getVertexBuffer()->draw(LLRender::TRIANGLES, face->getVertexBuffer()->getNumIndices(), 0);
 		
-		face->renderIndexed();
-
-		if (gPipeline.canUseVertexShaders())
+		if (!gPipeline.canUseVertexShaders())
 		{
-			gHighlightProgram.unbind();
+			gGL.getTexUnit(0)->setTextureBlendType(LLTexUnit::TB_MULT);
 		}
 	}
 }
@@ -324,7 +327,7 @@ void LLDrawPoolWLSky::renderDeferred(S32 pass)
 	LLGLDepthTest depth(GL_TRUE, GL_FALSE);
 	LLGLDisable clip(GL_CLIP_PLANE0);
 
-	gGL.setColorMask(true, false);
+	gGL.setColorMask(true, false);	//Just in case.
 
 	LLGLSquashToFarClip far_clip(glh_get_current_projection());
 
@@ -336,7 +339,7 @@ void LLDrawPoolWLSky::renderDeferred(S32 pass)
 		
 		gGL.translatef(origin.mV[0], origin.mV[1], origin.mV[2]);
 
-		gDeferredStarProgram.bind();
+		star_shader->bind();
 		// *NOTE: have to bind a texture here since register combiners blending in
 		// renderStars() requires something to be bound and we might as well only
 		// bind the moon's texture once.		
@@ -346,13 +349,12 @@ void LLDrawPoolWLSky::renderDeferred(S32 pass)
 
 		renderStars();
 		
-		gDeferredStarProgram.unbind();
+		star_shader->unbind();
 
 	gGL.popMatrix();
 
 	renderSkyClouds(camHeightLocal);
 
-	gGL.setColorMask(true, true);
 	//gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
 }
@@ -373,6 +375,8 @@ void LLDrawPoolWLSky::render(S32 pass)
 
 	LLGLSquashToFarClip far_clip(glh_get_current_projection());
 
+	gGL.setColorMask(true, false); //Just in case.
+
 	renderSkyHaze(camHeightLocal);
 
 	LLVector3 const & origin = LLViewerCamera::getInstance()->getOrigin();
@@ -380,6 +384,8 @@ void LLDrawPoolWLSky::render(S32 pass)
 
 		gGL.translatef(origin.mV[0], origin.mV[1], origin.mV[2]);
 
+		if(gPipeline.canUseVertexShaders())
+			star_shader->bind();
 		// *NOTE: have to bind a texture here since register combiners blending in
 		// renderStars() requires something to be bound and we might as well only
 		// bind the moon's texture once.		
@@ -388,6 +394,9 @@ void LLDrawPoolWLSky::render(S32 pass)
 		renderHeavenlyBodies();
 
 		renderStars();
+
+		if(gPipeline.canUseVertexShaders())
+			star_shader->unbind();
 		
 
 	gGL.popMatrix();

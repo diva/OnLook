@@ -6775,6 +6775,8 @@ version 2.0
 }
 
 // And, the money transfer
+// *NOTE: Unused as of 2010-04-06, because all back-end money transactions
+// are done with web services via L$ API.  JC
 {
 	MoneyTransferBackend Low 312 Trusted Zerocoded
 	{
@@ -6825,6 +6827,19 @@ version 2.0
 		{	SquareMetersCommitted	S32	}
 		{	Description			Variable 1	}	// string
 	}
+	// For replies that are part of a transaction (buying something) provide
+	// metadata for localization.  If TransactionType is 0, the message is
+	// purely a balance update.  Added for server 1.40 and viewer 2.1.  JC
+	{
+		TransactionInfo		Single
+		{	TransactionType			S32			}	// lltransactiontype.h
+		{	SourceID				LLUUID		}
+		{	IsSourceGroup			BOOL		}
+		{	DestID					LLUUID		}
+		{	IsDestGroup				BOOL		}
+		{	Amount					S32			}
+		{	ItemDescription			Variable 1	}	// string
+	}
 }
 
 
@@ -6850,6 +6865,17 @@ version 2.0
 		{	SquareMetersCredit	S32	}
 		{	SquareMetersCommitted	S32	}
 		{	Description			Variable 1	}	// string
+	}
+	// See MoneyBalanceReply above.
+	{
+		TransactionInfo		Single
+		{	TransactionType			S32			}	// lltransactiontype.h
+		{	SourceID				LLUUID		}
+		{	IsSourceGroup			BOOL		}
+		{	DestID					LLUUID		}
+		{	IsDestGroup				BOOL		}
+		{	Amount					S32			}
+		{	ItemDescription			Variable 1	}	// string
 	}
 }
 

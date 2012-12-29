@@ -390,6 +390,7 @@ void LLPrefsAscentChat::refreshValues()
     mSoundMulti                     = gSavedSettings.getU32("_NACL_AntiSpamSoundMulti");
     mNewLines                       = gSavedSettings.getU32("_NACL_AntiSpamNewlines");
     mPreloadMulti                   = gSavedSettings.getU32("_NACL_AntiSpamSoundPreloadMulti");
+	mEnableGestureSounds            = gSavedSettings.getBOOL("EnableGestureSounds");
 
     //Text Options ------------------------------------------------------------------------
     mSpellDisplay                   = gSavedSettings.getBOOL("SpellDisplay");
@@ -607,6 +608,7 @@ void LLPrefsAscentChat::cancel()
     gSavedSettings.setU32("_NACL_AntiSpamSoundMulti",        mSoundMulti);
     gSavedSettings.setU32("_NACL_AntiSpamNewlines",          mNewLines);
     gSavedSettings.setU32("_NACL_AntiSpamSoundPreloadMulti", mPreloadMulti);
+	gSavedSettings.setBOOL("EnableGestureSounds",           mEnableGestureSounds);
 
     //Text Options ------------------------------------------------------------------------
     gSavedSettings.setBOOL("SpellDisplay",                  mSpellDisplay);

@@ -278,6 +278,13 @@ vec3 unpack(vec2 tc)
 #endif
 }
 
+float luminance(vec3 color)
+{
+	/// CALCULATING LUMINANCE (Using NTSC lum weights)
+	/// http://en.wikipedia.org/wiki/Luma_%28video%29
+	return dot(color, vec3(0.299, 0.587, 0.114));
+}
+
 void main() 
 {
 	vec2 tc = vary_fragcoord.xy;
@@ -316,17 +323,20 @@ void main()
 
 			//add environmentmap
 			vec3 env_vec = env_mat * refnormpersp;
-			col = mix(col.rgb, textureCube(environmentMap, env_vec).rgb, 
-				max(spec.a-diffuse.a*2.0, 0.0)); 
+			vec3 env = textureCube(environmentMap, env_vec).rgb;
+			bloom = (luminance(env) - .45)*.25;
+			col = mix(col.rgb, env, 
+				max(spec.a-diffuse.a*2.0, 0.0));
 		}
 	
 		col = atmosLighting(col);
 		col = scaleSoftClip(col);
 
-		col = mix(col.rgb, diffuse.rgb, diffuse.a);
+		col = mix(col, diffuse.rgb, diffuse.a);
 	}
 	else
 	{
+		bloom = spec.r;
 		col = diffuse.rgb;
 	}
 

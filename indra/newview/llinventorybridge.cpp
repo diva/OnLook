@@ -612,6 +612,48 @@ BOOL LLInvFVBridge::isClipboardPasteable() const
 	return TRUE;
 }
 
+bool LLInvFVBridge::isClipboardPasteableAsCopy() const
+{
+	// In cut mode, we don't paste copies.
+	if (LLInventoryClipboard::instance().isCutMode())
+	{
+		return false;
+	}
+
+	LLInventoryModel* model = getInventoryModel();
+	if (!model)
+	{
+		return false;
+	}
+
+	// In copy mode, we need to check each element of the clipboard to know if it's a link
+	LLInventoryPanel* panel = dynamic_cast<LLInventoryPanel*>(mInventoryPanel.get());
+	LLDynamicArray<LLUUID> objects;
+	LLInventoryClipboard::instance().retrieve(objects);
+	const S32 count = objects.count();
+	for(S32 i = 0; i < count; i++)
+	{
+		const LLUUID &item_id = objects.get(i);
+
+		// Folders may be links
+		const LLInventoryCategory *cat = model->getCategory(item_id);
+		if (cat)
+		{
+			const LLFolderBridge cat_br(panel, mRoot, item_id);
+			if (cat_br.isLink())
+				return true;
+			// Skip to the next item in the clipboard
+			continue;
+		}
+
+		// May be link item
+		const LLItemBridge item_br(panel, mRoot, item_id);
+		if (item_br.isLink())
+			return true;
+	}
+	return false;
+}
+
 BOOL LLInvFVBridge::isClipboardPasteableAsLink() const
 {
 	if (!InventoryLinksEnabled())
@@ -731,6 +773,20 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
 	{
 		if (obj->getIsLinkType())
 		{
+			// Patch: Inventory-Links tweak, Can copy and cut Inventory Links
+			items.push_back(std::string("Copy Separator"));
+
+			items.push_back(std::string("Copy"));
+			if (!isItemCopyable())
+			{
+				disabled_items.push_back(std::string("Copy"));
+			}
+
+			items.push_back(std::string("Cut"));
+			if (!isItemMovable() || !isItemRemovable())
+			{
+				disabled_items.push_back(std::string("Cut"));
+			}
 			items.push_back(std::string("Find Original"));
 			if (isLinkedObjectMissing())
 			{
@@ -798,17 +854,26 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
 		}
 	}
 
+	bool paste_as_copy = false; // If Paste As Copy is on the menu, Paste As Link will always show up disabled, so don't bother.
 	// Don't allow items to be pasted directly into the COF or the inbox/outbox
 	if (!isCOFFolder() && !isInboxFolder() && !isOutboxFolder())
 	{
 		items.push_back(std::string("Paste"));
+		// Paste as copy if we have links.
+		if (InventoryLinksEnabled() && isClipboardPasteableAsCopy())
+		{
+			items.push_back(std::string("Paste As Copy"));
+			paste_as_copy = true;
+		}
 	}
 	if (!isClipboardPasteable() || ((flags & FIRST_SELECTED_ITEM) == 0))
 	{
 		disabled_items.push_back(std::string("Paste"));
+		disabled_items.push_back(std::string("Paste As Copy"));
+		paste_as_copy = false;
 	}
 
-	if(InventoryLinksEnabled())
+	if (!paste_as_copy && InventoryLinksEnabled())
 	{
 		items.push_back(std::string("Paste As Link"));
 		if (!isClipboardPasteableAsLink() || (flags & FIRST_SELECTED_ITEM) == 0)
@@ -1469,6 +1534,18 @@ void LLItemBridge::performAction(LLInventoryModel* model, std::string action)
 		folder_view_itemp->getListener()->pasteFromClipboard();
 		return;
 	}
+	else if ("paste_copies" == action)
+	{
+		// Single item only
+		LLInventoryItem* itemp = model->getItem(mUUID);
+		if (!itemp) return;
+
+		LLFolderViewItem* folder_view_itemp = mRoot->getItemByID(itemp->getParentUUID());
+		if (!folder_view_itemp) return;
+
+		folder_view_itemp->getListener()->pasteFromClipboard(true);
+		return;
+	}
 	else if ("paste_link" == action)
 	{
 		// Single item only
@@ -1812,7 +1889,10 @@ BOOL LLItemBridge::removeItem()
 	// we can't do this check because we may have items in a folder somewhere that is
 	// not yet in memory, so we don't want false negatives.  (If disabled, then we 
 	// know we only have links in the Outfits folder which we explicitly fetch.)
-	if (!InventoryLinksEnabled())
+// [SL:KB] - Patch: Inventory-Links | Checked: 2010-06-01 (Catznip-2.2.0a) | Added: Catznip-2.0.1a
+	// Users move folders around and reuse links that way... if we know something has links then it's just bad not to warn them :|
+// [/SL:KB]
+//	if (!InventoryLinksEnabled())
 	{
 		if (!item->getIsLinkType())
 		{
@@ -1873,13 +1953,26 @@ BOOL LLItemBridge::isItemCopyable() const
 			return FALSE;
 		}*/
 
-		// You can never copy a link.
-		if (item->getIsLinkType())
+//		// You can never copy a link.
+//		if (item->getIsLinkType())
+// [SL:KB] - Patch: Inventory-Links | Checked: 2010-04-12 (Catznip-2.2.0a) | Added: Catznip-2.0.0a
+		// We'll allow copying a link if:
+		//   - its target is available
+		//   - it doesn't point to another link [see LLViewerInventoryItem::getLinkedItem() which returns NULL in that case]
+		if (item->getIsLinkType() && !item->getLinkedItem())
+// [/SL:KB]
 		{
 			return FALSE;
 		}
 
-		return item->getPermissions().allowCopyBy(gAgent.getID()) || InventoryLinksEnabled();
+// [SL:KB] - Patch: Inventory-Links | Checked: 2010-04-12 (Catznip-2.2.0a) | Added: Catznip-2.0.0a
+		// User can copy the item if:
+		//   - the item (or its target in the case of a link) is "copy"
+		//   - and/or if the item (or its target in the case of a link) has a linkable asset type
+		// NOTE: we do *not* want to return TRUE on everything like LL seems to do in SL-2.1.0 because not all types are "linkable"
+		return (item->getPermissions().allowCopyBy(gAgent.getID())) || (LLAssetType::lookupCanLink(item->getType()));
+// [/SL:KB]
+//		return item->getPermissions().allowCopyBy(gAgent.getID()) || InventoryLinksEnabled();
 	}
 	return FALSE;
 }
@@ -2824,6 +2917,11 @@ void LLFolderBridge::performAction(LLInventoryModel* model, std::string action)
 		pasteFromClipboard();
 		return;
 	}
+	else if ("paste_copies" == action)
+	{
+		pasteFromClipboard(true);
+		return;
+	}
 	else if ("paste_link" == action)
 	{
 		pasteLinkFromClipboard();
@@ -3062,7 +3160,7 @@ bool LLFolderBridge::removeItemResponse(const LLSD& notification, const LLSD& re
 	return FALSE;
 }
 
-void LLFolderBridge::pasteFromClipboard()
+void LLFolderBridge::pasteFromClipboard(bool only_copies)
 {
 	LLInventoryModel* model = getInventoryModel();
 	if(model && isClipboardPasteable())
@@ -3135,7 +3233,7 @@ void LLFolderBridge::pasteFromClipboard()
 						dropToOutfit(item, move_is_into_current_outfit);
 					}
 				}
-				else if(LLInventoryClipboard::instance().isCutMode())
+				else if (!only_copies && LLInventoryClipboard::instance().isCutMode())
 				{
 					// Do a move to "paste" a "cut"
 					// move_inventory_item() is not enough, as we have to update inventory locally too
@@ -3160,6 +3258,11 @@ void LLFolderBridge::pasteFromClipboard()
 				}
 				else
 				{
+					if (only_copies)
+					{
+						item = model->getLinkedItem(item_id);
+						obj = model->getObject(item->getUUID());
+					}
 					// Do a "copy" to "paste" a regular copy clipboard
 					if (LLAssetType::AT_CATEGORY == obj->getType())
 					{
@@ -3170,6 +3273,19 @@ void LLFolderBridge::pasteFromClipboard()
 							copy_inventory_category(model, vicat, parent_id);
 						}
 					}
+// [SL:KB] - Patch: Inventory-Links | Checked: 2010-04-12 (Catznip-2.2.0a) | Added: Catznip-2.0.0a
+					else if (!only_copies && LLAssetType::lookupIsLinkType(item->getActualType()))
+					{
+						link_inventory_item(
+							gAgent.getID(),
+							item->getLinkedUUID(),
+							parent_id,
+							item->getName(),
+							item->getDescription(),
+							item->getActualType(),
+							LLPointer<LLInventoryCallback>(NULL));
+					}
+// [/SL:KB]
 					else
 					{
 						copy_inventory_item(
@@ -5231,9 +5347,10 @@ void LLObjectBridge::performAction(LLInventoryModel* model, std::string action)
 
 void LLObjectBridge::openItem()
 {
+	static LLCachedControl<bool> add(gSavedSettings, "LiruAddNotReplace");
 	// object double-click action is to wear/unwear object
 	performAction(getInventoryModel(),
-		      get_is_item_worn(mUUID) ? "detach" : "attach");
+		      get_is_item_worn(mUUID) ? "detach" : (add ? "wear_add" : "attach"));
 }
 
 std::string LLObjectBridge::getLabelSuffix() const
@@ -6687,10 +6804,14 @@ void LLWearableBridgeAction::wearOnAvatar()
 {
 	// TODO: investigate wearables may not be loaded at this point EXT-8231
 
+	static LLCachedControl<bool> add(gSavedSettings, "LiruAddNotReplace");
 	LLViewerInventoryItem* item = getItem();
 	if(item)
 	{
-		LLAppearanceMgr::instance().wearItemOnAvatar(item->getUUID(), true, true);
+		if (get_is_item_worn(item))
+			LLAppearanceMgr::instance().removeItemFromAvatar(item->getUUID());
+		else
+			LLAppearanceMgr::instance().wearItemOnAvatar(item->getUUID(), true, !add);
 	}
 }
 

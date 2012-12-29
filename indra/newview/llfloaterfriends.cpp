@@ -44,10 +44,7 @@
 #include "llagent.h"
 #include "llappviewer.h"	// for gLastVersionChannel
 
-// [Ansariel: Display name support]
-#include "llavatarname.h"
 #include "llavatarnamecache.h"
-// [/Ansariel: Display name support]
 
 #include "llfloateravatarpicker.h"
 #include "llviewerwindow.h"
@@ -78,7 +75,7 @@
 #include "llfloaterchat.h"
 
 // <dogmode> stuff for Contact groups
-#include "ascentfloatercontactgroups.h"
+//#include "ascentfloatercontactgroups.h"
 
 #define DEFAULT_PERIOD 5.0
 #define RIGHTS_CHANGE_TIMEOUT 5.0
@@ -87,18 +84,40 @@
 #define ONLINE_SIP_ICON_NAME "slim_icon_16_viewer.tga"
 
 // simple class to observe the calling cards.
-class LLLocalFriendsObserver : public LLFriendObserver, public LLEventTimer
+
+
+class LLAvatarListUpdater : public LLEventTimer
 {
-public: 
-	LLLocalFriendsObserver(LLPanelFriends* floater) : mFloater(floater), LLEventTimer(OBSERVER_TIMEOUT)
+public:
+	LLAvatarListUpdater(F32 period)
+	:	LLEventTimer(period)
 	{
 		mEventTimer.stop();
 	}
-	virtual ~LLLocalFriendsObserver()
+
+	virtual BOOL tick() // from LLEventTimer
 	{
-		mFloater = NULL;
+		return FALSE;
 	}
-	virtual void changed(U32 mask)
+};
+
+class LLLocalFriendsObserver : public LLAvatarListUpdater, public LLFriendObserver
+{
+	LOG_CLASS(LLLocalFriendsObserver);
+public: 
+	LLLocalFriendsObserver(LLPanelFriends* floater)
+	:	mFloater(floater), LLAvatarListUpdater(OBSERVER_TIMEOUT)
+	{
+		LLAvatarTracker::instance().addObserver(this);
+		// For notification when SIP online status changes.
+		LLVoiceClient::getInstance()->addObserver(this);
+	}
+	/*virtual*/ ~LLLocalFriendsObserver()
+	{
+		LLVoiceClient::getInstance()->removeObserver(this);
+		LLAvatarTracker::instance().removeObserver(this);
+	}
+	/*virtual*/ void changed(U32 mask)
 	{
 		// events can arrive quickly in bulk - we need not process EVERY one of them -
 		// so we wait a short while to let others pile-in, and process them in aggregate.
@@ -107,9 +126,9 @@ public:
 		// save-up all the mask-bits which have come-in
 		mMask |= mask;
 	}
-	virtual BOOL tick()
+	/*virtual*/ BOOL tick()
 	{
-		mFloater->populateContactGroupSelect();
+		//mFloater->populateContactGroupSelect();
 		mFloater->updateFriends(mMask);
 
 		mEventTimer.stop();
@@ -134,16 +153,10 @@ LLPanelFriends::LLPanelFriends() :
 {
 	mEventTimer.stop();
 	mObserver = new LLLocalFriendsObserver(this);
-	LLAvatarTracker::instance().addObserver(mObserver);
-	// For notification when SIP online status changes.
-	LLVoiceClient::getInstance()->addObserver(mObserver);
 }
 
 LLPanelFriends::~LLPanelFriends()
 {
-	// For notification when SIP online status changes.
-	LLVoiceClient::getInstance()->removeObserver(mObserver);
-	LLAvatarTracker::instance().removeObserver(mObserver);
 	delete mObserver;
 }
 
@@ -218,7 +231,7 @@ std::string LLPanelFriends::cleanFileName(std::string filename)
 	return filename;
 }
 
-void LLPanelFriends::populateContactGroupSelect()
+/*void LLPanelFriends::populateContactGroupSelect()
 {
 	LLComboBox* combo = getChild<LLComboBox>("buddy_group_combobox");
 
@@ -241,18 +254,18 @@ void LLPanelFriends::populateContactGroupSelect()
 		LLChat msg("Null combo");
 		LLFloaterChat::addChat(msg);
 	}
-}
+}*/
 
-void LLPanelFriends::setContactGroup(std::string contact_grp)
+/*void LLPanelFriends::setContactGroup(std::string contact_grp)
 {
 	LLChat msg("Group set to " + contact_grp);
 	LLFloaterChat::addChat(msg);
 	refreshNames(LLFriendObserver::ADD);
 	refreshUI();
 	categorizeContacts();
-}
+}*/
 
-void LLPanelFriends::categorizeContacts()
+/*void LLPanelFriends::categorizeContacts()
 {
 	LLSD contact_groups = gSavedPerAccountSettings.getLLSD("AscentContactGroups");
 	std::string group_name = "All";
@@ -306,7 +319,7 @@ void LLPanelFriends::categorizeContacts()
 		LLChat msg("Null combo.");
 		LLFloaterChat::addChat(msg);
 	}
-}
+}*/
 
 void LLPanelFriends::filterContacts(const std::string& search_name)
 {
@@ -350,7 +363,7 @@ void LLPanelFriends::onContactSearchEdit(const std::string& search_string, void*
 	}
 }
 
-void LLPanelFriends::onChangeContactGroup(LLUICtrl* ctrl, void* user_data)
+/*void LLPanelFriends::onChangeContactGroup(LLUICtrl* ctrl, void* user_data)
 {
 	LLPanelFriends* panelp = (LLPanelFriends*)user_data;
 
@@ -359,7 +372,7 @@ void LLPanelFriends::onChangeContactGroup(LLUICtrl* ctrl, void* user_data)
 		LLComboBox* combo = panelp->getChild<LLComboBox>("buddy_group_combobox");
 		panelp->setContactGroup(combo->getValue().asString());
 	}
-}
+}*/
 // --
 
 // virtual
@@ -368,7 +381,7 @@ BOOL LLPanelFriends::postBuild()
 	mFriendsList = getChild<LLScrollListCtrl>("friend_list");
 	mFriendsList->setCommitOnSelectionChange(TRUE);
 	mFriendsList->setCommitCallback(onSelectName, this);
-	childSetCommitCallback("buddy_group_combobox", onChangeContactGroup, this);
+	//childSetCommitCallback("buddy_group_combobox", onChangeContactGroup, this);
 	mFriendsList->setDoubleClickCallback(onClickIM, this);
 
 	// <dogmode>
@@ -387,7 +400,7 @@ BOOL LLPanelFriends::postBuild()
 	refreshNames(changed_mask);
 
 	childSetAction("im_btn", onClickIM, this);
-	childSetAction("assign_btn", onClickAssign, this);
+	//childSetAction("assign_btn", onClickAssign, this);
 	childSetAction("expand_collapse_btn", onClickExpand, this);
 	childSetAction("profile_btn", onClickProfile, this);
 	childSetAction("offer_teleport_btn", onClickOfferTeleport, this);
@@ -421,26 +434,8 @@ BOOL LLPanelFriends::addFriend(const LLUUID& agent_id)
 	bool isOnline = relationInfo->isOnline();
 
 	std::string fullname;
-	// [Ansariel: Display name support]
-	//BOOL have_name = gCacheName->getFullName(agent_id, fullname);
-	LLAvatarName avatar_name;
-	BOOL have_name;
-	if (LLAvatarNameCache::get(agent_id, &avatar_name))
-	{
-		static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-		switch (phoenix_name_system)
-		{
-			case 0 : fullname = avatar_name.getLegacyName(); break;
-			case 1 : fullname = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-			case 2 : fullname = avatar_name.mDisplayName; break;
-			default : fullname = avatar_name.getCompleteName(); break;
-		}
+	BOOL have_name = LLAvatarNameCache::getPNSName(agent_id, fullname);
 
-		have_name = TRUE;
-	}
-	else have_name = FALSE;
-	// [/Ansariel: Display name support]
-	
 	LLSD element;
 	element["id"] = agent_id;
 	LLSD& friend_column = element["columns"][LIST_FRIEND_NAME];
@@ -520,26 +515,8 @@ BOOL LLPanelFriends::updateFriendItem(const LLUUID& agent_id, const LLRelationsh
 	bool isOnlineSIP = LLVoiceClient::getInstance()->isOnlineSIP(itemp->getUUID());
 	bool isOnline = info->isOnline();
 
-	std::string fullname;	
-	// [Ansariel: Display name support]
-	//BOOL have_name = gCacheName->getFullName(agent_id, fullname);
-	LLAvatarName avatar_name;
-	BOOL have_name;
-	if (LLAvatarNameCache::get(agent_id, &avatar_name))
-	{
-		static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-		switch (phoenix_name_system)
-		{
-			case 0 : fullname = avatar_name.getLegacyName(); break;
-			case 1 : fullname = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-			case 2 : fullname = avatar_name.mDisplayName; break;
-			default : fullname = avatar_name.getCompleteName(); break;
-		}
-
-		have_name = TRUE;
-	}
-	else have_name = FALSE;
-	// [/Ansariel: Display name support]
+	std::string fullname;
+	BOOL have_name = LLAvatarNameCache::getPNSName(agent_id, fullname);
 
 	// Name of the status icon to use
 	std::string statusIcon;
@@ -579,6 +556,8 @@ BOOL LLPanelFriends::updateFriendItem(const LLUUID& agent_id, const LLRelationsh
 
 	// enable this item, in case it was disabled after user input
 	itemp->setEnabled(TRUE);
+
+	mFriendsList->setNeedsSort();
 
 	// Do not resort, this function can be called frequently.
 	return have_name;
@@ -635,7 +614,7 @@ void LLPanelFriends::refreshRightsChangeList()
 	if (num_selected == 0)  // nothing selected
 	{
 		childSetEnabled("im_btn", FALSE);
-		childSetEnabled("assign_btn", FALSE);
+		//childSetEnabled("assign_btn", FALSE);
 		childSetEnabled("offer_teleport_btn", FALSE);
 	}
 	else // we have at least one friend selected...
@@ -644,7 +623,7 @@ void LLPanelFriends::refreshRightsChangeList()
 		// to be consistent with context menus in inventory and because otherwise
 		// offline friends would be silently dropped from the session
 		childSetEnabled("im_btn", selected_friends_online || num_selected == 1);
-		childSetEnabled("assign_btn", num_selected == 1);
+		//childSetEnabled("assign_btn", num_selected == 1);
 		childSetEnabled("offer_teleport_btn", can_offer_teleport);
 	}
 }
@@ -776,7 +755,7 @@ void LLPanelFriends::refreshUI()
 	//Options that can only be performed with one friend selected
 	childSetEnabled("profile_btn", single_selected && !multiple_selected);
 	childSetEnabled("pay_btn", single_selected && !multiple_selected);
-	childSetEnabled("assign_btn", single_selected && !multiple_selected);
+	//childSetEnabled("assign_btn", single_selected && !multiple_selected);
 
 	//Options that can be performed with up to MAX_FRIEND_SELECT friends selected
 	//(single_selected will always be true in this situations)
@@ -817,7 +796,7 @@ void LLPanelFriends::onClickProfile(void* user_data)
 }
 
 // static
-void LLPanelFriends::onClickAssign(void* user_data)
+/*void LLPanelFriends::onClickAssign(void* user_data)
 {
 	LLPanelFriends* panelp = (LLPanelFriends*)user_data;
 	if (panelp)
@@ -825,7 +804,7 @@ void LLPanelFriends::onClickAssign(void* user_data)
 		const uuid_vec_t ids = panelp->mFriendsList->getSelectedIDs();
 		ASFloaterContactGroups::show(ids);
 	}
-}
+}*/
 
 // static
 void LLPanelFriends::onClickExpand(void* user_data)
@@ -880,20 +859,12 @@ void LLPanelFriends::onClickIM(void* user_data)
 		{
 			LLUUID agent_id = ids[0];
 			const LLRelationship* info = LLAvatarTracker::instance().getBuddyInfo(agent_id);
-			// [Ansariel: Display name support]
-			//std::string fullname;
-			//if(info && gCacheName->getFullName(agent_id, fullname))
-			//{
-			//	gIMMgr->setFloaterOpen(TRUE);
-			//	gIMMgr->addSession(fullname, IM_NOTHING_SPECIAL, agent_id);
-			//}
-			LLAvatarName avatar_name;
-			if (info && LLAvatarNameCache::get(agent_id, &avatar_name))
+			std::string fullname;
+			if(info && gCacheName->getFullName(agent_id, fullname))
 			{
 				gIMMgr->setFloaterOpen(TRUE);
-				gIMMgr->addSession(LLCacheName::cleanFullName(avatar_name.getLegacyName()),IM_NOTHING_SPECIAL,agent_id);
+				gIMMgr->addSession(fullname, IM_NOTHING_SPECIAL, agent_id);
 			}
-			// [/Ansariel: Display name support]
 		}
 		else
 		{
@@ -1009,30 +980,9 @@ void LLPanelFriends::onClickRemove(void* user_data)
 		if(ids.size() == 1)
 		{
 			LLUUID agent_id = ids[0];
-			// [Ansariel: Display name support]
-			//std::string first, last;
-			//if(gCacheName->getName(agent_id, first, last))
-			//{
-			//	args["FIRST_NAME"] = first;
-			//	args["LAST_NAME"] = last;	
-			//}
-
-			LLAvatarName avatar_name;
-			if (LLAvatarNameCache::get(agent_id, &avatar_name))
-			{
-				std::string fullname;
-				static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-				switch (phoenix_name_system)
-				{
-					case 0 : fullname = avatar_name.getLegacyName(); break;
-					case 1 : fullname = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-					case 2 : fullname = avatar_name.mDisplayName; break;
-					default : fullname = avatar_name.getCompleteName(); break;
-				}
-				
+			std::string fullname;
+			if (LLAvatarNameCache::getPNSName(agent_id, fullname))
 				args["NAME"] = fullname;
-			}
-			// [/Ansariel: Display name support]
 		}
 		else
 		{
@@ -1276,28 +1226,9 @@ void LLPanelFriends::confirmModifyRights(rights_map_t& ids, EGrantRevoke command
 		if(ids.size() == 1)
 		{
 			LLUUID agent_id = ids.begin()->first;
-			//std::string first, last;
-			//if(gCacheName->getName(agent_id, first, last))
-			//{
-			//	args["FIRST_NAME"] = first;
-			//	args["LAST_NAME"] = last;	
-			//}
-
-			LLAvatarName avatar_name;
-			if (LLAvatarNameCache::get(agent_id, &avatar_name))
-			{
-				std::string fullname;
-				static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-				switch (phoenix_name_system)
-				{
-					case 0 : fullname = avatar_name.getLegacyName(); break;
-					case 1 : fullname = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-					case 2 : fullname = avatar_name.mDisplayName; break;
-					default : fullname = avatar_name.getCompleteName(); break;
-				}
-				
+			std::string fullname;
+			if (LLAvatarNameCache::getPNSName(agent_id, fullname))
 				args["NAME"] = fullname;
-			}
 
 			if (command == GRANT)
 			{
@@ -1394,6 +1325,7 @@ void LLPanelFriends::applyRightsToFriends()
 				rights &= ~LLRelationship::GRANT_MAP_LOCATION;
 				// propagate rights constraint to UI
 				(*itr)->getColumn(LIST_VISIBLE_MAP)->setValue(FALSE);
+				mFriendsList->setNeedsSortColumn(LIST_VISIBLE_MAP);
 			}
 		}
 		if(buddy_relationship->isRightGrantedTo(LLRelationship::GRANT_MAP_LOCATION) != show_map_location)
@@ -1405,6 +1337,7 @@ void LLPanelFriends::applyRightsToFriends()
 				rights |= LLRelationship::GRANT_MAP_LOCATION;
 				rights |= LLRelationship::GRANT_ONLINE_STATUS;
 				(*itr)->getColumn(LIST_VISIBLE_ONLINE)->setValue(TRUE);
+				mFriendsList->setNeedsSortColumn(LIST_VISIBLE_ONLINE);
 			}
 			else 
 			{

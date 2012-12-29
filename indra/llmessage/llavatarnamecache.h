@@ -65,6 +65,12 @@ namespace LLAvatarNameCache
 	// If name is in cache, returns true and fills in provided LLAvatarName
 	// otherwise returns false
 	bool get(const LLUUID& agent_id, LLAvatarName *av_name);
+	// If get() succeeds, returns true and fills in name string
+	// via void function below, otherwise returns false
+	bool getPNSName(const LLUUID& agent_id, std::string& name);
+	// Perform a filling of name string according to Phoenix Name System,
+	// when we have an LLAvatarName already.
+	void getPNSName(const LLAvatarName& avatar_name, std::string& name);
 
 	// Callback types for get() below
 	typedef boost::signals2::signal<

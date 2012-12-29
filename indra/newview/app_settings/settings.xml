@@ -692,11 +692,55 @@
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
-	</map>
+    </map>
+    <key>LiruAddNotReplace</key>
+    <map>
+      <key>Comment</key>
+      <string>Add clothing and attachments instead of having them replace the currently worn or attached item at their destination.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LiruContinueFlyingOnUnsit</key>
+    <map>
+      <key>Comment</key>
+      <string>Fly after standing up, if you were flying when you sat down</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LiruFlyAfterTeleport</key>
+    <map>
+      <key>Comment</key>
+      <string>Fly after teleports</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LiruNoTransactionClutter</key>
+    <map>
+      <key>Comment</key>
+      <string>Use notifytips for transactions instead of notifys, this way they do not collect in the top right of the screen.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>LiruSensibleARC</key>
     <map>
       <key>Comment</key>
-	  <string>Use the old-style way to calculate Avatar Render Cost.
+      <string>Use the old-style way to calculate Avatar Render Cost.
 Found in Advanced->Rendering->Info Displays</string>
       <key>Persist</key>
       <integer>1</integer>
@@ -704,7 +748,7 @@ Found in Advanced->Rendering->Info Displays</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>1</integer>
-	</map>
+    </map>
     <key>MarketImporterUpdateFreq</key>
     <map>
       <key>Comment</key>
@@ -864,6 +908,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>TurnAroundWhenWalkingBackwards</key>
+    <map>
+      <key>Comment</key>
+      <string>Turn your avatar around to face the camera while walking backwards.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
     </map>
     <key>EmeraldBoobMass</key>
     <map>
@@ -6274,6 +6329,149 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
       </array>
     </map>
+    <key>RadarColumnMarkWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>Width for radar's mark column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>12</integer>
+    </map>
+    <key>RadarColumnPositionWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>Width for radar's position column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>60</integer>
+    </map>
+    <key>RadarColumnAltitudeWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>Width for radar's altitude column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>48</integer>
+    </map>
+    <key>RadarColumnActivityWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>Width for radar's activity column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>24</integer>
+    </map>
+    <key>RadarColumnAgeWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>Width for radar's age column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>45</integer>
+    </map>
+    <key>RadarColumnTimeWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>Width for radar's time column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>52</integer>
+    </map>
+    <key>RadarColumnMarkHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's mark column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>RadarColumnPositionHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's position column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>RadarColumnAltitudeHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's altitude column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>RadarColumnActivityHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's activity column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>RadarColumnAgeHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's age column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>RadarColumnTimeHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's time column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>RadarColumnClientHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's client column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>RadarKeepOpen</key>
     <map>
       <key>Comment</key>
@@ -6339,6 +6537,28 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>1</integer>
+    </map>
+    <key>RadarAlertAge</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether the radar emits chat alerts for avatars younger than AvatarAgeAlertDays appearing.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AvatarAgeAlertDays</key>
+    <map>
+      <key>Comment</key>
+      <string>Age below which avatars will be made known to you</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>3</integer>
     </map>
     <key>RadarChatAlerts</key>
     <map>

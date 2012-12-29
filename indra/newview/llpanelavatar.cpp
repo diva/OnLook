@@ -89,6 +89,7 @@
 
 
 #include <iosfwd>
+#include <boost/date_time.hpp>
 
 
 
@@ -167,21 +168,9 @@ void LLPanelAvatarSecondLife::updatePartnerName()
 {
 	if (mPartnerID.notNull())
 	{
-		// [Ansariel: Display name support]
-		LLAvatarName avatar_name;
-		if (LLAvatarNameCache::get(mPartnerID, &avatar_name))
-		{
-			std::string name;
-			switch (gSavedSettings.getS32("PhoenixNameSystem"))
-			{
-				case 0 : name = avatar_name.getLegacyName(); break;
-				case 1 : name = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-				case 2 : name = avatar_name.mDisplayName; break;
-				default : name = avatar_name.getLegacyName(); break;
-			}
+		std::string name;
+		if (LLAvatarNameCache::getPNSName(mPartnerID, name))
 			childSetTextArg("partner_edit", "[NAME]", name);
-		}
-		// [/Ansariel: Display name support]
 		childSetEnabled("partner_info", TRUE);
 	}
 }
@@ -202,9 +191,7 @@ void LLPanelAvatarSecondLife::clearControls()
 	childSetValue("born", "");
 	childSetValue("acct", "");
 
-	// [Ansariel: Display name support]
 	childSetTextArg("partner_edit", "[NAME]", LLStringUtil::null);
-	// [/Ansariel: Display name support]
 
 	mPartnerID = LLUUID::null;
 	
@@ -283,23 +270,15 @@ void LLPanelAvatarSecondLife::processProperties(void* data, EAvatarProcessorType
 
 			getChild<LLTextureCtrl>("img")->setImageAssetID(pAvatarData->image_id);
 
-			//Chalice - Show avatar age in days.
-			int year, month, day;
-			sscanf(pAvatarData->born_on.c_str(),"%d/%d/%d",&month,&day,&year);
-			time_t now = time(NULL);
-			struct tm * timeinfo;
-			timeinfo=localtime(&now);
-			timeinfo->tm_mon = --month;
-			timeinfo->tm_year = year - 1900;
-			timeinfo->tm_mday = day;
-			time_t birth = mktime(timeinfo);
-			std::stringstream NumberString;
-			NumberString << (difftime(now,birth) / (60*60*24));
-			std::string born_on = pAvatarData->born_on;
-			born_on += " (";
-			born_on += NumberString.str();
-			born_on += ")";
-			childSetValue("born", born_on);
+			// Show avatar age in days.
+			{
+				using namespace boost::gregorian;
+				int year, month, day;
+				sscanf(pAvatarData->born_on.c_str(),"%d/%d/%d",&month,&day,&year);
+				std::ostringstream born_on;
+				born_on << pAvatarData->born_on << " (" << day_clock::local_day() - date(year, month, day) << ")";
+				childSetValue("born", born_on.str());
+			}
 
 			bool allow_publish = (pAvatarData->flags & AVATAR_ALLOW_PUBLISH);
 			childSetValue("allow_publish", allow_publish);

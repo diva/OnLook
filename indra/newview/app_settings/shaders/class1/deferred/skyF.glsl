@@ -60,7 +60,7 @@ void main()
 
 	/// Gamma correct for WL (soft clip effect).
 	frag_data[0] = vec4(scaleSoftClip(color.rgb), 1.0);
-	frag_data[1] = vec4(0.0,0.0,0.0,0.0);
+	frag_data[1] = vec4(vary_HazeColor.a,0.0,0.0,0.0);
 //#define PACK_NORMALS
 #ifdef PACK_NORMALS
 	frag_data[2] = vec4(0.5,0.5,0.0,0.0);

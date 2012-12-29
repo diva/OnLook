@@ -721,6 +721,31 @@ std::string LLViewerRegion::accessToShortString(U8 sim_access)
 }
 
 // static
+U8 LLViewerRegion::shortStringToAccess(const std::string &sim_access)
+{
+	U8 accessValue;
+
+	if (LLStringUtil::compareStrings(sim_access, "PG") == 0)
+	{
+		accessValue = SIM_ACCESS_PG;
+	}
+	else if (LLStringUtil::compareStrings(sim_access, "M") == 0)
+	{
+		accessValue = SIM_ACCESS_MATURE;
+	}
+	else if (LLStringUtil::compareStrings(sim_access, "A") == 0)
+	{
+		accessValue = SIM_ACCESS_ADULT;
+	}
+	else
+	{
+		accessValue = SIM_ACCESS_MIN;
+	}
+
+	return accessValue;
+}
+
+// static
 void LLViewerRegion::processRegionInfo(LLMessageSystem* msg, void**)
 {
 	// send it to 'observers'
@@ -1565,7 +1590,6 @@ void LLViewerRegion::unpackRegionHandshake()
 	msg->sendReliable(host);
 }
 
-
 void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 {
 	capabilityNames.append("AgentState");
@@ -1576,11 +1600,9 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("CopyInventoryFromNotecard");
 	capabilityNames.append("CreateInventoryCategory");
 	capabilityNames.append("DispatchRegionInfo");
+	capabilityNames.append("EnvironmentSettings");
 	capabilityNames.append("EstateChangeInfo");
 	capabilityNames.append("EventQueueGet");
-	capabilityNames.append("EnvironmentSettings");
-	/*capabilityNames.append("ObjectMedia");
-	capabilityNames.append("ObjectMediaNavigate");*/
 	
 	if (gSavedSettings.getBOOL("UseHTTPInventory")) //Caps suffixed with 2 by LL. Don't update until rest of fetch system is updated first.
 	{
@@ -1591,12 +1613,12 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	}
 
 	capabilityNames.append("GetDisplayNames");
-	capabilityNames.append("GetTexture");
 	capabilityNames.append("GetMesh");
 	capabilityNames.append("GetObjectCost");
 	capabilityNames.append("GetObjectPhysicsData");
+	capabilityNames.append("GetTexture");
+	capabilityNames.append("GroupMemberData");
 	capabilityNames.append("GroupProposalBallot");
-
 	capabilityNames.append("HomeLocation");
 	//capabilityNames.append("LandResources"); //Script limits (llfloaterscriptlimits.cpp)
 	capabilityNames.append("MapLayer");
@@ -1606,9 +1628,11 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 #endif //MESH_IMPORT
 	capabilityNames.append("NavMeshGenerationStatus");
 	capabilityNames.append("NewFileAgentInventory");
+	/*capabilityNames.append("ObjectMedia");
+	capabilityNames.append("ObjectMediaNavigate");*/
 	capabilityNames.append("ObjectNavMeshProperties");
+	capabilityNames.append("ParcelNavigateMedia"); //Singu Note: Removed by Baker, do we need this?
 	capabilityNames.append("ParcelPropertiesUpdate");
-	capabilityNames.append("ParcelNavigateMedia");
 	capabilityNames.append("ParcelVoiceInfoRequest");
 	capabilityNames.append("ProductInfoRequest");
 	capabilityNames.append("ProvisionVoiceAccountRequest");
@@ -1622,10 +1646,10 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("SendUserReport");
 	capabilityNames.append("SendUserReportWithScreenshot");
 	capabilityNames.append("ServerReleaseNotes");
-	capabilityNames.append("SimConsole");
-	capabilityNames.append("SimulatorFeatures");
 	capabilityNames.append("SetDisplayName");
+	capabilityNames.append("SimConsole"); //Singu Note: Removed by Baker, sim console won't work without this.
 	capabilityNames.append("SimConsoleAsync");
+	capabilityNames.append("SimulatorFeatures");
 	capabilityNames.append("StartGroupProposal");
 	capabilityNames.append("TerrainNavMeshProperties");
 	capabilityNames.append("TextureStats");
@@ -1633,10 +1657,10 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("UpdateAgentInformation");
 	capabilityNames.append("UpdateAgentLanguage");
 	capabilityNames.append("UpdateGestureAgentInventory");
-	capabilityNames.append("UpdateNotecardAgentInventory");
-	capabilityNames.append("UpdateScriptAgent");
 	capabilityNames.append("UpdateGestureTaskInventory");
+	capabilityNames.append("UpdateNotecardAgentInventory");
 	capabilityNames.append("UpdateNotecardTaskInventory");
+	capabilityNames.append("UpdateScriptAgent");
 	capabilityNames.append("UpdateScriptTask");
 	capabilityNames.append("UploadBakedTexture");
 	//capabilityNames.append("ViewerMetrics");
@@ -1926,5 +1950,11 @@ bool LLViewerRegion::meshRezEnabled() const
 		return (mSimulatorFeatures.has("MeshRezEnabled") &&
 				mSimulatorFeatures["MeshRezEnabled"].asBoolean());
 	}
+}
+
+bool LLViewerRegion::dynamicPathfindingEnabled() const
+{
+	return ( mSimulatorFeatures.has("DynamicPathfindingEnabled") &&
+			 mSimulatorFeatures["DynamicPathfindingEnabled"].asBoolean());
 }
 

@@ -3959,7 +3959,8 @@ void LLAppViewer::idle()
     }
 
 	static const LLCachedControl<bool> hide_tp_screen("AscentDisableTeleportScreens",false);
-	if (!hide_tp_screen && gAgent.getTeleportState() != LLAgent::TELEPORT_NONE && gAgent.getTeleportState() != LLAgent::TELEPORT_LOCAL)
+	LLAgent::ETeleportState tp_state = gAgent.getTeleportState();
+	if (!hide_tp_screen && tp_state != LLAgent::TELEPORT_NONE && tp_state != LLAgent::TELEPORT_LOCAL && tp_state != LLAgent::TELEPORT_PENDING)
     {
 		return;
     }

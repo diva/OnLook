@@ -79,6 +79,13 @@ vec3 vary_AmblitColor;
 vec3 vary_AdditiveColor;
 vec3 vary_AtmosAttenuation;
 
+float luminance(vec3 color)
+{
+	/// CALCULATING LUMINANCE (Using NTSC lum weights)
+	/// http://en.wikipedia.org/wiki/Luma_%28video%29
+	return dot(color, vec3(0.299, 0.587, 0.114));
+}
+
 vec4 getPosition_d(vec2 pos_screen, float depth)
 {
 	vec2 sc = pos_screen.xy*2.0;
@@ -290,14 +297,13 @@ void main()
 	float da = max(dot(norm.xyz, sun_dir.xyz), 0.0);
 	
 	vec4 diffuse = texture2DRect(diffuseRect, tc);
+	vec4 spec = texture2DRect(specularRect, vary_fragcoord.xy);
 
 	vec3 col;
 	float bloom = 0.0;
 
 	if (diffuse.a < 0.9)
 	{
-		vec4 spec = texture2DRect(specularRect, vary_fragcoord.xy);
-		
 		vec2 scol_ambocc = texture2DRect(lightMap, vary_fragcoord.xy).rg;
 		float scol = max(scol_ambocc.r, diffuse.a); 
 		float ambocc = scol_ambocc.g;
@@ -324,7 +330,9 @@ void main()
 
 			//add environmentmap
 			vec3 env_vec = env_mat * refnormpersp;
-			col = mix(col.rgb, textureCube(environmentMap, env_vec).rgb, 
+			vec3 env = textureCube(environmentMap, env_vec).rgb;
+			bloom = (luminance(env) - .45)*.25;
+			col = mix(col.rgb, env, 
 				max(spec.a-diffuse.a*2.0, 0.0)); 
 		}
 			
@@ -335,6 +343,7 @@ void main()
 	}
 	else
 	{
+		bloom = spec.r;
 		col = diffuse.rgb;
 	}
 		

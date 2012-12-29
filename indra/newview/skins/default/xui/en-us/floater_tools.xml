@@ -99,9 +99,9 @@
 			Reference
 		</combo_item>
 	</combo_box>
-	<check_box bottom="-70" control_name="ScaleUniform" follows="left|top"
+	<check_box bottom="-67" control_name="ScaleUniform" follows="left|top"
 	    font="SansSerifSmall" height="15" initial_value="false"
-	    label="Stretch Both Sides" left="143" mouse_opaque="true"
+	    label="Stretch Both Sides" left="128" mouse_opaque="true"
 	    name="checkbox uniform" width="134" />
 	<check_box bottom_delta="-16" control_name="ScaleStretchTextures" follows="left|top"
 	    font="SansSerifSmall" height="15" initial_value="true"
@@ -111,12 +111,16 @@
 	    font="SansSerifSmall" height="15" initial_value="true"
 	    label="Limit drag distance" left_delta="0" mouse_opaque="true"
 	    name="checkbox limit drag distance" width="134" />
+	<check_box bottom_delta="-15" control_name="AscentBuildPrefs_ActualRoot" follows="left|top"
+		height="16" label="Edit Axis at Root" name="checkbox actual root" width="134"/>
+	<check_box bottom_delta="-16" control_name="RenderHighlightSelections" follows="left|top"
+		height="15" label="Show Highlight" name="checkbox show highlight"/>
 	<check_box bottom_delta="-16" control_name="SnapEnabled" follows="left|top"
 	    font="SansSerifSmall" height="15" initial_value="true" label="Use Grid"
 	    left_delta="0" mouse_opaque="true" name="checkbox snap to grid" width="134" />
-	<button bottom_delta="-17" follows="left|top" font="SansSerifSmall" halign="center" 
-		valign="center" height="20" label="Options..." label_selected="Options..." 
-		left_delta="20" mouse_opaque="true" name="Options..." scale_image="TRUE" width="80" />
+	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" halign="center"
+		valign="center" height="18" label="Options..." label_selected="Options..."
+		left_delta="64" mouse_opaque="true" name="Options..." scale_image="TRUE" width="75" />
 
 <!-- Help text -->
 
@@ -293,13 +297,13 @@
 	     increment="0.1" initial_val="0.00" left="178" max_val="2.0" min_val="-1.0"
 	     mouse_opaque="true" name="slider force" width="80" />
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-         bottom="-151" left="118" drop_shadow_visible="true" follows="left|top"
+         bottom="-160" left="118" drop_shadow_visible="true" follows="left|top"
          font="SansSerifSmall" h_pad="0" halign="right" height="16" visible="false" 
          mouse_opaque="true" name="link_num_obj_count" v_pad="0" width="143">
 		[DESC] [NUM]
 	</text>
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-       bottom="-163" left="118" drop_shadow_visible="true" follows="left|top"
+       bottom="-170" left="118" drop_shadow_visible="true" follows="left|top"
        font="SansSerifSmall" h_pad="0" halign="right" height="16"
        mouse_opaque="true" name="prim_count" v_pad="0" width="143"/>
 

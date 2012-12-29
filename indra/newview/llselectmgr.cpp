@@ -6430,7 +6430,7 @@ LLBBox LLSelectMgr::getBBoxOfSelection() const
 //-----------------------------------------------------------------------------
 BOOL LLSelectMgr::canUndo() const
 {
-	return const_cast<LLSelectMgr*>(this)->mSelectedObjects->getFirstEditableObject() != NULL; // HACK: casting away constness - MG
+	return const_cast<LLSelectMgr*>(this)->mSelectedObjects->getFirstMoveableObject() != NULL; // HACK: casting away constness - MG
 }
 
 //-----------------------------------------------------------------------------
@@ -6448,7 +6448,7 @@ void LLSelectMgr::undo()
 //-----------------------------------------------------------------------------
 BOOL LLSelectMgr::canRedo() const
 {
-	return const_cast<LLSelectMgr*>(this)->mSelectedObjects->getFirstEditableObject() != NULL; // HACK: casting away constness - MG
+	return const_cast<LLSelectMgr*>(this)->mSelectedObjects->getFirstMoveableObject() != NULL; // HACK: casting away constness - MG
 }
 
 //-----------------------------------------------------------------------------

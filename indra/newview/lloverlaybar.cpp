@@ -246,19 +246,23 @@ void LLOverlayBar::layoutButtons()
 
 	if (state_buttons_panel->getVisible())
 	{
-		U32 required_width=0;
+		U32 button_count = 0;
 		const child_list_t& view_list = *(state_buttons_panel->getChildList());
 		BOOST_FOREACH(LLView* viewp, view_list)
 		{
-			required_width+=viewp->getRect().getWidth();
+			if(!viewp->getEnabled())
+				continue;
+			++button_count;
 		}
+		const S32 MAX_BAR_WIDTH = 600;
+		S32 bar_width = llclamp(state_buttons_panel->getRect().getWidth(), 0, MAX_BAR_WIDTH);
 
-		const S32 MAX_BAR_WIDTH = 800;
-		//const S32 MAX_BUTTON_WIDTH = 150;
+		// calculate button widths
+		const S32 MAX_BUTTON_WIDTH = 150;
 
 		static LLCachedControl<S32> status_bar_pad("StatusBarPad",10);
-		S32 usable_bar_width = llclamp(state_buttons_panel->getRect().getWidth(), 0, MAX_BAR_WIDTH) - (view_list.size()-1) * status_bar_pad;
-		F32 element_scale = (F32)usable_bar_width / (F32)required_width;
+		S32 segment_width = llclamp(lltrunc((F32)(bar_width) / (F32)button_count), 0, MAX_BUTTON_WIDTH);
+		S32 btn_width = segment_width - status_bar_pad;
 
 		// Evenly space all buttons, starting from left
 		S32 left = 0;
@@ -266,13 +270,14 @@ void LLOverlayBar::layoutButtons()
 
 		BOOST_REVERSE_FOREACH(LLView* viewp, view_list)
 		{
+			if(!viewp->getEnabled())
+				continue;
 			LLRect r = viewp->getRect();
-			S32 new_width = r.getWidth() * element_scale;
 			//if(dynamic_cast<LLButton*>(viewp))
 			//	new_width = llclamp(new_width,0,MAX_BUTTON_WIDTH);
-			r.setOriginAndSize(left, bottom, new_width, r.getHeight());
-			viewp->setShape(r,false);
-			left += viewp->getRect().getWidth() + status_bar_pad;
+			r.setOriginAndSize(left, bottom, btn_width, r.getHeight());
+			viewp->setRect(r);
+			left += segment_width;
 		}
 	}
 }

@@ -213,6 +213,7 @@ extern bool gShiftFrame;
 // function prototypes
 bool check_offer_throttle(const std::string& from_name, bool check_only);
 void callbackCacheEstateOwnerName(const LLUUID& id, const std::string& full_name,  bool is_group);
+static void process_money_balance_reply_extended(LLMessageSystem* msg);
 
 //inventory offer throttle globals
 LLFrameTimer gThrottleTimer;
@@ -3633,29 +3634,11 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			}
 		}
 
-
-		// [Ansariel/Henri: Display name support]
 		if (chatter && chatter->isAvatar())
 		{
-			if (LLAvatarNameCache::useDisplayNames())
-			{
-				LLAvatarName avatar_name;
-				if (LLAvatarNameCache::get(from_id, &avatar_name))
-				{
-					static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-					if (phoenix_name_system == 2 || (phoenix_name_system == 1 && avatar_name.mIsDisplayNameDefault))
-					{
-						from_name = avatar_name.mDisplayName;
-					}
-					else
-					{
-						from_name = avatar_name.getCompleteName();
-					}
-				}
+			if (LLAvatarNameCache::getPNSName(from_id, from_name))
 				chat.mFromName = from_name;
-			}
 		}
-		// [/Ansariel/Henri: Display name support]
 
 		BOOL visible_in_chat_bubble = FALSE;
 		std::string verb;
@@ -5402,7 +5385,10 @@ void process_avatar_sit_response(LLMessageSystem *mesgsys, void **user_data)
 	gAgentCamera.setForceMouselook(force_mouselook);
 	// Forcing turning off flying here to prevent flying after pressing "Stand"
 	// to stand up from an object. See EXT-1655.
-	gAgent.setFlying(FALSE);
+	// Unless the user wants to.
+	static LLCachedControl<bool> ContinueFlying("LiruContinueFlyingOnUnsit");
+	if (!ContinueFlying)
+		gAgent.setFlying(FALSE);
 
 	LLViewerObject* object = gObjectList.findObject(sitObjectID);
 	if (object)
@@ -5706,20 +5692,20 @@ void process_money_balance_reply( LLMessageSystem* msg, void** )
 		gStatusBar->setLandCredit(credit);
 		gStatusBar->setLandCommitted(committed);
 	}
-	static std::deque<LLUUID> recent;
-	if(!desc.empty() && gSavedSettings.getBOOL("NotifyMoneyChange")
-	   && (std::find(recent.rbegin(), recent.rend(), tid) == recent.rend()))
-	{
-		// Make the user confirm the transaction, since they might
-		// have missed something during an event.
-		// *TODO:translate
-		LLSD args;
-		args["MESSAGE"] = desc;
-		LLNotificationsUtil::add("SystemMessage", args);
 
-		// Also send notification to chat -- MC
-		LLChat chat(desc);
-		LLFloaterChat::addChat(desc);
+	if (desc.empty()
+		|| !gSavedSettings.getBOOL("NotifyMoneyChange"))
+	{
+		// ...nothing to display
+		return;
+	}
+
+	// Suppress duplicate messages about the same transaction
+	static std::deque<LLUUID> recent;
+	if (std::find(recent.rbegin(), recent.rend(), tid) != recent.rend())
+	{
+		return;
+	}
 
 		// Once the 'recent' container gets large enough, chop some
 		// off the beginning.
@@ -5732,20 +5718,247 @@ void process_money_balance_reply( LLMessageSystem* msg, void** )
 		}
 		//LL_DEBUGS("Messaging") << "Pushing back transaction " << tid << LL_ENDL;
 		recent.push_back(tid);
+
+	if (msg->has("TransactionInfo"))
+	{
+		// ...message has extended info for localization
+		process_money_balance_reply_extended(msg);
+	}
+	else
+	{
+		// Only old dev grids will not supply the TransactionInfo block,
+		// so we can just use the hard-coded English string.
+		LLSD args;
+		args["MESSAGE"] = desc;
+		LLNotificationsUtil::add("SystemMessage", args);
+
+		// Also send notification to chat -- MC
+		LLChat chat(desc);
+		LLFloaterChat::addChat(desc);
 	}
 }
 
-bool handle_special_notification_callback(const LLSD& notification, const LLSD& response)
+static std::string reason_from_transaction_type(S32 transaction_type,
+												const std::string& item_desc)
+{
+	// *NOTE: The keys for the reason strings are unusual because
+	// an earlier version of the code used English language strings
+	// extracted from hard-coded server English descriptions.
+	// Keeping them so we don't have to re-localize them.
+	switch (transaction_type)
+	{
+		case TRANS_OBJECT_SALE:
+		{
+			LLStringUtil::format_map_t arg;
+			arg["ITEM"] = item_desc;
+			return LLTrans::getString("for item", arg);
+		}
+		case TRANS_LAND_SALE:
+			return LLTrans::getString("for a parcel of land");
+
+		case TRANS_LAND_PASS_SALE:
+			return LLTrans::getString("for a land access pass");
+
+		case TRANS_GROUP_LAND_DEED:
+			return LLTrans::getString("for deeding land");
+
+		case TRANS_GROUP_CREATE:
+			return LLTrans::getString("to create a group");
+
+		case TRANS_GROUP_JOIN:
+			return LLTrans::getString("to join a group");
+
+		case TRANS_UPLOAD_CHARGE:
+			return LLTrans::getString("to upload");
+
+		case TRANS_CLASSIFIED_CHARGE:
+			return LLTrans::getString("to publish a classified ad");
+
+		// These have no reason to display, but are expected and should not
+		// generate warnings
+		case TRANS_GIFT:
+		case TRANS_PAY_OBJECT:
+		case TRANS_OBJECT_PAYS:
+			return std::string();
+
+		default:
+			llwarns << "Unknown transaction type "
+				<< transaction_type << llendl;
+			return std::string();
+	}
+}
+
+static void process_money_balance_reply_extended(LLMessageSystem* msg)
+{
+	// Added in server 1.40 and viewer 2.1, support for localization
+	// and agent ids for name lookup.
+	S32 transaction_type = 0;
+	LLUUID source_id;
+	BOOL is_source_group = false;
+	LLUUID dest_id;
+	BOOL is_dest_group = false;
+	S32 amount = 0;
+	std::string item_description;
+	BOOL success = false;
+
+	msg->getS32("TransactionInfo", "TransactionType", transaction_type);
+	msg->getUUID("TransactionInfo", "SourceID", source_id);
+	msg->getBOOL("TransactionInfo", "IsSourceGroup", is_source_group);
+	msg->getUUID("TransactionInfo", "DestID", dest_id);
+	msg->getBOOL("TransactionInfo", "IsDestGroup", is_dest_group);
+	msg->getS32("TransactionInfo", "Amount", amount);
+	msg->getString("TransactionInfo", "ItemDescription", item_description);
+	msg->getBOOL("MoneyData", "TransactionSuccess", success);
+	LL_INFOS("Money") << "MoneyBalanceReply source " << source_id
+		<< " dest " << dest_id
+		<< " type " << transaction_type
+		<< " item " << item_description << LL_ENDL;
+
+	if (source_id.isNull() && dest_id.isNull())
+	{
+		// this is a pure balance update, no notification required
+		return;
+	}
+
+	std::string source_slurl;
+	if (is_source_group)
+	{
+		gCacheName->getGroupName(source_id, source_slurl);
+	}
+	else
+	{
+		LLAvatarNameCache::getPNSName(source_id, source_slurl);
+	}
+
+	std::string dest_slurl;
+	if (is_dest_group)
+	{
+		gCacheName->getGroupName(dest_id, dest_slurl);
+	}
+	else
+	{
+		LLAvatarNameCache::getPNSName(dest_id, dest_slurl);
+	}
+
+	std::string reason =
+		reason_from_transaction_type(transaction_type, item_description);
+
+	LLStringUtil::format_map_t args;
+	args["REASON"] = reason; // could be empty
+	args["AMOUNT"] = llformat("%d", amount);
+
+	// Need to delay until name looked up, so need to know whether or not
+	// is group
+	bool is_name_group = false;
+	LLUUID name_id;
+	std::string message;
+	static LLCachedControl<bool> no_transaction_clutter("LiruNoTransactionClutter", false);
+	std::string notification = no_transaction_clutter ? "Payment" : "SystemMessage";
+	LLSD final_args;
+	LLSD payload;
+
+	bool you_paid_someone = (source_id == gAgentID);
+	if (you_paid_someone)
+	{
+		args["NAME"] = dest_slurl;
+		is_name_group = is_dest_group;
+		name_id = dest_id;
+		if (!reason.empty())
+		{
+			if (dest_id.notNull())
+			{
+				message = success ? LLTrans::getString("you_paid_ldollars", args) :
+									LLTrans::getString("you_paid_failure_ldollars", args);
+			}
+			else
+			{
+				// transaction fee to the system, eg, to create a group
+				message = success ? LLTrans::getString("you_paid_ldollars_no_name", args) :
+									LLTrans::getString("you_paid_failure_ldollars_no_name", args);
+			}
+		}
+		else
+		{
+			if (dest_id.notNull())
+			{
+				message = success ? LLTrans::getString("you_paid_ldollars_no_reason", args) :
+									LLTrans::getString("you_paid_failure_ldollars_no_reason", args);
+			}
+			else
+			{
+				// no target, no reason, you just paid money
+				message = success ? LLTrans::getString("you_paid_ldollars_no_info", args) :
+									LLTrans::getString("you_paid_failure_ldollars_no_info", args);
+			}
+		}
+		final_args["MESSAGE"] = message;
+	}
+	else
+	{
+		// ...someone paid you
+		args["NAME"] = source_slurl;
+		is_name_group = is_source_group;
+		name_id = source_id;
+		if (!reason.empty())
+		{
+			message = LLTrans::getString("paid_you_ldollars", args);
+		}
+		else
+		{
+			message = LLTrans::getString("paid_you_ldollars_no_reason", args);
+		}
+		final_args["MESSAGE"] = message;
+
+		// make notification loggable
+		payload["from_id"] = source_id;
+	}
+
+	// Despite using SLURLs, wait until the name is available before
+	// showing the notification, otherwise the UI layout is strange and
+	// the user sees a "Loading..." message
+	if (is_name_group)
+	{
+		gCacheName->getGroup(name_id,
+						boost::bind(&LLNotificationsUtil::add,
+									notification, final_args, payload));
+	}
+	else
+	{
+		LLAvatarNameCache::get(name_id,
+						boost::bind(&LLNotificationsUtil::add,
+									notification, final_args, payload));
+	}
+}
+
+bool handle_prompt_for_maturity_level_change_callback(const LLSD& notification, const LLSD& response)
 {
 	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	
 	if (0 == option)
 	{
 		// set the preference to the maturity of the region we're calling
-		int preferredMaturity = notification["payload"]["_region_access"].asInteger();
-		gSavedSettings.setU32("PreferredMaturity", preferredMaturity);
-		gAgent.sendMaturityPreferenceToServer(preferredMaturity);
+		U8 preferredMaturity = static_cast<U8>(notification["payload"]["_region_access"].asInteger());
+		gSavedSettings.setU32("PreferredMaturity", static_cast<U32>(preferredMaturity));
+	}
+	
+	return false;
+}
 
+bool handle_prompt_for_maturity_level_change_and_reteleport_callback(const LLSD& notification, const LLSD& response)
+{
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
+	
+	if (0 == option)
+	{
+		// set the preference to the maturity of the region we're calling
+		U8 preferredMaturity = static_cast<U8>(notification["payload"]["_region_access"].asInteger());
+		gSavedSettings.setU32("PreferredMaturity", static_cast<U32>(preferredMaturity));
+		gAgent.setMaturityRatingChangeDuringTeleport(preferredMaturity);
+		gAgent.restartFailedTeleportRequest();
+	}
+	else
+	{
+		gAgent.clearTeleportRequest();
 	}
 	
 	return false;
@@ -5754,39 +5967,148 @@ bool handle_special_notification_callback(const LLSD& notification, const LLSD& 
 // some of the server notifications need special handling. This is where we do that.
 bool handle_special_notification(std::string notificationID, LLSD& llsdBlock)
 {
-	int regionAccess = llsdBlock["_region_access"].asInteger();
-	llsdBlock["REGIONMATURITY"] = LLViewerRegion::accessToString(regionAccess);
+	U8 regionAccess = static_cast<U8>(llsdBlock["_region_access"].asInteger());
+	std::string regionMaturity = LLViewerRegion::accessToString(regionAccess);
+	LLStringUtil::toLower(regionMaturity);
+	llsdBlock["REGIONMATURITY"] = regionMaturity;
 	
-	// we're going to throw the LLSD in there in case anyone ever wants to use it
-	LLNotificationsUtil::add(notificationID+"_Notify", llsdBlock);
-	
+	bool returnValue = false;
+	LLNotificationPtr maturityLevelNotification;
+	std::string notifySuffix = "_Notify";
 	if (regionAccess == SIM_ACCESS_MATURE)
 	{
 		if (gAgent.isTeen())
 		{
-			LLNotificationsUtil::add(notificationID+"_KB", llsdBlock);
-			return true;
+			gAgent.clearTeleportRequest();
+			maturityLevelNotification = LLNotificationsUtil::add(notificationID+"_AdultsOnlyContent", llsdBlock);
+			returnValue = true;
+
+			notifySuffix = "_NotifyAdultsOnly";
 		}
 		else if (gAgent.prefersPG())
 		{
-			LLNotificationsUtil::add(notificationID+"_Change", llsdBlock, llsdBlock, handle_special_notification_callback);
-			return true;
+			maturityLevelNotification = LLNotificationsUtil::add(notificationID+"_Change", llsdBlock, llsdBlock, handle_prompt_for_maturity_level_change_callback);
+			returnValue = true;
+		}
+		else if (LLStringUtil::compareStrings(notificationID, "RegionEntryAccessBlocked") == 0)
+		{
+			maturityLevelNotification = LLNotificationsUtil::add(notificationID+"_PreferencesOutOfSync", llsdBlock, llsdBlock);
+			returnValue = true;
 		}
 	}
 	else if (regionAccess == SIM_ACCESS_ADULT)
 	{
 		if (!gAgent.isAdult())
 		{
-			LLNotificationsUtil::add(notificationID+"_KB", llsdBlock);
-			return true;
+			gAgent.clearTeleportRequest();
+			maturityLevelNotification = LLNotificationsUtil::add(notificationID+"_AdultsOnlyContent", llsdBlock);
+			returnValue = true;
+
+			notifySuffix = "_NotifyAdultsOnly";
 		}
 		else if (gAgent.prefersPG() || gAgent.prefersMature())
 		{
-			LLNotificationsUtil::add(notificationID+"_Change", llsdBlock, llsdBlock, handle_special_notification_callback);
-			return true;
+			maturityLevelNotification = LLNotificationsUtil::add(notificationID+"_Change", llsdBlock, llsdBlock, handle_prompt_for_maturity_level_change_callback);
+			returnValue = true;
+		}
+		else if (LLStringUtil::compareStrings(notificationID, "RegionEntryAccessBlocked") == 0)
+		{
+			maturityLevelNotification = LLNotificationsUtil::add(notificationID+"_PreferencesOutOfSync", llsdBlock, llsdBlock);
+			returnValue = true;
 		}
 	}
-	return false;
+
+	if ((maturityLevelNotification == NULL) || maturityLevelNotification->isIgnored())
+	{
+		// Given a simple notification if no maturityLevelNotification is set or it is ignore
+		LLNotificationsUtil::add(notificationID + notifySuffix, llsdBlock);
+	}
+
+	return returnValue;
+}
+
+// some of the server notifications need special handling. This is where we do that.
+bool handle_teleport_access_blocked(LLSD& llsdBlock)
+{
+	std::string notificationID("TeleportEntryAccessBlocked");
+	U8 regionAccess = static_cast<U8>(llsdBlock["_region_access"].asInteger());
+	std::string regionMaturity = LLViewerRegion::accessToString(regionAccess);
+	LLStringUtil::toLower(regionMaturity);
+	llsdBlock["REGIONMATURITY"] = regionMaturity;
+	
+	bool returnValue = false;
+	LLNotificationPtr maturityLevelNotification;
+	std::string notifySuffix = "_Notify";
+	if (regionAccess == SIM_ACCESS_MATURE)
+	{
+		if (gAgent.isTeen())
+		{
+			gAgent.clearTeleportRequest();
+			maturityLevelNotification = LLNotificationsUtil::add(notificationID+"_AdultsOnlyContent", llsdBlock);
+			returnValue = true;
+
+			notifySuffix = "_NotifyAdultsOnly";
+		}
+		else if (gAgent.prefersPG())
+		{
+			if (gAgent.hasRestartableFailedTeleportRequest())
+			{
+				maturityLevelNotification = LLNotificationsUtil::add(notificationID+"_ChangeAndReTeleport", llsdBlock, llsdBlock, handle_prompt_for_maturity_level_change_and_reteleport_callback);
+				returnValue = true;
+			}
+			else
+			{
+				gAgent.clearTeleportRequest();
+				maturityLevelNotification = LLNotificationsUtil::add(notificationID+"_Change", llsdBlock, llsdBlock, handle_prompt_for_maturity_level_change_callback);
+				returnValue = true;
+			}
+		}
+		else
+		{
+			gAgent.clearTeleportRequest();
+			maturityLevelNotification = LLNotificationsUtil::add(notificationID+"_PreferencesOutOfSync", llsdBlock, llsdBlock, handle_prompt_for_maturity_level_change_callback);
+			returnValue = true;
+		}
+	}
+	else if (regionAccess == SIM_ACCESS_ADULT)
+	{
+		if (!gAgent.isAdult())
+		{
+			gAgent.clearTeleportRequest();
+			maturityLevelNotification = LLNotificationsUtil::add(notificationID+"_AdultsOnlyContent", llsdBlock);
+			returnValue = true;
+
+			notifySuffix = "_NotifyAdultsOnly";
+		}
+		else if (gAgent.prefersPG() || gAgent.prefersMature())
+		{
+			if (gAgent.hasRestartableFailedTeleportRequest())
+			{
+				maturityLevelNotification = LLNotificationsUtil::add(notificationID+"_ChangeAndReTeleport", llsdBlock, llsdBlock, handle_prompt_for_maturity_level_change_and_reteleport_callback);
+				returnValue = true;
+			}
+			else
+			{
+				gAgent.clearTeleportRequest();
+				maturityLevelNotification = LLNotificationsUtil::add(notificationID+"_Change", llsdBlock, llsdBlock, handle_prompt_for_maturity_level_change_callback);
+				returnValue = true;
+			}
+		}
+		else
+		{
+			gAgent.clearTeleportRequest();
+			maturityLevelNotification = LLNotificationsUtil::add(notificationID+"_PreferencesOutOfSync", llsdBlock, llsdBlock, handle_prompt_for_maturity_level_change_callback);
+			returnValue = true;
+		}
+	}
+
+	if ((maturityLevelNotification == NULL) || maturityLevelNotification->isIgnored())
+	{
+		// Given a simple notification if no maturityLevelNotification is set or it is ignore
+		LLNotificationsUtil::add(notificationID + notifySuffix, llsdBlock);
+	}
+
+	return returnValue;
 }
 
 bool attempt_standard_notification(LLMessageSystem* msgsystem)
@@ -5830,16 +6152,20 @@ bool attempt_standard_notification(LLMessageSystem* msgsystem)
 			 
 				RegionEntryAccessBlocked
 				RegionEntryAccessBlocked_Notify
+				RegionEntryAccessBlocked_NotifyAdultsOnly
 				RegionEntryAccessBlocked_Change
-				RegionEntryAccessBlocked_KB
+				RegionEntryAccessBlocked_AdultsOnlyContent
+				RegionEntryAccessBlocked_ChangeAndReTeleport
 				LandClaimAccessBlocked 
 				LandClaimAccessBlocked_Notify 
+				LandClaimAccessBlocked_NotifyAdultsOnly
 				LandClaimAccessBlocked_Change 
-				LandClaimAccessBlocked_KB 
+				LandClaimAccessBlocked_AdultsOnlyContent 
 				LandBuyAccessBlocked
 				LandBuyAccessBlocked_Notify
+				LandBuyAccessBlocked_NotifyAdultsOnly
 				LandBuyAccessBlocked_Change
-				LandBuyAccessBlocked_KB
+				LandBuyAccessBlocked_AdultsOnlyContent
 			 
 			-----------------------------------------------------------------------*/ 
 			if (handle_special_notification(notificationID, llsdBlock))
@@ -5891,6 +6217,30 @@ void process_alert_message(LLMessageSystem *msgsystem, void **user_data)
 	}
 }
 
+bool handle_not_age_verified_alert(const std::string &pAlertName)
+{
+	LLNotificationPtr notification = LLNotificationsUtil::add(pAlertName);
+	if ((notification == NULL) || notification->isIgnored())
+	{
+		LLNotificationsUtil::add(pAlertName + "_Notify");
+	}
+
+	return true;
+}
+
+bool handle_special_alerts(const std::string &pAlertName)
+{
+	bool isHandled = false;
+
+	if (LLStringUtil::compareStrings(pAlertName, "NotAgeVerified") == 0)
+	{
+		
+		isHandled = handle_not_age_verified_alert(pAlertName);
+	}
+
+	return isHandled;
+}
+
 void process_alert_core(const std::string& message, BOOL modal)
 {
 	// HACK -- handle callbacks for specific alerts
@@ -5914,7 +6264,10 @@ void process_alert_core(const std::string& message, BOOL modal)
 		// Allow the server to spawn a named alert so that server alerts can be
 		// translated out of English.
 		std::string alert_name(message.substr(ALERT_PREFIX.length()));
-		LLNotificationsUtil::add(alert_name);
+		if (!handle_special_alerts(alert_name))
+		{
+			LLNotificationsUtil::add(alert_name);
+		}
 	}
 	else if (message.find(NOTIFY_PREFIX) == 0)
 	{
@@ -6215,6 +6568,7 @@ bool script_question_cb(const LLSD& notification, const LLSD& response)
 
 		// ...with description on top
 		LLNotificationsUtil::add("DebitPermissionDetails");
+		return false;
 	}
 
 	// check whether permissions were granted or denied
@@ -6583,7 +6937,7 @@ void process_teleport_failed(LLMessageSystem *msg, void**)
 			else
 			{
 				// change notification name in this special case
-				if (handle_special_notification("RegionEntryAccessBlocked", llsd_block))
+				if (handle_teleport_access_blocked(llsd_block))
 				{
 					if( gAgent.getTeleportState() != LLAgent::TELEPORT_NONE )
 					{
@@ -6652,8 +7006,9 @@ void process_teleport_local(LLMessageSystem *msg,void**)
 		}
 	}
 
+	static LLCachedControl<bool> fly_after_tp(gSavedSettings, "LiruFlyAfterTeleport");
 	// Sim tells us whether the new position is off the ground
-	if (teleport_flags & TELEPORT_FLAGS_IS_FLYING)
+	if (fly_after_tp || (teleport_flags & TELEPORT_FLAGS_IS_FLYING))
 	{
 		gAgent.setFlying(TRUE);
 	}

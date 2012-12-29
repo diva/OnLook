@@ -2518,6 +2518,84 @@ Returns True / False if user identified by agentID is successfully added to grou
 integer osEjectFromGroup(key agentId)
 Returns True / False if user identified by agentID is successfully removed from group. (Object containing script must be attached to a group)
 	</string>
+	<string name="LSLTipText_osForceAttachToAvatar">
+osForceAttachToAvatar(integer attachPoint)
+Attach the object containing this script to the avatar that owns it without asking for PERMISSION_ATTACH to the attachPoint. For example, ATTACH_CHEST.
+	</string>
+	<string name="LSLTipText_osForceAttachToAvatarFromInventory">
+osForceAttachToAvatarFromInventory(string itemName, integer attachPoint)
+Attach the inventory item in the object containing this script to the avatar that owns it without checking for PERMISSION_ATTACH
+If itemName is not found in the inventory then a warning is sent to the owner.  An example of attachPoint is ATTACH_CHEST.
+	</string>
+	<string name="LSLTipText_osForceAttachToOtherAvatarFromInventory">
+osForceAttachToOtherAvatarFromInventory(string rawAvatarId, string itemName, integer attachPoint) 
+Attach an inventory item in the object containing this script to any avatar in the region without asking for PERMISSION_ATTACH.
+rawAvatarId = The UUID of the avatar to which to attach.  itemName = The name of the item.  attachPoint = The attachment point. Example, ATTACH_CHEST.
+	</string>
+	<string name="LSLTipText_osNpcTouch">
+osNpcTouch(key npcKey, key object_key, integer link_num)
+Allows the NPC, npcKey, to touch the specified object, object_key, and its link number, link_num.
+	</string>
+	<string name="LSLTipText_osIsUUID">
+osIsUUID(string thing)
+Checks if thing is a UUID.  Returns 1 if thing is a valid UUID, 0 otherwise.
+	</string>
+	<string name="LSLTipText_osMin">
+osMin(float A, float B)
+Returns the smaller of two numbers. Wraps to system Math.Min()
+	</string>
+	<string name="LSLTipText_osMax">
+osMax(float A, float B)
+Returns the larger of two numbers. Wraps to system Math.Max()
+	</string>
+	<string name="LSLTipText_osGetRezzingObject">
+osGetRezzingObject()
+Get the key of the object that rezzed this object. Will return NULL_KEY if rezzed by agent or otherwise unknown source.
+	</string>
+	<string name="LSLTipText_osGetHealth">
+osGetHealth(key avatar)
+Returns avatar's health in float value.
+	</string>
+	<string name="LSLTipText_osSetContentType">
+osSetContentType(key id, string type)
+Sets the response type for an HTTP request/response.
+	</string>
+	<string name="LSLTipText_osGetNumberOfAttachments">
+osGetNumberOfAttachments(key avatar, list attachmentPoints)
+Returns a strided list of the specified attachmentPoints and the number of attachments on those points.  "avatar" = avatar UUID,  "attachmentPoints" = list of ATTACH_* constants.
+	</string>
+	<string name="LSLTipText_osMessageAttachments">
+osMessageAttachments(key avatar, string message, list attachmentPoints, integer flags)
+Sends message to avatar's attachments on the specified attachmentPoints. Behaves as osMessageObject(), without the sending script needing to know the attachment keys in advance.  "avatar" =avatar UUID,  "message" = message string. "attachmentPoints" = list of ATTACH_* constants, or -1 for all attachments. If -1 is specified and OS_ATTACH_MSG_INVERT_POINTS is present in flags, no action is taken.. "flags" = flags further constraining the attachments to deliver the message to.
+	</string>
+	<string name="LSLTipText_osDropAttachment">
+osDropAttachment()
+Attempts to drop an attachment to the ground.
+	</string>
+	<string name="LSLTipText_osDropAttachmentAt">
+osDropAttachmentAt(vector pos, rotation rot)
+Attempts to drop an attachment at the specified coordinates.  "pos" = vector position "rot" = rotation of object.
+	</string>
+	<string name="LSLTipText_osForceDropAttachment">
+osForceDropAttachment()
+Attempts to drop an attachment to the ground while bypassing the script permissions.
+	</string>
+	<string name="LSLTipText_osForceDropAttachmentAt">
+osForceDropAttachmentAt(vector pos, rotation rot)
+Attempts to drop an attachment at the specified coordinates while bypassing the script permissions.  "pos" = vector position "rot" = rotation of object.
+	</string>
+	<string name="LSLTipText_osListenRegex">
+osListenRegex(integer channelID, string name, string ID, string msg, integer regexBitfield)
+Identical to llListen except for a bitfield which indicates which string parameters should be parsed as regex patterns.  Params = integer channelID, string name, string ID, string msg, integer regexBitfield.  Where regexBitfield = OS_LISTEN_REGEX_NAME or OS_LISTEN_REGEX_MESSAGE.
+	</string>
+	<string name="LSLTipText_osRegexIsMatch">
+osRegexIsMatch(string input, string pattern)
+Wraps to bool Regex.IsMatch(string input, string pattern)
+string input = string to test for match
+string pattern = string to use as pattern
+returns boolean TRUE/FALSE.
+	</string>
+
 	<string name="LSLTipText_cmSetWindlightScene">
 cmSetWindlightScene(list rules)
 Set the current WindLight scene. Estate managers and owners only.
@@ -2726,6 +2804,52 @@ STOP_TIME_REVERSAL_SAVING, START_TIME_REVERSAL, STOP_TIME_REVERSAL.
 	<string name="LSLTipText_aaGetIsInfiniteRegion">
 aaGetIsInfiniteRegion()
 Returns TRUE or FALSE if region is an infinite region.
+(Aurora-Sim only)
+	</string>
+	<string name="LSLTipText_aaSetCharacterStat">
+aaSetCharacterStat( ID, StatName, statValue)
+Sets Character Stats.  Where ID = avatar uuid, StatName = stat to change, statValue the value to change it to.
+(Aurora-Sim only)
+	</string>
+	<string name="LSLTipText_aaAllRegionInstanceSay">
+aaAllRegionInstanceSay(integer channelID, string text)
+(Aurora-Sim only)
+	</string>
+	<string name="LSLTipText_aaWindlightGetDayCycle">
+aaWindlightGetDayCycle()
+Returns a List of settings
+(Aurora-Sim only)
+	</string>
+	<string name="LSLTipText_aaWindlightAddDayCycleFrame">
+aaWindlightAddDayCycleFrame(float dayCyclePosition, integer dayCycleFrameToCopy)
+Returns TRUE / FALSE on success status
+(Aurora-Sim only)
+	</string>
+	<string name="LSLTipText_aaWindlightRemoveDayCycleFrame">
+aaWindlightRemoveDayCycleFrame(int dayCycleFrame)
+Returns TRUE / FALSE on success status
+(Aurora-Sim only)
+	</string>
+	<string name="LSLTipText_aaWindlightSetScene">
+aaWindlightSetScene(list list)
+aaWindlightSetScene(integer dayCycleIndex, list list)
+Returns TRUE/FALSE on success
+(Aurora-Sim only)
+	</string>
+	<string name="LSLTipText_aaWindlightGetScene">
+aaWindlightGetScene(list rules)
+aaWindlightGetScene(integer dayCycleKeyFrame, list rules)
+Returns a list
+(Aurora-Sim only)
+	</string>
+	<string name="LSLTipText_aaWindlightGetSceneIsStatic">
+aaWindlightGetSceneIsStatic()
+Returns TRUE / FALSE
+(Aurora-Sim only)
+	</string>
+	<string name="LSLTipText_aaWindlightGetSceneDayCycleKeyFrameCount">
+aaWindlightGetSceneDayCycleKeyFrameCount()
+Returns integer value
 (Aurora-Sim only)
 	</string>
 	<string name="LSLTipText_botGetWaitingTime">
@@ -3873,9 +3997,27 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
   <string name="Home position set.">Home position set.</string>
 
   <!-- Financial operations strings -->
-  <string name="this_costs">This costs [CURRENCY]</string>
+  <string name="paid_you_ldollars">[NAME] paid you L$[AMOUNT] [REASON].</string>
+  <string name="paid_you_ldollars_no_reason">[NAME] paid you L$[AMOUNT].</string>
+  <string name="you_paid_ldollars">You paid [NAME] L$[AMOUNT] [REASON].</string>
+  <string name="you_paid_ldollars_no_info">You paid L$[AMOUNT].</string>
+  <string name="you_paid_ldollars_no_reason">You paid [NAME] L$[AMOUNT].</string>
+  <string name="you_paid_ldollars_no_name">You paid L$[AMOUNT] [REASON].</string>
+  <string name="you_paid_failure_ldollars">You failed to pay [NAME] L$[AMOUNT] [REASON].</string>
+  <string name="you_paid_failure_ldollars_no_info">You failed to pay L$[AMOUNT].</string>
+  <string name="you_paid_failure_ldollars_no_reason">You failed to pay [NAME] L$[AMOUNT].</string>
+  <string name="you_paid_failure_ldollars_no_name">You failed to pay L$[AMOUNT] [REASON].</string>
+  <string name="for item">for [ITEM]</string>
+  <string name="for a parcel of land">for a parcel of land</string>
+  <string name="for a land access pass">for a land access pass</string>
+  <string name="for deeding land">for deeding land</string>
+  <string name="to create a group">to create a group</string>
+  <string name="to join a group">to join a group</string>
+  <string name="to upload">to upload</string>
+  <string name="to publish a classified ad">to publish a classified ad</string>
 
   <string name="giving">Giving [CURRENCY]</string>
+  <string name="this_costs">This costs [CURRENCY]</string>
 
   <string name="group_role_everyone">Everyone</string>
   <string name="group_role_officers">Officers</string>
