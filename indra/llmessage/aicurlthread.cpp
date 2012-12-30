@@ -2014,12 +2014,11 @@ void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, ch
 #if LOWRESTIMER
 	llinfos << "Hostname seems to have been still in the DNS cache." << llendl;
 #else
-	llwarns << "Huh? Curl returned CURLE_OPERATION_TIMEDOUT, but DNS lookup did not occur according to timings. Expected CURLE_COULDNT_RESOLVE_PROXY or CURLE_COULDNT_RESOLVE_HOST!" << llendl;
+	llwarns << "Curl returned CURLE_OPERATION_TIMEDOUT and DNS lookup did not occur according to timings. Apparently the resolve attempt timed out (bad network?)" << llendl;
 	llassert(connect_time == 0);
 	llassert(appconnect_time == 0);
 	llassert(pretransfer_time == 0);
 	llassert(starttransfer_time == 0);
-	// Fatal error for diagnostics.
 	return;
 #endif
   }
@@ -2042,11 +2041,10 @@ void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, ch
 #endif
 	  )
   {
-	llwarns << "Huh? Curl returned CURLE_OPERATION_TIMEDOUT, but connection did not occur according to timings. Expected CURLE_COULDNT_CONNECT!" << llendl;
+	llwarns << "Curl returned CURLE_OPERATION_TIMEDOUT and connection did not occur according to timings: apparently the connect attempt timed out (bad network?)" << llendl;
 	llassert(appconnect_time == 0);
 	llassert(pretransfer_time == 0);
 	llassert(starttransfer_time == 0);
-	// Fatal error for diagnostics.
 	return;
   }
   // If connect_time is almost equal to namelookup_time, then it was just set because it was already connected.
