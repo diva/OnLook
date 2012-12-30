@@ -275,13 +275,13 @@
    <map/>
    <key>osMessageAttachments</key>
    <map/>
-   <key>osDropAttachments</key>
+   <key>osDropAttachment</key>
    <map/>
-   <key>osDropAttachmentsAt</key>
+   <key>osDropAttachmentAt</key>
    <map/>
-   <key>osForceDropAttachments</key>
+   <key>osForceDropAttachment</key>
    <map/>
-   <key>osForceDropAttachmentsAt</key>
+   <key>osForceDropAttachmentAt</key>
    <map/>
    <key>osListenRegex</key>
    <map/>
