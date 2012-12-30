@@ -184,7 +184,7 @@ void LLPrefsAscentVan::refreshValues()
 	mDisableChatAnimation   = gSavedSettings.getBOOL("SGDisableChatAnimation");
 	mAddNotReplace = gSavedSettings.getBOOL("LiruAddNotReplace");
 	mTurnAround = gSavedSettings.getBOOL("TurnAroundWhenWalkingBackwards");
-	mAnnounceSnapshots = gSavedSettings.getBOOL("AnnounceStreamMetadata");
+	mAnnounceSnapshots = gSavedSettings.getBOOL("AnnounceSnapshots");
 	mAnnounceStreamMetadata = gSavedSettings.getBOOL("AnnounceStreamMetadata");
 
     //Tags\Colors ----------------------------------------------------------------------------

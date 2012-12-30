@@ -178,7 +178,7 @@
 #include "llinventorypanel.h"
 #include "llinventorybridge.h"
 #include "llkeyboard.h"
-#include "llpanellogin.h"
+#include "llmakeoutfitdialog.h"
 #include "llmenucommands.h"
 #include "llmenugl.h"
 #include "llmimetypes.h"
@@ -187,6 +187,7 @@
 #include "llmoveview.h"
 #include "llmutelist.h"
 #include "llnotify.h"
+#include "llpanellogin.h"
 #include "llpanelobject.h"
 
 #include "llparcel.h"
@@ -6523,6 +6524,10 @@ class LLShowFloater : public view_listener_t
 			{
 				gAgentCamera.changeCameraToCustomizeAvatar();
 			}
+		}
+		else if (floater_name == "outfit")
+		{
+			new LLMakeOutfitDialog(false);
 		}
 		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
 		else if (floater_name == "displayname")

@@ -301,6 +301,7 @@ set(viewer_SOURCE_FILES
     lllogchat.cpp
     llloginhandler.cpp
     llmainlooprepeater.cpp
+    llmakeoutfitdialog.cpp
     llmanip.cpp
     llmaniprotate.cpp
     llmanipscale.cpp
@@ -808,6 +809,7 @@ set(viewer_HEADER_FILES
     lllogchat.h
     llloginhandler.h
     llmainlooprepeater.h
+    llmakeoutfitdialog.h
     llmanip.h
     llmaniprotate.h
     llmanipscale.h

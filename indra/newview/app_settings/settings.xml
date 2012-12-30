@@ -846,10 +846,7 @@ This should be as low as possible, but too low may break functionality</string>
     <key>AnnounceSnapshots</key>
     <map>
       <key>Comment</key>
-      <string>
-Announce if someone nearby has taken a snapshot in chat
-(Won't work on people who hide/quiet snapshots)
-      </string>
+      <string>Announce if someone nearby has taken a snapshot in chat (Won't work on people who hide/quiet snapshots)</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

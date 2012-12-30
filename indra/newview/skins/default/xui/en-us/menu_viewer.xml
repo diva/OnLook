@@ -240,6 +240,10 @@
 			<on_click function="ShowFloater" userdata="appearance" />
 			<on_enable function="Edit.EnableCustomizeAvatar" />
 		</menu_item_call>
+		<menu_item_call bottom="-362" enabled="true" height="19" label="Make Outfit..." left="0"
+		     mouse_opaque="true" name="Make Outfit..." width="153">
+			<on_click function="ShowFloater" userdata="outfit" />
+		</menu_item_call>
 		<menu_item_call bottom="-362" enabled="true" height="19" label="Display Name..." left="0" 
 			 mouse_opaque="true" name="Display Name..." width="153">
 			<on_click function="ShowFloater" userdata="displayname" />

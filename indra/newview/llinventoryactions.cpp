@@ -67,6 +67,7 @@
 #include "llinventoryclipboard.h"
 #include "llinventorymodelbackgroundfetch.h"
 #include "lllineeditor.h"
+#include "llmakeoutfitdialog.h"
 #include "llmenugl.h"
 #include "llpreviewanim.h"
 #include "llpreviewgesture.h"
@@ -381,6 +382,10 @@ void do_create(LLInventoryModel *model, LLInventoryPanel *ptr, std::string type,
 							LLAssetType::AT_GESTURE,
 							LLInventoryType::IT_GESTURE,
 							PERM_ALL);
+	}
+	else if ("outfit" == type)
+	{
+		new LLMakeOutfitDialog(false);
 	}
 	else
 	{

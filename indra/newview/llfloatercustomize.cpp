@@ -32,7 +32,6 @@
 
 #include "llviewerprecompiledheaders.h"
 
-#include "llappearancemgr.h"
 #include "llimagejpeg.h"
 #include "llfloatercustomize.h"
 #include "llfontgl.h"
@@ -64,7 +63,6 @@
 #include "llviewercamera.h"
 #include "llappearance.h"
 #include "imageids.h"
-#include "llmodaldialog.h"
 #include "llassetstorage.h"
 #include "lltexturectrl.h"
 #include "lltextureentry.h"
@@ -79,9 +77,9 @@
 #include "lluictrlfactory.h"
 #include "llnotificationsutil.h"
 #include "llpaneleditwearable.h"
+#include "llmakeoutfitdialog.h"
 
 #include "statemachine/aifilepicker.h"
-#include "hippogridmanager.h"
 
 using namespace LLVOAvatarDefines;
 
@@ -118,220 +116,6 @@ BOOL edit_wearable_for_teens(LLWearableType::EType type)
 		return TRUE;
 	}
 }
-
-class LLMakeOutfitDialog : public LLModalDialog
-{
-private:
-	std::string	mFolderName;
-	void		(*mCommitCallback)(LLMakeOutfitDialog*,void*);
-	void*		mCallbackUserData;
-	std::vector<std::pair<std::string,S32> > mCheckBoxList;
-	
-public:
-	LLMakeOutfitDialog( void(*commit_cb)(LLMakeOutfitDialog*,void*), void* userdata )
-		: LLModalDialog(LLStringUtil::null,515, 510, TRUE ),
-		  mCommitCallback( commit_cb ),
-		  mCallbackUserData( userdata )
-	{
-		LLUICtrlFactory::getInstance()->buildFloater(this, "floater_new_outfit_dialog.xml");
-		
-		// Build list of check boxes
-		for( S32 i = 0; i < LLWearableType::WT_COUNT; i++ )
-		{
-			std::string name = std::string("checkbox_") + LLWearableType::getTypeLabel( (LLWearableType::EType)i );
-			mCheckBoxList.push_back(std::make_pair(name,i));
-			// Hide teen items
-			if (gAgent.isTeen() &&
-				!edit_wearable_for_teens((LLWearableType::EType)i))
-			{
-				// hide wearable checkboxes that don't apply to this account
-				std::string name = std::string("checkbox_") + LLWearableType::getTypeLabel( (LLWearableType::EType)i );
-				childSetVisible(name, FALSE);
-			}
-		}
-
-		// NOTE: .xml needs to be updated if attachments are added or their names are changed!
-		LLVOAvatar* avatar = gAgentAvatarp;
-		if( avatar )
-		{
-			for (LLVOAvatar::attachment_map_t::iterator iter = avatar->mAttachmentPoints.begin(); 
-				 iter != avatar->mAttachmentPoints.end(); )
-			{
-				LLVOAvatar::attachment_map_t::iterator curiter = iter++;
-				LLViewerJointAttachment* attachment = curiter->second;
-				S32	attachment_pt = curiter->first;	
-				BOOL object_attached = ( attachment->getNumObjects() > 0 );
-				std::string name = std::string("checkbox_") + attachment->getName();
-				mCheckBoxList.push_back(std::make_pair(name,attachment_pt));
-				childSetEnabled(name, object_attached);
-			}
-		}
-
-		if(!gHippoGridManager->getConnectedGrid()->supportsInvLinks()) {
-			childSetEnabled("checkbox_use_links", FALSE);
-			childSetValue("checkbox_use_links", FALSE);
-			childSetEnabled("checkbox_use_outfits", FALSE);
-			childSetValue("checkbox_use_outfits", FALSE);
-		}
-		
-		childSetAction("Save", onSave, this ); 
-		childSetAction("Cancel", onCancel, this ); 
-		childSetAction("Check All", onCheckAll, this );
-		childSetAction("Uncheck All", onUncheckAll, this );
-
-		LLCheckBoxCtrl* pOutfitFoldersCtrl = getChild<LLCheckBoxCtrl>("checkbox_use_outfits");
-		pOutfitFoldersCtrl->setCommitCallback(&LLMakeOutfitDialog::onOutfitFoldersToggle);
-		pOutfitFoldersCtrl->setCallbackUserData(this);
-	}
-
-	bool getUseOutfits()
-	{
-		return childGetValue("checkbox_use_outfits").asBoolean();
-	}
-	bool getUseLinks()
-	{
-		return childGetValue("checkbox_use_links").asBoolean();
-	}
-	/*bool getRenameClothing()
-	{
-		return childGetValue("rename").asBoolean();
-	}*/
-	virtual void draw()
-	{
-		BOOL one_or_more_items_selected = FALSE;
-		for( S32 i = 0; i < (S32)mCheckBoxList.size(); i++ )
-		{
-			if( childGetValue(mCheckBoxList[i].first).asBoolean() )
-			{
-				one_or_more_items_selected = TRUE;
-				break;
-			}
-		}
-
-		childSetEnabled("Save", one_or_more_items_selected );
-		
-		LLModalDialog::draw();
-	}
-
-	const std::string& getFolderName() { return mFolderName; }
-
-	void setWearableToInclude( S32 wearable, S32 enabled, S32 selected )
-	{
-		LLWearableType::EType wtType = (LLWearableType::EType)wearable;
-		if ( ( (0 <= wtType) && (wtType < LLWearableType::WT_COUNT) ) && 
-			 ( (LLAssetType::AT_BODYPART != LLWearableType::getAssetType(wtType)) || (!getUseOutfits()) ) )
-		{
-			std::string name = std::string("checkbox_") + LLWearableType::getTypeLabel(wtType);
-			childSetEnabled(name, enabled);
-			childSetValue(name, selected);
-		}
-	}
-
-	void getIncludedItems( LLInventoryModel::item_array_t& item_list )
-	{
-		LLInventoryModel::cat_array_t *cats;
-		LLInventoryModel::item_array_t *items;
-		gInventory.getDirectDescendentsOf(LLAppearanceMgr::instance().getCOF(), cats, items);
-		for (LLInventoryModel::item_array_t::const_iterator iter = items->begin();
-						 iter != items->end();
-						 ++iter)
-		{
-			LLViewerInventoryItem* item = (*iter);
-			if(!item)
-				continue;
-			if(item->isWearableType())
-			{
-				LLWearableType::EType type = item->getWearableType();
-				if (type < LLWearableType::WT_COUNT && childGetValue(mCheckBoxList[type].first).asBoolean())
-				{
-					item_list.push_back(item);
-				}
-			}
-			else
-			{
-				LLViewerJointAttachment* attachment = gAgentAvatarp->getWornAttachmentPoint(item->getLinkedUUID());
-				if(attachment && childGetValue(std::string("checkbox_")+attachment->getName()).asBoolean())
-				{
-					item_list.push_back(item);
-				}
-			}
-		}
-	}
-
-	static void onSave( void* userdata )
-	{
-		LLMakeOutfitDialog* self = (LLMakeOutfitDialog*) userdata;
-		self->mFolderName = self->childGetValue("name ed").asString();
-		LLStringUtil::trim(self->mFolderName);
-		if( !self->mFolderName.empty() )
-		{
-			if( self->mCommitCallback )
-			{
-				self->mCommitCallback( self, self->mCallbackUserData );
-			}
-			self->close(); // destroys this object
-		}
-	}
-
-	static void onCheckAll( void* userdata )
-	{
-		LLMakeOutfitDialog* self = (LLMakeOutfitDialog*) userdata;
-		for( S32 i = 0; i < (S32)(self->mCheckBoxList.size()); i++)
-		{
-			std::string name = self->mCheckBoxList[i].first;
-			if(self->childIsEnabled(name))self->childSetValue(name,TRUE);
-		}
-	}
-
-	static void onUncheckAll( void* userdata )
-	{
-		LLMakeOutfitDialog* self = (LLMakeOutfitDialog*) userdata;
-		for( S32 i = 0; i < (S32)(self->mCheckBoxList.size()); i++)
-		{
-			std::string name = self->mCheckBoxList[i].first;
-			if(self->childIsEnabled(name))self->childSetValue(name,FALSE);
-		}
-	}
-
-	static void onCancel( void* userdata )
-	{
-		LLMakeOutfitDialog* self = (LLMakeOutfitDialog*) userdata;
-		self->close(); // destroys this object
-	}
-
-	BOOL postBuild()
-	{
-		refresh();
-		return TRUE;
-	}
-
-	void refresh()
-	{
-		BOOL fUseOutfits = getUseOutfits();
-
-		for (S32 idxType = 0; idxType < LLWearableType::WT_COUNT; idxType++ )
-		{
-			LLWearableType::EType wtType = (LLWearableType::EType)idxType;
-			if (LLAssetType::AT_BODYPART != LLWearableType::getAssetType(wtType))
-				continue;
-			LLCheckBoxCtrl* pCheckCtrl = getChild<LLCheckBoxCtrl>(std::string("checkbox_") + LLWearableType::getTypeLabel(wtType));
-			if (!pCheckCtrl)
-				continue;
-
-			pCheckCtrl->setEnabled(!fUseOutfits);
-			if (fUseOutfits)
-				pCheckCtrl->setValue(TRUE);
-		}
-		childSetEnabled("checkbox_use_links", !fUseOutfits);
-	}
-
-	static void onOutfitFoldersToggle(LLUICtrl*, void* pParam)
-	{
-		LLMakeOutfitDialog* pSelf = (LLMakeOutfitDialog*)pParam;
-		if (pSelf)
-			pSelf->refresh();
-	}
-};
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -393,13 +177,13 @@ LLFloaterCustomize::LLFloaterCustomize()
 
 BOOL LLFloaterCustomize::postBuild()
 {
-	childSetAction("Make Outfit", LLFloaterCustomize::onBtnMakeOutfit, (void*)this);
-	childSetAction("Ok", LLFloaterCustomize::onBtnOk, (void*)this);
-	childSetAction("Cancel", LLFloater::onClickClose, (void*)this);
+	getChild<LLUICtrl>("Make Outfit")->setCommitCallback(boost::bind(&LLFloaterCustomize::onBtnMakeOutfit, this));
+	getChild<LLUICtrl>("Ok")->setCommitCallback(boost::bind(&LLFloaterCustomize::onBtnOk, this));
+	getChild<LLUICtrl>("Cancel")->setCommitCallback(boost::bind(&LLFloater::onClickClose, this));
 
     // reX
-	childSetAction("Import", LLFloaterCustomize::onBtnImport, (void*)this);
-	childSetAction("Export", LLFloaterCustomize::onBtnExport, (void*)this);
+	getChild<LLUICtrl>("Import")->setCommitCallback(boost::bind(&LLFloaterCustomize::onBtnImport, this));
+	getChild<LLUICtrl>("Export")->setCommitCallback(boost::bind(&LLFloaterCustomize::onBtnExport, this));
 	
 	// Wearable panels
 	initWearablePanels();
@@ -459,7 +243,7 @@ void LLFloaterCustomize::setCurrentWearableType( LLWearableType::EType type )
 }
 
 // reX: new function
-void LLFloaterCustomize::onBtnImport( void* userdata )
+void LLFloaterCustomize::onBtnImport()
 {
 	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(FFLOAD_XML);
@@ -519,7 +303,7 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 }
 
 // reX: new function
-void LLFloaterCustomize::onBtnExport( void* userdata )
+void LLFloaterCustomize::onBtnExport()
 {
 	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open("", FFSAVE_XML);
@@ -592,10 +376,8 @@ void LLFloaterCustomize::onBtnExport_continued(AIFilePicker* filepicker)
 	fclose(fp);
 }
 
-// static
-void LLFloaterCustomize::onBtnOk( void* userdata )
+void LLFloaterCustomize::onBtnOk()
 {
-	LLFloaterCustomize* floater = (LLFloaterCustomize*) userdata;
 	gAgentWearables.saveAllWearables();
 
 	if ( gAgentAvatarp )
@@ -607,55 +389,13 @@ void LLFloaterCustomize::onBtnOk( void* userdata )
 		gAgent.sendAgentSetAppearance();
 	}
 
-	gFloaterView->sendChildToBack(floater);
+	gFloaterView->sendChildToBack(this);
 	handle_reset_view();  // Calls askToSaveIfDirty
 }
 
-// static
-void LLFloaterCustomize::onBtnMakeOutfit( void* userdata )
+void LLFloaterCustomize::onBtnMakeOutfit()
 {
-	LLVOAvatar* avatar = gAgentAvatarp;
-	if(avatar)
-	{
-		LLMakeOutfitDialog* dialog = new LLMakeOutfitDialog( onMakeOutfitCommit, NULL );
-		// LLMakeOutfitDialog deletes itself.
-
-		for( S32 i = 0; i < LLWearableType::WT_COUNT; i++ )
-		{
-			BOOL enabled = (gAgentWearables.getWearableCount( (LLWearableType::EType) i ));	// TODO: MULTI-WEARABLE
-			BOOL selected = (enabled && (LLWearableType::WT_SHIRT <= i) && (i < LLWearableType::WT_COUNT)); // only select clothing by default
-			if (gAgent.isTeen()
-				&& !edit_wearable_for_teens((LLWearableType::EType)i))
-			{
-				dialog->setWearableToInclude( i, FALSE, FALSE );
-			}
-			else
-			{
-				dialog->setWearableToInclude( i, enabled, selected );
-			}
-		}
-		dialog->startModal();
-	}
-}
-
-// static
-void LLFloaterCustomize::onMakeOutfitCommit( LLMakeOutfitDialog* dialog, void* userdata )
-{
-	LLVOAvatar* avatar = gAgentAvatarp;
-	if(avatar)
-	{
-		LLDynamicArray<S32> wearables_to_include;
-		LLDynamicArray<S32> attachments_to_include;  // attachment points
-
-		LLInventoryModel::item_array_t item_list;
-		dialog->getIncludedItems(item_list);
-
-		// MULTI-WEARABLES TODO
-		if(dialog->getUseOutfits())
-			LLAppearanceMgr::instance().makeNewOutfitLinks( dialog->getFolderName(), item_list);
-		else
-			LLAppearanceMgr::instance().makeNewOutfitLegacy( dialog->getFolderName(), item_list, dialog->getUseLinks());
-	}
+	new LLMakeOutfitDialog(true); // LLMakeOutfitDialog deletes itself.
 }
 
 ////////////////////////////////////////////////////////////////////////////
