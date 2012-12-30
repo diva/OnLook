@@ -937,6 +937,9 @@
 				<on_click function="PromptShowURL" name="ReportSinguBug_url"
 						userdata="WebLaunchSinguIssue,http://code.google.com/p/singularity-viewer/issues/entry" />
 			</menu_item_call>
+			<menu_item_call bottom="-240" enabled="true" height="19" label="Request New Feature..." name="Request New Feature..." width="166">
+				<on_click function="PromptShowURL" name="RequestFeature_url" userdata="WebLaunchSinguIssue,http://code.google.com/p/singularity-viewer/issues/entry?template=Feature%20request"/>
+			</menu_item_call>
 		</menu>
 		<menu_item_call bottom="-313" enabled="true" height="19" label="About Singularity..." left="0"
 		     mouse_opaque="true" name="About Second Life..." width="166">
