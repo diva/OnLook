@@ -7,7 +7,10 @@
 			<check_box label="Reproducir sonidos de teleport al cambiar de sim" tool_tip="El Visor reproducirá el sonido de trnasportación al hacer un teleport." name="tp_sound_check"/>
 			<check_box label="Ocultar la pantalla de inicio/cierre de sesión" tool_tip="Marcado, el visor ocultará la pantalla de progreso de inicio/cierre de sesión." name="disable_logout_screen_check"/>
 			<check_box label="Desactivar animaciones de chat, susurro y gritos" tool_tip="Quitar las animaciones de tu avatar. El efecto es visible para todos" name="disable_chat_animation"/>
-			<check_box label="Añadir ropa y objetos vestibles en vez de reemplazarlos" tool_tip="Cuando hagas doble click o presiones la tecla Entrar sobre ropas u objetos para vestir en tu inventario, los objetos seleccionados se agregarán a tu vestuario en vez de reemplazar a los que tengas vestidos en la misma ubicación" name="add_not_replace"/>			
+			<check_box label="Añadir ropa y objetos vestibles en vez de reemplazarlos" tool_tip="Cuando hagas doble click o presiones la tecla Entrar sobre ropas u objetos para vestir en tu inventario, los objetos seleccionados se agregarán a tu vestuario en vez de reemplazar a los que tengas vestidos en la misma ubicación" name="add_not_replace"/>
+			<check_box label="Dar la vuelta al caminar hacía atrás" tool_tip="Es posible que algunos AOs puedan darte vuelta incluso con esta opción deshabiltada." name="turn_around"/>	
+			<check_box label="Anunciar cuando alguien toma una foto" tool_tip="No avisa si el usuario ha deshabilitado en su visor el no anunciar que está tomando fotografías." name="announce_snapshots"/>
+			<check_box label="Mostrar los metadatos de la música en stream en el chat local cuando es activada" tool_tip="Cuando comienza una nueva canción, se mostrará un mensaje en el chat local con la información disponible del tema." name="announce_stream_metadata"/>			
 		</panel>
 		<panel label="Tags/Colores" name="TagsColors">
 			<!-- Client tag options -->
