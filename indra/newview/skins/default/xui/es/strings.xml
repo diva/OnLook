@@ -2817,6 +2817,9 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="CurrentlySetToAnItemNotOnThisAccount">Un artículo no está en esta cuenta</string>
 	<string name="NotLoggedIn">Desconectado</string>
 
+    <!-- Non-standard LLChat strings -->
+    <string name="took_a_snapshot">ha tomado una fotografía</string>
+	 
 	<!-- Avatar busy/away mode -->
 	<string name="AvatarSetNotAway">No ausente</string>
 	<string name="AvatarSetAway">Ausente</string>
@@ -2918,7 +2921,8 @@ Arrastra carpetas a esta zona y pulsa "Enviar al Mercado" para listarlos y poner
 	<!-- inventory FVBridge -->
 	<!--  This is used in llpanelinventory.cpp when constructing a context menu for an item for Sale  -->
 	<string name="Buy">Comprar</string>
-	<string name="Buyfor" value="Comprar para "/><!-- Grid currency is appended automatically -->	
+	<!-- Grid currency is appended automatically -->	
+	<string name="Buyfor" value="Comprar para "/>
 	
 	<string name="Stone">Piedra</string>
 	<string name="Metal">Metal</string>

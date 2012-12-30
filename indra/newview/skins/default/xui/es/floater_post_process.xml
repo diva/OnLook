@@ -28,68 +28,68 @@
 			<slider label="I" name="contrast_base[3]"/>
 		</panel>
 		<!-- ============================= -->
-		<panel label="Desenfoque Gaussiano" name="GaussBlurPanel" width="498">
-			<check_box label="Activar" name="enable_gauss_blur" left="14"/>
-			<text name="GaussBlurPassesText" left="20">
+		<panel label="Desenfoque Gaussiano" name="GaussBlurPanel">
+			<check_box label="Activar" name="enable_gauss_blur"/>
+			<text name="GaussBlurPassesText">
 				Pasos a aplicar
 			</text>
-			<slider name="gauss_blur_passes" left="24"/>
+			<slider name="gauss_blur_passes"/>
 		</panel>
 		<!-- ============================= -->		
-		<panel label="Visión Nocturna" name="NightVisionPanel"  width="498">
-			<check_box label="Activar" name="enable_night_vision" left="14"/>
-			<text name="NightVisionBrightMultText" left="20">
+		<panel label="Visión Nocturna" name="NightVisionPanel">
+			<check_box label="Activar" name="enable_night_vision"/>
+			<text name="NightVisionBrightMultText">
 					Amplificación Múltiple de luz
 			</text>
-			<slider label="" name="brightness_multiplier" left="24"/>
-			<text name="NightVisionNoiseSizeText" left="20">
+			<slider label="" name="brightness_multiplier"/>
+			<text name="NightVisionNoiseSizeText">
 				Tamaño del Ruido
 			</text>
-			<slider label="" name="noise_size" left="24"/>
-			<text name="NightVisionNoiseStrengthText" left="20">
+			<slider label="" name="noise_size"/>
+			<text name="NightVisionNoiseStrengthText">
 					Fuerza del Ruido
 			</text>
-			<slider label="" name="noise_strength" left="24"/>
+			<slider label="" name="noise_strength"/>
 		</panel>
 		<!-- ============================= -->
-		<panel label="Posterizado" name="PosterizePanel" width="498">
-			<check_box label="Activar" left="14" name="enable_posterize"/>
+		<panel label="Posterizado" name="PosterizePanel">
+			<check_box label="Activar" name="enable_posterize"/>
 			<text left="10" name="PosterLayersText">
 				Número de Capa
 			</text>
-			<slider left="24" name="posterize_layers"/>
+			<slider name="posterize_layers"/>
 		</panel>
 		<!-- ============================= -->		
-		<panel height="484" label="Desenfoque de Movimiento" name="MotionBlurPanel" width="498">
-			<check_box label="Activar" left="14" name="enable_motionblur"/>
-			<text left="20" name="MotionBlurText">
+		<panel height="484" label="Desenfoque de Movimiento" name="MotionBlurPanel">
+			<check_box label="Activar" name="enable_motionblur"/>
+			<text name="MotionBlurText">
 		  		Intensidad desenfoque
 			</text>
-			<slider left="24" name="blur_strength"/>
+			<slider name="blur_strength"/>
 		</panel>
 		<!-- ============================= -->				
-		<panel label="Viñeta" name="VignettePanel" width="498">
-			<check_box label="Activar" left="14" name="enable_vignette"/>
-			<text left="20" name="VignetteStrengthText">
+		<panel label="Viñeta" name="VignettePanel">
+			<check_box label="Activar" name="enable_vignette"/>
+			<text name="VignetteStrengthText">
 				Intensidad
 			</text>
-			<slider left="24" name="vignette_strength"/>
-			<text left="20" name="VignetteRadiusText">
+			<slider name="vignette_strength"/>
+			<text lname="VignetteRadiusText">
 				Radio
 			</text>
-			<slider left="24" name="vignette_radius"/>
-			<text left="20" name="VignetteDarknessText">
+			<slider name="vignette_radius"/>
+			<text name="VignetteDarknessText">
 				Oscuridad
 			</text>
-			<slider left="24" name="vignette_darkness"/>
-			<text left="20" name="VignetteDesaturateText">
+			<slider name="vignette_darkness"/>
+			<text name="VignetteDesaturateText">
 				Intensidad de Desaturación
 			</text>
-			<slider left="24" name="vignette_desaturation"/>
-			<text left="20" name="VignetteChormaticAberrationText">
+			<slider name="vignette_desaturation"/>
+			<text name="VignetteChormaticAberrationText">
 				Aberración Cromática
 			</text>
-			<slider left="24" name="vignette_chromatic_aberration"/>
+			<slider name="vignette_chromatic_aberration"/>
 		</panel>
 		<!-- ============================= -->		
 		<!--<panel border="true" bottom="-180" follows="left|top|right|bottom" height="400"
@@ -135,7 +135,7 @@
 				 width="200" />
 		 </panel>-->
 		<!-- ============================= -->		
-		<panel label="Extras" name="Extras" width="498">
+		<panel label="Extras" name="Extras">
 			<combo_box name="PPEffectsCombo"/>
 			<line_editor label="Nombre del Efecto" name="PPEffectNameEditor"/>		
 			<button label="Cargar Efecto" label_selected="Cargar Efecto" name="PPLoadEffect"/>

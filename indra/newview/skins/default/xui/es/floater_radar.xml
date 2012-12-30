@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="radar" title="Radar">
+	<string name="Title">Radar</string>
+	<string name="TitleOneAvatar">Radar (1 Avatar)</string>
+	<string name="TitleWithCount">Radar ([COUNT] Avatares)</string>
 	<scroll_list name="avatar_list" tool_tip="Mantén presionada la tecla Mayús o la tecla Ctrl al  pulsar con el mouse para seleccionar multiples avatares">
 		<column name="marked" label="Marcar" tool_tip="Avatares Marcados"/>
 		<column name="avatar_name" label="Nombre" tool_tip="Mantén presionada la tecla Mayús o la tecla Ctrl al  pulsar con el mouse para seleccionar multiples avatares"/>
@@ -7,6 +10,8 @@
 		<column name="position" label="Pos." tool_tip="Posición (X, Y) dentro del sim, o dirección general (punto cardinal) fuera del sim"/>
 		<column name="altitude" label="Alt." tool_tip="Altitud"/>
 		<column name="activity" label="Act." tool_tip="Actividad"/>
+		<column name="age" label="Edad" tool_tip="Edad"/>
+		<column name="time" label="Tiempo" tool_tip="Tiempo transcurrido desde su arrivo al sim."/>		
 		<column name="client" label="Cliente" tool_tip="Cliente-Visor que el avatar posiblemente esté usando"/>
 	</scroll_list>
 
@@ -29,19 +34,19 @@
 			<button name="prev_in_list_btn" label="Anterior" tool_tip="Enfoca la cámara en el anterior avatar de la lista"/>
 			<button name="next_in_list_btn" label="Siguiente" tool_tip="Enfoca la cámara en el siguiente avatar de la lista"/>
 		</panel>
-
+		<!-- =============================== -->
 		<panel label="Alertas" name="alerts_tab">
 			<check_box label="Mostrar Alertas en el chat" name="radar_alerts" tool_tip="Muestra en el chat las alertas de llegada y salida de los avatares" />
 
 			<check_box label="Avatares entrando/saliendo del sim" name="alerts_sim" tool_tip="Reporta los avatares que entran o salen del sim" />
 
-			<check_box label="Avatare entrando/saliendo de la distancia de dibujo" name="alerts_draw" tool_tip="Reporta los avatares que entran o salen de la distancia de dibujo" />
+			<check_box label="Avatares entrando/saliendo de la distancia de dibujo" name="alerts_draw" tool_tip="Reporta los avatares que entran o salen de la distancia de dibujo" />
 
 			<check_box label="Avatares entrando/saliendo del rango de gritos" name="alerts_chat" tool_tip="Reporta los avatares que entran o salen del rango de gritos" />
 
 			<check_box label="Avatares entrando/saliendo del rango de chat" name="alerts_chat" tool_tip="Reporta los avatares que entran o salen del rango de chat" />
 		</panel>
-
+		<!-- =============================== -->
 		<panel label="Moderación" name="land_tab">
 			<!-- Upper row -->
 			<button name="mute_btn" label="(No)Ignorar" tool_tip="Ignorar o dejar de ignorar a este avatar (los nombre de los avatares ignorados se resaltan en rojo en la lista)."/>
@@ -51,9 +56,9 @@
 			<button name="eject_btn" label="Expulsar" tool_tip="Expulsar a este avatar de la parcela"/>
 			<button name="estate_eject_btn" label="Expulsar del Estado" tool_tip="Expulsar a este avatar del estado"/>
 			<!-- Lowest row -->
-			<button name="estate_ban_btn" label="Expulsar y Prohibir en el Estado" tool_tip="Expulsa y prohibe en el Estado a este avatar"/>			
+			<button name="estate_ban_btn" label="Expulsar y Prohibir en el Estado" tool_tip="Expulsa y prohibe en el Estado a este avatar"/>
 		</panel>
-
+		<!-- =============================== -->
 		<panel label="Opciones" name="options_tab">
 			<check_box label="Actualizar" name="update_enabled_cb" tool_tip="Definir cuando debe ser actualizada la lista de avatares"/>
 			<text name="rate">
@@ -74,10 +79,33 @@
 			<check_box label="Anunciar keys all HUD" name="radar_chat_keys" tool_tip="Definir cuando enviar las keys de los avarares a los scritps LSL" />
 			<button name="send_keys_btn" label="Anunciar Ahora" tool_tip="Envia todas las keys al HUD ahora"/>
 		</panel>
+		<!-- =============================== -->
+		<panel label="Extras" name="extras_tab">
+			<check_box label="Alerta Edad Avatar" name="agealert" tool_tip="Habilita el Alerta por Edad del Avatar" />
+			<spinner name="AgeAlertDays" left_delta="150" label="Umbral de Edad" tool_tip="La cantidad mínima de días que un avatar puede estar en el grid sin disparar el alerta" />
+			<text name="hide_columns">Ocultar Columnas:</text>
+			<check_box name="hide_mark" label="Marca"/>
+			<check_box name="hide_pos" label="Pos." tool_tip="Posición"/>
+			<check_box name="hide_alt" label="Alt." tool_tip="Altitud"/>
+			<check_box name="hide_act" label="Act." tool_tip="Actividad"/>
+			<check_box name="hide_age" label="Edad"/>
+			<check_box name="hide_time" label="Tiempo"/>
+			<check_box name="hide_client" label="Cliente"/>
+		</panel>
 	</tab_container>
+	<string name="Moving">Moviéndose</string>
+	<string name="Playing a gesture">Ejecutando un Gesto</string>
+	<string name="Playing a sound">Ejecutando un sonido</string>
+	<string name="Rezzing objects">Rezeando objectos</string>
+	<string name="Creating particles">Emitiendo partículas</string>
+	<string name="Just arrived">Recién Llegado</string>
+	<string name="Typing">Escribiendo</string>
+	<string name="has_triggered_your_avatar_age_alert">ha disparado el Alerta de Edad de Avatar</string>
+	<string name="template">[NAME] [ACTION] [RANGE].</string>
 	<!-- [ACTION] -->	
 	<string name="has_entered">ha entrado en</string>
 	<string name="has_left">se ha retirado de</string>
+	<!-- [RANGE] -->	
 	<string name="the_sim">este sim</string>
 	<string name="draw_distance">la distancia de dibujo</string>
 	<string name="shout_range">la distancia de grito</string>

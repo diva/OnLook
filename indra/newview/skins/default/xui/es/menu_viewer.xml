@@ -175,6 +175,7 @@
 		<menu_item_call label="Definir Ejecución de Scripts en la Selección" name="Set Scripts to Running in Selection"/>
 		<menu_item_call label="Definir la no ejecución de Scripts en la Selección" name="Set Scripts to Not Running in Selection"/>
 		<menu_item_call label="Borrar Scripts en la Selección" name="Remove Scripts in Selection"/>
+		<menu_item_call label="Rebake de Región" name="pathfinding_rebake_navmesh_item"/>
 	</menu>
 	<!-- =========================================== -->  
 	<menu label="Ayuda" left="227" name="Help" >

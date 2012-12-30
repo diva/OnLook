@@ -7,7 +7,7 @@
 
 		<panel label="Créditos" help_topic="about_credits_tab" name="credits_panel"/>
 
-		<panel label="Licenses" name="licenses_panel"/>
+		<panel label="Licencias" name="licenses_panel"/>
 	</tab_container>  
 	<string name="you_are_at">Estás en [POSITION]</string>
 </floater>
