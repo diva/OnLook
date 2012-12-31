@@ -82,6 +82,10 @@ protected:
     LLColor4 mEstateOwnerColor;
     LLColor4 mLindenColor;
     LLColor4 mMutedColor;
+	bool mColorFriendChat;
+	bool mColorEOChat;
+	bool mColorLindenChat;
+	bool mColorMutedChat;
     //Body Dynamics
     BOOL mBreastPhysicsToggle;
     F32 mBoobMass;

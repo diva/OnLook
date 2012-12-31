@@ -156,12 +156,16 @@ void LLPrefsAscentVan::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 
     if (ctrl->getName() == "use_status_check")
     {
-        BOOL showCustomColors = gSavedSettings.getBOOL("AscentUseStatusColors");
-        self->childSetEnabled("friends_color_textbox", showCustomColors);
-        self->childSetEnabled("friend_color_swatch", showCustomColors);
-        self->childSetEnabled("estate_owner_color_swatch", showCustomColors);
-        self->childSetEnabled("linden_color_swatch", showCustomColors);
-        self->childSetEnabled("muted_color_swatch", showCustomColors);
+		bool showCustomColors = gSavedSettings.getBOOL("AscentUseStatusColors");
+		self->childSetEnabled("friends_color_textbox", showCustomColors);
+		bool frColors = gSavedSettings.getBOOL("ColorFriendChat");
+		self->childSetEnabled("friend_color_swatch", showCustomColors || frColors);
+		bool eoColors = gSavedSettings.getBOOL("ColorEstateOwnerChat");
+		self->childSetEnabled("estate_owner_color_swatch", showCustomColors || eoColors);
+		bool lindColors = gSavedSettings.getBOOL("ColorLindenChat");
+		self->childSetEnabled("linden_color_swatch", showCustomColors || lindColors);
+		bool muteColors = gSavedSettings.getBOOL("ColorMutedChat");
+		self->childSetEnabled("muted_color_swatch", showCustomColors || muteColors);
     }
     else if (ctrl->getName() == "customize_own_tag_check")
     {
@@ -208,6 +212,10 @@ void LLPrefsAscentVan::refreshValues()
     mLindenColor			= gSavedSettings.getColor4("AscentLindenColor");
     mMutedColor				= gSavedSettings.getColor4("AscentMutedColor");
     //mCustomColor			= gSavedSettings.getColor4("MoyMiniMapCustomColor");
+	mColorFriendChat        = gSavedSettings.getBOOL("ColorFriendChat");
+	mColorEOChat            = gSavedSettings.getBOOL("ColorEstateOwnerChat");
+	mColorLindenChat        = gSavedSettings.getBOOL("ColorLindenChat");
+	mColorMutedChat         = gSavedSettings.getBOOL("ColorMutedChat");
 
     //Body Dynamics --------------------------------------------------------------------------
     mBreastPhysicsToggle    = gSavedSettings.getBOOL("EmeraldBreastPhysicsToggle");
@@ -232,10 +240,10 @@ void LLPrefsAscentVan::refresh()
     combo->setCurrentByIndex(mSelectedClient);
 
     childSetEnabled("friends_color_textbox",     mUseStatusColors);
-    childSetEnabled("friend_color_swatch",       mUseStatusColors);
-    childSetEnabled("estate_owner_color_swatch", mUseStatusColors);
-    childSetEnabled("linden_color_swatch",       mUseStatusColors);
-    childSetEnabled("muted_color_swatch",        mUseStatusColors);
+    childSetEnabled("friend_color_swatch",       mUseStatusColors || mColorFriendChat);
+    childSetEnabled("estate_owner_color_swatch", mUseStatusColors || mColorEOChat);
+    childSetEnabled("linden_color_swatch",       mUseStatusColors || mColorLindenChat);
+    childSetEnabled("muted_color_swatch",        mUseStatusColors || mColorMutedChat);
 
     childSetEnabled("custom_tag_label_text",   mCustomTagOn);
     childSetEnabled("custom_tag_label_box",    mCustomTagOn);
@@ -286,6 +294,10 @@ void LLPrefsAscentVan::cancel()
     gSavedSettings.setColor4("AscentLindenColor",        mLindenColor);
     gSavedSettings.setColor4("AscentMutedColor",         mMutedColor);
 //    gSavedSettings.setColor4("MoyMiniMapCustomColor",    mCustomColor);
+    gSavedSettings.setBOOL("ColorFriendChat",            mColorFriendChat);
+    gSavedSettings.setBOOL("ColorEstateOwnerChat",       mColorEOChat);
+    gSavedSettings.setBOOL("ColorLindenChat",            mColorLindenChat);
+    gSavedSettings.setBOOL("ColorMutedChat",             mColorMutedChat);
 
     //Body Dynamics --------------------------------------------------------------------------
     gSavedSettings.setBOOL("EmeraldBreastPhysicsToggle", mBreastPhysicsToggle);

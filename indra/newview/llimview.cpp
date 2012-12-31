@@ -483,8 +483,8 @@ void LLIMMgr::addMessage(
 	}
 
 	//not sure why...but if it is from ourselves we set the target_id
-	//to be NULL
-	if( other_participant_id == gAgent.getID() )
+	//to be NULL, which seems to be breaking links on group chats, so let's not there.
+	if (other_participant_id == gAgent.getID() && !gAgent.isInGroup(session_id))
 	{
 		other_participant_id = LLUUID::null;
 	}
@@ -553,7 +553,6 @@ void LLIMMgr::addMessage(
 		// when answering questions.
 		if(gAgent.isGodlike())
 		{
-			// *TODO:translate (low priority, god ability)
 			std::ostringstream bonus_info;
 			bonus_info << LLTrans::getString("***")+ " "+ LLTrans::getString("IMParentEstate") + LLTrans::getString(":") + " "
 				<< parent_estate_id
@@ -574,9 +573,26 @@ void LLIMMgr::addMessage(
 
 	// now add message to floater
 	bool is_from_system = target_id.isNull() || (from == SYSTEM_FROM);
-	const LLColor4& color = ( is_from_system ? 
-							  gSavedSettings.getColor4("SystemChatColor") : 
-							  gSavedSettings.getColor("IMChatColor"));
+
+	static LLCachedControl<bool> color_linden_chat("ColorLindenChat");
+	bool linden = color_linden_chat && LLMuteList::getInstance()->isLinden(from);
+
+	static LLCachedControl<bool> color_friend_chat("ColorFriendChat");
+	bool contact = color_friend_chat && LLAvatarTracker::instance().isBuddy(other_participant_id);
+
+	static LLCachedControl<bool> color_eo_chat("ColorEstateOwnerChat");
+	bool estate_owner = false;
+	if (color_eo_chat)
+	{
+		LLViewerRegion* parent_estate = gAgent.getRegion();
+		estate_owner = (parent_estate && parent_estate->isAlive() && other_participant_id == parent_estate->getOwner());
+	}
+
+	const LLColor4& color = ( is_from_system ? gSavedSettings.getColor4("SystemChatColor")
+							: linden ? gSavedSettings.getColor4("AscentLindenColor")
+							: contact ? gSavedSettings.getColor4("AscentFriendColor")
+							: estate_owner ? gSavedSettings.getColor4("AscentEstateOwnerColor")
+							: gSavedSettings.getColor("IMChatColor"));
 	if ( !link_name )
 	{
 		floater->addHistoryLine(msg,color); // No name to prepend, so just add the message normally
@@ -1153,7 +1169,7 @@ void LLIMMgr::noteOfflineUsers(
 			std::string full_name;
 			if (info
 				&& !info->isOnline()
-				&& gCacheName->getFullName(ids.get(i), full_name))
+				&& LLAvatarNameCache::getPNSName(ids.get(i), full_name))
 			{
 				LLUIString offline = LLTrans::getString("offline_message");
 				offline.setArg("[NAME]", full_name);
