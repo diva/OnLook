@@ -336,6 +336,7 @@ void LLPrefsAscentChat::refreshValues()
     mLinksForChattingObjects        = gSavedSettings.getU32("LinksForChattingObjects");
     mSecondsInChatAndIMs            = gSavedSettings.getBOOL("SecondsInChatAndIMs");
     mSecondsInLog                   = gSavedSettings.getBOOL("SecondsInLog");
+    mOtherChatsTornOff              = gSavedSettings.getBOOL("OtherChatsTornOff");
 
     std::string format = gSavedSettings.getString("ShortTimeFormat");
     if (format.find("%p") == -1)
@@ -542,6 +543,7 @@ void LLPrefsAscentChat::cancel()
     gSavedSettings.setU32("LinksForChattingObjects",               mLinksForChattingObjects);
     gSavedSettings.setBOOL("SecondsInChatAndIMs",                  mSecondsInChatAndIMs);
     gSavedSettings.setBOOL("SecondsInLog",                         mSecondsInLog);
+    gSavedSettings.setBOOL("OtherChatsTornOff",                    mOtherChatsTornOff);
 
     std::string short_date, long_date, short_time, long_time, timestamp;
 

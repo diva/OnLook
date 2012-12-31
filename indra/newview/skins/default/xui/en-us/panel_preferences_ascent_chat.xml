@@ -6,12 +6,11 @@
       <text bottom="-15" left="15" name="objects_link_text_box">IMs:</text>
       <check_box bottom_delta="-25" left="10" follows="top" initial_value="false" control_name="WoLfVerticalIMTabs" 
         label="Use Vertical IMs (Requires a restart)" name="use_vertical_ims_check"/>
+      <check_box bottom_delta="-20" follows="top" control_name="OtherChatsTornOff" label="Open new IMs in separate floaters" name="chats_torn_off"/>
       <check_box bottom_delta="-20" follows="left|top" initial_value="false" control_name="AscentInstantMessageAnnounceIncoming"
         label="Announce incoming instant messages" tool_tip="Opens an IM window when someone starts typing an IM to you. This gives you a heads up that someone is IMing you before they hit enter." name="quickstart_im_check"/>
       <check_box bottom_delta="-20" follows="left|top" control_name="AscentHideTypingNotification" initial_value="false"
         label="Don't send '[name] is typing...' in IMs" tool_tip="IM partners will not see '______ is typing...' when you're responding." name="hide_typing_check"/>
-      <check_box bottom_delta="-20" follows="left|top" control_name="OptionShowGroupNameInChatIM" initial_value="false"
-        label="Show group name in chat" tool_tip="The name of the group will also be displayed if the IM is from group chat." name="append_group_name_check"/>
 	  <!-- Left/Right Column split  
 		 <view_border bevel_style="none" border_thickness="1" bottom_delta="0" follows="top|left" height="75"
 		left="235" name="CmdDivisor" width="0"/>
@@ -21,6 +20,8 @@
         label="Play the typing sound for local chat" tool_tip="Silences the chatting type sound, making it quieter for things like performances." name="play_typing_sound_check"/>
       <check_box bottom_delta="-20" follows="left|top" control_name="HideNotificationsInChat" initial_value="false"
         label="Do not echo/log notifications in chat" name="hide_notifications_in_chat_check"/>
+      <check_box bottom_delta="-20" follows="left|top" control_name="OptionShowGroupNameInChatIM" initial_value="false"
+        label="Show group name in chat" tool_tip="The name of the group will also be displayed if the IM is from group chat." name="append_group_name_check"/>
       <check_box bottom="-120" left="10" control_name="AscentAllowMUpose" initial_value="false"
         label="Allow MU pose method." tool_tip="Allows the use of both /me and : to perform emotes." name="allow_mu_pose_check"/>
       <check_box bottom_delta="-20" follows="left|top" control_name="AscentAutoCloseOOC"

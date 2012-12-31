@@ -747,7 +747,18 @@ LLUUID LLIMMgr::addSession(
 		{
 			noteMutedUsers(floater, ids);
 		}
-		LLFloaterChatterBox::getInstance(LLSD())->showFloater(floater);
+
+		static LLCachedControl<bool> tear_off("OtherChatsTornOff");
+		if(tear_off)
+		{
+			// removal sets up relationship for re-attach
+			LLFloaterChatterBox::getInstance(LLSD())->removeFloater(floater);
+			// reparent to floater view
+			gFloaterView->addChild(floater);
+			gFloaterView->bringToFront(floater);
+		}
+		else
+			LLFloaterChatterBox::getInstance(LLSD())->showFloater(floater);
 	}
 	else
 	{
@@ -1119,6 +1130,19 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 													 dialog);
 	LLTabContainer::eInsertionPoint i_pt = user_initiated ? LLTabContainer::RIGHT_OF_CURRENT : LLTabContainer::END;
 	LLFloaterChatterBox::getInstance(LLSD())->addFloater(floater, FALSE, i_pt);
+	static LLCachedControl<bool> tear_off("OtherChatsTornOff");
+	if (tear_off)
+	{
+		LLFloaterChatterBox::getInstance(LLSD())->removeFloater(floater); // removal sets up relationship for re-attach
+		gFloaterView->addChild(floater); // reparent to floater view
+		LLFloater* focused_floater = gFloaterView->getFocusedFloater(); // obtain the focused floater
+		floater->open(); // make the new chat floater appear
+		if (focused_floater != NULL) // there was a focused floater
+		{
+			floater->setMinimized(true); // so minimize this one, for now
+			focused_floater->setFocus(true); // and work around focus being removed by focusing on the last
+		}
+	}
 	mFloaters.insert(floater->getHandle());
 	return floater;
 }
@@ -1145,6 +1169,19 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 													 dialog);
 	LLTabContainer::eInsertionPoint i_pt = user_initiated ? LLTabContainer::RIGHT_OF_CURRENT : LLTabContainer::END;
 	LLFloaterChatterBox::getInstance(LLSD())->addFloater(floater, FALSE, i_pt);
+	static LLCachedControl<bool> tear_off("OtherChatsTornOff");
+	if (tear_off)
+	{
+		LLFloaterChatterBox::getInstance(LLSD())->removeFloater(floater); // removal sets up relationship for re-attach
+		gFloaterView->addChild(floater); // reparent to floater view
+		LLFloater* focused_floater = gFloaterView->getFocusedFloater(); // obtain the focused floater
+		floater->open(); // make the new chat floater appear
+		if (focused_floater != NULL) // there was a focused floater
+		{
+			floater->setMinimized(true); // so minimize this one, for now
+			focused_floater->setFocus(true); // and work around focus being removed by focusing on the last
+		}
+	}
 	mFloaters.insert(floater->getHandle());
 	return floater;
 }

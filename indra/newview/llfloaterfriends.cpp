@@ -855,6 +855,8 @@ void LLPanelFriends::onClickIM(void* user_data)
 	const uuid_vec_t ids = panelp->mFriendsList->getSelectedIDs();
 	if(!ids.empty())
 	{
+		static LLCachedControl<bool> tear_off("OtherChatsTornOff");
+		if(!tear_off) gIMMgr->setFloaterOpen(TRUE);
 		if(ids.size() == 1)
 		{
 			LLUUID agent_id = ids[0];
@@ -862,13 +864,11 @@ void LLPanelFriends::onClickIM(void* user_data)
 			std::string fullname;
 			if(info && gCacheName->getFullName(agent_id, fullname))
 			{
-				gIMMgr->setFloaterOpen(TRUE);
 				gIMMgr->addSession(fullname, IM_NOTHING_SPECIAL, agent_id);
 			}
 		}
 		else
 		{
-			gIMMgr->setFloaterOpen(TRUE);
 			gIMMgr->addSession("Friends Conference", IM_SESSION_CONFERENCE_START, ids[0], ids);
 		}
 		make_ui_sound("UISndStartIM");
