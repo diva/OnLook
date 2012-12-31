@@ -44,6 +44,7 @@
         <combo_item name="day_first" value="default">DD/MM/YYYY</combo_item>
         <combo_item name="month_first" value="default">MM/DD/YYYY</combo_item>
       </combo_box>
+      <check_box bottom_delta="0" left="240" follows="top" control_name="SecondsInLog" label="Seconds in Log timestamps" name="seconds_in_log"/>
       <!-- Auto-responder -->
       <view_border bottom="-420" left="5" height="190" bevel_style="none" border_thickness="1" name="GraphicsBorder" width="485"/>
       <check_box bottom_delta="168" left="10" follows="top" initial_value="false" label="Enable Autoresponse"
