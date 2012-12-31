@@ -208,6 +208,10 @@ struct AICurlEasyHandleEvents {
 	virtual void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w) = 0;
 	virtual void finished(AICurlEasyRequest_wat& curl_easy_request_w) = 0;
 	virtual void removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w) = 0;
+	virtual void bad_file_descriptor(AICurlEasyRequest_wat& curl_easy_request_w) = 0;
+#ifdef SHOW_ASSERT
+	virtual void queued_for_removal(AICurlEasyRequest_wat& curl_easy_request_w) = 0;
+#endif
 	// Avoid compiler warning.
 	virtual ~AICurlEasyHandleEvents() { }
 };

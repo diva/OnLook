@@ -1236,6 +1236,20 @@ void CurlEasyRequest::removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy
 	mHandleEventsTarget->removed_from_multi_handle(curl_easy_request_w);
 }
 
+void CurlEasyRequest::bad_file_descriptor(AICurlEasyRequest_wat& curl_easy_request_w)
+{
+  if (mHandleEventsTarget)
+	mHandleEventsTarget->bad_file_descriptor(curl_easy_request_w);
+}
+
+#ifdef SHOW_ASSERT
+void CurlEasyRequest::queued_for_removal(AICurlEasyRequest_wat& curl_easy_request_w)
+{
+  if (mHandleEventsTarget)
+	mHandleEventsTarget->queued_for_removal(curl_easy_request_w);
+}
+#endif
+
 PerHostRequestQueuePtr CurlEasyRequest::getPerHostPtr(void)
 {
   if (!mPerHostPtr)
@@ -1299,7 +1313,17 @@ void BufferedCurlEasyRequest::timed_out(void)
   mResponder->finished(CURLE_OK, HTTP_INTERNAL_ERROR, "Request timeout, aborted.", sChannels, mOutput);
   if (mResponder->needsHeaders())
   {
-	send_buffer_events_to(NULL);	// Revoke buffer events: we sent them to the responder.
+	send_buffer_events_to(NULL);	// Revoke buffer events: we send them to the responder.
+  }
+  mResponder = NULL;
+}
+
+void BufferedCurlEasyRequest::bad_socket(void)
+{
+  mResponder->finished(CURLE_OK, HTTP_INTERNAL_ERROR, "File descriptor went bad! Aborted.", sChannels, mOutput);
+  if (mResponder->needsHeaders())
+  {
+	send_buffer_events_to(NULL);	// Revoke buffer events: we send them to the responder.
   }
   mResponder = NULL;
 }

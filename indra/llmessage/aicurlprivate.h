@@ -420,6 +420,11 @@ class CurlEasyRequest : public CurlEasyHandle {
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
 	/*virtual*/ void finished(AICurlEasyRequest_wat& curl_easy_request_w);
 	/*virtual*/ void removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
+  public:
+	/*virtual*/ void bad_file_descriptor(AICurlEasyRequest_wat& curl_easy_request_w);
+#ifdef SHOW_ASSERT
+	/*virtual*/ void queued_for_removal(AICurlEasyRequest_wat& curl_easy_request_w);
+#endif
 };
 
 // This class adds input/output buffers to the request and hooks up the libcurl callbacks to use those buffers.
@@ -437,6 +442,9 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 
 	// Called if libcurl doesn't deliver within AIHTTPTimeoutPolicy::mMaximumTotalDelay seconds.
 	void timed_out(void);
+
+	// Called if the underlaying socket went bad (ie, when accidently closed by a buggy library).
+	void bad_socket(void);
 
 	// Called after removed_from_multi_handle was called.
 	void processOutput(void);
