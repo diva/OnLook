@@ -1014,6 +1014,8 @@ CURLcode CurlEasyRequest::curlCtxCallback(CURL* curl, void* sslctx, void* parm)
 	options |= SSL_OP_NO_TLSv1_1;
   }
 #else
+  // This is expected when you compile against the headers of a version < 1.0.1 and then link at runtime with version >= 1.0.1.
+  // Don't do that.
   llassert_always(!need_renegotiation_hack);
 #endif
   SSL_CTX_set_options(ctx, options);
@@ -1417,3 +1419,16 @@ CurlMultiHandle::~CurlMultiHandle()
 }
 
 } // namespace AICurlPrivate
+
+extern "C" {
+
+// Keep linker happy.
+SSL_METHOD *SSLv2_client_method(void)
+{
+  // Never used.
+  llassert_always(false);
+  return NULL;
+}
+
+}
+
