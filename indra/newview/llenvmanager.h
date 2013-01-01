@@ -35,11 +35,11 @@
 
 #include "llmemory.h"
 #include "llsd.h"
-#include <boost/signals2.hpp>
 
 class LLWLParamManager;
 class LLWaterParamManager;
 class LLWLAnimator;
+class WindLightRefresh;
 
 // generic key
 struct LLEnvKey
@@ -257,6 +257,7 @@ public:
 	bool useRegionWater();
 
 private:
+	friend class WindLightRefresh;
 	bool useDefaultSky();
 	bool useDefaultWater();
 
