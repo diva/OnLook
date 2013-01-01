@@ -129,7 +129,10 @@ public:
 		CANNOT_CROP_HORIZONTALLY,
 		CANNOT_CROP_VERTICALLY,
 		SIZE_TOO_LARGE,
-		CANNOT_RESIZE
+		CANNOT_RESIZE,
+		DELAYED,
+		NO_RAW_IMAGE,
+		ENCODING_FAILED
 	};
 
 	U32 typeToMask(ESnapshotType type) const { return 1 << type; }
@@ -190,7 +193,7 @@ public:
 	BOOL setThumbnailImageSize();
 	void generateThumbnailImage();
 	EAspectSizeProblem getAspectSizeProblem(S32& width_out, S32& height_out, bool& crop_vertically_out, S32& crop_offset_out);
-	void generateFormattedAndFullscreenPreview(bool delayed_formatted = false);
+	EAspectSizeProblem generateFormattedAndFullscreenPreview(bool delayed_formatted = false);
 	void drawPreviewRect(S32 offset_x, S32 offset_y) ;
 
 	// Returns TRUE when snapshot generated, FALSE otherwise.
@@ -813,6 +816,9 @@ BOOL LLSnapshotLivePreview::onIdle(LLSnapshotLivePreview* previewp)
 
 	// Time to produce a snapshot.
 
+	// Reset Feed and Postcard Aspect to Default.
+	LLFloaterSnapshot::resetFeedAndPostcardAspect();
+
 	if (!previewp->mRawSnapshot)
 	{
 		previewp->mRawSnapshot = new LLImageRaw;
@@ -857,8 +863,17 @@ BOOL LLSnapshotLivePreview::onIdle(LLSnapshotLivePreview* previewp)
 		Dout(dc::notice, "Created a new raw snapshot of size " << previewp->mRawSnapshotWidth << "x" << previewp->mRawSnapshotHeight);
 
 		previewp->mPosTakenGlobal = gAgentCamera.getCameraPositionGlobal();
-		previewp->generateFormattedAndFullscreenPreview();
-		llassert(previewp->mFormattedUpToDate);
+		EAspectSizeProblem ret = previewp->generateFormattedAndFullscreenPreview();
+		// If the required size is too large, we might have to scale up one dimension... So that is ok.
+		// For example, if the target is 1000x1000 and the aspect is set to 8:1, then the required
+		// raw snapshot would be 8000x1000, but since 8000 is too large it would end up being only
+		// 6144x768 (since 6144 is the maximum) and we'll have to stretch the 768 to 1000.
+		llassert(previewp->mFormattedUpToDate || ret == SIZE_TOO_LARGE || ret == ENCODING_FAILED);
+		if (!previewp->mFormattedUpToDate && ret == SIZE_TOO_LARGE)
+		{
+			// ENCODING_FAILED was already reported.
+			LLNotificationsUtil::add("ErrorSizeAspectSnapshot");
+		}
     }
 
 	previewp->getWindow()->decBusyCount();
@@ -881,6 +896,19 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::getAspectSizePr
 
 	// The current aspect ratio of mRawSnapshot is:
 	F32 const raw_aspect = (F32)mRawSnapshotWidth / mRawSnapshotHeight;
+	// The smaller dimension might have been rounded up to 0.5 up or down. Calculate upper and lower limits.
+	F32 lower_raw_aspect;
+	F32 upper_raw_aspect;
+	if (mRawSnapshotWidth < mRawSnapshotHeight)
+	{
+		lower_raw_aspect = (mRawSnapshotWidth - 0.5) / mRawSnapshotHeight;
+		upper_raw_aspect = (mRawSnapshotWidth + 0.5) / mRawSnapshotHeight;
+	}
+	else
+	{
+		lower_raw_aspect = mRawSnapshotWidth / (mRawSnapshotHeight + 0.5);
+		upper_raw_aspect = mRawSnapshotWidth / (mRawSnapshotHeight - 0.5);
+	}
 	// Find out if mRawSnapshot was cropped already.
 	bool const allow_vertical_crop = window_height * raw_aspect >= window_width;		// mRawSnapshot was cropped horizontally.
 	bool const allow_horizontal_crop = window_width / raw_aspect >= window_height;		// mRawSnapshot was cropped vertically.
@@ -889,7 +917,7 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::getAspectSizePr
 	// Construct a rectangle size w,h that fits inside mRawSnapshot but has the correct aspect.
 	width_out = mRawSnapshotWidth;
 	height_out = mRawSnapshotHeight;
-	if (mAspectRatio < raw_aspect)
+	if (mAspectRatio < lower_raw_aspect)
 	{
 		width_out = llround(width_out * mAspectRatio / raw_aspect);
 		if (width_out < mRawSnapshotWidth)
@@ -899,13 +927,13 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::getAspectSizePr
 			if (!allow_horizontal_crop)
 			{
 				Dout(dc::notice, "NOT up to date: required aspect " << mAspectRatio <<
-					" is less than raw aspect " << raw_aspect << " which is already vertically cropped.");
+					" is less than the (lower) raw aspect " << lower_raw_aspect << " which is already vertically cropped.");
 				return CANNOT_CROP_HORIZONTALLY;
 			}
 			crop_offset_out = (mRawSnapshotWidth - width_out) / 2;
 		}
 	}
-	else if (mAspectRatio > raw_aspect)
+	else if (mAspectRatio > upper_raw_aspect)
 	{
 		height_out = llround(height_out * raw_aspect / mAspectRatio);
 		if (height_out < mRawSnapshotHeight)
@@ -913,7 +941,7 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::getAspectSizePr
 			if (!allow_vertical_crop)
 			{
 				Dout(dc::notice, "NOT up to date: required aspect " << mAspectRatio <<
-					" is larger than raw aspect " << raw_aspect << " which is already horizontally cropped.");
+					" is larger than the (upper) raw aspect " << upper_raw_aspect << " which is already horizontally cropped.");
 				return CANNOT_CROP_VERTICALLY;
 			}
 			crop_offset_out = (mRawSnapshotHeight - height_out) / 2;
@@ -940,7 +968,7 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::getAspectSizePr
 	return ASPECTSIZE_OK;
 }
 
-void LLSnapshotLivePreview::generateFormattedAndFullscreenPreview(bool delayed)
+LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::generateFormattedAndFullscreenPreview(bool delayed)
 {
 	DoutEntering(dc::notice, "LLSnapshotLivePreview::generateFormattedAndFullscreenPreview(" << delayed << ")");
 	mFormattedUpToDate = false;
@@ -951,7 +979,7 @@ void LLSnapshotLivePreview::generateFormattedAndFullscreenPreview(bool delayed)
 	if (ret != ASPECTSIZE_OK)
 	{
 		// Current raw snapshot cannot be used.
-		return;
+		return ret;
 	}
 
 	// Determine the required format.
@@ -990,7 +1018,7 @@ void LLSnapshotLivePreview::generateFormattedAndFullscreenPreview(bool delayed)
 	{
 		Dout(dc::notice, "Already up to date.");
 		mFormattedUpToDate = true;
-		return;
+		return ret;
 	}
 
 #ifdef CWDEBUG
@@ -1023,13 +1051,13 @@ void LLSnapshotLivePreview::generateFormattedAndFullscreenPreview(bool delayed)
 	{
 		// Just set mFormattedUpToDate.
 		Dout(dc::notice, "NOT up to date, but delayed. Returning.");
-		return;
+		return DELAYED;
 	}
 
 	if (!mRawSnapshot)
 	{
 		Dout(dc::notice, "No raw snapshot exists.");
-		return;
+		return NO_RAW_IMAGE;
 	}
 
 	Dout(dc::notice, "Generating a new formatted image!");
@@ -1106,6 +1134,7 @@ void LLSnapshotLivePreview::generateFormattedAndFullscreenPreview(bool delayed)
 		mFormattedDataSize = 0;
 		// Disable upload/save button.
 		mFormattedImage = NULL;
+		ret = ENCODING_FAILED;
 		LLNotificationsUtil::add("ErrorEncodingSnapshot");
 	}
 
@@ -1158,7 +1187,7 @@ void LLSnapshotLivePreview::generateFormattedAndFullscreenPreview(bool delayed)
 
 	// Return success if mFormattedImage was succesfully generated.
 	mFormattedUpToDate = mFormattedImage;
-	return;
+	return ret;
 }
 
 void LLSnapshotLivePreview::setSize(S32 w, S32 h)
@@ -1527,6 +1556,7 @@ public:
 	static void setResolution(LLFloaterSnapshot* floater, const std::string& comboname, bool visible, bool update_controls = true);
 	static void setAspect(LLFloaterSnapshot* floater, const std::string& comboname, bool update_controls = true);
 	static void updateControls(LLFloaterSnapshot* floater, bool delayed_formatted = false);
+	static void resetFeedAndPostcardAspect(LLFloaterSnapshot* floater);
 	static void updateLayout(LLFloaterSnapshot* floater);
 
 	static LLHandle<LLView> sPreviewHandle;
@@ -1603,6 +1633,16 @@ void LLFloaterSnapshot::Impl::setAspect(LLFloaterSnapshot* floater, const std::s
 	updateAspect(combo, floater, update_controls); 		// to sync spinner with combo
 }
 
+//static
+void LLFloaterSnapshot::Impl::resetFeedAndPostcardAspect(LLFloaterSnapshot* floaterp)
+{
+	floaterp->getChild<LLComboBox>("feed_aspect_combo")->setCurrentByIndex(0);		// Default
+	gSavedSettings.setS32("SnapshotFeedLastAspect", 0);
+
+	floaterp->getChild<LLComboBox>("postcard_aspect_combo")->setCurrentByIndex(0);	// Default
+	gSavedSettings.setS32("SnapshotPostcardLastAspect", 0);
+}
+
 //static 
 void LLFloaterSnapshot::Impl::updateLayout(LLFloaterSnapshot* floaterp)
 {
@@ -1614,13 +1654,11 @@ void LLFloaterSnapshot::Impl::updateLayout(LLFloaterSnapshot* floaterp)
 	{
 		floaterp->getChild<LLComboBox>("feed_size_combo")->setCurrentByIndex(2);		// 500x375
 		gSavedSettings.setS32("SnapshotFeedLastResolution", 2);
-		floaterp->getChild<LLComboBox>("feed_aspect_combo")->setCurrentByIndex(0);		// Default (500x375)
-		gSavedSettings.setS32("SnapshotFeedLastAspect", 0);
 
 		floaterp->getChild<LLComboBox>("postcard_size_combo")->setCurrentByIndex(0);	// Current window
 		gSavedSettings.setS32("SnapshotPostcardLastResolution", 0);
-		floaterp->getChild<LLComboBox>("postcard_aspect_combo")->setCurrentByIndex(0);	// Default (current window)
-		gSavedSettings.setS32("SnapshotPostcardLastAspect", 0);
+
+		resetFeedAndPostcardAspect(floaterp);
 
 		floaterp->getChild<LLComboBox>("texture_size_combo")->setCurrentByIndex(0);		// 512x512 (most likely result for current window).
 		gSavedSettings.setS32("SnapshotTextureLastResolution", 0);
@@ -2280,9 +2318,9 @@ void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool 
 	S32 new_height = 0;
 	F32 new_aspect = 0;
 	LLSnapshotLivePreview* previewp = getPreviewView(view);
+#if 0 // Broken -- not doing this for now.
 	LLSnapshotLivePreview::ESnapshotType shot_type = (LLSnapshotLivePreview::ESnapshotType)gSavedSettings.getS32("LastSnapshotType");
 
-#if 0 // Broken -- not doing this for now.
 	// Is the snapshot was already used (saved or uploaded) and no manual changes
 	// have been made since to the current destination type, and the raw snapshot
 	// is still up to date with regard to visibility of UI, HUD and BufferType etc?
@@ -2990,6 +3028,12 @@ void LLFloaterSnapshot::update()
 void LLFloaterSnapshot::updateControls()
 {
 	Impl::updateControls(sInstance);
+}
+
+//static 
+void LLFloaterSnapshot::resetFeedAndPostcardAspect()
+{
+	Impl::resetFeedAndPostcardAspect(sInstance);
 }
 
 BOOL LLFloaterSnapshot::handleKeyHere(KEY key, MASK mask)

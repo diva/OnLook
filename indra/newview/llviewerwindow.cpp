@@ -4387,15 +4387,15 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 
 	F32 const window_aspect = (F32)window_width / window_height;
 	// snapshot fits precisely inside window, it is the portion of the window with the correct aspect.
-	S32 snapshot_width = (snapshot_aspect > window_aspect) ? window_width : llround(window_height * snapshot_aspect);
-	S32 snapshot_height = (snapshot_aspect < window_aspect) ? window_height : llround(window_width / snapshot_aspect);
+	F32 snapshot_width = (snapshot_aspect > window_aspect) ? (F32)window_width : window_height * snapshot_aspect;
+	F32 snapshot_height = (snapshot_aspect < window_aspect) ? (F32)window_height : window_width / snapshot_aspect;
 	// ratio is the ratio snapshot/image', where image' is a rectangle with aspect snapshot_aspect that precisely contains image.
 	// Thus image_width' / image_height' == aspect ==> snapshot_width / image_width' == snapshot_height / image_height'.
 	// Since image' precisely contains image, one of them is equal (ie, image_height' = image_height) and the other is larger
 	// (or equal) (ie, image_width' >= image_width), and therefore one of snapshot_width / image_width and
 	// snapshot_height / image_height is correct, and the other is larger. Therefore, the smallest value of the
 	// following equals the ratio we're looking for.
-	F32 ratio = llmin((F32)snapshot_width / image_width, (F32)snapshot_height / image_height);
+	F32 ratio = llmin(snapshot_width / image_width, snapshot_height / image_height);
 	// buffer equals the largest of image' and snapshot. This is because in the first case we need the higher
 	// resolution because of the size of the target image, and in the second case there is no reason to go
 	// smaller because it takes the same amount of time (and a slightly better quality should result after
@@ -4404,7 +4404,7 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 	// and snapshot (which have the same aspect).
 	for(scale_factor = llmax(1.0f, 1.0f / ratio);;												// Initial attempt.
 	// However, if the buffer turns out to be too large, then clamp it to max_size.
-		scale_factor = llmin((F32)max_size / snapshot_width, (F32)max_size / snapshot_height))	// Clamp
+		scale_factor = llmin(max_size / snapshot_width, max_size / snapshot_height))	// Clamp
 	{
 		image_buffer_x = llround(snapshot_width * scale_factor);
 		image_buffer_y = llround(snapshot_height * scale_factor);

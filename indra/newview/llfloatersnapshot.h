@@ -77,6 +77,7 @@ public:
 	static void savePostcardDone(bool success, int index);
 
 	static void updateControls();
+	static void resetFeedAndPostcardAspect();
 
 private:
 	class Impl;

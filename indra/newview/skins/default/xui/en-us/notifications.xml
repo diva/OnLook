@@ -962,6 +962,14 @@ Error encoding snapshot.
 
   <notification
    icon="alertmodal.tga"
+   name="ErrorSizeAspectSnapshot"
+   type="alertmodal">
+It is not possible to make a snapshot with this size and aspect.
+Try a smaller size or a less stretched aspect.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="ErrorUploadingPostcard"
    type="alertmodal">
 There was a problem sending a snapshot due to the following reason: [REASON]
