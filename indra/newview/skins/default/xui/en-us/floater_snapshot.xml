@@ -23,10 +23,10 @@
 			Save to my hard drive
 		</radio_item>
 	</radio_group>
-	<button bottom_delta="-28" follows="left|top" height="20" label="Take snapshot" left="10"
-	  name="new_snapshot_btn" width="105" tool_tip="Make a snapshot of the current view. Use the save and/or upload button to actually save it. The latest snapshot is shown in the thumbnail. In Freeze Time mode a preview of the new snapshot is also shown full screen (note that this has NOT the same quality as the real thing that will be saved: it is downscaled from the actual formatted image to a power of two with a max. resolution of 1024x1024, in order to be displayed in openGL and then probably stretched again to fill your screen). Press ESC to go back to Freeze Time." />
-	<button bottom_delta="0" follows="left|top" height="20" label="Freeze time" left="119"
-	     name="freeze_time_btn" width="90" tool_tip="Show a fullscreen preview. Allows to cam around as if time is frozen and make multiple snapshots of the same scene. Press ESC to undo!" />
+	<button bottom_delta="-28" follows="left|top" height="20" label="Refresh snapshot" left="10"
+	  name="new_snapshot_btn" width="115" tool_tip="Make a snapshot of the current view. Use the save and/or upload button to actually save it. The latest snapshot is shown in the thumbnail. In Freeze Time mode a preview of the new snapshot is also shown full screen (note that this has NOT the same quality as the real thing that will be saved: it is downscaled from the actual formatted image to a power of two with a max. resolution of 1024x1024, in order to be displayed in openGL and then probably stretched again to fill your screen). Press ESC to go back to Freeze Time." />
+	<button bottom_delta="0" follows="left|top" height="20" label="Freeze time" left="129"
+	     name="freeze_time_btn" width="80" tool_tip="Freeze time and show a fullscreen preview. Allows to cam around as if time is frozen and make multiple snapshots of the same scene. Press ESC to undo!" />
 	<button bottom_delta="-22" follows="left|top" height="20" label="Upload" left="10"
 	     name="feed_btn" width="105" />
 	<button bottom_delta="0" follows="left|top" height="20" label="Send" left="10"
