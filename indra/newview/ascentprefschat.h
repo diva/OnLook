@@ -76,6 +76,8 @@ protected:
         U32 tempTimeFormat;
         U32 tempDateFormat;
     BOOL mSecondsInChatAndIMs;
+    BOOL mSecondsInLog;
+    BOOL mOtherChatsTornOff;
 
     BOOL mIMResponseAnyone;
     BOOL mIMResponseFriends;

@@ -15,6 +15,9 @@
 	<string name="pause_label">
 		Pause
 	</string>
+	<string name="Title">Title</string>
+	<string name="Artist">Artist</string>
+	<string name="Now_playing">Now playing</string>
 	<string name="default_tooltip_label">
 		No Media Specified
 	</string>

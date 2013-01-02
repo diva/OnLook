@@ -5606,7 +5606,9 @@ BOOL LLVOAvatar::processSingleAnimationStateChange( const LLUUID& anim_id, BOOL 
 
 	if ( start ) // start animation
 	{
-		if (anim_id == ANIM_AGENT_TYPE && gSavedSettings.getBOOL("PlayTypingSound"))
+		static LLCachedControl<bool> play_typing_sound("PlayTypingSound");
+		static LLCachedControl<bool> announce_snapshots("AnnounceSnapshots");
+		if (anim_id == ANIM_AGENT_TYPE && play_typing_sound)
 		{
 			if (gAudiop)
 			{
@@ -5631,6 +5633,17 @@ BOOL LLVOAvatar::processSingleAnimationStateChange( const LLUUID& anim_id, BOOL 
 		else if (anim_id == ANIM_AGENT_SIT_GROUND_CONSTRAINED)
 		{
 			sitDown(TRUE);
+		}
+		else if(anim_id == ANIM_AGENT_SNAPSHOT && announce_snapshots)
+		{
+			std::string name;
+			LLAvatarNameCache::getPNSName(mID, name);
+			LLChat chat;
+			chat.mFromName = name;
+			chat.mText = name + " " + LLTrans::getString("took_a_snapshot") + ".";
+			chat.mURL = llformat("secondlife:///app/agent/%s/about",mID.asString().c_str());
+			chat.mSourceType = CHAT_SOURCE_SYSTEM;
+			LLFloaterChat::addChat(chat);
 		}
 
 

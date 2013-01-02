@@ -161,7 +161,10 @@ LLAvatarListEntry::LLAvatarListEntry(const LLUUID& id, const std::string &name, 
 		mIsInList(false), mAge(-1), mAgeAlert(false), mTime(time(NULL))
 {
 	if (mID.notNull())
+	{
 		LLAvatarPropertiesProcessor::getInstance()->addObserver(mID, this);
+		LLAvatarPropertiesProcessor::getInstance()->sendAvatarPropertiesRequest(mID);
+	}
 }
 
 LLAvatarListEntry::~LLAvatarListEntry()
@@ -175,6 +178,7 @@ void LLAvatarListEntry::processProperties(void* data, EAvatarProcessorType type)
 {
 	if(type == APT_PROPERTIES)
 	{
+		LLAvatarPropertiesProcessor::getInstance()->removeObserver(mID, this);
 		const LLAvatarData* pAvatarData = static_cast<const LLAvatarData*>(data);
 		if (pAvatarData && (pAvatarData->avatar_id != LLUUID::null))
 		{
@@ -608,10 +612,9 @@ void LLFloaterAvatarList::updateAvatarList()
 				else
 				{
 					// Avatar not there yet, add it
-					LLAvatarListEntry entry(avid, name, position);
 					if(announce && avatarp->getRegion() == gAgent.getRegion())
 						announce_keys.push(avid);
-					mAvatars.push_back(entry);
+					mAvatars.push_back(LLAvatarListEntryPtr(new LLAvatarListEntry(avid, name, position)));
 				}
 			}
 			else
@@ -640,10 +643,9 @@ void LLFloaterAvatarList::updateAvatarList()
 				}
 				else
 				{
-					LLAvatarListEntry entry(avid, name, position);
 					if(announce && gAgent.getRegion()->pointInRegionGlobal(position))
 						announce_keys.push(avid);
-					mAvatars.push_back(entry);
+					mAvatars.push_back(LLAvatarListEntryPtr(new LLAvatarListEntry(avid, name, position)));
 				}
 			}
 		}
@@ -707,10 +709,19 @@ void LLFloaterAvatarList::expireAvatarList()
 //	llinfos << "radar: expiring" << llendl;
 	for(av_list_t::iterator it = mAvatars.begin(); it != mAvatars.end();)
 	{
-		if(!it->isDead())
-			(it++)->getAlive();
+		LLAvatarListEntry* entry = it->get();
+		if(!entry->isDead())
+		{
+			entry->getAlive();
+			++it;
+		}
 		else
 		{
+			if(mAvatars.back() == *it)
+			{
+				mAvatars.pop_back();
+				return;
+			}
 			*it = mAvatars.back();
 			mAvatars.pop_back();
 			if(mAvatars.empty())
@@ -771,17 +782,17 @@ void LLFloaterAvatarList::refreshAvatarList()
 		std::string av_name;
 
 		// Skip if avatar hasn't been around
-		if (entry.isDead())
+		if (entry->isDead())
 		{
 			continue;
 		}
 
-		entry.setInList();
+		entry->setInList();
 
-		av_id = entry.getID();
-		av_name = entry.getName().c_str();
+		av_id = entry->getID();
+		av_name = entry->getName().c_str();
 
-		LLVector3d position = entry.getPosition();
+		LLVector3d position = entry->getPosition();
 		BOOL UnknownAltitude = false;
 
 		LLVector3d delta = position - mypos;
@@ -813,15 +824,12 @@ void LLFloaterAvatarList::refreshAvatarList()
 			continue;
 		}
 
-		//Request properties here, so we'll have them later on when we need them
-		LLAvatarPropertiesProcessor::getInstance()->addObserver(entry.mID, &entry);
-		LLAvatarPropertiesProcessor::getInstance()->sendAvatarPropertiesRequest(entry.mID);
 
 		element["id"] = av_id;
 
 		element["columns"][LIST_MARK]["column"] = "marked";
 		element["columns"][LIST_MARK]["type"] = "text";
-		if (entry.isMarked())
+		if (entry->isMarked())
 		{
 			element["columns"][LIST_MARK]["value"] = "X";
 			element["columns"][LIST_MARK]["color"] = LLColor4::blue.getValue();
@@ -835,7 +843,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		element["columns"][LIST_AVATAR_NAME]["column"] = "avatar_name";
 		element["columns"][LIST_AVATAR_NAME]["type"] = "text";
 		element["columns"][LIST_AVATAR_NAME]["value"] = av_name;
-		if (entry.isFocused())
+		if (entry->isFocused())
 		{
 			element["columns"][LIST_AVATAR_NAME]["font-style"] = "BOLD";
 		}
@@ -843,7 +851,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		//<edit> custom colors for certain types of avatars!
 		//Changed a bit so people can modify them in settings. And since they're colors, again it's possibly account-based. Starting to think I need a function just to determine that. - HgB
 		//element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapAvatar" ).getValue();
-		LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(entry.getPosition());
+		LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(entry->getPosition());
 		LLUUID estate_owner = LLUUID::null;
 		if(parent_estate && parent_estate->isAlive())
 		{
@@ -895,7 +903,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		if (UnknownAltitude)
 		{
 			strcpy(temp, "?");
-			if (entry.isDrawn())
+			if (entry->isDrawn())
 			{
 				color = sRadarTextDrawDist;
 			}
@@ -916,7 +924,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 			}
 			else
 			{
-				if (entry.isDrawn())
+				if (entry->isDrawn())
 				{
 					color = sRadarTextDrawDist;
 				}
@@ -975,7 +983,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 		std::string activity_icon = "";
 		std::string activity_tip = "";
-		switch(entry.getActivity())
+		switch(entry->getActivity())
 		{
 		case LLAvatarListEntry::ACTIVITY_MOVING:
 			{
@@ -1030,17 +1038,17 @@ void LLFloaterAvatarList::refreshAvatarList()
 		element["columns"][LIST_AGE]["column"] = "age";
 		element["columns"][LIST_AGE]["type"] = "text";
 		color = sDefaultListText;
-		std::string age = boost::lexical_cast<std::string>(entry.mAge);
-		if (entry.mAge > -1)
+		std::string age = boost::lexical_cast<std::string>(entry->mAge);
+		if (entry->mAge > -1)
 		{
 			static LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");
-			if ((U32)entry.mAge < sAvatarAgeAlertDays)
+			if ((U32)entry->mAge < sAvatarAgeAlertDays)
 			{
 				color = sRadarTextYoung;
-				if (!entry.mAgeAlert) //Only announce age once per entry.
+				if (!entry->mAgeAlert) //Only announce age once per entry.
 				{
-					entry.mAgeAlert = true;
-					chat_avatar_status(entry.getName().c_str(), av_id, ALERT_TYPE_AGE, true);
+					entry->mAgeAlert = true;
+					chat_avatar_status(entry->getName().c_str(), av_id, ALERT_TYPE_AGE, true);
 				}
 			}
 		}
@@ -1051,7 +1059,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		element["columns"][LIST_AGE]["value"] = age;
 		element["columns"][LIST_AGE]["color"] = color.getValue();
 
-		int dur = difftime(time(NULL), entry.getTime());
+		int dur = difftime(time(NULL), entry->getTime());
 		int hours = dur / 3600;
 		int mins = (dur % 3600) / 60;
 		int secs = (dur % 3600) % 60;
@@ -1225,7 +1233,7 @@ LLAvatarListEntry * LLFloaterAvatarList::getAvatarEntry(LLUUID avatar)
 
 	av_list_t::iterator iter = std::find_if(mAvatars.begin(),mAvatars.end(),LLAvatarListEntry::uuidMatch(avatar));
 	if(iter != mAvatars.end())
-		return &(*iter);
+		return iter->get();
 	else
 		return NULL;
 }
@@ -1297,7 +1305,7 @@ void LLFloaterAvatarList::removeFocusFromAll()
 {
 	BOOST_FOREACH(av_list_t::value_type& entry, mAvatars)
 	{
-		entry.setFocus(FALSE);
+		entry->setFocus(FALSE);
 	}
 }
 
@@ -1309,7 +1317,7 @@ void LLFloaterAvatarList::setFocusAvatar(const LLUUID& id)
 		if(!gAgentCamera.lookAtObject(id, false))
 			return;
 		removeFocusFromAll();
-		iter->setFocus(TRUE);
+		(*iter)->setFocus(TRUE);
 	}
 }
 
@@ -1317,22 +1325,22 @@ template<typename T>
 void decrement_focus_target(T begin, T end, BOOL marked_only)
 {
 	T iter = begin;
-	while(iter != end && !iter->isFocused()) ++iter;
+	while(iter != end && !(*iter)->isFocused()) ++iter;
 	if(iter == end)
 		return;
 	T prev_iter = iter;
 	while(prev_iter != begin)
 	{
-		LLAvatarListEntry& entry = *(--prev_iter);
+		const LLAvatarListEntry& entry = *((--prev_iter)->get());
 		if(entry.isInList() && (entry.isMarked() || !marked_only) && gAgentCamera.lookAtObject(entry.getID(), false))
 		{
-			iter->setFocus(FALSE);
-			prev_iter->setFocus(TRUE);
-			gAgentCamera.lookAtObject(prev_iter->getID(), false);
+			(*iter)->setFocus(FALSE);
+			(*prev_iter)->setFocus(TRUE);
+			gAgentCamera.lookAtObject((*prev_iter)->getID(), false);
 			return;
 		}
 	}
-	gAgentCamera.lookAtObject(iter->getID(), false);
+	gAgentCamera.lookAtObject((*iter)->getID(), false);
 }
 
 void LLFloaterAvatarList::focusOnPrev(BOOL marked_only)

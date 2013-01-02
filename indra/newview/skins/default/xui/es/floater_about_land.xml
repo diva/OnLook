@@ -75,7 +75,7 @@
 			</text>
 			<button label="Comprar terreno..." label_selected="Comprar terreno..." name="Buy Land..." width="120"/>
 			<button label="Comprar para el grupo..." label_selected="Comprar para el grupo..." name="Buy For Group..." width="160" left="280"/>
-			<button label="Comprar un Pase..." label_selected="Comprar un Pase..." name="Buy Pass..." tool_tip="Un pase te da acceso temporal a este terreno." width="120"/>
+			<button label="Comprar un Pase..." label_selected="Comprar un Pase..." name="Buy Pass..." tool_tip="Un pase te da acceso temporario a este terreno." width="120"/>
 			<button label="Abandonar terreno..." label_selected="Abandonar terreno..." name="Abandon Land..." width="160" left="280"/>
 			<button label="Reclamar tereno..." label_selected="Reclamar terreno..." name="Reclaim Land..."/>
 			<button label="Venta Linden..." label_selected="Venta Linden..." name="Linden Sale..." tool_tip="El terreno debe estar en propiedad, con contenido, y no estar en subasta."/>
@@ -251,6 +251,8 @@ Ve al Menú Mundo &gt; Acerca del terreno o selecciona otra parcela para ver sus
 			<text name="Autoreturn" width="350">
 				Autoretorno de objetos a otros residentes (minutos; 0 para desactivar):
 			</text>
+			<line_editor name="clean other time" right="-50"
+/>			
 			<text name="Object Owners:" width="250">
 				Propietarios de los objetos:
 			</text>
@@ -291,7 +293,7 @@ Ve al Menú Mundo &gt; Acerca del terreno o selecciona otra parcela para ver sus
 				Opciones del terreno:
 			</text>
 			<check_box label="Seguro (sin daño)" name="check safe" tool_tip="Marcado, convierte el terreno en 'seguro', desactivando el daño en combate. Si no, se activa el daño en combate."/>
-			<check_box name="PushRestrictCheck" tool_tip="Previene scripts que empujen. Marcando esta opción evitará que en tu terreno haya comportamientos destructivos."/>
+			<check_box label="Sin Empujones" name="PushRestrictCheck" tool_tip="Previene scripts que empujen. Marcando esta opción evitará que en tu terreno haya comportamientos destructivos."/>
 			<check_box label="Mostrar parcela en la busqueda ([DIRECTORYFEE]) en" name="ShowDirectoryCheck" tool_tip="Permitir que aparezca esta parcela en los resultados de la búsqueda" left="14"/>
 			<string name="search_enabled_tooltip">
 				Permitir que aparezca esta parcela en los resultados de la búsqueda
@@ -413,7 +415,6 @@ Sólo las parcelas más grandes pueden listarse en la búsqueda.
 				Permitir a residentes en otras parcelas:
 			</text>
 			<check_box label="Ver Avatares" name="SeeAvatarsCheck" tool_tip="Premite a los residentes en otras parcelas ver y conversar con los residentes en esta parcela, y tu prodrás verlos y conversar también con ellos."/>
-
 			<text name="Snapshot:">
 				 Foto:
 			</text>
@@ -503,7 +504,7 @@ Selecciona la miniatura para elegir una textura diferente.
 			</text>
 			<line_editor name="music_url" left="110"/>
 			<text name="Sound:">
-				Música:
+				Sonido:
 			</text>
 			<check_box label="Restringir gestos y sonidos de objetos a esta parcela" name="check_sound_local"/>
 			<button label="?" label_selected="?" name="?"/>

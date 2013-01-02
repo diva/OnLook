@@ -386,7 +386,9 @@ void LLPanelGroups::startIM()
 		LLGroupData group_data;
 		if (gAgent.getGroupData(group_id, group_data))
 		{
-			gIMMgr->setFloaterOpen(TRUE);
+			static LLCachedControl<bool> tear_off("OtherChatsTornOff");
+			if (!tear_off)
+				gIMMgr->setFloaterOpen(TRUE);
 			gIMMgr->addSession(
 				group_data.mName,
 				IM_SESSION_GROUP_START,

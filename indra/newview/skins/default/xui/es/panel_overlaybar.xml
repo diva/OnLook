@@ -27,7 +27,7 @@
 		<layout_panel name="AdvSettings_container">
 			<panel name="Adv_Settings"/>
 		</layout_panel>
-		<layout_panel name="AdvSettings_container_exp">
+		<layout_panel name="AdvSettings_container_exp" min_width="230">
 			<panel name="Adv_Settings"/>
 		</layout_panel>
 	</layout_stack>

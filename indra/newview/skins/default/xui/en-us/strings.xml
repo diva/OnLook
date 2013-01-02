@@ -2946,6 +2946,9 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="CurrentlySetToAnItemNotOnThisAccount">Currently set to an item not on this account</string>
 	<string name="NotLoggedIn">Not logged in</string>
 
+    <!-- Non-standard LLChat strings -->
+    <string name="took_a_snapshot">took a snapshot</string>
+
   <!-- Avatar busy/away mode -->
 	<string name="AvatarSetNotAway">Not Away</string>
 	<string name="AvatarSetAway">Away</string>

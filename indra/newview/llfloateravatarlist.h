@@ -22,6 +22,8 @@
 #include <map>
 #include <set>
 
+#include <boost/shared_ptr.hpp>
+
 class LLFloaterAvatarList;
 
 /**
@@ -130,7 +132,7 @@ enum ACTIVITY_TYPE
 	struct uuidMatch
 	{
 		uuidMatch(const LLUUID& id) : mID(id) {}
-		bool operator()(const LLAvatarListEntry& l) { return l.getID() == mID; }
+		bool operator()(const boost::shared_ptr<LLAvatarListEntry>& l) { return l->getID() == mID; }
 		LLUUID mID;
 	};
 
@@ -243,7 +245,8 @@ public:
 	static void sound_trigger_hook(LLMessageSystem* msg,void **);
 	void sendKeys();
 
-	typedef std::vector<LLAvatarListEntry> av_list_t;
+	typedef boost::shared_ptr<LLAvatarListEntry> LLAvatarListEntryPtr;
+	typedef std::vector< LLAvatarListEntryPtr > av_list_t;
 
 private:
 	// when a line editor loses keyboard focus, it is committed.

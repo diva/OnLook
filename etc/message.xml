@@ -378,6 +378,14 @@
 					<boolean>true</boolean>
 				</map>
                 
+				<key>WindLightRefresh</key>
+					<map>
+					<key>flavor</key>
+					<string>llsd</string>
+					<key>trusted-sender</key>
+					<boolean>true</boolean>
+				</map>
+
 				<key>ParcelVoiceInfo</key>
 				<map>
 					<key>flavor</key>
@@ -385,7 +393,6 @@
 					<key>trusted-sender</key>
 					<boolean>true</boolean>
 				</map>
-
 
 				<key>ParcelNavigateMedia</key>
 				<map>

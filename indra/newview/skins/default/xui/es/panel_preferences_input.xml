@@ -8,9 +8,11 @@
 	</text>
 	<check_box label="Invertir el Ratón" name="invert_mouse"/>
 	<check_box label="Mostrar Avatar en Vista Subjetiva" name="first_person_avatar_visible"/>
-	<text name=" Auto Fly Options:">
-		Opciones de Vuelo:</text>
+	<text name=" Movement Options:">
+		Opciones de Movimiento:
+	</text>
 	<check_box label="Despegar/Aterrizar al pulsar RePág/AvPág" name="automatic_fly"/>
+	<check_box label="Permitir alternar estar en cuclillas presionando la tecla Mayús" name="crouch_toggle"/>	
 	<text left="10" name=" Camera Options:">
 		Opciones de Cámara:
 	</text>
@@ -25,5 +27,6 @@
 	<check_box label="Reorientar la cámara el editar" name="edit_camera_movement" tool_tip="Posicionar la Cámara automáticamente al entrar y salir del modo de Edición"/>
 	<check_box label="Reorientar la cámara el editar la apariencia" name="appearance_camera_movement" tool_tip="Posicionar la Cámara automáticamente mientras se esté en modo edición del avatar"/>
 	<check_box label="Levantar el avatar al reiniciar la cámara" name="unsit_on_camera_reset" tool_tip="Levanta al avatar automárticamente cuando presiones la tecla ESC y la cámara cambie a modo de vista en tercera persona"/>
+	<check_box label="Deshabilitar Restricciones de Cámara" name="DisableCameraConstraints" tool_tip="Prevenir el zoom automático de la cámara cuando estes muy cerca de paredes, objetos, etc.."/>	
 	<button label="Configuración Joystick" name="joystick_setup_button"/>
 </panel>
