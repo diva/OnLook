@@ -410,11 +410,7 @@ LLVector3 LLAgentCamera::calcFocusOffset(LLViewerObject *object, LLVector3 origi
 	}
 	
 	LLQuaternion inv_obj_rot = ~obj_rot; // get inverse of rotation
-	LLVector3 object_extents = object->getScale();	
-	//this stuff just seems to make camera snapping worse...
-	//const LLVector4a* oe4 = object->mDrawable->getSpatialExtents();
-	//object_extents.set( oe4[1][0], oe4[1][1], oe4[1][2] );
-
+	LLVector3 object_extents = object->getScale();
 	
 	// make sure they object extents are non-zero
 	object_extents.clamp(0.001f, F32_MAX);
@@ -2314,10 +2310,6 @@ void LLAgentCamera::changeCameraToThirdPerson(BOOL animate)
 		mCameraMode = CAMERA_MODE_THIRD_PERSON;
 		U32 old_flags = gAgent.getControlFlags();
 		gAgent.clearControlFlags(AGENT_CONTROL_MOUSELOOK);
-		if (old_flags != gAgent.getControlFlags())
-		{
-			gAgent.setFlagsDirty();
-		}
 	}
 
 	// Remove any pitch from the avatar

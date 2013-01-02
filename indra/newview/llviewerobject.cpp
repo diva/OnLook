@@ -2116,32 +2116,28 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 	static const LLCachedControl<bool> use_new_target_omega ("UseNewTargetOmegaCode", true);
 	if (use_new_target_omega)
 	{	// New, experimental code
-		if (new_rot != getRotation() || new_angv != old_angv)
+		if ((new_rot != getRotation()) || (new_angv != old_angv))
 		{
-			if (new_angv != old_angv)
+			if (new_rot != mPreviousRotation)
 			{
-				if (new_rot != mPreviousRotation)
+				resetRot();
+			}
+			else if (new_angv != old_angv)
+			{
+				if (flagUsePhysics())
 				{
 					resetRot();
 				}
-				else if (new_angv != old_angv)
+				else
 				{
-					if (flagUsePhysics())
-					{
-						resetRot();
-					}
-					else
-					{
-						mRotTime = 0.0f;
-					}
+					mRotTime = 0.0f;
 				}
 			}
 
 			// Remember the last rotation value
 			mPreviousRotation = new_rot;
 
-			// Set the rotation of the object followed by adjusting for the
-			// accumulated angular velocity (llSetTargetOmega)
+			// Set the rotation of the object followed by adjusting for the accumulated angular velocity (llSetTargetOmega)
 			setRotation(new_rot * mAngularVelocityRot);
 			setChanged(ROTATED | SILHOUETTE);
 		}
