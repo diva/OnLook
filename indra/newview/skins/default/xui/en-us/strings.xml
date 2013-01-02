@@ -196,6 +196,7 @@
 	<string name="AvatarAway">Away</string>
 	<string name="AvatarBusy">Busy</string>
 	<string name="AvatarMuted">Muted</string>
+	<string name="AvatarLangolier">Langolier</string>
 
 	<!-- animations -->
 	<string name="anim_express_afraid">Afraid</string>

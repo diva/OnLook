@@ -2977,6 +2977,8 @@ void LLFloaterSnapshot::onClose(bool app_quitting)
 	// Set invisible so it doesn't eat tooltips. JC
 	gSnapshotFloaterView->setVisible(FALSE);
 	gSavedSettings.setBOOL("SnapshotBtnState", FALSE);
+	gSavedSettings.setBOOL("UseFreezeTime", FALSE);
+	impl.updateLayout(this);
 	destroy();
 }
 
