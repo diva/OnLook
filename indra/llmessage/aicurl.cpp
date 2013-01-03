@@ -1444,10 +1444,11 @@ CurlMultiHandle::~CurlMultiHandle()
 
 } // namespace AICurlPrivate
 
+#if LL_LINUX
 extern "C" {
 
 // Keep linker happy.
-SSL_METHOD *SSLv2_client_method(void)
+const SSL_METHOD *SSLv2_client_method(void)
 {
   // Never used.
   llassert_always(false);
@@ -1455,4 +1456,5 @@ SSL_METHOD *SSLv2_client_method(void)
 }
 
 }
+#endif
 
