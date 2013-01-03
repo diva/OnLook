@@ -4113,8 +4113,9 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 	msg->getU64Fast(_PREHASH_Info, _PREHASH_RegionHandle, region_handle);
 	U32 teleport_flags;
 	msg->getU32Fast(_PREHASH_Info, _PREHASH_TeleportFlags, teleport_flags);
-	
-	
+
+	LLWorld::getInstance()->setRegionWidth(msg);
+
 	std::string seedCap;
 	msg->getStringFast(_PREHASH_Info, _PREHASH_SeedCapability, seedCap);
 
@@ -4434,6 +4435,8 @@ void process_crossed_region(LLMessageSystem* msg, void**)
 	
 	std::string seedCap;
 	msg->getStringFast(_PREHASH_RegionData, _PREHASH_SeedCapability, seedCap);
+
+	LLWorld::getInstance()->setRegionWidth(msg);
 
 	send_complete_agent_movement(sim_host);
 

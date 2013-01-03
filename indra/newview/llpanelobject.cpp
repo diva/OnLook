@@ -2522,7 +2522,7 @@ void LLPanelObject::onPastePos(void* user_data)
 	
 	LLPanelObject* self = (LLPanelObject*) user_data;
 	LLCalc* calcp = LLCalc::getInstance();
-	float region_width = LLWorld::getInstance()->getRegionWidthInMeters();
+	float region_width = gAgent.getRegion()->getWidth();
 	mClipboardPos.mV[VX] = llclamp( mClipboardPos.mV[VX], -3.5f, region_width);
 	mClipboardPos.mV[VY] = llclamp( mClipboardPos.mV[VY], -3.5f, region_width);
 	mClipboardPos.mV[VZ] = llclamp( mClipboardPos.mV[VZ], -3.5f, 4096.f);

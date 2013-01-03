@@ -375,10 +375,25 @@ LLSimInfo* LLWorldMap::simInfoFromPosGlobal(const LLVector3d& pos_global)
 
 LLSimInfo* LLWorldMap::simInfoFromHandle(const U64 handle)
 {
-	sim_info_map_t::iterator it = mSimInfoMap.find(handle);
-	if (it != mSimInfoMap.end())
+	std::map<U64, LLSimInfo*>::const_iterator it;
+	for (it = mSimInfoMap.begin(); it != mSimInfoMap.end(); ++it)
 	{
-		return it->second;
+		const U64 hndl = (*it).first;
+		LLSimInfo* info = (*it).second;
+		if (hndl == handle)
+		{
+			return info;
+		}
+		U32 x = 0, y = 0;
+		from_region_handle(handle, &x, &y);
+		U32 checkRegionX, checkRegionY;
+		from_region_handle(hndl, &checkRegionX, &checkRegionY);
+
+		if (x >= checkRegionX && x < (checkRegionX + info->getSizeX()) &&
+			y >= checkRegionY && y < (checkRegionY + info->getSizeY()))
+		{
+			return info;
+		}
 	}
 	return NULL;
 }

@@ -82,6 +82,7 @@
 #include "llviewerwindow.h"
 #include "llvlcomposition.h"
 #include "llagentui.h"
+#include "hippogridmanager.h"
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -1105,8 +1106,8 @@ BOOL LLPanelRegionTextureInfo::sendUpdate()
 {
 	llinfos << "LLPanelRegionTextureInfo::sendUpdate()" << llendl;
 
-	// Make sure user hasn't chosen wacky textures.
-	if (!validateTextureSizes())
+	// Make sure user hasn't chosen wacky textures on sl grids.
+	if (gHippoGridManager->getConnectedGrid()->isSecondLife() && !validateTextureSizes())
 	{
 		return FALSE;
 	}

@@ -584,6 +584,7 @@ char const* const _PREHASH_LastName = LLMessageStringTable::getInstance()->getSt
 char const* const _PREHASH_From = LLMessageStringTable::getInstance()->getString("From");
 char const* const _PREHASH_RoleChange = LLMessageStringTable::getInstance()->getString("RoleChange");
 char const* const _PREHASH_Port = LLMessageStringTable::getInstance()->getString("Port");
+char const* const _PREHASH_RegionSizeX = LLMessageStringTable::getInstance()->getString("RegionSizeX");
 char const* const _PREHASH_MemberTitle = LLMessageStringTable::getInstance()->getString("MemberTitle");
 char const* const _PREHASH_LogParcelChanges = LLMessageStringTable::getInstance()->getString("LogParcelChanges");
 char const* const _PREHASH_AgentCachedTextureResponse = LLMessageStringTable::getInstance()->getString("AgentCachedTextureResponse");

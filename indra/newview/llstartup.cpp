@@ -4197,7 +4197,10 @@ bool process_login_success_response(std::string& password)
 		U32 region_y = strtoul(region_y_str.c_str(), NULL, 10);
 		gFirstSimHandle = to_region_handle(region_x, region_y);
 	}
-	
+
+	text = response["region_size_x"].asString();
+	if (!text.empty()) LLViewerParcelMgr::getInstance()->widthUpdate(atoi(text.c_str()));
+
 	const std::string look_at_str = response["look_at"];
 	if (!look_at_str.empty())
 	{

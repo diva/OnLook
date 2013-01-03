@@ -584,6 +584,7 @@ extern char const* const _PREHASH_LastName;
 extern char const* const _PREHASH_From;
 extern char const* const _PREHASH_RoleChange;
 extern char const* const _PREHASH_Port;
+extern char const* const _PREHASH_RegionSizeX;
 extern char const* const _PREHASH_MemberTitle;
 extern char const* const _PREHASH_LogParcelChanges;
 extern char const* const _PREHASH_AgentCachedTextureResponse;

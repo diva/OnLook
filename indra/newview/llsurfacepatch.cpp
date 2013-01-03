@@ -249,18 +249,22 @@ void LLSurfacePatch::calcNormal(const U32 x, const U32 y, const U32 stride)
 
 	const F32 mpg = mSurfacep->getMetersPerGrid() * stride;
 
-	S32 poffsets[2][2][2];
+	S32 poffsets[2][2][3];
 	poffsets[0][0][0] = x - stride;
 	poffsets[0][0][1] = y - stride;
+	poffsets[0][0][2] = surface_stride;
 
 	poffsets[0][1][0] = x - stride;
 	poffsets[0][1][1] = y + stride;
+	poffsets[0][1][2] = surface_stride;
 
 	poffsets[1][0][0] = x + stride;
 	poffsets[1][0][1] = y - stride;
+	poffsets[1][0][2] = surface_stride;
 
 	poffsets[1][1][0] = x + stride;
 	poffsets[1][1][1] = y + stride;
+	poffsets[1][1][2] = surface_stride;
 
 	const LLSurfacePatch *ppatches[2][2];
 
@@ -286,6 +290,7 @@ void LLSurfacePatch::calcNormal(const U32 x, const U32 y, const U32 stride)
 				{
 					poffsets[i][j][0] += patch_width;
 					ppatches[i][j] = ppatches[i][j]->getNeighborPatch(WEST);
+					poffsets[i][j][2] = ppatches[i][j]->getSurface()->getGridsPerEdge();
 				}
 			}
 			if (poffsets[i][j][1] < 0)
@@ -298,6 +303,7 @@ void LLSurfacePatch::calcNormal(const U32 x, const U32 y, const U32 stride)
 				{
 					poffsets[i][j][1] += patch_width;
 					ppatches[i][j] = ppatches[i][j]->getNeighborPatch(SOUTH);
+					poffsets[i][j][2] = ppatches[i][j]->getSurface()->getGridsPerEdge();
 				}
 			}
 			if (poffsets[i][j][0] >= (S32)patch_width)
@@ -310,6 +316,7 @@ void LLSurfacePatch::calcNormal(const U32 x, const U32 y, const U32 stride)
 				{
 					poffsets[i][j][0] -= patch_width;
 					ppatches[i][j] = ppatches[i][j]->getNeighborPatch(EAST);
+					poffsets[i][j][2] = ppatches[i][j]->getSurface()->getGridsPerEdge();
 				}
 			}
 			if (poffsets[i][j][1] >= (S32)patch_width)
@@ -322,6 +329,7 @@ void LLSurfacePatch::calcNormal(const U32 x, const U32 y, const U32 stride)
 				{
 					poffsets[i][j][1] -= patch_width;
 					ppatches[i][j] = ppatches[i][j]->getNeighborPatch(NORTH);
+					poffsets[i][j][2] = ppatches[i][j]->getSurface()->getGridsPerEdge();
 				}
 			}
 		}
@@ -330,19 +338,19 @@ void LLSurfacePatch::calcNormal(const U32 x, const U32 y, const U32 stride)
 	LLVector3 p00(-mpg,-mpg,
 				  *(ppatches[0][0]->mDataZ
 				  + poffsets[0][0][0]
-				  + poffsets[0][0][1]*surface_stride));
+				  + poffsets[0][0][1]*poffsets[0][0][2]));
 	LLVector3 p01(-mpg,+mpg,
 				  *(ppatches[0][1]->mDataZ
 				  + poffsets[0][1][0]
-				  + poffsets[0][1][1]*surface_stride));
+				  + poffsets[0][1][1]*poffsets[0][1][2]));
 	LLVector3 p10(+mpg,-mpg,
 				  *(ppatches[1][0]->mDataZ
 				  + poffsets[1][0][0]
-				  + poffsets[1][0][1]*surface_stride));
+				  + poffsets[1][0][1]*poffsets[1][0][2]));
 	LLVector3 p11(+mpg,+mpg,
 				  *(ppatches[1][1]->mDataZ
 				  + poffsets[1][1][0]
-				  + poffsets[1][1][1]*surface_stride));
+				  + poffsets[1][1][1]*poffsets[1][1][2]));
 
 	LLVector3 c1 = p11 - p00;
 	LLVector3 c2 = p01 - p10;
@@ -493,6 +501,9 @@ void LLSurfacePatch::updateNormals()
 	// update the west edge
 	if (mNormalsInvalid[NORTHWEST] || mNormalsInvalid[WEST] || mNormalsInvalid[SOUTHWEST])
 	{
+		if(!getNeighborPatch(NORTH) && getNeighborPatch(NORTHWEST) && getNeighborPatch(NORTHWEST)->getHasReceivedData())
+			*(mDataZ + grids_per_patch_edge*grids_per_edge) = *(getNeighborPatch(NORTHWEST)->mDataZ + grids_per_patch_edge);
+
 		for (j = 0; j < grids_per_patch_edge; j++)
 		{
 			calcNormal(0, j, 2);
@@ -504,6 +515,9 @@ void LLSurfacePatch::updateNormals()
 	// update the south edge
 	if (mNormalsInvalid[SOUTHWEST] || mNormalsInvalid[SOUTH] || mNormalsInvalid[SOUTHEAST])
 	{
+		if(!getNeighborPatch(EAST) && getNeighborPatch(SOUTHEAST) && getNeighborPatch(SOUTHEAST)->getHasReceivedData())
+			*(mDataZ + grids_per_patch_edge) = *(getNeighborPatch(SOUTHEAST)->mDataZ + grids_per_patch_edge * getNeighborPatch(SOUTHEAST)->getSurface()->getGridsPerEdge());
+
 		for (i = 0; i < grids_per_patch_edge; i++)
 		{
 			calcNormal(i, 0, 2);
@@ -532,7 +546,7 @@ void LLSurfacePatch::updateNormals()
 					{
 						// East, but not north.  Pull from your east neighbor's northwest point.
 						*(mDataZ + grids_per_patch_edge + grids_per_patch_edge*grids_per_edge) =
-							*(getNeighborPatch(EAST)->mDataZ + (grids_per_patch_edge - 1)*grids_per_edge);
+							*(getNeighborPatch(EAST)->mDataZ + (getNeighborPatch(EAST)->getSurface()->getGridsPerPatchEdge() - 1)*getNeighborPatch(EAST)->getSurface()->getGridsPerEdge());
 					}
 					else
 					{
@@ -557,7 +571,7 @@ void LLSurfacePatch::updateNormals()
 					{
 						// North, but not east.  Pull from your north neighbor's southeast corner.
 						*(mDataZ + grids_per_patch_edge + grids_per_patch_edge*grids_per_edge) =
-							*(getNeighborPatch(NORTH)->mDataZ + (grids_per_patch_edge - 1));
+							*(getNeighborPatch(NORTH)->mDataZ + (getNeighborPatch(NORTH)->getSurface()->getGridsPerPatchEdge() - 1));
 					}
 					else
 					{
@@ -574,8 +588,17 @@ void LLSurfacePatch::updateNormals()
 				&&
 				(!getNeighborPatch(EAST) || (getNeighborPatch(EAST)->mSurfacep != mSurfacep)))
 			{
+				U32 own_xpos, own_ypos, neighbor_xpos, neighbor_ypos;
+				S32 own_offset = 0, neighbor_offset = 0;
+				from_region_handle(mSurfacep->getRegion()->getHandle(), &own_xpos, &own_ypos);
+				from_region_handle(getNeighborPatch(NORTHEAST)->mSurfacep->getRegion()->getHandle(), &neighbor_xpos, &neighbor_ypos);
+				if(own_ypos >= neighbor_ypos)
+					neighbor_offset = own_ypos - neighbor_ypos;
+				else
+					own_offset = neighbor_ypos - own_ypos;
+
 				*(mDataZ + grids_per_patch_edge + grids_per_patch_edge*grids_per_edge) =
-										*(getNeighborPatch(NORTHEAST)->mDataZ);
+					*(getNeighborPatch(NORTHEAST)->mDataZ + (grids_per_edge + neighbor_offset - own_offset - 1) * getNeighborPatch(NORTHEAST)->getSurface()->getGridsPerEdge());
 			}
 		}
 		else
@@ -618,8 +641,9 @@ void LLSurfacePatch::updateEastEdge()
 {
 	U32 grids_per_patch_edge = mSurfacep->getGridsPerPatchEdge();
 	U32 grids_per_edge = mSurfacep->getGridsPerEdge();
+	U32 grids_per_edge_east = grids_per_edge;
 
-	U32 j, k;
+	U32 j, k, h;
 	F32 *west_surface, *east_surface;
 
 	if (!getNeighborPatch(EAST))
@@ -631,6 +655,7 @@ void LLSurfacePatch::updateEastEdge()
 	{
 		west_surface = mDataZ + grids_per_patch_edge;
 		east_surface = getNeighborPatch(EAST)->mDataZ;
+		grids_per_edge_east = getNeighborPatch(EAST)->getSurface()->getGridsPerEdge();
 	}
 	else
 	{
@@ -642,7 +667,8 @@ void LLSurfacePatch::updateEastEdge()
 	for (j=0; j < grids_per_patch_edge; j++)
 	{
 		k = j * grids_per_edge;
-		*(west_surface + k) = *(east_surface + k);	// update buffer Z
+		h = j * grids_per_edge_east;
+		*(west_surface + k) = *(east_surface + h);	// update buffer Z
 	}
 }
 

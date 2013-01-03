@@ -1356,7 +1356,7 @@ void LLManipScale::renderGuidelinesPart( const LLBBox& bbox )
 
 	guideline_end -= guideline_start;
 	guideline_end.normVec();
-	guideline_end *= LLWorld::getInstance()->getRegionWidthInMeters();
+	guideline_end *= gAgent.getRegion()->getWidth();
 	guideline_end += guideline_start;
 
 	{

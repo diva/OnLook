@@ -2272,7 +2272,7 @@ void LLAgent::setStartPosition( U32 location_id )
     // this simulator.  Clamp it to the region the agent is
     // in, a little bit in on each side.
     const F32 INSET = 0.5f; //meters
-    const F32 REGION_WIDTH = LLWorld::getInstance()->getRegionWidthInMeters();
+	const F32 REGION_WIDTH = getRegion()->getWidth();
 
     LLVector3 agent_pos = getPositionAgent();
 
