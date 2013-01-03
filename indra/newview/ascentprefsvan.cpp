@@ -211,11 +211,12 @@ void LLPrefsAscentVan::refreshValues()
     mEstateOwnerColor		= gSavedSettings.getColor4("AscentEstateOwnerColor");
     mLindenColor			= gSavedSettings.getColor4("AscentLindenColor");
     mMutedColor				= gSavedSettings.getColor4("AscentMutedColor");
-    //mCustomColor			= gSavedSettings.getColor4("MoyMiniMapCustomColor");
+    mCustomColor			= gSavedSettings.getColor4("MoyMiniMapCustomColor");
 	mColorFriendChat        = gSavedSettings.getBOOL("ColorFriendChat");
 	mColorEOChat            = gSavedSettings.getBOOL("ColorEstateOwnerChat");
 	mColorLindenChat        = gSavedSettings.getBOOL("ColorLindenChat");
 	mColorMutedChat         = gSavedSettings.getBOOL("ColorMutedChat");
+//	mColorCustomChat        = gSavedSettings.getBOOL("ColorCustomChat");
 
     //Body Dynamics --------------------------------------------------------------------------
     mBreastPhysicsToggle    = gSavedSettings.getBOOL("EmeraldBreastPhysicsToggle");
@@ -293,11 +294,12 @@ void LLPrefsAscentVan::cancel()
     gSavedSettings.setColor4("AscentEstateOwnerColor",   mEstateOwnerColor);
     gSavedSettings.setColor4("AscentLindenColor",        mLindenColor);
     gSavedSettings.setColor4("AscentMutedColor",         mMutedColor);
-//    gSavedSettings.setColor4("MoyMiniMapCustomColor",    mCustomColor);
+    gSavedSettings.setColor4("MoyMiniMapCustomColor",    mCustomColor);
     gSavedSettings.setBOOL("ColorFriendChat",            mColorFriendChat);
     gSavedSettings.setBOOL("ColorEstateOwnerChat",       mColorEOChat);
     gSavedSettings.setBOOL("ColorLindenChat",            mColorLindenChat);
     gSavedSettings.setBOOL("ColorMutedChat",             mColorMutedChat);
+//	gSavedSettings.setBOOL("ColorCustomChat",            mColorCustomChat);
 
     //Body Dynamics --------------------------------------------------------------------------
     gSavedSettings.setBOOL("EmeraldBreastPhysicsToggle", mBreastPhysicsToggle);

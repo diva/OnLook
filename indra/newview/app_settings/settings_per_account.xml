@@ -357,22 +357,6 @@
 			<string>This is an autoresponse!</string>
 		</map>
 	</map>
-	<key>MoyMiniMapCustomColor</key>
-	<map>
-		<key>Comment</key>
-		<string>Custom minimap color you wish to have.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Color4</string>
-		<key>Value</key>
-		<array>
-			<real>0.375</real>
-			<real>1.0</real>
-			<real>1.0</real>
-			<real>1.0</real>
-		</array>
-	</map>
 	<!-- Ascent Account-Specific (Always) -->
     <!-- General additions -->
     <key>rkeastInventoryPreviousCount</key>
