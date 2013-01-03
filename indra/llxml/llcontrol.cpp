@@ -1513,7 +1513,6 @@ DECL_LLCC(S32, (S32)-666);
 DECL_LLCC(F32, (F32)-666.666);
 DECL_LLCC(bool, true);
 DECL_LLCC(BOOL, FALSE);
-static LLCachedControl<std::string> mySetting_string("TestCachedControlstring", "Default String Value");
 DECL_LLCC(LLVector3, LLVector3(1.0f, 2.0f, 3.0f));
 DECL_LLCC(LLVector3d, LLVector3d(6.0f, 5.0f, 4.0f));
 DECL_LLCC(LLRect, LLRect(0, 0, 100, 500));
@@ -1523,10 +1522,11 @@ DECL_LLCC(LLColor3, LLColor3(1.0f, 0.f, 0.5f));
 LLSD test_llsd = LLSD()["testing1"] = LLSD()["testing2"];
 DECL_LLCC(LLSD, test_llsd);
 
-static LLCachedControl<std::string> test_BrowserHomePage("BrowserHomePage", "hahahahahha", "Not the real comment");
-
 void test_cached_control()
 {
+	static const LLCachedControl<std::string> mySetting_string("TestCachedControlstring", "Default String Value");
+	static const LLCachedControl<std::string> test_BrowserHomePage("BrowserHomePage", "hahahahahha", "Not the real comment");
+
 #define TEST_LLCC(T, V) if((T)mySetting_##T != V) llerrs << "Fail "#T << llendl; \
 						mySetting_##T = V;\
 						if((T)mySetting_##T != V) llerrs << "Fail "#T << "Pass # 2" << llendl;
