@@ -17,7 +17,7 @@
 	</combo_box>
 	<line_editor bottom_delta="0" height="20" name="val_text" visible="false" width="300" />
 	<color_swatch bottom="30" can_apply_immediately="true" height="55" label="Color"
-	     name="color_swatch" visible="true" width="37" />
+	     name="val_color_swatch" visible="true" width="37" />
 	<spinner bottom_delta="25" height="20" label="x" label_width="40" max_val="10000000"
 	     name="val_spinner_1" visible="false" width="120" />
 	<spinner bottom_delta="0" height="20" label="x" label_width="40" left_delta="135"

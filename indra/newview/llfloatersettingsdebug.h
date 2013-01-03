@@ -35,9 +35,10 @@
 
 #include "llcontrol.h"
 #include "llfloater.h"
-#include "lltexteditor.h"
 
-class LLFloaterSettingsDebug : public LLFloater
+class LLFloaterSettingsDebug
+:	public LLFloater
+,	public LLSingleton<LLFloaterSettingsDebug>
 {
 public:
 	LLFloaterSettingsDebug();
@@ -48,14 +49,12 @@ public:
 
 	void updateControl(LLControlVariable* control);
 
-	static void show(void*);
-	static void onSettingSelect(LLUICtrl* ctrl, void* user_data);
-	static void onCommitSettings(LLUICtrl* ctrl, void* user_data);
-	static void onClickDefault(void* user_data);
+	void onSettingSelect(LLUICtrl* ctrl);
+	void onCommitSettings();
+	void onClickDefault();
 
 protected:
-	static LLFloaterSettingsDebug* sInstance;
-	LLTextEditor* mComment;
+	class LLTextEditor* mComment;
 };
 
 #endif //LLFLOATERDEBUGSETTINGS_H
