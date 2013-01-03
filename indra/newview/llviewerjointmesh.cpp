@@ -568,8 +568,8 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 		{
 			// This warning will always trigger if you've hacked the avatar to show as incomplete.
 			// Ignore the warning if that's the case.
-			static const LLCachedControl<bool> rener_unloaded_avatar("RenderUnloadedAvatar");
-			if (!rener_unloaded_avatar)
+			static const LLCachedControl<bool> render_unloaded_avatar("RenderUnloadedAvatar", false);
+			if (!render_unloaded_avatar)
 			{
 				llwarns << "Layerset without composite" << llendl;
 			}
