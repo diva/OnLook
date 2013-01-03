@@ -1637,7 +1637,7 @@ LLVector3d LLAgentCamera::calcFocusPositionTargetGlobal()
 					{
 						gPipeline.updateMoveNormalAsync(drawablep);
 					}
-					else
+					else if(!drawablep->isState(LLDrawable::ON_MOVE_LIST))
 					{
 						if (drawablep->isState(LLDrawable::MOVE_UNDAMPED))
 						{
