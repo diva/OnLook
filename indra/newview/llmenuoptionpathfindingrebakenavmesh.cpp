@@ -70,7 +70,6 @@ LLMenuOptionPathfindingRebakeNavmesh::~LLMenuOptionPathfindingRebakeNavmesh()
 
 void LLMenuOptionPathfindingRebakeNavmesh::initialize()
 {
-	llassert(!mIsInitialized);
 	if (!mIsInitialized)
 	{
 		mIsInitialized = true;

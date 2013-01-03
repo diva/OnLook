@@ -341,6 +341,8 @@ public:
 	BOOL			hasGray() const; 
 	S32				getRezzedStatus() const; // 0 = cloud, 1 = gray, 2 = fully textured.
 	void			updateRezzedStatusTimers();
+	bool			isLangolier() const { return mFreezeTimeLangolier; }
+	bool			isFrozenDead() const { return mFreezeTimeDead; }
 
 	S32				mLastRezzedStatus;
 protected:
@@ -358,6 +360,8 @@ private:
 	S32				mVisualComplexity;
 	LLFrameTimer	mFullyLoadedTimer;
 	LLFrameTimer	mRuthTimer;
+	bool			mFreezeTimeLangolier;	// True when this avatar was created during snapshot FreezeTime mode, and that mode is still active.
+	bool			mFreezeTimeDead;		// True when the avatar was marked dead (ie, TP-ed away) while in FreezeTime mode.
 protected:
 	LLFrameTimer    mInvisibleTimer;
 	
@@ -453,6 +457,7 @@ private:
 public:
 	U32 		renderImpostor(LLColor4U color = LLColor4U(255,255,255,255), S32 diffuse_channel = 0);
 	bool		isVisuallyMuted() const;
+	void		resetFreezeTime();
 
 	U32 		renderRigid();
 	U32 		renderSkinned(EAvatarRenderPass pass);
@@ -1012,6 +1017,7 @@ private:
 	bool      		mNameAppearance;
 	bool			mNameFriend;
 	bool			mNameCloud;
+	bool			mNameLangolier;
 	F32				mNameAlpha;
 	BOOL      		mRenderGroupTitles;
 

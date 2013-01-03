@@ -286,14 +286,36 @@ enum refresh_t {
   empty_and_complete = complete|empty
 };
 
+// A class with info for each socket that is in use by curl.
+class CurlSocketInfo
+{
+  public:
+	CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj);
+	~CurlSocketInfo();
+
+	void set_action(int action);
+	void mark_dead(void) { set_action(CURL_POLL_NONE); mDead = true; }
+	curl_socket_t getSocketFd(void) const { return mSocketFd; }
+	AICurlEasyRequest& getEasyRequest(void) { return mEasyRequest; }
+
+  private:
+	MultiHandle& mMultiHandle;
+	CURL const* mEasy;
+	curl_socket_t mSocketFd;
+	int mAction;
+	bool mDead;
+	AICurlEasyRequest mEasyRequest;
+	LLPointer<HTTPTimeout> mTimeout;
+};
+
 class PollSet
 {
   public:
 	PollSet(void);
 
 	// Add/remove a filedescriptor to/from mFileDescriptors.
-	void add(curl_socket_t s);
-	void remove(curl_socket_t s);
+	void add(CurlSocketInfo* sp);
+	void remove(CurlSocketInfo* sp);
 
 	// Copy mFileDescriptors to an internal fd_set that is returned by access().
 	// Returns if all fds could be copied (complete) and/or if the resulting fd_set is empty.
@@ -307,8 +329,8 @@ class PollSet
 	curl_socket_t get_max_fd(void) const { return mMaxFdSet; }
 #endif
 
-	// Return true if a filedescriptor is set in mFileDescriptors (used for debugging).
-	bool contains(curl_socket_t s) const;
+	// Return a pointer to the corresponding CurlSocketInfo if a filedescriptor is set in mFileDescriptors, or NULL if s is not set.
+	CurlSocketInfo* contains(curl_socket_t s) const;
 
 	// Return true if a filedescriptor is set in mFdSet.
 	bool is_set(curl_socket_t s) const;
@@ -323,7 +345,7 @@ class PollSet
 	void next(void);				// Advance to next filedescriptor.
 
   private:
-	curl_socket_t* mFileDescriptors;
+	CurlSocketInfo** mFileDescriptors;
 	int mNrFds;						// The number of filedescriptors in the array.
 	int mNext;						// The index of the first file descriptor to start copying, the next call to refresh().
 
@@ -332,8 +354,8 @@ class PollSet
 #if !WINDOWS_CODE
 	curl_socket_t mMaxFd;			// The largest filedescriptor in the array, or CURL_SOCKET_BAD when it is empty.
 	curl_socket_t mMaxFdSet;		// The largest filedescriptor set in mFdSet by refresh(), or CURL_SOCKET_BAD when it was empty.
-	std::vector<curl_socket_t> mCopiedFileDescriptors;	// Filedescriptors copied by refresh to mFdSet.
-	std::vector<curl_socket_t>::iterator mIter;			// Index into mCopiedFileDescriptors for next(); loop variable.
+	std::vector<CurlSocketInfo*> mCopiedFileDescriptors;	// Filedescriptors copied by refresh to mFdSet.
+	std::vector<CurlSocketInfo*>::iterator mIter;			// Index into mCopiedFileDescriptors for next(); loop variable.
 #else
 	unsigned int mIter;				// Index into fd_set::fd_array.
 #endif
@@ -359,7 +381,7 @@ class PollSet
 static size_t const MAXSIZE = llmax(1024, FD_SETSIZE);
 
 // Create an empty PollSet.
-PollSet::PollSet(void) : mFileDescriptors(new curl_socket_t [MAXSIZE]),
+PollSet::PollSet(void) : mFileDescriptors(new CurlSocketInfo* [MAXSIZE]),
                          mNrFds(0), mNext(0)
 #if !WINDOWS_CODE
 						 , mMaxFd(-1), mMaxFdSet(-1)
@@ -369,17 +391,17 @@ PollSet::PollSet(void) : mFileDescriptors(new curl_socket_t [MAXSIZE]),
 }
 
 // Add filedescriptor s to the PollSet.
-void PollSet::add(curl_socket_t s)
+void PollSet::add(CurlSocketInfo* sp)
 {
   llassert_always(mNrFds < (int)MAXSIZE);
-  mFileDescriptors[mNrFds++] = s;
+  mFileDescriptors[mNrFds++] = sp;
 #if !WINDOWS_CODE
-  mMaxFd = llmax(mMaxFd, s);
+  mMaxFd = llmax(mMaxFd, sp->getSocketFd());
 #endif
 }
 
 // Remove filedescriptor s from the PollSet.
-void PollSet::remove(curl_socket_t s)
+void PollSet::remove(CurlSocketInfo* sp)
 {
   // The number of open filedescriptors is relatively small,
   // and on top of that we rather do something CPU intensive
@@ -391,15 +413,15 @@ void PollSet::remove(curl_socket_t s)
   // back, keeping it compact and keeping the filedescriptors
   // in the same order (which is supposedly their priority).
   //
-  // The general case is where mFileDescriptors contains s at an index
+  // The general case is where mFileDescriptors contains sp at an index
   // between 0 and mNrFds:
   //                              mNrFds = 6
   //                                v
   // index: 0   1   2   3   4   5
   //        a   b   c   s   d   e
 
-  // This function should never be called unless s is actually in mFileDescriptors,
-  // as a result of a previous call to PollSet::add().
+  // This function should never be called unless sp is actually in mFileDescriptors,
+  // as a result of a previous call to PollSet::add(sp).
   llassert(mNrFds > 0);
 
   // Correct mNrFds for when the descriptor is removed.
@@ -409,17 +431,18 @@ void PollSet::remove(curl_socket_t s)
   //                            v
   // index: 0   1   2   3   4   5
   //        a   b   c   s   d   e
-  curl_socket_t cur = mFileDescriptors[i];		// cur = 'e'
+  curl_socket_t const s = sp->getSocketFd();
+  CurlSocketInfo* cur = mFileDescriptors[i];		// cur = 'e'
 #if !WINDOWS_CODE
   curl_socket_t max = -1;
 #endif
-  while (cur != s)
+  while (cur != sp)
   {
 	llassert(i > 0);
-	curl_socket_t next = mFileDescriptors[--i];	// next = 'd'
+	CurlSocketInfo* next = mFileDescriptors[--i];	// next = 'd'
 	mFileDescriptors[i] = cur;					// Overwrite 'd' with 'e'.
 #if !WINDOWS_CODE
-	max = llmax(max, cur);					// max is the maximum value in 'i' or higher.
+	max = llmax(max, cur->getSocketFd());		// max is the maximum value in 'i' or higher.
 #endif
 	cur = next;									// cur = 'd'
 	//                        i  NrFds = 5
@@ -427,21 +450,21 @@ void PollSet::remove(curl_socket_t s)
 	// index: 0   1   2   3   4
 	//        a   b   c   s   e					// cur = 'd'
 	//
-	// Next loop iteration: next = 's', overwrite 's' with 'd', cur = 's'; loop terminates.
+	// Next loop iteration: next = 'sp', overwrite 'sp' with 'd', cur = 'sp'; loop terminates.
 	//                    i      NrFds = 5
 	//                    v       v
 	// index: 0   1   2   3   4
-	//        a   b   c   d   e					// cur = 's'
+	//        a   b   c   d   e					// cur = 'sp'
   }
-  llassert(cur == s);
+  llassert(cur == sp);
   // At this point i was decremented once more and points to the element before the old s.
   //                i          NrFds = 5
   //                v           v
   // index: 0   1   2   3   4
   //        a   b   c   d   e					// max = llmax('d', 'e')
 
-  // If mNext pointed to an element before s, it should be left alone. Otherwise, if mNext pointed
-  // to s it must now point to 'd', or if it pointed beyond 's' it must be decremented by 1.
+  // If mNext pointed to an element before sp, it should be left alone. Otherwise, if mNext pointed
+  // to sp it must now point to 'd', or if it pointed beyond 'sp' it must be decremented by 1.
   if (mNext > i)								// i is where s was.
 	--mNext;
 
@@ -451,8 +474,8 @@ void PollSet::remove(curl_socket_t s)
   {
 	while (i > 0)
 	{
-	  curl_socket_t next = mFileDescriptors[--i];
-	  max = llmax(max, next);
+	  CurlSocketInfo* next = mFileDescriptors[--i];
+	  max = llmax(max, next->getSocketFd());
 	}
 	mMaxFd = max;
 	llassert(mMaxFd < s);
@@ -487,12 +510,12 @@ void PollSet::remove(curl_socket_t s)
 #endif
 }
 
-bool PollSet::contains(curl_socket_t fd) const
+CurlSocketInfo* PollSet::contains(curl_socket_t fd) const
 {
   for (int i = 0; i < mNrFds; ++i)
-	if (mFileDescriptors[i] == fd)
-	  return true;
-  return false;
+	if (mFileDescriptors[i]->getSocketFd() == fd)
+	  return mFileDescriptors[i];
+  return NULL;
 }
 
 inline bool PollSet::is_set(curl_socket_t fd) const
@@ -536,7 +559,7 @@ refresh_t PollSet::refresh(void)
 	// Calculate mMaxFdSet.
 	// Run over FD_SETSIZE - 1 elements, starting at mNext, wrapping to 0 when we reach the end.
 	int max = -1, i = mNext, count = 0;
-	while (++count < FD_SETSIZE) { max = llmax(max, mFileDescriptors[i]); if (++i == mNrFds) i = 0; }
+	while (++count < FD_SETSIZE) { max = llmax(max, mFileDescriptors[i]->getSocketFd()); if (++i == mNrFds) i = 0; }
 	mMaxFdSet = max;
 #endif
   }
@@ -556,7 +579,7 @@ refresh_t PollSet::refresh(void)
 	  mNext = i;
 	  return not_complete_not_empty;
 	}
-	FD_SET(mFileDescriptors[i], &mFdSet);
+	FD_SET(mFileDescriptors[i]->getSocketFd(), &mFdSet);
 #if !WINDOWS_CODE
 	mCopiedFileDescriptors.push_back(mFileDescriptors[i]);
 #endif
@@ -603,7 +626,7 @@ void PollSet::reset(void)
   else
   {
 	mIter = mCopiedFileDescriptors.begin();
-	if (!FD_ISSET(*mIter, &mFdSet))
+	if (!FD_ISSET((*mIter)->getSocketFd(), &mFdSet))
 	  next();
   }
 #endif
@@ -614,7 +637,7 @@ inline curl_socket_t PollSet::get(void) const
 #if WINDOWS_CODE
   return (mIter >= mFdSet.fd_count) ? CURL_SOCKET_BAD : mFdSet.fd_array[mIter];
 #else
-  return (mIter == mCopiedFileDescriptors.end()) ? CURL_SOCKET_BAD : *mIter;
+  return (mIter == mCopiedFileDescriptors.end()) ? CURL_SOCKET_BAD : (*mIter)->getSocketFd();
 #endif
 }
 
@@ -625,7 +648,7 @@ void PollSet::next(void)
   ++mIter;
 #else
   llassert(mIter != mCopiedFileDescriptors.end());	// Only call next() if the last call to get() didn't return -1.
-  while (++mIter != mCopiedFileDescriptors.end() && !FD_ISSET(*mIter, &mFdSet));
+  while (++mIter != mCopiedFileDescriptors.end() && !FD_ISSET((*mIter)->getSocketFd(), &mFdSet));
 #endif
 }
 
@@ -743,26 +766,8 @@ std::ostream& operator<<(std::ostream& os, DebugFdSet const& s)
 }
 #endif
 
-// A class with info for each socket that is in use by curl.
-class CurlSocketInfo
-{
-  public:
-	CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj);
-	~CurlSocketInfo();
-
-	void set_action(int action);
-
-  private:
-	MultiHandle& mMultiHandle;
-	CURL const* mEasy;
-	curl_socket_t mSocketFd;
-	int mAction;
-	AICurlEasyRequest mEasyRequest;
-	LLPointer<HTTPTimeout> mTimeout;
-};
-
 CurlSocketInfo::CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj) :
-    mMultiHandle(multi_handle), mEasy(easy), mSocketFd(s), mAction(CURL_POLL_NONE), mEasyRequest(lockobj)
+    mMultiHandle(multi_handle), mEasy(easy), mSocketFd(s), mAction(CURL_POLL_NONE), mDead(false), mEasyRequest(lockobj)
 {
   llassert(*AICurlEasyRequest_wat(*mEasyRequest) == easy);
   mMultiHandle.assign(s, this);
@@ -785,23 +790,28 @@ CurlSocketInfo::~CurlSocketInfo()
 
 void CurlSocketInfo::set_action(int action)
 {
+  if (mDead)
+  {
+	return;
+  }
+
   Dout(dc::curl, "CurlSocketInfo::set_action(" << action_str(mAction) << " --> " << action_str(action) << ") [" << (void*)mEasyRequest.get_ptr().get() << "]");
   int toggle_action = mAction ^ action; 
   mAction = action;
   if ((toggle_action & CURL_POLL_IN))
   {
 	if ((action & CURL_POLL_IN))
-	  mMultiHandle.mReadPollSet->add(mSocketFd);
+	  mMultiHandle.mReadPollSet->add(this);
 	else
-	  mMultiHandle.mReadPollSet->remove(mSocketFd);
+	  mMultiHandle.mReadPollSet->remove(this);
   }
   if ((toggle_action & CURL_POLL_OUT))
   {
 	if ((action & CURL_POLL_OUT))
-	  mMultiHandle.mWritePollSet->add(mSocketFd);
+	  mMultiHandle.mWritePollSet->add(this);
 	else
 	{
-	  mMultiHandle.mWritePollSet->remove(mSocketFd);
+	  mMultiHandle.mWritePollSet->remove(this);
 
 	  // The following is a bit of a hack, needed because of the lack of proper timeout callbacks in libcurl.
 	  // The removal of CURL_POLL_OUT could be part of the SSL handshake, therefore check if we're already connected:
@@ -837,6 +847,9 @@ class AICurlThread : public LLThread
 
 	// MAIN-THREAD
 	void stop_thread(void) { mRunning = false; wakeup_thread(); }
+
+	// MAIN-THREAD
+	apr_status_t join_thread(void);
 
   protected:
 	virtual void run(void);
@@ -1110,6 +1123,17 @@ void AICurlThread::wakeup_thread(void)
 #endif
 }
 
+apr_status_t AICurlThread::join_thread(void)
+{
+	apr_status_t retval = APR_SUCCESS;
+	if (sInstance)
+	{
+		apr_thread_join(&retval, sInstance->mAPRThreadp);
+		delete sInstance;
+	}
+	return retval;
+}
+
 void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
 {
   DoutEntering(dc::curl, "AICurlThread::wakeup");
@@ -1255,6 +1279,26 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
   }
 }
 
+// Return true if fd is a 'bad' socket.
+static bool is_bad(curl_socket_t fd, bool for_writing)
+{
+  fd_set tmp;
+  FD_ZERO(&tmp);
+  FD_SET(fd, &tmp);
+  fd_set* readfds = for_writing ? NULL : &tmp;
+  fd_set* writefds = for_writing ? &tmp : NULL;
+#if !WINDOWS_CODE
+  int nfds = fd + 1;
+#else
+  int nfds = 64;
+#endif
+  struct timeval timeout;
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 10;
+  int ret = select(nfds, readfds, writefds, NULL, &timeout);
+  return ret == -1;
+}
+
 // The main loop of the curl thread.
 void AICurlThread::run(void)
 {
@@ -1266,7 +1310,7 @@ void AICurlThread::run(void)
 	{
 	  // If mRunning is true then we can only get here if mWakeUpFd != CURL_SOCKET_BAD.
 	  llassert(mWakeUpFd != CURL_SOCKET_BAD);
-	  // Copy the next batch of file descriptors from the PollSets mFiledescriptors into their mFdSet.
+	  // Copy the next batch of file descriptors from the PollSets mFileDescriptors into their mFdSet.
 	  multi_handle_w->mReadPollSet->refresh();
 	  refresh_t wres = multi_handle_w->mWritePollSet->refresh();
 	  // Add wake up fd if any, and pass NULL to select() if a set is empty.
@@ -1383,6 +1427,51 @@ void AICurlThread::run(void)
 	  if (ready == -1)
 	  {
 		llwarns << "select() failed: " << errno << ", " << strerror(errno) << llendl;
+		if (errno == EBADF)
+		{
+		  // Somewhere (fmodex?) one of our file descriptors was closed. Try to recover by finding out which.
+		  llassert_always(!is_bad(mWakeUpFd, false));		// We can't recover from this.
+		  PollSet* found = NULL;
+		  // Run over all read file descriptors.
+		  multi_handle_w->mReadPollSet->refresh();
+		  multi_handle_w->mReadPollSet->reset();
+		  curl_socket_t fd;
+		  while ((fd = multi_handle_w->mReadPollSet->get()) != CURL_SOCKET_BAD)
+		  {
+			if (is_bad(fd, false))
+			{
+			  found = multi_handle_w->mReadPollSet;
+			  break;
+			}
+			multi_handle_w->mReadPollSet->next();
+		  }
+		  if (!found)
+		  {
+			// Try all write file descriptors.
+			refresh_t wres = multi_handle_w->mWritePollSet->refresh();
+			if (!(wres & empty))
+			{
+			  multi_handle_w->mWritePollSet->reset();
+			  while ((fd = multi_handle_w->mWritePollSet->get()) != CURL_SOCKET_BAD)
+			  {
+				if (is_bad(fd, true))
+				{
+				  found = multi_handle_w->mWritePollSet;
+				  break;
+				}
+				multi_handle_w->mWritePollSet->next();
+			  }
+			}
+		  }
+		  llassert_always(found);	// It makes no sense to continue if we can't recover.
+		  // Find the corresponding CurlSocketInfo
+		  CurlSocketInfo* sp = found->contains(fd);
+		  llassert_always(sp);		// fd was just *read* from this sp.
+		  sp->mark_dead();													// Make sure it's never used again.
+		  AICurlEasyRequest_wat curl_easy_request_w(*sp->getEasyRequest());
+		  curl_easy_request_w->pause(CURLPAUSE_ALL);						// Keep libcurl at bay.
+		  curl_easy_request_w->bad_file_descriptor(curl_easy_request_w);	// Make the main thread cleanly terminate this transaction.
+		}
 		continue;
 	  }
 	  // Clock count used for timeouts.
@@ -1822,7 +1911,7 @@ bool HTTPTimeout::data_received(size_t n)
 //                                                    | | |       |   |      |                 |  |   |     |    |  | |   |
 bool HTTPTimeout::lowspeed(size_t bytes)
 {
-  DoutCurlEntering("HTTPTimeout::lowspeed(" << bytes << ")");
+  //DoutCurlEntering("HTTPTimeout::lowspeed(" << bytes << ")");		commented out... too spammy for normal use.
 
   // The algorithm to determine if we timed out if different from how libcurls CURLOPT_LOW_SPEED_TIME works.
   //
@@ -2000,12 +2089,11 @@ void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, ch
 #if LOWRESTIMER
 	llinfos << "Hostname seems to have been still in the DNS cache." << llendl;
 #else
-	llwarns << "Huh? Curl returned CURLE_OPERATION_TIMEDOUT, but DNS lookup did not occur according to timings. Expected CURLE_COULDNT_RESOLVE_PROXY or CURLE_COULDNT_RESOLVE_HOST!" << llendl;
+	llwarns << "Curl returned CURLE_OPERATION_TIMEDOUT and DNS lookup did not occur according to timings. Apparently the resolve attempt timed out (bad network?)" << llendl;
 	llassert(connect_time == 0);
 	llassert(appconnect_time == 0);
 	llassert(pretransfer_time == 0);
 	llassert(starttransfer_time == 0);
-	// Fatal error for diagnostics.
 	return;
 #endif
   }
@@ -2028,11 +2116,10 @@ void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, ch
 #endif
 	  )
   {
-	llwarns << "Huh? Curl returned CURLE_OPERATION_TIMEDOUT, but connection did not occur according to timings. Expected CURLE_COULDNT_CONNECT!" << llendl;
+	llwarns << "Curl returned CURLE_OPERATION_TIMEDOUT and connection did not occur according to timings: apparently the connect attempt timed out (bad network?)" << llendl;
 	llassert(appconnect_time == 0);
 	llassert(pretransfer_time == 0);
 	llassert(starttransfer_time == 0);
-	// Fatal error for diagnostics.
 	return;
   }
   // If connect_time is almost equal to namelookup_time, then it was just set because it was already connected.
@@ -2148,12 +2235,22 @@ void stopCurlThread(void)
   if (AICurlThread::sInstance)
   {
 	AICurlThread::sInstance->stop_thread();
-	int count = 101;
+	int count = 401;
 	while(--count && !AICurlThread::sInstance->isStopped())
 	{
 	  ms_sleep(10);
 	}
-	Dout(dc::curl, "Curl thread" << (curlThreadIsRunning() ? " not" : "") << " stopped after " << ((100 - count) * 10) << "ms.");
+	if (AICurlThread::sInstance->isStopped())
+	{
+	  // isStopped() returns true somewhere at the end of run(),
+	  // but that doesn't mean the thread really stopped: it still
+	  // needs to destroy it's static variables.
+	  // If we don't join here, then there is a chance that the
+	  // curl thread will crash when using globals that we (the
+	  // main thread) will have destroyed before it REALLY finished.
+	  AICurlThread::sInstance->join_thread();	// Wait till it is REALLY done.
+	}
+	llinfos << "Curl thread" << (curlThreadIsRunning() ? " not" : "") << " stopped after " << ((400 - count) * 10) << "ms." << llendl;
   }
 }
 
@@ -2174,7 +2271,7 @@ void BufferedCurlEasyRequest::setStatusAndReason(U32 status, std::string const& 
   AICurlInterface::Stats::status_count[AICurlInterface::Stats::status2index(mStatus)]++;
 
   // Sanity check. If the server replies with a redirect status then we better have that option turned on!
-  if ((status >= 300 && status < 400) && mResponder && !mResponder->followRedir())
+  if ((status >= 300 && status < 400) && mResponder && !mResponder->redirect_status_ok())
   {
 	llerrs << "Received " << status << " (" << reason << ") for responder \"" << mTimeoutPolicy->name() << "\" which has no followRedir()!" << llendl;
   }
@@ -2188,7 +2285,7 @@ void BufferedCurlEasyRequest::processOutput(void)
   CURLcode code;
   AITransferInfo info;
   getResult(&code, &info);
-  if (code == CURLE_OK)
+  if (code == CURLE_OK && mStatus != HTTP_INTERNAL_ERROR)
   {
 	getinfo(CURLINFO_RESPONSE_CODE, &responseCode);
 	// If getResult code is CURLE_OK then we should have decoded the first header line ourselves.
@@ -2201,7 +2298,7 @@ void BufferedCurlEasyRequest::processOutput(void)
   else
   {
 	responseCode = HTTP_INTERNAL_ERROR;
-	responseReason = curl_easy_strerror(code);
+	responseReason = (code == CURLE_OK) ? mReason : std::string(curl_easy_strerror(code));
 	setopt(CURLOPT_FRESH_CONNECT, TRUE);
   }
 
@@ -2367,14 +2464,25 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 }
 
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
-int debug_callback(CURL*, curl_infotype infotype, char* buf, size_t size, void* user_ptr)
+int debug_callback(CURL* handle, curl_infotype infotype, char* buf, size_t size, void* user_ptr)
 {
   BufferedCurlEasyRequest* request = (BufferedCurlEasyRequest*)user_ptr;
+  if (infotype == CURLINFO_HEADER_OUT && size >= 5 && (strncmp(buf, "GET ", 4) == 0 || strncmp(buf, "HEAD ", 5) == 0))
+  {
+	request->mDebugIsHeadOrGetMethod = true;
+  }
+
+#ifdef DEBUG_CURLIO
+  if (!debug_curl_print_debug(handle))
+  {
+	return 0;
+  }
+#endif
 
 #ifdef CWDEBUG
   using namespace ::libcwd;
   std::ostringstream marker;
-  marker << (void*)request->get_lockobj();
+  marker << (void*)request->get_lockobj() << ' ';
   libcw_do.push_marker();
   libcw_do.marker().assign(marker.str().data(), marker.str().size());
   if (!debug::channels::dc::curlio.is_on())
@@ -2398,8 +2506,6 @@ int debug_callback(CURL*, curl_infotype infotype, char* buf, size_t size, void* 
 	  break;
 	case CURLINFO_HEADER_OUT:
 	  LibcwDoutStream << "H< ";
-	  if (size >= 5 && (strncmp(buf, "GET ", 4) == 0 || strncmp(buf, "HEAD ", 5) == 0))
-		request->mDebugIsHeadOrGetMethod = true;
 	  break;
 	case CURLINFO_DATA_IN:
 	  LibcwDoutStream << "D> ";
@@ -2572,6 +2678,14 @@ void AICurlEasyRequest::removeRequest(void)
 		  llassert(curl_easy_request_w->active() || !curl_easy_request_w->mRemovedPerCommand);
 		}
 	  }
+	}
+	{
+	  AICurlEasyRequest_wat curl_easy_request_w(*get());
+	  // As soon as the lock on the command queue is released, it could be picked up by
+	  // the curl thread and executed. At that point it (already) demands that the easy
+	  // request either timed out or is finished. So, to avoid race conditions that already
+	  // has to be true right now. The call to queued_for_removal() checks this.
+	  curl_easy_request_w->queued_for_removal(curl_easy_request_w);
 	}
 #endif
 	// Add a command to remove this request from the multi session to the command queue.

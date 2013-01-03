@@ -163,14 +163,14 @@ Asegurate que tu conexión a internet funciona correctamente.
 		<usetemplate name="okcancelbuttons" notext="No mover ítem(s)" yestext="Mover ítem(s)"/>
 	</notification>
 	
-	<notification name="OutboxFolderCreated" type="outbox">
+	<notification name="OutboxFolderCreated" type="alert">
 		<unique/>
 			Una nueva carpeta ha sido creada por cada ítem que has transferido en el nivel superior de tu Merchant Outbox.
 	
 		<usetemplate ignoretext="Una nueva carpeta ha sido creada en el Merchant Outbox" name="okignore" yestext="OK"/>
 	</notification>
 	
-	<notification name="OutboxImportComplete" type="outbox">
+	<notification name="OutboxImportComplete" type="alert">
 		Completado
 
 Todas las carpetas ha sido enviadas satisfactoriamente al Marketplace.
@@ -178,7 +178,7 @@ Todas las carpetas ha sido enviadas satisfactoriamente al Marketplace.
 		<usetemplate ignoretext="Todas las carpetas se han enviado al Marketplace" name="okignore" yestext="OK"/>
 	</notification>
 	
-	<notification name="OutboxImportHadErrors" type="outbox">
+	<notification name="OutboxImportHadErrors" type="alert">
 		Algunas carpetas no fueron transferidas
 
 Ha habido errores al enviar algunas carpetas al Markeplace. Estas carpetas aún están en tu Merchant Outbox.
@@ -188,7 +188,7 @@ Mira en el [log de errores [[MARKETPLACE_IMPORTS_URL]] para mayor información.
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	
-	<notification name="OutboxImportFailed" type="outbox">
+	<notification name="OutboxImportFailed" type="alertmodal">
 		La transferencia ha fallado
 
 No se han enviado carpetas al Marketplace debido a un error de sistema o de red. Inténtalo nuevamente más tarde.
@@ -196,7 +196,7 @@ No se han enviado carpetas al Marketplace debido a un error de sistema o de red.
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	
-	<notification name="OutboxInitFailed" type="outbox">
+	<notification name="OutboxInitFailed" type="alertmodal">
 		Ha fallado la inicialización del Marketplace
 
 La inicialización con el Marketplace ha fallado debido a un error de sistema o de red. Inténtalo nuevamente más tarde.

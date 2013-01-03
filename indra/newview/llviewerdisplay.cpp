@@ -188,7 +188,8 @@ void display_update_camera(bool tiling=false)
 	// Cut draw distance in half when customizing avatar,
 	// but on the viewer only.
 	F32 final_far = gAgentCamera.mDrawDistance;
-	if(tiling) //Don't animate clouds and water if tiling!
+    static const LLCachedControl<bool> freeze_time("FreezeTime",false);
+	if(freeze_time || tiling) //Don't animate clouds and water if tiling!
 	{
 		LLViewerCamera::getInstance()->setFar(final_far);
 		gViewerWindow->setup3DRender();

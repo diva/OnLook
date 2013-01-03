@@ -266,6 +266,22 @@ An error occurred while updating [APP_NAME]. Please download the latest version 
 
   <notification
    icon="alertmodal.tga"
+   name="EmptyFirstNameMessage"
+   type="alertmodal">
+[GRIDNAME] requires a non-empty first name to login.
+Please try again.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="EmptyLastNameMessage"
+   type="alertmodal">
+[GRIDNAME] requires a non-empty last name to login.
+Please try again.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="LoginFailedNoNetwork"
    type="alertmodal">
 Could not connect to the [SECOND_LIFE_GRID].
@@ -309,9 +325,9 @@ You don't have permission to copy one or more of these items to the Merchant Out
   </notification>
 
   <notification
-   icon="OutboxStatus_Success"
+   icon="alert.tga"
    name="OutboxFolderCreated"
-   type="outbox">
+   type="alert">
     <unique/>
 A new folder has been created for each item you have transferred into the top level of your Merchant Outbox.
 
@@ -322,9 +338,9 @@ A new folder has been created for each item you have transferred into the top le
   </notification>
 
   <notification
-   icon="OutboxStatus_Success"
+   icon="alert.tga"
    name="OutboxImportComplete"
-   type="outbox">
+   type="alert">
 Success
 
 All folders were successfully sent to the Marketplace.
@@ -336,9 +352,9 @@ All folders were successfully sent to the Marketplace.
   </notification>
 
   <notification
-   icon="OutboxStatus_Warning"
+   icon="alert.tga"
    name="OutboxImportHadErrors"
-   type="outbox">
+   type="alert">
 Some folders did not transfer
 
 Errors occurred when some folders were sent to the Marketplace.  Those folders are still in your Merchant Outbox.
@@ -351,9 +367,9 @@ See the [[MARKETPLACE_IMPORTS_URL] error log] for more information.
   </notification>
 
   <notification
-   icon="OutboxStatus_Error"
+   icon="alertmodal.tga"
    name="OutboxImportFailed"
-   type="outbox">
+   type="alertmodal">
 Transfer failed
 
 No folders were sent to the Marketplace because of a system or network error.  Try again later.
@@ -364,9 +380,9 @@ No folders were sent to the Marketplace because of a system or network error.  T
   </notification>
 
   <notification
-   icon="OutboxStatus_Error"
+   icon="alertmodal.tga"
    name="OutboxInitFailed"
-   type="outbox">
+   type="alertmodal">
 Marketplace initialization failed
 
 Initialization with the Marketplace failed because of a system or network error.  Try again later.
@@ -403,6 +419,13 @@ There was a problem writing animation data.  Please try again later.
    name="UploadAuctionSnapshotFail"
    type="alertmodal">
 There was a problem uploading the auction snapshot due to the following reason: [REASON]
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="UploadSnapshotFail"
+   type="alertmodal">
+There was a problem uploading the snapshot due to the following reason: [REASON]
   </notification>
 
   <notification
@@ -935,6 +958,14 @@ Error processing snapshot data
    name="ErrorEncodingSnapshot"
    type="alertmodal">
 Error encoding snapshot.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="ErrorSizeAspectSnapshot"
+   type="alertmodal">
+It is not possible to make a snapshot with this size and aspect.
+Try a smaller size or a less stretched aspect.
   </notification>
 
   <notification

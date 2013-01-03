@@ -757,9 +757,6 @@ bool idle_startup()
 			// We have at least some login information on a SLURL
 			firstname = gLoginHandler.getFirstName();
 			lastname = gLoginHandler.getLastName();
-			// <edit>
-			gFullName = utf8str_tolower(firstname + " " + lastname);
-			// </edit>
 			web_login_key = gLoginHandler.getWebLoginKey();
 
 			// Show the login screen if we don't have everything
@@ -771,9 +768,6 @@ bool idle_startup()
             LLSD cmd_line_login = gSavedSettings.getLLSD("UserLoginInfo");
 			firstname = cmd_line_login[0].asString();
 			lastname = cmd_line_login[1].asString();
-			// <edit>
-			gFullName = utf8str_tolower(firstname + " " + lastname);
-			// </edit>
 
 			LLMD5 pass((unsigned char*)cmd_line_login[2].asString().c_str());
 			char md5pass[33];               /* Flawfinder: ignore */
@@ -791,9 +785,6 @@ bool idle_startup()
 		{
 			firstname = gSavedSettings.getString("FirstName");
 			lastname = gSavedSettings.getString("LastName");
-			// <edit>
-			gFullName = utf8str_tolower(firstname + " " + lastname);
-			// </edit>
 			password = LLStartUp::loadPasswordFromDisk();
 			gSavedSettings.setBOOL("RememberPassword", TRUE);
 			
@@ -809,9 +800,6 @@ bool idle_startup()
 			// a valid grid is selected
 			firstname = gSavedSettings.getString("FirstName");
 			lastname = gSavedSettings.getString("LastName");
-			// <edit>
-			gFullName = utf8str_tolower(firstname + " " + lastname);
-			// </edit>
 			password = LLStartUp::loadPasswordFromDisk();
 			show_connect_box = true;
 		}
@@ -895,9 +883,6 @@ bool idle_startup()
 			else
 			{
 				LLPanelLogin::setFields(firstname, lastname, password);
-				// <edit>
-				gFullName = utf8str_tolower(firstname + " " + lastname);
-				// </edit>
 				LLPanelLogin::giveFocus();
 			}
 			display_startup();
@@ -969,9 +954,6 @@ bool idle_startup()
 		{
 			firstname = gLoginHandler.getFirstName();
 			lastname = gLoginHandler.getLastName();
-			// <edit>
-			gFullName = utf8str_tolower(firstname + " " + lastname);
-			// </edit>
 			web_login_key = gLoginHandler.getWebLoginKey();
 		}
 				
@@ -990,14 +972,20 @@ bool idle_startup()
 		{
 			gSavedSettings.setString("FirstName", firstname);
 			gSavedSettings.setString("LastName", lastname);
-			// <edit>
-			gFullName = utf8str_tolower(firstname + " " + lastname);
-			// </edit>
 			if (!gSavedSettings.controlExists("RememberLogin")) gSavedSettings.declareBOOL("RememberLogin", false, "Remember login", false);
 			gSavedSettings.setBOOL("RememberLogin", LLPanelLogin::getRememberLogin());
 
 			LL_INFOS("AppInit") << "Attempting login as: " << firstname << " " << lastname << LL_ENDL;
 			gDebugInfo["LoginName"] = firstname + " " + lastname;	
+		}
+		else
+		{
+			// User tried to login on a non-SecondLife grid with an empty lastname.
+			LLSD subs;
+			subs["GRIDNAME"] = gHippoGridManager->getConnectedGrid()->getGridName();
+			LLNotificationsUtil::add(firstname.empty() ? "EmptyFirstNameMessage" : "EmptyLastNameMessage", subs);
+			LLStartUp::setStartupState(STATE_LOGIN_SHOW);
+			return FALSE;
 		}
 
 		LLScriptEdCore::parseFunctions("lsl_functions_sl.xml");	//Singu Note: This parsing function essentially replaces the entirety of the lscript_library library
@@ -4099,9 +4087,6 @@ bool process_login_success_response(std::string& password)
 	if(!text.empty()) lastname.assign(text);
 	gSavedSettings.setString("FirstName", firstname);
 	gSavedSettings.setString("LastName", lastname);
-	// <edit>
-	gFullName = utf8str_tolower(firstname + " " + lastname);
-	// </edit>
 
 	if (gSavedSettings.getBOOL("RememberPassword"))
 	{

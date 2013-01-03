@@ -201,12 +201,19 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// In case it's added after being removed.
 	void add_queued(void) { mQueuedForRemoval = false; }
 
+#ifdef DEBUG_CURLIO
+	void debug(bool debug) { if (mDebug) debug_curl_remove_easy(mEasyHandle); if (debug) debug_curl_add_easy(mEasyHandle); mDebug = debug; }
+#endif
+
   private:
 	CURL* mEasyHandle;
 	CURLM* mActiveMultiHandle;
 	mutable char* mErrorBuffer;
 	AIPostFieldPtr mPostField;		// This keeps the POSTFIELD data alive for as long as the easy handle exists.
 	bool mQueuedForRemoval;			// Set if the easy handle is (probably) added to the multi handle, but is queued for removal.
+#ifdef DEBUG_CURLIO
+	bool mDebug;
+#endif
 #ifdef SHOW_ASSERT
   public:
 	bool mRemovedPerCommand;		// Set if mActiveMultiHandle was reset as per command from the main thread.
@@ -270,11 +277,11 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 // and the CurlEasyRequest destructed.
 class CurlEasyRequest : public CurlEasyHandle {
   private:
-	void setPost_raw(U32 size, char const* data);
+	void setPost_raw(U32 size, char const* data, bool keepalive);
   public:
-	void setPost(U32 size) { setPost_raw(size, NULL); }
-	void setPost(AIPostFieldPtr const& postdata, U32 size);
-	void setPost(char const* data, U32 size) { setPost(new AIPostField(data), size); }
+	void setPost(U32 size, bool keepalive = true) { setPost_raw(size, NULL, keepalive); }
+	void setPost(AIPostFieldPtr const& postdata, U32 size, bool keepalive = true);
+	void setPost(char const* data, U32 size, bool keepalive = true) { setPost(new AIPostField(data), size, keepalive); }
 	void setoptString(CURLoption option, std::string const& value);
 	void addHeader(char const* str);
 	void addHeaders(AIHTTPHeaders const& headers);
@@ -413,6 +420,11 @@ class CurlEasyRequest : public CurlEasyHandle {
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
 	/*virtual*/ void finished(AICurlEasyRequest_wat& curl_easy_request_w);
 	/*virtual*/ void removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
+  public:
+	/*virtual*/ void bad_file_descriptor(AICurlEasyRequest_wat& curl_easy_request_w);
+#ifdef SHOW_ASSERT
+	/*virtual*/ void queued_for_removal(AICurlEasyRequest_wat& curl_easy_request_w);
+#endif
 };
 
 // This class adds input/output buffers to the request and hooks up the libcurl callbacks to use those buffers.
@@ -430,6 +442,9 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 
 	// Called if libcurl doesn't deliver within AIHTTPTimeoutPolicy::mMaximumTotalDelay seconds.
 	void timed_out(void);
+
+	// Called if the underlaying socket went bad (ie, when accidently closed by a buggy library).
+	void bad_socket(void);
 
 	// Called after removed_from_multi_handle was called.
 	void processOutput(void);

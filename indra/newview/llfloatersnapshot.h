@@ -47,16 +47,22 @@ public:
 	{
 		SNAPSHOT_FORMAT_PNG,
 		SNAPSHOT_FORMAT_JPEG,
-		SNAPSHOT_FORMAT_BMP
+		SNAPSHOT_FORMAT_BMP,
+		SNAPSHOT_FORMAT_J2C
 	} ESnapshotFormat;
 
 	LLFloaterSnapshot();
 	virtual ~LLFloaterSnapshot();
 
+	LLRect getThumbnailAreaRect();
+
 	/*virtual*/ BOOL postBuild();
 	/*virtual*/ void draw();
 	/*virtual*/ void onClose(bool app_quitting);
 	/*virtual*/ void onOpen();
+	/*virtual*/ BOOL handleKeyHere(KEY key, MASK mask);
+	/*virtual*/ BOOL handleMouseDown(S32 x, S32 y, MASK mask);
+	/*virtual*/ BOOL handleMouseUp(S32 x, S32 y, MASK mask);
 
 	static void show(void*);
 	static void hide(void*);
@@ -65,6 +71,13 @@ public:
 	static S32  getUIWinHeightLong()  {return sUIWinHeightLong ;}
 	static S32  getUIWinHeightShort() {return sUIWinHeightShort ;}
 	static S32  getUIWinWidth()       {return sUIWinWidth ;}
+
+	static void saveLocalDone(bool success, int index);
+	static void saveFeedDone(bool success, int index);
+	static void savePostcardDone(bool success, int index);
+
+	static void updateControls();
+	static void resetFeedAndPostcardAspect();
 
 private:
 	class Impl;

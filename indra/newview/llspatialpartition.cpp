@@ -4421,6 +4421,10 @@ public:
 						}
 
 					}
+					else if (avatar->isLangolier())
+					{
+						skip_check = true;
+					}
 				}
 
 				if (!skip_check && vobj->lineSegmentIntersect(mStart, mEnd, -1, mPickTransparent, mFaceHit, &intersection, mTexCoord, mNormal, mBinormal))

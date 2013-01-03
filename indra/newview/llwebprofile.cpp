@@ -114,12 +114,13 @@ public:
 		config["caption"]					= data.get("caption", "").asString();
 
 		// Do the actual image upload using the configuration.
-		LL_DEBUGS("Snapshots") << "Got upload config, POSTing image to " << upload_url << ", config=[" << config << "]" << llendl;
+		LL_DEBUGS("Snapshots") << "Got upload config, POSTing image to " << upload_url << ", config=[" << config << "]" << LL_ENDL;
 		LLWebProfile::post(mImagep, config, upload_url);
 	}
 
 protected:
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return webProfileResponders_timeout; }
+	/*virtual*/ bool followRedir(void) const { return true; }
 
 private:
 	LLPointer<LLImageFormatted> mImagep;
@@ -150,12 +151,13 @@ public:
 		strstrm << istr.rdbuf();
 		const std::string body = strstrm.str();
 		llinfos << "Image uploaded." << llendl;
-		LL_DEBUGS("Snapshots") << "Uploading image succeeded. Response: [" << body << "]" << llendl;
+		LL_DEBUGS("Snapshots") << "Uploading image succeeded. Response: [" << body << "]" << LL_ENDL;
 		LLWebProfile::reportImageUploadStatus(true);
 	}
 
 protected:
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return webProfileResponders_timeout; }
+	/*virtual*/ bool followRedir(void) const { return true; }
 
 private:
 	LLPointer<LLImageFormatted> mImagep;
@@ -171,10 +173,11 @@ class LLWebProfileResponders::PostImageResponder : public LLHTTPClient::Responde
 public:
 	/*virtual*/ bool needsHeaders(void) const { return true; }
 
-	/*virtual*/ void completedHeader(U32 status, const std::string& reason, const LLSD& content)
+	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& received_headers)
 	{
-		// Viewer seems to fail to follow a 303 redirect on POST request
-		// (URLRequest Error: 65, Send failed since rewinding of the data stream failed).
+		// Server abuses 303 status; Curl can't handle it because it tries to resent
+		// the just uploaded data, which fails
+		// (CURLE_SEND_FAIL_REWIND: Send failed since rewinding of the data stream failed).
 		// Handle it manually.
 		if (status == 303)
 		{
@@ -182,14 +185,15 @@ public:
 			headers.addHeader("Accept", "*/*");
 			headers.addHeader("Cookie", LLWebProfile::getAuthCookie());
 			headers.addHeader("User-Agent", LLViewerMedia::getCurrentUserAgent());
-			const std::string& redir_url = content["location"];
-			LL_DEBUGS("Snapshots") << "Got redirection URL: " << redir_url << llendl;
+			std::string redir_url;
+			received_headers.getFirstValue("location", redir_url);
+			LL_DEBUGS("Snapshots") << "Got redirection URL: " << redir_url << LL_ENDL;
 			LLHTTPClient::get(redir_url, new LLWebProfileResponders::PostImageRedirectResponder, headers);
 		}
 		else
 		{
 			llwarns << "Unexpected POST status: " << status << " " << reason << llendl;
-			LL_DEBUGS("Snapshots") << "headers: [" << content << "]" << llendl;
+			LL_DEBUGS("Snapshots") << "received_headers: [" << received_headers << "]" << LL_ENDL;
 			LLWebProfile::reportImageUploadStatus(false);
 		}
 	}
@@ -203,6 +207,7 @@ public:
 
 protected:
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return webProfileResponders_timeout; }
+	/*virtual*/ bool redirect_status_ok(void) const { return true; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -219,7 +224,7 @@ void LLWebProfile::uploadImage(LLPointer<LLImageFormatted> image, const std::str
 	config_url += "?caption=" + LLURI::escape(caption);
 	config_url += "&add_loc=" + std::string(add_location ? "1" : "0");
 
-	LL_DEBUGS("Snapshots") << "Requesting " << config_url << llendl;
+	LL_DEBUGS("Snapshots") << "Requesting " << config_url << LL_ENDL;
 	AIHTTPHeaders headers;
 	headers.addHeader("Accept", "*/*");
 	headers.addHeader("Cookie", LLWebProfile::getAuthCookie());
@@ -230,7 +235,7 @@ void LLWebProfile::uploadImage(LLPointer<LLImageFormatted> image, const std::str
 // static
 void LLWebProfile::setAuthCookie(const std::string& cookie)
 {
-	LL_DEBUGS("Snapshots") << "Setting auth cookie: " << cookie << llendl;
+	LL_DEBUGS("Snapshots") << "Setting auth cookie: " << cookie << LL_ENDL;
 	sAuthCookie = cookie;
 }
 
@@ -286,24 +291,22 @@ void LLWebProfile::post(LLPointer<LLImageFormatted> image, const LLSD& config, c
 	body	<< "--" << boundary << "\r\n"
 			<< "Content-Disposition: form-data; name=\"file\"; filename=\"snapshot.png\"\r\n"
 			<< "Content-Type: image/png\r\n\r\n";
+	size_t const body_size = body.str().size();
 
-	// Insert the image data.
-	// *FIX: Treating this as a string will probably screw it up ...
-	U8* image_data = image->getData();
-	for (S32 i = 0; i < image->getDataSize(); ++i)
-	{
-		body << image_data[i];
-	}
+	std::ostringstream footer;
+	footer << "\r\n--" << boundary << "--\r\n";
+	size_t const footer_size = footer.str().size();
 
-	body <<	"\r\n--" << boundary << "--\r\n";
-
+	size_t size = body_size + image->getDataSize() + footer_size;
 	// postRaw() takes ownership of the buffer and releases it later.
-	size_t size = body.str().size();
 	char* data = new char [size];
-	memcpy(data, body.str().data(), size);
+	memcpy(data, body.str().data(), body_size);
+	// Insert the image data.
+	memcpy(data + body_size, image->getData(), image->getDataSize());
+	memcpy(data + body_size + image->getDataSize(), footer.str().data(), footer_size);
 
 	// Send request, successful upload will trigger posting metadata.
-	LLHTTPClient::postRaw(url, data, size, new LLWebProfileResponders::PostImageResponder(), headers);
+	LLHTTPClient::postRaw(url, data, size, new LLWebProfileResponders::PostImageResponder(), headers/*,*/ DEBUG_CURLIO_PARAM(debug_off), no_keep_alive);
 }
 
 // static

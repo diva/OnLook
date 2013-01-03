@@ -3990,10 +3990,11 @@ BOOL LLViewerWindow::mousePointOnLandGlobal(const S32 x, const S32 y, LLVector3d
 }
 
 // Saves an image to the harddrive as "SnapshotX" where X >= 1.
-void LLViewerWindow::saveImageNumbered(LLPointer<LLImageFormatted> image)
+void LLViewerWindow::saveImageNumbered(LLPointer<LLImageFormatted> image, int index)
 {
 	if (!image)
 	{
+		LLFloaterSnapshot::saveLocalDone(false, index);
 		return;
 	}
 
@@ -4022,15 +4023,15 @@ void LLViewerWindow::saveImageNumbered(LLPointer<LLImageFormatted> image)
 		// pick a directory in which to save
 		AIFilePicker* filepicker = AIFilePicker::create();				// Deleted in LLViewerWindow::saveImageNumbered_continued1
 		filepicker->open(proposed_name, pick_type, "", "snapshot");
-		filepicker->run(boost::bind(&LLViewerWindow::saveImageNumbered_continued1, this, image, extension, filepicker));
+		filepicker->run(boost::bind(&LLViewerWindow::saveImageNumbered_continued1, this, image, extension, filepicker, index));
 		return;
 	}
 
 	// LLViewerWindow::sSnapshotBaseName and LLViewerWindow::sSnapshotDir already known. Go straight to saveImageNumbered_continued2.
-	saveImageNumbered_continued2(image, extension);
+	saveImageNumbered_continued2(image, extension, index);
 }
 
-void LLViewerWindow::saveImageNumbered_continued1(LLPointer<LLImageFormatted> image, std::string const& extension, AIFilePicker* filepicker)
+void LLViewerWindow::saveImageNumbered_continued1(LLPointer<LLImageFormatted> image, std::string const& extension, AIFilePicker* filepicker, int index)
 {
 	if (filepicker->hasFilename())
 	{
@@ -4040,11 +4041,15 @@ void LLViewerWindow::saveImageNumbered_continued1(LLPointer<LLImageFormatted> im
 		LLViewerWindow::sSnapshotBaseName = gDirUtilp->getBaseFileName(filepath, true);
 		LLViewerWindow::sSnapshotDir = gDirUtilp->getDirName(filepath);
 
-		saveImageNumbered_continued2(image, extension);
+		saveImageNumbered_continued2(image, extension, index);
+	}
+	else
+	{
+		LLFloaterSnapshot::saveLocalDone(false, index);
 	}
 }
 
-void LLViewerWindow::saveImageNumbered_continued2(LLPointer<LLImageFormatted> image, std::string const& extension)
+void LLViewerWindow::saveImageNumbered_continued2(LLPointer<LLImageFormatted> image, std::string const& extension, int index)
 {
 	// Look for an unused file name
 	std::string filepath;
@@ -4068,6 +4073,11 @@ void LLViewerWindow::saveImageNumbered_continued2(LLPointer<LLImageFormatted> im
 	if (image->save(filepath))
 	{
 		playSnapshotAnimAndSound();
+		LLFloaterSnapshot::saveLocalDone(true, index);
+	}
+	else
+	{
+		LLFloaterSnapshot::saveLocalDone(false, index);
 	}
 }
 
@@ -4118,7 +4128,7 @@ BOOL LLViewerWindow::saveSnapshot( const std::string& filepath, S32 image_width,
 	llinfos << "Saving snapshot to: " << filepath << llendl;
 
 	LLPointer<LLImageRaw> raw = new LLImageRaw;
-	BOOL success = rawSnapshot(raw, image_width, image_height, TRUE, FALSE, show_ui, do_rebuild);
+	BOOL success = rawSnapshot(raw, image_width, image_height, (F32)image_width / image_height, show_ui, do_rebuild);
 
 	if (success)
 	{
@@ -4154,7 +4164,7 @@ void LLViewerWindow::playSnapshotAnimAndSound()
 
 BOOL LLViewerWindow::thumbnailSnapshot(LLImageRaw *raw, S32 preview_width, S32 preview_height, BOOL show_ui, BOOL do_rebuild, ESnapshotType type)
 {
-	return rawSnapshot(raw, preview_width, preview_height, FALSE, FALSE, show_ui, do_rebuild, type);
+	return rawSnapshot(raw, preview_width, preview_height, (F32)gViewerWindow->getWindowWidthRaw() / gViewerWindow->getWindowHeightRaw(), show_ui, do_rebuild, type);
 	
 	// *TODO below code was broken in deferred pipeline
 	/*
@@ -4293,25 +4303,29 @@ BOOL LLViewerWindow::thumbnailSnapshot(LLImageRaw *raw, S32 preview_width, S32 p
 	return TRUE;*/
 }
 
-// Saves the image from the screen to the specified filename and path.
-BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_height, 
-								 BOOL keep_window_aspect, BOOL is_texture, BOOL show_ui, BOOL do_rebuild, ESnapshotType type, S32 max_size, F32 supersample)
+// Saves the image from the screen to the image pointed to by raw.
+// This function does NOT yet scale the snapshot down to the requested size
+// if that is smaller than the current window (scale_factor < 1) or if
+// the aspect of the snapshot is unequal to the aspect of requested image.
+bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
+	S32 image_width, S32 image_height, F32 snapshot_aspect, BOOL show_ui,
+	BOOL do_rebuild, ESnapshotType type, S32 max_size, F32 supersample)
 {
 	if (!raw)
 	{
-		return FALSE;
+		return false;
 	}
 	//check if there is enough memory for the snapshot image
 	if(LLPipeline::sMemAllocationThrottled)
 	{
-		return FALSE ; //snapshot taking is disabled due to memory restriction.
+		return false; //snapshot taking is disabled due to memory restriction.
 	}
 	if(image_width * image_height > (1 << 22)) //if snapshot image is larger than 2K by 2K
 	{
 		if(!LLMemory::tryToAlloc(NULL, image_width * image_height * 3))
 		{
 			llwarns << "No enough memory to take the snapshot with size (w : h): " << image_width << " : " << image_height << llendl ;
-			return FALSE ; //there is no enough memory for taking this snapshot.
+			return false; //there is no enough memory for taking this snapshot.
 		}
 	}
 
@@ -4335,27 +4349,13 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 		LLPipeline::sShowHUDAttachments = FALSE;
 	}
 
-
 	// Copy screen to a buffer
-	// crop sides or top and bottom, if taking a snapshot of different aspect ratio
-	// from window
-	LLRect window_rect = show_ui ? getWindowRectRaw() : getWorldViewRectRaw(); 
 
-	S32 snapshot_width = window_rect.getWidth();
-	S32 snapshot_height = window_rect.getHeight();
+	LLRect const window_rect = show_ui ? getWindowRectRaw() : getWorldViewRectRaw(); 
+	S32 const window_width = window_rect.getWidth();
+	S32 const window_height = window_rect.getHeight();
+
 	// SNAPSHOT
-	S32 window_width = snapshot_width;
-	S32 window_height = snapshot_height;	
-	
-
-	F32 scale_factor = 1.0f ;
-	
-	bool is_tiling = false; 
-
-	//fbo method no longer supported. Good riddance
-	/*LLRenderTarget target;
-	bool use_fbo = false;
-	static const LLCachedControl<bool> force_tile("SHHighResSnapshotForceTile",false);*/
 
 #if 1//SHY_MOD // screenshot improvement
 	F32 internal_scale = llmin(llmax(supersample,1.f),3.f);
@@ -4379,86 +4379,79 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 		}
 	}
 	
-	if(!keep_window_aspect) //image cropping
-	{		
-		F32 ratio = llmin( (F32)window_width / image_width , (F32)window_height / image_height) ;
-		snapshot_width = (S32)(ratio * image_width) ;
-		snapshot_height = (S32)(ratio * image_height) ;
-		scale_factor = llmax(1.0f, 1.0f / ratio) ;
-	}
-	else //the scene(window) proportion needs to be maintained.
+	S32 buffer_x_offset = 0;
+	S32 buffer_y_offset = 0;
+	F32 scale_factor;
+	S32 image_buffer_x;
+	S32 image_buffer_y;
+
+	F32 const window_aspect = (F32)window_width / window_height;
+	// snapshot fits precisely inside window, it is the portion of the window with the correct aspect.
+	F32 snapshot_width = (snapshot_aspect > window_aspect) ? (F32)window_width : window_height * snapshot_aspect;
+	F32 snapshot_height = (snapshot_aspect < window_aspect) ? (F32)window_height : window_width / snapshot_aspect;
+	// ratio is the ratio snapshot/image', where image' is a rectangle with aspect snapshot_aspect that precisely contains image.
+	// Thus image_width' / image_height' == aspect ==> snapshot_width / image_width' == snapshot_height / image_height'.
+	// Since image' precisely contains image, one of them is equal (ie, image_height' = image_height) and the other is larger
+	// (or equal) (ie, image_width' >= image_width), and therefore one of snapshot_width / image_width and
+	// snapshot_height / image_height is correct, and the other is larger. Therefore, the smallest value of the
+	// following equals the ratio we're looking for.
+	F32 ratio = llmin(snapshot_width / image_width, snapshot_height / image_height);
+	// buffer equals the largest of image' and snapshot. This is because in the first case we need the higher
+	// resolution because of the size of the target image, and in the second case there is no reason to go
+	// smaller because it takes the same amount of time (and a slightly better quality should result after
+	// the final scaling). Thus, if ratio < 1 then buffer equals image', otherwise it equals snapshot.
+	// scale_factor is the ratio buffer/snapshot, and is initiallly equal to the ratio between buffer
+	// and snapshot (which have the same aspect).
+	for(scale_factor = llmax(1.0f, 1.0f / ratio);;												// Initial attempt.
+	// However, if the buffer turns out to be too large, then clamp it to max_size.
+		scale_factor = llmin(max_size / snapshot_width, max_size / snapshot_height))	// Clamp
 	{
-		if(image_width > window_width || image_height > window_height) //need to enlarge the scene
+		image_buffer_x = llround(snapshot_width * scale_factor);
+		image_buffer_y = llround(snapshot_height * scale_factor);
+		if (llmax(image_buffer_x, image_buffer_y) > max_size &&		// Boundary check to avoid memory overflow.
+			internal_scale <= 1.f)									// SHY_MOD: If supersampling... Don't care about max_size.
 		{
-			//Unsupported
-			/*if (!force_tile && gGLManager.mHasFramebufferObject && !show_ui)
-			{
-				GLint max_size = 0;
-				glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE_EXT, &max_size);
-		
-				if (image_width <= max_size && image_height <= max_size) //re-project the scene
-				{
-					use_fbo = TRUE;
-					
-					snapshot_width = image_width;
-					snapshot_height = image_height;
-					target.allocate(snapshot_width, snapshot_height, GL_RGBA, TRUE, TRUE, LLTexUnit::TT_RECT_TEXTURE, TRUE);
-					window_width = snapshot_width;
-					window_height = snapshot_height;
-					scale_factor = 1.f;
-					mWindowRectRaw.set(0, snapshot_height, snapshot_width, 0);
-					target.bindTarget();			
-				}
-			}
-
-			if(!use_fbo) //no re-projection, so tiling the scene*/
-			{
-				F32 ratio = llmin( (F32)window_width / image_width , (F32)window_height / image_height) ;
-				snapshot_width = (S32)(ratio * image_width) ;
-				snapshot_height = (S32)(ratio * image_height) ;
-				scale_factor = llmax(1.0f, 1.0f / ratio) ;	
-				is_tiling = true;
-			}
+			// Too big, clamp.
+			continue;
 		}
-		//else: keep the current scene scale, re-scale it if necessary after reading out.
+		// Done.
+		break;
 	}
-	
-	S32 buffer_x_offset = llfloor(((window_width - snapshot_width) * scale_factor) / 2.f);
-	S32 buffer_y_offset = llfloor(((window_height - snapshot_height) * scale_factor) / 2.f);
+	// Center the buffer.
+	buffer_x_offset = llfloor(((window_width - snapshot_width) * scale_factor) / 2.f);
+	buffer_y_offset = llfloor(((window_height - snapshot_height) * scale_factor) / 2.f);
+	Dout(dc::notice, "rawSnapshot(" << image_width << ", " << image_height << ", " << snapshot_aspect << "): image_buffer_x = " << image_buffer_x << "; image_buffer_y = " << image_buffer_y);
 
-	S32 image_buffer_x = llfloor(snapshot_width*scale_factor) ;
-	S32 image_buffer_y = llfloor(snapshot_height*scale_factor) ;
-#if 1//SHY_MOD // screenshot improvement
-	if(internal_scale <= 1.f) //If supersampling... Don't care about max_size.
-#endif //shy_mod
-	if(image_buffer_x > max_size || image_buffer_y > max_size) //boundary check to avoid memory overflow
+	bool error = !(image_buffer_x > 0 && image_buffer_y > 0);
+	if (!error)
 	{
-		scale_factor *= llmin((F32)max_size / image_buffer_x, (F32)max_size / image_buffer_y) ;
-		image_buffer_x = llfloor(snapshot_width*scale_factor) ;
-		image_buffer_y = llfloor(snapshot_height *scale_factor) ;
+		raw->resize(image_buffer_x, image_buffer_y, 3);
+		error = raw->isBufferInvalid();
 	}
-	if (image_buffer_x > 0 && image_buffer_y > 0)
+	if (error)
 	{
-	raw->resize(image_buffer_x, image_buffer_y, 3);
-	}
-	else
-	{
-		return FALSE ;
-	}
-	if(raw->isBufferInvalid())
-	{
-		return FALSE ;
+		if (prev_draw_ui != gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_UI))
+		{
+			LLPipeline::toggleRenderDebugFeature((void*)LLPipeline::RENDER_DEBUG_FEATURE_UI);
+		}
+		if (hide_hud)
+		{
+			LLPipeline::sShowHUDAttachments = TRUE;
+		}
+		setCursor(UI_CURSOR_ARROW);
+		return false;
 	}
 
-	BOOL high_res = scale_factor > 1.f;
-	if (high_res)
+	BOOL is_tiling = scale_factor > 1.f;
+	if (is_tiling)
 	{
+		Dout(dc::warning, "USING TILING FOR SNAPSHOT!");
 		send_agent_pause();
 		if (show_ui || !hide_hud)
 		{
-		//rescale fonts
-		initFonts(scale_factor);
-		LLHUDObject::reshapeAll();
+			//rescale fonts
+			initFonts(scale_factor);
+			LLHUDObject::reshapeAll();
 		}
 	}
 
@@ -4471,7 +4464,7 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 
 	for (int subimage_y = 0; subimage_y < scale_factor; ++subimage_y)
 	{
-		S32 subimage_y_offset = llclamp(buffer_y_offset - (subimage_y * window_height), 0, window_height);;
+		S32 subimage_y_offset = llclamp(buffer_y_offset - (subimage_y * window_height), 0, window_height);
 		// handle fractional columns
 		U32 read_height = llmax(0, (window_height - subimage_y_offset) -
 			llmax(0, (window_height * (subimage_y + 1)) - (buffer_y_offset + raw->getHeight())));
@@ -4513,7 +4506,7 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 					// Ping the watchdog thread every 100 lines to keep us alive (arbitrary number, feel free to change)
 					if (out_y % 100 == 0)
 					{
-						LLAppViewer::instance()->pingMainloopTimeout("LLViewerWindow::rawSnapshot");
+						LLAppViewer::instance()->pingMainloopTimeout("LLViewerWindow::rawRawSnapshot");
 					}
 				
 					if (type == SNAPSHOT_TYPE_COLOR)
@@ -4556,12 +4549,6 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 		output_buffer_offset_y += subimage_y_offset;
 	}
 
-	/*if (use_fbo)
-	{
-		mWindowRect = window_rect;
-		target.flush();
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	}*/
 	gDisplaySwapBuffers = FALSE;
 	gDepthDirty = TRUE;
 
@@ -4576,35 +4563,11 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 		LLPipeline::sShowHUDAttachments = TRUE;
 	}
 
-	if (high_res && (show_ui || !hide_hud))
+	if (is_tiling && (show_ui || !hide_hud))
 	{
 		initFonts(1.f);
 		LLHUDObject::reshapeAll();
 	}
-
-	// Pre-pad image to number of pixels such that the line length is a multiple of 4 bytes (for BMP encoding)
-	// Note: this formula depends on the number of components being 3.  Not obvious, but it's correct.	
-	image_width += (image_width * 3) % 4;
-
-	BOOL ret = TRUE ;
-	// Resize image
-	if(llabs(image_width - image_buffer_x) > 4 || llabs(image_height - image_buffer_y) > 4)
-	{
-		ret = raw->scale( image_width, image_height );  
-	}
-	else if(image_width != image_buffer_x || image_height != image_buffer_y)
-	{
-		ret = raw->scale( image_width, image_height, FALSE );  
-	}
-	
-#if 1//SHY_MOD // screenshot improvement
-	if(raw->isBufferInvalid()) //Just checking!
-		return FALSE;
-	if(internal_scale != 1.f)  //Scale down our render to the desired dimensions.
-		raw->scale( image_width/internal_scale, image_height/internal_scale );	
-	if(raw->isBufferInvalid()) //Just checking!
-		return FALSE;
-#endif //shy_mod
 
 	setCursor(UI_CURSOR_ARROW);
 
@@ -4618,10 +4581,49 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 		gPipeline.resetDrawOrders();
 	}
 
-	if (high_res)
+	if (is_tiling)
 	{
 		send_agent_resume();
 	}
+
+	return true;
+}
+
+// Same as the above, but does the resizing.
+bool LLViewerWindow::rawSnapshot(LLImageRaw *raw,
+	S32 image_width, S32 image_height, F32 snapshot_aspect, BOOL show_ui,
+	BOOL do_rebuild, ESnapshotType type, S32 max_size, F32 supersample)
+{
+	bool ret = rawRawSnapshot(raw, image_width, image_height, snapshot_aspect, show_ui, do_rebuild, type, max_size, supersample);
+
+#if 1
+
+	if (ret && !raw->scale(image_width, image_height))
+	{
+		ret = false;	// Failure.
+	}
+
+#else	// This was the old behavior.. but I don't think this is needed here.
+
+	if (ret)
+	{
+		// Pad image width such that the line length is a multiple of 4 bytes (for BMP encoding).
+		int n = 4;
+		for (int c = raw->getComponents(); c % 2 == 0 && n > 1; c /= 2) { n /= 2; }		// n /= gcd(n, components)
+		image_width += (image_width * (n - 1)) % n; // Now n divides image_width, and thus four divides image_width * components, the line length.
+
+		// Resize image
+		if (llabs(image_width - image_buffer_x) > 4 || llabs(image_height - image_buffer_y) > 4)
+		{
+			ret = raw->scale( image_width, image_height );  
+		}
+		else if (image_width != image_buffer_x || image_height != image_buffer_y)
+		{
+			ret = raw->scale( image_width, image_height, FALSE );  
+		}
+	}
+
+#endif
 
 	return ret;
 }

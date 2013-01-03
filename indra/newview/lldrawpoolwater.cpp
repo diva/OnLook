@@ -237,7 +237,10 @@ void LLDrawPoolWater::render(S32 pass)
 	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
 
 	// Slowly move over time.
-	F32 offset = fmod(gFrameTimeSeconds*2.f, 100.f);
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
+	static F32 frame_time;
+	if (!freeze_time) frame_time = gFrameTimeSeconds;
+	F32 offset = fmod(frame_time*2.f, 100.f);
 	F32 tp0[4] = {16.f/256.f, 0.0f, 0.0f, offset*0.01f};
 	F32 tp1[4] = {0.0f, 16.f/256.f, 0.0f, offset*0.01f};
 	glTexGenfv(GL_S, GL_OBJECT_PLANE, tp0);
@@ -418,11 +421,14 @@ void LLDrawPoolWater::renderOpaqueLegacyWater()
 	// Use the fact that we know all water faces are the same size
 	// to save some computation
 
-	// Slowly move texture coordinates over time so the watter appears
+	// Slowly move texture coordinates over time so the water appears
 	// to be moving.
 	F32 movement_period_secs = 50.f;
 
-	F32 offset = fmod(gFrameTimeSeconds, movement_period_secs);
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
+	static F32 frame_time;
+	if (!freeze_time) frame_time = gFrameTimeSeconds;
+	F32 offset = fmod(frame_time, movement_period_secs);
 
 	if (movement_period_secs != 0)
 	{
@@ -580,7 +586,11 @@ void LLDrawPoolWater::shade()
 		shader->bind();
 	}
 
-	sTime = (F32)LLFrameTimer::getElapsedSeconds()*0.5f;
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
+	if (!freeze_time)
+	{
+		sTime = (F32)LLFrameTimer::getElapsedSeconds()*0.5f;
+	}
 	
 	S32 reftex = shader->enableTexture(LLViewerShaderMgr::WATER_REFTEX);
 		

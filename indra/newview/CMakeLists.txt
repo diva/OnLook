@@ -196,8 +196,9 @@ set(viewer_SOURCE_FILES
     llfloaterevent.cpp
     llfloaterexploreanimations.cpp
     llfloaterexploresounds.cpp
-    llfloaterfriends.cpp
+    llfloaterfeed.cpp
     llfloaterfonttest.cpp
+    llfloaterfriends.cpp
     llfloatergesture.cpp
     llfloatergodtools.cpp
     llfloatergroupinfo.cpp
@@ -704,6 +705,7 @@ set(viewer_HEADER_FILES
     llfloaterexploreanimations.h
     llfloaterexploresounds.h
     llfloaterevent.h
+    llfloaterfeed.h
     llfloaterfonttest.h
     llfloaterfriends.h
     llfloatergesture.h

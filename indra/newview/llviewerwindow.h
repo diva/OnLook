@@ -308,17 +308,21 @@ public:
 	enum ESnapshotType
 	{
 		SNAPSHOT_TYPE_COLOR,
-		SNAPSHOT_TYPE_DEPTH,
+		SNAPSHOT_TYPE_DEPTH
 	};
 	BOOL			saveSnapshot(const std::string&  filename, S32 image_width, S32 image_height, BOOL show_ui = TRUE, BOOL do_rebuild = FALSE, ESnapshotType type = SNAPSHOT_TYPE_COLOR);
-	BOOL			rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_height, BOOL keep_window_aspect = TRUE, BOOL is_texture = FALSE,
-								BOOL show_ui = TRUE, BOOL do_rebuild = FALSE, ESnapshotType type = SNAPSHOT_TYPE_COLOR, S32 max_size = MAX_SNAPSHOT_IMAGE_SIZE, F32 supersample = 1.f );
+	bool			rawRawSnapshot(LLImageRaw* raw, S32 image_width, S32 image_height, F32 aspect,
+								BOOL show_ui = TRUE, BOOL do_rebuild = FALSE, ESnapshotType type = SNAPSHOT_TYPE_COLOR,
+								S32 max_size = MAX_SNAPSHOT_IMAGE_SIZE, F32 supersample = 1.f);
+	bool			rawSnapshot(LLImageRaw* raw, S32 image_width, S32 image_height, F32 aspect,
+								BOOL show_ui = TRUE, BOOL do_rebuild = FALSE, ESnapshotType type = SNAPSHOT_TYPE_COLOR,
+								S32 max_size = MAX_SNAPSHOT_IMAGE_SIZE, F32 supersample = 1.f);
 	BOOL			thumbnailSnapshot(LLImageRaw *raw, S32 preview_width, S32 preview_height, BOOL show_ui, BOOL do_rebuild, ESnapshotType type) ;
 	BOOL			isSnapshotLocSet() const { return ! sSnapshotDir.empty(); }
 	void			resetSnapshotLoc() const { sSnapshotDir.clear(); }
-	void saveImageNumbered(LLPointer<LLImageFormatted> image);
-	void saveImageNumbered_continued1(LLPointer<LLImageFormatted> image, std::string const& extension, AIFilePicker* filepicker);
-	void saveImageNumbered_continued2(LLPointer<LLImageFormatted> image, std::string const& extension);
+	void saveImageNumbered(LLPointer<LLImageFormatted> image, int index);
+	void saveImageNumbered_continued1(LLPointer<LLImageFormatted> image, std::string const& extension, AIFilePicker* filepicker, int index);
+	void saveImageNumbered_continued2(LLPointer<LLImageFormatted> image, std::string const& extension, int index);
 
 	// Reset the directory where snapshots are saved.
 	// Client will open directory picker on next snapshot save.

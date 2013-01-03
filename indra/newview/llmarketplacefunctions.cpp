@@ -199,12 +199,19 @@ namespace LLMarketplaceImport
 		/*virtual*/ bool followRedir(void) const { return true; }
 		/*virtual*/ bool needsHeaders(void) const { return true; }
 
-		void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+		/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 		{
-			std::string set_cookie_string;
-			if (headers.getFirstValue("set-cookie", set_cookie_string) && !set_cookie_string.empty())
+			if (status == HTTP_OK)
 			{
-				sMarketplaceCookie = set_cookie_string;
+				std::string value = get_cookie("_slm_session");
+				if (!value.empty())
+				{
+					sMarketplaceCookie = value;
+				}
+				else if (sMarketplaceCookie.empty())
+				{
+					llwarns << "No such cookie \"_slm_session\" received!" << llendl;
+				}
 			}
 		}
 
@@ -226,7 +233,7 @@ namespace LLMarketplaceImport
 			{
 				if (gSavedSettings.getBOOL("InventoryOutboxLogging"))
 				{
-					llinfos << " SLM GET clearing marketplace cookie due to authentication failure or timeout" << llendl;
+					llinfos << " SLM GET clearing marketplace cookie due to authentication failure or timeout (" << status << " / " << reason << ")." << llendl;
 				}
 
 				sMarketplaceCookie.clear();
@@ -372,7 +379,7 @@ namespace LLMarketplaceImport
 // Interface class
 //
 
-//static const F32 MARKET_IMPORTER_UPDATE_FREQUENCY = 300.0f; //1.0f;
+static const F32 MARKET_IMPORTER_UPDATE_FREQUENCY = 1.0f;
 
 //static
 void LLMarketplaceInventoryImporter::update()
@@ -383,7 +390,7 @@ void LLMarketplaceInventoryImporter::update()
 		if (update_timer.hasExpired())
 		{
 			LLMarketplaceInventoryImporter::instance().updateImport();
-			static LLCachedControl<F32> MARKET_IMPORTER_UPDATE_FREQUENCY("MarketImporterUpdateFreq", 10.0f);
+			//static LLCachedControl<F32> MARKET_IMPORTER_UPDATE_FREQUENCY("MarketImporterUpdateFreq", 1.0f);
 			update_timer.setTimerExpirySec(MARKET_IMPORTER_UPDATE_FREQUENCY);
 		}
 	}
