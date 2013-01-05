@@ -260,7 +260,7 @@ protected:
 public:
 	virtual void			setClothesColor(LLAvatarAppearanceDefines::ETextureIndex te, const LLColor4& new_color, BOOL upload_bake) = 0;
 	virtual LLColor4		getClothesColor(LLAvatarAppearanceDefines::ETextureIndex te) = 0;
-	//static BOOL		teToColorParams(LLAvatarAppearanceDefines::ETextureIndex te, U32 *param_name);
+	static BOOL		teToColorParams(LLAvatarAppearanceDefines::ETextureIndex te, U32 *param_name);
 
 	//--------------------------------------------------------------------
 	// Global colors
@@ -305,7 +305,7 @@ private:
  **                    BAKED TEXTURES
  **/
 public:
-	//LLTexLayerSet*		getAvatarLayerSet(LLAvatarAppearanceDefines::EBakedTextureIndex baked_index) const;
+	virtual LLTexLayerSet*		getAvatarLayerSet(LLAvatarAppearanceDefines::EBakedTextureIndex baked_index) const = 0;
 
 protected:
 	//virtual LLTexLayerSet*	createTexLayerSet() = 0;

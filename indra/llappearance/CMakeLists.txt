@@ -40,7 +40,7 @@ set(llappearance_SOURCE_FILES
     lltexlayer.cpp
     lltexlayerparams.cpp
     lltexturemanagerbridge.cpp
-    #llwearable.cpp
+    llwearable.cpp
     llwearabledata.cpp
     llwearabletype.cpp
     llviewervisualparam.cpp

@@ -756,7 +756,6 @@ public:
 public:
 	virtual void			setClothesColor(LLAvatarAppearanceDefines::ETextureIndex te, const LLColor4& new_color, BOOL upload_bake);
 	virtual LLColor4		getClothesColor(LLAvatarAppearanceDefines::ETextureIndex te);
-	static BOOL			teToColorParams(LLAvatarAppearanceDefines::ETextureIndex te, U32 *param_name);
 
 	//--------------------------------------------------------------------
 	// Global colors
@@ -798,6 +797,7 @@ public:
 	void				cleanupAttachedMesh( LLViewerObject* pVO );
 	static LLVOAvatar*  findAvatarFromAttachment(LLViewerObject* obj);
 	virtual BOOL			isWearingWearableType(LLWearableType::EType type ) const;
+	virtual LLTexLayerSet* getAvatarLayerSet(LLAvatarAppearanceDefines::EBakedTextureIndex baked_index) const;
 protected:
 	LLViewerJointAttachment* getTargetAttachmentPoint(LLViewerObject* viewer_object);
 	void 				lazyAttach();

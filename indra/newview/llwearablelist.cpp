@@ -112,16 +112,17 @@ void LLWearableList::processGetAssetReply( const char* filename, const LLAssetID
 	else if (status >= 0)
 	{
 		// read the file
-		LLFILE* fp = LLFile::fopen(std::string(filename), "rb");		/*Flawfinder: ignore*/
-		if( !fp )
+		llifstream ifs(filename, llifstream::binary);
+		if( !ifs.is_open() )
 		{
 			LL_WARNS("Wearable") << "Bad Wearable Asset: unable to open file: '" << filename << "'" << LL_ENDL;
 		}
 		else
 		{
 			wearable = new LLViewerWearable(uuid);
-			bool res = wearable->importFile( fp );
-			if (!res)
+			LLWearable::EImportResult result = wearable->importStream(
+												ifs, avatarp );
+			if (LLWearable::SUCCESS != result)
 			{
 				if (wearable->getType() == LLWearableType::WT_COUNT)
 				{
@@ -131,9 +132,12 @@ void LLWearableList::processGetAssetReply( const char* filename, const LLAssetID
 				wearable = NULL;
 			}
 
-			fclose( fp );
 			if(filename)
 			{
+				if (ifs.is_open())
+				{
+					ifs.close();
+				}
 				LLFile::remove(std::string(filename));
 			}
 		}
@@ -235,7 +239,7 @@ LLViewerWearable* LLWearableList::createNewWearable( LLWearableType::EType type,
 	lldebugs << "LLWearableList::createNewWearable()" << llendl;
 
 	LLViewerWearable *wearable = generateNewWearable();
-	wearable->setType( type );
+	wearable->setType( type, avatarp );
 	
 	std::string name = LLTrans::getString( LLWearableType::getTypeDefaultNewName(wearable->getType()) );
 	wearable->setName( name );
