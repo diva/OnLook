@@ -111,7 +111,7 @@ void LLDriverParamInfo::toStream(std::ostream &out)
 	out << std::endl;
 
 	if(mDriverParam && mDriverParam->getAvatarAppearance()->isSelf() &&
-		mDriverParam->getAvatarAppearance()->isAgent())
+		mDriverParam->getAvatarAppearance()->isValid())
 	{
 		for (entry_info_list_t::iterator iter = mDrivenInfoList.begin(); iter != mDrivenInfoList.end(); iter++)
 		{
@@ -612,7 +612,7 @@ void LLDriverParam::setDrivenWeight(LLDrivenEntry *driven, F32 driven_weight, bo
 {
 	bool use_self = false;
 	if(mWearablep &&
-		mAvatarAppearance->isAgent() &&
+		mAvatarAppearance->isValid() &&
 		driven->mParam->getCrossWearable())
 	{
 		LLWearable* wearable = dynamic_cast<LLWearable*> (mWearablep);

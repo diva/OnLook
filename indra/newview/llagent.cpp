@@ -3336,7 +3336,7 @@ void LLAgent::processAgentCachedTextureResponse(LLMessageSystem *mesgsys, void *
 		return;
 	}
 
-	if (isAgentAvatarValid() && !gAgentAvatarp->isUsingBakedTextures())
+	if (isAgentAvatarValid() && gAgentAvatarp->isEditingAppearance())
 	{
 		// ignore baked textures when in customize mode
 		return;
@@ -3912,7 +3912,7 @@ void LLAgent::sendAgentSetAppearance()
 {
 	if (!isAgentAvatarValid()) return;
 
-	if (gAgentQueryManager.mNumPendingQueries > 0 && (isAgentAvatarValid() && gAgentAvatarp->isUsingBakedTextures())) 
+	if (gAgentQueryManager.mNumPendingQueries > 0 && (isAgentAvatarValid() && !gAgentAvatarp->isEditingAppearance())) 
 	{
 		return;
 	}

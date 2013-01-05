@@ -640,13 +640,11 @@ BOOL LLPolyMorphTarget::setInfo(LLPolyMorphTargetInfo* info)
 	for (iter = getInfo()->mVolumeInfoList.begin(); iter != getInfo()->mVolumeInfoList.end(); iter++)
 	{
 		LLPolyVolumeMorphInfo *volume_info = &(*iter);
-		S32 volumes = avatarp->getNumCollisionVolumes();
-		for (S32 i = 0; i < volumes; i++)
+		for (S32 i = 0; i < avatarp->mNumCollisionVolumes; i++)
 		{
-			LLAvatarJointCollisionVolume* vol = avatarp->getCollisionVolume(i);
-			if (vol->getName() == volume_info->mName)
+			if (avatarp->mCollisionVolumes[i].getName() == volume_info->mName)
 			{
-				mVolumeMorphs.push_back(LLPolyVolumeMorph(vol,
+				mVolumeMorphs.push_back(LLPolyVolumeMorph(&avatarp->mCollisionVolumes[i],
 														  volume_info->mScale,
 														  volume_info->mPos));
 				break;

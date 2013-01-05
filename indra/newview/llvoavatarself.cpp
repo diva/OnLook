@@ -488,70 +488,6 @@ LLVOAvatarSelf::~LLVOAvatarSelf()
  **                                                                             **
  *********************************************************************************/
 
-//virtual
-BOOL LLVOAvatarSelf::loadLayersets()
-{
-	BOOL success = TRUE;
-	for (LLVOAvatarXmlInfo::layer_info_list_t::const_iterator iter = sAvatarXmlInfo->mLayerInfoList.begin();
-		 iter != sAvatarXmlInfo->mLayerInfoList.end(); 
-		 ++iter)
-	{
-		// Construct a layerset for each one specified in avatar_lad.xml and initialize it as such.
-		const LLTexLayerSetInfo *info = *iter;
-		LLViewerTexLayerSet* layer_set = new LLViewerTexLayerSet( this );
-		
-		if (!layer_set->setInfo(info))
-		{
-			stop_glerror();
-			delete layer_set;
-			llwarns << "avatar file: layer_set->parseData() failed" << llendl;
-			return FALSE;
-		}
-
-		// scan baked textures and associate the layerset with the appropriate one
-		EBakedTextureIndex baked_index = BAKED_NUM_INDICES;
-		for (LLAvatarAppearanceDictionary::BakedTextures::const_iterator baked_iter = LLAvatarAppearanceDictionary::getInstance()->getBakedTextures().begin();
-			 baked_iter != LLAvatarAppearanceDictionary::getInstance()->getBakedTextures().end();
-			 ++baked_iter)
-		{
-			const LLAvatarAppearanceDictionary::BakedEntry *baked_dict = baked_iter->second;
-			if (layer_set->isBodyRegion(baked_dict->mName))
-			{
-				baked_index = baked_iter->first;
-				// ensure both structures are aware of each other
-				mBakedTextureDatas[baked_index].mTexLayerSet = layer_set;
-				layer_set->setBakedTexIndex(baked_index);
-				break;
-			}
-		}
-		// if no baked texture was found, warn and cleanup
-		if (baked_index == BAKED_NUM_INDICES)
-		{
-			llwarns << "<layer_set> has invalid body_region attribute" << llendl;
-			delete layer_set;
-			return FALSE;
-		}
-
-		// scan morph masks and let any affected layers know they have an associated morph
-		for (LLVOAvatar::morph_list_t::const_iterator morph_iter = mBakedTextureDatas[baked_index].mMaskedMorphs.begin();
-			morph_iter != mBakedTextureDatas[baked_index].mMaskedMorphs.end();
-			 ++morph_iter)
-		{
-			LLMaskedMorph *morph = *morph_iter;
-			LLTexLayerInterface* layer = layer_set->findLayerByName(morph->mLayer);
-			if (layer)
-			{
-				layer->setHasMorph(TRUE);
-			}
-			else
-			{
-				llwarns << "Could not find layer named " << morph->mLayer << " to set morph flag" << llendl;
-				success = FALSE;
-			}
-		}
-	}
-	return success;
-}
 // virtual
 BOOL LLVOAvatarSelf::updateCharacter(LLAgent &agent)
 {
@@ -571,9 +507,15 @@ BOOL LLVOAvatarSelf::updateCharacter(LLAgent &agent)
 }
 
 // virtual
+BOOL LLVOAvatarSelf::isValid() const
+{
+	return ((getRegion() != NULL) && !isDead());
+}
+
+// virtual
 void LLVOAvatarSelf::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 {
-	if (isAgentAvatarValid())
+	if (isValid())
 	{
 		LLVOAvatar::idleUpdate(agent, world, time);
 		if(!gNoRender)
@@ -870,7 +812,7 @@ void LLVOAvatarSelf::idleUpdateTractorBeam()
 	}
 
 	// This is only done for yourself (maybe it should be in the agent?)
-	if (!needsRenderBeam() || !mIsBuilt)
+	if (!needsRenderBeam() || !isBuilt())
 	{
 		mBeam = NULL;
 	}
@@ -984,11 +926,6 @@ void LLVOAvatarSelf::updateAttachmentVisibility(U32 camera_mode)
 	}
 }
 
-/*virtual*/ BOOL LLVOAvatarSelf::isWearingWearableType(LLWearableType::EType type ) const
-{
-	return gAgentWearables.getWearableCount(type) > 0;
-}
-
 //-----------------------------------------------------------------------------
 // updatedWearable( LLWearableType::EType type )
 // forces an update to any baked textures relevant to type.
@@ -1012,7 +949,7 @@ void LLVOAvatarSelf::wearableUpdated( LLWearableType::EType type, BOOL upload_re
 				const LLWearableType::EType comp_type = *type_iter;
 				if (comp_type == type)
 				{
-					LLViewerTexLayerSet *layerset = dynamic_cast<LLViewerTexLayerSet*>(mBakedTextureDatas[index].mTexLayerSet);
+					LLViewerTexLayerSet *layerset = getLayerSet(index);
 					if (layerset)
 					{
 						layerset->setUpdatesEnabled(true);
@@ -1230,7 +1167,7 @@ BOOL LLVOAvatarSelf::detachObject(LLViewerObject *viewer_object)
 		// Make sure the inventory is in sync with the avatar.
 
 		// Update COF contents, don't trigger appearance update.
-		if (!isAgentAvatarValid())
+		if (!isValid())
 		{
 			llinfos << "removeItemLinks skipped, avatar is under destruction" << llendl;
 		}
@@ -1320,7 +1257,7 @@ void LLVOAvatarSelf::localTextureLoaded(BOOL success, LLViewerFetchedTexture *sr
 			discard_level < local_tex_obj->getDiscard())
 		{
 			local_tex_obj->setDiscard(discard_level);
-			if (isUsingBakedTextures())
+			if (!isEditingAppearance())
 			{
 				requestLayerSetUpdate(index);
 			}
@@ -1769,7 +1706,7 @@ void LLVOAvatarSelf::setLocalTexture(ETextureIndex type, LLViewerTexture* src_te
 			return;
 		}
 		LLWearableType::EType wearable_type = LLAvatarAppearanceDictionary::getInstance()->getTEWearableType(type);
-		if (!gAgentWearables.getWearable(wearable_type,index))
+		if (!gAgentWearables.getViewerWearable(wearable_type,index))
 		{
 			// no wearable is loaded, cannot set the texture.
 			return;
@@ -1785,7 +1722,7 @@ void LLVOAvatarSelf::setLocalTexture(ETextureIndex type, LLViewerTexture* src_te
 		LLViewerTexLayerSet *layer_set = getLayerSet(type);
 		if (layer_set)
 		{
-			layer_set->cloneTemplates(local_tex_obj, type, gAgentWearables.getWearable(wearable_type,index));
+			layer_set->cloneTemplates(local_tex_obj, type, gAgentWearables.getViewerWearable(wearable_type,index));
 		}
 
 	}
@@ -1805,11 +1742,11 @@ void LLVOAvatarSelf::setLocalTexture(ETextureIndex type, LLViewerTexture* src_te
 					local_tex_obj->setDiscard(tex_discard);
 					if (isSelf())
 					{
-						if (gAgentAvatarp->isUsingBakedTextures())
+					if (!isEditingAppearance())
 					{
 						requestLayerSetUpdate(type);
 					}
-						else
+					else
 					{
 						LLVisualParamHint::requestHintUpdates();
 					}
@@ -2499,13 +2436,10 @@ void LLVOAvatarSelf::processRebakeAvatarTextures(LLMessageSystem* msg, void**)
 	}
 }
 
-bool LLVOAvatarSelf::isUsingBakedTextures() const
+BOOL LLVOAvatarSelf::isEditingAppearance() const
 {
 	// Composite textures are used during appearance mode.
-	if (gAgentCamera.cameraCustomizeAvatar())
-		return FALSE;
-
-	return TRUE;
+	return gAgentCamera.cameraCustomizeAvatar();
 }
 
 

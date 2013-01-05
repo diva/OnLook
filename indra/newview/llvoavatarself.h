@@ -67,9 +67,8 @@ public:
 protected:
 	/*virtual*/ BOOL		loadAvatar();
 	BOOL					loadAvatarSelf();
-	virtual BOOL			buildSkeletonSelf(const LLAvatarSkeletonInfo *info);
+	BOOL					buildSkeletonSelf(const LLAvatarSkeletonInfo *info);
 	BOOL					buildMenus();
-	/*virtual*/ BOOL		loadLayersets();
 
 /**                    Initialization
  **                                                                            **
@@ -129,6 +128,7 @@ private:
 
 public:
 	/*virtual*/ bool 	isSelf() const { return true; }
+	/*virtual*/ BOOL	isValid() const;
 
 	//--------------------------------------------------------------------
 	// Updates
@@ -237,7 +237,8 @@ public:
 	void				setCachedBakedTexture(LLAvatarAppearanceDefines::ETextureIndex i, const LLUUID& uuid);
 	void				forceBakeAllTextures(bool slam_for_debug = false);
 	static void			processRebakeAvatarTextures(LLMessageSystem* msg, void**);
-	virtual bool		isUsingBakedTextures() const; // e.g. false if in appearance edit mode
+	/*virtual*/ BOOL	isEditingAppearance() const;
+	
 protected:
 	/*virtual*/ void	removeMissingBakedTextures();
 
@@ -297,7 +298,6 @@ protected:
  **/
 
 public:
-	/*virtual*/ BOOL	isWearingWearableType(LLWearableType::EType type) const;
 	void				wearableUpdated(LLWearableType::EType type, BOOL upload_result);
 protected:
 	U32 getNumWearables(LLAvatarAppearanceDefines::ETextureIndex i) const;

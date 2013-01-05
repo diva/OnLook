@@ -41,9 +41,6 @@ class LLTexGlobalColorInfo;
 class LLWearableData;
 class LLAvatarBoneInfo;
 class LLAvatarSkeletonInfo;
-class LLPolyMeshSharedData;
-class LLAvatarJointCollisionVolume;
-class LLTexLayerSet;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // LLAvatarAppearance
@@ -55,7 +52,7 @@ class LLAvatarAppearance : public LLCharacter
 	LOG_CLASS(LLAvatarAppearance);
 
 protected:
-//	struct LLAvatarXmlInfo;
+	struct LLAvatarXmlInfo;
 
 /********************************************************************************
  **                                                                            **
@@ -66,12 +63,15 @@ private:
 	LLAvatarAppearance() {}
 
 public:
-	LLAvatarAppearance(LLWearableData* wearable_data) : mIsDummy(FALSE), mWearableData(wearable_data) {};
-	virtual ~LLAvatarAppearance() {}
+	LLAvatarAppearance(LLWearableData* wearable_data);
+	virtual ~LLAvatarAppearance();
 
-	virtual BOOL		loadSkeletonNode() = 0;
-	virtual BOOL		loadMeshNodes() = 0;
-	virtual BOOL		loadLayersets() = 0;
+	static void			initClass(); // initializes static members
+	static void			cleanupClass();	// Cleanup data that's only init'd once per class.
+	virtual void 		initInstance(); // Called after construction to initialize the instance.
+	virtual BOOL		loadSkeletonNode();
+	BOOL				loadMeshNodes();
+	BOOL				loadLayersets();
 
 
 /**                    Initialization
@@ -87,14 +87,19 @@ public:
 	// LLCharacter interface and related
 	//--------------------------------------------------------------------
 public:
-	///*virtual*/ LLJoint*		getCharacterJoint(U32 num);
+	/*virtual*/ LLJoint*		getCharacterJoint(U32 num);
 
 	/*virtual*/ const char*		getAnimationPrefix() { return "avatar"; }
-	//*virtual*/ LLVector3		getVolumePos(S32 joint_index, LLVector3& volume_offset);
-	//*virtual*/ LLJoint*		findCollisionVolume(U32 volume_id);
-	//*virtual*/ S32			getCollisionVolumeID(std::string &name);
-	//*virtual*/ LLPolyMesh*	getHeadMesh();
-	//*virtual*/ LLPolyMesh*	getUpperBodyMesh();
+	/*virtual*/ LLVector3		getVolumePos(S32 joint_index, LLVector3& volume_offset);
+	/*virtual*/ LLJoint*		findCollisionVolume(U32 volume_id);
+	/*virtual*/ S32				getCollisionVolumeID(std::string &name);
+	/*virtual*/ LLPolyMesh*		getHeadMesh();
+	/*virtual*/ LLPolyMesh*		getUpperBodyMesh();
+	LLPolyMesh*					getMesh( LLPolyMeshSharedData *shared_data );
+
+	typedef std::map<S32, std::string> lod_mesh_map_t;
+	typedef std::map<std::string, lod_mesh_map_t> mesh_info_t;
+	static void getMeshInfo(mesh_info_t* mesh_info);
 
 /**                    Inherited
  **                                                                            **
@@ -105,17 +110,17 @@ public:
  **                    STATE
  **/
 public:
-	virtual bool 	isSelf() const = 0;// True if this avatar is for this viewer's agent
-	//virtual BOOL	isValid() const = 0;
-	virtual bool	isAgent() const = 0;
-	virtual bool	isUsingBakedTextures() const {return false;}
+	virtual bool 	isSelf() const { return false; } // True if this avatar is for this viewer's agent
+	virtual BOOL	isValid() const;
 	//virtual BOOL	isUsingServerBakes() const = 0;
 	//virtual BOOL	isUsingLocalAppearance() const = 0;
 	//virtual BOOL	isEditingAppearance() const = 0;
+	BOOL	isUsingLocalAppearance() const {return isEditingAppearance();}
+	virtual BOOL	isEditingAppearance() const {return FALSE;}
 
-	virtual bool isBuilt() const = 0;
+	bool isBuilt() const { return mIsBuilt; }
 
-	
+	virtual std::string		getFullname() const = 0;
 /**                    State
  **                                                                            **
  *******************************************************************************/
@@ -126,50 +131,50 @@ public:
  **/
 
 protected:
-	//virtual LLAvatarJoint*	createAvatarJoint() = 0;
-	//virtual LLAvatarJoint*	createAvatarJoint(S32 joint_num) = 0;
-	//virtual LLAvatarJointMesh*	createAvatarJointMesh() = 0;
+	virtual LLAvatarJoint*	createAvatarJoint() = 0;
+	virtual LLAvatarJoint*	createAvatarJoint(S32 joint_num) = 0;
+	virtual LLAvatarJointMesh*	createAvatarJointMesh() = 0;
 public:
-	virtual F32				getPelvisToFoot() const = 0;
-	//*virtual*/ LLJoint*	getRootJoint() { return mRoot; } //LLCharacter
+	F32					getPelvisToFoot() const { return mPelvisToFoot; }
+	/*virtual*/ LLJoint*	getRootJoint() { return mRoot; }
 
-	//LLVector3			mHeadOffset; // current head position
-	//LLAvatarJoint		*mRoot;
+	LLVector3			mHeadOffset; // current head position
+	LLAvatarJoint		*mRoot;
 
-	//typedef std::map<std::string, LLJoint*> joint_map_t;
-	//joint_map_t			mJointMap;
+	typedef std::map<std::string, LLJoint*> joint_map_t;
+	joint_map_t			mJointMap;
 	
-	virtual void		computeBodySize() = 0;
+	void				computeBodySize();
 
 
-public:
-	//static BOOL			parseSkeletonFile(const std::string& filename);
-	virtual void		buildCharacter() = 0;
-	virtual BOOL		loadAvatar() = 0;
-	//virtual void		bodySizeChanged() = 0;
-
-	//BOOL				setupBone(const LLAvatarBoneInfo* info, LLJoint* parent, S32 &current_volume_num, S32 &current_joint_num);
-	//BOOL				allocateCharacterJoints(U32 num); //LLCharacter
-	virtual BOOL		buildSkeleton(const LLAvatarSkeletonInfo *info) = 0;
 protected:
-	//void				clearSkeleton();
-	//BOOL				mIsBuilt; // state of deferred character building
-	//typedef std::vector<LLAvatarJoint*> avatar_joint_list_t;
-	//avatar_joint_list_t	mSkeleton;
+	static BOOL			parseSkeletonFile(const std::string& filename);
+	virtual void		buildCharacter();
+	virtual BOOL		loadAvatar();
+	virtual void		bodySizeChanged() = 0;
+
+	BOOL				setupBone(const LLAvatarBoneInfo* info, LLJoint* parent, S32 &current_volume_num, S32 &current_joint_num);
+	BOOL				allocateCharacterJoints(U32 num);
+	BOOL				buildSkeleton(const LLAvatarSkeletonInfo *info);
+protected:
+	void				clearSkeleton();
+	BOOL				mIsBuilt; // state of deferred character building
+	typedef std::vector<LLAvatarJoint*> avatar_joint_list_t;
+	avatar_joint_list_t	mSkeleton;
 	
 	//--------------------------------------------------------------------
 	// Pelvis height adjustment members.
 	//--------------------------------------------------------------------
 public:
-	//LLVector3			mBodySize;
+	LLVector3			mBodySize;
 protected:
-	//F32					mPelvisToFoot;
+	F32					mPelvisToFoot;
 
 	//--------------------------------------------------------------------
 	// Cached pointers to well known joints
 	//--------------------------------------------------------------------
 public:
-	/*LLJoint* 		mPelvisp;
+	LLJoint* 		mPelvisp;
 	LLJoint* 		mTorsop;
 	LLJoint* 		mChestp;
 	LLJoint* 		mNeckp;
@@ -196,7 +201,7 @@ protected:
 	static LLXmlTree 	sSkeletonXMLTree; // avatar skeleton file
 
 	static LLAvatarSkeletonInfo* 					sAvatarSkeletonInfo;
-	static LLAvatarXmlInfo* 						sAvatarXmlInfo;*/
+	static LLAvatarXmlInfo* 						sAvatarXmlInfo;
 
 
 /**                    Skeleton
@@ -215,7 +220,7 @@ public:
 	// Morph masks
 	//--------------------------------------------------------------------
 public:
-	virtual void 	addMaskedMorph(LLAvatarAppearanceDefines::EBakedTextureIndex index, LLVisualParam* morph_target, BOOL invert, std::string layer) = 0;
+	void 	addMaskedMorph(LLAvatarAppearanceDefines::EBakedTextureIndex index, LLVisualParam* morph_target, BOOL invert, std::string layer);
 	virtual void	applyMorphMask(U8* tex_data, S32 width, S32 height, S32 num_components, LLAvatarAppearanceDefines::EBakedTextureIndex index = LLAvatarAppearanceDefines::BAKED_NUM_INDICES) = 0;
 
 /**                    Rendering
@@ -236,14 +241,13 @@ public:
 public:
 	virtual void	updateMeshTextures() = 0;
 	virtual void	dirtyMesh() = 0; // Dirty the avatar mesh
-public:
-	virtual void	dirtyMesh(S32 priority) = 0; // Dirty the avatar mesh, with priority
-	
-	virtual LLPolyMesh*		getMesh(LLPolyMeshSharedData* shared_data) = 0;
 protected:
-	//typedef std::multimap<std::string, LLPolyMesh*> polymesh_map_t;
-	//polymesh_map_t 									mPolyMeshes;
-	//avatar_joint_list_t								mMeshLOD;
+	virtual void	dirtyMesh(S32 priority) = 0; // Dirty the avatar mesh, with priority
+
+protected:
+	typedef std::multimap<std::string, LLPolyMesh*> polymesh_map_t;
+	polymesh_map_t 									mPolyMeshes;
+	avatar_joint_list_t								mMeshLOD;
 
 /**                    Meshes
  **                                                                            **
@@ -258,24 +262,20 @@ protected:
 	// Clothing colors (convenience functions to access visual parameters)
 	//--------------------------------------------------------------------
 public:
-	virtual void			setClothesColor(LLAvatarAppearanceDefines::ETextureIndex te, const LLColor4& new_color, BOOL upload_bake) = 0;
-	virtual LLColor4		getClothesColor(LLAvatarAppearanceDefines::ETextureIndex te) = 0;
+	void			setClothesColor(LLAvatarAppearanceDefines::ETextureIndex te, const LLColor4& new_color, BOOL upload_bake);
+	LLColor4		getClothesColor(LLAvatarAppearanceDefines::ETextureIndex te);
 	static BOOL		teToColorParams(LLAvatarAppearanceDefines::ETextureIndex te, U32 *param_name);
 
 	//--------------------------------------------------------------------
 	// Global colors
 	//--------------------------------------------------------------------
 public:
-	virtual LLColor4		getGlobalColor(const std::string& color_name ) const = 0;
+	LLColor4		getGlobalColor(const std::string& color_name ) const;
 	virtual void	onGlobalColorChanged(const LLTexGlobalColor* global_color, BOOL upload_bake) = 0;
-
-	virtual S32 getNumCollisionVolumes() = 0;
-	virtual LLAvatarJointCollisionVolume* getCollisionVolume(S32 i) = 0;
-
 protected:
-	//LLTexGlobalColor* mTexSkinColor;
-	//LLTexGlobalColor* mTexHairColor;
-	//LLTexGlobalColor* mTexEyeColor;
+	LLTexGlobalColor* mTexSkinColor;
+	LLTexGlobalColor* mTexHairColor;
+	LLTexGlobalColor* mTexEyeColor;
 
 	//--------------------------------------------------------------------
 	// Visibility
@@ -295,7 +295,7 @@ public:
 	LLWearableData*			getWearableData() { return mWearableData; }
 	const LLWearableData*	getWearableData() const { return mWearableData; }
 	virtual BOOL isTextureDefined(LLAvatarAppearanceDefines::ETextureIndex te, U32 index = 0 ) const = 0;
-	virtual BOOL			isWearingWearableType(LLWearableType::EType type ) const = 0;
+	virtual BOOL			isWearingWearableType(LLWearableType::EType type ) const;
 
 private:
 	LLWearableData* mWearableData;
@@ -305,13 +305,13 @@ private:
  **                    BAKED TEXTURES
  **/
 public:
-	virtual LLTexLayerSet*		getAvatarLayerSet(LLAvatarAppearanceDefines::EBakedTextureIndex baked_index) const = 0;
+	LLTexLayerSet*		getAvatarLayerSet(LLAvatarAppearanceDefines::EBakedTextureIndex baked_index) const;
 
 protected:
-	//virtual LLTexLayerSet*	createTexLayerSet() = 0;
+	virtual LLTexLayerSet*	createTexLayerSet() = 0;
 
 protected:
-	/*class LLMaskedMorph;
+	class LLMaskedMorph;
 	typedef std::deque<LLMaskedMorph *> 	morph_list_t;
 	struct BakedTextureData
 	{
@@ -326,7 +326,7 @@ protected:
 		morph_list_t						mMaskedMorphs;
 	};
 	typedef std::vector<BakedTextureData> 	bakedtexturedata_vec_t;
-	bakedtexturedata_vec_t 					mBakedTextureDatas;*/
+	bakedtexturedata_vec_t 					mBakedTextureDatas;
 
 /********************************************************************************
  **                                                                            **
@@ -337,10 +337,10 @@ protected:
 	// Collision volumes
 	//--------------------------------------------------------------------
 public:
-  	//S32			mNumCollisionVolumes;
-	//LLAvatarJointCollisionVolume* mCollisionVolumes;
-public:
-	virtual BOOL		allocateCollisionVolumes(U32 num) = 0;
+  	S32			mNumCollisionVolumes;
+	LLAvatarJointCollisionVolume* mCollisionVolumes;
+protected:
+	BOOL		allocateCollisionVolumes(U32 num);
 
 /**                    Physics
  **                                                                            **
@@ -351,7 +351,7 @@ public:
  **                    SUPPORT CLASSES
  **/
 
-	/*struct LLAvatarXmlInfo
+	struct LLAvatarXmlInfo
 	{
 		LLAvatarXmlInfo();
 		~LLAvatarXmlInfo();
@@ -445,7 +445,7 @@ public:
 		LLVisualParam	*mMorphTarget;
 		BOOL				mInvert;
 		std::string			mLayer;
-	};*/
+	};
 /**                    Support Classes
  **                                                                            **
  *******************************************************************************/

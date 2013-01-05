@@ -1684,8 +1684,12 @@ bool idle_startup()
 		display_startup();
 
 		// init the shader managers
-		//LLDayCycleManager::initClass();
+
+		LLAvatarAppearance::initClass();
 		display_startup();
+
+		//LLDayCycleManager::initClass();
+		//display_startup();
 
 		// RN: don't initialize VO classes in drone mode, they are too closely tied to rendering
 		LLViewerObject::initVOClasses();

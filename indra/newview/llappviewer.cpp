@@ -1586,6 +1586,8 @@ bool LLAppViewer::cleanup()
 	
 	LLViewerObject::cleanupVOClasses();
 
+	LLAvatarAppearance::cleanupClass();
+	
 	LLPostProcess::cleanupClass();
 
 	LLTracker::cleanupInstance();

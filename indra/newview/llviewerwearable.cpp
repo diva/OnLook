@@ -320,7 +320,7 @@ void LLViewerWearable::writeToAvatar(LLAvatarAppearance *avatarp)
 
 	if (!avatarp || !viewer_avatar) return;
 
-	if (!viewer_avatar->isAgent()) return;
+	if (!viewer_avatar->isValid()) return;
 
 	ESex old_sex = avatarp->getSex();
 

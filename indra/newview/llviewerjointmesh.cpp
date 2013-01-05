@@ -241,7 +241,7 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 	// setup current color
 	//----------------------------------------------------------------
 	if (is_dummy)
-		gGL.diffuseColor4fv(LLAvatarAppearance::getDummyColor().mV);
+		gGL.diffuseColor4fv(LLVOAvatar::getDummyColor().mV);
 	else
 		gGL.diffuseColor4fv(mColor.mV);
 

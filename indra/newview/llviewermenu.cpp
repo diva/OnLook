@@ -8389,18 +8389,18 @@ void init_meshes_and_morphs_menu()
 	menu->addChild(new LLMenuItemCallGL("Dump Avatar Mesh Info", &LLPolyMesh::dumpDiagInfo));
 	menu->addSeparator();
 
-	LLVOAvatar::mesh_info_t mesh_info;
-	LLVOAvatar::getMeshInfo(&mesh_info);
+	LLAvatarAppearance::mesh_info_t mesh_info;
+	LLAvatarAppearance::getMeshInfo(&mesh_info);
 
-	for(LLVOAvatarSelf::mesh_info_t::iterator info_iter = mesh_info.begin();
+	for(LLAvatarAppearance::mesh_info_t::iterator info_iter = mesh_info.begin();
 		info_iter != mesh_info.end(); ++info_iter)
 	{
 		const std::string& type = info_iter->first;
-		LLVOAvatar::lod_mesh_map_t& lod_mesh = info_iter->second;
+		LLAvatarAppearance::lod_mesh_map_t& lod_mesh = info_iter->second;
 
 		LLMenuGL* type_menu = new LLMenuGL(type);
 
-		for(LLVOAvatar::lod_mesh_map_t::iterator lod_iter = lod_mesh.begin();
+		for(LLAvatarAppearance::lod_mesh_map_t::iterator lod_iter = lod_mesh.begin();
 			lod_iter != lod_mesh.end(); ++lod_iter)
 		{
 			S32 lod = lod_iter->first;

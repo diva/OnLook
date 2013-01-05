@@ -66,15 +66,12 @@ extern const LLUUID ANIM_AGENT_PELVIS_FIX;
 extern const LLUUID ANIM_AGENT_TARGET;
 extern const LLUUID ANIM_AGENT_WALK_ADJUST;
 
-class LLTexLayerSet;
+class LLViewerWearable;
 class LLVoiceVisualizer;
 class LLHUDNameTag;
 class LLHUDEffectSpiral;
 class LLTexGlobalColor;
-class LLVOAvatarBoneInfo;
-class LLAvatarSkeletonInfo;
-class LLPolySkeletalDistortionInfo;
-class LLViewerWearable;
+class LLViewerJoint;
 
 class SHClientTagMgr : public LLSingleton<SHClientTagMgr>, public boost::signals2::trackable
 {
@@ -128,9 +125,6 @@ class LLVOAvatar :
 
 public:
 	friend class LLVOAvatarSelf;
-protected:
-	struct LLVOAvatarXmlInfo;
-	class LLMaskedMorph;
 
 /********************************************************************************
  **                                                                            **
@@ -155,17 +149,10 @@ public:
 	virtual void 		initInstance(); // Called after construction to initialize the class.
 protected:
 	virtual				~LLVOAvatar();
-	BOOL				loadSkeletonNode();
-	BOOL				loadMeshNodes();
-	virtual BOOL		loadLayersets();
 
 /**                    Initialization
  **                                                                            **
  *******************************************************************************/
-
-public:
-	/*virtual*/ bool isAgent() const;
-	
 
 /********************************************************************************
  **                                                                            **
@@ -176,31 +163,31 @@ public:
 	// LLViewerObject interface and related
 	//--------------------------------------------------------------------
 public:
-	virtual void			updateGL();
-	virtual	LLVOAvatar*		asAvatar();
+	/*virtual*/ void			updateGL();
+	/*virtual*/ LLVOAvatar*		asAvatar();
 	virtual U32    	 	 	processUpdateMessage(LLMessageSystem *mesgsys,
 													 void **user_data,
 													 U32 block_num,
 													 const EObjectUpdateType update_type,
 													 LLDataPacker *dp);
 	virtual void   	 	 	idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time);
-	virtual BOOL   	 	 	updateLOD();
+	/*virtual*/ BOOL   	 	 	updateLOD();
 	BOOL  	 	 	 	 	updateJointLODs();
 	void					updateLODRiggedAttachments( void );
-	virtual BOOL   	 	 	isActive() const; // Whether this object needs to do an idleUpdate.
-	virtual void   	 	 	updateTextures();
-	virtual S32    	 	 	setTETexture(const U8 te, const LLUUID& uuid); // If setting a baked texture, need to request it from a non-local sim.
-	virtual void   	 	 	onShift(const LLVector4a& shift_vector);
-	virtual U32    	 	 	getPartitionType() const;
-	virtual const  	 	 	LLVector3 getRenderPosition() const;
-	virtual void   	 	 	updateDrawable(BOOL force_damped);
-	virtual LLDrawable* 	createDrawable(LLPipeline *pipeline);
-	virtual BOOL   	 	 	updateGeometry(LLDrawable *drawable);
-	virtual void   	 	 	setPixelAreaAndAngle(LLAgent &agent);
-	virtual void   	 	 	updateRegion(LLViewerRegion *regionp);
-	virtual void   	 	 	updateSpatialExtents(LLVector4a& newMin, LLVector4a &newMax);
-	virtual void   	 	 	getSpatialExtents(LLVector4a& newMin, LLVector4a& newMax);
-	virtual BOOL   	 	 	lineSegmentIntersect(const LLVector3& start, const LLVector3& end,
+	/*virtual*/ BOOL   	 	 	isActive() const; // Whether this object needs to do an idleUpdate.
+	/*virtual*/ void   	 	 	updateTextures();
+	/*virtual*/ S32    	 	 	setTETexture(const U8 te, const LLUUID& uuid); // If setting a baked texture, need to request it from a non-local sim.
+	/*virtual*/ void   	 	 	onShift(const LLVector4a& shift_vector);
+	/*virtual*/ U32    	 	 	getPartitionType() const;
+	/*virtual*/ const  	 	 	LLVector3 getRenderPosition() const;
+	/*virtual*/ void   	 	 	updateDrawable(BOOL force_damped);
+	/*virtual*/ LLDrawable* 	createDrawable(LLPipeline *pipeline);
+	/*virtual*/ BOOL   	 	 	updateGeometry(LLDrawable *drawable);
+	/*virtual*/ void   	 	 	setPixelAreaAndAngle(LLAgent &agent);
+	/*virtual*/ void   	 	 	updateRegion(LLViewerRegion *regionp);
+	/*virtual*/ void   	 	 	updateSpatialExtents(LLVector4a& newMin, LLVector4a &newMax);
+	/*virtual*/ void   	 	 	getSpatialExtents(LLVector4a& newMin, LLVector4a& newMax);
+	/*virtual*/ BOOL   	 	 	lineSegmentIntersect(const LLVector3& start, const LLVector3& end,
 												 S32 face = -1,                    // which face to check, -1 = ALL_SIDES
 												 BOOL pick_transparent = FALSE,
 												 S32* face_hit = NULL,             // which face was hit
@@ -221,16 +208,14 @@ public:
 	// LLCharacter interface and related
 	//--------------------------------------------------------------------
 public:
-	virtual LLVector3    	getCharacterPosition();
-	virtual LLQuaternion 	getCharacterRotation();
-	virtual LLVector3    	getCharacterVelocity();
-	virtual LLVector3    	getCharacterAngularVelocity();
-	virtual LLJoint*		getCharacterJoint(U32 num);
-	virtual BOOL			allocateCharacterJoints(U32 num);
+	/*virtual*/ LLVector3    	getCharacterPosition();
+	/*virtual*/ LLQuaternion 	getCharacterRotation();
+	/*virtual*/ LLVector3    	getCharacterVelocity();
+	/*virtual*/ LLVector3    	getCharacterAngularVelocity();
 
-	virtual LLUUID			remapMotionID(const LLUUID& id);
-	virtual BOOL			startMotion(const LLUUID& id, F32 time_offset = 0.f);
-	virtual BOOL			stopMotion(const LLUUID& id, BOOL stop_immediate = FALSE);
+	/*virtual*/ LLUUID			remapMotionID(const LLUUID& id);
+	/*virtual*/ BOOL			startMotion(const LLUUID& id, F32 time_offset = 0.f);
+	/*virtual*/ BOOL			stopMotion(const LLUUID& id, BOOL stop_immediate = FALSE);
 	virtual void			stopMotionFromSource(const LLUUID& source_id);
 	virtual void			requestStopMotion(LLMotion* motion);
 	LLMotion*				findMotion(const LLUUID& id) const;
@@ -238,22 +223,17 @@ public:
 	void					dumpAnimationState();
 
 	virtual LLJoint*		getJoint(const std::string &name);
-	virtual LLJoint*     	getRootJoint() { return mRoot; }
-
+	
 	void					resetJointPositionsToDefault( void );
 	void					resetSpecificJointPosition( const std::string& name );
-	virtual const LLUUID&   getID() const;
-	virtual LLVector3		getVolumePos(S32 joint_index, LLVector3& volume_offset);
-	virtual LLJoint*		findCollisionVolume(U32 volume_id);
-	virtual S32				getCollisionVolumeID(std::string &name);
-	virtual void			addDebugText(const std::string& text);
-	virtual F32          	getTimeDilation();
-	virtual void			getGround(const LLVector3 &inPos, LLVector3 &outPos, LLVector3 &outNorm);
-	virtual F32				getPixelArea() const;
-	virtual LLPolyMesh*		getHeadMesh();
-	virtual LLPolyMesh*		getUpperBodyMesh();
-	virtual LLVector3d		getPosGlobalFromAgent(const LLVector3 &position);
-	virtual LLVector3		getPosAgentFromGlobal(const LLVector3d &position);
+	
+	/*virtual*/ const LLUUID&	getID() const;
+	/*virtual*/ void			addDebugText(const std::string& text);
+	/*virtual*/ F32				getTimeDilation();
+	/*virtual*/ void			getGround(const LLVector3 &inPos, LLVector3 &outPos, LLVector3 &outNorm);
+	/*virtual*/ F32				getPixelArea() const;
+	/*virtual*/ LLVector3d		getPosGlobalFromAgent(const LLVector3 &position);
+	/*virtual*/ LLVector3		getPosAgentFromGlobal(const LLVector3d &position);
 	virtual void			updateVisualParams();
 
 
@@ -268,7 +248,6 @@ public:
 
 public:
 	virtual bool 	isSelf() const { return false; } // True if this avatar is for this viewer's agent
-	virtual bool	isBuilt() const { return mIsBuilt; }
 
 private: //aligned members
 	LL_ALIGN_16(LLVector4a	mImpostorExtents[2]);
@@ -300,9 +279,7 @@ public:
 	void 			idleUpdateRenderCost();
 	void 			idleUpdateBelowWater();
 	void 			idleUpdateBoobEffect();	//Emerald
-	
 
-	
 	//--------------------------------------------------------------------
 	// Static preferences (controlled by user settings/menus)
 	//--------------------------------------------------------------------
@@ -335,7 +312,7 @@ public:
 	//--------------------------------------------------------------------
 public:
 	BOOL			isFullyLoaded() const;
-	bool visualParamWeightsAreDefault();
+	bool 			visualParamWeightsAreDefault();
 	virtual BOOL	getIsCloud() const;
 	BOOL			isFullyTextured() const;
 	BOOL			hasGray() const; 
@@ -346,7 +323,6 @@ public:
 protected:
 	BOOL			updateIsFullyLoaded();
 	BOOL			processFullyLoadedChange(bool loading);
-
 	void			updateRuthTimer(bool loading);
 	F32 			calcMorphAmount();
 private:
@@ -364,22 +340,24 @@ protected:
 /**                    State
  **                                                                            **
  *******************************************************************************/
-
 /********************************************************************************
  **                                                                            **
  **                    SKELETON
  **/
 
-	virtual LLAvatarJoint*	createAvatarJoint();
-	virtual LLAvatarJoint*	createAvatarJoint(S32 joint_num);
-	virtual LLAvatarJointMesh*	createAvatarJointMesh();
+protected:
+	/*virtual*/ LLAvatarJoint*	createAvatarJoint(); // Returns LLViewerJoint
+	/*virtual*/ LLAvatarJoint*	createAvatarJoint(S32 joint_num); // Returns LLViewerJoint
+	/*virtual*/ LLAvatarJointMesh*	createAvatarJointMesh(); // Returns LLViewerJointMesh
 public:
 	void				updateHeadOffset();
-	virtual F32			getPelvisToFoot() const { return mPelvisToFoot; }
 	void				setPelvisOffset( bool hasOffset, const LLVector3& translation, F32 offset ) ;
 	bool				hasPelvisOffset( void ) { return mHasPelvisOffset; }
 	void				postPelvisSetRecalc( void );
 	void				setPelvisOffset( F32 pelvixFixupAmount );
+
+	/*virtual*/ BOOL	loadSkeletonNode();
+	/*virtual*/ void	buildCharacter();
 
 	bool				mHasPelvisOffset;
 	LLVector3			mPelvisOffset;
@@ -387,62 +365,8 @@ public:
 	F32					mPelvisFixup;
 	F32					mLastPelvisFixup;
 
-	LLVector3			mHeadOffset; // current head position
-	LLAvatarJoint		*mRoot;
-
-	typedef std::map<std::string, LLJoint*> joint_map_t;
-	joint_map_t			mJointMap;
-
-public:
-	static BOOL			parseSkeletonFile(const std::string& filename);
-	virtual void		buildCharacter();
-	virtual BOOL		loadAvatar();
-
-	BOOL				setupBone(const LLVOAvatarBoneInfo* info, LLJoint* parent, S32 &current_volume_num, S32 &current_joint_num);
-	virtual BOOL		buildSkeleton(const LLAvatarSkeletonInfo *info);
-private:
-	BOOL				mIsBuilt; // state of deferred character building
-	typedef std::vector<LLAvatarJoint*> avatar_joint_list_t;
-	avatar_joint_list_t		mSkeleton;
-	
-	//--------------------------------------------------------------------
-	// Pelvis height adjustment members.
-	//--------------------------------------------------------------------
-public:
-	LLVector3			mBodySize;
 	S32					mLastSkeletonSerialNum;
-private:
-	F32					mPelvisToFoot;
 
-	//--------------------------------------------------------------------
-	// Cached pointers to well known joints
-	//--------------------------------------------------------------------
-public:
-	LLJoint* 		mPelvisp;
-	LLJoint* 		mTorsop;
-	LLJoint* 		mChestp;
-	LLJoint* 		mNeckp;
-	LLJoint* 		mHeadp;
-	LLJoint* 		mSkullp;
-	LLJoint* 		mEyeLeftp;
-	LLJoint* 		mEyeRightp;
-	LLJoint* 		mHipLeftp;
-	LLJoint* 		mHipRightp;
-	LLJoint* 		mKneeLeftp;
-	LLJoint* 		mKneeRightp;
-	LLJoint* 		mAnkleLeftp;
-	LLJoint* 		mAnkleRightp;
-	LLJoint* 		mFootLeftp;
-	LLJoint* 		mFootRightp;
-	LLJoint* 		mWristLeftp;
-	LLJoint* 		mWristRightp;
-
-	//--------------------------------------------------------------------
-	// XML parse tree
-	//--------------------------------------------------------------------
-private:
-	static LLXmlTree 	sXMLTree; // avatar config file
-	static LLXmlTree 	sSkeletonXMLTree; // avatar skeleton file
 
 /**                    Skeleton
  **                                                                            **
@@ -483,9 +407,15 @@ private:
 	// Morph masks
 	//--------------------------------------------------------------------
 public:
+	/*virtual*/ void	applyMorphMask(U8* tex_data, S32 width, S32 height, S32 num_components, LLAvatarAppearanceDefines::EBakedTextureIndex index = LLAvatarAppearanceDefines::BAKED_NUM_INDICES);
 	BOOL 		morphMaskNeedsUpdate(LLAvatarAppearanceDefines::EBakedTextureIndex index = LLAvatarAppearanceDefines::BAKED_NUM_INDICES);
-	virtual void 		addMaskedMorph(LLAvatarAppearanceDefines::EBakedTextureIndex index, LLVisualParam* morph_target, BOOL invert, std::string layer);
-	void 		applyMorphMask(U8* tex_data, S32 width, S32 height, S32 num_components, LLAvatarAppearanceDefines::EBakedTextureIndex index = LLAvatarAppearanceDefines::BAKED_NUM_INDICES);
+
+	
+	//--------------------------------------------------------------------
+	// Global colors
+	//--------------------------------------------------------------------
+public:
+	/*virtual*/void onGlobalColorChanged(const LLTexGlobalColor* global_color, BOOL upload_bake);
 
 	//--------------------------------------------------------------------
 	// Visibility
@@ -571,7 +501,7 @@ public:
 	virtual LLViewerTexture::EBoostLevel 	getAvatarBoostLevel() const { return LLGLTexture::BOOST_AVATAR; }
 	virtual LLViewerTexture::EBoostLevel 	getAvatarBakedBoostLevel() const { return LLGLTexture::BOOST_AVATAR_BAKED; }
 	virtual S32 						getTexImageSize() const;
-	virtual S32 						getTexImageArea() const { return getTexImageSize()*getTexImageSize(); }
+	/*virtual*/ S32						getTexImageArea() const { return getTexImageSize()*getTexImageSize(); }
 
 /**                    Rendering
  **                                                                            **
@@ -599,6 +529,7 @@ public:
 	// Baked textures
 	//--------------------------------------------------------------------
 public:
+	/*virtual*/ LLTexLayerSet*	createTexLayerSet(); // Return LLViewerTexLayerSet
 	void			releaseComponentTextures(); // ! BACKWARDS COMPATIBILITY !
 protected:
 	static void		onBakedTextureMasksLoaded(BOOL success, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata);
@@ -608,23 +539,7 @@ protected:
 	void			useBakedTexture(const LLUUID& id);
 	LLViewerTexLayerSet*  getTexLayerSet(const U32 index) const { return dynamic_cast<LLViewerTexLayerSet*>(mBakedTextureDatas[index].mTexLayerSet);	}
 
-	LLTexLayerSet*	createTexLayerSet();
-	
-	typedef std::deque<LLMaskedMorph *> 	morph_list_t;
-	struct BakedTextureData
-	{
-		LLUUID								mLastTextureID;
-		LLTexLayerSet* 						mTexLayerSet; // Only exists for self
-		bool								mIsLoaded;
-		bool								mIsUsed;
-		LLAvatarAppearanceDefines::ETextureIndex 	mTextureIndex;
-		U32									mMaskTexName;
-		// Stores pointers to the joint meshes that this baked texture deals with
-		avatar_joint_mesh_list_t 			mJointMeshes;  // std::vector<LLAvatarJointMesh> mJoints[i]->mMeshParts
-		morph_list_t						mMaskedMorphs;
-	};
-	typedef std::vector<BakedTextureData> 	bakedtexturedata_vec_t;
-	bakedtexturedata_vec_t 					mBakedTextureDatas;
+
 	LLLoadedCallbackEntry::source_callback_list_t mCallbackTextureList ; 
 	BOOL mLoadedCallbacksPaused;
 	//--------------------------------------------------------------------
@@ -673,8 +588,6 @@ public:
 private:
 	static const LLAvatarAppearanceDefines::LLAvatarAppearanceDictionary *getDictionary() { return sAvatarDictionary; }
 	static LLAvatarAppearanceDefines::LLAvatarAppearanceDictionary* sAvatarDictionary;
-	static LLAvatarSkeletonInfo* 					sAvatarSkeletonInfo;
-	static LLVOAvatarXmlInfo* 						sAvatarXmlInfo;
 
 	//--------------------------------------------------------------------
 	// Messaging
@@ -695,22 +608,18 @@ private:
  **/
 
 public:
-	virtual void 			updateMeshTextures();
+	virtual void 	updateMeshTextures();
 	void 			updateSexDependentLayerSets(BOOL upload_bake);
-	virtual void 			dirtyMesh(); // Dirty the avatar mesh
+	virtual void	dirtyMesh(); // Dirty the avatar mesh
 	void 			updateMeshData();
 protected:
 	void 			releaseMeshData();
-	virtual void 	restoreMeshData();
+	virtual void restoreMeshData();
 private:
-	virtual void 			dirtyMesh(S32 priority); // Dirty the avatar mesh, with priority
+	virtual void	dirtyMesh(S32 priority); // Dirty the avatar mesh, with priority
 	LLViewerJoint*	getViewerJoint(S32 idx);
 	S32 			mDirtyMesh; // 0 -- not dirty, 1 -- morphed, 2 -- LOD
 	BOOL			mMeshTexturesDirty;
-
-	typedef std::multimap<std::string, LLPolyMesh*> polymesh_map_t;
-	polymesh_map_t 									mPolyMeshes;
-	avatar_joint_list_t 					mMeshLOD;
 
 	//--------------------------------------------------------------------
 	// Destroy invisible mesh
@@ -732,7 +641,7 @@ public:
 	void 			processAvatarAppearance(LLMessageSystem* mesgsys);
 	void 			hideSkirt();
 	void			startAppearanceAnimation();
-	virtual LLPolyMesh*		getMesh(LLPolyMeshSharedData* shared_data);
+	/*virtual*/ void bodySizeChanged();
 	
 	//--------------------------------------------------------------------
 	// Appearance morphing
@@ -743,30 +652,6 @@ private:
 	BOOL			mAppearanceAnimating;
 	LLFrameTimer	mAppearanceMorphTimer;
 	F32				mLastAppearanceBlendTime;
-
-public:
-	typedef std::map<S32, std::string> lod_mesh_map_t;
-	typedef std::map<std::string, lod_mesh_map_t> mesh_info_t;
-
-	static void getMeshInfo(mesh_info_t* mesh_info);
-
-	//--------------------------------------------------------------------
-	// Clothing colors (convenience functions to access visual parameters)
-	//--------------------------------------------------------------------
-public:
-	virtual void			setClothesColor(LLAvatarAppearanceDefines::ETextureIndex te, const LLColor4& new_color, BOOL upload_bake);
-	virtual LLColor4		getClothesColor(LLAvatarAppearanceDefines::ETextureIndex te);
-
-	//--------------------------------------------------------------------
-	// Global colors
-	//--------------------------------------------------------------------
-public:
-	virtual LLColor4		getGlobalColor(const std::string& color_name ) const;
-	virtual void			onGlobalColorChanged(const LLTexGlobalColor* global_color, BOOL upload_bake);
-private:
-	LLTexGlobalColor* mTexSkinColor;
-	LLTexGlobalColor* mTexHairColor;
-	LLTexGlobalColor* mTexEyeColor;
 
 	//--------------------------------------------------------------------
 	// Visibility
@@ -785,8 +670,6 @@ public:
  **                    WEARABLES
  **/
 
-
-	
 	//--------------------------------------------------------------------
 	// Attachments
 	//--------------------------------------------------------------------
@@ -796,8 +679,7 @@ public:
 	virtual BOOL 		detachObject(LLViewerObject *viewer_object);
 	void				cleanupAttachedMesh( LLViewerObject* pVO );
 	static LLVOAvatar*  findAvatarFromAttachment(LLViewerObject* obj);
-	virtual BOOL			isWearingWearableType(LLWearableType::EType type ) const;
-	virtual LLTexLayerSet* getAvatarLayerSet(LLAvatarAppearanceDefines::EBakedTextureIndex baked_index) const;
+	/*virtual*/ BOOL	isWearingWearableType(LLWearableType::EType type ) const;
 protected:
 	LLViewerJointAttachment* getTargetAttachmentPoint(LLViewerObject* viewer_object);
 	void 				lazyAttach();
@@ -810,7 +692,7 @@ public:
 	S32 				getAttachmentCount(); // Warning: order(N) not order(1) // currently used only by -self
 	typedef std::map<S32, LLViewerJointAttachment*> attachment_map_t;
 	attachment_map_t 								mAttachmentPoints;
-	std::vector<LLPointer<LLViewerObject> > 		mPendingAttachment;	
+	std::vector<LLPointer<LLViewerObject> > 		mPendingAttachment;
 
 	//--------------------------------------------------------------------
 	// HUD functions
@@ -916,18 +798,6 @@ private:
 	F32			mSpeed; // misc. animation repeated state
 
 	//--------------------------------------------------------------------
-	// Collision volumes
-	//--------------------------------------------------------------------
-public:
-  	S32			mNumCollisionVolumes;
-	LLAvatarJointCollisionVolume* mCollisionVolumes;
-	virtual S32 getNumCollisionVolumes() { return mNumCollisionVolumes; }
-	virtual LLAvatarJointCollisionVolume* getCollisionVolume(S32 i) { return &mCollisionVolumes[i]; }
-
-protected:
-	virtual BOOL		allocateCollisionVolumes(U32 num);
-
-	//--------------------------------------------------------------------
 	// Dimensions
 	//--------------------------------------------------------------------
 public:
@@ -936,7 +806,6 @@ public:
 	void 		resolveRayCollisionAgent(const LLVector3d start_pt, const LLVector3d end_pt, LLVector3d &out_pos, LLVector3 &out_norm);
 	void 		slamPosition(); // Slam position to transmitted position (for teleport);
 protected:
-	virtual void computeBodySize();
 
 	//--------------------------------------------------------------------
 	// Material being stepped on
@@ -980,9 +849,9 @@ private:
  **/
 
 public:
-	virtual BOOL 	setParent(LLViewerObject* parent);
-	virtual void 	addChild(LLViewerObject *childp);
-	virtual void 	removeChild(LLViewerObject *childp);
+	/*virtual*/ BOOL 	setParent(LLViewerObject* parent);
+	/*virtual*/ void 	addChild(LLViewerObject *childp);
+	/*virtual*/ void 	removeChild(LLViewerObject *childp);
 
 	//--------------------------------------------------------------------
 	// Sitting
@@ -1006,7 +875,7 @@ private:
  **/
 
 public:
-	std::string		getFullname() const; // Returns "FirstName LastName"
+	/*virtual*/ std::string		getFullname() const; // Returns "FirstName LastName"
 	std::string		avString() const; // Frequently used string in log messages "Avatar '<full name'"
 protected:
 	static void		getAnimLabels(LLDynamicArray<std::string>* labels);
@@ -1129,101 +998,6 @@ protected:
 
 protected: // Shared with LLVOAvatarSelf
 
-	struct LLVOAvatarXmlInfo
-	{
-		LLVOAvatarXmlInfo();
-		~LLVOAvatarXmlInfo();
-
-		BOOL 	parseXmlSkeletonNode(LLXmlTreeNode* root);
-		BOOL 	parseXmlMeshNodes(LLXmlTreeNode* root);
-		BOOL 	parseXmlColorNodes(LLXmlTreeNode* root);
-		BOOL 	parseXmlLayerNodes(LLXmlTreeNode* root);
-		BOOL 	parseXmlDriverNodes(LLXmlTreeNode* root);
-		BOOL	parseXmlMorphNodes(LLXmlTreeNode* root);
-
-		struct LLVOAvatarMeshInfo
-		{
-			typedef std::pair<LLViewerVisualParamInfo*,BOOL> morph_info_pair_t;
-			typedef std::vector<morph_info_pair_t> morph_info_list_t;
-
-			LLVOAvatarMeshInfo() : mLOD(0), mMinPixelArea(.1f) {}
-			~LLVOAvatarMeshInfo()
-			{
-				morph_info_list_t::iterator iter;
-				for (iter = mPolyMorphTargetInfoList.begin(); iter != mPolyMorphTargetInfoList.end(); iter++)
-				{
-					delete iter->first;
-				}
-				mPolyMorphTargetInfoList.clear();
-			}
-
-			std::string mType;
-			S32			mLOD;
-			std::string	mMeshFileName;
-			std::string	mReferenceMeshName;
-			F32			mMinPixelArea;
-			morph_info_list_t mPolyMorphTargetInfoList;
-		};
-		typedef std::vector<LLVOAvatarMeshInfo*> mesh_info_list_t;
-		mesh_info_list_t mMeshInfoList;
-
-		typedef std::vector<LLViewerVisualParamInfo*> skeletal_distortion_info_list_t;
-		skeletal_distortion_info_list_t mSkeletalDistortionInfoList;
-	
-		struct LLVOAvatarAttachmentInfo
-		{
-			LLVOAvatarAttachmentInfo()
-				: mGroup(-1), mAttachmentID(-1), mPieMenuSlice(-1), mVisibleFirstPerson(FALSE),
-				  mIsHUDAttachment(FALSE), mHasPosition(FALSE), mHasRotation(FALSE) {}
-			std::string mName;
-			std::string mJointName;
-			LLVector3 mPosition;
-			LLVector3 mRotationEuler;
-			S32 mGroup;
-			S32 mAttachmentID;
-			S32 mPieMenuSlice;
-			BOOL mVisibleFirstPerson;
-			BOOL mIsHUDAttachment;
-			BOOL mHasPosition;
-			BOOL mHasRotation;
-		};
-		typedef std::vector<LLVOAvatarAttachmentInfo*> attachment_info_list_t;
-		attachment_info_list_t mAttachmentInfoList;
-	
-		LLTexGlobalColorInfo *mTexSkinColorInfo;
-		LLTexGlobalColorInfo *mTexHairColorInfo;
-		LLTexGlobalColorInfo *mTexEyeColorInfo;
-
-		typedef std::vector<LLTexLayerSetInfo*> layer_info_list_t;
-		layer_info_list_t mLayerInfoList;
-
-		typedef std::vector<LLDriverParamInfo*> driver_info_list_t;
-		driver_info_list_t mDriverInfoList;
-
-		struct LLVOAvatarMorphInfo
-		{
-			LLVOAvatarMorphInfo()
-				: mInvert(FALSE) {}
-			std::string mName;
-			std::string mRegion;
-			std::string mLayer;
-			BOOL mInvert;
-		};
-
-		typedef std::vector<LLVOAvatarMorphInfo*> morph_info_list_t;
-		morph_info_list_t	mMorphMaskInfoList;
-	};
-
-
-	class LLMaskedMorph
-	{
-	public:
-		LLMaskedMorph(LLVisualParam *morph_target, BOOL invert, std::string layer);
-	
-		LLVisualParam	*mMorphTarget;
-		BOOL				mInvert;
-		std::string			mLayer;
-	};
 
 /**                    Support classes
  **                                                                            **
