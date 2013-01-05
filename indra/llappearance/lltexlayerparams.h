@@ -38,15 +38,11 @@ class LLTexLayer;
 class LLTexLayerInterface;
 class LLGLTexture;
 class LLWearable;
-class LLTexLayerSet;
 
-class LLTexLayerInterfaceTMP
-{
-public:
-	virtual const LLTexLayerSet* const getTexLayerSet() const = 0;
-	virtual LLTexLayerSet* const 	getTexLayerSet() = 0;
-	virtual void						invalidateMorphMasks() = 0;
-};
+//Temporary externs
+void gl_rect_2d_simple_tex( S32 width, S32 height );
+void gl_rect_2d_simple( S32 width, S32 height );
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // LLTexLayerParam
 // 
@@ -54,13 +50,13 @@ public:
 class LLTexLayerParam : public LLViewerVisualParam
 {
 public: 
-	LLTexLayerParam(LLTexLayerInterfaceTMP *layer);
+	LLTexLayerParam(LLTexLayerInterface *layer);
 	LLTexLayerParam(LLAvatarAppearance *appearance);
 	/*virtual*/ BOOL setInfo(LLViewerVisualParamInfo *info, BOOL add_to_appearance);
 	/*virtual*/ LLViewerVisualParam* cloneParam(LLWearable* wearable) const = 0;
 
 protected:
-	LLTexLayerInterfaceTMP*	mTexLayer;
+	LLTexLayerInterface*	mTexLayer;
 	LLAvatarAppearance*		mAvatarAppearance;
 };
 
@@ -71,7 +67,7 @@ protected:
 class LLTexLayerParamAlpha : public LLTexLayerParam
 {
 public:
-	LLTexLayerParamAlpha( LLTexLayerInterfaceTMP* layer );
+	LLTexLayerParamAlpha( LLTexLayerInterface* layer );
 	LLTexLayerParamAlpha( LLAvatarAppearance* appearance );
 	/*virtual*/ ~LLTexLayerParamAlpha();
 
@@ -159,7 +155,7 @@ public:
 		OP_COUNT = 3 // Number of operations
 	};
 
-	LLTexLayerParamColor( LLTexLayerInterfaceTMP* layer );
+	LLTexLayerParamColor( LLTexLayerInterface* layer );
 	LLTexLayerParamColor( LLAvatarAppearance* appearance );
 	/* virtual */ ~LLTexLayerParamColor();
 

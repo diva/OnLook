@@ -544,7 +544,7 @@ void LLFloaterCustomize::onBtnExport_continued(AIFilePicker* filepicker)
 	for( S32 i=0; i < LLWearableType::WT_COUNT; i++ )
 	{
 		is_modifiable = FALSE;
-		LLWearable* old_wearable = gAgentWearables.getWearable((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
+		LLViewerWearable* old_wearable = gAgentWearables.getViewerWearable((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
 		if( old_wearable )
 		{
 			item = gInventory.getItem(old_wearable->getItemID());
@@ -568,7 +568,7 @@ void LLFloaterCustomize::onBtnExport_continued(AIFilePicker* filepicker)
 	for( S32 i=0; i < LLWearableType::WT_COUNT; i++ )
 	{
 		is_modifiable = FALSE;
-		LLWearable* old_wearable = gAgentWearables.getWearable((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
+		LLViewerWearable* old_wearable = gAgentWearables.getViewerWearable((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
 		if( old_wearable )
 		{
 			item = gInventory.getItem(old_wearable->getItemID());
@@ -725,7 +725,7 @@ BOOL LLFloaterCustomize::isDirty() const
 	LLWearableType::EType cur = getCurrentWearableType();
 	for(U32 i = 0; i < gAgentWearables.getWearableCount(cur); ++i)
 	{
-		LLWearable* wearable = gAgentWearables.getWearable(cur,i);
+		LLViewerWearable* wearable = gAgentWearables.getViewerWearable(cur,i);
 		if(wearable && wearable->isDirty())
 			return TRUE;
 	}
@@ -859,7 +859,7 @@ bool LLFloaterCustomize::onSaveDialog(const LLSD& notification, const LLSD& resp
 
 	for(U32 i = 0;i < gAgentWearables.getWearableCount(cur);++i)
 	{
-		LLWearable* wearable = gAgentWearables.getWearable(cur,i);
+		LLViewerWearable* wearable = gAgentWearables.getViewerWearable(cur,i);
 		if(wearable && wearable->isDirty())
 		{
 			switch( option )
@@ -938,7 +938,7 @@ void LLFloaterCustomize::updateInventoryUI()
 		panel = mWearablePanelList[i];
 		if(panel)
 		{
-			LLWearable* wearable = panel->getWearable();
+			LLViewerWearable* wearable = panel->getWearable();
 			if(wearable)
 				item = gInventory.getItem(wearable->getItemID());
 		}

@@ -30,7 +30,7 @@
 #include "llcharacter.h"
 #include "llavatarappearancedefines.h"
 #include "llavatarjointmesh.h"
-//#include "lldriverparam.h"
+#include "lldriverparam.h"
 #include "lltexlayer.h"
 #include "llviewervisualparam.h"
 #include "llxmltree.h"
@@ -61,12 +61,12 @@ protected:
  **                                                                            **
  **                    INITIALIZATION
  **/
-public:
+private:
 	// Hide default constructor.
 	LLAvatarAppearance() {}
 
-//public:
-//	LLAvatarAppearance(LLWearableData* wearable_data) {};
+public:
+	LLAvatarAppearance(LLWearableData* wearable_data) : mIsDummy(FALSE), mWearableData(wearable_data) {};
 	virtual ~LLAvatarAppearance() {}
 
 	virtual BOOL		loadSkeletonNode() = 0;
@@ -209,7 +209,7 @@ protected:
  **                    RENDERING
  **/
 public:
-	//BOOL		mIsDummy; // for special views
+	BOOL		mIsDummy; // for special views
 
 	//--------------------------------------------------------------------
 	// Morph masks
@@ -281,7 +281,7 @@ protected:
 	// Visibility
 	//--------------------------------------------------------------------
 public:
-	//static LLColor4 getDummyColor();
+	static LLColor4 getDummyColor();
 /**                    Appearance
  **                                                                            **
  *******************************************************************************/
@@ -292,13 +292,13 @@ public:
  **/
 
 public:
-	//LLWearableData*			getWearableData() { return mWearableData; }
-	//const LLWearableData*	getWearableData() const { return mWearableData; }
+	LLWearableData*			getWearableData() { return mWearableData; }
+	const LLWearableData*	getWearableData() const { return mWearableData; }
 	virtual BOOL isTextureDefined(LLAvatarAppearanceDefines::ETextureIndex te, U32 index = 0 ) const = 0;
 	virtual BOOL			isWearingWearableType(LLWearableType::EType type ) const = 0;
 
 private:
-	//LLWearableData* mWearableData;
+	LLWearableData* mWearableData;
 
 /********************************************************************************
  **                                                                            **

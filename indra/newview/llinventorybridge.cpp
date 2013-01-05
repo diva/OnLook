@@ -6100,7 +6100,7 @@ void LLWearableBridge::wearAddOnAvatar()
 }
 
 // static
-//void LLWearableBridge::onWearOnAvatarArrived( LLWearable* wearable, void* userdata )
+//void LLWearableBridge::onWearOnAvatarArrived( LLViewerWearable* wearable, void* userdata )
 //{
 //	LLUUID* item_id = (LLUUID*) userdata;
 //	if(wearable)
@@ -6126,7 +6126,7 @@ void LLWearableBridge::wearAddOnAvatar()
 
 // static
 // BAP remove the "add" code path once everything is fully COF-ified.
-//void LLWearableBridge::onWearAddOnAvatarArrived( LLWearable* wearable, void* userdata )
+//void LLWearableBridge::onWearAddOnAvatarArrived( LLViewerWearable* wearable, void* userdata )
 //{
 //	LLUUID* item_id = (LLUUID*) userdata;
 //	if(wearable)
@@ -6207,7 +6207,7 @@ BOOL LLWearableBridge::canRemoveFromAvatar(void* user_data)
 //}
 
 // static
-//void LLWearableBridge::onRemoveFromAvatarArrived(LLWearable* wearable,
+//void LLWearableBridge::onRemoveFromAvatarArrived(LLViewerWearable* wearable,
 //												 void* userdata)
 //{
 //	OnRemoveStruct *on_remove_struct = (OnRemoveStruct*) userdata;

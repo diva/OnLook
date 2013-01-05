@@ -1,6 +1,6 @@
 /** 
- * @file llvoavatar.h
- * @brief Declaration of LLVOAvatar class which is a derivation fo
+ * @file llavatarappearancedefines.h
+ * @brief Various LLAvatarAppearance related definitions
  * LLViewerObject
  *
  * $LicenseInfo:firstyear=2001&license=viewerlgpl$
@@ -42,7 +42,7 @@ extern const S32 SCRATCH_TEX_HEIGHT;
 extern const S32 IMPOSTOR_PERIOD;
 
 //--------------------------------------------------------------------
-// texture entry assignment
+// Enums
 //--------------------------------------------------------------------
 enum ETextureIndex
 {
@@ -55,9 +55,9 @@ enum ETextureIndex
 	TEX_UPPER_BODYPAINT,
 	TEX_LOWER_BODYPAINT,
 	TEX_LOWER_SHOES,
-	TEX_HEAD_BAKED,			// Pre-composited
-	TEX_UPPER_BAKED,		// Pre-composited
-	TEX_LOWER_BAKED,		// Pre-composited
+	TEX_HEAD_BAKED,		// Pre-composited
+	TEX_UPPER_BAKED,	// Pre-composited
+	TEX_LOWER_BAKED,	// Pre-composited
 	TEX_EYES_BAKED,		// Pre-composited
 	TEX_LOWER_SOCKS,
 	TEX_UPPER_JACKET,
@@ -66,7 +66,7 @@ enum ETextureIndex
 	TEX_UPPER_UNDERSHIRT,
 	TEX_LOWER_UNDERPANTS,
 	TEX_SKIRT,
-	TEX_SKIRT_BAKED,		// Pre-composited
+	TEX_SKIRT_BAKED,	// Pre-composited
 	TEX_HAIR_BAKED,     // Pre-composited
 	TEX_LOWER_ALPHA,
 	TEX_UPPER_ALPHA,
@@ -77,7 +77,7 @@ enum ETextureIndex
 	TEX_UPPER_TATTOO,
 	TEX_LOWER_TATTOO,
 	TEX_NUM_INDICES
-};
+}; 
 
 enum EBakedTextureIndex
 {
@@ -137,19 +137,19 @@ private:
 public:
 	struct TextureEntry : public LLDictionaryEntry
 	{
-		TextureEntry(const std::string &name, 
-							   bool is_local_texture, 
-							   EBakedTextureIndex baked_texture_index = BAKED_NUM_INDICES,
-							   const std::string &default_image_name = "",
+		TextureEntry(const std::string &name, // this must match the xml name used by LLTexLayerInfo::parseXml
+					 bool is_local_texture, 
+					 EBakedTextureIndex baked_texture_index = BAKED_NUM_INDICES,
+					 const std::string& default_image_name = "",
 					 LLWearableType::EType wearable_type = LLWearableType::WT_INVALID);
-		const std::string mDefaultImageName;
+		const std::string 	mDefaultImageName;
 		const LLWearableType::EType mWearableType;
 		// It's either a local texture xor baked
-		BOOL mIsLocalTexture;
-		BOOL mIsBakedTexture;
+		BOOL 				mIsLocalTexture;
+		BOOL 				mIsBakedTexture;
 		// If it's a local texture, it may be used by a baked texture
-		BOOL mIsUsedByBakedTexture;
-		EBakedTextureIndex mBakedTextureIndex;
+		BOOL 				mIsUsedByBakedTexture;
+		EBakedTextureIndex 	mBakedTextureIndex;
 	};
 
 	struct Textures : public LLDictionary<ETextureIndex, TextureEntry>
@@ -200,7 +200,7 @@ public:
 		const LLUUID 		mWearablesHashID;
 		wearables_vec_t 	mWearables;
 	};
-	
+
 	struct BakedTextures: public LLDictionary<EBakedTextureIndex, BakedEntry>
 	{
 		BakedTextures();

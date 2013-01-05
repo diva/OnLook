@@ -33,14 +33,12 @@
 #include "llquantize.h"
 #include "lltexlayer.h"
 #include "lltexturemanagerbridge.h"
-//#include "llui.h"
-//#include "llwearable.h"
-#include "llgltexture.h"
+#include "llwearable.h"
 
 //-----------------------------------------------------------------------------
 // LLTexLayerParam
 //-----------------------------------------------------------------------------
-LLTexLayerParam::LLTexLayerParam(LLTexLayerInterfaceTMP *layer) :
+LLTexLayerParam::LLTexLayerParam(LLTexLayerInterface *layer) :
 	mTexLayer(layer),
 	mAvatarAppearance(NULL)
 {
@@ -68,6 +66,7 @@ BOOL LLTexLayerParam::setInfo(LLViewerVisualParamInfo *info, BOOL add_to_appeara
 	if (add_to_appearance)
 	{
 		mAvatarAppearance->addVisualParam( this);
+		this->setParamLocation(mAvatarAppearance->isSelf() ? LOC_AV_SELF : LOC_AV_OTHER);
 	}
 
 	return TRUE;
@@ -111,7 +110,7 @@ void LLTexLayerParamAlpha::getCacheByteCount(S32* gl_bytes)
 	}
 }
 
-LLTexLayerParamAlpha::LLTexLayerParamAlpha(LLTexLayerInterfaceTMP* layer) :
+LLTexLayerParamAlpha::LLTexLayerParamAlpha(LLTexLayerInterface* layer) :
 	LLTexLayerParam(layer),
 	mCachedProcessedTexture(NULL),
 	mNeedsCreateTexture(FALSE),
@@ -240,8 +239,7 @@ BOOL LLTexLayerParamAlpha::getSkip() const
 
 	return FALSE;
 }
-void gl_rect_2d_simple_tex( S32 width, S32 height );
-void gl_rect_2d_simple( S32 width, S32 height );
+
 
 static LLFastTimer::DeclareTimer FTM_TEX_LAYER_PARAM_ALPHA("alpha render");
 BOOL LLTexLayerParamAlpha::render(S32 x, S32 y, S32 width, S32 height)
@@ -403,7 +401,7 @@ BOOL LLTexLayerParamAlphaInfo::parseXml(LLXmlTreeNode* node)
 
 
 
-LLTexLayerParamColor::LLTexLayerParamColor(LLTexLayerInterfaceTMP* layer) :
+LLTexLayerParamColor::LLTexLayerParamColor(LLTexLayerInterface* layer) :
 	LLTexLayerParam(layer),
 	mAvgDistortionVec(1.f, 1.f, 1.f)
 {

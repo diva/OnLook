@@ -31,8 +31,7 @@
 
 #include "llviewervisualparam.h"
 #include "llxmltree.h"
-//#include "llui.h"
-#include "llwearabletype.h"
+#include "llwearable.h"
 
 //-----------------------------------------------------------------------------
 // LLViewerVisualParamInfo()

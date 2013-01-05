@@ -1,8 +1,8 @@
 /** 
- * @file llwearable.h
- * @brief LLWearable class header file
+ * @file llviewerwearable.h
+ * @brief LLViewerWearable class header file
  *
- * $LicenseInfo:firstyear=2002&license=viewerlgpl$
+ * $LicenseInfo:firstyear=2012&license=viewerlgpl$
  * Second Life Viewer Source Code
  * Copyright (C) 2010, Linden Research, Inc.
  * 
@@ -24,8 +24,8 @@
  * $/LicenseInfo$
  */
 
-#ifndef LL_LLWEARABLE_H
-#define LL_LLWEARABLE_H
+#ifndef LL_VIEWER_WEARABLE_H
+#define LL_VIEWER_WEARABLE_H
 
 #include "lluuid.h"
 #include "llstring.h"
@@ -35,6 +35,7 @@
 #include "llwearabletype.h"
 #include "llfile.h"
 #include "lllocaltextureobject.h"
+#include "llwearable.h"
 #include "llavatarappearancedefines.h"
 
 class LLViewerInventoryItem;
@@ -42,7 +43,7 @@ class LLVisualParam;
 class LLTexGlobalColorInfo;
 class LLTexGlobalColor;
 
-class LLWearable
+class LLViewerWearable : public LLWearable
 {
 	friend class LLWearableList;
 
@@ -51,10 +52,10 @@ class LLWearable
 	//--------------------------------------------------------------------
 private:
 	// Private constructors used by LLWearableList
-	LLWearable(const LLTransactionID& transactionID);
-	LLWearable(const LLAssetID& assetID);
+	LLViewerWearable(const LLTransactionID& transactionID);
+	LLViewerWearable(const LLAssetID& assetID);
 public:
-	virtual ~LLWearable();
+	virtual ~LLViewerWearable();
 
 	//--------------------------------------------------------------------
 	// Accessors
@@ -91,8 +92,8 @@ public:
 	BOOL				isDirty() const;
 	BOOL				isOldVersion() const;
 
-	void				writeToAvatar();
-	void				removeFromAvatar( BOOL upload_bake )	{ LLWearable::removeFromAvatar( mType, upload_bake ); }
+	/*virtual*/ void	writeToAvatar(LLAvatarAppearance* avatarp);
+	void				removeFromAvatar( BOOL upload_bake )	{ LLViewerWearable::removeFromAvatar( mType, upload_bake ); }
 	static void			removeFromAvatar( LLWearableType::EType type, BOOL upload_bake ); 
 
 	BOOL				exportFile(LLFILE* file) const;
@@ -104,11 +105,11 @@ public:
 	void				saveNewAsset() const;
 	static void			onSaveNewAssetComplete( const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status );
 
-	void				copyDataFrom(const LLWearable* src);
+	void				copyDataFrom(const LLViewerWearable* src);
 
-	static void			setCurrentDefinitionVersion( S32 version ) { LLWearable::sCurrentDefinitionVersion = version; }
+	static void			setCurrentDefinitionVersion( S32 version ) { LLViewerWearable::sCurrentDefinitionVersion = version; }
 
-	friend std::ostream& operator<<(std::ostream &s, const LLWearable &w);
+	friend std::ostream& operator<<(std::ostream &s, const LLViewerWearable &w);
 	void				setItemID(const LLUUID& item_id);
 
 	LLLocalTextureObject* getLocalTextureObject(S32 index);
@@ -128,17 +129,18 @@ public:
 
 	void				revertValues();
 	void				saveValues();
-	void				pullCrossWearableValues();		
 
 	BOOL				isOnTop() const;
 
 	// Something happened that requires the wearable's label to be updated (e.g. worn/unworn).
-	void				setLabelUpdated() const;
+	void				setUpdated() const;
 
 	// the wearable was worn. make sure the name of the wearable object matches the LLViewerInventoryItem,
 	// not the wearable asset itself.
 	void				refreshName();
 
+	// Update the baked texture hash.
+	/*virtual*/void		addToBakedTextureHash(LLMD5& hash) const;
 private:
 	typedef std::map<S32, LLLocalTextureObject*> te_map_t;
 	typedef std::map<S32, LLVisualParam *>    visual_param_index_map_t;
@@ -168,4 +170,5 @@ private:
 	LLUUID				mItemID;  // ID of the inventory item in the agent's inventory	
 };
 
-#endif  // LL_LLWEARABLE_H
+
+#endif  // LL_VIEWER_WEARABLE_H

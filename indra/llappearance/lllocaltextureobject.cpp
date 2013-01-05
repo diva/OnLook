@@ -23,13 +23,14 @@
  * $/LicenseInfo$
  */
 
-#include "llviewerprecompiledheaders.h"
+#include "linden_common.h"
 
 #include "lllocaltextureobject.h"
 
-#include "llviewertexlayer.h"
-#include "llviewertexture.h"
-#include "lltextureentry.h"
+#include "llimage.h"
+#include "llrender.h"
+#include "lltexlayer.h"
+#include "llgltexture.h"
 #include "lluuid.h"
 #include "llwearable.h"
 
@@ -41,7 +42,7 @@ LLLocalTextureObject::LLLocalTextureObject() :
 	mImage = NULL;
 }
 
-LLLocalTextureObject::LLLocalTextureObject(LLViewerFetchedTexture* image, const LLUUID& id) :
+LLLocalTextureObject::LLLocalTextureObject(LLGLTexture* image, const LLUUID& id) :
 	mIsBakedReady(FALSE),
 	mDiscard(MAX_DISCARD_LEVEL+1)
 {
@@ -77,7 +78,7 @@ LLLocalTextureObject::~LLLocalTextureObject()
 {
 }
 
-LLViewerFetchedTexture* LLLocalTextureObject::getImage() const
+LLGLTexture* LLLocalTextureObject::getImage() const
 {
 	return mImage;
 }
@@ -126,7 +127,7 @@ BOOL LLLocalTextureObject::getBakedReady() const
 	return mIsBakedReady;
 }
 
-void LLLocalTextureObject::setImage(LLViewerFetchedTexture* new_image)
+void LLLocalTextureObject::setImage(LLGLTexture* new_image)
 {
 	mImage = new_image;
 }

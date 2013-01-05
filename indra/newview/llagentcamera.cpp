@@ -1114,8 +1114,8 @@ void LLAgentCamera::updateLookAt(const S32 mouse_x, const S32 mouse_y)
 
 	if (!isAgentAvatarValid()) return;
 
-	LLQuaternion av_inv_rot = ~gAgentAvatarp->mRoot.getWorldRotation();
-	LLVector3 root_at = LLVector3::x_axis * gAgentAvatarp->mRoot.getWorldRotation();
+	LLQuaternion av_inv_rot = ~gAgentAvatarp->mRoot->getWorldRotation();
+	LLVector3 root_at = LLVector3::x_axis * gAgentAvatarp->mRoot->getWorldRotation();
 
 	if 	((gViewerWindow->getMouseVelocityStat()->getCurrent() < 0.01f) &&
 		 (root_at * last_at_axis > 0.95f))
@@ -1477,7 +1477,7 @@ void LLAgentCamera::updateCamera()
 			LLVector3(0.08f, 0.f, 0.05f) * gAgentAvatarp->mHeadp->getWorldRotation() + 
 			LLVector3(0.1f, 0.f, 0.f) * gAgentAvatarp->mPelvisp->getWorldRotation();
 		LLVector3 diff = mCameraPositionAgent - head_pos;
-		diff = diff * ~gAgentAvatarp->mRoot.getWorldRotation();
+		diff = diff * ~gAgentAvatarp->mRoot->getWorldRotation();
 
 		LLJoint* torso_joint = gAgentAvatarp->mTorsop;
 		LLJoint* chest_joint = gAgentAvatarp->mChestp;
@@ -1501,7 +1501,7 @@ void LLAgentCamera::updateCamera()
 
 		gAgentAvatarp->mPelvisp->setPosition(gAgentAvatarp->mPelvisp->getPosition() + diff);
 
-		gAgentAvatarp->mRoot.updateWorldMatrixChildren();
+		gAgentAvatarp->mRoot->updateWorldMatrixChildren();
 
 		for (LLVOAvatar::attachment_map_t::iterator iter = gAgentAvatarp->mAttachmentPoints.begin(); 
 			 iter != gAgentAvatarp->mAttachmentPoints.end(); )
@@ -1762,7 +1762,7 @@ LLVector3d LLAgentCamera::calcCameraPositionTargetGlobal(BOOL *hit_limit)
 	F32			camera_land_height;
 	LLVector3d	frame_center_global = !isAgentAvatarValid() ? 
 		gAgent.getPositionGlobal() :
-		gAgent.getPosGlobalFromAgent(gAgentAvatarp->mRoot.getWorldPosition());
+		gAgent.getPosGlobalFromAgent(gAgentAvatarp->mRoot->getWorldPosition());
 	
 	BOOL		isConstrained = FALSE;
 	LLVector3d	head_offset;
@@ -2354,7 +2354,7 @@ void LLAgentCamera::changeCameraToThirdPerson(BOOL animate)
 //-----------------------------------------------------------------------------
 void LLAgentCamera::changeCameraToCustomizeAvatar()
 {
-	if (LLViewerJoystick::getInstance()->getOverrideCamera())
+	if (LLViewerJoystick::getInstance()->getOverrideCamera() || !isAgentAvatarValid())
 	{
 		return;
 	}

@@ -881,7 +881,7 @@ bool RlvHandler::redirectChatOrEmote(const std::string& strUTF8Text) const
 		if ( (getCompositeInfo(idItem, &strComposite, &pFolder)) && (cstrItemType != strComposite) )
 		{
 			LLUUID idCompositeItem;
-			if ((type = LLWearable::typeNameToType(strComposite)) != WT_INVALID)
+			if ((type = LLViewerWearable::typeNameToType(strComposite)) != WT_INVALID)
 			{
 				idCompositeItem = gAgent.getWearableItem(type);
 			}
@@ -931,7 +931,7 @@ bool RlvHandler::redirectChatOrEmote(const std::string& strUTF8Text) const
 				case LLAssetType::AT_BODYPART:
 				case LLAssetType::AT_CLOTHING:
 					{
-						LLWearable* pWearable = gAgent.getWearableFromWearableItem(pItem->getUUID());
+						LLViewerWearable* pWearable = gAgent.getWearableFromWearableItem(pItem->getUUID());
 						if ( (pWearable) && (!isRemovable(pWearable->getType())) )
 							return false;	// If one wearable in the folder is non-removeable then the entire folder should be
 					}

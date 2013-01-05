@@ -1,6 +1,6 @@
 /** 
- * @file llvoavatar.cpp
- * @brief Implementation of LLVOAvatar class which is a derivation fo LLViewerObject
+ * @file llavatarappearancedefines.cpp
+ * @brief Implementation of LLAvatarAppearanceDefines::LLAvatarAppearanceDictionary 
  *
  * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
@@ -35,7 +35,6 @@ using namespace LLAvatarAppearanceDefines;
 
 /*********************************************************************************
  * Edit this function to add/remove/change textures and mesh definitions for avatars.
- * If these are changed, they MUST be changed in floater_avatar_textures.xml as well!
  */
 
 LLAvatarAppearanceDictionary::Textures::Textures()
@@ -160,11 +159,11 @@ void LLAvatarAppearanceDictionary::createAssociations()
 		
 }
 
-LLAvatarAppearanceDictionary::TextureEntry::TextureEntry(const std::string &name, 
-																	 bool is_local_texture, 
-																	 EBakedTextureIndex baked_texture_index,
-																	 const std::string &default_image_name,
-																	 LLWearableType::EType wearable_type) :
+LLAvatarAppearanceDictionary::TextureEntry::TextureEntry(const std::string &name,
+												 bool is_local_texture, 
+												 EBakedTextureIndex baked_texture_index,
+												 const std::string &default_image_name,
+												 LLWearableType::EType wearable_type) :
 	LLDictionaryEntry(name),
 	mIsLocalTexture(is_local_texture),
 	mIsBakedTexture(!is_local_texture),
@@ -221,7 +220,7 @@ ETextureIndex LLAvatarAppearanceDictionary::bakedToLocalTextureIndex(EBakedTextu
 	return LLAvatarAppearanceDictionary::getInstance()->getBakedTexture(index)->mTextureIndex;
 }
 
-//static 
+// static
 EBakedTextureIndex LLAvatarAppearanceDictionary::findBakedByRegionName(std::string name)
 {
 	U8 index = 0;
@@ -266,3 +265,4 @@ LLWearableType::EType LLAvatarAppearanceDictionary::getTEWearableType(ETextureIn
 {
 	return getInstance()->getTexture(index)->mWearableType;
 }
+

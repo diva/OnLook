@@ -166,5 +166,7 @@ public:
 extern LLGLSLShader			gUIProgram;
 //output vec4(color.rgb,color.a*tex0[tc0].a)
 extern LLGLSLShader			gSolidColorProgram;
+//Alpha mask shader (declared here so llappearance can access properly)
+extern LLGLSLShader			gAlphaMaskProgram;
 
 #endif

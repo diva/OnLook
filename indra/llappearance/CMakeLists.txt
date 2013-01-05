@@ -28,11 +28,11 @@ include_directories(
     )
 
 set(llappearance_SOURCE_FILES
-    #llavatarappearance.cpp
+    llavatarappearance.cpp
     llavatarjoint.cpp
     llavatarjointmesh.cpp
-    #lldriverparam.cpp
-    #lllocaltextureobject.cpp
+    lldriverparam.cpp
+    lllocaltextureobject.cpp
     llpolyskeletaldistortion.cpp
     llpolymesh.cpp
     llpolymorph.cpp
@@ -41,7 +41,7 @@ set(llappearance_SOURCE_FILES
     lltexlayerparams.cpp
     lltexturemanagerbridge.cpp
     #llwearable.cpp
-    #llwearabledata.cpp
+    llwearabledata.cpp
     llwearabletype.cpp
     llviewervisualparam.cpp
     llavatarappearancedefines.cpp
@@ -53,9 +53,9 @@ set(llappearance_HEADER_FILES
     llavatarappearance.h
     llavatarjoint.h
     llavatarjointmesh.h
-    #lldriverparam.h
+    lldriverparam.h
     lljointpickname.h
-    #lllocaltextureobject.h
+    lllocaltextureobject.h
     llpolyskeletaldistortion.h
     llpolymesh.h
     llpolymorph.h
@@ -64,7 +64,7 @@ set(llappearance_HEADER_FILES
     lltexlayerparams.h
     lltexturemanagerbridge.h
     #llwearable.h
-    #llwearabledata.h
+    llwearabledata.h
     llwearabletype.h
     llviewervisualparam.h
     llavatarappearancedefines.h

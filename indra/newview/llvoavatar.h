@@ -74,6 +74,7 @@ class LLTexGlobalColor;
 class LLVOAvatarBoneInfo;
 class LLAvatarSkeletonInfo;
 class LLPolySkeletalDistortionInfo;
+class LLViewerWearable;
 
 class SHClientTagMgr : public LLSingleton<SHClientTagMgr>, public boost::signals2::trackable
 {
@@ -129,7 +130,7 @@ public:
 	friend class LLVOAvatarSelf;
 protected:
 	struct LLVOAvatarXmlInfo;
-	struct LLMaskedMorph;
+	class LLMaskedMorph;
 
 /********************************************************************************
  **                                                                            **
@@ -162,6 +163,7 @@ protected:
  **                                                                            **
  *******************************************************************************/
 
+public:
 	/*virtual*/ bool isAgent() const;
 	
 
@@ -236,7 +238,7 @@ public:
 	void					dumpAnimationState();
 
 	virtual LLJoint*		getJoint(const std::string &name);
-	virtual LLJoint*     	getRootJoint() { return &mRoot; }
+	virtual LLJoint*     	getRootJoint() { return mRoot; }
 
 	void					resetJointPositionsToDefault( void );
 	void					resetSpecificJointPosition( const std::string& name );
@@ -368,6 +370,9 @@ protected:
  **                    SKELETON
  **/
 
+	virtual LLAvatarJoint*	createAvatarJoint();
+	virtual LLAvatarJoint*	createAvatarJoint(S32 joint_num);
+	virtual LLAvatarJointMesh*	createAvatarJointMesh();
 public:
 	void				updateHeadOffset();
 	virtual F32			getPelvisToFoot() const { return mPelvisToFoot; }
@@ -383,7 +388,7 @@ public:
 	F32					mLastPelvisFixup;
 
 	LLVector3			mHeadOffset; // current head position
-	LLViewerJoint		mRoot;
+	LLAvatarJoint		*mRoot;
 
 	typedef std::map<std::string, LLJoint*> joint_map_t;
 	joint_map_t			mJointMap;
@@ -393,11 +398,11 @@ public:
 	virtual void		buildCharacter();
 	virtual BOOL		loadAvatar();
 
-	BOOL				setupBone(const LLVOAvatarBoneInfo* info, LLViewerJoint* parent, S32 &current_volume_num, S32 &current_joint_num);
+	BOOL				setupBone(const LLVOAvatarBoneInfo* info, LLJoint* parent, S32 &current_volume_num, S32 &current_joint_num);
 	virtual BOOL		buildSkeleton(const LLAvatarSkeletonInfo *info);
 private:
-	typedef std::vector<LLViewerJoint*> avatar_joint_list_t;
 	BOOL				mIsBuilt; // state of deferred character building
+	typedef std::vector<LLAvatarJoint*> avatar_joint_list_t;
 	avatar_joint_list_t		mSkeleton;
 	
 	//--------------------------------------------------------------------
@@ -461,7 +466,6 @@ public:
 	static void	deleteCachedImages(bool clearAll=true);
 	static void	destroyGL();
 	static void	restoreGL();
-	BOOL 		mIsDummy; // for special views
 	S32			mSpecialRenderMode; // special lighting
 	U32			mAttachmentGeometryBytes; //number of bytes in attached geometry
 	F32			mAttachmentSurfaceArea; //estimated surface area of attachments
@@ -584,7 +588,7 @@ public:
 public:
 	virtual BOOL    isTextureDefined(LLAvatarAppearanceDefines::ETextureIndex type, U32 index = 0) const;
 	virtual BOOL	isTextureVisible(LLAvatarAppearanceDefines::ETextureIndex type, U32 index = 0) const;
-	virtual BOOL	isTextureVisible(LLAvatarAppearanceDefines::ETextureIndex type, LLWearable *wearable) const;
+	virtual BOOL	isTextureVisible(LLAvatarAppearanceDefines::ETextureIndex type, LLViewerWearable *wearable) const;
 
 	BOOL			isFullyBaked();
 	static BOOL		areAllNearbyInstancesBaked(S32& grey_avatars);
@@ -604,6 +608,8 @@ protected:
 	void			useBakedTexture(const LLUUID& id);
 	LLViewerTexLayerSet*  getTexLayerSet(const U32 index) const { return dynamic_cast<LLViewerTexLayerSet*>(mBakedTextureDatas[index].mTexLayerSet);	}
 
+	LLTexLayerSet*	createTexLayerSet();
+	
 	typedef std::deque<LLMaskedMorph *> 	morph_list_t;
 	struct BakedTextureData
 	{
@@ -703,7 +709,7 @@ private:
 	BOOL			mMeshTexturesDirty;
 
 	typedef std::multimap<std::string, LLPolyMesh*> polymesh_map_t;
-	polymesh_map_t 									mMeshes;
+	polymesh_map_t 									mPolyMeshes;
 	avatar_joint_list_t 					mMeshLOD;
 
 	//--------------------------------------------------------------------
@@ -771,7 +777,6 @@ public:
 	void			setVisibilityRank(U32 rank);
 	U32				getVisibilityRank()  const { return mVisibilityRank; } // unused
 	static S32 		sNumVisibleAvatars; // Number of instances of this class
-	static LLColor4 getDummyColor();
 /**                    Appearance
  **                                                                            **
  *******************************************************************************/
@@ -781,8 +786,7 @@ public:
  **                    WEARABLES
  **/
 
-public:
-	virtual BOOL			isWearingWearableType(LLWearableType::EType type ) const;
+
 	
 	//--------------------------------------------------------------------
 	// Attachments
@@ -793,6 +797,7 @@ public:
 	virtual BOOL 		detachObject(LLViewerObject *viewer_object);
 	void				cleanupAttachedMesh( LLViewerObject* pVO );
 	static LLVOAvatar*  findAvatarFromAttachment(LLViewerObject* obj);
+	virtual BOOL			isWearingWearableType(LLWearableType::EType type ) const;
 protected:
 	LLViewerJointAttachment* getTargetAttachmentPoint(LLViewerObject* viewer_object);
 	void 				lazyAttach();
@@ -1138,7 +1143,7 @@ protected: // Shared with LLVOAvatarSelf
 
 		struct LLVOAvatarMeshInfo
 		{
-			typedef std::pair<LLPolyMorphTargetInfo*,BOOL> morph_info_pair_t;
+			typedef std::pair<LLViewerVisualParamInfo*,BOOL> morph_info_pair_t;
 			typedef std::vector<morph_info_pair_t> morph_info_list_t;
 
 			LLVOAvatarMeshInfo() : mLOD(0), mMinPixelArea(.1f) {}
@@ -1162,7 +1167,7 @@ protected: // Shared with LLVOAvatarSelf
 		typedef std::vector<LLVOAvatarMeshInfo*> mesh_info_list_t;
 		mesh_info_list_t mMeshInfoList;
 
-		typedef std::vector<LLPolySkeletalDistortionInfo*> skeletal_distortion_info_list_t;
+		typedef std::vector<LLViewerVisualParamInfo*> skeletal_distortion_info_list_t;
 		skeletal_distortion_info_list_t mSkeletalDistortionInfoList;
 	
 		struct LLVOAvatarAttachmentInfo
@@ -1209,17 +1214,13 @@ protected: // Shared with LLVOAvatarSelf
 		morph_info_list_t	mMorphMaskInfoList;
 	};
 
-	struct LLMaskedMorph
+
+	class LLMaskedMorph
 	{
-		LLMaskedMorph(LLPolyMorphTarget *morph_target, BOOL invert, std::string layer) :
-			mMorphTarget(morph_target), 
-			mInvert(invert),
-			mLayer(layer)
-		{
-			morph_target->addPendingMorphMask();
-		}
+	public:
+		LLMaskedMorph(LLVisualParam *morph_target, BOOL invert, std::string layer);
 	
-		LLPolyMorphTarget	*mMorphTarget;
+		LLVisualParam	*mMorphTarget;
 		BOOL				mInvert;
 		std::string			mLayer;
 	};

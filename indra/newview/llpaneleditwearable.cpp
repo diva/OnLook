@@ -28,7 +28,7 @@
 
 #include "llpaneleditwearable.h"
 #include "llpanel.h"
-#include "llwearable.h"
+#include "llviewerwearable.h"
 #include "lluictrl.h"
 #include "llscrollingpanellist.h"
 #include "llvisualparam.h"
@@ -767,7 +767,7 @@ BOOL LLPanelEditWearable::postBuild()
 
 BOOL LLPanelEditWearable::isDirty() const
 {
-	LLWearable* wearable = getWearable();
+	LLViewerWearable* wearable = getWearable();
 	return wearable && wearable->isDirty();
 }
 
@@ -778,7 +778,7 @@ void LLPanelEditWearable::draw()
 
 	refreshWearables(false);
 
-	LLWearable* wearable = getWearable();
+	LLViewerWearable* wearable = getWearable();
 	BOOL has_wearable = (wearable != NULL );
 	BOOL has_any_wearable = has_wearable || gAgentWearables.getWearableCount(mType);
 	BOOL is_dirty = isDirty();
@@ -931,7 +931,7 @@ void LLPanelEditWearable::setWearableIndex(S32 index)
 			tab->selectTab(tab_index);
 	}	
 
-	LLWearable* wearable = gAgentWearables.getWearable(mType,mCurrentIndex);
+	LLViewerWearable* wearable = gAgentWearables.getViewerWearable(mType,mCurrentIndex);
 
 	if(wearable == getWearable())
 		return;
@@ -1059,7 +1059,7 @@ void LLPanelEditWearable::onBtnSaveAs( void* userdata )
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
 	if(self->mActiveModal)
 		return;
-	LLWearable* wearable = self->getWearable();
+	LLViewerWearable* wearable = self->getWearable();
 	if( wearable )
 	{
 		self->mActiveModal = new LLWearableSaveAsDialog( wearable->getName(), self, onSaveAsCommit, self );
@@ -1095,7 +1095,7 @@ void LLPanelEditWearable::onCommitSexChange()
 	}
 
 	bool is_new_sex_male = (gSavedSettings.getU32("AvatarSex") ? SEX_MALE : SEX_FEMALE) == SEX_MALE;
-	LLWearable*     wearable = gAgentWearables.getWearable(type, index);
+	LLViewerWearable*     wearable = gAgentWearables.getViewerWearable(type, index);
 	if (wearable)
 	{
 		wearable->setVisualParamWeight(param->getID(), is_new_sex_male, FALSE);
@@ -1142,7 +1142,7 @@ bool LLPanelEditWearable::onSelectAutoWearOption(const LLSD& notification, const
 	if(avatar)
 	{
 		// Create a new wearable in the default folder for the wearable's asset type.
-		LLWearable* wearable = LLWearableList::instance().createNewWearable( (LLWearableType::EType)notification["payload"]["wearable_type"].asInteger() );
+		LLViewerWearable* wearable = LLWearableList::instance().createNewWearable( (LLWearableType::EType)notification["payload"]["wearable_type"].asInteger(), avatar );
 		LLAssetType::EType asset_type = wearable->getAssetType();
 
 		LLUUID folder_id;
@@ -1160,7 +1160,7 @@ bool LLPanelEditWearable::onSelectAutoWearOption(const LLSD& notification, const
 	return false;
 }
 
-LLWearable* LLPanelEditWearable::getWearable() const
+LLViewerWearable* LLPanelEditWearable::getWearable() const
 {
 	return mCurrentWearable;//gAgentWearables.getWearable(mType, mCurrentIndex);	// TODO: MULTI-WEARABLE
 }
@@ -1267,7 +1267,7 @@ void LLPanelEditWearable::saveChanges(bool force_save_as, std::string new_name)
         {
                 // the name of the wearable has changed, re-save wearable with new name
                 LLAppearanceMgr::instance().removeCOFItemLinks(getWearable()->getItemID(),false);
-				LLWearable* new_wearable = gAgentWearables.saveWearableAs(mType, index, new_name, FALSE);
+				LLViewerWearable* new_wearable = gAgentWearables.saveWearableAs(mType, index, new_name, FALSE);
 				if(new_wearable)
 				{
 					mPendingWearable = new_wearable;
@@ -1284,7 +1284,7 @@ void LLPanelEditWearable::saveChanges(bool force_save_as, std::string new_name)
 
 void LLPanelEditWearable::revertChanges()
 {
-		LLWearable* wearable = getWearable();
+		LLViewerWearable* wearable = getWearable();
         if (!wearable || !isDirty())
         {
                 // no unsaved changes to revert
@@ -1383,7 +1383,7 @@ void LLPanelEditWearable::changeCamera(U8 subpart)
 		}
 
 		// Update the thumbnails we display
-		LLWearable* wearable = getWearable();
+		LLViewerWearable* wearable = getWearable();
 		LLViewerInventoryItem* item = wearable ? gInventory.getItem(wearable->getItemID()) : NULL;
 		U32 perm_mask = 0x0;
 		BOOL is_complete = FALSE;
@@ -1435,7 +1435,7 @@ void LLPanelEditWearable::updateScrollingPanelList()
 
 void LLPanelEditWearable::updateScrollingPanelUI()
 {
-	LLWearable* wearable = getWearable();
+	LLViewerWearable* wearable = getWearable();
 	 // do nothing if we don't have a valid wearable we're editing
 	if(!wearable)
 	{
@@ -1460,7 +1460,7 @@ void LLPanelEditWearable::onBtnTakeOff( void* userdata )
 {
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
 	
-	LLWearable* wearable = self->getWearable();
+	LLViewerWearable* wearable = self->getWearable();
 	if( !wearable )
 	{
 		return;
@@ -1475,12 +1475,12 @@ void LLPanelEditWearable::getSortedParams(value_map_t &sorted_params, const std:
 {
 	if(!getWearable())return;
 
-	    LLWearable::visual_param_vec_t param_list;
+	    LLViewerWearable::visual_param_vec_t param_list;
         ESex avatar_sex = gAgentAvatarp->getSex();
 
         getWearable()->getVisualParams(param_list);
 
-        for (LLWearable::visual_param_vec_t::iterator iter = param_list.begin();
+        for (LLViewerWearable::visual_param_vec_t::iterator iter = param_list.begin();
                 iter != param_list.end();
                 ++iter)
         {

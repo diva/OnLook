@@ -3834,7 +3834,7 @@ void renderAgentTarget(LLVOAvatar* avatar)
 	{
 		renderCrossHairs(avatar->getPositionAgent(), 0.2f, LLColor4(1, 0, 0, 0.8f));
 		renderCrossHairs(avatar->mDrawable->getPositionAgent(), 0.2f, LLColor4(1, 0, 0, 0.8f));
-		renderCrossHairs(avatar->mRoot.getWorldPosition(), 0.2f, LLColor4(1, 1, 1, 0.8f));
+		renderCrossHairs(avatar->mRoot->getWorldPosition(), 0.2f, LLColor4(1, 1, 1, 0.8f));
 		renderCrossHairs(avatar->mPelvisp->getWorldPosition(), 0.2f, LLColor4(0, 0, 1, 0.8f));
 	}
 }
@@ -3898,9 +3898,6 @@ public:
 		{
 			return;
 		}
-
-		LLVector4a nodeCenter = group->mBounds[0];
-		LLVector4a octCenter = group->mOctreeNode->getCenter();
 
 		group->rebuildGeom();
 		group->rebuildMesh();

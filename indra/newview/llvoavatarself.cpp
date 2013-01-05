@@ -633,7 +633,7 @@ BOOL LLVOAvatarSelf::setParamWeight(const LLViewerVisualParam *param, F32 weight
 		U32 size = gAgentWearables.getWearableCount(type);
 		for (U32 count = 0; count < size; ++count)
 		{
-			LLWearable *wearable = gAgentWearables.getWearable(type,count);
+			LLViewerWearable *wearable = gAgentWearables.getViewerWearable(type,count);
 			if (wearable)
 			{
 				wearable->setVisualParamWeight(param->getID(), weight, upload_bake);
@@ -667,7 +667,7 @@ void LLVOAvatarSelf::idleUpdateAppearanceAnimation()
 		LLWearable *wearable = gAgentWearables.getTopWearable((LLWearableType::EType)type);
 		if (wearable)
 		{
-			wearable->writeToAvatar();
+			wearable->writeToAvatar(this);
 		}
 	}
 
@@ -1358,7 +1358,7 @@ BOOL LLVOAvatarSelf::getLocalTextureGL(ETextureIndex type, LLViewerTexture** tex
 	{
 		return FALSE;
 	}
-	*tex_pp = local_tex_obj->getImage();
+	*tex_pp = dynamic_cast<LLViewerTexture*> (local_tex_obj->getImage());
 	return TRUE;
 }
 
@@ -1378,7 +1378,7 @@ LLViewerFetchedTexture* LLVOAvatarSelf::getLocalTextureGL(LLAvatarAppearanceDefi
 	{
 		return LLViewerTextureManager::getFetchedTexture(IMG_DEFAULT_AVATAR);
 	}
-	return local_tex_obj->getImage();
+	return dynamic_cast<LLViewerFetchedTexture*> (local_tex_obj->getImage());
 }
 
 const LLUUID& LLVOAvatarSelf::getLocalTextureID(ETextureIndex type, U32 index) const
@@ -1552,7 +1552,7 @@ BOOL LLVOAvatarSelf::isTextureVisible(LLAvatarAppearanceDefines::ETextureIndex t
 }
 
 //virtual
-BOOL LLVOAvatarSelf::isTextureVisible(LLAvatarAppearanceDefines::ETextureIndex type, LLWearable *wearable) const
+BOOL LLVOAvatarSelf::isTextureVisible(LLAvatarAppearanceDefines::ETextureIndex type, LLViewerWearable *wearable) const
 {
 	if (isIndexBakedTexture(type))
 	{
@@ -2167,7 +2167,7 @@ BOOL LLVOAvatarSelf::canGrabBakedTexture(EBakedTextureIndex baked_index) const
 		
 		for (U32 wearable_index = 0; wearable_index < count; ++wearable_index)
 		{
-			LLWearable *wearable = gAgentWearables.getWearable(wearable_type, wearable_index);
+			LLViewerWearable *wearable = gAgentWearables.getViewerWearable(wearable_type, wearable_index);
 			if (wearable)
 			{
 				const LLLocalTextureObject *texture = wearable->getLocalTextureObject((S32)t_index);
@@ -2242,7 +2242,7 @@ void LLVOAvatarSelf::addLocalTextureStats( ETextureIndex type, LLViewerFetchedTe
 LLLocalTextureObject* LLVOAvatarSelf::getLocalTextureObject(LLAvatarAppearanceDefines::ETextureIndex i, U32 wearable_index) const
 {
 	LLWearableType::EType type = LLAvatarAppearanceDictionary::getInstance()->getTEWearableType(i);
-	LLWearable* wearable = gAgentWearables.getWearable(type, wearable_index);
+	LLViewerWearable* wearable = gAgentWearables.getViewerWearable(type, wearable_index);
 	if (wearable)
 	{
 		return wearable->getLocalTextureObject(i);

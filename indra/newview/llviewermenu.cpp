@@ -9185,7 +9185,7 @@ class LLEditTakeOff : public view_listener_t
 					// We'll use the first wearable we come across that can be removed (moving from top to bottom)
 					for (; wearable_index >= 0; wearable_index--)
 					{
-						const LLWearable* pWearable = gAgentWearables.getWearable(type, wearable_index);
+						const LLViewerWearable* pWearable = gAgentWearables.getViewerWearable(type, wearable_index);
 						if (!gRlvWearableLocks.isLockedWearable(pWearable))
 							break;
 					}

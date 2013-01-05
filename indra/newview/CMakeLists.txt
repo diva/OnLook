@@ -153,7 +153,6 @@ set(viewer_SOURCE_FILES
     lldrawpooltree.cpp
     lldrawpoolwater.cpp
     lldrawpoolwlsky.cpp
-    lldriverparam.cpp
     lldroptarget.cpp
     lldynamictexture.cpp
     llemote.cpp
@@ -299,7 +298,6 @@ set(viewer_SOURCE_FILES
     lljoystickbutton.cpp
     lllandmarklist.cpp
     lllocalinventory.cpp
-    lllocaltextureobject.cpp
     lllogchat.cpp
     llloginhandler.cpp
     llmainlooprepeater.cpp
@@ -509,6 +507,7 @@ set(viewer_SOURCE_FILES
     llviewertextureanim.cpp
     llviewertexturelist.cpp
     llviewerthrottle.cpp
+    llviewerwearable.cpp
     llviewerwindow.cpp
     llvlcomposition.cpp
     llvlmanager.cpp
@@ -532,7 +531,6 @@ set(viewer_SOURCE_FILES
     llwatchdog.cpp
     llwaterparammanager.cpp
     llwaterparamset.cpp
-    llwearable.cpp
     llwearablelist.cpp
     llweb.cpp
     llwebprofile.cpp
@@ -654,7 +652,6 @@ set(viewer_HEADER_FILES
     lldrawpooltree.h
     lldrawpoolwater.h
     lldrawpoolwlsky.h
-    lldriverparam.h
     lldroptarget.h
     lldynamictexture.h
     llemote.h
@@ -800,7 +797,6 @@ set(viewer_HEADER_FILES
     lllandmarklist.h
     lllightconstants.h
     lllocalinventory.h
-    lllocaltextureobject.h
     lllogchat.h
     llloginhandler.h
     llmainlooprepeater.h
@@ -1014,6 +1010,7 @@ set(viewer_HEADER_FILES
     llviewertextureanim.h
     llviewertexturelist.h
     llviewerthrottle.h
+    llviewerwearable.h
     llviewerwindow.h
     llvlcomposition.h
     llvlmanager.h
@@ -1038,7 +1035,6 @@ set(viewer_HEADER_FILES
     llwatchdog.h
     llwaterparammanager.h
     llwaterparamset.h
-    llwearable.h
     llwearablelist.h
     llweb.h
     llwebprofile.h

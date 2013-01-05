@@ -35,7 +35,7 @@
 
 class LLAccordionCtrl;
 class LLCheckBoxCtrl;
-class LLWearable;
+class LLViewerWearable;
 class LLTextBox;
 class LLViewerInventoryItem;
 class LLViewerVisualParam;
@@ -64,7 +64,7 @@ public:
 
 	const std::string&	getLabel()	{ return LLWearableType::getTypeLabel( mType ); }
 	LLWearableType::EType		getType() const{ return mType; }
-	LLWearable* 		getWearable() 	const;
+	LLViewerWearable* 		getWearable() 	const;
 
 	void			onTabChanged(LLUICtrl* ctrl);
 	bool			onTabPrecommit();
@@ -129,8 +129,8 @@ private:
 	s32_uuid_map_t mPreviousAlphaTexture;
 	U32					mCurrentSubpart;
 	U32					mCurrentIndex;
-	LLWearable*			mCurrentWearable;
-	LLWearable*			mPendingWearable;	//For SaveAs. There's a period where the old wearable will be removed, but the new one will still be pending, 
+	LLViewerWearable*			mCurrentWearable;
+	LLViewerWearable*			mPendingWearable;	//For SaveAs. There's a period where the old wearable will be removed, but the new one will still be pending, 
 											//so this is needed to retain focus on this wearables tab over the messy transition.
 	bool				mPendingRefresh;	//LLAgentWearables::setWearableOutfit fires a buttload of remove/wear calls which spams wearablesChanged
 											//a bazillion pointless (and not particularly valid) times. Deferring to draw effectively sorts it all out.
