@@ -36,6 +36,9 @@
 #include "llcontrol.h"
 #include "llfloater.h"
 
+class LLScrollListCtrl;
+class LLTextEditor;
+
 class LLFloaterSettingsDebug
 :	public LLFloater
 ,	public LLSingleton<LLFloaterSettingsDebug>
@@ -47,15 +50,33 @@ public:
 	virtual BOOL postBuild();
 	virtual void draw();
 
-	void updateControl(LLControlVariable* control);
+	void updateControl();
 
-	void onSettingSelect(LLUICtrl* ctrl);
+	// updates control filter to display in the controls list on keystroke
+	static void onUpdateFilter(const std::string& searchTerm, void*);
+	void updateFilter(std::string searchTerm);
+
+	void onSettingSelect();
 	void onCommitSettings();
 	void onClickDefault();
+	void onCopyToClipboard();
+
+private:
+	// returns a pointer to the currently selected control variable, or NULL
+	LLControlVariable* getControlVariable();
 
 protected:
-	class LLTextEditor* mComment;
+	typedef std::map<std::string,LLControlVariable*> settings_map_t;
+
+	settings_map_t mSettingsMap;
+
+	std::string mOldSearchTerm;
+	LLControlVariable* mCurrentControlVariable;
+	LLControlVariable* mOldControlVariable;
+	bool mOldVisibility;
+
+	LLScrollListCtrl* mSettingsScrollList;
+	LLTextEditor* mComment;
 };
 
 #endif //LLFLOATERDEBUGSETTINGS_H
-
