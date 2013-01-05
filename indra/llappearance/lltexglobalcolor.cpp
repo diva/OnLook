@@ -24,20 +24,20 @@
  * $/LicenseInfo$
  */
 
-#include "llviewerprecompiledheaders.h"
-#include "llagent.h"
-#include "llviewertexlayer.h"
-#include "llvoavatar.h"
-#include "llwearable.h"
+#include "linden_common.h"
+#include "llavatarappearance.h"
+#include "lltexlayer.h"
 #include "lltexglobalcolor.h"
+
+class LLWearable;
 
 //-----------------------------------------------------------------------------
 // LLTexGlobalColor
 //-----------------------------------------------------------------------------
 
-LLTexGlobalColor::LLTexGlobalColor(LLVOAvatar* avatar) 
+LLTexGlobalColor::LLTexGlobalColor(LLAvatarAppearance* appearance)
 	:
-	mAvatar(avatar),
+	mAvatarAppearance(appearance),
 	mInfo(NULL)
 {
 }
@@ -91,7 +91,7 @@ const std::string& LLTexGlobalColor::getName() const
 // LLTexParamGlobalColor
 //-----------------------------------------------------------------------------
 LLTexParamGlobalColor::LLTexParamGlobalColor(LLTexGlobalColor* tex_global_color) :
-	LLTexLayerParamColor(tex_global_color->getAvatar()),
+	LLTexLayerParamColor(tex_global_color->getAvatarAppearance()),
 	mTexGlobalColor(tex_global_color)
 {
 }

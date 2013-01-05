@@ -36,7 +36,7 @@ set(llappearance_SOURCE_FILES
     llpolyskeletaldistortion.cpp
     llpolymesh.cpp
     llpolymorph.cpp
-    #lltexglobalcolor.cpp
+    lltexglobalcolor.cpp
     lltexlayer.cpp
     lltexlayerparams.cpp
     lltexturemanagerbridge.cpp
@@ -59,11 +59,11 @@ set(llappearance_HEADER_FILES
     llpolyskeletaldistortion.h
     llpolymesh.h
     llpolymorph.h
-    #lltexglobalcolor.h
+    lltexglobalcolor.h
     lltexlayer.h
     lltexlayerparams.h
     lltexturemanagerbridge.h
-    #llwearable.h
+    llwearable.h
     llwearabledata.h
     llwearabletype.h
     llviewervisualparam.h
