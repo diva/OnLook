@@ -28,18 +28,21 @@
 
 #include "llmodel.h"
 #include "llmemory.h"
-#if MESH_IMPORT
 #include "llconvexdecomposition.h"
-#endif //MESH_IMPORT
 #include "llsdserialize.h"
 #include "llvector4a.h"
-
-#if MESH_IMPORT
+#if LL_MSVC
+#pragma warning (disable : 4263)
+#pragma warning (disable : 4264)
+#endif
 #include "dae.h"
 #include "dae/daeErrorHandler.h"
 #include "dom/domConstants.h"
 #include "dom/domMesh.h"
-#endif //MESH_IMPORT
+#if LL_MSVC
+#pragma warning (default : 4263)
+#pragma warning (default : 4264)
+#endif
 
 #ifdef LL_STANDALONE
 # include <zlib.h>
@@ -72,13 +75,10 @@ LLModel::~LLModel()
 {
 	if (mDecompID >= 0)
 	{
-#if	MESH_IMPORT
 		LLConvexDecomposition::getInstance()->deleteDecomposition(mDecompID);
-#endif //MESH_IMPORT
 	}
 }
 
-#if	MESH_IMPORT
 
 bool get_dom_sources(const domInputLocalOffset_Array& inputs, S32& pos_offset, S32& tc_offset, S32& norm_offset, S32 &idx_stride,
 					 domSource* &pos_source, domSource* &tc_source, domSource* &norm_source)
@@ -823,7 +823,6 @@ BOOL LLModel::createVolumeFacesFromDomMesh(domMesh* mesh)
 	
 	return FALSE;
 }
-#endif //MESH_IMPORT
 
 void LLModel::offsetMesh( const LLVector3& pivotPoint )
 {
@@ -1294,8 +1293,6 @@ void LLModel::generateNormals(F32 angle_cutoff)
 	}
 }
 
-#if MESH_IMPORT
-
 //static
 std::string LLModel::getElementLabel(daeElement *element)
 { // try to get a decent label for this element
@@ -1351,7 +1348,6 @@ LLModel* LLModel::loadModelFromDomMesh(domMesh *mesh)
 	ret->mLabel = getElementLabel(mesh);
 	return ret;
 }
-#endif //MESH_IMPORT
 
 std::string LLModel::getName() const
 {
@@ -1540,6 +1536,7 @@ LLSD LLModel::writeModel(
 					mdl[model_names[idx]][i]["TexCoord0Domain"]["Max"] = max_tc.getValue();
 					mdl[model_names[idx]][i]["TexCoord0"] = tc;
 				}
+
 				mdl[model_names[idx]][i]["TriangleList"] = indices;
 
 				if (skinning)

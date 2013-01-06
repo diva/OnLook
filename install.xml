@@ -932,6 +932,23 @@
           </map>
         </map>
       </map>
+      <key>ndPhysicsStub</key>
+      <map>
+        <key>description</key>
+        <string>llphysicsextension_stub modified with hacd by NickyD</string>
+        <key>license</key>
+        <string>lgpl</string>
+        <key>packages</key>
+        <map>
+          <key>linux</key>
+          <map>
+            <key>md5sum</key>
+            <string>017e37250d49686a11db0b88d6633404</string>
+            <key>url</key>
+            <uri>https://bitbucket.org/LightDrake/singularitylibraries/downloads/ndPhysicsStub-r65-linux32-singu.tar.bz2</uri>
+          </map>
+        </map>
+      </map>
       <key>ogg-vorbis</key>
       <map>
         <key>copyright</key>

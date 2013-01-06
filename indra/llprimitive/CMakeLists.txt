@@ -7,12 +7,16 @@ include(LLCommon)
 include(LLMath)
 include(LLMessage)
 include(LLXML)
+include(LLPhysicsExtensions)
 
 include_directories(
     ${LLCOMMON_INCLUDE_DIRS}
     ${LLMATH_INCLUDE_DIRS}
     ${LLMESSAGE_INCLUDE_DIRS}
     ${LLXML_INCLUDE_DIRS}
+    ${LLPHYSICSEXTENSIONS_INCLUDE_DIRS}
+    ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/collada
+    ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/collada/1.4
     )
 
 set(llprimitive_SOURCE_FILES

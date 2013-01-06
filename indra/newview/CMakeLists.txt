@@ -27,8 +27,8 @@ include(LLImageJ2COJ)
 include(LLInventory)
 include(LLMath)
 include(LLMessage)
+include(LLPhysicsExtensions)
 include(LLPlugin)
-include(StateMachine)
 include(LLPrimitive)
 include(LLRender)
 include(LLUI)
@@ -39,6 +39,7 @@ include(LLXML)
 include(Linking)
 include(NDOF)
 include(GooglePerfTools)
+include(StateMachine)
 include(TemplateCheck)
 include(UI)
 include(LLKDU)
@@ -63,6 +64,7 @@ include_directories(
     ${LLINVENTORY_INCLUDE_DIRS}
     ${LLMATH_INCLUDE_DIRS}
     ${LLMESSAGE_INCLUDE_DIRS}
+    ${LLPHYSICSEXTENSIONS_INCLUDE_DIRS}
     ${LLPLUGIN_INCLUDE_DIRS}
     ${LLPRIMITIVE_INCLUDE_DIRS}
     ${LLRENDER_INCLUDE_DIRS}
@@ -1586,6 +1588,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${XMLRPCEPI_LIBRARIES}
     ${ELFIO_LIBRARIES}
     ${HUNSPELL_LIBRARY}
+    ${LLPHYSICSEXTENSIONS_LIBRARIES}
     )
 
 if (LINUX)
