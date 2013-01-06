@@ -82,21 +82,23 @@ const S32 PREVIEW_TEXTURE_HEIGHT = 300;
 LLFloaterImagePreview::LLFloaterImagePreview(const std::string& filename) : 
 	LLFloaterNameDesc(filename),
 	mAvatarPreview(NULL),
-	mSculptedPreview(NULL)
+	mSculptedPreview(NULL),
+	mLastMouseX(0),
+	mLastMouseY(0),
+	mImagep(NULL)
 {
-	mLastMouseX = 0;
-	mLastMouseY = 0;
-	mImagep = NULL ;
 	loadImage(mFilenameAndPath);
 }
 
 // <edit>
 LLFloaterImagePreview::LLFloaterImagePreview(const std::string& filename, void* item) : 
-	LLFloaterNameDesc(filename, item)
+	LLFloaterNameDesc(filename, item),
+	mAvatarPreview(NULL),
+	mSculptedPreview(NULL),
+	mLastMouseX(0),
+	mLastMouseY(0),
+	mImagep(NULL)
 {
-	mLastMouseX = 0;
-	mLastMouseY = 0;
-	mImagep = NULL ;
 	loadImage(mFilenameAndPath);
 }
 // </edit>
