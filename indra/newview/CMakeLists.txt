@@ -44,6 +44,7 @@ include(TemplateCheck)
 include(UI)
 include(LLKDU)
 include(ViewerMiscLibs)
+include(GLOD)
 include(ViewerArtwork.cmake)
 
 if (WINDOWS)
