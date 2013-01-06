@@ -223,7 +223,6 @@ void LLFloaterPostcard::onClickCancel(void* data)
 	if (data)
 	{
 		LLFloaterPostcard *self = (LLFloaterPostcard *)data;
-		LLFloaterSnapshot::savePostcardDone(false, self->mSnapshotIndex);
 		self->close(false);
 	}
 }
@@ -410,6 +409,7 @@ void LLFloaterPostcard::sendPostcard()
 	LLVFile::writeFile(mJPEGImage->getData(), mJPEGImage->getDataSize(), gVFS, mAssetID, LLAssetType::AT_IMAGE_JPEG);
 
 	// upload the image
+	LLFloaterSnapshot::saveStart(mSnapshotIndex);
 	std::string url = gAgent.getRegion()->getCapability("SendPostcard");
 	if(!url.empty())
 	{
@@ -436,11 +436,4 @@ void LLFloaterPostcard::sendPostcard()
 	// don't destroy the window until the upload is done
 	// this way we keep the information in the form
 	setVisible(FALSE);
-
-	// also remove any dependency on another floater
-	// so that we can be sure to outlive it while we
-	// need to.
-	LLFloater* dependee = getDependee();
-	if (dependee)
-		dependee->removeDependentFloater(this);
 }
