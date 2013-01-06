@@ -147,6 +147,9 @@ void AIFilePicker::open(ELoadFilter filter, std::string const& default_path, std
 	  case FFLOAD_ANIM:
 		  mFilter = "anim";
 		  break;
+	  case FFLOAD_COLLADA:
+		  mFilter = "dae";
+		  break;
 #ifdef _CORY_TESTING
 	  case FFLOAD_GEOMETRY:
 		  mFilter = "geometry";

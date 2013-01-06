@@ -75,6 +75,8 @@ include_directories(
     ${LLXML_INCLUDE_DIRS}
 #    ${LSCRIPT_INCLUDE_DIRS}
 #    ${LSCRIPT_INCLUDE_DIRS}/lscript_compile
+    ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/collada
+    ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/collada/1.4
     )
 
 set(viewer_SOURCE_FILES
@@ -222,6 +224,7 @@ set(viewer_SOURCE_FILES
     llfloatermediabrowser.cpp
     llfloatermemleak.cpp
     llfloatermessagelog.cpp
+    llfloatermodelpreview.cpp
     llfloatermodeluploadbase.cpp
     llfloatermute.cpp
     llfloaternamedesc.cpp
@@ -731,6 +734,7 @@ set(viewer_HEADER_FILES
     llfloatermediabrowser.h
     llfloatermemleak.h
     llfloatermessagelog.h
+    llfloatermodelpreview.h
     llfloatermodeluploadbase.h
     llfloatermute.h
     llfloaternamedesc.h

@@ -20,6 +20,11 @@
         <on_click function="File.UploadAnim" userdata="" />
         <on_enable function="File.EnableUpload" />
     </menu_item_call>
+	<menu_item_call label="Upload Mesh..." name="Upload Mesh"
+        mouse_opaque="true" enabled="true"  >
+        <on_click function="File.UploadMesh" userdata="" />
+        <on_enable function="File.EnableUpload" />
+    </menu_item_call>
     <menu_item_call label="Bulk ([UPLOADFEE] per file)..." name="Bulk Upload"
         mouse_opaque="true" enabled="true" >
         <on_click function="File.UploadBulk" userdata="" />

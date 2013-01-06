@@ -40,9 +40,7 @@
 #include "statemachine/aifilepicker.h"
 #include "llfloateranimpreview.h"
 #include "llfloaterimagepreview.h"
-#ifdef MESH_UPLOAD
 #include "llfloatermodelpreview.h"
-#endif
 #include "llfloaternamedesc.h"
 #include "llfloatersnapshot.h"
 #include "llimage.h"
@@ -336,6 +334,23 @@ class LLFileUploadAnim : public view_listener_t, public AIFileUpload
 	{
 		LLFloaterAnimPreview* floaterp = new LLFloaterAnimPreview(filename);
 		LLUICtrlFactory::getInstance()->buildFloater(floaterp, "floater_animation_preview.xml");
+	}
+};
+
+class LLFileUploadMesh : public view_listener_t, public AIFileUpload
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		start_filepicker(FFLOAD_COLLADA, "dae");
+		return true;
+	}
+
+  protected:
+	// Inherited from AIFileUpload.
+	/*virtual*/ void handle_event(std::string const& filename)
+	{
+		LLFloaterModelPreview* floaterp = new LLFloaterModelPreview(filename);
+		LLUICtrlFactory::getInstance()->buildFloater(floaterp, "floater_model_preview.xml");
 	}
 };
 
@@ -1326,6 +1341,7 @@ void init_menu_file()
 	(new LLFileUploadImage())->registerListener(gMenuHolder, "File.UploadImage");
 	(new LLFileUploadSound())->registerListener(gMenuHolder, "File.UploadSound");
 	(new LLFileUploadAnim())->registerListener(gMenuHolder, "File.UploadAnim");
+	(new LLFileUploadMesh())->registerListener(gMenuHolder, "File.UploadMesh");
 	(new LLFileUploadBulk())->registerListener(gMenuHolder, "File.UploadBulk");
 	(new LLFileCloseWindow())->registerListener(gMenuHolder, "File.CloseWindow");
 	(new LLFileCloseAllWindows())->registerListener(gMenuHolder, "File.CloseAllWindows");
