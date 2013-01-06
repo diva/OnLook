@@ -15,8 +15,9 @@
 		<check_box label="Reproducir Media Automáticamente" name="auto_streaming_video"/>
 		<check_box label="Solicitar Permiso (Activar Filtro de Media)" name="streaming_video"/>
 		<check_box label="Silenciar audio al minimizar la ventana" name="mute_when_minimized"/>
-		<slider label="Efecto Doppler" name="Doppler Effect"/>
-		<slider label="Factor de Atenuación" name="Rolloff Factor"/>
-		<spinner label="Informar transacción de [CURRENCY] desde:" name="currency_change_threshold" label_width="170" width="234"/>
-		<spinner label="Informar Estado de vida desde:" name="Health Change Threshold" label_width="170" width="234"/>
+		<slider label="Efecto Doppler" label_width="180"  name="Doppler Effect"/>
+		<slider label="Factor de Atenuación" label_width="180"  name="Rolloff Factor"/>
+		<slider label="Factor de Atenuación (Bajo el Agua)" label_width="180" name="Underwater Rolloff Factor" width="300"/>		
+		<spinner label="Informar transacción de [CURRENCY] desde:" name="currency_change_threshold" label_width="190" width="254"/>
+		<spinner label="Informar Estado de Salud desde:" name="Health Change Threshold" label_width="190" width="254"/>
 </panel>

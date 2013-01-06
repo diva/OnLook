@@ -50,14 +50,15 @@ class LLFloaterPostcard
 : public LLFloater
 {
 public:
-	LLFloaterPostcard(LLImageJPEG* jpeg, LLViewerTexture *img, const LLVector2& img_scale, const LLVector3d& pos_taken_global);
-	virtual ~LLFloaterPostcard();
+	LLFloaterPostcard(LLImageJPEG* jpeg, LLViewerTexture *img, const LLVector2& img_scale, const LLVector3d& pos_taken_global, int index);
+	/*virtual*/ ~LLFloaterPostcard();
 
-	virtual void init();
-	virtual BOOL postBuild();
-	virtual void draw();
+	/*virtual*/ void init();
+	/*virtual*/ BOOL postBuild();
+	/*virtual*/ void draw();
+	/*virtual*/ void onClose(bool app_quitting);
 
-	static LLFloaterPostcard* showFromSnapshot(LLImageJPEG *jpeg, LLViewerTexture *img, const LLVector2& img_scale, const LLVector3d& pos_taken_global);
+	static LLFloaterPostcard* showFromSnapshot(LLImageJPEG *jpeg, LLViewerTexture *img, const LLVector2& img_scale, const LLVector3d& pos_taken_global, int index);
 
 	static void onClickCancel(void* data);
 	static void onClickSend(void* data);
@@ -82,6 +83,7 @@ protected:
 	LLVector2 mImageScale;
 	LLVector3d mPosTakenGlobal;
 	bool mHasFirstMsgFocus;
+	int mSnapshotIndex;
 
 	typedef std::set<LLFloaterPostcard*> instance_list_t;
 	static instance_list_t sInstances;

@@ -53,6 +53,13 @@ uniform vec4 glow;
 
 uniform vec4 cloud_color;
 
+float luminance(vec3 color)
+{
+	/// CALCULATING LUMINANCE (Using NTSC lum weights)
+	/// http://en.wikipedia.org/wiki/Luma_%28video%29
+	return dot(color, vec3(0.299, 0.587, 0.114));
+}
+
 void main()
 {
 
@@ -151,6 +158,7 @@ void main()
 	// At horizon, blend high altitude sky color towards the darker color below the clouds
 	vary_HazeColor += (additiveColorBelowCloud - vary_HazeColor) * (1. - sqrt(temp1));
 	
+	vary_HazeColor.a = pow(clamp(luminance(vary_HazeColor.rgb)-.5,0,1),2);
 	// won't compile on mac without this being set
 	//vary_AtmosAttenuation = vec3(0.0,0.0,0.0);
 }

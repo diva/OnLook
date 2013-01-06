@@ -374,7 +374,7 @@ void LLWaterParamManager::updateShaderLinks()
 void LLWaterParamManager::update(LLViewerCamera * cam)
 {
 	LLFastTimer ftm(FTM_UPDATE_WATERPARAM);
-	
+
 	// update the shaders and the menu
 	propagateParameters();
 	

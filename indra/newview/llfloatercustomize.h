@@ -98,12 +98,12 @@ public:
 	static LLWearableType::EType getCurrentWearableType()					{ return sCurrentWearableType; }
 
 	// Callbacks
-	static void		onBtnOk( void* userdata );
-	static void		onBtnMakeOutfit( void* userdata );
-	static void		onMakeOutfitCommit( LLMakeOutfitDialog* dialog, void* userdata );
-	static void		onBtnImport( void* userdata );
+	void			onBtnOk();
+	void			onBtnMakeOutfit();
+	void			onMakeOutfitCommit();
+	void			onBtnImport();
 	static void		onBtnImport_continued(AIFilePicker* filepicker);
-	static void		onBtnExport( void* userdata );	
+	void			onBtnExport();
 	static void		onBtnExport_continued(AIFilePicker* filepicker);
 
 	static void		onTabChanged( const LLSD& param );

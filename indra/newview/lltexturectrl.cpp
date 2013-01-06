@@ -161,18 +161,19 @@ public:
 	static void		onBtnSetToDefault( void* userdata );
 	static void		onBtnSelect( void* userdata );
 	static void		onBtnCancel( void* userdata );
-	static void		onBtnPipette( void* userdata );
+		   void		onBtnPipette(  );
 	static void		onBtnUUID( void* userdata );
 	//static void		onBtnRevert( void* userdata );
 	static void		onBtnWhite( void* userdata );
+	static void		onBtnNone( void* userdata );
 	static void		onBtnInvisible( void* userdata );
 	static void		onBtnAlpha( void* userdata );
 	static void		onBtnClear( void* userdata );
-	static void		onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action, void* data);
+		   void		onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action);
 	static void		onShowFolders(LLUICtrl* ctrl, void* userdata);
 	static void		onApplyImmediateCheck(LLUICtrl* ctrl, void* userdata);
 	static void		onSearchEdit(const std::string& search_string, void* user_data );
-	static void		onTextureSelect( const LLTextureEntry& te, void *data );
+		   void		onTextureSelect( const LLTextureEntry& te );
 
 	// tag: vaa emerald local_asset_browser [begin]
 //	static void     onBtnLocal( void* userdata );
@@ -250,81 +251,9 @@ LLFloaterTexturePicker::LLFloaterTexturePicker(
 	mNonImmediateFilterPermMask(non_immediate_filter_perm_mask),
 	mContextConeOpacity(0.f)
 {
+	mCanApplyImmediately = can_apply_immediately;
 	LLUICtrlFactory::getInstance()->buildFloater(this,"floater_texture_ctrl.xml");
 
-	mTentativeLabel = getChild<LLTextBox>("Multiple");
-
-	mResolutionLabel = getChild<LLTextBox>("unknown");
-
-
-	childSetAction("Default",LLFloaterTexturePicker::onBtnSetToDefault,this);
-	childSetAction("Alpha", LLFloaterTexturePicker::onBtnAlpha,this);
-	childSetAction("Blank", LLFloaterTexturePicker::onBtnWhite,this);
-	childSetAction("Invisible", LLFloaterTexturePicker::onBtnInvisible,this);
-
-	// tag: vaa emerald local_asset_browser [begin]
-//	childSetAction("Local", LLFloaterTexturePicker::onBtnLocal, this);  
-//	childSetAction("Server", LLFloaterTexturePicker::onBtnServer, this);
-	childSetAction("Add", LLFloaterTexturePicker::onBtnAdd, this);
-	childSetAction("Remove", LLFloaterTexturePicker::onBtnRemove, this);
-	childSetAction("Browser", LLFloaterTexturePicker::onBtnBrowser, this);
-
-	mLocalScrollCtrl = getChild<LLScrollListCtrl>("local_name_list");
-	mLocalScrollCtrl->setCallbackUserData(this);                            
-	mLocalScrollCtrl->setCommitCallback(onLocalScrollCommit);
-	LocalAssetBrowser::UpdateTextureCtrlList( mLocalScrollCtrl );
-	// tag: vaa emerald local_asset_browser [end]	
-		
-	childSetCommitCallback("show_folders_check", onShowFolders, this);
-	childSetVisible("show_folders_check", FALSE);
-	
-	mSearchEdit = getChild<LLSearchEditor>("inventory search editor");
-	mSearchEdit->setSearchCallback(onSearchEdit, this);
-		
-	mInventoryPanel = getChild<LLInventoryPanel>("inventory panel");
-
-	if(mInventoryPanel)
-	{
-		U32 filter_types = 0x0;
-		filter_types |= 0x1 << LLInventoryType::IT_TEXTURE;
-		filter_types |= 0x1 << LLInventoryType::IT_SNAPSHOT;
-
-		mInventoryPanel->setFilterTypes(filter_types);
-		//mInventoryPanel->setFilterPermMask(getFilterPermMask());  //Commented out due to no-copy texture loss.
-		mInventoryPanel->setFilterPermMask(immediate_filter_perm_mask);
-		mInventoryPanel->setSelectCallback(boost::bind(&LLFloaterTexturePicker::onSelectionChange, _1, _2, (void*)this));
-		mInventoryPanel->setShowFolderState(LLInventoryFilter::SHOW_NON_EMPTY_FOLDERS);
-		mInventoryPanel->setAllowMultiSelect(FALSE);
-
-		// store this filter as the default one
-		mInventoryPanel->getRootFolder()->getFilter()->markDefault();
-
-		// Commented out to stop opening all folders with textures
-		// mInventoryPanel->openDefaultFolderForType(LLAssetType::AT_TEXTURE);
-		
-		// don't put keyboard focus on selected item, because the selection callback
-		// will assume that this was user input
-		mInventoryPanel->setSelection(findItemID(mImageAssetID, FALSE), TAKE_FOCUS_NO);
-	}
-
-	mCanApplyImmediately = can_apply_immediately;
-	mNoCopyTextureSelected = FALSE;
-		
-	childSetValue("apply_immediate_check", gSavedSettings.getBOOL("ApplyTextureImmediately"));
-	childSetCommitCallback("apply_immediate_check", onApplyImmediateCheck, this);
-	
-	if (!can_apply_immediately)
-	{
-		childSetEnabled("show_folders_check", FALSE);
-	}
-
-	childSetAction("Pipette", LLFloaterTexturePicker::onBtnPipette,this);
-	childSetAction("ApplyUUID", LLFloaterTexturePicker::onBtnUUID,this);
-	childSetAction("Cancel", LLFloaterTexturePicker::onBtnCancel,this);
-	childSetAction("Select", LLFloaterTexturePicker::onBtnSelect,this);
-
-	// update permission filter once UI is fully initialized
-	updateFilterPermMask();
 
 	setCanMinimize(FALSE);
 
@@ -532,7 +461,80 @@ BOOL LLFloaterTexturePicker::postBuild()
 	
 		setTitle(pick + mLabel);
 	}
+	mTentativeLabel = getChild<LLTextBox>("Multiple");
 
+	mResolutionLabel = getChild<LLTextBox>("unknown");
+
+
+	childSetAction("Default",LLFloaterTexturePicker::onBtnSetToDefault,this);
+	childSetAction("None", LLFloaterTexturePicker::onBtnNone,this);
+	childSetAction("Alpha", LLFloaterTexturePicker::onBtnAlpha,this);
+	childSetAction("Blank", LLFloaterTexturePicker::onBtnWhite,this);
+	childSetAction("Invisible", LLFloaterTexturePicker::onBtnInvisible,this);
+
+	// tag: vaa emerald local_asset_browser [begin]
+//	childSetAction("Local", LLFloaterTexturePicker::onBtnLocal, this);  
+//	childSetAction("Server", LLFloaterTexturePicker::onBtnServer, this);
+	childSetAction("Add", LLFloaterTexturePicker::onBtnAdd, this);
+	childSetAction("Remove", LLFloaterTexturePicker::onBtnRemove, this);
+	childSetAction("Browser", LLFloaterTexturePicker::onBtnBrowser, this);
+
+	mLocalScrollCtrl = getChild<LLScrollListCtrl>("local_name_list");
+	mLocalScrollCtrl->setCallbackUserData(this);                            
+	mLocalScrollCtrl->setCommitCallback(onLocalScrollCommit);
+	LocalAssetBrowser::UpdateTextureCtrlList( mLocalScrollCtrl );
+	// tag: vaa emerald local_asset_browser [end]	
+		
+	childSetCommitCallback("show_folders_check", onShowFolders, this);
+	childSetVisible("show_folders_check", FALSE);
+	
+	mSearchEdit = getChild<LLSearchEditor>("inventory search editor");
+	mSearchEdit->setSearchCallback(onSearchEdit, this);
+		
+	mInventoryPanel = getChild<LLInventoryPanel>("inventory panel");
+
+	if(mInventoryPanel)
+	{
+		U32 filter_types = 0x0;
+		filter_types |= 0x1 << LLInventoryType::IT_TEXTURE;
+		filter_types |= 0x1 << LLInventoryType::IT_SNAPSHOT;
+
+		mInventoryPanel->setFilterTypes(filter_types);
+		//mInventoryPanel->setFilterPermMask(getFilterPermMask());  //Commented out due to no-copy texture loss.
+		mInventoryPanel->setFilterPermMask(mImmediateFilterPermMask);
+		mInventoryPanel->setSelectCallback(boost::bind(&LLFloaterTexturePicker::onSelectionChange, this, _1, _2));
+		mInventoryPanel->setShowFolderState(LLInventoryFilter::SHOW_NON_EMPTY_FOLDERS);
+		mInventoryPanel->setAllowMultiSelect(FALSE);
+
+		// store this filter as the default one
+		mInventoryPanel->getRootFolder()->getFilter()->markDefault();
+
+		// Commented out to stop opening all folders with textures
+		// mInventoryPanel->openDefaultFolderForType(LLAssetType::AT_TEXTURE);
+		
+		// don't put keyboard focus on selected item, because the selection callback
+		// will assume that this was user input
+		mInventoryPanel->setSelection(findItemID(mImageAssetID, FALSE), TAKE_FOCUS_NO);
+	}
+
+	mNoCopyTextureSelected = FALSE;
+		
+	childSetValue("apply_immediate_check", gSavedSettings.getBOOL("ApplyTextureImmediately"));
+	childSetCommitCallback("apply_immediate_check", onApplyImmediateCheck, this);
+	
+	if (!mCanApplyImmediately)
+	{
+		childSetEnabled("show_folders_check", FALSE);
+	}
+
+	getChild<LLUICtrl>("Pipette")->setCommitCallback( boost::bind(&LLFloaterTexturePicker::onBtnPipette, this));
+	childSetAction("ApplyUUID", LLFloaterTexturePicker::onBtnUUID,this);
+	childSetAction("Cancel", LLFloaterTexturePicker::onBtnCancel,this);
+	childSetAction("Select", LLFloaterTexturePicker::onBtnSelect,this);
+
+	// update permission filter once UI is fully initialized
+	updateFilterPermMask();
+	LLToolPipette::getInstance()->setToolSelectCallback(boost::bind(&LLFloaterTexturePicker::onTextureSelect, this, _1));
 	return TRUE;
 }
 
@@ -624,6 +626,7 @@ void LLFloaterTexturePicker::draw()
 
 		childSetEnabled("Default",  mImageAssetID != mOwner->getDefaultImageAssetID());
 		childSetEnabled("Blank",   mImageAssetID != mWhiteImageAssetID );
+		childSetEnabled("None",	  mOwner->getAllowNoTexture() && !mImageAssetID.isNull() );
 		childSetEnabled("Invisible", mOwner->getAllowInvisibleTexture() && mImageAssetID != mInvisibleImageAssetID );
 		childSetEnabled("Alpha", mImageAssetID != mAlphaImageAssetID );
 
@@ -758,6 +761,13 @@ void LLFloaterTexturePicker::onBtnWhite(void* userdata)
 	self->commitIfImmediateSet();
 }
 
+// static
+void LLFloaterTexturePicker::onBtnNone(void* userdata)
+{
+	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*) userdata;
+	self->setImageID( LLUUID::null );
+	self->commitIfImmediateSet();
+}
 
 // static
 void LLFloaterTexturePicker::onBtnInvisible(void* userdata)
@@ -876,26 +886,18 @@ void LLFloaterTexturePicker::onLocalScrollCommit(LLUICtrl *ctrl, void *userdata)
 
 // tag: vaa emerald local_asset_browser [end]
 
-// static
-void LLFloaterTexturePicker::onBtnPipette( void* userdata )
+void LLFloaterTexturePicker::onBtnPipette()
 {
-	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*) userdata;
-
-	if ( self)
+	BOOL pipette_active = getChild<LLUICtrl>("Pipette")->getValue().asBoolean();
+	pipette_active = !pipette_active;
+	if (pipette_active)
 	{
-		BOOL pipette_active = self->childGetValue("Pipette").asBoolean();
-		pipette_active = !pipette_active;
-		if (pipette_active)
-		{
-			LLToolPipette::getInstance()->setSelectCallback(onTextureSelect, self);
-			LLToolMgr::getInstance()->setTransientTool(LLToolPipette::getInstance());
-		}
-		else
-		{
-			LLToolMgr::getInstance()->clearTransientTool();
-		}
+		LLToolMgr::getInstance()->setTransientTool(LLToolPipette::getInstance());
 	}
-
+	else
+	{
+		LLToolMgr::getInstance()->clearTransientTool();
+	}
 }
 
 // static
@@ -916,33 +918,32 @@ void LLFloaterTexturePicker::onBtnUUID( void* userdata )
 }
 
 // static 
-void LLFloaterTexturePicker::onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action, void* data)
+void LLFloaterTexturePicker::onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action)
 {
-	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*)data;
 	if (items.size())
 	{
 		LLFolderViewItem* first_item = items.front();
 		LLInventoryItem* itemp = gInventory.getItem(first_item->getListener()->getUUID());
-		self->mNoCopyTextureSelected = FALSE;
+		mNoCopyTextureSelected = FALSE;
 		if (itemp)
 		{
 			// <dogmode>
 			if (itemp->getPermissions().getMaskOwner() & PERM_ALL)
-				self->childSetValue("texture_uuid", self->mImageAssetID);
+				childSetValue("texture_uuid", mImageAssetID);
 			else
-				self->childSetValue("texture_uuid", LLUUID::null.asString());
+				childSetValue("texture_uuid", LLUUID::null.asString());
 			// </dogmode>
 
 			if (!itemp->getPermissions().allowCopyBy(gAgent.getID()))
 			{
-				self->mNoCopyTextureSelected = TRUE;
+				mNoCopyTextureSelected = TRUE;
 			}
-			self->mImageAssetID = itemp->getAssetUUID();
-			self->mIsDirty = TRUE;
+			mImageAssetID = itemp->getAssetUUID();
+			mIsDirty = TRUE;
 			if (user_action)
 			{
 				// only commit intentional selections, not implicit ones
-				self->commitIfImmediateSet();
+				commitIfImmediateSet();
 			}
 		}
 	}
@@ -1017,32 +1018,28 @@ void LLFloaterTexturePicker::onSearchEdit(const std::string& search_string, void
 	picker->mInventoryPanel->setFilterSubString(upper_case_search_string);
 }
 
-//static 
-void LLFloaterTexturePicker::onTextureSelect( const LLTextureEntry& te, void *data )
+void LLFloaterTexturePicker::onTextureSelect( const LLTextureEntry& te )
 {
-	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*)data;
-
-	LLUUID inventory_item_id = self->findItemID(te.getID(), TRUE);
-	if (self && inventory_item_id.notNull())
+	LLUUID inventory_item_id = findItemID(te.getID(), TRUE);
+	if (inventory_item_id.notNull())
 	{
 		LLToolPipette::getInstance()->setResult(TRUE, "");
-		self->setImageID(te.getID());
+		setImageID(te.getID());
 
-		self->mNoCopyTextureSelected = FALSE;
-
+		mNoCopyTextureSelected = FALSE;
 		LLInventoryItem* itemp = gInventory.getItem(inventory_item_id);
 
 		if (itemp && !itemp->getPermissions().allowCopyBy(gAgent.getID()))
 		{
 			// no copy texture
-			self->mNoCopyTextureSelected = TRUE;
+			mNoCopyTextureSelected = TRUE;
 		}
 		else 
 		{
-			self->childSetValue("texture_uuid", inventory_item_id.asString());
+			childSetValue("texture_uuid", inventory_item_id.asString());
 		}
 		
-		self->commitIfImmediateSet();
+		commitIfImmediateSet();
 	}
 	else
 	{

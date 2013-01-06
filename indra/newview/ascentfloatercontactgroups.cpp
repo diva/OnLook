@@ -30,7 +30,7 @@
 #include "llfloaterchat.h"
 
 ASFloaterContactGroups* ASFloaterContactGroups::sInstance = NULL;
-LLDynamicArray<LLUUID> ASFloaterContactGroups::mSelectedUUIDs;
+uuid_vec_t ASFloaterContactGroups::mSelectedUUIDs;
 LLSD ASFloaterContactGroups::mContactGroupData;
 
 ASFloaterContactGroups::ASFloaterContactGroups()
@@ -40,7 +40,7 @@ ASFloaterContactGroups::ASFloaterContactGroups()
 }
 
 // static
-void ASFloaterContactGroups::show(LLDynamicArray<LLUUID> ids)
+void ASFloaterContactGroups::show(const uuid_vec_t& ids)
 {
     if (!sInstance)
 	sInstance = new ASFloaterContactGroups();
@@ -84,7 +84,8 @@ void ASFloaterContactGroups::onBtnAdd(void* userdata)
 			self->createContactGroup(name);
 			combo->selectByValue(name);
 		}
-		for (S32 i = (self->mSelectedUUIDs.count() - 1); i >= 0; --i)
+		uuid_vec_t::reverse_iterator it = self->mSelectedUUIDs.rbegin();
+		for (;it != self->mSelectedUUIDs.rend();++it)
 		{
 			//self->addContactMember(combo->getSimple(), self->mSelectedUUIDs.get(i));
 		}
@@ -98,19 +99,21 @@ void ASFloaterContactGroups::onBtnRemove(void* userdata)
 
 	if(self)
 	{
-		if (self->mSelectedUUIDs.count() > 0)
+		if (!self->mSelectedUUIDs.empty())
 		{
 			LLScrollListCtrl* scroller = self->getChild<LLScrollListCtrl>("group_scroll_list");
 			if(scroller != NULL) 
 			{
-				for (S32 i = (self->mSelectedUUIDs.count() - 1); i >= 0; --i)
+				uuid_vec_t::size_type i = self->mSelectedUUIDs.size();
+				uuid_vec_t::reverse_iterator it = self->mSelectedUUIDs.rbegin();
+				for (;it != self->mSelectedUUIDs.rend();++it)
 				{
 					std::string i_str;
-					LLResMgr::getInstance()->getIntegerString(i_str, i);
-					LLChat msg("Adding index " + i_str + ": " + self->mSelectedUUIDs.get(i).asString());
+					LLResMgr::getInstance()->getIntegerString(i_str, --i);
+					LLChat msg("Adding index " + i_str + ": " + it->asString());
 					LLFloaterChat::addChat(msg);
 
-					self->addContactMember(scroller->getValue().asString(), self->mSelectedUUIDs.get(i));
+					self->addContactMember(scroller->getValue().asString(), *it);
 				}
 			}
 		}

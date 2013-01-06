@@ -50,8 +50,7 @@ LLMultiGesture::LLMultiGesture()
 	mSteps(),
 	mPlaying(FALSE),
 	mCurrentStep(0),
-	mDoneCallback(NULL),
-	mCallbackData(NULL)
+	mDoneCallback(NULL)
 {
 	reset();
 }

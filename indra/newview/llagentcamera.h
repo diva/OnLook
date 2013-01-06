@@ -234,7 +234,7 @@ public:
 	BOOL			setLookAt(ELookAtType target_type, LLViewerObject *object = NULL, LLVector3 position = LLVector3::zero);
 	ELookAtType		getLookAtType();
 	void			lookAtLastChat();
-	void			lookAtObject(const LLUUID &object_id, bool self=true);
+	bool			lookAtObject(const LLUUID &object_id, bool self=true);
 	void 			slamLookAt(const LLVector3 &look_at); // Set the physics data
 	BOOL			setPointAt(EPointAtType target_type, LLViewerObject *object = NULL, LLVector3 position = LLVector3::zero);
 	EPointAtType	getPointAtType();

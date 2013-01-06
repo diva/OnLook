@@ -1297,27 +1297,23 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 	}
 }
 
-// [Ansariel: Display name support]
 void LLFloaterIMPanel::lookupName()
 {
 	LLAvatarNameCache::get(mOtherParticipantUUID, boost::bind(&LLFloaterIMPanel::onAvatarNameLookup, _1, _2, this));
 }
 
 //static
-void LLFloaterIMPanel::onAvatarNameLookup(const LLUUID& id, const LLAvatarName& avatar_name, void* user_data)
+void LLFloaterIMPanel::onAvatarNameLookup(const LLUUID&, const LLAvatarName& avatar_name, void* data)
 {
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*)user_data;
+	LLFloaterIMPanel* self = (LLFloaterIMPanel*)data;
 
 	if (self && sFloaterIMPanels.count(self) != 0)
 	{
-		std::string title = avatar_name.getCompleteName();
-		if (!title.empty())
-		{
-			self->setTitle(title);
-		}
+		std::string title;
+		LLAvatarNameCache::getPNSName(avatar_name, title);
+		self->setTitle(title);
 	}
 }
-// [/Ansariel: Display name support]
 
 LLFloaterIMPanel::~LLFloaterIMPanel()
 {
@@ -1676,19 +1672,8 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 		else
 		{
 			std::string show_name = name;
-			LLAvatarName avatar_name;
-			if (source.notNull() &&
-				LLAvatarNameCache::get(source, &avatar_name))
-			{
-				static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-				switch (phoenix_name_system)
-				{
-					case 0 : show_name = avatar_name.getCompleteName(); break;
-					case 1 : show_name = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-					case 2 : show_name = avatar_name.mDisplayName; break;
-					default : show_name = avatar_name.getCompleteName(); break;
-				}
-			}
+			if (source.notNull())
+				LLAvatarNameCache::getPNSName(source, show_name);
 			// Convert the name to a hotlink and add to message.
 			const LLStyleSP &source_style = LLStyleMap::instance().lookupAgent(source);
 			mHistoryEditor->appendStyledText(show_name,false,prepend_newline,source_style);

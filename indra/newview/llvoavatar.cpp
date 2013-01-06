@@ -1005,6 +1005,7 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mAttachmentGeometryBytes(0),
 	mAttachmentSurfaceArea(0.f),
 	mTurning(FALSE),
+	mFreezeTimeDead(false),
 	mPelvisToFoot(0.f),
 	mLastSkeletonSerialNum( 0 ),
 	mHeadOffset(),
@@ -1045,7 +1046,6 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mSupportsAlphaLayers(FALSE),
 	mLoadedCallbacksPaused(FALSE),
 	mHasPelvisOffset( FALSE ),
-	mRenderUnloadedAvatar(LLCachedControl<bool>(gSavedSettings, "RenderUnloadedAvatar")),
 	mLastRezzedStatus(-1),
 	mFirstSetActualBoobGravRan( false ),
 	mSupportsPhysics( false ),
@@ -1054,6 +1054,9 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mCCSChatTextOverride(false)
 	// </edit>
 {
+	static LLCachedControl<bool> const freeze_time("FreezeTime", false);
+	mFreezeTimeLangolier = freeze_time;
+
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
 	//VTResume();  // VTune
 	
@@ -1229,6 +1232,13 @@ LLVOAvatar::~LLVOAvatar()
 
 void LLVOAvatar::markDead()
 {
+	static const LLCachedControl<bool> freeze_time("FreezeTime", false);
+	if (freeze_time && !mFreezeTimeLangolier)
+	{
+		// Delay the call to this function until FreezeTime is reset, otherwise avatars disappear from the frozen scene.
+		mFreezeTimeDead = true;
+		return;
+	}
 	if (mNameText)
 	{
 		mNameText->markDead();
@@ -1861,8 +1871,6 @@ void LLVOAvatar::onShift(const LLVector4a& shift_vector)
 	const LLVector3& shift = reinterpret_cast<const LLVector3&>(shift_vector);
 	mLastAnimExtents[0] += shift;
 	mLastAnimExtents[1] += shift;
-	mNeedsImpostorUpdate = TRUE;
-	mNeedsAnimUpdate = TRUE;
 }
 
 void LLVOAvatar::updateSpatialExtents(LLVector4a& newMin, LLVector4a &newMax)
@@ -2855,7 +2863,7 @@ void LLVOAvatar::dumpAnimationState()
 //------------------------------------------------------------------------
 // idleUpdate()
 //------------------------------------------------------------------------
-BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
+void LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 {
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
 	LLFastTimer t(FTM_AVATAR_UPDATE);
@@ -2863,12 +2871,12 @@ BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 	if (isDead())
 	{
 		llinfos << "Warning!  Idle on dead avatar" << llendl;
-		return TRUE;
-	}
+		return;
+	}	
 
  	if (!(gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_AVATAR)))
 	{
-		return TRUE;
+		return;
 	}
 
 	checkTextureLoading() ;
@@ -2937,7 +2945,7 @@ BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 
 	if (gNoRender)
 	{
-		return TRUE;
+		return;
 	}
 
 	idleUpdateVoiceVisualizer( voice_enabled );
@@ -2954,8 +2962,6 @@ BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 
 	idleUpdateNameTag( root_pos_last );
 	idleUpdateRenderCost();
-
-	return TRUE;
 }
 
 void LLVOAvatar::idleUpdateVoiceVisualizer(bool voice_enabled)
@@ -3135,7 +3141,7 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 
 	if (isImpostor() && !mNeedsImpostorUpdate)
 	{
-		LLVector4a ext[2];
+		LL_ALIGN_16(LLVector4a ext[2]);
 		F32 distance;
 		LLVector3 angle;
 
@@ -3666,6 +3672,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 	}
 	bool is_friend = LLAvatarTracker::instance().isBuddy(getID());
 	bool is_cloud = getIsCloud();
+	bool is_langolier = isLangolier();
 
 	if (is_appearance != mNameAppearance)
 	{
@@ -3691,7 +3698,8 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 		|| is_muted != mNameMute
 		|| is_appearance != mNameAppearance 
 		|| is_friend != mNameFriend
-		|| is_cloud != mNameCloud)
+		|| is_cloud != mNameCloud
+		|| is_langolier != mNameLangolier)
 	{
 		LLColor4 name_tag_color = getNameTagColor(is_friend);
 
@@ -3701,7 +3709,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 		std::string firstnameText;
 		std::string lastnameText;
 
-		if (is_away || is_muted || is_busy || is_appearance || !idle_string.empty())
+		if (is_away || is_muted || is_busy || is_appearance || is_langolier || !idle_string.empty())
 		{
 			std::string line;
 			if (is_away)
@@ -3724,7 +3732,12 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 				line += LLTrans::getString("AvatarEditingAppearance");	//"(Editing Appearance)"
 				line += ", ";
 			}
-			if (is_cloud)
+			if (is_langolier)
+			{
+				line += LLTrans::getString("AvatarLangolier");	//"Langolier"
+				line += ", ";
+			}
+			else if (is_cloud)
 			{
 				line += LLTrans::getString("LoadingData");	//"Loading..."
 				line += ", ";
@@ -3755,8 +3768,8 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 
 		static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
 
-		bool show_display_names = phoenix_name_system > 0;
-		bool show_usernames = phoenix_name_system < 2;
+		bool show_display_names = phoenix_name_system == 1 || phoenix_name_system == 2;
+		bool show_usernames = phoenix_name_system != 2;
 		if (show_display_names && LLAvatarNameCache::useDisplayNames())
 		{
 			LLAvatarName av_name;
@@ -3851,6 +3864,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 		mNameAppearance = is_appearance;
 		mNameFriend = is_friend;
 		mNameCloud = is_cloud;
+		mNameLangolier = is_langolier;
 		mTitle = title ? title->getString() : "";
 		LLStringFn::replace_ascii_controlchars(mTitle,LL_UNKNOWN_CHAR);
 		new_name = TRUE;
@@ -4088,7 +4102,18 @@ bool LLVOAvatar::isVisuallyMuted() const
 	
 	return LLMuteList::getInstance()->isMuted(getID()) ||
 			(mAttachmentGeometryBytes > max_attachment_bytes && max_attachment_bytes > 0) ||
-			(mAttachmentSurfaceArea > max_attachment_area && max_attachment_area > 0.f);
+			(mAttachmentSurfaceArea > max_attachment_area && max_attachment_area > 0.f) ||
+			isLangolier();
+}
+
+void LLVOAvatar::resetFreezeTime()
+{
+	bool dead = mFreezeTimeDead;
+	mFreezeTimeLangolier = mFreezeTimeDead = false;
+	if (dead)
+	{
+		markDead();
+	}
 }
 
 //------------------------------------------------------------------------
@@ -4098,6 +4123,13 @@ bool LLVOAvatar::isVisuallyMuted() const
 BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 {
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
+
+	// Frozen!
+	if (areAnimationsPaused())
+	{
+		updateMotions(LLCharacter::NORMAL_UPDATE);		// This is necessary to get unpaused again.
+		return FALSE;
+	}
 
 	// clear debug text
 	mDebugText.clear();
@@ -4339,7 +4371,8 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 			}
 			LLVector3 velDir = getVelocity();
 			velDir.normalize();
-			if ( mSignaledAnimations.find(ANIM_AGENT_WALK) != mSignaledAnimations.end())
+			static LLCachedControl<bool> TurnAround("TurnAroundWhenWalkingBackwards");
+			if (!TurnAround && (mSignaledAnimations.find(ANIM_AGENT_WALK) != mSignaledAnimations.end()))
 			{
 				F32 vpD = velDir * primDir;
 				if (vpD < -0.5f)
@@ -5245,7 +5278,20 @@ void LLVOAvatar::updateTextures()
 		LLWearableType::EType wearable_type = LLVOAvatarDictionary::getTEWearableType((ETextureIndex)texture_index);
 		U32 num_wearables = gAgentWearables.getWearableCount(wearable_type);
 		const LLTextureEntry *te = getTE(texture_index);
-		const F32 texel_area_ratio = fabs(te->mScaleS * te->mScaleT);
+
+		// getTE can return 0.
+		// Not sure yet why it does, but of course it crashes when te->mScale? gets used.
+		// Put safeguard in place so this corner case get better handling and does not result in a crash.
+		F32 texel_area_ratio = 1.0f;
+		if( te )
+		{
+			texel_area_ratio = fabs(te->mScaleS * te->mScaleT);
+		}
+		else
+		{
+			llwarns << "getTE( " << texture_index << " ) returned 0" <<llendl;
+		}
+
 		LLViewerFetchedTexture *imagep = NULL;
 		for (U32 wearable_index = 0; wearable_index < num_wearables; wearable_index++)
 		{
@@ -5362,7 +5408,7 @@ void LLVOAvatar::addBakedTextureStats( LLViewerFetchedTexture* imagep, F32 pixel
 	//the texture pipeline will stop fetching this texture.
 
 	imagep->resetTextureStats();
-	imagep->setCanUseHTTP(false) ; //turn off http fetching for baked textures.
+	//imagep->setCanUseHTTP(false) ; //turn off http fetching for baked textures.
 	imagep->setMaxVirtualSizeResetInterval(MAX_TEXTURE_VIRTURE_SIZE_RESET_INTERVAL);
 	imagep->resetMaxVirtualSizeResetCounter() ;
 
@@ -5596,7 +5642,9 @@ BOOL LLVOAvatar::processSingleAnimationStateChange( const LLUUID& anim_id, BOOL 
 
 	if ( start ) // start animation
 	{
-		if (anim_id == ANIM_AGENT_TYPE && gSavedSettings.getBOOL("PlayTypingSound"))
+		static LLCachedControl<bool> play_typing_sound("PlayTypingSound");
+		static LLCachedControl<bool> announce_snapshots("AnnounceSnapshots");
+		if (anim_id == ANIM_AGENT_TYPE && play_typing_sound)
 		{
 			if (gAudiop)
 			{
@@ -5621,6 +5669,17 @@ BOOL LLVOAvatar::processSingleAnimationStateChange( const LLUUID& anim_id, BOOL 
 		else if (anim_id == ANIM_AGENT_SIT_GROUND_CONSTRAINED)
 		{
 			sitDown(TRUE);
+		}
+		else if(anim_id == ANIM_AGENT_SNAPSHOT && announce_snapshots)
+		{
+			std::string name;
+			LLAvatarNameCache::getPNSName(mID, name);
+			LLChat chat;
+			chat.mFromName = name;
+			chat.mText = name + " " + LLTrans::getString("took_a_snapshot") + ".";
+			chat.mURL = llformat("secondlife:///app/agent/%s/about",mID.asString().c_str());
+			chat.mSourceType = CHAT_SOURCE_SYSTEM;
+			LLFloaterChat::addChat(chat);
 		}
 
 
@@ -7598,9 +7657,11 @@ BOOL LLVOAvatar::processFullyLoadedChange(bool loading)
 
 BOOL LLVOAvatar::isFullyLoaded() const
 {
+	static LLCachedControl<bool> const render_unloaded_avatar("RenderUnloadedAvatar", false);
+
 // [SL:KB] - Patch: Appearance-SyncAttach | Checked: 2010-09-22 (Catznip-2.2.0a) | Added: Catznip-2.2.0a
 	// Changes to LLAppearanceMgr::updateAppearanceFromCOF() expect this function to actually return mFullyLoaded for gAgentAvatarp
-	if ( (!isSelf()) && (mRenderUnloadedAvatar) )
+	if ( (!isSelf()) && render_unloaded_avatar )
 		return TRUE;
 	else
 		return mFullyLoaded;
@@ -7641,7 +7702,7 @@ void LLVOAvatar::updateMeshTextures()
 	if(!isSelf())
 	{
 		src_callback_list = &mCallbackTextureList ;
-		paused = mLoadedCallbacksPaused ;
+		paused = !isVisible();
 	}
 
 	std::vector<BOOL> is_layer_baked;
@@ -8206,7 +8267,7 @@ void LLVOAvatar::onFirstTEMessageReceived()
 		if(!isSelf())
 		{
 			src_callback_list = &mCallbackTextureList ;
-			paused = mLoadedCallbacksPaused ;
+			paused = !isVisible();
 		}
 
 		for (U32 i = 0; i < mBakedTextureDatas.size(); i++)
@@ -8824,6 +8885,9 @@ void LLVOAvatar::cullAvatarsByPixelArea()
 		}
 	}
 
+	// runway - this doesn't detect gray/grey state.
+	// think we just need to be checking self av since it's the only
+	// one with lltexlayer stuff.
 	S32 grey_avatars = 0;
 	if (LLVOAvatar::areAllNearbyInstancesBaked(grey_avatars))
 	{
@@ -9743,17 +9807,14 @@ BOOL LLVOAvatar::isTextureDefined(LLVOAvatarDefines::ETextureIndex te, U32 index
 		return FALSE;
 	}
 
-	LLViewerTexture* img = getImage(te, index);
-	if(img)
+	if( !getImage( te, index ) )
 	{
-		return (img->getID() != IMG_DEFAULT_AVATAR &&
-		        img->getID() != IMG_DEFAULT);
-	}
-	else
-	{
-		llwarns << "Image doesn't exist" << llendl;
+		llwarns << "getImage( " << te << ", " << index << " ) returned 0" << llendl;
 		return FALSE;
 	}
+
+	return (getImage(te, index)->getID() != IMG_DEFAULT_AVATAR && 
+			getImage(te, index)->getID() != IMG_DEFAULT);
 }
 
 //virtual

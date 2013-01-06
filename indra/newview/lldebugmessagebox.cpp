@@ -112,7 +112,7 @@ void LLDebugVarMessageBox::show(const std::string& title, F32 *var, F32 max_valu
 	{
 		box->mSlider1->setValue(*var);
 	}
-	box->mSlider1->setCommitCallback(slider_changed);
+	box->mSlider1->setCommitCallback(boost::bind(&LLDebugVarMessageBox::slider_changed,_1,box));
 	box->mSlider1->setCallbackUserData(box);
 #endif
 }
@@ -129,8 +129,7 @@ void LLDebugVarMessageBox::show(const std::string& title, S32 *var, S32 max_valu
 	{
 		box->mSlider1->setValue((F32)*var);
 	}
-	box->mSlider1->setCommitCallback(slider_changed);
-	box->mSlider1->setCallbackUserData(box);
+	box->mSlider1->setCommitCallback(boost::bind(&LLDebugVarMessageBox::slider_changed,_1,box));
 #endif
 }
 
@@ -142,20 +141,17 @@ void LLDebugVarMessageBox::show(const std::string& title, LLVector3 *var, LLVect
 	box->mSlider1->setMaxValue(max_value.mV[VX]);
 	box->mSlider1->setMinValue(-max_value.mV[VX]);
 	box->mSlider1->setIncrement(increment.mV[VX]);
-	box->mSlider1->setCommitCallback(slider_changed);
-	box->mSlider1->setCallbackUserData(box);
+	box->mSlider1->setCommitCallback(boost::bind(&LLDebugVarMessageBox::slider_changed,_1,box));
 
 	box->mSlider2->setMaxValue(max_value.mV[VX]);
 	box->mSlider2->setMinValue(-max_value.mV[VX]);
 	box->mSlider2->setIncrement(increment.mV[VX]);
-	box->mSlider2->setCommitCallback(slider_changed);
-	box->mSlider2->setCallbackUserData(box);
+	box->mSlider2->setCommitCallback(boost::bind(&LLDebugVarMessageBox::slider_changed,_1,box));
 
 	box->mSlider3->setMaxValue(max_value.mV[VX]);
 	box->mSlider3->setMinValue(-max_value.mV[VX]);
 	box->mSlider3->setIncrement(increment.mV[VX]);
-	box->mSlider3->setCommitCallback(slider_changed);
-	box->mSlider3->setCallbackUserData(box);
+	box->mSlider3->setCommitCallback(boost::bind(&LLDebugVarMessageBox::slider_changed,_1,box));
 #endif
 }
 

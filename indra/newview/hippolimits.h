@@ -26,6 +26,7 @@ private:
 	float mMinPrimScale;
 
 	void setOpenSimLimits();
+	void setAuroraLimits();
 	void setSecondLifeLimits();
 };
 

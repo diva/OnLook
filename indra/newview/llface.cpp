@@ -1374,7 +1374,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	
 	static LLCachedControl<bool> use_transform_feedback("RenderUseTransformFeedback", false);
 
-#if 0//#ifdef GL_TRANSFORM_FEEDBACK_BUFFER
+#ifdef GL_TRANSFORM_FEEDBACK_BUFFER
 	if (use_transform_feedback &&
 		gTransformPositionProgram.mProgramObject && //transform shaders are loaded
 		mVertexBuffer->useVBOs() && //target buffer is in VRAM
@@ -1639,7 +1639,8 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 						if (!do_xform)
 						{
 							LLFastTimer t(FTM_FACE_TEX_QUICK_NO_XFORM);
-							LLVector4a::memcpyNonAliased16((F32*) tex_coords.get(), (F32*) vf.mTexCoords, num_vertices*2*sizeof(F32));
+							S32 tc_size = (num_vertices*2*sizeof(F32)+0xF) & ~0xF;
+							LLVector4a::memcpyNonAliased16((F32*) tex_coords.get(), (F32*) vf.mTexCoords, tc_size);
 						}
 						else
 						{

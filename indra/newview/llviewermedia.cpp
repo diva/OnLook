@@ -55,6 +55,7 @@
 #include "llwindow.h"
 #include "llvieweraudio.h"
 #include "llweb.h"
+#include "llwebprofile.h"
 
 #include "llfloateravatarinfo.h"	// for getProfileURL() function
 //#include "viewerversion.h"
@@ -75,14 +76,15 @@ class LLMimeDiscoveryResponder : public LLHTTPClient::ResponderHeadersOnly
 {
 LOG_CLASS(LLMimeDiscoveryResponder);
 public:
-	LLMimeDiscoveryResponder( viewer_media_t media_impl)
+	LLMimeDiscoveryResponder(viewer_media_t media_impl, std::string const& default_mime_type)
 		: mMediaImpl(media_impl),
+		  mDefaultMimeType(default_mime_type),
 		  mInitialized(false)
 	{}
 
 	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{
-		if (200 <= status && status < 300)
+		if (200 <= status && status < 300 || status == 405)		// Using HEAD may result in a 405 METHOD NOT ALLOWED, but still have the right Content-TYpe header.
 		{
 			std::string media_type;
 			if (headers.getFirstValue("content-type", media_type))
@@ -92,9 +94,13 @@ public:
 				completeAny(status, mime_type);
 				return;
 			}
-			llwarns << "LLMimeDiscoveryResponder::completedHeaders: OK HTTP status (" << status << ") but no Content-Type! Received headers: " << headers << llendl;
+			if (200 <= status && status < 300)
+			{
+				llwarns << "LLMimeDiscoveryResponder::completedHeaders: OK HTTP status (" << status << ") but no Content-Type! Received headers: " << headers << llendl;
+			}
 		}
-		completeAny(status, "none/none");
+		llwarns << "LLMimeDiscoveryResponder::completedHeaders: Got status " << status << ". Using default mime-type: " << mDefaultMimeType << llendl;
+		completeAny(status, mDefaultMimeType);
 	}
 
 	void completeAny(U32 status, const std::string& mime_type)
@@ -113,6 +119,7 @@ public:
 
 	public:
 		viewer_media_t mMediaImpl;
+		std::string mDefaultMimeType;
 		bool mInitialized;
 };
 
@@ -134,12 +141,7 @@ public:
 	{
 		LL_DEBUGS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
 		LL_DEBUGS("MediaAuth") << headers << LL_ENDL;
-		AIHTTPReceivedHeaders::range_type cookies;
-		if (headers.getValues("set-cookie", cookies))
-		{
-			for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
-				LLViewerMedia::openIDCookieResponse(cookie->second);
-		}
+		LLViewerMedia::openIDCookieResponse(get_cookie("agni_sl_session_id"));
 	}
 
 	/* virtual */ void completedRaw(
@@ -168,6 +170,7 @@ public:
 	{
 	}
 
+	/* virtual */ bool followRedir(void) const { return true; }
 	/* virtual */ bool needsHeaders(void) const { return true; }
 
 	/* virtual */ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
@@ -175,11 +178,29 @@ public:
 		LL_INFOS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
 		LL_INFOS("MediaAuth") << headers << LL_ENDL;
 
+		bool found = false;
 		AIHTTPReceivedHeaders::range_type cookies;
 		if (headers.getValues("set-cookie", cookies))
 		{
 			for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
+			{
 			  LLViewerMedia::getCookieStore()->setCookiesFromHost(cookie->second, mHost);
+
+			  std::string key = cookie->second.substr(0, cookie->second.find('='));
+			  if (key == "_my_secondlife_session")
+			  {
+				// Set cookie for snapshot publishing.
+				std::string auth_cookie = cookie->second.substr(0, cookie->second.find(";")); // strip path
+				LL_INFOS("MediaAuth") << "Setting openID auth cookie \"" << auth_cookie << "\"." << LL_ENDL;
+				LLWebProfile::setAuthCookie(auth_cookie);
+				found = true;
+				break;
+			  }
+			}
+		}
+		if (!found)
+		{
+			llwarns << "LLViewerMediaWebProfileResponder did not receive a session ID cookie \"_my_secondlife_session\"! OpenID authentications will fail!" << llendl;
 		}
 	}
 
@@ -1312,7 +1333,7 @@ void LLViewerMediaImpl::navigateTo(const std::string& url, const std::string& mi
 		{
 			if(mime_type.empty())
 			{
-				LLHTTPClient::getHeaderOnly( url, new LLMimeDiscoveryResponder(this));
+				LLHTTPClient::getHeaderOnly(url, new LLMimeDiscoveryResponder(this, "text/html"));
 			}
 			else if(initializeMedia(mime_type) && (plugin = getMediaPlugin()))
 			{

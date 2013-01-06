@@ -70,8 +70,10 @@ BOOL LLPanelGeneral::postBuild()
 	childSetValue("show_my_name_checkbox", gSavedSettings.getBOOL("RenderNameHideSelf"));
 	childSetValue("small_avatar_names_checkbox", gSavedSettings.getBOOL("SmallAvatarNames"));
 	childSetValue("show_my_title_checkbox", gSavedSettings.getBOOL("RenderHideGroupTitle"));
+	childSetValue("away_when_idle_checkbox", gSavedSettings.getBOOL("AllowIdleAFK"));
 	childSetValue("afk_timeout_spinner", gSavedSettings.getF32("AFKTimeout"));
 	childSetValue("notify_money_change_checkbox", gSavedSettings.getBOOL("NotifyMoneyChange"));
+	childSetValue("no_transaction_clutter_checkbox", gSavedSettings.getBOOL("LiruNoTransactionClutter"));
 
 	
 
@@ -111,6 +113,12 @@ BOOL LLPanelGeneral::postBuild()
 	childSetVisible("maturity_desired_combobox", can_choose);
 	childSetVisible("maturity_desired_textbox",	!can_choose);
 
+	childSetEnabled("afk_timeout_spinner", gSavedSettings.getBOOL("AllowIdleAFK"));
+	childSetCommitCallback("away_when_idle_checkbox", &onClickCheckbox, this);
+
+	childSetEnabled("no_transaction_clutter_checkbox", gSavedSettings.getBOOL("NotifyMoneyChange"));
+	childSetCommitCallback("notify_money_change_checkbox", &onClickCheckbox, this);
+
 	childSetAction("clear_settings", &onClickClearSettings, this);
 			
 	return TRUE;
@@ -145,8 +153,10 @@ void LLPanelGeneral::apply()
 	gSavedSettings.setBOOL("RenderNameHideSelf", childGetValue("show_my_name_checkbox"));
 	gSavedSettings.setBOOL("SmallAvatarNames", childGetValue("small_avatar_names_checkbox"));
 	gSavedSettings.setBOOL("RenderHideGroupTitle", childGetValue("show_my_title_checkbox"));
+	gSavedSettings.setBOOL("AllowIdleAFK", childGetValue("away_when_idle_checkbox"));
 	gSavedSettings.setF32("AFKTimeout", childGetValue("afk_timeout_spinner").asReal());
 	gSavedSettings.setBOOL("NotifyMoneyChange", childGetValue("notify_money_change_checkbox"));
+	gSavedSettings.setBOOL("LiruNoTransactionClutter", childGetValue("no_transaction_clutter_checkbox"));
 
 	
 	gSavedSettings.setF32("UIScaleFactor", childGetValue("ui_scale_slider").asReal());
@@ -161,6 +171,17 @@ void LLPanelGeneral::apply()
 
 void LLPanelGeneral::cancel()
 {
+}
+
+// static
+void LLPanelGeneral::onClickCheckbox(LLUICtrl* ctrl, void* data)
+{
+	LLPanelGeneral* self = (LLPanelGeneral*)data;
+	bool enabled = ctrl->getValue().asBoolean();
+	if(ctrl->getName() == "away_when_idle_checkbox")
+		self->childSetEnabled("afk_timeout_spinner", enabled);
+	else if(ctrl->getName() == "notify_money_change_checkbox")
+		self->childSetEnabled("no_transaction_clutter_checkbox", enabled);
 }
 
 // static

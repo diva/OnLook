@@ -766,13 +766,14 @@ Commands:
 
 Command-options for "configure":
   We use cmake variables to change the build configuration.
-  -DSERVER:BOOL=OFF        Don't configure simulator/dataserver/etc
-  -DVIEWER:BOOL=OFF        Don't configure the viewer
-  -DPACKAGE:BOOL=ON        Create "package" target to make installers
-  -DLOCALIZESETUP:BOOL=ON  Create one win_setup target per supported language
-  -DLL_TESTS:BOOL=OFF      Don't generate unit test projects
-  -DEXAMPLEPLUGIN:BOOL=OFF Don't generate example plugin project
-  -VISTA_ICON:BOOL=ON      Allow pre-2008 VS to use vista-optimized resource file. (Requires updated rcdll.dll!)
+  -DSERVER:BOOL=OFF          Don't configure simulator/dataserver/etc
+  -DVIEWER:BOOL=OFF          Don't configure the viewer
+  -DPACKAGE:BOOL=ON          Create "package" target to make installers
+  -DLOCALIZESETUP:BOOL=ON    Create one win_setup target per supported language
+  -DLL_TESTS:BOOL=OFF        Don't generate unit test projects
+  -DEXAMPLEPLUGIN:BOOL=OFF   Don't generate example plugin project
+  -DDISABLE_TCMALLOC:BOOL=ON Disable linkage of TCMalloc. (64bit builds automatically disable TCMalloc)
+  -DVISTA_ICON:BOOL=ON       Allow pre-2008 VS to use vista-optimized resource file. (Requires updated rcdll.dll!)
 
 Examples:
   Set up a viewer-only project for your system:

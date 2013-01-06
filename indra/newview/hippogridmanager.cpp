@@ -51,6 +51,7 @@ HippoGridInfo::HippoGridInfo(const std::string& gridName) :
 	mGridMessage(""),
 	mXmlState(XML_VOID),
 	mVoiceConnector("SLVoice"),
+	mIsInProductionGrid(false),
 	mRenderCompat(true),
 	mInvLinks(false),
 	mAutoUpdate(false),
@@ -75,9 +76,20 @@ bool HippoGridInfo::isOpenSimulator() const
 	return (mPlatform == HippoGridInfo::PLATFORM_OPENSIM);
 }
 
+bool HippoGridInfo::isAurora() const
+{
+	return (mPlatform == HippoGridInfo::PLATFORM_AURORA);
+}
+
 bool HippoGridInfo::isSecondLife() const
 {
 	return (mPlatform == HippoGridInfo::PLATFORM_SECONDLIFE);
+}
+
+bool HippoGridInfo::isInProductionGrid() const
+{
+	llassert(mPlatform == HippoGridInfo::PLATFORM_SECONDLIFE);
+	return mIsInProductionGrid;
 }
 
 const std::string& HippoGridInfo::getGridName() const
@@ -85,11 +97,15 @@ const std::string& HippoGridInfo::getGridName() const
 	return mGridName;
 }
 
-const std::string& HippoGridInfo::getGridOwner() const {
-	if(isSecondLife()) {
+const std::string& HippoGridInfo::getGridOwner() const
+{
+	if(isSecondLife())
+	{
 		static const std::string ll = "Linden Lab";
 		return ll;
-	} else {
+	}
+	else
+	{
 		return this->getGridName();
 	}	
 }
@@ -220,12 +236,20 @@ void HippoGridInfo::setGridNick(std::string gridNick)
 	{
 		setGridName(gridNick);
 	}
+	if(gridNick == "secondlife")
+	{
+		mIsInProductionGrid = true;
+	}
 }
 
 void HippoGridInfo::setLoginUri(const std::string& loginUri)
 {
 	std::string uri = loginUri;
 	mLoginUri = sanitizeUri(uri);
+	if (utf8str_tolower(LLURI(uri).hostName()) == "login.agni.lindenlab.com")
+	{
+		mIsInProductionGrid = true;
+	}
 }
 
 void HippoGridInfo::setLoginPage(const std::string& loginPage)

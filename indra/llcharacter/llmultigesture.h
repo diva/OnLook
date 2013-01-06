@@ -100,8 +100,7 @@ public:
 	// Timer for waiting
 	LLFrameTimer mWaitTimer;
 
-	void (*mDoneCallback)(LLMultiGesture* gesture, void* data);
-	void* mCallbackData;
+	boost::function<void (LLMultiGesture*)> mDoneCallback;
 
 	// Animations that we requested to start
 	std::set<LLUUID> mRequestedAnimIDs;

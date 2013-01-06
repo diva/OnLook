@@ -450,7 +450,7 @@ void LLPanelGroupNotices::processNotices(LLMessageSystem* msg)
 		if (1 == count && id.isNull())
 		{
 			// Only one entry, the dummy entry.
-			mNoticesList->addCommentText(mNoNoticesStr);
+			mNoticesList->setCommentText(mNoNoticesStr);
 			mNoticesList->setEnabled(FALSE);
 			return;
 		}
@@ -493,7 +493,7 @@ void LLPanelGroupNotices::processNotices(LLMessageSystem* msg)
 		mNoticesList->addElement(row, ADD_BOTTOM);
 	}
 
-	mNoticesList->sortItems();
+	mNoticesList->updateSort();
 }
 
 void LLPanelGroupNotices::onSelectNotice(LLUICtrl* ctrl, void* data)

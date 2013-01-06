@@ -1,101 +1,34 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <pie_menu name="Object Pie">
-	<menu_item_call label="Abrir" name="Open">
-		<on_click function="Object.Open" />
-		<on_enable function="Object.EnableOpen" />
-	</menu_item_call>
-	<menu_item_call label="Crear" name="Create">
-		<on_click function="Object.Build" />
-		<on_enable function="EnableEdit" />
-	</menu_item_call>
-	<menu_item_call label="Tocar" name="Object Touch">
-		<on_click function="Object.Touch" />
-		<on_enable function="Object.EnableTouch" userdata="Touch" name="EnableTouch"/>
-	</menu_item_call>
-	<menu_item_call label="Sentarse" name="Object Sit">
-		<on_click function="Object.SitOrStand" />
-		<on_enable function="Object.EnableSitOrStand" userdata="Sit Here,Stand Up" name="EnableSitOrStand"/>
-	</menu_item_call>
-	<menu_item_call label="Recoger" name="Pie Object Take">
-		<on_click function="Tools.BuyOrTake" />
-		<on_enable function="Tools.EnableBuyOrTake" userdata="Buy,Take" name="EnableBuyOrTake"/>
-	</menu_item_call>
-	<menu_item_call label="Pagar..." name="Pay...">
-		<on_click function="PayObject" />
-		<on_enable function="EnablePayObject" />
-	</menu_item_call>
+	<menu_item_call label="Abrir" name="Open"/>
+	<menu_item_call label="Crear" name="Create"/>
+	<menu_item_call label="Tocar" name="Object Touch"/>
+	<menu_item_call label="Sentarse" name="Object Sit"/>
+	<menu_item_call label="Recoger" name="Pie Object Take"/>
+	<menu_item_call label="Pagar..." name="Pay..."/>
 	<pie_menu label="Más &gt;" name="More &gt;">
-		<menu_item_call label="Borrar" name="Delete">
-			<on_click function="Object.Delete" />
-			<on_enable function="Object.EnableDelete" />
-		</menu_item_call>
-		<menu_item_call label="Vestirse" name="Wear">
-			<on_click function="Object.AttachToAvatar" />
-			<on_enable function="Object.EnableWear" />
-		</menu_item_call>
-		<menu_item_call label="Recoger una copia" name="Take Copy">
-			<on_click function="Tools.TakeCopy" />
-			<on_enable function="Tools.EnableTakeCopy" />
-		</menu_item_call>
+		<menu_item_call label="Borrar" name="Delete"/>
+		<menu_item_call label="Vestirse" name="Wear"/>
+		<menu_item_call label="Recoger una copia" name="Take Copy"/>
 		<pie_menu label="Anexar HUD &gt;" name="Object Attach HUD" />
 		<pie_menu label="Anexar &gt;" name="Object Attach" />
-		<menu_item_call label="Regresar..." name="Return...">
-			<on_click function="Object.Return" />
-			<on_enable function="Object.EnableReturn" />
-		</menu_item_call>
+		<menu_item_call label="Regresar..." name="Return..."/>
 		<pie_menu label="Más &gt;" name="Rate Menu">
-			<menu_item_separator />
 			<pie_menu label="Herramientas &gt;" name="Rate Menu">
-				<menu_item_call label="Destruir" name="Destroy">
-					<on_click function="Object.Destroy" />
-					<on_enable function="Object.EnableDestroy" />
-				</menu_item_call>
-				<menu_item_call label="Explotar" name="Explode">
-					<on_click function="Object.Explode" />
-					<on_enable function="Object.EnableExplode" />
-				</menu_item_call>
-				<menu_item_call label="Medir" name="Measure">
-					<on_click function="Object.Measure" />
-				</menu_item_call>
-				<menu_item_call label="Información" name="Data">
-					<on_click function="Object.Data" />
-				</menu_item_call>
-				<menu_item_call label="S. Count" name="ScriptCount">
-					<on_click function="Object.ScriptCount" />
-					<on_visible function="Object.VisibleScriptCount" />
-				</menu_item_call>
-				<menu_item_call label="Reiniciar Scripts" name="Reset Scripts" >
-					<on_click function="Tools.SelectedScriptAction" userdata="reset" />
-					<on_enable function="EditableSelected" />
-				</menu_item_call>
-				<menu_item_call label="Exportar" name="Export">
-						<on_click function="Object.Export" />
-						<on_enable function="Object.EnableExport" />
-				</menu_item_call>				
+				<menu_item_call label="Explotar" name="Explode"/>
+				<menu_item_call label="Medir" name="Measure"/>
+				<menu_item_call label="Información" name="Data"/>
+				<menu_item_call label="Contar Scripts" name="ScriptCount"/>
+				<menu_item_call label="Reiniciar Scripts" name="Reset Scripts"/>
+				<menu_item_call label="Exportar" name="Export"/>
 			</pie_menu>
-			<menu_item_call label="Silenciar" name="Object Mute">
-				<on_click function="Object.Mute" />
-				<on_enable function="Object.EnableMute" />
-			</menu_item_call>
-			<menu_item_call label="Examinar" name="Object Inspect">
-				<on_click function="Object.Inspect" />
-				<on_enable function="Object.EnableInspect" />
-			</menu_item_call>
-			<menu_item_call label="Derender" name="Derender">
-				<on_click function="Object.DERENDER" />
-			</menu_item_call>
-			<menu_item_call label="Reportar..." name="Report Abuse...">
-				<on_click function="Object.ReportAbuse" />
-				<on_enable function="Object.EnableReportAbuse" />
-			</menu_item_call>
+			<menu_item_call label="Recargar" name="Reload Textures"/>
+			<menu_item_call label="Silenciar" name="Object Mute"/>
+			<menu_item_call label="Examinar" name="Object Inspect"/>
+			<menu_item_call label="Derenderizar" name="Derender"/>
+			<menu_item_call label="Denunciar..." name="Report Abuse..."/>
 		</pie_menu>
-		<menu_item_call label="Comprar..." name="Buy...">
-			<on_click function="Object.Buy" />
-			<on_enable function="Object.EnableBuy" />
-		</menu_item_call>
+		<menu_item_call label="Comprar..." name="Buy..."/>
 	</pie_menu>
-	<menu_item_call label="Editar..." name="Edit...">
-		<on_click function="Object.Edit" />
-		<on_enable function="EnableEdit" />
-	</menu_item_call>
+	<menu_item_call label="Editar..." name="Edit..."/>
 </pie_menu>

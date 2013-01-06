@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel name="panel_navmesh_rebake" >
-	<button label="Rebake de Región" name="navmesh_btn" tool_tip="Pulsa para hacer un rebake del navmesh de la región." width="120" />
-	<button label="Solicitando rebake" name="navmesh_btn_sending" tool_tip="Enviando requerimiento de rebake al servidor." width="120" />
-	<button label="Haciendo rebake de la Región" name="navmesh_btn_baking" tool_tip="Se está haciendo el rebake de la Región.  Cuando se haya competado, este botón desaparecerá." width="120" />
-</panel>

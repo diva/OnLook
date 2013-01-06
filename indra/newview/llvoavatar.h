@@ -140,6 +140,16 @@ protected:
  **/
 
 public:
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+
 	LLVOAvatar(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp);
 	virtual void		markDead();
 	static void			initClass(); // Initialize data that's only init'd once per class.
@@ -171,7 +181,7 @@ public:
 													 U32 block_num,
 													 const EObjectUpdateType update_type,
 													 LLDataPacker *dp);
-	virtual BOOL   	 	 	idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time);
+	virtual void   	 	 	idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time);
 	virtual BOOL   	 	 	updateLOD();
 	BOOL  	 	 	 	 	updateJointLODs();
 	void					updateLODRiggedAttachments( void );
@@ -261,7 +271,7 @@ public:
 	bool			isBuilt() const { return mIsBuilt; }
 
 private: //aligned members
-	LLVector4a	mImpostorExtents[2];
+	LL_ALIGN_16(LLVector4a	mImpostorExtents[2]);
 
 private:
 	BOOL			mSupportsAlphaLayers; // For backwards compatibility, TRUE for 1.23+ clients
@@ -331,6 +341,8 @@ public:
 	BOOL			hasGray() const; 
 	S32				getRezzedStatus() const; // 0 = cloud, 1 = gray, 2 = fully textured.
 	void			updateRezzedStatusTimers();
+	bool			isLangolier() const { return mFreezeTimeLangolier; }
+	bool			isFrozenDead() const { return mFreezeTimeDead; }
 
 	S32				mLastRezzedStatus;
 protected:
@@ -348,6 +360,8 @@ private:
 	S32				mVisualComplexity;
 	LLFrameTimer	mFullyLoadedTimer;
 	LLFrameTimer	mRuthTimer;
+	bool			mFreezeTimeLangolier;	// True when this avatar was created during snapshot FreezeTime mode, and that mode is still active.
+	bool			mFreezeTimeDead;		// True when the avatar was marked dead (ie, TP-ed away) while in FreezeTime mode.
 protected:
 	LLFrameTimer    mInvisibleTimer;
 	
@@ -443,6 +457,7 @@ private:
 public:
 	U32 		renderImpostor(LLColor4U color = LLColor4U(255,255,255,255), S32 diffuse_channel = 0);
 	bool		isVisuallyMuted() const;
+	void		resetFreezeTime();
 
 	U32 		renderRigid();
 	U32 		renderSkinned(EAvatarRenderPass pass);
@@ -518,8 +533,6 @@ private:
 	F32			mImpostorDistance;
 	F32			mImpostorPixelArea;
 	LLVector3	mLastAnimExtents[2];  
-	
-	LLCachedControl<bool> mRenderUnloadedAvatar;
 
 	//--------------------------------------------------------------------
 	// Wind rippling in clothes
@@ -1002,6 +1015,7 @@ private:
 	bool      		mNameAppearance;
 	bool			mNameFriend;
 	bool			mNameCloud;
+	bool			mNameLangolier;
 	F32				mNameAlpha;
 	BOOL      		mRenderGroupTitles;
 

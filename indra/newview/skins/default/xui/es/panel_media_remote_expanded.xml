@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel name="media_remote">
-	<panel filename="panel_bg_tab.xml"/>
 	<panel label="Audio &amp; Vídeo" name="Volume Panel"/>
-	<panel filename="panel_media_controls.xml"/>
 	<string name="play_label">
 		Reproducir
 	</string>
@@ -12,6 +10,15 @@
 	<string name="pause_label">
 		Pausa
 	</string>
+	<string name="Title">
+		Título
+	</string>
+	<string name="Artist">
+		Artista
+	</string>
+	<string name="Now_playing">
+		Ejecutándose ahora
+	</string>	
 	<string name="default_tooltip_label">
 		No se ha especificado media
 	</string>

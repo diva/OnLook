@@ -410,11 +410,7 @@ LLVector3 LLAgentCamera::calcFocusOffset(LLViewerObject *object, LLVector3 origi
 	}
 	
 	LLQuaternion inv_obj_rot = ~obj_rot; // get inverse of rotation
-	LLVector3 object_extents = object->getScale();	
-	//this stuff just seems to make camera snapping worse...
-	//const LLVector4a* oe4 = object->mDrawable->getSpatialExtents();
-	//object_extents.set( oe4[1][0], oe4[1][1], oe4[1][2] );
-
+	LLVector3 object_extents = object->getScale();
 	
 	// make sure they object extents are non-zero
 	object_extents.clamp(0.001f, F32_MAX);
@@ -1637,7 +1633,7 @@ LLVector3d LLAgentCamera::calcFocusPositionTargetGlobal()
 					{
 						gPipeline.updateMoveNormalAsync(drawablep);
 					}
-					else
+					else if(!drawablep->isState(LLDrawable::ON_MOVE_LIST))
 					{
 						if (drawablep->isState(LLDrawable::MOVE_UNDAMPED))
 						{
@@ -1844,8 +1840,9 @@ LLVector3d LLAgentCamera::calcCameraPositionTargetGlobal(BOOL *hit_limit)
 				local_camera_offset = gAgent.getFrameAgent().rotateToAbsolute( local_camera_offset );
 			}
 
+			static const LLCachedControl<bool> sg_ignore_sim_cam_consts("SGIgnoreSimulatorCameraConstraints",false);
 			if ( !mCameraCollidePlane.isExactlyZero()
-				 && !gSavedSettings.getBOOL("SGIgnoreSimulatorCameraConstraints")
+				 && !sg_ignore_sim_cam_consts
 				 && isAgentAvatarValid()
 				 && !gAgentAvatarp->isSitting())
 			{
@@ -2311,12 +2308,7 @@ void LLAgentCamera::changeCameraToThirdPerson(BOOL animate)
 		}
 		updateLastCamera();
 		mCameraMode = CAMERA_MODE_THIRD_PERSON;
-		U32 old_flags = gAgent.getControlFlags();
 		gAgent.clearControlFlags(AGENT_CONTROL_MOUSELOOK);
-		if (old_flags != gAgent.getControlFlags())
-		{
-			gAgent.setFlagsDirty();
-		}
 	}
 
 	// Remove any pitch from the avatar
@@ -2522,9 +2514,10 @@ void LLAgentCamera::setFocusObject(LLViewerObject* object)
 //-----------------------------------------------------------------------------
 void LLAgentCamera::setFocusGlobal(const LLPickInfo& pick)
 {
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
 	LLViewerObject* objectp = gObjectList.findObject(pick.mObjectID);
 
-	if (objectp)
+	if (objectp && !freeze_time)
 	{
 		// focus on object plus designated offset
 		// which may or may not be same as pick.mPosGlobal
@@ -2802,18 +2795,18 @@ void LLAgentCamera::lookAtLastChat()
 }
 
 //Pulled implementation out of lookAtLastChat and adapted to work for for general objects
-void LLAgentCamera::lookAtObject(const LLUUID &object_id, bool self)
+bool LLAgentCamera::lookAtObject(const LLUUID &object_id, bool self)
 {
 	// Block if camera is animating or not in normal third person camera mode
 	if (mCameraAnimating || !cameraThirdPerson())
 	{
-		return;
+		return false;
 	}
 
 	LLViewerObject *chatter = gObjectList.findObject(object_id);
 	if (!chatter)
 	{
-		return;
+		return false;
 	}
 
 	LLVector3 delta_pos;
@@ -2844,7 +2837,7 @@ void LLAgentCamera::lookAtObject(const LLUUID &object_id, bool self)
 		new_camera_pos += left * 0.3f;
 		new_camera_pos += up * 0.2f;
 
-		//setFocusOnAvatar(FALSE, FALSE);
+		setFocusOnAvatar(FALSE, FALSE);
 
 		if (chatter_av->mHeadp)
 		{
@@ -2862,7 +2855,6 @@ void LLAgentCamera::lookAtObject(const LLUUID &object_id, bool self)
 			else
 				mCameraFocusOffsetTarget.setVec(radius, radius, 0.f);
 		}
-		setFocusOnAvatar(FALSE, TRUE);
 	}
 	else
 	{
@@ -2882,17 +2874,15 @@ void LLAgentCamera::lookAtObject(const LLUUID &object_id, bool self)
 		new_camera_pos += left * 0.3f;
 		new_camera_pos += up * 0.2f;
 
-		//setFocusOnAvatar(FALSE, FALSE);
-		
+		setFocusOnAvatar(FALSE, FALSE);
 
 		setFocusGlobal(chatter->getPositionGlobal(), object_id);
 		if(self)
 			mCameraFocusOffsetTarget = gAgent.getPosGlobalFromAgent(new_camera_pos) - chatter->getPositionGlobal();
 		else
 			mCameraFocusOffsetTarget.setVec(radius, radius, 0.f);
-
-		setFocusOnAvatar(FALSE, TRUE);
 	}
+	return true;
 }
 
 

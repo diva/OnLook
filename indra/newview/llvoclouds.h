@@ -69,7 +69,7 @@ public:
 	/*virtual*/ void setPixelAreaAndAngle(LLAgent &agent); // generate accurate apparent angle and area
 	
 	void updateFaceSize(S32 idx) { }
-	BOOL idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time);
+	void idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time);
 
 	virtual U32 getPartitionType() const;
 

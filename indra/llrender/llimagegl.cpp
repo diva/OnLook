@@ -1329,6 +1329,7 @@ BOOL LLImageGL::createGLTexture(S32 discard_level, const U8* data_in, BOOL data_
 		llassert(mCurrentDiscardLevel >= 0);
 		discard_level = mCurrentDiscardLevel;
 	}
+	discard_level = llclamp(discard_level, 0, (S32)mMaxDiscardLevel);
 
 	if (mTexName != 0 && discard_level == mCurrentDiscardLevel)
 	{
@@ -1586,7 +1587,18 @@ void LLImageGL::destroyGLTexture()
 	}
 }
 
-
+//force to invalidate the gl texture, most likely a sculpty texture
+void LLImageGL::forceToInvalidateGLTexture()
+{
+	if (mTexName != 0)
+	{
+		destroyGLTexture();
+	}
+	else
+	{
+		mCurrentDiscardLevel = -1 ; //invalidate mCurrentDiscardLevel.
+	}
+}
 
 //----------------------------------------------------------------------------
 

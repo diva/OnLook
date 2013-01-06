@@ -107,6 +107,20 @@ void AIHTTPReceivedHeaders::addHeader(std::string const& key, std::string const&
   {
 	mContainer = new Container;
   }
+  else if (equal(key, "set-cookie"))
+  {
+	// If a cookie with this name already exists, replace it.
+	std::string const name = value.substr(0, value.find('='));
+	container_t::iterator const end = mContainer->mKeyValuePairs.end();
+	for (container_t::iterator header = mContainer->mKeyValuePairs.begin(); header != end; ++header)
+	{
+	  if (equal(header->first, "set-cookie") && header->second.substr(0, header->second.find('=')) == name)
+	  {
+		header->second = value;
+		return;
+	  }
+	}
+  }
   mContainer->mKeyValuePairs.insert(container_t::value_type(key, value));
 }
 
@@ -149,5 +163,22 @@ std::ostream& operator<<(std::ostream& os, AIHTTPReceivedHeaders const& headers)
   }
   os << '}';
   return os;
+}
+
+//static
+bool AIHTTPReceivedHeaders::equal(std::string const& key1, std::string const& key2)
+{
+  if (key1.length() != key2.length())
+  {
+	return false;
+  }
+  for (std::string::const_iterator i1 = key1.begin(), i2 = key2.begin(); i1 != key1.end(); ++i1, ++i2)
+  {
+	if ((*i1 ^ *i2) & 0xdf != 0)
+	{
+	  return false;
+	}
+  }
+  return true;
 }
 

@@ -262,11 +262,6 @@ U64 totalTime()
 			// No wrapping, we're all okay.
 			gTotalTimeClockCount += current_clock_count - gLastTotalTimeClockCount;
 		}
-		else if((gLastTotalTimeClockCount - current_clock_count)<0xFFFF)
-		{
-			//clock is glitching and walking backwards - ignore it
-			gTotalTimeClockCount = gLastTotalTimeClockCount;
-		}
 		else
 		{
 			// We've wrapped.  Compensate correctly

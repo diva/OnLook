@@ -267,8 +267,10 @@ void LLPrefsAscentSys::refreshValues()
     mDoubleClickTeleport		= gSavedSettings.getBOOL("DoubleClickTeleport");
         mResetCameraAfterTP		= gSavedSettings.getBOOL("OptionRotateCamAfterLocalTP");
         mOffsetTPByUserHeight	= gSavedSettings.getBOOL("OptionOffsetTPByAgentHeight");
+    mLiruFlyAfterTeleport		= gSavedSettings.getBOOL("LiruFlyAfterTeleport");
+    mLiruContinueFlying			= gSavedSettings.getBOOL("LiruContinueFlyingOnUnsit");
     mPreviewAnimInWorld			= gSavedSettings.getBOOL("PreviewAnimInWorld");
-//    mSaveScriptsAsMono			= gSavedSettings.getBOOL("SaveScriptsAsMono");
+    mSaveScriptsAsMono			= gSavedSettings.getBOOL("SaveInventoryScriptsAsMono");
     mAlwaysRezInGroup			= gSavedSettings.getBOOL("AscentAlwaysRezInGroup");
     mBuildAlwaysEnabled			= gSavedSettings.getBOOL("AscentBuildAlwaysEnabled");
     mAlwaysShowFly				= gSavedSettings.getBOOL("AscentFlyAlwaysEnabled");
@@ -416,8 +418,10 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("DoubleClickTeleport", mDoubleClickTeleport);
         gSavedSettings.setBOOL("OptionRotateCamAfterLocalTP", mResetCameraAfterTP);
         gSavedSettings.setBOOL("OptionOffsetTPByAgentHeight", mOffsetTPByUserHeight);
+    gSavedSettings.setBOOL("LiruFlyAfterTeleport", mLiruFlyAfterTeleport);
+    gSavedSettings.setBOOL("LiruContinueFlyingOnUnsit", mLiruContinueFlying);
     gSavedSettings.setBOOL("PreviewAnimInWorld", mPreviewAnimInWorld);
-//    gSavedSettings.setBOOL("SaveScriptsAsMono", mSaveScriptsAsMono);
+    gSavedSettings.setBOOL("SaveInventoryScriptsAsMono", mSaveScriptsAsMono);
     gSavedSettings.setBOOL("AscentAlwaysRezInGroup", mAlwaysRezInGroup);
     gSavedSettings.setBOOL("AscentBuildAlwaysEnabled", mBuildAlwaysEnabled);
     gSavedSettings.setBOOL("AscentFlyAlwaysEnabled", mAlwaysShowFly);

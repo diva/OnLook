@@ -527,6 +527,7 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 
 		S32 width = gViewerWindow->getWindowDisplayWidth();
 		S32 height = gViewerWindow->getWindowDisplayHeight();
+		F32 ratio = (F32)width / height;
 
 		F32 supersample = 1.f;
 		if (gSavedSettings.getBOOL("HighResSnapshot"))
@@ -546,8 +547,7 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 		if (gViewerWindow->rawSnapshot(raw,
 									   width,
 									   height,
-									   TRUE,
-									   FALSE,
+									   ratio,
 									   gSavedSettings.getBOOL("RenderUIInSnapshot"),
 									   FALSE,
 									   LLViewerWindow::SNAPSHOT_TYPE_COLOR,
@@ -574,7 +574,7 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 			formatted->enableOverSize() ;
 			formatted->encode(raw, 0);
 			formatted->disableOverSize();
-			gViewerWindow->saveImageNumbered(formatted);
+			gViewerWindow->saveImageNumbered(formatted, -1);
 		}
 		return true;
 	}

@@ -178,14 +178,16 @@
 #include "llinventorypanel.h"
 #include "llinventorybridge.h"
 #include "llkeyboard.h"
-#include "llpanellogin.h"
+#include "llmakeoutfitdialog.h"
 #include "llmenucommands.h"
 #include "llmenugl.h"
 #include "llmimetypes.h"
 #include "llmorphview.h"
+#include "llmenuoptionpathfindingrebakenavmesh.h"
 #include "llmoveview.h"
 #include "llmutelist.h"
 #include "llnotify.h"
+#include "llpanellogin.h"
 #include "llpanelobject.h"
 
 #include "llparcel.h"
@@ -263,6 +265,10 @@
 #include "llviewerobjectbackup.h"
 #include "llagentui.h"
 #include "llpathfindingmanager.h"
+
+#include "lltexturecache.h"
+#include "llvovolume.h"
+#include <map>
 
 #include "hippogridmanager.h"
 
@@ -2265,6 +2271,105 @@ class LLObjectDerender : public view_listener_t
 	}
 };
 
+class LLTextureReloader
+{
+public:
+	~LLTextureReloader()
+	{
+		for(std::set< LLViewerFetchedTexture*>::iterator it=mTextures.begin();it!=mTextures.end();++it)
+		{
+			LLViewerFetchedTexture* img = *it;
+			const LLUUID& id = img->getID();
+			if(id.notNull() && id != IMG_DEFAULT && id != IMG_DEFAULT_AVATAR && img != LLViewerFetchedTexture::sDefaultImagep)
+			{
+				LLAppViewer::getTextureCache()->removeFromCache(id);
+				img->forceRefetch();
+				for (S32 i = 0; i < img->getNumVolumes(); ++i)
+				{
+					LLVOVolume* volume = (*(img->getVolumeList()))[i];
+					if (volume && volume->isSculpted() && !volume->isMesh())
+						volume->notifyMeshLoaded();
+				}
+			}
+		}
+	}
+	void addTexture(LLViewerTexture* texture)
+	{
+		if(!texture)
+			return;
+		const LLUUID& id = texture->getID();
+		if(id.notNull() && id != IMG_DEFAULT && id != IMG_DEFAULT_AVATAR && texture != LLViewerFetchedTexture::sDefaultImagep)
+		{
+			LLViewerFetchedTexture* img = LLViewerTextureManager::staticCastToFetchedTexture(texture);
+			if(img)
+				mTextures.insert(img);
+		}
+	}
+
+private:
+	std::set< LLViewerFetchedTexture*> mTextures;
+};
+class LLAvatarReloadTextures : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
+		if(avatar)
+		{
+			LLAvatarPropertiesProcessor::getInstance()->sendAvatarTexturesRequest(avatar->getID());
+			LLTextureReloader texture_list;
+			for (U32 i = 0; i < LLVOAvatarDefines::TEX_NUM_INDICES; ++i)
+			{
+				if (LLVOAvatar::isIndexLocalTexture((ETextureIndex)i))
+				{
+					if(avatar->isSelf())
+					{
+						LLWearableType::EType wearable_type = LLVOAvatarDictionary::getTEWearableType((ETextureIndex)i);
+						U32 num_wearables = gAgentWearables.getWearableCount(wearable_type);
+						for (U32 wearable_index = 0; wearable_index < num_wearables; wearable_index++)
+						{
+							texture_list.addTexture(((LLVOAvatarSelf*)avatar)->getLocalTextureGL((ETextureIndex)i,wearable_index));
+						}
+					}
+				}
+				else 
+				{
+					texture_list.addTexture(avatar->getTEImage((ETextureIndex)i));
+				}
+			}
+		}
+		return true;
+	}
+};
+class LLObjectReloadTextures : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLTextureReloader texture_list;
+		for (LLObjectSelection::valid_iterator iter = LLSelectMgr::getInstance()->getSelection()->valid_begin();
+		 iter != LLSelectMgr::getInstance()->getSelection()->valid_end(); iter++)
+		{
+			LLViewerObject* object = (*iter)->getObject();
+			
+			for (U8 i = 0; i < object->getNumTEs(); i++)
+			{
+				if((*iter)->isTESelected(i))
+				{
+					texture_list.addTexture(object->getTEImage(i));
+				}
+				if(object->isSculpted() && !object->isMesh())
+				{
+					LLSculptParams *sculpt_params = (LLSculptParams *)object->getParameterEntry(LLNetworkData::PARAMS_SCULPT);
+					if(sculpt_params)
+					{
+						texture_list.addTexture(LLViewerTextureManager::getFetchedTexture(sculpt_params->getSculptTexture()));
+					}
+				}
+			}
+		}
+		return true;
+	}
+};
 
 //---------------------------------------------------------------------------
 // Land pie menu
@@ -3599,7 +3704,6 @@ void set_god_level(U8 god_level)
 
 	// God mode changes region visibility
 	LLWorldMap::getInstance()->reset();
-	LLWorldMap::getInstance()->setCurrentLayer(0);
 
 	// inventory in items may change in god mode
 	gObjectList.dirtyAllObjectInventory();
@@ -5225,6 +5329,39 @@ class LLToolsEnablePathfindingView : public view_listener_t
 	}
 };
 
+class LLToolsDoPathfindingRebakeRegion : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool hasPathfinding = (LLPathfindingManager::getInstance() != NULL);
+
+		if (hasPathfinding)
+		{
+			LLMenuOptionPathfindingRebakeNavmesh::getInstance()->sendRequestRebakeNavmesh();
+		}
+
+		return hasPathfinding;
+	}
+};
+
+class LLToolsEnablePathfindingRebakeRegion : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool returnValue = false;
+
+		if (LLPathfindingManager::getInstance() != NULL)
+		{
+			LLMenuOptionPathfindingRebakeNavmesh *rebakeInstance = LLMenuOptionPathfindingRebakeNavmesh::getInstance();
+			returnValue = (rebakeInstance->canRebakeRegion() &&
+				(rebakeInstance->getMode() == LLMenuOptionPathfindingRebakeNavmesh::kRebakeNavMesh_Available));
+			
+		}
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(returnValue);
+		return returnValue;
+	}
+};
+
 // Round the position of all root objects to the grid
 class LLToolsSnapObjectXY : public view_listener_t
 {
@@ -6387,6 +6524,10 @@ class LLShowFloater : public view_listener_t
 			{
 				gAgentCamera.changeCameraToCustomizeAvatar();
 			}
+		}
+		else if (floater_name == "outfit")
+		{
+			new LLMakeOutfitDialog(false);
 		}
 		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
 		else if (floater_name == "displayname")
@@ -9409,7 +9550,8 @@ void initialize_menus()
 
 	addMenu(new LLToolsEnablePathfinding(), "Tools.EnablePathfinding");
 	addMenu(new LLToolsEnablePathfindingView(), "Tools.EnablePathfindingView");
-
+	addMenu(new LLToolsDoPathfindingRebakeRegion(), "Tools.DoPathfindingRebakeRegion");
+	addMenu(new LLToolsEnablePathfindingRebakeRegion(), "Tools.EnablePathfindingRebakeRegion");
 	/*addMenu(new LLToolsVisibleBuyObject(), "Tools.VisibleBuyObject");
 	addMenu(new LLToolsVisibleTakeObject(), "Tools.VisibleTakeObject");*/
 
@@ -9469,6 +9611,8 @@ void initialize_menus()
 	addMenu(new LLObjectInspect(), "Object.Inspect");
 	// <dogmode> Visual mute, originally by Phox.
 	addMenu(new LLObjectDerender(), "Object.DERENDER");
+	addMenu(new LLAvatarReloadTextures(), "Avatar.ReloadTextures");
+	addMenu(new LLObjectReloadTextures(), "Object.ReloadTextures");
 	addMenu(new LLObjectExport(), "Object.Export");
 	addMenu(new LLObjectImport(), "Object.Import");
 	addMenu(new LLObjectImportUpload(), "Object.ImportUpload");

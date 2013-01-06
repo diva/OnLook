@@ -402,7 +402,7 @@ void LLPanelGroupRoles::activate()
 		
 		if (!gdatap || !gdatap->isMemberDataComplete() )
 		{
-			LLGroupMgr::getInstance()->sendGroupMembersRequest(mGroupID);
+			LLGroupMgr::getInstance()->sendCapGroupMembersRequest(mGroupID);
 		}
 
 		// Check role data.
@@ -790,7 +790,7 @@ void LLPanelGroupSubTab::buildActionCategory(LLScrollListCtrl* ctrl,
 
 			row["columns"][column_index]["column"] = "action";
 			row["columns"][column_index]["value"] = (*ra_it)->mDescription;
-			row["columns"][column_index]["font"] = "SANSSERIFSMALL";
+			row["columns"][column_index]["font"] = "SANSSERIF_SMALL";
 
 			LLScrollListItem* item = ctrl->addElement(row, ADD_BOTTOM, (*ra_it));
 
@@ -890,11 +890,10 @@ BOOL LLPanelGroupMembersSubTab::postBuildSubTab(LLView* root)
 	if (!mMembersList || !mAssignedRolesList || !mAllowedActionsList) return FALSE;
 
 	// We want to be notified whenever a member is selected.
-	mMembersList->setCallbackUserData(this);
 	mMembersList->setCommitOnSelectionChange(TRUE);
-	mMembersList->setCommitCallback(onMemberSelect);
+	mMembersList->setCommitCallback(boost::bind(&LLPanelGroupMembersSubTab::onMemberSelect,_1,this));
 	// Show the member's profile on double click.
-	mMembersList->setDoubleClickCallback(onMemberDoubleClick);
+	mMembersList->setDoubleClickCallback(boost::bind(&LLPanelGroupMembersSubTab::onMemberDoubleClick,this));
 
 	LLButton* button = parent->getChild<LLButton>("member_invite", recurse);
 	if ( button )
@@ -1616,7 +1615,7 @@ void LLPanelGroupMembersSubTab::update(LLGroupChange gc)
 			retrieved << "Retrieving role member mappings...";
 		}
 		mMembersList->setEnabled(FALSE);
-		mMembersList->addCommentText(retrieved.str());
+		mMembersList->setCommentText(retrieved.str());
 	}
 }
 
@@ -1679,9 +1678,9 @@ void LLPanelGroupMembersSubTab::updateMembers()
 
 			row["columns"][2]["column"] = "online";
 			row["columns"][2]["value"] = mMemberProgress->second->getOnlineStatus();
-			row["columns"][2]["font"] = "SANSSERIFSMALL";
+			row["columns"][2]["font"] = "SANSSERIF_SMALL";
 
-			mMembersList->addElement(row);//, ADD_SORTED);
+			mMembersList->addNameItem(row);
 			mHasMatch = TRUE;
 		}
 	}
@@ -1695,7 +1694,7 @@ void LLPanelGroupMembersSubTab::updateMembers()
 		else
 		{
 			mMembersList->setEnabled(FALSE);
-			mMembersList->addCommentText(std::string("No match."));
+			mMembersList->setCommentText(std::string("No match."));
 		}
 	}
 	else
@@ -1980,7 +1979,7 @@ void LLPanelGroupRolesSubTab::update(LLGroupChange gc)
 
 	if (!gdatap || !gdatap->isMemberDataComplete())
 	{
-		LLGroupMgr::getInstance()->sendGroupMembersRequest(mGroupID);
+		LLGroupMgr::getInstance()->sendCapGroupMembersRequest(mGroupID);
 	}
 	
 	if (!gdatap || !gdatap->isRoleMemberDataComplete())
@@ -2572,7 +2571,7 @@ void LLPanelGroupActionsSubTab::handleActionSelect()
 	}
 	else
 	{
-		LLGroupMgr::getInstance()->sendGroupMembersRequest(mGroupID);
+		LLGroupMgr::getInstance()->sendCapGroupMembersRequest(mGroupID);
 	}
 
 	if (gdatap->isRoleDataComplete())

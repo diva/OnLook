@@ -10,6 +10,7 @@
     name="floater_merchant_outbox"
     save_rect="true"
     save_visibility="false"
+    rect_control="FloaterOutboxRect"
     reuse_instance="true"
     title="Merchant Outbox"
     width="333">

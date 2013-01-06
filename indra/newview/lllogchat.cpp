@@ -88,11 +88,18 @@ std::string LLLogChat::timestamp(bool withdate)
 	// it's daylight savings time there.
 	timep = utc_to_pacific_time(utc_time, gPacificDaylightTime);
 
+	static LLCachedControl<bool> withseconds("SecondsInLog");
 	std::string text;
 	if (withdate)
-		text = llformat("[%d/%02d/%02d %02d:%02d]  ", (timep->tm_year-100)+2000, timep->tm_mon+1, timep->tm_mday, timep->tm_hour, timep->tm_min);
+		if (withseconds)
+			text = llformat("[%d-%02d-%02d %02d:%02d:%02d]  ", (timep->tm_year-100)+2000, timep->tm_mon+1, timep->tm_mday, timep->tm_hour, timep->tm_min, timep->tm_sec);
+		else
+			text = llformat("[%d/%02d/%02d %02d:%02d]  ", (timep->tm_year-100)+2000, timep->tm_mon+1, timep->tm_mday, timep->tm_hour, timep->tm_min);
 	else
-		text = llformat("[%02d:%02d]  ", timep->tm_hour, timep->tm_min);
+		if (withseconds)
+			text = llformat("[%02d:%02d:%02d]  ", timep->tm_hour, timep->tm_min, timep->tm_sec);
+		else
+			text = llformat("[%02d:%02d]  ", timep->tm_hour, timep->tm_min);
 
 	return text;
 }

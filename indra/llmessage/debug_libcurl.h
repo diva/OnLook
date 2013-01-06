@@ -86,4 +86,9 @@ extern char* debug_curl_version(void);
 
 #endif // !COMPILING_DEBUG_LIBCURL_CC
 
+extern bool gDebugCurlTerse;					// With this set,
+void debug_curl_add_easy(CURL* handle);			// only output debug output for easy handles added with this function.
+void debug_curl_remove_easy(CURL* handle);
+bool debug_curl_print_debug(CURL* handle);
+
 #endif // DEBUG_LIBCURL

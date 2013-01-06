@@ -33,6 +33,17 @@ VARYING vec3 vary_normal;
 VARYING vec4 vertex_color;
 VARYING vec2 vary_texcoord0;
 
+vec3 pack(vec3 norm)
+{
+//#define PACK_NORMALS
+#ifdef PACK_NORMALS
+	float p = sqrt(8.0*norm.z+8.0);
+	return vec3(norm.xy/p + 0.5, 0.0);
+#else
+	return norm.xyz*0.5+0.5;
+#endif
+}
+
 void main() 
 {
 	vec3 col = vertex_color.rgb * diffuseLookup(vary_texcoord0.xy).rgb;
@@ -41,5 +52,5 @@ void main()
 	frag_data[1] = vertex_color.aaaa; // spec
 	//frag_data[1] = vec4(vec3(vertex_color.a), vertex_color.a+(1.0-vertex_color.a)*vertex_color.a); // spec - from former class3 - maybe better, but not so well tested
 	vec3 nvn = normalize(vary_normal);
-	frag_data[2] = vec4(nvn.xy * 0.5 + 0.5, nvn.z, 0.0);
+	frag_data[2] = vec4(pack(nvn),0.0);
 }

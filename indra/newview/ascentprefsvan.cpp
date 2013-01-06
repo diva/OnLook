@@ -36,6 +36,8 @@
 #include "ascentprefsvan.h"
 
 //project includes
+#include "llaudioengine.h" //For gAudiop
+#include "llstreamingaudio.h" //For LLStreamingAudioInterface
 #include "llcolorswatch.h"
 #include "llvoavatarself.h"
 #include "llagent.h"
@@ -53,6 +55,8 @@
 LLPrefsAscentVan::LLPrefsAscentVan()
 {
     LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_vanity.xml");
+
+	childSetVisible("announce_streaming_metadata", gAudiop && gAudiop->getStreamingAudioImpl() && gAudiop->getStreamingAudioImpl()->supportsMetaData());
 
     childSetCommitCallback("tag_spoofing_combobox", onCommitClientTag, this);
 
@@ -152,12 +156,16 @@ void LLPrefsAscentVan::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 
     if (ctrl->getName() == "use_status_check")
     {
-        BOOL showCustomColors = gSavedSettings.getBOOL("AscentUseStatusColors");
-        self->childSetEnabled("friends_color_textbox", showCustomColors);
-        self->childSetEnabled("friend_color_swatch", showCustomColors);
-        self->childSetEnabled("estate_owner_color_swatch", showCustomColors);
-        self->childSetEnabled("linden_color_swatch", showCustomColors);
-        self->childSetEnabled("muted_color_swatch", showCustomColors);
+		bool showCustomColors = gSavedSettings.getBOOL("AscentUseStatusColors");
+		self->childSetEnabled("friends_color_textbox", showCustomColors);
+		bool frColors = gSavedSettings.getBOOL("ColorFriendChat");
+		self->childSetEnabled("friend_color_swatch", showCustomColors || frColors);
+		bool eoColors = gSavedSettings.getBOOL("ColorEstateOwnerChat");
+		self->childSetEnabled("estate_owner_color_swatch", showCustomColors || eoColors);
+		bool lindColors = gSavedSettings.getBOOL("ColorLindenChat");
+		self->childSetEnabled("linden_color_swatch", showCustomColors || lindColors);
+		bool muteColors = gSavedSettings.getBOOL("ColorMutedChat");
+		self->childSetEnabled("muted_color_swatch", showCustomColors || muteColors);
     }
     else if (ctrl->getName() == "customize_own_tag_check")
     {
@@ -172,12 +180,16 @@ void LLPrefsAscentVan::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 // Store current settings for cancel
 void LLPrefsAscentVan::refreshValues()
 {
-    //General --------------------------------------------------------------------------------
+    //Main -----------------------------------------------------------------------------------
     mUseAccountSettings		= gSavedSettings.getBOOL("AscentStoreSettingsPerAccount");
     mShowTPScreen			= !gSavedSettings.getBOOL("AscentDisableTeleportScreens");
     mPlayTPSound			= gSavedSettings.getBOOL("OptionPlayTpSound");
     mShowLogScreens			= !gSavedSettings.getBOOL("AscentDisableLogoutScreens");
 	mDisableChatAnimation   = gSavedSettings.getBOOL("SGDisableChatAnimation");
+	mAddNotReplace = gSavedSettings.getBOOL("LiruAddNotReplace");
+	mTurnAround = gSavedSettings.getBOOL("TurnAroundWhenWalkingBackwards");
+	mAnnounceSnapshots = gSavedSettings.getBOOL("AnnounceSnapshots");
+	mAnnounceStreamMetadata = gSavedSettings.getBOOL("AnnounceStreamMetadata");
 
     //Tags\Colors ----------------------------------------------------------------------------
     mAscentUseTag           = gSavedSettings.getBOOL("AscentUseTag");
@@ -199,7 +211,12 @@ void LLPrefsAscentVan::refreshValues()
     mEstateOwnerColor		= gSavedSettings.getColor4("AscentEstateOwnerColor");
     mLindenColor			= gSavedSettings.getColor4("AscentLindenColor");
     mMutedColor				= gSavedSettings.getColor4("AscentMutedColor");
-    //mCustomColor			= gSavedSettings.getColor4("MoyMiniMapCustomColor");
+    mCustomColor			= gSavedSettings.getColor4("MoyMiniMapCustomColor");
+	mColorFriendChat        = gSavedSettings.getBOOL("ColorFriendChat");
+	mColorEOChat            = gSavedSettings.getBOOL("ColorEstateOwnerChat");
+	mColorLindenChat        = gSavedSettings.getBOOL("ColorLindenChat");
+	mColorMutedChat         = gSavedSettings.getBOOL("ColorMutedChat");
+//	mColorCustomChat        = gSavedSettings.getBOOL("ColorCustomChat");
 
     //Body Dynamics --------------------------------------------------------------------------
     mBreastPhysicsToggle    = gSavedSettings.getBOOL("EmeraldBreastPhysicsToggle");
@@ -217,17 +234,17 @@ void LLPrefsAscentVan::refreshValues()
 // Update controls based on current settings
 void LLPrefsAscentVan::refresh()
 {
-    //General --------------------------------------------------------------------------------
+    //Main -----------------------------------------------------------------------------------
 
     //Tags\Colors ----------------------------------------------------------------------------
     LLComboBox* combo = getChild<LLComboBox>("tag_spoofing_combobox");
     combo->setCurrentByIndex(mSelectedClient);
 
     childSetEnabled("friends_color_textbox",     mUseStatusColors);
-    childSetEnabled("friend_color_swatch",       mUseStatusColors);
-    childSetEnabled("estate_owner_color_swatch", mUseStatusColors);
-    childSetEnabled("linden_color_swatch",       mUseStatusColors);
-    childSetEnabled("muted_color_swatch",        mUseStatusColors);
+    childSetEnabled("friend_color_swatch",       mUseStatusColors || mColorFriendChat);
+    childSetEnabled("estate_owner_color_swatch", mUseStatusColors || mColorEOChat);
+    childSetEnabled("linden_color_swatch",       mUseStatusColors || mColorLindenChat);
+    childSetEnabled("muted_color_swatch",        mUseStatusColors || mColorMutedChat);
 
     childSetEnabled("custom_tag_label_text",   mCustomTagOn);
     childSetEnabled("custom_tag_label_box",    mCustomTagOn);
@@ -246,12 +263,16 @@ void LLPrefsAscentVan::refresh()
 // Reset settings to local copy
 void LLPrefsAscentVan::cancel()
 {
-    //General --------------------------------------------------------------------------------
+    //Main -----------------------------------------------------------------------------------
     gSavedSettings.setBOOL("AscentStoreSettingsPerAccount", mUseAccountSettings);
     gSavedSettings.setBOOL("AscentDisableTeleportScreens", !mShowTPScreen);
     gSavedSettings.setBOOL("OptionPlayTpSound",             mPlayTPSound);
     gSavedSettings.setBOOL("AscentDisableLogoutScreens",   !mShowLogScreens);
 	gSavedSettings.setBOOL("SGDisableChatAnimation",		mDisableChatAnimation);
+	gSavedSettings.setBOOL("LiruAddNotReplace", mAddNotReplace);
+	gSavedSettings.setBOOL("TurnAroundWhenWalkingBackwards", mTurnAround);
+	gSavedSettings.setBOOL("AnnounceSnapshots", mAnnounceSnapshots);
+	gSavedSettings.setBOOL("AnnounceStreamMetadata", mAnnounceStreamMetadata);
 
     //Tags\Colors ----------------------------------------------------------------------------
     gSavedSettings.setBOOL("AscentUseTag",               mAscentUseTag);
@@ -273,7 +294,12 @@ void LLPrefsAscentVan::cancel()
     gSavedSettings.setColor4("AscentEstateOwnerColor",   mEstateOwnerColor);
     gSavedSettings.setColor4("AscentLindenColor",        mLindenColor);
     gSavedSettings.setColor4("AscentMutedColor",         mMutedColor);
-//    gSavedSettings.setColor4("MoyMiniMapCustomColor",    mCustomColor);
+    gSavedSettings.setColor4("MoyMiniMapCustomColor",    mCustomColor);
+    gSavedSettings.setBOOL("ColorFriendChat",            mColorFriendChat);
+    gSavedSettings.setBOOL("ColorEstateOwnerChat",       mColorEOChat);
+    gSavedSettings.setBOOL("ColorLindenChat",            mColorLindenChat);
+    gSavedSettings.setBOOL("ColorMutedChat",             mColorMutedChat);
+//	gSavedSettings.setBOOL("ColorCustomChat",            mColorCustomChat);
 
     //Body Dynamics --------------------------------------------------------------------------
     gSavedSettings.setBOOL("EmeraldBreastPhysicsToggle", mBreastPhysicsToggle);

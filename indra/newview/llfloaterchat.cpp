@@ -317,8 +317,9 @@ void LLFloaterChat::addChatHistory(const LLChat& chat, bool log_to_file)
 	}
 	else
 	{
+		static LLCachedControl<bool> color_muted_chat("ColorMutedChat");
 		// desaturate muted chat
-		LLColor4 muted_color = lerp(color, LLColor4::grey, 0.5f);
+		LLColor4 muted_color = lerp(color, color_muted_chat ? gSavedSettings.getColor4("AscentMutedColor") : LLColor4::grey, 0.5f);
 		add_timestamped_line(history_editor_with_mute, chat, muted_color);
 	}
 	
@@ -493,7 +494,7 @@ void LLFloaterChat::triggerAlerts(const std::string& text)
 {
 	// Cannot instantiate LLTextParser before logging in.
 	if (gDirUtilp->getLindenUserDir(true).empty())
-	  return;
+		return;
 
 	LLTextParser* parser = LLTextParser::getInstance();
 //    bool spoken=FALSE;
@@ -539,7 +540,11 @@ LLColor4 get_text_color(const LLChat& chat)
 
 	if(chat.mMuted)
 	{
-		text_color.setVec(0.8f, 0.8f, 0.8f, 1.f);
+		static LLCachedControl<bool> color_muted_chat("ColorMutedChat");
+		if (color_muted_chat)
+			text_color = gSavedSettings.getColor4("AscentMutedColor");
+		else
+			text_color.setVec(0.8f, 0.8f, 0.8f, 1.f);
 	}
 	else
 	{
@@ -549,7 +554,7 @@ LLColor4 get_text_color(const LLChat& chat)
 			text_color = gSavedSettings.getColor4("SystemChatColor");
 			break;
 		case CHAT_SOURCE_AGENT:
-		    if (chat.mFromID.isNull())
+			if (chat.mFromID.isNull())
 			{
 				text_color = gSavedSettings.getColor4("SystemChatColor");
 			}
@@ -561,7 +566,34 @@ LLColor4 get_text_color(const LLChat& chat)
 				}
 				else
 				{
-					text_color = gSavedSettings.getColor4("AgentChatColor");
+					static LLCachedControl<bool> color_linden_chat("ColorLindenChat");
+					if (color_linden_chat && LLMuteList::getInstance()->isLinden(chat.mFromName))
+					{
+						text_color = gSavedSettings.getColor4("AscentLindenColor");
+					}
+					else if (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
+					{
+						static LLCachedControl<bool> color_friend_chat("ColorFriendChat");
+						static LLCachedControl<bool> color_eo_chat("ColorEstateOwnerChat");
+						if (color_friend_chat && LLAvatarTracker::instance().isBuddy(chat.mFromID))
+						{
+							text_color = gSavedSettings.getColor4("AscentFriendColor");
+						}
+						else if (color_eo_chat)
+						{
+							LLViewerRegion* parent_estate = gAgent.getRegion();
+							if (parent_estate && parent_estate->isAlive() && chat.mFromID == parent_estate->getOwner())
+								text_color = gSavedSettings.getColor4("AscentEstateOwnerColor");
+							else
+								text_color = gSavedSettings.getColor4("AgentChatColor");
+						}
+						else
+							text_color = gSavedSettings.getColor4("AgentChatColor");
+					}
+					else
+					{
+						text_color = gSavedSettings.getColor4("AgentChatColor");
+					}
 				}
 			}
 			break;

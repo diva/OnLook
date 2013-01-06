@@ -125,7 +125,7 @@ Media/audio sont bloqués pour [DOMAIN]
 Filtres medias ont été reinitialisés
   </notification>
 	<notification functor="GenericAcknowledge" label="Message d'alerte inconnu" name="MissingAlert">
-		Votre version de Second Life ne peut afficher ce message d'erreur.
+		Votre version de [APP_NAME] ne peut afficher ce message d'erreur.
 
 Détails de l'erreur: L'alerte, appelée '[_NAME]' est introuvable dans notifications.xml.
 		<usetemplate name="okbutton" yestext="OK"/>
@@ -273,7 +273,7 @@ En cochant cette case, votre parcelle apparaîtra :
 	<notification name="ClickPartnerHelpAvatar">
 		Vous pouvez proposer à un autre résident de devenir votre partenaire ou dissoudre un partenariat existant à partir du site de [SECOND_LIFE].
 
-Aller sur le site de Second Life pour avoir plus d&apos;informations sur les partenariats?
+Aller sur le site de [SECOND_LIFE_GRID] pour avoir plus d&apos;informations sur les partenariats?
 		<usetemplate name="okcancelbuttons" notext="Annuler" yestext="Aller sur cette page"/>
 	</notification>
 	<notification name="ClickUploadHelpPermissions">
@@ -311,7 +311,7 @@ Votre prix de vente sera de [SALE_PRICE] [CURRENCY] et la vente sera disponible 
 		<usetemplate name="okcancelbuttons" notext="Annuler" yestext="OK"/>
 	</notification>
 	<notification name="ConfirmLandSaleToAnyoneChange">
-		Attention : en cliquant sur Vendre à n'importe qui, vous rendez votre terrain disponible à toute la communauté de Second Life, même aux personnes qui ne sont pas dans cette région.
+		Attention : en cliquant sur Vendre à n'importe qui, vous rendez votre terrain disponible à toute la communauté de [SECOND_LIFE], même aux personnes qui ne sont pas dans cette région.
 
 Le terrain sélectionné, de [LAND_SIZE] m², est mis en vente.
 Votre prix de vente sera de [SALE_PRICE] [CURRENCY] et la vente sera disponible à [NAME].
@@ -458,17 +458,17 @@ Une fois payés, les frais ne sont pas remboursables.
 		<usetemplate name="okcancelbuttons" notext="Annuler" yestext="OK"/>
 	</notification>
 	<notification name="CacheWillClear">
-		Le cache sera vidé après le redémarrage de [SECOND_LIFE].
+		Le cache sera vidé après le redémarrage de [APP_NAME].
 	</notification>
 	<notification name="CacheWillBeMoved">
-		Le cache sera déplacé après le redémarrage de [SECOND_LIFE].
+		Le cache sera déplacé après le redémarrage de [APP_NAME].
 Remarque : cela videra le cache.
 	</notification>
 	<notification name="ChangeConnectionPort">
-		Les paramètres du port prendront effet après le redémarrage de [SECOND_LIFE].
+		Les paramètres du port prendront effet après le redémarrage de [APP_NAME].
 	</notification>
 	<notification name="ChangeSkin">
-		Le nouveau thème apparaîtra après le redémarrage de [SECOND_LIFE].
+		Le nouveau thème apparaîtra après le redémarrage de [APP_NAME].
 	</notification>
 	<notification name="GoToAuctionPage">
 		Aller à la page web de [SECOND_LIFE] pour voir le détail des enchères ou enchérir.
@@ -527,7 +527,7 @@ L&apos;objet est peut-être inaccessible ou a peut-être été supprimé.
 		Impossible d&apos;écrire le fichier [[FILE]]
 	</notification>
 	<notification name="UnsupportedHardware">
-		Avertissement : vous n&apos;avez pas la configuration système requise pour utiliser Second Life. Si vous continuez à utiliser Second Life, votre performance risque d&apos;être moindre. Malheureusement, nous n&apos;offrons aucune assistance pour les problèmes de configuration système.
+		Avertissement : vous n&apos;avez pas la configuration système requise pour utiliser [APP_NAME]. Si vous continuez à utiliser [APP_NAME], votre performance risque d&apos;être moindre. Malheureusement, nous n&apos;offrons aucune assistance pour les problèmes de configuration système.
 
 MINSPECS
 Voulez-vous visiter [_URL] pour plus d&apos;informations ?
@@ -539,7 +539,7 @@ Voulez-vous visiter [_URL] pour plus d&apos;informations ?
 	<notification name="UnknownGPU">
 		Votre système contient une carte graphique que nous ne connaissons pas actuellement.
 Cela est souvent le cas avec le nouveau materiel qui n&apos;a pas encore été testé.
-Vous pourrez probablement utiliser Second Life sans problème, mais vous devrez peut-être ajuster les paramètres de vos graphiques.
+Vous pourrez probablement utiliser [APP_NAME] sans problème, mais vous devrez peut-être ajuster les paramètres de vos graphiques.
 (Menu Édition &gt; Préférences &gt; Graphiques).
 		<form name="form">
 			<ignore name="ignore" text="Lors de la détection d&apos;une carte graphique inconnue"/>
@@ -826,7 +826,7 @@ aucune parcelle sélectionnée.
 la région dans laquelle il est situé est introuvable.
 	</notification>
 	<notification name="CannotCloseFloaterBuyLand">
-		Vous ne pouvez pas fermer la fenêtre 'Acheter le terrain' avant que Second Life n&apos;estime le montant de cette transaction.
+		Vous ne pouvez pas fermer la fenêtre 'Acheter le terrain' avant que [APP_NAME] n&apos;estime le montant de cette transaction.
 	</notification>
 	<notification name="CannotDeedLandNothingSelected">
 		Cession du terrain impossible :
@@ -1167,7 +1167,7 @@ Retourner sur www.secondlife.com pour créer un nouveau compte ?
 		<usetemplate name="okcancelbuttons" notext="Continuer" yestext="Nouveau compte"/>
 	</notification>
 	<notification name="LoginPacketNeverReceived">
-		Vous avez des problèmes à vous connecter. Il peut s&apos;agir d&apos;un problème avec votre connexion internet ou les serveurs de Second Life.
+		Vous avez des problèmes à vous connecter. Il peut s&apos;agir d&apos;un problème avec votre connexion internet ou les serveurs de [SECOND_LIFE_GRID].
 
 Nous vous conseillons de vérifier votre connexion Internet et de réessayer dans quelques minutes, de cliquer sur Aide, ou bien de cliquer sur Téléporter pour être téléporté vers votre domicile.
 		<form name="form">
@@ -1535,88 +1535,141 @@ Cette action modifiera des milliers de régions et sera difficile à digérer po
 		<usetemplate name="okcancelbuttons" notext="Annuler" yestext="OK"/>
 	</notification>
 	<notification name="RegionEntryAccessBlocked">
-		Votre catégorie d&apos;accès ne vous autorise pas à pénétrer dans cette région. Cela vient peut-être du fait qu&apos;il manquait des informations pour valider votre âge.
-
-Vérifiez que vous avez la toute dernière version du client et consultez les pages d&apos;aide pour savoir comment accéder aux zones ayant ce niveau d&apos;accès.
+		La région que vous essayez de visiter comporte du contenu dont le niveau dépasse celui de vos préférences actuelles. Vous pouvez modifier vos préférences en accédant à Édition &gt; Préférences &gt; Général.
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
-	<notification name="RegionEntryAccessBlocked_KB">
-		Votre catégorie d&apos;accès ne vous permet pas de pénétrer dans cette région.
-
-Souhaitez-vous en savoir plus sur les différentes catégories d&apos;accès ?
+	<notification name="RegionEntryAccessBlocked_AdultsOnlyContent">
+		La région que vous essayez de visiter comporte du contenu [REGIONMATURITY] uniquement accessible aux adultes.
+		
+		Souhaitez-vous en savoir plus sur les différentes catégories d&apos;accès ?
 		<url name="url">
-			http://wiki.secondlife.com/wiki/Pr%C3%A9sentation_des_cat%C3%A9gories_de_contenu_(KB)
+			http://community.secondlife.com/t5/Base-de-connaissances/Cat%C3%A9gories-niveaux-de-contenu/ta-p/700311
 		</url>
-		<usetemplate ignoretext="Lorsque l&apos;accès à une région est bloqué à cause de la catégorie d&apos;accès" name="okcancelignore" notext="Fermer" yestext="Consulter les pages d&apos;aide"/>
+		<usetemplate ignoretext="Passage à une autre région : la région que vous essayez de visiter comporte du contenu uniquement accessible aux adultes." name="okcancelignore" notext="Fermer" yestext="Accéder à la Base de connaissances"/>
 	</notification>
 	<notification name="RegionEntryAccessBlocked_Notify">
-		Votre catégorie d&apos;accès ne vous permet pas de pénétrer dans cette région.
+		La région que vous essayez de visiter comporte du contenu [REGIONMATURITY] alors que les préférences que vous avez définies excluent tout contenu [REGIONMATURITY].
+	</notification>
+	<notification name="RegionEntryAccessBlocked_NotifyAdultsOnly">
+		La région que vous essayez de visiter comporte du contenu [REGIONMATURITY] uniquement accessible aux adultes.
 	</notification>
 	<notification name="RegionEntryAccessBlocked_Change">
-		Votre catégorie d&apos;accès ne vous permet pas de pénétrer dans cette région.
-
-En cliquant sur Modifier les préférences, vous pourrez changer votre catégorie d&apos;accès et pénétrer dans la région. À partir de maintenant, vous pouvez rechercher et accéder au contenu [REGIONMATURITY]. Vous pouvez modifier ce paramètre à partir du menu Édition &gt; Préférences... &gt; Général.
-	<form name="form">
-      <button
-       name="OK"
-       text="Modifier les Préférences"/>
-      <button
-       default="true"
-       name="Cancel"
-       text="Fermer"/>
-       <ignore name="ignore" text="Lorsque l&apos;accès à une région est bloqué à cause des préférences concernant la catégorie d&apos;accès"/>
-    </form>
+		La région que vous essayez de visiter comporte du contenu [REGIONMATURITY] alors que les préférences que vous avez définies excluent tout contenu [REGIONMATURITY]. 
+		
+		En cliquant sur Modifier les préférences, vous pourrez changer votre catégorie d&apos;accès et pénétrer dans la région. À partir de maintenant, vous pouvez rechercher et accéder au contenu [REGIONMATURITY]. Vous pouvez modifier ce paramètre à partir du menu Édition &gt; Préférences... &gt; Général.
+		<form name="form">
+			<button name="OK" text="Modifier les préférences"/>
+			<button default="true" name="Cancel" text="Annuler"/>
+			<ignore name="ignore" text="Passage à une autre région : la région que vous essayez de visiter comporte du contenu dont le niveau est exclu de vos préférences actuelles."/>
+		</form>
+	</notification>
+	<notification name="RegionEntryAccessBlocked_PreferencesOutOfSync">
+		Nous rencontrons des difficultés techniques au niveau de votre téléportation car vos préférences ne sont pas synchronisées avec le serveur.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked">
+		La région que vous essayez de visiter comporte du contenu dont le niveau dépasse celui de vos préférences actuelles. Vous pouvez modifier vos préférences en accédant à Moi &gt; Préférences &gt; Général.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_AdultsOnlyContent">
+		La région que vous essayez de visiter comporte du contenu [REGIONMATURITY] uniquement accessible aux adultes.
+		
+		Souhaitez-vous en savoir plus sur les différentes catégories d&apos;accès ?
+		<url name="url">
+			http://community.secondlife.com/t5/Base-de-connaissances/Cat%C3%A9gories-niveaux-de-contenu/ta-p/700311
+		</url>
+		<usetemplate ignoretext="Téléportation : la région que vous essayez de visiter comporte du contenu uniquement accessible aux adultes." name="okcancelignore" notext="Fermer" yestext="Accéder à la Base de connaissances"/>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_Notify">
+		La région que vous essayez de visiter comporte du contenu [REGIONMATURITY] alors que les préférences que vous avez définies excluent tout contenu [REGIONMATURITY].
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_NotifyAdultsOnly">
+		La région que vous essayez de visiter comporte du contenu [REGIONMATURITY] uniquement accessible aux adultes.
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_ChangeAndReTeleport">
+		La région que vous essayez de visiter comporte du contenu [REGIONMATURITY] alors que les préférences que vous avez définies excluent tout contenu [REGIONMATURITY]. Il est possible de modifier vos préférences afin de poursuivre la téléportation ou d&apos;annuler la téléportation.
+		<form name="form">
+			<button name="OK" text="Modifier et continuer"/>
+			<button name="Cancel" text="Annuler"/>
+			<ignore name="ignore" text="Téléportation (redémarrage possible) : la région que vous essayez de visiter comporte du contenu dont le niveau est exclu de vos préférences."/>
+		</form>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_Change">
+		La région que vous essayez de visiter comporte du contenu [REGIONMATURITY] alors que les préférences que vous avez définies excluent tout contenu [REGIONMATURITY]. Il est possible de modifier vos préférences ou d&apos;annuler la téléportation. Une fois vos préférences modifiées, vous devrez réessayer de vous téléporter.
+		<form name="form">
+			<button name="OK" text="Modifier les préférences"/>
+			<button name="Cancel" text="Annuler"/>
+			<ignore name="ignore" text="Téléportation (redémarrage impossible) : la région que vous essayez de visiter comporte du contenu dont le niveau est exclu de vos préférences."/>
+		</form>
+	</notification>
+	<notification name="TeleportEntryAccessBlocked_PreferencesOutOfSync">
+		Nous rencontrons des difficultés techniques au niveau de votre téléportation car vos préférences ne sont pas synchronisées avec le serveur.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="PreferredMaturityChanged">
+		Aucune autre notification vous informant que vous allez visiter une région au contenu [RATING] ne vous sera envoyée. Vous pouvez modifier vos préférences de contenu à l&apos;avenir en accédant à Édition &gt; Préférences &gt; Général, à partir de la barre de menus.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+	<notification name="MaturityChangeError">
+		Impossible de modifier vos préférences afin d&apos;afficher le contenu [PREFERRED_MATURITY] à l&apos;heure actuelle. Le paramètre [ACTUAL_MATURITY] a été rétabli. Vous pouvez réessayer de modifier vos préférences en accédant à Édition &gt; Préférences &gt; Général, à partir de la barre de menus.
+		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	<notification name="LandClaimAccessBlocked">
-		Votre catégorie d&apos;accès ne vous permet pas de réclamer cette région. Cela vient peut-être du fait qu&apos;il manquait des informations pour valider votre âge.
-
-Vérifiez que vous avez la toute dernière version du client et consultez les pages d&apos;aide pour savoir comment accéder aux zones ayant ce niveau d&apos;accès.
+		Le niveau de contenu du terrain que vous essayez de revendiquer dépasse celui défini dans vos préférences actuelles. Vous pouvez modifier vos préférences en accédant à Édition &gt; Préférences &gt; Général.
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
-	<notification name="LandClaimAccessBlocked_KB">
-		Votre catégorie d&apos;accès ne vous permet pas de réclamer cette région.
-
-Souhaitez-vous en savoir plus sur les différentes catégories d&apos;accès ?
+	<notification name="LandClaimAccessBlocked_AdultsOnlyContent">
+		Seuls les adultes sont autorisés à revendiquer ce terrain.
+		
+		Souhaitez-vous en savoir plus sur les différentes catégories d&apos;accès ?
 		<url name="url">
-			http://wiki.secondlife.com/wiki/Pr%C3%A9sentation_des_cat%C3%A9gories_de_contenu_(KB)
+			http://community.secondlife.com/t5/Base-de-connaissances/Cat%C3%A9gories-niveaux-de-contenu/ta-p/700311
 		</url>
-		<usetemplate ignoretext="Lorsqu&apos;une région ne peut pas être réclamée à cause de la catégorie d&apos;accès" name="okcancelignore" notext="Fermer" yestext="Consulter les pages d&apos;aide"/>
+		<usetemplate ignoretext="Seuls les adultes sont autorisés à revendiquer ce terrain." name="okcancelignore" notext="Fermer" yestext="Accéder à la Base de connaissances"/>
 	</notification>
 	<notification name="LandClaimAccessBlocked_Notify">
-		Votre catégorie d&apos;accès ne vous autorise pas à réclamer cette région.
+		Le terrain que vous essayez de revendiquer comporte du contenu [REGIONMATURITY] alors que les préférences que vous avez définies excluent tout contenu [REGIONMATURITY].
+	</notification>
+	<notification name="LandClaimAccessBlocked_NotifyAdultsOnly">
+		Le terrain que vous essayez de revendiquer comporte du contenu [REGIONMATURITY] uniquement accessible aux adultes.
 	</notification>
 	<notification name="LandClaimAccessBlocked_Change">
-		Votre catégorie d&apos;accès ne vous permet pas de réclamer cette région.
-
-En cliquant sur Modifier les préférences, vous pourrez changer votre catégorie d&apos;accès et pénétrer dans la région. À partir de maintenant, vous pouvez rechercher et accéder au contenu [REGIONMATURITY]. Vous pouvez modifier ce paramètre à partir du menu Édition &gt; Préférences... &gt; Général.
-		<usetemplate ignoretext="Lorsqu&apos;une région ne peut pas être réclamée à cause des préférences concernant la catégorie d&apos;accès" name="okcancelignore" notext="Fermer" yestext="Modifier les Préférences"/>
+		Le terrain que vous essayez de revendiquer comporte du contenu [REGIONMATURITY] alors que les préférences que vous avez définies excluent tout contenu [REGIONMATURITY]. Il est possible de modifier vos préférences, puis d&apos;essayer de revendiquer ce terrain à nouveau.
+		<form name="form">
+			<button name="OK" text="Modifier les préférences"/>
+			<button name="Cancel" text="Annuler"/>
+			<ignore name="ignore" text="Le terrain que vous essayez de revendiquer comporte du contenu dont le niveau est exclu de vos préférences."/>
+		</form>
 	</notification>
 	<notification name="LandBuyAccessBlocked">
-		Votre catégorie d&apos;accès ne vous permet pas d&apos;acheter cette région. Cela vient peut-être du fait qu&apos;il manquait des informations pour valider votre âge.
-
-Vérifiez que vous avez la toute dernière version du client et consultez les pages d&apos;aide pour savoir comment accéder aux zones ayant ce niveau d&apos;accès.
+		Le niveau de contenu du terrain que vous essayez d&apos;acheter dépasse celui défini dans vos préférences actuelles. Vous pouvez modifier vos préférences en accédant à Édition &gt; Préférences &gt; Général.
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
-	<notification name="LandBuyAccessBlocked_KB">
-		Votre catégorie d&apos;accès ne vous permet pas d&apos;acheter cette région.
-
-Souhaitez-vous en savoir plus sur les différentes catégories d&apos;accès ?
+	<notification name="LandBuyAccessBlocked_AdultsOnlyContent">
+		Seuls les adultes sont autorisés à acheter ce terrain.
+		
+		Souhaitez-vous en savoir plus sur les différentes catégories d&apos;accès ?
 		<url name="url">
-			http://wiki.secondlife.com/wiki/Pr%C3%A9sentation_des_cat%C3%A9gories_de_contenu_(KB)
+			http://community.secondlife.com/t5/Base-de-connaissances/Cat%C3%A9gories-niveaux-de-contenu/ta-p/700311
 		</url>
-		<usetemplate ignoretext="Lorsqu&apos;une région ne peut pas être achetée à cause de la catégorie d&apos;accès" name="okcancelignore" notext="Fermer" yestext="Consulter les pages d&apos;aide"/>
+		<usetemplate ignoretext="Seuls les adultes sont autorisés à acheter ce terrain." name="okcancelignore" notext="Fermer" yestext="Accéder à la Base de connaissances"/>
 	</notification>
 	<notification name="LandBuyAccessBlocked_Notify">
-		Votre catégorie d&apos;accès ne vous permet pas d&apos;acheter cette région.
+		Le terrain que vous essayez d&apos;acheter comporte du contenu [REGIONMATURITY] alors que les préférences que vous avez définies excluent tout contenu [REGIONMATURITY].
+	</notification>
+	<notification name="LandBuyAccessBlocked_NotifyAdultsOnly">
+		Le terrain que vous essayez d&apos;acheter comporte du contenu [REGIONMATURITY] uniquement accessible aux adultes.
 	</notification>
 	<notification name="LandBuyAccessBlocked_Change">
-		Votre catégorie d&apos;accès ne vous autorise pas à acheter cette région.
-
-En cliquant sur Modifier les préférences, vous pourrez changer votre catégorie d&apos;accès et pénétrer dans la région. À partir de maintenant, vous pouvez rechercher et accéder au contenu [REGIONMATURITY]. Vous pouvez modifier ce paramètre à partir du menu Édition &gt; Préférences... &gt; Général.
-		<usetemplate ignoretext="Lorsqu&apos;une région ne peut pas être achetée à cause des préférences concernant la catégorie d&apos;accès" name="okcancelignore" notext="Fermer" yestext="Modifier les Préférences"/>
+		Le terrain que vous essayez d&apos;acheter comporte du contenu [REGIONMATURITY] alors que les préférences que vous avez définies excluent tout contenu [REGIONMATURITY]. Il est possible de modifier vos préférences, puis d&apos;essayer d&apos;acheter ce terrain à nouveau.
+		<form name="form">
+			<button name="OK" text="Modifier les préférences"/>
+			<button name="Cancel" text="Annuler"/>
+			<ignore name="ignore" text="Le terrain que vous essayez d&apos;acheter comporte du contenu dont le niveau est exclu de vos préférences."/>
+		</form>
 	</notification>
 	<notification name="TooManyPrimsSelected">
-		&quot;Vous avez sélectionné trop de prims. Veuillez sélectionner au maximum [MAX_PRIM_COUNT] prims et réessayer.&quot;
+		Vous avez sélectionné trop de prims. Veuillez sélectionner au maximum [MAX_PRIM_COUNT] prims et réessayer.
 	</notification>
 	<notification name="ProblemImportingEstateCovenant">
 		Problème lors de l&apos;importation du règlement du domaine.
@@ -1872,7 +1925,7 @@ Si vous laissez ce champ vide, les rapports d&apos;infraction seront envoyés à
 Valeur par défaut : désactivé
 	</notification>
 	<notification label="Versions de voix non compatibles" name="VoiceVersionMismatch">
-		Cette version de Second Life n&apos;est pas compatible avec la fonctionnalité de chat vocal dans cette région. Vous devez mettre à jour Second Life pour que le chat vocal fonctionne correctement.
+		Cette version de [APP_NAME] n&apos;est pas compatible avec la fonctionnalité de chat vocal dans cette région. Vous devez mettre à jour [APP_NAME] pour que le chat vocal fonctionne correctement.
 	</notification>
 	<notification label="Règlement du domaine" name="HelpEstateCovenant">
 		Définir un règlement pour le domaine vous permet de vendre les parcelles de ce domaine. S&apos;il n&apos;y a pas de règlement, vous ne pouvez pas vendre le terrain. Si vous ne souhaitez pas indiquer de règlement ou donner de conseils aux acheteurs, laissez la section relative au règlement vide.
@@ -1995,7 +2048,7 @@ Déplacer les objets de l&apos;inventaire ?
 	</notification>
 	<notification name="ConfirmQuit">
 		Etes-vous certain(e) de vouloir quitter ?
-		<usetemplate ignoretext="Lorsque vous quittez Second Life" name="okcancelignore" notext="Continuer" yestext="Quitter"/>
+		<usetemplate ignoretext="Lorsque vous quittez [APP_NAME]" name="okcancelignore" notext="Continuer" yestext="Quitter"/>
 	</notification>
 	<notification name="HelpReportAbuseEmailLL">
 		Utilisez cet outil pour signaler des infractions aux Conditions d&apos;utilisation et aux Règles de la communauté. Voir :
@@ -2068,7 +2121,7 @@ Les descriptions précises nous permettent de résoudre les bugs plus rapidement
 
 Il semble que vous souhaitiez reporter une infraction à des droits de propriété intellectuelle. Pour signaler correctement cette infraction :
 
-(1) Remplissez un rapport d&apos;infraction. Vous pouvez soumettre un rapport d&apos;infraction si vous pensez qu&apos;un résident exploite le système de droits de Second Life, par exemple en utilisant un CopyBot ou des outils similaires pour enfreindre des droits de propriété intellectuelle. Notre équipe chargée des infractions mènera une enquête et prendra les mesures nécessaires à l&apos;encontre du résident non respectueux des Conditions d&apos;utilisation ou des règles de la communauté. Sachez toutefois que l&apos;équipe chargée des infractions ne supprimera pas de contenu à l&apos;intérieur de Second Life.
+(1) Remplissez un rapport d&apos;infraction. Vous pouvez soumettre un rapport d&apos;infraction si vous pensez qu&apos;un résident exploite le système de droits de [SECOND_LIFE], par exemple en utilisant un CopyBot ou des outils similaires pour enfreindre des droits de propriété intellectuelle. Notre équipe chargée des infractions mènera une enquête et prendra les mesures nécessaires à l&apos;encontre du résident non respectueux des Conditions d&apos;utilisation ou des règles de la communauté. Sachez toutefois que l&apos;équipe chargée des infractions ne supprimera pas de contenu à l&apos;intérieur de [SECOND_LIFE].
 
 (2) Demandez à ce que du contenu à l&apos;intérieur de Second Life soit supprimé. Pour demander à ce que du contenu soit supprimé de Second Life, vous devez soumettre un rapport d&apos;infraction valide, tel que fourni dans notre Règlement contre les violations des droit d&apos;auteurs (DMCA), à http://secondlife.com/corporate/dmca.php.
 
@@ -2193,7 +2246,7 @@ En cliquant sur le bouton Ciel Avancé, vous aurez accès à tous les réglages 
 En cliquant sur le bouton Eau Avancée, vous aurez accès à tous les réglages relatifs à l&apos;eau.
 	</notification>
 	<notification name="HelpDayCycle">
-		L&apos;éditeur du cycle du jour vous permet de contrôler le ciel au cours du cycle jour/nuit de second Life. C&apos;est ce même cycle qui est contrôlé par le curseur Heure de la journée dans l&apos;éditeur d&apos;environnement basique.
+		L&apos;éditeur du cycle du jour vous permet de contrôler le ciel au cours du cycle jour/nuit de [SECOND_LIFE_GRID]. C&apos;est ce même cycle qui est contrôlé par le curseur Heure de la journée dans l&apos;éditeur d&apos;environnement basique.
 
 L&apos;éditeur du jour fonctionne grâce au réglage d&apos;images-clés. Ces images-clés sont représentées par les marques grises sur la ligne du temps et ont des préréglages qui leurs sont associées. Au cours de la journée et de la nuit, le ciel WindLight s&apos;anime en passant d&apos;une clé à l&apos;autre.
 
@@ -2275,7 +2328,7 @@ Même chose que l&apos;azimut.
 		Contrôle la vitesse des nuages sur l&apos;axe des Y.
 	</notification>
 	<notification name="HelpClassicClouds">
-		Cochez cette option pour utiliser les anciens nuages de Second Life en plus des nuages WindLight.
+		Cochez cette option pour utiliser les anciens nuages de [APP_NAME] en plus des nuages WindLight.
 	</notification>
 	<notification name="HelpWaterFogColor">
 		Permet de sélectionner la couleur du brouillard sous l&apos;eau.
@@ -2373,13 +2426,16 @@ Même chose que l&apos;azimut.
 	</notification>
 	<notification name="NotAgeVerified">
 		Pour que vous puissiez accéder à cette parcelle, votre âge doit être vérifié.
-Voulez-vous aller sur le site de Second Life pour vérifier votre âge ?
+Voulez-vous aller sur le site de [SECOND_LIFE_GRID] pour vérifier votre âge ?
 
 [_URL]
 		<url name="url" option="0">
 			https://secondlife.com/account/verification.php?lang=fr
 		</url>
 		<usetemplate ignoretext="Avertir si l&apos;âge n&apos;a pas été vérifié" name="okcancelignore" notext="Non" yestext="Oui"/>
+	</notification>
+	<notification name="NotAgeVerified_Notify">
+		Pour que vous puissiez accéder à cette parcelle, votre âge doit être vérifié.
 	</notification>
 	<notification name="Cannot enter parcel: no payment info on file">
 		Avant de pouvoir pénétrer sur cette parcelle, vous devez enregistrer vos informations de paiement.
@@ -2930,7 +2986,7 @@ Les objets flexibles ne peuvent pas avoir de propriétés physiques et doivent r
 	</notification>
 	<notification name="FirstDebugMenus">
 		Vous avez activé le menu Avancé.
-Ce menu contient des fonctionnalités utiles pour les développeurs qui travaillent sur Second Life.
+Ce menu contient des fonctionnalités utiles pour les développeurs qui travaillent sur [APP_NAME].
 Pour activer/désactiver ce menu sous Windows, appuyez sur Ctrl-Alt-D. Sur un Mac, appuyez sur Cmd-Opt-Maj-D
 	</notification>
 	<notification name="FirstSculptedPrim">
@@ -3038,7 +3094,7 @@ Pour y participer, cliquez sur Accepter. Sinon, cliquez sur Refuser. Pour ignore
 		- Votre processeur ne remplit pas les conditions minimum requises.
 	</global>
 	<global name="UnsupportedGLRequirements">
-		Vous semblez ne pas avoir le matériel requis pour utiliser Second Life. Second Life requiert une carte graphique OpenGL avec une prise en charge du multitexturing. Si vous avez une telle carte, assurez-vous que vous avez aussi les drivers les plus récents pour la carte, ainsi que les service packs et les patchs pour votre système d&apos;exploitation.
+		Vous semblez ne pas avoir le matériel requis pour utiliser [APP_NAME]. [APP_NAME] requiert une carte graphique OpenGL avec une prise en charge du multitexturing. Si vous avez une telle carte, assurez-vous que vous avez aussi les drivers les plus récents pour la carte, ainsi que les service packs et les patchs pour votre système d&apos;exploitation.
 
 Si vous avez toujours des problèmes, veuillez consulter la page suivante : http://www.secondlife.com/support
 	</global>

@@ -17,7 +17,7 @@ endif(FMOD)
 include(OPENAL)
 include(FindOpenGL)
 include(Hunspell)
-#include(JsonCpp)
+include(JsonCpp)
 include(LLAddBuildTest)
 include(LLAudio)
 include(LLCharacter)
@@ -196,8 +196,9 @@ set(viewer_SOURCE_FILES
     llfloaterevent.cpp
     llfloaterexploreanimations.cpp
     llfloaterexploresounds.cpp
-    llfloaterfriends.cpp
+    llfloaterfeed.cpp
     llfloaterfonttest.cpp
+    llfloaterfriends.cpp
     llfloatergesture.cpp
     llfloatergodtools.cpp
     llfloatergroupinfo.cpp
@@ -301,6 +302,7 @@ set(viewer_SOURCE_FILES
     lllogchat.cpp
     llloginhandler.cpp
     llmainlooprepeater.cpp
+    llmakeoutfitdialog.cpp
     llmanip.cpp
     llmaniprotate.cpp
     llmanipscale.cpp
@@ -312,6 +314,7 @@ set(viewer_SOURCE_FILES
     llmediaremotectrl.cpp
     llmemoryview.cpp
     llmenucommands.cpp
+    llmenuoptionpathfindingrebakenavmesh.cpp
     llmeshrepository.cpp
     llmimetypes.cpp
     llmorphview.cpp
@@ -366,10 +369,10 @@ set(viewer_SOURCE_FILES
     llpanelnetwork.cpp
     llpanelobject.cpp
     llpanelobjectinventory.cpp
-    llpanelpathfindingrebakenavmesh.cpp
     llpanelpermissions.cpp
     llpanelpick.cpp
     llpanelplace.cpp
+    llpanelprofile.cpp
     llpanelskins.cpp
     llpanelvolume.cpp
     llpanelweb.cpp
@@ -538,6 +541,7 @@ set(viewer_SOURCE_FILES
     llwearablelist.cpp
     llwearabletype.cpp
     llweb.cpp
+    llwebprofile.cpp
     llwind.cpp
     llwlanimator.cpp
     llwldaycycle.cpp
@@ -546,6 +550,7 @@ set(viewer_SOURCE_FILES
     llwlparamset.cpp
     llworld.cpp
     llworldmap.cpp
+    llworldmapmessage.cpp
     llworldmipmap.cpp
     llworldmapview.cpp
     llxmlrpcresponder.cpp
@@ -700,6 +705,7 @@ set(viewer_HEADER_FILES
     llfloaterexploreanimations.h
     llfloaterexploresounds.h
     llfloaterevent.h
+    llfloaterfeed.h
     llfloaterfonttest.h
     llfloaterfriends.h
     llfloatergesture.h
@@ -805,6 +811,7 @@ set(viewer_HEADER_FILES
     lllogchat.h
     llloginhandler.h
     llmainlooprepeater.h
+    llmakeoutfitdialog.h
     llmanip.h
     llmaniprotate.h
     llmanipscale.h
@@ -815,6 +822,7 @@ set(viewer_HEADER_FILES
     llmediactrl.h
     llmediaremotectrl.h
     llmemoryview.h
+    llmenuoptionpathfindingrebakenavmesh.h
     llmenucommands.h
     llmeshrepository.h
     llmimetypes.h
@@ -870,10 +878,10 @@ set(viewer_HEADER_FILES
     llpanelnetwork.h
     llpanelobject.h
     llpanelobjectinventory.h
-    llpanelpathfindingrebakenavmesh.h
     llpanelpermissions.h
     llpanelpick.h
     llpanelplace.h
+    llpanelprofile.h
     llpanelskins.h
     llpanelvolume.h
     llpanelweb.h
@@ -1047,6 +1055,7 @@ set(viewer_HEADER_FILES
     llwearablelist.h
     llwearabletype.h
     llweb.h
+    llwebprofile.h
     llwind.h
     llwindebug.h
     llwlanimator.h
@@ -1056,6 +1065,7 @@ set(viewer_HEADER_FILES
     llwlparamset.h
     llworld.h
     llworldmap.h
+    llworldmapmessage.h
     llworldmipmap.h
     llworldmapview.h
     llxmlrpcresponder.h

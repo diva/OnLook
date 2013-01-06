@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel label="Terreno y [CURRENCY]" name="land_money_tab" >
+<panel label="Terreno y Dinero" name="land_money_tab" >
 	<string name="help_text">
 		Se listan las parcelas propiedad del grupo, detallando las contribuciones. Aparece una advertencia si el Terreno total en uso es menor que o igual a la Contribución total. Las pestañas &apos;Planificación&apos;, &apos;Detalles&apos; y &apos;Ventas&apos; aportan información sobre las finanzas del grupo	  
 	</string>
@@ -15,7 +15,7 @@
 	</string>
 	<text name="group_land_heading">
 		Terreno propiedad del grupo
-	/text>
+	</text>
 	<scroll_list name="group_parcel_list">
 		<column label="Parcela" name="name"/>
 		<column label="Región" name="location"/>
@@ -23,7 +23,7 @@
 		<column label="Superficie" name="area"/>
 		<column label="" name="hidden"/>
 	</scroll_list>
-	<button label="Mostrar en el Mapa" label_selected="Mostrar en el Mapa" name="map_button"/>
+	<button label="Mostrar en el Mapa" label_selected="Mostrar en el Mapa" name="map_button" left="280" width="130"/>
 	<text name="total_contributed_land_label">
 		Contribución Total:
 	</text>
