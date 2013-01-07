@@ -515,7 +515,9 @@ class DarwinManifest(ViewerManifest):
 
                 for libfile in ("libapr-1.0.dylib",
                                 "libaprutil-1.0.dylib",
-                                "libexpat.1.5.2.dylib"):
+                                "libcollada14dom.dylib",
+                                "libexpat.1.5.2.dylib"
+                                "libGLOD.dylib"):
                     self.path(os.path.join(libdir, libfile), libfile)
 
                 # For using FMOD for sound...but, fmod is proprietary so some might not use it...
