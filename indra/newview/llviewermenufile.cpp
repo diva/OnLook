@@ -120,6 +120,14 @@ class LLFileEnableUpload : public view_listener_t
 	}
 };
 
+class LLFileEnableUploadModel : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+	{
+		return gMeshRepo.meshUploadEnabled();
+	}
+};
+
 //============================================================================
 
 #if LL_WINDOWS
@@ -302,6 +310,27 @@ class LLFileUploadImage : public view_listener_t, public AIFileUpload
 	}
 };
 
+class LLFileUploadModel : public view_listener_t, public AIFileUpload
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		start_filepicker(FFLOAD_COLLADA, "dae");
+		return true;
+	}
+
+  protected:
+	// Inherited from AIFileUpload.
+	/*virtual*/ void handle_event(std::string const& filename)
+	{
+		LLFloaterModelPreview* fmp = new LLFloaterModelPreview(filename);
+		LLUICtrlFactory::getInstance()->buildFloater(fmp, "floater_model_preview.xml");
+		if (fmp)
+		{
+			fmp->loadModel(3);
+		}
+	}
+};
+
 class LLFileUploadSound : public view_listener_t, public AIFileUpload
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -334,23 +363,6 @@ class LLFileUploadAnim : public view_listener_t, public AIFileUpload
 	{
 		LLFloaterAnimPreview* floaterp = new LLFloaterAnimPreview(filename);
 		LLUICtrlFactory::getInstance()->buildFloater(floaterp, "floater_animation_preview.xml");
-	}
-};
-
-class LLFileUploadMesh : public view_listener_t, public AIFileUpload
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		start_filepicker(FFLOAD_COLLADA, "dae");
-		return true;
-	}
-
-  protected:
-	// Inherited from AIFileUpload.
-	/*virtual*/ void handle_event(std::string const& filename)
-	{
-		LLFloaterModelPreview* floaterp = new LLFloaterModelPreview(filename);
-		LLUICtrlFactory::getInstance()->buildFloater(floaterp, "floater_model_preview.xml");
 	}
 };
 
@@ -1341,7 +1353,7 @@ void init_menu_file()
 	(new LLFileUploadImage())->registerListener(gMenuHolder, "File.UploadImage");
 	(new LLFileUploadSound())->registerListener(gMenuHolder, "File.UploadSound");
 	(new LLFileUploadAnim())->registerListener(gMenuHolder, "File.UploadAnim");
-	(new LLFileUploadMesh())->registerListener(gMenuHolder, "File.UploadMesh");
+	(new LLFileUploadModel())->registerListener(gMenuHolder, "File.UploadModel");
 	(new LLFileUploadBulk())->registerListener(gMenuHolder, "File.UploadBulk");
 	(new LLFileCloseWindow())->registerListener(gMenuHolder, "File.CloseWindow");
 	(new LLFileCloseAllWindows())->registerListener(gMenuHolder, "File.CloseAllWindows");
@@ -1357,6 +1369,8 @@ void init_menu_file()
 	(new LLFileQuit())->registerListener(gMenuHolder, "File.Quit");
 	(new LLFileLogOut())->registerListener(gMenuHolder, "File.LogOut");
 	(new LLFileEnableUpload())->registerListener(gMenuHolder, "File.EnableUpload");
+	(new LLFileEnableUploadModel()->registerListener(gMenuHolder, "File.EnableUploadModel");
+
 	(new LLFileEnableSaveAs())->registerListener(gMenuHolder, "File.EnableSaveAs");
 }
 
