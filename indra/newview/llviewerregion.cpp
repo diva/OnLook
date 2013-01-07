@@ -1623,9 +1623,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	//capabilityNames.append("LandResources"); //Script limits (llfloaterscriptlimits.cpp)
 	capabilityNames.append("MapLayer");
 	capabilityNames.append("MapLayerGod");
-#if MESH_IMPORT
 	capabilityNames.append("MeshUploadFlag");
-#endif //MESH_IMPORT
 	capabilityNames.append("NavMeshGenerationStatus");
 	capabilityNames.append("NewFileAgentInventory");
 	/*capabilityNames.append("ObjectMedia");

@@ -37,9 +37,6 @@
 #include "llcallbacklist.h"
 #include "lldatapacker.h"
 #include "llfasttimer.h"
-#if MESH_IMPORT
-#include "llfloatermodelpreview.h"
-#endif //MESH_IMPORT
 #include "llfloaterperms.h"
 #include "lleconomy.h"
 #include "llimagej2c.h"
@@ -3301,6 +3298,8 @@ public:
 		: mRefCount(0)
 	{
 	}
+
+	virtual ~ndDecompTracer() { }
 
 	virtual void trace( char const *a_strMsg )
 	{

@@ -72,6 +72,7 @@ public:
 	static S32  getUIWinHeightShort() {return sUIWinHeightShort ;}
 	static S32  getUIWinWidth()       {return sUIWinWidth ;}
 
+	static void saveStart(int index);
 	static void saveLocalDone(bool success, int index);
 	static void saveFeedDone(bool success, int index);
 	static void savePostcardDone(bool success, int index);
@@ -79,8 +80,9 @@ public:
 	static void updateControls();
 	static void resetFeedAndPostcardAspect();
 
-private:
 	class Impl;
+
+private:
 	Impl& impl;
 
 	static LLFloaterSnapshot* sInstance;
