@@ -194,7 +194,7 @@ bool LLFilePickerBase::setupFilter(ELoadFilter filter)
 		mOFN.lpstrFilter = MODEL_FILTER \
 			L"\0";
 		break;
-	case FFLOAD_LSL:
+	case FFLOAD_SCRIPT:
 		mOFN.lpstrFilter = SCRIPT_FILTER \
 			L"\0";
 		break;
@@ -504,7 +504,7 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 			L"Gestures (*.gesture)\0*.gesture\0" \
 			L"\0";
 		break;
-	case FFSAVE_LSL:
+	case FFSAVE_SCRIPT:
 		if(filename.empty())
 		{
 			wcsncpy( mFilesW,L"untitled.lsl", FILENAME_BUFFER_SIZE);
@@ -822,7 +822,7 @@ Boolean LLFilePickerBase::navOpenFilterProc(AEDesc *theItem, void *info, void *c
 								result = false;
 							}
 						}
-						else if (filter == FFLOAD_LSL)
+						else if (filter == FFLOAD_SCRIPT)
 						{
 							if (fileInfo.filetype != 'LSL ' &&
 								(fileInfo.extension && (CFStringCompare(fileInfo.extension, CFSTR("lsl"), kCFCompareCaseInsensitive) != kCFCompareEqualTo)) )
@@ -1030,7 +1030,7 @@ OSStatus	LLFilePickerBase::doNavSaveDialog(ESaveFilter filter, std::string const
 			extension = CFSTR(".j2c");
 			break;
 		
-		case FFSAVE_LSL:
+		case FFSAVE_SCRIPT:
 			type = 'LSL ';
 			creator = '\?\?\?\?';
 			extension = CFSTR(".lsl");
@@ -1489,7 +1489,7 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 				 LLTrans::getString("compressed_image_files") + " (*.j2c)");
 			suggest_ext = ".j2c";
 			break;
-		case FFSAVE_LSL:
+		case FFSAVE_SCRIPT:
 			caption += add_script_filter_to_gtkchooser(picker);
 			suggest_ext = ".lsl";
 			break;
@@ -1553,7 +1553,7 @@ bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder
 		case FFLOAD_IMAGE:
 			filtername = add_imageload_filter_to_gtkchooser(picker);
 			break;
-		case FFLOAD_LSL:
+		case FFLOAD_SCRIPT:
 			filtername = add_script_filter_to_gtkchooser(picker);
 			break;
 		case FFLOAD_DICTIONARY:

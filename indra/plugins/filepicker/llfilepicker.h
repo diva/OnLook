@@ -62,7 +62,7 @@ public:
 		FFLOAD_RAW = 8,
 		FFLOAD_MODEL = 9,
 		FFLOAD_COLLADA = 10,
-		FFLOAD_LSL = 11,
+		FFLOAD_SCRIPT = 11,
 		FFLOAD_DICTIONARY = 12,
 		// <edit>
 		FFLOAD_INVGZ = 13,
@@ -88,7 +88,7 @@ public:
 		FFSAVE_J2C = 12,
 		FFSAVE_PNG = 13,
 		FFSAVE_JPEG = 14,
-		FFSAVE_LSL = 15,
+		FFSAVE_SCRIPT = 15,
 		// <edit>
 		FFSAVE_ANIMATN = 16,
 		FFSAVE_OGG = 17,
