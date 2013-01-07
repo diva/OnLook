@@ -1460,6 +1460,7 @@ U32 LLRender::getMatrixMode()
 	{ //always return MM_TEXTURE if current matrix mode points at any texture matrix
 		return MM_TEXTURE;
 	}
+
 	return mMatrixMode;
 }
 

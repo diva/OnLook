@@ -1,32 +1,26 @@
-/** 
+/**
  * @file llwindowmacosx.cpp
  * @brief Platform-dependent implementation of llwindow
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
- * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
- * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
- * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * Copyright (C) 2010, Linden Research, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -2787,43 +2781,43 @@ const char* cursorIDToName(int id)
 {
 	switch (id)
 	{
-		case UI_CURSOR_ARROW:			return "UI_CURSOR_ARROW";
-		case UI_CURSOR_WAIT:			return "UI_CURSOR_WAIT";
-		case UI_CURSOR_HAND:			return "UI_CURSOR_HAND";
-		case UI_CURSOR_IBEAM:			return "UI_CURSOR_IBEAM";
-		case UI_CURSOR_CROSS:			return "UI_CURSOR_CROSS";
-		case UI_CURSOR_SIZENWSE:		return "UI_CURSOR_SIZENWSE";
-		case UI_CURSOR_SIZENESW:		return "UI_CURSOR_SIZENESW";
-		case UI_CURSOR_SIZEWE:			return "UI_CURSOR_SIZEWE";
-		case UI_CURSOR_SIZENS:			return "UI_CURSOR_SIZENS";
-		case UI_CURSOR_NO:				return "UI_CURSOR_NO";
-		case UI_CURSOR_WORKING:			return "UI_CURSOR_WORKING";
-		case UI_CURSOR_TOOLGRAB:		return "UI_CURSOR_TOOLGRAB";
-		case UI_CURSOR_TOOLLAND:		return "UI_CURSOR_TOOLLAND";
-		case UI_CURSOR_TOOLFOCUS:		return "UI_CURSOR_TOOLFOCUS";
-		case UI_CURSOR_TOOLCREATE:		return "UI_CURSOR_TOOLCREATE";
-		case UI_CURSOR_ARROWDRAG:		return "UI_CURSOR_ARROWDRAG";
-		case UI_CURSOR_ARROWCOPY:		return "UI_CURSOR_ARROWCOPY";
-		case UI_CURSOR_ARROWDRAGMULTI:	return "UI_CURSOR_ARROWDRAGMULTI";
-		case UI_CURSOR_ARROWCOPYMULTI:	return "UI_CURSOR_ARROWCOPYMULTI";
-		case UI_CURSOR_NOLOCKED:		return "UI_CURSOR_NOLOCKED";
-		case UI_CURSOR_ARROWLOCKED:		return "UI_CURSOR_ARROWLOCKED";
-		case UI_CURSOR_GRABLOCKED:		return "UI_CURSOR_GRABLOCKED";
-		case UI_CURSOR_TOOLTRANSLATE:	return "UI_CURSOR_TOOLTRANSLATE";
-		case UI_CURSOR_TOOLROTATE:		return "UI_CURSOR_TOOLROTATE";
-		case UI_CURSOR_TOOLSCALE:		return "UI_CURSOR_TOOLSCALE";
-		case UI_CURSOR_TOOLCAMERA:		return "UI_CURSOR_TOOLCAMERA";
-		case UI_CURSOR_TOOLPAN:			return "UI_CURSOR_TOOLPAN";
-		case UI_CURSOR_TOOLZOOMIN:		return "UI_CURSOR_TOOLZOOMIN";
-		case UI_CURSOR_TOOLPICKOBJECT3:	return "UI_CURSOR_TOOLPICKOBJECT3";
-		case UI_CURSOR_TOOLPLAY:		return "UI_CURSOR_TOOLPLAY";
-		case UI_CURSOR_TOOLPAUSE:		return "UI_CURSOR_TOOLPAUSE";
-		case UI_CURSOR_TOOLMEDIAOPEN:	return "UI_CURSOR_TOOLMEDIAOPEN";
-		case UI_CURSOR_PIPETTE:			return "UI_CURSOR_PIPETTE";
-		case UI_CURSOR_TOOLSIT:			return "UI_CURSOR_TOOLSIT";
-		case UI_CURSOR_TOOLBUY:			return "UI_CURSOR_TOOLBUY";
-		case UI_CURSOR_TOOLOPEN:		return "UI_CURSOR_TOOLOPEN";
-		case UI_CURSOR_TOOLPAY:			return "UI_CURSOR_TOOLPAY";
+		case UI_CURSOR_ARROW:							return "UI_CURSOR_ARROW";
+		case UI_CURSOR_WAIT:							return "UI_CURSOR_WAIT";
+		case UI_CURSOR_HAND:							return "UI_CURSOR_HAND";
+		case UI_CURSOR_IBEAM:							return "UI_CURSOR_IBEAM";
+		case UI_CURSOR_CROSS:							return "UI_CURSOR_CROSS";
+		case UI_CURSOR_SIZENWSE:						return "UI_CURSOR_SIZENWSE";
+		case UI_CURSOR_SIZENESW:						return "UI_CURSOR_SIZENESW";
+		case UI_CURSOR_SIZEWE:							return "UI_CURSOR_SIZEWE";
+		case UI_CURSOR_SIZENS:							return "UI_CURSOR_SIZENS";
+		case UI_CURSOR_NO:								return "UI_CURSOR_NO";
+		case UI_CURSOR_WORKING:							return "UI_CURSOR_WORKING";
+		case UI_CURSOR_TOOLGRAB:						return "UI_CURSOR_TOOLGRAB";
+		case UI_CURSOR_TOOLLAND:						return "UI_CURSOR_TOOLLAND";
+		case UI_CURSOR_TOOLFOCUS:						return "UI_CURSOR_TOOLFOCUS";
+		case UI_CURSOR_TOOLCREATE:						return "UI_CURSOR_TOOLCREATE";
+		case UI_CURSOR_ARROWDRAG:						return "UI_CURSOR_ARROWDRAG";
+		case UI_CURSOR_ARROWCOPY:						return "UI_CURSOR_ARROWCOPY";
+		case UI_CURSOR_ARROWDRAGMULTI:					return "UI_CURSOR_ARROWDRAGMULTI";
+		case UI_CURSOR_ARROWCOPYMULTI:					return "UI_CURSOR_ARROWCOPYMULTI";
+		case UI_CURSOR_NOLOCKED:						return "UI_CURSOR_NOLOCKED";
+		case UI_CURSOR_ARROWLOCKED:						return "UI_CURSOR_ARROWLOCKED";
+		case UI_CURSOR_GRABLOCKED:						return "UI_CURSOR_GRABLOCKED";
+		case UI_CURSOR_TOOLTRANSLATE:					return "UI_CURSOR_TOOLTRANSLATE";
+		case UI_CURSOR_TOOLROTATE:						return "UI_CURSOR_TOOLROTATE";
+		case UI_CURSOR_TOOLSCALE:						return "UI_CURSOR_TOOLSCALE";
+		case UI_CURSOR_TOOLCAMERA:						return "UI_CURSOR_TOOLCAMERA";
+		case UI_CURSOR_TOOLPAN:							return "UI_CURSOR_TOOLPAN";
+		case UI_CURSOR_TOOLZOOMIN:						return "UI_CURSOR_TOOLZOOMIN";
+		case UI_CURSOR_TOOLPICKOBJECT3:					return "UI_CURSOR_TOOLPICKOBJECT3";
+		case UI_CURSOR_TOOLPLAY:						return "UI_CURSOR_TOOLPLAY";
+		case UI_CURSOR_TOOLPAUSE:						return "UI_CURSOR_TOOLPAUSE";
+		case UI_CURSOR_TOOLMEDIAOPEN:					return "UI_CURSOR_TOOLMEDIAOPEN";
+		case UI_CURSOR_PIPETTE:							return "UI_CURSOR_PIPETTE";
+		case UI_CURSOR_TOOLSIT:							return "UI_CURSOR_TOOLSIT";
+		case UI_CURSOR_TOOLBUY:							return "UI_CURSOR_TOOLBUY";
+		case UI_CURSOR_TOOLOPEN:						return "UI_CURSOR_TOOLOPEN";
+		case UI_CURSOR_TOOLPAY:							return "UI_CURSOR_TOOLPAY";
 	}
 
 	llerrs << "cursorIDToName: unknown cursor id" << id << llendl;

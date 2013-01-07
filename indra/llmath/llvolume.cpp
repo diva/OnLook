@@ -2696,7 +2696,7 @@ bool LLVolume::unpackVolumeFaces(std::istream& is, S32 size)
 	return true;
 }
 
-		
+
 BOOL LLVolume::isMeshAssetLoaded()
 {
 	return mIsMeshAssetLoaded;

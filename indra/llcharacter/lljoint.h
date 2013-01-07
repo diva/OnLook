@@ -87,6 +87,7 @@ protected:
 public:
 	U32				mDirtyFlags;
 	BOOL			mUpdateXform;
+
 	BOOL			mResetAfterRestoreOldXform;
 
 	// describes the skin binding pose
@@ -105,8 +106,8 @@ public:
 public:
 	LLJoint();
 	LLJoint(S32 joint_num);
+	// *TODO: Only used for LLVOAvatarSelf::mScreenp.  *DOES NOT INITIALIZE mResetAfterRestoreOldXform*
 	LLJoint( const std::string &name, LLJoint *parent=NULL );
-
 	virtual ~LLJoint();
 
 private:

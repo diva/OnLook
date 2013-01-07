@@ -97,7 +97,6 @@ set(llui_HEADER_FILES
     llfloater.h
     llfocusmgr.h
     llfunctorregistry.h
-    llhandle.h
     llhtmlhelp.h
     lliconctrl.h
     llkeywords.h
