@@ -88,6 +88,8 @@ static LLFilePicker::ESaveFilter str2savefilter(std::string const& filter)
 	return LLFilePicker::FFSAVE_PNG;
   else if (filter == "jpeg")
 	return LLFilePicker::FFSAVE_JPEG;
+  else if (filter == "lsl")
+	return LLFilePicker::FFSAVE_LSL;
   else if (filter == "animatn")
 	return LLFilePicker::FFSAVE_ANIMATN;
   else if (filter == "ogg")
@@ -96,8 +98,6 @@ static LLFilePicker::ESaveFilter str2savefilter(std::string const& filter)
 	return LLFilePicker::FFSAVE_NOTECARD;
   else if (filter == "gesture")
 	return LLFilePicker::FFSAVE_GESTURE;
-  else if (filter == "lsl")
-	return LLFilePicker::FFSAVE_LSL;
   else if (filter == "shape")
 	return LLFilePicker::FFSAVE_SHAPE;
   else if (filter == "skin")
@@ -157,6 +157,14 @@ static LLFilePicker::ELoadFilter str2loadfilter(std::string const& filter)
 	return LLFilePicker::FFLOAD_SLOBJECT;
   else if (filter == "raw")
 	return LLFilePicker::FFLOAD_RAW;
+  else if (filter == "model")
+	return LLFilePicker::FFLOAD_MODEL;
+  else if (filter == "collada")
+	return LLFilePicker::FFLOAD_COLLADA;
+  else if (filter == "lsl")
+	return LLFilePicker::FFLOAD_LSL;
+  else if (filter == "dictionary")
+	return LLFilePicker::FFLOAD_DICTIONARY;
   else if (filter == "invgz")
 	return LLFilePicker::FFLOAD_INVGZ;
   else if (filter == "ao")
