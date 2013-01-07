@@ -345,27 +345,6 @@ BOOL stop_gloderror()
 	return FALSE;
 }
 
-LLMeshFilePicker::LLMeshFilePicker(LLModelPreview* mp, S32 lod)
-{
-	mMP = mp;
-	mLOD = lod;
-	open(FFLOAD_COLLADA);
-	run(boost::bind(&LLMeshFilePicker::loadFromCollada, this));
-}
-
-// static
-void LLMeshFilePicker::loadFromCollada(LLMeshFilePicker* filepicker)
-{
-	LLMeshFilePicker* self = (LLMeshFilePicker*)filepicker;
-	if (self && filepicker->hasFilename())
-		self->notify(filepicker->getFilename());
-}
-
-void LLMeshFilePicker::notify(const std::string& filename)
-{
-	mMP->loadModel(filename, mLOD);
-}
-
 //-----------------------------------------------------------------------------
 // LLFloaterModelPreview()
 //-----------------------------------------------------------------------------
@@ -583,7 +562,19 @@ void LLFloaterModelPreview::loadModel(S32 lod)
 {
 	mModelPreview->mLoading = true;
 
-	new LLMeshFilePicker(mModelPreview, lod);
+	AIFilePicker* filepicker = AIFilePicker::create();
+	filepicker->open(FFLOAD_COLLADA, "", "mesh");
+	filepicker->run(boost::bind(&LLFloaterModelPreview::loadModel_continued, this, filepicker, lod));
+}
+
+void LLFloaterModelPreview::loadModel_continued(AIFilePicker* filepicker, S32 lod)
+{
+	std::string filename;
+	if (filepicker->hasFilename())				// User did not click Cancel?
+	{
+		filename = filepicker->getFilename();
+	}
+	mModelPreview->loadModel(filename, lod);	// Pass an empty filename if the user clicked Cancel.
 }
 
 void LLFloaterModelPreview::loadModel(S32 lod, const std::string& file_name, bool force_disable_slm)

@@ -187,6 +187,7 @@ public:
 	void refresh();
 
 	void			loadModel(S32 lod);
+	void			loadModel_continued(AIFilePicker* filepicker, S32 lod);
 	void 			loadModel(S32 lod, const std::string& file_name, bool force_disable_slm = false);
 
 	void onViewOptionChecked(LLUICtrl* ctrl);
@@ -212,7 +213,6 @@ public:
 
 protected:
 	friend class LLModelPreview;
-	friend class LLMeshFilePicker;
 	friend class LLPhysicsDecomp;
 
 	static void		onImportScaleCommit(LLUICtrl*, void*);
@@ -290,18 +290,6 @@ private:
 
 	LLButton* mUploadBtn;
 	LLButton* mCalculateBtn;
-};
-
-class LLMeshFilePicker : public AIFilePicker
-{
-public:
-	LLMeshFilePicker(LLModelPreview* mp, S32 lod);
-	static void loadFromCollada(LLMeshFilePicker* filepicker);
-	virtual void notify(const std::string& filename);
-
-private:
-	LLModelPreview* mMP;
-	S32 mLOD;
 };
 
 class LLModelPreview : public LLViewerDynamicTexture, public LLMutex
