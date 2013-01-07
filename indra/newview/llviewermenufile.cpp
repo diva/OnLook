@@ -122,7 +122,7 @@ class LLFileEnableUpload : public view_listener_t
 
 class LLFileEnableUploadModel : public view_listener_t
 {
-	bool handleEvent(const LLSD& userdata)
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		return gMeshRepo.meshUploadEnabled();
 	}
@@ -1369,7 +1369,7 @@ void init_menu_file()
 	(new LLFileQuit())->registerListener(gMenuHolder, "File.Quit");
 	(new LLFileLogOut())->registerListener(gMenuHolder, "File.LogOut");
 	(new LLFileEnableUpload())->registerListener(gMenuHolder, "File.EnableUpload");
-	(new LLFileEnableUploadModel()->registerListener(gMenuHolder, "File.EnableUploadModel");
+	(new LLFileEnableUploadModel())->registerListener(gMenuHolder, "File.EnableUploadModel");
 
 	(new LLFileEnableSaveAs())->registerListener(gMenuHolder, "File.EnableSaveAs");
 }
