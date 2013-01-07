@@ -6368,22 +6368,6 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
       </array>
     </map>
-	<key>FloaterModelPreviewRect</key>
-	<map>
-      <key>Comment</key>
-      <string>Rectangle for Model preview</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Rect</string>
-      <key>Value</key>
-      <array>
-        <integer>0</integer>
-        <integer>480</integer>
-        <integer>940</integer>
-        <integer>52</integer>
-      </array>
-	</map>
     <key>ShowRadar</key>
     <map>
       <key>Comment</key>

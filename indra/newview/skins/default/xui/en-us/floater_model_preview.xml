@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater name="Model Preview" title="Upload Model" rect_control="FloaterModelPreviewRect"
+<floater name="Model Preview" title="Upload Model"
  can_close="true" can_resize="false" can_minimize="true" can_drag_on_left="false"
  min_width="940" min_height="480" width="940" height="480">
 
