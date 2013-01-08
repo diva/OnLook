@@ -55,6 +55,7 @@
 #include "llviewerobject.h"
 #include "llviewerregion.h"
 #include "llresmgr.h"
+
 #include "llbutton.h"
 #include "lldir.h"
 #include "llnotificationsutil.h"
@@ -207,8 +208,7 @@ BOOL LLFloaterScriptQueue::start()
 	args["[COUNT]"] = llformat ("%d", mObjectIDs.count());
 	buffer = getString ("Starting", args);
 
-	LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
-	list->setCommentText(buffer);
+	getChild<LLScrollListCtrl>("queue output")->addSimpleElement(buffer, ADD_BOTTOM);
 
 	return nextObject();
 }
@@ -240,12 +240,9 @@ BOOL LLFloaterScriptQueue::nextObject()
 	} while((mObjectIDs.count() > 0) && !successful_start);
 	if(isDone() && !mDone)
 	{
-		
-		LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
-
-		mDone = TRUE;
-		list->setCommentText(getString("Done"));
-		childSetEnabled("close",TRUE);
+		mDone = true;
+		getChild<LLScrollListCtrl>("queue output")->addSimpleElement(getString("Done"), ADD_BOTTOM);
+		getChildView("close")->setEnabled(TRUE);
 	}
 	return successful_start;
 }
@@ -283,6 +280,40 @@ BOOL LLFloaterScriptQueue::popNext()
 /// Class LLFloaterCompileQueue
 ///----------------------------------------------------------------------------
 
+class LLCompileFloaterUploadQueueSupplier : public LLAssetUploadQueueSupplier
+{
+public:
+
+	LLCompileFloaterUploadQueueSupplier(const LLUUID& queue_id) :
+		mQueueId(queue_id)
+	{
+	}
+
+	virtual LLAssetUploadQueue* get() const
+	{
+		LLFloaterCompileQueue* queue = (LLFloaterCompileQueue*) LLFloaterScriptQueue::findInstance(mQueueId);
+		if(NULL == queue)
+		{
+			return NULL;
+		}
+		return queue->getUploadQueue();
+	}
+
+	virtual void log(std::string message) const
+	{
+		LLFloaterCompileQueue* queue = (LLFloaterCompileQueue*) LLFloaterScriptQueue::findInstance(mQueueId);
+		if(NULL == queue)
+		{
+			return;
+		}
+
+		queue->getChild<LLScrollListCtrl>("queue output")->addSimpleElement(message, ADD_BOTTOM);
+	}
+
+private:
+	LLUUID mQueueId;
+};
+
 // static
 LLFloaterCompileQueue* LLFloaterCompileQueue::create(BOOL mono)
 {
@@ -291,48 +322,8 @@ LLFloaterCompileQueue* LLFloaterCompileQueue::create(BOOL mono)
 	LLRect rect = gSavedSettings.getRect("CompileOutputRect");
 	rect.translate(left - rect.mLeft, top - rect.mTop);
 	LLFloaterCompileQueue* new_queue = new LLFloaterCompileQueue("queue", rect);
-	
-	class LLCompileFloaterUploadQueueSupplier : public LLAssetUploadQueueSupplier
-	{
-	public:
-	
-		LLCompileFloaterUploadQueueSupplier(const LLUUID& queue_id) :
-			mQueueId(queue_id)
-		{
-		}
-		
-		virtual LLAssetUploadQueue* get() const 
-		{
-			LLFloaterCompileQueue* queue = 
-				(LLFloaterCompileQueue*) LLFloaterScriptQueue::findInstance(mQueueId);
-			
-			if(NULL == queue)
-			{
-				return NULL;
-			}
-			
-			return queue->mUploadQueue;
-		}
 
-		virtual void log(std::string message) const
-		{
-			LLFloaterCompileQueue* queue = 
-				(LLFloaterCompileQueue*) LLFloaterScriptQueue::findInstance(mQueueId);
-
-			if(NULL == queue)
-			{
-				return;
-			}
-
-			LLScrollListCtrl* list = queue->getChild<LLScrollListCtrl>("queue output");
-			list->setCommentText(message.c_str());
-		}
-		
-	private:
-		LLUUID mQueueId;
-	};
-																 															 
-	new_queue->mUploadQueue = new LLAssetUploadQueue(new LLCompileFloaterUploadQueueSupplier(new_queue->getID()));															 
+	new_queue->mUploadQueue = new LLAssetUploadQueue(new LLCompileFloaterUploadQueueSupplier(new_queue->getID()));
 	new_queue->mMono = mono;
 	new_queue->open();
 	return new_queue;
@@ -414,8 +405,8 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 	llinfos << "LLFloaterCompileQueue::scriptArrived()" << llendl;
 	LLScriptQueueData* data = (LLScriptQueueData*)user_data;
 	if(!data) return;
-	LLFloaterCompileQueue* queue = static_cast<LLFloaterCompileQueue*> 
-				(LLFloaterScriptQueue::findInstance(data->mQueueID));
+	LLFloaterCompileQueue* queue = static_cast<LLFloaterCompileQueue*> (LLFloaterScriptQueue::findInstance(data->mQueueID));
+
 	std::string buffer;
 	if(queue && (0 == status))
 	{
@@ -519,8 +510,7 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 	}
 	if(queue && (buffer.size() > 0)) 
 	{
-		LLScrollListCtrl* list = queue->getChild<LLScrollListCtrl>("queue output");
-		list->setCommentText(buffer);
+		queue->getChild<LLScrollListCtrl>("queue output")->addSimpleElement(buffer, ADD_BOTTOM);
 	}
 	delete data;
 }
@@ -543,8 +533,7 @@ void LLFloaterCompileQueue::onSaveBytecodeComplete(const LLUUID& asset_id, void*
 {
 	llinfos << "LLFloaterCompileQueue::onSaveBytecodeComplete()" << llendl;
 	LLCompileQueueData* data = (LLCompileQueueData*)user_data;
-	LLFloaterCompileQueue* queue = static_cast<LLFloaterCompileQueue*> 
-				(LLFloaterScriptQueue::findInstance(data->mQueueID));
+	LLFloaterCompileQueue* queue = static_cast<LLFloaterCompileQueue*> (LLFloaterScriptQueue::findInstance(data->mQueueID));
 	if(queue && (0 == status) && data)
 	{
 		queue->saveItemByItemID(data->mItemId);
@@ -692,7 +681,7 @@ void LLFloaterResetQueue::handleInventory(LLViewerObject* viewer_obj,
 	// find all of the lsl, leaving off duplicates. We'll remove
 	// all matching asset uuids on compilation success.
 	LLDynamicArray<const char*> names;
-	
+
 	LLInventoryObject::object_list_t::const_iterator it = inv->begin();
 	LLInventoryObject::object_list_t::const_iterator end = inv->end();
 	for ( ; it != end; ++it)
@@ -704,10 +693,9 @@ void LLFloaterResetQueue::handleInventory(LLViewerObject* viewer_obj,
 			if (object)
 			{
 				LLInventoryItem* item = (LLInventoryItem*)((LLInventoryObject*)(*it));
-				LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
 				std::string buffer;
 				buffer = getString("Resetting") + LLTrans::getString(":") + " " + item->getName();
-				list->setCommentText(buffer);
+				getChild<LLScrollListCtrl>("queue output")->addSimpleElement(buffer, ADD_BOTTOM);
 				LLMessageSystem* msg = gMessageSystem;
 				msg->newMessageFast(_PREHASH_ScriptReset);
 				msg->nextBlockFast(_PREHASH_AgentData);
@@ -754,7 +742,7 @@ void LLFloaterRunQueue::handleInventory(LLViewerObject* viewer_obj,
 	// find all of the lsl, leaving off duplicates. We'll remove
 	// all matching asset uuids on compilation success.
 	LLDynamicArray<const char*> names;
-	
+
 	LLInventoryObject::object_list_t::const_iterator it = inv->begin();
 	LLInventoryObject::object_list_t::const_iterator end = inv->end();
 	for ( ; it != end; ++it)
@@ -769,7 +757,7 @@ void LLFloaterRunQueue::handleInventory(LLViewerObject* viewer_obj,
 				LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
 				std::string buffer;
 				buffer = getString("Running") + LLTrans::getString(":") + " " + item->getName();
-				list->setCommentText(buffer);
+				list->addSimpleElement(buffer, ADD_BOTTOM);
 
 				LLMessageSystem* msg = gMessageSystem;
 				msg->newMessageFast(_PREHASH_SetScriptRunning);
@@ -818,7 +806,7 @@ void LLFloaterNotRunQueue::handleInventory(LLViewerObject* viewer_obj,
 	// find all of the lsl, leaving off duplicates. We'll remove
 	// all matching asset uuids on compilation success.
 	LLDynamicArray<const char*> names;
-	
+
 	LLInventoryObject::object_list_t::const_iterator it = inv->begin();
 	LLInventoryObject::object_list_t::const_iterator end = inv->end();
 	for ( ; it != end; ++it)
@@ -833,8 +821,8 @@ void LLFloaterNotRunQueue::handleInventory(LLViewerObject* viewer_obj,
 				LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
 				std::string buffer;
 				buffer = getString("NotRunning") + LLTrans::getString(":") + " " + item->getName();
-				list->setCommentText(buffer);
-	
+				list->addSimpleElement(buffer, ADD_BOTTOM);
+
 				LLMessageSystem* msg = gMessageSystem;
 				msg->newMessageFast(_PREHASH_SetScriptRunning);
 				msg->nextBlockFast(_PREHASH_AgentData);

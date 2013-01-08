@@ -308,9 +308,10 @@ LLAtomicU32 Stats::llsd_body_count;
 LLAtomicU32 Stats::llsd_body_parse_error;
 LLAtomicU32 Stats::raw_body_count;
 
+// Called from BufferedCurlEasyRequest::setStatusAndReason.
+// The only allowed values for 'status' are S <= status < S+20, where S={100,200,300,400,500}.
 U32 Stats::status2index(U32 status)
 {
-  llassert_always(status >= 100 && status < 600 && (status % 100) < 20);	// Max value 519.
   return (status - 100) / 100 * 20 + status % 100;							// Returns 0..99 (for status 100..519).
 }
 

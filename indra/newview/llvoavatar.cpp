@@ -936,12 +936,6 @@ static F32 calc_bouncy_animation(F32 x);
 static U32 calc_shame(LLVOVolume* volume, std::set<LLUUID> &textures);
 
 //-----------------------------------------------------------------------------
-// Debug setting caches.
-//-----------------------------------------------------------------------------
-static LLCachedControl<bool> const freeze_time("FreezeTime", false);
-static LLCachedControl<bool> const render_unloaded_avatar("RenderUnloadedAvatar", false);
-
-//-----------------------------------------------------------------------------
 // LLVOAvatar()
 //-----------------------------------------------------------------------------
 LLVOAvatar::LLVOAvatar(const LLUUID& id,
@@ -953,7 +947,6 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mAttachmentGeometryBytes(0),
 	mAttachmentSurfaceArea(0.f),
 	mTurning(FALSE),
-	mFreezeTimeLangolier(freeze_time),
 	mFreezeTimeDead(false),
 	mLastSkeletonSerialNum( 0 ),
 	mIsSitting(FALSE),
@@ -990,7 +983,6 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mSupportsAlphaLayers(FALSE),
 	mLoadedCallbacksPaused(FALSE),
 	mHasPelvisOffset( FALSE ),
-	mRenderUnloadedAvatar(render_unloaded_avatar),
 	mLastRezzedStatus(-1),
 	mFirstSetActualBoobGravRan( false ),
 	mSupportsPhysics( false ),
@@ -999,6 +991,9 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mCCSChatTextOverride(false)
 	// </edit>
 {
+	static LLCachedControl<bool> const freeze_time("FreezeTime", false);
+	mFreezeTimeLangolier = freeze_time;
+
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
 	//VTResume();  // VTune
 	
@@ -6659,9 +6654,11 @@ BOOL LLVOAvatar::processFullyLoadedChange(bool loading)
 
 BOOL LLVOAvatar::isFullyLoaded() const
 {
+	static LLCachedControl<bool> const render_unloaded_avatar("RenderUnloadedAvatar", false);
+
 // [SL:KB] - Patch: Appearance-SyncAttach | Checked: 2010-09-22 (Catznip-2.2.0a) | Added: Catznip-2.2.0a
 	// Changes to LLAppearanceMgr::updateAppearanceFromCOF() expect this function to actually return mFullyLoaded for gAgentAvatarp
-	if ( (!isSelf()) && (mRenderUnloadedAvatar) )
+	if ( (!isSelf()) && render_unloaded_avatar )
 		return TRUE;
 	else
 		return mFullyLoaded;

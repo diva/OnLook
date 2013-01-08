@@ -2268,7 +2268,11 @@ void BufferedCurlEasyRequest::setStatusAndReason(U32 status, std::string const& 
 {
   mStatus = status;
   mReason = reason;
-  AICurlInterface::Stats::status_count[AICurlInterface::Stats::status2index(mStatus)]++;
+  if (status >= 100 && status < 600 && (status % 100) < 20)
+  {
+	// Only count statistic for sane values.
+	AICurlInterface::Stats::status_count[AICurlInterface::Stats::status2index(mStatus)]++;
+  }
 
   // Sanity check. If the server replies with a redirect status then we better have that option turned on!
   if ((status >= 300 && status < 400) && mResponder && !mResponder->redirect_status_ok())
@@ -2419,23 +2423,31 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	std::string::iterator pos2 = std::find(pos1, end, ' ');
 	if (pos2 != end) ++pos2;
 	std::string::iterator pos3 = std::find(pos2, end, '\r');
-	U32 status;
+	U32 status = 0;
 	std::string reason;
 	if (pos3 != end && std::isdigit(*pos1))
 	{
 	  status = atoi(&header_line[pos1 - begin]);
 	  reason.assign(pos2, pos3);
 	}
-	else
+	if (!(status >= 100 && status < 600 && (status % 100) < 20))	// Sanity check on the decoded status.
 	{
+	  if (status == 0)
+	  {
+		reason = "Header parse error.";
+		llwarns << "Received broken header line from server: \"" << header << "\"" << llendl;
+	  }
+	  else
+	  {
+		reason = "Unexpected HTTP status.";
+		llwarns << "Received unexpected status value from server (" << status << "): \"" << header << "\"" << llendl;
+	  }
+	  // Either way, this status value is not understood (or taken into account).
+	  // Set it to internal error so that the rest of code treats it as an error.
 	  status = HTTP_INTERNAL_ERROR;
-	  reason = "Header parse error.";
-	  llwarns << "Received broken header line from server: \"" << header << "\"" << llendl;
 	}
-	{
-	  self_w->received_HTTP_header();
-	  self_w->setStatusAndReason(status, reason);
-	}
+	self_w->received_HTTP_header();
+	self_w->setStatusAndReason(status, reason);
 	return header_len;
   }
 

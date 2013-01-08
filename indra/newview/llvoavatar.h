@@ -465,8 +465,6 @@ private:
 	F32			mImpostorDistance;
 	F32			mImpostorPixelArea;
 	LLVector3	mLastAnimExtents[2];  
-	
-	LLCachedControl<bool> mRenderUnloadedAvatar;
 
 	//--------------------------------------------------------------------
 	// Wind rippling in clothes
