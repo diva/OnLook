@@ -760,6 +760,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>ShowLocalChatFloaterBar</key>
+    <map>
+      <key>Comment</key>
+	  <string>Whether or not local chat should have an input bar, requires a restart.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
     <key>OtherChatsTornOff</key>
     <map>
       <key>Comment</key>
@@ -775,6 +786,17 @@ Found in Advanced->Rendering->Info Displays</string>
     <map>
       <key>Comment</key>
 	  <string>When this and OtherChatsTornOff are true, new chats open torn off and minimized.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>CommunicateSpecificShortcut</key>
+    <map>
+      <key>Comment</key>
+	  <string>When true, the keyboard shortcut for Communicate will not bring up the torn off Friends List.</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -6125,6 +6147,22 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
       </array>
     </map>
+    <key>FloaterChatBarlessRect</key>
+    <map>
+      <key>Comment</key>
+	  <string>Rectangle for chat history without input bar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>172</integer>
+        <integer>500</integer>
+        <integer>0</integer>
+      </array>
+    </map>
     <key>FloaterClothingRect</key>
     <map>
       <key>Comment</key>
@@ -6186,6 +6224,22 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
         <integer>646</integer>
         <integer>275</integer>
+        <integer>0</integer>
+      </array>
+    </map>
+    <key>FloaterDebugSettingsRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for the Debug Settings floater</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>300</integer>
+        <integer>245</integer>
         <integer>0</integer>
       </array>
     </map>

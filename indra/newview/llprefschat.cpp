@@ -66,6 +66,7 @@ private:
 	LLColor4 mHTMLLinkColor;
 	BOOL mChatFullWidth;
 	BOOL mCloseChatOnReturn;
+	bool mOnlyComm;
 	BOOL mArrowKeysMoveAvatar;
 	BOOL mShowTimestamps;
 	BOOL mPlayTypingAnim;
@@ -111,6 +112,7 @@ LLPrefsChatImpl::LLPrefsChatImpl()
 	childSetValue("bubble_chat_opacity", gSavedSettings.getF32("ChatBubbleOpacity"));
 	childSetValue("translate_language_combobox", 	gSavedSettings.getString("TranslateLanguage"));
 	childSetValue("translate_chat", 	gSavedSettings.getBOOL("TranslateChat"));
+	mOnlyComm = gSavedSettings.getBOOL("CommunicateSpecificShortcut");
 }
 
 void LLPrefsChatImpl::refreshValues()
@@ -139,6 +141,7 @@ void LLPrefsChatImpl::refreshValues()
 	mBubbleOpacity = gSavedSettings.getF32("ChatBubbleOpacity");
 	mTranslateLanguage = gSavedSettings.getString("TranslateLanguage");
 	mTranslateChat = gSavedSettings.getBOOL("TranslateChat");
+	mOnlyComm = gSavedSettings.getBOOL("CommunicateSpecificShortcut");
 }
 
 void LLPrefsChatImpl::cancel()
@@ -166,6 +169,7 @@ void LLPrefsChatImpl::cancel()
 	gSavedSettings.setF32("ChatBubbleOpacity", mBubbleOpacity);	
 	gSavedSettings.setString("TranslateLanguage", mTranslateLanguage);	
 	gSavedSettings.setBOOL("TranslateChat", mTranslateChat);
+	gSavedSettings.setBOOL("CommunicateSpecificShortcut", mOnlyComm);
 }
 
 void LLPrefsChatImpl::apply()

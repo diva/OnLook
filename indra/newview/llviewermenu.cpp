@@ -880,7 +880,7 @@ void init_menus()
 	
 	menu = new LLMenuGL(CLIENT_MENU_NAME);
 	menu->setCanTearOff(FALSE);
-	menu->addChild(new LLMenuItemCallGL("Debug Settings...", LLFloaterSettingsDebug::show, NULL, NULL));
+	menu->addChild(new LLMenuItemCallGL("Debug Settings...", handle_singleton_toggle<LLFloaterSettingsDebug>, NULL, NULL));
 	gLoginMenuBarView->addChild(menu);
 	menu->updateParent(LLMenuGL::sMenuContainer);
 
@@ -1223,7 +1223,7 @@ void init_client_menu(LLMenuGL* menu)
 										&menu_check_control,
 										(void*)"SaveMinidump"));
 
-	menu->addChild(new LLMenuItemCallGL("Debug Settings...", LLFloaterSettingsDebug::show, NULL, NULL));
+	menu->addChild(new LLMenuItemCallGL("Debug Settings...", handle_singleton_toggle<LLFloaterSettingsDebug>, NULL, NULL));
 	menu->addChild(new LLMenuItemCheckGL("View Admin Options", &handle_admin_override_toggle, NULL, &check_admin_override, NULL, 'V', MASK_CONTROL | MASK_ALT));
 
 	menu->addChild(new LLMenuItemCallGL("Request Admin Status", 
@@ -2062,7 +2062,8 @@ class LLViewCommunicate : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if (LLFloaterChatterBox::getInstance()->getFloaterCount() == 0)
+		static LLCachedControl<bool> only_comm("CommunicateSpecificShortcut");
+		if (!only_comm && LLFloaterChatterBox::getInstance()->getFloaterCount() == 0)
 		{
 			LLFloaterMyFriends::toggleInstance();
 		}

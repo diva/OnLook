@@ -1137,10 +1137,16 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 		gFloaterView->addChild(floater); // reparent to floater view
 		LLFloater* focused_floater = gFloaterView->getFocusedFloater(); // obtain the focused floater
 		floater->open(); // make the new chat floater appear
+		static LLCachedControl<bool> minimize("OtherChatsTornOffAndMinimized");
 		if (focused_floater != NULL) // there was a focused floater
 		{
-			floater->setMinimized(true); // so minimize this one, for now
+			floater->setMinimized(minimize); // so minimize this one, for now, if desired
 			focused_floater->setFocus(true); // and work around focus being removed by focusing on the last
+		}
+		else if (minimize)
+		{
+			floater->setFocus(false); // work around focus being granted to new floater
+			floater->setMinimized(true);
 		}
 	}
 	mFloaters.insert(floater->getHandle());
@@ -1179,11 +1185,12 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 		static LLCachedControl<bool> minimize("OtherChatsTornOffAndMinimized");
 		if (focused_floater != NULL) // there was a focused floater
 		{
-			floater->setMinimized(true); // so minimize this one, for now
+			floater->setMinimized(minimize); // so minimize this one, for now, if desired
 			focused_floater->setFocus(true); // and work around focus being removed by focusing on the last
 		}
 		else if (minimize)
 		{
+			floater->setFocus(false); // work around focus being granted to new floater
 			floater->setMinimized(true);
 		}
 	}
