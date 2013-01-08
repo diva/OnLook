@@ -1575,7 +1575,7 @@ int MultiHandle::socket_callback(CURL* easy, curl_socket_t s, int action, void* 
 	  ThreadSafeBufferedCurlEasyRequest* ptr;
 	  CURLcode rese = curl_easy_getinfo(easy, CURLINFO_PRIVATE, &ptr);
 	  llassert_always(rese == CURLE_OK);
-	  sock_info = new CurlSocketInfo(self, easy, s, action, ptr);
+	  sock_info = new CurlSocketInfo(self, ASSERT_ONLY(easy,) s, action, ptr);
 	}
 	else
 	{
