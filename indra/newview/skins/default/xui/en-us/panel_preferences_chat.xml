@@ -24,8 +24,9 @@
 	<text bottom_delta="6" follows="left|top" height="10" left="405" name="text_box5">(# lines)</text>
 	<slider bottom_delta="-25" control_name="ConsoleBackgroundOpacity" follows="top" height="12" increment="0.05" initial_val="1" label="Opacity" left="148" max_val="1" min_val="0" name="console_opacity" value="0.4" width="200"/>
 	<check_box bottom_delta="-25" control_name="ChatFullWidth" follows="top" height="16" initial_value="false" label="Use full screen width (Requires restart)" name="chat_full_width_check"/>
-	<text bottom_delta="-22" height="10" left="12"	     mouse_opaque="false" name="text_box6" v_pad="0" width="135">Chat Options:</text>
+	<text bottom_delta="-12" height="10" left="12"	     mouse_opaque="false" name="text_box6" v_pad="0" width="135">Chat Options:</text>
 	<check_box bottom_delta="-8"  follows="top" height="16" initial_value="false" label="Close chat bar after hitting return" left="148" name="close_chat_on_return_check"/>
+	<check_box bottom_delta="-20" follows="top" height="16" initial_value="false" label="Disallow communicate shortcut opening detached friends list" left="148" control_name="CommunicateSpecificShortcut" name="only_comm"/>
 	<check_box bottom_delta="-20" follows="top" height="16" initial_value="false" label="Arrow keys always move avatar when chatting" name="arrow_keys_move_avatar_check"/>
 	<check_box bottom_delta="-20" follows="top" height="16" initial_value="false" label="Show timestamps in Local Chat" name="show_timestamps_check"/>
 	<check_box bottom_delta="-20" control_name="ScriptErrorsAsChat" follows="top" height="16" initial_value="false" label="Show script errors and warnings as regular chat" name="script_errors_as_chat"/>
