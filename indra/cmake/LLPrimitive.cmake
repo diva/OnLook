@@ -4,7 +4,10 @@
 include(Prebuilt)
 use_prebuilt_binary(colladadom)
 use_prebuilt_binary(pcre)
+
+if (NOT DARWIN AND NOT WINDOWS)
 use_prebuilt_binary(libxml)
+endif (NOT DARWIN AND NOT WINDOWS)
 
 set(LLPRIMITIVE_INCLUDE_DIRS
     ${LIBS_OPEN_DIR}/llprimitive
