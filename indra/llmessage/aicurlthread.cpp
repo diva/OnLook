@@ -290,7 +290,7 @@ enum refresh_t {
 class CurlSocketInfo
 {
   public:
-	CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj);
+	CurlSocketInfo(MultiHandle& multi_handle, ASSERT_ONLY(CURL* easy,) curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj);
 	~CurlSocketInfo();
 
 	void set_action(int action);
@@ -300,7 +300,6 @@ class CurlSocketInfo
 
   private:
 	MultiHandle& mMultiHandle;
-	CURL const* mEasy;
 	curl_socket_t mSocketFd;
 	int mAction;
 	bool mDead;
@@ -354,8 +353,8 @@ class PollSet
 #if !WINDOWS_CODE
 	curl_socket_t mMaxFd;			// The largest filedescriptor in the array, or CURL_SOCKET_BAD when it is empty.
 	curl_socket_t mMaxFdSet;		// The largest filedescriptor set in mFdSet by refresh(), or CURL_SOCKET_BAD when it was empty.
-	std::vector<CurlSocketInfo*> mCopiedFileDescriptors;	// Filedescriptors copied by refresh to mFdSet.
-	std::vector<CurlSocketInfo*>::iterator mIter;			// Index into mCopiedFileDescriptors for next(); loop variable.
+	std::vector<curl_socket_t> mCopiedFileDescriptors;	// Filedescriptors copied by refresh to mFdSet.
+	std::vector<curl_socket_t>::iterator mIter;			// Index into mCopiedFileDescriptors for next(); loop variable.
 #else
 	unsigned int mIter;				// Index into fd_set::fd_array.
 #endif
@@ -581,7 +580,7 @@ refresh_t PollSet::refresh(void)
 	}
 	FD_SET(mFileDescriptors[i]->getSocketFd(), &mFdSet);
 #if !WINDOWS_CODE
-	mCopiedFileDescriptors.push_back(mFileDescriptors[i]);
+	mCopiedFileDescriptors.push_back(mFileDescriptors[i]->getSocketFd());
 #endif
 	if (++i == mNrFds)
 	{
@@ -626,7 +625,7 @@ void PollSet::reset(void)
   else
   {
 	mIter = mCopiedFileDescriptors.begin();
-	if (!FD_ISSET((*mIter)->getSocketFd(), &mFdSet))
+	if (!FD_ISSET(*mIter, &mFdSet))
 	  next();
   }
 #endif
@@ -637,7 +636,7 @@ inline curl_socket_t PollSet::get(void) const
 #if WINDOWS_CODE
   return (mIter >= mFdSet.fd_count) ? CURL_SOCKET_BAD : mFdSet.fd_array[mIter];
 #else
-  return (mIter == mCopiedFileDescriptors.end()) ? CURL_SOCKET_BAD : (*mIter)->getSocketFd();
+  return (mIter == mCopiedFileDescriptors.end()) ? CURL_SOCKET_BAD : *mIter;
 #endif
 }
 
@@ -648,7 +647,7 @@ void PollSet::next(void)
   ++mIter;
 #else
   llassert(mIter != mCopiedFileDescriptors.end());	// Only call next() if the last call to get() didn't return -1.
-  while (++mIter != mCopiedFileDescriptors.end() && !FD_ISSET((*mIter)->getSocketFd(), &mFdSet));
+  while (++mIter != mCopiedFileDescriptors.end() && !FD_ISSET(*mIter, &mFdSet));
 #endif
 }
 
@@ -669,12 +668,10 @@ class MergeIterator
   private:
 	PollSet* mReadPollSet;
 	PollSet* mWritePollSet;
-	int readIndx;
-	int writeIndx;
 };
 
 MergeIterator::MergeIterator(PollSet* readPollSet, PollSet* writePollSet) :
-    mReadPollSet(readPollSet), mWritePollSet(writePollSet), readIndx(0), writeIndx(0)
+    mReadPollSet(readPollSet), mWritePollSet(writePollSet)
 {
   mReadPollSet->reset();
   mWritePollSet->reset();
@@ -766,8 +763,8 @@ std::ostream& operator<<(std::ostream& os, DebugFdSet const& s)
 }
 #endif
 
-CurlSocketInfo::CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj) :
-    mMultiHandle(multi_handle), mEasy(easy), mSocketFd(s), mAction(CURL_POLL_NONE), mDead(false), mEasyRequest(lockobj)
+CurlSocketInfo::CurlSocketInfo(MultiHandle& multi_handle, ASSERT_ONLY(CURL* easy,) curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj) :
+    mMultiHandle(multi_handle), mSocketFd(s), mAction(CURL_POLL_NONE), mDead(false), mEasyRequest(lockobj)
 {
   llassert(*AICurlEasyRequest_wat(*mEasyRequest) == easy);
   mMultiHandle.assign(s, this);
@@ -1578,7 +1575,7 @@ int MultiHandle::socket_callback(CURL* easy, curl_socket_t s, int action, void* 
 	  ThreadSafeBufferedCurlEasyRequest* ptr;
 	  CURLcode rese = curl_easy_getinfo(easy, CURLINFO_PRIVATE, &ptr);
 	  llassert_always(rese == CURLE_OK);
-	  sock_info = new CurlSocketInfo(self, easy, s, action, ptr);
+	  sock_info = new CurlSocketInfo(self, ASSERT_ONLY(easy,) s, action, ptr);
 	}
 	else
 	{

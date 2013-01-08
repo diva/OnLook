@@ -46,4 +46,7 @@
      name="post_btn"
      bottom_delta="0"
      width="100"/>
+    <string name="upload_message">
+      "Uploading..."
+    </string>
 </floater>
