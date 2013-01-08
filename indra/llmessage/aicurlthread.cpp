@@ -353,8 +353,8 @@ class PollSet
 #if !WINDOWS_CODE
 	curl_socket_t mMaxFd;			// The largest filedescriptor in the array, or CURL_SOCKET_BAD when it is empty.
 	curl_socket_t mMaxFdSet;		// The largest filedescriptor set in mFdSet by refresh(), or CURL_SOCKET_BAD when it was empty.
-	std::vector<CurlSocketInfo*> mCopiedFileDescriptors;	// Filedescriptors copied by refresh to mFdSet.
-	std::vector<CurlSocketInfo*>::iterator mIter;			// Index into mCopiedFileDescriptors for next(); loop variable.
+	std::vector<curl_socket_t> mCopiedFileDescriptors;	// Filedescriptors copied by refresh to mFdSet.
+	std::vector<curl_socket_t>::iterator mIter;			// Index into mCopiedFileDescriptors for next(); loop variable.
 #else
 	unsigned int mIter;				// Index into fd_set::fd_array.
 #endif
@@ -580,7 +580,7 @@ refresh_t PollSet::refresh(void)
 	}
 	FD_SET(mFileDescriptors[i]->getSocketFd(), &mFdSet);
 #if !WINDOWS_CODE
-	mCopiedFileDescriptors.push_back(mFileDescriptors[i]);
+	mCopiedFileDescriptors.push_back(mFileDescriptors[i]->getSocketFd());
 #endif
 	if (++i == mNrFds)
 	{
@@ -625,7 +625,7 @@ void PollSet::reset(void)
   else
   {
 	mIter = mCopiedFileDescriptors.begin();
-	if (!FD_ISSET((*mIter)->getSocketFd(), &mFdSet))
+	if (!FD_ISSET(*mIter, &mFdSet))
 	  next();
   }
 #endif
@@ -636,7 +636,7 @@ inline curl_socket_t PollSet::get(void) const
 #if WINDOWS_CODE
   return (mIter >= mFdSet.fd_count) ? CURL_SOCKET_BAD : mFdSet.fd_array[mIter];
 #else
-  return (mIter == mCopiedFileDescriptors.end()) ? CURL_SOCKET_BAD : (*mIter)->getSocketFd();
+  return (mIter == mCopiedFileDescriptors.end()) ? CURL_SOCKET_BAD : *mIter;
 #endif
 }
 
@@ -647,7 +647,7 @@ void PollSet::next(void)
   ++mIter;
 #else
   llassert(mIter != mCopiedFileDescriptors.end());	// Only call next() if the last call to get() didn't return -1.
-  while (++mIter != mCopiedFileDescriptors.end() && !FD_ISSET((*mIter)->getSocketFd(), &mFdSet));
+  while (++mIter != mCopiedFileDescriptors.end() && !FD_ISSET(*mIter, &mFdSet));
 #endif
 }
 
