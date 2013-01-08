@@ -124,6 +124,25 @@ const int LL_ERR_PRICE_MISMATCH = -23018;
 #define llverify(func)			do {if (func) {}} while(0)
 #endif
 
+// This can be used for function parameters that are only used by llassert.
+// The ellipsis is needed in case the parameter contains comma's (ie, as part of the type,
+// or trailing comma). The first version can be used as first (or only) parameter of a function,
+// or as parameter in the middle when adding a trailing comma, while the second version can be
+// used as last parameter.
+//
+// Example usage:
+//
+// void foo(ASSERT_ONLY(int x));
+// void foo(x, ASSERT_ONLY(int y,) int z);
+// void foo(x/*,*/ ASSERT_ONLY_COMMA(int y));	// The optional /*,*/ makes it just a bit better readable.
+#ifdef SHOW_ASSERT
+#define ASSERT_ONLY(type_param,...)			type_param,##__VA_ARGS__
+#define ASSERT_ONLY_COMMA(type_param,...)	, type_param,##__VA_ARGS__
+#else
+#define ASSERT_ONLY(type_param,...)
+#define ASSERT_ONLY_COMMA(type_param,...)
+#endif
+
 // handy compile-time assert - enforce those template parameters! 
 #define cassert(expn) typedef char __C_ASSERT__[(expn)?1:-1]   /* Flawfinder: ignore */
 	//XXX: used in two places in llcommon/llskipmap.h

@@ -111,10 +111,10 @@ template<typename T> struct AIAccess;
 template<typename T> struct AISTAccessConst;
 template<typename T> struct AISTAccess;
 
+// This helper class is needed because offsetof is only allowed on POD types.
 template<typename T>
-class AIThreadSafeBits
+struct AIThreadSafeBitsPOD
 {
-private:
 	// AIThreadSafe is a wrapper around an instance of T.
 	// Because T might not have a default constructor, it is constructed
 	// 'in place', with placement new, in the memory reserved here.
@@ -122,7 +122,11 @@ private:
 	// Make sure that the memory that T will be placed in is properly
 	// aligned by using an array of long's.
 	long mMemory[(sizeof(T) + sizeof(long) - 1) / sizeof(long)];
+};
 
+template<typename T>
+class AIThreadSafeBits : private AIThreadSafeBitsPOD<T>
+{
 public:
 	// The wrapped objects are constructed in-place with placement new *outside*
 	// of this object (by AITHREADSAFE macro(s) or derived classes).
@@ -130,20 +134,20 @@ public:
 	~AIThreadSafeBits() { ptr()->~T(); }
 
 	// Only for use by AITHREADSAFE, see below.
-	void* memory() const { return const_cast<long*>(&mMemory[0]); }
+	void* memory() const { return const_cast<long*>(&AIThreadSafeBitsPOD<T>::mMemory[0]); }
 
 	// Cast a T* back to AIThreadSafeBits<T>. This is the inverse of memory().
 	template<typename T2>
 	  static AIThreadSafeBits<T2>* wrapper_cast(T2* ptr)
-	      { return reinterpret_cast<AIThreadSafeBits<T2>*>(reinterpret_cast<char*>(ptr) - offsetof(AIThreadSafeBits<T2>, mMemory[0])); }
+	      { return static_cast<AIThreadSafeBits<T2>*>(reinterpret_cast<AIThreadSafeBitsPOD<T2>*>(reinterpret_cast<char*>(ptr) - offsetof(AIThreadSafeBitsPOD<T2>, mMemory[0]))); }
 	template<typename T2>
 	  static AIThreadSafeBits<T2> const* wrapper_cast(T2 const* ptr)
-	      { return reinterpret_cast<AIThreadSafeBits<T2> const*>(reinterpret_cast<char const*>(ptr) - offsetof(AIThreadSafeBits<T2>, mMemory[0])); }
+	      { return static_cast<AIThreadSafeBits<T2> const*>(reinterpret_cast<AIThreadSafeBitsPOD<T2> const*>(reinterpret_cast<char const*>(ptr) - offsetof(AIThreadSafeBitsPOD<T2>, mMemory[0]))); }
 
 protected:
 	// Accessors.
-	T const* ptr() const { return reinterpret_cast<T const*>(mMemory); }
-	T* ptr() { return reinterpret_cast<T*>(mMemory); }
+	T const* ptr() const { return reinterpret_cast<T const*>(AIThreadSafeBitsPOD<T>::mMemory); }
+	T* ptr() { return reinterpret_cast<T*>(AIThreadSafeBitsPOD<T>::mMemory); }
 };
 
 /**
