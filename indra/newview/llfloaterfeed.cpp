@@ -42,6 +42,7 @@
 #include "llviewertexture.h"
 #include "llviewerwindow.h"
 #include "llwebprofile.h"
+#include "lluploaddialog.h"
 
 #include <boost/bind.hpp>
 
@@ -135,8 +136,7 @@ void LLFloaterFeed::draw(void)
 
 void LLFloaterFeed::onClickCancel()
 {
-	// Return false on cancel, to enable the upload button again.
-	LLFloaterSnapshot::saveFeedDone(false, mSnapshotIndex);
+	// Cancel is the same as just closing the floater.
 	close(false);
 }
 
@@ -152,23 +152,17 @@ void LLFloaterFeed::onClickPost()
 	{
 		static LLCachedControl<bool> add_location("SnapshotFeedAddLocation");
 		const std::string caption = childGetValue("caption").asString();
-		LLWebProfile::setImageUploadResultCallback(boost::bind(&LLFloaterSnapshot::saveFeedDone, _1, mPNGImage));
+		LLWebProfile::setImageUploadResultCallback(boost::bind(&LLFloaterSnapshot::saveFeedDone, _1, mSnapshotIndex));
+		LLFloaterSnapshot::saveStart(mSnapshotIndex);
 		LLWebProfile::uploadImage(mPNGImage, caption, add_location);
 
 		// give user feedback of the event
 		gViewerWindow->playSnapshotAnimAndSound();
+		LLUploadDialog::modalUploadDialog(getString("upload_message"));
 
 		// don't destroy the window until the upload is done
 		// this way we keep the information in the form
 		setVisible(FALSE);
-
-		// remove any dependency on snapshot floater
-		// so we outlive it during the upload.
-		LLFloater* dependee = getDependee();
-		if (dependee)
-		{
-			dependee->removeDependentFloater(this);
-		}
 	}
 	else
 	{
