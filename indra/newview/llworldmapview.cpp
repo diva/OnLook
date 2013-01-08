@@ -462,8 +462,8 @@ void LLWorldMapView::draw()
 			{
 				// Inform the fetch mechanism of the size we need
 				S32 draw_size = llround(sMapScale);
-				overlayimage->setKnownDrawSize(	llround(draw_size * LLUI::sGLScaleFactor.mV[VX] * ((F32)info->getSizeX() / REGION_WIDTH_METERS)), 
-												llround(draw_size * LLUI::sGLScaleFactor.mV[VY] * ((F32)info->getSizeY() / REGION_WIDTH_METERS)));
+				overlayimage->setKnownDrawSize(	llround(draw_size * LLUI::getScaleFactor().mV[VX] * ((F32)info->getSizeX() / REGION_WIDTH_METERS)), 
+												llround(draw_size * LLUI::getScaleFactor().mV[VY] * ((F32)info->getSizeY() / REGION_WIDTH_METERS)));
 				// Draw something whenever we have enough info
 				if (overlayimage->hasGLTexture() && !overlayimage->isMissingAsset() && overlayimage->getID() != IMG_DEFAULT)
 				{
@@ -833,8 +833,8 @@ void LLWorldMapView::drawLegacyBackgroundLayers(S32 width, S32 height) {
 		}
 		
 		current_image->setBoostLevel(LLGLTexture::BOOST_MAP);
-		current_image->setKnownDrawSize(llround(pix_width * LLUI::sGLScaleFactor.mV[VX]), 
-			llround(pix_height * LLUI::sGLScaleFactor.mV[VY]));
+		current_image->setKnownDrawSize(llround(pix_width * LLUI::getScaleFactor().mV[VX]), 
+			llround(pix_height * LLUI::getScaleFactor().mV[VY]));
 		
 		if (!current_image->hasGLTexture())	//Still loading.
 		{
@@ -922,8 +922,8 @@ F32 LLWorldMapView::drawLegacySimTile(LLSimInfo& sim_info, S32 left, S32 top, S3
 	if(sim_fetching || alpha >= ALPHA_CUTOFF)
 	{
 		S32 draw_size = llround(sMapScale);
-		simimage->setKnownDrawSize(	llround(draw_size * LLUI::sGLScaleFactor.mV[VX] * ((F32)sim_info.getSizeX() / REGION_WIDTH_METERS)), 
-									llround(draw_size * LLUI::sGLScaleFactor.mV[VY] * ((F32)sim_info.getSizeY() / REGION_WIDTH_METERS)));
+		simimage->setKnownDrawSize(	llround(draw_size * LLUI::getScaleFactor().mV[VX] * ((F32)sim_info.getSizeX() / REGION_WIDTH_METERS)), 
+									llround(draw_size * LLUI::getScaleFactor().mV[VY] * ((F32)sim_info.getSizeY() / REGION_WIDTH_METERS)));
 		simimage->setBoostLevel(LLGLTexture::BOOST_MAP);
 		if(alpha >= ALPHA_CUTOFF)
 		{

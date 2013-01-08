@@ -31,7 +31,7 @@
 
 // Project includes
 #include "lluiimage.h"
-#include "llui.h"
+#include "llrender2dutils.h"
 
 LLUIImage::LLUIImage(const std::string& name, LLPointer<LLTexture> image)
 :	mName(name),

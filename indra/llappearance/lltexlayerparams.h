@@ -39,10 +39,6 @@ class LLTexLayerInterface;
 class LLGLTexture;
 class LLWearable;
 
-//Temporary externs
-void gl_rect_2d_simple_tex( S32 width, S32 height );
-void gl_rect_2d_simple( S32 width, S32 height );
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // LLTexLayerParam
 // 

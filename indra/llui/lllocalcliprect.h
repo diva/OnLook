@@ -26,7 +26,6 @@
 #define LLLOCALCLIPRECT_H
 
 #include "llgl.h"
-#include "lllocalcliprect.h"
 #include "llrect.h"		// can't forward declare, it's templated
 #include <stack>
 

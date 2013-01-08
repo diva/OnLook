@@ -744,7 +744,7 @@ bool LLAppViewer::init()
 					&gColors, 
 					LLUIImageList::getInstance(),
 					ui_audio_callback,
-					&LLUI::sGLScaleFactor
+					&LLUI::getScaleFactor()
 					);
 	LLWeb::initClass();			  // do this after LLUI
 

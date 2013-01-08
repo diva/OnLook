@@ -37,7 +37,7 @@
 //#include "llviewercontrol.h"
 //#include "llxmltree.h"
 //#include "llvoavatar.h"
-//#include "llwearable.h"
+#include "llwearable.h"
 //#include "lldir.h"
 //#include "llvolume.h"
 //#include "llendianswizzle.h"

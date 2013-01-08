@@ -31,11 +31,14 @@ set(llrender_SOURCE_FILES
     llfontregistry.cpp
     llgldbg.cpp
     llglslshader.cpp
+    llgltexture.cpp
     llimagegl.cpp
     llpostprocess.cpp
+    llrender2dutils.cpp
     llrendersphere.cpp
     llshadermgr.cpp
     lltexture.cpp
+    lluiimage.cpp
     llvertexbuffer.cpp
     )
     
@@ -57,9 +60,11 @@ set(llrender_HEADER_FILES
     llimagegl.h
     llpostprocess.h
     llrender.h
+    llrender2dutils.h
     llrendersphere.h
     llshadermgr.h
     lltexture.h
+    lluiimage.h
     llvertexbuffer.h
     )
 

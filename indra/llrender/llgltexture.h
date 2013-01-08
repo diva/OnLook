@@ -79,92 +79,104 @@ public:
 		MAX_GL_IMAGE_CATEGORY
 	};
 
-	//static S32 getTotalNumOfCategories() ;
-	//static S32 getIndexFromCategory(S32 category) ;
-	//static S32 getCategoryFromIndex(S32 index) ;
+	static S32 getTotalNumOfCategories() ;
+	static S32 getIndexFromCategory(S32 category) ;
+	static S32 getCategoryFromIndex(S32 index) ;
 
 protected:
-	virtual ~LLGLTexture() {};
+	virtual ~LLGLTexture();
 	LOG_CLASS(LLGLTexture);
 
 public:
-	//LLGLTexture(BOOL usemipmaps = TRUE);
-	//LLGLTexture(const LLImageRaw* raw, BOOL usemipmaps) ;
-	//LLGLTexture(const U32 width, const U32 height, const U8 components, BOOL usemipmaps) ;
+	LLGLTexture(BOOL usemipmaps = TRUE);
+	LLGLTexture(const LLImageRaw* raw, BOOL usemipmaps) ;
+	LLGLTexture(const U32 width, const U32 height, const U8 components, BOOL usemipmaps) ;
 
-	virtual void dump() = 0;	// debug info to llinfos
+	virtual void dump();	// debug info to llinfos
 
 	virtual const LLUUID& getID() const = 0;
 
-	virtual void setBoostLevel(S32 level) = 0;
-	virtual S32  getBoostLevel() = 0;
+	void setBoostLevel(S32 level);
+	S32  getBoostLevel() { return mBoostLevel; }
 
-	virtual S32 getFullWidth() const = 0;
-	virtual S32 getFullHeight() const = 0;
+	S32 getFullWidth() const { return mFullWidth; }
+	S32 getFullHeight() const { return mFullHeight; }	
 
-	virtual void generateGLTexture() = 0;
-	virtual void destroyGLTexture() = 0;
+	void generateGLTexture() ;
+	void destroyGLTexture() ;
 
 	//---------------------------------------------------------------------------------------------
 	//functions to access LLImageGL
 	//---------------------------------------------------------------------------------------------
-	//*virtual*/S32	       getWidth(S32 discard_level = -1) const;
-	//*virtual*/S32	       getHeight(S32 discard_level = -1) const;
+	/*virtual*/S32	       getWidth(S32 discard_level = -1) const;
+	/*virtual*/S32	       getHeight(S32 discard_level = -1) const;
 
-	virtual BOOL       hasGLTexture() const = 0;
-	virtual LLGLuint   getTexName() const = 0;	
-	virtual BOOL       createGLTexture() = 0;
-	virtual BOOL       createGLTexture(S32 discard_level, const LLImageRaw* imageraw, S32 usename = 0, BOOL to_create = TRUE, S32 category = LLGLTexture::OTHER) = 0;
+	BOOL       hasGLTexture() const ;
+	LLGLuint   getTexName() const ;		
+	BOOL       createGLTexture() ;
+	BOOL       createGLTexture(S32 discard_level, const LLImageRaw* imageraw, S32 usename = 0, BOOL to_create = TRUE, S32 category = LLGLTexture::OTHER);
 
-	virtual void       setFilteringOption(LLTexUnit::eTextureFilterOptions option) = 0;
-	virtual void       setExplicitFormat(LLGLint internal_format, LLGLenum primary_format, LLGLenum type_format = 0, BOOL swap_bytes = FALSE) = 0;
-	virtual void       setAddressMode(LLTexUnit::eTextureAddressMode mode) = 0;
-	virtual BOOL       setSubImage(const LLImageRaw* imageraw, S32 x_pos, S32 y_pos, S32 width, S32 height, bool fast_update = false) = 0;
-	virtual BOOL       setSubImage(const U8* datap, S32 data_width, S32 data_height, S32 x_pos, S32 y_pos, S32 width, S32 height, bool fast_update = false) = 0;
-	virtual void       setGLTextureCreated (bool initialized) = 0;
-	virtual void       setCategory(S32 category)  = 0;
+	void       setFilteringOption(LLTexUnit::eTextureFilterOptions option);
+	void       setExplicitFormat(LLGLint internal_format, LLGLenum primary_format, LLGLenum type_format = 0, BOOL swap_bytes = FALSE);
+	void       setAddressMode(LLTexUnit::eTextureAddressMode mode);
+	BOOL       setSubImage(const LLImageRaw* imageraw, S32 x_pos, S32 y_pos, S32 width, S32 height, bool fast_update = false);
+	BOOL       setSubImage(const U8* datap, S32 data_width, S32 data_height, S32 x_pos, S32 y_pos, S32 width, S32 height, bool fast_update = false);
+	void       setGLTextureCreated (bool initialized);
+	void       setCategory(S32 category) ;
 
-	virtual LLTexUnit::eTextureAddressMode getAddressMode(void) const  = 0;
-	virtual S32        getMaxDiscardLevel() const = 0;
-	virtual S32        getDiscardLevel() const = 0;
-	virtual S8         getComponents() const = 0;
-	virtual BOOL       getBoundRecently() const = 0;
-	virtual S32        getTextureMemory() const  = 0;
-	virtual LLGLenum   getPrimaryFormat() const = 0;
-	virtual BOOL       getIsAlphaMask() const  = 0;
-	virtual LLTexUnit::eTextureType getTarget(void) const  = 0;
-	virtual BOOL       getMask(const LLVector2 &tc) = 0;
-	virtual F32        getTimePassedSinceLastBound() = 0;
-	virtual BOOL       getMissed() const  = 0;
-	virtual BOOL       isJustBound()const  = 0;
-	virtual void       forceUpdateBindStats(void) const = 0;
+	LLTexUnit::eTextureAddressMode getAddressMode(void) const ;
+	S32        getMaxDiscardLevel() const;
+	S32        getDiscardLevel() const;
+	S8         getComponents() const;
+	BOOL       getBoundRecently() const;
+	S32        getTextureMemory() const ;
+	LLGLenum   getPrimaryFormat() const;
+	BOOL       getIsAlphaMask() const ;
+	LLTexUnit::eTextureType getTarget(void) const ;
+	BOOL       getMask(const LLVector2 &tc);
+	F32        getTimePassedSinceLastBound();
+	BOOL       getMissed() const ;
+	BOOL       isJustBound()const ;
+	void       forceUpdateBindStats(void) const;
 
-	//virtual U32        getTexelsInAtlas() const  = 0;
-	//virtual U32        getTexelsInGLTexture() const  = 0;
-	//virtual BOOL       isGLTextureCreated() const  = 0;
-	//virtual S32        getDiscardLevelInAtlas() const  = 0;
+	/*U32        getTexelsInAtlas() const ;
+	U32        getTexelsInGLTexture() const ;
+	BOOL       isGLTextureCreated() const ;
+	S32        getDiscardLevelInAtlas() const ;*/
 	//---------------------------------------------------------------------------------------------
 	//end of functions to access LLImageGL
 	//---------------------------------------------------------------------------------------------
 
 	//-----------------
-	//*virtual*/ void setActive()  = 0;
-	virtual void forceActive()  = 0;
-	virtual void setNoDelete()  = 0;
-	virtual void dontDiscard()  = 0;
-	virtual BOOL getDontDiscard() const  = 0;
+	/*virtual*/ void setActive() ;
+	void forceActive() ;
+	void setNoDelete() ;
+	void dontDiscard() { mDontDiscard = 1; mTextureState = NO_DELETE; }
+	BOOL getDontDiscard() const { return mDontDiscard; }
 	//-----------------	
 
 private:
-	virtual void cleanup() = 0;
-	virtual void init(bool firstinit) = 0;
+	void cleanup();
+	void init();
 
 protected:
-
-	virtual void setTexelsPerImage() = 0;
+	void setTexelsPerImage();
 
 	//note: do not make this function public.
-	//*virtual*/ LLImageGL* getGLTexture() const  = 0;
+	/*virtual*/ LLImageGL* getGLTexture() const ;
+
+protected:
+	S32 mBoostLevel;				// enum describing priority level
+	S32 mFullWidth;
+	S32 mFullHeight;
+	BOOL  mUseMipMaps ;
+	S8  mComponents;
+	F32 mTexelsPerImage;			// Texels per image.
+	mutable S8  mNeedsGLTexture;
+
+	//GL texture
+	LLPointer<LLImageGL> mGLTexturep ;
+	S8 mDontDiscard;			// Keep full res version of this image (for UI, etc)
 
 protected:	
 	typedef enum 
@@ -175,6 +187,8 @@ protected:
 		ACTIVE,              //just being used, can become inactive if not being used for a certain time (10 seconds).
 		NO_DELETE = 99       //stay in memory, can not be removed.
 	} LLGLTextureState;
+	LLGLTextureState  mTextureState ;
+
 
 };
 
