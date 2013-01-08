@@ -42,9 +42,11 @@
 		Tamaño Interface:
 	</text>
 	<check_box label="Resolución independiente del tamaño" name="ui_auto_scale"/>
-	<spinner label="Ausente tras:" name="afk_timeout_spinner"/>
+	<check_box label="Estado Ausente al estar inactivo" name="away_when_idle_checkbox"/>	
+	<spinner label="Ausente tras:" name="afk_timeout_spinner"  label_width="71" left="236"/>
 	<check_box label="Avisar cuando gasto o recibo dinero" name="notify_money_change_checkbox"/>
-	<text name="maturity_desired_label">Rating:</text>
+	<check_box bottom="-257" height="16" label="Sin Ventana Emergente" name="no_transaction_clutter_checkbox" tool_tip="Siguen existiendo las notificaciones, pero la ventana emergente en la esquina superior derecha aparecerá momentáneamente y desaparecerá, de esta manera la transacción de dinero llamará la atención pero no exigirá tu atención."/>	
+	<text name="maturity_desired_label">Calificación:</text>
 	<text name="maturity_desired_prompt">
 		Quiero acceder a contenido 
 	</text>
@@ -68,7 +70,7 @@
 	<text name="show_names_textbox">
 		Mostrar Nombres:
 	</text>
-	<text name="seconds_textbox">
+	<text name="seconds_textbox" left="376">
 		segundos
 	</text>
 	<text name="crash_report_textbox">

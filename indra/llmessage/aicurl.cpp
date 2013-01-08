@@ -545,6 +545,9 @@ void CurlEasyHandle::handle_easy_error(CURLcode code)
 
 // Throws AICurlNoEasyHandle.
 CurlEasyHandle::CurlEasyHandle(void) : mActiveMultiHandle(NULL), mErrorBuffer(NULL), mQueuedForRemoval(false)
+#ifdef DEBUG_CURLIO
+	, mDebug(false)
+#endif
 #ifdef SHOW_ASSERT
 	, mRemovedPerCommand(true)
 #endif
@@ -588,6 +591,12 @@ CurlEasyHandle::~CurlEasyHandle()
   llassert(!mActiveMultiHandle);
   curl_easy_cleanup(mEasyHandle);
   Stats::easy_cleanup_calls++;
+#ifdef DEBUG_CURLIO
+  if (mDebug)
+  {
+	debug_curl_remove_easy(mEasyHandle);
+  }
+#endif
 }
 
 //static
@@ -760,17 +769,17 @@ void CurlEasyRequest::setoptString(CURLoption option, std::string const& value)
   setopt(option, value.c_str());
 }
 
-void CurlEasyRequest::setPost(AIPostFieldPtr const& postdata, U32 size)
+void CurlEasyRequest::setPost(AIPostFieldPtr const& postdata, U32 size, bool keepalive)
 {
   llassert_always(postdata->data());
 
   DoutCurl("POST size is " << size << " bytes: \"" << libcwd::buf2str(postdata->data(), size) << "\".");
   setPostField(postdata);		// Make sure the data stays around until we don't need it anymore.
 
-  setPost_raw(size, postdata->data());
+  setPost_raw(size, postdata->data(), keepalive);
 }
 
-void CurlEasyRequest::setPost_raw(U32 size, char const* data)
+void CurlEasyRequest::setPost_raw(U32 size, char const* data, bool keepalive)
 {
   if (!data)
   {
@@ -780,7 +789,7 @@ void CurlEasyRequest::setPost_raw(U32 size, char const* data)
 
   // The server never replies with 100-continue, so suppress the "Expect: 100-continue" header that libcurl adds by default.
   addHeader("Expect:");
-  if (size > 0)
+  if (size > 0 && keepalive)
   {
 	addHeader("Connection: keep-alive");
 	addHeader("Keep-alive: 300");
@@ -1005,6 +1014,8 @@ CURLcode CurlEasyRequest::curlCtxCallback(CURL* curl, void* sslctx, void* parm)
 	options |= SSL_OP_NO_TLSv1_1;
   }
 #else
+  // This is expected when you compile against the headers of a version < 1.0.1 and then link at runtime with version >= 1.0.1.
+  // Don't do that.
   llassert_always(!need_renegotiation_hack);
 #endif
   SSL_CTX_set_options(ctx, options);
@@ -1225,6 +1236,20 @@ void CurlEasyRequest::removed_from_multi_handle(AICurlEasyRequest_wat& curl_easy
 	mHandleEventsTarget->removed_from_multi_handle(curl_easy_request_w);
 }
 
+void CurlEasyRequest::bad_file_descriptor(AICurlEasyRequest_wat& curl_easy_request_w)
+{
+  if (mHandleEventsTarget)
+	mHandleEventsTarget->bad_file_descriptor(curl_easy_request_w);
+}
+
+#ifdef SHOW_ASSERT
+void CurlEasyRequest::queued_for_removal(AICurlEasyRequest_wat& curl_easy_request_w)
+{
+  if (mHandleEventsTarget)
+	mHandleEventsTarget->queued_for_removal(curl_easy_request_w);
+}
+#endif
+
 PerHostRequestQueuePtr CurlEasyRequest::getPerHostPtr(void)
 {
   if (!mPerHostPtr)
@@ -1288,7 +1313,17 @@ void BufferedCurlEasyRequest::timed_out(void)
   mResponder->finished(CURLE_OK, HTTP_INTERNAL_ERROR, "Request timeout, aborted.", sChannels, mOutput);
   if (mResponder->needsHeaders())
   {
-	send_buffer_events_to(NULL);	// Revoke buffer events: we sent them to the responder.
+	send_buffer_events_to(NULL);	// Revoke buffer events: we send them to the responder.
+  }
+  mResponder = NULL;
+}
+
+void BufferedCurlEasyRequest::bad_socket(void)
+{
+  mResponder->finished(CURLE_OK, HTTP_INTERNAL_ERROR, "File descriptor went bad! Aborted.", sChannels, mOutput);
+  if (mResponder->needsHeaders())
+  {
+	send_buffer_events_to(NULL);	// Revoke buffer events: we send them to the responder.
   }
   mResponder = NULL;
 }
@@ -1408,3 +1443,18 @@ CurlMultiHandle::~CurlMultiHandle()
 }
 
 } // namespace AICurlPrivate
+
+#if LL_LINUX
+extern "C" {
+
+// Keep linker happy.
+const SSL_METHOD *SSLv2_client_method(void)
+{
+  // Never used.
+  llassert_always(false);
+  return NULL;
+}
+
+}
+#endif
+

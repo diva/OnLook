@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="Panel Avatar">
-	<tab_container name="tab">
+	<tab_container name="tab" tab_min_width="30">
 		<panel label="2º Vida" name="2nd Life">
 			<string name="CaptionTextAcctInfo">
 				[ACCTTYPE]
@@ -58,7 +58,7 @@
 			</text>
 			<button label="i" label_selected="i" name="partner_info" tool_tip="Pulsa para abrir el Perfil del Compañero/a" left_delta="75"/>
 			<button label="?" label_selected="?" name="partner_help"/>
-			<line_editor name="partner_edit" tool_tip="Comapañera/o en Second Life partner. Para más información ver www.secondlife.com/partner">
+			<line_editor name="partner_edit" tool_tip="Compañera/o en Second Life partner. Para más información ver www.secondlife.com/partner">
 				[NAME]
 			</line_editor>
 			<text name="Photo:">
@@ -82,7 +82,7 @@
 			<view_border name="drop_target_rect"/>
 			<view_border name="drop_target_rect_vis"/>
 			<text name="Give inventory" tool_tip="Arrastra hasta aquí items de tu inventario para dárselos a este usuario">
-				  Arrastra hastsa aquí un ítem del inventario.
+				  Arrastra hasta aquí un ítem del inventario.
 			</text>
 			<check_box label="Mostrar en la Búsqueda" name="allow_publish" tool_tip="Publicar información del Perfil en la búsqueda."/>
 			<button label="?" label_selected="?" name="?"/>
@@ -96,13 +96,16 @@
 		</panel>
 		 <!-- Panel Perfil Web -->
 		<panel label="Web" name="WebProfile" width="400"> 
-			<line_editor name="url_edit"/>
-			<flyout_button label="Cargar" label_selected="Cargar" name="load" tool_tip="Cargar este perfil con el navegador incorporado" >
-				  <flyout_button_item value="open" name="open_item">En navegador externo</flyout_button_item>
-				  <flyout_button_item value="home" name="home_item">Inicio</flyout_button_item>
+			<flyout_button label="Cargar" label_selected="Cargar" name="load" tool_tip="Cargar este perfil con el navegador incorporado">
+				<flyout_button_item value="open" name="open_item">
+					En navegador externo
+				</flyout_button_item>
+				<flyout_button_item value="home" name="home_item">
+					Inicio
+				</flyout_button_item>
 			</flyout_button>
 			<button label="?" label_selected="?" name="web_profile_help" />
-			<check_box label="Cargar Pefil Web Automáticamente" tool_tip="Carga Automáticamente todos los perfiles web."/>
+			<check_box label="Cargar Pefil Web Automáticamente" tool_tip="Carga Automáticamente todos los perfiles web." name="auto_load"/>
 			<web_browser name="profile_html" start_url="" />
 			<text name="status_text" />
 		</panel>
@@ -140,12 +143,8 @@
 			</text>
 			<button label="Nuevo..." label_selected="Nuevo..." name="New..."/>
 			<button label="Borrar..." label_selected="Borrar..." name="Delete..."/>
-			<!-- <button bottom="-44" follows="left|top" font="SansSerif" halign="center" height="20"
-				label="Import..." label_selected="Import..." left_delta="74"
-				mouse_opaque="true" name="Import..." width="70" />
-				<button bottom="-44" follows="left|top" font="SansSerif" halign="center" height="20"
-				label="Export..." label_selected="Export..." left_delta="74"
-				mouse_opaque="true" name="Export..." width="70" />-->
+			<button label="Importar..." label_selected="Importar..." name="Import..."/>
+				<button label="Exportar..." label_selected="Exportar..." />
 			<tab_container name="picks tab" />
 			<text name="loading_text">
 				Cargando...
@@ -171,7 +170,7 @@
 				Información:
 			</text>
 			<text name="(250 chars)">
-				(250 characts)
+				(250 caracts)
 			</text>
 			<text_editor name="about"/>
 		</panel>

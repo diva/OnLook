@@ -335,6 +335,8 @@ void LLPrefsAscentChat::refreshValues()
     mEnableOOCAutoClose             = gSavedSettings.getBOOL("AscentAutoCloseOOC");
     mLinksForChattingObjects        = gSavedSettings.getU32("LinksForChattingObjects");
     mSecondsInChatAndIMs            = gSavedSettings.getBOOL("SecondsInChatAndIMs");
+    mSecondsInLog                   = gSavedSettings.getBOOL("SecondsInLog");
+    mOtherChatsTornOff              = gSavedSettings.getBOOL("OtherChatsTornOff");
 
     std::string format = gSavedSettings.getString("ShortTimeFormat");
     if (format.find("%p") == -1)
@@ -390,6 +392,7 @@ void LLPrefsAscentChat::refreshValues()
     mSoundMulti                     = gSavedSettings.getU32("_NACL_AntiSpamSoundMulti");
     mNewLines                       = gSavedSettings.getU32("_NACL_AntiSpamNewlines");
     mPreloadMulti                   = gSavedSettings.getU32("_NACL_AntiSpamSoundPreloadMulti");
+	mEnableGestureSounds            = gSavedSettings.getBOOL("EnableGestureSounds");
 
     //Text Options ------------------------------------------------------------------------
     mSpellDisplay                   = gSavedSettings.getBOOL("SpellDisplay");
@@ -539,6 +542,8 @@ void LLPrefsAscentChat::cancel()
     gSavedSettings.setBOOL("AscentAutoCloseOOC",                   mEnableOOCAutoClose);
     gSavedSettings.setU32("LinksForChattingObjects",               mLinksForChattingObjects);
     gSavedSettings.setBOOL("SecondsInChatAndIMs",                  mSecondsInChatAndIMs);
+    gSavedSettings.setBOOL("SecondsInLog",                         mSecondsInLog);
+    gSavedSettings.setBOOL("OtherChatsTornOff",                    mOtherChatsTornOff);
 
     std::string short_date, long_date, short_time, long_time, timestamp;
 
@@ -607,6 +612,7 @@ void LLPrefsAscentChat::cancel()
     gSavedSettings.setU32("_NACL_AntiSpamSoundMulti",        mSoundMulti);
     gSavedSettings.setU32("_NACL_AntiSpamNewlines",          mNewLines);
     gSavedSettings.setU32("_NACL_AntiSpamSoundPreloadMulti", mPreloadMulti);
+	gSavedSettings.setBOOL("EnableGestureSounds",           mEnableGestureSounds);
 
     //Text Options ------------------------------------------------------------------------
     gSavedSettings.setBOOL("SpellDisplay",                  mSpellDisplay);

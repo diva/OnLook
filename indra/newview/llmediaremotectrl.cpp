@@ -35,6 +35,8 @@
 #include "llmediaremotectrl.h"
 
 #include "llaudioengine.h"
+#include "llchat.h"
+#include "llfloaterchat.h"
 #include "lliconctrl.h"
 #include "llmimetypes.h"
 #include "lloverlaybar.h"
@@ -53,6 +55,7 @@
 //
 
 static LLRegisterWidget<LLMediaRemoteCtrl> r("media_remote");
+static std::string sLastTooltip;
 
 LLMediaRemoteCtrl::LLMediaRemoteCtrl()
 {
@@ -263,10 +266,22 @@ void LLMediaRemoteCtrl::enableMediaButtons()
 			if(artist.isDefined() && title.isDefined())
 				info_text = artist.asString() + " -- " + title.asString();
 			else if(title.isDefined())
-				info_text = std::string("Title: ") + title.asString();
+				info_text = getString("Title") + ": " + title.asString();
 			else if(artist.isDefined())
-				info_text = std::string("Artist: ") + artist.asString();
-			music_pause_btn->setToolTip(info_text);
+				info_text = getString("Artist") + ": " + artist.asString();
+			if(music_pause_btn->getToolTip() != info_text) //Has info_text changed since last call?
+			{
+				music_pause_btn->setToolTip(info_text);
+				static LLCachedControl<bool> announce_stream_metadata("AnnounceStreamMetadata");
+				if(announce_stream_metadata && info_text != sLastTooltip && info_text != "Loading...") //Are we announcing?  Don't annoounce what we've last announced.  Don't announce Loading.
+				{
+					sLastTooltip = info_text;
+					LLChat chat;
+					chat.mText = getString("Now_playing") + " " + info_text;
+					chat.mSourceType = CHAT_SOURCE_SYSTEM;
+					LLFloaterChat::addChat(chat);
+				}
+			}
 		}
 		else
 			music_pause_btn->setToolTip(mCachedPauseTip);

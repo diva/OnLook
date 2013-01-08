@@ -178,14 +178,16 @@
 #include "llinventorypanel.h"
 #include "llinventorybridge.h"
 #include "llkeyboard.h"
-#include "llpanellogin.h"
+#include "llmakeoutfitdialog.h"
 #include "llmenucommands.h"
 #include "llmenugl.h"
 #include "llmimetypes.h"
 #include "llmorphview.h"
+#include "llmenuoptionpathfindingrebakenavmesh.h"
 #include "llmoveview.h"
 #include "llmutelist.h"
 #include "llnotify.h"
+#include "llpanellogin.h"
 #include "llpanelobject.h"
 
 #include "llparcel.h"
@@ -5327,6 +5329,39 @@ class LLToolsEnablePathfindingView : public view_listener_t
 	}
 };
 
+class LLToolsDoPathfindingRebakeRegion : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool hasPathfinding = (LLPathfindingManager::getInstance() != NULL);
+
+		if (hasPathfinding)
+		{
+			LLMenuOptionPathfindingRebakeNavmesh::getInstance()->sendRequestRebakeNavmesh();
+		}
+
+		return hasPathfinding;
+	}
+};
+
+class LLToolsEnablePathfindingRebakeRegion : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool returnValue = false;
+
+		if (LLPathfindingManager::getInstance() != NULL)
+		{
+			LLMenuOptionPathfindingRebakeNavmesh *rebakeInstance = LLMenuOptionPathfindingRebakeNavmesh::getInstance();
+			returnValue = (rebakeInstance->canRebakeRegion() &&
+				(rebakeInstance->getMode() == LLMenuOptionPathfindingRebakeNavmesh::kRebakeNavMesh_Available));
+			
+		}
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(returnValue);
+		return returnValue;
+	}
+};
+
 // Round the position of all root objects to the grid
 class LLToolsSnapObjectXY : public view_listener_t
 {
@@ -6489,6 +6524,10 @@ class LLShowFloater : public view_listener_t
 			{
 				gAgentCamera.changeCameraToCustomizeAvatar();
 			}
+		}
+		else if (floater_name == "outfit")
+		{
+			new LLMakeOutfitDialog(false);
 		}
 		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
 		else if (floater_name == "displayname")
@@ -9511,7 +9550,8 @@ void initialize_menus()
 
 	addMenu(new LLToolsEnablePathfinding(), "Tools.EnablePathfinding");
 	addMenu(new LLToolsEnablePathfindingView(), "Tools.EnablePathfindingView");
-
+	addMenu(new LLToolsDoPathfindingRebakeRegion(), "Tools.DoPathfindingRebakeRegion");
+	addMenu(new LLToolsEnablePathfindingRebakeRegion(), "Tools.EnablePathfindingRebakeRegion");
 	/*addMenu(new LLToolsVisibleBuyObject(), "Tools.VisibleBuyObject");
 	addMenu(new LLToolsVisibleTakeObject(), "Tools.VisibleTakeObject");*/
 

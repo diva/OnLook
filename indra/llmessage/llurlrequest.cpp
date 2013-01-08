@@ -77,8 +77,8 @@ std::string LLURLRequest::actionAsVerb(LLURLRequest::ERequestAction action)
 
 // This might throw AICurlNoEasyHandle.
 LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string const& url, Injector* body,
-	LLHTTPClient::ResponderPtr responder, AIHTTPHeaders& headers, bool is_auth, bool no_compression) :
-    mAction(action), mURL(url), mIsAuth(is_auth), mNoCompression(no_compression),
+	LLHTTPClient::ResponderPtr responder, AIHTTPHeaders& headers, bool keepalive, bool is_auth, bool no_compression) :
+    mAction(action), mURL(url), mKeepAlive(keepalive), mIsAuth(is_auth), mNoCompression(no_compression),
 	mBody(body), mResponder(responder), mHeaders(headers)
 {
 }
@@ -226,7 +226,7 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 		case HTTP_POST:
 		{
 			// Set the handle for an http post
-			curlEasyRequest_w->setPost(mBodySize);
+			curlEasyRequest_w->setPost(mBodySize, mKeepAlive);
 
 			// Set Accept-Encoding to allow response compression
 			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, mNoCompression ? "identity" : "");

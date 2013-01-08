@@ -81,6 +81,14 @@ class AICurlEasyRequestStateMachine : public AIStateMachine, public AICurlEasyHa
 	// Called after this curl easy handle was removed from a multi handle.
 	/*virtual*/ void removed_from_multi_handle(AICurlEasyRequest_wat&);
 
+	// Called when the curl thread detected that the socket of this handle has become unusable.
+	/*virtual*/ void bad_file_descriptor(AICurlEasyRequest_wat&);
+
+#ifdef SHOW_ASSERT
+	// Called when a command was added to remove this easy handle.
+	/*virtual*/ void queued_for_removal(AICurlEasyRequest_wat&);
+#endif
+
   protected:
 	// AIStateMachine implementations.
 

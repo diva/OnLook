@@ -58,6 +58,8 @@ protected:
     BOOL mDoubleClickTeleport;
         BOOL mResetCameraAfterTP;
         BOOL mOffsetTPByUserHeight;
+    bool mLiruFlyAfterTeleport;
+    bool mLiruContinueFlying;
     BOOL mPreviewAnimInWorld;
     BOOL mSaveScriptsAsMono;
     BOOL mAlwaysRezInGroup;

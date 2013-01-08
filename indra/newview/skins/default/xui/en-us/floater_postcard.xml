@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater can_close="true" can_drag_on_left="false" can_minimize="false"
-     can_resize="true" height="380" min_height="380" min_width="450"
-     name="Postcard" title="Email Snapshot" width="450">
+     can_resize="true" height="346" min_height="346" min_width="450"
+	 name="Postcard" title="Email Snapshot" width="450"
+	 rect_control="FloaterSnapshotPostcardRect">
 	<text bottom="-35" follows="top|left" font="SansSerif" left="12" name="to_label">
 		Recipient&apos;s Email:
 	</text>
@@ -34,10 +35,6 @@
 	     max_length="700" name="msg_form" width="420" spell_check="true">
 		Type your message here.
 	</text_editor>
-	<text bottom_delta="-37" follows="left|bottom" font="SansSerifSmall" left="12"
-	     name="fine_print">
-		If your recipient joins our universe, you&apos;ll get a referral bonus.
-	</text>
 	<button bottom_delta="-32" follows="right|bottom" height="20" label="Cancel"
 	     name="cancel_btn" right="-10" width="100" />
 	<button bottom_delta="0" follows="right|bottom" height="20" label="Send"

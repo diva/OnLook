@@ -123,10 +123,10 @@
 			Profundidad
 		</combo_item>
 	</combo_box>
-	<check_box label="Incluir la interfaz en la foto" name="ui_check" />
-	<check_box label="Incluir HUDs en la foto"name="hud_check" />
+	<check_box label="Incluir la interfaz en la foto" name="ui_check"/>
+	<check_box label="Incluir HUDs en la foto" name="hud_check"/>
 	<check_box label="Mantener abierto tras guardar" name="keep_open_check"/>
-	<check_box label="Congelar la toma (Vista Previa en Pantalla Completa)" name="freeze_frame_check"/>
+	<check_box label="Congelar toma (Vista Previa en Pant. Completa)" name="freeze_frame_check"/>
 	<check_box label="Actualizar Automáticamente" name="auto_snapshot_check"/>
 	<check_box label="Imagen Temporal (Gratis)" name="temp_check" tooltip="Definir en los activos que es una imagen temporaria, lo que signfica que será gratis, pero también que su existencia será limitada."/>
 	<string name="unknown">

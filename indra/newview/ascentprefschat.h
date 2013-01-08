@@ -76,6 +76,8 @@ protected:
         U32 tempTimeFormat;
         U32 tempDateFormat;
     BOOL mSecondsInChatAndIMs;
+    BOOL mSecondsInLog;
+    BOOL mOtherChatsTornOff;
 
     BOOL mIMResponseAnyone;
     BOOL mIMResponseFriends;
@@ -104,6 +106,7 @@ protected:
     BOOL mSoundMulti;
     U32  mNewLines;
     U32  mPreloadMulti;
+	bool mEnableGestureSounds;
 
     //Text Options ------------------------------------------------------------------------
     BOOL mSpellDisplay;

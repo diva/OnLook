@@ -243,6 +243,7 @@ LLViewerObject::LLViewerObject(const LLUUID &id, const LLPCode pcode, LLViewerRe
 	mTimeDilation(1.f),
 	mRotTime(0.f),
 	mAngularVelocityRot(),
+	mPreviousRotation(),
 	mState(0),
 	mMedia(NULL),
 	mClickAction(0),
@@ -272,7 +273,12 @@ LLViewerObject::LLViewerObject(const LLUUID &id, const LLPCode pcode, LLViewerRe
 	{
 		mPositionAgent = mRegionp->getOriginAgent();
 	}
-	resetRot();
+
+	static const LLCachedControl<bool> use_new_target_omega ("UseNewTargetOmegaCode", true);
+	if (use_new_target_omega)
+	{
+		resetRot();
+	}
 
 	LLViewerObject::sNumObjects++;
 }
@@ -2107,17 +2113,49 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 		}
 	}
 
-	if (new_rot != getRotation()
-		|| new_angv != old_angv)
-	{
-		if (new_angv != old_angv)
+	static const LLCachedControl<bool> use_new_target_omega ("UseNewTargetOmegaCode", true);
+	if (use_new_target_omega)
+	{	// New, experimental code
+		if ((new_rot != getRotation()) || (new_angv != old_angv))
 		{
+			if (new_rot != mPreviousRotation)
+			{
+				resetRot();
+			}
+			else if (new_angv != old_angv)
+			{
+				if (flagUsePhysics())
+				{
+					resetRot();
+				}
+				else
+				{
+					mRotTime = 0.0f;
+				}
+			}
+
+			// Remember the last rotation value
+			mPreviousRotation = new_rot;
+
+			// Set the rotation of the object followed by adjusting for the accumulated angular velocity (llSetTargetOmega)
+			setRotation(new_rot * mAngularVelocityRot);
+			setChanged(ROTATED | SILHOUETTE);
+		}
+	}
+	else
+	{	// Old code
+		if (new_rot != mPreviousRotation || new_angv != old_angv)
+		{
+			if (new_rot != mPreviousRotation)
+			{
+				mPreviousRotation = new_rot;
+				setRotation(new_rot);
+			}
+
+			setChanged(ROTATED | SILHOUETTE);
+
 			resetRot();
 		}
-
-		// Set the rotation of the object followed by adjusting for the accumulated angular velocity (llSetTargetOmega)
-		setRotation(new_rot * mAngularVelocityRot);
-		setChanged(ROTATED | SILHOUETTE);
 	}
 
 
@@ -5511,8 +5549,12 @@ void LLViewerObject::applyAngularVelocity(F32 dt)
 		// calculate the delta increment based on the object's angular velocity
 		dQ.setQuat(angle, ang_vel);
 
-		// accumulate the angular velocity rotations to re-apply in the case of an object update
-		mAngularVelocityRot *= dQ;
+		static const LLCachedControl<bool> use_new_target_omega ("UseNewTargetOmegaCode", true);
+		if (use_new_target_omega)
+		{
+			// accumulate the angular velocity rotations to re-apply in the case of an object update
+			mAngularVelocityRot *= dQ;
+		}
 		
 		// Just apply the delta increment to the current rotation
 		setRotation(getRotation()*dQ);
@@ -5524,8 +5566,28 @@ void LLViewerObject::resetRot()
 {
 	mRotTime = 0.0f;
 
-	// Reset the accumulated angular velocity rotation
-	mAngularVelocityRot.loadIdentity(); 
+	static const LLCachedControl<bool> use_new_target_omega ("UseNewTargetOmegaCode", true);
+	if(use_new_target_omega)
+	{
+		// Reset the accumulated angular velocity rotation
+		mAngularVelocityRot.loadIdentity();
+	}
+}
+
+//virtual
+void LLViewerObject::setSelected(BOOL sel)
+{
+	mUserSelected = sel;
+
+	static const LLCachedControl<bool> use_new_target_omega ("UseNewTargetOmegaCode", true);
+	if(use_new_target_omega)
+	{
+		resetRot();
+	}
+	else
+	{
+		mRotTime = 0.f;
+	}
 }
 
 U32 LLViewerObject::getPartitionType() const

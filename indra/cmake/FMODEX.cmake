@@ -17,15 +17,25 @@ find_library(FMODEX_LIBRARY
 if (NOT FMODEX_LIBRARY)
   set(FMODEX_SDK_DIR CACHE PATH "Path to the FMOD Ex SDK.")
   if (FMODEX_SDK_DIR)
-    find_library(FMODEX_LIBRARY
-                 fmodex_vc fmodexL_vc fmodex fmodexL fmodex64 fmodexL64
-                 PATHS
-                 ${FMODEX_SDK_DIR}/api/lib
-                 ${FMODEX_SDK_DIR}/api
-                 ${FMODEX_SDK_DIR}/lib
-                 ${FMODEX_SDK_DIR}
-                 )
-
+    if(WORD_SIZE EQUAL 32)
+      find_library(FMODEX_LIBRARY
+                   fmodex_vc fmodexL_vc fmodex fmodexL
+                   PATHS
+                   ${FMODEX_SDK_DIR}/api/lib
+                   ${FMODEX_SDK_DIR}/api
+                   ${FMODEX_SDK_DIR}/lib
+                   ${FMODEX_SDK_DIR}
+                   )
+    elseif(WORD_SIZE EQUAL 64)
+      find_library(FMODEX_LIBRARY
+                   fmodex64 fmodexL64
+                   PATHS
+                   ${FMODEX_SDK_DIR}/api/lib
+                   ${FMODEX_SDK_DIR}/api
+                   ${FMODEX_SDK_DIR}/lib
+                   ${FMODEX_SDK_DIR}
+                   )
+    endif(WORD_SIZE EQUAL 32)
   endif(FMODEX_SDK_DIR)
   if(WINDOWS AND NOT FMODEX_LIBRARY)
     set(FMODEX_PROG_DIR "$ENV{PROGRAMFILES}/FMOD SoundSystem/FMOD Programmers API Windows")

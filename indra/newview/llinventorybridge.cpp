@@ -854,21 +854,26 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
 		}
 	}
 
+	bool paste_as_copy = false; // If Paste As Copy is on the menu, Paste As Link will always show up disabled, so don't bother.
 	// Don't allow items to be pasted directly into the COF or the inbox/outbox
 	if (!isCOFFolder() && !isInboxFolder() && !isOutboxFolder())
 	{
 		items.push_back(std::string("Paste"));
 		// Paste as copy if we have links.
 		if (InventoryLinksEnabled() && isClipboardPasteableAsCopy())
+		{
 			items.push_back(std::string("Paste As Copy"));
+			paste_as_copy = true;
+		}
 	}
 	if (!isClipboardPasteable() || ((flags & FIRST_SELECTED_ITEM) == 0))
 	{
 		disabled_items.push_back(std::string("Paste"));
 		disabled_items.push_back(std::string("Paste As Copy"));
+		paste_as_copy = false;
 	}
 
-	if(InventoryLinksEnabled())
+	if (!paste_as_copy && InventoryLinksEnabled())
 	{
 		items.push_back(std::string("Paste As Link"));
 		if (!isClipboardPasteableAsLink() || (flags & FIRST_SELECTED_ITEM) == 0)
@@ -5342,9 +5347,10 @@ void LLObjectBridge::performAction(LLInventoryModel* model, std::string action)
 
 void LLObjectBridge::openItem()
 {
+	static LLCachedControl<bool> add(gSavedSettings, "LiruAddNotReplace");
 	// object double-click action is to wear/unwear object
 	performAction(getInventoryModel(),
-		      get_is_item_worn(mUUID) ? "detach" : "attach");
+		      get_is_item_worn(mUUID) ? "detach" : (add ? "wear_add" : "attach"));
 }
 
 std::string LLObjectBridge::getLabelSuffix() const
@@ -6798,10 +6804,14 @@ void LLWearableBridgeAction::wearOnAvatar()
 {
 	// TODO: investigate wearables may not be loaded at this point EXT-8231
 
+	static LLCachedControl<bool> add(gSavedSettings, "LiruAddNotReplace");
 	LLViewerInventoryItem* item = getItem();
 	if(item)
 	{
-		LLAppearanceMgr::instance().wearItemOnAvatar(item->getUUID(), true, true);
+		if (get_is_item_worn(item))
+			LLAppearanceMgr::instance().removeItemFromAvatar(item->getUUID());
+		else
+			LLAppearanceMgr::instance().wearItemOnAvatar(item->getUUID(), true, !add);
 	}
 }
 

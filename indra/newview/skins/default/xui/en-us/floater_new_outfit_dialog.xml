@@ -2,7 +2,7 @@
 <floater border="true" bottom="167" can_close="false" can_drag_on_left="false"
      can_minimize="false" can_resize="false" can_tear_off="true" enabled="true"
      height="530" left="278" min_height="100" min_width="100"
-     mouse_opaque="true" name="modal container" title="" width="515">
+     mouse_opaque="true" name="modal container" title="Make New Outfit" width="515">
   <button bottom="5" enabled="true" font="SansSerif" halign="center" height="20"
 	     label="Save" label_selected="Save" left="171" mouse_opaque="true"
 	     name="Save" scale_image="true" width="82" />
@@ -225,12 +225,12 @@
 	     height="16" initial_value="false" label="Bottom Right" left="413"
 	     mouse_opaque="true" name="checkbox_Bottom Right" radio_style="false"
 	     width="100" />
-  <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+  <!--text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-24" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerif" h_pad="0" halign="left" height="16" left="13"
 	     mouse_opaque="true" name="Make New Outfit" v_pad="0" width="489">
     Make New Outfit
-  </text>
+  </text-->
   <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-102" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="70" left="13"

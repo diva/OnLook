@@ -52,12 +52,16 @@ protected:
     static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
     static void onCommitTextModified(LLUICtrl* ctrl, void* userdata);
     static void onManualClientUpdate(void* data);
-    //General
+    //Main
     BOOL mUseAccountSettings;
     BOOL mShowTPScreen;
     BOOL mPlayTPSound;
     BOOL mShowLogScreens;
 	bool mDisableChatAnimation;
+	bool mAddNotReplace;
+	bool mTurnAround;
+	bool mAnnounceSnapshots;
+	bool mAnnounceStreamMetadata;
     //Tags\Colors
     BOOL mAscentUseTag;
     std::string mReportClientUUID;
@@ -78,6 +82,10 @@ protected:
     LLColor4 mEstateOwnerColor;
     LLColor4 mLindenColor;
     LLColor4 mMutedColor;
+	bool mColorFriendChat;
+	bool mColorEOChat;
+	bool mColorLindenChat;
+	bool mColorMutedChat;
     //Body Dynamics
     BOOL mBreastPhysicsToggle;
     F32 mBoobMass;

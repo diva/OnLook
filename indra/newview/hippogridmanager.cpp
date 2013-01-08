@@ -76,6 +76,11 @@ bool HippoGridInfo::isOpenSimulator() const
 	return (mPlatform == HippoGridInfo::PLATFORM_OPENSIM);
 }
 
+bool HippoGridInfo::isAurora() const
+{
+	return (mPlatform == HippoGridInfo::PLATFORM_AURORA);
+}
+
 bool HippoGridInfo::isSecondLife() const
 {
 	return (mPlatform == HippoGridInfo::PLATFORM_SECONDLIFE);
@@ -92,11 +97,15 @@ const std::string& HippoGridInfo::getGridName() const
 	return mGridName;
 }
 
-const std::string& HippoGridInfo::getGridOwner() const {
-	if(isSecondLife()) {
+const std::string& HippoGridInfo::getGridOwner() const
+{
+	if(isSecondLife())
+	{
 		static const std::string ll = "Linden Lab";
 		return ll;
-	} else {
+	}
+	else
+	{
 		return this->getGridName();
 	}	
 }

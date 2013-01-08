@@ -240,6 +240,10 @@
 			<on_click function="ShowFloater" userdata="appearance" />
 			<on_enable function="Edit.EnableCustomizeAvatar" />
 		</menu_item_call>
+		<menu_item_call bottom="-362" enabled="true" height="19" label="Make Outfit..." left="0"
+		     mouse_opaque="true" name="Make Outfit..." width="153">
+			<on_click function="ShowFloater" userdata="outfit" />
+		</menu_item_call>
 		<menu_item_call bottom="-362" enabled="true" height="19" label="Display Name..." left="0" 
 			 mouse_opaque="true" name="Display Name..." width="153">
 			<on_click function="ShowFloater" userdata="displayname" />
@@ -837,6 +841,13 @@
       <on_click function="Tools.ScriptDelete" />
       <on_enable function="Tools.EnableScriptDelete" />
     </menu_item_call>
+    <menu_item_call bottom="-525" enabled="false" height="19"
+             label="Rebake region" left="0"
+             mouse_opaque="true" name="pathfinding_rebake_navmesh_item"
+             width="250">
+      <on_click function="Tools.DoPathfindingRebakeRegion" />
+      <on_enable function="Tools.EnablePathfindingRebakeRegion" />
+    </menu_item_call>
 	</menu>
 	<menu bottom="219" create_jump_keys="true" drop_shadow="true" enabled="true"
 	     height="317" label="Help" left="227" mouse_opaque="false" name="Help"
@@ -925,6 +936,9 @@
 			     mouse_opaque="true" name="Report Singularity Bug..." width="166">
 				<on_click function="PromptShowURL" name="ReportSinguBug_url"
 						userdata="WebLaunchSinguIssue,http://code.google.com/p/singularity-viewer/issues/entry" />
+			</menu_item_call>
+			<menu_item_call bottom="-240" enabled="true" height="19" label="Request New Feature..." name="Request New Feature..." width="166">
+				<on_click function="PromptShowURL" name="RequestFeature_url" userdata="WebLaunchSinguIssue,http://code.google.com/p/singularity-viewer/issues/entry?template=Feature%20request"/>
 			</menu_item_call>
 		</menu>
 		<menu_item_call bottom="-313" enabled="true" height="19" label="About Singularity..." left="0"
