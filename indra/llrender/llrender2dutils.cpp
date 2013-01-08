@@ -139,15 +139,13 @@ void gl_rect_2d(S32 left, S32 top, S32 right, S32 bottom, BOOL filled )
 			gGL.begin( LLRender::LINES );
 
 				// Verticals 
-				gGL.vertex2i(left + 1, top);
-				gGL.vertex2i(left + 1, bottom);
+				gGL.vertex2i(left + 1, top + 1);
+				gGL.vertex2i(left + 1, bottom + 1);
 
-				gGL.vertex2i(right, bottom);
-				gGL.vertex2i(right, top);
+				gGL.vertex2i(right + 1, bottom + 1);
+				gGL.vertex2i(right + 1, top + 1);
 
 				// Horizontals
-				top--;
-				right--;
 				gGL.vertex2i(left, bottom);
 				gGL.vertex2i(right, bottom);
 
@@ -157,8 +155,6 @@ void gl_rect_2d(S32 left, S32 top, S32 right, S32 bottom, BOOL filled )
 		}
 		else
 		{
-			top--;
-			right--;
 			gGL.begin( LLRender::LINE_STRIP );
 				gGL.vertex2i(left, top);
 				gGL.vertex2i(left, bottom);
