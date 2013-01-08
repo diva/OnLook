@@ -35,9 +35,13 @@
 
 #include "llcontrol.h"
 #include "llfloater.h"
-#include "lltexteditor.h"
 
-class LLFloaterSettingsDebug : public LLFloater
+class LLScrollListCtrl;
+class LLTextEditor;
+
+class LLFloaterSettingsDebug
+:	public LLFloater
+,	public LLSingleton<LLFloaterSettingsDebug>
 {
 public:
 	LLFloaterSettingsDebug();
@@ -46,17 +50,33 @@ public:
 	virtual BOOL postBuild();
 	virtual void draw();
 
-	void updateControl(LLControlVariable* control);
+	void updateControl();
 
-	static void show(void*);
-	static void onSettingSelect(LLUICtrl* ctrl, void* user_data);
-	static void onCommitSettings(LLUICtrl* ctrl, void* user_data);
-	static void onClickDefault(void* user_data);
+	// updates control filter to display in the controls list on keystroke
+	static void onUpdateFilter(const std::string& searchTerm, void*);
+	void updateFilter(std::string searchTerm);
+
+	void onSettingSelect();
+	void onCommitSettings();
+	void onClickDefault();
+	void onCopyToClipboard();
+
+private:
+	// returns a pointer to the currently selected control variable, or NULL
+	LLControlVariable* getControlVariable();
 
 protected:
-	static LLFloaterSettingsDebug* sInstance;
+	typedef std::map<std::string,LLControlVariable*> settings_map_t;
+
+	settings_map_t mSettingsMap;
+
+	std::string mOldSearchTerm;
+	LLControlVariable* mCurrentControlVariable;
+	LLControlVariable* mOldControlVariable;
+	bool mOldVisibility;
+
+	LLScrollListCtrl* mSettingsScrollList;
 	LLTextEditor* mComment;
 };
 
 #endif //LLFLOATERDEBUGSETTINGS_H
-
