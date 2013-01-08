@@ -174,7 +174,7 @@ bool AIHTTPReceivedHeaders::equal(std::string const& key1, std::string const& ke
   }
   for (std::string::const_iterator i1 = key1.begin(), i2 = key2.begin(); i1 != key1.end(); ++i1, ++i2)
   {
-	if ((*i1 ^ *i2) & 0xdf != 0)
+	if (((*i1 ^ *i2) & 0xdf) != 0)
 	{
 	  return false;
 	}

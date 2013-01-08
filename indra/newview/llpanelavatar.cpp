@@ -385,7 +385,7 @@ void LLPanelAvatarFirstLife::onClickImage(void* data)
 			S32 left, top;
 			gFloaterView->getNewFloaterPosition(&left, &top);
 			LLRect rect = gSavedSettings.getRect("PreviewTextureRect");
-			rect.translate( left - rect.mLeft, top - rect.mTop );
+			rect.translate( left - rect.mLeft, rect.mTop - top ); // Changed to avoid textures being sunken below the window border.
 			LLPreviewTexture* preview = new LLPreviewTexture("preview task texture",
 													 rect,
 													 std::string("Profile First Life Picture"),
@@ -433,7 +433,7 @@ void LLPanelAvatarSecondLife::onClickImage(void* data)
 				S32 left, top;
 				gFloaterView->getNewFloaterPosition(&left, &top);
 				LLRect rect = gSavedSettings.getRect("PreviewTextureRect");
-				rect.translate( left - rect.mLeft, top - rect.mTop );
+				rect.translate( left - rect.mLeft, rect.mTop - top ); // Changed to avoid textures being sunken below the window border.
 				LLPreviewTexture* preview = new LLPreviewTexture("preview task texture",
 														 rect,
 														 std::string("Profile Picture: ") +	name_text,

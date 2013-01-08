@@ -290,7 +290,7 @@ enum refresh_t {
 class CurlSocketInfo
 {
   public:
-	CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj);
+	CurlSocketInfo(MultiHandle& multi_handle, ASSERT_ONLY(CURL* easy,) curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj);
 	~CurlSocketInfo();
 
 	void set_action(int action);
@@ -300,7 +300,6 @@ class CurlSocketInfo
 
   private:
 	MultiHandle& mMultiHandle;
-	CURL const* mEasy;
 	curl_socket_t mSocketFd;
 	int mAction;
 	bool mDead;
@@ -669,12 +668,10 @@ class MergeIterator
   private:
 	PollSet* mReadPollSet;
 	PollSet* mWritePollSet;
-	int readIndx;
-	int writeIndx;
 };
 
 MergeIterator::MergeIterator(PollSet* readPollSet, PollSet* writePollSet) :
-    mReadPollSet(readPollSet), mWritePollSet(writePollSet), readIndx(0), writeIndx(0)
+    mReadPollSet(readPollSet), mWritePollSet(writePollSet)
 {
   mReadPollSet->reset();
   mWritePollSet->reset();
@@ -766,8 +763,8 @@ std::ostream& operator<<(std::ostream& os, DebugFdSet const& s)
 }
 #endif
 
-CurlSocketInfo::CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj) :
-    mMultiHandle(multi_handle), mEasy(easy), mSocketFd(s), mAction(CURL_POLL_NONE), mDead(false), mEasyRequest(lockobj)
+CurlSocketInfo::CurlSocketInfo(MultiHandle& multi_handle, ASSERT_ONLY(CURL* easy,) curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj) :
+    mMultiHandle(multi_handle), mSocketFd(s), mAction(CURL_POLL_NONE), mDead(false), mEasyRequest(lockobj)
 {
   llassert(*AICurlEasyRequest_wat(*mEasyRequest) == easy);
   mMultiHandle.assign(s, this);
