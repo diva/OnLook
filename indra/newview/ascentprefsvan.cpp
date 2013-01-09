@@ -190,7 +190,6 @@ void LLPrefsAscentVan::refreshValues()
 	mTurnAround = gSavedSettings.getBOOL("TurnAroundWhenWalkingBackwards");
 	mAnnounceSnapshots = gSavedSettings.getBOOL("AnnounceSnapshots");
 	mAnnounceStreamMetadata = gSavedSettings.getBOOL("AnnounceStreamMetadata");
-	mHorizButt = gSavedSettings.getBOOL("ContactsUseHorizontalButtons");
 
     //Tags\Colors ----------------------------------------------------------------------------
     mAscentUseTag           = gSavedSettings.getBOOL("AscentUseTag");
@@ -274,7 +273,6 @@ void LLPrefsAscentVan::cancel()
 	gSavedSettings.setBOOL("TurnAroundWhenWalkingBackwards", mTurnAround);
 	gSavedSettings.setBOOL("AnnounceSnapshots", mAnnounceSnapshots);
 	gSavedSettings.setBOOL("AnnounceStreamMetadata", mAnnounceStreamMetadata);
-	gSavedSettings.setBOOL("ContactsUseHorizontalButtons", mHorizButt);
 
     //Tags\Colors ----------------------------------------------------------------------------
     gSavedSettings.setBOOL("AscentUseTag",               mAscentUseTag);
