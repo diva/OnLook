@@ -760,6 +760,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>UseConciseIMButtons</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not IMs use buttons concisely on the same line as the name of the receiver, changes apply to new IMs only.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>ConciseIMButtons
     <key>ShowLocalChatFloaterBar</key>
     <map>
       <key>Comment</key>
