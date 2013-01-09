@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel border="true" name="friends">
+	<string name="Multiple">Multiple friends...</string>
+	<scroll_list bottom="70" can_resize="true" column_padding="0" draw_heading="true" follows="left|top|bottom|right" left="5" multi_select="true"
+	    name="friend_list" right="-5" search_column="1" tool_tip="Hold shift or control while clicking to select multiple friends" top="-40">
+		<column image="ff_online_status_button.tga" name="icon_online_status" tool_tip="Online status" width="20"/>
+		<column dynamicwidth="true" label="Name" name="friend_name" tool_tip="Name"/>
+		<column image="ff_visible_online_button.tga" name="icon_visible_online" tool_tip="Friend can see when you're online" width="20"/>
+		<column image="ff_visible_map_button.tga" name="icon_visible_map" tool_tip="Friend can locate you on the map" width="20"/>
+		<column image="ff_edit_mine_button.tga" name="icon_edit_mine" tool_tip="Friend can edit, delete or take objects" width="20"/>
+		<column image="ff_visible_online_button.tga" name="icon_visible_online_theirs" tool_tip="You can see when they are online (only updates on login)" width="20"/>
+		<column image="ff_visible_map_button.tga" name="icon_visible_map_theirs" tool_tip="You can locate them on the map" width="20"/>
+		<column image="ff_edit_theirs_button.tga" name="icon_edit_theirs" tool_tip="You can edit this friend's objects" width="20"/>
+		<column name="friend_last_update_generation" width="0"/>
+	</scroll_list>
+	<!--text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" name="friends" width="110">Contact Group:</text-->
+	<!--combo_box allow_text_entry="false" enabled="true" follows="right|top" bottom_delta="20" height="18" hidden="false" left="-255" max_chars="20" tool_tip="Buddy group" name="buddy_group_combobox" width="130">
+		<combo_item type="string" length="20" enabled="true" name="All" value="All">All</combo_item>
+	</combo_box-->
+	<!--text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" name="Contact Search:" width="110">Contact Search:</text-->
+	<search_editor bottom_delta="-100" enabled="true" follows="left|top" font="SansSerif" height="18" name="buddy_search_lineedit" label="Contact Search" tool_tip="The friend name you want to search for" width="160"/>
+	<button bottom_delta="0" follows="top|right" height="22" label="0" left="-25" name="expand_collapse_btn" tool_tip="Expand/Collapse extra info" width="22"/>
+	<!--button bottom_delta="-25" follows="top|right" height="22" label="Set Contact" name="assign_btn" tool_tip="Assign a friend to a Contact Group" width="80"/-->
+	<text bottom="38" left="12" follows="left|bottom" height="32" name="friends" width="95">Online:</text>
+	<text bottom_delta="0" left_delta="60" follows="left|bottom" height="32" name="f_num" width="95">0000</text>
+	<text bottom_delta="0" left_delta="44" follows="left|bottom" height="32" name="sel" width="95">|       Selected:</text>
+	<text bottom_delta="0" left_delta="100" follows="left|bottom" height="32" name="s_num" width="95">0000</text>
+	<button bottom_delta="-8" left="5" follows="left|bottom" height="22" label="IM/Call" name="im_btn" tool_tip="Open Instant Message session" width="80"/>
+	<button bottom_delta="0" left_delta="82" follows="left|bottom" height="22" label="Profile" name="profile_btn" tool_tip="Show picture, groups, and other information" width="80"/>
+	<button bottom_delta="0" left_delta="82" follows="left|bottom" height="22" label="Teleport..." name="offer_teleport_btn" tool_tip="Offer this friend a teleport to your current location" width="80" />
+	<button bottom_delta="-24" left="5" follows="left|bottom" height="22" label="Pay..." name="pay_btn" tool_tip="Give in-world money ([CURRENCY]) to this friend" width="80"/>
+	<button bottom_delta="0" left_delta="82" follows="left|bottom" height="22" label="Remove..." name="remove_btn" tool_tip="Remove this person from your friends list" width="80"/>
+	<button bottom_delta="0" left_delta="82" follows="left|bottom" height="22" label="Add..." name="add_btn" tool_tip="Offer friendship to a resident" width="80"/>
+</panel>

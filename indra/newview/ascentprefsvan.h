@@ -62,6 +62,7 @@ protected:
 	bool mTurnAround;
 	bool mAnnounceSnapshots;
 	bool mAnnounceStreamMetadata;
+	bool mHorizButt;
     //Tags\Colors
     BOOL mAscentUseTag;
     std::string mReportClientUUID;
