@@ -73,6 +73,7 @@
 #include "llworld.h"
 #include "llagentui.h"
 #include "llvoavatar.h"
+#include "lluploaddialog.h"
 
 #include "llgl.h"
 #include "llglheaders.h"
@@ -2018,6 +2019,7 @@ void LLFloaterSnapshot::saveLocalDone(bool success, int index)
 //static
 void LLFloaterSnapshot::saveFeedDone(bool success, int index)
 {
+	LLUploadDialog::modalUploadFinished();
 	LLSnapshotLivePreview* previewp = LLFloaterSnapshot::Impl::getPreviewView();
 	if (previewp)
 	{
@@ -2028,6 +2030,7 @@ void LLFloaterSnapshot::saveFeedDone(bool success, int index)
 //static
 void LLFloaterSnapshot::savePostcardDone(bool success, int index)
 {
+	LLUploadDialog::modalUploadFinished();
 	LLSnapshotLivePreview* previewp = LLFloaterSnapshot::Impl::getPreviewView();
 	if (previewp)
 	{

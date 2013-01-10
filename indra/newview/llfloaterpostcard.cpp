@@ -251,7 +251,6 @@ public:
 	/*virtual*/ void uploadComplete(const LLSD& content)
 	{
 		// we don't care about what the server returns from this post, just clean up the UI
-		LLUploadDialog::modalUploadFinished();
 		LLFloaterSnapshot::savePostcardDone(true, mSnapshotIndex);
 	}
 	/*virtual*/ void uploadFailure(const LLSD& content)
@@ -312,8 +311,6 @@ void LLFloaterPostcard::onClickSend(void* data)
 void LLFloaterPostcard::uploadCallback(const LLUUID& asset_id, void *user_data, S32 result, LLExtStat ext_status) // StoreAssetData callback (fixed)
 {
 	LLFloaterPostcard *self = (LLFloaterPostcard *)user_data;
-	
-	LLUploadDialog::modalUploadFinished();
 	
 	LLFloaterSnapshot::savePostcardDone(!result, self->mSnapshotIndex);
 
