@@ -1624,7 +1624,7 @@ void LLFloaterSnapshot::Impl::updateLayout(LLFloaterSnapshot* floaterp)
 	S32 delta_height = 0;
 	if (!gSavedSettings.getBOOL("AdvanceSnapshot"))
 	{
-		floaterp->getChild<LLComboBox>("feed_size_combo")->setCurrentByIndex(2);		// 500x375
+		floaterp->getChild<LLComboBox>("feed_size_combo")->setCurrentByIndex(2);		// 500x375 (4:3)
 		gSavedSettings.setS32("SnapshotFeedLastResolution", 2);
 
 		floaterp->getChild<LLComboBox>("postcard_size_combo")->setCurrentByIndex(0);	// Current window
@@ -2504,6 +2504,15 @@ void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool 
 				// load last custom value
 				previewp->setSize(gSavedSettings.getS32(lastSnapshotWidthName()), gSavedSettings.getS32(lastSnapshotHeightName()));
 			}
+		}
+		else if (height == -2)
+		{
+		  // The size is actually the source aspect now, encoded in the width.
+		  F32 source_aspect = width / 630.f;
+		  // Use the size of the current window, cropped to the required aspect.
+		  width = llmin(gViewerWindow->getWindowDisplayWidth(), llround(gViewerWindow->getWindowDisplayHeight() * source_aspect));
+		  height = llmin(gViewerWindow->getWindowDisplayHeight(), llround(gViewerWindow->getWindowDisplayWidth() / source_aspect));
+		  previewp->setSize(width, height);
 		}
 		else
 		{
