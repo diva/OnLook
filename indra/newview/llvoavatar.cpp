@@ -2789,28 +2789,6 @@ U32 LLVOAvatar::processUpdateMessage(LLMessageSystem *mesgsys,
 		}
 	}
 
-	//llinfos << getRotation() << llendl;
-	//llinfos << getPosition() << llendl;
-	// <edit>
-	if (update_type == OUT_FULL )
-	{
-		
-		if(isSelf())
-		{
-			if(gSavedSettings.getBOOL("ReSit"))
-			{
-				gMessageSystem->newMessageFast(_PREHASH_AgentRequestSit);
-				gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-				gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-				gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-				gMessageSystem->nextBlockFast(_PREHASH_TargetObject);
-				gMessageSystem->addUUIDFast(_PREHASH_TargetID, gReSitTargetID);
-				gMessageSystem->addVector3Fast(_PREHASH_Offset, gReSitOffset);
-				gAgent.getRegion()->sendReliableMessage();
-			}
-		}
-	}
-	// </edit>
 	return retval;
 }
 

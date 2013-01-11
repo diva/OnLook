@@ -819,11 +819,6 @@ void init_menus()
 										NULL,
 										&menu_check_control,
 										(void*)"Nimble"));
-	menu->addChild(new LLMenuItemCheckGL( "ReSit",
-										&menu_toggle_control,
-										NULL,
-										&menu_check_control,
-										(void*)"ReSit"));
 	menu->addSeparator();
 	menu->addChild(new LLMenuItemCallGL(	"Object Area Search", &handle_area_search, NULL));
 
@@ -4038,11 +4033,6 @@ bool handle_sit_or_stand()
 			gRlvHandler.setSitSource(gAgent.getPositionGlobal());
 		}
 // [/RLVa:KB]
-
-		// <edit>
-		gReSitTargetID = object->mID;
-		gReSitOffset = pick.mObjectOffset;
-		// </edit>
 		gMessageSystem->newMessageFast(_PREHASH_AgentRequestSit);
 		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
 		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());

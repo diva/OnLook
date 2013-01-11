@@ -126,10 +126,6 @@ const F32 MAX_FIDGET_TIME = 20.f; // seconds
 LLAgent gAgent;
 std::string gAuthString;
 
-// <edit>
-LLUUID gReSitTargetID;
-LLVector3 gReSitOffset;
-// </edit>
 class LLTeleportRequest
 {
 public:
