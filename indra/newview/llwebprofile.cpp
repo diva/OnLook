@@ -121,6 +121,7 @@ public:
 protected:
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return webProfileResponders_timeout; }
 	/*virtual*/ bool followRedir(void) const { return true; }
+	/*virtual*/ char const* getName(void) const { return "LLWebProfileResponders::ConfigResponder"; }
 
 private:
 	LLPointer<LLImageFormatted> mImagep;
@@ -156,8 +157,9 @@ public:
 	}
 
 protected:
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return webProfileResponders_timeout; }
 	/*virtual*/ bool followRedir(void) const { return true; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return webProfileResponders_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLWebProfileResponders::PostImageRedirectResponder"; }
 
 private:
 	LLPointer<LLImageFormatted> mImagep;
@@ -206,8 +208,9 @@ public:
 	}
 
 protected:
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return webProfileResponders_timeout; }
 	/*virtual*/ bool redirect_status_ok(void) const { return true; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return webProfileResponders_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLWebProfileResponders::PostImageResponder"; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -57,12 +57,13 @@ class EmeraldDicDownloader : public LLHTTPClient::ResponderWithCompleted
 public:
 	EmeraldDicDownloader(lggDicDownloadFloater* spanel, std::string sname);
 	~EmeraldDicDownloader() { }
-	void completedRaw(
+	/*virtual*/ void completedRaw(
 		U32 status,
 		const std::string& reason,
 		const LLChannelDescriptors& channels,
 		const buffer_ptr_t& buffer);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return emeraldDicDownloader_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return emeraldDicDownloader_timeout; }
+	/*virtual*/ char const* getName(void) const { return "EmeraldDicDownloader"; }
 private:
 	lggDicDownloadFloater* panel;
 	std::string name;

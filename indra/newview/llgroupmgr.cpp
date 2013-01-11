@@ -1896,12 +1896,12 @@ extern AIHTTPTimeoutPolicy groupMemberDataResponder_timeout;
 class GroupMemberDataResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return groupMemberDataResponder_timeout; }
-
 	GroupMemberDataResponder() {}
 	virtual ~GroupMemberDataResponder() {}
-	virtual void result(const LLSD& pContent);
-	virtual void error(U32 pStatus, const std::string& pReason);
+	/*virtual*/ void result(const LLSD& pContent);
+	/*virtual*/ void error(U32 pStatus, const std::string& pReason);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return groupMemberDataResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "GroupMemberDataResponder"; }
 private:
 	LLSD mMemberData;
 };

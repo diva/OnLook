@@ -199,7 +199,7 @@ public:
 		mAgents = agents_to_invite;
 	}
 
-	virtual void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void error(U32 statusNum, const std::string& reason)
 	{
 		//try an "old school" way.
 		if ( statusNum == 400 )
@@ -219,7 +219,8 @@ public:
 		//the possible different language translations
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return startConferenceChatResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return startConferenceChatResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLStartConferenceChatResponder"; }
 
 private:
 	LLUUID mTempSessionID;
@@ -306,9 +307,10 @@ class LLVoiceCallCapResponder : public LLHTTPClient::ResponderWithResult
 public:
 	LLVoiceCallCapResponder(const LLUUID& session_id) : mSessionID(session_id) {};
 
-	virtual void error(U32 status, const std::string& reason);	// called with bad status codes
-	virtual void result(const LLSD& content);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return voiceCallCapResponder_timeout; }
+	/*virtual*/ void error(U32 status, const std::string& reason);	// called with bad status codes
+	/*virtual*/ void result(const LLSD& content);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return voiceCallCapResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLVoiceCallCapResponder"; }
 
 private:
 	LLUUID mSessionID;
@@ -1562,13 +1564,14 @@ public:
 		mSessionID = session_id;
 	}
 
-	void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void error(U32 statusNum, const std::string& reason)
 	{
 		llinfos << "Error inviting all agents to session" << llendl;
 		//throw something back to the viewer here?
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return sessionInviteResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return sessionInviteResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLSessionInviteResponder"; }
 
 private:
 	LLUUID mSessionID;

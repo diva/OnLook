@@ -263,6 +263,7 @@ public:
 		LLAssetUploadResponder::error(statusNum, reason);
 		LLFloaterSnapshot::savePostcardDone(false, mSnapshotIndex);
 	}
+	/*virtual*/ char const* getName(void) const { return "LLSendPostcardResponder"; }
 };
 
 // static

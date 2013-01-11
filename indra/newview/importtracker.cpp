@@ -301,7 +301,9 @@ void ImportTracker::get_update(S32 newid, BOOL justCreated, BOOL createSelected)
 		break;*/
 	}
 }
-/*struct InventoryImportInfo
+
+#if 0
+struct InventoryImportInfo
 {
 	U32 localid;
 	LLAssetType::EType type;
@@ -372,7 +374,7 @@ public:
 	{
 
 	}
-	virtual void uploadComplete(const LLSD& content)
+	/*virtual*/ void uploadComplete(const LLSD& content)
 	{
 		LLPointer<LLInventoryCallback> cb = new JCImportTransferCallback(data);
 		LLPermissions perm;
@@ -385,6 +387,7 @@ public:
 			cb);
 		
 	}
+	/*virtual*/ char const* getName(void) const { return "JCImportInventoryResponder"; }
 private:
 	InventoryImportInfo* data;
 };
@@ -405,13 +408,14 @@ public:
 											   LLAssetType::EType asset_type) : LLAssetUploadResponder(post_data, file_name, asset_type)
 	{
 	}
-	virtual void uploadComplete(const LLSD& content)
+	/*virtual*/ void uploadComplete(const LLSD& content)
 	{
 		//cmdline_printchat("completed upload, inserting");
 		LLViewerInventoryItem* item = (LLViewerInventoryItem*)gInventory.getItem(item_id);
 		LLViewerObject* objectp = find(data->localid);
 		insert(item, objectp, data);
 	}
+	/*virtual*/ char const* getName(void) const { return "JCPostInvUploadResponder"; }
 private:
 	LLUUID item_id;
 	InventoryImportInfo* data;
@@ -1119,4 +1123,4 @@ void ImportTracker::plywood_above_head()
 		msg->addUUIDFast(_PREHASH_RayTargetID, LLUUID::null);
 		msg->sendReliable(region->getHost());
 }
-*/
+#endif

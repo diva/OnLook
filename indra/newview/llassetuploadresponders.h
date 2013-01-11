@@ -61,9 +61,10 @@ public:
 							const std::string& file_name,
 							LLAssetType::EType asset_type);
 	~LLAssetUploadResponder();
-    virtual void error(U32 statusNum, const std::string& reason);
-	virtual void result(const LLSD& content);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return assetUploadResponder_timeout; }
+    /*virtual*/ void error(U32 statusNum, const std::string& reason);
+	/*virtual*/ void result(const LLSD& content);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return assetUploadResponder_timeout; }
+
 	virtual void uploadUpload(const LLSD& content);
 	virtual void uploadComplete(const LLSD& content);
 	virtual void uploadFailure(const LLSD& content);
@@ -86,9 +87,10 @@ public:
 		const LLSD& post_data,
 		const std::string& file_name,
 		LLAssetType::EType asset_type);
-    virtual void error(U32 statusNum, const std::string& reason);
+    /*virtual*/ void error(U32 statusNum, const std::string& reason);
 	virtual void uploadComplete(const LLSD& content);
 	virtual void uploadFailure(const LLSD& content);
+	/*virtual*/ char const* getName(void) const { return "LLNewAgentInventoryResponder"; }
 };
 
 // A base class which goes through and performs some default
@@ -110,12 +112,12 @@ public:
 		const LLSD& inventory_info);
 	virtual ~LLNewAgentInventoryVariablePriceResponder();
 
-	void errorWithContent(
+	/*virtual*/ void errorWithContent(
 		U32 statusNum,
 		const std::string& reason,
 		const LLSD& content);
-	void result(const LLSD& content);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return newAgentInventoryVariablePriceResponder_timeout; }
+	/*virtual*/ void result(const LLSD& content);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return newAgentInventoryVariablePriceResponder_timeout; }
 
 	virtual void onApplicationLevelError(
 		const LLSD& error);
@@ -141,8 +143,9 @@ public:
 
 	~LLSendTexLayerResponder();
 
-	virtual void uploadComplete(const LLSD& content);
-	virtual void error(U32 statusNum, const std::string& reason);
+	/*virtual*/ void uploadComplete(const LLSD& content);
+	/*virtual*/ void error(U32 statusNum, const std::string& reason);
+	/*virtual*/ char const* getName(void) const { return "LLSendTexLayerResponder"; }
 
 	LLBakedUploadData * mBakedUploadData;
 };
@@ -157,6 +160,7 @@ public:
 								const std::string& file_name,
 											   LLAssetType::EType asset_type);
 	virtual void uploadComplete(const LLSD& content);
+	/*virtual*/ char const* getName(void) const { return "LLUpdateAgentInventoryResponder"; }
 };
 
 class LLUpdateTaskInventoryResponder : public LLAssetUploadResponder
@@ -174,7 +178,8 @@ public:
 								LLAssetType::EType asset_type);
 
 	virtual void uploadComplete(const LLSD& content);
-	
+	/*virtual*/ char const* getName(void) const { return "LLUpdateTaskInventoryResponder"; }
+
 private:
 	LLUUID mQueueId;
 };

@@ -196,6 +196,9 @@ public:
 		// Timeout policy to use.
 		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const = 0;
 
+		// The name of the derived responder object. For debugging purposes.
+		virtual char const* getName(void) const = 0;
+
 	protected:
 		// Derived classes can override this to get the HTML headers that were received, when the message is completed.
 		// Only actually called for classes that implement a needsHeaders() that returns true.
@@ -378,6 +381,7 @@ public:
 	 */
 	class ResponderIgnore : public ResponderIgnoreBody {
 		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return responderIgnore_timeout;}
+		/*virtual*/ char const* getName(void) const { return "ResponderIgnore"; }
 	};
 
 	// A Responder is passed around as ResponderPtr, which causes it to automatically

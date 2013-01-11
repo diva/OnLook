@@ -714,7 +714,7 @@ public:
 		}
 	}
 
-	void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void error(U32 statusNum, const std::string& reason)
 	{
 		llwarns
 			<< "Transport error requesting object cost "
@@ -726,7 +726,7 @@ public:
 		clear_object_list_pending_requests();
 	}
 
-	void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{
 		if ( !content.isMap() || content.has("error") )
 		{
@@ -776,7 +776,8 @@ public:
 		}
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return objectCostResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return objectCostResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLObjectCostResponder"; }
 
 private:
 	LLSD mObjectIDs;
@@ -804,7 +805,7 @@ public:
 		}
 	}
 
-	void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void error(U32 statusNum, const std::string& reason)
 	{
 		llwarns
 			<< "Transport error requesting object physics flags "
@@ -816,7 +817,7 @@ public:
 		clear_object_list_pending_requests();
 	}
 
-	void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{
 		if ( !content.isMap() || content.has("error") )
 		{
@@ -873,7 +874,8 @@ public:
 		}
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return physicsFlagsResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return physicsFlagsResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLPhysicsFlagsResponder"; }
 
 private:
 	LLSD mObjectIDs;

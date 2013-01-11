@@ -533,16 +533,19 @@ protected:
 class BlockingLLSDPostResponder : public BlockingLLSDResponder {
 public:
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return blockingLLSDPost_timeout; }
+	/*virtual*/ char const* getName(void) const { return "BlockingLLSDPostResponder"; }
 };
 
 class BlockingLLSDGetResponder : public BlockingLLSDResponder {
 public:
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return blockingLLSDGet_timeout; }
+	/*virtual*/ char const* getName(void) const { return "BlockingLLSDGetResponder"; }
 };
 
 class BlockingRawGetResponder : public BlockingRawResponder {
 public:
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return blockingRawGet_timeout; }
+	/*virtual*/ char const* getName(void) const { return "BlockingRawGetResponder"; }
 };
 
 // End (blocking) responders.
