@@ -352,7 +352,14 @@ void LLFloaterSettingsDebug::updateControl()
 			bool_ctrl->setVisible(true);
 			if (!bool_ctrl->hasFocus())
 			{
-				bool_ctrl->setValue(sd.asInteger());
+				if (sd.asBoolean())
+				{
+					bool_ctrl->setValue(LLSD("TRUE"));
+				}
+				else
+				{
+					bool_ctrl->setValue(LLSD("FALSE"));
+				}
 			}
 			break;
 		  case TYPE_STRING:

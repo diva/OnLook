@@ -62,11 +62,9 @@ protected:
     static void onCommitKeywords(LLUICtrl* ctrl, void* user_data);
 
     //Chat/IM -----------------------------------------------------------------------------
-    BOOL mWoLfVerticalIMTabs;
     BOOL mIMAnnounceIncoming;
     BOOL mHideTypingNotification;
     BOOL mShowGroupNameInChatIM;
-    bool mShowLocalChatFloaterBar;
     BOOL mPlayTypingSound;
     BOOL mHideNotificationsInChat;
     BOOL mEnableMUPose;
@@ -78,7 +76,6 @@ protected:
         U32 tempDateFormat;
     BOOL mSecondsInChatAndIMs;
     BOOL mSecondsInLog;
-    BOOL mOtherChatsTornOff;
 
     BOOL mIMResponseAnyone;
     BOOL mIMResponseFriends;
@@ -88,6 +85,14 @@ protected:
     BOOL mIMResponseRepeat;
     BOOL mIMResponseItem;
     std::string mIMResponseText;
+
+    //Chat UI -----------------------------------------------------------------------------
+	bool mWoLfVerticalIMTabs;
+	bool mOtherChatsTornOff;
+	bool mShowLocalChatFloaterBar;
+	bool mHorizButt;
+	bool mOneLineIMButt;
+	bool mOnlyComm;
 
     //Spam --------------------------------------------------------------------------------
     BOOL mEnableAS;

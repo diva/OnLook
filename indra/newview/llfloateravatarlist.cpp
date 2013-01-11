@@ -476,6 +476,15 @@ void LLFloaterAvatarList::assessColumns()
 		mAvatarList->getColumn(LIST_AVATAR_NAME)->mDynamicWidth = TRUE;
 		mAvatarList->getColumn(LIST_AVATAR_NAME)->mRelWidth = -1;
 	}
+	else if (!hide_client)
+	{
+		mAvatarList->getColumn(LIST_CLIENT)->setWidth(0);
+		mAvatarList->getColumn(LIST_AVATAR_NAME)->setWidth(0);
+		mAvatarList->getColumn(LIST_AVATAR_NAME)->mDynamicWidth = FALSE;
+		mAvatarList->getColumn(LIST_AVATAR_NAME)->mRelWidth = 0;
+		mAvatarList->getColumn(LIST_CLIENT)->mDynamicWidth = TRUE;
+		mAvatarList->getColumn(LIST_CLIENT)->mRelWidth = -1;
+	}
 
 	mAvatarList->updateLayout();
 }

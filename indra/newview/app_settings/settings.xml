@@ -760,6 +760,28 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>ContactsUseHorizontalButtons</key>
+    <map>
+      <key>Comment</key>
+	  <string>Whether or not groups and friends lists use horizontal buttons at the bottom of the panel or vertical ones on the right, requires a restart.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>UseConciseIMButtons</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not IMs use buttons concisely on the same line as the name of the receiver, changes apply to new IMs only.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>ConciseIMButtons
     <key>ShowLocalChatFloaterBar</key>
     <map>
       <key>Comment</key>
@@ -6182,7 +6204,23 @@ This should be as low as possible, but too low may break functionality</string>
     <key>FloaterContactsRect</key>
     <map>
       <key>Comment</key>
-      <string>Rectangle for chat history</string>
+      <string>Rectangle for contacts floater</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>390</integer>
+        <integer>395</integer>
+        <integer>0</integer>
+      </array>
+    </map>
+    <key>FloaterContactsHorizRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for contacts floater in horizontal mode</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

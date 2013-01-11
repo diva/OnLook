@@ -54,7 +54,8 @@ LLFloaterMyFriends::LLFloaterMyFriends(const LLSD& seed)
 	mFactoryMap["groups_panel"] = LLCallbackMap(LLFloaterMyFriends::createGroupsPanel, NULL);
 	// do not automatically open singleton floaters (as result of getInstance())
 	BOOL no_open = FALSE;
-	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_my_friends.xml", &getFactoryMap(), no_open);
+	static LLCachedControl<bool> horiz("ContactsUseHorizontalButtons");
+	LLUICtrlFactory::getInstance()->buildFloater(this, (horiz ? "floater_my_friends_horiz.xml" : "floater_my_friends.xml"), &getFactoryMap(), no_open);
 }
 
 LLFloaterMyFriends::~LLFloaterMyFriends()

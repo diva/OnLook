@@ -291,6 +291,7 @@
 	<string name="RemapControlInputs">Remap your control inputs</string>
 	<string name="AnimateYourAvatar">Animate your avatar</string>
 	<string name="AttachToYourAvatar">Attach to your avatar</string>
+	<string name="AGroupMemberNamed">A group member named</string>
 	<string name="ReleaseOwnership">Release ownership and become public</string>
 	<string name="LinkAndDelink">Link and delink from other objects</string>
 	<string name="AddAndRemoveJoints">Add and remove joints with other objects</string>
