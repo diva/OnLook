@@ -1871,7 +1871,13 @@ void HTTPTimeout::upload_finished(void)
 // queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
 //                                                                                             ^  ^   ^     ^    ^  ^ ^   ^
 //                                                                                             |  |   |     |    |  | |   |
-bool HTTPTimeout::data_received(size_t n)
+bool HTTPTimeout::data_received(size_t n/*,*/
+#ifdef CWDEBUG
+	ASSERT_ONLY_COMMA(bool upload_error_status)
+#else
+	ASSERT_ONLY_COMMA(bool)
+#endif
+	)
 {
   // The HTTP header of the reply is the first thing we receive.
   if (mNothingReceivedYet && n > 0)
@@ -1882,7 +1888,8 @@ bool HTTPTimeout::data_received(size_t n)
 	  // because in that case it is impossible to detect the difference between connecting and waiting for a reply without
 	  // using CURLOPT_DEBUGFUNCTION. Note that mDebugIsHeadOrGetMethod is only valid when the debug channel 'curlio' is on,
 	  // because it is set in the debug callback function.
-	  Debug(llassert(AICurlEasyRequest_wat(*mLockObj)->mDebugIsHeadOrGetMethod || !dc::curlio.is_on()));
+	  // This is also normal if we received a HTTP header with an error status, since that can interrupt our upload.
+	  Debug(llassert(upload_error_status || AICurlEasyRequest_wat(*mLockObj)->mDebugIsHeadOrGetMethod || !dc::curlio.is_on()));
 	  // 'Upload finished' detection failed, generate it now.
 	  upload_finished();
 	}
@@ -2395,23 +2402,18 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 
   char const* const header_line = static_cast<char const*>(data);
   size_t const header_len = size * nmemb;
-  if (self_w->httptimeout()->data_received(header_len))	// Update timeout administration.
-  {
-	// Transfer timed out. Return 0 which will abort with error CURLE_WRITE_ERROR.
-	return 0;
-  }
   if (!header_len)
   {
 	return header_len;
   }
   std::string header(header_line, header_len);
+  bool done = false;
   if (!LLStringUtil::_isASCII(header))
   {
-	return header_len;
+	done = true;
   }
-
   // Per HTTP spec the first header line must be the status line.
-  if (header.substr(0, 5) == "HTTP/")
+  else if (header.substr(0, 5) == "HTTP/")
   {
 	std::string::iterator const begin = header.begin();
 	std::string::iterator const end = header.end();
@@ -2445,6 +2447,16 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	}
 	self_w->received_HTTP_header();
 	self_w->setStatusAndReason(status, reason);
+	done = true;
+  }
+  // Update timeout administration. This must be done after the status is already known.
+  if (self_w->httptimeout()->data_received(header_len/*,*/ ASSERT_ONLY_COMMA(self_w->upload_error_status())))
+  {
+	// Transfer timed out. Return 0 which will abort with error CURLE_WRITE_ERROR.
+	return 0;
+  }
+  if (done)
+  {
 	return header_len;
   }
 

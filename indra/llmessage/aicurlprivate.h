@@ -88,7 +88,7 @@ class HTTPTimeout : public LLRefCount {
 	bool data_sent(size_t n);
 
 	// Called when data is received. Returns true if transfer timed out.
-	bool data_received(size_t n);
+	bool data_received(size_t n/*,*/ ASSERT_ONLY_COMMA(bool upload_error_status = false));
 
 	// Called immediately before done() after curl finished, with code.
 	void done(AICurlEasyRequest_wat const& curlEasyRequest_w, CURLcode code);
@@ -498,6 +498,9 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	// Return pointer to the ThreadSafe (wrapped) version of this object.
 	ThreadSafeBufferedCurlEasyRequest* get_lockobj(void);
 	ThreadSafeBufferedCurlEasyRequest const* get_lockobj(void) const;
+	// Return true when an error code was received that can occur before the upload finished.
+	// So far the only such error I've seen is HTTP_BAD_REQUEST.
+	bool upload_error_status(void) const { return mStatus == HTTP_BAD_REQUEST /*&& mStatus != HTTP_INTERNAL_ERROR*/; }
 
 	// Return true when prepRequest was already called and the object has not been
 	// invalidated as a result of calling timed_out().
