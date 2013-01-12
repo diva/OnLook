@@ -158,10 +158,12 @@ public:
 			// Erase all headers EXCEPT the cookies.
 			AIHTTPReceivedHeaders set_cookie_headers;
 			AIHTTPReceivedHeaders::range_type cookies;
-			mReceivedHeaders.getValues("set-cookie", cookies);
-			for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
+			if (mReceivedHeaders.getValues("set-cookie", cookies))
 			{
-				set_cookie_headers.addHeader(cookie->first, cookie->second);
+				for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
+				{
+					set_cookie_headers.addHeader(cookie->first, cookie->second);
+				}
 			}
 			// Replace headers with just the cookie headers.
 			mReceivedHeaders.swap(set_cookie_headers);

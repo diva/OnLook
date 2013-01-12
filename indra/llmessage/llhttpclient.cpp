@@ -370,12 +370,14 @@ void LLHTTPClient::ResponderBase::decode_raw_body(U32 status, std::string const&
 std::string const& LLHTTPClient::ResponderBase::get_cookie(std::string const& key)
 {
 	AIHTTPReceivedHeaders::range_type cookies;
-	mReceivedHeaders.getValues("set-cookie", cookies);
-	for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
+	if (mReceivedHeaders.getValues("set-cookie", cookies))
 	{
-		if (key == cookie->second.substr(0, cookie->second.find('=')))
+		for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
 		{
-			return cookie->second;
+			if (key == cookie->second.substr(0, cookie->second.find('=')))
+			{
+				return cookie->second;
+			}
 		}
 	}
 	// Not found.
