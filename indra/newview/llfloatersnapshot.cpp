@@ -914,6 +914,7 @@ BOOL LLSnapshotLivePreview::onIdle(LLSnapshotLivePreview* previewp)
 	if (previewp->mCloseCalled)
 	{
 		previewp->mCloseCalled->setEnabled(TRUE);
+		previewp->mCloseCalled->setVisible(TRUE);
 	}
 	previewp->sSnapshotIndex++;
 	Dout(dc::snapshot, "sSnapshotIndex is now " << previewp->sSnapshotIndex << "; mOutstandingCallbacks reset to 0.");
@@ -1464,6 +1465,7 @@ void LLSnapshotLivePreview::close(LLFloaterSnapshot* view)
 	}
 	else
 	{
+		view->setVisible(FALSE);
 		view->setEnabled(FALSE);
 	}
 }
@@ -1571,6 +1573,8 @@ void LLSnapshotLivePreview::doCloseAfterSave()
 	else
 	{
 		mCloseCalled->setEnabled(TRUE);
+		mCloseCalled->setVisible(TRUE);
+		gFloaterView->bringToFront(mCloseCalled);
 		mCloseCalled = NULL;
 	}
 }
@@ -1690,8 +1694,8 @@ void LLFloaterSnapshot::Impl::freezeTime(bool on)
 		// can see and interact with fullscreen preview now
 		if (previewp)
 		{
-			previewp->setVisible(TRUE);
 			previewp->setEnabled(TRUE);
+			previewp->setVisible(TRUE);
 		}
 
 		// Freeze all avatars.
@@ -2989,9 +2993,9 @@ void LLFloaterSnapshot::onOpen()
 
 void LLFloaterSnapshot::onClose(bool app_quitting)
 {
-	gSnapshotFloaterView->setEnabled(FALSE);
 	// Set invisible so it doesn't eat tooltips. JC
 	gSnapshotFloaterView->setVisible(FALSE);
+	gSnapshotFloaterView->setEnabled(FALSE);
 	gSavedSettings.setBOOL("SnapshotBtnState", FALSE);
 	impl.freezeTime(false);
 	destroy();
@@ -3021,6 +3025,8 @@ void LLFloaterSnapshot::show(void*)
 	
 	sInstance->open();		/* Flawfinder: ignore */
 	sInstance->focusFirstItem(FALSE);
+	sInstance->setEnabled(TRUE);
+	sInstance->setVisible(TRUE);
 	gSnapshotFloaterView->setEnabled(TRUE);
 	gSnapshotFloaterView->setVisible(TRUE);
 	gSnapshotFloaterView->adjustToFitScreen(sInstance, FALSE);
