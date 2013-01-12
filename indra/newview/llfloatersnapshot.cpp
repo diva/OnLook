@@ -3131,7 +3131,7 @@ BOOL LLFloaterSnapshot::handleMouseUp(S32 x, S32 y, MASK mask)
 
 LLSnapshotFloaterView::LLSnapshotFloaterView( const std::string& name, const LLRect& rect ) : LLFloaterView(name, rect)
 {
-	setMouseOpaque(TRUE);
+	setMouseOpaque(FALSE);
 	setEnabled(FALSE);
 }
 
