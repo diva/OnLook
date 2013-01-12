@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel border="true" bottom="-371" height="300" left="280" mouse_opaque="true"
      name="groups" width="350">
-	<scroll_list background_visible="true" bottom="85" column_padding="0" draw_border="true"
+	<scroll_list background_visible="true" bottom="109" column_padding="0" draw_border="true"
 	     draw_heading="true" draw_stripes="true" enabled="true"
 	     follows="left|top|right|bottom" left="5" mouse_opaque="true"
 	     multi_select="false" name="group list" tab_stop="true" top="-10"
@@ -17,13 +17,13 @@
         tool_tip="Receive group notices" width="20" />
 	</scroll_list>
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="67" drop_shadow_visible="true" enabled="true" follows="left|bottom"
+	     bottom_delta="-18" drop_shadow_visible="true" enabled="true" follows="left|bottom"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="12"
 	     mouse_opaque="false" name="groupdesc" v_pad="0" width="280">
 		Your currently active group is displayed in italics.
 	</text>
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="54" drop_shadow_visible="true" enabled="true" follows="left|bottom"
+	     bottom_delta="-13" drop_shadow_visible="true" enabled="true" follows="left|bottom"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="12"
 	     mouse_opaque="false" name="groupcount" v_pad="0" width="280">
 		You belong to [COUNT] groups (of [MAX] maximum).
@@ -35,13 +35,13 @@
 	     label="Info" name="Info" width="80" />
 	<button bottom_delta="0" left_delta="82" follows="left|bottom" font="SansSerif" height="22"
 	     label="Activate" name="Activate" width="80" />
-	<button bottom_delta="0" left_delta="82" follows="left|bottom" font="SansSerif" height="22"
-	     label="Leave" name="Leave" width="80" />
 	<button bottom_delta="-24" left="5" follows="left|bottom" font="SansSerif" height="22"
+	     label="Leave" name="Leave" width="80" />
+	<button bottom_delta="0" left_delta="82" follows="left|bottom" font="SansSerif" height="22"
 	     label="Create..." name="Create" width="80" />
 	<button bottom_delta="0" left_delta="82" follows="left|bottom" font="SansSerif" height="22"
 	     label="Search..." name="Search..." width="80" />
-	<button bottom_delta="0" left_delta="82" follows="left|bottom" font="SansSerif" height="22"
+	<button bottom_delta="-24" left="5" follows="left|bottom" font="SansSerif" height="22"
 	     label="Invite..." name="Invite..." width="80" />
 	<button bottom_delta="0" left_delta="82" follows="left|bottom" font="SansSerif" height="22"
 	     label="Titles..." name="Titles..." width="80" />
