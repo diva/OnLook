@@ -515,7 +515,9 @@ class DarwinManifest(ViewerManifest):
 
                 for libfile in ("libapr-1.0.dylib",
                                 "libaprutil-1.0.dylib",
-                                "libexpat.1.5.2.dylib"):
+                                "libcollada14dom.dylib",
+                                "libexpat.1.5.2.dylib"
+                                "libGLOD.dylib"):
                     self.path(os.path.join(libdir, libfile), libfile)
 
                 # For using FMOD for sound...but, fmod is proprietary so some might not use it...
@@ -802,11 +804,14 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libSDL-1.2.so*")
             self.path("libapr-1.so*")
             self.path("libaprutil-1.so*")
+            self.path("libcollada14dom.so")
             self.path("libcrypto.so*")
             self.path("libdb*.so")
             self.path("libdirect-1.*.so*")
             self.path("libdirectfb-1.*.so*")
             self.path("libfusion-1.*.so*")
+            self.path("libglod.so")
+            self.path("libminizip.so")
             self.path("libexpat.so*")
             self.path("libhunspell-*.so.*")
             self.path("libssl.so*")

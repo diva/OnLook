@@ -27,8 +27,8 @@ include(LLImageJ2COJ)
 include(LLInventory)
 include(LLMath)
 include(LLMessage)
+include(LLPhysicsExtensions)
 include(LLPlugin)
-include(StateMachine)
 include(LLPrimitive)
 include(LLRender)
 include(LLUI)
@@ -39,10 +39,12 @@ include(LLXML)
 include(Linking)
 include(NDOF)
 include(GooglePerfTools)
+include(StateMachine)
 include(TemplateCheck)
 include(UI)
 include(LLKDU)
 include(ViewerMiscLibs)
+include(GLOD)
 include(ViewerArtwork.cmake)
 
 if (WINDOWS)
@@ -56,6 +58,7 @@ include_directories(
     ${HUNSPELL_INCLUDE_DIR}
     ${ELFIO_INCLUDE_DIR}
     ${JSONCPP_INCLUDE_DIRS}
+    ${GLOD_INCLUDE_DIR}
     ${LLAUDIO_INCLUDE_DIRS}
     ${LLCHARACTER_INCLUDE_DIRS}
     ${LLCOMMON_INCLUDE_DIRS}
@@ -63,6 +66,7 @@ include_directories(
     ${LLINVENTORY_INCLUDE_DIRS}
     ${LLMATH_INCLUDE_DIRS}
     ${LLMESSAGE_INCLUDE_DIRS}
+    ${LLPHYSICSEXTENSIONS_INCLUDE_DIRS}
     ${LLPLUGIN_INCLUDE_DIRS}
     ${LLPRIMITIVE_INCLUDE_DIRS}
     ${LLRENDER_INCLUDE_DIRS}
@@ -72,6 +76,8 @@ include_directories(
     ${LLXML_INCLUDE_DIRS}
 #    ${LSCRIPT_INCLUDE_DIRS}
 #    ${LSCRIPT_INCLUDE_DIRS}/lscript_compile
+    ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/collada
+    ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/collada/1.4
     )
 
 set(viewer_SOURCE_FILES
@@ -219,6 +225,7 @@ set(viewer_SOURCE_FILES
     llfloatermediabrowser.cpp
     llfloatermemleak.cpp
     llfloatermessagelog.cpp
+    llfloatermodelpreview.cpp
     llfloatermodeluploadbase.cpp
     llfloatermute.cpp
     llfloaternamedesc.cpp
@@ -728,6 +735,7 @@ set(viewer_HEADER_FILES
     llfloatermediabrowser.h
     llfloatermemleak.h
     llfloatermessagelog.h
+    llfloatermodelpreview.h
     llfloatermodeluploadbase.h
     llfloatermute.h
     llfloaternamedesc.h
@@ -1576,6 +1584,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${DBUSGLIB_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${FMODWRAPPER_LIBRARY} # must come after LLAudio
+    ${GLOD_LIBRARIES}
     ${APRUTIL_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${JSONCPP_LIBRARIES}
@@ -1586,6 +1595,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${XMLRPCEPI_LIBRARIES}
     ${ELFIO_LIBRARIES}
     ${HUNSPELL_LIBRARY}
+    ${LLPHYSICSEXTENSIONS_LIBRARIES}
     )
 
 if (LINUX)

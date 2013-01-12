@@ -40,9 +40,7 @@
 #include "statemachine/aifilepicker.h"
 #include "llfloateranimpreview.h"
 #include "llfloaterimagepreview.h"
-#ifdef MESH_UPLOAD
 #include "llfloatermodelpreview.h"
-#endif
 #include "llfloaternamedesc.h"
 #include "llfloatersnapshot.h"
 #include "llimage.h"
@@ -119,6 +117,14 @@ class LLFileEnableUpload : public view_listener_t
 						 gStatusBar->getBalance() >= LLGlobalEconomy::Singleton::getInstance()->getPriceUpload();
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
+	}
+};
+
+class LLFileEnableUploadModel : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		return gMeshRepo.meshUploadEnabled();
 	}
 };
 
@@ -301,6 +307,27 @@ class LLFileUploadImage : public view_listener_t, public AIFileUpload
 	{
 		LLFloaterImagePreview* floaterp = new LLFloaterImagePreview(filename);
 		LLUICtrlFactory::getInstance()->buildFloater(floaterp, "floater_image_preview.xml");
+	}
+};
+
+class LLFileUploadModel : public view_listener_t, public AIFileUpload
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		start_filepicker(FFLOAD_COLLADA, "dae");
+		return true;
+	}
+
+  protected:
+	// Inherited from AIFileUpload.
+	/*virtual*/ void handle_event(std::string const& filename)
+	{
+		LLFloaterModelPreview* fmp = new LLFloaterModelPreview(filename);
+		LLUICtrlFactory::getInstance()->buildFloater(fmp, "floater_model_preview.xml");
+		if (fmp)
+		{
+			fmp->loadModel(3);
+		}
 	}
 };
 
@@ -1326,6 +1353,7 @@ void init_menu_file()
 	(new LLFileUploadImage())->registerListener(gMenuHolder, "File.UploadImage");
 	(new LLFileUploadSound())->registerListener(gMenuHolder, "File.UploadSound");
 	(new LLFileUploadAnim())->registerListener(gMenuHolder, "File.UploadAnim");
+	(new LLFileUploadModel())->registerListener(gMenuHolder, "File.UploadModel");
 	(new LLFileUploadBulk())->registerListener(gMenuHolder, "File.UploadBulk");
 	(new LLFileCloseWindow())->registerListener(gMenuHolder, "File.CloseWindow");
 	(new LLFileCloseAllWindows())->registerListener(gMenuHolder, "File.CloseAllWindows");
@@ -1341,6 +1369,8 @@ void init_menu_file()
 	(new LLFileQuit())->registerListener(gMenuHolder, "File.Quit");
 	(new LLFileLogOut())->registerListener(gMenuHolder, "File.LogOut");
 	(new LLFileEnableUpload())->registerListener(gMenuHolder, "File.EnableUpload");
+	(new LLFileEnableUploadModel())->registerListener(gMenuHolder, "File.EnableUploadModel");
+
 	(new LLFileEnableSaveAs())->registerListener(gMenuHolder, "File.EnableSaveAs");
 }
 

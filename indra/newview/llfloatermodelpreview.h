@@ -33,14 +33,14 @@
 #ifndef LL_LLFLOATERMODELPREVIEW_H
 #define LL_LLFLOATERMODELPREVIEW_H
 
-#include "llmodel.h"
-#include "llquaternion.h"
-#include "llthread.h"
 
 #include "lldynamictexture.h"
-#include "llfloatermodeluploadbase.h"
+#include "llquaternion.h"
 #include "llmeshrepository.h"
+#include "llmodel.h"
+#include "llthread.h"
 #include "llviewermenufile.h"
+#include "llfloatermodeluploadbase.h"
 
 class LLComboBox;
 class LLVOAvatar;
@@ -70,7 +70,8 @@ public:
 		GENERATING_VERTEX_BUFFERS,
 		GENERATING_LOD,
 		DONE,
-		ERROR_PARSING //basically loading failed
+		ERROR_PARSING, //basically loading failed
+		ERROR_MATERIALS,
 	} eLoadState;
 
 	U32 mState;
@@ -170,14 +171,14 @@ public:
 	BOOL handleHover(S32 x, S32 y, MASK mask);
 	BOOL handleScrollWheel(S32 x, S32 y, S32 clicks); 
 
-	/*virtual*/ void onOpen(const LLSD& key);
+	/*virtual*/ void onOpen(/*const LLSD& key*/);
 
 	static void onMouseCaptureLostModelPreview(LLMouseHandler*);
 	static void setUploadAmount(S32 amount) { sUploadAmount = amount; }
 
 	void setDetails(F32 x, F32 y, F32 z, F32 streaming_cost, F32 physics_cost);
 
-	static void onBrowseLOD(void* user_data);
+	void onBrowseLOD(S32 lod);
 
 	static void onReset(void* data);
 
@@ -186,8 +187,10 @@ public:
 	void refresh();
 
 	void			loadModel(S32 lod);
+	void			loadModel_continued(AIFilePicker* filepicker, S32 lod);
 	void 			loadModel(S32 lod, const std::string& file_name, bool force_disable_slm = false);
 
+	void onViewOptionChecked(LLUICtrl* ctrl);
 	bool isViewOptionChecked(const LLSD& userdata);
 	bool isViewOptionEnabled(const LLSD& userdata);
 	void setViewOptionEnabled(const std::string& option, bool enabled);
@@ -210,34 +213,24 @@ public:
 
 protected:
 	friend class LLModelPreview;
-	friend class LLMeshFilePicker;
 	friend class LLPhysicsDecomp;
 
-	static void	onImportScaleCommit(LLUICtrl* ctrl, void*);
-	static void	onPelvisOffsetCommit(LLUICtrl* ctrl, void*);
-	static void	onUploadJointsCommit(LLUICtrl* ctrl, void*);
-	static void	onUploadSkinCommit(LLUICtrl* ctrl, void*);
+	static void		onImportScaleCommit(LLUICtrl*, void*);
+	static void		onPelvisOffsetCommit(LLUICtrl*, void*);
+	static void		onUploadJointsCommit(LLUICtrl*,void*);
+	static void		onUploadSkinCommit(LLUICtrl*,void*);
 
-	static void	onPreviewLODCommit(LLUICtrl* ctrl, void*);
+	static void		onPreviewLODCommit(LLUICtrl*,void*);
 
-	static void	onGenerateNormalsCommit(LLUICtrl* ctrl, void*);
+	static void		onGenerateNormalsCommit(LLUICtrl*,void*);
 
-	static void toggleGenerateNormals(LLUICtrl* ctrl, void*);
+	void toggleGenerateNormals();
 
-	static void	onAutoFillCommit(LLUICtrl* ctrl, void*);
+	static void		onAutoFillCommit(LLUICtrl*,void*);
 
-	static void toggleCalculateButtonCallBack(LLUICtrl* ctrl, void* userdata);
+	void onLODParamCommit(S32 lod, bool enforce_tri_limit);
 
-	static void onClickCalculateBtn(void* userdata);
-
-	static void onLoDSourceCommit(LLUICtrl* ctrl, void* userdata);
-
-	static void onViewOptionChecked(LLUICtrl* ctrl, void* userdata);
-
-	static void onLODParamCommit(LLUICtrl* ctrl, void* userdata);
-	static void onLODParamCommitEnforceTriLimit(LLUICtrl* ctrl, void* userdata);
-
-	static void	onExplodeCommit(LLUICtrl* ctrl, void*);
+	static void		onExplodeCommit(LLUICtrl*, void*);
 
 	static void onPhysicsParamCommit(LLUICtrl* ctrl, void* userdata);
 	static void onPhysicsStageExecute(LLUICtrl* ctrl, void* userdata);
@@ -252,19 +245,18 @@ protected:
 
 	void		draw();
 
-	void		initDecompControls();
+	void initDecompControls();
 
-	void		setStatusMessage(const std::string& msg);
+	void setStatusMessage(const std::string& msg);
 
 	LLModelPreview*	mModelPreview;
 
 	LLPhysicsDecomp::decomp_params mDecompParams;
 
-	S32			mLastMouseX;
-	S32			mLastMouseY;
-	LLRect		mPreviewRect;
-	U32			mGLName;
-	static S32	sUploadAmount;
+	S32				mLastMouseX;
+	S32				mLastMouseY;
+	LLRect			mPreviewRect;
+	static S32		sUploadAmount;
 
 	std::set<LLPointer<DecompRequest> > mCurRequest;
 	std::string mStatusMessage;
@@ -283,6 +275,11 @@ protected:
 	LLSD mModelPhysicsFee;
 
 private:
+	void onClickCalculateBtn();
+	void toggleCalculateButton();
+
+	void onLoDSourceCommit(S32 lod);
+
 	// Toggles between "Calculate weights & fee" and "Upload" buttons.
 	void toggleCalculateButton(bool visible);
 
@@ -293,17 +290,6 @@ private:
 
 	LLButton* mUploadBtn;
 	LLButton* mCalculateBtn;
-};
-
-class LLMeshFilePicker : public LLFilePickerThread
-{
-public:
-	LLMeshFilePicker(LLModelPreview* mp, S32 lod);
-	virtual void notify(const std::string& filename);
-
-private:
-	LLModelPreview* mMP;
-	S32 mLOD;
 };
 
 class LLModelPreview : public LLViewerDynamicTexture, public LLMutex

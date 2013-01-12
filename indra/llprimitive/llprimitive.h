@@ -427,6 +427,7 @@ public:
 	inline BOOL	isAvatar() const;
 	inline BOOL	isSittingAvatar() const;
 	inline BOOL	isSittingAvatarOnGround() const;
+	inline bool hasBumpmap() const  { return mNumBumpmapTEs > 0;}
 
 	void setFlags(U32 flags) { mMiscFlags = flags; }
 	void addFlags(U32 flags) { mMiscFlags |= flags; }
@@ -441,6 +442,9 @@ public:
 	inline static BOOL isPrimitive(const LLPCode pcode);
 	inline static BOOL isApp(const LLPCode pcode);
 
+private:
+	void updateNumBumpmap(const U8 index, const U8 bump);
+
 protected:
 	LLPCode				mPrimitiveCode;		// Primitive code
 	LLVector3			mVelocity;			// how fast are we moving?
@@ -450,8 +454,10 @@ protected:
 	LLPrimTextureList	mTextureList;		// list of texture GUIDs, scales, offsets
 	U8					mMaterial;			// Material code
 	U8					mNumTEs;			// # of faces on the primitve	
+	U8                  mNumBumpmapTEs;     // number of bumpmap TEs.
 	U32 				mMiscFlags;			// home for misc bools
 
+public:
 	static LLVolumeMgr* sVolumeManager;
 };
 

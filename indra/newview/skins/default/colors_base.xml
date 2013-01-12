@@ -220,4 +220,7 @@
 <MultiSliderThumbCenterSelectedColor value="255, 50, 50, 255"/>
 <MultiSliderTriangleColor value="255, 255, 50, 255"/>
 
+<!-- Mesh upload colors -->
+<MeshImportTableNormalColor value="255, 255, 255, 255"/>
+<MeshImportTableHighlightColor value="51, 205, 255, 255"/>
 </settings>
