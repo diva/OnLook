@@ -378,6 +378,8 @@ void LLPrefsAscentChat::refreshValues()
 	mShowLocalChatFloaterBar        = gSavedSettings.getBOOL("ShowLocalChatFloaterBar");
 	mHorizButt                      = gSavedSettings.getBOOL("ContactsUseHorizontalButtons");
 	mOneLineIMButt                  = gSavedSettings.getBOOL("UseConciseIMButtons");
+	mOneLineGroupButt               = gSavedSettings.getBOOL("UseConciseGroupChatButtons");
+	mOneLineConfButt                = gSavedSettings.getBOOL("UseConciseConferenceButtons");
 	mOnlyComm                       = gSavedSettings.getBOOL("CommunicateSpecificShortcut");
 
     //Spam --------------------------------------------------------------------------------
@@ -604,6 +606,8 @@ void LLPrefsAscentChat::cancel()
 	gSavedSettings.setBOOL("ShowLocalChatFloaterBar",              mShowLocalChatFloaterBar);
 	gSavedSettings.setBOOL("ContactsUseHorizontalButtons",         mHorizButt);
 	gSavedSettings.setBOOL("UseConciseIMButtons",                  mOneLineIMButt);
+	gSavedSettings.setBOOL("UseConciseGroupChatButtons",           mOneLineGroupButt);
+	gSavedSettings.setBOOL("UseConciseConferenceButtons",          mOneLineConfButt);
 	gSavedSettings.setBOOL("CommunicateSpecificShortcut",          mOnlyComm);
 
     //Spam --------------------------------------------------------------------------------
