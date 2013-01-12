@@ -343,7 +343,7 @@ void LLFloaterPostcard::uploadCallback(const LLUUID& asset_id, void *user_data, 
 		gAgent.sendReliableMessage();
 	}
 
-	self->close();
+	self->destroy();
 }
 
 // static
