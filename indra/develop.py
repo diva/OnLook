@@ -473,26 +473,11 @@ class DarwinSetup(UnixSetup):
 
 class WindowsSetup(PlatformSetup):
     gens = {
-        'vc71' : {
-            'gen' : r'Visual Studio 7 .NET 2003',
-            'ver' : r'7.1'
-            },
-        'vc80' : {
-            'gen' : r'Visual Studio 8 2005',
-            'ver' : r'8.0'
-            },
-        'vc90' : {
-            'gen' : r'Visual Studio 9 2008',
-            'ver' : r'9.0'
-            },
         'vc100' : {
             'gen' : r'Visual Studio 10',
             'ver' : r'10.0'
             }
         }
-    gens['vs2003'] = gens['vc71']
-    gens['vs2005'] = gens['vc80']
-    gens['vs2008'] = gens['vc90']
     gens['vs2010'] = gens['vc100']
 
     search_path = r'C:\windows'
@@ -505,21 +490,21 @@ class WindowsSetup(PlatformSetup):
 
     def _get_generator(self):
         if self._generator is None:
-            for version in 'vc80 vc90 vc100 vc71'.split():
+            for version in 'vc100'.split():
                 if self.find_visual_studio(version):
                     self._generator = version
                     print 'Building with ', self.gens[version]['gen']
                     break
             else:
                 print >> sys.stderr, 'Cannot find a Visual Studio installation, testing for express editions'
-                for version in 'vc80 vc90 vc100 vc71'.split():
+                for version in 'vc100'.split():
                     if self.find_visual_studio_express(version):
                         self._generator = version
                         self.using_express = True
                         print 'Building with ', self.gens[version]['gen'] , "Express edition"
                         break
                 else:
-					for version in 'vc80 vc90 vc100 vc71'.split():
+					for version in 'vc100'.split():
 						if self.find_visual_studio_express_single(version):
 							self._generator = version
 							self.using_express = True
@@ -768,8 +753,7 @@ Options:
   -m32 | -m64           build architecture (32-bit or 64-bit)
   -N | --no-distcc      disable use of distcc
   -G | --generator=NAME generator name
-                        Windows: VC71 or VS2003 (default), VC80 (VS2005) 
-                          VC90 (VS2008), or VC100 (VS2010)
+                        Windows: VC100 (VS2010) (default)
                         Mac OS X: Xcode (default), Unix Makefiles
                         Linux: Unix Makefiles (default), KDevelop3
   -p | --project=NAME   set the root project name. (Doesn't effect makefiles)
