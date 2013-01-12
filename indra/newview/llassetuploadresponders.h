@@ -78,11 +78,15 @@ protected:
 
 class LLNewAgentInventoryResponder : public LLAssetUploadResponder
 {
+	void (*mCallBack)(bool, void*);
+	void* mUserData;
 public:
 	LLNewAgentInventoryResponder(
 		const LLSD& post_data,
 		const LLUUID& vfile_id,
-		LLAssetType::EType asset_type);
+		LLAssetType::EType asset_type,
+		void (*callback)(bool, void*) = NULL,
+		void* user_data = NULL);
 	LLNewAgentInventoryResponder(
 		const LLSD& post_data,
 		const std::string& file_name,

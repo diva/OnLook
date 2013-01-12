@@ -64,6 +64,7 @@
 #include "llviewerwindow.h"
 #include "llwindow.h"
 #include "llviewermenufile.h"	// upload_new_resource()
+#include "llresourcedata.h"
 #include "llfloaterpostcard.h"
 #include "llfloaterfeed.h"
 #include "llcheckboxctrl.h"
@@ -183,6 +184,7 @@ public:
 	LLFloaterPostcard* savePostcard();
 	void saveTexture();
 	static void saveTextureDone(LLUUID const& asset_id, void* user_data, S32 status,  LLExtStat ext_status);
+	static void saveTextureDone2(bool success, void* user_data);
 	void saveLocal();
 	void saveStart(int index);
 	void saveDone(ESnapshotType type, bool success, int index);
@@ -1383,9 +1385,10 @@ LLFloaterPostcard* LLSnapshotLivePreview::savePostcard()
 
 class saveTextureUserData {
 public:
-	saveTextureUserData(LLSnapshotLivePreview* self, int index) : mSelf(self), mSnapshotIndex(index) { }
+	saveTextureUserData(LLSnapshotLivePreview* self, int index, bool temporary) : mSelf(self), mSnapshotIndex(index), mTemporary(temporary) { }
 	LLSnapshotLivePreview* mSelf;
 	int mSnapshotIndex;
+	bool mTemporary;
 };
 
 void LLSnapshotLivePreview::saveTexture()
@@ -1412,7 +1415,8 @@ void LLSnapshotLivePreview::saveTexture()
 	LLAgentUI::buildFullname(who_took_it);
 	LLAssetStorage::LLStoreAssetCallback callback = &LLSnapshotLivePreview::saveTextureDone;
 	S32 expected_upload_cost = LLGlobalEconomy::Singleton::getInstance()->getPriceUpload();
-	upload_new_resource(tid,	// tid
+	saveTextureUserData* user_data = new saveTextureUserData(this, sSnapshotIndex, gSavedSettings.getBOOL("TemporaryUpload"));
+	if (!upload_new_resource(tid,	// tid
 				LLAssetType::AT_TEXTURE,
 				"Snapshot : " + pos_string,
 				"Taken by " + who_took_it + " at " + pos_string,
@@ -1423,7 +1427,12 @@ void LLSnapshotLivePreview::saveTexture()
 				LLFloaterPerms::getGroupPerms(), // that is more permissive than other uploads
 				LLFloaterPerms::getEveryonePerms(),
 				"Snapshot : " + pos_string,
-				callback, expected_upload_cost, new saveTextureUserData(this, sSnapshotIndex));
+				callback, expected_upload_cost, user_data, &LLSnapshotLivePreview::saveTextureDone2))
+	{
+		// Something went wrong.
+		delete user_data;
+		saveDone(SNAPSHOT_TEXTURE, false, sSnapshotIndex);
+	}
 
 	gViewerWindow->playSnapshotAnimAndSound();
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_SNAPSHOT_COUNT );
@@ -1509,16 +1518,36 @@ void LLSnapshotLivePreview::saveDone(ESnapshotType type, bool success, int index
 	}
 }
 
+// This callback is only used for the *legacy* LLViewerAssetStorage::storeAssetData
+// (when the cap NewFileAgentInventory is not available) and temporaries.
+// See upload_new_resource.
 //static
 void LLSnapshotLivePreview::saveTextureDone(LLUUID const& asset_id, void* user_data, S32 status, LLExtStat ext_status)
 {
-	bool success = status != LL_ERR_NOERR;
+	LLResourceData* resource_data = (LLResourceData*)user_data;
+
+	bool success = status == LL_ERR_NOERR;
 	if (!success)
 	{
 		LLSD args;
 		args["REASON"] = std::string(LLAssetStorage::getErrorString(status));
 		LLNotificationsUtil::add("UploadSnapshotFail", args);
 	}
+	saveTextureUserData* data = (saveTextureUserData*)resource_data->mUserData;
+	bool temporary = data->mTemporary;
+	data->mSelf->saveDone(SNAPSHOT_TEXTURE, success, data->mSnapshotIndex);
+	delete data;
+
+	// Call the default call back.
+	LLAssetStorage::LLStoreAssetCallback asset_callback = temporary ? &temp_upload_callback : &upload_done_callback;
+	(*asset_callback)(asset_id, user_data, status, ext_status);
+}
+
+// This callback used when the capability NewFileAgentInventory is available and it wasn't a temporary.
+// See upload_new_resource.
+//static
+void LLSnapshotLivePreview::saveTextureDone2(bool success, void* user_data)
+{
 	saveTextureUserData* data = (saveTextureUserData*)user_data;
 	data->mSelf->saveDone(SNAPSHOT_TEXTURE, success, data->mSnapshotIndex);
 	delete data;
