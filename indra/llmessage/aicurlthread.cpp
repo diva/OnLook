@@ -587,7 +587,7 @@ refresh_t PollSet::refresh(void)
 	  // If we reached the end and start at the beginning, then we copied everything.
 	  if (mNext == 0)
 		break;
-	  // When can only come here if mNrFds >= FD_SETSIZE, hence we can just
+	  // We can only come here if mNrFds >= FD_SETSIZE, hence we can just
 	  // wrap around and terminate on count reaching FD_SETSIZE.
 	  i = 0;
 	}
@@ -1307,28 +1307,7 @@ void AICurlThread::run(void)
 	{
 	  // If mRunning is true then we can only get here if mWakeUpFd != CURL_SOCKET_BAD.
 	  llassert(mWakeUpFd != CURL_SOCKET_BAD);
-	  // Copy the next batch of file descriptors from the PollSets mFileDescriptors into their mFdSet.
-	  multi_handle_w->mReadPollSet->refresh();
-	  refresh_t wres = multi_handle_w->mWritePollSet->refresh();
-	  // Add wake up fd if any, and pass NULL to select() if a set is empty.
-	  fd_set* read_fd_set = multi_handle_w->mReadPollSet->access();
-	  FD_SET(mWakeUpFd, read_fd_set);
-	  fd_set* write_fd_set = ((wres & empty)) ? NULL : multi_handle_w->mWritePollSet->access();
-	  // Calculate nfds (ignored on windows).
-#if !WINDOWS_CODE
-	  curl_socket_t const max_rfd = llmax(multi_handle_w->mReadPollSet->get_max_fd(), mWakeUpFd);
-	  curl_socket_t const max_wfd = multi_handle_w->mWritePollSet->get_max_fd();
-	  int nfds = llmax(max_rfd, max_wfd) + 1;
-	  llassert(0 <= nfds && nfds <= FD_SETSIZE);
-	  llassert((max_rfd == -1) == (read_fd_set == NULL) &&
-			   (max_wfd == -1) == (write_fd_set == NULL));	// Needed on Windows.
-	  llassert((max_rfd == -1 || multi_handle_w->mReadPollSet->is_set(max_rfd)) &&
-			   (max_wfd == -1 || multi_handle_w->mWritePollSet->is_set(max_wfd)));
-#else
-	  int nfds = 64;
-#endif
-	  int ready = 0;
-	  // Process every command in command_queue before entering select().
+	  // Process every command in command_queue before filling the fd_set passed to select().
 	  for(;;)
 	  {
 		mWakeUpMutex.lock();
@@ -1346,9 +1325,32 @@ void AICurlThread::run(void)
 		mWakeUpMutex.unlock();
 		break;
 	  }
+
 	  // If we get here then mWakeUpFlag has been false since we grabbed the lock.
 	  // We're now entering select(), during which the main thread will write to the pipe/socket
 	  // to wake us up, because it can't get the lock.
+
+	  // Copy the next batch of file descriptors from the PollSets mFileDescriptors into their mFdSet.
+	  multi_handle_w->mReadPollSet->refresh();
+	  refresh_t wres = multi_handle_w->mWritePollSet->refresh();
+	  // Add wake up fd if any, and pass NULL to select() if a set is empty.
+	  fd_set* read_fd_set = multi_handle_w->mReadPollSet->access();
+	  FD_SET(mWakeUpFd, read_fd_set);
+	  fd_set* write_fd_set = ((wres & empty)) ? NULL : multi_handle_w->mWritePollSet->access();
+	  // Calculate nfds (ignored on windows).
+#if !WINDOWS_CODE
+	  curl_socket_t const max_rfd = llmax(multi_handle_w->mReadPollSet->get_max_fd(), mWakeUpFd);
+	  curl_socket_t const max_wfd = multi_handle_w->mWritePollSet->get_max_fd();
+	  int nfds = llmax(max_rfd, max_wfd) + 1;
+	  llassert(1 <= nfds && nfds <= FD_SETSIZE);
+	  llassert((max_rfd == -1) == (read_fd_set == NULL) &&
+			   (max_wfd == -1) == (write_fd_set == NULL));	// Needed on Windows.
+	  llassert((max_rfd == -1 || multi_handle_w->mReadPollSet->is_set(max_rfd)) &&
+			   (max_wfd == -1 || multi_handle_w->mWritePollSet->is_set(max_wfd)));
+#else
+	  int nfds = 64;
+#endif
+	  int ready = 0;
 	  struct timeval timeout;
 	  long timeout_ms = multi_handle_w->getTimeout();
 	  // If no timeout is set, sleep 1 second.
