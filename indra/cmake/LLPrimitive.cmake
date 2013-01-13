@@ -3,7 +3,10 @@
 # these should be moved to their own cmake file
 include(Prebuilt)
 use_prebuilt_binary(colladadom)
+
+if (NOT WINDOWS)
 use_prebuilt_binary(pcre)
+endif (NOT WINDOWS)
 
 if (NOT DARWIN AND NOT WINDOWS)
 use_prebuilt_binary(libxml)

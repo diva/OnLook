@@ -849,10 +849,13 @@ class Linux_x86_64Manifest(LinuxManifest):
         if (not self.standalone()) and self.prefix("../../libraries/x86_64-linux/lib/release", dst="lib64"):
             self.path("libapr-1.so*")
             self.path("libaprutil-1.so*")
+            self.path("libcollada14dom.so.2.2", "libcollada14dom.so")
             self.path("libdb-*.so*")
             self.path("libcrypto.so.*")
             self.path("libexpat.so*")
+            self.path("libglod.so")
             self.path("libhunspell-1.3.so*")
+            self.path("libminizip.so.1.2.3", "libminizip.so");
             self.path("libssl.so*")
             self.path("libuuid.so*")
             self.path("libSDL-1.2.so*")
