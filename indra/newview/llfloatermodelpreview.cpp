@@ -338,7 +338,7 @@ BOOL stop_gloderror()
 
 	if (error != GLOD_NO_ERROR)
 	{
-		llwarns << "GLOD error detected, cannot generate LOD: " << std::hex << error << llendl;
+		llwarns << "GLOD error detected, cannot generate LOD: " << std::hex << error << std::dec << llendl;
 		return TRUE;
 	}
 
