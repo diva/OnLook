@@ -123,66 +123,59 @@ const S32 SMOOTH_VALUES_NUMBER = 10;
 
 void drawBoxOutline(const LLVector3& pos, const LLVector3& size);
 
-std::string lod_name[NUM_LOD + 1] =
+std::string lod_name[NUM_LOD] =
 {
 	"lowest",
 	"low",
 	"medium",
 	"high",
-	"I went off the end of the lod_name array.  Me so smart."
 };
 
-std::string lod_triangles_name[NUM_LOD + 1] =
+std::string lod_triangles_name[NUM_LOD] =
 {
 	"lowest_triangles",
 	"low_triangles",
 	"medium_triangles",
 	"high_triangles",
-	"I went off the end of the lod_triangles_name array.  Me so smart."
 };
 
-std::string lod_vertices_name[NUM_LOD + 1] =
+std::string lod_vertices_name[NUM_LOD] =
 {
 	"lowest_vertices",
 	"low_vertices",
 	"medium_vertices",
 	"high_vertices",
-	"I went off the end of the lod_vertices_name array.  Me so smart."
 };
 
-std::string lod_status_name[NUM_LOD + 1] =
+std::string lod_status_name[NUM_LOD] =
 {
 	"lowest_status",
 	"low_status",
 	"medium_status",
 	"high_status",
-	"I went off the end of the lod_status_name array.  Me so smart."
 };
 
-std::string lod_icon_name[NUM_LOD + 1] =
+std::string lod_icon_name[NUM_LOD] =
 {
 	"status_icon_lowest",
 	"status_icon_low",
 	"status_icon_medium",
 	"status_icon_high",
-	"I went off the end of the lod_status_name array.  Me so smart."
 };
 
-std::string lod_status_image[NUM_LOD + 1] =
+std::string lod_status_image[NUM_LOD] =
 {
-	"ModelImport_Status_Good",
-	"ModelImport_Status_Warning",
-	"ModelImport_Status_Error",
-	"I went off the end of the lod_status_image array.  Me so smart."
+	"green_checkmark.png",
+	"lag_status_warning.tga",
+	"red_x.png",
 };
 
-std::string lod_label_name[NUM_LOD + 1] =
+std::string lod_label_name[NUM_LOD] =
 {
 	"lowest_label",
 	"low_label",
 	"medium_label",
 	"high_label",
-	"I went off the end of the lod_label_name array.  Me so smart."
 };
 
 std::string colladaVersion[VERSIONTYPE_COUNT + 1] = 

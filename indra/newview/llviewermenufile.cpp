@@ -310,24 +310,17 @@ class LLFileUploadImage : public view_listener_t, public AIFileUpload
 	}
 };
 
-class LLFileUploadModel : public view_listener_t, public AIFileUpload
+class LLFileUploadModel : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		start_filepicker(FFLOAD_COLLADA, "mesh");
-		return true;
-	}
-
-  protected:
-	// Inherited from AIFileUpload.
-	/*virtual*/ void handle_event(std::string const& filename)
-	{
-		LLFloaterModelPreview* fmp = new LLFloaterModelPreview(filename);
+		LLFloaterModelPreview* fmp = new LLFloaterModelPreview("Model Preview");
 		LLUICtrlFactory::getInstance()->buildFloater(fmp, "floater_model_preview.xml");
 		if (fmp)
 		{
 			fmp->loadModel(3);
 		}
+		return true;
 	}
 };
 
