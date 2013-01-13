@@ -32,6 +32,8 @@
 
 #include "llviewerprecompiledheaders.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #include "dae.h"
 //#include "dom.h"
 #include "dom/domAsset.h"
@@ -53,6 +55,7 @@
 #include "dom/domScale.h"
 #include "dom/domTranslate.h"
 #include "dom/domVisual_scene.h"
+#pragma GCC diagnostic pop
 
 #include "llfloatermodelpreview.h"
 
