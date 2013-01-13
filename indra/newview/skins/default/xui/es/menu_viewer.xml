@@ -49,6 +49,7 @@
 		<menu_item_call label="Gestos..." name="Gestures..."/>
 		<menu_item_call label="Perfil..." name="Profile..."/>
 		<menu_item_call label="Apariencia..." name="Appearance..."/>
+		<menu_item_call label="Crear Vestuario..." name="Make Outfit..."/>		
 		<menu_item_call label="Nombre a Mostrar..." name="Display Name..."/>
 		<menu_item_check label="Amigos..." name="Friends..."/>
 		<menu_item_call label="Grupos..." name="Groups..."/>
@@ -195,6 +196,7 @@
 			<menu_item_call label="Wiki de QA..." name="QA Wiki..."/>
 			<menu_item_call label="Informar Fallos..." name="Report Bug..."/>
 			<menu_item_call label="Informar Fallos de Singularity..." name="Report Singularity Bug..."/>
+			<menu_item_call label="Solicitar Nueva Característica..." name="Request New Feature..."/>			
 		</menu>
 		<menu_item_call label="Acerca de Singularity..." name="About Second Life..."/>
 	</menu>
