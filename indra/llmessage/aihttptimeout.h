@@ -31,17 +31,29 @@
 #ifndef AIHTTPTIMEOUT_H
 #define AIHTTPTIMEOUT_H
 
-#include "linden_common.h"
+#include <vector>
+
+#ifndef HTTPTIMEOUT_TESTSUITE
+
 #include "llrefcount.h"
 #include "aithreadsafe.h"		// AIAccess
 
-#include <vector>
 #include <curl/curl.h>      // Needed for files that include this header (also for aicurlprivate.h).
 #ifdef DEBUG_CURLIO
 #include "debug_libcurl.h"
 #endif
 
-//#undef AICurlPrivate
+#else
+
+#include <sys/types.h>
+
+class LLRefCount { };
+template<typename T> struct AIAccess;
+typedef int CURLcode;
+
+#define ASSERT_ONLY_COMMA(...) , __VA_ARGS__
+
+#endif
 
 class AIHTTPTimeoutPolicy;
 
@@ -86,9 +98,6 @@ class HTTPTimeout : public LLRefCount {
 		, mLockObj(lock_obj)
 #endif
 		{ }
-
-	// Called after sending all headers, when body data is written the first time.
-	void connected(void);
 
 	// Called when everything we had to send to the server has been sent.
 	void upload_finished(void);

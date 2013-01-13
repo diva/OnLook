@@ -28,12 +28,61 @@
  *   Initial version, written by Aleric Inglewood @ SL
  */
 
-#include "aihttptimeout.h"
+#ifndef HTTPTIMEOUT_TESTSUITE
+
+#include "linden_common.h"
 #include "aihttptimeoutpolicy.h"
 #include "lltimer.h"		// calc_clock_frequency()
 #include "aicurl.h"			// DoutCurl
 
 #undef AICurlPrivate
+
+#else
+
+#include "../llcommon/stdtypes.h"
+#include <iostream>
+#include <cassert>
+
+#define llassert assert
+#define llassert_always assert
+#define DoutCurl(...) do { std::cout << __VA_ARGS__ ; } while(0)
+#define Debug(...) do { } while(0)
+#define llmin std::min
+#define llwarns std::cout
+#define llendl std::endl
+int const CURLE_OPERATION_TIMEDOUT  = 1;
+int const CURLE_COULDNT_RESOLVE_HOST = 2;
+int const CURLINFO_NAMELOOKUP_TIME = 3;
+
+F64 calc_clock_frequency(void) { return 1000000.0; } 
+
+template<typename T>
+struct AIAccess {
+  T* mP;
+  AIAccess(T* p) : mP(p) { }
+  T* operator->() const { return mP; }
+};
+
+struct AIHTTPTimeoutPolicy {
+  U16 getReplyDelay(void) const { return 60; }
+  U16 getLowSpeedTime(void) const { return 30; }
+  U32 getLowSpeedLimit(void) const { return 56000; }
+  static bool connect_timed_out(std::string const&) { return false; }
+};
+
+namespace AICurlPrivate {
+
+class BufferedCurlEasyRequest {
+public:
+  char const* getLowercaseHostname(void) const { return "hostname.com"; }
+  void getinfo(const int&, double* p) { *p = 0.1; }
+};
+
+}
+
+#endif // HTTPTIMEOUT_TESTSUITE
+
+#include "aihttptimeout.h"
 
 namespace AICurlPrivate {
 namespace curlthread {
@@ -307,6 +356,7 @@ void HTTPTimeout::done(AICurlEasyRequest_wat const& curlEasyRequest_w, CURLcode 
 
 void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, char const* eff_url)
 {
+#ifndef HTTPTIMEOUT_TESTSUITE
   llwarns << "Request to \"" << curl_easy_request->getLowercaseHostname() << "\" timed out for " << curl_easy_request->getTimeoutPolicy()->name() << llendl;
   llinfos << "Effective URL: \"" << eff_url << "\"." << llendl;
   double namelookup_time, connect_time, appconnect_time, pretransfer_time, starttransfer_time;
@@ -420,8 +470,18 @@ void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, ch
   {
 	llinfos << "The " << (mNothingReceivedYet ? "upload" : "download") << " did last " << mLastSecond << " second" << ((mLastSecond == 1) ? "" : "s") << ", before it timed out." << llendl;
   }
+#endif // HTTPTIMEOUT_TESTSUITE
 }
 
 } // namespace curlthread
 } // namespace AICurlPrivate
+
+#ifdef HTTPTIMEOUT_TESTSUITE
+int main()
+{
+  using namespace AICurlPrivate::curlthread;
+  AIHTTPTimeoutPolicy policy;
+  HTTPTimeout test(&policy, NULL);
+}
+#endif // HTTPTIMEOUT_TESTSUITE
 
