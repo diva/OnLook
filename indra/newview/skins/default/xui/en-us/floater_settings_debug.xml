@@ -8,10 +8,10 @@
 	     name="comment_text" word_wrap="true" />
 	<radio_group bottom_delta="-48" draw_border="false" follows="bottom|left|right" height="36"
 	     left="15" name="boolean_combo" visible="false">
-		<radio_item bottom="-18" height="15" name="TRUE" value="1">
+		<radio_item bottom="-18" height="15" name="TRUE" value="true">
 			True
 		</radio_item>
-		<radio_item bottom="-36" height="15" name="FALSE" value="0">
+		<radio_item bottom="-36" height="15" name="FALSE" value="">
 			False
 		</radio_item>
 	</radio_group>
