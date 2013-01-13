@@ -211,7 +211,6 @@ public:
 	void			setCameraPosAndFocusGlobal(const LLVector3d& pos, const LLVector3d& focus, const LLUUID &object_id);
 	void			clearFocusObject();
 	void			setFocusObject(LLViewerObject* object);
-	void			setObjectTracking(BOOL track) 	{ mTrackFocusObject = track; }
 	const LLVector3d &getFocusGlobal() const		{ return mFocusGlobal; }
 	const LLVector3d &getFocusTargetGlobal() const	{ return mFocusTargetGlobal; }
 private:
@@ -224,7 +223,6 @@ private:
 	F32				mFocusObjectDist;
 	LLVector3		mFocusObjectOffset;
 	F32				mFocusDotRadius; 				// Meters
-	BOOL			mTrackFocusObject;
 
 	//--------------------------------------------------------------------
 	// Lookat / Pointat

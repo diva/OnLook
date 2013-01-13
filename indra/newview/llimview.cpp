@@ -1140,7 +1140,7 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 		static LLCachedControl<bool> minimize("OtherChatsTornOffAndMinimized");
 		if (focused_floater != NULL) // there was a focused floater
 		{
-			floater->setMinimized(true); // so minimize this one, for now
+			floater->setMinimized(minimize); // so minimize this one, for now, if desired
 			focused_floater->setFocus(true); // and work around focus being removed by focusing on the last
 		}
 		else if (minimize)
@@ -1185,7 +1185,7 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 		static LLCachedControl<bool> minimize("OtherChatsTornOffAndMinimized");
 		if (focused_floater != NULL) // there was a focused floater
 		{
-			floater->setMinimized(true); // so minimize this one, for now
+			floater->setMinimized(minimize); // so minimize this one, for now, if desired
 			focused_floater->setFocus(true); // and work around focus being removed by focusing on the last
 		}
 		else if (minimize)

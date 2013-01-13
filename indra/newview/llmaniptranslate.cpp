@@ -1077,7 +1077,6 @@ BOOL LLManipTranslate::handleMouseUp(S32 x, S32 y, MASK mask)
 		
 		mInSnapRegime = FALSE;
 		LLSelectMgr::getInstance()->saveSelectedObjectTransform(SELECT_ACTION_TYPE_PICK);
-		//gAgent.setObjectTracking(gSavedSettings.getBOOL("TrackFocusObject"));
 	}
 
 	return LLManip::handleMouseUp(x, y, mask);

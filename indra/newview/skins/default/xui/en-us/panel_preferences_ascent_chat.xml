@@ -22,6 +22,7 @@
         label="Do not echo/log notifications in chat" name="hide_notifications_in_chat_check"/>
       <check_box bottom_delta="-20" follows="left|top" control_name="OptionShowGroupNameInChatIM" initial_value="false"
         label="Show group name in chat" tool_tip="The name of the group will also be displayed if the IM is from group chat." name="append_group_name_check"/>
+      <check_box bottom_delta="-20" follows="left|top" control_name="ShowLocalChatFloaterBar" label="Show local chat bar in floater (Needs restart)" tool_tip="Whether or not to display the input bar at the bottom of the local chat floater." name="show_local_chat_floater_bar"/>
       <check_box bottom="-120" left="10" control_name="AscentAllowMUpose" initial_value="false"
         label="Allow MU pose method." tool_tip="Allows the use of both /me and : to perform emotes." name="allow_mu_pose_check"/>
       <check_box bottom_delta="-20" follows="left|top" control_name="AscentAutoCloseOOC"

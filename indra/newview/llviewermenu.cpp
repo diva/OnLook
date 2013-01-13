@@ -2062,7 +2062,8 @@ class LLViewCommunicate : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if (LLFloaterChatterBox::getInstance()->getFloaterCount() == 0)
+		static LLCachedControl<bool> only_comm("CommunicateSpecificShortcut");
+		if (!only_comm && LLFloaterChatterBox::getInstance()->getFloaterCount() == 0)
 		{
 			LLFloaterMyFriends::toggleInstance();
 		}

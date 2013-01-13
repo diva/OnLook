@@ -983,8 +983,6 @@ BOOL LLToolGrab::handleMouseUp(S32 x, S32 y, MASK mask)
 		gGrabTransientTool = NULL;
 	}
 
-	//gAgent.setObjectTracking(gSavedSettings.getBOOL("TrackFocusObject"));
-
 	return TRUE;
 } 
 
