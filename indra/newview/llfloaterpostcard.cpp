@@ -251,7 +251,6 @@ public:
 	/*virtual*/ void uploadComplete(const LLSD& content)
 	{
 		// we don't care about what the server returns from this post, just clean up the UI
-		LLUploadDialog::modalUploadFinished();
 		LLFloaterSnapshot::savePostcardDone(true, mSnapshotIndex);
 	}
 	/*virtual*/ void uploadFailure(const LLSD& content)
@@ -264,6 +263,7 @@ public:
 		LLAssetUploadResponder::error(statusNum, reason);
 		LLFloaterSnapshot::savePostcardDone(false, mSnapshotIndex);
 	}
+	/*virtual*/ char const* getName(void) const { return "LLSendPostcardResponder"; }
 };
 
 // static
@@ -313,8 +313,6 @@ void LLFloaterPostcard::uploadCallback(const LLUUID& asset_id, void *user_data, 
 {
 	LLFloaterPostcard *self = (LLFloaterPostcard *)user_data;
 	
-	LLUploadDialog::modalUploadFinished();
-	
 	LLFloaterSnapshot::savePostcardDone(!result, self->mSnapshotIndex);
 
 	if (result)
@@ -345,7 +343,7 @@ void LLFloaterPostcard::uploadCallback(const LLUUID& asset_id, void *user_data, 
 		gAgent.sendReliableMessage();
 	}
 
-	self->close();
+	self->destroy();
 }
 
 // static

@@ -219,7 +219,7 @@ public:
 	virtual ~BaseCapabilitiesComplete()
 	{ }
 
-    void error(U32 statusNum, const std::string& reason)
+    /*virtual*/ void error(U32 statusNum, const std::string& reason)
     {
 		LL_WARNS2("AppInit", "Capabilities") << statusNum << ": " << reason << LL_ENDL;
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
@@ -229,7 +229,7 @@ public:
 		}
     }
 
-    void result(const LLSD& content)
+    /*virtual*/ void result(const LLSD& content)
     {
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if(!regionp) //region was removed
@@ -265,7 +265,8 @@ public:
 		}
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return baseCapabilitiesComplete_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return baseCapabilitiesComplete_timeout; }
+	/*virtual*/ char const* getName(void) const { return "BaseCapabilitiesComplete"; }
 
     static boost::intrusive_ptr<BaseCapabilitiesComplete> build( U64 region_handle, S32 id )
     {
@@ -1746,13 +1747,13 @@ public:
     { }
 	
 	
-    void error(U32 statusNum, const std::string& reason)
+    /*virtual*/ void error(U32 statusNum, const std::string& reason)
     {
 		LL_WARNS2("AppInit", "SimulatorFeatures") << statusNum << ": " << reason << LL_ENDL;
 		retry();
     }
 
-    void result(const LLSD& content)
+    /*virtual*/ void result(const LLSD& content)
     {
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if(!regionp) //region is removed or responder is not created.
@@ -1764,7 +1765,8 @@ public:
 		regionp->setSimulatorFeatures(content);
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return simulatorFeaturesReceived_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return simulatorFeaturesReceived_timeout; }
+	/*virtual*/ char const* getName(void) const { return "SimulatorFeaturesReceived"; }
 
 private:
 	void retry()

@@ -62,7 +62,7 @@ public:
 
 	  LLHandle<LLFloater> mParent;
 
-	  virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+	  /*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	  {
 		  if (200 <= status && status < 300)
 		  {
@@ -89,7 +89,9 @@ public:
 			  floater_url_entry->headerFetchComplete( status, resolved_mime_type );
 	  }
 
-	  virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return mediaTypeResponder_timeout; }
+	  /*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return mediaTypeResponder_timeout; }
+
+	  /*virtual*/ char const* getName(void) const { return "LLMediaTypeResponder"; }
 };
 
 //-----------------------------------------------------------------------------

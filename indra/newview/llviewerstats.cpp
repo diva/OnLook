@@ -703,18 +703,19 @@ class ViewerStatsResponder : public LLHTTPClient::ResponderWithResult
 public:
     ViewerStatsResponder() { }
 
-    void error(U32 statusNum, const std::string& reason)
+    /*virtual*/ void error(U32 statusNum, const std::string& reason)
     {
 		llinfos << "ViewerStatsResponder::error " << statusNum << " "
 				<< reason << llendl;
     }
 
-    void result(const LLSD& content)
+    /*virtual*/ void result(const LLSD& content)
     {
 		llinfos << "ViewerStatsResponder::result" << llendl;
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerStatsResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerStatsResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "ViewerStatsResponder"; }
 };
 
 /*

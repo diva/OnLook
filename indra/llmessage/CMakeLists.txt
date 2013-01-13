@@ -27,6 +27,7 @@ set(llmessage_SOURCE_FILES
     aicurlperhost.cpp
     aicurlthread.cpp
     aihttpheaders.cpp
+    aihttptimeout.cpp
     aihttptimeoutpolicy.cpp
     debug_libcurl.cpp
     llhttpclient.cpp
@@ -114,6 +115,7 @@ set(llmessage_HEADER_FILES
     aicurlperhost.h
     aicurlthread.h
     aihttpheaders.h
+    aihttptimeout.h
     aihttptimeoutpolicy.h
     debug_libcurl.h
     llares.h

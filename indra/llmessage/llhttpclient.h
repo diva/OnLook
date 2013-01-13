@@ -158,10 +158,12 @@ public:
 			// Erase all headers EXCEPT the cookies.
 			AIHTTPReceivedHeaders set_cookie_headers;
 			AIHTTPReceivedHeaders::range_type cookies;
-			mReceivedHeaders.getValues("set-cookie", cookies);
-			for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
+			if (mReceivedHeaders.getValues("set-cookie", cookies))
 			{
-				set_cookie_headers.addHeader(cookie->first, cookie->second);
+				for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
+				{
+					set_cookie_headers.addHeader(cookie->first, cookie->second);
+				}
 			}
 			// Replace headers with just the cookie headers.
 			mReceivedHeaders.swap(set_cookie_headers);
@@ -195,6 +197,9 @@ public:
 
 		// Timeout policy to use.
 		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const = 0;
+
+		// The name of the derived responder object. For debugging purposes.
+		virtual char const* getName(void) const = 0;
 
 	protected:
 		// Derived classes can override this to get the HTML headers that were received, when the message is completed.
@@ -378,6 +383,7 @@ public:
 	 */
 	class ResponderIgnore : public ResponderIgnoreBody {
 		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return responderIgnore_timeout;}
+		/*virtual*/ char const* getName(void) const { return "ResponderIgnore"; }
 	};
 
 	// A Responder is passed around as ResponderPtr, which causes it to automatically

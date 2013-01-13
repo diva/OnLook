@@ -60,22 +60,23 @@ extern AIHTTPTimeoutPolicy crashLoggerResponder_timeout;
 class LLCrashLoggerResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return crashLoggerResponder_timeout; }
-
 	LLCrashLoggerResponder() 
 	{
 	}
 
-	virtual void error(U32 status, const std::string& reason)
+	/*virtual*/ void error(U32 status, const std::string& reason)
 	{
 		gBreak = true;		
 	}
 
-	virtual void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{	
 		gBreak = true;
 		gSent = true;
 	}
+
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return crashLoggerResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLCrashLoggerResponder"; }
 };
 
 bool LLCrashLoggerText::mainLoop()

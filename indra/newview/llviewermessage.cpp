@@ -3307,6 +3307,8 @@ protected:
 		delete m_chat;
 	}
 
+	/*virtual*/ char const* getName(void) const { return "ChatTranslationReceiver"; }
+
 private:
 	LLChat *m_chat;
 	const BOOL m_history;		
@@ -3371,6 +3373,7 @@ protected:
 	}
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return authHandler_timeout; }
+	/*virtual*/ char const* getName(void) const { return "AuthHandler"; }
 };
 
 void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)

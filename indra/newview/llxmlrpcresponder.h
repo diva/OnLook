@@ -112,6 +112,7 @@ public:
 	/*virtual*/ void completed_headers(U32 status, std::string const& reason, AITransferInfo* info);
 	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return XMLRPCResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "XMLRPCResponder"; }
 };
 
 #endif // LLXMLRPCRESPONDER_H
