@@ -111,7 +111,7 @@ void setDefaultTextures()
 	}
 }
 
-class importResponder: public LLNewAgentInventoryResponder
+class importResponder : public LLNewAgentInventoryResponder
 {
 public:
 
@@ -191,6 +191,8 @@ public:
 		LLObjectBackup::getInstance()->updateMap(content["new_asset"].asUUID());
 		LLObjectBackup::getInstance()->uploadNextAsset();
 	}
+
+	/*virtual*/ char const* getName(void) const { return "importResponder"; }
 };
 
 class CacheReadResponder : public LLTextureCache::ReadResponder

@@ -832,7 +832,7 @@ void LLPanelActiveSpeakers::onModeratorMuteVoice(LLUICtrl* ctrl, void* user_data
 			mSessionID = session_id;
 		}
 
-		virtual void error(U32 status, const std::string& reason)
+		/*virtual*/ void error(U32 status, const std::string& reason)
 		{
 			llwarns << status << ": " << reason << llendl;
 
@@ -862,7 +862,8 @@ void LLPanelActiveSpeakers::onModeratorMuteVoice(LLUICtrl* ctrl, void* user_data
 			}
 		}
 
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return muteVoiceResponder_timeout; }
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return muteVoiceResponder_timeout; }
+		/*virtual*/ char const* getName(void) const { return "MuteVoiceResponder"; }
 
 	private:
 		LLUUID mSessionID;
@@ -899,7 +900,7 @@ void LLPanelActiveSpeakers::onModeratorMuteText(LLUICtrl* ctrl, void* user_data)
 			mSessionID = session_id;
 		}
 
-		virtual void error(U32 status, const std::string& reason)
+		/*virtual*/ void error(U32 status, const std::string& reason)
 		{
 			llwarns << status << ": " << reason << llendl;
 
@@ -929,7 +930,8 @@ void LLPanelActiveSpeakers::onModeratorMuteText(LLUICtrl* ctrl, void* user_data)
 			}
 		}
 
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return muteTextResponder_timeout; }
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return muteTextResponder_timeout; }
+		/*virtual*/ char const* getName(void) const { return "MuteTextResponder"; }
 
 	private:
 		LLUUID mSessionID;
@@ -967,11 +969,12 @@ void LLPanelActiveSpeakers::onChangeModerationMode(LLUICtrl* ctrl, void* user_da
 
 	struct ModerationModeResponder : public LLHTTPClient::ResponderIgnoreBody
 	{
-		virtual void error(U32 status, const std::string& reason)
+		/*virtual*/ void error(U32 status, const std::string& reason)
 		{
 			llwarns << status << ": " << reason << llendl;
 		}
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return moderationModeResponder_timeout; }
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return moderationModeResponder_timeout; }
+		/*virtual*/ char const* getName(void) const { return "ModerationModeResponder"; }
 	};
 
 	LLHTTPClient::post(url, data, new ModerationModeResponder());

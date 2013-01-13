@@ -188,8 +188,6 @@ private:
 	virtual bool needsHeaders(void) const { return true; }
 	
 public:
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return avatarNameResponder_timeout; }
-
 	LLAvatarNameResponder(const std::vector<LLUUID>& agent_ids)
 	:	mAgentIDs(agent_ids)
 	{ }
@@ -271,6 +269,9 @@ public:
 			LLAvatarNameCache::handleAgentError(agent_id);
 		}
 	}
+
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return avatarNameResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLAvatarNameResponder"; }
 };
 
 // Provide some fallback for agents that return errors

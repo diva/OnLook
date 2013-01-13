@@ -312,8 +312,6 @@ public:
 	{
 	}
 
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return HTTPGetResponder_timeout; }
-
 #if 0 //Apparently, SL never sends content-range and instead sends transfer-encoding: chunked, so disabling for now
 	/*virtual*/ bool needsHeaders(void) const { return true; }
 
@@ -413,6 +411,9 @@ public:
 		return mFollowRedir;
 	}
 	
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return HTTPGetResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "HTTPGetResponder"; }
+
 private:
 	LLTextureFetch* mFetcher;
 	LLUUID mID;
@@ -3107,8 +3108,7 @@ TFReqSendMetrics::doWork(LLTextureFetch * fetcher)
                 mFetcher->decrCurlPOSTCount();
             }
 
-		// virtual
-		void error(U32 status_num, const std::string & reason)
+		/*virtual*/ void error(U32 status_num, const std::string & reason)
 			{
                 if (mLiveSequence == mExpectedSequence)
                 {
@@ -3118,8 +3118,7 @@ TFReqSendMetrics::doWork(LLTextureFetch * fetcher)
 									<< reason << LL_ENDL;
 			}
 
-		// virtual
-		void result(const LLSD & content)
+		/*virtual*/ void result(const LLSD & content)
 			{
                 if (mLiveSequence == mExpectedSequence)
                 {
@@ -3127,7 +3126,8 @@ TFReqSendMetrics::doWork(LLTextureFetch * fetcher)
                     mReportingStarted = true;
                 }
 			}
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return lcl_responder_timeout; }
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return lcl_responder_timeout; }
+		/*virtual*/ char const* getName(void) const { return "lcl_responder"; }
 
 	private:
 		LLTextureFetch * mFetcher;

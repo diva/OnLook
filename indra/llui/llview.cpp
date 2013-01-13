@@ -1185,7 +1185,7 @@ void LLView::drawChildren()
 			{
 				// Only draw views that are within the root view
 				LLRect screen_rect = viewp->calcScreenRect();
-				if ( rootp->getLocalRect().overlaps(screen_rect) )
+				if ( rootp->getRect().overlaps(screen_rect) )
 				{
 					//gGL.matrixMode(LLRender::MM_MODELVIEW);
 					LLUI::pushMatrix();

@@ -2512,10 +2512,11 @@ public:
 	LLMaturityPreferencesResponder(LLAgent *pAgent, U8 pPreferredMaturity, U8 pPreviousMaturity);
 	virtual ~LLMaturityPreferencesResponder();
 
-	virtual void result(const LLSD &pContent);
-	virtual void error(U32 pStatus, const std::string& pReason);
+	/*virtual*/ void result(const LLSD &pContent);
+	/*virtual*/ void error(U32 pStatus, const std::string& pReason);
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return maturityPreferences_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return maturityPreferences_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLMaturityPreferencesResponder"; }
 
 private:
 	U8 parseMaturityFromServerResponse(const LLSD &pContent);

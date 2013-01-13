@@ -66,7 +66,8 @@ void upload_new_resource(const std::string& src_filename,
 						 S32 expected_upload_cost,
 						 void *userdata);
 
-void upload_new_resource(const LLTransactionID &tid, 
+// Return false if no upload attempt was done (and the callback will not be called).
+bool upload_new_resource(const LLTransactionID &tid, 
 						 LLAssetType::EType type,
 						 std::string name,
 						 std::string desc, 
@@ -79,7 +80,13 @@ void upload_new_resource(const LLTransactionID &tid,
 						 const std::string& display_name,
 						 LLAssetStorage::LLStoreAssetCallback callback,
 						 S32 expected_upload_cost,
-						 void *userdata);
+						 void *userdata,
+						 void (*callback2)(bool, void*) = NULL);
+
+// The default callback functions, called when 'callback' == NULL (for normal and temporary uploads).
+// user_data must be a LLResourceData allocated with new (or NULL).
+void upload_done_callback(const LLUUID& uuid, void* user_data, S32 result, LLExtStat ext_status);
+void temp_upload_callback(const LLUUID& uuid, void* user_data, S32 result, LLExtStat ext_status);
 
 LLAssetID generate_asset_id_for_new_upload(const LLTransactionID& tid);
 

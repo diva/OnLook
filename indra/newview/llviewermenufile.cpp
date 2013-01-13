@@ -1182,7 +1182,7 @@ LLSD generate_new_resource_upload_capability_body(LLAssetType::EType asset_type,
 	return body;
 }
 
-void upload_new_resource(const LLTransactionID &tid, LLAssetType::EType asset_type,
+bool upload_new_resource(const LLTransactionID &tid, LLAssetType::EType asset_type,
 			 std::string name,
 			 std::string desc, S32 compression_info,
 			 LLFolderType::EType destination_folder_type,
@@ -1193,11 +1193,12 @@ void upload_new_resource(const LLTransactionID &tid, LLAssetType::EType asset_ty
 			 const std::string& display_name,
 			 LLAssetStorage::LLStoreAssetCallback callback,
 			 S32 expected_upload_cost,
-			 void *userdata)
+			 void *userdata,
+			 void (*callback2)(bool, void*))
 {
 	if(gDisconnected)
 	{
-		return ;
+		return false;
 	}
 
 
@@ -1234,7 +1235,7 @@ void upload_new_resource(const LLTransactionID &tid, LLAssetType::EType asset_ty
 		body["expected_upload_cost"] = LLSD::Integer(expected_upload_cost);
 		
 		LLHTTPClient::post(url, body,
-						   new LLNewAgentInventoryResponder(body, uuid, asset_type));
+						   new LLNewAgentInventoryResponder(body, uuid, asset_type, callback2, userdata));
 	}
 	else
 	{
@@ -1257,7 +1258,7 @@ void upload_new_resource(const LLTransactionID &tid, LLAssetType::EType asset_ty
 					args["[CURRENCY]"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
 					args["[AMOUNT]"] = llformat("%d", expected_upload_cost);
 					LLFloaterBuyCurrency::buyCurrency( LLTrans::getString("UploadingCosts", args), expected_upload_cost );
-					return;
+					return false;
 				}
 			}
 		}
@@ -1287,6 +1288,9 @@ void upload_new_resource(const LLTransactionID &tid, LLAssetType::EType asset_ty
 										TRUE,
 										temporary);
 	}
+
+	// Return true when a call to a callback function will follow.
+	return true;
 }
 
 LLAssetID generate_asset_id_for_new_upload(const LLTransactionID& tid)

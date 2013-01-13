@@ -75,7 +75,7 @@ LLUploadDialog::LLUploadDialog( const std::string& msg)
 	}
 	LLUploadDialog::sDialog = this;
 
-	const LLFontGL* font = LLResMgr::getInstance()->getRes( LLFONT_SANSSERIF );
+	const LLFontGL* font = LLResMgr::getInstance()->getRes( LLFONT_SANSSERIF_BIG );
 	LLRect msg_rect;
 	for (int line_num=0; line_num<16; ++line_num)
 	{
@@ -91,7 +91,10 @@ LLUploadDialog::LLUploadDialog( const std::string& msg)
 
 void LLUploadDialog::setMessage( const std::string& msg)
 {
-	const LLFontGL* font = LLResMgr::getInstance()->getRes( LLFONT_SANSSERIF );
+	S32 const min_width = gViewerWindow->getWindowWidthRaw() / 10;
+	S32 const min_height = gViewerWindow->getWindowHeightRaw() / 10;
+
+	const LLFontGL* font = LLResMgr::getInstance()->getRes( LLFONT_SANSSERIF_BIG );
 
 	const S32 VPAD = 16;
 	const S32 HPAD = 25;
@@ -127,14 +130,14 @@ void LLUploadDialog::setMessage( const std::string& msg)
 
 
 	S32 line_height = S32( font->getLineHeight() + 0.99f );
-	S32 dialog_width = max_msg_width + 2 * HPAD;
-	S32 dialog_height = line_height * msg_lines.size() + 2 * VPAD;
+	S32 dialog_width = llmax(max_msg_width + 2 * HPAD, min_width);
+	S32 dialog_height = llmax(line_height * (S32)msg_lines.size() + 2 * VPAD, min_height);
 
 	reshape( dialog_width, dialog_height, FALSE );
 
 	// Message
 	S32 msg_x = (getRect().getWidth() - max_msg_width) / 2;
-	S32 msg_y = getRect().getHeight() - VPAD - line_height;
+	S32 msg_y = (getRect().getHeight() + line_height * msg_lines.size()) / 2 - line_height;
 	int line_num;
 	for (line_num=0; line_num<16; ++line_num)
 	{
