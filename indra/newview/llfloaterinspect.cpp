@@ -166,7 +166,7 @@ BOOL LLFloaterInspect::postBuild()
 	mObjectList = getChild<LLScrollListCtrl>("object_list");
 	childSetAction("button owner",onClickOwnerProfile, this);
 	childSetAction("button creator",onClickCreatorProfile, this);
-	childSetCommitCallback("object_list", onSelectObject);
+	childSetCommitCallback("object_list", onSelectObject, this);
 	return TRUE;
 }
 

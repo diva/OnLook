@@ -896,7 +896,7 @@ BOOL LLFloaterModelPreview::handleScrollWheel(S32 x, S32 y, S32 clicks)
 }
 
 /*virtual*/
-void LLFloaterModelPreview::onOpen(const LLSD& key)
+void LLFloaterModelPreview::onOpen()
 {
 	requestAgentUploadPermissions();
 }

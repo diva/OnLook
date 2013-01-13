@@ -563,7 +563,6 @@ LLAppViewer::LLAppViewer() :
 	mSavedFinalSnapshot(false),
 	mQuitRequested(false),
 	mLogoutRequestSent(false),
-	mYieldTime(-1),
 	mMainloopTimeout(NULL),
 	mAgentRegionLastAlive(false)
 {
@@ -1089,7 +1088,7 @@ bool LLAppViewer::mainLoop()
 	LLVoiceChannel::initClass();
 	LLVoiceClient::init(gServicePump);
 				
-	LLTimer frameTimer,idleTimer;
+	LLTimer frameTimer,idleTimer,periodicRenderingTimer;
 	LLTimer debugTime;
 	LLFrameTimer memCheckTimer;
 	LLViewerJoystick* joystick(LLViewerJoystick::getInstance());
@@ -1102,6 +1101,7 @@ bool LLAppViewer::mainLoop()
     // point of posting.
     LLSD newFrame;
 
+	BOOL restore_rendering_masks = FALSE;
 
 	// Handle messages
 	while (!LLApp::isExiting())
@@ -1116,6 +1116,28 @@ bool LLAppViewer::mainLoop()
 		
 		try
 		{
+			// Check if we need to restore rendering masks.
+			if (restore_rendering_masks)
+			{
+				gPipeline.popRenderDebugFeatureMask();
+				gPipeline.popRenderTypeMask();
+			}
+			// Check if we need to temporarily enable rendering.
+			static const LLCachedControl<F32> periodic_rendering("ForcePeriodicRenderingTime", 0.f);
+			if (periodic_rendering > F_APPROXIMATELY_ZERO && periodicRenderingTimer.getElapsedTimeF64() > periodic_rendering)
+			{
+				periodicRenderingTimer.reset();
+				restore_rendering_masks = TRUE;
+				gPipeline.pushRenderTypeMask();
+				gPipeline.pushRenderDebugFeatureMask();
+				gPipeline.setAllRenderTypes();
+				gPipeline.setAllRenderDebugFeatures();
+			}
+			else
+			{
+				restore_rendering_masks = FALSE;
+			}
+
 			pingMainloopTimeout("Main:MiscNativeWindowEvents");
 
 			if (gViewerWindow)
@@ -1225,7 +1247,6 @@ bool LLAppViewer::mainLoop()
 					pingMainloopTimeout("Main:Display");
 					gGLActive = TRUE;
 					display();
-
 					pingMainloopTimeout("Main:Snapshot");
 					LLFloaterSnapshot::update(); // take snapshots
 					gGLActive = FALSE;
@@ -1242,12 +1263,12 @@ bool LLAppViewer::mainLoop()
 				LLMemType mt_sleep(LLMemType::MTYPE_SLEEP);
 				LLFastTimer t2(FTM_SLEEP);
 				static const LLCachedControl<bool> run_multiple_threads("RunMultipleThreads",false);
-
+				static const LLCachedControl<S32> yield_time("YieldTime", -1);
 				// yield some time to the os based on command line option
-				if(mYieldTime >= 0)
+				if(yield_time >= 0)
 				{
 					LLFastTimer t(FTM_YIELD);
-					ms_sleep(mYieldTime);
+					ms_sleep(yield_time);
 				}
 
 				// yield cooperatively when not running as foreground window
@@ -1812,6 +1833,8 @@ bool LLAppViewer::cleanup()
 		llinfos << "File launched." << llendflush;
 	}
 
+	LLWearableType::cleanupClass();
+
 	LLMainLoopRepeater::instance().stop();
 
 	//release all private memory pools.
@@ -2361,8 +2384,6 @@ bool LLAppViewer::initConfiguration()
         gDirUtilp->setSkinFolder(skinfolder->getValue().asString());
     }
 
-    mYieldTime = gSavedSettings.getS32("YieldTime");
-             
 	// XUI:translate
 	gSecondLife = "Singularity Viewer";
 

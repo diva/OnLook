@@ -312,6 +312,7 @@ public:
 	//--------------------------------------------------------------------
 public:
 	BOOL			isFullyLoaded() const;
+	bool			isTooComplex() const;
 	bool 			visualParamWeightsAreDefault();
 	virtual BOOL	getIsCloud() const;
 	BOOL			isFullyTextured() const;
@@ -560,6 +561,7 @@ protected:
 private:
 	virtual	void				setImage(const U8 te, LLViewerTexture *imagep, const U32 index); 
 	virtual LLViewerTexture*	getImage(const U8 te, const U32 index) const;
+	const std::string 			getImageURL(const U8 te, const LLUUID &uuid);
 
 	virtual const LLTextureEntry* getTexEntry(const U8 te_num) const;
 	virtual void setTexEntry(const U8 index, const LLTextureEntry &te);
@@ -611,6 +613,7 @@ private:
  **/
 
 public:
+	void			debugColorizeSubMeshes(U32 i, const LLColor4& color);
 	virtual void 	updateMeshTextures();
 	void 			updateSexDependentLayerSets(BOOL upload_bake);
 	virtual void	dirtyMesh(); // Dirty the avatar mesh
@@ -651,10 +654,31 @@ public:
 	//--------------------------------------------------------------------
 public:
 	BOOL			getIsAppearanceAnimating() const { return mAppearanceAnimating; }
+
+	// True if we are computing our appearance via local compositing
+	// instead of baked textures, as for example during wearable
+	// editing or when waiting for a subsequent server rebake.
+	/*virtual*/ BOOL	isUsingLocalAppearance() const { return mUseLocalAppearance; }
+
+	// True if this avatar should fetch its baked textures via the new
+	// appearance mechanism.
+	/*virtual*/ BOOL	isUsingServerBakes() const { return mUseServerBakes; }
+	void 				setIsUsingServerBakes(BOOL newval);
+
+
+	// True if we are currently in appearance editing mode. Often but
+	// not always the same as isUsingLocalAppearance().
+	/*virtual*/ BOOL	isEditingAppearance() const { return mIsEditingAppearance; }
+
+	// FIXME review isUsingLocalAppearance uses, some should be isEditing instead.
+
 private:
 	BOOL			mAppearanceAnimating;
 	LLFrameTimer	mAppearanceMorphTimer;
 	F32				mLastAppearanceBlendTime;
+	BOOL			mIsEditingAppearance; // flag for if we're actively in appearance editing mode
+	BOOL			mUseLocalAppearance; // flag for if we're using a local composite
+	BOOL			mUseServerBakes; // flag for if baked textures should be fetched from baking service (false if they're temporary uploads)
 
 	//--------------------------------------------------------------------
 	// Visibility
@@ -961,7 +985,10 @@ private:
 	// General
 	//--------------------------------------------------------------------
 public:
-	static void			dumpArchetypeXML(void*);
+	void				dumpArchetypeXML(const std::string& prefix, bool group_by_wearables = false);
+	void 				dumpAppearanceMsgParams( const std::string& dump_prefix,
+												 const std::vector<F32>& paramsForDump,
+												 const LLTEContents& tec);
 	static void			dumpBakedStatus();
 	const std::string 	getBakedStatusForPrintout() const;
 	void				dumpAvatarTEs(const std::string& context) const;
@@ -978,6 +1005,7 @@ private:
 	F32					mMaxPixelArea;
 	F32					mAdjustedPixelArea;
 	std::string  		mDebugText;
+	std::string			mBakedTextureDebugText;
 
 
 	//--------------------------------------------------------------------

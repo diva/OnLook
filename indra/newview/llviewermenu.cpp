@@ -618,6 +618,9 @@ BOOL enable_region_owner(void*);
 void menu_toggle_attached_lights(void* user_data);
 void menu_toggle_attached_particles(void* user_data);
 
+BOOL enable_dump_archetype_xm(void*);
+void handle_dump_archetype_xml(void *);
+
 class LLMenuParcelObserver : public LLParcelObserver
 {
 public:
@@ -1628,7 +1631,7 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 		&gAllowIdleAFK));
 
 	sub_menu->addChild(new LLMenuItemCallGL("Appearance To XML", 
-		&LLVOAvatar::dumpArchetypeXML));
+		&handle_dump_archetype_xml,&enable_dump_archetype_xm));
 
 	// HACK for easy testing of avatar geometry
 	sub_menu->addChild(new LLMenuItemCallGL( "Toggle Character Geometry", 
@@ -2495,7 +2498,7 @@ class LLSelfRemoveAllAttachments : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLAgentWearables::userRemoveAllAttachments();
+		LLAppearanceMgr::instance().removeAllAttachmentsFromAvatar();
 		return true;
 	}
 };
@@ -4229,14 +4232,14 @@ void handle_show_newest_map(void*)
 //
 // Major mode switching
 //
-void reset_view_final( BOOL proceed );
+void reset_view_final( BOOL proceed);
 
 void handle_reset_view()
 {
-	if( (CAMERA_MODE_CUSTOMIZE_AVATAR == gAgentCamera.getCameraMode()) && gFloaterCustomize )
+	if(gAgentCamera.cameraCustomizeAvatar() && LLFloaterCustomize::instanceExists())
 	{
 		// Show dialog box if needed.
-		gFloaterCustomize->askToSaveIfDirty( boost::bind(&reset_view_final, _1) );
+		LLFloaterCustomize::getInstance()->askToSaveIfDirty( boost::bind(&reset_view_final, _1) );
 	}
 	else
 	{
@@ -4254,7 +4257,7 @@ class LLViewResetView : public view_listener_t
 };
 
 // Note: extra parameters allow this function to be called from dialog.
-void reset_view_final( BOOL proceed ) 
+void reset_view_final( BOOL proceed) 
 {
 	if( !proceed )
 	{
@@ -4264,6 +4267,10 @@ void reset_view_final( BOOL proceed )
 	gAgentCamera.switchCameraPreset(CAMERA_PRESET_REAR_VIEW);
 	gAgentCamera.resetView(TRUE, TRUE);
 	gAgentCamera.setLookAt(LOOKAT_TARGET_CLEAR);
+
+	if(gAgentCamera.cameraCustomizeAvatar() && LLFloaterCustomize::instanceExists())
+		LLFloaterCustomize::getInstance()->close();
+
 }
 
 class LLViewLookAtLastChatter : public view_listener_t
@@ -4553,6 +4560,22 @@ void handle_god_request_havok(void *)
 //	}
 //}
 
+BOOL enable_dump_archetype_xm(void*)
+{
+	return gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");
+}
+
+void handle_dump_archetype_xml(void *)
+{
+	std::string emptyname;
+	LLVOAvatar* avatar =
+		find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
+	if (!avatar)
+	{
+		avatar = gAgentAvatarp;
+	}
+	avatar->dumpArchetypeXML(emptyname);
+};
 
 // HACK for easily testing new avatar geometry
 void handle_god_request_avatar_geometry(void *)
@@ -6522,7 +6545,7 @@ class LLShowFloater : public view_listener_t
 		{
 			if (gAgentWearables.areWearablesLoaded())
 			{
-				gAgentCamera.changeCameraToCustomizeAvatar();
+				LLFloaterCustomize::show();
 			}
 		}
 		else if (floater_name == "outfit")
@@ -7155,6 +7178,7 @@ class LLAttachmentDrop : public view_listener_t
 // called from avatar pie menu
 void handle_detach_from_avatar(void* user_data)
 {
+	uuid_vec_t ids_to_remove;
 	const LLViewerJointAttachment *attachment = (LLViewerJointAttachment*)user_data;
 	
 //	if (attachment->getNumObjects() > 0)
@@ -7162,11 +7186,6 @@ void handle_detach_from_avatar(void* user_data)
 	if ( (attachment->getNumObjects() > 0) && ((!rlv_handler_t::isEnabled()) || (gRlvAttachmentLocks.canDetach(attachment))) )
 // [/RLVa:KB]
 	{
-		gMessageSystem->newMessage("ObjectDetach");
-		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
-		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-		
 		for (LLViewerJointAttachment::attachedobjs_vec_t::const_iterator iter = attachment->mAttachedObjects.begin();
 			 iter != attachment->mAttachedObjects.end();
 			 iter++)
@@ -7176,12 +7195,14 @@ void handle_detach_from_avatar(void* user_data)
 			if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.isLockedAttachment(attached_object)) )
 				continue;
 // [/RLVa:KB]
-			gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-			gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, attached_object->getLocalID());
+			ids_to_remove.push_back(attached_object->getAttachmentItemID());
 		}
-		gMessageSystem->sendReliable( gAgent.getRegionHost() );
+		if (!ids_to_remove.empty())
+		{
+			LLAppearanceMgr::instance().removeItemsFromAvatar(ids_to_remove);
+		}
 	}
-}
+};
 
 void attach_label(std::string& label, void* user_data)
 {
@@ -7279,17 +7300,8 @@ class LLAttachmentDetach : public view_listener_t
 		}
 // [/RLVa:KB]
 
-		// The sendDetach() method works on the list of selected
-		// objects.  Thus we need to clear the list, make sure it only
-		// contains the object the user clicked, send the message,
-		// then clear the list.
-		// We use deselectAll to update the simulator's notion of what's
-		// selected, and removeAll just to change things locally.
-		//RN: I thought it was more useful to detach everything that was selected
-		if (LLSelectMgr::getInstance()->getSelection()->isAttachment())
-		{
-			LLSelectMgr::getInstance()->sendDetach();
-		}
+		LLAppearanceMgr::instance().removeItemFromAvatar(object->getAttachmentItemID());
+
 		return true;
 	}
 };
@@ -9070,6 +9082,10 @@ void handle_rebake_textures(void*)
 	// Slam pending upload count to "unstick" things
 	bool slam_for_debug = true;
 	gAgentAvatarp->forceBakeAllTextures(slam_for_debug);
+	if (gAgent.getRegion() && gAgent.getRegion()->getCentralBakeVersion())
+	{
+		LLAppearanceMgr::instance().requestServerAppearanceUpdate();
+	}
 }
 
 void toggle_visibility(void* user_data)
@@ -9207,7 +9223,7 @@ class LLEditTakeOff : public view_listener_t
 	{
 		std::string clothing = userdata.asString();
 		if (clothing == "all")
-			LLWearableBridge::removeAllClothesFromAvatar();
+			LLAppearanceMgr::instance().removeAllClothesFromAvatar();
 		else
 		{
 			LLWearableType::EType type = LLWearableType::typeNameToType(clothing);
@@ -9232,9 +9248,8 @@ class LLEditTakeOff : public view_listener_t
 						return true;	// No wearable found that can be removed
 				}
 // [/RLVa:KB]
-
-				LLViewerInventoryItem *item = dynamic_cast<LLViewerInventoryItem*>(gAgentWearables.getWearableInventoryItem(type,wearable_index));
-				LLWearableBridge::removeItemFromAvatar(item);
+				LLUUID item_id = gAgentWearables.getWearableItemID(type,wearable_index);
+				LLAppearanceMgr::instance().removeItemFromAvatar(item_id);
 			}
 		}
 		return true;

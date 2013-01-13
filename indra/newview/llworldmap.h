@@ -153,7 +153,7 @@ public:
 	// Accessors
 	std::string getName() const { return mName; }
 	const std::string getFlagsString() const { return LLViewerRegion::regionFlagsToString(mRegionFlags); }
-	const U32 getRegionFlags() const { return mRegionFlags; }
+	const U64 getRegionFlags() const { return mRegionFlags; }
 	const std::string getAccessString() const { return LLViewerRegion::accessToString((U8)mAccess); }
 	const U8 getAccess() const { return mAccess; }
 	const S32 getAgentCount() const;				// Compute the total agents count

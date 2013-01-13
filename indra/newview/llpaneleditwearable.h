@@ -46,13 +46,14 @@ class LLJoint;
 class LLLineEditor;
 class LLSubpart;
 class LLWearableSaveAsDialog;
+class LLFloaterCustomize;
 
 using namespace LLAvatarAppearanceDefines;
 
 class LLPanelEditWearable : public LLPanel
 {
 public:
-	LLPanelEditWearable( LLWearableType::EType type );
+	LLPanelEditWearable( LLWearableType::EType type, LLFloaterCustomize* parent );
 	virtual ~LLPanelEditWearable();
 
 	/*virtual*/ BOOL 		postBuild();
@@ -84,7 +85,6 @@ public:
 
 	void 				updateScrollingPanelList();
 
-	static void			onRevertButtonClicked( void* userdata );
 	void				onCommitSexChange();
 		
 	virtual void		setVisible( BOOL visible );
@@ -97,15 +97,13 @@ public:
 	void				buildParamList(LLScrollingPanelList *panel_list, value_map_t &sorted_params);
 		
 	// Callbacks
-	static void			onBtnSubpart( void* userdata );
-	static void			onBtnTakeOff( void* userdata );
-	static void			onBtnSave( void* userdata );
+	void				onBtnTakeOff();
+	void				onBtnSave();
 
-	static void			onBtnSaveAs( void* userdata );
-	static void			onSaveAsCommit( LLWearableSaveAsDialog* save_as_dialog, void* userdata );
+	void				onBtnSaveAs();
+	void				onSaveAsCommit( LLWearableSaveAsDialog* save_as_dialog );
 
-	static void			onBtnTakeOffDialog( S32 option, void* userdata );
-	static void			onBtnCreateNew( void* userdata );
+	void				onBtnCreateNew();
 	static bool			onSelectAutoWearOption(const LLSD& notification, const LLSD& response);
 
 	void				onColorSwatchCommit(const LLUICtrl*);
@@ -119,7 +117,7 @@ public:
 	void initPreviousAlphaTextureEntry(LLAvatarAppearanceDefines::ETextureIndex te);
 	
 private:
-
+	LLFloaterCustomize*			mCustomizeFloater;
 	LLWearableType::EType		mType;
 	BOOL				mCanTakeOff;
 	typedef std::map<std::string, LLAvatarAppearanceDefines::ETextureIndex> string_texture_index_map_t;

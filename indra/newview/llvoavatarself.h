@@ -237,8 +237,6 @@ public:
 	void				setCachedBakedTexture(LLAvatarAppearanceDefines::ETextureIndex i, const LLUUID& uuid);
 	void				forceBakeAllTextures(bool slam_for_debug = false);
 	static void			processRebakeAvatarTextures(LLMessageSystem* msg, void**);
-	/*virtual*/ BOOL	isEditingAppearance() const;
-	
 protected:
 	/*virtual*/ void	removeMissingBakedTextures();
 
@@ -340,8 +338,8 @@ private:
  **/
 
 public:
-	static void		onCustomizeStart();
-	static void		onCustomizeEnd();
+	static void		onCustomizeStart(bool disable_camera_switch = false);
+	static void		onCustomizeEnd(bool disable_camera_switch = false);
 
 	//--------------------------------------------------------------------
 	// Visibility
@@ -365,6 +363,7 @@ public:
 	static void		dumpTotalLocalTextureByteCount();
 	void			dumpLocalTextures() const;
 	static void		dumpScratchTextureByteCount();
+	void			dumpWearableInfo(LLAPRFile& outfile);
 
 	//--------------------------------------------------------------------
 	// Avatar Rez Metrics

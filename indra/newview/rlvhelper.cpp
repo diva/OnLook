@@ -883,7 +883,7 @@ void RlvForceWear::done()
 		for (std::list<const LLViewerObject*>::const_iterator itAttachObj = m_remAttachments.begin(); 
 				itAttachObj != m_remAttachments.end(); ++itAttachObj)
 		{
-			pAppearanceMgr->removeCOFItemLinks((*itAttachObj)->getAttachmentItemID(), false);
+			pAppearanceMgr->removeCOFItemLinks((*itAttachObj)->getAttachmentItemID());
 		}
 
 		m_remAttachments.clear();

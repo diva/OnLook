@@ -1444,9 +1444,10 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 #else
 					val = (U16 *) &data[count];
 #endif
-					setAngularVelocity(	U16_to_F32(val[VX], -size, size),
+					new_angv.set(U16_to_F32(val[VX], -size, size),
 										U16_to_F32(val[VY], -size, size),
 										U16_to_F32(val[VZ], -size, size));
+					setAngularVelocity(new_angv);
 					break;
 
 				case 16:
@@ -4174,6 +4175,23 @@ void LLViewerObject::setTEImage(const U8 te, LLViewerTexture *imagep)
 	}
 }
 
+
+S32 LLViewerObject::setTETextureCore(const U8 te, const LLUUID& uuid, const std::string &url )
+{
+	S32 retval = 0;
+	if (uuid != getTE(te)->getID() ||
+		uuid == LLUUID::null)
+	{
+		retval = LLPrimitive::setTETexture(te, uuid);
+		mTEImages[te] = LLViewerTextureManager::getFetchedTextureFromUrl  (url, TRUE, LLGLTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE, 0, 0, uuid);
+		setChanged(TEXTURE);
+		if (mDrawable.notNull())
+		{
+			gPipeline.markTextured(mDrawable);
+		}
+	}
+	return retval;
+}
 
 S32 LLViewerObject::setTETextureCore(const U8 te, const LLUUID& uuid, LLHost host)
 {

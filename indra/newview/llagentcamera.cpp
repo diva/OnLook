@@ -611,7 +611,6 @@ BOOL LLAgentCamera::calcCameraMinDistance(F32 &obj_min_distance)
 	abs_target_offset.abs();
 
 	LLVector3 target_offset_dir = target_offset_origin;
-	F32 object_radius = mFocusObject->getVObjRadius();
 
 	BOOL target_outside_object_extents = FALSE;
 
@@ -706,17 +705,6 @@ BOOL LLAgentCamera::calcCameraMinDistance(F32 &obj_min_distance)
 
 	LLVector3 camera_offset_object(getCameraPositionAgent() - mFocusObject->getPositionAgent());
 
-	// length projected orthogonal to target offset
-	F32 camera_offset_dist = (camera_offset_object - target_offset_dir * (camera_offset_object * target_offset_dir)).magVec();
-
-	// calculate whether the target point would be "visible" if it were outside the bounding box
-	// on the opposite of the splitting plane defined by object_split_axis;
-	BOOL exterior_target_visible = FALSE;
-	if (camera_offset_dist > object_radius)
-	{
-		// target is visible from camera, so turn off fov zoom
-		exterior_target_visible = TRUE;
-	}
 
 	F32 camera_offset_clip = camera_offset_object * object_split_axis;
 	F32 target_offset_clip = target_offset_dir * object_split_axis;
@@ -1430,7 +1418,7 @@ void LLAgentCamera::updateCamera()
 //	llinfos << "Current FOV Zoom: " << mCameraCurrentFOVZoomFactor << " Target FOV Zoom: " << mCameraFOVZoomFactor << " Object penetration: " << mFocusObjectDist << llendl;
 
 	F32 ui_offset = 0.f;
-	if( CAMERA_MODE_CUSTOMIZE_AVATAR == mCameraMode ) 
+	if( LLFloaterCustomize::instanceExists() /*CAMERA_MODE_CUSTOMIZE_AVATAR == mCameraMode*/ ) 
 	{
 		ui_offset = calcCustomizeAvatarUIOffset( camera_pos_global );
 	}
@@ -1557,9 +1545,9 @@ F32 LLAgentCamera::calcCustomizeAvatarUIOffset( const LLVector3d& camera_pos_glo
 {
 	F32 ui_offset = 0.f;
 
-	if( gFloaterCustomize )
+	if( LLFloaterCustomize::instanceExists() )
 	{
-		const LLRect& rect = gFloaterCustomize->getRect();
+		const LLRect& rect = LLFloaterCustomize::getInstance()->getRect();
 
 		// Move the camera so that the avatar isn't covered up by this floater.
 		F32 fraction_of_fov = 0.5f - (0.5f * (1.f - llmin(1.f, ((F32)rect.getWidth() / (F32)gViewerWindow->getWindowWidth()))));
@@ -1730,7 +1718,6 @@ F32	LLAgentCamera::calcCameraFOVZoomFactor()
 	else if (mFocusObject.notNull() && !mFocusObject->isAvatar() && !mFocusOnAvatar)
 	{
 		// don't FOV zoom on mostly transparent objects
-		LLVector3 focus_offset = mFocusObjectOffset;
 		F32 obj_min_dist = 0.f;
 		if (!gSavedSettings.getBOOL("AscentDisableMinZoomDist"))
 			calcCameraMinDistance(obj_min_dist);
@@ -1897,7 +1884,6 @@ LLVector3d LLAgentCamera::calcCameraPositionTargetGlobal(BOOL *hit_limit)
 			// set the global camera position
 			LLVector3d camera_offset;
 			
-			LLVector3 av_pos = !isAgentAvatarValid() ? LLVector3::zero : gAgentAvatarp->getRenderPosition();
 			camera_offset.setVec( local_camera_offset );
 			camera_position_global = frame_center_global + head_offset + camera_offset;
 
@@ -2384,29 +2370,21 @@ void LLAgentCamera::changeCameraToCustomizeAvatar()
 		gFocusMgr.setKeyboardFocus( NULL );
 		gFocusMgr.setMouseCapture( NULL );
 
-		LLVOAvatarSelf::onCustomizeStart();
+		// Remove any pitch or rotation from the avatar
+		LLVector3 at = gAgent.getAtAxis();
+		at.mV[VZ] = 0.f;
+		at.normalize();
+		gAgent.resetAxes(at);
 
-		if (isAgentAvatarValid())
+		gAgent.sendAnimationRequest(ANIM_AGENT_CUSTOMIZE, ANIM_REQUEST_START);
+		gAgent.setCustomAnim(TRUE);
+		gAgentAvatarp->startMotion(ANIM_AGENT_CUSTOMIZE);
+		LLMotion* turn_motion = gAgentAvatarp->findMotion(ANIM_AGENT_CUSTOMIZE);
+
+		if (turn_motion)
 		{
-			// Remove any pitch or rotation from the avatar
-			LLVector3 at = gAgent.getAtAxis();
-			at.mV[VZ] = 0.f;
-			at.normalize();
-			gAgent.resetAxes(at);
-
-			gAgent.sendAnimationRequest(ANIM_AGENT_CUSTOMIZE, ANIM_REQUEST_START);
-			gAgent.setCustomAnim(TRUE);
-			gAgentAvatarp->startMotion(ANIM_AGENT_CUSTOMIZE);
-			LLMotion* turn_motion = gAgentAvatarp->findMotion(ANIM_AGENT_CUSTOMIZE);
-
-			if (turn_motion)
-			{
-				// delay camera animation long enough to play through turn animation
-				setAnimationDuration(turn_motion->getDuration() + CUSTOMIZE_AVATAR_CAMERA_ANIM_SLOP);
-			}
-
-			gAgentAvatarp->invalidateAll();
-			gAgentAvatarp->updateMeshTextures();
+			// delay camera animation long enough to play through turn animation
+			setAnimationDuration(turn_motion->getDuration() + CUSTOMIZE_AVATAR_CAMERA_ANIM_SLOP);
 		}
 	}
 	// <edit>
@@ -2629,7 +2607,7 @@ void LLAgentCamera::setCameraPosAndFocusGlobal(const LLVector3d& camera_pos, con
 	{
 		startCameraAnimation();
 
-		if( CAMERA_MODE_CUSTOMIZE_AVATAR == mCameraMode ) 
+		if( LLFloaterCustomize::instanceExists()/*CAMERA_MODE_CUSTOMIZE_AVATAR == mCameraMode*/ ) 
 		{
 			// Compensate for the fact that the camera has already been offset to make room for LLFloaterCustomize.
 			mAnimationCameraStartGlobal -= LLVector3d(LLViewerCamera::getInstance()->getLeftAxis() * calcCustomizeAvatarUIOffset( mAnimationCameraStartGlobal ));

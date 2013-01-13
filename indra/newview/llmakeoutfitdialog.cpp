@@ -34,10 +34,11 @@
 
 #include "llmakeoutfitdialog.h"
 
-#include "llagent.h"
 #include "llappearancemgr.h"
 #include "lluictrlfactory.h"
 #include "llvoavatarself.h"
+#include "llagent.h"
+#include "llviewerregion.h"
 
 #include "hippogridmanager.h"
 
@@ -214,5 +215,10 @@ void LLMakeOutfitDialog::makeOutfit(const std::string folder_name)
 		LLAppearanceMgr::instance().makeNewOutfitLinks(folder_name, item_list);
 	else
 		LLAppearanceMgr::instance().makeNewOutfitLegacy(folder_name, item_list, getUseLinks());
+
+	if ( gAgent.getRegion() && gAgent.getRegion()->getCentralBakeVersion())
+	{
+		LLAppearanceMgr::instance().requestServerAppearanceUpdate();
+	}
 }
 

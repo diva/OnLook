@@ -322,6 +322,16 @@ void LLViewerWearable::writeToAvatar(LLAvatarAppearance *avatarp)
 
 	if (!viewer_avatar->isValid()) return;
 
+#if 0
+	// FIXME DRANO - kludgy way to avoid overwriting avatar state from wearables.
+	// Ideally would avoid calling this func in the first place.
+	if (viewer_avatar->isUsingServerBakes() &&
+		!viewer_avatar->isUsingLocalAppearance())
+	{
+		return;
+	}
+#endif
+
 	ESex old_sex = avatarp->getSex();
 
 	LLWearable::writeToAvatar(avatarp);
@@ -381,9 +391,9 @@ void LLViewerWearable::removeFromAvatar( LLWearableType::EType type, BOOL upload
 		}
 	}
 
-	if(gAgentCamera.cameraCustomizeAvatar())
+	if(isAgentAvatarValid() && gAgentAvatarp->isEditingAppearance() && LLFloaterCustomize::instanceExists())
 	{
-		gFloaterCustomize->wearablesChanged(type);
+		LLFloaterCustomize::getInstance()->wearablesChanged(type);
 	}
 
 	gAgentAvatarp->updateVisualParams();
@@ -465,6 +475,13 @@ void LLViewerWearable::setItemID(const LLUUID& item_id)
 
 void LLViewerWearable::revertValues()
 {
+#if 0
+	// DRANO avoid overwrite when not in local appearance
+	if (isAgentAvatarValid() && gAgentAvatarp->isUsingServerBakes() && !gAgentAvatarp->isUsingLocalAppearance())
+	{
+		return;
+	}
+#endif
 	LLWearable::revertValues();
 
 
@@ -473,8 +490,8 @@ void LLViewerWearable::revertValues()
 	{
 		panel->updateScrollingPanelList();
 	}*/
-	if( gFloaterCustomize && gAgentWearables.getWearableIndex(this)==0 )
-		gFloaterCustomize->updateScrollingPanelList();
+	if( LLFloaterCustomize::instanceExists() && gAgentWearables.getWearableIndex(this)==0 )
+		LLFloaterCustomize::getInstance()->updateScrollingPanelList();
 	
 }
 
@@ -488,8 +505,8 @@ void LLViewerWearable::saveValues()
 		panel->updateScrollingPanelList();
 	}*/
 
-	if( gFloaterCustomize && gAgentWearables.getWearableIndex(this)==0)
-		gFloaterCustomize->updateScrollingPanelList();
+	if( LLFloaterCustomize::instanceExists() && gAgentWearables.getWearableIndex(this)==0)
+		LLFloaterCustomize::getInstance()->updateScrollingPanelList();
 }
 
 /*void LLViewerWearable::readFromAvatar()

@@ -57,6 +57,7 @@
 #include "llviewerstats.h"
 #include "llviewerregion.h"
 #include "llviewertexlayer.h"
+#include "llviewerwearable.h"
 #include "llappearancemgr.h"
 #include "llmeshrepository.h"
 #include "llvovolume.h"
@@ -227,8 +228,6 @@ BOOL LLVOAvatarSelf::loadAvatarSelf()
 		llwarns << "avatar file: buildSkeleton() failed" << llendl;
 		return FALSE;
 	}
-	// TODO: make loadLayersets() called only by self.
-	//success &= loadLayersets();
 
 	return success;
 }
@@ -569,6 +568,14 @@ BOOL LLVOAvatarSelf::setParamWeight(const LLViewerVisualParam *param, F32 weight
 		return FALSE;
 	}
 
+#if 0
+	// FIXME DRANO - kludgy way to avoid overwriting avatar state from wearables.
+	if (isUsingServerBakes() && !isUsingLocalAppearance())
+	{
+		return FALSE;
+	}
+#endif
+
 	if (param->getCrossWearable())
 	{
 		LLWearableType::EType type = (LLWearableType::EType)param->getWearableType();
@@ -652,7 +659,10 @@ U32  LLVOAvatarSelf::processUpdateMessage(LLMessageSystem *mesgsys,
 {
 	U32 retval = LLVOAvatar::processUpdateMessage(mesgsys,user_data,block_num,update_type,dp);
 
-	if (mInitialBakesLoaded == false && retval == 0x0)
+	// FIXME DRANO - skipping in the case of !mFirstAppearanceMessageReceived prevents us from trying to
+	// load textures before we know where they come from (ie, from baking service or not);
+	// unknown impact on performance.
+	if (mInitialBakesLoaded == false && retval == 0x0 && mFirstAppearanceMessageReceived)
 	{
 		// call update textures to force the images to be created
 		updateMeshTextures();
@@ -727,14 +737,14 @@ void LLVOAvatarSelf::removeMissingBakedTextures()
 		for (U32 i = 0; i < mBakedTextureDatas.size(); i++)
 		{
 			LLViewerTexLayerSet *layerset = getTexLayerSet(i);
-			if(layerset)
-			{
-				layerset->setUpdatesEnabled(TRUE);
-				invalidateComposite(layerset, FALSE);
-			}
+			layerset->setUpdatesEnabled(TRUE);
+			invalidateComposite(layerset, FALSE);
 		}
 		updateMeshTextures();
-		requestLayerSetUploads();
+		if (getRegion() && !getRegion()->getCentralBakeVersion())
+		{
+			requestLayerSetUploads();
+		}
 	}
 }
 
@@ -1216,7 +1226,7 @@ BOOL LLVOAvatarSelf::detachAttachmentIntoInventory(const LLUUID &item_id)
 			const LLViewerObject *attached_obj = gAgentAvatarp->getWornAttachment(item_id);
 			if (!attached_obj)
 			{
-				LLAppearanceMgr::instance().removeCOFItemLinks(item_id, false);
+				LLAppearanceMgr::instance().removeCOFItemLinks(item_id);
 			}
 		}
 		return TRUE;
@@ -1257,11 +1267,8 @@ void LLVOAvatarSelf::localTextureLoaded(BOOL success, LLViewerFetchedTexture *sr
 			discard_level < local_tex_obj->getDiscard())
 		{
 			local_tex_obj->setDiscard(discard_level);
-			if (!isEditingAppearance())
-			{
-				requestLayerSetUpdate(index);
-			}
-			else
+			requestLayerSetUpdate(index);
+			if (isEditingAppearance())
 			{
 				LLVisualParamHint::requestHintUpdates();
 			}
@@ -1554,7 +1561,7 @@ void LLVOAvatarSelf::invalidateComposite( LLTexLayerSet* layerset, BOOL upload_r
 	layer_set->requestUpdate();
 	layer_set->invalidateMorphMasks();
 
-	if( upload_result )
+	if( upload_result  && (getRegion() && !getRegion()->getCentralBakeVersion()))
 	{
 		llassert(isSelf());
 
@@ -1742,15 +1749,12 @@ void LLVOAvatarSelf::setLocalTexture(ETextureIndex type, LLViewerTexture* src_te
 					local_tex_obj->setDiscard(tex_discard);
 					if (isSelf())
 					{
-					if (!isEditingAppearance())
-					{
 						requestLayerSetUpdate(type);
+						if (isEditingAppearance())
+						{
+							LLVisualParamHint::requestHintUpdates();
+						}
 					}
-					else
-					{
-						LLVisualParamHint::requestHintUpdates();
-					}
-				}
 				}
 				else
 				{					
@@ -1764,6 +1768,7 @@ void LLVOAvatarSelf::setLocalTexture(ETextureIndex type, LLViewerTexture* src_te
 	local_tex_obj->setID(tex->getID());
 	setBakedReady(type,baked_version_ready,index);
 }
+
 //virtual
 void LLVOAvatarSelf::setBakedReady(LLAvatarAppearanceDefines::ETextureIndex type, BOOL baked_version_exists, U32 index)
 {
@@ -2150,29 +2155,29 @@ void LLVOAvatarSelf::addLocalTextureStats( ETextureIndex type, LLViewerFetchedTe
 {
 	if (!isIndexLocalTexture(type)) return;
 
-	if (!covered_by_baked)
+	if (getLocalTextureID(type, index) != IMG_DEFAULT_AVATAR && imagep->getDiscardLevel() != 0)
 	{
-		if (getLocalTextureID(type, index) != IMG_DEFAULT_AVATAR && imagep->getDiscardLevel() != 0)
-		{
-			F32 desired_pixels;
-			desired_pixels = llmin(mPixelArea, (F32)getTexImageArea());
-			imagep->setBoostLevel(getAvatarBoostLevel());
+		F32 desired_pixels;
+		desired_pixels = llmin(mPixelArea, (F32)getTexImageArea());
 
-			imagep->resetTextureStats();
-			imagep->setMaxVirtualSizeResetInterval(MAX_TEXTURE_VIRTURE_SIZE_RESET_INTERVAL);
-			imagep->addTextureStats( desired_pixels / texel_area_ratio );
-			imagep->setAdditionalDecodePriority(SELF_ADDITIONAL_PRI) ;
-			imagep->forceUpdateBindStats() ;
-			if (imagep->getDiscardLevel() < 0)
-			{
-				mHasGrey = TRUE; // for statistics gathering
-			}
-		}
-		else
+		if (isUsingLocalAppearance())
 		{
-			// texture asset is missing
+			imagep->setBoostLevel(getAvatarBoostLevel());
+			imagep->setAdditionalDecodePriority(SELF_ADDITIONAL_PRI) ;
+		}
+		imagep->resetTextureStats();
+		imagep->setMaxVirtualSizeResetInterval(MAX_TEXTURE_VIRTURE_SIZE_RESET_INTERVAL);
+		imagep->addTextureStats( desired_pixels / texel_area_ratio );
+		imagep->forceUpdateBindStats() ;
+		if (imagep->getDiscardLevel() < 0)
+		{
 			mHasGrey = TRUE; // for statistics gathering
 		}
+	}
+	else
+	{
+		// texture asset is missing
+		mHasGrey = TRUE; // for statistics gathering
 	}
 }
 
@@ -2436,12 +2441,6 @@ void LLVOAvatarSelf::processRebakeAvatarTextures(LLMessageSystem* msg, void**)
 	}
 }
 
-BOOL LLVOAvatarSelf::isEditingAppearance() const
-{
-	// Composite textures are used during appearance mode.
-	return gAgentCamera.cameraCustomizeAvatar();
-}
-
 
 void LLVOAvatarSelf::forceBakeAllTextures(bool slam_for_debug)
 {
@@ -2524,19 +2523,50 @@ LLViewerTexLayerSet* LLVOAvatarSelf::getLayerSet(EBakedTextureIndex baked_index)
 
 
 // static
-void LLVOAvatarSelf::onCustomizeStart()
-{
-	// We're no longer doing any baking or invalidating on entering 
-	// appearance editing mode. Leaving function in place in case 
-	// further changes require us to do something at this point - Nyx
-}
-
-// static
-void LLVOAvatarSelf::onCustomizeEnd()
+void LLVOAvatarSelf::onCustomizeStart(bool disable_camera_switch)
 {
 	if (isAgentAvatarValid())
 	{
+		gAgentAvatarp->mIsEditingAppearance = true;
+		gAgentAvatarp->mUseLocalAppearance = true;
+
+		if (gSavedSettings.getBOOL("AppearanceCameraMovement") && !disable_camera_switch)
+		{
+			gAgentCamera.changeCameraToCustomizeAvatar();
+		}
+
+#if 0
+		gAgentAvatarp->clearVisualParamWeights();
+		gAgentAvatarp->idleUpdateAppearanceAnimation();
+#endif
+		
 		gAgentAvatarp->invalidateAll();
+		gAgentAvatarp->updateMeshTextures();
+	}
+}
+
+// static
+void LLVOAvatarSelf::onCustomizeEnd(bool disable_camera_switch)
+{
+
+	if (isAgentAvatarValid())
+	{
+		gAgentAvatarp->mIsEditingAppearance = false;
+		if (gAgentAvatarp->getRegion() && !gAgentAvatarp->getRegion()->getCentralBakeVersion())
+		{
+			// FIXME DRANO - move to sendAgentSetAppearance, make conditional on upload complete.
+			gAgentAvatarp->mUseLocalAppearance = false;
+		}
+
+		gAgentAvatarp->invalidateAll();
+
+		if (gAgentCamera.cameraCustomizeAvatar()) //If in customize cam, break out of it, always.
+		{
+			gAgentCamera.changeCameraToDefault();
+			gAgentCamera.resetView();
+		}
+
+		LLAppearanceMgr::instance().updateAppearanceFromCOF();
 	}
 }
 
@@ -2675,6 +2705,41 @@ void LLVOAvatarSelf::deleteScratchTextures()
 void LLVOAvatarSelf::dumpScratchTextureByteCount()
 {
 	llinfos << "Scratch Texture GL: " << (sScratchTexBytes/1024) << "KB" << llendl;
+}
+
+void dump_visual_param(apr_file_t* file, LLVisualParam* viewer_param, F32 value);
+
+void LLVOAvatarSelf::dumpWearableInfo(LLAPRFile& outfile)
+{
+	apr_file_t* file = outfile.getFileHandle();
+	if (!file)
+	{
+		return;
+	}
+
+	
+	apr_file_printf( file, "\n<wearable_info>\n" );
+
+	LLWearableData *wd = getWearableData();
+	for (S32 type = 0; type < LLWearableType::WT_COUNT; type++)
+	{
+		const std::string& type_name = LLWearableType::getTypeName((LLWearableType::EType)type);
+		for (U32 j=0; j< wd->getWearableCount((LLWearableType::EType)type); j++)
+		{
+			LLViewerWearable *wearable = gAgentWearables.getViewerWearable((LLWearableType::EType)type,j);
+			apr_file_printf( file, "\n\t    <wearable type=\"%s\" name=\"%s\"/>\n",
+							 type_name.c_str(), wearable->getName().c_str() );
+			LLWearable::visual_param_vec_t v_params;
+			wearable->getVisualParams(v_params);
+			for (LLWearable::visual_param_vec_t::iterator it = v_params.begin();
+				 it != v_params.end(); ++it)
+			{
+				LLVisualParam *param = *it;
+				dump_visual_param(file, param, param->getWeight());
+			}
+		}
+	}
+	apr_file_printf( file, "\n</wearable_info>\n" );
 }
 
 // static

@@ -74,19 +74,16 @@ using namespace LLAvatarAppearanceDefines;
 ///////////////////////////////////////////////////////////////////////////////
 
 // Callback to wear and start editing an item that has just been created.
-class LLWearAndEditCallback : public LLInventoryCallback
+void wear_and_edit_cb(const LLUUID& inv_item)
 {
-	void fire(const LLUUID& inv_item)
-	{
-		if (inv_item.isNull()) return;
-
-		// Request editing the item after it gets worn.
-		gAgentWearables.requestEditingWearable(inv_item);
-
-		// Wear it.
-		LLAppearanceMgr::instance().wearItemOnAvatar(inv_item);
-	}
-};
+	if (inv_item.isNull()) return;
+	
+	// Request editing the item after it gets worn.
+	gAgentWearables.requestEditingWearable(inv_item);
+	
+	// Wear it.
+	LLAppearanceMgr::instance().wearItemOnAvatar(inv_item);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -758,9 +755,9 @@ void LLAgentWearables::wearableUpdated(LLWearable *wearable, BOOL removed)
 		// This number was incorrectly incremented for internal builds before release, and
 		// this fix will ensure that the affected wearables are re-saved with the right version number.
 		// the versions themselves are compatible. This code can be removed before release.
-		if( viewer_wearable->getDefinitionVersion() == 24 )
+		if( wearable->getDefinitionVersion() == 24 )
 		{
-			viewer_wearable->setDefinitionVersion(22);
+			wearable->setDefinitionVersion(22);
 			U32 index = getWearableIndex(wearable);
 			llinfos << "forcing wearable type " << wearable->getType() << " to version 22 from 24" << llendl;
 			saveWearable(wearable->getType(),index,TRUE);
@@ -770,8 +767,8 @@ void LLAgentWearables::wearableUpdated(LLWearable *wearable, BOOL removed)
 		//while the wearable being created has not yet been stuffed into the wearable list.
 		//This results in the param hints being buggered and screwing up the current wearable during LLVisualParamHint::preRender,
 		//thus making the wearable 'dirty'. The code below basically 'forces' a refresh of the panel to fix this.
-		if(gFloaterCustomize)
-			gFloaterCustomize->wearablesChanged(wearable->getType());
+		if( LLFloaterCustomize::instanceExists() )
+			LLFloaterCustomize::getInstance()->wearablesChanged(wearable->getType());
 			
 		checkWearableAgainstInventory(viewer_wearable);
 	}
@@ -1605,7 +1602,7 @@ void LLAgentWearables::setWearableFinal(LLInventoryItem* new_item, LLViewerWeara
 
 void LLAgentWearables::queryWearableCache()
 {
-	if (!areWearablesLoaded())
+	if (!areWearablesLoaded() || (gAgent.getRegion() && gAgent.getRegion()->getCentralBakeVersion()))
 	{
 		return;
 	}
@@ -1823,31 +1820,6 @@ void LLAgentWearables::userRemoveMultipleAttachments(llvo_vec_t& objects_to_remo
 	gMessageSystem->sendReliable(gAgent.getRegionHost());
 }
 
-void LLAgentWearables::userRemoveAllAttachments()
-{
-	if (!isAgentAvatarValid()) return;
-
-	llvo_vec_t objects_to_remove;
-	
-	for (LLVOAvatar::attachment_map_t::iterator iter = gAgentAvatarp->mAttachmentPoints.begin(); 
-		 iter != gAgentAvatarp->mAttachmentPoints.end();)
-	{
-		LLVOAvatar::attachment_map_t::iterator curiter = iter++;
-		LLViewerJointAttachment* attachment = curiter->second;
-		for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = attachment->mAttachedObjects.begin();
-			 attachment_iter != attachment->mAttachedObjects.end();
-			 ++attachment_iter)
-		{
-			LLViewerObject *attached_object = (*attachment_iter);
-			if (attached_object)
-			{
-				objects_to_remove.push_back(attached_object);
-			}
-		}
-	}
-	userRemoveMultipleAttachments(objects_to_remove);
-}
-
 void LLAgentWearables::userAttachMultipleAttachments(LLInventoryModel::item_array_t& obj_item_array)
 {
 // [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1b) | Added: RLVa-1.3.1b
@@ -2034,9 +2006,9 @@ bool LLAgentWearables::moveWearable(const LLViewerInventoryItem* item, bool clos
 		U32 swap_i = closer_to_body ? i-1 : i+1;
 		swapWearables(type, i, swap_i);
 
-		if(gFloaterCustomize)
+		if( LLFloaterCustomize::instanceExists() )
 		{
-			gFloaterCustomize->wearablesChanged(item->getWearableType());
+			LLFloaterCustomize::getInstance()->wearablesChanged(item->getWearableType());
 		}
 
 		return true;
@@ -2053,7 +2025,7 @@ void LLAgentWearables::createWearable(LLWearableType::EType type, bool wear, con
 	LLViewerWearable* wearable = LLWearableList::instance().createNewWearable(type, gAgentAvatarp);
 	LLAssetType::EType asset_type = wearable->getAssetType();
 	LLInventoryType::EType inv_type = LLInventoryType::IT_WEARABLE;
-	LLPointer<LLInventoryCallback> cb = wear ? new LLWearAndEditCallback : NULL;
+	LLPointer<LLInventoryCallback> cb = wear ? new LLBoostFuncInventoryCallback(wear_and_edit_cb) : NULL;
 	LLUUID folder_id;
 
 	if (parent_id.notNull())
@@ -2096,16 +2068,10 @@ void LLAgentWearables::editWearable(const LLUUID& item_id)
 		return;
 	}
 
-	//const BOOL disable_camera_switch = LLWearableType::getDisableCameraSwitch(wearable->getType());
+	const BOOL disable_camera_switch = LLWearableType::getDisableCameraSwitch(wearable->getType());
 
 	// Set the tab to the right wearable.
-	LLFloaterCustomize::setCurrentWearableType( wearable->getType() );
-	
-	if( CAMERA_MODE_CUSTOMIZE_AVATAR != gAgentCamera.getCameraMode() )
-	{
-		// Start Avatar Customization
-		gAgentCamera.changeCameraToCustomizeAvatar();
-	}
+	LLFloaterCustomize::editWearable( wearable, disable_camera_switch );
 }
 
 // Request editing the item after it gets worn.

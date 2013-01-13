@@ -35,6 +35,7 @@
 #include "llagentwearables.h"
 #include "llagentui.h"
 #include "llanimationstates.h"
+#include "llappearancemgr.h"
 #include "llcallingcard.h"
 #include "llcapabilitylistener.h"
 #include "llconsole.h"
@@ -775,6 +776,18 @@ void LLAgent::toggleTPosed()
 	setTPosed(posed);
 }
 
+void LLAgent::handleServerBakeRegionTransition(const LLUUID& region_id)
+{
+	llinfos << "called" << llendl;
+
+	if (isAgentAvatarValid() &&
+		!gAgentAvatarp->isUsingServerBakes() &&
+		(mRegionp->getCentralBakeVersion()>0))
+	{
+		LLAppearanceMgr::instance().requestServerAppearanceUpdate();
+	}
+}
+
 
 //-----------------------------------------------------------------------------
 // setRegion()
@@ -865,6 +878,19 @@ void LLAgent::setRegion(LLViewerRegion *regionp)
 	else
 	{
 		LLEnvManagerNew::instance().onRegionCrossing();
+	}
+
+	// If the newly entered region is using server bakes, and our
+	// current appearance is non-baked, request appearance update from
+	// server.
+	if (mRegionp->capabilitiesReceived())
+	{
+		handleServerBakeRegionTransition(mRegionp->getRegionID());
+	}
+	else
+	{
+		// Need to handle via callback after caps arrive.
+		mRegionp->setCapabilitiesReceivedCallback(boost::bind(&LLAgent::handleServerBakeRegionTransition,this,_1));
 	}
 }
 
@@ -1705,12 +1731,10 @@ void LLAgent::autoPilot(F32 *delta_yaw)
 		*delta_yaw = yaw;
 
 		// Compute when to start slowing down and when to stop
-		F32 stop_distance = mAutoPilotStopDistance;
 		F32 slow_distance;
 		if (getFlying())
 		{
 			slow_distance = llmax(6.f, mAutoPilotStopDistance + 5.f);
-			stop_distance = llmax(2.f, mAutoPilotStopDistance);
 		}
 		else
 		{
@@ -4403,12 +4427,18 @@ void LLAgent::requestLeaveGodMode()
 //-----------------------------------------------------------------------------
 void LLAgent::sendAgentSetAppearance()
 {
-	if (!isAgentAvatarValid()) return;
+	// FIXME DRANO - problems around new-style appearance in an old-style region.
+	// - does this get called?
+	// - need to change mUseServerBakes->FALSE in that case
+	// - need to call processAvatarAppearance as if server had returned this result?
+	// gAgentAvatarp->mUseServerBakes = FALSE;
 
-	if (gAgentQueryManager.mNumPendingQueries > 0 && (isAgentAvatarValid() && !gAgentAvatarp->isEditingAppearance())) 
+	if (gAgentQueryManager.mNumPendingQueries > 0) 
 	{
 		return;
 	}
+
+	if (!isAgentAvatarValid() || (getRegion() && getRegion()->getCentralBakeVersion())) return;
 
 	LL_INFOS("Avatar") << gAgentAvatarp->avString() << "TAT: Sent AgentSetAppearance: " << gAgentAvatarp->getBakedStatusForPrintout() << LL_ENDL;
 	//dumpAvatarTEs( "sendAgentSetAppearance()" );

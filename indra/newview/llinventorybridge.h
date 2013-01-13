@@ -514,10 +514,9 @@ public:
 	void			editOnAvatar();
 
 	static BOOL		canRemoveFromAvatar( void* userdata );
-	static void		onRemoveFromAvatar( void* userdata );
-	static void		onRemoveFromAvatarArrived( LLViewerWearable* wearable, 	void* userdata );
-	static void 	removeItemFromAvatar(LLViewerInventoryItem *item);
-	static void 	removeAllClothesFromAvatar();
+	//static void		onRemoveFromAvatar( void* userdata );
+	//static void		onRemoveFromAvatarArrived( LLViewerWearable* wearable, 	void* userdata );
+	//static void 	removeAllClothesFromAvatar();
 	void			removeFromAvatar();
 protected:
 	LLAssetType::EType mAssetType;

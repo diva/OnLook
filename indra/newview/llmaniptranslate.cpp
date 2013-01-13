@@ -2,31 +2,25 @@
  * @file llmaniptranslate.cpp
  * @brief LLManipTranslate class implementation
  *
- * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
- * Copyright (c) 2002-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -502,7 +496,6 @@ BOOL LLManipTranslate::handleHover(S32 x, S32 y, MASK mask)
 	}
 
 	// Throttle updates to 10 per second.
-	BOOL send_update = FALSE;
 
 	LLVector3		axis_f;
 	LLVector3d		axis_d;
@@ -719,11 +712,6 @@ BOOL LLManipTranslate::handleHover(S32 x, S32 y, MASK mask)
 				LLVector3 old_position_local = object->getPosition();
 				LLVector3 new_position_local = selectNode->mSavedPositionLocal + (clamped_relative_move_f * objWorldRotation);
 
-				// move and clamp root object first, before adjusting children
-				if (new_position_local != old_position_local)
-				{
-					send_update = TRUE;
-				}
 				//RN: I forget, but we need to do this because of snapping which doesn't often result
 				// in position changes even when the mouse moves
 				object->setPosition(new_position_local);
@@ -733,8 +721,6 @@ BOOL LLManipTranslate::handleHover(S32 x, S32 y, MASK mask)
 
 				if (selectNode->mIndividualSelection)
 				{
-					send_update = FALSE;
-		
 					// counter-translate child objects if we are moving the root as an individual
 					object->resetChildrenPosition(old_position_local - new_position_local, TRUE) ;					
 				}
@@ -770,7 +756,6 @@ BOOL LLManipTranslate::handleHover(S32 x, S32 y, MASK mask)
 				}
 
 				// PR: Only update if changed
-				LLVector3d old_position_global = object->getPositionGlobal();
 				LLVector3 old_position_agent = object->getPositionAgent();
 				LLVector3 new_position_agent = gAgent.getPosAgentFromGlobal(new_position_global);
 				if (object->isRootEdit())
@@ -792,11 +777,6 @@ BOOL LLManipTranslate::handleHover(S32 x, S32 y, MASK mask)
 				{
 					// counter-translate child objects if we are moving the root as an individual
 					object->resetChildrenPosition(old_position_agent - new_position_agent, TRUE) ;					
-					send_update = FALSE;
-				}
-				else if (old_position_global != new_position_global)
-				{
-					send_update = TRUE;
 				}
 			}
 			selectNode->mLastPositionLocal  = object->getPosition();
@@ -1328,7 +1308,6 @@ void LLManipTranslate::renderSnapGuides()
 					// add in off-axis offset
 					tick_start += (mSnapOffsetAxis * mSnapOffsetMeters);
 
-					BOOL is_sub_tick = FALSE;
 					F32 tick_scale = 1.f;
 					for (F32 division_level = max_subdivisions; division_level >= sGridMinSubdivisionLevel; division_level /= 2.f)
 					{
@@ -1337,7 +1316,6 @@ void LLManipTranslate::renderSnapGuides()
 							break;
 						}
 						tick_scale *= 0.7f;
-						is_sub_tick = TRUE;
 					}
 
 // 					S32 num_ticks_to_fade = is_sub_tick ? num_ticks_per_side / 2 : num_ticks_per_side;
@@ -1559,7 +1537,6 @@ void LLManipTranslate::renderSnapGuides()
 		
 		float a = line_alpha;
 
-		LLColor4 col = gColors.getColor("SilhouetteChildColor");
 		{
 			//draw grid behind objects
 			LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE);

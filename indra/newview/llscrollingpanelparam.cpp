@@ -147,7 +147,7 @@ void LLScrollingPanelParam::setVisible( BOOL visible )
 
 void LLScrollingPanelParam::draw()
 {
-	if( !mWearable || gFloaterCustomize->isMinimized() )
+	if( !mWearable || !LLFloaterCustomize::instanceExists() || LLFloaterCustomize::getInstance()->isMinimized() )
 	{
 		return;
 	}

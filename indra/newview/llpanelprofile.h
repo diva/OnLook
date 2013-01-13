@@ -47,7 +47,7 @@ class LLPanelProfile : public LLPanel
 public:
 	/*virtual*/ BOOL postBuild();
 	/*virtual*/ void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
-	/*virtual*/ void onOpen(const LLSD& key);
+	/*virtual*/ void onOpen();
 
 	virtual void openPanel(LLPanel* panel, const LLSD& params);
 

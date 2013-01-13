@@ -193,11 +193,6 @@ BOOL LLFloaterRegionDebugConsole::postBuild()
 void LLFloaterRegionDebugConsole::onClose(bool app_quitting)
 {
 	LLFloater::onClose(app_quitting);
-
-	if (!app_quitting)
-	{
-		delete this;
-	}
 }
 
 void LLFloaterRegionDebugConsole::onInput(LLUICtrl* ctrl, const LLSD& param)

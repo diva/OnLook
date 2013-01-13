@@ -170,7 +170,7 @@ public:
 	BOOL handleHover(S32 x, S32 y, MASK mask);
 	BOOL handleScrollWheel(S32 x, S32 y, S32 clicks); 
 
-	/*virtual*/ void onOpen(const LLSD& key);
+	/*virtual*/ void onOpen();
 
 	static void onMouseCaptureLostModelPreview(LLMouseHandler*);
 	static void setUploadAmount(S32 amount) { sUploadAmount = amount; }
