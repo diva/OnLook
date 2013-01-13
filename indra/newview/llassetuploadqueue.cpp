@@ -75,7 +75,7 @@ public:
 		delete mData;
    	}
 	
-	virtual void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void error(U32 statusNum, const std::string& reason)
    	{
 		llwarns << "Error: " << reason << llendl;
 		LLUpdateTaskInventoryResponder::error(statusNum, reason);
@@ -86,7 +86,7 @@ public:
    		}
    	}
 
-	virtual void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
    	{
 		LLUpdateTaskInventoryResponder::result(content);
    		LLAssetUploadQueue *queue = mSupplier->get();
@@ -136,12 +136,13 @@ public:
 		LLUpdateTaskInventoryResponder::uploadComplete(content);
 	}
 
+	/*virtual*/ char const* getName(void) const { return "LLAssetUploadChainResponder"; }
+
 	LLAssetUploadQueueSupplier *mSupplier;
 	char* mData;
 	U32 mDataSize;
 	std::string mScriptName;
 };
-
 
 LLAssetUploadQueue::LLAssetUploadQueue(LLAssetUploadQueueSupplier *supplier) :
 	mSupplier(supplier)

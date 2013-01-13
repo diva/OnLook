@@ -2326,7 +2326,7 @@ public:
 	}
 	
 	// if we get a normal response, handle it here
-	virtual void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{
 		LL_INFOS("Windlight") << "Successfully committed estate info" << llendl;
 
@@ -2337,13 +2337,14 @@ public:
 	}
 	
 	// if we get an error response
-	virtual void error(U32 status, const std::string& reason)
+	/*virtual*/ void error(U32 status, const std::string& reason)
 	{
 		llinfos << "LLEstateChangeInfoResponder::error "
 			<< status << ": " << reason << llendl;
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return estateChangeInfoResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return estateChangeInfoResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLEstateChangeInfoResponder"; }
 
 private:
 	LLHandle<LLPanel> mpPanel;

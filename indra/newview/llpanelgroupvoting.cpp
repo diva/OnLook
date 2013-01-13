@@ -693,7 +693,7 @@ public:
 	}
 
 	//If we get back a normal response, handle it here
-	virtual void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{
 		//Ack'd the proposal initialization, now let's finish up.
 		LLPanelGroupVoting::handleResponse(
@@ -702,7 +702,7 @@ public:
 	}
 
 	//If we get back an error (not found, etc...), handle it here
-	virtual void error(U32 status, const std::string& reason)
+	/*virtual*/ void error(U32 status, const std::string& reason)
 	{
 		llinfos << "LLPanelGroupVotingResponder::error "
 			<< status << ": " << reason << llendl;
@@ -710,8 +710,8 @@ public:
 		LLPanelGroupVoting::handleFailure(mGroupID);
 	}
 
-	//Return our timeout policy.
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return startGroupVoteResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return startGroupVoteResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLStartGroupVoteResponder"; }
 
 private:
 	LLUUID mGroupID;
@@ -726,7 +726,7 @@ public:
 	}
 
 	//If we get back a normal response, handle it here
-	virtual void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{
 		//Ack'd the proposal initialization, now let's finish up.
 		LLPanelGroupVoting::handleResponse(
@@ -736,7 +736,7 @@ public:
 	}
 
 	//If we get back an error (not found, etc...), handle it here
-	virtual void error(U32 status, const std::string& reason)
+	/*virtual*/ void error(U32 status, const std::string& reason)
 	{
 		llinfos << "LLPanelGroupVotingResponder::error "
 			<< status << ": " << reason << llendl;
@@ -745,7 +745,8 @@ public:
 	}
 
 	//Return out timeout policy.
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return groupProposalBallotResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return groupProposalBallotResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLGroupProposalBallotResponder"; }
 
 private:
 	LLUUID mGroupID;

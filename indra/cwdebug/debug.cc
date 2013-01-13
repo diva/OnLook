@@ -239,6 +239,7 @@ void stop_recording_backtraces(void)
       channel_ct curl DDCN("CURL");		//!< This debug channel is used for output related to AICurl.
       channel_ct curlio DDCN("CURLIO");	//!< This debug channel is used to print debug output of libcurl. This includes all HTTP network traffic.
       channel_ct curltr DDCN("CURLTR");	//!< This debug channel is used to print libcurl API calls.
+      channel_ct snapshot DDCN("SNAPSHOT");	//!< This debug channel is used for output related to snapshots.
 
     } // namespace dc
   } // namespace DEBUGCHANNELS

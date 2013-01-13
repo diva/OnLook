@@ -225,11 +225,12 @@ public:
 		LLMeshRepoThread::sActiveHeaderRequests--;
 	}
 
-	virtual void completedRaw(U32 status, const std::string& reason,
+	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshHeaderResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshHeaderResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLMeshHeaderResponder"; }
 };
 
 class LLMeshLODResponder : public LLHTTPClient::ResponderWithCompleted
@@ -251,11 +252,12 @@ public:
 		LLMeshRepoThread::sActiveLODRequests--;
 	}
 
-	virtual void completedRaw(U32 status, const std::string& reason,
+	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshLODResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshLODResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLMeshLODResponder"; }
 };
 
 class LLMeshSkinInfoResponder : public LLHTTPClient::ResponderWithCompleted
@@ -270,11 +272,12 @@ public:
 	{
 	}
 
-	virtual void completedRaw(U32 status, const std::string& reason,
+	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshSkinInfoResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshSkinInfoResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLMeshSkinInfoResponder"; }
 };
 
 class LLMeshDecompositionResponder : public LLHTTPClient::ResponderWithCompleted
@@ -289,11 +292,12 @@ public:
 	{
 	}
 
-	virtual void completedRaw(U32 status, const std::string& reason,
+	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshDecompositionResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshDecompositionResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLMeshDecompositionResponder"; }
 };
 
 class LLMeshPhysicsShapeResponder : public LLHTTPClient::ResponderWithCompleted
@@ -308,11 +312,12 @@ public:
 	{
 	}
 
-	virtual void completedRaw(U32 status, const std::string& reason,
+	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshPhysicsShapeResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshPhysicsShapeResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLMeshPhysicsShapeResponder"; }
 };
 
 void log_upload_error(S32 status, const LLSD& content, std::string stage, std::string model_name)
@@ -364,7 +369,7 @@ void log_upload_error(S32 status, const LLSD& content, std::string stage, std::s
 	}
 }
 
-class LLWholeModelFeeResponder: public LLHTTPClient::ResponderWithCompleted
+class LLWholeModelFeeResponder : public LLHTTPClient::ResponderWithCompleted
 {
 	LLMeshUploadThread* mThread;
 	LLSD mModelData;
@@ -389,9 +394,9 @@ public:
 		}
 	}
 
-	virtual void completed(U32 status,
-						   const std::string& reason,
-						   const LLSD& content)
+	/*virtual*/ void completed(U32 status,
+							   const std::string& reason,
+							   const LLSD& content)
 	{
 		LLSD cc = content;
 		if (gSavedSettings.getS32("MeshUploadFakeErrors")&1)
@@ -427,10 +432,11 @@ public:
 		}
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return wholeModelFeeResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return wholeModelFeeResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLWholeModelFeeResponder"; }
 };
 
-class LLWholeModelUploadResponder: public LLHTTPClient::ResponderWithCompleted
+class LLWholeModelUploadResponder : public LLHTTPClient::ResponderWithCompleted
 {
 	LLMeshUploadThread* mThread;
 	LLSD mModelData;
@@ -456,9 +462,9 @@ public:
 		}
 	}
 
-	virtual void completed(U32 status,
-						   const std::string& reason,
-						   const LLSD& content)
+	/*virtual*/ void completed(U32 status,
+							   const std::string& reason,
+							   const LLSD& content)
 	{
 		LLSD cc = content;
 		if (gSavedSettings.getS32("MeshUploadFakeErrors")&2)
@@ -496,7 +502,8 @@ public:
 		}
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return wholeModelUploadResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return wholeModelUploadResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLWholeModelUploadResponder"; }
 };
 
 LLMeshRepoThread::LLMeshRepoThread()

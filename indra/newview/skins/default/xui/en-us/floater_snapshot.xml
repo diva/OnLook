@@ -69,22 +69,22 @@
 		<combo_item name="CurrentWindow" value="[i0,i0]">
 			Current Window
 		</combo_item>
-		<combo_item name="500x500" value="[i500,i500]">
+		<combo_item name="500x500" value="[i630,i-2]">
 			500x500 (1:1)
 		</combo_item>
-		<combo_item name="500x375" value="[i500,i375]">
+		<combo_item name="500x375" value="[i840,i-2]">
 			500x375 (4:3)
 		</combo_item>
-		<combo_item name="500x350" value="[i500,i350]">
+		<combo_item name="500x350" value="[i900,i-2]">
 			500x350 (10:7)
 		</combo_item>
-		<combo_item name="500x313" value="[i500,i313]">
+		<combo_item name="500x313" value="[i1008,i-2]">
 			500x313 (16:10)
 		</combo_item>
-		<combo_item name="500x281" value="[i500,i281]">
+		<combo_item name="500x281" value="[i1120,i-2]">
 			500x281 (16:9)
 		</combo_item>
-		<combo_item name="500x250" value="[i500,i250]">
+		<combo_item name="500x250" value="[i1260,i-2]">
 			500x250 (2:1)
 		</combo_item>
 		<combo_item name="Custom" value="[i-1,i-1]">

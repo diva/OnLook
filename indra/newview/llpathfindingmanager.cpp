@@ -116,9 +116,10 @@ public:
 	NavMeshStatusResponder(const std::string &pCapabilityURL, LLViewerRegion *pRegion, bool pIsGetStatusOnly);
 	virtual ~NavMeshStatusResponder();
 
-	virtual void result(const LLSD &pContent);
-	virtual void error(U32 pStatus, const std::string& pReason);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return navMeshStatusResponder_timeout; }
+	/*virtual*/ void result(const LLSD &pContent);
+	/*virtual*/ void error(U32 pStatus, const std::string& pReason);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return navMeshStatusResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "NavMeshStatusResponder"; }
 
 protected:
 
@@ -139,9 +140,10 @@ public:
 	NavMeshResponder(const std::string &pCapabilityURL, U32 pNavMeshVersion, LLPathfindingNavMeshPtr pNavMeshPtr);
 	virtual ~NavMeshResponder();
 
-	virtual void result(const LLSD &pContent);
-	virtual void error(U32 pStatus, const std::string& pReason);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return navMeshResponder_timeout; }
+	/*virtual*/ void result(const LLSD &pContent);
+	/*virtual*/ void error(U32 pStatus, const std::string& pReason);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return navMeshResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "NavMeshResponder"; }
 
 protected:
 
@@ -161,9 +163,10 @@ public:
 	AgentStateResponder(const std::string &pCapabilityURL);
 	virtual ~AgentStateResponder();
 
-	virtual void result(const LLSD &pContent);
-	virtual void error(U32 pStatus, const std::string& pReason);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return agentStateResponder_timeout; }
+	/*virtual*/ void result(const LLSD &pContent);
+	/*virtual*/ void error(U32 pStatus, const std::string& pReason);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return agentStateResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "AgentStateResponder"; }
 
 protected:
 
@@ -181,9 +184,10 @@ public:
 	NavMeshRebakeResponder(const std::string &pCapabilityURL, LLPathfindingManager::rebake_navmesh_callback_t pRebakeNavMeshCallback);
 	virtual ~NavMeshRebakeResponder();
 
-	virtual void result(const LLSD &pContent);
-	virtual void error(U32 pStatus, const std::string& pReason);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return navMeshRebakeResponder_timeout; }
+	/*virtual*/ void result(const LLSD &pContent);
+	/*virtual*/ void error(U32 pStatus, const std::string& pReason);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return navMeshRebakeResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "NavMeshRebakeResponder"; }
 
 protected:
 
@@ -241,9 +245,10 @@ public:
 	ObjectLinksetsResponder(const std::string &pCapabilityURL, LinksetsResponderPtr pLinksetsResponsderPtr);
 	virtual ~ObjectLinksetsResponder();
 
-	virtual void result(const LLSD &pContent);
-	virtual void error(U32 pStatus, const std::string &pReason);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return objectLinksetsResponder_timeout; }
+	/*virtual*/ void result(const LLSD &pContent);
+	/*virtual*/ void error(U32 pStatus, const std::string &pReason);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return objectLinksetsResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "ObjectLinksetsResponder"; }
 
 protected:
 
@@ -261,9 +266,10 @@ public:
 	TerrainLinksetsResponder(const std::string &pCapabilityURL, LinksetsResponderPtr pLinksetsResponsderPtr);
 	virtual ~TerrainLinksetsResponder();
 
-	virtual void result(const LLSD &pContent);
-	virtual void error(U32 pStatus, const std::string &pReason);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return terrainLinksetsResponder_timeout; }
+	/*virtual*/ void result(const LLSD &pContent);
+	/*virtual*/ void error(U32 pStatus, const std::string &pReason);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return terrainLinksetsResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "TerrainLinksetsResponder"; }
 
 protected:
 
@@ -281,9 +287,10 @@ public:
 	CharactersResponder(const std::string &pCapabilityURL, LLPathfindingManager::request_id_t pRequestId, LLPathfindingManager::object_request_callback_t pCharactersCallback);
 	virtual ~CharactersResponder();
 
-	virtual void result(const LLSD &pContent);
-	virtual void error(U32 pStatus, const std::string &pReason);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return charactersResponder_timeout; }
+	/*virtual*/ void result(const LLSD &pContent);
+	/*virtual*/ void error(U32 pStatus, const std::string &pReason);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return charactersResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "CharactersResponder"; }
 
 protected:
 

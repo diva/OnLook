@@ -136,11 +136,11 @@ const int LL_ERR_PRICE_MISMATCH = -23018;
 // void foo(x, ASSERT_ONLY(int y,) int z);
 // void foo(x/*,*/ ASSERT_ONLY_COMMA(int y));	// The optional /*,*/ makes it just a bit better readable.
 #ifdef SHOW_ASSERT
-#define ASSERT_ONLY(type_param,...)			type_param,##__VA_ARGS__
-#define ASSERT_ONLY_COMMA(type_param,...)	, type_param,##__VA_ARGS__
+#define ASSERT_ONLY(...)		__VA_ARGS__
+#define ASSERT_ONLY_COMMA(...)	, __VA_ARGS__
 #else
-#define ASSERT_ONLY(type_param,...)
-#define ASSERT_ONLY_COMMA(type_param,...)
+#define ASSERT_ONLY(...)
+#define ASSERT_ONLY_COMMA(...)
 #endif
 
 // handy compile-time assert - enforce those template parameters! 

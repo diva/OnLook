@@ -143,8 +143,7 @@ static int scale_speaker_volume(float volume)
 	return scaled_volume;
 }
 
-class LLViewerVoiceAccountProvisionResponder :
-	public LLHTTPClient::ResponderWithResult
+class LLViewerVoiceAccountProvisionResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLViewerVoiceAccountProvisionResponder(int retries)
@@ -152,7 +151,7 @@ public:
 		mRetries = retries;
 	}
 
-	virtual void error(U32 status, const std::string& reason)
+	/*virtual*/ void error(U32 status, const std::string& reason)
 	{
 		if ( mRetries > 0 )
 		{
@@ -167,7 +166,7 @@ public:
 		}
 	}
 
-	virtual void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{
 		if ( gVoiceClient )
 		{
@@ -191,7 +190,8 @@ public:
 		}
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerVoiceAccountProvisionResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerVoiceAccountProvisionResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLViewerVoiceAccountProvisionResponder"; }
 
 private:
 	int mRetries;
@@ -1019,9 +1019,10 @@ class LLVoiceClientCapResponder : public LLHTTPClient::ResponderWithResult
 public:
 	LLVoiceClientCapResponder(void){};
 
-	virtual void error(U32 status, const std::string& reason);	// called with bad status codes
-	virtual void result(const LLSD& content);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return voiceClientCapResponder_timeout; }
+	/*virtual*/ void error(U32 status, const std::string& reason);	// called with bad status codes
+	/*virtual*/ void result(const LLSD& content);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return voiceClientCapResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLVoiceClientCapResponder"; }
 
 private:
 };

@@ -63,8 +63,7 @@ extern AIHTTPTimeoutPolicy placeAvatarTeleportResponder_timeout;
 // OGPX TODO: should this be combined with the Login responder for rez_avatar/place?
 // OGPX TODO: mResult should not get replaced in result(), instead 
 //            should replace individual LLSD fields in mResult.
-class LLPlaceAvatarTeleportResponder :
-	public LLHTTPClient::ResponderWithResult
+class LLPlaceAvatarTeleportResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLPlaceAvatarTeleportResponder()
@@ -75,7 +74,7 @@ public:
 	{
 	}
 	
-	void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void error(U32 statusNum, const std::string& reason)
 	{		
 		LL_INFOS("OGPX") << "LLPlaceAvatarTeleportResponder error in TP "
 				<< statusNum << " " << reason << LL_ENDL;
@@ -90,7 +89,7 @@ public:
 	
 	}
 
-	void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{
 		
 		LLSD result;
@@ -221,7 +220,8 @@ public:
 		
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return placeAvatarTeleportResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return placeAvatarTeleportResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLPlaceAvatarTeleportResponder"; }
 };
 
 // Statics

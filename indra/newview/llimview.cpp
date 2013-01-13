@@ -94,8 +94,7 @@ LLIMMgr* gIMMgr = NULL;
 //{
 //	return (LLStringUtil::compareDict( a->mName, b->mName ) < 0);
 //}
-class LLViewerChatterBoxInvitationAcceptResponder :
-	public LLHTTPClient::ResponderWithResult
+class LLViewerChatterBoxInvitationAcceptResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLViewerChatterBoxInvitationAcceptResponder(
@@ -106,7 +105,7 @@ public:
 		mInvitiationType = invitation_type;
 	}
 
-	void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{
 		if ( gIMMgr)
 		{
@@ -154,8 +153,8 @@ public:
 		}
 	}
 
-	void error(U32 statusNum, const std::string& reason)
-	{		
+	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	{
 		//throw something back to the viewer here?
 		if ( gIMMgr )
 		{
@@ -177,7 +176,8 @@ public:
 		}
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerChatterBoxInvitationAcceptResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerChatterBoxInvitationAcceptResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLViewerChatterBoxInvitationAcceptResponder"; }
 
 private:
 	LLUUID mSessionID;

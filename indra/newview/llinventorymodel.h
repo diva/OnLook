@@ -87,9 +87,10 @@ public:
 	{
 	public:
 		fetchInventoryResponder(const LLSD& request_sd) : mRequestSD(request_sd) {};
-		void result(const LLSD& content);			
-		void error(U32 status, const std::string& reason);
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return fetchInventoryResponder_timeout; }
+		/*virtual*/ void result(const LLSD& content);			
+		/*virtual*/ void error(U32 status, const std::string& reason);
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return fetchInventoryResponder_timeout; }
+		/*virtual*/ char const* getName(void) const { return "fetchInventoryResponder"; }
 	protected:
 		LLSD mRequestSD;
 	};

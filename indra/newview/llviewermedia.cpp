@@ -117,6 +117,8 @@ public:
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return mimeDiscoveryResponder_timeout; }
 
+	/*virtual*/ char const* getName(void) const { return "LLMimeDiscoveryResponder"; }
+
 	public:
 		viewer_media_t mMediaImpl;
 		std::string mDefaultMimeType;
@@ -135,16 +137,16 @@ public:
 	{
 	}
 
-	/* virtual */ bool needsHeaders(void) const { return true; }
+	/*virtual*/ bool needsHeaders(void) const { return true; }
 
-	/* virtual */ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{
 		LL_DEBUGS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
 		LL_DEBUGS("MediaAuth") << headers << LL_ENDL;
 		LLViewerMedia::openIDCookieResponse(get_cookie("agni_sl_session_id"));
 	}
 
-	/* virtual */ void completedRaw(
+	/*virtual*/ void completedRaw(
 		U32 status,
 		const std::string& reason,
 		const LLChannelDescriptors& channels,
@@ -154,26 +156,21 @@ public:
 		// We don't care about the content of the response, only the set-cookie header.
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerMediaOpenIDResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerMediaOpenIDResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLViewerMediaOpenIDResponder"; }
 };
 
 class LLViewerMediaWebProfileResponder : public LLHTTPClient::ResponderWithCompleted
 {
 LOG_CLASS(LLViewerMediaWebProfileResponder);
 public:
-	LLViewerMediaWebProfileResponder(std::string host)
-	{
-		mHost = host;
-	}
+	LLViewerMediaWebProfileResponder(std::string host) : mHost(host) { }
+	~LLViewerMediaWebProfileResponder() { }
 
-	~LLViewerMediaWebProfileResponder()
-	{
-	}
+	/*virtual*/ bool followRedir(void) const { return true; }
+	/*virtual*/ bool needsHeaders(void) const { return true; }
 
-	/* virtual */ bool followRedir(void) const { return true; }
-	/* virtual */ bool needsHeaders(void) const { return true; }
-
-	/* virtual */ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{
 		LL_INFOS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
 		LL_INFOS("MediaAuth") << headers << LL_ENDL;
@@ -204,7 +201,7 @@ public:
 		}
 	}
 
-	void completedRaw(
+	/*virtual*/ void completedRaw(
 		U32 status,
 		const std::string& reason,
 		const LLChannelDescriptors& channels,
@@ -214,8 +211,10 @@ public:
 		// We don't care about the content of the response, only the set-cookie header.
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerMediaWebProfileResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerMediaWebProfileResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLViewerMediaWebProfileResponder"; }
 
+private:
 	std::string mHost;
 };
 
