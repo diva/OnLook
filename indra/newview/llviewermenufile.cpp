@@ -314,7 +314,7 @@ class LLFileUploadModel : public view_listener_t, public AIFileUpload
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		start_filepicker(FFLOAD_COLLADA, "dae");
+		start_filepicker(FFLOAD_COLLADA, "mesh");
 		return true;
 	}
 
