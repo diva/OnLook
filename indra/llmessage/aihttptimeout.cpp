@@ -297,7 +297,15 @@ bool HTTPTimeout::lowspeed(size_t bytes)
 	dropped_bytes += mBuckets[bucket];
 	// Note how, when max_stall_time == low_speed_time, dropped_bytes has
 	// to be equal to mTotalBytes, the sum of all vector elements.
-	llassert_always(max_stall_time < low_speed_time || dropped_bytes == mTotalBytes);
+	llassert(max_stall_time < low_speed_time || dropped_bytes == mTotalBytes);
+	// AIFIXME: This is a bug and should really be fixed instead of just be a warning.
+	if (!(max_stall_time < low_speed_time || dropped_bytes == mTotalBytes))
+	{
+	  llwarns << "ASSERT max_stall_time < low_speed_time || dropped_bytes == mTotalBytes failed... aborting. "
+		"max_stall_time = " << max_stall_time << "; low_speed_time = " << low_speed_time <<
+		"; dropped_bytes = " << dropped_bytes << "; mTotalBytes = " << mTotalBytes << llendl;
+	  break;
+	}
 	// And thus the following will certainly abort.
 	if (second + max_stall_time >= low_speed_time && mTotalBytes - dropped_bytes < mintotalbytes)
 	  break;
