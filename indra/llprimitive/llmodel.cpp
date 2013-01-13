@@ -1539,7 +1539,6 @@ LLSD LLModel::writeModel(
 					mdl[model_names[idx]][i]["TexCoord0Domain"]["Max"] = max_tc.getValue();
 					mdl[model_names[idx]][i]["TexCoord0"] = tc;
 				}
-
 				mdl[model_names[idx]][i]["TriangleList"] = indices;
 
 				if (skinning)
