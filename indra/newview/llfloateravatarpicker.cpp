@@ -487,7 +487,8 @@ public:
 		}
 	}
 
-	const AIHTTPTimeoutPolicy &getHTTPTimeoutPolicy(void) const { return avatarPickerResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return avatarPickerResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLAvatarPickerResponder"; }
 };
 
 void LLFloaterAvatarPicker::find()

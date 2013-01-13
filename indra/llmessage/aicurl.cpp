@@ -1276,7 +1276,7 @@ static int const HTTP_REDIRECTS_DEFAULT = 10;
 
 LLChannelDescriptors const BufferedCurlEasyRequest::sChannels;
 
-BufferedCurlEasyRequest::BufferedCurlEasyRequest() : mRequestTransferedBytes(0), mResponseTransferedBytes(0), mBufferEventsTarget(NULL)
+BufferedCurlEasyRequest::BufferedCurlEasyRequest() : mRequestTransferedBytes(0), mResponseTransferedBytes(0), mBufferEventsTarget(NULL), mStatus(HTTP_INTERNAL_ERROR)
 {
   AICurlInterface::Stats::BufferedCurlEasyRequest_count++;
 }
@@ -1336,8 +1336,13 @@ void BufferedCurlEasyRequest::resetState(void)
   // Call base class implementation.
   CurlEasyRequest::resetState();
 
+  // Reset local variables.
   mOutput.reset();
   mInput.reset();
+  mRequestTransferedBytes = 0;
+  mResponseTransferedBytes = 0;
+  mBufferEventsTarget = NULL;
+  mStatus = HTTP_INTERNAL_ERROR;
 }
 
 void BufferedCurlEasyRequest::print_diagnostics(CURLcode code)

@@ -43,7 +43,7 @@ extern AIHTTPTimeoutPolicy translationReceiver_timeout;
 class LLTranslate
 {
 public :
-	class TranslationReceiver: public LLHTTPClient::ResponderWithResult
+	class TranslationReceiver : public LLHTTPClient::ResponderWithResult
 	{
 	protected:
 		TranslationReceiver(const std::string &fromLang, const std::string &toLang)
@@ -60,15 +60,13 @@ public :
 		{
 		}
 
-		virtual void error(U32 status, const std::string& reason)
+		/*virtual*/ void error(U32 status, const std::string& reason)
 		{
 			LL_WARNS("Translate") << "URL Request error: " << reason << LL_ENDL;
 			handleFailure();
 		}
 
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return translationReceiver_timeout; }
-
-		virtual void completedRaw(
+		/*virtual*/ void completedRaw(
 			U32 status,
 			const std::string& reason,
 			const LLChannelDescriptors& channels,
@@ -99,6 +97,8 @@ public :
 
 			handleResponse(translation, detectedLanguage);
 		}
+
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return translationReceiver_timeout; }
 
 	protected:
 		const std::string m_toLang;

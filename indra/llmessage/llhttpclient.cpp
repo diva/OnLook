@@ -370,12 +370,14 @@ void LLHTTPClient::ResponderBase::decode_raw_body(U32 status, std::string const&
 std::string const& LLHTTPClient::ResponderBase::get_cookie(std::string const& key)
 {
 	AIHTTPReceivedHeaders::range_type cookies;
-	mReceivedHeaders.getValues("set-cookie", cookies);
-	for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
+	if (mReceivedHeaders.getValues("set-cookie", cookies))
 	{
-		if (key == cookie->second.substr(0, cookie->second.find('=')))
+		for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
 		{
-			return cookie->second;
+			if (key == cookie->second.substr(0, cookie->second.find('=')))
+			{
+				return cookie->second;
+			}
 		}
 	}
 	// Not found.
@@ -533,16 +535,19 @@ protected:
 class BlockingLLSDPostResponder : public BlockingLLSDResponder {
 public:
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return blockingLLSDPost_timeout; }
+	/*virtual*/ char const* getName(void) const { return "BlockingLLSDPostResponder"; }
 };
 
 class BlockingLLSDGetResponder : public BlockingLLSDResponder {
 public:
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return blockingLLSDGet_timeout; }
+	/*virtual*/ char const* getName(void) const { return "BlockingLLSDGetResponder"; }
 };
 
 class BlockingRawGetResponder : public BlockingRawResponder {
 public:
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return blockingRawGet_timeout; }
+	/*virtual*/ char const* getName(void) const { return "BlockingRawGetResponder"; }
 };
 
 // End (blocking) responders.

@@ -43,6 +43,7 @@
 #include "llviewerwindow.h"
 #include "llwebprofile.h"
 #include "lluploaddialog.h"
+#include "lltexteditor.h"
 
 #include <boost/bind.hpp>
 
@@ -52,7 +53,7 @@
 
 LLFloaterFeed::LLFloaterFeed(LLImagePNG* png, LLViewerTexture* img, LLVector2 const& img_scale, int index) : 
 	LLFloater(std::string("Feed Floater")),
-	mPNGImage(png), mViewerImage(img), mImageScale(img_scale), mSnapshotIndex(index)
+	mPNGImage(png), mViewerImage(img), mImageScale(img_scale), mSnapshotIndex(index), mHasFirstMsgFocus(false)
 {
 }
 
@@ -66,8 +67,24 @@ BOOL LLFloaterFeed::postBuild()
 {
 	getChild<LLUICtrl>("cancel_btn")->setCommitCallback(boost::bind(&LLFloaterFeed::onClickCancel, this));
 	getChild<LLUICtrl>("post_btn")->setCommitCallback(boost::bind(&LLFloaterFeed::onClickPost, this));
+	LLTextEditor* caption = getChild<LLTextEditor>("caption");
+	if (caption)
+	{
+		// For the first time a user focusess to the msg box, all text will be selected.
+		caption->setFocusChangedCallback(boost::bind(&LLFloaterFeed::onMsgFormFocusRecieved, this, _1, caption));
+	}
+	childSetFocus("cancel_btn", TRUE);
 
 	return true;
+}
+
+void LLFloaterFeed::onMsgFormFocusRecieved(LLFocusableElement* receiver, LLTextEditor* caption)
+{
+	if (caption && caption == receiver && caption->hasFocus() && !mHasFirstMsgFocus)
+	{
+		mHasFirstMsgFocus = true;
+		caption->setText(LLStringUtil::null);
+	}
 }
 
 // static
@@ -148,6 +165,12 @@ void LLFloaterFeed::onClose(bool app_quitting)
 
 void LLFloaterFeed::onClickPost()
 {
+	if (!mHasFirstMsgFocus)
+	{
+		// The user never switched focus to the messagee window. 
+		// Using the default string.
+		childSetValue("caption", getString("default_message"));
+	}
 	if (mPNGImage.notNull())
 	{
 		static LLCachedControl<bool> add_location("SnapshotFeedAddLocation");

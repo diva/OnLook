@@ -843,7 +843,7 @@ public:
 	LLUserReportScreenshotResponder(const LLSD & post_data, 
 									const LLUUID & vfile_id, 
 									LLAssetType::EType asset_type):
-	  LLAssetUploadResponder(post_data, vfile_id, asset_type)
+	LLAssetUploadResponder(post_data, vfile_id, asset_type)
 	{
 	}
 	void uploadFailed(const LLSD& content)
@@ -856,6 +856,8 @@ public:
 		// we don't care about what the server returns from this post, just clean up the UI
 		LLUploadDialog::modalUploadFinished();
 	}
+
+	/*virtual*/ char const* getName(void) const { return "LLUserReportScreenshotResponder"; }
 };
 
 class LLUserReportResponder : public LLHTTPClient::ResponderWithResult
@@ -863,17 +865,18 @@ class LLUserReportResponder : public LLHTTPClient::ResponderWithResult
 public:
 	LLUserReportResponder() { }
 
-	void error(U32 status, const std::string& reason)
+	/*virtual*/ void error(U32 status, const std::string& reason)
 	{
 		// *TODO do some user messaging here
 		LLUploadDialog::modalUploadFinished();
 	}
-	void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{
 		// we don't care about what the server returns
 		LLUploadDialog::modalUploadFinished();
 	}
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return userReportResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return userReportResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLUserReportResponder"; }
 };
 
 void LLFloaterReporter::sendReportViaCaps(std::string url, std::string sshot_url, const LLSD& report)

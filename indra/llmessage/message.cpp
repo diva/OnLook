@@ -118,7 +118,7 @@ namespace
 		{
 		}
 
-		virtual void error(U32 status, const std::string& reason)
+		/*virtual*/ void error(U32 status, const std::string& reason)
 		{
 			// don't spam when agent communication disconnected already
 			if (status != 410)
@@ -131,12 +131,13 @@ namespace
 			if(NULL != mCallback) mCallback(mCallbackData, LL_ERR_TCP_TIMEOUT);
 		}
 		
-		virtual void result(const LLSD& content)
+		/*virtual*/ void result(const LLSD& content)
 		{
 			if(NULL != mCallback) mCallback(mCallbackData, LL_ERR_NOERR);
 		}
 
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return fnPtrResponder_timeout; }
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return fnPtrResponder_timeout; }
+		/*virtual*/ char const* getName(void) const { return "LLFnPtrResponder"; }
 
 	private:
 

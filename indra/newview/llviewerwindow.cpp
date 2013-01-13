@@ -4420,7 +4420,7 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 	// Center the buffer.
 	buffer_x_offset = llfloor(((window_width - snapshot_width) * scale_factor) / 2.f);
 	buffer_y_offset = llfloor(((window_height - snapshot_height) * scale_factor) / 2.f);
-	Dout(dc::notice, "rawSnapshot(" << image_width << ", " << image_height << ", " << snapshot_aspect << "): image_buffer_x = " << image_buffer_x << "; image_buffer_y = " << image_buffer_y);
+	Dout(dc::snapshot, "rawRawSnapshot(" << image_width << ", " << image_height << ", " << snapshot_aspect << "): image_buffer_x = " << image_buffer_x << "; image_buffer_y = " << image_buffer_y);
 
 	bool error = !(image_buffer_x > 0 && image_buffer_y > 0);
 	if (!error)

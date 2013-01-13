@@ -35,82 +35,15 @@
 #include "llatomic.h"
 #include "llrefcount.h"
 #include "aicurlperhost.h"
+#include "aihttptimeout.h"
 
 class AIHTTPHeaders;
-class AIHTTPTimeoutPolicy;
-class AICurlEasyRequest;
 class AICurlEasyRequestStateMachine;
 
 namespace AICurlPrivate {
 
-class CurlEasyRequest;
-class ThreadSafeBufferedCurlEasyRequest;
-
 namespace curlthread {
-  
 class MultiHandle;
-
-// A class that keeps track of timeout administration per connection.
-class HTTPTimeout : public LLRefCount {
-  private:
-	AIHTTPTimeoutPolicy const* mPolicy;			// A pointer to the used timeout policy.
-	std::vector<U32> mBuckets;					// An array with the number of bytes transfered in each second.
-	U16 mBucket;								// The bucket corresponding to mLastSecond.
-	bool mNothingReceivedYet;					// Set when created, reset when the HTML reply header from the server is received.
-	bool mLowSpeedOn;							// Set while uploading or downloading data.
-	bool mUploadFinished;						// Used to keep track of whether upload_finished was called yet.
-	S32 mLastSecond;							// The time at which lowspeed() was last called, in seconds since mLowSpeedClock.
-	U32 mTotalBytes;							// The sum of all bytes in mBuckets.
-	U64 mLowSpeedClock;							// Clock count at which low speed detection (re)started.
-	U64 mStalled;								// The clock count at which this transaction is considered to be stalling if nothing is transfered anymore.
-  public:
-	static F64 const sClockWidth;				// Time between two clock ticks in seconds.
-	static U64 sClockCount;						// Clock count used as 'now' during one loop of the main loop.
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
-	ThreadSafeBufferedCurlEasyRequest* mLockObj;
-#endif
-
-  public:
-	HTTPTimeout(AIHTTPTimeoutPolicy const* policy, ThreadSafeBufferedCurlEasyRequest* lock_obj) :
-		mPolicy(policy), mNothingReceivedYet(true), mLowSpeedOn(false), mUploadFinished(false), mStalled((U64)-1)
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
-		, mLockObj(lock_obj)
-#endif
-		{ }
-
-	// Called after sending all headers, when body data is written the first time.
-	void connected(void);
-
-	// Called when everything we had to send to the server has been sent.
-	void upload_finished(void);
-
-	// Called when data is sent. Returns true if transfer timed out.
-	bool data_sent(size_t n);
-
-	// Called when data is received. Returns true if transfer timed out.
-	bool data_received(size_t n);
-
-	// Called immediately before done() after curl finished, with code.
-	void done(AICurlEasyRequest_wat const& curlEasyRequest_w, CURLcode code);
-
-	// Accessor.
-	bool has_stalled(void) const { return mStalled < sClockCount;  }
-
-	// Called from BufferedCurlEasyRequest::processOutput if a timeout occurred.
-	void print_diagnostics(CurlEasyRequest const* curl_easy_request, char const* eff_url);
-
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
-	void* get_lockobj(void) const { return mLockObj; }
-#endif
-
-  private:
-	// (Re)start low speed transer rate detection.
-	void reset_lowspeed(void);
-
-	// Common low speed detection, Called from data_sent or data_received.
-	bool lowspeed(size_t bytes);
-};
-
 } // namespace curlthread
 
 void handle_multi_error(CURLMcode code);
@@ -498,6 +431,9 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	// Return pointer to the ThreadSafe (wrapped) version of this object.
 	ThreadSafeBufferedCurlEasyRequest* get_lockobj(void);
 	ThreadSafeBufferedCurlEasyRequest const* get_lockobj(void) const;
+	// Return true when an error code was received that can occur before the upload finished.
+	// So far the only such error I've seen is HTTP_BAD_REQUEST.
+	bool upload_error_status(void) const { return mStatus == HTTP_BAD_REQUEST /*&& mStatus != HTTP_INTERNAL_ERROR*/; }
 
 	// Return true when prepRequest was already called and the object has not been
 	// invalidated as a result of calling timed_out().

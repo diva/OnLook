@@ -46,10 +46,11 @@ class LLRemoteParcelRequestResponder : public LLHTTPClient::ResponderWithResult
 public:
 	LLRemoteParcelRequestResponder(LLHandle<LLPanel> place_panel_handle);
 	//If we get back a normal response, handle it here
-	virtual void result(const LLSD& content);
+	/*virtual*/ void result(const LLSD& content);
 	//If we get back an error (not found, etc...), handle it here
-	virtual void error(U32 status, const std::string& reason);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return remoteParcelRequestResponder_timeout; }
+	/*virtual*/ void error(U32 status, const std::string& reason);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return remoteParcelRequestResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLRemoteParcelRequestResponder"; }
 
 protected:
 	LLHandle<LLPanel> mPlacePanelHandle;

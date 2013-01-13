@@ -157,9 +157,7 @@ namespace LLMarketplaceImport
 	class LLImportPostResponder : public LLHTTPClient::ResponderWithCompleted
 	{
 	public:
-		AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return MPImportPostResponder_timeout; }
-
-		void completed(U32 status, const std::string& reason, const LLSD& content)
+		/*virtual*/ void completed(U32 status, const std::string& reason, const LLSD& content)
 		{
 			slmPostTimer.stop();
 
@@ -189,13 +187,14 @@ namespace LLMarketplaceImport
 			sImportResultStatus = status;
 			sImportId = content;
 		}
+
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return MPImportPostResponder_timeout; }
+		/*virtual*/ char const* getName(void) const { return "LLImportPostResponder"; }
 	};
 
 	class LLImportGetResponder : public LLHTTPClient::ResponderWithCompleted
 	{
 	public:
-		AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return MPImportGetResponder_timeout; }
-
 		/*virtual*/ bool followRedir(void) const { return true; }
 		/*virtual*/ bool needsHeaders(void) const { return true; }
 
@@ -215,7 +214,7 @@ namespace LLMarketplaceImport
 			}
 		}
 
-		void completed(U32 status, const std::string& reason, const LLSD& content)
+		/*virtual*/ void completed(U32 status, const std::string& reason, const LLSD& content)
 		{
 			slmGetTimer.stop();
 
@@ -244,6 +243,9 @@ namespace LLMarketplaceImport
 			sImportResultStatus = status;
 			sImportResults = content;
 		}
+
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return MPImportGetResponder_timeout; }
+		/*virtual*/ char const* getName(void) const { return "LLImportGetResponder"; }
 	};
 
 	// Basic API

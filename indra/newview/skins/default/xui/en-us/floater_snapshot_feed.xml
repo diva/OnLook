@@ -18,7 +18,9 @@
      left="10"
      right="-10"
      type="string"
-     word_wrap="true"/>
+     word_wrap="true">
+     Type your message here.
+	</text_editor>
     <check_box
      follows="left|bottom"
      initial_value="true"
@@ -46,6 +48,9 @@
      name="post_btn"
      bottom_delta="0"
      width="100"/>
+    <string name="default_message">
+      Click on the 'snapshot' link above to see the larger original.
+    </string>
     <string name="upload_message">
       "Uploading..."
     </string>

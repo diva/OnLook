@@ -38,6 +38,8 @@
 
 class LLImagePNG;
 class LLViewerTexture;
+class LLFocusableElement;
+class LLTextEditor;
 
 class LLFloaterFeed : public LLFloater
 {
@@ -53,12 +55,14 @@ public:
 
 	void onClickCancel();
 	void onClickPost();
+	void onMsgFormFocusRecieved(LLFocusableElement* receiver, LLTextEditor* caption);
 
 protected:
 	LLPointer<LLImagePNG> mPNGImage;
 	LLPointer<LLViewerTexture> mViewerImage;
 	LLVector2 const mImageScale;
 	int mSnapshotIndex;
+	bool mHasFirstMsgFocus;
 };
 
 #endif // LL_LLFLOATERFEED_H

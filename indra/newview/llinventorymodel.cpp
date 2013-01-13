@@ -483,12 +483,12 @@ public:
 	{
 	}
 
-	virtual void error(U32 status, const std::string& reason)
+	/*virtual*/ void error(U32 status, const std::string& reason)
 	{
 		LL_WARNS("InvAPI") << "CreateInventoryCategory failed.   status = " << status << ", reasion = \"" << reason << "\"" << LL_ENDL;
 	}
 
-	virtual void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{
 		//Server has created folder.
 
@@ -515,7 +515,8 @@ public:
 
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return createInventoryCategoryResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return createInventoryCategoryResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLCreateInventoryCategoryResponder"; }
 
 private:
 	void (*mCallback)(const LLSD&, void*);
