@@ -385,7 +385,6 @@ BOOL LLManipScale::handleMouseUp(S32 x, S32 y, MASK mask)
 		// Might have missed last update due to UPDATE_DELAY timing
 		LLSelectMgr::getInstance()->sendMultipleUpdate( mLastUpdateFlags );
 		
-		//gAgent.setObjectTracking(gSavedSettings.getBOOL("TrackFocusObject"));
 		LLSelectMgr::getInstance()->saveSelectedObjectTransform(SELECT_ACTION_TYPE_PICK);
 	}
 	return LLManip::handleMouseUp(x, y, mask);

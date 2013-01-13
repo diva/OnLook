@@ -161,7 +161,6 @@ LLAgentCamera::LLAgentCamera() :
 	mFocusObjectDist(0.f),
 	mFocusObjectOffset(),
 	mFocusDotRadius( 0.1f ),			// meters
-	mTrackFocusObject(TRUE),
 	mUIOffset(0.f),
 
 	mAtKey(0), // Either 1, 0, or -1... indicates that movement-key is pressed
@@ -225,7 +224,6 @@ void LLAgentCamera::init()
 	mCurrentCameraDistance = getCameraOffsetInitial().magVec() * gSavedSettings.getF32("CameraOffsetScale");
 	mTargetCameraDistance = mCurrentCameraDistance;
 	mCameraZoomFraction = 1.f;
-	mTrackFocusObject = gSavedSettings.getBOOL("TrackFocusObject");
 
 	mInitialized = true;
 }
@@ -1623,11 +1621,9 @@ LLVector3d LLAgentCamera::calcFocusPositionTargetGlobal()
 		{
 			LLDrawable* drawablep = mFocusObject->mDrawable;
 			
-			if (mTrackFocusObject &&
-				drawablep && 
-				drawablep->isActive())
+			if (gSavedSettings.getBOOL("TrackFocusObject") && drawablep)
 			{
-				if (!mFocusObject->isAvatar())
+				if (drawablep->isActive() && !mFocusObject->isAvatar())
 				{
 					if (mFocusObject->isSelected())
 					{

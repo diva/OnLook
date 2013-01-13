@@ -1,31 +1,33 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater can_close="true" can_drag_on_left="false" can_minimize="false"
-     can_resize="false" height="215" name="settings_debug"
-     title="Debug Settings" width="350">
-	<combo_box allow_text_entry="true" bottom="-50" follows="top|left" font="SansSerifSmall"
-	     height="20" left="15" max_chars="255" name="settings_combo" />
-	<text_editor bottom_delta="-75" enabled="false" height="60" width="320" hide_scrollbar="true"
+     can_resize="true" height="220" name="settings_debug" min_height="220" min_width="285"
+     title="Debug Settings" width="300" rect_control="FloaterDebugSettingsRect">
+    <search_editor bottom="-40" follows="top|left|right" height="20" label="Search" left="10" right="-10" max_chars="255" name="search_settings_input" tool_tip="Type the search term you are interested in here. Results will be displayed for partial fulltext matches within the setting's name or comment."/>
+	<scroll_list height="20" bottom_delta="-24" follows="all" left="10" right="-10" name="settings_scroll_list" />
+	<text_editor follows="left|right" bottom_delta="-64" enabled="false" height="60" width="320" left="10" right="-10" hide_scrollbar="true"
 	     name="comment_text" word_wrap="true" />
-	<combo_box bottom_delta="-30" follows="top|left" font="SansSerifSmall" height="20"
+	<radio_group bottom_delta="-48" draw_border="false" follows="bottom|left|right" height="36"
 	     left="15" name="boolean_combo" visible="false">
-		<combo_item name="TRUE" value="true">
-			TRUE
-		</combo_item>
-		<combo_item name="FALSE" value="">
-			FALSE
-		</combo_item>
-	</combo_box>
-	<line_editor bottom_delta="0" height="20" name="val_text" visible="false" width="300" />
+		<radio_item bottom="-18" height="15" name="TRUE" value="1">
+			True
+		</radio_item>
+		<radio_item bottom="-36" height="15" name="FALSE" value="0">
+			False
+		</radio_item>
+	</radio_group>
+	<line_editor follows="bottom|left|right" bottom="52" left="15" right="-15" height="20" name="val_text" visible="false" width="300" />
 	<color_swatch bottom="30" can_apply_immediately="true" height="55" label="Color"
-	     name="color_swatch" visible="true" width="37" />
-	<spinner bottom_delta="25" height="20" label="x" label_width="40" max_val="10000000"
+	     name="val_color_swatch" visible="false" width="37" />
+	<spinner bottom_delta="31" height="24" label="x" label_width="40" max_val="10000000"
 	     name="val_spinner_1" visible="false" width="120" />
-	<spinner bottom_delta="0" height="20" label="x" label_width="40" left_delta="135"
+	<spinner bottom_delta="0" height="24" label="x" label_width="40" left_delta="135"
 	     max_val="10000000" name="val_spinner_2" visible="false" width="120" />
-	<spinner bottom_delta="-20" height="20" label="x" label_width="40" left="15"
+	<spinner bottom_delta="-23" height="24" label="x" label_width="40" left="15"
 	     max_val="10000000" name="val_spinner_3" visible="false" width="120" />
-	<spinner bottom_delta="0" height="20" label="x" label_width="40" left_delta="135"
+	<spinner bottom_delta="0" height="24" label="x" label_width="40" left_delta="135"
 	     max_val="10000000" name="val_spinner_4" visible="false" width="120" />
-	<button bottom="5" height="20" label="Reset to default" left="15" name="default_btn"
-	     width="150" />
+	<button bottom="10" height="20" label="Copy Name" left="10" name="copy_btn" tool_tip="Copy the name of this setting."
+	     width="130" />
+	<button follows="right" bottom_delta="0" height="20" label="Reset to default" right="-10" name="default_btn"
+	     width="130" />
 </floater>
