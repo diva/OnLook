@@ -124,8 +124,7 @@ LLPreviewTexture::LLPreviewTexture(
 	const LLRect& rect,
 	const std::string& title,
 	const LLUUID& asset_id,
-	BOOL copy_to_inv,
-	BOOL copyable)
+	BOOL copy_to_inv)
 	:
 	LLPreview(
 		name,
@@ -140,7 +139,6 @@ LLPreviewTexture::LLPreviewTexture(
 	mLoadingFullImage( FALSE ),
 	mShowKeepDiscard(FALSE),
 	mCopyToInv(copy_to_inv),
-	mIsCopyable(copyable),
 	mLastHeight(0),
 	mLastWidth(0),
 	mAspectRatio(0.f),
