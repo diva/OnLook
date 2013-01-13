@@ -57,8 +57,7 @@ public:
 		const LLRect& rect,
 		const std::string& title,
 		const LLUUID& asset_id,
-		BOOL copy_to_inv = FALSE,
-		BOOL copyable = TRUE);
+		BOOL copy_to_inv = FALSE);
 	~LLPreviewTexture();
 
 	virtual void		draw();
