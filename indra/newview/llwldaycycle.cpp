@@ -348,7 +348,7 @@ bool LLWLDayCycle::hasReferencesTo(const LLWLParamKey& keyframe) const
 void LLWLDayCycle::removeReferencesTo(const LLWLParamKey& keyframe)
 {
 	lldebugs << "Removing references to key frame " << keyframe.toLLSD() << llendl;
-	F32 keytime;
+	F32 keytime = 0.f;	// Avoid compiler warning.
 	bool might_exist;
 	do 
 	{
