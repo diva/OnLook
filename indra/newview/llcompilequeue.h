@@ -136,10 +136,6 @@ public:
 	// will be responsible for it's own destruction.
 	static LLFloaterCompileQueue* create(BOOL mono);
 
-	static void onSaveBytecodeComplete(const LLUUID& asset_id,
-									void* user_data,
-									S32 status);
-									
 	// remove any object in mScriptScripts with the matching uuid.
 	void removeItemByItemID(const LLUUID& item_id);
 
@@ -158,6 +154,7 @@ protected:
 								LLAssetType::EType type,
 								void* user_data, S32 status, LLExtStat ext_status);
 
+#if 0 //Client side compiling disabled.
 	static void onSaveTextComplete(const LLUUID& asset_id, void* user_data, S32 status, LLExtStat ext_status);
 
 	static void onSaveBytecodeComplete(const LLUUID& asset_id,
@@ -165,7 +162,6 @@ protected:
 									   S32 status, LLExtStat ext_status);
 
 	// compile the file given and save it out.
-#if 0 //Client side compiling disabled.
 	void compile(const std::string& filename, const LLUUID& asset_id);
 #endif
 	
