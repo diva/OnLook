@@ -3147,24 +3147,16 @@ void LLVolume::sculpt(U16 sculpt_width, U16 sculpt_height, S8 sculpt_components,
 		data_is_empty = TRUE;
 	}
 
-	// Singu Note: initialize sizeS and sizeT as 0 for the case that data_is_empty.
-	S32 sizeS = 0;
-	S32 sizeT = 0;
-	if (!data_is_empty)				// Singu Note: do not call these functions when we have no data.
-	{
-		mPathp->generate(mParams.getPathParams(), sculpt_detail, 0, TRUE, requested_sizeS);
-		mProfilep->generate(mParams.getProfileParams(), mPathp->isOpen(), sculpt_detail, 0, TRUE, requested_sizeT);
+	mPathp->generate(mParams.getPathParams(), sculpt_detail, 0, TRUE, requested_sizeS);
+	mProfilep->generate(mParams.getProfileParams(), mPathp->isOpen(), sculpt_detail, 0, TRUE, requested_sizeT);
 
-		sizeS = mPathp->mPath.size();         // we requested a specific size, now see what we really got
-		sizeT = mProfilep->mProfile.size();   // we requested a specific size, now see what we really got
-	}
-	if (sizeS == 0 || sizeT == 0)	// Singu Note: treat this case as if there is no data (there isn't sufficient data).
+	S32 sizeS = mPathp->mPath.size();         // we requested a specific size, now see what we really got
+	S32 sizeT = mProfilep->mProfile.size();   // we requested a specific size, now see what we really got
+
+	// weird crash bug - DEV-11158 - trying to collect more data:
+	if ((sizeS == 0) || (sizeT == 0))
 	{
-		if (!data_is_empty)
-		{
-			llwarns << "sculpt bad mesh size " << sizeS << " " << sizeT << llendl;
-		}
-		data_is_empty = TRUE;
+		llwarns << "sculpt bad mesh size " << sizeS << " " << sizeT << llendl;
 	}
 	
 	sNumMeshPoints -= mMesh.size();
