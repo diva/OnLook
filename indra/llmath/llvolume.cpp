@@ -3057,13 +3057,27 @@ S32 sculpt_sides(F32 detail)
 // determine the number of vertices in both s and t direction for this sculpt
 void sculpt_calc_mesh_resolution(U16 width, U16 height, U8 type, F32 detail, S32& s, S32& t)
 {
+	//Singu Note: minimum number of vertices depend on stitching type.
+	S32 min_s = 1;
+	S32 min_t = 1;
+
+  	if ((type == LL_SCULPT_TYPE_SPHERE) ||
+		(type == LL_SCULPT_TYPE_TORUS) ||
+		(type == LL_SCULPT_TYPE_CYLINDER))
+		min_s = 4;
+
+	if (type == LL_SCULPT_TYPE_TORUS)
+		min_t = 4;
+
 	// this code has the following properties:
 	// 1) the aspect ratio of the mesh is as close as possible to the ratio of the map
 	//    while still using all available verts
 	// 2) the mesh cannot have more verts than is allowed by LOD
 	// 3) the mesh cannot have more verts than is allowed by the map
-	
-	S32 max_vertices_lod = (S32)pow((double)sculpt_sides(detail), 2.0);
+
+	//Singu Note: Replaced float math mangling to get an integer square with just one multiplication.
+	S32 const sculptsides = sculpt_sides(detail);
+	S32 max_vertices_lod = sculptsides * sculptsides;
 	S32 max_vertices_map = width * height / 4;
 	
 	S32 vertices;
@@ -3082,10 +3096,10 @@ void sculpt_calc_mesh_resolution(U16 width, U16 height, U8 type, F32 detail, S32
 	
 	s = (S32)(F32) sqrt(((F32)vertices / ratio));
 
-	s = llmax(s, 4);              // no degenerate sizes, please
+	s = llmax(s, min_s);          // no degenerate sizes, please
 	t = vertices / s;
 
-	t = llmax(t, 4);              // no degenerate sizes, please
+	t = llmax(t, min_t);          // no degenerate sizes, please
 	s = vertices / t;
 }
 
@@ -3113,18 +3127,26 @@ void LLVolume::sculpt(U16 sculpt_width, U16 sculpt_height, S8 sculpt_components,
 		sculpt_detail = 4.0;
 	}
 
-	sculpt_calc_mesh_resolution(sculpt_width, sculpt_height, sculpt_type, sculpt_detail, requested_sizeS, requested_sizeT);
-
-	mPathp->generate(mParams.getPathParams(), sculpt_detail, 0, TRUE, requested_sizeS);
-	mProfilep->generate(mParams.getProfileParams(), mPathp->isOpen(), sculpt_detail, 0, TRUE, requested_sizeT);
-
-	S32 sizeS = mPathp->mPath.size();         // we requested a specific size, now see what we really got
-	S32 sizeT = mProfilep->mProfile.size();   // we requested a specific size, now see what we really got
-
-	// weird crash bug - DEV-11158 - trying to collect more data:
-	if ((sizeS == 0) || (sizeT == 0))
+	// Singu Note: initialize sizeS and sizeT as 0 for the case that data_is_empty.
+	S32 sizeS = 0;
+	S32 sizeT = 0;
+	if (!data_is_empty)				// Singu Note: do not call these functions when we have no data.
 	{
-		llwarns << "sculpt bad mesh size " << sizeS << " " << sizeT << llendl;
+		sculpt_calc_mesh_resolution(sculpt_width, sculpt_height, sculpt_type, sculpt_detail, requested_sizeS, requested_sizeT);
+
+		mPathp->generate(mParams.getPathParams(), sculpt_detail, 0, TRUE, requested_sizeS);
+		mProfilep->generate(mParams.getProfileParams(), mPathp->isOpen(), sculpt_detail, 0, TRUE, requested_sizeT);
+
+		sizeS = mPathp->mPath.size();         // we requested a specific size, now see what we really got
+		sizeT = mProfilep->mProfile.size();   // we requested a specific size, now see what we really got
+	}
+	if (sizeS == 0 || sizeT == 0)	// Singu Note: treat this case as if there is no data (there isn't sufficient data).
+	{
+		if (!data_is_empty)
+		{
+			llwarns << "sculpt bad mesh size " << sizeS << " " << sizeT << llendl;
+		}
+		data_is_empty = TRUE;
 	}
 	
 	sNumMeshPoints -= mMesh.size();
