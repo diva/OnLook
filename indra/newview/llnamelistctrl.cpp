@@ -457,18 +457,7 @@ LLView* LLNameListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 	}
 
 	std::string contents = node->getTextContents();
-
-	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-	boost::char_separator<char> sep("\t\n");
-	tokenizer tokens(contents, sep);
-	tokenizer::iterator token_iter = tokens.begin();
-
-	while(token_iter != tokens.end())
-	{
-		const std::string& line = *token_iter;
-		name_list->setCommentText(line);
-		++token_iter;
-	}
+	name_list->setCommentText(contents);
 
 	return name_list;
 }
