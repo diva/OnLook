@@ -3055,7 +3055,7 @@ S32 sculpt_sides(F32 detail)
 
 
 // determine the number of vertices in both s and t direction for this sculpt
-void sculpt_calc_mesh_resolution(U16 width, U16 height, U8 type, F32 detail, S32& s, S32& t)
+bool sculpt_calc_mesh_resolution(U16 width, U16 height, U8 type, F32 detail, S32& s, S32& t)
 {
 	//Singu Note: minimum number of vertices depend on stitching type.
 	S32 min_s = 1;
@@ -3101,6 +3101,17 @@ void sculpt_calc_mesh_resolution(U16 width, U16 height, U8 type, F32 detail, S32
 
 	t = llmax(t, min_t);          // no degenerate sizes, please
 	s = vertices / t;
+
+	// Singu Note: return false if we failed to get enough vertices for this stitching
+	// type (due to not enough data, ie while the sculpt is still loading).
+	bool enough_data = s >= min_s;
+	if (!enough_data)
+	{
+		// Uses standard lod stepping for the sphere that will be shown.
+		s = t = sculptsides;
+	}
+
+	return enough_data;
 }
 
 // sculpt replaces generate() for sculpted surfaces
@@ -3127,13 +3138,20 @@ void LLVolume::sculpt(U16 sculpt_width, U16 sculpt_height, S8 sculpt_components,
 		sculpt_detail = 4.0;
 	}
 
+	//Singu Note: this function returns false when sculpt_width and sculpt_height are too small.
+	// In that case requested_sizeS and requested_sizeT are set to the same values as should have happened
+	// when either of sculpt_width or sculpt_height had been zero.
+	if (!sculpt_calc_mesh_resolution(sculpt_width, sculpt_height, sculpt_type, sculpt_detail, requested_sizeS, requested_sizeT))
+	{
+		sculpt_level = -1;
+		data_is_empty = TRUE;
+	}
+
 	// Singu Note: initialize sizeS and sizeT as 0 for the case that data_is_empty.
 	S32 sizeS = 0;
 	S32 sizeT = 0;
 	if (!data_is_empty)				// Singu Note: do not call these functions when we have no data.
 	{
-		sculpt_calc_mesh_resolution(sculpt_width, sculpt_height, sculpt_type, sculpt_detail, requested_sizeS, requested_sizeT);
-
 		mPathp->generate(mParams.getPathParams(), sculpt_detail, 0, TRUE, requested_sizeS);
 		mProfilep->generate(mParams.getProfileParams(), mPathp->isOpen(), sculpt_detail, 0, TRUE, requested_sizeT);
 
