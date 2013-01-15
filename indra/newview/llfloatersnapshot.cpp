@@ -1688,8 +1688,8 @@ void LLFloaterSnapshot::Impl::freezeTime(bool on)
 	LLSnapshotLivePreview* previewp = getPreviewView();
 	if (on)
 	{
-		// stop all mouse events at fullscreen preview layer
-		sInstance->getParent()->setMouseOpaque(TRUE);
+		// Stop all mouse events at fullscreen preview layer.
+		gSnapshotFloaterView->setMouseOpaque(TRUE);
 
 		// can see and interact with fullscreen preview now
 		if (previewp)
@@ -1716,7 +1716,8 @@ void LLFloaterSnapshot::Impl::freezeTime(bool on)
 	}
 	else // turning off freeze frame mode
 	{
-		sInstance->getParent()->setMouseOpaque(FALSE);
+		gSnapshotFloaterView->setMouseOpaque(FALSE);
+
 		if (previewp)
 		{
 			previewp->setVisible(FALSE);
