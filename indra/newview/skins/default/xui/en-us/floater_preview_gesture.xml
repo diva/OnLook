@@ -49,13 +49,13 @@
 	<text bottom_delta="0" follows="top|left" font="SansSerif" left="220" name="steps_label">
 		Steps:
 	</text>
-	<scroll_list bottom_delta="-120" draw_border="true" follows="top|left" height="110"
+  <scroll_list bottom_delta="-120" draw_border="true" follows="top|left" height="110"
 	     left="16" multi_select="false" name="library_list" width="100">
-		Animation
-Sound
-Chat
-Wait
-	</scroll_list>
+    <row name="action_animation" value="Animation"/>
+    <row name="action_sound" value="Sound"/>
+    <row name="action_chat" value="Chat"/>
+    <row name="action_wait" value="Wait"/>
+  </scroll_list>
 	<button bottom_delta="90" follows="top|left" height="20" label="Add &gt;&gt;"
 	     left="130" name="add_btn" width="80" />
 	<button bottom_delta="-30" follows="top|left" height="20" label="Move Up"

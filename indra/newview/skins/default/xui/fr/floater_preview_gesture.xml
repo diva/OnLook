@@ -34,10 +34,10 @@
 		Étapes:
 	</text>
 	<scroll_list name="library_list">
-		Animation
-Son
-Chat
-Attendre
+    <row name="action_animation" value="Animation"/>
+    <row name="action_sound" value="Son"/>
+    <row name="action_chat" value="Chat"/>
+    <row name="action_wait" value="Attendre"/>
 	</scroll_list>
 	<button label="Ajouter &gt;&gt;" name="add_btn"/>
 	<button label="Monter" name="up_btn"/>
