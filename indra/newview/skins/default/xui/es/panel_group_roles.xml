@@ -54,7 +54,7 @@ realizarla.
 				<column label="Cuotas Donadas" name="donated"/>
 				<column label="Última Conexión" name="online"/>
 			</name_list>
-			<button label="Invitar a un Nuevo Miembro..." name="member_invite"/>
+			<button label="Invitar a un Nuevo Miembro..." name="member_invite" width="176"/>
 			<button label="Expulsar del Grupo" name="member_eject"/>
 			<string name="help_text">
 				Puedea añadir o quitar los roles asignados a los miembros.

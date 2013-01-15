@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel border="true" name="friends">
+	<string name="Multiple">Multiples amigos...</string>
+	<scroll_list name="friend_list" tool_tip="Mantén presionadas las teclas Mayús o control mientras pulsas en la lista para seleccionar múltiples amigos">
+		<column name="icon_online_status" tool_tip="Estado En Línea"/>
+		<column label="Nombre" name="friend_name" tool_tip="Nombre"/>
+		<column name="icon_visible_online" tool_tip="Tu amigo puede ver tu estado en línea"/>
+		<column name="icon_visible_map" tool_tip="Tu amigo puede localizarte en el mapa"/>
+		<column name="icon_edit_mine" tool_tip="Tu amigo puede editar, borrar o tomar tus objetos"/>
+		<column name="icon_visible_online_theirs" tool_tip="Puedes ver si tu amigo está en línea (Sólo se actualiza al iniciar sesión)"/>
+		<column name="icon_visible_map_theirs" tool_tip="Puedes localizar a tu amigo en el mapa"/>
+		<column name="icon_edit_theirs" tool_tip="Puedes editar los objetos de tu amigo"/>
+		<column name="friend_last_update_generation" width="0"/>
+	</scroll_list>
+	<!--text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" name="friends" width="110">Contact Group:</text-->
+	<!--combo_box allow_text_entry="false" enabled="true" follows="right|top" bottom_delta="20" height="18" hidden="false" left="-255" max_chars="20" tool_tip="Buddy group" name="buddy_group_combobox" width="130">
+		<combo_item type="string" length="20" enabled="true" name="All" value="All">All</combo_item>
+	</combo_box-->
+	<!--text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" name="Contact Search:" width="110">Contact Search:</text-->
+	<search_editor name="buddy_search_lineedit" label="Buscar Contactos" tool_tip="El nombre del contacto que estás buscando"/>
+	<button label="0" name="expand_collapse_btn" tool_tip="Expandir/Retraer información extra"/>
+	<!--button bottom_delta="-25" follows="top|right" height="22" label="Set Contact" name="assign_btn" tool_tip="Assign a friend to a Contact Group" width="80"/-->
+	<text name="friends">Conectados:</text>
+	<text name="f_num" width="95">0000</text>
+	<text name="sel" width="95">|       Seleccionados:</text>
+	<text name="s_num" width="95">0000</text>
+	<button label="IM/Llamar" name="im_btn" tool_tip="Abrir sesión de Mensaje Instantáneo" width="80"/>
+	<button label="Perfil" name="profile_btn" tool_tip="Mostrar foto, grupos y otra información"/>
+	<button label="Teleportar..." name="offer_teleport_btn" tool_tip="Ofrece a este amigo teleportarse a tu posición"/>
+	<button label="Pagar..." name="pay_btn" tool_tip="Dar dinero ([CURRENCY]) a este contacto"/>
+	<button label="Quitar..." name="remove_btn" tool_tip="Quitar a este usuario de tu lista de contactos"/>
+	<button label="Agregar..." name="add_btn" tool_tip="Ofrecer amistad a un residente"/>
+</panel>
