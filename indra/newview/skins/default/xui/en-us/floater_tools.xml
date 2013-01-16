@@ -779,7 +779,7 @@
 			</text>
 			<button bottom="-24" follows="top|right" font="SansSerifSmall" halign="center"
 			    height="16" label="Copy" left="178" mouse_opaque="true" name="copyparams"  enabled="true"
-			    tool_tip="Copy Parameters from Clipboard"  width="42" />
+			    tool_tip="Copy Parameters to Clipboard"  width="42" />
 			<button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="16" label="Paste" left_delta="42" mouse_opaque="true" name="pasteparams"  enabled="true"
      			 tool_tip="Paste Parameters from Clipboard"  width="42" />
