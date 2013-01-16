@@ -50,6 +50,10 @@ class LLColorSwatchCtrl;
 class LLTextureCtrl;
 class LLInventoryItem;
 class LLUUID;
+class LLFlexibleObjectData;
+class LLLightParams;
+class LLLightImageParams;
+class LLSculptParams;
 
 class LLPanelObject : public LLPanel
 {
@@ -119,6 +123,10 @@ protected:
 	static LLVector3 mClipboardSize;
 	static LLVector3 mClipboardRot;
 	static LLVolumeParams mClipboardVolumeParams;
+	static LLFlexibleObjectData* mClipboardFlexiParams;
+	static LLLightParams* mClipboardLightParams;
+	static LLSculptParams* mClipboardSculptParams;
+	static LLLightImageParams* mClipboardLightImageParams;
 	static BOOL hasParamClipboard;
 
 	S32				mComboMaterialItemCount;
