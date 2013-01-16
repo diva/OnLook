@@ -1,111 +1,102 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel top="20" left="10" height="400" width="517" border="true" label="Chat Avanc&#xE9;" name="ascsys">
-  <tab_container label="Advanced Chat" bottom="0" height="440" width="497" left="0" name="Ascent Chat" tab_position="top">
-     <panel border="true" left="1" bottom="-408" height="408" width="500" label="Chat/IM" name="Chat/IM">
+<panel label="Chat Avanc&#xE9;" name="ascsys">
+  <tab_container label="Advanced Chat" name="Ascent Chat">
+     <panel label="Chat/IM" name="Chat/IM">
 
-      <check_box bottom_delta="-25" left="10" follows="top" initial_value="false" control_name="WoLfVerticalIMTabs" 
-        label="IMs verticaux (n&#xE9;cessite une d&#xE9;co/reco)" name="use_vertical_ims_check"/>
-      <check_box bottom_delta="-20" follows="left|top" initial_value="false" control_name="AscentInstantMessageAnnounceIncoming"
-        label="Annonce les IMs entrants" tool_tip="" name="quickstart_im_check"/>
-      <check_box bottom_delta="-20" follows="left|top" control_name="AscentHideTypingNotification" initial_value="false"
-        label="Ne pas envoyer &#x22;[Machin Truc] is typing...&#x22; dans les IMs" tool_tip="" name="hide_typing_check"/>
-      <check_box bottom_delta="-20" follows="left|top" control_name="OptionShowGroupNameInChatIM" initial_value="false"
-        label="Montrer le nom du groupe dans le chat" tool_tip="" name="append_group_name_check"/>
-      <check_box bottom_delta="-25" left_delta="-5" follows="left|top" control_name="PlayTypingSound" initial_value="true"
-        label="Jouer le son typique pour le chat local" tool_tip="" name="play_typing_sound_check"/>
-      <check_box bottom_delta="-20" follows="left|top" control_name="HideNotificationsInChat" initial_value="false"
-        label="Ne pas afficher les notifs. de log dans le chat" name="hide_notifications_in_chat_check"/>
-      <check_box bottom="-120" left="10" control_name="AscentAllowMUpose" initial_value="false"
-        label="Permet d'utiliser &#x22;/me&#x22; aussi bien que &#x22;:&#x22; pour les &#x22;emotes&#x22;" tool_tip="" name="allow_mu_pose_check"/>
-      <check_box bottom_delta="-20" follows="left|top" control_name="AscentAutoCloseOOC"
-        label="Ajoute automatiquement les fins des commentaires OOC (RP mode)" tool_tip="Ajoute automatiquement &#x22;))&#x22; &#xE0; chaque message commen&#xE7;ant par &#x22;((&#x22;, et vice-versa." name="close_ooc_check"/>
-<text bottom_delta="-15" follows="left|top" name="objects_link_text_box3">Active un lien qui montre le nom du propri&#xE9;taire dans l'historique du chat pour :</text>
-       <radio_group bottom_delta="-26" control_name="LinksForChattingObjects" tool_tip="Enables a link to show you the owner of the speaking object."
-        follows="top" height="20" left="20" name="objects_link" width="350">
-        <radio_item bottom_delta="0" left_delta="5" name="no_object" width="48">Aucun objet</radio_item>
-        <radio_item bottom_delta="0" left_delta="45" name="others_objects" width="48">Les objets des autres</radio_item>
-        <radio_item bottom_delta="0" left_delta="65" name="anyones_objects" width="48">Tous les objets</radio_item>
+      <check_box label="Annonce les IMs entrants" name="quickstart_im_check"/>
+      <check_box label="Ne pas envoyer &#x22;[Machin Truc] is typing..." name="hide_typing_check"/>
+      <check_box label="Montrer le nom du groupe dans le chat" name="append_group_name_check"/>
+      <check_box label="Jouer le son typique pour le chat local" name="play_typing_sound_check"/>
+      <check_box label="Ne pas afficher les notifs. de log dans le chat" name="hide_notifications_in_chat_check"/>
+      <check_box label="Permet d'utiliser &#x22;/me&#x22; aussi bien que &#x22;:&#x22;" name="allow_mu_pose_check"/>
+      <check_box label="Ajoute automatiquement les fins des commentaires OOC (RP mode)" tool_tip="Ajoute automatiquement &#x22;))&#x22; &#xE0; chaque message commen&#xE7;ant par &#x22;((&#x22;, et vice-versa." name="close_ooc_check"/>
+      <text name="objects_link_text_box3">Active un lien qui montre le nom du propri&#xE9;taire dans l'historique du chat pour :</text>
+       <radio_group tool_tip="Enables a link to show you the owner of the speaking object." name="objects_link">
+        <radio_item name="no_object">Aucun objet</radio_item>
+        <radio_item name="others_objects">Les objets des autres</radio_item>
+        <radio_item left_delta="65" name="anyones_objects">Tous les objets</radio_item>
       </radio_group>
 
-      <text bottom_delta="-18" left="10" follows="top" name="time_format_text_box">Type d'heure :</text>
-      <combo_box bottom_delta="-5" left="90" follows="top" height="18" tool_tip="" name="time_format_combobox" width="130">
-        <combo_item name="24hours" value="default">Horloge 24/H</combo_item>
-        <combo_item name="12hours" value="default">Horloge 12/H</combo_item>
+      <text name="time_format_text_box">Type d'heure :</text>
+      <combo_box name="time_format_combobox">
+        <combo_item name="24hours">Horloge 24/H</combo_item>
+        <combo_item name="12hours">Horloge 12/H</combo_item>
       </combo_box>
-      <check_box bottom_delta="0" left="240" follows="top" control_name="SecondsInChatAndIMs" initial_value="false" label="Secondes dans les Chat/IMs" name="seconds_in_chat_and_ims_check"/>
-      <text bottom_delta="-18" left="10" follows="top" name="date_format_text_box">Type de date :</text>
-      <combo_box bottom_delta="-5" left="90" follows="top" height="18" name="date_format_combobox" width="130">
-        <combo_item name="year_first" value="default">AAAA-MM-JJ</combo_item>
-        <combo_item name="day_first" value="default">JJ/MM/AAAA</combo_item>
-        <combo_item name="month_first" value="default">MM/JJ/AAA</combo_item>
+      <check_box label="Secondes dans les Chat/IMs" name="seconds_in_chat_and_ims_check"/>
+      <text name="date_format_text_box">Type de date :</text>
+      <combo_box name="date_format_combobox">
+        <combo_item name="year_first">AAAA-MM-JJ</combo_item>
+        <combo_item name="day_first">JJ/MM/AAAA</combo_item>
+        <combo_item name="month_first">MM/JJ/AAA</combo_item>
       </combo_box>
       <!-- Auto-responder -->
-      <view_border bottom="-420" left="5" height="190" bevel_style="none" border_thickness="1" name="GraphicsBorder" width="485"/>
-      <check_box bottom_delta="168" left="10" follows="top" initial_value="false" label="Activer le R&#xE9;pondeur Automatique"
-        name="AscentInstantMessageResponseAnyone" tool_tip=""/>
-	  <check_box bottom_delta="-20" follows="left|top" initial_value="false"
-		label="Auto-r&#xE9;ponse aux 'non-friends'" name="AscentInstantMessageResponseFriends" tool_tip=""/>
-	  <check_box bottom_delta="-20" follows="left|top" initial_value="false" 
-		label="Auto-r&#xE9;ponse aux personnes 'muted'" name="AscentInstantMessageResponseMuted" tool_tip=""/>
-      <check_box bottom_delta="-20" follows="left|top" initial_value="false" label="Envoyer d&#xE8;s que l'on commence &#xE0; vous &#xE9;crire" name="AscentInstantMessageShowOnTyping"/>
-      <check_box bottom_delta="-20" follows="left|top" initial_value="false" label="Ne pas montrer les IMs auxquels vous avez r&#xE9;pondu" name="AscentInstantMessageShowResponded"/>
-      <check_box bottom_delta="-20" follows="left|top" initial_value="false" label="Auto-r&#xE9;ponse &#xE0; chaque message" name="AscentInstantMessageResponseRepeat"/>
-      <check_box bottom_delta="-20" follows="left|top" initial_value="false" label="Joindre un objet &#xE0; la r&#xE9;ponse" name="AscentInstantMessageResponseItem" tool_tip="Glissez l'objet dans la fen&#xEA;tre de r&#xE9;ponse."/>
+      <check_box label="Activer le R&#xE9;pondeur Automatique" name="AscentInstantMessageResponseAnyone"/>
+	  <check_box label="Auto-r&#xE9;ponse aux 'non-friends'" name="AscentInstantMessageResponseFriends"/>
+	  <check_box label="Auto-r&#xE9;ponse aux personnes 'muted'" name="AscentInstantMessageResponseMuted"/>
+      <check_box label="Envoyer d&#xE8;s que l'on commence &#xE0; vous &#xE9;crire" name="AscentInstantMessageShowOnTyping"/>
+      <check_box label="Ne pas montrer les IMs auxquels vous avez r&#xE9;pondu" name="AscentInstantMessageShowResponded"/>
+      <check_box label="Auto-r&#xE9;ponse &#xE0; chaque message" name="AscentInstantMessageResponseRepeat"/>
+      <check_box label="Joindre un objet &#xE0; la r&#xE9;ponse" name="AscentInstantMessageResponseItem" tool_tip="Glissez l'objet dans la fen&#xEA;tre de r&#xE9;ponse."/>
 	  <text bottom_delta="120" left_delta="280" follows="left|top" height="18" name="text_box1">Texte de la r&#xE9;ponse :</text>
-      <text_editor bottom_delta="-110" follows="left|top" height="110" max_length="1100" name="im_response" width="200" word_wrap="true" spell_check="true"/>
-      <text bottom_delta="-25" follows="left|top" height="18" name="text_box2">
-#f Pr&#xE9;nom, #l Nom, 
-#t Dur&#xE9;e, #r SLURL,
+      <text name="text_box2">
+#f Pr&#xE9;nom,#l Nom,#t Dur&#xE9;e,#r SLURL,
 #i Dur&#xE9;e de 'l'IDLE'. (ex. "5 mins")
       </text>
     </panel>
-
-    <panel border="true" left="1" bottom="-408" height="408" width="500" label="Spam" name="Spam">
-      <check_box left="10" bottom_delta="-25" follows="top" font="SansSerifSmall"
-        label="Activer le blocage de spam du chat" tool_tip="" name="AscChatSpamBlock" control_name="SGBlockChatSpam"/>
-      <spinner left_delta="20" height="18" width="120" follows="top" decimal_digits="0" increment="1" initial_val="10" min_val="2" max_val="100"
-        label="Nombre" label_width="70" tool_tip="(Default: 10)" name="AscChatSpamCount" control_name="SGChatSpamCount"/>
-      <spinner height="18" width="120" follows="left|top" decimal_digits="1" increment="1" initial_val="1.0" min_val="1" max_val="60"
-        label="Dur&#xE9;e" label_width="70" name="AscChatSpamTime" control_name="SGChatSpamTime" tool_tip="(Default: 1.0)"/>
-      <text bottom_delta="0" left_delta="130" height="16" follows="top" name="" width="100">secondes</text>
-      <check_box left_delta="-150" height="16" follows="top" label="Activer le blocage du spam de dialogue" tool_tip="" name="AscDialogSpamBlock" control_name="SGBlockDialogSpam"/>
-      <check_box height="16" follows="left|top" label="Dur&#xE9;e" tool_tip="" name="AscCardSpamBlock" control_name="SGBlockCardSpam"/>
-      <spinner left_delta="20" height="18" width="120" follows="top" decimal_digits="0" increment="1" initial_val="4" min_val="2" max_val="100"
-        label="Nombre" label_width="70" name="AscSpamCount" control_name="SGSpamCount" tool_tip="(Default: 4)"/>
-      <spinner height="18" width="120" follows="left|top" decimal_digits="1" increment="1" initial_val="1.0" min_val="1" max_val="60"
-        label="Dur&#xE9;e" label_width="70" name="AscSpamTime" control_name="SGSpamTime" tool_tip="(Default: 1.0)"/>
-      <text bottom_delta="0" left_delta="130" height="16" follows="top" name="">secondes</text>
+    <panel label="Chat UI" name="ChatUI">
+      <check_box label="IMs Verticaux (Déco Reco)" name="use_vertical_ims_check"/>
+      <check_box label="Ouvre les nouveaux IMs séparements" name="chats_torn_off"/>
+      <check_box label="Montre la barre du chat local séparée (Déco Reco)" tool_tip="" name="show_local_chat_floater_bar"/>
+      <check_box label="boutons horizontaux pour les contacts (Déco Reco)" tool_tip="Activé, les boutons amis/groupes seront en bas et horizontaux et non plus verticaux et à droite." name="horiz_butt"/>
+      <check_box label="Boutons sur la même ligne que les noms pour les IMs" name="im_concise_butt"/>
+      <check_box label="Boutons sur la ligne des noms des chats de groupe" name="group_concise_butt"/>
+      <check_box label="Boutons sur la ligne de titre des conférences" name="conf_concise_butt"/>
+      <check_box label="Désactive le raccourci ouvrant détacher la liste d'amis" name="only_comm"/>
     </panel>
 
-    <panel border="true" bottom="-580" height="525" label="Options de Texte" left="1" name="TextOptions" width="418">
-      <check_box bottom="-25" left="12" height="16" label="Montre les 'fot de frap' ou suppos&#xE9;es telles en ROUGE" name="SpellDisplay" control_name="SpellDisplay"/>
-      <text bottom_delta="-24" follows="left|top" height="16" name="EmSpell_txt1">Langage courant (dictionnaire) :</text>
-      <combo_box bottom_delta="-20" follows="left|top" height="20" name="SpellBase" width="250" control_name="SpellBase"/>
-      <text bottom_delta="-24" follows="left|top" height="20" name="EmSpell_txt3">T&#xE9;l&#xE9;charger les langues (dictionnaires) :</text>
-      <combo_box bottom_delta="-20" follows="left|top" height="20" name="EmSpell_Avail" width="250" control_name="EmSpell_Avail"/>
-      <button bottom_delta="0" left_delta="255" follows="left|top" height="20" label="Installer" name="EmSpell_Add" tool_tip="" width="80"/>
-      <button bottom_delta="-22" left="12" follows="top" height="20" label="T&#xE9;l&#xE9;charger +++" name="EmSpell_GetMore" tool_tip="Obtenez plus de dictionnaires en ligne" width="250"/>
-      <text bottom_delta="-24" follows="left|top" height="20" name="EmSpell_txt2">Langues additionnelles (dictionnaires) :</text>
-      <combo_box bottom_delta="-20" follows="left|top" height="20" name="EmSpell_Installed" width="250" control_name="EmSpell_Installed" tool_tip=""/>
-      <button bottom_delta="0" left_delta="255" follows="left|top" height="20" label="Supprimer" name="EmSpell_Remove" tool_tip="" width="80"/>
-      <button bottom_delta="-20" left="12" follows="top" height="20" label="Editer un dictionnaire" name="EmSpell_EditCustom" width="250"/>
-      <text bottom_delta="-24" follows="left|top" height="20" name="EmSpell_txt4">
+    <panel label="Spam" name="Spam">
+      <check_box label="Activer l'antispam" name="enable_as"/>
+      <check_box label="Aucun message spécifique dans la file d'attente de spam" name="spammsg_checkbox"/>
+      <button label="Réinitialiser la file d'attente" label_selected="d&#xE9;bloquer les sources de spam" name="reset_antispam"/>
+      <spinner label="Antispam (Dur&#xE9;e/secondes):" tool_tip="Le plus bas sera le moins sensible - O d&#xE9;sactive" name="antispamtime"/>
+      <spinner label="Nombre min. de messages par spam:" name="antispamamount"/>
+      <spinner label="Multiplicateur du nombre de messages pour les sons:" name="antispamsoundmulti"/>
+      <spinner label="Multiplicateur du nombre de sons &#xE0; pr&#xE9;charger par spam:" name="antispamsoundpreloadmulti"/>
+      <spinner label="Nombre de lignes max. d'un message:" name="antispamnewlines"/>
+      <check_box label="D&#xE9;sactive toutes les fen&#xEA;tres de dialogue (D&#xE9;co/Reco)" name="antispam_checkbox"/>
+
+	  <text name="Block All Dialogs From">Bloquer tous les dialogues provenants de :</text>
+      <check_box label="Alertes" name="Alerts"/>
+      <check_box label="Demande d'amitié" name="Friendship Offers" left_delta="80"/>
+      <check_box label="Invitations de groupes" name="Group Invites" left_delta="120"/>
+      <check_box label="Notices de groupes" name="Group Notices" left_delta="140"/>
+      <check_box label="Offre d'objets" name="Item Offers"/>
+      <check_box label="Scripts" name="Scripts"/>
+      <check_box label="Offres de TP" name="Teleport Offers"/>
+      <check_box label="Me notifier quand un spam est bloqu&#xE9;" name="Notify On Spam" tool_tip="When enabled, the bottom right corner may become a source of pseudo-spam whenever real spam is blocked."/>
+    </panel>
+
+    <panel label="Options de Texte" name="TextOptions">
+      <check_box label="Montre les 'fot de frap' ou suppos&#xE9;es telles en ROUGE" name="SpellDisplay"/>
+      <text name="EmSpell_txt1">Langage courant (dictionnaire) :</text>
+      <text name="EmSpell_txt3">T&#xE9;l&#xE9;charger les langues (dictionnaires) :</text>
+      <button label="Installer" name="EmSpell_Add"/>
+      <button label="T&#xE9;l&#xE9;charger +++" name="EmSpell_GetMore" tool_tip="Obtenez plus de dictionnaires en ligne"/>
+      <text name="EmSpell_txt2">Langues additionnelles (dictionnaires) :</text>
+      <button label="Supprimer" name="EmSpell_Remove"/>
+      <button label="Editer un dictionnaire" name="EmSpell_EditCustom"/>
+      <text name="EmSpell_txt4">
 Clic droit sur le mot mal &#xE9;crit et choisir son remplacement.
       </text>
 
-      <view_border bevel_style="none" border_thickness="1" bottom_delta="-16" follows="top" height="0" left="5" name="CmdDivisor" width="356"/>
-
-      <check_box bottom_delta="-24" follows="left|top" font="SansSerifSmall" height="16"
-        label="Mettre en valeur les messages si l'un deux contient les termes suivants :" name="KeywordsOn" width="270"/>
-      <text bottom_delta="-20" follows="top" height="20" left="12" name="keyword_txt1">(s&#xE9;par&#xE9;s par des virgules)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" left_delta="5" max_length="500" name="KeywordsList" width="300"/>
-      <text bottom_delta="-24" follows="top" height="20" left_delta="15" name="EmKeyw">Est trouv&#xE9; dans :</text>
-      <check_box bottom_delta="3" follows="top" height="16" left_delta="100" label="Chat local" name="KeywordsInChat"/>
-      <check_box bottom_delta="-15" follows="left|top" height="16" label="IMs" name="KeywordsInIM"/>
-      <check_box bottom_delta="-24" follows="top" height="16" label="Mettre en valeur le message avec cette couleur :" left_delta="-110" name="KeywordsChangeColor"/>
-      <color_swatch border_color="0.45098, 0.517647, 0.607843, 1" bottom_delta="-16" can_apply_immediately="true" color="1, 1, 1, 1" follows="left|top" height="35" left_delta="270" name="KeywordsColor" tool_tip="Click to open Color Picker" width="50"/>
-      <check_box bottom_delta="-10" follows="top" height="16" left_delta="-210" label="Jouer cette alerte sonore : (UUID)" name="KeywordsPlaySound"/>
-      <line_editor bottom_delta="-20" follows="left|top" bevel_style="in" border_style="line" border_thickness="1" height="20" left_delta="-5" max_length="36" name="KeywordsSound" width="300"/>
+      <check_box label="Mettre en valeur les messages si l'un deux contient les termes suivants :" name="KeywordsOn"/>
+      <text name="keyword_txt1">(s&#xE9;par&#xE9;s par des virgules)</text>
+      <text name="EmKeyw">Est trouv&#xE9; dans :</text>
+      <check_box label="Chat local" name="KeywordsInChat"/>
+      <check_box label="IMs" name="KeywordsInIM"/>
+      <check_box label="Mettre en valeur le message avec cette couleur :" name="KeywordsChangeColor"/>
+      <color_swatch name="KeywordsColor" tool_tip="Click to open Color Picker"/>
+      <check_box label="Jouer cette alerte sonore : (UUID)" name="KeywordsPlaySound"/>
     </panel>
 
   </tab_container>
