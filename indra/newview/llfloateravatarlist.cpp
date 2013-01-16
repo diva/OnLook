@@ -443,7 +443,7 @@ BOOL LLFloaterAvatarList::postBuild()
 	return TRUE;
 }
 
-void col_helper(const bool hide, const std::string width_ctrl_name, LLScrollListColumn* col)
+void col_helper(const bool hide, LLCachedControl<S32> &setting, LLScrollListColumn* col)
 {
 	// Brief Explanation:
 	// Check if we want the column hidden, and if it's still showing. If so, hide it, but save its width.
@@ -453,44 +453,55 @@ void col_helper(const bool hide, const std::string width_ctrl_name, LLScrollList
 
 	if (hide && width)
 	{
-		gSavedSettings.setS32(width_ctrl_name, width);
+		setting = width;
 		col->setWidth(0);
 	}
 	else if(!hide && !width)
 	{
-		llinfos << "We got into the setter!!" << llendl;
-		col->setWidth(gSavedSettings.getS32(width_ctrl_name));
+		col->setWidth(setting);
 	}
 }
 
+//Macro to reduce redundant lines. Preprocessor concatenation and stringizing avoids bloat that
+//wrapping in a class would create.
+#define BIND_COLUMN_TO_SETTINGS(col, name)\
+	static const LLCachedControl<bool> hide_##name(gSavedSettings, "RadarColumn"#name"Hidden");\
+	static LLCachedControl<S32> width_##name(gSavedSettings, "RadarColumn"#name"Width");\
+	col_helper(hide_##name, width_##name, mAvatarList->getColumn(col));
+
 void LLFloaterAvatarList::assessColumns()
 {
-	static LLCachedControl<bool> hide_mark(gSavedSettings, "RadarColumnMarkHidden");
-	col_helper(hide_mark, "RadarColumnMarkWidth", mAvatarList->getColumn(LIST_MARK));
+	BIND_COLUMN_TO_SETTINGS(LIST_MARK,Mark);
+	BIND_COLUMN_TO_SETTINGS(LIST_POSITION,Position);
+	BIND_COLUMN_TO_SETTINGS(LIST_ALTITUDE,Altitude);
+	BIND_COLUMN_TO_SETTINGS(LIST_ACTIVITY,Activity);
+	BIND_COLUMN_TO_SETTINGS(LIST_AGE,Age);
+	BIND_COLUMN_TO_SETTINGS(LIST_TIME,Time);
 
-	static LLCachedControl<bool> hide_pos(gSavedSettings, "RadarColumnPositionHidden");
-	col_helper(hide_pos, "RadarColumnPositionWidth", mAvatarList->getColumn(LIST_POSITION));
+	static const LLCachedControl<bool> hide_client(gSavedSettings, "RadarColumnClientHidden");
+	static LLCachedControl<S32> width_name(gSavedSettings, "RadarColumnNameWidth");
+	bool client_hidden = hide_client || gHippoGridManager->getConnectedGrid()->isSecondLife();
+	LLScrollListColumn* name_col = mAvatarList->getColumn(LIST_AVATAR_NAME);
+	LLScrollListColumn* client_col = mAvatarList->getColumn(LIST_CLIENT);
 
-	static LLCachedControl<bool> hide_alt(gSavedSettings, "RadarColumnAltitudeHidden");
-	col_helper(hide_alt, "RadarColumnAltitudeWidth", mAvatarList->getColumn(LIST_ALTITUDE));
+	if (client_hidden != !!name_col->mDynamicWidth)
+	{
+		//Don't save if its being hidden because of detected grid. Not that it really matters, as this setting(along with the other RadarColumn*Width settings)
+		//isn't handled in a way that allows it to carry across sessions, but I assume that may want to be fixed in the future..
+		if(client_hidden && !gHippoGridManager->getConnectedGrid()->isSecondLife() && name_col->getWidth() > 0)
+			width_name = name_col->getWidth();
 
-	static LLCachedControl<bool> hide_act(gSavedSettings, "RadarColumnActivityHidden");
-	col_helper(hide_act, "RadarColumnActivityWidth", mAvatarList->getColumn(LIST_ACTIVITY));
+		//MUST call setWidth(0) first to clear out mTotalStaticColumnWidth accumulation in parent before changing the mDynamicWidth value
+		client_col->setWidth(0);
+		name_col->setWidth(0);
 
-	static LLCachedControl<bool> hide_age(gSavedSettings, "RadarColumnAgeHidden");
-	col_helper(hide_age, "RadarColumnAgeWidth", mAvatarList->getColumn(LIST_AGE));
+		client_col->mDynamicWidth =	!client_hidden;
+		name_col->mDynamicWidth =	 client_hidden;
 
-	static LLCachedControl<bool> hide_time(gSavedSettings, "RadarColumnTimeHidden");
-	col_helper(hide_time, "RadarColumnTimeWidth", mAvatarList->getColumn(LIST_TIME));
-
-	static LLCachedControl<bool> hide_client(gSavedSettings, "RadarColumnClientHidden");
-	if (gHippoGridManager->getConnectedGrid()->isSecondLife() || hide_client){
-		mAvatarList->getColumn(LIST_AVATAR_NAME)->setWidth(0);
-		mAvatarList->getColumn(LIST_CLIENT)->setWidth(0);
-		mAvatarList->getColumn(LIST_CLIENT)->mDynamicWidth = FALSE;
-		mAvatarList->getColumn(LIST_CLIENT)->mRelWidth = 0;
-		mAvatarList->getColumn(LIST_AVATAR_NAME)->mDynamicWidth = TRUE;
-		mAvatarList->getColumn(LIST_AVATAR_NAME)->mRelWidth = -1;
+		if(!client_hidden)
+		{
+			name_col->setWidth(width_name);
+		}
 	}
 	else if (!hide_client)
 	{
