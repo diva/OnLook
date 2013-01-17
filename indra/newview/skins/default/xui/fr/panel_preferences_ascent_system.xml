@@ -206,51 +206,22 @@ Se tp vers un avatar (usage: cmd nom)
         label="Affiche les changements de d&#xE9;comptes de scripts de la r&#xE9;gion." left_delta="0"
         name="totalscriptjumps" width="270"
         tool_tip="D&#xE9;pendant du seuil que vous choisissez dans la fen&#xEA;tre &#xE0; droite."/>
-      <spinner name="ScriptJumpCount" tool_tip="Threshold for the script jump message [Default: 100]"/>
+      <spinner left_delta="350" name="ScriptJumpCount" tool_tip="Threshold for the script jump message [Default: 100]"/>
     </panel>
 
     <panel label="Build/Cr&#xE9;ation" name="Building">
-      <text left_delta="30" name="text_box6">Point de Pivot</text>
-      <spinner label="X pos" label_width="40" left="10" name="X pos" width="120"/>
-      <spinner label="Y pos" label_width="40" name="Y pos" width="120"/>
-      <spinner label="Z pos" label_width="40" name="Z pos" width="120"/>
-      <check_box bottom_delta="-20" label="Valeurs en pour&#xE7;entages" left_delta="-5" tool_tip="Default settings are Percentages and every axis set at 50" name="EmPivotPercToggle"/>
-      <check_box bottom_delta="60" label="Active les &#x22;Highlights&#x22; sur les prims s&#xE9;lectionn&#xE9;s" left_delta="140" name="EmBuildPrefsRenderHighlight_toggle"/>
-	  <check_box bottom_delta="-20" label="Axe sur le Root Prim" tool_tip="Default behaviour is to show the axis on the center of mass of a linkset. If enabled, the axis will be shown on the root prim of the linkset instead." name="EmBuildPrefsActualRoot_toggle"/>
-      <text bottom_delta="60" follows="top" height="10" left_delta="10" name="text_box7">Permissions:</text>
-        <check_box label="Copy " tool_tip="Next owner can make copies of creations" name="next_owner_copy"/>
-        <check_box label="Modify " tool_tip="Next owner can edit creations" name="next_owner_modify"/>
-        <check_box label="Transfer " tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer"/>
-      <texture_picker bottom="-190" label="     Texture" left="155" name="texture control" tool_tip="Click to choose a texture" width="64"/>
-      <check_box bottom="-131" left_delta="75" label="Phantom" name="EmPhantomToggle"/>
+      <text name="text_box6">Point de Pivot</text>
+      <check_box label="Valeurs en %" name="EmPivotPercToggle"/>
+      <check_box label="Active les &#x22;Highlights&#x22; sur les prims s&#xE9;lectionn&#xE9;s" name="EmBuildPrefsRenderHighlight_toggle"/>
+	  <check_box label="Axe sur le Root Prim" name="EmBuildPrefsActualRoot_toggle"/>
+      <text name="text_box7">Permissions :</text>
+      <check_box label="Phantom" name="EmPhantomToggle"/>
       <check_box label="Physical" name="EmPhysicalToggle"/>
       <check_box label="Temporaire" name="EmTemporaryToggle"/>
-      <combo_box bottom="-190" left_delta="6" name="material" width="64">
-        <combo_item name="Stone">Stone</combo_item>
-        <combo_item name="Metal">Metal</combo_item>
-        <combo_item name="Glass">Glass</combo_item>
-        <combo_item name="Wood">Wood</combo_item>
-        <combo_item name="Flesh">Flesh</combo_item>
-        <combo_item name="Plastic">Plastic</combo_item>
-        <combo_item name="Rubber">Rubber</combo_item>
-      </combo_box>
-      <color_swatch label="    Couleur" left_delta="76" name="colorswatch" tool_tip="Click to open Color Picker" width="64"/>
-      <spinner bottom_delta="60" label="Alpha" label_width="45" left_delta="70" width="97"/>
-      <spinner bottom_delta="-20" label="Glow" label_width="45" name="glow" width="97"/>
+      <color_swatch label="    Couleur" name="colorswatch"/>
       <check_box label="Lumineux" name="EmFBToggle"/>
-      <combo_box bottom_delta="-5" left_delta="42" name="combobox shininess" tool_tip="Set the amount of shine for the object" width="62">
-        <combo_item name="None" value="None">None</combo_item>
-        <combo_item name="Low" value="Low">Low</combo_item>
-        <combo_item name="Medium" value="Medium">Medium</combo_item>
-        <combo_item name="High" value="High">High</combo_item>
-      </combo_box>
-      <check_box name="EmeraldBuildPrefsEmbedItem" left="5" bottom_delta="-15" label="Mettre un &#xE9;l&#xE9;ment dans l'object"/>
-        <text bottom_delta="0" left_delta="8" name="Give inventory">Glissez l'&#xE9;l&#xE9;ment ICI</text>
-         <text bottom_delta="15" left_delta="0" name="build_item_add_disp_rect_txt" halign="center" width="138">Currently set to:
-	       ITEM</text>
-       <spinner bottom="369" left="380" label="          X" label_width="40" name="X size" width="110"/>
-       <spinner bottom_delta="-20" label="          Y" label_width="40" name="Y size" width="110"/>
-       <spinner bottom_delta="-20" label="          Z" label_width="40" name="Z size" width="110"/>
+      <check_box name="EmeraldBuildPrefsEmbedItem" label="Mettre un &#xE9;l&#xE9;ment dans l'object"/>
+        <text name="Give inventory">Glissez l'&#xE9;l&#xE9;ment ICI</text>
     </panel>
 
   </tab_container>

@@ -37,7 +37,8 @@
       <check_box label="Ne pas montrer les IMs auxquels vous avez r&#xE9;pondu" name="AscentInstantMessageShowResponded"/>
       <check_box label="Auto-r&#xE9;ponse &#xE0; chaque message" name="AscentInstantMessageResponseRepeat"/>
       <check_box label="Joindre un objet &#xE0; la r&#xE9;ponse" name="AscentInstantMessageResponseItem" tool_tip="Glissez l'objet dans la fen&#xEA;tre de r&#xE9;ponse."/>
-	  <text bottom_delta="120" left_delta="280" follows="left|top" height="18" name="text_box1">Texte de la r&#xE9;ponse :</text>
+	  <text bottom_delta="140" left_delta="280" follows="left|top" height="18" name="text_box1">Texte de la r&#xE9;ponse :</text>
+      <text_editor bottom_delta="-130" height="130" name="im_response" width="190"/>
       <text name="text_box2">
 #f Pr&#xE9;nom,#l Nom,#t Dur&#xE9;e,#r SLURL,
 #i Dur&#xE9;e de 'l'IDLE'. (ex. "5 mins")
@@ -67,9 +68,9 @@
 
 	  <text name="Block All Dialogs From">Bloquer tous les dialogues provenants de :</text>
       <check_box label="Alertes" name="Alerts"/>
-      <check_box label="Demande d'amitié" name="Friendship Offers" left_delta="80"/>
-      <check_box label="Invitations de groupes" name="Group Invites" left_delta="120"/>
-      <check_box label="Notices de groupes" name="Group Notices" left_delta="140"/>
+      <check_box label="Demande d'amitié" name="Friendship Offers"/>
+      <check_box label="Invitations de groupes" name="Group Invites"/>
+      <check_box label="Notices de groupes" name="Group Notices"/>
       <check_box label="Offre d'objets" name="Item Offers"/>
       <check_box label="Scripts" name="Scripts"/>
       <check_box label="Offres de TP" name="Teleport Offers"/>
