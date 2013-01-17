@@ -69,12 +69,14 @@
 	  <text name="Block All Dialogs From">Bloquer tous les dialogues provenants de :</text>
       <check_box label="Alertes" name="Alerts"/>
       <check_box label="Demande d'amitié" name="Friendship Offers"/>
-      <check_box label="Invitations de groupes" name="Group Invites"/>
+      <check_box label="Invitation de groupe" name="Group Invites"/>
       <check_box label="Notices de groupes" name="Group Notices"/>
       <check_box label="Offre d'objets" name="Item Offers"/>
       <check_box label="Scripts" name="Scripts"/>
       <check_box label="Offres de TP" name="Teleport Offers"/>
       <check_box label="Me notifier quand un spam est bloqu&#xE9;" name="Notify On Spam" tool_tip="When enabled, the bottom right corner may become a source of pseudo-spam whenever real spam is blocked."/>
+      <check_box label="Invit. de fee de grp" name="Group Fee Invites"/>
+      <check_box label="Active les sons des gestures" name="Enable Gesture Sounds"/>
     </panel>
 
     <panel label="Options de Texte" name="TextOptions">
