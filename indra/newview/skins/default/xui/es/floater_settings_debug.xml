@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater name="settings_debug" title="Configurar del Depurador">
-	<combo_box name="settings_combo" />
-	<combo_box name="boolean_combo">
-		<combo_item name="TRUE">
-			VERDADERO
-		</combo_item>
-		<combo_item name="FALSE">
-			FALSO
-		</combo_item>
-	</combo_box>
-	<color_swatch label="Color" name="color_swatch"/>
+<floater name="settings_debug" title="Configurar Depurador">
+    <search_editor label="Buscar" name="search_settings_input" tool_tip="Escribe aquí el término que estás buscando. Los resultados mostrarán las coincidencias parciales del texto buscado ya sea en los nombres de clave o en los comentarios."/>
+
+	<radio_group name="boolean_combo">
+		<radio_item name="TRUE">
+			Verdadero
+		</radio_item>
+		<radio_item name="FALSE">
+			Falso
+		</radio_item>
+	</radio_group>
+	<color_swatch label="Color" name="val_color_swatch"/>
 	<spinner label="x" name="val_spinner_1"/>
 	<spinner label="x" name="val_spinner_2"/>
 	<spinner label="x" name="val_spinner_3"/>
 	<spinner label="x" name="val_spinner_4"/>
+	<button label="Copiar Nombre" name="copy_btn" tool_tip="Copiar el nombre de esta clave." width="130" />	
 	<button label="Restablecer" name="default_btn"/>
 </floater>

@@ -17,7 +17,7 @@
 	<check_box label="Sélectionner une face" name="radio select face"/>
 	<check_box label="Modifier les parties liées" name="checkbox edit linked parts"/>
 	<text name="text ruler mode">
-		Axe:
+		Axe :
 	</text>
 	<combo_box name="combobox grid mode">
 		<combo_item name="World">
@@ -65,7 +65,7 @@
 	<check_box label="Annuler modification" name="radio revert"/>
 	<button label="Appliquer" label_selected="Appliquer" name="button apply to selection" tool_tip="Modifier le terrain sélectionné" left="176"/>
 	<text name="Bulldozer:">
-		Bulldozer:
+		Bulldozer :
 	</text>
 	<text name="Dozer Size:">
 		Taille
@@ -74,28 +74,28 @@
 		Force
 	</text>
 	<text name="obj_count">
-		Objets sélectionnés: [COUNT]
+		Objets sélectionnés : [COUNT]
 	</text>
 	<text name="prim_count">
-		Prims: [COUNT]
+		Prims : [COUNT]
 	</text>
 	<tab_container name="Object Info Tabs">
 		<panel label="Général" name="General">
 			<text name="Name:">
-				Nom:
+				Nom :
 			</text>
 			<text name="Description:">
-				Description:
+				Description :
 			</text>
 			<text name="Creator:">
-				Créateur:
+				Créateur :
 			</text>
 			<text name="Creator Name">
 				Thrax Linden
 			</text>
 			<button label="Profil" label_selected="Profil" name="button creator profile"/>
 			<text name="Owner:">
-				Propriétaire:
+				Propriétaire :
 			</text>
 
 		    <button label="Profil" label_selected="Profil" name="button last owner profile"/>
@@ -111,15 +111,15 @@
 			</text>
 			<button label="Profil" label_selected="Profil" name="button owner profile"/>
 			<text name="Group:">
-				Groupe:
+				Groupe :
 			</text>
 			<text name="Group Name Proxy">
 				Les Lindens
 			</text>
 			<button label="Définir" label_selected="Définir" name="button set group"/>
 			<button label="Voir" name="button open group"/>
-			<text name="Permissions:">
-				Droits:
+			<text name="Permissions :">
+				Droits :
 			</text>
 			<text name="perm_modify">
 				Vous pouvez modifier cet objet.
@@ -151,7 +151,7 @@
 				</radio_item>
 			</radio_group>
 			<text name="Next owner can:">
-				Le prochain propriétaire pourra:
+				Le prochain propriétaire pourra :
 			</text>
 			<check_box label="Modifier" name="checkbox next owner can modify"/>
 			<check_box label="Copier" left_delta="66" name="checkbox next owner can copy"/>
@@ -184,22 +184,22 @@
 			</combo_box>
 			<button bottom="-338" label="Copier la Clef" tool_tip="Copie la clef dans le presse-papier." width="80"/>
 			<text name="B:">
-				B:
+				B :
 			</text>
 			<text name="O:">
-				O:
+				O :
 			</text>
 			<text name="G:">
-				G:
+				G :
 			</text>
 			<text name="E:">
-				E:
+				E :
 			</text>
 			<text name="N:">
-				N:
+				N :
 			</text>
 			<text name="F:">
-				F:
+				F :
 			</text>
 			<string name="text modify info 1">
 				Vous pouvez modifier cet objet.
@@ -217,13 +217,13 @@
 				Sélectionnez l'objet en entier.
 			</string>
 			<string name="Cost Default">
-				Prix:           [CURRENCY]
+				Prix :           [CURRENCY]
 			</string>
 			<string name="Cost Total">
-				Prix total:  [CURRENCY]
+				Prix total :  [CURRENCY]
 			</string>
 			<string name="Cost Per Unit">
-				Prix par:     [CURRENCY]
+				Prix par :     [CURRENCY]
 			</string>
 			<string name="Cost Mixed">
 				Prix mixte
@@ -419,7 +419,7 @@
 				Sélectionnez un prim pour modifier les attributs.
 			</text>
 			<text name="edit_object">
-				Modifiez les attributs de l'objet:
+				Modifiez les attributs de l'objet :
 			</text>
 			<check_box label="Flexibilité" name="Flexible1D Checkbox Ctrl" tool_tip="Donne à l'objet de la souplesse sur l'axe des Z (côté client uniquement)."/>
 			<spinner label="Souplesse" name="FlexNumSections"/>
@@ -567,7 +567,11 @@
 				Ajuster la texture du média
 (chargement préalable)
 			</text>
-			<button label="Ajuster" label_selected="Ajuster" left="150" name="button align"/>
+			<button label="Ajuster" label_selected="Ajuster" left="140" name="button align" width="45"/>
+
+			<text name="textbox params">Paramètres</text>
+			<button label="Copier" name="copytextures" tool_tip="Copie les paramètres de la texture dans le presse papier"  width="55"/>
+			<button label="Coller" name="pastetextures" tool_tip="Colle les paramètres de la texture du presse papier"  width="55"/>
 		</panel>
 		<panel label="Contenu" name="Contents">
 			<button label="Nouveau script" label_selected="Nouveau script" name="button new script"/>
@@ -579,7 +583,7 @@
 			Informations sur la parcelle
 		</text>
 		<text name="label_area_price">
-			Prix : [PRICE][CURRENCY] pour [AREA] m².
+			Prix : [PRICE] [CURRENCY] pour [AREA] m².
 		</text>
 		<text name="label_area">
 			Surface : [AREA] m²

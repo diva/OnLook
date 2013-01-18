@@ -2011,7 +2011,9 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	// </edit>
 
 	BOOL is_busy = gAgent.getBusy();
-	BOOL is_muted = LLMuteList::getInstance()->isMuted(from_id, name, LLMute::flagTextChat);
+	BOOL is_muted = LLMuteList::getInstance()->isMuted(from_id, name, LLMute::flagTextChat)
+		// object IMs contain sender object id in session_id (STORM-1209)
+		|| dialog == IM_FROM_TASK && LLMuteList::getInstance()->isMuted(session_id);
 	BOOL is_linden = LLMuteList::getInstance()->isLinden(name);
 	BOOL is_owned_by_me = FALSE;
 
@@ -2509,7 +2511,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				info->mFolderID = gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(info->mType));
 				std::string from_name;
 
-				from_name += "A group member named ";
+				from_name += LLTrans::getString("AGroupMemberNamed") + " ";
 				from_name += name;
 
 				info->mFromName = from_name;
