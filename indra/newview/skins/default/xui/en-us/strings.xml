@@ -196,6 +196,8 @@
 	<string name="AvatarAway">Away</string>
 	<string name="AvatarBusy">Busy</string>
 	<string name="AvatarMuted">Muted</string>
+	<!-- "AvatarLangolier" is used for an avatar that teleported into a Time Frozen scene (only their moving tag is visible).
+		 A Langolier is a creature from Stephen Kings "The Langoliers" that exists outside time and lives by eating the past. -->
 	<string name="AvatarLangolier">Langolier</string>
 
 	<!-- animations -->
