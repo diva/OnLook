@@ -124,12 +124,12 @@ std::map<std::string,std::string> LLWorldMapView::sStringsMap;
 
 F32 DRAW_TEXT_THRESHOLD = 96.f;
 
-const int SIM_MAP_AGENT_SCALE=8; // width in pixels, where we start drawing agents
-const int SIM_DATA_SCALE=12; // width in pixels where we start requesting sim info
+const int SIM_MAP_AGENT_SCALE=32; // width in pixels, where we start drawing agents
+const int SIM_DATA_SCALE=32; // width in pixels where we start requesting sim info
 const int SIM_LANDFORSALE_SCALE=32;
 
 const int SIM_COMPOSITE_SCALE=2; // width in pixels, where we start drawing sim tiles. (legacy tiling method)
-const int SIM_FETCH_SCALE=SIM_DATA_SCALE; // width in pixels, where we start requesting sim tile textures. (legacy tiling method)
+const int SIM_FETCH_SCALE=12; // width in pixels, where we start requesting sim tile textures. (legacy tiling method)
 
 // When on, draw an outline for each mipmap tile gotten from S3
 #define DEBUG_DRAW_TILE 0
