@@ -461,7 +461,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 	return true;
 }
 
-//case insensative search for avatar in draw distance
+//case insensitive search for avatar in draw distance
 //TODO: make this use the avatar list floaters list so we have EVERYONE
 // even if they are out of draw distance.
 LLUUID cmdline_partial_name2key(std::string partial_name)
@@ -471,7 +471,7 @@ LLUUID cmdline_partial_name2key(std::string partial_name)
 	LLStringUtil::toLower(partial_name);
 	LLWorld::getInstance()->getAvatars(&avatars);
 	typedef std::vector<LLUUID>::const_iterator av_iter;
-	bool has_avatarlist = (LLFloaterAvatarList::getInstance() ? true : false);
+	bool has_avatarlist = LLFloaterAvatarList::instanceExists();
 	if(has_avatarlist)
 		LLFloaterAvatarList::getInstance()->updateAvatarList();
 	for(av_iter i = avatars.begin(); i != avatars.end(); ++i)
@@ -511,7 +511,7 @@ void cmdline_tp2name(std::string target)
 		cmdline_printchat("Avatar not found.");
 		return;
 	}
-	LLFloaterAvatarList* avlist = LLFloaterAvatarList::getInstance();
+	LLFloaterAvatarList* avlist = LLFloaterAvatarList::instanceExists() ? LLFloaterAvatarList::getInstance() : NULL;
 	LLVOAvatar* avatarp = gObjectList.findAvatar(avkey);
 	if(avatarp)
 	{

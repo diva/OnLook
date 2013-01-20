@@ -345,6 +345,7 @@ public:
 
 	LLToolset*	mLastToolset;
 	boost::signals2::connection mQualityMouseUpConnection;
+	LLFocusableElement* mPrevDefaultKeyboardFocus;
 };
 
 //----------------------------------------------------------------------------
@@ -1688,8 +1689,8 @@ void LLFloaterSnapshot::Impl::freezeTime(bool on)
 	LLSnapshotLivePreview* previewp = getPreviewView();
 	if (on)
 	{
-		// stop all mouse events at fullscreen preview layer
-		sInstance->getParent()->setMouseOpaque(TRUE);
+		// Stop all mouse events at fullscreen preview layer.
+		gSnapshotFloaterView->setMouseOpaque(TRUE);
 
 		// can see and interact with fullscreen preview now
 		if (previewp)
@@ -1713,10 +1714,19 @@ void LLFloaterSnapshot::Impl::freezeTime(bool on)
 			sInstance->impl.mLastToolset = LLToolMgr::getInstance()->getCurrentToolset();
 			LLToolMgr::getInstance()->setCurrentToolset(gCameraToolset);
 		}
+
+		// Make sure the floater keeps focus so that pressing ESC stops Freeze Time mode.
+		sInstance->impl.mPrevDefaultKeyboardFocus = gFocusMgr.getDefaultKeyboardFocus();
+		gFocusMgr.setDefaultKeyboardFocus(sInstance);
 	}
-	else // turning off freeze frame mode
+	else if (gSavedSettings.getBOOL("FreezeTime")) // turning off freeze frame mode
 	{
-		sInstance->getParent()->setMouseOpaque(FALSE);
+		// Restore default keyboard focus.
+		gFocusMgr.setDefaultKeyboardFocus(sInstance->impl.mPrevDefaultKeyboardFocus);
+		sInstance->impl.mPrevDefaultKeyboardFocus = NULL;
+
+		gSnapshotFloaterView->setMouseOpaque(FALSE);
+
 		if (previewp)
 		{
 			previewp->setVisible(FALSE);

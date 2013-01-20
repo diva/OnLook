@@ -752,7 +752,12 @@ LLScrollListCtrl::LLScrollListCtrl(const std::string& name, const LLRect& rect,
 		addChild(mBorder);
 	}
 
-
+	LLTextBox* textBox = new LLTextBox("comment_text",mItemListRect,std::string());
+	textBox->setBorderVisible(false);
+	textBox->setFollowsAll();
+	textBox->setFontShadow(LLFontGL::NO_SHADOW);
+	textBox->setColor(LLUI::sColorsGroup->getColor("DefaultListText"));
+	addChild(textBox);
 }
 
 S32 LLScrollListCtrl::getSearchColumn()
@@ -1688,7 +1693,7 @@ void LLScrollListCtrl::deselectAllItems(BOOL no_commit_on_change)
 
 void LLScrollListCtrl::setCommentText(const std::string& comment_text)
 {
-	getChild<LLTextBox>("comment_text")->setValue(comment_text);
+	getChild<LLTextBox>("comment_text")->setWrappedText(comment_text);
 }
 
 LLScrollListItem* LLScrollListCtrl::addSeparator(EAddPosition pos)
@@ -2045,6 +2050,7 @@ void LLScrollListCtrl::draw()
 
 	updateColumns();
 
+	getChildView("comment_text")->setVisible(mItemList.empty());
 
 	drawItems();
 
@@ -3218,16 +3224,20 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 
 	for (child = node->getFirstChild(); child.notNull(); child = child->getNextSibling())
 	{
-		if (child->hasName("row"))
+		if (child->hasName("row") || child->hasName("rows"))
 		{
 			LLUUID id;
-			child->getAttributeUUID("id", id);
-
 			LLSD row;
-
-			row["id"] = id;
+			std::string value;
+			child->getAttributeString("value",value);
+			bool id_found = child->getAttributeUUID("id", id);
+			if(id_found)
+				row["id"] = id;
+			else
+				row["id"] = value;
 
 			S32 column_idx = 0;
+			bool explicit_column = false;
 			LLXMLNodePtr row_child;
 			for (row_child = child->getFirstChild(); row_child.notNull(); row_child = row_child->getNextSibling())
 			{
@@ -3249,28 +3259,24 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 					row["columns"][column_idx]["font"] = font;
 					row["columns"][column_idx]["font-style"] = font_style;
 					column_idx++;
+					explicit_column = true;
 				}
 			}
-			scroll_list->addElement(row);
+			if(explicit_column)
+				scroll_list->addElement(row);
+			else
+			{
+				LLSD entry_id;
+				if(id_found)
+					entry_id = id;
+				scroll_list->addSimpleElement(value,ADD_BOTTOM,entry_id);
+			}
 		}
 	}
 
 	std::string contents = node->getTextContents();
-	if (!contents.empty())
-	{
-		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-		boost::char_separator<char> sep("\t\n");
-		tokenizer tokens(contents, sep);
-		tokenizer::iterator token_iter = tokens.begin();
+	scroll_list->setCommentText(contents);
 
-		while(token_iter != tokens.end())
-		{
-			const std::string& line = *token_iter;
-			scroll_list->addSimpleElement(line);
-			++token_iter;
-		}
-	}
-	
 	return scroll_list;
 }
 

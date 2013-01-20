@@ -196,6 +196,8 @@
 	<string name="AvatarAway">Away</string>
 	<string name="AvatarBusy">Busy</string>
 	<string name="AvatarMuted">Muted</string>
+	<!-- "AvatarLangolier" is used for an avatar that teleported into a Time Frozen scene (only their moving tag is visible).
+		 A Langolier is a creature from Stephen Kings "The Langoliers" that exists outside time and lives by eating the past. -->
 	<string name="AvatarLangolier">Langolier</string>
 
 	<!-- animations -->
@@ -3115,6 +3117,7 @@ Drag folders to this area and click "Send to Marketplace" to list them for sale 
 	<string name="CompileQueueScriptNotFound">Script not found on server.</string>
 	<string name="CompileQueueProblemDownloading">Problem downloading</string>
   <string name="CompileQueueProblemUploading">Sim lacking UpdateScriptTask capabilities. Unable to request recompile</string>
+  <string name="CompileQueueProblemWriting">Error writing to local file. Is your hard drive full?</string>
 	<string name="CompileQueueInsufficientPermDownload">Insufficient permissions to download a script.</string>
 	<string name="CompileQueueInsufficientPermFor">Insufficient permissions for</string>
 	<string name="CompileQueueUnknownFailure">Unknown failure to download</string>

@@ -485,10 +485,7 @@ bool LLScriptEdCore::writeToFile(const std::string& filename)
 	{
 		llwarns << "Unable to write to " << filename << llendl;
 
-		LLSD row;
-		row["columns"][0]["value"] = "Error writing to local file. Is your hard drive full?";
-		row["columns"][0]["font"] = "SANSSERIF_SMALL";
-		mErrorList->addElement(row);
+		mErrorList->addSimpleElement(LLTrans::getString("CompileQueueProblemWriting"));
 		return false;
 	}
 
@@ -653,15 +650,12 @@ void LLScriptEdCore::autoSave()
 		//mAutosaveFilename = llformat("%s.lsl", asfilename.c_str());		
 	}
 	
-	FILE* fp = LLFile::fopen(mAutosaveFilename.c_str(), "wb");
+	LLFILE* fp = LLFile::fopen(mAutosaveFilename.c_str(), "wb");
 	if(!fp)
 	{
 		llwarns << "Unable to write to " << mAutosaveFilename << llendl;
 		
-		LLSD row;
-		row["columns"][0]["value"] = "Error writing to temp file. Is your hard drive full?";
-		row["columns"][0]["font"] = "SANSSERIF_SMALL";
-		mErrorList->addElement(row);
+		mErrorList->addSimpleElement(LLTrans::getString("CompileQueueProblemWriting"));
 		return;
 	}
 	
@@ -706,9 +700,7 @@ void LLScriptEdCore::addHelpItemToHistory(const std::string& help_string)
 	// separate history items from full item list
 	if (mLiveHelpHistorySize == 0)
 	{
-		LLSD row;
-		row["columns"][0]["type"] = "separator";
-		history_combo->addElement(row, ADD_TOP);
+		history_combo->addSeparator(ADD_TOP);
 	}
 	// delete all history items over history limit
 	while(mLiveHelpHistorySize > MAX_HISTORY_COUNT - 1)
@@ -1321,8 +1313,8 @@ LLPreviewLSL::LLPreviewLSL(const std::string& name, const LLRect& rect,
 void LLPreviewLSL::callbackLSLCompileSucceeded()
 {
 	llinfos << "LSL Bytecode saved" << llendl;
-	mScriptEd->mErrorList->setCommentText(LLTrans::getString("CompileSuccessful"));
-	mScriptEd->mErrorList->setCommentText(LLTrans::getString("SaveComplete"));
+	mScriptEd->mErrorList->addSimpleElement(LLTrans::getString("CompileSuccessful"));
+	mScriptEd->mErrorList->addSimpleElement(LLTrans::getString("SaveComplete"));
 	closeIfNeeded();
 }
 
@@ -1338,6 +1330,7 @@ void LLPreviewLSL::callbackLSLCompileFailed(const LLSD& compile_errors)
 		LLSD row;
 		std::string error_message = line->asString();
 		LLStringUtil::stripNonprintable(error_message);
+		row["columns"][0]["column"] = "default_column";
 		row["columns"][0]["value"] = error_message;
 		row["columns"][0]["font"] = "OCRA";
 		mScriptEd->mErrorList->addElement(row);
@@ -1480,10 +1473,7 @@ void LLPreviewLSL::saveIfNeeded()
 	{
 		llwarns << "Unable to write to " << filename << llendl;
 
-		LLSD row;
-		row["columns"][0]["value"] = "Error writing to local file. Is your hard drive full?";
-		row["columns"][0]["font"] = "SANSSERIF_SMALL";
-		mScriptEd->mErrorList->addElement(row);
+		mScriptEd->mErrorList->addSimpleElement(LLTrans::getString("CompileQueueProblemWriting"));
 		return;
 	}
 
@@ -1506,9 +1496,7 @@ void LLPreviewLSL::saveIfNeeded()
 		else
 		{
 			LLSD row;
-			row["columns"][0]["value"] = LLTrans::getString("CompileQueueProblemUploading");
-			row["columns"][0]["font"] = "SANSSERIF_SMALL";
-			mScriptEd->mErrorList->addElement(row);
+			mScriptEd->mErrorList->addSimpleElement(LLTrans::getString("CompileQueueProblemUploading"));
 			LLFile::remove(filename);
 		}
 #if 0 //Client side compiling disabled.
@@ -1622,7 +1610,6 @@ void LLPreviewLSL::uploadAssetLegacy(const std::string& filename,
 	LLFile::remove(err_filename);
 	LLFile::remove(dst_filename);
 }
-#endif
 
 // static
 void LLPreviewLSL::onSaveComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status) // StoreAssetData callback (fixed)
@@ -1710,6 +1697,7 @@ void LLPreviewLSL::onSaveBytecodeComplete(const LLUUID& asset_uuid, void* user_d
 	}
 	delete instance_uuid;
 }
+#endif
 
 // static
 void LLPreviewLSL::onLoadComplete( LLVFS *vfs, const LLUUID& asset_uuid, LLAssetType::EType type,
@@ -1931,8 +1919,8 @@ void LLLiveLSLEditor::callbackLSLCompileSucceeded(const LLUUID& task_id,
 												  bool is_script_running)
 {
 	lldebugs << "LSL Bytecode saved" << llendl;
-	mScriptEd->mErrorList->setCommentText(LLTrans::getString("CompileSuccessful"));
-	mScriptEd->mErrorList->setCommentText(LLTrans::getString("SaveComplete"));
+	mScriptEd->mErrorList->addSimpleElement(LLTrans::getString("CompileSuccessful"));
+	mScriptEd->mErrorList->addSimpleElement(LLTrans::getString("SaveComplete"));
 	closeIfNeeded();
 }
 
@@ -1947,6 +1935,7 @@ void LLLiveLSLEditor::callbackLSLCompileFailed(const LLSD& compile_errors)
 		LLSD row;
 		std::string error_message = line->asString();
 		LLStringUtil::stripNonprintable(error_message);
+		row["columns"][0]["column"] = "default_column";
 		row["columns"][0]["value"] = error_message;
 		row["columns"][0]["font"] = "OCRA";
 		mScriptEd->mErrorList->addElement(row);
@@ -2389,10 +2378,7 @@ void LLLiveLSLEditor::saveIfNeeded()
 	{
 		llwarns << "Unable to write to " << filename << llendl;
 
-		LLSD row;
-		row["columns"][0]["value"] = "Error writing to local file. Is your hard drive full?";
-		row["columns"][0]["font"] = "SANSSERIF_SMALL";
-		mScriptEd->mErrorList->addElement(row);
+		mScriptEd->mErrorList->addSimpleElement(LLTrans::getString("CompileQueueProblemWriting"));
 		return;
 	}
 	std::string utf8text = mScriptEd->mEditor->getText();
@@ -2419,10 +2405,7 @@ void LLLiveLSLEditor::saveIfNeeded()
 	}
 	else
 	{
-		LLSD row;
-		row["columns"][0]["value"] = LLTrans::getString("CompileQueueProblemUploading");
-		row["columns"][0]["font"] = "SANSSERIF_SMALL";
-		mScriptEd->mErrorList->addElement(row);
+		mScriptEd->mErrorList->addSimpleElement(LLTrans::getString("CompileQueueProblemUploading"));
 		LLFile::remove(filename);
 	}
 #if 0 //Client side compiling disabled.
@@ -2548,7 +2531,6 @@ void LLLiveLSLEditor::uploadAssetLegacy(const std::string& filename,
 	runningCheckbox->setLabel(getString("script_running"));
 	runningCheckbox->setEnabled(TRUE);
 }
-#endif
 
 void LLLiveLSLEditor::onSaveTextComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status) // StoreAssetData callback (fixed)
 {
@@ -2579,7 +2561,6 @@ void LLLiveLSLEditor::onSaveTextComplete(const LLUUID& asset_uuid, void* user_da
 	data = NULL;
 }
 
-
 void LLLiveLSLEditor::onSaveBytecodeComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status) // StoreAssetData callback (fixed)
 {
 	LLLiveLSLSaveData* data = (LLLiveLSLSaveData*)user_data;
@@ -2593,7 +2574,7 @@ void LLLiveLSLEditor::onSaveBytecodeComplete(const LLUUID& asset_uuid, void* use
 		if(self)
 		{
 			// Tell the user that the compile worked.
-			self->mScriptEd->mErrorList->setCommentText(LLTrans::getString("SaveComplete"));
+			self->mScriptEd->mErrorList->addSimpleElement(LLTrans::getString("SaveComplete"));
 			// close the window if this completes both uploads
 			self->getWindow()->decBusyCount();
 			self->mPendingUploads--;
@@ -2627,6 +2608,7 @@ void LLLiveLSLEditor::onSaveBytecodeComplete(const LLUUID& asset_uuid, void* use
 	LLFile::remove(dst_filename);
 	delete data;
 }
+#endif
 
 void LLLiveLSLEditor::open()
 {

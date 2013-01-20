@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater label="(desconocido)" name="im_floater" title="(desconocido)">
+	<string name="ringing">
+		Uniéndose al Chat de Voz...
+	</string>
+	<string name="connected">
+		Conectado, pulsa Terminar Llamada para colgar
+	</string>
+	<string name="hang_up">
+		Salida Chat de Voz
+	</string>
+	<string name="title_string">
+		Mensaje Instantáneo con [NAME]
+	</string>
+	<string name="typing_start_string">
+		[NAME] está escribiendo...
+	</string>
+	<string name="session_start_string">
+		Iniciando sesión con [NAME], espera por favor.
+	</string>
+	<string name="default_text_label">
+		Pulsa aquí para un Mensaje Instantáneo.
+	</string>
+	<string name="moderated_chat_label">
+		(Moderado: Voz Apagada por defecto)
+	</string>
+	<string name="muted_text_label">
+		Tu chat de texto ha sido deshabilitado por un Moderado del Grupo.
+	</string>
+	<button label="Información Grupo" right="-245" name="group_info_btn" width="80"/>
+	<button label="Historial" left_delta="80" name="history_btn" width="80"/>
+	<button label="Unirse a Llamada" left_delta="80" name="start_call_btn" width="80"/>
+	<button label="Terminar Llamada" name="end_call_btn" width="80"/>
+	<button label="&lt; &lt;" label_selected="&gt; &gt;" left="420" name="toggle_active_speakers_btn" right="450" tool_tip="Pulsa aquí para mostrar/ocultar la lista de participantes activos en esta sesión de MI." width="80"/>
+	<layout_stack name="panels">
+		<layout_panel name="im_contents_panel" width="495">
+			<button label="Enviar" left="435" name="send_btn" width="60"/>
+		</layout_panel>
+	<string name="live_help_dialog">
+		*** Bienvenido a la Petición de Ayuda *** 
+Por favor, en primer lugar revisa nuestras páginas de ayuda de SL pulsando F1, o accede a la Base de Conocimientos http://secondlife.com/knowledgebase/ 
+Si no encuentras allí la respuesta que buscas, por favor, empieza el proceso escribiendo tu pregunta, y espera unos momentos a que responda algunos de los ayudantes disponibles.
+-=-=- El tiempo de respuesta puede variar, especialmente durante las horas punta -=-=-	
+	</string>
+</floater>

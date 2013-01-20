@@ -84,6 +84,8 @@ typedef enum e_radar_alert_type
 	ALERT_TYPE_AGE = 16,
 } ERadarAlertType;
 
+namespace
+{
 void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool entering)
 {
 	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) return; //RLVa:LF Don't announce people are around when blind, that cheats the system.
@@ -94,7 +96,6 @@ void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool
 	static LLCachedControl<bool> radar_alert_shout_range(gSavedSettings, "RadarAlertShoutRange");
 	static LLCachedControl<bool> radar_alert_chat_range(gSavedSettings, "RadarAlertChatRange");
 	static LLCachedControl<bool> radar_alert_age(gSavedSettings, "RadarAlertAge");
-	static LLCachedControl<bool> radar_chat_keys(gSavedSettings, "RadarChatKeys");
 
 	LLFloaterAvatarList* self = LLFloaterAvatarList::getInstance();
 	LLStringUtil::format_map_t args;
@@ -152,6 +153,21 @@ void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool
 		LLFloaterChat::addChat(chat);
 	}
 }
+
+	void send_keys_message(const int transact_num, const int num_ids, const std::string ids)
+	{
+		gMessageSystem->newMessage("ScriptDialogReply");
+		gMessageSystem->nextBlock("AgentData");
+		gMessageSystem->addUUID("AgentID", gAgent.getID());
+		gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
+		gMessageSystem->nextBlock("Data");
+		gMessageSystem->addUUID("ObjectID", gAgent.getID());
+		gMessageSystem->addS32("ChatChannel", -777777777);
+		gMessageSystem->addS32("ButtonIndex", 1);
+		gMessageSystem->addString("ButtonLabel", llformat("%d,%d", transact_num, num_ids) + ids);
+		gAgent.sendReliableMessage();
+	}
+} //namespace
 
 LLAvatarListEntry::LLAvatarListEntry(const LLUUID& id, const std::string &name, const LLVector3d &position) :
 		mID(id), mName(name), mPosition(position), mDrawPosition(), mMarked(false), mFocused(false),
@@ -427,7 +443,7 @@ BOOL LLFloaterAvatarList::postBuild()
 	return TRUE;
 }
 
-void col_helper(const bool hide, const std::string width_ctrl_name, LLScrollListColumn* col)
+void col_helper(const bool hide, LLCachedControl<S32> &setting, LLScrollListColumn* col)
 {
 	// Brief Explanation:
 	// Check if we want the column hidden, and if it's still showing. If so, hide it, but save its width.
@@ -437,44 +453,55 @@ void col_helper(const bool hide, const std::string width_ctrl_name, LLScrollList
 
 	if (hide && width)
 	{
-		gSavedSettings.setS32(width_ctrl_name, width);
+		setting = width;
 		col->setWidth(0);
 	}
 	else if(!hide && !width)
 	{
-		llinfos << "We got into the setter!!" << llendl;
-		col->setWidth(gSavedSettings.getS32(width_ctrl_name));
+		col->setWidth(setting);
 	}
 }
 
+//Macro to reduce redundant lines. Preprocessor concatenation and stringizing avoids bloat that
+//wrapping in a class would create.
+#define BIND_COLUMN_TO_SETTINGS(col, name)\
+	static const LLCachedControl<bool> hide_##name(gSavedSettings, "RadarColumn"#name"Hidden");\
+	static LLCachedControl<S32> width_##name(gSavedSettings, "RadarColumn"#name"Width");\
+	col_helper(hide_##name, width_##name, mAvatarList->getColumn(col));
+
 void LLFloaterAvatarList::assessColumns()
 {
-	static LLCachedControl<bool> hide_mark(gSavedSettings, "RadarColumnMarkHidden");
-	col_helper(hide_mark, "RadarColumnMarkWidth", mAvatarList->getColumn(LIST_MARK));
+	BIND_COLUMN_TO_SETTINGS(LIST_MARK,Mark);
+	BIND_COLUMN_TO_SETTINGS(LIST_POSITION,Position);
+	BIND_COLUMN_TO_SETTINGS(LIST_ALTITUDE,Altitude);
+	BIND_COLUMN_TO_SETTINGS(LIST_ACTIVITY,Activity);
+	BIND_COLUMN_TO_SETTINGS(LIST_AGE,Age);
+	BIND_COLUMN_TO_SETTINGS(LIST_TIME,Time);
 
-	static LLCachedControl<bool> hide_pos(gSavedSettings, "RadarColumnPositionHidden");
-	col_helper(hide_pos, "RadarColumnPositionWidth", mAvatarList->getColumn(LIST_POSITION));
+	static const LLCachedControl<bool> hide_client(gSavedSettings, "RadarColumnClientHidden");
+	static LLCachedControl<S32> width_name(gSavedSettings, "RadarColumnNameWidth");
+	bool client_hidden = hide_client || gHippoGridManager->getConnectedGrid()->isSecondLife();
+	LLScrollListColumn* name_col = mAvatarList->getColumn(LIST_AVATAR_NAME);
+	LLScrollListColumn* client_col = mAvatarList->getColumn(LIST_CLIENT);
 
-	static LLCachedControl<bool> hide_alt(gSavedSettings, "RadarColumnAltitudeHidden");
-	col_helper(hide_alt, "RadarColumnAltitudeWidth", mAvatarList->getColumn(LIST_ALTITUDE));
+	if (client_hidden != !!name_col->mDynamicWidth)
+	{
+		//Don't save if its being hidden because of detected grid. Not that it really matters, as this setting(along with the other RadarColumn*Width settings)
+		//isn't handled in a way that allows it to carry across sessions, but I assume that may want to be fixed in the future..
+		if(client_hidden && !gHippoGridManager->getConnectedGrid()->isSecondLife() && name_col->getWidth() > 0)
+			width_name = name_col->getWidth();
 
-	static LLCachedControl<bool> hide_act(gSavedSettings, "RadarColumnActivityHidden");
-	col_helper(hide_act, "RadarColumnActivityWidth", mAvatarList->getColumn(LIST_ACTIVITY));
+		//MUST call setWidth(0) first to clear out mTotalStaticColumnWidth accumulation in parent before changing the mDynamicWidth value
+		client_col->setWidth(0);
+		name_col->setWidth(0);
 
-	static LLCachedControl<bool> hide_age(gSavedSettings, "RadarColumnAgeHidden");
-	col_helper(hide_age, "RadarColumnAgeWidth", mAvatarList->getColumn(LIST_AGE));
+		client_col->mDynamicWidth =	!client_hidden;
+		name_col->mDynamicWidth =	 client_hidden;
 
-	static LLCachedControl<bool> hide_time(gSavedSettings, "RadarColumnTimeHidden");
-	col_helper(hide_time, "RadarColumnTimeWidth", mAvatarList->getColumn(LIST_TIME));
-
-	static LLCachedControl<bool> hide_client(gSavedSettings, "RadarColumnClientHidden");
-	if (gHippoGridManager->getConnectedGrid()->isSecondLife() || hide_client){
-		mAvatarList->getColumn(LIST_AVATAR_NAME)->setWidth(0);
-		mAvatarList->getColumn(LIST_CLIENT)->setWidth(0);
-		mAvatarList->getColumn(LIST_CLIENT)->mDynamicWidth = FALSE;
-		mAvatarList->getColumn(LIST_CLIENT)->mRelWidth = 0;
-		mAvatarList->getColumn(LIST_AVATAR_NAME)->mDynamicWidth = TRUE;
-		mAvatarList->getColumn(LIST_AVATAR_NAME)->mRelWidth = -1;
+		if(!client_hidden)
+		{
+			name_col->setWidth(width_name);
+		}
 	}
 	else if (!hide_client)
 	{
@@ -567,7 +594,7 @@ void LLFloaterAvatarList::updateAvatarList()
 		size_t i;
 		size_t count = avatar_ids.size();
 
-		bool announce = gSavedSettings.getBOOL("RadarChatKeys");
+		static LLCachedControl<bool> announce(gSavedSettings, "RadarChatKeys");
 		std::queue<LLUUID> announce_keys;
 
 		for (i = 0; i < count; ++i)
@@ -659,8 +686,9 @@ void LLFloaterAvatarList::updateAvatarList()
 			}
 		}
 		//let us send the keys in a more timely fashion
-		if(announce && !announce_keys.empty())
+		if (announce && !announce_keys.empty())
 		{
+			// NOTE: This fragment is repeated in sendKey
 			std::ostringstream ids;
 			int transact_num = (int)gFrameCount;
 			int num_ids = 0;
@@ -672,37 +700,17 @@ void LLFloaterAvatarList::updateAvatarList()
 				ids << "," << id.asString();
 				++num_ids;
 
-				if(ids.tellp() > 200)
+				if (ids.tellp() > 200)
 				{
-					gMessageSystem->newMessage("ScriptDialogReply");
-					gMessageSystem->nextBlock("AgentData");
-					gMessageSystem->addUUID("AgentID", gAgent.getID());
-					gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
-					gMessageSystem->nextBlock("Data");
-					gMessageSystem->addUUID("ObjectID", gAgent.getID());
-					gMessageSystem->addS32("ChatChannel", -777777777);
-					gMessageSystem->addS32("ButtonIndex", 1);
-					gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
-					gAgent.sendReliableMessage();
+					send_keys_message(transact_num, num_ids, ids.str());
 
 					num_ids = 0;
 					ids.seekp(0);
 					ids.str("");
 				}
 			}
-			if(num_ids > 0)
-			{
-				gMessageSystem->newMessage("ScriptDialogReply");
-				gMessageSystem->nextBlock("AgentData");
-				gMessageSystem->addUUID("AgentID", gAgent.getID());
-				gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
-				gMessageSystem->nextBlock("Data");
-				gMessageSystem->addUUID("ObjectID", gAgent.getID());
-				gMessageSystem->addS32("ChatChannel", -777777777);
-				gMessageSystem->addS32("ButtonIndex", 1);
-				gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
-				gAgent.sendReliableMessage();
-			}
+			if (num_ids > 0)
+				send_keys_message(transact_num, num_ids, ids.str());
 		}
 	}
 
@@ -1396,19 +1404,17 @@ void LLFloaterAvatarList::onClickGetKey()
 
 void LLFloaterAvatarList::sendKeys()
 {
+	// This would break for send_keys_btn callback, check this beforehand, if it matters.
+	//static LLCachedControl<bool> radar_chat_keys(gSavedSettings, "RadarChatKeys");
+	//if (radar_chat_keys) return;
+
 	LLViewerRegion* regionp = gAgent.getRegion();
-	if(!regionp)return;//ALWAYS VALIDATE DATA
-	std::ostringstream ids;
+	if (!regionp) return;//ALWAYS VALIDATE DATA
+
 	static int last_transact_num = 0;
 	int transact_num = (int)gFrameCount;
-	int num_ids = 0;
 
-	if(!gSavedSettings.getBOOL("RadarChatKeys"))
-	{
-		return;
-	}
-
-	if(transact_num > last_transact_num)
+	if (transact_num > last_transact_num)
 	{
 		last_transact_num = transact_num;
 	}
@@ -1419,7 +1425,9 @@ void LLFloaterAvatarList::sendKeys()
 		return;
 	}
 
-	if (!regionp) return; // caused crash if logged out/connection lost
+	std::ostringstream ids;
+	int num_ids = 0;
+
 	for (int i = 0; i < regionp->mMapAvatarIDs.count(); i++)
 	{
 		const LLUUID &id = regionp->mMapAvatarIDs.get(i);
@@ -1428,67 +1436,54 @@ void LLFloaterAvatarList::sendKeys()
 		++num_ids;
 
 
-		if(ids.tellp() > 200)
+		if (ids.tellp() > 200)
 		{
-			gMessageSystem->newMessage("ScriptDialogReply");
-			gMessageSystem->nextBlock("AgentData");
-			gMessageSystem->addUUID("AgentID", gAgent.getID());
-			gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
-			gMessageSystem->nextBlock("Data");
-			gMessageSystem->addUUID("ObjectID", gAgent.getID());
-			gMessageSystem->addS32("ChatChannel", -777777777);
-			gMessageSystem->addS32("ButtonIndex", 1);
-			gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
-			gAgent.sendReliableMessage();
+			send_keys_message(transact_num, num_ids, ids.str());
 
 			num_ids = 0;
 			ids.seekp(0);
 			ids.str("");
 		}
 	}
-	if(num_ids > 0)
-	{
-		gMessageSystem->newMessage("ScriptDialogReply");
-		gMessageSystem->nextBlock("AgentData");
-		gMessageSystem->addUUID("AgentID", gAgent.getID());
-		gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
-		gMessageSystem->nextBlock("Data");
-		gMessageSystem->addUUID("ObjectID", gAgent.getID());
-		gMessageSystem->addS32("ChatChannel", -777777777);
-		gMessageSystem->addS32("ButtonIndex", 1);
-		gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
-		gAgent.sendReliableMessage();
-	}
+	if (num_ids > 0)
+		send_keys_message(transact_num, num_ids, ids.str());
 }
 //static
 void LLFloaterAvatarList::sound_trigger_hook(LLMessageSystem* msg,void **)
 {
+	if (!LLFloaterAvatarList::instanceExists()) return; // Don't bother if we're closed.
+
 	LLUUID  sound_id,owner_id;
 	msg->getUUIDFast(_PREHASH_SoundData, _PREHASH_SoundID, sound_id);
 	msg->getUUIDFast(_PREHASH_SoundData, _PREHASH_OwnerID, owner_id);
-	if(owner_id == gAgent.getID() && sound_id == LLUUID("76c78607-93f9-f55a-5238-e19b1a181389"))
+	if (owner_id == gAgent.getID() && sound_id == LLUUID("76c78607-93f9-f55a-5238-e19b1a181389"))
 	{
-		//let's ask if they want to turn it on.
-		if(gSavedSettings.getBOOL("RadarChatKeys"))
-		{
+		static LLCachedControl<bool> on("RadarChatKeys");
+		static LLCachedControl<bool> do_not_ask("RadarChatKeysStopAsking");
+		if (on)
 			LLFloaterAvatarList::getInstance()->sendKeys();
-		}else
-		{
-			LLSD args;
-			args["MESSAGE"] = "An object owned by you has request the keys from your radar.\nWould you like to enable announcing keys to objects in the sim?";
-			LLNotificationsUtil::add("GenericAlertYesCancel", args, LLSD(), onConfirmRadarChatKeys);
-		}
+		else if (!do_not_ask) // Let's ask if they want to turn it on, but not pester them.
+			LLNotificationsUtil::add("RadarChatKeysRequest", LLSD(), LLSD(), onConfirmRadarChatKeys);
 	}
 }
 // static
 bool LLFloaterAvatarList::onConfirmRadarChatKeys(const LLSD& notification, const LLSD& response )
 {
 	S32 option = LLNotification::getSelectedOption(notification, response);
-	if(option == 0) // yes
+	if (option == 1) // no
 	{
-		gSavedSettings.setBOOL("RadarChatKeys",TRUE);
+		return false;
+	}
+	else if (option == 0) // yes
+	{
+		gSavedSettings.setBOOL("RadarChatKeys", true);
 		LLFloaterAvatarList::getInstance()->sendKeys();
 	}
+	else if (option == 2) // No, and stop asking!!
+	{
+		gSavedSettings.setBOOL("RadarChatKeysStopAsking", true);
+	}
+
 	return false;
 }
 
