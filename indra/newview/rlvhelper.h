@@ -26,6 +26,8 @@
 #include "rlvdefines.h"
 #include "rlvcommon.h"
 
+class LLViewerWearable;
+
 // ============================================================================
 // RlvCommand
 //
