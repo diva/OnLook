@@ -43,6 +43,7 @@
 #include "llmapresponders.h"
 #include "llviewercontrol.h"
 #include "llfloaterworldmap.h"
+#include "lltexturecache.h"
 #include "lltracker.h"
 #include "llviewertexturelist.h"
 #include "llviewerregion.h"
@@ -91,12 +92,17 @@ LLSimInfo::LLSimInfo(U64 handle)
 
 void LLSimInfo::setLandForSaleImage (LLUUID image_id) 
 {
+	const bool is_aurora = gHippoGridManager->getConnectedGrid()->isAurora();
+	if (is_aurora && mMapImageID[SIM_LAYER_OVERLAY].isNull() && image_id.notNull() && gTextureList.findImage(image_id))
+		LLAppViewer::getTextureCache()->removeFromCache(image_id);
+
 	mMapImageID[SIM_LAYER_OVERLAY] = image_id;
 
 	// Fetch the image
 	if (mMapImageID[SIM_LAYER_OVERLAY].notNull())
 	{
 		mLayerImage[SIM_LAYER_OVERLAY] = LLViewerTextureManager::getFetchedTexture(mMapImageID[SIM_LAYER_OVERLAY], MIPMAP_TRUE, LLViewerTexture::BOOST_MAP, LLViewerTexture::LOD_TEXTURE);
+		if (is_aurora) mLayerImage[SIM_LAYER_OVERLAY]->forceImmediateUpdate();
 		mLayerImage[SIM_LAYER_OVERLAY]->setAddressMode(LLTexUnit::TAM_CLAMP);
 	}
 	else
@@ -526,8 +532,8 @@ void LLWorldMap::processMapLayerReply(LLMessageSystem* msg, void**)
 bool LLWorldMap::useWebMapTiles()
 {
 	static const LLCachedControl<bool> use_web_map_tiles("UseWebMapTiles",false);
-	return use_web_map_tiles &&
-		   (( gHippoGridManager->getConnectedGrid()->isSecondLife() || sGotMapURL));
+	return use_web_map_tiles && !gHippoGridManager->getConnectedGrid()->isAurora() &&
+		   ((gHippoGridManager->getConnectedGrid()->isSecondLife() || sGotMapURL));
 }
 
 void LLWorldMap::reloadItems(bool force)

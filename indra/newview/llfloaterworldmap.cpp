@@ -645,8 +645,10 @@ void LLFloaterWorldMap::trackLocation(const LLVector3d& pos_global)
 	}
 	
 	std::string sim_name = sim_info->getName();
-	F32 region_x = (F32)fmod( pos_global.mdV[VX], (F64)REGION_WIDTH_METERS );
-	F32 region_y = (F32)fmod( pos_global.mdV[VY], (F64)REGION_WIDTH_METERS );
+	U32 locX, locY;
+	from_region_handle(sim_info->getHandle(), &locX, &locY);
+	F32 region_x = pos_global.mdV[VX] - locX;
+	F32 region_y = pos_global.mdV[VY] - locY;
 	std::string full_name = llformat("%s (%d, %d, %d)", 
 //								  sim_name.c_str(), 
 // [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-04 (RLVa-1.0.0a)

@@ -151,6 +151,7 @@ public:
 	void setMapImageID (const LLUUID& id, const U8 &layer) { mMapImageID[layer] = id; }
 
 	// Accessors
+	U64 getHandle() const { return mHandle; }
 	std::string getName() const { return mName; }
 	const std::string getFlagsString() const { return LLViewerRegion::regionFlagsToString(mRegionFlags); }
 	const U32 getRegionFlags() const { return mRegionFlags; }
