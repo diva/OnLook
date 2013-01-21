@@ -91,9 +91,9 @@ LLMediaCtrl::LLMediaCtrl( const std::string& name, const LLRect& rect ) :
 	if(!getDecoupleTextureSize())
 	{
 		S32 screen_width = mIgnoreUIScale ? 
-			llround((F32)getRect().getWidth() * LLUI::sGLScaleFactor.mV[VX]) : getRect().getWidth();
+			llround((F32)getRect().getWidth() * LLUI::getScaleFactor().mV[VX]) : getRect().getWidth();
 		S32 screen_height = mIgnoreUIScale ? 
-			llround((F32)getRect().getHeight() * LLUI::sGLScaleFactor.mV[VY]) : getRect().getHeight();
+			llround((F32)getRect().getHeight() * LLUI::getScaleFactor().mV[VY]) : getRect().getHeight();
 	
 		setTextureSize(screen_width, screen_height);
 	}
@@ -444,8 +444,8 @@ void LLMediaCtrl::reshape( S32 width, S32 height, BOOL called_from_parent )
 {
 	if(!getDecoupleTextureSize())
 	{
-		S32 screen_width = mIgnoreUIScale ? llround((F32)width * LLUI::sGLScaleFactor.mV[VX]) : width;
-		S32 screen_height = mIgnoreUIScale ? llround((F32)height * LLUI::sGLScaleFactor.mV[VY]) : height;
+		S32 screen_width = mIgnoreUIScale ? llround((F32)width * LLUI::getScaleFactor().mV[VX]) : width;
+		S32 screen_height = mIgnoreUIScale ? llround((F32)height * LLUI::getScaleFactor().mV[VY]) : height;
 
 		// when floater is minimized, these sizes are negative
 		if ( screen_height > 0 && screen_width > 0 )
@@ -725,8 +725,8 @@ void LLMediaCtrl::draw()
 				gGL.loadIdentity();
 				// font system stores true screen origin, need to scale this by UI scale factor
 				// to get render origin for this view (with unit scale)
-				gGL.translatef(floorf(LLFontGL::sCurOrigin.mX * LLUI::sGLScaleFactor.mV[VX]), 
-							floorf(LLFontGL::sCurOrigin.mY * LLUI::sGLScaleFactor.mV[VY]), 
+				gGL.translatef(floorf(LLFontGL::sCurOrigin.mX * LLUI::getScaleFactor().mV[VX]), 
+							floorf(LLFontGL::sCurOrigin.mY * LLUI::getScaleFactor().mV[VY]), 
 							LLFontGL::sCurDepth);
 			}
 
@@ -778,10 +778,10 @@ void LLMediaCtrl::draw()
 
 			if (mIgnoreUIScale)
 			{
-				x_offset = llround((F32)x_offset * LLUI::sGLScaleFactor.mV[VX]);
-				y_offset = llround((F32)y_offset * LLUI::sGLScaleFactor.mV[VY]);
-				width = llround((F32)width * LLUI::sGLScaleFactor.mV[VX]);
-				height = llround((F32)height * LLUI::sGLScaleFactor.mV[VY]);
+				x_offset = llround((F32)x_offset * LLUI::getScaleFactor().mV[VX]);
+				y_offset = llround((F32)y_offset * LLUI::getScaleFactor().mV[VY]);
+				width = llround((F32)width * LLUI::getScaleFactor().mV[VX]);
+				height = llround((F32)height * LLUI::getScaleFactor().mV[VY]);
 			}
 
 			// draw the browser
@@ -841,14 +841,14 @@ void LLMediaCtrl::convertInputCoords(S32& x, S32& y)
 		coords_opengl = mMediaSource->getMediaPlugin()->getTextureCoordsOpenGL();
 	}
 	
-	x = mIgnoreUIScale ? llround((F32)x * LLUI::sGLScaleFactor.mV[VX]) : x;
+	x = mIgnoreUIScale ? llround((F32)x * LLUI::getScaleFactor().mV[VX]) : x;
 	if ( ! coords_opengl )
 	{
-		y = mIgnoreUIScale ? llround((F32)(y) * LLUI::sGLScaleFactor.mV[VY]) : y;
+		y = mIgnoreUIScale ? llround((F32)(y) * LLUI::getScaleFactor().mV[VY]) : y;
 	}
 	else
 	{
-		y = mIgnoreUIScale ? llround((F32)(getRect().getHeight() - y) * LLUI::sGLScaleFactor.mV[VY]) : getRect().getHeight() - y;
+		y = mIgnoreUIScale ? llround((F32)(getRect().getHeight() - y) * LLUI::getScaleFactor().mV[VY]) : getRect().getHeight() - y;
 	};
 }
 

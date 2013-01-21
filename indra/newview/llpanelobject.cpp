@@ -598,10 +598,9 @@ void LLPanelObject::getState( )
 	mBtnCopyParams->setEnabled( single_volume );
 	mBtnPasteParams->setEnabled( single_volume );
 
-	BOOL owners_identical;
 	LLUUID owner_id;
 	std::string owner_name;
-	owners_identical = LLSelectMgr::getInstance()->selectGetOwner(owner_id, owner_name);
+	LLSelectMgr::getInstance()->selectGetOwner(owner_id, owner_name);
 
 	// BUG? Check for all objects being editable?
 	S32 roots_selected = LLSelectMgr::getInstance()->getSelection()->getRootObjectCount();

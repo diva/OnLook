@@ -30,12 +30,12 @@
 #include "llpanel.h"
 #include "llscrollingpanellist.h"
 #include "llmodaldialog.h"
-#include "llvoavatardefines.h"
+#include "llavatarappearancedefines.h"
 #include "llwearabletype.h"
 
 class LLAccordionCtrl;
 class LLCheckBoxCtrl;
-class LLWearable;
+class LLViewerWearable;
 class LLTextBox;
 class LLViewerInventoryItem;
 class LLViewerVisualParam;
@@ -46,13 +46,14 @@ class LLJoint;
 class LLLineEditor;
 class LLSubpart;
 class LLWearableSaveAsDialog;
+class LLFloaterCustomize;
 
-using namespace LLVOAvatarDefines;
+using namespace LLAvatarAppearanceDefines;
 
 class LLPanelEditWearable : public LLPanel
 {
 public:
-	LLPanelEditWearable( LLWearableType::EType type );
+	LLPanelEditWearable( LLWearableType::EType type, LLFloaterCustomize* parent );
 	virtual ~LLPanelEditWearable();
 
 	/*virtual*/ BOOL 		postBuild();
@@ -64,7 +65,7 @@ public:
 
 	const std::string&	getLabel()	{ return LLWearableType::getTypeLabel( mType ); }
 	LLWearableType::EType		getType() const{ return mType; }
-	LLWearable* 		getWearable() 	const;
+	LLViewerWearable* 		getWearable() 	const;
 
 	void			onTabChanged(LLUICtrl* ctrl);
 	bool			onTabPrecommit();
@@ -84,7 +85,6 @@ public:
 
 	void 				updateScrollingPanelList();
 
-	static void			onRevertButtonClicked( void* userdata );
 	void				onCommitSexChange();
 		
 	virtual void		setVisible( BOOL visible );
@@ -97,40 +97,38 @@ public:
 	void				buildParamList(LLScrollingPanelList *panel_list, value_map_t &sorted_params);
 		
 	// Callbacks
-	static void			onBtnSubpart( void* userdata );
-	static void			onBtnTakeOff( void* userdata );
-	static void			onBtnSave( void* userdata );
+	void				onBtnTakeOff();
+	void				onBtnSave();
 
-	static void			onBtnSaveAs( void* userdata );
-	static void			onSaveAsCommit( LLWearableSaveAsDialog* save_as_dialog, void* userdata );
+	void				onBtnSaveAs();
+	void				onSaveAsCommit( LLWearableSaveAsDialog* save_as_dialog );
 
-	static void			onBtnTakeOffDialog( S32 option, void* userdata );
-	static void			onBtnCreateNew( void* userdata );
+	void				onBtnCreateNew();
 	static bool			onSelectAutoWearOption(const LLSD& notification, const LLSD& response);
 
 	void				onColorSwatchCommit(const LLUICtrl*);
 	void				onTexturePickerCommit(const LLUICtrl*);
 	
 	//alpha mask checkboxes
-	void configureAlphaCheckbox(LLVOAvatarDefines::ETextureIndex te, const std::string& name);
-	void onInvisibilityCommit(LLCheckBoxCtrl* checkbox_ctrl, LLVOAvatarDefines::ETextureIndex te);
+	void configureAlphaCheckbox(LLAvatarAppearanceDefines::ETextureIndex te, const std::string& name);
+	void onInvisibilityCommit(LLCheckBoxCtrl* checkbox_ctrl, LLAvatarAppearanceDefines::ETextureIndex te);
 	void updateAlphaCheckboxes();
 	void initPreviousAlphaTextures();
-	void initPreviousAlphaTextureEntry(LLVOAvatarDefines::ETextureIndex te);
+	void initPreviousAlphaTextureEntry(LLAvatarAppearanceDefines::ETextureIndex te);
 	
 private:
-
+	LLFloaterCustomize*			mCustomizeFloater;
 	LLWearableType::EType		mType;
 	BOOL				mCanTakeOff;
-	typedef std::map<std::string, LLVOAvatarDefines::ETextureIndex> string_texture_index_map_t;
+	typedef std::map<std::string, LLAvatarAppearanceDefines::ETextureIndex> string_texture_index_map_t;
 	string_texture_index_map_t mAlphaCheckbox2Index;
 
-	typedef std::map<LLVOAvatarDefines::ETextureIndex, LLUUID> s32_uuid_map_t;
+	typedef std::map<LLAvatarAppearanceDefines::ETextureIndex, LLUUID> s32_uuid_map_t;
 	s32_uuid_map_t mPreviousAlphaTexture;
 	U32					mCurrentSubpart;
 	U32					mCurrentIndex;
-	LLWearable*			mCurrentWearable;
-	LLWearable*			mPendingWearable;	//For SaveAs. There's a period where the old wearable will be removed, but the new one will still be pending, 
+	LLViewerWearable*			mCurrentWearable;
+	LLViewerWearable*			mPendingWearable;	//For SaveAs. There's a period where the old wearable will be removed, but the new one will still be pending, 
 											//so this is needed to retain focus on this wearables tab over the messy transition.
 	bool				mPendingRefresh;	//LLAgentWearables::setWearableOutfit fires a buttload of remove/wear calls which spams wearablesChanged
 											//a bazillion pointless (and not particularly valid) times. Deferring to draw effectively sorts it all out.

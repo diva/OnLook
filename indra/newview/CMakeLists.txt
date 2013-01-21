@@ -44,6 +44,7 @@ include(UI)
 include(LLKDU)
 include(ViewerMiscLibs)
 include(ViewerArtwork.cmake)
+include(LLAppearance)
 
 if (WINDOWS)
     include(CopyWinLibs)
@@ -70,6 +71,7 @@ include_directories(
     ${LLVFS_INCLUDE_DIRS}
     ${LLWINDOW_INCLUDE_DIRS}
     ${LLXML_INCLUDE_DIRS}
+    ${LLAPPEARANCE_INCLUDE_DIRS}
 #    ${LSCRIPT_INCLUDE_DIRS}
 #    ${LSCRIPT_INCLUDE_DIRS}/lscript_compile
     )
@@ -151,7 +153,6 @@ set(viewer_SOURCE_FILES
     lldrawpooltree.cpp
     lldrawpoolwater.cpp
     lldrawpoolwlsky.cpp
-    lldriverparam.cpp
     lldroptarget.cpp
     lldynamictexture.cpp
     llemote.cpp
@@ -298,7 +299,6 @@ set(viewer_SOURCE_FILES
     lljoystickbutton.cpp
     lllandmarklist.cpp
     lllocalinventory.cpp
-    lllocaltextureobject.cpp
     lllogchat.cpp
     llloginhandler.cpp
     llmainlooprepeater.cpp
@@ -389,8 +389,6 @@ set(viewer_SOURCE_FILES
     llpathfindingobjectlist.cpp
     llphysicsmotion.cpp
     llphysicsshapebuilderutil.cpp
-    llpolymesh.cpp
-    llpolymorph.cpp
     llprefschat.cpp
     llprefsim.cpp
     llprefsvoice.cpp
@@ -424,9 +422,6 @@ set(viewer_SOURCE_FILES
     llstylemap.cpp
     llsurface.cpp
     llsurfacepatch.cpp
-    lltexglobalcolor.cpp
-    lltexlayer.cpp
-    lltexlayerparams.cpp
     lltexturecache.cpp
     lltexturectrl.cpp
     lltexturefetch.cpp
@@ -507,17 +502,17 @@ set(viewer_SOURCE_FILES
     llviewershadermgr.cpp
     llviewerstats.cpp
     llviewerstatsrecorder.cpp
+    llviewertexlayer.cpp
     llviewertexteditor.cpp
     llviewertexture.cpp
     llviewertextureanim.cpp
     llviewertexturelist.cpp
     llviewerthrottle.cpp
-    llviewervisualparam.cpp
+    llviewerwearable.cpp
     llviewerwindow.cpp
     llvlcomposition.cpp
     llvlmanager.cpp
     llvoavatar.cpp
-    llvoavatardefines.cpp
     llvoavatarself.cpp
     llvocache.cpp
     llvoclouds.cpp
@@ -537,9 +532,7 @@ set(viewer_SOURCE_FILES
     llwatchdog.cpp
     llwaterparammanager.cpp
     llwaterparamset.cpp
-    llwearable.cpp
     llwearablelist.cpp
-    llwearabletype.cpp
     llweb.cpp
     llwebprofile.cpp
     llwind.cpp
@@ -660,7 +653,6 @@ set(viewer_HEADER_FILES
     lldrawpooltree.h
     lldrawpoolwater.h
     lldrawpoolwlsky.h
-    lldriverparam.h
     lldroptarget.h
     lldynamictexture.h
     llemote.h
@@ -807,7 +799,6 @@ set(viewer_HEADER_FILES
     lllandmarklist.h
     lllightconstants.h
     lllocalinventory.h
-    lllocaltextureobject.h
     lllogchat.h
     llloginhandler.h
     llmainlooprepeater.h
@@ -898,8 +889,6 @@ set(viewer_HEADER_FILES
     llpathfindingobjectlist.h
     llphysicsmotion.h
     llphysicsshapebuilderutil.h
-    llpolymesh.h
-    llpolymorph.h
     llprefschat.h
     llprefsim.h
     llprefsvoice.h
@@ -935,9 +924,6 @@ set(viewer_HEADER_FILES
     llsurface.h
     llsurfacepatch.h
     lltable.h
-    lltexglobalcolor.h
-    lltexlayer.h
-    lltexlayerparams.h
     lltexturecache.h
     lltexturectrl.h
     lltexturefetch.h
@@ -1020,17 +1006,17 @@ set(viewer_HEADER_FILES
     llviewershadermgr.h
     llviewerstats.h
     llviewerstatsrecorder.h
+    llviewertexlayer.h
     llviewertexteditor.h
     llviewertexture.h
     llviewertextureanim.h
     llviewertexturelist.h
     llviewerthrottle.h
-    llviewervisualparam.h
+    llviewerwearable.h
     llviewerwindow.h
     llvlcomposition.h
     llvlmanager.h
     llvoavatar.h
-    llvoavatardefines.h
     llvoavatarself.h
     llvocache.h
     llvoclouds.h
@@ -1051,9 +1037,7 @@ set(viewer_HEADER_FILES
     llwatchdog.h
     llwaterparammanager.h
     llwaterparamset.h
-    llwearable.h
     llwearablelist.h
-    llwearabletype.h
     llweb.h
     llwebprofile.h
     llwind.h
@@ -1586,6 +1570,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${XMLRPCEPI_LIBRARIES}
     ${ELFIO_LIBRARIES}
     ${HUNSPELL_LIBRARY}
+    ${LLAPPEARANCE_LIBRARIES}
     )
 
 if (LINUX)

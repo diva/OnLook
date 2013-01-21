@@ -72,7 +72,6 @@ set(llui_SOURCE_FILES
     lluicolor.cpp
     lluictrl.cpp
     lluictrlfactory.cpp
-    lluiimage.cpp
     lluistring.cpp
     llundo.cpp
     llviewborder.cpp
@@ -97,7 +96,6 @@ set(llui_HEADER_FILES
     llfloater.h
     llfocusmgr.h
     llfunctorregistry.h
-    llhandle.h
     llhtmlhelp.h
     lliconctrl.h
     llkeywords.h
@@ -140,7 +138,6 @@ set(llui_HEADER_FILES
     lluifwd.h
     llui.h
     lluicolor.h
-    lluiimage.h
     lluistring.h
     lluixmltags.h
     llundo.h

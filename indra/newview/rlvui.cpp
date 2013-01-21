@@ -227,7 +227,7 @@ void RlvUIEnabler::onToggleShowLoc()
 		// Close the "Estate Tools" floater is it's currently visible
 		if (LLFloaterRegionInfo::instanceVisible())
 				LLFloaterRegionInfo::hideInstance();
-		LLFloaterGodTools::hide(NULL);
+		LLFloaterGodTools::hide();
 	}
 }
 

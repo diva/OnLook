@@ -2,31 +2,25 @@
  * @file llassettype.h
  * @brief Declaration of LLAssetType.
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -42,121 +36,113 @@ class LL_COMMON_API LLAssetType
 public:
 	enum EType
 	{
-		// Used for painting the faces of geometry.
-		// Stored in typical j2c stream format
 		AT_TEXTURE = 0,
+			// Used for painting the faces of geometry.
+			// Stored in typical j2c stream format.
 
-		// Used to fill the aural spectrum.
 		AT_SOUND = 1, 
+			// Used to fill the aural spectrum.
 
-		// Links instant message access to the user on the card. eg, a
-		// card for yourself, a card for linden support, a card for
-		// the guy you were talking to in the coliseum.
 		AT_CALLINGCARD = 2,
+		    // Links instant message access to the user on the card.
+			// : E.G. A card for yourself, for linden support, for
+			// : the guy you were talking to in the coliseum.
 
-		// Links to places in the world with location and a screen
-		// shot or image saved. eg, home, linden headquarters, the
-		// coliseum, or destinations where we want to increase
-		// traffic.
 		AT_LANDMARK = 3,
+			// Links to places in the world with location and a screen shot or image saved.
+			// : E.G. Home, linden headquarters, the coliseum, destinations where 
+			// : we want to increase traffic.
 
-		// Valid scripts that can be attached to an object. eg. open a
-		// door, jump into the air.
 		AT_SCRIPT = 4,
+			// Valid scripts that can be attached to an object.
+			// : E.G. Open a door, jump into the air.
 
-		// A collection of textures and parameters that can be worn
-		// by an avatar.
 		AT_CLOTHING = 5,
+			// A collection of textures and parameters that can be worn by an avatar.
 
-		// Any combination of textures, sounds, and scripts that are
-		// associated with a fixed piece of geometry. eg, a hot tub, a
-		// house with working door.
 		AT_OBJECT = 6,
+			// Any combination of textures, sounds, and scripts that are
+			// associated with a fixed piece of geometry.
+			// : E.G. A hot tub, a house with working door.
 
-		// Just text
 		AT_NOTECARD = 7,
+			// Just text.
 
-		// A category holds a collection of inventory items. It's
-		// treated as an item in the inventory, and therefore needs a
-		// type.
 		AT_CATEGORY = 8,
+			// Holds a collection of inventory items.
+			// It's treated as an item in the inventory and therefore needs a type.
 
-		// A root category is a user's root inventory category. We
-		// decided to expose it visually, so it seems logical to fold
-		// it into the asset types.
-		//AT_ROOT_CATEGORY = 9,
-
-		// The LSL is the brand spanking new scripting language. We've
-		// split it into a text and bytecode representation.
 		AT_LSL_TEXT = 10,
 		AT_LSL_BYTECODE = 11,
+			// The LSL is the scripting language. 
+			// We've split it into a text and bytecode representation.
 		
-		// uncompressed TGA texture
 		AT_TEXTURE_TGA = 12,
+			// Uncompressed TGA texture.
 
-		// A collection of textures and parameters that can be worn
-		// by an avatar.
 		AT_BODYPART = 13,
-
-		// This asset type is meant to only be used as a marker for a
-		// category preferred type. Using this, we can throw things in
-		// the trash before completely deleting.
+			// A collection of textures and parameters that can be worn by an avatar.
+		
 		//AT_TRASH = 14,
-
-		// This is a marker for a folder meant for snapshots. No
-		// actual assets will be snapshots, though if there were, you
-		// could interpret them as textures.
+			// This asset type is meant to only be used as a marker for a
+			// category preferred type. Using this, we can throw things in
+			// the trash before completely deleting.
+			
 		//AT_SNAPSHOT_CATEGORY = 15,
+			// This is a marker for a folder meant for snapshots. No
+			// actual assets will be snapshots, though if there were, you
+			// could interpret them as textures.
 
-		// This is used to stuff lost&found items into
 		//AT_LOST_AND_FOUND = 16,
+			// This is used to stuff lost&found items into
 
 		// uncompressed sound
 		AT_SOUND_WAV = 17,
+			// Uncompressed sound.
 
-		// uncompressed image, non-square, and not appropriate for use
-		// as a texture.
 		AT_IMAGE_TGA = 18,
+			// Uncompressed image, non-square.
+			// Not appropriate for use as a texture.
 
-		// compressed image, non-square, and not appropriate for use
-		// as a texture.
 		AT_IMAGE_JPEG = 19,
+			// Compressed image, non-square.
+			// Not appropriate for use as a texture.
 
-		// animation
 		AT_ANIMATION = 20,
+			// Animation.
 
-		// gesture, sequence of animations, sounds, chat, wait steps
 		AT_GESTURE = 21,
+			// Gesture, sequence of animations, sounds, chat, wait steps.
 
-		// simstate file
 		AT_SIMSTATE = 22,
+			// Simstate file.
 
-		//AT_FAVORITE = 23,
-
-		// Inventory symbolic link
 		AT_LINK = 24,
+			// Inventory symbolic link
 
-		// Inventory folder link
 		AT_LINK_FOLDER = 25,
+			// Inventory folder link
 	
 		AT_CURRENT_OUTFIT = 46,
 
 		AT_OUTFIT = 47,
 
 		AT_MY_OUTFITS = 48,
-
+		
 		AT_MESH = 49,
-		    // Mesh data in our proprietary SLM format
-
+			// Mesh data in our proprietary SLM format
+		
 		AT_COUNT = 50,
-		// +*********************************************+
-		// |  TO ADD AN ELEMENT TO THIS ENUM:            |
-		// +*********************************************+
-		// | 1. INSERT BEFORE AT_COUNT                   |
-		// | 2. INCREMENT AT_COUNT BY 1                  |
-		// | 3. ADD TO LLAssetType::mAssetTypeNames      |
-		// | 4. ADD TO LLAssetType::mAssetTypeHumanNames |
-		// +*********************************************+
+
+			// +*********************************************************+
+			// |  TO ADD AN ELEMENT TO THIS ENUM:                        |
+			// +*********************************************************+
+			// | 1. INSERT BEFORE AT_COUNT                               |
+			// | 2. INCREMENT AT_COUNT BY 1                              |
+			// | 3. ADD TO LLAssetType.cpp                               |
+			// | 4. ADD TO LLViewerAssetType.cpp                         |
+			// | 5. ADD TO DEFAULT_ASSET_FOR_INV in LLInventoryType.cpp  |
+			// +*********************************************************+
 
 		AT_NONE = -1
 	};
@@ -170,8 +156,6 @@ public:
 	static EType 				lookupHumanReadable(const char* desc_name); // safe conversion to std::string, *TODO: deprecate
 	static EType 				lookupHumanReadable(const std::string& readable_name);
 	static const char*			lookupHumanReadable(EType asset_type);
-
-	//NOTE: LLAssetType::lookupDragAndDropType & LLAssetType::generateDescriptionFor moved to newview/llviewerassettype.h
 
 	static EType 				getType(const std::string& desc_name);
 	static const std::string&	getDesc(EType asset_type);

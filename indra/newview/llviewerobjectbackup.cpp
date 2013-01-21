@@ -777,10 +777,10 @@ void LLObjectBackup::exportNextTexture()
 			S32 cur_discard = imagep->getDiscardLevel();
 			if (cur_discard > 0)
 			{
-				if (imagep->getBoostLevel() != LLViewerTexture::BOOST_PREVIEW)
+				if (imagep->getBoostLevel() != LLGLTexture::BOOST_PREVIEW)
 				{
 					// we want to force discard 0: this one does this.
-					imagep->setBoostLevel(LLViewerTexture::BOOST_PREVIEW);
+					imagep->setBoostLevel(LLGLTexture::BOOST_PREVIEW);
 				}
 			}
 			else

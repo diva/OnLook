@@ -308,7 +308,7 @@ void LLPanelProfile::reshape(S32 width, S32 height, BOOL called_from_parent)
 	mChildStack.postParentReshape();
 }
 
-void LLPanelProfile::onOpen(const LLSD& key)
+void LLPanelProfile::onOpen()
 {
 	getTabContainer()[PANEL_PICKS]->onOpen(getAvatarId());
 

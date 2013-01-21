@@ -69,6 +69,7 @@
 #include "llfloatermute.h"
 #include "llimpanel.h"
 #include "llscrolllistctrl.h"
+#include "llfloatercustomize.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -481,7 +482,7 @@ void LLToolBar::onClickAppearance(void*)
 {
 	if (gAgentWearables.areWearablesLoaded())
 	{
-		gAgentCamera.changeCameraToCustomizeAvatar();
+		LLFloaterCustomize::show();
 	}
 }
 

@@ -185,16 +185,10 @@ void LLInventoryModelBackgroundFetch::backgroundFetchCB(void *)
 	LLInventoryModelBackgroundFetch::instance().backgroundFetch();
 }
 
-//static 
 void LLInventoryModelBackgroundFetch::backgroundFetch()
 {
 	LLViewerRegion* region = gAgent.getRegion();
-	if (!region)
-	{
-		return;
-	}
-	
-	if (mBackgroundFetchActive && gAgent.getRegion())
+	if (mBackgroundFetchActive && region && region->capabilitiesReceived())
 	{
 		// If we'll be using the capability, we'll be sending batches and the background thing isn't as important.
 		std::string url = region->getCapability("FetchInventory2");

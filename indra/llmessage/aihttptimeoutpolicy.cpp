@@ -880,6 +880,7 @@ P(placeAvatarTeleportResponder);
 P(productInfoRequestResponder);
 P(regionResponder);
 P(remoteParcelRequestResponder);
+P(requestAgentUpdateAppearance);
 P(responderIgnore);
 P(sessionInviteResponder);
 P(setDisplayNameResponder);

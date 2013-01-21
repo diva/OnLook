@@ -936,7 +936,7 @@ bool RlvWearableLocks::canRemove(LLWearableType::EType eType) const
 {
 	// NOTE: we return TRUE if the wearable type has at least one wearable that can be removed by the user
 	for (U32 idxWearable = 0, cntWearable = gAgentWearables.getWearableCount(eType); idxWearable < cntWearable; idxWearable++)
-		if (!isLockedWearable(gAgentWearables.getWearable(eType, idxWearable)))
+		if (!isLockedWearable(gAgentWearables.getViewerWearable(eType, idxWearable)))
 			return true;
 	return false;
 }
@@ -946,13 +946,13 @@ bool RlvWearableLocks::hasLockedWearable(LLWearableType::EType eType) const
 {
 	// NOTE: we return TRUE if there is at least 1 non-removable wearable currently worn on this wearable type
 	for (U32 idxWearable = 0, cntWearable = gAgentWearables.getWearableCount(eType); idxWearable < cntWearable; idxWearable++)
-		if (isLockedWearable(gAgentWearables.getWearable(eType, idxWearable)))
+		if (isLockedWearable(gAgentWearables.getViewerWearable(eType, idxWearable)))
 			return true;
 	return false;
 }
 
 // Checked: 2010-03-19 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
-bool RlvWearableLocks::isLockedWearableExcept(const LLWearable* pWearable, const LLUUID& idRlvObj) const
+bool RlvWearableLocks::isLockedWearableExcept(const LLViewerWearable* pWearable, const LLUUID& idRlvObj) const
 {
 	if (idRlvObj.isNull())
 		return isLockedWearable(pWearable);

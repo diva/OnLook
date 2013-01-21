@@ -472,7 +472,7 @@ void RlvForceWear::forceFolder(const LLViewerInventoryCategory* pFolder, EWearAc
 				}
 				else
 				{
-					const LLWearable* pWearable = gAgentWearables.getWearableFromItemID(pItem->getUUID());
+					const LLViewerWearable* pWearable = gAgentWearables.getWearableFromItemID(pItem->getUUID());
 					if ( (pWearable) && (isForceRemovable(pWearable, false)) )
 						remWearable(pWearable);
 				}
@@ -612,7 +612,7 @@ void RlvForceWear::forceDetach(const LLViewerJointAttachment* pAttachPt)
 }
 
 // Checked: 2010-03-19 (RLVa-1.1.3b) | Modified: RLVa-1.2.0a
-bool RlvForceWear::isForceRemovable(const LLWearable* pWearable, bool fCheckComposite /*=true*/, const LLUUID& idExcept /*=LLUUID::null*/)
+bool RlvForceWear::isForceRemovable(const LLViewerWearable* pWearable, bool fCheckComposite /*=true*/, const LLUUID& idExcept /*=LLUUID::null*/)
 {
 	// Wearable can be removed by an RLV command if:
 	//   - its asset type is AT_CLOTHING
@@ -640,13 +640,13 @@ bool RlvForceWear::isForceRemovable(LLWearableType::EType wtType, bool fCheckCom
 {
 	// Wearable type can be removed by an RLV command if there's at least one currently worn wearable that can be removed
 	for (U32 idxWearable = 0, cntWearable = gAgentWearables.getWearableCount(wtType); idxWearable < cntWearable; idxWearable++)
-		if (isForceRemovable(gAgentWearables.getWearable(wtType, idxWearable), fCheckComposite, idExcept))
+		if (isForceRemovable(gAgentWearables.getViewerWearable(wtType, idxWearable), fCheckComposite, idExcept))
 			return true;
 	return false;
 }
 
 // Checked: 2010-03-19 (RLVa-1.2.0a) | Modified: RLVa-1.2.0a
-void RlvForceWear::forceRemove(const LLWearable* pWearable)
+void RlvForceWear::forceRemove(const LLViewerWearable* pWearable)
 {
 	// Sanity check - no need to process duplicate removes
 	if ( (!pWearable) || (isRemWearable(pWearable)) )
@@ -675,7 +675,7 @@ void RlvForceWear::forceRemove(const LLWearable* pWearable)
 void RlvForceWear::forceRemove(LLWearableType::EType wtType)
 {
 	for (U32 idxWearable = 0, cntWearable = gAgentWearables.getWearableCount(wtType); idxWearable < cntWearable; idxWearable++)
-		forceRemove(gAgentWearables.getWearable(wtType, idxWearable));
+		forceRemove(gAgentWearables.getViewerWearable(wtType, idxWearable));
 }
 
 // Checked: 2010-03-19 (RLVa-1.2.0c) | Modified: RLVa-1.2.0a
@@ -784,7 +784,7 @@ void RlvForceWear::remAttachment(const LLViewerObject* pAttachObj)
 // Checked: 2010-08-30 (RLVa-1.1.3b) | Modified: RLVa-1.2.1c
 void RlvForceWear::addWearable(const LLViewerInventoryItem* pItem, EWearAction eAction)
 {
-	const LLWearable* pWearable = gAgentWearables.getWearableFromItemID(pItem->getLinkedUUID());
+	const LLViewerWearable* pWearable = gAgentWearables.getWearableFromItemID(pItem->getLinkedUUID());
 	// When replacing remove all currently worn wearables of this type *unless* the item is currently worn
 	if ( (ACTION_WEAR_REPLACE == eAction) && (!pWearable) )
 		forceRemove(pItem->getWearableType());
@@ -812,7 +812,7 @@ void RlvForceWear::addWearable(const LLViewerInventoryItem* pItem, EWearAction e
 }
 
 // Checked: 2010-08-30 (RLVa-1.1.3b) | Modified: RLVa-1.2.1c
-void RlvForceWear::remWearable(const LLWearable* pWearable)
+void RlvForceWear::remWearable(const LLViewerWearable* pWearable)
 {
 	// Remove it from 'm_addWearables' if it's queued for wearing
 	const LLViewerInventoryItem* pItem = gInventory.getItem(pWearable->getItemID());
@@ -850,7 +850,7 @@ void RlvForceWear::done()
 	// Wearables
 	if (m_remWearables.size())
 	{
-		for (std::list<const LLWearable*>::const_iterator itWearable = m_remWearables.begin(); itWearable != m_remWearables.end(); ++itWearable)
+		for (std::list<const LLViewerWearable*>::const_iterator itWearable = m_remWearables.begin(); itWearable != m_remWearables.end(); ++itWearable)
 			pAppearanceMgr->removeItemFromAvatar((*itWearable)->getItemID());
 		m_remWearables.clear();
 	}
@@ -883,7 +883,7 @@ void RlvForceWear::done()
 		for (std::list<const LLViewerObject*>::const_iterator itAttachObj = m_remAttachments.begin(); 
 				itAttachObj != m_remAttachments.end(); ++itAttachObj)
 		{
-			pAppearanceMgr->removeCOFItemLinks((*itAttachObj)->getAttachmentItemID(), false);
+			pAppearanceMgr->removeCOFItemLinks((*itAttachObj)->getAttachmentItemID());
 		}
 
 		m_remAttachments.clear();

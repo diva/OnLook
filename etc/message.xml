@@ -663,7 +663,7 @@
 			<boolean>false</boolean>
 
 			<key>RequestTextureDownload</key>
-			<boolean>false</boolean>
+			<boolean>true</boolean>
 
 			<key>EventQueueGet</key>
 			<boolean>false</boolean>
@@ -714,6 +714,9 @@
 			<boolean>true</boolean>
 		
 			<key>FetchLib2</key>
+			<boolean>true</boolean>
+
+			<key>UploadBakedTexture</key>
 			<boolean>true</boolean>
 		</map>
 

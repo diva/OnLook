@@ -147,7 +147,7 @@ void LLScrollingPanelParam::setVisible( BOOL visible )
 
 void LLScrollingPanelParam::draw()
 {
-	if( !mWearable || gFloaterCustomize->isMinimized() )
+	if( !mWearable || !LLFloaterCustomize::instanceExists() || LLFloaterCustomize::getInstance()->isMinimized() )
 	{
 		return;
 	}
@@ -269,7 +269,7 @@ void LLScrollingPanelParam::onHintHeldDown( bool max )
 				&& new_percent < slider->getMaxValue())
 			{
 				mWearable->setVisualParamWeight(param->getID(), new_weight, FALSE);
-				mWearable->writeToAvatar();
+				mWearable->writeToAvatar(gAgentAvatarp);
 				gAgentAvatarp->updateVisualParams();
 
 				slider->setValue( weightToPercent( new_weight ) );
@@ -308,7 +308,7 @@ void LLScrollingPanelParam::onHintMouseUp( bool max )
 						&& new_percent < slider->getMaxValue())
 					{
 						mWearable->setVisualParamWeight(param->getID(), new_weight, FALSE);
-						mWearable->writeToAvatar();
+						mWearable->writeToAvatar(gAgentAvatarp);
 						slider->setValue( weightToPercent( new_weight ) );
 					}
 				}

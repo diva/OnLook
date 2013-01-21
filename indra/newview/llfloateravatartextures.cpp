@@ -40,7 +40,7 @@
 #include "llviewerobjectlist.h"
 #include "llvoavatar.h"
 
-using namespace LLVOAvatarDefines;
+using namespace LLAvatarAppearanceDefines;
 
 LLFloaterAvatarTextures::LLFloaterAvatarTextures(const LLUUID& id) : 
 	LLFloater(std::string("avatar_texture_debug")),
@@ -72,7 +72,7 @@ BOOL LLFloaterAvatarTextures::postBuild()
 {
 	for (U32 i=0; i < TEX_NUM_INDICES; i++)
 	{
-		const std::string tex_name = LLVOAvatarDictionary::getInstance()->getTexture(ETextureIndex(i))->mName;
+		const std::string tex_name = LLAvatarAppearanceDictionary::getInstance()->getTexture(ETextureIndex(i))->mName;
 		mTextures[i] = getChild<LLTextureCtrl>(tex_name);
 	}
 	mTitle = getTitle();

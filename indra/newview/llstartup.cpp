@@ -1672,8 +1672,12 @@ bool idle_startup()
 		display_startup();
 
 		// init the shader managers
-		//LLDayCycleManager::initClass();
+
+		LLAvatarAppearance::initClass();
 		display_startup();
+
+		//LLDayCycleManager::initClass();
+		//display_startup();
 
 		// RN: don't initialize VO classes in drone mode, they are too closely tied to rendering
 		LLViewerObject::initVOClasses();
@@ -4310,6 +4314,13 @@ bool process_login_success_response(std::string& password)
 			gCloudTextureID = id;
 		}
 #endif
+		// set the location of the Agent Appearance service, from which we can request
+		// avatar baked textures if they are supported by the current region
+		std::string agent_appearance_url = response["agent_appearance_service"];
+		if (!agent_appearance_url.empty())
+		{
+			gSavedSettings.setString("AgentAppearanceServiceURL", agent_appearance_url);
+		}
 	}
 
 	// Override grid info with anything sent in the login response

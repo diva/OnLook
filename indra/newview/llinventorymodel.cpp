@@ -892,6 +892,11 @@ U32 LLInventoryModel::updateItem(const LLViewerInventoryItem* item)
 			{
 				parent_id = findCategoryUUIDForType(LLFolderType::FT_LOST_AND_FOUND);
 				new_item->setParent(parent_id);
+				LLInventoryModel::update_list_t update;
+				LLInventoryModel::LLCategoryUpdate new_folder(parent_id, 1);
+				update.push_back(new_folder);
+				accountForUpdate(update);
+
 			}
 			item_array_t* item_array = get_ptr_in_map(mParentChildItemTree, parent_id);
 			if(item_array)
@@ -1426,7 +1431,6 @@ void  LLInventoryModel::fetchInventoryResponder::result(const LLSD& content)
 	item_array_t items;
 	update_map_t update;
 	S32 count = content["items"].size();
-	bool all_one_folder = true;
 	LLUUID folder_id;
 	// Does this loop ever execute more than once?
 	for(S32 i = 0; i < count; ++i)
@@ -1458,10 +1462,6 @@ void  LLInventoryModel::fetchInventoryResponder::result(const LLSD& content)
 		if (folder_id.isNull())
 		{
 			folder_id = titem->getParentUUID();
-		}
-		else
-		{
-			all_one_folder = false;
 		}
 	}
 
@@ -1561,6 +1561,10 @@ void LLInventoryModel::addCategory(LLViewerInventoryCategory* category)
 		{
 			return;
 		}
+
+		// try to localize default names first. See EXT-8319, EXT-7051.
+		//category->localizeName();
+
 		// Insert category uniquely into the map
 		mCategoryMap[category->getUUID()] = category; // LLPointer will deref and delete the old one
 		//mInventory[category->getUUID()] = category;
@@ -2639,7 +2643,6 @@ bool LLInventoryModel::messageUpdateCore(LLMessageSystem* msg, bool account)
 	item_array_t items;
 	update_map_t update;
 	S32 count = msg->getNumberOfBlocksFast(_PREHASH_InventoryData);
-	bool all_one_folder = true;
 	LLUUID folder_id;
 	// Does this loop ever execute more than once?
 	for(S32 i = 0; i < count; ++i)
@@ -2670,10 +2673,6 @@ bool LLInventoryModel::messageUpdateCore(LLMessageSystem* msg, bool account)
 		if (folder_id.isNull())
 		{
 			folder_id = titem->getParentUUID();
-		}
-		else
-		{
-			all_one_folder = false;
 		}
 	}
 	if(account)
