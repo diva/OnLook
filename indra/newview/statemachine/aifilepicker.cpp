@@ -29,6 +29,11 @@
  */
 
 #include "linden_common.h"
+#if LL_WINDOWS
+#include <winsock2.h>
+#include <windows.h>
+#include <shlobj.h>
+#endif
 #include "lltrans.h"
 #include "llpluginclassmedia.h"
 #include "llpluginmessageclasses.h"
@@ -40,6 +45,7 @@
 #if LL_GTK && LL_X11
 #include "llwindowsdl.h"
 #endif
+
 
 enum filepicker_state_type {
 	AIFilePicker_initialize_plugin = AIStateMachine::max_state,
@@ -99,13 +105,22 @@ std::string AIFilePicker::get_folder(std::string const& default_path, std::strin
 	else
 	{
 		// This is the last resort when all else failed. Open the file chooser in directory 'home'.
+		std::string home;
 #if LL_WINDOWS
-		char const* envname = "USERPROFILE";
+		WCHAR w_home[MAX_PATH];
+		HRESULT hr = ::SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, w_home);
+		if(hr == S_OK) {
+			home = utf16str_to_utf8str(w_home);
+		}
 #else
 		char const* envname = "HOME";
+		char const* t_home = getenv(envname);
+		if (t_home)
+		{
+			home.assign(t_home);
+		}
 #endif
-		char const* home = getenv(envname);
-		if (!home || home[0] == '\0')
+		if(home.empty())
 		{
 #if LL_WINDOWS
 			// On windows, the filepicker window won't pop up at all if we pass an empty string.
@@ -114,12 +129,12 @@ std::string AIFilePicker::get_folder(std::string const& default_path, std::strin
 			home = "/";
 #endif
 			LL_DEBUGS("Plugin") << "context \"" << context << "\" not found, default_path empty, context \"savefile\" not found "
-			  "and environment variable \"$" << envname << "\" empty! Returning \"" << home << "\"." << LL_ENDL;
+			  "and $HOME or CSIDL_PERSONAL is empty! Returning \"" << home << "\"." << LL_ENDL;
 		}
 		else
 		{
 			LL_DEBUGS("Plugin") << "context \"" << context << "\" not found, default_path empty and context \"savefile\" not found. "
-			  "Returning environment variable \"$" << envname << "\" (" << home << ")." << LL_ENDL;
+			  "Returning $HOME or CSIDL_PERSONAL (" << home << ")." << LL_ENDL;
 		}
 		return home;
 	}

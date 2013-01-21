@@ -92,6 +92,8 @@ protected:
 	bool mShowLocalChatFloaterBar;
 	bool mHorizButt;
 	bool mOneLineIMButt;
+	bool mOneLineGroupButt;
+	bool mOneLineConfButt;
 	bool mOnlyComm;
 
     //Spam --------------------------------------------------------------------------------

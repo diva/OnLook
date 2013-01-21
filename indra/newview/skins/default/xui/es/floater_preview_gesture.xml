@@ -32,10 +32,10 @@
 		Pasos:
 	</text>
 	<scroll_list name="library_list">
-		Animación
-Sonidos
-Chat
-Esperar
+    <row name="action_animation" value="Animación"/>
+    <row name="action_sound" value="Sonidos"/>
+    <row name="action_chat" value="Chat"/>
+    <row name="action_wait" value="Esperar"/>
 	</scroll_list>
 	<button label="Añadir &gt;&gt;" name="add_btn"/>
 	<button label="Subir" name="up_btn"/>

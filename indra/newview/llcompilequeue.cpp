@@ -515,6 +515,7 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 	delete data;
 }
 
+#if 0 //Client side compiling disabled.
 // static
 void LLFloaterCompileQueue::onSaveTextComplete(const LLUUID& asset_id, void* user_data, S32 status, LLExtStat ext_status) // StoreAssetData callback (fixed)
 {
@@ -551,7 +552,6 @@ void LLFloaterCompileQueue::onSaveBytecodeComplete(const LLUUID& asset_id, void*
 }
 
 // compile the file given and save it out.
-#if 0 //Client side compiling disabled.
 void LLFloaterCompileQueue::compile(const std::string& filename,
 									const LLUUID& item_id)
 {

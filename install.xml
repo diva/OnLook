@@ -867,9 +867,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>c6f662eaa9aeaf03f73779393640f386</string>
+            <string>50ab4b0642c427e062f4e86b5421eb01</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/llqtwebkit-linux-x86_64-20120716.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/llqtwebkit-4.7.1-linux64-20130116.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>

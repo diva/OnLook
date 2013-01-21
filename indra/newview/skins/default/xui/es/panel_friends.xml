@@ -31,7 +31,7 @@
 	<text name="sel">
 		Seleccionados:
 	</text>
-	<text name="s_num">
+	<text name="s_num" left_delta="75">
 		0000
 	</text>		 
 </panel>

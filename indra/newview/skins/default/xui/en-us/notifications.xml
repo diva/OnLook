@@ -7622,4 +7622,18 @@ AntiSpam: Blocked [SOURCE] for spamming [TYPE]s [AMOUNT] times in [TIME] seconds
 AntiSpam: Blocked newline flood from [SOURCE] (over [AMOUNT] newlines).
   </notification>
 
+
+  <notification
+   icon="alertmodal.tga"
+   name="RadarChatKeysRequest"
+   type="alertmodal">
+An object owned by you has requested keys from your radar.
+Would you like to enable announcing keys to objects in the sim?
+    <usetemplate
+     name="yesnocancelbuttons"
+     yestext="Yes"
+     notext="No"
+     canceltext="No, don't ask again!"/>
+  </notification>
+
 </notifications>

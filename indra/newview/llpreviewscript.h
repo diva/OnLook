@@ -202,9 +202,11 @@ protected:
 	void uploadAssetViaCaps(const std::string& url,
 							const std::string& filename, 
 							const LLUUID& item_id);
+#if 0 //Client side compiling disabled.
 	void uploadAssetLegacy(const std::string& filename,
 							const LLUUID& item_id,
 							const LLTransactionID& tid);
+#endif
 	// <edit>
 	virtual BOOL canSaveAs() const;
 	virtual void saveAs();
@@ -218,8 +220,10 @@ protected:
 	static void onLoadComplete(LLVFS *vfs, const LLUUID& uuid,
 							   LLAssetType::EType type,
 							   void* user_data, S32 status, LLExtStat ext_status);
+#if 0 //Client side compiling disabled.
 	static void onSaveComplete(const LLUUID& uuid, void* user_data, S32 status, LLExtStat ext_status);
 	static void onSaveBytecodeComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status);
+#endif
 public:
 	static LLPreviewLSL* getInstance(const LLUUID& uuid);
 	LLTextEditor* getEditor() { return mScriptEd->mEditor; }
@@ -275,10 +279,12 @@ protected:
 							const LLUUID& task_id,
 							const LLUUID& item_id,
 							BOOL is_running);
+#if 0 //Client side compiling disabled.
 	void uploadAssetLegacy(const std::string& filename,
 						   LLViewerObject* object,
 						   const LLTransactionID& tid,
 						   BOOL is_running);
+#endif
 	// <edit>
 	virtual BOOL canSaveAs() const;
 	virtual void saveAs();
@@ -292,8 +298,10 @@ protected:
 	static void onLoadComplete(LLVFS *vfs, const LLUUID& asset_uuid,
 							   LLAssetType::EType type,
 							   void* user_data, S32 status, LLExtStat ext_status);
+#if 0 //Client side compiling disabled.
 	static void onSaveTextComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status);
 	static void onSaveBytecodeComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status);
+#endif
 	static void onRunningCheckboxClicked(LLUICtrl*, void* userdata);
 	static void onReset(void* userdata);
 
