@@ -4281,6 +4281,18 @@ bool process_login_success_response(std::string& password)
 		gSavedSettings.setString("MapServerURL", map_server_url);
 		LLWorldMap::gotMapServerURL(true);
 	}
+
+	if(gHippoGridManager->getConnectedGrid()->isOpenSimulator())
+	{
+		std::string web_profile_url = response["web_profile_url"];
+		if(!web_profile_url.empty())
+			gSavedSettings.setString("WebProfileURL", web_profile_url);
+	}
+	else if(!gHippoGridManager->getConnectedGrid()->isInProductionGrid())
+	{
+		gSavedSettings.setString("WebProfileURL", "https://my-demo.secondlife.com/[AGENT_NAME]");
+	}
+
 	// Initial outfit for the user.
 	LLSD initial_outfit = response["initial-outfit"][0];
 	if(initial_outfit.size())
