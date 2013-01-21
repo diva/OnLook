@@ -3391,6 +3391,8 @@ public:
 	}	
 
 	LLPointer<LLHTTPRetryPolicy> mRetryPolicy;
+
+	/*virtual*/ char const* getName(void) const { return "RequestAgentUpdateAppearanceResponder"; }
 };
 
 void LLAppearanceMgr::requestServerAppearanceUpdate(LLHTTPClient::ResponderPtr responder_ptr)
