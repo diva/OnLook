@@ -279,15 +279,16 @@
 	<!-- Chat -->
 	<string name="whisper">Susurra:</string>
 	<string name="shout">Grita:</string>
-	<string name="ringing">Conectando al Chat de Voz del Mundo...</string>
+	<string name="ringing">Conectando al Chat de Voz...</string>
 	<string name="connected">Conectado</string>
 	<string name="unavailable">Chat de Voz no disponible en esta ubicación</string>
-	<string name="hang_up">Desconectado del Chat de Voz del Mundo</string>
+	<string name="hang_up">Desconectado del Chat de Voz</string>
 	<string name="ScriptTakeMoney">Transferir moneda de tu cuenta</string>
 	<string name="ActOnControlInputs">Actuar en tus controles de entrada</string>
 	<string name="RemapControlInputs">Remapear tus controles de entrada</string>
 	<string name="AnimateYourAvatar">Animar tu avatar</string>
 	<string name="AttachToYourAvatar">Anexar a tu avatar</string>
+	<string name="AGroupMemberNamed">un miembro del grupo de nombre</string>	
 	<string name="ReleaseOwnership">Liberar propiedad y hacer público</string>
 	<string name="LinkAndDelink">Enlazar y desenlazar de otros objetos</string>
 	<string name="AddAndRemoveJoints">Agregar o remover uniones con otros objetos</string>

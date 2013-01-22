@@ -325,7 +325,6 @@ void LLPrefsAscentChat::onCommitKeywords(LLUICtrl* ctrl, void* user_data)
 void LLPrefsAscentChat::refreshValues()
 {
     //Chat/IM -----------------------------------------------------------------------------
-    mWoLfVerticalIMTabs             = gSavedSettings.getBOOL("WoLfVerticalIMTabs");
     mIMAnnounceIncoming             = gSavedSettings.getBOOL("AscentInstantMessageAnnounceIncoming");
     mHideTypingNotification         = gSavedSettings.getBOOL("AscentHideTypingNotification");
     mShowGroupNameInChatIM          = gSavedSettings.getBOOL("OptionShowGroupNameInChatIM");
@@ -336,7 +335,6 @@ void LLPrefsAscentChat::refreshValues()
     mLinksForChattingObjects        = gSavedSettings.getU32("LinksForChattingObjects");
     mSecondsInChatAndIMs            = gSavedSettings.getBOOL("SecondsInChatAndIMs");
     mSecondsInLog                   = gSavedSettings.getBOOL("SecondsInLog");
-    mOtherChatsTornOff              = gSavedSettings.getBOOL("OtherChatsTornOff");
 
     std::string format = gSavedSettings.getString("ShortTimeFormat");
     if (format.find("%p") == -1)
@@ -373,6 +371,16 @@ void LLPrefsAscentChat::refreshValues()
     mIMResponseRepeat               = gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseRepeat");
     mIMResponseItem                 = gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseItem");
     mIMResponseText                 = gSavedPerAccountSettings.getString("AscentInstantMessageResponse");
+
+	//Chat UI -----------------------------------------------------------------------------
+	mWoLfVerticalIMTabs             = gSavedSettings.getBOOL("WoLfVerticalIMTabs");
+	mOtherChatsTornOff              = gSavedSettings.getBOOL("OtherChatsTornOff");
+	mShowLocalChatFloaterBar        = gSavedSettings.getBOOL("ShowLocalChatFloaterBar");
+	mHorizButt                      = gSavedSettings.getBOOL("ContactsUseHorizontalButtons");
+	mOneLineIMButt                  = gSavedSettings.getBOOL("UseConciseIMButtons");
+	mOneLineGroupButt               = gSavedSettings.getBOOL("UseConciseGroupChatButtons");
+	mOneLineConfButt                = gSavedSettings.getBOOL("UseConciseConferenceButtons");
+	mOnlyComm                       = gSavedSettings.getBOOL("CommunicateSpecificShortcut");
 
     //Spam --------------------------------------------------------------------------------
 	mEnableAS                       = gSavedSettings.getBOOL("AntiSpamEnabled");
@@ -532,7 +540,6 @@ void LLPrefsAscentChat::refresh()
 void LLPrefsAscentChat::cancel()
 {
     //Chat/IM -----------------------------------------------------------------------------
-    gSavedSettings.setBOOL("WoLfVerticalIMTabs",                   mWoLfVerticalIMTabs);
     gSavedSettings.setBOOL("AscentInstantMessageAnnounceIncoming", mIMAnnounceIncoming);
     gSavedSettings.setBOOL("AscentHideTypingNotification",         mHideTypingNotification);
     gSavedSettings.setBOOL("OptionShowGroupNameInChatIM",          mShowGroupNameInChatIM);
@@ -543,7 +550,6 @@ void LLPrefsAscentChat::cancel()
     gSavedSettings.setU32("LinksForChattingObjects",               mLinksForChattingObjects);
     gSavedSettings.setBOOL("SecondsInChatAndIMs",                  mSecondsInChatAndIMs);
     gSavedSettings.setBOOL("SecondsInLog",                         mSecondsInLog);
-    gSavedSettings.setBOOL("OtherChatsTornOff",                    mOtherChatsTornOff);
 
     std::string short_date, long_date, short_time, long_time, timestamp;
 
@@ -593,6 +599,16 @@ void LLPrefsAscentChat::cancel()
     gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseRepeat",  mIMResponseRepeat);
     gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseItem",    mIMResponseItem);
     gSavedPerAccountSettings.setString("AscentInstantMessageResponse",      mIMResponseText);
+
+	//Chat UI -----------------------------------------------------------------------------
+	gSavedSettings.setBOOL("WoLfVerticalIMTabs",                   mWoLfVerticalIMTabs);
+	gSavedSettings.setBOOL("OtherChatsTornOff",                    mOtherChatsTornOff);
+	gSavedSettings.setBOOL("ShowLocalChatFloaterBar",              mShowLocalChatFloaterBar);
+	gSavedSettings.setBOOL("ContactsUseHorizontalButtons",         mHorizButt);
+	gSavedSettings.setBOOL("UseConciseIMButtons",                  mOneLineIMButt);
+	gSavedSettings.setBOOL("UseConciseGroupChatButtons",           mOneLineGroupButt);
+	gSavedSettings.setBOOL("UseConciseConferenceButtons",          mOneLineConfButt);
+	gSavedSettings.setBOOL("CommunicateSpecificShortcut",          mOnlyComm);
 
     //Spam --------------------------------------------------------------------------------
 	gSavedSettings.setBOOL("AntiSpamEnabled",                mEnableAS);

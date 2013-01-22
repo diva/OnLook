@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater label="(desconocido)" name="im_floater" title="(desconocido)">
+	<string name="answering">
+		Conectando...
+	</string>
+	<string name="ringing">
+		Llamando...
+	</string>
+	<string name="connected">
+		Conectado. Pulsa Terminar LLamada para colgar
+	</string>
+	<string name="hang_up">
+		Llamada terminada
+	</string>
+	<string name="title_string">
+		Mensaje Instantáneo con [NAME]
+	</string>
+	<string name="typing_start_string">
+		[NAME] está escribiendo...
+	</string>
+	<string name="session_start_string">
+		Iniciando sesión con [NAME], por favor espera.
+	</string>
+	<string name="default_text_label">
+		Pulsa aquí para enviar un Mensaje Instantáneo.
+	</string>
+	<string name="unavailable_text_label">
+		El chat de texto no está disponible para esta llamada.
+	</string>
+	<string name="inventory_item_offered">
+		Ofrecido un Ítem de Inventario
+	</string>
+	<button label="Perfil" left="135" name="profile_callee_btn" width="60"/>
+	<button label="Historial" left_delta="60" name="history_btn" width="60"/>
+	<button label="Teleportar" name="profile_tele_btn" width="70"/>
+	<check_box left_delta="70" name="rp_mode">
+		Modo RP
+	</check_box>
+	<button label="Llamar" left_delta="67" name="start_call_btn" width="60"/>
+	<button label="Finalizar" name="end_call_btn" width="24"/>
+	<panel left_delta="16" name="speaker_controls" width="60">
+		<volume_slider name="speaker_volume" width="48"/>
+		<button label="" left_delta="42" name="mute_btn" tool_tip="Ignorar Voz" width="25"/>
+	</panel>
+	<text_editor left="5" name="im_history" width="488"/>
+	<line_editor label="Pulsa aquí para enviar un Mensaje Instantáneo" name="chat_editor" width="423"/>
+	<button label="Enviar" left="433" name="send_btn" width="60"/>
+	<string name="live_help_dialog">
+		*** Bienvenido a la Petición de Ayuda ***
+Por favor, primero revisa nuestras páginas de ayuda presionando F1 o yendo a la Base de Conocimientos en http://secondlife.com/knowledgebase/
+Si la respuesta no está ahi, por favor, ingresa tu consulta y espera un momento a que uno de nuestros soportistas esté disponible para responderte.
+-=-=- El tiempo de respuesta puede variar, especialmente en horas pico -=-=-</string>
+</floater>

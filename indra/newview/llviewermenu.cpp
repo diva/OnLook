@@ -860,6 +860,7 @@ void init_menus()
 	menu->setCanTearOff(TRUE);
 	init_client_menu(menu);
 	gMenuBarView->addChild( menu );
+	rlvMenuToggleVisible();
 
 	menu = new LLMenuGL(SERVER_MENU_NAME);
 	menu->setCanTearOff(TRUE);
@@ -880,7 +881,7 @@ void init_menus()
 	
 	menu = new LLMenuGL(CLIENT_MENU_NAME);
 	menu->setCanTearOff(FALSE);
-	menu->addChild(new LLMenuItemCallGL("Debug Settings...", LLFloaterSettingsDebug::show, NULL, NULL));
+	menu->addChild(new LLMenuItemCallGL("Debug Settings...", handle_singleton_toggle<LLFloaterSettingsDebug>, NULL, NULL));
 	gLoginMenuBarView->addChild(menu);
 	menu->updateParent(LLMenuGL::sMenuContainer);
 
@@ -1064,15 +1065,13 @@ void init_client_menu(LLMenuGL* menu)
 
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.1b | OK
 	#ifdef RLV_ADVANCED_MENU
-		if (rlv_handler_t::isEnabled())
-		{
-			sub_menu = new LLMenuGL("RLVa");
-			sub_menu->setCanTearOff(TRUE);
-			init_debug_rlva_menu(sub_menu);
-			menu->addChild(sub_menu);
-			sub_menu->setVisible(rlv_handler_t::isEnabled());
-			sub_menu->setEnabled(rlv_handler_t::isEnabled());
-		}
+		sub_menu = new LLMenuGL("RLVa Embedded");
+		init_debug_rlva_menu(sub_menu);
+		menu->addChild(sub_menu);
+		// Top Level Menu as well
+		sub_menu = new LLMenuGL("RLVa Main");
+		init_debug_rlva_menu(sub_menu);
+		gMenuBarView->addChild(sub_menu);
 	#endif // RLV_ADVANCED_MENU
 // [/RLVa:KB]
 
@@ -1223,7 +1222,7 @@ void init_client_menu(LLMenuGL* menu)
 										&menu_check_control,
 										(void*)"SaveMinidump"));
 
-	menu->addChild(new LLMenuItemCallGL("Debug Settings...", LLFloaterSettingsDebug::show, NULL, NULL));
+	menu->addChild(new LLMenuItemCallGL("Debug Settings...", handle_singleton_toggle<LLFloaterSettingsDebug>, NULL, NULL));
 	menu->addChild(new LLMenuItemCheckGL("View Admin Options", &handle_admin_override_toggle, NULL, &check_admin_override, NULL, 'V', MASK_CONTROL | MASK_ALT));
 
 	menu->addChild(new LLMenuItemCallGL("Request Admin Status", 
@@ -1697,6 +1696,9 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 // [RLVa:KB] - Checked: 2009-11-17 (RLVa-1.1.0d) | Modified: RLVa-1.1.0d | OK
 void init_debug_rlva_menu(LLMenuGL* menu)
 {
+	menu->setLabel(std::string("RLVa")); // Same menu, same label
+	menu->setCanTearOff(true);
+
 	// Debug options
 	{
 		LLMenuGL* pDbgMenu = new LLMenuGL("Debug");
@@ -2062,7 +2064,8 @@ class LLViewCommunicate : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if (LLFloaterChatterBox::getInstance()->getFloaterCount() == 0)
+		static LLCachedControl<bool> only_comm("CommunicateSpecificShortcut");
+		if (!only_comm && LLFloaterChatterBox::getInstance()->getFloaterCount() == 0)
 		{
 			LLFloaterMyFriends::toggleInstance();
 		}

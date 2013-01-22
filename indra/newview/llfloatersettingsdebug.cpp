@@ -31,117 +31,129 @@
  */
 
 #include "llviewerprecompiledheaders.h"
+
 #include "llfloatersettingsdebug.h"
-#include "llfloater.h"
-#include "lluictrlfactory.h"
-#include "llfirstuse.h"
-#include "llcombobox.h"
-#include "llspinctrl.h"
+
 #include "llcolorswatch.h"
+//#include "llfirstuse.h"
+#include "llfloater.h"
+#include "llscrolllistctrl.h"
+#include "llspinctrl.h"
+#include "lltexteditor.h"
+#include "lluictrlfactory.h"
 #include "llviewercontrol.h"
+#include "llwindow.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
 #include "rlvextensions.h"
 // [/RLVa:KB]
 
-LLFloaterSettingsDebug* LLFloaterSettingsDebug::sInstance = NULL;
-
-LLFloaterSettingsDebug::LLFloaterSettingsDebug() : LLFloater(std::string("Configuration Editor"))
+LLFloaterSettingsDebug::LLFloaterSettingsDebug()
+:	LLFloater(std::string("Configuration Editor"))
+,	mCurrentControlVariable(NULL)
+,	mOldControlVariable(NULL)
+,	mOldSearchTerm(std::string("---"))
 {
+	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_settings_debug.xml");
 }
 
 LLFloaterSettingsDebug::~LLFloaterSettingsDebug()
 {
-	sInstance = NULL;
+	if (mOldControlVariable)
+		mOldControlVariable->getCommitSignal()->disconnect(boost::bind(&LLFloaterSettingsDebug::onSettingSelect, this));
 }
 
 BOOL LLFloaterSettingsDebug::postBuild()
 {
-	LLComboBox* settings_combo = getChild<LLComboBox>("settings_combo");
+	mSettingsScrollList = getChild<LLScrollListCtrl>("settings_scroll_list");
 
 	struct f : public LLControlGroup::ApplyFunctor
 	{
-		LLComboBox* combo;
-		f(LLComboBox* c) : combo(c) {}
+		settings_map_t* map;
+		f(settings_map_t* m) : map(m) {}
 		virtual void apply(const std::string& name, LLControlVariable* control)
 		{
 			if (!control->isHiddenFromSettingsEditor())
 			{
-				combo->add(name, (void*)control);
+				(*map)[name]=control;
 			}
 		}
-	} func(settings_combo);
+	} func(&mSettingsMap);
 
 	gSavedSettings.applyToAll(&func);
 	gSavedPerAccountSettings.applyToAll(&func);
 	gColors.applyToAll(&func);
 
-	settings_combo->sortByName();
-	settings_combo->setCommitCallback(onSettingSelect);
-	settings_combo->setCallbackUserData(this);
-	settings_combo->updateSelection();
+	// Populate the list
+	{
+		for(settings_map_t::iterator it = mSettingsMap.begin(); it != mSettingsMap.end(); it++)
+		{
+			LLSD item;
+			item["columns"][0]["value"] = it->second->getName();
+			mSettingsScrollList->addElement(item, ADD_BOTTOM, it->second);
+		}
+	}
+	mSettingsScrollList->sortByColumnIndex(0, true);
+	mSettingsScrollList->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onSettingSelect, this));
 
-	childSetCommitCallback("val_spinner_1", onCommitSettings);
-	childSetUserData("val_spinner_1", this);
-	childSetCommitCallback("val_spinner_2", onCommitSettings);
-	childSetUserData("val_spinner_2", this);
-	childSetCommitCallback("val_spinner_3", onCommitSettings);
-	childSetUserData("val_spinner_3", this);
-	childSetCommitCallback("val_spinner_4", onCommitSettings);
-	childSetUserData("val_spinner_4", this);
-	childSetCommitCallback("val_text", onCommitSettings);
-	childSetUserData("val_text", this);
-	childSetCommitCallback("boolean_combo", onCommitSettings);
-	childSetUserData("boolean_combo", this);
-	childSetCommitCallback("color_swatch", onCommitSettings);
-	childSetUserData("color_swatch", this);
-	childSetAction("default_btn", onClickDefault, this);
+	llinfos << mSettingsScrollList->getItemCount() << " total debug settings displayed." << llendl;
+
+	getChild<LLUICtrl>("val_spinner_1")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCommitSettings, this));
+	getChild<LLUICtrl>("val_spinner_2")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCommitSettings, this));
+	getChild<LLUICtrl>("val_spinner_3")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCommitSettings, this));
+	getChild<LLUICtrl>("val_spinner_4")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCommitSettings, this));
+	getChild<LLUICtrl>("val_text")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCommitSettings, this));
+	getChild<LLUICtrl>("boolean_combo")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCommitSettings, this));
+	getChild<LLUICtrl>("color_swatch")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCommitSettings, this));
+	getChild<LLUICtrl>("copy_btn")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCopyToClipboard, this));
+	getChild<LLUICtrl>("default_btn")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onClickDefault, this));
+	getChild<LLSearchEditor>("search_settings_input")->setSearchCallback(onUpdateFilter, this);
 	mComment = getChild<LLTextEditor>("comment_text");
 	return TRUE;
 }
 
 void LLFloaterSettingsDebug::draw()
 {
-	LLComboBox* settings_combo = getChild<LLComboBox>("settings_combo");
-	LLControlVariable* controlp = static_cast<LLControlVariable*>(settings_combo->getCurrentUserdata());
-	updateControl(controlp ? controlp->getCOAActive() : NULL);
+	// check for changes in control visibility, like RLVa does
+	if(mCurrentControlVariable && mCurrentControlVariable->isHiddenFromSettingsEditor() != mOldVisibility)
+		updateControl();
 
 	LLFloater::draw();
 }
 
-//static
-void LLFloaterSettingsDebug::show(void*)
+LLControlVariable* LLFloaterSettingsDebug::getControlVariable()
 {
-	if (sInstance == NULL)
-	{
-		sInstance = new LLFloaterSettingsDebug();
+	LLScrollListItem* item = mSettingsScrollList->getFirstSelected();
+	if (!item) return NULL;
 
-		LLUICtrlFactory::getInstance()->buildFloater(sInstance, "floater_settings_debug.xml");
-	}
+	LLControlVariable* controlp = static_cast<LLControlVariable*>(item->getUserdata());
 
-	sInstance->open();		/* Flawfinder: ignore */
+	return controlp ? controlp->getCOAActive() : NULL;
 }
 
-//static 
-void LLFloaterSettingsDebug::onSettingSelect(LLUICtrl* ctrl, void* user_data)
+void LLFloaterSettingsDebug::onSettingSelect()
 {
-	LLFloaterSettingsDebug* floaterp = (LLFloaterSettingsDebug*)user_data;
-	LLComboBox* combo_box = static_cast<LLComboBox*>(ctrl);
-	LLControlVariable* controlp = static_cast<LLControlVariable*>(combo_box->getCurrentUserdata());
+	mCurrentControlVariable = getControlVariable();
 
-	floaterp->updateControl(controlp ? controlp->getCOAActive() : NULL);
+	if (mOldControlVariable == mCurrentControlVariable) return;
+
+	// unbind change control signal from previously selected control
+	if(mOldControlVariable)
+		mOldControlVariable->getCommitSignal()->disconnect(boost::bind(&LLFloaterSettingsDebug::onSettingSelect, this));
+
+	// bind change control signal, so we can see updates to the current control in realtime
+	if(mCurrentControlVariable)
+		mCurrentControlVariable->getCommitSignal()->connect(boost::bind(&LLFloaterSettingsDebug::onSettingSelect, this));
+
+	mOldControlVariable = mCurrentControlVariable;
+
+	updateControl();
 }
 
-//static
-void LLFloaterSettingsDebug::onCommitSettings(LLUICtrl* ctrl, void* user_data)
+void LLFloaterSettingsDebug::onCommitSettings()
 {
-	LLFloaterSettingsDebug* floaterp = (LLFloaterSettingsDebug*)user_data;
-
-	LLComboBox* settings_combo = floaterp->getChild<LLComboBox>("settings_combo");
-	LLControlVariable* controlp = static_cast<LLControlVariable*>(settings_combo->getCurrentUserdata());
-	controlp = controlp ? controlp->getCOAActive() : NULL;
-	if(!controlp)//Uh oh!
+	if (!mCurrentControlVariable)
 		return;
 
 	LLVector3 vector;
@@ -152,88 +164,89 @@ void LLFloaterSettingsDebug::onCommitSettings(LLUICtrl* ctrl, void* user_data)
 	LLColor4U col4U;
 	LLColor4 color_with_alpha;
 
-	switch(controlp->type())
+	switch(mCurrentControlVariable->type())
 	{		
 	  case TYPE_U32:
-		controlp->set(floaterp->childGetValue("val_spinner_1"));
+		mCurrentControlVariable->set(getChild<LLUICtrl>("val_spinner_1")->getValue());
 		break;
 	  case TYPE_S32:
-		controlp->set(floaterp->childGetValue("val_spinner_1"));
+		mCurrentControlVariable->set(getChild<LLUICtrl>("val_spinner_1")->getValue());
 		break;
 	  case TYPE_F32:
-		controlp->set(LLSD(floaterp->childGetValue("val_spinner_1").asReal()));
+		mCurrentControlVariable->set(LLSD(getChild<LLUICtrl>("val_spinner_1")->getValue().asReal()));
 		break;
 	  case TYPE_BOOLEAN:
-		controlp->set(floaterp->childGetValue("boolean_combo"));
+		mCurrentControlVariable->set(getChild<LLUICtrl>("boolean_combo")->getValue());
 		break;
 	  case TYPE_STRING:
-		controlp->set(LLSD(floaterp->childGetValue("val_text").asString()));
+		mCurrentControlVariable->set(LLSD(getChild<LLUICtrl>("val_text")->getValue().asString()));
 		break;
 	  case TYPE_VEC3:
-		vector.mV[VX] = (F32)floaterp->childGetValue("val_spinner_1").asReal();
-		vector.mV[VY] = (F32)floaterp->childGetValue("val_spinner_2").asReal();
-		vector.mV[VZ] = (F32)floaterp->childGetValue("val_spinner_3").asReal();
-		controlp->set(vector.getValue());
+		vector.mV[VX] = (F32)getChild<LLUICtrl>("val_spinner_1")->getValue().asReal();
+		vector.mV[VY] = (F32)getChild<LLUICtrl>("val_spinner_2")->getValue().asReal();
+		vector.mV[VZ] = (F32)getChild<LLUICtrl>("val_spinner_3")->getValue().asReal();
+		mCurrentControlVariable->set(vector.getValue());
 		break;
 	  case TYPE_VEC3D:
-		vectord.mdV[VX] = floaterp->childGetValue("val_spinner_1").asReal();
-		vectord.mdV[VY] = floaterp->childGetValue("val_spinner_2").asReal();
-		vectord.mdV[VZ] = floaterp->childGetValue("val_spinner_3").asReal();
-		controlp->set(vectord.getValue());
+		vectord.mdV[VX] = getChild<LLUICtrl>("val_spinner_1")->getValue().asReal();
+		vectord.mdV[VY] = getChild<LLUICtrl>("val_spinner_2")->getValue().asReal();
+		vectord.mdV[VZ] = getChild<LLUICtrl>("val_spinner_3")->getValue().asReal();
+		mCurrentControlVariable->set(vectord.getValue());
 		break;
 	  case TYPE_RECT:
-		rect.mLeft = floaterp->childGetValue("val_spinner_1").asInteger();
-		rect.mRight = floaterp->childGetValue("val_spinner_2").asInteger();
-		rect.mBottom = floaterp->childGetValue("val_spinner_3").asInteger();
-		rect.mTop = floaterp->childGetValue("val_spinner_4").asInteger();
-		controlp->set(rect.getValue());
+		rect.mLeft = getChild<LLUICtrl>("val_spinner_1")->getValue().asInteger();
+		rect.mRight = getChild<LLUICtrl>("val_spinner_2")->getValue().asInteger();
+		rect.mBottom = getChild<LLUICtrl>("val_spinner_3")->getValue().asInteger();
+		rect.mTop = getChild<LLUICtrl>("val_spinner_4")->getValue().asInteger();
+		mCurrentControlVariable->set(rect.getValue());
 		break;
 	  case TYPE_COL4:
-		col3.setValue(floaterp->childGetValue("color_swatch"));
-		col4 = LLColor4(col3, (F32)floaterp->childGetValue("val_spinner_4").asReal());
-		controlp->set(col4.getValue());
+		col3.setValue(getChild<LLUICtrl>("val_color_swatch")->getValue());
+		col4 = LLColor4(col3, (F32)getChild<LLUICtrl>("val_spinner_4")->getValue().asReal());
+		mCurrentControlVariable->set(col4.getValue());
 		break;
 	  case TYPE_COL3:
-		controlp->set(floaterp->childGetValue("color_swatch"));
-		//col3.mV[VRED] = (F32)floaterp->childGetValue("val_spinner_1").asC();
-		//col3.mV[VGREEN] = (F32)floaterp->childGetValue("val_spinner_2").asReal();
-		//col3.mV[VBLUE] = (F32)floaterp->childGetValue("val_spinner_3").asReal();
-		//controlp->set(col3.getValue());
+		mCurrentControlVariable->set(getChild<LLUICtrl>("val_color_swatch")->getValue());
+		//col3.mV[VRED] = (F32)getChild<LLUICtrl>("val_spinner_1")->getValue().asC();
+		//col3.mV[VGREEN] = (F32)getChild<LLUICtrl>("val_spinner_2")->getValue().asReal();
+		//col3.mV[VBLUE] = (F32)getChild<LLUICtrl>("val_spinner_3")->getValue().asReal();
+		//mCurrentControlVariable->set(col3.getValue());
 		break;
 	  case TYPE_COL4U:
-		col3.setValue(floaterp->childGetValue("color_swatch"));
+		col3.setValue(getChild<LLUICtrl>("val_color_swatch")->getValue());
 		col4U.setVecScaleClamp(col3);
-		col4U.mV[VALPHA] = floaterp->childGetValue("val_spinner_4").asInteger();
-		controlp->set(col4U.getValue());
+		col4U.mV[VALPHA] = getChild<LLUICtrl>("val_spinner_4")->getValue().asInteger();
+		mCurrentControlVariable->set(col4U.getValue());
 		break;
 	  default:
 		break;
 	}
 }
 
-// static
-void LLFloaterSettingsDebug::onClickDefault(void* user_data)
+void LLFloaterSettingsDebug::onClickDefault()
 {
-	LLFloaterSettingsDebug* floaterp = (LLFloaterSettingsDebug*)user_data;
-	LLComboBox* settings_combo = floaterp->getChild<LLComboBox>("settings_combo");
-	LLControlVariable* controlp = (LLControlVariable*)settings_combo->getCurrentUserdata();
-
-	if (controlp)
+	if (mCurrentControlVariable)
 	{
-		controlp = controlp->getCOAActive();
-		controlp->resetToDefault(true);
-		floaterp->updateControl(controlp);
+		mCurrentControlVariable->resetToDefault(true);
+		updateControl();
 	}
 }
 
-// we've switched controls, or doing per-frame update, so update spinners, etc.
-void LLFloaterSettingsDebug::updateControl(LLControlVariable* controlp)
+void LLFloaterSettingsDebug::onCopyToClipboard()
+{
+	if (mCurrentControlVariable)
+		getWindow()->copyTextToClipboard(utf8str_to_wstring(mCurrentControlVariable->getName()));
+}
+
+// we've switched controls, so update spinners, etc.
+void LLFloaterSettingsDebug::updateControl()
 {
 	LLSpinCtrl* spinner1 = getChild<LLSpinCtrl>("val_spinner_1");
 	LLSpinCtrl* spinner2 = getChild<LLSpinCtrl>("val_spinner_2");
 	LLSpinCtrl* spinner3 = getChild<LLSpinCtrl>("val_spinner_3");
 	LLSpinCtrl* spinner4 = getChild<LLSpinCtrl>("val_spinner_4");
-	LLColorSwatchCtrl* color_swatch = getChild<LLColorSwatchCtrl>("color_swatch");
+	LLColorSwatchCtrl* color_swatch = getChild<LLColorSwatchCtrl>("val_color_swatch");
+	LLUICtrl* bool_ctrl = getChild<LLUICtrl>("boolean_combo");
 
 	if (!spinner1 || !spinner2 || !spinner3 || !spinner4 || !color_swatch)
 	{
@@ -247,45 +260,33 @@ void LLFloaterSettingsDebug::updateControl(LLControlVariable* controlp)
 	spinner3->setVisible(FALSE);
 	spinner4->setVisible(FALSE);
 	color_swatch->setVisible(FALSE);
-	childSetVisible("val_text", FALSE);
+	getChildView("val_text")->setVisible( FALSE);
 	mComment->setText(LLStringUtil::null);
+	childSetEnabled("copy_btn", false);
+	childSetEnabled("default_btn", false);
+	bool_ctrl->setVisible(false);
 
-	if (controlp)
+	if (mCurrentControlVariable)
 	{
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g) | Modified: RLVa-0.2.1d
-		if (rlv_handler_t::isEnabled())
-		{
-			// Don't allow changing DBG_WRITE debug settings under @setdebug=n
-			bool fEnable = !( (gRlvHandler.hasBehaviour(RLV_BHVR_SETDEBUG)) && 
-				(RlvExtGetSet::getDebugSettingFlags(controlp->getName()) & RlvExtGetSet::DBG_WRITE) );
-			// Don't allow toggling "Basic Shaders" and/or "Atmopsheric Shaders" through the debug settings under @setenv=n
-			fEnable &= !((gRlvHandler.hasBehaviour(RLV_BHVR_SETENV)) && 
-				(("VertexShaderEnable" == controlp->getName()) || ("WindLightUseAtmosShaders" == controlp->getName())));
-			#ifdef RLV_EXTENSION_STARTLOCATION
-				// Don't allow toggling RLVaLoginLastLocation
-				fEnable &= !(RLV_SETTING_LOGINLASTLOCATION == controlp->getName());
-			#endif // RLV_EXTENSION_STARTLOCATION
-
-			// NOTE: this runs per-frame so there's no need to explictly handle onCommitSettings() or onClickDefault()
-			spinner1->setEnabled(fEnable);
-			spinner2->setEnabled(fEnable);
-			spinner3->setEnabled(fEnable);
-			spinner4->setEnabled(fEnable);
-			color_swatch->setEnabled(fEnable);
-			childSetEnabled("val_text", fEnable);
-			childSetEnabled("boolean_combo", fEnable);
-			childSetEnabled("default_btn", fEnable);
-		}
+// [RLVa:KB] - Checked: 2011-05-28 (RLVa-1.4.0a) | Modified: RLVa-1.4.0a
+		// If "HideFromEditor" was toggled while the floater is open then we need to manually disable access to the control
+		mOldVisibility = mCurrentControlVariable->isHiddenFromSettingsEditor();
+		spinner1->setEnabled(!mOldVisibility);
+		spinner2->setEnabled(!mOldVisibility);
+		spinner3->setEnabled(!mOldVisibility);
+		spinner4->setEnabled(!mOldVisibility);
+		color_swatch->setEnabled(!mOldVisibility);
+		childSetEnabled("val_text", !mOldVisibility);
+		bool_ctrl->setEnabled(!mOldVisibility);
+		childSetEnabled("default_btn", !mOldVisibility);
 // [/RLVa:KB]
 
-		controlp = controlp->getCOAActive();
-		eControlType type = controlp->type();
+		childSetEnabled("copy_btn", true);
 
-		//hide combo box only for non booleans, otherwise this will result in the combo box closing every frame
-		childSetVisible("boolean_combo", type == TYPE_BOOLEAN);
-		
+		eControlType type = mCurrentControlVariable->type();
 
-		mComment->setText(controlp->getComment());
+		mComment->setText(mCurrentControlVariable->getName() + std::string(": ") + mCurrentControlVariable->getComment());
+
 		spinner1->setMaxValue(F32_MAX);
 		spinner2->setMaxValue(F32_MAX);
 		spinner3->setMaxValue(F32_MAX);
@@ -311,7 +312,7 @@ void LLFloaterSettingsDebug::updateControl(LLControlVariable* controlp)
 			spinner4->setIncrement(0.1f);
 		}
 
-		LLSD sd = controlp->get();
+		LLSD sd = mCurrentControlVariable->get();
 		switch(type)
 		{
 		  case TYPE_U32:
@@ -348,23 +349,24 @@ void LLFloaterSettingsDebug::updateControl(LLControlVariable* controlp)
 			}
 			break;
 		  case TYPE_BOOLEAN:
-			if (!childHasFocus("boolean_combo"))
+			bool_ctrl->setVisible(true);
+			if (!bool_ctrl->hasFocus())
 			{
 				if (sd.asBoolean())
 				{
-					childSetValue("boolean_combo", LLSD("true"));
+					bool_ctrl->setValue(LLSD("TRUE"));
 				}
 				else
 				{
-					childSetValue("boolean_combo", LLSD(""));
+					bool_ctrl->setValue(LLSD("FALSE"));
 				}
 			}
 			break;
 		  case TYPE_STRING:
-			childSetVisible("val_text", TRUE);
-			if (!childHasFocus("val_text"))
+			getChildView("val_text")->setVisible( TRUE);
+			if (!getChild<LLUICtrl>("val_text")->hasFocus())
 			{
-				childSetValue("val_text", sd);
+				getChild<LLUICtrl>("val_text")->setValue(sd);
 			}
 			break;
 		  case TYPE_VEC3:
@@ -529,4 +531,59 @@ void LLFloaterSettingsDebug::updateControl(LLControlVariable* controlp)
 		}
 	}
 
+}
+
+void LLFloaterSettingsDebug::onUpdateFilter(const std::string& searchTerm, void*)
+{
+	LLFloaterSettingsDebug::getInstance()->updateFilter(searchTerm);
+}
+
+void LLFloaterSettingsDebug::updateFilter(std::string searchTerm)
+{
+	// make sure not to reselect the first item in the list on focus restore
+	if (searchTerm == mOldSearchTerm) return;
+
+	mOldSearchTerm = searchTerm;
+
+	LLStringUtil::toLower(searchTerm);
+
+	mSettingsScrollList->deleteAllItems();
+
+	for(settings_map_t::iterator it = mSettingsMap.begin(); it != mSettingsMap.end(); it++)
+	{
+		bool addItem = searchTerm.empty();
+		if (!addItem)
+		{
+			std::string itemValue = it->second->getName();
+
+			LLStringUtil::toLower(itemValue);
+
+			if (itemValue.find(searchTerm, 0) != std::string::npos)
+			{
+				addItem = true;
+			}
+			else // performance: broken out to save toLower calls on comments
+			{
+				std::string itemComment = it->second->getComment();
+				LLStringUtil::toLower(itemComment);
+				if (itemComment.find(searchTerm, 0) != std::string::npos)
+					addItem = true;
+			}
+		}
+
+		if (addItem)
+		{
+			LLSD item;
+			item["columns"][0]["value"] = it->second->getName();
+			mSettingsScrollList->addElement(item, ADD_BOTTOM, it->second);
+		}
+	}
+	mSettingsScrollList->sortByColumnIndex(0, true);
+
+	// if at least one match was found, highlight and select the topmost entry in the list
+	// but only if actually a search term was given
+	if (mSettingsScrollList->getItemCount() && !searchTerm.empty())
+		mSettingsScrollList->selectFirstItem();
+
+	onSettingSelect();
 }

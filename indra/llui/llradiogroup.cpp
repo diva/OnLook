@@ -316,7 +316,8 @@ void LLRadioGroup::setValue( const LLSD& value )
 		}
 		else
 		{
-			llwarns << "LLRadioGroup::setValue: value not found: " << value_name << llendl;
+			llwarns << "LLRadioGroup::setValue: radio_item with name=\"" << value_name << "\" not found, radio_group values are set by radio_item name not value.  Falling back on LLUICtrl::setValue." << llendl;
+			LLUICtrl::setValue(value);
 		}
 	}
 }

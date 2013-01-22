@@ -79,7 +79,7 @@ protected:
 								  LLInventoryObject::object_list_t* inv,
 								 S32 serial_num,
 								 void* queue);
-	
+
 	// This is called by inventoryChanged
 	virtual void handleInventory(LLViewerObject* viewer_obj,
 								 LLInventoryObject::object_list_t* inv) = 0;
@@ -105,7 +105,7 @@ protected:
 	// Object Queue
 	LLDynamicArray<LLUUID> mObjectIDs;
 	LLUUID mCurrentObjectID;
-	BOOL mDone;
+	bool mDone;
 
 	LLUUID mID;
 	static LLMap<LLUUID, LLFloaterScriptQueue*> sInstances;
@@ -142,6 +142,8 @@ public:
 									
 	// remove any object in mScriptScripts with the matching uuid.
 	void removeItemByItemID(const LLUUID& item_id);
+
+	LLAssetUploadQueue* getUploadQueue() { return mUploadQueue; }
 
 protected:
 	LLFloaterCompileQueue(const std::string& name, const LLRect& rect);
@@ -200,12 +202,10 @@ public:
 protected:
 	LLFloaterResetQueue(const std::string& name, const LLRect& rect);
 	virtual ~LLFloaterResetQueue();
-	
+
 	// This is called by inventoryChanged
 	virtual void handleInventory(LLViewerObject* viewer_obj,
-								 LLInventoryObject::object_list_t* inv);
-
-protected:
+								 LLInventoryObject::object_list_t* inv);	
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -224,12 +224,10 @@ public:
 protected:
 	LLFloaterRunQueue(const std::string& name, const LLRect& rect);
 	virtual ~LLFloaterRunQueue();
-	
+
 	// This is called by inventoryChanged
 	virtual void handleInventory(LLViewerObject* viewer_obj,
 								 LLInventoryObject::object_list_t* inv);
-
-protected:
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -252,8 +250,6 @@ protected:
 	// This is called by inventoryChanged
 	virtual void handleInventory(LLViewerObject* viewer_obj,
 								 LLInventoryObject::object_list_t* inv);
-
-protected:
 };
 
 #endif // LL_LLCOMPILEQUEUE_H

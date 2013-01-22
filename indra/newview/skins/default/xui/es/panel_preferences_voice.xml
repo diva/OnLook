@@ -3,7 +3,7 @@
 	<text name="voice_unavailable">
 		El Chat de Voz no está Disponible
 	</text>
-	<check_box bottom_delta="0" follows="top" height="16" initial_value="false" label="Enable voice chat" left="8" name="enable_voice_check"/>
+	<check_box bottom_delta="0" follows="top" height="16" initial_value="false" label="Habilitar Chat de Voz" left="8" name="enable_voice_check"/>
 	<radio_group bottom_delta="-46" draw_border="false" follows="top" height="40" left_delta="20" name="ear_location" width="364">
 		<radio_item name="0">
 			Oir el chat desde la posición de la cámara.

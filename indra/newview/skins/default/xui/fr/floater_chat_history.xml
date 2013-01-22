@@ -71,7 +71,7 @@
 				</combo_item>
 			</combo_box>
 			<check_box label="Afficher le texte ignoré" name="show mutes"/>
-			<button label="Historique" name="chat_history_open" tool_tip="Cliquer ici pour ouvrir l'historique de la conversation."/>
+			<button left_delta="150" width="90" label="Historique" name="chat_history_open" tool_tip="Cliquer ici pour ouvrir l'historique de la conversation."/>
 
 			<button label="&lt; &lt;" label_selected="&gt; &gt;" name="toggle_active_speakers_btn" tool_tip="Cliquez ici pour voir la liste des participants actifs dans cette session IM."/>
 			<panel name="chat_panel">

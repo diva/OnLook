@@ -1076,7 +1076,7 @@ bool idle_startup()
 		gSavedSettings.getControl("_NACL_AntiSpamAmount")->getSignal()->connect(boost::bind(&NACLAntiSpamRegistry::handleNaclAntiSpamAmountChanged, _2));
         // NaCl End
 
-		//good as place as any to create user windlight directories
+		//good a place as any to create user windlight directories
 		std::string user_windlight_path_name(gDirUtilp->getExpandedFilename( LL_PATH_USER_SETTINGS , "windlight", ""));
 		LLFile::mkdir(user_windlight_path_name.c_str());		
 
@@ -4284,6 +4284,18 @@ bool process_login_success_response(std::string& password)
 		gSavedSettings.setString("MapServerURL", map_server_url);
 		LLWorldMap::gotMapServerURL(true);
 	}
+
+	if(gHippoGridManager->getConnectedGrid()->isOpenSimulator())
+	{
+		std::string web_profile_url = response["web_profile_url"];
+		if(!web_profile_url.empty())
+			gSavedSettings.setString("WebProfileURL", web_profile_url);
+	}
+	else if(!gHippoGridManager->getConnectedGrid()->isInProductionGrid())
+	{
+		gSavedSettings.setString("WebProfileURL", "https://my-demo.secondlife.com/[AGENT_NAME]");
+	}
+
 	// Initial outfit for the user.
 	LLSD initial_outfit = response["initial-outfit"][0];
 	if(initial_outfit.size())
