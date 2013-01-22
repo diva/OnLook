@@ -198,7 +198,7 @@ typedef bool (RlvCommandHandler::*rlvCommandHandler)(const RlvCommand& rlvCmd, E
 
 BOOL rlvMenuCheckEnabled(void*);
 void rlvMenuToggleEnabled(void*);
-//void rlvMenuToggleVisible(void*);
+void rlvMenuToggleVisible();
 //bool rlvMenuEnableIfNot(const LLSD& sdParam);
 class RlvEnableIfNot : public LLMemberListener<LLView>
 {

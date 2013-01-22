@@ -1,84 +1,36 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Graphiques" name="Display panel">
-	<button label="?" name="GraphicsPreferencesHelpButton"/>
+	<check_box label="Lancer Singularity dans une fen&#xEA;tre (non pas, PAR la fen&#xEA;tre)" name="windowed mode"/>
+	<button left="330" width="165" label="Param&#xE8;tres recommand&#xE9;s" tool_tip="Reset to recommended graphics settings" name="Defaults"/>
 	<text_editor bottom="-56" height="40" left="25" name="FullScreenInfo" width="460">
 		D&#xE9;cocher cette option pour passer en mode plein &#xE9;cran.
 	</text_editor>
-	<text name="WindowSizeLabel">
-		Taille de la fen&#xEA;tre :
-	</text>
+	<text name="WindowSizeLabel">Taille de la fen&#xEA;tre :</text>
 	<combo_box name="windowsize combo">
-		<combo_item name="640x480">
-			640 x 480
-		</combo_item>
-		<combo_item name="800x600">
-			800 x 600
-		</combo_item>
-		<combo_item name="720x480">
-			720 x 480 (NTSC)
-		</combo_item>
-		<combo_item name="768x576">
-			768 x 576 (PAL)
-		</combo_item>
-		<combo_item name="1024x768">
-			1024 x 768
-		</combo_item>
+		<combo_item name="640x480">640 x 480</combo_item>
+		<combo_item name="800x600">800 x 600</combo_item>
+		<combo_item name="720x480">720 x 480 (NTSC)</combo_item>
+		<combo_item name="768x576">68 x 576 (PAL)</combo_item>
+		<combo_item name="1024x768">1024 x 768</combo_item>
 	</combo_box>
-	<text name="DisplayResLabel" width="165">
-		R&#xE9;solution de l'affichage :
-	</text>
-	<text name="AspectRatioLabel1" tool_tip="largeur/hauteur">
-		Rapport hauteur/largeur :
-	</text>
+	<text name="DisplayResLabel" width="165">R&#xE9;solution de l'affichage :</text>
+	<text name="AspectRatioLabel1" tool_tip="largeur/hauteur">Rapport hauteur/largeur :</text>
 	<combo_box name="aspect_ratio" tool_tip="largeur/hauteur">
-		<combo_item name="4:3(StandardCRT)">
-			4:3 (Standard CRT)
-		</combo_item>
-		<combo_item name="5:4(1280x1024LCD)">
-			5:4 (1280 x 1024 LCD)
-		</combo_item>
-		<combo_item name="8:5(Widescreen)">
-			8:5 (&#xE9;cran large)
-		</combo_item>
-		<combo_item name="16:9(Widescreen)">
-			16:9 (plein &#xE9;cran)
-		</combo_item>
+		<combo_item name="4:3(StandardCRT)">4:3 (Standard CRT)</combo_item>
+		<combo_item name="5:4(1280x1024LCD)">5:4 (1280 x 1024 LCD)</combo_item>
+		<combo_item name="8:5(Widescreen)">8:5 (&#xE9;cran large)</combo_item>
+		<combo_item name="16:9(Widescreen)">16:9 (plein &#xE9;cran)</combo_item>
 	</combo_box>
-	<text name="text">
-		R&#xE9;solution d'affichage :
-	</text>
-	<text name="Fullscreen Aspect Ratio:">
-		Format de plein &#xE9;cran :
-	</text>
-	<text name="(width / height)">
-		(largeur / hauteur)
-	</text>
-	<text name="UI Size:">
-		Taille de l'IU :
-	</text>
-	<text name="(meters, lower is faster)">
-		(mètres, moins = plus rapide)
-	</text>
-	<text name="text2">
-		Options d'affichage :
-	</text>
-	<check_box label="Lancer Singularity dans une fen&#xEA;tre (non pas, PAR la fen&#xEA;tre)" name="windowed mode"/>
-	<button left="330" width="165" label="Param&#xE8;tres recommand&#xE9;s" tool_tip="Reset to recommended graphics settings" name="Defaults"/>
 	<check_box label="Auto-d&#xE9;tection du ratio" left="350" name="aspect_auto_detect"/>
-	<check_box label="Utiliser &#xE9;chelle de r&#xE9;solution ind&#xE9;pendante" name="ui_auto_scale"/>
-	<check_box label="Montrer l'avatar en vue subjective" name="avfp"/>
-	<spinner label="Distance d'affichage :" name="draw_distance"/>
-	<check_box label="Auto-detect ratio" name="aspect_auto_detect"/>
-
-  <tab_container name="graphics_tab">
-	<panel label="Main" name="Main">
-	<text bottom="330"  height="12" left="10" name="QualityText">Qualité / Perfs:</text>
-	<text bottom_delta="0"  height="12" left="125" name="FasterText">Rapidité</text>
-	<text bottom_delta="-16" height="12" left_delta="45" name="ShadersPrefText">Bas</text>
-	<text bottom_delta="0" height="12" left_delta="30" name="ShadersPrefText2">Medium</text>
-	<text bottom_delta="0" height="12" left_delta="52" name="ShadersPrefText3">Haut</text>
-	<text bottom_delta="0" height="12" left_delta="35" name="ShadersPrefText4">Ultra</text>
-	<text bottom_delta="16"  height="12"	left_delta="23" name="QualityText2">Qualité</text>
+ <tab_container name="graphics_tab">
+	<panel label="Menu" name="Main">
+	<text name="QualityText">Qualité / Perfs:</text>
+	<text left="125" name="FasterText">Rapidité</text>
+	<text left_delta="45" name="ShadersPrefText">Bas</text>
+	<text left_delta="30" name="ShadersPrefText2">Medium</text>
+	<text left_delta="52" name="ShadersPrefText3">Haut</text>
+	<text left_delta="35" name="ShadersPrefText4">Ultra</text>
+	<text name="QualityText2">Qualité</text>
 	<text name="QualityText2" visible="false"/>
 	<check_box label="Personnaliser" left="395" name="CustomSettings"/>
 	<text name="ShadersText">
@@ -93,26 +45,6 @@
 	<check_box label="Occlusion ambiante" name="UseSSAO"/>
 	<check_box label="Profondeur de champ" name="RenderDepthOfField"/>
 	<check_box label="Illumination globale (Experimental)" name="RenderDeferredGI" width="256"/>
-	<text  name="ReflectionDetailText" width="128">
-		Reflets :
-	</text>
-	<combo_box bottom_delta="-20" label="Reflection Detail" name="ReflectionDetailCombo">
-		<combo_item name="0">
-           Aucun
-           </combo_item>
-		<combo_item name="1">
-			Terrain et arbres
-		</combo_item>
-		<combo_item name="2">
-			Objets Statiques
-		</combo_item>
-		<combo_item name="3">
-			Avatars et objets
-		</combo_item>
-		<combo_item name="4">
-			Tout
-		</combo_item>
-	</combo_box>
   <text name="TerrainScaleText">Echelle du terrain:</text>
   <combo_box label="Echelle du terrain" name="TerrainScaleCombo">
     <combo_item name="Low">Faible</combo_item>
@@ -120,120 +52,77 @@
     <combo_item name="High">Haute</combo_item>
     <combo_item name="Ultra">Ultra</combo_item>
   </combo_box>
-  <text bottom_delta="-17" name="ShadowDetailText" width="128">
-    Ombres att&#xE9;nu&#xE9;es :
-  </text>
+  <text name="ShadowDetailText" width="128">Ombres att&#xE9;nu&#xE9;es :</text>
   <combo_box bottom_delta="-20" label="Shadow Detail" name="ShadowDetailCombo">
-    <combo_item name="0">
-      D&#xE9;sactiv&#xE9;
-    </combo_item>
-    <combo_item name="1">
-      Ombres solaires
-    </combo_item>
-    <combo_item name="2">
-      Ombres des projecteurs
-    </combo_item>
+    <combo_item name="0">D&#xE9;sactiv&#xE9;</combo_item>
+    <combo_item name="1">Ombres solaires</combo_item>
+    <combo_item name="2">Ombres des projecteurs</combo_item>
   </combo_box>
-	<text name="AvatarRenderingText">
-		Rendu de l'avatar :
-	</text>
+	<text  name="ReflectionDetailText" width="128">Reflets :</text>
+	<combo_box bottom_delta="-20" label="Reflection Detail" name="ReflectionDetailCombo">
+		<combo_item name="0">Aucun</combo_item>
+		<combo_item name="1">Terrain et arbres</combo_item>
+		<combo_item name="2">Objets Statiques</combo_item>
+		<combo_item name="3">Avatars et objets</combo_item>
+		<combo_item name="4">Tout</combo_item>
+	</combo_box>
+
 	<check_box label="Avatars &#xE9;loign&#xE9;s en 2D" name="AvatarImpostors"/>
 	<check_box label="Acc&#xE9;l&#xE9;ration du rendu" name="AvatarVertexProgram"/>
 	<check_box label="Mouvement des habits" name="AvatarCloth"/>
-	<text name="DrawDistanceMeterText1">
-		m
-	</text>
-	<text name="DrawDistanceMeterText2">
-		m
-	</text>
+	<text name="DrawDistanceMeterText1">m</text>
+	<text name="DrawDistanceMeterText2">m</text>
 	<slider label="Limite d'affichage :" name="DrawDistance"/>
 	<slider label="Nombre de particules max. :" label_width="143" name="MaxParticleCount"/>
+    <slider label="Avatars Max:" name="AvatarMaxVisible"/>
 	<slider label="Qualit&#xE9; post-traitement :" label_width="125" name="RenderPostProcess"/>
-	<text name="MeshDetailText">
-		D&#xE9;tails des rendus :
-	</text>
+	<text name="PostProcessText">Faible</text>
+	<text name="MeshDetailText">D&#xE9;tails des rendus :</text>
 	<slider label="  Objets :" name="ObjectMeshDetail"/>
 	<slider label="  Flexiprims :" name="FlexibleMeshDetail"/>
 	<slider label="  Arbres :" name="TreeMeshDetail"/>
 	<slider label="  Avatars :" name="AvatarMeshDetail"/>
 	<slider label="  Relief :" name="TerrainMeshDetail"/>
 	<slider label="  Ciel :" name="SkyMeshDetail"/>
-	<text name="PostProcessText">
-		Faible
-	</text>
-	<text name="ObjectMeshDetailText">
-		Faible
-	</text>
-	<text name="FlexibleMeshDetailText">
-		Faible
-	</text>
-	<text name="TreeMeshDetailText">
-		Faible
-	</text>
-	<text name="AvatarMeshDetailText">
-		Faible
-	</text>
-	<text name="TerrainMeshDetailText">
-		Faible
-	</text>
-	<text name="SkyMeshDetailText">
-		Faible
-	</text>
-	<text name="LightingDetailText">
-		Sources lumineuses :
-	</text>
-	<radio_group name="LightingDetailRadio">
-		<radio_item name="SunMoon">
-			Soleil et lune uniquement
-		</radio_item>
-		<radio_item name="LocalLights">
-			Lumi&#xE8;res de proximit&#xE9;
-		</radio_item>
-	</radio_group>
-	<text left="380" name="TerrainDetailText">
-		Rendu du terrain :
-	</text>
+	<text name="ObjectMeshDetailText">Faible</text>
+	<text name="FlexibleMeshDetailText">Faible</text>
+	<text name="TreeMeshDetailText">Faible</text>
+	<text name="AvatarMeshDetailText">Faible</text>
+	<text name="TerrainMeshDetailText">Faible</text>
+	<text name="SkyMeshDetailText">Faible</text>
+	<text left="380" name="TerrainDetailText">Rendu du terrain :</text>
 	<radio_group name="TerrainDetailRadio">
-		<radio_item name="0">
-			Faible
-		</radio_item>
-		<radio_item name="2">
-			Elev&#xE9;
-		</radio_item>
+	  <radio_item name="0">Faible</radio_item>
+	  <radio_item name="2">Elev&#xE9;</radio_item>
 	</radio_group>
   </panel>
 
   <panel name="Hardware" label="Configuration du mat&#xE9;riel">
-	<check_box bottom="-22" label="Filtre anisotrope (plus lent si activ&#xE9;)" left="5" name="ani"/>
-    <text bottom="-37" left="10" name="Antialiasing:">Antialiasing:</text>
-    <combo_box bottom="-41" label="Antialiasing" left="148" name="fsaa">
+	<check_box label="Filtre anisotrope (plus lent si activ&#xE9;)" name="ani"/>
+    <text name="Antialiasing:">Antialiasing:</text>
+    <combo_box label="Antialiasing" name="fsaa">
       <combo_item name="FSAADisabled">Disabled</combo_item>
       <combo_item name="2x">2x</combo_item>
       <combo_item name="4x">4x</combo_item>
       <combo_item name="8x">8x</combo_item>
       <combo_item name="16x">16x</combo_item>
     </combo_box>
-    <spinner bottom_delta="70" label="M&#xE9;moire graphique (MB):" label_width="138" left="10" name="GrapicsCardTextureMemory"
-     tool_tip="Taille de la m&#xE9;moire allou&#xE9;e aux textures. Par d&#xE9;faut, c&#x27;est celle de la carte graphique. La réduire peut am&#xE9;liorer les performances mais peut aussi rendre les textures floues." width="202"/>
-    <check_box bottom_delta="-25" label="Activer OpenGL Vertex Buffer Objects" left="5" name="vbo"
+    <spinner label="M&#xE9;moire graphique (MB):" name="GrapicsCardTextureMemory" tool_tip="Taille de la m&#xE9;moire allou&#xE9;e aux textures. Par d&#xE9;faut, c&#x27;est celle de la carte graphique. La réduire peut am&#xE9;liorer les performances mais peut aussi rendre les textures floues."/>
+    <check_box label="Activer OpenGL Vertex Buffer Objects" name="vbo"
      tool_tip="Sur un matériel moderne, cette option permet une meilleure performance. Par contre, sur un matériel plus ancien, les VBO sont souvent mal implémentés et peuvent causer des crashs lorsqu'ils sont activés."/>
-    <check_box bottom_delta="-18" label="Activer Streamed VBOs" left="14" name="vbo_stream"
+    <check_box label="Activer Streamed VBOs" name="vbo_stream"
      tool_tip="La performance peut être ameliorée si les VBO sont activés. Désactivé, on observe une meilleure performance pour certains processeurs AMD."/>
-    <check_box bottom_delta="-25" label="Activer la m&#xE9;moire tampon de la trame" left="5" name="fbo"
+    <check_box label="Activer la m&#xE9;moire tampon de la trame" name="fbo"
      tool_tip="Sur un matériel moderne, cette option permet une meilleure performance. Par contre, sur un matériel plus ancien, les VBO sont souvent mal implémentés et peuvent causer des crashs lorsqu'ils sont activés."/>
-    <spinner bottom="-42" label="Gamma:" label_width="138" left="250" name="gamma" width="202" tool_tip="(0 = défaut, valeur faible = plus lumineux)"/>
-    <spinner bottom_delta="70" label="Coefficient de Brouillard :" label_width="138" name="fog" width="202"/>
-    <text bottom_delta="-50" name="note">
+    <spinner label="Gamma:" name="gamma" tool_tip="(0 = défaut, valeur faible = plus lumineux)"/>
+    <spinner label="Coefficient de Brouillard :" name="fog"/>
+    <text name="note">
 Note: Le Gamma et le brouillard, sont inactifs
 quand les effets atmosphériques
 le sont également.
     </text>
   </panel>
  </tab_container>
-	<text name="resolution_format">
-		[RES_X] x [RES_Y]
-	</text>
-	<text name="aspect_ratio_text">
-		[NUM]:[DEN]
-	</text>
+	<string name="resolution_format">[RES_X] x [RES_Y]</string>
+	<string name="aspect_ratio_text">[NUM]:[DEN]</string>
 </panel>

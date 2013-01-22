@@ -61,6 +61,7 @@
 #include "llworld.h"
 #include "llui.h"
 #include "pipeline.h"
+#include "hippogridmanager.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -539,6 +540,9 @@ BOOL LLManipTranslate::handleHover(S32 x, S32 y, MASK mask)
 	if (gSavedSettings.getBOOL("LimitDragDistance"))
 	{
 		F32 max_drag_distance = gSavedSettings.getF32("MaxDragDistance");
+
+		if (gHippoGridManager->getConnectedGrid()->isAurora())
+			max_drag_distance = llmin(10000.f, max_drag_distance);
 
 		if (relative_move.magVecSquared() > max_drag_distance * max_drag_distance)
 		{

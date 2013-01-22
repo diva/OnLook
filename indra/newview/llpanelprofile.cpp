@@ -47,16 +47,7 @@ static const std::string PANEL_PICKS = "panel_picks";
 
 std::string getProfileURL(const std::string& agent_name)
 {
-	std::string url;
-
-	if (gHippoGridManager->getConnectedGrid()->isInProductionGrid())
-	{
-		url = gSavedSettings.getString("WebProfileURL");
-	}
-	else
-	{
-		url = gSavedSettings.getString("WebProfileNonProductionURL");
-	}
+	std::string url = gSavedSettings.getString("WebProfileURL");
 	LLSD subs;
 	subs["AGENT_NAME"] = agent_name;
 	url = LLWeb::expandURLSubstitutions(url,subs);

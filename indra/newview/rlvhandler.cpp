@@ -1054,14 +1054,6 @@ BOOL RlvHandler::setEnabled(BOOL fEnable)
 		RlvUIEnabler::getInstance();
 	}
 
-	// RELEASE-RLVa: LL defines CLIENT_MENU_NAME but we can't get to it from here so we need to keep those two in sync manually
-	LLMenuGL* pClientMenu = NULL;
-	if ( (gMenuBarView) && ((pClientMenu = gMenuBarView->getChildMenuByName("Advanced", FALSE)) != NULL) )
-	{
-		pClientMenu->setItemVisible("RLVa", m_fEnabled);
-		pClientMenu->setItemEnabled("RLVa", m_fEnabled);
-	}
-
 	return m_fEnabled;		// Return enabled/disabled state
 }
 

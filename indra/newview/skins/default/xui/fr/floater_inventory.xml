@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="Inventory" title="Inventaire">
 	<search_editor label="Saisir votre recherche ici" name="inventory search editor"/>
-  <button left="6" bottom_delta="-26" height="22" width="22" follows="left|top" halign="center"
-    label="" image_overlay="inv_collapse_all.tga" name="collapse_btn" mouse_opaque="true" font="SansSerif"
-    tool_tip="Collapse All" />
-   <button left="28" bottom_delta="0" height="22" width="22" follows="left|top" halign="center"
-    label="" image_overlay="inv_expand_all.tga" name="Inventory.ExpandAll" mouse_opaque="true" font="SansSerif"
-    tool_tip="Expand All"/>
- <text name="group_titles_textbox" halign="right" font="SansSerifSmall" follows="left|top"
-		height="16" left="43" bottom_delta="2" right="108">Filtre rapide</text>
+  <button name="collapse_btn" tool_tip="Collapse All" />
+   <button name="Inventory.ExpandAll" tool_tip="Expand All"/>
+   <button name="Inventory.ResetAll" tool_tip="Réinitialisation de l'inventaire : Nettoye les filtres et réduit l'inventaire"/>
 	<!-- Inventory Type Filter Labels -->
 	<string name="filter_type_all">TOUT</string>
 	<string name="filter_type_animation">Animations</string>
@@ -23,7 +18,7 @@
 	<string name="filter_type_texture">Textures</string>
 	<string name="filter_type_snapshot">Photos</string>
 	<string name="filter_type_custom">Personnalis&#xE9;</string>
-	<combo_box name="Quick Filter" label="Filtre Rapide" follows="left|top|right" height="20" left="110" right="-6" bottom_delta="0">
+	<combo_box name="Quick Filter" tool_tip="filtrer par genre">
 		<combo_item name="filter_type_all">TOUT</combo_item>
 		<separator />
 		<combo_item name="filter_type_animation">Animations</combo_item>
@@ -47,7 +42,6 @@
 	</tab_container>
 	<menu_bar name="Inventory Menu">
 		<menu label="Fichier" name="File">
-			<tearoff_menu label="~~~~~~~~~~~" name="~~~~~~~~~~~"/>
 			<menu_item_call label="Ouvrir" name="Open"/>
 			<menu_item_call label="Nouvelle fenêtre" name="New Window"/>
 			<menu_item_call label="Afficher les filtres" name="Show Filters"/>
@@ -57,7 +51,6 @@
 			<menu_item_call label="Rafraichir l'inventaire" name="Refresh Inventory"/>
 		</menu>
 		<menu label="Créer" name="Create">
-			<tearoff_menu label="~~~~~~~~~~~" name="~~~~~~~~~~~"/>
 			<menu_item_call label="Nouveau dossier" name="New Folder"/>
 			<menu_item_call label="Nouveau script" name="New Script"/>
 			<menu_item_call label="Nouvelle note" name="New Note"/>
@@ -79,9 +72,9 @@
 				<menu_item_call label="Nouveaux cheveux" name="New Hair"/>
 				<menu_item_call label="Nouveaux yeux" name="New Eyes"/>
 			</menu>
+			<menu_item_call label="Nouvel ensemble" name="New Outfit"/>
 		</menu>
 		<menu label="Trier" name="Sort">
-			<tearoff_menu label="~~~~~~~~~~~" name="~~~~~~~~~~~"/>
 			<menu_item_check label="Par nom" name="By Name"/>
 			<menu_item_check label="Par date" name="By Date"/>
 			<menu_item_check label="Trier les dossiers par nom" name="Folders Always By Name"/>
@@ -93,7 +86,6 @@
 			<menu_item_check label="par créateur" name="Item creatorr"/>
 		</menu>
 		<menu label="Filters" name="Filters">
-			<tearoff_menu label="~~~~~~~~~~~" name="~~~~~~~~~~~"/>
 			<menu_item_check label="Modifier actuel" name="Modify Current"/>
 			<menu_item_call label="Réinitialiser actuel" name="Reset Current"/>
 		</menu>

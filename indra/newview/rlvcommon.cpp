@@ -129,6 +129,8 @@ void RlvSettings::initClass()
 		if (gSavedSettings.controlExists(RLV_SETTING_AVATAROFFSET_Z))
 			gSavedSettings.getControl(RLV_SETTING_AVATAROFFSET_Z)->getSignal()->connect(boost::bind(&onChangedAvatarOffset, _2));
 
+		if (gSavedSettings.controlExists(RLV_SETTING_TOPLEVELMENU))
+			gSavedSettings.getControl(RLV_SETTING_TOPLEVELMENU)->getSignal()->connect(boost::bind(&onChangedMenuLevel));
 		fInitialized = true;
 	}
 }
@@ -155,6 +157,14 @@ bool RlvSettings::onChangedAvatarOffset(const LLSD& sdValue)
 	gAgent.sendAgentSetAppearance();
 	return true;
 }
+// Checked: 2011-08-16 (RLVa-1.4.0b) | Added: RLVa-1.4.0b
+bool RlvSettings::onChangedMenuLevel()
+{
+	rlvMenuToggleVisible();
+	return true;
+}
+
+// Checked: 2010-02-27 (RLVa-1.2.0a) | Added: RLVa-1.1.0i
 bool RlvSettings::onChangedSettingBOOL(const LLSD& sdValue, bool* pfSetting)
 {
 	if (pfSetting)
@@ -524,6 +534,36 @@ void rlvMenuToggleEnabled(void*)
 	LLNotificationsUtil::add("GenericAlert", args);
 	
 	return;
+}
+
+// Checked: 2011-08-16 (RLVa-1.4.0b) | Added: RLVa-1.4.0b
+void rlvMenuToggleVisible()
+{
+	bool fTopLevel = rlvGetSetting(RLV_SETTING_TOPLEVELMENU, true);
+	bool fRlvEnabled = rlv_handler_t::isEnabled();
+
+	//LLMenuGL* pRLVaMenuMain = gMenuBarView->getChildMenuByName("RLVa Main", FALSE);
+	// RELEASE-RLVa: LL defines CLIENT_MENU_NAME but we can't get to it from here so we need to keep those two in sync manually
+	LLMenuGL* pAdvancedMenu = gMenuBarView->getChildMenuByName("Advanced", FALSE);
+	//LLMenuGL* pRLVaMenuEmbed = pAdvancedMenu->getChildMenuByName("RLVa Embedded", FALSE);
+
+	gMenuBarView->setItemVisible("RLVa Main", (fRlvEnabled) && (fTopLevel));
+	if (!pAdvancedMenu) return;
+	pAdvancedMenu->setItemVisible("RLVa Embedded", (fRlvEnabled) && (!fTopLevel));
+
+	/* Singu Note: In the future when we have advanced menu in xml, we will want to use this to move the menu.
+	if ( (rlv_handler_t::isEnabled()) && (pRLVaMenuMain) && (pRLVaMenuEmbed) &&
+		 ( ((fTopLevel) && (1 == pRLVaMenuMain->getItemCount())) || ((!fTopLevel) && (1 == pRLVaMenuEmbed->getItemCount())) ) )
+	{
+		LLMenuGL* pMenuFrom = (fTopLevel) ? pRLVaMenuEmbed : pRLVaMenuMain;
+		LLMenuGL* pMenuTo = (fTopLevel) ? pRLVaMenuMain : pRLVaMenuEmbed;
+		while (LLMenuItemGL* pItem = pMenuFrom->getItem(1))
+		{
+			pMenuFrom->removeChild(pItem);
+			pMenuTo->addChild(pItem);
+			pItem->updateBranchParent(pMenuTo);
+		}
+	}*/
 }
 
 bool RlvEnableIfNot::handleEvent(LLPointer<LLEvent>, const LLSD& userdata)
