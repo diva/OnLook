@@ -86,6 +86,9 @@
 		</menu_item_call>
 	</pie_menu>
   <pie_menu label="Tools &gt;" name="Tools &gt;">
+      <menu_item_call enabled="true" label="Reload" mouse_opaque="true" name="Reload Textures">
+          <on_click function="Avatar.ReloadTextures" />
+      </menu_item_call>
 	  <menu_item_call enabled="true" hidden="false" label="Anims..." mouse_opaque="true"
 						   name="Anims...">
 		  <on_click function="Avatar.Anims" />

@@ -62,6 +62,7 @@
 #include "llviewernetwork.h"
 #include "llmeshrepository.h" //for LLMeshRepository::sBytesReceived
 #include "sgmemstat.h"
+#include "llviewertexlayer.h"
 
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy viewerStatsResponder_timeout;
@@ -525,7 +526,7 @@ void output_statistics(void*)
 	llinfos << "Avatar Memory (partly overlaps with above stats):" << llendl;
 	LLTexLayerStaticImageList::getInstance()->dumpByteCount();
 	LLVOAvatarSelf::dumpScratchTextureByteCount();
-	LLTexLayerSetBuffer::dumpTotalByteCount();
+	LLViewerTexLayerSetBuffer::dumpTotalByteCount();
 	LLVOAvatarSelf::dumpTotalLocalTextureByteCount();
 	LLTexLayerParamAlpha::dumpCacheByteCount();
 	LLVOAvatar::dumpBakedStatus();
@@ -703,18 +704,19 @@ class ViewerStatsResponder : public LLHTTPClient::ResponderWithResult
 public:
     ViewerStatsResponder() { }
 
-    void error(U32 statusNum, const std::string& reason)
+    /*virtual*/ void error(U32 statusNum, const std::string& reason)
     {
 		llinfos << "ViewerStatsResponder::error " << statusNum << " "
 				<< reason << llendl;
     }
 
-    void result(const LLSD& content)
+    /*virtual*/ void result(const LLSD& content)
     {
 		llinfos << "ViewerStatsResponder::result" << llendl;
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerStatsResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerStatsResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "ViewerStatsResponder"; }
 };
 
 /*
@@ -873,7 +875,7 @@ void send_stats()
 	llinfos << "Misc Stats: int_1: " << misc["int_1"] << " int_2: " << misc["int_2"] << llendl;
 	llinfos << "Misc Stats: string_1: " << misc["string_1"] << " string_2: " << misc["string_2"] << llendl;
 
-	body["DisplayNamesEnabled"] = gSavedSettings.getS32("PhoenixNameSystem") > 0;
+	body["DisplayNamesEnabled"] = gSavedSettings.getS32("PhoenixNameSystem") == 1 || gSavedSettings.getS32("PhoenixNameSystem") == 2;
 	body["DisplayNamesShowUsername"] = gSavedSettings.getS32("PhoenixNameSystem") == 1;
 	
 	body["MinimalSkin"] = false;

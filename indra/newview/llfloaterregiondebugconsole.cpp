@@ -80,12 +80,9 @@ namespace
 	class AsyncConsoleResponder : public LLHTTPClient::ResponderIgnoreBody
 	{
 	public:
-		/* virtual */
-		void error(U32 status, const std::string& reason)
-		{
-			sConsoleReplySignal(UNABLE_TO_SEND_COMMAND);
-		}
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return asyncConsoleResponder_timeout; }
+		/*virtual*/ void error(U32 status, const std::string& reason) { sConsoleReplySignal(UNABLE_TO_SEND_COMMAND); }
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return asyncConsoleResponder_timeout; }
+		/*virtual*/ char const* getName(void) const { return "AsyncConsoleResponder"; }
 	};
 
 	class ConsoleResponder : public LLHTTPClient::ResponderWithResult
@@ -95,8 +92,7 @@ namespace
 		{
 		}
 
-		/*virtual*/
-		void error(U32 status, const std::string& reason)
+		/*virtual*/ void error(U32 status, const std::string& reason)
 		{
 			if (mOutput)
 			{
@@ -106,8 +102,7 @@ namespace
 			}
 		}
 
-		/*virtual*/
-		void result(const LLSD& content)
+		/*virtual*/ void result(const LLSD& content)
 		{
 			if (mOutput)
 			{
@@ -116,7 +111,8 @@ namespace
 			}
 		}
 
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return consoleResponder_timeout; }
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return consoleResponder_timeout; }
+		/*virtual*/ char const* getName(void) const { return "ConsoleResponder"; }
 
 		LLTextEditor * mOutput;
 	};
@@ -193,11 +189,6 @@ BOOL LLFloaterRegionDebugConsole::postBuild()
 void LLFloaterRegionDebugConsole::onClose(bool app_quitting)
 {
 	LLFloater::onClose(app_quitting);
-
-	if (!app_quitting)
-	{
-		delete this;
-	}
 }
 
 void LLFloaterRegionDebugConsole::onInput(LLUICtrl* ctrl, const LLSD& param)

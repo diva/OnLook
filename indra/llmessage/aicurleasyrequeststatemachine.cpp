@@ -40,7 +40,8 @@ enum curleasyrequeststatemachine_state_type {
   AICurlEasyRequestStateMachine_timedOut,	// This must be smaller than the rest, so they always overrule.
   AICurlEasyRequestStateMachine_finished,
   AICurlEasyRequestStateMachine_removed,	// The removed states must be largest two, so they are never ignored.
-  AICurlEasyRequestStateMachine_removed_after_finished
+  AICurlEasyRequestStateMachine_removed_after_finished,
+  AICurlEasyRequestStateMachine_bad_file_descriptor
 };
 
 char const* AICurlEasyRequestStateMachine::state_str_impl(state_type run_state) const
@@ -54,6 +55,7 @@ char const* AICurlEasyRequestStateMachine::state_str_impl(state_type run_state) 
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_finished);
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_removed);
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_removed_after_finished);
+	AI_CASE_RETURN(AICurlEasyRequestStateMachine_bad_file_descriptor);
   }
   return "UNKNOWN STATE";
 }
@@ -93,6 +95,24 @@ void AICurlEasyRequestStateMachine::removed_from_multi_handle(AICurlEasyRequest_
 										// a BufferedCurlEasyRequest with a still active Responder.
   set_state(mFinished ? AICurlEasyRequestStateMachine_removed_after_finished : AICurlEasyRequestStateMachine_removed);
 }
+
+// CURL-THREAD
+void AICurlEasyRequestStateMachine::bad_file_descriptor(AICurlEasyRequest_wat&)
+{
+  if (!mFinished)
+  {
+	mFinished = true;
+	set_state(AICurlEasyRequestStateMachine_bad_file_descriptor);
+  }
+}
+
+#ifdef SHOW_ASSERT
+// CURL-THREAD
+void AICurlEasyRequestStateMachine::queued_for_removal(AICurlEasyRequest_wat&)
+{
+  llassert(mFinished || mTimedOut);		// See AICurlEasyRequestStateMachine::removed_from_multi_handle
+}
+#endif
 
 void AICurlEasyRequestStateMachine::multiplex_impl(void)
 {
@@ -206,6 +226,11 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
 		finish();
 
 	  break;
+	}
+	case AICurlEasyRequestStateMachine_bad_file_descriptor:
+	{
+	  AICurlEasyRequest_wat(*mCurlEasyRequest)->bad_socket();
+	  abort();
 	}
   }
 }

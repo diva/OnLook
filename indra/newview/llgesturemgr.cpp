@@ -342,7 +342,7 @@ void LLGestureMgr::deactivateGesture(const LLUUID& item_id)
 
 	gAgent.sendReliableMessage();
 
-	LLAppearanceMgr::instance().removeCOFItemLinks(base_item_id, false);
+	LLAppearanceMgr::instance().removeCOFItemLinks(base_item_id);
 
 	notifyObservers();
 }
@@ -792,7 +792,7 @@ void LLGestureMgr::update()
 
 			if (gesture->mDoneCallback)
 			{
-				gesture->mDoneCallback(gesture, gesture->mCallbackData);
+				gesture->mDoneCallback(gesture);
 
 				// callback might have deleted gesture, can't
 				// rely on this pointer any more
@@ -1299,7 +1299,7 @@ void LLGestureMgr::stopGesture(LLMultiGesture* gesture)
 
 	if (gesture->mDoneCallback)
 	{
-		gesture->mDoneCallback(gesture, gesture->mCallbackData);
+		gesture->mDoneCallback(gesture);
 
 		// callback might have deleted gesture, can't
 		// rely on this pointer any more

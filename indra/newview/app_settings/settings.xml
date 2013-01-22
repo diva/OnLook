@@ -9,6 +9,17 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+    <key>UseNewTargetOmegaCode</key>
+    <map>
+      <key>Comment</key>
+      <string>Enable target omega code from Viewer 3.4</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
 	<key>SGIgnoreSimulatorCameraConstraints</key>
 	<map>
 	  <key>Comment</key>
@@ -90,67 +101,11 @@
 	<key>Value</key>
 	<integer>0</integer>
   </map>
-
-  <key>WaterPresetName</key>
-  <map>
-	<key>Comment</key>
-	<string>Water preset to use. May be superseded by region settings</string>
-	<key>Persist</key>
-	<integer>1</integer>
-	<key>Type</key>
-	<string>String</string>
-	<key>Value</key>
-	<integer>Default</integer>
-  </map>
-  <key>SkyPresetName</key>
-  <map>
-	<key>Comment</key>
-	<string>Sky preset to use. May be superseded by region settings</string>
-	<key>Persist</key>
-	<integer>1</integer>
-	<key>Type</key>
-	<string>String</string>
-	<key>Value</key>
-	<integer>Default</integer>
-  </map>
-  <key>DayCycleName</key>
-  <map>
-	<key>Comment</key>
-	<string>Day Cycle to use. May be superseded by region settings</string>
-	<key>Persist</key>
-	<integer>1</integer>
-	<key>Type</key>
-	<string>String</string>
-	<key>Value</key>
-	<integer>Default</integer>
-  </map>
-  <key>UseEnvironmentFromRegion</key>
-  <map>
-	<key>Comment</key>
-	<string>Choose whether to use the region's environment settings, or override them with the local settings.</string>
-	<key>Persist</key>
-	<integer>1</integer>
-	<key>Type</key>
-	<string>Boolean</string>
-	<key>Value</key>
-	<integer>1</integer>
-  </map>
   <key>UseEnvironmentFromRegionAlways</key>
   <map>
 	<key>Comment</key>
 	<string>Choose whether to always use the region's environment settings when they are available
 			or to allow the manual selections to remain unchanging.</string>
-	<key>Persist</key>
-	<integer>1</integer>
-	<key>Type</key>
-	<string>Boolean</string>
-	<key>Value</key>
-	<integer>1</integer>
-  </map>
-  <key>UseDayCycle</key>
-  <map>
-	<key>Comment</key>
-	<string>Whether to use use a day cycle or a fixed sky.</string>
 	<key>Persist</key>
 	<integer>1</integer>
 	<key>Type</key>
@@ -692,11 +647,55 @@
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
-	</map>
+    </map>
+    <key>LiruAddNotReplace</key>
+    <map>
+      <key>Comment</key>
+      <string>Add clothing and attachments instead of having them replace the currently worn or attached item at their destination.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LiruContinueFlyingOnUnsit</key>
+    <map>
+      <key>Comment</key>
+      <string>Fly after standing up, if you were flying when you sat down</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LiruFlyAfterTeleport</key>
+    <map>
+      <key>Comment</key>
+      <string>Fly after teleports</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LiruNoTransactionClutter</key>
+    <map>
+      <key>Comment</key>
+      <string>Use notifytips for transactions instead of notifys, this way they do not collect in the top right of the screen.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>LiruSensibleARC</key>
     <map>
       <key>Comment</key>
-	  <string>Use the old-style way to calculate Avatar Render Cost.
+      <string>Use the old-style way to calculate Avatar Render Cost.
 Found in Advanced->Rendering->Info Displays</string>
       <key>Persist</key>
       <integer>1</integer>
@@ -704,7 +703,95 @@ Found in Advanced->Rendering->Info Displays</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>1</integer>
-	</map>
+    </map>
+    <key>ContactsUseHorizontalButtons</key>
+    <map>
+      <key>Comment</key>
+	  <string>Whether or not groups and friends lists use horizontal buttons at the bottom of the panel or vertical ones on the right, requires a restart.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>UseConciseIMButtons</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not IMs use buttons concisely on the same line as the name of the receiver, changes apply to new IMs only.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>UseConciseGroupChatButtons</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not group chats use buttons concisely on the same line as the group name, changes apply to new group chats only.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>UseConciseConferenceButtons</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not conferences use buttons concisely on the same line as the name of the conference, changes apply to new conferences only.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>ShowLocalChatFloaterBar</key>
+    <map>
+      <key>Comment</key>
+	  <string>Whether or not local chat should have an input bar, requires a restart.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>OtherChatsTornOff</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, chats other than local chat open torn off of the Communicate window.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>OtherChatsTornOffAndMinimized</key>
+    <map>
+      <key>Comment</key>
+	  <string>When this and OtherChatsTornOff are true, new chats open torn off and minimized.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>CommunicateSpecificShortcut</key>
+    <map>
+      <key>Comment</key>
+	  <string>When true, the keyboard shortcut for Communicate will not bring up the torn off Friends List.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>MarketImporterUpdateFreq</key>
     <map>
       <key>Comment</key>
@@ -799,6 +886,28 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>AnnounceSnapshots</key>
+    <map>
+      <key>Comment</key>
+      <string>Announce if someone nearby has taken a snapshot in chat (Won't work on people who hide/quiet snapshots)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AnnounceStreamMetadata</key>
+    <map>
+      <key>Comment</key>
+      <string>Announce the metadata of the track playing, in chat, during streams.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>InventorySortOrder</key>
     <map>
       <key>Comment</key>
@@ -864,6 +973,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>TurnAroundWhenWalkingBackwards</key>
+    <map>
+      <key>Comment</key>
+      <string>Turn your avatar around to face the camera while walking backwards.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
     </map>
     <key>EmeraldBoobMass</key>
     <map>
@@ -1761,6 +1881,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>AgentAppearanceServiceURL</key>
+    <map>
+      <key>Comment</key>
+      <string>Current Session Agent Appearance Service URL</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string></string>
+    </map>
     <key>AlertedUnsupportedHardware</key>
     <map>
       <key>Comment</key>
@@ -2322,6 +2453,28 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>2</integer>
     </map>
+    <key>AvatarRotateThresholdSlow</key>
+    <map>
+      <key>Comment</key>
+      <string>Angle between avatar facing and camera facing at which avatar turns to face same direction as camera, when moving slowly (degrees)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <integer>60</integer>
+    </map>  
+    <key>AvatarRotateThresholdFast</key>
+    <map>
+      <key>Comment</key>
+      <string>Angle between avatar facing and camera facing at which avatar turns to face same direction as camera, when moving fast (degrees)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <integer>2</integer>
+    </map>  
     <key>AvatarBakedTextureUploadTimeout</key>
     <map>
       <key>Comment</key>
@@ -2494,14 +2647,25 @@ This should be as low as possible, but too low may break functionality</string>
     <key>BlockAvatarAppearanceMessages</key>
     <map>
       <key>Comment</key>
-      <string>Ignore's appearance messages (for simulating Ruth)</string>
+      <string>Ignores appearance messages (for simulating Ruth)</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>0</integer>
-    </map>
+            <integer>0</integer>
+        </map>
+    <key>BlockSomeAvatarAppearanceVisualParams</key>
+        <map>
+        <key>Comment</key>
+            <string>Drop around 50% of VisualParam occurances in appearance messages (for simulating Ruth)</string>
+        <key>Persist</key>
+            <integer>1</integer>
+        <key>Type</key>
+            <string>Boolean</string>
+        <key>Value</key>
+            <integer>0</integer>
+        </map>
     <key>BrowserProxyAddress</key>
     <map>
       <key>Comment</key>
@@ -4383,6 +4547,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <string />
     </map>
+  <key>DebugAvatarAppearanceMessage</key>
+  <map>
+    <key>Comment</key>
+    <string>Dump a bunch of XML files when handling appearance messages</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
 	<key>DebugAvatarRezTime</key>
 	<map>
 		<key>Comment</key>
@@ -4398,6 +4573,17 @@ This should be as low as possible, but too low may break functionality</string>
   <map>
     <key>Comment</key>
     <string>Display time for loading avatar local textures.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>DebugAvatarCompositeBaked</key>
+  <map>
+    <key>Comment</key>
+    <string>Colorize avatar meshes based on baked/composite state.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -4507,7 +4693,7 @@ This should be as low as possible, but too low may break functionality</string>
     <key>DebugShowTime</key>
     <map>
       <key>Comment</key>
-      <string>Show depth buffer contents</string>
+      <string>Show time info</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -5758,6 +5944,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>SecondsInLog</key>
+    <map>
+      <key>Comment</key>
+      <string>TRUE to add seconds to timestamps for Log</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>FloaterAboutRect</key>
     <map>
       <key>Comment</key>
@@ -6004,6 +6201,22 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
       </array>
     </map>
+    <key>FloaterChatBarlessRect</key>
+    <map>
+      <key>Comment</key>
+	  <string>Rectangle for chat history without input bar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>172</integer>
+        <integer>500</integer>
+        <integer>0</integer>
+      </array>
+    </map>
     <key>FloaterClothingRect</key>
     <map>
       <key>Comment</key>
@@ -6023,7 +6236,23 @@ This should be as low as possible, but too low may break functionality</string>
     <key>FloaterContactsRect</key>
     <map>
       <key>Comment</key>
-      <string>Rectangle for chat history</string>
+      <string>Rectangle for contacts floater</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>390</integer>
+        <integer>395</integer>
+        <integer>0</integer>
+      </array>
+    </map>
+    <key>FloaterContactsHorizRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for contacts floater in horizontal mode</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -6065,6 +6294,22 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
         <integer>646</integer>
         <integer>275</integer>
+        <integer>0</integer>
+      </array>
+    </map>
+    <key>FloaterDebugSettingsRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for the Debug Settings floater</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>300</integer>
+        <integer>245</integer>
         <integer>0</integer>
       </array>
     </map>
@@ -6274,6 +6519,160 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
       </array>
     </map>
+    <key>RadarColumnMarkWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>Width for radar's mark column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>12</integer>
+    </map>
+    <key>RadarColumnPositionWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>Width for radar's position column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>60</integer>
+    </map>
+    <key>RadarColumnAltitudeWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>Width for radar's altitude column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>48</integer>
+    </map>
+    <key>RadarColumnActivityWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>Width for radar's activity column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>24</integer>
+    </map>
+    <key>RadarColumnAgeWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>Width for radar's age column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>45</integer>
+    </map>
+    <key>RadarColumnTimeWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>Width for radar's time column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>52</integer>
+    </map>
+    <key>RadarColumnNameWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>Width for radar's name column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>80</integer>
+    </map>
+    <key>RadarColumnMarkHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's mark column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>RadarColumnPositionHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's position column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>RadarColumnAltitudeHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's altitude column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>RadarColumnActivityHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's activity column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>RadarColumnAgeHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's age column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>RadarColumnTimeHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's time column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>RadarColumnClientHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's client column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>RadarKeepOpen</key>
     <map>
       <key>Comment</key>
@@ -6340,6 +6739,28 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>RadarAlertAge</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether the radar emits chat alerts for avatars younger than AvatarAgeAlertDays appearing.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AvatarAgeAlertDays</key>
+    <map>
+      <key>Comment</key>
+      <string>Age below which avatars will be made known to you</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>3</integer>
+    </map>
     <key>RadarChatAlerts</key>
     <map>
       <key>Comment</key>
@@ -6354,7 +6775,18 @@ This should be as low as possible, but too low may break functionality</string>
     <key>RadarChatKeys</key>
     <map>
       <key>Comment</key>
-      <string>Enable private chat alerts for avatars entering the region</string>
+      <string>Enable alerting scripts about avatars detected by the radar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>RadarChatKeysStopAsking</key>
+    <map>
+      <key>Comment</key>
+      <string>Do not ask if RadarChatKeys should be enabled when a script requests for the radar's keys.</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -6490,6 +6922,22 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
       </array>
     </map>
+    <key>FloaterOutboxRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for merchant outbox window</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+		<integer>0</integer>
+		<integer>342</integer>
+		<integer>310</integer>
+		<integer>52</integer>
+      </array>
+    </map>
     <key>FloaterPayRectB</key>
     <map>
       <key>Comment</key>
@@ -6567,6 +7015,38 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
         <integer>200</integer>
         <integer>200</integer>
+        <integer>400</integer>
+      </array>
+    </map>
+    <key>FloaterSnapshotFeedRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for snapshot feed window</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>200</integer>
+        <integer>200</integer>
+        <integer>400</integer>
+      </array>
+    </map>
+    <key>FloaterSnapshotPostcardRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for snapshot postcard window</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>346</integer>
+        <integer>450</integer>
         <integer>400</integer>
       </array>
     </map>
@@ -7602,6 +8082,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <real>1.0</real>
     </map>
+    <key>InventoryDebugSimulateOpFailureRate</key>
+    <map>
+      <key>Comment</key>
+        <string>Rate at which we simulate failures of copy/link requests in some operations</string>
+      <key>Persist</key>
+        <integer>1</integer>
+      <key>Type</key>
+        <string>F32</string>
+      <key>Value</key>
+        <real>0.0</real>
+    </map>
     <key>InventoryDisplayInbox</key>
     <map>
         <key>Comment</key>
@@ -7866,17 +8357,6 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
         <integer>64</integer>
 	  </map>
-    <key>KeepAspectForSnapshot</key>
-    <map>
-      <key>Comment</key>
-      <string>Use full window when taking snapshot, regardless of requested image size</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
     <key>LandBrushSize</key>
     <map>
       <key>Comment</key>
@@ -8047,6 +8527,50 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <string>0.0.0</string>
     </map>
+    <key>LastSnapshotToFeedAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>The aspect ratio spinner value for snapshots uploaded to my.secondlife.com</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <integer>1.33333</integer>
+    </map>
+    <key>LastSnapshotToFeedHeight</key>
+    <map>
+      <key>Comment</key>
+      <string>The height of the last my.secondlife.com feed snapshot, in px</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>525</integer>
+    </map>
+    <key>LastSnapshotToFeedWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>The width of the last my.secondlife.com feed snapshot, in px</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>700</integer>
+    </map>
+    <key>LastSnapshotToEmailAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>The aspect ratio spinner value for snapshots sent by email</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>LastSnapshotToEmailHeight</key>
     <map>
       <key>Comment</key>
@@ -8069,6 +8593,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>1024</integer>
     </map>
+    <key>LastSnapshotToDiskAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>The aspect ratio spinner value for snapshots written to disk</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>LastSnapshotToDiskHeight</key>
     <map>
       <key>Comment</key>
@@ -8090,6 +8625,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>S32</string>
       <key>Value</key>
       <integer>1024</integer>
+    </map>
+    <key>LastSnapshotToInventoryAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>The aspect ratio spinner value for snapshots uploaded to inventory</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <integer>0</integer>
     </map>
     <key>LastSnapshotToInventoryHeight</key>
     <map>
@@ -8121,6 +8667,17 @@ This should be as low as possible, but too low may break functionality</string>
       <integer>1</integer>
       <key>Type</key>
       <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>SnapshotFeedAddLocation</key>
+    <map>
+      <key>Comment</key>
+      <string>Include your location in your uploads to profile feed.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
@@ -8322,17 +8879,6 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <real>20.0</real>
     </map>
-    <key>MapServerURL</key>
-    <map>
-      <key>Comment</key>
-      <string>World map URL template for locating map tiles</string>
-      <key>Persist</key>
-      <integer>0</integer>
-      <key>Type</key>
-      <string>String</string>
-      <key>Value</key>
-      <string>http://map.secondlife.com.s3.amazonaws.com/</string>
-    </map>
     <key>UseWebMapTiles</key>
     <map>
       <key>Comment</key>
@@ -8365,6 +8911,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>F32</string>
       <key>Value</key>
       <real>128.0</real>
+    </map>
+    <key>MapServerURL</key>
+    <map>
+      <key>Comment</key>
+      <string>World map URL template for locating map tiles</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>http://map.secondlife.com.s3.amazonaws.com/</string>
     </map>
     <key>MapShowAgentCount</key>
     <map>
@@ -9894,17 +10451,6 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
       </array>
     </map>
-    <key>SaveScriptsAsMono</key>
-    <map>
-      <key>Comment</key>
-      <string>When set to TRUE, save scripts in inventory as Mono scripts instead of LSL2</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
     <key>PreviewSoundRect</key>
     <map>
       <key>Comment</key>
@@ -10163,6 +10709,18 @@ This should be as low as possible, but too low may break functionality</string>
     <integer>128</integer>
   </map>
 
+    <key>OctreeReserveNodeCapacity</key>
+    <map>
+      <key>Comment</key>
+      <string>Default number of elements to pre-allocate for in a single octree node</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>4</integer>
+    </map>    
+    
   <key>OctreeStaticObjectSizeFactor</key>
   <map>
     <key>Comment</key>
@@ -10421,6 +10979,20 @@ This should be as low as possible, but too low may break functionality</string>
     <key>Value</key>
     <integer>0</integer>
   </map>
+    <key>RenderPerformanceTest</key>
+    <map>
+      <key>Comment</key>
+            <string>
+                Disable rendering of everything but in-world content for
+                performance testing
+</string>
+      <key>Persist</key>
+      <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
    
   <key>RenderLocalLights</key>
   <map>
@@ -10536,7 +11108,7 @@ This should be as low as possible, but too low may break functionality</string>
     <key>Type</key>
     <string>F32</string>
     <key>Value</key>
-    <real>500.0</real>
+    <real>1500.0</real>
   </map>
   <key>RenderSSAOMaxScale</key>
   <map>
@@ -10547,7 +11119,7 @@ This should be as low as possible, but too low may break functionality</string>
     <key>Type</key>
     <string>U32</string>
     <key>Value</key>
-    <integer>200</integer>
+    <integer>250</integer>
   </map>
   <key>RenderSSAOFactor</key>
   <map>
@@ -10558,19 +11130,19 @@ This should be as low as possible, but too low may break functionality</string>
     <key>Type</key>
     <string>F32</string>
     <key>Value</key>
-    <real>0.30</real>
+    <real>5.0</real>
   </map>
   <key>RenderSSAOEffect</key>
   <map>
     <key>Comment</key>
-    <string>Multiplier for (1) value and (2) saturation (HSV definition), for areas which are totally occluded.  Blends with original color for partly-occluded areas.  (Third component is unused.)</string>
+    <string>Multiplier for (1) value for areas which are totally occluded.  Blends with original color for partly-occluded areas.  (Third component is unused.)</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
     <string>Vector3</string>
     <key>Value</key>
     <array>
-      <real>0.80</real>
+      <real>0.50</real>
       <real>1.00</real>
       <real>0.00</real>
     </array>
@@ -10847,6 +11419,18 @@ This should be as low as possible, but too low may break functionality</string>
     <real>0</real>
   </map>
 
+  <key>RenderDepthPrePass</key>
+  <map>
+    <key>Comment</key>
+    <string>EXPERIMENTAL: Prime the depth buffer with simple prim geometry before rendering with textures.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  
   <key>RenderDepthOfField</key>
   <map>
     <key>Comment</key>
@@ -11157,7 +11741,7 @@ This should be as low as possible, but too low may break functionality</string>
     <string>Vector3</string>
     <key>Value</key>
     <array>
-      <real>3.0</real>
+      <real>1.0</real>
       <real>2.0</real>
       <real>0.0</real>
     </array>
@@ -11172,7 +11756,7 @@ This should be as low as possible, but too low may break functionality</string>
     <key>Type</key>
     <string>F32</string>
     <key>Value</key>
-    <real>1.4</real>
+    <real>3.0</real>
   </map>
   <key>RenderShadowBlurSamples</key>
   <map>
@@ -11469,6 +12053,28 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>DisableAllRenderTypes</key>
+    <map>
+      <key>Comment</key>
+      <string>Disables all rendering types.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>DisableAllRenderFeatures</key>
+    <map>
+      <key>Comment</key>
+      <string>Disables all rendering features.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>RenderHUDInSnapshot</key>
     <map>
       <key>Comment</key>
@@ -11644,17 +12250,6 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>1</integer>
-    </map>
-    <key>ReSit</key>
-    <map>
-      <key>Comment</key>
-      <string>Sit again if unsat</string>
-      <key>Persist</key>
-      <integer>0</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
     </map>
     <key>SpecifiedChannel</key>
     <map>
@@ -11981,7 +12576,7 @@ This should be as low as possible, but too low may break functionality</string>
     <key>RenderUseVAO</key>
     <map>
       <key>Comment</key>
-      <string>Use GL Vertex Array Objects</string>
+      <string>[EXPERIMENTAL] Use GL Vertex Array Objects</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -11989,6 +12584,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+  <key>RenderUseTransformFeedback</key>
+  <map>
+    <key>Comment</key>
+    <string>[EXPERIMENTAL] Use transform feedback shaders for LoD updates</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
     <key>RenderVBOMappingDisable</key>
     <map>
       <key>Comment</key>
@@ -13388,6 +13994,28 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>SnapshotFeedLastAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>Take next feed snapshot at this aspect</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>SnapshotFeedLastResolution</key>
+    <map>
+      <key>Comment</key>
+      <string>Take next feed snapshot at this resolution</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>SnapshotFormat</key>
     <map>
       <key>Comment</key>
@@ -13399,12 +14027,45 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>SnapshotLayerType</key>
+    <map>
+      <key>Comment</key>
+      <string>Save snapshots in this format (0 = Colors, 1 = Depth)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>SnapshotLocalLastAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>Take next local snapshot at this aspect</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>SnapshotLocalLastResolution</key>
     <map>
       <key>Comment</key>
       <string>Take next local snapshot at this resolution</string>
       <key>Persist</key>
       <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>SnapshotPostcardLastAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>Take next postcard snapshot at this aspect</string>
+      <key>Persist</key>
+      <integer>0</integer>
       <key>Type</key>
       <string>S32</string>
       <key>Value</key>
@@ -13432,6 +14093,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>75</integer>
     </map>
+    <key>SnapshotTextureLastAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>Take next texture snapshot at this aspect</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>SnapshotTextureLastResolution</key>
     <map>
       <key>Comment</key>
@@ -13440,6 +14112,17 @@ This should be as low as possible, but too low may break functionality</string>
       <integer>1</integer>
       <key>Type</key>
       <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>SnapshotOpenFreezeTime</key>
+    <map>
+      <key>Comment</key>
+      <string>When opening the snapshot floater, immediately freeze time.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
@@ -13700,6 +14383,72 @@ This should be as low as possible, but too low may break functionality</string>
       <string>U32</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>TextureFetchUpdateHighPriority</key>
+    <map>
+      <key>Comment</key>
+      <string>Number of high priority textures to update per frame</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>32</integer>
+    </map>
+    <key>TextureFetchUpdateMaxMediumPriority</key>
+    <map>
+      <key>Comment</key>
+      <string>Maximum number of medium priority textures to update per frame</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>256</integer>
+    </map>
+    <key>TextureFetchUpdateMinMediumPriority</key>
+    <map>
+      <key>Comment</key>
+      <string>Minimum number of medium priority textures to update per frame</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>32</integer>
+    </map>
+    <key>TextureFetchUpdatePriorityThreshold</key>
+    <map>
+      <key>Comment</key>
+      <string>Threshold under which textures will be considered too low priority and skipped for update</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <integer>0.0</integer>
+    </map>
+    <key>TextureFetchUpdateSkipLowPriority</key>
+    <map>
+      <key>Comment</key>
+      <string>Flag indicating if we want to skip textures with too low of a priority</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>TextureFetchUpdatePriorities</key>
+    <map>
+      <key>Comment</key>
+      <string>Number of priority texture to update per frame</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>32</integer>
     </map>
     <key>TextureLoadFullRes</key>
     <map>
@@ -14144,6 +14893,61 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>UseEnvironmentFromRegion</key>
+    <map>
+      <key>Comment</key>
+      <string>Choose whether to use the region's environment settings, or override them with the local settings.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+  <key>UseDayCycle</key>
+  <map>
+	<key>Comment</key>
+	<string>Whether to use use a day cycle or a fixed sky.</string>
+	<key>Persist</key>
+	<integer>1</integer>
+	<key>Type</key>
+	<string>Boolean</string>
+	<key>Value</key>
+	<integer>1</integer>
+  </map>
+  <key>WaterPresetName</key>
+  <map>
+      <key>Comment</key>
+      <string>Water preset to use. May be superseded by region settings.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>Default</string>
+    </map>
+    <key>SkyPresetName</key>
+    <map>
+      <key>Comment</key>
+      <string>Sky preset to use. May be superseded by region settings or by a day cycle (see DayCycleName).</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>Default</string>
+    </map>
+    <key>DayCycleName</key>
+    <map>
+      <key>Comment</key>
+      <string>Day cycle to use. May be superseded by region settings.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>Default</string>
+    </map>
     <key>UseExternalBrowser</key>
     <map>
       <key>Comment</key>
@@ -14153,18 +14957,7 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>0</integer>
-    </map>
-    <key>UseFreezeFrame</key>
-    <map>
-      <key>Comment</key>
-      <string>Freeze time when taking snapshots.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
+      <boolean>1</boolean>
     </map>
     <key>UseInventoryLinks</key>
     <map>
@@ -14188,6 +14981,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
+  <key>RenderSynchronousOcclusion</key>
+  <map>
+    <key>Comment</key>
+    <string>Don't let occlusion queries get more than one frame behind (block until they complete).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
     <key>SkipReflectOcclusionUpdates</key>
     <map>
       <key>Comment</key>
@@ -15122,6 +15926,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>-1</integer>
     </map>
+    <key>ForcePeriodicRenderingTime</key>
+    <map>
+      <key>Comment</key>
+      <string>Periodically enable all rendering masks for a single frame.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <integer>-1.0</integer>
+    </map>
     <key>ZoomDirect</key>
     <map>
       <key>Comment</key>
@@ -15320,6 +16135,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
+  <key>SimulateFBOFailure</key>
+  <map>
+    <key>Comment</key>
+    <string>[DEBUG] Make allocateScreenBuffer return false.  Used to test error handling.</string>
+    <key>Persist</key>
+    <integer>0</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
     <key>FloaterUploadRect</key>
     <map>
       <key>Comment</key>

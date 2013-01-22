@@ -343,10 +343,8 @@ void LLPanelPermissions::refresh()
 	
 	// Update creator text field
 	childSetEnabled("Creator:",true);
-	BOOL creators_identical;
 	std::string creator_name;
-	creators_identical = LLSelectMgr::getInstance()->selectGetCreator(mCreatorID,
-													  creator_name);
+	bool creators_identical = LLSelectMgr::getInstance()->selectGetCreator(mCreatorID, creator_name);
 
 	childSetText("Creator Name",creator_name);
 	childSetEnabled("Creator Name",TRUE);
@@ -355,9 +353,8 @@ void LLPanelPermissions::refresh()
 	// Update owner text field
 	childSetEnabled("Owner:",true);
 
-	BOOL owners_identical;
 	std::string owner_name;
-	owners_identical = LLSelectMgr::getInstance()->selectGetOwner(mOwnerID, owner_name);
+	const BOOL owners_identical = LLSelectMgr::getInstance()->selectGetOwner(mOwnerID, owner_name);
 
 //	llinfos << "owners_identical " << (owners_identical ? "TRUE": "FALSE") << llendl;
 	std::string last_owner_name;

@@ -455,7 +455,7 @@ BOOL LLFloaterModelPreview::postBuild()
 	std::string validate_url;
 	if (gHippoGridManager->getCurrentGrid()->isSecondLife())
 	{
-		if (LLViewerLogin::getInstance()->isInProductionGrid())
+		if (gHippoGridManager->getConnectedGrid()->isInProductionGrid())
 		{
 			validate_url = "http://secondlife.com/my/account/mesh.php";
 		}
@@ -896,7 +896,7 @@ BOOL LLFloaterModelPreview::handleScrollWheel(S32 x, S32 y, S32 clicks)
 }
 
 /*virtual*/
-void LLFloaterModelPreview::onOpen(const LLSD& key)
+void LLFloaterModelPreview::onOpen()
 {
 	requestAgentUploadPermissions();
 }
@@ -2487,7 +2487,7 @@ void LLModelLoader::loadTextures()
 				if (!material.mDiffuseMapFilename.empty())
 				{
 					material.mDiffuseMap = 
-						LLViewerTextureManager::getFetchedTextureFromUrl("file://" + material.mDiffuseMapFilename, TRUE, LLViewerTexture::BOOST_PREVIEW);
+						LLViewerTextureManager::getFetchedTextureFromUrl("file://" + material.mDiffuseMapFilename, TRUE, LLGLTexture::BOOST_PREVIEW);
 					material.mDiffuseMap->setLoadedCallback(LLModelPreview::textureLoadedCallback, 0, TRUE, FALSE, mPreview, NULL, FALSE);
 					material.mDiffuseMap->forceToSaveRawImage(0, F32_MAX);
 					mNumOfFetchingTextures++;

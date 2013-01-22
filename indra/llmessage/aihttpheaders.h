@@ -132,6 +132,9 @@ class AIHTTPReceivedHeaders {
 	// Add a header.
 	void addHeader(std::string const& key, std::string const& value);
 
+	// Swap headers with another container.
+	void swap(AIHTTPReceivedHeaders& headers) { LLPointer<Container>::swap(mContainer, headers.mContainer); }
+
 	// Return true if there are no headers associated with this object.
 	bool empty(void) const { return !mContainer || mContainer->mKeyValuePairs.empty(); }
 
@@ -146,6 +149,9 @@ class AIHTTPReceivedHeaders {
 
 	// For debug purposes.
 	friend std::ostream& operator<<(std::ostream& os, AIHTTPReceivedHeaders const& headers);
+
+	// Returns true if the two keys compare equal (ie, "Set-Cookie" == "set-cookie").
+	static bool equal(std::string const& key1, std::string const& key2);
 
   private:
 	struct Container : public LLThreadSafeRefCount {

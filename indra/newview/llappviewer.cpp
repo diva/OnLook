@@ -507,7 +507,7 @@ static void settings_to_globals()
 	gAllowIdleAFK = gSavedSettings.getBOOL("AllowIdleAFK");
 	gAllowTapTapHoldRun = gSavedSettings.getBOOL("AllowTapTapHoldRun");
 	gShowObjectUpdates = gSavedSettings.getBOOL("ShowObjectUpdates");
-	LLWorldMapView::sMapScale = gSavedSettings.getF32("MapScale");
+	LLWorldMapView::sMapScale =  llmax(.1f,gSavedSettings.getF32("MapScale"));
 	LLHoverView::sShowHoverTips = gSavedSettings.getBOOL("ShowHoverTips");
 }
 
@@ -563,7 +563,6 @@ LLAppViewer::LLAppViewer() :
 	mSavedFinalSnapshot(false),
 	mQuitRequested(false),
 	mLogoutRequestSent(false),
-	mYieldTime(-1),
 	mMainloopTimeout(NULL),
 	mAgentRegionLastAlive(false)
 {
@@ -584,6 +583,15 @@ LLAppViewer::~LLAppViewer()
 	removeMarkerFile();
 }
 
+class LLUITranslationBridge : public LLTranslationBridge
+{
+public:
+	virtual std::string getString(const std::string &xml_desc)
+	{
+		return LLTrans::getString(xml_desc);
+	}
+};
+
 bool LLAppViewer::init()
 {
 	//
@@ -595,6 +603,10 @@ bool LLAppViewer::init()
 	//
 	LLFastTimer::reset();
 	
+	// initialize LLWearableType translation bridge.
+	// Memory will be cleaned up in ::cleanupClass()
+	LLWearableType::initClass(new LLUITranslationBridge());
+
 	// <edit>
 	// We can call this early.
 	LLFrameTimer::global_initialization();
@@ -731,7 +743,7 @@ bool LLAppViewer::init()
 					&gColors, 
 					LLUIImageList::getInstance(),
 					ui_audio_callback,
-					&LLUI::sGLScaleFactor
+					&LLUI::getScaleFactor()
 					);
 	LLWeb::initClass();			  // do this after LLUI
 
@@ -848,8 +860,10 @@ bool LLAppViewer::init()
 	{	
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
+		std::string msg = LLNotifications::instance().getGlobalString("UnsupportedGLRequirements");
+		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
-			LLNotifications::instance().getGlobalString("UnsupportedGLRequirements"),
+			msg,
 			LLStringUtil::null,
 			OSMB_OK);
 		return 0;
@@ -861,8 +875,10 @@ bool LLAppViewer::init()
 	{
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
+		std::string msg = LLNotifications::instance().getGlobalString("UnsupportedCPUSSE2");
+		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
-			LLNotifications::instance().getGlobalString("UnsupportedCPUSSE2"),
+			msg,
 			LLStringUtil::null,
 			OSMB_OK);
 		return 0;
@@ -873,8 +889,10 @@ bool LLAppViewer::init()
 	{
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
+		std::string msg = LNotifications::instance().getGlobalString("UnsupportedCPUSSE2");
+		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
-			LLNotifications::instance().getGlobalString("UnsupportedCPUSSE"),
+			msg,
 			LLStringUtil::null,
 			OSMB_OK);
 		return 0;
@@ -1070,7 +1088,7 @@ bool LLAppViewer::mainLoop()
 	LLVoiceChannel::initClass();
 	LLVoiceClient::init(gServicePump);
 				
-	LLTimer frameTimer,idleTimer;
+	LLTimer frameTimer,idleTimer,periodicRenderingTimer;
 	LLTimer debugTime;
 	LLFrameTimer memCheckTimer;
 	LLViewerJoystick* joystick(LLViewerJoystick::getInstance());
@@ -1083,6 +1101,7 @@ bool LLAppViewer::mainLoop()
     // point of posting.
     LLSD newFrame;
 
+	BOOL restore_rendering_masks = FALSE;
 
 	// Handle messages
 	while (!LLApp::isExiting())
@@ -1097,6 +1116,28 @@ bool LLAppViewer::mainLoop()
 		
 		try
 		{
+			// Check if we need to restore rendering masks.
+			if (restore_rendering_masks)
+			{
+				gPipeline.popRenderDebugFeatureMask();
+				gPipeline.popRenderTypeMask();
+			}
+			// Check if we need to temporarily enable rendering.
+			static const LLCachedControl<F32> periodic_rendering("ForcePeriodicRenderingTime", 0.f);
+			if (periodic_rendering > F_APPROXIMATELY_ZERO && periodicRenderingTimer.getElapsedTimeF64() > periodic_rendering)
+			{
+				periodicRenderingTimer.reset();
+				restore_rendering_masks = TRUE;
+				gPipeline.pushRenderTypeMask();
+				gPipeline.pushRenderDebugFeatureMask();
+				gPipeline.setAllRenderTypes();
+				gPipeline.setAllRenderDebugFeatures();
+			}
+			else
+			{
+				restore_rendering_masks = FALSE;
+			}
+
 			pingMainloopTimeout("Main:MiscNativeWindowEvents");
 
 			if (gViewerWindow)
@@ -1206,7 +1247,6 @@ bool LLAppViewer::mainLoop()
 					pingMainloopTimeout("Main:Display");
 					gGLActive = TRUE;
 					display();
-
 					pingMainloopTimeout("Main:Snapshot");
 					LLFloaterSnapshot::update(); // take snapshots
 					gGLActive = FALSE;
@@ -1223,12 +1263,12 @@ bool LLAppViewer::mainLoop()
 				LLMemType mt_sleep(LLMemType::MTYPE_SLEEP);
 				LLFastTimer t2(FTM_SLEEP);
 				static const LLCachedControl<bool> run_multiple_threads("RunMultipleThreads",false);
-
+				static const LLCachedControl<S32> yield_time("YieldTime", -1);
 				// yield some time to the os based on command line option
-				if(mYieldTime >= 0)
+				if(yield_time >= 0)
 				{
 					LLFastTimer t(FTM_YIELD);
-					ms_sleep(mYieldTime);
+					ms_sleep(yield_time);
 				}
 
 				// yield cooperatively when not running as foreground window
@@ -1567,6 +1607,8 @@ bool LLAppViewer::cleanup()
 	
 	LLViewerObject::cleanupVOClasses();
 
+	LLAvatarAppearance::cleanupClass();
+	
 	LLPostProcess::cleanupClass();
 
 	LLTracker::cleanupInstance();
@@ -1790,6 +1832,8 @@ bool LLAppViewer::cleanup()
 		LLWeb::loadURLExternal( gLaunchFileOnQuit );
 		llinfos << "File launched." << llendflush;
 	}
+
+	LLWearableType::cleanupClass();
 
 	LLMainLoopRepeater::instance().stop();
 
@@ -2340,8 +2384,6 @@ bool LLAppViewer::initConfiguration()
         gDirUtilp->setSkinFolder(skinfolder->getValue().asString());
     }
 
-    mYieldTime = gSavedSettings.getS32("YieldTime");
-             
 	// XUI:translate
 	gSecondLife = "Singularity Viewer";
 
@@ -3948,6 +3990,13 @@ void LLAppViewer::idle()
 	}
 	
 	if (gDisconnected)
+    {
+		return;
+    }
+
+	static const LLCachedControl<bool> hide_tp_screen("AscentDisableTeleportScreens",false);
+	LLAgent::ETeleportState tp_state = gAgent.getTeleportState();
+	if (!hide_tp_screen && tp_state != LLAgent::TELEPORT_NONE && tp_state != LLAgent::TELEPORT_LOCAL && tp_state != LLAgent::TELEPORT_PENDING)
     {
 		return;
     }

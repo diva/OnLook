@@ -130,6 +130,10 @@ LLVector3 LLPanelObject::mClipboardPos;
 LLVector3 LLPanelObject::mClipboardSize;
 LLVector3 LLPanelObject::mClipboardRot;
 LLVolumeParams LLPanelObject::mClipboardVolumeParams;
+LLFlexibleObjectData* LLPanelObject::mClipboardFlexiParams = NULL;
+LLLightParams* LLPanelObject::mClipboardLightParams = NULL;
+LLSculptParams* LLPanelObject::mClipboardSculptParams = NULL;
+LLLightImageParams* LLPanelObject::mClipboardLightImageParams = NULL;
 BOOL LLPanelObject::hasParamClipboard = FALSE;
 
 BOOL	LLPanelObject::postBuild()
@@ -594,10 +598,9 @@ void LLPanelObject::getState( )
 	mBtnCopyParams->setEnabled( single_volume );
 	mBtnPasteParams->setEnabled( single_volume );
 
-	BOOL owners_identical;
 	LLUUID owner_id;
 	std::string owner_name;
-	owners_identical = LLSelectMgr::getInstance()->selectGetOwner(owner_id, owner_name);
+	LLSelectMgr::getInstance()->selectGetOwner(owner_id, owner_name);
 
 	// BUG? Check for all objects being editable?
 	S32 roots_selected = LLSelectMgr::getInstance()->getSelection()->getRootObjectCount();
@@ -2493,15 +2496,65 @@ void LLPanelObject::onCopyRot(void* user_data)
 void LLPanelObject::onCopyParams(void* user_data)
 {
 	LLPanelObject* self = (LLPanelObject*) user_data;
+	if (!self) return;
+
 	self->getVolumeParams(mClipboardVolumeParams);
 	hasParamClipboard = TRUE;
+
+	LLViewerObject* objp = self->mObject;
+
+	mClipboardFlexiParams = (LLFlexibleObjectData*)objp->getParameterEntry(LLNetworkData::PARAMS_FLEXIBLE);
+	mClipboardLightParams = (LLLightParams*)objp->getParameterEntry(LLNetworkData::PARAMS_LIGHT);
+	mClipboardSculptParams = (LLSculptParams*)objp->getParameterEntry(LLNetworkData::PARAMS_SCULPT);
+	if (mClipboardSculptParams)
+	{
+		LLUUID id = mClipboardSculptParams->getSculptTexture();
+
+		// Texture perms check
+		if (!(id.isNull() || gInventory.isObjectDescendentOf(id, gInventory.getLibraryRootFolderID())
+			 || id == LLUUID(gSavedSettings.getString("UIImgWhiteUUID"))
+			 || id == LLUUID(gSavedSettings.getString("UIImgInvisibleUUID"))
+			 || id == LLUUID(std::string("8dcd4a48-2d37-4909-9f78-f7a9eb4ef903"))) // alpha
+			&& findItemID(id).isNull())
+		{
+			mClipboardSculptParams->setSculptTexture(LLUUID(SCULPT_DEFAULT_TEXTURE));
+		}
+	}
+	mClipboardLightImageParams = (LLLightImageParams*)objp->getParameterEntry(LLNetworkData::PARAMS_LIGHT_IMAGE);
+	if (mClipboardLightImageParams)
+	{
+		LLUUID id = mClipboardLightImageParams->getLightTexture();
+
+		// Texture perms check
+		if (!(id.isNull() || gInventory.isObjectDescendentOf(id, gInventory.getLibraryRootFolderID())
+			 || id == LLUUID(gSavedSettings.getString("UIImgWhiteUUID"))
+			 || id == LLUUID(gSavedSettings.getString("UIImgInvisibleUUID"))
+			 || id == LLUUID("8dcd4a48-2d37-4909-9f78-f7a9eb4ef903"))) // alpha
+		{
+			mClipboardLightImageParams->setLightTexture(findItemID(id));
+		}
+	}
 }
 
 void LLPanelObject::onPasteParams(void* user_data)
 {
+	if(!hasParamClipboard) return;
+
 	LLPanelObject* self = (LLPanelObject*) user_data;
-	if(hasParamClipboard)
-		self->mObject->updateVolume(mClipboardVolumeParams);
+	if(!self) return;
+
+	LLViewerObject* objp = self->mObject;
+
+	objp->updateVolume(mClipboardVolumeParams);
+
+	if (mClipboardFlexiParams)
+		objp->setParameterEntry(LLNetworkData::PARAMS_FLEXIBLE, *mClipboardFlexiParams, true);
+	if (mClipboardLightParams)
+		objp->setParameterEntry(LLNetworkData::PARAMS_LIGHT, *mClipboardLightParams, true);
+	if (mClipboardSculptParams)
+		objp->setParameterEntry(LLNetworkData::PARAMS_SCULPT, *mClipboardSculptParams, true);
+	if (mClipboardLightImageParams)
+		objp->setParameterEntry(LLNetworkData::PARAMS_LIGHT_IMAGE, *mClipboardLightImageParams, true);
 }
 
 void LLPanelObject::onLinkObj(void* user_data)

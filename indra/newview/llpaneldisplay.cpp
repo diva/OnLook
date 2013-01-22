@@ -897,10 +897,14 @@ void LLPanelDisplay::apply()
 		LLWindow* window = gViewerWindow->getWindow();
 		LLCoordScreen size;
 		window->getSize(&size);
+		LLGLState::checkStates();
+		LLGLState::checkTextureChannels();
 		gViewerWindow->changeDisplaySettings(window->getFullscreen(),
 												size,
 												gSavedSettings.getBOOL("DisableVerticalSync"),
 												logged_in);
+		LLGLState::checkStates();
+		LLGLState::checkTextureChannels();
 	}
 }
 

@@ -81,7 +81,7 @@ LLPreviewTexture::LLPreviewTexture(const std::string& name,
 	mLastWidth(0),
 	mAspectRatio(0.f),
 	mImage(NULL),
-	mImageOldBoostLevel(LLViewerTexture::BOOST_NONE)
+	mImageOldBoostLevel(LLGLTexture::BOOST_NONE)
 {
 	const LLInventoryItem *item = getItem();
 	if(item)
@@ -124,8 +124,7 @@ LLPreviewTexture::LLPreviewTexture(
 	const LLRect& rect,
 	const std::string& title,
 	const LLUUID& asset_id,
-	BOOL copy_to_inv,
-	BOOL copyable)
+	BOOL copy_to_inv)
 	:
 	LLPreview(
 		name,
@@ -140,7 +139,6 @@ LLPreviewTexture::LLPreviewTexture(
 	mLoadingFullImage( FALSE ),
 	mShowKeepDiscard(FALSE),
 	mCopyToInv(copy_to_inv),
-	mIsCopyable(copyable),
 	mLastHeight(0),
 	mLastWidth(0),
 	mAspectRatio(0.f),
@@ -700,9 +698,9 @@ void LLPreviewTexture::onAspectRatioCommit(LLUICtrl* ctrl, void* userdata)
 
 void LLPreviewTexture::loadAsset()
 {
-	mImage = LLViewerTextureManager::getFetchedTexture(mImageID, MIPMAP_TRUE, LLViewerTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE);
+	mImage = LLViewerTextureManager::getFetchedTexture(mImageID, MIPMAP_TRUE, LLGLTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE);
 	mImageOldBoostLevel = mImage->getBoostLevel();
-	mImage->setBoostLevel(LLViewerTexture::BOOST_PREVIEW);
+	mImage->setBoostLevel(LLGLTexture::BOOST_PREVIEW);
 	mImage->forceToSaveRawImage(0) ;
 	mAssetStatus = PREVIEW_ASSET_LOADING;
 	mUpdateDimensions = TRUE;

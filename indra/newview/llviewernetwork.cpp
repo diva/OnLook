@@ -77,6 +77,7 @@ bool LLViewerLogin::isSecondLife()
 
 bool LLViewerLogin::isInProductionGrid()
 {
-	return true;
+	// Return true (as before) on opensim grids, but return the real thing (agni or not) on SL.
+	return !gHippoGridManager->getConnectedGrid()->isSecondLife() || gHippoGridManager->getConnectedGrid()->isInProductionGrid();
 }
 

@@ -56,6 +56,8 @@
 #include "llstring.h"
 #include "llhudnametag.h"
 #include "lldrawable.h"
+#include "llflexibleobject.h"
+#include "llviewertextureanim.h"
 #include "xform.h"
 #include "llsky.h"
 #include "llviewercamera.h"
@@ -89,6 +91,8 @@ extern BOOL gAnimateTextures;
 
 #include "importtracker.h"
 extern ImportTracker gImportTracker;
+
+#define MAX_CONCURRENT_PHYSICS_REQUESTS 256
 
 void dialog_refresh_all();
 
@@ -331,9 +335,12 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 	// have to transform to absolute coordinates.
 	num_objects = mesgsys->getNumberOfBlocksFast(_PREHASH_ObjectData);
 
+	// I don't think this case is ever hit.  TODO* Test this.
 	if (!cached && !compressed && update_type != OUT_FULL)
 	{
+		//llinfos << "TEST: !cached && !compressed && update_type != OUT_FULL" << llendl;
 		gTerseObjectUpdates += num_objects;
+		/*
 		S32 size;
 		if (mesgsys->getReceiveCompressedSize())
 		{
@@ -343,10 +350,12 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 		{
 			size = mesgsys->getReceiveSize();
 		}
-		// llinfos << "Received terse " << num_objects << " in " << size << " byte (" << size/num_objects << ")" << llendl;
+		llinfos << "Received terse " << num_objects << " in " << size << " byte (" << size/num_objects << ")" << llendl;
+		*/
 	}
 	else
 	{
+		/*
 		S32 size;
 		if (mesgsys->getReceiveCompressedSize())
 		{
@@ -357,7 +366,8 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			size = mesgsys->getReceiveSize();
 		}
 
-		// llinfos << "Received " << num_objects << " in " << size << " byte (" << size/num_objects << ")" << llendl;
+		llinfos << "Received " << num_objects << " in " << size << " byte (" << size/num_objects << ")" << llendl;
+		*/
 		gFullObjectUpdates += num_objects;
 	}
 
@@ -710,7 +720,7 @@ public:
 		}
 	}
 
-	void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void error(U32 statusNum, const std::string& reason)
 	{
 		llwarns
 			<< "Transport error requesting object cost "
@@ -722,7 +732,7 @@ public:
 		clear_object_list_pending_requests();
 	}
 
-	void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{
 		if ( !content.isMap() || content.has("error") )
 		{
@@ -772,7 +782,8 @@ public:
 		}
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return objectCostResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return objectCostResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLObjectCostResponder"; }
 
 private:
 	LLSD mObjectIDs;
@@ -800,7 +811,7 @@ public:
 		}
 	}
 
-	void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void error(U32 statusNum, const std::string& reason)
 	{
 		llwarns
 			<< "Transport error requesting object physics flags "
@@ -812,7 +823,7 @@ public:
 		clear_object_list_pending_requests();
 	}
 
-	void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{
 		if ( !content.isMap() || content.has("error") )
 		{
@@ -869,7 +880,8 @@ public:
 		}
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return physicsFlagsResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return physicsFlagsResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLPhysicsFlagsResponder"; }
 
 private:
 	LLSD mObjectIDs;
@@ -924,26 +936,35 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 
 	const F64 frame_time = LLFrameTimer::getElapsedSeconds();
 	
-	std::vector<LLViewerObject*> kill_list;
-	S32 num_active_objects = 0;
 	LLViewerObject *objectp = NULL;	
 	
 	// Make a copy of the list in case something in idleUpdate() messes with it
-	std::vector<LLViewerObject*> idle_list;
-	
+	static std::vector<LLViewerObject*> idle_list;
+	if(mActiveObjects.size() > idle_list.capacity())
+		idle_list.reserve( mActiveObjects.size() );
+
+	U32 idle_count = 0;
+		
 	static LLFastTimer::DeclareTimer idle_copy("Idle Copy");
 
 	{
 		LLFastTimer t(idle_copy);
-		idle_list.reserve( mActiveObjects.size() );
 
- 		for (std::set<LLPointer<LLViewerObject> >::iterator active_iter = mActiveObjects.begin();
+ 		for (std::vector<LLPointer<LLViewerObject> >::iterator active_iter = mActiveObjects.begin();
 			active_iter != mActiveObjects.end(); active_iter++)
 		{
 			objectp = *active_iter;
 			if (objectp)
 			{
-				idle_list.push_back( objectp );
+				if (idle_count >= idle_list.size())
+				{
+					idle_list.push_back( objectp );
+				}
+				else
+				{
+					idle_list[idle_count] = objectp;
+				}
+				++idle_count;
 			}
 			else
 			{	// There shouldn't be any NULL pointers in the list, but they have caused
@@ -952,12 +973,14 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 			}
 		}
 	}
+	
+	std::vector<LLViewerObject*>::iterator idle_end = idle_list.begin()+idle_count;
 
 	static const LLCachedControl<bool> freeze_time("FreezeTime",0);
 	if (freeze_time)
 	{
 		for (std::vector<LLViewerObject*>::iterator iter = idle_list.begin();
-			iter != idle_list.end(); iter++)
+			iter != idle_end; iter++)
 		{
 			objectp = *iter;
 			if (
@@ -973,26 +996,22 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 	else
 	{
 		for (std::vector<LLViewerObject*>::iterator idle_iter = idle_list.begin();
-			idle_iter != idle_list.end(); idle_iter++)
+			idle_iter != idle_end; idle_iter++)
 		{
 			objectp = *idle_iter;
-			if (!objectp->idleUpdate(agent, world, frame_time))
-			{
-				//  If Idle Update returns false, kill object!
-				kill_list.push_back(objectp);
-			}
-			else
-			{
-				num_active_objects++;
-			}
+			llassert(objectp->isActive());
+			objectp->idleUpdate(agent, world, frame_time);
+
 		}
-		for (std::vector<LLViewerObject*>::iterator kill_iter = kill_list.begin();
-			kill_iter != kill_list.end(); kill_iter++)
-		{
-			objectp = *kill_iter;
-			killObject(objectp);
-		}
+
+		//update flexible objects
+		LLVolumeImplFlexible::updateClass();
+
+		//update animated textures
+		LLViewerTextureAnim::updateClass();
 	}
+
+
 
 	fetchObjectCosts();
 	fetchPhysicsFlags();
@@ -1060,7 +1079,7 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 	*/
 
 	LLViewerStats::getInstance()->mNumObjectsStat.addValue((S32) mObjects.size() - mNumDeadObjects);
-	LLViewerStats::getInstance()->mNumActiveObjectsStat.addValue(num_active_objects);
+	LLViewerStats::getInstance()->mNumActiveObjectsStat.addValue(idle_count);
 	LLViewerStats::getInstance()->mNumSizeCulledStat.addValue(mNumSizeCulled);
 	LLViewerStats::getInstance()->mNumVisCulledStat.addValue(mNumVisCulled);
 }
@@ -1081,8 +1100,6 @@ void LLViewerObjectList::fetchObjectCosts()
 				LLSD id_list;
 				U32 object_index = 0;
 
-				U32 count = 0;
-
 				for (
 					std::set<LLUUID>::iterator iter = mStaleObjectCost.begin();
 					iter != mStaleObjectCost.end();
@@ -1099,7 +1116,7 @@ void LLViewerObjectList::fetchObjectCosts()
 
 					mStaleObjectCost.erase(iter++);
 
-					if (count++ >= 450)
+					if (object_index >= MAX_CONCURRENT_PHYSICS_REQUESTS)
 					{
 						break;
 					}
@@ -1144,7 +1161,7 @@ void LLViewerObjectList::fetchPhysicsFlags()
 				for (
 					std::set<LLUUID>::iterator iter = mStalePhysicsFlags.begin();
 					iter != mStalePhysicsFlags.end();
-					++iter)
+					)
 				{
 					// Check to see if a request for this object
 					// has already been made.
@@ -1154,12 +1171,14 @@ void LLViewerObjectList::fetchPhysicsFlags()
 						mPendingPhysicsFlags.insert(*iter);
 						id_list[object_index++] = *iter;
 					}
-				}
 
-				// id_list should now contain all
-				// requests in mStalePhysicsFlags before, so clear
-				// it now
-				mStalePhysicsFlags.clear();
+					mStalePhysicsFlags.erase(iter++);
+					
+					if (object_index >= MAX_CONCURRENT_PHYSICS_REQUESTS)
+					{
+						break;
+					}
+				}
 
 				if ( id_list.size() > 0 )
 				{
@@ -1226,7 +1245,7 @@ void LLViewerObjectList::cleanupReferences(LLViewerObject *objectp)
 	{
 		//llinfos << "Removing " << objectp->mID << " " << objectp->getPCodeString() << " from active list in cleanupReferences." << llendl;
 		objectp->setOnActiveList(FALSE);
-		mActiveObjects.erase(objectp);
+		removeFromActiveList(objectp);
 	}
 
 	if (objectp->isOnMap())
@@ -1329,7 +1348,7 @@ void LLViewerObjectList::killAllObjects()
 		
 		killObject(objectp);
 		// Object must be dead, or it's the LLVOAvatarSelf which never dies.
-		llassert((objectp == gAgentAvatarp) || objectp->isDead());
+		llassert((objectp == gAgentAvatarp) || objectp->isDead() || (objectp->asAvatar() && objectp->asAvatar()->isFrozenDead()));
 	}
 
 	cleanDeadObjects(FALSE);
@@ -1416,6 +1435,27 @@ void LLViewerObjectList::cleanDeadObjects(BOOL use_timer)
 	mNumDeadObjects = 0;
 }
 
+void LLViewerObjectList::removeFromActiveList(LLViewerObject* objectp)
+{
+	S32 idx = objectp->getListIndex();
+	if (idx != -1)
+	{ //remove by moving last element to this object's position
+		llassert(mActiveObjects[idx] == objectp);
+		
+		objectp->setListIndex(-1);
+
+		S32 last_index = mActiveObjects.size()-1;
+
+		if (idx != last_index)
+		{
+			mActiveObjects[idx] = mActiveObjects[last_index];
+			mActiveObjects[idx]->setListIndex(idx);
+		}
+
+		mActiveObjects.pop_back();
+	}
+}
+
 void LLViewerObjectList::updateActive(LLViewerObject *objectp)
 {
 	LLMemType mt(LLMemType::MTYPE_OBJECT);
@@ -1430,16 +1470,35 @@ void LLViewerObjectList::updateActive(LLViewerObject *objectp)
 		if (active)
 		{
 			//llinfos << "Adding " << objectp->mID << " " << objectp->getPCodeString() << " to active list." << llendl;
-			mActiveObjects.insert(objectp);
-			objectp->setOnActiveList(TRUE);
+			S32 idx = objectp->getListIndex();
+			if (idx <= -1)
+			{
+				mActiveObjects.push_back(objectp);
+				objectp->setListIndex(mActiveObjects.size()-1);
+				objectp->setOnActiveList(TRUE);
+			}
+			else
+			{
+				llassert(idx < (S32)mActiveObjects.size());
+				llassert(mActiveObjects[idx] == objectp);
+
+				if (idx >= (S32)mActiveObjects.size() ||
+					mActiveObjects[idx] != objectp)
+				{
+					llwarns << "Invalid object list index detected!" << llendl;
+				}
+			}
 		}
 		else
 		{
 			//llinfos << "Removing " << objectp->mID << " " << objectp->getPCodeString() << " from active list." << llendl;
-			mActiveObjects.erase(objectp);
+			removeFromActiveList(objectp);
 			objectp->setOnActiveList(FALSE);
 		}
 	}
+
+	llassert(objectp->isActive() || objectp->getListIndex() == -1);
+
 }
 
 void LLViewerObjectList::updateObjectCost(LLViewerObject* object)

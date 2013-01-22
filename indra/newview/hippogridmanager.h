@@ -38,7 +38,9 @@ public:
 
 	Platform           getPlatform();
 	bool isOpenSimulator() const;
+	bool isAurora() const;
 	bool isSecondLife() const;
+	bool isInProductionGrid() const;		// Should only be called if isSecondLife() returns true.
 	const std::string& getGridName()        const;
 	const std::string& getGridOwner()       const;	
 	const std::string& getLoginUri()        const;
@@ -110,6 +112,7 @@ private:
 	std::string mPasswordUrl;
 	std::string mSearchUrl;
 	std::string mVoiceConnector;
+	bool mIsInProductionGrid;
 	bool mRenderCompat;
 	bool mInvLinks;
 	bool mAutoUpdate;

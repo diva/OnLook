@@ -89,6 +89,7 @@ protected:
 	void renderFull2TU();
 	void renderFull4TU();
 	void renderFullShader();
+	void drawLoop();
 };
 
 #endif // LL_LLDRAWPOOLSIMPLE_H

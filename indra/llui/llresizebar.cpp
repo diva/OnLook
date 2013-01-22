@@ -54,6 +54,7 @@ LLResizeBar::LLResizeBar( const std::string& name, LLView* resizing_view, const 
 	mAllowDoubleClickSnapping(TRUE),
 	mResizingView(resizing_view)
 {
+	setFollowsNone();
 	// set up some generically good follow code.
 	switch( side )
 	{
@@ -87,6 +88,8 @@ LLResizeBar::LLResizeBar( const std::string& name, LLView* resizing_view, const 
 
 BOOL LLResizeBar::handleMouseDown(S32 x, S32 y, MASK mask)
 {
+	if (!canResize()) return FALSE;
+
 	// Route future Mouse messages here preemptively.  (Release on mouse up.)
 	// No handler needed for focus lost since this clas has no state that depends on it.
 	gFocusMgr.setMouseCapture( this );
@@ -240,7 +243,7 @@ BOOL LLResizeBar::handleHover(S32 x, S32 y, MASK mask)
 		handled = TRUE;
 	}
 
-	if( handled )
+	if( handled && canResize() )
 	{
 		switch( mSide )
 		{

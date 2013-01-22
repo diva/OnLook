@@ -2,31 +2,25 @@
  * @file llimagegl.cpp
  * @brief Generic GL image handler
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -498,10 +492,11 @@ void LLImageGL::init(BOOL usemipmaps)
 	mWidth = 0;
 	mHeight	= 0;
 	mCurrentDiscardLevel = -1;	
-	
- 	mAllowCompression = true;
 
-	mTarget			  = GL_TEXTURE_2D;
+
+	mAllowCompression = true;
+	
+	mTarget = GL_TEXTURE_2D;
 	mBindTarget = LLTexUnit::TT_TEXTURE;
 	mHasMipMaps = false;
 	mMipLevels = -1;
@@ -521,7 +516,7 @@ void LLImageGL::init(BOOL usemipmaps)
 	mFormatSwapBytes = FALSE;
 
 #ifdef DEBUG_MISS
-	mMissed				= FALSE;
+	mMissed	= FALSE;
 #endif
 
 	mCategory = -1;
@@ -592,11 +587,11 @@ void LLImageGL::setSize(S32 width, S32 height, S32 ncomponents, S32 discard_leve
 				width >>= 1;
 				height >>= 1;
 			}
+
 			if(discard_level > 0)
 			{
 				mMaxDiscardLevel = llmax(mMaxDiscardLevel, (S8)discard_level);
 			}
-
 		}
 		else
 		{
@@ -692,14 +687,16 @@ void LLImageGL::setImage(const LLImageRaw* imageraw)
 	setImage(rawdata, FALSE);
 }
 
+static LLFastTimer::DeclareTimer FTM_SET_IMAGE("setImage");
 void LLImageGL::setImage(const U8* data_in, BOOL data_hasmips)
 {
+	LLFastTimer t(FTM_SET_IMAGE);
 	bool is_compressed = false;
 	if (mFormatPrimary >= GL_COMPRESSED_RGBA_S3TC_DXT1_EXT && mFormatPrimary <= GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
 	{
 		is_compressed = true;
 	}
-
+	
 	
 	
 	if (mUseMipMaps)
@@ -739,7 +736,6 @@ void LLImageGL::setImage(const U8* data_in, BOOL data_hasmips)
 				}
 				if (is_compressed)
 				{
-// 					LLFastTimer t2(FTM_TEMP4);
  					S32 tex_size = dataFormatBytes(mFormatPrimary, w, h);
 					glCompressedTexImage2DARB(mTarget, gl_level, mFormatPrimary, w, h, 0, tex_size, (GLvoid *)data_in);
 					stop_glerror();
@@ -1048,8 +1044,10 @@ BOOL LLImageGL::setSubImageFromFrameBuffer(S32 fb_x, S32 fb_y, S32 x_pos, S32 y_
 }
 
 // static
+static LLFastTimer::DeclareTimer FTM_GENERATE_TEXTURES("generate textures");
 void LLImageGL::generateTextures(LLTexUnit::eTextureType type, U32 format, S32 numTextures, U32 *textures)
 {
+	LLFastTimer t(FTM_GENERATE_TEXTURES);
 	bool empty = true;
 
 	dead_texturelist_t::iterator iter = sDeadTextureList[type].find(format);
@@ -1110,8 +1108,10 @@ void LLImageGL::deleteTextures(LLTexUnit::eTextureType type, U32 format, S32 mip
 }
 
 // static
+static LLFastTimer::DeclareTimer FTM_SET_MANUAL_IMAGE("setManualImage");
 void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 width, S32 height, U32 pixformat, U32 pixtype, const void *pixels, bool allow_compression)
 {
+	LLFastTimer t(FTM_SET_MANUAL_IMAGE);
 	bool use_scratch = false;
 	U32* scratch = NULL;
 	if (LLRender::sGLCoreProfile)
@@ -1215,8 +1215,10 @@ void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 widt
 
 //create an empty GL texture: just create a texture name
 //the texture is assiciate with some image by calling glTexImage outside LLImageGL
+static LLFastTimer::DeclareTimer FTM_CREATE_GL_TEXTURE1("createGLTexture()");
 BOOL LLImageGL::createGLTexture()
 {
+	LLFastTimer t(FTM_CREATE_GL_TEXTURE1);
 	if (gGLManager.mIsDisabled)
 	{
 		llwarns << "Trying to create a texture while GL is disabled!" << llendl;
@@ -1244,8 +1246,10 @@ BOOL LLImageGL::createGLTexture()
 	return TRUE ;
 }
 
+static LLFastTimer::DeclareTimer FTM_CREATE_GL_TEXTURE2("createGLTexture(raw)");
 BOOL LLImageGL::createGLTexture(S32 discard_level, const LLImageRaw* imageraw, S32 usename/*=0*/, BOOL to_create, S32 category)
 {
+	LLFastTimer t(FTM_CREATE_GL_TEXTURE2);
 	if (gGLManager.mIsDisabled)
 	{
 		llwarns << "Trying to create a texture while GL is disabled!" << llendl;
@@ -1261,7 +1265,7 @@ BOOL LLImageGL::createGLTexture(S32 discard_level, const LLImageRaw* imageraw, S
 		llassert(mCurrentDiscardLevel >= 0);
 		discard_level = mCurrentDiscardLevel;
 	}
-
+	
 	// Actual image width/height = raw image width/height * 2^discard_level
 	S32 raw_w = imageraw->getWidth() ;
 	S32 raw_h = imageraw->getHeight() ;
@@ -1275,29 +1279,29 @@ BOOL LLImageGL::createGLTexture(S32 discard_level, const LLImageRaw* imageraw, S
 	{
 		switch (mComponents)
 		{
-		  case 1:
+			case 1:
 			// Use luminance alpha (for fonts)
 			mFormatInternal = GL_LUMINANCE8;
 			mFormatPrimary = GL_LUMINANCE;
 			mFormatType = GL_UNSIGNED_BYTE;
 			break;
-		  case 2:
+			case 2:
 			// Use luminance alpha (for fonts)
 			mFormatInternal = GL_LUMINANCE8_ALPHA8;
 			mFormatPrimary = GL_LUMINANCE_ALPHA;
 			mFormatType = GL_UNSIGNED_BYTE;
 			break;
-		  case 3:
+			case 3:
 			mFormatInternal = GL_RGB8;
 			mFormatPrimary = GL_RGB;
 			mFormatType = GL_UNSIGNED_BYTE;
 			break;
-		  case 4:
+			case 4:
 			mFormatInternal = GL_RGBA8;
 			mFormatPrimary = GL_RGBA;
 			mFormatType = GL_UNSIGNED_BYTE;
 			break;
-		  default:
+			default:
 			LL_DEBUGS("Openjpeg") << "Bad number of components for texture: " << (U32)getComponents() << LL_ENDL;
 			to_create = false;
 			break;
@@ -1314,13 +1318,15 @@ BOOL LLImageGL::createGLTexture(S32 discard_level, const LLImageRaw* imageraw, S
 		return TRUE ;
 	}
 
-	setCategory(category) ;
+	setCategory(category);
  	const U8* rawdata = imageraw->getData();
 	return createGLTexture(discard_level, rawdata, FALSE, usename);
 }
 
+static LLFastTimer::DeclareTimer FTM_CREATE_GL_TEXTURE3("createGLTexture3(data)");
 BOOL LLImageGL::createGLTexture(S32 discard_level, const U8* data_in, BOOL data_hasmips, S32 usename)
 {
+	LLFastTimer t(FTM_CREATE_GL_TEXTURE3);
 	llassert(data_in);
 	stop_glerror();
 
@@ -1329,6 +1335,7 @@ BOOL LLImageGL::createGLTexture(S32 discard_level, const U8* data_in, BOOL data_
 		llassert(mCurrentDiscardLevel >= 0);
 		discard_level = mCurrentDiscardLevel;
 	}
+	discard_level = llclamp(discard_level, 0, (S32)mMaxDiscardLevel);
 
 	if (mTexName != 0 && discard_level == mCurrentDiscardLevel)
 	{
@@ -1586,7 +1593,18 @@ void LLImageGL::destroyGLTexture()
 	}
 }
 
-
+//force to invalidate the gl texture, most likely a sculpty texture
+void LLImageGL::forceToInvalidateGLTexture()
+{
+	if (mTexName != 0)
+	{
+		destroyGLTexture();
+	}
+	else
+	{
+		mCurrentDiscardLevel = -1 ; //invalidate mCurrentDiscardLevel.
+	}
+}
 
 //----------------------------------------------------------------------------
 
@@ -1823,7 +1841,6 @@ void LLImageGL::analyzeAlpha(const void* data_in, U32 w, U32 h)
 		llassert(w%2 == 0);
 		llassert(h%2 == 0);
 		const GLubyte* rowstart = ((const GLubyte*) data_in) + mAlphaOffset;
-
 		for (U32 y = 0; y < h; y+=2)
 		{
 			const GLubyte* current = rowstart;
@@ -1849,6 +1866,7 @@ void LLImageGL::analyzeAlpha(const void* data_in, U32 w, U32 h)
 				alphatotal += asum;
 				sample[asum/(16*4)] += 4;
 			}
+			
 			
 			rowstart += 2 * w * mAlphaStride;
 		}

@@ -106,7 +106,7 @@ void LLFloaterInventoryBackupSettings::onClickNext(void* userdata)
 	for( ; item_iter != order->mItems.end(); )
 	{
 		if(type_remove[(*item_iter)->getType()])
-			order->mItems.erase(item_iter);
+			item_iter = order->mItems.erase(item_iter);
 		else
 			++item_iter;
 	}
@@ -305,7 +305,7 @@ void LLInventoryBackup::download(LLInventoryItem* item, LLFloater* floater, load
 	switch(item->getType())
 	{
 	case LLAssetType::AT_TEXTURE:
-		imagep = LLViewerTextureManager::getFetchedTexture(item->getAssetUUID(), MIPMAP_TRUE, LLViewerTexture::BOOST_UI);
+		imagep = LLViewerTextureManager::getFetchedTexture(item->getAssetUUID(), MIPMAP_TRUE, LLGLTexture::BOOST_UI);
 		imagep->setLoadedCallback( onImage, 0, TRUE, FALSE, userdata, NULL ); // was setLoadedCallbackNoAuth
 		break;
 	case LLAssetType::AT_NOTECARD:
@@ -363,7 +363,7 @@ void LLInventoryBackup::imageCallback(BOOL success,
 	}
 	else
 	{
-		src_vi->setBoostLevel(LLViewerTexture::BOOST_UI);
+		src_vi->setBoostLevel(LLGLTexture::BOOST_UI);
 	}
 }
 
@@ -619,11 +619,11 @@ BOOL LLFloaterInventoryBackup::postBuild(void)
 		status_column["column"] = "status";
 		status_column["value"] = "Pending";
 
-		LLScrollListItem* scroll_itemp = list->addElement(element, ADD_BOTTOM);
+		/*LLScrollListItem* scroll_itemp = */list->addElement(element, ADD_BOTTOM);
 		
 		//hack to stop crashing
-		LLScrollListIcon* icon = (LLScrollListIcon*)scroll_itemp->getColumn(LIST_TYPE);
-		icon->setClickCallback(NULL, NULL);
+		//LLScrollListIcon* icon = (LLScrollListIcon*)scroll_itemp->getColumn(LIST_TYPE);
+		//icon->setClickCallback(NULL);
 	}
 
 	// Setup and go!
@@ -738,7 +738,7 @@ void LLFloaterInventoryBackup::imageCallback(BOOL success,
 	}
 	else
 	{
-		src_vi->setBoostLevel(LLViewerTexture::BOOST_UI);
+		src_vi->setBoostLevel(LLGLTexture::BOOST_UI);
 	}
 }
 

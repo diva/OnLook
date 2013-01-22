@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="chat floater" title="Chat Local">
+	<string name="ringing">
+		Conectándose con el Chat de Voz...
+	</string>
+	<string name="connected">
+		Conectado
+	</string>
+	<string name="unavailable">
+		El Chat de Voz no está disponible en esta ubicación
+	</string>
+	<string name="hang_up">
+		Desconectado del Chat de Voz
+	</string>
+	<string name="IM_logging_string">
+		-- Habilitado el registro de Mensajes Instantáneos --
+	</string>
+	<string name="IM_end_log_string">
+		-- Fin del Registro --
+	</string>
+	<string name="ScriptQuestionCautionChatGranted">
+		'[OBJECTNAME]', al objeto, propiedad de '[OWNERNAME]', ubicado en [REGIONNAME]: [REGIONPOS], se le ha concedido permiso para: [PERMISSIONS].
+	</string>
+	<string name="ScriptQuestionCautionChatDenied">
+		'[OBJECTNAME]', al objeto, propiedad de '[OWNERNAME]', ubicado en [REGIONNAME]: [REGIONPOS], se le ha denegado permiso para: [PERMISSIONS].
+	</string>
+	<string name="ScriptTakeMoney">
+		Transferir dinero ([CURRENCY]) de tu cuenta
+	</string>
+	<string name="ActOnControlInputs">
+		Actuar en tus controles de entrada
+	</string>
+	<string name="RemapControlInputs">
+		Reconfigurar tus controles de entrada
+	</string>
+	<string name="AnimateYourAvatar">
+		Animar tu Avatar
+	</string>
+	<string name="AttachToYourAvatar">
+		Anexarse a tu Avatar
+	</string>
+	<string name="ReleaseOwnership">
+		Liberar propiedad y volverse público
+	</string>
+	<string name="LinkAndDelink">
+		Enlazar y desenlazar de otros objetos
+	</string>
+	<string name="AddAndRemoveJoints">
+		Agregar y quitar uniones con otros objetos
+	</string>
+	<string name="ChangePermissions">
+		Cambiar sus propios permisos
+	</string>
+	<string name="TrackYourCamera">
+		Seguir tu cámara
+	</string>
+	<string name="TeleportYourAgent">
+		Teleportarte
+	</string>
+	<string name="ControlYourCamera">
+		Controlar tu cámara
+	</string>
+	<layout_stack name="panels">
+		<layout_panel name="im_contents_panel">
+			<combo_box label="Gestos" name="Gesture">
+				<combo_item name="Gestures">
+					Gestos
+				</combo_item>
+			</combo_box>
+			<check_box label="Mostrar Texto Ignorado" left_delta="124" name="show mutes" width="116"/>
+			<!--check_box bottom_delta="-15" enabled="true" follows="left|top" font="SansSerifSmall" height="20" initial_value="false" label="Translate Chat (powered by Google)" name="translate chat" width="100"/-->
+			<button label="Abrir Historial" name="chat_history_open" tool_tip="Pulsa aquí para abrir el historial en un editor externo."/>
+			<button label="&lt; &lt;" label_selected="&gt; &gt;" name="toggle_active_speakers_btn" tool_tip="Pulsa aquí para mostrar/ocultar la lista de participantes activos en esta sesión de MI." width="80"/>
+			<panel name="chat_panel">
+				<string name="gesture_label">
+					Gestos
+				</string>
+			</panel>
+		</layout_panel>
+		<layout_panel name="active_speakers_panel"/>
+	</layout_stack>
+</floater>

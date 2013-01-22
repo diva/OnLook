@@ -17,7 +17,7 @@ endif(FMOD)
 include(OPENAL)
 include(FindOpenGL)
 include(Hunspell)
-#include(JsonCpp)
+include(JsonCpp)
 include(LLAddBuildTest)
 include(LLAudio)
 include(LLCharacter)
@@ -44,6 +44,7 @@ include(UI)
 include(LLKDU)
 include(ViewerMiscLibs)
 include(ViewerArtwork.cmake)
+include(LLAppearance)
 
 if (WINDOWS)
     include(CopyWinLibs)
@@ -70,6 +71,7 @@ include_directories(
     ${LLVFS_INCLUDE_DIRS}
     ${LLWINDOW_INCLUDE_DIRS}
     ${LLXML_INCLUDE_DIRS}
+    ${LLAPPEARANCE_INCLUDE_DIRS}
 #    ${LSCRIPT_INCLUDE_DIRS}
 #    ${LSCRIPT_INCLUDE_DIRS}/lscript_compile
     )
@@ -151,7 +153,6 @@ set(viewer_SOURCE_FILES
     lldrawpooltree.cpp
     lldrawpoolwater.cpp
     lldrawpoolwlsky.cpp
-    lldriverparam.cpp
     lldroptarget.cpp
     lldynamictexture.cpp
     llemote.cpp
@@ -196,8 +197,9 @@ set(viewer_SOURCE_FILES
     llfloaterevent.cpp
     llfloaterexploreanimations.cpp
     llfloaterexploresounds.cpp
-    llfloaterfriends.cpp
+    llfloaterfeed.cpp
     llfloaterfonttest.cpp
+    llfloaterfriends.cpp
     llfloatergesture.cpp
     llfloatergodtools.cpp
     llfloatergroupinfo.cpp
@@ -297,10 +299,10 @@ set(viewer_SOURCE_FILES
     lljoystickbutton.cpp
     lllandmarklist.cpp
     lllocalinventory.cpp
-    lllocaltextureobject.cpp
     lllogchat.cpp
     llloginhandler.cpp
     llmainlooprepeater.cpp
+    llmakeoutfitdialog.cpp
     llmanip.cpp
     llmaniprotate.cpp
     llmanipscale.cpp
@@ -312,6 +314,7 @@ set(viewer_SOURCE_FILES
     llmediaremotectrl.cpp
     llmemoryview.cpp
     llmenucommands.cpp
+    llmenuoptionpathfindingrebakenavmesh.cpp
     llmeshrepository.cpp
     llmimetypes.cpp
     llmorphview.cpp
@@ -366,10 +369,10 @@ set(viewer_SOURCE_FILES
     llpanelnetwork.cpp
     llpanelobject.cpp
     llpanelobjectinventory.cpp
-    llpanelpathfindingrebakenavmesh.cpp
     llpanelpermissions.cpp
     llpanelpick.cpp
     llpanelplace.cpp
+    llpanelprofile.cpp
     llpanelskins.cpp
     llpanelvolume.cpp
     llpanelweb.cpp
@@ -386,8 +389,6 @@ set(viewer_SOURCE_FILES
     llpathfindingobjectlist.cpp
     llphysicsmotion.cpp
     llphysicsshapebuilderutil.cpp
-    llpolymesh.cpp
-    llpolymorph.cpp
     llprefschat.cpp
     llprefsim.cpp
     llprefsvoice.cpp
@@ -421,9 +422,6 @@ set(viewer_SOURCE_FILES
     llstylemap.cpp
     llsurface.cpp
     llsurfacepatch.cpp
-    lltexglobalcolor.cpp
-    lltexlayer.cpp
-    lltexlayerparams.cpp
     lltexturecache.cpp
     lltexturectrl.cpp
     lltexturefetch.cpp
@@ -504,17 +502,17 @@ set(viewer_SOURCE_FILES
     llviewershadermgr.cpp
     llviewerstats.cpp
     llviewerstatsrecorder.cpp
+    llviewertexlayer.cpp
     llviewertexteditor.cpp
     llviewertexture.cpp
     llviewertextureanim.cpp
     llviewertexturelist.cpp
     llviewerthrottle.cpp
-    llviewervisualparam.cpp
+    llviewerwearable.cpp
     llviewerwindow.cpp
     llvlcomposition.cpp
     llvlmanager.cpp
     llvoavatar.cpp
-    llvoavatardefines.cpp
     llvoavatarself.cpp
     llvocache.cpp
     llvoclouds.cpp
@@ -534,10 +532,9 @@ set(viewer_SOURCE_FILES
     llwatchdog.cpp
     llwaterparammanager.cpp
     llwaterparamset.cpp
-    llwearable.cpp
     llwearablelist.cpp
-    llwearabletype.cpp
     llweb.cpp
+    llwebprofile.cpp
     llwind.cpp
     llwlanimator.cpp
     llwldaycycle.cpp
@@ -546,6 +543,7 @@ set(viewer_SOURCE_FILES
     llwlparamset.cpp
     llworld.cpp
     llworldmap.cpp
+    llworldmapmessage.cpp
     llworldmipmap.cpp
     llworldmapview.cpp
     llxmlrpcresponder.cpp
@@ -655,7 +653,6 @@ set(viewer_HEADER_FILES
     lldrawpooltree.h
     lldrawpoolwater.h
     lldrawpoolwlsky.h
-    lldriverparam.h
     lldroptarget.h
     lldynamictexture.h
     llemote.h
@@ -700,6 +697,7 @@ set(viewer_HEADER_FILES
     llfloaterexploreanimations.h
     llfloaterexploresounds.h
     llfloaterevent.h
+    llfloaterfeed.h
     llfloaterfonttest.h
     llfloaterfriends.h
     llfloatergesture.h
@@ -801,10 +799,10 @@ set(viewer_HEADER_FILES
     lllandmarklist.h
     lllightconstants.h
     lllocalinventory.h
-    lllocaltextureobject.h
     lllogchat.h
     llloginhandler.h
     llmainlooprepeater.h
+    llmakeoutfitdialog.h
     llmanip.h
     llmaniprotate.h
     llmanipscale.h
@@ -815,6 +813,7 @@ set(viewer_HEADER_FILES
     llmediactrl.h
     llmediaremotectrl.h
     llmemoryview.h
+    llmenuoptionpathfindingrebakenavmesh.h
     llmenucommands.h
     llmeshrepository.h
     llmimetypes.h
@@ -870,10 +869,10 @@ set(viewer_HEADER_FILES
     llpanelnetwork.h
     llpanelobject.h
     llpanelobjectinventory.h
-    llpanelpathfindingrebakenavmesh.h
     llpanelpermissions.h
     llpanelpick.h
     llpanelplace.h
+    llpanelprofile.h
     llpanelskins.h
     llpanelvolume.h
     llpanelweb.h
@@ -890,8 +889,6 @@ set(viewer_HEADER_FILES
     llpathfindingobjectlist.h
     llphysicsmotion.h
     llphysicsshapebuilderutil.h
-    llpolymesh.h
-    llpolymorph.h
     llprefschat.h
     llprefsim.h
     llprefsvoice.h
@@ -927,9 +924,6 @@ set(viewer_HEADER_FILES
     llsurface.h
     llsurfacepatch.h
     lltable.h
-    lltexglobalcolor.h
-    lltexlayer.h
-    lltexlayerparams.h
     lltexturecache.h
     lltexturectrl.h
     lltexturefetch.h
@@ -1012,17 +1006,17 @@ set(viewer_HEADER_FILES
     llviewershadermgr.h
     llviewerstats.h
     llviewerstatsrecorder.h
+    llviewertexlayer.h
     llviewertexteditor.h
     llviewertexture.h
     llviewertextureanim.h
     llviewertexturelist.h
     llviewerthrottle.h
-    llviewervisualparam.h
+    llviewerwearable.h
     llviewerwindow.h
     llvlcomposition.h
     llvlmanager.h
     llvoavatar.h
-    llvoavatardefines.h
     llvoavatarself.h
     llvocache.h
     llvoclouds.h
@@ -1043,10 +1037,9 @@ set(viewer_HEADER_FILES
     llwatchdog.h
     llwaterparammanager.h
     llwaterparamset.h
-    llwearable.h
     llwearablelist.h
-    llwearabletype.h
     llweb.h
+    llwebprofile.h
     llwind.h
     llwindebug.h
     llwlanimator.h
@@ -1056,6 +1049,7 @@ set(viewer_HEADER_FILES
     llwlparamset.h
     llworld.h
     llworldmap.h
+    llworldmapmessage.h
     llworldmipmap.h
     llworldmapview.h
     llxmlrpcresponder.h
@@ -1576,6 +1570,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${XMLRPCEPI_LIBRARIES}
     ${ELFIO_LIBRARIES}
     ${HUNSPELL_LIBRARY}
+    ${LLAPPEARANCE_LIBRARIES}
     )
 
 if (LINUX)

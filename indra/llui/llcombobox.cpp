@@ -603,7 +603,7 @@ void LLComboBox::showList()
 	LLCoordWindow window_size;
 	getWindow()->getSize(&window_size);
 	//HACK: shouldn't have to know about scale here
-	mList->fitContents( 192, llfloor((F32)window_size.mY / LLUI::sGLScaleFactor.mV[VY]) - 50 );
+	mList->fitContents( 192, llfloor((F32)window_size.mY / LLUI::getScaleFactor().mV[VY]) - 50 );
 
 	// Make sure that we can see the whole list
 	LLRect root_view_local;
@@ -615,7 +615,7 @@ void LLComboBox::showList()
 	S32 min_width = getRect().getWidth();
 	S32 max_width = llmax(min_width, MAX_COMBO_WIDTH);
 	// make sure we have up to date content width metrics
-	mList->calcColumnWidths();
+	mList->updateColumnWidths();
 	S32 list_width = llclamp(mList->getMaxContentWidth(), min_width, max_width);
 
 	if (mListPosition == BELOW)
@@ -707,7 +707,7 @@ void LLComboBox::hideList()
 
 	mButton->setToggleState(FALSE);
 	mList->setVisible(FALSE);
-	mList->highlightNthItem(-1);
+	mList->mouseOverHighlightNthItem(-1);
 
 	setUseBoundingRect(FALSE);
 	if( gFocusMgr.getTopCtrl() == this )
@@ -731,7 +731,7 @@ void LLComboBox::onButtonDown(void *userdata)
 		if (last_selected_item)
 		{
 			// highlight the original selection before potentially selecting a new item
-			self->mList->highlightNthItem(self->mList->getItemIndex(last_selected_item));
+			self->mList->mouseOverHighlightNthItem(self->mList->getItemIndex(last_selected_item));
 		}
 
 		if( self->mPrearrangeCallback )
@@ -839,7 +839,7 @@ BOOL LLComboBox::handleKeyHere(KEY key, MASK mask)
 		if (last_selected_item)
 		{
 			// highlight the original selection before potentially selecting a new item
-			mList->highlightNthItem(mList->getItemIndex(last_selected_item));
+			mList->mouseOverHighlightNthItem(mList->getItemIndex(last_selected_item));
 		}
 		result = mList->handleKeyHere(key, mask);
 
@@ -873,7 +873,7 @@ BOOL LLComboBox::handleUnicodeCharHere(llwchar uni_char)
 			if (last_selected_item)
 			{
 				// highlight the original selection before potentially selecting a new item
-				mList->highlightNthItem(mList->getItemIndex(last_selected_item));
+				mList->mouseOverHighlightNthItem(mList->getItemIndex(last_selected_item));
 			}
 			result = mList->handleUnicodeCharHere(uni_char);
 			if (mList->getLastSelectedItem() != last_selected_item)

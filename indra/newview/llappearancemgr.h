@@ -34,11 +34,13 @@
 #include "llinventorymodel.h"
 #include "llinventoryobserver.h"
 #include "llviewerinventory.h"
+#include "llhttpclient.h"
 
 class LLWearable;
 class LLWearableHoldingPattern;
 class LLInventoryCallback;
 class LLOutfitUnLockTimer;
+class LLCallAfterInventoryLinkMgr;
 
 class LLAppearanceMgr: public LLSingleton<LLAppearanceMgr>
 {
@@ -103,6 +105,9 @@ public:
 
 	// Find the Current Outfit folder.
 	const LLUUID getCOF() const;
+	S32 getCOFVersion() const;
+
+	S32 mLastUpdateRequestCOFVersion;
 
 	// Finds the folder link to the currently worn outfit
 	const LLViewerInventoryItem *getBaseOutfitLink();
@@ -117,6 +122,7 @@ public:
 	// Update the displayed outfit name in UI.
 	void updatePanelOutfitName(const std::string& name);
 
+	void purgeBaseOutfitLink(const LLUUID& category);
 	void createBaseOutfitLink(const LLUUID& category, LLPointer<LLInventoryCallback> link_waiter);
 
 	void updateAgentWearables(LLWearableHoldingPattern* holder, bool append);
@@ -140,11 +146,10 @@ public:
 	void addCOFItemLink(const LLInventoryItem *item, bool do_update = true, LLPointer<LLInventoryCallback> cb = NULL);
 
 	// Remove COF entries
-	void removeCOFItemLinks(const LLUUID& item_id, bool do_update = true);
-	void removeCOFLinksOfType(LLWearableType::EType type, bool do_update = true);
-
-	// Add COF link to ensemble folder.
-	void addEnsembleLink(LLInventoryCategory* item, bool do_update = true);
+	void removeCOFItemLinks(const LLUUID& item_id);
+	void removeCOFLinksOfType(LLWearableType::EType type);
+	void removeAllClothesFromAvatar();
+	void removeAllAttachmentsFromAvatar();
 
 	//has the current outfit changed since it was loaded?
 	bool isOutfitDirty() { return mOutfitIsDirty; }
@@ -172,12 +177,15 @@ public:
 	bool updateBaseOutfit();
 
 	//Remove clothing or detach an object from the agent (a bodypart cannot be removed)
+	void removeItemsFromAvatar(const uuid_vec_t& item_ids);
 	void removeItemFromAvatar(const LLUUID& item_id);
 
-
-	LLUUID makeNewOutfitLinks(const std::string& new_folder_name,bool show_panel = true);
-	LLUUID makeNewOutfitLinks(const std::string& new_folder_name, LLInventoryModel::item_array_t& item_list, bool show_panel = true);
-	LLUUID makeNewOutfitLegacy(const std::string& new_folder_name, LLInventoryModel::item_array_t& items, bool use_links, bool show_panel = true);
+private:
+	LLUUID makeNewOutfitCore(const std::string& new_folder_name, bool show_panel/*=true*/, LLInventoryModel::item_array_t* items = NULL);
+public:
+	LLUUID makeNewOutfitLinks(const std::string& new_folder_name, bool show_panel/*=true*/);
+	LLUUID makeNewOutfitLinks(const std::string& new_folder_name, LLInventoryModel::item_array_t& item_list);
+	LLUUID makeNewOutfitLegacy(const std::string& new_folder_name, LLInventoryModel::item_array_t& items, bool use_links);
 
 	bool moveWearable(LLViewerInventoryItem* item, bool closer_to_body);
 
@@ -193,6 +201,8 @@ public:
 	bool isOutfitLocked() { return mOutfitLocked; }
 
 	bool isInUpdateAppearanceFromCOF() { return mIsInUpdateAppearanceFromCOF; }
+
+	void requestServerAppearanceUpdate(LLHTTPClient::ResponderPtr responder_ptr = NULL);
 
 protected:
 	LLAppearanceMgr();
@@ -214,14 +224,13 @@ private:
 								   bool follow_folder_links);
 
 	void purgeCategory(const LLUUID& category, bool keep_outfit_links);
-	void purgeBaseOutfitLink(const LLUUID& category);
 
 	static void onOutfitRename(const LLSD& notification, const LLSD& response);
 
 	void setOutfitLocked(bool locked);
 
 // [SL:KB] - Checked: 2010-04-24 (RLVa-1.2.0f) | Added: RLVa-1.2.0f
-	void syncCOF(const LLInventoryModel::item_array_t& items, LLAssetType::EType type, LLPointer<LLInventoryCallback> cb);
+	void syncCOF(const LLInventoryModel::item_array_t& items, LLAssetType::EType type, LLCallAfterInventoryLinkMgr* link_waiter);
 // [/SL:KB]
 
 	bool mAttachmentInvLinkEnabled;
@@ -291,4 +300,5 @@ void callAfterCategoryFetch(const LLUUID& cat_id, nullary_func_t cb);
 // Wear all items in a uuid vector.
 void wear_multiple(const uuid_vec_t& ids, bool replace);
 
+void wear_on_avatar_cb(const LLUUID& inv_item, bool do_replace = false);
 #endif

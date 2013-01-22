@@ -229,8 +229,6 @@ bool LLTexUnit::bind(LLTexture* texture, bool for_rendering, bool forceBind)
 	stop_glerror();
 	if (mIndex < 0) return false;
 
-	gGL.flush();
-
 	LLImageGL* gl_tex = NULL ;
 	if (texture == NULL || !(gl_tex = texture->getGLTexture()))
 	{
@@ -258,6 +256,7 @@ bool LLTexUnit::bind(LLTexture* texture, bool for_rendering, bool forceBind)
 	}
 	if ((mCurrTexture != gl_tex->getTexName()) || forceBind)
 	{
+		gGL.flush();
 		activate();
 		enable(gl_tex->getTarget());
 		mCurrTexture = gl_tex->getTexName();
@@ -1120,6 +1119,9 @@ void LLRender::refreshState(void)
 	
 	setAlphaRejectSettings(mCurrAlphaFunc, mCurrAlphaFuncVal);
 
+	//Singu note: Also reset glBlendFunc
+	blendFunc(mCurrBlendColorSFactor,mCurrBlendColorDFactor,mCurrBlendAlphaSFactor,mCurrBlendAlphaDFactor);
+
 	mDirty = false;
 }
 
@@ -1458,6 +1460,7 @@ U32 LLRender::getMatrixMode()
 	{ //always return MM_TEXTURE if current matrix mode points at any texture matrix
 		return MM_TEXTURE;
 	}
+
 	return mMatrixMode;
 }
 
@@ -1510,20 +1513,26 @@ void LLRender::pushUIMatrix()
 {
 	if (mUIOffset.empty())
 	{
-		mUIOffset.push_back(new LLVector4a(0.f));
+		mUIOffset.push_back(static_cast<LLVector4a*>(ll_aligned_malloc_16(sizeof(LLVector4a))));
+		mUIOffset.back()->splat(0.f);
 	}
 	else
 	{
-		mUIOffset.push_back(new LLVector4a(*mUIOffset.back()));
+		const LLVector4a* last_entry = mUIOffset.back();
+		mUIOffset.push_back(static_cast<LLVector4a*>(ll_aligned_malloc_16(sizeof(LLVector4a))));
+		*mUIOffset.back() = *last_entry;
 	}
 	
 	if (mUIScale.empty())
 	{
-		mUIScale.push_back(new LLVector4a(1.f));
+		mUIScale.push_back(static_cast<LLVector4a*>(ll_aligned_malloc_16(sizeof(LLVector4a))));
+		mUIScale.back()->splat(1.f);
 	}
 	else
 	{
-		mUIScale.push_back(new LLVector4a(*mUIScale.back()));
+		const LLVector4a* last_entry = mUIScale.back();
+		mUIScale.push_back(static_cast<LLVector4a*>(ll_aligned_malloc_16(sizeof(LLVector4a))));
+		*mUIScale.back() = *last_entry;
 	}
 }
 
@@ -1533,9 +1542,9 @@ void LLRender::popUIMatrix()
 	{
 		llerrs << "UI offset stack blown." << llendl;
 	}
-	delete mUIOffset.back();
+	ll_aligned_free_16(mUIOffset.back());
 	mUIOffset.pop_back();
-	delete mUIScale.back();
+	ll_aligned_free_16(mUIScale.back());
 	mUIScale.pop_back();
 }
 
@@ -1580,7 +1589,7 @@ void LLRender::setColorMask(bool writeColorR, bool writeColorG, bool writeColorB
 	if (mCurrColorMask[0] != writeColorR ||
 		mCurrColorMask[1] != writeColorG ||
 		mCurrColorMask[2] != writeColorB ||
-		mCurrColorMask[3] != writeAlpha)
+		mCurrColorMask[3] != writeAlpha || mDirty)
 	{
 		mCurrColorMask[0] = writeColorR;
 		mCurrColorMask[1] = writeColorG;
@@ -1635,7 +1644,7 @@ void LLRender::setAlphaRejectSettings(eCompareFunc func, F32 value)
 	}
 
 	if (mCurrAlphaFunc != func ||
-		mCurrAlphaFuncVal != value)
+		mCurrAlphaFuncVal != value || mDirty)
 	{
 		mCurrAlphaFunc = func;
 		mCurrAlphaFuncVal = value;
@@ -1679,7 +1688,7 @@ void LLRender::blendFunc(eBlendFactor sfactor, eBlendFactor dfactor)
 	llassert(sfactor < BF_UNDEF);
 	llassert(dfactor < BF_UNDEF);
 	if (mCurrBlendColorSFactor != sfactor || mCurrBlendColorDFactor != dfactor ||
-	    mCurrBlendAlphaSFactor != sfactor || mCurrBlendAlphaDFactor != dfactor)
+	    mCurrBlendAlphaSFactor != sfactor || mCurrBlendAlphaDFactor != dfactor || mDirty)
 	{
 		mCurrBlendColorSFactor = sfactor;
 		mCurrBlendAlphaSFactor = sfactor;
@@ -1704,7 +1713,7 @@ void LLRender::blendFunc(eBlendFactor color_sfactor, eBlendFactor color_dfactor,
 		return;
 	}
 	if (mCurrBlendColorSFactor != color_sfactor || mCurrBlendColorDFactor != color_dfactor ||
-	    mCurrBlendAlphaSFactor != alpha_sfactor || mCurrBlendAlphaDFactor != alpha_dfactor)
+	    mCurrBlendAlphaSFactor != alpha_sfactor || mCurrBlendAlphaDFactor != alpha_dfactor || mDirty)
 	{
 		mCurrBlendColorSFactor = color_sfactor;
 		mCurrBlendAlphaSFactor = alpha_sfactor;

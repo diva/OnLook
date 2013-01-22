@@ -33,7 +33,7 @@
 #include "llinventorymodel.h"
 #include "llinventoryobserver.h"
 #include "llviewercontrol.h"
-#include "llwearable.h"
+#include "llviewerwearable.h"
 
 class LLInventoryPanel;
 class LLInventoryModel;
@@ -108,8 +108,9 @@ public:
 	virtual BOOL copyToClipboard() const;
 	virtual void cutToClipboard();
 	virtual BOOL isClipboardPasteable() const;
+	bool isClipboardPasteableAsCopy() const;
 	virtual BOOL isClipboardPasteableAsLink() const;
-	virtual void pasteFromClipboard() {}
+	virtual void pasteFromClipboard(bool only_copies = false) {}
 	virtual void pasteLinkFromClipboard() {}
 	void getClipboardEntries(bool show_asset_id, menuentry_vec_t &items, 
 							 menuentry_vec_t &disabled_items, U32 flags);
@@ -160,7 +161,7 @@ protected:
 									 BOOL restamp);
 	void removeBatchNoCheck(LLDynamicArray<LLFolderViewEventListener*>& batch);
 protected:
-	LLHandle<LLPanel> mInventoryPanel;
+	LLHandle<LLInventoryPanel> mInventoryPanel;
 	LLFolderView* mRoot;
 	const LLUUID mUUID;	// item id
 	LLInventoryType::EType mInvType;
@@ -261,7 +262,7 @@ public:
 	BOOL removeSystemFolder();
 	bool removeItemResponse(const LLSD& notification, const LLSD& response);
 
-	virtual void pasteFromClipboard();
+	virtual void pasteFromClipboard(bool only_copies = false);
 	virtual void pasteLinkFromClipboard();
 	virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
 	virtual BOOL hasChildren() const;
@@ -502,10 +503,10 @@ public:
 
 	static void		onWearOnAvatar( void* userdata );	// Access to wearOnAvatar() from menu
 	static BOOL		canWearOnAvatar( void* userdata );
-	static void		onWearOnAvatarArrived( LLWearable* wearable, void* userdata );
+	static void		onWearOnAvatarArrived( LLViewerWearable* wearable, void* userdata );
 	void			wearOnAvatar();
 
-	static void		onWearAddOnAvatarArrived( LLWearable* wearable, void* userdata );
+	static void		onWearAddOnAvatarArrived( LLViewerWearable* wearable, void* userdata );
 	void			wearAddOnAvatar();
 
 	static BOOL		canEditOnAvatar( void* userdata );	// Access to editOnAvatar() from menu
@@ -513,10 +514,9 @@ public:
 	void			editOnAvatar();
 
 	static BOOL		canRemoveFromAvatar( void* userdata );
-	static void		onRemoveFromAvatar( void* userdata );
-	static void		onRemoveFromAvatarArrived( LLWearable* wearable, 	void* userdata );
-	static void 	removeItemFromAvatar(LLViewerInventoryItem *item);
-	static void 	removeAllClothesFromAvatar();
+	//static void		onRemoveFromAvatar( void* userdata );
+	//static void		onRemoveFromAvatarArrived( LLViewerWearable* wearable, 	void* userdata );
+	//static void 	removeAllClothesFromAvatar();
 	void			removeFromAvatar();
 protected:
 	LLAssetType::EType mAssetType;

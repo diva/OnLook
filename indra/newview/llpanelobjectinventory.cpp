@@ -48,6 +48,7 @@
 #include "llinventorydefines.h"
 #include "llinventoryfilter.h"
 #include "llinventoryfunctions.h"
+#include "llinventoryicon.h"
 #include "llpreviewanim.h"
 #include "llpreviewgesture.h"
 #include "llpreviewnotecard.h"
@@ -131,7 +132,7 @@ public:
 	virtual BOOL copyToClipboard() const;
 	virtual void cutToClipboard();
 	virtual BOOL isClipboardPasteable() const;
-	virtual void pasteFromClipboard();
+	virtual void pasteFromClipboard(bool only_copies = false);
 	virtual void pasteLinkFromClipboard();
 	virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
 	virtual void performAction(LLInventoryModel* model, std::string action);
@@ -604,7 +605,7 @@ BOOL LLTaskInvFVBridge::isClipboardPasteable() const
 	return FALSE;
 }
 
-void LLTaskInvFVBridge::pasteFromClipboard()
+void LLTaskInvFVBridge::pasteFromClipboard(bool only_copies)
 {
 }
 

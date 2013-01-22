@@ -2,31 +2,25 @@
  * @file lldrawable.cpp
  * @brief LLDrawable class implementation
  *
- * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
- * Copyright (c) 2002-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -62,6 +56,8 @@ const F32 OBJECT_DAMPING_TIME_CONSTANT = 0.06f;
 const F32 MIN_SHADOW_CASTER_RADIUS = 2.0f;
 
 static LLFastTimer::DeclareTimer FTM_CULL_REBOUND("Cull Rebound");
+
+extern bool gShiftFrame;
 
 
 ////////////////////////
@@ -102,7 +98,6 @@ void LLDrawable::init()
 	mPositionGroup.clear();
 	mExtents[0].clear();
 	mExtents[1].clear();
-	mQuietCount = 0;
 
 	mState     = 0;
 	mVObjp   = NULL;
@@ -410,6 +405,8 @@ void LLDrawable::makeActive()
 		if (!isRoot() && !mParent->isActive())
 		{
 			mParent->makeActive();
+			//NOTE: linked set will now NEVER become static
+			mParent->setState(LLDrawable::ACTIVE_CHILD);
 		}
 
 		//all child objects must also be active
@@ -429,41 +426,27 @@ void LLDrawable::makeActive()
 
 		if (mVObjp->getPCode() == LL_PCODE_VOLUME)
 		{
-			if (mVObjp->isFlexible())
-			{
-				return;
-			}
-		}
-	
-		if (mVObjp->getPCode() == LL_PCODE_VOLUME)
-		{
 			gPipeline.markRebuild(this, LLDrawable::REBUILD_VOLUME, TRUE);
 		}
 		updatePartition();
 	}
 
-	if (isRoot())
-	{
-		mQuietCount = 0;
-	}
-	else
-	{
-		getParent()->mQuietCount = 0;
-	}
+	llassert(isAvatar() || isRoot() || mParent->isActive());
 }
 
 
 void LLDrawable::makeStatic(BOOL warning_enabled)
 {
-	if (isState(ACTIVE))
+	if (isState(ACTIVE) && 
+		!isState(ACTIVE_CHILD) && 
+		!mVObjp->isAttachment() && 
+		!mVObjp->isFlexible())
 	{
 		clearState(ACTIVE | ANIMATED_CHILD);
 
-		if (mParent.notNull() && mParent->isActive() && warning_enabled)
-		{
-			LL_WARNS_ONCE("Drawable") << "Drawable becomes static with active parent!" << LL_ENDL;
-		}
-
+		//drawable became static with active parent, not acceptable
+		llassert(mParent.isNull() || !mParent->isActive() || !warning_enabled);
+		
 		LLViewerObject::const_child_list_t& child_list = mVObjp->getChildren();
 		for (LLViewerObject::child_list_t::const_iterator iter = child_list.begin();
 			 iter != child_list.end(); iter++)
@@ -490,8 +473,8 @@ void LLDrawable::makeStatic(BOOL warning_enabled)
 			mSpatialBridge->markDead();
 			setSpatialBridge(NULL);
 		}
+		updatePartition();
 	}
-	updatePartition();
 }
 
 // Returns "distance" between target destination and resulting xfrom
@@ -519,7 +502,6 @@ F32 LLDrawable::updateXform(BOOL undamped)
 	//scaling
 	LLVector3 target_scale = mVObjp->getScale();
 	LLVector3 old_scale = mCurrentScale;
-	LLVector3 dest_scale = target_scale;
 	
 	// Damping
 	F32 dist_squared = 0.f;
@@ -642,7 +624,7 @@ BOOL LLDrawable::updateMove()
 	}
 	
 	makeActive();
-	
+
 	BOOL done;
 
 	if (isState(MOVE_UNDAMPED))
@@ -719,6 +701,11 @@ void LLDrawable::updateDistance(LLCamera& camera, bool force_update)
 	if (LLViewerCamera::sCurCameraID != LLViewerCamera::CAMERA_WORLD)
 	{
 		llwarns << "Attempted to update distance for non-world camera." << llendl;
+		return;
+	}
+
+	if (gShiftFrame)
+	{
 		return;
 	}
 
@@ -820,14 +807,19 @@ void LLDrawable::shiftPos(const LLVector4a &shift_vector)
 		mXform.setPosition(mVObjp->getPositionAgent());
 	}
 
-	mXform.setRotation(mVObjp->getRotation());
-	mXform.setScale(1,1,1);
 	mXform.updateMatrix();
 
 	if (isStatic())
 	{
 		LLVOVolume* volume = getVOVolume();
-		if (!volume)
+
+		bool rebuild = (!volume && 
+						getRenderType() != LLPipeline::RENDER_TYPE_TREE &&
+						getRenderType() != LLPipeline::RENDER_TYPE_TERRAIN &&
+						getRenderType() != LLPipeline::RENDER_TYPE_SKY &&
+						getRenderType() != LLPipeline::RENDER_TYPE_GROUND);
+
+		if (rebuild)
 		{
 			gPipeline.markRebuild(this, LLDrawable::REBUILD_ALL, TRUE);
 		}
@@ -841,7 +833,7 @@ void LLDrawable::shiftPos(const LLVector4a &shift_vector)
 				facep->mExtents[0].add(shift_vector);
 				facep->mExtents[1].add(shift_vector);
 			
-				if (!volume && facep->hasGeometry())
+				if (rebuild && facep->hasGeometry())
 				{
 					facep->clearVertexBuffer();
 				}
@@ -960,6 +952,12 @@ LLSpatialGroup* LLDrawable::getSpatialGroup() const
 
 void LLDrawable::setSpatialGroup(LLSpatialGroup *groupp)
 {
+	//precondition: mSpatialGroupp MUST be null or DEAD or mSpatialGroupp MUST NOT contain this
+	llassert(!mSpatialGroupp || mSpatialGroupp->isDead() || !mSpatialGroupp->hasElement(this));
+
+	//precondition: groupp MUST be null or groupp MUST contain this
+	llassert(!groupp || groupp->hasElement(this));
+
 /*if (mSpatialGroupp && (groupp != mSpatialGroupp))
 	{
 		mSpatialGroupp->setState(LLSpatialGroup::GEOM_DIRTY);
@@ -979,9 +977,12 @@ void LLDrawable::setSpatialGroup(LLSpatialGroup *groupp)
 		}
 	}
 
-	mSpatialGroupp = groupp;
+	//postcondition: if next group is NULL, previous group must be dead OR NULL OR binIndex must be -1
+	//postcondition: if next group is NOT NULL, binIndex must not be -1
+	llassert(groupp == NULL ? (mSpatialGroupp == NULL || mSpatialGroupp->isDead()) || getBinIndex() == -1 :
+							getBinIndex() != -1);
 
-	llassert((mSpatialGroupp == NULL) ? getBinIndex() == -1 : getBinIndex() != -1);
+	mSpatialGroupp = groupp;
 }
 
 LLSpatialPartition* LLDrawable::getSpatialPartition()
@@ -1224,7 +1225,6 @@ LLCamera LLSpatialBridge::transformCamera(LLCamera& camera)
 	LLCamera ret = camera;
 	LLXformMatrix* mat = mDrawable->getXform();
 	LLVector3 center = LLVector3(0,0,0) * mat->getWorldMatrix();
-	LLQuaternion rotation = LLQuaternion(mat->getWorldMatrix());
 
 	LLVector3 delta = ret.getOrigin() - center;
 	LLQuaternion rot = ~mat->getRotation();
@@ -1416,6 +1416,11 @@ void LLSpatialBridge::updateDistance(LLCamera& camera_in, bool force_update)
 		return;
 	}
 
+	if (gShiftFrame)
+	{
+		return;
+	}
+
 	if (mDrawable->getVObj())
 	{
 		if (mDrawable->getVObj()->isAttachment())
@@ -1499,13 +1504,11 @@ void LLSpatialBridge::cleanupReferences()
 	LLDrawable::cleanupReferences();
 	if (mDrawable)
 	{
-		LLSpatialGroup* group = mDrawable->getSpatialGroup();
-		if (group)
-		{
-			group->mOctreeNode->remove(mDrawable);
-			mDrawable->setSpatialGroup(NULL);
-		}
+		/*
 		
+		DON'T DO THIS -- this should happen through octree destruction
+
+		mDrawable->setSpatialGroup(NULL);
 		if (mDrawable->getVObj())
 		{
 			LLViewerObject::const_child_list_t& child_list = mDrawable->getVObj()->getChildren();
@@ -1516,15 +1519,10 @@ void LLSpatialBridge::cleanupReferences()
 				LLDrawable* drawable = child->mDrawable;					
 				if (drawable)
 				{
-					LLSpatialGroup* group = drawable->getSpatialGroup();
-					if (group)
-					{
-						group->mOctreeNode->remove(drawable);
-						drawable->setSpatialGroup(NULL);
-					}
+					drawable->setSpatialGroup(NULL);
 				}
 			}
-		}
+		}*/
 
 		LLDrawable* drawablep = mDrawable;
 		mDrawable = NULL;

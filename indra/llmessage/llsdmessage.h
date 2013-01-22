@@ -136,8 +136,6 @@ private:
     class EventResponder: public LLHTTPClient::ResponderWithResult
     {
     public:
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return *mHTTPTimeoutPolicy; }
-
         /**
          * LLHTTPClient::ResponderWithResult that dispatches via named LLEventPump instances.
          * We bind LLEventPumps, even though it's an LLSingleton, for testability.
@@ -158,9 +156,12 @@ private:
 
 		void setTimeoutPolicy(std::string const& name);
     
-        virtual void result(const LLSD& data);
-        virtual void errorWithContent(U32 status, const std::string& reason, const LLSD& content);
-    
+        /*virtual*/ void result(const LLSD& data);
+        /*virtual*/ void errorWithContent(U32 status, const std::string& reason, const LLSD& content);
+
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return *mHTTPTimeoutPolicy; }
+		/*virtual*/ char const* getName(void) const { return "EventResponder"; }
+
     private:
         LLEventPumps& mPumps;
         LLReqID mReqID;

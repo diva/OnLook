@@ -3,8 +3,9 @@
 	<search_editor label="Escribe aquí para buscar" name="inventory search editor"/>
 	<button label="" name="collapse_btn" tool_tip="Cerrar Todo" />
 	<button label="" name="Inventory.ExpandAll" tool_tip="Expandir Todo"/>	  
+   <button name="Inventory.ResetAll" tool_tip="Cerrar Todo y Limpiar Filtros"/>
 	<text name="group_titles_textbox">
-		Filtro Rápido:
+		Tipos:
 	</text>
 	<!-- Inventory Type Filter Labels -->
 	<string name="filter_type_all">
@@ -46,7 +47,7 @@
 	<string name="filter_type_custom">
 		Personalizado...
 	</string>
-	<combo_box name="Quick Filter" label="Filtro Rápido">
+	<combo_box name="Quick Filter" tool_tip="Filtro Rápido">
 		<combo_item name="filter_type_all">
 			Todos los Tipos
 		</combo_item>

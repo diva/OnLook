@@ -378,6 +378,14 @@
 					<boolean>true</boolean>
 				</map>
                 
+				<key>WindLightRefresh</key>
+					<map>
+					<key>flavor</key>
+					<string>llsd</string>
+					<key>trusted-sender</key>
+					<boolean>true</boolean>
+				</map>
+
 				<key>ParcelVoiceInfo</key>
 				<map>
 					<key>flavor</key>
@@ -385,7 +393,6 @@
 					<key>trusted-sender</key>
 					<boolean>true</boolean>
 				</map>
-
 
 				<key>ParcelNavigateMedia</key>
 				<map>
@@ -656,7 +663,7 @@
 			<boolean>false</boolean>
 
 			<key>RequestTextureDownload</key>
-			<boolean>false</boolean>
+			<boolean>true</boolean>
 
 			<key>EventQueueGet</key>
 			<boolean>false</boolean>
@@ -707,6 +714,9 @@
 			<boolean>true</boolean>
 		
 			<key>FetchLib2</key>
+			<boolean>true</boolean>
+
+			<key>UploadBakedTexture</key>
 			<boolean>true</boolean>
 		</map>
 

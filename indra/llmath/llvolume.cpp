@@ -29,6 +29,10 @@
 #include "llmath.h"
 
 #include <set>
+#if !LL_WINDOWS
+#include <stdint.h>
+#endif
+#include <cmath>
 
 #include "llerror.h"
 #include "llmemtype.h"
@@ -90,17 +94,6 @@ const F32 SCULPT_MIN_AREA = 0.002f;
 const S32 SCULPT_MIN_AREA_DETAIL = 1;
 
 extern BOOL gDebugGL;
-
-void assert_aligned(void* ptr, uintptr_t alignment)
-{
-#if 0
-	uintptr_t t = (uintptr_t) ptr;
-	if (t%alignment != 0)
-	{
-		llerrs << "Alignment check failed." << llendl;
-	}
-#endif
-}
 
 BOOL check_same_clock_dir( const LLVector3& pt1, const LLVector3& pt2, const LLVector3& pt3, const LLVector3& norm)
 {    
@@ -2703,7 +2696,7 @@ bool LLVolume::unpackVolumeFaces(std::istream& is, S32 size)
 	return true;
 }
 
-		
+
 BOOL LLVolume::isMeshAssetLoaded()
 {
 	return mIsMeshAssetLoaded;
@@ -3062,15 +3055,29 @@ S32 sculpt_sides(F32 detail)
 
 
 // determine the number of vertices in both s and t direction for this sculpt
-void sculpt_calc_mesh_resolution(U16 width, U16 height, U8 type, F32 detail, S32& s, S32& t)
+bool sculpt_calc_mesh_resolution(U16 width, U16 height, U8 type, F32 detail, S32& s, S32& t)
 {
+	//Singu Note: minimum number of vertices depend on stitching type.
+	S32 min_s = 1;
+	S32 min_t = 1;
+
+  	if ((type == LL_SCULPT_TYPE_SPHERE) ||
+		(type == LL_SCULPT_TYPE_TORUS) ||
+		(type == LL_SCULPT_TYPE_CYLINDER))
+		min_s = 4;
+
+	if (type == LL_SCULPT_TYPE_TORUS)
+		min_t = 4;
+
 	// this code has the following properties:
 	// 1) the aspect ratio of the mesh is as close as possible to the ratio of the map
 	//    while still using all available verts
 	// 2) the mesh cannot have more verts than is allowed by LOD
 	// 3) the mesh cannot have more verts than is allowed by the map
-	
-	S32 max_vertices_lod = (S32)pow((double)sculpt_sides(detail), 2.0);
+
+	//Singu Note: Replaced float math mangling to get an integer square with just one multiplication.
+	S32 const sculptsides = sculpt_sides(detail);
+	S32 max_vertices_lod = sculptsides * sculptsides;
 	S32 max_vertices_map = width * height / 4;
 	
 	S32 vertices;
@@ -3089,11 +3096,22 @@ void sculpt_calc_mesh_resolution(U16 width, U16 height, U8 type, F32 detail, S32
 	
 	s = (S32)(F32) sqrt(((F32)vertices / ratio));
 
-	s = llmax(s, 4);              // no degenerate sizes, please
+	s = llmax(s, min_s);          // no degenerate sizes, please
 	t = vertices / s;
 
-	t = llmax(t, 4);              // no degenerate sizes, please
+	t = llmax(t, min_t);          // no degenerate sizes, please
 	s = vertices / t;
+
+	// Singu Note: return false if we failed to get enough vertices for this stitching
+	// type (due to not enough data, ie while the sculpt is still loading).
+	bool enough_data = s >= min_s;
+	if (!enough_data)
+	{
+		// Uses standard lod stepping for the sphere that will be shown.
+		s = t = sculptsides;
+	}
+
+	return enough_data;
 }
 
 // sculpt replaces generate() for sculpted surfaces
@@ -3120,7 +3138,14 @@ void LLVolume::sculpt(U16 sculpt_width, U16 sculpt_height, S8 sculpt_components,
 		sculpt_detail = 4.0;
 	}
 
-	sculpt_calc_mesh_resolution(sculpt_width, sculpt_height, sculpt_type, sculpt_detail, requested_sizeS, requested_sizeT);
+	//Singu Note: this function returns false when sculpt_width and sculpt_height are too small.
+	// In that case requested_sizeS and requested_sizeT are set to the same values as should have happened
+	// when either of sculpt_width or sculpt_height had been zero.
+	if (!sculpt_calc_mesh_resolution(sculpt_width, sculpt_height, sculpt_type, sculpt_detail, requested_sizeS, requested_sizeT))
+	{
+		sculpt_level = -1;
+		data_is_empty = TRUE;
+	}
 
 	mPathp->generate(mParams.getPathParams(), sculpt_detail, 0, TRUE, requested_sizeS);
 	mProfilep->generate(mParams.getProfileParams(), mPathp->isOpen(), sculpt_detail, 0, TRUE, requested_sizeT);
@@ -6963,14 +6988,14 @@ void LLVolumeFace::resizeVertices(S32 num_verts)
 	if (num_verts)
 	{
 		mPositions = (LLVector4a*) ll_aligned_malloc_16(sizeof(LLVector4a)*num_verts);
-		assert_aligned(mPositions, 16);
+		ll_assert_aligned(mPositions, 16);
 		mNormals = (LLVector4a*) ll_aligned_malloc_16(sizeof(LLVector4a)*num_verts);
-		assert_aligned(mNormals, 16);
+		ll_assert_aligned(mNormals, 16);
 
 		//pad texture coordinate block end to allow for QWORD reads
 		S32 size = ((num_verts*sizeof(LLVector2)) + 0xF) & ~0xF;
 		mTexCoords = (LLVector2*) ll_aligned_malloc_16(size);
-		assert_aligned(mTexCoords, 16);
+		ll_assert_aligned(mTexCoords, 16);
 	}
 	else
 	{
@@ -6991,17 +7016,21 @@ void LLVolumeFace::pushVertex(const LLVector4a& pos, const LLVector4a& norm, con
 {
 	S32 new_verts = mNumVertices+1;
 	S32 new_size = new_verts*16;
-//	S32 old_size = mNumVertices*16;
+	S32 old_size = mNumVertices*16;
 
 	//positions
-	mPositions = (LLVector4a*) realloc(mPositions, new_size);
+	mPositions = (LLVector4a*) ll_aligned_realloc_16(mPositions, new_size, old_size);
+	ll_assert_aligned(mPositions,16);
 	
 	//normals
-	mNormals = (LLVector4a*) realloc(mNormals, new_size);
-	
+	mNormals = (LLVector4a*) ll_aligned_realloc_16(mNormals, new_size, old_size);
+	ll_assert_aligned(mNormals,16);
+
 	//tex coords
 	new_size = ((new_verts*8)+0xF) & ~0xF;
-	mTexCoords = (LLVector2*) realloc(mTexCoords, new_size);
+	old_size = ((mNumVertices*8)+0xF) & ~0xF;
+	mTexCoords = (LLVector2*) ll_aligned_realloc_16(mTexCoords, new_size, old_size);
+	ll_assert_aligned(mTexCoords,16);
 	
 
 	//just clear binormals
@@ -7054,7 +7083,8 @@ void LLVolumeFace::pushIndex(const U16& idx)
 	S32 old_size = ((mNumIndices*2)+0xF) & ~0xF;
 	if (new_size != old_size)
 	{
-		mIndices = (U16*) realloc(mIndices, new_size);
+		mIndices = (U16*) ll_aligned_realloc_16(mIndices, new_size, old_size);
+		ll_assert_aligned(mIndices,16);
 	}
 	
 	mIndices[mNumIndices++] = idx;
@@ -7095,12 +7125,12 @@ void LLVolumeFace::appendFace(const LLVolumeFace& face, LLMatrix4& mat_in, LLMat
 	}
 
 	//allocate new buffer space
-	mPositions = (LLVector4a*) realloc(mPositions, new_count*sizeof(LLVector4a));
-	assert_aligned(mPositions, 16);
-	mNormals = (LLVector4a*) realloc(mNormals, new_count*sizeof(LLVector4a));
-	assert_aligned(mNormals, 16);
-	mTexCoords = (LLVector2*) realloc(mTexCoords, (new_count*sizeof(LLVector2)+0xF) & ~0xF);
-	assert_aligned(mTexCoords, 16);
+	mPositions = (LLVector4a*) ll_aligned_realloc_16(mPositions, new_count*sizeof(LLVector4a), mNumVertices*sizeof(LLVector4a));
+	ll_assert_aligned(mPositions, 16);
+	mNormals = (LLVector4a*) ll_aligned_realloc_16(mNormals, new_count*sizeof(LLVector4a), mNumVertices*sizeof(LLVector4a));
+	ll_assert_aligned(mNormals, 16);
+	mTexCoords = (LLVector2*) ll_aligned_realloc_16(mTexCoords, (new_count*sizeof(LLVector2)+0xF) & ~0xF, (mNumVertices*sizeof(LLVector2)+0xF) & ~0xF);
+	ll_assert_aligned(mTexCoords, 16);
 	
 	mNumVertices = new_count;
 
@@ -7146,7 +7176,7 @@ void LLVolumeFace::appendFace(const LLVolumeFace& face, LLMatrix4& mat_in, LLMat
 	new_count = mNumIndices + face.mNumIndices;
 
 	//allocate new index buffer
-	mIndices = (U16*) realloc(mIndices, (new_count*sizeof(U16)+0xF) & ~0xF);
+	mIndices = (U16*) ll_aligned_realloc_16(mIndices, (new_count*sizeof(U16)+0xF) & ~0xF, (mNumIndices*sizeof(U16)+0xF) & ~0xF);
 	
 	//get destination address into new index buffer
 	U16* dst_idx = mIndices+mNumIndices;

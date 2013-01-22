@@ -77,11 +77,6 @@ public:
 	~LLSpeaker() {};
 	void lookupName();
 
-    // [Ansariel: Display name support]
-	//static void onAvatarNameLookup(const LLUUID& id, const std::string& first, const std::string& last, BOOL is_group, void* user_data);
-    static void onAvatarNameLookup(const LLUUID& id, const LLAvatarName& avatar_name, void* user_data);
-    // [/Ansariel: Display name support]
-
 	ESpeakerStatus	mStatus;			// current activity status in speech group
 	F32				mLastSpokeTime;		// timestamp when this speaker last spoke
 	F32				mSpeechVolume;		// current speech amplitude (timea average rms amplitude?)
@@ -232,7 +227,6 @@ public:
 	static void onVolumeChange(LLUICtrl* source, void* user_data);
 	static void onClickProfile(void* user_data);
 	static void onDoubleClickSpeaker(void* user_data);
-	static void onSelectSpeaker(LLUICtrl* source, void* user_data);
 	static void onSortChanged(void* user_data);
 	static void	onModeratorMuteVoice(LLUICtrl* ctrl, void* user_data);
 	static void	onModeratorMuteText(LLUICtrl* ctrl, void* user_data);

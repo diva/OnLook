@@ -57,6 +57,7 @@
 #include "lltabcontainer.h"
 #include "v2math.h"
 #include "llfasttimer.h"
+#include "airecursive.h"
 
 const S32 MINIMIZED_WIDTH = 160;
 const S32 CLOSE_BOX_FROM_TOP = 1;
@@ -148,7 +149,6 @@ LLFloater::LLFloater() :
 		mResizeHandle[i] = NULL;
 	}
 	mDragHandle = NULL;
-	mHandle.bind(this);
 	mNotificationContext = new LLFloaterNotificationContext(getHandle());
 }
 
@@ -222,7 +222,6 @@ void LLFloater::initFloater(const std::string& title,
 					 BOOL resizable, S32 min_width, S32 min_height,
 					 BOOL drag_on_left, BOOL minimizable, BOOL close_btn)
 {
-	mHandle.bind(this);
 	mNotificationContext = new LLFloaterNotificationContext(getHandle());
 
 	// Init function can be called more than once, so clear out old data.
@@ -422,7 +421,7 @@ void LLFloater::initFloater(const std::string& title,
 	setVisible(FALSE);
 
 	// add self to handle->floater map
-	sFloaterMap[mHandle] = this;
+	sFloaterMap[getHandle()] = this;
 
 	if (!getParent())
 	{
@@ -483,7 +482,7 @@ LLFloater::~LLFloater()
 	// correct, non-minimized positions.
 	setMinimized( FALSE );
 
-	sFloaterMap.erase(mHandle);
+	sFloaterMap.erase(getHandle());
 
 	delete mDragHandle;
 	for (S32 i = 0; i < 4; i++) 
@@ -1990,9 +1989,16 @@ LLRect LLFloaterView::findNeighboringPosition( LLFloater* reference_floater, LLF
 	return new_rect;
 }
 
-
 void LLFloaterView::bringToFront(LLFloater* child, BOOL give_focus)
 {
+	// Stop recursive call sequence
+	//   LLFloaterView::bringToFront calls
+	//   LLFloater::setFocus         calls
+	//   LLFloater::setFrontmost     calls this again.
+	static bool recursive;
+	if (recursive) { return; }
+	AIRecursive enter(recursive);
+
 	// *TODO: make this respect floater's mAutoFocus value, instead of
 	// using parameter
 	if (child->getHost())

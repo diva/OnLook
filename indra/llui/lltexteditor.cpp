@@ -3244,8 +3244,8 @@ void LLTextEditor::drawCursor()
 				LLRect screen_pos = calcScreenRect();
 				LLCoordGL ime_pos( screen_pos.mLeft + llfloor(cursor_left), screen_pos.mBottom + llfloor(cursor_top) );
 
-				ime_pos.mX = (S32) (ime_pos.mX * LLUI::sGLScaleFactor.mV[VX]);
-				ime_pos.mY = (S32) (ime_pos.mY * LLUI::sGLScaleFactor.mV[VY]);
+				ime_pos.mX = (S32) (ime_pos.mX * LLUI::getScaleFactor().mV[VX]);
+				ime_pos.mY = (S32) (ime_pos.mY * LLUI::getScaleFactor().mV[VY]);
 				getWindow()->setLanguageTextInput( ime_pos );
 			}
 		}
@@ -5224,5 +5224,5 @@ void LLTextEditor::markAsPreedit(S32 position, S32 length)
 
 S32 LLTextEditor::getPreeditFontSize() const
 {
-	return llround(mGLFont->getLineHeight() * LLUI::sGLScaleFactor.mV[VY]);
+	return llround(mGLFont->getLineHeight() * LLUI::getScaleFactor().mV[VY]);
 }

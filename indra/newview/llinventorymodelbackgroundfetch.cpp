@@ -185,16 +185,10 @@ void LLInventoryModelBackgroundFetch::backgroundFetchCB(void *)
 	LLInventoryModelBackgroundFetch::instance().backgroundFetch();
 }
 
-//static 
 void LLInventoryModelBackgroundFetch::backgroundFetch()
 {
 	LLViewerRegion* region = gAgent.getRegion();
-	if (!region)
-	{
-		return;
-	}
-	
-	if (mBackgroundFetchActive && gAgent.getRegion())
+	if (mBackgroundFetchActive && region && region->capabilitiesReceived())
 	{
 		// If we'll be using the capability, we'll be sending batches and the background thing isn't as important.
 		std::string url = region->getCapability("FetchInventory2");
@@ -376,9 +370,10 @@ class LLInventoryModelFetchItemResponder : public LLInventoryModel::fetchInvento
 {
 public:
 	LLInventoryModelFetchItemResponder(const LLSD& request_sd) : LLInventoryModel::fetchInventoryResponder(request_sd) {};
-	void result(const LLSD& content);			
-	void error(U32 status, const std::string& reason);
-	AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return inventoryModelFetchItemResponder_timeout; }
+	/*virtual*/ void result(const LLSD& content);			
+	/*virtual*/ void error(U32 status, const std::string& reason);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return inventoryModelFetchItemResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLInventoryModelFetchItemResponder"; }
 };
 
 void LLInventoryModelFetchItemResponder::result( const LLSD& content )
@@ -393,7 +388,7 @@ void LLInventoryModelFetchItemResponder::error( U32 status, const std::string& r
 	LLInventoryModelBackgroundFetch::instance().incrFetchCount(-1);
 }
 
-class LLInventoryModelFetchDescendentsResponder: public LLHTTPClient::ResponderWithResult
+class LLInventoryModelFetchDescendentsResponder : public LLHTTPClient::ResponderWithResult
 {
 	public:
 	LLInventoryModelFetchDescendentsResponder(const LLSD& request_sd, uuid_vec_t recursive_cats) : 
@@ -401,9 +396,10 @@ class LLInventoryModelFetchDescendentsResponder: public LLHTTPClient::ResponderW
 		mRecursiveCatUUIDs(recursive_cats)
 	{};
 	//LLInventoryModelFetchDescendentsResponder() {};
-	void result(const LLSD& content);
-	void error(U32 status, const std::string& reason);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return inventoryModelFetchDescendentsResponder_timeout; }
+	/*virtual*/ void result(const LLSD& content);
+	/*virtual*/ void error(U32 status, const std::string& reason);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return inventoryModelFetchDescendentsResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLInventoryModelFetchDescendentsResponder"; }
 
 protected:
 	BOOL getIsRecursive(const LLUUID& cat_id) const;

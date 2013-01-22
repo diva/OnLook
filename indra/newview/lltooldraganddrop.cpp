@@ -1089,14 +1089,17 @@ void LLToolDragAndDrop::dropTextureAllFaces(LLViewerObject* hit_obj,
 	{
 		return;
 	}
-	LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture(asset_id);
+	//LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture(asset_id);
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_EDIT_TEXTURE_COUNT );
 	S32 num_faces = hit_obj->getNumTEs();
 	for( S32 face = 0; face < num_faces; face++ )
 	{
 
 		// update viewer side image in anticipation of update from simulator
-		hit_obj->setTEImage(face, image);
+		//hit_obj->setTEImage(face, image);
+		hit_obj->setTETexture(face, asset_id);	//Singu note: setTETexture will allow the real id to be passed to LLPrimitive::setTETexture,
+												// even if it's null. setTEImage would actually pass down IMG_DEFAULT under such a case,
+												// which we don't want.
 		dialog_refresh_all();
 	}
 	// send the update to the simulator
@@ -1157,9 +1160,12 @@ void LLToolDragAndDrop::dropTextureOneFace(LLViewerObject* hit_obj,
 		return;
 	}
 	// update viewer side image in anticipation of update from simulator
-	LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture(asset_id);
+	//LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture(asset_id);
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_EDIT_TEXTURE_COUNT );
-	hit_obj->setTEImage(hit_face, image);
+	//hit_obj->setTEImage(hit_face, image);
+	hit_obj->setTETexture(hit_face, asset_id);	//Singu note: setTETexture will allow the real id to be passed to LLPrimitive::setTETexture,
+												// even if it's null. setTEImage would actually pass down IMG_DEFAULT under such a case,
+												// which we don't want.										
 	dialog_refresh_all();
 
 	// send the update to the simulator
@@ -1258,7 +1264,7 @@ void LLToolDragAndDrop::dropObject(LLViewerObject* raycast_target,
 	if (!item || !item->isFinished()) return;
 	
 	if (regionp
-		&& (regionp->getRegionFlags() & REGION_FLAGS_SANDBOX))
+		&& regionp->getRegionFlag(REGION_FLAGS_SANDBOX))
 	{
 		LLFirstUse::useSandbox();
 	}
@@ -1732,7 +1738,7 @@ EAcceptance LLToolDragAndDrop::dad3dRezAttachmentFromInv(
 //			LLPointer<LLInventoryCallback> cb = new RezAttachmentCallback(0);
 // [SL:KB] - Patch: Appearance-DnDWear | Checked: 2010-09-28 (Catznip-3.0.0a) | Added: Catznip-2.2.0a
 			// Make this behave consistent with dad3dWearItem
-			LLPointer<LLInventoryCallback> cb = new RezAttachmentCallback(0, !(mask & MASK_CONTROL));
+			LLPointer<LLInventoryCallback> cb = new LLBoostFuncInventoryCallback(boost::bind(&rez_attachment_cb, _1, (LLViewerJointAttachment*)0, !(mask & MASK_CONTROL)));
 // [/SL:KB]
 			copy_inventory_item(
 				gAgent.getID(),
@@ -2137,7 +2143,7 @@ EAcceptance LLToolDragAndDrop::dad3dActivateGesture(
 			{
 				// create item based on that one, and put it on if that
 				// was a success.
-				LLPointer<LLInventoryCallback> cb = new ActivateGestureCallback();
+				LLPointer<LLInventoryCallback> cb = new LLBoostFuncInventoryCallback(activate_gesture_cb);
 				copy_inventory_item(
 					gAgent.getID(),
 					item->getPermissions().getOwner(),

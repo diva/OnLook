@@ -178,14 +178,16 @@
 #include "llinventorypanel.h"
 #include "llinventorybridge.h"
 #include "llkeyboard.h"
-#include "llpanellogin.h"
+#include "llmakeoutfitdialog.h"
 #include "llmenucommands.h"
 #include "llmenugl.h"
 #include "llmimetypes.h"
 #include "llmorphview.h"
+#include "llmenuoptionpathfindingrebakenavmesh.h"
 #include "llmoveview.h"
 #include "llmutelist.h"
 #include "llnotify.h"
+#include "llpanellogin.h"
 #include "llpanelobject.h"
 
 #include "llparcel.h"
@@ -264,10 +266,14 @@
 #include "llagentui.h"
 #include "llpathfindingmanager.h"
 
+#include "lltexturecache.h"
+#include "llvovolume.h"
+#include <map>
+
 #include "hippogridmanager.h"
 
 using namespace LLOldEvents;
-using namespace LLVOAvatarDefines;
+using namespace LLAvatarAppearanceDefines;
 void init_client_menu(LLMenuGL* menu);
 void init_server_menu(LLMenuGL* menu);
 
@@ -612,6 +618,9 @@ BOOL enable_region_owner(void*);
 void menu_toggle_attached_lights(void* user_data);
 void menu_toggle_attached_particles(void* user_data);
 
+BOOL enable_dump_archetype_xm(void*);
+void handle_dump_archetype_xml(void *);
+
 class LLMenuParcelObserver : public LLParcelObserver
 {
 public:
@@ -813,11 +822,6 @@ void init_menus()
 										NULL,
 										&menu_check_control,
 										(void*)"Nimble"));
-	menu->addChild(new LLMenuItemCheckGL( "ReSit",
-										&menu_toggle_control,
-										NULL,
-										&menu_check_control,
-										(void*)"ReSit"));
 	menu->addSeparator();
 	menu->addChild(new LLMenuItemCallGL(	"Object Area Search", &handle_area_search, NULL));
 
@@ -854,6 +858,7 @@ void init_menus()
 	menu->setCanTearOff(TRUE);
 	init_client_menu(menu);
 	gMenuBarView->addChild( menu );
+	rlvMenuToggleVisible();
 
 	menu = new LLMenuGL(SERVER_MENU_NAME);
 	menu->setCanTearOff(TRUE);
@@ -874,7 +879,7 @@ void init_menus()
 	
 	menu = new LLMenuGL(CLIENT_MENU_NAME);
 	menu->setCanTearOff(FALSE);
-	menu->addChild(new LLMenuItemCallGL("Debug Settings...", LLFloaterSettingsDebug::show, NULL, NULL));
+	menu->addChild(new LLMenuItemCallGL("Debug Settings...", handle_singleton_toggle<LLFloaterSettingsDebug>, NULL, NULL));
 	gLoginMenuBarView->addChild(menu);
 	menu->updateParent(LLMenuGL::sMenuContainer);
 
@@ -1058,15 +1063,13 @@ void init_client_menu(LLMenuGL* menu)
 
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.1b | OK
 	#ifdef RLV_ADVANCED_MENU
-		if (rlv_handler_t::isEnabled())
-		{
-			sub_menu = new LLMenuGL("RLVa");
-			sub_menu->setCanTearOff(TRUE);
-			init_debug_rlva_menu(sub_menu);
-			menu->addChild(sub_menu);
-			sub_menu->setVisible(rlv_handler_t::isEnabled());
-			sub_menu->setEnabled(rlv_handler_t::isEnabled());
-		}
+		sub_menu = new LLMenuGL("RLVa Embedded");
+		init_debug_rlva_menu(sub_menu);
+		menu->addChild(sub_menu);
+		// Top Level Menu as well
+		sub_menu = new LLMenuGL("RLVa Main");
+		init_debug_rlva_menu(sub_menu);
+		gMenuBarView->addChild(sub_menu);
 	#endif // RLV_ADVANCED_MENU
 // [/RLVa:KB]
 
@@ -1217,7 +1220,7 @@ void init_client_menu(LLMenuGL* menu)
 										&menu_check_control,
 										(void*)"SaveMinidump"));
 
-	menu->addChild(new LLMenuItemCallGL("Debug Settings...", LLFloaterSettingsDebug::show, NULL, NULL));
+	menu->addChild(new LLMenuItemCallGL("Debug Settings...", handle_singleton_toggle<LLFloaterSettingsDebug>, NULL, NULL));
 	menu->addChild(new LLMenuItemCheckGL("View Admin Options", &handle_admin_override_toggle, NULL, &check_admin_override, NULL, 'V', MASK_CONTROL | MASK_ALT));
 
 	menu->addChild(new LLMenuItemCallGL("Request Admin Status", 
@@ -1622,7 +1625,7 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 		&gAllowIdleAFK));
 
 	sub_menu->addChild(new LLMenuItemCallGL("Appearance To XML", 
-		&LLVOAvatar::dumpArchetypeXML));
+		&handle_dump_archetype_xml,&enable_dump_archetype_xm));
 
 	// HACK for easy testing of avatar geometry
 	sub_menu->addChild(new LLMenuItemCallGL( "Toggle Character Geometry", 
@@ -1691,6 +1694,9 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 // [RLVa:KB] - Checked: 2009-11-17 (RLVa-1.1.0d) | Modified: RLVa-1.1.0d | OK
 void init_debug_rlva_menu(LLMenuGL* menu)
 {
+	menu->setLabel(std::string("RLVa")); // Same menu, same label
+	menu->setCanTearOff(true);
+
 	// Debug options
 	{
 		LLMenuGL* pDbgMenu = new LLMenuGL("Debug");
@@ -2056,7 +2062,8 @@ class LLViewCommunicate : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if (LLFloaterChatterBox::getInstance()->getFloaterCount() == 0)
+		static LLCachedControl<bool> only_comm("CommunicateSpecificShortcut");
+		if (!only_comm && LLFloaterChatterBox::getInstance()->getFloaterCount() == 0)
 		{
 			LLFloaterMyFriends::toggleInstance();
 		}
@@ -2265,6 +2272,105 @@ class LLObjectDerender : public view_listener_t
 	}
 };
 
+class LLTextureReloader
+{
+public:
+	~LLTextureReloader()
+	{
+		for(std::set< LLViewerFetchedTexture*>::iterator it=mTextures.begin();it!=mTextures.end();++it)
+		{
+			LLViewerFetchedTexture* img = *it;
+			const LLUUID& id = img->getID();
+			if(id.notNull() && id != IMG_DEFAULT && id != IMG_DEFAULT_AVATAR && img != LLViewerFetchedTexture::sDefaultImagep)
+			{
+				LLAppViewer::getTextureCache()->removeFromCache(id);
+				img->forceRefetch();
+				for (S32 i = 0; i < img->getNumVolumes(); ++i)
+				{
+					LLVOVolume* volume = (*(img->getVolumeList()))[i];
+					if (volume && volume->isSculpted() && !volume->isMesh())
+						volume->notifyMeshLoaded();
+				}
+			}
+		}
+	}
+	void addTexture(LLViewerTexture* texture)
+	{
+		if(!texture)
+			return;
+		const LLUUID& id = texture->getID();
+		if(id.notNull() && id != IMG_DEFAULT && id != IMG_DEFAULT_AVATAR && texture != LLViewerFetchedTexture::sDefaultImagep)
+		{
+			LLViewerFetchedTexture* img = LLViewerTextureManager::staticCastToFetchedTexture(texture);
+			if(img)
+				mTextures.insert(img);
+		}
+	}
+
+private:
+	std::set< LLViewerFetchedTexture*> mTextures;
+};
+class LLAvatarReloadTextures : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
+		if(avatar)
+		{
+			LLAvatarPropertiesProcessor::getInstance()->sendAvatarTexturesRequest(avatar->getID());
+			LLTextureReloader texture_list;
+			for (U32 i = 0; i < LLAvatarAppearanceDefines::TEX_NUM_INDICES; ++i)
+			{
+				if (LLVOAvatar::isIndexLocalTexture((ETextureIndex)i))
+				{
+					if(avatar->isSelf())
+					{
+						LLWearableType::EType wearable_type = LLAvatarAppearanceDictionary::getTEWearableType((ETextureIndex)i);
+						U32 num_wearables = gAgentWearables.getWearableCount(wearable_type);
+						for (U32 wearable_index = 0; wearable_index < num_wearables; wearable_index++)
+						{
+							texture_list.addTexture(((LLVOAvatarSelf*)avatar)->getLocalTextureGL((ETextureIndex)i,wearable_index));
+						}
+					}
+				}
+				else 
+				{
+					texture_list.addTexture(avatar->getTEImage((ETextureIndex)i));
+				}
+			}
+		}
+		return true;
+	}
+};
+class LLObjectReloadTextures : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLTextureReloader texture_list;
+		for (LLObjectSelection::valid_iterator iter = LLSelectMgr::getInstance()->getSelection()->valid_begin();
+		 iter != LLSelectMgr::getInstance()->getSelection()->valid_end(); iter++)
+		{
+			LLViewerObject* object = (*iter)->getObject();
+			
+			for (U8 i = 0; i < object->getNumTEs(); i++)
+			{
+				if((*iter)->isTESelected(i))
+				{
+					texture_list.addTexture(object->getTEImage(i));
+				}
+				if(object->isSculpted() && !object->isMesh())
+				{
+					LLSculptParams *sculpt_params = (LLSculptParams *)object->getParameterEntry(LLNetworkData::PARAMS_SCULPT);
+					if(sculpt_params)
+					{
+						texture_list.addTexture(LLViewerTextureManager::getFetchedTexture(sculpt_params->getSculptTexture()));
+					}
+				}
+			}
+		}
+		return true;
+	}
+};
 
 //---------------------------------------------------------------------------
 // Land pie menu
@@ -2390,7 +2496,7 @@ class LLSelfRemoveAllAttachments : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLAgentWearables::userRemoveAllAttachments();
+		LLAppearanceMgr::instance().removeAllAttachmentsFromAvatar();
 		return true;
 	}
 };
@@ -3599,7 +3705,6 @@ void set_god_level(U8 god_level)
 
 	// God mode changes region visibility
 	LLWorldMap::getInstance()->reset();
-	LLWorldMap::getInstance()->setCurrentLayer(0);
 
 	// inventory in items may change in god mode
 	gObjectList.dirtyAllObjectInventory();
@@ -3933,11 +4038,6 @@ bool handle_sit_or_stand()
 			gRlvHandler.setSitSource(gAgent.getPositionGlobal());
 		}
 // [/RLVa:KB]
-
-		// <edit>
-		gReSitTargetID = object->mID;
-		gReSitOffset = pick.mObjectOffset;
-		// </edit>
 		gMessageSystem->newMessageFast(_PREHASH_AgentRequestSit);
 		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
 		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
@@ -4125,14 +4225,14 @@ void handle_show_newest_map(void*)
 //
 // Major mode switching
 //
-void reset_view_final( BOOL proceed );
+void reset_view_final( BOOL proceed);
 
 void handle_reset_view()
 {
-	if( (CAMERA_MODE_CUSTOMIZE_AVATAR == gAgentCamera.getCameraMode()) && gFloaterCustomize )
+	if(gAgentCamera.cameraCustomizeAvatar() && LLFloaterCustomize::instanceExists())
 	{
 		// Show dialog box if needed.
-		gFloaterCustomize->askToSaveIfDirty( boost::bind(&reset_view_final, _1) );
+		LLFloaterCustomize::getInstance()->askToSaveIfDirty( boost::bind(&reset_view_final, _1) );
 	}
 	else
 	{
@@ -4150,7 +4250,7 @@ class LLViewResetView : public view_listener_t
 };
 
 // Note: extra parameters allow this function to be called from dialog.
-void reset_view_final( BOOL proceed ) 
+void reset_view_final( BOOL proceed) 
 {
 	if( !proceed )
 	{
@@ -4160,6 +4260,10 @@ void reset_view_final( BOOL proceed )
 	gAgentCamera.switchCameraPreset(CAMERA_PRESET_REAR_VIEW);
 	gAgentCamera.resetView(TRUE, TRUE);
 	gAgentCamera.setLookAt(LOOKAT_TARGET_CLEAR);
+
+	if(gAgentCamera.cameraCustomizeAvatar() && LLFloaterCustomize::instanceExists())
+		LLFloaterCustomize::getInstance()->close();
+
 }
 
 class LLViewLookAtLastChatter : public view_listener_t
@@ -4449,6 +4553,22 @@ void handle_god_request_havok(void *)
 //	}
 //}
 
+BOOL enable_dump_archetype_xm(void*)
+{
+	return gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");
+}
+
+void handle_dump_archetype_xml(void *)
+{
+	std::string emptyname;
+	LLVOAvatar* avatar =
+		find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
+	if (!avatar)
+	{
+		avatar = gAgentAvatarp;
+	}
+	avatar->dumpArchetypeXML(emptyname);
+};
 
 // HACK for easily testing new avatar geometry
 void handle_god_request_avatar_geometry(void *)
@@ -5222,6 +5342,39 @@ class LLToolsEnablePathfindingView : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		return (LLPathfindingManager::getInstance() != NULL) && LLPathfindingManager::getInstance()->isPathfindingEnabledForCurrentRegion() && LLPathfindingManager::getInstance()->isPathfindingViewEnabled();
+	}
+};
+
+class LLToolsDoPathfindingRebakeRegion : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool hasPathfinding = (LLPathfindingManager::getInstance() != NULL);
+
+		if (hasPathfinding)
+		{
+			LLMenuOptionPathfindingRebakeNavmesh::getInstance()->sendRequestRebakeNavmesh();
+		}
+
+		return hasPathfinding;
+	}
+};
+
+class LLToolsEnablePathfindingRebakeRegion : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool returnValue = false;
+
+		if (LLPathfindingManager::getInstance() != NULL)
+		{
+			LLMenuOptionPathfindingRebakeNavmesh *rebakeInstance = LLMenuOptionPathfindingRebakeNavmesh::getInstance();
+			returnValue = (rebakeInstance->canRebakeRegion() &&
+				(rebakeInstance->getMode() == LLMenuOptionPathfindingRebakeNavmesh::kRebakeNavMesh_Available));
+			
+		}
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(returnValue);
+		return returnValue;
 	}
 };
 
@@ -6385,8 +6538,12 @@ class LLShowFloater : public view_listener_t
 		{
 			if (gAgentWearables.areWearablesLoaded())
 			{
-				gAgentCamera.changeCameraToCustomizeAvatar();
+				LLFloaterCustomize::show();
 			}
+		}
+		else if (floater_name == "outfit")
+		{
+			new LLMakeOutfitDialog(false);
 		}
 		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
 		else if (floater_name == "displayname")
@@ -7014,6 +7171,7 @@ class LLAttachmentDrop : public view_listener_t
 // called from avatar pie menu
 void handle_detach_from_avatar(void* user_data)
 {
+	uuid_vec_t ids_to_remove;
 	const LLViewerJointAttachment *attachment = (LLViewerJointAttachment*)user_data;
 	
 //	if (attachment->getNumObjects() > 0)
@@ -7021,11 +7179,6 @@ void handle_detach_from_avatar(void* user_data)
 	if ( (attachment->getNumObjects() > 0) && ((!rlv_handler_t::isEnabled()) || (gRlvAttachmentLocks.canDetach(attachment))) )
 // [/RLVa:KB]
 	{
-		gMessageSystem->newMessage("ObjectDetach");
-		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
-		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-		
 		for (LLViewerJointAttachment::attachedobjs_vec_t::const_iterator iter = attachment->mAttachedObjects.begin();
 			 iter != attachment->mAttachedObjects.end();
 			 iter++)
@@ -7035,12 +7188,14 @@ void handle_detach_from_avatar(void* user_data)
 			if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.isLockedAttachment(attached_object)) )
 				continue;
 // [/RLVa:KB]
-			gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-			gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, attached_object->getLocalID());
+			ids_to_remove.push_back(attached_object->getAttachmentItemID());
 		}
-		gMessageSystem->sendReliable( gAgent.getRegionHost() );
+		if (!ids_to_remove.empty())
+		{
+			LLAppearanceMgr::instance().removeItemsFromAvatar(ids_to_remove);
+		}
 	}
-}
+};
 
 void attach_label(std::string& label, void* user_data)
 {
@@ -7138,17 +7293,8 @@ class LLAttachmentDetach : public view_listener_t
 		}
 // [/RLVa:KB]
 
-		// The sendDetach() method works on the list of selected
-		// objects.  Thus we need to clear the list, make sure it only
-		// contains the object the user clicked, send the message,
-		// then clear the list.
-		// We use deselectAll to update the simulator's notion of what's
-		// selected, and removeAll just to change things locally.
-		//RN: I thought it was more useful to detach everything that was selected
-		if (LLSelectMgr::getInstance()->getSelection()->isAttachment())
-		{
-			LLSelectMgr::getInstance()->sendDetach();
-		}
+		LLAppearanceMgr::instance().removeItemFromAvatar(object->getAttachmentItemID());
+
 		return true;
 	}
 };
@@ -8287,18 +8433,18 @@ void init_meshes_and_morphs_menu()
 	menu->addChild(new LLMenuItemCallGL("Dump Avatar Mesh Info", &LLPolyMesh::dumpDiagInfo));
 	menu->addSeparator();
 
-	LLVOAvatar::mesh_info_t mesh_info;
-	LLVOAvatar::getMeshInfo(&mesh_info);
+	LLAvatarAppearance::mesh_info_t mesh_info;
+	LLAvatarAppearance::getMeshInfo(&mesh_info);
 
-	for(LLVOAvatarSelf::mesh_info_t::iterator info_iter = mesh_info.begin();
+	for(LLAvatarAppearance::mesh_info_t::iterator info_iter = mesh_info.begin();
 		info_iter != mesh_info.end(); ++info_iter)
 	{
 		const std::string& type = info_iter->first;
-		LLVOAvatar::lod_mesh_map_t& lod_mesh = info_iter->second;
+		LLAvatarAppearance::lod_mesh_map_t& lod_mesh = info_iter->second;
 
 		LLMenuGL* type_menu = new LLMenuGL(type);
 
-		for(LLVOAvatar::lod_mesh_map_t::iterator lod_iter = lod_mesh.begin();
+		for(LLAvatarAppearance::lod_mesh_map_t::iterator lod_iter = lod_mesh.begin();
 			lod_iter != lod_mesh.end(); ++lod_iter)
 		{
 			S32 lod = lod_iter->first;
@@ -8929,6 +9075,10 @@ void handle_rebake_textures(void*)
 	// Slam pending upload count to "unstick" things
 	bool slam_for_debug = true;
 	gAgentAvatarp->forceBakeAllTextures(slam_for_debug);
+	if (gAgent.getRegion() && gAgent.getRegion()->getCentralBakeVersion())
+	{
+		LLAppearanceMgr::instance().requestServerAppearanceUpdate();
+	}
 }
 
 void toggle_visibility(void* user_data)
@@ -9066,7 +9216,7 @@ class LLEditTakeOff : public view_listener_t
 	{
 		std::string clothing = userdata.asString();
 		if (clothing == "all")
-			LLWearableBridge::removeAllClothesFromAvatar();
+			LLAppearanceMgr::instance().removeAllClothesFromAvatar();
 		else
 		{
 			LLWearableType::EType type = LLWearableType::typeNameToType(clothing);
@@ -9083,7 +9233,7 @@ class LLEditTakeOff : public view_listener_t
 					// We'll use the first wearable we come across that can be removed (moving from top to bottom)
 					for (; wearable_index >= 0; wearable_index--)
 					{
-						const LLWearable* pWearable = gAgentWearables.getWearable(type, wearable_index);
+						const LLViewerWearable* pWearable = gAgentWearables.getViewerWearable(type, wearable_index);
 						if (!gRlvWearableLocks.isLockedWearable(pWearable))
 							break;
 					}
@@ -9091,9 +9241,8 @@ class LLEditTakeOff : public view_listener_t
 						return true;	// No wearable found that can be removed
 				}
 // [/RLVa:KB]
-
-				LLViewerInventoryItem *item = dynamic_cast<LLViewerInventoryItem*>(gAgentWearables.getWearableInventoryItem(type,wearable_index));
-				LLWearableBridge::removeItemFromAvatar(item);
+				LLUUID item_id = gAgentWearables.getWearableItemID(type,wearable_index);
+				LLAppearanceMgr::instance().removeItemFromAvatar(item_id);
 			}
 		}
 		return true;
@@ -9409,7 +9558,8 @@ void initialize_menus()
 
 	addMenu(new LLToolsEnablePathfinding(), "Tools.EnablePathfinding");
 	addMenu(new LLToolsEnablePathfindingView(), "Tools.EnablePathfindingView");
-
+	addMenu(new LLToolsDoPathfindingRebakeRegion(), "Tools.DoPathfindingRebakeRegion");
+	addMenu(new LLToolsEnablePathfindingRebakeRegion(), "Tools.EnablePathfindingRebakeRegion");
 	/*addMenu(new LLToolsVisibleBuyObject(), "Tools.VisibleBuyObject");
 	addMenu(new LLToolsVisibleTakeObject(), "Tools.VisibleTakeObject");*/
 
@@ -9469,6 +9619,8 @@ void initialize_menus()
 	addMenu(new LLObjectInspect(), "Object.Inspect");
 	// <dogmode> Visual mute, originally by Phox.
 	addMenu(new LLObjectDerender(), "Object.DERENDER");
+	addMenu(new LLAvatarReloadTextures(), "Avatar.ReloadTextures");
+	addMenu(new LLObjectReloadTextures(), "Object.ReloadTextures");
 	addMenu(new LLObjectExport(), "Object.Export");
 	addMenu(new LLObjectImport(), "Object.Import");
 	addMenu(new LLObjectImportUpload(), "Object.ImportUpload");

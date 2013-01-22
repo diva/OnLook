@@ -77,12 +77,10 @@ BOOL LLNotificationChannelPanel::postBuild()
 	mChannelRejectsPtr->connectChanged(boost::bind(&LLNotificationChannelPanel::update, this, _1, false));
 
 	LLScrollListCtrl* scroll = getChild<LLScrollListCtrl>("notifications_list");
-	scroll->setDoubleClickCallback(onClickNotification);
-	scroll->setCallbackUserData(this);
+	scroll->setDoubleClickCallback(boost::bind(&LLNotificationChannelPanel::onClickNotification,this));
 
 	scroll = getChild<LLScrollListCtrl>("notification_rejects_list");
-	scroll->setDoubleClickCallback(onClickNotificationReject);
-	scroll->setCallbackUserData(this);
+	scroll->setDoubleClickCallback(boost::bind(&LLNotificationChannelPanel::onClickNotificationReject,this));
 
 	return TRUE;
 }

@@ -73,6 +73,7 @@ const F32 SG_OCCLUSION_FUDGE = 0.25f;
 #define assert_states_valid(x)
 #endif
 
+extern bool gShiftFrame;
 
 static U32 sZombieGroups = 0;
 U32 LLSpatialGroup::sNodeCount = 0;
@@ -82,6 +83,7 @@ U32 LLSpatialGroup::sNodeCount = 0;
 std::set<GLuint> LLSpatialGroup::sPendingQueries;
 
 U32 gOctreeMaxCapacity;
+U32 gOctreeReserveCapacity;
 
 BOOL LLSpatialGroup::sNoDelete = FALSE;
 
@@ -98,7 +100,7 @@ public:
 
 protected:
 
-	std::list<GLuint> mAvailableName;
+	std::queue<GLuint> mAvailableName;	//Use queue, because this usage is FIFO, which queue is desgined for
 	GLuint mCurQuery;
 		
 	virtual GLuint allocateName()
@@ -108,7 +110,7 @@ protected:
 		if (!mAvailableName.empty())
 		{
 			ret = mAvailableName.front();
-			mAvailableName.pop_front();
+			mAvailableName.pop();
 		}
 		else
 		{
@@ -123,8 +125,8 @@ protected:
 #if LL_TRACK_PENDING_OCCLUSION_QUERIES
 		LLSpatialGroup::sPendingQueries.erase(name);
 #endif
-		llassert(std::find(mAvailableName.begin(), mAvailableName.end(), name) == mAvailableName.end());
-		mAvailableName.push_back(name);
+		//llassert(std::find(mAvailableName.begin(), mAvailableName.end(), name) == mAvailableName.end());
+		mAvailableName.push(name);
 	}
 };
 
@@ -412,6 +414,7 @@ void LLSpatialGroup::setVisible()
 
 void LLSpatialGroup::validate()
 {
+	ll_assert_aligned(this,64);
 #if LL_OCTREE_PARANOIA_CHECK
 
 	sg_assert(!isState(DIRTY));
@@ -805,7 +808,10 @@ void LLSpatialGroup::shift(const LLVector4a &offset)
 	mObjectExtents[0].add(offset);
 	mObjectExtents[1].add(offset);
 
-	if (!mSpatialPartition->mRenderByGroup)
+	if (!mSpatialPartition->mRenderByGroup && 
+		mSpatialPartition->mPartitionType != LLViewerRegion::PARTITION_TREE &&
+		mSpatialPartition->mPartitionType != LLViewerRegion::PARTITION_TERRAIN &&
+		mSpatialPartition->mPartitionType != LLViewerRegion::PARTITION_BRIDGE)
 	{
 		setState(GEOM_DIRTY);
 		gPipeline.markRebuild(this, TRUE);
@@ -1075,6 +1081,8 @@ LLSpatialGroup::LLSpatialGroup(OctreeNode* node, LLSpatialPartition* part) :
 	mLastUpdateDistance(-1.f), 
 	mLastUpdateTime(gFrameTimeSeconds)
 {
+	ll_assert_aligned(this,16);
+	
 	sNodeCount++;
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 
@@ -1115,6 +1123,11 @@ void LLSpatialGroup::updateDistance(LLCamera &camera)
 	if (LLViewerCamera::sCurCameraID != LLViewerCamera::CAMERA_WORLD)
 	{
 		llwarns << "Attempted to update distance for camera other than world camera!" << llendl;
+		return;
+	}
+
+	if (gShiftFrame)
+	{
 		return;
 	}
 
@@ -1554,7 +1567,7 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 		// Don't cull hole/edge water, unless RenderWaterVoidCulling is set and we have the GL_ARB_depth_clamp extension.
 		//if ((mSpatialPartition->mDrawableType == LLDrawPool::POOL_VOIDWATER && !gGLManager.mHasDepthClamp) ||
 		//	earlyFail(camera, this))
-		if (earlyFail(camera, this))
+		if (earlyFail(camera, this))	//Returns true if camera is inside this spatial group.
 		{
 			LLFastTimer t(FTM_OCCLUSION_EARLY_FAIL);
 			setOcclusionState(LLSpatialGroup::DISCARD_QUERY);
@@ -1609,9 +1622,12 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 						llassert(shader);
 
 						shader->uniform3fv(LLShaderMgr::BOX_CENTER, 1, mBounds[0].getF32ptr());
-						shader->uniform3f(LLShaderMgr::BOX_SIZE, mBounds[1][0]+SG_OCCLUSION_FUDGE, 
-																 mBounds[1][1]+SG_OCCLUSION_FUDGE, 
-																 mBounds[1][2]+SG_OCCLUSION_FUDGE);
+						//static LLVector4a fudge(SG_OCCLUSION_FUDGE);
+						static LLCachedControl<F32> vel("SHOcclusionFudge",SG_OCCLUSION_FUDGE);
+						LLVector4a fudge(SG_OCCLUSION_FUDGE);
+						static LLVector4a bounds;
+						bounds.setAdd(fudge,mBounds[1]);
+						shader->uniform3fv(LLShaderMgr::BOX_SIZE, 1, bounds.getF32ptr());
 
 						if (!use_depth_clamp && mSpatialPartition->mDrawableType == LLDrawPool::POOL_VOIDWATER)
 						{
@@ -1731,6 +1747,8 @@ BOOL LLSpatialPartition::remove(LLDrawable *drawablep, LLSpatialGroup *curp)
 	{
 		drawablep->setSpatialGroup(NULL);
 	}
+
+	drawablep->setSpatialGroup(NULL);
 
 	assert_octree_valid(mOctree);
 	
@@ -2308,12 +2326,11 @@ BOOL earlyFail(LLCamera* camera, LLSpatialGroup* group)
 		return FALSE;
 	}
 
-	const F32 vel = SG_OCCLUSION_FUDGE*2.f;
-	LLVector4a fudge;
-	fudge.splat(vel);
+	static LLCachedControl<F32> vel("SHOcclusionFudge",SG_OCCLUSION_FUDGE);
+	LLVector4a fudge(vel*2.f);
 
 	const LLVector4a& c = group->mBounds[0];
-	LLVector4a r;
+	static LLVector4a r;
 	r.setAdd(group->mBounds[1], fudge);
 
 	/*if (r.magVecSquared() > 1024.0*1024.0)
@@ -3029,6 +3046,8 @@ void renderMeshBaseHull(LLVOVolume* volume, U32 data_mask, LLColor4& color, LLCo
 
 void render_hull(LLModel::PhysicsMesh& mesh, const LLColor4& color, const LLColor4& line_color)
 {
+	if(mesh.mPositions.empty() ||  mesh.mNormals.empty())
+		return;
 	gGL.diffuseColor4fv(color.mV);
 	LLVertexBuffer::drawArrays(LLRender::TRIANGLES, mesh.mPositions, mesh.mNormals);
 	LLGLEnable offset(GL_POLYGON_OFFSET_LINE);
@@ -3390,6 +3409,8 @@ void renderPhysicsShapes(LLSpatialGroup* group)
 			LLViewerObject* object = drawable->getVObj();
 			if (object && object->getPCode() == LLViewerObject::LL_VO_SURFACE_PATCH)
 			{
+				gGL.pushMatrix();
+				gGL.multMatrix((F32*) object->getRegion()->mRenderMatrix.mMatrix);
 				//push face vertices for terrain
 				for (S32 i = 0; i < drawable->getNumFaces(); ++i)
 				{
@@ -3411,6 +3432,7 @@ void renderPhysicsShapes(LLSpatialGroup* group)
 						}
 					}
 				}
+				gGL.popMatrix();
 			}
 		}
 	}
@@ -3463,9 +3485,9 @@ void renderTexturePriority(LLDrawable* drawable)
 		drawBox(center, size);
 		
 		/*S32 boost = imagep->getBoostLevel();
-		if (boost>LLViewerTexture::BOOST_NONE)
+		if (boost>LLGLTexture::BOOST_NONE)
 		{
-			F32 t = (F32) boost / (F32) (LLViewerTexture::BOOST_MAX_LEVEL-1);
+			F32 t = (F32) boost / (F32) (LLGLTexture::BOOST_MAX_LEVEL-1);
 			LLVector4 col = lerp(boost_cold, boost_hot, t);
 			LLGLEnable blend_on(GL_BLEND);
 			gGL.blendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -3812,7 +3834,7 @@ void renderAgentTarget(LLVOAvatar* avatar)
 	{
 		renderCrossHairs(avatar->getPositionAgent(), 0.2f, LLColor4(1, 0, 0, 0.8f));
 		renderCrossHairs(avatar->mDrawable->getPositionAgent(), 0.2f, LLColor4(1, 0, 0, 0.8f));
-		renderCrossHairs(avatar->mRoot.getWorldPosition(), 0.2f, LLColor4(1, 1, 1, 0.8f));
+		renderCrossHairs(avatar->mRoot->getWorldPosition(), 0.2f, LLColor4(1, 1, 1, 0.8f));
 		renderCrossHairs(avatar->mPelvisp->getWorldPosition(), 0.2f, LLColor4(0, 0, 1, 0.8f));
 	}
 }
@@ -3876,9 +3898,6 @@ public:
 		{
 			return;
 		}
-
-		LLVector4a nodeCenter = group->mBounds[0];
-		LLVector4a octCenter = group->mOctreeNode->getCenter();
 
 		group->rebuildGeom();
 		group->rebuildMesh();
@@ -4399,6 +4418,10 @@ public:
 						}
 
 					}
+					else if (avatar->isLangolier())
+					{
+						skip_check = true;
+					}
 				}
 
 				if (!skip_check && vobj->lineSegmentIntersect(mStart, mEnd, -1, mPickTransparent, mFaceHit, &intersection, mTexCoord, mNormal, mBinormal))
@@ -4489,251 +4512,27 @@ LLVertexBuffer* LLGeometryManager::createVertexBuffer(U32 type_mask, U32 usage)
 	return new LLVertexBuffer(type_mask, usage);
 }
 
-LLCullResult::LLCullResult() 
-{	
-	mVisibleGroupsAllocated = 0;
-	mAlphaGroupsAllocated = 0;
-	mOcclusionGroupsAllocated = 0;
-	mDrawableGroupsAllocated = 0;
-	mVisibleListAllocated = 0;
-	mVisibleBridgeAllocated = 0;
-
-	mVisibleGroups = NULL;
-	mVisibleGroupsEnd = NULL;
-	mAlphaGroups = NULL;
-	mAlphaGroupsEnd = NULL;
-	mOcclusionGroups = NULL;
-	mOcclusionGroupsEnd = NULL;
-	mDrawableGroups = NULL;
-	mDrawableGroupsEnd = NULL;
-	mVisibleList = NULL;
-	mVisibleListEnd = NULL;
-	mVisibleBridge = NULL;
-	mVisibleBridgeEnd = NULL;
-
-	for (U32 i = 0; i < LLRenderPass::NUM_RENDER_TYPES; i++)
-	{
-		mRenderMap[i] = NULL;
-		mRenderMapEnd[i] = NULL;
-		mRenderMapAllocated[i] = 0;
-	}
-
-	clear();
-}
-
-void LLCullResult::pushBack(void**& head, U32& count, void* val)
-{
-	count++;
-	head = (void**) realloc((void*) head, sizeof(void*) * count);
-	head[count-1] = val;
-}
 
 void LLCullResult::clear()
 {
-	mVisibleGroupsSize = 0;
-	mVisibleGroupsEnd = mVisibleGroups;
-
-	mAlphaGroupsSize = 0;
-	mAlphaGroupsEnd = mAlphaGroups;
-
-	mOcclusionGroupsSize = 0;
-	mOcclusionGroupsEnd = mOcclusionGroups;
-
-	mDrawableGroupsSize = 0;
-	mDrawableGroupsEnd = mDrawableGroups;
-
-	mVisibleListSize = 0;
-	mVisibleListEnd = mVisibleList;
-
-	mVisibleBridgeSize = 0;
-	mVisibleBridgeEnd = mVisibleBridge;
-
+	mVisibleGroups.clear();
+	mAlphaGroups.clear();
+	mOcclusionGroups.clear();
+	mDrawableGroups.clear();
+	mVisibleList.clear();
+	mVisibleBridge.clear();
 
 	for (U32 i = 0; i < LLRenderPass::NUM_RENDER_TYPES; i++)
 	{
-		for (U32 j = 0; j < mRenderMapSize[i]; j++)
-		{
-			mRenderMap[i][j] = 0;
-		}
-		mRenderMapSize[i] = 0;
-		mRenderMapEnd[i] = mRenderMap[i];
+		mRenderMap[i].clear();
 	}
 }
-
-LLCullResult::sg_iterator LLCullResult::beginVisibleGroups()
-{
-	return mVisibleGroups;
-}
-
-LLCullResult::sg_iterator LLCullResult::endVisibleGroups()
-{
-	return mVisibleGroupsEnd;
-}
-
-LLCullResult::sg_iterator LLCullResult::beginAlphaGroups()
-{
-	return mAlphaGroups;
-}
-
-LLCullResult::sg_iterator LLCullResult::endAlphaGroups()
-{
-	return mAlphaGroupsEnd;
-}
-
-LLCullResult::sg_iterator LLCullResult::beginOcclusionGroups()
-{
-	return mOcclusionGroups;
-}
-
-LLCullResult::sg_iterator LLCullResult::endOcclusionGroups()
-{
-	return mOcclusionGroupsEnd;
-}
-
-LLCullResult::sg_iterator LLCullResult::beginDrawableGroups()
-{
-	return mDrawableGroups;
-}
-
-LLCullResult::sg_iterator LLCullResult::endDrawableGroups()
-{
-	return mDrawableGroupsEnd;
-}
-
-LLCullResult::drawable_iterator LLCullResult::beginVisibleList()
-{
-	return mVisibleList;
-}
-
-LLCullResult::drawable_iterator LLCullResult::endVisibleList()
-{
-	return mVisibleListEnd;
-}
-
-LLCullResult::bridge_iterator LLCullResult::beginVisibleBridge()
-{
-	return mVisibleBridge;
-}
-
-LLCullResult::bridge_iterator LLCullResult::endVisibleBridge()
-{
-	return mVisibleBridgeEnd;
-}
-
-LLCullResult::drawinfo_iterator LLCullResult::beginRenderMap(U32 type)
-{
-	return mRenderMap[type];
-}
-
-LLCullResult::drawinfo_iterator LLCullResult::endRenderMap(U32 type)
-{
-	return mRenderMapEnd[type];
-}
-
-void LLCullResult::pushVisibleGroup(LLSpatialGroup* group)
-{
-	if (mVisibleGroupsSize < mVisibleGroupsAllocated)
-	{
-		mVisibleGroups[mVisibleGroupsSize] = group;
-	}
-	else
-	{
-		pushBack((void**&) mVisibleGroups, mVisibleGroupsAllocated, (void*) group);
-	}
-	++mVisibleGroupsSize;
-	mVisibleGroupsEnd = mVisibleGroups+mVisibleGroupsSize;
-}
-
-void LLCullResult::pushAlphaGroup(LLSpatialGroup* group)
-{
-	if (mAlphaGroupsSize < mAlphaGroupsAllocated)
-	{
-		mAlphaGroups[mAlphaGroupsSize] = group;
-	}
-	else
-	{
-		pushBack((void**&) mAlphaGroups, mAlphaGroupsAllocated, (void*) group);
-	}
-	++mAlphaGroupsSize;
-	mAlphaGroupsEnd = mAlphaGroups+mAlphaGroupsSize;
-}
-
-void LLCullResult::pushOcclusionGroup(LLSpatialGroup* group)
-{
-	if (mOcclusionGroupsSize < mOcclusionGroupsAllocated)
-	{
-		mOcclusionGroups[mOcclusionGroupsSize] = group;
-	}
-	else
-	{
-		pushBack((void**&) mOcclusionGroups, mOcclusionGroupsAllocated, (void*) group);
-	}
-	++mOcclusionGroupsSize;
-	mOcclusionGroupsEnd = mOcclusionGroups+mOcclusionGroupsSize;
-}
-
-void LLCullResult::pushDrawableGroup(LLSpatialGroup* group)
-{
-	if (mDrawableGroupsSize < mDrawableGroupsAllocated)
-	{
-		mDrawableGroups[mDrawableGroupsSize] = group;
-	}
-	else
-	{
-		pushBack((void**&) mDrawableGroups, mDrawableGroupsAllocated, (void*) group);
-	}
-	++mDrawableGroupsSize;
-	mDrawableGroupsEnd = mDrawableGroups+mDrawableGroupsSize;
-}
-
-void LLCullResult::pushDrawable(LLDrawable* drawable)
-{
-	if (mVisibleListSize < mVisibleListAllocated)
-	{
-		mVisibleList[mVisibleListSize] = drawable;
-	}
-	else
-	{
-		pushBack((void**&) mVisibleList, mVisibleListAllocated, (void*) drawable);
-	}
-	++mVisibleListSize;
-	mVisibleListEnd = mVisibleList+mVisibleListSize;
-}
-
-void LLCullResult::pushBridge(LLSpatialBridge* bridge)
-{
-	if (mVisibleBridgeSize < mVisibleBridgeAllocated)
-	{
-		mVisibleBridge[mVisibleBridgeSize] = bridge;
-	}
-	else
-	{
-		pushBack((void**&) mVisibleBridge, mVisibleBridgeAllocated, (void*) bridge);
-	}
-	++mVisibleBridgeSize;
-	mVisibleBridgeEnd = mVisibleBridge+mVisibleBridgeSize;
-}
-
-void LLCullResult::pushDrawInfo(U32 type, LLDrawInfo* draw_info)
-{
-	if (mRenderMapSize[type] < mRenderMapAllocated[type])
-	{
-		mRenderMap[type][mRenderMapSize[type]] = draw_info;
-	}
-	else
-	{
-		pushBack((void**&) mRenderMap[type], mRenderMapAllocated[type], (void*) draw_info);
-	}
-	++mRenderMapSize[type];
-	mRenderMapEnd[type] = mRenderMap[type] + mRenderMapSize[type];
-}
-
 
 void LLCullResult::assertDrawMapsEmpty()
 {
 	for (U32 i = 0; i < LLRenderPass::NUM_RENDER_TYPES; i++)
 	{
-		if (mRenderMapSize[i] != 0)
+		if (hasRenderMap(i))
 		{
 			llerrs << "Stale LLDrawInfo's in LLCullResult!" << llendl;
 		}

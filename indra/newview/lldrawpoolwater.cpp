@@ -53,6 +53,8 @@
 #include "pipeline.h"
 #include "llviewershadermgr.h"
 #include "llwaterparammanager.h"
+#include "llappviewer.h"
+#include "lltexturecache.h"
 
 const LLUUID TRANSPARENT_WATER_TEXTURE("2bfd3884-7e27-69b9-ba3a-3e673f680004");
 const LLUUID OPAQUE_WATER_TEXTURE("43c32285-d658-1793-c123-bf86315de055");
@@ -72,11 +74,11 @@ LLVector3 LLDrawPoolWater::sLightDir;
 LLDrawPoolWater::LLDrawPoolWater() :
 	LLFacePool(POOL_WATER)
 {
-	mHBTex[0] = LLViewerTextureManager::getFetchedTexture(gSunTextureID, TRUE, LLViewerTexture::BOOST_UI);
+	mHBTex[0] = LLViewerTextureManager::getFetchedTexture(gSunTextureID, TRUE, LLGLTexture::BOOST_UI);
 	gGL.getTexUnit(0)->bind(mHBTex[0]) ;
 	mHBTex[0]->setAddressMode(LLTexUnit::TAM_CLAMP);
 
-	mHBTex[1] = LLViewerTextureManager::getFetchedTexture(gMoonTextureID, TRUE, LLViewerTexture::BOOST_UI);
+	mHBTex[1] = LLViewerTextureManager::getFetchedTexture(gMoonTextureID, TRUE, LLGLTexture::BOOST_UI);
 	gGL.getTexUnit(0)->bind(mHBTex[1]);
 	mHBTex[1]->setAddressMode(LLTexUnit::TAM_CLAMP);
 
@@ -235,7 +237,10 @@ void LLDrawPoolWater::render(S32 pass)
 	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
 
 	// Slowly move over time.
-	F32 offset = fmod(gFrameTimeSeconds*2.f, 100.f);
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
+	static F32 frame_time;
+	if (!freeze_time) frame_time = gFrameTimeSeconds;
+	F32 offset = fmod(frame_time*2.f, 100.f);
 	F32 tp0[4] = {16.f/256.f, 0.0f, 0.0f, offset*0.01f};
 	F32 tp1[4] = {0.0f, 16.f/256.f, 0.0f, offset*0.01f};
 	glTexGenfv(GL_S, GL_OBJECT_PLANE, tp0);
@@ -260,8 +265,11 @@ void LLDrawPoolWater::render(S32 pass)
 		{
 			continue;
 		}
-		gGL.getTexUnit(0)->bind(face->getTexture());
-		face->renderIndexed();
+		if(face->getTexture() && face->getTexture()->hasGLTexture())
+		{
+			gGL.getTexUnit(0)->bind(face->getTexture());
+			face->renderIndexed();
+		}
 	}
 
 	// Now, disable texture coord generation on texture state 1
@@ -367,6 +375,32 @@ void LLDrawPoolWater::renderOpaqueLegacyWater()
 
 	gPipeline.disableLights();
 
+	//Singu note: This is a hack around bizarre opensim behavior. The opaque water texture we get is pure white and only has one channel.
+	// This behavior is clearly incorrect, so we try to detect that case, purge it from the cache, and try to re-fetch the texture.
+	// If the re-fetched texture is still invalid, or doesn't exist, we use transparent water, which is fine since alphablend is unset.
+	// The current logic for refetching is crude here, and probably wont work if, say, a prim were to also have the texture for some reason,
+	// however it works well enough otherwise, and is much cleaner than diving into LLTextureList, LLViewerFetchedTexture, and LLViewerTexture.
+	// Perhaps a proper reload mechanism could be done if we ever add user-level texture reloading, but until then it's not a huge priority.
+	// Failing to fully refetch will just give us the same invalid texture we started with, which will result in the fallback texture being used.
+	if(mOpaqueWaterImagep != mWaterImagep)
+	{
+		if(mOpaqueWaterImagep->isMissingAsset())
+		{
+			mOpaqueWaterImagep = mWaterImagep;
+		}
+		else if(mOpaqueWaterImagep->hasGLTexture() && mOpaqueWaterImagep->getComponents() < 3)
+		{
+			LLAppViewer::getTextureCache()->removeFromCache(mOpaqueWaterImagep->getID());
+			static bool sRefetch = true;
+			if(sRefetch)
+			{
+				sRefetch = false;
+				((LLViewerFetchedTexture*)mOpaqueWaterImagep.get())->forceRefetch();
+			}
+			else
+				mOpaqueWaterImagep = mWaterImagep;
+		}
+	}
 	mOpaqueWaterImagep->addTextureStats(1024.f*1024.f);
 
 	// Activate the texture binding and bind one
@@ -380,18 +414,21 @@ void LLDrawPoolWater::renderOpaqueLegacyWater()
 	{
 		glEnable(GL_TEXTURE_GEN_S); //texture unit 0
 		glEnable(GL_TEXTURE_GEN_T); //texture unit 0
-		glTexGenf(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-		glTexGenf(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
 	}
 
 	// Use the fact that we know all water faces are the same size
 	// to save some computation
 
-	// Slowly move texture coordinates over time so the watter appears
+	// Slowly move texture coordinates over time so the water appears
 	// to be moving.
 	F32 movement_period_secs = 50.f;
 
-	F32 offset = fmod(gFrameTimeSeconds, movement_period_secs);
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
+	static F32 frame_time;
+	if (!freeze_time) frame_time = gFrameTimeSeconds;
+	F32 offset = fmod(frame_time, movement_period_secs);
 
 	if (movement_period_secs != 0)
 	{
@@ -549,7 +586,11 @@ void LLDrawPoolWater::shade()
 		shader->bind();
 	}
 
-	sTime = (F32)LLFrameTimer::getElapsedSeconds()*0.5f;
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
+	if (!freeze_time)
+	{
+		sTime = (F32)LLFrameTimer::getElapsedSeconds()*0.5f;
+	}
 	
 	S32 reftex = shader->enableTexture(LLViewerShaderMgr::WATER_REFTEX);
 		
@@ -674,7 +715,7 @@ void LLDrawPoolWater::shade()
 			}
 
 			LLVOWater* water = (LLVOWater*) face->getViewerObject();
-			if(diffTex > -1 && face->getTexture()->hasGLTexture())
+			if(diffTex > -1 && face->getTexture() && face->getTexture()->hasGLTexture())
 				gGL.getTexUnit(diffTex)->bind(face->getTexture());
 
 			sNeedsReflectionUpdate = TRUE;

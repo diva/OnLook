@@ -94,8 +94,7 @@ LLIMMgr* gIMMgr = NULL;
 //{
 //	return (LLStringUtil::compareDict( a->mName, b->mName ) < 0);
 //}
-class LLViewerChatterBoxInvitationAcceptResponder :
-	public LLHTTPClient::ResponderWithResult
+class LLViewerChatterBoxInvitationAcceptResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	LLViewerChatterBoxInvitationAcceptResponder(
@@ -106,7 +105,7 @@ public:
 		mInvitiationType = invitation_type;
 	}
 
-	void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{
 		if ( gIMMgr)
 		{
@@ -154,8 +153,8 @@ public:
 		}
 	}
 
-	void error(U32 statusNum, const std::string& reason)
-	{		
+	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	{
 		//throw something back to the viewer here?
 		if ( gIMMgr )
 		{
@@ -177,7 +176,8 @@ public:
 		}
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerChatterBoxInvitationAcceptResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerChatterBoxInvitationAcceptResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLViewerChatterBoxInvitationAcceptResponder"; }
 
 private:
 	LLUUID mSessionID;
@@ -483,8 +483,8 @@ void LLIMMgr::addMessage(
 	}
 
 	//not sure why...but if it is from ourselves we set the target_id
-	//to be NULL
-	if( other_participant_id == gAgent.getID() )
+	//to be NULL, which seems to be breaking links on group chats, so let's not there.
+	if (other_participant_id == gAgent.getID() && !gAgent.isInGroup(session_id))
 	{
 		other_participant_id = LLUUID::null;
 	}
@@ -553,7 +553,6 @@ void LLIMMgr::addMessage(
 		// when answering questions.
 		if(gAgent.isGodlike())
 		{
-			// *TODO:translate (low priority, god ability)
 			std::ostringstream bonus_info;
 			bonus_info << LLTrans::getString("***")+ " "+ LLTrans::getString("IMParentEstate") + LLTrans::getString(":") + " "
 				<< parent_estate_id
@@ -574,9 +573,26 @@ void LLIMMgr::addMessage(
 
 	// now add message to floater
 	bool is_from_system = target_id.isNull() || (from == SYSTEM_FROM);
-	const LLColor4& color = ( is_from_system ? 
-							  gSavedSettings.getColor4("SystemChatColor") : 
-							  gSavedSettings.getColor("IMChatColor"));
+
+	static LLCachedControl<bool> color_linden_chat("ColorLindenChat");
+	bool linden = color_linden_chat && LLMuteList::getInstance()->isLinden(from);
+
+	static LLCachedControl<bool> color_friend_chat("ColorFriendChat");
+	bool contact = color_friend_chat && LLAvatarTracker::instance().isBuddy(other_participant_id);
+
+	static LLCachedControl<bool> color_eo_chat("ColorEstateOwnerChat");
+	bool estate_owner = false;
+	if (color_eo_chat)
+	{
+		LLViewerRegion* parent_estate = gAgent.getRegion();
+		estate_owner = (parent_estate && parent_estate->isAlive() && other_participant_id == parent_estate->getOwner());
+	}
+
+	const LLColor4& color = ( is_from_system ? gSavedSettings.getColor4("SystemChatColor")
+							: linden ? gSavedSettings.getColor4("AscentLindenColor")
+							: contact ? gSavedSettings.getColor4("AscentFriendColor")
+							: estate_owner ? gSavedSettings.getColor4("AscentEstateOwnerColor")
+							: gSavedSettings.getColor("IMChatColor"));
 	if ( !link_name )
 	{
 		floater->addHistoryLine(msg,color); // No name to prepend, so just add the message normally
@@ -731,7 +747,18 @@ LLUUID LLIMMgr::addSession(
 		{
 			noteMutedUsers(floater, ids);
 		}
-		LLFloaterChatterBox::getInstance(LLSD())->showFloater(floater);
+
+		static LLCachedControl<bool> tear_off("OtherChatsTornOff");
+		if(tear_off)
+		{
+			// removal sets up relationship for re-attach
+			LLFloaterChatterBox::getInstance(LLSD())->removeFloater(floater);
+			// reparent to floater view
+			gFloaterView->addChild(floater);
+			gFloaterView->bringToFront(floater);
+		}
+		else
+			LLFloaterChatterBox::getInstance(LLSD())->showFloater(floater);
 	}
 	else
 	{
@@ -1103,6 +1130,25 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 													 dialog);
 	LLTabContainer::eInsertionPoint i_pt = user_initiated ? LLTabContainer::RIGHT_OF_CURRENT : LLTabContainer::END;
 	LLFloaterChatterBox::getInstance(LLSD())->addFloater(floater, FALSE, i_pt);
+	static LLCachedControl<bool> tear_off("OtherChatsTornOff");
+	if (tear_off)
+	{
+		LLFloaterChatterBox::getInstance(LLSD())->removeFloater(floater); // removal sets up relationship for re-attach
+		gFloaterView->addChild(floater); // reparent to floater view
+		LLFloater* focused_floater = gFloaterView->getFocusedFloater(); // obtain the focused floater
+		floater->open(); // make the new chat floater appear
+		static LLCachedControl<bool> minimize("OtherChatsTornOffAndMinimized");
+		if (focused_floater != NULL) // there was a focused floater
+		{
+			floater->setMinimized(minimize); // so minimize this one, for now, if desired
+			focused_floater->setFocus(true); // and work around focus being removed by focusing on the last
+		}
+		else if (minimize)
+		{
+			floater->setFocus(false); // work around focus being granted to new floater
+			floater->setMinimized(true);
+		}
+	}
 	mFloaters.insert(floater->getHandle());
 	return floater;
 }
@@ -1129,6 +1175,25 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 													 dialog);
 	LLTabContainer::eInsertionPoint i_pt = user_initiated ? LLTabContainer::RIGHT_OF_CURRENT : LLTabContainer::END;
 	LLFloaterChatterBox::getInstance(LLSD())->addFloater(floater, FALSE, i_pt);
+	static LLCachedControl<bool> tear_off("OtherChatsTornOff");
+	if (tear_off)
+	{
+		LLFloaterChatterBox::getInstance(LLSD())->removeFloater(floater); // removal sets up relationship for re-attach
+		gFloaterView->addChild(floater); // reparent to floater view
+		LLFloater* focused_floater = gFloaterView->getFocusedFloater(); // obtain the focused floater
+		floater->open(); // make the new chat floater appear
+		static LLCachedControl<bool> minimize("OtherChatsTornOffAndMinimized");
+		if (focused_floater != NULL) // there was a focused floater
+		{
+			floater->setMinimized(minimize); // so minimize this one, for now, if desired
+			focused_floater->setFocus(true); // and work around focus being removed by focusing on the last
+		}
+		else if (minimize)
+		{
+			floater->setFocus(false); // work around focus being granted to new floater
+			floater->setMinimized(true);
+		}
+	}
 	mFloaters.insert(floater->getHandle());
 	return floater;
 }
@@ -1153,7 +1218,7 @@ void LLIMMgr::noteOfflineUsers(
 			std::string full_name;
 			if (info
 				&& !info->isOnline()
-				&& gCacheName->getFullName(ids.get(i), full_name))
+				&& LLAvatarNameCache::getPNSName(ids.get(i), full_name))
 			{
 				LLUIString offline = LLTrans::getString("offline_message");
 				offline.setArg("[NAME]", full_name);

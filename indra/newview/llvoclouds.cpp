@@ -63,7 +63,7 @@ LLVOClouds::LLVOClouds(const LLUUID &id, const LLPCode pcode, LLViewerRegion *re
 	mbCanSelect = FALSE;
 	setNumTEs(1);
 	LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture(gCloudTextureID);
-	image->setBoostLevel(LLViewerTexture::BOOST_CLOUDS);
+	image->setBoostLevel(LLGLTexture::BOOST_CLOUDS);
 	setTEImage(0, image);
 }
 
@@ -79,11 +79,11 @@ BOOL LLVOClouds::isActive() const
 }
 
 
-BOOL LLVOClouds::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
+void LLVOClouds::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 {
 	if (!(gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS)))
 	{
-		return TRUE;
+		return;
 	}
 	
 	// Set dirty flag (so renderer will rebuild primitive)
@@ -91,8 +91,6 @@ BOOL LLVOClouds::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 	{
 		gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME, TRUE);
 	}
-
-	return TRUE;
 }
 
 

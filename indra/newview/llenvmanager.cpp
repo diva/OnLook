@@ -47,6 +47,8 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
+#include "hippogridmanager.h"
+
 std::string LLEnvPrefs::getWaterPresetName() const
 {
 	if (mWaterPresetName.empty())
@@ -509,7 +511,8 @@ void LLEnvManagerNew::onRegionSettingsResponse(const LLSD& content)
 	mRegionSettingsChangeSignal();
 
 	// reset
-	mInterpNextChangeMessage = false;
+	if (!gHippoGridManager->getConnectedGrid()->isAurora()) // On Aurora, the region says when to refresh
+		mInterpNextChangeMessage = false;
 }
 
 void LLEnvManagerNew::onRegionSettingsApplyResponse(bool ok)
@@ -698,3 +701,36 @@ void LLEnvManagerNew::onRegionChange(bool interpolate)
 	// Let interested parties know agent region has been changed.
 	mRegionChangeSignal();
 }
+
+// Aurora-sim windlight refresh
+class WindLightRefresh : public LLHTTPNode
+{
+	/*virtual*/ void post(LLHTTPNode::ResponsePtr response,	const LLSD& context, const LLSD& input) const
+	{
+		if (!input || !context || !input.isMap() || !input.has("body"))
+		{
+			llinfos << "malformed WindLightRefresh!" << llendl;
+			return;
+		}
+
+		//std::string dump = input["body"].asString();
+		//llwarns << dump << llendl;
+
+		LLSD body = input["body"];
+		LLEnvManagerNew *env = &LLEnvManagerNew::instance();
+
+		LLViewerRegion* regionp = gAgent.getRegion();
+		LLUUID region_uuid = regionp ? regionp->getRegionID() : LLUUID::null;
+
+		env->mNewRegionPrefs.clear();
+		env->mCurRegionUUID = region_uuid;
+
+		env->mInterpNextChangeMessage = !body.has("Interpolate") || body["Interpolate"].asInteger() == 1;
+
+		llinfos << "Windlight Refresh, interpolate:" << env->mInterpNextChangeMessage << llendl;
+		env->requestRegionSettings();
+		env->mRegionChangeSignal();
+	}
+};
+
+LLHTTPRegistration<WindLightRefresh> gHTTPRegistrationWindLightRefresh("/message/WindLightRefresh");

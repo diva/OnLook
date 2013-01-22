@@ -120,7 +120,7 @@ LLViewerParcelMgr::LLViewerParcelMgr()
 	mRequestResult(0),
 	mWestSouth(),
 	mEastNorth(),
-	mSelectedDwell(0.f),
+	mSelectedDwell(DWELL_NAN),
 	mAgentParcelSequenceID(-1),
 	mHoverRequestResult(0),
 	mHoverWestSouth(),
@@ -244,7 +244,7 @@ void LLViewerParcelMgr::getDisplayInfo(S32* area_out, S32* claim_out,
 	S32 price = 0;
 	S32 rent = 0;
 	BOOL for_sale = FALSE;
-	F32 dwell = 0.f;
+	F32 dwell = DWELL_NAN;
 
 	if (mSelected)
 	{
@@ -590,7 +590,7 @@ void LLViewerParcelMgr::deselectLand()
 		mCurrentParcel->mBanList.clear();
 		//mCurrentParcel->mRenterList.reset();
 
-		mSelectedDwell = 0.f;
+		mSelectedDwell = DWELL_NAN;
 
 		// invalidate parcel selection so that existing users of this selection can clean up
 		mCurrentParcelSelection->setParcel(NULL);
@@ -710,8 +710,8 @@ bool LLViewerParcelMgr::allowAgentScripts(const LLViewerRegion* region, const LL
 	// This mirrors the traditional menu bar parcel icon code, but is not
 	// technically correct.
 	return region
-		&& !(region->getRegionFlags() & REGION_FLAGS_SKIP_SCRIPTS)
-		&& !(region->getRegionFlags() & REGION_FLAGS_ESTATE_SKIP_SCRIPTS)
+		&& !region->getRegionFlag(REGION_FLAGS_SKIP_SCRIPTS)
+		&& !region->getRegionFlag(REGION_FLAGS_ESTATE_SKIP_SCRIPTS)
 		&& parcel
 		&& parcel->getAllowOtherScripts();
 }
@@ -1679,7 +1679,7 @@ void LLViewerParcelMgr::processParcelProperties(LLMessageSystem *msg, void **use
 			parcel_mgr.sendParcelAccessListRequest(AL_ACCESS | AL_BAN);
 
 			// Request dwell for this land, if it's not public land.
-			parcel_mgr.mSelectedDwell = 0.f;
+			parcel_mgr.mSelectedDwell = DWELL_NAN;
 			if (0 != local_id)
 			{
 				parcel_mgr.sendParcelDwellRequest();
@@ -2080,7 +2080,7 @@ void LLViewerParcelMgr::startReleaseLand()
 		return;
 	}
 /*
-	if ((region->getRegionFlags() & REGION_FLAGS_BLOCK_LAND_RESELL)
+	if (region->getRegionFlag(REGION_FLAGS_BLOCK_LAND_RESELL)
 		&& !gAgent.isGodlike())
 	{
 		LLSD args;
@@ -2324,7 +2324,7 @@ void LLViewerParcelMgr::startDeedLandToGroup()
 	/*
 	if(!gAgent.isGodlike())
 	{
-		if((region->getRegionFlags() & REGION_FLAGS_BLOCK_LAND_RESELL)
+		if(region->getRegionFlag(REGION_FLAGS_BLOCK_LAND_RESELL)
 			&& (mCurrentParcel->getOwnerID() != region->getOwner()))
 		{
 			LLSD args;

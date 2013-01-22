@@ -31,7 +31,7 @@
       <integer>1</integer>
     </map>
 
-    <key>MoyMiniMapCustomColor</key>
+        <key>MoyMiniMapCustomColor</key>
 		<map>
 			<key>Comment</key>
 			<string>Custom minimap color you wish to have.</string>
@@ -135,7 +135,7 @@
 		<key>AscentFriendColor</key>
 		<map>
 			<key>Comment</key>
-			<string>Color of chat messages from other residents</string>
+			<string>Special color to distinguish friends from other residents</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>
@@ -153,7 +153,7 @@
 		<key>AscentLindenColor</key>
 		<map>
 			<key>Comment</key>
-			<string>Color of chat messages from other residents</string>
+			<string>Special color to distinguish Lindens(/grid operators) from other residents</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>
@@ -171,7 +171,7 @@
 		<key>AscentMutedColor</key>
 		<map>
 			<key>Comment</key>
-			<string>Color of chat messages from other residents</string>
+			<string>Special color to distinguish those who have been muted from other residents</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>
@@ -189,7 +189,7 @@
 		<key>AscentEstateOwnerColor</key>
 		<map>
 			<key>Comment</key>
-			<string>Color of chat messages from other residents</string>
+			<string>Special color to distinguish estate owners from other residents</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>
@@ -204,7 +204,73 @@
 			<key>IsCOA</key>
 			<integer>1</integer>
 		</map>
-		<key>AscentReportClientUUID</key>
+        <key>ColorFriendChat</key>
+        <map>
+          <key>Comment</key>
+          <string>Color chat from friends using AscentFriendColor</string>
+          <key>Persist</key>
+          <integer>1</integer>
+          <key>Type</key>
+          <string>Boolean</string>
+          <key>Value</key>
+          <integer>0</integer>
+          <key>IsCOA</key>
+          <integer>1</integer>
+        </map>
+        <key>ColorLindenChat</key>
+        <map>
+          <key>Comment</key>
+		  <string>Color chat from Lindens(/grid operators) using AscentLindenColor</string>
+          <key>Persist</key>
+          <integer>1</integer>
+          <key>Type</key>
+          <string>Boolean</string>
+          <key>Value</key>
+          <integer>0</integer>
+          <key>IsCOA</key>
+          <integer>1</integer>
+        </map>
+        <key>ColorMutedChat</key>
+        <map>
+          <key>Comment</key>
+          <string>Color chat from muted residents using AscentMutedColor</string>
+          <key>Persist</key>
+          <integer>1</integer>
+          <key>Type</key>
+          <string>Boolean</string>
+          <key>Value</key>
+          <integer>0</integer>
+          <key>IsCOA</key>
+          <integer>1</integer>
+        </map>
+        <key>ColorEstateOwnerChat</key>
+        <map>
+          <key>Comment</key>
+          <string>Color chat from estate owners using AscentEstateOwnerColor</string>
+          <key>Persist</key>
+          <integer>1</integer>
+          <key>Type</key>
+          <string>Boolean</string>
+          <key>Value</key>
+          <integer>0</integer>
+          <key>IsCOA</key>
+          <integer>1</integer>
+        </map>
+        <!--TODO: implement this and make MoyMiniMapCustomColor more flexible
+        <key>ColorCustomChat</key>
+        <map>
+          <key>Comment</key>
+          <string>Color chat from users you have chosen using MoyMiniMapCustomColor</string>
+          <key>Persist</key>
+          <integer>1</integer>
+          <key>Type</key>
+          <string>Boolean</string>
+          <key>Value</key>
+          <integer>0</integer>
+          <key>IsCOA</key>
+          <integer>1</integer>
+        </map-->
+        <key>AscentReportClientUUID</key>
 		<map>
 			<key>Comment</key>
 			<string>Broadcasted Client Key</string>

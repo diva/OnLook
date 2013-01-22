@@ -2,31 +2,25 @@
  * @file llprimitive.h
  * @brief LLPrimitive base class
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -295,6 +289,34 @@ public:
 };
 
 
+// This code is not naming-standards compliant. Leaving it like this for
+// now to make the connection to code in
+// 	BOOL packTEMessage(LLDataPacker &dp) const;
+// more obvious. This should be refactored to remove the duplication, at which
+// point we can fix the names as well.
+// - Vir
+struct LLTEContents
+{
+	static const U32 MAX_TES = 32;
+
+	U8     image_data[MAX_TES*16];
+	U8	  colors[MAX_TES*4];
+	F32    scale_s[MAX_TES];
+	F32    scale_t[MAX_TES];
+	S16    offset_s[MAX_TES];
+	S16    offset_t[MAX_TES];
+	S16    image_rot[MAX_TES];
+	U8	   bump[MAX_TES];
+	U8	   media_flags[MAX_TES];
+    U8     glow[MAX_TES];
+	
+	static const U32 MAX_TE_BUFFER = 4096;
+	U8 packed_buffer[MAX_TE_BUFFER];
+
+	U32 size;
+	U32 face_count;
+};
+
 class LLPrimitive : public LLXform
 {
 public:
@@ -366,9 +388,10 @@ public:
 	S32 unpackTEField(U8 *cur_ptr, U8 *buffer_end, U8 *data_ptr, U8 data_size, U8 face_count, EMsgVariableType type);
 	BOOL packTEMessage(LLMessageSystem *mesgsys) const;
 	BOOL packTEMessage(LLDataPacker &dp) const;
-	S32 unpackTEMessage(LLMessageSystem* mesgsys, char const* block_name);
 	S32 unpackTEMessage(LLMessageSystem* mesgsys, char const* block_name, const S32 block_num); // Variable num of blocks
 	BOOL unpackTEMessage(LLDataPacker &dp);
+	S32 parseTEMessage(LLMessageSystem* mesgsys, char const* block_name, const S32 block_num, LLTEContents& tec);
+	S32 applyParsedTEMessage(LLTEContents& tec);
 	
 #ifdef CHECK_FOR_FINITE
 	inline void setPosition(const LLVector3& pos);

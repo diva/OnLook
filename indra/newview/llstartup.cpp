@@ -191,6 +191,7 @@
 #include "llwind.h"
 #include "llworld.h"
 #include "llworldmap.h"
+#include "llworldmapmessage.h"
 #include "llxfermanager.h"
 #include "pipeline.h"
 #include "llappviewer.h"
@@ -306,7 +307,6 @@ bool process_login_success_response(std::string &password);
 
 void callback_cache_name(const LLUUID& id, const std::string& full_name, bool is_group)
 {
-	LLNameListCtrl::refreshAll(id, full_name);
 	LLNameBox::refreshAll(id, full_name, is_group);
 	LLNameEditor::refreshAll(id, full_name, is_group);
 
@@ -757,9 +757,6 @@ bool idle_startup()
 			// We have at least some login information on a SLURL
 			firstname = gLoginHandler.getFirstName();
 			lastname = gLoginHandler.getLastName();
-			// <edit>
-			gFullName = utf8str_tolower(firstname + " " + lastname);
-			// </edit>
 			web_login_key = gLoginHandler.getWebLoginKey();
 
 			// Show the login screen if we don't have everything
@@ -771,9 +768,6 @@ bool idle_startup()
             LLSD cmd_line_login = gSavedSettings.getLLSD("UserLoginInfo");
 			firstname = cmd_line_login[0].asString();
 			lastname = cmd_line_login[1].asString();
-			// <edit>
-			gFullName = utf8str_tolower(firstname + " " + lastname);
-			// </edit>
 
 			LLMD5 pass((unsigned char*)cmd_line_login[2].asString().c_str());
 			char md5pass[33];               /* Flawfinder: ignore */
@@ -791,9 +785,6 @@ bool idle_startup()
 		{
 			firstname = gSavedSettings.getString("FirstName");
 			lastname = gSavedSettings.getString("LastName");
-			// <edit>
-			gFullName = utf8str_tolower(firstname + " " + lastname);
-			// </edit>
 			password = LLStartUp::loadPasswordFromDisk();
 			gSavedSettings.setBOOL("RememberPassword", TRUE);
 			
@@ -809,9 +800,6 @@ bool idle_startup()
 			// a valid grid is selected
 			firstname = gSavedSettings.getString("FirstName");
 			lastname = gSavedSettings.getString("LastName");
-			// <edit>
-			gFullName = utf8str_tolower(firstname + " " + lastname);
-			// </edit>
 			password = LLStartUp::loadPasswordFromDisk();
 			show_connect_box = true;
 		}
@@ -895,9 +883,6 @@ bool idle_startup()
 			else
 			{
 				LLPanelLogin::setFields(firstname, lastname, password);
-				// <edit>
-				gFullName = utf8str_tolower(firstname + " " + lastname);
-				// </edit>
 				LLPanelLogin::giveFocus();
 			}
 			display_startup();
@@ -969,9 +954,6 @@ bool idle_startup()
 		{
 			firstname = gLoginHandler.getFirstName();
 			lastname = gLoginHandler.getLastName();
-			// <edit>
-			gFullName = utf8str_tolower(firstname + " " + lastname);
-			// </edit>
 			web_login_key = gLoginHandler.getWebLoginKey();
 		}
 				
@@ -990,14 +972,20 @@ bool idle_startup()
 		{
 			gSavedSettings.setString("FirstName", firstname);
 			gSavedSettings.setString("LastName", lastname);
-			// <edit>
-			gFullName = utf8str_tolower(firstname + " " + lastname);
-			// </edit>
 			if (!gSavedSettings.controlExists("RememberLogin")) gSavedSettings.declareBOOL("RememberLogin", false, "Remember login", false);
 			gSavedSettings.setBOOL("RememberLogin", LLPanelLogin::getRememberLogin());
 
 			LL_INFOS("AppInit") << "Attempting login as: " << firstname << " " << lastname << LL_ENDL;
 			gDebugInfo["LoginName"] = firstname + " " + lastname;	
+		}
+		else
+		{
+			// User tried to login on a non-SecondLife grid with an empty lastname.
+			LLSD subs;
+			subs["GRIDNAME"] = gHippoGridManager->getConnectedGrid()->getGridName();
+			LLNotificationsUtil::add(firstname.empty() ? "EmptyFirstNameMessage" : "EmptyLastNameMessage", subs);
+			LLStartUp::setStartupState(STATE_LOGIN_SHOW);
+			return FALSE;
 		}
 
 		LLScriptEdCore::parseFunctions("lsl_functions_sl.xml");	//Singu Note: This parsing function essentially replaces the entirety of the lscript_library library
@@ -1076,7 +1064,7 @@ bool idle_startup()
 		gSavedSettings.getControl("_NACL_AntiSpamAmount")->getSignal()->connect(boost::bind(&NACLAntiSpamRegistry::handleNaclAntiSpamAmountChanged, _2));
         // NaCl End
 
-		//good as place as any to create user windlight directories
+		//good a place as any to create user windlight directories
 		std::string user_windlight_path_name(gDirUtilp->getExpandedFilename( LL_PATH_USER_SETTINGS , "windlight", ""));
 		LLFile::mkdir(user_windlight_path_name.c_str());		
 
@@ -1432,7 +1420,6 @@ bool idle_startup()
 			LL_DEBUGS("AppInit") << "downloading..." << LL_ENDL;
 			return FALSE;
 		}
-		Debug(if (gCurlIo) dc::curlio.off());		// Login succeeded: restore dc::curlio to original state.
 		LLStartUp::setStartupState( STATE_LOGIN_PROCESS_RESPONSE );
 		progress += 0.01f;
 		set_startup_status(progress, LLTrans::getString("LoginProcessingResponse"), auth_message);
@@ -1469,6 +1456,7 @@ bool idle_startup()
 			{
 				// Yay, login!
 				successful_login = true;
+				Debug(if (gCurlIo) dc::curlio.off());		// Login succeeded: restore dc::curlio to original state.
 			}
 			else
 			{
@@ -1548,13 +1536,12 @@ bool idle_startup()
 				}
 			}
 			break;
-		case LLUserAuth::E_COULDNT_RESOLVE_HOST:
-		case LLUserAuth::E_SSL_PEER_CERTIFICATE:
-		case LLUserAuth::E_UNHANDLED_ERROR:
-		case LLUserAuth::E_SSL_CACERT:
-		case LLUserAuth::E_SSL_CONNECT_ERROR:
 		default:
-			if (LLViewerLogin::getInstance()->tryNextURI())
+		  {
+			static int http_failures = 0;
+			http_failures = (error == LLUserAuth::E_HTTP_SERVER_ERROR) ? http_failures + 1 : 0;
+			if ((error == LLUserAuth::E_HTTP_SERVER_ERROR && http_failures <= 3) ||
+				LLViewerLogin::getInstance()->tryNextURI())
 			{
 				static int login_attempt_number = 0;
 				std::ostringstream s;
@@ -1569,6 +1556,7 @@ bool idle_startup()
 				emsg << "Unable to connect to " << gHippoGridManager->getCurrentGrid()->getGridName() << ".\n";
 				emsg << LLUserAuth::getInstance()->errorMessage();
 			}
+		  }
 			break;
 		}
 
@@ -1684,8 +1672,12 @@ bool idle_startup()
 		display_startup();
 
 		// init the shader managers
-		//LLDayCycleManager::initClass();
+
+		LLAvatarAppearance::initClass();
 		display_startup();
+
+		//LLDayCycleManager::initClass();
+		//display_startup();
 
 		// RN: don't initialize VO classes in drone mode, they are too closely tied to rendering
 		LLViewerObject::initVOClasses();
@@ -3394,8 +3386,8 @@ void register_viewer_callbacks(LLMessageSystem* msg)
 	msg->setHandlerFunc("AvatarPickerReply", LLFloaterAvatarPicker::processAvatarPickerReply);
 
 	msg->setHandlerFunc("MapLayerReply", LLWorldMap::processMapLayerReply);
-	msg->setHandlerFunc("MapBlockReply", LLWorldMap::processMapBlockReply);
-	msg->setHandlerFunc("MapItemReply", LLWorldMap::processMapItemReply);
+	msg->setHandlerFunc("MapBlockReply", LLWorldMapMessage::processMapBlockReply);
+	msg->setHandlerFunc("MapItemReply", LLWorldMapMessage::processMapItemReply);
 
 	msg->setHandlerFunc("EventInfoReply", LLPanelEvent::processEventInfoReply);
 	msg->setHandlerFunc("PickInfoReply", &LLAvatarPropertiesProcessor::processPickInfoReply);
@@ -4099,9 +4091,6 @@ bool process_login_success_response(std::string& password)
 	if(!text.empty()) lastname.assign(text);
 	gSavedSettings.setString("FirstName", firstname);
 	gSavedSettings.setString("LastName", lastname);
-	// <edit>
-	gFullName = utf8str_tolower(firstname + " " + lastname);
-	// </edit>
 
 	if (gSavedSettings.getBOOL("RememberPassword"))
 	{
@@ -4281,6 +4270,18 @@ bool process_login_success_response(std::string& password)
 		gSavedSettings.setString("MapServerURL", map_server_url);
 		LLWorldMap::gotMapServerURL(true);
 	}
+
+	if(gHippoGridManager->getConnectedGrid()->isOpenSimulator())
+	{
+		std::string web_profile_url = response["web_profile_url"];
+		if(!web_profile_url.empty())
+			gSavedSettings.setString("WebProfileURL", web_profile_url);
+	}
+	else if(!gHippoGridManager->getConnectedGrid()->isInProductionGrid())
+	{
+		gSavedSettings.setString("WebProfileURL", "https://my-demo.secondlife.com/[AGENT_NAME]");
+	}
+
 	// Initial outfit for the user.
 	LLSD initial_outfit = response["initial-outfit"][0];
 	if(initial_outfit.size())
@@ -4325,6 +4326,13 @@ bool process_login_success_response(std::string& password)
 			gCloudTextureID = id;
 		}
 #endif
+		// set the location of the Agent Appearance service, from which we can request
+		// avatar baked textures if they are supported by the current region
+		std::string agent_appearance_url = response["agent_appearance_service"];
+		if (!agent_appearance_url.empty())
+		{
+			gSavedSettings.setString("AgentAppearanceServiceURL", agent_appearance_url);
+		}
 	}
 
 	// Override grid info with anything sent in the login response

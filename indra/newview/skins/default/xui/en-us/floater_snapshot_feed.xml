@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+ can_minimize="false"
+ title="Post to My Profile Feed"
+ height="380"
+ width="370"
+ layout="topleft"
+ name="floater_snapshot_profile"
+ rect_control="FloaterSnapshotFeedRect">
+    <text_editor
+     follows="bottom|left"
+     bottom="40"
+     hide_scrollbar="true"
+     length="1"
+     max_length="700"
+     name="caption"
+     top="-180"
+     left="10"
+     right="-10"
+     type="string"
+     word_wrap="true">
+     Type your message here.
+	</text_editor>
+    <check_box
+     follows="left|bottom"
+     initial_value="true"
+     label="Include location"
+     layout="topleft"
+     left_delta="0"
+     name="add_location_cb"
+     control_name="SnapshotFeedAddLocation"
+     bottom_delta="-25" />
+    <button
+     follows="right|bottom"
+     height="23"
+     label="Cancel"
+     layout="topleft"
+     name="cancel_btn"
+     right="-10"
+     bottom="10"
+     width="100"/>
+    <button
+     follows="right|bottom"
+     height="23"
+     label="Post"
+     layout="topleft"
+     left_delta="-106"
+     name="post_btn"
+     bottom_delta="0"
+     width="100"/>
+    <string name="default_message">
+      Click on the 'snapshot' link above to see the larger original.
+    </string>
+    <string name="upload_message">
+      "Uploading..."
+    </string>
+</floater>

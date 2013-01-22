@@ -3,33 +3,26 @@
  * @brief LLInstanceTracker is a mixin class that automatically tracks object
  *        instances with or without an associated key
  *
- * $LicenseInfo:firstyear=2000&license=viewergpl$
- * 
- * Copyright (c) 2000-2010, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2000&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlife.com/developers/opensource/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlife.com/developers/opensource/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
- * 
  */
 
 #ifndef LL_LLINSTANCETRACKER_H
@@ -45,10 +38,16 @@
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/iterator/indirect_iterator.hpp>
 
+/**
+ * Base class manages "class-static" data that must actually have singleton
+ * semantics: one instance per process, rather than one instance per module as
+ * sometimes happens with data simply declared static.
+ */
 class LL_COMMON_API LLInstanceTrackerBase : public boost::noncopyable
 {
-	protected:
-		static void * & getInstances(std::type_info const & info);
+protected:
+	/// Get a process-unique void* pointer slot for the specified type_info
+	static void * & getInstances(std::type_info const & info);
 
 	/// Find or create a STATICDATA instance for the specified TRACKED class.
 	/// STATICDATA must be default-constructible.
@@ -168,8 +167,9 @@ public:
 
 	static T* getInstance(const KEY& k)
 	{
-		typename InstanceMap::const_iterator found = getMap_().find(k);
-		return (found == getMap_().end()) ? NULL : found->second;
+		const InstanceMap& map(getMap_());
+		typename InstanceMap::const_iterator found = map.find(k);
+		return (found == map.end()) ? NULL : found->second;
 	}
 
 	static instance_iter beginInstances() 
@@ -240,8 +240,20 @@ class LLInstanceTracker<T, T*> : public LLInstanceTrackerBase
 
 public:
 
-	/// for completeness of analogy with the generic implementation
-	static T* getInstance(T* k) { return k; }
+	/**
+	 * Does a particular instance still exist? Of course, if you already have
+	 * a T* in hand, you need not call getInstance() to @em locate the
+	 * instance -- unlike the case where getInstance() accepts some kind of
+	 * key. Nonetheless this method is still useful to @em validate a
+	 * particular T*, since each instance's destructor removes itself from the
+	 * underlying set.
+	 */
+	static T* getInstance(T* k)
+	{
+		const InstanceSet& set(getSet_());
+		typename InstanceSet::const_iterator found = set.find(k);
+		return (found == set.end())? NULL : *found;
+	}
 	static S32 instanceCount() { return getSet_().size(); }
 
 	class instance_iter : public boost::iterator_facade<instance_iter, T, boost::forward_traversal_tag>

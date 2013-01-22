@@ -77,19 +77,14 @@ std::string LLURLRequest::actionAsVerb(LLURLRequest::ERequestAction action)
 
 // This might throw AICurlNoEasyHandle.
 LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string const& url, Injector* body,
-	LLHTTPClient::ResponderPtr responder, AIHTTPHeaders& headers, bool is_auth, bool no_compression) :
-    mAction(action), mURL(url), mIsAuth(is_auth), mNoCompression(no_compression),
+	LLHTTPClient::ResponderPtr responder, AIHTTPHeaders& headers, bool keepalive, bool is_auth, bool no_compression) :
+    mAction(action), mURL(url), mKeepAlive(keepalive), mIsAuth(is_auth), mNoCompression(no_compression),
 	mBody(body), mResponder(responder), mHeaders(headers)
 {
 }
 
 void LLURLRequest::initialize_impl(void)
 {
-	if (mHeaders.hasHeader("Cookie"))
-	{
-		allowCookies();
-	}
-
 	// If the header is "Pragma" with no value, the caller intends to
 	// force libcurl to drop the Pragma header it so gratuitously inserts.
 	// Before inserting the header, force libcurl to not use the proxy.
@@ -105,7 +100,7 @@ void LLURLRequest::initialize_impl(void)
 		// but if they did not specify a Content-Type, then ask the injector.
 		mHeaders.addHeader("Content-Type", mBody->contentType(), AIHTTPHeaders::keep_existing_header);
 	}
-	else
+	else if (mAction != HTTP_HEAD)
 	{
 		// Check to see if we have already set Accept or not. If no one
 		// set it, set it to application/llsd+xml since that's what we
@@ -199,12 +194,6 @@ void LLURLRequest::useProxy(const std::string &proxy)
 }
 #endif
 
-void LLURLRequest::allowCookies()
-{
-	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);
-	curlEasyRequest_w->setoptString(CURLOPT_COOKIEFILE, "");
-}
-
 bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 {
 	bool rv = false;
@@ -213,13 +202,11 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 		{
 		case HTTP_HEAD:
 			curlEasyRequest_w->setopt(CURLOPT_NOBODY, 1);
-			curlEasyRequest_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
 			rv = true;
 			break;
 
 		case HTTP_GET:
 			curlEasyRequest_w->setopt(CURLOPT_HTTPGET, 1);
-			curlEasyRequest_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
 
 			// Set Accept-Encoding to allow response compression
 			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, mNoCompression ? "identity" : "");
@@ -239,7 +226,7 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 		case HTTP_POST:
 		{
 			// Set the handle for an http post
-			curlEasyRequest_w->setPost(mBodySize);
+			curlEasyRequest_w->setPost(mBodySize, mKeepAlive);
 
 			// Set Accept-Encoding to allow response compression
 			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, mNoCompression ? "identity" : "");

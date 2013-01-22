@@ -143,6 +143,8 @@ public:
 	LLCheckBoxCtrl*	mCheckStretchUniform;
 	LLCheckBoxCtrl*	mCheckStretchTexture;
 	LLCheckBoxCtrl*	mCheckLimitDrag;
+	LLCheckBoxCtrl*	mCheckShowHighlight;
+	LLCheckBoxCtrl*	mCheckActualRoot;
 
 
 	LLButton	*mBtnRotateLeft;

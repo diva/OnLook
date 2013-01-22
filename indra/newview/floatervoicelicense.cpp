@@ -85,13 +85,13 @@ class LLIamHereVoice : public LLHTTPClient::ResponderWithResult
 			mParent = parentIn;
 		};
 		
-		virtual void result( const LLSD& content )
+		/*virtual*/ void result( const LLSD& content )
 		{
 			if ( mParent )
 				mParent->setSiteIsAlive( true );
 		};
 
-		virtual void error( U32 status, const std::string& reason )
+		/*virtual*/ void error( U32 status, const std::string& reason )
 		{
 			if ( mParent )
 			{
@@ -103,7 +103,8 @@ class LLIamHereVoice : public LLHTTPClient::ResponderWithResult
 			}
 		};
 
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return iamHereVoice_timeout; }
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return iamHereVoice_timeout; }
+		/*virtual*/ char const* getName(void) const { return "LLIamHereVoice"; }
 };
 
 // this is global and not a class member to keep crud out of the header file

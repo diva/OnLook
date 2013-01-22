@@ -16,6 +16,7 @@ include(LLImage)
 include(LLCharacter)
 include(LLInventory)
 include(LLPrimitive)
+include(LLAppearance)
 
 include_directories(
 	${CMAKE_SOURCE_DIR}/newview
@@ -32,6 +33,7 @@ include_directories(
 	${LLCHARACTER_INCLUDE_DIRS}
 	${LLINVENTORY_INCLUDE_DIRS}
 	${LLPRIMITIVE_INCLUDE_DIRS}
+	${LLAPPEARANCE_INCLUDE_DIRS}
     )
 
 set(statemachine_SOURCE_FILES

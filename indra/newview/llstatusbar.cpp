@@ -401,8 +401,8 @@ void LLStatusBar::refresh()
 
 	BOOL no_scripts = FALSE;
 	if((region
-		&& ((region->getRegionFlags() & REGION_FLAGS_SKIP_SCRIPTS)
-		|| (region->getRegionFlags() & REGION_FLAGS_ESTATE_SKIP_SCRIPTS)))
+		&& (region->getRegionFlag(REGION_FLAGS_SKIP_SCRIPTS)
+		|| region->getRegionFlag(REGION_FLAGS_ESTATE_SKIP_SCRIPTS)))
 		|| (parcel && !parcel->getAllowOtherScripts()))
 	{
 		no_scripts = TRUE;
@@ -725,11 +725,9 @@ void LLStatusBar::setHealth(S32 health)
 	{
 		if (mHealth > (health + gSavedSettings.getF32("UISndHealthReductionThreshold")))
 		{
-			LLVOAvatar *me;
-
-			if ((me = gAgentAvatarp))
+			if (isAgentAvatarValid())
 			{
-				if (me->getSex() == SEX_FEMALE)
+				if (gAgentAvatarp->getSex() == SEX_FEMALE)
 				{
 					make_ui_sound("UISndHealthReductionF");
 				}
@@ -841,11 +839,11 @@ static void onClickSeeAV(void*)
 static void onClickScripts(void*)
 {
 	LLViewerRegion* region = gAgent.getRegion();
-	if(region && region->getRegionFlags() & REGION_FLAGS_ESTATE_SKIP_SCRIPTS)
+	if(region && region->getRegionFlag(REGION_FLAGS_ESTATE_SKIP_SCRIPTS))
 	{
 		LLNotificationsUtil::add("ScriptsStopped");
 	}
-	else if(region && region->getRegionFlags() & REGION_FLAGS_SKIP_SCRIPTS)
+	else if(region && region->getRegionFlag(REGION_FLAGS_SKIP_SCRIPTS))
 	{
 		LLNotificationsUtil::add("ScriptsNotRunning");
 	}

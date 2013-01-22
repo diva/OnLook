@@ -199,7 +199,7 @@ public:
 		mAgents = agents_to_invite;
 	}
 
-	virtual void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void error(U32 statusNum, const std::string& reason)
 	{
 		//try an "old school" way.
 		if ( statusNum == 400 )
@@ -219,7 +219,8 @@ public:
 		//the possible different language translations
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return startConferenceChatResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return startConferenceChatResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLStartConferenceChatResponder"; }
 
 private:
 	LLUUID mTempSessionID;
@@ -306,9 +307,10 @@ class LLVoiceCallCapResponder : public LLHTTPClient::ResponderWithResult
 public:
 	LLVoiceCallCapResponder(const LLUUID& session_id) : mSessionID(session_id) {};
 
-	virtual void error(U32 status, const std::string& reason);	// called with bad status codes
-	virtual void result(const LLSD& content);
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return voiceCallCapResponder_timeout; }
+	/*virtual*/ void error(U32 status, const std::string& reason);	// called with bad status codes
+	/*virtual*/ void result(const LLSD& content);
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return voiceCallCapResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLVoiceCallCapResponder"; }
 
 private:
 	LLUUID mSessionID;
@@ -1184,40 +1186,43 @@ void LLFloaterIMPanel::init(const std::string& session_label)
     // [Ansariel: Display name support]
     mProfileButtonEnabled = FALSE;
     // [/Ansariel: Display name support]
-    
+
+	static LLCachedControl<bool> concise_im("UseConciseIMButtons");
+	static LLCachedControl<bool> concise_group("UseConciseGroupChatButtons");
+	static LLCachedControl<bool> concise_conf("UseConciseConferenceButtons");
 	std::string xml_filename;
 	switch(mDialog)
 	{
 	case IM_SESSION_GROUP_START:
 		mFactoryMap["active_speakers_panel"] = LLCallbackMap(createSpeakersPanel, this);
-		xml_filename = "floater_instant_message_group.xml";
+		xml_filename = concise_group ? "floater_instant_message_group_concisebuttons.xml" : "floater_instant_message_group.xml";
 		mVoiceChannel = new LLVoiceChannelGroup(mSessionUUID, mSessionLabel);
 		break;
 	case IM_SESSION_INVITE:
 		mFactoryMap["active_speakers_panel"] = LLCallbackMap(createSpeakersPanel, this);
 		if (gAgent.isInGroup(mSessionUUID))
 		{
-			xml_filename = "floater_instant_message_group.xml";
+			xml_filename = concise_group ? "floater_instant_message_group_concisebuttons.xml" : "floater_instant_message_group.xml";
 		}
 		else // must be invite to ad hoc IM
 		{
-			xml_filename = "floater_instant_message_ad_hoc.xml";
+			xml_filename = concise_conf ? "floater_instant_message_ad_hoc_concisebuttons.xml" : "floater_instant_message_ad_hoc.xml";
 		}
 		mVoiceChannel = new LLVoiceChannelGroup(mSessionUUID, mSessionLabel);
 		break;
 	case IM_SESSION_P2P_INVITE:
-		xml_filename = "floater_instant_message.xml";
+		xml_filename = concise_im ? "floater_instant_message_concisebuttons.xml" : "floater_instant_message.xml";
 		mVoiceChannel = new LLVoiceChannelP2P(mSessionUUID, mSessionLabel, mOtherParticipantUUID);
 		break;
 	case IM_SESSION_CONFERENCE_START:
 		mFactoryMap["active_speakers_panel"] = LLCallbackMap(createSpeakersPanel, this);
-		xml_filename = "floater_instant_message_ad_hoc.xml";
+		xml_filename = concise_conf ? "floater_instant_message_ad_hoc_concisebuttons.xml" : "floater_instant_message_ad_hoc.xml";
 		mVoiceChannel = new LLVoiceChannelGroup(mSessionUUID, mSessionLabel);
 		break;
 	// just received text from another user
 	case IM_NOTHING_SPECIAL:
 
-		xml_filename = "floater_instant_message.xml";
+		xml_filename = concise_im ? "floater_instant_message_concisebuttons.xml" : "floater_instant_message.xml";
 		
 		mTextIMPossible = LLVoiceClient::getInstance()->isSessionTextIMPossible(mSessionUUID);
 		mProfileButtonEnabled = LLVoiceClient::getInstance()->isParticipantAvatar(mSessionUUID);
@@ -1227,7 +1232,7 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 		break;
 	default:
 		llwarns << "Unknown session type" << llendl;
-		xml_filename = "floater_instant_message.xml";
+		xml_filename = concise_im ? "floater_instant_message_concisebuttons.xml" : "floater_instant_message.xml";
 		break;
 	}
 
@@ -1297,27 +1302,23 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 	}
 }
 
-// [Ansariel: Display name support]
 void LLFloaterIMPanel::lookupName()
 {
 	LLAvatarNameCache::get(mOtherParticipantUUID, boost::bind(&LLFloaterIMPanel::onAvatarNameLookup, _1, _2, this));
 }
 
 //static
-void LLFloaterIMPanel::onAvatarNameLookup(const LLUUID& id, const LLAvatarName& avatar_name, void* user_data)
+void LLFloaterIMPanel::onAvatarNameLookup(const LLUUID&, const LLAvatarName& avatar_name, void* data)
 {
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*)user_data;
+	LLFloaterIMPanel* self = (LLFloaterIMPanel*)data;
 
 	if (self && sFloaterIMPanels.count(self) != 0)
 	{
-		std::string title = avatar_name.getCompleteName();
-		if (!title.empty())
-		{
-			self->setTitle(title);
-		}
+		std::string title;
+		LLAvatarNameCache::getPNSName(avatar_name, title);
+		self->setTitle(title);
 	}
 }
-// [/Ansariel: Display name support]
 
 LLFloaterIMPanel::~LLFloaterIMPanel()
 {
@@ -1566,13 +1567,14 @@ public:
 		mSessionID = session_id;
 	}
 
-	void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void error(U32 statusNum, const std::string& reason)
 	{
 		llinfos << "Error inviting all agents to session" << llendl;
 		//throw something back to the viewer here?
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return sessionInviteResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return sessionInviteResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLSessionInviteResponder"; }
 
 private:
 	LLUUID mSessionID;
@@ -1676,19 +1678,8 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 		else
 		{
 			std::string show_name = name;
-			LLAvatarName avatar_name;
-			if (source.notNull() &&
-				LLAvatarNameCache::get(source, &avatar_name))
-			{
-				static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-				switch (phoenix_name_system)
-				{
-					case 0 : show_name = avatar_name.getCompleteName(); break;
-					case 1 : show_name = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
-					case 2 : show_name = avatar_name.mDisplayName; break;
-					default : show_name = avatar_name.getCompleteName(); break;
-				}
-			}
+			if (source.notNull())
+				LLAvatarNameCache::getPNSName(source, show_name);
 			// Convert the name to a hotlink and add to message.
 			const LLStyleSP &source_style = LLStyleMap::instance().lookupAgent(source);
 			mHistoryEditor->appendStyledText(show_name,false,prepend_newline,source_style);

@@ -114,6 +114,8 @@ public:
 	virtual void deleteData();
 	virtual U8* allocateData(S32 size = -1);
 	virtual U8* reallocateData(S32 size = -1);
+	static void deleteData(U8* data) { FREE_MEM(sPrivatePoolp, data); }
+	U8* release() { U8* data = mData; mData = NULL; mDataSize = 0; return data; }	// Same as deleteData(), but returns old data. Call deleteData(old_data) to free it.
 
 	virtual void dump();
 	virtual void sanityCheck();
@@ -134,7 +136,7 @@ public:
 
 protected:
 	// special accessor to allow direct setting of mData and mDataSize by LLImageFormatted
-	void setDataAndSize(U8 *data, S32 size) { mData = data; mDataSize = size; }
+	void setDataAndSize(U8 *data, S32 size);
 	
 public:
 	static void generateMip(const U8 *indata, U8* mipdata, int width, int height, S32 nchannels);
@@ -175,12 +177,13 @@ public:
 	LLImageRaw();
 	LLImageRaw(U16 width, U16 height, S8 components);
 	LLImageRaw(U8 *data, U16 width, U16 height, S8 components);
+	LLImageRaw(LLImageRaw const* src, U16 width, U16 height, U16 crop_offset, bool crop_vertically);
 	// Construct using createFromFile (used by tools)
 	//LLImageRaw(const std::string& filename, bool j2c_lowest_mip_only = false);
 
 	/*virtual*/ void deleteData();
 	/*virtual*/ U8* allocateData(S32 size = -1);
-	/*virtual*/ U8* reallocateData(S32 size);
+	/*virtual*/ U8* reallocateData(S32 size = -1);
 	
 	BOOL resize(U16 width, U16 height, S8 components);
 
@@ -194,7 +197,8 @@ public:
 
 	void expandToPowerOfTwo(S32 max_dim = MAX_IMAGE_SIZE, BOOL scale_image = TRUE);
 	void contractToPowerOfTwo(S32 max_dim = MAX_IMAGE_SIZE, BOOL scale_image = TRUE);
-	void biasedScaleToPowerOfTwo(S32 max_dim = MAX_IMAGE_SIZE);
+	void biasedScaleToPowerOfTwo(S32 target_width, S32 target_height, S32 max_dim = MAX_IMAGE_SIZE);
+	void biasedScaleToPowerOfTwo(S32 max_dim = MAX_IMAGE_SIZE) { biasedScaleToPowerOfTwo(getWidth(), getHeight(), max_dim); }
 	BOOL scale( S32 new_width, S32 new_height, BOOL scale_image = TRUE );
 	//BOOL scaleDownWithoutBlending( S32 new_width, S32 new_height) ;
 
@@ -287,7 +291,7 @@ public:
 	// LLImageBase
 	/*virtual*/ void deleteData();
 	/*virtual*/ U8* allocateData(S32 size = -1);
-	/*virtual*/ U8* reallocateData(S32 size);
+	/*virtual*/ U8* reallocateData(S32 size = -1);
 	
 	/*virtual*/ void dump();
 	/*virtual*/ void sanityCheck();
@@ -296,16 +300,16 @@ public:
 	// subclasses must return a prefered file extension (lowercase without a leading dot)
 	virtual std::string getExtension() = 0;
 	// calcHeaderSize() returns the maximum size of header;
-	//   0 indicates we don't know have a header and have to lead the entire file
+	//   0 indicates we don't have a header and have to read the entire file
 	virtual S32 calcHeaderSize() { return 0; };
 	// calcDataSize() returns how many bytes to read to load discard_level (including header)
 	virtual S32 calcDataSize(S32 discard_level);
 	// calcDiscardLevelBytes() returns the smallest valid discard level based on the number of input bytes
 	virtual S32 calcDiscardLevelBytes(S32 bytes);
-	// getRawDiscardLevel()by default returns mDiscardLevel, but may be overridden (LLImageJ2C)
+	// getRawDiscardLevel() by default returns mDiscardLevel, but may be overridden (LLImageJ2C)
 	virtual S8  getRawDiscardLevel() { return mDiscardLevel; }
 	
-	BOOL load(const std::string& filename);
+	BOOL load(const std::string& filename, int load_size = 0);
 	BOOL save(const std::string& filename);
 
 	virtual BOOL updateData() = 0; // pure virtual

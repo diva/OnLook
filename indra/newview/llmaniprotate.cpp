@@ -2,31 +2,25 @@
  * @file llmaniprotate.cpp
  * @brief LLManipRotate class implementation
  *
- * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
- * Copyright (c) 2002-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -500,7 +494,6 @@ BOOL LLManipRotate::handleMouseUp(S32 x, S32 y, MASK mask)
 		// Might have missed last update due to timing.
 		LLSelectMgr::getInstance()->sendMultipleUpdate( UPD_ROTATION | UPD_POSITION );
 		LLSelectMgr::getInstance()->enableSilhouette(TRUE);
-		//gAgent.setObjectTracking(gSavedSettings.getBOOL("TrackFocusObject"));
 
 		LLSelectMgr::getInstance()->updateSelectionCenter();
 		LLSelectMgr::getInstance()->saveSelectedObjectTransform(SELECT_ACTION_TYPE_PICK);
@@ -945,32 +938,32 @@ void LLManipRotate::renderSnapGuides()
 					{
 						if (i == 0)
 						{
-							renderTickText(text_point, LLTrans::getString(mObjectSelection->isAttachment() ? "Direction_Forward" : "Direction_East"), LLColor4::white);
+							renderTickText(text_point, mObjectSelection->isAttachment() ? LLTrans::getString("Direction_Forward") : LLTrans::getString("Direction_East"), LLColor4::white);
 						}
 						else if (i == 16)
 						{
 							if (constraint_axis.mV[VZ] > 0.f)
 							{
-								renderTickText(text_point, LLTrans::getString(mObjectSelection->isAttachment() ? "Direction_Left" : "Direction_North"), LLColor4::white);
+								renderTickText(text_point, mObjectSelection->isAttachment() ? LLTrans::getString("Direction_Left") : LLTrans::getString("Direction_North"), LLColor4::white);
 							}
 							else
 							{
-								renderTickText(text_point, LLTrans::getString(mObjectSelection->isAttachment() ? "Direction_Right" : "Direction_South"), LLColor4::white);
+								renderTickText(text_point, mObjectSelection->isAttachment() ? LLTrans::getString("Direction_Right") : LLTrans::getString("Direction_South"), LLColor4::white);
 							}
 						}
 						else if (i == 32)
 						{
-							renderTickText(text_point, LLTrans::getString(mObjectSelection->isAttachment() ? "Direction_Back" : "Direction_West"), LLColor4::white);
+							renderTickText(text_point, mObjectSelection->isAttachment() ? LLTrans::getString("Direction_Back") : LLTrans::getString("Direction_West"), LLColor4::white);
 						}
 						else
 						{
 							if (constraint_axis.mV[VZ] > 0.f)
 							{
-								renderTickText(text_point, LLTrans::getString(mObjectSelection->isAttachment() ? "Direction_Right" : "Direction_South"), LLColor4::white);
+								renderTickText(text_point, mObjectSelection->isAttachment() ? LLTrans::getString("Direction_Right") : LLTrans::getString("Direction_South"), LLColor4::white);
 							}
 							else
 							{
-								renderTickText(text_point, LLTrans::getString(mObjectSelection->isAttachment() ? "Direction_Left" : "Direction_North"), LLColor4::white);
+								renderTickText(text_point, mObjectSelection->isAttachment() ? LLTrans::getString("Direction_Left") : LLTrans::getString("Direction_North"), LLColor4::white);
 							}
 						}
 					}
@@ -978,7 +971,7 @@ void LLManipRotate::renderSnapGuides()
 					{
 						if (i == 0)
 						{
-							renderTickText(text_point, LLTrans::getString(mObjectSelection->isAttachment() ? "Direction_Left" : "Direction_North"), LLColor4::white);
+							renderTickText(text_point, mObjectSelection->isAttachment() ? LLTrans::getString("Direction_Left") : LLTrans::getString("Direction_North"), LLColor4::white);
 						}
 						else if (i == 16)
 						{
@@ -993,7 +986,7 @@ void LLManipRotate::renderSnapGuides()
 						}
 						else if (i == 32)
 						{
-							renderTickText(text_point, LLTrans::getString(mObjectSelection->isAttachment() ? "Direction_Right" : "Direction_South"), LLColor4::white);
+							renderTickText(text_point, mObjectSelection->isAttachment() ? LLTrans::getString("Direction_Right") : LLTrans::getString("Direction_South"), LLColor4::white);
 						}
 						else
 						{
@@ -1017,11 +1010,11 @@ void LLManipRotate::renderSnapGuides()
 						{
 							if (constraint_axis.mV[VY] > 0.f)
 							{
-								renderTickText(text_point, LLTrans::getString(mObjectSelection->isAttachment() ? "Direction_Forward" : "Direction_East"), LLColor4::white);
+								renderTickText(text_point, mObjectSelection->isAttachment() ? LLTrans::getString("Direction_Forward") : LLTrans::getString("Direction_East"), LLColor4::white);
 							}
 							else
 							{
-								renderTickText(text_point, LLTrans::getString(mObjectSelection->isAttachment() ? "Direction_Back" : "Direction_West"), LLColor4::white);
+								renderTickText(text_point, mObjectSelection->isAttachment() ? LLTrans::getString("Direction_Back") : LLTrans::getString("Direction_West"), LLColor4::white);
 							}
 						}
 						else if (i == 32)
@@ -1032,11 +1025,11 @@ void LLManipRotate::renderSnapGuides()
 						{
 							if (constraint_axis.mV[VY] > 0.f)
 							{
-								renderTickText(text_point, LLTrans::getString(mObjectSelection->isAttachment() ? "Direction_Back" : "Direction_West"), LLColor4::white);
+								renderTickText(text_point, mObjectSelection->isAttachment() ? LLTrans::getString("Direction_Back") : LLTrans::getString("Direction_West"), LLColor4::white);
 							}
 							else
 							{
-								renderTickText(text_point, LLTrans::getString(mObjectSelection->isAttachment() ? "Direction_Forward" : "Direction_East"), LLColor4::white);
+								renderTickText(text_point, mObjectSelection->isAttachment() ? LLTrans::getString("Direction_Forward") : LLTrans::getString("Direction_East"), LLColor4::white);
 							}
 						}
 					}
@@ -1381,74 +1374,28 @@ LLQuaternion LLManipRotate::dragConstrained( S32 x, S32 y )
 		BOOL hit = getMousePointOnPlaneAgent(projected_mouse, x, y, snap_plane_center, constraint_axis);
 		projected_mouse -= snap_plane_center;
 
-		S32 snap_plane = 0;
-
-		F32 dot = cam_to_snap_plane * constraint_axis;
-		if (llabs(dot) < 0.01f)
-		{
-			// looking at ring edge on, project onto view plane and check if mouse is past ring
-			getMousePointOnPlaneAgent(projected_mouse, x, y, snap_plane_center, cam_to_snap_plane);
-			projected_mouse -= snap_plane_center;
-			dot = projected_mouse * constraint_axis;
-			if (projected_mouse * constraint_axis > 0)
-			{
-				snap_plane = 1;
-			}
-			projected_mouse -= dot * constraint_axis;
-		}
-		else if (dot > 0.f)
-		{
-			// look for mouse position outside and in front of snap circle
-			if (hit && projected_mouse.magVec() > SNAP_GUIDE_INNER_RADIUS * mRadiusMeters && projected_mouse * cam_to_snap_plane < 0.f)
-			{
-				snap_plane = 1;
-			}
-		}
-		else
-		{
-			// look for mouse position inside or in back of snap circle
-			if (projected_mouse.magVec() < SNAP_GUIDE_INNER_RADIUS * mRadiusMeters || projected_mouse * cam_to_snap_plane > 0.f || !hit)
-			{
-				snap_plane = 1;
-			}
-		}
-
-		if (snap_plane == 0)
-		{
-			// try other plane
-			snap_plane_center = (center - (constraint_axis * mRadiusMeters * 0.5f));
-			if (mObjectSelection->getSelectType() == SELECT_TYPE_HUD)
-			{
-				cam_to_snap_plane.setVec(1.f, 0.f, 0.f);
-			}
-			else
-			{
-				cam_to_snap_plane = snap_plane_center - gAgentCamera.getCameraPositionAgent();
-				cam_to_snap_plane.normVec();
-			}
-
-			hit = getMousePointOnPlaneAgent(projected_mouse, x, y, snap_plane_center, constraint_axis);
-			projected_mouse -= snap_plane_center;
-
-			dot = cam_to_snap_plane * constraint_axis;
+		if (gSavedSettings.getBOOL("SnapEnabled")) {
+			S32 snap_plane = 0;
+	
+			F32 dot = cam_to_snap_plane * constraint_axis;
 			if (llabs(dot) < 0.01f)
 			{
 				// looking at ring edge on, project onto view plane and check if mouse is past ring
 				getMousePointOnPlaneAgent(projected_mouse, x, y, snap_plane_center, cam_to_snap_plane);
 				projected_mouse -= snap_plane_center;
 				dot = projected_mouse * constraint_axis;
-				if (projected_mouse * constraint_axis < 0)
+				if (projected_mouse * constraint_axis > 0)
 				{
-					snap_plane = 2;
+					snap_plane = 1;
 				}
 				projected_mouse -= dot * constraint_axis;
 			}
-			else if (dot < 0.f)
+			else if (dot > 0.f)
 			{
 				// look for mouse position outside and in front of snap circle
 				if (hit && projected_mouse.magVec() > SNAP_GUIDE_INNER_RADIUS * mRadiusMeters && projected_mouse * cam_to_snap_plane < 0.f)
 				{
-					snap_plane = 2;
+					snap_plane = 1;
 				}
 			}
 			else
@@ -1456,78 +1403,136 @@ LLQuaternion LLManipRotate::dragConstrained( S32 x, S32 y )
 				// look for mouse position inside or in back of snap circle
 				if (projected_mouse.magVec() < SNAP_GUIDE_INNER_RADIUS * mRadiusMeters || projected_mouse * cam_to_snap_plane > 0.f || !hit)
 				{
-					snap_plane = 2;
+					snap_plane = 1;
 				}
 			}
-		}
-
-		if (snap_plane > 0)
-		{
-			LLVector3 cam_at_axis;
-			if (mObjectSelection->getSelectType() == SELECT_TYPE_HUD)
+	
+			if (snap_plane == 0)
 			{
-				cam_at_axis.setVec(1.f, 0.f, 0.f);
+				// try other plane
+				snap_plane_center = (center - (constraint_axis * mRadiusMeters * 0.5f));
+				if (mObjectSelection->getSelectType() == SELECT_TYPE_HUD)
+				{
+					cam_to_snap_plane.setVec(1.f, 0.f, 0.f);
+				}
+				else
+				{
+					cam_to_snap_plane = snap_plane_center - gAgentCamera.getCameraPositionAgent();
+					cam_to_snap_plane.normVec();
+				}
+	
+				hit = getMousePointOnPlaneAgent(projected_mouse, x, y, snap_plane_center, constraint_axis);
+				projected_mouse -= snap_plane_center;
+	
+				dot = cam_to_snap_plane * constraint_axis;
+				if (llabs(dot) < 0.01f)
+				{
+					// looking at ring edge on, project onto view plane and check if mouse is past ring
+					getMousePointOnPlaneAgent(projected_mouse, x, y, snap_plane_center, cam_to_snap_plane);
+					projected_mouse -= snap_plane_center;
+					dot = projected_mouse * constraint_axis;
+					if (projected_mouse * constraint_axis < 0)
+					{
+						snap_plane = 2;
+					}
+					projected_mouse -= dot * constraint_axis;
+				}
+				else if (dot < 0.f)
+				{
+					// look for mouse position outside and in front of snap circle
+					if (hit && projected_mouse.magVec() > SNAP_GUIDE_INNER_RADIUS * mRadiusMeters && projected_mouse * cam_to_snap_plane < 0.f)
+					{
+						snap_plane = 2;
+					}
+				}
+				else
+				{
+					// look for mouse position inside or in back of snap circle
+					if (projected_mouse.magVec() < SNAP_GUIDE_INNER_RADIUS * mRadiusMeters || projected_mouse * cam_to_snap_plane > 0.f || !hit)
+					{
+						snap_plane = 2;
+					}
+				}
 			}
-			else
-			{
-				cam_at_axis = snap_plane_center - gAgentCamera.getCameraPositionAgent();
-				cam_at_axis.normVec();
-			}
-
-			// first, project mouse onto screen plane at point tangent to rotation radius. 
-			getMousePointOnPlaneAgent(projected_mouse, x, y, snap_plane_center, cam_at_axis);
-			// project that point onto rotation plane
-			projected_mouse -= snap_plane_center;
-			projected_mouse -= projected_vec(projected_mouse, constraint_axis);
-
-			F32 mouse_lateral_dist = llmin(SNAP_GUIDE_INNER_RADIUS * mRadiusMeters, projected_mouse.magVec());
-			F32 mouse_depth = SNAP_GUIDE_INNER_RADIUS * mRadiusMeters;
-			if (llabs(mouse_lateral_dist) > 0.01f)
-			{
-				mouse_depth = sqrtf((SNAP_GUIDE_INNER_RADIUS * mRadiusMeters) * (SNAP_GUIDE_INNER_RADIUS * mRadiusMeters) - 
-									(mouse_lateral_dist * mouse_lateral_dist));
-			}
-			LLVector3 projected_camera_at = cam_at_axis - projected_vec(cam_at_axis, constraint_axis);
-			projected_mouse -= mouse_depth * projected_camera_at;
-
-			if (!mInSnapRegime)
-			{
-				mSmoothRotate = TRUE;
-			}
-			mInSnapRegime = TRUE;
-			// 0 to 360 deg
-			F32 mouse_angle = fmodf(atan2(projected_mouse * axis1, projected_mouse * axis2) * RAD_TO_DEG + 360.f, 360.f);
 			
-			F32 relative_mouse_angle = fmodf(mouse_angle + (SNAP_ANGLE_DETENTE / 2), SNAP_ANGLE_INCREMENT);
-			//fmodf(llround(mouse_angle * RAD_TO_DEG, 7.5f) + 360.f, 360.f);
-
-			LLVector3 object_axis;
-			getObjectAxisClosestToMouse(object_axis);
-			object_axis = object_axis * first_object_node->mSavedRotation;
-
-			// project onto constraint plane
-			object_axis = object_axis - (object_axis * getConstraintAxis()) * getConstraintAxis();
-			object_axis.normVec();
-
-			if (relative_mouse_angle < SNAP_ANGLE_DETENTE)
+			if (snap_plane > 0)
 			{
-				F32 quantized_mouse_angle = mouse_angle - (relative_mouse_angle - (SNAP_ANGLE_DETENTE * 0.5f));
-				angle = (quantized_mouse_angle * DEG_TO_RAD) - atan2(object_axis * axis1, object_axis * axis2);
+				LLVector3 cam_at_axis;
+				if (mObjectSelection->getSelectType() == SELECT_TYPE_HUD)
+				{
+					cam_at_axis.setVec(1.f, 0.f, 0.f);
+				}
+				else
+				{
+					cam_at_axis = snap_plane_center - gAgentCamera.getCameraPositionAgent();
+					cam_at_axis.normVec();
+				}
+	
+				// first, project mouse onto screen plane at point tangent to rotation radius. 
+				getMousePointOnPlaneAgent(projected_mouse, x, y, snap_plane_center, cam_at_axis);
+				// project that point onto rotation plane
+				projected_mouse -= snap_plane_center;
+				projected_mouse -= projected_vec(projected_mouse, constraint_axis);
+	
+				F32 mouse_lateral_dist = llmin(SNAP_GUIDE_INNER_RADIUS * mRadiusMeters, projected_mouse.magVec());
+				F32 mouse_depth = SNAP_GUIDE_INNER_RADIUS * mRadiusMeters;
+				if (llabs(mouse_lateral_dist) > 0.01f)
+				{
+					mouse_depth = sqrtf((SNAP_GUIDE_INNER_RADIUS * mRadiusMeters) * (SNAP_GUIDE_INNER_RADIUS * mRadiusMeters) - 
+										(mouse_lateral_dist * mouse_lateral_dist));
+				}
+				LLVector3 projected_camera_at = cam_at_axis - projected_vec(cam_at_axis, constraint_axis);
+				projected_mouse -= mouse_depth * projected_camera_at;
+	
+				if (!mInSnapRegime)
+				{
+					mSmoothRotate = TRUE;
+				}
+				mInSnapRegime = TRUE;
+				// 0 to 360 deg
+				F32 mouse_angle = fmodf(atan2(projected_mouse * axis1, projected_mouse * axis2) * RAD_TO_DEG + 360.f, 360.f);
+				
+				F32 relative_mouse_angle = fmodf(mouse_angle + (SNAP_ANGLE_DETENTE / 2), SNAP_ANGLE_INCREMENT);
+				//fmodf(llround(mouse_angle * RAD_TO_DEG, 7.5f) + 360.f, 360.f);
+	
+				LLVector3 object_axis;
+				getObjectAxisClosestToMouse(object_axis);
+				object_axis = object_axis * first_object_node->mSavedRotation;
+	
+				// project onto constraint plane
+				object_axis = object_axis - (object_axis * getConstraintAxis()) * getConstraintAxis();
+				object_axis.normVec();
+	
+				if (relative_mouse_angle < SNAP_ANGLE_DETENTE)
+				{
+					F32 quantized_mouse_angle = mouse_angle - (relative_mouse_angle - (SNAP_ANGLE_DETENTE * 0.5f));
+					angle = (quantized_mouse_angle * DEG_TO_RAD) - atan2(object_axis * axis1, object_axis * axis2);
+				}
+				else
+				{
+					angle = (mouse_angle * DEG_TO_RAD) - atan2(object_axis * axis1, object_axis * axis2);
+				}
+				return LLQuaternion( -angle, constraint_axis );
 			}
 			else
 			{
-				angle = (mouse_angle * DEG_TO_RAD) - atan2(object_axis * axis1, object_axis * axis2);
+				if (mInSnapRegime)
+				{
+					mSmoothRotate = TRUE;
+				}
+				mInSnapRegime = FALSE;
 			}
-			return LLQuaternion( -angle, constraint_axis );
 		}
-		else
-		{
+		else {
 			if (mInSnapRegime)
 			{
 				mSmoothRotate = TRUE;
 			}
 			mInSnapRegime = FALSE;
-
+		}
+		
+		if (!mInSnapRegime)
+		{
 			LLVector3 up_from_axis = mCenterToCamNorm % constraint_axis;
 			up_from_axis.normVec();
 			LLVector3 cur_intersection;
@@ -1694,7 +1699,6 @@ void LLManipRotate::highlightManipulators( S32 x, S32 y )
 		return;
 	}
 	
-	LLQuaternion object_rot = first_object->getRenderRotation();
 	LLVector3 rotation_center = gAgent.getPosAgentFromGlobal(mRotationCenter);
 	LLVector3 mouse_dir_x;
 	LLVector3 mouse_dir_y;

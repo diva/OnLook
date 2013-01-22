@@ -111,7 +111,7 @@ void setDefaultTextures()
 	}
 }
 
-class importResponder: public LLNewAgentInventoryResponder
+class importResponder : public LLNewAgentInventoryResponder
 {
 public:
 
@@ -191,6 +191,8 @@ public:
 		LLObjectBackup::getInstance()->updateMap(content["new_asset"].asUUID());
 		LLObjectBackup::getInstance()->uploadNextAsset();
 	}
+
+	/*virtual*/ char const* getName(void) const { return "importResponder"; }
 };
 
 class CacheReadResponder : public LLTextureCache::ReadResponder
@@ -775,10 +777,10 @@ void LLObjectBackup::exportNextTexture()
 			S32 cur_discard = imagep->getDiscardLevel();
 			if (cur_discard > 0)
 			{
-				if (imagep->getBoostLevel() != LLViewerTexture::BOOST_PREVIEW)
+				if (imagep->getBoostLevel() != LLGLTexture::BOOST_PREVIEW)
 				{
 					// we want to force discard 0: this one does this.
-					imagep->setBoostLevel(LLViewerTexture::BOOST_PREVIEW);
+					imagep->setBoostLevel(LLGLTexture::BOOST_PREVIEW);
 				}
 			}
 			else

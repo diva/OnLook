@@ -29,8 +29,7 @@
 
 class LLMessageSystem;
 
-#include "llmemory.h"
-#include <boost/signals2.hpp>
+#include "llsingleton.h"
 
 /**
  * Contains region info, notifies interested parties of its changes.
@@ -53,7 +52,7 @@ public:
 	U8			mSimAccess;
 	U8			mAgentLimit;
 
-	U32			mRegionFlags;
+	U64			mRegionFlags;
 	U32			mEstateID;
 	U32			mParentEstateID;
 

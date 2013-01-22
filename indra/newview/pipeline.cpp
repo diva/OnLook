@@ -142,6 +142,8 @@ void check_stack_depth(S32 stack_depth)
 //#define DEBUG_INDICES
 #endif
 
+bool gShiftFrame = false;
+
 const F32 BACKLIGHT_DAY_MAGNITUDE_AVATAR = 0.2f;
 const F32 BACKLIGHT_NIGHT_MAGNITUDE_AVATAR = 0.1f;
 const F32 BACKLIGHT_DAY_MAGNITUDE_OBJECT = 0.1f;
@@ -345,8 +347,9 @@ void validate_framebuffer_object();
 
 bool addDeferredAttachments(LLRenderTarget& target)
 {
+	static const LLCachedControl<bool> SHPrecisionDeferredNormals("SHPrecisionDeferredNormals",false);
 	return target.addColorAttachment(GL_RGBA) && //specular
-			target.addColorAttachment(GL_RGBA); //normal+z	
+			target.addColorAttachment(SHPrecisionDeferredNormals ? GL_RGB10_A2 : GL_RGBA); //normal+z
 }
 
 LLPipeline::LLPipeline() :
@@ -403,6 +406,7 @@ void LLPipeline::init()
 	refreshCachedSettings();
 
 	gOctreeMaxCapacity = gSavedSettings.getU32("OctreeMaxNodeCapacity");
+	gOctreeReserveCapacity = llmin(gSavedSettings.getU32("OctreeReserveNodeCapacity"),U32(512));
 	sDynamicLOD = gSavedSettings.getBOOL("RenderDynamicLOD");
 	sRenderBump = gSavedSettings.getBOOL("RenderObjectBump");
 	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("ShyotlRenderUseStreamVBO");
@@ -427,19 +431,37 @@ void LLPipeline::init()
 	LLViewerStats::getInstance()->mTrianglesDrawnStat.reset();
 	resetFrameStats();
 
-	for (U32 i = 0; i < NUM_RENDER_TYPES; ++i)
+	if (gSavedSettings.getBOOL("DisableAllRenderFeatures"))
 	{
-		mRenderTypeEnabled[i] = TRUE; //all rendering types start enabled
+		clearAllRenderDebugFeatures();
+	}
+	else
+	{
+		setAllRenderDebugFeatures(); // By default, all debugging features on
+	}
+	clearAllRenderDebugDisplays(); // All debug displays off
+
+	if (gSavedSettings.getBOOL("DisableAllRenderTypes"))
+	{
+		clearAllRenderTypes();
+	}
+	else
+	{
+		setAllRenderTypes(); // By default, all rendering types start enabled
+		// Don't turn on ground when this is set
+		// Mac Books with intel 950s need this
+		if(!gSavedSettings.getBOOL("RenderGround"))
+		{
+			toggleRenderType(RENDER_TYPE_GROUND);
+		}
 	}
 
-	mRenderDebugFeatureMask = 0xffffffff; // All debugging features on
-	mRenderDebugMask = 0;	// All debug starts off
-
-	// Don't turn on ground when this is set
-	// Mac Books with intel 950s need this
-	if(!gSavedSettings.getBOOL("RenderGround"))
+	// make sure RenderPerformanceTest persists (hackity hack hack)
+	// disables non-object rendering (UI, sky, water, etc)
+	if (gSavedSettings.getBOOL("RenderPerformanceTest"))
 	{
-		toggleRenderType(RENDER_TYPE_GROUND);
+		gSavedSettings.setBOOL("RenderPerformanceTest", FALSE);
+		gSavedSettings.setBOOL("RenderPerformanceTest", TRUE);
 	}
 
 	mOldRenderDebugMask = mRenderDebugMask;
@@ -547,6 +569,7 @@ void LLPipeline::cleanup()
 	mInitialized = FALSE;
 
 	mDeferredVB = NULL;
+	mCubeVB = NULL;
 }
 
 //============================================================================
@@ -623,7 +646,43 @@ void LLPipeline::allocatePhysicsBuffer()
 	}
 }
 
-void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
+bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
+{
+	refreshCachedSettings();
+	
+	bool save_settings = sRenderDeferred;
+	if (save_settings)
+	{
+		// Set this flag in case we crash while resizing window or allocating space for deferred rendering targets
+		gSavedSettings.setBOOL("RenderInitError", TRUE);
+		gSavedSettings.saveToFile( gSavedSettings.getString("ClientSettingsFile"), TRUE );
+	}
+
+	eFBOStatus ret = doAllocateScreenBuffer(resX, resY);
+
+	if (save_settings)
+	{
+		// don't disable shaders on next session
+		gSavedSettings.setBOOL("RenderInitError", FALSE);
+		gSavedSettings.saveToFile( gSavedSettings.getString("ClientSettingsFile"), TRUE );
+	}
+	
+	if (ret == FBO_FAILURE)
+	{ //FAILSAFE: screen buffer allocation failed, disable deferred rendering if it's enabled
+		//NOTE: if the session closes successfully after this call, deferred rendering will be 
+		// disabled on future sessions
+		if (LLPipeline::sRenderDeferred)
+		{
+			gSavedSettings.setBOOL("RenderDeferred", FALSE);
+			LLPipeline::refreshCachedSettings();
+		}
+	}
+
+	return ret == FBO_SUCCESS_FULLRES;
+}
+
+
+LLPipeline::eFBOStatus LLPipeline::doAllocateScreenBuffer(U32 resX, U32 resY)
 {
 	refreshCachedSettings();
 	static const LLCachedControl<U32> RenderFSAASamples("RenderFSAASamples",0);
@@ -634,8 +693,12 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 	// - if not multisampled, shrink resolution and try again (favor X resolution over Y)
 	// Make sure to call "releaseScreenBuffers" after each failure to cleanup the partially loaded state
 
+	eFBOStatus ret = FBO_SUCCESS_FULLRES;
 	if (!allocateScreenBuffer(resX, resY, samples))
 	{
+		//failed to allocate at requested specification, return false
+		ret = FBO_FAILURE;
+
 		releaseScreenBuffers();
 		//reduce number of samples 
 		while (samples > 0)
@@ -643,7 +706,7 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 			samples /= 2;
 			if (allocateScreenBuffer(resX, resY, samples))
 			{ //success
-				return;
+				return FBO_SUCCESS_LOWRES;
 			}
 			releaseScreenBuffers();
 		}
@@ -656,22 +719,23 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 			resY /= 2;
 			if (allocateScreenBuffer(resX, resY, samples))
 			{
-				return;
+				return FBO_SUCCESS_LOWRES;
 			}
 			releaseScreenBuffers();
 
 			resX /= 2;
 			if (allocateScreenBuffer(resX, resY, samples))
 			{
-				return;
+				return FBO_SUCCESS_LOWRES;
 			}
 			releaseScreenBuffers();
 		}
 
 		llwarns << "Unable to allocate screen buffer at any resolution!" << llendl;
 	}
-}
 
+	return ret;
+}
 
 bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY, U32 samples)
 {
@@ -688,10 +752,6 @@ bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY, U32 samples)
 
 	if (LLPipeline::sRenderDeferred)
 	{
-		// Set this flag in case we crash while resizing window or allocating space for deferred rendering targets
-		gSavedSettings.setBOOL("RenderInitError", TRUE);
-		gSavedSettings.saveToFile( gSavedSettings.getString("ClientSettingsFile"), TRUE );
-
 		S32 shadow_detail = gSavedSettings.getS32("RenderShadowDetail");
 		BOOL ssao = gSavedSettings.getBOOL("RenderDeferredSSAO");
 		BOOL RenderDepthOfField = gSavedSettings.getBOOL("RenderDepthOfField");
@@ -759,9 +819,11 @@ bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY, U32 samples)
 			}
 		}
 
-		// don't disable shaders on next session
-		gSavedSettings.setBOOL("RenderInitError", FALSE);
-		gSavedSettings.saveToFile( gSavedSettings.getString("ClientSettingsFile"), TRUE );
+		//HACK make screenbuffer allocations start failing after 30 seconds
+		if (gSavedSettings.getBOOL("SimulateFBOFailure"))
+		{
+			return false;
+		}
 	}
 	else
 	{
@@ -783,7 +845,10 @@ bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY, U32 samples)
 			if(mSampleBuffer.allocate(resX,resY,GL_RGBA,TRUE,TRUE,LLTexUnit::TT_RECT_TEXTURE,FALSE,samples))
 				mScreen.setSampleBuffer(&mSampleBuffer);
 			else
-				mSampleBuffer.release();	
+			{
+				mSampleBuffer.release();
+				return false;
+			}
 		}
 		
 	}
@@ -860,7 +925,7 @@ void LLPipeline::releaseGLBuffers()
 	mWaterRef.release();
 	mWaterDis.release();
 	
-	for (U32 i = 0; i < 3; i++)
+	for (U32 i = 0; i < 2; i++)
 	{
 		mGlow[i].release();
 	}
@@ -926,15 +991,25 @@ void LLPipeline::createGLBuffers()
 	GLuint resX = gViewerWindow->getWorldViewWidthRaw();
 	GLuint resY = gViewerWindow->getWorldViewHeightRaw();
 	
+
+
 	if (LLPipeline::sRenderGlow)
 	{ //screen space glow buffers
 		const U32 glow_res = llmax(1, 
 			llmin(512, 1 << gSavedSettings.getS32("RenderGlowResolutionPow")));
 
-		for (U32 i = 0; i < 3; i++)
+		glClearColor(0,0,0,0);
+		gGL.setColorMask(true, true);
+		for (U32 i = 0; i < 2; i++)
 		{
-			mGlow[i].allocate(512,glow_res,GL_RGBA,FALSE,FALSE);
+			if(mGlow[i].allocate(512,glow_res,GL_RGBA,FALSE,FALSE))
+			{
+				mGlow[i].bindTarget();
+				mGlow[i].clear();
+				mGlow[i].unbindTarget();
+			}
 		}
+
 
 		allocateScreenBuffer(resX,resY);
 
@@ -1456,6 +1531,22 @@ void LLPipeline::unlinkDrawable(LLDrawable *drawable)
 
 }
 
+//static
+void LLPipeline::removeMutedAVsLights(LLVOAvatar* muted_avatar)
+{
+	LLFastTimer t(FTM_REMOVE_FROM_LIGHT_SET);
+	for (light_set_t::iterator iter = gPipeline.mNearbyLights.begin();
+		 iter != gPipeline.mNearbyLights.end();)
+	{
+		if (iter->drawable->getVObj()->isAttachment() && iter->drawable->getVObj()->getAvatar() == muted_avatar)
+		{
+			gPipeline.mLights.erase(iter->drawable);
+			gPipeline.mNearbyLights.erase(iter++);
+		}
+		else ++iter;
+	}
+}
+
 U32 LLPipeline::addObject(LLViewerObject *vobj)
 {
 	llassert_always(vobj);
@@ -1643,6 +1734,10 @@ void LLPipeline::updateMovedList(LLDrawable::drawable_vector_t& moved_list)
 		drawablep->clearState(LLDrawable::EARLY_MOVE | LLDrawable::MOVE_UNDAMPED);
 		if (done)
 		{
+			if (drawablep->isRoot())
+			{
+				drawablep->makeStatic();
+			}
 			drawablep->clearState(LLDrawable::ON_MOVE_LIST);
 			if (drawablep->isState(LLDrawable::ANIMATED_CHILD))
 			{ //will likely not receive any future world matrix updates
@@ -1775,6 +1870,7 @@ void LLPipeline::grabReferences(LLCullResult& result)
 void LLPipeline::clearReferences()
 {
 	sCull = NULL;
+	mGroupSaveQ1.clear();
 }
 
 void check_references(LLSpatialGroup* group, LLDrawable* drawable)
@@ -2337,6 +2433,65 @@ void LLPipeline::updateGL()
 	}*/
 }
 
+void LLPipeline::clearRebuildGroups()
+{
+	LLSpatialGroup::sg_vector_t	hudGroups;
+
+	mGroupQ1Locked = true;
+	// Iterate through all drawables on the priority build queue,
+	for (LLSpatialGroup::sg_vector_t::iterator iter = mGroupQ1.begin();
+		 iter != mGroupQ1.end(); ++iter)
+	{
+		LLSpatialGroup* group = *iter;
+
+		// If the group contains HUD objects, save the group
+		if (group->isHUDGroup())
+		{
+			hudGroups.push_back(group);
+		}
+		// Else, no HUD objects so clear the build state
+		else
+		{
+			group->clearState(LLSpatialGroup::IN_BUILD_Q1);
+		}
+	}
+
+	// Clear the group
+	//mGroupQ1.clear();	//Assign already clears...
+
+	// Copy the saved HUD groups back in
+	mGroupQ1.assign(hudGroups.begin(), hudGroups.end());
+	mGroupQ1Locked = false;
+
+	// Clear the HUD groups
+	hudGroups.clear();
+
+	mGroupQ2Locked = true;
+	for (LLSpatialGroup::sg_vector_t::iterator iter = mGroupQ2.begin();
+		 iter != mGroupQ2.end(); ++iter)
+	{
+		LLSpatialGroup* group = *iter;
+
+		// If the group contains HUD objects, save the group
+		if (group->isHUDGroup())
+		{
+			hudGroups.push_back(group);
+		}
+		// Else, no HUD objects so clear the build state
+		else
+		{
+			group->clearState(LLSpatialGroup::IN_BUILD_Q2);
+		}
+	}	
+
+	// Clear the group
+	//mGroupQ2.clear(); //Assign already clears...
+
+	// Copy the saved HUD groups back in
+	mGroupQ2.assign(hudGroups.begin(), hudGroups.end());
+	mGroupQ2Locked = false;
+}
+
 static LLFastTimer::DeclareTimer FTM_REBUILD_PRIORITY_GROUPS("Rebuild Priority Groups");
 
 void LLPipeline::rebuildPriorityGroups()
@@ -2359,6 +2514,7 @@ void LLPipeline::rebuildPriorityGroups()
 		group->clearState(LLSpatialGroup::IN_BUILD_Q1);
 	}
 
+	mGroupSaveQ1 = mGroupQ1;
 	mGroupQ1.clear();
 	mGroupQ1Locked = false;
 
@@ -5037,38 +5193,34 @@ void LLPipeline::calcNearbyLights(LLCamera& camera)
 		F32 max_dist = LIGHT_MAX_RADIUS * 4.f; // ignore enitrely lights > 4 * max light rad
 		
 		// UPDATE THE EXISTING NEARBY LIGHTS
-		if (!LLPipeline::sSkipUpdate)
+		light_set_t cur_nearby_lights;
+		for (light_set_t::iterator iter = mNearbyLights.begin();
+			iter != mNearbyLights.end(); iter++)
 		{
-			light_set_t cur_nearby_lights;
-			for (light_set_t::iterator iter = mNearbyLights.begin();
-				iter != mNearbyLights.end(); iter++)
+			const Light* light = &(*iter);
+			LLDrawable* drawable = light->drawable;
+			LLVOVolume* volight = drawable->getVOVolume();
+			if (!volight || !drawable->isState(LLDrawable::LIGHT))
 			{
-				const Light* light = &(*iter);
-				LLDrawable* drawable = light->drawable;
-				LLVOVolume* volight = drawable->getVOVolume();
-				if (!volight || !drawable->isState(LLDrawable::LIGHT))
-				{
-					setLight(drawable,false);	//remove from mLight list
-					drawable->clearState(LLDrawable::NEARBY_LIGHT);
-					continue;
-				}
-				if (light->fade <= -LIGHT_FADE_TIME)
-				{
-					drawable->clearState(LLDrawable::NEARBY_LIGHT);
-					continue;
-				}
-				if (!sRenderAttachedLights && volight && volight->isAttachment())
-				{
-					drawable->clearState(LLDrawable::NEARBY_LIGHT);
-					continue;
-				}
-
-				F32 dist = calc_light_dist(volight, cam_pos, max_dist);
-				cur_nearby_lights.insert(Light(drawable, dist, light->fade));
+				drawable->clearState(LLDrawable::NEARBY_LIGHT);
+				continue;
 			}
-			mNearbyLights = cur_nearby_lights;
+			if (light->fade <= -LIGHT_FADE_TIME)
+			{
+				drawable->clearState(LLDrawable::NEARBY_LIGHT);
+				continue;
+			}
+			if (!sRenderAttachedLights && volight && volight->isAttachment())
+			{
+				drawable->clearState(LLDrawable::NEARBY_LIGHT);
+				continue;
+			}
+
+			F32 dist = calc_light_dist(volight, cam_pos, max_dist);
+			cur_nearby_lights.insert(Light(drawable, dist, light->fade));
 		}
-		
+		mNearbyLights = cur_nearby_lights;
+				
 		// FIND NEW LIGHTS THAT ARE IN RANGE
 		light_set_t new_nearby_lights;
 		for (LLDrawable::drawable_set_t::iterator iter = mLights.begin();
@@ -5820,6 +5972,34 @@ BOOL LLPipeline::toggleRenderDebugFeatureControl(void* data)
 	return gPipeline.hasRenderDebugFeatureMask(bit);
 }
 
+void LLPipeline::setRenderDebugFeatureControl(U32 bit, bool value)
+{
+	if (value)
+	{
+		gPipeline.mRenderDebugFeatureMask |= bit;
+	}
+	else
+	{
+		gPipeline.mRenderDebugFeatureMask &= !bit;
+	}
+}
+
+void LLPipeline::pushRenderDebugFeatureMask()
+{
+	mRenderDebugFeatureStack.push(mRenderDebugFeatureMask);
+}
+
+void LLPipeline::popRenderDebugFeatureMask()
+{
+	if (mRenderDebugFeatureStack.empty())
+	{
+		llerrs << "Depleted render feature stack." << llendl;
+	}
+
+	mRenderDebugFeatureMask = mRenderDebugFeatureStack.top();
+	mRenderDebugFeatureStack.pop();
+}
+
 // static
 void LLPipeline::setRenderScriptedBeacons(BOOL val)
 {
@@ -6159,7 +6339,8 @@ void LLPipeline::resetVertexBuffers(LLDrawable* drawable)
 }
 
 void LLPipeline::resetVertexBuffers()
-{	mResetVertexBuffers = true;
+{
+	mResetVertexBuffers = true;
 }
 
 static LLFastTimer::DeclareTimer FTM_RESET_VB("Reset VB");
@@ -6199,6 +6380,8 @@ void LLPipeline::doResetVertexBuffers()
 
 	if(LLPostProcess::instanceExists())
 		LLPostProcess::getInstance()->destroyGL();
+
+	LLVOPartGroup::destroyGL();
 
 	LLVertexBuffer::cleanupClass();
 	
@@ -6432,8 +6615,8 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 	{
 		{
 			LLFastTimer ftm(FTM_RENDER_BLOOM_FBO);
-			mGlow[2].bindTarget();
-			mGlow[2].clear();
+			mGlow[1].bindTarget();
+			mGlow[1].clear();
 		}
 		
 		gGlowExtractProgram.bind();	
@@ -6472,7 +6655,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 		
 		gGL.getTexUnit(0)->unbind(mScreen.getUsage());
 
-		mGlow[2].flush();
+		mGlow[1].flush();
 	}
 
 	tc1.setVec(0,0);
@@ -6504,14 +6687,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 			mGlow[i%2].clear();
 		}
 			
-		if (i == 0)
-		{
-			gGL.getTexUnit(0)->bind(&mGlow[2]);
-		}
-		else
-		{
-			gGL.getTexUnit(0)->bind(&mGlow[(i-1)%2]);
-		}
+		gGL.getTexUnit(0)->bind(&mGlow[(i+1)%2]);
 
 		if (i%2 == 0)
 		{
@@ -7217,14 +7393,7 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, U32 n
 	shader.uniform1f(LLShaderMgr::DEFERRED_SSAO_FACTOR_INV, 1.0/ssao_factor);
 
 	LLVector3 ssao_effect = RenderSSAOEffect;
-	F32 matrix_diag = (ssao_effect[0] + 2.0*ssao_effect[1])/3.0;
-	F32 matrix_nondiag = (ssao_effect[0] - ssao_effect[1])/3.0;
-	// This matrix scales (proj of color onto <1/rt(3),1/rt(3),1/rt(3)>) by
-	// value factor, and scales remainder by saturation factor
-	F32 ssao_effect_mat[] = {	matrix_diag, matrix_nondiag, matrix_nondiag,
-								matrix_nondiag, matrix_diag, matrix_nondiag,
-								matrix_nondiag, matrix_nondiag, matrix_diag};
-	shader.uniformMatrix3fv(LLShaderMgr::DEFERRED_SSAO_EFFECT_MAT, 1, GL_FALSE, ssao_effect_mat);
+	shader.uniform1f(LLShaderMgr::DEFERRED_SSAO_EFFECT, ssao_effect[0]);
 
 	F32 shadow_offset_error = 1.f + RenderShadowOffsetError * fabsf(LLViewerCamera::getInstance()->getOrigin().mV[2]);
 	F32 shadow_bias_error = 1.f + RenderShadowBiasError * fabsf(LLViewerCamera::getInstance()->getOrigin().mV[2]);
@@ -7774,10 +7943,10 @@ void LLPipeline::renderDeferredLighting()
 		pushRenderTypeMask();
 		andRenderTypeMask(LLPipeline::RENDER_TYPE_ALPHA,
 						 LLPipeline::RENDER_TYPE_FULLBRIGHT,
-						 LLPipeline::RENDER_TYPE_VOLUME,
+						 //LLPipeline::RENDER_TYPE_VOLUME,
 						 LLPipeline::RENDER_TYPE_GLOW,
 						 LLPipeline::RENDER_TYPE_BUMP,
-						 LLPipeline::RENDER_TYPE_PASS_SIMPLE,
+						 /*LLPipeline::RENDER_TYPE_PASS_SIMPLE,	//These aren't used.
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA,
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA_MASK,
 						 LLPipeline::RENDER_TYPE_PASS_BUMP,
@@ -7789,7 +7958,7 @@ void LLPipeline::renderDeferredLighting()
 						 LLPipeline::RENDER_TYPE_PASS_GRASS,
 						 LLPipeline::RENDER_TYPE_PASS_SHINY,
 						 LLPipeline::RENDER_TYPE_PASS_INVISIBLE,
-						 LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY,
+						 LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY,*/
 						 LLPipeline::RENDER_TYPE_AVATAR,
 						 END_RENDER_TYPES);
 		
@@ -8559,9 +8728,6 @@ BOOL LLPipeline::getVisiblePointCloud(LLCamera& camera, LLVector3& min, LLVector
 		3,7	
 	};
 
-	LLVector3 center = (max+min)*0.5f;
-	LLVector3 size = (max-min)*0.5f;
-	
 	for (U32 i = 0; i < 12; i++)
 	{
 		for (U32 j = 0; j < 6; ++j)
@@ -8720,7 +8886,7 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 	mSunOrthoClipPlanes = LLVector4(clip, clip.mV[2]*clip.mV[2]/clip.mV[1]);
 
 	//currently used for amount to extrude frusta corners for constructing shadow frusta
-	LLVector3 n = RenderShadowNearDist;
+	//LLVector3 n = RenderShadowNearDist;
 	//F32 nearDist[] = { n.mV[0], n.mV[1], n.mV[2], n.mV[2] };
 
 	//put together a universal "near clip" plane for shadow frusta
@@ -9682,25 +9848,25 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar)
 
 BOOL LLPipeline::hasRenderBatches(const U32 type) const
 {
-	return sCull->getRenderMapSize(type) > 0;
+	return sCull->hasRenderMap(type);
 }
 
-LLCullResult::drawinfo_iterator LLPipeline::beginRenderMap(U32 type)
+LLCullResult::drawinfo_iterator LLPipeline::beginRenderMap(U32 type) const
 {
 	return sCull->beginRenderMap(type);
 }
 
-LLCullResult::drawinfo_iterator LLPipeline::endRenderMap(U32 type)
+LLCullResult::drawinfo_iterator LLPipeline::endRenderMap(U32 type) const
 {
 	return sCull->endRenderMap(type);
 }
 
-LLCullResult::sg_iterator LLPipeline::beginAlphaGroups()
+LLCullResult::sg_iterator LLPipeline::beginAlphaGroups() const
 {
 	return sCull->beginAlphaGroups();
 }
 
-LLCullResult::sg_iterator LLPipeline::endAlphaGroups()
+LLCullResult::sg_iterator LLPipeline::endAlphaGroups() const
 {
 	return sCull->endAlphaGroups();
 }
@@ -9822,6 +9988,22 @@ void LLPipeline::clearRenderTypeMask(U32 type, ...)
 	if (type > END_RENDER_TYPES)
 	{
 		llerrs << "Invalid render type." << llendl;
+	}
+}
+
+void LLPipeline::setAllRenderTypes()
+{
+	for (U32 i = 0; i < NUM_RENDER_TYPES; ++i)
+	{
+		mRenderTypeEnabled[i] = TRUE;
+	}
+}
+
+void LLPipeline::clearAllRenderTypes()
+{
+	for (U32 i = 0; i < NUM_RENDER_TYPES; ++i)
+	{
+		mRenderTypeEnabled[i] = FALSE;
 	}
 }
 

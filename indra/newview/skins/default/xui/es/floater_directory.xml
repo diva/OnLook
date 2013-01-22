@@ -63,7 +63,7 @@
 			<line_editor name="name"/>
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
-			<check_box label="Adult content" name="incadult"/>
+			<check_box label="Contenido Adulto" name="incadult"/>
 			<combo_box name="Category">
 				<combo_item name="AnyCategory">
 					Cualquier Categoría
@@ -239,14 +239,16 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 					En Venta - Estado
 				</combo_item>
 			</combo_box>
-			<check_box label="Precio &#8804; " name="pricecheck"/>
+			<check_box label="Precio " name="pricecheck"/>
 			<text name="pricecheck_symbol">
 				[CURRENCY]
 			</text>
-			<check_box label="Superficie &#8805; " name="areacheck"/>
-			<text name="areacheck_symbol">
+			<check_box label="Superficie " name="areacheck"/>
+			<text name="areacheck_symbol" left="180">
 				m²
 			</text>
+			<line_editor left="130" name="priceedit"/>
+			<line_editor left="130" name="areaedit"/>			
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
 			<scroll_list name="results">
 				<column label="Nombre" name="name"/>

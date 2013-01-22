@@ -162,10 +162,6 @@ public:
 
 LLLoginRefreshHandler gLoginRefreshHandler;
 
-// <edit>
-std::string gFullName;
-// </edit>
-
 // helper class that trys to download a URL from a web site and calls a method 
 // on parent class indicating if the web server is working or not
 class LLIamHereLogin : public LLHTTPClient::ResponderHeadersOnly
@@ -196,7 +192,9 @@ class LLIamHereLogin : public LLHTTPClient::ResponderHeadersOnly
 			}
 		}
 
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return iamHereLogin_timeout; }
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return iamHereLogin_timeout; }
+
+		/*virtual*/ char const* getName(void) const { return "LLIamHereLogin"; }
 };
 
 // this is global and not a class member to keep crud out of the header file

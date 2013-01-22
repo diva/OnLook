@@ -67,6 +67,17 @@ VARYING vec4 littleWave;
 VARYING vec4 view;
 VARYING vec4 vary_position;
 
+vec3 pack(vec3 norm)
+{
+//#define PACK_NORMALS
+#ifdef PACK_NORMALS
+	float p = sqrt(8.0*norm.z+8.0);
+	return vec3(norm.xy/p + 0.5, 0.0);
+#else
+	return norm.xyz*0.5+0.5;
+#endif
+}
+
 void main() 
 {
 	vec4 color;
@@ -151,8 +162,9 @@ void main()
 	//spec *= shadow;
 	//color.rgb += spec * specular;
 	
-	//color.rgb = atmosTransport(color.rgb);
-	//color.rgb = scaleSoftClip(color.rgb);
+	color.rgb = atmosTransport(color.rgb);
+	color.rgb = scaleSoftClip(color.rgb);
+
 	//color.a = spec * sunAngle2;
 
 	//wavef.z *= 0.1f;
@@ -161,5 +173,5 @@ void main()
 	
 	frag_data[0] = vec4(color.rgb, 0.5); // diffuse
 	frag_data[1] = vec4(0.5,0.5,0.5, 0.95); // speccolor*spec, spec
-	frag_data[2] = vec4(screenspacewavef.xy*0.5+0.5, screenspacewavef.z, screenspacewavef.z*0.5); // normalxyz, displace
+	frag_data[2] = vec4(pack(screenspacewavef), 0.5);
 }

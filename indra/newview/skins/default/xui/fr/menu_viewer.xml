@@ -1,46 +1,25 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <menu_bar name="Main Menu">
 	<menu label="Fichier" name="File">
-		<tearoff_menu label="~~~~~~~~~~~" name="~~~~~~~~~~~"/>
-    <menu_item_call label="Import  d'image ([UPLOADFEE])" name="Upload Image">
-		<on_click function="File.UploadImage" userdata="" />
-		<on_enable function="File.EnableUpload" />
-    </menu_item_call>
-    <menu_item_call label="Import de son ([UPLOADFEE])" name="Upload Sound">
-        <on_click function="File.UploadSound" userdata="" />
-        <on_enable function="File.EnableUpload" />
-    </menu_item_call>
-    <menu_item_call label="Import d'animation ([UPLOADFEE])" name="Upload Animation">
-        <on_click function="File.UploadAnim" userdata="" />
-        <on_enable function="File.EnableUpload" />
-    </menu_item_call>
-    <menu_item_call label="Import  multiples ([UPLOADFEE] par fichier)" name="Bulk Upload">
-        <on_click function="File.UploadBulk" userdata="" />
-    </menu_item_call>
-	<menu_item_call label="Import XML" name="Import">
-		<on_click function="Object.Import" />
-		<on_enable function="Object.EnableImport" />
-	</menu_item_call>
-	<menu_item_call label="Import avec textures" name="Import2">
-		<on_click function="Object.ImportUpload" />
-		<on_enable function="Object.EnableImport" />
-	</menu_item_call>
-    <menu_item_separator label="-----------" name="separator" />
-    <menu_item_call label="Définir les droits par défaut " name="perm prefs" >
-        <on_click function="ShowFloater" userdata="perm prefs" />
-    </menu_item_call>
-		<menu_item_separator label="-----------" name="separator2"/>
-		<menu_item_call label="Enregistrer la texture sur le disque dur" name="Save Preview As...">
-			<on_click function="File.SavePreview" userdata="" />
-			<on_enable function="File.EnableSaveAs" />
-		</menu_item_call>
-		<menu_item_separator label="-----------" name="separator"/>
+    <menu_item_call label="Import  d'image ([UPLOADFEE])" name="Upload Image"/>
+    <menu_item_call label="Import de son ([UPLOADFEE])" name="Upload Sound"/>
+    <menu_item_call label="Import d'animation ([UPLOADFEE])" name="Upload Animation"/>
+    <menu_item_call label="Import  multiples ([UPLOADFEE] par fichier)" name="Bulk Upload"/>
+	<menu_item_call label="Import XML" name="Import"/>
+	<menu_item_call label="Import avec textures" name="Import2"/>
+    <menu_item_separator/>
+    <menu_item_call label="Définir les droits par défaut " name="perm prefs"/>
+		<menu_item_separator/>
+		<menu_item_call label="Enregistrer la texture sur le disque dur en TGA" name="Save Preview As..."/>
+		<menu_item_call label="Enregistrer la texture sur le disque dur en PNG" name="Save Preview AsPNG..."/>
+
+		<menu_item_separator/>
 		<menu_item_call label="Fermer la fenêtre" name="Close Window"/>
 		<menu_item_call label="Fermer toutes les fenêtres" name="Close All Windows"/>
 		<menu_item_separator label="-----------" name="separator3"/>
 		<menu_item_call label="Prendre une photo" name="Take Snapshot"/>
 		<menu_item_call label="Enregistrer la photo sur le disque dur" name="Snapshot to Disk" shortcut="control|shift|X"/>
-		<menu_item_separator label="-----------" name="separator4"/>
+		<menu_item_separator/>
 		<menu_item_call label="Quitter" name="Quit"/>
 	</menu>
 	<menu label="Édition" name="Edit">
@@ -77,6 +56,7 @@
 		<menu_item_call label="Gestures" name="Gestures..."/>
 		<menu_item_call label="Profil" name="Profile..."/>
 		<menu_item_call label="Apparence" name="Appearance..."/>
+		<menu_item_call label="Créer un ensemble" name="Make Outfit..."/>
 		<menu_item_call label="Display Name - Nom en 'Rab'" name="Display Name..."/>
 		<menu_item_separator label="-----------" name="separator7"/>
 		<menu_item_check label="Amis" name="Friends..."/>
@@ -90,7 +70,7 @@
 		<menu_item_check label="Construire" name="Build"/>
 		<menu_item_check label="Vue au joystick" name="Joystick Flycam"/>
 		<menu_item_call label="Réinitialiser l'affichage" name="Reset View"/>
-		<menu_item_call label="Regarder le dernier intervenant" name="Look at Last Chatter" shortcut="alt|V"/>
+		<menu_item_call label="Regarder le dernier intervenant" name="Look at Last Chatter"/>
 		<menu_item_separator label="-----------" name="separator"/>
 		<menu_item_check label="Barre d'outils" name="Toolbar"/>
 		<menu_item_check label="Chat local" name="Chat History"/>
@@ -133,30 +113,17 @@
 	<menu label="Monde" name="World">
 		<menu_item_call label="Chat" name="Chat"/>
 		<menu_item_check label="Toujours courir" name="Always Run"/>
-		<menu_item_call label="S'asseoir au sol" name="Sit on Ground" shortcut="control|alt|S"/>
-		<menu_item_check label="Voler" name="Fly" shortcut="F"/>
+		<menu_item_call label="S'asseoir au sol" name="Sit on Ground"/>
+		<menu_item_check label="Voler" name="Fly"/>
 		<menu_item_separator label="-----------" name="separator"/>
 		<menu_item_call label="Créer un repère ici - Landmark" name="Create Landmark Here"/>
 		<menu_item_call label="Définir comme domicile" name="Set Home to Here"/>
 		<menu_item_separator label="-----------" name="separator2"/>
 		<menu_item_call label="Me téléporter chez moi" name="Teleport Home"/>
 		<menu_item_separator label="-----------" name="separator3"/>
-
-    	<menu_item_call bottom="-186" enabled="true" height="19" label="Faux Absent (on/off)" left="0"
-     		mouse_opaque="true" name="Fake Away Status" width="185">
-      		<on_click function="World.FakeAway" userdata=""/>
-    	</menu_item_call>
-
-
-		<menu_item_call bottom="-186" enabled="true" height="19" label="Absent(e)-Away" left="0"
-		     mouse_opaque="true" name="Set Away" width="185">
-			<on_click function="World.SetAway" userdata=""/>
-		</menu_item_call>
-		<menu_item_call bottom="-205" enabled="true" height="19" label="OQP-Busy" left="0"
-		     mouse_opaque="true" name="Set Busy" width="185">
-			<on_click function="World.SetBusy" userdata=""/>
-		</menu_item_call>
-
+		<menu_item_call label="Faux Absent (on/off)" name="Fake Away Status"/>
+		<menu_item_call label="Absent(e)-Away" name="Set Away"/>
+		<menu_item_call label="OQP-Busy" name="Set Busy"/>
 		<menu_item_call label="Arrêter d'animer mon avatar" name="Stop Animating My Avatar"/>
 		<menu_item_call label="Reprendre le contrôle" name="Release Keys"/>
 		<menu_item_separator label="-----------" name="separator4"/>
@@ -198,8 +165,6 @@
 		<menu_item_check label="Sélectionner les objets déplaçables uniquement" name="Select Only Movable Objects"/>
 		<menu_item_check label="Sélectionner en entourant" name="Select By Surrounding"/>
 		<menu_item_check label="Montrer les contours de la sélection" name="Show Selection Outlines" />
-			<on_click function="Tools.ShowSelectionHighlights" userdata="" />
-			<on_check control="RenderHighlightSelections" />
 		<menu_item_check label="Afficher les parties cachées de la sélection" name="Show Hidden Selection"/>
 		<menu_item_check label="Afficher la sphère de lumière de la sélection" name="Show Light Radius for Selection"/>
 		<menu_item_check label="Afficher le faisceau de sélection" name="Show Selection Beam"/>
@@ -211,11 +176,11 @@
 		<menu_item_separator label="-----------" name="separator3"/>
 		<menu_item_check label="Modifier les parties liées" name="Edit Linked Parts"/>
 		<menu label="Sélection parties liées" name="Select Linked Parts">
-		<menu_item_call label="Sélection Suivante" name="Select Next Part"/>		
-		<menu_item_call label="Sélection Precedente" name="Select Previous Part"/>
-		<menu_item_call label="Inclure Suivante" name="Include Next Part"/>
-		<menu_item_call label="Inclure Precedente" name="Include Previous Part"/>
-            </menu>
+			<menu_item_call label="Sélection Suivante" name="Select Next Part"/>
+			<menu_item_call label="Sélection Precedente" name="Select Previous Part"/>
+			<menu_item_call label="Inclure Suivante" name="Include Next Part"/>
+			<menu_item_call label="Inclure Precedente" name="Include Previous Part"/>
+		</menu>
 		<menu_item_call label="Lier" name="Link"/>
 		<menu_item_call label="Délier" name="Unlink"/>
 		<menu_item_separator label="-----------" name="separator4"/>
@@ -227,7 +192,7 @@
 		<menu_item_call label="Prendre une copie" name="Take Copy"/>
 		<menu_item_call label="Retourner l'objet" name="Return..."/>
 		<menu_item_call label="Remplacer l'objet dans le contenu de l'objet" name="Save Object Back to Object Contents"/>
-		<menu_item_call label="Admin Suppr.(fonction pour les open grids)" name="Admin Delete" shortcut="control|alt|shift|Del"/>		
+		<menu_item_call label="Admin Suppr.(fonction pour les open grids)" name="Admin Delete"/>
         <menu_item_separator label="-----------" name="separator6"/>
 		<menu_item_call label="Afficher la fenêtre d'alertes/erreurs de script" name="Show Script Warning/Error Window"/>
 		<menu label="Recompiler les scripts dans la sélection" name="Recompile Scripts in Selection">

@@ -378,24 +378,21 @@ void LLFloaterReporter::onClickSelectAbuser(void *userdata)
 {
 	LLFloaterReporter *self = (LLFloaterReporter *)userdata;
 
-	gFloaterView->getParentFloater(self)->addDependentFloater(LLFloaterAvatarPicker::show(callbackAvatarID, userdata, FALSE, TRUE ));
+	gFloaterView->getParentFloater(self)->addDependentFloater(LLFloaterAvatarPicker::show(boost::bind(&LLFloaterReporter::callbackAvatarID, self, _1, _2), FALSE, TRUE ));
 }
 
-// static
-void LLFloaterReporter::callbackAvatarID(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* data)
+void LLFloaterReporter::callbackAvatarID(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names)
 {
-	LLFloaterReporter* self = (LLFloaterReporter*) data;
-
 	if (ids.empty() || names.empty()) return;
 
 	// this should never be called in a bug report but here for safety.
-	if ( self->mReportType != BUG_REPORT )
+	if ( mReportType != BUG_REPORT )
 	{
-		self->childSetText("abuser_name_edit", names[0] );
+		childSetText("abuser_name_edit", names[0].getCompleteName() );
 		
-		self->mAbuserID = ids[0];
+		mAbuserID = ids[0];
 
-		self->refresh();
+		refresh();
 	};
 }
 
@@ -846,7 +843,7 @@ public:
 	LLUserReportScreenshotResponder(const LLSD & post_data, 
 									const LLUUID & vfile_id, 
 									LLAssetType::EType asset_type):
-	  LLAssetUploadResponder(post_data, vfile_id, asset_type)
+	LLAssetUploadResponder(post_data, vfile_id, asset_type)
 	{
 	}
 	void uploadFailed(const LLSD& content)
@@ -859,6 +856,8 @@ public:
 		// we don't care about what the server returns from this post, just clean up the UI
 		LLUploadDialog::modalUploadFinished();
 	}
+
+	/*virtual*/ char const* getName(void) const { return "LLUserReportScreenshotResponder"; }
 };
 
 class LLUserReportResponder : public LLHTTPClient::ResponderWithResult
@@ -866,17 +865,18 @@ class LLUserReportResponder : public LLHTTPClient::ResponderWithResult
 public:
 	LLUserReportResponder() { }
 
-	void error(U32 status, const std::string& reason)
+	/*virtual*/ void error(U32 status, const std::string& reason)
 	{
 		// *TODO do some user messaging here
 		LLUploadDialog::modalUploadFinished();
 	}
-	void result(const LLSD& content)
+	/*virtual*/ void result(const LLSD& content)
 	{
 		// we don't care about what the server returns
 		LLUploadDialog::modalUploadFinished();
 	}
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return userReportResponder_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return userReportResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "LLUserReportResponder"; }
 };
 
 void LLFloaterReporter::sendReportViaCaps(std::string url, std::string sshot_url, const LLSD& report)
@@ -901,7 +901,8 @@ void LLFloaterReporter::takeScreenshot()
 	const S32 IMAGE_HEIGHT = 768;
 
 	LLPointer<LLImageRaw> raw = new LLImageRaw;
-	if( !gViewerWindow->rawSnapshot(raw, IMAGE_WIDTH, IMAGE_HEIGHT, TRUE, FALSE, TRUE, FALSE))
+	// Warning: This crops left and right in case of wide-screen monitor:
+	if( !gViewerWindow->rawSnapshot(raw, IMAGE_WIDTH, IMAGE_HEIGHT, (F32)IMAGE_WIDTH / IMAGE_HEIGHT, TRUE, FALSE))
 	{
 		llwarns << "Unable to take screenshot" << llendl;
 		return;
@@ -941,7 +942,7 @@ void LLFloaterReporter::takeScreenshot()
 
 	// store in the image list so it doesn't try to fetch from the server
 	LLPointer<LLViewerFetchedTexture> image_in_list = 
-		LLViewerTextureManager::getFetchedTexture(mResourceDatap->mAssetInfo.mUuid, TRUE, LLViewerTexture::BOOST_NONE, LLViewerTexture::FETCHED_TEXTURE);
+		LLViewerTextureManager::getFetchedTexture(mResourceDatap->mAssetInfo.mUuid, TRUE, LLGLTexture::BOOST_NONE, LLViewerTexture::FETCHED_TEXTURE);
 	image_in_list->createGLTexture(0, raw, 0, TRUE, LLViewerTexture::OTHER);
 
 	// the texture picker then uses that texture

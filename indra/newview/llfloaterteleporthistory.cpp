@@ -96,8 +96,8 @@ BOOL LLFloaterTeleportHistory::postBuild()
 	}
 
 	// setup callbacks for the scroll list
-	mPlacesList->setDoubleClickCallback(onTeleport);
-	childSetCommitCallback("places_list", onPlacesSelected, this);
+	mPlacesList->setDoubleClickCallback(boost::bind(&LLFloaterTeleportHistory::onTeleport,this));
+	mPlacesList->setCommitCallback(boost::bind(&LLFloaterTeleportHistory::onPlacesSelected,_1,this));
 	childSetAction("teleport", onTeleport, this);
 	childSetAction("show_on_map", onShowOnMap, this);
 	childSetAction("copy_slurl", onCopySLURL, this);

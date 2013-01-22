@@ -159,7 +159,7 @@ void LLStandardBumpmap::addstandard()
 		gStandardBumpmapList[LLStandardBumpmap::sStandardBumpmapCount].mLabel = label;
 		gStandardBumpmapList[LLStandardBumpmap::sStandardBumpmapCount].mImage = 
 			LLViewerTextureManager::getFetchedTexture(LLUUID(bump_image_id));	
-		gStandardBumpmapList[LLStandardBumpmap::sStandardBumpmapCount].mImage->setBoostLevel(LLViewerTexture::BOOST_BUMP) ;
+		gStandardBumpmapList[LLStandardBumpmap::sStandardBumpmapCount].mImage->setBoostLevel(LLGLTexture::BOOST_BUMP) ;
 		gStandardBumpmapList[LLStandardBumpmap::sStandardBumpmapCount].mImage->setLoadedCallback(LLBumpImageList::onSourceStandardLoaded, 0, TRUE, FALSE, NULL, NULL );
 		gStandardBumpmapList[LLStandardBumpmap::sStandardBumpmapCount].mImage->forceToSaveRawImage(0) ;
 		LLStandardBumpmap::sStandardBumpmapCount++;
@@ -1075,7 +1075,7 @@ LLViewerTexture* LLBumpImageList::getBrightnessDarknessImage(LLViewerFetchedText
 			src_image->getHeight() != bump->getHeight())// ||
 			//(LLPipeline::sRenderDeferred && bump->getComponents() != 4))
 		{
-			src_image->setBoostLevel(LLViewerTexture::BOOST_BUMP) ;
+			src_image->setBoostLevel(LLGLTexture::BOOST_BUMP) ;
 			src_image->setLoadedCallback( callback_func, 0, TRUE, FALSE, new LLUUID(src_image->getID()), NULL );
 			src_image->forceToSaveRawImage(0) ;
 		}
@@ -1572,16 +1572,21 @@ void LLDrawPoolInvisible::render(S32 pass)
 		gOcclusionProgram.unbind();
 	}
 
-	if (gPipeline.hasRenderBatches(LLRenderPass::PASS_INVISI_SHINY))
+	/*if (gPipeline.hasRenderBatches(LLRenderPass::PASS_INVISI_SHINY)) // invisible (deprecated)
 	{
 		beginShiny(true);
 		renderShiny(true);
 		endShiny(true);
-	}
+	}*/
 }
 
 void LLDrawPoolInvisible::beginDeferredPass(S32 pass)
 {
+	static const LLCachedControl<bool> enable("SianaRenderDeferredInvisiprim");
+	if (!enable)
+	{
+	    return;
+	}
 	beginRenderPass(pass);
 }
 
@@ -1593,7 +1598,8 @@ void LLDrawPoolInvisible::endDeferredPass( S32 pass )
 void LLDrawPoolInvisible::renderDeferred( S32 pass )
 { //render invisiprims; this doesn't work becaue it also blocks all the post-deferred stuff
 	static const LLCachedControl<bool> enable("SianaRenderDeferredInvisiprim");
-	if (!enable) {
+	if (!enable)
+	{
 	    return;
 	}
 
@@ -1610,10 +1616,10 @@ void LLDrawPoolInvisible::renderDeferred( S32 pass )
 	
 	gOcclusionProgram.unbind();
 
-	if (gPipeline.hasRenderBatches(LLRenderPass::PASS_INVISI_SHINY))
+	/*if (gPipeline.hasRenderBatches(LLRenderPass::PASS_INVISI_SHINY)) // invisible (deprecated)
 	{
 		beginShiny(true);
 		renderShiny(true);
 		endShiny(true);
-	}
+	}*/
 }

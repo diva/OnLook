@@ -219,7 +219,7 @@ public:
 	virtual ~BaseCapabilitiesComplete()
 	{ }
 
-    void error(U32 statusNum, const std::string& reason)
+    /*virtual*/ void error(U32 statusNum, const std::string& reason)
     {
 		LL_WARNS2("AppInit", "Capabilities") << statusNum << ": " << reason << LL_ENDL;
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
@@ -229,7 +229,7 @@ public:
 		}
     }
 
-    void result(const LLSD& content)
+    /*virtual*/ void result(const LLSD& content)
     {
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if(!regionp) //region was removed
@@ -265,7 +265,8 @@ public:
 		}
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return baseCapabilitiesComplete_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return baseCapabilitiesComplete_timeout; }
+	/*virtual*/ char const* getName(void) const { return "BaseCapabilitiesComplete"; }
 
     static boost::intrusive_ptr<BaseCapabilitiesComplete> build( U64 region_handle, S32 id )
     {
@@ -291,9 +292,11 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 	mZoning(""),
 	mIsEstateManager(FALSE),
 	mRegionFlags( REGION_FLAGS_DEFAULT ),
+	mRegionProtocols( 0 ),
 	mSimAccess( SIM_ACCESS_MIN ),
 	mBillableFactor(1.0),
 	mMaxTasks(DEFAULT_MAX_REGION_WIDE_PRIM_COUNT),
+	mCentralBakeVersion(0),
 	mClassID(0),
 	mCPURatio(0),
 	mColoName("unknown"),
@@ -472,18 +475,6 @@ void LLViewerRegion::sendReliableMessage()
 	gMessageSystem->sendReliable(mImpl->mHost);
 }
 
-void LLViewerRegion::setFlags(BOOL b, U32 flags)
-{
-	if (b)
-	{
-		mRegionFlags |=  flags;
-	}
-	else
-	{
-		mRegionFlags &= ~flags;
-	}
-}
-
 void LLViewerRegion::setWaterHeight(F32 water_level)
 {
 	mImpl->mLandp->setWaterHeight(water_level);
@@ -496,10 +487,10 @@ F32 LLViewerRegion::getWaterHeight() const
 
 BOOL LLViewerRegion::isVoiceEnabled() const
 {
-	return (getRegionFlags() & REGION_FLAGS_ALLOW_VOICE);
+	return getRegionFlag(REGION_FLAGS_ALLOW_VOICE);
 }
 
-void LLViewerRegion::setRegionFlags(U32 flags)
+void LLViewerRegion::setRegionFlags(U64 flags)
 {
 	mRegionFlags = flags;
 }
@@ -595,7 +586,7 @@ std::string LLViewerRegion::getLocalizedSimProductName() const
 }
 
 // static
-std::string LLViewerRegion::regionFlagsToString(U32 flags)
+std::string LLViewerRegion::regionFlagsToString(U64 flags)
 {
 	std::string result;
 
@@ -718,6 +709,31 @@ std::string LLViewerRegion::accessToShortString(U8 sim_access)
 	default:
 		return "U";
 	}
+}
+
+// static
+U8 LLViewerRegion::shortStringToAccess(const std::string &sim_access)
+{
+	U8 accessValue;
+
+	if (LLStringUtil::compareStrings(sim_access, "PG") == 0)
+	{
+		accessValue = SIM_ACCESS_PG;
+	}
+	else if (LLStringUtil::compareStrings(sim_access, "M") == 0)
+	{
+		accessValue = SIM_ACCESS_MATURE;
+	}
+	else if (LLStringUtil::compareStrings(sim_access, "A") == 0)
+	{
+		accessValue = SIM_ACCESS_ADULT;
+	}
+	else
+	{
+		accessValue = SIM_ACCESS_MIN;
+	}
+
+	return accessValue;
 }
 
 // static
@@ -1444,7 +1460,8 @@ void LLViewerRegion::unpackRegionHandshake()
 {
 	LLMessageSystem *msg = gMessageSystem;
 
-	U32 region_flags;
+	U64 region_flags = 0;
+	U64 region_protocols = 0;
 	U8 sim_access;
 	std::string sim_name;
 	LLUUID sim_owner;
@@ -1453,7 +1470,6 @@ void LLViewerRegion::unpackRegionHandshake()
 	F32 billable_factor;
 	LLUUID cache_id;
 
-	msg->getU32		("RegionInfo", "RegionFlags", region_flags);
 	msg->getU8		("RegionInfo", "SimAccess", sim_access);
 	msg->getString	("RegionInfo", "SimName", sim_name);
 	msg->getUUID	("RegionInfo", "SimOwner", sim_owner);
@@ -1462,7 +1478,20 @@ void LLViewerRegion::unpackRegionHandshake()
 	msg->getF32		("RegionInfo", "BillableFactor", billable_factor);
 	msg->getUUID	("RegionInfo", "CacheID", cache_id );
 
+	if (msg->has(_PREHASH_RegionInfo4))
+	{
+		msg->getU64Fast(_PREHASH_RegionInfo4, _PREHASH_RegionFlagsExtended, region_flags);
+		msg->getU64Fast(_PREHASH_RegionInfo4, _PREHASH_RegionProtocols, region_protocols);
+	}
+	else
+	{
+		U32 flags = 0;
+		msg->getU32Fast(_PREHASH_RegionInfo, _PREHASH_RegionFlags, flags);
+		region_flags = flags;
+	}
+
 	setRegionFlags(region_flags);
+	setRegionProtocols(region_protocols);
 	setSimAccess(sim_access);
 	setRegionNameAndZone(sim_name);
 	setOwner(sim_owner);
@@ -1501,6 +1530,8 @@ void LLViewerRegion::unpackRegionHandshake()
 		mProductName = productName;
 	}
 
+
+	mCentralBakeVersion = region_protocols & 1; // was (S32)gSavedSettings.getBOOL("UseServerTextureBaking");
 	LLVLComposition *compp = getComposition();
 	if (compp)
 	{
@@ -1538,7 +1569,8 @@ void LLViewerRegion::unpackRegionHandshake()
 		// all of our terrain stuff, by
 		if (compp->getParamsReady())
 		{
-			getLand().dirtyAllPatches();
+			//this line creates frame stalls on region crossing and removing it appears to have no effect
+			//getLand().dirtyAllPatches();
 		}
 		else
 		{
@@ -1564,7 +1596,6 @@ void LLViewerRegion::unpackRegionHandshake()
 	msg->sendReliable(host);
 }
 
-
 void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 {
 	capabilityNames.append("AgentState");
@@ -1575,11 +1606,9 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("CopyInventoryFromNotecard");
 	capabilityNames.append("CreateInventoryCategory");
 	capabilityNames.append("DispatchRegionInfo");
+	capabilityNames.append("EnvironmentSettings");
 	capabilityNames.append("EstateChangeInfo");
 	capabilityNames.append("EventQueueGet");
-	capabilityNames.append("EnvironmentSettings");
-	/*capabilityNames.append("ObjectMedia");
-	capabilityNames.append("ObjectMediaNavigate");*/
 	
 	if (gSavedSettings.getBOOL("UseHTTPInventory")) //Caps suffixed with 2 by LL. Don't update until rest of fetch system is updated first.
 	{
@@ -1590,12 +1619,12 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	}
 
 	capabilityNames.append("GetDisplayNames");
-	capabilityNames.append("GetTexture");
 	capabilityNames.append("GetMesh");
 	capabilityNames.append("GetObjectCost");
 	capabilityNames.append("GetObjectPhysicsData");
+	capabilityNames.append("GetTexture");
+	capabilityNames.append("GroupMemberData");
 	capabilityNames.append("GroupProposalBallot");
-
 	capabilityNames.append("HomeLocation");
 	//capabilityNames.append("LandResources"); //Script limits (llfloaterscriptlimits.cpp)
 	capabilityNames.append("MapLayer");
@@ -1605,9 +1634,11 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 #endif //MESH_IMPORT
 	capabilityNames.append("NavMeshGenerationStatus");
 	capabilityNames.append("NewFileAgentInventory");
+	/*capabilityNames.append("ObjectMedia");
+	capabilityNames.append("ObjectMediaNavigate");*/
 	capabilityNames.append("ObjectNavMeshProperties");
+	capabilityNames.append("ParcelNavigateMedia"); //Singu Note: Removed by Baker, do we need this?
 	capabilityNames.append("ParcelPropertiesUpdate");
-	capabilityNames.append("ParcelNavigateMedia");
 	capabilityNames.append("ParcelVoiceInfoRequest");
 	capabilityNames.append("ProductInfoRequest");
 	capabilityNames.append("ProvisionVoiceAccountRequest");
@@ -1621,21 +1652,22 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("SendUserReport");
 	capabilityNames.append("SendUserReportWithScreenshot");
 	capabilityNames.append("ServerReleaseNotes");
-	capabilityNames.append("SimConsole");
-	capabilityNames.append("SimulatorFeatures");
 	capabilityNames.append("SetDisplayName");
+	capabilityNames.append("SimConsole"); //Singu Note: Removed by Baker, sim console won't work without this.
 	capabilityNames.append("SimConsoleAsync");
+	capabilityNames.append("SimulatorFeatures");
 	capabilityNames.append("StartGroupProposal");
 	capabilityNames.append("TerrainNavMeshProperties");
 	capabilityNames.append("TextureStats");
 	capabilityNames.append("UntrustedSimulatorMessage");
 	capabilityNames.append("UpdateAgentInformation");
 	capabilityNames.append("UpdateAgentLanguage");
+	capabilityNames.append("UpdateAvatarAppearance");
 	capabilityNames.append("UpdateGestureAgentInventory");
-	capabilityNames.append("UpdateNotecardAgentInventory");
-	capabilityNames.append("UpdateScriptAgent");
 	capabilityNames.append("UpdateGestureTaskInventory");
+	capabilityNames.append("UpdateNotecardAgentInventory");
 	capabilityNames.append("UpdateNotecardTaskInventory");
+	capabilityNames.append("UpdateScriptAgent");
 	capabilityNames.append("UpdateScriptTask");
 	capabilityNames.append("UploadBakedTexture");
 	//capabilityNames.append("ViewerMetrics");
@@ -1721,13 +1753,13 @@ public:
     { }
 	
 	
-    void error(U32 statusNum, const std::string& reason)
+    /*virtual*/ void error(U32 statusNum, const std::string& reason)
     {
 		LL_WARNS2("AppInit", "SimulatorFeatures") << statusNum << ": " << reason << LL_ENDL;
 		retry();
     }
 
-    void result(const LLSD& content)
+    /*virtual*/ void result(const LLSD& content)
     {
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if(!regionp) //region is removed or responder is not created.
@@ -1739,7 +1771,8 @@ public:
 		regionp->setSimulatorFeatures(content);
 	}
 
-	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return simulatorFeaturesReceived_timeout; }
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return simulatorFeaturesReceived_timeout; }
+	/*virtual*/ char const* getName(void) const { return "SimulatorFeaturesReceived"; }
 
 private:
 	void retry()
@@ -1793,6 +1826,11 @@ bool LLViewerRegion::isSpecialCapabilityName(const std::string &name)
 
 std::string LLViewerRegion::getCapability(const std::string& name) const
 {
+	if (!capabilitiesReceived() && (name!=std::string("Seed")) && (name!=std::string("ObjectMedia")))
+	{
+		llwarns << "getCapability called before caps received" << llendl;
+	}
+	
 	CapabilityMap::const_iterator iter = mImpl->mCapabilities.find(name);
 	if(iter == mImpl->mCapabilities.end())
 	{
@@ -1852,7 +1890,7 @@ LLSpatialPartition* LLViewerRegion::getSpatialPartition(U32 type)
 
 // the viewer can not yet distinquish between normal- and estate-owned objects
 // so we collapse these two bits and enable the UI if either are set
-const U32 ALLOW_RETURN_ENCROACHING_OBJECT = REGION_FLAGS_ALLOW_RETURN_ENCROACHING_OBJECT
+const U64 ALLOW_RETURN_ENCROACHING_OBJECT = REGION_FLAGS_ALLOW_RETURN_ENCROACHING_OBJECT
 											| REGION_FLAGS_ALLOW_RETURN_ENCROACHING_ESTATE_OBJECT;
 
 bool LLViewerRegion::objectIsReturnable(const LLVector3& pos, const std::vector<LLBBox>& boxes) const
@@ -1860,7 +1898,7 @@ bool LLViewerRegion::objectIsReturnable(const LLVector3& pos, const std::vector<
 	return (mParcelOverlay != NULL)
 		&& (mParcelOverlay->isOwnedSelf(pos)
 			|| mParcelOverlay->isOwnedGroup(pos)
-			|| ((mRegionFlags & ALLOW_RETURN_ENCROACHING_OBJECT)
+			|| (getRegionFlag(ALLOW_RETURN_ENCROACHING_OBJECT)
 				&& mParcelOverlay->encroachesOwned(boxes)) );
 }
 
@@ -1880,7 +1918,10 @@ void LLViewerRegion::getNeighboringRegions( std::vector<LLViewerRegion*>& unique
 {
 	mImpl->mLandp->getNeighboringRegions( uniqueRegions );
 }
-
+void LLViewerRegion::getNeighboringRegionsStatus( std::vector<S32>& regions )
+{
+	mImpl->mLandp->getNeighboringRegionsStatus( regions );
+}
 void LLViewerRegion::showReleaseNotes()
 {
 	std::string url = this->getCapability("ServerReleaseNotes");
@@ -1925,5 +1966,11 @@ bool LLViewerRegion::meshRezEnabled() const
 		return (mSimulatorFeatures.has("MeshRezEnabled") &&
 				mSimulatorFeatures["MeshRezEnabled"].asBoolean());
 	}
+}
+
+bool LLViewerRegion::dynamicPathfindingEnabled() const
+{
+	return ( mSimulatorFeatures.has("DynamicPathfindingEnabled") &&
+			 mSimulatorFeatures["DynamicPathfindingEnabled"].asBoolean());
 }
 

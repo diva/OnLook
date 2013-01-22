@@ -300,8 +300,6 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					if(LLUUID::parseUUID(avatarKey, &tempUUID))
 					{
 						char buffer[DB_IM_MSG_BUF_SIZE * 2];  /* Flawfinder: ignore */
-						LLDynamicArray<LLUUID> ids;
-						ids.push_back(tempUUID);
 						std::string tpMsg="Join me!";
 						LLMessageSystem* msg = gMessageSystem;
 						msg->newMessageFast(_PREHASH_StartLure);
@@ -312,11 +310,8 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 						msg->addU8Fast(_PREHASH_LureType, (U8)0); 
 
 						msg->addStringFast(_PREHASH_Message, tpMsg);
-						for(LLDynamicArray<LLUUID>::iterator itr = ids.begin(); itr != ids.end(); ++itr)
-						{
-							msg->nextBlockFast(_PREHASH_TargetData);
-							msg->addUUIDFast(_PREHASH_TargetID, *itr);
-						}
+						msg->nextBlockFast(_PREHASH_TargetData);
+						msg->addUUIDFast(_PREHASH_TargetID, tempUUID);
 						gAgent.sendReliableMessage();
 						snprintf(buffer,sizeof(buffer),"Offered TP to key %s",tempUUID.asString().c_str());
 						cmdline_printchat(std::string(buffer));
@@ -466,7 +461,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 	return true;
 }
 
-//case insensative search for avatar in draw distance
+//case insensitive search for avatar in draw distance
 //TODO: make this use the avatar list floaters list so we have EVERYONE
 // even if they are out of draw distance.
 LLUUID cmdline_partial_name2key(std::string partial_name)
@@ -476,7 +471,7 @@ LLUUID cmdline_partial_name2key(std::string partial_name)
 	LLStringUtil::toLower(partial_name);
 	LLWorld::getInstance()->getAvatars(&avatars);
 	typedef std::vector<LLUUID>::const_iterator av_iter;
-	bool has_avatarlist = (LLFloaterAvatarList::getInstance() ? true : false);
+	bool has_avatarlist = LLFloaterAvatarList::instanceExists();
 	if(has_avatarlist)
 		LLFloaterAvatarList::getInstance()->updateAvatarList();
 	for(av_iter i = avatars.begin(); i != avatars.end(); ++i)
@@ -516,7 +511,7 @@ void cmdline_tp2name(std::string target)
 		cmdline_printchat("Avatar not found.");
 		return;
 	}
-	LLFloaterAvatarList* avlist = LLFloaterAvatarList::getInstance();
+	LLFloaterAvatarList* avlist = LLFloaterAvatarList::instanceExists() ? LLFloaterAvatarList::getInstance() : NULL;
 	LLVOAvatar* avatarp = gObjectList.findAvatar(avkey);
 	if(avatarp)
 	{

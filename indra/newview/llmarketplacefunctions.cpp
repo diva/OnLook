@@ -41,24 +41,53 @@
 // Helpers
 //
 
+static std::string getLoginUriDomain()
+{
+	LLURI uri(gHippoGridManager->getConnectedGrid()->getLoginUri());
+	std::string hostname = uri.hostName();	// Ie, "login.<gridid>.lindenlab.com"
+	if (hostname.substr(0, 6) == "login.")
+	{
+		hostname = hostname.substr(6);		// "<gridid>.lindenlab.com"
+	}
+	return hostname;
+}
+
+// Apart from well-known cases, in general this function returns the domain of the loginUri (with the "login." stripped off).
+// This should be correct for all SL BETA grids, assuming they have the form of "login.<gridId>.lindenlab.com", in which
+// case it returns "<gridId>.lindenlab.com".
+//
+// Well-known cases that deviate from this:
+// agni      --> "secondlife.com"
+// damballah --> "secondlife-staging.com"
+//
 static std::string getMarketplaceDomain()
 {
-	std::string domain = "secondlife.com";
+	std::string domain;
 	if (gHippoGridManager->getCurrentGrid()->isSecondLife())
 	{
-		if (!LLViewerLogin::getInstance()->isInProductionGrid())
+		if (gHippoGridManager->getConnectedGrid()->isInProductionGrid())
 		{
-			domain = "secondlife.aditi.lindenlab.com";
+			domain = "secondlife.com";		// agni
+		}
+		else
+		{
+			// SecondLife(tm) BETA grid.
+			// Using the login URI is a bit of a kludge, but it's the best we've got at the moment.
+			domain = utf8str_tolower(getLoginUriDomain());				// <gridid>.lindenlab.com; ie, "aditi.lindenlab.com".
+			llassert(domain.length() > 14 && domain.substr(domain.length() - 14) == ".lindenlab.com");
+			if (domain == "damballah.lindenlab.com")
+			{
+				domain = "secondlife-staging.com";
+			}
 		}
 	}
 	else
 	{
 		// TODO: Find out if OpenSim, and Avination adopted any outbox stuffs, if so code HippoGridManager for this
 		// Aurora grid has not.
-		// For now, reset domain on other grids, so we don't harass LL web services.
-		domain = ""; //gHippoGridManager->getCurrentGrid()->getMarketPlaceDomain();
+		// For now, set domain on other grids to the loginUri domain, so we don't harass LL web services.
+		domain = getLoginUriDomain(); //gHippoGridManager->getCurrentGrid()->getMarketPlaceDomain();
 	}
-
 	return domain;
 }
 
@@ -128,9 +157,7 @@ namespace LLMarketplaceImport
 	class LLImportPostResponder : public LLHTTPClient::ResponderWithCompleted
 	{
 	public:
-		AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return MPImportPostResponder_timeout; }
-
-		void completed(U32 status, const std::string& reason, const LLSD& content)
+		/*virtual*/ void completed(U32 status, const std::string& reason, const LLSD& content)
 		{
 			slmPostTimer.stop();
 
@@ -160,25 +187,34 @@ namespace LLMarketplaceImport
 			sImportResultStatus = status;
 			sImportId = content;
 		}
+
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return MPImportPostResponder_timeout; }
+		/*virtual*/ char const* getName(void) const { return "LLImportPostResponder"; }
 	};
 
 	class LLImportGetResponder : public LLHTTPClient::ResponderWithCompleted
 	{
 	public:
-		AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return MPImportGetResponder_timeout; }
+		/*virtual*/ bool followRedir(void) const { return true; }
+		/*virtual*/ bool needsHeaders(void) const { return true; }
 
-		bool needsHeaders(void) const { return true; }
-
-		void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+		/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 		{
-			std::string set_cookie_string;
-			if (headers.getFirstValue("set-cookie", set_cookie_string) && !set_cookie_string.empty())
+			if (status == HTTP_OK)
 			{
-				sMarketplaceCookie = set_cookie_string;
+				std::string value = get_cookie("_slm_session");
+				if (!value.empty())
+				{
+					sMarketplaceCookie = value;
+				}
+				else if (sMarketplaceCookie.empty())
+				{
+					llwarns << "No such cookie \"_slm_session\" received!" << llendl;
+				}
 			}
 		}
 
-		void completed(U32 status, const std::string& reason, const LLSD& content)
+		/*virtual*/ void completed(U32 status, const std::string& reason, const LLSD& content)
 		{
 			slmGetTimer.stop();
 
@@ -196,7 +232,7 @@ namespace LLMarketplaceImport
 			{
 				if (gSavedSettings.getBOOL("InventoryOutboxLogging"))
 				{
-					llinfos << " SLM GET clearing marketplace cookie due to authentication failure or timeout" << llendl;
+					llinfos << " SLM GET clearing marketplace cookie due to authentication failure or timeout (" << status << " / " << reason << ")." << llendl;
 				}
 
 				sMarketplaceCookie.clear();
@@ -207,6 +243,9 @@ namespace LLMarketplaceImport
 			sImportResultStatus = status;
 			sImportResults = content;
 		}
+
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return MPImportGetResponder_timeout; }
+		/*virtual*/ char const* getName(void) const { return "LLImportGetResponder"; }
 	};
 
 	// Basic API
@@ -342,7 +381,7 @@ namespace LLMarketplaceImport
 // Interface class
 //
 
-//static const F32 MARKET_IMPORTER_UPDATE_FREQUENCY = 300.0f; //1.0f;
+static const F32 MARKET_IMPORTER_UPDATE_FREQUENCY = 1.0f;
 
 //static
 void LLMarketplaceInventoryImporter::update()
@@ -353,7 +392,7 @@ void LLMarketplaceInventoryImporter::update()
 		if (update_timer.hasExpired())
 		{
 			LLMarketplaceInventoryImporter::instance().updateImport();
-			static LLCachedControl<F32> MARKET_IMPORTER_UPDATE_FREQUENCY("MarketImporterUpdateFreq", 10.0f);
+			//static LLCachedControl<F32> MARKET_IMPORTER_UPDATE_FREQUENCY("MarketImporterUpdateFreq", 1.0f);
 			update_timer.setTimerExpirySec(MARKET_IMPORTER_UPDATE_FREQUENCY);
 		}
 	}

@@ -227,7 +227,7 @@ void RlvUIEnabler::onToggleShowLoc()
 		// Close the "Estate Tools" floater is it's currently visible
 		if (LLFloaterRegionInfo::instanceVisible())
 				LLFloaterRegionInfo::hideInstance();
-		LLFloaterGodTools::hide(NULL);
+		LLFloaterGodTools::hide();
 	}
 }
 
@@ -265,7 +265,7 @@ void RlvUIEnabler::onToggleShowNames(bool fQuitting)
 	else
 	{
 		LLAvatarNameCache::setForceDisplayNames(false);
-		LLAvatarNameCache::setUseDisplayNames(gSavedSettings.getS32("PhoenixNameSystem") != 0);
+		LLAvatarNameCache::setUseDisplayNames(gSavedSettings.getS32("PhoenixNameSystem") == 1 || gSavedSettings.getS32("PhoenixNameSystem") == 2);
 	}
 	LLVOAvatar::invalidateNameTags();	// See handleDisplayNamesOptionChanged()
 }

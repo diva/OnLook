@@ -31,6 +31,7 @@
 #include "linden_common.h"
 #include "aicurlthread.h"
 #include "aihttptimeoutpolicy.h"
+#include "aihttptimeout.h"
 #include "aicurlperhost.h"
 #include "lltimer.h"		// ms_sleep, get_clock_count
 #include "llhttpstatuscodes.h"
@@ -286,14 +287,35 @@ enum refresh_t {
   empty_and_complete = complete|empty
 };
 
+// A class with info for each socket that is in use by curl.
+class CurlSocketInfo
+{
+  public:
+	CurlSocketInfo(MultiHandle& multi_handle, ASSERT_ONLY(CURL* easy,) curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj);
+	~CurlSocketInfo();
+
+	void set_action(int action);
+	void mark_dead(void) { set_action(CURL_POLL_NONE); mDead = true; }
+	curl_socket_t getSocketFd(void) const { return mSocketFd; }
+	AICurlEasyRequest& getEasyRequest(void) { return mEasyRequest; }
+
+  private:
+	MultiHandle& mMultiHandle;
+	curl_socket_t mSocketFd;
+	int mAction;
+	bool mDead;
+	AICurlEasyRequest mEasyRequest;
+	LLPointer<HTTPTimeout> mTimeout;
+};
+
 class PollSet
 {
   public:
 	PollSet(void);
 
 	// Add/remove a filedescriptor to/from mFileDescriptors.
-	void add(curl_socket_t s);
-	void remove(curl_socket_t s);
+	void add(CurlSocketInfo* sp);
+	void remove(CurlSocketInfo* sp);
 
 	// Copy mFileDescriptors to an internal fd_set that is returned by access().
 	// Returns if all fds could be copied (complete) and/or if the resulting fd_set is empty.
@@ -307,8 +329,8 @@ class PollSet
 	curl_socket_t get_max_fd(void) const { return mMaxFdSet; }
 #endif
 
-	// Return true if a filedescriptor is set in mFileDescriptors (used for debugging).
-	bool contains(curl_socket_t s) const;
+	// Return a pointer to the corresponding CurlSocketInfo if a filedescriptor is set in mFileDescriptors, or NULL if s is not set.
+	CurlSocketInfo* contains(curl_socket_t s) const;
 
 	// Return true if a filedescriptor is set in mFdSet.
 	bool is_set(curl_socket_t s) const;
@@ -323,7 +345,7 @@ class PollSet
 	void next(void);				// Advance to next filedescriptor.
 
   private:
-	curl_socket_t* mFileDescriptors;
+	CurlSocketInfo** mFileDescriptors;
 	int mNrFds;						// The number of filedescriptors in the array.
 	int mNext;						// The index of the first file descriptor to start copying, the next call to refresh().
 
@@ -359,7 +381,7 @@ class PollSet
 static size_t const MAXSIZE = llmax(1024, FD_SETSIZE);
 
 // Create an empty PollSet.
-PollSet::PollSet(void) : mFileDescriptors(new curl_socket_t [MAXSIZE]),
+PollSet::PollSet(void) : mFileDescriptors(new CurlSocketInfo* [MAXSIZE]),
                          mNrFds(0), mNext(0)
 #if !WINDOWS_CODE
 						 , mMaxFd(-1), mMaxFdSet(-1)
@@ -369,17 +391,17 @@ PollSet::PollSet(void) : mFileDescriptors(new curl_socket_t [MAXSIZE]),
 }
 
 // Add filedescriptor s to the PollSet.
-void PollSet::add(curl_socket_t s)
+void PollSet::add(CurlSocketInfo* sp)
 {
   llassert_always(mNrFds < (int)MAXSIZE);
-  mFileDescriptors[mNrFds++] = s;
+  mFileDescriptors[mNrFds++] = sp;
 #if !WINDOWS_CODE
-  mMaxFd = llmax(mMaxFd, s);
+  mMaxFd = llmax(mMaxFd, sp->getSocketFd());
 #endif
 }
 
 // Remove filedescriptor s from the PollSet.
-void PollSet::remove(curl_socket_t s)
+void PollSet::remove(CurlSocketInfo* sp)
 {
   // The number of open filedescriptors is relatively small,
   // and on top of that we rather do something CPU intensive
@@ -391,15 +413,15 @@ void PollSet::remove(curl_socket_t s)
   // back, keeping it compact and keeping the filedescriptors
   // in the same order (which is supposedly their priority).
   //
-  // The general case is where mFileDescriptors contains s at an index
+  // The general case is where mFileDescriptors contains sp at an index
   // between 0 and mNrFds:
   //                              mNrFds = 6
   //                                v
   // index: 0   1   2   3   4   5
   //        a   b   c   s   d   e
 
-  // This function should never be called unless s is actually in mFileDescriptors,
-  // as a result of a previous call to PollSet::add().
+  // This function should never be called unless sp is actually in mFileDescriptors,
+  // as a result of a previous call to PollSet::add(sp).
   llassert(mNrFds > 0);
 
   // Correct mNrFds for when the descriptor is removed.
@@ -409,17 +431,18 @@ void PollSet::remove(curl_socket_t s)
   //                            v
   // index: 0   1   2   3   4   5
   //        a   b   c   s   d   e
-  curl_socket_t cur = mFileDescriptors[i];		// cur = 'e'
+  curl_socket_t const s = sp->getSocketFd();
+  CurlSocketInfo* cur = mFileDescriptors[i];		// cur = 'e'
 #if !WINDOWS_CODE
   curl_socket_t max = -1;
 #endif
-  while (cur != s)
+  while (cur != sp)
   {
 	llassert(i > 0);
-	curl_socket_t next = mFileDescriptors[--i];	// next = 'd'
+	CurlSocketInfo* next = mFileDescriptors[--i];	// next = 'd'
 	mFileDescriptors[i] = cur;					// Overwrite 'd' with 'e'.
 #if !WINDOWS_CODE
-	max = llmax(max, cur);					// max is the maximum value in 'i' or higher.
+	max = llmax(max, cur->getSocketFd());		// max is the maximum value in 'i' or higher.
 #endif
 	cur = next;									// cur = 'd'
 	//                        i  NrFds = 5
@@ -427,21 +450,21 @@ void PollSet::remove(curl_socket_t s)
 	// index: 0   1   2   3   4
 	//        a   b   c   s   e					// cur = 'd'
 	//
-	// Next loop iteration: next = 's', overwrite 's' with 'd', cur = 's'; loop terminates.
+	// Next loop iteration: next = 'sp', overwrite 'sp' with 'd', cur = 'sp'; loop terminates.
 	//                    i      NrFds = 5
 	//                    v       v
 	// index: 0   1   2   3   4
-	//        a   b   c   d   e					// cur = 's'
+	//        a   b   c   d   e					// cur = 'sp'
   }
-  llassert(cur == s);
+  llassert(cur == sp);
   // At this point i was decremented once more and points to the element before the old s.
   //                i          NrFds = 5
   //                v           v
   // index: 0   1   2   3   4
   //        a   b   c   d   e					// max = llmax('d', 'e')
 
-  // If mNext pointed to an element before s, it should be left alone. Otherwise, if mNext pointed
-  // to s it must now point to 'd', or if it pointed beyond 's' it must be decremented by 1.
+  // If mNext pointed to an element before sp, it should be left alone. Otherwise, if mNext pointed
+  // to sp it must now point to 'd', or if it pointed beyond 'sp' it must be decremented by 1.
   if (mNext > i)								// i is where s was.
 	--mNext;
 
@@ -451,8 +474,8 @@ void PollSet::remove(curl_socket_t s)
   {
 	while (i > 0)
 	{
-	  curl_socket_t next = mFileDescriptors[--i];
-	  max = llmax(max, next);
+	  CurlSocketInfo* next = mFileDescriptors[--i];
+	  max = llmax(max, next->getSocketFd());
 	}
 	mMaxFd = max;
 	llassert(mMaxFd < s);
@@ -487,12 +510,12 @@ void PollSet::remove(curl_socket_t s)
 #endif
 }
 
-bool PollSet::contains(curl_socket_t fd) const
+CurlSocketInfo* PollSet::contains(curl_socket_t fd) const
 {
   for (int i = 0; i < mNrFds; ++i)
-	if (mFileDescriptors[i] == fd)
-	  return true;
-  return false;
+	if (mFileDescriptors[i]->getSocketFd() == fd)
+	  return mFileDescriptors[i];
+  return NULL;
 }
 
 inline bool PollSet::is_set(curl_socket_t fd) const
@@ -536,7 +559,7 @@ refresh_t PollSet::refresh(void)
 	// Calculate mMaxFdSet.
 	// Run over FD_SETSIZE - 1 elements, starting at mNext, wrapping to 0 when we reach the end.
 	int max = -1, i = mNext, count = 0;
-	while (++count < FD_SETSIZE) { max = llmax(max, mFileDescriptors[i]); if (++i == mNrFds) i = 0; }
+	while (++count < FD_SETSIZE) { max = llmax(max, mFileDescriptors[i]->getSocketFd()); if (++i == mNrFds) i = 0; }
 	mMaxFdSet = max;
 #endif
   }
@@ -556,16 +579,16 @@ refresh_t PollSet::refresh(void)
 	  mNext = i;
 	  return not_complete_not_empty;
 	}
-	FD_SET(mFileDescriptors[i], &mFdSet);
+	FD_SET(mFileDescriptors[i]->getSocketFd(), &mFdSet);
 #if !WINDOWS_CODE
-	mCopiedFileDescriptors.push_back(mFileDescriptors[i]);
+	mCopiedFileDescriptors.push_back(mFileDescriptors[i]->getSocketFd());
 #endif
 	if (++i == mNrFds)
 	{
 	  // If we reached the end and start at the beginning, then we copied everything.
 	  if (mNext == 0)
 		break;
-	  // When can only come here if mNrFds >= FD_SETSIZE, hence we can just
+	  // We can only come here if mNrFds >= FD_SETSIZE, hence we can just
 	  // wrap around and terminate on count reaching FD_SETSIZE.
 	  i = 0;
 	}
@@ -646,12 +669,10 @@ class MergeIterator
   private:
 	PollSet* mReadPollSet;
 	PollSet* mWritePollSet;
-	int readIndx;
-	int writeIndx;
 };
 
 MergeIterator::MergeIterator(PollSet* readPollSet, PollSet* writePollSet) :
-    mReadPollSet(readPollSet), mWritePollSet(writePollSet), readIndx(0), writeIndx(0)
+    mReadPollSet(readPollSet), mWritePollSet(writePollSet)
 {
   mReadPollSet->reset();
   mWritePollSet->reset();
@@ -743,26 +764,8 @@ std::ostream& operator<<(std::ostream& os, DebugFdSet const& s)
 }
 #endif
 
-// A class with info for each socket that is in use by curl.
-class CurlSocketInfo
-{
-  public:
-	CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj);
-	~CurlSocketInfo();
-
-	void set_action(int action);
-
-  private:
-	MultiHandle& mMultiHandle;
-	CURL const* mEasy;
-	curl_socket_t mSocketFd;
-	int mAction;
-	AICurlEasyRequest mEasyRequest;
-	LLPointer<HTTPTimeout> mTimeout;
-};
-
-CurlSocketInfo::CurlSocketInfo(MultiHandle& multi_handle, CURL* easy, curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj) :
-    mMultiHandle(multi_handle), mEasy(easy), mSocketFd(s), mAction(CURL_POLL_NONE), mEasyRequest(lockobj)
+CurlSocketInfo::CurlSocketInfo(MultiHandle& multi_handle, ASSERT_ONLY(CURL* easy,) curl_socket_t s, int action, ThreadSafeBufferedCurlEasyRequest* lockobj) :
+    mMultiHandle(multi_handle), mSocketFd(s), mAction(CURL_POLL_NONE), mDead(false), mEasyRequest(lockobj)
 {
   llassert(*AICurlEasyRequest_wat(*mEasyRequest) == easy);
   mMultiHandle.assign(s, this);
@@ -785,23 +788,28 @@ CurlSocketInfo::~CurlSocketInfo()
 
 void CurlSocketInfo::set_action(int action)
 {
+  if (mDead)
+  {
+	return;
+  }
+
   Dout(dc::curl, "CurlSocketInfo::set_action(" << action_str(mAction) << " --> " << action_str(action) << ") [" << (void*)mEasyRequest.get_ptr().get() << "]");
   int toggle_action = mAction ^ action; 
   mAction = action;
   if ((toggle_action & CURL_POLL_IN))
   {
 	if ((action & CURL_POLL_IN))
-	  mMultiHandle.mReadPollSet->add(mSocketFd);
+	  mMultiHandle.mReadPollSet->add(this);
 	else
-	  mMultiHandle.mReadPollSet->remove(mSocketFd);
+	  mMultiHandle.mReadPollSet->remove(this);
   }
   if ((toggle_action & CURL_POLL_OUT))
   {
 	if ((action & CURL_POLL_OUT))
-	  mMultiHandle.mWritePollSet->add(mSocketFd);
+	  mMultiHandle.mWritePollSet->add(this);
 	else
 	{
-	  mMultiHandle.mWritePollSet->remove(mSocketFd);
+	  mMultiHandle.mWritePollSet->remove(this);
 
 	  // The following is a bit of a hack, needed because of the lack of proper timeout callbacks in libcurl.
 	  // The removal of CURL_POLL_OUT could be part of the SSL handshake, therefore check if we're already connected:
@@ -837,6 +845,9 @@ class AICurlThread : public LLThread
 
 	// MAIN-THREAD
 	void stop_thread(void) { mRunning = false; wakeup_thread(); }
+
+	// MAIN-THREAD
+	apr_status_t join_thread(void);
 
   protected:
 	virtual void run(void);
@@ -1110,6 +1121,17 @@ void AICurlThread::wakeup_thread(void)
 #endif
 }
 
+apr_status_t AICurlThread::join_thread(void)
+{
+	apr_status_t retval = APR_SUCCESS;
+	if (sInstance)
+	{
+		apr_thread_join(&retval, sInstance->mAPRThreadp);
+		delete sInstance;
+	}
+	return retval;
+}
+
 void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
 {
   DoutEntering(dc::curl, "AICurlThread::wakeup");
@@ -1255,6 +1277,26 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
   }
 }
 
+// Return true if fd is a 'bad' socket.
+static bool is_bad(curl_socket_t fd, bool for_writing)
+{
+  fd_set tmp;
+  FD_ZERO(&tmp);
+  FD_SET(fd, &tmp);
+  fd_set* readfds = for_writing ? NULL : &tmp;
+  fd_set* writefds = for_writing ? &tmp : NULL;
+#if !WINDOWS_CODE
+  int nfds = fd + 1;
+#else
+  int nfds = 64;
+#endif
+  struct timeval timeout;
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 10;
+  int ret = select(nfds, readfds, writefds, NULL, &timeout);
+  return ret == -1;
+}
+
 // The main loop of the curl thread.
 void AICurlThread::run(void)
 {
@@ -1266,28 +1308,7 @@ void AICurlThread::run(void)
 	{
 	  // If mRunning is true then we can only get here if mWakeUpFd != CURL_SOCKET_BAD.
 	  llassert(mWakeUpFd != CURL_SOCKET_BAD);
-	  // Copy the next batch of file descriptors from the PollSets mFiledescriptors into their mFdSet.
-	  multi_handle_w->mReadPollSet->refresh();
-	  refresh_t wres = multi_handle_w->mWritePollSet->refresh();
-	  // Add wake up fd if any, and pass NULL to select() if a set is empty.
-	  fd_set* read_fd_set = multi_handle_w->mReadPollSet->access();
-	  FD_SET(mWakeUpFd, read_fd_set);
-	  fd_set* write_fd_set = ((wres & empty)) ? NULL : multi_handle_w->mWritePollSet->access();
-	  // Calculate nfds (ignored on windows).
-#if !WINDOWS_CODE
-	  curl_socket_t const max_rfd = llmax(multi_handle_w->mReadPollSet->get_max_fd(), mWakeUpFd);
-	  curl_socket_t const max_wfd = multi_handle_w->mWritePollSet->get_max_fd();
-	  int nfds = llmax(max_rfd, max_wfd) + 1;
-	  llassert(0 <= nfds && nfds <= FD_SETSIZE);
-	  llassert((max_rfd == -1) == (read_fd_set == NULL) &&
-			   (max_wfd == -1) == (write_fd_set == NULL));	// Needed on Windows.
-	  llassert((max_rfd == -1 || multi_handle_w->mReadPollSet->is_set(max_rfd)) &&
-			   (max_wfd == -1 || multi_handle_w->mWritePollSet->is_set(max_wfd)));
-#else
-	  int nfds = 64;
-#endif
-	  int ready = 0;
-	  // Process every command in command_queue before entering select().
+	  // Process every command in command_queue before filling the fd_set passed to select().
 	  for(;;)
 	  {
 		mWakeUpMutex.lock();
@@ -1305,9 +1326,32 @@ void AICurlThread::run(void)
 		mWakeUpMutex.unlock();
 		break;
 	  }
+
 	  // If we get here then mWakeUpFlag has been false since we grabbed the lock.
 	  // We're now entering select(), during which the main thread will write to the pipe/socket
 	  // to wake us up, because it can't get the lock.
+
+	  // Copy the next batch of file descriptors from the PollSets mFileDescriptors into their mFdSet.
+	  multi_handle_w->mReadPollSet->refresh();
+	  refresh_t wres = multi_handle_w->mWritePollSet->refresh();
+	  // Add wake up fd if any, and pass NULL to select() if a set is empty.
+	  fd_set* read_fd_set = multi_handle_w->mReadPollSet->access();
+	  FD_SET(mWakeUpFd, read_fd_set);
+	  fd_set* write_fd_set = ((wres & empty)) ? NULL : multi_handle_w->mWritePollSet->access();
+	  // Calculate nfds (ignored on windows).
+#if !WINDOWS_CODE
+	  curl_socket_t const max_rfd = llmax(multi_handle_w->mReadPollSet->get_max_fd(), mWakeUpFd);
+	  curl_socket_t const max_wfd = multi_handle_w->mWritePollSet->get_max_fd();
+	  int nfds = llmax(max_rfd, max_wfd) + 1;
+	  llassert(1 <= nfds && nfds <= FD_SETSIZE);
+	  llassert((max_rfd == -1) == (read_fd_set == NULL) &&
+			   (max_wfd == -1) == (write_fd_set == NULL));	// Needed on Windows.
+	  llassert((max_rfd == -1 || multi_handle_w->mReadPollSet->is_set(max_rfd)) &&
+			   (max_wfd == -1 || multi_handle_w->mWritePollSet->is_set(max_wfd)));
+#else
+	  int nfds = 64;
+#endif
+	  int ready = 0;
 	  struct timeval timeout;
 	  long timeout_ms = multi_handle_w->getTimeout();
 	  // If no timeout is set, sleep 1 second.
@@ -1383,6 +1427,51 @@ void AICurlThread::run(void)
 	  if (ready == -1)
 	  {
 		llwarns << "select() failed: " << errno << ", " << strerror(errno) << llendl;
+		if (errno == EBADF)
+		{
+		  // Somewhere (fmodex?) one of our file descriptors was closed. Try to recover by finding out which.
+		  llassert_always(!is_bad(mWakeUpFd, false));		// We can't recover from this.
+		  PollSet* found = NULL;
+		  // Run over all read file descriptors.
+		  multi_handle_w->mReadPollSet->refresh();
+		  multi_handle_w->mReadPollSet->reset();
+		  curl_socket_t fd;
+		  while ((fd = multi_handle_w->mReadPollSet->get()) != CURL_SOCKET_BAD)
+		  {
+			if (is_bad(fd, false))
+			{
+			  found = multi_handle_w->mReadPollSet;
+			  break;
+			}
+			multi_handle_w->mReadPollSet->next();
+		  }
+		  if (!found)
+		  {
+			// Try all write file descriptors.
+			refresh_t wres = multi_handle_w->mWritePollSet->refresh();
+			if (!(wres & empty))
+			{
+			  multi_handle_w->mWritePollSet->reset();
+			  while ((fd = multi_handle_w->mWritePollSet->get()) != CURL_SOCKET_BAD)
+			  {
+				if (is_bad(fd, true))
+				{
+				  found = multi_handle_w->mWritePollSet;
+				  break;
+				}
+				multi_handle_w->mWritePollSet->next();
+			  }
+			}
+		  }
+		  llassert_always(found);	// It makes no sense to continue if we can't recover.
+		  // Find the corresponding CurlSocketInfo
+		  CurlSocketInfo* sp = found->contains(fd);
+		  llassert_always(sp);		// fd was just *read* from this sp.
+		  sp->mark_dead();													// Make sure it's never used again.
+		  AICurlEasyRequest_wat curl_easy_request_w(*sp->getEasyRequest());
+		  curl_easy_request_w->pause(CURLPAUSE_ALL);						// Keep libcurl at bay.
+		  curl_easy_request_w->bad_file_descriptor(curl_easy_request_w);	// Make the main thread cleanly terminate this transaction.
+		}
 		continue;
 	  }
 	  // Clock count used for timeouts.
@@ -1489,7 +1578,7 @@ int MultiHandle::socket_callback(CURL* easy, curl_socket_t s, int action, void* 
 	  ThreadSafeBufferedCurlEasyRequest* ptr;
 	  CURLcode rese = curl_easy_getinfo(easy, CURLINFO_PRIVATE, &ptr);
 	  llassert_always(rese == CURLE_OK);
-	  sock_info = new CurlSocketInfo(self, easy, s, action, ptr);
+	  sock_info = new CurlSocketInfo(self, ASSERT_ONLY(easy,) s, action, ptr);
 	}
 	else
 	{
@@ -1613,7 +1702,9 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
   ThreadSafeBufferedCurlEasyRequest* lockobj = iter->get_ptr().get();
 #endif
   mAddedEasyRequests.erase(iter);
+#if CWDEBUG
   Dout(dc::curl, "MultiHandle::remove_easy_request: Removed AICurlEasyRequest " << (void*)lockobj << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
+#endif
 
   // Attempt to add a queued request, if any.
   PerHostRequestQueue_wat(*per_host)->add_queued_to(this);
@@ -1719,385 +1810,6 @@ void MultiHandle::finish_easy_request(AICurlEasyRequest const& easy_request, CUR
   curl_easy_request_w->done(curl_easy_request_w, result);
 }
 
-//-----------------------------------------------------------------------------
-// HTTPTimeout
-
-//static
-F64 const HTTPTimeout::sClockWidth = 1.0 / calc_clock_frequency();	// Time between two clock ticks, in seconds.
-U64 HTTPTimeout::sClockCount;										// Clock count, set once per select() exit.
-
-// CURL-THREAD
-// This is called when body data was sent to the server socket.
-//                                                    <-----mLowSpeedOn------>
-// queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
-//                                                    ^ ^ ^       ^   ^      ^
-//                                                    | | |       |   |      |
-bool HTTPTimeout::data_sent(size_t n)
-{
-  // Generate events.
-  if (!mLowSpeedOn)
-  {
-	// If we can send data (for the first time) then that's our only way to know we connected.
-	reset_lowspeed();
-  }
-  // Detect low speed.
-  return lowspeed(n);
-}
-
-// CURL-THREAD
-// This is called when the 'low speed' timer should be started.
-//                                                    <-----mLowSpeedOn------>                 <-------mLowSpeedOn-------->
-// queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
-//                                                    ^                                        ^
-//                                                    |                                        |
-void HTTPTimeout::reset_lowspeed(void)
-{
-  mLowSpeedClock = sClockCount;
-  mLowSpeedOn = true;
-  mLastSecond = -1;			// This causes lowspeed to initialize the rest.
-  mStalled = (U64)-1;		// Stop reply delay timer.
-  DoutCurl("reset_lowspeed: mLowSpeedClock = " << mLowSpeedClock << "; mStalled = -1");
-}
-
-// CURL-THREAD
-// This is called when everything we had to send to the server has been sent.
-//                                                    <-----mLowSpeedOn------>
-// queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
-//                                                                             ^
-//                                                                             |
-void HTTPTimeout::upload_finished(void)
-{
-  llassert(!mUploadFinished);	// If we get here twice, then the 'upload finished' detection failed.
-  mUploadFinished = true;
-  // We finished uploading (if there was a body to upload at all), so not more transfer rate timeouts.
-  mLowSpeedOn = false;
-  // Timeout if the server doesn't reply quick enough.
-  mStalled = sClockCount + mPolicy->getReplyDelay() / sClockWidth;
-  DoutCurl("upload_finished: mStalled set to sClockCount (" << sClockCount << ") + " << (mStalled - sClockCount) << " (" << mPolicy->getReplyDelay() << " seconds)");
-}
-
-// CURL-THREAD
-// This is called when data was received from the server.
-//
-//          <--------------------------------mNothingReceivedYet------------------------------><-------mLowSpeedOn-------->
-// queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
-//                                                                                             ^  ^   ^     ^    ^  ^ ^   ^
-//                                                                                             |  |   |     |    |  | |   |
-bool HTTPTimeout::data_received(size_t n)
-{
-  // The HTTP header of the reply is the first thing we receive.
-  if (mNothingReceivedYet && n > 0)
-  {
-	if (!mUploadFinished)
-	{
-	  // mUploadFinished not being set this point should only happen for GET requests (in fact, then it is normal),
-	  // because in that case it is impossible to detect the difference between connecting and waiting for a reply without
-	  // using CURLOPT_DEBUGFUNCTION. Note that mDebugIsHeadOrGetMethod is only valid when the debug channel 'curlio' is on,
-	  // because it is set in the debug callback function.
-	  Debug(llassert(AICurlEasyRequest_wat(*mLockObj)->mDebugIsHeadOrGetMethod || !dc::curlio.is_on()));
-	  // 'Upload finished' detection failed, generate it now.
-	  upload_finished();
-	}
-	// Turn this flag off again now that we received data, so that if 'upload_finished()' is called again
-	// for a future upload on the same descriptor, then that won't trigger an assert.
-	// Note that because we also set mNothingReceivedYet here, we won't enter this code block anymore,
-	// so it's safe to do this.
-	mUploadFinished = false;
-	// Mark that something was received.
-	mNothingReceivedYet = false;
-	// We received something; switch to getLowSpeedLimit()/getLowSpeedTime().
-	reset_lowspeed();
-  }
-  return mLowSpeedOn ? lowspeed(n) : false;
-}
-
-// CURL_THREAD
-// bytes is the number of bytes we just sent or received (including headers).
-// Returns true if the transfer should be aborted.
-//
-// queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
-//                                                    ^ ^ ^       ^   ^      ^                 ^  ^   ^     ^    ^  ^ ^   ^
-//                                                    | | |       |   |      |                 |  |   |     |    |  | |   |
-bool HTTPTimeout::lowspeed(size_t bytes)
-{
-  DoutCurlEntering("HTTPTimeout::lowspeed(" << bytes << ")");
-
-  // The algorithm to determine if we timed out if different from how libcurls CURLOPT_LOW_SPEED_TIME works.
-  //
-  // libcurl determines the transfer rate since the last call to an equivalent 'lowspeed' function, and then
-  // triggers a timeout if CURLOPT_LOW_SPEED_TIME long such a transfer value is less than CURLOPT_LOW_SPEED_LIMIT.
-  // That doesn't work right because once there IS data it can happen that this function is called a few
-  // times (with less than a milisecond in between) causing seemingly VERY high "transfer rate" spikes.
-  // The only correct way to determine the transfer rate is to actually average over CURLOPT_LOW_SPEED_TIME
-  // seconds.
-  //
-  // We do this as follows: we create low_speed_time (in seconds) buckets and fill them with the number
-  // of bytes received during that second. We also keep track of the sum of all bytes received between 'now'
-  // and 'now - llmax(starttime, low_speed_time)'. Then if that period reaches at least low_speed_time
-  // seconds, and the transfer rate (sum / low_speed_time) is less than low_speed_limit, we abort.
-
-  // When are we?
-  S32 second = (sClockCount - mLowSpeedClock) * sClockWidth;
-  llassert(sClockWidth > 0.0);
-  // This REALLY should never happen, but due to another bug it did happened
-  // and caused something so evil and hard to find that... NEVER AGAIN!
-  llassert(second >= 0);
-
-  // If this is the same second as last time, just add the number of bytes to the current bucket.
-  if (second == mLastSecond)
-  {
-	mTotalBytes += bytes;
-	mBuckets[mBucket] += bytes;
-	return false;
-  }
-
-  // We arrived at a new second.
-  // The below is at most executed once per second, even though for
-  // every currently connected transfer, CPU is not a big issue.
-
-  // Determine the number of buckets needed and increase the number of buckets if needed.
-  U16 const low_speed_time = mPolicy->getLowSpeedTime();
-  if (low_speed_time > mBuckets.size())
-  {
-	mBuckets.resize(low_speed_time, 0);
-  }
-
-  S32 s = mLastSecond;
-  mLastSecond = second;
-
-  // If this is the first time this function is called, we need to do some initialization.
-  if (s == -1)
-  {
-	mBucket = 0;				// It doesn't really matter where we start.
-	mTotalBytes = bytes;
-	mBuckets[mBucket] = bytes;
-	return false;
-  }
-
-  // Update all administration.
-  U16 bucket = mBucket;
-  while(1)		// Run over all the seconds that were skipped.
-  {
-	if (++bucket == low_speed_time)
-	  bucket = 0;
-	if (++s == second)
-	  break;
-    mTotalBytes -= mBuckets[bucket];
-	mBuckets[bucket] = 0;
-  }
-  mBucket = bucket;
-  mTotalBytes -= mBuckets[mBucket];
-  mTotalBytes += bytes;
-  mBuckets[mBucket] = bytes;
-
-  // Check if we timed out.
-  U32 const low_speed_limit = mPolicy->getLowSpeedLimit();
-  U32 mintotalbytes = low_speed_limit * low_speed_time;
-  DoutCurl("Transfered " << mTotalBytes << " bytes in " << llmin(second, (S32)low_speed_time) << " seconds after " << second << " second" << ((second == 1) ? "" : "s") << ".");
-  if (second >= low_speed_time)
-  {
-	DoutCurl("Average transfer rate is " << (mTotalBytes / low_speed_time) << " bytes/s (low speed limit is " << low_speed_limit << " bytes/s)");
-	if (mTotalBytes < mintotalbytes)
-	{
-	  // The average transfer rate over the passed low_speed_time seconds is too low. Abort the transfer.
-	  llwarns <<
-#ifdef CWDEBUG
-		(void*)get_lockobj() << ": "
-#endif
-		"aborting slow connection (average transfer rate below " << low_speed_limit <<
-		" for more than " << low_speed_time << " second" << ((low_speed_time == 1) ? "" : "s") << ")." << llendl;
-	  return true;
-	}
-  }
-
-  // Calculate how long the data transfer may stall until we should timeout.
-  llassert_always(mintotalbytes > 0);
-  S32 max_stall_time = 0;
-  U32 dropped_bytes = 0;
-  while(1)
-  {
-	if (++bucket == low_speed_time)				// The next second the next bucket will be emptied.
-	  bucket = 0;
-	++max_stall_time;
-	dropped_bytes += mBuckets[bucket];
-	// Note how, when max_stall_time == low_speed_time, dropped_bytes has
-	// to be equal to mTotalBytes, the sum of all vector elements.
-	llassert_always(max_stall_time < low_speed_time || dropped_bytes == mTotalBytes);
-	// And thus the following will certainly abort.
-	if (second + max_stall_time >= low_speed_time && mTotalBytes - dropped_bytes < mintotalbytes)
-	  break;
-  }
-  // If this function isn't called again within max_stall_time seconds, we stalled.
-  mStalled = sClockCount + max_stall_time / sClockWidth;
-  DoutCurl("mStalled set to sClockCount (" << sClockCount << ") + " << (mStalled - sClockCount) << " (" << max_stall_time << " seconds)");
-
-  return false;
-}
-
-// CURL-THREAD
-// This is called immediately before done() after curl finished, with code.
-//                                                                                             <-------mLowSpeedOn-------->
-// queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
-//                                                                                                                         ^
-//                                                                                                                         |
-void HTTPTimeout::done(AICurlEasyRequest_wat const& curlEasyRequest_w, CURLcode code)
-{
-  if (code == CURLE_OPERATION_TIMEDOUT || code == CURLE_COULDNT_RESOLVE_HOST)
-  {
-	bool dns_problem = false;
-	if (code == CURLE_COULDNT_RESOLVE_HOST)
-	{
-	  // Note that CURLINFO_OS_ERRNO returns 0; we don't know any more than this.
-	  llwarns << "Failed to resolve hostname " << curlEasyRequest_w->getLowercaseHostname() << llendl;
-	  dns_problem = true;
-	}
-	else if (mNothingReceivedYet)
-	{
-	  // Only consider this to possibly be related to a DNS lookup if we didn't
-	  // resolved the host yet, which can be detected by asking for
-	  // CURLINFO_NAMELOOKUP_TIME which is set when libcurl initiates the
-	  // actual connect and thus knows the IP# (possibly from it's DNS cache).
-	  double namelookup_time;
-	  curlEasyRequest_w->getinfo(CURLINFO_NAMELOOKUP_TIME, &namelookup_time);
-	  dns_problem = (namelookup_time == 0);
-	}
-	if (dns_problem)
-	{
-	  // Inform policy object that there might be problems with resolving this host.
-	  // This will increase the connect timeout the next time we try to connect to this host.
-	  AIHTTPTimeoutPolicy::connect_timed_out(curlEasyRequest_w->getLowercaseHostname());
-	  // AIFIXME: use return value to change priority
-	}
-  }
-  // Make sure no timeout will happen anymore.
-  mLowSpeedOn = false;
-  mStalled = (U64)-1;
-  DoutCurl("done: mStalled set to -1");
-}
-
-// Libcurl uses GetTickCount on windows, with a resolution of 10 to 16 ms.
-// As a result, we can not assume that namelookup_time == 0 has a special meaning.
-#define LOWRESTIMER LL_WINDOWS
-
-void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, char const* eff_url)
-{
-  llwarns << "Request to \"" << curl_easy_request->getLowercaseHostname() << "\" timed out for " << curl_easy_request->getTimeoutPolicy()->name() << llendl;
-  llinfos << "Effective URL: \"" << eff_url << "\"." << llendl;
-  double namelookup_time, connect_time, appconnect_time, pretransfer_time, starttransfer_time;
-  curl_easy_request->getinfo(CURLINFO_NAMELOOKUP_TIME, &namelookup_time);
-  curl_easy_request->getinfo(CURLINFO_CONNECT_TIME, &connect_time);
-  curl_easy_request->getinfo(CURLINFO_APPCONNECT_TIME, &appconnect_time);
-  curl_easy_request->getinfo(CURLINFO_PRETRANSFER_TIME, &pretransfer_time);
-  curl_easy_request->getinfo(CURLINFO_STARTTRANSFER_TIME, &starttransfer_time);
-  if (namelookup_time == 0
-#if LOWRESTIMER
-	  && connect_time == 0
-#endif
-	  )
-  {
-#if LOWRESTIMER
-	llinfos << "Hostname seems to have been still in the DNS cache." << llendl;
-#else
-	llwarns << "Huh? Curl returned CURLE_OPERATION_TIMEDOUT, but DNS lookup did not occur according to timings. Expected CURLE_COULDNT_RESOLVE_PROXY or CURLE_COULDNT_RESOLVE_HOST!" << llendl;
-	llassert(connect_time == 0);
-	llassert(appconnect_time == 0);
-	llassert(pretransfer_time == 0);
-	llassert(starttransfer_time == 0);
-	// Fatal error for diagnostics.
-	return;
-#endif
-  }
-  // If namelookup_time is less than 500 microseconds, then it's very likely just a DNS cache lookup.
-  else if (namelookup_time < 500e-6)
-  {
-#if LOWRESTIMER
-	llinfos << "Hostname was most likely still in DNS cache (or lookup occured in under ~10ms)." << llendl;
-#else
-	llinfos << "Hostname was still in DNS cache." << llendl;
-#endif
-  }
-  else
-  {
-	llinfos << "DNS lookup of " << curl_easy_request->getLowercaseHostname() << " took " << namelookup_time << " seconds." << llendl;
-  }
-  if (connect_time == 0
-#if LOWRESTIMER
-	  && namelookup_time > 0		// connect_time, when set, is namelookup_time + something.
-#endif
-	  )
-  {
-	llwarns << "Huh? Curl returned CURLE_OPERATION_TIMEDOUT, but connection did not occur according to timings. Expected CURLE_COULDNT_CONNECT!" << llendl;
-	llassert(appconnect_time == 0);
-	llassert(pretransfer_time == 0);
-	llassert(starttransfer_time == 0);
-	// Fatal error for diagnostics.
-	return;
-  }
-  // If connect_time is almost equal to namelookup_time, then it was just set because it was already connected.
-  if (connect_time - namelookup_time <= 1e-5)
-  {
-#if LOWRESTIMER		// Assuming 10ms resolution.
-	llinfos << "The socket was most likely already connected (or you connected to a proxy with a connect time of under ~10 ms)." << llendl;
-#else
-	llinfos << "The socket was already connected (to remote or proxy)." << llendl;
-#endif
-	// I'm assuming that the SSL/TLS handshake can be measured with a low res timer.
-	if (appconnect_time == 0)
-	{
-	  llwarns << "The SSL/TLS handshake never occurred according to the timings!" << llendl;
-	  return;
-	}
-	// If appconnect_time is almost equal to connect_time, then it was just set because this is a connection re-use.
-	if (appconnect_time - connect_time <= 1e-5)
-	{
-	  llinfos << "Connection with HTTP server was already established; this was a re-used connection." << llendl;
-	}
-	else
-	{
-	  llinfos << "SSL/TLS handshake with HTTP server took " << (appconnect_time - connect_time) << " seconds." << llendl;
-	}
-  }
-  else
-  {
-	llinfos << "Socket connected to remote host (or proxy) in " << (connect_time - namelookup_time) << " seconds." << llendl;
-	if (appconnect_time == 0)
-	{
-	  llwarns << "The SSL/TLS handshake never occurred according to the timings!" << llendl;
-	  return;
-	}
-	llinfos << "SSL/TLS handshake with HTTP server took " << (appconnect_time - connect_time) << " seconds." << llendl;
-  }
-  if (pretransfer_time == 0)
-  {
-	llwarns << "The transfer never happened because there was too much in the pipeline (apparently)." << llendl;
-	return;
-  }
-  else if (pretransfer_time - appconnect_time >= 1e-5)
-  {
-	llinfos << "Apparently there was a delay, due to waits in line for the pipeline, of " << (pretransfer_time - appconnect_time) << " seconds before the transfer began." << llendl;
-  }
-  if (starttransfer_time == 0)
-  {
-	llwarns << "No data was ever received from the server according to the timings." << llendl;
-  }
-  else
-  {
-	llinfos << "The time it took to send the request to the server plus the time it took before the server started to reply was " << (starttransfer_time - pretransfer_time) << " seconds." << llendl;
-  }
-  if (mNothingReceivedYet)
-  {
-	llinfos << "No data at all was actually received from the server." << llendl;
-  }
-  if (mUploadFinished)
-  {
-	llinfos << "The request upload finished successfully." << llendl;
-  }
-  if (mLastSecond > 0 && mLowSpeedOn)
-  {
-	llinfos << "The " << (mNothingReceivedYet ? "upload" : "download") << " did last " << mLastSecond << " second" << ((mLastSecond == 1) ? "" : "s") << ", before it timed out." << llendl;
-  }
-}
-
 } // namespace curlthread
 } // namespace AICurlPrivate
 
@@ -2146,12 +1858,22 @@ void stopCurlThread(void)
   if (AICurlThread::sInstance)
   {
 	AICurlThread::sInstance->stop_thread();
-	int count = 101;
+	int count = 401;
 	while(--count && !AICurlThread::sInstance->isStopped())
 	{
 	  ms_sleep(10);
 	}
-	Dout(dc::curl, "Curl thread" << (curlThreadIsRunning() ? " not" : "") << " stopped after " << ((100 - count) * 10) << "ms.");
+	if (AICurlThread::sInstance->isStopped())
+	{
+	  // isStopped() returns true somewhere at the end of run(),
+	  // but that doesn't mean the thread really stopped: it still
+	  // needs to destroy it's static variables.
+	  // If we don't join here, then there is a chance that the
+	  // curl thread will crash when using globals that we (the
+	  // main thread) will have destroyed before it REALLY finished.
+	  AICurlThread::sInstance->join_thread();	// Wait till it is REALLY done.
+	}
+	llinfos << "Curl thread" << (curlThreadIsRunning() ? " not" : "") << " stopped after " << ((400 - count) * 10) << "ms." << llendl;
   }
 }
 
@@ -2169,7 +1891,17 @@ void BufferedCurlEasyRequest::setStatusAndReason(U32 status, std::string const& 
 {
   mStatus = status;
   mReason = reason;
-  AICurlInterface::Stats::status_count[AICurlInterface::Stats::status2index(mStatus)]++;
+  if (status >= 100 && status < 600 && (status % 100) < 20)
+  {
+	// Only count statistic for sane values.
+	AICurlInterface::Stats::status_count[AICurlInterface::Stats::status2index(mStatus)]++;
+  }
+
+  // Sanity check. If the server replies with a redirect status then we better have that option turned on!
+  if ((status >= 300 && status < 400) && mResponder && !mResponder->redirect_status_ok())
+  {
+	llerrs << "Received " << status << " (" << reason << ") for responder \"" << mTimeoutPolicy->name() << "\" which has no followRedir()!" << llendl;
+  }
 }
 
 void BufferedCurlEasyRequest::processOutput(void)
@@ -2180,7 +1912,7 @@ void BufferedCurlEasyRequest::processOutput(void)
   CURLcode code;
   AITransferInfo info;
   getResult(&code, &info);
-  if (code == CURLE_OK)
+  if (code == CURLE_OK && mStatus != HTTP_INTERNAL_ERROR)
   {
 	getinfo(CURLINFO_RESPONSE_CODE, &responseCode);
 	// If getResult code is CURLE_OK then we should have decoded the first header line ourselves.
@@ -2193,7 +1925,7 @@ void BufferedCurlEasyRequest::processOutput(void)
   else
   {
 	responseCode = HTTP_INTERNAL_ERROR;
-	responseReason = curl_easy_strerror(code);
+	responseReason = (code == CURLE_OK) ? mReason : std::string(curl_easy_strerror(code));
 	setopt(CURLOPT_FRESH_CONNECT, TRUE);
   }
 
@@ -2289,23 +2021,18 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 
   char const* const header_line = static_cast<char const*>(data);
   size_t const header_len = size * nmemb;
-  if (self_w->httptimeout()->data_received(header_len))	// Update timeout administration.
-  {
-	// Transfer timed out. Return 0 which will abort with error CURLE_WRITE_ERROR.
-	return 0;
-  }
   if (!header_len)
   {
 	return header_len;
   }
   std::string header(header_line, header_len);
+  bool done = false;
   if (!LLStringUtil::_isASCII(header))
   {
-	return header_len;
+	done = true;
   }
-
   // Per HTTP spec the first header line must be the status line.
-  if (header.substr(0, 5) == "HTTP/")
+  else if (header.substr(0, 5) == "HTTP/")
   {
 	std::string::iterator const begin = header.begin();
 	std::string::iterator const end = header.end();
@@ -2314,23 +2041,41 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	std::string::iterator pos2 = std::find(pos1, end, ' ');
 	if (pos2 != end) ++pos2;
 	std::string::iterator pos3 = std::find(pos2, end, '\r');
-	U32 status;
+	U32 status = 0;
 	std::string reason;
 	if (pos3 != end && std::isdigit(*pos1))
 	{
 	  status = atoi(&header_line[pos1 - begin]);
 	  reason.assign(pos2, pos3);
 	}
-	else
+	if (!(status >= 100 && status < 600 && (status % 100) < 20))	// Sanity check on the decoded status.
 	{
+	  if (status == 0)
+	  {
+		reason = "Header parse error.";
+		llwarns << "Received broken header line from server: \"" << header << "\"" << llendl;
+	  }
+	  else
+	  {
+		reason = "Unexpected HTTP status.";
+		llwarns << "Received unexpected status value from server (" << status << "): \"" << header << "\"" << llendl;
+	  }
+	  // Either way, this status value is not understood (or taken into account).
+	  // Set it to internal error so that the rest of code treats it as an error.
 	  status = HTTP_INTERNAL_ERROR;
-	  reason = "Header parse error.";
-	  llwarns << "Received broken header line from server: \"" << header << "\"" << llendl;
 	}
-	{
-	  self_w->received_HTTP_header();
-	  self_w->setStatusAndReason(status, reason);
-	}
+	self_w->received_HTTP_header();
+	self_w->setStatusAndReason(status, reason);
+	done = true;
+  }
+  // Update timeout administration. This must be done after the status is already known.
+  if (self_w->httptimeout()->data_received(header_len/*,*/ ASSERT_ONLY_COMMA(self_w->upload_error_status())))
+  {
+	// Transfer timed out. Return 0 which will abort with error CURLE_WRITE_ERROR.
+	return 0;
+  }
+  if (done)
+  {
 	return header_len;
   }
 
@@ -2359,14 +2104,25 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 }
 
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
-int debug_callback(CURL*, curl_infotype infotype, char* buf, size_t size, void* user_ptr)
+int debug_callback(CURL* handle, curl_infotype infotype, char* buf, size_t size, void* user_ptr)
 {
+  BufferedCurlEasyRequest* request = (BufferedCurlEasyRequest*)user_ptr;
+  if (infotype == CURLINFO_HEADER_OUT && size >= 5 && (strncmp(buf, "GET ", 4) == 0 || strncmp(buf, "HEAD ", 5) == 0))
+  {
+	request->mDebugIsHeadOrGetMethod = true;
+  }
+
+#ifdef DEBUG_CURLIO
+  if (!debug_curl_print_debug(handle))
+  {
+	return 0;
+  }
+#endif
+
 #ifdef CWDEBUG
   using namespace ::libcwd;
-
-  BufferedCurlEasyRequest* request = (BufferedCurlEasyRequest*)user_ptr;
   std::ostringstream marker;
-  marker << (void*)request->get_lockobj();
+  marker << (void*)request->get_lockobj() << ' ';
   libcw_do.push_marker();
   libcw_do.marker().assign(marker.str().data(), marker.str().size());
   if (!debug::channels::dc::curlio.is_on())
@@ -2390,8 +2146,6 @@ int debug_callback(CURL*, curl_infotype infotype, char* buf, size_t size, void* 
 	  break;
 	case CURLINFO_HEADER_OUT:
 	  LibcwDoutStream << "H< ";
-	  if (size >= 5 && (strncmp(buf, "GET ", 4) == 0 || strncmp(buf, "HEAD ", 5) == 0))
-		request->mDebugIsHeadOrGetMethod = true;
 	  break;
 	case CURLINFO_DATA_IN:
 	  LibcwDoutStream << "D> ";
@@ -2564,6 +2318,14 @@ void AICurlEasyRequest::removeRequest(void)
 		  llassert(curl_easy_request_w->active() || !curl_easy_request_w->mRemovedPerCommand);
 		}
 	  }
+	}
+	{
+	  AICurlEasyRequest_wat curl_easy_request_w(*get());
+	  // As soon as the lock on the command queue is released, it could be picked up by
+	  // the curl thread and executed. At that point it (already) demands that the easy
+	  // request either timed out or is finished. So, to avoid race conditions that already
+	  // has to be true right now. The call to queued_for_removal() checks this.
+	  curl_easy_request_w->queued_for_removal(curl_easy_request_w);
 	}
 #endif
 	// Add a command to remove this request from the multi session to the command queue.

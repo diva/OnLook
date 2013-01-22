@@ -67,6 +67,7 @@
 #include "llinventoryclipboard.h"
 #include "llinventorymodelbackgroundfetch.h"
 #include "lllineeditor.h"
+#include "llmakeoutfitdialog.h"
 #include "llmenugl.h"
 #include "llpreviewanim.h"
 #include "llpreviewgesture.h"
@@ -382,6 +383,10 @@ void do_create(LLInventoryModel *model, LLInventoryPanel *ptr, std::string type,
 							LLInventoryType::IT_GESTURE,
 							PERM_ALL);
 	}
+	else if ("outfit" == type)
+	{
+		new LLMakeOutfitDialog(false);
+	}
 	else
 	{
 		LLWearableType::EType wear_type = LLWearableType::typeNameToType(type);
@@ -671,7 +676,7 @@ class LLAttachObject : public inventory_panel_listener_t
 		else if(item && item->isFinished())
 		{
 			// must be in library. copy it to our inventory and put it on.
-			LLPointer<LLInventoryCallback> cb = new RezAttachmentCallback(attachmentp);
+			LLPointer<LLInventoryCallback> cb = new LLBoostFuncInventoryCallback(boost::bind(rez_attachment_cb, _1, attachmentp, false));
 			copy_inventory_item(
 				gAgent.getID(),
 				item->getPermissions().getOwner(),

@@ -272,7 +272,8 @@ void LLToolMgr::updateToolStatus()
 
 bool LLToolMgr::inEdit()
 {
-	return mBaseTool != LLToolPie::getInstance() && mBaseTool != gToolNull;
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
+	return mBaseTool != LLToolPie::getInstance() && mBaseTool != gToolNull && (mCurrentToolset != gCameraToolset || !freeze_time);
 }
 
 bool LLToolMgr::canEdit()

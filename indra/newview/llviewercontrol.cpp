@@ -157,6 +157,43 @@ static bool handleSetShaderChanged(const LLSD& newvalue)
 	return true;
 }
 
+static bool handleRenderPerfTestChanged(const LLSD& newvalue)
+{
+       bool status = !newvalue.asBoolean();
+       if (!status)
+       {
+               gPipeline.clearRenderTypeMask(LLPipeline::RENDER_TYPE_WL_SKY,
+                                                                         LLPipeline::RENDER_TYPE_GROUND,
+                                                                        LLPipeline::RENDER_TYPE_TERRAIN,
+                                                                         LLPipeline::RENDER_TYPE_GRASS,
+                                                                         LLPipeline::RENDER_TYPE_TREE,
+                                                                         LLPipeline::RENDER_TYPE_WATER,
+                                                                         LLPipeline::RENDER_TYPE_PASS_GRASS,
+                                                                         LLPipeline::RENDER_TYPE_HUD,
+                                                                         LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS,
+                                                                         LLPipeline::RENDER_TYPE_HUD_PARTICLES,
+                                                                         LLPipeline::END_RENDER_TYPES); 
+               gPipeline.setRenderDebugFeatureControl(LLPipeline::RENDER_DEBUG_FEATURE_UI, false);
+       }
+       else 
+       {
+               gPipeline.setRenderTypeMask(LLPipeline::RENDER_TYPE_WL_SKY,
+                                                                         LLPipeline::RENDER_TYPE_GROUND,
+                                                                         LLPipeline::RENDER_TYPE_TERRAIN,
+                                                                         LLPipeline::RENDER_TYPE_GRASS,
+                                                                         LLPipeline::RENDER_TYPE_TREE,
+                                                                         LLPipeline::RENDER_TYPE_WATER,
+                                                                         LLPipeline::RENDER_TYPE_PASS_GRASS,
+                                                                         LLPipeline::RENDER_TYPE_HUD,
+                                                                         LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS,
+                                                                         LLPipeline::RENDER_TYPE_HUD_PARTICLES,
+                                                                         LLPipeline::END_RENDER_TYPES);
+               gPipeline.setRenderDebugFeatureControl(LLPipeline::RENDER_DEBUG_FEATURE_UI, true);
+       }
+
+       return true;
+}
+
 static bool handleAvatarBoobMassChanged(const LLSD& newvalue)
 {
 	LLVOAvatar::sBoobConfig.mass = EmeraldBoobUtils::convertMass((F32) newvalue.asReal());
@@ -203,6 +240,11 @@ static bool handleAvatarBoobXYInfluence(const LLSD& newvalue)
 static bool handleSetSelfInvisible( const LLSD& newvalue)
 {
 	LLVOAvatarSelf::onChangeSelfInvisible( newvalue.asBoolean() );
+	return true;
+}
+
+bool handleRenderAvatarComplexityLimitChanged(const LLSD& newvalue)
+{
 	return true;
 }
 
@@ -437,6 +479,7 @@ static bool handleRepartition(const LLSD&)
 	if (gPipeline.isInit())
 	{
 		gOctreeMaxCapacity = gSavedSettings.getU32("OctreeMaxNodeCapacity");
+		gOctreeReserveCapacity = llmin(gSavedSettings.getU32("OctreeReserveNodeCapacity"),U32(512));
 		gObjectList.repartitionObjects();
 	}
 	return true;
@@ -638,6 +681,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("OctreeStaticObjectSizeFactor")->getSignal()->connect(boost::bind(&handleRepartition, _2));
 	gSavedSettings.getControl("OctreeDistanceFactor")->getSignal()->connect(boost::bind(&handleRepartition, _2));
 	gSavedSettings.getControl("OctreeMaxNodeCapacity")->getSignal()->connect(boost::bind(&handleRepartition, _2));
+	gSavedSettings.getControl("OctreeReserveNodeCapacity")->getSignal()->connect(boost::bind(&handleRepartition, _2));
 	gSavedSettings.getControl("OctreeAlphaDistanceFactor")->getSignal()->connect(boost::bind(&handleRepartition, _2));
 	gSavedSettings.getControl("OctreeAttachmentSizeFactor")->getSignal()->connect(boost::bind(&handleRepartition, _2));
 	gSavedSettings.getControl("RenderMaxTextureIndex")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _2));
@@ -659,6 +703,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("RenderGammaFull")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _2));
 	gSavedSettings.getControl("RenderAvatarMaxVisible")->getSignal()->connect(boost::bind(&handleAvatarMaxVisibleChanged, _2));
 	gSavedSettings.getControl("RenderAvatarInvisible")->getSignal()->connect(boost::bind(&handleSetSelfInvisible, _2));
+	gSavedSettings.getControl("RenderAvatarComplexityLimit")->getSignal()->connect(boost::bind(&handleRenderAvatarComplexityLimitChanged, _2));
 	gSavedSettings.getControl("RenderVolumeLODFactor")->getSignal()->connect(boost::bind(&handleVolumeLODChanged, _2));
 	gSavedSettings.getControl("RenderAvatarLODFactor")->getSignal()->connect(boost::bind(&handleAvatarLODChanged, _2));
 	gSavedSettings.getControl("RenderAvatarPhysicsLODFactor")->getSignal()->connect(boost::bind(&handleAvatarPhysicsLODChanged, _2));
@@ -689,6 +734,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("RenderShadowDetail")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _2));
 	gSavedSettings.getControl("RenderDeferredSSAO")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _2));
 	gSavedSettings.getControl("RenderDepthOfField")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _2));
+	gSavedSettings.getControl("RenderPerformanceTest")->getSignal()->connect(boost::bind(&handleRenderPerfTestChanged, _2));
 	gSavedSettings.getControl("TextureMemory")->getSignal()->connect(boost::bind(&handleVideoMemoryChanged, _2));
 	gSavedSettings.getControl("AuditTexture")->getSignal()->connect(boost::bind(&handleAuditTextureChanged, _2));
 	gSavedSettings.getControl("ChatFontSize")->getSignal()->connect(boost::bind(&handleChatFontSizeChanged, _2));

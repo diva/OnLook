@@ -62,7 +62,7 @@ uniform float max_y;
 uniform vec4 glow;
 uniform float scene_light_strength;
 uniform mat3 env_mat;
-uniform mat3 ssao_effect_mat;
+uniform float ssao_effect;
 
 uniform vec3 sun_dir;
 VARYING vec2 vary_fragcoord;
@@ -203,21 +203,14 @@ void calcAtmospherics(vec3 inPositionEye, float ambFactor) {
 	//increase ambient when there are more clouds
 	vec4 tmpAmbient = ambient + (vec4(1.) - ambient) * cloud_shadow * 0.5;
 	
-	/*  decrease value and saturation (that in HSV, not HSL) for occluded areas
-	 * // for HSV color/geometry used here, see http://gimp-savvy.com/BOOK/index.html?node52.html
-	 * // The following line of code performs the equivalent of:
-	 * float ambAlpha = tmpAmbient.a;
-	 * float ambValue = dot(vec3(tmpAmbient), vec3(0.577)); // projection onto <1/rt(3), 1/rt(3), 1/rt(3)>, the neutral white-black axis
-	 * vec3 ambHueSat = vec3(tmpAmbient) - vec3(ambValue);
-	 * tmpAmbient = vec4(RenderSSAOEffect.valueFactor * vec3(ambValue) + RenderSSAOEffect.saturationFactor *(1.0 - ambFactor) * ambHueSat, ambAlpha);
-	 */
-	tmpAmbient = vec4(mix(ssao_effect_mat * tmpAmbient.rgb, tmpAmbient.rgb, ambFactor), tmpAmbient.a);
-
 	//haze color
 	setAdditiveColor(
 		vec3(blue_horizon * blue_weight * (sunlight*(1.-cloud_shadow) + tmpAmbient)
 	  + (haze_horizon * haze_weight) * (sunlight*(1.-cloud_shadow) * temp2.x
 		  + tmpAmbient)));
+
+	// decrease value for occluded areas
+	tmpAmbient = vec4(mix(ssao_effect * tmpAmbient.rgb, tmpAmbient.rgb, ambFactor), tmpAmbient.a);
 
 	//brightness of surface both sunlight and ambient
 	setSunlitColor(vec3(sunlight * .5));
@@ -271,13 +264,33 @@ vec3 scaleSoftClip(vec3 light)
 	return light;
 }
 
+vec3 unpack(vec2 tc)
+{
+//#define PACK_NORMALS
+#ifdef PACK_NORMALS
+	vec2 enc = texture2DRect(normalMap, tc).xy;
+	enc = enc*4.0-2.0;
+	float prod = dot(enc,enc);
+	return vec3(enc*sqrt(1.0-prod*.25),1.0-prod*.5);
+#else
+	vec3 norm = texture2DRect(normalMap, tc).xyz;
+	return norm*2.0-1.0;
+#endif
+}
+
+float luminance(vec3 color)
+{
+	/// CALCULATING LUMINANCE (Using NTSC lum weights)
+	/// http://en.wikipedia.org/wiki/Luma_%28video%29
+	return dot(color, vec3(0.299, 0.587, 0.114));
+}
+
 void main() 
 {
 	vec2 tc = vary_fragcoord.xy;
 	float depth = texture2DRect(depthMap, tc.xy).r;
 	vec3 pos = getPosition_d(tc, depth).xyz;
-	vec3 norm = texture2DRect(normalMap, tc).xyz;
-	norm = vec3((norm.xy-0.5)*2.0,norm.z); // unpack norm
+	vec3 norm = unpack(tc); // unpack norm
 		
 	float da = max(dot(norm.xyz, sun_dir.xyz), 0.0);
 	
@@ -310,17 +323,20 @@ void main()
 
 			//add environmentmap
 			vec3 env_vec = env_mat * refnormpersp;
-			col = mix(col.rgb, textureCube(environmentMap, env_vec).rgb, 
-				max(spec.a-diffuse.a*2.0, 0.0)); 
+			vec3 env = textureCube(environmentMap, env_vec).rgb;
+			bloom = (luminance(env) - .45)*.25;
+			col = mix(col.rgb, env, 
+				max(spec.a-diffuse.a*2.0, 0.0));
 		}
 	
 		col = atmosLighting(col);
 		col = scaleSoftClip(col);
 
-		col = mix(col.rgb, diffuse.rgb, diffuse.a);
+		col = mix(col, diffuse.rgb, diffuse.a);
 	}
 	else
 	{
+		bloom = spec.r;
 		col = diffuse.rgb;
 	}
 
