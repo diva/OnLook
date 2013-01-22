@@ -58,7 +58,7 @@ include_directories(
     ${HUNSPELL_INCLUDE_DIR}
     ${ELFIO_INCLUDE_DIR}
     ${JSONCPP_INCLUDE_DIRS}
-    ${GLOD_INCLUDE_DIR}
+    ${GLOD_INCLUDE_DIRS}
     ${LLAUDIO_INCLUDE_DIRS}
     ${LLCHARACTER_INCLUDE_DIRS}
     ${LLCOMMON_INCLUDE_DIRS}
@@ -76,8 +76,6 @@ include_directories(
     ${LLXML_INCLUDE_DIRS}
 #    ${LSCRIPT_INCLUDE_DIRS}
 #    ${LSCRIPT_INCLUDE_DIRS}/lscript_compile
-    ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/collada
-    ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/collada/1.4
     )
 
 set(viewer_SOURCE_FILES

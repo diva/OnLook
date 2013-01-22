@@ -1,39 +1,22 @@
 # -*- cmake -*-
 
-# these should be moved to their own cmake file
-include(Prebuilt)
-use_prebuilt_binary(colladadom)
-
-if (NOT WINDOWS)
-use_prebuilt_binary(pcre)
-endif (NOT WINDOWS)
-
-if (NOT DARWIN AND NOT WINDOWS)
-use_prebuilt_binary(libxml)
-endif (NOT DARWIN AND NOT WINDOWS)
+include(Colladadom)
 
 set(LLPRIMITIVE_INCLUDE_DIRS
-    ${LIBS_OPEN_DIR}/llprimitive
-    )
+  ${LIBS_OPEN_DIR}/llprimitive
+  ${COLLADADOM_INCLUDE_DIRS}
+  )
+
 if (WINDOWS)
-    set(LLPRIMITIVE_LIBRARIES 
-        debug llprimitive
-        optimized llprimitive
-        debug libcollada14dom22-d
-        optimized libcollada14dom22
-        debug libboost_filesystem-mt-gd
-        optimized libboost_filesystem-mt
-        debug libboost_system-mt-gd
-        optimized libboost_system-mt
-        )
+  set(LLPRIMITIVE_LIBRARIES 
+	  debug llprimitive
+	  optimized llprimitive
+	  ${COLLADADOM_LIBRARIES}
+	  )
 else (WINDOWS)
-    set(LLPRIMITIVE_LIBRARIES 
-        llprimitive
-        collada14dom
-        minizip
-        xml2
-        pcrecpp
-        pcre
-        )
+  set(LLPRIMITIVE_LIBRARIES 
+	  llprimitive
+	  ${COLLADADOM_LIBRARIES}
+	  )
 endif (WINDOWS)
 
