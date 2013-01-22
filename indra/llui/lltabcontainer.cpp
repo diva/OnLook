@@ -42,7 +42,6 @@
 #include "lltextbox.h"
 #include "llcriticaldamp.h"
 #include "lluictrlfactory.h"
-#include "lltabcontainervertical.h"
 #include "llrender.h"
 #include "llmultifloater.h"
 
