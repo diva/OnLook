@@ -176,7 +176,7 @@ void AIStateMachine::idle(state_type current_run_state)
 // About thread safeness:
 //
 // The main thread initializes a statemachine and calls run, so a statemachine
-// runs in the main thread. However, it is allowed that a state calls idle()
+// runs in the main thread. However, it is allowed that a state calls idle(current_state)
 // and then allows one or more other threads to call cont() upon some
 // event (only once, of course, as idle() has to be called before cont()
 // can be called again-- and a non-main thread is not allowed to call idle()).
