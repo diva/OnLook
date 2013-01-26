@@ -70,8 +70,6 @@ const LLColor4 INACTIVE_COLOR(0.3f, 0.3f, 0.3f, 0.5f);
 const LLColor4 ACTIVE_COLOR(0.5f, 0.5f, 0.5f, 1.f);
 const F32 TYPING_ANIMATION_FPS = 2.5f;
 
-static void on_avatar_name_lookup(const LLUUID&, const LLAvatarName& avatar_name, std::string& mDisplayName);
-
 LLSpeaker::LLSpeaker(const LLUUID& id, const std::string& name, const ESpeakerType type) : 
 	mStatus(LLSpeaker::STATUS_TEXT_ONLY),
 	mLastSpokeTime(0.f), 
@@ -84,7 +82,8 @@ LLSpeaker::LLSpeaker(const LLUUID& id, const std::string& name, const ESpeakerTy
 	mType(type),
 	mIsModerator(FALSE),
 	mModeratorMutedVoice(FALSE),
-	mModeratorMutedText(FALSE)
+	mModeratorMutedText(FALSE),
+	mNameRequested(false)
 {
 	// Make sure we also get the display name if SLIM or some other external
 	// voice client is used and not whatever is provided.
@@ -104,15 +103,14 @@ LLSpeaker::LLSpeaker(const LLUUID& id, const std::string& name, const ESpeakerTy
 
 void LLSpeaker::lookupName()
 {
-	LLAvatarNameCache::get(mID, boost::bind(&on_avatar_name_lookup, _1, _2, boost::ref(mDisplayName)));
-
-	// Also set the legacy name. We will need it to initiate a new
-	// IM session.
-	gCacheName->getFullName(mID, mLegacyName);
-	mLegacyName = LLCacheName::cleanFullName(mLegacyName);
+	if(!mNameRequested)
+	{
+		mNameRequested = true;
+		LLAvatarNameCache::get(mID, boost::bind(&LLSpeaker::onNameCache, this, _2));
+	}
 }
 
-static void on_avatar_name_lookup(const LLUUID&, const LLAvatarName& avatar_name, std::string& mDisplayName)
+void LLSpeaker::onNameCache(const LLAvatarName& avatar_name)
 {
 	LLAvatarNameCache::getPNSName(avatar_name, mDisplayName);
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g) | Added: RLVa-1.0.0g
@@ -120,6 +118,10 @@ static void on_avatar_name_lookup(const LLUUID&, const LLAvatarName& avatar_name
 	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 		mDisplayName = RlvStrings::getAnonym(mDisplayName);
 // [/RLVa:KB]
+
+	// Also set the legacy name. We will need it to initiate a new
+	// IM session.
+	mLegacyName = LLCacheName::cleanFullName(avatar_name.getLegacyName());
 }
 
 LLSpeakerTextModerationEvent::LLSpeakerTextModerationEvent(LLSpeaker* source)
@@ -616,6 +618,7 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 								&& selected_speakerp->mType != LLSpeaker::SPEAKER_EXTERNAL
 								// Ansariel: No, we don't want to mute Lindens with display names
 								//&& !LLMuteList::getInstance()->isLinden(selected_speakerp->mDisplayName));
+								&& !selected_speakerp->mLegacyName.empty()
 								&& !LLMuteList::getInstance()->isLinden(selected_speakerp->mLegacyName));
 	}
 	mVolumeSlider->setValue(gVoiceClient->getUserVolume(selected_id));
@@ -788,7 +791,7 @@ void LLPanelActiveSpeakers::onDoubleClickSpeaker(void* user_data)
 
 	LLPointer<LLSpeaker> speakerp = panelp->mSpeakerMgr->findSpeaker(speaker_id);
 
-	if (speaker_id != gAgent.getID() && speakerp.notNull())
+	if (speaker_id != gAgent.getID() && speakerp.notNull() && !speakerp->mLegacyName.empty())
 	{
 		// Changed for display name support
 		//gIMMgr->addSession(speakerp->mDisplayName, IM_NOTHING_SPECIAL, speaker_id);

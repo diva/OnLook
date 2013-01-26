@@ -39,7 +39,9 @@
 #include "llvoiceclient.h"
 #include "llframetimer.h"
 #include "llevent.h"
+
 #include <list>
+#include <boost/signals2.hpp>
 
 class LLScrollListCtrl;
 class LLButton;
@@ -52,7 +54,7 @@ class LLCheckBoxCtrl;
 
 
 // data for a given participant in a voice channel
-class LLSpeaker : public LLRefCount, public LLOldEvents::LLObservable, public LLHandleProvider<LLSpeaker>
+class LLSpeaker : public LLRefCount, public LLOldEvents::LLObservable, public LLHandleProvider<LLSpeaker>, public boost::signals2::trackable
 {
 public:
 	typedef enum e_speaker_type
@@ -76,6 +78,7 @@ public:
 	LLSpeaker(const LLUUID& id, const std::string& name = LLStringUtil::null, const ESpeakerType type = SPEAKER_AGENT);
 	~LLSpeaker() {};
 	void lookupName();
+	void onNameCache(const LLAvatarName& avatar_name);
 
 	ESpeakerStatus	mStatus;			// current activity status in speech group
 	F32				mLastSpokeTime;		// timestamp when this speaker last spoke
@@ -92,6 +95,7 @@ public:
 	BOOL			mModeratorMutedVoice;
 	BOOL			mModeratorMutedText;
 	std::string     mLegacyName;
+	bool			mNameRequested;
 };
 
 class LLSpeakerTextModerationEvent : public LLOldEvents::LLEvent
