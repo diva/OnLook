@@ -1730,204 +1730,206 @@ void LLWindowSDL::gatherInput()
     {
         switch (event.type)
         {
-            case SDL_MOUSEMOTION:
+        case SDL_MOUSEMOTION:
+        {
+            LLCoordWindow winCoord(event.button.x, event.button.y);
+            LLCoordGL openGlCoord;
+            convertCoords(winCoord, &openGlCoord);
+            MASK mask = gKeyboard->currentMask(TRUE);
+            mCallbacks->handleMouseMove(this, openGlCoord, mask);
+            break;
+        }
+
+        case SDL_KEYDOWN:
+            mKeyScanCode = event.key.keysym.scancode;
+            mKeyVirtualKey = event.key.keysym.unicode;
+            mKeyModifiers = event.key.keysym.mod;
+
+            gKeyboard->handleKeyDown(event.key.keysym.sym, event.key.keysym.mod);
+            // part of the fix for SL-13243
+            if (SDLCheckGrabbyKeys(event.key.keysym.sym, TRUE) != 0)
+                SDLReallyCaptureInput(TRUE);
+
+            if (event.key.keysym.unicode)
             {
-                LLCoordWindow winCoord(event.button.x, event.button.y);
-                LLCoordGL openGlCoord;
-                convertCoords(winCoord, &openGlCoord);
-				MASK mask = gKeyboard->currentMask(TRUE);
-				mCallbacks->handleMouseMove(this, openGlCoord, mask);
-                break;
+                handleUnicodeUTF16(event.key.keysym.unicode,
+                                   gKeyboard->currentMask(FALSE));
             }
+            break;
 
-            case SDL_KEYDOWN:
-		    mKeyScanCode = event.key.keysym.scancode;
-		    mKeyVirtualKey = event.key.keysym.unicode;
-		    mKeyModifiers = event.key.keysym.mod;
+        case SDL_KEYUP:
+            mKeyScanCode = event.key.keysym.scancode;
+            mKeyVirtualKey = event.key.keysym.unicode;
+            mKeyModifiers = event.key.keysym.mod;
 
-		    gKeyboard->handleKeyDown(event.key.keysym.sym, event.key.keysym.mod);
-		    // part of the fix for SL-13243
-		    if (SDLCheckGrabbyKeys(event.key.keysym.sym, TRUE) != 0)
-			    SDLReallyCaptureInput(TRUE);
+            if (SDLCheckGrabbyKeys(event.key.keysym.sym, FALSE) == 0)
+                SDLReallyCaptureInput(FALSE); // part of the fix for SL-13243
 
-		    if (event.key.keysym.unicode)
-		    {
-			    handleUnicodeUTF16(event.key.keysym.unicode,
-					       gKeyboard->currentMask(FALSE));
-		    }
-                break;
+            gKeyboard->handleKeyUp(event.key.keysym.sym, event.key.keysym.mod);
+            break;
 
-            case SDL_KEYUP:
-		    mKeyScanCode = event.key.keysym.scancode;
-		    mKeyVirtualKey = event.key.keysym.unicode;
-		    mKeyModifiers = event.key.keysym.mod;
+        case SDL_MOUSEBUTTONDOWN:
+        {
+            bool isDoubleClick = false;
+            LLCoordWindow winCoord(event.button.x, event.button.y);
+            LLCoordGL openGlCoord;
+            convertCoords(winCoord, &openGlCoord);
+            MASK mask = gKeyboard->currentMask(TRUE);
 
-		    if (SDLCheckGrabbyKeys(event.key.keysym.sym, FALSE) == 0)
-			    SDLReallyCaptureInput(FALSE); // part of the fix for SL-13243
-
-		    gKeyboard->handleKeyUp(event.key.keysym.sym, event.key.keysym.mod);
-		    break;
-
-            case SDL_MOUSEBUTTONDOWN:
+            if (event.button.button == SDL_BUTTON_LEFT)   // SDL doesn't manage double clicking...
             {
-                bool isDoubleClick = false;
-                LLCoordWindow winCoord(event.button.x, event.button.y);
-                LLCoordGL openGlCoord;
-                convertCoords(winCoord, &openGlCoord);
-		MASK mask = gKeyboard->currentMask(TRUE);
-
-                if (event.button.button == SDL_BUTTON_LEFT)   // SDL doesn't manage double clicking...
+                Uint32 now = SDL_GetTicks();
+                if ((now - lastLeftDown) > CLICK_THRESHOLD)
+                    leftClick = 1;
+                else
                 {
-                    Uint32 now = SDL_GetTicks();
-                    if ((now - lastLeftDown) > CLICK_THRESHOLD)
-                        leftClick = 1;
-                    else
+                    if (++leftClick >= 2)
                     {
-                        if (++leftClick >= 2)
-                        {
-                            leftClick = 0;
-			    isDoubleClick = true;
-                        }
+                        leftClick = 0;
+                        isDoubleClick = true;
                     }
-                    lastLeftDown = now;
                 }
-                else if (event.button.button == SDL_BUTTON_RIGHT)
+                lastLeftDown = now;
+            }
+            else if (event.button.button == SDL_BUTTON_RIGHT)
+            {
+                Uint32 now = SDL_GetTicks();
+                if ((now - lastRightDown) > CLICK_THRESHOLD)
+                    rightClick = 1;
+                else
                 {
-                    Uint32 now = SDL_GetTicks();
-                    if ((now - lastRightDown) > CLICK_THRESHOLD)
-                        rightClick = 1;
-                    else
+                    if (++rightClick >= 2)
                     {
-                        if (++rightClick >= 2)
-                        {
-                            rightClick = 0;
-    					    isDoubleClick = true;
-                        }
+                        rightClick = 0;
+                        isDoubleClick = true;
                     }
-                    lastRightDown = now;
                 }
+                lastRightDown = now;
+            }
 
-                if (event.button.button == SDL_BUTTON_LEFT)  // left
+            if (event.button.button == SDL_BUTTON_LEFT)  // left
+            {
+                if (isDoubleClick)
+                    mCallbacks->handleDoubleClick(this, openGlCoord, mask);
+                else
+                    mCallbacks->handleMouseDown(this, openGlCoord, mask);
+            }
+
+            else if (event.button.button == SDL_BUTTON_RIGHT)  // right
+            {
+                mCallbacks->handleRightMouseDown(this, openGlCoord, mask);
+            }
+
+            else if (event.button.button == SDL_BUTTON_MIDDLE)  // middle
+            {
+                mCallbacks->handleMiddleMouseDown(this, openGlCoord, mask);
+            }
+            else if (event.button.button == 4)  // mousewheel up...thanks to X11 for making SDL consider these "buttons".
+                mCallbacks->handleScrollWheel(this, -1);
+            else if (event.button.button == 5)  // mousewheel down...thanks to X11 for making SDL consider these "buttons".
+                mCallbacks->handleScrollWheel(this, 1);
+
+            break;
+        }
+
+        case SDL_MOUSEBUTTONUP:
+        {
+            LLCoordWindow winCoord(event.button.x, event.button.y);
+            LLCoordGL openGlCoord;
+            convertCoords(winCoord, &openGlCoord);
+            MASK mask = gKeyboard->currentMask(TRUE);
+
+            if (event.button.button == SDL_BUTTON_LEFT)  // left
+                mCallbacks->handleMouseUp(this, openGlCoord, mask);
+            else if (event.button.button == SDL_BUTTON_RIGHT)  // right
+                mCallbacks->handleRightMouseUp(this, openGlCoord, mask);
+            else if (event.button.button == SDL_BUTTON_MIDDLE)  // middle
+                mCallbacks->handleMiddleMouseUp(this, openGlCoord, mask);
+            // don't handle mousewheel here...
+
+            break;
+        }
+
+        case SDL_VIDEOEXPOSE:  // VIDEOEXPOSE doesn't specify the damage, but hey, it's OpenGL...repaint the whole thing!
+            mCallbacks->handlePaint(this, 0, 0, mWindow->w, mWindow->h);
+            break;
+
+        case SDL_VIDEORESIZE:
+        {
+            llinfos << "Handling a resize event: " << event.resize.w <<
+                       "x" << event.resize.h << llendl;
+
+            S32 width = llmax(event.resize.w, MIN_WINDOW_WIDTH);
+            S32 height = llmax(event.resize.h, MIN_WINDOW_HEIGHT);
+
+            if (width != mWindow->w || height != mWindow->h)
+            {
+                mWindow = SDL_SetVideoMode(width, height, 32, mSDLFlags);
+            }
+            if (!mWindow)
+            {
+                // *FIX: More informative dialog?
+                llinfos << "Could not recreate context after resize! Quitting..." << llendl;
+                if(mCallbacks->handleCloseRequest(this))
                 {
-                    if (isDoubleClick)
-				        mCallbacks->handleDoubleClick(this, openGlCoord, mask);
+                    // Get the app to initiate cleanup.
+                    mCallbacks->handleQuit(this);
+                    // The app is responsible for calling destroyWindow when done with GL
+                }
+                break;
+            }
+
+            mCallbacks->handleResize(this, width, height);
+            break;
+        }
+        case SDL_ACTIVEEVENT:
+            if (event.active.state & SDL_APPINPUTFOCUS)
+            {
+                // Note that for SDL (particularly on X11), keyboard
+                // and mouse focus are independent things.  Here we are
+                // tracking keyboard focus state changes.
+
+                // We have to do our own state massaging because SDL
+                // can send us two unfocus events in a row for example,
+                // which confuses the focus code [SL-24071].
+                if (event.active.gain != mHaveInputFocus)
+                {
+                    mHaveInputFocus = !!event.active.gain;
+
+                    if (mHaveInputFocus)
+                        mCallbacks->handleFocus(this);
                     else
-    				    mCallbacks->handleMouseDown(this, openGlCoord, mask);
+                        mCallbacks->handleFocusLost(this);
                 }
-
-                else if (event.button.button == SDL_BUTTON_RIGHT)  // right
-                {
-			mCallbacks->handleRightMouseDown(this, openGlCoord, mask);
-                }
-
-                else if (event.button.button == SDL_BUTTON_MIDDLE)  // middle
-				{
-				    mCallbacks->handleMiddleMouseDown(this, openGlCoord, mask);
-				}
-                else if (event.button.button == 4)  // mousewheel up...thanks to X11 for making SDL consider these "buttons".
-					mCallbacks->handleScrollWheel(this, -1);
-                else if (event.button.button == 5)  // mousewheel down...thanks to X11 for making SDL consider these "buttons".
-					mCallbacks->handleScrollWheel(this, 1);
-
-                break;
             }
-
-            case SDL_MOUSEBUTTONUP:
+            if (event.active.state & SDL_APPACTIVE)
             {
-                LLCoordWindow winCoord(event.button.x, event.button.y);
-                LLCoordGL openGlCoord;
-                convertCoords(winCoord, &openGlCoord);
-		MASK mask = gKeyboard->currentMask(TRUE);
+                // Change in iconification/minimization state.
+                if ((!event.active.gain) != mIsMinimized)
+                {
+                    mIsMinimized = (!event.active.gain);
 
-                if (event.button.button == SDL_BUTTON_LEFT)  // left
-			mCallbacks->handleMouseUp(this, openGlCoord, mask);
-                else if (event.button.button == SDL_BUTTON_RIGHT)  // right
-			mCallbacks->handleRightMouseUp(this, openGlCoord, mask);
-                else if (event.button.button == SDL_BUTTON_MIDDLE)  // middle
-			mCallbacks->handleMiddleMouseUp(this, openGlCoord, mask);
-                // don't handle mousewheel here...
-
-                break;
+                    mCallbacks->handleActivate(this, !mIsMinimized);
+                    lldebugs << "SDL deiconification state switched to " << BOOL(event.active.gain) << llendl;
+                }
+                else
+                {
+                    llinfos << "Ignored bogus redundant SDL deiconification state switch to " << BOOL(event.active.gain) << llendl;
+                }
             }
+            break;
 
-            case SDL_VIDEOEXPOSE:  // VIDEOEXPOSE doesn't specify the damage, but hey, it's OpenGL...repaint the whole thing!
-			    mCallbacks->handlePaint(this, 0, 0, mWindow->w, mWindow->h);
-                break;
-
-            case SDL_VIDEORESIZE:  // *FIX: handle this?
+        case SDL_QUIT:
+            if(mCallbacks->handleCloseRequest(this))
             {
-		llinfos << "Handling a resize event: " << event.resize.w <<
-			"x" << event.resize.h << llendl;
-
-		S32 width = llmax(event.resize.w, MIN_WINDOW_WIDTH);
-		S32 height = llmax(event.resize.h, MIN_WINDOW_HEIGHT);
-
-		// *FIX: I'm not sure this is necessary!
-		mWindow = SDL_SetVideoMode(width, height, 32, mSDLFlags);
-		if (!mWindow)
-		{
-			// *FIX: More informative dialog?
-			llinfos << "Could not recreate context after resize! Quitting..." << llendl;
-			if(mCallbacks->handleCloseRequest(this))
-    			{
-    				// Get the app to initiate cleanup.
-    				mCallbacks->handleQuit(this);
-    				// The app is responsible for calling destroyWindow when done with GL
-    			}
-                break;
-		}
-
-		mCallbacks->handleResize(this, width, height);
-                break;
+                // Get the app to initiate cleanup.
+                mCallbacks->handleQuit(this);
+                // The app is responsible for calling destroyWindow when done with GL
             }
-            case SDL_ACTIVEEVENT:
-                if (event.active.state & SDL_APPINPUTFOCUS)
-                {
-			// Note that for SDL (particularly on X11), keyboard
-			// and mouse focus are independent things.  Here we are
-			// tracking keyboard focus state changes.
-
-			// We have to do our own state massaging because SDL
-			// can send us two unfocus events in a row for example,
-			// which confuses the focus code [SL-24071].
-			if (event.active.gain != mHaveInputFocus)
-			{
-				mHaveInputFocus = !!event.active.gain;
-
-				if (mHaveInputFocus)
-					mCallbacks->handleFocus(this);
-				else
-					mCallbacks->handleFocusLost(this);
-			}
-                }
-                if (event.active.state & SDL_APPACTIVE)
-                {
-			// Change in iconification/minimization state.
-			if ((!event.active.gain) != mIsMinimized)
-			{
-				mIsMinimized = (!event.active.gain);
-
-				mCallbacks->handleActivate(this, !mIsMinimized);
-				lldebugs << "SDL deiconification state switched to " << BOOL(event.active.gain) << llendl;
-			}
-			else
-			{
-				llinfos << "Ignored bogus redundant SDL deiconification state switch to " << BOOL(event.active.gain) << llendl;
-			}
-                }
-                break;
-
-            case SDL_QUIT:
-			    if(mCallbacks->handleCloseRequest(this))
-    			{
-    				// Get the app to initiate cleanup.
-    				mCallbacks->handleQuit(this);
-    				// The app is responsible for calling destroyWindow when done with GL
-    			}
-                break;
-	default:
-		//llinfos << "Unhandled SDL event type " << event.type << llendl;
-		break;
+            break;
+        default:
+            //llinfos << "Unhandled SDL event type " << event.type << llendl;
+            break;
         }
     }
 	
