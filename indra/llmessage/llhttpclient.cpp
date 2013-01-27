@@ -204,7 +204,9 @@ static void request(
 	DEBUG_CURLIO_PARAM(EDebugCurl debug),
 	EKeepAlive keepalive = keep_alive,
 	bool is_auth = false,
-	bool no_compression = false)
+	bool no_compression = false,
+	AIStateMachine* parent = NULL,
+	AIStateMachine::state_type new_parent_state = 0)
 {
 	if (responder)
 	{
@@ -227,7 +229,7 @@ static void request(
 		return ;
 	}
 
-	req->run();
+	req->run(parent, new_parent_state, parent != NULL);
 }
 
 void LLHTTPClient::getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug))
@@ -684,9 +686,9 @@ void LLHTTPClient::put(std::string const& url, LLSD const& body, ResponderPtr re
 	request(url, LLURLRequest::HTTP_PUT, new LLSDInjector(body), responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug));
 }
 
-void LLHTTPClient::post(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug), EKeepAlive keepalive)
+void LLHTTPClient::post(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug), EKeepAlive keepalive, AIStateMachine* parent, AIStateMachine::state_type new_parent_state)
 {
-	request(url, LLURLRequest::HTTP_POST, new LLSDInjector(body), responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive);
+	request(url, LLURLRequest::HTTP_POST, new LLSDInjector(body), responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive, false, false, parent, new_parent_state);
 }
 
 void LLHTTPClient::postXMLRPC(std::string const& url, XMLRPC_REQUEST xmlrpc_request, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug), EKeepAlive keepalive)
