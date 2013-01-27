@@ -11,7 +11,7 @@
 	</text>
 	<text bottom_delta="-26" follows="left|top" height="20" left="10"
 	     name="detail_texture_text" width="300">
-		Terrain Textures (requires 512x512, 24 bit .tga files)
+		Terrain Textures
 	</text>
 	<texture_picker bottom_delta="-100" follows="left|top" height="100" left="10"
 	     name="texture_detail_0" width="100" />
