@@ -31,16 +31,16 @@
 #include "linden_common.h"
 #include "aistatemachinethread.h"
 
-class StateMachineThread : public LLThread {
+class AIStateMachineThreadBase::Thread : public LLThread {
   private:
 	LLPointer<AIThreadImpl> mImpl;
 	bool mNeedCleanup;
   public:
-	StateMachineThread(AIThreadImpl* impl) : LLThread("StateMachineThread"), mImpl(impl) { }
+	Thread(AIThreadImpl* impl) : LLThread("AIStateMachineThreadBase::Thread"), mImpl(impl) { }
   protected:
 	/*virtual*/ void run(void)
 	{
-	  mNeedCleanup = !mImpl->done(mImpl->run());
+	  mNeedCleanup = mImpl->thread_done(mImpl->run());
 	}
 	/*virtual*/ void terminated(void)
 	{
@@ -50,10 +50,26 @@ class StateMachineThread : public LLThread {
 		mStatus = STOPPED;		// Stop LLThread::shutdown from blocking a whole minute and then calling apr_thread_exit to never return!
 		// This is OK now because nobody is watching us and having set the status to STOPPED didn't change anything really.
 		// Normally is can cause the LLThread to be deleted directly after by the main thread.
-		delete this;
+		Thread::completed(this);
 	  }
 	}
+  public:
+	// TODO: Implement a thread pool. For now, just create a new one every time.
+	static Thread* allocate(AIThreadImpl* impl) { return new Thread(impl); }
+	static void completed(Thread* threadp) { delete threadp; }
 };
+
+// MAIN THREAD
+
+char const* AIStateMachineThreadBase::state_str_impl(state_type run_state) const
+{
+  switch(run_state)
+  {
+	AI_CASE_RETURN(start_thread);
+	AI_CASE_RETURN(wait_stopped);
+  }
+  return "UNKNOWN STATE";
+}
 
 void AIStateMachineThreadBase::initialize_impl(void)
 {
@@ -67,8 +83,7 @@ void AIStateMachineThreadBase::multiplex_impl(void)
   switch(mRunState)
   {
 	case start_thread:
-	  // TODO: Implement thread pools. For now just start a new thread.
-	  mThread = new StateMachineThread(mImpl);
+	  mThread = Thread::allocate(mImpl);
 	  // Set next state.
 	  set_state(wait_stopped);
 	  idle(wait_stopped);		// Wait till the thread returns.
@@ -78,9 +93,15 @@ void AIStateMachineThreadBase::multiplex_impl(void)
 	  if (!mThread->isStopped())
 		break;
 	  // We're done!
-	  mImpl = NULL;
-	  delete mThread;
-	  mThread = NULL;
+	  //
+	  // We can only get here when AIThreadImpl::done called cont(), (very
+	  // shortly after which it will be STOPPED), which means we need to do
+	  // the clean up of the thread.
+	  // Also, the thread has really stopped now, so it's safe to delete it.
+	  //
+	  // Clean up the thread.
+	  Thread::completed(mThread);
+	  mThread = NULL;			// Stop abort_impl() from doing anything.
 	  if (mAbort)
 		abort();
 	  else
@@ -91,67 +112,76 @@ void AIStateMachineThreadBase::multiplex_impl(void)
 
 void AIStateMachineThreadBase::abort_impl(void)
 {
-  // If this AIStateMachineThreadBase still exists then the first base class of
-  // AIStateMachineThread<THREAD_IMPL>, LLPointer<THREAD_IMPL>, also still exists
-  // and therefore mImpl is valid (unless we set it NULL above).
-  if (mImpl)
-  {
-	// We can only get here if the statemachine was aborted by it's parent,
-	// in that case we'll never reach the "We're done!" above, so this
-	// call also signals that the thread has to clean up itself.
-	mImpl->abort();
-  }
-}
-
-void AIStateMachineThreadBase::finish_impl(void)
-{
   if (mThread)
   {
-	if (!mThread->isStopped())
+	// If this AIStateMachineThreadBase still exists then the first base class of
+	// AIStateMachineThread<THREAD_IMPL>, LLPointer<THREAD_IMPL>, also still exists
+	// and therefore mImpl is valid.
+	bool need_cleanup = mImpl->state_machine_done(mThread);		// Signal the fact that we aborted.
+	if (need_cleanup)
 	{
-	  // Lets make sure we're not flooded with this.
-	  llwarns << "Thread state machine aborted while the thread is still running. That is a waste of CPU and should be avoided." << llendl;
-	  // In fact, this should only ever happen when the state machine was aborted!
-	  llassert(aborted());
-	  if (!aborted())
+	  // This is an unlikely race condition. We have been aborted by our parent,
+	  // but at the same time the thread finished!
+	  // We can only get here when AIThreadImpl::thread_done already returned
+	  // (VERY shortly after the thread will stop (if not already)).
+	  // Just go into a tight loop while waiting for that, when it is safe
+	  // to clean up the thread.
+	  while (!mThread->isStopped())
 	  {
-		// Avoid a call back to us.
-		mImpl->abort();
+		mThread->yield();
 	  }
-	  mThread->setQuitting();		// Try to signal the thread that is can abort.
+	  Thread::completed(mThread);
 	}
-	mThread = NULL;
+	else
+	{
+	  // The thread is still happily running (and will clean up itself).
+	  // Lets make sure we're not flooded with this situation.
+	  llwarns << "Thread state machine aborted while the thread is still running. That is a waste of CPU and should be avoided." << llendl;
+	}
   }
 }
 
-char const* AIStateMachineThreadBase::state_str_impl(state_type run_state) const
+bool AIThreadImpl::state_machine_done(LLThread* threadp)
 {
-  switch(run_state)
+  StateMachineThread_wat state_machine_thread_w(mStateMachineThread);
+  AIStateMachineThreadBase* state_machine_thread = *state_machine_thread_w;
+  bool need_cleanup = !state_machine_thread;
+  if (!need_cleanup)
   {
-	AI_CASE_RETURN(start_thread);
-	AI_CASE_RETURN(wait_stopped);
+	// If state_machine_thread is non-NULL, then AIThreadImpl::thread_done wasnt called yet
+	// (or at least didn't return yet) which means the thread is still running.
+	// Try telling the thread that it can stop.
+	threadp->setQuitting();
+	// Finally, mark that we are NOT going to do the cleanup by setting mStateMachineThread to NULL.
+	*state_machine_thread_w = NULL;
   }
-  return "UNKNOWN STATE";
+  return need_cleanup;
 }
 
 // AIStateMachineThread THREAD
 
-bool AIThreadImpl::done(bool result)
+bool AIThreadImpl::thread_done(bool result)
 {
   StateMachineThread_wat state_machine_thread_w(mStateMachineThread);
   AIStateMachineThreadBase* state_machine_thread = *state_machine_thread_w;
-  bool state_machine_running = state_machine_thread;
-  if (state_machine_running)
+  bool need_cleanup = !state_machine_thread;
+  if (!need_cleanup)
   {
-	// If state_machine_thread is non-NULL, then AIStateMachineThreadBase::abort_impl was never called,
+	// If state_machine_thread is non-NULL then AIThreadImpl::abort_impl wasn't called,
 	// which means the state machine still exists. In fact, it should be in the waiting() state.
-	// The only other way it could possibly have been destructed is when finished() was called
-	// while the thread was still running, which would be quite illegal and not possible when
-	// the statemachine is actually waiting as it should.
-	llassert(state_machine_thread->waiting());
+	// It can also happen that the state machine is being aborted right now (but it will still exist).
+	// (Note that waiting() and running() aren't strictly thread-safe (we should really lock
+	// mSetStateLock here) but by first calling waiting() and then running(), and assuming that
+	// changing an int from the value 1 to the value 2 is atomic, this will work since the
+	// only possible transition is from waiting to not running).
+	llassert(state_machine_thread->waiting() || !state_machine_thread->running());
 	state_machine_thread->schedule_abort(!result);
+	// Note that if the state machine is not running (being aborted, ie - hanging in abort_impl
+	// waiting for the lock on mStateMachineThread) then this is simply ignored.
 	state_machine_thread->cont();
+	// Finally, mark that we are NOT going to do the cleanup by setting mStateMachineThread to NULL.
+	*state_machine_thread_w = NULL;
   }
-  return state_machine_running;
+  return need_cleanup;
 }
 

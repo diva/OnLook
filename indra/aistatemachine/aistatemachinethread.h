@@ -160,13 +160,16 @@ class AIThreadImpl : public LLThreadSafeRefCount {
 
   public:
 	virtual bool run(void) = 0;
-	bool done(bool result);
-	void abort(void) { *StateMachineThread_wat(mStateMachineThread) = NULL; }
+	bool thread_done(bool result);
+	bool state_machine_done(LLThread* threadp);
 };
 
 // The base class for statemachine threads.
 class AIStateMachineThreadBase : public AIStateMachine {
   private:
+	// The actual thread (derived from LLThread).
+	class Thread;
+
 	// The states of this state machine.
 	enum thread_state_type {
 	  start_thread = AIStateMachine::max_state,		// Start the thread (if necessary create it first).
@@ -187,13 +190,13 @@ class AIStateMachineThreadBase : public AIStateMachine {
 	/*virtual*/ void abort_impl(void);
 
 	// Handle cleaning up from initialization (or post abort) state.
-	/*virtual*/ void finish_impl(void);
+	/*virtual*/ void finish_impl(void) { }
 
 	// Implemenation of state_str for run states.
 	/*virtual*/ char const* state_str_impl(state_type run_state) const;
 
   private:
-	LLThread* mThread;		// The thread that the code is run in.
+	Thread* mThread;		// The thread that the code is run in.
 	AIThreadImpl* mImpl;	// Pointer to the implementation code that needs to be run in the thread.
 	bool mAbort;			// (Inverse of) return value of AIThreadImpl::run(). Only valid in state wait_stopped.
 
