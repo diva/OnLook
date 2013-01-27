@@ -176,7 +176,7 @@ public:
 	void saveIgnoreGroup();
 	void updateIgnoreGroup(const LLUUID& group_id, bool ignore);
 	// Returns true if group chat is ignored for the UUID, false if not
-	bool getIgnoreGroup(const LLUUID& group_id);
+	bool getIgnoreGroup(const LLUUID& group_id) const;
 
 private:
 	// create a panel and update internal representation for

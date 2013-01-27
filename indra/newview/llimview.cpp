@@ -1339,38 +1339,34 @@ void LLIMMgr::saveIgnoreGroup()
 
 void LLIMMgr::updateIgnoreGroup(const LLUUID& group_id, bool ignore)
 {
-	if (group_id.notNull())
-	{
-		std::list<LLUUID>::iterator found =
-			std::find( mIgnoreGroupList.begin(), mIgnoreGroupList.end(),
-			           group_id);
+	if (group_id.isNull()) return;
 
-		if (found != mIgnoreGroupList.end() && !ignore)
-		{
-			// change from ignored to not ignored
-			// llinfos << "unignoring group " << group_id << llendl;
-			mIgnoreGroupList.remove(group_id);
-		}
-		else if (found == mIgnoreGroupList.end() && ignore)
-		{
-			// change from not ignored to ignored
-			// llinfos << "ignoring group " << group_id << llendl;
-			mIgnoreGroupList.push_back(group_id);
-		}
-		else
-		{
-			// nothing to do
-			// llinfos << "no change to group " << group_id << ", it is already "
-			//         << (ignore ? "" : "not ") << "ignored" << llendl;
-		}
+	if (getIgnoreGroup(group_id) == ignore)
+	{
+		// nothing to do
+		// llinfos << "no change to group " << group_id << ", it is already "
+		//         << (ignore ? "" : "not ") << "ignored" << llendl;
+		return;
+	}
+	else if (!ignore)
+	{
+		// change from ignored to not ignored
+		// llinfos << "unignoring group " << group_id << llendl;
+		mIgnoreGroupList.remove(group_id);
+	}
+	else //if (ignore)
+	{
+		// change from not ignored to ignored
+		// llinfos << "ignoring group " << group_id << llendl;
+		mIgnoreGroupList.push_back(group_id);
 	}
 }
 
-bool LLIMMgr::getIgnoreGroup(const LLUUID& group_id)
+bool LLIMMgr::getIgnoreGroup(const LLUUID& group_id) const
 {
 	if (group_id.notNull())
 	{
-		std::list<LLUUID>::iterator found =
+		std::list<LLUUID>::const_iterator found =
 			std::find( mIgnoreGroupList.begin(), mIgnoreGroupList.end(),
 			           group_id);
 
@@ -1628,10 +1624,12 @@ public:
 			{
 				return;
 			}
+
+			bool group = gAgent.isInGroup(session_id);
 // [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
 			if ( (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIM)) || (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIMFROM)) )
 			{
-				if (gAgent.isInGroup(session_id))						// Group chat: don't accept the invite if not an exception
+				if (group)												// Group chat: don't accept the invite if not an exception
 				{
 					if (!gRlvHandler.canReceiveIM(session_id))
 						return;
@@ -1667,14 +1665,29 @@ public:
 				message_params["region_id"].asUUID(),
 				ll_vector3_from_sd(message_params["position"]),
 				true);
-			LLGroupData group_data;
-			gAgent.getGroupData(session_id, group_data);
+
 			std::string prepend_msg;
-			if (gAgent.isInGroup(session_id)&& gSavedSettings.getBOOL("OptionShowGroupNameInChatIM"))
+			if (group)
 			{
-				prepend_msg = "[";
-				prepend_msg += group_data.mName;
-				prepend_msg += "] ";
+				if (gIMMgr->getIgnoreGroup(session_id))
+				{
+					// Tell the server we've left group chat
+					std::string name;
+					gAgent.buildFullname(name);
+					pack_instant_message(gMessageSystem, gAgentID, false, gAgent.getSessionID(), from_id,
+						name, LLStringUtil::null, IM_ONLINE, IM_SESSION_LEAVE, session_id);
+					gAgent.sendReliableMessage();
+					gIMMgr->removeSession(session_id);
+					return;
+				}
+				else if (gSavedSettings.getBOOL("OptionShowGroupNameInChatIM"))
+				{
+					LLGroupData group_data;
+					gAgent.getGroupData(session_id, group_data);
+					prepend_msg = "[";
+					prepend_msg += group_data.mName;
+					prepend_msg += "] ";
+				}
 			}
 			else
 			{
