@@ -1828,7 +1828,7 @@ std::string LLViewerRegion::getCapability(const std::string& name) const
 {
 	if (!capabilitiesReceived() && (name!=std::string("Seed")) && (name!=std::string("ObjectMedia")))
 	{
-		llwarns << "getCapability called before caps received" << llendl;
+		llwarns << "getCapability("<<name<<") called before caps received" << llendl;
 	}
 	
 	CapabilityMap::const_iterator iter = mImpl->mCapabilities.find(name);

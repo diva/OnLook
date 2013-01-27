@@ -1579,7 +1579,7 @@ void LLVoiceClient::stateMachine()
 		LLViewerRegion *region = gAgent.getRegion();
 		LLParcel *parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
 		
-		if(region && parcel)
+		if(region && parcel && region->capabilitiesReceived())
 		{
 			S32 parcelLocalID = parcel->getLocalID();
 			std::string regionName = region->getName();
@@ -1876,7 +1876,7 @@ void LLVoiceClient::stateMachine()
 			{
 				LLViewerRegion *region = gAgent.getRegion();
 				
-				if(region)
+				if(region && region->capabilitiesReceived())
 				{
 					if ( region->getCapability("ProvisionVoiceAccountRequest") != "" )
 					{
