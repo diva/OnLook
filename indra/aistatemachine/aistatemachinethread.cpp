@@ -50,12 +50,16 @@ class AIStateMachineThreadBase::Thread : public LLThread {
 	}
 	/*virtual*/ void terminated(void)
 	{
+	  mStatus = STOPPED;
 	  if (mNeedCleanup)
 	  {
 		// The state machine that started us has disappeared! Clean up ourselves.
-		mStatus = STOPPED;		// Stop LLThread::shutdown from blocking a whole minute and then calling apr_thread_exit to never return!
-		// This is OK now because nobody is watching us and having set the status to STOPPED didn't change anything really.
-		// Normally is can cause the LLThread to be deleted directly after by the main thread.
+
+		// This is OK now because in our case nobody is watching us and having set
+		// the status to STOPPED didn't change anything really, although it will
+		// prevent LLThread::shutdown from blocking a whole minute and then calling
+		// apr_thread_exit to never return! Normally, the LLThread might be deleted
+		// immediately (by the main thread) after setting mStatus to STOPPED.
 		Thread::completed(this);
 	  }
 	}
