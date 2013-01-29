@@ -36,7 +36,13 @@ class AIStateMachineThreadBase::Thread : public LLThread {
 	LLPointer<AIThreadImpl> mImpl;
 	bool mNeedCleanup;
   public:
-	Thread(AIThreadImpl* impl) : LLThread("AIStateMachineThreadBase::Thread"), mImpl(impl) { }
+	Thread(AIThreadImpl* impl) :
+#ifdef LL_DEBUG
+	  LLThread(impl->getName()),
+#else
+	  LLThread("AIStateMachineThreadBase::Thread"),
+#endif
+	  mImpl(impl) { }
   protected:
 	/*virtual*/ void run(void)
 	{

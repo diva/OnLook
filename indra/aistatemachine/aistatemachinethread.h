@@ -44,8 +44,8 @@ class HelloWorldThread : public AIThreadImpl {
 
   public:
 	// Constructor.
-	HelloWorldThread(AIStateMachineThreadBase* state_machine_thread) :
-	    AIThreadImpl(state_machine_thread), mStdErr(false), mSuccess(false) { }		// MAIN THREAD
+	HelloWorldThread(AIStateMachineThreadBase* state_machine_thread) :				// MAIN THREAD
+	    AIThreadImpl(state_machine_thread, "HelloWorldThread"), mStdErr(false), mSuccess(false) { }
 
 	// Some initialization function (if needed).
 	void init(bool err)	{ mStdErr = err; }											// MAIN THREAD
@@ -154,14 +154,24 @@ class AIThreadImpl : public LLThreadSafeRefCount {
   private:
 	typedef AIAccess<AIStateMachineThreadBase*> StateMachineThread_wat;
 	AIThreadSafeSimpleDC<AIStateMachineThreadBase*> mStateMachineThread;
+#ifdef LL_DEBUG
+	char const* mName;
+#endif
 
   protected:
-	AIThreadImpl(AIStateMachineThreadBase* state_machine_thread) : mStateMachineThread(state_machine_thread) { }
+	AIThreadImpl(AIStateMachineThreadBase* state_machine_thread, char const* name = "AIStateMachineThreadBase::Thread") : mStateMachineThread(state_machine_thread)
+#ifdef LL_DEBUG
+	  , mName(name)
+#endif
+		{ }
 
   public:
 	virtual bool run(void) = 0;
 	bool thread_done(bool result);
 	bool state_machine_done(LLThread* threadp);
+#ifdef LL_DEBUG
+	char const* getName(void) const { return mName; }
+#endif
 };
 
 // The base class for statemachine threads.
