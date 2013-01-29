@@ -1310,7 +1310,6 @@ bool LLAppViewer::mainLoop()
 						break;
 					}
 				}
-				gMeshRepo.update() ;
 				if ((LLStartUp::getStartupState() >= STATE_CLEANUP) &&
 					(frameTimer.getElapsedTimeF64() > FRAME_STALL_THRESHOLD))
 				{

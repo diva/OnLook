@@ -371,27 +371,19 @@ void log_upload_error(S32 status, const LLSD& content, std::string stage, std::s
 
 class LLWholeModelFeeResponder : public LLHTTPClient::ResponderWithCompleted
 {
-	LLMeshUploadThread* mThread;
+	std::string& mWholeModelUploadURL;
 	LLSD mModelData;
 	LLHandle<LLWholeModelFeeObserver> mObserverHandle;
 public:
-	LLWholeModelFeeResponder(LLMeshUploadThread* thread, LLSD& model_data, LLHandle<LLWholeModelFeeObserver> observer_handle):
-		mThread(thread),
+	LLWholeModelFeeResponder(LLSD& model_data, LLHandle<LLWholeModelFeeObserver> observer_handle, std::string& url_out):
+		mWholeModelUploadURL(url_out),
 		mModelData(model_data),
 		mObserverHandle(observer_handle)
 	{
-		if (mThread)
-		{
-			mThread->startRequest();
-		}
 	}
 
 	~LLWholeModelFeeResponder()
 	{
-		if (mThread)
-		{
-			mThread->stopRequest();
-		}
 	}
 
 	/*virtual*/ void completed(U32 status,
@@ -411,19 +403,19 @@ public:
 		if (((200 <= status) && (status < 300)) &&
 			cc["state"].asString() == "upload")
 		{
-			mThread->mWholeModelUploadURL = cc["uploader"].asString();
+			mWholeModelUploadURL = cc["uploader"].asString();
 
 			if (observer)
 			{
 				cc["data"]["upload_price"] = cc["upload_price"];
-				observer->onModelPhysicsFeeReceived(cc["data"], mThread->mWholeModelUploadURL);
+				observer->onModelPhysicsFeeReceived(cc["data"], mWholeModelUploadURL);
 			}
 		}
 		else
 		{
 			llwarns << "fee request failed" << llendl;
 			log_upload_error(status,cc,"fee",mModelData["name"]);
-			mThread->mWholeModelUploadURL = "";
+			mWholeModelUploadURL = "";
 
 			if (observer)
 			{
@@ -438,28 +430,18 @@ public:
 
 class LLWholeModelUploadResponder : public LLHTTPClient::ResponderWithCompleted
 {
-	LLMeshUploadThread* mThread;
 	LLSD mModelData;
 	LLHandle<LLWholeModelUploadObserver> mObserverHandle;
 	
 public:
-	LLWholeModelUploadResponder(LLMeshUploadThread* thread, LLSD& model_data, LLHandle<LLWholeModelUploadObserver> observer_handle):
-		mThread(thread),
+	LLWholeModelUploadResponder(LLSD& model_data, LLHandle<LLWholeModelUploadObserver> observer_handle):
 		mModelData(model_data),
 		mObserverHandle(observer_handle)
 	{
-		if (mThread)
-		{
-			mThread->startRequest();
-		}
 	}
 
 	~LLWholeModelUploadResponder()
 	{
-		if (mThread)
-		{
-			mThread->stopRequest();
-		}
 	}
 
 	/*virtual*/ void completed(U32 status,
@@ -1288,22 +1270,21 @@ bool LLMeshRepoThread::physicsShapeReceived(const LLUUID& mesh_id, U8* data, S32
 	return true;
 }
 
-LLMeshUploadThread::LLMeshUploadThread(LLMeshUploadThread::instance_list& data, LLVector3& scale, bool upload_textures,
-										bool upload_skin, bool upload_joints, std::string upload_url, bool do_upload,
-					   LLHandle<LLWholeModelFeeObserver> fee_observer, LLHandle<LLWholeModelUploadObserver> upload_observer)
-: LLThread("mesh upload"),
-	mDiscarded(FALSE),
-	mDoUpload(do_upload),
-	mWholeModelUploadURL(upload_url),
-	mFeeObserverHandle(fee_observer),
-	mUploadObserverHandle(upload_observer)
+LLMeshUploadThread::LLMeshUploadThread(AIStateMachineThreadBase* state_machine_thread) : AIThreadImpl(state_machine_thread, "mesh upload")
 {
+}
+
+void LLMeshUploadThread::init(LLMeshUploadThread::instance_list& data, LLVector3& scale, bool upload_textures,
+							  bool upload_skin, bool upload_joints, bool do_upload,
+							  LLHandle<LLWholeModelFeeObserver> const& fee_observer, LLHandle<LLWholeModelUploadObserver> const& upload_observer)
+{
+	mDoUpload = do_upload;
+	mFeeObserverHandle = fee_observer;
+	mUploadObserverHandle = upload_observer;
 	mInstanceList = data;
 	mUploadTextures = upload_textures;
 	mUploadSkin = upload_skin;
 	mUploadJoints = upload_joints;
-	mMutex = new LLMutex();
-	mPendingUploads = 0;
 	mOrigin = gAgent.getPositionAgent();
 	mHost = gAgent.getRegionHost();
 	
@@ -1356,28 +1337,86 @@ void LLMeshUploadThread::preStart()
 	}
 }
 
-void LLMeshUploadThread::discard()
+AIMeshUpload::AIMeshUpload(LLMeshUploadThread::instance_list& data, LLVector3& scale, bool upload_textures, bool upload_skin, bool upload_joints, std::string const& upload_url, bool do_upload,
+	LLHandle<LLWholeModelFeeObserver> const& fee_observer, LLHandle<LLWholeModelUploadObserver> const& upload_observer) : mWholeModelUploadURL(upload_url)
 {
-	LLMutexLock lock(mMutex) ;
-	mDiscarded = TRUE ;
+	mMeshUpload->init(data, scale, upload_textures, upload_skin, upload_joints, do_upload, fee_observer, upload_observer);
 }
 
-BOOL LLMeshUploadThread::isDiscarded()
+char const* AIMeshUpload::state_str_impl(state_type run_state) const
 {
-	LLMutexLock lock(mMutex) ;
-	return mDiscarded ;
-}
-
-void LLMeshUploadThread::run()
-{
-	if (mDoUpload)
+	switch (run_state)
 	{
-		doWholeModelUpload();
+		AI_CASE_RETURN(AIMeshUpload_start);
+		AI_CASE_RETURN(AIMeshUpload_threadFinished);
+		AI_CASE_RETURN(AIMeshUpload_responderFinished);
+	}
+	return "UNKNOWN STATE";
+}
+
+void AIMeshUpload::initialize_impl()
+{
+	mMeshUpload->preStart();
+	set_state(AIMeshUpload_start);
+}
+
+void AIMeshUpload::multiplex_impl()
+{
+	switch (mRunState)
+	{
+		case AIMeshUpload_start:
+			mMeshUpload.run(this, AIMeshUpload_threadFinished);
+			idle(AIMeshUpload_start);					// Wait till the thread finished.
+			break;
+		case AIMeshUpload_threadFinished:
+			mMeshUpload->postRequest(mWholeModelUploadURL, this);
+			idle(AIMeshUpload_threadFinished);			// Wait till the responder finished.
+			break;
+		case AIMeshUpload_responderFinished:
+			finish();
+			break;
+	}
+}
+
+bool LLMeshUploadThread::run()
+{
+	generateHulls();
+	wholeModelToLLSD(mModelData, mDoUpload);
+	if (!mDoUpload)
+	{
+		++dump_num;
+		dump_llsd_to_file(mModelData, make_dump_name("whole_model_fee_request_", dump_num));
 	}
 	else
 	{
-		requestWholeModelFee();
+		mBody = mModelData["asset_resources"];
+		dump_llsd_to_file(mBody, make_dump_name("whole_model_body_", dump_num));
 	}
+	return true;          // true = finish, false = abort.
+}
+
+void LLMeshUploadThread::postRequest(std::string& whole_model_upload_url, AIMeshUpload* state_machine)
+{
+	if (!mDoUpload)
+	{
+		LLHTTPClient::post(mWholeModelFeeCapability, mModelData,
+			new LLWholeModelFeeResponder(mModelData, mFeeObserverHandle, whole_model_upload_url)/*,*/
+			DEBUG_CURLIO_PARAM(debug_on), keep_alive, state_machine, AIMeshUpload_responderFinished);
+	}
+	else
+	{
+		LLHTTPClient::post(whole_model_upload_url, mBody,
+			new LLWholeModelUploadResponder(mModelData, mUploadObserverHandle)/*,*/
+			DEBUG_CURLIO_PARAM(debug_off), keep_alive, state_machine, AIMeshUpload_responderFinished);
+	}
+}
+
+void AIMeshUpload::abort_impl()
+{
+}
+
+void AIMeshUpload::finish_impl()
+{
 }
 
 void dump_llsd_to_file(const LLSD& content, std::string filename)
@@ -1623,40 +1662,6 @@ void LLMeshUploadThread::generateHulls()
 			apr_sleep(100);
 		}
 	}	
-}
-
-void LLMeshUploadThread::doWholeModelUpload()
-{
-	if (mWholeModelUploadURL.empty())
-	{
-		llinfos << "unable to upload, fee request failed" << llendl;
-	}
-	else
-	{
-		generateHulls();
-
-		LLSD full_model_data;
-		wholeModelToLLSD(full_model_data, true);
-		LLSD body = full_model_data["asset_resources"];
-		dump_llsd_to_file(body,make_dump_name("whole_model_body_",dump_num));
-		LLHTTPClient::post(mWholeModelUploadURL, body,
-						   new LLWholeModelUploadResponder(this, full_model_data, mUploadObserverHandle));
-	}
-}
-
-void LLMeshUploadThread::requestWholeModelFee()
-{
-	dump_num++;
-
-	generateHulls();
-
-	LLSD model_data;
-	wholeModelToLLSD(model_data,false);
-	dump_llsd_to_file(model_data,make_dump_name("whole_model_fee_request_",dump_num));
-
-	// This might throw AICurlNoEasyHandle.
-	LLHTTPClient::post(mWholeModelFeeCapability, model_data,
-					   new LLWholeModelFeeResponder(this, model_data, mFeeObserverHandle));
 }
 
 void LLMeshRepoThread::notifyLoadedMeshes()
@@ -2134,12 +2139,6 @@ void LLMeshRepository::shutdown()
 {
 	llinfos << "Shutting down mesh repository." << llendl;
 
-	for (U32 i = 0; i < mUploads.size(); ++i)
-	{
-		llinfos << "Discard the pending mesh uploads " << llendl;
-		mUploads[i]->discard() ; //discard the uploading requests.
-	}
-
 	mThread->mSignal->signal();
 	
 	while (!mThread->isStopped())
@@ -2148,18 +2147,6 @@ void LLMeshRepository::shutdown()
 	}
 	delete mThread;
 	mThread = NULL;
-
-	for (U32 i = 0; i < mUploads.size(); ++i)
-	{
-		llinfos << "Waiting for pending mesh upload " << i << "/" << mUploads.size() << llendl;
-		while (!mUploads[i]->isStopped())
-		{
-			apr_sleep(10);
-		}
-		delete mUploads[i];
-	}
-
-	mUploads.clear();
 
 	delete mMeshMutex;
 	mMeshMutex = NULL;
@@ -2174,27 +2161,6 @@ void LLMeshRepository::shutdown()
 	}
 
 	LLConvexDecomposition::quitSystem();
-}
-
-//called in the main thread.
-S32 LLMeshRepository::update()
-{
-	S32 size = 0;
-	if(mUploadWaitList.empty())
-	{
-		return 0 ;
-	}
-
-	size = mUploadWaitList.size() ;
-	for (S32 i = 0; i < size; ++i)
-	{
-		mUploads.push_back(mUploadWaitList[i]);
-		mUploadWaitList[i]->preStart() ;
-		mUploadWaitList[i]->start() ;
-	}
-	mUploadWaitList.clear() ;
-
-	return size ;
 }
 
 S32 LLMeshRepository::loadMesh(LLVOVolume* vobj, const LLVolumeParams& mesh_params, S32 detail, S32 last_lod)
@@ -2279,22 +2245,6 @@ void LLMeshRepository::notifyLoadedMeshes()
 { //called from main thread
 	static const LLCachedControl<U32> max_concurrent_requests("MeshMaxConcurrentRequests");
 	LLMeshRepoThread::sMaxConcurrentRequests = max_concurrent_requests;
-
-	//clean up completed upload threads
-	for (std::vector<LLMeshUploadThread*>::iterator iter = mUploads.begin(); iter != mUploads.end(); )
-	{
-		LLMeshUploadThread* thread = *iter;
-
-		if (thread->isStopped())
-		{
-			iter = mUploads.erase(iter);
-			delete thread;
-		}
-		else
-		{
-			++iter;
-		}
-	}
 
 	//update inventory
 	if (!mInventoryQ.empty())
@@ -2720,9 +2670,13 @@ void LLMeshRepository::uploadModel(std::vector<LLModelInstance>& data, LLVector3
 									bool upload_skin, bool upload_joints, std::string upload_url, bool do_upload,
 								   LLHandle<LLWholeModelFeeObserver> fee_observer, LLHandle<LLWholeModelUploadObserver> upload_observer)
 {
-	LLMeshUploadThread* thread = new LLMeshUploadThread(data, scale, upload_textures, upload_skin, upload_joints, upload_url, 
-														do_upload, fee_observer, upload_observer);
-	mUploadWaitList.push_back(thread);
+	if (do_upload && upload_url.empty())
+	{
+		llinfos << "unable to upload, fee request failed" << llendl;
+		return;
+	}
+	AIMeshUpload* uploader = new AIMeshUpload(data, scale, upload_textures, upload_skin, upload_joints, upload_url, do_upload, fee_observer, upload_observer);
+	uploader->run();
 }
 
 S32 LLMeshRepository::getMeshSize(const LLUUID& mesh_id, S32 lod)
