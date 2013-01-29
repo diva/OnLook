@@ -130,7 +130,7 @@ void HelloWorld::multiplex_impl(void)
 	case HelloWorld_start:
 	{
 	  mHelloWorld.run(this, HelloWorld_done);		// Run HelloWorldThread and set the state of 'this' to HelloWorld_done when finished.
-	  // This statemachine is already idle() here (set to idle by the above call).
+	  idle(HelloWorld_start);						// Always go idle after starting a thread!
 	  break;
 	}
 	case HelloWorld_done:
