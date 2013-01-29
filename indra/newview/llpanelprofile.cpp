@@ -47,16 +47,7 @@ static const std::string PANEL_PICKS = "panel_picks";
 
 std::string getProfileURL(const std::string& agent_name)
 {
-	std::string url;
-
-	if (gHippoGridManager->getConnectedGrid()->isInProductionGrid())
-	{
-		url = gSavedSettings.getString("WebProfileURL");
-	}
-	else
-	{
-		url = gSavedSettings.getString("WebProfileNonProductionURL");
-	}
+	std::string url = gSavedSettings.getString("WebProfileURL");
 	LLSD subs;
 	subs["AGENT_NAME"] = agent_name;
 	url = LLWeb::expandURLSubstitutions(url,subs);
@@ -308,7 +299,7 @@ void LLPanelProfile::reshape(S32 width, S32 height, BOOL called_from_parent)
 	mChildStack.postParentReshape();
 }
 
-void LLPanelProfile::onOpen(const LLSD& key)
+void LLPanelProfile::onOpen()
 {
 	getTabContainer()[PANEL_PICKS]->onOpen(getAvatarId());
 

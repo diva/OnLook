@@ -2,31 +2,25 @@
  * @file llfloatergodtools.cpp
  * @brief The on-screen rectangle with tool options.
  *
- * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
- * Copyright (c) 2002-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -34,6 +28,7 @@
 
 #include "llfloatergodtools.h"
 
+#include "llavatarnamecache.h"
 #include "llcoord.h"
 #include "llfontgl.h"
 #include "llframetimer.h"
@@ -46,7 +41,6 @@
 
 #include "llagent.h"
 #include "llalertdialog.h"
-#include "llavatarnamecache.h"
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
 #include "llcombobox.h"
@@ -84,30 +78,33 @@
 
 const F32 SECONDS_BETWEEN_UPDATE_REQUESTS = 5.0f;
 
-static LLFloaterGodTools* sGodTools = NULL;
-
 // *****************************************************************************
 // LLFloaterGodTools
 // *****************************************************************************
 
-// static
-LLFloaterGodTools* LLFloaterGodTools::instance()
+void LLFloaterGodTools::onOpen()
 {
-	if (!sGodTools)
+	center();
+	setFocus(TRUE);
+// 	LLPanel *panel = getChild<LLTabContainer>("GodTools Tabs")->getCurrentPanel();
+// 	if (panel)
+// 		panel->setFocus(TRUE);
+	LLPanel *panel = childGetVisibleTab("GodTools Tabs");
+	if (panel) panel->setFocus(TRUE);
+	if (mPanelObjectTools)
+		mPanelObjectTools->setTargetAvatar(LLUUID::null);
+
+	if (gAgent.getRegionHost() != mCurrentHost)
 	{
-		sGodTools = new LLFloaterGodTools();
-		sGodTools->open();	/*Flawfinder: ignore*/
-		sGodTools->center();
-		sGodTools->setFocus(TRUE);
+		// we're in a new region
+		sendRegionInfoRequest();
 	}
-	return sGodTools;
 }
  
-
 // static
 void LLFloaterGodTools::refreshAll()
 {
-	LLFloaterGodTools* god_tools = instance();
+	LLFloaterGodTools* god_tools = instanceExists() ? getInstance() : NULL;
 	if (god_tools)
 	{
 		if (gAgent.getRegionHost() != god_tools->mCurrentHost)
@@ -131,14 +128,17 @@ LLFloaterGodTools::LLFloaterGodTools()
 	factory_map["objects"] = LLCallbackMap(createPanelObjects, this);
 	factory_map["request"] = LLCallbackMap(createPanelRequest, this);
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_god_tools.xml", &factory_map);
+}
 
+BOOL LLFloaterGodTools::postBuild()
+{
 	getChild<LLTabContainer>("GodTools Tabs")->setCommitCallback(boost::bind(&LLFloaterGodTools::onTabChanged,_1,_2));
 
 	sendRegionInfoRequest();
-
-	childShowTab("GodTools Tabs", "region");
+	getChild<LLTabContainer>("GodTools Tabs")->selectTabByName("region");
 
 	childSetTextArg("land cost text", "[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
+	return TRUE;
 }
 
 // static
@@ -175,9 +175,9 @@ LLFloaterGodTools::~LLFloaterGodTools()
 }
 
 
-U32 LLFloaterGodTools::computeRegionFlags() const
+U64 LLFloaterGodTools::computeRegionFlags() const
 {
-	U32 flags = gAgent.getRegion()->getRegionFlags();
+	U64 flags = gAgent.getRegion()->getRegionFlags();
 	if (mPanelRegionTools) flags = mPanelRegionTools->computeRegionFlags(flags);
 	if (mPanelObjectTools) flags = mPanelObjectTools->computeRegionFlags(flags);
 	return flags;
@@ -186,15 +186,6 @@ U32 LLFloaterGodTools::computeRegionFlags() const
 
 void LLFloaterGodTools::updatePopup(LLCoordGL center, MASK mask)
 {
-}
-
-// virtual
-void LLFloaterGodTools::onClose(bool app_quitting)
-{
-	if (sGodTools)
-	{
-		sGodTools->setVisible(FALSE);
-	}
 }
 
 // virtual
@@ -217,31 +208,23 @@ void LLFloaterGodTools::draw()
 // static
 void LLFloaterGodTools::show(void *)
 {
-	LLFloaterGodTools* god_tools = instance();
-	god_tools->open();
-	LLPanel *panel = god_tools->childGetVisibleTab("GodTools Tabs");
-	if (panel) panel->setFocus(TRUE);
-	if (god_tools->mPanelObjectTools) god_tools->mPanelObjectTools->setTargetAvatar(LLUUID::null);
-
-	if (gAgent.getRegionHost() != god_tools->mCurrentHost)
-	{
-		// we're in a new region
-		god_tools->sendRegionInfoRequest();
-	}
+	getInstance()->open();
 }
 
-void LLFloaterGodTools::hide(void *)
+// static
+void LLFloaterGodTools::hide()
 {
-	if(sGodTools)
-		sGodTools->setVisible(FALSE);;
+	if(instanceExists())
+		getInstance()->close();
 }
 
 void LLFloaterGodTools::showPanel(const std::string& panel_name)
 {
-	childShowTab("GodTools Tabs", panel_name);
+	getChild<LLTabContainer>("GodTools Tabs")->selectTabByName(panel_name);
 	open();	/*Flawfinder: ignore*/
-	LLPanel *panel = childGetVisibleTab("GodTools Tabs");
-	if (panel) panel->setFocus(TRUE);
+	LLPanel *panel = getChild<LLTabContainer>("GodTools Tabs")->getCurrentPanel();
+	if (panel)
+		panel->setFocus(TRUE);
 }
 
 //static
@@ -259,7 +242,7 @@ void LLFloaterGodTools::processRegionInfo(LLMessageSystem* msg)
 	if (!msg) return;
 
 	//const S32 SIM_NAME_BUF = 256;
-	U32 region_flags;
+	U64 region_flags;
 	U8 sim_access;
 	U8 agent_limit;
 	std::string sim_name;
@@ -280,12 +263,22 @@ void LLFloaterGodTools::processRegionInfo(LLMessageSystem* msg)
 	msg->getStringFast(_PREHASH_RegionInfo, _PREHASH_SimName, sim_name);
 	msg->getU32Fast(_PREHASH_RegionInfo, _PREHASH_EstateID, estate_id);
 	msg->getU32Fast(_PREHASH_RegionInfo, _PREHASH_ParentEstateID, parent_estate_id);
-	msg->getU32Fast(_PREHASH_RegionInfo, _PREHASH_RegionFlags, region_flags);
 	msg->getU8Fast(_PREHASH_RegionInfo, _PREHASH_SimAccess, sim_access);
 	msg->getU8Fast(_PREHASH_RegionInfo, _PREHASH_MaxAgents, agent_limit);
 	msg->getF32Fast(_PREHASH_RegionInfo, _PREHASH_ObjectBonusFactor, object_bonus_factor);
 	msg->getF32Fast(_PREHASH_RegionInfo, _PREHASH_BillableFactor, billable_factor);
 	msg->getF32Fast(_PREHASH_RegionInfo, _PREHASH_WaterHeight, water_height);
+
+	if (msg->has(_PREHASH_RegionInfo3))
+	{
+		msg->getU64Fast(_PREHASH_RegionInfo3, _PREHASH_RegionFlagsExtended, region_flags);
+	}
+	else
+	{
+		U32 flags = 0;
+		msg->getU32Fast(_PREHASH_RegionInfo, _PREHASH_RegionFlags, flags);
+		region_flags = flags;
+	}
 
 	if (host != gAgent.getRegionHost())
 	{
@@ -312,15 +305,16 @@ void LLFloaterGodTools::processRegionInfo(LLMessageSystem* msg)
 		regionp->setBillableFactor(billable_factor);
 	}
 
-	if (!sGodTools) return;
+	LLFloaterGodTools* god_tools = LLFloaterGodTools::instanceExists() ? LLFloaterGodTools::getInstance() : NULL;
+	if (!god_tools) return;
 
 	// push values to god tools, if available
 	if ( gAgent.isGodlike()
-		&& sGodTools->mPanelRegionTools
-		&& sGodTools->mPanelObjectTools)
+		&& god_tools->mPanelRegionTools
+		&& god_tools->mPanelObjectTools)
 	{
-		LLPanelRegionTools* rtool = sGodTools->mPanelRegionTools;
-		sGodTools->mCurrentHost = host;
+		LLPanelRegionTools* rtool = god_tools->mPanelRegionTools;
+		god_tools->mCurrentHost = host;
 
 		// store locally
 		rtool->setSimName(sim_name);
@@ -333,7 +327,7 @@ void LLFloaterGodTools::processRegionInfo(LLMessageSystem* msg)
 		rtool->setRedirectGridY(redirect_grid_y);
 		rtool->enableAllWidgets();
 
-		LLPanelObjectTools *otool = sGodTools->mPanelObjectTools;
+		LLPanelObjectTools *otool = god_tools->mPanelObjectTools;
 		otool->setCheckFlags(region_flags);
 		otool->enableAllWidgets();
 
@@ -376,17 +370,19 @@ void LLFloaterGodTools::sendRegionInfoRequest()
 
 void LLFloaterGodTools::sendGodUpdateRegionInfo()
 {
-	if (!sGodTools) return;
+	LLFloaterGodTools* god_tools = LLFloaterGodTools::instanceExists() ? LLFloaterGodTools::getInstance() : NULL;
+	if (!god_tools) return;
 
 	LLViewerRegion *regionp = gAgent.getRegion();
 	if (gAgent.isGodlike()
-		&& sGodTools->mPanelRegionTools
+		&& god_tools->mPanelRegionTools
 		&& regionp
 		&& gAgent.getRegionHost() == mCurrentHost)
 	{
 		LLMessageSystem *msg = gMessageSystem;
-		LLPanelRegionTools *rtool = sGodTools->mPanelRegionTools;
+		LLPanelRegionTools *rtool = god_tools->mPanelRegionTools;
 
+		U64 region_flags = computeRegionFlags();
 		msg->newMessage("GodUpdateRegionInfo");
 		msg->nextBlockFast(_PREHASH_AgentData);
 		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
@@ -395,11 +391,14 @@ void LLFloaterGodTools::sendGodUpdateRegionInfo()
 		msg->addStringFast(_PREHASH_SimName, rtool->getSimName());
 		msg->addU32Fast(_PREHASH_EstateID, rtool->getEstateID());
 		msg->addU32Fast(_PREHASH_ParentEstateID, rtool->getParentEstateID());
-		msg->addU32Fast(_PREHASH_RegionFlags, computeRegionFlags());
+		// Legacy flags
+		msg->addU32Fast(_PREHASH_RegionFlags, U32(region_flags));
 		msg->addF32Fast(_PREHASH_BillableFactor, rtool->getBillableFactor());
 		msg->addS32Fast(_PREHASH_PricePerMeter, rtool->getPricePerMeter());
 		msg->addS32Fast(_PREHASH_RedirectGridX, rtool->getRedirectGridX());
 		msg->addS32Fast(_PREHASH_RedirectGridY, rtool->getRedirectGridY());
+		msg->nextBlockFast(_PREHASH_RegionInfo2);
+		msg->addU64Fast(_PREHASH_RegionFlagsExtended, region_flags);
 
 		gAgent.sendReliableMessage();
 	}
@@ -449,54 +448,54 @@ LLPanelRegionTools::LLPanelRegionTools(const std::string& title)
 
 BOOL LLPanelRegionTools::postBuild()
 {
-	childSetCommitCallback("region name", onChangeAnything, this);
+	getChild<LLUICtrl>("region name")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 	childSetKeystrokeCallback("region name", onChangeSimName, this);
 	childSetPrevalidate("region name", &LLLineEditor::prevalidatePrintableNotPipe);
 
-	childSetCommitCallback("check prelude", onChangePrelude, this);
-	childSetCommitCallback("check fixed sun", onChangeAnything, this);
-	childSetCommitCallback("check reset home", onChangeAnything, this);
-	childSetCommitCallback("check visible", onChangeAnything, this);
-	childSetCommitCallback("check damage", onChangeAnything, this);
-	childSetCommitCallback("block dwell", onChangeAnything, this);
-	childSetCommitCallback("block terraform", onChangeAnything, this);
-	childSetCommitCallback("allow transfer", onChangeAnything, this);
-	childSetCommitCallback("is sandbox", onChangeAnything, this);
+	getChild<LLUICtrl>("check prelude")->setCommitCallback(boost::bind(&LLPanelRegionTools:: onChangePrelude, this));
+	getChild<LLUICtrl>("check fixed sun")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	getChild<LLUICtrl>("check reset home")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	getChild<LLUICtrl>("check visible")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	getChild<LLUICtrl>("check damage")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	getChild<LLUICtrl>("block dwell")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	getChild<LLUICtrl>("block terraform")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	getChild<LLUICtrl>("allow transfer")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	getChild<LLUICtrl>("is sandbox")->setCommitCallback( boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 
-	childSetAction("Bake Terrain", onBakeTerrain, this);
-	childSetAction("Revert Terrain", onRevertTerrain, this);
-	childSetAction("Swap Terrain", onSwapTerrain, this);
+	childSetAction("Bake Terrain", boost::bind(&LLPanelRegionTools::onBakeTerrain, this));
+	childSetAction("Revert Terrain", boost::bind(&LLPanelRegionTools::onRevertTerrain, this));
+	childSetAction("Swap Terrain", boost::bind(&LLPanelRegionTools::onSwapTerrain, this));
 
-	childSetCommitCallback("estate", onChangeAnything, this);
+	getChild<LLUICtrl>("estate")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 	childSetPrevalidate("estate", &LLLineEditor::prevalidatePositiveS32);
 
-	childSetCommitCallback("parentestate", onChangeAnything, this);
+	getChild<LLUICtrl>("parentestate")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 	childSetPrevalidate("parentestate", &LLLineEditor::prevalidatePositiveS32);
 	childDisable("parentestate");
 
-	childSetCommitCallback("gridposx", onChangeAnything, this);
+	getChild<LLUICtrl>("gridposx")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 	childSetPrevalidate("gridposx", &LLLineEditor::prevalidatePositiveS32);
 	childDisable("gridposx");
 
-	childSetCommitCallback("gridposy", onChangeAnything, this);
+	getChild<LLUICtrl>("gridposy")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 	childSetPrevalidate("gridposy", &LLLineEditor::prevalidatePositiveS32);
 	childDisable("gridposy");
 
-	childSetCommitCallback("redirectx", onChangeAnything, this);
+	getChild<LLUICtrl>("redirectx")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 	childSetPrevalidate("redirectx", &LLLineEditor::prevalidatePositiveS32);
 
-	childSetCommitCallback("redirecty", onChangeAnything, this);
+	getChild<LLUICtrl>("redirecty")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 	childSetPrevalidate("redirecty", &LLLineEditor::prevalidatePositiveS32);
 
-	childSetCommitCallback("billable factor", onChangeAnything, this);
+	getChild<LLUICtrl>("billable factor")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 
-	childSetCommitCallback("land cost", onChangeAnything, this);
+	getChild<LLUICtrl>("land cost")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 
-	childSetAction("Refresh", onRefresh, this);
-	childSetAction("Apply", onApplyChanges, this);
+	childSetAction("Refresh", boost::bind(&LLPanelRegionTools::onRefresh, this));
+	childSetAction("Apply", boost::bind(&LLPanelRegionTools::onApplyChanges, this));
 
-	childSetAction("Select Region", onSelectRegion, this);
-	childSetAction("Autosave now", onSaveState, this);
+	childSetAction("Select Region", boost::bind(&LLPanelRegionTools::onSelectRegion, this));
+	childSetAction("Autosave now", boost::bind(onSaveState, this));
 			 
 	return TRUE;
 }
@@ -507,7 +506,7 @@ LLPanelRegionTools::~LLPanelRegionTools()
 	// base class will take care of everything
 }
 
-U32 LLPanelRegionTools::computeRegionFlags(U32 flags) const
+U64 LLPanelRegionTools::computeRegionFlags(U64 flags) const
 {
 	flags &= getRegionFlagsMask();
 	flags |= getRegionFlags();
@@ -523,42 +522,42 @@ void LLPanelRegionTools::refresh()
 void LLPanelRegionTools::clearAllWidgets()
 {
 	// clear all widgets
-	childSetValue("region name", "unknown");
-	childSetFocus("region name", FALSE);
+	getChild<LLUICtrl>("region name")->setValue("unknown");
+	getChild<LLUICtrl>("region name")->setFocus( FALSE);
 
-	childSetValue("check prelude", FALSE);
-	childDisable("check prelude");
+	getChild<LLUICtrl>("check prelude")->setValue(FALSE);
+	getChildView("check prelude")->setEnabled(FALSE);
 
-	childSetValue("check fixed sun", FALSE);
-	childDisable("check fixed sun");
+	getChild<LLUICtrl>("check fixed sun")->setValue(FALSE);
+	getChildView("check fixed sun")->setEnabled(FALSE);
 
-	childSetValue("check reset home", FALSE);
-	childDisable("check reset home");
+	getChild<LLUICtrl>("check reset home")->setValue(FALSE);
+	getChildView("check reset home")->setEnabled(FALSE);
 
-	childSetValue("check damage", FALSE);
-	childDisable("check damage");
+	getChild<LLUICtrl>("check damage")->setValue(FALSE);
+	getChildView("check damage")->setEnabled(FALSE);
 
-	childSetValue("check visible", FALSE);
-	childDisable("check visible");
+	getChild<LLUICtrl>("check visible")->setValue(FALSE);
+	getChildView("check visible")->setEnabled(FALSE);
 
-	childSetValue("block terraform", FALSE);
-	childDisable("block terraform");
+	getChild<LLUICtrl>("block terraform")->setValue(FALSE);
+	getChildView("block terraform")->setEnabled(FALSE);
 
-	childSetValue("block dwell", FALSE);
-	childDisable("block dwell");
+	getChild<LLUICtrl>("block dwell")->setValue(FALSE);
+	getChildView("block dwell")->setEnabled(FALSE);
 
-	childSetValue("is sandbox", FALSE);
-	childDisable("is sandbox");
+	getChild<LLUICtrl>("is sandbox")->setValue(FALSE);
+	getChildView("is sandbox")->setEnabled(FALSE);
 
-	childSetValue("billable factor", BILLABLE_FACTOR_DEFAULT);
-	childDisable("billable factor");
+	getChild<LLUICtrl>("billable factor")->setValue(BILLABLE_FACTOR_DEFAULT);
+	getChildView("billable factor")->setEnabled(FALSE);
 
-	childSetValue("land cost", PRICE_PER_METER_DEFAULT);
-	childDisable("land cost");
+	getChild<LLUICtrl>("land cost")->setValue(PRICE_PER_METER_DEFAULT);
+	getChildView("land cost")->setEnabled(FALSE);
 
-	childDisable("Apply");
-	childDisable("Bake Terrain");
-	childDisable("Autosave now");
+	getChildView("Apply")->setEnabled(FALSE);
+	getChildView("Bake Terrain")->setEnabled(FALSE);
+	getChildView("Autosave now")->setEnabled(FALSE);
 }
 
 
@@ -566,25 +565,23 @@ void LLPanelRegionTools::enableAllWidgets()
 {
 	// enable all of the widgets
 	
-	childEnable("check prelude");
-	childEnable("check fixed sun");
-	childEnable("check reset home");
-	childEnable("check damage");
-	childDisable("check visible"); // use estates to update...
-	childEnable("block terraform");
-	childEnable("block dwell");
-	childEnable("is sandbox");
+	getChildView("check prelude")->setEnabled(TRUE);
+	getChildView("check fixed sun")->setEnabled(TRUE);
+	getChildView("check reset home")->setEnabled(TRUE);
+	getChildView("check damage")->setEnabled(TRUE);
+	getChildView("check visible")->setEnabled(FALSE); // use estates to update...
+	getChildView("block terraform")->setEnabled(TRUE);
+	getChildView("block dwell")->setEnabled(TRUE);
+	getChildView("is sandbox")->setEnabled(TRUE);
 	
-	childEnable("billable factor");
-	childEnable("land cost");
+	getChildView("billable factor")->setEnabled(TRUE);
+	getChildView("land cost")->setEnabled(TRUE);
 
-	childDisable("Apply");	// don't enable this one
-	childEnable("Bake Terrain");
-	childEnable("Autosave now");
+	getChildView("Apply")->setEnabled(FALSE);	// don't enable this one
+	getChildView("Bake Terrain")->setEnabled(TRUE);
+	getChildView("Autosave now")->setEnabled(TRUE);
 }
 
-
-// static
 void LLPanelRegionTools::onSaveState(void* userdata)
 {
 	if (gAgent.isGodlike())
@@ -602,112 +599,112 @@ void LLPanelRegionTools::onSaveState(void* userdata)
 
 const std::string LLPanelRegionTools::getSimName() const
 {
-	return childGetValue("region name");
+	return getChild<LLUICtrl>("region name")->getValue();
 }
 
 U32 LLPanelRegionTools::getEstateID() const
 {
-	U32 id = (U32)childGetValue("estate").asInteger();
+	U32 id = (U32)getChild<LLUICtrl>("estate")->getValue().asInteger();
 	return id;
 }
 
 U32 LLPanelRegionTools::getParentEstateID() const
 {
-	U32 id = (U32)childGetValue("parentestate").asInteger();
+	U32 id = (U32)getChild<LLUICtrl>("parentestate")->getValue().asInteger();
 	return id;
 }
 
 S32 LLPanelRegionTools::getRedirectGridX() const
 {
-	return childGetValue("redirectx").asInteger();
+	return getChild<LLUICtrl>("redirectx")->getValue().asInteger();
 }
 
 S32 LLPanelRegionTools::getRedirectGridY() const
 {
-	return childGetValue("redirecty").asInteger();
+	return getChild<LLUICtrl>("redirecty")->getValue().asInteger();
 }
 
 S32 LLPanelRegionTools::getGridPosX() const
 {
-	return childGetValue("gridposx").asInteger();
+	return getChild<LLUICtrl>("gridposx")->getValue().asInteger();
 }
 
 S32 LLPanelRegionTools::getGridPosY() const
 {
-	return childGetValue("gridposy").asInteger();
+	return getChild<LLUICtrl>("gridposy")->getValue().asInteger();
 }
 
-U32 LLPanelRegionTools::getRegionFlags() const
+U64 LLPanelRegionTools::getRegionFlags() const
 {
-	U32 flags = 0x0;
-	flags = childGetValue("check prelude").asBoolean()  
+	U64 flags = 0x0;
+	flags = getChild<LLUICtrl>("check prelude")->getValue().asBoolean()  
 					? set_prelude_flags(flags)
 					: unset_prelude_flags(flags);
 
 	// override prelude
-	if (childGetValue("check fixed sun").asBoolean())
+	if (getChild<LLUICtrl>("check fixed sun")->getValue().asBoolean())
 	{
 		flags |= REGION_FLAGS_SUN_FIXED;
 	}
-	if (childGetValue("check reset home").asBoolean())
+	if (getChild<LLUICtrl>("check reset home")->getValue().asBoolean())
 	{
 		flags |= REGION_FLAGS_RESET_HOME_ON_TELEPORT;
 	}
-	if (childGetValue("check visible").asBoolean())
+	if (getChild<LLUICtrl>("check visible")->getValue().asBoolean())
 	{
 		flags |= REGION_FLAGS_EXTERNALLY_VISIBLE;
 	}
-	if (childGetValue("check damage").asBoolean())
+	if (getChild<LLUICtrl>("check damage")->getValue().asBoolean())
 	{
 		flags |= REGION_FLAGS_ALLOW_DAMAGE;
 	}
-	if (childGetValue("block terraform").asBoolean())
+	if (getChild<LLUICtrl>("block terraform")->getValue().asBoolean())
 	{
 		flags |= REGION_FLAGS_BLOCK_TERRAFORM;
 	}
-	if (childGetValue("block dwell").asBoolean())
+	if (getChild<LLUICtrl>("block dwell")->getValue().asBoolean())
 	{
 		flags |= REGION_FLAGS_BLOCK_DWELL;
 	}
-	if (childGetValue("is sandbox").asBoolean())
+	if (getChild<LLUICtrl>("is sandbox")->getValue().asBoolean())
 	{
 		flags |= REGION_FLAGS_SANDBOX;
 	}
 	return flags;
 }
 
-U32 LLPanelRegionTools::getRegionFlagsMask() const
+U64 LLPanelRegionTools::getRegionFlagsMask() const
 {
-	U32 flags = 0xffffffff;
-	flags = childGetValue("check prelude").asBoolean()
+	U64 flags = 0xFFFFFFFFFFFFFFFFULL;
+	flags = getChild<LLUICtrl>("check prelude")->getValue().asBoolean()
 				? set_prelude_flags(flags)
 				: unset_prelude_flags(flags);
 
-	if (!childGetValue("check fixed sun").asBoolean())
+	if (!getChild<LLUICtrl>("check fixed sun")->getValue().asBoolean())
 	{
 		flags &= ~REGION_FLAGS_SUN_FIXED;
 	}
-	if (!childGetValue("check reset home").asBoolean())
+	if (!getChild<LLUICtrl>("check reset home")->getValue().asBoolean())
 	{
 		flags &= ~REGION_FLAGS_RESET_HOME_ON_TELEPORT;
 	}
-	if (!childGetValue("check visible").asBoolean())
+	if (!getChild<LLUICtrl>("check visible")->getValue().asBoolean())
 	{
 		flags &= ~REGION_FLAGS_EXTERNALLY_VISIBLE;
 	}
-	if (!childGetValue("check damage").asBoolean())
+	if (!getChild<LLUICtrl>("check damage")->getValue().asBoolean())
 	{
 		flags &= ~REGION_FLAGS_ALLOW_DAMAGE;
 	}
-	if (!childGetValue("block terraform").asBoolean())
+	if (!getChild<LLUICtrl>("block terraform")->getValue().asBoolean())
 	{
 		flags &= ~REGION_FLAGS_BLOCK_TERRAFORM;
 	}
-	if (!childGetValue("block dwell").asBoolean())
+	if (!getChild<LLUICtrl>("block dwell")->getValue().asBoolean())
 	{
 		flags &= ~REGION_FLAGS_BLOCK_DWELL;
 	}
-	if (!childGetValue("is sandbox").asBoolean())
+	if (!getChild<LLUICtrl>("is sandbox")->getValue().asBoolean())
 	{
 		flags &= ~REGION_FLAGS_SANDBOX;
 	}
@@ -716,150 +713,145 @@ U32 LLPanelRegionTools::getRegionFlagsMask() const
 
 F32 LLPanelRegionTools::getBillableFactor() const
 {
-	return (F32)childGetValue("billable factor").asReal();
+	return (F32)getChild<LLUICtrl>("billable factor")->getValue().asReal();
 }
 
 S32 LLPanelRegionTools::getPricePerMeter() const
 {
-	return childGetValue("land cost");
+	return getChild<LLUICtrl>("land cost")->getValue();
 }
 
 void LLPanelRegionTools::setSimName(const std::string& name)
 {
-	childSetValue("region name", name);
+	getChild<LLUICtrl>("region name")->setValue(name);
 }
 
 void LLPanelRegionTools::setEstateID(U32 id)
 {
-	childSetValue("estate", (S32)id);
+	getChild<LLUICtrl>("estate")->setValue((S32)id);
 }
 
 void LLPanelRegionTools::setGridPosX(S32 pos)
 {
-	childSetValue("gridposx", pos);
+	getChild<LLUICtrl>("gridposx")->setValue(pos);
 }
 
 void LLPanelRegionTools::setGridPosY(S32 pos)
 {
-	childSetValue("gridposy", pos);
+	getChild<LLUICtrl>("gridposy")->setValue(pos);
 }
 
 void LLPanelRegionTools::setRedirectGridX(S32 pos)
 {
-	childSetValue("redirectx", pos);
+	getChild<LLUICtrl>("redirectx")->setValue(pos);
 }
 
 void LLPanelRegionTools::setRedirectGridY(S32 pos)
 {
-	childSetValue("redirecty", pos);
+	getChild<LLUICtrl>("redirecty")->setValue(pos);
 }
 
 void LLPanelRegionTools::setParentEstateID(U32 id)
 {
-	childSetValue("parentestate", (S32)id);
+	getChild<LLUICtrl>("parentestate")->setValue((S32)id);
 }
 
-void LLPanelRegionTools::setCheckFlags(U32 flags)
+void LLPanelRegionTools::setCheckFlags(U64 flags)
 {
-	childSetValue("check prelude", is_prelude(flags) ? TRUE : FALSE);
-	childSetValue("check fixed sun", flags & REGION_FLAGS_SUN_FIXED ? TRUE : FALSE);
-	childSetValue("check reset home", flags & REGION_FLAGS_RESET_HOME_ON_TELEPORT ? TRUE : FALSE);
-	childSetValue("check damage", flags & REGION_FLAGS_ALLOW_DAMAGE ? TRUE : FALSE);
-	childSetValue("check visible", flags & REGION_FLAGS_EXTERNALLY_VISIBLE ? TRUE : FALSE);
-	childSetValue("block terraform", flags & REGION_FLAGS_BLOCK_TERRAFORM ? TRUE : FALSE);
-	childSetValue("block dwell", flags & REGION_FLAGS_BLOCK_DWELL ? TRUE : FALSE);
-	childSetValue("is sandbox", flags & REGION_FLAGS_SANDBOX ? TRUE : FALSE );
+	getChild<LLUICtrl>("check prelude")->setValue(is_prelude(flags) ? TRUE : FALSE);
+	getChild<LLUICtrl>("check fixed sun")->setValue(flags & REGION_FLAGS_SUN_FIXED ? TRUE : FALSE);
+	getChild<LLUICtrl>("check reset home")->setValue(flags & REGION_FLAGS_RESET_HOME_ON_TELEPORT ? TRUE : FALSE);
+	getChild<LLUICtrl>("check damage")->setValue(flags & REGION_FLAGS_ALLOW_DAMAGE ? TRUE : FALSE);
+	getChild<LLUICtrl>("check visible")->setValue(flags & REGION_FLAGS_EXTERNALLY_VISIBLE ? TRUE : FALSE);
+	getChild<LLUICtrl>("block terraform")->setValue(flags & REGION_FLAGS_BLOCK_TERRAFORM ? TRUE : FALSE);
+	getChild<LLUICtrl>("block dwell")->setValue(flags & REGION_FLAGS_BLOCK_DWELL ? TRUE : FALSE);
+	getChild<LLUICtrl>("is sandbox")->setValue(flags & REGION_FLAGS_SANDBOX ? TRUE : FALSE );
 }
 
 void LLPanelRegionTools::setBillableFactor(F32 billable_factor)
 {
-	childSetValue("billable factor", billable_factor);
+	getChild<LLUICtrl>("billable factor")->setValue(billable_factor);
 }
 
 void LLPanelRegionTools::setPricePerMeter(S32 price)
 {
-	childSetValue("land cost", price);
+	getChild<LLUICtrl>("land cost")->setValue(price);
 }
 
-// static
-void LLPanelRegionTools::onChangeAnything(LLUICtrl* ctrl, void* userdata)
+void LLPanelRegionTools::onChangeAnything()
 {
-	if (sGodTools && userdata && gAgent.isGodlike())
+	if (gAgent.isGodlike())
 	{
-		LLPanelRegionTools* region_tools = (LLPanelRegionTools*) userdata;
-		region_tools->childEnable("Apply");
+		getChildView("Apply")->setEnabled(TRUE);
 	}
 }
 
-// static
-void LLPanelRegionTools::onChangePrelude(LLUICtrl* ctrl, void* data)
+void LLPanelRegionTools::onChangePrelude()
 {
 	// checking prelude auto-checks fixed sun
-	LLPanelRegionTools* self = (LLPanelRegionTools*)data;
-	if (self->childGetValue("check prelude").asBoolean())
+	if (getChild<LLUICtrl>("check prelude")->getValue().asBoolean())
 	{
-		self->childSetValue("check fixed sun", TRUE);
-		self->childSetValue("check reset home", TRUE);
+		getChild<LLUICtrl>("check fixed sun")->setValue(TRUE);
+		getChild<LLUICtrl>("check reset home")->setValue(TRUE);
 	}
 	// pass on to default onChange handler
-	onChangeAnything(ctrl, data);
+	onChangeAnything();
 }
 
 // static
 void LLPanelRegionTools::onChangeSimName(LLLineEditor* caller, void* userdata )
 {
-	if (sGodTools && userdata && gAgent.isGodlike())
+	if (userdata && gAgent.isGodlike())
 	{
 		LLPanelRegionTools* region_tools = (LLPanelRegionTools*) userdata;
-		region_tools->childEnable("Apply");
+		region_tools->getChildView("Apply")->setEnabled(TRUE);
 	}
 }
 
-//static
-void LLPanelRegionTools::onRefresh(void* userdata)
+
+void LLPanelRegionTools::onRefresh()
 {
-	if(!sGodTools) return;
+	LLFloaterGodTools* god_tools = LLFloaterGodTools::instanceExists() ? LLFloaterGodTools::getInstance() : NULL;
+	if(!god_tools) return;
 	LLViewerRegion *region = gAgent.getRegion();
 	if (region && gAgent.isGodlike())
 	{
-		sGodTools->sendRegionInfoRequest();
+		god_tools->sendRegionInfoRequest();
+		//LLFloaterGodTools::getInstance()->sendRegionInfoRequest();
+		//LLFloaterReg::getTypedInstance<LLFloaterGodTools>("god_tools")->sendRegionInfoRequest();
 	}
 }
 
-// static
-void LLPanelRegionTools::onApplyChanges(void* userdata)
+void LLPanelRegionTools::onApplyChanges()
 {
-	if(!sGodTools) return;
+	LLFloaterGodTools* god_tools = LLFloaterGodTools::instanceExists() ? LLFloaterGodTools::getInstance() : NULL;
+	if(!god_tools) return;
 	LLViewerRegion *region = gAgent.getRegion();
-	if (region && userdata && gAgent.isGodlike())
+	if (region && gAgent.isGodlike())
 	{
-		LLPanelRegionTools* region_tools = (LLPanelRegionTools*) userdata;
-
-		region_tools->childDisable("Apply");
-		sGodTools->sendGodUpdateRegionInfo();
+		getChildView("Apply")->setEnabled(FALSE);
+		god_tools->sendGodUpdateRegionInfo();
+		//LLFloaterReg::getTypedInstance<LLFloaterGodTools>("god_tools")->sendGodUpdateRegionInfo();
 	}
 }
 
-// static
-void LLPanelRegionTools::onBakeTerrain(void *userdata)
+void LLPanelRegionTools::onBakeTerrain()
 {
 	LLPanelRequestTools::sendRequest("terrain", "bake", gAgent.getRegionHost());
 }
 
-// static
-void LLPanelRegionTools::onRevertTerrain(void *userdata)
+void LLPanelRegionTools::onRevertTerrain()
 {
 	LLPanelRequestTools::sendRequest("terrain", "revert", gAgent.getRegionHost());
 }
 
-// static
-void LLPanelRegionTools::onSwapTerrain(void *userdata)
+
+void LLPanelRegionTools::onSwapTerrain()
 {
 	LLPanelRequestTools::sendRequest("terrain", "swap", gAgent.getRegionHost());
 }
 
-// static
-void LLPanelRegionTools::onSelectRegion(void* userdata)
+void LLPanelRegionTools::onSelectRegion()
 {
 	llinfos << "LLPanelRegionTools::onSelectRegion" << llendl;
 
@@ -914,8 +906,8 @@ LLPanelGridTools::~LLPanelGridTools()
 
 BOOL LLPanelGridTools::postBuild()
 {
-	childSetAction("Kick all users", onClickKickAll, this);
-	childSetAction("Flush This Region's Map Visibility Caches", onClickFlushMapVisibilityCaches, this);
+	childSetAction("Kick all users", boost::bind(&LLPanelGridTools::onClickKickAll, this));
+	childSetAction("Flush This Region's Map Visibility Caches", boost::bind(&LLPanelGridTools::onClickFlushMapVisibilityCaches, this));
 
 	return TRUE;
 }
@@ -925,17 +917,12 @@ void LLPanelGridTools::refresh()
 }
 
 
-// static
-void LLPanelGridTools::onClickKickAll(void* userdata)
+void LLPanelGridTools::onClickKickAll()
 {
-	S32 left, top;
-	gFloaterView->getNewFloaterPosition(&left, &top);
-	LLRect rect(left, top, left+400, top-300);
-
 	LLNotificationsUtil::add("KickAllUsers", LLSD(), LLSD(), LLPanelGridTools::confirmKick);
 }
 
-
+// static
 bool LLPanelGridTools::confirmKick(const LLSD& notification, const LLSD& response)
 {
 	if (LLNotification::getSelectedOption(notification, response) == 0)
@@ -946,7 +933,6 @@ bool LLPanelGridTools::confirmKick(const LLSD& notification, const LLSD& respons
 	}
 	return false;
 }
-
 
 // static
 bool LLPanelGridTools::finishKick(const LLSD& notification, const LLSD& response)
@@ -969,9 +955,7 @@ bool LLPanelGridTools::finishKick(const LLSD& notification, const LLSD& response
 	return false;
 }
 
-
-// static
-void LLPanelGridTools::onClickFlushMapVisibilityCaches(void* data)
+void LLPanelGridTools::onClickFlushMapVisibilityCaches()
 {
 	LLNotificationsUtil::add("FlushMapVisibilityCaches", LLSD(), LLSD(), flushMapVisibilityCachesConfirm);
 }
@@ -979,7 +963,7 @@ void LLPanelGridTools::onClickFlushMapVisibilityCaches(void* data)
 // static
 bool LLPanelGridTools::flushMapVisibilityCachesConfirm(const LLSD& notification, const LLSD& response)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	if (option != 0) return false;
 
 	// HACK: Send this as an EstateOwnerRequest so it gets routed
@@ -1039,22 +1023,23 @@ LLPanelObjectTools::~LLPanelObjectTools()
 
 BOOL LLPanelObjectTools::postBuild()
 {
-	childSetCommitCallback("disable scripts", onChangeAnything, this);
-	childSetCommitCallback("disable collisions", onChangeAnything, this);
-	childSetCommitCallback("disable physics", onChangeAnything, this);
+	getChild<LLUICtrl>("disable scripts")->setCommitCallback(boost::bind(&LLPanelObjectTools::onChangeAnything, this));
+	getChild<LLUICtrl>("disable collisions")->setCommitCallback(boost::bind(&LLPanelObjectTools::onChangeAnything, this));
+	getChild<LLUICtrl>("disable physics")->setCommitCallback(boost::bind(&LLPanelObjectTools::onChangeAnything, this));
 
-	childSetAction("Apply", onApplyChanges, this);
+	childSetAction("Apply",  boost::bind(&LLPanelObjectTools::onApplyChanges, this));
 
-	childSetAction("Set Target", onClickSet, this);
+	childSetAction("Set Target", boost::bind(&LLPanelObjectTools::onClickSet, this));
 
-	childSetAction("Delete Target's Scripted Objects On Others Land", onClickDeletePublicOwnedBy, this);
-	childSetAction("Delete Target's Scripted Objects On *Any* Land", onClickDeleteAllScriptedOwnedBy, this);
-	childSetAction("Delete *ALL* Of Target's Objects", onClickDeleteAllOwnedBy, this);
+	childSetAction("Delete Target's Scripted Objects On Others Land",  boost::bind(&LLPanelObjectTools::onClickDeletePublicOwnedBy, this));
+	childSetAction("Delete Target's Scripted Objects On *Any* Land",  boost::bind(&LLPanelObjectTools::onClickDeleteAllScriptedOwnedBy, this));
+	childSetAction("Delete *ALL* Of Target's Objects",  boost::bind(&LLPanelObjectTools::onClickDeleteAllOwnedBy, this));
 
-	childSetAction("Get Top Colliders", onGetTopColliders, this);
-	childSetAction("Get Top Scripts", onGetTopScripts, this);
-	childSetAction("Scripts digest", onGetScriptDigest, this);
+	childSetAction("Get Top Colliders",  boost::bind(&LLPanelObjectTools::onGetTopColliders, this));
+	childSetAction("Get Top Scripts",  boost::bind(&LLPanelObjectTools::onGetTopScripts, this));
+	childSetAction("Scripts digest",  boost::bind(&LLPanelObjectTools::onGetScriptDigest, this));
 
+	refresh();
 	return TRUE;
 }
 
@@ -1063,7 +1048,7 @@ void LLPanelObjectTools::setTargetAvatar(const LLUUID &target_id)
 	mTargetAvatar = target_id;
 	if (target_id.isNull())
 	{
-		childSetValue("target_avatar_name", getString("no_target"));
+		getChild<LLUICtrl>("target_avatar_name")->setValue(getString("no_target"));
 	}
 } 
 
@@ -1073,14 +1058,14 @@ void LLPanelObjectTools::refresh()
 	LLViewerRegion *regionp = gAgent.getRegion();
 	if (regionp)
 	{
-		childSetText("region name", regionp->getName());
+		getChild<LLUICtrl>("region name")->setValue(regionp->getName());
 	}
 }
 
 
-U32 LLPanelObjectTools::computeRegionFlags(U32 flags) const
+U64 LLPanelObjectTools::computeRegionFlags(U64 flags) const
 {
-	if (childGetValue("disable scripts").asBoolean())
+	if (getChild<LLUICtrl>("disable scripts")->getValue().asBoolean())
 	{
 		flags |= REGION_FLAGS_SKIP_SCRIPTS;
 	}
@@ -1088,7 +1073,7 @@ U32 LLPanelObjectTools::computeRegionFlags(U32 flags) const
 	{
 		flags &= ~REGION_FLAGS_SKIP_SCRIPTS;
 	}
-	if (childGetValue("disable collisions").asBoolean())
+	if (getChild<LLUICtrl>("disable collisions")->getValue().asBoolean())
 	{
 		flags |= REGION_FLAGS_SKIP_COLLISIONS;
 	}
@@ -1096,7 +1081,7 @@ U32 LLPanelObjectTools::computeRegionFlags(U32 flags) const
 	{
 		flags &= ~REGION_FLAGS_SKIP_COLLISIONS;
 	}
-	if (childGetValue("disable physics").asBoolean())
+	if (getChild<LLUICtrl>("disable physics")->getValue().asBoolean())
 	{
 		flags |= REGION_FLAGS_SKIP_PHYSICS;
 	}
@@ -1108,46 +1093,45 @@ U32 LLPanelObjectTools::computeRegionFlags(U32 flags) const
 }
 
 
-void LLPanelObjectTools::setCheckFlags(U32 flags)
+void LLPanelObjectTools::setCheckFlags(U64 flags)
 {
-	childSetValue("disable scripts", flags & REGION_FLAGS_SKIP_SCRIPTS ? TRUE : FALSE);
-	childSetValue("disable collisions", flags & REGION_FLAGS_SKIP_COLLISIONS ? TRUE : FALSE);
-	childSetValue("disable physics", flags & REGION_FLAGS_SKIP_PHYSICS ? TRUE : FALSE);
+	getChild<LLUICtrl>("disable scripts")->setValue(flags & REGION_FLAGS_SKIP_SCRIPTS ? TRUE : FALSE);
+	getChild<LLUICtrl>("disable collisions")->setValue(flags & REGION_FLAGS_SKIP_COLLISIONS ? TRUE : FALSE);
+	getChild<LLUICtrl>("disable physics")->setValue(flags & REGION_FLAGS_SKIP_PHYSICS ? TRUE : FALSE);
 }
 
 
 void LLPanelObjectTools::clearAllWidgets()
 {
-	childSetValue("disable scripts", FALSE);
-	childDisable("disable scripts");
+	getChild<LLUICtrl>("disable scripts")->setValue(FALSE);
+	getChildView("disable scripts")->setEnabled(FALSE);
 
-	childDisable("Apply");
-	childDisable("Set Target");
-	childDisable("Delete Target's Scripted Objects On Others Land");
-	childDisable("Delete Target's Scripted Objects On *Any* Land");
-	childDisable("Delete *ALL* Of Target's Objects");
+	getChildView("Apply")->setEnabled(FALSE);
+	getChildView("Set Target")->setEnabled(FALSE);
+	getChildView("Delete Target's Scripted Objects On Others Land")->setEnabled(FALSE);
+	getChildView("Delete Target's Scripted Objects On *Any* Land")->setEnabled(FALSE);
+	getChildView("Delete *ALL* Of Target's Objects")->setEnabled(FALSE);
 }
 
 
 void LLPanelObjectTools::enableAllWidgets()
 {
-	childEnable("disable scripts");
+	getChildView("disable scripts")->setEnabled(TRUE);
 
-	childDisable("Apply");	// don't enable this one
-	childEnable("Set Target");
-	childEnable("Delete Target's Scripted Objects On Others Land");
-	childEnable("Delete Target's Scripted Objects On *Any* Land");
-	childEnable("Delete *ALL* Of Target's Objects");
-	childEnable("Get Top Colliders");
-	childEnable("Get Top Scripts");
+	getChildView("Apply")->setEnabled(FALSE);	// don't enable this one
+	getChildView("Set Target")->setEnabled(TRUE);
+	getChildView("Delete Target's Scripted Objects On Others Land")->setEnabled(TRUE);
+	getChildView("Delete Target's Scripted Objects On *Any* Land")->setEnabled(TRUE);
+	getChildView("Delete *ALL* Of Target's Objects")->setEnabled(TRUE);
+	getChildView("Get Top Colliders")->setEnabled(TRUE);
+	getChildView("Get Top Scripts")->setEnabled(TRUE);
 }
 
-
-// static
-void LLPanelObjectTools::onGetTopColliders(void* userdata)
+void LLPanelObjectTools::onGetTopColliders()
 {
-	if(!sGodTools) return;
-
+	LLFloaterGodTools* god_tools = LLFloaterGodTools::instanceExists() ? LLFloaterGodTools::getInstance() : NULL;
+	if(!god_tools)
+		return;
 	if (gAgent.isGodlike())
 	{
 		LLFloaterTopObjects::show();
@@ -1156,11 +1140,11 @@ void LLPanelObjectTools::onGetTopColliders(void* userdata)
 	}
 }
 
-// static
-void LLPanelObjectTools::onGetTopScripts(void* userdata)
+void LLPanelObjectTools::onGetTopScripts()
 {
-	if(!sGodTools) return;
-
+	LLFloaterGodTools* god_tools = LLFloaterGodTools::instanceExists() ? LLFloaterGodTools::getInstance() : NULL;
+	if(!god_tools)
+		return;
 	if (gAgent.isGodlike())
 	{
 		LLFloaterTopObjects::show();
@@ -1169,10 +1153,9 @@ void LLPanelObjectTools::onGetTopScripts(void* userdata)
 	}
 }
 
-// static
-void LLPanelObjectTools::onGetScriptDigest(void* userdata)
+void LLPanelObjectTools::onGetScriptDigest()
 {
-	if (sGodTools && gAgent.isGodlike())
+	if (gAgent.isGodlike())
 	{
 		// get the list of scripts and number of occurences of each
 		// (useful for finding self-replicating objects)
@@ -1180,66 +1163,62 @@ void LLPanelObjectTools::onGetScriptDigest(void* userdata)
 	}
 }
 
-void LLPanelObjectTools::onClickDeletePublicOwnedBy(void* userdata)
+void LLPanelObjectTools::onClickDeletePublicOwnedBy()
 {
 	// Bring up view-modal dialog
-	LLPanelObjectTools* panelp = (LLPanelObjectTools*)userdata;
-	if (!panelp->mTargetAvatar.isNull())
+
+	if (!mTargetAvatar.isNull())
 	{
-		panelp->mSimWideDeletesFlags = 
+		mSimWideDeletesFlags = 
 			SWD_SCRIPTED_ONLY | SWD_OTHERS_LAND_ONLY;
 
 		LLSD args;
-		args["AVATAR_NAME"] = panelp->childGetValue("target_avatar_name").asString();
+		args["AVATAR_NAME"] = getChild<LLUICtrl>("target_avatar_name")->getValue().asString();
 		LLSD payload;
-		payload["avatar_id"] = panelp->mTargetAvatar;
-		payload["flags"] = (S32)panelp->mSimWideDeletesFlags;
+		payload["avatar_id"] = mTargetAvatar;
+		payload["flags"] = (S32)mSimWideDeletesFlags;
 
-		LLNotifications::instance().add( "GodDeleteAllScriptedPublicObjectsByUser",
+		LLNotificationsUtil::add( "GodDeleteAllScriptedPublicObjectsByUser",
 								args,
 								payload,
 								callbackSimWideDeletes);
 	}
 }
 
-// static
-void LLPanelObjectTools::onClickDeleteAllScriptedOwnedBy(void* userdata)
+void LLPanelObjectTools::onClickDeleteAllScriptedOwnedBy()
 {
 	// Bring up view-modal dialog
-	LLPanelObjectTools* panelp = (LLPanelObjectTools*)userdata;
-	if (!panelp->mTargetAvatar.isNull())
+	if (!mTargetAvatar.isNull())
 	{
-		panelp->mSimWideDeletesFlags = SWD_SCRIPTED_ONLY;
+		mSimWideDeletesFlags = SWD_SCRIPTED_ONLY;
 
 		LLSD args;
-		args["AVATAR_NAME"] = panelp->childGetValue("target_avatar_name").asString();
+		args["AVATAR_NAME"] = getChild<LLUICtrl>("target_avatar_name")->getValue().asString();
 		LLSD payload;
-		payload["avatar_id"] = panelp->mTargetAvatar;
-		payload["flags"] = (S32)panelp->mSimWideDeletesFlags;
+		payload["avatar_id"] = mTargetAvatar;
+		payload["flags"] = (S32)mSimWideDeletesFlags;
 
-		LLNotifications::instance().add( "GodDeleteAllScriptedObjectsByUser",
+		LLNotificationsUtil::add( "GodDeleteAllScriptedObjectsByUser",
 								args,
 								payload,
 								callbackSimWideDeletes);
 	}
 }
 
-// static
-void LLPanelObjectTools::onClickDeleteAllOwnedBy(void* userdata)
+void LLPanelObjectTools::onClickDeleteAllOwnedBy()
 {
 	// Bring up view-modal dialog
-	LLPanelObjectTools* panelp = (LLPanelObjectTools*)userdata;
-	if (!panelp->mTargetAvatar.isNull())
+	if (!mTargetAvatar.isNull())
 	{
-		panelp->mSimWideDeletesFlags = 0;
+		mSimWideDeletesFlags = 0;
 
 		LLSD args;
-		args["AVATAR_NAME"] = panelp->childGetValue("target_avatar_name").asString();
+		args["AVATAR_NAME"] = getChild<LLUICtrl>("target_avatar_name")->getValue().asString();
 		LLSD payload;
-		payload["avatar_id"] = panelp->mTargetAvatar;
-		payload["flags"] = (S32)panelp->mSimWideDeletesFlags;
+		payload["avatar_id"] = mTargetAvatar;
+		payload["flags"] = (S32)mSimWideDeletesFlags;
 
-		LLNotifications::instance().add( "GodDeleteAllObjectsByUser",
+		LLNotificationsUtil::add( "GodDeleteAllObjectsByUser",
 								args,
 								payload,
 								callbackSimWideDeletes);
@@ -1249,7 +1228,7 @@ void LLPanelObjectTools::onClickDeleteAllOwnedBy(void* userdata)
 // static
 bool LLPanelObjectTools::callbackSimWideDeletes( const LLSD& notification, const LLSD& response )
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	if (option == 0)
 	{
 		if (!notification["payload"]["avatar_id"].asUUID().isNull())
@@ -1261,11 +1240,14 @@ bool LLPanelObjectTools::callbackSimWideDeletes( const LLSD& notification, const
 	return false;
 }
 
-void LLPanelObjectTools::onClickSet(void* data)
+void LLPanelObjectTools::onClickSet()
 {
-	LLPanelObjectTools* panelp = (LLPanelObjectTools*) data;
+	LLFloaterAvatarPicker* picker = LLFloaterAvatarPicker::show(boost::bind(&LLPanelObjectTools::callbackAvatarID, this, _1,_2));
 	// grandparent is a floater, which can have a dependent
-	gFloaterView->getParentFloater(panelp)->addDependentFloater(LLFloaterAvatarPicker::show(boost::bind(&LLPanelObjectTools::callbackAvatarID, panelp, _1, _2)));
+	if (picker)
+	{
+		gFloaterView->getParentFloater(this)->addDependentFloater(picker);
+	}
 }
 
 void LLPanelObjectTools::onClickSetBySelection(void* data)
@@ -1286,40 +1268,36 @@ void LLPanelObjectTools::onClickSetBySelection(void* data)
 	args["[OBJECT]"] = node->mName;
 	args["[OWNER]"] = owner_name;
 	std::string name = LLTrans::getString("GodToolsObjectOwnedBy", args);
-	panelp->childSetValue("target_avatar_name", name);
+	panelp->getChild<LLUICtrl>("target_avatar_name")->setValue(name);
 }
 
-void LLPanelObjectTools::callbackAvatarID(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names)
+void LLPanelObjectTools::callbackAvatarID(const uuid_vec_t& ids, const std::vector<LLAvatarName> names)
 {
 	if (ids.empty() || names.empty()) return;
 	mTargetAvatar = ids[0];
-	childSetValue("target_avatar_name", names[0].getCompleteName());
+	getChild<LLUICtrl>("target_avatar_name")->setValue(names[0].getCompleteName());
 	refresh();
 }
 
-// static
-void LLPanelObjectTools::onChangeAnything(LLUICtrl* ctrl, void* userdata)
+void LLPanelObjectTools::onChangeAnything()
 {
-	if (sGodTools
-		&& userdata
-		&& gAgent.isGodlike())
+	if (gAgent.isGodlike())
 	{
-		LLPanelObjectTools* object_tools = (LLPanelObjectTools*) userdata;
-		object_tools->childEnable("Apply");
+		getChildView("Apply")->setEnabled(TRUE);
 	}
 }
 
-// static
-void LLPanelObjectTools::onApplyChanges(void* userdata)
+void LLPanelObjectTools::onApplyChanges()
 {
-	if(!sGodTools) return;
+	LLFloaterGodTools* god_tools = LLFloaterGodTools::instanceExists() ? LLFloaterGodTools::getInstance() : NULL;
+	if(!god_tools) return;
 	LLViewerRegion *region = gAgent.getRegion();
-	if (region && userdata && gAgent.isGodlike())
+	if (region && gAgent.isGodlike())
 	{
-		LLPanelObjectTools* object_tools = (LLPanelObjectTools*) userdata;
 		// TODO -- implement this
-		object_tools->childDisable("Apply");
-		sGodTools->sendGodUpdateRegionInfo();
+		getChildView("Apply")->setEnabled(FALSE);
+		god_tools->sendGodUpdateRegionInfo();
+		//LLFloaterReg::getTypedInstance<LLFloaterGodTools>("god_tools")->sendGodUpdateRegionInfo();
 	}
 }
 
@@ -1342,7 +1320,7 @@ LLPanelRequestTools::~LLPanelRequestTools()
 
 BOOL LLPanelRequestTools::postBuild()
 {
-	childSetAction("Make Request", onClickRequest, this);
+	childSetAction("Make Request", boost::bind(&LLPanelRequestTools::onClickRequest, this));
 
 	refresh();
 
@@ -1351,7 +1329,7 @@ BOOL LLPanelRequestTools::postBuild()
 
 void LLPanelRequestTools::refresh()
 {
-	std::string buffer = childGetValue("destination");
+	std::string buffer = getChild<LLUICtrl>("destination")->getValue();
 	LLCtrlListInterface *list = childGetListInterface("destination");
 	if (!list) return;
 
@@ -1400,21 +1378,19 @@ void LLPanelRequestTools::sendRequest(const std::string& request,
 	msg->sendReliable(host);
 }
 
-// static
-void LLPanelRequestTools::onClickRequest(void* data)
+void LLPanelRequestTools::onClickRequest()
 {
-	LLPanelRequestTools* self = (LLPanelRequestTools*)data;
-	const std::string dest = self->childGetValue("destination").asString();
+	const std::string dest = getChild<LLUICtrl>("destination")->getValue().asString();
 	if(dest == SELECTION)
 	{
-		std::string req = self->childGetValue("request");
+		std::string req =getChild<LLUICtrl>("request")->getValue();
 		req = req.substr(0, req.find_first_of(" "));
-		std::string param = self->childGetValue("parameter");
+		std::string param = getChild<LLUICtrl>("parameter")->getValue();
 		LLSelectMgr::getInstance()->sendGodlikeRequest(req, param);
 	}
 	else if(dest == AGENT_REGION)
 	{
-		self->sendRequest(gAgent.getRegionHost());
+		sendRequest(gAgent.getRegionHost());
 	}
 	else
 	{
@@ -1426,7 +1402,7 @@ void LLPanelRequestTools::onClickRequest(void* data)
 			if(dest == regionp->getName())
 			{
 				// found it
-				self->sendRequest(regionp->getHost());
+				sendRequest(regionp->getHost());
 			}
 		}
 	}
@@ -1448,7 +1424,7 @@ void LLPanelRequestTools::sendRequest(const LLHost& host)
 {
 
 	// intercept viewer local actions here
-	std::string req = childGetValue("request");
+	std::string req = getChild<LLUICtrl>("request")->getValue();
 	if (req == "terrain download")
 	{
 		gXferManager->requestFile(std::string("terrain.raw"), std::string("terrain.raw"), LL_PATH_NONE,
@@ -1460,7 +1436,7 @@ void LLPanelRequestTools::sendRequest(const LLHost& host)
 	else
 	{
 		req = req.substr(0, req.find_first_of(" "));
-		sendRequest(req, childGetValue("parameter").asString(), host);
+		sendRequest(req, getChild<LLUICtrl>("parameter")->getValue().asString(), host);
 	}
 }
 

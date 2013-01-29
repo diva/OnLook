@@ -2,31 +2,25 @@
  * @file llinventorytype.h
  * @brief Inventory item type, more specific than an asset type.
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -67,12 +61,58 @@ public:
 		IT_WEARABLE = 18,
 		IT_ANIMATION = 19,
 		IT_GESTURE = 20,
-
 		IT_MESH = 22,
 		IT_COUNT = 23,
 
 		IT_NONE = -1
 	};
+
+	enum EIconName
+	{
+		ICONNAME_TEXTURE,
+		ICONNAME_SOUND,
+		ICONNAME_CALLINGCARD_ONLINE,
+		ICONNAME_CALLINGCARD_OFFLINE,
+		ICONNAME_LANDMARK,
+		ICONNAME_LANDMARK_VISITED,
+		ICONNAME_SCRIPT,
+		ICONNAME_CLOTHING,
+		ICONNAME_OBJECT,
+		ICONNAME_OBJECT_MULTI,
+		ICONNAME_NOTECARD,
+		ICONNAME_BODYPART,
+		ICONNAME_SNAPSHOT,
+		
+		ICONNAME_BODYPART_SHAPE,
+		ICONNAME_BODYPART_SKIN,
+		ICONNAME_BODYPART_HAIR,
+		ICONNAME_BODYPART_EYES,
+		ICONNAME_CLOTHING_SHIRT,
+		ICONNAME_CLOTHING_PANTS,
+		ICONNAME_CLOTHING_SHOES,
+		ICONNAME_CLOTHING_SOCKS,
+		ICONNAME_CLOTHING_JACKET,
+		ICONNAME_CLOTHING_GLOVES,
+		ICONNAME_CLOTHING_UNDERSHIRT,
+		ICONNAME_CLOTHING_UNDERPANTS,
+		ICONNAME_CLOTHING_SKIRT,
+		ICONNAME_CLOTHING_ALPHA,
+		ICONNAME_CLOTHING_TATTOO,
+
+		ICONNAME_ANIMATION,
+		ICONNAME_GESTURE,
+
+		ICONNAME_CLOTHING_PHYSICS,
+		
+		ICONNAME_LINKITEM,
+		ICONNAME_LINKFOLDER,
+		ICONNAME_MESH,
+
+		ICONNAME_INVALID,
+		ICONNAME_COUNT,
+		ICONNAME_NONE = -1
+	};
+
 
 	// machine transation between type and strings
 	static EType lookup(const std::string& name);
@@ -92,7 +132,7 @@ private:
 	~LLInventoryType( void );
 };
 
-// helper function which returns true if inventory type and asset type
+// helper function that returns true if inventory type and asset type
 // are potentially compatible. For example, an attachment must be an
 // object, but a wearable can be a bodypart or clothing asset.
 bool inventory_and_asset_types_match(LLInventoryType::EType inventory_type,

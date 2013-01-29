@@ -48,6 +48,7 @@
 #include "llinventorydefines.h"
 #include "llinventoryfilter.h"
 #include "llinventoryfunctions.h"
+#include "llinventoryicon.h"
 #include "llpreviewanim.h"
 #include "llpreviewgesture.h"
 #include "llpreviewnotecard.h"

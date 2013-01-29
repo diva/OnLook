@@ -42,6 +42,7 @@ set(cmake_SOURCE_FILES
     Hunspell.cmake
     JPEG.cmake
     LLAddBuildTest.cmake
+    LLAppearance.cmake
     LLAudio.cmake
     LLCharacter.cmake
     LLCommon.cmake

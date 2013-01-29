@@ -2,31 +2,25 @@
  * @file llstring.h
  * @brief String utility functions and std::string class.
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -188,6 +182,9 @@ public:
 
 	static bool isPunct(char a) { return ispunct((unsigned char)a) != 0; }
 	static bool isPunct(llwchar a) { return iswpunct(a) != 0; }
+
+	static bool isAlpha(char a) { return isalpha((unsigned char)a) != 0; }
+	static bool isAlpha(llwchar a) { return iswalpha(a) != 0; }
 
 	static bool isAlnum(char a) { return isalnum((unsigned char)a) != 0; }
 	static bool isAlnum(llwchar a) { return iswalnum(a) != 0; }
@@ -463,7 +460,7 @@ public:
  * This function works on bytes rather than glyphs, so this will
  * incorrectly truncate non-single byte strings.
  * Use utf8str_truncate() for utf8 strings
- * @return a copy of in string minus the trailing count characters.
+ * @return a copy of in string minus the trailing count bytes.
  */
 inline std::string chop_tail_copy(
 	const std::string& in,
@@ -495,7 +492,7 @@ LL_COMMON_API bool iswindividual(llwchar elem);
  */
 
 // Make the incoming string a utf8 string. Replaces any unknown glyph
-// with the UNKOWN_CHARACTER. Once any unknown glph is found, the rest
+// with the UNKNOWN_CHARACTER. Once any unknown glyph is found, the rest
 // of the data may not be recovered.
 LL_COMMON_API std::string rawstr_to_utf8(const std::string& raw);
 
@@ -528,10 +525,10 @@ LL_COMMON_API std::string utf16str_to_utf8str(const llutf16string &utf16str, S32
 LL_COMMON_API std::string utf16str_to_utf8str(const llutf16string &utf16str);
 
 // Length of this UTF32 string in bytes when transformed to UTF8
-LL_COMMON_API S32 wstring_utf8_length(const LLWString& wstr);
+LL_COMMON_API S32 wstring_utf8_length(const LLWString& wstr); 
 
 // Length in bytes of this wide char in a UTF8 string
-LL_COMMON_API S32 wchar_utf8_length(const llwchar wc);
+LL_COMMON_API S32 wchar_utf8_length(const llwchar wc); 
 
 LL_COMMON_API std::string utf8str_tolower(const std::string& utf8str);
 
@@ -577,7 +574,7 @@ LL_COMMON_API std::string utf8str_substChar(
 LL_COMMON_API std::string utf8str_makeASCII(const std::string& utf8str);
 
 // Hack - used for evil notecards.
-LL_COMMON_API std::string mbcsstring_makeASCII(const std::string& str);
+LL_COMMON_API std::string mbcsstring_makeASCII(const std::string& str); 
 
 LL_COMMON_API std::string utf8str_removeCRLF(const std::string& utf8str);
 
@@ -608,7 +605,7 @@ LL_COMMON_API std::string utf8str_removeCRLF(const std::string& utf8str);
 // Deal with the differeneces on Windows
 namespace snprintf_hack
 {
-    LL_COMMON_API int snprintf(char *str, size_t size, const char *format, ...);
+	LL_COMMON_API int snprintf(char *str, size_t size, const char *format, ...);
 }
 
 using snprintf_hack::snprintf;
@@ -696,7 +693,7 @@ namespace LLStringFn
 ////////////////////////////////////////////////////////////
 // NOTE: LLStringUtil::format, getTokens, and support functions moved to llstring.cpp.
 // There is no LLWStringUtil::format implementation currently.
-// Calling thse for anything other than LLStringUtil will produce link errors.
+// Calling these for anything other than LLStringUtil will produce link errors.
 
 ////////////////////////////////////////////////////////////
 

@@ -52,9 +52,9 @@ void HippoLimits::setAuroraLimits()
 {
 	mMaxAgentGroups = gHippoGridManager->getConnectedGrid()->getMaxAgentGroups();
 	if (mMaxAgentGroups < 0) mMaxAgentGroups = 50;
-	mMaxPrimScale = 256.0f;
+	mMaxPrimScale = 8192.0f;
 	mMinPrimScale = 0.001f;
-	mMaxHeight = 8192.0f;
+	mMaxHeight = 10000.0f;
 	mMinHoleSize = 0.001f;
 	mMaxHollow = 99.0f;
 }

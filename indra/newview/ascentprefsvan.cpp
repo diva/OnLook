@@ -39,6 +39,7 @@
 #include "llaudioengine.h" //For gAudiop
 #include "llstreamingaudio.h" //For LLStreamingAudioInterface
 #include "llcolorswatch.h"
+#include "llvoavatar.h"
 #include "llvoavatarself.h"
 #include "llagent.h"
 #include "llfloaterchat.h"

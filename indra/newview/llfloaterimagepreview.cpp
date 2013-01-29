@@ -82,21 +82,23 @@ const S32 PREVIEW_TEXTURE_HEIGHT = 300;
 LLFloaterImagePreview::LLFloaterImagePreview(const std::string& filename) : 
 	LLFloaterNameDesc(filename),
 	mAvatarPreview(NULL),
-	mSculptedPreview(NULL)
+	mSculptedPreview(NULL),
+	mLastMouseX(0),
+	mLastMouseY(0),
+	mImagep(NULL)
 {
-	mLastMouseX = 0;
-	mLastMouseY = 0;
-	mImagep = NULL ;
 	loadImage(mFilenameAndPath);
 }
 
 // <edit>
 LLFloaterImagePreview::LLFloaterImagePreview(const std::string& filename, void* item) : 
-	LLFloaterNameDesc(filename, item)
+	LLFloaterNameDesc(filename, item),
+	mAvatarPreview(NULL),
+	mSculptedPreview(NULL),
+	mLastMouseX(0),
+	mLastMouseY(0),
+	mImagep(NULL)
 {
-	mLastMouseX = 0;
-	mLastMouseY = 0;
-	mImagep = NULL ;
 	loadImage(mFilenameAndPath);
 }
 // </edit>
@@ -664,7 +666,7 @@ S8 LLImagePreviewAvatar::getType() const
 
 void LLImagePreviewAvatar::setPreviewTarget(const std::string& joint_name, const std::string& mesh_name, LLImageRaw* imagep, F32 distance, BOOL male) 
 { 
-	mTargetJoint = mDummyAvatar->mRoot.findJoint(joint_name);
+	mTargetJoint = mDummyAvatar->mRoot->findJoint(joint_name);
 	// clear out existing test mesh
 	if (mTargetMesh)
 	{
@@ -683,9 +685,9 @@ void LLImagePreviewAvatar::setPreviewTarget(const std::string& joint_name, const
 		mDummyAvatar->updateVisualParams();
 		mDummyAvatar->updateGeometry(mDummyAvatar->mDrawable);
 	}
-	mDummyAvatar->mRoot.setVisible(FALSE, TRUE);
+	mDummyAvatar->mRoot->setVisible(FALSE, TRUE);
 
-	mTargetMesh = (LLViewerJointMesh*)mDummyAvatar->mRoot.findJoint(mesh_name);
+	mTargetMesh = dynamic_cast<LLViewerJointMesh*>(mDummyAvatar->mRoot->findJoint(mesh_name));
 	mTargetMesh->setTestTexture(mTextureName);
 	mTargetMesh->setVisible(TRUE, FALSE);
 	mCameraDistance = distance;
@@ -702,7 +704,7 @@ void LLImagePreviewAvatar::clearPreviewTexture(const std::string& mesh_name)
 {
 	if (mDummyAvatar)
 	{
-		LLViewerJointMesh *mesh = (LLViewerJointMesh*)mDummyAvatar->mRoot.findJoint(mesh_name);
+		LLViewerJointMesh *mesh = dynamic_cast<LLViewerJointMesh*>(mDummyAvatar->mRoot->findJoint(mesh_name));
 		// clear out existing test mesh
 		if (mesh)
 		{

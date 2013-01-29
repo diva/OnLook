@@ -646,7 +646,7 @@ void ImportTracker::send_inventory(LLSD& prim)
 							LLFILE* fp = LLFile::fopen(data->filename, "rb");
 							if(fp)//HACK LOL LOL LOL
 							{
-								LLWearable* wearable = new LLWearable(LLUUID::null);
+								LLViewerWearable* wearable = new LLWearable(LLUUID::null);
 								wearable->importFile( fp );
 								//if (!res)
 								{

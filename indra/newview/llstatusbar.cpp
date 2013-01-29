@@ -401,8 +401,8 @@ void LLStatusBar::refresh()
 
 	BOOL no_scripts = FALSE;
 	if((region
-		&& ((region->getRegionFlags() & REGION_FLAGS_SKIP_SCRIPTS)
-		|| (region->getRegionFlags() & REGION_FLAGS_ESTATE_SKIP_SCRIPTS)))
+		&& (region->getRegionFlag(REGION_FLAGS_SKIP_SCRIPTS)
+		|| region->getRegionFlag(REGION_FLAGS_ESTATE_SKIP_SCRIPTS)))
 		|| (parcel && !parcel->getAllowOtherScripts()))
 	{
 		no_scripts = TRUE;
@@ -839,11 +839,11 @@ static void onClickSeeAV(void*)
 static void onClickScripts(void*)
 {
 	LLViewerRegion* region = gAgent.getRegion();
-	if(region && region->getRegionFlags() & REGION_FLAGS_ESTATE_SKIP_SCRIPTS)
+	if(region && region->getRegionFlag(REGION_FLAGS_ESTATE_SKIP_SCRIPTS))
 	{
 		LLNotificationsUtil::add("ScriptsStopped");
 	}
-	else if(region && region->getRegionFlags() & REGION_FLAGS_SKIP_SCRIPTS)
+	else if(region && region->getRegionFlag(REGION_FLAGS_SKIP_SCRIPTS))
 	{
 		LLNotificationsUtil::add("ScriptsNotRunning");
 	}

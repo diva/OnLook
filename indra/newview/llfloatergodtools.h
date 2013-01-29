@@ -2,31 +2,25 @@
  * @file llfloatergodtools.h
  * @brief The on-screen rectangle with tool options.
  *
- * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
- * Copyright (c) 2002-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -58,11 +52,9 @@ class LLTextBox;
 class LLMessageSystem;
 
 class LLFloaterGodTools
-: public LLFloater
+: public LLFloater, public LLSingleton<LLFloaterGodTools>
 {
 public:
-
-	static LLFloaterGodTools* instance();
 
 	enum EGodPanel
 	{
@@ -74,7 +66,7 @@ public:
 	};
 
 	static void show(void *);
-	static void hide(void *);
+	static void hide();
 
 	static void* createPanelGrid(void *userdata);
 	static void* createPanelRegion(void *userdata);
@@ -85,7 +77,7 @@ public:
 
 	void showPanel(const std::string& panel_name);
 
-	virtual void onClose(bool app_quitting);
+	virtual void onOpen();
 
 	virtual void draw();
 
@@ -104,18 +96,20 @@ public:
 
 	static void onTabChanged(LLUICtrl* ctrl, const LLSD& param);
 
-protected:
-	U32 computeRegionFlags() const;
-
-protected:
+public:
+	
 	LLFloaterGodTools();
 	~LLFloaterGodTools();
+	
+protected:
+	U64 computeRegionFlags() const;
 
+protected:
+
+	/*virtual*/	BOOL	postBuild();
 	// When the floater is going away, reset any options that need to be 
 	// cleared.
 	void resetToolState();
-
-	static LLFloaterGodTools* sInstance;
 
 public:
 	LLPanelRegionTools 	*mPanelRegionTools;
@@ -141,23 +135,24 @@ public:
 
 	/*virtual*/ void refresh();
 
-	static void onSaveState(void* data);
-	static void onChangeAnything(LLUICtrl* ctrl, void* userdata);
-	static void onChangePrelude(LLUICtrl* ctrl, void* data);
+	static void onSaveState(void* userdata);
 	static void onChangeSimName(LLLineEditor* caller, void* userdata);
-	static void onApplyChanges(void* userdata);
-	static void onBakeTerrain(void *userdata);
-	static void onRevertTerrain(void *userdata);
-	static void onSwapTerrain(void *userdata);
-	static void onSelectRegion(void *userdata);
-	static void onRefresh(void* userdata);
+	
+	void onChangeAnything();
+	void onChangePrelude();
+	void onApplyChanges();
+	void onBakeTerrain();
+	void onRevertTerrain();
+	void onSwapTerrain();
+	void onSelectRegion();
+	void onRefresh();
 
 	// set internal checkboxes/spinners/combos 
 	const std::string getSimName() const;
 	U32 getEstateID() const;
 	U32 getParentEstateID() const;
-	U32 getRegionFlags() const;
-	U32 getRegionFlagsMask() const;
+	U64 getRegionFlags() const;
+	U64 getRegionFlagsMask() const;
 	F32 getBillableFactor() const;
 	S32 getPricePerMeter() const;
 	S32 getGridPosX() const;
@@ -169,7 +164,7 @@ public:
 	void setSimName(const std::string& name);
 	void setEstateID(U32 id);
 	void setParentEstateID(U32 id);
-	void setCheckFlags(U32 flags);
+	void setCheckFlags(U64 flags);
 	void setBillableFactor(F32 billable_factor);
 	void setPricePerMeter(S32 price);
 	void setGridPosX(S32 pos);
@@ -177,7 +172,7 @@ public:
 	void setRedirectGridX(S32 pos);
 	void setRedirectGridY(S32 pos);
 
-	U32 computeRegionFlags(U32 initial_flags) const;
+	U64 computeRegionFlags(U64 initial_flags) const;
 	void clearAllWidgets();
 	void enableAllWidgets();
 
@@ -202,11 +197,11 @@ public:
 
 	void refresh();
 
-	static void onClickKickAll(void *data);
+	void onClickKickAll();
 	static bool confirmKick(const LLSD& notification, const LLSD& response);
 	static bool finishKick(const LLSD& notification, const LLSD& response);
 	static void onDragSunPhase(LLUICtrl *ctrl, void *userdata);
-	static void onClickFlushMapVisibilityCaches(void* data);
+	void onClickFlushMapVisibilityCaches();
 	static bool flushMapVisibilityCachesConfirm(const LLSD& notification, const LLSD& response);
 
 protected:
@@ -230,22 +225,22 @@ public:
 	/*virtual*/ void refresh();
 
 	void setTargetAvatar(const LLUUID& target_id);
-	U32 computeRegionFlags(U32 initial_flags) const;
+	U64 computeRegionFlags(U64 initial_flags) const;
 	void clearAllWidgets();
 	void enableAllWidgets();
-	void setCheckFlags(U32 flags);
+	void setCheckFlags(U64 flags);
 
-	static void onChangeAnything(LLUICtrl* ctrl, void* data);
-	static void onApplyChanges(void* data);
-	static void onClickSet(void* data);
-	void callbackAvatarID(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names);
-	static void onClickDeletePublicOwnedBy(void* data);
-	static void onClickDeleteAllScriptedOwnedBy(void* data);
-	static void onClickDeleteAllOwnedBy(void* data);
+	void onChangeAnything();
+	void onApplyChanges();
+	void onClickSet();
+	void callbackAvatarID(const uuid_vec_t& ids, const std::vector<LLAvatarName> names);
+	void onClickDeletePublicOwnedBy();
+	void onClickDeleteAllScriptedOwnedBy();
+	void onClickDeleteAllOwnedBy();
 	static bool callbackSimWideDeletes(const LLSD& notification, const LLSD& response);
-	static void onGetTopColliders(void* data);
-	static void onGetTopScripts(void* data);
-	static void onGetScriptDigest(void* data);
+	void onGetTopColliders();
+	void onGetTopScripts();
+	void onGetScriptDigest();
 	static void onClickSetBySelection(void* data);
 
 protected:
@@ -275,7 +270,7 @@ public:
 							const LLHost& host);
 
 protected:
-	static void onClickRequest(void *data);
+	void onClickRequest();
 	void sendRequest(const LLHost& host);
 };
 

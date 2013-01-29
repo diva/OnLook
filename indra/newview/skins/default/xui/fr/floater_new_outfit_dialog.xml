@@ -1,23 +1,25 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="modal container" width="585">
-	<button label="Enregistrer" label_selected="Enregistrer" left="171" name="Save" width="100"/>
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="modal container" width="600">
+	<button label="Enregistrer" label_selected="Enregistrer" name="Save" width="100"/>
 	<button label="Annuler" label_selected="Annuler" left="280" name="Cancel" width="100"/>
 	<check_box label="Silhouette" name="checkbox_Shape"/>
 	<check_box label="Peau" name="checkbox_Skin"/>
 	<check_box label="Cheveux" name="checkbox_Hair"/>
 	<check_box label="Yeux" name="checkbox_Eyes"/>
 	<check_box label="Donner le nom du dossier &#10;&#xE0; l'ensemble" name="rename"/>
+	  <check_box name="checkbox_use_outfits" label="Utiliser un dossier Viewer 2"/>
+	<check_box name="checkbox_use_links" label="Utiliser des Liens pour les No Copy, No Mod ou les éléments 'multi worn'"/>
 	<check_box label="Chemise" name="checkbox_Shirt"/>
 	<check_box label="Pantalon" name="checkbox_Pants"/>
 	<check_box label="Chaussures" name="checkbox_Shoes"/>
-	<check_box label="Chaussettes" name="checkbox_Socks"/>
+  <check_box label="Chaussettes" name="checkbox_socks"/>
 	<check_box label="Veste" name="checkbox_Jacket"/>
-	<check_box label="Gants" name="checkbox_Gloves"/>
+  <check_box label="Gants" name="checkbox_gloves"/>
 	<check_box label="Tee Shirt" name="checkbox_Undershirt"/>
 	<check_box label="culotte" name="checkbox_Underpants"/>
 	<check_box label="Jupe" name="checkbox_Skirt"/>
 	<check_box label="Poitrine" left="225" name="checkbox_Chest"/>
-	<check_box label="Cr�ne" left="225" name="checkbox_Skull"/>
+	<check_box label="Crâne" left="225" name="checkbox_Skull"/>
 	<check_box label="Epaule gauche" left="225" name="checkbox_Left Shoulder"/>
 	<check_box label="Epaule droite" left="225" name="checkbox_Right Shoulder"/>
 	<check_box label="Main gauche" left="225" name="checkbox_Left Hand"/>
@@ -46,14 +48,16 @@
 	<check_box label="Estomac" left="460" name="checkbox_Stomach"/>
 	<check_box label="Pectoral gauche" left="460" name="checkbox_Left Pec"/>
 	<check_box label="Pectoral droit" left="460" name="checkbox_Right Pec"/>
+	  <check_box label="Cou" left="460" name="checkbox_Neck"/>
+	<check_box label="Root" left="460" name="checkbox_Root"/>
 	<check_box label="Centre 2" left="460" name="checkbox_Center 2"/>
-	<check_box label="En haut � droite" left="460" name="checkbox_Top Right"/>
+	<check_box label="En haut à droite" left="460" name="checkbox_Top Right"/>
 	<check_box label="En haut" left="460" name="checkbox_Top"/>
-	<check_box label="En haut � gauche" left="460" name="checkbox_Top Left"/>
+	<check_box label="En haut à gauche" left="460" name="checkbox_Top Left"/>
 	<check_box label="Centre" left="460" name="checkbox_Center"/>
-	<check_box label="En bas � gauche" left="460" name="checkbox_Bottom Left"/>
+	<check_box label="En bas à gauche" left="460" name="checkbox_Bottom Left"/>
 	<check_box label="En bas" left="460" name="checkbox_Bottom"/>
-	<check_box label="En bas � droite" left="460" name="checkbox_Bottom Right"/>
+	<check_box label="En bas à droite" left="460" name="checkbox_Bottom Right"/>
 	<text name="Make New Outfit">
 		Cr&#xE9;er un ensemble
 	</text>
@@ -65,22 +69,24 @@ Le bouton Cr&#xE9;er un ensemble vous permet de cr&#xE9;er un dossier et d'y sau
 des articles que vous portez maintenant.
 	</text>
 	<text name="Folder name:">
-		Nom du dossier:
+		Nom du dossier :
 	</text>
 	<text name="Items to include in outfit:">
-		Articles &#xE0; inclure &#xE0; l'ensemble:
+		Articles &#xE0; inclure &#xE0; l'ensemble  :
 	</text>
+	  <button label="Sélect. TOUT" name="Check All" width="85" />
+  <button label="Déselect. TOUT" left_delta="110" name="Uncheck All" width="105" />
 	<text name="Body Parts:">
-		Parties du corps:
+		Parties du corps :
 	</text>
-	<text left="115" name="Clothes:">
-		Habits:
+	<text name="Clothes:">
+		Habits :
 	</text>
-	<text left="227" name="Attachments:">
-		Attachements:
+	<text name="Attachments:">
+		Attachements  :
 	</text>
 	<text name="Options:">
-		Options:
+		Options :
 	</text>
 	<line_editor name="name ed">
 		Nouvelle tenue

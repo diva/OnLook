@@ -96,7 +96,7 @@ void LLSimInfo::setLandForSaleImage (LLUUID image_id)
 	// Fetch the image
 	if (mMapImageID[SIM_LAYER_OVERLAY].notNull())
 	{
-		mLayerImage[SIM_LAYER_OVERLAY] = LLViewerTextureManager::getFetchedTexture(mMapImageID[SIM_LAYER_OVERLAY], MIPMAP_TRUE, LLViewerTexture::BOOST_MAP, LLViewerTexture::LOD_TEXTURE);
+		mLayerImage[SIM_LAYER_OVERLAY] = LLViewerTextureManager::getFetchedTexture(mMapImageID[SIM_LAYER_OVERLAY], MIPMAP_TRUE, LLGLTexture::BOOST_MAP, LLViewerTexture::LOD_TEXTURE);
 		mLayerImage[SIM_LAYER_OVERLAY]->setAddressMode(LLTexUnit::TAM_CLAMP);
 	}
 	else
@@ -110,13 +110,13 @@ LLPointer<LLViewerFetchedTexture> LLSimInfo::getLandForSaleImage ()
 	if (mLayerImage[SIM_LAYER_OVERLAY].isNull() && mMapImageID[SIM_LAYER_OVERLAY].notNull())
 	{
 		// Fetch the image if it hasn't been done yet (unlikely but...)
-		mLayerImage[SIM_LAYER_OVERLAY] = LLViewerTextureManager::getFetchedTexture(mMapImageID[SIM_LAYER_OVERLAY], MIPMAP_TRUE, LLViewerTexture::BOOST_MAP, LLViewerTexture::LOD_TEXTURE);
+		mLayerImage[SIM_LAYER_OVERLAY] = LLViewerTextureManager::getFetchedTexture(mMapImageID[SIM_LAYER_OVERLAY], MIPMAP_TRUE, LLGLTexture::BOOST_MAP, LLViewerTexture::LOD_TEXTURE);
 		mLayerImage[SIM_LAYER_OVERLAY]->setAddressMode(LLTexUnit::TAM_CLAMP);
 	}
 	if (!mLayerImage[SIM_LAYER_OVERLAY].isNull())
 	{
 		// Boost the fetch level when we try to access that image
-		mLayerImage[SIM_LAYER_OVERLAY]->setBoostLevel(LLViewerTexture::BOOST_MAP);
+		mLayerImage[SIM_LAYER_OVERLAY]->setBoostLevel(LLGLTexture::BOOST_MAP);
 	}
 	return mLayerImage[SIM_LAYER_OVERLAY];
 }
@@ -491,7 +491,7 @@ void LLWorldMap::processMapLayerReply(LLMessageSystem* msg, void**)
 		msg->getU32Fast(_PREHASH_LayerData, _PREHASH_Top, top, block);
 		msg->getU32Fast(_PREHASH_LayerData, _PREHASH_Bottom, bottom, block);
 
-		new_layer.LayerImage = LLViewerTextureManager::getFetchedTexture(new_layer.LayerImageID, MIPMAP_TRUE, LLViewerTexture::BOOST_MAP, LLViewerTexture::LOD_TEXTURE);
+		new_layer.LayerImage = LLViewerTextureManager::getFetchedTexture(new_layer.LayerImageID, MIPMAP_TRUE, LLGLTexture::BOOST_MAP, LLViewerTexture::LOD_TEXTURE);
 
 		gGL.getTexUnit(0)->bind(new_layer.LayerImage.get());
 		new_layer.LayerImage->setAddressMode(LLTexUnit::TAM_CLAMP);

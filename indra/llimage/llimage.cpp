@@ -2,31 +2,25 @@
  * @file llimage.cpp
  * @brief Base class for images.
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -180,11 +174,21 @@ U8* LLImageBase::allocateData(S32 size)
 			llerrs << llformat("LLImageBase::allocateData called with bad dimensions: %dx%dx%d",mWidth,mHeight,(S32)mComponents) << llendl;
 		}
 	}
-	else if (size <= 0 || (size > 4096*4096*16 && !mAllowOverSize))
-	{
-		llerrs << "LLImageBase::allocateData: bad size: " << size << llendl;
-	}
 	
+	//make this function thread-safe.
+	static const U32 MAX_BUFFER_SIZE = 4096 * 4096 * 16 ; //256 MB
+	if (size < 1 || size > MAX_BUFFER_SIZE) 
+	{
+		//llinfos << "width: " << mWidth << " height: " << mHeight << " components: " << mComponents << llendl ;
+		if(mAllowOverSize)
+		{
+			//llinfos << "Oversize: " << size << llendl ;
+		}
+		else
+		{
+			llerrs << "LLImageBase::allocateData: bad size: " << size << llendl;
+		}
+	}
 	if (!mData || size != mDataSize)
 	{
 		deleteData(); // virtual
@@ -192,7 +196,7 @@ U8* LLImageBase::allocateData(S32 size)
 		mData = (U8*)ALLOCATE_MEM(sPrivatePoolp, size);
 		if (!mData)
 		{
-			llwarns << "allocate image data: " << size << llendl;
+			llwarns << "Failed to allocate image data size [" << size << "]" << llendl;
 			size = 0 ;
 			mWidth = mHeight = 0 ;
 			mBadBufferAllocation = true ;
@@ -498,22 +502,24 @@ void LLImageRaw::verticalFlip()
 {
 	LLMemType mt1(mMemType);
 	S32 row_bytes = getWidth() * getComponents();
-	U8* line_buffer = new (std::nothrow) U8[row_bytes];
-	if (!line_buffer )
+	llassert(row_bytes > 0);
+	try
 	{
-		llerrs << "Out of memory in LLImageRaw::verticalFlip()" << llendl;
-		return;
-	}
+	std::vector<U8> line_buffer(row_bytes);
 	S32 mid_row = getHeight() / 2;
 	for( S32 row = 0; row < mid_row; row++ )
 	{
 		U8* row_a_data = getData() + row * row_bytes;
 		U8* row_b_data = getData() + (getHeight() - 1 - row) * row_bytes;
-		memcpy( line_buffer, row_a_data,  row_bytes );	/* Flawfinder: ignore */
-		memcpy( row_a_data,  row_b_data,  row_bytes );	/* Flawfinder: ignore */
-		memcpy( row_b_data,  line_buffer, row_bytes );	/* Flawfinder: ignore */
+		memcpy( &line_buffer[0], row_a_data,  row_bytes );
+		memcpy( row_a_data,  row_b_data,  row_bytes );
+		memcpy( row_b_data,  &line_buffer[0], row_bytes );
 	}
-	delete[] line_buffer;
+	}
+	catch(std::bad_alloc)
+	{
+		llerrs << "Out of memory in LLImageRaw::verticalFlip()" << llendl;
+	}
 }
 
 
@@ -641,27 +647,28 @@ void LLImageRaw::compositeScaled4onto3(LLImageRaw* src)
 
 	llassert( (4 == src->getComponents()) && (3 == dst->getComponents()) );
 
-	// Vertical: scale but no composite
 	S32 temp_data_size = src->getWidth() * dst->getHeight() * src->getComponents();
-	U8* temp_buffer = new (std::nothrow) U8[ temp_data_size ];
-	if (!temp_buffer )
+	llassert_always(temp_data_size > 0);
+	try
 	{
-		llerrs << "Out of memory in LLImageRaw::compositeScaled4onto3()" << llendl;
-		return;
-	}
+	std::vector<U8> temp_buffer(temp_data_size);
+
+	// Vertical: scale but no composite
 	for( S32 col = 0; col < src->getWidth(); col++ )
 	{
-		copyLineScaled( src->getData() + (src->getComponents() * col), temp_buffer + (src->getComponents() * col), src->getHeight(), dst->getHeight(), src->getWidth(), src->getWidth() );
+		copyLineScaled( src->getData() + (src->getComponents() * col), &temp_buffer[0] + (src->getComponents() * col), src->getHeight(), dst->getHeight(), src->getWidth(), src->getWidth() );
 	}
 
 	// Horizontal: scale and composite
 	for( S32 row = 0; row < dst->getHeight(); row++ )
 	{
-		compositeRowScaled4onto3( temp_buffer + (src->getComponents() * src->getWidth() * row), dst->getData() + (dst->getComponents() * dst->getWidth() * row), src->getWidth(), dst->getWidth() );
+		compositeRowScaled4onto3( &temp_buffer[0] + (src->getComponents() * src->getWidth() * row), dst->getData() + (dst->getComponents() * dst->getWidth() * row), src->getWidth(), dst->getWidth() );
 	}
-
-	// Clean up
-	delete[] temp_buffer;
+	}
+	catch(std::bad_alloc)
+	{
+		llerrs << "Out of memory in LLImageRaw::compositeScaled4onto3()" << llendl;
+	}
 }
 
 
@@ -897,28 +904,29 @@ void LLImageRaw::copyScaled( LLImageRaw* src )
 		return;
 	}
 
-	// Vertical
 	S32 temp_data_size = src->getWidth() * dst->getHeight() * getComponents();
 	llassert_always(temp_data_size > 0);
-	U8* temp_buffer = new (std::nothrow) U8[ temp_data_size ];
-	if (!temp_buffer )
+	try
 	{
-		llerrs << "Out of memory in LLImageRaw::copyScaled()" << llendl;
-		return;
-	}
+	std::vector<U8> temp_buffer(temp_data_size);
+
+	// Vertical
 	for( S32 col = 0; col < src->getWidth(); col++ )
 	{
-		copyLineScaled( src->getData() + (getComponents() * col), temp_buffer + (getComponents() * col), src->getHeight(), dst->getHeight(), src->getWidth(), src->getWidth() );
+		copyLineScaled( src->getData() + (getComponents() * col), &temp_buffer[0] + (getComponents() * col), src->getHeight(), dst->getHeight(), src->getWidth(), src->getWidth() );
 	}
 
 	// Horizontal
 	for( S32 row = 0; row < dst->getHeight(); row++ )
 	{
-		copyLineScaled( temp_buffer + (getComponents() * src->getWidth() * row), dst->getData() + (getComponents() * dst->getWidth() * row), src->getWidth(), dst->getWidth(), 1, 1 );
+		copyLineScaled( &temp_buffer[0] + (getComponents() * src->getWidth() * row), dst->getData() + (getComponents() * dst->getWidth() * row), src->getWidth(), dst->getWidth(), 1, 1 );
 	}
-
-	// Clean up
-	delete[] temp_buffer;
+	}
+	catch(std::bad_alloc)
+	{
+		llerrs << "Out of memory in LLImageRaw::copyScaled()" << llendl;
+	}
+	
 }
 
 #if 0
@@ -1359,7 +1367,7 @@ bool LLImageRaw::createFromFile(const std::string &filename, bool j2c_lowest_mip
 	llassert(image.notNull());
 
 	U8 *buffer = image->allocateData(length);
-	ifs.read ((char*)buffer, length);	/* Flawfinder: ignore */
+	ifs.read ((char*)buffer, length);
 	ifs.close();
 	
 	BOOL success;
@@ -1607,6 +1615,7 @@ void LLImageFormatted::setData(U8 *data, S32 size)
 	{
 		deleteData();
 		setDataAndSize(data, size); // Access private LLImageBase members
+
 		sGlobalFormattedMemory += getDataSize();
 	}
 }
@@ -1632,7 +1641,7 @@ void LLImageFormatted::appendData(U8 *data, S32 size)
 
 //----------------------------------------------------------------------------
 
-BOOL LLImageFormatted::load(const std::string &filename)
+BOOL LLImageFormatted::load(const std::string &filename, int load_size)
 {
 	resetLastError();
 
@@ -1650,14 +1659,19 @@ BOOL LLImageFormatted::load(const std::string &filename)
 		return FALSE;
 	}
 
+	// Constrain the load size to acceptable values
+	if ((load_size == 0) || (load_size > file_size))
+	{
+		load_size = file_size;
+	}
 	BOOL res;
-	U8 *data = allocateData(file_size);
-	apr_size_t bytes_read = file_size;
+	U8 *data = allocateData(load_size);
+	apr_size_t bytes_read = load_size;
 	apr_status_t s = apr_file_read(apr_file, data, &bytes_read); // modifies bytes_read
-	if (s != APR_SUCCESS || (S32) bytes_read != file_size)
+	if (s != APR_SUCCESS || (S32) bytes_read != load_size)
 	{
 		deleteData();
-		setLastError("Unable to read entire file",filename);
+		setLastError("Unable to read file",filename);
 		res = FALSE;
 	}
 	else

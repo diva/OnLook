@@ -73,7 +73,7 @@ HippoGridInfo::Platform HippoGridInfo::getPlatform()
 
 bool HippoGridInfo::isOpenSimulator() const
 {
-	return (mPlatform == HippoGridInfo::PLATFORM_OPENSIM);
+	return (mPlatform == HippoGridInfo::PLATFORM_OPENSIM || mPlatform == HippoGridInfo::PLATFORM_AURORA);
 }
 
 bool HippoGridInfo::isAurora() const

@@ -43,6 +43,7 @@
 #include "llviewermenu.h"
 #include "llwearable.h"
 #include "lliconctrl.h"
+#include "llsingleton.h"
 
 class LLButton;
 class LLIconCtrl;
@@ -62,6 +63,7 @@ class LLViewerJointMesh;
 class LLViewerVisualParam;
 class LLVisualParam;
 class LLVisualParamReset;
+class LLViewerWearable;
 class LLWearableSaveAsDialog;
 class LLPanelEditWearable;
 class AIFilePicker;
@@ -69,74 +71,82 @@ class AIFilePicker;
 /////////////////////////////////////////////////////////////////////
 // LLFloaterCustomize
 
-class LLFloaterCustomize : public LLFloater
+class LLFloaterCustomize : public LLFloater, public LLSingleton<LLFloaterCustomize>
 {
 public:
+	// Ctor/Dtor
 	LLFloaterCustomize();
 	virtual ~LLFloaterCustomize();
-	virtual BOOL 	postBuild();
 
-	// Inherted methods from LLFloater (and above)
-	virtual void	onClose(bool app_quitting);
-	virtual void	draw();
-	/*virtual*/ void open();
+	// Inherted methods
+	/*virtual*/ BOOL 	postBuild();
+	/*virtual*/ void	onClose(bool app_quitting);
+	/*virtual*/ void	draw();
+	
+	// Creation procedures
+	static void		editWearable(LLViewerWearable* wearable, bool disable_camera_switch);
+	static void		show();
 
 
-	// New methods
+private:
+	// Initilization	
+	void			initWearablePanels();
+	void			initScrollingPanelList();
 
+	// Deinitilization
+	void			delayedClose(bool proceed, bool app_quitting);
+
+	// Setters/Getters
+	void			setCurrentWearableType(LLWearableType::EType type, bool disable_camera_switch);
+public:
+	LLWearableType::EType getCurrentWearableType()	const	{ return mCurrentWearableType; }
+	LLPanelEditWearable* getCurrentWearablePanel()	const	{ return mWearablePanelList[ mCurrentWearableType ]; }
+	LLScrollingPanelList* getScrollingPanelList()	const	{ return mScrollingPanelList; }	//LLPanelEditWearable needs access to this.
+
+	// Updates
 	void			wearablesChanged(LLWearableType::EType type);
+public:
 	void			updateScrollingPanelList();
-	LLPanelEditWearable* getCurrentWearablePanel() { return mWearablePanelList[ sCurrentWearableType ]; }
+	void			updateVisiblity(bool force_disable_camera_switch = false);
+private:
+	void			updateInventoryUI();
 
-	virtual BOOL	isDirty() const;
+	// Utility
+	void			fetchInventory();
+	bool			isWearableDirty() const;
 
+public:
 	void			askToSaveIfDirty( boost::function<void (BOOL)> cb );
-
 	void			switchToDefaultSubpart();
 
-	static void		setCurrentWearableType( LLWearableType::EType type );
-	static LLWearableType::EType getCurrentWearableType()					{ return sCurrentWearableType; }
-
+private:
 	// Callbacks
 	void			onBtnOk();
 	void			onBtnMakeOutfit();
-	void			onMakeOutfitCommit();
 	void			onBtnImport();
 	static void		onBtnImport_continued(AIFilePicker* filepicker);
 	void			onBtnExport();
 	static void		onBtnExport_continued(AIFilePicker* filepicker);
-
-	static void		onTabChanged( const LLSD& param );
+	void			onTabChanged( const LLSD& param );
 	bool			onTabPrecommit( LLUICtrl* ctrl, const LLSD& param );
 	bool			onSaveDialog(const LLSD& notification, const LLSD& response);
-	static void		onCommitChangeTab(BOOL proceed, LLTabContainer* ctrl, std::string panel_name, LLWearableType::EType type);
+	void			onCommitChangeTab(BOOL proceed, LLTabContainer* ctrl, std::string panel_name, LLWearableType::EType type);
+	
+	// LLCallbackMap callback.
+	static void*	createWearablePanel(void* userdata);
 
-	void fetchInventory();
-	void updateInventoryUI();
+	// Member variables
+	LLPanelEditWearable*			mWearablePanelList[ LLWearableType::WT_COUNT ];
 
-	LLScrollingPanelList* getScrollingPanelList() const { return mScrollingPanelList; }
-protected:
-	LLPanelEditWearable*	mWearablePanelList[ LLWearableType::WT_COUNT ];
+	LLWearableType::EType			mCurrentWearableType;
 
-	static LLWearableType::EType	sCurrentWearableType;
+	LLScrollingPanelList*			mScrollingPanelList;
+	LLScrollableContainerView*		mScrollContainer;
+	LLPointer<LLVisualParamReset>	mResetParams;
 
-	LLScrollingPanelList*	mScrollingPanelList;
-	LLScrollableContainerView* mScrollContainer;
-	LLPointer<LLVisualParamReset>		mResetParams;
-
-	LLInventoryObserver* mInventoryObserver;
+	LLInventoryObserver*			mInventoryObserver;
 
 	boost::signals2::signal<void (bool proceed)> mNextStepAfterSaveCallback;
-	
-protected:
-	
-	static void* createWearablePanel(void* userdata);
-	
-	void			initWearablePanels();
-	void			initScrollingPanelList();
 };
-
-extern LLFloaterCustomize* gFloaterCustomize;
-
 
 #endif  // LL_LLFLOATERCUSTOMIZE_H

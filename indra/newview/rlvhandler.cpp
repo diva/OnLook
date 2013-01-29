@@ -881,7 +881,7 @@ bool RlvHandler::redirectChatOrEmote(const std::string& strUTF8Text) const
 		if ( (getCompositeInfo(idItem, &strComposite, &pFolder)) && (cstrItemType != strComposite) )
 		{
 			LLUUID idCompositeItem;
-			if ((type = LLWearable::typeNameToType(strComposite)) != WT_INVALID)
+			if ((type = LLViewerWearable::typeNameToType(strComposite)) != WT_INVALID)
 			{
 				idCompositeItem = gAgent.getWearableItem(type);
 			}
@@ -931,7 +931,7 @@ bool RlvHandler::redirectChatOrEmote(const std::string& strUTF8Text) const
 				case LLAssetType::AT_BODYPART:
 				case LLAssetType::AT_CLOTHING:
 					{
-						LLWearable* pWearable = gAgent.getWearableFromWearableItem(pItem->getUUID());
+						LLViewerWearable* pWearable = gAgent.getWearableFromWearableItem(pItem->getUUID());
 						if ( (pWearable) && (!isRemovable(pWearable->getType())) )
 							return false;	// If one wearable in the folder is non-removeable then the entire folder should be
 					}
@@ -1052,14 +1052,6 @@ BOOL RlvHandler::setEnabled(BOOL fEnable)
 			
 		// Set up RlvUIEnabler
 		RlvUIEnabler::getInstance();
-	}
-
-	// RELEASE-RLVa: LL defines CLIENT_MENU_NAME but we can't get to it from here so we need to keep those two in sync manually
-	LLMenuGL* pClientMenu = NULL;
-	if ( (gMenuBarView) && ((pClientMenu = gMenuBarView->getChildMenuByName("Advanced", FALSE)) != NULL) )
-	{
-		pClientMenu->setItemVisible("RLVa", m_fEnabled);
-		pClientMenu->setItemEnabled("RLVa", m_fEnabled);
 	}
 
 	return m_fEnabled;		// Return enabled/disabled state

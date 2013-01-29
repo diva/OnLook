@@ -50,7 +50,6 @@
 #include "llscrollcontainer.h"
 #include "llscrollingpanelparam.h"
 #include "llsliderctrl.h"
-#include "lltabcontainervertical.h"
 #include "llviewerwindow.h"
 #include "llinventoryfunctions.h"
 #include "llinventoryobserver.h"
@@ -78,15 +77,13 @@
 #include "llnotificationsutil.h"
 #include "llpaneleditwearable.h"
 #include "llmakeoutfitdialog.h"
+#include "llagentcamera.h"
 
 #include "statemachine/aifilepicker.h"
 
-using namespace LLVOAvatarDefines;
+using namespace LLAvatarAppearanceDefines;
 
 // *TODO:translate : The ui xml for this really needs to be integrated with the appearance paramaters
-
-// Globals
-LLFloaterCustomize* gFloaterCustomize = NULL;
 
 /////////////////////////////////////////////////////////////////////
 // LLFloaterCustomizeObserver
@@ -121,21 +118,18 @@ BOOL edit_wearable_for_teens(LLWearableType::EType type)
 
 void updateAvatarHeightDisplay()
 {
-	if (gFloaterCustomize && isAgentAvatarValid())
+	if (LLFloaterCustomize::instanceExists() && isAgentAvatarValid())
 	{
 		F32 avatar_size = (gAgentAvatarp->mBodySize.mV[VZ]) + (F32)0.17; //mBodySize is actually quite a bit off.
-		gFloaterCustomize->getChild<LLTextBox>("HeightTextM")->setValue(llformat("%.2f", avatar_size) + "m");
+		LLFloaterCustomize::getInstance()->getChild<LLTextBox>("HeightTextM")->setValue(llformat("%.2f", avatar_size) + "m");
 		F32 feet = avatar_size / 0.3048;
 		F32 inches = (feet - (F32)((U32)feet)) * 12.0;
-		gFloaterCustomize->getChild<LLTextBox>("HeightTextI")->setValue(llformat("%d'%d\"", (U32)feet, (U32)inches));
+		LLFloaterCustomize::getInstance()->getChild<LLTextBox>("HeightTextI")->setValue(llformat("%d'%d\"", (U32)feet, (U32)inches));
 	}
  }
 
 /////////////////////////////////////////////////////////////////////
 // LLFloaterCustomize
-
-// statics
-LLWearableType::EType	LLFloaterCustomize::sCurrentWearableType = LLWearableType::WT_INVALID;
 
 struct WearablePanelData
 {
@@ -148,7 +142,8 @@ struct WearablePanelData
 LLFloaterCustomize::LLFloaterCustomize()
 :	LLFloater(std::string("customize")),
 	mScrollingPanelList( NULL ),
-	mInventoryObserver(NULL)
+	mInventoryObserver(NULL),
+	mCurrentWearableType(LLWearableType::WT_INVALID)
 {
 	memset(&mWearablePanelList[0],0,sizeof(char*)*LLWearableType::WT_COUNT); //Initialize to 0
 
@@ -173,8 +168,23 @@ LLFloaterCustomize::LLFloaterCustomize()
 	}
 
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_customize.xml", &factory_map);
+
+	fetchInventory();	//May as well start requesting now.
+
+	LLFloater::open();
+
+	setVisible(false);
 }
 
+LLFloaterCustomize::~LLFloaterCustomize()
+{
+	llinfos << "Destroying LLFloaterCustomize" << llendl;
+	mResetParams = NULL;
+	gInventory.removeObserver(mInventoryObserver);
+	delete mInventoryObserver;
+}
+
+// virtual
 BOOL LLFloaterCustomize::postBuild()
 {
 	getChild<LLUICtrl>("Make Outfit")->setCommitCallback(boost::bind(&LLFloaterCustomize::onBtnMakeOutfit, this));
@@ -185,14 +195,11 @@ BOOL LLFloaterCustomize::postBuild()
 	getChild<LLUICtrl>("Import")->setCommitCallback(boost::bind(&LLFloaterCustomize::onBtnImport, this));
 	getChild<LLUICtrl>("Export")->setCommitCallback(boost::bind(&LLFloaterCustomize::onBtnExport, this));
 	
-	// Wearable panels
-	initWearablePanels();
-
 	// Tab container
 	LLTabContainer* tab_container = getChild<LLTabContainer>("customize tab container");
 	if(tab_container)
 	{
-		tab_container->setCommitCallback(boost::bind(&LLFloaterCustomize::onTabChanged, _2));
+		tab_container->setCommitCallback(boost::bind(&LLFloaterCustomize::onTabChanged, this, _2));
 		tab_container->setValidateCallback(boost::bind(&LLFloaterCustomize::onTabPrecommit, this, _1, _2));
 	}
 
@@ -214,31 +221,71 @@ BOOL LLFloaterCustomize::postBuild()
 	return TRUE;
 }
 
-void LLFloaterCustomize::open()
+//static
+void LLFloaterCustomize::editWearable(LLViewerWearable* wearable, bool disable_camera_switch)
 {
-	LLFloater::open();
-	// childShowTab depends on gFloaterCustomize being defined and therefore must be called after the constructor. - Nyx
-	childShowTab("customize tab container", "Shape", true);
-	setCurrentWearableType(LLWearableType::WT_SHAPE);
+	if(!wearable)
+		return;
+	LLFloaterCustomize::getInstance()->setCurrentWearableType(wearable->getType(), disable_camera_switch);
+}
+
+//static
+void LLFloaterCustomize::show()
+{
+	if(!LLFloaterCustomize::instanceExists())
+	{
+		const BOOL disable_camera_switch = LLWearableType::getDisableCameraSwitch(LLWearableType::WT_SHAPE);
+		LLFloaterCustomize::getInstance()->setCurrentWearableType(LLWearableType::WT_SHAPE, disable_camera_switch);
+	}
+	else
+		LLFloaterCustomize::getInstance()->setFrontmost(true);
+}
+
+// virtual
+void LLFloaterCustomize::onClose(bool app_quitting)
+{
+	// since this window is potentially staying open, push to back to let next window take focus
+	gFloaterView->sendChildToBack(this);
+	// askToSaveIfDirty will call delayedClose immediately if there's nothing to save.
+	askToSaveIfDirty( boost::bind(&LLFloaterCustomize::delayedClose, this, _1, app_quitting) );
+}
+
+void LLFloaterCustomize::delayedClose(bool proceed, bool app_quitting)
+{
+	if(proceed)
+	{
+		LLVOAvatarSelf::onCustomizeEnd();
+		LLFloater::onClose(app_quitting);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
-// static
-void LLFloaterCustomize::setCurrentWearableType( LLWearableType::EType type )
+void LLFloaterCustomize::setCurrentWearableType( LLWearableType::EType type, bool disable_camera_switch )
 {
-	if( LLFloaterCustomize::sCurrentWearableType != type )
+	if( mCurrentWearableType != type )
 	{
-		LLFloaterCustomize::sCurrentWearableType = type; 
+		mCurrentWearableType = type; 
+
+		if (!gAgentCamera.cameraCustomizeAvatar())
+		{
+			LLVOAvatarSelf::onCustomizeStart(disable_camera_switch);
+		}
+		else if(!gSavedSettings.getBOOL("AppearanceCameraMovement") || disable_camera_switch)	//Break out to free camera.
+		{
+			gAgentCamera.changeCameraToDefault();
+			gAgentCamera.resetView();
+		}
 
 		S32 type_int = (S32)type;
-		if( gFloaterCustomize
-			&& gFloaterCustomize->mWearablePanelList[type_int])
+		if(mWearablePanelList[type_int])
 		{
-			std::string panelname = gFloaterCustomize->mWearablePanelList[type_int]->getName();
-			gFloaterCustomize->childShowTab("customize tab container", panelname);
-			gFloaterCustomize->switchToDefaultSubpart();
+			std::string panelname = mWearablePanelList[type_int]->getName();
+			childShowTab("customize tab container", panelname);
+			switchToDefaultSubpart();
 		}
+
+		updateVisiblity(disable_camera_switch);
 	}
 }
 
@@ -328,7 +375,7 @@ void LLFloaterCustomize::onBtnExport_continued(AIFilePicker* filepicker)
 	for( S32 i=0; i < LLWearableType::WT_COUNT; i++ )
 	{
 		is_modifiable = FALSE;
-		LLWearable* old_wearable = gAgentWearables.getWearable((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
+		LLViewerWearable* old_wearable = gAgentWearables.getViewerWearable((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
 		if( old_wearable )
 		{
 			item = gInventory.getItem(old_wearable->getItemID());
@@ -352,7 +399,7 @@ void LLFloaterCustomize::onBtnExport_continued(AIFilePicker* filepicker)
 	for( S32 i=0; i < LLWearableType::WT_COUNT; i++ )
 	{
 		is_modifiable = FALSE;
-		LLWearable* old_wearable = gAgentWearables.getWearable((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
+		LLViewerWearable* old_wearable = gAgentWearables.getViewerWearable((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
 		if( old_wearable )
 		{
 			item = gInventory.getItem(old_wearable->getItemID());
@@ -390,7 +437,7 @@ void LLFloaterCustomize::onBtnOk()
 	}
 
 	gFloaterView->sendChildToBack(this);
-	handle_reset_view();  // Calls askToSaveIfDirty
+	close(false);
 }
 
 void LLFloaterCustomize::onBtnMakeOutfit()
@@ -405,33 +452,16 @@ void* LLFloaterCustomize::createWearablePanel(void* userdata)
 {
 	WearablePanelData* data = (WearablePanelData*)userdata;
 	LLWearableType::EType type = data->mType;
-	LLPanelEditWearable* panel;
-	if ((gAgent.isTeen() && !edit_wearable_for_teens(data->mType) ))
-	{
-		panel = NULL;
-	}
+	LLPanelEditWearable* &panel = data->mFloater->mWearablePanelList[type];
+	if (!gAgent.isTeen() || edit_wearable_for_teens(type))
+		panel = new LLPanelEditWearable( type, data->mFloater );
 	else
-	{
-		panel = new LLPanelEditWearable( type );
-	}
-	data->mFloater->mWearablePanelList[type] = panel;
+		panel = NULL;
 	delete data;
 	return panel;
 }
 
-void LLFloaterCustomize::initWearablePanels()
-{
-}
-
 ////////////////////////////////////////////////////////////////////////////
-
-LLFloaterCustomize::~LLFloaterCustomize()
-{
-	llinfos << "Destroying LLFloaterCustomize" << llendl;
-	mResetParams = NULL;
-	gInventory.removeObserver(mInventoryObserver);
-	delete mInventoryObserver;
-}
 
 void LLFloaterCustomize::switchToDefaultSubpart()
 {
@@ -460,12 +490,12 @@ void LLFloaterCustomize::draw()
 	LLFloater::draw();
 }
 
-BOOL LLFloaterCustomize::isDirty() const
+bool LLFloaterCustomize::isWearableDirty() const
 {
 	LLWearableType::EType cur = getCurrentWearableType();
 	for(U32 i = 0; i < gAgentWearables.getWearableCount(cur); ++i)
 	{
-		LLWearable* wearable = gAgentWearables.getWearable(cur,i);
+		LLViewerWearable* wearable = gAgentWearables.getViewerWearable(cur,i);
 		if(wearable && wearable->isDirty())
 			return TRUE;
 	}
@@ -482,9 +512,9 @@ bool LLFloaterCustomize::onTabPrecommit( LLUICtrl* ctrl, const LLSD& param )
 
 		if(type_name == panel_name)
 		{
-			if(LLFloaterCustomize::sCurrentWearableType != type)
+			if(mCurrentWearableType != type)
 			{
-				askToSaveIfDirty(boost::bind(&LLFloaterCustomize::onCommitChangeTab, _1, (LLTabContainer*)ctrl, param.asString(), (LLWearableType::EType)type));
+				askToSaveIfDirty(boost::bind(&LLFloaterCustomize::onCommitChangeTab, this, _1, (LLTabContainer*)ctrl, param.asString(), (LLWearableType::EType)type));
 				return false;
 			}
 		}
@@ -493,7 +523,6 @@ bool LLFloaterCustomize::onTabPrecommit( LLUICtrl* ctrl, const LLSD& param )
 }
 
 
-// static
 void LLFloaterCustomize::onTabChanged( const LLSD& param )
 {
 	std::string panel_name = param.asString();
@@ -504,28 +533,22 @@ void LLFloaterCustomize::onTabChanged( const LLSD& param )
 
 		if(type_name == panel_name)
 		{
-			LLFloaterCustomize::setCurrentWearableType((LLWearableType::EType)type);
+			const BOOL disable_camera_switch = LLWearableType::getDisableCameraSwitch((LLWearableType::EType)type);
+			setCurrentWearableType((LLWearableType::EType)type, disable_camera_switch);
 			break;
 		}
 	}
 }
 
-void LLFloaterCustomize::onClose(bool app_quitting)
-{
-	// since this window is potentially staying open, push to back to let next window take focus
-	gFloaterView->sendChildToBack(this);
-	handle_reset_view();  // Calls askToSaveIfDirty
-}
-
-// static
 void LLFloaterCustomize::onCommitChangeTab(BOOL proceed, LLTabContainer* ctrl, std::string panel_name, LLWearableType::EType type)
 {
-	if (!proceed || !gFloaterCustomize)
+	if (!proceed)
 	{
 		return;
 	}
 
-	LLFloaterCustomize::setCurrentWearableType(type);
+	const BOOL disable_camera_switch = LLWearableType::getDisableCameraSwitch(type);
+	setCurrentWearableType(type, disable_camera_switch);
 	ctrl->selectTabByName(panel_name);
 }
 
@@ -567,6 +590,15 @@ void LLFloaterCustomize::wearablesChanged(LLWearableType::EType type)
 	}
 }
 
+void LLFloaterCustomize::updateVisiblity(bool force_disable_camera_switch/*=false*/)
+{
+	if(!getVisible())
+	{
+		if(force_disable_camera_switch || !gAgentCamera.cameraCustomizeAvatar() || !gAgentCamera.getCameraAnimating() || (gMorphView && gMorphView->getVisible()))
+			setVisibleAndFrontmost(TRUE);
+	}
+}
+
 void LLFloaterCustomize::updateScrollingPanelList()
 {
 	getCurrentWearablePanel()->updateScrollingPanelList();
@@ -574,7 +606,7 @@ void LLFloaterCustomize::updateScrollingPanelList()
 
 void LLFloaterCustomize::askToSaveIfDirty( boost::function<void (BOOL)> cb )
 {
-	if(isDirty())
+	if(isWearableDirty())
 	{
 		// Ask if user wants to save, then continue to next step afterwards
 		mNextStepAfterSaveCallback.connect(cb);
@@ -599,7 +631,7 @@ bool LLFloaterCustomize::onSaveDialog(const LLSD& notification, const LLSD& resp
 
 	for(U32 i = 0;i < gAgentWearables.getWearableCount(cur);++i)
 	{
-		LLWearable* wearable = gAgentWearables.getWearable(cur,i);
+		LLViewerWearable* wearable = gAgentWearables.getViewerWearable(cur,i);
 		if(wearable && wearable->isDirty())
 		{
 			switch( option )
@@ -678,7 +710,7 @@ void LLFloaterCustomize::updateInventoryUI()
 		panel = mWearablePanelList[i];
 		if(panel)
 		{
-			LLWearable* wearable = panel->getWearable();
+			LLViewerWearable* wearable = panel->getWearable();
 			if(wearable)
 				item = gInventory.getItem(wearable->getItemID());
 		}
@@ -696,7 +728,7 @@ void LLFloaterCustomize::updateInventoryUI()
 			is_complete = false;
 			perm_mask = 0x0;
 		}
-		if(i == sCurrentWearableType)
+		if(i == mCurrentWearableType)
 		{
 			if(panel)
 			{

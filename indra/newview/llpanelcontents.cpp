@@ -85,8 +85,6 @@
 
 BOOL LLPanelContents::postBuild()
 {
-	LLRect rect = this->getRect();
-
 	setMouseOpaque(FALSE);
 
 	childSetAction("button new script",&LLPanelContents::onClickNewScript, this);

@@ -65,7 +65,6 @@ SHFloaterMediaTicker::SHFloaterMediaTicker() : LLFloater()/*, LLSingleton<SHFloa
 	if (!app_quitting)
 	{
 		gSavedSettings.setBOOL("SHShowMediaTicker", FALSE);
-		delete this;
 	}
 }
 /*virtual*/void SHFloaterMediaTicker::reshape(S32 width, S32 height, BOOL called_from_parent/*=TRUE*/)

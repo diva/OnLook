@@ -54,6 +54,7 @@
 #include "llviewerregion.h"
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
+#include "llinventoryicon.h"
 
 #include "hippogridmanager.h"
 
