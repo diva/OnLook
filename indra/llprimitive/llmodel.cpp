@@ -32,6 +32,8 @@
 #include "llsdserialize.h"
 #include "llvector4a.h"
 #if LL_MSVC
+#pragma warning (push)
+#pragma warning (disable : 4068)
 #pragma warning (disable : 4263)
 #pragma warning (disable : 4264)
 #endif
@@ -43,8 +45,7 @@
 #include "dom/domMesh.h"
 #pragma GCC diagnostic pop
 #if LL_MSVC
-#pragma warning (default : 4263)
-#pragma warning (default : 4264)
+#pragma warning (pop)
 #endif
 
 #ifdef LL_STANDALONE
