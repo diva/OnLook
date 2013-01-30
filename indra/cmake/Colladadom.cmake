@@ -24,13 +24,14 @@ else (STANDALONE)
 	  )
 
   if (WINDOWS)
+	  add_definitions(-DDOM_DYNAMIC)
 	  set(COLLADADOM_LIBRARIES 
 		  debug libcollada14dom22-d
 		  optimized libcollada14dom22
-		  debug libboost_filesystem-mt-gd
-		  optimized libboost_filesystem-mt
-		  debug libboost_system-mt-gd
-		  optimized libboost_system-mt
+		  debug libboost_filesystem-vc100-mt-gd-1_45.lib
+		  optimized libboost_filesystem-vc100-mt-1_45.lib
+		  debug libboost_system-vc100-mt-gd-1_45.lib
+		  optimized libboost_system-vc100-mt-1_45.lib
 		  )
   else (WINDOWS)
 	  set(COLLADADOM_LIBRARIES 
