@@ -394,10 +394,12 @@ public:
 	LLHost			mHost;
 	std::string		mWholeModelFeeCapability;
 
-	LLMeshUploadThread(AIStateMachineThreadBase* state_machine_thread);
-	~LLMeshUploadThread();
+#ifdef LL_DEBUG
+	LLMeshUploadThread(void) : AIThreadImpl("mesh upload") { }
+#endif
 	void init(instance_list& data, LLVector3& scale, bool upload_textures, bool upload_skin, bool upload_joints, bool do_upload,
 		LLHandle<LLWholeModelFeeObserver> const& fee_observer, LLHandle<LLWholeModelUploadObserver> const& upload_observer);
+
 	void postRequest(std::string& url, AIMeshUpload* state_machine);
 
 	/*virtual*/ bool run();
