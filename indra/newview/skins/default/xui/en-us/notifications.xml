@@ -7330,6 +7330,22 @@ The URL you clicked cannot be opened from this web browser.
   </notification>
 
   <notification
+    name="MeshUploadError"
+    icon="alert.tga"
+    type="alert">
+    [LABEL] failed to upload: [MESSAGE] [IDENTIFIER]
+
+See the log file for details.
+  </notification>
+
+  <notification
+    name="MeshUploadPermError"
+    icon="alert.tga"
+    type="alert">
+    Error while requesting mesh upload permissons.
+  </notification>
+
+  <notification
     name="RegionCapabilityRequestError"
     icon="alert.tga"
     type="alert">
