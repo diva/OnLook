@@ -4453,15 +4453,16 @@ void LLAgent::sendAgentSetAppearance()
 	// to tweak this number again
 	LLVector3 body_size = gAgentAvatarp->mBodySize;
 
-// [RLVa:KB] - Checked: 2010-10-11 (RLVa-1.2.0e) | Added: RLVa-1.2.0e
-	F32 offset_z = RlvSettings::getAvatarOffsetZ();
-	if(fabs(offset_z) < .1)
-		offset_z = gSavedSettings.getF32("AscentAvatarZModifier");
-// [/RLVa:KB]
+	static LLCachedControl<F32> x_off("AscentAvatarXModifier");
+	static LLCachedControl<F32> y_off("AscentAvatarYModifier");
+	static LLCachedControl<F32> z_off("AscentAvatarZModifier");
 
-	body_size.mV[VX] = body_size.mV[VX] + gSavedSettings.getF32("AscentAvatarXModifier");
-	body_size.mV[VY] = body_size.mV[VY] + gSavedSettings.getF32("AscentAvatarYModifier");
-	body_size.mV[VZ] = body_size.mV[VZ] + offset_z;
+	body_size.mV[VX] += x_off;
+	body_size.mV[VY] += y_off;
+	body_size.mV[VZ] += z_off; // Offset by RLVa, but not overridden.
+// [RLVa:KB] - Checked: 2010-10-11 (RLVa-1.2.0e) | Added: RLVa-1.2.0e
+	body_size.mV[VZ] += RlvSettings::getAvatarOffsetZ();
+// [/RLVa:KB]
 
 	msg->addVector3Fast(_PREHASH_Size, body_size);	
 
