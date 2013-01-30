@@ -522,7 +522,7 @@ class DarwinManifest(ViewerManifest):
                 for libfile in ("libapr-1.0.dylib",
                                 "libaprutil-1.0.dylib",
                                 "libcollada14dom.dylib",
-                                "libexpat.1.5.2.dylib"
+                                "libexpat.1.5.2.dylib",
                                 "libGLOD.dylib"):
                     self.path(os.path.join(libdir, libfile), libfile)
 
