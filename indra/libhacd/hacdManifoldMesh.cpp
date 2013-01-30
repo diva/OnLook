@@ -152,6 +152,7 @@ namespace HACD
 			m_triangles.Next();
 		}   
 	}
+#if 0
     bool TMMesh::Save(const char *fileName)
     {
         std::ofstream fout(fileName);
@@ -235,6 +236,7 @@ namespace HACD
         }
         return true;
     }
+#endif
     void TMMesh::GetIFS(Vec3<Real> * const points, Vec3<long> * const triangles)
     {
         size_t nV = m_vertices.GetSize();

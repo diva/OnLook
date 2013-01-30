@@ -214,12 +214,14 @@ namespace HACD
         //! @param exportDistPoints specifies wheter distance points should ne exported or not (used only for debugging).
 		//! @return true if sucess
         bool										Compute(bool fullCH=false, bool exportDistPoints=false);
+#if 0
 		//! Saves the generated convex-hulls in a VRML 2.0 file.
 		//! @param fileName the output file name
 		//! @param uniColor specifies whether the different convex-hulls should have the same color or not
         //! @param numCluster specifies the cluster to be saved, if numCluster < 0 export all clusters
         //! @return true if sucess
 		bool										Save(const char * fileName, bool uniColor, long numCluster=-1) const;
+#endif
 		//! Shifts and scales to the data to have all the coordinates between 0.0 and 1000.0.
 		void										NormalizeData();
 		//! Inverse the operations applied by NormalizeData().

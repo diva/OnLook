@@ -198,12 +198,14 @@ namespace HACD
 			void												Print();
             //!
             void                                                GetIFS(Vec3<Real> * const points, Vec3<long> * const triangles);
+#if 0
             //! Save mesh 
             bool												Save(const char *fileName);        
             //! Save mesh to VRML 2.0 format 
             bool												SaveVRML2(std::ofstream &fout);             
             //! Save mesh to VRML 2.0 format 
             bool												SaveVRML2(std::ofstream &fout, const Material & material);  			
+#endif
             //!  
             void												Clear();
             //!

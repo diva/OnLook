@@ -1088,6 +1088,7 @@ namespace HACD
         return true;
     }
 
+#if 0
     bool HACD::Save(const char * fileName, bool uniColor, long numCluster) const
     {
         std::ofstream fout(fileName);
@@ -1137,4 +1138,5 @@ namespace HACD
             return false;
         }
     }
+#endif
 }
