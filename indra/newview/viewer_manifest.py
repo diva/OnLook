@@ -204,6 +204,12 @@ class WindowsManifest(ViewerManifest):
             self.path("libhunspell.dll")
             self.end_prefix()
 
+		# For mesh upload
+        if self.prefix(src=self.args['configuration'], dst=""):
+            self.path("libcollada14dom22.dll")
+            self.path("glod.dll")
+            self.end_prefix()
+
         # For use in crash reporting (generates minidumps)
         #self.path("dbghelp.dll")
         #is shipped with windows anyway
