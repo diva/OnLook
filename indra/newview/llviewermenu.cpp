@@ -6517,6 +6517,7 @@ class LLShowFloater : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		std::string floater_name = userdata.asString();
+		if (floater_name.empty()) return false;
 		if (floater_name == "gestures")
 		{
 			LLFloaterGesture::toggleVisibility();
@@ -6687,6 +6688,14 @@ class LLShowFloater : public view_listener_t
 		else if (floater_name == "outbox")
 		{
 			LLFloaterOutbox::toggleInstance(LLSD());
+		}
+		else // Simple codeless floater
+		{
+			LLFloater* floater = LLUICtrlFactory::getInstance()->getBuiltFloater(floater_name);
+			if (floater)
+				gFloaterView->bringToFront(floater);
+			else
+				LLUICtrlFactory::getInstance()->buildFloater(new LLFloater(), floater_name);
 		}
 		return true;
 	}
