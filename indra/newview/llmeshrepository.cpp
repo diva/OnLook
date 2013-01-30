@@ -1270,10 +1270,6 @@ bool LLMeshRepoThread::physicsShapeReceived(const LLUUID& mesh_id, U8* data, S32
 	return true;
 }
 
-LLMeshUploadThread::LLMeshUploadThread(AIStateMachineThreadBase* state_machine_thread) : AIThreadImpl(state_machine_thread, "mesh upload")
-{
-}
-
 void LLMeshUploadThread::init(LLMeshUploadThread::instance_list& data, LLVector3& scale, bool upload_textures,
 							  bool upload_skin, bool upload_joints, bool do_upload,
 							  LLHandle<LLWholeModelFeeObserver> const& fee_observer, LLHandle<LLWholeModelUploadObserver> const& upload_observer)
@@ -1293,11 +1289,6 @@ void LLMeshUploadThread::init(LLMeshUploadThread::instance_list& data, LLVector3
 	mOrigin += gAgent.getAtAxis() * scale.magVec();
 
 	mMeshUploadTimeOut = gSavedSettings.getS32("MeshUploadTimeOut") ;
-}
-
-LLMeshUploadThread::~LLMeshUploadThread()
-{
-
 }
 
 LLMeshUploadThread::DecompRequest::DecompRequest(LLModel* mdl, LLModel* base_model, LLMeshUploadThread* thread)

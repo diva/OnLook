@@ -44,8 +44,8 @@ class HelloWorldThread : public AIThreadImpl {
 
   public:
 	// Constructor.
-	HelloWorldThread(AIStateMachineThreadBase* state_machine_thread) :				// MAIN THREAD
-	    AIThreadImpl(state_machine_thread, "HelloWorldThread"), mStdErr(false), mSuccess(false) { }
+	HelloWorldThread(void) : AIThreadImpl("HelloWorldThread"),						// MAIN THREAD
+		mStdErr(false), mSuccess(false) { }
 
 	// Some initialization function (if needed).
 	void init(bool err)	{ mStdErr = err; }											// MAIN THREAD
@@ -152,24 +152,21 @@ class AIStateMachineThreadBase;
 // Derive from this to implement the code that must run in another thread.
 class AIThreadImpl : public LLThreadSafeRefCount {
   private:
+    template<typename THREAD_IMPL> friend struct AIStateMachineThread;
 	typedef AIAccess<AIStateMachineThreadBase*> StateMachineThread_wat;
 	AIThreadSafeSimpleDC<AIStateMachineThreadBase*> mStateMachineThread;
-#ifdef LL_DEBUG
-	char const* mName;
-#endif
-
-  protected:
-	AIThreadImpl(AIStateMachineThreadBase* state_machine_thread, char const* name = "AIStateMachineThreadBase::Thread") : mStateMachineThread(state_machine_thread)
-#ifdef LL_DEBUG
-	  , mName(name)
-#endif
-		{ }
 
   public:
 	virtual bool run(void) = 0;
 	bool thread_done(bool result);
 	bool state_machine_done(LLThread* threadp);
+
 #ifdef LL_DEBUG
+  private:
+	char const* mName;
+  protected:
+	AIThreadImpl(char const* name = "AIStateMachineThreadBase::Thread") : mName(name) { }
+  public:
 	char const* getName(void) const { return mName; }
 #endif
 };
@@ -221,9 +218,11 @@ template<typename THREAD_IMPL>
 struct AIStateMachineThread : public LLPointer<THREAD_IMPL>, public AIStateMachineThreadBase {
   // Constructor.
   AIStateMachineThread(void) :
-	  LLPointer<THREAD_IMPL>(new THREAD_IMPL(this)),
+	  LLPointer<THREAD_IMPL>(new THREAD_IMPL),
 	  AIStateMachineThreadBase(LLPointer<THREAD_IMPL>::get())
-  { }
+  {
+	*AIThreadImpl::StateMachineThread_wat(static_cast<AIThreadImpl*>(LLPointer<THREAD_IMPL>::get())->mStateMachineThread) = this;
+  }
 };
 
 #endif
