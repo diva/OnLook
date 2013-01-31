@@ -105,7 +105,7 @@ BOOL	LLFloaterAvatarInfo::postBuild()
 }
 
 LLFloaterAvatarInfo::LLFloaterAvatarInfo(const std::string& name, const LLRect &rect, const LLUUID &avatar_id)
-:	LLPreview(name, rect, FLOATER_TITLE, LLUUID::null, LLUUID::null), LLInstanceTracker(avatar_id),
+:	LLPreview(name, rect, FLOATER_TITLE, LLUUID::null, LLUUID::null), LLInstanceTracker<LLFloaterAvatarInfo, LLUUID>(avatar_id),
 	mAvatarID( avatar_id ),
 	mSuggestedOnlineStatus(ONLINE_STATUS_NO)
 {
