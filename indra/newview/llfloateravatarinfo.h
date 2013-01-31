@@ -43,6 +43,7 @@
 #include "llpreview.h"
 #include "lluuid.h"
 #include "llpanelavatar.h"
+#include "llinstancetracker.h"
 
 class LLAvatarName;
 class LLButton;
@@ -60,7 +61,7 @@ class LLViewerTexture;
 class LLViewerObject;
 
 class LLFloaterAvatarInfo
-:	public LLPreview
+:	public LLPreview, public LLInstanceTracker<LLFloaterAvatarInfo,LLUUID>
 {
 public:
 	static	void*	createPanelAvatar(void*	data);
@@ -89,9 +90,8 @@ public:
 
 	static void showFromProfile(const LLUUID &avatar_id, LLRect rect);
 
-	static LLFloaterAvatarInfo* getInstance(const LLUUID &id);
 	static void showProfileCallback(S32 option, void *userdata);
-	static void callbackLoadAvatarName(const LLUUID& agent_id, const LLAvatarName& av_name);
+	void callbackLoadAvatarName(const LLUUID& agent_id, const LLAvatarName& av_name);
 	void resetGroupList();
 
 private:

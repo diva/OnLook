@@ -299,6 +299,8 @@ public:
 
 	void setAvatar(LLViewerObject *avatarp);
 
+	void onAvatarNameResponse(const LLUUID& agent_id, const LLAvatarName& av_name);
+
 	// Fill in the avatar ID and handle some field fill-in, as well as 
 	// button enablement.
 	// Pass one of the ONLINE_STATUS_foo constants above.
@@ -350,7 +352,6 @@ private:
 	static bool finishUnfreeze(const LLSD& notification, const LLSD& response);
 
 	static void showProfileCallback(S32 option, void *userdata);
-	static void on_avatar_name_response(const LLUUID& agent_id, const LLAvatarName& av_name, void *userdata);
 	static	void*	createPanelAvatar(void*	data);
 	static	void*	createFloaterAvatarInfo(void*	data);
 	static	void*	createPanelAvatarSecondLife(void*	data);

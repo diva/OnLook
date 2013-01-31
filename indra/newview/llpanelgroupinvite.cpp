@@ -49,7 +49,9 @@
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
 
-class LLPanelGroupInvite::impl
+#include <boost/signals2.hpp>
+
+class LLPanelGroupInvite::impl : public boost::signals2::trackable
 {
 public:
 	impl(const LLUUID& group_id);
@@ -67,12 +69,10 @@ public:
 	static void callbackClickAdd(void* userdata);
 	static void callbackClickRemove(void* userdata);
 	static void callbackSelect(LLUICtrl* ctrl, void* userdata);
-	static void callbackAddUsers(const uuid_vec_t& agent_ids,
-								 void* user_data);
+	void callbackAddUsers(const uuid_vec_t& agent_idsa);
 	
-	static void onAvatarNameCache(const LLUUID& agent_id,
-											 const LLAvatarName& av_name,
-											 void* user_data);
+	void onAvatarNameCache(const LLUUID& agent_id,
+											 const LLAvatarName& av_name);
 
 	bool inviteOwnerCallback(const LLSD& notification, const LLSD& response);
 
@@ -307,7 +307,7 @@ void LLPanelGroupInvite::impl::callbackClickAdd(void* userdata)
 		//instead of being it's own separate floater.  But that is next week.
 		//This will do for now. -jwolk May 10, 2006
 		LLFloaterAvatarPicker* picker = LLFloaterAvatarPicker::show(
-			boost::bind(impl::callbackAddUsers, _1, panelp->mImplementation), TRUE);
+			boost::bind(&impl::callbackAddUsers, panelp->mImplementation, _1), TRUE);
 		if (picker)
 		{
 			gFloaterView->getParentFloater(panelp)->addDependentFloater(picker);
@@ -376,34 +376,25 @@ void LLPanelGroupInvite::impl::callbackClickOK(void* userdata)
 }
 
 
-
-//static
-void LLPanelGroupInvite::impl::callbackAddUsers(const uuid_vec_t& agent_ids, void* user_data)
+void LLPanelGroupInvite::impl::callbackAddUsers(const uuid_vec_t& agent_ids)
 {	
 	std::vector<std::string> names;
 	for (S32 i = 0; i < (S32)agent_ids.size(); i++)
 	{
 		LLAvatarNameCache::get(agent_ids[i],
-			boost::bind(&LLPanelGroupInvite::impl::onAvatarNameCache, _1, _2, user_data));
+			boost::bind(&LLPanelGroupInvite::impl::onAvatarNameCache, this, _1, _2));
 	}	
-	
 }
 
 void LLPanelGroupInvite::impl::onAvatarNameCache(const LLUUID& agent_id,
-											 const LLAvatarName& av_name,
-											 void* user_data)
+											 const LLAvatarName& av_name)
 {
-	impl* selfp = (impl*) user_data;
-
-	if (selfp)
-	{
-		std::vector<std::string> names;
-		uuid_vec_t agent_ids;
-		agent_ids.push_back(agent_id);
-		names.push_back(av_name.getCompleteName());
+	std::vector<std::string> names;
+	uuid_vec_t agent_ids;
+	agent_ids.push_back(agent_id);
+	names.push_back(av_name.getCompleteName());
 		
-		selfp->addUsers(names, agent_ids);
-	}
+	addUsers(names, agent_ids);
 }
 
 LLPanelGroupInvite::LLPanelGroupInvite(const std::string& name,

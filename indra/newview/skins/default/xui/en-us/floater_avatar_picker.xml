@@ -1,7 +1,29 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater bottom="-380" can_close="true" can_drag_on_left="false" can_minimize="true"
-     can_resize="true" height="350" left="400" min_height="200" min_width="375"
+     can_resize="true" height="350" left="400" min_height="200" min_width="340"
      mouse_opaque="true" name="avatarpicker" title="Choose Resident" width="375">
+    <string
+     name="not_found">
+	&apos;[TEXT]&apos; not found
+    </string>
+    <string
+     name="no_one_near">
+	No one near
+    </string>
+    <string
+     name="no_results">
+	No results
+    </string>
+    <string
+     name="searching">
+	Searching...
+    </string>
+    <!-- For multiple person selection, use "Select" and "Close" 
+      instead of "OK" and "Cancel" because "Cancel" still keeps the ones 
+      you have already selected.  The code will show the appropriate
+      set of buttons. -->
+    <string name="Select">Select</string>
+    <string name="Close">Close</string>
 
 	<tab_container bottom="30" follows="left|right|top|bottom" height="300" left="4"
 	     name="ResidentChooserTabs" tab_position="top" tab_width="65" width="365">
@@ -29,19 +51,23 @@
 			     multi_select="false" name="SearchResults" width="115" />
 		</panel>
 
-		<panel name="CallingCardsPanel" label="Calling Cards"
+		<panel name="FriendsPanel" label="Friends"
 			border="true" bottom="0" height="150" left="0" width="135" 
 			mouse_opaque="true">
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-24" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
-			     mouse_opaque="true" name="InstructSelectCallingCard" v_pad="0"
+			     mouse_opaque="true" name="InstructSelectFriend" v_pad="0"
 			     width="220">
-				Select a calling card:
+				Select a person:
 			</text>
-			<inventory_panel allow_multi_select="false" border="true" bottom_delta="-117"
+			<button bottom_delta="-3" left_delta="25" width="90" height="20" follows="top|right" 
+		           label="Refresh List" label_selected="Refresh List" halign="center"
+		           font="SansSerif" mouse_opaque="true" name="RefreshFriends" scale_image="TRUE" />
+			<scroll_list background_visible="true" bottom_delta="-115" column_padding="5"
+			     draw_border="true" draw_heading="false" draw_stripes="true"
 			     follows="left|top|right|bottom" height="110" left="10" mouse_opaque="true"
-			     name="InventoryPanel" sort_order="AvatarPickerSortOrder" width="115" />
+			     multi_select="false" name="Friends" width="115" />
 		</panel>
 
     <panel name="NearMePanel" label="Near Me"
@@ -88,23 +114,11 @@
     </panel>
 	</tab_container>
 
-  <button bottom="6" left="10" follows="left|bottom" font="SansSerif" halign="center"
-	     width="95" height="20" label="Select" label_selected="Select" mouse_opaque="true"
-	     name="Select" scale_image="TRUE" />
+  	<button bottom="6" left="10" follows="left|bottom" font="SansSerif" halign="center"
+	     width="95" height="20" label="OK" label_selected="OK" mouse_opaque="true"
+	     name="ok_btn" scale_image="TRUE" />
 	<button bottom_delta="0" right="240" follows="left|bottom" font="SansSerif" halign="center"
 	     width="95" height="20" label="Cancel" label_selected="Cancel" mouse_opaque="true"
-	     name="Cancel" scale_image="TRUE" />
+	     name="cancel_btn" scale_image="TRUE" />
 
-	<string name="not_found">
-		&apos;[TEXT]&apos; not found
-	</string>
-	<string name="no_one_near">
-		No-one near
-	</string>
-	<string name="no_results">
-		No results
-	</string>
-	<string name="searching">
-		Searching...
-	</string>
 </floater>
