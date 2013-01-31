@@ -112,8 +112,6 @@ LLVoiceChannel* LLVoiceChannel::sSuspendedVoiceChannel = NULL;
 
 BOOL LLVoiceChannel::sSuspended = FALSE;
 
-std::set<LLFloaterIMPanel*> LLFloaterIMPanel::sFloaterIMPanels;
-
 void session_starter_helper(
 	const LLUUID& temp_session_id,
 	const LLUUID& other_participant_id,
@@ -1124,10 +1122,6 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 		llwarns << "Other participant is NULL" << llendl;
 	}
 		
-    // [Ansariel: Display name support]
-    sFloaterIMPanels.insert(this);
-    // [/Ansariel: Display name support]
-
 	init(session_label);
 }
 
@@ -1164,10 +1158,6 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 	{
 		llwarns << "Other participant is NULL" << llendl;
 	}
-	
-    // [Ansariel: Display name support]
-    sFloaterIMPanels.insert(this);
-    // [/Ansariel: Display name support]
     
 	mSessionInitialTargetIDs = ids;
 	init(session_label);
@@ -1299,28 +1289,18 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 
 void LLFloaterIMPanel::lookupName()
 {
-	LLAvatarNameCache::get(mOtherParticipantUUID, boost::bind(&LLFloaterIMPanel::onAvatarNameLookup, _1, _2, this));
+	LLAvatarNameCache::get(mOtherParticipantUUID, boost::bind(&LLFloaterIMPanel::onAvatarNameLookup, this, _1, _2));
 }
 
-//static
-void LLFloaterIMPanel::onAvatarNameLookup(const LLUUID&, const LLAvatarName& avatar_name, void* data)
+void LLFloaterIMPanel::onAvatarNameLookup(const LLUUID&, const LLAvatarName& avatar_name)
 {
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*)data;
-
-	if (self && sFloaterIMPanels.count(self) != 0)
-	{
-		std::string title;
-		LLAvatarNameCache::getPNSName(avatar_name, title);
-		self->setTitle(title);
-	}
+	std::string title;
+	LLAvatarNameCache::getPNSName(avatar_name, title);
+	setTitle(title);
 }
 
 LLFloaterIMPanel::~LLFloaterIMPanel()
 {
-    // [Ansariel: Display name support]
-    sFloaterIMPanels.erase(this);
-    // [/Ansariel: Display name support]
-
 	delete mSpeakers;
 	mSpeakers = NULL;
 	

@@ -1586,10 +1586,9 @@ void LLPanelAvatar::setOnlineStatus(EOnlineStatus online_status)
 	}
 }
 
-void LLPanelAvatar::on_avatar_name_response(const LLUUID& agent_id, const LLAvatarName& av_name, void *userdata){
-	LLPanelAvatar* self = (LLPanelAvatar*)userdata;
-	LLLineEditor* dnname_edit = self->getChild<LLLineEditor>("dnname");
-	if(LLAvatarNameCache::useDisplayNames() && agent_id==self->mAvatarID) dnname_edit->setText(av_name.getCompleteName());
+void LLPanelAvatar::onAvatarNameResponse(const LLUUID& agent_id, const LLAvatarName& av_name){
+	LLLineEditor* dnname_edit = getChild<LLLineEditor>("dnname");
+	if(LLAvatarNameCache::useDisplayNames() && agent_id==mAvatarID) dnname_edit->setText(av_name.getCompleteName());
 }
 
 void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name,
@@ -1664,7 +1663,7 @@ void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name
 			}
 			else{
 				dnname_edit->setText(name_edit->getText());
-				LLAvatarNameCache::get(avatar_id, boost::bind(&LLPanelAvatar::on_avatar_name_response, _1, _2, this));			
+				LLAvatarNameCache::get(avatar_id, boost::bind(&LLPanelAvatar::onAvatarNameResponse, this, _1, _2));			
 			}
 			childSetVisible("dnname",TRUE);
 			childSetVisible("name",FALSE);

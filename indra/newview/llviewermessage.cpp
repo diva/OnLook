@@ -191,7 +191,6 @@ extern AIHTTPTimeoutPolicy authHandler_timeout;
 
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
 #include "llfloateravatarinfo.h"
-extern LLMap< const LLUUID, LLFloaterAvatarInfo* > gAvatarInfoInstances; // Only defined in llfloateravatarinfo.cpp
 // [/RLVa:KB]
 
 //
@@ -2690,7 +2689,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	{
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.0b
 		bool fRlvObfuscate = (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) &&
-			 (RlvUtil::isNearbyAgent(from_id)) && (!gAvatarInfoInstances.checkData(from_id));
+			 (RlvUtil::isNearbyAgent(from_id)) && (!LLFloaterAvatarInfo::getInstance(from_id));
 		args["NAME"] = (!fRlvObfuscate) ? name : RlvStrings::getAnonym(name);
 // [/RLVa:KB]
 		//args["NAME"] = name;
@@ -2701,7 +2700,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	{
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.0b
 		bool fRlvObfuscate = (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) &&
-			 (RlvUtil::isNearbyAgent(from_id)) && (!gAvatarInfoInstances.checkData(from_id));
+			 (RlvUtil::isNearbyAgent(from_id)) && (!LLFloaterAvatarInfo::getInstance(from_id));
 		args["NAME"] = (!fRlvObfuscate) ? name : RlvStrings::getAnonym(name);
 // [/RLVa:KB]
 		//args["NAME"] = name;

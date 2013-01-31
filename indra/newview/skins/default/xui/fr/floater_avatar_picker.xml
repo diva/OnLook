@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="avatarpicker" title="Choisir le résident">
+	<string name="not_found">
+		'[TEXT]' introuvable
+	</string>
+	<string name="no_one_near">
+		Il n'y a personne près de vous
+	</string>
+	<string name="no_results">
+		Aucun résultat
+	</string>
+	<string name="searching">
+		Recherche...
+	</string>
+	<string label="OK" label_selected="OK" name="Select">
+		Sélectionner
+	</string>
+	<string name="Close">
+		Fermer
+	</string>
 	<tab_container name="ResidentChooserTabs">
 		<panel label="Rechercher" name="SearchPanel">
 			<text name="InstructSearchResidentName">
@@ -7,10 +25,11 @@
 			</text>
 			<button label="Trouver" label_selected="Trouver" name="Find"/>
 		</panel>
-		<panel name="CallingCardsPanel" label="Cartes de visite">
-			<text name="InstructSelectCallingCard">
-				Sélectionner une carte de visite:
+		<panel name="FriendsPanel" label="Amis">
+			<text name="InstructSelectFriend">
+				Sélectionner une personne:
 			</text>
+			<button font="SansSerifSmall" label="Rafraîchir la liste" label_selected="Rafraîchir la liste" name="RefreshFriends" left_delta="10" width="105"/>
 		</panel>
 		<panel name="NearMePanel" label="Près de moi">
 			<text name="InstructSelectResident">
@@ -29,18 +48,6 @@
 			</text>
 		</panel>
 	</tab_container>
-	<button label="Sélectionner" label_selected="Sélectionner" name="Select"/>
-	<button label="Annuler" label_selected="Annuler" name="Cancel"/>
-	<string name="not_found">
-		'[TEXT]' introuvable
-	</string>
-	<string name="no_one_near">
-		Il n'y a personne près de vous
-	</string>
-	<string name="no_results">
-		Aucun résultat
-	</string>
-	<string name="searching">
-		Recherche...
-	</string>
+	<button label="OK" label_selected="OK" name="ok_btn"/>
+	<button label="Annuler" label_selected="Annuler" name="cancel_btn"/>
 </floater>

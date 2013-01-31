@@ -57,8 +57,6 @@ const LLRect FAI_RECT(0, 530, 420, 0);
 // Globals
 //-----------------------------------------------------------------------------
 
-LLMap< const LLUUID, LLFloaterAvatarInfo* > gAvatarInfoInstances;
-
 class LLAgentHandler : public LLCommandHandler
 {
 public:
@@ -107,7 +105,7 @@ BOOL	LLFloaterAvatarInfo::postBuild()
 }
 
 LLFloaterAvatarInfo::LLFloaterAvatarInfo(const std::string& name, const LLRect &rect, const LLUUID &avatar_id)
-:	LLPreview(name, rect, FLOATER_TITLE, LLUUID::null, LLUUID::null),
+:	LLPreview(name, rect, FLOATER_TITLE, LLUUID::null, LLUUID::null), LLInstanceTracker(avatar_id),
 	mAvatarID( avatar_id ),
 	mSuggestedOnlineStatus(ONLINE_STATUS_NO)
 {
@@ -124,16 +122,13 @@ LLFloaterAvatarInfo::LLFloaterAvatarInfo(const std::string& name, const LLRect &
 		mPanelAvatarp->selectTab(0);
 	}
 
-	gAvatarInfoInstances.addData(avatar_id, this); // must be done before callback below is called.
 	//gCacheName->get(avatar_id, FALSE, callbackLoadAvatarName);
-	LLAvatarNameCache::get(avatar_id, boost::bind(&LLFloaterAvatarInfo::callbackLoadAvatarName, _1, _2));
+	LLAvatarNameCache::get(avatar_id, boost::bind(&LLFloaterAvatarInfo::callbackLoadAvatarName, this, _1, _2));
 }
 
 // virtual
 LLFloaterAvatarInfo::~LLFloaterAvatarInfo()
 {
-	// child views automatically deleted
-	gAvatarInfoInstances.removeData(mAvatarID);
 }
 
 void LLFloaterAvatarInfo::resetGroupList()
@@ -155,28 +150,21 @@ LLFloaterAvatarInfo* LLFloaterAvatarInfo::show(const LLUUID &avatar_id)
 		return NULL;
 	}
 
-	LLFloaterAvatarInfo *floater;
-	if (gAvatarInfoInstances.checkData(avatar_id))
+	LLFloaterAvatarInfo *floater = LLFloaterAvatarInfo::getInstance(avatar_id);
+	if(!floater)
 	{
-		// ...bring that window to front
-		floater = gAvatarInfoInstances.getData(avatar_id);
-		floater->open();	/*Flawfinder: ignore*/
-	}
-	else
-	{
-		floater =  new LLFloaterAvatarInfo("avatarinfo", FAI_RECT, 
-			avatar_id );
+		floater =  new LLFloaterAvatarInfo("avatarinfo", FAI_RECT, avatar_id );
 		floater->center();
-		floater->open();	/*Flawfinder: ignore*/
 	}
+
+	// ...bring that window to front
+	floater->open();	/*Flawfinder: ignore*/
 	return floater;
 }
 
 // Open profile to a certain tab.
 // static
-void LLFloaterAvatarInfo::showFromObject(
-	const LLUUID& avatar_id,
-	std::string tab_name)
+void LLFloaterAvatarInfo::showFromObject(const LLUUID& avatar_id,std::string tab_name)
 {
 	LLFloaterAvatarInfo *floater = show(avatar_id);
 	if (floater)
@@ -216,24 +204,15 @@ void LLFloaterAvatarInfo::showFromProfile(const LLUUID &avatar_id, LLRect rect)
 		return;
 	}
 
-	LLFloaterAvatarInfo *floater;
-	if (gAvatarInfoInstances.checkData(avatar_id))
+	LLFloaterAvatarInfo *floater = LLFloaterAvatarInfo::getInstance(avatar_id);
+	if(!floater)
 	{
-		// ...bring that window to front
-		floater = gAvatarInfoInstances.getData(avatar_id);
-	}
-	else
-	{
-		floater =  new LLFloaterAvatarInfo("avatarinfo", FAI_RECT, 
-										   avatar_id);
+		floater =  new LLFloaterAvatarInfo("avatarinfo", FAI_RECT, avatar_id);
 		floater->translate(rect.mLeft - floater->getRect().mLeft + 16,
 						   rect.mTop - floater->getRect().mTop - 16);
 		floater->mPanelAvatarp->setAvatarID(avatar_id, LLStringUtil::null, ONLINE_STATUS_NO);
 	}
-	if (floater)
-	{
-		floater->open();
-	}
+	floater->open();
 }
 
 void LLFloaterAvatarInfo::showProfileCallback(S32 option, void *userdata)
@@ -244,20 +223,13 @@ void LLFloaterAvatarInfo::showProfileCallback(S32 option, void *userdata)
 	}
 }
 
-// static
-void LLFloaterAvatarInfo::callbackLoadAvatarName(const LLUUID& id,
-										  const LLAvatarName& av_name)
+void LLFloaterAvatarInfo::callbackLoadAvatarName(const LLUUID& id, const LLAvatarName& av_name)
 {
-	LLFloaterAvatarInfo *floater = gAvatarInfoInstances.getIfThere(id);
-
-	if (floater)
-	{
-		// Build a new title including the avatar name.
-		std::ostringstream title;
-		//title << first << " " << last << " - " << floater->getTitle();
-		title << av_name.getCompleteName()<< " - " << floater->getTitle();
-		floater->setTitle(title.str());
-	}
+	// Build a new title including the avatar name.
+	std::ostringstream title;
+	//title << first << " " << last << " - " << floater->getTitle();
+	title << av_name.getCompleteName()<< " - " << getTitle();
+	setTitle(title.str());
 }
 
 //// virtual
@@ -271,11 +243,6 @@ void LLFloaterAvatarInfo::draw()
 BOOL LLFloaterAvatarInfo::canClose()
 {
 	return mPanelAvatarp && mPanelAvatarp->canClose();
-}
-
-LLFloaterAvatarInfo* LLFloaterAvatarInfo::getInstance(const LLUUID &id)
-{
-	return gAvatarInfoInstances.getIfThere(gAgentID);
 }
 
 void LLFloaterAvatarInfo::loadAsset()
