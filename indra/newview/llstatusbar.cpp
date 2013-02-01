@@ -517,6 +517,8 @@ void LLStatusBar::refresh()
 						   pos_x, pos_y, pos_z,
 						   region->getSimAccessString().c_str());
 		}
+		static LLCachedControl<bool> show_channel("ShowSimChannel");
+		if (show_channel && !gLastVersionChannel.empty()) location_name += " - " + gLastVersionChannel;
 	}
 	else
 	{

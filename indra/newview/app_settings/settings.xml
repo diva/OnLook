@@ -860,6 +860,17 @@ This should be as low as possible, but too low may break functionality</string>
 		<key>Value</key>
 		<integer>1</integer>
 		</map>
+    <key>ShowSimChannel</key>
+    <map>
+      <key>Comment</key>
+      <string>Show the channel information for the current sim in the status bar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>MoyFastMiniMap</key>
     <map>
       <key>Comment</key>
