@@ -326,10 +326,6 @@ public:
 	void calculateCameraDistance();
 
 	friend std::ostream& operator<<(std::ostream &s, const LLViewerRegion &region);
-
-	// used by LCD to get details for debug screen
-	U32 getNetDetailsForLCD();
-	
     /// implements LLCapabilityProvider
     virtual std::string getDescription() const;
 	std::string getHttpUrl() const { return mHttpUrl ;}

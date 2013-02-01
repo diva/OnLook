@@ -136,7 +136,6 @@ LLPreferenceCore::LLPreferenceCore(LLTabContainer* tab_container, LLButton * def
 	mMsgPanel(NULL),
 	mSkinsPanel(NULL),
 	mGridsPanel(NULL),
-	mLCDPanel(NULL),
 	mPrefsAscentChat(NULL),
 	mPrefsAscentSys(NULL),
 	mPrefsAscentVan(NULL)

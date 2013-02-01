@@ -503,50 +503,11 @@ void LLStatusBar::refresh()
 			pos_y -= pos_y % 2;
 		}
 
-		mRegionDetails.mTime = mTextTime->getText();
-		mRegionDetails.mBalance = mBalance;
-		mRegionDetails.mAccessString = region->getSimAccessString();
-		mRegionDetails.mPing = region->getNetDetailsForLCD();
 		if (parcel)
 		{
 			if (!LLAgentUI::buildLocationString(location_name, LLAgentUI::LOCATION_FORMAT_FULL)) 
 			{
 				location_name = "???";
-			}
-
-			// keep these around for the LCD to use
-			mRegionDetails.mRegionName = region->getName();
-			mRegionDetails.mParcelName = parcel->getName();
-			mRegionDetails.mX = pos_x;
-			mRegionDetails.mY = pos_y;
-			mRegionDetails.mZ = pos_z;
-
-			mRegionDetails.mArea = parcel->getArea();
-			mRegionDetails.mForSale = parcel->getForSale();
-			mRegionDetails.mTraffic = LLViewerParcelMgr::getInstance()->getDwelling();
-			
-			if (parcel->isPublic())
-			{
-				mRegionDetails.mOwner = "Public";
-			}
-			else
-			{
-				if (parcel->getIsGroupOwned())
-				{
-					if(!parcel->getGroupID().isNull())
-					{
-						gCacheName->getGroupName(parcel->getGroupID(), mRegionDetails.mOwner);
-					}
-					else
-					{
-						mRegionDetails.mOwner = "Group Owned";
-					}
-				}
-				else
-				{
-					// Figure out the owner's name
-					gCacheName->getFullName(parcel->getOwnerID(), mRegionDetails.mOwner);
-				}
 			}
 		}
 		else
@@ -555,40 +516,17 @@ void LLStatusBar::refresh()
 				+ llformat(" %d, %d, %d (%s)", 
 						   pos_x, pos_y, pos_z,
 						   region->getSimAccessString().c_str());
-			// keep these around for the LCD to use
-			mRegionDetails.mRegionName = region->getName();
-			mRegionDetails.mParcelName = "Unknown";
-			
-			mRegionDetails.mX = pos_x;
-			mRegionDetails.mY = pos_y;
-			mRegionDetails.mZ = pos_z;
-			mRegionDetails.mArea = 0;
-			mRegionDetails.mForSale = FALSE;
-			mRegionDetails.mOwner = "Unknown";
-			mRegionDetails.mTraffic = 0.0f;
 		}
 	}
 	else
 	{
 		// no region
 		location_name = "(Unknown)";
-		// keep these around for the LCD to use
-		mRegionDetails.mRegionName = "Unknown";
-		mRegionDetails.mParcelName = "Unknown";
-		mRegionDetails.mAccessString = "Unknown";
-		mRegionDetails.mX = 0;
-		mRegionDetails.mY = 0;
-		mRegionDetails.mZ = 0;
-		mRegionDetails.mArea = 0;
-		mRegionDetails.mForSale = FALSE;
-		mRegionDetails.mOwner = "Unknown";
-		mRegionDetails.mTraffic = 0.0f;
 	}
 
 // [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a) | Modified: RLVa-1.0.0a
-	if ( (region) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )	// region == NULL if we loose our connection to the grid
+	if ( (region) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )	// region == NULL if we lose our connection to the grid
 	{
-		// TODO-RLVa: find out whether the LCD code is still used because if so then we need to filter that as well
 		location_name = llformat("%s (%s) - %s", 
 			RlvStrings::getString(RLV_STRING_HIDDEN_REGION).c_str(), region->getSimAccessString().c_str(), 
 			RlvStrings::getString(RLV_STRING_HIDDEN).c_str());
