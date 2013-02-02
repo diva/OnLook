@@ -51,9 +51,9 @@ public:
 		POOL_FULLBRIGHT,
 		POOL_BUMP,
 		POOL_TERRAIN,	
+		POOL_TREE,	// Singu Note: Before sky for zcull.
 		POOL_SKY,
 		POOL_WL_SKY,
-		POOL_TREE,
 		POOL_GRASS,
 		POOL_INVISIBLE, // see below *
 		POOL_AVATAR,
