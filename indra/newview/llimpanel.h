@@ -197,7 +197,7 @@ public:
 	virtual ~LLFloaterIMPanel();
 
 	void lookupName();
-	static void onAvatarNameLookup(const LLUUID&, const LLAvatarName& avatar_name, void* data);
+	void onAvatarNameLookup(const LLUUID&, const LLAvatarName& avatar_name);
 
 	/*virtual*/ BOOL postBuild();
 

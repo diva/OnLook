@@ -213,10 +213,10 @@ std::string gPoolNames[] =
 	"POOL_GROUND",
 	"POOL_FULLBRIGHT",
 	"POOL_BUMP",
-	"POOL_TERRAIN",	
+	"POOL_TERRAIN",
+	"POOL_TREE", // Singu Note: Before sky for zcull.
 	"POOL_SKY",
 	"POOL_WL_SKY",
-	"POOL_TREE",
 	"POOL_GRASS",
 	"POOL_INVISIBLE",
 	"POOL_AVATAR",
@@ -6784,7 +6784,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 												  NULL,
 												  &focus_point);
 				}
-				else
+				else if(gAgent.getRegion())
 				{
 					//focus on alt-zoom target
 					focus_point = LLVector3(gAgentCamera.getFocusGlobal()-gAgent.getRegion()->getOriginGlobal());

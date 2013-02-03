@@ -32,10 +32,8 @@
 #include "v4math.h"
 #include "m4math.h"
 
-#if MESH_IMPORT
 class daeElement;
 class domMesh;
-#endif //MESH_IMPORT
 
 #define MAX_MODEL_FACES 8
 
@@ -147,10 +145,8 @@ public:
 		LLSD& mdl,
 		BOOL nowrite = FALSE, BOOL as_slm = FALSE);
 
-#if MESH_IMPORT
 	static LLModel* loadModelFromDomMesh(domMesh* mesh);
 	static std::string getElementLabel(daeElement* element);
-#endif //MESH_IMPORT
 	std::string getName() const;
 	std::string getMetric() const {return mMetric;}
 	EModelStatus getStatus() const {return mStatus;}
@@ -278,10 +274,8 @@ public:
 
 	EModelStatus mStatus ;
 protected:
-#if MESH_IMPORT
 	void addVolumeFacesFromDomMesh(domMesh* mesh);
 	virtual BOOL createVolumeFacesFromDomMesh(domMesh *mesh);
-#endif //MESH_IMPORT
 };
 
 #endif //LL_LLMODEL_H

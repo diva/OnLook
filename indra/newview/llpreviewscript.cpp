@@ -1799,7 +1799,7 @@ void LLPreviewLSL::saveAs()
 	}
 
 	AIFilePicker* filepicker = AIFilePicker::create();
-	filepicker->open(default_filename, FFSAVE_LSL);
+	filepicker->open(default_filename, FFSAVE_SCRIPT);
 	filepicker->run(boost::bind(&LLPreviewLSL::saveAs_continued, this, filepicker));
 }
 
@@ -2756,7 +2756,7 @@ void LLLiveLSLEditor::saveAs()
 	}
 
 	AIFilePicker* filepicker = AIFilePicker::create();
-	filepicker->open(default_filename, FFSAVE_LSL);
+	filepicker->open(default_filename, FFSAVE_SCRIPT);
 	filepicker->run(boost::bind(&LLLiveLSLEditor::saveAs_continued, this, filepicker));
 }
 

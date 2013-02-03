@@ -30,7 +30,7 @@ include(BuildVersion)
 
 include(UnixInstall)
 
-set (DISABLE_FATAL_WARNINGS TRUE)
+set (DISABLE_FATAL_WARNINGS CACHE BOOL TRUE)
 
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -53,6 +53,9 @@ add_subdirectory(${LIBS_OPEN_PREFIX}llcharacter)
 add_subdirectory(${LIBS_OPEN_PREFIX}llcommon)
 add_subdirectory(${LIBS_OPEN_PREFIX}llimage)
 add_subdirectory(${LIBS_OPEN_PREFIX}libopenjpeg)
+add_subdirectory(${LIBS_OPEN_PREFIX}libhacd)
+add_subdirectory(${LIBS_OPEN_PREFIX}libndhacd)
+add_subdirectory(${LIBS_OPEN_PREFIX}libpathing)
 add_subdirectory(${LIBS_OPEN_PREFIX}llimagej2coj)
 add_subdirectory(${LIBS_OPEN_PREFIX}llinventory)
 add_subdirectory(${LIBS_OPEN_PREFIX}llmath)

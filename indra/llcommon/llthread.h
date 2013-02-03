@@ -122,6 +122,9 @@ public:
 	// this kicks off the apr thread
 	void start(void);
 
+	// Can be used to tell the thread we're not interested anymore and it should abort.
+	void setQuitting();
+	
 	// Return thread-local data for the current thread.
 	static LLThreadLocalData& tldata(void) { return LLThreadLocalData::tldata(); }
 
@@ -141,11 +144,12 @@ protected:
 	friend void LLThreadLocalData::create(LLThread* threadp);
 	LLThreadLocalData*  mThreadLocalData;
 
-	void setQuitting();
-	
 	// virtual function overridden by subclass -- this will be called when the thread runs
 	virtual void run(void) = 0; 
 	
+	// This class is completely done (called from THREAD!).
+	virtual void terminated(void) { mStatus = STOPPED; }
+
 	// virtual predicate function -- returns true if the thread should wake up, false if it should sleep.
 	virtual bool runCondition(void);
 

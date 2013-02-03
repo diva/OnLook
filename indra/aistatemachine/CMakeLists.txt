@@ -19,6 +19,7 @@ include_directories(
 
 set(aistatemachine_SOURCE_FILES
     aistatemachine.cpp
+    aistatemachinethread.cpp
     aitimer.cpp
     )
 
@@ -26,6 +27,7 @@ set(aistatemachine_HEADER_FILES
     CMakeLists.txt
 
     aistatemachine.h
+    aistatemachinethread.h
     aitimer.h
     )
 

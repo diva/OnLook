@@ -36,6 +36,7 @@ set(cmake_SOURCE_FILES
     FMOD.cmake
     FMODEX.cmake
     FreeType.cmake
+    GLOD.cmake
     GStreamer010Plugin.cmake
     GooglePerfTools.cmake
     Hunspell.cmake
@@ -55,6 +56,7 @@ set(cmake_SOURCE_FILES
     LLMessage.cmake
     LLPlugin.cmake
     LLPrimitive.cmake
+    LLPhysicsExtensions.cmake
     LLQtWebkit.cmake
     LLRender.cmake
     LLScene.cmake

@@ -28,18 +28,25 @@
 
 #include "llmodel.h"
 #include "llmemory.h"
-#if MESH_IMPORT
-#include "llconvexdecomposition.h"
-#endif //MESH_IMPORT
+#include "LLConvexDecomposition.h"
 #include "llsdserialize.h"
 #include "llvector4a.h"
-
-#if MESH_IMPORT
+#if LL_MSVC
+#pragma warning (push)
+#pragma warning (disable : 4068)
+#pragma warning (disable : 4263)
+#pragma warning (disable : 4264)
+#endif
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #include "dae.h"
 #include "dae/daeErrorHandler.h"
 #include "dom/domConstants.h"
 #include "dom/domMesh.h"
-#endif //MESH_IMPORT
+#pragma GCC diagnostic pop
+#if LL_MSVC
+#pragma warning (pop)
+#endif
 
 #ifdef LL_STANDALONE
 # include <zlib.h>
@@ -72,13 +79,10 @@ LLModel::~LLModel()
 {
 	if (mDecompID >= 0)
 	{
-#if	MESH_IMPORT
 		LLConvexDecomposition::getInstance()->deleteDecomposition(mDecompID);
-#endif //MESH_IMPORT
 	}
 }
 
-#if	MESH_IMPORT
 
 bool get_dom_sources(const domInputLocalOffset_Array& inputs, S32& pos_offset, S32& tc_offset, S32& norm_offset, S32 &idx_stride,
 					 domSource* &pos_source, domSource* &tc_source, domSource* &norm_source)
@@ -823,7 +827,6 @@ BOOL LLModel::createVolumeFacesFromDomMesh(domMesh* mesh)
 	
 	return FALSE;
 }
-#endif //MESH_IMPORT
 
 void LLModel::offsetMesh( const LLVector3& pivotPoint )
 {
@@ -1294,8 +1297,6 @@ void LLModel::generateNormals(F32 angle_cutoff)
 	}
 }
 
-#if MESH_IMPORT
-
 //static
 std::string LLModel::getElementLabel(daeElement *element)
 { // try to get a decent label for this element
@@ -1351,7 +1352,6 @@ LLModel* LLModel::loadModelFromDomMesh(domMesh *mesh)
 	ret->mLabel = getElementLabel(mesh);
 	return ret;
 }
-#endif //MESH_IMPORT
 
 std::string LLModel::getName() const
 {

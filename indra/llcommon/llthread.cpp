@@ -103,7 +103,7 @@ void *APR_THREAD_FUNC LLThread::staticRun(apr_thread_t *apr_threadp, void *datap
 	--sRunning;
 
 	// We're done with the run function, this thread is done executing now.
-	threadp->mStatus = STOPPED;
+	threadp->terminated();
 
 	// Only now print this info [doing that before setting mStatus
 	// to STOPPED makes it much more likely that another thread runs

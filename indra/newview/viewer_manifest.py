@@ -204,6 +204,12 @@ class WindowsManifest(ViewerManifest):
             self.path("libhunspell.dll")
             self.end_prefix()
 
+		# For mesh upload
+        if self.prefix(src=self.args['configuration'], dst=""):
+            self.path("libcollada14dom22.dll")
+            self.path("glod.dll")
+            self.end_prefix()
+
         # For use in crash reporting (generates minidumps)
         #self.path("dbghelp.dll")
         #is shipped with windows anyway
@@ -515,7 +521,9 @@ class DarwinManifest(ViewerManifest):
 
                 for libfile in ("libapr-1.0.dylib",
                                 "libaprutil-1.0.dylib",
-                                "libexpat.1.5.2.dylib"):
+                                "libcollada14dom.dylib",
+                                "libexpat.1.5.2.dylib",
+                                "libGLOD.dylib"):
                     self.path(os.path.join(libdir, libfile), libfile)
 
                 # For using FMOD for sound...but, fmod is proprietary so some might not use it...
@@ -802,11 +810,14 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libSDL-1.2.so*")
             self.path("libapr-1.so*")
             self.path("libaprutil-1.so*")
+            self.path("libcollada14dom.so")
             self.path("libcrypto.so*")
             self.path("libdb*.so")
             self.path("libdirect-1.*.so*")
             self.path("libdirectfb-1.*.so*")
             self.path("libfusion-1.*.so*")
+            self.path("libglod.so")
+            self.path("libminizip.so")
             self.path("libexpat.so*")
             self.path("libhunspell-*.so.*")
             self.path("libssl.so*")
@@ -844,10 +855,13 @@ class Linux_x86_64Manifest(LinuxManifest):
         if (not self.standalone()) and self.prefix("../../libraries/x86_64-linux/lib/release", dst="lib64"):
             self.path("libapr-1.so*")
             self.path("libaprutil-1.so*")
+            self.path("libcollada14dom.so.2.2", "libcollada14dom.so")
             self.path("libdb-*.so*")
             self.path("libcrypto.so.*")
             self.path("libexpat.so*")
+            self.path("libglod.so")
             self.path("libhunspell-1.3.so*")
+            self.path("libminizip.so.1.2.3", "libminizip.so");
             self.path("libssl.so*")
             self.path("libuuid.so*")
             self.path("libSDL-1.2.so*")

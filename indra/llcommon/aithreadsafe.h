@@ -2,7 +2,7 @@
  * @file aithreadsafe.h
  * @brief Implementation of AIThreadSafe, AIReadAccessConst, AIReadAccess and AIWriteAccess.
  *
- * Copyright (c) 2010, Aleric Inglewood.
+ * Copyright (c) 2010 - 2013, Aleric Inglewood.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,9 @@
  *   Added AIThreadSafeSingleThread and friends.
  *   Added AIAccessConst (and derived AIAccess from it) to allow read
  *   access to a const AIThreadSafeSimple.
+ *
+ *   26/01/2013
+ *   Added support for LLCondition to AIThreadSafeSimple.
  */
 
 // This file defines wrapper template classes for arbitrary types T
@@ -106,8 +109,8 @@
 template<typename T> struct AIReadAccessConst;
 template<typename T> struct AIReadAccess;
 template<typename T> struct AIWriteAccess;
-template<typename T> struct AIAccessConst;
-template<typename T> struct AIAccess;
+template<typename T, typename MUTEX> struct AIAccessConst;
+template<typename T, typename MUTEX> struct AIAccess;
 template<typename T> struct AISTAccessConst;
 template<typename T> struct AISTAccess;
 
@@ -456,16 +459,16 @@ struct AIWriteAccess : public AIReadAccess<T>
  *
  * See also AIThreadSafe
  */
-template<typename T>
+template<typename T, typename MUTEX = LLMutex>
 class AIThreadSafeSimple : public AIThreadSafeBits<T>
 {
 protected:
 	// Only this one may access the object (through ptr()).
-	friend struct AIAccessConst<T>;
-	friend struct AIAccess<T>;
+	friend struct AIAccessConst<T, MUTEX>;
+	friend struct AIAccess<T, MUTEX>;
 
 	// Locking control.
-	LLMutex mMutex;
+	MUTEX mMutex;
 
 	friend struct AIRegisteredStateMachinesList;
 	// For use by AIThreadSafeSimpleDC and AIRegisteredStateMachinesList.
@@ -475,6 +478,9 @@ protected:
 public:
 	// Only for use by AITHREADSAFESIMPLE, see below.
 	AIThreadSafeSimple(T* object) { llassert(object == AIThreadSafeBits<T>::ptr()); }
+
+	// If MUTEX is a LLCondition then this can be used to wake up the waiting thread.
+	void signal() { mMutex.signal(); }
 
 #if LL_DEBUG
 	// Can only be locked when there still exists an AIAccess object that
@@ -506,6 +512,7 @@ public:
  *       If that is needed, have a look at AIThreadSafeSimpleDC.
  */
 #define AITHREADSAFESIMPLE(type, var, paramlist) AIThreadSafeSimple<type> var(new (var.memory()) type paramlist)
+#define AITHREADSAFESIMPLECONDITION(type, var, paramlist) AIThreadSafeSimple<type, LLCondition> var(new (var.memory()) type paramlist)
 
 /**
  * @brief A wrapper class for objects that need to be accessed by more than one thread.
@@ -536,18 +543,18 @@ public:
  *
  * which is not possible with AITHREADSAFESIMPLE.
  */
-template<typename T>
-class AIThreadSafeSimpleDC : public AIThreadSafeSimple<T>
+template<typename T, typename MUTEX = LLMutex>
+class AIThreadSafeSimpleDC : public AIThreadSafeSimple<T, MUTEX>
 {
 public:
 	// Construct a wrapper around a default constructed object.
-	AIThreadSafeSimpleDC(void) { new (AIThreadSafeSimple<T>::ptr()) T; }
+	AIThreadSafeSimpleDC(void) { new (AIThreadSafeSimple<T, MUTEX>::ptr()) T; }
 	// Allow an arbitrary parameter to be passed for construction.
-	template<typename T2> AIThreadSafeSimpleDC(T2 const& val) { new (AIThreadSafeSimple<T>::ptr()) T(val); }
+	template<typename T2> AIThreadSafeSimpleDC(T2 const& val) { new (AIThreadSafeSimple<T, MUTEX>::ptr()) T(val); }
 
 protected:
 	// For use by AIThreadSafeSimpleDCRootPool
-	AIThreadSafeSimpleDC(LLAPRRootPool& parent) : AIThreadSafeSimple<T>(parent) { new (AIThreadSafeSimple<T>::ptr()) T; }
+	AIThreadSafeSimpleDC(LLAPRRootPool& parent) : AIThreadSafeSimple<T, MUTEX>(parent) { new (AIThreadSafeSimple<T, MUTEX>::ptr()) T; }
 };
 
 // Helper class for AIThreadSafeSimpleDCRootPool to assure initialization of
@@ -587,11 +594,11 @@ public:
 /**
  * @brief Write lock object and provide read access.
  */
-template<typename T>
+template<typename T, typename MUTEX = LLMutex>
 struct AIAccessConst
 {
 	//! Construct a AIAccessConst from a constant AIThreadSafeSimple.
-	AIAccessConst(AIThreadSafeSimple<T> const& wrapper) : mWrapper(const_cast<AIThreadSafeSimple<T>&>(wrapper))
+	AIAccessConst(AIThreadSafeSimple<T, MUTEX> const& wrapper) : mWrapper(const_cast<AIThreadSafeSimple<T, MUTEX>&>(wrapper))
 #if AI_NEED_ACCESS_CC
 		, mIsCopyConstructed(false)
 #endif
@@ -613,8 +620,11 @@ struct AIAccessConst
 	  this->mWrapper.mMutex.unlock();
 	}
 
+	// If MUTEX is an LLCondition, then this can be used to wait for a signal.
+	void wait() { this->mWrapper.mMutex.wait(); }
+
 protected:
-	AIThreadSafeSimple<T>& mWrapper;		//!< Reference to the object that we provide access to.
+	AIThreadSafeSimple<T, MUTEX>& mWrapper;		//!< Reference to the object that we provide access to.
 
 #if AI_NEED_ACCESS_CC
 	bool mIsCopyConstructed;
@@ -630,11 +640,11 @@ private:
 /**
  * @brief Write lock object and provide read/write access.
  */
-template<typename T>
-struct AIAccess : public AIAccessConst<T>
+template<typename T, typename MUTEX = LLMutex>
+struct AIAccess : public AIAccessConst<T, MUTEX>
 {
 	//! Construct a AIAccess from a non-constant AIThreadSafeSimple.
-	AIAccess(AIThreadSafeSimple<T>& wrapper) : AIAccessConst<T>(wrapper) { }
+	AIAccess(AIThreadSafeSimple<T, MUTEX>& wrapper) : AIAccessConst<T, MUTEX>(wrapper) { }
 
 	//! Access the underlaying object for (read and) write access.
 	T* operator->() const { return this->mWrapper.ptr(); }

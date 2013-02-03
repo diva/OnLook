@@ -50,6 +50,13 @@
             <key>url</key>
             <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/glod-1.0pre4-linux-20110611.tar.bz2</uri>
           </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>9552782ad333c819c91d31087750db64</string>
+            <key>url</key>
+            <uri>https://bitbucket.org/Siana/singularityviewer/downloads/glod-1.0pre4-linux-x86_64-20120609.tar.bz2</uri>
+          </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
@@ -224,6 +231,13 @@
             <string>c8c56c032bc39d174876ab25c72a05d8</string>
             <key>url</key>
             <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-linux-20110621.tar.bz2</uri>
+          </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>bab6e7fea2411dd375d76bb4ce9118a5</string>
+            <key>url</key>
+            <uri>https://bitbucket.org/Siana/singularityviewer/downloads/colladadom-2.2-linux-x86_64-20120719.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -1064,6 +1078,13 @@
             <string>3372b361e916df8981cb3bd7393b0353</string>
             <key>url</key>
             <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/pcre-7.6-linux-20110504.tar.bz2</uri>
+          </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>be0a9c92b5ab7d6761574b61685d6300</string>
+            <key>url</key>
+            <uri>https://bitbucket.org/Siana/singularityviewer/downloads/pcre-7.6-linux-x86_64-20120715.tar.bz2</uri>
           </map>
         </map>
       </map>

@@ -50,12 +50,16 @@ LLFilePicker LLFilePicker::sInstance;
 #define BLACKLIST_FILTER L"Asset Blacklist (*.blacklist)\0*.blacklist\0"
 // </edit>
 #define ANIM_FILTER L"Animations (*.bvh)\0*.bvh\0"
+#define COLLADA_FILTER L"Scene (*.dae)\0*.dae\0"
 #ifdef _CORY_TESTING
 #define GEOMETRY_FILTER L"SL Geometry (*.slg)\0*.slg\0"
 #endif
 #define XML_FILTER L"XML files (*.xml)\0*.xml\0"
 #define SLOBJECT_FILTER L"Objects (*.slobject)\0*.slobject\0"
 #define RAW_FILTER L"RAW files (*.raw)\0*.raw\0"
+#define MODEL_FILTER L"Model files (*.dae)\0*.dae\0"
+#define SCRIPT_FILTER L"Script files (*.lsl)\0*.lsl\0"
+#define DICTIONARY_FILTER L"Dictionary files (*.dic; *.xcu)\0*.dic;*.xcu\0"
 #endif
 
 //
@@ -164,6 +168,10 @@ bool LLFilePickerBase::setupFilter(ELoadFilter filter)
 		mOFN.lpstrFilter = ANIM_FILTER \
 			L"\0";
 		break;
+	case FFLOAD_COLLADA:
+		mOFN.lpstrFilter = COLLADA_FILTER \
+			L"\0";
+		break;
 #ifdef _CORY_TESTING
 	case FFLOAD_GEOMETRY:
 		mOFN.lpstrFilter = GEOMETRY_FILTER \
@@ -180,6 +188,18 @@ bool LLFilePickerBase::setupFilter(ELoadFilter filter)
 		break;
 	case FFLOAD_RAW:
 		mOFN.lpstrFilter = RAW_FILTER \
+			L"\0";
+		break;
+	case FFLOAD_MODEL:
+		mOFN.lpstrFilter = MODEL_FILTER \
+			L"\0";
+		break;
+	case FFLOAD_SCRIPT:
+		mOFN.lpstrFilter = SCRIPT_FILTER \
+			L"\0";
+		break;
+	case FFLOAD_DICTIONARY:
+		mOFN.lpstrFilter = DICTIONARY_FILTER \
 			L"\0";
 		break;
 	// <edit>
@@ -484,15 +504,13 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 			L"Gestures (*.gesture)\0*.gesture\0" \
 			L"\0";
 		break;
-	case FFSAVE_LSL:
+	case FFSAVE_SCRIPT:
 		if(filename.empty())
 		{
 			wcsncpy( mFilesW,L"untitled.lsl", FILENAME_BUFFER_SIZE);
 		}
 		mOFN.lpstrDefExt = L"lsl";
-		mOFN.lpstrFilter =
-			L"LSL (*.lsl)\0*.lsl\0" \
-			L"\0";
+		mOFN.lpstrFilter = L"LSL Files (*.lsl)\0*.lsl\0" L"\0";
 		break;
 	case FFSAVE_SHAPE:
 		if(filename.empty())
@@ -762,6 +780,15 @@ Boolean LLFilePickerBase::navOpenFilterProc(AEDesc *theItem, void *info, void *c
 								result = false;
 							}
 						}
+						else if (filter == FFLOAD_COLLADA)
+						{
+							if (fileInfo.filetype != 'DAE ' &&
+								(fileInfo.extension && (CFStringCompare(fileInfo.extension, CFSTR("dae"), kCFCompareCaseInsensitive) != kCFCompareEqualTo))
+							)
+							{
+								result = false;
+							}
+						}
 						else if (filter == FFLOAD_XML)
 						{
 							if (fileInfo.filetype != 'XML ' &&
@@ -795,7 +822,25 @@ Boolean LLFilePickerBase::navOpenFilterProc(AEDesc *theItem, void *info, void *c
 								result = false;
 							}
 						}
-						
+						else if (filter == FFLOAD_SCRIPT)
+						{
+							if (fileInfo.filetype != 'LSL ' &&
+								(fileInfo.extension && (CFStringCompare(fileInfo.extension, CFSTR("lsl"), kCFCompareCaseInsensitive) != kCFCompareEqualTo)) )
+							{
+								result = false;
+							}
+						}
+						else if (filter == FFLOAD_DICTIONARY)
+						{
+							if (fileInfo.filetype != 'DIC ' &&
+								fileInfo.filetype != 'XCU ' &&
+								(fileInfo.extension && (CFStringCompare(fileInfo.extension, CFSTR("dic"), kCFCompareCaseInsensitive) != kCFCompareEqualTo) &&
+								 fileInfo.extension && (CFStringCompare(fileInfo.extension, CFSTR("xcu"), kCFCompareCaseInsensitive) != kCFCompareEqualTo)))
+							{
+								result = false;
+							}
+						}
+
 						if (fileInfo.extension)
 						{
 							CFRelease(fileInfo.extension);
@@ -985,6 +1030,12 @@ OSStatus	LLFilePickerBase::doNavSaveDialog(ESaveFilter filter, std::string const
 			extension = CFSTR(".j2c");
 			break;
 		
+		case FFSAVE_SCRIPT:
+			type = 'LSL ';
+			creator = '\?\?\?\?';
+			extension = CFSTR(".lsl");
+			break;
+
 		case FFSAVE_ALL:
 		default:
 			type = '\?\?\?\?';
@@ -1349,6 +1400,12 @@ static std::string add_xml_filter_to_gtkchooser(GtkWindow *picker)
 												 LLTrans::getString("xml_file") + " (*.xml)");
 }
 
+static std::string add_collada_filter_to_gtkchooser(GtkWindow *picker)
+{
+	return add_simple_pattern_filter_to_gtkchooser(picker,  "*.dae",
+												   LLTrans::getString("scene_files") + " (*.dae)");
+}
+
 static std::string add_imageload_filter_to_gtkchooser(GtkWindow *picker)
 {
 	GtkFileFilter *gfilter = gtk_file_filter_new();
@@ -1362,6 +1419,17 @@ static std::string add_imageload_filter_to_gtkchooser(GtkWindow *picker)
 	return filtername;
 }
 
+static std::string add_script_filter_to_gtkchooser(GtkWindow *picker)
+{
+	return add_simple_mime_filter_to_gtkchooser(picker,  "text/plain",
+												LLTrans::getString("script_files") + " (*.lsl)");
+}
+
+static std::string add_dictionary_filter_to_gtkchooser(GtkWindow *picker)
+{
+	return add_simple_mime_filter_to_gtkchooser(picker,  "text/plain",
+												LLTrans::getString("dictionary_files") + " (*.dic; *.xcu)");
+}
 
 bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filename, std::string const& folder)
 {
@@ -1421,6 +1489,10 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 				 LLTrans::getString("compressed_image_files") + " (*.j2c)");
 			suggest_ext = ".j2c";
 			break;
+		case FFSAVE_SCRIPT:
+			caption += add_script_filter_to_gtkchooser(picker);
+			suggest_ext = ".lsl";
+			break;
 		default:;
 			break;
 		}
@@ -1475,8 +1547,17 @@ bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder
 		case FFLOAD_ANIM:
 			filtername = add_bvh_filter_to_gtkchooser(picker);
 			break;
+		case FFLOAD_COLLADA:
+			filtername = add_collada_filter_to_gtkchooser(picker);
+			break;
 		case FFLOAD_IMAGE:
 			filtername = add_imageload_filter_to_gtkchooser(picker);
+			break;
+		case FFLOAD_SCRIPT:
+			filtername = add_script_filter_to_gtkchooser(picker);
+			break;
+		case FFLOAD_DICTIONARY:
+			filtername = add_dictionary_filter_to_gtkchooser(picker);
 			break;
 		case FFLOAD_XML:
 			filtername = add_xml_filter_to_gtkchooser(picker);

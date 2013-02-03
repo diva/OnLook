@@ -31,6 +31,8 @@ set(debug_files
     libapriconv-1.dll
     libeay32.dll
     ssleay32.dll
+    libcollada14dom22-d.dll
+    glod.dll
     )
 
 copy_if_different(
@@ -210,6 +212,8 @@ set(release_files
     libapriconv-1.dll
     libeay32.dll
     ssleay32.dll
+    libcollada14dom22.dll
+    glod.dll
     )
 
 if(FMODEX)

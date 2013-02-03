@@ -175,7 +175,7 @@ ESaveFilter LLInventoryBackup::getSaveFilter(LLInventoryItem* item)
 		return FFSAVE_OGG;
 	case LLAssetType::AT_SCRIPT:
 	case LLAssetType::AT_LSL_TEXT:
-		return FFSAVE_LSL;
+		return FFSAVE_SCRIPT;
 	case LLAssetType::AT_ANIMATION:
 		return FFSAVE_ANIMATN;
 	case LLAssetType::AT_GESTURE:

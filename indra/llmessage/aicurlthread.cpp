@@ -841,10 +841,7 @@ class AICurlThread : public LLThread
 	virtual ~AICurlThread();
 
 	// MAIN-THREAD
-	void wakeup_thread(void);
-
-	// MAIN-THREAD
-	void stop_thread(void) { mRunning = false; wakeup_thread(); }
+	void wakeup_thread(bool stop_thread = false);
 
 	// MAIN-THREAD
 	apr_status_t join_thread(void);
@@ -1071,7 +1068,7 @@ void AICurlThread::cleanup_wakeup_fds(void)
 }
 
 // MAIN-THREAD
-void AICurlThread::wakeup_thread(void)
+void AICurlThread::wakeup_thread(bool stop_thread)
 {
   DoutEntering(dc::curl, "AICurlThread::wakeup_thread");
   llassert(is_main_thread());
@@ -1079,6 +1076,10 @@ void AICurlThread::wakeup_thread(void)
   // If we are already exiting the viewer then return immediately.
   if (!mRunning)
 	return;
+
+  // Last time we are run?
+  if (stop_thread)
+	mRunning = false;
 
   // Try if curl thread is still awake and if so, pass the new commands directly.
   if (mWakeUpMutex.tryLock())
@@ -1857,7 +1858,7 @@ void stopCurlThread(void)
   using curlthread::AICurlThread;
   if (AICurlThread::sInstance)
   {
-	AICurlThread::sInstance->stop_thread();
+	AICurlThread::sInstance->wakeup_thread(true);
 	int count = 401;
 	while(--count && !AICurlThread::sInstance->isStopped())
 	{

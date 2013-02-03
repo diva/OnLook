@@ -779,8 +779,12 @@ void LLStat::init()
 
 LLStat::stat_map_t& LLStat::getStatList()
 {
-	static LLStat::stat_map_t stat_list;
-	return stat_list;
+	static LLStat::stat_map_t* stat_list = NULL;
+	if(!stat_list)
+	{
+		stat_list = new LLStat::stat_map_t();
+	}
+	return *stat_list;
 }
 
 LLStat::LLStat(const U32 num_bins, const BOOL use_frame_timer)

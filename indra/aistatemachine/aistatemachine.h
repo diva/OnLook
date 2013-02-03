@@ -264,7 +264,7 @@ class AIStateMachine {
 	//! Halt the state machine until cont() is called (not thread-safe).
 	void idle(void);
 
-	//! Halt the state machine until cont() is called, provided it is still in 'cur_run_state'.
+	//! Halt the state machine until cont() is called, provided it is still in 'current_run_state'.
 	void idle(state_type current_run_state);
 
 	//! Temporarily halt the state machine.

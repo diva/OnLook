@@ -1,31 +1,25 @@
 /** 
  * @file llfloateravatarpicker.cpp
  *
- * $LicenseInfo:firstyear=2003&license=viewergpl$
- * 
- * Copyright (c) 2003-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2003&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -35,13 +29,12 @@
 
 // Viewer includes
 #include "llagent.h"
+#include "llcallingcard.h"
 #include "llfocusmgr.h"
-#include "llfoldervieweventlistener.h"
-#include "llinventoryfunctions.h"
-#include "llinventorymodel.h"
-#include "llinventorypanel.h"
+#include "llimview.h"			// for gIMMgr
+#include "lltooldraganddrop.h"	// for LLToolDragAndDrop
 #include "llviewercontrol.h"
-#include "llviewerregion.h"
+#include "llviewerregion.h"		// getCapability()
 #include "llworld.h"
 
 // Linden libraries
@@ -50,7 +43,7 @@
 #include "llcachename.h"
 #include "lllineeditor.h"
 #include "llscrolllistctrl.h"
-#include "lltextbox.h"
+#include "lltabcontainer.h"
 #include "lluictrlfactory.h"
 #include "message.h"
 
@@ -58,40 +51,38 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
-const S32 MIN_WIDTH = 200;
-const S32 MIN_HEIGHT = 340;
-const LLRect FLOATER_RECT(0, 380, 240, 0);
-const std::string FLOATER_TITLE = "Choose Resident";
-
-// static
-LLFloaterAvatarPicker* LLFloaterAvatarPicker::sInstance = NULL;
+//put it back as a member once the legacy path is out?
 static std::map<LLUUID, LLAvatarName> sAvatarNameMap;
 
 LLFloaterAvatarPicker* LLFloaterAvatarPicker::show(select_callback_t callback,
 												   BOOL allow_multiple,
 												   BOOL closeOnSelect)
 {
-	// TODO: This class should not be a singleton as it's used in multiple places
-	// and therefore can't be used simultaneously. -MG
-	
-	LLFloaterAvatarPicker* floater = sInstance ? sInstance : new LLFloaterAvatarPicker();
-	floater->open();	/* Flawfinder: ignore */
-	if(!sInstance)
-	{
-		sInstance = floater;
-		floater->center();
-	}
+	// *TODO: Use a key to allow this not to be an effective singleton
+
+	LLFloaterAvatarPicker* floater = getInstance();
+	floater->open();
 	
 	floater->mSelectionCallback = callback;
 	floater->setAllowMultiple(allow_multiple);
 	floater->mNearMeListComplete = FALSE;
 	floater->mCloseOnSelect = closeOnSelect;
+	
+	if (!closeOnSelect)
+	{
+		// Use Select/Close
+		std::string select_string = floater->getString("Select");
+		std::string close_string = floater->getString("Close");
+		floater->getChild<LLButton>("ok_btn")->setLabel(select_string);
+		floater->getChild<LLButton>("cancel_btn")->setLabel(close_string);
+	}
+
 	return floater;
 }
 
 // Default constructor
 LLFloaterAvatarPicker::LLFloaterAvatarPicker() :
-	LLFloater(std::string("avatarpicker"), FLOATER_RECT, FLOATER_TITLE, TRUE, MIN_WIDTH, MIN_HEIGHT),
+	LLFloater(),
 	mNumResultsReturned(0),
 	mNearMeListComplete(FALSE),
 	mCloseOnSelect(FALSE)
@@ -101,8 +92,8 @@ LLFloaterAvatarPicker::LLFloaterAvatarPicker() :
 
 BOOL LLFloaterAvatarPicker::postBuild()
 {
-	childSetKeystrokeCallback("Edit", editKeystroke, this);
-	childSetKeystrokeCallback("EditUUID", editKeystroke, this);
+	childSetKeystrokeCallback("Edit", &LLFloaterAvatarPicker::editKeystroke, (void*)this);
+	childSetKeystrokeCallback("EditUUID", &LLFloaterAvatarPicker::editKeystroke, (void*)this);
 
 	childSetAction("Find", boost::bind(&LLFloaterAvatarPicker::onBtnFind, this));
 	getChildView("Find")->setEnabled(FALSE);
@@ -118,9 +109,14 @@ BOOL LLFloaterAvatarPicker::postBuild()
 	nearme->setDoubleClickCallback(boost::bind(&LLFloaterAvatarPicker::onBtnSelect, this));
 	nearme->setCommitCallback(boost::bind(&LLFloaterAvatarPicker::onList, this));
 
-	childSetAction("Select", boost::bind(&LLFloaterAvatarPicker::onBtnSelect, this));
-	getChildView("Select")->setEnabled(FALSE);
-	childSetAction("Cancel", boost::bind(&LLFloaterAvatarPicker::onBtnClose, this));
+	LLScrollListCtrl* friends = getChild<LLScrollListCtrl>("Friends");
+	friends->setDoubleClickCallback(boost::bind(&LLFloaterAvatarPicker::onBtnSelect, this));
+	childSetAction("RefreshFriends", boost::bind(&LLFloaterAvatarPicker::populateFriend, this));
+	getChild<LLUICtrl>("Friends")->setCommitCallback(boost::bind(&LLFloaterAvatarPicker::onList, this));
+
+	childSetAction("ok_btn", boost::bind(&LLFloaterAvatarPicker::onBtnSelect, this));
+	getChildView("ok_btn")->setEnabled(FALSE);
+	childSetAction("cancel_btn", boost::bind(&LLFloaterAvatarPicker::onBtnClose, this));
 
 	getChild<LLUICtrl>("Edit")->setFocus(TRUE);
 
@@ -133,32 +129,32 @@ BOOL LLFloaterAvatarPicker::postBuild()
 
 	getChild<LLScrollListCtrl>("SearchResults")->setCommentText(getString("no_results"));
 
-	LLInventoryPanel* inventory_panel = getChild<LLInventoryPanel>("InventoryPanel");
-	inventory_panel->setFilterTypes(0x1 << LLInventoryType::IT_CALLINGCARD);
-	inventory_panel->setFollowsAll();
-	inventory_panel->setShowFolderState(LLInventoryFilter::SHOW_NON_EMPTY_FOLDERS);
-	inventory_panel->openDefaultFolderForType(LLAssetType::AT_CALLINGCARD);
-	inventory_panel->setSelectCallback(boost::bind(&LLFloaterAvatarPicker::onCallingCardSelectionChange, this, _1, _2));
-
 	getChild<LLTabContainer>("ResidentChooserTabs")->setCommitCallback(
 		boost::bind(&LLFloaterAvatarPicker::onTabChanged,this));
-
+	
 	setAllowMultiple(FALSE);
+	
+	center();
+	
+	populateFriend();
 
 	return TRUE;
 }
 
+void LLFloaterAvatarPicker::setOkBtnEnableCb(validate_callback_t cb)
+{
+	mOkButtonValidateSignal.connect(cb);
+}
+
 void LLFloaterAvatarPicker::onTabChanged()
 {
-	childSetEnabled("Select", visibleItemsSelected());
+	getChildView("ok_btn")->setEnabled(isSelectBtnEnabled());
 }
 
 // Destroys the object
 LLFloaterAvatarPicker::~LLFloaterAvatarPicker()
 {
 	gFocusMgr.releaseFocusIfNeeded( this );
-
-	sInstance = NULL;
 }
 
 void LLFloaterAvatarPicker::onBtnFind()
@@ -166,79 +162,61 @@ void LLFloaterAvatarPicker::onBtnFind()
 	find();
 }
 
-static void getSelectedAvatarData(const LLScrollListCtrl* from, uuid_vec_t& avatar_ids, std::vector<LLAvatarName>& avatar_names)
+static void addAvatarUUID(const LLUUID av_id, uuid_vec_t& avatar_ids, std::vector<LLAvatarName>& avatar_names)
 {
-	std::vector<LLScrollListItem*> items = from->getAllSelected();
-	for (std::vector<LLScrollListItem*>::iterator iter = items.begin(); iter != items.end(); ++iter)
+	if (av_id.notNull())
 	{
-		LLScrollListItem* item = *iter;
-		if (item->getUUID().notNull())
-		{
-			avatar_ids.push_back(item->getUUID());
+		avatar_ids.push_back(av_id);
 
-			std::map<LLUUID, LLAvatarName>::iterator iter = sAvatarNameMap.find(item->getUUID());
-			if (iter != sAvatarNameMap.end())
-			{
-				avatar_names.push_back(iter->second);
-			}
-			else
-			{
-				// the only case where it isn't in the name map is friends
-				// but it should be in the name cache
-				LLAvatarName av_name;
-				LLAvatarNameCache::get(item->getUUID(), &av_name);
-				avatar_names.push_back(av_name);
-			}
+		std::map<LLUUID, LLAvatarName>::iterator iter = sAvatarNameMap.find(av_id);
+		if (iter != sAvatarNameMap.end())
+		{
+			avatar_names.push_back(iter->second);
+		}
+		else
+		{
+			// the only case where it isn't in the name map is friends
+			// but it should be in the name cache
+			LLAvatarName av_name;
+			LLAvatarNameCache::get(av_id, &av_name);
+			avatar_names.push_back(av_name);
 		}
 	}
 }
+
+static void getSelectedAvatarData(const LLUICtrl* from, uuid_vec_t& avatar_ids, std::vector<LLAvatarName>& avatar_names)
+{
+	const LLScrollListCtrl* list = dynamic_cast<const LLScrollListCtrl*>(from);
+	if(list)
+	{
+		std::vector<LLScrollListItem*> items = list->getAllSelected();
+		for (std::vector<LLScrollListItem*>::iterator iter = items.begin(); iter != items.end(); ++iter)
+		{
+			addAvatarUUID((*iter)->getUUID(), avatar_ids, avatar_names);
+		}
+	}
+	else
+		addAvatarUUID(from->getValue().asUUID(), avatar_ids, avatar_names);
+}
+
 
 void LLFloaterAvatarPicker::onBtnSelect()
 {
 
 	// If select btn not enabled then do not callback
-	if (!visibleItemsSelected())
+	if (!isSelectBtnEnabled())
 		return;
 
 	if(mSelectionCallback)
 	{
-		std::vector<LLAvatarName>	avatar_names;
-		std::vector<LLUUID>			avatar_ids;
 		std::string active_panel_name;
-		LLScrollListCtrl* list =  NULL;
-		LLPanel* active_panel = childGetVisibleTab("ResidentChooserTabs");
+		LLUICtrl* list =  NULL;
+		LLPanel* active_panel = getChild<LLTabContainer>("ResidentChooserTabs")->getCurrentPanel();
 		if(active_panel)
 		{
 			active_panel_name = active_panel->getName();
 		}
-		if(active_panel_name == "CallingCardsPanel")
-		{
-			avatar_ids = mSelectedInventoryAvatarIDs;
-			for(std::vector<std::string>::size_type i = 0; i < avatar_ids.size(); ++i)
-			{
-				std::map<LLUUID, LLAvatarName>::iterator iter = sAvatarNameMap.find(avatar_ids[i]);
-				LLAvatarName av_name;
-				if (iter != sAvatarNameMap.end())
-				{
-					avatar_names.push_back(iter->second);
-				}
-				else if(LLAvatarNameCache::get(avatar_ids[i], &av_name))
-				{
-					avatar_names.push_back(av_name);
-				}
-				else
-				{
-					std::string name = gCacheName->buildLegacyName(mSelectedInventoryAvatarNames[i]);
-					std::string::size_type pos = name.find(' ');
-					av_name.mLegacyFirstName = name.substr(pos);
-					av_name.mLegacyLastName = pos!=std::string::npos ? name.substr(pos+1) : "Resident";
-					av_name.mDisplayName = name;
-					av_name.mUsername = "";
-					avatar_names.push_back(av_name);
-				}
-			}
-		}
-		else if(active_panel_name == "SearchPanel")
+		if(active_panel_name == "SearchPanel")
 		{
 			list = getChild<LLScrollListCtrl>("SearchResults");
 		}
@@ -246,38 +224,26 @@ void LLFloaterAvatarPicker::onBtnSelect()
 		{
 			list = getChild<LLScrollListCtrl>("NearMe");
 		}
+		else if (active_panel_name == "FriendsPanel")
+		{
+			list = getChild<LLScrollListCtrl>("Friends");
+		}
 		else if(active_panel_name == "KeyPanel")
 		{
-			LLUUID specified = getChild<LLLineEditor>("EditUUID")->getValue().asUUID();
-			if(specified.isNull())
-				return;
-			avatar_ids.push_back(specified);
-
-			std::map<LLUUID, LLAvatarName>::iterator iter = sAvatarNameMap.find(specified);
-			if (iter != sAvatarNameMap.end())
-			{
-				avatar_names.push_back(iter->second);
-			}
-			else
-			{
-				LLAvatarName av_name;
-				LLAvatarNameCache::get(specified, &av_name);
-				avatar_names.push_back(av_name);
-			}
+			list = getChild<LLLineEditor>("EditUUID");
 		}
 
 		if(list)
 		{
+			uuid_vec_t			avatar_ids;
+			std::vector<LLAvatarName>	avatar_names;
 			getSelectedAvatarData(list, avatar_ids, avatar_names);
-		}
-		if(!avatar_names.empty() && !avatar_ids.empty())
-		{
 			mSelectionCallback(avatar_ids, avatar_names);
 		}
 	}
-	getChild<LLInventoryPanel>("InventoryPanel")->setSelection(LLUUID::null, FALSE);
 	getChild<LLScrollListCtrl>("SearchResults")->deselectAllItems(TRUE);
 	getChild<LLScrollListCtrl>("NearMe")->deselectAllItems(TRUE);
+	getChild<LLScrollListCtrl>("Friends")->deselectAllItems(TRUE);
 	if(mCloseOnSelect)
 	{
 		mCloseOnSelect = FALSE;
@@ -304,41 +270,7 @@ void LLFloaterAvatarPicker::onRangeAdjust()
 
 void LLFloaterAvatarPicker::onList()
 {
-	getChildView("Select")->setEnabled(visibleItemsSelected());
-}
-
-// Callback for inventory picker (select from calling cards)
-void LLFloaterAvatarPicker::onCallingCardSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action)
-{
-	bool panel_active = (childGetVisibleTab("ResidentChooserTabs") == getChild<LLPanel>("CallingCardsPanel"));
-	
-	mSelectedInventoryAvatarIDs.clear();
-	mSelectedInventoryAvatarNames.clear();
-	
-	if (panel_active)
-	{
-		childSetEnabled("Select", FALSE);
-	}
-
-	std::deque<LLFolderViewItem*>::const_iterator item_it;
-	for (item_it = items.begin(); item_it != items.end(); ++item_it)
-	{
-		LLFolderViewEventListener* listenerp = (*item_it)->getListener();
-		if (listenerp->getInventoryType() == LLInventoryType::IT_CALLINGCARD)
-		{
-			LLInventoryItem* item = gInventory.getItem(listenerp->getUUID());
-			if (item)
-			{
-				mSelectedInventoryAvatarIDs.push_back(item->getCreatorUUID());
-				mSelectedInventoryAvatarNames.push_back(listenerp->getName());
-			}
-		}
-	}
-
-	if (panel_active)
-	{
-		childSetEnabled("Select", visibleItemsSelected());
-	}
+	getChildView("ok_btn")->setEnabled(isSelectBtnEnabled());
 }
 
 void LLFloaterAvatarPicker::populateNearMe()
@@ -380,13 +312,13 @@ void LLFloaterAvatarPicker::populateNearMe()
 	if (empty)
 	{
 		getChildView("NearMe")->setEnabled(FALSE);
-		getChildView("Select")->setEnabled(FALSE);
+		getChildView("ok_btn")->setEnabled(FALSE);
 		near_me_scroller->setCommentText(getString("no_one_near"));
 	}
 	else 
 	{
 		getChildView("NearMe")->setEnabled(TRUE);
-		getChildView("Select")->setEnabled(TRUE);
+		getChildView("ok_btn")->setEnabled(TRUE);
 		near_me_scroller->selectFirstItem();
 		onList();
 		near_me_scroller->setFocus(TRUE);
@@ -398,8 +330,39 @@ void LLFloaterAvatarPicker::populateNearMe()
 	}
 }
 
+void LLFloaterAvatarPicker::populateFriend()
+{
+	LLScrollListCtrl* friends_scroller = getChild<LLScrollListCtrl>("Friends");
+	friends_scroller->deleteAllItems();
+	LLCollectAllBuddies collector;
+	LLAvatarTracker::instance().applyFunctor(collector);
+	LLCollectAllBuddies::buddy_map_t::iterator it;
+	
+	for(it = collector.mOnline.begin(); it!=collector.mOnline.end(); it++)
+	{
+		friends_scroller->addStringUUIDItem(it->first, it->second);
+	}
+	for(it = collector.mOffline.begin(); it!=collector.mOffline.end(); it++)
+	{
+			friends_scroller->addStringUUIDItem(it->first, it->second);
+	}
+	friends_scroller->sortByColumnIndex(0, TRUE);
+}
+
 void LLFloaterAvatarPicker::draw()
 {
+	// sometimes it is hard to determine when Select/Ok button should be disabled (see LLAvatarActions::shareWithAvatars).
+	// lets check this via mOkButtonValidateSignal callback periodically.
+	static LLFrameTimer timer;
+	if (timer.hasExpired())
+	{
+		timer.setTimerExpirySec(0.33f); // three times per second should be enough.
+
+		// simulate list changes.
+		onList();
+		timer.start();
+	}
+
 	LLFloater::draw();
 
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-1.0.0e
@@ -425,7 +388,7 @@ void LLFloaterAvatarPicker::draw()
 	}
 // [/RLVa:KB]
 
-	if (!mNearMeListComplete && childGetVisibleTab("ResidentChooserTabs") == getChild<LLPanel>("NearMePanel"))
+	if (!mNearMeListComplete &&  getChild<LLTabContainer>("ResidentChooserTabs")->getCurrentPanel() == getChild<LLPanel>("NearMePanel"))
 	{
 		populateNearMe();
 	}
@@ -433,19 +396,19 @@ void LLFloaterAvatarPicker::draw()
 
 BOOL LLFloaterAvatarPicker::visibleItemsSelected() const
 {
-	LLPanel* active_panel = childGetVisibleTab("ResidentChooserTabs");
+	LLPanel* active_panel = getChild<LLTabContainer>("ResidentChooserTabs")->getCurrentPanel();
 
 	if(active_panel == getChild<LLPanel>("SearchPanel"))
 	{
 		return getChild<LLScrollListCtrl>("SearchResults")->getFirstSelectedIndex() >= 0;
 	}
-	else if(active_panel == getChild<LLPanel>("CallingCardsPanel"))
-	{
-		return !mSelectedInventoryAvatarIDs.empty();
-	}
 	else if(active_panel == getChild<LLPanel>("NearMePanel"))
 	{
 		return getChild<LLScrollListCtrl>("NearMe")->getFirstSelectedIndex() >= 0;
+	}
+	else if(active_panel == getChild<LLPanel>("FriendsPanel"))
+	{
+		return getChild<LLScrollListCtrl>("Friends")->getFirstSelectedIndex() >= 0;
 	}
 	else if(active_panel == getChild<LLPanel>("KeyPanel"))
 	{
@@ -473,10 +436,9 @@ public:
 		// just set it to process so it displays 'not found'
 		if ((200 <= status && status < 300) || status == 400)
 		{
-			LLFloaterAvatarPicker* floater = LLFloaterAvatarPicker::sInstance;
-			if (floater)
+			if (LLFloaterAvatarPicker::instanceExists())
 			{
-				floater->processResponse(mQueryID, content);
+				LLFloaterAvatarPicker::getInstance()->processResponse(mQueryID, content);
 			}
 		}
 		else
@@ -496,7 +458,7 @@ void LLFloaterAvatarPicker::find()
 	//clear our stored LLAvatarNames
 	sAvatarNameMap.clear();
 
-	const std::string& text = childGetValue("Edit").asString();
+	std::string text = getChild<LLUICtrl>("Edit")->getValue().asString();
 
 	mQueryID.generate();
 
@@ -537,15 +499,90 @@ void LLFloaterAvatarPicker::find()
 	getChild<LLScrollListCtrl>("SearchResults")->deleteAllItems();
 	getChild<LLScrollListCtrl>("SearchResults")->setCommentText(getString("searching"));
 	
-	childSetEnabled("Select", FALSE);
+	getChildView("ok_btn")->setEnabled(FALSE);
 	mNumResultsReturned = 0;
 }
 
 void LLFloaterAvatarPicker::setAllowMultiple(BOOL allow_multiple)
 {
 	getChild<LLScrollListCtrl>("SearchResults")->setAllowMultipleSelection(allow_multiple);
-	getChild<LLInventoryPanel>("InventoryPanel")->setAllowMultiSelect(allow_multiple);
 	getChild<LLScrollListCtrl>("NearMe")->setAllowMultipleSelection(allow_multiple);
+	getChild<LLScrollListCtrl>("Friends")->setAllowMultipleSelection(allow_multiple);
+}
+
+LLScrollListCtrl* LLFloaterAvatarPicker::getActiveList()
+{
+	std::string acvtive_panel_name;
+	LLScrollListCtrl* list = NULL;
+	LLPanel* active_panel = getChild<LLTabContainer>("ResidentChooserTabs")->getCurrentPanel();
+	if(active_panel)
+	{
+		acvtive_panel_name = active_panel->getName();
+	}
+	if(acvtive_panel_name == "SearchPanel")
+	{
+		list = getChild<LLScrollListCtrl>("SearchResults");
+	}
+	else if(acvtive_panel_name == "NearMePanel")
+	{
+		list = getChild<LLScrollListCtrl>("NearMe");
+	}
+	else if (acvtive_panel_name == "FriendsPanel")
+	{
+		list = getChild<LLScrollListCtrl>("Friends");
+	}
+	return list;
+}
+
+BOOL LLFloaterAvatarPicker::handleDragAndDrop(S32 x, S32 y, MASK mask,
+											  BOOL drop, EDragAndDropType cargo_type,
+											  void *cargo_data, EAcceptance *accept,
+											  std::string& tooltip_msg)
+{
+	LLScrollListCtrl* list = getActiveList();
+	if(list)
+	{
+		LLRect rc_list;
+		LLRect rc_point(x,y,x,y);
+		if (localRectToOtherView(rc_point, &rc_list, list))
+		{
+			// Keep selected only one item
+			list->deselectAllItems(TRUE);
+			list->selectItemAt(rc_list.mLeft, rc_list.mBottom, mask);
+			LLScrollListItem* selection = list->getFirstSelected();
+			if (selection)
+			{
+				LLUUID session_id = LLUUID::null;
+				LLUUID dest_agent_id = selection->getUUID();
+				std::string avatar_name = selection->getColumn(0)->getValue().asString();
+				if (dest_agent_id.notNull() && dest_agent_id != gAgentID)
+				{
+					if (drop)
+					{
+						// Start up IM before give the item
+						session_id = gIMMgr->addSession(avatar_name, IM_NOTHING_SPECIAL, dest_agent_id);
+					}
+					return LLToolDragAndDrop::handleGiveDragAndDrop(dest_agent_id, session_id, drop,
+																	cargo_type, cargo_data, accept);
+				}
+			}
+		}
+	}
+	*accept = ACCEPT_NO;
+	return TRUE;
+}
+
+
+void LLFloaterAvatarPicker::openFriendsTab()
+{
+	LLTabContainer* tab_container = getChild<LLTabContainer>("ResidentChooserTabs");
+	if (tab_container == NULL)
+	{
+		llassert(tab_container != NULL);
+		return;
+	}
+
+	tab_container->selectTabByName("FriendsPanel");
 }
 
 // static 
@@ -563,8 +600,9 @@ void LLFloaterAvatarPicker::processAvatarPickerReply(LLMessageSystem* msg, void*
 	// Not for us
 	if (agent_id != gAgent.getID()) return;
 
-	// Dialog already closed
-	LLFloaterAvatarPicker *floater = sInstance;
+	if(!instanceExists())
+		return;
+	LLFloaterAvatarPicker *floater = getInstance();
 
 	// floater is closed or these are not results from our last request
 	if (NULL == floater || query_id != floater->mQueryID)
@@ -592,10 +630,10 @@ void LLFloaterAvatarPicker::processAvatarPickerReply(LLMessageSystem* msg, void*
 		if (avatar_id.isNull())
 		{
 			LLStringUtil::format_map_t map;
-			map["[TEXT]"] = floater->childGetText("Edit");
+			map["[TEXT]"] = floater->getChild<LLUICtrl>("Edit")->getValue().asString();
 			avatar_name = floater->getString("not_found", map);
 			search_results->setEnabled(FALSE);
-			floater->getChildView("Select")->setEnabled(FALSE);
+			floater->getChildView("ok_btn")->setEnabled(FALSE);
 		}
 		else
 		{
@@ -620,7 +658,7 @@ void LLFloaterAvatarPicker::processAvatarPickerReply(LLMessageSystem* msg, void*
 
 	if (found_one)
 	{
-		floater->getChildView("Select")->setEnabled(TRUE);
+		floater->getChildView("ok_btn")->setEnabled(TRUE);
 		search_results->selectFirstItem();
 		floater->onList();
 		search_results->setFocus(TRUE);
@@ -645,7 +683,7 @@ void LLFloaterAvatarPicker::processResponse(const LLUUID& query_id, const LLSD& 
 		item["columns"][0]["value"] = getString("not_found", map);
 		search_results->addElement(item);
 		search_results->setEnabled(false);
-		getChildView("Select")->setEnabled(false);
+		getChildView("ok_btn")->setEnabled(false);
 		return;
 	}
 
@@ -671,7 +709,7 @@ void LLFloaterAvatarPicker::processResponse(const LLUUID& query_id, const LLSD& 
 		sAvatarNameMap[row["id"].asUUID()] = avatar_name;
 	}
 
-	getChildView("Select")->setEnabled(true);
+	getChildView("ok_btn")->setEnabled(true);
 	search_results->setEnabled(true);
 	search_results->selectFirstItem();
 	onList();
@@ -682,14 +720,10 @@ void LLFloaterAvatarPicker::processResponse(const LLUUID& query_id, const LLSD& 
 void LLFloaterAvatarPicker::editKeystroke(LLLineEditor* caller, void* user_data)
 {
 	LLFloaterAvatarPicker* self = (LLFloaterAvatarPicker*)user_data;
-	LLPanel* active_panel = self->childGetVisibleTab("ResidentChooserTabs");
-	if(active_panel == self->getChild<LLPanel>("SearchPanel"))
-		self->childSetEnabled("Find", caller->getText().size() >= 3);
-	else if(active_panel == self->getChild<LLPanel>("KeyPanel"))
-	{
-		LLUUID specified = self->getChild<LLLineEditor>("EditUUID")->getValue().asUUID();
-		self->childSetEnabled("Select", specified.notNull());
-	}
+	if(caller->getName() == "Edit")
+		self->getChildView("Find")->setEnabled(caller->getText().size() >= 3);
+	else
+		self->childSetEnabled("Select", caller->getValue().asUUID().notNull());
 }
 
 // virtual
@@ -714,4 +748,46 @@ BOOL LLFloaterAvatarPicker::handleKeyHere(KEY key, MASK mask)
 	}
 
 	return LLFloater::handleKeyHere(key, mask);
+}
+
+bool LLFloaterAvatarPicker::isSelectBtnEnabled()
+{
+	bool ret_val = visibleItemsSelected();
+
+	if ( ret_val && mOkButtonValidateSignal.num_slots() )
+	{
+		std::string active_panel_name;
+		LLUICtrl* list =  NULL;
+		LLPanel* active_panel = getChild<LLTabContainer>("ResidentChooserTabs")->getCurrentPanel();
+		if(active_panel)
+		{
+			active_panel_name = active_panel->getName();
+		}
+		if(active_panel_name == "SearchPanel")
+		{
+			list = getChild<LLScrollListCtrl>("SearchResults");
+		}
+		else if(active_panel_name == "NearMePanel")
+		{
+			list = getChild<LLScrollListCtrl>("NearMe");
+		}
+		else if (active_panel_name == "FriendsPanel")
+		{
+			list = getChild<LLScrollListCtrl>("Friends");
+		}
+		else if(active_panel_name == "KeyPanel")
+		{
+			list = getChild<LLLineEditor>("EditUUID");
+		}
+
+		if(list)
+		{
+			uuid_vec_t			avatar_ids;
+			std::vector<LLAvatarName>	avatar_names;
+			getSelectedAvatarData(list, avatar_ids, avatar_names);
+			return mOkButtonValidateSignal(avatar_ids);
+		}
+	}
+
+	return ret_val;
 }

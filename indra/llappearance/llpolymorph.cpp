@@ -28,6 +28,7 @@
 // Header Files
 //-----------------------------------------------------------------------------
 
+#include "linden_common.h"
 #include "llpolymorph.h"
 #include "llavatarappearance.h"
 #include "llavatarjoint.h"

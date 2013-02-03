@@ -927,11 +927,6 @@ void LLViewerRegion::calculateCameraDistance()
 	mCameraDistanceSquared = (F32)(gAgentCamera.getCameraPositionGlobal() - getCenterGlobal()).magVecSquared();
 }
 
-U32 LLViewerRegion::getNetDetailsForLCD()
-{
-	return mPingDelay;
-}
-
 std::ostream& operator<<(std::ostream &s, const LLViewerRegion &region)
 {
 	s << "{ ";
@@ -1629,9 +1624,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	//capabilityNames.append("LandResources"); //Script limits (llfloaterscriptlimits.cpp)
 	capabilityNames.append("MapLayer");
 	capabilityNames.append("MapLayerGod");
-#if MESH_IMPORT
 	capabilityNames.append("MeshUploadFlag");
-#endif //MESH_IMPORT
 	capabilityNames.append("NavMeshGenerationStatus");
 	capabilityNames.append("NewFileAgentInventory");
 	/*capabilityNames.append("ObjectMedia");
@@ -1828,7 +1821,7 @@ std::string LLViewerRegion::getCapability(const std::string& name) const
 {
 	if (!capabilitiesReceived() && (name!=std::string("Seed")) && (name!=std::string("ObjectMedia")))
 	{
-		llwarns << "getCapability called before caps received" << llendl;
+		llwarns << "getCapability("<<name<<") called before caps received" << llendl;
 	}
 	
 	CapabilityMap::const_iterator iter = mImpl->mCapabilities.find(name);

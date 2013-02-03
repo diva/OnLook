@@ -1313,7 +1313,16 @@ void LLVoiceClient::connectorCreate()
 	<< "<Request requestId=\"" << mCommandCookie++ << "\" action=\"Connector.Create.1\">"
 		<< "<ClientName>V2 SDK</ClientName>"
 		<< "<AccountManagementServer>" << mVoiceAccountServerURI << "</AccountManagementServer>"
-		<< "<Mode>Normal</Mode>"
+		<< "<Mode>Normal</Mode>";
+	
+	if (gSavedSettings.getBOOL("VoiceMultiInstance"))
+	{
+		stream
+			<< "<MinimumPort>30000</MinimumPort>"
+			<< "<MaximumPort>50000</MaximumPort>";
+	}
+
+	stream
 		<< "<Logging>"
 			<< "<Folder>" << logpath << "</Folder>"
 			<< "<FileNamePrefix>Connector</FileNamePrefix>"
@@ -1579,7 +1588,7 @@ void LLVoiceClient::stateMachine()
 		LLViewerRegion *region = gAgent.getRegion();
 		LLParcel *parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
 		
-		if(region && parcel)
+		if(region && parcel && region->capabilitiesReceived())
 		{
 			S32 parcelLocalID = parcel->getLocalID();
 			std::string regionName = region->getName();
@@ -1686,6 +1695,19 @@ void LLVoiceClient::stateMachine()
 						std::string args;
 						std::string cmd;
 						std::string loglevel = gSavedSettings.getString("VivoxDebugLevel");
+
+						// If we allow multiple instances of the viewer to start the voice
+						// daemon, set TEMPORARY random voice port
+						if (gSavedSettings.getBOOL("VoiceMultiInstance"))
+						{
+							LLControlVariable* voice_port = gSavedSettings.getControl("VoicePort");
+							if (voice_port)
+							{
+								const BOOL DO_NOT_PERSIST = FALSE;
+								S32 port_nr = 30000 + ll_rand(20000);
+								voice_port->setValue(LLSD(port_nr), DO_NOT_PERSIST);
+							}
+						}
 						
 						if(loglevel.empty())
 						{
@@ -1694,6 +1716,12 @@ void LLVoiceClient::stateMachine()
 						
 						args += " -ll ";
 						args += loglevel;
+
+						// Tell voice gateway to listen to a specific port
+						if (gSavedSettings.getBOOL("VoiceMultiInstance"))
+						{
+							args += llformat(" -i 127.0.0.1:%u",  gSavedSettings.getU32("VoicePort"));
+						}
 						
 						LL_DEBUGS("Voice") << "Args for SLVoice: " << args << LL_ENDL;
 
@@ -1876,7 +1904,7 @@ void LLVoiceClient::stateMachine()
 			{
 				LLViewerRegion *region = gAgent.getRegion();
 				
-				if(region)
+				if(region && region->capabilitiesReceived())
 				{
 					if ( region->getCapability("ProvisionVoiceAccountRequest") != "" )
 					{

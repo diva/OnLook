@@ -2759,16 +2759,16 @@ Please choose the male or female avatar. You can change your mind later.
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notify.tga"
    name="GrantedModifyRights"
-   type="alertmodal">
+   type="notify">
 You have been granted the privilege to modify [NAME]&apos;s objects.
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notify.tga"
    name="RevokedModifyRights"
-   type="alertmodal">
+   type="notify">
 Your privilege to modify [NAME]&apos;s objects has been revoked
   </notification>
 
@@ -2831,9 +2831,9 @@ Are you sure you want to return objects owned by [USER_NAME]?
    name="InvalidTerrainBitDepth"
    type="alertmodal">
 Couldn&apos;t set region textures:
-Terrain texture [TEXTURE_NUM] has an invalid bit depth of [TEXTURE_BIT_DEPTH].
+Terrain texture [TEXTURE_NUM] has an invalid bit depth of [TEXTURE_BIT_DEPTH]. Probable cause is that the texture data contains transparency information.
 
-Replace texture [TEXTURE_NUM] with a 24-bit 512x512 or smaller image then click &quot;Apply&quot; again.
+Replace texture [TEXTURE_NUM] with a 24-bit 1024x1024 or smaller image then click &quot;Apply&quot; again.
   </notification>
 
   <notification
@@ -2843,7 +2843,7 @@ Replace texture [TEXTURE_NUM] with a 24-bit 512x512 or smaller image then click 
 Couldn&apos;t set region textures:
 Terrain texture [TEXTURE_NUM] is too large at [TEXTURE_SIZE_X]x[TEXTURE_SIZE_Y].
 
-Replace texture [TEXTURE_NUM] with a 24-bit 512x512 or smaller image then click &quot;Apply&quot; again.
+Replace texture [TEXTURE_NUM] with a 24-bit 1024x1024 or smaller image then click &quot;Apply&quot; again.
   </notification>
 
   <notification
@@ -2890,7 +2890,7 @@ Exceeds the [MAX_AGENTS] [LIST_TYPE] limit by [NUM_EXCESS].
    icon="alertmodal.tga"
    name="MaxAllowedGroupsOnRegion"
    type="alertmodal">
-You can only have [MAX_GROUPS] Allowed Groups.
+You can only have [MAX_GROUPS] groups.
     <usetemplate
      name="okcancelbuttons"
      notext="Cancel"
@@ -7327,6 +7327,22 @@ The region you have entered is running a different simulator version. Click this
    priority="high"
    type="notifytip">
 The URL you clicked cannot be opened from this web browser.
+  </notification>
+
+  <notification
+    name="MeshUploadError"
+    icon="alert.tga"
+    type="alert">
+    [LABEL] failed to upload: [MESSAGE] [IDENTIFIER]
+
+See the log file for details.
+  </notification>
+
+  <notification
+    name="MeshUploadPermError"
+    icon="alert.tga"
+    type="alert">
+    Error while requesting mesh upload permissons.
   </notification>
 
   <notification

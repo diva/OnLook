@@ -2026,7 +2026,6 @@ void LLAppearanceMgr::updateCOF(LLInventoryModel::item_array_t& body_items_new,
 //	if (!append)
 	{
 		link_waiter->addItem(category);
-	}
 	
 	// Remove current COF contents.  Have to do this after creating
 	// the link_waiter so links can be followed for any items that get
@@ -2034,6 +2033,7 @@ void LLAppearanceMgr::updateCOF(LLInventoryModel::item_array_t& body_items_new,
 	// contain one)
 	bool keep_outfit_links = append;
 	purgeCategory(cof, keep_outfit_links);
+	}
 	gInventory.notifyObservers();
 
 	LL_DEBUGS("Avatar") << self_av_string() << "waiting for LLUpdateAppearanceOnDestroy" << LL_ENDL;

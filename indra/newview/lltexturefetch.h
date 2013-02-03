@@ -186,7 +186,6 @@ private:
 	typedef std::map<LLHost,std::set<LLUUID> > cancel_queue_t;
 	cancel_queue_t mCancelQueue;
 	F32 mTextureBandwidth;
-	F32 mMaxBandwidth;
 	LLTextureInfo mTextureInfo;
 
 	U32 mHTTPTextureBits;
