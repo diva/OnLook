@@ -27,8 +27,7 @@
 //-----------------------------------------------------------------------------
 // Header Files
 //-----------------------------------------------------------------------------
-#include "llpreprocessor.h"
-#include "llerrorlegacy.h"
+#include "linden_common.h"
 //#include "llcommon.h"
 //#include "llmemory.h"
 #include "llavatarappearance.h"
