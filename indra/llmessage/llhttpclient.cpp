@@ -208,11 +208,13 @@ static void request(
 	AIStateMachine* parent = NULL,
 	AIStateMachine::state_type new_parent_state = 0)
 {
-	if (responder)
-	{
-		// For possible debug output from within the responder.
-		responder->setURL(url);
+	llassert(responder);
+
+	if (!responder) {
+		responder = new LLHTTPClient::ResponderIgnore;
 	}
+	// For possible debug output from within the responder.
+	responder->setURL(url);
 
 	LLURLRequest* req;
 	try
