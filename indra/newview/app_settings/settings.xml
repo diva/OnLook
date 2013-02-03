@@ -192,7 +192,7 @@
     <key>Type</key>
     <string>U32</string>
     <key>Value</key>
-    <integer>32</integer>
+    <integer>12</integer>
   </map>
   <key>HTTPMinRequests</key>
   <map>
@@ -204,6 +204,17 @@
     <string>U32</string>
     <key>Value</key>
     <integer>2</integer>
+  </map>
+  <key>HTTPThrottleBandwidth</key>
+  <map>
+    <key>Comment</key>
+    <string>The bandwidth (in kbit/s) to strive for</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>3000</real>
   </map>
 
   <key>TeleportHistoryMaxEntries</key>
