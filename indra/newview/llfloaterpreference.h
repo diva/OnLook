@@ -44,7 +44,6 @@
 class HippoPanelGrids;
 class LLPanelGeneral;
 class LLPanelInput;
-class LLPanelLCD;
 class LLPanelDisplay;
 class LLPanelAudioPrefs;
 class LLPanelDebug;
@@ -97,7 +96,6 @@ private:
 	LLPrefsIM				*mPrefsIM;
 	LLPanelWeb				*mWebPanel;
 	LLPanelMsgs				*mMsgPanel;
-	LLPanelLCD				*mLCDPanel;
 	LLPrefsAscentChat		*mPrefsAscentChat;
 	LLPrefsAscentSys		*mPrefsAscentSys;
 	LLPrefsAscentVan		*mPrefsAscentVan;
