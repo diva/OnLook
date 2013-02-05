@@ -1513,12 +1513,6 @@ BOOL LLFolderView::handleKeyHere( KEY key, MASK mask )
 		LLMenuGL::sMenuContainer->hideMenus();
 	}
 
-	LLView *item = NULL;
-	if (getChildCount() > 0)
-	{
-		item = *(getChildList()->begin());
-	}
-
 	switch( key )
 	{
 	case KEY_F2:
