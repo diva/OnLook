@@ -582,9 +582,9 @@ public:
 	static std::string escapeXML(const std::string& xml, std::string& indent);
 
 	// focuses the item in the list after the currently-focused item, wrapping if necessary
-	static	BOOL focusNext(LLView::child_list_t & result);
+	static	BOOL focusNext(viewList_t& result);
 	// focuses the item in the list before the currently-focused item, wrapping if necessary
-	static	BOOL focusPrev(LLView::child_list_t & result);
+	static	BOOL focusPrev(viewList_t& result);
 
 	// returns query for iterating over controls in tab order	
 	static const LLCtrlQuery & getTabOrderQuery();

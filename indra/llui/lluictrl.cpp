@@ -302,8 +302,8 @@ BOOL LLUICtrl::focusFirstItem(BOOL prefer_text_fields, BOOL focus_flash)
 	LLCtrlQuery query = getTabOrderQuery();
 	// sort things such that the default tab group is at the front
 	query.setSorter(DefaultTabGroupFirstSorter::getInstance());
-	child_list_t result = query(this);
-	if(result.size() > 0)
+	viewList_t result = query(this);
+	if(!result.empty())
 	{
 		LLUICtrl * ctrl = static_cast<LLUICtrl*>(result.front());
 		if(!ctrl->hasFocus())
@@ -322,7 +322,7 @@ BOOL LLUICtrl::focusFirstItem(BOOL prefer_text_fields, BOOL focus_flash)
 	{
 		LLCtrlQuery query = getTabOrderQuery();
 		query.addPreFilter(LLUICtrl::LLTextInputFilter::getInstance());
-		child_list_t result = query(this);
+		viewList_t result = query(this);
 		if(result.size() > 0)
 		{
 			LLUICtrl * ctrl = static_cast<LLUICtrl*>(result.front());
@@ -358,7 +358,7 @@ BOOL LLUICtrl::focusLastItem(BOOL prefer_text_fields)
 	{
 		LLCtrlQuery query = getTabOrderQuery();
 		query.addPreFilter(LLUICtrl::LLTextInputFilter::getInstance());
-		child_list_t result = query(this);
+		viewList_t result = query(this);
 		if(result.size() > 0)
 		{
 			LLUICtrl * ctrl = static_cast<LLUICtrl*>(result.back());
@@ -372,7 +372,7 @@ BOOL LLUICtrl::focusLastItem(BOOL prefer_text_fields)
 		}
 	}
 	// no text field found, or we don't care about text fields
-	child_list_t result = getTabOrderQuery().run(this);
+	viewList_t result = getTabOrderQuery().run(this);
 	if(result.size() > 0)
 	{
 		LLUICtrl * ctrl = static_cast<LLUICtrl*>(result.back());
@@ -395,7 +395,7 @@ BOOL LLUICtrl::focusNextItem(BOOL text_fields_only)
 	{
 		query.addPreFilter(LLUICtrl::LLTextInputFilter::getInstance());
 	}
-	child_list_t result = query(this);
+	viewList_t result = query(this);
 	return focusNext(result);
 }
 
@@ -407,7 +407,7 @@ BOOL LLUICtrl::focusPrevItem(BOOL text_fields_only)
 	{
 		query.addPreFilter(LLUICtrl::LLTextInputFilter::getInstance());
 	}
-	child_list_t result = query(this);
+	viewList_t result = query(this);
 	return focusPrev(result);
 }
 

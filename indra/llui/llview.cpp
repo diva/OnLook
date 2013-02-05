@@ -518,21 +518,21 @@ LLRect LLView::getRequiredRect()
 
 BOOL LLView::focusNextRoot()
 {
-	LLView::child_list_t result = LLView::getFocusRootsQuery().run(this);
+	viewList_t result = LLView::getFocusRootsQuery().run(this);
 	return LLView::focusNext(result);
 }
 
 BOOL LLView::focusPrevRoot()
 {
-	LLView::child_list_t result = LLView::getFocusRootsQuery().run(this);
+	viewList_t result = LLView::getFocusRootsQuery().run(this);
 	return LLView::focusPrev(result);
 }
 
 // static
-BOOL LLView::focusNext(LLView::child_list_t & result)
+BOOL LLView::focusNext(viewList_t& result)
 {
-	LLView::child_list_iter_t focused = result.end();
-	for(LLView::child_list_iter_t iter = result.begin();
+	viewList_t::iterator focused = result.end();
+	for(viewList_t::iterator iter = result.begin();
 		iter != result.end();
 		++iter)
 	{
@@ -542,7 +542,7 @@ BOOL LLView::focusNext(LLView::child_list_t & result)
 			break;
 		}
 	}
-	LLView::child_list_iter_t next = focused;
+	viewList_t::iterator next = focused;
 	next = (next == result.end()) ? result.begin() : ++next;
 	while(next != focused)
 	{
@@ -565,10 +565,10 @@ BOOL LLView::focusNext(LLView::child_list_t & result)
 }
 
 // static
-BOOL LLView::focusPrev(LLView::child_list_t & result)
+BOOL LLView::focusPrev(viewList_t& result)
 {
-	LLView::child_list_reverse_iter_t focused = result.rend();
-	for(LLView::child_list_reverse_iter_t iter = result.rbegin();
+	viewList_t::reverse_iterator focused = result.rend();
+	for(viewList_t::reverse_iterator iter = result.rbegin();
 		iter != result.rend();
 		++iter)
 	{
@@ -578,7 +578,7 @@ BOOL LLView::focusPrev(LLView::child_list_t & result)
 			break;
 		}
 	}
-	LLView::child_list_reverse_iter_t next = focused;
+	viewList_t::reverse_iterator next = focused;
 	next = (next == result.rend()) ? result.rbegin() : ++next;
 	while(next != focused)
 	{

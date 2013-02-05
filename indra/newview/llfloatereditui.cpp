@@ -56,9 +56,9 @@ void	LLFloaterEditUI::navigateHierarchyButtonPressed(void*	data)
 	const LLView::child_list_t*	viewChildren = view->getChildList();
 	const LLView::child_list_t*	parentChildren = parent->getChildList();
 	//LLView::child_list_t::iterator
-	std::list<LLView*>::const_iterator	itor;
-	std::list<LLView*>::size_type	idx;
-	std::list<LLView*>::size_type	sidx;
+	LLView::child_list_t::const_iterator	itor;
+	LLView::child_list_t::size_type	idx;
+	LLView::child_list_t::size_type	sidx;
 	for(idx = 0,itor = parentChildren->begin();itor!=parentChildren->end();itor++,idx++){
 		if((*itor)==view)break;
 	}
