@@ -1170,16 +1170,13 @@ void LLView::drawChildren()
 		LLView* rootp = getRootView();		
 		++sDepth;
 
-		for (child_list_reverse_iter_t child_iter = mChildList.rbegin(); child_iter != mChildList.rend();)  // ++child_iter)
+		for (child_list_const_reverse_iter_t child_iter = mChildList.rbegin(); child_iter != mChildList.rend(); ++child_iter)
 		{
-				child_list_reverse_iter_t child = child_iter++;
-				LLView *viewp = *child;
-			
-				if (viewp == NULL)
-				{
-					continue;
-				}
-
+			LLView *viewp = *child_iter;
+			if (viewp == NULL)
+			{
+				continue;
+			}
 
 			if (viewp->getVisible() && /*viewp != focus_view && */viewp->getRect().isValid())
 			{
