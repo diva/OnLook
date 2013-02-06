@@ -76,7 +76,7 @@ viewList_t LLViewQuery::run(LLView* view) const
 	viewList_t result;
 
 	// prefilter gets immediate children of view
-	filterResult_t pre = runFilters(view, *view->getChildList(), mPreFilters);
+	filterResult_t pre = runFilters(view, view->getChildList()->get_std_list(), mPreFilters);
 	if(!pre.first && !pre.second)
 	{
 		// not including ourselves or the children
@@ -113,7 +113,7 @@ viewList_t LLViewQuery::run(LLView* view) const
 
 void LLViewQuery::filterChildren(LLView * view, viewList_t & filtered_children) const
 {
-	viewList_t views(*(view->getChildList()));
+	viewList_t views(view->getChildList()->get_std_list());
 	if (mSorterp)
 	{
 		(*mSorterp)(view, views); // sort the children per the sorter
