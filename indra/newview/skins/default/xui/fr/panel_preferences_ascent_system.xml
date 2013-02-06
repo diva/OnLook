@@ -1,211 +1,77 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel top="20" left="10" height="400" width="517" follows="left|top|right|bottom"
-  label="Syst&#xE8;me" name="ascsys">
+<panel label="Syst&#xE8;me" name="ascsys">
   <tab_container label="Singularity System" name="Ascent System">
 
     <panel label="G&#xE9;n&#xE9;ral" name="User Interface">
-      <check_box
-        label="Activer le TP avec le double-clic" left="10"
-        tool_tip="Activer le TP sur un objet/une personne avec le double-clic"
-        name="double_click_teleport_check"
-        width="400" />
-      <check_box
-        label="R&#xE9;initialiser la cam&#xE9;ra apr&#xE8;s le TP" left="20"
-        tool_tip="Centre la cam&#xE9;ra derri&#xE8;re vous apr&#xE8;s un TP."
-        name="center_after_teleport_check"
-        width="400" />
-      <check_box
-        label="Compenser la cible du TP" left="20"
-        tool_tip="Essaye de cibler le TP pour que vos pieds atterrissent au point vis&#xE9;"
-        name="offset_teleport_check"
-        width="400" />
-      <check_box
-        label="Preview animations on the avatar - Test temporaire d&#x27;une animation" left="10"
-        tool_tip="L&#x27;animation est jou&#xE9;e avec votre avatar avant d&#x27;&#xEA;tre t&#xE9;l&#xE9;charg&#xE9;e."
-        name="preview_anim_in_world_check"
-        width="400" />
-      <check_box
-        label="Enregistrer les scripts syst&#xE9;matiquement en Mono" left="10"
-        tool_tip="Compile les scripts en Mono quand cela est possible."
-        name="save_scripts_as_mono_check"
-        width="400" />
-      <check_box
-        label="Rezzer les objets avec le groupe du terrain quand cela est possible" left="10"
-        tool_tip="Rez les objets avec le m&#xEA;me groupe que le terrain, ind&#xE9;pendamment de votre tag actif."
-        mouse_opaque="true" name="always_rez_in_group_check" radio_style="false"
-        width="400" />
-      <check_box
-        label="Toujours montrer le bouton construire activ&#xE9;" left="10"
-        tool_tip="Permet d&#x27;acc&#xE9;der &#xE0; au bouton construire en permanence, sans pour autant avoir le droit de construire."
-        name="always_build_check"
-        width="400" />
-      <check_box
-        label="Toujours permettre le mode vol (Fly)" left="10"
-        tool_tip="Permet de voler quelques soient les droits de la sim, &#xE0; vos risques et p&#xE9;rils."
-        name="always_fly_check"
-        width="400" />
-      <check_box
-        label="D&#xE9;sactiver la distance minimum de la cam&#xE9;ra" left="10"
-        tool_tip="La cam&#xE9;ra zoome de tr&#xE9;s pr&#xE8;s."
-        name="disable_camera_zoom_check"
-        width="400" />
-      <check_box
-        label="Activer les fonctions Power User - &#xE0; vos risques et p&#xE9;rils !" left="10"
-        tool_tip="Ajoute des fonctions consid&#xE9;r&#xE9;es trop dangereuses pour une utilisation normale. Ces fonctions peuvent faire des ravages si employ&#xE9;es improprement."
-        name="power_user_check"
-        width="400" />
-      <check_box
-        label="Confirmer les fonctions Power User" left="20"
-        tool_tip="Confirme les fonctions Power User. A vos risques et p&#xE9;rils. Singularity n'est pas responsable de cette utilisation."
-        name="power_user_confirm_check"
-        width="400" />
-      <check_box
-        label="Activer l&#x27;Ascent System Inventory (Red&#xE9;marrage n&#xE9;cessaire)" left="10"
-        tool_tip="Cr&#xE9;e un nouveau dossier dans l&#x27;inventaire afin de stocker les fichiers de settings et les assets non permanents."
-        name="system_folder_check"
-        width="400" />
-      <check_box
-        label="Les t&#xE9;l&#xE9;chargements temporaires vont dans le dossier : System Inventory &#x3E; Assets" left="20"
-        tool_tip="Place les t&#xE9;l&#xE9;chargements temporaires dans le dossier : System Inventory &#x3E; Assets ce qui permet de les retrouver plus ais&#xE9;ment"
-        name="temp_in_system_check"
-        width="400" />
-      <check_box
-        label="Pr&#xE9;charger l&#x27;inventaire &#xE0; la connection" left="10"
-        tool_tip="R&#xE9;duit l&#x27;attente lors de votre recherche initiale dans l&#x27;inventaire"
-        name="fetch_inventory_on_login_check"
-        width="400" />
-      <check_box
-        label="Activer les effets de vent" left="10"
-        name="enable_wind"
-        width="400" />
-      <check_box
-        label="Activer les nuages" left="10"
-        name="enable_clouds"
-        width="400" />
-      <check_box
-        label="Activer les nuages classiques" left="10"
-        mouse_opaque="true" name="enable_classic_clouds"
-        width="400" />
-      <check_box left_delta="-10"
-        label="Activer le rezz rapide par rapport &#xE0; une distance progressive" left="10"
-        name="speed_rez_check"
-        tool_tip="Active, cette fonction charge progressivement les textures du plus pr&#xE8;s au plus loin"
-        width="400" />
-      <spinner
-        width="230"
-        label="Intervalle distance/affichage:" label_width="180"
-        name="speed_rez_interval" />
-      <text name="speed_rez_seconds" width="100">
-secondes
-      </text>
+      <check_box label="Activer le TP avec le double-clic" tool_tip="Activer le TP sur un objet/une personne avec le double-clic" name="double_click_teleport_check"/>
+      <check_box label="R&#xE9;initialiser la cam&#xE9;ra apr&#xE8;s le TP" tool_tip="Centre la cam&#xE9;ra derri&#xE8;re vous apr&#xE8;s un TP." name="center_after_teleport_check"/>
+      <check_box label="Compenser la cible du TP" tool_tip="Essaye de cibler le TP pour que vos pieds atterrissent au point vis&#xE9;" name="offset_teleport_check"/>
+      <check_box name="fly_after_tp" label="Toujours voler apres un TP" tool_tip="Comme ça on reste pas bloqué sur le teston des gens !!!!."/>
+      <check_box name="continue_flying" label="Voleter quand on se lève" tool_tip="vous voletez quand vous faites stand, pratique pour les avi d'oiseaux, de fées etc..."/>
+      <check_box label="Preview animations on the avatar - Test temporaire d&#x27;une animation" tool_tip="L&#x27;animation est jou&#xE9;e avec votre avatar avant d&#x27;&#xEA;tre t&#xE9;l&#xE9;charg&#xE9;e." name="preview_anim_in_world_check"/>
+      <check_box label="Enregistrer les scripts syst&#xE9;matiquement en Mono" tool_tip="Compile les scripts en Mono quand cela est possible." name="save_scripts_as_mono_check"/>
+      <check_box label="Rezzer les objets avec le groupe du terrain quand cela est possible" tool_tip="Rez les objets avec le m&#xEA;me groupe que le terrain, ind&#xE9;pendamment de votre tag actif." name="always_rez_in_group_check"/>
+      <check_box label="Toujours montrer le bouton construire activ&#xE9;" tool_tip="Permet d&#x27;acc&#xE9;der &#xE0; au bouton construire en permanence, sans pour autant avoir le droit de construire." name="always_build_check"/>
+      <check_box label="Toujours permettre le mode vol (Fly)" tool_tip="Permet de voler quelques soient les droits de la sim, &#xE0; vos risques et p&#xE9;rils." name="always_fly_check"/>
+      <check_box label="D&#xE9;sactiver la distance minimum de la cam&#xE9;ra" tool_tip="La cam&#xE9;ra zoome de tr&#xE9;s pr&#xE8;s." name="disable_camera_zoom_check"/>
+      <check_box label="Activer les fonctions Power User - &#xE0; vos risques et p&#xE9;rils !" tool_tip="Ajoute des fonctions consid&#xE9;r&#xE9;es trop dangereuses pour une utilisation normale. Ces fonctions peuvent faire des ravages si employ&#xE9;es improprement." name="power_user_check"/>
+      <check_box label="Confirmer les fonctions Power User" tool_tip="Confirme les fonctions Power User. A vos risques et p&#xE9;rils. Singularity n'est pas responsable de cette utilisation." name="power_user_confirm_check"/>
+      <check_box label="Activer l&#x27;Ascent System Inventory (Red&#xE9;marrage n&#xE9;cessaire)" tool_tip="Cr&#xE9;e un nouveau dossier dans l&#x27;inventaire afin de stocker les fichiers de settings et les assets non permanents." name="system_folder_check"/>
+      <check_box label="Les t&#xE9;l&#xE9;chargements temporaires vont dans le dossier : System Inventory &#x3E; Assets" tool_tip="Place les t&#xE9;l&#xE9;chargements temporaires dans le dossier : System Inventory &#x3E; Assets ce qui permet de les retrouver plus ais&#xE9;ment" name="temp_in_system_check"/>
+      <check_box label="Pr&#xE9;charger l&#x27;inventaire &#xE0; la connection" tool_tip="R&#xE9;duit l&#x27;attente lors de votre recherche initiale dans l&#x27;inventaire" name="fetch_inventory_on_login_check"/>
+      <check_box label="Activer les effets de vent" name="enable_wind"/>
+      <check_box label="Activer les nuages" name="enable_clouds"/>
+      <check_box label="Activer les nuages classiques" name="enable_classic_clouds"/>
+      <check_box label="Activer le rezz rapide par rapport &#xE0; une distance progressive" name="speed_rez_check" tool_tip="Active, cette fonction charge progressivement les textures du plus pr&#xE8;s au plus loin"/>
+      <spinner label="Intervalle distance/affichage:" name="speed_rez_interval"/>
+      <text name="speed_rez_seconds">secondes</text>
     </panel>
 
     <panel label="Commandes Texte" name="Command Line">
-      <check_box label="Activer l'usage de la barre de chat comme ligne de commande" left="10"
-        name="chat_cmd_toggle" width="270"/>
-      <text name="cmd_line_text_2" width="512">
-Tp &#224; travers la sim (usage: cmd x y z)
-      </text>
-      <line_editor name="AscentCmdLinePos" width="200"/>
-      <text name="cmd_line_text_3" width="512">
-Tp au sol (usage: cmd)
-      </text>
-      <line_editor name="AscentCmdLineGround" width="200"/>
-      <text name="cmd_line_text_4" width="512">
-Tp en altitude (usage: cmd z)
-      </text>
-      <line_editor name="AscentCmdLineHeight" width="200"/>
-      <text name="cmd_line_text_5" width="512">
-Tp &#x22;ET, rentrer maison !&#x22; (usage: cmd)
-      </text>
-      <line_editor name="AscentCmdLineTeleportHome" width="200"/>
-      <text name="cmd_line_text_6" width="512">
-Rezzer une plateforme (usage: cmd 0 - 30)
-      </text>
-      <line_editor name="AscentCmdLineRezPlatform" width="200"/>
-      <slider name="AscentPlatformSize" label="Dimensions:" label_width="75"
-        tool_tip="Quelle taille voulez-vous ?"/>
-      <text name="cmd_line_text_8" width="512">
-Calculette (usage: cmd 2 + 2)
-      </text>
-      <line_editor name="AscentCmdLineCalc" width="200"/>
-      <text name="cmd_line_text_15" width="512">
-Vider l&apos;historique du chat (usage: cmd)
-      </text>
-      <line_editor name="AscentCmdLineClearChat" width="200"/>
+      <check_box label="Activer l'usage de la barre de chat comme ligne de commande" name="chat_cmd_toggle"/>
+      <text name="cmd_line_text_2">Tp &#224; travers la sim (usage: cmd x y z)</text>
+      <line_editor name="AscentCmdLinePos"/>
+      <text name="cmd_line_text_3">Tp au sol (usage: cmd)</text>
+      <line_editor name="AscentCmdLineGround"/>
+      <text name="cmd_line_text_4">Tp en altitude (usage: cmd z)</text>
+      <line_editor name="AscentCmdLineHeight"/>
+      <text name="cmd_line_text_5">Tp &#x22;ET, rentrer maison !&#x22; (usage: cmd)</text>
+      <line_editor name="AscentCmdLineTeleportHome"/>
+      <text name="cmd_line_text_6">Rezzer une plateforme (usage: cmd 0 - 30)</text>
+      <line_editor name="AscentCmdLineRezPlatform"/>
+      <slider name="AscentPlatformSize" label="Dimensions:" tool_tip="Quelle taille voulez-vous ?"/>
+      <text name="cmd_line_text_8">Calculette (usage: cmd 2 + 2)</text>
+      <line_editor name="AscentCmdLineCalc"/>
+      <text name="cmd_line_text_15">Vider l'historique du chat (usage: cmd)</text>
+      <line_editor name="AscentCmdLineClearChat"/>
       <!-- Column Split -->
-      <text name="cmd_line_text_9" width="512">
-Changer le "Draw Distance" (usage: cmd metres)
-      </text>
-      <line_editor name="AscentCmdLineDrawDistance" width="200"/>
-      <text bname="cmd_line_text_10" width="512">
-Tp &#224; la position de la cam (usage: cmd)
-      </text>
-      <line_editor name="AscentCmdTeleportToCam" width="200"/>
-      <text name="cmd_line_text_11" width="512">
-Avoir un nom avec la clef (usage: cmd clef)
-      </text>
-      <line_editor name="AscentCmdLineKeyToName" width="200"/>
-      <text name="cmd_line_text_12" width="512">
-Tp un avatar avec la clef (usage: cmd clef)
-      </text>
-      <line_editor name="AscentCmdLineOfferTp" width="200"/>
-      <text name="cmd_line_text_7" width="512">
-Tp sur une sim x (usage: cmd nomdelasim)
-      </text>
-      <line_editor name="AscentCmdLineMapTo" width="200"/>
-      <check_box
-        label="Utiliser la meme position entre les sims" left_delta="0"
-        name="map_to_keep_pos" width="270"/>
-      <text name="cmd_line_text_13" width="512">
-Se tp vers un avatar (usage: cmd nom)
-      </text>
-      <line_editor
-        tool_tip="Cette syntaxe permet les noms partiels."
-        name="AscentCmdLineTP2" width="200"/>
+      <text name="cmd_line_text_9">Changer le "Draw Distance" (usage: cmd metres)</text>
+      <line_editor name="AscentCmdLineDrawDistance"/>
+      <text bname="cmd_line_text_10">Tp &#224; la position de la cam (usage: cmd)</text>
+      <line_editor name="AscentCmdTeleportToCam"/>
+      <text name="cmd_line_text_11">Avoir un nom avec la clef (usage: cmd clef)</text>
+      <line_editor name="AscentCmdLineKeyToName"/>
+      <text name="cmd_line_text_12">Tp un avatar avec la clef (usage: cmd clef)</text>
+      <line_editor name="AscentCmdLineOfferTp"/>
+      <text name="cmd_line_text_7">Tp sur une sim x (usage: cmd nomdelasim)</text>
+      <line_editor name="AscentCmdLineMapTo"/>
+      <check_box label="Utiliser la meme position entre les sims" name="map_to_keep_pos"/>
+      <text name="cmd_line_text_13">Se tp vers un avatar (usage: cmd nom)</text>
+      <line_editor tool_tip="Cette syntaxe permet les noms partiels." name="AscentCmdLineTP2"/>
       <text name="cmd_line_text_14">Active/d&#xE9;sactive le faux absent (usage: cmd)</text>
-      <line_editor name="SinguCmdLineAway" width="200"/>
+      <line_editor name="SinguCmdLineAway"/>
     </panel>
 
     <panel label="S&#xE9;curit&#xE9;" name="Security">
-      <check_box
-        label="Emettre les effets du viewer (Excluant les rayons)" left="10"
-        name="broadcast_viewer_effects"
-        width="400" />
-      <check_box
-        label="D&#xE9;sactiver le &#x22;Pointer vers&#x22; &#xE0; l&#x22;&#xE9;dition d&#x27;un objet" left="10"
-        tool_tip="Masque le pointeur sur l&#x27;objet  &#xE9;dit&#xE9;"
-        name="disable_point_at_and_beams_check"
-        width="400" />
-      <check_box
-        label="Ne pas &#x22;Regarder vers&#x22;" left="10"
-        tool_tip="Supprime les mouvements de t&#xEA;te, et le &#x22;Regarder vers&#x22; pour soi-m&#xEA;me"
-        name="private_look_at_check"
-        width="400" />
-      <check_box
-        label="Voir quand les autres &#x22;Regardent vers&#x22;" left="10"
-        tool_tip="Montre o&#xF9; les autres regardent."
-        name="show_look_at_check"
-        width="400" />
-       <check_box label="Détache automatiquement ce rodjudju de LSL Bridge" tool_tip="détache le LSL Bridge de Phoenix et/ou Firestorm viewer." name="detach_bridge"/>
-       <check_box
-       label="Prendre discr&#xE8;tement un photo, sur votre disque dur" 
-       tool_tip="Permet de prendre une photo en mode &#x22;espionnage&#x22;, sans bruit d&#x27;appareil, ni mouvement de cam&#xE9;ra, ni gesture. (Uniquement vers le disque dur)." 
-       name="quiet_snapshots_check"/>
-       <check_box
-        label="En vous levant, annule les permissions que l&#x27;objet a sur votre avatar" left="10"
-        tool_tip="Evite que l&#x27;objet garde le contr&#xF4;le de votre avatar, comme par exemple les animations."
-        name="revoke_perms_on_stand_up_check"
-        width="400" />
-      <check_box
-        label="D&#xE9;sactive le &#x22;Click to sit&#x22; automatique" left="10"
-        tool_tip="D&#xE9;sactive llSitTarget. Vous devrez s&#xE9;lectionner vous m&#xEA;me la fonction &#x22;sit&#x22; sur l&#x27;objet."
-        name="disable_click_sit_check"
-        width="400" />
-      <check_box
-        label="Affiche les changements de d&#xE9;comptes de scripts de la r&#xE9;gion." left_delta="0"
-        name="totalscriptjumps" width="270"
-        tool_tip="D&#xE9;pendant du seuil que vous choisissez dans la fen&#xEA;tre &#xE0; droite."/>
+      <check_box label="Emettre les effets du viewer (Excluant les rayons)" name="broadcast_viewer_effects"/>
+      <check_box label="D&#xE9;sactiver le &#x22;Pointer vers&#x22; &#xE0; l&#x22;&#xE9;dition d&#x27;un objet" tool_tip="Masque le pointeur sur l&#x27;objet  &#xE9;dit&#xE9;" name="disable_point_at_and_beams_check"/>
+      <check_box label="Ne pas &#x22;Regarder vers&#x22;" tool_tip="Supprime les mouvements de t&#xEA;te, et le &#x22;Regarder vers&#x22; pour soi-m&#xEA;me" name="private_look_at_check"/>
+      <check_box label="Voir quand les autres &#x22;Regardent vers&#x22;" tool_tip="Montre o&#xF9; les autres regardent." name="show_look_at_check"/>
+      <check_box label="Détache automatiquement ce rodjudju de LSL Bridge" tool_tip="détache le LSL Bridge de Phoenix et/ou Firestorm viewer." name="detach_bridge"/>
+      <check_box label="Prendre discr&#xE8;tement un photo, sur votre disque dur" tool_tip="Permet de prendre une photo en mode &#x22;espionnage&#x22;, sans bruit d&#x27;appareil, ni mouvement de cam&#xE9;ra, ni gesture. (Uniquement vers le disque dur)." name="quiet_snapshots_check"/>
+      <check_box label="En vous levant, annule les permissions que l&#x27;objet a sur votre avatar" tool_tip="Evite que l&#x27;objet garde le contr&#xF4;le de votre avatar, comme par exemple les animations." name="revoke_perms_on_stand_up_check"/>
+      <check_box label="D&#xE9;sactive le &#x22;Click to sit&#x22; automatique" tool_tip="D&#xE9;sactive llSitTarget. Vous devrez s&#xE9;lectionner vous m&#xEA;me la fonction &#x22;sit&#x22; sur l&#x27;objet." name="disable_click_sit_check"/>
+      <check_box label="Affiche les changements de d&#xE9;comptes de scripts de la r&#xE9;gion." name="totalscriptjumps" tool_tip="D&#xE9;pendant du seuil que vous choisissez dans la fen&#xEA;tre &#xE0; droite."/>
       <spinner left_delta="350" name="ScriptJumpCount" tool_tip="Threshold for the script jump message [Default: 100]"/>
     </panel>
 
@@ -213,7 +79,7 @@ Se tp vers un avatar (usage: cmd nom)
       <text name="text_box6">Point de Pivot</text>
       <check_box label="Valeurs en %" name="EmPivotPercToggle"/>
       <check_box label="Active les &#x22;Highlights&#x22; sur les prims s&#xE9;lectionn&#xE9;s" name="EmBuildPrefsRenderHighlight_toggle"/>
-	  <check_box label="Axe sur le Root Prim" name="EmBuildPrefsActualRoot_toggle"/>
+      <check_box label="Axe sur le Root Prim" name="EmBuildPrefsActualRoot_toggle"/>
       <text name="text_box7">Permissions :</text>
       <check_box label="Phantom" name="EmPhantomToggle"/>
       <check_box label="Physical" name="EmPhysicalToggle"/>
