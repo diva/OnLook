@@ -2759,16 +2759,16 @@ Please choose the male or female avatar. You can change your mind later.
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notify.tga"
    name="GrantedModifyRights"
-   type="alertmodal">
+   type="notify">
 You have been granted the privilege to modify [NAME]&apos;s objects.
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notify.tga"
    name="RevokedModifyRights"
-   type="alertmodal">
+   type="notify">
 Your privilege to modify [NAME]&apos;s objects has been revoked
   </notification>
 
@@ -2890,7 +2890,7 @@ Exceeds the [MAX_AGENTS] [LIST_TYPE] limit by [NUM_EXCESS].
    icon="alertmodal.tga"
    name="MaxAllowedGroupsOnRegion"
    type="alertmodal">
-You can only have [MAX_GROUPS] Allowed Groups.
+You can only have [MAX_GROUPS] groups.
     <usetemplate
      name="okcancelbuttons"
      notext="Cancel"

@@ -327,8 +327,6 @@ void LLDrawPoolWLSky::renderDeferred(S32 pass)
 	LLGLDepthTest depth(GL_TRUE, GL_FALSE);
 	LLGLDisable clip(GL_CLIP_PLANE0);
 
-	gGL.setColorMask(true, false);	//Just in case.
-
 	LLGLSquashToFarClip far_clip(glh_get_current_projection());
 
 	renderSkyHaze(camHeightLocal);

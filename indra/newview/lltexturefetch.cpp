@@ -490,6 +490,7 @@ public:
 
 SGHostBlackList::blacklist_t SGHostBlackList::blacklist;
 
+#if 0
 //call every time a connection is opened
 //return true if connecting allowed
 static bool sgConnectionThrottle() {
@@ -511,6 +512,7 @@ static bool sgConnectionThrottle() {
 		return false;
 	}
 }
+#endif
 
 #if HTTP_METRICS
 // Cross-thread messaging for asset metrics.
@@ -1286,12 +1288,12 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			//1, not opening too many file descriptors at the same time;
 			//2, control the traffic of http so udp gets bandwidth.
 			//
-			static const LLCachedControl<U32> max_http_requests("HTTPMaxRequests", 32);
+			static const LLCachedControl<U32> max_http_requests("HTTPMaxRequests", 8);
 			static const LLCachedControl<U32> min_http_requests("HTTPMinRequests", 2);
-			if(((U32)mFetcher->getNumHTTPRequests() > max_http_requests) ||
-			   ((mFetcher->getTextureBandwidth() > mFetcher->mMaxBandwidth) &&
-				((U32)mFetcher->getNumHTTPRequests() > min_http_requests)) ||
-			    !sgConnectionThrottle())
+			static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
+			if(((U32)mFetcher->getNumHTTPRequests() >= max_http_requests) ||
+			   ((mFetcher->getTextureBandwidth() > throttle_bandwidth) &&
+				((U32)mFetcher->getNumHTTPRequests() > min_http_requests)))
 			{
 				return false ; //wait.
 			}
@@ -1329,9 +1331,10 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				mLoaded = FALSE;
 				mGetStatus = 0;
 				mGetReason.clear();
+				static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
 				LL_DEBUGS("Texture") << "HTTP GET: " << mID << " Offset: " << mRequestedOffset
 									 << " Bytes: " << mRequestedSize
-									 << " Bandwidth(kbps): " << mFetcher->getTextureBandwidth() << "/" << mFetcher->mMaxBandwidth
+									 << " Bandwidth(kbps): " << mFetcher->getTextureBandwidth() << "/" << throttle_bandwidth
 									 << LL_ENDL;
 				setPriority(LLWorkerThread::PRIORITY_LOW | mWorkPriority);
 				mState = WAIT_HTTP_REQ;	
@@ -2062,7 +2065,6 @@ LLTextureFetch::LLTextureFetch(LLTextureCache* cache, LLImageDecodeThread* image
 #if HTTP_METRICS
 	mCurlPOSTRequestCount = 0;
 #endif
-	mMaxBandwidth = gSavedSettings.getF32("ThrottleBandwidthKBPS");
 	mTextureInfo.setUpLogging(gSavedSettings.getBOOL("LogTextureDownloadsToViewerLog"), gSavedSettings.getBOOL("LogTextureDownloadsToSimulator"), gSavedSettings.getU32("TextureLoggingThreshold"));
 }
 
@@ -2446,11 +2448,8 @@ void LLTextureFetch::commonUpdate()
 //virtual
 S32 LLTextureFetch::update(F32 max_time_ms)
 {
-	static LLCachedControl<F32> band_width(gSavedSettings,"ThrottleBandwidthKBPS");
-
 	{
 		mNetworkQueueMutex.lock() ;
-		mMaxBandwidth = band_width ;
 
 		gTextureList.sTextureBits += mHTTPTextureBits ;
 		mHTTPTextureBits = 0 ;

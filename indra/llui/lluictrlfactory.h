@@ -61,6 +61,8 @@ public:
 	BOOL buildPanelFromBuffer(LLPanel *panelp, const std::string &buffer,
 							  const LLCallbackMap::map_t* factory_map = NULL);
 
+	LLFloater* getBuiltFloater(const std::string name) const;
+
 	void removePanel(LLPanel* panelp) { mBuiltPanels.erase(panelp->getHandle()); }
 	void removeFloater(LLFloater* floaterp) { mBuiltFloaters.erase(floaterp->getHandle()); }
 	

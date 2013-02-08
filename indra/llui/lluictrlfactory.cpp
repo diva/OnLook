@@ -294,6 +294,20 @@ void LLUICtrlFactory::buildFloaterInternal(LLFloater *floaterp, LLXMLNodePtr &ro
 }
 
 //-----------------------------------------------------------------------------
+// getBuiltFloater()
+//-----------------------------------------------------------------------------
+LLFloater* LLUICtrlFactory::getBuiltFloater(const std::string name) const
+{
+	for (built_floater_t::const_iterator i = mBuiltFloaters.begin(); i != mBuiltFloaters.end(); ++i)
+	{
+		LLFloater* floater = i->first.get();
+		if (floater && floater->getName() == name)
+			return floater;
+	}
+	return NULL;
+}
+
+//-----------------------------------------------------------------------------
 // saveToXML()
 //-----------------------------------------------------------------------------
 S32 LLUICtrlFactory::saveToXML(LLView* viewp, const std::string& filename)

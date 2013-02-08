@@ -213,10 +213,10 @@ std::string gPoolNames[] =
 	"POOL_GROUND",
 	"POOL_FULLBRIGHT",
 	"POOL_BUMP",
-	"POOL_TERRAIN",	
+	"POOL_TERRAIN",
+	"POOL_TREE", // Singu Note: Before sky for zcull.
 	"POOL_SKY",
 	"POOL_WL_SKY",
-	"POOL_TREE",
 	"POOL_GRASS",
 	"POOL_INVISIBLE",
 	"POOL_AVATAR",

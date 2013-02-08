@@ -351,7 +351,7 @@ bool inviteUserResponse(const LLSD& notification, const LLSD& response)
 			LLHTTPClient::post(
 				url,
 				data,
-				NULL);				
+				new LLHTTPClient::ResponderIgnore);
 		}
 	}
 

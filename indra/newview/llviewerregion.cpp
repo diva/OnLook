@@ -927,11 +927,6 @@ void LLViewerRegion::calculateCameraDistance()
 	mCameraDistanceSquared = (F32)(gAgentCamera.getCameraPositionGlobal() - getCenterGlobal()).magVecSquared();
 }
 
-U32 LLViewerRegion::getNetDetailsForLCD()
-{
-	return mPingDelay;
-}
-
 std::ostream& operator<<(std::ostream &s, const LLViewerRegion &region)
 {
 	s << "{ ";
