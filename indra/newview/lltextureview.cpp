@@ -101,7 +101,7 @@ public:
 // Used for sorting
 	struct sort
 	{
-		bool operator()(const LLView* i1, const LLView* i2)
+		bool operator()(const LLView* i1, const LLView* i2) const
 		{
 			LLTextureBar* bar1p = (LLTextureBar*)i1;
 			LLTextureBar* bar2p = (LLTextureBar*)i2;
@@ -120,7 +120,7 @@ public:
 
 	struct sort_fetch
 	{
-		bool operator()(const LLView* i1, const LLView* i2)
+		bool operator()(const LLView* i1, const LLView* i2) const
 		{
 			LLTextureBar* bar1p = (LLTextureBar*)i1;
 			LLTextureBar* bar2p = (LLTextureBar*)i2;

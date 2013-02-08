@@ -74,9 +74,10 @@ filterResult_t LLCtrlFilter::operator() (const LLView* const view, const viewLis
 viewList_t LLViewQuery::run(LLView* view) const
 {
 	viewList_t result;
+	viewList_t const child_list(view->getChildList()->begin(), view->getChildList()->end());
 
 	// prefilter gets immediate children of view
-	filterResult_t pre = runFilters(view, view->getChildList()->get_std_list(), mPreFilters);
+	filterResult_t pre = runFilters(view, child_list, mPreFilters);
 	if(!pre.first && !pre.second)
 	{
 		// not including ourselves or the children
@@ -113,14 +114,14 @@ viewList_t LLViewQuery::run(LLView* view) const
 
 void LLViewQuery::filterChildren(LLView * view, viewList_t & filtered_children) const
 {
-	viewList_t views(view->getChildList()->get_std_list());
+	viewList_t views(view->getChildList()->begin(), view->getChildList()->end());
 	if (mSorterp)
 	{
 		(*mSorterp)(view, views); // sort the children per the sorter
 	}
 	for(viewList_t::iterator iter = views.begin();
 		iter != views.end();
-		iter++)
+		++iter)
 	{
 		viewList_t indiv_children = this->run(*iter);
 		filtered_children.splice(filtered_children.end(), indiv_children);
@@ -132,7 +133,7 @@ filterResult_t LLViewQuery::runFilters(LLView* view, viewList_t const& children,
 	filterResult_t result = filterResult_t(TRUE, TRUE);
 	for(filterList_const_iter_t iter = filters.begin();
 		iter != filters.end();
-		iter++)
+		++iter)
 	{
 		filterResult_t filtered = (**iter)(view, children);
 		result.first = result.first && filtered.first;
