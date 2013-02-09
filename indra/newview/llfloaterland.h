@@ -49,11 +49,11 @@ class LLButton;
 class LLCheckBoxCtrl;
 class LLRadioGroup;
 class LLComboBox;
-class LLNameListCtrl;
-class LLSpinCtrl;
 class LLLineEditor;
+class LLNameListCtrl;
 class LLRadioGroup;
 class LLParcelSelectionObserver;
+class LLSpinCtrl;
 class LLTabContainer;
 class LLTextBox;
 class LLTextEditor;
@@ -149,8 +149,8 @@ public:
 	virtual void draw();
 
 	void setGroup(const LLUUID& group_id);
-	static void onClickProfile(void*);
-	static void onClickSetGroup(void*);
+	void onClickProfile();
+	void onClickSetGroup();
 	static void onClickInfoGroup(void*);
 	static void cbGroupID(LLUUID group_id, void* userdata);
 	static BOOL enableDeedToGroup(void*);
@@ -382,14 +382,15 @@ public:
 
 	static void onCommitPublicAccess(LLUICtrl* ctrl, void *userdata);
 	static void onCommitAny(LLUICtrl* ctrl, void *userdata);
-	static void onClickAddAccess(void*);
-	void callbackAvatarCBAccess(const uuid_vec_t& ids);
 	static void onClickRemoveAccess(void*);
-	static void onClickAddBanned(void*);
-	void callbackAvatarCBBanned(const uuid_vec_t& ids);
 	static void onClickRemoveBanned(void*);
 
 	virtual BOOL postBuild();
+
+	void onClickAddAccess();
+	void onClickAddBanned();
+	void callbackAvatarCBBanned(const uuid_vec_t& ids);
+	void callbackAvatarCBAccess(const uuid_vec_t& ids);
 
 protected:
 	LLNameListCtrl*		mListAccess;
