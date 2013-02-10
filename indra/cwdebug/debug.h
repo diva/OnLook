@@ -173,8 +173,8 @@ extern LL_COMMON_API fake_channel const notice;
 #include <boost/shared_array.hpp>
 #if CWDEBUG_LOCATION
 #include <execinfo.h>		// Needed for 'backtrace'.
-#include "llpreprocessor.h"
 #endif
+#include "llpreprocessor.h"	// LL_COMMON_API
 #include <set>
 
 #define CWD_API __attribute__ ((visibility("default")))
