@@ -217,7 +217,7 @@ public:
 
 	void scrollToShowSelection();
 	void scrollToShowItem(LLFolderViewItem* item, const LLRect& constraint_rect);
-	void setScrollContainer( LLScrollableContainerView* parent ) { mScrollContainer = parent; }
+	void setScrollContainer(LLScrollableContainerView* parent);
 	LLRect getVisibleRect();
 
 	BOOL search(LLFolderViewItem* first_item, const std::string &search_string, BOOL backward);

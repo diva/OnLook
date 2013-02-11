@@ -278,3 +278,10 @@ void LLContainerView::setDisplayChildren(const BOOL displayChildren)
 		childp->setVisible(mDisplayChildren);
 	}
 }
+
+void LLContainerView::setScrollContainer(LLScrollableContainerView* scroll)
+{
+	mScrollContainer = scroll;
+	scroll->setPassBackToChildren(false);
+}
+

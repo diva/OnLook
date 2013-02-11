@@ -2068,6 +2068,12 @@ void LLFolderView::scrollToShowItem(LLFolderViewItem* item, const LLRect& constr
 	}
 }
 
+void LLFolderView::setScrollContainer(LLScrollableContainerView* parent)
+{
+	mScrollContainer = parent;
+	parent->setPassBackToChildren(false);
+}
+
 LLRect LLFolderView::getVisibleRect()
 {
 	S32 visible_height = mScrollContainer->getRect().getHeight();
