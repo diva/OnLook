@@ -884,6 +884,11 @@ BOOL LLPanelScriptLimitsRegionMemory::StartRequestChain()
 	}
 	LLParcel* parcel = instance->getCurrentSelectedParcel();
 	LLViewerRegion* region = LLViewerParcelMgr::getInstance()->getSelectionRegion();
+	if (!parcel) //Pretend we have the parcel we're on selected.
+	{
+		parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
+		region = gAgent.getRegion();
+	}
 
 	LLUUID current_region_id = gAgent.getRegion()->getRegionID();
 
