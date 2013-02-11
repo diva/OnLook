@@ -51,6 +51,7 @@
 #include "llpanelevent.h"
 #include "llappviewer.h"
 #include "llnotificationsutil.h"
+#include "llviewerregion.h"
 
 BOOL gDisplayEventHack = FALSE;
 
@@ -93,6 +94,8 @@ BOOL LLPanelDirEvents::postBuild()
 		//performQuery(); // Temporary change to help DB - Sabin
 	}
 	gDisplayEventHack = FALSE;
+
+	childSetVisible("filter_gaming", !gAgent.getRegion()->getCapability("GamingData").empty());
 
 	return TRUE;
 }
@@ -181,6 +184,7 @@ void LLPanelDirEvents::performQueryOrDelete(U32 event_id)
 	if ( childGetValue("incpg").asBoolean() ) scope |= DFQ_INC_PG;
 	if ( childGetValue("incmature").asBoolean() ) scope |= DFQ_INC_MATURE;
 	if ( childGetValue("incadult").asBoolean() ) scope |= DFQ_INC_ADULT;
+	if (childGetValue("filter_gaming").asBoolean()) scope |= DFQ_FILTER_GAMING;
 	
 	// Add old query flags in case we are talking to an old server
 	if ( childGetValue("incpg").asBoolean() && !childGetValue("incmature").asBoolean())

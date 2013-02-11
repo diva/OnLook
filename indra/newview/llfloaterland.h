@@ -362,6 +362,7 @@ private:
 	LLButton*		mClearBtn;
 
 	LLCheckBoxCtrl		*mMatureCtrl;
+	LLCheckBoxCtrl		*mGamingCtrl;
 	LLCheckBoxCtrl		*mPushRestrictionCtrl;
 	LLCheckBoxCtrl		*mSeeAvatarsCtrl;
 	LLButton			*mPublishHelpButton;

@@ -161,6 +161,8 @@ BOOL LLPanelDirFind::postBuild()
 		navigateToDefaultPage();
 	}
 
+	childSetVisible("filter_gaming", !gAgent.getRegion()->getCapability("GamingData").empty());
+
 	return TRUE;
 }
 
@@ -309,9 +311,9 @@ void LLPanelDirFind::navigateToDefaultPage()
 		mWebBrowser->navigateTo( start_url );
 	}
 }
-// static
-std::string LLPanelDirFind::buildSearchURL(const std::string& search_text, const std::string& collection, 
-										   bool inc_pg, bool inc_mature, bool inc_adult, bool is_web)
+
+const std::string LLPanelDirFind::buildSearchURL(const std::string& search_text, const std::string& collection,
+										   bool inc_pg, bool inc_mature, bool inc_adult, bool is_web) const
 {
 	std::string url;
 	if (search_text.empty()) 
@@ -363,8 +365,8 @@ std::string LLPanelDirFind::buildSearchURL(const std::string& search_text, const
 	llinfos << "web search url " << url << llendl;
 	return url;
 }
-// static
-std::string LLPanelDirFind::getSearchURLSuffix(bool inc_pg, bool inc_mature, bool inc_adult, bool is_web)
+
+const std::string LLPanelDirFind::getSearchURLSuffix(bool inc_pg, bool inc_mature, bool inc_adult, bool is_web) const
 {
 	std::string url = gHippoGridManager->getConnectedGrid()->getSearchUrl(HippoGridInfo::SEARCH_ALL_TEMPLATE, is_web);
 	llinfos << "Suffix template " << url << llendl;
@@ -426,6 +428,13 @@ std::string LLPanelDirFind::getSearchURLSuffix(bool inc_pg, bool inc_mature, boo
 			std::string teen_string = gAgent.isTeen() ? "y" : "n";
 			std::string teen_tag = "[TEEN]";
 			url.replace( url.find( teen_tag ), teen_tag.length(), teen_string );
+
+			// and set the flag for gaming areas if not on SL Grid.
+			if (!gHippoGridManager->getConnectedGrid()->isSecondLife())
+			{
+				substring = "[DICE]";
+				url.replace(url.find(substring), substring.length(), childGetValue("filter_gaming").asBoolean() ? "y" : "n");
+			}
 		}	
 	}
 	
@@ -561,6 +570,8 @@ BOOL LLPanelDirFindAllOld::postBuild()
 	childDisable("Search");
 	setDefaultBtn( "Search" );
 
+	childSetVisible("filter_gaming", !gAgent.getRegion()->getCapability("GamingData").empty());
+
 	return TRUE;
 }
 
@@ -621,6 +632,11 @@ void LLPanelDirFindAllOld::onClickSearch(void *userdata)
 	if (inc_adult)
 	{
 		scope |= DFQ_INC_ADULT;
+	}
+
+	if (self->childGetValue("filter_gaming").asBoolean())
+	{
+		scope |= DFQ_FILTER_GAMING;
 	}
 
 	// send the message

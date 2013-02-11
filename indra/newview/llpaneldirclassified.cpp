@@ -121,6 +121,8 @@ BOOL LLPanelDirClassified::postBuild()
 	// Don't do this every time we open find, it's expensive; require clicking 'search'
 	//requestClassified();
 
+	childSetVisible("filter_gaming", !gAgent.getRegion()->getCapability("GamingData").empty());
+
 	return TRUE;
 }
 
@@ -206,6 +208,7 @@ void LLPanelDirClassified::performQuery()
 	BOOL filter_auto_renew = FALSE;
 	U32 query_flags = pack_classified_flags_request(filter_auto_renew, inc_pg, inc_mature, inc_adult);
 	//if (gAgent.isTeen()) query_flags |= DFQ_PG_SIMS_ONLY;
+	if (childGetValue("filter_gaming")) query_flags |= DFQ_FILTER_GAMING;
 
 	U32 category = childGetValue("Category").asInteger();
 	

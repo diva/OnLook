@@ -52,6 +52,7 @@
 #include "lltextbox.h"
 #include "llviewercontrol.h"
 #include "llviewermessage.h"
+#include "llviewerregion.h"
 
 #include "hippogridmanager.h"
 
@@ -124,6 +125,8 @@ BOOL LLPanelDirLand::postBuild()
 			results->setColumnLabel(col->mName, label);
 		}
 	}
+
+	childSetVisible("filter_gaming", !gAgent.getRegion()->getCapability("GamingData").empty());
 
 	return TRUE;
 }
@@ -212,6 +215,11 @@ void LLPanelDirLand::performQuery()
 	if (inc_adult && adult_enabled)
 	{
 		query_flags |= DFQ_INC_ADULT;
+	}
+
+	if (childGetValue("filter_gaming").asBoolean())
+	{
+		query_flags |= DFQ_FILTER_GAMING;
 	}
 	
 	// Add old flags in case we are talking to an old dataserver

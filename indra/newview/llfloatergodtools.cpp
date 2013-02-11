@@ -461,6 +461,10 @@ BOOL LLPanelRegionTools::postBuild()
 	getChild<LLUICtrl>("block terraform")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 	getChild<LLUICtrl>("allow transfer")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 	getChild<LLUICtrl>("is sandbox")->setCommitCallback( boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	getChild<LLUICtrl>("is gaming")->setVisible(!gAgent.getRegion()->getCapability("GamingData").empty());
+	getChild<LLUICtrl>("is gaming")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	getChild<LLUICtrl>("hide from search")->setVisible(!gHippoGridManager->getConnectedGrid()->isSecondLife());
+	getChild<LLUICtrl>("hide from search")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 
 	childSetAction("Bake Terrain", boost::bind(&LLPanelRegionTools::onBakeTerrain, this));
 	childSetAction("Revert Terrain", boost::bind(&LLPanelRegionTools::onRevertTerrain, this));
@@ -670,6 +674,14 @@ U64 LLPanelRegionTools::getRegionFlags() const
 	{
 		flags |= REGION_FLAGS_SANDBOX;
 	}
+	if (getChild<LLUICtrl>("is gaming")->getValue().asBoolean())
+	{
+		flags |= REGION_FLAGS_GAMING;
+	}
+	if (getChild<LLUICtrl>("hide from search")->getValue().asBoolean())
+	{
+		flags |= REGION_FLAGS_HIDE_FROM_SEARCH;
+	}
 	return flags;
 }
 
@@ -707,6 +719,14 @@ U64 LLPanelRegionTools::getRegionFlagsMask() const
 	if (!getChild<LLUICtrl>("is sandbox")->getValue().asBoolean())
 	{
 		flags &= ~REGION_FLAGS_SANDBOX;
+	}
+	if (!getChild<LLUICtrl>("is gaming")->getValue().asBoolean())
+	{
+		flags &= ~REGION_FLAGS_GAMING;
+	}
+	if (!getChild<LLUICtrl>("hide from search")->getValue().asBoolean())
+	{
+		flags &= ~REGION_FLAGS_HIDE_FROM_SEARCH;
 	}
 	return flags;
 }

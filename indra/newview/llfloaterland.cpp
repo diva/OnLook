@@ -1859,6 +1859,7 @@ LLPanelLandOptions::LLPanelLandOptions(LLParcelSelectionHandle& parcel)
 	mSetBtn(NULL),
 	mClearBtn(NULL),
 	mMatureCtrl(NULL),
+	mGamingCtrl(NULL),
 	mPushRestrictionCtrl(NULL),
 	mSeeAvatarsCtrl(NULL),
 	mParcel(parcel),
@@ -1936,6 +1937,10 @@ BOOL LLPanelLandOptions::postBuild()
 
 	mMatureCtrl = getChild<LLCheckBoxCtrl>( "MatureCheck");
 	childSetCommitCallback("MatureCheck", onCommitAny, this);
+
+	mGamingCtrl = getChild<LLCheckBoxCtrl>( "GamingCheck");
+	childSetCommitCallback("GamingCheck", onCommitAny, this);
+	mGamingCtrl->setVisible(!gAgent.getRegion()->getCapability("GamingData").empty());
 	
 	mPublishHelpButton = getChild<LLButton>("?");
 	mPublishHelpButton->setClickedCallback(onClickPublishHelp, this);
@@ -2165,6 +2170,7 @@ void LLPanelLandOptions::refresh()
 					mMatureCtrl->setToolTip(getString("mature_check_adult_tooltip"));
 				}
 			}
+			mGamingCtrl->set(parcel->getParcelFlag(PF_GAMING));
 		}
 	}
 }
@@ -2302,6 +2308,7 @@ void LLPanelLandOptions::onCommitAny(LLUICtrl *ctrl, void *userdata)
 	BOOL mature_publish		= self->mMatureCtrl->get();
 	BOOL push_restriction	= self->mPushRestrictionCtrl->get();
 	BOOL see_avs			= self->mSeeAvatarsCtrl->get();
+	bool gaming				= self->mGamingCtrl->get();
 	BOOL show_directory		= self->mCheckShowDirectory->get();
 	// we have to get the index from a lookup, not from the position in the dropdown!
 	S32  category_index		= LLParcel::getCategoryFromString(self->mCategoryCombo->getSelectedValue());
@@ -2336,6 +2343,7 @@ void LLPanelLandOptions::onCommitAny(LLUICtrl *ctrl, void *userdata)
 	parcel->setParcelFlag(PF_SHOW_DIRECTORY, show_directory);
 	parcel->setParcelFlag(PF_ALLOW_PUBLISH, allow_publish);
 	parcel->setParcelFlag(PF_MATURE_PUBLISH, mature_publish);
+	parcel->setParcelFlag(PF_GAMING, gaming);
 	parcel->setParcelFlag(PF_RESTRICT_PUSHOBJECT, push_restriction);
 	parcel->setCategory((LLParcel::ECategory)category_index);
 	parcel->setLandingType((LLParcel::ELandingType)landing_type_index);

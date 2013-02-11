@@ -1613,6 +1613,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 		capabilityNames.append("FetchInventoryDescendents2");
 	}
 
+	capabilityNames.append("GamingData"); //Used by certain grids.
 	capabilityNames.append("GetDisplayNames");
 	capabilityNames.append("GetMesh");
 	capabilityNames.append("GetObjectCost");

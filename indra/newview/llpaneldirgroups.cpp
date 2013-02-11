@@ -40,6 +40,7 @@
 #include "message.h"
 #include "llqueryflags.h"
 #include "llviewercontrol.h"
+#include "llviewerregion.h"
 #include "llviewerwindow.h"
 #include "llnotificationsutil.h"
 
@@ -59,6 +60,8 @@ BOOL LLPanelDirGroups::postBuild()
 	childSetAction("Search", &LLPanelDirBrowser::onClickSearchCore, this);
 	childDisable("Search");
 	setDefaultBtn( "Search" );
+
+	childSetVisible("filter_gaming", !gAgent.getRegion()->getCapability("GamingData").empty());
 
 	return TRUE;
 }
@@ -129,6 +132,10 @@ void LLPanelDirGroups::performQuery()
 	if (inc_adult)
 	{
 		scope |= DFQ_INC_ADULT;
+	}
+	if (childGetValue("filter_gaming").asBoolean())
+	{
+		scope |= DFQ_FILTER_GAMING;
 	}
 
 	mCurrentSortColumn = "score";

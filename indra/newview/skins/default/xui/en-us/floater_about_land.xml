@@ -745,6 +745,7 @@ Only large parcels can be listed in search.
 			     mouse_opaque="true" name="MatureCheck" radio_style="false"
 			     tool_tip=" "
 			     width="107" />
+			<check_box name="GamingCheck" label="This parcel is used for gaming" bottom_delta="0" left="178" follows="left|top" height="16"/>
 			<string name="mature_check_mature">
 				Mature Content
 			</string>
