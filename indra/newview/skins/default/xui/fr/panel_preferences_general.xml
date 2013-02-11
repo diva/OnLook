@@ -56,7 +56,7 @@ de sélection :
 		<combo_item name="Hungarian">Magyar (Hongrois) - Bêta</combo_item>
 		<combo_item name="Dutch">Nederlands (Néerlandais) - Bêta</combo_item>
 		<combo_item name="Polish">Polski (Polonais) - Bêta</combo_item>
-		<combo_item name="Portugese">Portugués (Portugais) - Bêta</combo_item>
+		<combo_item name="Portugese">Portugués (Portugais)</combo_item>
 		<combo_item name="Russian">Русский (Russe) - Bêta</combo_item>
 		<combo_item name="Turkish">Türkçe (Turc) - Bêta</combo_item>
 		<combo_item name="Ukrainian">Українська (Ukrainien) - Bêta</combo_item>
