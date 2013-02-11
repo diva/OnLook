@@ -417,6 +417,27 @@ BOOL LLPanelLandGeneral::postBuild()
 	
 	mBtnBuyLand = getChild<LLButton>("Buy Land...");
 	mBtnBuyLand->setClickedCallback(onClickBuyLand, (void*)&BUY_PERSONAL_LAND);
+
+	// note: on region change this will not be re checked, should not matter on Agni as
+	// 99% of the time all regions will return the same caps. In case of an erroneous setting
+	// to enabled the floater will just throw an error when trying to get it's cap
+	std::string url = gAgent.getRegion()->getCapability("LandResources");
+	if (!url.empty())
+	{
+		mBtnScriptLimits = getChild<LLButton>("Scripts...");
+		if(mBtnScriptLimits)
+		{
+			mBtnScriptLimits->setClickedCallback(onClickScriptLimits, this);
+		}
+	}
+	else
+	{
+		mBtnScriptLimits = getChild<LLButton>("Scripts...");
+		if(mBtnScriptLimits)
+		{
+			mBtnScriptLimits->setVisible(false);
+		}
+	}
 	
 	mBtnBuyGroupLand = getChild<LLButton>("Buy For Group...");
 	mBtnBuyGroupLand->setClickedCallback(onClickBuyLand, (void*)&BUY_GROUP_LAND);
@@ -505,6 +526,7 @@ void LLPanelLandGeneral::refresh()
 		mTextDwell->setText(LLStringUtil::null);
 
 		mBtnBuyLand->setEnabled(FALSE);
+		mBtnScriptLimits->setEnabled(FALSE);
 		mBtnBuyGroupLand->setEnabled(FALSE);
 		mBtnReleaseLand->setEnabled(FALSE);
 		mBtnReclaimLand->setEnabled(FALSE);
@@ -720,6 +742,7 @@ void LLPanelLandGeneral::refresh()
 
 		mBtnBuyLand->setEnabled(
 			LLViewerParcelMgr::getInstance()->canAgentBuyParcel(parcel, false));
+		mBtnScriptLimits->setEnabled(true);
 		mBtnBuyGroupLand->setEnabled(
 			LLViewerParcelMgr::getInstance()->canAgentBuyParcel(parcel, true));
 
@@ -884,11 +907,15 @@ void LLPanelLandGeneral::onClickBuyLand(void* data)
 	LLViewerParcelMgr::getInstance()->startBuyLand(*for_group);
 }
 
-BOOL LLPanelLandGeneral::enableDeedToGroup(void* data)
+// static
+void LLPanelLandGeneral::onClickScriptLimits(void* data)
 {
 	LLPanelLandGeneral* panelp = (LLPanelLandGeneral*)data;
 	LLParcel* parcel = panelp->mParcel->getParcel();
-	return (parcel != NULL) && (parcel->getParcelFlag(PF_ALLOW_DEED_TO_GROUP));
+	if(parcel != NULL)
+	{
+		LLFloaterScriptLimits::showInstance();
+	}
 }
 
 // static

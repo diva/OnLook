@@ -1594,7 +1594,7 @@ void LLViewerRegion::unpackRegionHandshake()
 void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 {
 	capabilityNames.append("AgentState");
-	//capabilityNames.append("AttachmentResources"); //Script limits (llfloaterscriptlimits.cpp)
+	capabilityNames.append("AttachmentResources");
 	//capabilityNames.append("AvatarPickerSearch"); //Display name/SLID lookup (llfloateravatarpicker.cpp)
 	capabilityNames.append("CharacterProperties");
 	capabilityNames.append("ChatSessionRequest");
@@ -1621,7 +1621,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("GroupMemberData");
 	capabilityNames.append("GroupProposalBallot");
 	capabilityNames.append("HomeLocation");
-	//capabilityNames.append("LandResources"); //Script limits (llfloaterscriptlimits.cpp)
+	capabilityNames.append("LandResources");
 	capabilityNames.append("MapLayer");
 	capabilityNames.append("MapLayerGod");
 	capabilityNames.append("MeshUploadFlag");
@@ -1637,7 +1637,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("ProvisionVoiceAccountRequest");
 	capabilityNames.append("RemoteParcelRequest");
 	capabilityNames.append("RequestTextureDownload");
-	capabilityNames.append("ResourceCostSelected"); //Unreferenced?
+	//capabilityNames.append("ResourceCostSelected"); //Object weights (llfloaterobjectweights.cpp)
 	capabilityNames.append("RetrieveNavMeshSrc");
 	capabilityNames.append("SearchStatRequest");
 	capabilityNames.append("SearchStatTracking");

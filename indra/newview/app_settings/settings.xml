@@ -7072,6 +7072,22 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
       </array>
     </map>
+    <key>FloaterScriptLimitsRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for Script Limits window</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>500</integer>
+        <integer>480</integer>
+        <integer>0</integer>
+      </array>
+    </map>
     <key>FloaterSnapshotRect</key>
     <map>
       <key>Comment</key>

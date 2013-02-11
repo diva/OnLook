@@ -195,6 +195,7 @@
 			     halign="center" height="20" label="Buy Land..."
 			     label_selected="Buy Land..." left="155" mouse_opaque="true"
 			     name="Buy Land..." scale_image="true" width="100" />
+            <button name="Scripts..." label="Script Info" bottom="-372" follows="left|top" height="20" left="10" width="140"/>
 			<button bottom="-372" enabled="false" follows="left|top" font="SansSerif"
 			     halign="center" height="20" label="Buy For Group..."
 			     label_selected="Buy For Group..." left="260" mouse_opaque="true"

@@ -153,9 +153,9 @@ public:
 	void onClickSetGroup();
 	static void onClickInfoGroup(void*);
 	static void cbGroupID(LLUUID group_id, void* userdata);
-	static BOOL enableDeedToGroup(void*);
 	static void onClickDeed(void*);
 	static void onClickBuyLand(void* data);
+	static void onClickScriptLimits(void* data);
 	static void onClickRelease(void*);
 	static void onClickReclaim(void*);
 	static void onClickBuyPass(void* deselect_when_done);
@@ -225,6 +225,7 @@ protected:
 	LLTextBox*		mTextDwell;
 
 	LLButton*		mBtnBuyLand;
+	LLButton*		mBtnScriptLimits;
 	LLButton*		mBtnBuyGroupLand;
 
 	// these buttons share the same location, but
