@@ -1261,7 +1261,7 @@ BOOL LLViewerWindow::handleActivate(LLWindow *window, BOOL activated)
 	else
 	{
 		mActive = FALSE;
-		if (gAllowIdleAFK)
+		if (gSavedSettings.getBOOL("AllowIdleAFK"))
 		{
 			gAgent.setAFK();
 		}
