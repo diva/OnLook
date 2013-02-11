@@ -786,6 +786,8 @@ void LLPanelRegionTools::setCheckFlags(U64 flags)
 	getChild<LLUICtrl>("block terraform")->setValue(flags & REGION_FLAGS_BLOCK_TERRAFORM ? TRUE : FALSE);
 	getChild<LLUICtrl>("block dwell")->setValue(flags & REGION_FLAGS_BLOCK_DWELL ? TRUE : FALSE);
 	getChild<LLUICtrl>("is sandbox")->setValue(flags & REGION_FLAGS_SANDBOX ? TRUE : FALSE );
+	getChild<LLUICtrl>("is gaming")->setValue(flags & REGION_FLAGS_GAMING ? true : false);
+	getChild<LLUICtrl>("hide from search")->setValue(flags & REGION_FLAGS_HIDE_FROM_SEARCH ? true : false);
 }
 
 void LLPanelRegionTools::setBillableFactor(F32 billable_factor)
