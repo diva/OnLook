@@ -5799,6 +5799,18 @@ static std::string reason_from_transaction_type(S32 transaction_type,
 	}
 }
 
+static void process_money_group_name_reply(const std::string& name, const std::string notification, LLSD args, LLSD payload)
+{
+	args["NAME"] = name;
+	LLNotificationsUtil::add(notification,args,payload);
+}
+static void process_money_avatar_name_reply(const LLAvatarName& name, const std::string notification, LLSD args, LLSD payload)
+{
+	std::string av_name;
+	LLAvatarNameCache::getPNSName(name,av_name);
+	args["NAME"] = av_name;
+	LLNotificationsUtil::add(notification,args,payload);
+}
 static void process_money_balance_reply_extended(LLMessageSystem* msg)
 {
 	// Added in server 1.40 and viewer 2.1, support for localization
@@ -5831,26 +5843,6 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 		return;
 	}
 
-	std::string source_slurl;
-	if (is_source_group)
-	{
-		gCacheName->getGroupName(source_id, source_slurl);
-	}
-	else
-	{
-		LLAvatarNameCache::getPNSName(source_id, source_slurl);
-	}
-
-	std::string dest_slurl;
-	if (is_dest_group)
-	{
-		gCacheName->getGroupName(dest_id, dest_slurl);
-	}
-	else
-	{
-		LLAvatarNameCache::getPNSName(dest_id, dest_slurl);
-	}
-
 	std::string reason =
 		reason_from_transaction_type(transaction_type, item_description);
 
@@ -5871,7 +5863,6 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 	bool you_paid_someone = (source_id == gAgentID);
 	if (you_paid_someone)
 	{
-		args["NAME"] = dest_slurl;
 		is_name_group = is_dest_group;
 		name_id = dest_id;
 		if (!reason.empty())
@@ -5907,7 +5898,6 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 	else
 	{
 		// ...someone paid you
-		args["NAME"] = source_slurl;
 		is_name_group = is_source_group;
 		name_id = source_id;
 		if (!reason.empty())
@@ -5930,14 +5920,14 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 	if (is_name_group)
 	{
 		gCacheName->getGroup(name_id,
-						boost::bind(&LLNotificationsUtil::add,
-									notification, final_args, payload));
+						boost::bind(&process_money_group_name_reply,
+									_2, notification, final_args, payload));
 	}
 	else
 	{
 		LLAvatarNameCache::get(name_id,
-						boost::bind(&LLNotificationsUtil::add,
-									notification, final_args, payload));
+						boost::bind(&process_money_avatar_name_reply,
+									_2, notification, final_args, payload));
 	}
 }
 
