@@ -152,7 +152,7 @@ void HTTPTimeout::upload_finished(void)
 //                                                                                             ^  ^   ^     ^    ^  ^ ^   ^
 //                                                                                             |  |   |     |    |  | |   |
 bool HTTPTimeout::data_received(size_t n/*,*/
-#ifdef CWDEBUG
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 	ASSERT_ONLY_COMMA(bool upload_error_status)
 #else
 	ASSERT_ONLY_COMMA(bool)

@@ -82,8 +82,10 @@ struct fake_channel {
 extern LL_COMMON_API fake_channel const warning;
 extern LL_COMMON_API fake_channel const curl;
 extern LL_COMMON_API fake_channel const curlio;
+extern LL_COMMON_API fake_channel const curltr;
 extern LL_COMMON_API fake_channel const statemachine;
 extern LL_COMMON_API fake_channel const notice;
+extern LL_COMMON_API fake_channel const snapshot;
 
 } // namespace dc
 } // namespace debug
