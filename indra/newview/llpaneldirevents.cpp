@@ -95,7 +95,7 @@ BOOL LLPanelDirEvents::postBuild()
 	}
 	gDisplayEventHack = FALSE;
 
-	childSetVisible("filter_gaming", !gAgent.getRegion()->getCapability("GamingData").empty());
+	childSetVisible("filter_gaming", (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_EVENTS));
 
 	return TRUE;
 }

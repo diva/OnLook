@@ -849,6 +849,7 @@ P(fetchScriptLimitsRegionDetailsResponder);
 P(fetchScriptLimitsRegionInfoResponder);
 P(fetchScriptLimitsRegionSummaryResponder);
 P(fnPtrResponder);
+P2(gamingDataReceived,							transfer_18s);
 P2(groupMemberDataResponder,					transfer_300s);
 P2(groupProposalBallotResponder,				transfer_300s);
 P(homeLocationResponder);

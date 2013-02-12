@@ -1940,7 +1940,8 @@ BOOL LLPanelLandOptions::postBuild()
 
 	mGamingCtrl = getChild<LLCheckBoxCtrl>( "GamingCheck");
 	childSetCommitCallback("GamingCheck", onCommitAny, this);
-	mGamingCtrl->setVisible(!gAgent.getRegion()->getCapability("GamingData").empty());
+	mGamingCtrl->setVisible((gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_PARCEL));
+	mGamingCtrl->setEnabled(false);
 	
 	mPublishHelpButton = getChild<LLButton>("?");
 	mPublishHelpButton->setClickedCallback(onClickPublishHelp, this);
@@ -2048,6 +2049,7 @@ void LLPanelLandOptions::refresh()
 		mClearBtn->setEnabled(FALSE);
 
 		mMatureCtrl->setEnabled(FALSE);
+		mGamingCtrl->setEnabled(false);
 		mPublishHelpButton->setEnabled(FALSE);
 	}
 	else
@@ -2170,8 +2172,9 @@ void LLPanelLandOptions::refresh()
 					mMatureCtrl->setToolTip(getString("mature_check_adult_tooltip"));
 				}
 			}
-			mGamingCtrl->set(parcel->getParcelFlag(PF_GAMING));
 		}
+		mGamingCtrl->set(parcel->getParcelFlag(PF_GAMING));
+		mGamingCtrl->setEnabled(can_change_options);
 	}
 }
 

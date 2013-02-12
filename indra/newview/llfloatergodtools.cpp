@@ -461,7 +461,7 @@ BOOL LLPanelRegionTools::postBuild()
 	getChild<LLUICtrl>("block terraform")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 	getChild<LLUICtrl>("allow transfer")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 	getChild<LLUICtrl>("is sandbox")->setCommitCallback( boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	getChild<LLUICtrl>("is gaming")->setVisible(!gAgent.getRegion()->getCapability("GamingData").empty());
+	getChild<LLUICtrl>("is gaming")->setVisible((gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_GOD_FLOATER));
 	getChild<LLUICtrl>("is gaming")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 	getChild<LLUICtrl>("hide from search")->setVisible(!gHippoGridManager->getConnectedGrid()->isSecondLife());
 	getChild<LLUICtrl>("hide from search")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));

@@ -161,7 +161,7 @@ BOOL LLPanelDirFind::postBuild()
 		navigateToDefaultPage();
 	}
 
-	childSetVisible("filter_gaming", !gAgent.getRegion()->getCapability("GamingData").empty());
+	childSetVisible("filter_gaming", (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_ALL));
 
 	return TRUE;
 }
@@ -570,7 +570,7 @@ BOOL LLPanelDirFindAllOld::postBuild()
 	childDisable("Search");
 	setDefaultBtn( "Search" );
 
-	childSetVisible("filter_gaming", !gAgent.getRegion()->getCapability("GamingData").empty());
+	childSetVisible("filter_gaming", (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_ALL_CLASSIC));
 
 	return TRUE;
 }

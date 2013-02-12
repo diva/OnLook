@@ -350,6 +350,9 @@ public:
 	void getNeighboringRegions( std::vector<LLViewerRegion*>& uniqueRegions );
 	void getNeighboringRegionsStatus( std::vector<S32>& regions );
 	
+	void setGamingData(const LLSD& info);
+	const U32 getGamingFlags() const { return mGamingFlags; }
+
 public:
 	struct CompareDistance
 	{
@@ -444,6 +447,7 @@ private:
 	BOOL mReleaseNotesRequested;
 	
 	LLSD mSimulatorFeatures;
+	U32 mGamingFlags;
 };
 
 inline BOOL LLViewerRegion::getRegionProtocol(U64 protocol) const

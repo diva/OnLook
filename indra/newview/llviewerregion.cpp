@@ -84,6 +84,7 @@
 
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy baseCapabilitiesComplete_timeout;
+extern AIHTTPTimeoutPolicy gamingDataReceived_timeout;
 extern AIHTTPTimeoutPolicy simulatorFeaturesReceived_timeout;
 
 const F32 WATER_TEXTURE_SCALE = 8.f;			//  Number of times to repeat the water texture across a region
@@ -306,7 +307,8 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 	mCacheLoaded(FALSE),
 	mCacheDirty(FALSE),
 	mReleaseNotesRequested(FALSE),
-	mCapabilitiesReceived(false)
+	mCapabilitiesReceived(false),
+	mGamingFlags(0)
 {
 	mWidth = region_width_meters;
 	mImpl->mOriginGlobal = from_region_handle(handle); 
@@ -1250,6 +1252,36 @@ void LLViewerRegion::setSimulatorFeatures(const LLSD& sim_features)
 	mSimulatorFeatures = sim_features;
 }
 
+void LLViewerRegion::setGamingData(const LLSD& gaming_data)
+{
+	mGamingFlags = 0;
+
+	if (!gaming_data.has("display"))
+		llerrs << "GamingData Capability requires \"display\"" << llendl;
+	if (gaming_data["display"].asBoolean())
+		mGamingFlags |= REGION_GAMING_PRESENT;
+	if (gaming_data.has("hide_parcel") && gaming_data["hide_parcel"].asBoolean())
+		mGamingFlags |= REGION_GAMING_HIDE_PARCEL;
+	if (gaming_data.has("hide_find_all") && gaming_data["hide_find_all"].asBoolean())
+		mGamingFlags |= REGION_GAMING_HIDE_FIND_ALL;
+	if (gaming_data.has("hide_find_classifieds") && gaming_data["hide_find_classifieds"].asBoolean())
+		mGamingFlags |= REGION_GAMING_HIDE_FIND_CLASSIFIEDS;
+	if (gaming_data.has("hide_find_events") && gaming_data["hide_find_events"].asBoolean())
+		mGamingFlags |= REGION_GAMING_HIDE_FIND_EVENTS;
+	if (gaming_data.has("hide_find_land") && gaming_data["hide_find_land"].asBoolean())
+		mGamingFlags |= REGION_GAMING_HIDE_FIND_LAND;
+	if (gaming_data.has("hide_find_sims") && gaming_data["hide_find_sims"].asBoolean())
+		mGamingFlags |= REGION_GAMING_HIDE_FIND_SIMS;
+	if (gaming_data.has("hide_find_groups") && gaming_data["hide_find_groups"].asBoolean())
+		mGamingFlags |= REGION_GAMING_HIDE_FIND_GROUPS;
+	if (gaming_data.has("hide_find_all_classic") && gaming_data["hide_find_all_classic"].asBoolean())
+		mGamingFlags |= REGION_GAMING_HIDE_FIND_ALL_CLASSIC;
+	if (gaming_data.has("hide_god_floater") && gaming_data["hide_god_floater"].asBoolean())
+		mGamingFlags |= REGION_GAMING_HIDE_GOD_FLOATER;
+
+	llinfos << "Gaming flags are " << mGamingFlags << llendl;
+}
+
 LLViewerRegion::eCacheUpdateResult LLViewerRegion::cacheFullUpdate(LLViewerObject* objectp, LLDataPackerBinaryBuffer &dp)
 {
 	U32 local_id = objectp->getLocalID();
@@ -1785,6 +1817,46 @@ private:
 	S32 mMaxAttempts;
 };
 
+class GamingDataReceived : public LLHTTPClient::ResponderWithResult
+{
+	LOG_CLASS(GamingDataReceived);
+public:
+	GamingDataReceived(const std::string& retry_url, U64 region_handle, S32 attempt = 0, S32 max_attempts = MAX_CAP_REQUEST_ATTEMPTS)
+	: mRetryURL(retry_url), mRegionHandle(region_handle), mAttempt(attempt), mMaxAttempts(max_attempts)
+	{}
+
+	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	{
+		LL_WARNS2("AppInit", "GamingData") << statusNum << ": " << reason << LL_ENDL;
+		retry();
+	}
+
+	/*virtual*/ void result(const LLSD& content)
+	{
+		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
+		if(regionp) regionp->setGamingData(content);
+	}
+
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return gamingDataReceived_timeout; }
+	/*virtual*/ char const* getName(void) const { return "GamingDataReceived"; }
+
+private:
+	void retry()
+	{
+		if (mAttempt < mMaxAttempts)
+		{
+			mAttempt++;
+			LL_WARNS2("AppInit", "GamingData") << "Retrying '" << mRetryURL << "'.  Retry #" << mAttempt << LL_ENDL;
+			LLHTTPClient::get(mRetryURL, new GamingDataReceived(*this));
+		}
+	}
+
+	std::string mRetryURL;
+	U64 mRegionHandle;
+	S32 mAttempt;
+	S32 mMaxAttempts;
+};
+
 
 void LLViewerRegion::setCapability(const std::string& name, const std::string& url)
 {
@@ -1802,6 +1874,12 @@ void LLViewerRegion::setCapability(const std::string& name, const std::string& u
 	{
 		// kick off a request for simulator features
 		LLHTTPClient::get(url, new SimulatorFeaturesReceived(url, getHandle()));
+	}
+	else if (name == "GamingData")
+	{
+		LLSD gamingRequest = LLSD::emptyMap();
+		// request settings from simulator
+		LLHTTPClient::post(url, gamingRequest, new GamingDataReceived(url, getHandle()));
 	}
 	else
 	{
