@@ -489,7 +489,10 @@ void LLPipeline::init()
 	//gSavedSettings.getControl("RenderDelayVBUpdate")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	gSavedSettings.getControl("UseOcclusion")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	gSavedSettings.getControl("VertexShaderEnable")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
+	gSavedSettings.getControl("RenderDeferred")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	gSavedSettings.getControl("RenderFSAASamples")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
+	gSavedSettings.getControl("RenderAvatarVP")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
+	gSavedSettings.getControl("WindLightUseAtmosShaders")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 }
 
 LLPipeline::~LLPipeline()
@@ -631,7 +634,16 @@ void LLPipeline::resizeScreenTexture()
 		GLuint resX = gViewerWindow->getWorldViewWidthRaw();
 		GLuint resY = gViewerWindow->getWorldViewHeightRaw();
 	
-		allocateScreenBuffer(resX,resY);
+		if (!allocateScreenBuffer(resX,resY))
+		{ //FAILSAFE: screen buffer allocation failed, disable deferred rendering if it's enabled
+			//NOTE: if the session closes successfully after this call, deferred rendering will be 
+			// disabled on future sessions
+			if (LLPipeline::sRenderDeferred)
+			{
+				gSavedSettings.setBOOL("RenderDeferred", FALSE);
+				LLPipeline::refreshCachedSettings();
+			}
+		}
 	}
 }
 
@@ -902,6 +914,8 @@ void LLPipeline::refreshCachedSettings()
 			&& LLFeatureManager::getInstance()->isFeatureAvailable("UseOcclusion") 
 			&& gSavedSettings.getBOOL("UseOcclusion") 
 			&& gGLManager.mHasOcclusionQuery) ? 2 : 0;
+	
+	updateRenderDeferred();
 }
 
 void LLPipeline::releaseGLBuffers()
@@ -5412,7 +5426,6 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 			if (light->isLightSpotlight() // directional (spot-)light
 			    && (LLPipeline::sRenderDeferred || RenderSpotLightsInNondeferred)) // these are only rendered as GL spotlights if we're in deferred rendering mode *or* the setting forces them on
 			{
-				LLVector3 spotparams = light->getSpotLightParams();
 				LLQuaternion quat = light->getRenderRotation();
 				LLVector3 at_axis(0,0,-1); // this matches deferred rendering's object light direction
 				at_axis *= quat;
@@ -5460,7 +5473,7 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 
 		F32 light_radius = 16.f;
 
-			F32 x = 3.f;
+		F32 x = 3.f;
 		float linatten = x / (light_radius); // % of brightness at radius
 
 		mHWLightColors[2] = light_color;
@@ -5624,7 +5637,7 @@ void LLPipeline::enableLightsPreview()
 	
 	LLVector4 light_pos(dir0, 0.0f);
 
-	LLLightState* light = gGL.getLight(0);
+	LLLightState* light = gGL.getLight(1);
 
 	light->enable();
 	light->setPosition(light_pos);
@@ -5636,7 +5649,7 @@ void LLPipeline::enableLightsPreview()
 
 	light_pos = LLVector4(dir1, 0.f);
 
-	light = gGL.getLight(1);
+	light = gGL.getLight(2);
 	light->enable();
 	light->setPosition(light_pos);
 	light->setDiffuse(diffuse1);
@@ -5646,7 +5659,7 @@ void LLPipeline::enableLightsPreview()
 	light->setSpotCutoff(180.f);
 
 	light_pos = LLVector4(dir2, 0.f);
-	light = gGL.getLight(2);
+	light = gGL.getLight(3);
 	light->enable();
 	light->setPosition(light_pos);
 	light->setDiffuse(diffuse2);
