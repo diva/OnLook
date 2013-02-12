@@ -99,8 +99,10 @@ typedef enum e_control_type
 
 class LLControlVariable : public LLRefCount
 {
-	friend class LLControlGroup;
+	LOG_CLASS(LLControlVariable);
 
+	friend class LLControlGroup;
+	
 public:
 	typedef boost::signals2::signal<bool(LLControlVariable* control, const LLSD&), boost_boolean_combiner> validate_signal_t;
 	typedef boost::signals2::signal<void(LLControlVariable* control, const LLSD&)> commit_signal_t;
@@ -208,6 +210,7 @@ T convert_from_llsd(const LLSD& sd, eControlType type, const std::string& contro
 //const U32 STRING_CACHE_SIZE = 10000;
 class LLControlGroup : public LLInstanceTracker<LLControlGroup, std::string>
 {
+	LOG_CLASS(LLControlGroup);
 protected:
 	typedef std::map<std::string, LLControlVariablePtr > ctrl_name_table_t;
 	ctrl_name_table_t mNameTable;
@@ -283,6 +286,7 @@ public:
 		else
 		{
 			llwarns << "Control " << name << " not found." << llendl;
+			return T();
 		}
 		return convert_from_llsd<T>(value, type, name);
 	}
@@ -313,7 +317,7 @@ public:
 		}
 		else
 		{
-			llerrs << "Invalid control " << name << llendl;
+			llwarns << "Invalid control " << name << llendl;
 		}
 	}
 	
