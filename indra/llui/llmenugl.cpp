@@ -2225,7 +2225,10 @@ bool LLMenuGL::addChild(LLView* view, LLView* insert_before, S32 tab_group)
 	if (LLMenuGL* menup = dynamic_cast<LLMenuGL*>(view))
 	{
 		lldebugs << "Adding menu " << menup->getName() << " to " << getName() << llendl;
-		appendMenu(menup, insert_before);
+		if (!insert_before)
+			appendMenu(menup);
+		else
+			appendMenu(menup, insert_before);
 		return true;
 	}
 	else if (LLMenuItemGL* itemp = dynamic_cast<LLMenuItemGL*>(view))
