@@ -308,6 +308,7 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 	mCacheDirty(FALSE),
 	mReleaseNotesRequested(FALSE),
 	mCapabilitiesReceived(false),
+	mFeaturesReceived(false),
 	mGamingFlags(0)
 {
 	mWidth = region_width_meters;
@@ -1250,6 +1251,10 @@ void LLViewerRegion::setSimulatorFeatures(const LLSD& sim_features)
 	LLSDSerialize::toPrettyXML(sim_features, str);
 	llinfos << str.str() << llendl;
 	mSimulatorFeatures = sim_features;
+
+	mFeaturesReceived = true;
+	mFeaturesReceivedSignal(getRegionID());
+	mFeaturesReceivedSignal.disconnect_all_slots();
 }
 
 void LLViewerRegion::setGamingData(const LLSD& gaming_data)
@@ -1872,6 +1877,9 @@ void LLViewerRegion::setCapability(const std::string& name, const std::string& u
 	}
 	else if (name == "SimulatorFeatures")
 	{
+		// although this is not needed later, add it so we can check if the sim supports it at all later
+		mImpl->mCapabilities[name] = url;
+
 		// kick off a request for simulator features
 		LLHTTPClient::get(url, new SimulatorFeaturesReceived(url, getHandle()));
 	}
@@ -1929,6 +1937,15 @@ void LLViewerRegion::setCapabilitiesReceived(bool received)
 
 		// This is a single-shot signal. Forget callbacks to save resources.
 		mCapabilitiesReceivedSignal.disconnect_all_slots();
+
+		// If we don't have this cap, send the changed signal to simplify code
+		// in consumers by allowing them to expect this signal, regardless.
+		if (getCapability("SimulatorFeatures").empty())
+		{
+			mFeaturesReceived = true;
+			mFeaturesReceivedSignal(getRegionID());
+			mFeaturesReceivedSignal.disconnect_all_slots();
+		}
 	}
 }
 
@@ -2044,5 +2061,10 @@ bool LLViewerRegion::dynamicPathfindingEnabled() const
 {
 	return ( mSimulatorFeatures.has("DynamicPathfindingEnabled") &&
 			 mSimulatorFeatures["DynamicPathfindingEnabled"].asBoolean());
+}
+
+boost::signals2::connection LLViewerRegion::setFeaturesReceivedCallback(const features_received_signal_t::slot_type& cb)
+{
+	return mFeaturesReceivedSignal.connect(cb);
 }
 
