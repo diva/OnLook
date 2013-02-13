@@ -885,7 +885,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		LLColor4 name_color = sDefaultListText;
 
 		//Lindens are always more Linden than your friend, make that take precedence
-		if(LLMuteList::getInstance()->isLinden(av_name))
+		if(LLMuteList::getInstance()->isLinden(av_id))
 		{
 			static const LLCachedControl<LLColor4> ascent_linden_color("AscentLindenColor",LLColor4(0.f,0.f,1.f,1.f));
 			name_color = ascent_linden_color;

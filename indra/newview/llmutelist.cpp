@@ -280,6 +280,13 @@ LLMuteList::~LLMuteList()
 	}
 }
 
+bool LLMuteList::isLinden(const LLUUID& id) const
+{
+	std::string name;
+	gCacheName->getFullName(id, name);
+	return isLinden(name);
+}
+
 BOOL LLMuteList::isLinden(const std::string& name) const
 {
 	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;

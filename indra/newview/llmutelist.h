@@ -116,6 +116,7 @@ public:
 	BOOL isMuted(const LLUUID& id, U32 flags) const { return isMuted(id, LLStringUtil::null, flags); };
 	
 	BOOL isLinden(const std::string& name) const;
+	bool isLinden(const LLUUID& id) const;
 	
 	BOOL isLoaded() const { return mIsLoaded; }
 
