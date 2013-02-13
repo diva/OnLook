@@ -5799,17 +5799,34 @@ static std::string reason_from_transaction_type(S32 transaction_type,
 	}
 }
 
-static void process_money_group_name_reply(const std::string& name, const std::string notification, LLSD args, LLSD payload)
+static void money_balance_group_notify(const LLUUID& group_id,
+									   const std::string& name,
+									   bool is_group,
+									   std::string message,
+									   std::string notification,
+									   LLStringUtil::format_map_t args,
+									   LLSD payload)
 {
 	args["NAME"] = name;
-	LLNotificationsUtil::add(notification,args,payload);
+	LLSD msg_args;
+	msg_args["MESSAGE"] = LLTrans::getString(message,args);
+	LLNotificationsUtil::add(notification,msg_args,payload);
 }
-static void process_money_avatar_name_reply(const LLAvatarName& name, const std::string notification, LLSD args, LLSD payload)
+
+static void money_balance_avatar_notify(const LLUUID& agent_id,
+										const LLAvatarName& av_name,
+										std::string message,
+									   	std::string notification,
+									   	LLStringUtil::format_map_t args,
+									   	LLSD payload)
 {
-	std::string av_name;
-	LLAvatarNameCache::getPNSName(name,av_name);
-	args["NAME"] = av_name;
-	LLNotificationsUtil::add(notification,args,payload);
+
+	std::string name;
+	LLAvatarNameCache::getPNSName(av_name,name);
+	args["NAME"] = name;
+	LLSD msg_args;
+	msg_args["MESSAGE"] = LLTrans::getString(message,args);
+	LLNotificationsUtil::add(notification,msg_args,payload);
 }
 static void process_money_balance_reply_extended(LLMessageSystem* msg)
 {
@@ -5857,7 +5874,6 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 	std::string message;
 	static LLCachedControl<bool> no_transaction_clutter("LiruNoTransactionClutter", false);
 	std::string notification = no_transaction_clutter ? "Payment" : "SystemMessage";
-	LLSD final_args;
 	LLSD payload;
 
 	bool you_paid_someone = (source_id == gAgentID);
@@ -5869,31 +5885,30 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 		{
 			if (dest_id.notNull())
 			{
-				message = success ? LLTrans::getString("you_paid_ldollars", args) :
-									LLTrans::getString("you_paid_failure_ldollars", args);
+				message = success ? "you_paid_ldollars" :
+									"you_paid_failure_ldollars";
 			}
 			else
 			{
 				// transaction fee to the system, eg, to create a group
-				message = success ? LLTrans::getString("you_paid_ldollars_no_name", args) :
-									LLTrans::getString("you_paid_failure_ldollars_no_name", args);
+				message = success ? "you_paid_ldollars_no_name" :
+									"you_paid_failure_ldollars_no_name";
 			}
 		}
 		else
 		{
 			if (dest_id.notNull())
 			{
-				message = success ? LLTrans::getString("you_paid_ldollars_no_reason", args) :
-									LLTrans::getString("you_paid_failure_ldollars_no_reason", args);
+				message = success ? "you_paid_ldollars_no_reason" :
+									"you_paid_failure_ldollars_no_reason";
 			}
 			else
 			{
 				// no target, no reason, you just paid money
-				message = success ? LLTrans::getString("you_paid_ldollars_no_info", args) :
-									LLTrans::getString("you_paid_failure_ldollars_no_info", args);
+				message = success ? "you_paid_ldollars_no_info" :
+									"you_paid_failure_ldollars_no_info";
 			}
 		}
-		final_args["MESSAGE"] = message;
 	}
 	else
 	{
@@ -5902,13 +5917,12 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 		name_id = source_id;
 		if (!reason.empty())
 		{
-			message = LLTrans::getString("paid_you_ldollars", args);
+			message = "paid_you_ldollars";
 		}
 		else
 		{
-			message = LLTrans::getString("paid_you_ldollars_no_reason", args);
+			message = "paid_you_ldollars_no_reason";
 		}
-		final_args["MESSAGE"] = message;
 
 		// make notification loggable
 		payload["from_id"] = source_id;
@@ -5920,14 +5934,15 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 	if (is_name_group)
 	{
 		gCacheName->getGroup(name_id,
-						boost::bind(&process_money_group_name_reply,
-									_2, notification, final_args, payload));
+						boost::bind(&money_balance_group_notify,
+									_1, _2, _3, message,
+									notification, args, payload));
 	}
-	else
-	{
+	else {
 		LLAvatarNameCache::get(name_id,
-						boost::bind(&process_money_avatar_name_reply,
-									_2, notification, final_args, payload));
+							   boost::bind(&money_balance_avatar_notify,
+										   _1, _2, message,
+										   notification, args, payload));										   
 	}
 }
 
