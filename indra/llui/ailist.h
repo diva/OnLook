@@ -56,7 +56,7 @@ struct AINode {
   mutable unsigned short dead;		// Whether or not the element is "erased".
 
   AINode(void) : count(0), dead(0) { }
-  explicit AINode(T const& __value) : mElement(__value), count(0), dead(0) { }
+  explicit AINode(T const& __val) : mElement(__val), count(0), dead(0) { }
 
   // Equivalence operators.
   // __node may not be dead. Dead nodes in the list are "skipped" (obviously), meaning that they are never equal or always unequal.
@@ -459,8 +459,8 @@ class AIList {
 	~AIList() { clear(); }
 #endif
 
-	// Construct a list with __n elements of __value.
-	explicit AIList(size_type __n, value_type const& __value = value_type()) : mContainer(__n, AINode<T>(__value)), mSize(__n) { }
+	// Construct a list with __n elements of __val.
+	explicit AIList(size_type __n, value_type const& __val = value_type()) : mContainer(__n, AINode<T>(__val)), mSize(__n) { }
 
 	// Copy constructor.
 	AIList(AIList const& __list) : mSize(0)
@@ -589,13 +589,13 @@ class AIList {
 	  return ++__position;
 	}
 
-	// Remove all elements, designated by the iterator where, for which *where == __value.
-	void remove(value_type const& __value)
+	// Remove all elements, designated by the iterator where, for which *where == __val.
+	void remove(value_type const& __val)
 	{
 	  _Iterator const __e = mContainer.end();
 	  for (_Iterator __i = mContainer.begin(); __i != __e;)
 	  {
-		if (!__i->dead && __i->mElement == __value)
+		if (!__i->dead && __i->mElement == __val)
 		{
 		  --mSize;
 		  if (__i->count == 0)
