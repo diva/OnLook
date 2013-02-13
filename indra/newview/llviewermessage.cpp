@@ -3577,7 +3577,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 				sChatObjectAuth[from_id] = 1;
 				return;
 			}
-			else if (sChatObjectAuth.find(from_id) != sChatObjectAuth.end())
+			else if (from_id.isNull() || sChatObjectAuth.find(from_id) != sChatObjectAuth.end())
 			{
 				LLUUID key;
 				if (key.set(mesg.substr(3, 36),false))
