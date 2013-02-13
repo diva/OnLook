@@ -476,6 +476,8 @@ public:
 	/*virtual*/ void removeChild( LLView* ctrl);
 	/*virtual*/ BOOL postBuild();
 
+	bool addChild(LLView* view, LLView* insert_before, S32 tab_group = 0);
+
 	virtual BOOL handleAcceleratorKey(KEY key, MASK mask);
 
 	LLMenuGL* getChildMenuByName(const std::string& name, BOOL recurse) const;
@@ -572,11 +574,14 @@ public:
 protected:
 	void createSpilloverBranch();
 	void cleanupSpilloverBranch();
+
 	// Add the menu item to this menu.
 	virtual BOOL append( LLMenuItemGL* item );
+	BOOL append(LLMenuItemGL* item, LLView* insert_before);
 
 	// add a menu - this will create a cascading menu
 	virtual BOOL appendMenu( LLMenuGL* menu );
+	BOOL appendMenu(LLMenuGL* menu, LLView* insert_before);
 
 	// TODO: create accessor methods for these?
 	typedef std::list< LLMenuItemGL* > item_list_t;

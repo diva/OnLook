@@ -93,6 +93,7 @@
 #include "lldrawable.h"
 #include "lldrawpoolalpha.h"
 #include "lldrawpooltree.h"
+#include "llenvmanager.h"
 #include "llface.h"
 #include "llfirstuse.h"
 #include "llfloater.h"
@@ -278,6 +279,8 @@ void init_client_menu(LLMenuGL* menu);
 void init_server_menu(LLMenuGL* menu);
 
 typedef LLPointer<LLViewerObject> LLViewerObjectPtr;
+typedef std::vector<LLMenuItemCallGL*> custom_menu_item_list_t;
+custom_menu_item_list_t gCustomMenuItems;
 
 void init_debug_world_menu(LLMenuGL* menu);
 void init_debug_rendering_menu(LLMenuGL* menu);
@@ -621,6 +624,10 @@ void menu_toggle_attached_particles(void* user_data);
 BOOL enable_dump_archetype_xm(void*);
 void handle_dump_archetype_xml(void *);
 
+void region_change();
+void parse_simulator_features();
+void custom_selected(void* user_data);
+
 class LLMenuParcelObserver : public LLParcelObserver
 {
 public:
@@ -895,6 +902,18 @@ void init_menus()
 	gLoginMenuBarView->setBackgroundColor( color );
 
 	gMenuHolder->addChild(gLoginMenuBarView);
+
+	LLView* ins = gMenuBarView->getChildView("insert_world", true, false);
+	ins->setVisible(false);
+	ins = gMenuBarView->getChildView("insert_agent", true, false);
+	ins->setVisible(false);
+	ins = gMenuBarView->getChildView("insert_tools", true, false);
+	ins->setVisible(false);
+	/* Singu Note: When the advanced menu is made xml, this should be uncommented.
+	ins = gMenuBarView->getChildView("insert_advanced", true, false);
+	ins->setVisible(false);*/
+
+	LLEnvManagerNew::instance().setRegionChangeCallback(&region_change);
 }
 
 
@@ -1181,6 +1200,13 @@ void init_client_menu(LLMenuGL* menu)
 										NULL,
 										&menu_check_control,
 										(void*) "MouseSmooth"));
+
+	// Singu Note: When this menu is xml, handle this above, with the other insertion points
+	{
+		LLMenuItemCallGL* item = new LLMenuItemCallGL("insert_advanced", NULL);
+		item->setVisible(false);
+		menu->addChild(item);
+	}
 	menu->addSeparator();
 
 	menu->addChild(new LLMenuItemCheckGL( "Console Window", 
@@ -9694,4 +9720,74 @@ void initialize_menus()
 // [/RLVa:KB]
 
 	LLToolMgr::getInstance()->initMenu(sMenus);
+}
+
+void region_change()
+{
+	// Remove current dynamic items
+	for (custom_menu_item_list_t::iterator i = gCustomMenuItems.begin(); i != gCustomMenuItems.end(); ++i)
+	{
+		LLMenuItemCallGL* item = (*i);
+		item->getParent()->removeChild(item);
+		delete item;
+	}
+	gCustomMenuItems.clear();
+
+	LLViewerRegion* regionp = gAgent.getRegion();
+	if (!regionp) return;
+
+	if (regionp->getFeaturesReceived())
+	{
+		parse_simulator_features();
+	}
+	else
+	{
+		regionp->setFeaturesReceivedCallback(boost::bind(&parse_simulator_features));
+	}
+}
+
+void parse_simulator_features()
+{
+	LLViewerRegion* regionp = gAgent.getRegion();
+	if (!regionp) return;
+
+	LLSD info;
+	regionp->getSimulatorFeatures(info);
+	if (!info.has("menus")) return;
+
+	LLSD menus = info["menus"];
+	for (LLSD::map_iterator i = menus.beginMap(); i != menus.endMap(); ++i)
+	{
+		std::string insertMarker = "insert_" + i->first;
+
+		LLView* marker = gMenuBarView->getChildView(insertMarker, true, false);
+		if (!marker) continue;
+
+		LLMenuGL* menu = dynamic_cast<LLMenuGL*>(marker->getParent());
+		if (!menu) continue;
+
+		for (LLSD::map_iterator j = i->second.beginMap(); j != i->second.endMap(); ++j)
+		{
+			LLMenuItemCallGL* custom = new LLMenuItemCallGL(j->second.asString(), j->first, custom_selected);
+			custom->setUserData(custom);
+			gCustomMenuItems.push_back(custom);
+			menu->addChild(custom, marker);
+		}
+	}
+}
+
+void custom_selected(void* user_data)
+{
+	LLViewerRegion* regionp = gAgent.getRegion();
+	if (!regionp) return;
+
+	std::string url = regionp->getCapability("CustomMenuAction");
+	if (url.empty()) return;
+
+	LLMenuItemCallGL* custom = (LLMenuItemCallGL*)user_data;
+
+	LLSD menuAction = LLSD::emptyMap();
+	menuAction["action"] = LLSD(custom->getName());
+
+	LLHTTPClient::post(url, menuAction, new LLHTTPClient::ResponderIgnore);
 }
