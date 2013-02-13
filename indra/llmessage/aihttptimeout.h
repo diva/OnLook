@@ -81,6 +81,7 @@ class HTTPTimeout : public LLRefCount {
 	bool mLowSpeedOn;							// Set while uploading or downloading data.
 	bool mUploadFinished;						// Used to keep track of whether upload_finished was called yet.
 	S32 mLastSecond;							// The time at which lowspeed() was last called, in seconds since mLowSpeedClock.
+	S32 mOverwriteSecond;						// The second at which the first bucket of this transfer will be overwritten.
 	U32 mTotalBytes;							// The sum of all bytes in mBuckets.
 	U64 mLowSpeedClock;							// Clock count at which low speed detection (re)started.
 	U64 mStalled;								// The clock count at which this transaction is considered to be stalling if nothing is transfered anymore.
