@@ -89,42 +89,42 @@ LLPanelPermissions::LLPanelPermissions(const std::string& title) :
 
 BOOL LLPanelPermissions::postBuild()
 {
-	this->childSetCommitCallback("Object Name",LLPanelPermissions::onCommitName,this);
-	this->childSetPrevalidate("Object Name",LLLineEditor::prevalidatePrintableNotPipe);
-	this->childSetCommitCallback("Object Description",LLPanelPermissions::onCommitDesc,this);
-	this->childSetPrevalidate("Object Description",LLLineEditor::prevalidatePrintableNotPipe);
+	childSetCommitCallback("Object Name",LLPanelPermissions::onCommitName,this);
+	childSetPrevalidate("Object Name",LLLineEditor::prevalidatePrintableNotPipe);
+	childSetCommitCallback("Object Description",LLPanelPermissions::onCommitDesc,this);
+	childSetPrevalidate("Object Description",LLLineEditor::prevalidatePrintableNotPipe);
 
 	
-	this->childSetAction("button owner profile",LLPanelPermissions::onClickOwner,this);
-	this->childSetAction("button last owner profile",LLPanelPermissions::onClickLastOwner,this);
-	this->childSetAction("button creator profile",LLPanelPermissions::onClickCreator,this);
+	childSetAction("button owner profile",LLPanelPermissions::onClickOwner,this);
+	childSetAction("button last owner profile",LLPanelPermissions::onClickLastOwner,this);
+	childSetAction("button creator profile",LLPanelPermissions::onClickCreator,this);
 
-	this->childSetAction("button set group",LLPanelPermissions::onClickGroup,this);
-	this->childSetAction("button open group",LLPanelPermissions::onClickOpenGroup,this);
+	childSetAction("button set group",LLPanelPermissions::onClickGroup,this);
+	childSetAction("button open group",LLPanelPermissions::onClickOpenGroup,this);
 
-	this->childSetCommitCallback("checkbox share with group",LLPanelPermissions::onCommitGroupShare,this);
+	childSetCommitCallback("checkbox share with group",LLPanelPermissions::onCommitGroupShare,this);
 
-	this->childSetAction("button deed",LLPanelPermissions::onClickDeedToGroup,this);
+	childSetAction("button deed",LLPanelPermissions::onClickDeedToGroup,this);
 
-	this->childSetAction("button cpy_key",LLPanelPermissions::onClickCopyObjKey,this);
+	childSetAction("button cpy_key",LLPanelPermissions::onClickCopyObjKey,this);
 
-	this->childSetCommitCallback("checkbox allow everyone move",LLPanelPermissions::onCommitEveryoneMove,this);
+	childSetCommitCallback("checkbox allow everyone move",LLPanelPermissions::onCommitEveryoneMove,this);
 
-	this->childSetCommitCallback("checkbox allow everyone copy",LLPanelPermissions::onCommitEveryoneCopy,this);
-	
-	this->childSetCommitCallback("checkbox for sale",LLPanelPermissions::onCommitSaleInfo,this);
+	childSetCommitCallback("checkbox allow everyone copy",LLPanelPermissions::onCommitEveryoneCopy,this);
 
-	this->childSetCommitCallback("Edit Cost",LLPanelPermissions::onCommitSaleInfo,this);
-	this->childSetPrevalidate("Edit Cost",LLLineEditor::prevalidateNonNegativeS32);
+	childSetCommitCallback("checkbox for sale",LLPanelPermissions::onCommitSaleInfo,this);
 
-	this->childSetCommitCallback("sale type",LLPanelPermissions::onCommitSaleType,this);
-	
-	this->childSetCommitCallback("checkbox next owner can modify",LLPanelPermissions::onCommitNextOwnerModify,this);
-	this->childSetCommitCallback("checkbox next owner can copy",LLPanelPermissions::onCommitNextOwnerCopy,this);
-	this->childSetCommitCallback("checkbox next owner can transfer",LLPanelPermissions::onCommitNextOwnerTransfer,this);
-	this->childSetCommitCallback("clickaction",LLPanelPermissions::onCommitClickAction,this);
-	this->childSetCommitCallback("search_check",LLPanelPermissions::onCommitIncludeInSearch,this);
-	
+	childSetCommitCallback("Edit Cost",LLPanelPermissions::onCommitSaleInfo,this);
+	childSetPrevalidate("Edit Cost",LLLineEditor::prevalidateNonNegativeS32);
+
+	childSetCommitCallback("sale type",LLPanelPermissions::onCommitSaleType,this);
+
+	childSetCommitCallback("checkbox next owner can modify",LLPanelPermissions::onCommitNextOwnerModify,this);
+	childSetCommitCallback("checkbox next owner can copy",LLPanelPermissions::onCommitNextOwnerCopy,this);
+	childSetCommitCallback("checkbox next owner can transfer",LLPanelPermissions::onCommitNextOwnerTransfer,this);
+	childSetCommitCallback("clickaction",LLPanelPermissions::onCommitClickAction,this);
+	childSetCommitCallback("search_check",LLPanelPermissions::onCommitIncludeInSearch,this);
+
 	LLTextBox* group_rect_proxy = getChild<LLTextBox>("Group Name Proxy");
 	if(group_rect_proxy )
 	{
@@ -284,8 +284,8 @@ void LLPanelPermissions::refresh()
 	BOOL is_nonpermanent_enforced = (LLSelectMgr::getInstance()->getSelection()->getFirstRootNode() 
 						   && LLSelectMgr::getInstance()->selectGetRootsNonPermanentEnforced())
 		|| LLSelectMgr::getInstance()->selectGetNonPermanentEnforced();
-
 	const LLFocusableElement* keyboard_focus_view = gFocusMgr.getKeyboardFocus();
+
 	S32 string_index = 0;
 	std::string MODIFY_INFO_STRINGS[] =
 	{
@@ -569,51 +569,58 @@ void LLPanelPermissions::refresh()
 	// based on who owns the object.
 	// TODO: Creator permissions
 
-	BOOL valid_base_perms		= FALSE;
-	BOOL valid_owner_perms		= FALSE;
-	BOOL valid_group_perms		= FALSE;
-	BOOL valid_everyone_perms	= FALSE;
-	BOOL valid_next_perms		= FALSE;
-
-	U32 base_mask_on;
-	U32 base_mask_off;
-	U32 owner_mask_on;
-	U32 owner_mask_off;
-	U32 group_mask_on;
-	U32 group_mask_off;
-	U32 everyone_mask_on;
-	U32 everyone_mask_off;
+	U32 base_mask_on = 0;
+	U32 base_mask_off = 0;
+	U32 owner_mask_off = 0;
+	U32 owner_mask_on = 0;
+	U32 group_mask_on = 0;
+	U32 group_mask_off = 0;
+	U32 everyone_mask_on = 0;
+	U32 everyone_mask_off = 0;
 	U32 next_owner_mask_on = 0;
 	U32 next_owner_mask_off = 0;
 
-	valid_base_perms = LLSelectMgr::getInstance()->selectGetPerm(PERM_BASE,
+	BOOL valid_base_perms = LLSelectMgr::getInstance()->selectGetPerm(PERM_BASE,
 									  &base_mask_on,
 									  &base_mask_off);
 
-	valid_owner_perms = LLSelectMgr::getInstance()->selectGetPerm(PERM_OWNER,
+	//BOOL valid_owner_perms =//
+	LLSelectMgr::getInstance()->selectGetPerm(PERM_OWNER,
 									  &owner_mask_on,
 									  &owner_mask_off);
 
-	valid_group_perms = LLSelectMgr::getInstance()->selectGetPerm(PERM_GROUP,
+	BOOL valid_group_perms = LLSelectMgr::getInstance()->selectGetPerm(PERM_GROUP,
 									  &group_mask_on,
 									  &group_mask_off);
 	
-	valid_everyone_perms = LLSelectMgr::getInstance()->selectGetPerm(PERM_EVERYONE,
+	BOOL valid_everyone_perms = LLSelectMgr::getInstance()->selectGetPerm(PERM_EVERYONE,
 									  &everyone_mask_on,
 									  &everyone_mask_off);
 	
-	valid_next_perms = LLSelectMgr::getInstance()->selectGetPerm(PERM_NEXT_OWNER,
+	BOOL valid_next_perms = LLSelectMgr::getInstance()->selectGetPerm(PERM_NEXT_OWNER,
 									  &next_owner_mask_on,
 									  &next_owner_mask_off);
 
 	
 	if( gSavedSettings.getBOOL("DebugPermissions") )
 	{
+		childSetVisible("perm_modify", false);
 		std::string perm_string;
 		if (valid_base_perms)
 		{
 			perm_string = "B: ";
 			perm_string += mask_to_string(base_mask_on);
+			if (U32 diff_mask = base_mask_on ^ owner_mask_on) // When different, show the user's potential permissions lowercase.
+			{
+				if (diff_mask & PERM_MOVE)
+					LLStringUtil::replaceChar(perm_string, 'V', 'v');
+				if (diff_mask & PERM_MODIFY)
+					LLStringUtil::replaceChar(perm_string, 'M', 'm');
+				if (diff_mask & PERM_COPY)
+					LLStringUtil::replaceChar(perm_string, 'C', 'c');
+				if (diff_mask & PERM_TRANSFER)
+					LLStringUtil::replaceChar(perm_string, 'T', 't');
+			}
 			childSetText("B:",perm_string);
 			childSetVisible("B:",true);
 			
@@ -639,20 +646,17 @@ void LLPanelPermissions::refresh()
 		}
 		perm_string = "F: ";
 		U32 flag_mask = 0x0;
-		if (objectp->permMove())
-			flag_mask |= PERM_MOVE;
-		if (objectp->permModify())
-			flag_mask |= PERM_MODIFY;
-		if (objectp->permCopy())
-			flag_mask |= PERM_COPY;
-		if (objectp->permTransfer())
-			flag_mask |= PERM_TRANSFER;
+		if (objectp->permMove())		flag_mask |= PERM_MOVE;
+		if (objectp->permModify())		flag_mask |= PERM_MODIFY;
+		if (objectp->permCopy())		flag_mask |= PERM_COPY;
+		if (objectp->permTransfer())	flag_mask |= PERM_TRANSFER;
 		perm_string += mask_to_string(flag_mask);
 		childSetText("F:",perm_string);
 		childSetVisible("F:",true);
 	}
 	else
 	{
+		childSetVisible("perm_modify", true);
 		childSetVisible("B:",false);
 		childSetVisible("O:",false);
 		childSetVisible("G:",false);
@@ -930,12 +934,6 @@ void LLPanelPermissions::onClickOwner(void *data)
 //		LLFloaterAvatarInfo::showFromObject(self->mOwnerID);
 	}
 }
-
-
-
-
-
-
 
 void LLPanelPermissions::onClickLastOwner(void *data)
 {
