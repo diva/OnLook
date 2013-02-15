@@ -537,7 +537,7 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 	
 	childSetValue("CheckEveryoneCopy",LLSD((BOOL)(everyone_mask & PERM_COPY)));
 	childSetValue("CheckEveryoneMove",LLSD((BOOL)(everyone_mask & PERM_MOVE)));
-	childSetValue("CheckExport", everyone_mask & PERM_EXPORT);
+	childSetValue("CheckExport", (bool)(everyone_mask & PERM_EXPORT));
 
 	///////////////
 	// SALE INFO //

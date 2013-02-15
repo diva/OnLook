@@ -1093,7 +1093,7 @@ void LLPanelPermissions::onCommitEveryoneCopy(LLUICtrl *ctrl, void *data)
 
 void LLPanelPermissions::onCommitExport()
 {
-	perm.setEveryoneBits(gAgent.getID(), gAgent.getGroupID(), childGetValue("checkbox allow export"), PERM_EXPORT);
+	LLSelectMgr::getInstance()->selectionSetObjectPermissions(PERM_EVERYONE, childGetValue("checkbox allow export"), PERM_EXPORT);
 }
 
 // static
