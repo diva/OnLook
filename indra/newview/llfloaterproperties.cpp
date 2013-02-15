@@ -197,6 +197,7 @@ LLFloaterProperties::LLFloaterProperties(const std::string& name, const LLRect& 
 	// everyone permissions
 	childSetCommitCallback("CheckEveryoneCopy",&onCommitPermissions, this);
 	childSetCommitCallback("CheckEveryoneMove",&onCommitPermissions, this);
+	childSetCommitCallback("CheckExport", &onCommitPermissions, this);
 	// next owner permissions
 	childSetCommitCallback("CheckNextOwnerModify",&onCommitPermissions, this);
 	childSetCommitCallback("CheckNextOwnerCopy",&onCommitPermissions, this);
@@ -251,11 +252,13 @@ void LLFloaterProperties::refresh()
 			"CheckOwnerModify",
 			"CheckOwnerCopy",
 			"CheckOwnerTransfer",
+			"CheckOwnerExport",
 			"CheckGroupCopy",
 			"CheckGroupMod",
 			"CheckGroupMove",
 			"CheckEveryoneCopy",
 			"CheckEveryoneMove",
+			"CheckExport",
 			"CheckNextOwnerModify",
 			"CheckNextOwnerCopy",
 			"CheckNextOwnerTransfer",
@@ -436,6 +439,8 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 	childSetValue("CheckOwnerCopy",LLSD((BOOL)(owner_mask & PERM_COPY)));
 	childSetEnabled("CheckOwnerTransfer",FALSE);
 	childSetValue("CheckOwnerTransfer",LLSD((BOOL)(owner_mask & PERM_TRANSFER)));
+	childSetEnabled("CheckOwnerExport",false);
+//	childSetValue("CheckOwnerExport", (bool)(owner_mask & PERM_EXPORT));
 
 	///////////////////////
 	// DEBUG PERMISSIONS //
@@ -519,6 +524,7 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 		childSetEnabled("CheckEveryoneCopy",false);
 		childSetEnabled("CheckEveryoneMove",false);
 	}
+	childSetEnabled("CheckExport", gAgent.getID() == item->getCreatorUUID());
 
 	// Set values.
 	BOOL is_group_copy = (group_mask & PERM_COPY) ? TRUE : FALSE;
@@ -531,6 +537,7 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 	
 	childSetValue("CheckEveryoneCopy",LLSD((BOOL)(everyone_mask & PERM_COPY)));
 	childSetValue("CheckEveryoneMove",LLSD((BOOL)(everyone_mask & PERM_MOVE)));
+	//childSetValue("CheckExport", everyone_mask & PERM_EXPORT);
 
 	///////////////
 	// SALE INFO //
@@ -749,6 +756,11 @@ void LLFloaterProperties::onCommitPermissions(LLUICtrl* ctrl, void* data)
 	{
 		perm.setEveryoneBits(gAgent.getID(), gAgent.getGroupID(),
 						 CheckEveryoneCopy->get(), PERM_COPY);
+	}
+	LLCheckBoxCtrl* CheckExport = self->getChild<LLCheckBoxCtrl>("CheckExport");
+	if(CheckExport)
+	{
+//		perm.setEveryoneBits(gAgent.getID(), gAgent.getGroupID(), CheckExport->get(), PERM_EXPORT);
 	}
 
 	LLCheckBoxCtrl* CheckNextOwnerModify = self->getChild<LLCheckBoxCtrl>("CheckNextOwnerModify");

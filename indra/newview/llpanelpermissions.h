@@ -86,6 +86,7 @@ protected:
 	static void onCommitEveryoneMove(LLUICtrl *ctrl, void *data);
 	static void onCommitEveryoneCopy(LLUICtrl *ctrl, void *data);
 	//static void onCommitEveryoneModify(LLUICtrl *ctrl, void *data);
+	void onCommitExport();
 
 	static void onCommitNextOwnerModify(LLUICtrl* ctrl, void* data);
 	static void onCommitNextOwnerCopy(LLUICtrl* ctrl, void* data);

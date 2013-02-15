@@ -112,6 +112,8 @@ BOOL LLPanelPermissions::postBuild()
 
 	childSetCommitCallback("checkbox allow everyone copy",LLPanelPermissions::onCommitEveryoneCopy,this);
 
+	getChild<LLUICtrl>("checkbox allow export")->setCommitCallback(boost::bind(&LLPanelPermissions::onCommitExport, this));
+
 	childSetCommitCallback("checkbox for sale",LLPanelPermissions::onCommitSaleInfo,this);
 
 	childSetCommitCallback("Edit Cost",LLPanelPermissions::onCommitSaleInfo,this);
@@ -223,10 +225,13 @@ void LLPanelPermissions::refresh()
 		childSetEnabled("checkbox share with group",false);
 		childSetEnabled("button deed",false);
 
+		childSetEnabled("text anyone can", false);
 		childSetValue("checkbox allow everyone move",FALSE);
 		childSetEnabled("checkbox allow everyone move",false);
 		childSetValue("checkbox allow everyone copy",FALSE);
 		childSetEnabled("checkbox allow everyone copy",false);
+		childSetValue("checkbox allow export", false);
+		childSetEnabled("checkbox allow export", false);
 
 		//Next owner can:
 		childSetEnabled("Next owner can:",false);
@@ -620,6 +625,8 @@ void LLPanelPermissions::refresh()
 					LLStringUtil::replaceChar(perm_string, 'C', 'c');
 				if (diff_mask & PERM_TRANSFER)
 					LLStringUtil::replaceChar(perm_string, 'T', 't');
+/*				if (diff_mask & PERM_EXPORT)
+					LLStringUtil::replaceChar(perm_string, 'E', 'e');*/
 			}
 			childSetText("B:",perm_string);
 			childSetVisible("B:",true);
@@ -688,15 +695,18 @@ void LLPanelPermissions::refresh()
 	if (has_change_perm_ability)
 	{
 		childSetEnabled("checkbox share with group",true);
+		childSetEnabled("text anyone can", true);
 		childSetEnabled("checkbox allow everyone move",owner_mask_on & PERM_MOVE);
 		childSetEnabled("checkbox allow everyone copy",owner_mask_on & PERM_COPY && owner_mask_on & PERM_TRANSFER);
 	}
 	else
 	{
 		childSetEnabled("checkbox share with group", FALSE);
+		childSetEnabled("text anyone can", false);
 		childSetEnabled("checkbox allow everyone move", FALSE);
 		childSetEnabled("checkbox allow everyone copy", FALSE);
 	}
+	childSetEnabled("checkbox allow export", mCreatorID == gAgent.getID());
 
 	if (has_change_sale_ability && (owner_mask_on & PERM_TRANSFER))
 	{
@@ -778,6 +788,23 @@ void LLPanelPermissions::refresh()
 		{
 			childSetValue("checkbox allow everyone copy",TRUE);
 			childSetTentative("checkbox allow everyone copy",true);
+		}
+
+		// Export
+/*		if(everyone_mask_on & PERM_EXPORT)
+		{
+			childSetValue("checkbox allow export", true);
+			childSetTentative("checkbox allow export", false);
+		}
+		else if(everyone_mask_on & PERM_EXPORT)
+		{
+			childSetValue("checkbox allow export", false);
+			childSetTentative("checkbox allow export", false);
+		}
+		else*/
+		{
+			childSetValue("checkbox allow export", true);
+			childSetTentative("checkbox allow export", true);
 		}
 	}
 
@@ -1062,6 +1089,11 @@ void LLPanelPermissions::onCommitEveryoneMove(LLUICtrl *ctrl, void *data)
 void LLPanelPermissions::onCommitEveryoneCopy(LLUICtrl *ctrl, void *data)
 {
 	onCommitPerm(ctrl, data, PERM_EVERYONE, PERM_COPY);
+}
+
+void LLPanelPermissions::onCommitExport()
+{
+//	perm.setEveryoneBits(gAgent.getID(), gAgent.getGroupID(), childGetValue("checkbox allow export"), PERM_EXPORT);
 }
 
 // static
