@@ -440,7 +440,7 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 	childSetEnabled("CheckOwnerTransfer",FALSE);
 	childSetValue("CheckOwnerTransfer",LLSD((BOOL)(owner_mask & PERM_TRANSFER)));
 	childSetEnabled("CheckOwnerExport",false);
-//	childSetValue("CheckOwnerExport", (bool)(owner_mask & PERM_EXPORT));
+	childSetValue("CheckOwnerExport", (bool)(owner_mask & PERM_EXPORT));
 
 	///////////////////////
 	// DEBUG PERMISSIONS //
@@ -537,7 +537,7 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 	
 	childSetValue("CheckEveryoneCopy",LLSD((BOOL)(everyone_mask & PERM_COPY)));
 	childSetValue("CheckEveryoneMove",LLSD((BOOL)(everyone_mask & PERM_MOVE)));
-	//childSetValue("CheckExport", everyone_mask & PERM_EXPORT);
+	childSetValue("CheckExport", everyone_mask & PERM_EXPORT);
 
 	///////////////
 	// SALE INFO //
@@ -760,7 +760,7 @@ void LLFloaterProperties::onCommitPermissions(LLUICtrl* ctrl, void* data)
 	LLCheckBoxCtrl* CheckExport = self->getChild<LLCheckBoxCtrl>("CheckExport");
 	if(CheckExport)
 	{
-//		perm.setEveryoneBits(gAgent.getID(), gAgent.getGroupID(), CheckExport->get(), PERM_EXPORT);
+		perm.setEveryoneBits(gAgent.getID(), gAgent.getGroupID(), CheckExport->get(), PERM_EXPORT);
 	}
 
 	LLCheckBoxCtrl* CheckNextOwnerModify = self->getChild<LLCheckBoxCtrl>("CheckNextOwnerModify");

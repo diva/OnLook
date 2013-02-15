@@ -625,8 +625,8 @@ void LLPanelPermissions::refresh()
 					LLStringUtil::replaceChar(perm_string, 'C', 'c');
 				if (diff_mask & PERM_TRANSFER)
 					LLStringUtil::replaceChar(perm_string, 'T', 't');
-/*				if (diff_mask & PERM_EXPORT)
-					LLStringUtil::replaceChar(perm_string, 'E', 'e');*/
+				if (diff_mask & PERM_EXPORT)
+					LLStringUtil::replaceChar(perm_string, 'E', 'e');
 			}
 			childSetText("B:",perm_string);
 			childSetVisible("B:",true);
@@ -791,7 +791,7 @@ void LLPanelPermissions::refresh()
 		}
 
 		// Export
-/*		if(everyone_mask_on & PERM_EXPORT)
+		if(everyone_mask_on & PERM_EXPORT)
 		{
 			childSetValue("checkbox allow export", true);
 			childSetTentative("checkbox allow export", false);
@@ -801,7 +801,7 @@ void LLPanelPermissions::refresh()
 			childSetValue("checkbox allow export", false);
 			childSetTentative("checkbox allow export", false);
 		}
-		else*/
+		else
 		{
 			childSetValue("checkbox allow export", true);
 			childSetTentative("checkbox allow export", true);
@@ -1093,7 +1093,7 @@ void LLPanelPermissions::onCommitEveryoneCopy(LLUICtrl *ctrl, void *data)
 
 void LLPanelPermissions::onCommitExport()
 {
-//	perm.setEveryoneBits(gAgent.getID(), gAgent.getGroupID(), childGetValue("checkbox allow export"), PERM_EXPORT);
+	perm.setEveryoneBits(gAgent.getID(), gAgent.getGroupID(), childGetValue("checkbox allow export"), PERM_EXPORT);
 }
 
 // static
