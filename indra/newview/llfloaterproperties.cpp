@@ -524,7 +524,8 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 		childSetEnabled("CheckEveryoneCopy",false);
 		childSetEnabled("CheckEveryoneMove",false);
 	}
-	childSetEnabled("CheckExport", gAgent.getID() == item->getCreatorUUID());
+	childSetEnabled("CheckExport", /*simSupportsExport() &&*/ item->getType() != LLAssetType::AT_OBJECT && gAgent.getID() == item->getCreatorUUID() //TODO: Implement Simulator Feature for Export.
+									&& !(base_mask & PERM_EXPORT && owner_mask & PERM_EXPORT && next_owner_mask & PERM_ITEM_UNRESTRICTED));
 
 	// Set values.
 	BOOL is_group_copy = (group_mask & PERM_COPY) ? TRUE : FALSE;
@@ -552,10 +553,11 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 		childSetEnabled("SaleLabel",is_complete);
 		childSetEnabled("CheckPurchase",is_complete);
 
-		childSetEnabled("NextOwnerLabel",TRUE);
-		childSetEnabled("CheckNextOwnerModify",base_mask & PERM_MODIFY);
-		childSetEnabled("CheckNextOwnerCopy",base_mask & PERM_COPY);
-		childSetEnabled("CheckNextOwnerTransfer",next_owner_mask & PERM_COPY);
+		bool no_export = !(everyone_mask & PERM_EXPORT); // Next owner perms can't be changed if set
+		childSetEnabled("NextOwnerLabel", no_export);
+		childSetEnabled("CheckNextOwnerModify", no_export && base_mask & PERM_MODIFY);
+		childSetEnabled("CheckNextOwnerCopy", no_export && base_mask & PERM_COPY);
+		childSetEnabled("CheckNextOwnerTransfer", no_export && next_owner_mask & PERM_COPY);
 
 		childSetEnabled("RadioSaleType",is_complete && is_for_sale);
 		childSetEnabled("TextPrice",is_complete && is_for_sale);

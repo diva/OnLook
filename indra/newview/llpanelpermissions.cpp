@@ -706,7 +706,53 @@ void LLPanelPermissions::refresh()
 		childSetEnabled("checkbox allow everyone move", FALSE);
 		childSetEnabled("checkbox allow everyone copy", FALSE);
 	}
-	childSetEnabled("checkbox allow export", mCreatorID == gAgent.getID());
+
+	// Is this user allowed to toggle export on this object?
+	{
+		bool can_export = self_owned && mCreatorID == mOwnerID;
+		if (can_export)
+		{
+			if (can_export = (base_mask_on & PERM_EXPORT && owner_mask_on & PERM_EXPORT && everyone_mask_on & PERM_ITEM_UNRESTRICTED)) //Base & Owner must have EXPORT, Everyone must be UNRESTRICTED
+			{
+				//if (can_export = simSupportsExport()) //TODO: Implement Simulator Feature for Export.
+				{
+					LLInventoryObject::object_list_t objects;
+					objectp->getInventoryContents(objects);
+					for (LLInventoryObject::object_list_t::iterator i = objects.begin(); i != objects.end(); ++i) //The object's inventory must have EXPORT.
+					{
+						LLViewerInventoryItem* item = static_cast<LLViewerInventoryItem*>(i->get()); //getInventoryContents() filters out categories, static_cast.
+						//if (item->getCreatorUUID() == gAgent.getID()) continue; //TODO: Find out if we can bypass the perms check if the creator is the agent.
+						const LLPermissions& perm = item->getPermissions();
+						if (!(perm.getMaskBase() & PERM_EXPORT && perm.getMaskOwner() & PERM_EXPORT && perm.getMaskEveryone() & PERM_EXPORT))
+						{
+							can_export = false;
+							break;
+						}
+					}
+
+					/*if (can_export) // Can the textures be exported?
+					{
+						//TODO: iterate through faces... I can't quite figure this out, so I've left in some placeholders.
+						LLTexture::texture_list_t textures = objectp->getTextures(); //NOTE: Fake code
+						for(LLTexture::texture_list_t::iterator i = textures.begin(); i != textures.end(); ++i) //NOTE: Fake code
+						{
+							LLTexture* texture = i->get(); //NOTE: Fake code
+							//TODO: Do they were they uploaded by the user?
+							if (texture->getCreatorID == gAgent.getID()) continue; //NOTE: Fake code
+							//TODO: Or else have they not PERM_EXPORT?
+							const LLPermissions& perm = texture->getPermissions(); //NOTE: Fake code
+							if (!(perm.getMaskBase & PERM_EXPORT))
+							{
+								can_export = false;
+								break;
+							}
+						}
+					}*/
+				}
+			}
+		}
+		childSetEnabled("checkbox allow export", can_export);
+	}
 
 	if (has_change_sale_ability && (owner_mask_on & PERM_TRANSFER))
 	{
@@ -716,10 +762,11 @@ void LLPanelPermissions::refresh()
 		childSetTentative("checkbox for sale", is_for_sale_mixed);
 		childSetEnabled("sale type",num_for_sale && can_transfer && !is_sale_price_mixed);
 
-		childSetEnabled("Next owner can:", TRUE);
-		childSetEnabled("checkbox next owner can modify",base_mask_on & PERM_MODIFY);
-		childSetEnabled("checkbox next owner can copy",base_mask_on & PERM_COPY);
-		childSetEnabled("checkbox next owner can transfer",next_owner_mask_on & PERM_COPY);
+		bool no_export = everyone_mask_off & PERM_EXPORT; // Next owner perms can't be changed if set
+		childSetEnabled("Next owner can:", no_export);
+		childSetEnabled("checkbox next owner can modify", no_export && base_mask_on & PERM_MODIFY);
+		childSetEnabled("checkbox next owner can copy", no_export && base_mask_on & PERM_COPY);
+		childSetEnabled("checkbox next owner can transfer", no_export && next_owner_mask_on & PERM_COPY);
 	}
 	else 
 	{
