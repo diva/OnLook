@@ -1082,9 +1082,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>be0a9c92b5ab7d6761574b61685d6300</string>
+            <string>272bd861a7ff9f77e6908064cf52e4cf</string>
             <key>url</key>
-            <uri>https://bitbucket.org/Siana/singularityviewer/downloads/pcre-7.6-linux-x86_64-20120715.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/pcre-7.6-linux64-20130216.tar.bz2</uri>
           </map>
         </map>
       </map>
