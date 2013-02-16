@@ -709,46 +709,41 @@ void LLPanelPermissions::refresh()
 
 	// Is this user allowed to toggle export on this object?
 	{
-		bool can_export = self_owned && mCreatorID == mOwnerID;
+		bool can_export = self_owned && mCreatorID == mOwnerID/* && simSupportsExport()*/; //TODO: Implement Simulator Feature for Export.
 		if (can_export)
 		{
 			if (can_export = (base_mask_on & PERM_EXPORT && owner_mask_on & PERM_EXPORT && everyone_mask_on & PERM_ITEM_UNRESTRICTED)) //Base & Owner must have EXPORT, Everyone must be UNRESTRICTED
-			{
-				//if (can_export = simSupportsExport()) //TODO: Implement Simulator Feature for Export.
 				{
 					LLInventoryObject::object_list_t objects;
 					objectp->getInventoryContents(objects);
 					for (LLInventoryObject::object_list_t::iterator i = objects.begin(); i != objects.end(); ++i) //The object's inventory must have EXPORT.
 					{
 						LLViewerInventoryItem* item = static_cast<LLViewerInventoryItem*>(i->get()); //getInventoryContents() filters out categories, static_cast.
-						//if (item->getCreatorUUID() == gAgent.getID()) continue; //TODO: Find out if we can bypass the perms check if the creator is the agent.
 						const LLPermissions& perm = item->getPermissions();
-						if (!(perm.getMaskBase() & PERM_EXPORT && perm.getMaskOwner() & PERM_EXPORT && perm.getMaskEveryone() & PERM_EXPORT))
+						if (!(perm.getMaskBase() & PERM_EXPORT && (perm.getMaskOwner() & PERM_EXPORT || perm.getMaskEveryone() & PERM_EXPORT)))
 						{
 							can_export = false;
 							break;
 						}
 					}
-
-					/*if (can_export) // Can the textures be exported?
-					{
-						//TODO: iterate through faces... I can't quite figure this out, so I've left in some placeholders.
-						LLTexture::texture_list_t textures = objectp->getTextures(); //NOTE: Fake code
-						for(LLTexture::texture_list_t::iterator i = textures.begin(); i != textures.end(); ++i) //NOTE: Fake code
-						{
-							LLTexture* texture = i->get(); //NOTE: Fake code
-							//TODO: Do they were they uploaded by the user?
-							if (texture->getCreatorID == gAgent.getID()) continue; //NOTE: Fake code
-							//TODO: Or else have they not PERM_EXPORT?
-							const LLPermissions& perm = texture->getPermissions(); //NOTE: Fake code
-							if (!(perm.getMaskBase & PERM_EXPORT))
+					if (can_export)
+						for (U8 i = 0; i < objectp->getNumTEs(); ++i) // Can the textures be exported?
+							if (LLTextureEntry* texture = objectp->getTE(i))
 							{
-								can_export = false;
-								break;
+								const LLUUID id = texture->getID();
+								if (id.isNull()) continue; // Don't permission-check null textures
+								else if (LLViewerInventoryItem* item = gInventory.getItem(id))
+								{
+									const LLPermissions& perm = item->getPermissions();
+									can_export = perm.getMaskBase() & PERM_EXPORT && (perm.getMaskOwner() & PERM_EXPORT || perm.getMaskEveryone() & PERM_EXPORT);
+									if (!can_export) break;
+								}
+								else // Texture not in inventory
+								{
+									can_export = false;
+									break;
+								}
 							}
-						}
-					}*/
-				}
 			}
 		}
 		childSetEnabled("checkbox allow export", can_export);
