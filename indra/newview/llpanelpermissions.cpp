@@ -712,7 +712,7 @@ void LLPanelPermissions::refresh()
 		bool can_export = self_owned && mCreatorID == mOwnerID/* && simSupportsExport()*/; //TODO: Implement Simulator Feature for Export.
 		if (can_export)
 		{
-			if (can_export = (base_mask_on & PERM_EXPORT && owner_mask_on & PERM_EXPORT && everyone_mask_on & PERM_ITEM_UNRESTRICTED)) //Base & Owner must have EXPORT, Everyone must be UNRESTRICTED
+			if (can_export = (base_mask_on & PERM_EXPORT && owner_mask_on & PERM_EXPORT && (next_owner_mask_on & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED)) //Base and Owner must have EXPORT, Next Owner must be UNRESTRICTED
 			{
 				LLInventoryObject::object_list_t objects;
 				objectp->getInventoryContents(objects);
@@ -720,7 +720,7 @@ void LLPanelPermissions::refresh()
 				{
 					LLViewerInventoryItem* item = static_cast<LLViewerInventoryItem*>(i->get()); //getInventoryContents() filters out categories, static_cast.
 					const LLPermissions& perm = item->getPermissions();
-					if (!(perm.getMaskBase() & PERM_EXPORT && (perm.getMaskOwner() & PERM_EXPORT || perm.getMaskEveryone() & PERM_EXPORT)))
+					if (!(perm.getMaskBase() & PERM_EXPORT && perm.getMaskEveryone() & PERM_EXPORT))
 					{
 						can_export = false;
 						break;
