@@ -1075,16 +1075,16 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>3372b361e916df8981cb3bd7393b0353</string>
+            <string>a561ed0ef937f3086ba3f84f2e59b1b2</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/pcre-7.6-linux-20110504.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/pcre-7.6-linux-20130216.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>be0a9c92b5ab7d6761574b61685d6300</string>
+            <string>272bd861a7ff9f77e6908064cf52e4cf</string>
             <key>url</key>
-            <uri>https://bitbucket.org/Siana/singularityviewer/downloads/pcre-7.6-linux-x86_64-20120715.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/pcre-7.6-linux64-20130216.tar.bz2</uri>
           </map>
         </map>
       </map>
