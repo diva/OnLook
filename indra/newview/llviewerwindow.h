@@ -313,7 +313,7 @@ public:
 	BOOL			saveSnapshot(const std::string&  filename, S32 image_width, S32 image_height, BOOL show_ui = TRUE, BOOL do_rebuild = FALSE, ESnapshotType type = SNAPSHOT_TYPE_COLOR);
 	bool			rawRawSnapshot(LLImageRaw* raw, S32 image_width, S32 image_height, F32 aspect,
 								BOOL show_ui = TRUE, BOOL do_rebuild = FALSE, ESnapshotType type = SNAPSHOT_TYPE_COLOR,
-								S32 max_size = MAX_SNAPSHOT_IMAGE_SIZE, F32 supersample = 1.f);
+								S32 max_size = MAX_SNAPSHOT_IMAGE_SIZE, F32 supersample = 1.f, bool uncrop = false);
 	bool			rawSnapshot(LLImageRaw* raw, S32 image_width, S32 image_height, F32 aspect,
 								BOOL show_ui = TRUE, BOOL do_rebuild = FALSE, ESnapshotType type = SNAPSHOT_TYPE_COLOR,
 								S32 max_size = MAX_SNAPSHOT_IMAGE_SIZE, F32 supersample = 1.f);

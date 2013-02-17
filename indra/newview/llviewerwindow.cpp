@@ -4309,7 +4309,7 @@ BOOL LLViewerWindow::thumbnailSnapshot(LLImageRaw *raw, S32 preview_width, S32 p
 // the aspect of the snapshot is unequal to the aspect of requested image.
 bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 	S32 image_width, S32 image_height, F32 snapshot_aspect, BOOL show_ui,
-	BOOL do_rebuild, ESnapshotType type, S32 max_size, F32 supersample)
+	BOOL do_rebuild, ESnapshotType type, S32 max_size, F32 supersample, bool uncrop)
 {
 	if (!raw)
 	{
@@ -4402,14 +4402,25 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 	// the final scaling). Thus, if ratio < 1 then buffer equals image', otherwise it equals snapshot.
 	// scale_factor is the ratio buffer/snapshot, and is initiallly equal to the ratio between buffer
 	// and snapshot (which have the same aspect).
+	S32 unscaled_image_buffer_x = snapshot_width;
+	S32 unscaled_image_buffer_y = snapshot_height;
+	if (uncrop)	// Cropping will happen later.
+	{
+	  // Stretch the requested snapshot to fill the entire (scaled) window, so that any aspect ratio,
+	  // that requires cropping either horizontally or vertically, will always work.
+	  unscaled_image_buffer_x = window_width;
+	  unscaled_image_buffer_y = window_height;
+	}
 	for(scale_factor = llmax(1.0f, 1.0f / ratio);;												// Initial attempt.
 	// However, if the buffer turns out to be too large, then clamp it to max_size.
 		scale_factor = llmin(max_size / snapshot_width, max_size / snapshot_height))	// Clamp
 	{
-		image_buffer_x = llround(snapshot_width * scale_factor);
-		image_buffer_y = llround(snapshot_height * scale_factor);
-		if (llmax(image_buffer_x, image_buffer_y) > max_size &&		// Boundary check to avoid memory overflow.
-			internal_scale <= 1.f)									// SHY_MOD: If supersampling... Don't care about max_size.
+		image_buffer_x = llround(unscaled_image_buffer_x * scale_factor);
+		image_buffer_y = llround(unscaled_image_buffer_y * scale_factor);
+		S32 image_size_x = llround(snapshot_width * scale_factor);
+		S32 image_size_y = llround(snapshot_width * scale_factor);
+		if (llmax(image_size_x, image_size_y) > max_size &&		// Boundary check to avoid memory overflow.
+			internal_scale <= 1.f)								// SHY_MOD: If supersampling... Don't care about max_size.
 		{
 			// Too big, clamp.
 			continue;
@@ -4418,8 +4429,8 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 		break;
 	}
 	// Center the buffer.
-	buffer_x_offset = llfloor(((window_width - snapshot_width) * scale_factor) / 2.f);
-	buffer_y_offset = llfloor(((window_height - snapshot_height) * scale_factor) / 2.f);
+	buffer_x_offset = llfloor(((window_width - unscaled_image_buffer_x) * scale_factor) / 2.f);
+	buffer_y_offset = llfloor(((window_height - unscaled_image_buffer_y) * scale_factor) / 2.f);
 	Dout(dc::snapshot, "rawRawSnapshot(" << image_width << ", " << image_height << ", " << snapshot_aspect << "): image_buffer_x = " << image_buffer_x << "; image_buffer_y = " << image_buffer_y);
 
 	bool error = !(image_buffer_x > 0 && image_buffer_y > 0);
