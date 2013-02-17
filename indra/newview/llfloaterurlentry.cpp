@@ -103,27 +103,6 @@ LLFloaterURLEntry::LLFloaterURLEntry(LLHandle<LLPanel> parent)
 	mPanelLandMediaHandle(parent)
 {
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_url_entry.xml");
-
-	mMediaURLEdit = getChild<LLComboBox>("media_entry");
-
-	// Cancel button
-	childSetAction("cancel_btn", onBtnCancel, this);
-
-	// Cancel button
-	childSetAction("clear_btn", onBtnClear, this);
-
-	// clear media list button
-	LLSD parcel_history = LLURLHistory::getURLHistory("parcel");
-	bool enable_clear_button = parcel_history.size() > 0 ? true : false;
-	childSetEnabled( "clear_btn", enable_clear_button );
-
-	// OK button
-	childSetAction("ok_btn", onBtnOK, this);
-
-	setDefaultBtn("ok_btn");
-	buildURLHistory();
-
-	sInstance = this;
 }
 
 //-----------------------------------------------------------------------------
@@ -134,6 +113,28 @@ LLFloaterURLEntry::~LLFloaterURLEntry()
 	sInstance = NULL;
 }
 
+BOOL LLFloaterURLEntry::postBuild()
+{
+	mMediaURLEdit = getChild<LLComboBox>("media_entry");
+
+	// Cancel button
+	childSetAction("cancel_btn", onBtnCancel, this);
+
+	// Cancel button
+	childSetAction("clear_btn", onBtnClear, this);
+	// clear media list button
+	LLSD parcel_history = LLURLHistory::getURLHistory("parcel");
+	bool enable_clear_button = parcel_history.size() > 0 ? true : false;
+	getChildView("clear_btn")->setEnabled(enable_clear_button );
+
+	// OK button
+	childSetAction("ok_btn", onBtnOK, this);
+
+	setDefaultBtn("ok_btn");
+	buildURLHistory();
+
+	return TRUE;
+}
 void LLFloaterURLEntry::buildURLHistory()
 {
 	LLCtrlListInterface* url_list = childGetListInterface("media_entry");
@@ -157,7 +158,7 @@ void LLFloaterURLEntry::buildURLHistory()
 
 void LLFloaterURLEntry::headerFetchComplete(U32 status, const std::string& mime_type)
 {
-	LLPanelLandMedia* panel_media = (LLPanelLandMedia*)mPanelLandMediaHandle.get();
+	LLPanelLandMedia* panel_media = dynamic_cast<LLPanelLandMedia*>(mPanelLandMediaHandle.get());
 	if (panel_media)
 	{
 		// status is ignored for now -- error = "none/none"
@@ -166,21 +167,18 @@ void LLFloaterURLEntry::headerFetchComplete(U32 status, const std::string& mime_
 	}
 	// Decrement the cursor
 	getWindow()->decBusyCount();
-	childSetVisible("loading_label", false);
+	getChildView("loading_label")->setVisible( false);
 	close();
 }
 
 // static
 LLHandle<LLFloater> LLFloaterURLEntry::show(LLHandle<LLPanel> parent)
 {
-	if (sInstance)
-	{
-		sInstance->open();
-	}
-	else
+	if (!sInstance)
 	{
 		sInstance = new LLFloaterURLEntry(parent);
 	}
+	sInstance->open();
 	sInstance->updateFromLandMediaPanel();
 	return sInstance->getHandle();
 }
@@ -239,7 +237,8 @@ void LLFloaterURLEntry::onBtnOK( void* userdata )
 	}
 
 	// Discover the MIME type only for "http" scheme.
-	if(scheme == "http" || scheme == "https")
+	if(!media_url.empty() && 
+	   (scheme == "http" || scheme == "https"))
 	{
 		LLHTTPClient::getHeaderOnly( media_url,
 			new LLMediaTypeResponder(self->getHandle()));
@@ -250,13 +249,13 @@ void LLFloaterURLEntry::onBtnOK( void* userdata )
 	}
 
 	// Grey the buttons until we get the header response
-	self->childSetEnabled("ok_btn", false);
-	self->childSetEnabled("cancel_btn", false);
-	self->childSetEnabled("media_entry", false);
+	self->getChildView("ok_btn")->setEnabled(false);
+	self->getChildView("cancel_btn")->setEnabled(false);
+	self->getChildView("media_entry")->setEnabled(false);
 
 	// show progress bar here?
 	getWindow()->incBusyCount();
-	self->childSetVisible("loading_label", true);
+	self->getChildView("loading_label")->setVisible( true);
 }
 
 // static
@@ -298,7 +297,7 @@ bool LLFloaterURLEntry::callback_clear_url_list(const LLSD& notification, const 
 		LLURLHistory::clear("parcel");
 
 		// cleared the list so disable Clear button
-		childSetEnabled( "clear_btn", false );
+		getChildView("clear_btn")->setEnabled(false );
 	}
 	return false;
 }

@@ -106,7 +106,8 @@ BOOL LLFloaterJoystick::postBuild()
 	for (U32 i = 0; i < 6; i++)
 	{
 		axis.setArg("[NUM]", llformat("%d", i));
-		mAxisStats[i] = new LLStat(4);
+		std::string stat_name(llformat("Joystick axis %d", i));
+		mAxisStats[i] = new LLStat(stat_name,4);
 		mAxisStatsBar[i] = mAxisStatsView->addStat(axis, mAxisStats[i]);
 		mAxisStatsBar[i]->mMinBar = -range;
 		mAxisStatsBar[i]->mMaxBar = range;

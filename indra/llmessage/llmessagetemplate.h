@@ -364,7 +364,6 @@ public:
 	{
 		if (mHandlerFunc)
 		{
-            LLPerfBlock msg_cb_time("msg_cb", mName);
 			mHandlerFunc(msgsystem, mUserData);
 			return TRUE;
 		}

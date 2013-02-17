@@ -63,7 +63,7 @@ protected:
 	bool mAnnounceSnapshots;
 	bool mAnnounceStreamMetadata;
     //Tags\Colors
-    BOOL mAscentUseTag;
+    BOOL mAscentBroadcastTag;
     std::string mReportClientUUID;
     U32 mSelectedClient;
     BOOL mShowSelfClientTag;
