@@ -8732,7 +8732,7 @@ This should be as low as possible, but too low may break functionality</string>
     <key>LastSnapshotType</key>
     <map>
       <key>Comment</key>
-      <string>Select this as next type of snapshot to take (0 = postcard, 1 = texture, 2 = local image)</string>
+      <string>Select this as next type of snapshot to take (0 = feed, 1 = postcard, 2 = texture, 3 = local image)</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -14182,6 +14182,50 @@ This should be as low as possible, but too low may break functionality</string>
       <integer>1</integer>
       <key>Type</key>
       <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>SnapshotFeedKeepAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>When adjusting feed resolution keep its aspect ratio constant and equal to the target aspect.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>SnapshotPostcardKeepAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>When adjusting postcard resolution keep its aspect ratio constant and equal to the target aspect.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>SnapshotTextureKeepAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>When adjusting texture resolution keep its aspect ratio constant and equal to the target aspect.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>SnapshotLocalKeepAspect</key>
+    <map>
+      <key>Comment</key>
+      <string>When adjusting local resolution keep its aspect ratio constant and equal to the target aspect.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
     </map>

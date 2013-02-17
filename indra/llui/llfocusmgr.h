@@ -84,6 +84,7 @@ public:
 
 	// Keyboard Focus
 	void			setKeyboardFocus(LLFocusableElement* new_focus, BOOL lock = FALSE, BOOL keystrokes_only = FALSE);		// new_focus = NULL to release the focus.
+	void			restoreKeyboardFocus(LLFocusableElement* current_focus);
 	LLFocusableElement*		getKeyboardFocus() const { return mKeyboardFocus; }  
 	LLFocusableElement*		getLastKeyboardFocus() const { return mLastKeyboardFocus; }  
 	BOOL			childHasKeyboardFocus( const LLView* parent ) const;
@@ -103,7 +104,8 @@ public:
 
 	// If setKeyboardFocus(NULL) is called, and there is a non-NULL default
 	// keyboard focus view, focus goes there. JC
-	void			setDefaultKeyboardFocus(LLFocusableElement* default_focus) { mDefaultKeyboardFocus = default_focus; }
+	void			setDefaultKeyboardFocus(LLFocusableElement* default_focus) { mLastDefaultKeyboardFocus = mDefaultKeyboardFocus; mDefaultKeyboardFocus = default_focus; }
+	void			restoreDefaultKeyboardFocus(LLFocusableElement* current_default_focus);
 	LLFocusableElement*		getDefaultKeyboardFocus() const { return mDefaultKeyboardFocus; }
 
 	
@@ -132,6 +134,7 @@ private:
 	LLFocusableElement*	mKeyboardFocus;				// Keyboard events are preemptively routed to this object
 	LLFocusableElement*	mLastKeyboardFocus;			// who last had focus
 	LLFocusableElement*	mDefaultKeyboardFocus;
+	LLFocusableElement*	mLastDefaultKeyboardFocus;
 	BOOL				mKeystrokesOnly;
 	
 	// Top View

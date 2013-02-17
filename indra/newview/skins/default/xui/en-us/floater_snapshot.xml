@@ -53,16 +53,16 @@
 	<button bottom_delta="-22" follows="left|top" font="SansSerifSmall" halign="center"
 	     height="20" label="Advanced&gt;&gt;" left="10"
 	     mouse_opaque="true" name="more_btn" scale_image="TRUE"
-	     tool_tip="Advanced Options. Default uses current window size (500x375 for profile feed)." width="72" />
+	     tool_tip="Advanced Options. Default uses current window size ((cropped to) 4:3 for profile feed)." width="72" />
 	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" halign="center"
 	     height="20" label="&lt;&lt;Default" left_delta="0"
 	     mouse_opaque="true" name="less_btn" scale_image="TRUE"
-	     tool_tip="Advanced Options. Default uses current window size (500x375 for profile feed)." width="72" />
+	     tool_tip="Advanced Options. Default uses current window size ((cropped to) 4:3 for profile feed)." width="72" />
 	<slider bottom_delta="0" decimal_digits="0" follows="left|top" height="15"
 	     increment="1" initial_val="75" left="80"
 	     max_val="100" min_val="0" name="image_quality_slider" width="150" />
 	<text bottom_delta="-20" follows="top|left" height="15" left="10" name="type_label2" width="115">
-	Target size
+	Target Resolution
 	</text>
 	<combo_box bottom_delta="-22" follows="left|top" height="20" label="Resolution" left="10"
 	     name="feed_size_combo" width="125">
@@ -176,14 +176,16 @@
 		</combo_item>
 	</combo_box>
 	<spinner bottom_delta="-25" decimal_digits="0" follows="left|top" height="20"
-	     increment="32" label="Width" label_width="30" left="10" max_val="6016"
+	     increment="32" label="Width" label_width="30" left="14" max_val="6016"
 	     min_val="32" name="snapshot_width" width="95" allow_text_entry="false"/>
 	<spinner bottom_delta="0" decimal_digits="0" follows="left|top" height="20"
-	     increment="32" label="Height" label_width="35" left="110" max_val="6016"
+	     increment="32" label="Height" label_width="35" left="114" max_val="6016"
 	     min_val="32" name="snapshot_height" width="95" allow_text_entry="false"/>
-	<text bottom_delta="-18" follows="top|left" height="15" left="10" name="type_label3"
-	     width="115">
-		Target aspect ratio
+	<check_box bottom_delta="-14" follows="top|left" label="Keep aspect ratio"
+	     left="10" name="keep_aspect" tool_tip="When changing the resolution keep its aspect ratio the same. This also enforces this aspect ratio to be equal to the target aspect (as if the Aspect was set to Default): changing the target aspect will change the aspect of the resolution. Note: setting the resolution to non-Custom, or the Aspect to Default will reset this check box because they are not compatible." />
+	<text bottom_delta="-20" follows="top|left" height="15" left="10" name="type_label3"
+	     width="200">
+		 place holder, see targetAR / sourceAR
 	</text>
 	<combo_box bottom_delta="-22" follows="left|top" height="20" label="Aspect" left="10"
 	     name="feed_aspect_combo" width="115">
@@ -269,8 +271,8 @@
 	<spinner bottom_delta="0" decimal_digits="5" follows="left|top" height="20"
 	     increment="0.01" label="" left="130" max_val="32"
 	     min_val="0.03125" name="aspect_ratio" width="64" allow_text_entry="false"/>
-    <text bottom_delta="-10" height="20" left="196" name="aspect_one_label">:1</text>
-	<text bottom_delta="-20" follows="left|top" height="20" left="15"
+    <text bottom_delta="-4" height="20" left="196" name="aspect_one_label">:1</text>
+	<text bottom_delta="-26" follows="left|top" height="20" left="15"
 	     name="layer_type_label" width="50">
 		Capture:
 	</text>
@@ -298,6 +300,12 @@
              name="temp_check" tool_tip="Uploads the texture to the sim instead of the asset server, meaning it's free but only visible in the current sim and deleted when you leave the sim." />
 	<string name="unknown">
 		unknown
+	</string>
+	<string name="targetAR">
+		Target Aspect Ratio
+	</string>
+	<string name="sourceAR">
+		Resolution- AND Target- Aspect Ratio
 	</string>
 </floater>
  

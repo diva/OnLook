@@ -397,6 +397,43 @@ public:
 #endif
 };
 
+#if LL_DEBUG
+class LL_COMMON_API AINRLock
+{
+private:
+	int read_locked;
+	int write_locked;
+
+	mutable bool mAccessed;
+	mutable AIThreadID mTheadID;
+
+	void accessed(void) const
+	{
+	  if (!mAccessed)
+	  {
+		mAccessed = true;
+		mTheadID.reset();
+	  }
+	  else
+	  {
+		llassert_always(mTheadID.equals_current_thread());
+	  }
+	}
+
+public:
+	AINRLock(void) : read_locked(false), write_locked(false), mAccessed(false) { }
+
+	bool isLocked() const { return read_locked || write_locked; }
+
+	void rdlock(bool high_priority = false) { accessed(); ++read_locked; }
+	void rdunlock() { --read_locked; }
+	void wrlock() { llassert(!isLocked()); accessed(); ++write_locked; }
+	void wrunlock() { --write_locked; }
+	void wr2rdlock() { llassert(false); }
+	void rd2wrlock() { llassert(false); }
+};
+#endif
+
 //============================================================================
 
 void LLThread::lockData()

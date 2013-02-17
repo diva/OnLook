@@ -77,7 +77,8 @@ LLScrollableContainerView::LLScrollableContainerView( const std::string& name,
 	mReserveScrollCorner( FALSE ),
 	mMinAutoScrollRate( MIN_AUTO_SCROLL_RATE ),
 	mMaxAutoScrollRate( MAX_AUTO_SCROLL_RATE ),
-	mScrolledView( scrolled_view )
+	mScrolledView( scrolled_view ),
+	mPassBackToChildren(true)
 {
 	if( mScrolledView )
 	{
@@ -218,7 +219,7 @@ BOOL LLScrollableContainerView::handleScrollWheel( S32 x, S32 y, S32 clicks )
 {
 	// Give event to my child views - they may have scroll bars
 	// (Bad UI design, but technically possible.)
-	if (LLUICtrl::handleScrollWheel(x,y,clicks))
+	if (mPassBackToChildren && LLUICtrl::handleScrollWheel(x,y,clicks))
 		return TRUE;
 
 	// When the vertical scrollbar is visible, scroll wheel

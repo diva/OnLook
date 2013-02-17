@@ -152,7 +152,7 @@ void HTTPTimeout::upload_finished(void)
 //                                                                                             ^  ^   ^     ^    ^  ^ ^   ^
 //                                                                                             |  |   |     |    |  | |   |
 bool HTTPTimeout::data_received(size_t n/*,*/
-#ifdef CWDEBUG
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 	ASSERT_ONLY_COMMA(bool upload_error_status)
 #else
 	ASSERT_ONLY_COMMA(bool)
@@ -208,8 +208,9 @@ bool HTTPTimeout::lowspeed(size_t bytes)
   //
   // We do this as follows: we create low_speed_time (in seconds) buckets and fill them with the number
   // of bytes received during that second. We also keep track of the sum of all bytes received between 'now'
-  // and 'now - llmax(starttime, low_speed_time)'. Then if that period reaches at least low_speed_time
-  // seconds, and the transfer rate (sum / low_speed_time) is less than low_speed_limit, we abort.
+  // and 'llmax(starttime, now - low_speed_time)'. Then if that period reaches at least low_speed_time
+  // seconds (when now >= starttime + low_speed_time) and the transfer rate (sum / low_speed_time) is
+  // less than low_speed_limit, we abort.
 
   // When are we?
   S32 second = (sClockCount - mLowSpeedClock) * sClockWidth;
@@ -244,6 +245,7 @@ bool HTTPTimeout::lowspeed(size_t bytes)
   if (s == -1)
   {
 	mBucket = 0;				// It doesn't really matter where we start.
+	mOverwriteSecond = second + low_speed_time;
 	mTotalBytes = bytes;
 	mBuckets[mBucket] = bytes;
 	return false;
@@ -257,11 +259,17 @@ bool HTTPTimeout::lowspeed(size_t bytes)
 	  bucket = 0;
 	if (++s == second)
 	  break;
-    mTotalBytes -= mBuckets[bucket];
+	if (s >= mOverwriteSecond)
+	{
+	  mTotalBytes -= mBuckets[bucket];
+	}
 	mBuckets[bucket] = 0;
   }
   mBucket = bucket;
-  mTotalBytes -= mBuckets[mBucket];
+  if (s >= mOverwriteSecond)
+  {
+	mTotalBytes -= mBuckets[mBucket];
+  }
   mTotalBytes += bytes;
   mBuckets[mBucket] = bytes;
 
@@ -286,29 +294,40 @@ bool HTTPTimeout::lowspeed(size_t bytes)
   }
 
   // Calculate how long the data transfer may stall until we should timeout.
+  //
+  //                Assume 6 buckets:  0 1 2 3 4 5  (low_speed_time == 6)
+  // Seconds since start of transfer:  4 5 6 7 8 9  (mOverwriteSecond == 10)
+  //                  Current second:    ^
+  //                 Data in buckets:  A B w x y z  (mTotalBytes = A + B; w, x, y and z are undefined)
+  //
+  // Obviously, we need to stall at LEAST till second low_speed_time before we can "timeout".
+  // And possibly more if mTotalBytes is already >= mintotalbytes.
+  //
+  // The code below finds 'max_stall_time', so that when from now on the buckets
+  // are filled with 0, then at 'second + max_stall_time' we should time out,
+  // meaning that the resulting mTotalBytes after writing 0 at that second
+  // will be less than mintotalbytes and 'second + max_stall_time' >= low_speed_time.
+  //
   llassert_always(mintotalbytes > 0);
-  S32 max_stall_time = 0;
-  U32 dropped_bytes = 0;
-  while(1)
+  S32 max_stall_time = low_speed_time - second;	// Minimum value.
+  // Note that if max_stall_time <= 0 here, then second >= low_speed_time and
+  // thus mTotalBytes >= mintotalbytes because we didn't timeout already above.
+  if (mTotalBytes >= mintotalbytes)
   {
-	if (++bucket == low_speed_time)				// The next second the next bucket will be emptied.
-	  bucket = 0;
-	++max_stall_time;
-	dropped_bytes += mBuckets[bucket];
-	// Note how, when max_stall_time == low_speed_time, dropped_bytes has
-	// to be equal to mTotalBytes, the sum of all vector elements.
-	llassert(max_stall_time < low_speed_time || dropped_bytes == mTotalBytes);
-	// AIFIXME: This is a bug and should really be fixed instead of just be a warning.
-	if (!(max_stall_time < low_speed_time || dropped_bytes == mTotalBytes))
+	// In this case max_stall_time has a minimum value equal to when we will reach mOverwriteSecond,
+	// because that is the first second at which mTotalBytes will decrease.
+	max_stall_time = mOverwriteSecond - second - 1;
+	U32 total_bytes = mTotalBytes;
+	int bucket = -1;		// Must be one less as the start bucket, which corresponds with mOverwriteSecond (and thus with the current max_stall_time).
+	do
 	{
-	  llwarns << "ASSERT max_stall_time < low_speed_time || dropped_bytes == mTotalBytes failed... aborting. "
-		"max_stall_time = " << max_stall_time << "; low_speed_time = " << low_speed_time <<
-		"; dropped_bytes = " << dropped_bytes << "; mTotalBytes = " << mTotalBytes << llendl;
-	  break;
+	  ++max_stall_time;					// Next second (mOverwriteSecond upon entry of the loop).
+	  ++bucket;							// The next bucket (0 upon entry of the loop).
+	  // Once we reach the end of the vector total_bytes MUST have reached 0 exactly and we should have left this loop.
+	  llassert_always(bucket < low_speed_time);
+	  total_bytes -= mBuckets[bucket];	// Empty this bucket.
 	}
-	// And thus the following will certainly abort.
-	if (second + max_stall_time >= low_speed_time && mTotalBytes - dropped_bytes < mintotalbytes)
-	  break;
+	while(total_bytes >= 1);	// Use 1 here instead of mintotalbytes, to test that total_bytes indeed always reaches zero.
   }
   // If this function isn't called again within max_stall_time seconds, we stalled.
   mStalled = sClockCount + max_stall_time / sClockWidth;

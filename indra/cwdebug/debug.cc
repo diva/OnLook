@@ -562,8 +562,10 @@ namespace dc
 fake_channel const      warning(1, "WARNING     ");
 fake_channel const         curl(1, "CURL        ");
 fake_channel const       curlio(1, "CURLIO      ");
+fake_channel const       curltr(1, "CURLTR      ");
 fake_channel const statemachine(1, "STATEMACHINE");
 fake_channel const       notice(1, "NOTICE      ");
+fake_channel const     snapshot(0, "SNAPSHOT    ");
 
 } // namespace dc
 } // namespace debug
