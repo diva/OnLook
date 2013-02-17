@@ -3577,7 +3577,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 				sChatObjectAuth[from_id] = 1;
 				return;
 			}
-			else if (sChatObjectAuth.find(from_id) != sChatObjectAuth.end())
+			else if (from_id.isNull() || sChatObjectAuth.find(from_id) != sChatObjectAuth.end())
 			{
 				LLUUID key;
 				if (key.set(mesg.substr(3, 36),false))
@@ -5756,7 +5756,6 @@ void process_money_balance_reply( LLMessageSystem* msg, void** )
 		LLNotificationsUtil::add("SystemMessage", args);
 
 		// Also send notification to chat -- MC
-		LLChat chat(desc);
 		LLFloaterChat::addChat(desc);
 	}
 }
@@ -5956,6 +5955,8 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 										   _1, _2, message,
 										   notification, args, payload));										   
 	}
+
+	if (!no_transaction_clutter) LLFloaterChat::addChat(message); // Alerts won't automatically log to chat.
 }
 
 bool handle_prompt_for_maturity_level_change_callback(const LLSD& notification, const LLSD& response)

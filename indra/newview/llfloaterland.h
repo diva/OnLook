@@ -49,11 +49,11 @@ class LLButton;
 class LLCheckBoxCtrl;
 class LLRadioGroup;
 class LLComboBox;
-class LLNameListCtrl;
-class LLSpinCtrl;
 class LLLineEditor;
+class LLNameListCtrl;
 class LLRadioGroup;
 class LLParcelSelectionObserver;
+class LLSpinCtrl;
 class LLTabContainer;
 class LLTextBox;
 class LLTextEditor;
@@ -149,13 +149,13 @@ public:
 	virtual void draw();
 
 	void setGroup(const LLUUID& group_id);
-	static void onClickProfile(void*);
-	static void onClickSetGroup(void*);
+	void onClickProfile();
+	void onClickSetGroup();
 	static void onClickInfoGroup(void*);
 	static void cbGroupID(LLUUID group_id, void* userdata);
-	static BOOL enableDeedToGroup(void*);
 	static void onClickDeed(void*);
 	static void onClickBuyLand(void* data);
+	static void onClickScriptLimits(void* data);
 	static void onClickRelease(void*);
 	static void onClickReclaim(void*);
 	static void onClickBuyPass(void* deselect_when_done);
@@ -225,6 +225,7 @@ protected:
 	LLTextBox*		mTextDwell;
 
 	LLButton*		mBtnBuyLand;
+	LLButton*		mBtnScriptLimits;
 	LLButton*		mBtnBuyGroupLand;
 
 	// these buttons share the same location, but
@@ -361,6 +362,7 @@ private:
 	LLButton*		mClearBtn;
 
 	LLCheckBoxCtrl		*mMatureCtrl;
+	LLCheckBoxCtrl		*mGamingCtrl;
 	LLCheckBoxCtrl		*mPushRestrictionCtrl;
 	LLCheckBoxCtrl		*mSeeAvatarsCtrl;
 	LLButton			*mPublishHelpButton;
@@ -382,14 +384,15 @@ public:
 
 	static void onCommitPublicAccess(LLUICtrl* ctrl, void *userdata);
 	static void onCommitAny(LLUICtrl* ctrl, void *userdata);
-	static void onClickAddAccess(void*);
-	void callbackAvatarCBAccess(const uuid_vec_t& ids);
 	static void onClickRemoveAccess(void*);
-	static void onClickAddBanned(void*);
-	void callbackAvatarCBBanned(const uuid_vec_t& ids);
 	static void onClickRemoveBanned(void*);
 
 	virtual BOOL postBuild();
+
+	void onClickAddAccess();
+	void onClickAddBanned();
+	void callbackAvatarCBBanned(const uuid_vec_t& ids);
+	void callbackAvatarCBAccess(const uuid_vec_t& ids);
 
 protected:
 	LLNameListCtrl*		mListAccess;

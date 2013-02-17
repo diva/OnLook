@@ -71,6 +71,7 @@
 #include "lluistring.h"
 #include "llviewerobject.h" 
 #include "llviewerobjectlist.h"
+#include "llenvmanager.h"
 
 namespace 
 {
@@ -253,6 +254,9 @@ void LLMuteList::loadUserVolumes()
 	{
 		mUserVolumeSettings.insert(std::make_pair(LLUUID(iter->first), (F32)iter->second.asReal()));
 	}
+
+	LLEnvManagerNew::instance().setRegionChangeCallback(boost::bind(&LLMuteList::checkNewRegion, this));
+	checkNewRegion();
 }
 
 //-----------------------------------------------------------------------------
@@ -280,8 +284,18 @@ LLMuteList::~LLMuteList()
 	}
 }
 
+bool LLMuteList::isLinden(const LLUUID& id) const
+{
+	std::string name;
+	gCacheName->getFullName(id, name);
+	return isLinden(name);
+}
+
 BOOL LLMuteList::isLinden(const std::string& name) const
 {
+	if (mGodFullNames.find(name) != mGodFullNames.end()) return true;
+	if (mGodLastNames.empty()) return false;
+
 	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 	boost::char_separator<char> sep(" ");
 	tokenizer tokens(name, sep);
@@ -292,7 +306,7 @@ BOOL LLMuteList::isLinden(const std::string& name) const
 	if (token_iter == tokens.end()) return FALSE;
 	
 	std::string last_name = *token_iter;
-	return last_name == "Linden";
+	return mGodLastNames.find(last_name) != mGodLastNames.end();
 }
 
 static LLVOAvatar* find_avatar(const LLUUID& id)
@@ -542,7 +556,7 @@ void notify_automute_callback(const LLUUID& agent_id, const std::string& full_na
 
 	LLSD args;
 	args["NAME"] = full_name;
-    
+
 	LLNotificationPtr notif_ptr = LLNotifications::instance().add(notif_name, args);
 	if (notif_ptr)
 	{
@@ -876,5 +890,55 @@ void LLMuteList::notifyObservers()
 		observer->onChange();
 		// In case onChange() deleted an entry.
 		it = mObservers.upper_bound(observer);
+	}
+}
+
+void LLMuteList::checkNewRegion()
+{
+	LLViewerRegion* regionp = gAgent.getRegion();
+	if (!regionp) return;
+
+	if (regionp->getFeaturesReceived())
+	{
+		parseSimulatorFeatures();
+	}
+	else
+	{
+		regionp->setFeaturesReceivedCallback(boost::bind(&LLMuteList::parseSimulatorFeatures, this));
+	}
+}
+
+void LLMuteList::parseSimulatorFeatures()
+{
+	LLViewerRegion* regionp = gAgent.getRegion();
+	if (!regionp) return;
+
+	LLSD info;
+	regionp->getSimulatorFeatures(info);
+
+	mGodLastNames.clear();
+	mGodFullNames.clear();
+
+	if (info.has("god_names"))
+	{
+		if (info["god_names"].has("last_names"))
+		{
+			LLSD godNames = info["god_names"]["last_names"];
+
+			for (LLSD::array_iterator godNames_it = godNames.beginArray(); godNames_it != godNames.endArray(); godNames_it++)
+				mGodLastNames.insert((*godNames_it).asString());
+		}
+
+		if (info["god_names"].has("full_names"))
+		{
+			LLSD godNames = info["god_names"]["full_names"];
+
+			for (LLSD::array_iterator godNames_it = godNames.beginArray(); godNames_it != godNames.endArray(); godNames_it++)
+				mGodFullNames.insert((*godNames_it).asString());
+		}
+	}
+	else // Just use Linden
+	{
+		mGodLastNames.insert("Linden");
 	}
 }

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+ legacy_header_height="18"
+ can_close="true"
+ can_minimize="true"
+ can_resize="true"
+ min_height="260"
+ height="570"
+ help_topic="scriptlimits"
+ layout="topleft"
+ name="scriptlimits"
+ rect_control="FloaterScriptLimitsRect"
+ title="Script Information"
+ min_width="400"
+ width="480">
+    <tab_container
+     top="555"
+     follows="left|right|top|bottom"
+     layout="topleft"
+     left="1"
+     name="scriptlimits_panels"
+     right="-1"
+     tab_position="top"
+     bottom="0" />
+</floater>

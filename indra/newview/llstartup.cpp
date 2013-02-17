@@ -62,16 +62,16 @@
 #include "statemachine/aifilepicker.h"
 
 #include "llares.h"
+#include "llavatarnamecache.h"
+#include "lllandmark.h"
 #include "llcachename.h"
-#include "llviewercontrol.h"
 #include "lldir.h"
 #include "llerrorcontrol.h"
 #include "llfiltersd2xmlrpc.h"
 #include "llfocusmgr.h"
 #include "llhttpsender.h"
-#include "imageids.h"
 #include "llimageworker.h"
-#include "lllandmark.h"
+
 #include "llloginflags.h"
 #include "llmd5.h"
 #include "llmemorystream.h"
@@ -87,8 +87,10 @@
 #include "llstring.h"
 #include "lluserrelations.h"
 #include "sgversion.h"
+#include "llviewercontrol.h"
 #include "llvfs.h"
 #include "llxorcipher.h"	// saved password, MAC address
+#include "imageids.h"
 #include "message.h"
 #include "v3math.h"
 
@@ -144,23 +146,24 @@
 #include "llpanelevent.h"
 #include "llpanelclassified.h"
 #include "llpanelpick.h"
-#include "llpanelplace.h"
 #include "llpanelgrouplandmoney.h"
 #include "llpanelgroupnotices.h"
 #include "llpreview.h"
 #include "llpreviewscript.h"
+#include "llproxy.h"
 #include "llproductinforequest.h"
+#include "llremoteparcelrequest.h"
 #include "llsecondlifeurls.h"
 #include "llselectmgr.h"
 #include "llsky.h"
 #include "llsrv.h"
 #include "llstatview.h"
-#include "lltrans.h"
 #include "llstatusbar.h"		// sendMoneyBalanceRequest(), owns L$ balance
 #include "llsurface.h"
 #include "lltexturecache.h"
 #include "lltexturefetch.h"
 #include "lltoolmgr.h"
+#include "lltrans.h"
 #include "llui.h"
 #include "llurldispatcher.h"
 #include "llurlsimstring.h"
@@ -205,7 +208,6 @@
 #include "llwlparammanager.h"
 #include "llwaterparammanager.h"
 #include "llagentlanguage.h"
-#include "llproxy.h"
 #include "llwearable.h"
 #include "llinventorybridge.h"
 #include "llappearancemgr.h"
@@ -225,7 +227,6 @@
 
 #include "llpathfindingmanager.h"
 
-#include "llavatarnamecache.h"
 #include "lgghunspell_wrapper.h"
 
 // [RLVa:KB]
@@ -457,8 +458,8 @@ bool idle_startup()
 		// is using SOCKS for HTTP so we get the login
 		// screen and HTTP tables via SOCKS.
 		//-------------------------------------------------
-		LLStartUp::startLLProxy();		
-			
+		LLStartUp::startLLProxy();
+
 		gSavedSettings.setS32("LastFeatureVersion", LLFeatureManager::getInstance()->getVersion());
 
 		std::string xml_file = LLUI::locateSkin("xui_version.xml");
@@ -518,7 +519,7 @@ bool idle_startup()
 		
 		#if LL_WINDOWS
 			// On the windows dev builds, unpackaged, the message_template.msg 
-			// file will be located in 
+			// file will be located in:
 			// indra/build-vc**/newview/<config>/app_settings.
 			if (!found_template)
 			{
@@ -934,7 +935,6 @@ bool idle_startup()
 
 	if (STATE_LOGIN_CLEANUP == LLStartUp::getStartupState())
 	{
-	
 		// Post login screen, we should see if any settings have changed that may
 		// require us to either start/stop or change the socks proxy. As various communications
 		// past this point may require the proxy to be up.
@@ -3391,9 +3391,9 @@ void register_viewer_callbacks(LLMessageSystem* msg)
 
 	msg->setHandlerFunc("EventInfoReply", LLPanelEvent::processEventInfoReply);
 	msg->setHandlerFunc("PickInfoReply", &LLAvatarPropertiesProcessor::processPickInfoReply);
-	//msg->setHandlerFunc("ClassifiedInfoReply", LLPanelClassified::processClassifiedInfoReply);
+//	msg->setHandlerFunc("ClassifiedInfoReply", LLPanelClassified::processClassifiedInfoReply);
 	msg->setHandlerFunc("ClassifiedInfoReply", LLAvatarPropertiesProcessor::processClassifiedInfoReply);
-	msg->setHandlerFunc("ParcelInfoReply", LLPanelPlace::processParcelInfoReply);
+	msg->setHandlerFunc("ParcelInfoReply", LLRemoteParcelInfoProcessor::processParcelInfoReply);
 	msg->setHandlerFunc("ScriptDialog", process_script_dialog);
 	msg->setHandlerFunc("LoadURL", process_load_url);
 	msg->setHandlerFunc("ScriptTeleportRequest", process_script_teleport_request);

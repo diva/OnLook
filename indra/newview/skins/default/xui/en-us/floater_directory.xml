@@ -68,6 +68,7 @@
 			     font="SansSerifSmall" height="16" initial_value="false"
 			     label="Adult content" left="450" mouse_opaque="true"
 			     name="incadult" width="156" />
+            <check_box name="filter_gaming" label="Hide Gaming" control_name="FilterGamingSearchAll" follows="right|top" bottom="-58" left="550"/>
 	                <button bottom="-22" enabled="true" follows="right|top" font="SansSerif"
                              halign="center" height="18" label="?" label_selected="?" left="-25"
                              mouse_opaque="true" name="?" width="18" />
@@ -116,6 +117,7 @@
 			     font="SansSerifSmall" height="16" initial_value="false"
 			     label="Adult content" left="420" mouse_opaque="true"
 			     name="incadult" width="156" />
+            <check_box name="filter_gaming" label="Hide Gaming" control_name="FilterGamingClassifieds" follows="right|top" bottom="-22" left="520"/>
 			<combo_box allow_text_entry="false" bottom="-46" follows="right|top" height="18" left="230"
 			     max_chars="20" mouse_opaque="true" name="Category" width="158">
 				<combo_item name="AnyCategory" value="0">
@@ -281,6 +283,7 @@
 			     font="SansSerifSmall" height="16" initial_value="false"
 			     label="Adult content" left="420" mouse_opaque="true"
 			     name="incadult" width="156" />
+            <check_box name="filter_gaming" label="Hide Gaming" control_name="FilterGamingEvents" follows="right|top" bottom="-58" left="520"/>
 			<button bottom="-48" follows="right|top" font="SansSerif" halign="center" height="20"
 			     label="Search" label_selected="Search" left="121" mouse_opaque="true" name="Search"
 			     visible="true" width="95" />
@@ -379,6 +382,7 @@ To buy direct, visit the land and click on the place name in the title bar.
 			     font="SansSerifSmall" height="16" initial_value="false"
 			     label="Adult content" left="420" mouse_opaque="true"
 			     name="incadult" tab_group="9" width="156" />
+            <check_box name="filter_gaming" label="Hide Gaming" control_name="FilterGamingLand" follows="right|top" bottom="-58" left="520"/>
 			<combo_box allow_text_entry="false" bottom="-46" follows="left|top|right" height="18" left="282"
 			     max_chars="20" mouse_opaque="true" name="type" tab_group="6" width="128">
 				<combo_item name="AllTypes" value="All Types">
@@ -473,6 +477,7 @@ To buy direct, visit the land and click on the place name in the title bar.
 			     font="SansSerifSmall" height="16" initial_value="false"
 			     label="Adult content" left="420" mouse_opaque="true"
 			     name="incadult" width="156" />
+            <check_box name="filter_gaming" label="Hide Gaming" control_name="FilterGamingSims" follows="right|top" bottom="-58" left="520"/>
 			<combo_box allow_text_entry="false" bottom="-46" enabled="false" follows="right|top" height="18" left="230"
 			     max_chars="20" mouse_opaque="true" name="Category" width="128" visible="false">
 				<combo_item name="AnyCategory" value="any">

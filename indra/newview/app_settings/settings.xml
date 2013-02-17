@@ -5768,6 +5768,84 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <real>10.0</real>
     </map>
+    <key>FilterGamingSearchAll</key>
+    <map>
+      <key>Comment</key>
+      <string>Filter results flagged gaming in everything search</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>HideFromEditor</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>FilterGamingClassifieds</key>
+    <map>
+      <key>Comment</key>
+      <string>Filter results flagged gaming in classifieds search</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>HideFromEditor</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>FilterGamingEvents</key>
+    <map>
+      <key>Comment</key>
+      <string>Filter results flagged gaming in event search</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>HideFromEditor</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>FilterGamingGroups</key>
+    <map>
+      <key>Comment</key>
+      <string>Filter results flagged gaming in groups search</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>HideFromEditor</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>FilterGamingLand</key>
+    <map>
+      <key>Comment</key>
+      <string>Filter results flagged gaming in land search</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>HideFromEditor</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>FilterGamingSims</key>
+    <map>
+      <key>Comment</key>
+      <string>Filter results flagged gaming in sim search</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>HideFromEditor</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
     <key>FilterItemsPerFrame</key>
     <map>
       <key>Comment</key>
@@ -7069,6 +7147,22 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
         <integer>130</integer>
         <integer>450</integer>
+        <integer>0</integer>
+      </array>
+    </map>
+    <key>FloaterScriptLimitsRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for Script Limits window</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>500</integer>
+        <integer>480</integer>
         <integer>0</integer>
       </array>
     </map>
