@@ -1945,7 +1945,7 @@ void LLMenuGL::parseChildXML(LLXMLNodePtr child, LLView *parent, LLUICtrlFactory
 	{
 		// SUBMENU
 		LLMenuGL *submenu = (LLMenuGL*)LLMenuGL::fromXML(child, parent, factory);
-		appendMenu(submenu);
+		appendMenu(submenu, 0);
 		if (LLMenuGL::sMenuContainer != NULL)
 		{
 			submenu->updateParent(LLMenuGL::sMenuContainer);
@@ -2214,18 +2214,27 @@ void LLMenuGL::parseChildXML(LLXMLNodePtr child, LLView *parent, LLUICtrlFactory
 	}
 }
 
+// This wrapper is needed because the virtual linkage causes errors if default parameters are used
 bool LLMenuGL::addChild(LLView* view, S32 tab_group)
+{
+	return addChild(view, 0, tab_group);
+}
+
+bool LLMenuGL::addChild(LLView* view, LLView* insert_before, S32 tab_group)
 {
 	if (LLMenuGL* menup = dynamic_cast<LLMenuGL*>(view))
 	{
 		lldebugs << "Adding menu " << menup->getName() << " to " << getName() << llendl;
-		appendMenu(menup);
+		if (!insert_before)
+			appendMenu(menup);
+		else
+			appendMenu(menup, insert_before);
 		return true;
 	}
 	else if (LLMenuItemGL* itemp = dynamic_cast<LLMenuItemGL*>(view))
 	{
 		lldebugs << "Adding " << itemp->getName() << " to " << getName() << llendl;
-		append(itemp);
+		append(itemp, insert_before);
 		return true;
 	}
 	lldebugs << "Error adding unknown child '"<<(view ? view->getName() : std::string("NULL")) << "' to " << getName() << llendl;
@@ -2712,10 +2721,29 @@ BOOL LLMenuGL::handleJumpKey(KEY key)
 
 
 // Add the menu item to this menu.
+// This wrapper is needed because the virtual linkage causes errors if default parameters are used
 BOOL LLMenuGL::append( LLMenuItemGL* item )
 {
+	return append(item, 0);
+}
+
+BOOL LLMenuGL::append(LLMenuItemGL* item, LLView* insert_before)
+{
 	if (!item) return FALSE;
+	if (!insert_before)
+	{
 	mItems.push_back( item );
+	}
+	else
+	{
+		item_list_t::iterator i;
+
+		for (i = mItems.begin(); i != mItems.end(); ++i)
+			if (*i == insert_before)
+				break;
+		mItems.insert(i, item);
+	}
+
 	LLUICtrl::addChild(item);
 	needsArrange();
 	return TRUE;
@@ -2729,7 +2757,13 @@ BOOL LLMenuGL::addSeparator()
 }
 
 // add a menu - this will create a cascading menu
+// This wrapper is needed because the virtual linkage causes errors if default parameters are used
 BOOL LLMenuGL::appendMenu( LLMenuGL* menu )
+{
+	return appendMenu(menu, 0);
+}
+
+BOOL LLMenuGL::appendMenu(LLMenuGL* menu, LLView* insert_before)
 {
 	if( menu == this )
 	{
@@ -2741,7 +2775,7 @@ BOOL LLMenuGL::appendMenu( LLMenuGL* menu )
 	LLMenuItemBranchGL* branch = NULL;
 	branch = new LLMenuItemBranchGL( menu->getName(), menu->getLabel(), menu->getHandle() );
 	branch->setJumpKey(menu->getJumpKey());
-	success &= append( branch );
+	success &= append( branch, insert_before );
 
 	// Inherit colors
 	menu->setBackgroundColor( mBackgroundColor );

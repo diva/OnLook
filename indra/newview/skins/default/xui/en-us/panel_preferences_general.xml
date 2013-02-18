@@ -55,7 +55,7 @@
 		<combo_item name="Hungarian" value="hu">Magyar(Hungarian)*</combo_item>
 		<combo_item name="Dutch" value="nl">Nederlands(Dutch)*</combo_item>
 		<combo_item name="Polish" value="pl">Polski(Polish)*</combo_item>
-		<combo_item name="Portugese" value="pt">Portugués(Portuguese)*</combo_item>
+		<combo_item name="Portugese" value="pt">Portugués(Portuguese)</combo_item>
  		<combo_item name="Russian" value="ru">Русский(Russian)*</combo_item>
 		<combo_item name="Turkish" value="tr">Türkçe(Turkish)*</combo_item>
  		<combo_item name="Ukrainian" value="uk">Українська(Ukrainian)*</combo_item>

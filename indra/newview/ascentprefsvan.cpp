@@ -193,7 +193,7 @@ void LLPrefsAscentVan::refreshValues()
 	mAnnounceStreamMetadata = gSavedSettings.getBOOL("AnnounceStreamMetadata");
 
     //Tags\Colors ----------------------------------------------------------------------------
-    mAscentUseTag           = gSavedSettings.getBOOL("AscentUseTag");
+    mAscentBroadcastTag     = gSavedSettings.getBOOL("AscentBroadcastTag");
     mReportClientUUID       = gSavedSettings.getString("AscentReportClientUUID");
     mSelectedClient			= gSavedSettings.getU32("AscentReportClientIndex");
     mShowSelfClientTag		= gSavedSettings.getBOOL("AscentShowSelfTag");
@@ -276,7 +276,7 @@ void LLPrefsAscentVan::cancel()
 	gSavedSettings.setBOOL("AnnounceStreamMetadata", mAnnounceStreamMetadata);
 
     //Tags\Colors ----------------------------------------------------------------------------
-    gSavedSettings.setBOOL("AscentUseTag",               mAscentUseTag);
+    gSavedSettings.setBOOL("AscentBroadcastTag",         mAscentBroadcastTag);
     gSavedSettings.setString("AscentReportClientUUID",   mReportClientUUID);
     gSavedSettings.setU32("AscentReportClientIndex",     mSelectedClient);
     gSavedSettings.setBOOL("AscentShowSelfTag",          mShowSelfClientTag);

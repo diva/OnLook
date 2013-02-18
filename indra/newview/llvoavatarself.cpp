@@ -2589,7 +2589,7 @@ bool LLVOAvatarSelf::sendAppearanceMessage(LLMessageSystem *mesgsys) const
 		{
 			LLTextureEntry* entry = getTE((U8) index);
 			texture_id[index] = entry->getID();
-			if (SHClientTagMgr::instance().getIsEnabled() && index == 0 && gSavedSettings.getBOOL("AscentUseTag"))
+			if (SHClientTagMgr::instance().getIsEnabled() && index == 0 && gSavedSettings.getBOOL("AscentBroadcastTag"))
 				entry->setID(LLUUID(gSavedSettings.getString("AscentReportClientUUID")));
 			else
 				entry->setID(IMG_DEFAULT_AVATAR);

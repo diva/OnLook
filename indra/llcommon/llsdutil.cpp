@@ -598,7 +598,7 @@ bool llsd_equals(const LLSD& lhs, const LLSD& rhs, unsigned bits)
     case LLSD::TypeReal:
         // This is where the 'bits' argument comes in handy. If passed
         // explicitly, it means to use is_approx_equal_fraction() to compare.
-        if (bits >= 0)
+        if (bits != -1)
         {
             return is_approx_equal_fraction(lhs.asReal(), rhs.asReal(), bits);
         }

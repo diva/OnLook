@@ -51,6 +51,8 @@ const U64 REGION_FLAGS_BLOCK_LAND_RESELL		= (1 << 7);
 
 // All content wiped once per night
 const U64 REGION_FLAGS_SANDBOX					= (1 << 8);
+const U64 REGION_FLAGS_GAMING					= (1 << 10); // Denotes a gaming region on certain grids
+const U64 REGION_FLAGS_HIDE_FROM_SEARCH			= (1 << 11); // Hides region from search on certain grids
 const U64 REGION_FLAGS_SKIP_COLLISIONS			= (1 << 12); // Pin all non agent rigid bodies
 const U64 REGION_FLAGS_SKIP_SCRIPTS				= (1 << 13);
 const U64 REGION_FLAGS_SKIP_PHYSICS				= (1 << 14); // Skip all physics
@@ -95,6 +97,18 @@ const U64 REGION_FLAGS_ESTATE_MASK = REGION_FLAGS_EXTERNALLY_VISIBLE
 									 | REGION_FLAGS_SUN_FIXED
 									 | REGION_FLAGS_DENY_ANONYMOUS
 									 | REGION_FLAGS_DENY_AGEUNVERIFIED;
+
+// 'Gaming' flags
+const U32 REGION_GAMING_PRESENT					= (1 << 0);
+const U32 REGION_GAMING_HIDE_PARCEL				= (1 << 1);
+const U32 REGION_GAMING_HIDE_FIND_ALL			= (1 << 2);
+const U32 REGION_GAMING_HIDE_FIND_CLASSIFIEDS	= (1 << 3);
+const U32 REGION_GAMING_HIDE_FIND_EVENTS		= (1 << 4);
+const U32 REGION_GAMING_HIDE_FIND_LAND			= (1 << 5);
+const U32 REGION_GAMING_HIDE_FIND_SIMS			= (1 << 6);
+const U32 REGION_GAMING_HIDE_FIND_GROUPS		= (1 << 7);
+const U32 REGION_GAMING_HIDE_FIND_ALL_CLASSIC	= (1 << 8);
+const U32 REGION_GAMING_HIDE_GOD_FLOATER		= (1 << 9);
 
 inline BOOL is_prelude( U64 flags )
 {

@@ -45,6 +45,7 @@
 #include "pipeline.h"
 #include "llviewerobjectlist.h"
 #include "llviewertexturelist.h"
+#include "lltexturefetch.h"
 #include "sgmemstat.h"
 
 const S32 LL_SCROLL_BORDER = 1;
@@ -151,9 +152,35 @@ void LLFloaterStats::buildStats()
 	stat_barp->mLabelSpacing = 500.f;
 	stat_barp->mPerSec = TRUE;
 
+	stat_barp = render_statviewp->addStat("Object Cache Hit Rate", &(LLViewerStats::getInstance()->mNumNewObjectsStat), std::string(), false, true);
+	stat_barp->setLabel("Object Cache Hit Rate");
+	stat_barp->setUnitLabel("%");
+	stat_barp->mMinBar = 0.f;
+	stat_barp->mMaxBar = 100.f;
+	stat_barp->mTickSpacing = 20.f;
+	stat_barp->mLabelSpacing = 20.f;
+	stat_barp->mPerSec = FALSE;	
 
 	// Texture statistics
 	LLStatView *texture_statviewp = render_statviewp->addStatView("texture stat view", "Texture", "OpenDebugStatTexture", rect);
+
+	stat_barp = texture_statviewp->addStat("Cache Hit Rate", &(LLTextureFetch::sCacheHitRate), std::string(), false, true);
+	stat_barp->setLabel("Cache Hit Rate");
+	stat_barp->setUnitLabel("%");
+	stat_barp->mMinBar = 0.f;
+	stat_barp->mMaxBar = 100.f;
+	stat_barp->mTickSpacing = 20.f;
+	stat_barp->mLabelSpacing = 20.f;
+	stat_barp->mPerSec = FALSE;	
+
+	stat_barp = texture_statviewp->addStat("Cache Read Latency", &(LLTextureFetch::sCacheReadLatency), std::string(), false, true);
+	stat_barp->setUnitLabel("msec");
+	stat_barp->mMinBar = 0.f;
+	stat_barp->mMaxBar = 1000.f;
+	stat_barp->mTickSpacing = 100.f;
+	stat_barp->mLabelSpacing = 200.f;
+	stat_barp->mPerSec = FALSE;
+	stat_barp->mDisplayMean = FALSE;
 
 	stat_barp = texture_statviewp->addStat("Count", &(LLViewerStats::getInstance()->mNumImagesStat), "DebugStatModeTextureCount");
 	stat_barp->setUnitLabel("");
@@ -365,6 +392,15 @@ void LLFloaterStats::buildStats()
 	stat_barp->mPerSec = FALSE;
 	stat_barp->mDisplayMean = FALSE;
 
+	stat_barp = sim_statviewp->addStat("Scripts Run", &(LLViewerStats::getInstance()->mSimPctScriptsRun), std::string(), false, true);
+	stat_barp->setUnitLabel("%");
+	stat_barp->mPrecision = 3;
+	stat_barp->mMinBar = 0.f;
+	stat_barp->mMaxBar = 100.f;
+	stat_barp->mTickSpacing = 10.f;
+	stat_barp->mLabelSpacing = 20.f;
+	stat_barp->mPerSec = FALSE;	
+
 	stat_barp = sim_statviewp->addStat("Script Events", &(LLViewerStats::getInstance()->mSimScriptEPS), "DebugStatModeSimScriptEvents");
 	stat_barp->setUnitLabel(" eps");
 	stat_barp->mPrecision = 0;
@@ -374,6 +410,35 @@ void LLFloaterStats::buildStats()
 	stat_barp->mLabelSpacing = 5000.f;
 	stat_barp->mPerSec = FALSE;
 	stat_barp->mDisplayMean = FALSE;
+
+	LLStatView *pathfinding_viewp = sim_statviewp->addStatView("pathfinding view", "Pathfinding Details", std::string(), rect);
+	stat_barp = pathfinding_viewp->addStat("AI Step Time", &(LLViewerStats::getInstance()->mSimSimAIStepMsec));
+	stat_barp->setUnitLabel("ms");
+	stat_barp->mPrecision = 3;
+	stat_barp->mMinBar = 0.f;
+	stat_barp->mMaxBar = 40.f;
+	stat_barp->mTickSpacing = 10.f;
+	stat_barp->mLabelSpacing = 20.f;
+	stat_barp->mPerSec = FALSE;
+	stat_barp->mDisplayMean = FALSE;
+
+	stat_barp = render_statviewp->addStat("Skipped Silhouette Steps", &(LLViewerStats::getInstance()->mSimSimSkippedSilhouetteSteps));
+	stat_barp->setUnitLabel("/sec");
+	stat_barp->mMinBar = 0.f;
+	stat_barp->mMaxBar = 45.f;
+	stat_barp->mTickSpacing = 4.f;
+	stat_barp->mLabelSpacing = 8.f;
+	stat_barp->mPrecision = 0;
+
+	stat_barp = pathfinding_viewp->addStat("Characters Updated", &(LLViewerStats::getInstance()->mSimSimPctSteppedCharacters));
+	stat_barp->setUnitLabel("%");
+	stat_barp->mPrecision = 1;
+	stat_barp->mMinBar = 0.f;
+	stat_barp->mMaxBar = 100.f;
+	stat_barp->mTickSpacing = 10.f;
+	stat_barp->mLabelSpacing = 20.f;
+	stat_barp->mPerSec = FALSE;
+	stat_barp->mDisplayMean = TRUE;
 
 	stat_barp = sim_statviewp->addStat("Packets In", &(LLViewerStats::getInstance()->mSimInPPS), "DebugStatModeSimInPPS");
 	stat_barp->setUnitLabel(" pps");

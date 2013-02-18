@@ -680,7 +680,6 @@ void LLCircuitData::checkPacketInID(TPACKETID id, BOOL receive_resent)
 		setPacketInID((id + 1) % LL_MAX_OUT_PACKET_ID);
 
         mLastPacketGap = 0;
-        mOutOfOrderRate.count(0);
 		return;
 	}
 
@@ -776,7 +775,6 @@ void LLCircuitData::checkPacketInID(TPACKETID id, BOOL receive_resent)
 
 		}
 	}
-    mOutOfOrderRate.count(gap);
     mLastPacketGap = gap;
 }
 

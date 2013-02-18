@@ -268,7 +268,7 @@
 			<key>Value</key>
 			<integer>1</integer>
 		</map>
-		<key>AscentUseTag</key>
+		<key>AscentBroadcastTag</key>
 		<map>
 			<key>Comment</key>
 			<string>Broadcast client tag</string>

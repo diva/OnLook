@@ -27,7 +27,9 @@
 #include "llmemtype.h"
 #include "llallocator.h"
 
+#if MEM_TRACK_TYPE
 std::vector<char const *> LLMemType::DeclareMemType::mNameList;
+#endif
 
 LLMemType::DeclareMemType LLMemType::MTYPE_INIT("Init");
 LLMemType::DeclareMemType LLMemType::MTYPE_STARTUP("Startup");
@@ -194,7 +196,7 @@ LLMemType::DeclareMemType LLMemType::MTYPE_TEMP9("Temp9");
 
 LLMemType::DeclareMemType LLMemType::MTYPE_OTHER("Other");
 
-
+#if MEM_TRACK_TYPE
 LLMemType::DeclareMemType::DeclareMemType(char const * st)
 {
 	mID = (S32)mNameList.size();
@@ -229,3 +231,4 @@ char const * LLMemType::getNameFromID(S32 id)
 }
 
 //--------------------------------------------------------------------------------------------------
+#endif //MEM_TRACK_TYPE

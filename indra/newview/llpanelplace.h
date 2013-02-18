@@ -34,6 +34,7 @@
 #define LL_LLPANELPLACE_H
 
 #include "llpanel.h"
+#include "llremoteparcelrequest.h"
 
 #include "v3dmath.h"
 #include "lluuid.h"
@@ -46,7 +47,7 @@ class LLTextureCtrl;
 class LLMessageSystem;
 class LLInventoryItem;
 
-class LLPanelPlace : public LLPanel
+class LLPanelPlace : public LLPanel, public LLRemoteParcelInfoObserver
 {
 public:
 	LLPanelPlace();
@@ -58,7 +59,7 @@ public:
 		// Ignore all old location information, useful if you are 
 		// recycling an existing dialog and need to clear it.
 
-	void setParcelID(const LLUUID& parcel_id);
+	/*virtual*/ void setParcelID(const LLUUID& parcel_id);
 		// Sends a request for data about the given parcel, which will
 		// only update the location if there is none already available.
 
@@ -67,15 +68,14 @@ public:
 	void setSnapshot(const LLUUID& snapshot_id);
 	void setLocationString(const std::string& location);
 	void setLandTypeString(const std::string& land_type);
-	void setErrorStatus(U32 status, const std::string& reason);
+	/*virtual*/ void setErrorStatus(U32 status, const std::string& reason);
 	void resetName(const std::string& name);
 
-	void sendParcelInfoRequest();
 	void displayParcelInfo(const LLVector3& pos_region,
 			const LLUUID& landmark_asset_id,
 			const LLUUID& region_id,
 			const LLVector3d& pos_global);
-	static void processParcelInfoReply(LLMessageSystem* msg, void**);
+	/*virtual*/ void processParcelInfo(const LLParcelData& parcel_data);
 
 	LLTextureCtrl *getSnapshotCtrl() const { return mSnapshotCtrl; }
 
@@ -113,9 +113,6 @@ protected:
 	LLButton*	mMapBtn;
 	//LLButton*	mLandmarkBtn;
 	LLButton*	mAuctionBtn;
-
-	typedef std::list<LLPanelPlace*> panel_list_t;
-	static panel_list_t sAllPanels;
 };
 
 #endif // LL_LLPANELPLACE_H

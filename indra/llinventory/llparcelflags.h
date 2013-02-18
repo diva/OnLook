@@ -59,6 +59,7 @@ const U32 PF_URL_WEB_PAGE				= 1 << 19;	// The "media URL" is an HTML page
 const U32 PF_URL_RAW_HTML				= 1 << 20;	// The "media URL" is a raw HTML string like <H1>Foo</H1>
 const U32 PF_RESTRICT_PUSHOBJECT		= 1 << 21;	// Restrict push object to either on agent or on scripts owned by parcel owner
 const U32 PF_DENY_ANONYMOUS				= 1 << 22;	// Deny all non identified/transacted accounts
+const U32 PF_GAMING						= 1 << 23;	// Denotes a gaming parcel on certain grids
 // const U32 PF_DENY_IDENTIFIED			= 1 << 23;	// Deny identified accounts
 // const U32 PF_DENY_TRANSACTED			= 1 << 24;	// Deny identified accounts
 const U32 PF_ALLOW_GROUP_SCRIPTS		= 1 << 25;	// Allow scripts owned by group

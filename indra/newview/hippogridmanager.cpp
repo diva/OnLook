@@ -357,7 +357,7 @@ std::string HippoGridInfo::getSearchUrl(SearchType ty, bool is_web) const
 			} 
 			else if (ty == SEARCH_ALL_TEMPLATE) 
 			{
-				return "lang=[LANG]&mat=[MATURITY]&t=[TEEN]&region=[REGION]&x=[X]&y=[Y]&z=[Z]&session=[SESSION]";
+				return "lang=[LANG]&mat=[MATURITY]&t=[TEEN]&region=[REGION]&x=[X]&y=[Y]&z=[Z]&session=[SESSION]&dice=[DICE]";
 			} 
 			else 
 			{
@@ -400,7 +400,7 @@ std::string HippoGridInfo::getSearchUrl(SearchType ty, bool is_web) const
 	    } 
 		else if (ty == SEARCH_ALL_TEMPLATE) 
 		{
-	    	return "lang=[LANG]&m=[MATURITY]&t=[TEEN]&region=[REGION]&x=[X]&y=[Y]&z=[Z]&session=[SESSION]";
+			return "lang=[LANG]&m=[MATURITY]&t=[TEEN]&region=[REGION]&x=[X]&y=[Y]&z=[Z]&session=[SESSION]&dice=[DICE]";
 	    } 
 		else 
 		{

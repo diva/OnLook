@@ -116,6 +116,7 @@ public:
 	BOOL isMuted(const LLUUID& id, U32 flags) const { return isMuted(id, LLStringUtil::null, flags); };
 	
 	BOOL isLinden(const std::string& name) const;
+	bool isLinden(const LLUUID& id) const;
 	
 	BOOL isLoaded() const { return mIsLoaded; }
 
@@ -147,6 +148,9 @@ private:
 	static void processUseCachedMuteList(LLMessageSystem* msg, void**);
 
 	static void onFileMuteList(void** user_data, S32 code, LLExtStat ext_status);
+
+	void checkNewRegion();
+	void parseSimulatorFeatures();
 
 private:
 	struct compare_by_name
@@ -185,6 +189,9 @@ private:
 
 	typedef std::map<LLUUID, F32> user_volume_map_t; 
 	user_volume_map_t mUserVolumeSettings;
+
+	std::set<std::string> mGodLastNames;
+	std::set<std::string> mGodFullNames;
 };
 
 class LLMuteListObserver

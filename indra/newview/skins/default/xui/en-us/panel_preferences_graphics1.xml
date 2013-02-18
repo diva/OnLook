@@ -52,7 +52,7 @@
     <check_box bottom_delta="-17" control_name="RenderLocalLights" height="16" label="Local Lights" name="LightingDetailRadio"/>
 	<check_box bottom_delta="-17" control_name="VertexShaderEnable" height="16" initial_value="true" label="Basic shaders" left_delta="0" name="BasicShaders" tool_tip="Disabling this option may prevent some graphics card drivers from crashing."/>
 	<check_box bottom_delta="-17" control_name="WindLightUseAtmosShaders" initial_value="true" label="Atmospheric shaders" left_delta="0" name="WindLightUseAtmosShaders"/>
-	<check_box bottom_delta="-17" control_name="RenderDeferred" initial_value="true" label="Lighting and Shadows" tool_tip="Deferred Shading" left_delta="0" name="RenderDeferred"/>
+	<check_box bottom_delta="-17" control_name="RenderDeferred" initial_value="true" label="Advanced Lighting Model" tool_tip="Deferred Shading" left_delta="0" name="RenderDeferred"/>
     <check_box bottom_delta="-17" control_name="RenderDeferredSSAO" height="16" initial_value="true" label="Ambient Occlusion" left_delta="0" name="UseSSAO"/>
 	<check_box bottom_delta="-17" control_name="RenderDepthOfField"	initial_value="true" label="Depth of Field" left_delta="0" name="RenderDepthOfField"/>
   <text bottom_delta="-17" height="12" left="15" name="TerrainScaleText">Terrain Scale:</text>
