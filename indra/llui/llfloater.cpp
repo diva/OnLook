@@ -911,6 +911,8 @@ void LLFloater::setMinimized(BOOL minimize)
 
 		// Lose keyboard focus when minimized
 		releaseFocus();
+		// Also reset mLockedView and mLastKeyboardFocus, to avoid that we get focus back somehow.
+		gFocusMgr.removeKeyboardFocusWithoutCallback(this);
 
 		for (S32 i = 0; i < 4; i++)
 		{

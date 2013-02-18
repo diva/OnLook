@@ -1,10 +1,9 @@
 /** 
- * @file llallocator.h
- * @brief Declaration of the LLAllocator class.
+ * @file previewF.glsl
  *
- * $LicenseInfo:firstyear=2009&license=viewerlgpl$
+ * $LicenseInfo:firstyear=2011&license=viewerlgpl$
  * Second Life Viewer Source Code
- * Copyright (C) 2010, Linden Research, Inc.
+ * Copyright (C) 2011, Linden Research, Inc.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,28 +23,19 @@
  * $/LicenseInfo$
  */
 
-#ifndef LL_LLALLOCATOR_H
-#define LL_LLALLOCATOR_H
+#ifdef DEFINE_GL_FRAGCOLOR
+out vec4 frag_color;
+#else
+#define frag_color gl_FragColor
+#endif
 
-#include <string>
+uniform sampler2D diffuseMap;
 
-#include "llallocator_heap_profile.h"
+VARYING vec4 vertex_color;
+VARYING vec2 vary_texcoord0;
 
-class LL_COMMON_API LLAllocator {
-    friend class LLMemoryView;
-
-public:
-    void setProfilingEnabled(bool should_enable);
-
-    static bool isProfiling();
-
-    LLAllocatorHeapProfile const & getProfile();
-
-private:
-    std::string getRawProfile();
-
-private:
-    LLAllocatorHeapProfile mProf;
-};
-
-#endif // LL_LLALLOCATOR_H
+void main()
+{
+	vec4 color = texture2D(diffuseMap,vary_texcoord0.xy) * vertex_color;
+	frag_color = color;
+}

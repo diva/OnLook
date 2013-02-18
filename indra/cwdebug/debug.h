@@ -82,8 +82,10 @@ struct fake_channel {
 extern LL_COMMON_API fake_channel const warning;
 extern LL_COMMON_API fake_channel const curl;
 extern LL_COMMON_API fake_channel const curlio;
+extern LL_COMMON_API fake_channel const curltr;
 extern LL_COMMON_API fake_channel const statemachine;
 extern LL_COMMON_API fake_channel const notice;
+extern LL_COMMON_API fake_channel const snapshot;
 
 } // namespace dc
 } // namespace debug
@@ -173,8 +175,8 @@ extern LL_COMMON_API fake_channel const notice;
 #include <boost/shared_array.hpp>
 #if CWDEBUG_LOCATION
 #include <execinfo.h>		// Needed for 'backtrace'.
-#include "llpreprocessor.h"
 #endif
+#include "llpreprocessor.h"	// LL_COMMON_API
 #include <set>
 
 #define CWD_API __attribute__ ((visibility("default")))
@@ -387,21 +389,21 @@ void InstanceTracker<T>::dump(void)
 // Print "Entering " << \a data to channel \a cntrl and increment
 // debugging output indentation until the end of the current scope.
 #define DoutEntering(cntrl, data) \
-  int __slviewer_debug_indentation = 2;                                                                      \
+  int __slviewer_debug_indentation = 2;                                                                                 \
   {                                                                                                                     \
     LIBCWD_TSD_DECLARATION;                                                                                             \
     if (LIBCWD_DO_TSD_MEMBER_OFF(::libcwd::libcw_do) < 0)                                                               \
     {                                                                                                                   \
       ::libcwd::channel_set_bootstrap_st __libcwd_channel_set(LIBCWD_DO_TSD(::libcwd::libcw_do) LIBCWD_COMMA_TSD);      \
-      bool on;                                                                                                          \
+      bool __slviewer_debug_on;                                                                                         \
       {                                                                                                                 \
         using namespace LIBCWD_DEBUGCHANNELS;                                                                           \
-        on = (__libcwd_channel_set|cntrl).on;                                                                           \
+        __slviewer_debug_on = (__libcwd_channel_set|cntrl).on;                                                          \
       }                                                                                                                 \
-      if (on)                                                                                                           \
+      if (__slviewer_debug_on)                                                                                          \
         Dout(cntrl, "Entering " << data);                                                                               \
       else                                                                                                              \
-        __slviewer_debug_indentation = 0;                                                                    \
+        __slviewer_debug_indentation = 0;                                                                               \
     }                                                                                                                   \
   }                                                                                                                     \
   debug::Indent __slviewer_debug_indent(__slviewer_debug_indentation);

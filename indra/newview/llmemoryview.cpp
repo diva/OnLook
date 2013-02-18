@@ -104,6 +104,7 @@ void LLMemoryView::refreshProfile()
 
 	mLines.clear();
 
+#if MEM_TRACK_MEM
  	if(mAlloc->isProfiling()) 
 	{
 		const LLAllocatorHeapProfile &prof = mAlloc->getProfile();
@@ -118,6 +119,7 @@ void LLMemoryView::refreshProfile()
 			mLines.push_back(utf8string_to_wstring(ss.str()));
 		}
 	}
+#endif
 }
 
 void LLMemoryView::draw()

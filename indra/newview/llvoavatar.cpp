@@ -567,9 +567,14 @@ SHClientTagMgr::SHClientTagMgr()
 	gSavedSettings.getControl("AscentFriendColor")->getSignal()->connect(boost::bind(&LLVOAvatar::invalidateNameTags));
 	gSavedSettings.getControl("AscentMutedColor")->getSignal()->connect(boost::bind(&LLVOAvatar::invalidateNameTags));
 
+	//Following group of settings all actually manipulate the tag cache for agent avatar. Even if the tag system is 'disabled', we still allow an
+	//entry to exist for the agent avatar.
 	gSavedSettings.getControl("AscentUseCustomTag")->getSignal()->connect(boost::bind(&SHClientTagMgr::updateAgentAvatarTag, this));
 	gSavedSettings.getControl("AscentCustomTagColor")->getSignal()->connect(boost::bind(&SHClientTagMgr::updateAgentAvatarTag, this));
 	gSavedSettings.getControl("AscentCustomTagLabel")->getSignal()->connect(boost::bind(&SHClientTagMgr::updateAgentAvatarTag, this));
+
+	//And because there can be an entry for the self avatar, always perform this as well.
+	gSavedSettings.getControl("AscentShowSelfTag")->getSignal()->connect(boost::bind(&LLVOAvatar::invalidateNameTags));
 
 	if(!getIsEnabled())
 		return;
@@ -578,12 +583,14 @@ SHClientTagMgr::SHClientTagMgr()
 		fetchDefinitions();
 	parseDefinitions();
 
-	//These only matter to the agent avatar. Don't iterate over everything.
-	gSavedSettings.getControl("AscentUseTag")->getSignal()->connect(boost::bind(&SHClientTagMgr::updateAgentAvatarTag, this));
+	//Tags for other users only exist if the tag system is enabled. No point in registering this callback if non-agent avatars can't have tags.
+	gSavedSettings.getControl("AscentShowOthersTag")->getSignal()->connect(boost::bind(&LLVOAvatar::invalidateNameTags));
+
+	//Update the cached tag for the agent avatar. AscentReportClientUUID dictates what tag the agent avatar sees on their self.
 	gSavedSettings.getControl("AscentReportClientUUID")->getSignal()->connect(boost::bind(&SHClientTagMgr::updateAgentAvatarTag, this));
 
-	//Fire off a AgentSetAppearance update if these change.
-	gSavedSettings.getControl("AscentUseTag")->getSignal()->connect(boost::bind(&LLAgent::sendAgentSetAppearance, &gAgent));
+	//Fire off a AgentSetAppearance update if these change. Essentially, forces the new clientid (or lack thereof) to be sent off to the server for others to see.
+	gSavedSettings.getControl("AscentBroadcastTag")->getSignal()->connect(boost::bind(&LLAgent::sendAgentSetAppearance, &gAgent));
 	gSavedSettings.getControl("AscentReportClientUUID")->getSignal()->connect(boost::bind(&LLAgent::sendAgentSetAppearance, &gAgent));
 }
 
@@ -682,7 +689,6 @@ const LLSD SHClientTagMgr::generateClientTag(const LLVOAvatar* pAvatar) const
 
 	if (pAvatar->isSelf())
 	{
-		static const LLCachedControl<bool>			ascent_use_tag("AscentUseTag",true);
 		static const LLCachedControl<bool>			ascent_use_custom_tag("AscentUseCustomTag", false);
 		static const LLCachedControl<LLColor4>		ascent_custom_tag_color("AscentCustomTagColor", LLColor4(.5f,1.f,.25f,1.f));
 		static const LLCachedControl<std::string>	ascent_custom_tag_label("AscentCustomTagLabel","custom");
@@ -699,7 +705,7 @@ const LLSD SHClientTagMgr::generateClientTag(const LLVOAvatar* pAvatar) const
 		{
 			return LLSD();
 		}
-		else if (ascent_use_tag)
+		else
 		{
 			id.set(ascent_report_client_uuid,false);
 		}
@@ -796,24 +802,32 @@ void SHClientTagMgr::updateAvatarTag(LLVOAvatar* pAvatar)
 		if(new_tag.isUndefined())
 			mAvatarTags.erase(id);
 		else
-			mAvatarTags.insert(std::pair<LLUUID,LLSD>(id, new_tag));
+			mAvatarTags[id]=new_tag;
 		pAvatar->clearNameTag();	//LLVOAvatar::idleUpdateNameTag will pick up on mNameString being cleared.
 	}
 }
 const std::string SHClientTagMgr::getClientName(const LLVOAvatar* pAvatar, bool is_friend) const
 {
 	static LLCachedControl<bool> ascent_show_friends_tag("AscentShowFriendsTag", false);
+	static LLCachedControl<bool> ascent_show_self_tag("AscentShowSelfTag", false);
+	static LLCachedControl<bool> ascent_show_others_tag("AscentShowOthersTag", false);
 	if(is_friend && ascent_show_friends_tag)
 		return "Friend";
 	else
 	{
-		LLSD tag;
-		std::map<LLUUID, LLSD>::const_iterator it = mAvatarTags.find(pAvatar->getID());
-		if(it != mAvatarTags.end())
+		if((!pAvatar->isSelf() && ascent_show_others_tag) || 
+			(pAvatar->isSelf() && ascent_show_self_tag))
 		{
-			tag = it->second.get("name");
+			LLSD tag;
+			std::map<LLUUID, LLSD>::const_iterator it = mAvatarTags.find(pAvatar->getID());
+			if(it != mAvatarTags.end())
+			{
+				tag = it->second.get("name");
+			}
+			return tag.asString();
 		}
-		return tag.asString();
+		else
+			return std::string();
 	}
 }
 const LLUUID SHClientTagMgr::getClientID(const LLVOAvatar* pAvatar) const
@@ -3222,7 +3236,13 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 				while ((index = line.find("%f")) != std::string::npos)
 					line.replace(index, 2, firstnameText);
 				while ((index = line.find("%l")) != std::string::npos)
-					line.replace(index, 2, lastnameText);
+				{
+					llinfos << "'" <<  line.substr(index) << "'" <<  llendl;
+					if(lastnameText.empty() && line[index+2] == ' ')	//Entire displayname string crammed into firstname
+						line.replace(index, 3, "");						//so eat the extra space.
+					else
+						line.replace(index, 2, lastnameText);
+				}
 				while ((index = line.find("%g")) != std::string::npos)
 					line.replace(index, 2, groupText);
 				while ((index = line.find("%t")) != std::string::npos)

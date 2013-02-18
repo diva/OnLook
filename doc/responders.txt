@@ -1,0 +1,82 @@
+All Responders are derived from ResponderBase, however you normally do never derived from that directly yourself.
+Instead, Responder classes are derived from one of:
+
+1. Responder base classes
+
+	ResponderHeadersOnly			-- Derived classes are used with HTTPClient::head or HTTPClient::getHeaderOnly.
+	ResponderWithCompleted			-- Derived classes implement completed(U32, std::string const&, LLSD const&),
+										or completedRaw(U32, std::string const&, LLChannelDescriptors const&, buffer_ptr_t const&)
+										if the response is not (always) LLSD.
+	ResponderWithResult				-- Derived classes implement result(LLSD const&) and optionally
+										errorWithContent(U32, std::string const&, LLSD const&) OR error(U32, std::string const&).
+
+2. Special base classes
+
+	ResponderIgnoreBody				-- Same as ResponderWithResult but already implements result() that ignored the body.
+	LLAssetUploadResponder			-- Derived from ResponderWithResult. Base class for responders that upload assets via capabilities.
+	LegacyPolledResponder			-- Used for old code that needs polling (do not use).
+
+
+There is one non-base class Responder with a more general purpose:
+
+3. Special purpose responders:
+
+	ResponderIgnore					-- Derived from ResponderIgnoreBody. Used for "fire and forget" requests as it ignores any response.
+
+
+4. Signatures.
+
+Every final (derived) responder class must implement 'getName(void) const' and 'getHTTPTimeoutPolicy(void)',
+except the base classes (this is to alert the developer they have to implement getName as it is pure virtual).
+
+For example:
+
+	extern AIHTTPTimeoutPolicy myResponder_timeout;			// Add 'P(myResponder)' to indra/llmessage/aihttptimeoutpolicy.cpp.
+
+	class MyResponder : public LLHTTPClient::SomeResponderBaseClass {
+		...
+		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return myResponder_timeout; }
+		/*virtual*/ char const* getName(void) const { return "MyResponder"; }
+	};
+
+Note the convention that the name of a AIHTTPTimeoutPolicy (what goes between the brackets of P()) is
+the class name minus any 'AI' or 'LL' prefix and starting with a lowercase character.
+
+Then, depending on the three main base classes that was derived from, the signatures should be:
+
+	class MyResponder1 : public LLHTTPClient::ResponderHeadersOnly {
+		/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers);
+																									// See for example PostImageResponder
+		...
+	};
+
+	class MyResponder2 : public LLHTTPClient::ResponderWithCompleted {
+		/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
+																									// See for example PostImageRedirectResponder
+		   >>>OR<<<
+
+		/*virtual*/ void completed(U32 status, const std::string& reason, const LLSD& content);		// See for example LLImportPostResponder
+
+	};
+
+	class MyResponder3 : public LLHTTPClient::ResponderWithResult {
+		/*virtual*/ void result(const LLSD& content);												// See for example LLInventoryModelFetchItemResponder
+		/*virtual*/ void error(U32 status, const std::string& reason);
+		   >>>OR instead error()<<<
+		/*virtual*/ void errorWithContent(U32 status, const std::string& reason, const LLSD& content);
+																									// See for example LLSDMessage::EventResponder
+	};
+
+Finally, if a responder derived from ResponderWithCompleted or ResponderWithResult needs to process
+individual headers, you need to override 'needsHeaders':
+
+		/*virtual*/ bool needsHeaders(void) const { return true; }									// See for example LLWebProfileResponders::PostImageResponder
+			// which will cause this to be called:
+		/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers);
+
+And if it needs redirection to work (you'll get an assert if you forget this and it is being redirected):
+
+		/*virtual*/ bool followRedir(void) const { return true; }									// See for example LLWebProfileResponders::ConfigResponder
+
+This is not necessary for ResponderHeadersOnly because that already defines both.
+

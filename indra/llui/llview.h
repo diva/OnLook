@@ -57,6 +57,7 @@
 #include "llinitparam.h"
 #include "llfocusmgr.h"
 #include <boost/unordered_map.hpp>
+#include "ailist.h"
 
 const U32	FOLLOWS_NONE	= 0x00;
 const U32	FOLLOWS_LEFT	= 0x01;
@@ -231,7 +232,7 @@ public:
 		SNAP_BOTTOM
 	};
 
-	typedef std::list<LLView*> child_list_t;
+	typedef AIList<LLView*> child_list_t;
 	typedef child_list_t::iterator					child_list_iter_t;
 	typedef child_list_t::const_iterator  			child_list_const_iter_t;
 	typedef child_list_t::reverse_iterator 			child_list_reverse_iter_t;
@@ -582,9 +583,9 @@ public:
 	static std::string escapeXML(const std::string& xml, std::string& indent);
 
 	// focuses the item in the list after the currently-focused item, wrapping if necessary
-	static	BOOL focusNext(LLView::child_list_t & result);
+	static	BOOL focusNext(viewList_t& result);
 	// focuses the item in the list before the currently-focused item, wrapping if necessary
-	static	BOOL focusPrev(LLView::child_list_t & result);
+	static	BOOL focusPrev(viewList_t& result);
 
 	// returns query for iterating over controls in tab order	
 	static const LLCtrlQuery & getTabOrderQuery();

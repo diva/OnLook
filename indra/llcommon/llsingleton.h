@@ -226,7 +226,7 @@ void LLSingleton<DERIVED_TYPE>::createInstance(SingletonInstanceData& data)
 	
 	if (data.mInitState == INITIALIZING)
 	{
-		llwarns << "Tried to access singleton " << typeid(DERIVED_TYPE).name() << " from initSingleton(), using half-initialized object" << llendl;
+		lldebugs << "Tried to access singleton " << typeid(DERIVED_TYPE).name() << " from initSingleton(), using half-initialized object" << llendl;
 		return;
 	}
 
