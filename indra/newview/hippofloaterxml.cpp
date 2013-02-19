@@ -265,8 +265,9 @@ void HippoFloaterXml::execute(const std::string &cmds)
 // ********************************************************************
 // generic notification callbacks
 
-static void notifyCallback(LLUICtrl *ctrl)
+static void notifyCallback(void *c)
 {
+	LLUICtrl *ctrl = (LLUICtrl *)c;
 	std::string msg = "NOTIFY:";
 	msg += ctrl->getName();
 	msg += ':';
@@ -324,20 +325,17 @@ bool HippoFloaterXmlImpl::execute(LLUICtrl *ctrl,
 					bool set = (value != "0");
 					if (HippoFloaterXmlImpl *floater = dynamic_cast<HippoFloaterXmlImpl*>(ctrl)) {
 						floater->mIsNotifyOnClose = set;
-					} else if (LLButton *button = dynamic_cast<LLButton*>(ctrl)) 
-					{
-						if (set)
-							floater->mNotices[button] = notice_ptr_t(new notice_connection_t(button->setClickedCallback(boost::bind(&notifyCallback, ctrl))));
-						else
-							floater->mNotices.erase(button);
-					} 
-					else 
-					{
-						if (set)
-							floater->mNotices[ctrl] = notice_ptr_t(new notice_connection_t(ctrl->setCommitCallback(boost::bind(&notifyCallback, ctrl))));
-						else
-							floater->mNotices.erase(ctrl);
-					}
+                    } else if (LLButton *button = dynamic_cast<LLButton*>(ctrl)) {
+                        if (set)
+                            button->setClickedCallback(boost::bind(&notifyCallback, _1), ctrl);
+                        else
+                            button->setClickedCallback(0, 0);
+                    } else {
+                        if (set)
+                            ctrl->setCommitCallback(boost::bind(&notifyCallback, _1), ctrl);
+                        else
+                            ctrl->setCommitCallback(0);
+                    }
 				}
 			}
 		}
