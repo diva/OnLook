@@ -718,8 +718,7 @@ void LLPanelPermissions::refresh()
 		{
 			LLViewerInventoryItem* item = static_cast<LLViewerInventoryItem*>(i->get()); //getInventoryContents() filters out categories, static_cast.
 			const LLPermissions& perm = item->getPermissions();
-			if (!(perm.getMaskBase() & PERM_EXPORT && perm.getMaskEveryone() & PERM_EXPORT))
-				can_export = false;
+			can_export = perm.getMaskBase() & PERM_EXPORT && perm.getMaskEveryone() & PERM_EXPORT;
 		}
 		for (U8 i = 0; can_export && i < objectp->getNumTEs(); ++i) // Can the textures be exported?
 			if (LLTextureEntry* texture = objectp->getTE(i))
