@@ -73,23 +73,24 @@
      layout="topleft"
      left_delta="0"
      multi_select="true"
-     sort_column="0"
-     sort_ascending="true"
+     sort_column="1"
+     sort_ascending="false"
      name="scripts_list"
      top_delta="16"
      width="460">
         <column
-         label="Size (kb)"
+         label="Object"
+         name="name"
+         width="245" />
+        <column
+         label="Size"
+         tool_tip="Size in kilobytes"
          name="size"
-         width="70" />
+         width="40" />
         <column
          label="URLs"
          name="urls"
-         width="50" />
-        <column
-         label="Object"
-         name="name"
-         width="210" />
+         width="45" />
         <column
          label="Location"
          name="location"

@@ -4460,9 +4460,14 @@ void LLAgent::sendAgentSetAppearance()
 	body_size.mV[VX] += x_off;
 	body_size.mV[VY] += y_off;
 // [RLVa:KB] - Checked: 2010-10-11 (RLVa-1.2.0e) | Added: RLVa-1.2.0e
-	F32 rlvz_off = RlvSettings::getAvatarOffsetZ();
-	body_size.mV[VZ] += fabs(rlvz_off) ? rlvz_off : z_off;
+	if (rlv_handler_t::isEnabled())
+	{
+		F32 rlvz_off = RlvSettings::getAvatarOffsetZ();
+		body_size.mV[VZ] += fabs(rlvz_off) ? rlvz_off : z_off;
+	}
+	else
 // [/RLVa:KB]
+		body_size.mV[VZ] += z_off;
 
 	msg->addVector3Fast(_PREHASH_Size, body_size);	
 

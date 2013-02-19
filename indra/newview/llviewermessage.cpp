@@ -5814,30 +5814,35 @@ static void money_balance_group_notify(const LLUUID& group_id,
 									   const std::string& name,
 									   bool is_group,
 									   std::string message,
-									   std::string notification,
 									   LLStringUtil::format_map_t args,
 									   LLSD payload)
 {
+	bool no_transaction_clutter = gSavedSettings.getBOOL("LiruNoTransactionClutter");
+	std::string notification = no_transaction_clutter ? "Payment" : "SystemMessage";
 	args["NAME"] = name;
 	LLSD msg_args;
 	msg_args["MESSAGE"] = LLTrans::getString(message,args);
 	LLNotificationsUtil::add(notification,msg_args,payload);
+
+	if (!no_transaction_clutter) LLFloaterChat::addChat(msg_args["MESSAGE"].asString()); // Alerts won't automatically log to chat.
 }
 
 static void money_balance_avatar_notify(const LLUUID& agent_id,
 										const LLAvatarName& av_name,
 										std::string message,
-									   	std::string notification,
 									   	LLStringUtil::format_map_t args,
 									   	LLSD payload)
 {
-
+	bool no_transaction_clutter = gSavedSettings.getBOOL("LiruNoTransactionClutter");
+	std::string notification = no_transaction_clutter ? "Payment" : "SystemMessage";
 	std::string name;
 	LLAvatarNameCache::getPNSName(av_name,name);
 	args["NAME"] = name;
 	LLSD msg_args;
 	msg_args["MESSAGE"] = LLTrans::getString(message,args);
 	LLNotificationsUtil::add(notification,msg_args,payload);
+
+	if (!no_transaction_clutter) LLFloaterChat::addChat(msg_args["MESSAGE"].asString()); // Alerts won't automatically log to chat.
 }
 static void process_money_balance_reply_extended(LLMessageSystem* msg)
 {
@@ -5883,8 +5888,6 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 	bool is_name_group = false;
 	LLUUID name_id;
 	std::string message;
-	static LLCachedControl<bool> no_transaction_clutter("LiruNoTransactionClutter", false);
-	std::string notification = no_transaction_clutter ? "Payment" : "SystemMessage";
 	LLSD payload;
 
 	bool you_paid_someone = (source_id == gAgentID);
@@ -5947,16 +5950,14 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 		gCacheName->getGroup(name_id,
 						boost::bind(&money_balance_group_notify,
 									_1, _2, _3, message,
-									notification, args, payload));
+									args, payload));
 	}
 	else {
 		LLAvatarNameCache::get(name_id,
 							   boost::bind(&money_balance_avatar_notify,
 										   _1, _2, message,
-										   notification, args, payload));										   
+										   args, payload));
 	}
-
-	if (!no_transaction_clutter) LLFloaterChat::addChat(message); // Alerts won't automatically log to chat.
 }
 
 bool handle_prompt_for_maturity_level_change_callback(const LLSD& notification, const LLSD& response)
