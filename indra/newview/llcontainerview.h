@@ -61,7 +61,7 @@ public:
 	void showLabel(BOOL show) { mShowLabel = show; }
 	void setDisplayChildren(const BOOL displayChildren);
 	BOOL getDisplayChildren() { return mDisplayChildren; }
-	void setScrollContainer(LLScrollableContainerView* scroll) {mScrollContainer = scroll;}
+	void setScrollContainer(LLScrollableContainerView* scroll);
 
  private:
 	LLScrollableContainerView* mScrollContainer;

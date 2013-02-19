@@ -66,6 +66,8 @@ const U32 DFQ_INC_NEW_VIEWER	= (DFQ_INC_PG | DFQ_INC_MATURE | DFQ_INC_ADULT);	//
 
 const U32 DFQ_ADULT_SIMS_ONLY	= 0x1 << 27;
 
+const U32 DFQ_FILTER_GAMING		= 0x1 << 28;
+
 // Sell Type flags
 const U32 ST_AUCTION	= 0x1 << 1;
 const U32 ST_NEWBIE		= 0x1 << 2;

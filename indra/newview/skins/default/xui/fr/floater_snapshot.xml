@@ -4,6 +4,9 @@
 		Destination de la photo
 	</text>
 	<radio_group label="Type de photo" name="snapshot_type_radio" width="228">
+		<radio_item name="feed">
+			Poster sur my.secondlife.com
+		</radio_item>
 		<radio_item name="postcard">
 			Envoyez par e-mail
 		</radio_item>
@@ -95,6 +98,22 @@
 	</combo_box>
 	<spinner label="Largeur" label_width="41" name="snapshot_width" width="101"/>
 	<spinner label="Hauteur" label_width="41" left="121" name="snapshot_height" width="101"/>
+	<text name="type_label3">Ratio de l'image</text>
+	<combo_box name="feed_aspect_combo">
+		<combo_item name="Default">Défaut</combo_item>
+	</combo_box>
+	<combo_box name="postcard_aspect_combo">
+		<combo_item name="Default">Défaut</combo_item>
+	</combo_box>
+	<combo_box name="texture_aspect_combo">
+		<combo_item name="CurrentWindow">Fenêtre actuelle</combo_item>
+	</combo_box>
+	<combo_box name="local_aspect_combo">
+		<combo_item name="Default">Defaut</combo_item>
+		<combo_item name="CurrentWindow">Fenêtre actuelle</combo_item>
+		<combo_item name="Custom">Personnaliser</combo_item>
+	</combo_box>
+
 	<slider label="Qualité de l&apos;image" name="image_quality_slider"/>
 	<text name="layer_type_label">
 		Capturez:
@@ -116,9 +135,11 @@
 	<check_box label="Voir l'interface sur la photo" name="ui_check"/>
 	<check_box label="Voir les éléments HUD sur la photo" name="hud_check"/>
 	<check_box label="Garder ouvert après enregistrement" name="keep_open_check"/>
+	<check_box label="Ouvrir le panneau en mode geler la vue" name="freeze_time_check" tool_tip="Gelez l'image, jouez avec la cam pour choisir différents angles de vue."/>
 	<check_box label="Imposer les proportions" name="keep_aspect_check"/>
 	<check_box label="Prévisualisation plein écran (geler l'écran)" name="freeze_frame_check"/>
 	<button label="Rafraîchir" name="new_snapshot_btn"/>
+	<button label="Geler la vue" name="freeze_time_btn" width="110" tool_tip="Bloque la vue et montre celle ci figée en plein écran, permet de jouer avec la cam et de prendre en photo selon plusieurs angles. ESC pour quitter."/>
 	<check_box label="Rafraîchissement automatique" name="auto_snapshot_check"/>
 	<button label="Enregistrer ([UPLOADFEE])" name="upload_btn" width="118"/>
 	<button label="Envoyer" name="send_btn" width="118"/>
@@ -131,9 +152,7 @@
 		</flyout_button_item>
 	</flyout_button>
 	<button label="Annuler" name="discard_btn" left="133" width="72" />
-	<check_box bottom_delta="-20" follows="left|top" control_name="TemporaryUpload" enabled="true"
-             initial_value="false" label="Image Temporaire (Gratuit)" left="10"
-             name="temp_check" tooltip="Comme toute image temporaire elle disparaitra à votre deconnection." />
+	<check_box label="Image Temporaire (Gratuit)" name="temp_check" tooltip="Comme toute image temporaire elle disparaitra à votre deconnection."/>
 	<string name="unknown">
 		inconnu
 	</string>

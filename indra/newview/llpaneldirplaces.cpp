@@ -57,6 +57,7 @@
 #include "lluiconstants.h"
 #include "llviewercontrol.h"
 #include "llviewermessage.h"
+#include "llviewerregion.h"
 #include "llworldmap.h"
 
 LLPanelDirPlaces::LLPanelDirPlaces(const std::string& name, LLFloaterDirectory* floater)
@@ -98,6 +99,8 @@ BOOL LLPanelDirPlaces::postBuild()
 		childSetEnabled("Category", true);
 	}
 	
+	childSetVisible("filter_gaming", (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_SIMS));
+
 	// Don't prepopulate the places list, as it hurts the database as of 2006-12-04. JC
 	// initialQuery();
 
@@ -197,6 +200,11 @@ void LLPanelDirPlaces::performQuery()
 	if( gSavedSettings.getBOOL("ShowAdultSims") && adult_enabled)
 	{
 		flags |= DFQ_INC_ADULT;
+	}
+
+	if (childGetValue("filter_gaming").asBoolean())
+	{
+		flags |= DFQ_FILTER_GAMING;
 	}
 	
 	// Pack old query flag in case we are talking to an old server

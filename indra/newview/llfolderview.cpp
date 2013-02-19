@@ -1513,12 +1513,6 @@ BOOL LLFolderView::handleKeyHere( KEY key, MASK mask )
 		LLMenuGL::sMenuContainer->hideMenus();
 	}
 
-	LLView *item = NULL;
-	if (getChildCount() > 0)
-	{
-		item = *(getChildList()->begin());
-	}
-
 	switch( key )
 	{
 	case KEY_F2:
@@ -2072,6 +2066,12 @@ void LLFolderView::scrollToShowItem(LLFolderViewItem* item, const LLRect& constr
 		mScrollContainer->scrollToShowRect( item_doc_rect, constraint_rect );
 
 	}
+}
+
+void LLFolderView::setScrollContainer(LLScrollableContainerView* parent)
+{
+	mScrollContainer = parent;
+	parent->setPassBackToChildren(false);
 }
 
 LLRect LLFolderView::getVisibleRect()

@@ -60,7 +60,9 @@
 			     initial_value="false" label="Sandbox" left="10" mouse_opaque="true"
 			     name="is sandbox" tool_tip="Toggle whether this is a sandbox region."
 			     width="180" />
-			<button bottom_delta="-52" follows="top|right" font="SansSerifSmall" halign="center"
+			<check_box name="is gaming" label="Gaming" tool_tip="Toggle whether this is a gaming region." bottom_delta="-20" follows="left|top"/>
+			<check_box name="hide from search" label="Hide region from search" tool_tip="Toggle whether this region is searchable at all." bottom_delta="-20" follows="left|top"/>
+			<button bottom_delta="-32" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="20" label="Bake Terrain" label_selected="Bake Terrain" left="8"
 			     mouse_opaque="true" name="Bake Terrain"
 			     tool_tip="Save the current terrain as default." width="110" />

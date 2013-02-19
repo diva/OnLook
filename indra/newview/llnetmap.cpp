@@ -409,7 +409,7 @@ void LLNetMap::draw()
 				avColor = it->second;
 			}
 			//Lindens are always more Linden than your friend, make that take precedence
-			else if(LLMuteList::getInstance()->isLinden(avName))
+			else if(LLMuteList::getInstance()->isLinden(id))
 			{
 				avColor = linden_color;
 			}

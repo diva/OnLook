@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include <cstring>
 #include <algorithm>
+#include <vector>
 #include "llpreprocessor.h"
 #include <curl/curl.h>
 #define COMPILING_DEBUG_LIBCURL_CC

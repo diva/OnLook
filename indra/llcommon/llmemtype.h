@@ -52,6 +52,10 @@ public:
 	class LL_COMMON_API DeclareMemType
 	{
 	public:
+		
+#if !MEM_TRACK_TYPE
+		DeclareMemType(char const * st) {}; //Do nothing
+#else
 		DeclareMemType(char const * st);
 		~DeclareMemType();
 	
@@ -60,12 +64,17 @@ public:
 		
 		// array so we can map an index ID to Name
 		static std::vector<char const *> mNameList;
+#endif
 	};
 
+#if !MEM_TRACK_TYPE
+	LLMemType(DeclareMemType& dt){} //Do nothing
+#else
 	LLMemType(DeclareMemType& dt);
 	~LLMemType();
 
 	static char const * getNameFromID(S32 id);
+#endif
 
 	static DeclareMemType MTYPE_INIT;
 	static DeclareMemType MTYPE_STARTUP;
@@ -232,7 +241,9 @@ public:
 
 	static DeclareMemType MTYPE_OTHER; // Special; used by display code
 
+#if MEM_TRACK_TYPE
 	S32 mTypeIndex;
+#endif
 };
 
 //----------------------------------------------------------------------------

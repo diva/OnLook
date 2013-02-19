@@ -126,7 +126,7 @@ public:
 
 private:
 
-	filterResult_t runFilters(LLView * view, const viewList_t children, const filterList_t filters) const;
+	filterResult_t runFilters(LLView* view, viewList_t const& children, filterList_t const& filters) const;
 
 	filterList_t mPreFilters;
 	filterList_t mPostFilters;

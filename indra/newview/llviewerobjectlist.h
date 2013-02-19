@@ -205,6 +205,8 @@ public:
 	std::vector<OrphanInfo> mOrphanChildren;	// UUID's of orphaned objects
 	S32 mNumOrphans;
 
+	static LLStat sCacheHitRate;
+
 	typedef std::vector<LLPointer<LLViewerObject> > vobj_list_t;
 
 	vobj_list_t mObjects;

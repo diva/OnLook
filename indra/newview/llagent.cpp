@@ -4459,9 +4459,9 @@ void LLAgent::sendAgentSetAppearance()
 
 	body_size.mV[VX] += x_off;
 	body_size.mV[VY] += y_off;
-	body_size.mV[VZ] += z_off; // Offset by RLVa, but not overridden.
 // [RLVa:KB] - Checked: 2010-10-11 (RLVa-1.2.0e) | Added: RLVa-1.2.0e
-	body_size.mV[VZ] += RlvSettings::getAvatarOffsetZ();
+	F32 rlvz_off = RlvSettings::getAvatarOffsetZ();
+	body_size.mV[VZ] += fabs(rlvz_off) ? rlvz_off : z_off;
 // [/RLVa:KB]
 
 	msg->addVector3Fast(_PREHASH_Size, body_size);	

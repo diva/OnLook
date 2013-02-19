@@ -100,6 +100,7 @@ public:
 	} eObjectPartitions;
 
 	typedef boost::signals2::signal<void(const LLUUID& region_id)> caps_received_signal_t;
+	typedef boost::signals2::signal<void(const LLUUID& region_id)> features_received_signal_t;
 
 	LLViewerRegion(const U64 &handle,
 				   const LLHost &host,
@@ -262,6 +263,9 @@ public:
 	static bool isSpecialCapabilityName(const std::string &name);
 	void logActiveCapabilities() const;
 
+	boost::signals2::connection setFeaturesReceivedCallback(const features_received_signal_t::slot_type& cb);
+	bool getFeaturesReceived() const { return mFeaturesReceived; }
+
     /// Get LLEventPump on which we listen for capability requests
     /// (https://wiki.lindenlab.com/wiki/Viewer:Messaging/Messaging_Notes#Capabilities)
     LLEventPump& getCapAPI() const;
@@ -350,6 +354,9 @@ public:
 	void getNeighboringRegions( std::vector<LLViewerRegion*>& uniqueRegions );
 	void getNeighboringRegionsStatus( std::vector<S32>& regions );
 	
+	void setGamingData(const LLSD& info);
+	const U32 getGamingFlags() const { return mGamingFlags; }
+
 public:
 	struct CompareDistance
 	{
@@ -439,11 +446,14 @@ private:
 
 	bool	mAlive;					// can become false if circuit disconnects
 	bool	mCapabilitiesReceived;
+	bool	mFeaturesReceived;
 	caps_received_signal_t mCapabilitiesReceivedSignal;
+	features_received_signal_t mFeaturesReceivedSignal;
 
 	BOOL mReleaseNotesRequested;
 	
 	LLSD mSimulatorFeatures;
+	U32 mGamingFlags;
 };
 
 inline BOOL LLViewerRegion::getRegionProtocol(U64 protocol) const

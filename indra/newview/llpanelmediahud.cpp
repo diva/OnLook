@@ -424,8 +424,8 @@ void LLPanelMediaHUD::setAlpha(F32 alpha)
 	LLViewQuery query;
 
 	LLView* query_view = mMediaFocus ? getChildView("media_focused_controls") : getChildView("media_hover_controls");
-	child_list_t children = query(query_view);
-	for (child_list_iter_t child_iter = children.begin();
+	viewList_t children = query(query_view);
+	for (viewList_t::iterator child_iter = children.begin();
 		child_iter != children.end(); ++child_iter)
 	{
 		LLUICtrl* ctrl = dynamic_cast<LLUICtrl*>(*child_iter);

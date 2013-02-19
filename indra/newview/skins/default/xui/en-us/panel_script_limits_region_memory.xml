@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel
+ border="true"
+ mouse_opaque="false"
+ follows="top|left"
+ height="570"
+ label="Region Memory"
+ layout="topleft"
+ name="script_limits_region_memory_panel"
+ top="0"
+ left="0"
+ width="480">
+	<text
+	 type="string"
+	 length="1"
+	 follows="left|top"
+	 height="16"
+	 layout="topleft"
+	 left="10"
+	 name="script_memory"
+	 top_pad="24"
+	 width="480">
+	   Parcel Script Memory
+	</text>
+	<text
+	 type="string"
+	 length="1"
+	 follows="left|top"
+	 height="16"
+	 layout="topleft"
+	 left="30"
+	 name="parcels_listed"
+	 top_delta="18"
+	 visible="true"
+	 width="480">
+
+	</text>
+	<text
+	 type="string"
+	 length="1"
+	 follows="left|top"
+	 height="16"
+	 layout="topleft"
+	 left="30"
+	 name="memory_used"
+	 top_delta="18"
+	 width="480">
+	</text>
+
+	<text
+	 type="string"
+	 length="1"
+	 follows="left|top"
+	 height="16"
+	 layout="topleft"
+	 left="30"
+	 name="urls_used"
+	 top_delta="18"
+	 width="480">
+
+	</text>
+	<text
+     type="string"
+     length="1"
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left="10"
+     name="loading_text"
+     top_delta="12"
+     width="480">
+        Loading...
+    </text>
+    <scroll_list
+     draw_heading="true"
+     follows="all"
+     height="409"
+     layout="topleft"
+     left_delta="0"
+     multi_select="true"
+     sort_column="0"
+     sort_ascending="true"
+     name="scripts_list"
+     top_delta="16"
+     width="460">
+        <column
+         label="Size (kb)"
+         name="size"
+         width="70" />
+        <column
+         label="URLs"
+         name="urls"
+         width="50" />
+        <column
+         label="Object"
+         name="name"
+         width="70" />
+        <column
+         label="Owner"
+         name="owner"
+         width="90" />
+        <column
+         label="Parcel"
+         name="parcel"
+         width="100" />
+        <column
+         label="Location"
+         name="location"
+         width="80" />
+    </scroll_list>
+    <button
+     follows="bottom|left"
+     height="19"
+     label="Refresh List"
+     layout="bottomleft"
+     left_pad="5"
+     name="refresh_list_btn"
+     bottom_delta="-34"
+     left="10"
+     width="100" />
+    <button
+     follows="bottom|right"
+     height="19"
+     label="Highlight"
+	 visible="false"
+     layout="bottomright"
+     left="370"
+     name="highlight_btn"
+     bottom_delta="0"
+     width="100" />
+    <button
+     follows="bottom|right"
+     height="19"
+     label="Return"
+	 visible="false"
+     layout="bottomright"
+     name="return_btn"
+     bottom_delta="0"
+     left_delta="-105"
+     width="100" />
+</panel>

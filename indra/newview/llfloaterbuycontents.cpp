@@ -58,26 +58,36 @@
 
 #include "hippogridmanager.h"
 
-LLFloaterBuyContents* LLFloaterBuyContents::sInstance = NULL;
-
 LLFloaterBuyContents::LLFloaterBuyContents()
 :	LLFloater(std::string("floater_buy_contents"), std::string("FloaterBuyContentsRect"), LLStringUtil::null)
 {
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_buy_contents.xml");
+}
 
-	childSetAction("cancel_btn", onClickCancel, this);
-	childSetAction("buy_btn", onClickBuy, this);
+BOOL LLFloaterBuyContents::postBuild()
+{
 
-	childDisable("item_list");
-	childDisable("buy_btn");
-	childDisable("wear_check");
+	getChild<LLUICtrl>("cancel_btn")->setCommitCallback( boost::bind(&LLFloaterBuyContents::onClickCancel, this));
+	getChild<LLUICtrl>("buy_btn")->setCommitCallback( boost::bind(&LLFloaterBuyContents::onClickBuy, this));
+
+	getChildView("item_list")->setEnabled(FALSE);
+	getChildView("buy_btn")->setEnabled(FALSE);
+	getChildView("wear_check")->setEnabled(FALSE);
 
 	setDefaultBtn("cancel_btn"); // to avoid accidental buy (SL-43130)
+
+	// Always center the dialog.  User can change the size,
+	// but purchases are important and should be center screen.
+	// This also avoids problems where the user resizes the application window
+	// mid-session and the saved rect is off-center.
+	center();
+	
+	return TRUE;
 }
 
 LLFloaterBuyContents::~LLFloaterBuyContents()
 {
-	sInstance = NULL;
+	removeVOInventoryListener();
 }
 
 
@@ -92,26 +102,20 @@ void LLFloaterBuyContents::show(const LLSaleInfo& sale_info)
 		return;
 	}
 
-	// Create a new instance only if needed
-	if (sInstance)
-	{
-		LLScrollListCtrl* list = sInstance->getChild<LLScrollListCtrl>("item_list");
-		if (list) list->deleteAllItems();
-	}
-	else
-	{
-		sInstance = new LLFloaterBuyContents();
-	}
+	LLFloaterBuyContents* floater = getInstance();
+	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("item_list");
+	if (list)
+		list->deleteAllItems();
 
-	sInstance->open(); /*Flawfinder: ignore*/
-	sInstance->setFocus(TRUE);
-	sInstance->mObjectSelection = LLSelectMgr::getInstance()->getEditSelection();
+	floater->mObjectSelection = LLSelectMgr::getInstance()->getEditSelection();
 
+	floater->open(); /*Flawfinder: ignore*/
+	floater->setFocus(TRUE);
 	// Always center the dialog.  User can change the size,
 	// but purchases are important and should be center screen.
 	// This also avoids problems where the user resizes the application window
 	// mid-session and the saved rect is off-center.
-	sInstance->center();
+	floater->center();
 
 	LLUUID owner_id;
 	std::string owner_name;
@@ -122,7 +126,7 @@ void LLFloaterBuyContents::show(const LLSaleInfo& sale_info)
 		return;
 	}
 
-	sInstance->mSaleInfo = sale_info;
+	floater->mSaleInfo = sale_info;
 
 	// Update the display
 	LLSelectNode* node = selection->getFirstRootNode();
@@ -132,17 +136,17 @@ void LLFloaterBuyContents::show(const LLSaleInfo& sale_info)
 		gCacheName->getGroupName(owner_id, owner_name);
 	}
 
-	sInstance->childSetTextArg("contains_text", "[NAME]", node->mName);
-	sInstance->childSetTextArg("buy_text", "[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
-	sInstance->childSetTextArg("buy_text", "[AMOUNT]", llformat("%d", sale_info.getSalePrice()));
-	sInstance->childSetTextArg("buy_text", "[NAME]", owner_name);
+	floater->getChild<LLUICtrl>("contains_text")->setTextArg("[NAME]", node->mName);
+	floater->getChild<LLUICtrl>("buy_text")->setTextArg("[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
+	floater->getChild<LLUICtrl>("buy_text")->setTextArg("[AMOUNT]", llformat("%d", sale_info.getSalePrice()));
+	floater->getChild<LLUICtrl>("buy_text")->setTextArg("[NAME]", owner_name);
 
 	// Must do this after the floater is created, because
 	// sometimes the inventory is already there and 
 	// the callback is called immediately.
 	LLViewerObject* obj = selection->getFirstRootObject();
-	sInstance->registerVOInventoryListener(obj,NULL);
-	sInstance->requestVOInventory();
+	floater->registerVOInventoryListener(obj,NULL);
+	floater->requestVOInventory();
 }
 
 
@@ -157,23 +161,26 @@ void LLFloaterBuyContents::inventoryChanged(LLViewerObject* obj,
 		return;
 	}
 
-	if (!inv)
-	{
-		llwarns << "No inventory in LLFloaterBuyContents::inventoryChanged"
-			<< llendl;
-		removeVOInventoryListener();
-		return;
-	}
-
-	LLCtrlListInterface *item_list = childGetListInterface("item_list");
+	LLScrollListCtrl* item_list = getChild<LLScrollListCtrl>("item_list");
 	if (!item_list)
 	{
 		removeVOInventoryListener();
 		return;
 	}
 
+	item_list->deleteAllItems();
+	
+	if (!inv)
+	{
+		llwarns << "No inventory in LLFloaterBuyContents::inventoryChanged"
+			<< llendl;
+
+		return;
+	}
+
 	// default to turning off the buy button.
-	childDisable("buy_btn");
+	LLView* buy_btn = getChildView("buy_btn");
+	buy_btn->setEnabled(FALSE);
 
 	LLUUID owner_id;
 	BOOL is_group_owned;
@@ -214,13 +221,15 @@ void LLFloaterBuyContents::inventoryChanged(LLViewerObject* obj,
 
 		// There will be at least one item shown in the display, so go
 		// ahead and enable the buy button.
-		childEnable("buy_btn");
+		buy_btn->setEnabled(TRUE);
 
 		// Create the line in the list
 		LLSD row;
 
 		BOOL item_is_multi = FALSE;
-		if ( inv_item->getFlags() & LLInventoryItemFlags::II_FLAGS_LANDMARK_VISITED )
+		if ((inv_item->getFlags() & LLInventoryItemFlags::II_FLAGS_LANDMARK_VISITED
+			|| inv_item->getFlags() & LLInventoryItemFlags::II_FLAGS_OBJECT_HAS_MULTIPLE_ITEMS)
+			&& !(inv_item->getFlags() & LLInventoryItemFlags::II_FLAGS_WEARABLES_MASK))
 		{
 			item_is_multi = TRUE;
 		}
@@ -260,28 +269,25 @@ void LLFloaterBuyContents::inventoryChanged(LLViewerObject* obj,
 
 	if (wearable_count > 0)
 	{
-		childEnable("wear_check");
-		childSetValue("wear_check", LLSD(false) );
+		getChildView("wear_check")->setEnabled(TRUE);
+		getChild<LLUICtrl>("wear_check")->setValue(LLSD(false) );
 	}
-	
-	removeVOInventoryListener();
 }
 
 
-// static
-void LLFloaterBuyContents::onClickBuy(void*)
+void LLFloaterBuyContents::onClickBuy()
 {
 	// Make sure this wasn't selected through other mechanisms 
 	// (ie, being the default button and pressing enter.
-	if(!sInstance->childIsEnabled("buy_btn"))
+	if(!getChildView("buy_btn")->getEnabled())
 	{
 		// We shouldn't be enabled.  Just close.
-		sInstance->close();
+		close();
 		return;
 	}
 
 	// We may want to wear this item
-	if (sInstance->childGetValue("wear_check"))
+	if (getChild<LLUICtrl>("wear_check")->getValue())
 	{
 		LLInventoryState::sWearNewClothing = TRUE;
 	}
@@ -293,14 +299,14 @@ void LLFloaterBuyContents::onClickBuy(void*)
 	// *NOTE: doesn't work for multiple object buy, which UI does not
 	// currently support sale info is used for verification only, if
 	// it doesn't match region info then sale is canceled.
-	LLSelectMgr::getInstance()->sendBuy(gAgent.getID(), category_id, sInstance->mSaleInfo);
+	LLSelectMgr::getInstance()->sendBuy(gAgent.getID(), category_id, mSaleInfo);
 
-	sInstance->close();
+	close();
 }
 
 
 // static
-void LLFloaterBuyContents::onClickCancel(void*)
+void LLFloaterBuyContents::onClickCancel()
 {
-	sInstance->close();
+	close();
 }

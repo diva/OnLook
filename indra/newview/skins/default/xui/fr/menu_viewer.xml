@@ -4,6 +4,7 @@
     <menu_item_call label="Import  d'image ([UPLOADFEE])" name="Upload Image"/>
     <menu_item_call label="Import de son ([UPLOADFEE])" name="Upload Sound"/>
     <menu_item_call label="Import d'animation ([UPLOADFEE])" name="Upload Animation"/>
+    <menu_item_call label="Import de Mesh" name="Upload Mesh"/>
     <menu_item_call label="Import  multiples ([UPLOADFEE] par fichier)" name="Bulk Upload"/>
 	<menu_item_call label="Import XML" name="Import"/>
 	<menu_item_call label="Import avec textures" name="Import2"/>
@@ -135,6 +136,9 @@
 		</menu_item_call>
 		<menu_item_call label="Acheter des [CURRENCY]" name="Buy and Sell L$..."/>
 		<menu_item_separator label="-----------" name="separator5"/>
+        <menu_item_call label="Mes Ensembles" name="My Outfits"/>
+        <menu_item_call label="Favoris" name="Favorites"/>
+        <menu_item_separator label="-----------" name="separator5"/>
 		<menu_item_call label="Mes terrains" name="My Land..."/>
 		<menu_item_call label="À propos du terrain" name="About Land..."/>
 		<menu_item_call label="Acheter le terrain" name="Buy Land..."/>

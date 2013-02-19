@@ -1641,7 +1641,6 @@ bool LLModelLoader::doLoadModel()
 
 						//If no skeleton, do a breadth-first search to get at specific joints
 						bool rootNode = false;
-						bool skeletonWithNoRootNode = false;
 
 						//Need to test for a skeleton that does not have a root node
 						//This occurs when your instance controller does not have an associated scene 
@@ -1651,10 +1650,6 @@ bool LLModelLoader::doLoadModel()
 							if (pSkeletonRootNode)
 							{
 								rootNode = true;
-							}
-							else 
-							{
-								skeletonWithNoRootNode = true;
 							}
 
 						}
@@ -5034,6 +5029,11 @@ BOOL LLModelPreview::render()
 		refresh();
 	}
 
+	if (use_shaders)
+	{
+		gObjectPreviewProgram.bind();
+	}
+
 	gGL.loadIdentity();
 	gPipeline.enableLightsPreview();
 
@@ -5043,8 +5043,9 @@ BOOL LLModelPreview::render()
 	LLQuaternion av_rot = camera_rot;
 	LLViewerCamera::getInstance()->setOriginAndLookAt(
 													  target_pos + ((LLVector3(mCameraDistance, 0.f, 0.f) + offset) * av_rot),		// camera
-							   LLVector3::z_axis,																	// up
-							   target_pos);			// point of interest
+													  LLVector3::z_axis,																	// up
+													  target_pos);											// point of interest
+
 
 	z_near = llclamp(z_far * 0.001f, 0.001f, 0.1f);
 
@@ -5057,11 +5058,6 @@ BOOL LLModelPreview::render()
 	gGL.color3f(BRIGHTNESS, BRIGHTNESS, BRIGHTNESS);
 
 	const U32 type_mask = LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_NORMAL | LLVertexBuffer::MAP_TEXCOORD0;
-
-	if (use_shaders)
-	{
-		gObjectPreviewProgram.bind();
-	}
 
 	LLGLEnable normalize(GL_NORMALIZE);
 
@@ -5248,10 +5244,10 @@ BOOL LLModelPreview::render()
 
 										if (i + 1 >= hull_colors.size())
 										{
-											hull_colors.push_back(LLColor4U(rand()%128 + 127, rand()%128 + 127, rand()%128 + 127, 128));
+											hull_colors.push_back(LLColor4U(rand()%128+127, rand()%128+127, rand()%128+127, 128));
 										}
 
-										glColor4ubv(hull_colors[i].mV);
+										gGL.diffuseColor4ubv(hull_colors[i].mV);
 										LLVertexBuffer::drawArrays(LLRender::TRIANGLES, physics.mMesh[i].mPositions, physics.mMesh[i].mNormals);
 
 										if (explode > 0.f)
