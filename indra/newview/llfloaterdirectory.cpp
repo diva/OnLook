@@ -67,6 +67,29 @@
 
 #include "hippogridmanager.h"
 
+class LLPanelDirMarket : public LLPanelDirFind
+{
+public:
+	LLPanelDirMarket(const std::string& name, LLFloaterDirectory* floater)
+	: LLPanelDirFind(name, floater, "market_browser")
+	{}
+
+	/*virtual*/ void search(const std::string& url)
+	{
+		if (url.empty()) navigateToDefaultPage();
+	}
+
+	/*virtual*/ void navigateToDefaultPage()
+	{
+		if (mWebBrowser) mWebBrowser->navigateTo(getString("default_search_page"));
+	}
+
+	static void* create(void* data)
+	{
+		return new LLPanelDirMarket("market_panel", static_cast<LLFloaterDirectory*>(data));
+	}
+};
+
 LLFloaterDirectory* LLFloaterDirectory::sInstance = NULL;
 //static
 S32 LLFloaterDirectory::sOldSearchCount = 0; // debug
@@ -110,6 +133,8 @@ LLFloaterDirectory::LLFloaterDirectory(const std::string& name)
 		// web search and showcase only for SecondLife
 		factory_map["find_all_panel"] = LLCallbackMap(createFindAll, this);
 		factory_map["showcase_panel"] = LLCallbackMap(createShowcase, this);		
+		if (!enableClassicAllSearch)
+			factory_map["market_panel"] = LLCallbackMap(LLPanelDirMarket::create, this);
 	}
 
 	if (enableClassicAllSearch)
