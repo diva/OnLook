@@ -325,11 +325,6 @@ bool HippoFloaterXmlImpl::execute(LLUICtrl *ctrl,
 					bool set = (value != "0");
 					if (HippoFloaterXmlImpl *floater = dynamic_cast<HippoFloaterXmlImpl*>(ctrl)) {
 						floater->mIsNotifyOnClose = set;
-                    } else if (LLButton *button = dynamic_cast<LLButton*>(ctrl)) {
-                        if (set)
-                            button->setClickedCallback(boost::bind(&notifyCallback, _1), ctrl);
-                        else
-                            button->setClickedCallback(0, 0);
                     } else {
                         if (set)
                             ctrl->setCommitCallback(boost::bind(&notifyCallback, _1), ctrl);
