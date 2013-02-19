@@ -33,19 +33,24 @@
 #ifndef LL_LLTEXTUREFETCH_H
 #define LL_LLTEXTUREFETCH_H
 
+#include <vector>
+#include <map>
+
 #include "lldir.h"
 #include "llimage.h"
 #include "lluuid.h"
 #include "llworkerthread.h"
 #include "lltextureinfo.h"
 #include "llapr.h"
+#include "llstat.h"
 
 class LLViewerTexture;
 class LLTextureFetchWorker;
 class HTTPGetResponder;
-class LLTextureCache;
 class LLImageDecodeThread;
 class LLHost;
+class LLViewerAssetStats;
+class LLTextureCache;
 
 // Interface class
 class LLTextureFetch : public LLWorkerThread
@@ -93,8 +98,23 @@ public:
 	LLTextureFetchWorker* getWorker(const LLUUID& id);
 	LLTextureFetchWorker* getWorkerAfterLock(const LLUUID& id);
 
-	LLTextureInfo* getTextureInfo() { return &mTextureInfo; }
+	// Commands available to other threads to control metrics gathering operations.
 
+	// Threads:  T*
+	void commandSetRegion(U64 region_handle);
+
+	// Threads:  T*
+	void commandSendMetrics(const std::string & caps_url,
+							const LLUUID & session_id,
+							const LLUUID & agent_id,
+							LLViewerAssetStats * main_stats);
+
+	// Threads:  T*
+	void commandDataBreak();
+
+	bool isQAMode() const				{ return mQAMode; }
+	void updateStateStats(U32 cache_read, U32 cache_write);
+	void getStateStats(U32 * cache_read, U32 * cache_write);
 protected:
 	void addToNetworkQueue(LLTextureFetchWorker* worker);
 	void removeFromNetworkQueue(LLTextureFetchWorker* worker, bool cancel);
@@ -107,9 +127,14 @@ protected:
 
 private:
 	void sendRequestListToSimulators();
+	/*virtual*/ void startThread(void);
+	/*virtual*/ void endThread(void);
 	/*virtual*/ void threadedUpdate(void);
 	void commonUpdate();
 
+	void cmdEnqueue(TFRequest *);
+	TFRequest * cmdDequeue();
+	void cmdDoWork();
 	
 public:
 	LLUUID mDebugID;
@@ -148,6 +173,25 @@ private:
 	//debug use
 	U32 mTotalHTTPRequests ;
 
+	// Out-of-band cross-thread command queue.  This command queue
+	// is logically tied to LLQueuedThread's list of
+	// QueuedRequest instances and so must be covered by the
+	// same locks.
+	typedef std::vector<TFRequest *> command_queue_t;
+	command_queue_t mCommands;
+
+	// If true, modifies some behaviors that help with QA tasks.
+	const bool mQAMode;
+	// Cumulative stats on the states/requests issued by
+	// textures running through here.
+	U32 mTotalCacheReadCount;
+	U32 mTotalCacheWriteCount;
+
+public:
+	// A probabilistically-correct indicator that the current
+	// attempt to log metrics follows a break in the metrics stream
+	// reporting due to either startup or a problem POSTing data.
+	static volatile bool svMetricsDataBreak;
 };
 
 #endif // LL_LLTEXTUREFETCH_H

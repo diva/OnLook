@@ -4781,6 +4781,10 @@ void LLCallingCardBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	}
 	else
 	{
+		if ((flags & FIRST_SELECTED_ITEM) == 0)
+		{
+		disabled_items.push_back(std::string("Open"));
+		}
 		addOpenRightClickMenuOption(items);
 		items.push_back(std::string("Properties"));
 
@@ -5961,7 +5965,8 @@ void LLWearableBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 		}
 // [/RLVa:KB]*/
 
-		if ((flags & FIRST_SELECTED_ITEM) == 0)
+		bool not_modifiable = !gAgentWearables.isWearableModifiable(item->getUUID());
+		if (((flags & FIRST_SELECTED_ITEM) == 0) || not_modifiable)
 		{
 			disabled_items.push_back(std::string("Wearable Edit"));
 		}

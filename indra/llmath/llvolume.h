@@ -1025,17 +1025,6 @@ public:
 								   LLVector3* normal = NULL,
 								   LLVector3* bi_normal = NULL);
 	
-	// The following cleans up vertices and triangles,
-	// getting rid of degenerate triangles and duplicate vertices,
-	// and allocates new arrays with the clean data.
-	static BOOL cleanupTriangleData( const S32 num_input_vertices,
-								const std::vector<Point> &input_vertices,
-								const S32 num_input_triangles,
-								S32 *input_triangles,
-								S32 &num_output_vertices,
-								LLVector3 **output_vertices,
-								S32 &num_output_triangles,
-								S32 **output_triangles);
 	LLFaceID generateFaceMask();
 
 	BOOL isFaceMaskValid(LLFaceID face_mask);
@@ -1045,7 +1034,7 @@ public:
 	friend std::ostream& operator<<(std::ostream &s, const LLVolume *volumep);		// HACK to bypass Windoze confusion over 
 																				// conversion if *(LLVolume*) to LLVolume&
 	const LLVolumeFace &getVolumeFace(const S32 f) const {return mVolumeFaces[f];} // DO NOT DELETE VOLUME WHILE USING THIS REFERENCE, OR HOLD A POINTER TO THIS VOLUMEFACE
-
+	
 	U32					mFaceMask;			// bit array of which faces exist in this volume
 	LLVector3			mLODScaleBias;		// vector for biasing LOD based on scale
 	

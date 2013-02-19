@@ -2,44 +2,92 @@
  * @file llviewerassetstorage.cpp
  * @brief Subclass capable of loading asset data to/from an external source.
  *
- * $LicenseInfo:firstyear=2003&license=viewergpl$
- * 
- * Copyright (c) 2003-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2003&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
 #include "llviewerprecompiledheaders.h"
 
-#include "linden_common.h"
-
-#include "llagent.h"
 #include "llviewerassetstorage.h"
-#include "llviewerbuild.h"
+
 #include "llvfile.h"
 #include "llvfs.h"
+#include "message.h"
 
+#include "llagent.h"
+#include "lltransfersourceasset.h"
+#include "lltransfertargetvfile.h"
+#include "llviewerassetstats.h"
+
+///----------------------------------------------------------------------------
+/// LLViewerAssetRequest
+///----------------------------------------------------------------------------
+
+/**
+ * @brief Local class to encapsulate asset fetch requests with a timestamp.
+ *
+ * Derived from the common LLAssetRequest class, this is currently used
+ * only for fetch/get operations and its only function is to wrap remote
+ * asset fetch requests so that they can be timed.
+ */
+class LLViewerAssetRequest : public LLAssetRequest
+{
+public:
+	LLViewerAssetRequest(const LLUUID &uuid, const LLAssetType::EType type)
+		: LLAssetRequest(uuid, type),
+		  mMetricsStartTime(0)
+		{
+		}
+	
+	LLViewerAssetRequest & operator=(const LLViewerAssetRequest &);	// Not defined
+	// Default assignment operator valid
+	
+	// virtual
+	~LLViewerAssetRequest()
+		{
+			recordMetrics();
+		}
+
+protected:
+	void recordMetrics()
+		{
+			if (mMetricsStartTime)
+			{
+				// Okay, it appears this request was used for useful things.  Record
+				// the expected dequeue and duration of request processing.
+				LLViewerAssetStatsFF::record_dequeue_main(mType, false, false);
+				LLViewerAssetStatsFF::record_response_main(mType, false, false,
+														   (LLViewerAssetStatsFF::get_timestamp()
+															- mMetricsStartTime));
+				mMetricsStartTime = 0;
+			}
+		}
+	
+public:
+	LLViewerAssetStats::duration_t		mMetricsStartTime;
+};
+
+///----------------------------------------------------------------------------
+/// LLViewerAssetStorage
+///----------------------------------------------------------------------------
 
 LLViewerAssetStorage::LLViewerAssetStorage(LLMessageSystem *msg, LLXferManager *xfer,
 										   LLVFS *vfs, LLVFS *static_vfs, 
@@ -68,7 +116,7 @@ void LLViewerAssetStorage::storeAssetData(
 	F64 timeout)
 {
 	LLAssetID asset_id = tid.makeAssetID(gAgent.getSecureSessionID());
-	llinfos << "LLViewerAssetStorage::storeAssetData (legacy) " << tid << ":" << LLAssetType::lookup(asset_type)
+	LL_DEBUGS("AssetStorage") << "LLViewerAssetStorage::storeAssetData (legacy) " << tid << ":" << LLAssetType::lookup(asset_type)
 			<< " ASSET_ID: " << asset_id << llendl;
 	
 	if (mUpstreamHost.isOk())
@@ -201,9 +249,9 @@ void LLViewerAssetStorage::storeAssetData(
 	}
 	
 	LLAssetID asset_id = tid.makeAssetID(gAgent.getSecureSessionID());
-	llinfos << "LLViewerAssetStorage::storeAssetData (legacy)" << asset_id << ":" << LLAssetType::lookup(asset_type) << llendl;
+	LL_DEBUGS("AssetStorage") << "LLViewerAssetStorage::storeAssetData (legacy)" << asset_id << ":" << LLAssetType::lookup(asset_type) << llendl;
 
-	llinfos << "ASSET_ID: " << asset_id << llendl;
+	LL_DEBUGS("AssetStorage") << "ASSET_ID: " << asset_id << llendl;
 
 	S32 size = 0;
 	LLFILE* fp = LLFile::fopen(filename, "rb");
@@ -266,3 +314,77 @@ void LLViewerAssetStorage::storeAssetData(
 		}
 	}
 }
+
+
+/**
+ * @brief Allocate and queue an asset fetch request for the viewer
+ *
+ * This is a nearly-verbatim copy of the base class's implementation
+ * with the following changes:
+ *  -  Use a locally-derived request class
+ *  -  Start timing for metrics when request is queued
+ *
+ * This is an unfortunate implementation choice but it's forced by
+ * current conditions.  A refactoring that might clean up the layers
+ * of responsibility or introduce factories or more virtualization
+ * of methods would enable a more attractive solution.
+ *
+ * If LLAssetStorage::_queueDataRequest changes, this must change
+ * as well.
+ */
+
+// virtual
+void LLViewerAssetStorage::_queueDataRequest(
+	const LLUUID& uuid,
+	LLAssetType::EType atype,
+	LLGetAssetCallback callback,
+	void *user_data,
+	BOOL duplicate,
+	BOOL is_priority)
+{
+	if (mUpstreamHost.isOk())
+	{
+		// stash the callback info so we can find it after we get the response message
+		LLViewerAssetRequest *req = new LLViewerAssetRequest(uuid, atype);
+		req->mDownCallback = callback;
+		req->mUserData = user_data;
+		req->mIsPriority = is_priority;
+		if (!duplicate)
+		{
+			// Only collect metrics for non-duplicate requests.  Others 
+			// are piggy-backing and will artificially lower averages.
+			req->mMetricsStartTime = LLViewerAssetStatsFF::get_timestamp();
+		}
+		
+		mPendingDownloads.push_back(req);
+	
+		if (!duplicate)
+		{
+			// send request message to our upstream data provider
+			// Create a new asset transfer.
+			LLTransferSourceParamsAsset spa;
+			spa.setAsset(uuid, atype);
+
+			// Set our destination file, and the completion callback.
+			LLTransferTargetParamsVFile tpvf;
+			tpvf.setAsset(uuid, atype);
+			tpvf.setCallback(downloadCompleteCallback, req);
+
+			LL_DEBUGS("AssetStorage") << "Starting transfer for " << uuid << llendl;
+			LLTransferTargetChannel *ttcp = gTransferManager.getTargetChannel(mUpstreamHost, LLTCT_ASSET);
+			ttcp->requestTransfer(spa, tpvf, 100.f + (is_priority ? 1.f : 0.f));
+
+			LLViewerAssetStatsFF::record_enqueue_main(atype, false, false);
+		}
+	}
+	else
+	{
+		// uh-oh, we shouldn't have gotten here
+		llwarns << "Attempt to move asset data request upstream w/o valid upstream provider" << llendl;
+		if (callback)
+		{
+			callback(mVFS, uuid, atype, user_data, LL_ERR_CIRCUIT_GONE, LL_EXSTAT_NO_UPSTREAM);
+		}
+	}
+}
+

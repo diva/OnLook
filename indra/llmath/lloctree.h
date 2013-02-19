@@ -745,7 +745,7 @@ public:
 		}
 
 		//node is now root
-		llwarns << "!!! OCTREE REMOVING FACE BY ADDRESS, SEVERE PERFORMANCE PENALTY |||" << llendl;
+		llwarns << "!!! OCTREE REMOVING ELEMENT BY ADDRESS, SEVERE PERFORMANCE PENALTY |||" << llendl;
 		node->removeByAddress(data);
 		llassert(data->getBinIndex() == -1);
 		return true;

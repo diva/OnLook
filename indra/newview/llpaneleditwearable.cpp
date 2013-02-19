@@ -1241,11 +1241,30 @@ void LLPanelEditWearable::saveChanges(bool force_save_as, std::string new_name)
 	
 	U32 index = gAgentWearables.getWearableIndex(getWearable());
 	
+
+	// Find an existing link to this wearable's inventory item, if any, and its description field.
+	LLInventoryItem *link_item = NULL;
+
+	std::string description;
+	if(gAgentAvatarp->isUsingServerBakes())
+	{
+		LLInventoryModel::item_array_t links =
+			LLAppearanceMgr::instance().findCOFItemLinks(getWearable()->getItemID());
+		if (links.size()>0)
+		{
+			link_item = links.get(0).get();
+			if (link_item && link_item->getIsLinkType())
+			{
+				description = link_item->getActualDescription();
+			}
+		}
+	}
+
 	if (force_save_as)
 	{
 		// the name of the wearable has changed, re-save wearable with new name
 		LLAppearanceMgr::instance().removeCOFItemLinks(getWearable()->getItemID());
-		LLViewerWearable* new_wearable = gAgentWearables.saveWearableAs(mType, index, new_name, FALSE);
+		LLViewerWearable* new_wearable = gAgentWearables.saveWearableAs(mType, index, new_name, description, FALSE);
 		if(new_wearable)
 		{
 			mPendingWearable = new_wearable;
@@ -1256,7 +1275,23 @@ void LLPanelEditWearable::saveChanges(bool force_save_as, std::string new_name)
 	}	
 	else
 	{
-	        gAgentWearables.saveWearable(mType, index, TRUE, new_name);
+		// Make another copy of this link, with the same
+		// description.  This is needed to bump the COF
+		// version so texture baking service knows appearance has changed.
+		if (link_item)
+		{
+			// Create new link
+			link_inventory_item( gAgent.getID(),
+								 link_item->getLinkedUUID(),
+								 LLAppearanceMgr::instance().getCOF(),
+								 link_item->getName(),
+								 description,
+								 LLAssetType::AT_LINK,
+								 NULL);
+			// Remove old link
+			gInventory.purgeObject(link_item->getUUID());
+		}
+		gAgentWearables.saveWearable(mType, index, TRUE, new_name);
 	}
 }
 

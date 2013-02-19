@@ -824,7 +824,9 @@ AIHTTPTimeoutPolicy const* AIHTTPTimeoutPolicy::getTimeoutPolicyByName(std::stri
 // Policy name									Policy
 P(accountingCostResponder);
 P(agentStateResponder);
+P(appearanceChangeMetricsResponder);
 P(assetUploadResponder);
+P(assetReportHandler);
 P(asyncConsoleResponder);
 P(avatarPickerResponder);
 P(authHandler);

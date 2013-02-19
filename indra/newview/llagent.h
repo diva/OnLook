@@ -861,8 +861,9 @@ private:
 	// Send
 	//--------------------------------------------------------------------
 public:
-	void			sendMessage();						// Send message to this agent's region.
+	void			sendMessage(); // Send message to this agent's region
 	void			sendReliableMessage();
+	void 			dumpSentAppearance(const std::string& dump_prefix);
 	void			sendAgentSetAppearance();
 	void 			sendAgentDataUpdateRequest();
 	void 			sendAgentUserInfoRequest();

@@ -742,7 +742,7 @@ void LLViewerRegion::processRegionInfo(LLMessageSystem* msg, void**)
 	// send it to 'observers'
 	// *TODO: switch the floaters to using LLRegionInfoModel
 	llinfos << "Processing region info" << llendl;
-	LLRegionInfoModel::getInstance()->update(msg);
+	LLRegionInfoModel::instance().update(msg);
 	LLFloaterGodTools::processRegionInfo(msg);
 	LLFloaterRegionInfo::processRegionInfo(msg);
 	LLFloaterReporter::processRegionInfo(msg);
@@ -1660,7 +1660,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("UpdateScriptAgent");
 	capabilityNames.append("UpdateScriptTask");
 	capabilityNames.append("UploadBakedTexture");
-	//capabilityNames.append("ViewerMetrics");
+	capabilityNames.append("ViewerMetrics");
 	capabilityNames.append("ViewerStartAuction");
 	capabilityNames.append("ViewerStats");
 	

@@ -180,9 +180,10 @@ void LLFloaterColorPicker::createUI ()
 //
 void LLFloaterColorPicker::showUI ()
 {
+	open();		/*Flawfinder: ignore*/
 	setVisible ( TRUE );
 	setFocus ( TRUE );
-	open();		/*Flawfinder: ignore*/
+
 
 	// HACK: if system color picker is required - close the SL one we made and use default system dialog
 	if ( gSavedSettings.getBOOL ( "UseDefaultColorPicker" ) )

@@ -95,7 +95,8 @@ void LLWearableData::setWearable(const LLWearableType::EType type, U32 index, LL
 }
 
 U32 LLWearableData::pushWearable(const LLWearableType::EType type, 
-									LLWearable *wearable)
+								   LLWearable *wearable,
+								   bool trigger_updated /* = true */)
 {
 	if (wearable == NULL)
 	{
@@ -121,8 +122,11 @@ U32 LLWearableData::pushWearable(const LLWearableType::EType type,
 			mWearableDatas[type].push_back(wearable);
 			idxWearable = mWearableDatas[type].size() - 1;
 		}
-		const BOOL removed = FALSE;
-		wearableUpdated(wearable, removed);
+		if (trigger_updated)
+		{
+			const BOOL removed = FALSE;
+			wearableUpdated(wearable, removed);
+		}
 		return idxWearable;
 // [/RLVa:KB]
 	}
@@ -173,6 +177,17 @@ void LLWearableData::popWearable(const LLWearableType::EType type, U32 index)
 		const BOOL removed = TRUE;
 		wearableUpdated(wearable, removed);
 	}
+}
+
+void LLWearableData::clearWearableType(const LLWearableType::EType type)
+{
+	wearableentry_map_t::iterator wearable_iter = mWearableDatas.find(type);
+	if (wearable_iter == mWearableDatas.end())
+	{
+		return;
+	}
+	wearableentry_vec_t& wearable_vec = wearable_iter->second;
+	wearable_vec.clear();
 }
 
 bool LLWearableData::swapWearables(const LLWearableType::EType type, U32 index_a, U32 index_b)
