@@ -430,7 +430,7 @@ void LLPanelPermissions::refresh()
 		}
 	}
 	
-	childSetEnabled("button set group",owners_identical && (mOwnerID == gAgent.getID()) && is_nonpermanent_enforced);
+	childSetEnabled("button set group",root_selected && owners_identical && (mOwnerID == gAgent.getID()) && is_nonpermanent_enforced);
 	childSetEnabled("button open group", group_id.notNull());
 
 	// figure out the contents of the name, description, & category

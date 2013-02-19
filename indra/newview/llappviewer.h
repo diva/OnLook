@@ -168,6 +168,10 @@ public:
 	void addOnIdleCallback(const boost::function<void()>& cb); // add a callback to fire (once) when idle
 
 	void purgeCache(); // Clear the local cache. 
+
+	// Metrics policy helper statics.
+	static void metricsUpdateRegion(U64 region_handle);
+	static void metricsSend(bool enable_reporting);
 protected:
 	virtual bool initWindow(); // Initialize the viewer's window.
 	virtual bool initLogging(); // Initialize log files, logging system, return false on failure.

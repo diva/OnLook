@@ -72,10 +72,12 @@ public:
 protected:
 	// Low-level data structure setter - public access is via setWearableItem, etc.
 	void 			setWearable(const LLWearableType::EType type, U32 index, LLWearable *wearable);
-	U32 			pushWearable(const LLWearableType::EType type, LLWearable *wearable);
-	virtual void	wearableUpdated(LLWearable *wearable, BOOL removed) = 0;
+	U32 			pushWearable(const LLWearableType::EType type, LLWearable *wearable, 
+								 bool trigger_updated = true);
+	virtual void	wearableUpdated(LLWearable *wearable, BOOL removed);
 	void 			popWearable(LLWearable *wearable);
 	void			popWearable(const LLWearableType::EType type, U32 index);
+	void			clearWearableType(const LLWearableType::EType type);
 	bool			swapWearables(const LLWearableType::EType type, U32 index_a, U32 index_b);
 
 private:
@@ -88,7 +90,7 @@ public:
 	LLUUID			computeBakedTextureHash(LLAvatarAppearanceDefines::EBakedTextureIndex baked_index,
 											BOOL generate_valid_hash = TRUE);
 protected:
-	virtual void	invalidateBakedTextureHash(LLMD5& hash) const = 0;
+	virtual void	invalidateBakedTextureHash(LLMD5& hash) const {}
 
 	//--------------------------------------------------------------------
 	// Member variables

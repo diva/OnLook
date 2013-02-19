@@ -34,8 +34,8 @@
 #include "llagentcamera.h"
 #include "llagentwearables.h"
 #include "llagentui.h"
-#include "llanimationstates.h"
 #include "llappearancemgr.h"
+#include "llanimationstates.h"
 #include "llcallingcard.h"
 #include "llcapabilitylistener.h"
 #include "llconsole.h"
@@ -780,6 +780,7 @@ void LLAgent::handleServerBakeRegionTransition(const LLUUID& region_id)
 		!gAgentAvatarp->isUsingServerBakes() &&
 		(mRegionp->getCentralBakeVersion()>0))
 	{
+		llinfos << "update requested due to region transition" << llendl;
 		LLAppearanceMgr::instance().requestServerAppearanceUpdate();
 	}
 }
@@ -852,6 +853,9 @@ void LLAgent::setRegion(LLViewerRegion *regionp)
 			// Update all of the regions.
 			LLWorld::getInstance()->updateAgentOffset(mAgentOriginGlobal);
 		}
+
+		// Pass new region along to metrics components that care about this level of detail.
+		LLAppViewer::metricsUpdateRegion(regionp->getHandle());
 	}
 	mRegionp = regionp;
 
@@ -3717,6 +3721,10 @@ void LLAgent::processControlRelease(LLMessageSystem *msg, void **)
 void LLAgent::processAgentCachedTextureResponse(LLMessageSystem *mesgsys, void **user_data)
 {
 	gAgentQueryManager.mNumPendingQueries--;
+	if (gAgentQueryManager.mNumPendingQueries == 0)
+	{
+		selfStopPhase("fetch_texture_cache_entries");
+	}
 
 	if (!isAgentAvatarValid() || gAgentAvatarp->isDead())
 	{
@@ -4419,23 +4427,91 @@ void LLAgent::requestLeaveGodMode()
 	sendReliableMessage();
 }
 
+extern void dump_visual_param(apr_file_t* file, LLVisualParam* viewer_param, F32 value);
+extern std::string get_sequential_numbered_file_name(const std::string& prefix,
+													 const std::string& suffix);
+
+// For debugging, trace agent state at times appearance message are sent out.
+void LLAgent::dumpSentAppearance(const std::string& dump_prefix)
+{
+	std::string outfilename = get_sequential_numbered_file_name(dump_prefix,".xml");
+
+	LLAPRFile outfile;
+	std::string fullpath = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,outfilename);
+	outfile.open(fullpath, LL_APR_WB );
+	apr_file_t* file = outfile.getFileHandle();
+	if (!file)
+	{
+		return;
+	}
+	else
+	{
+		LL_DEBUGS("Avatar") << "dumping sent appearance message to " << fullpath << llendl;
+	}
+
+	LLVisualParam* appearance_version_param = gAgentAvatarp->getVisualParam(11000);
+	if (appearance_version_param)
+	{
+		F32 value = appearance_version_param->getWeight();
+		dump_visual_param(file, appearance_version_param, value);
+	}
+	for (LLAvatarAppearanceDictionary::Textures::const_iterator iter = LLAvatarAppearanceDictionary::getInstance()->getTextures().begin();
+		 iter != LLAvatarAppearanceDictionary::getInstance()->getTextures().end();
+		 ++iter)
+	{
+		const ETextureIndex index = iter->first;
+		const LLAvatarAppearanceDictionary::TextureEntry *texture_dict = iter->second;
+		if (texture_dict->mIsBakedTexture)
+		{
+			LLTextureEntry* entry = gAgentAvatarp->getTE((U8) index);
+			const LLUUID& uuid = entry->getID();
+			apr_file_printf( file, "\t\t<texture te=\"%i\" uuid=\"%s\"/>\n", index, uuid.asString().c_str());
+		}
+	}
+}
+
 //-----------------------------------------------------------------------------
 // sendAgentSetAppearance()
 //-----------------------------------------------------------------------------
 void LLAgent::sendAgentSetAppearance()
 {
-	// FIXME DRANO - problems around new-style appearance in an old-style region.
-	// - does this get called?
-	// - need to change mUseServerBakes->FALSE in that case
-	// - need to call processAvatarAppearance as if server had returned this result?
-	// gAgentAvatarp->mUseServerBakes = FALSE;
-
 	if (gAgentQueryManager.mNumPendingQueries > 0) 
 	{
 		return;
 	}
 
+	if (!gAgentWearables.changeInProgress())
+	{
+		// Change is fully resolved, can close some open phases.
+		gAgentAvatarp->stopPhase("process_initial_wearables_update");
+		gAgentAvatarp->stopPhase("wear_inventory_category");
+	}
+
 	if (!isAgentAvatarValid() || (getRegion() && getRegion()->getCentralBakeVersion())) return;
+
+	// At this point we have a complete appearance to send and are in a non-baking region.
+	// DRANO FIXME
+	//gAgentAvatarp->setIsUsingServerBakes(FALSE);
+	S32 sb_count, host_count, both_count, neither_count;
+	gAgentAvatarp->bakedTextureOriginCounts(sb_count, host_count, both_count, neither_count);
+	if (both_count != 0 || neither_count != 0)
+	{
+		llwarns << "bad bake texture state " << sb_count << "," << host_count << "," << both_count << "," << neither_count << llendl;
+	}
+	if (sb_count != 0 && host_count == 0)
+	{
+		gAgentAvatarp->setIsUsingServerBakes(true);
+	}
+	else if (sb_count == 0 && host_count != 0)
+	{
+		gAgentAvatarp->setIsUsingServerBakes(false);
+	}
+	else if (sb_count + host_count > 0)
+	{
+		llwarns << "unclear baked texture state, not sending appearance" << llendl;
+		return;
+	}
+	
 
 	LL_INFOS("Avatar") << gAgentAvatarp->avString() << "TAT: Sent AgentSetAppearance: " << gAgentAvatarp->getBakedStatusForPrintout() << LL_ENDL;
 	//dumpAvatarTEs( "sendAgentSetAppearance()" );
@@ -4493,14 +4569,25 @@ void LLAgent::sendAgentSetAppearance()
 		// IMG_DEFAULT_AVATAR means not baked. 0 index should be ignored for baked textures
 		if (!gAgentAvatarp->isTextureDefined(texture_index, 0))
 		{
+			LL_DEBUGS("Avatar") << "texture not current for baked " << (S32)baked_index << " local " << (S32)texture_index << llendl;
 			textures_current = FALSE;
 			break;
 		}
 	}
 
 	// only update cache entries if we have all our baked textures
+
+	// FIXME DRANO need additional check for not in appearance editing
+	// mode, if still using local composites need to set using local
+	// composites to false, and update mesh textures.
 	if (textures_current)
 	{
+		bool enable_verbose_dumps = gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");
+		std::string dump_prefix = gAgentAvatarp->getFullname() + "_sent_appearance";
+		if (enable_verbose_dumps)
+		{
+			dumpSentAppearance(dump_prefix);
+		}
 		LL_INFOS("Avatar") << gAgentAvatarp->avString() << "TAT: Sending cached texture data" << LL_ENDL;
 		for (U8 baked_index = 0; baked_index < BAKED_NUM_INDICES; baked_index++)
 		{

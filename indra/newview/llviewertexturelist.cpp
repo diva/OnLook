@@ -399,7 +399,24 @@ LLViewerFetchedTexture* LLViewerTextureList::getImageFromUrl(const std::string& 
 	}
 
 	LLPointer<LLViewerFetchedTexture> imagep = findImage(new_id);
-	
+
+	if (!imagep.isNull())
+	{
+		LLViewerFetchedTexture *texture = imagep.get();
+		if (texture->getUrl().empty())
+		{
+			llwarns << "Requested texture " << new_id << " already exists but does not have a URL" << llendl;
+		}
+		else if (texture->getUrl() != url)
+		{
+			// This is not an error as long as the images really match -
+			// e.g. could be two avatars wearing the same outfit.
+			LL_DEBUGS("Avatar") << "Requested texture " << new_id
+								<< " already exists with a different url, requested: " << url
+								<< " current: " << texture->getUrl() << llendl;
+		}
+		
+	}
 	if (imagep.isNull())
 	{
 		switch(texture_type)
@@ -461,7 +478,23 @@ LLViewerFetchedTexture* LLViewerTextureList::getImage(const LLUUID &image_id,
 	}
 	
 	LLPointer<LLViewerFetchedTexture> imagep = findImage(image_id);
-	
+	if (!imagep.isNull())
+	{
+		LLViewerFetchedTexture *texture = imagep.get();
+		if (request_from_host.isOk() &&
+			!texture->getTargetHost().isOk())
+		{
+			llwarns << "Requested texture " << image_id << " already exists but does not have a host" << llendl;
+		}
+		else if (request_from_host.isOk() &&
+				 texture->getTargetHost().isOk() &&
+				 request_from_host != texture->getTargetHost())
+		{
+			llwarns << "Requested texture " << image_id << " already exists with a different target host, requested: " 
+					<< request_from_host << " current: " << texture->getTargetHost() << llendl;
+		}
+		
+	}
 	if (imagep.isNull())
 	{
 		imagep = createImage(image_id, usemipmaps, boost_priority, texture_type, internal_format, primary_format, request_from_host) ;
@@ -531,6 +564,7 @@ LLViewerFetchedTexture *LLViewerTextureList::findImage(const LLUUID &image_id)
 
 void LLViewerTextureList::addImageToList(LLViewerFetchedTexture *image)
 {
+	assert_main_thread();
 	llassert_always(mInitialized) ;
 	llassert(image);
 	if (image->isInImageList())
@@ -547,6 +581,7 @@ void LLViewerTextureList::addImageToList(LLViewerFetchedTexture *image)
 
 void LLViewerTextureList::removeImageFromList(LLViewerFetchedTexture *image)
 {
+	assert_main_thread();
 	llassert_always(mInitialized) ;
 	llassert(image);
 	if (!image->isInImageList())
@@ -900,9 +935,8 @@ void LLViewerTextureList::forceImmediateUpdate(LLViewerFetchedTexture* imagep)
 	imagep->processTextureStats();
 	F32 decode_priority = LLViewerFetchedTexture::maxDecodePriority() ;
 	imagep->setDecodePriority(decode_priority);
-	mImageList.insert(imagep);
-	imagep->setInImageList(TRUE) ;
-
+	addImageToList(imagep);
+	
 	return ;
 }
 
@@ -1022,8 +1056,7 @@ void LLViewerTextureList::decodeAllImages(F32 max_time)
 		imagep->processTextureStats();
 		F32 decode_priority = imagep->calcDecodePriority();
 		imagep->setDecodePriority(decode_priority);
-		mImageList.insert(imagep);
-		imagep->setInImageList(TRUE) ;
+		addImageToList(imagep);
 	}
 	image_list.clear();
 	

@@ -86,6 +86,7 @@ LLInitialWearablesFetch::LLInitialWearablesFetch(const LLUUID& cof_id) :
 {
 	if (isAgentAvatarValid())
 	{
+		gAgentAvatarp->startPhase("initial_wearables_fetch");
 		gAgentAvatarp->outputRezTiming("Initial wearables fetch started");
 	}
 }
@@ -111,6 +112,7 @@ void LLInitialWearablesFetch::done()
 // [/RLVa:KB]
 	if (isAgentAvatarValid())
 	{
+		gAgentAvatarp->stopPhase("initial_wearables_fetch");
 		gAgentAvatarp->outputRezTiming("Initial wearables fetch done");
 	}
 }

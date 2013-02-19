@@ -54,7 +54,6 @@ public:
 	// Initialization
 	//--------------------------------------------------------------------
 public:
-	MEM_TYPE_NEW(LLMemType::MTYPE_INVENTORY);
 	LLInventoryObject();
 	LLInventoryObject(const LLUUID& uuid, 
 					  const LLUUID& parent_uuid,
@@ -129,7 +128,6 @@ public:
 	// Initialization
 	//--------------------------------------------------------------------
 public:
-	MEM_TYPE_NEW(LLMemType::MTYPE_INVENTORY);
 	LLInventoryItem(const LLUUID& uuid,
 					const LLUUID& parent_uuid,
 					const LLPermissions& permissions,
@@ -148,11 +146,6 @@ public:
 	LLInventoryItem(const LLInventoryItem* other);
 	virtual void copyItem(const LLInventoryItem* other); // LLRefCount requires custom copy
 	void generateUUID() { mUUID.generate(); }
-	
-		// As a constructor alternative, the clone() method works like a
-	// copy constructor, but gens a new UUID.
-	// It is up to the caller to delete (unref) the item.
-	virtual void cloneItem(LLPointer<LLInventoryItem>& newitem) const;
 protected:
 	~LLInventoryItem(); // ref counted
 	
@@ -165,6 +158,7 @@ public:
 	virtual const LLUUID& getCreatorUUID() const;
 	virtual const LLUUID& getAssetUUID() const;
 	virtual const std::string& getDescription() const;
+	virtual const std::string& getActualDescription() const; // Does not follow links
 	virtual const LLSaleInfo& getSaleInfo() const;
 	virtual LLInventoryType::EType getInventoryType() const;
 	virtual U32 getFlags() const;
@@ -247,7 +241,6 @@ public:
 	// Initialization
 	//--------------------------------------------------------------------
 public:
-	MEM_TYPE_NEW(LLMemType::MTYPE_INVENTORY);
 	LLInventoryCategory(const LLUUID& uuid, const LLUUID& parent_uuid,
 						LLFolderType::EType preferred_type,
 						const std::string& name);
@@ -297,7 +290,6 @@ protected:
 //   item, appropriate for serialization.
 //-----------------------------------------------------------------------------
 LLSD ll_create_sd_from_inventory_item(LLPointer<LLInventoryItem> item);
-LLPointer<LLInventoryItem> ll_create_item_from_sd(const LLSD& sd_item);
 LLSD ll_create_sd_from_inventory_category(LLPointer<LLInventoryCategory> cat);
 LLPointer<LLInventoryCategory> ll_create_category_from_sd(const LLSD& sd_cat);
 

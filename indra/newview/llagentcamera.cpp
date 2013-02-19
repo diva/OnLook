@@ -1416,7 +1416,7 @@ void LLAgentCamera::updateCamera()
 //	llinfos << "Current FOV Zoom: " << mCameraCurrentFOVZoomFactor << " Target FOV Zoom: " << mCameraFOVZoomFactor << " Object penetration: " << mFocusObjectDist << llendl;
 
 	F32 ui_offset = 0.f;
-	if( LLFloaterCustomize::instanceExists() /*CAMERA_MODE_CUSTOMIZE_AVATAR == mCameraMode*/ ) 
+	if( CAMERA_MODE_CUSTOMIZE_AVATAR == mCameraMode ) 
 	{
 		ui_offset = calcCustomizeAvatarUIOffset( camera_pos_global );
 	}
@@ -1543,7 +1543,7 @@ F32 LLAgentCamera::calcCustomizeAvatarUIOffset( const LLVector3d& camera_pos_glo
 {
 	F32 ui_offset = 0.f;
 
-	if( LLFloaterCustomize::instanceExists() )
+	if( LLFloaterCustomize::instanceExists() && CAMERA_MODE_CUSTOMIZE_AVATAR == mCameraMode )
 	{
 		const LLRect& rect = LLFloaterCustomize::getInstance()->getRect();
 
@@ -2603,7 +2603,7 @@ void LLAgentCamera::setCameraPosAndFocusGlobal(const LLVector3d& camera_pos, con
 	{
 		startCameraAnimation();
 
-		if( LLFloaterCustomize::instanceExists()/*CAMERA_MODE_CUSTOMIZE_AVATAR == mCameraMode*/ ) 
+		if( CAMERA_MODE_CUSTOMIZE_AVATAR == mCameraMode ) 
 		{
 			// Compensate for the fact that the camera has already been offset to make room for LLFloaterCustomize.
 			mAnimationCameraStartGlobal -= LLVector3d(LLViewerCamera::getInstance()->getLeftAxis() * calcCustomizeAvatarUIOffset( mAnimationCameraStartGlobal ));

@@ -33,7 +33,12 @@
 #ifndef LL_LLSTARTUP_H
 #define LL_LLSTARTUP_H
 
-class LLViewerTexture;
+#include <boost/scoped_ptr.hpp>
+
+class LLViewerTexture ;
+class LLEventPump;
+
+#include "llviewerstats.h"
 
 // functions
 bool idle_startup();
@@ -101,7 +106,6 @@ public:
 
 	static void initNameCache();
 	
-
 	static void cleanupNameCache();
 
 	// outfit_folder_name can be a folder anywhere in your inventory, 
@@ -128,15 +132,20 @@ public:
 		// if we have a SLURL or sim string ("Ahern/123/45") that started
 		// the viewer, dispatch it
 
+	static void postStartupState();
 	static std::string sSLURLCommand;
 		// *HACK: On startup, if we were passed a secondlife://app/do/foo
 		// command URL, store it for later processing.
 
 	static bool startLLProxy(); // Initialize the SOCKS 5 proxy	
 
+	static LLViewerStats::PhaseMap& getPhases() { return *sPhases; }
 private:
+
 	static std::string startupStateToString(EStartupState state);
 	static EStartupState gStartupState; // Do not set directly, use LLStartup::setStartupState
+	static boost::scoped_ptr<LLEventPump> sStateWatcher;
+	static boost::scoped_ptr<LLViewerStats::PhaseMap> sPhases;
 };
 
 

@@ -117,6 +117,7 @@ private:
 
 public:
 	void			askToSaveIfDirty( boost::function<void (BOOL)> cb );
+	void			saveCurrentWearables();
 	void			switchToDefaultSubpart();
 
 private:

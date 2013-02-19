@@ -1129,6 +1129,8 @@ LLVOAvatar::~LLVOAvatar()
 	mAnimationSources.clear();
 	LLLoadedCallbackEntry::cleanUpCallbackList(&mCallbackTextureList) ;
 
+	getPhases().clearPhases();
+
 	SHClientTagMgr::instance().clearAvatarTag(this);
 
 	lldebugs << "LLVOAvatar Destructor end" << llendl;
@@ -2193,27 +2195,53 @@ U32 LLVOAvatar::processUpdateMessage(LLMessageSystem *mesgsys,
 	return retval;
 }
 
-// virtual
-S32 LLVOAvatar::setTETexture(const U8 te, const LLUUID& uuid)
+LLViewerFetchedTexture *LLVOAvatar::getBakedTextureImage(const U8 te, const LLUUID& uuid)
 {
-	// The core setTETexture() method requests images, so we need
-	// to redirect certain avatar texture requests to different sims.
-	if (isIndexBakedTexture((ETextureIndex)te))
+	LLViewerFetchedTexture *result = NULL;
+
+	if (uuid == IMG_DEFAULT_AVATAR ||
+		uuid == IMG_DEFAULT ||
+		uuid == IMG_INVISIBLE)
+	{
+		// Should already exist, don't need to find it on sim or baked-texture host.
+		result = gTextureList.findImage(uuid);
+	}
+
+	if (!result)
 	{
 		const std::string url = getImageURL(te,uuid);
 		if (!url.empty())
 		{
 			llinfos << "texture URL " << url << llendl;
-			return setTETextureCore(te, uuid, url);
+			result = LLViewerTextureManager::getFetchedTextureFromUrl(
+				url, TRUE, LLGLTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE, 0, 0, uuid);
 		}
+		else
+		{
+			llinfos << "get texture from host " << uuid << llendl;
+			LLHost host = getObjectHost();
+			result = LLViewerTextureManager::getFetchedTexture(
+				uuid, TRUE, LLGLTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE, 0, 0, host);
+		}
+	}
+	return result;
+}
 
-		LLHost target_host = getObjectHost();
-		return setTETextureCore(te, uuid, target_host);
-	}
-	else
+// virtual
+S32 LLVOAvatar::setTETexture(const U8 te, const LLUUID& uuid)
+{
+	if (!isIndexBakedTexture((ETextureIndex)te))
 	{
-		return setTETextureCore(te, uuid, LLHost::invalid);
+		if (!uuid.isNull())
+		{
+			llinfos << "ignoring texture " << uuid << " in non-baked slot " << (S32)te << " - will use null " << llendl;
+		}
+		return LLViewerObject::setTETexture(te, LLUUID::null);
 	}
+
+	LLViewerFetchedTexture *image = getBakedTextureImage(te,uuid);
+	llassert(image);
+	return setTETextureCore(te, image);
 }
 
 static LLFastTimer::DeclareTimer FTM_AVATAR_UPDATE("Avatar Update");
@@ -3536,9 +3564,24 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 		{
 			central_bake_version = getRegion()->getCentralBakeVersion();
 		}
-		addDebugText(llformat("mLocal: %d, mEdit: %d, mUSB: %d, CBV: %d",
-							  mUseLocalAppearance, mIsEditingAppearance,
-							  mUseServerBakes, central_bake_version));
+		bool all_baked_downloaded = allBakedTexturesCompletelyDownloaded();
+		bool all_local_downloaded = allLocalTexturesCompletelyDownloaded();
+		std::string debug_line = llformat("%s%s - mLocal: %d, mEdit: %d, mUSB: %d, CBV: %d",
+										  all_local_downloaded ? "L" : "l",
+										  all_baked_downloaded ? "B" : "b",
+										  mUseLocalAppearance, mIsEditingAppearance,
+										  mUseServerBakes, central_bake_version);
+		std::string origin_string = bakedTextureOriginInfo();
+		debug_line += " [" + origin_string + "]";
+		if (isSelf())
+		{
+			S32 curr_cof_version = LLAppearanceMgr::instance().getCOFVersion();
+			S32 last_request_cof_version = LLAppearanceMgr::instance().getLastUpdateRequestCOFVersion();
+			S32 last_received_cof_version = LLAppearanceMgr::instance().getLastAppearanceUpdateCOFVersion();
+			debug_line += llformat(" - cof: %d req: %d rcv:%d",
+								   curr_cof_version, last_request_cof_version, last_received_cof_version);
+		}
+		addDebugText(debug_line);
 	}
 	if (gSavedSettings.getBOOL("DebugAvatarCompositeBaked"))
 	{
@@ -4675,11 +4718,206 @@ U32 LLVOAvatar::renderImpostor(LLColor4U color, S32 diffuse_channel)
 	return 6;
 }
 
-//------------------------------------------------------------------------
-// LLVOAvatar::updateTextures()
-//------------------------------------------------------------------------
+bool LLVOAvatar::allTexturesCompletelyDownloaded(std::set<LLUUID>& ids)
+{
+	for (std::set<LLUUID>::const_iterator it = ids.begin(); it != ids.end(); ++it)
+	{
+		LLViewerFetchedTexture *imagep = gTextureList.findImage(*it);
+		if (imagep && imagep->getDiscardLevel()!=0)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool LLVOAvatar::allLocalTexturesCompletelyDownloaded()
+{
+	std::set<LLUUID> local_ids;
+	collectLocalTextureUUIDs(local_ids);
+	return allTexturesCompletelyDownloaded(local_ids);
+}
+
+bool LLVOAvatar::allBakedTexturesCompletelyDownloaded()
+{
+	std::set<LLUUID> baked_ids;
+	collectBakedTextureUUIDs(baked_ids);
+	return allTexturesCompletelyDownloaded(baked_ids);
+}
+
+void LLVOAvatar::bakedTextureOriginCounts(S32 &sb_count, // server-bake, has origin URL.
+										  S32 &host_count, // host-based bake, has host.
+										  S32 &both_count, // error - both host and URL set.
+										  S32 &neither_count) // error - neither set.
+{
+	sb_count = host_count = both_count = neither_count = 0;
+	
+	std::set<LLUUID> baked_ids;
+	collectBakedTextureUUIDs(baked_ids);
+	for (std::set<LLUUID>::const_iterator it = baked_ids.begin(); it != baked_ids.end(); ++it)
+	{
+		LLViewerFetchedTexture *imagep = gTextureList.findImage(*it);
+		bool has_url = false, has_host = false;
+		if (!imagep->getUrl().empty())
+		{
+			has_url = true;
+		}
+		if (imagep->getTargetHost().isOk())
+		{
+			has_host = true;
+		}
+		if (has_url && !has_host) sb_count++;
+		else if (has_host && !has_url) host_count++;
+		else if (has_host && has_url) both_count++;
+		else if (!has_host && !has_url) neither_count++;
+	}
+}
+
+std::string LLVOAvatar::bakedTextureOriginInfo()
+{
+	std::string result;
+	
+	std::set<LLUUID> baked_ids;
+	collectBakedTextureUUIDs(baked_ids);
+	for (std::set<LLUUID>::const_iterator it = baked_ids.begin(); it != baked_ids.end(); ++it)
+	{
+		LLViewerFetchedTexture *imagep = gTextureList.findImage(*it);
+		bool has_url = false, has_host = false;
+		if (!imagep->getUrl().empty())
+		{
+			has_url = true;
+		}
+		if (imagep->getTargetHost().isOk())
+		{
+			has_host = true;
+		}
+		if (has_url && !has_host) result += "u"; // server-bake texture with url 
+		else if (has_host && !has_url) result += "h"; // old-style texture on sim
+		else if (has_host && has_url) result += "?"; // both origins?
+		else if (!has_host && !has_url) result += "n"; // no origin?
+	}
+	return result;
+}
+
+S32 LLVOAvatar::totalTextureMemForUUIDS(std::set<LLUUID>& ids)
+{
+	S32 result = 0;
+	for (std::set<LLUUID>::const_iterator it = ids.begin(); it != ids.end(); ++it)
+	{
+		LLViewerFetchedTexture *imagep = gTextureList.findImage(*it);
+		if (imagep)
+		{
+			result += imagep->getTextureMemory();
+		}
+	}
+	return result;
+}
+	
+void LLVOAvatar::collectLocalTextureUUIDs(std::set<LLUUID>& ids)
+{
+	for (U32 texture_index = 0; texture_index < getNumTEs(); texture_index++)
+	{
+		LLWearableType::EType wearable_type = LLAvatarAppearanceDictionary::getTEWearableType((ETextureIndex)texture_index);
+		U32 num_wearables = gAgentWearables.getWearableCount(wearable_type);
+
+		LLViewerFetchedTexture *imagep = NULL;
+		for (U32 wearable_index = 0; wearable_index < num_wearables; wearable_index++)
+		{
+			imagep = LLViewerTextureManager::staticCastToFetchedTexture(getImage(texture_index, wearable_index), TRUE);
+			if (imagep)
+			{
+				const LLAvatarAppearanceDictionary::TextureEntry *texture_dict = LLAvatarAppearanceDictionary::getInstance()->getTexture((ETextureIndex)texture_index);
+				if (texture_dict->mIsLocalTexture)
+				{
+					ids.insert(imagep->getID());
+				}
+			}
+		}
+	}
+	ids.erase(IMG_DEFAULT);
+	ids.erase(IMG_DEFAULT_AVATAR);
+	ids.erase(IMG_INVISIBLE);
+}
+
+void LLVOAvatar::collectBakedTextureUUIDs(std::set<LLUUID>& ids)
+{
+	for (U32 texture_index = 0; texture_index < getNumTEs(); texture_index++)
+	{
+		LLViewerFetchedTexture *imagep = NULL;
+		if (isIndexBakedTexture((ETextureIndex) texture_index))
+		{
+			imagep = LLViewerTextureManager::staticCastToFetchedTexture(getImage(texture_index,0), TRUE);
+			if (imagep)
+			{
+				ids.insert(imagep->getID());
+			}
+		}
+	}
+	ids.erase(IMG_DEFAULT);
+	ids.erase(IMG_DEFAULT_AVATAR);
+	ids.erase(IMG_INVISIBLE);
+}
+
+void LLVOAvatar::collectTextureUUIDs(std::set<LLUUID>& ids)
+{
+	collectLocalTextureUUIDs(ids);
+	collectBakedTextureUUIDs(ids);
+}
+
+void LLVOAvatar::releaseOldTextures()
+{
+	S32 current_texture_mem = 0;
+	
+	// Any textures that we used to be using but are no longer using should no longer be flagged as "NO_DELETE"
+	std::set<LLUUID> baked_texture_ids;
+	collectBakedTextureUUIDs(baked_texture_ids);
+	S32 new_baked_mem = totalTextureMemForUUIDS(baked_texture_ids);
+
+	std::set<LLUUID> local_texture_ids;
+	collectLocalTextureUUIDs(local_texture_ids);
+	S32 new_local_mem = totalTextureMemForUUIDS(local_texture_ids);
+
+	std::set<LLUUID> new_texture_ids;
+	new_texture_ids.insert(baked_texture_ids.begin(),baked_texture_ids.end());
+	new_texture_ids.insert(local_texture_ids.begin(),local_texture_ids.end());
+	S32 new_total_mem = totalTextureMemForUUIDS(new_texture_ids);
+
+	S32 old_total_mem = totalTextureMemForUUIDS(mTextureIDs);
+	LL_DEBUGS("Avatar") << getFullname() << " old_total_mem: " << old_total_mem << " new_total_mem (L/B): " << new_total_mem << " (" << new_local_mem <<", " << new_baked_mem << ")" << llendl;  
+	if (!isSelf() && new_total_mem > new_baked_mem)
+	{
+			llwarns << "extra local textures stored for non-self av" << llendl;
+	}
+	for (std::set<LLUUID>::iterator it = mTextureIDs.begin(); it != mTextureIDs.end(); ++it)
+	{
+		if (new_texture_ids.find(*it) == new_texture_ids.end())
+		{
+			LLViewerFetchedTexture *imagep = gTextureList.findImage(*it);
+			if (imagep)
+			{
+				current_texture_mem += imagep->getTextureMemory();
+				if (imagep->getTextureState() == LLGLTexture::NO_DELETE)
+				{
+					// This will allow the texture to be deleted if not in use.
+					imagep->forceActive();
+
+					// This resets the clock to texture being flagged
+					// as unused, preventing the texture from being
+					// deleted immediately. If other avatars or
+					// objects are using it, it can still be flagged
+					// no-delete by them.
+					imagep->forceUpdateBindStats();
+				}
+			}
+		}
+	}
+	mTextureIDs = new_texture_ids;
+}
+
 void LLVOAvatar::updateTextures()
 {
+	releaseOldTextures();
+	
 	BOOL render_avatar = TRUE;
 
 	if (mIsDummy || gNoRender)
@@ -6604,36 +6842,138 @@ void LLVOAvatar::updateRezzedStatusTimers()
 	if (rez_status != mLastRezzedStatus)
 	{
 		LL_DEBUGS("Avatar") << avString() << "rez state change: " << mLastRezzedStatus << " -> " << rez_status << LL_ENDL;
-		/*bool is_cloud_or_gray = (rez_status==0 || rez_status==1);
+		bool is_cloud_or_gray = (rez_status==0 || rez_status==1);
 		bool was_cloud_or_gray = (mLastRezzedStatus==0 || mLastRezzedStatus==1);
 		bool is_cloud = (rez_status==0);
 		bool was_cloud = (mLastRezzedStatus==0);
 
-		]// Non-cloud to cloud
+		// Non-cloud to cloud
 		if (is_cloud && !was_cloud)
 		{
 			// start cloud timer.
-			getPhases().startPhase("cloud");
+			startPhase("cloud");
 		}
 		else if (was_cloud && !is_cloud)
 		{
 			// stop cloud timer, which will capture stats.
-			getPhases().stopPhase("cloud");
+			stopPhase("cloud");
 		}
 
 		// Non-cloud-or-gray to cloud-or-gray
 		if (is_cloud_or_gray && !was_cloud_or_gray)
 		{
 			// start cloud-or-gray timer.
-			getPhases().startPhase("cloud-or-gray");
+			startPhase("cloud-or-gray");
 		}
 		else if (was_cloud_or_gray && !is_cloud_or_gray)
 		{
 			// stop cloud-or-gray timer, which will capture stats.
-			getPhases().stopPhase("cloud-or-gray");
-		}*/
+			stopPhase("cloud-or-gray");
+		}
 		
 		mLastRezzedStatus = rez_status;
+	}
+}
+
+void LLVOAvatar::clearPhases()
+{
+	getPhases().clearPhases();
+}
+
+void LLVOAvatar::startPhase(const std::string& phase_name)
+{
+	getPhases().startPhase(phase_name);
+}
+
+void LLVOAvatar::logPendingPhases()
+{
+	for (LLViewerStats::phase_map_t::iterator it = getPhases().begin();
+		 it != getPhases().end();
+		 ++it)
+	{
+		const std::string& phase_name = it->first;
+		F32 elapsed;
+		bool completed;
+		if (getPhases().getPhaseValues(phase_name, elapsed, completed))
+		{
+			if (!completed)
+			{
+				logMetricsTimerRecord(phase_name, elapsed, completed);
+			}
+			else
+			{
+				llwarns << "ignoring " << phase_name << llendl;
+			}
+		}
+	}
+}
+
+//static
+void LLVOAvatar::logPendingPhasesAllAvatars()
+{
+	for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
+		 iter != LLCharacter::sInstances.end(); ++iter)
+	{
+		LLVOAvatar* inst = (LLVOAvatar*) *iter;
+		if( inst->isDead() )
+		{
+			continue;
+		}
+		inst->logPendingPhases();
+	}
+}
+
+void LLVOAvatar::logMetricsTimerRecord(const std::string& phase_name, F32 elapsed, bool completed)
+{
+	LLSD record;
+	record["timer_name"] = phase_name;
+	record["agent_id"] = gAgent.getID();
+	record["avatar_id"] = getID();
+	record["elapsed"] = elapsed;
+	record["completed"] = completed;
+	U32 grid_x(0), grid_y(0);
+	if (getRegion())
+	{
+		record["central_bake_version"] = LLSD::Integer(getRegion()->getCentralBakeVersion());
+		grid_from_region_handle(getRegion()->getHandle(), &grid_x, &grid_y);
+	}
+	record["grid_x"] = LLSD::Integer(grid_x);
+	record["grid_y"] = LLSD::Integer(grid_y);
+	record["is_using_server_bakes"] = ((bool) isUsingServerBakes());
+	record["is_self"] = isSelf();
+	
+
+	std::ostringstream ostr;
+	ostr << LLSDNotationStreamer(record);
+	LL_DEBUGS("Avatar") << "record\n" << ostr.str() << llendl;
+
+	if (isAgentAvatarValid())
+	{
+		gAgentAvatarp->addMetricsTimerRecord(record);
+	}
+}
+
+void LLVOAvatar::stopPhase(const std::string& phase_name)
+{
+	F32 elapsed;
+	bool completed;
+	if (getPhases().getPhaseValues(phase_name, elapsed, completed))
+	{
+		if (!completed)
+		{
+			getPhases().stopPhase(phase_name);
+			completed = true;
+
+		}
+		else
+		{
+			llwarns << "stop when stopped already for " << phase_name << llendl;
+		}
+		logMetricsTimerRecord(phase_name, elapsed, completed);
+	}
+	else
+	{
+		llwarns << "stop when not started for " << phase_name << llendl;
 	}
 }
 
@@ -6764,6 +7104,7 @@ void LLVOAvatar::debugColorizeSubMeshes(U32 i, const LLColor4& color)
 // virtual
 void LLVOAvatar::updateMeshTextures()
 {
+	static S32 update_counter = 0;
 	mBakedTextureDebugText.clear();
     // llinfos << "updateMeshTextures" << llendl;
 	if (gNoRender) return;
@@ -6794,7 +7135,8 @@ void LLVOAvatar::updateMeshTextures()
 	std::vector<BOOL> use_lkg_baked_layer; // lkg = "last known good"
 	use_lkg_baked_layer.resize(mBakedTextureDatas.size(), false);
 
-	mBakedTextureDebugText +=          "indx layerset linvld ltda ilb ulkg ltid\n";
+	mBakedTextureDebugText += llformat("%06d\n",update_counter++);
+	mBakedTextureDebugText += "indx layerset linvld ltda ilb ulkg ltid\n";
 	for (U32 i=0; i < mBakedTextureDatas.size(); i++)
 	{
 		is_layer_baked[i] = isTextureDefined(mBakedTextureDatas[i].mTextureIndex);
@@ -6827,6 +7169,8 @@ void LLVOAvatar::updateMeshTextures()
 			last_id_string = "A";
 		else if (mBakedTextureDatas[i].mLastTextureID == IMG_DEFAULT)
 			last_id_string = "D";
+		else if (mBakedTextureDatas[i].mLastTextureID == IMG_INVISIBLE)
+			last_id_string = "I";
 		else
 			last_id_string = "*";
 		bool is_ltda = layerset
@@ -7370,7 +7714,7 @@ void LLVOAvatar::dumpAppearanceMsgParams( const std::string& dump_prefix,
 	}
 	else
 	{
-		llinfos << "xmlfile write handle obtained : " << fullpath << llendl;
+		LL_DEBUGS("Avatar") << "dumping appearance message to " << fullpath << llendl;
 	}
 
 
@@ -7394,46 +7738,173 @@ void LLVOAvatar::dumpAppearanceMsgParams( const std::string& dump_prefix,
 	}
 }
 
+struct LLAppearanceMessageContents
+{
+	LLAppearanceMessageContents():
+		mAppearanceVersion(-1),
+		mParamAppearanceVersion(-1),
+		mCOFVersion(LLViewerInventoryCategory::VERSION_UNKNOWN)
+	{
+	}
+	LLTEContents mTEContents;
+	S32 mAppearanceVersion;
+	S32 mParamAppearanceVersion;
+	S32 mCOFVersion;
+	// For future use:
+	//U32 appearance_flags = 0;
+	std::vector<F32> mParamWeights;
+	std::vector<LLVisualParam*> mParams;
+};
+
+void LLVOAvatar::parseAppearanceMessage(LLMessageSystem* mesgsys, LLAppearanceMessageContents& contents)
+{
+	parseTEMessage(mesgsys, _PREHASH_ObjectData, -1, contents.mTEContents);
+
+	// Parse the AppearanceData field, if any.
+	if (mesgsys->has(_PREHASH_AppearanceData))
+	{
+		U8 av_u8;
+		mesgsys->getU8Fast(_PREHASH_AppearanceData, _PREHASH_AppearanceVersion, av_u8, 0);
+		contents.mAppearanceVersion = av_u8;
+		llinfos << "appversion set by AppearanceData field: " << contents.mAppearanceVersion << llendl;
+		mesgsys->getS32Fast(_PREHASH_AppearanceData, _PREHASH_CofVersion, contents.mCOFVersion, 0);
+		// For future use:
+		//mesgsys->getU32Fast(_PREHASH_AppearanceData, _PREHASH_Flags, appearance_flags, 0);
+	}
+
+	// Parse visual params, if any.
+	S32 num_blocks = mesgsys->getNumberOfBlocksFast(_PREHASH_VisualParam);
+	bool drop_visual_params_debug = gSavedSettings.getBOOL("BlockSomeAvatarAppearanceVisualParams") && (ll_rand(2) == 0); // pretend that ~12% of AvatarAppearance messages arrived without a VisualParam block, for testing
+	if( num_blocks > 1 && !drop_visual_params_debug)
+	{
+		LL_DEBUGS("Avatar") << avString() << " handle visual params, num_blocks " << num_blocks << LL_ENDL;
+		
+		LLVisualParam* param = getFirstVisualParam();
+		llassert(param); // if this ever fires, we should do the same as when num_blocks<=1
+		if (!param)
+		{
+			llwarns << "No visual params!" << llendl;
+		}
+		else
+		{
+			for( S32 i = 0; i < num_blocks; i++ )
+			{
+				while( param && (param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) ) // should not be any of group VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
+				{
+					param = getNextVisualParam();
+				}
+						
+				if( !param )
+				{
+					// more visual params supplied than expected - just process what we know about
+					break;
+				}
+
+				U8 value;
+				mesgsys->getU8Fast(_PREHASH_VisualParam, _PREHASH_ParamValue, value, i);
+				F32 newWeight = U8_to_F32(value, param->getMinWeight(), param->getMaxWeight());
+				contents.mParamWeights.push_back(newWeight);
+				contents.mParams.push_back(param);
+
+				param = getNextVisualParam();
+			}
+		}
+
+		const S32 expected_tweakable_count = getVisualParamCountInGroup(VISUAL_PARAM_GROUP_TWEAKABLE); // don't worry about VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
+		if (num_blocks != expected_tweakable_count)
+		{
+			llinfos << "Number of params in AvatarAppearance msg (" << num_blocks << ") does not match number of tweakable params in avatar xml file (" << expected_tweakable_count << ").  Processing what we can.  object: " << getID() << llendl;
+		}
+	}
+	else
+	{
+		if (drop_visual_params_debug)
+		{
+			llinfos << "Debug-faked lack of parameters on AvatarAppearance for object: "  << getID() << llendl;
+		}
+		else
+		{
+			llinfos << "AvatarAppearance msg received without any parameters, object: " << getID() << llendl;
+		}
+	}
+
+	LLVisualParam* appearance_version_param = getVisualParam(11000);
+	if (appearance_version_param)
+	{
+		std::vector<LLVisualParam*>::iterator it = std::find(contents.mParams.begin(), contents.mParams.end(),appearance_version_param);
+		if (it != contents.mParams.end())
+		{
+			S32 index = it - contents.mParams.begin();
+			llinfos << "index: " << index << llendl;
+			contents.mParamAppearanceVersion = llround(contents.mParamWeights[index]);
+			LL_DEBUGS("Avatar") << "appversion req by appearance_version param: " << contents.mParamAppearanceVersion << llendl;
+		}
+	}
+}
+
+bool resolve_appearance_version(const LLAppearanceMessageContents& contents, S32& appearance_version)
+{
+	appearance_version = -1;
+	
+	if ((contents.mAppearanceVersion) >= 0 &&
+		(contents.mParamAppearanceVersion >= 0) &&
+		(contents.mAppearanceVersion != contents.mParamAppearanceVersion))
+	{
+		llwarns << "inconsistent appearance_version settings - field: " <<
+			contents.mAppearanceVersion << ", param: " <<  contents.mParamAppearanceVersion << llendl;
+		return false;
+	}
+	if (contents.mParamAppearanceVersion >= 0) // use visual param if available.
+	{
+		appearance_version = contents.mParamAppearanceVersion;
+	}
+	if (contents.mAppearanceVersion >= 0)
+	{
+		appearance_version = contents.mAppearanceVersion;
+	}
+	if (appearance_version < 0) // still not set, go with 0.
+	{
+		appearance_version = 0;
+	}
+	LL_DEBUGS("Avatar") << "appearance version info - field " << contents.mAppearanceVersion
+						<< " param: " << contents.mParamAppearanceVersion
+						<< " final: " << appearance_version << llendl;
+	return true;
+}
+
 //-----------------------------------------------------------------------------
 // processAvatarAppearance()
 //-----------------------------------------------------------------------------
 void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 {
+	LL_DEBUGS("Avatar") << "starts" << llendl;
+	
 	bool enable_verbose_dumps = gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");
 	std::string dump_prefix = getFullname() + "_" + (isSelf()?"s":"o") + "_";
-	if (enable_verbose_dumps) { dumpArchetypeXML(dump_prefix + "process_start"); }
+	//if (enable_verbose_dumps) { dumpArchetypeXML(dump_prefix + "process_start"); }
 	if (gSavedSettings.getBOOL("BlockAvatarAppearanceMessages"))
 	{
 		llwarns << "Blocking AvatarAppearance message" << llendl;
 		return;
 	}
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
-
-	BOOL is_first_appearance_message = !mFirstAppearanceMessageReceived;
-	mFirstAppearanceMessageReceived = TRUE;
-
-	LL_INFOS("Avatar") << avString() << "processAvatarAppearance start " << mID
-			<< " first? " << is_first_appearance_message << " self? " << isSelf() << LL_ENDL;
-
 
 	ESex old_sex = getSex();
 
-	LLTEContents tec;
-	parseTEMessage(mesgsys, _PREHASH_ObjectData, -1, tec);
-
-	U8 appearance_version = 0;
-	S32 this_update_cof_version = LLViewerInventoryCategory::VERSION_UNKNOWN;
-	S32 last_update_request_cof_version = LLAppearanceMgr::instance().mLastUpdateRequestCOFVersion;
-	// For future use:
-	//U32 appearance_flags = 0;
-
-	if (mesgsys->has(_PREHASH_AppearanceData))
+	LLAppearanceMessageContents contents;
+	parseAppearanceMessage(mesgsys, contents);
+	if (enable_verbose_dumps)
 	{
-		mesgsys->getU8Fast(_PREHASH_AppearanceData, _PREHASH_AppearanceVersion, appearance_version, 0);
-		mesgsys->getS32Fast(_PREHASH_AppearanceData, _PREHASH_CofVersion, this_update_cof_version, 0);
-		// For future use:
-		//mesgsys->getU32Fast(_PREHASH_AppearanceData, _PREHASH_Flags, appearance_flags, 0);
+		dumpAppearanceMsgParams(dump_prefix + "appearance_msg", contents.mParamWeights, contents.mTEContents);
 	}
+
+	S32 appearance_version;
+	if (!resolve_appearance_version(contents, appearance_version))
+	{
+		llwarns << "bad appearance version info, discarding" << llendl;
+		return;
+	}
+	S32 this_update_cof_version = contents.mCOFVersion;
+	S32 last_update_request_cof_version = LLAppearanceMgr::instance().mLastUpdateRequestCOFVersion;
 
 	// Only now that we have result of appearance_version can we decide whether to bail out.
 	if( isSelf() )
@@ -7442,6 +7913,8 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 				<< " last_update_request_cof_version " << last_update_request_cof_version
 				<<  " my_cof_version " << LLAppearanceMgr::instance().getCOFVersion() << llendl;
 
+		LLAppearanceMgr::instance().setLastAppearanceUpdateCOFVersion(this_update_cof_version);
+		
 		if (getRegion() && (getRegion()->getCentralBakeVersion()==0))
 		{
 			llwarns << avString() << "Received AvatarAppearance message for self in non-server-bake region" << llendl;
@@ -7450,6 +7923,10 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		{
 			return;
 		}
+	}
+	else
+	{
+		LL_DEBUGS("Avatar") << "appearance message received" << llendl;
 	}
 
 	if (gNoRender)
@@ -7473,9 +7950,20 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		return;
 	}
 
-	mUseServerBakes = (appearance_version > 0);
+	S32 num_params = contents.mParamWeights.size();
+	if (num_params <= 1)
+	{
+		// In this case, we have no reliable basis for knowing
+		// appearance version, which may cause us to look for baked
+		// textures in the wrong place and flag them as missing
+		// assets.
+		llinfos << "ignoring appearance message due to lack of params" << llendl;
+		return;
+	}
 
-	applyParsedTEMessage(tec);
+	setIsUsingServerBakes(appearance_version > 0);
+
+	applyParsedTEMessage(contents.mTEContents);
 
 	SHClientTagMgr::instance().updateAvatarTag(this);
 
@@ -7493,16 +7981,16 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		}
 	}
 
+	// runway - was
+	// if (!is_first_appearance_message )
+	// which means it would be called on second appearance message - probably wrong.
+	BOOL is_first_appearance_message = !mFirstAppearanceMessageReceived;
+	mFirstAppearanceMessageReceived = TRUE;
 
-	//llinfos << "Received AvatarAppearance: " << (isSelf() ? "(self): " : "(other): ")  << std::endl <<
-	//	(isTextureDefined(TEX_HEAD_BAKED)  ? "HEAD " : "head " ) << (getTEImage(TEX_HEAD_BAKED)->getID()) << std::endl <<
-	//	(isTextureDefined(TEX_UPPER_BAKED) ? "UPPER " : "upper " ) << (getTEImage(TEX_UPPER_BAKED)->getID()) << std::endl <<
-	//	(isTextureDefined(TEX_LOWER_BAKED) ? "LOWER " : "lower " ) << (getTEImage(TEX_LOWER_BAKED)->getID()) << std::endl <<
-	//	(isTextureDefined(TEX_SKIRT_BAKED) ? "SKIRT " : "skirt " ) << (getTEImage(TEX_SKIRT_BAKED)->getID()) << std::endl <<
-	//	(isTextureDefined(TEX_HAIR_BAKED) ? "HAIR" : "hair " ) << (getTEImage(TEX_HAIR_BAKED)->getID()) << std::endl <<
-	//	(isTextureDefined(TEX_EYES_BAKED)  ? "EYES" : "eyes" ) << (getTEImage(TEX_EYES_BAKED)->getID()) << llendl ;
- 
-	if( is_first_appearance_message )
+	LL_INFOS("Avatar") << avString() << "processAvatarAppearance start " << mID
+			<< " first? " << is_first_appearance_message << " self? " << isSelf() << LL_ENDL;
+
+	if (is_first_appearance_message )
 	{
 		onFirstTEMessageReceived();
 	}
@@ -7512,85 +8000,45 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 
 	mSupportsPhysics = false;
 
-	// parse visual params
-	S32 num_blocks = mesgsys->getNumberOfBlocksFast(_PREHASH_VisualParam);
-	bool drop_visual_params_debug = gSavedSettings.getBOOL("BlockSomeAvatarAppearanceVisualParams") && (ll_rand(2) == 0); // pretend that ~12% of AvatarAppearance messages arrived without a VisualParam block, for testing
-	if( num_blocks > 1 && !drop_visual_params_debug)
+	// Apply visual params
+	if( num_params > 1)
 	{
-		LL_DEBUGS("Avatar") << avString() << " handle visual params, num_blocks " << num_blocks << LL_ENDL;
+		LL_DEBUGS("Avatar") << avString() << " handle visual params, num_params " << num_params << LL_ENDL;
 		BOOL params_changed = FALSE;
 		BOOL interp_params = FALSE;
 		
-		LLVisualParam* param = getFirstVisualParam();
-		llassert(param); // if this ever fires, we should do the same as when num_blocks<=1
-		if (!param)
+			for( S32 i = 0; i < num_params; i++ )
 		{
-			llwarns << "No visual params!" << llendl;
-		}
-		else
-		{
-			std::vector<F32> params_for_dump;
-			for( S32 i = 0; i < num_blocks; i++ )
+			LLVisualParam* param = contents.mParams[i];
+			F32 newWeight = contents.mParamWeights[i];
+
+			if(param->getID() == 10000)
 			{
-				while( param && (param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) ) // should not be any of group VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
-				{
-					param = getNextVisualParam();
-				}
-						
-				if( !param )
-				{
-					// more visual params supplied than expected - just process what we know about
-					break;
-				}
-
-				U8 value;
-				mesgsys->getU8Fast(_PREHASH_VisualParam, _PREHASH_ParamValue, value, i);
-				F32 newWeight = U8_to_F32(value, param->getMinWeight(), param->getMaxWeight());
-
-				if(param->getID() == 10000)
-				{
-					mSupportsPhysics = true;
-				}
-				else if(param->getID() == EMERALD_BOOB_GRAVITY_PARAM && newWeight != getActualBoobGrav())
-				{
-					setActualBoobGrav(newWeight);
-				}
+				mSupportsPhysics = true;
+			}
+			else if(param->getID() == EMERALD_BOOB_GRAVITY_PARAM && newWeight != getActualBoobGrav())
+			{
+				setActualBoobGrav(newWeight);
+			}
 				
-				params_for_dump.push_back(newWeight);
-
-				if (is_first_appearance_message || (param->getWeight() != newWeight))
-				{
-					//llinfos << "Received update for param " << param->getDisplayName() << " at value " << newWeight << llendl;
-					params_changed = TRUE;
-					if(is_first_appearance_message)
-					{
-						param->setWeight(newWeight, FALSE);
-					}
-					else
-					{
-						interp_params = TRUE;
-						param->setAnimationTarget(newWeight, FALSE);
-					}
-				}
-				param = getNextVisualParam();
-			}
-			if (enable_verbose_dumps)
-				dumpAppearanceMsgParams(dump_prefix + "appearance_msg", params_for_dump, tec);
-		}
-
-		if (enable_verbose_dumps) { dumpArchetypeXML(dump_prefix + "process_post_set_weights"); }
-
-		const S32 expected_tweakable_count = getVisualParamCountInGroup(VISUAL_PARAM_GROUP_TWEAKABLE); // don't worry about VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
-		if (num_blocks != expected_tweakable_count)
-		{
-			llinfos << "Number of params in AvatarAppearance msg (" << num_blocks << ") does not match number of tweakable params in avatar xml file (" << expected_tweakable_count << ").  Processing what we can.  object: " << getID() << llendl;
-			if(is_first_appearance_message)
+			if (is_first_appearance_message || (param->getWeight() != newWeight))
 			{
-				while( param && (param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) )
-					param = getNextVisualParam();
-				if(param && param->getName() == "breast_physics_mass")
-					llinfos << getFullname() << " does not have avatar physics." << llendl;
+				params_changed = TRUE;
+				if(is_first_appearance_message)
+				{
+					param->setWeight(newWeight, FALSE);
+				}
+				else
+				{
+					interp_params = TRUE;
+					param->setAnimationTarget(newWeight, FALSE);
+				}
 			}
+		}
+		const S32 expected_tweakable_count = getVisualParamCountInGroup(VISUAL_PARAM_GROUP_TWEAKABLE); // don't worry about VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
+		if (num_params != expected_tweakable_count)
+		{
+			llinfos << "Number of params in AvatarAppearance msg (" << num_params << ") does not match number of tweakable params in avatar xml file (" << expected_tweakable_count << ").  Processing what we can.  object: " << getID() << llendl;
 		}
 
 		if (params_changed)
@@ -7614,14 +8062,6 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 	{
 		// AvatarAppearance message arrived without visual params
 		LL_DEBUGS("Avatar") << avString() << "no visual params" << LL_ENDL;
-		if (drop_visual_params_debug)
-		{
-			llinfos << "Debug-faked lack of parameters on AvatarAppearance for object: "  << getID() << llendl;
-		}
-		else
-		{
-			llinfos << "AvatarAppearance msg received without any parameters, object: " << getID() << llendl;
-		}
 
 		const F32 LOADING_TIMEOUT_SECONDS = 60.f;
 		// this isn't really a problem if we already have a non-default shape
@@ -7651,8 +8091,7 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 
 	updateMeshTextures();
 
-	if (enable_verbose_dumps) dumpArchetypeXML(dump_prefix + "process_end");
-//	llinfos << "processAvatarAppearance end " << mID << llendl;
+	//if (enable_verbose_dumps) dumpArchetypeXML(dump_prefix + "process_end");
 }
 
 // static
@@ -8124,9 +8563,29 @@ void LLVOAvatar::bodySizeChanged()
 	}
 }
 
+BOOL LLVOAvatar::isUsingServerBakes() const
+{
+#if 1
+	// Sanity check - visual param for appearance version should match mUseServerBakes
+	LLVisualParam* appearance_version_param = getVisualParam(11000);
+	llassert(appearance_version_param);
+	F32 wt = appearance_version_param->getWeight();
+	F32 expect_wt = mUseServerBakes ? 1.0 : 0.0;
+	if (!is_approx_equal(wt,expect_wt))
+	{
+		llwarns << "wt " << wt << " differs from expected " << expect_wt << llendl;
+	}
+#endif
+
+	return mUseServerBakes;
+}
+
 void LLVOAvatar::setIsUsingServerBakes(BOOL newval)
 {
 	mUseServerBakes = newval;
+	LLVisualParam* appearance_version_param = getVisualParam(11000);
+	llassert(appearance_version_param);
+	appearance_version_param->setWeight(newval ? 1.0 : 0.0, false);
 }
 
 // virtual

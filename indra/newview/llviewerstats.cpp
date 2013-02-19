@@ -881,3 +881,72 @@ void send_stats()
 	LLHTTPClient::post(url, body, new ViewerStatsResponder);
 }
 
+LLViewerStats::PhaseMap::PhaseMap()
+{
+}
+
+LLTimer& LLViewerStats::PhaseMap::getPhaseTimer(const std::string& phase_name)
+{
+	phase_map_t::iterator iter = mPhaseMap.find(phase_name);
+	if (iter == mPhaseMap.end())
+	{
+		LLTimer timer;
+		mPhaseMap[phase_name] = timer;
+	}
+	LLTimer& timer = mPhaseMap[phase_name];
+	return timer;
+}
+
+void LLViewerStats::PhaseMap::startPhase(const std::string& phase_name)
+{
+	LLTimer& timer = getPhaseTimer(phase_name);
+	lldebugs << "startPhase " << phase_name << llendl;
+	timer.start();
+}
+
+void LLViewerStats::PhaseMap::stopPhase(const std::string& phase_name)
+{
+	phase_map_t::iterator iter = mPhaseMap.find(phase_name);
+	if (iter != mPhaseMap.end())
+	{
+		if (iter->second.getStarted())
+		{
+			// Going from started to paused state - record stats.
+			iter->second.stop();
+		}
+	}
+}
+
+bool LLViewerStats::PhaseMap::getPhaseValues(const std::string& phase_name, F32& elapsed, bool& completed)
+{
+	phase_map_t::iterator iter = mPhaseMap.find(phase_name);
+	if (iter != mPhaseMap.end())
+	{
+		elapsed =  iter->second.getElapsedTimeF32();
+		completed = !iter->second.getStarted();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+	
+void LLViewerStats::PhaseMap::clearPhases()
+{
+	lldebugs << "clearPhases" << llendl;
+
+	mPhaseMap.clear();
+}
+
+LLSD LLViewerStats::PhaseMap::dumpPhases()
+{
+	LLSD result;
+	for (phase_map_t::iterator iter = mPhaseMap.begin(); iter != mPhaseMap.end(); ++iter)
+	{
+		const std::string& phase_name = iter->first;
+		result[phase_name]["completed"] = LLSD::Integer(!(iter->second.getStarted()));
+		result[phase_name]["elapsed"] = iter->second.getElapsedTimeF32();
+	}
+	return result;
+}

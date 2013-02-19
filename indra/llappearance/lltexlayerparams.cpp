@@ -178,10 +178,6 @@ void LLTexLayerParamAlpha::setWeight(F32 weight, BOOL upload_bake)
 		if ((mAvatarAppearance->getSex() & getSex()) &&
 			(mAvatarAppearance->isSelf() && !mIsDummy)) // only trigger a baked texture update if we're changing a wearable's visual param.
 		{
-			if (mAvatarAppearance->isValid() && mAvatarAppearance->isEditingAppearance())
-			{
-				upload_bake = FALSE;
-			}
 			mAvatarAppearance->invalidateComposite(mTexLayer->getTexLayerSet(), upload_bake);
 			mTexLayer->invalidateMorphMasks();
 		}
