@@ -708,36 +708,36 @@ void LLPanelPermissions::refresh()
 	}
 
 	// Is this user allowed to toggle export on this object?
-		if (self_owned && mCreatorID == mOwnerID/* && simSupportsExport()*/ //TODO: Implement Simulator Feature for Export.
-		&& (base_mask_on & PERM_EXPORT && owner_mask_on & PERM_EXPORT && (next_owner_mask_on & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED)) //Base and Owner must have EXPORT, Next Owner must be UNRESTRICTED
+	if (self_owned && mCreatorID == mOwnerID/* && simSupportsExport()*/ //TODO: Implement Simulator Feature for Export.
+	&& (base_mask_on & PERM_EXPORT && owner_mask_on & PERM_EXPORT && (next_owner_mask_on & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED)) //Base and Owner must have EXPORT, Next Owner must be UNRESTRICTED
+	{
+		bool can_export = true;
+		LLInventoryObject::object_list_t objects;
+		objectp->getInventoryContents(objects);
+		for (LLInventoryObject::object_list_t::iterator i = objects.begin(); can_export && i != objects.end() ; ++i) //The object's inventory must have EXPORT.
 		{
-				bool can_export = true;
-				LLInventoryObject::object_list_t objects;
-				objectp->getInventoryContents(objects);
-				for (LLInventoryObject::object_list_t::iterator i = objects.begin(); can_export && i != objects.end() ; ++i) //The object's inventory must have EXPORT.
-				{
-					LLViewerInventoryItem* item = static_cast<LLViewerInventoryItem*>(i->get()); //getInventoryContents() filters out categories, static_cast.
-					const LLPermissions& perm = item->getPermissions();
-					if (!(perm.getMaskBase() & PERM_EXPORT && perm.getMaskEveryone() & PERM_EXPORT))
-						can_export = false;
-				}
-					for (U8 i = 0; can_export && i < objectp->getNumTEs(); ++i) // Can the textures be exported?
-						if (LLTextureEntry* texture = objectp->getTE(i))
-						{
-							const LLUUID id = texture->getID();
-							if (id.isNull()) continue; // Don't permission-check null textures
-							else if (LLViewerInventoryItem* item = gInventory.getItem(id))
-							{
-								const LLPermissions& perm = item->getPermissions();
-								can_export = perm.getMaskBase() & PERM_EXPORT && (perm.getMaskOwner() & PERM_EXPORT || perm.getMaskEveryone() & PERM_EXPORT);
-							}
-							else // Texture not in inventory
-								can_export = false;
-						}
-			childSetEnabled("checkbox allow export", can_export);
+			LLViewerInventoryItem* item = static_cast<LLViewerInventoryItem*>(i->get()); //getInventoryContents() filters out categories, static_cast.
+			const LLPermissions& perm = item->getPermissions();
+			if (!(perm.getMaskBase() & PERM_EXPORT && perm.getMaskEveryone() & PERM_EXPORT))
+				can_export = false;
 		}
-		else
-			childSetEnabled("checkbox allow export", false);
+		for (U8 i = 0; can_export && i < objectp->getNumTEs(); ++i) // Can the textures be exported?
+			if (LLTextureEntry* texture = objectp->getTE(i))
+			{
+				const LLUUID id = texture->getID();
+				if (id.isNull()) continue; // Don't permission-check null textures
+				else if (LLViewerInventoryItem* item = gInventory.getItem(id))
+				{
+					const LLPermissions& perm = item->getPermissions();
+					can_export = perm.getMaskBase() & PERM_EXPORT && (perm.getMaskOwner() & PERM_EXPORT || perm.getMaskEveryone() & PERM_EXPORT);
+				}
+				else // Texture not in inventory
+					can_export = false;
+			}
+		childSetEnabled("checkbox allow export", can_export);
+	}
+	else
+		childSetEnabled("checkbox allow export", false);
 
 	if (has_change_sale_ability && (owner_mask_on & PERM_TRANSFER))
 	{
