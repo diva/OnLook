@@ -68,6 +68,9 @@ BOOL LLPanelNetwork::postBuild()
 
 	childSetValue("cache_size", (F32)gSavedSettings.getU32("CacheSize"));
 	childSetValue("max_bandwidth", gSavedSettings.getF32("ThrottleBandwidthKBPS"));
+	childSetValue("tex_bandwidth", gSavedSettings.getF32("HTTPThrottleBandwidth"));
+	childSetValue("http_textures", gSavedSettings.getBOOL("ImagePipelineUseHTTP"));
+	childSetValue("http_inventory", gSavedSettings.getBOOL("UseHTTPInventory"));
 	childSetValue("connection_port_enabled", gSavedSettings.getBOOL("ConnectionPortEnabled"));
 	childSetValue("connection_port", (F32)gSavedSettings.getU32("ConnectionPort"));
 
@@ -113,6 +116,9 @@ void LLPanelNetwork::apply()
 		gSavedSettings.setU32("CacheSize", cache_size);
 	}
 	gSavedSettings.setF32("ThrottleBandwidthKBPS", childGetValue("max_bandwidth").asReal());
+	gSavedSettings.setF32("HTTPThrottleBandwidth", childGetValue("tex_bandwidth").asReal());
+	gSavedSettings.setBOOL("ImagePipelineUseHTTP", childGetValue("http_textures"));
+	gSavedSettings.setBOOL("UseHTTPInventory", childGetValue("http_inventory"));
 	gSavedSettings.setBOOL("ConnectionPortEnabled", childGetValue("connection_port_enabled"));
 	gSavedSettings.setU32("ConnectionPort", childGetValue("connection_port").asInteger());
 
