@@ -234,7 +234,6 @@ private:
 	LLPointer<LLImageRaw>		mRawSnapshot;
 	S32							mRawSnapshotWidth;
 	S32							mRawSnapshotHeight;
-	F32							mRawSnapshotAspectRatio;
 	BOOL						mRawSnapshotRenderUI;
 	BOOL						mRawSnapshotRenderHUD;
 	LLViewerWindow::ESnapshotType mRawSnapshotBufferType;
@@ -395,7 +394,6 @@ LLSnapshotLivePreview::LLSnapshotLivePreview (const LLRect& rect) :
 	mRawSnapshot(NULL),
 	mRawSnapshotWidth(0),
 	mRawSnapshotHeight(1),
-	mRawSnapshotAspectRatio(1.0),
 	mRawSnapshotRenderUI(FALSE),
 	mRawSnapshotRenderHUD(FALSE),
 	mRawSnapshotBufferType(LLViewerWindow::SNAPSHOT_TYPE_COLOR),
@@ -939,7 +937,6 @@ BOOL LLSnapshotLivePreview::onIdle(LLSnapshotLivePreview* previewp)
 	previewp->mRawSnapshotRenderUI = gSavedSettings.getBOOL("RenderUIInSnapshot");
 	previewp->mRawSnapshotRenderHUD = gSavedSettings.getBOOL("RenderHUDInSnapshot");
 	previewp->mRawSnapshotBufferType = previewp->mSnapshotBufferType;
-	previewp->mRawSnapshotAspectRatio = previewp->mAspectRatio;
 	// Mark that the those values do not represent the current snapshot (yet).
 	previewp->mRawSnapshotWidth = 0;
 	previewp->mRawSnapshotHeight = 1;	// Avoid division by zero when calculation an aspect in LLSnapshotLivePreview::getAspectSizeProblem.
@@ -948,11 +945,11 @@ BOOL LLSnapshotLivePreview::onIdle(LLSnapshotLivePreview* previewp)
 							previewp->mRawSnapshot,
 							previewp->mWidth,
 							previewp->mHeight,
-							previewp->mRawSnapshotAspectRatio,
+							previewp->mAspectRatio,
 							previewp->mRawSnapshotRenderUI,
 							FALSE,
 							previewp->mRawSnapshotBufferType,
-							previewp->getMaxImageSize()))
+							previewp->getMaxImageSize(), 1.f, true))
 	{
 		// On success, cache the size of the raw snapshot.
 		previewp->mRawSnapshotWidth = previewp->mRawSnapshot->getWidth();
@@ -988,11 +985,14 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::getAspectSizePr
 {
 	S32 const window_width = gViewerWindow->getWindowWidthRaw();
 	S32 const window_height = gViewerWindow->getWindowHeightRaw();
+	F32 const window_aspect = (F32)window_width / window_height;
 
 	// We need an image with the aspect mAspectRatio (from which mWidth and mHeight were derived).
 
-	// The current aspect ratio of mRawSnapshot is:
-	F32 const raw_aspect = (F32)mRawSnapshotWidth / mRawSnapshotHeight;
+	// The current aspect ratio of mRawSnapshot. This should be (almost) equal to window_width / window_height,
+	// since these values are calculated in rawRawSnapshot with llround(window_width * scale_factor) and
+	// llround(window_height * scale_factor) respectively (since we set uncrop = true).
+	F32 raw_aspect = (F32)mRawSnapshotWidth / mRawSnapshotHeight;
 	// The smaller dimension might have been rounded up to 0.5 up or down. Calculate upper and lower limits.
 	F32 lower_raw_aspect;
 	F32 upper_raw_aspect;
@@ -1007,8 +1007,18 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::getAspectSizePr
 		upper_raw_aspect = mRawSnapshotWidth / (mRawSnapshotHeight - 0.5);
 	}
 	// Find out if mRawSnapshot was cropped already.
-	bool const allow_vertical_crop = window_height * raw_aspect >= window_width;		// mRawSnapshot was cropped horizontally.
-	bool const allow_horizontal_crop = window_width / raw_aspect >= window_height;		// mRawSnapshot was cropped vertically.
+	bool const allow_vertical_crop = window_height * upper_raw_aspect >= window_width;			// mRawSnapshot was cropped horizontally.
+	bool const allow_horizontal_crop = window_width / lower_raw_aspect >= window_height;		// mRawSnapshot was cropped vertically.
+
+	if (lower_raw_aspect <= window_aspect && window_aspect <= upper_raw_aspect)	// Was rawRawSnapshot called?
+	{
+	  // NEW: Since we pass uncrop = true to rawRawSnapshot, these should now always both be true.
+	  // Also, mRawSnapshotWidth or mRawSnapshotHeight is calculated from window_aspect to begin
+	  // with and a better approximation of raw_aspect for the following calculations is to use this source.
+	  llassert(allow_vertical_crop && allow_horizontal_crop);
+	  raw_aspect = window_aspect;			// Go back to the source.
+	}
+
 	crop_vertically_out = true;			// Prefer this, as it is faster.
 	crop_offset_out = 0;				// The number of columns or rows to cut off on the left or bottom.
 	// Construct a rectangle size w,h that fits inside mRawSnapshot but has the correct aspect.
@@ -1048,7 +1058,7 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::getAspectSizePr
 	if (mWidth > width_out || mHeight > height_out)
 	{
 		Dout(dc::snapshot, "NOT up to date: required target size " << mWidth << "x" << mHeight <<
-			" is larger than (cropped) raw snapshot with size " << width_out << "x" << height_out << "!");
+			" is larger than the raw snapshot with size " << width_out << "x" << height_out << "!");
 		return SIZE_TOO_LARGE;
 	}
 	// Do not allow any resizing for target images that are equal or larger than the current window, when the target is the harddisk.
@@ -1058,7 +1068,7 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::getAspectSizePr
 	{
 		Dout(dc::snapshot, "NOT up to date: required target size " << mWidth << "x" << mHeight <<
 			" is larger or equal the window size (" << window_width << "x" << window_height << ")"
-			" but unequal the (cropped) raw snapshot size (" << width_out << "x" << height_out << ")"
+			" but unequal the the raw snapshot size (" << width_out << "x" << height_out << ")"
 			" and target is disk!");
 		return CANNOT_RESIZE;
 	}
