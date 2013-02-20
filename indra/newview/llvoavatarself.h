@@ -380,7 +380,7 @@ public:
 	};
 
 	LLTimer					mTimeSinceLastRezMessage;
-	bool					updateAvatarRezMetrics(bool force_send);
+	static bool				updateAvatarRezMetrics(bool force_send);
 
 	std::vector<LLSD>		mPendingTimerRecords;
 	void 					addMetricsTimerRecord(const LLSD& record);

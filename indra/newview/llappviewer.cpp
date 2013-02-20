@@ -3158,7 +3158,7 @@ void LLAppViewer::requestQuit()
 	// Try to send last batch of avatar rez metrics.
 	if (!gDisconnected && isAgentAvatarValid())
 	{
-		gAgentAvatarp->updateAvatarRezMetrics(true); // force a last packet to be sent.
+		LLVOAvatarSelf::updateAvatarRezMetrics(true); // force a last packet to be sent.
 	}
 	
 	LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral*)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_POINT, TRUE);

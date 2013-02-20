@@ -228,7 +228,7 @@ void LLVOAvatarSelf::initInstance()
 	}
 
 	//doPeriodically(output_self_av_texture_diagnostics, 30.0);
-	doPeriodically(boost::bind(&LLVOAvatarSelf::updateAvatarRezMetrics, this, false), 5.0);
+	doPeriodically(boost::bind(&LLVOAvatarSelf::updateAvatarRezMetrics, false), 5.0);
 }
 
 // virtual
@@ -2247,6 +2247,11 @@ private:
 
 bool LLVOAvatarSelf::updateAvatarRezMetrics(bool force_send)
 {
+	//Can be called via event system after agent avatar has been removed.
+	//Also skip if quit has been requested, because we already send out rez metrics when entering the quit state.
+	if(!isAgentAvatarValid() || LLAppViewer::instance()->quitRequested())
+		return false;
+	
 	const F32 AV_METRICS_INTERVAL_QA = 30.0;
 	F32 send_period = 300.0;
 	if (gSavedSettings.getBOOL("QAModeMetrics"))
@@ -2254,13 +2259,13 @@ bool LLVOAvatarSelf::updateAvatarRezMetrics(bool force_send)
 		send_period = AV_METRICS_INTERVAL_QA;
 	}
 
-	if (force_send || mTimeSinceLastRezMessage.getElapsedTimeF32() > send_period)
+	if (force_send || gAgentAvatarp->mTimeSinceLastRezMessage.getElapsedTimeF32() > send_period)
 	{
-		// Stats for completed phases have been getting logged as they
+		// Stats for completed phases have been getting l	ogged as they
 		// complete.  This will give us stats for any timers that
 		// haven't finished as of the metric's being sent.
 		LLVOAvatar::logPendingPhasesAllAvatars();
-		sendViewerAppearanceChangeMetrics();
+		gAgentAvatarp->sendViewerAppearanceChangeMetrics();
 	}
 
 	return false;
