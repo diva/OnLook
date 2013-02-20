@@ -35,6 +35,15 @@
 #include "aitimer.h"
 #include "aicurl.h"
 
+enum curleasyrequeststatemachine_state_type {
+  AICurlEasyRequestStateMachine_addRequest = AIStateMachine::max_state,
+  AICurlEasyRequestStateMachine_waitAdded,
+  AICurlEasyRequestStateMachine_timedOut,	// This must be smaller than the rest, so they always overrule.
+  AICurlEasyRequestStateMachine_removed,	// The removed states must be largest two, so they are never ignored.
+  AICurlEasyRequestStateMachine_removed_after_finished,
+  AICurlEasyRequestStateMachine_bad_file_descriptor
+};
+
 // A curl easy request state machine.
 //
 // Before calling cersm.run() initialize the object (cersm) as follows:

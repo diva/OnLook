@@ -82,6 +82,11 @@ class AITimer : public AIStateMachine {
 	 */
 	F64 getInterval(void) const { return mInterval; }
 
+	/**
+	 * @brief Abort the timer from another thread.
+	 */
+	void request_abort(void);
+
   protected:
 	// Call finish() (or abort()), not delete.
 	/*virtual*/ ~AITimer() { DoutEntering(dc::statemachine, "~AITimer() [" << (void*)this << "]"); mFrameTimer.cancel(); }

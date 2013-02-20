@@ -83,6 +83,24 @@ LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string cons
 {
 }
 
+bool LLURLRequest::thread_safe_impl(void) const
+{
+  if (base_state() == bs_run &&
+	  (mRunState == AICurlEasyRequestStateMachine_removed_after_finished ||
+	   mRunState == AICurlEasyRequestStateMachine_addRequest) &&
+	  mResponder->thread_safe_complete())
+  {
+	return true;
+  }
+
+  // AICurlEasyRequestStateMachine::initialize_impl is thread safe because the statemachine
+  // will only just have been created and no other thread can know of this instance.
+  if (base_state() == bs_initialize)
+	return true;
+
+  return false;
+}
+
 void LLURLRequest::initialize_impl(void)
 {
 	// If the header is "Pragma" with no value, the caller intends to

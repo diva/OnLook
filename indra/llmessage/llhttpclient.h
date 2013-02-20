@@ -202,6 +202,9 @@ public:
 		// The name of the derived responder object. For debugging purposes.
 		virtual char const* getName(void) const = 0;
 
+		// Returning true causes AICurlEasyRequestStateMachine::multiplex_impl to be called from non-main threads.
+		virtual bool thread_safe_complete(void) const { return false; }
+
 	protected:
 		// Derived classes can override this to get the HTML headers that were received, when the message is completed.
 		// Only actually called for classes that implement a needsHeaders() that returns true.
