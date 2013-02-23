@@ -84,6 +84,11 @@ public:
 
 #include "aihttptimeout.h"
 
+// If this is set, treat dc::curlio as off in the assertion below.
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+bool gCurlIo;
+#endif
+
 namespace AICurlPrivate {
 namespace curlthread {
 
@@ -169,7 +174,7 @@ bool HTTPTimeout::data_received(size_t n/*,*/
 	  // using CURLOPT_DEBUGFUNCTION. Note that mDebugIsHeadOrGetMethod is only valid when the debug channel 'curlio' is on,
 	  // because it is set in the debug callback function.
 	  // This is also normal if we received a HTTP header with an error status, since that can interrupt our upload.
-	  Debug(llassert(upload_error_status || AICurlEasyRequest_wat(*mLockObj)->mDebugIsHeadOrGetMethod || !dc::curlio.is_on()));
+	  Debug(llassert(upload_error_status || AICurlEasyRequest_wat(*mLockObj)->mDebugIsHeadOrGetMethod || !dc::curlio.is_on() || gCurlIo));
 	  // 'Upload finished' detection failed, generate it now.
 	  upload_finished();
 	}
