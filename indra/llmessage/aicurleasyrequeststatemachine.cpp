@@ -33,13 +33,26 @@
 #include "aihttptimeoutpolicy.h"
 #include "llcontrol.h"
 
+enum curleasyrequeststatemachine_state_type {
+  AICurlEasyRequestStateMachine_addRequest = AIStateMachine::max_state,
+  AICurlEasyRequestStateMachine_waitAdded,
+  AICurlEasyRequestStateMachine_added,
+  AICurlEasyRequestStateMachine_timedOut,	// This must be smaller than the rest, so they always overrule.
+  AICurlEasyRequestStateMachine_finished,
+  AICurlEasyRequestStateMachine_removed,	// The removed states must be largest two, so they are never ignored.
+  AICurlEasyRequestStateMachine_removed_after_finished,
+  AICurlEasyRequestStateMachine_bad_file_descriptor
+};
+
 char const* AICurlEasyRequestStateMachine::state_str_impl(state_type run_state) const
 {
   switch(run_state)
   {
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_addRequest);
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_waitAdded);
+	AI_CASE_RETURN(AICurlEasyRequestStateMachine_added);
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_timedOut);
+	AI_CASE_RETURN(AICurlEasyRequestStateMachine_finished);
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_removed);
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_removed_after_finished);
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_bad_file_descriptor);
@@ -64,12 +77,14 @@ void AICurlEasyRequestStateMachine::initialize_impl(void)
 // CURL-THREAD
 void AICurlEasyRequestStateMachine::added_to_multi_handle(AICurlEasyRequest_wat&)
 {
+  set_state(AICurlEasyRequestStateMachine_added);
 }
 
 // CURL-THREAD
 void AICurlEasyRequestStateMachine::finished(AICurlEasyRequest_wat&)
 {
   mFinished = true;
+  set_state(AICurlEasyRequestStateMachine_finished);
 }
 
 // CURL-THREAD
@@ -115,11 +130,15 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
 	  // immediately after this call.
 	  mAdded = true;
 	  mCurlEasyRequest.addRequest();	// This causes the state to be changed, now or later, to
+	  									//   AICurlEasyRequestStateMachine_added, then
+										//   AICurlEasyRequestStateMachine_finished and then
 										//   AICurlEasyRequestStateMachine_removed_after_finished.
 
 	  // The first two states might be skipped thus, and the state at this point is one of
 	  // 1) AICurlEasyRequestStateMachine_waitAdded (idle)
-	  // 2) AICurlEasyRequestStateMachine_removed_after_finished (running)
+	  // 2) AICurlEasyRequestStateMachine_added (running)
+	  // 3) AICurlEasyRequestStateMachine_finished (running)
+	  // 4) AICurlEasyRequestStateMachine_removed_after_finished (running)
 
 	  if (mTotalDelayTimeout > 0.f)
 	  {
@@ -132,16 +151,22 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
 	  }
 	  break;
 	}
-	case AICurlEasyRequestStateMachine_waitAdded:
+	case AICurlEasyRequestStateMachine_added:
 	{
-	  // Nothing to do.
-	  idle(AICurlEasyRequestStateMachine_waitAdded);
+	  // The request was added to the multi handle. This is a no-op, which is good cause
+	  // this state might be skipped anyway ;).
+	  idle(current_state);				// Wait for the next event.
+
+	  // The state at this point is one of
+	  // 1) AICurlEasyRequestStateMachine_added (idle)
+	  // 2) AICurlEasyRequestStateMachine_finished (running)
+	  // 3) AICurlEasyRequestStateMachine_removed_after_finished (running)
 	  break;
 	}
 	case AICurlEasyRequestStateMachine_timedOut:
 	{
 	  // It is possible that exactly at this point the state changes into
-	  // AICurlEasyRequestStateMachine_removed_after_finished, with as result that mTimedOut
+	  // AICurlEasyRequestStateMachine_finished, with as result that mTimedOut
 	  // is set while we will continue with that state. Hence that mTimedOut
 	  // is explicitly reset in that state.
 
@@ -154,6 +179,7 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
 	  idle(current_state);				// Wait till AICurlEasyRequestStateMachine::removed_from_multi_handle() is called.
 	  break;
 	}
+	case AICurlEasyRequestStateMachine_finished:
 	case AICurlEasyRequestStateMachine_removed_after_finished:
 	{
 	  if (!mHandled)
@@ -165,13 +191,18 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
 		{
 		  // Stop the timer. Note that it's the main thread that generates timer events,
 		  // so we're certain that there will be no time out anymore if we reach this point.
-		  // Note that we can't call abort() directly here, as we're a boosted statemachine.
-		  mTimer->request_abort();
+		  mTimer->abort();
 		}
 
 		// The request finished and either data or an error code is available.
 		AICurlEasyRequest_wat easy_request_w(*mCurlEasyRequest);
 		easy_request_w->processOutput();
+	  }
+
+	  if (current_state == AICurlEasyRequestStateMachine_finished)
+	  {
+	    idle(current_state);				// Wait till AICurlEasyRequestStateMachine::removed_from_multi_handle() is called.
+	    break;
 	  }
 
 	  // See above.
@@ -233,9 +264,7 @@ void AICurlEasyRequestStateMachine::finish_impl(void)
 	// Note that even if the timer expired, it wasn't deleted because we used AIPersistentTimer; so mTimer is still valid.
 	// Stop the timer, if it's still running.
 	if (!mHandled)
-	{
-	  mTimer->request_abort();
-	}
+	  mTimer->abort();
   }
   // Auto clean up ourselves.
   kill();

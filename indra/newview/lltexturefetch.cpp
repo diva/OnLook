@@ -338,8 +338,6 @@ public:
 	}
 #endif
 
-	/*virtual*/ bool thread_safe_complete(void) const { return true; }
-
 	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const buffer_ptr_t& buffer)

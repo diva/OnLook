@@ -176,7 +176,6 @@
 //   Should return a stringified value of run_state.
 //
 class AIStateMachine {
-  protected:
 	//! The type of mState
 	enum base_state_type {
 	  bs_initialize,
@@ -214,15 +213,12 @@ class AIStateMachine {
 	base_state_type mState;						//!< State of the base class.
 	bool mIdle;									//!< True if this state machine is not running.
 	bool mAborted;								//!< True after calling abort() and before calling run().
-	bool mBoost;								//!< True when not being run by the main thread, but by which ever thread is changing the state.
-	active_type mActive;						//!< Whether statemachine is idle, queued to be added to the active list, or already on the active list (not used for boosted SM).
-	S64 mSleep;									//!< Non-zero while the state machine is sleeping (not used for boosted SM).
-	LLMutex mIdleActive;						//!< Used for atomic operations on the pair mIdle / mActive (not used for boosted SM).
-	LLMutex mMultiplexMutex;					//!< Used for boosted state machines, locked during multiplexing.
+	active_type mActive;						//!< Whether statemachine is idle, queued to be added to the active list, or already on the active list.
+	S64 mSleep;									//!< Non-zero while the state machine is sleeping.
+	LLMutex mIdleActive;						//!< Used for atomic operations on the pair mIdle / mActive.
 #ifdef SHOW_ASSERT
 	AIThreadID mContThread;						//!< Thread that last called locked_cont().
 	bool mCalledThreadUnsafeIdle;				//!< Set to true when idle() is called.
-	bool mInsideMultiplexImpl;					//!< Set to true while running a boosted state machine (also set while inside initialize_impl).
 #endif
 
 	// Callback facilities.
@@ -254,11 +250,10 @@ class AIStateMachine {
 
   public:
 	//! Create a non-running state machine.
-	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mActive(as_idle), mSleep(0),
+	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mActive(as_idle), mSleep(0), mParent(NULL), mCallback(NULL)
 #ifdef SHOW_ASSERT
-		mContThread(AIThreadID::none), mCalledThreadUnsafeIdle(false),
+		, mContThread(AIThreadID::none), mCalledThreadUnsafeIdle(false)
 #endif
-		mParent(NULL), mCallback(NULL), mRunState(0)
 		{ }
 
   protected:
@@ -379,10 +374,6 @@ class AIStateMachine {
 	//! Return a stringified state, for debugging purposes.
 	char const* state_str(state_type state);
 
-  protected:
-	//! Return mState.
-	base_state_type base_state(void) const { return mState; }
-
   private:
 	static void add_continued_statemachines(AIReadAccess<csme_type>& csme_r);
 	static void dowork(void);
@@ -420,10 +411,6 @@ class AIStateMachine {
 
 	// Handle cleaning up from initialization (or post abort) state.
 	virtual void finish_impl(void) = 0;
-
-	// Determine if it is thread-safe to run the current state in another thread than the main-thread.
-	// Only called while mSetStateLock is locked, may ONLY access mState and mRunState.
-	virtual bool thread_safe_impl(void) const { return false; }
 
 	// Implemenation of state_str for run states.
 	virtual char const* state_str_impl(state_type run_state) const = 0;

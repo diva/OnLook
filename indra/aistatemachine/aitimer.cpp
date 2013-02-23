@@ -33,8 +33,7 @@
 
 enum timer_state_type {
   AITimer_start = AIStateMachine::max_state,
-  AITimer_expired,
-  AITimer_abort
+  AITimer_expired
 };
 
 char const* AITimer::state_str_impl(state_type run_state) const
@@ -43,7 +42,6 @@ char const* AITimer::state_str_impl(state_type run_state) const
   {
 	AI_CASE_RETURN(AITimer_start);
 	AI_CASE_RETURN(AITimer_expired);
-	AI_CASE_RETURN(AITimer_abort);
   }
   return "UNKNOWN STATE";
 }
@@ -52,12 +50,6 @@ void AITimer::initialize_impl(void)
 {
   llassert(!mFrameTimer.isRunning());
   set_state(AITimer_start);
-}
-
-void AITimer::request_abort(void)
-{
-  mFrameTimer.cancel();
-  set_state(AITimer_abort);
 }
 
 void AITimer::expired(void)
@@ -72,17 +64,12 @@ void AITimer::multiplex_impl(void)
 	case AITimer_start:
 	{
 	  mFrameTimer.create(mInterval, boost::bind(&AITimer::expired, this));
-	  idle(AITimer_start);
+	  idle();
 	  break;
 	}
 	case AITimer_expired:
 	{
 	  finish();
-	  break;
-	}
-	case AITimer_abort:
-	{
-	  abort();
 	  break;
 	}
   }

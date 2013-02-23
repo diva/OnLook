@@ -260,6 +260,10 @@ extern S32 gStartImageHeight;
 // local globals
 //
 
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+static bool gCurlIo;
+#endif
+
 static LLHost gAgentSimHost;
 static BOOL gSkipOptionalUpdate = FALSE;
 

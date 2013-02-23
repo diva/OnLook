@@ -122,9 +122,6 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
   protected:
 	// Handle initializing the object.
 	/*virtual*/ void initialize_impl(void);
-
-	// Return true if current state is thread safe.
-	/*virtual*/ bool thread_safe_impl(void) const;
 };
 
 #endif // LL_LLURLREQUEST_H

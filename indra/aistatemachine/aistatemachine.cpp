@@ -82,8 +82,7 @@ void AIStateMachine::setMaxCount(F32 StateMachineMaxTime)
 
 void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bool abort_parent, bool on_abort_signal_parent)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::run(" << (void*)parent << ", " << (parent ? parent->state_str(new_parent_state) : "NA") <<
-	  ", " << abort_parent << ", " << on_abort_signal_parent << ") [" << (void*)this << "]");
+  DoutEntering(dc::statemachine, "AIStateMachine::run(" << (void*)parent << ", " << (parent ? parent->state_str(new_parent_state) : "NA") << ", " << abort_parent << ") [" << (void*)this << "]");
   // Must be the first time we're being run, or we must be called from a callback function.
   llassert(!mParent || mState == bs_callback);
   llassert(!mCallback || mState == bs_callback);
@@ -114,7 +113,7 @@ void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bo
   // Mark that run() has been called, in case we're being called from a callback function.
   mState = bs_initialize;
 
-  // Set mIdle to false and add statemachine to continued_statemachines-- or, when boosted,  run the statemachine till it finished or goes idle.
+  // Set mIdle to false and add statemachine to continued_statemachines.
   mSetStateLock.lock();
   locked_cont();
 }
@@ -141,7 +140,7 @@ void AIStateMachine::run(callback_type::signal_type::slot_type const& slot)
   // Mark that run() has been called, in case we're being called from a callback function.
   mState = bs_initialize;
 
-  // Set mIdle to false and add statemachine to continued_statemachines-- or, when boosted,  run the statemachine till it finished or goes idle.
+  // Set mIdle to false and add statemachine to continued_statemachines.
   mSetStateLock.lock();
   locked_cont();
 }
@@ -149,11 +148,9 @@ void AIStateMachine::run(callback_type::signal_type::slot_type const& slot)
 void AIStateMachine::idle(void)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::idle() [" << (void*)this << "]");
-  llassert(mInsideMultiplexImpl);
-  mSetStateLock.lock();
+  llassert(is_main_thread());
   llassert(!mIdle);
   mIdle = true;
-  mSetStateLock.unlock();
   mSleep = 0;
 #ifdef SHOW_ASSERT
   mCalledThreadUnsafeIdle = true;
@@ -163,12 +160,9 @@ void AIStateMachine::idle(void)
 void AIStateMachine::idle(state_type current_run_state)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::idle(" << state_str(current_run_state) << ") [" << (void*)this << "]");
-  llassert(mInsideMultiplexImpl);	// Only boosted state machines can come here as non-main thread because you may only get here from multiplex_impl().
-  mSetStateLock.lock();
-  // If two different threads call multiplex_impl() (boosted state machines) then that should happen serialized:
-  // only one thread may call multiplex() at any given time. Hence, it is impossible that idle() is called while
-  // we are already idle.
+  llassert(is_main_thread());
   llassert(!mIdle);
+  mSetStateLock.lock();
   // Only go idle if the run state is (still) what we expect it to be.
   // Otherwise assume that another thread called set_state() and continue running.
   if (current_run_state == mRunState)
@@ -202,7 +196,6 @@ void AIStateMachine::locked_cont(void)
   mIdle = false;
   bool not_active = mActive == as_idle;
   mIdleActive.unlock();
-  mBoost = thread_safe_impl();
   // mActive is only changed in AIStateMachine::mainloop, by the main-thread, and
   // here, possibly by any thread. However, after setting mIdle to false above, it
   // is impossible for any thread to come here, until after the main-thread called
@@ -217,15 +210,8 @@ void AIStateMachine::locked_cont(void)
   // to release mSetStateLock here, with as advantage that if we're not the main-
   // thread and not_active is true, then the main-thread won't block when it has
   // a timer running that times out and calls set_state().
-  // Finally, if mBoost is true then not_active is not going to be tested and
-  // mActive is not going to be changed, so then we're done with this lock too.
   mSetStateLock.unlock();
-  if (mBoost)
-  {
-	// Run statemachine until it is finished or idle again.
-	multiplex(0);
-  }
-  else if (not_active)
+  if (not_active)
   {
 	AIWriteAccess<csme_type> csme_w(sContinuedStateMachinesAndMainloopEnabled);
 	// See above: it is not possible that mActive was changed since not_active
@@ -249,6 +235,9 @@ void AIStateMachine::set_state(state_type state)
 
   // Stop race condition of multiple threads calling cont() or set_state() here.
   mSetStateLock.lock();
+
+  // Do not call set_state() unless running.
+  llassert(mState == bs_run || !is_main_thread());
 
   // If this function is called from another thread than the main thread, then we have to ignore
   // it if we're not idle and the state is less than the current state. The main thread must
@@ -290,11 +279,8 @@ void AIStateMachine::set_state(state_type state)
 	return;		// Ignore.
   }
 
-  // Do not call set_state() from multiplex_impl unless running.
-  llassert(mState == bs_run || !mInsideMultiplexImpl);
-
   // Do not call idle() when set_state is called from another thread; use idle(state_type) instead.
-  llassert(!mCalledThreadUnsafeIdle || AIThreadID::in_main_thread());
+  llassert(!mCalledThreadUnsafeIdle || is_main_thread());
 
   // Change mRunState to the requested value.
   if (mRunState != state)
@@ -307,15 +293,7 @@ void AIStateMachine::set_state(state_type state)
   if (mIdle)
 	locked_cont();				// This unlocks mSetStateLock.
   else
-  {
-	// The state was changed while not being idle.
-	// Note that if thread_safe_impl() returns true now then we don't need to call multiplex() here
-	// when we ended up here from multiplex(). However, if we end up here as the result of an
-	// external state change while the state machine is running in the main thread, then we can't
-	// call multiplex here; it would be too dangerous. In that case we let the main thread pick
-	// up this state.
 	mSetStateLock.unlock();
-  }
 
   // If we get here then mIdle is false, so only mRunState can still be changed but we won't
   // call locked_cont() anymore. When the main thread finally picks up on the state change,
@@ -476,7 +454,6 @@ void AIStateMachine::multiplex(U64 current_time)
   // amount of time has passed.
   if (mSleep != 0)
   {
-	llassert(!mBoost);		// Sleeping MUST be done in the main thread: thread_safe_impl() should have returned false.
 	if (mSleep < 0)
 	{
 	  if (++mSleep)
@@ -498,90 +475,11 @@ void AIStateMachine::multiplex(U64 current_time)
   {
 	mAborted = false;
 	mState = bs_run;
-#ifdef SHOW_ASSERT
-	mInsideMultiplexImpl = true;
-#endif
 	initialize_impl();
-#ifdef SHOW_ASSERT
-	mInsideMultiplexImpl = false;
-#endif
 	if (mAborted || mState != bs_run)
-	{
-	  mBoost = false;
 	  return;
-	}
-	mSetStateLock.lock();
-	mBoost = thread_safe_impl();
-	if (!mBoost && !AIThreadID::in_main_thread())
-	{
-	  // Pass running on the main thread.
-	  mIdle = true;
-	  locked_cont();
-	  return;
-	}
-	mSetStateLock.unlock();
   }
-  if (!mBoost)
-  {
-	llassert(AIThreadID::in_main_thread());
-#ifdef SHOW_ASSERT
-	mInsideMultiplexImpl = true;
-#endif
-  	multiplex_impl();
-#ifdef SHOW_ASSERT
-	mInsideMultiplexImpl = false;
-#endif
-  }
-  else
-  {
-	if (mState != bs_run)
-	  return;
-
-	mSetStateLock.lock();
-	llassert(!mIdle);	// We should never get here when idle.
-
-	if (!mMultiplexMutex.tryLock())		// Point A
-	{
-	  // If another thread is already already calling multiplex_impl() then we can't do that too.
-	  // However, instead of blocking we simply return: by getting here it is guaranteed that
-	  // the other thread will do at least one more test of 'mState == bs_run && !mIdle' before
-	  // stopping to run the statemachine.
-	  // The reason for that is that if another thread had mMultiplexMutex at point A, while
-	  // we had mSetStateLock, then the other thread has to be between point B and point C
-	  // because that is the only area where mSetStateLock is unlocked while mMultiplexMutex
-	  // is locked, and the test follows this area.
-	  mSetStateLock.unlock();
-	  return;
-	}
-
-	do
-	{
-	  mSetStateLock.unlock();			// Point B
-#ifdef SHOW_ASSERT
-	  mInsideMultiplexImpl = true;
-#endif
-	  multiplex_impl();
-#ifdef SHOW_ASSERT
-	  mInsideMultiplexImpl = false;
-#endif
-	  mSetStateLock.lock();				// Point C
-
-	  // The state might have changed, check if we may still run outside the main thread.
-	  mBoost = thread_safe_impl();
-	  if (!mBoost && !AIThreadID::in_main_thread())
-	  {
-		mMultiplexMutex.unlock();
-		// Pass running on the main thread.
-		mIdle = true;
-		locked_cont();
-		return;
-	  }
-	}
-	while (mState == bs_run && !mIdle);
-
-	mMultiplexMutex.unlock();
-	mSetStateLock.unlock();
-  }
+  multiplex_impl();
 }
 
 //static
@@ -692,10 +590,6 @@ void AIStateMachine::flush(void)
   for (active_statemachines_type::iterator iter = active_statemachines.begin(); iter != active_statemachines.end(); ++iter)
   {
 	AIStateMachine& statemachine(iter->statemachine());
-#ifdef SHOW_ASSERT
-	// Make assertions happy.
-	statemachine.mInsideMultiplexImpl = true;
-#endif
 	if (statemachine.abortable())
 	{
 	  // We can't safely call abort() here for non-running (run() was called, but they weren't initialized yet) statemachines,

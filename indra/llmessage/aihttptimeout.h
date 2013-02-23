@@ -133,9 +133,5 @@ class HTTPTimeout : public LLRefCount {
 } // namespace curlthread
 } // namespace AICurlPrivate
 
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
-extern bool gCurlIo;
-#endif
-
 #endif
 
