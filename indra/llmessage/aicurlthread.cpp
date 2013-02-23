@@ -832,8 +832,8 @@ class AICurlThread : public LLThread
 {
   public:
 	static AICurlThread* sInstance;
-	LLMutex mWakeUpMutex;
-	bool mWakeUpFlag;			// Protected by mWakeUpMutex.
+	LLMutex mWakeUpFlagMutex;	// Set when the curl thread is sleeping (in or about to enter select()).
+	bool mWakeUpFlag;			// Protected by mWakeUpFlagMutex.
 
   public:
 	// MAIN-THREAD
@@ -1082,10 +1082,10 @@ void AICurlThread::wakeup_thread(bool stop_thread)
 	mRunning = false;
 
   // Try if curl thread is still awake and if so, pass the new commands directly.
-  if (mWakeUpMutex.tryLock())
+  if (mWakeUpFlagMutex.tryLock())
   {
 	mWakeUpFlag = true;
-	mWakeUpMutex.unlock();
+	mWakeUpFlagMutex.unlock();
 	return;
   }
 
@@ -1247,9 +1247,9 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 	  command_queue_wat command_queue_w(command_queue);
 	  if (command_queue_w->empty())
 	  {
-		mWakeUpMutex.lock();
+		mWakeUpFlagMutex.lock();
 		mWakeUpFlag = false;
-		mWakeUpMutex.unlock();
+		mWakeUpFlagMutex.unlock();
 		break;
 	  }
 	  // Move the next command from the queue into command_being_processed.
@@ -1312,10 +1312,10 @@ void AICurlThread::run(void)
 	  // Process every command in command_queue before filling the fd_set passed to select().
 	  for(;;)
 	  {
-		mWakeUpMutex.lock();
+		mWakeUpFlagMutex.lock();
 		if (mWakeUpFlag)
 		{
-		  mWakeUpMutex.unlock();
+		  mWakeUpFlagMutex.unlock();
 		  process_commands(multi_handle_w);
 		  continue;
 		}
@@ -1324,7 +1324,7 @@ void AICurlThread::run(void)
 	  // wakeup_thread() is also called after setting mRunning to false.
 	  if (!mRunning)
 	  {
-		mWakeUpMutex.unlock();
+		mWakeUpFlagMutex.unlock();
 		break;
 	  }
 
@@ -1400,7 +1400,7 @@ void AICurlThread::run(void)
 #endif
 #endif
 	  ready = select(nfds, read_fd_set, write_fd_set, NULL, &timeout);
-	  mWakeUpMutex.unlock();
+	  mWakeUpFlagMutex.unlock();
 #ifdef CWDEBUG
 #ifdef DEBUG_CURLIO
 	  Dout(dc::finish|cond_error_cf(ready == -1), ready);
