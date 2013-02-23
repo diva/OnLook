@@ -327,7 +327,7 @@ bool HTTPTimeout::lowspeed(size_t bytes)
 	  llassert_always(bucket < low_speed_time);
 	  total_bytes -= mBuckets[bucket];	// Empty this bucket.
 	}
-	while(total_bytes >= 1);	// Use 1 here instead of mintotalbytes, to test that total_bytes indeed always reaches zero.
+	while(total_bytes >= mintotalbytes);
   }
   // If this function isn't called again within max_stall_time seconds, we stalled.
   mStalled = sClockCount + max_stall_time / sClockWidth;
