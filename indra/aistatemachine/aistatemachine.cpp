@@ -82,7 +82,8 @@ void AIStateMachine::setMaxCount(F32 StateMachineMaxTime)
 
 void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bool abort_parent, bool on_abort_signal_parent)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::run(" << (void*)parent << ", " << (parent ? parent->state_str(new_parent_state) : "NA") << ", " << abort_parent << ") [" << (void*)this << "]");
+  DoutEntering(dc::statemachine, "AIStateMachine::run(" << (void*)parent << ", " << (parent ? parent->state_str(new_parent_state) : "NA") <<
+	  ", " << abort_parent << ", " << on_abort_signal_parent << ") [" << (void*)this << "]");
   // Must be the first time we're being run, or we must be called from a callback function.
   llassert(!mParent || mState == bs_callback);
   llassert(!mCallback || mState == bs_callback);

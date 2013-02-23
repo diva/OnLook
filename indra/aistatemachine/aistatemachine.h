@@ -250,10 +250,11 @@ class AIStateMachine {
 
   public:
 	//! Create a non-running state machine.
-	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mActive(as_idle), mSleep(0), mParent(NULL), mCallback(NULL)
+	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mActive(as_idle), mSleep(0),
 #ifdef SHOW_ASSERT
-		, mContThread(AIThreadID::none), mCalledThreadUnsafeIdle(false)
+		mContThread(AIThreadID::none), mCalledThreadUnsafeIdle(false),
 #endif
+		mParent(NULL), mCallback(NULL), mRunState(0)
 		{ }
 
   protected:
