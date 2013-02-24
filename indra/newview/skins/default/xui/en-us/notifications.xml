@@ -392,6 +392,30 @@ Initialization with the Marketplace failed because of a system or network error.
          yestext="OK"/>
   </notification>
     
+  <notification
+   icon="alertmodal.tga"
+   name="MarketplaceURLChanged"
+   type="alertmodal">
+The region you have entered has a different marketplace page, would you like to change the marketplace's default page?
+
+Furthermore, would you like your marketplace browser to be reset to this region's page now?
+        <usetemplate
+         name="yesnocancelbuttons"
+         notext="No"
+         canceltext="Reset"
+         yestext="Yes"/>
+  </notification>
+
+  <notification
+   icon="notify.tga"
+   name="MarketplaceURLGone"
+   type="notify">
+There is no marketplace on the region you've moved to.
+        <usetemplate
+         ignoretext="MarketplaceURL is empty on region change"
+         name="okignore"
+         yestext="OK"/>
+  </notification>
 
     <notification
    icon="alertmodal.tga"
