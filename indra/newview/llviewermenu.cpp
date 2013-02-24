@@ -9805,5 +9805,18 @@ void custom_selected(void* user_data)
 	LLSD menuAction = LLSD::emptyMap();
 	menuAction["action"] = LLSD(custom->getName());
 
+	LLSD selection = LLSD::emptyArray();
+
+    for (LLObjectSelection::iterator iter = LLSelectMgr::getInstance()->getSelection()->begin();
+         iter != LLSelectMgr::getInstance()->getSelection()->end(); iter++)
+    {
+        LLSelectNode* selectNode = *iter;
+        LLViewerObject*cur = selectNode->getObject();
+
+		selection.append(LLSD((S32)cur->getLocalID()));
+	}
+
+	menuAction["selection"] = selection;
+
 	LLHTTPClient::post(url, menuAction, new LLHTTPClient::ResponderIgnore);
 }
