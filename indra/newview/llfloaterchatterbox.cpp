@@ -235,6 +235,7 @@ void LLFloaterChatterBox::removeFloater(LLFloater* floaterp)
 		// only my friends floater now locked
 		mTabContainer->lockTabs(mTabContainer->getNumLockedTabs() - 1);
 		gSavedSettings.setBOOL("ChatHistoryTornOff", TRUE);
+		if (!gSavedSettings.getBOOL("ShowLocalChatFloaterBar")) floaterp->childSetVisible("chat_layout_panel", false);
 		floaterp->setCanClose(TRUE);
 	}
 	else if (floaterp->getName() == "floater_my_friends")
@@ -276,6 +277,7 @@ void LLFloaterChatterBox::addFloater(LLFloater* floaterp,
 		// make sure first two tabs are now locked
 		mTabContainer->lockTabs(num_locked_tabs + 1);
 		gSavedSettings.setBOOL("ChatHistoryTornOff", FALSE);
+		floaterp->childSetVisible("chat_layout_panel", true);
 		floaterp->setCanClose(FALSE);
 	}
 	else if (floaterp->getName() == "floater_my_friends")

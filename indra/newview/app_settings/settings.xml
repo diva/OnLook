@@ -762,7 +762,7 @@ Found in Advanced->Rendering->Info Displays</string>
     <key>ShowLocalChatFloaterBar</key>
     <map>
       <key>Comment</key>
-	  <string>Whether or not local chat should have an input bar, requires a restart.</string>
+	  <string>Whether or not local chat should have an input bar when undocked, requires docking and undocking if already undocked.</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -6289,22 +6289,6 @@ This should be as low as possible, but too low may break functionality</string>
     <map>
       <key>Comment</key>
       <string>Rectangle for chat history</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Rect</string>
-      <key>Value</key>
-      <array>
-        <integer>0</integer>
-        <integer>172</integer>
-        <integer>500</integer>
-        <integer>0</integer>
-      </array>
-    </map>
-    <key>FloaterChatBarlessRect</key>
-    <map>
-      <key>Comment</key>
-	  <string>Rectangle for chat history without input bar</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
