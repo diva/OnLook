@@ -1120,7 +1120,7 @@ LLVOAvatar::~LLVOAvatar()
 		}
 	}
 
-	logPendingPhases();
+	//logPendingPhases();
 	
 	lldebugs << "LLVOAvatar Destructor (0x" << this << ") id:" << mID << llendl;
 
@@ -1156,7 +1156,12 @@ void LLVOAvatar::markDead()
 	}
 	mVoiceVisualizer->markDead();
 	LLLoadedCallbackEntry::cleanUpCallbackList(&mCallbackTextureList) ;
+
+	if(!isDead())
+		logPendingPhases();
+
 	LLViewerObject::markDead();
+
 }
 
 
