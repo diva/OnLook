@@ -2386,7 +2386,8 @@ void LLVOAvatarSelf::sendViewerAppearanceChangeMetrics()
 	by_fields.push_back("is_using_server_bakes");
 	by_fields.push_back("is_self");
 	by_fields.push_back("central_bake_version");
-	LLSD summary = summarize_by_buckets(mPendingTimerRecords, by_fields, std::string("elapsed"));
+	std::string val = "elapsed";
+	LLSD summary = summarize_by_buckets(mPendingTimerRecords, by_fields, val);
 	msg["timers"] = summary;
 
 	mPendingTimerRecords.clear();
