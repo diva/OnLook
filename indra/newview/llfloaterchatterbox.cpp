@@ -44,6 +44,15 @@
 #include "llimview.h"
 #include "llimpanel.h"
 #include "llstring.h"
+
+namespace
+{
+	void handleLocalChatBar(LLFloaterChat* floater_chat, bool show_bar)
+	{
+		floater_chat->childSetVisible("chat_layout_panel", show_bar || !gSavedSettings.getBOOL("ChatHistoryTornOff"));
+	}
+}
+
 //
 // LLFloaterMyFriends
 //
@@ -119,9 +128,9 @@ LLFloaterChatterBox::LLFloaterChatterBox(const LLSD& seed) :
 		addFloater(LLFloaterMyFriends::getInstance(0), TRUE);
 	}
 
+	LLFloaterChat* floater_chat = LLFloaterChat::getInstance();
 	if (gSavedSettings.getBOOL("ChatHistoryTornOff"))
 	{
-		LLFloaterChat* floater_chat = LLFloaterChat::getInstance();
 		// add then remove to set up relationship for re-attach
 		addFloater(floater_chat, FALSE);
 		removeFloater(floater_chat);
@@ -130,8 +139,9 @@ LLFloaterChatterBox::LLFloaterChatterBox(const LLSD& seed) :
 	}
 	else
 	{
-		addFloater(LLFloaterChat::getInstance(LLSD()), FALSE);
+		addFloater(floater_chat, FALSE);
 	}
+	gSavedSettings.getControl("ShowLocalChatFloaterBar")->getSignal()->connect(boost::bind(handleLocalChatBar, floater_chat, _2));
 	mTabContainer->lockTabs();
 }
 

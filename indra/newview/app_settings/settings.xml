@@ -762,7 +762,7 @@ Found in Advanced->Rendering->Info Displays</string>
     <key>ShowLocalChatFloaterBar</key>
     <map>
       <key>Comment</key>
-	  <string>Whether or not local chat should have an input bar when undocked, requires docking and undocking if already undocked.</string>
+	  <string>Whether or not local chat should have an input bar when undocked.</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
