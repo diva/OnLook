@@ -93,7 +93,6 @@ public:
 	}
 
 	LLDrawable()				{ init(); }
-	MEM_TYPE_NEW(LLMemType::MTYPE_DRAWABLE);
 	
 	void markDead();			// Mark this drawable as dead
 	BOOL isDead() const			{ return isState(DEAD); }
