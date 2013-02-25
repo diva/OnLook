@@ -2290,6 +2290,7 @@ void LLAppearanceMgr::updateAppearanceFromCOF(bool update_base_outfit_ordering)
 	}
 
 	BoolSetter setIsInUpdateAppearanceFromCOF(mIsInUpdateAppearanceFromCOF);
+	selfStartPhase("update_appearance_from_cof");
 
 	LL_INFOS("Avatar") << self_av_string() << "starting" << LL_ENDL;
 
@@ -3456,6 +3457,12 @@ public:
 
 void LLAppearanceMgr::requestServerAppearanceUpdate(LLHTTPClient::ResponderPtr responder_ptr)
 {
+	if (gAgentAvatarp->isEditingAppearance()) 
+	{
+		// don't send out appearance updates if in appearance editing mode
+		return;
+	}
+
 	if (!gAgent.getRegion())
 	{
 		llwarns << "Region not set, cannot request server appearance update" << llendl;

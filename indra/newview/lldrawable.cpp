@@ -546,7 +546,6 @@ F32 LLDrawable::updateXform(BOOL undamped)
 		}
 	}
 
-
 	if ((mCurrentScale != target_scale) ||
 		(!isRoot() &&
 		(dist_squared >= MIN_INTERPOLATE_DISTANCE_SQUARED ||

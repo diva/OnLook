@@ -414,8 +414,8 @@ void LLDrawPoolWater::renderOpaqueLegacyWater()
 	{
 		glEnable(GL_TEXTURE_GEN_S); //texture unit 0
 		glEnable(GL_TEXTURE_GEN_T); //texture unit 0
-		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+		glTexGenf(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+		glTexGenf(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
 	}
 
 	// Use the fact that we know all water faces are the same size

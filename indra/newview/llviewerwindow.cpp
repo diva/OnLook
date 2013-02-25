@@ -4349,8 +4349,8 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 	// Copy screen to a buffer
 
 	LLRect const window_rect = show_ui ? getWindowRectRaw() : getWorldViewRectRaw(); 
-	S32 const window_width = window_rect.getWidth();
-	S32 const window_height = window_rect.getHeight();
+	S32 window_width = window_rect.getWidth();
+	S32 window_height = window_rect.getHeight();
 
 	// SNAPSHOT
 
@@ -4378,7 +4378,7 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 	
 	S32 buffer_x_offset = 0;
 	S32 buffer_y_offset = 0;
-	F32 scale_factor;
+	F32 scale_factor = 1.0f;
 	S32 image_buffer_x;
 	S32 image_buffer_y;
 
@@ -4386,6 +4386,36 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 	// snapshot fits precisely inside window, it is the portion of the window with the correct aspect.
 	F32 snapshot_width = (snapshot_aspect > window_aspect) ? (F32)window_width : window_height * snapshot_aspect;
 	F32 snapshot_height = (snapshot_aspect < window_aspect) ? (F32)window_height : window_width / snapshot_aspect;
+
+	//This is what I would classify as a hack. If in deferred then do not tile (window_*=snapshot_*=image_*, ratio=scale_factor=1.f)
+	S32 original_width = 0;
+	S32 original_height = 0;
+	bool reset_deferred = false;
+	LLRenderTarget scratch_space;
+	if ((image_width > window_width || image_height > window_height) && LLPipeline::sRenderDeferred && !show_ui)
+	{
+		if (scratch_space.allocate(image_width, image_height, GL_RGBA, true, true))
+		{
+			original_width = gPipeline.mDeferredScreen.getWidth();
+			original_height = gPipeline.mDeferredScreen.getHeight();
+
+			if (gPipeline.allocateScreenBuffer(image_width, image_height))
+			{
+				image_width = snapshot_width = window_width = scratch_space.getWidth();
+				image_height = snapshot_height = window_height = scratch_space.getHeight();
+				reset_deferred = true;
+				mWindowRectRaw.set(0, image_height, image_width, 0);
+				scratch_space.bindTarget();
+			}
+			else
+			{
+				scratch_space.release();
+				gPipeline.allocateScreenBuffer(original_width, original_height);
+			}
+		}
+	}
+
+
 	// ratio is the ratio snapshot/image', where image' is a rectangle with aspect snapshot_aspect that precisely contains image.
 	// Thus image_width' / image_height' == aspect ==> snapshot_width / image_width' == snapshot_height / image_height'.
 	// Since image' precisely contains image, one of them is equal (ie, image_height' = image_height) and the other is larger
@@ -4417,7 +4447,7 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 		S32 image_size_x = llround(snapshot_width * scale_factor);
 		S32 image_size_y = llround(snapshot_width * scale_factor);
 		if (llmax(image_size_x, image_size_y) > max_size &&		// Boundary check to avoid memory overflow.
-			internal_scale <= 1.f)								// SHY_MOD: If supersampling... Don't care about max_size.
+			internal_scale <= 1.f && !reset_deferred)				// SHY_MOD: If supersampling... Don't care about max_size.
 		{
 			// Too big, clamp.
 			continue;
@@ -4425,6 +4455,8 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 		// Done.
 		break;
 	}
+	
+
 	// Center the buffer.
 	buffer_x_offset = llfloor(((window_width - unscaled_image_buffer_x) * scale_factor) / 2.f);
 	buffer_y_offset = llfloor(((window_height - unscaled_image_buffer_y) * scale_factor) / 2.f);
@@ -4587,6 +4619,15 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 		// and we stand a good chance of crashing on rebuild because the render drawable arrays have multiple copies of
 		// objects on them.
 		gPipeline.resetDrawOrders();
+	}
+	
+	if (reset_deferred)
+	{
+		mWindowRectRaw = window_rect;
+		scratch_space.flush();
+		scratch_space.release();
+		gPipeline.allocateScreenBuffer(original_width, original_height);
+		
 	}
 
 	if (is_tiling)

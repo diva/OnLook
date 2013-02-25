@@ -783,8 +783,15 @@ void LLAgent::handleServerBakeRegionTransition(const LLUUID& region_id)
 		llinfos << "update requested due to region transition" << llendl;
 		LLAppearanceMgr::instance().requestServerAppearanceUpdate();
 	}
+	// new-style appearance entering a non-bake region,
+	// need to check for existence of the baking service.
+	else if (isAgentAvatarValid() &&
+			 gAgentAvatarp->isUsingServerBakes() &&
+			 mRegionp->getCentralBakeVersion()==0)
+	{
+		gAgentAvatarp->checkForUnsupportedServerBakeAppearance();
+	}
 }
-
 
 //-----------------------------------------------------------------------------
 // setRegion()
@@ -4478,13 +4485,6 @@ void LLAgent::sendAgentSetAppearance()
 	if (gAgentQueryManager.mNumPendingQueries > 0) 
 	{
 		return;
-	}
-
-	if (!gAgentWearables.changeInProgress())
-	{
-		// Change is fully resolved, can close some open phases.
-		gAgentAvatarp->stopPhase("process_initial_wearables_update");
-		gAgentAvatarp->stopPhase("wear_inventory_category");
 	}
 
 	if (!isAgentAvatarValid() || (getRegion() && getRegion()->getCentralBakeVersion())) return;
