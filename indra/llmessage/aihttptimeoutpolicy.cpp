@@ -836,6 +836,7 @@ P(blockingLLSDPost);
 P(blockingLLSDGet);
 P(blockingRawGet);
 P(charactersResponder);
+P(checkAgentAppearanceServiceResponder);
 P(classifiedStatsResponder);
 P(consoleResponder);
 P2(crashLoggerResponder,						transfer_5s);

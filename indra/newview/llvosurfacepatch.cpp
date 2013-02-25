@@ -473,7 +473,7 @@ void LLVOSurfacePatch::updateNorthGeometry(LLFace *facep,
 	S32 vertex_count = 0;
 	S32 i, x, y;
 
-	S32 num_vertices, num_indices;
+	S32 num_vertices;
 
 	U32 render_stride = mLastStride;
 	S32 patch_size = mPatchp->getSurface()->getGridsPerPatchEdge();
@@ -491,7 +491,6 @@ void LLVOSurfacePatch::updateNorthGeometry(LLFace *facep,
 	if (north_stride == render_stride)
 	{
 		num_vertices = 2 * length + 1;
-		num_indices = length * 6 - 3;
 
 		facep->mCenterAgent = (mPatchp->getPointAgent(8, 15) + mPatchp->getPointAgent(8, 16))*0.5f;
 
@@ -542,7 +541,6 @@ void LLVOSurfacePatch::updateNorthGeometry(LLFace *facep,
 	{
 		// North stride is longer (has less vertices)
 		num_vertices = length + length/2 + 1;
-		num_indices = half_length*9 - 3;
 
 		facep->mCenterAgent = (mPatchp->getPointAgent(7, 15) + mPatchp->getPointAgent(8, 16))*0.5f;
 
@@ -601,7 +599,6 @@ void LLVOSurfacePatch::updateNorthGeometry(LLFace *facep,
 		length = patch_size / north_stride;
 		half_length = length / 2;
 		num_vertices = length + half_length + 1;
-		num_indices = 9*half_length - 3;
 
 		facep->mCenterAgent = (mPatchp->getPointAgent(15, 7) + mPatchp->getPointAgent(16, 8))*0.5f;
 
@@ -672,7 +669,7 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
 {
 	S32 i, x, y;
 
-	S32 num_vertices, num_indices;
+	S32 num_vertices;
 
 	U32 render_stride = mLastStride;
 	S32 patch_size = mPatchp->getSurface()->getGridsPerPatchEdge();
@@ -685,7 +682,6 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
 	if (east_stride == render_stride)
 	{
 		num_vertices = 2 * length + 1;
-		num_indices = length * 6 - 3;
 
 		facep->mCenterAgent = (mPatchp->getPointAgent(8, 15) + mPatchp->getPointAgent(8, 16))*0.5f;
 
@@ -734,7 +730,6 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
 	{
 		// East stride is longer (has less vertices)
 		num_vertices = length + half_length + 1;
-		num_indices = half_length*9 - 3;
 
 		facep->mCenterAgent = (mPatchp->getPointAgent(7, 15) + mPatchp->getPointAgent(8, 16))*0.5f;
 
@@ -789,7 +784,6 @@ void LLVOSurfacePatch::updateEastGeometry(LLFace *facep,
 		length = patch_size / east_stride;
 		half_length = length / 2;
 		num_vertices = length + length/2 + 1;
-		num_indices = 9*(length/2) - 3;
 
 		facep->mCenterAgent = (mPatchp->getPointAgent(15, 7) + mPatchp->getPointAgent(16, 8))*0.5f;
 
