@@ -2944,8 +2944,19 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 		mVisibleChat = visible_chat;
 		new_name = TRUE;
 	}
-	
-	if (sRenderGroupTitles != (bool)mRenderGroupTitles)
+
+// [RLVa:KB] - Checked: 2010-04-04 (RLVa-1.2.2a) | Added: RLVa-0.2.0b
+	if (fRlvShowNames)
+	{
+		if (mRenderGroupTitles)
+		{
+			mRenderGroupTitles = FALSE;
+			new_name = TRUE;
+		}
+	}
+	else if (sRenderGroupTitles != (bool)mRenderGroupTitles)
+// [/RLVa]
+	//if (sRenderGroupTitles != (bool)mRenderGroupTitles)
 	{
 		mRenderGroupTitles = sRenderGroupTitles;
 		new_name = TRUE;
@@ -3082,6 +3093,9 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 	// Avatars must have a first and last name
 	if (!firstname || !lastname) return;
 
+// [RLVa:KB] - Checked: 2010-10-31 (RLVa-1.2.2a) | Added: RLVa-1.2.2a
+	bool fRlvShowNames = gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES);
+// [/RLVa:KB]
 	bool is_away = mSignaledAnimations.find(ANIM_AGENT_AWAY)  != mSignaledAnimations.end();
 	bool is_busy = mSignaledAnimations.find(ANIM_AGENT_BUSY) != mSignaledAnimations.end();
 	bool is_appearance = mSignaledAnimations.find(ANIM_AGENT_CUSTOMIZE) != mSignaledAnimations.end();
@@ -3094,7 +3108,10 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 	{
 		is_muted = LLMuteList::getInstance()->isMuted(getID());
 	}
-	bool is_friend = LLAvatarTracker::instance().isBuddy(getID());
+//	bool is_friend = LLAvatarTracker::instance().isBuddy(getID());
+// [RLVa:KB] - Checked: 2010-10-31 (RLVa-1.2.2a) | Added: RLVa-1.2.2a
+	bool is_friend = (!fRlvShowNames) && (LLAvatarTracker::instance().isBuddy(getID()));
+// [/RLVa:KB]
 	bool is_cloud = getIsCloud();
 	bool is_langolier = isLangolier();
 
@@ -3177,7 +3194,10 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 				LLFontGL::getFontSansSerifSmall());
 		}
 
-		if (sRenderGroupTitles
+//		if (sRenderGroupTitles
+// [RLVa:KB] - Checked: 2010-10-31 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
+		if (sRenderGroupTitles && !fRlvShowNames
+// [/RLVa:KB]
 			&& title && title->getString() && title->getString()[0] != '\0')
 		{
 			std::string title_str = title->getString();
@@ -3205,6 +3225,10 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 					boost::bind(&LLVOAvatar::clearNameTag, this));
 			}
 
+// [RLVa:KB] - Checked: 2010-10-31 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
+			if ( (!fRlvShowNames) || (isSelf()) )
+			{
+// [/RLVa:KB]
 			// Might be blank if name not available yet, that's OK
 			if (show_display_names)
 			{
@@ -3225,15 +3249,35 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 				//addNameTagLine(av_name.mUsername, username_color, LLFontGL::NORMAL,
 				//LLFontGL::getFontSansSerifSmall());
 			}
+// [RLVa:KB] - Checked: 2010-10-31 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
+			}
+			else
+			{
+				firstnameText = RlvStrings::getAnonym(av_name);
+			}
+// [/RLVa:KB]
 		}
 		else
 		{
+// [RLVa:KB] - Checked: 2010-10-31 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
+			if ( (!fRlvShowNames) || (isSelf()) )
+			{
+// [/RLVa:KB]
 			firstnameText=firstname->getString();	//Defer for later formatting
 			lastnameText=lastname->getString();		//Defer for later formatting
 			//const LLFontGL* font = LLFontGL::getFontSansSerif();
 			//std::string full_name =
 			//	LLCacheName::buildFullName( firstname->getString(), lastname->getString() );
 			//addNameTagLine(full_name, name_tag_color, LLFontGL::NORMAL, font);
+			}
+// [RLVa:KB] - Checked: 2010-10-31 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
+			else
+			{
+				std::string full_name =	LLCacheName::buildFullName( firstname->getString(), lastname->getString() );
+				firstnameText = RlvStrings::getAnonym(full_name);
+			}
+// [/RLVa:KB]
+
 		}
 		
 		static const LLCachedControl<bool> allow_nameplate_override ("CCSAllowNameplateOverride", true);
