@@ -1085,8 +1085,7 @@ void LLPanelGroupMembersSubTab::handleMemberSelect()
 				// Extract the checkbox that was created.
 				LLScrollListCheck* check_cell = (LLScrollListCheck*) item->getColumn(0);
 				LLCheckBoxCtrl* check = check_cell->getCheckBox();
-				check->setCommitCallback(onRoleCheck);
-				check->setCallbackUserData(this);
+				check->setCommitCallback(onRoleCheck, this);
 				check->set( count > 0 );
 				check->setTentative(
 					(0 != count)
@@ -1098,6 +1097,7 @@ void LLPanelGroupMembersSubTab::handleMemberSelect()
 				//last owner.  We should check for this special case
 				// -jwolk
 				check->setEnabled(cb_enable);
+				item->setEnabled(cb_enable);
 			}
 		}
 		else
