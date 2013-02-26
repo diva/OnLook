@@ -192,11 +192,14 @@ class LLDisplayNameUpdate : public LLHTTPNode
 		// force name tag to update
 		LLVOAvatar::invalidateNameTag(agent_id);
 
-		LLSD args;
-		args["OLD_NAME"] = old_display_name;
-		args["SLID"] = av_name.mUsername;
-		args["NEW_NAME"] = av_name.mDisplayName;
-		LLNotificationsUtil::add("DisplayNameUpdate", args);
+		if (gSavedSettings.getBOOL("ShowDisplayNameChanges"))
+		{
+			LLSD args;
+			args["OLD_NAME"] = old_display_name;
+			args["SLID"] = av_name.mUsername;
+			args["NEW_NAME"] = av_name.mDisplayName;
+			LLNotificationsUtil::add("DisplayNameUpdate", args);
+		}
 		if (agent_id == gAgent.getID())
 		{
 			LLViewerDisplayName::sNameChangedSignal();
