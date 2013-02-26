@@ -161,7 +161,6 @@ void LLStreamingAudio_FMODEX::update()
 			// Reset volume to previously set volume
 			setGain(getGain());
 			mFMODInternetStreamChannelp->setPaused(false);
-			mLastStarved.stop();
 		}
 	}
 	else if(open_state == FMOD_OPENSTATE_ERROR)
@@ -200,6 +199,13 @@ void LLStreamingAudio_FMODEX::update()
 						if(name == "Title") name = "TITLE";
 						else if(name == "WM/AlbumArtist") name = "ARTIST";
 						break;
+					case(FMOD_TAGTYPE_FMOD):
+						if (!strcmp(tag.name, "Sample Rate Change"))
+						{
+							llinfos << "Stream forced changing sample rate to " << *((float *)tag.data) << llendl;
+							mFMODInternetStreamChannelp->setFrequency(*((float *)tag.data));
+						}
+						continue;
 					default:
 						break;
 					}
@@ -243,19 +249,19 @@ void LLStreamingAudio_FMODEX::update()
 			}
 			if(starving)
 			{
-				if(!mLastStarved.getStarted())
+				bool paused = false;
+				mFMODInternetStreamChannelp->getPaused(&paused);
+				if(!paused)
 				{
-					llinfos << "Stream starvation detected! Muting stream audio until it clears." << llendl;
+					llinfos << "Stream starvation detected! Pausing stream until buffer nearly full." << llendl;
 					llinfos << "  (diskbusy="<<diskbusy<<")" << llendl;
 					llinfos << "  (progress="<<progress<<")" << llendl;
-					mFMODInternetStreamChannelp->setMute(true);
+					mFMODInternetStreamChannelp->setPaused(true);
 				}
-				mLastStarved.start();
 			}
-			else if(mLastStarved.getStarted() && mLastStarved.getElapsedTimeF32() > 1.f)
+			else if(progress > 80)
 			{
-				mLastStarved.stop();
-				mFMODInternetStreamChannelp->setMute(false);
+				mFMODInternetStreamChannelp->setPaused(false);
 			}
 		}
 	}
@@ -263,7 +269,6 @@ void LLStreamingAudio_FMODEX::update()
 
 void LLStreamingAudio_FMODEX::stop()
 {
-	mLastStarved.stop();
 	if(mMetaData)
 	{
 		delete mMetaData;
