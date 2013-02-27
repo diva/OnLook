@@ -3404,7 +3404,7 @@ public:
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return requestAgentUpdateAppearance_timeout; }
 	RequestAgentUpdateAppearanceResponder()
 	{
-		mRetryPolicy = new LLAdaptiveRetryPolicy(1.0, 16.0, 2.0, 5);
+		mRetryPolicy = new LLAdaptiveRetryPolicy(1.0, 32.0, 2.0, 10);
 	}
 
 	virtual ~RequestAgentUpdateAppearanceResponder()
