@@ -79,8 +79,6 @@ private:
 	std::string mURL;
 	F32 mGain;
 
-	LLTimer mLastStarved;
-
 	LLSD *mMetaData;
 };
 

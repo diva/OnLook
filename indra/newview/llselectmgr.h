@@ -774,6 +774,8 @@ private:
 	BOOL					mForceSelection;
 
 	LLAnimPauseRequest		mPauseRequest;
+
+	friend class LLObjectBackup;
 };
 
 // *DEPRECATED: For callbacks or observers, use
