@@ -180,6 +180,8 @@ void LLFloaterChat::handleVisibilityChange(BOOL new_visibility)
 	if (new_visibility)
 	{
 		LLFloaterChatterBox::getInstance()->setFloaterFlashing(this, FALSE);
+		// Work around the chat bar no longer focusing from within the layout_stack
+		gFocusMgr.setKeyboardFocus(getChildView("Chat Editor"));
 	}
 
 	LLFloater::handleVisibilityChange(new_visibility);
