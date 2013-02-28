@@ -23,6 +23,14 @@
 #include <time.h>
 #include <boost/lexical_cast.hpp>
 
+bool can_block(const LLUUID& id)
+{
+	if (id.isNull() || gAgent.getID() == id) return false; //Can't block system or self.
+	if (const LLViewerObject* obj = gObjectList.findObject(id)) //From an object,
+		return !obj->permYouOwner(); //not own object.
+	return true;
+}
+
 U32 NACLAntiSpamRegistry::globalAmount;
 U32 NACLAntiSpamRegistry::globalTime;
 bool NACLAntiSpamRegistry::bGlobalQueue;
@@ -308,10 +316,8 @@ void NACLAntiSpamRegistry::blockGlobalEntry(LLUUID& source)
 bool NACLAntiSpamRegistry::checkQueue(U32 name, LLUUID& source, U32 multiplier)
 //returns true if blocked
 {
-	if(source.isNull() || gAgent.getID() == source) return false;
-	LLViewerObject *obj=gObjectList.findObject(source);
-	if(obj && obj->permYouOwner()) return false;
-	
+	if (!can_block(source)) return false;
+
 	int result;
 	if(bGlobalQueue)
 	{

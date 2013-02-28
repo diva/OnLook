@@ -85,7 +85,6 @@
 #include "aicurl.h"
 #include "aihttptimeoutpolicy.h"
 
-#include "NACLantispam.h"    // for NaCl Antispam Registry
 
 #ifdef TOGGLE_HACKED_GODLIKE_VIEWER
 BOOL 				gHackGodmode = FALSE;
