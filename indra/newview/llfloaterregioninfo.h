@@ -62,11 +62,12 @@ class LLPanelRegionTerrainInfo;
 class LLPanelEstateInfo;
 class LLPanelEstateCovenant;
 
+
 class LLFloaterRegionInfo : public LLFloater, public LLFloaterSingleton<LLFloaterRegionInfo>
 {
 	friend class LLUISingleton<LLFloaterRegionInfo, VisibilityPolicy<LLFloater> >;
 public:
-	~LLFloaterRegionInfo();
+
 
 	/*virtual*/ void onOpen();
 	/*virtual*/ BOOL postBuild();
@@ -90,10 +91,12 @@ public:
 	// from LLPanel
 	virtual void refresh();
 	
-	static void requestRegionInfo();
+	void requestRegionInfo();
 
 protected:
 	LLFloaterRegionInfo(const LLSD& seed);
+	~LLFloaterRegionInfo();
+
 	void refreshFromRegion(LLViewerRegion* region);
 
 	// member data
@@ -109,10 +112,11 @@ protected:
 class LLPanelRegionInfo : public LLPanel
 {
 public:
-	LLPanelRegionInfo() : LLPanel(std::string("Region Info Panel")) {}
-	static void onBtnSet(void* user_data);
-	static void onChangeChildCtrl(LLUICtrl* ctrl, void* user_data);
-	static void onChangeAnything(LLUICtrl* ctrl, void* user_data);
+	LLPanelRegionInfo();
+
+	void onBtnSet();
+	void onChangeChildCtrl(LLUICtrl* ctrl);
+	void onChangeAnything();
 	static void onChangeText(LLLineEditor* caller, void* user_data);
 	
 	virtual bool refreshFromRegion(LLViewerRegion* region);
@@ -124,12 +128,14 @@ public:
 	void enableButton(const std::string& btn_name, BOOL enable = TRUE);
 	void disableButton(const std::string& btn_name);
 	
+	void onClickManageTelehub();
+
 protected:
 	void initCtrl(const std::string& name);
 	void initHelpBtn(const std::string& name, const std::string& xml_alert);
 
-	// Callback for all help buttons, data is name of XML alert to show.
-	static void onClickHelp(void* data);
+	// Callback for all help buttons, xml_alert is the name of XML alert to show.
+	void onClickHelp(const std::string& xml_alert);
 	
 	// Returns TRUE if update sent and apply button should be
 	// disabled.
@@ -153,6 +159,7 @@ protected:
 
 class LLPanelRegionGeneralInfo : public LLPanelRegionInfo
 {
+
 public:
 	LLPanelRegionGeneralInfo()
 		:	LLPanelRegionInfo()	{}
@@ -162,16 +169,16 @@ public:
 	
 	// LLPanel
 	virtual BOOL postBuild();
+
 protected:
 	virtual BOOL sendUpdate();
-	
-	static void onClickKick(void* userdata);
+	void onClickKick();
 	void onKickCommit(const uuid_vec_t& ids);
 	static void onClickKickAll(void* userdata);
 	bool onKickAllCommit(const LLSD& notification, const LLSD& response);
 	static void onClickMessage(void* userdata);
 	bool onMessageCommit(const LLSD& notification, const LLSD& response);
-	static void onClickManageTelehub(void* data);
+
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -190,14 +197,14 @@ public:
 protected:
 	virtual BOOL sendUpdate();
 
-	static void onClickChooseAvatar(void*);
+	void onClickChooseAvatar();
 	void callbackAvatarID(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names);
 	static void onClickReturn(void *);
 	bool callbackReturn(const LLSD& notification, const LLSD& response);
 	static void onClickTopColliders(void*);
 	static void onClickTopScripts(void*);
 	static void onClickRestart(void* data);
-	bool callbackRestart(const LLSD& notification, const LLSD& response, S32 seconds);
+	bool callbackRestart(const LLSD& notification, const LLSD& response);
 	static void onClickCancelRestart(void* data);
 	
 private:
@@ -212,15 +219,12 @@ public:
 	LLPanelRegionTextureInfo();
 	~LLPanelRegionTextureInfo() {}
 	
-	virtual bool refreshFromRegion(LLViewerRegion* region);
-	
-	// LLPanel && LLView
-	virtual BOOL postBuild();
+	virtual BOOL postBuild();												// LLPanel
+
+	virtual bool refreshFromRegion(LLViewerRegion* region);					// refresh local settings from region update from simulator
 	
 protected:
 	virtual BOOL sendUpdate();
-	
-	static void onClickDump(void* data);
 	BOOL validateTextureSizes();
 };
 
@@ -228,21 +232,20 @@ protected:
 
 class LLPanelRegionTerrainInfo : public LLPanelRegionInfo
 {
+	LOG_CLASS(LLPanelRegionTerrainInfo);
+
 public:
-	LLPanelRegionTerrainInfo()
-		:	LLPanelRegionInfo() {}
+	LLPanelRegionTerrainInfo() : LLPanelRegionInfo() {}
 	~LLPanelRegionTerrainInfo() {}
-	// LLPanel
-	virtual BOOL postBuild();
+
+	virtual BOOL postBuild();												// LLPanel
 	
-	virtual bool refreshFromRegion(LLViewerRegion* region);
+	virtual bool refreshFromRegion(LLViewerRegion* region);					// refresh local settings from region update from simulator
 	
 protected:
 	virtual BOOL sendUpdate();
 
 	static void onChangeUseEstateTime(LLUICtrl* ctrl, void* user_data);
-	static void onChangeFixedSun(LLUICtrl* ctrl, void* user_data);
-	static void onChangeSunHour(LLUICtrl* ctrl, void*);
 
 	static void onClickDownloadRaw(void*);
 	void onClickDownloadRaw_continued(AIFilePicker* filepicker);
@@ -259,27 +262,27 @@ class LLPanelEstateInfo : public LLPanelRegionInfo
 public:
 	static void initDispatch(LLDispatcher& dispatch);
 	
-	static void onChangeFixedSun(LLUICtrl* ctrl, void* user_data);
-	static void onChangeUseGlobalTime(LLUICtrl* ctrl, void* user_data);
+	void onChangeFixedSun();
+	void onChangeUseGlobalTime();
 	
-	static void onClickEditSky(void* userdata);
-	static void onClickEditSkyHelp(void* userdata);	
-	static void onClickEditDayCycle(void* userdata);
-	static void onClickEditDayCycleHelp(void* userdata);	
+	void onClickEditSky();
+	void onClickEditSkyHelp();
+	void onClickEditDayCycle();
+	void onClickEditDayCycleHelp();
 
-	static void onClickAddAllowedAgent(void* user_data);
-	static void onClickRemoveAllowedAgent(void* user_data);
-	static void onClickAddAllowedGroup(void* user_data);
-	static void onClickRemoveAllowedGroup(void* user_data);
-	static void onClickAddBannedAgent(void* user_data);
-	static void onClickRemoveBannedAgent(void* user_data);
-	static void onClickAddEstateManager(void* user_data);
-	static void onClickRemoveEstateManager(void* user_data);
-	static void onClickKickUser(void* userdata);
+	void onClickAddAllowedAgent();
+	void onClickRemoveAllowedAgent();
+	void onClickAddAllowedGroup();
+	void onClickRemoveAllowedGroup();
+	void onClickAddBannedAgent();
+	void onClickRemoveBannedAgent();
+	void onClickAddEstateManager();
+	void onClickRemoveEstateManager();
+	void onClickKickUser();
 
 	// Group picker callback is different, can't use core methods below
 	bool addAllowedGroup(const LLSD& notification, const LLSD& response);
-	static void addAllowedGroup2(LLUUID id, void* data);
+	static void addAllowedGroup2(LLUUID id, void*);
 
 	// Core methods for all above add/remove button clicks
 	static void accessAddCore(U32 operation_flag, const std::string& dialog_name);
@@ -333,9 +336,6 @@ public:
 	
 	const std::string getOwnerName() const;
 	void setOwnerName(const std::string& name);
-
-	const std::string getAbuseEmailAddress() const;
-	void setAbuseEmailAddress(const std::string& address);
 
 	// If visible from mainland, allowed agent and allowed groups
 	// are ignored, so must disable UI.
