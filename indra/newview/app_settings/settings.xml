@@ -726,6 +726,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>InstantMessageLogPathAnyAccount</key>
+    <map>
+      <key>Comment</key>
+      <string>Path to your log files if you've never set the path while logged in on this account.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string/>
+    </map>
     <key>UseConciseIMButtons</key>
     <map>
       <key>Comment</key>

@@ -1048,7 +1048,8 @@ bool idle_startup()
 		//Default the path if one isn't set.
 		if (gSavedPerAccountSettings.getString("InstantMessageLogPath").empty())
 		{
-			gDirUtilp->setChatLogsDir(gDirUtilp->getOSUserAppDir());
+			const std::string dir = gSavedSettings.getString("InstantMessageLogPathAnyAccount");
+			gDirUtilp->setChatLogsDir(dir.empty() ? gDirUtilp->getOSUserAppDir() : dir);
 			gSavedPerAccountSettings.setString("InstantMessageLogPath",gDirUtilp->getChatLogsDir());
 		}
 		else

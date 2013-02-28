@@ -113,7 +113,7 @@ BOOL LLPrefsIMImpl::postBuild()
 	childDisable("log_instant_messages");
 	childDisable("log_chat");
 	childDisable("log_show_history");
-	childDisable("log_path_button");
+	//childDisable("log_path_button");
 	childDisable("busy_response");
 	childDisable("log_instant_messages_timestamp");
 	childDisable("log_chat_timestamp");
@@ -127,7 +127,8 @@ BOOL LLPrefsIMImpl::postBuild()
 	childSetValue("show_timestamps_check", gSavedSettings.getBOOL("IMShowTimestamps"));
 	childSetValue("friends_online_notify_checkbox", gSavedSettings.getBOOL("ChatOnlineNotification"));
 
-	childSetText("log_path_string", gSavedPerAccountSettings.getString("InstantMessageLogPath"));
+	const std::string log_path = gSavedPerAccountSettings.getString("InstantMessageLogPath");
+	childSetText("log_path_string", log_path.empty() ? gSavedSettings.getString("InstantMessageLogPathAnyAccount") : log_path);
 	childSetValue("log_instant_messages", gSavedPerAccountSettings.getBOOL("LogInstantMessages")); 
 	childSetValue("log_chat", gSavedPerAccountSettings.getBOOL("LogChat")); 
 	childSetValue("log_show_history", gSavedPerAccountSettings.getBOOL("LogShowHistory"));
@@ -228,6 +229,12 @@ void LLPrefsIMImpl::apply()
 			msg->addString("DirectoryVisibility", mDirectoryVisibility);
 			gAgent.sendReliableMessage();
 		}
+	}
+	else
+	{
+		const std::string log_path = childGetText("log_path_string");
+		gSavedPerAccountSettings.setString("InstantMessageLogPathAnyAccount", log_path);
+		gDirUtilp->setChatLogsDir(log_path);
 	}
 }
 
