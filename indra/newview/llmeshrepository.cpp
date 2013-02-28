@@ -1351,17 +1351,17 @@ void AIMeshUpload::initialize_impl()
 	set_state(AIMeshUpload_start);
 }
 
-void AIMeshUpload::multiplex_impl()
+void AIMeshUpload::multiplex_impl(state_type run_state)
 {
-	switch (mRunState)
+	switch (run_state)
 	{
 		case AIMeshUpload_start:
 			mMeshUpload.run(this, AIMeshUpload_threadFinished);
-			idle(AIMeshUpload_start);					// Wait till the thread finished.
+			idle();										// Wait till the thread finished.
 			break;
 		case AIMeshUpload_threadFinished:
 			mMeshUpload->postRequest(mWholeModelUploadURL, this);
-			idle(AIMeshUpload_threadFinished);			// Wait till the responder finished.
+			idle();										// Wait till the responder finished.
 			break;
 		case AIMeshUpload_responderFinished:
 			finish();
@@ -1400,14 +1400,6 @@ void LLMeshUploadThread::postRequest(std::string& whole_model_upload_url, AIMesh
 			new LLWholeModelUploadResponder(mModelData, mUploadObserverHandle)/*,*/
 			DEBUG_CURLIO_PARAM(debug_off), keep_alive, state_machine, AIMeshUpload_responderFinished);
 	}
-}
-
-void AIMeshUpload::abort_impl()
-{
-}
-
-void AIMeshUpload::finish_impl()
-{
 }
 
 void dump_llsd_to_file(const LLSD& content, std::string filename)

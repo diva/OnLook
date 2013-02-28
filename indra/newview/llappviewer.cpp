@@ -236,6 +236,9 @@ extern BOOL gRandomizeFramerate;
 extern BOOL gPeriodicSlowFrame;
 extern BOOL gDebugGL;
 
+extern void startEngineThread(void);
+extern void stopEngineThread(void);
+
 ////////////////////////////////////////////////////////////
 // All from the last globals push...
 const F32 DEFAULT_AFK_TIMEOUT = 5.f * 60.f; // time with no input before user flagged as Away From Keyboard
@@ -654,7 +657,7 @@ bool LLAppViewer::init()
 
     mAlloc.setProfilingEnabled(gSavedSettings.getBOOL("MemProfiling"));
 
-	AIStateMachine::setMaxCount(gSavedSettings.getU32("StateMachineMaxTime"));
+	AIEngine::setMaxCount(gSavedSettings.getU32("StateMachineMaxTime"));
 
 	{
 		AIHTTPTimeoutPolicy policy_tmp(
@@ -1804,6 +1807,7 @@ bool LLAppViewer::cleanup()
 	llinfos << "Message system deleted." << llendflush;
 
 	LLApp::stopErrorThread();			// The following call is not thread-safe. Have to stop all threads.
+	stopEngineThread();
 	AICurlInterface::cleanupCurl();
 
 	// Cleanup settings last in case other classes reference them.
@@ -1879,6 +1883,9 @@ bool LLAppViewer::initThreads()
 	{
 		LLWatchdog::getInstance()->init(watchdog_killer_callback);
 	}
+
+	// State machine thread.
+	startEngineThread();
 
 	AICurlInterface::startCurlThread(gSavedSettings.getU32("CurlMaxTotalConcurrentConnections"),
 		                             gSavedSettings.getU32("CurlConcurrentConnectionsPerHost"),
@@ -3823,7 +3830,7 @@ void LLAppViewer::idle()
 
 	{
 		LLFastTimer t(FTM_STATEMACHINE);
-		AIStateMachine::mainloop();
+		gMainThreadEngine.mainloop();
 	}
 
 	// Must wait until both have avatar object and mute list, so poll

@@ -138,10 +138,7 @@ class AIFetchInventoryFolder : public AIStateMachine {
 	/*virtual*/ void initialize_impl(void);
 
 	// Handle mRunState.
-	/*virtual*/ void multiplex_impl(void);
-
-	// Handle aborting from current bs_run state.
-	/*virtual*/ void abort_impl(void);
+	/*virtual*/ void multiplex_impl(state_type run_state);
 
 	// Handle cleaning up from initialization (or post abort) state.
 	/*virtual*/ void finish_impl(void);

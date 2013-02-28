@@ -62,7 +62,7 @@ class AICurlEasyRequestStateMachine : public AIStateMachine, public AICurlEasyHa
 	bool mTimedOut;						// Set if the expiration timer timed out.
 	bool mFinished;						// Set by the curl thread to signal it finished.
 	bool mHandled;						// Set when we processed the received data.
-	AITimer* mTimer;					// Expiration timer.
+	LLPointer<AITimer> mTimer;			// Expiration timer.
 	F32 mTotalDelayTimeout;				// The time out value for mTimer.
 
   public:
@@ -99,7 +99,7 @@ class AICurlEasyRequestStateMachine : public AIStateMachine, public AICurlEasyHa
 	/*virtual*/ void initialize_impl(void);
 
 	// Handle mRunState.
-	/*virtual*/ void multiplex_impl(void);
+	/*virtual*/ void multiplex_impl(state_type run_state);
 
 	// Handle aborting from current bs_run state.
 	/*virtual*/ void abort_impl(void);

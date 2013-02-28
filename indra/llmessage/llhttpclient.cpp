@@ -487,7 +487,8 @@ void BlockingResponder::wait(void)
 	// We're the main thread, so we have to give AIStateMachine CPU cycles.
 	while (!mFinished)
 	{
-	  AIStateMachine::mainloop();
+	  // AIFIXME: this can probably be removed once curl is detached from the main thread.
+	  gMainThreadEngine.mainloop();
 	  ms_sleep(10);
 	}
   }

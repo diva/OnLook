@@ -88,15 +88,15 @@ void AIStateMachineThreadBase::initialize_impl(void)
   set_state(start_thread);
 }
 
-void AIStateMachineThreadBase::multiplex_impl(void)
+void AIStateMachineThreadBase::multiplex_impl(state_type run_state)
 {
-  switch(mRunState)
+  switch(run_state)
   {
 	case start_thread:
 	  mThread = Thread::allocate(mImpl);
 	  // Set next state.
 	  set_state(wait_stopped);
-	  idle(wait_stopped);		// Wait till the thread returns.
+	  idle();					// Wait till the thread returns.
 	  mThread->start();
 	  break;
 	case wait_stopped:
@@ -179,12 +179,8 @@ bool AIThreadImpl::thread_done(bool result)
   {
 	// If state_machine_thread is non-NULL then AIThreadImpl::abort_impl wasn't called,
 	// which means the state machine still exists. In fact, it should be in the waiting() state.
-	// It can also happen that the state machine is being aborted right now (but it will still exist).
-	// (Note that waiting() and running() aren't strictly thread-safe (we should really lock
-	// mSetStateLock here) but by first calling waiting() and then running(), and assuming that
-	// changing an int from the value 1 to the value 2 is atomic, this will work since the
-	// only possible transition is from waiting to not running).
-	llassert(state_machine_thread->waiting() || !state_machine_thread->running());
+	// It can also happen that the state machine is being aborted right now.
+	llassert(state_machine_thread->waiting_or_aborting());
 	state_machine_thread->schedule_abort(!result);
 	// Note that if the state machine is not running (being aborted, ie - hanging in abort_impl
 	// waiting for the lock on mStateMachineThread) then this is simply ignored.

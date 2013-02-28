@@ -445,11 +445,9 @@ public:
 
 protected:
 	// Implement AIStateMachine.
-	/*virtual*/ const char* state_str_impl(state_type) const;
+	/*virtual*/ const char* state_str_impl(state_type run_state) const;
 	/*virtual*/ void initialize_impl();
-	/*virtual*/ void multiplex_impl();
-	/*virtual*/ void abort_impl();
-	/*virtual*/ void finish_impl();
+	/*virtual*/ void multiplex_impl(state_type run_state);
 };
 
 class LLMeshRepository

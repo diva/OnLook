@@ -418,7 +418,8 @@ void cleanupCurl(void)
   stopCurlThread();
   if (CurlMultiHandle::getTotalMultiHandles() != 0)
 	llwarns << "Not all CurlMultiHandle objects were destroyed!" << llendl;
-  AIStateMachine::flush();
+  gMainThreadEngine.flush();			// Not really related to curl, but why not.
+  gStateMachineThreadEngine.flush();
   clearCommandQueue();
   Stats::print();
   ssl_cleanup();

@@ -89,19 +89,8 @@ class HelloWorld : public AIStateMachine {
 	// Handle initializing the object.
 	/*virtual*/ void initialize_impl(void);
 
-	// Handle mRunState.
-	/*virtual*/ void multiplex_impl(void);
-
-	// Handle aborting from current bs_run state.
-	/*virtual*/ void abort_impl(void) { }
-
-	// Handle cleaning up from initialization (or post abort) state.
-	/*virtual*/ void finish_impl(void)
-	{
-	  // Kill object by default.
-	  // This can be overridden by calling run() from the callback function.
-	  kill();
-	}
+	// Handle run_state.
+	/*virtual*/ void multiplex_impl(state_type run_state);
 
 	// Implemenation of state_str for run states.
 	/*virtual*/ char const* state_str_impl(state_type run_state) const
@@ -123,9 +112,9 @@ void HelloWorld::initialize_impl(void)
   set_state(HelloWorld_start);
 }
 
-void HelloWorld::multiplex_impl(void)
+void HelloWorld::multiplex_impl(state_type run_state)
 {
-  switch (mRunState)
+  switch (run_state)
   {
 	case HelloWorld_start:
 	{
@@ -177,27 +166,29 @@ class AIStateMachineThreadBase : public AIStateMachine {
 	// The actual thread (derived from LLThread).
 	class Thread;
 
+  protected:
+	typedef AIStateMachine direct_base_type;
+
 	// The states of this state machine.
 	enum thread_state_type {
-	  start_thread = AIStateMachine::max_state,		// Start the thread (if necessary create it first).
+	  start_thread = direct_base_type::max_state,	// Start the thread (if necessary create it first).
 	  wait_stopped									// Wait till the thread is stopped.
 	};
+  public:
+	static state_type const max_state = wait_stopped + 1;
 
   protected:
-	AIStateMachineThreadBase(AIThreadImpl* impl) : mImpl(impl) { }
+	AIStateMachineThreadBase(AIThreadImpl* impl) : mImpl(impl) { ref(); /* Never call delete */ }
 
   private:
 	// Handle initializing the object.
 	/*virtual*/ void initialize_impl(void);
 
 	// Handle mRunState.
-	/*virtual*/ void multiplex_impl(void);
+	/*virtual*/ void multiplex_impl(state_type run_state);
 
 	// Handle aborting from current bs_run state.
 	/*virtual*/ void abort_impl(void);
-
-	// Handle cleaning up from initialization (or post abort) state.
-	/*virtual*/ void finish_impl(void) { }
 
 	// Implemenation of state_str for run states.
 	/*virtual*/ char const* state_str_impl(state_type run_state) const;
