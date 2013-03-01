@@ -57,7 +57,6 @@ class AIFilePicker;
 
 class LLPanelRegionGeneralInfo;
 class LLPanelRegionDebugInfo;
-class LLPanelRegionTextureInfo;
 class LLPanelRegionTerrainInfo;
 class LLPanelEstateInfo;
 class LLPanelEstateCovenant;
@@ -87,6 +86,7 @@ public:
 
 	static LLPanelEstateInfo* getPanelEstate();
 	static LLPanelEstateCovenant* getPanelCovenant();
+	static LLPanelRegionTerrainInfo* getPanelRegionTerrain();
 
 	// from LLPanel
 	virtual void refresh();
@@ -213,23 +213,6 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////
 
-class LLPanelRegionTextureInfo : public LLPanelRegionInfo
-{
-public:
-	LLPanelRegionTextureInfo();
-	~LLPanelRegionTextureInfo() {}
-	
-	virtual BOOL postBuild();												// LLPanel
-
-	virtual bool refreshFromRegion(LLViewerRegion* region);					// refresh local settings from region update from simulator
-	
-protected:
-	virtual BOOL sendUpdate();
-	BOOL validateTextureSizes();
-};
-
-/////////////////////////////////////////////////////////////////////////////
-
 class LLPanelRegionTerrainInfo : public LLPanelRegionInfo
 {
 	LOG_CLASS(LLPanelRegionTerrainInfo);
@@ -242,10 +225,14 @@ public:
 	
 	virtual bool refreshFromRegion(LLViewerRegion* region);					// refresh local settings from region update from simulator
 	
+	BOOL validateTextureSizes();
+
 protected:
-	virtual BOOL sendUpdate();
 
 	static void onChangeUseEstateTime(LLUICtrl* ctrl, void* user_data);
+	//static void onChangeAnything(LLUICtrl* ctrl, void* userData);			// callback for any change, to enable commit button
+
+	virtual BOOL sendUpdate();
 
 	static void onClickDownloadRaw(void*);
 	void onClickDownloadRaw_continued(AIFilePicker* filepicker);

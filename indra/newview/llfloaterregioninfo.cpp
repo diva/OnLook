@@ -199,10 +199,6 @@ BOOL LLFloaterRegionInfo::postBuild()
 	LLUICtrlFactory::getInstance()->buildPanel(panel, "panel_region_terrain.xml");
 	mTab->addTabPanel(panel, panel->getLabel(), FALSE);
 
-	panel = new LLPanelRegionTextureInfo;
-	mInfoPanels.push_back(panel);
-	LLUICtrlFactory::getInstance()->buildPanel(panel, "panel_region_texture.xml");
-	mTab->addTabPanel(panel, panel->getLabel(), FALSE);
 
 	panel = new LLPanelRegionDebugInfo;
 	mInfoPanels.push_back(panel);
@@ -418,6 +414,23 @@ LLPanelEstateCovenant* LLFloaterRegionInfo::getPanelCovenant()
 	if (!floater) return NULL;
 	LLTabContainer* tab = floater->getChild<LLTabContainer>("region_panels");
 	LLPanelEstateCovenant* panel = (LLPanelEstateCovenant*)tab->getChild<LLPanel>("Covenant");
+	return panel;
+}
+
+// static
+LLPanelRegionTerrainInfo* LLFloaterRegionInfo::getPanelRegionTerrain()
+{
+	LLFloaterRegionInfo* floater = LLFloaterRegionInfo::getInstance();
+	if (!floater)
+	{
+		llassert(floater);
+		return NULL;
+	}
+
+	LLTabContainer* tab_container = floater->getChild<LLTabContainer>("region_panels");
+	LLPanelRegionTerrainInfo* panel =
+		dynamic_cast<LLPanelRegionTerrainInfo*>(tab_container->getChild<LLPanel>("Terrain"));
+	llassert(panel);
 	return panel;
 }
 
@@ -1022,127 +1035,7 @@ void LLPanelRegionDebugInfo::onClickCancelRestart(void* data)
 }
 
 
-/////////////////////////////////////////////////////////////////////////////
-// LLPanelRegionTextureInfo
-//
-LLPanelRegionTextureInfo::LLPanelRegionTextureInfo() : LLPanelRegionInfo()
-{
-	// nothing.
-}
-
-bool LLPanelRegionTextureInfo::refreshFromRegion(LLViewerRegion* region)
-{
-	BOOL allow_modify = gAgent.isGodlike() || (region && region->canManageEstate());
-	setCtrlsEnabled(allow_modify);
-	childDisable("apply_btn");
-
-	if (region)
-	{
-		childSetValue("region_text", LLSD(region->getName()));
-	}
-	else
-	{
-		childSetValue("region_text", LLSD(""));
-	}
-
-	if (!region) return LLPanelRegionInfo::refreshFromRegion(region);
-
-	LLVLComposition* compp = region->getComposition();
-	LLTextureCtrl* texture_ctrl;
-	std::string buffer;
-	for(S32 i = 0; i < TERRAIN_TEXTURE_COUNT; ++i)
-	{
-		buffer = llformat("texture_detail_%d", i);
-		texture_ctrl = getChild<LLTextureCtrl>(buffer);
-		if(texture_ctrl)
-		{
-			lldebugs << "Detail Texture " << i << ": "
-					 << compp->getDetailTextureID(i) << llendl;
-			LLUUID tmp_id(compp->getDetailTextureID(i));
-			texture_ctrl->setImageAssetID(tmp_id);
-		}
-	}
-
-	for(S32 i = 0; i < CORNER_COUNT; ++i)
-    {
-		buffer = llformat("height_start_spin_%d", i);
-		childSetValue(buffer, LLSD(compp->getStartHeight(i)));
-		buffer = llformat("height_range_spin_%d", i);
-		childSetValue(buffer, LLSD(compp->getHeightRange(i)));
-	}
-
-	// Call the parent for common book-keeping
-	return LLPanelRegionInfo::refreshFromRegion(region);
-}
-
-
-BOOL LLPanelRegionTextureInfo::postBuild()
-{
-	LLPanelRegionInfo::postBuild();
-	std::string buffer;
-	for(S32 i = 0; i < TERRAIN_TEXTURE_COUNT; ++i)
-	{
-		buffer = llformat("texture_detail_%d", i);
-		initCtrl(buffer);
-	}
-
-	for(S32 i = 0; i < CORNER_COUNT; ++i)
-	{
-		buffer = llformat("height_start_spin_%d", i);
-		initCtrl(buffer);
-		buffer = llformat("height_range_spin_%d", i);
-		initCtrl(buffer);
-	}
-
-	return LLPanelRegionInfo::postBuild();
-}
-
-BOOL LLPanelRegionTextureInfo::sendUpdate()
-{
-	llinfos << "LLPanelRegionTextureInfo::sendUpdate()" << llendl;
-
-	// Make sure user hasn't chosen wacky textures.
-	if (!validateTextureSizes())
-	{
-		return FALSE;
-	}
-
-	LLTextureCtrl* texture_ctrl;
-	std::string buffer;
-	std::string id_str;
-	LLMessageSystem* msg = gMessageSystem;
-	strings_t strings;
-
-	LLUUID invoice(LLFloaterRegionInfo::getLastInvoice());
-	
-	for(S32 i = 0; i < TERRAIN_TEXTURE_COUNT; ++i)
-	{
-		buffer = llformat("texture_detail_%d", i);
-		texture_ctrl = getChild<LLTextureCtrl>(buffer);
-		if(texture_ctrl)
-		{
-			LLUUID tmp_id(texture_ctrl->getImageAssetID());
-			tmp_id.toString(id_str);
-			buffer = llformat("%d %s", i, id_str.c_str());
-			strings.push_back(buffer);
-		}
-	}
-	sendEstateOwnerMessage(msg, "texturedetail", invoice, strings);
-	strings.clear();
-	for(S32 i = 0; i < CORNER_COUNT; ++i)
-	{
-		buffer = llformat("height_start_spin_%d", i);
-		std::string buffer2 = llformat("height_range_spin_%d", i);
-		std::string buffer3 = llformat("%d %f %f", i, (F32)childGetValue(buffer).asReal(), (F32)childGetValue(buffer2).asReal());
-		strings.push_back(buffer3);
-	}
-	sendEstateOwnerMessage(msg, "textureheights", invoice, strings);
-	strings.clear();
-	sendEstateOwnerMessage(msg, "texturecommit", invoice, strings);
-	return TRUE;
-}
-
-BOOL LLPanelRegionTextureInfo::validateTextureSizes()
+BOOL LLPanelRegionTerrainInfo::validateTextureSizes()
 {
 	for(S32 i = 0; i < TERRAIN_TEXTURE_COUNT; ++i)
 	{
@@ -1211,11 +1104,26 @@ BOOL LLPanelRegionTerrainInfo::postBuild()
 	childSetCommitCallback("use_estate_sun_check", onChangeUseEstateTime, this);
 	initCtrl("sun_hour_slider");
 
+	std::string buffer;
+	for(S32 i = 0; i < TERRAIN_TEXTURE_COUNT; ++i)
+	{
+		buffer = llformat("texture_detail_%d", i);
+		initCtrl(buffer);
+	}
+
+	for(S32 i = 0; i < CORNER_COUNT; ++i)
+	{
+		buffer = llformat("height_start_spin_%d", i);
+		initCtrl(buffer);
+		buffer = llformat("height_range_spin_%d", i);
+		initCtrl(buffer);
+	}
+
 	childSetAction("download_raw_btn", onClickDownloadRaw, this);
 	childSetAction("upload_raw_btn", onClickUploadRaw, this);
 	childSetAction("bake_terrain_btn", onClickBakeTerrain, this);
 
-	return TRUE;
+	return LLPanelRegionInfo::postBuild();
 }
 
 // virtual
@@ -1229,6 +1137,39 @@ bool LLPanelRegionTerrainInfo::refreshFromRegion(LLViewerRegion* region)
 
 	getChildView("apply_btn")->setEnabled(FALSE);
 
+	if (region)
+	{
+		getChild<LLUICtrl>("region_text")->setValue(LLSD(region->getName()));
+
+		LLVLComposition* compp = region->getComposition();
+		LLTextureCtrl* texture_ctrl;
+		std::string buffer;
+		for(S32 i = 0; i < TERRAIN_TEXTURE_COUNT; ++i)
+		{
+			buffer = llformat("texture_detail_%d", i);
+			texture_ctrl = getChild<LLTextureCtrl>(buffer);
+			if(texture_ctrl)
+			{
+				lldebugs << "Detail Texture " << i << ": "
+						 << compp->getDetailTextureID(i) << llendl;
+				LLUUID tmp_id(compp->getDetailTextureID(i));
+				texture_ctrl->setImageAssetID(tmp_id);
+			}
+		}
+
+		for(S32 i = 0; i < CORNER_COUNT; ++i)
+		{
+			buffer = llformat("height_start_spin_%d", i);
+			getChild<LLUICtrl>(buffer)->setValue(LLSD(compp->getStartHeight(i)));
+			buffer = llformat("height_range_spin_%d", i);
+			getChild<LLUICtrl>(buffer)->setValue(LLSD(compp->getHeightRange(i)));
+		}
+	}
+	else
+	{
+		lldebugs << "no region set" << llendl;
+		getChild<LLUICtrl>("region_text")->setValue(LLSD(""));
+	}
 
 	getChildView("download_raw_btn")->setEnabled(owner_or_god);
 	getChildView("upload_raw_btn")->setEnabled(owner_or_god);
@@ -1258,6 +1199,52 @@ BOOL LLPanelRegionTerrainInfo::sendUpdate()
 
 	// and sync the region with it
 	region_info.sendRegionTerrain(invoice);
+
+	// =======================================
+	// Assemble and send texturedetail message
+
+	// Make sure user hasn't chosen wacky textures.
+	if (!validateTextureSizes())
+	{
+		return FALSE;
+	}
+
+	LLTextureCtrl* texture_ctrl;
+	std::string id_str;
+	LLMessageSystem* msg = gMessageSystem;
+
+	for(S32 i = 0; i < TERRAIN_TEXTURE_COUNT; ++i)
+	{
+		buffer = llformat("texture_detail_%d", i);
+		texture_ctrl = getChild<LLTextureCtrl>(buffer);
+		if(texture_ctrl)
+		{
+			LLUUID tmp_id(texture_ctrl->getImageAssetID());
+			tmp_id.toString(id_str);
+			buffer = llformat("%d %s", i, id_str.c_str());
+			strings.push_back(buffer);
+		}
+	}
+	sendEstateOwnerMessage(msg, "texturedetail", invoice, strings);
+	strings.clear();
+
+	// ========================================
+	// Assemble and send textureheights message
+
+	for(S32 i = 0; i < CORNER_COUNT; ++i)
+	{
+		buffer = llformat("height_start_spin_%d", i);
+		std::string buffer2 = llformat("height_range_spin_%d", i);
+		std::string buffer3 = llformat("%d %f %f", i, (F32)getChild<LLUICtrl>(buffer)->getValue().asReal(), (F32)getChild<LLUICtrl>(buffer2)->getValue().asReal());
+		strings.push_back(buffer3);
+	}
+	sendEstateOwnerMessage(msg, "textureheights", invoice, strings);
+	strings.clear();
+
+	// ========================================
+	// Send texturecommit message
+
+	sendEstateOwnerMessage(msg, "texturecommit", invoice, strings);
 
 	// Grab estate information in case the user decided to set the
 	// region back to estate time. JC
@@ -2476,7 +2463,7 @@ const std::string LLPanelEstateInfo::getOwnerName() const
 
 void LLPanelEstateInfo::setOwnerName(const std::string& name)
 {
-	childSetValue("estate_owner", LLSD(name));
+	getChild<LLUICtrl>("estate_owner")->setValue(LLSD(name));
 }
 
 void LLPanelEstateInfo::setAccessAllowedEnabled(bool enable_agent,
@@ -2556,6 +2543,7 @@ void LLPanelEstateInfo::clearAccessLists()
 	{
 		name_list->deleteAllItems();
 	}
+	updateControls(gAgent.getRegion());
 }
 
 // enables/disables the "remove" button for the various allow/ban lists
