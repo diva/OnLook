@@ -49,18 +49,18 @@
 #include "llagent.h"
 #include "llalertdialog.h"
 #include "llappviewer.h"
+#include "llavatarnamecache.h"
 #include "llfloateravatarpicker.h"
 #include "llbutton.h" 
 #include "llcheckboxctrl.h"
 #include "llcombobox.h"
 #include "llenvmanager.h"
+#include "llestateinfomodel.h"
 #include "statemachine/aifilepicker.h"
-#include "llfloaterdaycycle.h"
 #include "llfloatergodtools.h"	// for send_sim_wide_deletes()
 #include "llfloatertopobjects.h" // added to fix SL-32336
 #include "llfloatergroups.h"
 #include "llfloatertelehub.h"
-#include "llfloaterwindlight.h"
 #include "llinventorymodel.h"
 #include "lllineeditor.h"
 #include "llnamelistctrl.h"
@@ -387,11 +387,6 @@ void LLFloaterRegionInfo::processRegionInfo(LLMessageSystem* msg)
 	panel->getChild<LLUICtrl>("terrain_raise_spin")->setValue(region_info.mTerrainRaiseLimit);
 	panel->getChild<LLUICtrl>("terrain_lower_spin")->setValue(region_info.mTerrainLowerLimit);
 
-	panel->getChild<LLUICtrl>("use_estate_sun_check")->setValue(region_info.mUseEstateSun);
-	panel->getChild<LLUICtrl>("fixed_sun_check")->setValue(region_info.getUseFixedSun());
-	panel->getChild<LLUICtrl>("fixed_sun_check")->setEnabled(allow_modify && !region_info.mUseEstateSun);
-	panel->getChild<LLUICtrl>("sun_hour_slider")->setValue(region_info.mSunHour);
-	panel->getChild<LLUICtrl>("sun_hour_slider")->setEnabled(allow_modify && !region_info.mUseEstateSun);
 	panel->setCtrlsEnabled(allow_modify);
 
 	floater->refreshFromRegion( gAgent.getRegion() );
@@ -1092,17 +1087,11 @@ BOOL LLPanelRegionTerrainInfo::postBuild()
 	initHelpBtn("terrain_lower_help",	"HelpRegionTerrainLower");
 	initHelpBtn("upload_raw_help",		"HelpRegionUploadRaw");
 	initHelpBtn("download_raw_help",	"HelpRegionDownloadRaw");
-	initHelpBtn("use_estate_sun_help",	"HelpRegionUseEstateSun");
-	initHelpBtn("fixed_sun_help",		"HelpRegionFixedSun");
 	initHelpBtn("bake_terrain_help",	"HelpRegionBakeTerrain");
 
 	initCtrl("water_height_spin");
 	initCtrl("terrain_raise_spin");
 	initCtrl("terrain_lower_spin");
-
-	initCtrl("fixed_sun_check");
-	childSetCommitCallback("use_estate_sun_check", onChangeUseEstateTime, this);
-	initCtrl("sun_hour_slider");
 
 	std::string buffer;
 	for(S32 i = 0; i < TERRAIN_TEXTURE_COUNT; ++i)
@@ -1192,10 +1181,6 @@ BOOL LLPanelRegionTerrainInfo::sendUpdate()
 	region_info.mWaterHeight = (F32) getChild<LLUICtrl>("water_height_spin")->getValue().asReal();
 	region_info.mTerrainRaiseLimit = (F32) getChild<LLUICtrl>("terrain_raise_spin")->getValue().asReal();
 	region_info.mTerrainLowerLimit = (F32) getChild<LLUICtrl>("terrain_lower_spin")->getValue().asReal();
-	region_info.mUseEstateSun = getChild<LLUICtrl>("use_estate_sun_check")->getValue().asBoolean();
-	region_info.setUseFixedSun(getChild<LLUICtrl>("fixed_sun_check")->getValue().asBoolean());
-	region_info.mSunHour = (F32) getChild<LLUICtrl>("sun_hour_slider")->getValue().asReal();
-
 
 	// and sync the region with it
 	region_info.sendRegionTerrain(invoice);
@@ -1246,54 +1231,7 @@ BOOL LLPanelRegionTerrainInfo::sendUpdate()
 
 	sendEstateOwnerMessage(msg, "texturecommit", invoice, strings);
 
-	// Grab estate information in case the user decided to set the
-	// region back to estate time. JC
-	LLFloaterRegionInfo* floater = LLFloaterRegionInfo::getInstance();
-	if (!floater) return true;
-
-	LLTabContainer* tab = floater->getChild<LLTabContainer>("region_panels");
-	if (!tab) return true;
-
-	LLPanelEstateInfo* panel = (LLPanelEstateInfo*)tab->getChild<LLPanel>("Estate");
-	if (!panel) return true;
-
-	BOOL estate_global_time = panel->getGlobalTime();
-	BOOL estate_fixed_sun = panel->getFixedSun();
-	F32 estate_sun_hour;
-	if (estate_global_time)
-	{
-		estate_sun_hour = 0.f;
-	}
-	else
-	{
-		estate_sun_hour = panel->getSunHour();
-	}
-
-	buffer = llformat("%s", (estate_global_time ? "Y" : "N") );
-	strings.push_back(buffer);
-	buffer = llformat("%s", (estate_fixed_sun ? "Y" : "N") );
-	strings.push_back(buffer);
-	buffer = llformat("%f", estate_sun_hour);
-	strings.push_back(buffer);
-
-	sendEstateOwnerMessage(gMessageSystem, "setregionterrain", invoice, strings);
 	return TRUE;
-}
-
-// static 
-void LLPanelRegionTerrainInfo::onChangeUseEstateTime(LLUICtrl* ctrl, void* user_data)
-{
-	LLPanelRegionTerrainInfo* panel = (LLPanelRegionTerrainInfo*) user_data;
-	if (!panel) return;
-	BOOL use_estate_sun = panel->childGetValue("use_estate_sun_check").asBoolean();
-	panel->childSetEnabled("fixed_sun_check", !use_estate_sun);
-	panel->childSetEnabled("sun_hour_slider", !use_estate_sun);
-	if (use_estate_sun)
-	{
-		panel->childSetValue("fixed_sun_check", LLSD(FALSE));
-		panel->childSetValue("sun_hour_slider", LLSD(0.f));
-	}
-	panel->childEnable("apply_btn");
 }
 
 // static
@@ -1374,6 +1312,9 @@ LLPanelEstateInfo::LLPanelEstateInfo()
 :	LLPanelRegionInfo(),
 	mEstateID(0)	// invalid
 {
+	LLEstateInfoModel& estate_info = LLEstateInfoModel::instance();
+	estate_info.setCommitCallback(boost::bind(&LLPanelEstateInfo::refreshFromEstate, this));
+	estate_info.setUpdateCallback(boost::bind(&LLPanelEstateInfo::refreshFromEstate, this));
 }
 
 // static
@@ -1396,38 +1337,9 @@ void LLPanelEstateInfo::initDispatch(LLDispatcher& dispatch)
 	estate_dispatch_initialized = true;
 }
 
-// Disables the sun-hour slider and the use fixed time check if the use global time is check
-void LLPanelEstateInfo::onChangeUseGlobalTime()
-{
-	bool enabled = !childGetValue("use_global_time_check").asBoolean();
-	childSetEnabled("sun_hour_slider", enabled);
-	childSetEnabled("fixed_sun_check", enabled);
-	childSetValue("fixed_sun_check", false);
-	enableButton("apply_btn");
-}
-
-// Enables the sun-hour slider if the fixed-sun checkbox is set
-void LLPanelEstateInfo::onChangeFixedSun()
-{
-	bool enabled = !childGetValue("fixed_sun_check").asBoolean();
-	childSetEnabled("use_global_time_check", enabled);
-	childSetValue("use_global_time_check", false);
-	enableButton("apply_btn");
-}
-
 //---------------------------------------------------------------------------
 // Add/Remove estate access button callbacks
 //---------------------------------------------------------------------------
-void LLPanelEstateInfo::onClickEditSky()
-{
-	LLFloaterWindLight::show();
-}
-
-void LLPanelEstateInfo::onClickEditDayCycle()
-{
-	LLFloaterDayCycle::show();
-}
-
 void LLPanelEstateInfo::onClickAddAllowedAgent()
 {
 	LLCtrlListInterface *list = childGetListInterface("allowed_avatar_name_list");
@@ -1635,10 +1547,7 @@ std::string all_estates_text()
 // static
 bool LLPanelEstateInfo::isLindenEstate()
 {
-	LLPanelEstateInfo* panel = LLFloaterRegionInfo::getPanelEstate();
-	if (!panel) return false;
-
-	U32 estate_id = panel->getEstateID();
+	U32 estate_id = LLEstateInfoModel::instance().getID();
 	return (estate_id <= ESTATE_LAST_LINDEN);
 }
 
@@ -2071,29 +1980,17 @@ BOOL LLPanelEstateInfo::postBuild()
 {
 	// set up the callbacks for the generic controls
 	initCtrl("externally_visible_check");
-	initCtrl("use_global_time_check");
-	initCtrl("fixed_sun_check");
 	initCtrl("allow_direct_teleport");
 	initCtrl("limit_payment");
 	initCtrl("limit_age_verified");
 	initCtrl("voice_chat_check");
 	initHelpBtn("estate_manager_help",			"HelpEstateEstateManager");
-	initHelpBtn("use_global_time_help",			"HelpEstateUseGlobalTime");
-	initHelpBtn("fixed_sun_help",				"HelpEstateFixedSun");
-	initHelpBtn("WLEditSkyHelp",				"HelpEditSky");
-	initHelpBtn("WLEditDayCycleHelp",			"HelpEditDayCycle");
-
 	initHelpBtn("externally_visible_help",		"HelpEstateExternallyVisible");
 	initHelpBtn("allow_direct_teleport_help",	"HelpEstateAllowDirectTeleport");
 	initHelpBtn("allow_resident_help",			"HelpEstateAllowResident");
 	initHelpBtn("allow_group_help",				"HelpEstateAllowGroup");
 	initHelpBtn("ban_resident_help",			"HelpEstateBanResident");
 	initHelpBtn("voice_chat_help",                  "HelpEstateVoiceChat");
-
-	// set up the use global time checkbox
-	getChild<LLUICtrl>("use_global_time_check")->setCommitCallback(boost::bind(&LLPanelEstateInfo::onChangeUseGlobalTime, this));
-	getChild<LLUICtrl>("fixed_sun_check")->setCommitCallback(boost::bind(&LLPanelEstateInfo::onChangeFixedSun, this));
-	getChild<LLUICtrl>("sun_hour_slider")->setCommitCallback(boost::bind(&LLPanelEstateInfo::onChangeChildCtrl, this, _1));
 
 	getChild<LLUICtrl>("allowed_avatar_name_list")->setCommitCallback(boost::bind(&LLPanelEstateInfo::onChangeChildCtrl, this, _1));
 	LLNameListCtrl *avatar_name_list = getChild<LLNameListCtrl>("allowed_avatar_name_list");
@@ -2141,9 +2038,6 @@ BOOL LLPanelEstateInfo::postBuild()
 	childSetAction("message_estate_btn", boost::bind(&LLPanelEstateInfo::onClickMessageEstate, this));
 	childSetAction("kick_user_from_estate_btn", boost::bind(&LLPanelEstateInfo::onClickKickUser, this));
 
-	childSetAction("WLEditSky", boost::bind(&LLPanelEstateInfo::onClickEditSky, this));
-	childSetAction("WLEditDayCycle", boost::bind(&LLPanelEstateInfo::onClickEditDayCycle, this));
-
 	return LLPanelRegionInfo::postBuild();
 }
 
@@ -2162,6 +2056,31 @@ void LLPanelEstateInfo::refresh()
 		getChild<LLUICtrl>("limit_payment")->setValue(false);
 		getChild<LLUICtrl>("limit_age_verified")->setValue(false);
 	}
+}
+
+void LLPanelEstateInfo::refreshFromEstate()
+{
+	const LLEstateInfoModel& estate_info = LLEstateInfoModel::instance();
+
+	getChild<LLUICtrl>("estate_name")->setValue(estate_info.getName());
+	const LLUUID& owner_id = estate_info.getOwnerID();
+	std::string owner_name;
+	if (!LLAvatarNameCache::getPNSName(owner_id, owner_name))
+	{
+		llwarns << "Failed to getPNSName for " << owner_id << ". Falling back to legacy." << llendl;
+		gCacheName->getFullName(owner_id, owner_name);
+	}
+	setOwnerName(owner_name);
+
+	getChild<LLUICtrl>("externally_visible_check")->setValue(estate_info.getIsExternallyVisible());
+	getChild<LLUICtrl>("voice_chat_check")->setValue(estate_info.getAllowVoiceChat());
+	getChild<LLUICtrl>("allow_direct_teleport")->setValue(estate_info.getAllowDirectTeleport());
+	getChild<LLUICtrl>("limit_payment")->setValue(estate_info.getDenyAnonymous());
+	getChild<LLUICtrl>("limit_age_verified")->setValue(estate_info.getDenyAgeUnverified());
+
+	// Ensure appriopriate state of the management UI
+	updateControls(gAgent.getRegion());
+	refresh();
 }
 
 BOOL LLPanelEstateInfo::sendUpdate()
@@ -2190,12 +2109,19 @@ bool LLPanelEstateInfo::callbackChangeLindenEstate(const LLSD& notification, con
 	switch(option)
 	{
 	case 0:
-		// send the update
-		if (!commitEstateInfoCaps())
 		{
-			// the caps method failed, try the old way
-			LLFloaterRegionInfo::nextInvoice();
-			commitEstateInfoDataserver();
+			LLEstateInfoModel& estate_info = LLEstateInfoModel::instance();
+
+			// update model
+			estate_info.setUseFixedSun(false); // we don't support fixed sun estates anymore
+			estate_info.setIsExternallyVisible(getChild<LLUICtrl>("externally_visible_check")->getValue().asBoolean());
+			estate_info.setAllowDirectTeleport(getChild<LLUICtrl>("allow_direct_teleport")->getValue().asBoolean());
+			estate_info.setDenyAnonymous(getChild<LLUICtrl>("limit_payment")->getValue().asBoolean());
+			estate_info.setDenyAgeUnverified(getChild<LLUICtrl>("limit_age_verified")->getValue().asBoolean());
+			estate_info.setAllowVoiceChat(getChild<LLUICtrl>("voice_chat_check")->getValue().asBoolean());
+
+			// send the update to sim
+			estate_info.sendEstateInfo();
 		}
 
 		// we don't want to do this because we'll get it automatically from the sim
@@ -2276,186 +2202,6 @@ private:
 	LLHandle<LLPanel> mpPanel;
 };
 
-// tries to send estate info using a cap; returns true if it succeeded
-bool LLPanelEstateInfo::commitEstateInfoCaps()
-{
-	std::string url = gAgent.getRegion()->getCapability("EstateChangeInfo");
-	
-	if (url.empty())
-	{
-		// whoops, couldn't find the cap, so bail out
-		return false;
-	}
-	
-	LLSD body;
-	body["estate_name"] = getEstateName();
-
-	body["is_externally_visible"] = childGetValue("externally_visible_check").asBoolean();
-	body["allow_direct_teleport"] = childGetValue("allow_direct_teleport").asBoolean();
-	body["is_sun_fixed"         ] = childGetValue("fixed_sun_check").asBoolean();
-	body["deny_anonymous"       ] = childGetValue("limit_payment").asBoolean();
-	body["deny_age_unverified"  ] = childGetValue("limit_age_verified").asBoolean();
-	body["allow_voice_chat"     ] = childGetValue("voice_chat_check").asBoolean();
-	body["invoice"              ] = LLFloaterRegionInfo::getLastInvoice();
-
-	// block fly is in estate database but not in estate UI, so we're not supporting it
-	//body["block_fly"            ] = childGetValue("").asBoolean();
-
-	F32 sun_hour = getSunHour();
-	if (childGetValue("use_global_time_check").asBoolean())
-	{
-		sun_hour = 0.f;			// 0 = global time
-	}
-	body["sun_hour"] = sun_hour;
-
-	// we use a responder so that we can re-get the data after committing to the database
-	LLHTTPClient::post(url, body, new LLEstateChangeInfoResponder(this));
-    return true;
-}
-
-/* This is the old way of doing things, is deprecated, and should be 
-   deleted when the dataserver model can be removed */
-// key = "estatechangeinfo"
-// strings[0] = str(estate_id) (added by simulator before relay - not here)
-// strings[1] = estate_name
-// strings[2] = str(estate_flags)
-// strings[3] = str((S32)(sun_hour * 1024.f))
-void LLPanelEstateInfo::commitEstateInfoDataserver()
-{
-	LLMessageSystem* msg = gMessageSystem;
-	msg->newMessage("EstateOwnerMessage");
-	msg->nextBlockFast(_PREHASH_AgentData);
-	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-	msg->addUUIDFast(_PREHASH_TransactionID, LLUUID::null); //not used
-
-	msg->nextBlock("MethodData");
-	msg->addString("Method", "estatechangeinfo");
-	msg->addUUID("Invoice", LLFloaterRegionInfo::getLastInvoice());
-
-	msg->nextBlock("ParamList");
-	msg->addString("Parameter", getEstateName());
-
-	std::string buffer;
-	buffer = llformat("%u", computeEstateFlags());
-	msg->nextBlock("ParamList");
-	msg->addString("Parameter", buffer);
-
-	F32 sun_hour = getSunHour();
-	if (childGetValue("use_global_time_check").asBoolean())
-	{
-		sun_hour = 0.f;	// 0 = global time
-	}
-
-	buffer = llformat("%d", (S32)(sun_hour*1024.0f));
-	msg->nextBlock("ParamList");
-	msg->addString("Parameter", buffer);
-
-	gAgent.sendMessage();
-}
-
-void LLPanelEstateInfo::setEstateFlags(U32 flags)
-{
-	childSetValue("externally_visible_check", LLSD(flags & REGION_FLAGS_EXTERNALLY_VISIBLE ? TRUE : FALSE) );
-	childSetValue("fixed_sun_check", LLSD(flags & REGION_FLAGS_SUN_FIXED ? TRUE : FALSE) );
-	childSetValue(
-		"voice_chat_check",
-		LLSD(flags & REGION_FLAGS_ALLOW_VOICE ? TRUE : FALSE));
-	childSetValue("allow_direct_teleport", LLSD(flags & REGION_FLAGS_ALLOW_DIRECT_TELEPORT ? TRUE : FALSE) );
-	childSetValue("limit_payment", LLSD(flags & REGION_FLAGS_DENY_ANONYMOUS ? TRUE : FALSE) );
-	childSetValue("limit_age_verified", LLSD(flags & REGION_FLAGS_DENY_AGEUNVERIFIED ? TRUE : FALSE) );
-
-	refresh();
-}
-
-U32 LLPanelEstateInfo::computeEstateFlags()
-{
-	U32 flags = 0;
-
-	if (childGetValue("externally_visible_check").asBoolean())
-	{
-		flags |= REGION_FLAGS_EXTERNALLY_VISIBLE;
-	}
-
-	if ( childGetValue("voice_chat_check").asBoolean() )
-	{
-		flags |= REGION_FLAGS_ALLOW_VOICE;
-	}
-	
-	if (childGetValue("allow_direct_teleport").asBoolean())
-	{
-		flags |= REGION_FLAGS_ALLOW_DIRECT_TELEPORT;
-	}
-
-	if (childGetValue("fixed_sun_check").asBoolean())
-	{
-		flags |= REGION_FLAGS_SUN_FIXED;
-	}
-	
-	if (childGetValue("limit_payment").asBoolean())
-	{
-		flags |= REGION_FLAGS_DENY_ANONYMOUS;
-	}
-	
-	if (childGetValue("limit_age_verified").asBoolean())
-	{
-		flags |= REGION_FLAGS_DENY_AGEUNVERIFIED;
-	}
-
-	
-	return flags;
-}
-
-BOOL LLPanelEstateInfo::getGlobalTime()
-{
-	return childGetValue("use_global_time_check").asBoolean();
-}
-
-void LLPanelEstateInfo::setGlobalTime(bool b)
-{
-	childSetValue("use_global_time_check", LLSD(b));
-	childSetEnabled("fixed_sun_check", LLSD(!b));
-	childSetEnabled("sun_hour_slider", LLSD(!b));
-	if (b)
-	{
-		childSetValue("sun_hour_slider", LLSD(0.f));
-	}
-}
-
-
-BOOL LLPanelEstateInfo::getFixedSun()
-{
-	return childGetValue("fixed_sun_check").asBoolean();
-}
-
-void LLPanelEstateInfo::setSunHour(F32 sun_hour)
-{
-	if(sun_hour < 6.0f)
-	{
-		sun_hour = 24.0f + sun_hour;
-	}
-	childSetValue("sun_hour_slider", LLSD(sun_hour));
-}
-
-F32 LLPanelEstateInfo::getSunHour()
-{
-	if (childIsEnabled("sun_hour_slider"))
-	{
-		return (F32)childGetValue("sun_hour_slider").asReal();
-	}
-	return 0.f;
-}
-
-const std::string LLPanelEstateInfo::getEstateName() const
-{
-	return childGetValue("estate_name").asString();
-}
-
-void LLPanelEstateInfo::setEstateName(const std::string& name)
-{
-	childSetValue("estate_name", LLSD(name));
-}
-
 const std::string LLPanelEstateInfo::getOwnerName() const
 {
 	return getChild<LLUICtrl>("estate_owner")->getValue().asString();
@@ -2464,70 +2210,6 @@ const std::string LLPanelEstateInfo::getOwnerName() const
 void LLPanelEstateInfo::setOwnerName(const std::string& name)
 {
 	getChild<LLUICtrl>("estate_owner")->setValue(LLSD(name));
-}
-
-void LLPanelEstateInfo::setAccessAllowedEnabled(bool enable_agent,
-												bool enable_group,
-												bool enable_ban)
-{
-	childSetEnabled("allow_resident_label", enable_agent);
-	childSetEnabled("allowed_avatar_name_list", enable_agent);
-	childSetVisible("allowed_avatar_name_list", enable_agent);
-	childSetEnabled("add_allowed_avatar_btn", enable_agent);
-	childSetEnabled("remove_allowed_avatar_btn", enable_agent);
-
-	// Groups
-	childSetEnabled("allow_group_label", enable_group);
-	childSetEnabled("allowed_group_name_list", enable_group);
-	childSetVisible("allowed_group_name_list", enable_group);
-	childSetEnabled("add_allowed_group_btn", enable_group);
-	childSetEnabled("remove_allowed_group_btn", enable_group);
-
-	// Ban
-	childSetEnabled("ban_resident_label", enable_ban);
-	childSetEnabled("banned_avatar_name_list", enable_ban);
-	childSetVisible("banned_avatar_name_list", enable_ban);
-	childSetEnabled("add_banned_avatar_btn", enable_ban);
-	childSetEnabled("remove_banned_avatar_btn", enable_ban);
-
-	// Update removal buttons if needed
-	if (enable_agent)
-	{
-		checkRemovalButton("allowed_avatar_name_list");
-	}
-
-	if (enable_group)
-	{
-		checkRemovalButton("allowed_group_name_list");
-	}
-
-	if (enable_ban)
-	{
-		checkRemovalButton("banned_avatar_name_list");
-	}
-}
-
-// static
-void LLPanelEstateInfo::callbackCacheName(
-	const LLUUID& id,
-	const std::string& full_name,
-	bool is_group)
-{
-	LLPanelEstateInfo* self = LLFloaterRegionInfo::getPanelEstate();
-	if (!self) return;
-
-	std::string name;
-	
-	if (id.isNull())
-	{
-		name = "(none)";
-	}
-	else
-	{
-		name = full_name;
-	}
-
-	self->setOwnerName(name);
 }
 
 void LLPanelEstateInfo::clearAccessLists() 
@@ -2544,50 +2226,6 @@ void LLPanelEstateInfo::clearAccessLists()
 		name_list->deleteAllItems();
 	}
 	updateControls(gAgent.getRegion());
-}
-
-// enables/disables the "remove" button for the various allow/ban lists
-BOOL LLPanelEstateInfo::checkRemovalButton(std::string name)
-{
-	std::string btn_name = "";
-	if (name == "allowed_avatar_name_list")
-	{
-		btn_name = "remove_allowed_avatar_btn";
-	}
-	else if (name == "allowed_group_name_list")
-	{
-		btn_name = "remove_allowed_group_btn";
-	}
-	else if (name == "banned_avatar_name_list")
-	{
-		btn_name = "remove_banned_avatar_btn";
-	}
-	else if (name == "estate_manager_name_list")
-	{
-		//ONLY OWNER CAN ADD /DELET ESTATE MANAGER
-		LLViewerRegion* region = gAgent.getRegion();
-		if (region && (region->getOwner() == gAgent.getID()))
-		{
-			btn_name = "remove_estate_manager_btn";
-		}
-	}
-
-	// enable the remove button if something is selected
-	LLNameListCtrl* name_list = getChild<LLNameListCtrl>(name);
-	childSetEnabled(btn_name, name_list && name_list->getFirstSelected() ? TRUE : FALSE);
-
-	return (btn_name != "");
-}
-
-BOOL LLPanelEstateInfo::checkSunHourSlider(LLUICtrl* child_ctrl)
-{
-	BOOL found_child_ctrl = FALSE;
-	if (child_ctrl->getName() == "sun_hour_slider")
-	{
-		enableButton("apply_btn");
-		found_child_ctrl = TRUE;
-	}
-	return found_child_ctrl;
 }
 
 // static
@@ -2988,52 +2626,12 @@ bool LLDispatchEstateUpdateInfo::operator()(
 		const LLUUID& invoice,
 		const sparam_t& strings)
 {
-	LLPanelEstateInfo* panel = LLFloaterRegionInfo::getPanelEstate();
-	if (!panel) return true;
+	lldebugs << "Received estate update" << llendl;
 
-	// NOTE: LLDispatcher extracts strings with an extra \0 at the
-	// end.  If we pass the std::string direct to the UI/renderer
-	// it draws with a weird character at the end of the string.
-	std::string estate_name = strings[0].c_str(); // preserve c_str() call!
-	panel->setEstateName(estate_name);
-	
-	LLViewerRegion* regionp = gAgent.getRegion();
-
-	LLUUID owner_id(strings[1]);
-	regionp->setOwner(owner_id);
-	// Update estate owner name in UI
-	gCacheName->get(owner_id, false, boost::bind(&LLPanelEstateInfo::callbackCacheName,_1,_2,_3));
-
-	U32 estate_id = strtoul(strings[2].c_str(), NULL, 10);
-	panel->setEstateID(estate_id);
-
-	U32 flags = strtoul(strings[3].c_str(), NULL, 10);
-	panel->setEstateFlags(flags);
-
-	F32 sun_hour = ((F32)(strtod(strings[4].c_str(), NULL)))/1024.0f;
-	if(sun_hour == 0 && (flags & REGION_FLAGS_SUN_FIXED ? FALSE : TRUE))
-	{
-		panel->setGlobalTime(TRUE);
-	} 
-	else
-	{
-		panel->setGlobalTime(FALSE);
-		panel->setSunHour(sun_hour);
-	}
-
-	bool visible_from_mainland = (bool)(flags & REGION_FLAGS_EXTERNALLY_VISIBLE);
-	bool god = gAgent.isGodlike();
-	bool linden_estate = (estate_id <= ESTATE_LAST_LINDEN);
-
-	// If visible from mainland, disable the access allowed
-	// UI, as anyone can teleport there.
-	// However, gods need to be able to edit the access list for
-	// linden estates, regardless of visibility, to allow object
-	// and L$ transfers.
-	bool enable_agent = (!visible_from_mainland || (god && linden_estate));
-	bool enable_group = enable_agent;
-	bool enable_ban = !linden_estate;
-	panel->setAccessAllowedEnabled(enable_agent, enable_group, enable_ban);
+	// Update estate info model.
+	// This will call LLPanelEstateInfo::refreshFromEstate().
+	// *TODO: Move estate message handling stuff to llestateinfomodel.cpp.
+	LLEstateInfoModel::instance().update(strings);
 
 	return true;
 }
@@ -3117,7 +2715,6 @@ bool LLDispatchSetEstateAccess::operator()(
 				memcpy(id.mData, strings[index++].data(), UUID_BYTES);		/* Flawfinder: ignore */
 				allowed_agent_name_list->addNameItem(id);
 			}
-			panel->childSetEnabled("remove_allowed_avatar_btn", allowed_agent_name_list->getFirstSelected() ? TRUE : FALSE);
 			allowed_agent_name_list->sortByName(TRUE);
 		}
 	}
@@ -3144,7 +2741,6 @@ bool LLDispatchSetEstateAccess::operator()(
 				memcpy(id.mData, strings[index++].data(), UUID_BYTES);		/* Flawfinder: ignore */
 				allowed_group_name_list->addGroupNameItem(id);
 			}
-			panel->childSetEnabled("remove_allowed_group_btn", allowed_group_name_list->getFirstSelected() ? TRUE : FALSE);
 			allowed_group_name_list->sortByName(TRUE);
 		}
 	}
@@ -3178,7 +2774,6 @@ bool LLDispatchSetEstateAccess::operator()(
 				memcpy(id.mData, strings[index++].data(), UUID_BYTES);		/* Flawfinder: ignore */
 				banned_agent_name_list->addNameItem(id);
 			}
-			panel->childSetEnabled("remove_banned_avatar_btn", banned_agent_name_list->getFirstSelected() ? TRUE : FALSE);
 			banned_agent_name_list->sortByName(TRUE);
 		}
 	}
@@ -3208,7 +2803,6 @@ bool LLDispatchSetEstateAccess::operator()(
 				memcpy(id.mData, strings[index++].data(), UUID_BYTES);		/* Flawfinder: ignore */
 				estate_manager_name_list->addNameItem(id);
 			}
-			panel->childSetEnabled("remove_estate_manager_btn", estate_manager_name_list->getFirstSelected() ? TRUE : FALSE);
 			estate_manager_name_list->sortByName(TRUE);
 		}
 	}

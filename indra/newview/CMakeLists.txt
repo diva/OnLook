@@ -161,6 +161,7 @@ set(viewer_SOURCE_FILES
     lldynamictexture.cpp
     llemote.cpp
     llenvmanager.cpp
+    llestateinfomodel.cpp
     lleventinfo.cpp
     lleventnotifier.cpp
     lleventpoll.cpp
@@ -664,6 +665,7 @@ set(viewer_HEADER_FILES
     lldynamictexture.h
     llemote.h
     llenvmanager.h
+    llestateinfomodel.h
     lleventinfo.h
     lleventnotifier.h
     lleventpoll.h

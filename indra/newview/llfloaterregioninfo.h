@@ -229,7 +229,6 @@ public:
 
 protected:
 
-	static void onChangeUseEstateTime(LLUICtrl* ctrl, void* user_data);
 	//static void onChangeAnything(LLUICtrl* ctrl, void* userData);			// callback for any change, to enable commit button
 
 	virtual BOOL sendUpdate();
@@ -295,6 +294,9 @@ public:
 	
 	void updateControls(LLViewerRegion* region);
 	
+	static void updateEstateName(const std::string& name);
+	static void updateEstateOwnerName(const std::string& name);
+
 	virtual bool refreshFromRegion(LLViewerRegion* region);
 	virtual bool estateUpdate(LLMessageSystem* msg);
 	
@@ -303,50 +305,22 @@ public:
 	virtual void updateChild(LLUICtrl* child_ctrl);
 	virtual void refresh();
 	
-	U32 computeEstateFlags();
-	void setEstateFlags(U32 flags);
+	void refreshFromEstate();
 	
-	BOOL getGlobalTime();
-	void setGlobalTime(bool b);
-
-	BOOL getFixedSun();
-
-	F32 getSunHour();
-	void setSunHour(F32 sun_hour);
-	
-	const std::string getEstateName() const;
-	void setEstateName(const std::string& name);
-
-	U32 getEstateID() const { return mEstateID; }
-	void setEstateID(U32 estate_id) { mEstateID = estate_id; }
 	static bool isLindenEstate();
 	
 	const std::string getOwnerName() const;
 	void setOwnerName(const std::string& name);
-
-	// If visible from mainland, allowed agent and allowed groups
-	// are ignored, so must disable UI.
-	void setAccessAllowedEnabled(bool enable_agent, bool enable_group, bool enable_ban);
-
-	// this must have the same function signature as
-	// llmessage/llcachename.h:LLCacheNameCallback
-	static void callbackCacheName(
-		const LLUUID& id,
-		const std::string& full_name,
-		bool is_group);
 
 protected:
 	virtual BOOL sendUpdate();
 	// confirmation dialog callback
 	bool callbackChangeLindenEstate(const LLSD& notification, const LLSD& response);
 
-	void commitEstateInfoDataserver();
-	bool commitEstateInfoCaps();
 	void commitEstateAccess();
 	void commitEstateManagers();
 	
 	void clearAccessLists();
-	BOOL checkRemovalButton(std::string name);
 	BOOL checkSunHourSlider(LLUICtrl* child_ctrl);
 
 	U32 mEstateID;
