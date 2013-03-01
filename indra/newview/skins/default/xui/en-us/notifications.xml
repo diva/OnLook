@@ -5152,6 +5152,46 @@ This day cycle file references a missing sky file: [SKY].
 
   <notification
    icon="alertmodal.tga"
+   name="WLRegionApplyFail"
+   type="alertmodal">
+Sorry, the settings couldn't be applied to the region.  Leaving the region and then returning may help rectify the problem.  The reason given was: [FAIL_REASON]
+  </notification>
+
+  <notification
+   functor="GenericAcknowledge"
+   icon="alertmodal.tga"
+   name="EnvCannotDeleteLastDayCycleKey"
+   type="alertmodal">
+Unable to delete the last key in this day cycle because you cannot have an empty day cycle.  You should modify the last remaining key instead of attempting to delete it and then to create a new one.
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   functor="GenericAcknowledge"
+   icon="alertmodal.tga"
+   name="DayCycleTooManyKeyframes"
+   type="alertmodal">
+You cannot add any more keyframes to this day cycle.  The maximum number of keyframes for day cycles of [SCOPE] scope is [MAX].
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   functor="GenericAcknowledge"
+   icon="alertmodal.tga"
+   name="EnvUpdateRate"
+   type="alertmodal">
+    You may only update region environmental settings every [WAIT] seconds.  Wait at least that long and then try again.
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="PPSaveEffectAlert"
    type="alertmodal">
 PostProcess Effect exists. Do you still wish overwrite it?
