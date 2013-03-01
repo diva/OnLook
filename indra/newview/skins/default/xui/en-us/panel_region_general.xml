@@ -14,7 +14,7 @@
 		Version: 
 	</text>
 	<text bottom_delta="0" follows="left|top" font="SansSerif" height="20" left="60"
-	     name="version_channel_text" width="200">
+	     name="version_channel_text">
 		unknown
 	</text>
 	<text bottom="-70" follows="left|top" font="SansSerif" height="20" left="10"
