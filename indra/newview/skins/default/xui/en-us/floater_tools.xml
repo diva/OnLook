@@ -436,7 +436,7 @@
 			<check_box bottom_delta="0" follows="left|top" font="SansSerifSmall" height="16"
 			     initial_value="false" label="Copy" left_delta="60"
 			     mouse_opaque="true" name="checkbox allow everyone copy" width="141" />
-			<check_box name="checkbox export" label="Export" bottom_delta="0" left_delta="60" follows="left|top"/>
+			<check_box name="checkbox allow export" label="Export" bottom_delta="0" left_delta="60" follows="left|top"/>
 			<check_box bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16"
 			     initial_value="false" label="Show in search" left="10" name="search_check"
 			     tool_tip="Let people see this object in search results" width="78" />
