@@ -1909,6 +1909,26 @@ void LLPanelEstateInfo::sendEstateAccessDelta(U32 flags, const LLUUID& agent_or_
 	gAgent.sendReliableMessage();
 }
 
+// static
+void LLPanelEstateInfo::updateEstateOwnerName(const std::string& name)
+{
+	LLPanelEstateInfo* panelp = LLFloaterRegionInfo::getPanelEstate();
+	if (panelp)
+	{
+		panelp->setOwnerName(name);
+	}
+}
+
+// static
+void LLPanelEstateInfo::updateEstateName(const std::string& name)
+{
+	LLPanelEstateInfo* panelp = LLFloaterRegionInfo::getPanelEstate();
+	if (panelp)
+	{
+		panelp->getChildRef<LLTextBox>("estate_name").setText(name);
+	}
+}
+
 void LLPanelEstateInfo::updateControls(LLViewerRegion* region)
 {
 	BOOL god = gAgent.isGodlike();
@@ -2078,14 +2098,7 @@ void LLPanelEstateInfo::refreshFromEstate()
 	const LLEstateInfoModel& estate_info = LLEstateInfoModel::instance();
 
 	getChild<LLUICtrl>("estate_name")->setValue(estate_info.getName());
-	const LLUUID& owner_id = estate_info.getOwnerID();
-	std::string owner_name;
-	if (!LLAvatarNameCache::getPNSName(owner_id, owner_name))
-	{
-		llwarns << "Failed to getPNSName for " << owner_id << ". Falling back to legacy." << llendl;
-		gCacheName->getFullName(owner_id, owner_name);
-	}
-	setOwnerName(owner_name);
+	LLAvatarNameCache::get(estate_info.getOwnerID(), boost::bind(&LLPanelEstateInfo::setOwnerPNSName, this, _1, _2));
 
 	getChild<LLUICtrl>("externally_visible_check")->setValue(estate_info.getIsExternallyVisible());
 	getChild<LLUICtrl>("voice_chat_check")->setValue(estate_info.getAllowVoiceChat());
@@ -2225,6 +2238,13 @@ const std::string LLPanelEstateInfo::getOwnerName() const
 void LLPanelEstateInfo::setOwnerName(const std::string& name)
 {
 	getChild<LLUICtrl>("estate_owner")->setValue(LLSD(name));
+}
+
+void LLPanelEstateInfo::setOwnerPNSName(const LLUUID& agent_id, const LLAvatarName& av_name)
+{
+	std::string name;
+	LLAvatarNameCache::getPNSName(av_name, name);
+	setOwnerName(name);
 }
 
 void LLPanelEstateInfo::clearAccessLists() 

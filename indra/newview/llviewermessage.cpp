@@ -212,7 +212,7 @@ extern bool gShiftFrame;
 
 // function prototypes
 bool check_offer_throttle(const std::string& from_name, bool check_only);
-void callbackCacheEstateOwnerName(const LLUUID& id, const std::string& full_name,  bool is_group);
+void callbackCacheEstateOwnerName(const LLUUID& id, const LLAvatarName& av_name);
 static void process_money_balance_reply_extended(LLMessageSystem* msg);
 
 //inventory offer throttle globals
@@ -7652,7 +7652,10 @@ void process_covenant_reply(LLMessageSystem* msg, void**)
 
 	LLPanelEstateCovenant::updateEstateName(estate_name);
 	LLPanelLandCovenant::updateEstateName(estate_name);
+	LLPanelEstateInfo::updateEstateName(estate_name);
 	LLFloaterBuyLand::updateEstateName(estate_name);
+
+	LLAvatarNameCache::get(estate_owner_id, boost::bind(&callbackCacheEstateOwnerName, _1, _2));
 
 	// standard message, not from system
 	std::string last_modified;
@@ -7668,9 +7671,6 @@ void process_covenant_reply(LLMessageSystem* msg, void**)
 	LLPanelEstateCovenant::updateLastModified(last_modified);
 	LLPanelLandCovenant::updateLastModified(last_modified);
 	LLFloaterBuyLand::updateLastModified(last_modified);
-
-	gCacheName->get(estate_owner_id, false,
-		boost::bind(&callbackCacheEstateOwnerName, _1, _2, _3));
 	
 	// load the actual covenant asset data
 	const BOOL high_priority = TRUE;
@@ -7704,22 +7704,14 @@ void process_covenant_reply(LLMessageSystem* msg, void**)
 	}
 }
 
-void callbackCacheEstateOwnerName(const LLUUID& id,
-								  const std::string& full_name,
-								  bool is_group)
+void callbackCacheEstateOwnerName(const LLUUID& id, const LLAvatarName& av_name)
 {
 	std::string name;
-	
-	if (id.isNull())
-	{
-		name = "(none)";
-	}
-	else
-	{
-		name = full_name;
-	}
+	LLAvatarNameCache::getPNSName(av_name, name);
+
 	LLPanelEstateCovenant::updateEstateOwnerName(name);
 	LLPanelLandCovenant::updateEstateOwnerName(name);
+	LLPanelEstateInfo::updateEstateOwnerName(name);
 	LLFloaterBuyLand::updateEstateOwnerName(name);
 }
 

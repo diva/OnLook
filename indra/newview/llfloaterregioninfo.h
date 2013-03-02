@@ -316,6 +316,7 @@ public:
 	
 	const std::string getOwnerName() const;
 	void setOwnerName(const std::string& name);
+	void setOwnerPNSName(const LLUUID& agent_id, const LLAvatarName& av_name);
 
 protected:
 	virtual BOOL sendUpdate();
