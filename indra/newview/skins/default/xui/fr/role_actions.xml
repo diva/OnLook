@@ -23,7 +23,7 @@
 		<action description="Supprimer des rôles"
 		     longdescription="Supprimez des rôles à l&apos;onglet Membres et rôles &gt; Rôles."
 		     name="role delete" value="5" />
-		<action description="Modifier les noms, les titres et les descriptions des rôles".
+		<action description="Modifier les noms, les titres et les descriptions des rôles."
 		     longdescription="Modifiez les noms, titres et descriptions des rôles à l&apos;onglet Membres et rôles &gt; Rôles."
 		     name="role properties" value="6" />
 		<action description="Attribuer des rôles limités"
