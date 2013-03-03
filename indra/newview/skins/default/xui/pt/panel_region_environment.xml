@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Ambiente" name="panel_env_info">
 	<text name="water_settings_title">
-		Selecione as configurações de Água e céu / Ciclo dos dias que todos os visitantes à sua região verão.  Mais informações
+		Selecione as configurações de Água e céu / Ciclo dos dias que todos os visitantes à sua
+região verão.  Mais informações
 	</text>
 	<radio_group name="region_settings_radio_group">
 		<radio_item name="use_sl_default_settings">Usar o padrão do Second Life</radio_item>

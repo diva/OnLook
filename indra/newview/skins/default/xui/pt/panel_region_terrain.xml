@@ -7,10 +7,10 @@
 		nenhum
 	</text>
 	<spinner label="Altura da água" name="water_height_spin"/>
-	<spinner label="Limite do aumento do
-terreno" name="terrain_raise_spin"/>
-	<spinner bottom_delta="-34" label="Limite mais baixo do
-terreno" name="terrain_lower_spin"/>
+	<spinner label="Limite do aumento do terreno" name="terrain_raise_spin" label_width="150" width="210" left="220"/>
+	<button name="terrain_raise_help" left_delta="210"/>
+	<spinner label="Limite mais baixo do terreno" name="terrain_lower_spin" label_width="150" width="210" left="220"/>
+	<button name="terrain_lower_help" left_delta="210"/>
 	<text name="detail_texture_text">
 		Texturas de terreno
 	</text>
@@ -59,8 +59,11 @@ altura MÍNIMA da Textura 4.
 	<spinner label="Baixo" name="height_start_spin_2"/>
 	<spinner label="Alto" name="height_range_spin_0"/>
 	<spinner label="Alto" name="height_range_spin_2"/>
-	<button label="Download de terreno RAW..." name="download_raw_btn" tool_tip="Não disponível aos gerentes, somente aos proprietários."/>
-	<button label="Upload de terreno RAW..." name="upload_raw_btn" tool_tip="Não disponível aos gerentes, somente aos proprietários."/>
-	<button label="Nivelar o terreno" name="bake_terrain_btn" tool_tip="Ajustar terreno atual como o ponto médio para os limites de aumento/decréscimo" width="170"/>
+	<button label="Download de terreno RAW..." name="download_raw_btn" tool_tip="Não disponível aos gerentes, somente aos proprietários." width="180"/>
+	<button name="download_raw_help" left_delta="180"/>
+	<button label="Upload de terreno RAW..." name="upload_raw_btn" tool_tip="Não disponível aos gerentes, somente aos proprietários." width="180" left_delta="-180" bottom_delta="-20"/>
+	<button name="upload_raw_help" left_delta="180"/>
+	<button label="Nivelar o terreno" name="bake_terrain_btn" tool_tip="Ajustar terreno atual como o ponto médio para os limites de aumento/decréscimo" width="180" left_delta="50" bottom_delta="20"/>
+	<button name="bake_terrain_help" left_delta="180"/>
 	<button label="Aplicar" name="apply_btn"/>
 </panel>

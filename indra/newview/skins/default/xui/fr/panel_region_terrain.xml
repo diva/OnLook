@@ -7,10 +7,10 @@
 		(inconnue)
 	</text>
 	<spinner label="Niveau de l&apos;eau" name="water_height_spin"/>
-	<spinner label="Limite d&apos;élévation du
-terrain" name="terrain_raise_spin"/>
-	<spinner bottom_delta="-34" label="Limite d&apos;abaissement
-du terrain" name="terrain_lower_spin"/>
+	<spinner label="Limite d&apos;élévation du terrain" name="terrain_raise_spin" label_width="160" width="220" left="220"/>
+	<button name="terrain_raise_help" left_delta="220"/>
+	<spinner label="Limite d&apos;abaissement du terrain" name="terrain_lower_spin" label_width="160" width="220" left="220"/>
+	<button name="terrain_lower_help" left_delta="220"/>
 	<text name="detail_texture_text">
 		Textures du terrain
 	</text>
@@ -59,8 +59,11 @@ MINIMUM de la texture n°4.
 	<spinner label="Bas" name="height_start_spin_2"/>
 	<spinner label="Haut" name="height_range_spin_0"/>
 	<spinner label="Haut" name="height_range_spin_2"/>
-	<button label="Télécharger le terrain en RAW..." name="download_raw_btn" tool_tip="Réservé aux propriétaires de domaine, pas aux gérants" width="230"/>
-	<button label="Charger un terrain en RAW..." name="upload_raw_btn" tool_tip="Réservé aux propriétaires de domaine, pas aux gérants" width="230"/>
-	<button label="Figer le terrain" name="bake_terrain_btn" tool_tip="Définir le terrain actuel comme point central pour les limites d&apos;élévation/abaissement"/>
+	<button label="Télécharger le terrain en RAW..." name="download_raw_btn" tool_tip="Réservé aux propriétaires de domaine, pas aux gérants" width="180"/>
+	<button name="download_raw_help" left_delta="180"/>
+	<button label="Charger un terrain en RAW..." name="upload_raw_btn" tool_tip="Réservé aux propriétaires de domaine, pas aux gérants" width="180" left_delta="-180" bottom_delta="-20"/>
+	<button name="upload_raw_help" left_delta="180"/>
+	<button label="Figer le terrain" name="bake_terrain_btn" tool_tip="Définir le terrain actuel comme point central pour les limites d&apos;élévation/abaissement" width="180" left_delta="50" bottom_delta="20"/>
+	<button name="bake_terrain_help" left_delta="180"/>
 	<button label="Appliquer" name="apply_btn"/>
 </panel>

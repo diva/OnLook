@@ -7,10 +7,10 @@
 		desconocida
 	</text>
 	<spinner label="Nivel del agua" name="water_height_spin"/>
-	<spinner label="Límite de elevación
-del terreno" name="terrain_raise_spin"/>
-	<spinner bottom_delta="-34" label="Límite de bajada del
-terreno" name="terrain_lower_spin"/>
+	<spinner label="Límite de elevación del terreno" name="terrain_raise_spin" label_width="150" width="210" left="220"/>
+	<button name="terrain_raise_help" left_delta="210"/>
+	<spinner label="Límite de bajada del terreno" name="terrain_lower_spin" label_width="150" width="210" left="220"/>
+	<button name="terrain_lower_help" left_delta="210"/>
 	<text name="detail_texture_text">
 		Texturas del terreno
 	</text>
@@ -59,8 +59,11 @@ MÍNIMA de la textura n.º 4.
 	<spinner label="Bajo" name="height_start_spin_2"/>
 	<spinner label="Alto" name="height_range_spin_0"/>
 	<spinner label="Alto" name="height_range_spin_2"/>
-	<button label="Descargar el RAW del terreno..." name="download_raw_btn" tool_tip="Disponible sólo para los propietarios del estado, no para los administradores" width="230"/>
-	<button label="Subir un RAW para el terreno..." name="upload_raw_btn" tool_tip="Disponible sólo para los propietarios del estado, no para los administradores" width="230"/>
-	<button label="Predeterminar este terreno" name="bake_terrain_btn" tool_tip="Definir el terreno actual como punto medio para los límites de elevación/bajada" width="230"/>
+	<button label="Descargar el RAW del terreno..." name="download_raw_btn" tool_tip="Disponible sólo para los propietarios del estado, no para los administradores" width="180"/>
+	<button name="download_raw_help" left_delta="180"/>
+	<button label="Subir un RAW para el terreno..." name="upload_raw_btn" tool_tip="Disponible sólo para los propietarios del estado, no para los administradores" width="180" left_delta="-180" bottom_delta="-20"/>
+	<button name="upload_raw_help" left_delta="180"/>
+	<button label="Predeterminar este terreno" name="bake_terrain_btn" tool_tip="Definir el terreno actual como punto medio para los límites de elevación/bajada" width="180" left_delta="50" bottom_delta="20"/>
+	<button name="bake_terrain_help" left_delta="180"/>
 	<button label="Aplicar" name="apply_btn"/>
 </panel>

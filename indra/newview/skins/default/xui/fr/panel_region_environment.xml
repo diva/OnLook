@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Environnement" name="panel_env_info">
 	<text name="water_settings_title">
-		Sélectionnez les réglages d&apos;eau et de ciel/cycle du jour que vous souhaitez afficher pour tous les résidents visitant votre région. En savoir plus
+		Sélectionnez les réglages d&apos;eau et de ciel/cycle du jour que vous souhaitez afficher
+pour tous les résidents visitant votre région. En savoir plus
 	</text>
 	<radio_group name="region_settings_radio_group">
 		<radio_item name="use_sl_default_settings">Utiliser les réglages par défaut de Second Life</radio_item>
