@@ -695,7 +695,36 @@ bool LLAppViewer::init()
     initThreads();
 	LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ;
 
+	// Load art UUID information, don't require these strings to be declared in code.
+	std::string colors_base_filename = gDirUtilp->findSkinnedFilename("colors_base.xml");
+	LL_DEBUGS("InitInfo") << "Loading base colors from " << colors_base_filename << LL_ENDL;
+	gColors.loadFromFileLegacy(colors_base_filename, FALSE, TYPE_COL4U);
 
+	// Load overrides from user colors file
+	std::string user_colors_filename = gDirUtilp->findSkinnedFilename("colors.xml");
+	LL_DEBUGS("InitInfo") << "Loading user colors from " << user_colors_filename << LL_ENDL;
+	if (gColors.loadFromFileLegacy(user_colors_filename, FALSE, TYPE_COL4U) == 0)
+	{
+		LL_DEBUGS("InitInfo") << "Cannot load user colors from " << user_colors_filename << LL_ENDL;
+	}
+
+	// Widget construction depends on LLUI being initialized
+	LLUI::initClass(&gSavedSettings,
+		&gSavedSettings,
+		&gColors,
+		LLUIImageList::getInstance(),
+		ui_audio_callback,
+		&LLUI::getScaleFactor());
+	LL_INFOS("InitInfo") << "UI initialized." << LL_ENDL ;
+
+	LLUICtrlFactory::getInstance()->setupPaths(); // update paths with correct language set
+
+	// Setup LLTrans after LLUI::initClass has been called.
+	LLTrans::parseStrings("strings.xml", default_trans_args);
+
+	// Setup notifications after LLUI::initClass() has been called.
+	LLNotifications::instance();
+	LL_INFOS("InitInfo") << "Notifications initialized." << LL_ENDL ;
 	
     writeSystemInfo();
 
@@ -744,36 +773,7 @@ bool LLAppViewer::init()
 		LLError::setPrintLocation(true);
 	}
 	
-	// Load art UUID information, don't require these strings to be declared in code.
-	std::string colors_base_filename = gDirUtilp->findSkinnedFilename("colors_base.xml");
-	LL_DEBUGS("InitInfo") << "Loading base colors from " << colors_base_filename << LL_ENDL;
-	gColors.loadFromFileLegacy(colors_base_filename, FALSE, TYPE_COL4U);
-
-	// Load overrides from user colors file
-	std::string user_colors_filename = gDirUtilp->findSkinnedFilename("colors.xml");
-	LL_DEBUGS("InitInfo") << "Loading user colors from " << user_colors_filename << LL_ENDL;
-	if (gColors.loadFromFileLegacy(user_colors_filename, FALSE, TYPE_COL4U) == 0)
-	{
-		LL_DEBUGS("InitInfo") << "Cannot load user colors from " << user_colors_filename << LL_ENDL;
-	}
-
-	// Widget construction depends on LLUI being initialized
-	LLUI::initClass(&gSavedSettings, 
-					&gSavedSettings, 
-					&gColors, 
-					LLUIImageList::getInstance(),
-					ui_audio_callback,
-					&LLUI::getScaleFactor()
-					);
-				
-	// Setup notifications after LLUI::initClass() has been called.
-	LLNotifications::instance();
-	LL_INFOS("InitInfo") << "Notifications initialized." << LL_ENDL ;
-	
 	LLWeb::initClass();			  // do this after LLUI
-
-	LLUICtrlFactory::getInstance()->setupPaths(); // update paths with correct language set
-	LLTrans::parseStrings("strings.xml", default_trans_args);
 
 	LLTextEditor::setURLCallbacks(&LLWeb::loadURL,
 				&LLURLDispatcher::dispatchFromTextEditor,
