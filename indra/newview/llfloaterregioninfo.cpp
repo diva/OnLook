@@ -626,7 +626,7 @@ bool LLPanelRegionGeneralInfo::refreshFromRegion(LLViewerRegion* region)
 	// now set in processRegionInfo for teen grid detection
 	getChildView("kick_btn")->setEnabled(allow_modify);
 	getChildView("kick_all_btn")->setEnabled(allow_modify);
-	getChildView("assign_btn")->setEnabled(allow_modify);
+	getChildView("im_btn")->setEnabled(allow_modify);
 	getChildView("manage_telehub_btn")->setEnabled(allow_modify);
 
 	// Data gets filled in by processRegionInfo
