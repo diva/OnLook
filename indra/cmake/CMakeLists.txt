@@ -14,8 +14,8 @@ set(cmake_SOURCE_FILES
     Boost.cmake
     BuildVersion.cmake
     CARes.cmake
-    CURL.cmake
     CMakeCopyIfDifferent.cmake
+    CURL.cmake
     CopyWinLibs.cmake
     CSharpMacros.cmake
     DBusGlib.cmake
@@ -29,7 +29,7 @@ set(cmake_SOURCE_FILES
     FindELFIO.cmake
     FindGooglePerfTools.cmake
     FindHunSpell.cmake
-    FindMT.cmake
+    FindJsonCpp.cmake
     FindNDOF.cmake
     FindOpenJPEG.cmake
     FindXmlRpcEpi.cmake
@@ -38,49 +38,54 @@ set(cmake_SOURCE_FILES
     FreeType.cmake
     GLOD.cmake
     GStreamer010Plugin.cmake
+    Glui.cmake
+    Glut.cmake
     GooglePerfTools.cmake
     Hunspell.cmake
     JPEG.cmake
+    JsonCpp.cmake
     LLAddBuildTest.cmake
     LLAppearance.cmake
     LLAudio.cmake
     LLCharacter.cmake
     LLCommon.cmake
     LLCrashLogger.cmake
-    LLDatabase.cmake
     LLImage.cmake
     LLImageJ2COJ.cmake
     LLInventory.cmake
     LLKDU.cmake
     LLMath.cmake
     LLMessage.cmake
+    LLPhysicsExtensions.cmake
     LLPlugin.cmake
     LLPrimitive.cmake
-    LLPhysicsExtensions.cmake
     LLQtWebkit.cmake
     LLRender.cmake
-    LLScene.cmake
     LLUI.cmake
     LLVFS.cmake
     LLWindow.cmake
     LLXML.cmake
 #    LScript.cmake
     Linking.cmake
+    MediaPluginBase.cmake
     NDOF.cmake
     OPENAL.cmake
     OpenGL.cmake
     OpenJPEG.cmake
     OpenSSL.cmake
     PNG.cmake
-    Python.cmake
     Prebuilt.cmake
+    PulseAudio.cmake
+    Python.cmake
     Qt4.cmake
+    QuickTimePlugin.cmake
     RunBuildTest.cmake
     TemplateCheck.cmake
     Tut.cmake
     UI.cmake
     UnixInstall.cmake
     Variables.cmake
+    WebKitLibPlugin.cmake
     XmlRpcEpi.cmake
     ZLIB.cmake
     )
@@ -91,10 +96,6 @@ set(master_SOURCE_FILES
     ../CMakeLists.txt
     ../develop.py
     )
-
-if (SERVER)
-  list(APPEND master_SOURCE_FILES ../Server.cmake)
-endif (SERVER)
 
 source_group("Master Rules" FILES ${master_SOURCE_FILES})
 

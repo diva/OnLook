@@ -8,40 +8,28 @@
 #   DARWIN  - Mac OS X
 #   LINUX   - Linux
 #   WINDOWS - Windows
-#
-# What to build:
-#
-#   VIEWER - viewer and other viewer-side components
-#   SERVER - simulator and other server-side bits
 
 
 # Relative and absolute paths to subtrees.
 
+if(NOT DEFINED COMMON_CMAKE_DIR)
+    set(COMMON_CMAKE_DIR "${CMAKE_SOURCE_DIR}/cmake")
+endif(NOT DEFINED COMMON_CMAKE_DIR)
+
 set(LIBS_CLOSED_PREFIX)
 set(LIBS_OPEN_PREFIX)
-set(LIBS_SERVER_PREFIX)
 set(SCRIPTS_PREFIX ../scripts)
-set(SERVER_PREFIX)
 set(VIEWER_PREFIX)
 
 set(LIBS_CLOSED_DIR ${CMAKE_SOURCE_DIR}/${LIBS_CLOSED_PREFIX})
 set(LIBS_OPEN_DIR ${CMAKE_SOURCE_DIR}/${LIBS_OPEN_PREFIX})
-set(LIBS_SERVER_DIR ${CMAKE_SOURCE_DIR}/${LIBS_SERVER_PREFIX})
 set(SCRIPTS_DIR ${CMAKE_SOURCE_DIR}/${SCRIPTS_PREFIX})
-set(SERVER_DIR ${CMAKE_SOURCE_DIR}/${SERVER_PREFIX})
 set(VIEWER_DIR ${CMAKE_SOURCE_DIR}/${VIEWER_PREFIX})
 set(DISABLE_TCMALLOC OFF CACHE BOOL "Disable linkage of TCMalloc. (64bit builds automatically disable TCMalloc)")
 set(LL_TESTS OFF CACHE BOOL "Build and run unit and integration tests (disable for build timing runs to reduce variation)")
-set(VISTA_ICON OFF CACHE BOOL "Allow vista icon with pre 2008 Visual Studio IDEs. (Assumes replacement old rcdll.dll with new rcdll.dll from win sdk 7.0 or later)")
 
 set(LIBS_PREBUILT_DIR ${CMAKE_SOURCE_DIR}/../libraries CACHE PATH
     "Location of prebuilt libraries.")
-
-if (EXISTS ${CMAKE_SOURCE_DIR}/Server.cmake)
-  # We use this as a marker that you can try to use the proprietary libraries.
-  set(INSTALL_PROPRIETARY ON CACHE BOOL "Install proprietary binaries")
-endif (EXISTS ${CMAKE_SOURCE_DIR}/Server.cmake)
-
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   set(WINDOWS ON BOOL FORCE)
@@ -69,6 +57,26 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
       set(WORD_SIZE 64)
     endif(CMAKE_SIZEOF_VOID_P MATCHES 4)
   endif (WORD_SIZE EQUAL 32)
+  if (WORD_SIZE EQUAL 32)
+    set(DEB_ARCHITECTURE i386)
+    set(FIND_LIBRARY_USE_LIB64_PATHS OFF)
+    set(CMAKE_SYSTEM_LIBRARY_PATH /usr/lib32 ${CMAKE_SYSTEM_LIBRARY_PATH})
+  else (WORD_SIZE EQUAL 32)
+    set(DEB_ARCHITECTURE amd64)
+    set(FIND_LIBRARY_USE_LIB64_PATHS ON)
+  endif (WORD_SIZE EQUAL 32)
+
+  execute_process(COMMAND dpkg-architecture -a${DEB_ARCHITECTURE} -qDEB_HOST_MULTIARCH 
+      RESULT_VARIABLE DPKG_RESULT
+      OUTPUT_VARIABLE DPKG_ARCH
+      OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+  #message (STATUS "DPKG_RESULT ${DPKG_RESULT}, DPKG_ARCH ${DPKG_ARCH}")
+  if (DPKG_RESULT EQUAL 0)
+    set(CMAKE_LIBRARY_ARCHITECTURE ${DPKG_ARCH})
+    set(CMAKE_SYSTEM_LIBRARY_PATH /usr/lib/${DPKG_ARCH} /usr/local/lib/${DPKG_ARCH} ${CMAKE_SYSTEM_LIBRARY_PATH})
+  endif (DPKG_RESULT EQUAL 0)
+
+  include(ConfigurePkgConfig)
 
   set(LL_ARCH ${ARCH}_linux)
   set(LL_ARCH_DIR ${ARCH}-linux)
@@ -77,38 +85,36 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(DARWIN 1)
 
-  if(${CMAKE_GENERATOR} MATCHES Xcode) 
-    #SDK Compiler and Deployment targets for XCode
-    if (${XCODE_VERSION} VERSION_LESS 4.0.0)
-      set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.5.sdk)
-      set(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
-      set(CMAKE_XCODE_ATTIBUTE_GCC_VERSION "4.2")
-    else (${XCODE_VERSION} VERSION_LESS 4.0.0)
-      set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.6.sdk)
+  if(${CMAKE_GENERATOR} MATCHES Xcode)
+    execute_process(
+      COMMAND sh -c "xcodebuild -version | grep Xcode  | cut -d ' ' -f2 | cut -d'.' -f1-2"
+      OUTPUT_VARIABLE XCODE_VERSION )
+
+    # To support a different SDK update these Xcode settings:
+    if (XCODE_VERSION GREATER 4.2)
       set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
-      set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvmgcc42")
-    endif (${XCODE_VERSION} VERSION_LESS 4.0.0)
-  else()
-    set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.6.sdk)
+    else (XCODE_VERSION GREATER 4.2)
+      set(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
+    endif (XCODE_VERSION GREATER 4.2)
+  else(${CMAKE_GENERATOR} MATCHES Xcode)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
-    set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvmgcc42")
   endif(${CMAKE_GENERATOR} MATCHES Xcode)
 
-  ## We currently support only 32-bit i386 builds, so use these:
-  set(CMAKE_OSX_ARCHITECTURES i386)
+  set(CMAKE_OSX_SYSROOT macosx10.6)
+  set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvmgcc42")
+
+  set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT dwarf-with-dsym)
+
+  # Build only for i386 by default, system default on MacOSX 10.6 is x86_64
+  if (NOT CMAKE_OSX_ARCHITECTURES)
+    set(CMAKE_OSX_ARCHITECTURES i386)
+  endif (NOT CMAKE_OSX_ARCHITECTURES)
   set(ARCH i386)
   set(WORD_SIZE 32)
 
-  ## But if you want to compile for mixed 32/64 bit, try these:
-  # set(CMAKE_OSX_ARCHITECTURES i386;x86_64)
-  # set(ARCH universal)
-  # set(WORD_SIZE 64)
-
-  ## Finally, set up the build output directories
   set(LL_ARCH ${ARCH}_darwin)
   set(LL_ARCH_DIR universal-darwin)
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-
 
 if (WINDOWS)
   set(PREBUILT_TYPE windows)
@@ -120,11 +126,9 @@ elseif(LINUX AND WORD_SIZE EQUAL 64)
   set(PREBUILT_TYPE linux64)
 endif(WINDOWS)
 
-
 # Default deploy grid
 set(GRID agni CACHE STRING "Target Grid")
 
-set(VIEWER ON CACHE BOOL "Build Second Life viewer.")
 set(VIEWER_CHANNEL "Singularity" CACHE STRING "Viewer Channel Name")
 set(VIEWER_LOGIN_CHANNEL ${VIEWER_CHANNEL} CACHE STRING "Fake login channel for A/B Testing")
 set(VIEWER_BRANDING_ID "singularity" CACHE STRING "Viewer branding id (currently secondlife|snowglobe)")
@@ -134,18 +138,5 @@ set(VIEWER_BRANDING_NAME "Singularity")
 set(VIEWER_BRANDING_NAME_CAMELCASE "Singularity")
 
 set(STANDALONE OFF CACHE BOOL "Do not use Linden-supplied prebuilt libraries.")
-
-if (NOT STANDALONE AND EXISTS ${CMAKE_SOURCE_DIR}/llphysics)
-    set(SERVER ON CACHE BOOL "Build Second Life server software.")
-endif (NOT STANDALONE AND EXISTS ${CMAKE_SOURCE_DIR}/llphysics)
-
-if (LINUX AND SERVER AND VIEWER)
-  MESSAGE(FATAL_ERROR "
-The indra source does not currently support building SERVER and VIEWER at the same time.
-Please set one of these values to OFF in your CMake cache file.
-(either by running ccmake or by editing CMakeCache.txt by hand)
-For more information, please see JIRA DEV-14943 - Cmake Linux cannot build both VIEWER and SERVER in one build environment
-  ")
-endif (LINUX AND SERVER AND VIEWER)
 
 source_group("CMake Rules" FILES CMakeLists.txt)

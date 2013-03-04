@@ -58,7 +58,7 @@ include_directories(
     ${DBUSGLIB_INCLUDE_DIRS}
     ${HUNSPELL_INCLUDE_DIR}
     ${ELFIO_INCLUDE_DIR}
-    ${JSONCPP_INCLUDE_DIRS}
+    ${JSONCPP_INCLUDE_DIR}
     ${GLOD_INCLUDE_DIRS}
     ${LLAUDIO_INCLUDE_DIRS}
     ${LLCHARACTER_INCLUDE_DIRS}
@@ -1215,25 +1215,12 @@ if (WINDOWS)
     set_source_files_properties(${viewer_RESOURCE_FILES}
                                 PROPERTIES HEADER_FILE_ONLY TRUE)
 
-    if(NOT ARTWORK_IN_SOURCE)
-      # The resource compiler needs to find resources here.
-      include_directories(${ARTWORK_DIR}/res)
-    endif(NOT ARTWORK_IN_SOURCE)
+    set(viewer_RESOURCE_FILES
+       res/resource.h
+        res/viewerRes.rc
+        ${viewer_RESOURCE_FILES}
+        )
 
-	if (MSVC71 OR MSVC80 AND NOT VISTA_ICON)
-		set(viewer_RESOURCE_FILES 
-			res/resource.h
-			res/viewerRes_bc.rc 
-			${viewer_RESOURCE_FILES}
-		)
-	else (MSVC71 OR MSVC80 AND NOT VISTA_ICON)
-		set(viewer_RESOURCE_FILES 
-			res/resource.h
-			res/viewerRes.rc 
-			${viewer_RESOURCE_FILES}
-		)
-	endif (MSVC71 OR MSVC80 AND NOT VISTA_ICON)
-	  
     SOURCE_GROUP("Resource Files" FILES ${viewer_RESOURCE_FILES})
 
     list(APPEND viewer_SOURCE_FILES ${viewer_RESOURCE_FILES})
