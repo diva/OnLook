@@ -35,7 +35,6 @@
 #include <cmath>
 
 #include "llerror.h"
-#include "llmemtype.h"
 
 #include "llvolumemgr.h"
 #include "v2math.h"
@@ -378,8 +377,6 @@ public:
 
 LLProfile::Face* LLProfile::addCap(S16 faceID)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	Face *face   = vector_append(mFaces, 1);
 	
 	face->mIndex = 0;
@@ -392,8 +389,6 @@ LLProfile::Face* LLProfile::addCap(S16 faceID)
 
 LLProfile::Face* LLProfile::addFace(S32 i, S32 count, F32 scaleU, S16 faceID, BOOL flat)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	Face *face   = vector_append(mFaces, 1);
 	
 	face->mIndex = i;
@@ -409,7 +404,6 @@ LLProfile::Face* LLProfile::addFace(S32 i, S32 count, F32 scaleU, S16 faceID, BO
 //static
 S32 LLProfile::getNumNGonPoints(const LLProfileParams& params, S32 sides, F32 offset, F32 bevel, F32 ang_scale, S32 split)
 { // this is basically LLProfile::genNGon stripped down to only the operations that influence the number of points
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
 	S32 np = 0;
 
 	// Generate an n-sided "circular" path.
@@ -475,8 +469,6 @@ S32 LLProfile::getNumNGonPoints(const LLProfileParams& params, S32 sides, F32 of
 // filleted and chamfered corners
 void LLProfile::genNGon(const LLProfileParams& params, S32 sides, F32 offset, F32 bevel, F32 ang_scale, S32 split)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	// Generate an n-sided "circular" path.
 	// 0 is (1,0), and we go counter-clockwise along a circular path from there.
 	const F32 tableScale[] = { 1, 1, 1, 0.5f, 0.707107f, 0.53f, 0.525f, 0.5f };
@@ -730,8 +722,6 @@ LLProfile::Face* LLProfile::addHole(const LLProfileParams& params, BOOL flat, F3
 S32 LLProfile::getNumPoints(const LLProfileParams& params, BOOL path_open,F32 detail, S32 split,
 						 BOOL is_sculpted, S32 sculpt_size)
 { // this is basically LLProfile::generate stripped down to only operations that influence the number of points
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	if (detail < MIN_LOD)
 	{
 		detail = MIN_LOD;
@@ -842,8 +832,6 @@ S32 LLProfile::getNumPoints(const LLProfileParams& params, BOOL path_open,F32 de
 BOOL LLProfile::generate(const LLProfileParams& params, BOOL path_open,F32 detail, S32 split,
 						 BOOL is_sculpted, S32 sculpt_size)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	if ((!mDirty) && (!is_sculpted))
 	{
 		return FALSE;
@@ -1116,8 +1104,6 @@ BOOL LLProfile::generate(const LLProfileParams& params, BOOL path_open,F32 detai
 
 BOOL LLProfileParams::importFile(LLFILE *fp)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	const S32 BUFSIZE = 16384;
 	char buffer[BUFSIZE];	/* Flawfinder: ignore */
 	// *NOTE: changing the size or type of these buffers will require
@@ -1193,8 +1179,6 @@ BOOL LLProfileParams::exportFile(LLFILE *fp) const
 
 BOOL LLProfileParams::importLegacyStream(std::istream& input_stream)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	const S32 BUFSIZE = 16384;
 	char buffer[BUFSIZE];	/* Flawfinder: ignore */
 	// *NOTE: changing the size or type of these buffers will require
@@ -1286,7 +1270,6 @@ bool LLProfileParams::fromLLSD(LLSD& sd)
 
 void LLProfileParams::copyParams(const LLProfileParams &params)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
 	setCurveType(params.getCurveType());
 	setBegin(params.getBegin());
 	setEnd(params.getEnd());
@@ -1503,8 +1486,6 @@ const LLVector2 LLPathParams::getEndScale() const
 
 S32 LLPath::getNumPoints(const LLPathParams& params, F32 detail)
 { // this is basically LLPath::generate stripped down to only the operations that influence the number of points
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	if (detail < MIN_LOD)
 	{
 		detail = MIN_LOD;
@@ -1554,8 +1535,6 @@ S32 LLPath::getNumPoints(const LLPathParams& params, F32 detail)
 BOOL LLPath::generate(const LLPathParams& params, F32 detail, S32 split,
 					  BOOL is_sculpted, S32 sculpt_size)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	if ((!mDirty) && (!is_sculpted))
 	{
 		return FALSE;
@@ -1683,8 +1662,6 @@ BOOL LLPath::generate(const LLPathParams& params, F32 detail, S32 split,
 BOOL LLDynamicPath::generate(const LLPathParams& params, F32 detail, S32 split,
 							 BOOL is_sculpted, S32 sculpt_size)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	mOpen = TRUE; // Draw end caps
 	if (getPathLength() == 0)
 	{
@@ -1706,8 +1683,6 @@ BOOL LLDynamicPath::generate(const LLPathParams& params, F32 detail, S32 split,
 
 BOOL LLPathParams::importFile(LLFILE *fp)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	const S32 BUFSIZE = 16384;
 	char buffer[BUFSIZE];	/* Flawfinder: ignore */
 	// *NOTE: changing the size or type of these buffers will require
@@ -1852,8 +1827,6 @@ BOOL LLPathParams::exportFile(LLFILE *fp) const
 
 BOOL LLPathParams::importLegacyStream(std::istream& input_stream)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	const S32 BUFSIZE = 16384;
 	char buffer[BUFSIZE];	/* Flawfinder: ignore */
 	// *NOTE: changing the size or type of these buffers will require
@@ -2061,8 +2034,6 @@ S32 LLVolume::sNumMeshPoints = 0;
 LLVolume::LLVolume(const LLVolumeParams &params, const F32 detail, const BOOL generate_single_face, const BOOL is_unique)
 	: mParams(params)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	mUnique = is_unique;
 	mFaceMask = 0x0;
 	mDetail = detail;
@@ -2134,7 +2105,6 @@ LLVolume::~LLVolume()
 
 BOOL LLVolume::generate()
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
 	llassert_always(mProfilep);
 	
 	//Added 10.03.05 Dave Parks
@@ -2730,8 +2700,6 @@ S32	LLVolume::getNumFaces() const
 
 void LLVolume::createVolumeFaces()
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-
 	if (mGenerateSingleFace)
 	{
 		// do nothing
@@ -2903,8 +2871,6 @@ F32 LLVolume::sculptGetSurfaceArea()
 // create placeholder shape
 void LLVolume::sculptGeneratePlaceholder()
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	S32 sizeS = mPathp->mPath.size();
 	S32 sizeT = mProfilep->mProfile.size();
 	
@@ -2940,10 +2906,7 @@ void LLVolume::sculptGenerateMapVertices(U16 sculpt_width, U16 sculpt_height, S8
 	BOOL sculpt_invert = sculpt_type & LL_SCULPT_FLAG_INVERT;
 	BOOL sculpt_mirror = sculpt_type & LL_SCULPT_FLAG_MIRROR;
 	BOOL reverse_horizontal = (sculpt_invert ? !sculpt_mirror : sculpt_mirror);  // XOR
-	
-	
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
+
 	S32 sizeS = mPathp->mPath.size();
 	S32 sizeT = mProfilep->mProfile.size();
 	
@@ -3117,7 +3080,6 @@ bool sculpt_calc_mesh_resolution(U16 width, U16 height, U8 type, F32 detail, S32
 // sculpt replaces generate() for sculpted surfaces
 void LLVolume::sculpt(U16 sculpt_width, U16 sculpt_height, S8 sculpt_components, const U8* sculpt_data, S32 sculpt_level)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
     U8 sculpt_type = mParams.getSculptType();
 
 	BOOL data_is_empty = FALSE;
@@ -3268,7 +3230,6 @@ bool LLVolumeParams::operator<(const LLVolumeParams &params) const
 
 void LLVolumeParams::copyParams(const LLVolumeParams &params)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
 	mProfileParams.copyParams(params.mProfileParams);
 	mPathParams.copyParams(params.mPathParams);
 	mSculptID = params.getSculptID();
@@ -3640,8 +3601,6 @@ bool LLVolumeParams::validate(U8 prof_curve, F32 prof_begin, F32 prof_end, F32 h
 
 S32 *LLVolume::getTriangleIndices(U32 &num_indices) const
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	S32 expected_num_triangle_indices = getNumTriangleIndices();
 	if (expected_num_triangle_indices > MAX_VOLUME_TRIANGLE_INDICES)
 	{
@@ -4369,8 +4328,6 @@ void LLVolume::generateSilhouetteVertices(std::vector<LLVector3> &vertices,
 										  const LLMatrix3& norm_mat_in,
 										  S32 face_mask)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-
 	LLMatrix4a mat;
 	mat.loadu(mat_in);
 
@@ -4832,8 +4789,6 @@ BOOL equalTriangle(const S32 *a, const S32 *b)
 
 BOOL LLVolumeParams::importFile(LLFILE *fp)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	//llinfos << "importing volume" << llendl;
 	const S32 BUFSIZE = 16384;
 	char buffer[BUFSIZE];	/* Flawfinder: ignore */
@@ -4888,8 +4843,6 @@ BOOL LLVolumeParams::exportFile(LLFILE *fp) const
 
 BOOL LLVolumeParams::importLegacyStream(std::istream& input_stream)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	//llinfos << "importing volume" << llendl;
 	const S32 BUFSIZE = 16384;
 	// *NOTE: changing the size or type of this buffer will require
@@ -4929,8 +4882,6 @@ BOOL LLVolumeParams::importLegacyStream(std::istream& input_stream)
 
 BOOL LLVolumeParams::exportLegacyStream(std::ostream& output_stream) const
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	output_stream <<"\tshape 0\n";
 	output_stream <<"\t{\n";
 	mPathParams.exportLegacyStream(output_stream);
@@ -6146,8 +6097,6 @@ void	LerpPlanarVertex(LLVolumeFace::VertexData& v0,
 
 BOOL LLVolumeFace::createUnCutCubeCap(LLVolume* volume, BOOL partial_build)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	const std::vector<LLVolume::Point>& mesh = volume->getMesh();
 	const std::vector<LLVector3>& profile = volume->getProfile().mProfile;
 	S32 max_s = volume->getProfile().getTotal();
@@ -6293,8 +6242,6 @@ BOOL LLVolumeFace::createUnCutCubeCap(LLVolume* volume, BOOL partial_build)
 
 BOOL LLVolumeFace::createCap(LLVolume* volume, BOOL partial_build)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	if (!(mTypeMask & HOLLOW_MASK) && 
 		!(mTypeMask & OPEN_MASK) && 
 		((volume->getParams().getPathParams().getBegin()==0.0f)&&
@@ -6681,8 +6628,6 @@ BOOL LLVolumeFace::createCap(LLVolume* volume, BOOL partial_build)
 
 void LLVolumeFace::createBinormals()
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	if (!mBinormals)
 	{
 		allocateBinormals(mNumVertices);
@@ -6954,8 +6899,6 @@ void LLVolumeFace::appendFace(const LLVolumeFace& face, LLMatrix4& mat_in, LLMat
 
 BOOL LLVolumeFace::createSide(LLVolume* volume, BOOL partial_build)
 {
-	LLMemType m1(LLMemType::MTYPE_VOLUME);
-	
 	BOOL flat = mTypeMask & FLAT_MASK;
 
 	U8 sculpt_type = volume->getParams().getSculptType();

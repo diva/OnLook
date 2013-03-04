@@ -908,8 +908,6 @@ private:
 
 void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 {
-	LLMemType mt(LLMemType::MTYPE_OBJECT);
-
 	// Update globals
 	static const LLCachedControl<bool> VelocityInterpolate("VelocityInterpolate");
 	static const LLCachedControl<bool> PingInterpolate("PingInterpolate");
@@ -1235,7 +1233,6 @@ void LLViewerObjectList::clearDebugText()
 
 void LLViewerObjectList::cleanupReferences(LLViewerObject *objectp)
 {
-	LLMemType mt(LLMemType::MTYPE_OBJECT);
 	if (mDeadObjects.find(objectp->mID) != mDeadObjects.end())
 	{
 		llinfos << "Object " << objectp->mID << " already on dead list!" << llendl;	
@@ -1477,7 +1474,6 @@ void LLViewerObjectList::removeFromActiveList(LLViewerObject* objectp)
 
 void LLViewerObjectList::updateActive(LLViewerObject *objectp)
 {
-	LLMemType mt(LLMemType::MTYPE_OBJECT);
 	if (objectp->isDead())
 	{
 		return; // We don't update dead objects!
@@ -1958,7 +1954,6 @@ void LLViewerObjectList::resetObjectBeacons()
 
 LLViewerObject *LLViewerObjectList::createObjectViewer(const LLPCode pcode, LLViewerRegion *regionp)
 {
-	LLMemType mt(LLMemType::MTYPE_OBJECT);
 	LLUUID fullid;
 	fullid.generate();
 
@@ -1990,7 +1985,6 @@ static LLFastTimer::DeclareTimer FTM_CREATE_OBJECT("Create Object");
 LLViewerObject *LLViewerObjectList::createObject(const LLPCode pcode, LLViewerRegion *regionp,
 												 const LLUUID &uuid, const U32 local_id, const LLHost &sender)
 {
-	LLMemType mt(LLMemType::MTYPE_OBJECT);
 	LLFastTimer t(FTM_CREATE_OBJECT);
 	
 	LLUUID fullid;
@@ -2061,7 +2055,6 @@ S32 LLViewerObjectList::findReferences(LLDrawable *drawablep) const
 
 void LLViewerObjectList::orphanize(LLViewerObject *childp, U32 parent_id, U32 ip, U32 port)
 {
-	LLMemType mt(LLMemType::MTYPE_OBJECT);
 #ifdef ORPHAN_SPAM
 	llinfos << "Orphaning object " << childp->getID() << " with parent " << parent_id << llendl;
 #endif

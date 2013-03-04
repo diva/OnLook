@@ -165,7 +165,6 @@
 #include "llframestats.h"
 #include "llframestatview.h"
 #include "llfasttimerview.h"
-#include "llmemoryview.h"
 #include "llgivemoney.h"
 #include "llgroupmgr.h"
 #include "llhoverview.h"
@@ -973,14 +972,6 @@ void init_client_menu(LLMenuGL* menu)
 										&get_visibility,
 										(void*)gDebugView->mFastTimerView,
 										  '9', MASK_CONTROL|MASK_SHIFT ) );
-//#if MEM_TRACK_MEM
-		sub->addChild(new LLMenuItemCheckGL("Memory", 
-										&toggle_visibility,
-										NULL,
-										&get_visibility,
-										(void*)gDebugView->mMemoryView,
-										  '0', MASK_CONTROL|MASK_SHIFT ) );
-//#endif
 		
 		sub->addSeparator();
 		

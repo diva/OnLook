@@ -30,7 +30,6 @@
 #include "lldarray.h"
 #include "llfoldertype.h"
 #include "llinventorytype.h"
-#include "llmemtype.h"
 #include "llpermissions.h"
 #include "llrefcount.h"
 #include "llsaleinfo.h"

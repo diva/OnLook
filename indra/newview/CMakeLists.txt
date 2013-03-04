@@ -318,7 +318,6 @@ set(viewer_SOURCE_FILES
     llmarketplacenotifications.cpp
     llmediactrl.cpp
     llmediaremotectrl.cpp
-    llmemoryview.cpp
     llmenucommands.cpp
     llmenuoptionpathfindingrebakenavmesh.cpp
     llmeshrepository.cpp
@@ -821,7 +820,6 @@ set(viewer_HEADER_FILES
     llmarketplacenotifications.h
     llmediactrl.h
     llmediaremotectrl.h
-    llmemoryview.h
     llmenuoptionpathfindingrebakenavmesh.h
     llmenucommands.h
     llmeshrepository.h
