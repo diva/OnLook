@@ -837,20 +837,20 @@ void LLPanelPermissions::refresh()
 		// Export
 		if (supports_export)
 		{
-		if(everyone_mask_on & PERM_EXPORT)
-		{
-			childSetValue("checkbox allow export", true);
-			childSetTentative("checkbox allow export", false);
-		}
+			if(everyone_mask_on & PERM_EXPORT)
+			{
+				childSetValue("checkbox allow export", true);
+				childSetTentative("checkbox allow export", false);
+			}
 			else if(everyone_mask_off & PERM_EXPORT)
-		{
-			childSetValue("checkbox allow export", false);
-			childSetTentative("checkbox allow export", false);
-		}
-		else
-		{
-			childSetValue("checkbox allow export", true);
-			childSetTentative("checkbox allow export", true);
+			{
+				childSetValue("checkbox allow export", false);
+				childSetTentative("checkbox allow export", false);
+			}
+			else
+			{
+				childSetValue("checkbox allow export", true);
+				childSetTentative("checkbox allow export", true);
 			}
 		}
 		else
