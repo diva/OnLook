@@ -78,7 +78,7 @@
   <texture name="color_swatch_alpha.tga" preload="true"/>
 
   <texture name="eye_button_active.tga" preload="true" />
-  <texture name="eye_button_inactive.tga" preload="true""/>
+  <texture name="eye_button_inactive.tga" preload="true"/>
   
   <texture name="active_voice_tab.tga"/>
   <texture name="button_anim_pause.tga"/>

@@ -328,6 +328,7 @@ void LLPrefsAscentChat::refreshValues()
     mIMAnnounceIncoming             = gSavedSettings.getBOOL("AscentInstantMessageAnnounceIncoming");
     mHideTypingNotification         = gSavedSettings.getBOOL("AscentHideTypingNotification");
     mShowGroupNameInChatIM          = gSavedSettings.getBOOL("OptionShowGroupNameInChatIM");
+    mShowDisplayNameChanges         = gSavedSettings.getBOOL("ShowDisplayNameChanges");
     mPlayTypingSound                = gSavedSettings.getBOOL("PlayTypingSound");
     mHideNotificationsInChat        = gSavedSettings.getBOOL("HideNotificationsInChat");
     mEnableMUPose                   = gSavedSettings.getBOOL("AscentAllowMUpose");
@@ -543,6 +544,7 @@ void LLPrefsAscentChat::cancel()
     gSavedSettings.setBOOL("AscentInstantMessageAnnounceIncoming", mIMAnnounceIncoming);
     gSavedSettings.setBOOL("AscentHideTypingNotification",         mHideTypingNotification);
     gSavedSettings.setBOOL("OptionShowGroupNameInChatIM",          mShowGroupNameInChatIM);
+    gSavedSettings.setBOOL("ShowDisplayNameChanges",               mShowDisplayNameChanges);
     gSavedSettings.setBOOL("PlayTypingSound",                      mPlayTypingSound);
     gSavedSettings.setBOOL("HideNotificationsInChat",              mHideNotificationsInChat);
     gSavedSettings.setBOOL("AscentAllowMUpose",                    mEnableMUPose);

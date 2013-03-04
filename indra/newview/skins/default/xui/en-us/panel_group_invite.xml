@@ -34,10 +34,10 @@ Resident Chooser&apos; to start.
 	</string>
 	<string name="already_in_group">
 		Some Residents you chose are already in the group, and so were not sent an invitation.
-	<string>
+	</string>
 	<string name="invite_selection_too_large">
 		Group Invitations not sent: too many Residents selected. Group Invitations are limited to 100 per request.
-	<string>
+	</string>
 	<!--button bottom="25" font="SansSerifSmall" halign="center" height="20"
 	     label="Send Invitations" left="65" name="ok_button" width="140" />
 	<button bottom_delta="-22" font="SansSerifSmall" halign="center" height="20"
