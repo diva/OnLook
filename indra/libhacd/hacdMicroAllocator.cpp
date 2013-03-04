@@ -50,8 +50,9 @@
 #include <pthread.h>
 #endif
 
-
+#if defined(_WIN32)
 #pragma warning(disable:4100)
+#endif
 
 namespace HACD
 {
