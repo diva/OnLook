@@ -105,7 +105,7 @@ public:
 
 	void handleRegionChange(LLTabContainer* container)
 	{
-		if ((LLViewerRegion* region = gAgent.getRegion()))
+		if (LLViewerRegion* region = gAgent.getRegion())
 		{
 			if (region->getFeaturesReceived())
 			{
@@ -120,7 +120,7 @@ public:
 
 	void setMarketplaceURL(LLTabContainer* container)
 	{
-		if ((LLViewerRegion* region = gAgent.getRegion()))
+		if (LLViewerRegion* region = gAgent.getRegion())
 		{
 			LLSD info;
 			region->getSimulatorFeatures(info);
