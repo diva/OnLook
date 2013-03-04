@@ -602,11 +602,12 @@ bool LLGLManager::initGL()
 	if (mGLVendor.substr(0,4) == "ATI ")
 	{
 		mGLVendorShort = "ATI";
-		BOOL mobile = FALSE;
-		if (mGLRenderer.find("MOBILITY") != std::string::npos)
-		{
-			mobile = TRUE;
-		}
+		// "mobile" appears to be unused, and this code was causing warnings.
+		//BOOL mobile = FALSE;
+		//if (mGLRenderer.find("MOBILITY") != std::string::npos)
+		//{
+		//	mobile = TRUE;
+		//}
 		mIsATI = TRUE;
 
 #if LL_WINDOWS && !LL_MESA_HEADLESS
@@ -1443,8 +1444,7 @@ void assert_glerror()
 void clear_glerror()
 {
 	//  Create or update texture to be used with this data 
-	GLenum error;
-	error = glGetError();
+	glGetError();
 }
 
 ///////////////////////////////////////////////////////////////

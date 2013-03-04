@@ -380,7 +380,6 @@ bool idle_startup()
 	const F32 TIMEOUT_SECONDS = 5.f;
 	const S32 MAX_TIMEOUT_COUNT = 3;
 	static LLTimer timeout;
-	static S32 timeout_count = 0;
 
 	static LLTimer login_time;
 
@@ -402,7 +401,6 @@ bool idle_startup()
 
 	// last location by default
 	static S32  agent_location_id = START_LOCATION_ID_LAST;
-	static S32  location_which = START_LOCATION_ID_LAST;
 
 	static bool show_connect_box = true;
 
@@ -843,9 +841,6 @@ bool idle_startup()
 		
 		gViewerWindow->getWindow()->setCursor(UI_CURSOR_ARROW);
 
-		timeout_count = 0;
-
-
 		// *NOTE: This is where LLViewerParcelMgr::getInstance() used to get allocated before becoming LLViewerParcelMgr::getInstance().
 
 		// *NOTE: This is where gHUDManager used to bet allocated before becoming LLHUDManager::getInstance().
@@ -1130,7 +1125,6 @@ bool idle_startup()
 		{
 			// Force login at the last location
 			agent_location_id = START_LOCATION_ID_LAST;
-			location_which = START_LOCATION_ID_LAST;
 			gSavedSettings.setBOOL("LoginLastLocation", FALSE);
 			
 			// Clear some things that would cause us to divert to a user-specified location
@@ -1142,21 +1136,14 @@ bool idle_startup()
 		{
 			// a startup URL was specified
 			agent_location_id = START_LOCATION_ID_URL;
-
-			// doesn't really matter what location_which is, since
-			// agent_start_look_at will be overwritten when the
-			// UserLoginLocationReply arrives
-			location_which = START_LOCATION_ID_LAST;
 		}
 		else if (gSavedSettings.getBOOL("LoginLastLocation"))
 		{
 			agent_location_id = START_LOCATION_ID_LAST;	// last location
-			location_which = START_LOCATION_ID_LAST;
 		}
 		else
 		{
 			agent_location_id = START_LOCATION_ID_HOME;	// home
-			location_which = START_LOCATION_ID_HOME;
 		}
 
 		gViewerWindow->getWindow()->setCursor(UI_CURSOR_WAIT);

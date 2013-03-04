@@ -323,7 +323,6 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 {
 	LLFastTimer t(FTM_PROCESS_OBJECTS);	
 	
-	LLVector3d camera_global = gAgentCamera.getCameraPositionGlobal();
 	LLViewerObject *objectp;
 	S32			num_objects;
 	U32			local_id;

@@ -1477,9 +1477,6 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 	
 	bool busy=FALSE;
 	
-// [RLVa:KB] - Checked: 2010-09-23 (RLVa-1.2.1e) | Added: RLVa-1.2.1e
-	bool fRlvNotifyAccepted = false;
-// [/RLVa:KB]
 	switch(button)
 	{
 	case IOR_ACCEPT:
@@ -1495,13 +1492,11 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		if ( (rlv_handler_t::isEnabled()) && 
 			 (IM_TASK_INVENTORY_OFFERED == mIM) && (LLAssetType::AT_CATEGORY == mType) && (mDesc.find(RLV_PUTINV_PREFIX) == 1) )
 		{
-			fRlvNotifyAccepted = true;
 			if (!RlvSettings::getForbidGiveToRLV())
 			{
 				const LLViewerInventoryCategory* pRlvRoot = RlvInventory::instance().getSharedRoot();
 				if (pRlvRoot)
 				{
-					fRlvNotifyAccepted = false;		// "accepted_in_rlv" is sent from RlvGiveToRLVTaskOffer *after* we have the folder
 					mFolderID = pRlvRoot->getUUID();
 
 					RlvGiveToRLVTaskOffer* pOfferObserver = new RlvGiveToRLVTaskOffer(mTransactionID);

@@ -3079,7 +3079,8 @@ void LLVoiceClient::giveUp()
 
 static void oldSDKTransform (LLVector3 &left, LLVector3 &up, LLVector3 &at, LLVector3d &pos, LLVector3 &vel)
 {
-	F32 nat[3], nup[3], nl[3], nvel[3]; // the new at, up, left vectors and the  new position and velocity
+	F32 nat[3], nup[3], nl[3]; // the new at, up, left vectors and the  new position and velocity
+//	F32 nvel[3];
 	F64 npos[3];
 	
 	// The original XML command was sent like this:
@@ -3129,9 +3130,9 @@ static void oldSDKTransform (LLVector3 &left, LLVector3 &up, LLVector3 &at, LLVe
 	npos[1] = pos.mdV[VZ];
 	npos[2] = pos.mdV[VY];
 
-	nvel[0] = vel.mV[VX];
-	nvel[1] = vel.mV[VZ];
-	nvel[2] = vel.mV[VY];
+//	nvel[0] = vel.mV[VX];
+//	nvel[1] = vel.mV[VZ];
+//	nvel[2] = vel.mV[VY];
 
 	for(int i=0;i<3;++i) {
 		at.mV[i] = nat[i];

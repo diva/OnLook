@@ -92,7 +92,6 @@ LLFontManager::LLFontManager()
 	}
 }
 
-
 LLFontManager::~LLFontManager()
 {
 	FT_Done_FreeType(gFTLibrary);
@@ -101,14 +100,14 @@ LLFontManager::~LLFontManager()
 
 LLFontGlyphInfo::LLFontGlyphInfo(U32 index)
 :	mGlyphIndex(index),
-	mXBitmapOffset(0), 	// Offset to the origin in the bitmap
-	mYBitmapOffset(0), 	// Offset to the origin in the bitmap
-	mXBearing(0),		// Distance from baseline to left in pixels
-	mYBearing(0),		// Distance from baseline to top in pixels
 	mWidth(0),			// In pixels
 	mHeight(0),			// In pixels
 	mXAdvance(0.f),		// In pixels
 	mYAdvance(0.f),		// In pixels
+	mXBitmapOffset(0), 	// Offset to the origin in the bitmap
+	mYBitmapOffset(0), 	// Offset to the origin in the bitmap
+	mXBearing(0),		// Distance from baseline to left in pixels
+	mYBearing(0),		// Distance from baseline to top in pixels
 	mIsRendered(FALSE),
 	mMetricsValid(FALSE)
 {}
@@ -543,14 +542,11 @@ void LLFont::renderGlyph(const U32 glyph_index) const
 	if (mFTFace == NULL)
 		return;
 
-	int error = FT_Load_Glyph(mFTFace, glyph_index, FT_LOAD_DEFAULT );
-	llassert(!error);
+	llassert_always(! FT_Load_Glyph(mFTFace, glyph_index, FT_LOAD_FORCE_AUTOHINT) );
 
-	error = FT_Render_Glyph(mFTFace->glyph, gFontRenderMode);
+	llassert_always(! FT_Render_Glyph(mFTFace->glyph, gFontRenderMode) );
 
 	mRenderGlyphCount++;
-	
-	llassert(!error);
 }
 
 

@@ -93,24 +93,34 @@ public:
 	/*virtual*/ BOOL postBuild()
 	{
 		if (gHippoGridManager->getConnectedGrid()->isSecondLife())
+		{
 			mMarketplaceURL = getString("default_search_page");
+		}
 		else
+		{
 			getChild<LLUICtrl>("reset_btn")->setCommitCallback(boost::bind(&LLPanelDirMarket::navigateToDefaultPage, this));
+		}
 		return LLPanelDirFind::postBuild();
 	}
 
 	void handleRegionChange(LLTabContainer* container)
 	{
-		if (LLViewerRegion* region = gAgent.getRegion())
+		if ((LLViewerRegion* region = gAgent.getRegion()))
+		{
 			if (region->getFeaturesReceived())
+			{
 				setMarketplaceURL(container);
+			}
 			else
+			{
 				region->setFeaturesReceivedCallback(boost::bind(&LLPanelDirMarket::setMarketplaceURL, this, container));
+			}
+		}
 	}
 
 	void setMarketplaceURL(LLTabContainer* container)
 	{
-		if (LLViewerRegion* region = gAgent.getRegion())
+		if ((LLViewerRegion* region = gAgent.getRegion()))
 		{
 			LLSD info;
 			region->getSimulatorFeatures(info);

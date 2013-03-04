@@ -65,9 +65,9 @@ bool LLImageGL::sCompressTextures = false;
 
 std::set<LLImageGL*> LLImageGL::sImageList;
 
-// ****************************************************************************************************
+//****************************************************************************************************
 //The below for texture auditing use only
-// ****************************************************************************************************
+//****************************************************************************************************
 //-----------------------
 //debug use
 BOOL gAuditTexture = FALSE ;
@@ -816,8 +816,9 @@ void LLImageGL::setImage(const U8* data_in, BOOL data_hasmips)
 				S32 w = width, h = height;
 				const U8* prev_mip_data = 0;
 				const U8* cur_mip_data = 0;
-				S32 prev_mip_size = 0;
+#ifdef SHOW_ASSERT
 				S32 cur_mip_size = 0;
+#endif
 				
 				mMipLevels = nummips;
 
@@ -826,18 +827,24 @@ void LLImageGL::setImage(const U8* data_in, BOOL data_hasmips)
 					if (m==0)
 					{
 						cur_mip_data = data_in;
+#ifdef SHOW_ASSERT
 						cur_mip_size = width * height * mComponents; 
+#endif
 					}
 					else
 					{
 						S32 bytes = w * h * mComponents;
+#ifdef SHOW_ASSERT
 						llassert(prev_mip_data);
-						llassert(prev_mip_size == bytes*4);
+						llassert(cur_mip_size == bytes*4);
+#endif
 						U8* new_data = new U8[bytes];
 						llassert_always(new_data);
 						LLImageBase::generateMip(prev_mip_data, new_data, w, h, mComponents);
 						cur_mip_data = new_data;
+#ifdef SHOW_ASSERT
 						cur_mip_size = bytes; 
+#endif
 					}
 					llassert(w > 0 && h > 0 && cur_mip_data);
 					{
@@ -870,7 +877,6 @@ void LLImageGL::setImage(const U8* data_in, BOOL data_hasmips)
 						delete[] prev_mip_data;
 					}
 					prev_mip_data = cur_mip_data;
-					prev_mip_size = cur_mip_size;
 					w >>= 1;
 					h >>= 1;
 				}

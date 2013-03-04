@@ -1420,7 +1420,7 @@ void LLView::updateBoundingRect()
 {
 	if (isDead()) return;
 
-	LLRect cur_rect = mBoundingRect;
+	//LLRect cur_rect = mBoundingRect;
 
 	if (getUseBoundingRect())
 	{

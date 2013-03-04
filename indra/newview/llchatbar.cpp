@@ -430,8 +430,6 @@ void LLChatBar::sendChat( EChatType type )
 			{
 				if (gSavedSettings.getBOOL("AscentAutoCloseOOC") && (utf8text.length() > 1))
 				{
-					// Chalice - OOC autoclosing patch based on code by Henri Beauchamp
-					int needsClosingType=0;
 					//Check if it needs the end-of-chat brackets -HgB
 					if (utf8text.find("((") == 0 && utf8text.find("))") == -1)
 					{
@@ -445,8 +443,7 @@ void LLChatBar::sendChat( EChatType type )
 							utf8text+=" ";
 						utf8text+="]]";
 					}
-					//Check if it needs the start-of-chat brackets -HgB
-					needsClosingType=0;
+
 					if (utf8text.find("((") == -1 && utf8text.find("))") == (utf8text.length() - 2))
 					{
 						if(utf8text.at(0) == '(')

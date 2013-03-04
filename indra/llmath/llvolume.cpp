@@ -2141,7 +2141,7 @@ BOOL LLVolume::generate()
 		mLODScaleBias.setVec(0.6f, 0.6f, 0.6f);
 	}
 	
-	// ********************************************************************
+	//********************************************************************
 	//debug info, to be removed
 	if((U32)(mPathp->mPath.size() * mProfilep->mProfile.size()) > (1u << 20))
 	{
@@ -2153,7 +2153,7 @@ BOOL LLVolume::generate()
 
 		llerrs << "LLVolume corrupted!" << llendl ;
 	}
-	// ********************************************************************
+	//********************************************************************
 
 	BOOL regenPath = mPathp->generate(mParams.getPathParams(), path_detail, split);
 	BOOL regenProf = mProfilep->generate(mParams.getProfileParams(), mPathp->isOpen(),profile_detail, split);
@@ -2163,7 +2163,7 @@ BOOL LLVolume::generate()
 		S32 sizeS = mPathp->mPath.size();
 		S32 sizeT = mProfilep->mProfile.size();
 
-		// ********************************************************************
+		//********************************************************************
 		//debug info, to be removed
 		if((U32)(sizeS * sizeT) > (1u << 20))
 		{
@@ -2176,7 +2176,7 @@ BOOL LLVolume::generate()
 
 			llerrs << "LLVolume corrupted!" << llendl ;
 		}
-		// ********************************************************************
+		//********************************************************************
 
 		sNumMeshPoints -= mMesh.size();
 		mMesh.resize(sizeT * sizeS);

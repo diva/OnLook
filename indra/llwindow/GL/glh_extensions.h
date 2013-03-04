@@ -1,5 +1,7 @@
 /*
  *  glh_extensions.h
+ * $LicenseInfo:firstyear=2006&license=mit$ (mit used here to satisfy validity checker)
+ * Copyright (C) 2006, NVIDIA
  *  From nVidia Corporation, downloaded 2006-12-18 from:
  *  http://developer.nvidia.com/attach/8196
  *  ("NVParse Library with Source (.zip) (2390 KB)")
@@ -8,6 +10,8 @@
  *  "The files bison.exe, bison.simple, and flex.exe are covered by
  *  the GPL.  All other files in this distribution can be used however
  *  you want."
+ * $/LicenseInfo$
+
  */
 
 #ifndef GLH_EXTENSIONS
@@ -109,7 +113,7 @@ static const char* EatNonWhiteSpace(const char *str)
 int glh_init_extensions(const char *origReqExts)
 {
 	// Length of requested extensions string
-	unsigned reqExtsLen;
+	//unsigned reqExtsLen;
 	char *reqExts;
 	// Ptr for individual extensions within reqExts
 	char *reqExt;
@@ -151,8 +155,8 @@ int glh_init_extensions(const char *origReqExts)
 		return TRUE;
 	}
 	reqExts = strdup(origReqExts);
-	reqExtsLen = (S32)strlen(reqExts);
 	/*
+	reqExtsLen = (S32)strlen(reqExts);
 	if (NULL == gGLHExts.mUnsupportedExts)
 	{
 		gGLHExts.mUnsupportedExts = (char*)malloc(reqExtsLen + 1);

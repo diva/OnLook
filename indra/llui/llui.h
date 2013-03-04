@@ -348,8 +348,10 @@ public:
 	// even if their constructors have side effects
 	void reference()
 	{
+#if LL_WINDOWS
 		S32 dummy;
 		dummy = 0;
+#endif /*LL_WINDOWS*/
 	}
 };
 
