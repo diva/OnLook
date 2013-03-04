@@ -32,6 +32,7 @@
  */
 
 #include "llviewerprecompiledheaders.h"
+#include "lfsimfeaturehandler.h"
 #include "llalertdialog.h"
 #include "llcheckboxctrl.h"
 #include "llfloaterperms.h"
@@ -63,8 +64,8 @@ namespace
 			}
 			if (!value) // If any of these are unchecked, export can no longer be checked.
 				view->childSetEnabled("everyone_export", false);
-			else // TODO: Implement Simulator Feature for Export.
-				view->childSetEnabled("everyone_export", /*simSupportsExport() &&*/ (LLFloaterPerms::getNextOwnerPerms() & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED);
+			else
+				view->childSetEnabled("everyone_export", LFSimFeatureHandler::instance().simSupportsExport() && (LLFloaterPerms::getNextOwnerPerms() & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED);
 		}
 	}
 }
@@ -78,7 +79,7 @@ BOOL LLFloaterPerms::postBuild()
 {
 	//handle_checkboxes
 	{
-		bool export_support = true; //simSupportsExport(); // TODO: Implement Simulator Feature for Export.
+		bool export_support = LFSimFeatureHandler::instance().simSupportsExport();
 		const U32 next_owner_perms = getNextOwnerPerms();
 		childSetEnabled("everyone_export", export_support && (next_owner_perms & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED);
 		if (!next_owner_perms & PERM_COPY)
@@ -165,7 +166,7 @@ U32 LLFloaterPerms::getGroupPerms(std::string prefix)
 U32 LLFloaterPerms::getEveryonePerms(std::string prefix)
 {
 	U32 flags = PERM_NONE;
-	if (prefix.empty() && gSavedPerAccountSettings.getBOOL("EveryoneExport")) // TODO: Bulk enable export?
+	if (LFSimFeatureHandler::instance().simSupportsExport() && prefix.empty() && gSavedPerAccountSettings.getBOOL("EveryoneExport")) // TODO: Bulk enable export?
 		flags |= PERM_EXPORT;
 	if (gSavedSettings.getBOOL(prefix+"EveryoneCopy"))
 		flags |= PERM_COPY;

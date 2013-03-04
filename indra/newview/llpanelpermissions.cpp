@@ -68,6 +68,7 @@
 #include "roles_constants.h"
 #include "lltrans.h"
 
+#include "lfsimfeaturehandler.h"
 #include "hippogridmanager.h"
 
 
@@ -137,6 +138,9 @@ BOOL LLPanelPermissions::postBuild()
 	{
 		mLabelGroupName = NULL;
 	}
+
+	if (!gHippoGridManager->getCurrentGrid()->isSecondLife())
+		LFSimFeatureHandler::instance().setSupportsExportCallback(boost::bind(&LLPanelPermissions::refresh, this));
 
 	return TRUE;
 }
@@ -606,6 +610,7 @@ void LLPanelPermissions::refresh()
 									  &next_owner_mask_on,
 									  &next_owner_mask_off);
 
+	bool supports_export = LFSimFeatureHandler::instance().simSupportsExport();
 	
 	if( gSavedSettings.getBOOL("DebugPermissions") )
 	{
@@ -615,6 +620,8 @@ void LLPanelPermissions::refresh()
 		{
 			perm_string = "B: ";
 			perm_string += mask_to_string(base_mask_on);
+			if (!supports_export && base_mask_on & PERM_EXPORT) // Hide Export when not available
+				perm_string.erase(perm_string.find_last_of("E"));
 			if (U32 diff_mask = base_mask_on ^ owner_mask_on) // When different, show the user's potential permissions lowercase.
 			{
 				if (diff_mask & PERM_MOVE)
@@ -633,6 +640,8 @@ void LLPanelPermissions::refresh()
 			
 			perm_string = "O: ";
 			perm_string += mask_to_string(owner_mask_on);
+			if (!supports_export && owner_mask_on & PERM_EXPORT) // Hide Export when not available
+				perm_string.erase(perm_string.find_last_of("E"));
 			childSetText("O:",perm_string);
 			childSetVisible("O:",true);
 			
@@ -643,6 +652,8 @@ void LLPanelPermissions::refresh()
 			
 			perm_string = "E: ";
 			perm_string += mask_to_string(everyone_mask_on);
+			if (!supports_export && everyone_mask_on & PERM_EXPORT) // Hide Export when not available
+				perm_string.erase(perm_string.find_last_of("E"));
 			childSetText("E:",perm_string);
 			childSetVisible("E:",true);
 			
@@ -708,7 +719,7 @@ void LLPanelPermissions::refresh()
 	}
 
 	// Is this user allowed to toggle export on this object?
-	if (self_owned && mCreatorID == mOwnerID/* && simSupportsExport()*/ //TODO: Implement Simulator Feature for Export.
+	if (supports_export && self_owned && mCreatorID == mOwnerID
 	&& (base_mask_on & PERM_EXPORT && owner_mask_on & PERM_EXPORT && (next_owner_mask_on & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED)) //Base and Owner must have EXPORT, Next Owner must be UNRESTRICTED
 	{
 		bool can_export = true;
@@ -736,7 +747,9 @@ void LLPanelPermissions::refresh()
 		childSetEnabled("checkbox allow export", can_export);
 	}
 	else
+	{
 		childSetEnabled("checkbox allow export", false);
+	}
 
 	if (has_change_sale_ability && (owner_mask_on & PERM_TRANSFER))
 	{
@@ -822,12 +835,14 @@ void LLPanelPermissions::refresh()
 		}
 
 		// Export
+		if (supports_export)
+		{
 		if(everyone_mask_on & PERM_EXPORT)
 		{
 			childSetValue("checkbox allow export", true);
 			childSetTentative("checkbox allow export", false);
 		}
-		else if(everyone_mask_on & PERM_EXPORT)
+			else if(everyone_mask_off & PERM_EXPORT)
 		{
 			childSetValue("checkbox allow export", false);
 			childSetTentative("checkbox allow export", false);
@@ -836,6 +851,12 @@ void LLPanelPermissions::refresh()
 		{
 			childSetValue("checkbox allow export", true);
 			childSetTentative("checkbox allow export", true);
+			}
+		}
+		else
+		{
+			childSetValue("checkbox allow export", false);
+			childSetTentative("checkbox allow export", false);
 		}
 	}
 

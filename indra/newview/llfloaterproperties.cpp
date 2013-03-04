@@ -60,6 +60,7 @@
 
 #include "lluictrlfactory.h"
 
+#include "lfsimfeaturehandler.h"
 #include "hippogridmanager.h"
 
 
@@ -198,6 +199,8 @@ LLFloaterProperties::LLFloaterProperties(const std::string& name, const LLRect& 
 	childSetCommitCallback("CheckEveryoneCopy",&onCommitPermissions, this);
 	childSetCommitCallback("CheckEveryoneMove",&onCommitPermissions, this);
 	childSetCommitCallback("CheckExport", &onCommitPermissions, this);
+	if (!gHippoGridManager->getCurrentGrid()->isSecondLife())
+		LFSimFeatureHandler::instance().setSupportsExportCallback(boost::bind(&LLFloaterProperties::refresh, this));
 	// next owner permissions
 	childSetCommitCallback("CheckNextOwnerModify",&onCommitPermissions, this);
 	childSetCommitCallback("CheckNextOwnerCopy",&onCommitPermissions, this);
@@ -439,8 +442,10 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 	childSetValue("CheckOwnerCopy",LLSD((BOOL)(owner_mask & PERM_COPY)));
 	childSetEnabled("CheckOwnerTransfer",FALSE);
 	childSetValue("CheckOwnerTransfer",LLSD((BOOL)(owner_mask & PERM_TRANSFER)));
+
+	bool supports_export = LFSimFeatureHandler::instance().simSupportsExport();
 	childSetEnabled("CheckOwnerExport",false);
-	childSetValue("CheckOwnerExport", (bool)(owner_mask & PERM_EXPORT));
+	childSetValue("CheckOwnerExport", supports_export && owner_mask & PERM_EXPORT);
 
 	///////////////////////
 	// DEBUG PERMISSIONS //
@@ -464,11 +469,15 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 
 		perm_string = "B: ";
 		perm_string += mask_to_string(base_mask);
+		if (!supports_export && base_mask & PERM_EXPORT) // Hide Export when not available
+			perm_string.erase(perm_string.find_last_of("E"));
 		childSetText("BaseMaskDebug",perm_string);
 		childSetVisible("BaseMaskDebug",TRUE);
 		
 		perm_string = "O: ";
 		perm_string += mask_to_string(owner_mask);
+		if (!supports_export && owner_mask & PERM_EXPORT) // Hide Export when not available
+			perm_string.erase(perm_string.find_last_of("E"));
 		childSetText("OwnerMaskDebug",perm_string);
 		childSetVisible("OwnerMaskDebug",TRUE);
 		
@@ -481,6 +490,8 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 		perm_string = "E";
 		perm_string += overwrite_everyone ? "*: " : ": ";
 		perm_string += mask_to_string(everyone_mask);
+		if (!supports_export && everyone_mask & PERM_EXPORT) // Hide Export when not available
+			perm_string.erase(perm_string.find_last_of("E"));
 		childSetText("EveryoneMaskDebug",perm_string);
 		childSetVisible("EveryoneMaskDebug",TRUE);
 		
@@ -524,7 +535,7 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 		childSetEnabled("CheckEveryoneCopy",false);
 		childSetEnabled("CheckEveryoneMove",false);
 	}
-	childSetEnabled("CheckExport", /*simSupportsExport() &&*/ item->getType() != LLAssetType::AT_OBJECT && gAgent.getID() == item->getCreatorUUID() //TODO: Implement Simulator Feature for Export.
+	childSetEnabled("CheckExport", supports_export && item->getType() != LLAssetType::AT_OBJECT && gAgent.getID() == item->getCreatorUUID()
 									&& !(base_mask & PERM_EXPORT && owner_mask & PERM_EXPORT && next_owner_mask & PERM_ITEM_UNRESTRICTED));
 
 	// Set values.
@@ -538,7 +549,7 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 	
 	childSetValue("CheckEveryoneCopy",LLSD((BOOL)(everyone_mask & PERM_COPY)));
 	childSetValue("CheckEveryoneMove",LLSD((BOOL)(everyone_mask & PERM_MOVE)));
-	childSetValue("CheckExport", (bool)(everyone_mask & PERM_EXPORT));
+	childSetValue("CheckExport", supports_export && everyone_mask & PERM_EXPORT);
 
 	///////////////
 	// SALE INFO //
