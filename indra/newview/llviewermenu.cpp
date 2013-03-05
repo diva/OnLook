@@ -250,8 +250,6 @@
 #include "lltexlayer.h"
 
 // <edit>
-#include "llfloatervfs.h"
-#include "llfloatervfsexplorer.h"
 #include "llfloatermessagelog.h"
 #include "shfloatermediaticker.h"
 #include "llpacketring.h"
@@ -501,8 +499,6 @@ void handle_hide_typing_notification(void*);
 void handle_close_all_notifications(void*);
 void handle_open_message_log(void*);
 void handle_edit_ao(void*);
-void handle_local_assets(void*);
-void handle_vfs_explorer(void*);
 void handle_sounds_explorer(void*);
 void handle_blacklist(void*);
 // </edit>
@@ -3799,16 +3795,6 @@ void handle_open_message_log(void*)
 void handle_edit_ao(void*)
 {
 	LLFloaterAO::show(NULL);
-}
-
-void handle_local_assets(void*)
-{
-
-}
-
-void handle_vfs_explorer(void*)
-{
-
 }
 
 void handle_sounds_explorer(void*)

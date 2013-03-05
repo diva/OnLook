@@ -256,8 +256,6 @@ set(viewer_SOURCE_FILES
     llfloatertos.cpp
     llfloaterurldisplay.cpp
     llfloaterurlentry.cpp
-    llfloatervfs.cpp
-    llfloatervfsexplorer.cpp
     llfloatervoicedevicesettings.cpp
     llfloaterwater.cpp
     llfloaterwindlight.cpp
@@ -757,8 +755,6 @@ set(viewer_HEADER_FILES
     llfloatertos.h
     llfloaterurldisplay.h
     llfloaterurlentry.h
-    llfloatervfs.h
-    llfloatervfsexplorer.h
     llfloatervoicedevicesettings.h
     llfloaterwater.h
     llfloaterwindlight.h
