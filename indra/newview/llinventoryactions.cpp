@@ -95,9 +95,6 @@
 
 // <edit>
 #include "lllocalinventory.h"
-#include "llinventorybackup.h"
-//#include "llcheats.h"
-//#include "llnotecardmagic.h"
 #include "statemachine/aifilepicker.h"
 // </edit>
 

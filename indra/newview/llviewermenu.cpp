@@ -250,7 +250,6 @@
 #include "lltexlayer.h"
 
 // <edit>
-#include "hgfloatertexteditor.h"
 #include "llfloatervfs.h"
 #include "llfloatervfsexplorer.h"
 #include "llfloatermessagelog.h"

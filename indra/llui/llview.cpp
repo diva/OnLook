@@ -59,10 +59,6 @@
 #include "lltextbox.h"
 #include "llfasttimer.h"
 
-// <edit>
-#include "lldelayeduidelete.h"
-// </edit>
-
 using namespace LLOldEvents;
 
 //HACK: this allows you to instantiate LLView from xml with "<view/>" which we don't want

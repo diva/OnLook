@@ -93,7 +93,6 @@ set(viewer_SOURCE_FILES
     floaterlocalassetbrowse.cpp
     floatervoicelicense.cpp
     hbfloatergrouptitles.cpp
-    hgfloatertexteditor.cpp
     hippofloaterxml.cpp
     hippogridmanager.cpp
     hippolimits.cpp
@@ -122,7 +121,6 @@ set(viewer_SOURCE_FILES
     llaudiosourcevo.cpp
     llavatarpropertiesprocessor.cpp
     llbox.cpp
-    llbuildnewviewsscheduler.cpp
     llcallbacklist.cpp
     llcallingcard.cpp
     llcapabilitylistener.cpp
@@ -293,7 +291,6 @@ set(viewer_SOURCE_FILES
     llimpanel.cpp
     llimview.cpp
     llinventoryactions.cpp
-    llinventorybackup.cpp
     llinventorybridge.cpp
     llinventoryclipboard.cpp
     llinventoryfilter.cpp
@@ -595,7 +592,6 @@ set(viewer_HEADER_FILES
     floaterlocalassetbrowse.h
     floatervoicelicense.h
     hbfloatergrouptitles.h
-    hgfloatertexteditor.h
     hippofloaterxml.h
     hippogridmanager.h
     hippolimits.h
@@ -625,7 +621,6 @@ set(viewer_HEADER_FILES
     llaudiosourcevo.h
     llavatarpropertiesprocessor.h
     llbox.h
-    llbuildnewviewsscheduler.h
     llcallbacklist.h
     llcallingcard.h
     llcapabilitylistener.h
@@ -795,7 +790,6 @@ set(viewer_HEADER_FILES
     llhudview.h
     llimpanel.h
     llimview.h
-    llinventorybackup.h
     llinventorybridge.h
     llinventoryclipboard.h
     llinventoryfilter.h

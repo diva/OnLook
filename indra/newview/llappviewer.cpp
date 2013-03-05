@@ -117,8 +117,6 @@
 #include "llimageworker.h"
 
 // <edit>
-#include "lldelayeduidelete.h"
-#include "llbuildnewviewsscheduler.h"
 #include "aicurleasyrequeststatemachine.h"
 #include "aihttptimeoutpolicy.h"
 // </edit>
@@ -641,9 +639,6 @@ bool LLAppViewer::init()
 	// Logging is initialized. Now it's safe to start the error thread.
 	startErrorThread();
 
-	gDeleteScheduler = new LLDeleteScheduler();
-	gBuildNewViewsScheduler = new LLBuildNewViewsScheduler();
-	// </edit>
 	//
 	// OK to write stuff to logs now, we've now crash reported if necessary
 	//

@@ -11,7 +11,6 @@
 #include "llpreviewtexture.h"
 #include "llpreviewgesture.h"
 #include "llpreviewlandmark.h"
-#include "hgfloatertexteditor.h"
 
 #include "llappviewer.h"
 
