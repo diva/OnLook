@@ -186,15 +186,6 @@ class WindowsManifest(ViewerManifest):
                                'llplugin', 'slplugin', self.args['configuration'], "SLPlugin.exe"),
                   "SLPlugin.exe")
 
-        # need to get the kdu dll from any of the build directories as well
-        #~ try:
-            #~ self.path(self.find_existing_file('../llkdu/%s/llkdu.dll' % self.args['configuration'],
-            #~ '../../libraries/i686-win32/lib/release/llkdu.dll'),
-                  #~ dst='llkdu.dll')
-            #~ pass
-        #~ except:
-            #~ print "Skipping llkdu.dll"
-            #~ pass
         self.path(src="licenses-win32.txt", dst="licenses.txt")
 
         self.path("featuretable.txt")

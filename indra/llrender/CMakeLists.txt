@@ -26,8 +26,8 @@ include_directories(
 set(llrender_SOURCE_FILES
     llcubemap.cpp
     llfont.cpp
-    llfontgl.cpp
     llfontbitmapcache.cpp
+    llfontgl.cpp
     llfontregistry.cpp
     llgl.cpp
     llgldbg.cpp
@@ -49,9 +49,9 @@ set(llrender_HEADER_FILES
     CMakeLists.txt
 
     llcubemap.h
-    llfontgl.h
     llfont.h
     llfontbitmapcache.h
+    llfontgl.h
     llfontregistry.h
     llgl.h
     llgldbg.h

@@ -35,9 +35,9 @@ include_directories(
 set(llwindow_SOURCE_FILES
     llkeyboard.cpp
     llkeyboardheadless.cpp
-    llwindowheadless.cpp
-    llwindowcallbacks.cpp
     llwindow.cpp
+    llwindowcallbacks.cpp
+    llwindowheadless.cpp
     )
 
 set(llwindow_HEADER_FILES
@@ -45,8 +45,8 @@ set(llwindow_HEADER_FILES
 
     llkeyboard.h
     llkeyboardheadless.h
-    llwindowheadless.h
     llwindowcallbacks.h
+    llwindowheadless.h
     )
 
 set(viewer_SOURCE_FILES
@@ -54,9 +54,9 @@ set(viewer_SOURCE_FILES
     )
 
 set(viewer_HEADER_FILES
-    llwindow.h
-    llpreeditor.h
     llmousehandler.h
+    llpreeditor.h
+    llwindow.h
     )
 
 # Libraries on which this library depends, needed for Linux builds
@@ -111,16 +111,16 @@ endif (DARWIN)
 
 if (WINDOWS)
   list(APPEND llwindow_SOURCE_FILES
-       llwindowwin32.cpp
+       lldragdropwin32.cpp
        lldxhardware.cpp
        llkeyboardwin32.cpp
-       lldragdropwin32.cpp
+       llwindowwin32.cpp
        )
   list(APPEND llwindow_HEADER_FILES
-       llwindowwin32.h
+       lldragdropwin32.h
        lldxhardware.h
        llkeyboardwin32.h
-       lldragdropwin32.h
+       llwindowwin32.h
        )
   list(APPEND llwindow_LINK_LIBRARIES
        comdlg32     # Common Dialogs for ChooseColor

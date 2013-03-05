@@ -72,9 +72,9 @@ set(llui_SOURCE_FILES
     lluictrlfactory.cpp
     lluistring.cpp
     llundo.cpp
+    llview.cpp
     llviewborder.cpp
     llviewmodel.cpp
-    llview.cpp
     llviewquery.cpp
     )
     
@@ -103,8 +103,8 @@ set(llui_HEADER_FILES
     llmenugl.h
     llmodaldialog.h
     llmultifloater.h 
-    llmultisliderctrl.h
     llmultislider.h
+    llmultisliderctrl.h
     llnotificationptr.h
     llnotifications.h
     llnotificationsutil.h
@@ -120,8 +120,8 @@ set(llui_HEADER_FILES
     llscrollcontainer.h
     llscrollingpanellist.h
     llscrolllistctrl.h
-    llsliderctrl.h
     llslider.h
+    llsliderctrl.h
     llspinctrl.h
     llstyle.h
     lltabcontainer.h
@@ -129,18 +129,18 @@ set(llui_HEADER_FILES
     lltexteditor.h
     lltextparser.h
     lltrans.h
-    lluiconstants.h
-    lluictrlfactory.h
-    lluictrl.h
-    lluifwd.h
     llui.h
     lluicolor.h
+    lluiconstants.h
+    lluictrl.h
+    lluictrlfactory.h
+    lluifwd.h
     lluistring.h
     lluixmltags.h
     llundo.h
+    llview.h
     llviewborder.h
     llviewmodel.h
-    llview.h
     llviewquery.h
     )
 
