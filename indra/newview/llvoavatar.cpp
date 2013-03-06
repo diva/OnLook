@@ -7419,7 +7419,11 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 	ESex old_sex = getSex();
 
 	LLTEContents tec;
-	parseTEMessage(mesgsys, _PREHASH_ObjectData, -1, tec);
+	if (!parseTEMessage(mesgsys, _PREHASH_ObjectData, -1, tec))
+	{
+	  llwarns << avString() << "Failed to parse ObjectData" << llendl;
+	  return;
+	}
 
 	U8 appearance_version = 0;
 	S32 this_update_cof_version = LLViewerInventoryCategory::VERSION_UNKNOWN;
