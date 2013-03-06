@@ -299,8 +299,6 @@ protected:
 	LLPointer<SpeakerClearListener> mSpeakerClearListener;
 
 	CachedUICtrl<LLUICtrl> mVolumeSlider;
-	CachedUICtrl<LLCheckBoxCtrl> mModeratorAllowVoiceCheckbox;
-	CachedUICtrl<LLCheckBoxCtrl> mModeratorAllowTextCheckbox;
 };
 
 

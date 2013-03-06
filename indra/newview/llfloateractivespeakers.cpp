@@ -338,15 +338,9 @@ BOOL LLPanelActiveSpeakers::postBuild()
 		childSetAction("profile_btn", onClickProfile, this);
 
 	if (findChild<LLUICtrl>("moderator_allow_voice"))
-	{
 		childSetCommitCallback("moderator_allow_voice", onModeratorMuteVoice, this);
-		mModeratorAllowVoiceCheckbox.connect(this,"moderator_allow_voice");
-	}
 	if (findChild<LLUICtrl>("moderator_allow_text"))
-	{
 		childSetCommitCallback("moderator_allow_text", onModeratorMuteText, this);
-		mModeratorAllowTextCheckbox.connect(this,"moderator_allow_text");
-	}
 	if (findChild<LLUICtrl>("moderator_mode"))
 		childSetCommitCallback("moderation_mode", onChangeModerationMode, this);
 
@@ -635,13 +629,11 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 	if (LLView* view = findChild<LLView>("moderator_controls_label"))
 		view->setEnabled(selected_id.notNull());
 
-	mModeratorAllowVoiceCheckbox->setEnabled(
-		selected_id.notNull() 
-		&& mSpeakerMgr->isVoiceActive()
-		&& gVoiceClient->getVoiceEnabled(selected_id));
+	if (LLView* view = findChild<LLView>("moderator_allow_voice"))
+		view->setEnabled(selected_id.notNull() && mSpeakerMgr->isVoiceActive() && gVoiceClient->getVoiceEnabled(selected_id));
 
-	mModeratorAllowTextCheckbox->setEnabled(
-		selected_id.notNull());
+	if (LLView* view = findChild<LLView>("moderator_allow_text"))
+		view->setEnabled(selected_id.notNull());
 
 	if (mProfileBtn)
 	{
