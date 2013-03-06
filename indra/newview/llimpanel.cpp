@@ -1969,7 +1969,7 @@ void LLFloaterIMPanel::onClickSend(void* userdata)
 
 void LLFloaterIMPanel::onClickToggleActiveSpeakers(const LLSD& value)
 {
-	childSetVisible("active_speakers_panel", value);
+	childSetVisible("active_speakers_panel", !value);
 }
 
 // static
