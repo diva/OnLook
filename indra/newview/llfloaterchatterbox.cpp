@@ -272,7 +272,7 @@ void LLFloaterChatterBox::addFloater(LLFloater* floaterp,
 	{
 		mTabContainer->unlockTabs();
 		// add chat history as second tab if contact window is present, first tab otherwise
-		if (getChildView("floater_my_friends"))
+		if (findChild<LLView>("floater_my_friends"))
 		{
 			// assuming contacts window is first tab, select it
 			mTabContainer->selectFirstTab();

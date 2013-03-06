@@ -197,9 +197,7 @@ mSquareMetersCommitted(0)
 	mSGBandwidth = new LLStatGraph("BandwidthGraph", r);
 	mSGBandwidth->setFollows(FOLLOWS_BOTTOM | FOLLOWS_RIGHT);
 	mSGBandwidth->setStat(&LLViewerStats::getInstance()->mKBitStat);
-	std::string text = childGetText("bandwidth_tooltip") + " ";
-	LLUIString bandwidth_tooltip = text;	// get the text from XML until this widget is XML driven
-	mSGBandwidth->setLabel(bandwidth_tooltip.getString());
+	mSGBandwidth->setLabel(getString("bandwidth_tooltip") + " ");
 	mSGBandwidth->setUnits("Kbps");
 	mSGBandwidth->setPrecision(0);
 	mSGBandwidth->setMouseOpaque(FALSE);
@@ -210,9 +208,7 @@ mSquareMetersCommitted(0)
 	mSGPacketLoss = new LLStatGraph("PacketLossPercent", r);
 	mSGPacketLoss->setFollows(FOLLOWS_BOTTOM | FOLLOWS_RIGHT);
 	mSGPacketLoss->setStat(&LLViewerStats::getInstance()->mPacketsLostPercentStat);
-	text = childGetText("packet_loss_tooltip") + " ";
-	LLUIString packet_loss_tooltip = text;	// get the text from XML until this widget is XML driven
-	mSGPacketLoss->setLabel(packet_loss_tooltip.getString());
+	mSGPacketLoss->setLabel(getString("packet_loss_tooltip") + " ");
 	mSGPacketLoss->setUnits("%");
 	mSGPacketLoss->setMin(0.f);
 	mSGPacketLoss->setMax(5.f);

@@ -324,29 +324,33 @@ BOOL LLPanelActiveSpeakers::postBuild()
 	mSpeakerList->setSortChangedCallback(boost::bind(&LLPanelActiveSpeakers::onSortChanged,this));
 	mSpeakerList->setCallbackUserData(this);
 
-	mMuteTextCtrl = getChild<LLUICtrl>("mute_text_btn");
-	childSetCommitCallback("mute_text_btn", onClickMuteTextCommit, this);
+	if ((mMuteTextCtrl = findChild<LLUICtrl>("mute_text_btn")))
+		childSetCommitCallback("mute_text_btn", onClickMuteTextCommit, this);
 
 	mMuteVoiceCtrl = getChild<LLUICtrl>("mute_btn");
 	childSetCommitCallback("mute_btn", onClickMuteVoiceCommit, this);
 
 	childSetCommitCallback("speaker_volume", onVolumeChange, this);
 
-	mNameText = getChild<LLTextBox>("resident_name");
+	mNameText = findChild<LLTextBox>("resident_name");
 	
-	mProfileBtn = getChild<LLButton>("profile_btn");
-	childSetAction("profile_btn", onClickProfile, this);
+	if ((mProfileBtn = findChild<LLButton>("profile_btn")))
+		childSetAction("profile_btn", onClickProfile, this);
 
-	childSetCommitCallback("moderator_allow_voice", onModeratorMuteVoice, this);
-	childSetCommitCallback("moderator_allow_text", onModeratorMuteText, this);
-	childSetCommitCallback("moderation_mode", onChangeModerationMode, this);
+	if (findChild<LLUICtrl>("moderator_allow_voice"))
+	{
+		childSetCommitCallback("moderator_allow_voice", onModeratorMuteVoice, this);
+		mModeratorAllowVoiceCheckbox.connect(this,"moderator_allow_voice");
+	}
+	if (findChild<LLUICtrl>("moderator_allow_text"))
+	{
+		childSetCommitCallback("moderator_allow_text", onModeratorMuteText, this);
+		mModeratorAllowTextCheckbox.connect(this,"moderator_allow_text");
+	}
+	if (findChild<LLUICtrl>("moderator_mode"))
+		childSetCommitCallback("moderation_mode", onChangeModerationMode, this);
 
 	mVolumeSlider.connect(this,"speaker_volume");
-	mModeratorCtrlLbl.connect(this,"moderator_controls_label");
-	mModeratorAllowVoiceCheckbox.connect(this,"moderator_allow_voice");
-	mModeratorAllowTextCheckbox.connect(this,"moderator_allow_text");
-	mModeratorModePanel.connect(this,"moderation_mode_panel");
-	mModeratorControlsPanel.connect(this,"moderator_controls");
 
 	// update speaker UI
 	handleSpeakerSelect();
@@ -628,7 +632,8 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 					&& selected_id != gAgent.getID() 
 					&& (selected_speakerp.notNull() && (selected_speakerp->mType == LLSpeaker::SPEAKER_AGENT || selected_speakerp->mType == LLSpeaker::SPEAKER_EXTERNAL)));
 
-	mModeratorCtrlLbl->setEnabled(selected_id.notNull());
+	if (LLView* view = findChild<LLView>("moderator_controls_label"))
+		view->setEnabled(selected_id.notNull());
 
 	mModeratorAllowVoiceCheckbox->setEnabled(
 		selected_id.notNull() 
@@ -660,8 +665,10 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 	LLPointer<LLSpeaker> self_speakerp = mSpeakerMgr->findSpeaker(gAgent.getID());
 	if(self_speakerp)
 	{
-		mModeratorModePanel->setVisible(self_speakerp->mIsModerator && mSpeakerMgr->isVoiceActive());
-		mModeratorControlsPanel->setVisible(self_speakerp->mIsModerator);
+		if (LLView* view = findChild<LLView>("moderation_mode_panel"))
+			view->setVisible(self_speakerp->mIsModerator && mSpeakerMgr->isVoiceActive());
+		if (LLView* view = findChild<LLView>("moderator_controls"))
+			view->setVisible(self_speakerp->mIsModerator);
 	}
 
 	// keep scroll value stable

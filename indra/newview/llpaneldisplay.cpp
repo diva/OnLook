@@ -107,9 +107,6 @@ BOOL LLPanelDisplay::postBuild()
 	// return to default values
 	childSetAction("Defaults", setHardwareDefaults, NULL);
 	
-	// Help button
-	childSetAction("GraphicsPreferencesHelpButton", onOpenHelp, this);
-
 	//============================================================================
 	// Resolution
 	
@@ -120,7 +117,6 @@ BOOL LLPanelDisplay::postBuild()
 	mCtrlWindowed->setCallbackUserData(this);
 
 	mAspectRatioLabel1 = getChild<LLTextBox>("AspectRatioLabel1");
-	mFullScreenInfo = getChild<LLTextEditor>("FullScreenInfo");
 	mDisplayResLabel = getChild<LLTextBox>("DisplayResLabel");
 
 	S32 num_resolutions = 0;
@@ -218,7 +214,7 @@ BOOL LLPanelDisplay::postBuild()
 	mCtrlCustomSettings->setCommitCallback(onChangeCustom);
 	mCtrlCustomSettings->setCallbackUserData(this);
 
-	mGraphicsBorder = getChild<LLViewBorder>("GraphicsBorder");
+	//mGraphicsBorder = getChild<LLViewBorder>("GraphicsBorder");
 
 	// Enable Transparent Water
 	mCtrlTransparentWater = getChild<LLCheckBoxCtrl>("TransparentWater");
@@ -350,7 +346,6 @@ BOOL LLPanelDisplay::postBuild()
 	mReflectionText = getChild<LLTextBox>("ReflectionDetailText");
 	mAvatarText = getChild<LLTextBox>("AvatarRenderingText");
 	mTerrainText = getChild<LLTextBox>("TerrainDetailText");
-	mLightingText = getChild<LLTextBox>("LightingDetailText");
 	mMeshDetailText = getChild<LLTextBox>("MeshDetailText");
 	mShadowDetailText = getChild<LLTextBox>("ShadowDetailText");
 	mTerrainScaleText = getChild<LLTextBox>("TerrainScaleText");
@@ -486,7 +481,6 @@ void LLPanelDisplay::refreshEnabledState()
 	mCtrlAspectRatio->setVisible(isFullScreen);
 	mAspectRatioLabel1->setVisible(isFullScreen);
 	mCtrlAutoDetectAspect->setVisible(isFullScreen);
-	mFullScreenInfo->setVisible(!isFullScreen);
 	mWindowSizeLabel->setVisible(!isFullScreen);
 	mCtrlWindowSize->setVisible(!isFullScreen);
 
@@ -713,7 +707,7 @@ void LLPanelDisplay::disableUnavailableSettings()
 void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 {
 	// quick check
-	llassert(mGraphicsBorder != NULL);
+	//llassert(mGraphicsBorder != NULL);
 
 	llassert(mCtrlDrawDistance != NULL);
 	llassert(mCtrlLODFactor != NULL);
@@ -753,13 +747,12 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	llassert(mReflectionText != NULL);
 	llassert(mTerrainScaleText != NULL);
 	llassert(mAvatarText != NULL);
-	llassert(mLightingText != NULL);
 	llassert(mTerrainText != NULL);
 	llassert(mDrawDistanceMeterText1 != NULL);
 	llassert(mDrawDistanceMeterText2 != NULL);
 
 	// enable/disable the states
-	mGraphicsBorder->setVisible(!isHidden);
+	//mGraphicsBorder->setVisible(!isHidden);
 	/* 
 	LLColor4 light(.45098f, .51765f, .6078f, 1.0f);
 	LLColor4 dark(.10196f, .10196f, .10196f, 1.0f);
@@ -809,7 +802,6 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	mShaderText->setVisible(!isHidden);
 	mReflectionText->setVisible(!isHidden);
 	mAvatarText->setVisible(!isHidden);
-	mLightingText->setVisible(!isHidden);
 	mTerrainText->setVisible(!isHidden);
 	mDrawDistanceMeterText1->setVisible(!isHidden);
 	mDrawDistanceMeterText2->setVisible(!isHidden);
@@ -928,15 +920,6 @@ void LLPanelDisplay::onChangeQuality(LLUICtrl *ctrl, void *data)
 void LLPanelDisplay::onChangeCustom(LLUICtrl *ctrl, void *data)
 {
 	LLFloaterPreference::refreshEnabledGraphics();
-}
-
-void LLPanelDisplay::onOpenHelp(void* user_data)
-{
-	LLPanelDisplay* self = static_cast<LLPanelDisplay*>(user_data);
-
-	const char* xml_alert = "GraphicsPreferencesHelp";
-	LLFloater* parent_floater = gFloaterView->getParentFloater(self);
-	LLNotifications::instance().add(parent_floater->contextualNotification(xml_alert));
 }
 
 void LLPanelDisplay::onApplyResolution(LLUICtrl* src, void* user_data)

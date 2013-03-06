@@ -110,12 +110,11 @@ LLFloaterChat::LLFloaterChat(const LLSD& seed)
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_chat_history.xml", &getFactoryMap(), /*no_open =*/false);
 
 	childSetCommitCallback("show mutes",onClickToggleShowMute,this); //show mutes
-	childSetCommitCallback("translate chat",onClickToggleTranslateChat,this);
-	childSetValue("translate chat", gSavedSettings.getBOOL("TranslateChat"));
+	//childSetCommitCallback("translate chat",onClickToggleTranslateChat,this);
+	//childSetValue("translate chat", gSavedSettings.getBOOL("TranslateChat"));
 	childSetVisible("Chat History Editor with mute",FALSE);
 	childSetAction("toggle_active_speakers_btn", onClickToggleActiveSpeakers, this);
 	childSetAction("chat_history_open", onClickChatHistoryOpen, this);
-	setDefaultBtn("Chat");
 }
 
 LLFloaterChat::~LLFloaterChat()

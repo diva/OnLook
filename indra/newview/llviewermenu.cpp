@@ -800,10 +800,7 @@ void init_menus()
 	gMenuHolder->childSetLabelArg("Upload Sound", "[UPLOADFEE]", fee);
 	gMenuHolder->childSetLabelArg("Upload Animation", "[UPLOADFEE]", fee);
 	gMenuHolder->childSetLabelArg("Bulk Upload", "[UPLOADFEE]", fee);
-	gMenuHolder->childSetLabelArg("ImportUpload", "[UPLOADFEE]", fee);
 	gMenuHolder->childSetLabelArg("Buy and Sell L$...", "[CURRENCY]",
-		gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
-	gMenuHolder->childSetLabelArg("Reload Balance", "[CURRENCY]",
 		gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 
 	gAFKMenu = gMenuBarView->getChild<LLMenuItemCallGL>("Set Away", TRUE);

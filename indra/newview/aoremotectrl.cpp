@@ -84,8 +84,11 @@ BOOL AORemoteCtrl::postBuild()
 {
 	
 	childSetAction("ao_btn", onClickToggleAO, this);
-	childSetAction("ao_sit_btn", onClickToggleAOSit, this);
-	childSetAction("ao_show_btn", onClickShowAO, this);
+	if (gSavedSettings.getBOOL("ShowAOSitPopup"))
+	{
+		childSetAction("ao_sit_btn", onClickToggleAOSit, this);
+		//childSetAction("ao_show_btn", onClickShowAO, this);
+	}
 	childSetAction("popup_btn", onClickPopupBtn, this);
 
 	return TRUE;

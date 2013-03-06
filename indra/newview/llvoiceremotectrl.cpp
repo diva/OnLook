@@ -80,21 +80,19 @@ BOOL LLVoiceRemoteCtrl::postBuild()
 	mSpeakersBtn->setClickedCallback(boost::bind(&LLVoiceRemoteCtrl::onClickSpeakers));
 
 	childSetAction("show_channel", onClickPopupBtn, this);
-	childSetAction("end_call_btn", onClickEndCall, this);
+	if (LLButton* end_call_btn = findChild<LLButton>("end_call_btn"))
+		end_call_btn->setClickedCallback(boost::bind(&LLVoiceRemoteCtrl::onClickEndCall));
 
-	LLTextBox* text = getChild<LLTextBox>("channel_label");
+	LLTextBox* text = findChild<LLTextBox>("channel_label");
 	if (text)
 	{
 		text->setUseEllipses(TRUE);
 	}
 
-	childSetAction("voice_channel_bg", onClickVoiceChannel, this);
+	if (LLButton* voice_channel_bg = findChild<LLButton>("voice_channel_bg"))
+		voice_channel_bg->setClickedCallback(boost::bind(&LLVoiceRemoteCtrl::onClickVoiceChannel));
 
-	mEndCallBtn.connect(this,"end_call_btn");
 	mVoiceVolIcon.connect(this,"voice_volume");
-	mVoiceChanIcon.connect(this,"voice_channel_icon");
-	mVoiceChanBgBtn.connect(this,"voice_channel_bg");
-	mChanLabelTextBox.connect(this,"channel_label");
 	mShowChanBtn.connect(this,"show_channel");
 	return TRUE;
 }
@@ -168,23 +166,25 @@ void LLVoiceRemoteCtrl::draw()
 	}
 
 	LLVoiceChannel* current_channel = LLVoiceChannel::getCurrentVoiceChannel();
-	mEndCallBtn->setEnabled(LLVoiceClient::voiceEnabled() 
+	if (LLButton* end_call_btn = findChild<LLButton>("end_call_btn"))
+		end_call_btn->setEnabled(LLVoiceClient::voiceEnabled()
 								&& current_channel
 								&& current_channel->isActive()
 								&& current_channel != LLVoiceChannelProximal::getInstance());
 
-	mChanLabelTextBox->setValue(active_channel_name);
-	mVoiceChanBgBtn->setToolTip(active_channel_name);
+	if (LLTextBox* text = findChild<LLTextBox>("channel_label"))
+		text->setValue(active_channel_name);
+	LLButton* voice_channel_bg = findChild<LLButton>("voice_channel_bg");
+	if (voice_channel_bg) voice_channel_bg->setToolTip(active_channel_name);
 
 	if (current_channel)
 	{
-		LLIconCtrl* voice_channel_icon = mVoiceChanIcon;
+		LLIconCtrl* voice_channel_icon = findChild<LLIconCtrl>("voice_channel_icon");
 		if (voice_channel_icon && voice_floater)
 		{
 			voice_channel_icon->setImage(voice_floater->getString("voice_icon"));
 		}
 
-		LLButton* voice_channel_bg = mVoiceChanBgBtn;
 		if (voice_channel_bg)
 		{
 			LLColor4 bg_color;
@@ -272,7 +272,7 @@ void LLVoiceRemoteCtrl::onClickPopupBtn(void* user_data)
 }
 
 //static
-void LLVoiceRemoteCtrl::onClickEndCall(void* user_data)
+void LLVoiceRemoteCtrl::onClickEndCall()
 {
 	LLVoiceChannel* current_channel = LLVoiceChannel::getCurrentVoiceChannel();
 
@@ -289,7 +289,7 @@ void LLVoiceRemoteCtrl::onClickSpeakers()
 }
 
 //static 
-void LLVoiceRemoteCtrl::onClickVoiceChannel(void* user_data)
+void LLVoiceRemoteCtrl::onClickVoiceChannel()
 {
 	LLFloaterChatterBox::showInstance();
 }

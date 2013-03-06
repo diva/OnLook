@@ -145,7 +145,7 @@ BOOL	LLPanelObject::postBuild()
 	//--------------------------------------------------------
 	
 	// Build constant tipsheet
-	childSetAction("build_math_constants",onClickBuildConstants,this);
+	//childSetAction("build_math_constants",onClickBuildConstants,this);
 
 	// Lock checkbox
 	mCheckLock = getChild<LLCheckBoxCtrl>("checkbox locked");
@@ -471,7 +471,6 @@ void LLPanelObject::getState( )
 	BOOL enable_scale	= objectp->permMove() && !objectp->isPermanentEnforced() && ((root_objectp == NULL) || !root_objectp->isPermanentEnforced()) && objectp->permModify();
 	BOOL enable_rotate	= objectp->permMove() && !objectp->isPermanentEnforced() && ((root_objectp == NULL) || !root_objectp->isPermanentEnforced()) && ( (objectp->permModify() && !objectp->isAttachment()) || !gSavedSettings.getBOOL("EditLinkedParts"));
 
-	childSetEnabled("build_math_constants",true);
 	S32 selected_count = LLSelectMgr::getInstance()->getSelection()->getObjectCount();
 	BOOL single_volume = (LLSelectMgr::getInstance()->selectionAllPCode( LL_PCODE_VOLUME ))
 						 && (selected_count == 1);
@@ -2295,8 +2294,6 @@ void LLPanelObject::clearCtrls()
 	childSetEnabled("advanced_cut", FALSE);
 	childSetEnabled("advanced_dimple", FALSE);
 	childSetVisible("advanced_slice", FALSE);
-
-	childSetEnabled("build_math_constants",false);
 }
 
 //

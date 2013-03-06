@@ -394,22 +394,22 @@ void LLPrefsAscentSys::refresh()
     childSetValue("SinguCmdLineAway",           mCmdLineAway);
 
 	//Build -------------------------------------------------------------------------------
-	childSetValue("EmeraldBuildPrefs_Alpha",        mAlpha);
-	getChild<LLColorSwatchCtrl>("EmeraldBuildPrefs_Color")->setOriginal(mColor);
-	childSetValue("EmeraldBuildPrefs_FullBright",   mFullBright);
-	childSetValue("EmeraldBuildPrefs_Glow",         mGlow);
-	childSetValue("BuildPrefs_Material",            mMaterial);
-	childSetValue("NextOwnerCopy",                  mNextCopy);
-	childSetValue("NextOwnerModify",                mNextMod);
-	childSetValue("NextOwnerTransfer",              mNextTrans);
-	childSetValue("EmeraldBuildPrefs_Phantom",      mPhantom);
-	childSetValue("EmeraldBuildPrefs_Physical",     mPhysical);
-	childSetValue("EmeraldBuildPrefs_Shiny",        mShiny);
-	childSetValue("EmeraldBuildPrefs_Temporary",    mTemporary);
-	childSetValue("EmeraldBuildPrefs_Texture",      mTexture);
-	childSetValue("BuildPrefs_Xsize",               mXsize);
-	childSetValue("BuildPrefs_Ysize",               mYsize);
-	childSetValue("BuildPrefs_Zsize",               mZsize);
+	childSetValue("alpha",               mAlpha);
+	getChild<LLColorSwatchCtrl>("colorswatch")->setOriginal(mColor);
+	childSetValue("EmFBToggle",          mFullBright);
+	childSetValue("glow",                mGlow);
+	childSetValue("material",            mMaterial);
+	childSetValue("next_owner_copy",     mNextCopy);
+	childSetValue("next_owner_modify",   mNextMod);
+	childSetValue("next_owner_transfer", mNextTrans);
+	childSetValue("EmPhantomToggle",     mPhantom);
+	childSetValue("EmPhysicalToggle",    mPhysical);
+	childSetValue("combobox shininess",  mShiny);
+	childSetValue("EmTemporaryToggle",   mTemporary);
+	childSetValue("texture control",     mTexture);
+	childSetValue("X size",              mXsize);
+	childSetValue("Y size",              mYsize);
+	childSetValue("Z size",              mZsize);
 }
 
 void LLPrefsAscentSys::cancel()

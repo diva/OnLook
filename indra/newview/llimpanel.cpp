@@ -1356,18 +1356,25 @@ BOOL LLFloaterIMPanel::postBuild()
 		mInputEditor->setRevertOnEsc( FALSE );
 		mInputEditor->setReplaceNewlinesWithSpaces( FALSE );
 
-		childSetAction("profile_callee_btn", onClickProfile, this);
-		childSetAction("profile_tele_btn", onClickTeleport, this);
-		childSetAction("group_info_btn", onClickGroupInfo, this);
+		if (LLButton* btn = findChild<LLButton>("profile_callee_btn"))
+		{
+			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickProfile, this));
+			if (!mProfileButtonEnabled) btn->setEnabled(false);
+		}
+		if (LLButton* btn = findChild<LLButton>("profile_tele_btn"))
+			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickTeleport, this));
+		if (LLButton* btn = findChild<LLButton>("group_info_btn"))
+			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickGroupInfo, this));
 		childSetAction("history_btn", onClickHistory, this);
-		childSetCommitCallback("rp_mode", onRPMode, this);
+		if (LLUICtrl* ctrl = findChild<LLUICtrl>("rp_mode"))
+			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onRPMode, this, _2));
 
 		childSetAction("start_call_btn", onClickStartCall, this);
 		childSetAction("end_call_btn", onClickEndCall, this);
 		childSetAction("send_btn", onClickSend, this);
-		childSetAction("toggle_active_speakers_btn", onClickToggleActiveSpeakers, this);
+		if (LLButton* btn = findChild<LLButton>("toggle_active_speakers_btn"))
+			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickToggleActiveSpeakers, this, _2));
 
-		childSetAction("moderator_kick_speaker", onKickSpeaker, this);
 		//LLButton* close_btn = getChild<LLButton>("close_btn");
 		//close_btn->setClickedCallback(&LLFloaterIMPanel::onClickClose, this);
 
@@ -1380,11 +1387,6 @@ BOOL LLFloaterIMPanel::postBuild()
 			childSetEnabled("profile_btn", FALSE);
 		}
 		
-		if(!mProfileButtonEnabled)
-		{
-			childSetEnabled("profile_callee_btn", FALSE);
-		}
-
 		sTitleString = getString("title_string");
 		sTypingStartString = getString("typing_start_string");
 		sSessionStartString = getString("session_start_string");
@@ -1402,8 +1404,6 @@ BOOL LLFloaterIMPanel::postBuild()
 
 		setDefaultBtn("send_btn");
 
-		mActiveSpeakersPanel.connect(this,"active_speakers_panel");
-		mToggleActiveSpeakersBtn.connect(this,"toggle_active_speakers_btn");
 		mVolumeSlider.connect(this,"speaker_volume");
 		mEndCallBtn.connect(this,"end_call_btn");
 		mStartCallBtn.connect(this,"start_call_btn");
@@ -1496,10 +1496,11 @@ void LLFloaterIMPanel::draw()
 	// show speakers window when voice first connects
 	if (mShowSpeakersOnConnect && mVoiceChannel->isActive())
 	{
-		mActiveSpeakersPanel->setVisible(true);
+		childSetVisible("active_speakers_panel", true);
 		mShowSpeakersOnConnect = FALSE;
 	}
-	mToggleActiveSpeakersBtn->setValue(mActiveSpeakersPanel->getVisible());
+	if (LLUICtrl* ctrl = findChild<LLUICtrl>("toggle_active_speakers_btn"))
+		ctrl->setValue(getChildView("active_speakers_panel")->getVisible());
 
 	if (mTyping)
 	{
@@ -1884,37 +1885,28 @@ void LLFloaterIMPanel::onTabClick(void* userdata)
 }
 
 
-// static
-void LLFloaterIMPanel::onClickProfile( void* userdata )
+void LLFloaterIMPanel::onClickProfile()
 {
 	//  Bring up the Profile window
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*) userdata;
-	
-	if (self->mOtherParticipantUUID.notNull())
+	if (mOtherParticipantUUID.notNull())
 	{
-		LLFloaterAvatarInfo::showFromDirectory(self->getOtherParticipantID());
+		LLFloaterAvatarInfo::showFromDirectory(mOtherParticipantUUID);
 	}
 }
 
-//static
-void LLFloaterIMPanel::onClickTeleport( void* userdata )
+void LLFloaterIMPanel::onClickTeleport()
 {
-	//  Bring up the Profile window
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*) userdata;
-	
-	if (self->mOtherParticipantUUID.notNull())
+	if (mOtherParticipantUUID.notNull())
 	{
-		handle_lure(self->getOtherParticipantID());
+		handle_lure(mOtherParticipantUUID);
 		//do a teleport to other part id
-		//LLFloaterAvatarInfo::showFromDirectory(self->getOtherParticipantID());
+		//LLFloaterAvatarInfo::showFromDirectory(mOtherParticipantID);
 	}
 }
 
-// static
-void LLFloaterIMPanel::onRPMode(LLUICtrl* source, void* user_data)
+void LLFloaterIMPanel::onRPMode(const LLSD& value)
 {
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*) user_data;
-	self->mRPMode = source->getValue().asBoolean();
+	mRPMode = value.asBoolean();
 }
 
 // static
@@ -1936,13 +1928,10 @@ void LLFloaterIMPanel::onClickHistory( void* userdata )
 	}
 }
 
-// static
-void LLFloaterIMPanel::onClickGroupInfo( void* userdata )
+void LLFloaterIMPanel::onClickGroupInfo()
 {
 	//  Bring up the Profile window
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*) userdata;
-
-	LLFloaterGroupInfo::showFromUUID(self->mSessionUUID);
+	LLFloaterGroupInfo::showFromUUID(mSessionUUID);
 }
 
 // static
@@ -1978,12 +1967,9 @@ void LLFloaterIMPanel::onClickSend(void* userdata)
 	self->sendMsg();
 }
 
-// static
-void LLFloaterIMPanel::onClickToggleActiveSpeakers(void* userdata)
+void LLFloaterIMPanel::onClickToggleActiveSpeakers(const LLSD& value)
 {
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*)userdata;
-
-	self->childSetVisible("active_speakers_panel", !self->childIsVisible("active_speakers_panel"));
+	childSetVisible("active_speakers_panel", value);
 }
 
 // static
@@ -2593,12 +2579,6 @@ void LLFloaterIMPanel::showSessionForceClose(
 		args,
 		payload,
 		LLFloaterIMPanel::onConfirmForceCloseError);
-
-}
-
-//static 
-void LLFloaterIMPanel::onKickSpeaker(void* user_data)
-{
 
 }
 

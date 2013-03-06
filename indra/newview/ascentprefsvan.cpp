@@ -57,7 +57,7 @@ LLPrefsAscentVan::LLPrefsAscentVan()
 {
     LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_vanity.xml");
 
-	childSetVisible("announce_streaming_metadata", gAudiop && gAudiop->getStreamingAudioImpl() && gAudiop->getStreamingAudioImpl()->supportsMetaData());
+	childSetVisible("announce_stream_metadata", gAudiop && gAudiop->getStreamingAudioImpl() && gAudiop->getStreamingAudioImpl()->supportsMetaData());
 
     childSetCommitCallback("tag_spoofing_combobox", onCommitClientTag, this);
 

@@ -6477,7 +6477,6 @@ void process_economy_data(LLMessageSystem *msg, void** /*user_data*/)
 	gMenuHolder->childSetLabelArg("Upload Sound", "[UPLOADFEE]", fee);
 	gMenuHolder->childSetLabelArg("Upload Animation", "[UPLOADFEE]", fee);
 	gMenuHolder->childSetLabelArg("Bulk Upload", "[UPLOADFEE]", fee);
-	gMenuHolder->childSetLabelArg("ImportUpload", "[UPLOADFEE]", fee);
 	gMenuHolder->childSetLabelArg("Buy and Sell L$...", "[CURRENCY]",
 		gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 }

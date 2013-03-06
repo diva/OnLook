@@ -54,18 +54,14 @@ public:
 	static void onBtnTalkClicked();
 	static void onClickSpeakers();
 	static void onClickPopupBtn(void* user_data);
-	static void onClickVoiceChannel(void* user_data);
-	static void onClickEndCall(void* user_data);
+	static void onClickVoiceChannel();
+	static void onClickEndCall();
 
 protected:
 	LLButton* mTalkBtn;
 	LLButton* mTalkLockBtn;
 	LLButton* mSpeakersBtn;
-	CachedUICtrl<LLButton> mEndCallBtn;
 	CachedUICtrl<LLIconCtrl> mVoiceVolIcon;
-	CachedUICtrl<LLIconCtrl> mVoiceChanIcon;
-	CachedUICtrl<LLButton> mVoiceChanBgBtn;
-	CachedUICtrl<LLTextBox> mChanLabelTextBox;
 	CachedUICtrl<LLButton> mShowChanBtn;
 };
 

@@ -59,7 +59,6 @@
 
 BOOL firstBuildDone;
 void* fixPointer;
-std::string ButtonState;
 
 wlfPanel_AdvSettings::wlfPanel_AdvSettings()
 {
@@ -70,6 +69,7 @@ wlfPanel_AdvSettings::wlfPanel_AdvSettings()
 void wlfPanel_AdvSettings::build()
 {
 	deleteAllChildren();
+	std::string ButtonState;
 	if (!gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
 	{
 		LLUICtrlFactory::getInstance()->buildPanel(this, "wlfPanel_AdvSettings_expanded.xml", &getFactoryMap());
@@ -80,20 +80,22 @@ void wlfPanel_AdvSettings::build()
 		LLUICtrlFactory::getInstance()->buildPanel(this, "wlfPanel_AdvSettings.xml", &getFactoryMap());
 		ButtonState = "arrow_down.tga";
 	}
+	getChild<LLButton>("expand")->setImageOverlay(ButtonState);
 }
 
 void wlfPanel_AdvSettings::refresh()
 {
 // [RLVa:KB] - Checked: 2009-09-19
-	if ( (rlv_handler_t::isEnabled()) && (gSavedSettings.getBOOL("wlfAdvSettingsPopup")) )
+	if (rlv_handler_t::isEnabled() && !gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
 	{
+		if (!findChild<LLView>("use_estate_wl")) return; // Singu Note: Not certain why, but sometimes none of these exist even though the above setting implies they should
 		childSetEnabled("use_estate_wl", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
 		childSetEnabled("EnvAdvancedWaterButton", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
-		childSetEnabled("WWPresetsCombo", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
+		childSetEnabled("WLWaterPresetsCombo", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
 		childSetEnabled("WWprev", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
 		childSetEnabled("WWnext", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
 		childSetEnabled("EnvAdvancedSkyButton", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
-		childSetEnabled("WLPresetsCombo", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
+		childSetEnabled("WLSkyPresetsCombo", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
 		childSetEnabled("WLprev", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
 		childSetEnabled("WLnext", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
 		childSetEnabled("EnvTimeSlider", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
@@ -143,38 +145,41 @@ BOOL wlfPanel_AdvSettings::postBuild()
 {
 	childSetAction("expand", onClickExpandBtn, this);
 
-	getChild<LLCheckBoxCtrl>("use_estate_wl")->setCommitCallback(onUseRegionSettings);
+	if (!gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
+	{
+		getChild<LLCheckBoxCtrl>("use_estate_wl")->setCommitCallback(onUseRegionSettings);
 
-	mWaterPresetCombo = getChild<LLComboBox>("WLWaterPresetsCombo");
-	mWaterPresetCombo->setCommitCallback(onChangeWWPresetName);
-		
-	mSkyPresetCombo = getChild<LLComboBox>("WLSkyPresetsCombo");
-	mSkyPresetCombo->setCommitCallback(onChangeWLPresetName);
-	
-	// mDayCyclePresetCombo = getChild<LLComboBox>("DCPresetsCombo");
-	// mDayCyclePresetCombo->setCommitCallback(onChangeDCPresetName);
-	
-	LLEnvManagerNew::instance().setPreferencesChangeCallback(boost::bind(&wlfPanel_AdvSettings::refreshLists, this));
-	LLWaterParamManager::getInstance()->setPresetListChangeCallback(boost::bind(&wlfPanel_AdvSettings::populateWaterPresetsList, this));
-	LLWLParamManager::getInstance()->setPresetListChangeCallback(boost::bind(&wlfPanel_AdvSettings::populateSkyPresetsList, this));
-	// LLDayCycleManager::instance().setModifyCallback(boost::bind(&wlfPanel_AdvSettings::populateDayCyclePresetsList, this));
+		mWaterPresetCombo = getChild<LLComboBox>("WLWaterPresetsCombo");
+		mWaterPresetCombo->setCommitCallback(onChangeWWPresetName);
 
-	populateWaterPresetsList();
-	populateSkyPresetsList();
-	//populateDayCyclePresetsList();
+		mSkyPresetCombo = getChild<LLComboBox>("WLSkyPresetsCombo");
+		mSkyPresetCombo->setCommitCallback(onChangeWLPresetName);
 
-	// next/prev buttons
-	childSetAction("WWnext", onClickWWNext, this);
-	childSetAction("WWprev", onClickWWPrev, this);
-	childSetAction("WLnext", onClickWLNext, this);
-	childSetAction("WLprev", onClickWLPrev, this);
-	
-	childSetAction("EnvAdvancedSkyButton", onOpenAdvancedSky, NULL);
-	childSetAction("EnvAdvancedWaterButton", onOpenAdvancedWater, NULL);
-	
-	mTimeSlider = getChild<LLSliderCtrl>("EnvTimeSlider");
-	mTimeSlider->setCommitCallback(onChangeDayTime);
-	updateTimeSlider();
+		// mDayCyclePresetCombo = getChild<LLComboBox>("DCPresetsCombo");
+		// mDayCyclePresetCombo->setCommitCallback(onChangeDCPresetName);
+
+		LLEnvManagerNew::instance().setPreferencesChangeCallback(boost::bind(&wlfPanel_AdvSettings::refreshLists, this));
+		LLWaterParamManager::getInstance()->setPresetListChangeCallback(boost::bind(&wlfPanel_AdvSettings::populateWaterPresetsList, this));
+		LLWLParamManager::getInstance()->setPresetListChangeCallback(boost::bind(&wlfPanel_AdvSettings::populateSkyPresetsList, this));
+		// LLDayCycleManager::instance().setModifyCallback(boost::bind(&wlfPanel_AdvSettings::populateDayCyclePresetsList, this));
+
+		populateWaterPresetsList();
+		populateSkyPresetsList();
+		//populateDayCyclePresetsList();
+
+		// next/prev buttons
+		childSetAction("WWnext", onClickWWNext, this);
+		childSetAction("WWprev", onClickWWPrev, this);
+		childSetAction("WLnext", onClickWLNext, this);
+		childSetAction("WLprev", onClickWLPrev, this);
+
+		childSetAction("EnvAdvancedSkyButton", onOpenAdvancedSky, NULL);
+		childSetAction("EnvAdvancedWaterButton", onOpenAdvancedWater, NULL);
+
+		mTimeSlider = getChild<LLSliderCtrl>("EnvTimeSlider");
+		mTimeSlider->setCommitCallback(onChangeDayTime);
+		updateTimeSlider();
+	}
 	
 	fixPointer = this;
 	return TRUE;
@@ -182,19 +187,6 @@ BOOL wlfPanel_AdvSettings::postBuild()
 
 void wlfPanel_AdvSettings::draw()
 {
-	LLButton* expand_button = getChild<LLButton>("expand");
-/*	if (expand_button)
-	{
-		if (expand_button->getToggleState())
-		{
-			expand_button->setImageOverlay("arrow_down.tga");
-		}
-		else
-		{
-			expand_button->setImageOverlay("arrow_up.tga");
-		}
-	} */
-			expand_button->setImageOverlay(ButtonState);
 	refresh();
 	LLPanel::draw();
 }

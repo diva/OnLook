@@ -105,7 +105,6 @@ BOOL LLFloaterSettingsDebug::postBuild()
 	getChild<LLUICtrl>("val_spinner_4")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCommitSettings, this));
 	getChild<LLUICtrl>("val_text")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCommitSettings, this));
 	getChild<LLUICtrl>("boolean_combo")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCommitSettings, this));
-	getChild<LLUICtrl>("color_swatch")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCommitSettings, this));
 	getChild<LLUICtrl>("copy_btn")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCopyToClipboard, this));
 	getChild<LLUICtrl>("default_btn")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onClickDefault, this));
 	getChild<LLSearchEditor>("search_settings_input")->setSearchCallback(onUpdateFilter, this);

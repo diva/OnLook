@@ -108,7 +108,7 @@ void LLFloaterWater::initCallbacks(void) {
 	initHelpBtn("WaterFogColorHelp", "HelpWaterFogColor");
 	initHelpBtn("WaterFogDensityHelp", "HelpWaterFogDensity");
 	initHelpBtn("WaterUnderWaterFogModHelp", "HelpUnderWaterFogMod");
-	initHelpBtn("WaterGlowHelp", "HelpWaterGlow");	
+	//initHelpBtn("WaterGlowHelp", "HelpWaterGlow");
 	initHelpBtn("WaterNormalScaleHelp", "HelpWaterNormalScale");
 	initHelpBtn("WaterFresnelScaleHelp", "HelpWaterFresnelScale");
 	initHelpBtn("WaterFresnelOffsetHelp", "HelpWaterFresnelOffset");
@@ -126,7 +126,7 @@ void LLFloaterWater::initCallbacks(void) {
 	childSetCommitCallback("WaterFogColor", onWaterFogColorMoved, &param_mgr->mFogColor);
 
 	// 
-	childSetCommitCallback("WaterGlow", onColorControlAMoved, &param_mgr->mFogColor);
+	//childSetCommitCallback("WaterGlow", onColorControlAMoved, &param_mgr->mFogColor);
 
 	// fog density
 	childSetCommitCallback("WaterFogDensity", onExpFloatControlMoved, &param_mgr->mFogDensity);
@@ -165,8 +165,8 @@ void LLFloaterWater::initCallbacks(void) {
 	childSetCommitCallback("WaterNormalMap", onNormalMapPicked, NULL);
 
 	// next/prev buttons
-	childSetAction("next", onClickNext, this);
-	childSetAction("prev", onClickPrev, this);
+	//childSetAction("next", onClickNext, this);
+	//childSetAction("prev", onClickPrev, this);
 }
 
 void LLFloaterWater::onClickHelp(void* data)
@@ -237,7 +237,7 @@ void LLFloaterWater::syncMenu()
 	param_mgr->mFogColor = current_params.getVector4(param_mgr->mFogColor.mName, err);
 
 	LLColor4 col = param_mgr->getFogColor();
-	childSetValue("WaterGlow", col.mV[3]);
+	//childSetValue("WaterGlow", col.mV[3]);
 	col.mV[3] = 1.0f;
 	LLColorSwatchCtrl* colCtrl = sWaterMenu->getChild<LLColorSwatchCtrl>("WaterFogColor");
 

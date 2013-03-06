@@ -356,9 +356,9 @@ BOOL LLFloaterAO::postBuild()
 	childSetAction("newcard",onClickNewCard,this);
 	childSetAction("prevstand",onClickPrevStand,this);
 	childSetAction("nextstand",onClickNextStand,this);
-	getChild<LLComboBox>("AOEnabled")->setCommitCallback(boost::bind(&LLFloaterAO::onClickToggleAO));
-	getChild<LLComboBox>("AOSitsEnabled")->setCommitCallback(boost::bind(&LLFloaterAO::onClickToggleSits));
-	getChild<LLComboBox>("standtime")->setCommitCallback(boost::bind(&LLFloaterAO::onSpinnerCommit,_1));
+	getChild<LLUICtrl>("AOEnabled")->setCommitCallback(boost::bind(&LLFloaterAO::onClickToggleAO));
+	getChild<LLUICtrl>("AOSitsEnabled")->setCommitCallback(boost::bind(&LLFloaterAO::onClickToggleSits));
+	getChild<LLUICtrl>("standtime")->setCommitCallback(boost::bind(&LLFloaterAO::onSpinnerCommit,_1));
 	mcomboBox_stands = getChild<LLComboBox>("stands");
 	mcomboBox_walks = getChild<LLComboBox>("walks");
 	mcomboBox_runs = getChild<LLComboBox>("runs");
@@ -593,7 +593,6 @@ void LLFloaterAO::updateLayout(LLFloaterAO* floater)
 		floater->childSetVisible("sits", advanced);
 		floater->childSetVisible("gsits", advanced);
 		floater->childSetVisible("crouchs", advanced);
-		floater->childSetVisible("crouchwalks", advanced);
 		floater->childSetVisible("falls", advanced);
 		floater->childSetVisible("hovers", advanced);
 		floater->childSetVisible("flys", advanced);
