@@ -46,10 +46,13 @@ class AIHTTPTimeoutPolicy;
 class LLBufferArray;
 class LLChannelDescriptors;
 class AIStateMachine;
+class Injector;
+class AIEngine;
 
 extern AIHTTPTimeoutPolicy responderIgnore_timeout;
 typedef struct _xmlrpc_request* XMLRPC_REQUEST;
 typedef struct _xmlrpc_value* XMLRPC_VALUE;
+extern AIEngine gMainThreadEngine;
 
 // Output parameter of AICurlPrivate::CurlEasyRequest::getResult.
 // Used in XMLRPCResponder.
@@ -84,6 +87,20 @@ enum EDebugCurl {
 
 class LLHTTPClient {
 public:
+	/** 
+	 * @brief This enumeration is for specifying the type of request.
+	 */
+	enum ERequestAction
+	{
+		INVALID,
+		HTTP_HEAD,
+		HTTP_GET,
+		HTTP_PUT,
+		HTTP_POST,
+		HTTP_DELETE,
+		HTTP_MOVE, // Caller will need to set 'Destination' header
+		REQUEST_ACTION_COUNT
+	};
 
 	/** @name Responder base classes */
 	//@{
@@ -392,6 +409,21 @@ public:
 	typedef boost::intrusive_ptr<ResponderBase> ResponderPtr;
 
 	//@}
+
+	/** General API to request a transfer. */
+	static void request(
+		std::string const& url,
+		ERequestAction method,
+		Injector* body_injector,
+		ResponderPtr responder,
+		AIHTTPHeaders& headers/*,*/
+		DEBUG_CURLIO_PARAM(EDebugCurl debug),
+		EKeepAlive keepalive = keep_alive,
+		bool is_auth = false,
+		bool no_compression = false,
+		AIStateMachine* parent = NULL,
+		/*AIStateMachine::state_type*/ U32 new_parent_state = 0,
+		AIEngine* default_engine = &gMainThreadEngine);
 
 	/** @name non-blocking API */
 	//@{

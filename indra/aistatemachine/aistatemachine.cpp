@@ -360,6 +360,7 @@ char const* AIStateMachine::event_str(event_type event)
 {
   switch(event)
   {
+	AI_CASE_RETURN(initial_run);
 	AI_CASE_RETURN(schedule_run);
 	AI_CASE_RETURN(normal_run);
 	AI_CASE_RETURN(insert_abort);
@@ -371,6 +372,9 @@ char const* AIStateMachine::event_str(event_type event)
 
 void AIStateMachine::multiplex(event_type event)
 {
+  // If this fails then you are using a pointer to a state machine instead of an LLPointer.
+  llassert(event == initial_run || getNumRefs() > 0);
+
   DoutEntering(dc::statemachine, "AIStateMachine::multiplex(" << event_str(event) << ") [" << (void*)this << "]");
 
   base_state_type state;
@@ -463,6 +467,13 @@ void AIStateMachine::multiplex(event_type event)
 	  }
 	  // Any previous reason to run is voided by actually running.
 	  mDebugShouldRun = false;
+	  // Make sure we only call ref() once and in balance with unref().
+	  if (state == bs_initialize)
+	  {
+		// This -- and call to ref() (and the test when we're about to call unref()) -- is all done in the critical area of mMultiplexMutex.
+		llassert(!mDebugRefCalled);
+		mDebugRefCalled = true;
+	  }
 #endif
 
 	  switch(state)
@@ -503,6 +514,7 @@ void AIStateMachine::multiplex(event_type event)
 	  //=================================
 	  // Start of critical area of mState
 
+	  // Unless the state is bs_multiplex or bs_killed, the state machine needs to keep calling multiplex().
 	  bool need_new_run = true;
 	  if (event == normal_run || event == insert_abort)
 	  {
@@ -518,8 +530,8 @@ void AIStateMachine::multiplex(event_type event)
 			  {
 				// We have been aborted before we could even initialize, no de-initialization is possible.
 				state_w->base_state = bs_killed;
-				// Immediately handle this.
-				destruct = true;
+				// Stop running.
+				need_new_run = false;
 			  }
 			  else
 			  {
@@ -537,6 +549,8 @@ void AIStateMachine::multiplex(event_type event)
 			  {
 				// Start actually running.
 				state_w->base_state = bs_multiplex;
+				// If the state is bs_multiplex we only need to run again when need_run was set again in the meantime or when this state machine isn't idle.
+				need_new_run = sub_state_r->need_run || !sub_state_r->idle;
 			  }
 			  break;
 			case bs_multiplex:
@@ -550,7 +564,12 @@ void AIStateMachine::multiplex(event_type event)
 				// finish() was called.
 				state_w->base_state = bs_finish;
 			  }
-			  // else continue in bs_multiplex.
+			  else
+			  {
+				// Continue in bs_multiplex.
+				// If the state is bs_multiplex we only need to run again when need_run was set again in the meantime or when this state machine isn't idle.
+				need_new_run = sub_state_r->need_run || !sub_state_r->idle;
+			  }
 			  break;
 			case bs_abort:
 			  // After calling abort_impl(), call finish_impl().
@@ -570,18 +589,16 @@ void AIStateMachine::multiplex(event_type event)
 			  {
 				// After the call back, we're done.
 				state_w->base_state = bs_killed;
-				// Immediately handle this.
+				// Call unref().
 				destruct = true;
+				// Stop running.
+				need_new_run = false;
 			  }
 			  break;
 			default: // bs_killed
 			  // We never get here.
 			  break;
 		  }
-
-		  // Unless the state bs_multiplex or bs_killed, the state machine needs to keep calling multiplex().
-		  // If the state is bs_multiplex we only need to run again when need_run was set again in the mean time or when this state machine isn't idle.
-		  need_new_run = !destruct && (state_w->base_state != bs_multiplex || sub_state_r->need_run || !sub_state_r->idle);
 		}
 		else // event == insert_abort
 		{
@@ -621,7 +638,6 @@ void AIStateMachine::multiplex(event_type event)
 	  if (keep_looping)
 	  {
 		// Start a new loop.
-		llassert(AIThreadID::in_main_thread());						// AIFIXME: right now we should be in the main thread or something is wrong.
 		run_state = begin_loop((state = state_w->base_state));
 		event = normal_run;
 	  }
@@ -648,6 +664,13 @@ void AIStateMachine::multiplex(event_type event)
 #ifdef SHOW_ASSERT
 		// Mark that we stop running the loop.
 		mThreadId.clear();
+
+		if (destruct)
+		{
+		  // We're about to call unref(). Make sure we call that in balance with ref()!
+		  llassert(mDebugRefCalled);
+		  mDebugRefCalled  = false;
+		}
 #endif
 
 		// End of critical area of mMultiplexMutex.
@@ -673,7 +696,9 @@ void AIStateMachine::multiplex(event_type event)
   while (keep_looping);
 
   if (destruct)
+  {
 	unref();
+  }
 }
 
 AIStateMachine::state_type AIStateMachine::begin_loop(base_state_type base_state)
@@ -723,7 +748,7 @@ void AIStateMachine::run(LLPointer<AIStateMachine> parent, state_type new_parent
 	  (parent ? parent->state_str_impl(new_parent_state) : "NA") <<
 	  ", abort_parent = " << (abort_parent ? "true" : "false") <<
 	  ", on_abort_signal_parent = " << (on_abort_signal_parent ? "true" : "false") <<
-	  ", default_engine = " << default_engine->name() << ") [" << (void*)this << "]");
+	  ", default_engine = " << (default_engine ? default_engine->name() : "NULL") << ") [" << (void*)this << "]");
 
 #ifdef SHOW_ASSERT
   {
@@ -887,7 +912,7 @@ void AIStateMachine::reset()
   if (!inside_multiplex)
   {
 	// Kick start the state machine.
-	multiplex(schedule_run);
+	multiplex(initial_run);
   }
 }
 

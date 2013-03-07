@@ -36,9 +36,11 @@
 #include "llrefcount.h"
 #include "aicurlperhost.h"
 #include "aihttptimeout.h"
+#include "llhttpclient.h"
 
 class AIHTTPHeaders;
 class AICurlEasyRequestStateMachine;
+class AITransferInfo;
 
 namespace AICurlPrivate {
 

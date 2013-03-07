@@ -470,6 +470,7 @@ public:
 
 	void unref()
 	{
+		llassert(mRef > 0);
 		if (!--mRef) delete this;
 	}
 	S32 getNumRefs() const

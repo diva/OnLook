@@ -107,6 +107,7 @@ class AIStateMachine : public LLThreadSafeRefCount
   protected:
 	// The type of event that causes multiplex() to be called.
 	enum event_type {
+	  initial_run,
 	  schedule_run,
 	  normal_run,
 	  insert_abort
@@ -189,13 +190,14 @@ class AIStateMachine : public LLThreadSafeRefCount
 	bool mDebugContPending;						// True while cont() was called by not handled yet.
 	bool mDebugSetStatePending;					// True while set_state() was called by not handled yet.
 	bool mDebugAdvanceStatePending;				// True while advance_state() was called by not handled yet.
+	bool mDebugRefCalled;						// True when ref() is called (or will be called within the critial area of mMultiplexMutex).
 #endif
 
   public:
 	AIStateMachine(void) : mCallback(NULL), mDefaultEngine(NULL), mYieldEngine(NULL)
 #ifdef SHOW_ASSERT
 		, mDebugLastState(bs_killed), mDebugShouldRun(false), mDebugAborted(false), mDebugContPending(false),
-		  mDebugSetStatePending(false), mDebugAdvanceStatePending(false)
+		  mDebugSetStatePending(false), mDebugAdvanceStatePending(false), mDebugRefCalled(false)
 #endif
 	{ }
 

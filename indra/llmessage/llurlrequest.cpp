@@ -61,7 +61,7 @@ const std::string CONTEXT_TRANSFERED_BYTES("transfered_bytes");
 // static
 std::string LLURLRequest::actionAsVerb(LLURLRequest::ERequestAction action)
 {
-	static int const array_size = HTTP_MOVE + 1;	// INVALID == 0
+	static int const array_size = LLHTTPClient::REQUEST_ACTION_COUNT;	// INVALID == 0
 	static char const* const VERBS[array_size] =
 	{
 		"(invalid)",
@@ -72,7 +72,7 @@ std::string LLURLRequest::actionAsVerb(LLURLRequest::ERequestAction action)
 		"DELETE",
 		"MOVE"
 	};
-	return VERBS[action >= array_size ? INVALID : action];
+	return VERBS[action >= array_size ? LLHTTPClient::INVALID : action];
 }
 
 // This might throw AICurlNoEasyHandle.
@@ -94,13 +94,13 @@ void LLURLRequest::initialize_impl(void)
 		useProxy(false);
 	}
 
-	if (mAction == HTTP_PUT || mAction == HTTP_POST)
+	if (mAction == LLHTTPClient::HTTP_PUT || mAction == LLHTTPClient::HTTP_POST)
 	{
 		// If the Content-Type header was passed in we defer to the caller's wisdom,
 		// but if they did not specify a Content-Type, then ask the injector.
 		mHeaders.addHeader("Content-Type", mBody->contentType(), AIHTTPHeaders::keep_existing_header);
 	}
-	else if (mAction != HTTP_HEAD)
+	else if (mAction != LLHTTPClient::HTTP_HEAD)
 	{
 		// Check to see if we have already set Accept or not. If no one
 		// set it, set it to application/llsd+xml since that's what we
@@ -108,7 +108,7 @@ void LLURLRequest::initialize_impl(void)
 		mHeaders.addHeader("Accept", "application/llsd+xml", AIHTTPHeaders::keep_existing_header);
 	}
 
-	if (mAction == HTTP_POST && gMessageSystem)
+	if (mAction == LLHTTPClient::HTTP_POST && gMessageSystem)
 	{
 		mHeaders.addHeader("X-SecondLife-UDP-Listen-Port", llformat("%d", gMessageSystem->mPort));
 	}
@@ -200,12 +200,12 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 	{
 		switch(mAction)
 		{
-		case HTTP_HEAD:
+		case LLHTTPClient::HTTP_HEAD:
 			curlEasyRequest_w->setopt(CURLOPT_NOBODY, 1);
 			rv = true;
 			break;
 
-		case HTTP_GET:
+		case LLHTTPClient::HTTP_GET:
 			curlEasyRequest_w->setopt(CURLOPT_HTTPGET, 1);
 
 			// Set Accept-Encoding to allow response compression
@@ -213,7 +213,7 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 			rv = true;
 			break;
 
-		case HTTP_PUT:
+		case LLHTTPClient::HTTP_PUT:
 		{
 			// Disable the expect http 1.1 extension. POST and PUT default
 			// to using this, causing the broken server to get confused.
@@ -223,7 +223,7 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 			rv = true;
 			break;
 		}
-		case HTTP_POST:
+		case LLHTTPClient::HTTP_POST:
 		{
 			// Set the handle for an http post
 			curlEasyRequest_w->setPost(mBodySize, mKeepAlive);
@@ -233,13 +233,13 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 			rv = true;
 			break;
 		}
-		case HTTP_DELETE:
+		case LLHTTPClient::HTTP_DELETE:
 			// Set the handle for an http post
 			curlEasyRequest_w->setoptString(CURLOPT_CUSTOMREQUEST, "DELETE");
 			rv = true;
 			break;
 
-		case HTTP_MOVE:
+		case LLHTTPClient::HTTP_MOVE:
 			// Set the handle for an http post
 			curlEasyRequest_w->setoptString(CURLOPT_CUSTOMREQUEST, "MOVE");
 			rv = true;

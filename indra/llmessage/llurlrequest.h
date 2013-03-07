@@ -51,20 +51,7 @@ class Injector
 
 class LLURLRequest : public AICurlEasyRequestStateMachine {
   public:
-	/** 
-	 * @brief This enumeration is for specifying the type of request.
-	 */
-	enum ERequestAction
-	{
-		INVALID,
-		HTTP_HEAD,
-		HTTP_GET,
-		HTTP_PUT,
-		HTTP_POST,
-		HTTP_DELETE,
-		HTTP_MOVE, // Caller will need to set 'Destination' header
-		REQUEST_ACTION_COUNT
-	};
+	typedef LLHTTPClient::ERequestAction ERequestAction;
 
 	/**
 	 * @brief Turn the request action into an http verb.

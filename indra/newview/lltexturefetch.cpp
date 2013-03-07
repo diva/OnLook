@@ -1083,18 +1083,17 @@ bool LLTextureFetchWorker::doWork(S32 param)
 					mRequestedOffset--;
 				}
 
-				try
-				{
-					// Will call callbackHttpGet when curl request completes
-					AIHTTPHeaders headers("Accept", "image/x-j2c");
-					LLHTTPClient::getByteRange(mUrl, mRequestedOffset, mRequestedSize,
-												new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, mRequestedOffset, true), headers);
-					res = true;
-				}
-				catch(AICurlNoEasyHandle const& error)
-				{
-					llwarns << error.what() << llendl;
-				}
+				  // Will call callbackHttpGet when curl request completes
+				  AIHTTPHeaders headers("Accept", "image/x-j2c");
+				  // Call LLHTTPClient::request directly instead of LLHTTPClient::getByteRange, because we want to pass a NULL AIEngine.
+				  if (mRequestedOffset > 0 || mRequestedSize > 0)
+				  {
+					  headers.addHeader("Range", llformat("bytes=%d-%d", mRequestedOffset, mRequestedOffset + mRequestedSize - 1));
+				  }
+				  LLHTTPClient::request(mUrl, LLHTTPClient::HTTP_GET, NULL,
+					  new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, mRequestedOffset, true),
+					  headers/*,*/ DEBUG_CURLIO_PARAM(false), keep_alive, false, false, NULL, 0, NULL);
+				  res = true;
 			}
 			if (!res)
 			{
