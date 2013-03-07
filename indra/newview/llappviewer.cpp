@@ -80,7 +80,7 @@
 #include "llfirstuse.h"
 #include "llrender.h"
 #include "llvector4a.h"
-#include "llfont.h"
+#include "llfontfreetype.h"
 #include "llvocache.h"
 #include "llvopartgroup.h"
 #include "llfloaterteleporthistory.h"
@@ -803,7 +803,7 @@ bool LLAppViewer::init()
 	// Modify settings based on system configuration and compile options
 	settings_modify();
 	// Work around for a crash bug when changing OpenGL settings
-	LLFont::sOpenGLcrashOnRestart = (getenv("LL_OPENGL_RESTART_CRASH_BUG") != NULL);
+	LLFontFreetype::sOpenGLcrashOnRestart = (getenv("LL_OPENGL_RESTART_CRASH_BUG") != NULL);
 
 	// Find partition serial number (Windows) or hardware serial (Mac)
 	mSerialNumber = generateSerialNumber();
