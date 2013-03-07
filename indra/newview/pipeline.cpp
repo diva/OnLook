@@ -1020,7 +1020,7 @@ void LLPipeline::createGLBuffers()
 			{
 				mGlow[i].bindTarget();
 				mGlow[i].clear();
-				mGlow[i].unbindTarget();
+				mGlow[i].flush();
 			}
 		}
 
@@ -6728,11 +6728,11 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 	gGlowProgram.unbind();
 
-	if (LLRenderTarget::sUseFBO)
+	/*if (LLRenderTarget::sUseFBO)
 	{
 		LLFastTimer ftm(FTM_RENDER_BLOOM_FBO);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	}
+	}*/
 
 	gGLViewport[0] = gViewerWindow->getWorldViewRectRaw().mLeft;
 	gGLViewport[1] = gViewerWindow->getWorldViewRectRaw().mBottom;
@@ -8413,8 +8413,6 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 			mWaterDis.flush();
 		}
 		last_update = LLDrawPoolWater::sNeedsReflectionUpdate && LLDrawPoolWater::sNeedsDistortionUpdate;
-
-		LLRenderTarget::unbindTarget();
 
 		LLPipeline::sReflectionRender = FALSE;
 

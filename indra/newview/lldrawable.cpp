@@ -250,11 +250,17 @@ S32 LLDrawable::findReferences(LLDrawable *drawablep)
 	return count;
 }
 
+static LLFastTimer::DeclareTimer FTM_ALLOCATE_FACE("Allocate Face", true);
+
 LLFace*	LLDrawable::addFace(LLFacePool *poolp, LLViewerTexture *texturep)
 {
-	LLMemType mt(LLMemType::MTYPE_DRAWABLE);
 	
-	LLFace *face = new LLFace(this, mVObjp);
+	LLFace *face;
+	{
+		LLFastTimer t(FTM_ALLOCATE_FACE);
+		face = new LLFace(this, mVObjp);
+	}
+
 	if (!face) llerrs << "Allocating new Face: " << mFaces.size() << llendl;
 	
 	if (face)
@@ -276,10 +282,12 @@ LLFace*	LLDrawable::addFace(LLFacePool *poolp, LLViewerTexture *texturep)
 
 LLFace*	LLDrawable::addFace(const LLTextureEntry *te, LLViewerTexture *texturep)
 {
-	LLMemType mt(LLMemType::MTYPE_DRAWABLE);
-	
 	LLFace *face;
-	face = new LLFace(this, mVObjp);
+
+	{
+		LLFastTimer t(FTM_ALLOCATE_FACE);
+		face = new LLFace(this, mVObjp);
+	}
 
 	face->setTEOffset(mFaces.size());
 	face->setTexture(texturep);
@@ -538,29 +546,14 @@ F32 LLDrawable::updateXform(BOOL undamped)
 		}
 	}
 
-	LLVector3 vec = mCurrentScale-target_scale;
-	
-	if (vec*vec > MIN_INTERPOLATE_DISTANCE_SQUARED)
-	{ //scale change requires immediate rebuild
+	if ((mCurrentScale != target_scale) ||
+		(!isRoot() &&
+		(dist_squared >= MIN_INTERPOLATE_DISTANCE_SQUARED ||
+		!mVObjp->getAngularVelocity().isExactlyZero() ||
+		target_pos != mXform.getPosition() ||
+		target_rot != mXform.getRotation())))
+	{ //child prim moving or scale change requires immediate rebuild
 		mCurrentScale = target_scale;
-		gPipeline.markRebuild(this, LLDrawable::REBUILD_POSITION, TRUE);
-	}
-	else if (!isRoot() && 
-		 (!mVObjp->getAngularVelocity().isExactlyZero() ||
-			dist_squared > 0.f))
-	{ //child prim moving relative to parent, tag as needing to be rendered atomically and rebuild
-		dist_squared = 1.f; //keep this object on the move list
-		if (!isState(LLDrawable::ANIMATED_CHILD))
-		{			
-			setState(LLDrawable::ANIMATED_CHILD);
-			gPipeline.markRebuild(this, LLDrawable::REBUILD_ALL, TRUE);
-			mVObjp->dirtySpatialGroup();
-		}
-	}
-	else if (!isRoot() && (
-				 dist_vec_squared(old_pos, target_pos) > 0.f
-				 || old_rot != target_rot ))
-	{ //fix for BUG-860, MAINT-2275, MAINT-1742, MAINT-2247
 		gPipeline.markRebuild(this, LLDrawable::REBUILD_POSITION, TRUE);
 	}
 	else if (!getVOVolume() && !isAvatar())
@@ -652,7 +645,7 @@ BOOL LLDrawable::updateMoveUndamped()
 
 	if (!isState(LLDrawable::INVISIBLE))
 	{
-		BOOL moved = (dist_squared > 0.001f && dist_squared < 255.99f);	
+		BOOL moved = (dist_squared > 0.001f);	
 		moveUpdatePipeline(moved);
 		mVObjp->updateText();
 	}
@@ -687,7 +680,7 @@ BOOL LLDrawable::updateMoveDamped()
 
 	if (!isState(LLDrawable::INVISIBLE))
 	{
-		BOOL moved = (dist_squared > 0.001f && dist_squared < 128.0f);
+		BOOL moved = (dist_squared > 0.001f);
 		moveUpdatePipeline(moved);
 		mVObjp->updateText();
 	}

@@ -50,6 +50,7 @@
 #include "lldriverparam.h"
 #include "llviewertexlayer.h"
 #include "material_codes.h"		// LL_MCODE_END
+#include "llviewerstats.h"
 
 #include "emeraldboobutils.h"
 #include "llavatarname.h"
@@ -72,6 +73,7 @@ class LLHUDNameTag;
 class LLHUDEffectSpiral;
 class LLTexGlobalColor;
 class LLViewerJoint;
+struct LLAppearanceMessageContents;
 
 class SHClientTagMgr : public LLSingleton<SHClientTagMgr>, public boost::signals2::trackable
 {
@@ -173,9 +175,21 @@ public:
 	virtual void   	 	 	idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time);
 	/*virtual*/ BOOL   	 	 	updateLOD();
 	BOOL  	 	 	 	 	updateJointLODs();
-	void					updateLODRiggedAttachments( void );
+	void						updateLODRiggedAttachments( void );
 	/*virtual*/ BOOL   	 	 	isActive() const; // Whether this object needs to do an idleUpdate.
+	S32 						totalTextureMemForUUIDS(std::set<LLUUID>& ids);
+	bool 						allTexturesCompletelyDownloaded(std::set<LLUUID>& ids) const;
+	bool 						allLocalTexturesCompletelyDownloaded() const;
+	bool 						allBakedTexturesCompletelyDownloaded() const;
+	void 						bakedTextureOriginCounts(S32 &sb_count, S32 &host_count,
+														 S32 &both_count, S32 &neither_count);
+	std::string 				bakedTextureOriginInfo();
+	void 						collectLocalTextureUUIDs(std::set<LLUUID>& ids) const;
+	void 						collectBakedTextureUUIDs(std::set<LLUUID>& ids) const;
+	void 						collectTextureUUIDs(std::set<LLUUID>& ids);
+	void						releaseOldTextures();
 	/*virtual*/ void   	 	 	updateTextures();
+	LLViewerFetchedTexture*		getBakedTextureImage(const U8 te, const LLUUID& uuid);
 	/*virtual*/ S32    	 	 	setTETexture(const U8 te, const LLUUID& uuid); // If setting a baked texture, need to request it from a non-local sim.
 	/*virtual*/ void   	 	 	onShift(const LLVector4a& shift_vector);
 	/*virtual*/ U32    	 	 	getPartitionType() const;
@@ -317,13 +331,23 @@ public:
 	virtual BOOL	getIsCloud() const;
 	BOOL			isFullyTextured() const;
 	BOOL			hasGray() const; 
-	S32				getRezzedStatus() const; // 0 = cloud, 1 = gray, 2 = fully textured.
+	S32				getRezzedStatus() const; // 0 = cloud, 1 = gray, 2 = textured, 3 = textured and fully downloaded.
 	void			updateRezzedStatusTimers();
 	bool			isLangolier() const { return mFreezeTimeLangolier; }
 	bool			isFrozenDead() const { return mFreezeTimeDead; }
 
 	S32				mLastRezzedStatus;
+
+	
+	void 			startPhase(const std::string& phase_name);
+	void 			stopPhase(const std::string& phase_name, bool err_check = true);
+	void			clearPhases();
+	void 			logPendingPhases();
+	static void 	logPendingPhasesAllAvatars();
+	void 			logMetricsTimerRecord(const std::string& phase_name, F32 elapsed, bool completed);
+
 protected:
+	LLViewerStats::PhaseMap& getPhases() { return mPhases; }
 	BOOL			updateIsFullyLoaded();
 	BOOL			processFullyLoadedChange(bool loading);
 	void			updateRuthTimer(bool loading);
@@ -339,6 +363,10 @@ private:
 	LLFrameTimer	mRuthTimer;
 	bool			mFreezeTimeLangolier;	// True when this avatar was created during snapshot FreezeTime mode, and that mode is still active.
 	bool			mFreezeTimeDead;		// True when the avatar was marked dead (ie, TP-ed away) while in FreezeTime mode.
+
+private:
+	LLViewerStats::PhaseMap mPhases;
+
 protected:
 	LLFrameTimer    mInvisibleTimer;
 	
@@ -546,6 +574,7 @@ protected:
 
 	LLLoadedCallbackEntry::source_callback_list_t mCallbackTextureList ; 
 	BOOL mLoadedCallbacksPaused;
+	std::set<LLUUID>	mTextureIDs;
 	//--------------------------------------------------------------------
 	// Local Textures
 	//--------------------------------------------------------------------
@@ -644,6 +673,7 @@ protected:
  **/
 
 public:
+	void 			parseAppearanceMessage(LLMessageSystem* mesgsys, LLAppearanceMessageContents& msg);
 	void 			processAvatarAppearance(LLMessageSystem* mesgsys);
 	void 			hideSkirt();
 	void			startAppearanceAnimation();
@@ -662,7 +692,7 @@ public:
 
 	// True if this avatar should fetch its baked textures via the new
 	// appearance mechanism.
-	/*virtual*/ BOOL	isUsingServerBakes() const { return mUseServerBakes; }
+	BOOL				isUsingServerBakes() const;
 	void 				setIsUsingServerBakes(BOOL newval);
 
 

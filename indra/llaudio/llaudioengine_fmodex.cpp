@@ -288,13 +288,33 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 	int r_numbuffers, r_samplerate, r_channels, r_bits;
 	unsigned int r_bufferlength;
 	char r_name[256];
+	FMOD_SPEAKERMODE speaker_mode;
 	mSystem->getDSPBufferSize(&r_bufferlength, &r_numbuffers);
 	mSystem->getSoftwareFormat(&r_samplerate, NULL, &r_channels, NULL, NULL, &r_bits);
 	mSystem->getDriverInfo(0, r_name, 255, 0);
+	mSystem->getSpeakerMode(&speaker_mode);
+	std::string speaker_mode_str = "unknown";
+	switch(speaker_mode)
+	{
+		#define SPEAKER_MODE_CASE(MODE) case MODE: speaker_mode_str = #MODE; break;
+		SPEAKER_MODE_CASE(FMOD_SPEAKERMODE_RAW)
+		SPEAKER_MODE_CASE(FMOD_SPEAKERMODE_MONO)
+		SPEAKER_MODE_CASE(FMOD_SPEAKERMODE_STEREO)
+		SPEAKER_MODE_CASE(FMOD_SPEAKERMODE_QUAD)
+		SPEAKER_MODE_CASE(FMOD_SPEAKERMODE_SURROUND)
+		SPEAKER_MODE_CASE(FMOD_SPEAKERMODE_5POINT1)
+		SPEAKER_MODE_CASE(FMOD_SPEAKERMODE_7POINT1)
+		SPEAKER_MODE_CASE(FMOD_SPEAKERMODE_SRS5_1_MATRIX)
+		SPEAKER_MODE_CASE(FMOD_SPEAKERMODE_MYEARS)
+		default:;
+		#undef SPEAKER_MODE_CASE
+	}
+
 	r_name[255] = '\0';
 	int latency = 1000.0 * r_bufferlength * r_numbuffers /r_samplerate;
 
 	LL_INFOS("AppInit") << "FMOD device: "<< r_name << "\n"
+		<< "Output mode: "<< speaker_mode_str << "\n"
 		<< "FMOD Ex parameters: " << r_samplerate << " Hz * " << r_channels << " * " <<r_bits <<" bit\n"
 		<< "\tbuffer " << r_bufferlength << " * " << r_numbuffers << " (" << latency <<"ms)" << LL_ENDL;
 

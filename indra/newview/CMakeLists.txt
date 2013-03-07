@@ -468,6 +468,7 @@ set(viewer_SOURCE_FILES
     llvectorperfoptions.cpp
     llvelocitybar.cpp
     llviewchildren.cpp
+    llviewerassetstats.cpp
     llviewerassetstorage.cpp
     llviewerassettype.cpp
     llvieweraudio.cpp
@@ -919,6 +920,7 @@ set(viewer_HEADER_FILES
     llscrollingpanelparam.h
     llscrollingpanelparambase.h
     llselectmgr.h
+    llsimplestat.h
     llsky.h
     llspatialpartition.h
     llsprite.h
@@ -974,6 +976,7 @@ set(viewer_HEADER_FILES
     llvectorperfoptions.h
     llvelocitybar.h
     llviewchildren.h
+    llviewerassetstats.h
     llviewerassetstorage.h
     llviewerassettype.h
     llvieweraudio.h

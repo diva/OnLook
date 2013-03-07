@@ -65,6 +65,7 @@ public:
 	//whether or not to use FBO implementation
 	static bool sUseFBO; 
 	static U32 sBytesAllocated;
+	static U32 sCurFBO;
 
 	LLRenderTarget();
 	virtual ~LLRenderTarget();
@@ -101,9 +102,6 @@ public:
 	//applies appropriate viewport
 	virtual void bindTarget();
 
-	//unbind target for rendering
-	static void unbindTarget();
-	
 	//clear render targer, clears depth buffer if present,
 	//uses scissor rect if in copy-to-texture mode
 	void clear(U32 mask = 0xFFFFFFFF);
@@ -156,6 +154,7 @@ protected:
 	std::vector<U32> mTex;
 	std::vector<U32> mInternalFormat;
 	U32 mFBO;
+	U32 mPreviousFBO;
 	U32 mDepth;
 	bool mStencil;
 	bool mUseDepth;

@@ -676,7 +676,10 @@ void LLWorld::updateRegions(F32 max_update_time)
 		if (did_one && max_time <= 0.f)
 			break;
 		max_time = llmin(max_time, max_update_time*.1f);
-		did_one |= regionp->idleUpdate(max_update_time);
+		if (regionp->idleUpdate(max_update_time))
+		{
+			did_one = TRUE;
+		}
 	}
 }
 
@@ -1450,7 +1453,8 @@ void LLWorld::getAvatars(std::vector<LLUUID>* avatar_ids, std::vector<LLVector3d
 		iter != LLCharacter::sInstances.end(); ++iter)
 	{
 		LLVOAvatar* pVOAvatar = (LLVOAvatar*) *iter;
-		if(!pVOAvatar->isDead() && !pVOAvatar->isSelf())
+
+		if (!pVOAvatar->isDead() && !pVOAvatar->isSelf() && !pVOAvatar->mIsDummy)
 		{
 			LLUUID uuid = pVOAvatar->getID();
 			if(!uuid.isNull())

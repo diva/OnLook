@@ -78,6 +78,7 @@
 #include "llpaneleditwearable.h"
 #include "llmakeoutfitdialog.h"
 #include "llagentcamera.h"
+#include "llappearancemgr.h"
 
 #include "statemachine/aifilepicker.h"
 
@@ -256,6 +257,7 @@ void LLFloaterCustomize::delayedClose(bool proceed, bool app_quitting)
 	{
 		LLVOAvatarSelf::onCustomizeEnd();
 		LLFloater::onClose(app_quitting);
+		if(gAgentAvatarp)gAgentAvatarp->mSpecialRenderMode = 0;
 	}
 }
 
@@ -425,17 +427,7 @@ void LLFloaterCustomize::onBtnExport_continued(AIFilePicker* filepicker)
 
 void LLFloaterCustomize::onBtnOk()
 {
-	gAgentWearables.saveAllWearables();
-
-	if ( gAgentAvatarp )
-	{
-		gAgentAvatarp->invalidateAll();
-		
-		gAgentAvatarp->requestLayerSetUploads();
-
-		gAgent.sendAgentSetAppearance();
-	}
-
+	saveCurrentWearables();
 	gFloaterView->sendChildToBack(this);
 	close(false);
 }
@@ -595,7 +587,10 @@ void LLFloaterCustomize::updateVisiblity(bool force_disable_camera_switch/*=fals
 	if(!getVisible())
 	{
 		if(force_disable_camera_switch || !gAgentCamera.cameraCustomizeAvatar() || !gAgentCamera.getCameraAnimating() || (gMorphView && gMorphView->getVisible()))
+		{
+			if(gAgentAvatarp)gAgentAvatarp->mSpecialRenderMode = 3;
 			setVisibleAndFrontmost(TRUE);
+		}
 	}
 }
 
@@ -621,12 +616,8 @@ void LLFloaterCustomize::askToSaveIfDirty( boost::function<void (BOOL)> cb )
 	}
 }
 
-
-bool LLFloaterCustomize::onSaveDialog(const LLSD& notification, const LLSD& response )
+void LLFloaterCustomize::saveCurrentWearables()
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
-
-	BOOL proceed = FALSE;
 	LLWearableType::EType cur = getCurrentWearableType();
 
 	for(U32 i = 0;i < gAgentWearables.getWearableCount(cur);++i)
@@ -634,32 +625,71 @@ bool LLFloaterCustomize::onSaveDialog(const LLSD& notification, const LLSD& resp
 		LLViewerWearable* wearable = gAgentWearables.getViewerWearable(cur,i);
 		if(wearable && wearable->isDirty())
 		{
-			switch( option )
+			/*
+			===============================================================================================
+			Copy-pasted some code from LLPanelEditWearable::saveChanges instead of just calling saveChanges, as
+			we only have one 'active' panel per wearable type, not per layer. The panels just update when
+			layer of focus is changed. Easier just to do it right here manually.
+			===============================================================================================
+			*/ 
+			// Find an existing link to this wearable's inventory item, if any, and its description field.
+			if(gAgentAvatarp->isUsingServerBakes())
 			{
-			case 0:  // "Save"
-				gAgentWearables.saveWearable( cur, i );
-				proceed = TRUE;
-				break;
-
-			case 1:  // "Don't Save"
+				LLInventoryItem *link_item = NULL;
+				std::string description;
+				LLInventoryModel::item_array_t links =
+					LLAppearanceMgr::instance().findCOFItemLinks(wearable->getItemID());
+				if (links.size()>0)
 				{
-					gAgentWearables.revertWearable( cur, i );
-					proceed = TRUE;
+					link_item = links.get(0).get();
+					if (link_item && link_item->getIsLinkType())
+					{
+						description = link_item->getActualDescription();
+					}
 				}
-				break;
+				// Make another copy of this link, with the same
+				// description.  This is needed to bump the COF
+				// version so texture baking service knows appearance has changed.
+				if (link_item)
+				{
+					// Create new link
+					link_inventory_item( gAgent.getID(),
+										 link_item->getLinkedUUID(),
+										 LLAppearanceMgr::instance().getCOF(),
+										 link_item->getName(),
+										 description,
+										 LLAssetType::AT_LINK,
+										 NULL);
+					// Remove old link
+					gInventory.purgeObject(link_item->getUUID());
+				}
+			}
+			gAgentWearables.saveWearable( cur, i );
+		}
+	}
+}
 
-			case 2: // "Cancel"
-				break;
-
-			default:
-				llassert(0);
-				break;
+bool LLFloaterCustomize::onSaveDialog(const LLSD& notification, const LLSD& response )
+{
+	S32 option = LLNotification::getSelectedOption(notification, response);
+	if(option == 0)
+	{
+		saveCurrentWearables();
+	}
+	else
+	{
+		LLWearableType::EType cur = getCurrentWearableType();
+		for(U32 i = 0;i < gAgentWearables.getWearableCount(cur);++i)
+		{
+			LLViewerWearable* wearable = gAgentWearables.getViewerWearable(cur,i);
+			if(wearable && wearable->isDirty())
+			{
+				gAgentWearables.revertWearable( cur, i );
 			}
 		}
 	}
 
-
-	mNextStepAfterSaveCallback(proceed);
+	mNextStepAfterSaveCallback(option < 2);
 	mNextStepAfterSaveCallback.disconnect_all_slots();	//Should this be done?
 
 	return false;

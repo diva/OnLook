@@ -1137,7 +1137,7 @@ void LLViewerFetchedTexture::dump()
 // ONLY called from LLViewerFetchedTextureList
 void LLViewerFetchedTexture::destroyTexture() 
 {
-	if(LLImageGL::sGlobalTextureMemoryInBytes < sMaxDesiredTextureMemInBytes)//not ready to release unused memory.
+	if(LLImageGL::sGlobalTextureMemoryInBytes < sMaxDesiredTextureMemInBytes * 0.95f)//not ready to release unused memory.
 	{
 		return ;
 	}

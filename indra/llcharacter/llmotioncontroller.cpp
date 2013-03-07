@@ -50,6 +50,7 @@ const U32 MAX_MOTION_INSTANCES = 32;
 //-----------------------------------------------------------------------------
 // Constants and statics
 //-----------------------------------------------------------------------------
+F32 LLMotionController::sCurrentTimeFactor = 1.f;
 LLMotionRegistry LLMotionController::sRegistry;
 
 //-----------------------------------------------------------------------------
@@ -133,7 +134,7 @@ LLMotion *LLMotionRegistry::createMotion( const LLUUID &id )
 // Class Constructor
 //-----------------------------------------------------------------------------
 LLMotionController::LLMotionController()
-	: mTimeFactor(1.f),
+	: mTimeFactor(sCurrentTimeFactor),
 	  mCharacter(NULL),
 	  mAnimTime(0.f),
 	  mPrevTimerElapsed(0.f),

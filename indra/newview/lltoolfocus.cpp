@@ -57,6 +57,7 @@
 #include "llviewerwindow.h"
 #include "llvoavatarself.h"
 #include "llmorphview.h"
+#include "llfloatercustomize.h"
 
 // Globals
 BOOL gCameraBtnZoom = TRUE;
@@ -232,6 +233,7 @@ void LLToolCamera::pickCallback(const LLPickInfo& pick_info)
 
 	if( CAMERA_MODE_CUSTOMIZE_AVATAR == gAgentCamera.getCameraMode() )
 	{
+		if(CAMERA_MODE_CUSTOMIZE_AVATAR == gAgentCamera.getCameraMode())
 		gAgentCamera.setFocusOnAvatar(FALSE, FALSE);
 		
 		LLVector3d cam_pos = gAgentCamera.getCameraPositionGlobal();

@@ -226,14 +226,14 @@ LLAgentWearables::sendAgentWearablesUpdateCallback::~sendAgentWearablesUpdateCal
  * @param todo Bitmask of actions to take on completion.
  */
 LLAgentWearables::addWearableToAgentInventoryCallback::addWearableToAgentInventoryCallback(
-	LLPointer<LLRefCount> cb, LLWearableType::EType type, U32 index, LLViewerWearable* wearable, U32 todo) :
+	LLPointer<LLRefCount> cb, LLWearableType::EType type, U32 index, LLViewerWearable* wearable, U32 todo, const std::string description) :
 	mType(type),
 	mIndex(index),	
 	mWearable(wearable),
 	mTodo(todo),
-	mCB(cb)
+	mCB(cb),
+	mDescription(description)
 {
-	//llassert_always(index == 0);
 	llinfos << "constructor" << llendl;
 }
 
@@ -272,7 +272,7 @@ void LLAgentWearables::addWearableToAgentInventoryCallback::fire(const LLUUID& i
 	}
 	if (mTodo & CALL_WEARITEM)
 	{
-		LLAppearanceMgr::instance().addCOFItemLink(inv_item, true);
+		LLAppearanceMgr::instance().addCOFItemLink(inv_item, true, NULL, mDescription);
 	}
 }
 
@@ -473,6 +473,7 @@ void LLAgentWearables::saveWearable(const LLWearableType::EType type, const U32 
 LLViewerWearable* LLAgentWearables::saveWearableAs(const LLWearableType::EType type,
 									  const U32 index,
 									  const std::string& new_name,
+									  const std::string& description,
 									  BOOL save_in_lost_and_found)
 {
 	if (!isWearableCopyable(type, index))
@@ -504,7 +505,9 @@ LLViewerWearable* LLAgentWearables::saveWearableAs(const LLWearableType::EType t
 			type,
 			index,
 			new_wearable,
-			addWearableToAgentInventoryCallback::CALL_WEARITEM);
+			addWearableToAgentInventoryCallback::CALL_WEARITEM,
+			description
+			);
 	LLUUID category_id;
 	if (save_in_lost_and_found)
 	{
@@ -850,6 +853,8 @@ void LLAgentWearables::processAgentInitialWearablesUpdate(LLMessageSystem* mesgs
 
 	if (isAgentAvatarValid())
 	{
+		//gAgentAvatarp->clearPhases(); // reset phase timers for outfit loading.
+		gAgentAvatarp->startPhase("process_initial_wearables_update");
 		gAgentAvatarp->outputRezTiming("Received initial wearables update");
 	}
 
@@ -1646,6 +1651,7 @@ void LLAgentWearables::queryWearableCache()
 	{
 		if (isAgentAvatarValid())
 		{
+			selfStartPhase("fetch_texture_cache_entries");
 			gAgentAvatarp->outputRezTiming("Fetching textures from cache");
 		}
 

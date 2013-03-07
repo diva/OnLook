@@ -149,6 +149,7 @@
 #include "llfloaterregioninfo.h"
 #include "llfloaterreporter.h"
 #include "llfloaterscriptdebug.h"
+#include "llfloaterscriptlimits.h"
 #include "llfloatersettingsdebug.h"
 
 #include "llfloaterenvsettings.h"
@@ -2549,6 +2550,16 @@ class LLSelfEnableRemoveAllAttachments : public view_listener_t
 			}
 		}
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		return true;
+	}
+};
+
+class LLSelfVisibleScriptInfo : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		if (LLViewerRegion* region = gAgent.getRegion())
+			gMenuHolder->findControl(userdata["control"].asString())->setValue(!region->getCapability("AttachmentResources").empty());
 		return true;
 	}
 };
@@ -6671,6 +6682,10 @@ class LLShowFloater : public view_listener_t
 		{
 			LLFloaterScriptDebug::show(LLUUID::null);
 		}
+		else if (floater_name == "script info")
+		{
+			LLFloaterScriptLimits::showInstance();
+		}
 		else if (floater_name == "help f1")
 		{
 			llinfos << "Spawning HTML help window" << llendl;
@@ -9606,6 +9621,7 @@ void initialize_menus()
 
 	addMenu(new LLSelfEnableSitOrStand(), "Self.EnableSitOrStand");
 	addMenu(new LLSelfEnableRemoveAllAttachments(), "Self.EnableRemoveAllAttachments");
+	addMenu(new LLSelfVisibleScriptInfo(), "Self.VisibleScriptInfo");
 
 	 // Avatar pie menu
 

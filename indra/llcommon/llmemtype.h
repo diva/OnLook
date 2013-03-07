@@ -40,7 +40,6 @@
 
 #include <vector>
 
-#define MEM_TYPE_NEW(T)
 
 class LL_COMMON_API LLMemType
 {

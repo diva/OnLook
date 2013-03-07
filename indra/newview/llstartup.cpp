@@ -226,6 +226,7 @@
 // </edit>
 
 #include "llpathfindingmanager.h"
+#include "llevents.h"
 
 #include "lgghunspell_wrapper.h"
 
@@ -278,6 +279,11 @@ static LLHost gFirstSim;
 static std::string gFirstSimSeedCap;
 static LLVector3 gAgentStartLookAt(1.0f, 0.f, 0.f);
 static std::string gAgentStartLocation = "safe";
+
+
+boost::scoped_ptr<LLEventPump> LLStartUp::sStateWatcher(new LLEventStream("StartupState"));
+boost::scoped_ptr<LLViewerStats::PhaseMap> LLStartUp::sPhases(new LLViewerStats::PhaseMap);
+
 //
 // local function declaration
 //
@@ -420,6 +426,15 @@ bool idle_startup()
 
 	if ( STATE_FIRST == LLStartUp::getStartupState() )
 	{
+		static bool first_call = true;
+		if (first_call)
+		{
+			// Other phases get handled when startup state changes,
+			// need to capture the initial state as well.
+			LLStartUp::getPhases().startPhase(LLStartUp::getStartupStateString());
+			first_call = false;
+		}
+
 		gViewerWindow->showCursor();
 		gViewerWindow->getWindow()->setCursor(UI_CURSOR_WAIT);
 
@@ -1881,7 +1896,7 @@ bool idle_startup()
 		display_startup();
 
 		//reset statistics
-		LLViewerStats::getInstance()->resetStats();
+		LLViewerStats::instance().resetStats();
 
 		if (!gNoRender)
 		{
@@ -3645,11 +3660,23 @@ std::string LLStartUp::startupStateToString(EStartupState state)
 void LLStartUp::setStartupState( EStartupState state )
 {
 	LL_INFOS("AppInit") << "Startup state changing from " <<  
-		startupStateToString(gStartupState) << " to " <<  
+		getStartupStateString() << " to " <<  
 		startupStateToString(state) << LL_ENDL;
+
+	getPhases().stopPhase(getStartupStateString());
 	gStartupState = state;
+	getPhases().startPhase(getStartupStateString());
+
+	postStartupState();
 }
 
+void LLStartUp::postStartupState()
+{
+	LLSD stateInfo;
+	stateInfo["str"] = getStartupStateString();
+	stateInfo["enum"] = gStartupState;
+	sStateWatcher->post(stateInfo);
+}
 
 void reset_login()
 {
