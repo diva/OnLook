@@ -156,6 +156,8 @@ class AIStateMachine : public LLThreadSafeRefCount
 
 	// Mutex protecting everything below and making sure only one thread runs the state machine at a time.
 	LLMutex mMultiplexMutex;
+	// Mutex that is locked while calling *_impl() functions and the call back.
+	LLMutex mRunMutex;
 
 	S64 mSleep;                                 //!< Non-zero while the state machine is sleeping.
 

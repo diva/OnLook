@@ -459,7 +459,6 @@ void AIStateMachine::multiplex(event_type event)
 	  mDebugLastState = state;
 	  if (state == bs_multiplex)
 	  {
-		llassert(!mDebugAborted);
 		// set_state is only called from multiplex_impl and therefore synced with mMultiplexMutex.
 		mDebugShouldRun |= mDebugSetStatePending;
 		// Should we run at all?
@@ -476,6 +475,15 @@ void AIStateMachine::multiplex(event_type event)
 	  }
 #endif
 
+	  mRunMutex.lock();
+	  // Now we are actually running a single state.
+	  // If abort() was called at any moment before, we execute that state instead.
+	  bool const late_abort = (state == bs_multiplex || state == bs_initialize) && sub_state_type_rat(mSubState)->aborted;
+	  if (LL_UNLIKELY(late_abort))
+	  {
+		// abort() was called from a child state machine, from another thread, while we were already scheduled to run normally from an engine.
+		state = bs_abort;
+	  }
 	  switch(state)
 	  {
 		case bs_reset:
@@ -486,6 +494,7 @@ void AIStateMachine::multiplex(event_type event)
 		  initialize_impl();
 		  break;
 		case bs_multiplex:
+		  llassert(!mDebugAborted);
 		  multiplex_impl(run_state);
 		  break;
 		case bs_abort:
@@ -499,6 +508,7 @@ void AIStateMachine::multiplex(event_type event)
 		  callback();
 		  break;
 		case bs_killed:
+		  mRunMutex.unlock();
 		  // bs_killed is handled when it is set. So, this must be a re-entry.
 		  // We can only get here when being called by an engine that we were added to before we were killed.
 		  // This should already be have been set to NULL to indicate that we want to be removed from that engine.
@@ -506,6 +516,7 @@ void AIStateMachine::multiplex(event_type event)
 		  // Do not call unref() twice.
 		  return;
 	  }
+	  mRunMutex.unlock();
 	}
 
 	{
@@ -1035,6 +1046,13 @@ void AIStateMachine::abort(void)
   {
 	multiplex(insert_abort);
   }
+  // Block until the current run finished.
+  if (!mRunMutex.tryLock())
+  {
+	llwarns << "AIStateMachine::abort() blocks because the statemachine is still executing code in another thread." << llendl;
+	mRunMutex.lock();
+  }
+  mRunMutex.unlock();
 #ifdef SHOW_ASSERT
   // When abort() returns, it may never run again.
   mDebugAborted = true;
