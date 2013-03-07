@@ -3075,6 +3075,14 @@ void LLFloaterSnapshot::show(void*)
 
 		sInstance->impl.updateLayout(sInstance);
 	}
+	else // just refresh the snapshot in the existing floater instance (DEV-12255)
+	{
+		LLSnapshotLivePreview* preview = LLFloaterSnapshot::Impl::getPreviewView();
+		if(preview)
+		{
+			preview->updateSnapshot(TRUE);
+		}
+	}
 	
 	sInstance->open();		/* Flawfinder: ignore */
 	sInstance->focusFirstItem(FALSE);
