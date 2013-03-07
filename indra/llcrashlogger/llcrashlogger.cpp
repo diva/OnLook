@@ -57,6 +57,7 @@ BOOL gSent = false;
 
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy crashLoggerResponder_timeout;
+extern void startEngineThread(void);
 
 class LLCrashLoggerResponder : public LLHTTPClient::ResponderWithResult
 {
@@ -375,7 +376,7 @@ void LLCrashLogger::updateApplication(const std::string& message)
 {
 	gServicePump->pump();
     gServicePump->callback();
-	AIStateMachine::mainloop();
+	gMainThreadEngine.mainloop();
 }
 
 bool LLCrashLogger::init()
@@ -383,7 +384,11 @@ bool LLCrashLogger::init()
 	// Initialize curl
 	AICurlInterface::initCurl();
 
-	AIStateMachine::setMaxCount(100);		// StateMachineMaxTime
+	// Initialize state machine engines.
+	AIEngine::setMaxCount(100);				// StateMachineMaxTime
+
+	// Start state machine thread.
+	startEngineThread();
 
 	// Start curl thread.
 	AICurlInterface::startCurlThread(64,	// CurlMaxTotalConcurrentConnections
