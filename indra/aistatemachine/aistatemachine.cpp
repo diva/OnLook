@@ -890,6 +890,7 @@ void AIStateMachine::reset()
   mDebugAborted = false;
   mDebugContPending = false;
   mDebugSetStatePending = false;
+  mDebugRefCalled = false;
 #endif
   bool inside_multiplex;
   {
