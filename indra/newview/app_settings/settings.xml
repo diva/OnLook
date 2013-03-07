@@ -4459,17 +4459,6 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>16</integer>
     </map>
-    <key>CurlMaximumNumberOfHandles</key>
-    <map>
-      <key>Comment</key>
-      <string>Maximum number of handles curl can use (requires restart)</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>S32</string>
-      <key>Value</key>
-      <integer>256</integer>
-    </map>
     <key>CurlTimeoutDNSLookup</key>
     <map>
       <key>Comment</key>
