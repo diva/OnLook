@@ -542,7 +542,7 @@ void LLFont::renderGlyph(const U32 glyph_index) const
 	if (mFTFace == NULL)
 		return;
 
-	llassert_always(! FT_Load_Glyph(mFTFace, glyph_index, FT_LOAD_FORCE_AUTOHINT) );
+	llassert_always(! FT_Load_Glyph(mFTFace, glyph_index, FT_LOAD_DEFAULT));
 
 	llassert_always(! FT_Render_Glyph(mFTFace->glyph, gFontRenderMode) );
 
