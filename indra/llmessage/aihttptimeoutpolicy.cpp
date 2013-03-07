@@ -621,7 +621,7 @@ AIHTTPTimeoutPolicyBase HTTPTimeoutPolicy_default(
 		AITP_default_maximum_curl_transaction,
 		AITP_default_maximum_total_delay);
 
-//static. Initialized here, but shortly overwritten by Debug Settings.
+//static. Initialized here, but shortly overwritten by Debug Settings (except for the crash logger, in which case these are the actual values).
 AIHTTPTimeoutPolicyBase AIHTTPTimeoutPolicy::sDebugSettingsCurlTimeout(
 		AITP_default_DNS_lookup_grace,
 		AITP_default_maximum_connect_time,

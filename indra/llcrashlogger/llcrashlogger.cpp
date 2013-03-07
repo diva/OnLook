@@ -49,6 +49,7 @@
 #include "llhttpclient.h"
 #include "llsdserialize.h"
 #include "llcurl.h"
+#include "aistatemachine.h"
 
 LLPumpIO* gServicePump;
 BOOL gBreak = false;
@@ -374,13 +375,20 @@ void LLCrashLogger::updateApplication(const std::string& message)
 {
 	gServicePump->pump();
     gServicePump->callback();
-	//FIXME: AIStateMachine::mainloop(); needs CPU cycles. Can't call it from here though, because it uses gSavedSettings which is part of newview.
+	AIStateMachine::mainloop();
 }
 
 bool LLCrashLogger::init()
 {
 	// Initialize curl
 	AICurlInterface::initCurl();
+
+	AIStateMachine::setMaxCount(100);		// StateMachineMaxTime
+
+	// Start curl thread.
+	AICurlInterface::startCurlThread(64,	// CurlMaxTotalConcurrentConnections
+									 8,		// CurlConcurrentConnectionsPerHost
+									 true);	// NoVerifySSLCert
 
 	// We assume that all the logs we're looking for reside on the current drive
 	gDirUtilp->initAppDirs("SecondLife");
