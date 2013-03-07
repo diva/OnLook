@@ -456,7 +456,7 @@ void AIStateMachine::multiplex(event_type event)
 			break;
 		}
 	  }
-	  mDebugLastState = state;
+	  // More sanity checks.
 	  if (state == bs_multiplex)
 	  {
 		// set_state is only called from multiplex_impl and therefore synced with mMultiplexMutex.
@@ -466,13 +466,6 @@ void AIStateMachine::multiplex(event_type event)
 	  }
 	  // Any previous reason to run is voided by actually running.
 	  mDebugShouldRun = false;
-	  // Make sure we only call ref() once and in balance with unref().
-	  if (state == bs_initialize)
-	  {
-		// This -- and call to ref() (and the test when we're about to call unref()) -- is all done in the critical area of mMultiplexMutex.
-		llassert(!mDebugRefCalled);
-		mDebugRefCalled = true;
-	  }
 #endif
 
 	  mRunMutex.lock();
@@ -483,7 +476,20 @@ void AIStateMachine::multiplex(event_type event)
 	  {
 		// abort() was called from a child state machine, from another thread, while we were already scheduled to run normally from an engine.
 		state = bs_abort;
+#ifdef CWDEBUG
+		Dout(dc::statemachine, "Late abort detected! Running state " << state_str(state) << " instead [" << (void*)this << "]");
+#endif
 	  }
+#ifdef SHOW_ASSERT
+	  mDebugLastState = state;
+	  // Make sure we only call ref() once and in balance with unref().
+	  if (state == bs_initialize)
+	  {
+		// This -- and call to ref() (and the test when we're about to call unref()) -- is all done in the critical area of mMultiplexMutex.
+		llassert(!mDebugRefCalled);
+		mDebugRefCalled = true;
+	  }
+#endif
 	  switch(state)
 	  {
 		case bs_reset:
