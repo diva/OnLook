@@ -19,6 +19,7 @@ set(llcommon_SOURCE_FILES
     aithreadid.cpp
     imageids.cpp
     indra_constants.cpp
+    ll_template_cast.h
     llallocator.cpp
     llallocator_heap_profile.cpp
     llapp.cpp
@@ -54,22 +55,21 @@ set(llcommon_SOURCE_FILES
     llformat.cpp
     llframetimer.cpp
     llheartbeat.cpp
+    llindraconfigfile.cpp
     llinitparam.cpp
     llinstancetracker.cpp
-    llindraconfigfile.cpp
     llliveappconfig.cpp
     lllivefile.cpp
     lllog.cpp
     llmd5.cpp
     llmemory.cpp
     llmemorystream.cpp
-    llmemtype.cpp
     llmetrics.cpp
     llmortician.cpp
     lloptioninterface.cpp
-    llptrto.cpp 
     llprocesslauncher.cpp
     llprocessor.cpp
+    llptrto.cpp 
     llqueuedthread.cpp
     llrand.cpp
     llrefcount.cpp
@@ -81,8 +81,8 @@ set(llcommon_SOURCE_FILES
     llsdutil.cpp
     llsecondlifeurls.cpp
     llsingleton.cpp
-    llstat.cpp
     llstacktrace.cpp
+    llstat.cpp
     llstreamtools.cpp
     llstring.cpp
     llstringtable.cpp
@@ -93,7 +93,6 @@ set(llcommon_SOURCE_FILES
     lluri.cpp
     lluuid.cpp
     llworkerthread.cpp
-    ll_template_cast.h
     metaclass.cpp
     metaproperty.cpp
     reflective.cpp
@@ -116,10 +115,9 @@ set(llcommon_HEADER_FILES
     linden_common.h
     linked_lists.h
     llaccountingcost.h
+    llagentconstants.h
     llallocator.h
     llallocator_heap_profile.h
-    llagentconstants.h
-    llavatarname.h
     llapp.h
     llapr.h
     llaprpool.h
@@ -127,6 +125,7 @@ set(llcommon_HEADER_FILES
     llassoclist.h
     llatomic.h
     llavatarconstants.h
+    llavatarname.h
     llbase32.h
     llbase64.h
     llboost.h
@@ -142,8 +141,8 @@ set(llcommon_HEADER_FILES
     lldarrayptr.h
     lldate.h
     lldefs.h
-    lldependencies.h
     lldeleteutils.h
+    lldependencies.h
     lldepthstack.h
     lldictionary.h
     lldlinked.h
@@ -158,11 +157,11 @@ set(llcommon_HEADER_FILES
     lleventapi.h
     lleventcoro.h
     lleventdispatcher.h
+    lleventemitter.h
     lleventfilter.h
     llevents.h
-    lleventemitter.h
-    llextendedstatus.h
     lleventtimer.h
+    llextendedstatus.h
     llfasttimer.h
     llfasttimer_class.h
     llfile.h
@@ -176,9 +175,9 @@ set(llcommon_HEADER_FILES
     llheartbeat.h
     llhttpstatuscodes.h
     llindexedqueue.h
+    llindraconfigfile.h
     llinitparam.h
     llinstancetracker.h
-    llindraconfigfile.h
     llkeythrottle.h
     lllinkedqueue.h
     llliveappconfig.h
@@ -190,7 +189,6 @@ set(llcommon_HEADER_FILES
     llmd5.h
     llmemory.h
     llmemorystream.h
-    llmemtype.h
     llmetrics.h
     llmortician.h
     llnametable.h
@@ -206,8 +204,8 @@ set(llcommon_HEADER_FILES
     llqueuedthread.h
     llrand.h
     llrefcount.h
-    llrun.h
     llrefcount.h
+    llrun.h
     llsafehandle.h
     llsd.h
     llsdserialize.h

@@ -36,17 +36,12 @@ set(LLWINDOW_INCLUDE_DIRS
     ${LIBS_OPEN_DIR}/llwindow
     )
 
-if (SERVER AND LINUX)
-  set(LLWINDOW_LIBRARIES
-      llwindowheadless
-      )
-else (SERVER AND LINUX)
-  set(LLWINDOW_LIBRARIES
-      llwindow
-      )
-  if (WINDOWS)
-      list(APPEND LLWINDOW_LIBRARIES
-          comdlg32
-          )
-  endif (WINDOWS)
-endif (SERVER AND LINUX)
+set(LLWINDOW_LIBRARIES
+    llwindow
+    )
+
+if (WINDOWS)
+    list(APPEND LLWINDOW_LIBRARIES
+        comdlg32
+        )
+endif (WINDOWS)

@@ -36,7 +36,6 @@
 #include "llsdserialize.h"
 #include "lluuid.h"
 #include "message.h"
-#include "llmemtype.h"
 
 #include <boost/regex.hpp>
 
@@ -692,7 +691,6 @@ bool LLCacheName::getIfThere(const LLUUID& id, std::string& fullname, BOOL& is_g
 
 void LLCacheName::processPending()
 {
-	LLMemType mt_pp(LLMemType::MTYPE_CACHE_PROCESS_PENDING);
 	const F32 SECS_BETWEEN_PROCESS = 0.1f;
 	if(!impl.mProcessTimer.checkExpirationAndReset(SECS_BETWEEN_PROCESS))
 	{
@@ -798,7 +796,6 @@ std::string LLCacheName::getDefaultLastName()
 
 void LLCacheName::Impl::processPendingAsks()
 {
-	LLMemType mt_ppa(LLMemType::MTYPE_CACHE_PROCESS_PENDING_ASKS);
 	sendRequest(_PREHASH_UUIDNameRequest, mAskNameQueue);
 	sendRequest(_PREHASH_UUIDGroupNameRequest, mAskGroupQueue);
 	mAskNameQueue.clear();
@@ -807,7 +804,6 @@ void LLCacheName::Impl::processPendingAsks()
 
 void LLCacheName::Impl::processPendingReplies()
 {
-	LLMemType mt_ppr(LLMemType::MTYPE_CACHE_PROCESS_PENDING_REPLIES);
 	// First call all the callbacks, because they might send messages.
 	for(ReplyQueue::iterator it = mReplyQueue.begin(); it != mReplyQueue.end(); ++it)
 	{

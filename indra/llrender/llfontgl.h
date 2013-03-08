@@ -28,7 +28,7 @@
 #ifndef LL_LLFONTGL_H
 #define LL_LLFONTGL_H
 
-#include "llfont.h"
+#include "llfontfreetype.h"
 #include "lltexture.h"
 #include "v2math.h"
 #include "llcoord.h"
@@ -44,7 +44,7 @@ class LLFontDescriptor;
 // Structure used to store previously requested fonts.
 class LLFontRegistry;
 
-class LLFontGL : public LLFont
+class LLFontGL : public LLFontFreetype
 {
 public:
 	enum HAlign
@@ -67,11 +67,10 @@ public:
 	enum StyleFlags
 	{
 		// text style to render.  May be combined (these are bit flags)
-		// text style to render.  May be combined (these are bit flags)
 		NORMAL    = 0x00,	
 		BOLD      = 0x01,
 		ITALIC    = 0x02,
-		UNDERLINE = 0x04,
+		UNDERLINE = 0x04
 	};
 
 	enum ShadowType

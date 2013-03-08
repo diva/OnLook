@@ -165,7 +165,6 @@
 #include "llframestats.h"
 #include "llframestatview.h"
 #include "llfasttimerview.h"
-#include "llmemoryview.h"
 #include "llgivemoney.h"
 #include "llgroupmgr.h"
 #include "llhoverview.h"
@@ -251,9 +250,6 @@
 #include "lltexlayer.h"
 
 // <edit>
-#include "hgfloatertexteditor.h"
-#include "llfloatervfs.h"
-#include "llfloatervfsexplorer.h"
 #include "llfloatermessagelog.h"
 #include "shfloatermediaticker.h"
 #include "llpacketring.h"
@@ -503,8 +499,6 @@ void handle_hide_typing_notification(void*);
 void handle_close_all_notifications(void*);
 void handle_open_message_log(void*);
 void handle_edit_ao(void*);
-void handle_local_assets(void*);
-void handle_vfs_explorer(void*);
 void handle_sounds_explorer(void*);
 void handle_blacklist(void*);
 // </edit>
@@ -970,14 +964,6 @@ void init_client_menu(LLMenuGL* menu)
 										&get_visibility,
 										(void*)gDebugView->mFastTimerView,
 										  '9', MASK_CONTROL|MASK_SHIFT ) );
-//#if MEM_TRACK_MEM
-		sub->addChild(new LLMenuItemCheckGL("Memory", 
-										&toggle_visibility,
-										NULL,
-										&get_visibility,
-										(void*)gDebugView->mMemoryView,
-										  '0', MASK_CONTROL|MASK_SHIFT ) );
-//#endif
 		
 		sub->addSeparator();
 		
@@ -3806,16 +3792,6 @@ void handle_open_message_log(void*)
 void handle_edit_ao(void*)
 {
 	LLFloaterAO::show(NULL);
-}
-
-void handle_local_assets(void*)
-{
-
-}
-
-void handle_vfs_explorer(void*)
-{
-
 }
 
 void handle_sounds_explorer(void*)

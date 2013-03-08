@@ -22,8 +22,8 @@ include_directories(
     )
 
 set(llimage_SOURCE_FILES
-    llimagebmp.cpp
     llimage.cpp
+    llimagebmp.cpp
     llimagedxt.cpp
     llimagej2c.cpp
     llimagejpeg.cpp
@@ -35,6 +35,7 @@ set(llimage_SOURCE_FILES
 
 set(llimage_HEADER_FILES
     CMakeLists.txt
+
     llimage.h
     llimagebmp.h
     llimagedxt.h

@@ -26,6 +26,7 @@
 #ifndef LLMEMORY_H
 #define LLMEMORY_H
 
+#include "linden_common.h"
 
 #include <new>
 #include <cstdlib>
@@ -33,7 +34,7 @@
 #include <stdint.h>		// uintptr_t
 #endif
 
-#include "llmemtype.h"
+class LLMutex ;
 
 #if LL_WINDOWS && LL_DEBUG
 #define LL_CHECK_MEMORY llassert(_CrtCheckMemory());
@@ -173,8 +174,8 @@ private:
 };
 
 //----------------------------------------------------------------------------
-class LLMutex ;
 #if MEM_TRACK_MEM
+class LLMutex ;
 class LL_COMMON_API LLMemTracker
 {
 private:

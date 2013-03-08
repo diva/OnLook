@@ -26,10 +26,12 @@
 
 #include "linden_common.h"
 
-#include <boost/tokenizer.hpp>
 
-#include "llfont.h"
+
 #include "llfontgl.h"
+
+// Linden library includes
+#include "llfontfreetype.h"
 #include "llfontbitmapcache.h"
 #include "llfontregistry.h"
 #include "llgl.h"
@@ -37,6 +39,9 @@
 #include "v4color.h"
 #include "llstl.h"
 #include "llfasttimer.h"
+
+// Third party library includes
+#include <boost/tokenizer.hpp>
 
 const S32 BOLD_OFFSET = 1;
 
@@ -79,7 +84,7 @@ F32 llfont_round_y(F32 y)
 }
 
 LLFontGL::LLFontGL()
-	: LLFont()
+	: LLFontFreetype()
 {
 	clearEmbeddedChars();
 }
@@ -128,7 +133,7 @@ void LLFontGL::destroyGL()
 
 BOOL LLFontGL::loadFace(const std::string& filename, const F32 point_size, const F32 vert_dpi, const F32 horz_dpi, const S32 components, BOOL is_fallback)
 {
-	if (!LLFont::loadFace(filename, point_size, vert_dpi, horz_dpi, components, is_fallback))
+	if (!LLFontFreetype::loadFace(filename, point_size, vert_dpi, horz_dpi, components, is_fallback))
 	{
 		return FALSE;
 	}
@@ -138,7 +143,7 @@ BOOL LLFontGL::loadFace(const std::string& filename, const F32 point_size, const
 
 BOOL LLFontGL::addChar(const llwchar wch) const
 {
-	if (!LLFont::addChar(wch))
+	if (!LLFontFreetype::addChar(wch))
 	{
 		return FALSE;
 	}
@@ -288,7 +293,7 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 	F32 inv_width = 1.f / mFontBitmapCachep->getBitmapWidth();
 	F32 inv_height = 1.f / mFontBitmapCachep->getBitmapHeight();
 
-	const S32 LAST_CHARACTER = LLFont::LAST_CHAR_FULL;
+	const S32 LAST_CHARACTER = LLFontFreetype::LAST_CHAR_FULL;
 
 
 	BOOL draw_ellipses = FALSE;
@@ -546,7 +551,7 @@ F32 LLFontGL::getWidthF32(const std::string& utf8text, const S32 begin_offset, c
 
 F32 LLFontGL::getWidthF32(const llwchar* wchars, const S32 begin_offset, const S32 max_chars, BOOL use_embedded) const
 {
-	const S32 LAST_CHARACTER = LLFont::LAST_CHAR_FULL;
+	const S32 LAST_CHARACTER = LLFontFreetype::LAST_CHAR_FULL;
 
 	F32 cur_x = 0;
 	const S32 max_index = begin_offset + max_chars;
@@ -981,7 +986,7 @@ void LLFontGL::destroyAllGL()
 {
 	if (sFontRegistry)
 	{
-		if (LLFont::sOpenGLcrashOnRestart)
+		if (LLFontFreetype::sOpenGLcrashOnRestart)
 		{
 			// This will leak memory but will prevent a crash...
 			sFontRegistry = NULL;

@@ -33,7 +33,6 @@
 
 #include "llbuffer.h"
 #include "llhost.h"
-#include "llmemtype.h"
 #include "llpumpio.h"
 #include "llthread.h"
 
@@ -101,7 +100,6 @@ void ll_debug_socket(const char* msg, apr_socket_t* apr_sock)
 // static
 LLSocket::ptr_t LLSocket::create(EType type, U16 port)
 {
-	LLMemType m1(LLMemType::MTYPE_IO_TCP);
 	apr_status_t status = APR_EGENERAL;
 	LLSocket::ptr_t rv(new LLSocket);
 
@@ -179,7 +177,6 @@ LLSocket::ptr_t LLSocket::create(EType type, U16 port)
 // static
 LLSocket::ptr_t LLSocket::create(apr_status_t& status, LLSocket::ptr_t& listen_socket)
 {
-	LLMemType m1(LLMemType::MTYPE_IO_TCP);
 	if (!listen_socket->getSocket())
 	{
 		status = APR_ENOSOCKET;
@@ -232,7 +229,6 @@ LLSocket::LLSocket() :
 
 LLSocket::~LLSocket()
 {
-	LLMemType m1(LLMemType::MTYPE_IO_TCP);
 	// *FIX: clean up memory we are holding.
 	if(mSocket)
 	{
@@ -248,7 +244,6 @@ LLSocket::~LLSocket()
 
 void LLSocket::setBlocking(S32 timeout)
 {
-	LLMemType m1(LLMemType::MTYPE_IO_TCP);
 	// set up the socket options
 	ll_apr_warn_status(apr_socket_timeout_set(mSocket, timeout));
 	ll_apr_warn_status(apr_socket_opt_set(mSocket, APR_SO_NONBLOCK, 0));
@@ -259,7 +254,6 @@ void LLSocket::setBlocking(S32 timeout)
 
 void LLSocket::setNonBlocking()
 {
-	LLMemType m1(LLMemType::MTYPE_IO_TCP);
 	// set up the socket options
 	ll_apr_warn_status(apr_socket_timeout_set(mSocket, 0));
 	ll_apr_warn_status(apr_socket_opt_set(mSocket, APR_SO_NONBLOCK, 1));
@@ -276,12 +270,10 @@ LLIOSocketReader::LLIOSocketReader(LLSocket::ptr_t socket) :
 	mSource(socket),
 	mInitialized(false)
 {
-	LLMemType m1(LLMemType::MTYPE_IO_TCP);
 }
 
 LLIOSocketReader::~LLIOSocketReader()
 {
-	LLMemType m1(LLMemType::MTYPE_IO_TCP);
 	//lldebugs << "Destroying LLIOSocketReader" << llendl;
 }
 
@@ -297,7 +289,6 @@ LLIOPipe::EStatus LLIOSocketReader::process_impl(
 {
 	LLFastTimer t(FTM_PROCESS_SOCKET_READER);
 	PUMP_DEBUG;
-	LLMemType m1(LLMemType::MTYPE_IO_TCP);
 	if(!mSource) return STATUS_PRECONDITION_NOT_MET;
 	if(!mInitialized)
 	{
@@ -379,12 +370,10 @@ LLIOSocketWriter::LLIOSocketWriter(LLSocket::ptr_t socket) :
 	mLastWritten(NULL),
 	mInitialized(false)
 {
-	LLMemType m1(LLMemType::MTYPE_IO_TCP);
 }
 
 LLIOSocketWriter::~LLIOSocketWriter()
 {
-	LLMemType m1(LLMemType::MTYPE_IO_TCP);
 	//lldebugs << "Destroying LLIOSocketWriter" << llendl;
 }
 
@@ -399,7 +388,6 @@ LLIOPipe::EStatus LLIOSocketWriter::process_impl(
 {
 	LLFastTimer t(FTM_PROCESS_SOCKET_WRITER);
 	PUMP_DEBUG;
-	LLMemType m1(LLMemType::MTYPE_IO_TCP);
 	if(!mDestination) return STATUS_PRECONDITION_NOT_MET;
 	if(!mInitialized)
 	{
@@ -531,12 +519,10 @@ LLIOServerSocket::LLIOServerSocket(
 	mInitialized(false),
 	mResponseTimeout(DEFAULT_CHAIN_EXPIRY_SECS)
 {
-	LLMemType m1(LLMemType::MTYPE_IO_TCP);
 }
 
 LLIOServerSocket::~LLIOServerSocket()
 {
-	LLMemType m1(LLMemType::MTYPE_IO_TCP);
 	//lldebugs << "Destroying LLIOServerSocket" << llendl;
 }
 
@@ -556,7 +542,6 @@ LLIOPipe::EStatus LLIOServerSocket::process_impl(
 {
 	LLFastTimer t(FTM_PROCESS_SERVER_SOCKET);
 	PUMP_DEBUG;
-	LLMemType m1(LLMemType::MTYPE_IO_TCP);
 	if(!pump)
 	{
 		llwarns << "Need a pump for server socket." << llendl;

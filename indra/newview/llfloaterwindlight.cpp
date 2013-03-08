@@ -875,14 +875,11 @@ bool LLFloaterWindLight::deleteAlertCallback(const LLSD& notification, const LLS
 	{
 		LLFloaterDayCycle* day_cycle = NULL;
 		LLComboBox* key_combo = NULL;
-		LLMultiSliderCtrl* mult_sldr = NULL;
 
 		if(LLFloaterDayCycle::isOpen()) 
 		{
 			day_cycle = LLFloaterDayCycle::instance();
-			key_combo = day_cycle->getChild<LLComboBox>( 
-				"WLKeyPresets");
-			mult_sldr = day_cycle->getChild<LLMultiSliderCtrl>("WLDayCycleKeys");
+			key_combo = day_cycle->getChild<LLComboBox>("WLKeyPresets");
 		}
 
 		std::string name(mSkyPresetCombo->getSelectedValue().asString());

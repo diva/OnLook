@@ -729,7 +729,6 @@ void LLFloaterModelPreview::onLODParamCommit(S32 lod, bool enforce_tri_limit)
 void LLFloaterModelPreview::draw()
 {
 	LLFloater::draw();
-	LLRect r = getRect();
 
 	mModelPreview->update();
 
@@ -4934,14 +4933,8 @@ BOOL LLModelPreview::render()
 	bool upload_skin = mFMP->childGetValue("upload_skin").asBoolean();
 	bool upload_joints = mFMP->childGetValue("upload_joints").asBoolean();
 
-	bool resetJoints = false;
-	if (upload_joints != mLastJointUpdate)
+	if ( upload_joints != mLastJointUpdate )
 	{
-		if (mLastJointUpdate)
-		{
-			resetJoints = true;
-		}
-
 		mLastJointUpdate = upload_joints;
 	}
 

@@ -2228,7 +2228,7 @@ void LLTextEditor::pasteHelper(bool is_primary)
 		for( S32 i = 0; i < len; i++ )
 		{
 			llwchar wc = clean_string[i];
-			if( (wc < LLFont::FIRST_CHAR) && (wc != LF) )
+			if( (wc < LLFontFreetype::FIRST_CHAR) && (wc != LF) )
 			{
 				clean_string[i] = LL_UNKNOWN_CHAR;
 			}

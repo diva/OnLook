@@ -1018,7 +1018,6 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	static LLCachedControl<bool> const freeze_time("FreezeTime", false);
 	mFreezeTimeLangolier = freeze_time;
 
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
 	//VTResume();  // VTune
 	
 	// mVoiceVisualizer is created by the hud effects manager and uses the HUD Effects pipeline
@@ -1965,8 +1964,6 @@ void LLVOAvatar::buildCharacter()
 //-----------------------------------------------------------------------------
 void LLVOAvatar::releaseMeshData()
 {
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
-	
 	if (sInstances.size() < AVATAR_RELEASE_THRESHOLD || mIsDummy)
 	{
 		return;
@@ -2021,7 +2018,6 @@ void LLVOAvatar::releaseMeshData()
 void LLVOAvatar::restoreMeshData()
 {
 	llassert(!isSelf());
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
 	
 	//llinfos << "Restoring" << llendl;
 	mMeshValid = TRUE;
@@ -2179,8 +2175,6 @@ U32 LLVOAvatar::processUpdateMessage(LLMessageSystem *mesgsys,
 									 U32 block_num, const EObjectUpdateType update_type,
 										  LLDataPacker *dp)
 {
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
-	
 	const BOOL has_name = !getNVPair("FirstName");
 
 	// Do base class updates...
@@ -2286,7 +2280,6 @@ void LLVOAvatar::dumpAnimationState()
 //------------------------------------------------------------------------
 void LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 {
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
 	LLFastTimer t(FTM_AVATAR_UPDATE);
 
 	if (isDead())
@@ -3350,8 +3343,6 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 		mNameText->setTextAlignment(LLHUDNameTag::ALIGN_TEXT_LEFT);
 		mNameText->setFadeDistance(CHAT_NORMAL_RADIUS * 2.f, 5.f);
 			
-		char line[MAX_STRING];		/* Flawfinder: ignore */
-		line[0] = '\0';
 		std::deque<LLChat>::iterator chat_iter = mChats.begin();
 		mNameText->clearString();
 
@@ -3596,8 +3587,6 @@ void LLVOAvatar::resetFreezeTime()
 //------------------------------------------------------------------------
 BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 {
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
-
 	// Frozen!
 	if (areAnimationsPaused())
 	{
@@ -4614,8 +4603,8 @@ U32 LLVOAvatar::renderTransparent(BOOL first_pass)
 		}
 		// Can't test for baked hair being defined, since that won't always be the case (not all viewers send baked hair)
 		// TODO: 1.25 will be able to switch this logic back to calling isTextureVisible();
-		if ( getImage(TEX_HAIR_BAKED, 0) && 
-		     getImage(TEX_HAIR_BAKED, 0)->getID() != IMG_INVISIBLE || LLDrawPoolAlpha::sShowDebugAlpha)		
+		if ((getImage(TEX_HAIR_BAKED, 0) && 
+		     getImage(TEX_HAIR_BAKED, 0)->getID() != IMG_INVISIBLE) || LLDrawPoolAlpha::sShowDebugAlpha)		
 		{
 			LLViewerJoint* hair_mesh = getViewerJoint(MESH_ID_HAIR);
 			if (hair_mesh)
@@ -5306,8 +5295,6 @@ const LLUUID& LLVOAvatar::getStepSound() const
 //-----------------------------------------------------------------------------
 void LLVOAvatar::processAnimationStateChanges()
 {
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
-	
 	if ((gNoRender)||(gAgent.isTPosed())) //isTPosed is meant to stop animation updates while force-TPosed.
 	{
 		return;
@@ -5423,8 +5410,6 @@ void LLVOAvatar::processAnimationStateChanges()
 //-----------------------------------------------------------------------------
 BOOL LLVOAvatar::processSingleAnimationStateChange( const LLUUID& anim_id, BOOL start )
 {
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
-	
 	BOOL result = FALSE;
 
 	if ( start ) // start animation
@@ -5611,8 +5596,6 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 	{
 		return TRUE;
 	}
-
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
 
 	lldebugs << "motion requested " << id.asString() << " " << gAnimLibrary.animationName(id) << llendl;
 
@@ -5992,8 +5975,6 @@ BOOL LLVOAvatar::isActive() const
 //-----------------------------------------------------------------------------
 void LLVOAvatar::setPixelAreaAndAngle(LLAgent &agent)
 {
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
-
 	if (mDrawable.isNull())
 	{
 		return;
@@ -8200,7 +8181,6 @@ void LLVOAvatar::onBakedTextureMasksLoaded( BOOL success, LLViewerFetchedTexture
 	if (!userdata) return;
 
 	//llinfos << "onBakedTextureMasksLoaded: " << src_vi->getID() << llendl;
-	const LLMemType mt(LLMemType::MTYPE_AVATAR);
 	const LLUUID id = src_vi->getID();
  
 	LLTextureMaskData* maskData = (LLTextureMaskData*) userdata;

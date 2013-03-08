@@ -30,11 +30,10 @@
  * $/LicenseInfo$
  */
 
-#ifndef LL_LLFONT_H
-#define LL_LLFONT_H
+#ifndef LL_LLFONTFREETYPE_H
+#define LL_LLFONTFREETYPE_H
 
 #include <map>
-//#include "lllocalidhashmap.h"
 #include "llmemory.h"
 #include "llstl.h"
 
@@ -43,7 +42,7 @@
 
 class LLImageRaw;
 class LLFontManager;
-class LLFont;
+class LLFontFreetype;
 
 // Hack.  FT_Face is just a typedef for a pointer to a struct,
 // but there's no simple forward declarations file for FreeType, 
@@ -59,7 +58,7 @@ class LLFontManager
 public:
 	static void initClass();
 	static void cleanupClass();
-	
+
 public:
 	LLFontManager();
 	virtual ~LLFontManager();
@@ -88,19 +87,19 @@ public:
 };
 
 // Used for lists of fallback fonts
-class LLFontList : public std::vector<LLFont*>
+class LLFontList : public std::vector<LLFontFreetype*>
 {
 public:
 	LLFontList();
 	~LLFontList();
-	void addAtEnd(LLFont *font);
+	void addAtEnd(LLFontFreetype *font);
 };
 
-class LLFont
+class LLFontFreetype
 {
 public:
-	LLFont();
-	virtual ~LLFont();
+	LLFontFreetype();
+	~LLFontFreetype();
 
 	// is_fallback should be true for fallback fonts that aren't used
 	// to render directly (Unicode backup, primarily)
@@ -157,7 +156,7 @@ protected:
 	virtual BOOL hasGlyph(const llwchar wch) const;		// Has a glyph for this character
 	virtual BOOL addChar(const llwchar wch) const;		// Add a new character to the font if necessary
 	virtual BOOL addGlyph(const llwchar wch, const U32 glyph_index) const;	// Add a new glyph to the existing font
-	virtual BOOL addGlyphFromFont(const LLFont *fontp, const llwchar wch, const U32 glyph_index) const;	// Add a glyph from this font to the other (returns the glyph_index, 0 if not found)
+	virtual BOOL addGlyphFromFont(const LLFontFreetype *fontp, const llwchar wch, const U32 glyph_index) const;	// Add a glyph from this font to the other (returns the glyph_index, 0 if not found)
 
 	virtual LLFontGlyphInfo* getGlyphInfo(const llwchar wch) const;
 
@@ -195,4 +194,4 @@ protected:
 	mutable S32 mAddGlyphCount;
 };
 
-#endif // LL_FONT_
+#endif // LL_FONTFREETYPE_H

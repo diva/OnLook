@@ -21,8 +21,6 @@ else (STANDALONE)
       debug ${ARCH_PREBUILT_DIRS_DEBUG}/libapriconv-1.lib
       optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libapriconv-1.lib
       )
-    # Doesn't need to link with iconv.dll
-    set(APRICONV_LIBRARIES "")
     set(APRUTIL_LIBRARIES 
       debug ${ARCH_PREBUILT_DIRS_DEBUG}/libaprutil-1.lib ${APRICONV_LIBRARIES}
       optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libaprutil-1.lib ${APRICONV_LIBRARIES}
@@ -44,7 +42,7 @@ else (STANDALONE)
   endif (WINDOWS)
   set(APR_INCLUDE_DIR ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/apr-1)
 
-  if (LINUX AND VIEWER)
+  if (LINUX)
     list(APPEND APRUTIL_LIBRARIES ${DB_LIBRARIES})
-  endif (LINUX AND VIEWER)
+  endif (LINUX)
 endif (STANDALONE)

@@ -2145,8 +2145,6 @@ void LLFloaterIMPanel::sendMsg()
 			std::string prefix = utf8text.substr(0, 4);
 			if (gSavedSettings.getBOOL("AscentAutoCloseOOC") && (utf8text.length() > 1) && !mRPMode)
 			{
-				// Chalice - OOC autoclosing patch based on code by Henri Beauchamp
-				int needsClosingType=0;
 				//Check if it needs the end-of-chat brackets -HgB
 				if (utf8text.find("((") == 0 && utf8text.find("))") == std::string::npos)
 				{
@@ -2160,8 +2158,7 @@ void LLFloaterIMPanel::sendMsg()
 						utf8text+=" ";
 					utf8text+="]]";
 				}
-				//Check if it needs the start-of-chat brackets -HgB
-				needsClosingType=0;
+
 				if (prefix != "/me " && prefix != "/me'")   //Allow /me to end with )) or ]]
 				{
 					if (utf8text.find("((") == std::string::npos && utf8text.find("))") == (utf8text.length() - 2))

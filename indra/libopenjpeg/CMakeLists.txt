@@ -14,8 +14,8 @@ set(OPENJPEG_VERSION
 
 set(openjpeg_SOURCE_FILES
     bio.c
-    cio.c
     cidx_manager.c
+    cio.c
     dwt.c
     event.c
     image.c
@@ -26,8 +26,8 @@ set(openjpeg_SOURCE_FILES
     mct.c
     mqc.c
     openjpeg.c
-    pi.c
     phix_manager.c
+    pi.c
     ppix_manager.c
     raw.c
     t1.c
@@ -40,8 +40,8 @@ set(openjpeg_SOURCE_FILES
 
 set(openjpeg_HEADER_FILES
     bio.h
-    cio.h
     cidx_manager.h
+    cio.h
     dwt.h
     event.h
     fix.h

@@ -505,14 +505,10 @@ void LLHoverView::updateText()
 
 		LLParcel* hover_parcel = LLViewerParcelMgr::getInstance()->getHoverParcel();
 		LLUUID owner;
-		S32 width = 0;
-		S32 height = 0;
 
 		if ( hover_parcel )
 		{
 			owner = hover_parcel->getOwnerID();
-			width = S32(LLViewerParcelMgr::getInstance()->getHoverParcelWidth());
-			height = S32(LLViewerParcelMgr::getInstance()->getHoverParcelHeight());
 		}
 
 		// Line: "Land"
@@ -636,15 +632,6 @@ void LLHoverView::updateText()
 			}
 		}
 
-		// Line: "Size: 1x4"
-		// Only show for non-public land
-		/*
-		if ( hover_parcel && LLUUID::null != owner)
-		{
-			line = llformat("Size: %dx%d", width, height );
-			mText.push_back(line);
-		}
-		*/
 		if (hover_parcel && hover_parcel->getParcelFlag(PF_FOR_SALE))
 		{
 			LLStringUtil::format_map_t args;

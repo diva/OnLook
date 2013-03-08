@@ -3044,10 +3044,13 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 	}
 
 	//build matrix palette
-	LLMatrix4a mp[64];
+	static const size_t kMaxJoints = 64;
+
+	LLMatrix4a mp[kMaxJoints];
 	LLMatrix4* mat = (LLMatrix4*) mp;
 	
-	for (U32 j = 0; j < skin->mJointNames.size(); ++j)
+	U32 maxJoints = llmin(skin->mJointNames.size(), kMaxJoints);
+	for (U32 j = 0; j < maxJoints; ++j)
 	{
 		LLJoint* joint = avatar->getJoint(skin->mJointNames[j]);
 		if (joint)
@@ -3105,8 +3108,10 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 					F32 w = wght[k];
 
 					LLMatrix4a src;
-					src.setMul(mp[idx[k]], w);
-
+					// Insure ref'd bone is in our clamped array of mats
+					llassert(idx[k] < kMaxJoints);
+					// clamp k to kMaxJoints to avoid reading garbage off stack in release
+					src.setMul(mp[idx[(k < kMaxJoints) ? k : 0]], w);
 					final_mat.add(src);
 				}
 
@@ -3210,7 +3215,6 @@ static LLFastTimer::DeclareTimer FTM_REGISTER_FACE("Register Face");
 void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep, U32 type)
 {
 	LLFastTimer t(FTM_REGISTER_FACE);
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 
 //	if (facep->getViewerObject()->isSelected() && gHideSelectedObjects)
 // [RLVa:KB] - Checked: 2010-11-29 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c

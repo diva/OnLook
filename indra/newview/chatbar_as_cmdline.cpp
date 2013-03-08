@@ -244,7 +244,6 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					{
 						if (i >> z)
 						{
-							LLVector3 agentPos = gAgent.getPositionAgent();
 							LLViewerRegion* agentRegionp = gAgent.getRegion();
 							if(agentRegionp)
 							{

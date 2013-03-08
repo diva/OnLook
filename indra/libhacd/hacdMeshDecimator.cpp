@@ -187,7 +187,7 @@ namespace HACD
 				m_nTriangles--;
 			}
 		}
-        long idEdge;
+        long idEdge = 0;
 		for(size_t itE = 0; itE < m_vertices[v2].m_edges.Size(); ++itE)
 		{
             idEdge = m_vertices[v2].m_edges[itE];
@@ -529,7 +529,7 @@ namespace HACD
 		long a, b;
         long idEdge1;
         long idEdge2;
-		long idEdgeV1V2;
+		long idEdgeV1V2 = 0;
 		for(size_t itE1 = 0; itE1 < m_vertices[v1].m_edges.Size(); ++itE1)
 		{
             idEdge1 = m_vertices[v1].m_edges[itE1];

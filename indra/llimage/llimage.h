@@ -36,7 +36,6 @@
 #include "lluuid.h"
 #include "llstring.h"
 #include "llthread.h"
-#include "llmemtype.h"
 #include "aithreadsafe.h"
 
 const S32 MIN_IMAGE_MIP =  2; // 4x4, only used for expand/contract power of 2
@@ -163,8 +162,6 @@ private:
 	bool mAllowOverSize ;
 
 	static LLPrivateMemoryPool* sPrivatePoolp ;
-public:
-	LLMemType::DeclareMemType& mMemType; // debug
 };
 
 // Raw representation of an image (used for textures, and other uncompressed formats

@@ -42,10 +42,8 @@ include(GooglePerfTools)
 include(StateMachine)
 include(TemplateCheck)
 include(UI)
-include(LLKDU)
 include(ViewerMiscLibs)
 include(GLOD)
-include(ViewerArtwork.cmake)
 include(LLAppearance)
 
 if (WINDOWS)
@@ -58,7 +56,7 @@ include_directories(
     ${DBUSGLIB_INCLUDE_DIRS}
     ${HUNSPELL_INCLUDE_DIR}
     ${ELFIO_INCLUDE_DIR}
-    ${JSONCPP_INCLUDE_DIRS}
+    ${JSONCPP_INCLUDE_DIR}
     ${GLOD_INCLUDE_DIRS}
     ${LLAUDIO_INCLUDE_DIRS}
     ${LLCHARACTER_INCLUDE_DIRS}
@@ -81,6 +79,7 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
+    NACLantispam.cpp
     aoremotectrl.cpp
     ascentfloatercontactgroups.cpp
     ascentkeyword.cpp
@@ -93,7 +92,6 @@ set(viewer_SOURCE_FILES
     floaterlocalassetbrowse.cpp
     floatervoicelicense.cpp
     hbfloatergrouptitles.cpp
-    hgfloatertexteditor.cpp
     hippofloaterxml.cpp
     hippogridmanager.cpp
     hippolimits.cpp
@@ -122,7 +120,6 @@ set(viewer_SOURCE_FILES
     llaudiosourcevo.cpp
     llavatarpropertiesprocessor.cpp
     llbox.cpp
-    llbuildnewviewsscheduler.cpp
     llcallbacklist.cpp
     llcallingcard.cpp
     llcapabilitylistener.cpp
@@ -259,8 +256,6 @@ set(viewer_SOURCE_FILES
     llfloatertos.cpp
     llfloaterurldisplay.cpp
     llfloaterurlentry.cpp
-    llfloatervfs.cpp
-    llfloatervfsexplorer.cpp
     llfloatervoicedevicesettings.cpp
     llfloaterwater.cpp
     llfloaterwindlight.cpp
@@ -293,7 +288,6 @@ set(viewer_SOURCE_FILES
     llimpanel.cpp
     llimview.cpp
     llinventoryactions.cpp
-    llinventorybackup.cpp
     llinventorybridge.cpp
     llinventoryclipboard.cpp
     llinventoryfilter.cpp
@@ -319,7 +313,6 @@ set(viewer_SOURCE_FILES
     llmarketplacenotifications.cpp
     llmediactrl.cpp
     llmediaremotectrl.cpp
-    llmemoryview.cpp
     llmenucommands.cpp
     llmenuoptionpathfindingrebakenavmesh.cpp
     llmeshrepository.cpp
@@ -348,8 +341,8 @@ set(viewer_SOURCE_FILES
     llpaneldirland.cpp
     llpaneldirpeople.cpp
     llpaneldirplaces.cpp
-    llpaneldisplay.cpp
     llpaneldirpopular.cpp
+    llpaneldisplay.cpp
     llpaneleditwearable.cpp
     llpanelevent.cpp
     llpanelface.cpp
@@ -552,11 +545,10 @@ set(viewer_SOURCE_FILES
     llworld.cpp
     llworldmap.cpp
     llworldmapmessage.cpp
-    llworldmipmap.cpp
     llworldmapview.cpp
+    llworldmipmap.cpp
     llxmlrpcresponder.cpp
     m7wlinterface.cpp
-    NACLantispam.cpp
     noise.cpp
     pipeline.cpp
     qtoolalign.cpp
@@ -584,6 +576,8 @@ set(VIEWER_BINARY_NAME "secondlife-bin" CACHE STRING
 set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
+
+    NACLantispam.h
     aoremotectrl.h
     ascentfloatercontactgroups.h
     ascentkeyword.h
@@ -596,7 +590,6 @@ set(viewer_HEADER_FILES
     floaterlocalassetbrowse.h
     floatervoicelicense.h
     hbfloatergrouptitles.h
-    hgfloatertexteditor.h
     hippofloaterxml.h
     hippogridmanager.h
     hippolimits.h
@@ -626,7 +619,6 @@ set(viewer_HEADER_FILES
     llaudiosourcevo.h
     llavatarpropertiesprocessor.h
     llbox.h
-    llbuildnewviewsscheduler.h
     llcallbacklist.h
     llcallingcard.h
     llcapabilitylistener.h
@@ -703,9 +695,9 @@ set(viewer_HEADER_FILES
     llfloaterdisplayname.h
     llfloatereditui.h
     llfloaterenvsettings.h
+    llfloaterevent.h
     llfloaterexploreanimations.h
     llfloaterexploresounds.h
-    llfloaterevent.h
     llfloaterfeed.h
     llfloaterfonttest.h
     llfloaterfriends.h
@@ -763,8 +755,6 @@ set(viewer_HEADER_FILES
     llfloatertos.h
     llfloaterurldisplay.h
     llfloaterurlentry.h
-    llfloatervfs.h
-    llfloatervfsexplorer.h
     llfloatervoicedevicesettings.h
     llfloaterwater.h
     llfloaterwindlight.h
@@ -796,7 +786,6 @@ set(viewer_HEADER_FILES
     llhudview.h
     llimpanel.h
     llimview.h
-    llinventorybackup.h
     llinventorybridge.h
     llinventoryclipboard.h
     llinventoryfilter.h
@@ -823,9 +812,8 @@ set(viewer_HEADER_FILES
     llmarketplacenotifications.h
     llmediactrl.h
     llmediaremotectrl.h
-    llmemoryview.h
-    llmenuoptionpathfindingrebakenavmesh.h
     llmenucommands.h
+    llmenuoptionpathfindingrebakenavmesh.h
     llmeshrepository.h
     llmimetypes.h
     llmorphview.h
@@ -1063,12 +1051,11 @@ set(viewer_HEADER_FILES
     llworld.h
     llworldmap.h
     llworldmapmessage.h
-    llworldmipmap.h
     llworldmapview.h
+    llworldmipmap.h
     llxmlrpcresponder.h
     m7wlinterface.h
     macmain.h
-    NACLantispam.h
     noise.h
     pipeline.h
     qtoolalign.h
@@ -1088,9 +1075,9 @@ set(viewer_HEADER_FILES
     shcommandhandler.h
     shfloatermediaticker.h
     slfloatermediafilter.h
+    wlfPanel_AdvSettings.h
     VertexCache.h
     VorbisFramework.h
-    wlfPanel_AdvSettings.h
     )
 
 source_group("CMake Rules" FILES ViewerInstall.cmake)
@@ -1176,66 +1163,53 @@ if (WINDOWS)
     # viewerRes.rc is the only buildable file, but
     # the rest are all dependencies of it.
     set(viewer_RESOURCE_FILES
-        ${ARTWORK_DIR}/res/arrow.cur
-        ${ARTWORK_DIR}/res/arrowcop.cur
-        ${ARTWORK_DIR}/res/arrowcopmulti.cur
-        ${ARTWORK_DIR}/res/arrowdrag.cur
-        ${ARTWORK_DIR}/res/circleandline.cur
-        ${ARTWORK_DIR}/res/icon1.ico
-        ${ARTWORK_DIR}/res/llarrow.cur
-        ${ARTWORK_DIR}/res/llarrowdrag.cur
-        ${ARTWORK_DIR}/res/llarrowdragmulti.cur
-        ${ARTWORK_DIR}/res/llarrowlocked.cur
-        ${ARTWORK_DIR}/res/llgrablocked.cur
-        ${ARTWORK_DIR}/res/llno.cur
-        ${ARTWORK_DIR}/res/llnolocked.cur
-        ${ARTWORK_DIR}/res/lltoolcamera.cur
-        ${ARTWORK_DIR}/res/lltoolcreate.cur
-        ${ARTWORK_DIR}/res/lltoolfocus.cur
-        ${ARTWORK_DIR}/res/lltoolgrab.cur
-        ${ARTWORK_DIR}/res/lltoolland.cur
-        ${ARTWORK_DIR}/res/lltoolpan.cur
-        ${ARTWORK_DIR}/res/lltoolpipette.cur
-        ${ARTWORK_DIR}/res/lltoolrotate.cur
-        ${ARTWORK_DIR}/res/lltoolscale.cur
-        ${ARTWORK_DIR}/res/lltooltranslate.cur
-        ${ARTWORK_DIR}/res/lltoolzoomin.cur
-        ${ARTWORK_DIR}/res/lltoolzoomout.cur
-        ${ARTWORK_DIR}/res/snowglobe_icon.BMP
-        ${ARTWORK_DIR}/res/snowglobe_icon.ico
-        ${ARTWORK_DIR}/res/resource.h
-        ${ARTWORK_DIR}/res/toolpickobject.cur
-        ${ARTWORK_DIR}/res/toolpickobject2.cur
-        ${ARTWORK_DIR}/res/toolpickobject3.cur
-        ${ARTWORK_DIR}/res/toolpipette.cur
-        ${ARTWORK_DIR}/res/toolbuy.cur
-        ${ARTWORK_DIR}/res/toolopen.cur
-        ${ARTWORK_DIR}/res/toolpay.cur
-        ${ARTWORK_DIR}/res/toolsit.cur
+        res/arrow.cur
+        res/arrowcop.cur
+        res/arrowcopmulti.cur
+        res/arrowdrag.cur
+        res/circleandline.cur
+        res/icon1.ico
+        res/llarrow.cur
+        res/llarrowdrag.cur
+        res/llarrowdragmulti.cur
+        res/llarrowlocked.cur
+        res/llgrablocked.cur
+        res/llno.cur
+        res/llnolocked.cur
+        res/lltoolcamera.cur
+        res/lltoolcreate.cur
+        res/lltoolfocus.cur
+        res/lltoolgrab.cur
+        res/lltoolland.cur
+        res/lltoolpan.cur
+        res/lltoolpipette.cur
+        res/lltoolrotate.cur
+        res/lltoolscale.cur
+        res/lltooltranslate.cur
+        res/lltoolzoomin.cur
+        res/lltoolzoomout.cur
+        res/snowglobe_icon.BMP
+        res/snowglobe_icon.ico
+        res/resource.h
+        res/toolpickobject.cur
+        res/toolpickobject2.cur
+        res/toolpickobject3.cur
+        res/toolpipette.cur
+        res/toolbuy.cur
+        res/toolopen.cur
+        res/toolpay.cur
+        res/toolsit.cur
         )
 
     set_source_files_properties(${viewer_RESOURCE_FILES}
                                 PROPERTIES HEADER_FILE_ONLY TRUE)
 
-    if(NOT ARTWORK_IN_SOURCE)
-      # The resource compiler needs to find resources here.
-      include_directories(${ARTWORK_DIR}/res)
-    endif(NOT ARTWORK_IN_SOURCE)
+    set(viewer_RESOURCE_FILES
+       res/resource.h
+        res/viewerRes.rc
+        ${viewer_RESOURCE_FILES}
+        )
 
-	if (MSVC71 OR MSVC80 AND NOT VISTA_ICON)
-		set(viewer_RESOURCE_FILES 
-			res/resource.h
-			res/viewerRes_bc.rc 
-			${viewer_RESOURCE_FILES}
-		)
-	else (MSVC71 OR MSVC80 AND NOT VISTA_ICON)
-		set(viewer_RESOURCE_FILES 
-			res/resource.h
-			res/viewerRes.rc 
-			${viewer_RESOURCE_FILES}
-		)
-	endif (MSVC71 OR MSVC80 AND NOT VISTA_ICON)
-	  
     SOURCE_GROUP("Resource Files" FILES ${viewer_RESOURCE_FILES})
 
     list(APPEND viewer_SOURCE_FILES ${viewer_RESOURCE_FILES})
@@ -1341,22 +1315,20 @@ set_source_files_properties(${viewer_APPSETTINGS_FILES}
 
 list(APPEND viewer_SOURCE_FILES ${viewer_APPSETTINGS_FILES})
 
-if(ARTWORK_EXISTS)
-  set(viewer_CHARACTER_FILES
-    ${ARTWORK_DIR}/character/attentions.xml
-    ${ARTWORK_DIR}/character/attentionsN.xml
-    ${ARTWORK_DIR}/character/avatar_lad.xml
-    ${ARTWORK_DIR}/character/avatar_skeleton.xml
-    ${ARTWORK_DIR}/character/genepool.xml
+set(viewer_CHARACTER_FILES
+    character/attentions.xml
+    character/attentionsN.xml
+    character/avatar_lad.xml
+    character/avatar_skeleton.xml
+    character/genepool.xml
     )
 
-  source_group("Character File" FILES ${viewer_CHARACTER_FILES})
+source_group("Character File" FILES ${viewer_CHARACTER_FILES})
 
-  set_source_files_properties(${viewer_CHARACTER_FILES}
-                              PROPERTIES HEADER_FILE_ONLY TRUE)
+set_source_files_properties(${viewer_CHARACTER_FILES}
+                            PROPERTIES HEADER_FILE_ONLY TRUE)
 
-  list(APPEND viewer_SOURCE_FILES ${viewer_CHARACTER_FILES})
-endif(ARTWORK_EXISTS)
+list(APPEND viewer_SOURCE_FILES ${viewer_CHARACTER_FILES})
 
 if (WINDOWS)
   file(GLOB viewer_INSTALLER_FILES installers/windows/*.nsi)
@@ -1421,10 +1393,6 @@ add_executable(${VIEWER_BINARY_NAME}
 if (!DISABLE_TEMPLATE_CHECK)
 	check_message_template(${VIEWER_BINARY_NAME})
 endif (!DISABLE_TEMPLATE_CHECK)
-
-if (LLKDU_LIBRARY)
-  add_dependencies(${VIEWER_BINARY_NAME} ${LLKDU_LIBRARY})
-endif (LLKDU_LIBRARY)
 
 # We package by default on Linux so we can run from newview/packaged.
 if (LINUX)

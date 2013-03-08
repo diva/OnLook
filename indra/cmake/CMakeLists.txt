@@ -8,79 +8,96 @@ set(cmake_SOURCE_FILES
     CMakeLists.txt
 
     00-Common.cmake
+    AIStateMachine.cmake
     APR.cmake
     Audio.cmake
+    BasicPluginBase.cmake
     BerkeleyDB.cmake
     Boost.cmake
     BuildVersion.cmake
     CARes.cmake
-    CURL.cmake
     CMakeCopyIfDifferent.cmake
+    CURL.cmake
+    Colladadom.cmake
+    ConfigurePkgConfig.cmake
+    CopyBackToSource.cmake
     CopyWinLibs.cmake
-    CSharpMacros.cmake
+    Cwdebug.cmake
     DBusGlib.cmake
     DirectX.cmake
     DownloadPrebuilt.cmake.in
     ELFIO.cmake
     EXPAT.cmake
+    ExamplePlugin.cmake
+    FMOD.cmake
+    FMODEX.cmake
     FindAPR.cmake
     FindBerkeleyDB.cmake
     FindCARes.cmake
+    FindColladadom.cmake
     FindELFIO.cmake
+    FindGLOD.cmake
     FindGooglePerfTools.cmake
     FindHunSpell.cmake
-    FindMT.cmake
+    FindJsonCpp.cmake
+    FindLLQtWebkit.cmake
     FindNDOF.cmake
     FindOpenJPEG.cmake
+    FindTut.cmake
     FindXmlRpcEpi.cmake
-    FMOD.cmake
-    FMODEX.cmake
     FreeType.cmake
     GLOD.cmake
     GStreamer010Plugin.cmake
+    Glui.cmake
+    Glut.cmake
     GooglePerfTools.cmake
     Hunspell.cmake
     JPEG.cmake
+    JsonCpp.cmake
     LLAddBuildTest.cmake
     LLAppearance.cmake
     LLAudio.cmake
     LLCharacter.cmake
     LLCommon.cmake
     LLCrashLogger.cmake
-    LLDatabase.cmake
     LLImage.cmake
     LLImageJ2COJ.cmake
     LLInventory.cmake
-    LLKDU.cmake
     LLMath.cmake
     LLMessage.cmake
+    LLPhysicsExtensions.cmake
     LLPlugin.cmake
     LLPrimitive.cmake
-    LLPhysicsExtensions.cmake
     LLQtWebkit.cmake
     LLRender.cmake
-    LLScene.cmake
     LLUI.cmake
     LLVFS.cmake
     LLWindow.cmake
     LLXML.cmake
-#    LScript.cmake
+    LScript.cmake
     Linking.cmake
+    MediaPluginBase.cmake
     NDOF.cmake
     OPENAL.cmake
     OpenGL.cmake
     OpenJPEG.cmake
     OpenSSL.cmake
     PNG.cmake
-    Python.cmake
+    PluginAPI.cmake
     Prebuilt.cmake
+    PulseAudio.cmake
+    Python.cmake
     Qt4.cmake
+    QuickTimePlugin.cmake
     RunBuildTest.cmake
+    StateMachine.cmake
     TemplateCheck.cmake
     Tut.cmake
     UI.cmake
     UnixInstall.cmake
     Variables.cmake
+    ViewerMiscLibs.cmake
+    WebKitLibPlugin.cmake
     XmlRpcEpi.cmake
     ZLIB.cmake
     )
@@ -91,10 +108,6 @@ set(master_SOURCE_FILES
     ../CMakeLists.txt
     ../develop.py
     )
-
-if (SERVER)
-  list(APPEND master_SOURCE_FILES ../Server.cmake)
-endif (SERVER)
 
 source_group("Master Rules" FILES ${master_SOURCE_FILES})
 

@@ -80,7 +80,7 @@
 #include "llfirstuse.h"
 #include "llrender.h"
 #include "llvector4a.h"
-#include "llfont.h"
+#include "llfontfreetype.h"
 #include "llvocache.h"
 #include "llvopartgroup.h"
 #include "llfloaterteleporthistory.h"
@@ -117,8 +117,6 @@
 #include "llimageworker.h"
 
 // <edit>
-#include "lldelayeduidelete.h"
-#include "llbuildnewviewsscheduler.h"
 #include "aicurleasyrequeststatemachine.h"
 #include "aihttptimeoutpolicy.h"
 // </edit>
@@ -641,9 +639,6 @@ bool LLAppViewer::init()
 	// Logging is initialized. Now it's safe to start the error thread.
 	startErrorThread();
 
-	gDeleteScheduler = new LLDeleteScheduler();
-	gBuildNewViewsScheduler = new LLBuildNewViewsScheduler();
-	// </edit>
 	//
 	// OK to write stuff to logs now, we've now crash reported if necessary
 	//
@@ -808,7 +803,7 @@ bool LLAppViewer::init()
 	// Modify settings based on system configuration and compile options
 	settings_modify();
 	// Work around for a crash bug when changing OpenGL settings
-	LLFont::sOpenGLcrashOnRestart = (getenv("LL_OPENGL_RESTART_CRASH_BUG") != NULL);
+	LLFontFreetype::sOpenGLcrashOnRestart = (getenv("LL_OPENGL_RESTART_CRASH_BUG") != NULL);
 
 	// Find partition serial number (Windows) or hardware serial (Mac)
 	mSerialNumber = generateSerialNumber();
@@ -1096,7 +1091,6 @@ static LLFastTimer::DeclareTimer FTM_STATEMACHINE("State Machine");
 
 bool LLAppViewer::mainLoop()
 {
-	LLMemType mt1(LLMemType::MTYPE_MAIN);
 	mMainloopTimeout = new LLWatchdogTimeout();
 	// *FIX:Mani - Make this a setting, once new settings exist in this branch.
 	
@@ -1216,7 +1210,6 @@ bool LLAppViewer::mainLoop()
 					&& !gViewerWindow->getShowProgress()
 					&& !gFocusMgr.focusLocked())
 				{
-					LLMemType mjk(LLMemType::MTYPE_JOY_KEY);
 					joystick->scanJoystick();
 					gKeyboard->scanKeyboard();
 					if(isCrouch)
@@ -1236,7 +1229,6 @@ bool LLAppViewer::mainLoop()
 
 					if (gAres != NULL && gAres->isInitialized())
 					{
-						LLMemType mt_ip(LLMemType::MTYPE_IDLE_PUMP);
 						pingMainloopTimeout("Main:ServicePump");				
 						LLFastTimer t4(FTM_PUMP);
 						{
@@ -1285,7 +1277,6 @@ bool LLAppViewer::mainLoop()
 
 			// Sleep and run background threads
 			{
-				LLMemType mt_sleep(LLMemType::MTYPE_SLEEP);
 				LLFastTimer t2(FTM_SLEEP);
 				static const LLCachedControl<bool> run_multiple_threads("RunMultipleThreads",false);
 				static const LLCachedControl<S32> yield_time("YieldTime", -1);
@@ -3823,7 +3814,6 @@ static LLFastTimer::DeclareTimer FTM_VLMANAGER("VL Manager");
 ///////////////////////////////////////////////////////
 void LLAppViewer::idle()
 {
-	LLMemType mt_idle(LLMemType::MTYPE_IDLE);
 	pingMainloopTimeout("Main:Idle");
 	
 	// Update frame timers
@@ -4446,7 +4436,6 @@ static LLFastTimer::DeclareTimer FTM_DYNAMIC_THROTTLE("Dynamic Throttle");
 static LLFastTimer::DeclareTimer FTM_CHECK_REGION_CIRCUIT("Check Region Circuit");
 void LLAppViewer::idleNetwork()
 {
-	LLMemType mt_in(LLMemType::MTYPE_IDLE_NETWORK);
 	pingMainloopTimeout("idleNetwork");
 
 	gObjectList.mNumNewObjects = 0;

@@ -32,8 +32,8 @@ set(llcharacter_SOURCE_FILES
     llkeyframemotionparam.cpp
     llkeyframestandmotion.cpp
     llkeyframewalkmotion.cpp
-    llmotioncontroller.cpp
     llmotion.cpp
+    llmotioncontroller.cpp
     llmultigesture.cpp
     llpose.cpp
     llstatemachine.cpp
@@ -45,8 +45,8 @@ set(llcharacter_HEADER_FILES
     CMakeLists.txt
 
     llanimationstates.h
-    llbvhloader.h
     llbvhconsts.h
+    llbvhloader.h
     llcharacter.h
     lleditingmotion.h
     llgesture.h

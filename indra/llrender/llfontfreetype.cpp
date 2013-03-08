@@ -1,6 +1,6 @@
 /** 
- * @file llfont.cpp
- * @brief Font library wrapper
+ * @file llfontfreetype.cpp
+ * @brief Freetype font library wrapper
  *
  * $LicenseInfo:firstyear=2002&license=viewergpl$
  * 
@@ -32,18 +32,10 @@
 
 #include "linden_common.h"
 
-#include "llfont.h"
+#include "llfontfreetype.h"
 
 // Freetype stuff
-#if !defined(LL_LINUX) || defined(LL_STANDALONE)
-# include <ft2build.h>
-#else
-// I had to do some work to avoid the system-installed FreeType headers... --ryan.
-//This path no longer exists.
-//# include "llfreetype2/freetype/ft2build.h"
-//This works fine.
-# include "../include/ft2build.h"
-#endif
+#include <ft2build.h>
 
 // For some reason, this won't work if it's not wrapped in the ifdef
 #ifdef FT_FREETYPE_H
@@ -65,12 +57,15 @@ LLFontManager *gFontManagerp = NULL;
 
 FT_Library gFTLibrary = NULL;
 
-bool LLFont::sOpenGLcrashOnRestart = false;
+bool LLFontFreetype::sOpenGLcrashOnRestart = false;
 
 //static
 void LLFontManager::initClass()
 {
-	gFontManagerp = new LLFontManager;
+	if (!gFontManagerp) 
+	{
+		gFontManagerp = new LLFontManager;
+	}
 }
 
 //static
@@ -92,7 +87,6 @@ LLFontManager::LLFontManager()
 	}
 }
 
-
 LLFontManager::~LLFontManager()
 {
 	FT_Done_FreeType(gFTLibrary);
@@ -101,14 +95,14 @@ LLFontManager::~LLFontManager()
 
 LLFontGlyphInfo::LLFontGlyphInfo(U32 index)
 :	mGlyphIndex(index),
-	mXBitmapOffset(0), 	// Offset to the origin in the bitmap
-	mYBitmapOffset(0), 	// Offset to the origin in the bitmap
-	mXBearing(0),		// Distance from baseline to left in pixels
-	mYBearing(0),		// Distance from baseline to top in pixels
 	mWidth(0),			// In pixels
 	mHeight(0),			// In pixels
 	mXAdvance(0.f),		// In pixels
 	mYAdvance(0.f),		// In pixels
+	mXBitmapOffset(0), 	// Offset to the origin in the bitmap
+	mYBitmapOffset(0), 	// Offset to the origin in the bitmap
+	mXBearing(0),		// Distance from baseline to left in pixels
+	mYBearing(0),		// Distance from baseline to top in pixels
 	mIsRendered(FALSE),
 	mMetricsValid(FALSE)
 {}
@@ -126,33 +120,29 @@ LLFontList::~LLFontList()
 		// The (now dangling) pointers in the vector will be cleaned up when the vector is deleted by the superclass destructor.
 	}
 }
-void LLFontList::addAtEnd(LLFont *font)
+void LLFontList::addAtEnd(LLFontFreetype *font)
 {
 	// Purely a convenience function
 	this->push_back(font);
 }
 
-LLFont::LLFont()
+LLFontFreetype::LLFontFreetype()
+:	mFontBitmapCachep(new LLFontBitmapCache),
+	mValid(FALSE),
+	mAscender(0.f),
+	mDescender(0.f),
+	mLineHeight(0.f),
+	mFallbackFontp(NULL),
+	mIsFallback(FALSE),
+	mFTFace(NULL),
+	mRenderGlyphCount(0),
+	mAddGlyphCount(0),
+	mPointSize(0)
 {
-	mFontBitmapCachep = new LLFontBitmapCache;
-
-	mValid = FALSE;
-	mAscender = 0.f;
-	mDescender = 0.f;
-	mLineHeight = 0.f;
-
-	mFallbackFontp = NULL;
-	mIsFallback = FALSE;
-	mFTFace = NULL;
-
-	mRenderGlyphCount = 0;
-	mAddGlyphCount = 0;
-
-	mPointSize = 0;
 }
 
 
-LLFont::~LLFont()
+LLFontFreetype::~LLFontFreetype()
 {
 	// Clean up freetype libs.
 	if (mFTFace)
@@ -165,25 +155,7 @@ LLFont::~LLFont()
 	// mFontBitmapCachep will be cleaned up by LLPointer destructor.
 }
 
-// virtual
-F32 LLFont::getLineHeight() const
-{
-	return mLineHeight;
-}
-
-// virtual
-F32 LLFont::getAscenderHeight() const
-{
-	return mAscender;
-}
-
-// virtual
-F32 LLFont::getDescenderHeight() const
-{
-	return mDescender;
-}
-
-BOOL LLFont::loadFace(const std::string& filename, const F32 point_size, const F32 vert_dpi, const F32 horz_dpi, const S32 components, BOOL is_fallback)
+BOOL LLFontFreetype::loadFace(const std::string& filename, const F32 point_size, const F32 vert_dpi, const F32 horz_dpi, const S32 components, BOOL is_fallback)
 {
 	// Don't leak face objects.  This is also needed to deal with
 	// changed font file names.
@@ -260,38 +232,115 @@ BOOL LLFont::loadFace(const std::string& filename, const F32 point_size, const F
 	return TRUE;
 }
 
-void LLFont::resetBitmapCache()
+//virtual
+F32 LLFontFreetype::getLineHeight() const
 {
-	// Iterate through glyphs and clear the mIsRendered flag
-	for (char_glyph_info_map_t::iterator iter = mCharGlyphInfoMap.begin();
-		 iter != mCharGlyphInfoMap.end(); ++iter)
-	{
-		iter->second->mIsRendered = FALSE;
-		//FIXME: this is only strictly necessary when resetting the entire font, 
-		//not just flushing the bitmap
-		iter->second->mMetricsValid = FALSE;
-	}
-	mFontBitmapCachep->reset();
-
-	if (!mIsFallback || !sOpenGLcrashOnRestart)	// because this often crashes under Linux...
-	{
-	// Add the empty glyph`5
-	addGlyph(0, 0);
-	}
+	return mLineHeight;
 }
 
-LLFontGlyphInfo* LLFont::getGlyphInfo(const llwchar wch) const
+//virtual
+F32 LLFontFreetype::getAscenderHeight() const
 {
-	char_glyph_info_map_t::iterator iter = mCharGlyphInfoMap.find(wch);
-	if (iter != mCharGlyphInfoMap.end())
-	{
-		return iter->second;
-	}
-	return NULL;
+	return mAscender;
 }
 
+//virtual
+F32 LLFontFreetype::getDescenderHeight() const
+{
+	return mDescender;
+}
 
-BOOL LLFont::hasGlyph(const llwchar wch) const
+F32 LLFontFreetype::getXAdvance(const llwchar wch) const
+{
+	if (mFTFace == NULL)
+		return 0.0;
+
+	llassert(!mIsFallback);
+	U32 glyph_index;
+
+	// Return existing info only if it is current
+	LLFontGlyphInfo* gi = getGlyphInfo(wch);
+	if (gi && gi->mMetricsValid)
+	{
+		return gi->mXAdvance;
+	}
+
+	const LLFontFreetype* fontp = this;
+	
+	// Initialize char to glyph map
+	glyph_index = FT_Get_Char_Index(mFTFace, wch);
+	if (glyph_index == 0 && mFallbackFontp)
+	{
+		LLFontList::iterator iter;
+		for(iter = mFallbackFontp->begin(); (iter != mFallbackFontp->end()) && (glyph_index == 0); iter++)
+		{
+			glyph_index = FT_Get_Char_Index((*iter)->mFTFace, wch);
+			if(glyph_index)
+			{
+				fontp = *iter;
+			}
+		}
+	}
+	
+	if (glyph_index)
+	{
+		// This font has this glyph
+		fontp->renderGlyph(glyph_index);
+
+		// Create the entry if it's not there
+		char_glyph_info_map_t::iterator iter2 = mCharGlyphInfoMap.find(wch);
+		if (iter2 == mCharGlyphInfoMap.end())
+		{
+			gi = new LLFontGlyphInfo(glyph_index);
+			insertGlyphInfo(wch, gi);
+		}
+		else
+		{
+			gi = iter2->second;
+		}
+		
+		gi->mWidth = fontp->mFTFace->glyph->bitmap.width;
+		gi->mHeight = fontp->mFTFace->glyph->bitmap.rows;
+
+		// Convert these from 26.6 units to float pixels.
+		gi->mXAdvance = fontp->mFTFace->glyph->advance.x / 64.f;
+		gi->mYAdvance = fontp->mFTFace->glyph->advance.y / 64.f;
+		gi->mMetricsValid = TRUE;
+		return gi->mXAdvance;
+	}
+	else
+	{
+		gi = get_if_there(mCharGlyphInfoMap, (llwchar)0, (LLFontGlyphInfo*)NULL);
+		if (gi)
+		{
+			return gi->mXAdvance;
+		}
+	}
+
+	// Last ditch fallback - no glyphs defined at all.
+	return (F32)mFontBitmapCachep->getMaxCharWidth();
+}
+
+F32 LLFontFreetype::getXKerning(const llwchar char_left, const llwchar char_right) const
+{
+	if (mFTFace == NULL)
+		return 0.0;
+
+	llassert(!mIsFallback);
+	LLFontGlyphInfo* left_glyph_info = get_if_there(mCharGlyphInfoMap, char_left, (LLFontGlyphInfo*)NULL);
+	U32 left_glyph = left_glyph_info ? left_glyph_info->mGlyphIndex : 0;
+	// Kern this puppy.
+	LLFontGlyphInfo* right_glyph_info = get_if_there(mCharGlyphInfoMap, char_right, (LLFontGlyphInfo*)NULL);
+	U32 right_glyph = right_glyph_info ? right_glyph_info->mGlyphIndex : 0;
+
+	FT_Vector  delta;
+
+	llverify(!FT_Get_Kerning(mFTFace, left_glyph, right_glyph, ft_kerning_unfitted, &delta));
+
+	return delta.x*(1.f/64.f);
+}
+
+BOOL LLFontFreetype::hasGlyph(const llwchar wch) const
 {
 	llassert(!mIsFallback);
 	const LLFontGlyphInfo* gi = getGlyphInfo(wch);
@@ -305,7 +354,7 @@ BOOL LLFont::hasGlyph(const llwchar wch) const
 	}
 }
 
-BOOL LLFont::addChar(const llwchar wch) const
+BOOL LLFontFreetype::addChar(const llwchar wch) const
 {
 	if (mFTFace == NULL)
 		return FALSE;
@@ -345,21 +394,7 @@ BOOL LLFont::addChar(const llwchar wch) const
 	return FALSE;
 }
 
-void LLFont::insertGlyphInfo(llwchar wch, LLFontGlyphInfo* gi) const
-{
-	char_glyph_info_map_t::iterator iter = mCharGlyphInfoMap.find(wch);
-	if (iter != mCharGlyphInfoMap.end())
-	{
-		delete iter->second;
-		iter->second = gi;
-	}
-	else
-	{
-		mCharGlyphInfoMap[wch] = gi;
-	}
-}
-
-BOOL LLFont::addGlyphFromFont(const LLFont *fontp, const llwchar wch, const U32 glyph_index) const
+BOOL LLFontFreetype::addGlyphFromFont(const LLFontFreetype *fontp, const llwchar wch, const U32 glyph_index) const
 {
 	if (mFTFace == NULL)
 		return FALSE;
@@ -460,120 +495,69 @@ BOOL LLFont::addGlyphFromFont(const LLFont *fontp, const llwchar wch, const U32 
 	return TRUE;
 }
 
-BOOL LLFont::addGlyph(const llwchar wch, const U32 glyph_index) const
+LLFontGlyphInfo* LLFontFreetype::getGlyphInfo(const llwchar wch) const
+{
+	char_glyph_info_map_t::iterator iter = mCharGlyphInfoMap.find(wch);
+	if (iter != mCharGlyphInfoMap.end())
+	{
+		return iter->second;
+	}
+	return NULL;
+}
+
+void LLFontFreetype::insertGlyphInfo(llwchar wch, LLFontGlyphInfo* gi) const
+{
+	char_glyph_info_map_t::iterator iter = mCharGlyphInfoMap.find(wch);
+	if (iter != mCharGlyphInfoMap.end())
+	{
+		delete iter->second;
+		iter->second = gi;
+	}
+	else
+	{
+		mCharGlyphInfoMap[wch] = gi;
+	}
+}
+
+BOOL LLFontFreetype::addGlyph(const llwchar wch, const U32 glyph_index) const
 {
 	return addGlyphFromFont(this, wch, glyph_index);
 }
 
-
-F32 LLFont::getXAdvance(const llwchar wch) const
-{
-	if (mFTFace == NULL)
-		return 0.0;
-
-	llassert(!mIsFallback);
-	U32 glyph_index;
-
-	// Return existing info only if it is current
-	LLFontGlyphInfo* gi = getGlyphInfo(wch);
-	if (gi && gi->mMetricsValid)
-	{
-		return gi->mXAdvance;
-	}
-
-	const LLFont* fontp = this;
-	
-	// Initialize char to glyph map
-	glyph_index = FT_Get_Char_Index(mFTFace, wch);
-	if (glyph_index == 0 && mFallbackFontp)
-	{
-		LLFontList::iterator iter;
-		for(iter = mFallbackFontp->begin(); (iter != mFallbackFontp->end()) && (glyph_index == 0); iter++)
-		{
-			glyph_index = FT_Get_Char_Index((*iter)->mFTFace, wch);
-			if(glyph_index)
-			{
-				fontp = *iter;
-			}
-		}
-	}
-	
-	if (glyph_index)
-	{
-		// This font has this glyph
-		fontp->renderGlyph(glyph_index);
-
-		// Create the entry if it's not there
-		char_glyph_info_map_t::iterator iter2 = mCharGlyphInfoMap.find(wch);
-		if (iter2 == mCharGlyphInfoMap.end())
-		{
-			gi = new LLFontGlyphInfo(glyph_index);
-			insertGlyphInfo(wch, gi);
-		}
-		else
-		{
-			gi = iter2->second;
-		}
-		
-		gi->mWidth = fontp->mFTFace->glyph->bitmap.width;
-		gi->mHeight = fontp->mFTFace->glyph->bitmap.rows;
-
-		// Convert these from 26.6 units to float pixels.
-		gi->mXAdvance = fontp->mFTFace->glyph->advance.x / 64.f;
-		gi->mYAdvance = fontp->mFTFace->glyph->advance.y / 64.f;
-		gi->mMetricsValid = TRUE;
-		return gi->mXAdvance;
-	}
-	else
-	{
-		gi = get_if_there(mCharGlyphInfoMap, (llwchar)0, (LLFontGlyphInfo*)NULL);
-		if (gi)
-		{
-			return gi->mXAdvance;
-		}
-	}
-
-	// Last ditch fallback - no glyphs defined at all.
-	return (F32)mFontBitmapCachep->getMaxCharWidth();
-}
-
-
-void LLFont::renderGlyph(const U32 glyph_index) const
+void LLFontFreetype::renderGlyph(const U32 glyph_index) const
 {
 	if (mFTFace == NULL)
 		return;
 
-	int error = FT_Load_Glyph(mFTFace, glyph_index, FT_LOAD_DEFAULT );
-	llassert(!error);
+	llassert_always(! FT_Load_Glyph(mFTFace, glyph_index, FT_LOAD_DEFAULT));
 
-	error = FT_Render_Glyph(mFTFace->glyph, gFontRenderMode);
+	llassert_always(! FT_Render_Glyph(mFTFace->glyph, gFontRenderMode) );
 
 	mRenderGlyphCount++;
-	
-	llassert(!error);
 }
 
-
-F32 LLFont::getXKerning(const llwchar char_left, const llwchar char_right) const
+void LLFontFreetype::resetBitmapCache()
 {
-	if (mFTFace == NULL)
-		return 0.0;
+	// Iterate through glyphs and clear the mIsRendered flag
+	for (char_glyph_info_map_t::iterator iter = mCharGlyphInfoMap.begin();
+		 iter != mCharGlyphInfoMap.end(); ++iter)
+	{
+		iter->second->mIsRendered = FALSE;
+		//FIXME: this is only strictly necessary when resetting the entire font, 
+		//not just flushing the bitmap
+		iter->second->mMetricsValid = FALSE;
+	}
+	mFontBitmapCachep->reset();
 
-	llassert(!mIsFallback);
-	LLFontGlyphInfo* left_glyph_info = get_if_there(mCharGlyphInfoMap, char_left, (LLFontGlyphInfo*)NULL);
-	U32 left_glyph = left_glyph_info ? left_glyph_info->mGlyphIndex : 0;
-	// Kern this puppy.
-	LLFontGlyphInfo* right_glyph_info = get_if_there(mCharGlyphInfoMap, char_right, (LLFontGlyphInfo*)NULL);
-	U32 right_glyph = right_glyph_info ? right_glyph_info->mGlyphIndex : 0;
-
-	FT_Vector  delta;
-
-	llverify(!FT_Get_Kerning(mFTFace, left_glyph, right_glyph, ft_kerning_unfitted, &delta));
-
-	return delta.x*(1.f/64.f);
+	if (!mIsFallback || !sOpenGLcrashOnRestart)	// because this often crashes under Linux...
+	{
+	// Add the empty glyph`5
+	addGlyph(0, 0);
+	}
 }
 
-void LLFont::setSubImageLuminanceAlpha(const U32 x,
+
+void LLFontFreetype::setSubImageLuminanceAlpha(const U32 x,
 									   const U32 y,
 									   const U32 bitmap_num,
 									   const U32 width,
