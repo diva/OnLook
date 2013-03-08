@@ -99,7 +99,7 @@ class LLFontFreetype
 {
 public:
 	LLFontFreetype();
-	~LLFontFreetype();
+	virtual ~LLFontFreetype();
 
 	// is_fallback should be true for fallback fonts that aren't used
 	// to render directly (Unicode backup, primarily)
