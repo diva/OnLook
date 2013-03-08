@@ -6306,11 +6306,15 @@ You cannot create objects here.
   </notification>
 
   <notification
-     icon="notify.tga"
+     icon="alert.tga"
      name="PathfindingDirty"
-     type="notify">
+     type="alert">
     <unique/>
-    The region has pending pathfinding changes.  If you have build rights, you may rebake the region by clicking on the “Rebake region” button.
+The region has pending pathfinding changes.  If you have build rights, you may rebake the region by clicking “Rebake”.
+    <usetemplate
+     name="okcancelbuttons"
+     yestext="Rebake"
+     notext="Close" />
   </notification>
 
   <notification
@@ -6319,26 +6323,6 @@ You cannot create objects here.
      type="notify">
     <unique/>
     Dynamic pathfinding is not enabled on this region.  Scripted objects using pathfinding LSL calls may not operate as expected on this region.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="PathfindingRebakeNavmesh"
-   type="alertmodal">
-    <unique/>
-    Changing certain objects in this region could cause other moving objects to behave incorrectly.  To make moving objects behave correctly, click the “Rebake region” button.  Choose “Help” for more information.
-    <url
-      option="1"
-      name="url"
-      target = "_external">
-      http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer
-    </url>
-    <usetemplate
-     name="okhelpignore"
-     ignoretext="Changing certain objects in this region could cause other moving objects to behave incorrectly."
-     yestext="OK"
-     helptext="Help"
-     />
   </notification>
 
   <notification
@@ -7505,19 +7489,6 @@ You locally updated a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME]
   </notification>
 
   <notification
-   icon="alertmodal.tga"
-   name="PathfindingLinksets_ChangeToFlexiblePath"
-   type="alertmodal">
-    The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh.
-    <tag>confirm</tag>
-    <usetemplate
-     ignoretext="The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh."
-     name="okcancelignore"
-     notext="Cancel"
-     yestext="OK"/>
-  </notification>
-
-  <notification
    icon="notify.tga"
    name="FirstAO"
    type="notify">
@@ -7644,6 +7615,134 @@ Only textures will upload as temporary on Agni and Aditi.
      notext="Permanent"
      yestext="Temporary"
      canceltext="Cancel"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_WarnOnPhantom"
+   type="alertmodal">
+Some selected linksets will have the Phantom flag toggled.
+
+Do you wish to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Some selected linksets phantom flag will be toggled."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_MismatchOnRestricted"
+   type="alertmodal">
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because of permission restrictions on the linkset.  These linksets will be set to be '[RESTRICTED_TYPE]' instead.
+
+Do you wish to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Some selected linksets cannot be set because of permission restrictions on the linkset."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_MismatchOnVolume"
+   type="alertmodal">
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because the shape is non-convex.
+
+Do you wish to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Some selected linksets cannot be set because the shape is non-convex"
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_WarnOnPhantom_MismatchOnRestricted"
+   type="alertmodal">
+Some selected linksets will have the Phantom flag toggled.
+
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because of permission restrictions on the linkset.  These linksets will be set to be '[RESTRICTED_TYPE]' instead.
+
+Do you wish to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Some selected linksets phantom flag will be toggled and others cannot be set because of permission restrictions on the linkset."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_WarnOnPhantom_MismatchOnVolume"
+   type="alertmodal">
+Some selected linksets will have the Phantom flag toggled.
+
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because the shape is non-convex.
+
+Do you wish to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Some selected linksets phantom flag will be toggled and others cannot be set because the shape is non-convex"
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_MismatchOnRestricted_MismatchOnVolume"
+   type="alertmodal">
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because of permission restrictions on the linkset.  These linksets will be set to be '[RESTRICTED_TYPE]' instead.
+
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because the shape is non-convex. These linksets&apos; use types will not change.
+
+Do you wish to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Some selected linksets cannot be set because of permission restrictions on the linkset and because the shape is non-convex."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_WarnOnPhantom_MismatchOnRestricted_MismatchOnVolume"
+   type="alertmodal">
+Some selected linksets will have the Phantom flag toggled.
+
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because of permission restrictions on the linkset.  These linksets will be set to be '[RESTRICTED_TYPE]' instead.
+
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because the shape is non-convex. These linksets&apos; use types will not change.
+
+Do you wish to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Some selected linksets phantom flag will be toggled and others cannot be set because of permission restrictions on the linkset and because the shape is non-convex."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_ChangeToFlexiblePath"
+   type="alertmodal">
+    The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh.
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
   </notification>
 
   <global name="UnsupportedGLRequirements">

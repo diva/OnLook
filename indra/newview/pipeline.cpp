@@ -4359,12 +4359,12 @@ void LLPipeline::renderDebug()
 {
 	assertInitialized();
 
+
 	gGL.color4f(1,1,1,1);
 
 	gGLLastMatrix = NULL;
 	gGL.loadMatrix(gGLModelView);
 	gGL.setColorMask(true, false);
-
 	bool hud_only = hasRenderType(LLPipeline::RENDER_TYPE_HUD);
 
 	if (!hud_only && !mDebugBlips.empty())
@@ -9969,5 +9969,72 @@ void LLPipeline::addDebugBlip(const LLVector3& position, const LLColor4& color)
 {
 	DebugBlip blip(position, color);
 	mDebugBlips.push_back(blip);
+}
+
+void LLPipeline::hideObject( const LLUUID& id )
+{
+	LLViewerObject *pVO = gObjectList.findObject( id );
+
+	if ( pVO )
+	{
+		LLDrawable *pDrawable = pVO->mDrawable;
+
+		if ( pDrawable )
+		{
+			hideDrawable( pDrawable );
+		}
+	}
+}
+
+void LLPipeline::hideDrawable( LLDrawable *pDrawable )
+{
+	pDrawable->setState( LLDrawable::FORCE_INVISIBLE );
+	markRebuild( pDrawable, LLDrawable::REBUILD_ALL, TRUE );
+	//hide the children
+	LLViewerObject::const_child_list_t& child_list = pDrawable->getVObj()->getChildren();
+	for ( LLViewerObject::child_list_t::const_iterator iter = child_list.begin();
+		  iter != child_list.end(); iter++ )
+	{
+		LLViewerObject* child = *iter;
+		LLDrawable* drawable = child->mDrawable;
+		if ( drawable )
+		{
+			drawable->setState( LLDrawable::FORCE_INVISIBLE );
+			markRebuild( drawable, LLDrawable::REBUILD_ALL, TRUE );
+		}
+	}
+}
+
+void LLPipeline::unhideDrawable( LLDrawable *pDrawable )
+{
+	pDrawable->clearState( LLDrawable::FORCE_INVISIBLE );
+	markRebuild( pDrawable, LLDrawable::REBUILD_ALL, TRUE );
+	//restore children
+	LLViewerObject::const_child_list_t& child_list = pDrawable->getVObj()->getChildren();
+	for ( LLViewerObject::child_list_t::const_iterator iter = child_list.begin();
+		  iter != child_list.end(); iter++)
+	{
+		LLViewerObject* child = *iter;
+		LLDrawable* drawable = child->mDrawable;
+		if ( drawable )
+		{
+			drawable->clearState( LLDrawable::FORCE_INVISIBLE );
+			markRebuild( drawable, LLDrawable::REBUILD_ALL, TRUE );
+		}
+	}
+}
+
+void LLPipeline::restoreHiddenObject( const LLUUID& id )
+{
+	LLViewerObject *pVO = gObjectList.findObject( id );
+
+	if ( pVO )
+	{
+		LLDrawable *pDrawable = pVO->mDrawable;
+		if ( pDrawable )
+		{
+			unhideDrawable( pDrawable );
+		}
+	}
 }
 

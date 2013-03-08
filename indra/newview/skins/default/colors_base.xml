@@ -223,4 +223,14 @@
 <!-- Mesh upload colors -->
 <MeshImportTableNormalColor value="255, 255, 255, 255"/>
 <MeshImportTableHighlightColor value="51, 205, 255, 255"/>
+
+<!-- Pathfinding colors -->
+<PathfindingErrorColor value="255, 51, 51, 255" />
+<PathfindingWarningColor value="255, 219, 0, 255" />
+<PathfindingGoodColor value="51, 255, 51, 255" />
+<PathfindingDefaultBeaconColor value="255, 0, 0, 204" />
+<PathfindingDefaultBeaconTextColor value="255, 255, 255, 255" />
+<PathfindingLinksetBeaconColor value="0, 0, 255, 204" />
+<PathfindingCharacterBeaconColor value="255, 0, 0, 204" />
+
 </settings>

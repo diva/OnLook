@@ -48,7 +48,7 @@
 #include "llpathfindingnavmesh.h"
 #include "llpathfindingnavmeshstatus.h"
 #include "llpathfindingobject.h"
-//#include "llpathinglib.h"
+#include "llpathinglib.h"
 #include "llsingleton.h"
 #include "llsd.h"
 #include "lltrans.h"
@@ -318,24 +318,23 @@ LLPathfindingManager::~LLPathfindingManager()
 
 void LLPathfindingManager::initSystem()
 {
-	/*if (LLPathingLib::getInstance() == NULL)
+	if (LLPathingLib::getInstance() == NULL)
 	{
 		LLPathingLib::initSystem();
-	}*/
+	}
 }
 
 void LLPathfindingManager::quitSystem()
 {
-	/*if (LLPathingLib::getInstance() != NULL)
+	if (LLPathingLib::getInstance() != NULL)
 	{
 		LLPathingLib::quitSystem();
-	}*/
+	}
 }
 
 bool LLPathfindingManager::isPathfindingViewEnabled() const
 {
-	return false;
-	//return (LLPathingLib::getInstance() != NULL);
+	return (LLPathingLib::getInstance() != NULL);
 }
 
 bool LLPathfindingManager::isPathfindingEnabledForCurrentRegion() const

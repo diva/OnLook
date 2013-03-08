@@ -38,7 +38,7 @@
 #include "llagent.h"
 #include "llbutton.h"
 #include "llcommandhandler.h"
-#include "llviewercontrol.h"
+#include "llenvmanager.h"
 #include "llfloaterbuycurrency.h"
 #include "llfloaterchat.h"
 #include "llfloaterdirectory.h"		// to spawn search
@@ -51,7 +51,10 @@
 #include "llkeyboard.h"
 #include "lllineeditor.h"
 #include "llmenugl.h"
+#include "llmenuoptionpathfindingrebakenavmesh.h"
 #include "llnotify.h"
+#include "llpathfindingmanager.h"
+#include "llpathfindingnavmeshstatus.h"
 #include "llimview.h"
 #include "lltextbox.h"
 #include "llui.h"
@@ -64,6 +67,7 @@
 #include "llresmgr.h"
 #include "llworld.h"
 #include "llstatgraph.h"
+#include "llviewercontrol.h"
 #include "llviewermenu.h"	// for gMenuBarView
 #include "llviewerparcelmgr.h"
 #include "llviewerthrottle.h"
@@ -122,6 +126,8 @@ static void onClickFly(void*);
 static void onClickPush(void*);
 static void onClickVoice(void*);
 static void onClickBuild(void*);
+static void onClickPFDirty(void*);
+static void onClickPFDisabled(void*);
 static void onClickSeeAV(void*);
 static void onClickScripts(void*);
 static void onClickBuyLand(void*);
@@ -136,7 +142,10 @@ LLStatusBar::LLStatusBar(const std::string& name, const LLRect& rect)
 mBalance(0),
 mHealth(100),
 mSquareMetersCredit(0),
-mSquareMetersCommitted(0)
+mSquareMetersCommitted(0),
+mRegionCrossingSlot(),
+mNavMeshSlot(),
+mIsNavMeshDirty(false)
 {
 	// status bar can possible overlay menus?
 	setMouseOpaque(FALSE);
@@ -169,6 +178,8 @@ mSquareMetersCommitted(0)
 	childSetAction("buyland", onClickBuyLand, this );
 	childSetAction("buycurrency", onClickBuyCurrency, this );
 	childSetAction("no_build", onClickBuild, this );
+	childSetAction("pf_dirty", onClickPFDirty, this);
+	childSetAction("pf_disabled", onClickPFDisabled, this);
 	childSetAction("status_SeeAV", onClickSeeAV, this );
 	childSetAction("no_scripts", onClickScripts, this );
 	childSetAction("restrictpush", onClickPush, this );
@@ -188,7 +199,10 @@ mSquareMetersCommitted(0)
 	// that don't support currency yet -- MC
 	LLButton* buybtn = getChild<LLButton>("buycurrency");
 	buybtn->setLabelArg("[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
-	
+
+	mRegionCrossingSlot = LLEnvManagerNew::getInstance()->setRegionChangeCallback(boost::bind(&LLStatusBar::createNavMeshStatusListenerForCurrentRegion, this));
+	createNavMeshStatusListenerForCurrentRegion();
+
 	// Adding Net Stat Graph
 	S32 x = getRect().getWidth() - 2;
 	S32 y = 0;
@@ -231,6 +245,9 @@ LLStatusBar::~LLStatusBar()
 
 	delete mHealthTimer;
 	mHealthTimer = NULL;
+
+	mRegionCrossingSlot.disconnect();
+	mNavMeshSlot.disconnect();
 
 	// LLView destructor cleans up children
 }
@@ -455,6 +472,22 @@ void LLStatusBar::refresh()
 		r.setOriginAndSize( x, y, buttonRect.getWidth(), buttonRect.getHeight());
 		childSetRect( "status_SeeAV", r );
 		x += buttonRect.getWidth();
+	}
+
+	if (region)
+	{
+		bool pf_disabled = !region->dynamicPathfindingEnabled();
+		getChild<LLUICtrl>("pf_dirty")->setVisible(mIsNavMeshDirty);
+		getChild<LLUICtrl>("pf_disabled")->setVisible(pf_disabled);
+		const std::string pf_icon = mIsNavMeshDirty ? "pf_dirty" : pf_disabled ? "pf_disabled" : "";
+		if (!pf_icon.empty())
+		{
+			x += 6;
+			childGetRect(pf_icon, buttonRect);
+			r.setOriginAndSize(x, y, buttonRect.getWidth(), buttonRect.getHeight());
+			childSetRect(pf_icon, r);
+			x += buttonRect.getWidth();
+		}
 	}
 
 	BOOL canBuyLand = parcel
@@ -765,6 +798,47 @@ static void onClickVoice(void* )
 static void onClickBuild(void*)
 {
 	LLNotificationsUtil::add("NoBuild");
+}
+
+static bool rebakeRegionCallback(const LLSD& n, const LLSD& r)
+{
+	if(!LLNotificationsUtil::getSelectedOption(n, r)) //0 is Yes
+	{
+		LLMenuOptionPathfindingRebakeNavmesh::getInstance()->sendRequestRebakeNavmesh();
+		return true;
+	}
+	return false;
+}
+
+static void onClickPFDirty(void*)
+{
+	LLNotificationsUtil::add("PathfindingDirty", LLSD(), LLSD(), rebakeRegionCallback);
+}
+
+static void onClickPFDisabled(void*)
+{
+	LLNotificationsUtil::add("DynamicPathfindingDisabled");
+}
+
+void LLStatusBar::createNavMeshStatusListenerForCurrentRegion()
+{
+	if (mNavMeshSlot.connected())
+	{
+		mNavMeshSlot.disconnect();
+	}
+
+	LLViewerRegion *currentRegion = gAgent.getRegion();
+	if (currentRegion != NULL)
+	{
+		mNavMeshSlot = LLPathfindingManager::getInstance()->registerNavMeshListenerForRegion(currentRegion, boost::bind(&LLStatusBar::onNavMeshStatusChange, this, _2));
+		LLPathfindingManager::getInstance()->requestGetNavMeshForRegion(currentRegion, true);
+	}
+}
+
+void LLStatusBar::onNavMeshStatusChange(const LLPathfindingNavMeshStatus &pNavMeshStatus)
+{
+	mIsNavMeshDirty = pNavMeshStatus.isValid() && (pNavMeshStatus.getStatus() != LLPathfindingNavMeshStatus::kComplete);
+	refresh();
 }
 
 static void onClickSeeAV(void*)

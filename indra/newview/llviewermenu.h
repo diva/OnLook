@@ -99,7 +99,18 @@ void handle_gestures(void*);
 void handle_sit_down(void*);
 void handle_object_build(void*);
 
+bool visible_take_object();
+bool enable_object_take_copy();
+bool enable_object_return();
+bool enable_object_delete();
+
+// Buy either contents or object itself
 void handle_buy();
+void handle_take();
+void handle_take_copy();
+void handle_object_return();
+void handle_object_delete();
+
 // Can anyone take a free copy of the object?
 // *TODO: Move to separate file
 bool anyone_copy_selection(LLSelectNode* nodep);
@@ -120,11 +131,6 @@ bool handle_go_to();
 
 // Export to XML or Collada
 void handle_export_selected( void * );
-
-// Pass in an empty string and this function will build a string that
-// describes buyer permissions.
-class LLSaleInfo;
-class LLPermissions;
 
 class LLViewerMenuHolderGL : public LLMenuHolderGL
 {

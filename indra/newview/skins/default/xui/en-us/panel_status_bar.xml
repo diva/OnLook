@@ -86,6 +86,12 @@
      image_unselected="status_SeeAVsOff.tga" label="" label_selected=""
      left="600" mouse_opaque="true" name="status_SeeAV" scale_image="false"
      tool_tip="Parcel has Avatar privacy" visible="false" width="24" />
+  <button bottom="-17" follows="right|bottom" height="16" label="" width="24" left="624" mouse_opaque="true"
+     image_unselected="Pathfinding_Dirty.png" image_selected="Pathfinding_Dirty.png" scale_image="false"
+     name="pf_dirty" tool_tip="Objects that move may not behave correctly in this region until the region is rebaked."/>
+  <button bottom="-17" follows="right|bottom" height="16" label="" width="24" left="624" mouse_opaque="true"
+     image_unselected="Pathfinding_Disabled.png" image_selected="Pathfinding_Disabled.png" scale_image="false"
+     name="pf_disabled" tool_tip="Dynamic pathfinding is not enabled on this region."/>
 	<button bottom="-17" enabled="true" follows="right|bottom" font="SansSerif"
 	     halign="center" height="16" image_selected="status_buy_land_pressed.tga"
 	     image_unselected="status_buy_land.tga" label="" label_selected=""

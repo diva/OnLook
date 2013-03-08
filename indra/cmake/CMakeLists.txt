@@ -68,6 +68,7 @@ set(cmake_SOURCE_FILES
     LLPhysicsExtensions.cmake
     LLPlugin.cmake
     LLPrimitive.cmake
+    LLPhysicsExtensions.cmake
     LLQtWebkit.cmake
     LLRender.cmake
     LLUI.cmake
