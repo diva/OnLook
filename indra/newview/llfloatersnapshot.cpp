@@ -295,6 +295,7 @@ public:
 		mAvatarPauseHandles.clear();
 		mQualityMouseUpConnection.disconnect();
 	}
+	static void onClickDiscard(void* data);
 	static void onClickKeep(void* data);
 	static void onCommitSave(LLUICtrl* ctrl, void* data);
 	static void onClickNewSnapshot(void* data);
@@ -1861,7 +1862,7 @@ void LLFloaterSnapshot::Impl::updateControls(LLFloaterSnapshot* floater, bool de
 	floater->childSetVisible("keep_aspect",				is_advance);
 	floater->childSetVisible("type_label3",				is_advance);
 	floater->childSetVisible("format_label",			is_advance && is_local);
-	floater->childSetVisible("local_format_combo",		is_local);
+	floater->childSetVisible("local_format_combo",		is_advance && is_local);
 	floater->childSetVisible("layer_types",				is_advance);
 	floater->childSetVisible("layer_type_label",		is_advance);
 	floater->childSetVisible("aspect_one_label",		is_advance);
@@ -1873,7 +1874,7 @@ void LLFloaterSnapshot::Impl::updateControls(LLFloaterSnapshot* floater, bool de
 	floater->childSetVisible("keep_open_check",			is_advance);
 	floater->childSetVisible("freeze_time_check",		is_advance);
 	floater->childSetVisible("auto_snapshot_check",		is_advance);
-	floater->childSetVisible("image_quality_slider",	show_slider);
+	floater->childSetVisible("image_quality_slider",	is_advance && show_slider);
 	floater->childSetVisible("temp_check",				is_advance);
 
 	BOOL got_bytes = previewp && previewp->getDataSize() > 0;
@@ -1938,6 +1939,23 @@ void LLFloaterSnapshot::Impl::checkAutoSnapshot(LLSnapshotLivePreview* previewp,
 	{
 		BOOL autosnap = gSavedSettings.getBOOL("AutoSnapshot");
 		previewp->updateSnapshot(autosnap, update_thumbnail, autosnap ? AUTO_SNAPSHOT_TIME_DELAY : 0.f);
+	}
+}
+
+// static
+void LLFloaterSnapshot::Impl::onClickDiscard(void* data)
+{
+	LLFloaterSnapshot* view = static_cast<LLFloaterSnapshot*>(data);
+	if (gSavedSettings.getBOOL("FreezeTime"))
+	{
+		LLSnapshotLivePreview* previewp = view->impl.getPreviewView();
+		if (previewp && previewp->getShowFreezeFrameSnapshot())
+			previewp->showFreezeFrameSnapshot(false);
+		view->impl.freezeTime(false);
+	}
+	else
+	{
+		view->close();
 	}
 }
 
@@ -2934,6 +2952,7 @@ BOOL LLFloaterSnapshot::postBuild()
 	childSetAction("send_btn", Impl::onClickKeep, this);
 	childSetAction("feed_btn", Impl::onClickKeep, this);
 	childSetCommitCallback("save_btn", Impl::onCommitSave, this);
+	childSetAction("discard_btn", Impl::onClickDiscard, this);
 
 	childSetCommitCallback("image_quality_slider", Impl::onCommitQuality, this);
 	childSetValue("image_quality_slider", gSavedSettings.getS32("SnapshotQuality"));
