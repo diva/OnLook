@@ -66,6 +66,11 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	 */
 	LLURLRequest(ERequestAction action, std::string const& url, Injector* body, LLHTTPClient::ResponderPtr responder, AIHTTPHeaders& headers, bool keepalive, bool is_auth, bool no_compression);
 
+	/**
+	 * @brief Cached value of responder->getName() as passed to the constructor.
+	 */
+	char const* getResponderName(void) const { return mResponderNameCache; }
+
   protected:
 	// Call abort(), not delete.
 	/*virtual*/ ~LLURLRequest() { }
@@ -105,6 +110,7 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	U32 mBodySize;
 	LLHTTPClient::ResponderPtr mResponder;
 	AIHTTPHeaders mHeaders;
+	char const* mResponderNameCache;
 
   protected:
 	// Handle initializing the object.

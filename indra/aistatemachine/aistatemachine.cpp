@@ -293,6 +293,8 @@ void AIEngine::add(AIStateMachine* state_machine)
   }
 }
 
+extern void print_statemachine_diagnostics(U64 total_clocks, U64 max_delta, AIEngine::queued_type::const_reference slowest_state_machine);
+
 // MAIN-THREAD
 void AIEngine::mainloop(void)
 {
@@ -303,6 +305,10 @@ void AIEngine::mainloop(void)
 	queued_element = engine_state_w->list.begin();
   }
   U64 total_clocks = 0;
+#ifndef LL_RELEASE_FOR_DOWNLOAD
+  U64 max_delta = 0;
+  queued_type::value_type slowest_element(NULL);
+#endif
   while (queued_element != end)
   {
 	AIStateMachine& state_machine(queued_element->statemachine());
@@ -312,8 +318,15 @@ void AIEngine::mainloop(void)
 	  state_machine.multiplex(AIStateMachine::normal_run);
 	}
 	U64 delta = get_clock_count() - start;
-	queued_element->add(delta);
+	state_machine.add(delta);
 	total_clocks += delta;
+#ifndef LL_RELEASE_FOR_DOWNLOAD
+	if (delta > max_delta)
+	{
+	  max_delta = delta;
+	  slowest_element = *queued_element;
+	}
+#endif
 	bool active = state_machine.active(this);		// This locks mState shortly, so it must be called before locking mEngineState because add() locks mEngineState while holding mState.
 	engine_state_type_wat engine_state_w(mEngineState);
 	if (!active)
@@ -328,7 +341,7 @@ void AIEngine::mainloop(void)
 	if (total_clocks >= sMaxCount)
 	{
 #ifndef LL_RELEASE_FOR_DOWNLOAD
-	  llwarns << "AIStateMachine::mainloop did run for " << (total_clocks * 1000 / calc_clock_frequency()) << " ms." << llendl;
+	  print_statemachine_diagnostics(total_clocks, max_delta, slowest_element);
 #endif
 	  Dout(dc::statemachine, "Sorting " << engine_state_w->list.size() << " state machines.");
 	  engine_state_w->list.sort(QueueElementComp());
@@ -909,6 +922,7 @@ void AIStateMachine::reset()
   mDebugSetStatePending = false;
   mDebugRefCalled = false;
 #endif
+  mRuntime = 0;
   bool inside_multiplex;
   {
 	multiplex_state_type_rat state_r(mState);

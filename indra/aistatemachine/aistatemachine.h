@@ -48,20 +48,18 @@ class AIEngine
 	class QueueElement {
 	  private:
 		LLPointer<AIStateMachine> mStateMachine;
-		U64 mRuntime;
 
 	  public:
-		QueueElement(AIStateMachine* statemachine) : mStateMachine(statemachine), mRuntime(0) { }
+		QueueElement(AIStateMachine* statemachine) : mStateMachine(statemachine) { }
 		friend bool operator==(QueueElement const& e1, QueueElement const& e2) { return e1.mStateMachine == e2.mStateMachine; }
 		friend bool operator!=(QueueElement const& e1, QueueElement const& e2) { return e1.mStateMachine != e2.mStateMachine; }
 		friend struct QueueElementComp;
 
 		AIStateMachine const& statemachine(void) const { return *mStateMachine; }
 		AIStateMachine& statemachine(void) { return *mStateMachine; }
-		void add(U64 count) { mRuntime += count; }
 	};
 	struct QueueElementComp {
-	  bool operator()(QueueElement const& e1, QueueElement const& e2) const { return e1.mRuntime < e2.mRuntime; }
+	  inline bool operator()(QueueElement const& e1, QueueElement const& e2) const;
 	};
 
   public:
@@ -194,13 +192,15 @@ class AIStateMachine : public LLThreadSafeRefCount
 	bool mDebugAdvanceStatePending;				// True while advance_state() was called by not handled yet.
 	bool mDebugRefCalled;						// True when ref() is called (or will be called within the critial area of mMultiplexMutex).
 #endif
+	U64 mRuntime;								// Total time spent running in the main thread (in clocks).
 
   public:
-	AIStateMachine(void) : mCallback(NULL), mDefaultEngine(NULL), mYieldEngine(NULL)
+	AIStateMachine(void) : mCallback(NULL), mDefaultEngine(NULL), mYieldEngine(NULL),
 #ifdef SHOW_ASSERT
-		, mDebugLastState(bs_killed), mDebugShouldRun(false), mDebugAborted(false), mDebugContPending(false),
-		  mDebugSetStatePending(false), mDebugAdvanceStatePending(false), mDebugRefCalled(false)
+		mDebugLastState(bs_killed), mDebugShouldRun(false), mDebugAborted(false), mDebugContPending(false),
+		mDebugSetStatePending(false), mDebugAdvanceStatePending(false), mDebugRefCalled(false),
 #endif
+		mRuntime(0)
 	{ }
 
   protected:
@@ -275,6 +275,9 @@ class AIStateMachine : public LLThreadSafeRefCount
 	char const* event_str(event_type event);
 #endif
 
+	void add(U64 count) { mRuntime += count; }
+	U64 getRuntime(void) const { return mRuntime; }
+
   protected:
 	virtual void initialize_impl(void) = 0;
 	virtual void multiplex_impl(state_type run_state) = 0;
@@ -300,6 +303,11 @@ class AIStateMachine : public LLThreadSafeRefCount
 
 	friend class AIEngine;						// Calls multiplex().
 };
+
+bool AIEngine::QueueElementComp::operator()(QueueElement const& e1, QueueElement const& e2) const
+{
+  return e1.mStateMachine->getRuntime() < e2.mStateMachine->getRuntime();
+}
 
 // This can be used in state_str_impl.
 #define AI_CASE_RETURN(x) do { case x: return #x; } while(0)
