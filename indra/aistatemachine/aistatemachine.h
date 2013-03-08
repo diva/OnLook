@@ -197,7 +197,7 @@ class AIStateMachine : public LLThreadSafeRefCount
   public:
 	AIStateMachine(void) : mCallback(NULL), mDefaultEngine(NULL), mYieldEngine(NULL),
 #ifdef SHOW_ASSERT
-		mDebugLastState(bs_killed), mDebugShouldRun(false), mDebugAborted(false), mDebugContPending(false),
+		mThreadId(AIThreadID::none), mDebugLastState(bs_killed), mDebugShouldRun(false), mDebugAborted(false), mDebugContPending(false),
 		mDebugSetStatePending(false), mDebugAdvanceStatePending(false), mDebugRefCalled(false),
 #endif
 		mRuntime(0)

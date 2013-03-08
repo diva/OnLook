@@ -400,6 +400,7 @@ void AIStateMachine::multiplex(event_type event)
 	// If another thread is already running multiplex() then it will pick up
 	// our need to run (by us having set need_run), so there is no need to run
 	// ourselves.
+	llassert(!mMultiplexMutex.isSelfLocked());		// We may never enter recursively!
 	if (!mMultiplexMutex.tryLock())
 	{
 	  Dout(dc::statemachine, "Leaving because it is already being run [" << (void*)this << "]");
@@ -999,7 +1000,10 @@ void AIStateMachine::advance_state(state_type new_state)
 	mDebugAdvanceStatePending = true;
 #endif
   }
-  multiplex(schedule_run);
+  if (!mMultiplexMutex.isSelfLocked())
+  {
+	multiplex(schedule_run);
+  }
 }
 
 void AIStateMachine::idle(void)
@@ -1045,7 +1049,10 @@ void AIStateMachine::cont(void)
 	mDebugContPending = true;
 #endif
   }
-  multiplex(schedule_run);
+  if (!mMultiplexMutex.isSelfLocked())
+  {
+	multiplex(schedule_run);
+  }
 }
 
 void AIStateMachine::abort(void)
@@ -1062,7 +1069,7 @@ void AIStateMachine::abort(void)
 	// Schedule a new run when this state machine is waiting.
 	is_waiting = state_r->base_state == bs_multiplex && sub_state_w->idle;
   }
-  if (is_waiting)
+  if (is_waiting && !mMultiplexMutex.isSelfLocked())
   {
 	multiplex(insert_abort);
   }
