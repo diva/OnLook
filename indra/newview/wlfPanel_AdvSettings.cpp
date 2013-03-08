@@ -73,12 +73,12 @@ void wlfPanel_AdvSettings::build()
 	if (!gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
 	{
 		LLUICtrlFactory::getInstance()->buildPanel(this, "wlfPanel_AdvSettings_expanded.xml", &getFactoryMap());
-		ButtonState = "arrow_up.tga";
+		ButtonState = "arrow_down.tga";
 	}
 	else
 	{
 		LLUICtrlFactory::getInstance()->buildPanel(this, "wlfPanel_AdvSettings.xml", &getFactoryMap());
-		ButtonState = "arrow_down.tga";
+		ButtonState = "arrow_up.tga";
 	}
 	getChild<LLButton>("expand")->setImageOverlay(ButtonState);
 }
