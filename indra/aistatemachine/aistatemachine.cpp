@@ -489,7 +489,15 @@ void AIStateMachine::multiplex(event_type event)
 	  if (LL_UNLIKELY(late_abort))
 	  {
 		// abort() was called from a child state machine, from another thread, while we were already scheduled to run normally from an engine.
-		state = bs_abort;
+		// What we want to do here is pretend we detected the abort at the end of the *previous* run.
+		// If the state is bs_multiplex then the previous state was either bs_initialize or bs_multiplex,
+		// both of which would have switched to bs_abort: we set the state to bs_abort instead and just
+		// continue this run.
+		// However, if the state is bs_initialize we can't switch to bs_killed because that state isn't
+		// handled in the switch below; it's only handled when exiting multiplex() directly after it is set.
+		// Therefore, in that case we have to set the state BACK to bs_reset and run it again. This duplicated
+		// run of bs_reset is not a problem because it happens to be a NoOp.
+		state = (state == bs_initialize) ? bs_reset : bs_abort;
 #ifdef CWDEBUG
 		Dout(dc::statemachine, "Late abort detected! Running state " << state_str(state) << " instead [" << (void*)this << "]");
 #endif
@@ -507,7 +515,8 @@ void AIStateMachine::multiplex(event_type event)
 	  switch(state)
 	  {
 		case bs_reset:
-		  // We're just being kick started to get into the right thread.
+		  // We're just being kick started to get into the right thread
+		  // (possibly for the second time when a late abort was detected, but that's ok: we do nothing here).
 		  break;
 		case bs_initialize:
 		  ref();
