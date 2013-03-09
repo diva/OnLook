@@ -172,6 +172,7 @@ namespace LLMarketplaceImport
 
 			if ((status == MarketplaceErrorCodes::IMPORT_REDIRECT) ||
 				(status == MarketplaceErrorCodes::IMPORT_AUTHENTICATION_ERROR) ||
+				(status == MarketplaceErrorCodes::IMPORT_JOB_LOW_SPEED) ||
 				(status == MarketplaceErrorCodes::IMPORT_JOB_TIMEOUT))
 			{
 				if (gSavedSettings.getBOOL("InventoryOutboxLogging"))
@@ -228,6 +229,7 @@ namespace LLMarketplaceImport
 			}
 
 			if ((status == MarketplaceErrorCodes::IMPORT_AUTHENTICATION_ERROR) ||
+				(status == MarketplaceErrorCodes::IMPORT_JOB_LOW_SPEED) ||
 				(status == MarketplaceErrorCodes::IMPORT_JOB_TIMEOUT))
 			{
 				if (gSavedSettings.getBOOL("InventoryOutboxLogging"))

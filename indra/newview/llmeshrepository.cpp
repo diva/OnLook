@@ -1780,7 +1780,7 @@ void LLMeshLODResponder::completedRaw(U32 status, const std::string& reason,
 
 	if (data_size < (S32)mRequestedBytes)
 	{
-		if (status == 499 || status == 503)
+		if (is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE)
 		{	//timeout or service unavailable, try again
 			LLMeshRepository::sHTTPRetryCount++;
 			gMeshRepo.mThread->loadMeshLOD(mMeshParams, mLOD);
@@ -1834,7 +1834,7 @@ void LLMeshSkinInfoResponder::completedRaw(U32 status, const std::string& reason
 
 	if (data_size < (S32)mRequestedBytes)
 	{
-		if (status == 499 || status == 503)
+		if (is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE)
 		{	//timeout or service unavailable, try again
 			LLMeshRepository::sHTTPRetryCount++;
 			gMeshRepo.mThread->loadMeshSkinInfo(mMeshID);
@@ -1888,7 +1888,7 @@ void LLMeshDecompositionResponder::completedRaw(U32 status, const std::string& r
 
 	if (data_size < (S32)mRequestedBytes)
 	{
-		if (status == 499 || status == 503)
+		if (is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE)
 		{	//timeout or service unavailable, try again
 			LLMeshRepository::sHTTPRetryCount++;
 			gMeshRepo.mThread->loadMeshDecomposition(mMeshID);
@@ -1942,7 +1942,7 @@ void LLMeshPhysicsShapeResponder::completedRaw(U32 status, const std::string& re
 
 	if (data_size < (S32)mRequestedBytes)
 	{
-		if (status == 499 || status == 503)
+		if (is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE)
 		{	//timeout or service unavailable, try again
 			LLMeshRepository::sHTTPRetryCount++;
 			gMeshRepo.mThread->loadMeshPhysicsShape(mMeshID);
@@ -1993,13 +1993,13 @@ void LLMeshHeaderResponder::completedRaw(U32 status, const std::string& reason,
 		//	<< "Header responder failed with status: "
 		//	<< status << ": " << reason << llendl;
 
-		// 503 (service unavailable) or 499 (timeout)
+		// HTTP_SERVICE_UNAVAILABLE (503) or HTTP_INTERNAL_ERROR_*'s.
 		// can be due to server load and can be retried
 
 		// TODO*: Add maximum retry logic, exponential backoff
 		// and (somewhat more optional than the others) retries
 		// again after some set period of time
-		if (status == 503 || status == 499)
+		if (is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE)
 		{	//retry
 			LLMeshRepository::sHTTPRetryCount++;
 			LLMeshRepoThread::HeaderRequest req(mMeshParams);

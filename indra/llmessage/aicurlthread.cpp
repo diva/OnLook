@@ -1937,7 +1937,7 @@ void BufferedCurlEasyRequest::setStatusAndReason(U32 status, std::string const& 
   // Sanity check. If the server replies with a redirect status then we better have that option turned on!
   if ((status >= 300 && status < 400) && mResponder && !mResponder->redirect_status_ok())
   {
-	llerrs << "Received " << status << " (" << reason << ") for responder \"" << mTimeoutPolicy->name() << "\" which has no followRedir()!" << llendl;
+	llerrs << "Received " << status << " (" << reason << ") for responder \"" << mResponder->getName() << "\" which has no followRedir()!" << llendl;
   }
 }
 
@@ -1949,7 +1949,7 @@ void BufferedCurlEasyRequest::processOutput(void)
   CURLcode code;
   AITransferInfo info;
   getResult(&code, &info);
-  if (code == CURLE_OK && mStatus != HTTP_INTERNAL_ERROR)
+  if (code == CURLE_OK && !is_internal_http_error(mStatus))
   {
 	getinfo(CURLINFO_RESPONSE_CODE, &responseCode);
 	// If getResult code is CURLE_OK then we should have decoded the first header line ourselves.
@@ -1961,8 +1961,30 @@ void BufferedCurlEasyRequest::processOutput(void)
   }
   else
   {
-	responseCode = HTTP_INTERNAL_ERROR;
 	responseReason = (code == CURLE_OK) ? mReason : std::string(curl_easy_strerror(code));
+	switch (code)
+	{
+	  case CURLE_FAILED_INIT:
+		responseCode = HTTP_INTERNAL_ERROR_OTHER;
+		break;
+	  case CURLE_OPERATION_TIMEDOUT:
+		responseCode = HTTP_INTERNAL_ERROR_CURL_TIMEOUT;
+		break;
+	  case CURLE_WRITE_ERROR:
+		responseCode = HTTP_INTERNAL_ERROR_LOW_SPEED;
+		break;
+	  default:
+		responseCode = HTTP_INTERNAL_ERROR_CURL_OTHER;
+		break;
+	}
+	if (responseCode == HTTP_INTERNAL_ERROR_LOW_SPEED)
+	{
+		// Rewrite error to something understandable.
+		responseReason = llformat("Download stalled: received less than %u bytes in %u seconds (in total received %u bytes, using responder %s). "
+			"To change these values, tune debug settings CurlTimeoutLowSpeedLimit and CurlTimeoutLowSpeedTime respectively.",
+			mResponder->getHTTPTimeoutPolicy().getLowSpeedLimit(), mResponder->getHTTPTimeoutPolicy().getLowSpeedTime(),
+			mResponseTransferedBytes, mResponder->getName());
+	}
 	setopt(CURLOPT_FRESH_CONNECT, TRUE);
   }
 
@@ -2099,7 +2121,7 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	  }
 	  // Either way, this status value is not understood (or taken into account).
 	  // Set it to internal error so that the rest of code treats it as an error.
-	  status = HTTP_INTERNAL_ERROR;
+	  status = HTTP_INTERNAL_ERROR_OTHER;
 	}
 	self_w->received_HTTP_header();
 	self_w->setStatusAndReason(status, reason);

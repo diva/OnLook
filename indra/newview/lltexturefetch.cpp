@@ -1369,14 +1369,21 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			if (mRequestedSize < 0)
 			{
 				S32 max_attempts;
-				if (mGetStatus == HTTP_NOT_FOUND || mGetStatus == 499)
+				if (mGetStatus == HTTP_NOT_FOUND || mGetStatus == HTTP_INTERNAL_ERROR_CURL_TIMEOUT || mGetStatus == HTTP_INTERNAL_ERROR_LOW_SPEED)
 				{
 					mHTTPFailCount = max_attempts = 1; // Don't retry
 					if(mGetStatus == HTTP_NOT_FOUND)
 						llwarns << "Texture missing from server (404): " << mUrl << llendl;
-					else if (mGetStatus == 499) 
+					else if (mGetStatus == HTTP_INTERNAL_ERROR_CURL_TIMEOUT || mGetStatus == HTTP_INTERNAL_ERROR_LOW_SPEED)
 					{
-						llwarns << "No response from server (499): " << mUrl << llendl;
+						if (mGetStatus == HTTP_INTERNAL_ERROR_CURL_TIMEOUT)
+						{
+							llwarns << "No response from server (HTTP_INTERNAL_ERROR_CURL_TIMEOUT): " << mUrl << llendl;
+						}
+						else
+						{
+							llwarns << "Slow response from server (HTTP_INTERNAL_ERROR_LOW_SPEED): " << mUrl << llendl;
+						}
 						SGHostBlackList::add(mUrl, 60.0, mGetStatus);
 					}
 					//roll back to try UDP

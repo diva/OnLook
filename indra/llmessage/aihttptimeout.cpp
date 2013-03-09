@@ -294,6 +294,7 @@ bool HTTPTimeout::lowspeed(size_t bytes)
 #endif
 		"aborting slow connection (average transfer rate below " << low_speed_limit <<
 		" for more than " << low_speed_time << " second" << ((low_speed_time == 1) ? "" : "s") << ")." << llendl;
+	  // This causes curl to exit with CURLE_WRITE_ERROR.
 	  return true;
 	}
   }

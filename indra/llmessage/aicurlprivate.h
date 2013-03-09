@@ -435,7 +435,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	ThreadSafeBufferedCurlEasyRequest const* get_lockobj(void) const;
 	// Return true when an error code was received that can occur before the upload finished.
 	// So far the only such error I've seen is HTTP_BAD_REQUEST.
-	bool upload_error_status(void) const { return mStatus == HTTP_BAD_REQUEST /*&& mStatus != HTTP_INTERNAL_ERROR*/; }
+	bool upload_error_status(void) const { return mStatus == HTTP_BAD_REQUEST; }
 
 	// Return true when prepRequest was already called and the object has not been
 	// invalidated as a result of calling timed_out().

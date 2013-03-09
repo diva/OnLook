@@ -304,7 +304,7 @@ AIHTTPTimeoutPolicy const& LLHTTPClient::ResponderBase::getHTTPTimeoutPolicy(voi
 void LLHTTPClient::ResponderBase::decode_llsd_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, LLSD& content)
 {
 	AICurlInterface::Stats::llsd_body_count++;
-	if (status == HTTP_INTERNAL_ERROR)
+	if (is_internal_http_error(status))
 	{
 		// In case of an internal error (ie, a curl error), a description of the (curl) error is the best we can do.
 		// In any case, the body if anything was received at all, can not be relied upon.
@@ -355,7 +355,7 @@ void LLHTTPClient::ResponderBase::decode_llsd_body(U32 status, std::string const
 void LLHTTPClient::ResponderBase::decode_raw_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, std::string& content)
 {
 	AICurlInterface::Stats::raw_body_count++;
-	if (status == HTTP_INTERNAL_ERROR)
+	if (is_internal_http_error(status))
 	{
 		// In case of an internal error (ie, a curl error), a description of the (curl) error is the best we can do.
 		// In any case, the body if anything was received at all, can not be relied upon.
@@ -612,11 +612,10 @@ static LLSD blocking_request(
 
 	responder->wait();
 
-	S32 http_status = HTTP_INTERNAL_ERROR;
 	LLSD response = LLSD::emptyMap();
 	CURLcode result = responder->result_code();
+	S32 http_status = responder->http_status();
 
-	http_status = responder->http_status();
 	bool http_success = http_status >= 200 && http_status < 300;
 	if (result == CURLE_OK && http_success)
 	{

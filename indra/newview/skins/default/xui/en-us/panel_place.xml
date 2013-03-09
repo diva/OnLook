@@ -52,4 +52,7 @@
 	<string name="server_forbidden_text">
 		Information about this location is unavailable due to access restrictions.  Please check your permissions with the parcel owner.
 	</string>
+	<string name="internal_timeout_text">
+		Information about this location is unavailable due to a network timeout, please try again later.
+	</string>
 </panel>

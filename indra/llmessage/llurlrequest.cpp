@@ -47,7 +47,6 @@
 #include "llscopedvolatileaprpool.h"
 #include "llfasttimer.h"
 #include "message.h"
-static const U32 HTTP_STATUS_PIPE_ERROR = 499;
 
 /**
  * String constants

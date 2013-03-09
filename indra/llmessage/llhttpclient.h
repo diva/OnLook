@@ -380,7 +380,7 @@ public:
 		}
 
 	public:
-		LegacyPolledResponder(void) : mStatus(HTTP_INTERNAL_ERROR) { }
+		LegacyPolledResponder(void) : mStatus(HTTP_INTERNAL_ERROR_OTHER) { }
 
 		// Accessors.
 		U32 http_status(void) const { return mStatus; }

@@ -97,7 +97,7 @@ public:
 		}
 
 		// *TODO: 404 = not supported by the grid
-		// *TODO: increase timeout or handle 499 Expired
+		// *TODO: increase timeout or handle HTTP_INTERNAL_ERROR_* time errors.
 
 		// Convert config to LLSD.
 		const Json::Value data = root["data"];
