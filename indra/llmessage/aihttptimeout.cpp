@@ -105,7 +105,7 @@ U64 HTTPTimeout::sClockCount;										// Clock count, set once per select() exi
 // queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
 //                                                    ^ ^ ^       ^   ^      ^
 //                                                    | | |       |   |      |
-bool HTTPTimeout::data_sent(size_t n)
+bool HTTPTimeout::data_sent(size_t n, bool finished)
 {
   // Generate events.
   if (!mLowSpeedOn)
@@ -114,7 +114,7 @@ bool HTTPTimeout::data_sent(size_t n)
 	reset_lowspeed();
   }
   // Detect low speed.
-  return lowspeed(n);
+  return lowspeed(n, finished);
 }
 
 // CURL-THREAD
@@ -127,6 +127,7 @@ void HTTPTimeout::reset_lowspeed(void)
 {
   mLowSpeedClock = sClockCount;
   mLowSpeedOn = true;
+  mLastBytesSent = false;	// We're just starting!
   mLastSecond = -1;			// This causes lowspeed to initialize the rest.
   mStalled = (U64)-1;		// Stop reply delay timer.
   DoutCurl("reset_lowspeed: mLowSpeedClock = " << mLowSpeedClock << "; mStalled = -1");
@@ -198,9 +199,9 @@ bool HTTPTimeout::data_received(size_t n/*,*/
 // queued--><--DNS lookup + connect + send headers-->[<--send body (if any)-->]<--replydelay--><--receive headers + body--><--done
 //                                                    ^ ^ ^       ^   ^      ^                 ^  ^   ^     ^    ^  ^ ^   ^
 //                                                    | | |       |   |      |                 |  |   |     |    |  | |   |
-bool HTTPTimeout::lowspeed(size_t bytes)
+bool HTTPTimeout::lowspeed(size_t bytes, bool finished)
 {
-  //DoutCurlEntering("HTTPTimeout::lowspeed(" << bytes << ")");		commented out... too spammy for normal use.
+  //DoutCurlEntering("HTTPTimeout::lowspeed(" << bytes << ", " << finished << ")");		commented out... too spammy for normal use.
 
   // The algorithm to determine if we timed out if different from how libcurls CURLOPT_LOW_SPEED_TIME works.
   //
@@ -223,6 +224,9 @@ bool HTTPTimeout::lowspeed(size_t bytes)
   // This REALLY should never happen, but due to another bug it did happened
   // and caused something so evil and hard to find that... NEVER AGAIN!
   llassert(second >= 0);
+
+  // finished should be false until the very last call to this function.
+  mLastBytesSent = finished;
 
   // If this is the same second as last time, just add the number of bytes to the current bucket.
   if (second == mLastSecond)
@@ -287,6 +291,23 @@ bool HTTPTimeout::lowspeed(size_t bytes)
 	DoutCurl("Average transfer rate is " << (mTotalBytes / low_speed_time) << " bytes/s (low speed limit is " << low_speed_limit << " bytes/s)");
 	if (mTotalBytes < mintotalbytes)
 	{
+	  if (finished)
+	  {
+		llwarns <<
+#ifdef CWDEBUG
+		(void*)get_lockobj() << ": "
+#endif
+		"Transfer rate timeout (average transfer rate below " << low_speed_limit <<
+		" for more than " << low_speed_time << " second" << ((low_speed_time == 1) ? "" : "s") <<
+		") but we just sent the LAST bytes! Waiting an additional 4 seconds." << llendl;
+		// Lets hope these last bytes will make it and do not time out on transfer speed anymore.
+		// Just give these bytes 4 more seconds to be written to the socket (after which we'll
+		// assume that the 'upload finished' detection failed and we'll wait another ReplyDelay
+		// seconds before finally, actually timing out.
+		mStalled = sClockCount + 4 / sClockWidth;
+		DoutCurl("mStalled set to sClockCount (" << sClockCount << ") + " << (mStalled - sClockCount) << " (4 seconds)");
+		return false;
+	  }
 	  // The average transfer rate over the passed low_speed_time seconds is too low. Abort the transfer.
 	  llwarns <<
 #ifdef CWDEBUG
@@ -381,6 +402,19 @@ void HTTPTimeout::done(AICurlEasyRequest_wat const& curlEasyRequest_w, CURLcode 
   mLowSpeedOn = false;
   mStalled = (U64)-1;
   DoutCurl("done: mStalled set to -1");
+}
+
+bool HTTPTimeout::maybe_upload_finished(void)
+{
+  if (!mUploadFinished && mLastBytesSent)
+  {
+	// Assume that 'upload finished' detection failed and the server is slow with a reply.
+	// Switch to waiting for a reply.
+	upload_finished();
+	return true;
+  }
+  // The upload certainly finished or certainly did not finish.
+  return false;
 }
 
 // Libcurl uses GetTickCount on windows, with a resolution of 10 to 16 ms.
@@ -498,6 +532,10 @@ void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, ch
   if (mUploadFinished)
   {
 	llinfos << "The request upload finished successfully." << llendl;
+  }
+  else if (mLastBytesSent)
+  {
+	llinfos << "All bytes where sent to libcurl for upload." << llendl;
   }
   if (mLastSecond > 0 && mLowSpeedOn)
   {

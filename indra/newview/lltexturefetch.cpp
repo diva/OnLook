@@ -1343,7 +1343,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				  }
 				  LLHTTPClient::request(mUrl, LLHTTPClient::HTTP_GET, NULL,
 					  new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, mRequestedOffset, true),
-					  headers/*,*/ DEBUG_CURLIO_PARAM(false), keep_alive, false, false, NULL, 0, NULL);
+					  headers/*,*/ DEBUG_CURLIO_PARAM(false), keep_alive, no_does_authentication, allow_compressed_reply, NULL, 0, NULL);
 				  res = true;
 			}
 			if (!res)

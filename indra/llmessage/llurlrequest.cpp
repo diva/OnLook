@@ -76,8 +76,8 @@ std::string LLURLRequest::actionAsVerb(LLURLRequest::ERequestAction action)
 
 // This might throw AICurlNoEasyHandle.
 LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string const& url, Injector* body,
-	LLHTTPClient::ResponderPtr responder, AIHTTPHeaders& headers, bool keepalive, bool is_auth, bool no_compression) :
-    mAction(action), mURL(url), mKeepAlive(keepalive), mIsAuth(is_auth), mNoCompression(no_compression),
+	LLHTTPClient::ResponderPtr responder, AIHTTPHeaders& headers, bool keepalive, bool is_auth, bool compression) :
+    mAction(action), mURL(url), mKeepAlive(keepalive), mIsAuth(is_auth), mNoCompression(!compression),
 	mBody(body), mResponder(responder), mHeaders(headers), mResponderNameCache(responder ? responder->getName() : "<uninitialized>")
 {
 }
@@ -213,17 +213,17 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 			break;
 
 		case LLHTTPClient::HTTP_PUT:
-		{
-			// Disable the expect http 1.1 extension. POST and PUT default
-			// to using this, causing the broken server to get confused.
-			curlEasyRequest_w->addHeader("Expect:");
-			curlEasyRequest_w->setopt(CURLOPT_UPLOAD, 1);
-			curlEasyRequest_w->setopt(CURLOPT_INFILESIZE, mBodySize);
+
+			// Set the handle for an http put
+			curlEasyRequest_w->setPut(mBodySize, mKeepAlive);
+
+			// Set Accept-Encoding to allow response compression
+			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, mNoCompression ? "identity" : "");
 			rv = true;
 			break;
-		}
+
 		case LLHTTPClient::HTTP_POST:
-		{
+
 			// Set the handle for an http post
 			curlEasyRequest_w->setPost(mBodySize, mKeepAlive);
 
@@ -231,7 +231,7 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, mNoCompression ? "identity" : "");
 			rv = true;
 			break;
-		}
+
 		case LLHTTPClient::HTTP_DELETE:
 			// Set the handle for an http post
 			curlEasyRequest_w->setoptString(CURLOPT_CUSTOMREQUEST, "DELETE");

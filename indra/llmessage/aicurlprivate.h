@@ -214,6 +214,7 @@ class CurlEasyRequest : public CurlEasyHandle {
   private:
 	void setPost_raw(U32 size, char const* data, bool keepalive);
   public:
+	void setPut(U32 size, bool keepalive = true);
 	void setPost(U32 size, bool keepalive = true) { setPost_raw(size, NULL, keepalive); }
 	void setPost(AIPostFieldPtr const& postdata, U32 size, bool keepalive = true);
 	void setPost(char const* data, U32 size, bool keepalive = true) { setPost(new AIPostField(data), size, keepalive); }
@@ -299,6 +300,7 @@ class CurlEasyRequest : public CurlEasyHandle {
   protected:
 	curl_slist* mHeaders;
 	AICurlEasyHandleEvents* mHandleEventsTarget;
+	U32 mContentLength;		// Non-zero if known (only set for PUT and POST).
 	CURLcode mResult;		//AIFIXME: this does not belong in the request object, but belongs in the response object.
 
 	AIHTTPTimeoutPolicy const* mTimeoutPolicy;
@@ -321,12 +323,12 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// Accessor for mTimeout with optional creation of orphaned object (if lockobj != NULL).
 	LLPointer<curlthread::HTTPTimeout>& httptimeout(void) { if (!mTimeout) { create_timeout_object(); mTimeoutIsOrphan = true; } return mTimeout; }
 	// Return true if no data has been received on the latest socket (if any) for too long.
-	bool has_stalled(void) const { return mTimeout && mTimeout->has_stalled(); }
+	bool has_stalled(void) { return mTimeout && mTimeout->has_stalled(); }
 
   protected:
 	// This class may only be created as base class of BufferedCurlEasyRequest.
 	// Throws AICurlNoEasyHandle.
-	CurlEasyRequest(void) : mHeaders(NULL), mHandleEventsTarget(NULL), mResult(CURLE_FAILED_INIT), mTimeoutPolicy(NULL), mTimeoutIsOrphan(false)
+	CurlEasyRequest(void) : mHeaders(NULL), mHandleEventsTarget(NULL), mContentLength(0), mResult(CURLE_FAILED_INIT), mTimeoutPolicy(NULL), mTimeoutIsOrphan(false)
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 		, mDebugIsHeadOrGetMethod(false)
 #endif

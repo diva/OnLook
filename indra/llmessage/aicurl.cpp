@@ -771,6 +771,22 @@ void CurlEasyRequest::setoptString(CURLoption option, std::string const& value)
   setopt(option, value.c_str());
 }
 
+void CurlEasyRequest::setPut(U32 size, bool keepalive)
+{
+  DoutCurl("PUT size is " << size << " bytes.");
+  mContentLength = size;
+
+  // The server never replies with 100-continue, so suppress the "Expect: 100-continue" header that libcurl adds by default.
+  addHeader("Expect:");
+  if (size > 0 && keepalive)
+  {
+	addHeader("Connection: keep-alive");
+	addHeader("Keep-alive: 300");
+  }
+  setopt(CURLOPT_UPLOAD, 1);
+  setopt(CURLOPT_INFILESIZE, size);
+}
+
 void CurlEasyRequest::setPost(AIPostFieldPtr const& postdata, U32 size, bool keepalive)
 {
   llassert_always(postdata->data());
@@ -788,6 +804,7 @@ void CurlEasyRequest::setPost_raw(U32 size, char const* data, bool keepalive)
 	// data == NULL when we're going to read the data using CURLOPT_READFUNCTION.
 	DoutCurl("POST size is " << size << " bytes.");
   }
+  mContentLength = size;
 
   // The server never replies with 100-continue, so suppress the "Expect: 100-continue" header that libcurl adds by default.
   addHeader("Expect:");

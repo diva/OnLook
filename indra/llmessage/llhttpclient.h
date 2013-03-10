@@ -75,6 +75,16 @@ enum EKeepAlive {
   keep_alive
 };
 
+enum EDoesAuthentication {
+  no_does_authentication = 0,
+  does_authentication
+};
+
+enum EAllowCompressedReply {
+  no_allow_compressed_reply = 0,
+  allow_compressed_reply
+};
+
 #ifdef DEBUG_CURLIO
 enum EDebugCurl {
   debug_off = 0,
@@ -419,8 +429,8 @@ public:
 		AIHTTPHeaders& headers/*,*/
 		DEBUG_CURLIO_PARAM(EDebugCurl debug),
 		EKeepAlive keepalive = keep_alive,
-		bool is_auth = false,
-		bool no_compression = false,
+		EDoesAuthentication does_auth = no_does_authentication,
+		EAllowCompressedReply allow_compression = allow_compressed_reply,
 		AIStateMachine* parent = NULL,
 		/*AIStateMachine::state_type*/ U32 new_parent_state = 0,
 		AIEngine* default_engine = &gMainThreadEngine);

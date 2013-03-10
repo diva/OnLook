@@ -204,8 +204,8 @@ void LLHTTPClient::request(
 	AIHTTPHeaders& headers/*,*/
 	DEBUG_CURLIO_PARAM(EDebugCurl debug),
 	EKeepAlive keepalive,
-	bool is_auth,
-	bool no_compression,
+	EDoesAuthentication does_auth,
+	EAllowCompressedReply allow_compression,
 	AIStateMachine* parent,
 	AIStateMachine::state_type new_parent_state,
 	AIEngine* default_engine)
@@ -221,7 +221,7 @@ void LLHTTPClient::request(
 	LLURLRequest* req;
 	try
 	{
-		req = new LLURLRequest(method, url, body_injector, responder, headers, keepalive, is_auth, no_compression);
+		req = new LLURLRequest(method, url, body_injector, responder, headers, keepalive, does_auth, allow_compression);
 #ifdef DEBUG_CURLIO
 		req->mCurlEasyRequest.debug(debug);
 #endif
@@ -687,17 +687,17 @@ U32 LLHTTPClient::blockingGetRaw(const std::string& url, std::string& body/*,*/ 
 
 void LLHTTPClient::put(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug))
 {
-	request(url, HTTP_PUT, new LLSDInjector(body), responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug));
+	request(url, HTTP_PUT, new LLSDInjector(body), responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), no_keep_alive, no_does_authentication, no_allow_compressed_reply);
 }
 
 void LLHTTPClient::post(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug), EKeepAlive keepalive, AIStateMachine* parent, AIStateMachine::state_type new_parent_state)
 {
-	request(url, HTTP_POST, new LLSDInjector(body), responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive, false, false, parent, new_parent_state);
+	request(url, HTTP_POST, new LLSDInjector(body), responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive, no_does_authentication, allow_compressed_reply, parent, new_parent_state);
 }
 
 void LLHTTPClient::postXMLRPC(std::string const& url, XMLRPC_REQUEST xmlrpc_request, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug), EKeepAlive keepalive)
 {
-  	request(url, HTTP_POST, new XMLRPCInjector(xmlrpc_request), responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive, true, false);		// Does use compression.
+  	request(url, HTTP_POST, new XMLRPCInjector(xmlrpc_request), responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive, does_authentication, allow_compressed_reply);
 }
 
 void LLHTTPClient::postXMLRPC(std::string const& url, char const* method, XMLRPC_VALUE value, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug), EKeepAlive keepalive)
@@ -708,7 +708,7 @@ void LLHTTPClient::postXMLRPC(std::string const& url, char const* method, XMLRPC
 	XMLRPC_RequestSetData(xmlrpc_request, value);
 	// XMLRPCInjector takes ownership of xmlrpc_request and will free it when done.
 	// LLURLRequest takes ownership of the XMLRPCInjector object and will free it when done.
-  	request(url, HTTP_POST, new XMLRPCInjector(xmlrpc_request), responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive, true, true);		// Does not use compression.
+  	request(url, HTTP_POST, new XMLRPCInjector(xmlrpc_request), responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive, does_authentication, no_allow_compressed_reply);
 }
 
 void LLHTTPClient::postRaw(std::string const& url, char const* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug), EKeepAlive keepalive)

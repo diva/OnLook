@@ -2058,8 +2058,9 @@ size_t BufferedCurlEasyRequest::curlReadCallback(char* data, size_t size, size_t
   S32 bytes = size * nmemb;		// The maximum amount to read.
   self_w->mLastRead = self_w->getInput()->readAfter(sChannels.out(), self_w->mLastRead, (U8*)data, bytes);
   self_w->mRequestTransferedBytes += bytes;		// Accumulate data sent to the server.
+  llassert(self_w->mRequestTransferedBytes <= self_w->mContentLength);	// Content-Length should always be known, and we should never be sending more.
   // Timeout administration.
-  if (self_w->httptimeout()->data_sent(bytes))
+  if (self_w->httptimeout()->data_sent(bytes, self_w->mRequestTransferedBytes >= self_w->mContentLength))
   {
 	// Transfer timed out. Return CURL_READFUNC_ABORT which will abort with error CURLE_ABORTED_BY_CALLBACK.
 	return CURL_READFUNC_ABORT;
