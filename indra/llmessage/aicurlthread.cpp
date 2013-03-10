@@ -1980,10 +1980,10 @@ void BufferedCurlEasyRequest::processOutput(void)
 	if (responseCode == HTTP_INTERNAL_ERROR_LOW_SPEED)
 	{
 		// Rewrite error to something understandable.
-		responseReason = llformat("Download stalled: received less than %u bytes in %u seconds (in total received %u bytes, using responder %s). "
-			"To change these values, tune debug settings CurlTimeoutLowSpeedLimit and CurlTimeoutLowSpeedTime respectively.",
-			mResponder->getHTTPTimeoutPolicy().getLowSpeedLimit(), mResponder->getHTTPTimeoutPolicy().getLowSpeedTime(),
-			mResponseTransferedBytes, mResponder->getName());
+		responseReason = llformat("Connection to \"%s\" stalled: download speed dropped below %u bytes/s for %u seconds (up till that point, %s received a total of %u bytes). "
+			"To change these values, go to Advanced --> Debug Settings and change CurlTimeoutLowSpeedLimit and CurlTimeoutLowSpeedTime respectively.",
+			mResponder->getURL().c_str(), mResponder->getHTTPTimeoutPolicy().getLowSpeedLimit(), mResponder->getHTTPTimeoutPolicy().getLowSpeedTime(),
+			mResponder->getName(), mResponseTransferedBytes);
 	}
 	setopt(CURLOPT_FRESH_CONNECT, TRUE);
   }

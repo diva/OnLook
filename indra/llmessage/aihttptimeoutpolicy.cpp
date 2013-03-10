@@ -88,7 +88,7 @@ U16 const AITP_default_DNS_lookup_grace = 60;			// Allow for 60 seconds long DNS
 U16 const AITP_default_maximum_connect_time = 10;		// Allow the SSL/TLS connection through a proxy, including handshakes, to take up to 10 seconds.
 U16 const AITP_default_maximum_reply_delay = 60;		// Allow the server 60 seconds to do whatever it has to do before starting to send data.
 U16 const AITP_default_low_speed_time = 30;				// If a transfer speed drops below AITP_default_low_speed_limit bytes/s for 30 seconds, terminate the transfer.
-U32 const AITP_default_low_speed_limit = 56000;			// In bytes per second (use for CURLOPT_LOW_SPEED_LIMIT).
+U32 const AITP_default_low_speed_limit = 7000;			// In bytes per second (use for CURLOPT_LOW_SPEED_LIMIT).
 U16 const AITP_default_maximum_curl_transaction = 300;	// Allow large files to be transfered over slow connections.
 U16 const AITP_default_maximum_total_delay = 600;		// Avoid "leaking" by terminating anything that wasn't completed after 10 minutes.
 

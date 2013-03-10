@@ -66,7 +66,7 @@ struct AIAccess {
 struct AIHTTPTimeoutPolicy {
   U16 getReplyDelay(void) const { return 60; }
   U16 getLowSpeedTime(void) const { return 30; }
-  U32 getLowSpeedLimit(void) const { return 56000; }
+  U32 getLowSpeedLimit(void) const { return 7000; }
   static bool connect_timed_out(std::string const&) { return false; }
 };
 
@@ -283,8 +283,8 @@ bool HTTPTimeout::lowspeed(size_t bytes, bool finished)
   mBuckets[mBucket] = bytes;
 
   // Check if we timed out.
-  U32 const low_speed_limit = mPolicy->getLowSpeedLimit();
-  U32 mintotalbytes = low_speed_limit * low_speed_time;
+  U32 const low_speed_limit = mPolicy->getLowSpeedLimit();	// In bytes/s
+  U32 mintotalbytes = low_speed_limit * low_speed_time;		// In bytes.
   DoutCurl("Transfered " << mTotalBytes << " bytes in " << llmin(second, (S32)low_speed_time) << " seconds after " << second << " second" << ((second == 1) ? "" : "s") << ".");
   if (second >= low_speed_time)
   {
@@ -298,7 +298,7 @@ bool HTTPTimeout::lowspeed(size_t bytes, bool finished)
 		(void*)get_lockobj() << ": "
 #endif
 		"Transfer rate timeout (average transfer rate below " << low_speed_limit <<
-		" for more than " << low_speed_time << " second" << ((low_speed_time == 1) ? "" : "s") <<
+		" bytes/s for more than " << low_speed_time << " second" << ((low_speed_time == 1) ? "" : "s") <<
 		") but we just sent the LAST bytes! Waiting an additional 4 seconds." << llendl;
 		// Lets hope these last bytes will make it and do not time out on transfer speed anymore.
 		// Just give these bytes 4 more seconds to be written to the socket (after which we'll
@@ -314,7 +314,7 @@ bool HTTPTimeout::lowspeed(size_t bytes, bool finished)
 		(void*)get_lockobj() << ": "
 #endif
 		"aborting slow connection (average transfer rate below " << low_speed_limit <<
-		" for more than " << low_speed_time << " second" << ((low_speed_time == 1) ? "" : "s") << ")." << llendl;
+		" bytes/s for more than " << low_speed_time << " second" << ((low_speed_time == 1) ? "" : "s") << ")." << llendl;
 	  // This causes curl to exit with CURLE_WRITE_ERROR.
 	  return true;
 	}
