@@ -651,11 +651,6 @@ BOOL LLVOAvatarSelf::setParamWeight(const LLViewerVisualParam *param, F32 weight
 		}
 	}
 
-	if(param->getID() == EMERALD_BOOB_GRAVITY_PARAM && weight != getActualBoobGrav())
- 	{
- 		setActualBoobGrav(weight);
- 	}
-
 	return LLCharacter::setVisualParamWeight(param,weight,upload_bake);
 }
 

@@ -87,7 +87,6 @@ set(viewer_SOURCE_FILES
     ascentprefssys.cpp
     ascentprefsvan.cpp
     chatbar_as_cmdline.cpp
-    emeraldboobutils.cpp
     floaterao.cpp
     floaterlocalassetbrowse.cpp
     floatervoicelicense.cpp
@@ -588,7 +587,6 @@ set(viewer_HEADER_FILES
     ascentprefssys.h
     ascentprefsvan.h
     chatbar_as_cmdline.h
-    emeraldboobutils.h
     floaterao.h
     floaterlocalassetbrowse.h
     floatervoicelicense.h
