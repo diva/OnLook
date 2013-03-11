@@ -418,7 +418,8 @@ void cleanupCurl(void)
   stopCurlThread();
   if (CurlMultiHandle::getTotalMultiHandles() != 0)
 	llwarns << "Not all CurlMultiHandle objects were destroyed!" << llendl;
-  AIStateMachine::flush();
+  gMainThreadEngine.flush();			// Not really related to curl, but why not.
+  gStateMachineThreadEngine.flush();
   clearCommandQueue();
   Stats::print();
   ssl_cleanup();
@@ -770,6 +771,22 @@ void CurlEasyRequest::setoptString(CURLoption option, std::string const& value)
   setopt(option, value.c_str());
 }
 
+void CurlEasyRequest::setPut(U32 size, bool keepalive)
+{
+  DoutCurl("PUT size is " << size << " bytes.");
+  mContentLength = size;
+
+  // The server never replies with 100-continue, so suppress the "Expect: 100-continue" header that libcurl adds by default.
+  addHeader("Expect:");
+  if (size > 0 && keepalive)
+  {
+	addHeader("Connection: keep-alive");
+	addHeader("Keep-alive: 300");
+  }
+  setopt(CURLOPT_UPLOAD, 1);
+  setopt(CURLOPT_INFILESIZE, size);
+}
+
 void CurlEasyRequest::setPost(AIPostFieldPtr const& postdata, U32 size, bool keepalive)
 {
   llassert_always(postdata->data());
@@ -787,6 +804,7 @@ void CurlEasyRequest::setPost_raw(U32 size, char const* data, bool keepalive)
 	// data == NULL when we're going to read the data using CURLOPT_READFUNCTION.
 	DoutCurl("POST size is " << size << " bytes.");
   }
+  mContentLength = size;
 
   // The server never replies with 100-continue, so suppress the "Expect: 100-continue" header that libcurl adds by default.
   addHeader("Expect:");
@@ -872,13 +890,13 @@ void CurlEasyRequest::setSSLCtxCallback(curl_ssl_ctx_callback callback, void* us
 static size_t noHeaderCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
   llmaybewarns << "Calling noHeaderCallback(); curl session aborted." << llendl;
-  return 0;							// Cause a CURL_WRITE_ERROR
+  return 0;							// Cause a CURLE_WRITE_ERROR
 }
 
 static size_t noWriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
   llmaybewarns << "Calling noWriteCallback(); curl session aborted." << llendl;
-  return 0;							// Cause a CURL_WRITE_ERROR
+  return 0;							// Cause a CURLE_WRITE_ERROR
 }
 
 static size_t noReadCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
@@ -1276,7 +1294,7 @@ static int const HTTP_REDIRECTS_DEFAULT = 10;
 
 LLChannelDescriptors const BufferedCurlEasyRequest::sChannels;
 
-BufferedCurlEasyRequest::BufferedCurlEasyRequest() : mRequestTransferedBytes(0), mResponseTransferedBytes(0), mBufferEventsTarget(NULL), mStatus(HTTP_INTERNAL_ERROR)
+BufferedCurlEasyRequest::BufferedCurlEasyRequest() : mRequestTransferedBytes(0), mResponseTransferedBytes(0), mBufferEventsTarget(NULL), mStatus(HTTP_INTERNAL_ERROR_OTHER)
 {
   AICurlInterface::Stats::BufferedCurlEasyRequest_count++;
 }
@@ -1311,7 +1329,7 @@ BufferedCurlEasyRequest::~BufferedCurlEasyRequest()
 
 void BufferedCurlEasyRequest::timed_out(void)
 {
-  mResponder->finished(CURLE_OK, HTTP_INTERNAL_ERROR, "Request timeout, aborted.", sChannels, mOutput);
+  mResponder->finished(CURLE_OK, HTTP_INTERNAL_ERROR_CURL_LOCKUP, "Request timeout, aborted.", sChannels, mOutput);
   if (mResponder->needsHeaders())
   {
 	send_buffer_events_to(NULL);	// Revoke buffer events: we send them to the responder.
@@ -1321,7 +1339,7 @@ void BufferedCurlEasyRequest::timed_out(void)
 
 void BufferedCurlEasyRequest::bad_socket(void)
 {
-  mResponder->finished(CURLE_OK, HTTP_INTERNAL_ERROR, "File descriptor went bad! Aborted.", sChannels, mOutput);
+  mResponder->finished(CURLE_OK, HTTP_INTERNAL_ERROR_CURL_BADSOCKET, "File descriptor went bad! Aborted.", sChannels, mOutput);
   if (mResponder->needsHeaders())
   {
 	send_buffer_events_to(NULL);	// Revoke buffer events: we send them to the responder.
@@ -1342,7 +1360,7 @@ void BufferedCurlEasyRequest::resetState(void)
   mRequestTransferedBytes = 0;
   mResponseTransferedBytes = 0;
   mBufferEventsTarget = NULL;
-  mStatus = HTTP_INTERNAL_ERROR;
+  mStatus = HTTP_INTERNAL_ERROR_OTHER;
 }
 
 void BufferedCurlEasyRequest::print_diagnostics(CURLcode code)

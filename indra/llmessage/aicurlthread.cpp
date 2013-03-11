@@ -832,8 +832,9 @@ class AICurlThread : public LLThread
 {
   public:
 	static AICurlThread* sInstance;
-	LLMutex mWakeUpMutex;
-	bool mWakeUpFlag;			// Protected by mWakeUpMutex.
+	LLMutex mWakeUpMutex;		// Set while a thread is waking up the curl thread.
+	LLMutex mWakeUpFlagMutex;	// Set when the curl thread is sleeping (in or about to enter select()).
+	bool mWakeUpFlag;			// Protected by mWakeUpFlagMutex.
 
   public:
 	// MAIN-THREAD
@@ -1067,11 +1068,10 @@ void AICurlThread::cleanup_wakeup_fds(void)
 #endif
 }
 
-// MAIN-THREAD
+// OTHER THREADS
 void AICurlThread::wakeup_thread(bool stop_thread)
 {
   DoutEntering(dc::curl, "AICurlThread::wakeup_thread");
-  llassert(is_main_thread());
 
   // If we are already exiting the viewer then return immediately.
   if (!mRunning)
@@ -1079,12 +1079,29 @@ void AICurlThread::wakeup_thread(bool stop_thread)
 
   // Last time we are run?
   if (stop_thread)
-	mRunning = false;
+	mRunning = false;			// Thread-safe because all other threads were already stopped.
+
+  // Note, we do not want this function to be blocking the calling thread; therefore we only use tryLock()s.
+
+  // Stop two threads running the following code concurrently.
+  if (!mWakeUpMutex.tryLock())
+  {
+	// If we failed to obtain mWakeUpMutex then another thread is (or was) in AICurlThread::wakeup_thread,
+	// or curl was holding the lock for a micro second at the start of process_commands.
+	// In the first case, curl might or might not yet have been woken up because of that, but if it was
+	// then it could not have started processing the commands yet, because it needs to obtain mWakeUpMutex
+	// between being woken up and processing the commands.
+	// Either way, the command that this thread called this function for was already in the queue (it's
+	// added before this function is called) but the command(s) that another thread called this function
+	// for were not processed yet. Hence, it's safe to exit here as our command(s) will be processed too.
+	return;
+  }
 
   // Try if curl thread is still awake and if so, pass the new commands directly.
-  if (mWakeUpMutex.tryLock())
+  if (mWakeUpFlagMutex.tryLock())
   {
 	mWakeUpFlag = true;
+	mWakeUpFlagMutex.unlock();
 	mWakeUpMutex.unlock();
 	return;
   }
@@ -1111,7 +1128,10 @@ void AICurlThread::wakeup_thread(bool stop_thread)
   {
     len = write(mWakeUpFd_in, "!", 1);
     if (len == -1 && errno == EAGAIN)
+	{
+	  mWakeUpMutex.unlock();
 	  return;		// Unread characters are still in the pipe, so no need to add more.
+	}
   }
   while(len == -1 && errno == EINTR);
   if (len == -1)
@@ -1120,6 +1140,12 @@ void AICurlThread::wakeup_thread(bool stop_thread)
   }
   llassert_always(len == 1);
 #endif
+
+  // Release the lock here and not sooner, for the sole purpose of making sure
+  // that not two threads execute the above code concurrently. If the above code
+  // is thread-safe (maybe it is?) then we could release this lock arbitrarily
+  // sooner indeed - or even not lock it at all.
+  mWakeUpMutex.unlock();
 }
 
 apr_status_t AICurlThread::join_thread(void)
@@ -1239,6 +1265,16 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 {
   DoutEntering(dc::curl, "AICurlThread::process_commands(void)");
 
+  // Block here until the thread that woke us up released mWakeUpMutex.
+  // This is necessary to make sure that a third thread added commands
+  // too then either it will signal us later, or we process those commands
+  // now, too.
+  mWakeUpMutex.lock();
+  // Note that if at THIS point another thread tries to obtain mWakeUpMutex in AICurlThread::wakeup_thread
+  // and fails, it is ok that it leaves that function without waking us up too: we're awake and
+  // about to process any commands!
+  mWakeUpMutex.unlock();
+
   // If we get here then the main thread called wakeup_thread() recently.
   for(;;)
   {
@@ -1247,9 +1283,9 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 	  command_queue_wat command_queue_w(command_queue);
 	  if (command_queue_w->empty())
 	  {
-		mWakeUpMutex.lock();
+		mWakeUpFlagMutex.lock();
 		mWakeUpFlag = false;
-		mWakeUpMutex.unlock();
+		mWakeUpFlagMutex.unlock();
 		break;
 	  }
 	  // Move the next command from the queue into command_being_processed.
@@ -1312,10 +1348,10 @@ void AICurlThread::run(void)
 	  // Process every command in command_queue before filling the fd_set passed to select().
 	  for(;;)
 	  {
-		mWakeUpMutex.lock();
+		mWakeUpFlagMutex.lock();
 		if (mWakeUpFlag)
 		{
-		  mWakeUpMutex.unlock();
+		  mWakeUpFlagMutex.unlock();
 		  process_commands(multi_handle_w);
 		  continue;
 		}
@@ -1324,7 +1360,7 @@ void AICurlThread::run(void)
 	  // wakeup_thread() is also called after setting mRunning to false.
 	  if (!mRunning)
 	  {
-		mWakeUpMutex.unlock();
+		mWakeUpFlagMutex.unlock();
 		break;
 	  }
 
@@ -1400,7 +1436,7 @@ void AICurlThread::run(void)
 #endif
 #endif
 	  ready = select(nfds, read_fd_set, write_fd_set, NULL, &timeout);
-	  mWakeUpMutex.unlock();
+	  mWakeUpFlagMutex.unlock();
 #ifdef CWDEBUG
 #ifdef DEBUG_CURLIO
 	  Dout(dc::finish|cond_error_cf(ready == -1), ready);
@@ -1901,7 +1937,7 @@ void BufferedCurlEasyRequest::setStatusAndReason(U32 status, std::string const& 
   // Sanity check. If the server replies with a redirect status then we better have that option turned on!
   if ((status >= 300 && status < 400) && mResponder && !mResponder->redirect_status_ok())
   {
-	llerrs << "Received " << status << " (" << reason << ") for responder \"" << mTimeoutPolicy->name() << "\" which has no followRedir()!" << llendl;
+	llerrs << "Received " << status << " (" << reason << ") for responder \"" << mResponder->getName() << "\" which has no followRedir()!" << llendl;
   }
 }
 
@@ -1913,7 +1949,7 @@ void BufferedCurlEasyRequest::processOutput(void)
   CURLcode code;
   AITransferInfo info;
   getResult(&code, &info);
-  if (code == CURLE_OK && mStatus != HTTP_INTERNAL_ERROR)
+  if (code == CURLE_OK && !is_internal_http_error(mStatus))
   {
 	getinfo(CURLINFO_RESPONSE_CODE, &responseCode);
 	// If getResult code is CURLE_OK then we should have decoded the first header line ourselves.
@@ -1925,8 +1961,30 @@ void BufferedCurlEasyRequest::processOutput(void)
   }
   else
   {
-	responseCode = HTTP_INTERNAL_ERROR;
 	responseReason = (code == CURLE_OK) ? mReason : std::string(curl_easy_strerror(code));
+	switch (code)
+	{
+	  case CURLE_FAILED_INIT:
+		responseCode = HTTP_INTERNAL_ERROR_OTHER;
+		break;
+	  case CURLE_OPERATION_TIMEDOUT:
+		responseCode = HTTP_INTERNAL_ERROR_CURL_TIMEOUT;
+		break;
+	  case CURLE_WRITE_ERROR:
+		responseCode = HTTP_INTERNAL_ERROR_LOW_SPEED;
+		break;
+	  default:
+		responseCode = HTTP_INTERNAL_ERROR_CURL_OTHER;
+		break;
+	}
+	if (responseCode == HTTP_INTERNAL_ERROR_LOW_SPEED)
+	{
+		// Rewrite error to something understandable.
+		responseReason = llformat("Connection to \"%s\" stalled: download speed dropped below %u bytes/s for %u seconds (up till that point, %s received a total of %u bytes). "
+			"To change these values, go to Advanced --> Debug Settings and change CurlTimeoutLowSpeedLimit and CurlTimeoutLowSpeedTime respectively.",
+			mResponder->getURL().c_str(), mResponder->getHTTPTimeoutPolicy().getLowSpeedLimit(), mResponder->getHTTPTimeoutPolicy().getLowSpeedTime(),
+			mResponder->getName(), mResponseTransferedBytes);
+	}
 	setopt(CURLOPT_FRESH_CONNECT, TRUE);
   }
 
@@ -2000,8 +2058,9 @@ size_t BufferedCurlEasyRequest::curlReadCallback(char* data, size_t size, size_t
   S32 bytes = size * nmemb;		// The maximum amount to read.
   self_w->mLastRead = self_w->getInput()->readAfter(sChannels.out(), self_w->mLastRead, (U8*)data, bytes);
   self_w->mRequestTransferedBytes += bytes;		// Accumulate data sent to the server.
+  llassert(self_w->mRequestTransferedBytes <= self_w->mContentLength);	// Content-Length should always be known, and we should never be sending more.
   // Timeout administration.
-  if (self_w->httptimeout()->data_sent(bytes))
+  if (self_w->httptimeout()->data_sent(bytes, self_w->mRequestTransferedBytes >= self_w->mContentLength))
   {
 	// Transfer timed out. Return CURL_READFUNC_ABORT which will abort with error CURLE_ABORTED_BY_CALLBACK.
 	return CURL_READFUNC_ABORT;
@@ -2063,7 +2122,7 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	  }
 	  // Either way, this status value is not understood (or taken into account).
 	  // Set it to internal error so that the rest of code treats it as an error.
-	  status = HTTP_INTERNAL_ERROR;
+	  status = HTTP_INTERNAL_ERROR_OTHER;
 	}
 	self_w->received_HTTP_header();
 	self_w->setStatusAndReason(status, reason);

@@ -995,18 +995,8 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::getAspectSizePr
 	// llround(window_height * scale_factor) respectively (since we set uncrop = true).
 	F32 raw_aspect = (F32)mRawSnapshotWidth / mRawSnapshotHeight;
 	// The smaller dimension might have been rounded up to 0.5 up or down. Calculate upper and lower limits.
-	F32 lower_raw_aspect;
-	F32 upper_raw_aspect;
-	if (mRawSnapshotWidth < mRawSnapshotHeight)
-	{
-		lower_raw_aspect = (mRawSnapshotWidth - 0.5) / mRawSnapshotHeight;
-		upper_raw_aspect = (mRawSnapshotWidth + 0.5) / mRawSnapshotHeight;
-	}
-	else
-	{
-		lower_raw_aspect = mRawSnapshotWidth / (mRawSnapshotHeight + 0.5);
-		upper_raw_aspect = mRawSnapshotWidth / (mRawSnapshotHeight - 0.5);
-	}
+	F32 lower_raw_aspect = (mRawSnapshotWidth - 0.5) / (mRawSnapshotHeight + 0.5);
+	F32 upper_raw_aspect = (mRawSnapshotWidth + 0.5) / (mRawSnapshotHeight - 0.5);
 	// Find out if mRawSnapshot was cropped already.
 	bool const allow_vertical_crop = window_height * upper_raw_aspect >= window_width;			// mRawSnapshot was cropped horizontally.
 	bool const allow_horizontal_crop = window_width / lower_raw_aspect >= window_height;		// mRawSnapshot was cropped vertically.

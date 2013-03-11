@@ -51,6 +51,11 @@ void AIThreadID::set_current_thread_id(void)
 }
 
 #ifndef LL_DARWIN
+void AIThreadID::clear(void)
+{
+	mID = undefinedID;
+}
+
 void AIThreadID::reset(void)
 {
 	mID = lCurrentThread;

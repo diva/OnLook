@@ -46,7 +46,6 @@
 #include "llscopedvolatileaprpool.h"
 #include "llfasttimer.h"
 #include "message.h"
-static const U32 HTTP_STATUS_PIPE_ERROR = 499;
 
 /**
  * String constants
@@ -60,7 +59,7 @@ const std::string CONTEXT_TRANSFERED_BYTES("transfered_bytes");
 // static
 std::string LLURLRequest::actionAsVerb(LLURLRequest::ERequestAction action)
 {
-	static int const array_size = HTTP_MOVE + 1;	// INVALID == 0
+	static int const array_size = LLHTTPClient::REQUEST_ACTION_COUNT;	// INVALID == 0
 	static char const* const VERBS[array_size] =
 	{
 		"(invalid)",
@@ -71,14 +70,14 @@ std::string LLURLRequest::actionAsVerb(LLURLRequest::ERequestAction action)
 		"DELETE",
 		"MOVE"
 	};
-	return VERBS[action >= array_size ? INVALID : action];
+	return VERBS[action >= array_size ? LLHTTPClient::INVALID : action];
 }
 
 // This might throw AICurlNoEasyHandle.
 LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string const& url, Injector* body,
-	LLHTTPClient::ResponderPtr responder, AIHTTPHeaders& headers, bool keepalive, bool is_auth, bool no_compression) :
-    mAction(action), mURL(url), mKeepAlive(keepalive), mIsAuth(is_auth), mNoCompression(no_compression),
-	mBody(body), mResponder(responder), mHeaders(headers)
+	LLHTTPClient::ResponderPtr responder, AIHTTPHeaders& headers, bool keepalive, bool is_auth, bool compression) :
+    mAction(action), mURL(url), mKeepAlive(keepalive), mIsAuth(is_auth), mNoCompression(!compression),
+	mBody(body), mResponder(responder), mHeaders(headers), mResponderNameCache(responder ? responder->getName() : "<uninitialized>")
 {
 }
 
@@ -93,13 +92,13 @@ void LLURLRequest::initialize_impl(void)
 		useProxy(false);
 	}
 
-	if (mAction == HTTP_PUT || mAction == HTTP_POST)
+	if (mAction == LLHTTPClient::HTTP_PUT || mAction == LLHTTPClient::HTTP_POST)
 	{
 		// If the Content-Type header was passed in we defer to the caller's wisdom,
 		// but if they did not specify a Content-Type, then ask the injector.
 		mHeaders.addHeader("Content-Type", mBody->contentType(), AIHTTPHeaders::keep_existing_header);
 	}
-	else if (mAction != HTTP_HEAD)
+	else if (mAction != LLHTTPClient::HTTP_HEAD)
 	{
 		// Check to see if we have already set Accept or not. If no one
 		// set it, set it to application/llsd+xml since that's what we
@@ -107,7 +106,7 @@ void LLURLRequest::initialize_impl(void)
 		mHeaders.addHeader("Accept", "application/llsd+xml", AIHTTPHeaders::keep_existing_header);
 	}
 
-	if (mAction == HTTP_POST && gMessageSystem)
+	if (mAction == LLHTTPClient::HTTP_POST && gMessageSystem)
 	{
 		mHeaders.addHeader("X-SecondLife-UDP-Listen-Port", llformat("%d", gMessageSystem->mPort));
 	}
@@ -199,12 +198,12 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 	{
 		switch(mAction)
 		{
-		case HTTP_HEAD:
+		case LLHTTPClient::HTTP_HEAD:
 			curlEasyRequest_w->setopt(CURLOPT_NOBODY, 1);
 			rv = true;
 			break;
 
-		case HTTP_GET:
+		case LLHTTPClient::HTTP_GET:
 			curlEasyRequest_w->setopt(CURLOPT_HTTPGET, 1);
 
 			// Set Accept-Encoding to allow response compression
@@ -212,18 +211,18 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 			rv = true;
 			break;
 
-		case HTTP_PUT:
-		{
-			// Disable the expect http 1.1 extension. POST and PUT default
-			// to using this, causing the broken server to get confused.
-			curlEasyRequest_w->addHeader("Expect:");
-			curlEasyRequest_w->setopt(CURLOPT_UPLOAD, 1);
-			curlEasyRequest_w->setopt(CURLOPT_INFILESIZE, mBodySize);
+		case LLHTTPClient::HTTP_PUT:
+
+			// Set the handle for an http put
+			curlEasyRequest_w->setPut(mBodySize, mKeepAlive);
+
+			// Set Accept-Encoding to allow response compression
+			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, mNoCompression ? "identity" : "");
 			rv = true;
 			break;
-		}
-		case HTTP_POST:
-		{
+
+		case LLHTTPClient::HTTP_POST:
+
 			// Set the handle for an http post
 			curlEasyRequest_w->setPost(mBodySize, mKeepAlive);
 
@@ -231,14 +230,14 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 			curlEasyRequest_w->setoptString(CURLOPT_ENCODING, mNoCompression ? "identity" : "");
 			rv = true;
 			break;
-		}
-		case HTTP_DELETE:
+
+		case LLHTTPClient::HTTP_DELETE:
 			// Set the handle for an http post
 			curlEasyRequest_w->setoptString(CURLOPT_CUSTOMREQUEST, "DELETE");
 			rv = true;
 			break;
 
-		case HTTP_MOVE:
+		case LLHTTPClient::HTTP_MOVE:
 			// Set the handle for an http post
 			curlEasyRequest_w->setoptString(CURLOPT_CUSTOMREQUEST, "MOVE");
 			rv = true;
@@ -259,3 +258,33 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 	}
 	return rv;
 }
+
+// Called from AIStateMachine::mainloop, but put here because we don't want to include llurlrequest.h there of course.
+void print_statemachine_diagnostics(U64 total_clocks, U64 max_delta, AIEngine::queued_type::const_reference slowest_element)
+{
+  AIStateMachine const& slowest_state_machine = slowest_element.statemachine();
+  LLURLRequest const* request = dynamic_cast<LLURLRequest const*>(&slowest_state_machine);
+  F64 const tfactor = 1000 / calc_clock_frequency();
+  std::ostringstream msg;
+  if (total_clocks > max_delta)
+  {
+	  msg << "AIStateMachine::mainloop did run for " << (total_clocks * tfactor) << " ms. The slowest ";
+  }
+  else
+  {
+	  msg << "AIStateMachine::mainloop: A ";
+  }
+  msg << "state machine ";
+  if (request)
+  {
+	  msg << "(" << request->getResponderName() << ") ";
+  }
+  msg << "ran for " << (max_delta * tfactor) << " ms";
+  if (slowest_state_machine.getRuntime() > max_delta)
+  {
+	  msg << " (" << (slowest_state_machine.getRuntime() * tfactor) << " ms in total now)";
+  }
+  msg << ".";
+  llwarns << msg.str() << llendl;
+}
+

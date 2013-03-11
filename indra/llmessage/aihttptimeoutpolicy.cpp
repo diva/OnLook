@@ -88,7 +88,7 @@ U16 const AITP_default_DNS_lookup_grace = 60;			// Allow for 60 seconds long DNS
 U16 const AITP_default_maximum_connect_time = 10;		// Allow the SSL/TLS connection through a proxy, including handshakes, to take up to 10 seconds.
 U16 const AITP_default_maximum_reply_delay = 60;		// Allow the server 60 seconds to do whatever it has to do before starting to send data.
 U16 const AITP_default_low_speed_time = 30;				// If a transfer speed drops below AITP_default_low_speed_limit bytes/s for 30 seconds, terminate the transfer.
-U32 const AITP_default_low_speed_limit = 56000;			// In bytes per second (use for CURLOPT_LOW_SPEED_LIMIT).
+U32 const AITP_default_low_speed_limit = 7000;			// In bytes per second (use for CURLOPT_LOW_SPEED_LIMIT).
 U16 const AITP_default_maximum_curl_transaction = 300;	// Allow large files to be transfered over slow connections.
 U16 const AITP_default_maximum_total_delay = 600;		// Avoid "leaking" by terminating anything that wasn't completed after 10 minutes.
 
@@ -105,6 +105,7 @@ AIHTTPTimeoutPolicy& AIHTTPTimeoutPolicy::operator=(AIHTTPTimeoutPolicy const& r
   mLowSpeedLimit = rhs.mLowSpeedLimit;
   mMaximumCurlTransaction = rhs.mMaximumCurlTransaction;
   mMaximumTotalDelay = rhs.mMaximumTotalDelay;
+  changed();
   return *this;
 }
 
@@ -136,18 +137,26 @@ struct PolicyOp {
 class AIHTTPTimeoutPolicyBase : public AIHTTPTimeoutPolicy {
   private:
 	std::vector<AIHTTPTimeoutPolicy*> mDerived;	// Policies derived from this one.
+	PolicyOp const* mOp;						// Operator we applied to base to get ourselves.
 
   public:
 	AIHTTPTimeoutPolicyBase(U16 dns_lookup_grace, U16 subsequent_connects, U16 reply_delay,
 							U16 low_speed_time, U32 low_speed_limit,
 							U16 curl_transaction, U16 total_delay) :
-		AIHTTPTimeoutPolicy(NULL, dns_lookup_grace, subsequent_connects, reply_delay, low_speed_time, low_speed_limit, curl_transaction, total_delay) { }
+		AIHTTPTimeoutPolicy(NULL, dns_lookup_grace, subsequent_connects, reply_delay, low_speed_time, low_speed_limit, curl_transaction, total_delay),
+		mOp(NULL) { }
 
 	// Derive base from base.
-	AIHTTPTimeoutPolicyBase(AIHTTPTimeoutPolicyBase& rhs, PolicyOp const& op) : AIHTTPTimeoutPolicy(rhs) { op.perform(this); }
+	AIHTTPTimeoutPolicyBase(AIHTTPTimeoutPolicyBase& rhs, PolicyOp& op) : AIHTTPTimeoutPolicy(rhs), mOp(&op) { rhs.derived(this); mOp->perform(this); }
 
 	// Called for every derived policy.
 	void derived(AIHTTPTimeoutPolicy* derived) { mDerived.push_back(derived); }
+
+	// Called when our base changed.
+	/*virtual*/ void base_changed(void);
+
+	// Called when we ourselves changed.
+	/*virtual*/ void changed(void);
 
 	// Provide public acces to sDebugSettingsCurlTimeout for this compilation unit.
 	static AIHTTPTimeoutPolicyBase& getDebugSettingsCurlTimeout(void) { return sDebugSettingsCurlTimeout; }
@@ -156,6 +165,27 @@ class AIHTTPTimeoutPolicyBase : public AIHTTPTimeoutPolicy {
 	friend void AIHTTPTimeoutPolicy::setDefaultCurlTimeout(AIHTTPTimeoutPolicy const& timeout);
 	AIHTTPTimeoutPolicyBase& operator=(AIHTTPTimeoutPolicy const& rhs);
 };
+
+void AIHTTPTimeoutPolicyBase::base_changed(void)
+{
+  AIHTTPTimeoutPolicy::base_changed();
+  if (mOp)
+	mOp->perform(this);
+  changed();
+}
+
+void AIHTTPTimeoutPolicyBase::changed(void)
+{
+  for (std::vector<AIHTTPTimeoutPolicy*>::iterator iter = mDerived.begin(); iter != mDerived.end(); ++iter)
+	(*iter)->base_changed();
+}
+
+void AIHTTPTimeoutPolicy::changed(void)
+{
+  Dout(dc::notice, "Policy \"" << mName << "\" changed into: DNSLookup: " << mDNSLookupGrace << "; Connect: " << mMaximumConnectTime <<
+	  "; ReplyDelay: " << mMaximumReplyDelay << "; LowSpeedTime: " << mLowSpeedTime << "; LowSpeedLimit: " << mLowSpeedLimit <<
+	  "; MaxTransaction: " << mMaximumCurlTransaction << "; MaxTotalDelay:" << mMaximumTotalDelay);
+}
 
 AIHTTPTimeoutPolicy::AIHTTPTimeoutPolicy(AIHTTPTimeoutPolicy& base) :
 	mName(NULL),
@@ -190,6 +220,19 @@ AIHTTPTimeoutPolicy::AIHTTPTimeoutPolicy(char const* name, AIHTTPTimeoutPolicyBa
   sNameMap.insert(namemap_t::value_type(name, this));
   // Register for changes to the base policy.
   mBase->derived(this);
+}
+
+void AIHTTPTimeoutPolicy::base_changed(void)
+{
+  // The same as *this = *mBase; but can't use operator= because of an assert that checks that mBase is not set.
+  mDNSLookupGrace = mBase->mDNSLookupGrace;
+  mMaximumConnectTime = mBase->mMaximumConnectTime;
+  mMaximumReplyDelay = mBase->mMaximumReplyDelay;
+  mLowSpeedTime = mBase->mLowSpeedTime;
+  mLowSpeedLimit = mBase->mLowSpeedLimit;
+  mMaximumCurlTransaction = mBase->mMaximumCurlTransaction;
+  mMaximumTotalDelay = mBase->mMaximumTotalDelay;
+  changed();
 }
 
 //static
@@ -621,7 +664,7 @@ AIHTTPTimeoutPolicyBase HTTPTimeoutPolicy_default(
 		AITP_default_maximum_curl_transaction,
 		AITP_default_maximum_total_delay);
 
-//static. Initialized here, but shortly overwritten by Debug Settings.
+//static. Initialized here, but shortly overwritten by Debug Settings (except for the crash logger, in which case these are the actual values).
 AIHTTPTimeoutPolicyBase AIHTTPTimeoutPolicy::sDebugSettingsCurlTimeout(
 		AITP_default_DNS_lookup_grace,
 		AITP_default_maximum_connect_time,
@@ -631,8 +674,8 @@ AIHTTPTimeoutPolicyBase AIHTTPTimeoutPolicy::sDebugSettingsCurlTimeout(
 		AITP_default_maximum_curl_transaction,
 		AITP_default_maximum_total_delay);
 
-// Note: Broken compiler doesn't allow as to use temporaries for the Operator ojects,
-// so they are instantiated separately.
+// Note: All operator objects (Transaction, Connect, etc) must be globals (not temporaries)!
+// To enforce this they are passes as reference to non-const (but will never be changed).
 
 // This used to be '5 seconds'.
 Transaction transactionOp5s(5);

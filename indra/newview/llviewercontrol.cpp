@@ -134,7 +134,7 @@ static bool handleTerrainScaleChanged(const LLSD& inputvalue)
 bool handleStateMachineMaxTimeChanged(const LLSD& newvalue)
 {
 	F32 StateMachineMaxTime = newvalue.asFloat();
-	AIStateMachine::setMaxCount(StateMachineMaxTime);
+	AIEngine::setMaxCount(StateMachineMaxTime);
 	return true;
 }
 

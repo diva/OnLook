@@ -547,7 +547,7 @@ void LLInventoryModelFetchDescendentsResponder::error(U32 status, const std::str
 						
 	fetcher->incrFetchCount(-1);
 
-	if (status==499) // timed out
+	if (is_internal_http_error_that_warrants_a_retry(status)) // timed out
 	{
 		for(LLSD::array_const_iterator folder_it = mRequestSD["folders"].beginArray();
 			folder_it != mRequestSD["folders"].endArray();

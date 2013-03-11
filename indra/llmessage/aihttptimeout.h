@@ -79,6 +79,7 @@ class HTTPTimeout : public LLRefCount {
 	U16 mBucket;								// The bucket corresponding to mLastSecond.
 	bool mNothingReceivedYet;					// Set when created, reset when the HTML reply header from the server is received.
 	bool mLowSpeedOn;							// Set while uploading or downloading data.
+	bool mLastBytesSent;						// Set when the last bytes were sent to libcurl to be uploaded.
 	bool mUploadFinished;						// Used to keep track of whether upload_finished was called yet.
 	S32 mLastSecond;							// The time at which lowspeed() was last called, in seconds since mLowSpeedClock.
 	S32 mOverwriteSecond;						// The second at which the first bucket of this transfer will be overwritten.
@@ -94,7 +95,7 @@ class HTTPTimeout : public LLRefCount {
 
   public:
 	HTTPTimeout(AIHTTPTimeoutPolicy const* policy, ThreadSafeBufferedCurlEasyRequest* lock_obj) :
-		mPolicy(policy), mNothingReceivedYet(true), mLowSpeedOn(false), mUploadFinished(false), mStalled((U64)-1)
+		mPolicy(policy), mNothingReceivedYet(true), mLowSpeedOn(false), mLastBytesSent(false), mUploadFinished(false), mStalled((U64)-1)
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 		, mLockObj(lock_obj)
 #endif
@@ -104,7 +105,7 @@ class HTTPTimeout : public LLRefCount {
 	void upload_finished(void);
 
 	// Called when data is sent. Returns true if transfer timed out.
-	bool data_sent(size_t n);
+	bool data_sent(size_t n, bool finished);
 
 	// Called when data is received. Returns true if transfer timed out.
 	bool data_received(size_t n/*,*/ ASSERT_ONLY_COMMA(bool upload_error_status = false));
@@ -112,8 +113,8 @@ class HTTPTimeout : public LLRefCount {
 	// Called immediately before done() after curl finished, with code.
 	void done(AICurlEasyRequest_wat const& curlEasyRequest_w, CURLcode code);
 
-	// Accessor.
-	bool has_stalled(void) const { return mStalled < sClockCount;  }
+	// Returns true when we REALLY timed out. Might call upload_finished heuristically.
+	bool has_stalled(void) { return mStalled < sClockCount && !maybe_upload_finished(); }
 
 	// Called from BufferedCurlEasyRequest::processOutput if a timeout occurred.
 	void print_diagnostics(CurlEasyRequest const* curl_easy_request, char const* eff_url);
@@ -127,11 +128,19 @@ class HTTPTimeout : public LLRefCount {
 	void reset_lowspeed(void);
 
 	// Common low speed detection, Called from data_sent or data_received.
-	bool lowspeed(size_t bytes);
+	bool lowspeed(size_t bytes, bool finished = false);
+
+	// Return false when we timed out on reply delay, or didn't sent all bytes yet.
+	// Otherwise calls upload_finished() and return true;
+	bool maybe_upload_finished(void);
 };
 
 } // namespace curlthread
 } // namespace AICurlPrivate
+
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+extern bool gCurlIo;
+#endif
 
 #endif
 

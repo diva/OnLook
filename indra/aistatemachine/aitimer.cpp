@@ -31,11 +31,6 @@
 #include "linden_common.h"
 #include "aitimer.h"
 
-enum timer_state_type {
-  AITimer_start = AIStateMachine::max_state,
-  AITimer_expired
-};
-
 char const* AITimer::state_str_impl(state_type run_state) const
 {
   switch(run_state)
@@ -43,6 +38,7 @@ char const* AITimer::state_str_impl(state_type run_state) const
 	AI_CASE_RETURN(AITimer_start);
 	AI_CASE_RETURN(AITimer_expired);
   }
+  llassert(false);
   return "UNKNOWN STATE";
 }
 
@@ -54,12 +50,12 @@ void AITimer::initialize_impl(void)
 
 void AITimer::expired(void)
 {
-  set_state(AITimer_expired);
+  advance_state(AITimer_expired);
 }
 
-void AITimer::multiplex_impl(void)
+void AITimer::multiplex_impl(state_type run_state)
 {
-  switch (mRunState)
+  switch (run_state)
   {
 	case AITimer_start:
 	{
@@ -78,19 +74,4 @@ void AITimer::multiplex_impl(void)
 void AITimer::abort_impl(void)
 {
   mFrameTimer.cancel();
-}
-
-void AITimer::finish_impl(void)
-{
-  // Kill object by default.
-  // This can be overridden by calling run() from the callback function.
-  kill();
-}
-
-void AIPersistentTimer::finish_impl(void)
-{
-  // Don't kill object by default.
-  if (aborted())
-	kill();
-  // Callback function should always call kill() or run().
 }

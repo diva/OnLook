@@ -203,15 +203,24 @@ void LLPanelPlace::setLandTypeString(const std::string& land_type)
 
 void LLPanelPlace::setErrorStatus(U32 status, const std::string& reason)
 {
-	// We only really handle 404 and 499 errors
+	// We only really handle 404 and timeout errors
 	std::string error_text;
-	if(status == 404)
+	if (status == HTTP_NOT_FOUND)
 	{	
 		error_text = getString("server_error_text");
 	}
-	else if(status == 499)
+	else if (status == HTTP_UNAUTHORIZED)		// AIFIXME: Is this indeed the error we get when we don't have access rights for this?
 	{
 		error_text = getString("server_forbidden_text");
+	}
+	else if (status == HTTP_INTERNAL_ERROR_LOW_SPEED || status == HTTP_INTERNAL_ERROR_CURL_TIMEOUT)
+	{
+		error_text = getString("internal_timeout_text");
+	}
+	else
+	{
+		llwarns << "Unexpected error (" << status << "): " << reason << llendl;
+		error_text = llformat("Unexpected Error (%u): %s", status, reason.c_str());
 	}
 	mDescEditor->setText(error_text);
 }

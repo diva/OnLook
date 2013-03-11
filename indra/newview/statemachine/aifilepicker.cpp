@@ -66,7 +66,7 @@ char const* AIFilePicker::state_str_impl(state_type run_state) const
 	return "UNKNOWN STATE";
 }
 
-AIFilePicker::AIFilePicker(void) : mPluginManager(NULL), mAutoKill(false), mCanceled(false)
+AIFilePicker::AIFilePicker(void) : mPluginManager(NULL), mCanceled(false)
 {
 }
 
@@ -345,7 +345,7 @@ void AIFilePicker::initialize_impl(void)
 	set_state(AIFilePicker_initialize_plugin);
 }
 
-void AIFilePicker::multiplex_impl(void)
+void AIFilePicker::multiplex_impl(state_type run_state)
 {
 	mPluginManager->update();										// Give the plugin some CPU for it's messages.
 	LLPluginClassBasic* plugin = mPluginManager->getPlugin();
@@ -355,7 +355,7 @@ void AIFilePicker::multiplex_impl(void)
 		abort();
 		return;
 	}
-	switch (mRunState)
+	switch (run_state)
 	{
 		case AIFilePicker_initialize_plugin:
 		{
@@ -430,10 +430,6 @@ void AIFilePicker::multiplex_impl(void)
 	}
 }
 
-void AIFilePicker::abort_impl(void)
-{
-}
-
 void AIFilePicker::finish_impl(void)
 {
 	if (mPluginManager)
@@ -442,12 +438,6 @@ void AIFilePicker::finish_impl(void)
 		mPluginManager = NULL;
 	}
 	mFilter.clear();		// Check that open is called before calling run (again).
-	if (mAutoKill)
-	{
-		// The default behavior is to delete the plugin. This can be overridden in
-		// the callback by calling run() again.
-		kill();
-	}
 }
 
 // This function is called when a new message is received from the plugin.
@@ -467,7 +457,7 @@ void AIFilePicker::receivePluginMessage(const LLPluginMessage &message)
 		if (message_name == "canceled")
 		{
 			LL_DEBUGS("Plugin") << "received message \"canceled\"" << LL_ENDL;
-			set_state(AIFilePicker_canceled);
+			advance_state(AIFilePicker_canceled);
 		}
 		else if (message_name == "done")
 		{
@@ -478,7 +468,7 @@ void AIFilePicker::receivePluginMessage(const LLPluginMessage &message)
 			{
 				mFilenames.push_back(*filename);
 			}
-			set_state(AIFilePicker_done);
+			advance_state(AIFilePicker_done);
 		}
 		else
 		{

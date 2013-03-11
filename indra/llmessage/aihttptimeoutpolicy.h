@@ -110,6 +110,12 @@ class AIHTTPTimeoutPolicy {
 	// Called when a connect to a hostname timed out.
 	static bool connect_timed_out(std::string const& hostname);
 
+	// Called when the base that this policy was based on changed.
+	virtual void base_changed(void);
+
+	// Called when we ourselves changed.
+	virtual void changed(void);
+
   protected:
 	// Used by AIHTTPTimeoutPolicyBase::AIHTTPTimeoutPolicyBase(AIHTTPTimeoutPolicyBase&).
 	AIHTTPTimeoutPolicy(AIHTTPTimeoutPolicy&);

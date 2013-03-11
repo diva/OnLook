@@ -45,6 +45,18 @@ if [ ! -z "$XBROWSER" ]; then
     echo "$0: Trying some others..."
 fi
 
+# Launcher for any desktop.
+if which xdg-open >/dev/null;  then
+    xdg-open "$URL"
+	case $? in
+	  0) exit ;;
+	  1) echo "xdg-open: Error in command line syntax." ;;
+	  2) echo "xdg-open: One of the files passed on the command line did not exist." ;;
+	  3) echo "xdg-open: A required tool could not be found." ;;
+	  4) echo "xdg-open: The action failed." ;;
+	esac
+fi
+
 # Launcher the default GNOME browser.
 if [ ! -z "$GNOME_DESKTOP_SESSION_ID" ] && which gnome-open >/dev/null; then
     gnome-open "$URL" &

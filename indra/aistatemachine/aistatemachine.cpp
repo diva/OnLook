@@ -2,7 +2,7 @@
  * @file aistatemachine.cpp
  * @brief Implementation of AIStateMachine
  *
- * Copyright (c) 2010, Aleric Inglewood.
+ * Copyright (c) 2010 - 2013, Aleric Inglewood.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,68 +26,785 @@
  *
  *   01/03/2010
  *   Initial version, written by Aleric Inglewood @ SL
+ *
+ *   28/02/2013
+ *   Rewritten from scratch to fully support threading.
  */
 
 #include "linden_common.h"
-
-#include <algorithm>
-
-#include "llcontrol.h"
-#include "llfasttimer.h"
-#include "aithreadsafe.h"
 #include "aistatemachine.h"
+#include "lltimer.h"
 
-// Local variables.
-namespace {
-  struct QueueElementComp;
+//==================================================================
+// Overview
 
-  class QueueElement {
-	private:
-	  AIStateMachine* mStateMachine;
-	  U64 mRuntime;
+// A AIStateMachine is a base class that allows derived classes to
+// go through asynchronous states, while the code still appears to
+// be more or less sequential.
+//
+// These state machine objects can be reused to build more complex
+// objects.
+//
+// It is important to note that each state has a duality: the object
+// can have a state that will cause a corresponding function to be
+// called; and often that function will end with changing the state
+// again, to signal that it was handled. It is easy to confuse the
+// function of a state with the state at the end of the function.
+// For example, the state "initialize" could cause the member
+// function 'init()' to be called, and at the end one would be
+// inclined to set the state to "initialized". However, this is the
+// wrong approach: the correct use of state names does reflect the
+// functions that will be called, never the function that just was
+// called.
+//
+// Each (derived) class goes through a series of states as follows:
+//
+//   Creation
+//       |
+//       v
+//     (idle) <----.   		Idle until run() is called.
+//       |         |
+//   Initialize    |		Calls initialize_impl().
+//       |         |
+//       | (idle)  |		Idle until cont() or advance_state() is called.
+//       |  |  ^   |
+//       v  v  |   |
+//   .-----------. |
+//   | Multiplex | |		Call multiplex_impl() until idle(), abort() or finish() is called.
+//   '-----------' |
+//    |    |       |
+//    v    |       |
+//  Abort  |       |		Calls abort_impl().
+//    |    |       |
+//    v    v       |
+//    Finish       |		Calls finish_impl(), which may call run().
+//    |    |       |
+//    |    v       |
+//    | Callback   |        which may call kill() and/or run().
+//    |  |   |     |
+//    |  |   `-----'
+//    v  v
+//  Killed					Delete the statemachine (all statemachines must be allocated with new).
+//
+// Each state causes corresponding code to be called.
+// Finish cleans up whatever is done by Initialize.
+// Abort should clean up additional things done while running.
+//
+// The running state is entered by calling run().
+//
+// While the base class is in the bs_multiplex state, it is the derived class
+// that goes through different states. The state variable of the derived
+// class is only valid while the base class is in the bs_multiplex state.
+//
+// A derived class can exit the bs_multiplex state by calling one of two methods:
+// abort() in case of failure, or finish() in case of success.
+// Respectively these set the state to bs_abort and bs_finish.
+//
+// The methods of the derived class call set_state() to change their
+// own state within the bs_multiplex state, or by calling either abort()
+// or finish().
+//
+// Restarting a finished state machine can be done by calling run(),
+// which will cause a re-initialize. The default is to destruct the
+// state machine once the last LLPointer to it is deleted.
+//
 
-	public:
-	  QueueElement(AIStateMachine* statemachine) : mStateMachine(statemachine), mRuntime(0) { }
-	  friend bool operator==(QueueElement const& e1, QueueElement const& e2) { return e1.mStateMachine == e2.mStateMachine; }
-	  friend struct QueueElementComp;
 
-	  AIStateMachine& statemachine(void) const { return *mStateMachine; }
-	  void add(U64 count) { mRuntime += count; }
-  };
+//==================================================================
+// Declaration
 
-  struct QueueElementComp {
-	bool operator()(QueueElement const& e1, QueueElement const& e2) const { return e1.mRuntime < e2.mRuntime; }
-  };
+// Every state machine is (indirectly) derived from AIStateMachine.
+// For example:
 
-  typedef std::vector<QueueElement> active_statemachines_type;
-  active_statemachines_type active_statemachines;
+#ifdef EXAMPLE_CODE	// undefined
+
+class HelloWorld : public AIStateMachine {
+  protected:
+	// The base class of this state machine.
+	typedef AIStateMachine direct_base_type;
+
+	// The different states of the state machine.
+	enum hello_world_state_type {
+	  HelloWorld_start = direct_base_type::max_state,
+	  HelloWorld_done,
+	};
+  public:
+	static state_type const max_state = HelloWorld_done + 1;	// One beyond the largest state.
+
+  public:
+	// The derived class must have a default constructor.
+	HelloWorld();
+
+  protected:
+	// The destructor must be protected.
+	/*virtual*/ ~HelloWorld();
+
+  protected:
+	// The following virtual functions must be implemented:
+
+	// Handle initializing the object.
+	/*virtual*/ void initialize_impl(void);
+
+	// Handle mRunState.
+	/*virtual*/ void multiplex_impl(state_type run_state);
+
+	// Handle aborting from current bs_multiplex state (the default AIStateMachine::abort_impl() does nothing).
+	/*virtual*/ void abort_impl(void);
+
+	// Handle cleaning up from initialization (or post abort) state (the default AIStateMachine::finish_impl() does nothing).
+	/*virtual*/ void finish_impl(void);
+
+	// Return human readable string for run_state.
+	/*virtual*/ char const* state_str_impl(state_type run_state) const;
+};
+
+// In the .cpp file:
+
+char const* HelloWorld::state_str_impl(state_type run_state) const
+{
+  switch(run_state)
+  {
+	// A complete listing of hello_world_state_type.
+	AI_CASE_RETURN(HelloWorld_start);
+	AI_CASE_RETURN(HelloWorld_done);
+  }
+#if directly_derived_from_AIStateMachine
+  llassert(false);
+  return "UNKNOWN STATE";
+#else
+  llassert(run_state < direct_base_type::max_state);
+  return direct_base_type::state_str_impl(run_state);
+#endif
+}
+
+#endif // EXAMPLE_CODE
+
+
+//==================================================================
+// Life cycle: creation, initialization, running and destruction
+
+// Any thread may create a state machine object, initialize it by calling
+// it's initializing member function and call one of the 'run' methods,
+// which might or might not immediately start to execute the state machine.
+
+#ifdef EXAMPLE_CODE
+  HelloWorld* hello_world = new HelloWorld;
+  hello_world->init(...);					// A custom initialization function.
+  hello_world->run(...);					// One of the run() functions.
+  // hello_world might be destructed here.
+  // You can avoid possible destruction by using an LLPointer<HelloWorld>
+  // instead of HelloWorld*.
+#endif // EXAMPLE_CODE
+
+// The call to run() causes a call to initialize_impl(), which MUST call
+//   set_state() at least once (only the last call is used).
+// Upon return from initialize_impl(), multiplex_impl() will be called
+//   with that state.
+// multiplex_impl() may never reentrant (cause itself to be called).
+// multiplex_impl() should end by callling either one of:
+//   idle(current_state), yield*(), finish() [or abort()].
+// Leaving multiplex_impl() without calling any of those might result in an
+//   immediate reentry, which could lead to 100% CPU usage unless the state
+//   is changed with set_state().
+// If multiplex_impl() calls finish() then finish_impl() will be called [if it
+//   calls abort() then abort_impl() will called, followed by finish_impl()].
+// Upon return from multiplex_impl(), and if finish() [or abort()] was called,
+//   the call back passed to run() will be called.
+// Upon return from the call back, the state machine object might be destructed
+//   (see below).
+// If idle(current_state) was called, and the state was (still) current_state,
+//   then multiplex_impl() will not be called again until the state is
+//   advanced, or cont() is called.
+//
+// If the call back function does not call run(), then the state machine is
+//   deleted when the last LLPointer<> reference is deleted.
+// If kill() is called after run() was called, then the call to run() is ignored.
+
+
+//==================================================================
+// Aborting
+
+// If abort() is called before initialize_impl() is entered, then the state
+//   machine is destructed after the last LLPointer<> reference to it is
+//   deleted (if any). Note that this is only possible when a child state
+//   machine is aborted before the parent even runs.
+//
+// If abort() is called inside its initialize_impl() that initialize_impl()
+//   should return immediately after.
+// if idle(), abort() or finish() are called inside its multiplex_impl() then
+//   that multiplex_impl() should return immediately after.
+//
+
+
+//==================================================================
+// Thread safety
+
+// Only one thread can "run" a state machine at a time; can call 'multiplex_impl'.
+//
+// Only from inside multiplex_impl (set_state also from initialize_impl), any of the
+// following functions can be called:
+//
+// - set_state(new_state)		--> Force the state to new_state. This voids any previous call to set_state() or idle().
+// - idle(current_state)		--> If the current state is still current_state (if there was no call to advance_state()
+// 									since the last call to set_state(current_state)) then go idle (do nothing until
+// 									cont() or advance_state() is called). If the current state is not current_state,
+// 									then multiplex_impl shall be reentered immediately upon return.
+// - finish()					--> Disables any scheduled runs.
+// 								--> finish_impl		--> [optional] kill()
+// 								--> call back
+// 								--> [optional] delete
+// 								--> [optional] reset, upon return from multiplex_impl, call initialize_impl and start again at the top of multiplex.
+// - yield([engine])			--> give CPU to other state machines before running again, run next from a state machine engine.
+// 									If no engine is passed, the state machine will run in it's default engine (as set during construction).
+// - yield_frame()/yield_ms()	--> yield(&gMainThreadEngine)
+//
+// the following function may be called from multiplex_impl() of any state machine (and thus by any thread):
+//
+// - abort()					--> abort_impl
+// 								--> finish()
+//
+// while the following functions may be called from anywhere (and any thread):
+//
+// - cont()						--> schedules a run if there was no call to set_state() or advance_state() since the last call to idle().
+// - advance_state(new_state)	--> sets the state to new_state, if the new_state > current_state, and schedules a run (and voids the last call to idle()).
+//
+// In the above "scheduling a run" means calling multiplex_impl(), but the same holds for any *_impl()
+// and the call back: Whenever one of those have to be called, thread_safe_impl() is called to
+// determine if the current state machine allows that function to be called by the current thread,
+// and if not - by which thread it should be called then (either main thread, or a special state machine
+// thread). If thread switching is necessary, the call is literally scheduled in a queue of one
+// of those two, otherwise it is run immediately.
+//
+// However, since only one thread at a time may be calling any *_impl function (except thread_safe_impl())
+// or the call back function, it is possible that at the moment scheduling is necessary another thread
+// is already running one of those functions. In that case thread_safe_impl() does not consider the
+// current thread, but rather the running thread and does not do any scheduling if the running thread
+// is ok, rather marks the need to continue running which should be picked up upon return from
+// whatever the running thread is calling.
+
+void AIEngine::add(AIStateMachine* state_machine)
+{
+  Dout(dc::statemachine, "Adding state machine [" << (void*)state_machine << "] to " << mName);
+  engine_state_type_wat engine_state_w(mEngineState);
+  engine_state_w->list.push_back(QueueElement(state_machine));
+  if (engine_state_w->waiting)
+  {
+	engine_state_w.signal();
+  }
+}
+
+extern void print_statemachine_diagnostics(U64 total_clocks, U64 max_delta, AIEngine::queued_type::const_reference slowest_state_machine);
+
+// MAIN-THREAD
+void AIEngine::mainloop(void)
+{
+  queued_type::iterator queued_element, end;
+  {
+	engine_state_type_wat engine_state_w(mEngineState);
+	end = engine_state_w->list.end();
+	queued_element = engine_state_w->list.begin();
+  }
+  U64 total_clocks = 0;
+#ifndef LL_RELEASE_FOR_DOWNLOAD
+  U64 max_delta = 0;
+  queued_type::value_type slowest_element(NULL);
+#endif
+  while (queued_element != end)
+  {
+	AIStateMachine& state_machine(queued_element->statemachine());
+	U64 start = get_clock_count();
+	if (!state_machine.sleep(start))
+	{
+	  state_machine.multiplex(AIStateMachine::normal_run);
+	}
+	U64 delta = get_clock_count() - start;
+	state_machine.add(delta);
+	total_clocks += delta;
+#ifndef LL_RELEASE_FOR_DOWNLOAD
+	if (delta > max_delta)
+	{
+	  max_delta = delta;
+	  slowest_element = *queued_element;
+	}
+#endif
+	bool active = state_machine.active(this);		// This locks mState shortly, so it must be called before locking mEngineState because add() locks mEngineState while holding mState.
+	engine_state_type_wat engine_state_w(mEngineState);
+	if (!active)
+	{
+	  Dout(dc::statemachine, "Erasing state machine [" << (void*)&state_machine << "] from " << mName);
+	  engine_state_w->list.erase(queued_element++);
+	}
+	else
+	{
+	  ++queued_element;
+	}
+	if (total_clocks >= sMaxCount)
+	{
+#ifndef LL_RELEASE_FOR_DOWNLOAD
+	  print_statemachine_diagnostics(total_clocks, max_delta, slowest_element);
+#endif
+	  Dout(dc::statemachine, "Sorting " << engine_state_w->list.size() << " state machines.");
+	  engine_state_w->list.sort(QueueElementComp());
+	  break;
+	}
+  }
+}
+
+void AIEngine::flush(void)
+{
+  DoutEntering(dc::statemachine, "AIEngine::flush [" << mName << "]");
+  engine_state_type_wat engine_state_w(mEngineState);
+  engine_state_w->list.clear();
 }
 
 // static
-U64 AIStateMachine::sMaxCount;
-AIThreadSafeDC<AIStateMachine::csme_type> AIStateMachine::sContinuedStateMachinesAndMainloopEnabled;
+U64 AIEngine::sMaxCount;
 
 // static
-void AIStateMachine::setMaxCount(F32 StateMachineMaxTime)
+void AIEngine::setMaxCount(F32 StateMachineMaxTime)
 {
-  llassert(is_main_thread());
+  llassert(AIThreadID::in_main_thread());
   Dout(dc::statemachine, "(Re)calculating AIStateMachine::sMaxCount");
   sMaxCount = calc_clock_frequency() * StateMachineMaxTime / 1000;
 }
 
-//----------------------------------------------------------------------------
-//
-// Public methods
-//
-
-void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bool abort_parent, bool on_abort_signal_parent)
+#ifdef CWDEBUG
+char const* AIStateMachine::event_str(event_type event)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::run(" << (void*)parent << ", " << (parent ? parent->state_str(new_parent_state) : "NA") << ", " << abort_parent << ") [" << (void*)this << "]");
-  // Must be the first time we're being run, or we must be called from a callback function.
-  llassert(!mParent || mState == bs_callback);
-  llassert(!mCallback || mState == bs_callback);
-  // Can only be run when in this state.
-  llassert(mState == bs_initialize || mState == bs_callback);
+  switch(event)
+  {
+	AI_CASE_RETURN(initial_run);
+	AI_CASE_RETURN(schedule_run);
+	AI_CASE_RETURN(normal_run);
+	AI_CASE_RETURN(insert_abort);
+  }
+  llassert(false);
+  return "UNKNOWN EVENT";
+}
+#endif
+
+void AIStateMachine::multiplex(event_type event)
+{
+  // If this fails then you are using a pointer to a state machine instead of an LLPointer.
+  llassert(event == initial_run || getNumRefs() > 0);
+
+  DoutEntering(dc::statemachine, "AIStateMachine::multiplex(" << event_str(event) << ") [" << (void*)this << "]");
+
+  base_state_type state;
+  state_type run_state;
+
+  // Critical area of mState.
+  {
+	multiplex_state_type_rat state_r(mState);
+
+	// If another thread is already running multiplex() then it will pick up
+	// our need to run (by us having set need_run), so there is no need to run
+	// ourselves.
+	llassert(!mMultiplexMutex.isSelfLocked());		// We may never enter recursively!
+	if (!mMultiplexMutex.tryLock())
+	{
+	  Dout(dc::statemachine, "Leaving because it is already being run [" << (void*)this << "]");
+	  return;
+	}
+
+	//===========================================
+	// Start of critical area of mMultiplexMutex.
+
+	// If another thread already called begin_loop() since we needed a run,
+	// then we must not schedule a run because that could lead to running
+	// the same state twice. Note that if need_run was reset in the mean
+	// time and then set again, then it can't hurt to schedule a run since
+	// we should indeed run, again.
+	if (event == schedule_run && !sub_state_type_rat(mSubState)->need_run)
+	{
+	  Dout(dc::statemachine, "Leaving because it was already being run [" << (void*)this << "]");
+	  return;
+	}
+
+	// We're at the beginning of multiplex, about to actually run it.
+	// Make a copy of the states.
+	run_state = begin_loop((state = state_r->base_state));
+  }
+  // End of critical area of mState.
+
+  bool keep_looping;
+  bool destruct = false;
+  do
+  {
+
+	if (event == normal_run)
+	{
+#ifdef CWDEBUG
+	  if (state == bs_multiplex)
+		Dout(dc::statemachine, "Running state bs_multiplex / " << state_str_impl(run_state) << " [" << (void*)this << "]");
+	  else
+		Dout(dc::statemachine, "Running state " << state_str(state) << " [" << (void*)this << "]");
+#endif
+
+#ifdef SHOW_ASSERT
+	  // This debug code checks that each state machine steps precisely through each of it's states correctly.
+	  if (state != bs_reset)
+	  {
+		switch(mDebugLastState)
+		{
+		  case bs_reset:
+			llassert(state == bs_initialize || state == bs_killed);
+			break;
+		  case bs_initialize:
+			llassert(state == bs_multiplex || state == bs_abort);
+			break;
+		  case bs_multiplex:
+			llassert(state == bs_multiplex || state == bs_finish || state == bs_abort);
+			break;
+		  case bs_abort:
+			llassert(state == bs_finish);
+			break;
+		  case bs_finish:
+			llassert(state == bs_callback);
+			break;
+		  case bs_callback:
+			llassert(state == bs_killed || state == bs_reset);
+			break;
+		  case bs_killed:
+			llassert(state == bs_killed);
+			break;
+		}
+	  }
+	  // More sanity checks.
+	  if (state == bs_multiplex)
+	  {
+		// set_state is only called from multiplex_impl and therefore synced with mMultiplexMutex.
+		mDebugShouldRun |= mDebugSetStatePending;
+		// Should we run at all?
+		llassert(mDebugShouldRun);
+	  }
+	  // Any previous reason to run is voided by actually running.
+	  mDebugShouldRun = false;
+#endif
+
+	  mRunMutex.lock();
+	  // Now we are actually running a single state.
+	  // If abort() was called at any moment before, we execute that state instead.
+	  bool const late_abort = (state == bs_multiplex || state == bs_initialize) && sub_state_type_rat(mSubState)->aborted;
+	  if (LL_UNLIKELY(late_abort))
+	  {
+		// abort() was called from a child state machine, from another thread, while we were already scheduled to run normally from an engine.
+		// What we want to do here is pretend we detected the abort at the end of the *previous* run.
+		// If the state is bs_multiplex then the previous state was either bs_initialize or bs_multiplex,
+		// both of which would have switched to bs_abort: we set the state to bs_abort instead and just
+		// continue this run.
+		// However, if the state is bs_initialize we can't switch to bs_killed because that state isn't
+		// handled in the switch below; it's only handled when exiting multiplex() directly after it is set.
+		// Therefore, in that case we have to set the state BACK to bs_reset and run it again. This duplicated
+		// run of bs_reset is not a problem because it happens to be a NoOp.
+		state = (state == bs_initialize) ? bs_reset : bs_abort;
+#ifdef CWDEBUG
+		Dout(dc::statemachine, "Late abort detected! Running state " << state_str(state) << " instead [" << (void*)this << "]");
+#endif
+	  }
+#ifdef SHOW_ASSERT
+	  mDebugLastState = state;
+	  // Make sure we only call ref() once and in balance with unref().
+	  if (state == bs_initialize)
+	  {
+		// This -- and call to ref() (and the test when we're about to call unref()) -- is all done in the critical area of mMultiplexMutex.
+		llassert(!mDebugRefCalled);
+		mDebugRefCalled = true;
+	  }
+#endif
+	  switch(state)
+	  {
+		case bs_reset:
+		  // We're just being kick started to get into the right thread
+		  // (possibly for the second time when a late abort was detected, but that's ok: we do nothing here).
+		  break;
+		case bs_initialize:
+		  ref();
+		  initialize_impl();
+		  break;
+		case bs_multiplex:
+		  llassert(!mDebugAborted);
+		  multiplex_impl(run_state);
+		  break;
+		case bs_abort:
+		  abort_impl();
+		  break;
+		case bs_finish:
+		  sub_state_type_wat(mSubState)->reset = false;		// By default, halt state machines when finished.
+		  finish_impl();									// Call run() from finish_impl() or the call back to restart from the beginning.
+		  break;
+		case bs_callback:
+		  callback();
+		  break;
+		case bs_killed:
+		  mRunMutex.unlock();
+		  // bs_killed is handled when it is set. So, this must be a re-entry.
+		  // We can only get here when being called by an engine that we were added to before we were killed.
+		  // This should already be have been set to NULL to indicate that we want to be removed from that engine.
+		  llassert(!multiplex_state_type_rat(mState)->current_engine);
+		  // Do not call unref() twice.
+		  return;
+	  }
+	  mRunMutex.unlock();
+	}
+
+	{
+	  multiplex_state_type_wat state_w(mState);
+
+	  //=================================
+	  // Start of critical area of mState
+
+	  // Unless the state is bs_multiplex or bs_killed, the state machine needs to keep calling multiplex().
+	  bool need_new_run = true;
+	  if (event == normal_run || event == insert_abort)
+	  {
+		sub_state_type_rat sub_state_r(mSubState);
+
+		if (event == normal_run)
+		{
+		  // Switch base state as function of sub state.
+		  switch(state)
+		  {
+			case bs_reset:
+			  if (sub_state_r->aborted)
+			  {
+				// We have been aborted before we could even initialize, no de-initialization is possible.
+				state_w->base_state = bs_killed;
+				// Stop running.
+				need_new_run = false;
+			  }
+			  else
+			  {
+				// run() was called: call initialize_impl() next.
+				state_w->base_state = bs_initialize;
+			  }
+			  break;
+			case bs_initialize:
+			  if (sub_state_r->aborted)
+			  {
+				// initialize_impl() called abort.
+				state_w->base_state = bs_abort;
+			  }
+			  else
+			  {
+				// Start actually running.
+				state_w->base_state = bs_multiplex;
+				// If the state is bs_multiplex we only need to run again when need_run was set again in the meantime or when this state machine isn't idle.
+				need_new_run = sub_state_r->need_run || !sub_state_r->idle;
+			  }
+			  break;
+			case bs_multiplex:
+			  if (sub_state_r->aborted)
+			  {
+				// abort() was called.
+				state_w->base_state = bs_abort;
+			  }
+			  else if (sub_state_r->finished)
+			  {
+				// finish() was called.
+				state_w->base_state = bs_finish;
+			  }
+			  else
+			  {
+				// Continue in bs_multiplex.
+				// If the state is bs_multiplex we only need to run again when need_run was set again in the meantime or when this state machine isn't idle.
+				need_new_run = sub_state_r->need_run || !sub_state_r->idle;
+			  }
+			  break;
+			case bs_abort:
+			  // After calling abort_impl(), call finish_impl().
+			  state_w->base_state = bs_finish;
+			  break;
+			case bs_finish:
+			  // After finish_impl(), call the call back function.
+			  state_w->base_state = bs_callback;
+			  break;
+			case bs_callback:
+			  if (sub_state_r->reset)
+			  {
+				// run() was called (not followed by kill()).
+				state_w->base_state = bs_reset;
+			  }
+			  else
+			  {
+				// After the call back, we're done.
+				state_w->base_state = bs_killed;
+				// Call unref().
+				destruct = true;
+				// Stop running.
+				need_new_run = false;
+			  }
+			  break;
+			default: // bs_killed
+			  // We never get here.
+			  break;
+		  }
+		}
+		else // event == insert_abort
+		{
+		  // We have been aborted, but we're idle. If we'd just schedule a new run below, it would re-run
+		  // the last state before the abort is handled. What we really need is to pick up as if the abort
+		  // was handled directly after returning from the last run. If we're not running anymore, then
+		  // do nothing as the state machine already ran and things should be processed normally
+		  // (in that case this is just a normal schedule which can't harm because we're can't accidently
+		  // re-run an old run_state).
+		  if (state_w->base_state == bs_multiplex)		// Still running?
+		  {
+			// See the switch above for case bs_multiplex.
+			llassert(sub_state_r->aborted);
+			// abort() was called.
+			state_w->base_state = bs_abort;
+		  }
+		}
+
+#ifdef CWDEBUG
+		if (state != state_w->base_state)
+		  Dout(dc::statemachine, "Base state changed from " << state_str(state) << " to " << state_str(state_w->base_state) <<
+			  "; need_new_run = " << (need_new_run ? "true" : "false") << " [" << (void*)this << "]");
+#endif
+	  }
+
+	  // Figure out in which engine we should run.
+	  AIEngine* engine = mYieldEngine ? mYieldEngine : (state_w->current_engine ? state_w->current_engine : mDefaultEngine);
+	  // And the current engine we're running in.
+	  AIEngine* current_engine = (event == normal_run) ? state_w->current_engine : NULL;
+
+	  // Immediately run again if yield() wasn't called and it's OK to run in this thread.
+	  // Note that when it's OK to run in any engine (mDefaultEngine is NULL) then the last
+	  // compare is also true when current_engine == NULL.
+	  keep_looping = need_new_run && !mYieldEngine && engine == current_engine;
+	  mYieldEngine = NULL;
+
+	  if (keep_looping)
+	  {
+		// Start a new loop.
+		run_state = begin_loop((state = state_w->base_state));
+		event = normal_run;
+	  }
+	  else
+	  {
+		if (need_new_run)
+		{
+		  // Add us to an engine if necessary.
+		  if (engine != state_w->current_engine)
+		  {
+			// engine can't be NULL here: it can only be NULL if mDefaultEngine is NULL.
+			engine->add(this);
+			// Mark that we're added to this engine, and at the same time, that we're not added to the previous one.
+			state_w->current_engine = engine;
+		  }
+		}
+		else
+		{
+		  // Remove this state machine from any engine.
+		  // Cause the engine to remove us.
+		  state_w->current_engine = NULL;
+		}
+
+#ifdef SHOW_ASSERT
+		// Mark that we stop running the loop.
+		mThreadId.clear();
+
+		if (destruct)
+		{
+		  // We're about to call unref(). Make sure we call that in balance with ref()!
+		  llassert(mDebugRefCalled);
+		  mDebugRefCalled  = false;
+		}
+#endif
+
+		// End of critical area of mMultiplexMutex.
+		//=========================================
+
+		// Release the lock on mMultiplexMutex *first*, before releasing the lock on mState,
+		// to avoid to ever call the tryLock() and fail, while this thread isn't still
+		// BEFORE the critical area of mState!
+
+		mMultiplexMutex.unlock();
+	  }
+
+	  // Now it is safe to leave the critical area of mState as the tryLock won't fail anymore.
+	  // (Or, if we didn't release mMultiplexMutex because keep_looping is true, then this
+	  // end of the critical area of mState is equivalent to the first critical area in this
+	  // function.
+
+	  // End of critical area of mState.
+	  //================================
+	}
+
+  }
+  while (keep_looping);
+
+  if (destruct)
+  {
+	unref();
+  }
+}
+
+AIStateMachine::state_type AIStateMachine::begin_loop(base_state_type base_state)
+{
+  DoutEntering(dc::statemachine, "AIStateMachine::begin_loop(" << state_str(base_state) << ") [" << (void*)this << "]");
+
+  sub_state_type_wat sub_state_w(mSubState);
+  // Honor a subsequent call to idle() (only necessary in bs_multiplex, but it doesn't hurt to reset this flag in other states too).
+  sub_state_w->skip_idle = false;
+  // Mark that we're about to honor all previous run requests.
+  sub_state_w->need_run = false;
+  // Honor previous calls to advance_state() (once run_state is initialized).
+  if (base_state == bs_multiplex && sub_state_w->advance_state > sub_state_w->run_state)
+  {
+	Dout(dc::statemachine, "Copying advance_state to run_state, because it is larger [" << state_str_impl(sub_state_w->advance_state) << " > " << state_str_impl(sub_state_w->run_state) << "]");
+	sub_state_w->run_state = sub_state_w->advance_state;
+  }
+#ifdef SHOW_ASSERT
+  else
+  {
+	// If advance_state wasn't honored then it isn't a reason to run.
+	// We're running anyway, but that should be because set_state() was called.
+	mDebugAdvanceStatePending = false;
+  }
+#endif
+  sub_state_w->advance_state = 0;
+
+#ifdef SHOW_ASSERT
+  // Mark that we're running the loop.
+  mThreadId.reset();
+  // This point marks handling cont().
+  mDebugShouldRun |= mDebugContPending;
+  mDebugContPending = false;
+  // This point also marks handling advance_state().
+  mDebugShouldRun |= mDebugAdvanceStatePending;
+  mDebugAdvanceStatePending = false;
+#endif
+
+  // Make a copy of the state that we're about to run.
+  return sub_state_w->run_state;
+}
+
+void AIStateMachine::run(LLPointer<AIStateMachine> parent, state_type new_parent_state, bool abort_parent, bool on_abort_signal_parent, AIEngine* default_engine)
+{
+  DoutEntering(dc::statemachine, "AIStateMachine::run(" <<
+	  (void*)parent.get() << ", " <<
+	  (parent ? parent->state_str_impl(new_parent_state) : "NA") <<
+	  ", abort_parent = " << (abort_parent ? "true" : "false") <<
+	  ", on_abort_signal_parent = " << (on_abort_signal_parent ? "true" : "false") <<
+	  ", default_engine = " << (default_engine ? default_engine->name() : "NULL") << ") [" << (void*)this << "]");
+
+#ifdef SHOW_ASSERT
+  {
+	multiplex_state_type_rat state_r(mState);
+	// Can only be run when in one of these states.
+	llassert(state_r->base_state == bs_reset || state_r->base_state == bs_finish || state_r->base_state == bs_callback);
+	// Must be the first time we're being run, or we must be called from finish_impl or a callback function.
+	llassert(!(state_r->base_state == bs_reset && (mParent || mCallback)));
+  }
+#endif
+
+  // Store the requested default engine.
+  mDefaultEngine = default_engine;
+
+  // Initialize sleep timer.
+  mSleep = 0;
 
   // Allow NULL to be passed as parent to signal that we want to reuse the old one.
   if (parent)
@@ -108,24 +825,31 @@ void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bo
   // If abort_parent is requested then a parent must be provided.
   llassert(!abort_parent || mParent);
   // If a parent is provided, it must be running.
-  llassert(!mParent || mParent->mState == bs_run);
+  llassert(!mParent || mParent->running());
 
-  // Mark that run() has been called, in case we're being called from a callback function.
-  mState = bs_initialize;
-
-  // Set mIdle to false and add statemachine to continued_statemachines.
-  mSetStateLock.lock();
-  locked_cont();
+  // Start from the beginning.
+  reset();
 }
 
-void AIStateMachine::run(callback_type::signal_type::slot_type const& slot)
+void AIStateMachine::run(callback_type::signal_type::slot_type const& slot, AIEngine* default_engine)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::run(<slot>) [" << (void*)this << "]");
-  // Must be the first time we're being run, or we must be called from a callback function.
-  llassert(!mParent || mState == bs_callback);
-  llassert(!mCallback || mState == bs_callback);
-  // Can only be run when in this state.
-  llassert(mState == bs_initialize || mState == bs_callback);
+  DoutEntering(dc::statemachine, "AIStateMachine::run(<slot>, default_engine = " << default_engine->name() << ") [" << (void*)this << "]");
+
+#ifdef SHOW_ASSERT
+  {
+	multiplex_state_type_rat state_r(mState);
+	// Can only be run when in one of these states.
+	llassert(state_r->base_state == bs_reset || state_r->base_state == bs_finish || state_r->base_state == bs_callback);
+	// Must be the first time we're being run, or we must be called from finish_impl or a callback function.
+	llassert(!(state_r->base_state == bs_reset && (mParent || mCallback)));
+  }
+#endif
+
+  // Store the requested default engine.
+  mDefaultEngine = default_engine;
+
+  // Initialize sleep timer.
+  mSleep = 0;
 
   // Clean up any old callbacks.
   mParent = NULL;
@@ -135,229 +859,18 @@ void AIStateMachine::run(callback_type::signal_type::slot_type const& slot)
 	mCallback = NULL;
   }
 
+  // Create new call back.
   mCallback = new callback_type(slot);
 
-  // Mark that run() has been called, in case we're being called from a callback function.
-  mState = bs_initialize;
-
-  // Set mIdle to false and add statemachine to continued_statemachines.
-  mSetStateLock.lock();
-  locked_cont();
+  // Start from the beginning.
+  reset();
 }
 
-void AIStateMachine::idle(void)
+void AIStateMachine::callback(void)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::idle() [" << (void*)this << "]");
-  llassert(is_main_thread());
-  llassert(!mIdle);
-  mIdle = true;
-  mSleep = 0;
-#ifdef SHOW_ASSERT
-  mCalledThreadUnsafeIdle = true;
-#endif
-}
+  DoutEntering(dc::statemachine, "AIStateMachine::callback() [" << (void*)this << "]");
 
-void AIStateMachine::idle(state_type current_run_state)
-{
-  DoutEntering(dc::statemachine, "AIStateMachine::idle(" << state_str(current_run_state) << ") [" << (void*)this << "]");
-  llassert(is_main_thread());
-  llassert(!mIdle);
-  mSetStateLock.lock();
-  // Only go idle if the run state is (still) what we expect it to be.
-  // Otherwise assume that another thread called set_state() and continue running.
-  if (current_run_state == mRunState)
-  {
-	mIdle = true;
-	mSleep = 0;
-  }
-  mSetStateLock.unlock();
-}
-
-// About thread safeness:
-//
-// The main thread initializes a statemachine and calls run, so a statemachine
-// runs in the main thread. However, it is allowed that a state calls idle(current_state)
-// and then allows one or more other threads to call cont() upon some
-// event (only once, of course, as idle() has to be called before cont()
-// can be called again-- and a non-main thread is not allowed to call idle()).
-// Instead of cont() one may also call set_state().
-// Of course, this may give rise to a race condition; if that happens then
-// the thread that calls cont() (set_state()) first is serviced, and the other
-// thread(s) are ignored, as if they never called cont().
-void AIStateMachine::locked_cont(void)
-{
-  DoutEntering(dc::statemachine, "AIStateMachine::locked_cont() [" << (void*)this << "]");
-  llassert(mIdle);
-  // Atomic test mActive and change mIdle.
-  mIdleActive.lock();
-#ifdef SHOW_ASSERT
-  mContThread.reset();
-#endif
-  mIdle = false;
-  bool not_active = mActive == as_idle;
-  mIdleActive.unlock();
-  // mActive is only changed in AIStateMachine::mainloop, by the main-thread, and
-  // here, possibly by any thread. However, after setting mIdle to false above, it
-  // is impossible for any thread to come here, until after the main-thread called
-  // idle(). So, if this is the main thread then that certainly isn't going to
-  // happen until we left this function, while if this is another thread  and the
-  // state machine is already running in the main thread then not_active is false
-  // and we're already at the end of this function.
-  // If not_active is true then main-thread is not running this statemachine.
-  // It might call cont() (or set_state()) but never locked_cont(), and will never
-  // start actually running until we are done here and release the lock on
-  // sContinuedStateMachinesAndMainloopEnabled again. It is therefore safe
-  // to release mSetStateLock here, with as advantage that if we're not the main-
-  // thread and not_active is true, then the main-thread won't block when it has
-  // a timer running that times out and calls set_state().
-  mSetStateLock.unlock();
-  if (not_active)
-  {
-	AIWriteAccess<csme_type> csme_w(sContinuedStateMachinesAndMainloopEnabled);
-	// See above: it is not possible that mActive was changed since not_active
-	// was set to true above.
-	llassert_always(mActive == as_idle);
-	Dout(dc::statemachine, "Adding " << (void*)this << " to continued_statemachines");
-	csme_w->continued_statemachines.push_back(this);
-	if (!csme_w->mainloop_enabled)
-	{
-	  Dout(dc::statemachine, "Activating AIStateMachine::mainloop.");
-	  csme_w->mainloop_enabled = true;
-	}
-	mActive = as_queued;
-	llassert_always(!mIdle);	// It should never happen that the main thread calls idle(), while another thread calls cont() concurrently.
-  }
-}
-
-void AIStateMachine::set_state(state_type state)
-{
-  DoutEntering(dc::statemachine, "AIStateMachine::set_state(" << state_str(state) << ") [" << (void*)this << "]");
-
-  // Stop race condition of multiple threads calling cont() or set_state() here.
-  mSetStateLock.lock();
-
-  // Do not call set_state() unless running.
-  llassert(mState == bs_run || !is_main_thread());
-
-  // If this function is called from another thread than the main thread, then we have to ignore
-  // it if we're not idle and the state is less than the current state. The main thread must
-  // be able to change the state to anything (also smaller values). Note that that only can work
-  // if the main thread itself at all times cancels thread callbacks that call set_state()
-  // before calling idle() again!
-  //
-  // Thus: main thead calls idle(), and tells one or more threads to do callbacks on events,
-  // which (might) call set_state(). If the main thread calls set_state first (currently only
-  // possible as a result of the use of a timer) it will set mIdle to false (here) then cancel
-  // the call backs from the other threads and only then call idle() again.
-  // Thus if you want other threads get here while mIdle is false to be ignored then the
-  // main thread should use a large value for the new run state.
-  //
-  // If a non-main thread calls set_state first, then the state is changed but the main thread
-  // can still override it if it calls set_state before handling the new state; in the latter
-  // case it would still be as if the call from the non-main thread was ignored.
-  //
-  // Concurrent calls from non-main threads however, always result in the largest state
-  // to prevail.
-
-  // If the state machine is already running, and we are not the main-thread and the new
-  // state is less than the current state, ignore it.
-  // Also, if abort() or finish() was called, then we should just ignore it.
-  if (mState != bs_run ||
-	  (!mIdle && state <= mRunState && !AIThreadID::in_main_thread()))
-  {
-#ifdef SHOW_ASSERT
-	// It's a bit weird if the same thread does two calls on a row where the second call
-	// has a smaller value: warn about that.
-	if (mState == bs_run && mContThread.equals_current_thread())
-	{
-	  llwarns << "Ignoring call to set_state(" << state_str(state) <<
-		  ") by non-main thread before main-thread could react on previous call, "
-		  "because new state is smaller than old state (" << state_str(mRunState) << ")." << llendl;
-	}
-#endif
-	mSetStateLock.unlock();
-	return;		// Ignore.
-  }
-
-  // Do not call idle() when set_state is called from another thread; use idle(state_type) instead.
-  llassert(!mCalledThreadUnsafeIdle || is_main_thread());
-
-  // Change mRunState to the requested value.
-  if (mRunState != state)
-  {
-	mRunState = state;
-	Dout(dc::statemachine, "mRunState set to " << state_str(mRunState));
-  }
-
-  // Continue the state machine if appropriate.
-  if (mIdle)
-	locked_cont();				// This unlocks mSetStateLock.
-  else
-	mSetStateLock.unlock();
-
-  // If we get here then mIdle is false, so only mRunState can still be changed but we won't
-  // call locked_cont() anymore. When the main thread finally picks up on the state change,
-  // it will cancel any possible callbacks from other threads and process the largest state
-  // that this function was called with in the meantime.
-}
-
-void AIStateMachine::abort(void)
-{
-  DoutEntering(dc::statemachine, "AIStateMachine::abort() [" << (void*)this << "]");
-  // It's possible that abort() is called before calling AIStateMachine::multiplex.
-  // In that case the statemachine wasn't initialized yet and we should just kill() it.
-  if (LL_UNLIKELY(mState == bs_initialize))
-  {
-	// It's ok to use the thread-unsafe idle() here, because if the statemachine
-	// wasn't started yet, then other threads won't call set_state() on it.
-	if (!mIdle)
-	  idle();
-	// run() calls locked_cont() after which the top of the mainloop adds this
-	// state machine to active_statemachines. Therefore, if the following fails
-	// then either the same statemachine called run() immediately followed by abort(),
-	// which is not allowed; or there were two active statemachines running,
-	// the first created a new statemachine and called run() on it, and then
-	// the other (before reaching the top of the mainloop) called abort() on
-	// that freshly created statemachine. Obviously, this is highly unlikely,
-	// but if that is the case then here we bump the statemachine into
-	// continued_statemachines to prevent kill() to delete this statemachine:
-	// the caller of abort() does not expect that.
-	if (LL_UNLIKELY(mActive == as_idle))
-	{
-	  mSetStateLock.lock();
-	  locked_cont();
-	  idle();
-	}
-	kill();
-  }
-  else
-  {
-	llassert(mState == bs_run);
-	mSetStateLock.lock();
-	mState = bs_abort;		// Causes additional calls to set_state to be ignored.
-	mSetStateLock.unlock();
-	abort_impl();
-	mAborted = true;
-	finish();
-  }
-}
-
-void AIStateMachine::finish(void)
-{
-  DoutEntering(dc::statemachine, "AIStateMachine::finish() [" << (void*)this << "]");
-  mSetStateLock.lock();
-  llassert(mState == bs_run || mState == bs_abort);
-  // It is possible that mIdle is true when abort or finish was called from
-  // outside multiplex_impl. However, that only may be done by the main thread.
-  llassert(!mIdle || is_main_thread());
-  if (!mIdle)
-	idle();					// After calling this, we don't want other threads to call set_state() anymore.
-  mState = bs_finish;		// Causes additional calls to set_state to be ignored.
-  mSetStateLock.unlock();
-  finish_impl();
-  // Did finish_impl call kill()? Then that is only the default. Remember it.
-  bool default_delete = (mState == bs_killed);
-  mState = bs_finish;
+  bool aborted = sub_state_type_rat(mSubState)->aborted;
   if (mParent)
   {
 	// It is possible that the parent is not running when the parent is in fact aborting and called
@@ -365,26 +878,21 @@ void AIStateMachine::finish(void)
 	// call abort again (or change it's state).
 	if (mParent->running())
 	{
-	  if (mAborted && mAbortParent)
+	  if (aborted && mAbortParent)
 	  {
 		mParent->abort();
 		mParent = NULL;
 	  }
-	  else if (!mAborted || mOnAbortSignalParent)
+	  else if (!aborted || mOnAbortSignalParent)
 	  {
-		mParent->set_state(mNewParentState);
+		mParent->advance_state(mNewParentState);
 	  }
 	}
   }
-  // After this (bool)*this evaluates to true and we can call the callback, which then is allowed to call run().
-  mState = bs_callback;
   if (mCallback)
   {
-	// This can/may call kill() that sets mState to bs_kill and in which case the whole AIStateMachine
-	// will be deleted from the mainloop, or it may call run() that sets mState is set to bs_initialize
-	// and might change or reuse mCallback or mParent.
-	mCallback->callback(!mAborted);
-	if (mState != bs_initialize)
+	mCallback->callback(!aborted);
+	if (multiplex_state_type_rat(mState)->base_state != bs_reset)
 	{
 	  delete mCallback;
 	  mCallback = NULL;
@@ -396,233 +904,376 @@ void AIStateMachine::finish(void)
 	// Not restarted by callback. Allow run() to be called later on.
 	mParent = NULL;
   }
-  // Fix the final state.
-  if (mState == bs_callback)
-	mState = default_delete ? bs_killed : bs_initialize;
-  if (mState == bs_killed && mActive == as_idle)
-  {
-	// Bump the statemachine onto the active statemachine list, or else it won't be deleted.
-	mSetStateLock.lock();
-	locked_cont();
-	idle();
-  }
 }
 
 void AIStateMachine::kill(void)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::kill() [" << (void*)this << "]");
-  // Should only be called from finish() (or when not running (bs_initialize)).
-  // However, also allow multiple calls to kill() on a row (bs_killed) (which effectively don't do anything).
-  llassert(mIdle && (mState == bs_callback || mState == bs_finish || mState == bs_initialize || mState == bs_killed));
-  base_state_type prev_state = mState;
-  mState = bs_killed;
-  if (prev_state == bs_initialize && mActive == as_idle)
+#ifdef SHOW_ASSERT
   {
-	// We're not running (ie being deleted by a parent statemachine), delete it immediately.
-	delete this;
+	multiplex_state_type_rat state_r(mState);
+	// kill() may only be called from the call back function.
+	llassert(state_r->base_state == bs_callback);
+	// May only be called by the thread that is holding mMultiplexMutex.
+	llassert(mThreadId.equals_current_thread());
+  }
+#endif
+  sub_state_type_wat sub_state_w(mSubState);
+  // Void last call to run() (ie from finish_impl()), if any.
+  sub_state_w->reset = false;
+}
+
+void AIStateMachine::reset()
+{
+  DoutEntering(dc::statemachine, "AIStateMachine::reset() [" << (void*)this << "]");
+#ifdef SHOW_ASSERT
+  mDebugAborted = false;
+  mDebugContPending = false;
+  mDebugSetStatePending = false;
+  mDebugRefCalled = false;
+#endif
+  mRuntime = 0;
+  bool inside_multiplex;
+  {
+	multiplex_state_type_rat state_r(mState);
+	// reset() is only called from run(), which may only be called when just created, from finish_impl() or from the call back function.
+	llassert(state_r->base_state == bs_reset || state_r->base_state == bs_finish || state_r->base_state == bs_callback);
+	inside_multiplex = state_r->base_state != bs_reset;
+  }
+  {
+	sub_state_type_wat sub_state_w(mSubState);
+	// Reset.
+	sub_state_w->aborted = sub_state_w->finished = false;
+	// Signal that we want to start running from the beginning.
+	sub_state_w->reset = true;
+	// Start running.
+	sub_state_w->idle = false;
+	// Keep running till we reach at least bs_multiplex.
+	sub_state_w->need_run = true;
+  }
+  if (!inside_multiplex)
+  {
+	// Kick start the state machine.
+	multiplex(initial_run);
   }
 }
 
-// Return stringified 'state'.
-char const* AIStateMachine::state_str(state_type state)
+void AIStateMachine::set_state(state_type new_state)
 {
-  if (state >= min_state && state < max_state)
+  DoutEntering(dc::statemachine, "AIStateMachine::set_state(" << state_str_impl(new_state) << ") [" << (void*)this << "]");
+#ifdef SHOW_ASSERT
   {
-	switch (state)
+	multiplex_state_type_rat state_r(mState);
+	// set_state() may only be called from initialize_impl() or multiplex_impl().
+	llassert(state_r->base_state == bs_initialize || state_r->base_state == bs_multiplex);
+	// May only be called by the thread that is holding mMultiplexMutex. If this fails, you probably called set_state() by accident instead of advance_state().
+	llassert(mThreadId.equals_current_thread());
+  }
+#endif
+  sub_state_type_wat sub_state_w(mSubState);
+  // Force current state to the requested state.
+  sub_state_w->run_state = new_state;
+  // Void last call to advance_state.
+  sub_state_w->advance_state = 0;
+  // Void last call to idle(), if any.
+  sub_state_w->idle = false;
+  // Honor a subsequent call to idle().
+  sub_state_w->skip_idle = false;
+#ifdef SHOW_ASSERT
+  // We should run. This can only be cancelled by a call to idle().
+  mDebugSetStatePending = true;
+#endif
+}
+
+void AIStateMachine::advance_state(state_type new_state)
+{
+  DoutEntering(dc::statemachine, "AIStateMachine::advance_state(" << state_str_impl(new_state) << ") [" << (void*)this << "]");
+  {
+	sub_state_type_wat sub_state_w(mSubState);
+	// Ignore call to advance_state when the currently queued state is already greater or equal to the requested state.
+	if (sub_state_w->advance_state >= new_state)
 	{
-	  AI_CASE_RETURN(bs_initialize);
-	  AI_CASE_RETURN(bs_run);
-	  AI_CASE_RETURN(bs_abort);
-	  AI_CASE_RETURN(bs_finish);
-	  AI_CASE_RETURN(bs_callback);
-	  AI_CASE_RETURN(bs_killed);
+	  Dout(dc::statemachine, "Ignored, because " << state_str_impl(sub_state_w->advance_state) << " >= " << state_str_impl(new_state) << ".");
+	  return;
+	}
+	// Increment state.
+	sub_state_w->advance_state = new_state;
+	// Void last call to idle(), if any.
+	sub_state_w->idle = false;
+	// Ignore a call to idle if it occurs before we leave multiplex_impl().
+	sub_state_w->skip_idle = true;
+	// Mark that a re-entry of multiplex() is necessary.
+	sub_state_w->need_run = true;
+#ifdef SHOW_ASSERT
+	// From this moment on.
+	mDebugAdvanceStatePending = true;
+#endif
+  }
+  if (!mMultiplexMutex.isSelfLocked())
+  {
+	multiplex(schedule_run);
+  }
+}
+
+void AIStateMachine::idle(void)
+{
+  DoutEntering(dc::statemachine, "AIStateMachine::idle() [" << (void*)this << "]");
+#ifdef SHOW_ASSERT
+  {
+	multiplex_state_type_rat state_r(mState);
+	// idle() may only be called from initialize_impl() or multiplex_impl().
+	llassert(state_r->base_state == bs_multiplex || state_r->base_state == bs_initialize);
+	// May only be called by the thread that is holding mMultiplexMutex.
+	llassert(mThreadId.equals_current_thread());
+  }
+  // idle() following set_state() cancels the reason to run because of the call to set_state.
+  mDebugSetStatePending = false;
+#endif
+  sub_state_type_wat sub_state_w(mSubState);
+  // As idle may only be called from within the state machine, it should never happen that the state machine is already idle.
+  llassert(!sub_state_w->idle);
+  // Ignore call to idle() when advance_state() was called since last call to set_state().
+  if (sub_state_w->skip_idle)
+  {
+	Dout(dc::statemachine, "Ignored, because skip_idle is true (advance_state() was called last).");
+	return;
+  }
+  // Mark that we are idle.
+  sub_state_w->idle = true;
+  // Not sleeping (anymore).
+  mSleep = 0;
+}
+
+void AIStateMachine::cont(void)
+{
+  DoutEntering(dc::statemachine, "AIStateMachine::cont() [" << (void*)this << "]");
+  {
+	sub_state_type_wat sub_state_w(mSubState);
+	// Void last call to idle(), if any.
+	sub_state_w->idle = false;
+	// Mark that a re-entry of multiplex() is necessary.
+	sub_state_w->need_run = true;
+#ifdef SHOW_ASSERT
+	// From this moment.
+	mDebugContPending = true;
+#endif
+  }
+  if (!mMultiplexMutex.isSelfLocked())
+  {
+	multiplex(schedule_run);
+  }
+}
+
+void AIStateMachine::abort(void)
+{
+  DoutEntering(dc::statemachine, "AIStateMachine::abort() [" << (void*)this << "]");
+  bool is_waiting = false;
+  {
+	multiplex_state_type_rat state_r(mState);
+	sub_state_type_wat sub_state_w(mSubState);
+	// Mark that we are aborted, iff we didn't already finish.
+	sub_state_w->aborted = !sub_state_w->finished;
+	// Mark that a re-entry of multiplex() is necessary.
+	sub_state_w->need_run = true;
+	// Schedule a new run when this state machine is waiting.
+	is_waiting = state_r->base_state == bs_multiplex && sub_state_w->idle;
+  }
+  if (is_waiting && !mMultiplexMutex.isSelfLocked())
+  {
+	multiplex(insert_abort);
+  }
+  // Block until the current run finished.
+  if (!mRunMutex.tryLock())
+  {
+	llwarns << "AIStateMachine::abort() blocks because the statemachine is still executing code in another thread." << llendl;
+	mRunMutex.lock();
+  }
+  mRunMutex.unlock();
+#ifdef SHOW_ASSERT
+  // When abort() returns, it may never run again.
+  mDebugAborted = true;
+#endif
+}
+
+void AIStateMachine::finish(void)
+{
+  DoutEntering(dc::statemachine, "AIStateMachine::finish() [" << (void*)this << "]");
+#ifdef SHOW_ASSERT
+  {
+	multiplex_state_type_rat state_r(mState);
+	// finish() may only be called from multiplex_impl().
+	llassert(state_r->base_state == bs_multiplex);
+	// May only be called by the thread that is holding mMultiplexMutex.
+	llassert(mThreadId.equals_current_thread());
+  }
+#endif
+  sub_state_type_wat sub_state_w(mSubState);
+  // finish() should not be called when idle.
+  llassert(!sub_state_w->idle);
+  // Mark that we are finished.
+  sub_state_w->finished = true;
+}
+
+void AIStateMachine::yield(void)
+{
+  DoutEntering(dc::statemachine, "AIStateMachine::yield() [" << (void*)this << "]");
+  multiplex_state_type_rat state_r(mState);
+  // yield() may only be called from multiplex_impl().
+  llassert(state_r->base_state == bs_multiplex);
+  // May only be called by the thread that is holding mMultiplexMutex.
+  llassert(mThreadId.equals_current_thread());
+  // Set mYieldEngine to the best non-NUL value.
+  mYieldEngine = state_r->current_engine ? state_r->current_engine : (mDefaultEngine ? mDefaultEngine : &gStateMachineThreadEngine);
+}
+
+void AIStateMachine::yield(AIEngine* engine)
+{
+  llassert(engine);
+  DoutEntering(dc::statemachine, "AIStateMachine::yield(" << engine->name() << ") [" << (void*)this << "]");
+#ifdef SHOW_ASSERT
+  {
+	multiplex_state_type_rat state_r(mState);
+	// yield() may only be called from multiplex_impl().
+	llassert(state_r->base_state == bs_multiplex);
+	// May only be called by the thread that is holding mMultiplexMutex.
+	llassert(mThreadId.equals_current_thread());
+  }
+#endif
+  mYieldEngine = engine;
+}
+
+void AIStateMachine::yield_frame(unsigned int frames)
+{
+  DoutEntering(dc::statemachine, "AIStateMachine::yield_frame(" << frames << ") [" << (void*)this << "]");
+  mSleep = -(S64)frames;
+  // Sleeping is always done from the main thread.
+  yield(&gMainThreadEngine);
+}
+
+void AIStateMachine::yield_ms(unsigned int ms)
+{
+  DoutEntering(dc::statemachine, "AIStateMachine::yield_ms(" << ms << ") [" << (void*)this << "]");
+  mSleep = get_clock_count() + calc_clock_frequency() * ms / 1000;
+  // Sleeping is always done from the main thread.
+  yield(&gMainThreadEngine);
+}
+
+char const* AIStateMachine::state_str(base_state_type state)
+{
+  switch(state)
+  {
+	AI_CASE_RETURN(bs_reset);
+	AI_CASE_RETURN(bs_initialize);
+	AI_CASE_RETURN(bs_multiplex);
+	AI_CASE_RETURN(bs_abort);
+	AI_CASE_RETURN(bs_finish);
+	AI_CASE_RETURN(bs_callback);
+	AI_CASE_RETURN(bs_killed);
+  }
+  llassert(false);
+  return "UNKNOWN BASE STATE";
+}
+
+AIEngine gMainThreadEngine("gMainThreadEngine");
+AIEngine gStateMachineThreadEngine("gStateMachineThreadEngine");
+
+// State Machine Thread main loop.
+void AIEngine::threadloop(void)
+{
+  queued_type::iterator queued_element, end;
+  {
+	engine_state_type_wat engine_state_w(mEngineState);
+	end = engine_state_w->list.end();
+	queued_element = engine_state_w->list.begin();
+	if (queued_element == end)
+	{
+	  // Nothing to do. Wait till something is added to the queue again.
+	  engine_state_w->waiting = true;
+	  engine_state_w.wait();
+	  engine_state_w->waiting = false;
+	  return;
 	}
   }
-  return state_str_impl(state);
-}
-
-//----------------------------------------------------------------------------
-//
-// Private methods
-//
-
-void AIStateMachine::multiplex(U64 current_time)
-{
-  // Return immediately when this state machine is sleeping.
-  // A negative value of mSleep means we're counting frames,
-  // a positive value means we're waiting till a certain
-  // amount of time has passed.
-  if (mSleep != 0)
+  do
   {
-	if (mSleep < 0)
+	AIStateMachine& state_machine(queued_element->statemachine());
+	state_machine.multiplex(AIStateMachine::normal_run);
+	bool active = state_machine.active(this);		// This locks mState shortly, so it must be called before locking mEngineState because add() locks mEngineState while holding mState.
+	engine_state_type_wat engine_state_w(mEngineState);
+	if (!active)
 	{
-	  if (++mSleep)
-		return;
+	  Dout(dc::statemachine, "Erasing state machine [" << (void*)&state_machine << "] from " << mName);
+	  engine_state_w->list.erase(queued_element++);
 	}
 	else
 	{
-	  if (current_time < (U64)mSleep)
-		return;
-	  mSleep = 0;
+	  ++queued_element;
 	}
   }
-
-  DoutEntering(dc::statemachine, "AIStateMachine::multiplex() [" << (void*)this << "] [with state: " << state_str(mState == bs_run ? mRunState : mState) << "]");
-  llassert(mState == bs_initialize || mState == bs_run);
-
-  // Real state machine starts here.
-  if (mState == bs_initialize)
-  {
-	mAborted = false;
-	mState = bs_run;
-	initialize_impl();
-	if (mAborted || mState != bs_run)
-	  return;
-  }
-  multiplex_impl();
+  while (queued_element != end);
 }
+
+void AIEngine::wake_up(void)
+{
+  engine_state_type_wat engine_state_w(mEngineState);
+  if (engine_state_w->waiting)
+  {
+	engine_state_w.signal();
+  }
+}
+
+//-----------------------------------------------------------------------------
+// AIEngineThread
+
+class AIEngineThread : public LLThread
+{
+  public:
+	static AIEngineThread* sInstance;
+	bool volatile mRunning;
+
+  public:
+    // MAIN-THREAD
+    AIEngineThread(void);
+    virtual ~AIEngineThread();
+
+  protected:
+	virtual void run(void);
+};
 
 //static
-void AIStateMachine::add_continued_statemachines(AIReadAccess<csme_type>& csme_r)
+AIEngineThread* AIEngineThread::sInstance;
+
+AIEngineThread::AIEngineThread(void) : LLThread("AIEngineThread"), mRunning(true)
 {
-  bool nonempty = false;
-  for (continued_statemachines_type::const_iterator iter = csme_r->continued_statemachines.begin(); iter != csme_r->continued_statemachines.end(); ++iter)
-  {
-	nonempty = true;
-	active_statemachines.push_back(QueueElement(*iter));
-	Dout(dc::statemachine, "Adding " << (void*)*iter << " to active_statemachines");
-	(*iter)->mActive = as_active;
-  }
-  if (nonempty)
-	AIWriteAccess<csme_type>(csme_r)->continued_statemachines.clear();
 }
 
-// static
-void AIStateMachine::dowork(void)
+AIEngineThread::~AIEngineThread(void)
 {
-  llassert(!active_statemachines.empty());
-  // Run one or more state machines.
-  U64 total_clocks = 0;
-  for (active_statemachines_type::iterator iter = active_statemachines.begin(); iter != active_statemachines.end(); ++iter)
+}
+
+void AIEngineThread::run(void)
+{
+  while(mRunning)
   {
-	AIStateMachine& statemachine(iter->statemachine());
-	if (!statemachine.mIdle)
-	{
-	  U64 start = get_clock_count();
-	  // This might call idle() and then pass the statemachine to another thread who then may call cont().
-	  // Hence, after this isn't not sure what mIdle is, and it can change from true to false at any moment,
-	  // if it is true after this function returns.
-	  statemachine.multiplex(start);
-	  U64 delta = get_clock_count() - start;
-	  iter->add(delta);
-	  total_clocks += delta;
-	  if (total_clocks >= sMaxCount)
-	  {
-#ifndef LL_RELEASE_FOR_DOWNLOAD
-		llwarns << "AIStateMachine::mainloop did run for " << (total_clocks * 1000 / calc_clock_frequency()) << " ms." << llendl;
-#endif
-		std::sort(active_statemachines.begin(), active_statemachines.end(), QueueElementComp());
-		break;
-	  }
-	}
-  }
-  // Remove idle state machines from the loop.
-  active_statemachines_type::iterator iter = active_statemachines.begin();
-  while (iter != active_statemachines.end())
-  {
-	AIStateMachine& statemachine(iter->statemachine());
-	// Atomic test mIdle and change mActive.
-	bool locked = statemachine.mIdleActive.tryLock();
-	// If the lock failed, then another thread is in the middle of calling cont(),
-	// thus mIdle will end up false. So, there is no reason to block here; just
-	// treat mIdle as false already.
-	if (locked && statemachine.mIdle)
-	{
-	  // Without the lock, it would be possible that another thread called cont() right here,
-	  // changing mIdle to false again but NOT adding the statemachine to continued_statemachines,
-	  // thinking it is in active_statemachines (and it is), while immediately below it is
-	  // erased from active_statemachines.
-	  statemachine.mActive = as_idle;
-	  // Now, calling cont() is ok -- as that will cause the statemachine to be added to
-	  // continued_statemachines, so it's fine in that case-- even necessary-- to remove it from
-	  // active_statemachines regardless, and we can release the lock here.
-	  statemachine.mIdleActive.unlock();
-	  Dout(dc::statemachine, "Erasing " << (void*)&statemachine << " from active_statemachines");
-	  iter = active_statemachines.erase(iter);
-	  if (statemachine.mState == bs_killed)
-	  {
-	  	Dout(dc::statemachine, "Deleting " << (void*)&statemachine);
-		delete &statemachine;
-	  }
-	}
-	else
-	{
-	  if (locked)
-	  {
-		statemachine.mIdleActive.unlock();
-	  }
-	  llassert(statemachine.mActive == as_active);	// It should not be possible that another thread called cont() and changed this when we are we are not idle.
-	  llassert(statemachine.mState == bs_run || statemachine.mState == bs_initialize);
-	  ++iter;
-	}
-  }
-  if (active_statemachines.empty())
-  {
-	// If this was the last state machine, remove mainloop from the IdleCallbacks.
-	AIReadAccess<csme_type> csme_r(sContinuedStateMachinesAndMainloopEnabled, true);
-	if (csme_r->continued_statemachines.empty() && csme_r->mainloop_enabled)
-	{
-	  Dout(dc::statemachine, "Deactivating AIStateMachine::mainloop: no active state machines left.");
-	  AIWriteAccess<csme_type>(csme_r)->mainloop_enabled = false;
-	}
+	gStateMachineThreadEngine.threadloop();
   }
 }
 
-// static
-void AIStateMachine::flush(void)
+void startEngineThread(void)
 {
-  DoutEntering(dc::curl, "AIStateMachine::flush(void)");
-  {
-	AIReadAccess<csme_type> csme_r(sContinuedStateMachinesAndMainloopEnabled);
-	add_continued_statemachines(csme_r);
-  }
-  // Abort all state machines.
-  for (active_statemachines_type::iterator iter = active_statemachines.begin(); iter != active_statemachines.end(); ++iter)
-  {
-	AIStateMachine& statemachine(iter->statemachine());
-	if (statemachine.abortable())
-	{
-	  // We can't safely call abort() here for non-running (run() was called, but they weren't initialized yet) statemachines,
-	  // because that might call kill() which in some cases is undesirable (ie, when it is owned by a partent that will
-	  // also call abort() on it when it is aborted itself).
-	  if (statemachine.running())
-		statemachine.abort();
-	  else
-		statemachine.idle();		// Stop the statemachine from starting, in the next loop with batch == 0.
-	}
-  }
-  for (int batch = 0;; ++batch)
-  {
-	// Run mainloop until all state machines are idle (batch == 0) or deleted (batch == 1).
-	for(;;)
-	{
-	  {
-		AIReadAccess<csme_type> csme_r(sContinuedStateMachinesAndMainloopEnabled);
-		if (!csme_r->mainloop_enabled)
-		  break;
-	  }
-	  mainloop();
-	}
-	if (batch == 1)
-	  break;
-	{
-	  AIReadAccess<csme_type> csme_r(sContinuedStateMachinesAndMainloopEnabled);
-	  add_continued_statemachines(csme_r);
-	}
-  }
-  // At this point all statemachines should be idle.
-  AIReadAccess<csme_type> csme_r(sContinuedStateMachinesAndMainloopEnabled);
-  llinfos << "Current number of continued statemachines: " << csme_r->continued_statemachines.size() << llendl;
-  llinfos << "Current number of active statemachines: " << active_statemachines.size() << llendl;
-  llassert(csme_r->continued_statemachines.empty() && active_statemachines.empty());
+  AIEngineThread::sInstance = new AIEngineThread;
+  AIEngineThread::sInstance->start();
 }
+
+void stopEngineThread(void)
+{
+  AIEngineThread::sInstance->mRunning = false;
+  gStateMachineThreadEngine.wake_up();
+  int count = 401;
+  while(--count && !AIEngineThread::sInstance->isStopped())
+  {
+	ms_sleep(10);
+  }
+  llinfos << "State machine thread" << (!AIEngineThread::sInstance->isStopped() ? " not" : "") << " stopped after " << ((400 - count) * 10) << "ms." << llendl;
+}
+

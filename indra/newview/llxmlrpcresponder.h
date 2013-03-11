@@ -35,7 +35,6 @@
 #define LLXMLRPCRESPONDER_H
 
 #include <string>
-#include "llurlrequest.h"	// Injector
 #include "llcurl.h"
 #include "llhttpstatuscodes.h"
 

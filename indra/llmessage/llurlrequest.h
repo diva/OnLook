@@ -51,20 +51,7 @@ class Injector
 
 class LLURLRequest : public AICurlEasyRequestStateMachine {
   public:
-	/** 
-	 * @brief This enumeration is for specifying the type of request.
-	 */
-	enum ERequestAction
-	{
-		INVALID,
-		HTTP_HEAD,
-		HTTP_GET,
-		HTTP_PUT,
-		HTTP_POST,
-		HTTP_DELETE,
-		HTTP_MOVE, // Caller will need to set 'Destination' header
-		REQUEST_ACTION_COUNT
-	};
+	typedef LLHTTPClient::ERequestAction ERequestAction;
 
 	/**
 	 * @brief Turn the request action into an http verb.
@@ -78,6 +65,11 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	 * @param url The url of the request. It should already be encoded.
 	 */
 	LLURLRequest(ERequestAction action, std::string const& url, Injector* body, LLHTTPClient::ResponderPtr responder, AIHTTPHeaders& headers, bool keepalive, bool is_auth, bool no_compression);
+
+	/**
+	 * @brief Cached value of responder->getName() as passed to the constructor.
+	 */
+	char const* getResponderName(void) const { return mResponderNameCache; }
 
   protected:
 	// Call abort(), not delete.
@@ -118,6 +110,7 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	U32 mBodySize;
 	LLHTTPClient::ResponderPtr mResponder;
 	AIHTTPHeaders mHeaders;
+	char const* mResponderNameCache;
 
   protected:
 	// Handle initializing the object.

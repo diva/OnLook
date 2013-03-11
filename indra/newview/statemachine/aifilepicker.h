@@ -136,8 +136,8 @@ new AIFilePicker
   which sets the state to AIFilePicker_canceled or AIFilePicker_done
   respectively, causing a call to AIStateMachine::finish(), which calls
   AIFilePicker::finish_impl which destroys the plugin (mPluginBase),
-  the plugin manager (mPluginManager) and calls AIStateMachine::kill()
-  causing the AIFilePicker to be deleted.
+  the plugin manager (mPluginManager) after which the state machine
+  calls unref() causing the AIFilePicker to be deleted.
 
 */
 
@@ -155,7 +155,7 @@ public:
 	AIFilePicker(void);
 
 	// Create a dynamically created AIFilePicker object.
-	static AIFilePicker* create(bool auto_kill = true) { AIFilePicker* filepicker = new AIFilePicker; filepicker->mAutoKill = auto_kill; return filepicker; }
+	static AIFilePicker* create(void) { AIFilePicker* filepicker = new AIFilePicker; return filepicker; }
 
 	// The starting directory that the user will be in when the file picker opens
 	// will be the same as the directory used the last time the file picker was
@@ -191,7 +191,6 @@ private:
 	typedef std::map<std::string, std::string> context_map_type;	//!< Type of mContextMap.
 	static AIThreadSafeSimpleDC<context_map_type> sContextMap;		//!< Map context (ie, "snapshot" or "image") to last used folder.
 	std::string mContext;											//!< Some key to indicate the context (remembers the folder per key).
-	bool mAutoKill;													//!< True if the default behavior is to delete itself after being finished.
 
 	// Input variables (cache variable between call to open and run).
 	open_type mOpenType;					//!< Set to whether opening a filepicker to select for saving one file, for loading one file, or loading multiple files.
@@ -215,10 +214,7 @@ protected:
 	/*virtual*/ void initialize_impl(void);
 
 	// Handle mRunState.
-	/*virtual*/ void multiplex_impl(void);
-
-	// Handle aborting from current bs_run state.
-	/*virtual*/ void abort_impl(void);
+	/*virtual*/ void multiplex_impl(state_type run_state);
 
 	// Handle cleaning up from initialization (or post abort) state.
 	/*virtual*/ void finish_impl(void);
