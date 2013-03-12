@@ -243,7 +243,6 @@ const F32 DEFAULT_AFK_TIMEOUT = 5.f * 60.f; // time with no input before user fl
 F32 gSimLastTime; // Used in LLAppViewer::init and send_stats()
 F32 gSimFrames;
 
-BOOL gAllowTapTapHoldRun = TRUE;
 BOOL gShowObjectUpdates = FALSE;
 BOOL gUseQuickTime = TRUE;
 
@@ -283,9 +282,6 @@ LLUUID gSystemFolderAssets;
 
 BOOL				gDisconnected = FALSE;
 
-// Minimap scale in pixels per region
-
-
 // used to restore texture state after a mode switch
 LLFrameTimer	gRestoreGLTimer;
 BOOL			gRestoreGL = FALSE;
@@ -322,9 +318,6 @@ const std::string ERROR_MARKER_FILE_NAME("Singularity.error_marker");
 const std::string LLERROR_MARKER_FILE_NAME("Singularity.llerror_marker");
 const std::string LOGOUT_MARKER_FILE_NAME("Singularity.logout_marker");
 static BOOL gDoDisconnect = FALSE;
-// <edit>
-//static BOOL gBusyDisconnect = FALSE;
-// </edit>
 static std::string gLaunchFileOnQuit;
 
 // Used on Win32 for other apps to identify our window (eg, win_setup)
@@ -489,6 +482,7 @@ static void settings_to_globals()
 	LLSurface::setTextureSize(gSavedSettings.getU32("RegionTextureSize"));
 	
 	LLRender::sGLCoreProfile = gSavedSettings.getBOOL("RenderGLCoreProfile");
+
 	LLImageGL::sGlobalUseAnisotropic	= gSavedSettings.getBOOL("RenderAnisotropic");
 	LLImageGL::sCompressTextures		= gSavedSettings.getBOOL("RenderCompressTextures");
 	LLVOVolume::sLODFactor				= gSavedSettings.getF32("RenderVolumeLODFactor");
@@ -512,7 +506,6 @@ static void settings_to_globals()
 	gAgent.setHideGroupTitle(gSavedSettings.getBOOL("RenderHideGroupTitle"));
 		
 	gDebugWindowProc = gSavedSettings.getBOOL("DebugWindowProc");
-	gAllowTapTapHoldRun = gSavedSettings.getBOOL("AllowTapTapHoldRun");
 	gShowObjectUpdates = gSavedSettings.getBOOL("ShowObjectUpdates");
 	LLWorldMapView::sMapScale =  llmax(.1f,gSavedSettings.getF32("MapScale"));
 	LLHoverView::sShowHoverTips = gSavedSettings.getBOOL("ShowHoverTips");
@@ -2697,25 +2690,15 @@ void LLAppViewer::cleanupSavedSettings()
 {
 	gSavedSettings.setBOOL("MouseSun", FALSE);
 
-	gSavedSettings.setBOOL("FlyBtnState", FALSE);
-
-	gSavedSettings.setBOOL("FirstPersonBtnState", FALSE);
-	gSavedSettings.setBOOL("ThirdPersonBtnState", TRUE);
-	gSavedSettings.setBOOL("BuildBtnState", FALSE);
-
 	gSavedSettings.setBOOL("UseEnergy", TRUE);				// force toggle to turn off, since sends message to simulator
 
 	gSavedSettings.setBOOL("DebugWindowProc", gDebugWindowProc);
 		
-	gSavedSettings.setBOOL("AllowTapTapHoldRun", gAllowTapTapHoldRun);
 	gSavedSettings.setBOOL("ShowObjectUpdates", gShowObjectUpdates);
 	
-	if (!gNoRender)
+	if (!gNoRender && gDebugView)
 	{
-		if (gDebugView)
-		{
-			gSavedSettings.setBOOL("ShowDebugConsole", gDebugView->mDebugConsolep->getVisible());
-		}
+		gSavedSettings.setBOOL("ShowDebugConsole", gDebugView->mDebugConsolep->getVisible());
 	}
 
 	// save window position if not fullscreen

@@ -1667,7 +1667,7 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 
 	menu->addChild(sub_menu);
 
-	menu->addChild(new LLMenuItemToggleGL("Tap-Tap-Hold To Run", &gAllowTapTapHoldRun));
+	menu->addChild(new LLMenuItemCheckGL("Tap-Tap-Hold To Run", menu_toggle_control, NULL, menu_check_control, (void*)"AllowTapTapHoldRun"));
 	menu->addChild(new LLMenuItemCallGL("Force Params to Default", &LLAgent::clearVisualParams, NULL));
 	menu->addChild(new LLMenuItemCallGL("Reload Vertex Shader", &reload_vertex_shader, NULL));
 	menu->addChild(new LLMenuItemToggleGL("Animation Info", &LLVOAvatar::sShowAnimationDebug));
