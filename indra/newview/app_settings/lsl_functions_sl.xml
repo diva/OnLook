@@ -1010,5 +1010,8 @@
    <map/>
    <key>llWanderWithin</key>
    <map/>
+<!-- Server RC LeTigre 12.10.12.265819 new function -->
+   <key>llGetSimStats</key>
+   <map/>
   </map>
 </llsd>
