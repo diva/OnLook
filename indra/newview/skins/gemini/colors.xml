@@ -217,5 +217,7 @@
 <MultiSliderTrackColor value="30, 30, 30, 255"/>
 <MultiSliderThumbCenterSelectedColor value="255, 50, 50, 255"/>
 <MultiSliderTriangleColor value="255, 255, 50, 255"/>
+<!-- LSL colors -->
+<LSLFunctionColor value="102, 217, 239, 0" />
 
 </settings>

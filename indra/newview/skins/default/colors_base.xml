@@ -233,4 +233,7 @@
 <PathfindingLinksetBeaconColor value="0, 0, 255, 204" />
 <PathfindingCharacterBeaconColor value="255, 0, 0, 204" />
 
+<!-- LSL colors -->
+<LSLFunctionColor value="102, 217, 239, 0" />
+
 </settings>
