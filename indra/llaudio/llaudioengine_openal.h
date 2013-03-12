@@ -72,8 +72,8 @@ class LLAudioEngine_OpenAL : public LLAudioEngine
 		ALuint mWindSource;
 		int mNumEmptyWindALBuffers;
 
-		static const int MAX_NUM_WIND_BUFFERS = 80;
-		static const float WIND_BUFFER_SIZE_SEC = 0.05f; // 1/20th sec
+    	static const int MAX_NUM_WIND_BUFFERS = 80;
+    	static const float WIND_BUFFER_SIZE_SEC; // 1/20th sec
 };
 
 class LLAudioChannelOpenAL : public LLAudioChannel
