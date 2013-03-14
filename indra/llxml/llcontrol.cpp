@@ -174,7 +174,8 @@ LLControlVariable::LLControlVariable(const std::string& name, eControlType type,
 	  mValidateSignal(new validate_signal_t),
 	  mIsCOA(IsCOA),
 	  mIsCOAParent(false),
-	  mCOAConnectedVar(NULL)
+	  mCOAConnectedVar(NULL),
+	  mLookupCount(0)
 {
 	if (mPersist && mComment.empty())
 	{
@@ -339,29 +340,16 @@ LLSD LLControlVariable::getSaveValue() const
 {
 	//The first level of the stack is default
 	//We assume that the second level is user preferences that should be saved
-	if(mValues.size() > 1) return mValues[1];
+	if(mValues.size() > 1) return mValues[1]; 
 	return mValues[0];
 }
 
-#if PROF_CTRL_CALLS
-std::vector<std::pair<std::string, U32>> gSettingsCallMap;
-
-static update_gSettingsCallMap(ctrl_name_table_t::const_iterator const& iter)
+#ifdef PROF_CTRL_CALLS
+void LLControlGroup::updateLookupMap(ctrl_name_table_t::const_iterator iter) const
 {
-	if(iter != mNameTable.end())
+	if(iter != mNameTable.end() && iter->second.notNull())
 	{
-		std::vector<std::pair<std::string, U32>>::iterator iter2 = gSettingsCallMap.begin();
-		std::vector<std::pair<std::string, U32>>::iterator end = gSettingsCallMap.end();
-		for(;iter2!=end;iter2++)
-		{
-			if(iter2->first==name)
-			{
-				iter2->second = iter2->second + 1;
-				break;
-			}
-		}
-		if(iter2 == gSettingsCallMap.end())
-			gSettingsCallMap.push_back(std::pair<std::string, U32>(name.c_str(),1));
+		iter->second.get()->mLookupCount++;
 	}
 }
 #endif //PROF_CTRL_CALLS
@@ -369,8 +357,8 @@ static update_gSettingsCallMap(ctrl_name_table_t::const_iterator const& iter)
 LLControlVariable* LLControlGroup::getControl(std::string const& name)
 {
 	ctrl_name_table_t::iterator iter = mNameTable.find(name);
-#if PROF_CTRL_CALLS
-	update_gSettingsCallMap(iter);
+#ifdef PROF_CTRL_CALLS
+	updateLookupMap(iter);
 #endif //PROF_CTRL_CALLS
 	if(iter != mNameTable.end())
 		return iter->second->getCOAActive();
@@ -381,8 +369,8 @@ LLControlVariable* LLControlGroup::getControl(std::string const& name)
 LLControlVariable const* LLControlGroup::getControl(std::string const& name) const
 {
 	ctrl_name_table_t::const_iterator iter = mNameTable.find(name);
-#if PROF_CTRL_CALLS
-	update_gSettingsCallMap(iter);
+#ifdef PROF_CTRL_CALLS
+	updateLookupMap(iter);
 #endif //PROF_CTRL_CALLS
 	if(iter != mNameTable.end())
 		return iter->second->getCOAActive();
