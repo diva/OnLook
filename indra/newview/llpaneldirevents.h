@@ -61,7 +61,6 @@ protected:
 	static void onBackBtn(void* data);
 	static void onForwardBtn(void* data);
 	static void onClickToday(void *userdata);
-	static void onCommitMature(LLUICtrl* ctrl, void* data);
 	static void onClickSearch(void *data);
 	static void onClickDelete(void *data);
 

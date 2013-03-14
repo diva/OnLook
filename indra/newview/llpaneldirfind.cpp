@@ -108,12 +108,16 @@ BOOL LLPanelDirFind::postBuild()
 	LLPanelDirBrowser::postBuild();
 
 	childSetAction("back_btn", onClickBack, this);
-	childSetAction("home_btn", onClickHome, this);
+	if (hasChild("home_btn"))
+		childSetAction("home_btn", onClickHome, this);
 	childSetAction("forward_btn", onClickForward, this);
 	childSetAction("reload_btn", onClickRefresh, this);
-	childSetCommitCallback("search_editor", onCommitSearch, this);
-	childSetAction("search_btn", onClickSearch, this);
-	childSetAction("?", onClickHelp, this);
+	if (hasChild("search_editor"))
+		childSetCommitCallback("search_editor", onCommitSearch, this);
+	if (hasChild("search_btn"))
+		childSetAction("search_btn", onClickSearch, this);
+	if (hasChild("?"))
+		childSetAction("?", onClickHelp, this);
 
 	// showcase doesn't have maturity flags -- it's all PG
 	if (hasChild("incmature"))
@@ -161,7 +165,8 @@ BOOL LLPanelDirFind::postBuild()
 		navigateToDefaultPage();
 	}
 
-	childSetVisible("filter_gaming", (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_ALL));
+	if (LLUICtrl* ctrl = findChild<LLUICtrl>("filter_gaming"))
+		ctrl->setVisible((gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_ALL));
 
 	return TRUE;
 }
@@ -257,7 +262,8 @@ void LLPanelDirFindAll::search(const std::string& search_text)
 
 void LLPanelDirFind::focus()
 {
-	childSetFocus("search_editor");
+	if (hasChild("search_editor"))
+		childSetFocus("search_editor");
 }
 
 void LLPanelDirFind::navigateToDefaultPage()
@@ -291,17 +297,20 @@ void LLPanelDirFind::navigateToDefaultPage()
 			start_url += "panel=" + getName() + "&";
 		}
 
-		BOOL inc_pg = childGetValue("incpg").asBoolean();
-		BOOL inc_mature = childGetValue("incmature").asBoolean();
-		BOOL inc_adult = childGetValue("incadult").asBoolean();
-		if (!(inc_pg || inc_mature || inc_adult))
+		if (hasChild("incmature"))
 		{
-			// if nothing's checked, just go for pg; we don't notify in
-			// this case because it's a default page.
-			inc_pg = true;
-		}
+			bool inc_pg = childGetValue("incpg").asBoolean();
+			bool inc_mature = childGetValue("incmature").asBoolean();
+			bool inc_adult = childGetValue("incadult").asBoolean();
+			if (!(inc_pg || inc_mature || inc_adult))
+			{
+				// if nothing's checked, just go for pg; we don't notify in
+				// this case because it's a default page.
+				inc_pg = true;
+			}
 	
-		start_url += getSearchURLSuffix(inc_pg, inc_mature, inc_adult, true);
+			start_url += getSearchURLSuffix(inc_pg, inc_mature, inc_adult, true);
+		}
 	}
 
 	llinfos << "default web search url: "  << start_url << llendl;
@@ -433,7 +442,7 @@ const std::string LLPanelDirFind::getSearchURLSuffix(bool inc_pg, bool inc_matur
 			if (!gHippoGridManager->getConnectedGrid()->isSecondLife())
 			{
 				substring = "[DICE]";
-				url.replace(url.find(substring), substring.length(), childGetValue("filter_gaming").asBoolean() ? "y" : "n");
+				url.replace(url.find(substring), substring.length(), (hasChild("filter_gaming") && childGetValue("filter_gaming").asBoolean()) ? "y" : "n");
 			}
 		}	
 	}
@@ -570,7 +579,8 @@ BOOL LLPanelDirFindAllOld::postBuild()
 	childDisable("Search");
 	setDefaultBtn( "Search" );
 
-	childSetVisible("filter_gaming", (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_ALL_CLASSIC));
+	if (LLUICtrl* ctrl = findChild<LLUICtrl>("filter_gaming"))
+		ctrl->setVisible((gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_ALL_CLASSIC));
 
 	return TRUE;
 }
@@ -634,7 +644,7 @@ void LLPanelDirFindAllOld::onClickSearch(void *userdata)
 		scope |= DFQ_INC_ADULT;
 	}
 
-	if (self->childGetValue("filter_gaming").asBoolean())
+	if (self->hasChild("filter_gaming") && self->childGetValue("filter_gaming").asBoolean())
 	{
 		scope |= DFQ_FILTER_GAMING;
 	}
