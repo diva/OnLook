@@ -187,8 +187,8 @@ BOOL LLFloaterNotificationConsole::postBuild()
 	getChild<LLButton>("add_notification")->setClickedCallback(onClickAdd, this);
 
 	LLComboBox* notifications = getChild<LLComboBox>("notification_types");
-	LLNotifications::TemplateNames names = LLNotifications::instance().getTemplateNames();
-	for (LLNotifications::TemplateNames::iterator template_it = names.begin();
+	LLNotificationTemplates::TemplateNames names = LLNotificationTemplates::instance().getTemplateNames();
+	for (LLNotificationTemplates::TemplateNames::iterator template_it = names.begin();
 		template_it != names.end();
 		++template_it)
 	{

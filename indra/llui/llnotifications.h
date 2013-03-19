@@ -679,44 +679,19 @@ private:
 	LLNotificationComparator mComparator;
 };
 
-
-
-class LLNotifications : 
-	public LLSingleton<LLNotifications>, 
-	public LLNotificationChannelBase
+class LLNotificationTemplates :
+	public LLSingleton<LLNotificationTemplates>
 {
-	LOG_CLASS(LLNotifications);
+	LOG_CLASS(LLNotificationTemplates);
 
-	friend class LLSingleton<LLNotifications>;
+	friend class LLSingleton<LLNotificationTemplates>;
+
+	// This class may not use LLNotifications.
+	typedef char LLNotifications;
+
 public:
-	// load notification descriptions from file; 
-	// OK to call more than once because it will reload
 	bool loadTemplates();  
 	LLXMLNodePtr checkForXMLTemplate(LLXMLNodePtr item);
-
-	// we provide a collection of simple add notification functions so that it's reasonable to create notifications in one line
-	LLNotificationPtr add(const std::string& name, 
-						const LLSD& substitutions = LLSD(), 
-						const LLSD& payload = LLSD());
-	LLNotificationPtr add(const std::string& name, 
-						const LLSD& substitutions, 
-						const LLSD& payload, 
-						const std::string& functor_name);
-	LLNotificationPtr add(const std::string& name, 
-						const LLSD& substitutions, 
-						const LLSD& payload, 
-						LLNotificationFunctorRegistry::ResponseFunctor functor);
-	LLNotificationPtr add(const LLNotification::Params& p);
-
-	void add(const LLNotificationPtr pNotif);
-	void cancel(LLNotificationPtr pNotif);
-	void update(const LLNotificationPtr pNotif);
-
-	LLNotificationPtr find(LLUUID uuid);
-	
-	typedef boost::function<void (LLNotificationPtr)> NotificationProcess;
-	
-	void forEachNotification(NotificationProcess process);
 
 	// This is all stuff for managing the templates
 	// take your template out
@@ -736,17 +711,67 @@ public:
 	// useful if you're reloading the file
 	void clearTemplates();   // erase all templates
 
-	void forceResponse(const LLNotification::Params& params, S32 option);
+	// put your template in (should only be called from LLNotifications).
+	bool addTemplate(const std::string& name, LLNotificationTemplatePtr theTemplate);
 
+	std::string getGlobalString(const std::string& key) const;
+
+private:
+	// we're a singleton, so we don't have a public constructor
+	LLNotificationTemplates() { }
+	/*virtual*/ void initSingleton();
+
+	TemplateMap mTemplates;
+
+	typedef std::map<std::string, LLXMLNodePtr> XMLTemplateMap;
+	XMLTemplateMap mXmlTemplates;
+
+	typedef std::map<std::string, std::string> GlobalStringMap;
+	GlobalStringMap mGlobalStrings;
+};
+
+class LLNotifications :
+	public LLSingleton<LLNotifications>,
+	public LLNotificationChannelBase
+{
+	LOG_CLASS(LLNotifications);
+
+	friend class LLSingleton<LLNotifications>;
+public:
+	// load notification descriptions from file;
+	// OK to call more than once because it will reload
+	bool loadNotifications();
 	void createDefaultChannels();
+
+	// we provide a collection of simple add notification functions so that it's reasonable to create notifications in one line
+	LLNotificationPtr add(const std::string& name,
+						const LLSD& substitutions = LLSD(),
+						const LLSD& payload = LLSD());
+	LLNotificationPtr add(const std::string& name,
+						const LLSD& substitutions,
+						const LLSD& payload,
+						const std::string& functor_name);
+	LLNotificationPtr add(const std::string& name,
+						const LLSD& substitutions,
+						const LLSD& payload,
+						LLNotificationFunctorRegistry::ResponseFunctor functor);
+	LLNotificationPtr add(const LLNotification::Params& p);
+
+	void forceResponse(const LLNotification::Params& params, S32 option);
 
 	typedef std::map<std::string, LLNotificationChannelPtr> ChannelMap;
 	ChannelMap mChannels;
 
 	void addChannel(LLNotificationChannelPtr pChan);
 	LLNotificationChannelPtr getChannel(const std::string& channelName);
+
+	void add(const LLNotificationPtr pNotif);
+	void cancel(LLNotificationPtr pNotif);
+	void update(const LLNotificationPtr pNotif);
+	LLNotificationPtr find(LLUUID const& uuid);
 	
-	std::string getGlobalString(const std::string& key) const;
+	typedef boost::function<void (LLNotificationPtr)> NotificationProcess;
+	void forEachNotification(NotificationProcess process);
 
 private:
 	// we're a singleton, so we don't have a public constructor
@@ -760,22 +785,11 @@ private:
 	bool uniqueFilter(LLNotificationPtr pNotification);
 	bool uniqueHandler(const LLSD& payload);
 	bool failedUniquenessTest(const LLSD& payload);
+
 	LLNotificationChannelPtr pHistoryChannel;
 	LLNotificationChannelPtr pExpirationChannel;
-	
-	// put your template in
-	bool addTemplate(const std::string& name, LLNotificationTemplatePtr theTemplate);
-	TemplateMap mTemplates;
-
-	std::string mFileName;
-	
-	typedef std::map<std::string, LLXMLNodePtr> XMLTemplateMap;
-	XMLTemplateMap mXmlTemplates;
 
 	LLNotificationMap mUniqueNotifications;
-	
-	typedef std::map<std::string, std::string> GlobalStringMap;
-	GlobalStringMap mGlobalStrings;
 };
 
 

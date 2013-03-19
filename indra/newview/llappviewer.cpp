@@ -770,7 +770,7 @@ bool LLAppViewer::init()
 					);
 				
 	// Setup notifications after LLUI::initClass() has been called.
-	LLNotifications::instance();
+	LLNotifications::instance().createDefaultChannels();
 	LL_INFOS("InitInfo") << "Notifications initialized." << LL_ENDL ;
 	
 	LLWeb::initClass();			  // do this after LLUI
@@ -888,7 +888,7 @@ bool LLAppViewer::init()
 	{	
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
-		std::string msg = LLNotifications::instance().getGlobalString("UnsupportedGLRequirements");
+		std::string msg = LLNotificationTemplates::instance().getGlobalString("UnsupportedGLRequirements");
 		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
 			msg,
@@ -903,7 +903,7 @@ bool LLAppViewer::init()
 	{
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
-		std::string msg = LLNotifications::instance().getGlobalString("UnsupportedCPUSSE2");
+		std::string msg = LLNotificationTemplates::instance().getGlobalString("UnsupportedCPUSSE2");
 		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
 			msg,
@@ -917,7 +917,7 @@ bool LLAppViewer::init()
 	{
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
-		std::string msg = LNotifications::instance().getGlobalString("UnsupportedCPUSSE2");
+		std::string msg = LNotificationTemplates::instance().getGlobalString("UnsupportedCPUSSE2");
 		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
 			msg,
@@ -935,31 +935,31 @@ bool LLAppViewer::init()
 		std::string minSpecs;
 		
 		// get cpu data from xml
-		std::stringstream minCPUString(LLNotifications::instance().getGlobalString("UnsupportedCPUAmount"));
+		std::stringstream minCPUString(LLNotificationTemplates::instance().getGlobalString("UnsupportedCPUAmount"));
 		S32 minCPU = 0;
 		minCPUString >> minCPU;
 
 		// get RAM data from XML
-		std::stringstream minRAMString(LLNotifications::instance().getGlobalString("UnsupportedRAMAmount"));
+		std::stringstream minRAMString(LLNotificationTemplates::instance().getGlobalString("UnsupportedRAMAmount"));
 		U64 minRAM = 0;
 		minRAMString >> minRAM;
 		minRAM = minRAM * 1024 * 1024;
 
 		if(!LLFeatureManager::getInstance()->isGPUSupported() && LLFeatureManager::getInstance()->getGPUClass() != GPU_CLASS_UNKNOWN)
 		{
-			minSpecs += LLNotifications::instance().getGlobalString("UnsupportedGPU");
+			minSpecs += LLNotificationTemplates::instance().getGlobalString("UnsupportedGPU");
 			minSpecs += "\n";
 			unsupported = true;
 		}
 		if(gSysCPU.getMHz() < minCPU)
 		{
-			minSpecs += LLNotifications::instance().getGlobalString("UnsupportedCPU");
+			minSpecs += LLNotificationTemplates::instance().getGlobalString("UnsupportedCPU");
 			minSpecs += "\n";
 			unsupported = true;
 		}
 		if(gSysMemory.getPhysicalMemoryClamped() < minRAM)
 		{
-			minSpecs += LLNotifications::instance().getGlobalString("UnsupportedRAM");
+			minSpecs += LLNotificationTemplates::instance().getGlobalString("UnsupportedRAM");
 			minSpecs += "\n";
 			unsupported = true;
 		}
