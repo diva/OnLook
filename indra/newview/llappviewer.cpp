@@ -992,6 +992,11 @@ bool LLAppViewer::init()
 
 	LLViewerJoystick::getInstance()->init(false);
 
+	// Finish windlight initialization.
+	LLWLParamManager::instance().initHack();
+	// Use prefered Environment.
+	LLEnvManagerNew::instance().usePrefs();
+
 	gGLActive = FALSE;
 	return true;
 }

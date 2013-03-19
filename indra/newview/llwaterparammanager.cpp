@@ -588,7 +588,10 @@ void LLWaterParamManager::initSingleton()
 
 	loadAllPresets();
 
-	LLEnvManagerNew::instance().usePrefs();
+	// This shouldn't be called here. It has nothing to do with the initialization of this singleton.
+	// Instead, call it one-time when the viewer starts. Calling it here causes a recursive entry
+	// of LLWaterParamManager::initSingleton().
+	//LLEnvManagerNew::instance().usePrefs();
 }
 
 // static
