@@ -6131,7 +6131,7 @@ bool attempt_standard_notification(LLMessageSystem* msgsystem)
 		// notification was specified using the new mechanism, so we can just handle it here
 		std::string notificationID;
 		msgsystem->getStringFast(_PREHASH_AlertInfo, _PREHASH_Message, notificationID);
-		if (!LLNotifications::getInstance()->templateExists(notificationID))
+		if (!LLNotificationTemplates::getInstance()->templateExists(notificationID))
 		{
 			return false;
 		}
@@ -6309,7 +6309,7 @@ void process_alert_core(const std::string& message, BOOL modal)
 		}
 		else
 		{
-			std::string new_msg =LLNotifications::instance().getGlobalString(text);
+			std::string new_msg =LLNotificationTemplates::instance().getGlobalString(text);
 			args["MESSAGE"] = new_msg;
 			LLNotificationsUtil::add("SystemMessage", args);
 		}
@@ -6317,7 +6317,7 @@ void process_alert_core(const std::string& message, BOOL modal)
 	else if (modal)
 	{
 		LLSD args;
-		std::string new_msg =LLNotifications::instance().getGlobalString(message);
+		std::string new_msg =LLNotificationTemplates::instance().getGlobalString(message);
 		args["ERROR_MESSAGE"] = new_msg;
 		LLNotificationsUtil::add("ErrorMessage", args);
 	}
@@ -6328,7 +6328,7 @@ void process_alert_core(const std::string& message, BOOL modal)
 		if (message.find(AUTOPILOT_CANCELED_MSG) == std::string::npos )
 		{
 			LLSD args;
-			std::string new_msg =LLNotifications::instance().getGlobalString(message);
+			std::string new_msg =LLNotificationTemplates::instance().getGlobalString(message);
 
 			std::string localized_msg;
 			bool is_message_localized = LLTrans::findString(localized_msg, new_msg);

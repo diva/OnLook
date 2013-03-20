@@ -341,6 +341,9 @@ private:
 	std::map<LLWLParamKey, LLWLParamSet> mParamList;
 
 	preset_list_signal_t mPresetListChangeSignal;
+
+public:
+	void initHack();
 };
 
 inline F32 LLWLParamManager::getDomeOffset(void) const

@@ -89,6 +89,9 @@ class AIHTTPTimeoutPolicy {
 		U16 curl_transaction,
 		U16 total_delay);
 
+	// Destructor.
+	virtual ~AIHTTPTimeoutPolicy() { }
+
 	void sanity_checks(void) const;
 
 	// Accessors.
