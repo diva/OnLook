@@ -161,6 +161,7 @@
         left_delta="242"
         bottom_delta="-5"
         width="150" />
+<!-- Singu NOTE: Requires havok
     <check_box
         height="19"
         follows="left|bottom"
@@ -170,7 +171,8 @@
         top_pad="-19"
         left_delta="150"
         bottom_delta="0"
-        width="150" />
+		width="150" />
+-->
     <button
         follows="left|bottom"
         height="22"

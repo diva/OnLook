@@ -9971,6 +9971,7 @@ void LLPipeline::addDebugBlip(const LLVector3& position, const LLColor4& color)
 	mDebugBlips.push_back(blip);
 }
 
+/* Singu Note: This is currently only used upstream by code that requires havok
 void LLPipeline::hideObject( const LLUUID& id )
 {
 	LLViewerObject *pVO = gObjectList.findObject( id );
@@ -10037,4 +10038,5 @@ void LLPipeline::restoreHiddenObject( const LLUUID& id )
 		}
 	}
 }
+*/
 

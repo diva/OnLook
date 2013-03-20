@@ -32,21 +32,25 @@
 #include "lluuid.h"
 #include "v4color.h"
 
-class LLCheckBoxCtrl;
+//class LLCheckBoxCtrl;
 class LLPathfindingCharacter;
+/* Singu Note: Capsule doesn't seem to work without havok
 class LLQuaternion;
 class LLSD;
 class LLVector3;
+*/
 
 class LLFloaterPathfindingCharacters : public LLFloaterPathfindingObjects, public LLFloaterSingleton<LLFloaterPathfindingCharacters>
 {
 public:
+/* Singu Note: Capsule doesn't seem to work without havok
 	virtual void                                    onClose(bool pIsAppQuitting);
 
 	BOOL                                            isShowPhysicsCapsule() const;
 	void                                            setShowPhysicsCapsule(BOOL pIsShowPhysicsCapsule);
 
 	BOOL                                            isPhysicsCapsuleEnabled(LLUUID& id, LLVector3& pos, LLQuaternion& rot) const;
+*/
 
 	static void                                     openCharactersWithSelectedObjects();
 
@@ -62,7 +66,7 @@ protected:
 
 	virtual void                       buildObjectsScrollList(const LLPathfindingObjectListPtr pObjectListPtr);
 
-	virtual void                       updateControlsOnScrollListChange();
+//	virtual void                       updateControlsOnScrollListChange();
 
 	virtual S32                        getNameColumnIndex() const;
 	virtual S32                        getOwnerNameColumnIndex() const;
@@ -72,10 +76,12 @@ protected:
 	virtual LLPathfindingObjectListPtr getEmptyObjectList() const;
 
 private:
-	void onShowPhysicsCapsuleClicked();
+//	void onShowPhysicsCapsuleClicked();
+
 
 	LLSD buildCharacterScrollListItemData(const LLPathfindingCharacter *pCharacterPtr) const;
 
+/* Singu Note: Capsule doesn't seem to work without havok
 	void updateStateOnDisplayControls();
 	void showSelectedCharacterCapsules();
 
@@ -85,6 +91,7 @@ private:
 	bool getCapsuleRenderData(LLVector3& pPosition, LLQuaternion& rot) const;
 
 	LLCheckBoxCtrl                                   *mShowPhysicsCapsuleCheckBox;
+*/
 
 	LLUUID                                           mSelectedCharacterId;
 

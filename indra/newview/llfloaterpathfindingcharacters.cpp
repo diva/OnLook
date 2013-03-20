@@ -30,13 +30,16 @@
 
 #include "llfloaterpathfindingcharacters.h"
 
+/* Singu Note: Capsule doesn't seem to work without havok
 #include <string>
 
 #include "llcheckboxctrl.h"
 #include "llfloaterpathfindingobjects.h"
 #include "llhandle.h"
+*/
 #include "llpathfindingcharacter.h"
 #include "llpathfindingcharacterlist.h"
+/* Singu Note: Capsule doesn't seem to work without havok
 #include "llpathfindingmanager.h"
 #include "llpathfindingobject.h"
 #include "llpathfindingobjectlist.h"
@@ -44,18 +47,20 @@
 #include "llquaternion.h"
 #include "llsd.h"
 #include "llui.h"
-#include "lluictrlfactory.h"
 #include "lluuid.h"
 #include "llviewerobject.h"
 #include "llviewerobjectlist.h"
 #include "pipeline.h"
 #include "v3math.h"
 #include "v4color.h"
+*/
+#include "lluictrlfactory.h"
 
 //---------------------------------------------------------------------------
 // LLFloaterPathfindingCharacters
 //---------------------------------------------------------------------------
 
+/* Singu Note: Capsule doesn't seem to work without havok
 void LLFloaterPathfindingCharacters::onClose(bool pIsAppQuitting)
 {
 	// Hide any capsule that might be showing on floater close
@@ -80,6 +85,7 @@ BOOL LLFloaterPathfindingCharacters::isPhysicsCapsuleEnabled(LLUUID& id, LLVecto
 	// parameters for any selected object
 	return (isShowPhysicsCapsule() &&  getCapsuleRenderData(pos, rot ));
 }
+*/
 
 void LLFloaterPathfindingCharacters::openCharactersWithSelectedObjects()
 {
@@ -89,7 +95,7 @@ void LLFloaterPathfindingCharacters::openCharactersWithSelectedObjects()
 
 LLFloaterPathfindingCharacters::LLFloaterPathfindingCharacters(const LLSD& pSeed)
 	: LLFloaterPathfindingObjects(/*pSeed*/),
-	mShowPhysicsCapsuleCheckBox(NULL),
+//	mShowPhysicsCapsuleCheckBox(NULL),
 	mSelectedCharacterId(),
 	mBeaconColor()
 {
@@ -104,10 +110,12 @@ BOOL LLFloaterPathfindingCharacters::postBuild()
 {
 	mBeaconColor = LLUI::sColorsGroup->getColor("PathfindingCharacterBeaconColor");
 
+/* Singu Note: Capsule doesn't seem to work without havok
 	mShowPhysicsCapsuleCheckBox = getChild<LLCheckBoxCtrl>("show_physics_capsule");
 	llassert(mShowPhysicsCapsuleCheckBox != NULL);
 	mShowPhysicsCapsuleCheckBox->setCommitCallback(boost::bind(&LLFloaterPathfindingCharacters::onShowPhysicsCapsuleClicked, this));
 	mShowPhysicsCapsuleCheckBox->setEnabled(LLPathingLib::getInstance() != NULL);
+*/
 
 	return LLFloaterPathfindingObjects::postBuild();
 }
@@ -133,12 +141,14 @@ void LLFloaterPathfindingCharacters::buildObjectsScrollList(const LLPathfindingO
 	}
 }
 
+/* Singu Note: Capsule doesn't seem to work without havok
 void LLFloaterPathfindingCharacters::updateControlsOnScrollListChange()
 {
 	LLFloaterPathfindingObjects::updateControlsOnScrollListChange();
 	updateStateOnDisplayControls();
 	showSelectedCharacterCapsules();
 }
+*/
 
 S32 LLFloaterPathfindingCharacters::getNameColumnIndex() const
 {
@@ -172,6 +182,7 @@ LLPathfindingObjectListPtr LLFloaterPathfindingCharacters::getEmptyObjectList() 
 	return objectListPtr;
 }
 
+/* Singu Note: Capsule doesn't seem to work without havok
 void LLFloaterPathfindingCharacters::onShowPhysicsCapsuleClicked()
 {
 	if (LLPathingLib::getInstance() == NULL)
@@ -193,6 +204,7 @@ void LLFloaterPathfindingCharacters::onShowPhysicsCapsuleClicked()
 		}
 	}
 }
+*/
 
 LLSD LLFloaterPathfindingCharacters::buildCharacterScrollListItemData(const LLPathfindingCharacter *pCharacterPtr) const
 {
@@ -221,6 +233,7 @@ LLSD LLFloaterPathfindingCharacters::buildCharacterScrollListItemData(const LLPa
 	return columns;
 }
 
+/* Singu Note: Capsule doesn't seem to work without havok
 void LLFloaterPathfindingCharacters::updateStateOnDisplayControls()
 {
 	int numSelectedItems = getNumSelectedObjects();;
@@ -307,3 +320,4 @@ bool LLFloaterPathfindingCharacters::getCapsuleRenderData(LLVector3& pPosition, 
 
 	return result;
 }
+*/
