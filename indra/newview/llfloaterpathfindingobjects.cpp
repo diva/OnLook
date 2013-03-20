@@ -73,7 +73,7 @@ void LLFloaterPathfindingObjects::onOpen(/*const LLSD &pKey*/)
 {
 	LLFloater::onOpen(/*pKey*/);
 
-	selectNoneObjects();
+	//selectNoneObjects(); // Singu Note: We call this onClose, we shouldn't need to call this onOpen, in fact this call causes opening with selection to fail
 	mObjectsScrollList->setCommitOnSelectionChange(TRUE);
 
 	if (!mSelectionUpdateSlot.connected())
@@ -121,7 +121,7 @@ void LLFloaterPathfindingObjects::onClose(bool pIsAppQuitting)
 
 	if (pIsAppQuitting)
 	{
-		clearAllObjects();
+		//clearAllObjects();
 		destroy();
 	}
 	else
