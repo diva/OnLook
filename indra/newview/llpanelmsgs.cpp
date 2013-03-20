@@ -83,8 +83,8 @@ void LLPanelMsgs::buildLists() //void LLFloaterPreference::buildPopupLists() in 
 	disabled_popups.deleteAllItems();
 	enabled_popups.deleteAllItems();
 
-	for (LLNotifications::TemplateMap::const_iterator iter = LLNotifications::instance().templatesBegin();
-		iter != LLNotifications::instance().templatesEnd();
+	for (LLNotificationTemplates::TemplateMap::const_iterator iter = LLNotificationTemplates::instance().templatesBegin();
+		iter != LLNotificationTemplates::instance().templatesEnd();
 		++iter)
 	{
 		LLNotificationTemplatePtr templatep = iter->second;
@@ -175,8 +175,8 @@ void LLPanelMsgs::cancel()
 
 void LLPanelMsgs::resetAllIgnored()
 {
-	for (LLNotifications::TemplateMap::const_iterator iter = LLNotifications::instance().templatesBegin();
-		iter != LLNotifications::instance().templatesEnd();
+	for (LLNotificationTemplates::TemplateMap::const_iterator iter = LLNotificationTemplates::instance().templatesBegin();
+		iter != LLNotificationTemplates::instance().templatesEnd();
 		++iter)
 	{
 		if (iter->second->mForm->getIgnoreType() != LLNotificationForm::IGNORE_NO)
@@ -188,8 +188,8 @@ void LLPanelMsgs::resetAllIgnored()
 
 void LLPanelMsgs::setAllIgnored()
 {
-	for (LLNotifications::TemplateMap::const_iterator iter = LLNotifications::instance().templatesBegin();
-		iter != LLNotifications::instance().templatesEnd();
+	for (LLNotificationTemplates::TemplateMap::const_iterator iter = LLNotificationTemplates::instance().templatesBegin();
+		iter != LLNotificationTemplates::instance().templatesEnd();
 		++iter)
 	{
 		if (iter->second->mForm->getIgnoreType() != LLNotificationForm::IGNORE_NO)
@@ -210,7 +210,7 @@ void LLPanelMsgs::onClickEnablePopup(void* user_data)
 	std::vector<LLScrollListItem*>::iterator itor;
 	for (itor = items.begin(); itor != items.end(); ++itor)
 	{
-		LLNotificationTemplatePtr templatep = LLNotifications::instance().getTemplate(*(std::string*)((*itor)->getUserdata()));
+		LLNotificationTemplatePtr templatep = LLNotificationTemplates::instance().getTemplate(*(std::string*)((*itor)->getUserdata()));
 		gSavedSettings.setWarning(templatep->mName, TRUE);
 	}
 

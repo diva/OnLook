@@ -165,7 +165,7 @@ void LLFloaterDisplayName::onCacheSetName(bool success,
 	// We might have a localized string for this message
 	// error_args will usually be empty from the server.
 	if (!error_tag.empty()
-		&& LLNotifications::getInstance()->templateExists(error_tag))
+		&& LLNotificationTemplates::getInstance()->templateExists(error_tag))
 	{
 		LLNotifications::instance().add(error_tag);
 		return;

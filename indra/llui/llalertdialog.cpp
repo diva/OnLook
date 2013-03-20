@@ -315,11 +315,11 @@ LLAlertDialog::LLAlertDialog( LLNotificationPtr notification, bool modal)
 
 	if (form->getIgnoreType() == LLNotificationForm::IGNORE_WITH_DEFAULT_RESPONSE)
 	{
-		setCheckBox(LLNotifications::instance().getGlobalString("skipnexttime"), ignore_label);
+		setCheckBox(LLNotificationTemplates::instance().getGlobalString("skipnexttime"), ignore_label);
 	}
 	else if (form->getIgnoreType() == LLNotificationForm::IGNORE_WITH_LAST_RESPONSE)
 	{
-		setCheckBox(LLNotifications::instance().getGlobalString("alwayschoose"), ignore_label);
+		setCheckBox(LLNotificationTemplates::instance().getGlobalString("alwayschoose"), ignore_label);
 	}
 }
 

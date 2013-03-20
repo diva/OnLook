@@ -483,7 +483,6 @@ static void settings_to_globals()
 	LLSurface::setTextureSize(gSavedSettings.getU32("RegionTextureSize"));
 	
 	LLRender::sGLCoreProfile = gSavedSettings.getBOOL("RenderGLCoreProfile");
-
 	LLImageGL::sGlobalUseAnisotropic	= gSavedSettings.getBOOL("RenderAnisotropic");
 	LLImageGL::sCompressTextures		= gSavedSettings.getBOOL("RenderCompressTextures");
 	LLVOVolume::sLODFactor				= gSavedSettings.getF32("RenderVolumeLODFactor");
@@ -714,7 +713,7 @@ bool LLAppViewer::init()
 	LLTrans::parseStrings("strings.xml", default_trans_args);
 
 	// Setup notifications after LLUI::initClass() has been called.
-	LLNotifications::instance();
+	LLNotifications::instance().createDefaultChannels();
 	LL_INFOS("InitInfo") << "Notifications initialized." << LL_ENDL ;
 	
     writeSystemInfo();
@@ -876,7 +875,7 @@ bool LLAppViewer::init()
 	{	
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
-		std::string msg = LLNotifications::instance().getGlobalString("UnsupportedGLRequirements");
+		std::string msg = LLNotificationTemplates::instance().getGlobalString("UnsupportedGLRequirements");
 		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
 			msg,
@@ -891,7 +890,7 @@ bool LLAppViewer::init()
 	{
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
-		std::string msg = LLNotifications::instance().getGlobalString("UnsupportedCPUSSE2");
+		std::string msg = LLNotificationTemplates::instance().getGlobalString("UnsupportedCPUSSE2");
 		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
 			msg,
@@ -905,7 +904,7 @@ bool LLAppViewer::init()
 	{
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
-		std::string msg = LNotifications::instance().getGlobalString("UnsupportedCPUSSE2");
+		std::string msg = LNotificationTemplates::instance().getGlobalString("UnsupportedCPUSSE2");
 		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
 			msg,
@@ -923,31 +922,31 @@ bool LLAppViewer::init()
 		std::string minSpecs;
 		
 		// get cpu data from xml
-		std::stringstream minCPUString(LLNotifications::instance().getGlobalString("UnsupportedCPUAmount"));
+		std::stringstream minCPUString(LLNotificationTemplates::instance().getGlobalString("UnsupportedCPUAmount"));
 		S32 minCPU = 0;
 		minCPUString >> minCPU;
 
 		// get RAM data from XML
-		std::stringstream minRAMString(LLNotifications::instance().getGlobalString("UnsupportedRAMAmount"));
+		std::stringstream minRAMString(LLNotificationTemplates::instance().getGlobalString("UnsupportedRAMAmount"));
 		U64 minRAM = 0;
 		minRAMString >> minRAM;
 		minRAM = minRAM * 1024 * 1024;
 
 		if(!LLFeatureManager::getInstance()->isGPUSupported() && LLFeatureManager::getInstance()->getGPUClass() != GPU_CLASS_UNKNOWN)
 		{
-			minSpecs += LLNotifications::instance().getGlobalString("UnsupportedGPU");
+			minSpecs += LLNotificationTemplates::instance().getGlobalString("UnsupportedGPU");
 			minSpecs += "\n";
 			unsupported = true;
 		}
 		if(gSysCPU.getMHz() < minCPU)
 		{
-			minSpecs += LLNotifications::instance().getGlobalString("UnsupportedCPU");
+			minSpecs += LLNotificationTemplates::instance().getGlobalString("UnsupportedCPU");
 			minSpecs += "\n";
 			unsupported = true;
 		}
 		if(gSysMemory.getPhysicalMemoryClamped() < minRAM)
 		{
-			minSpecs += LLNotifications::instance().getGlobalString("UnsupportedRAM");
+			minSpecs += LLNotificationTemplates::instance().getGlobalString("UnsupportedRAM");
 			minSpecs += "\n";
 			unsupported = true;
 		}
@@ -979,6 +978,11 @@ bool LLAppViewer::init()
 	gSimFrames = (F32)gFrameCount;
 
 	LLViewerJoystick::getInstance()->init(false);
+
+	// Finish windlight initialization.
+	LLWLParamManager::instance().initHack();
+	// Use prefered Environment.
+	LLEnvManagerNew::instance().usePrefs();
 
 	gGLActive = FALSE;
 	return true;

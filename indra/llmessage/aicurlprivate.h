@@ -40,7 +40,7 @@
 
 class AIHTTPHeaders;
 class AICurlEasyRequestStateMachine;
-class AITransferInfo;
+struct AITransferInfo;
 
 namespace AICurlPrivate {
 
@@ -406,8 +406,8 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	//U32 mBodyLimit;									// From the old LLURLRequestDetail::mBodyLimit, but never used.
 	U32 mStatus;										// HTTP status, decoded from the first header line.
 	std::string mReason;								// The "reason" from the same header line.
-	S32 mRequestTransferedBytes;
-	S32 mResponseTransferedBytes;
+	U32 mRequestTransferedBytes;
+	U32 mResponseTransferedBytes;
 	AIBufferedCurlEasyRequestEvents* mBufferEventsTarget;
 
   public:

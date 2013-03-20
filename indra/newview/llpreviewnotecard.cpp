@@ -126,7 +126,8 @@ LLPreviewNotecard::LLPreviewNotecard(const std::string& name,
 			}
 		}
 	}	
-	childSetAction("Save",onClickSave,this);
+	if (hasChild("Save", true))
+		childSetAction("Save",onClickSave,this);
 
 	// only assert shape if not hosted in a multifloater
 	if (!getHost())
@@ -135,18 +136,20 @@ LLPreviewNotecard::LLPreviewNotecard(const std::string& name,
 		setRect(curRect);
 	}
 			
-	childSetVisible("lock", FALSE);	
+	if (LLUICtrl* ctrl = findChild<LLUICtrl>("lock"))
+		ctrl->setVisible(false);
 	
-	const LLInventoryItem* item = getItem();
-	
-	childSetCommitCallback("desc", LLPreview::onText, this);
-	if (item)
-		childSetText("desc", item->getDescription());
-	childSetPrevalidate("desc", &LLLineEditor::prevalidatePrintableNotPipe);
+	if (hasChild("desc", true))
+	{
+		childSetCommitCallback("desc", LLPreview::onText, this);
+		if (const LLInventoryItem* item = getItem())
+			childSetText("desc", item->getDescription());
+		childSetPrevalidate("desc", &LLLineEditor::prevalidatePrintableNotPipe);
+	}
 
 	setTitle(title);
 	
-	LLViewerTextEditor* editor = getChild<LLViewerTextEditor>("Notecard Editor");
+	LLViewerTextEditor* editor = findChild<LLViewerTextEditor>("Notecard Editor");
 
 	if (editor)
 	{
@@ -166,7 +169,7 @@ LLPreviewNotecard::~LLPreviewNotecard()
 
 BOOL LLPreviewNotecard::postBuild()
 {
-	LLViewerTextEditor *ed = getChild<LLViewerTextEditor>("Notecard Editor");
+	LLViewerTextEditor* ed = findChild<LLViewerTextEditor>("Notecard Editor");
 	if (ed)
 	{
 		ed->setNotecardInfo(mNotecardItemID, mObjectID);
@@ -192,27 +195,27 @@ bool LLPreviewNotecard::saveItem(LLPointer<LLInventoryItem>* itemptr)
 
 void LLPreviewNotecard::setEnabled( BOOL enabled )
 {
+	LLViewerTextEditor* editor = findChild<LLViewerTextEditor>("Notecard Editor");
 
-	LLViewerTextEditor* editor = getChild<LLViewerTextEditor>("Notecard Editor");
-
-	childSetEnabled("Notecard Editor", enabled);
-	childSetVisible("lock", !enabled);
-	childSetEnabled("desc", enabled);
-	childSetEnabled("Save", enabled && editor && (!editor->isPristine()));
+	if (editor)
+		editor->setEnabled(enabled);
+	if (LLUICtrl* ctrl = findChild<LLUICtrl>("lock"))
+		ctrl->setVisible(!enabled);
+	if (LLUICtrl* ctrl = findChild<LLUICtrl>("desc"))
+		ctrl->setEnabled(enabled);
+	if (LLUICtrl* ctrl = findChild<LLUICtrl>("Save"))
+		ctrl->setEnabled(enabled && editor && !editor->isPristine());
 
 }
 
 
 void LLPreviewNotecard::draw()
 {
+	LLViewerTextEditor* editor = findChild<LLViewerTextEditor>("Notecard Editor");
+	BOOL script_changed = editor && !editor->isPristine();
 	
-
-	//childSetFocus("Save", FALSE);
-
-	LLViewerTextEditor* editor = getChild<LLViewerTextEditor>("Notecard Editor");
-	BOOL script_changed = !editor->isPristine();
-	
-	childSetEnabled("Save", script_changed && getEnabled());
+	if (LLUICtrl* ctrl = findChild<LLUICtrl>("Save"))
+		ctrl->setEnabled(script_changed && getEnabled());
 	
 	LLPreview::draw();
 }
@@ -228,7 +231,7 @@ BOOL LLPreviewNotecard::handleKeyHere(KEY key, MASK mask)
 
 	if ('F' == key && (mask & MASK_CONTROL) && !(mask & (MASK_SHIFT | MASK_ALT)))
 	{
-		LLFloaterSearchReplace::show(getChild<LLViewerTextEditor>("Notecard Editor"));
+		LLFloaterSearchReplace::show(findChild<LLViewerTextEditor>("Notecard Editor"));
 		return TRUE;
 	}
 
@@ -238,9 +241,9 @@ BOOL LLPreviewNotecard::handleKeyHere(KEY key, MASK mask)
 // virtual
 BOOL LLPreviewNotecard::canClose()
 {
-	LLViewerTextEditor* editor = getChild<LLViewerTextEditor>("Notecard Editor");
+	LLViewerTextEditor* editor = findChild<LLViewerTextEditor>("Notecard Editor");
 
-	if(mForceClose || editor->isPristine())
+	if (mForceClose || (editor && editor->isPristine()))
 	{
 		return TRUE;
 	}
@@ -255,9 +258,7 @@ BOOL LLPreviewNotecard::canClose()
 
 const LLInventoryItem* LLPreviewNotecard::getDragItem()
 {
-	LLViewerTextEditor* editor = getChild<LLViewerTextEditor>("Notecard Editor");
-
-	if(editor)
+	if (LLViewerTextEditor* editor = findChild<LLViewerTextEditor>("Notecard Editor"))
 	{
 		return editor->getDragItem();
 	}
@@ -266,10 +267,9 @@ const LLInventoryItem* LLPreviewNotecard::getDragItem()
 
 bool LLPreviewNotecard::hasEmbeddedInventory()
 {
-	LLViewerTextEditor* editor = NULL;
-	editor = getChild<LLViewerTextEditor>("Notecard Editor");
-	if (!editor) return false;
-	return editor->hasEmbeddedInventory();
+	if (LLViewerTextEditor* editor = findChild<LLViewerTextEditor>("Notecard Editor"))
+		return editor->hasEmbeddedInventory();
+	return false;
 }
 
 void LLPreviewNotecard::refreshFromInventory()
@@ -280,15 +280,13 @@ void LLPreviewNotecard::refreshFromInventory()
 
 void LLPreviewNotecard::loadAsset()
 {
-	// request the asset.
-	const LLInventoryItem* item = getItem();
-	LLViewerTextEditor* editor = getChild<LLViewerTextEditor>("Notecard Editor");
+	LLViewerTextEditor* editor = findChild<LLViewerTextEditor>("Notecard Editor");
 
 	if (!editor)
 		return;
 
-
-	if(item)
+	// request the asset.
+	if (const LLInventoryItem* item = getItem())
 	{
 		if (gAgent.allowOperation(PERM_COPY, item->getPermissions(),
 									GP_OBJECT_MANIPULATE)
@@ -355,7 +353,8 @@ void LLPreviewNotecard::loadAsset()
 			// <edit> You can always save in task inventory
 			if(!mObjectUUID.isNull()) editor->setEnabled(TRUE);
 			// </edit>
-			childSetVisible("lock", TRUE);
+			if (LLUICtrl* ctrl = findChild<LLUICtrl>("lock"))
+				ctrl->setVisible(true);
 		}
 	}
 	else
@@ -391,22 +390,23 @@ void LLPreviewNotecard::onLoadComplete(LLVFS *vfs,
 			buffer[file_length] = 0;
 
 			
-			LLViewerTextEditor* previewEditor = preview->getChild<LLViewerTextEditor>("Notecard Editor");
-
-			if( (file_length > 19) && !strncmp( buffer, "Linden text version", 19 ) )
+			if (LLViewerTextEditor* previewEditor = preview->findChild<LLViewerTextEditor>("Notecard Editor"))
 			{
-				if( !previewEditor->importBuffer( buffer, file_length+1 ) )
+				if ((file_length > 19) && !strncmp(buffer, "Linden text version", 19))
 				{
-					llwarns << "Problem importing notecard" << llendl;
+					if (!previewEditor->importBuffer(buffer, file_length+1))
+					{
+						llwarns << "Problem importing notecard" << llendl;
+					}
 				}
-			}
-			else
-			{
-				// Version 0 (just text, doesn't include version number)
-				previewEditor->setText(LLStringExplicit(buffer));
-			}
+				else
+				{
+					// Version 0 (just text, doesn't include version number)
+					previewEditor->setText(LLStringExplicit(buffer));
+				}
 
-			previewEditor->makePristine();
+				previewEditor->makePristine();
+			}
 
 			const LLInventoryItem* item = preview->getItem();
 			BOOL modifiable = item && gAgent.allowOperation(PERM_MODIFY,
@@ -466,42 +466,37 @@ void LLPreviewNotecard::onClickSave(void* user_data)
 // static
 void LLPreviewNotecard::onClickGetItems(void* user_data)
 {
-	LLPreviewNotecard* preview = (LLPreviewNotecard*)user_data;
-	if(preview)
+	LLPreviewNotecard* preview = static_cast<LLPreviewNotecard*>(user_data);
+	if (LLViewerTextEditor* editor = preview->findChild<LLViewerTextEditor>("Notecard Editor"))
 	{
-		LLViewerTextEditor* editor = preview->getChild<LLViewerTextEditor>("Notecard Editor");
-		if(editor)
+		std::vector<LLPointer<LLInventoryItem> > items = editor->getEmbeddedItems();
+		if (items.size())
 		{
-			std::vector<LLPointer<LLInventoryItem> > items = editor->getEmbeddedItems();
-			if(items.size())
+			std::vector<LLPointer<LLInventoryItem> >::iterator iter = items.begin();
+			std::vector<LLPointer<LLInventoryItem> >::iterator end = items.end();
+			for ( ; iter != end; ++iter)
 			{
-				const BOOL use_caps = FALSE;
-
-				std::vector<LLPointer<LLInventoryItem> >::iterator iter = items.begin();
-				std::vector<LLPointer<LLInventoryItem> >::iterator end = items.end();
-				for( ; iter != end; ++iter)
+				LLInventoryItem* item = static_cast<LLInventoryItem*>(*iter);
+				#if 0 //use_caps
 				{
-					LLInventoryItem* item = static_cast<LLInventoryItem*>(*iter);
-					if(use_caps)
-					{
-						copy_inventory_from_notecard(LLUUID::null, preview->getObjectID(), preview->getNotecardItemID(), item, 0);
-					}
-					else
-					{
-						// Only one item per message actually works
-						gMessageSystem->newMessageFast(_PREHASH_CopyInventoryFromNotecard);
-						gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-						gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-						gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-						gMessageSystem->nextBlockFast(_PREHASH_NotecardData);
-						gMessageSystem->addUUIDFast(_PREHASH_NotecardItemID, preview->getNotecardItemID());
-						gMessageSystem->addUUIDFast(_PREHASH_ObjectID, preview->getObjectID());
-						gMessageSystem->nextBlockFast(_PREHASH_InventoryData);
-						gMessageSystem->addUUIDFast(_PREHASH_ItemID, item->getUUID());
-						gMessageSystem->addUUIDFast(_PREHASH_FolderID, gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(item->getType())));
-						gAgent.sendReliableMessage();
-					}
+					copy_inventory_from_notecard(LLUUID::null, preview->getObjectID(), preview->getNotecardItemID(), item, 0);
 				}
+				#else
+				{
+					// Only one item per message actually works
+					gMessageSystem->newMessageFast(_PREHASH_CopyInventoryFromNotecard);
+					gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+					gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+					gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+					gMessageSystem->nextBlockFast(_PREHASH_NotecardData);
+					gMessageSystem->addUUIDFast(_PREHASH_NotecardItemID, preview->getNotecardItemID());
+					gMessageSystem->addUUIDFast(_PREHASH_ObjectID, preview->getObjectID());
+					gMessageSystem->nextBlockFast(_PREHASH_InventoryData);
+					gMessageSystem->addUUIDFast(_PREHASH_ItemID, item->getUUID());
+					gMessageSystem->addUUIDFast(_PREHASH_FolderID, gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(item->getType())));
+					gAgent.sendReliableMessage();
+				}
+				#endif
 			}
 		}
 	}
@@ -530,9 +525,9 @@ bool LLPreviewNotecard::saveIfNeeded(LLInventoryItem* copyitem)
 	}
 
 	
-	LLViewerTextEditor* editor = getChild<LLViewerTextEditor>("Notecard Editor");
+	LLViewerTextEditor* editor = findChild<LLViewerTextEditor>("Notecard Editor");
 
-	if(!editor->isPristine())
+	if (editor && !editor->isPristine())
 	{
 		// We need to update the asset information
 		LLTransactionID tid;
@@ -602,8 +597,8 @@ bool LLPreviewNotecard::saveIfNeeded(LLInventoryItem* copyitem)
 // static
 void LLPreviewNotecard::onSaveComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status) // StoreAssetData callback (fixed)
 {
-	LLSaveNotecardInfo* info = (LLSaveNotecardInfo*)user_data;
-	if(info && (0 == status))
+	LLSaveNotecardInfo* info = static_cast<LLSaveNotecardInfo*>(user_data);
+	if (0 == status)
 	{
 		if(info->mObjectUUID.isNull())
 		{
@@ -647,8 +642,7 @@ void LLPreviewNotecard::onSaveComplete(const LLUUID& asset_uuid, void* user_data
 		// Perform item copy to inventory
 		if (info->mCopyItem.notNull())
 		{
-			LLViewerTextEditor* editor = info->mSelf->getChild<LLViewerTextEditor>("Notecard Editor");
-			if (editor)
+			if (LLViewerTextEditor* editor = info->mSelf->findChild<LLViewerTextEditor>("Notecard Editor"))
 			{
 				editor->copyInventory(info->mCopyItem);
 			}
@@ -741,10 +735,10 @@ void LLPreviewNotecard::saveAs_continued(AIFilePicker* filepicker)
 	if (!filepicker->hasFilename())
 		return;
 
-	LLViewerTextEditor* editor = getChild<LLViewerTextEditor>("Notecard Editor");
+	LLViewerTextEditor* editor = findChild<LLViewerTextEditor>("Notecard Editor");
 
 	std::string buffer;
-	if (!editor->exportBuffer(buffer))
+	if (editor && !editor->exportBuffer(buffer))
 	{
 		// FIXME: Notify the user!
 		return;
@@ -782,7 +776,7 @@ LLUUID LLPreviewNotecard::getItemID()
 
 LLTextEditor* LLPreviewNotecard::getEditor()
 {
-	return getChild<LLViewerTextEditor>("Notecard Editor");
+	return findChild<LLViewerTextEditor>("Notecard Editor");
 }
 
 void LLPreviewNotecard::initMenu()
@@ -823,183 +817,128 @@ void LLPreviewNotecard::initMenu()
 // static 
 void LLPreviewNotecard::onSearchMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (self)
-	{
-		LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-		if (editor)
-		{
-			LLFloaterSearchReplace::show(editor);
-		}
-	}
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		LLFloaterSearchReplace::show(editor);
 }
 
 // static 
 void LLPreviewNotecard::onUndoMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (self)
-	{
-		LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-		if (editor)
-		{
-			editor->undo();
-		}
-	}
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		editor->undo();
 }
 
 // static 
 void LLPreviewNotecard::onRedoMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (self)
-	{
-		LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-		if (editor)
-		{
-			editor->redo();
-		}
-	}
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		editor->redo();
 }
 
 // static 
 void LLPreviewNotecard::onCutMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (self)
-	{
-		LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-		if (editor)
-		{
-			editor->cut();
-		}
-	}
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		editor->cut();
 }
 
 // static 
 void LLPreviewNotecard::onCopyMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (self)
-	{
-		LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-		if (editor)
-		{
-			editor->copy();
-		}
-	}
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		editor->copy();
 }
 
 // static 
 void LLPreviewNotecard::onPasteMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (self)
-	{
-		LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-		if (editor)
-		{
-			editor->paste();
-		}
-	}
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		editor->paste();
 }
 
 // static 
 void LLPreviewNotecard::onSelectAllMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (self)
-	{
-		LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-		if (editor)
-		{
-			editor->selectAll();
-		}
-	}
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		editor->selectAll();
 }
 
 // static 
 void LLPreviewNotecard::onDeselectMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (self)
-	{
-		LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-		if (editor)
-		{
-			editor->deselect();
-		}
-	}
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		editor->deselect();
 }
 
 // static 
 BOOL LLPreviewNotecard::enableUndoMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (!self) return FALSE;
-	LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-	if (!editor) return FALSE;
-	return editor->canUndo();
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		return editor->canUndo();
+	return false;
 }
 
 // static 
 BOOL LLPreviewNotecard::enableRedoMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (!self) return FALSE;
-	LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-	if (!editor) return FALSE;
-	return editor->canRedo();
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		return editor->canRedo();
+	return false;
 }
 
 // static 
 BOOL LLPreviewNotecard::enableCutMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (!self) return FALSE;
-	LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-	if (!editor) return FALSE;
-	return editor->canCut();
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		return editor->canCut();
+	return false;
 }
 
 // static 
 BOOL LLPreviewNotecard::enableCopyMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (!self) return FALSE;
-	LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-	if (!editor) return FALSE;
-	return editor->canCopy();
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		return editor->canCopy();
+	return false;
 }
 
 // static 
 BOOL LLPreviewNotecard::enablePasteMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (!self) return FALSE;
-	LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-	if (!editor) return FALSE;
-	return editor->canPaste();
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		return editor->canPaste();
+	return false;
 }
 
 // static 
 BOOL LLPreviewNotecard::enableSelectAllMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (!self) return FALSE;
-	LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-	if (!editor) return FALSE;
-	return editor->canSelectAll();
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		return editor->canSelectAll();
+	return false;
 }
 
 // static 
 BOOL LLPreviewNotecard::enableDeselectMenu(void* userdata)
 {
-	LLPreviewNotecard* self = (LLPreviewNotecard*)userdata;
-	if (!self) return FALSE;
-	LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("Notecard Editor");
-	if (!editor) return FALSE;
-	return editor->canDeselect();
+	LLPreviewNotecard* self = static_cast<LLPreviewNotecard*>(userdata);
+	if (LLViewerTextEditor* editor = self->findChild<LLViewerTextEditor>("Notecard Editor"))
+		return editor->canDeselect();
+	return false;
 }
 
 // EOF
