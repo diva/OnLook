@@ -69,7 +69,7 @@ BOOL LLPanelGroupTab::isVisibleByAgent(LLAgent* agentp)
 BOOL LLPanelGroupTab::postBuild()
 {
 	// Hook up the help button callback.
-	LLButton* button = getChild<LLButton>("help_button");
+	LLButton* button = findChild<LLButton>("help_button");
 	if (button)
 	{
 		button->setClickedCallback(boost::bind(&LLPanelGroupTab::onClickHelp,this));

@@ -672,6 +672,7 @@ To buy direct, visit the land and click on the place name in the title bar.
 		     font="SansSerifSmall" height="16" initial_value="false"
 			     label="Adult content" left_delta="110" mouse_opaque="true"
 			     name="incadult" width="204" />
+            <check_box name="filter_gaming" label="Hide Gaming" control_name="FilterGamingGroups" follows="right|top" bottom="-46" left_delta="110"/>
 			<scroll_list background_visible="true" bottom="-513" column_padding="0" draw_border="true"
 			     draw_heading="true"
 			     follows="left|top|right|bottom" height="464" left="4" mouse_opaque="true"

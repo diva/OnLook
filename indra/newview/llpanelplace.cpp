@@ -97,7 +97,7 @@ BOOL LLPanelPlace::postBuild()
     mDescEditor = getChild<LLTextEditor>("desc_editor");
 
 	mInfoEditor = getChild<LLTextBox>("info_editor");
-	mLandTypeEditor = getChild<LLTextBox>("land_type_display");
+	mLandTypeEditor = findChild<LLTextBox>("land_type_display");
 
     mLocationDisplay = getChild<LLTextBox>("location_editor");
 
@@ -145,7 +145,8 @@ void LLPanelPlace::resetLocation()
 	mNameEditor->setText( LLStringUtil::null );
 	mDescEditor->setText( LLStringUtil::null );
 	mInfoEditor->setText( LLStringUtil::null );
-	mLandTypeEditor->setText( LLStringUtil::null );
+	if (mLandTypeEditor)
+		mLandTypeEditor->setText(LLStringUtil::null);
 	mLocationDisplay->setText( LLStringUtil::null );
 }
 
@@ -198,7 +199,8 @@ void LLPanelPlace::setLocationString(const std::string& location)
 
 void LLPanelPlace::setLandTypeString(const std::string& land_type)
 {
-	mLandTypeEditor->setText(land_type);
+	if (mLandTypeEditor)
+		mLandTypeEditor->setText(land_type);
 }
 
 void LLPanelPlace::setErrorStatus(U32 status, const std::string& reason)

@@ -515,7 +515,7 @@ BOOL LLPanelGroupSubTab::postBuild()
 		delete icon;
 	}
 
-	icon = getChild<LLIconCtrl>("power_all_have_icon",no_recurse);
+	icon = getChild<LLIconCtrl>("power_all_have_icon",no_recurse, false);
 	if (icon && !icon->getImageName().empty())
 	{
 		mActionIcons["full"] = icon->getImageName();
@@ -523,7 +523,7 @@ BOOL LLPanelGroupSubTab::postBuild()
 		delete icon;
 	}
 
-	icon = getChild<LLIconCtrl>("power_partial_icon",no_recurse);
+	icon = getChild<LLIconCtrl>("power_partial_icon",no_recurse, false);
 	if (icon && !icon->getImageName().empty())
 	{
 		mActionIcons["partial"] = icon->getImageName();

@@ -103,9 +103,9 @@ vote on open proposals, and view old proposals.
 	     mouse_opaque="true" name="majority"
 	     text_disabled_color="0.67647, 0.76275, 0.93529, 0.45"
 	     tool_tip="Majority of total votes needed to win." width="107">
-		Simple Majority
-		2/3 Majority
-		Unanimous
+      <radio_item follows="all" bottom="-18" left_delta="2">Simple Majority</radio_item>
+      <radio_item follows="all" bottom_delta="-9">2/3 Majority</radio_item>
+      <radio_item follows="all" bottom_delta="-10">Unanimous</radio_item>
 	</radio_group>
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom_delta="-72" drop_shadow_visible="true" follows="left|top"
