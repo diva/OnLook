@@ -1758,6 +1758,8 @@ bool LLAppViewer::cleanup()
 			LLViewerMedia::saveCookieFile();
 	// Stop the plugin read thread if it's running.
 	LLPluginProcessParent::setUseReadThread(false);
+	// Stop curl responder call backs.
+	AICurlInterface::shutdownCurl();
 
 	llinfos << "Shutting down Threads" << llendflush;
 

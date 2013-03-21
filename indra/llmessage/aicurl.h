@@ -163,8 +163,13 @@ void initCurl(void);
 // Called once at start of application (from LLAppViewer::initThreads), starts AICurlThread.
 void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentConnectionsPerHost, bool NoVerifySSLCert);
 
-// Called once at end of application (from newview/llappviewer.cpp by main thread),
-// with purpose to stop curl threads, free curl resources and deinitialize curl.
+// Called once at the end of application before terminating other threads (most notably the texture thread workers)
+// with the purpose to stop the curl thread from doing any call backs to running responders: the responders sometimes
+// access objects that will be shot down when bringing down other threads.
+void shutdownCurl(void);
+
+// Called once at end of application (from newview/llappviewer.cpp by main thread) after all other threads have been terminated
+// with the purpose to stop the curl thread, free curl resources and deinitialize curl.
 void cleanupCurl(void);
 
 // Called from indra/newview/llfloaterabout.cpp for the About floater, and
