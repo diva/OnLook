@@ -347,6 +347,12 @@ void LLHTTPClient::ResponderBase::decode_llsd_body(U32 status, std::string const
 		{
 			llwarns << "The server sent us a response with http status " << status << " and LLSD(!) body: \"" << ss.str() << "\"!" << llendl;
 		}
+		// This is not really an error, and it has been known to happen before. It just normally never happens (at the moment)
+		// and therefore warrants an investigation. Linden Lab (or other grids) might start to send error messages
+		// as LLSD in the body in future, but until that happens frequently we might want to leave this assert in.
+		// Note that an HTTP error code means an error at the transport level in most cases-- so I'm highly suspicious
+		// when there is any additional information in the body in LLSD format: it is not unlikely to be a server
+		// bug, where the returned HTTP status code should have been 200 instead.
 		llassert(!server_sent_llsd_with_http_error);
 	}
 #endif
