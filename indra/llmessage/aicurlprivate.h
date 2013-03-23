@@ -386,6 +386,9 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	// Called after removed_from_multi_handle was called.
 	void processOutput(void);
 
+	// Called just before shutting down the texture thread, to prevent responder call backs.
+	static void shutdown(void);
+
 	// Do not write more than this amount.
 	//void setBodyLimit(U32 size) { mBodyLimit = size; }
 
@@ -412,6 +415,8 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 
   public:
 	static LLChannelDescriptors const sChannels;		// Channel object for mInput (channel out()) and mOutput (channel in()).
+	static LLMutex sResponderCallbackMutex;				// Locked while calling back any overridden ResponderBase::finished and/or accessing sShuttingDown.
+	static bool sShuttingDown;							// If true, no additional calls to ResponderBase::finished will be made anymore.
 
   private:
 	// This class may only be created by constructing a ThreadSafeBufferedCurlEasyRequest.
