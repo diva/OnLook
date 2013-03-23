@@ -42,7 +42,7 @@
 // {
 //   static bool recursive;
 //   if (recursive) return;
-//   AIRecursive dummy(flag);
+//   AIRecursive dummy(recursive);
 //   ...
 // }
 
