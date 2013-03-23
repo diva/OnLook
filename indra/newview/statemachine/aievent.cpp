@@ -36,26 +36,52 @@
 // Additional information stored per registered statemachine in AIRegisteredStateMachines std::map.
 struct AIRSData {
 	bool mOneShot;
-	AIRSData(void) { }
-	AIRSData(bool one_shot) : mOneShot(one_shot) { }
+	bool mRunning;
+	AIRSData(void) : mRunning(false) { }
+	AIRSData(bool one_shot) : mOneShot(one_shot), mRunning(false) { }
+	void operator=(bool one_shot) { mOneShot = one_shot; }
 };
 
 // A list of all statemachines registered for a particular event, and an API to work on it.
 struct AIRegisteredStateMachines {
 	typedef std::map<AIStateMachine*, AIRSData> rsm_type;
 	rsm_type mRegisteredStateMachines;
-	void Register(AIStateMachine* statemachine, bool one_shot) { mRegisteredStateMachines[statemachine] = one_shot; }
-	void Unregister(AIStateMachine* statemachine) { mRegisteredStateMachines.erase(statemachine); }
+	void Register(AIStateMachine* statemachine, bool one_shot);
+	void Unregister(AIStateMachine* statemachine);
 	void trigger(void);
 };
 
-// Inline this, because it's only called from one place.
+// Inline these, because they are only called from one place.
+
+inline void AIRegisteredStateMachines::Register(AIStateMachine* statemachine, bool one_shot)
+{
+	mRegisteredStateMachines[statemachine] = one_shot;
+}
+
+inline void AIRegisteredStateMachines::Unregister(AIStateMachine* statemachine)
+{
+	rsm_type::iterator sm = mRegisteredStateMachines.find(statemachine);
+	if (sm != mRegisteredStateMachines.end())
+	{
+		if (!sm->second.mRunning)
+		{
+			mRegisteredStateMachines.erase(sm);
+		}
+		else
+		{
+			sm->second.mOneShot = true;	// Delay the erase till we return to trigger().
+		}
+	}
+}
+
 inline void AIRegisteredStateMachines::trigger(void)
 {
 	rsm_type::iterator sm = mRegisteredStateMachines.begin();
 	while(sm != mRegisteredStateMachines.end())
 	{
-		sm->first->cont();				// This is safe, cont() does never access mRegisteredStateMachines.
+		sm->second.mRunning = true;
+		sm->first->cont();				// This is safe, cont() doesn't invalidates sm while mRunning is set.
+		sm->second.mRunning = false;
 		if (sm->second.mOneShot)
 			mRegisteredStateMachines.erase(sm++);
 		else
