@@ -229,8 +229,6 @@ private:
 // Statics
 //
 
-BOOL LLAgent::exlPhantom = 0;
-
 const F32 LLAgent::TYPING_TIMEOUT_SECS = 5.f;
 
 std::map<std::string, std::string> LLAgent::sTeleportErrorMessages;
@@ -651,17 +649,6 @@ BOOL LLAgent::getFlying() const
 	return mControlFlags & AGENT_CONTROL_FLY; 
 }
 
-// Better Set Phantom options ~Charbl
-void LLAgent::setPhantom(BOOL phantom)
-{
-	exlPhantom = phantom;
-}
-
-BOOL LLAgent::getPhantom()
-{
-	return exlPhantom;
-}
-
 //-----------------------------------------------------------------------------
 // setFlying()
 //-----------------------------------------------------------------------------
@@ -755,13 +742,6 @@ void LLAgent::standUp()
 		setControlFlags(AGENT_CONTROL_STAND_UP);
 	}
 // [/RLVa:KB]
-}
-
-void LLAgent::togglePhantom()
-{
-	BOOL phan = !(exlPhantom);
-
-	setPhantom( phan );
 }
 
 void LLAgent::handleServerBakeRegionTransition(const LLUUID& region_id)

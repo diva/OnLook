@@ -899,39 +899,6 @@ public:
  **                                                                            **
  *******************************************************************************/
 
-/********************************************************************************
- **                                                                            **
- **                   Phantom mode!
- **/
-
-public:
-	static BOOL			getPhantom();
-	static void			setPhantom(BOOL phantom);
-	static void			togglePhantom();
-private:
-	static BOOL exlPhantom;
-/**                    PHANTOM
- **                                                                            **
- *******************************************************************************/
- 	
-/********************************************************************************
- **                                                                            **
- **                    Depreciated stuff. Move when ready.
- **/
-public:
-	//What's this t-posed stuff from?
-	static BOOL			isTPosed() { return mForceTPose; }
-	static void			setTPosed(BOOL TPose) { mForceTPose = TPose; }
-	static void			toggleTPosed();
-	
-private:
- 	static BOOL 	mForceTPose;
-	
-
-/**                    DEPRECIATED
- **                                                                            **
- *******************************************************************************/
- 
 };
 
 extern LLAgent gAgent;

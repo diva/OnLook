@@ -409,7 +409,6 @@ BOOL handle_check_pose(void* userdata) {
 
 
 void handle_force_ground_sit(void*);
-void handle_phantom_avatar(void*);
 void handle_hide_typing_notification(void*);
 void handle_close_all_notifications(void*);
 void handle_open_message_log(void*);
@@ -711,7 +710,6 @@ void init_menus()
 	menu->addSeparator();
 	menu->addChild(new LLMenuItemCallGL(  "Fake Away Status", &handle_fake_away_status, NULL));
 	menu->addChild(new LLMenuItemCallGL(  "Force Ground Sit", &handle_force_ground_sit, NULL));
-	menu->addChild(new LLMenuItemCallGL(  "Phantom Avatar", &handle_phantom_avatar, NULL, NULL, 'P', MASK_CONTROL | MASK_ALT));
 
 	menu->addSeparator();
 	menu->addChild(new LLMenuItemCallGL( "Animation Override...",
@@ -3707,9 +3705,9 @@ void handle_fake_away_status(void*)
 
 void handle_force_ground_sit(void*)
 {
-	if (gAgentAvatarp)
+	if (isAgentAvatarValid())
 	{
-		if(!gAgentAvatarp->isSitting())
+		if (!gAgentAvatarp->isSitting())
 		{
 			gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
 		} 
@@ -3718,23 +3716,6 @@ void handle_force_ground_sit(void*)
 			gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
 		}
 	}
-}
-
-void handle_phantom_avatar(void*)
-{
-	BOOL ph = LLAgent::getPhantom();
-
-	if (ph)
-		gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
-	else
-		gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
-	
-	LLAgent::togglePhantom();
-	ph = LLAgent::getPhantom();
-	LLChat chat;
-	chat.mSourceType = CHAT_SOURCE_SYSTEM;
-	chat.mText = llformat("%s%s","Phantom ",(ph ? "On" : "Off"));
-	LLFloaterChat::addChat(chat);
 }
 
 // </edit>
