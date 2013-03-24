@@ -69,6 +69,7 @@
 	<string name="ShuttingDown">Shutting down...</string>
 	<string name="YouHaveBeenDisconnected">You have been disconnected from the region you were in.</string>
 	<string name="SentToInvalidRegion">You were sent to an invalid region.</string>
+	<string name="TestingDisconnect">Testing viewer disconnect</string>
 
 	<!-- Tooltip, llhoverview.cpp -->
 	<string name="TooltipPerson">Person</string><!-- Object under mouse pointer is an avatar -->
@@ -3101,7 +3102,6 @@ Drag folders to this area and click "Send to Marketplace" to list them for sale 
 	<string name="Right Pec">Right Pec</string>
     <string name="Neck">Neck</string>
     <string name="Root">Root</string>
-	<string name="unsupported point">unsupported point</string>
 	<string name="Invalid Attachment">Invalid Attachment Point</string>
 
   <!-- HUD Position -->
@@ -3266,6 +3266,7 @@ Drag folders to this area and click "Send to Marketplace" to list them for sale 
 	<string name="AcquiredItems">Acquired Items</string>
 	<string name="Cancel">Cancel</string>
 	<string name="UploadingCosts">Uploading [NAME] costs [CURRENCY] [AMOUNT]</string>
+	<string name="BuyingCosts">Buying this costs</string>
 	<string name="UnknownFileExtension">
 		Unknown file extension .%s
 Expected .wav, .tga, .bmp, .jpg, .jpeg, or .bvh
@@ -3955,6 +3956,9 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 	<string name="Unnamed">(Unnamed)</string>
 	<string name="inventory_item_offered_to">Inventory item offered to</string>
 	<string name="Saved_message" value="(Saved [LONG_TIMESTAMP]) "/>
+	<string name="StartPointSet">Start point set</string>
+	<string name="EndPointSet">End point set</string>
+	<string name="MeasuredDistance">Distance: [DIST]</string>
 	<string name="PowerUser1">You are bestowed with powers beyond mortal comprehension.</string>
 	<string name="PowerUser2">Use your newfound abilities wisely.</string>
 	<string name="Unlocked:">Unlocked:</string>
@@ -4084,6 +4088,7 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 
   <string name="giving">Giving [CURRENCY]</string>
   <string name="this_costs">This costs [CURRENCY]</string>
+  <string name="this_object_costs">This object costs</string>
 
   <string name="group_role_everyone">Everyone</string>
   <string name="group_role_officers">Officers</string>
@@ -4129,6 +4134,15 @@ Try enclosing path to the editor with double quotes.
 
   <string name="Left">Left</string>
   <string name="Right">Right</string>
+
+  <!-- llviewerwindow -->
+  <string name="BeaconParticle">Viewing particle beacons (blue)</string>
+  <string name="BeaconPhysical">Viewing physical object beacons (green)</string>
+  <string name="BeaconScripted">Viewing scripted object beacons (red)</string>
+  <string name="BeaconScriptedTouch">Viewing scripted object with touch function beacons (red)</string>
+  <string name="BeaconSound">Viewing sound beacons (yellow)</string>
+  <string name="BeaconMedia">Viewing media beacons (white)</string>
+  <string name="ParticleHiding">Hiding Particles</string>
 
   <!-- Pathfinding -->
   <string name="Pathfinding_Wiki_URL">http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer</string>

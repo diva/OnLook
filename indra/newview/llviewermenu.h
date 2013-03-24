@@ -90,7 +90,6 @@ BOOL enable_god_full(void* user_data);
 BOOL enable_god_liaison(void* user_data);
 BOOL enable_god_customer_service(void* user_data);
 BOOL enable_god_basic(void* user_data);
-void handle_show_newest_map(void*);
 void set_underclothes_menu_options();
 
 void exchange_callingcard(const LLUUID& dest_id);
@@ -98,6 +97,7 @@ void exchange_callingcard(const LLUUID& dest_id);
 void handle_gestures(void*);
 void handle_sit_down(void*);
 void handle_object_build(void*);
+bool handle_object_open();
 
 bool visible_take_object();
 bool enable_object_take_copy();
@@ -108,6 +108,7 @@ bool enable_object_delete();
 void handle_buy();
 void handle_take();
 void handle_take_copy();
+void handle_look_at_selection(const LLSD& param);
 void handle_object_return();
 void handle_object_delete();
 
@@ -125,7 +126,6 @@ void handle_fake_away_status(void*);
 
 bool handle_sit_or_stand();
 bool handle_give_money_dialog();
-bool handle_object_open();
 bool enable_buy_object();
 bool handle_go_to();
 

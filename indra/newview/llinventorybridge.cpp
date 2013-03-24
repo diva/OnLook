@@ -5359,25 +5359,9 @@ std::string LLObjectBridge::getLabelSuffix() const
 		{
 			return LLItemBridge::getLabelSuffix() + LLTrans::getString("worn");
 		}
-		bool unsupportedPoint = false; //Unsupported points are given special names, translate them as they're named, not later.
-		std::string attachment_point_name = gAgentAvatarp->getAttachedPointName(mUUID);
-		if (attachment_point_name == LLStringUtil::null) // Error condition, invalid attach point
-		{
-			attachment_point_name = "Invalid Attachment";
-			std::map<S32, std::pair<LLUUID,LLUUID> >::iterator iter = gAgentAvatarp->mUnsupportedAttachmentPoints.begin();
-			std::map<S32, std::pair<LLUUID,LLUUID> >::iterator end = gAgentAvatarp->mUnsupportedAttachmentPoints.end();
-			for( ; iter != end; ++iter)
-			{
-				if((*iter).second.first == mUUID)
-				{
-					attachment_point_name = llformat((LLTrans::getString("unsupported point")+" %d)").c_str(), (*iter).first);
-				}
-			}
-			unsupportedPoint = attachment_point_name != "Invalid Attachment";
-		}
 		// e.g. "(worn on ...)" / "(attached to ...)"
 		LLStringUtil::format_map_t args;
-		args["[ATTACHMENT_POINT]"] = unsupportedPoint ? attachment_point_name : LLTrans::getString(attachment_point_name);
+		args["[ATTACHMENT_POINT]"] = LLTrans::getString(gAgentAvatarp->getAttachedPointName(mUUID));
 
 		if(gRlvAttachmentLocks.canDetach(getItem()))
 			return LLItemBridge::getLabelSuffix() + LLTrans::getString("WornOnAttachmentPoint", args);
@@ -5545,13 +5529,6 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 					disabled_items.push_back(std::string("Detach From Yourself"));
 // [/RLVa:KB]
 			}
-			else
-			// <edit> testzone attachpt
-			if( gAgentAvatarp->isWearingUnsupportedAttachment( mUUID ) )
-			{
-				items.push_back(std::string("Detach From Yourself"));
-			}
-			// </edit>
 			else if (!isItemInTrash() && !isLinkedObjectInTrash() && !isLinkedObjectMissing() && !isCOFFolder())
 			{
 				items.push_back(std::string("Wearable And Object Separator"));

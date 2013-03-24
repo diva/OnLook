@@ -230,7 +230,6 @@ private:
 //
 
 BOOL LLAgent::exlPhantom = 0;
-BOOL LLAgent::mForceTPose = 0;
 
 const F32 LLAgent::TYPING_TIMEOUT_SECS = 5.f;
 
@@ -763,13 +762,6 @@ void LLAgent::togglePhantom()
 	BOOL phan = !(exlPhantom);
 
 	setPhantom( phan );
-}
-
-void LLAgent::toggleTPosed()
-{
-	BOOL posed = !(mForceTPose);
-
-	setTPosed(posed);
 }
 
 void LLAgent::handleServerBakeRegionTransition(const LLUUID& region_id)
@@ -1315,17 +1307,6 @@ LLQuaternion LLAgent::getQuat() const
 //-----------------------------------------------------------------------------
 U32 LLAgent::getControlFlags()
 {
-/*
-	// HACK -- avoids maintenance of control flags when camera mode is turned on or off,
-	// only worries about it when the flags are measured
-	if (mCameraMode == CAMERA_MODE_MOUSELOOK) 
-	{
-		if ( !(mControlFlags & AGENT_CONTROL_MOUSELOOK) )
-		{
-			mControlFlags |= AGENT_CONTROL_MOUSELOOK;
-		}
-	}
-*/
 	return mControlFlags;
 }
 
@@ -1420,7 +1401,6 @@ void LLAgent::setAFK()
 void LLAgent::clearAFK()
 {
 	gAwayTriggerTimer.reset();
-	if (!gSavedSettings.controlExists("FakeAway")) gSavedSettings.declareBOOL("FakeAway", FALSE, "", NO_PERSIST);
 	if (gSavedSettings.getBOOL("FakeAway") == TRUE) return;
 
 	// Gods can sometimes get into away state (via gestures)
@@ -2035,6 +2015,7 @@ void LLAgent::endAnimationUpdateUI()
 		{
 			(*mMouselookModeOutSignal)();
 		}
+
 		// Only pop if we have pushed...
 		if (TRUE == mViewsPushed)
 		{
@@ -3102,13 +3083,13 @@ void LLAgent::sendAnimationRequest(const LLUUID &anim_id, EAnimRequest request)
 // [RLVa:KB] - Checked: 2011-05-11 (RLVa-1.3.0i) | Added: RLVa-1.3.0i
 void LLAgent::setAlwaysRun()
 {
-	mbAlwaysRun = true;//(!rlv_handler_t::isEnabled()) || (!gRlvHandler.hasBehaviour(RLV_BHVR_ALWAYSRUN));
+	mbAlwaysRun = (!rlv_handler_t::isEnabled()) || (!gRlvHandler.hasBehaviour(RLV_BHVR_ALWAYSRUN));
 	sendWalkRun();
 }
 
 void LLAgent::setTempRun()
 {
-	mbTempRun = true;//(!rlv_handler_t::isEnabled()) || (!gRlvHandler.hasBehaviour(RLV_BHVR_TEMPRUN));
+	mbTempRun = (!rlv_handler_t::isEnabled()) || (!gRlvHandler.hasBehaviour(RLV_BHVR_TEMPRUN));
 	sendWalkRun();
 }
 
@@ -4092,6 +4073,7 @@ void LLAgent::teleportViaLandmark(const LLUUID& landmark_asset_id)
 		return;
 	}
 // [/RLVa:KB]
+
 	mTeleportRequest = LLTeleportRequestPtr(new LLTeleportRequestViaLandmark(landmark_asset_id));
 	startTeleportRequest();
 }
@@ -4189,6 +4171,7 @@ void LLAgent::teleportViaLocation(const LLVector3d& pos_global)
 		}
 	}
 // [/RLVa:KB]
+
 	mTeleportRequest = LLTeleportRequestPtr(new LLTeleportRequestViaLocation(pos_global));
 	startTeleportRequest();
 }
@@ -4261,6 +4244,7 @@ void LLAgent::teleportViaLocationLookAt(const LLVector3d& pos_global)
 		return;
 	}
 // [/RLVa:KB]
+
 	mTeleportRequest = LLTeleportRequestPtr(new LLTeleportRequestViaLocationLookAt(pos_global));
 	startTeleportRequest();
 }
@@ -4745,6 +4729,16 @@ void LLAgent::sendAgentUpdateUserInfo(bool im_via_email, const std::string& dire
 	gMessageSystem->addString("DirectoryVisibility", directory_visibility);
 	gAgent.sendReliableMessage();
 }
+
+void LLAgent::dumpGroupInfo()
+{
+	llinfos << "group   " << mGroupName << llendl;
+	llinfos << "ID      " << mGroupID << llendl;
+	llinfos << "powers " << mGroupPowers << llendl;
+	llinfos << "title   " << mGroupTitle << llendl;
+	//llinfos << "insig   " << mGroupInsigniaID << llendl;
+}
+
 // Draw a representation of current autopilot target
 void LLAgent::renderAutoPilotTarget()
 {
@@ -4990,4 +4984,5 @@ void LLTeleportRequestViaLocationLookAt::restartTeleport()
 {
 	gAgent.doTeleportViaLocationLookAt(getPosGlobal());
 }
+
 // EOF

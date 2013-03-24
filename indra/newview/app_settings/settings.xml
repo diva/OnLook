@@ -726,6 +726,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>FakeAway</key>
+    <map>
+      <key>HideFromEditor</key>
+      <integer>1</integer>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>InstantMessageLogPathAnyAccount</key>
     <map>
       <key>Comment</key>

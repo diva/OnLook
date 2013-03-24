@@ -219,10 +219,6 @@ public:
 	virtual void	saveAs() {}
 	virtual void	saveAsType(BOOL type=false) {}
 	
-	// <edit>
-	virtual LLUUID  getItemID() { return LLUUID::null; }
-	// </edit>
-
 	void			setSnapTarget(LLHandle<LLFloater> handle) { mSnappedTo = handle; }
 	void			clearSnapTarget() { mSnappedTo.markDead(); }
 	LLHandle<LLFloater>	getSnapTarget() const { return mSnappedTo; }
