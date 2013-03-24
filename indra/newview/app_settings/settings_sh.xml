@@ -50,7 +50,7 @@
       <key>Type</key>
       <string>U32</string>
       <key>Value</key>
-      <integer>15000</integer>
+      <integer>6000</integer>
     </map>
     <key>SHFMODExDecodeBufferSize</key>
     <map>
