@@ -1,60 +1,466 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel border="true" bottom="0" follows="top|left" height="320" label="Terrain"
-     left="0" name="Terrain" width="480">
-	<text bottom="-30" follows="left|top" font="SansSerif" height="20" left="10"
-	     name="region_text_lbl" width="100">
-		Region:
-	</text>
-	<text bottom_delta="0" follows="left|top" font="SansSerif" height="20" left="60"
-	     name="region_text" width="400">
-		unknown
-	</text>
-	<spinner bottom_delta="-30" follows="left|top" height="20" increment=".1"
-	     label="Water Height" label_width="120" left="15" max_val="100" min_val="0"
-	     name="water_height_spin" width="180" />
-	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" height="18" label="?"
-	     left="200" name="water_height_help" width="18" />
-	<spinner bottom_delta="-20" follows="left|top" height="20" increment=".2"
-	     label="Terrain Raise Limit" label_width="120" left="15" max_val="100"
-	     min_val="0" name="terrain_raise_spin" width="180" />
-	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" height="18" label="?"
-	     left="200" name="terrain_raise_help" width="18" />
-	<spinner bottom_delta="-20" follows="left|top" height="20" increment=".2"
-	     label="Terrain Lower Limit" label_width="120" left="15" max_val="0"
-	     min_val="-100" name="terrain_lower_spin" width="180" />
-	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" height="18" label="?"
-	     left="200" name="terrain_lower_help" width="18" />
-	<check_box bottom="-55" follows="left|top" height="20" label="Use Estate Sun" left="250"
-	     name="use_estate_sun_check" width="100" />
-	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" height="18" label="?"
-	     left="420" name="use_estate_sun_help" width="18" />
-	<check_box bottom_delta="-20" follows="left|top" height="20" label="Fixed Sun" left="250"
-	     name="fixed_sun_check" width="100" />
-	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" height="18" label="?"
-	     left="420" name="fixed_sun_help" width="18" />
-	<icon bottom_delta="-25" follows="left|top" height="20"
-	     image_name="icon_day_cycle.tga" left="285" name="daycycle" width="165" />
-	<slider bottom_delta="-25" follows="left|top" height="20" increment="0.001"
-	     label="Phase" left="250" max_val="30" min_val="6" name="sun_hour_slider"
-	     show_text="false" width="200" />
-	<button bottom_delta="-30" enabled="false" follows="left|top" height="20" label="Apply"
-	     left="350" name="apply_btn" width="90" />
-	<view_border bevel_style="none" border_thickness="1" bottom_delta="-5" follows="top|left"
-	     height="130" left="8" width="460" />
-	<button bottom_delta="-80" follows="left|top" height="20"
-	     label="Download RAW terrain..." left="10" name="download_raw_btn"
-	     tool_tip="Available only to estate owners, not managers" width="170" />
-	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" height="18" label="?"
-	     left="190" name="download_raw_help" width="18" />
-	<button bottom_delta="-23" follows="left|top" height="20" label="Upload RAW terrain..."
-	     left="10" name="upload_raw_btn"
-	     tool_tip="Available only to estate owners, not managers" width="170" />
-	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" height="18" label="?"
-	     left="190" name="upload_raw_help" width="18" />
-	<button bottom_delta="-40" follows="left|top" height="20" label="Bake Terrain"
-	     left="10" name="bake_terrain_btn"
-	     tool_tip="Set current terrain as mid-point for raise/lower limits"
-	     width="100" />
-	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" height="18" label="?"
-	     left="120" name="bake_terrain_help" width="18" />
+<panel
+ border="true"
+ follows="top|left"
+ help_topic="panel_region_terrain_tab"
+ label="Terrain"
+ layout="topleft"
+ left="0"
+ name="Terrain"
+ bottom="0"
+ height="320"
+ width="480">
+    <text
+     follows="left|top"
+     font="SansSerif"
+     height="20"
+     layout="topleft"
+     left="10"
+     name="region_text_lbl"
+     bottom="-30"
+     width="100">
+        Region:
+    </text>
+    <text
+     follows="left|top"
+     font="SansSerif"
+     height="20"
+     layout="topleft"
+     left="60"
+     name="region_text"
+     bottom_delta="0"
+     width="400">
+        unknown
+    </text>
+    <spinner
+     follows="left|top"
+     height="20"
+     increment=".1"
+     label="Water Height"
+     label_width="120"
+     layout="topleft"
+     left="15"
+     max_val="100"
+     min_val="0"
+     name="water_height_spin"
+     bottom="-60"
+     width="180" />
+    <button
+     bottom_delta="3"
+     follows="left|top"
+     font="SansSerifSmall"
+     height="18"
+     label="?"
+     left_delta="182"
+     name="water_height_help"
+     width="18" />
+    <spinner
+     follows="left|top"
+     height="20"
+     increment="0.2"
+     label="Terrain Raise Limit"
+     label_width="120"
+     layout="topleft"
+     left="240"
+     max_val="100"
+     min_val="0"
+     name="terrain_raise_spin"
+     bottom="-60"
+     width="180" />
+    <button
+     bottom_delta="3"
+     follows="left|top"
+     font="SansSerifSmall"
+     height="18"
+     label="?"
+     left_delta="182"
+     name="terrain_raise_help"
+     width="18" />
+    <spinner
+     follows="left|top"
+     height="20"
+     increment="0.2"
+     label="Terrain Lower Limit"
+     label_width="120"
+     layout="topleft"
+     left="240"
+     max_val="0"
+     min_val="-100"
+     name="terrain_lower_spin"
+     bottom_delta="-25"
+     width="180" />
+    <button
+     bottom_delta="3"
+     follows="left|top"
+     font="SansSerifSmall"
+     height="18"
+     label="?"
+     left_delta="182"
+     name="terrain_lower_help"
+     width="18" />
+    <view_border
+     bevel_style="none"
+     follows="top|left"
+     height="60"
+     layout="topleft"
+     left="8"
+     bottom_delta="-10"
+     top="30"
+     width="460" />
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left="10"
+     name="detail_texture_text"
+     bottom_delta="-30"
+     width="300">
+        Terrain Textures
+    </text>
+    <texture_picker
+     follows="left|top"
+     height="100"
+     layout="topleft"
+     left_delta="0"
+     name="texture_detail_0"
+     bottom_delta="-100"
+     width="100" />
+    <texture_picker
+     follows="left|top"
+     height="100"
+     layout="topleft"
+     left_delta="110"
+     name="texture_detail_1"
+     bottom_delta="0"
+     width="100" />
+    <texture_picker
+     follows="left|top"
+     height="100"
+     layout="topleft"
+     left_delta="110"
+     name="texture_detail_2"
+     bottom_delta="0"
+     width="100" />
+    <texture_picker
+     follows="left|top"
+     height="100"
+     layout="topleft"
+     left_delta="110"
+     name="texture_detail_3"
+     bottom_delta="0"
+     width="100" />
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left="10"
+     name="height_text_lbl"
+     bottom_delta="-10"
+     width="65">
+        1 (Low)
+    </text>
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left_delta="110"
+     name="height_text_lbl2"
+     bottom_delta="0"
+     width="100">
+        2
+    </text>
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left_delta="110"
+     name="height_text_lbl3"
+     bottom_delta="0"
+     width="100">
+        3
+    </text>
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left_delta="110"
+     name="height_text_lbl4"
+     bottom_delta="0"
+     width="100">
+        4 (High)
+    </text>
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left="10"
+     name="height_text_lbl5"
+     bottom_delta="-30"
+     top_delta="30"
+     width="300">
+        Texture Elevation Ranges
+    </text>
+    <text
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left="10"
+     name="height_text_lbl10"
+     top_delta="30"
+     width="200"
+     word_wrap="true">
+      These values represent the blend
+range for the textures above.
+    </text>
+    <text
+       follows="left|top"
+       height="60"
+       layout="topleft"
+       left_delta="0"
+       name="height_text_lbl11"
+       bottom_delta="-80"
+       top_delta="32"
+       width="200"
+       word_wrap="true">
+        Measured in meters, the LOW value
+is the MAXIMUM height of Texture #1,
+and the HIGH value is the
+MINIMUM height of Texture #4.
+    </text>
+    <text
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left="270"
+     name="height_text_lbl6"
+     bottom="-260"
+     width="100">
+        Northwest
+    </text>
+    <text
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left_delta="110"
+     name="height_text_lbl7"
+     bottom_delta="0"
+     width="100">
+        Northeast
+    </text>
+<!--  northwest low-->
+    <spinner
+     follows="left|top"
+     height="20"
+     increment="0.5"
+     label="Low"
+     label_width="37"
+     layout="topleft"
+     left="230"
+     max_val="500"
+     min_val="-500"
+     name="height_start_spin_1"
+     bottom_delta="-20"
+     width="100" />
+<!--    northeast low-->
+    <spinner
+     follows="left|top"
+     height="20"
+     increment="0.5"
+     label="Low"
+     label_width="37"
+     layout="topleft"
+     left_delta="110"
+     max_val="500"
+     min_val="-500"
+     name="height_start_spin_3"
+     bottom_delta="0"
+     width="100" />
+<!--  northwest high-->
+    <spinner
+     follows="left|top"
+     height="20"
+     increment="0.5"
+     label="High"
+     label_width="37"
+     layout="topleft"
+     left="230"
+     max_val="500"
+     min_val="-500"
+     name="height_range_spin_1"
+     bottom_delta="-20"
+     width="100" />
+<!--  northeast high-->
+    <spinner
+     follows="left|top"
+     height="20"
+     increment="0.5"
+     label="High"
+     label_width="37"
+     layout="topleft"
+     left_delta="110"
+     max_val="500"
+     min_val="-500"
+     name="height_range_spin_3"
+     bottom_delta="0"
+     width="100" />
+    <text
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left="270"
+     name="height_text_lbl8"
+     bottom_delta="-20"
+     top_pad="10"
+     width="100">
+        Southwest
+    </text>
+    <text
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left_delta="110"
+     name="height_text_lbl9"
+     bottom_delta="0"
+     width="100">
+        Southeast
+    </text>
+<!--  southwest low-->
+    <spinner
+     follows="left|top"
+     height="20"
+     increment="0.5"
+     label="Low"
+     label_width="37"
+     layout="topleft"
+     left="230"
+     max_val="500"
+     min_val="-500"
+     name="height_start_spin_0"
+     bottom_delta="-20"
+     width="100" />
+<!--  southeast low-->
+    <spinner
+     follows="left|top"
+     height="20"
+     increment="0.5"
+     label="Low"
+     label_width="37"
+     layout="topleft"
+     left_delta="110"
+     max_val="500"
+     min_val="-500"
+     name="height_start_spin_2"
+     bottom_delta="0"
+     width="100" />
+<!--southwest high-->
+    <spinner
+     follows="left|top"
+     height="20"
+     increment="0.5"
+     label="High"
+     label_width="37"
+     layout="topleft"
+     left="230"
+     max_val="500"
+     min_val="-500"
+     name="height_range_spin_0"
+     bottom_delta="-20"
+     width="100" />
+<!--  southeast high-->
+    <spinner
+     follows="left|top"
+     height="20"
+     increment="0.5"
+     label="High"
+     label_width="37"
+     layout="topleft"
+     left_delta="110"
+     max_val="500"
+     min_val="-500"
+     name="height_range_spin_2"
+     bottom_delta="0"
+     width="100" />
+<!-- Terrain Download/Upload/Bake buttons -->
+    <button
+     follows="left|top"
+     height="20"
+     label="Download RAW terrain..."
+     font="SansSerifSmall"
+     layout="topleft"
+     left="10"
+     name="download_raw_btn"
+     tool_tip="Available only to estate owners, not managers"
+     bottom_delta="-35"
+     width="140" />
+    <button
+     bottom_delta="0"
+     follows="left|top"
+     font="SansSerifSmall"
+     height="20"
+     label="?"
+     left_delta="140"
+     name="download_raw_help"
+     width="20" />
+    <button
+     follows="left|top"
+     height="20"
+     label="Upload RAW terrain..."
+     font="SansSerifSmall"
+     layout="topleft"
+     left_delta="30"
+     bottom_delta="0"
+     name="upload_raw_btn"
+     tool_tip="Available only to estate owners, not managers"
+     width="130" />
+    <button
+     bottom_delta="0"
+     follows="left|top"
+     font="SansSerifSmall"
+     height="20"
+     label="?"
+     left_delta="130"
+     name="upload_raw_help"
+     width="20" />
+    <button
+     bottom_delta="0"
+     follows="left|top"
+     height="20"
+     label="Bake Terrain"
+     font="SansSerifSmall"
+     layout="topleft"
+     left_delta="30"
+     name="bake_terrain_btn"
+     tool_tip="Set current terrain as mid-point for raise/lower limits"
+     width="80" />
+    <button
+     bottom_delta="0"
+     follows="left|top"
+     font="SansSerifSmall"
+     height="20"
+     label="?"
+     left_delta="80"
+     name="bake_terrain_help"
+     width="20" />
+    <button
+     enabled="true"
+     follows="left|top"
+     height="20"
+     label="Apply"
+     layout="topleft"
+     left_delta="-80"
+     name="apply_btn"
+     bottom_delta="-40"
+     width="100" />
 </panel>

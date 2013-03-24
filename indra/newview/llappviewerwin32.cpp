@@ -40,8 +40,6 @@
 
 #include "llappviewerwin32.h"
 
-#include "llmemtype.h"
-
 #include "llwindowwin32.cpp" // *FIX: for setting gIconResource.
 #include "res/resource.h" // *FIX: for setting gIconResource.
 
@@ -159,8 +157,6 @@ int APIENTRY WINMAIN(HINSTANCE hInstance,
                      LPSTR     lpCmdLine,
                      int       nCmdShow)
 {
-	LLMemType mt1(LLMemType::MTYPE_STARTUP);
-
 	const S32 MAX_HEAPS = 255;
 	DWORD heap_enable_lfh_error[MAX_HEAPS];
 	S32 num_heaps = 0;

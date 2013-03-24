@@ -82,7 +82,7 @@
 				"http://secondlife.com/app/search/index.php?"
 			</string>
 		</panel>
-		<panel label="Clasificadosname="classified_panel">
+		<panel label="Clasificados" name="classified_panel">
 			<string name="searching_text">
 				Buscando...
 			</string>
@@ -95,7 +95,6 @@
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adult" name="incadult"/>
-			<combo_box name="Category">
 			<combo_box name="Category">
 				<combo_item name="AnyCategory">
 					Cualquier Categoría

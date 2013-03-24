@@ -59,6 +59,18 @@
 // just reuse the old ones (call the same callback).
 //
 class AITimer : public AIStateMachine {
+  protected:
+	// The base class of this state machine.
+	typedef AIStateMachine direct_base_type;
+
+	// The different states of the state machine.
+	enum timer_state_type {
+	  AITimer_start = direct_base_type::max_state,
+	  AITimer_expired
+	};
+  public:
+	static state_type const max_state = AITimer_expired + 1;
+
   private:
 	AIFrameTimer mFrameTimer;		//!< The actual timer that this object wraps.
 	F64 mInterval;					//!< Input variable: interval after which the event will be generated, in seconds.
@@ -90,13 +102,10 @@ class AITimer : public AIStateMachine {
 	/*virtual*/ void initialize_impl(void);
 
 	// Handle mRunState.
-	/*virtual*/ void multiplex_impl(void);
+	/*virtual*/ void multiplex_impl(state_type run_state);
 
 	// Handle aborting from current bs_run state.
 	/*virtual*/ void abort_impl(void);
-
-	// Handle cleaning up from initialization (or post abort) state.
-	/*virtual*/ void finish_impl(void);
 
 	// Implemenation of state_str for run states.
 	/*virtual*/ char const* state_str_impl(state_type run_state) const;
@@ -104,14 +113,6 @@ class AITimer : public AIStateMachine {
   private:
 	// This is the callback for mFrameTimer.
 	void expired(void);
-};
-
-// Same as above but does not delete itself automatically by default after use.
-// Call kill() on it yourself (from the callback function) when you're done with it!
-class AIPersistentTimer : public AITimer {
-  protected:
-	// Handle cleaning up from initialization (or post abort) state.
-	/*virtual*/ void finish_impl(void);
 };
 
 #endif

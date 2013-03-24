@@ -97,7 +97,7 @@ BOOL LLPanelPlace::postBuild()
     mDescEditor = getChild<LLTextEditor>("desc_editor");
 
 	mInfoEditor = getChild<LLTextBox>("info_editor");
-	mLandTypeEditor = getChild<LLTextBox>("land_type_display");
+	mLandTypeEditor = findChild<LLTextBox>("land_type_display");
 
     mLocationDisplay = getChild<LLTextBox>("location_editor");
 
@@ -145,7 +145,8 @@ void LLPanelPlace::resetLocation()
 	mNameEditor->setText( LLStringUtil::null );
 	mDescEditor->setText( LLStringUtil::null );
 	mInfoEditor->setText( LLStringUtil::null );
-	mLandTypeEditor->setText( LLStringUtil::null );
+	if (mLandTypeEditor)
+		mLandTypeEditor->setText(LLStringUtil::null);
 	mLocationDisplay->setText( LLStringUtil::null );
 }
 
@@ -198,20 +199,30 @@ void LLPanelPlace::setLocationString(const std::string& location)
 
 void LLPanelPlace::setLandTypeString(const std::string& land_type)
 {
-	mLandTypeEditor->setText(land_type);
+	if (mLandTypeEditor)
+		mLandTypeEditor->setText(land_type);
 }
 
 void LLPanelPlace::setErrorStatus(U32 status, const std::string& reason)
 {
-	// We only really handle 404 and 499 errors
+	// We only really handle 404 and timeout errors
 	std::string error_text;
-	if(status == 404)
+	if (status == HTTP_NOT_FOUND)
 	{	
 		error_text = getString("server_error_text");
 	}
-	else if(status == 499)
+	else if (status == HTTP_UNAUTHORIZED)		// AIFIXME: Is this indeed the error we get when we don't have access rights for this?
 	{
 		error_text = getString("server_forbidden_text");
+	}
+	else if (status == HTTP_INTERNAL_ERROR_LOW_SPEED || status == HTTP_INTERNAL_ERROR_CURL_TIMEOUT)
+	{
+		error_text = getString("internal_timeout_text");
+	}
+	else
+	{
+		llwarns << "Unexpected error (" << status << "): " << reason << llendl;
+		error_text = llformat("Unexpected Error (%u): %s", status, reason.c_str());
 	}
 	mDescEditor->setText(error_text);
 }

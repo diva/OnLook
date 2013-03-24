@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+
+<panel
+ border="true"
+ follows="top|left"
+ height="300"
+ label="Environment"
+ layout="topleft"
+ help_topic="panel_region_environment_tab"
+ name="panel_env_info"
+ width="530"> 
+ <text
+  name="water_settings_title"
+  follows="top|left"
+  height="30"
+  layout="topleft"
+  left="20"
+  top_pad="20"
+  width="430"
+  wrap="true">
+  Select the Water and Sky/Day Cycle Settings you would like all visitors to your
+region to see.  More info
+ </text> 
+ <view_border
+  bevel_style="none"
+  follows="top|left"
+  height="217"
+  layout="topleft"
+  left="20"
+  name="border"
+  bottom="-277"
+  width="430"/>
+ <radio_group
+  follows="top|left"
+  height="45"
+  layout="topleft"
+  draw_border="false"
+  left_delta="10"
+  name="region_settings_radio_group"
+  bottom="-112"
+  width="200">
+  <radio_item
+   layout="topleft"
+   bottom="30"
+   name="use_sl_default_settings">
+   Use Second Life default
+  </radio_item>
+  <radio_item
+   layout="topleft"
+   name="use_my_settings"
+   bottom_delta="-15">
+   Use the following settings
+  </radio_item>
+ </radio_group>
+ <panel
+  follows="top|left"
+  height="217"
+  layout="topleft"
+  left="20"
+  name="user_environment_settings"
+  bottom_delta="-217"
+  width="430">
+   <text
+    name="water_settings_title"
+    follows="top|left"
+    height="16"
+    layout="topleft"
+    left="50"
+    bottom_delta="-37"
+    width="160">
+    Water Setting
+   </text>
+   <combo_box
+    follows="top|left"
+    height="20"
+    left_delta="162"
+    name="water_settings_preset_combo"
+    bottom_delta="0"
+    width="200">
+    <combo_item
+     name="item0">
+     -Select a preset-
+    </combo_item>
+   </combo_box>
+   <text
+    name="sky_dayc_settings_title"
+    follows="top|left"
+    height="16"
+    layout="topleft"
+    left="50"
+    bottom_delta="-35"
+    width="100">
+    Sky / Day Cycle
+   </text>
+   <radio_group
+    layout="topleft"
+    draw_border="false"
+    left_delta="50"
+    name="sky_dayc_settings_radio_group"
+    bottom_delta="-60"
+    height="50"
+    width="110">
+    <radio_item
+     layout="topleft"
+     bottom="30"
+     name="my_sky_settings">
+     Fixed sky
+    </radio_item>
+    <radio_item
+     layout="topleft"
+     name="my_dayc_settings"
+     bottom_delta="-15">
+     Day cycle
+    </radio_item>  	
+   </radio_group>
+   <combo_box
+    follows="top|left"
+    height="20"
+    left_delta="112"
+    name="sky_settings_preset_combo"
+    bottom_delta="30"
+    width="200">
+    <combo_item
+     name="item0">
+     -Select a preset-
+    </combo_item>
+   </combo_box>
+   <combo_box
+    follows="top|left"
+    height="20"
+    name="dayc_settings_preset_combo"
+    bottom_delta="-30"
+    width="200">
+    <combo_item
+     name="item0">
+     -Select a preset-
+    </combo_item>
+   </combo_box>
+ </panel>
+ <button
+  follows="left|top"
+  height="23"
+  label="Apply"
+  layout="topleft"
+  left="240"
+  name="apply_btn"
+  bottom_delta="23"
+  width="100" />
+ <button
+  follows="left|top"
+  height="23"
+  label="Cancel"
+  layout="topleft"
+  left_delta="110"
+  name="cancel_btn"
+  bottom_delta="0"
+  width="100" /> 
+ <loading_indicator
+  width="23" />
+ <text
+  follows="left|top"
+  font="SansSerifHuge"
+  height="23"
+  left="50"
+  name="progress_indicator"
+  bottom_delta="0"
+  visible="false"
+ >
+  Applying
+ </text>
+</panel>

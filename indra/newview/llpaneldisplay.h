@@ -93,7 +93,7 @@ protected:
 	LLCheckBoxCtrl	*mCtrlCustomSettings;
 
 	// performance sliders and boxes
-	LLViewBorder	*mGraphicsBorder;
+	//LLViewBorder	*mGraphicsBorder;
 
 	LLSliderCtrl	*mCtrlDrawDistance;				// the draw distance slider
 	LLSliderCtrl	*mCtrlLODFactor;				// LOD for volume objects
@@ -125,14 +125,12 @@ protected:
 
 	LLTextBox		*mAspectRatioLabel1;
 	LLTextBox		*mDisplayResLabel;
-	LLTextEditor	*mFullScreenInfo;
 	LLTextBox       *mWindowSizeLabel;
 	
 	LLTextBox		*mShaderText;
 	LLTextBox		*mReflectionText;
 	LLTextBox		*mAvatarText;
 	LLTextBox		*mTerrainText;
-	LLTextBox		*mLightingText;
 	LLTextBox		*mDrawDistanceMeterText1;
 	LLTextBox		*mDrawDistanceMeterText2;
 
@@ -203,7 +201,6 @@ protected:
 	// if the custom settings box is clicked
 	static void onChangeCustom(LLUICtrl *ctrl, void *data);
 	
-	static void onOpenHelp(void *data);
 	static void onCommitAutoDetectAspect(LLUICtrl *ctrl, void *data);
 	static void onKeystrokeAspectRatio(LLLineEditor* caller, void* user_data);
 	static void onSelectAspectRatio(LLUICtrl*, void*);

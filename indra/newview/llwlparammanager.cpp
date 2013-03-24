@@ -775,14 +775,19 @@ boost::signals2::connection LLWLParamManager::setPresetListChangeCallback(const 
 }
 
 
-
-// static
 void LLWLParamManager::initSingleton()
 {
 	LL_DEBUGS("Windlight") << "Initializing sky" << LL_ENDL;
 
 	loadAllPresets();
 
+	// Here it used to call LLWLParamManager::initHack(), but we can't do that since it calls
+	// LLWLParamManager::initSingleton() recursively. Instead, call it from LLAppViewer::init().
+}
+
+// This is really really horrible, but can't be fixed without a rewrite.
+void LLWLParamManager::initHack()
+{
 	// load the day
 	std::string preferred_day = LLEnvManagerNew::instance().getDayCycleName();
 	if (!LLDayCycleManager::instance().getPreset(preferred_day, mDay))
@@ -810,7 +815,10 @@ void LLWLParamManager::initSingleton()
 	// but use linden time sets it to what the estate is
 	mAnimator.setTimeType(LLWLAnimator::TIME_LINDEN);
 
-	LLEnvManagerNew::instance().usePrefs();
+	// This shouldn't be called here. It has nothing to do with the initialization of this singleton.
+	// Instead, call it one-time when the viewer starts. Calling it here causes a recursive entry
+	// of LLWLParamManager::initSingleton().
+	//LLEnvManagerNew::instance().usePrefs();
 }
 
 // static

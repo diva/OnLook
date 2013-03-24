@@ -123,7 +123,6 @@ void LLFloaterDisplayName::onOpen()
 		getChild<LLUICtrl>("lockout_text")->setTextArg("[TIME]",
 			next_update_string_time);
 		getChild<LLUICtrl>("lockout_text")->setVisible(true);
-		getChild<LLUICtrl>("no_lockout_text")->setVisible(false);
 		getChild<LLUICtrl>("save_btn")->setEnabled(false);
 		getChild<LLUICtrl>("display_name_editor")->setEnabled(false);
 		getChild<LLUICtrl>("display_name_confirm")->setEnabled(false);
@@ -133,7 +132,6 @@ void LLFloaterDisplayName::onOpen()
 	else
 	{
 		getChild<LLUICtrl>("lockout_text")->setVisible(false);
-		getChild<LLUICtrl>("no_lockout_text")->setVisible(true);
 		getChild<LLUICtrl>("save_btn")->setEnabled(true);
 		getChild<LLUICtrl>("display_name_editor")->setEnabled(true);
 		getChild<LLUICtrl>("display_name_confirm")->setEnabled(true);
@@ -167,7 +165,7 @@ void LLFloaterDisplayName::onCacheSetName(bool success,
 	// We might have a localized string for this message
 	// error_args will usually be empty from the server.
 	if (!error_tag.empty()
-		&& LLNotifications::getInstance()->templateExists(error_tag))
+		&& LLNotificationTemplates::getInstance()->templateExists(error_tag))
 	{
 		LLNotifications::instance().add(error_tag);
 		return;

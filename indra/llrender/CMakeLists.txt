@@ -25,17 +25,20 @@ include_directories(
 
 set(llrender_SOURCE_FILES
     llcubemap.cpp
-    llfont.cpp
-    llfontgl.cpp
     llfontbitmapcache.cpp
+    llfontfreetype.cpp
+    llfontgl.cpp
     llfontregistry.cpp
+    llgl.cpp
     llgldbg.cpp
     llglslshader.cpp
     llgltexture.cpp
     llimagegl.cpp
     llpostprocess.cpp
+    llrender.cpp
     llrender2dutils.cpp
     llrendersphere.cpp
+    llrendertarget.cpp
     llshadermgr.cpp
     lltexture.cpp
     lluiimage.cpp
@@ -46,9 +49,9 @@ set(llrender_HEADER_FILES
     CMakeLists.txt
 
     llcubemap.h
-    llfontgl.h
-    llfont.h
     llfontbitmapcache.h
+    llfontfreetype.h
+    llfontgl.h
     llfontregistry.h
     llgl.h
     llgldbg.h
@@ -73,29 +76,5 @@ set_source_files_properties(${llrender_HEADER_FILES}
 
 list(APPEND llrender_SOURCE_FILES ${llrender_HEADER_FILES})
 
-if (SERVER AND NOT WINDOWS AND NOT DARWIN)
-  copy_server_sources(
-      llgl
-      llrender
-      )
-
-
-  set_source_files_properties(
-    ${server_SOURCE_FILES}
-    PROPERTIES
-    COMPILE_FLAGS "-DLL_MESA=1 -DLL_MESA_HEADLESS=1"
-    )
-  add_library (llrenderheadless
-    ${llrender_SOURCE_FILES}
-    ${server_SOURCE_FILES}
-    )
-  add_dependencies(llrenderheadless prepare)
-else (SERVER AND NOT WINDOWS AND NOT DARWIN)
-  list(APPEND llrender_SOURCE_FILES
-      llgl.cpp
-      llrender.cpp
-      llrendertarget.cpp
-      )
-endif (SERVER AND NOT WINDOWS AND NOT DARWIN)
 add_library (llrender ${llrender_SOURCE_FILES})
 add_dependencies(llrender prepare)

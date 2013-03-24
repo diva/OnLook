@@ -1571,17 +1571,17 @@ void LLPanelAvatar::setOnlineStatus(EOnlineStatus online_status)
 	if(gAgent.isGodlike())
 	{
 		childSetEnabled("Offer Teleport...", TRUE);
-		childSetToolTip("Offer Teleport...", childGetValue("TeleportGod").asString());
+		childSetToolTip("Offer Teleport...", getString("TeleportGod"));
 	}
 	else if (in_prelude)
 	{
 		childSetEnabled("Offer Teleport...",FALSE);
-		childSetToolTip("Offer Teleport...",childGetValue("TeleportPrelude").asString());
+		childSetToolTip("Offer Teleport...", getString("TeleportPrelude"));
 	}
 	else
 	{
 		childSetEnabled("Offer Teleport...", TRUE /*(online_status == ONLINE_STATUS_YES)*/);
-		childSetToolTip("Offer Teleport...", childGetValue("TeleportNormal").asString());
+		childSetToolTip("Offer Teleport...", getString("TeleportNormal"));
 	}
 }
 
@@ -1759,15 +1759,15 @@ void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name
 			childSetEnabled("Find on Map",enable_track);
 			if (!mIsFriend)
 			{
-				childSetToolTip("Find on Map",childGetValue("ShowOnMapNonFriend").asString());
+				childSetToolTip("Find on Map", getString("ShowOnMapNonFriend"));
 			}
 			else if (ONLINE_STATUS_YES != online_status)
 			{
-				childSetToolTip("Find on Map",childGetValue("ShowOnMapFriendOffline").asString());
+				childSetToolTip("Find on Map", getString("ShowOnMapFriendOffline"));
 			}
 			else
 			{
-				childSetToolTip("Find on Map",childGetValue("ShowOnMapFriendOnline").asString());
+				childSetToolTip("Find on Map", getString("ShowOnMapFriendOnline"));
 			}
 			childSetVisible("Add Friend...", true);
 			childSetEnabled("Add Friend...", !avatar_is_friend);

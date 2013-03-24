@@ -81,11 +81,9 @@
 #include "aistatemachine.h"
 #include "aithreadsafe.h"
 #include "lldrawpoolbump.h"
-#include "emeraldboobutils.h"
 #include "aicurl.h"
 #include "aihttptimeoutpolicy.h"
 
-#include "NACLantispam.h"    // for NaCl Antispam Registry
 
 #ifdef TOGGLE_HACKED_GODLIKE_VIEWER
 BOOL 				gHackGodmode = FALSE;
@@ -136,7 +134,7 @@ static bool handleTerrainScaleChanged(const LLSD& inputvalue)
 bool handleStateMachineMaxTimeChanged(const LLSD& newvalue)
 {
 	F32 StateMachineMaxTime = newvalue.asFloat();
-	AIStateMachine::setMaxCount(StateMachineMaxTime);
+	AIEngine::setMaxCount(StateMachineMaxTime);
 	return true;
 }
 
@@ -192,49 +190,6 @@ static bool handleRenderPerfTestChanged(const LLSD& newvalue)
        }
 
        return true;
-}
-
-static bool handleAvatarBoobMassChanged(const LLSD& newvalue)
-{
-	LLVOAvatar::sBoobConfig.mass = EmeraldBoobUtils::convertMass((F32) newvalue.asReal());
-	return true;
-}
-
-static bool handleAvatarBoobHardnessChanged(const LLSD& newvalue)
-{
-	LLVOAvatar::sBoobConfig.hardness = EmeraldBoobUtils::convertHardness((F32) newvalue.asReal());
-	return true;
-}
-
-static bool handleAvatarBoobVelMaxChanged(const LLSD& newvalue)
-{
-	LLVOAvatar::sBoobConfig.velMax = EmeraldBoobUtils::convertVelMax((F32) newvalue.asReal());
-	LLVOAvatar::sBoobConfig.velMin = LLVOAvatar::sBoobConfig.velMin*LLVOAvatar::sBoobConfig.velMax;
-	return true;
-}
-
-static bool handleAvatarBoobFrictionChanged(const LLSD& newvalue)
-{
-	LLVOAvatar::sBoobConfig.friction = EmeraldBoobUtils::convertFriction((F32) newvalue.asReal());
-	return true;
-}
-
-static bool handleAvatarBoobVelMinChanged(const LLSD& newvalue)
-{
-	LLVOAvatar::sBoobConfig.velMin = EmeraldBoobUtils::convertVelMin((F32) newvalue.asReal())*LLVOAvatar::sBoobConfig.velMax;
-	return true;
-}
-
-static bool handleAvatarBoobToggleChanged(const LLSD& newvalue)
-{
-	LLVOAvatar::sBoobConfig.enabled = (BOOL) newvalue.asReal();
-	return true;
-}
-
-static bool handleAvatarBoobXYInfluence(const LLSD& newvalue)
-{
-	LLVOAvatar::sBoobConfig.XYInfluence = (F32) newvalue.asReal();
-	return true;
 }
 
 static bool handleSetSelfInvisible( const LLSD& newvalue)
@@ -829,14 +784,6 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("CloudsEnabled")->getSignal()->connect(boost::bind(&handleCloudSettingsChanged, _2));
 	gSavedSettings.getControl("SkyUseClassicClouds")->getSignal()->connect(boost::bind(&handleCloudSettingsChanged, _2));
 	gSavedSettings.getControl("RenderTransparentWater")->getSignal()->connect(boost::bind(&handleRenderTransparentWaterChanged, _2));
-
-	gSavedSettings.getControl("EmeraldBoobMass")->getSignal()->connect(boost::bind(&handleAvatarBoobMassChanged, _2));
-	gSavedSettings.getControl("EmeraldBoobHardness")->getSignal()->connect(boost::bind(&handleAvatarBoobHardnessChanged, _2));
-	gSavedSettings.getControl("EmeraldBoobVelMax")->getSignal()->connect(boost::bind(&handleAvatarBoobVelMaxChanged, _2));
-	gSavedSettings.getControl("EmeraldBoobFriction")->getSignal()->connect(boost::bind(&handleAvatarBoobFrictionChanged, _2));
-	gSavedSettings.getControl("EmeraldBoobVelMin")->getSignal()->connect(boost::bind(&handleAvatarBoobVelMinChanged, _2));
-	gSavedSettings.getControl("EmeraldBreastPhysicsToggle")->getSignal()->connect(boost::bind(&handleAvatarBoobToggleChanged, _2));
-	gSavedSettings.getControl("EmeraldBoobXYInfluence")->getSignal()->connect(boost::bind(&handleAvatarBoobXYInfluence, _2));
 	
 	gSavedSettings.getControl("AscentAvatarXModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _2));
 	gSavedSettings.getControl("AscentAvatarYModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _2));

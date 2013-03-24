@@ -100,10 +100,10 @@ private:
 
 		for (LLNotificationSet::iterator it = mItems.begin(); it != mItems.end(); ++it)
 		{
-			if (!LLNotifications::instance().templateExists((*it)->getName())) continue;
+			if (!LLNotificationTemplates::instance().templateExists((*it)->getName())) continue;
 
 			// only store notifications flagged as persisting
-			LLNotificationTemplatePtr templatep = LLNotifications::instance().getTemplate((*it)->getName());
+			LLNotificationTemplatePtr templatep = LLNotificationTemplates::instance().getTemplate((*it)->getName());
 			if (!templatep->mPersist) continue;
 
 			data.append((*it)->asLLSD());
@@ -228,7 +228,7 @@ LLNotificationForm::LLNotificationForm(const std::string& name, const LLXMLNodeP
 	LLXMLNodePtr child = xml_node->getFirstChild();
 	while(child)
 	{
-		child = LLNotifications::instance().checkForXMLTemplate(child);
+		child = LLNotificationTemplates::instance().checkForXMLTemplate(child);
 
 		LLSD item_entry;
 		std::string element_name = child->getName()->mString;
@@ -662,7 +662,7 @@ bool LLNotification::isEquivalentTo(LLNotificationPtr that) const
 
 void LLNotification::init(const std::string& template_name, const LLSD& form_elements)
 {
-	mTemplatep = LLNotifications::instance().getTemplate(template_name);
+	mTemplatep = LLNotificationTemplates::instance().getTemplate(template_name);
 	if (!mTemplatep) return;
 
 	const LLStringUtil::format_map_t& default_args = LLTrans::getDefaultArgs();
@@ -1098,12 +1098,19 @@ LLNotificationChannelPtr LLNotifications::getChannel(const std::string& channelN
 	return p->second;
 }
 
+// this function is called once at construction time, after the object is constructed.
+void LLNotificationTemplates::initSingleton()
+{
+	loadTemplates();
+}
 
 // this function is called once at construction time, after the object is constructed.
 void LLNotifications::initSingleton()
 {
-	loadTemplates();
-	createDefaultChannels();
+	loadNotifications();
+	// Cannot create default channels here, since that recursively accesses the singleton.
+	// Instead we call createDefaultChannels() from LLAppViewer::init().
+ 	//createDefaultChannels();
 }
 
 void LLNotifications::createDefaultChannels()
@@ -1142,7 +1149,7 @@ void LLNotifications::createDefaultChannels()
 static std::string sStringSkipNextTime("Skip this dialog next time");
 static std::string sStringAlwaysChoose("Always choose this option");
 
-bool LLNotifications::addTemplate(const std::string &name, 
+bool LLNotificationTemplates::addTemplate(const std::string &name, 
 								  LLNotificationTemplatePtr theTemplate)
 {
 	if (mTemplates.count(name))
@@ -1154,7 +1161,7 @@ bool LLNotifications::addTemplate(const std::string &name,
 	return true;
 }
 
-LLNotificationTemplatePtr LLNotifications::getTemplate(const std::string& name)
+LLNotificationTemplatePtr LLNotificationTemplates::getTemplate(const std::string& name)
 {
 	if (mTemplates.count(name))
 	{
@@ -1166,12 +1173,12 @@ LLNotificationTemplatePtr LLNotifications::getTemplate(const std::string& name)
 	}
 }
 
-bool LLNotifications::templateExists(const std::string& name)
+bool LLNotificationTemplates::templateExists(const std::string& name)
 {
 	return (mTemplates.count(name) != 0);
 }
 
-void LLNotifications::clearTemplates()
+void LLNotificationTemplates::clearTemplates()
 {
 	mTemplates.clear();
 }
@@ -1192,7 +1199,7 @@ void LLNotifications::forceResponse(const LLNotification::Params& params, S32 op
 	temp_notify->respond(response);
 }
 
-LLNotifications::TemplateNames LLNotifications::getTemplateNames() const
+LLNotificationTemplates::TemplateNames LLNotificationTemplates::getTemplateNames() const
 {
 	TemplateNames names;
 	for (TemplateMap::const_iterator it = mTemplates.begin(); it != mTemplates.end(); ++it)
@@ -1242,7 +1249,7 @@ void replaceSubstitutionStrings(LLXMLNodePtr node, StringMap& replacements)
 // returns true if the template request was invalid and there's nothing else we
 // can do with this node, false if you should keep processing (it may have
 // replaced the contents of the node referred to)
-LLXMLNodePtr LLNotifications::checkForXMLTemplate(LLXMLNodePtr item)
+LLXMLNodePtr LLNotificationTemplates::checkForXMLTemplate(LLXMLNodePtr item)
 {
 	if (item->hasName("usetemplate"))
 	{
@@ -1271,7 +1278,7 @@ LLXMLNodePtr LLNotifications::checkForXMLTemplate(LLXMLNodePtr item)
 	return item;
 }
 
-bool LLNotifications::loadTemplates()
+bool LLNotificationTemplates::loadTemplates()
 {
 	const std::string xml_filename = "notifications.xml";
 	LLXMLNodePtr root;
@@ -1289,11 +1296,6 @@ bool LLNotifications::loadTemplates()
 	for (LLXMLNodePtr item = root->getFirstChild();
 		 item.notNull(); item = item->getNextSibling())
 	{
-		// we do this FIRST so that item can be changed if we 
-		// encounter a usetemplate -- we just replace the
-		// current xml node and keep processing
-		item = checkForXMLTemplate(item);
-		
 		if (item->hasName("global"))
 		{
 			std::string global_name;
@@ -1321,7 +1323,35 @@ bool LLNotifications::loadTemplates()
                        " found in " << xml_filename << llendl;
 			continue;
 		}
+	}
+
+	return true;
+}
 		
+bool LLNotifications::loadNotifications()
+{
+	const std::string xml_filename = "notifications.xml";
+	LLXMLNodePtr root;
+	
+	BOOL success  = LLUICtrlFactory::getLayeredXMLNode(xml_filename, root);
+	
+	if (!success || root.isNull() || !root->hasName( "notifications" ))
+	{
+		llerrs << "Problem reading UI Notifications file: " << xml_filename << llendl;
+		return false;
+	}
+	
+	for (LLXMLNodePtr item = root->getFirstChild();
+		 item.notNull(); item = item->getNextSibling())
+	{
+		// we do this FIRST so that item can be changed if we 
+		// encounter a usetemplate -- we just replace the
+		// current xml node and keep processing
+		item = LLNotificationTemplates::instance().checkForXMLTemplate(item);
+		
+		if (!item->hasName("notification"))
+		  continue;
+
 		// now we know we have a notification entry, so let's build it
 		LLNotificationTemplatePtr pTemplate(new LLNotificationTemplate());
 
@@ -1369,7 +1399,7 @@ bool LLNotifications::loadTemplates()
 		for (LLXMLNodePtr child = item->getFirstChild();
 			 !child.isNull(); child = child->getNextSibling())
 		{
-			child = checkForXMLTemplate(child);
+			child = LLNotificationTemplates::instance().checkForXMLTemplate(child);
 			
 			// <url>
 			if (child->hasName("url"))
@@ -1405,7 +1435,7 @@ bool LLNotifications::loadTemplates()
                 pTemplate->mForm = LLNotificationFormPtr(new LLNotificationForm(pTemplate->mName, child));
 			}
 		}
-		addTemplate(pTemplate->mName, pTemplate);
+		LLNotificationTemplates::instance().addTemplate(pTemplate->mName, pTemplate);
 	}
 	
 	//std::ostringstream ostream;
@@ -1485,7 +1515,7 @@ void LLNotifications::update(const LLNotificationPtr pNotif)
 }
 
 
-LLNotificationPtr LLNotifications::find(LLUUID uuid)
+LLNotificationPtr LLNotifications::find(LLUUID const& uuid)
 {
 	LLNotificationPtr target = LLNotificationPtr(new LLNotification(uuid));
 	LLNotificationSet::iterator it=mItems.find(target);
@@ -1505,7 +1535,7 @@ void LLNotifications::forEachNotification(NotificationProcess process)
 	std::for_each(mItems.begin(), mItems.end(), process);
 }
 
-std::string LLNotifications::getGlobalString(const std::string& key) const
+std::string LLNotificationTemplates::getGlobalString(const std::string& key) const
 {
 	GlobalStringMap::const_iterator it = mGlobalStrings.find(key);
 	if (it != mGlobalStrings.end())

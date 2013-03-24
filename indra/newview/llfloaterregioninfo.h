@@ -38,6 +38,8 @@
 #include "llfloater.h"
 #include "llpanel.h"
 
+#include "llenvmanager.h" // for LLEnvironmentSettings
+
 class LLAvatarName;
 struct LLEstateAccessChangeInfo;
 class LLLineEditor;
@@ -50,6 +52,7 @@ class LLInventoryItem;
 class LLCheckBoxCtrl;
 class LLComboBox;
 class LLNameListCtrl;
+class LLRadioGroup;
 class LLSliderCtrl;
 class LLSpinCtrl;
 class LLTextBox;
@@ -57,16 +60,16 @@ class AIFilePicker;
 
 class LLPanelRegionGeneralInfo;
 class LLPanelRegionDebugInfo;
-class LLPanelRegionTextureInfo;
 class LLPanelRegionTerrainInfo;
 class LLPanelEstateInfo;
 class LLPanelEstateCovenant;
+
 
 class LLFloaterRegionInfo : public LLFloater, public LLFloaterSingleton<LLFloaterRegionInfo>
 {
 	friend class LLUISingleton<LLFloaterRegionInfo, VisibilityPolicy<LLFloater> >;
 public:
-	~LLFloaterRegionInfo();
+
 
 	/*virtual*/ void onOpen();
 	/*virtual*/ BOOL postBuild();
@@ -86,14 +89,18 @@ public:
 
 	static LLPanelEstateInfo* getPanelEstate();
 	static LLPanelEstateCovenant* getPanelCovenant();
+	static LLPanelRegionTerrainInfo* getPanelRegionTerrain();
 
 	// from LLPanel
 	virtual void refresh();
 	
-	static void requestRegionInfo();
+	void requestRegionInfo();
 
 protected:
 	LLFloaterRegionInfo(const LLSD& seed);
+	~LLFloaterRegionInfo();
+
+	void onTabSelected(const LLSD& param);
 	void refreshFromRegion(LLViewerRegion* region);
 
 	// member data
@@ -109,10 +116,11 @@ protected:
 class LLPanelRegionInfo : public LLPanel
 {
 public:
-	LLPanelRegionInfo() : LLPanel(std::string("Region Info Panel")) {}
-	static void onBtnSet(void* user_data);
-	static void onChangeChildCtrl(LLUICtrl* ctrl, void* user_data);
-	static void onChangeAnything(LLUICtrl* ctrl, void* user_data);
+	LLPanelRegionInfo();
+
+	void onBtnSet();
+	void onChangeChildCtrl(LLUICtrl* ctrl);
+	void onChangeAnything();
 	static void onChangeText(LLLineEditor* caller, void* user_data);
 	
 	virtual bool refreshFromRegion(LLViewerRegion* region);
@@ -120,16 +128,19 @@ public:
 	
 	virtual BOOL postBuild();
 	virtual void updateChild(LLUICtrl* child_ctrl);
+	virtual void onOpen(const LLSD& key) {}
 	
 	void enableButton(const std::string& btn_name, BOOL enable = TRUE);
 	void disableButton(const std::string& btn_name);
 	
+	void onClickManageTelehub();
+
 protected:
 	void initCtrl(const std::string& name);
 	void initHelpBtn(const std::string& name, const std::string& xml_alert);
 
-	// Callback for all help buttons, data is name of XML alert to show.
-	static void onClickHelp(void* data);
+	// Callback for all help buttons, xml_alert is the name of XML alert to show.
+	void onClickHelp(const std::string& xml_alert);
 	
 	// Returns TRUE if update sent and apply button should be
 	// disabled.
@@ -153,6 +164,7 @@ protected:
 
 class LLPanelRegionGeneralInfo : public LLPanelRegionInfo
 {
+
 public:
 	LLPanelRegionGeneralInfo()
 		:	LLPanelRegionInfo()	{}
@@ -162,16 +174,16 @@ public:
 	
 	// LLPanel
 	virtual BOOL postBuild();
+
 protected:
 	virtual BOOL sendUpdate();
-	
-	static void onClickKick(void* userdata);
+	void onClickKick();
 	void onKickCommit(const uuid_vec_t& ids);
 	static void onClickKickAll(void* userdata);
 	bool onKickAllCommit(const LLSD& notification, const LLSD& response);
 	static void onClickMessage(void* userdata);
 	bool onMessageCommit(const LLSD& notification, const LLSD& response);
-	static void onClickManageTelehub(void* data);
+
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -190,14 +202,14 @@ public:
 protected:
 	virtual BOOL sendUpdate();
 
-	static void onClickChooseAvatar(void*);
+	void onClickChooseAvatar();
 	void callbackAvatarID(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names);
 	static void onClickReturn(void *);
 	bool callbackReturn(const LLSD& notification, const LLSD& response);
 	static void onClickTopColliders(void*);
 	static void onClickTopScripts(void*);
 	static void onClickRestart(void* data);
-	bool callbackRestart(const LLSD& notification, const LLSD& response, S32 seconds);
+	bool callbackRestart(const LLSD& notification, const LLSD& response);
 	static void onClickCancelRestart(void* data);
 	
 private:
@@ -206,43 +218,25 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////
 
-class LLPanelRegionTextureInfo : public LLPanelRegionInfo
-{
-public:
-	LLPanelRegionTextureInfo();
-	~LLPanelRegionTextureInfo() {}
-	
-	virtual bool refreshFromRegion(LLViewerRegion* region);
-	
-	// LLPanel && LLView
-	virtual BOOL postBuild();
-	
-protected:
-	virtual BOOL sendUpdate();
-	
-	static void onClickDump(void* data);
-	BOOL validateTextureSizes();
-};
-
-/////////////////////////////////////////////////////////////////////////////
-
 class LLPanelRegionTerrainInfo : public LLPanelRegionInfo
 {
-public:
-	LLPanelRegionTerrainInfo()
-		:	LLPanelRegionInfo() {}
-	~LLPanelRegionTerrainInfo() {}
-	// LLPanel
-	virtual BOOL postBuild();
-	
-	virtual bool refreshFromRegion(LLViewerRegion* region);
-	
-protected:
-	virtual BOOL sendUpdate();
+	LOG_CLASS(LLPanelRegionTerrainInfo);
 
-	static void onChangeUseEstateTime(LLUICtrl* ctrl, void* user_data);
-	static void onChangeFixedSun(LLUICtrl* ctrl, void* user_data);
-	static void onChangeSunHour(LLUICtrl* ctrl, void*);
+public:
+	LLPanelRegionTerrainInfo() : LLPanelRegionInfo() {}
+	~LLPanelRegionTerrainInfo() {}
+
+	virtual BOOL postBuild();												// LLPanel
+	
+	virtual bool refreshFromRegion(LLViewerRegion* region);					// refresh local settings from region update from simulator
+	
+	BOOL validateTextureSizes();
+
+protected:
+
+	//static void onChangeAnything(LLUICtrl* ctrl, void* userData);			// callback for any change, to enable commit button
+
+	virtual BOOL sendUpdate();
 
 	static void onClickDownloadRaw(void*);
 	void onClickDownloadRaw_continued(AIFilePicker* filepicker);
@@ -259,27 +253,27 @@ class LLPanelEstateInfo : public LLPanelRegionInfo
 public:
 	static void initDispatch(LLDispatcher& dispatch);
 	
-	static void onChangeFixedSun(LLUICtrl* ctrl, void* user_data);
-	static void onChangeUseGlobalTime(LLUICtrl* ctrl, void* user_data);
+	void onChangeFixedSun();
+	void onChangeUseGlobalTime();
 	
-	static void onClickEditSky(void* userdata);
-	static void onClickEditSkyHelp(void* userdata);	
-	static void onClickEditDayCycle(void* userdata);
-	static void onClickEditDayCycleHelp(void* userdata);	
+	void onClickEditSky();
+	void onClickEditSkyHelp();
+	void onClickEditDayCycle();
+	void onClickEditDayCycleHelp();
 
-	static void onClickAddAllowedAgent(void* user_data);
-	static void onClickRemoveAllowedAgent(void* user_data);
-	static void onClickAddAllowedGroup(void* user_data);
-	static void onClickRemoveAllowedGroup(void* user_data);
-	static void onClickAddBannedAgent(void* user_data);
-	static void onClickRemoveBannedAgent(void* user_data);
-	static void onClickAddEstateManager(void* user_data);
-	static void onClickRemoveEstateManager(void* user_data);
-	static void onClickKickUser(void* userdata);
+	void onClickAddAllowedAgent();
+	void onClickRemoveAllowedAgent();
+	void onClickAddAllowedGroup();
+	void onClickRemoveAllowedGroup();
+	void onClickAddBannedAgent();
+	void onClickRemoveBannedAgent();
+	void onClickAddEstateManager();
+	void onClickRemoveEstateManager();
+	void onClickKickUser();
 
 	// Group picker callback is different, can't use core methods below
 	bool addAllowedGroup(const LLSD& notification, const LLSD& response);
-	static void addAllowedGroup2(LLUUID id, void* data);
+	static void addAllowedGroup2(LLUUID id, void*);
 
 	// Core methods for all above add/remove button clicks
 	static void accessAddCore(U32 operation_flag, const std::string& dialog_name);
@@ -305,6 +299,9 @@ public:
 	
 	void updateControls(LLViewerRegion* region);
 	
+	static void updateEstateName(const std::string& name);
+	static void updateEstateOwnerName(const std::string& name);
+
 	virtual bool refreshFromRegion(LLViewerRegion* region);
 	virtual bool estateUpdate(LLMessageSystem* msg);
 	
@@ -313,53 +310,23 @@ public:
 	virtual void updateChild(LLUICtrl* child_ctrl);
 	virtual void refresh();
 	
-	U32 computeEstateFlags();
-	void setEstateFlags(U32 flags);
+	void refreshFromEstate();
 	
-	BOOL getGlobalTime();
-	void setGlobalTime(bool b);
-
-	BOOL getFixedSun();
-
-	F32 getSunHour();
-	void setSunHour(F32 sun_hour);
-	
-	const std::string getEstateName() const;
-	void setEstateName(const std::string& name);
-
-	U32 getEstateID() const { return mEstateID; }
-	void setEstateID(U32 estate_id) { mEstateID = estate_id; }
 	static bool isLindenEstate();
 	
 	const std::string getOwnerName() const;
 	void setOwnerName(const std::string& name);
-
-	const std::string getAbuseEmailAddress() const;
-	void setAbuseEmailAddress(const std::string& address);
-
-	// If visible from mainland, allowed agent and allowed groups
-	// are ignored, so must disable UI.
-	void setAccessAllowedEnabled(bool enable_agent, bool enable_group, bool enable_ban);
-
-	// this must have the same function signature as
-	// llmessage/llcachename.h:LLCacheNameCallback
-	static void callbackCacheName(
-		const LLUUID& id,
-		const std::string& full_name,
-		bool is_group);
+	void setOwnerPNSName(const LLUUID& agent_id, const LLAvatarName& av_name);
 
 protected:
 	virtual BOOL sendUpdate();
 	// confirmation dialog callback
 	bool callbackChangeLindenEstate(const LLSD& notification, const LLSD& response);
 
-	void commitEstateInfoDataserver();
-	bool commitEstateInfoCaps();
 	void commitEstateAccess();
 	void commitEstateManagers();
 	
 	void clearAccessLists();
-	BOOL checkRemovalButton(std::string name);
 	BOOL checkSunHourSlider(LLUICtrl* child_ctrl);
 
 	U32 mEstateID;
@@ -425,6 +392,70 @@ protected:
 	LLUUID					mCovenantID;
 	LLViewerTextEditor*		mEditor;
 	EAssetStatus			mAssetStatus;
+};
+
+/////////////////////////////////////////////////////////////////////////////
+
+class LLPanelEnvironmentInfo : public LLPanelRegionInfo
+{
+	LOG_CLASS(LLPanelEnvironmentInfo);
+
+public:
+	LLPanelEnvironmentInfo();
+
+	// LLPanel
+	/*virtual*/ BOOL postBuild();
+
+	// LLPanelRegionInfo
+	/*virtual*/ void onOpen(const LLSD& key);
+
+	// LLView
+	/*virtual*/ void handleVisibilityChange(BOOL new_visibility);
+
+	// LLPanelRegionInfo
+	/*virtual*/ bool refreshFromRegion(LLViewerRegion* region);
+
+private:
+	void refresh();
+	void setControlsEnabled(bool enabled);
+	void setApplyProgress(bool started);
+	void setDirty(bool dirty);
+
+	void sendRegionSunUpdate();
+	void fixEstateSun();
+
+	void populateWaterPresetsList();
+	void populateSkyPresetsList();
+	void populateDayCyclesList();
+
+	bool getSelectedWaterParams(LLSD& water_params);
+	bool getSelectedSkyParams(LLSD& sky_params, std::string& preset_name);
+	bool getSelectedDayCycleParams(LLSD& day_cycle, LLSD& sky_map, short& scope);
+
+	void onSwitchRegionSettings();
+	void onSwitchDayCycle();
+
+	void onSelectWaterPreset();
+	void onSelectSkyPreset();
+	void onSelectDayCycle();
+
+	void onBtnApply();
+	void onBtnCancel();
+
+	void onRegionSettingschange();
+	void onRegionSettingsApplied(bool ok);
+
+	/// New environment settings that are being applied to the region.
+	LLEnvironmentSettings	mNewRegionSettings;
+
+	bool			mEnableEditing;
+
+	LLRadioGroup*	mRegionSettingsRadioGroup;
+	LLRadioGroup*	mDayCycleSettingsRadioGroup;
+
+	LLComboBox*		mWaterPresetCombo;
+	LLComboBox*		mSkyPresetCombo;
+	LLComboBox*		mDayCyclePresetCombo;
 };
 
 #endif

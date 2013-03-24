@@ -80,7 +80,7 @@
 #include "llfirstuse.h"
 #include "llrender.h"
 #include "llvector4a.h"
-#include "llfont.h"
+#include "llfontfreetype.h"
 #include "llvocache.h"
 #include "llvopartgroup.h"
 #include "llfloaterteleporthistory.h"
@@ -117,8 +117,6 @@
 #include "llimageworker.h"
 
 // <edit>
-#include "lldelayeduidelete.h"
-#include "llbuildnewviewsscheduler.h"
 #include "aicurleasyrequeststatemachine.h"
 #include "aihttptimeoutpolicy.h"
 // </edit>
@@ -236,6 +234,9 @@ extern BOOL gRandomizeFramerate;
 extern BOOL gPeriodicSlowFrame;
 extern BOOL gDebugGL;
 
+extern void startEngineThread(void);
+extern void stopEngineThread(void);
+
 ////////////////////////////////////////////////////////////
 // All from the last globals push...
 const F32 DEFAULT_AFK_TIMEOUT = 5.f * 60.f; // time with no input before user flagged as Away From Keyboard
@@ -243,7 +244,6 @@ const F32 DEFAULT_AFK_TIMEOUT = 5.f * 60.f; // time with no input before user fl
 F32 gSimLastTime; // Used in LLAppViewer::init and send_stats()
 F32 gSimFrames;
 
-BOOL gAllowTapTapHoldRun = TRUE;
 BOOL gShowObjectUpdates = FALSE;
 BOOL gUseQuickTime = TRUE;
 
@@ -283,9 +283,6 @@ LLUUID gSystemFolderAssets;
 
 BOOL				gDisconnected = FALSE;
 
-// Minimap scale in pixels per region
-
-
 // used to restore texture state after a mode switch
 LLFrameTimer	gRestoreGLTimer;
 BOOL			gRestoreGL = FALSE;
@@ -322,9 +319,6 @@ const std::string ERROR_MARKER_FILE_NAME("Singularity.error_marker");
 const std::string LLERROR_MARKER_FILE_NAME("Singularity.llerror_marker");
 const std::string LOGOUT_MARKER_FILE_NAME("Singularity.logout_marker");
 static BOOL gDoDisconnect = FALSE;
-// <edit>
-//static BOOL gBusyDisconnect = FALSE;
-// </edit>
 static std::string gLaunchFileOnQuit;
 
 // Used on Win32 for other apps to identify our window (eg, win_setup)
@@ -512,7 +506,6 @@ static void settings_to_globals()
 	gAgent.setHideGroupTitle(gSavedSettings.getBOOL("RenderHideGroupTitle"));
 		
 	gDebugWindowProc = gSavedSettings.getBOOL("DebugWindowProc");
-	gAllowTapTapHoldRun = gSavedSettings.getBOOL("AllowTapTapHoldRun");
 	gShowObjectUpdates = gSavedSettings.getBOOL("ShowObjectUpdates");
 	LLWorldMapView::sMapScale =  llmax(.1f,gSavedSettings.getF32("MapScale"));
 	LLHoverView::sShowHoverTips = gSavedSettings.getBOOL("ShowHoverTips");
@@ -641,9 +634,6 @@ bool LLAppViewer::init()
 	// Logging is initialized. Now it's safe to start the error thread.
 	startErrorThread();
 
-	gDeleteScheduler = new LLDeleteScheduler();
-	gBuildNewViewsScheduler = new LLBuildNewViewsScheduler();
-	// </edit>
 	//
 	// OK to write stuff to logs now, we've now crash reported if necessary
 	//
@@ -662,7 +652,7 @@ bool LLAppViewer::init()
 
     mAlloc.setProfilingEnabled(gSavedSettings.getBOOL("MemProfiling"));
 
-	AIStateMachine::setMaxCount(gSavedSettings.getU32("StateMachineMaxTime"));
+	AIEngine::setMaxCount(gSavedSettings.getU32("StateMachineMaxTime"));
 
 	{
 		AIHTTPTimeoutPolicy policy_tmp(
@@ -695,7 +685,36 @@ bool LLAppViewer::init()
     initThreads();
 	LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ;
 
+	// Load art UUID information, don't require these strings to be declared in code.
+	std::string colors_base_filename = gDirUtilp->findSkinnedFilename("colors_base.xml");
+	LL_DEBUGS("InitInfo") << "Loading base colors from " << colors_base_filename << LL_ENDL;
+	gColors.loadFromFileLegacy(colors_base_filename, FALSE, TYPE_COL4U);
 
+	// Load overrides from user colors file
+	std::string user_colors_filename = gDirUtilp->findSkinnedFilename("colors.xml");
+	LL_DEBUGS("InitInfo") << "Loading user colors from " << user_colors_filename << LL_ENDL;
+	if (gColors.loadFromFileLegacy(user_colors_filename, FALSE, TYPE_COL4U) == 0)
+	{
+		LL_DEBUGS("InitInfo") << "Cannot load user colors from " << user_colors_filename << LL_ENDL;
+	}
+
+	// Widget construction depends on LLUI being initialized
+	LLUI::initClass(&gSavedSettings,
+		&gSavedSettings,
+		&gColors,
+		LLUIImageList::getInstance(),
+		ui_audio_callback,
+		&LLUI::getScaleFactor());
+	LL_INFOS("InitInfo") << "UI initialized." << LL_ENDL ;
+
+	LLUICtrlFactory::getInstance()->setupPaths(); // update paths with correct language set
+
+	// Setup LLTrans after LLUI::initClass has been called.
+	LLTrans::parseStrings("strings.xml", default_trans_args);
+
+	// Setup notifications after LLUI::initClass() has been called.
+	LLNotifications::instance().createDefaultChannels();
+	LL_INFOS("InitInfo") << "Notifications initialized." << LL_ENDL ;
 	
     writeSystemInfo();
 
@@ -744,36 +763,7 @@ bool LLAppViewer::init()
 		LLError::setPrintLocation(true);
 	}
 	
-	// Load art UUID information, don't require these strings to be declared in code.
-	std::string colors_base_filename = gDirUtilp->findSkinnedFilename("colors_base.xml");
-	LL_DEBUGS("InitInfo") << "Loading base colors from " << colors_base_filename << LL_ENDL;
-	gColors.loadFromFileLegacy(colors_base_filename, FALSE, TYPE_COL4U);
-
-	// Load overrides from user colors file
-	std::string user_colors_filename = gDirUtilp->findSkinnedFilename("colors.xml");
-	LL_DEBUGS("InitInfo") << "Loading user colors from " << user_colors_filename << LL_ENDL;
-	if (gColors.loadFromFileLegacy(user_colors_filename, FALSE, TYPE_COL4U) == 0)
-	{
-		LL_DEBUGS("InitInfo") << "Cannot load user colors from " << user_colors_filename << LL_ENDL;
-	}
-
-	// Widget construction depends on LLUI being initialized
-	LLUI::initClass(&gSavedSettings, 
-					&gSavedSettings, 
-					&gColors, 
-					LLUIImageList::getInstance(),
-					ui_audio_callback,
-					&LLUI::getScaleFactor()
-					);
-				
-	// Setup notifications after LLUI::initClass() has been called.
-	LLNotifications::instance();
-	LL_INFOS("InitInfo") << "Notifications initialized." << LL_ENDL ;
-	
 	LLWeb::initClass();			  // do this after LLUI
-
-	LLUICtrlFactory::getInstance()->setupPaths(); // update paths with correct language set
-	LLTrans::parseStrings("strings.xml", default_trans_args);
 
 	LLTextEditor::setURLCallbacks(&LLWeb::loadURL,
 				&LLURLDispatcher::dispatchFromTextEditor,
@@ -808,7 +798,7 @@ bool LLAppViewer::init()
 	// Modify settings based on system configuration and compile options
 	settings_modify();
 	// Work around for a crash bug when changing OpenGL settings
-	LLFont::sOpenGLcrashOnRestart = (getenv("LL_OPENGL_RESTART_CRASH_BUG") != NULL);
+	LLFontFreetype::sOpenGLcrashOnRestart = (getenv("LL_OPENGL_RESTART_CRASH_BUG") != NULL);
 
 	// Find partition serial number (Windows) or hardware serial (Mac)
 	mSerialNumber = generateSerialNumber();
@@ -885,7 +875,7 @@ bool LLAppViewer::init()
 	{	
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
-		std::string msg = LLNotifications::instance().getGlobalString("UnsupportedGLRequirements");
+		std::string msg = LLNotificationTemplates::instance().getGlobalString("UnsupportedGLRequirements");
 		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
 			msg,
@@ -900,7 +890,7 @@ bool LLAppViewer::init()
 	{
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
-		std::string msg = LLNotifications::instance().getGlobalString("UnsupportedCPUSSE2");
+		std::string msg = LLNotificationTemplates::instance().getGlobalString("UnsupportedCPUSSE2");
 		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
 			msg,
@@ -914,7 +904,7 @@ bool LLAppViewer::init()
 	{
 		// can't use an alert here since we're exiting and
 		// all hell breaks lose.
-		std::string msg = LNotifications::instance().getGlobalString("UnsupportedCPUSSE2");
+		std::string msg = LNotificationTemplates::instance().getGlobalString("UnsupportedCPUSSE2");
 		LLStringUtil::format(msg,LLTrans::getDefaultArgs());
 		OSMessageBox(
 			msg,
@@ -932,31 +922,31 @@ bool LLAppViewer::init()
 		std::string minSpecs;
 		
 		// get cpu data from xml
-		std::stringstream minCPUString(LLNotifications::instance().getGlobalString("UnsupportedCPUAmount"));
+		std::stringstream minCPUString(LLNotificationTemplates::instance().getGlobalString("UnsupportedCPUAmount"));
 		S32 minCPU = 0;
 		minCPUString >> minCPU;
 
 		// get RAM data from XML
-		std::stringstream minRAMString(LLNotifications::instance().getGlobalString("UnsupportedRAMAmount"));
+		std::stringstream minRAMString(LLNotificationTemplates::instance().getGlobalString("UnsupportedRAMAmount"));
 		U64 minRAM = 0;
 		minRAMString >> minRAM;
 		minRAM = minRAM * 1024 * 1024;
 
 		if(!LLFeatureManager::getInstance()->isGPUSupported() && LLFeatureManager::getInstance()->getGPUClass() != GPU_CLASS_UNKNOWN)
 		{
-			minSpecs += LLNotifications::instance().getGlobalString("UnsupportedGPU");
+			minSpecs += LLNotificationTemplates::instance().getGlobalString("UnsupportedGPU");
 			minSpecs += "\n";
 			unsupported = true;
 		}
 		if(gSysCPU.getMHz() < minCPU)
 		{
-			minSpecs += LLNotifications::instance().getGlobalString("UnsupportedCPU");
+			minSpecs += LLNotificationTemplates::instance().getGlobalString("UnsupportedCPU");
 			minSpecs += "\n";
 			unsupported = true;
 		}
 		if(gSysMemory.getPhysicalMemoryClamped() < minRAM)
 		{
-			minSpecs += LLNotifications::instance().getGlobalString("UnsupportedRAM");
+			minSpecs += LLNotificationTemplates::instance().getGlobalString("UnsupportedRAM");
 			minSpecs += "\n";
 			unsupported = true;
 		}
@@ -988,6 +978,11 @@ bool LLAppViewer::init()
 	gSimFrames = (F32)gFrameCount;
 
 	LLViewerJoystick::getInstance()->init(false);
+
+	// Finish windlight initialization.
+	LLWLParamManager::instance().initHack();
+	// Use prefered Environment.
+	LLEnvManagerNew::instance().usePrefs();
 
 	gGLActive = FALSE;
 	return true;
@@ -1096,7 +1091,6 @@ static LLFastTimer::DeclareTimer FTM_STATEMACHINE("State Machine");
 
 bool LLAppViewer::mainLoop()
 {
-	LLMemType mt1(LLMemType::MTYPE_MAIN);
 	mMainloopTimeout = new LLWatchdogTimeout();
 	// *FIX:Mani - Make this a setting, once new settings exist in this branch.
 	
@@ -1216,7 +1210,6 @@ bool LLAppViewer::mainLoop()
 					&& !gViewerWindow->getShowProgress()
 					&& !gFocusMgr.focusLocked())
 				{
-					LLMemType mjk(LLMemType::MTYPE_JOY_KEY);
 					joystick->scanJoystick();
 					gKeyboard->scanKeyboard();
 					if(isCrouch)
@@ -1236,7 +1229,6 @@ bool LLAppViewer::mainLoop()
 
 					if (gAres != NULL && gAres->isInitialized())
 					{
-						LLMemType mt_ip(LLMemType::MTYPE_IDLE_PUMP);
 						pingMainloopTimeout("Main:ServicePump");				
 						LLFastTimer t4(FTM_PUMP);
 						{
@@ -1285,7 +1277,6 @@ bool LLAppViewer::mainLoop()
 
 			// Sleep and run background threads
 			{
-				LLMemType mt_sleep(LLMemType::MTYPE_SLEEP);
 				LLFastTimer t2(FTM_SLEEP);
 				static const LLCachedControl<bool> run_multiple_threads("RunMultipleThreads",false);
 				static const LLCachedControl<S32> yield_time("YieldTime", -1);
@@ -1833,6 +1824,7 @@ bool LLAppViewer::cleanup()
 	llinfos << "Message system deleted." << llendflush;
 
 	LLApp::stopErrorThread();			// The following call is not thread-safe. Have to stop all threads.
+	stopEngineThread();
 	AICurlInterface::cleanupCurl();
 
 	// Cleanup settings last in case other classes reference them.
@@ -1909,6 +1901,9 @@ bool LLAppViewer::initThreads()
 	{
 		LLWatchdog::getInstance()->init(watchdog_killer_callback);
 	}
+
+	// State machine thread.
+	startEngineThread();
 
 	AICurlInterface::startCurlThread(gSavedSettings.getU32("CurlMaxTotalConcurrentConnections"),
 		                             gSavedSettings.getU32("CurlConcurrentConnectionsPerHost"),
@@ -2202,7 +2197,6 @@ bool LLAppViewer::initConfiguration()
 	LLFirstUse::addConfigVariable("FirstSculptedPrim");
 	LLFirstUse::addConfigVariable("FirstVoice");
 	LLFirstUse::addConfigVariable("FirstMedia");
-	LLFirstUse::addConfigVariable("FirstPhysicsWearable");
 	
 // [RLVa:KB] - Checked: RLVa-1.0.3a (2009-09-10) | Added: RLVa-1.0.3a
 	//LLFirstUse::addConfigVariable(RLV_SETTING_FIRSTUSE_DETACH);
@@ -2697,25 +2691,15 @@ void LLAppViewer::cleanupSavedSettings()
 {
 	gSavedSettings.setBOOL("MouseSun", FALSE);
 
-	gSavedSettings.setBOOL("FlyBtnState", FALSE);
-
-	gSavedSettings.setBOOL("FirstPersonBtnState", FALSE);
-	gSavedSettings.setBOOL("ThirdPersonBtnState", TRUE);
-	gSavedSettings.setBOOL("BuildBtnState", FALSE);
-
 	gSavedSettings.setBOOL("UseEnergy", TRUE);				// force toggle to turn off, since sends message to simulator
 
 	gSavedSettings.setBOOL("DebugWindowProc", gDebugWindowProc);
 		
-	gSavedSettings.setBOOL("AllowTapTapHoldRun", gAllowTapTapHoldRun);
 	gSavedSettings.setBOOL("ShowObjectUpdates", gShowObjectUpdates);
 	
-	if (!gNoRender)
+	if (!gNoRender && gDebugView)
 	{
-		if (gDebugView)
-		{
-			gSavedSettings.setBOOL("ShowDebugConsole", gDebugView->mDebugConsolep->getVisible());
-		}
+		gSavedSettings.setBOOL("ShowDebugConsole", gDebugView->mDebugConsolep->getVisible());
 	}
 
 	// save window position if not fullscreen
@@ -3823,7 +3807,6 @@ static LLFastTimer::DeclareTimer FTM_VLMANAGER("VL Manager");
 ///////////////////////////////////////////////////////
 void LLAppViewer::idle()
 {
-	LLMemType mt_idle(LLMemType::MTYPE_IDLE);
 	pingMainloopTimeout("Main:Idle");
 	
 	// Update frame timers
@@ -3865,7 +3848,7 @@ void LLAppViewer::idle()
 
 	{
 		LLFastTimer t(FTM_STATEMACHINE);
-		AIStateMachine::mainloop();
+		gMainThreadEngine.mainloop();
 	}
 
 	// Must wait until both have avatar object and mute list, so poll
@@ -4446,7 +4429,6 @@ static LLFastTimer::DeclareTimer FTM_DYNAMIC_THROTTLE("Dynamic Throttle");
 static LLFastTimer::DeclareTimer FTM_CHECK_REGION_CIRCUIT("Check Region Circuit");
 void LLAppViewer::idleNetwork()
 {
-	LLMemType mt_in(LLMemType::MTYPE_IDLE_NETWORK);
 	pingMainloopTimeout("idleNetwork");
 
 	gObjectList.mNumNewObjects = 0;

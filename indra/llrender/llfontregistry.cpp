@@ -27,6 +27,7 @@
 
 #include "linden_common.h"
 #include "llgl.h"
+#include "llfontfreetype.h"
 #include "llfontgl.h"
 #include "llfontregistry.h"
 #include <boost/tokenizer.hpp>
@@ -188,21 +189,20 @@ bool LLFontRegistry::parseFontInfo(const std::string& xml_filename)
 		 path_it != xml_paths.end();
 		 ++path_it)
 	{
-	
 		LLXMLNodePtr root;
 		std::string full_filename = gDirUtilp->findSkinnedFilename(*path_it, xml_filename);
 		bool parsed_file = LLXMLNode::parseFile(full_filename, root, NULL);
 
 		if (!parsed_file)
 			continue;
-		
+
 		if ( root.isNull() || ! root->hasName( "fonts" ) )
 		{
 			llwarns << "Bad font info file: "
 					<< full_filename << llendl;
 			continue;
 		}
-		
+
 		std::string root_name;
 		root->getAttributeString("name",root_name);
 		if (root->hasName("fonts"))
@@ -214,7 +214,7 @@ bool LLFontRegistry::parseFontInfo(const std::string& xml_filename)
 	}
 	if (success)
 		dump();
-	
+
 	return success;
 }
 

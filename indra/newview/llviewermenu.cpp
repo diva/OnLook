@@ -141,6 +141,8 @@
 #include "llfloatermute.h"
 #include "llfloateropenobject.h"
 #include "llfloateroutbox.h"
+#include "llfloaterpathfindingcharacters.h"
+#include "llfloaterpathfindinglinksets.h"
 #include "llfloaterpermissionsmgr.h"
 #include "llfloaterperms.h"
 #include "llfloaterpostprocess.h"
@@ -165,7 +167,6 @@
 #include "llframestats.h"
 #include "llframestatview.h"
 #include "llfasttimerview.h"
-#include "llmemoryview.h"
 #include "llgivemoney.h"
 #include "llgroupmgr.h"
 #include "llhoverview.h"
@@ -251,9 +252,6 @@
 #include "lltexlayer.h"
 
 // <edit>
-#include "hgfloatertexteditor.h"
-#include "llfloatervfs.h"
-#include "llfloatervfsexplorer.h"
 #include "llfloatermessagelog.h"
 #include "shfloatermediaticker.h"
 #include "llpacketring.h"
@@ -503,8 +501,6 @@ void handle_hide_typing_notification(void*);
 void handle_close_all_notifications(void*);
 void handle_open_message_log(void*);
 void handle_edit_ao(void*);
-void handle_local_assets(void*);
-void handle_vfs_explorer(void*);
 void handle_sounds_explorer(void*);
 void handle_blacklist(void*);
 // </edit>
@@ -800,10 +796,7 @@ void init_menus()
 	gMenuHolder->childSetLabelArg("Upload Sound", "[UPLOADFEE]", fee);
 	gMenuHolder->childSetLabelArg("Upload Animation", "[UPLOADFEE]", fee);
 	gMenuHolder->childSetLabelArg("Bulk Upload", "[UPLOADFEE]", fee);
-	gMenuHolder->childSetLabelArg("ImportUpload", "[UPLOADFEE]", fee);
 	gMenuHolder->childSetLabelArg("Buy and Sell L$...", "[CURRENCY]",
-		gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
-	gMenuHolder->childSetLabelArg("Reload Balance", "[CURRENCY]",
 		gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 
 	gAFKMenu = gMenuBarView->getChild<LLMenuItemCallGL>("Set Away", TRUE);
@@ -973,14 +966,6 @@ void init_client_menu(LLMenuGL* menu)
 										&get_visibility,
 										(void*)gDebugView->mFastTimerView,
 										  '9', MASK_CONTROL|MASK_SHIFT ) );
-//#if MEM_TRACK_MEM
-		sub->addChild(new LLMenuItemCheckGL("Memory", 
-										&toggle_visibility,
-										NULL,
-										&get_visibility,
-										(void*)gDebugView->mMemoryView,
-										  '0', MASK_CONTROL|MASK_SHIFT ) );
-//#endif
 		
 		sub->addSeparator();
 		
@@ -1670,7 +1655,7 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 
 	menu->addChild(sub_menu);
 
-	menu->addChild(new LLMenuItemToggleGL("Tap-Tap-Hold To Run", &gAllowTapTapHoldRun));
+	menu->addChild(new LLMenuItemCheckGL("Tap-Tap-Hold To Run", menu_toggle_control, NULL, menu_check_control, (void*)"AllowTapTapHoldRun"));
 	menu->addChild(new LLMenuItemCallGL("Force Params to Default", &LLAgent::clearVisualParams, NULL));
 	menu->addChild(new LLMenuItemCallGL("Reload Vertex Shader", &reload_vertex_shader, NULL));
 	menu->addChild(new LLMenuItemToggleGL("Animation Info", &LLVOAvatar::sShowAnimationDebug));
@@ -2881,15 +2866,49 @@ class LLObjectMeasure : public view_listener_t
 	}
 };
 
+class LLObjectPFLinksetsSelected : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLFloaterPathfindingLinksets::openLinksetsWithSelectedObjects();
+		return true;
+	}
+};
+
 bool enable_object_select_in_pathfinding_linksets()
 {
 	return LLPathfindingManager::getInstance()->isPathfindingEnabledForCurrentRegion() && LLSelectMgr::getInstance()->selectGetEditableLinksets();
 }
 
+class LLObjectEnablePFLinksetsSelected : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		return enable_object_select_in_pathfinding_linksets();
+	}
+};
+
+class LLObjectPFCharactersSelected : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLFloaterPathfindingCharacters::openCharactersWithSelectedObjects();
+		return true;
+	}
+};
+
 bool enable_object_select_in_pathfinding_characters()
 {
 	return LLPathfindingManager::getInstance()->isPathfindingEnabledForCurrentRegion() &&  LLSelectMgr::getInstance()->selectGetViewableCharacters();
 }
+
+class LLObjectEnablePFCharactersSelected : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		return enable_object_select_in_pathfinding_characters();
+	}
+};
 
 class LLAvatarAnims : public view_listener_t
 {
@@ -3809,16 +3828,6 @@ void handle_open_message_log(void*)
 void handle_edit_ao(void*)
 {
 	LLFloaterAO::show(NULL);
-}
-
-void handle_local_assets(void*)
-{
-
-}
-
-void handle_vfs_explorer(void*)
-{
-
 }
 
 void handle_sounds_explorer(void*)
@@ -4841,7 +4850,14 @@ class LLToolsTakeCopy : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if (LLSelectMgr::getInstance()->getSelection()->isEmpty()) return true;
+		handle_take_copy();
+		return true;
+	}
+};
+
+void handle_take_copy()
+{
+	if (LLSelectMgr::getInstance()->getSelection()->isEmpty()) return;
 // [RLVa:KB] - Checked: 2010-03-07 (RLVa-1.2.0c) | Modified: RLVa-1.2.0a
 	if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStand()) )
 	{
@@ -4849,16 +4865,13 @@ class LLToolsTakeCopy : public view_listener_t
 		LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
 		RlvSelectIsSittingOn f(gAgentAvatarp);
 		if ( (hSel.notNull()) && (hSel->getFirstRootNode(&f, TRUE) != NULL) )
-			return true;
+			return;
 	}
 // [/RLVa:KB]
 
-		const LLUUID& category_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_OBJECT);
-		derez_objects(DRD_ACQUIRE_TO_AGENT_INVENTORY, category_id);
-
-		return true;
-	}
-};
+	const LLUUID& category_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_OBJECT);
+	derez_objects(DRD_ACQUIRE_TO_AGENT_INVENTORY, category_id);
+}
 
 // You can return an object to its owner if it is on your land.
 class LLObjectReturn : public view_listener_t
@@ -5145,6 +5158,11 @@ class LLToolsBuyOrTake : public view_listener_t
 		return true;
 	}
 };
+
+bool visible_take_object()
+{
+	return !is_selection_buy_not_take() && enable_take();
+}
 
 class LLToolsEnableBuyOrTake : public view_listener_t
 {
@@ -5782,30 +5800,41 @@ class LLEditDelete : public view_listener_t
 	}
 };
 
+bool enable_object_return()
+{
+	return (!LLSelectMgr::getInstance()->getSelection()->isEmpty() &&
+		(gAgent.isGodlike() || can_derez(DRD_RETURN_TO_OWNER)));
+}
+
 class LLObjectEnableDelete : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool new_value = 
-#ifdef HACKED_GODLIKE_VIEWER
-			TRUE;
-#else
-# ifdef TOGGLE_HACKED_GODLIKE_VIEWER
-			(!LLViewerLogin::getInstance()->isInProductionGrid()
-             && gAgent.isGodlike()) ||
-# endif
-			LLSelectMgr::getInstance()->canDoDelete();
-#endif
-// [RLVa:KB] - Checked: 2009-07-05 (RLVa-1.0.0b)
-		if ( (new_value) && (rlv_handler_t::isEnabled()) )
-		{
-			new_value = rlvCanDeleteOrReturn();
-		}
-// [/RLVa:KB]
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(enable_object_delete());
 		return true;
 	}
 };
+
+bool enable_object_delete()
+{
+	bool new_value =
+#ifdef HACKED_GODLIKE_VIEWER
+	TRUE;
+#else
+# ifdef TOGGLE_HACKED_GODLIKE_VIEWER
+	(!LLViewerLogin::getInstance()->isInProductionGrid()
+     && gAgent.isGodlike()) ||
+# endif
+		LLSelectMgr::getInstance()->canDoDelete();
+#endif
+// [RLVa:KB] - Checked: 2009-07-05 (RLVa-1.0.0b)
+	if ( (new_value) && (rlv_handler_t::isEnabled()) )
+	{
+		new_value = rlvCanDeleteOrReturn();
+	}
+// [/RLVa:KB]
+	return new_value;
+}
 
 class LLEditSearch : public view_listener_t
 {
@@ -5815,6 +5844,49 @@ class LLEditSearch : public view_listener_t
 		return true;
 	}
 };
+
+class LLObjectsReturnPackage
+{
+public:
+	LLObjectsReturnPackage() : mObjectSelection(), mReturnableObjects(), mError(),	mFirstRegion(NULL) {};
+	~LLObjectsReturnPackage()
+	{
+		mObjectSelection.clear();
+		mReturnableObjects.clear();
+		mError.clear();
+		mFirstRegion = NULL;
+	};
+
+	LLObjectSelectionHandle mObjectSelection;
+	LLDynamicArray<LLViewerObjectPtr> mReturnableObjects;
+	std::string mError;
+	LLViewerRegion *mFirstRegion;
+};
+
+static void return_objects(LLObjectsReturnPackage *objectsReturnPackage, const LLSD& notification, const LLSD& response)
+{
+	if (LLNotificationsUtil::getSelectedOption(notification, response) == 0)
+	{
+		// Ignore category ID for this derez destination.
+		derez_objects(DRD_RETURN_TO_OWNER, LLUUID::null, objectsReturnPackage->mFirstRegion, objectsReturnPackage->mError, &objectsReturnPackage->mReturnableObjects);
+	}
+
+	delete objectsReturnPackage;
+}
+
+void handle_object_return()
+{
+	if (!LLSelectMgr::getInstance()->getSelection()->isEmpty())
+	{
+		LLObjectsReturnPackage *objectsReturnPackage = new LLObjectsReturnPackage();
+		objectsReturnPackage->mObjectSelection = LLSelectMgr::getInstance()->getEditSelection();
+
+		// Save selected objects, so that we still know what to return after the confirmation dialog resets selection.
+		get_derezzable_objects(DRD_RETURN_TO_OWNER, objectsReturnPackage->mError, objectsReturnPackage->mFirstRegion, &objectsReturnPackage->mReturnableObjects);
+
+		LLNotificationsUtil::add("ReturnToOwner", LLSD(), LLSD(), boost::bind(&return_objects, objectsReturnPackage, _1, _2));
+	}
+}
 
 class LLObjectDelete : public view_listener_t
 {
@@ -5826,7 +5898,13 @@ class LLObjectDelete : public view_listener_t
 			return true;
 		}
 // [/RLVa:KB]
+		handle_object_delete();
+		return true;
+	}
+};
 
+void handle_object_delete()
+{
 		if (LLSelectMgr::getInstance())
 		{
 			LLSelectMgr::getInstance()->doDelete();
@@ -5838,9 +5916,8 @@ class LLObjectDelete : public view_listener_t
 		// When deleting an object we may not actually be done
 		// Keep selection so we know what to delete when confirmation is needed about the delete
 		gPieObject->hide(TRUE);
-		return true;
-	}
-};
+		return;
+}
 
 void handle_force_delete(void*)
 {
@@ -6742,6 +6819,14 @@ class LLShowFloater : public view_listener_t
 		{
 			LLFloaterOutbox::toggleInstance(LLSD());
 		}
+		else if (floater_name == "pathfinding_linksets")
+		{
+			LLFloaterPathfindingLinksets::toggleInstance(LLSD());
+		}
+		else if (floater_name == "pathfinding_characters")
+		{
+			LLFloaterPathfindingCharacters::toggleInstance(LLSD());
+		}
 		else // Simple codeless floater
 		{
 			LLFloater* floater = LLUICtrlFactory::getInstance()->getBuiltFloater(floater_name);
@@ -6827,6 +6912,14 @@ class LLFloaterVisible : public view_listener_t
 		else if (floater_name == "outbox")
 		{
 			new_value = LLFloaterOutbox::instanceVisible(LLSD());
+		}
+		else if (floater_name == "pathfinding_linksets")
+		{
+			new_value = LLFloaterPathfindingLinksets::instanceVisible(LLSD());
+		}
+		else if (floater_name == "pathfinding_characters")
+		{
+			new_value = LLFloaterPathfindingCharacters::instanceVisible(LLSD());
 		}
 		gMenuHolder->findControl(control_name)->setValue(new_value);
 		return true;
@@ -8044,8 +8137,17 @@ class LLToolsEnableTakeCopy : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool all_valid = false;
-		if (LLSelectMgr::getInstance())
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(enable_object_take_copy());
+		return true;
+	}
+};
+
+bool enable_object_take_copy()
+{
+	bool all_valid = false;
+	if (LLSelectMgr::getInstance())
+	{
+		if (!LLSelectMgr::getInstance()->getSelection()->isEmpty())
 		{
 			all_valid = true;
 #ifndef HACKED_GODLIKE_VIEWER
@@ -8059,10 +8161,9 @@ class LLToolsEnableTakeCopy : public view_listener_t
 					virtual bool apply(LLViewerObject* obj)
 					{
 //						return (!obj->permCopy() || obj->isAttachment());
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
+// [RLVa:KB] - Checked: 2010-04-01 (RLVa-1.2.0c) | Modified: RLVa-1.0.0g
 						return (!obj->permCopy() || obj->isAttachment()) || 
-							   ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (gAgentAvatarp) && 
-							     (gAgentAvatarp->getRoot() == obj) );
+							( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (isAgentAvatarValid()) && (gAgentAvatarp->getRoot() == obj) );
 // [/RLVa:KB]
 					}
 				} func;
@@ -8072,11 +8173,10 @@ class LLToolsEnableTakeCopy : public view_listener_t
 			}
 #endif // HACKED_GODLIKE_VIEWER
 		}
-
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(all_valid);
-		return true;
 	}
-};
+
+	return all_valid;
+}
 
 // <edit>
 class LLToolsEnableAdminDelete : public view_listener_t
@@ -9722,6 +9822,11 @@ void initialize_menus()
 	addMenu(new LLEnablePayObject(), "EnablePayObject");
 	addMenu(new LLEnableEdit(), "EnableEdit");
 
+	addMenu(new LLObjectPFLinksetsSelected(), "Pathfinding.Linksets.Select");
+	addMenu(new LLObjectEnablePFLinksetsSelected(), "EnableSelectInPathfindingLinksets");
+	addMenu(new LLObjectPFCharactersSelected(), "Pathfinding.Characters.Select");
+	addMenu(new LLObjectEnablePFCharactersSelected(), "EnableSelectInPathfindingCharacters");
+
 	addMenu(new LLFloaterVisible(), "FloaterVisible");
 	addMenu(new LLSomethingSelected(), "SomethingSelected");
 	addMenu(new LLSomethingSelectedNoHUD(), "SomethingSelectedNoHUD");
@@ -9804,6 +9909,19 @@ void custom_selected(void* user_data)
 
 	LLSD menuAction = LLSD::emptyMap();
 	menuAction["action"] = LLSD(custom->getName());
+
+	LLSD selection = LLSD::emptyArray();
+
+    for (LLObjectSelection::iterator iter = LLSelectMgr::getInstance()->getSelection()->begin();
+         iter != LLSelectMgr::getInstance()->getSelection()->end(); iter++)
+    {
+        LLSelectNode* selectNode = *iter;
+        LLViewerObject*cur = selectNode->getObject();
+
+		selection.append(LLSD((S32)cur->getLocalID()));
+	}
+
+	menuAction["selection"] = selection;
 
 	LLHTTPClient::post(url, menuAction, new LLHTTPClient::ResponderIgnore);
 }

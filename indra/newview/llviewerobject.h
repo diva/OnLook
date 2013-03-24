@@ -40,7 +40,6 @@
 #include "llhudicon.h"
 #include "llinventory.h"
 #include "llrefcount.h"
-#include "llmemtype.h"
 #include "llprimitive.h"
 #include "lluuid.h"
 #include "llvoinventorylistener.h"

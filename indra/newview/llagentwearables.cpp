@@ -1308,30 +1308,6 @@ void LLAgentWearables::removeWearableFinal( LLWearableType::EType type, bool do_
 	gInventory.notifyObservers();
 }
 
-/*static bool isFirstPhysicsWearable(LLWearableType::EType type, LLInventoryItem *new_item, LLWearable *new_wearable)
-{
-	if (type == LLWearableType::WT_PHYSICS && gSavedSettings.getWarning("FirstPhysicsWearable"))
-	{
-		class WearableDelayedCallback
-		{
-		public:
-			static void setDelayedWearable( const LLSD& notification, const LLSD& response, LLUUID item_id, LLWearable *wearable )
-			{
-				if(LLNotification::getSelectedOption(notification, response) == 0) //User selected wear
-				{
-					gSavedSettings.setWarning("FirstPhysicsWearable",FALSE);
-					LLInventoryItem *item = gInventory.getItem(item_id);
-					if(item)
-						gAgentWearables.setWearableItem(item,wearable); //re-enter.
-				}
-			}
-		};
-		LLNotificationsUtil::add("FirstPhysicsWearable",LLSD(),LLSD(),boost::bind(WearableDelayedCallback::setDelayedWearable, _1, _2, new_item->getUUID(),new_wearable));
-		return true;
-	}
-	return false;
-}*/
-
 // Assumes existing wearables are not dirty.
 void LLAgentWearables::setWearableOutfit(const LLInventoryItem::item_array_t& items,
 										 const LLDynamicArray< LLViewerWearable* >& wearables,
@@ -1372,11 +1348,6 @@ void LLAgentWearables::setWearableOutfit(const LLInventoryItem::item_array_t& it
 		if (new_wearable)
 		{
 			const LLWearableType::EType type = new_wearable->getType();
-
-			/*if (isFirstPhysicsWearable(type, new_item, new_wearable))
-			{
-				return;
-			}*/
 
 			new_wearable->setName(new_item->getName());
 			new_wearable->setItemID(new_item->getUUID());

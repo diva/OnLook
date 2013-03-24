@@ -392,6 +392,30 @@ Initialization with the Marketplace failed because of a system or network error.
          yestext="OK"/>
   </notification>
     
+  <notification
+   icon="alertmodal.tga"
+   name="MarketplaceURLChanged"
+   type="alertmodal">
+The region you have entered has a different marketplace page, would you like to change the marketplace's default page?
+
+Furthermore, would you like your marketplace browser to be reset to this region's page now?
+        <usetemplate
+         name="yesnocancelbuttons"
+         notext="No"
+         canceltext="Reset"
+         yestext="Yes"/>
+  </notification>
+
+  <notification
+   icon="notify.tga"
+   name="MarketplaceURLGone"
+   type="notify">
+There is no marketplace on the region you've moved to.
+        <usetemplate
+         ignoretext="MarketplaceURL is empty on region change"
+         name="okignore"
+         yestext="OK"/>
+  </notification>
 
     <notification
    icon="alertmodal.tga"
@@ -5128,6 +5152,46 @@ This day cycle file references a missing sky file: [SKY].
 
   <notification
    icon="alertmodal.tga"
+   name="WLRegionApplyFail"
+   type="alertmodal">
+Sorry, the settings couldn't be applied to the region.  Leaving the region and then returning may help rectify the problem.  The reason given was: [FAIL_REASON]
+  </notification>
+
+  <notification
+   functor="GenericAcknowledge"
+   icon="alertmodal.tga"
+   name="EnvCannotDeleteLastDayCycleKey"
+   type="alertmodal">
+Unable to delete the last key in this day cycle because you cannot have an empty day cycle.  You should modify the last remaining key instead of attempting to delete it and then to create a new one.
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   functor="GenericAcknowledge"
+   icon="alertmodal.tga"
+   name="DayCycleTooManyKeyframes"
+   type="alertmodal">
+You cannot add any more keyframes to this day cycle.  The maximum number of keyframes for day cycles of [SCOPE] scope is [MAX].
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   functor="GenericAcknowledge"
+   icon="alertmodal.tga"
+   name="EnvUpdateRate"
+   type="alertmodal">
+    You may only update region environmental settings every [WAIT] seconds.  Wait at least that long and then try again.
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="PPSaveEffectAlert"
    type="alertmodal">
 PostProcess Effect exists. Do you still wish overwrite it?
@@ -6242,11 +6306,15 @@ You cannot create objects here.
   </notification>
 
   <notification
-     icon="notify.tga"
+     icon="alert.tga"
      name="PathfindingDirty"
-     type="notify">
+     type="alert">
     <unique/>
-    The region has pending pathfinding changes.  If you have build rights, you may rebake the region by clicking on the “Rebake region” button.
+The region has pending pathfinding changes.  If you have build rights, you may rebake the region by clicking “Rebake”.
+    <usetemplate
+     name="okcancelbuttons"
+     yestext="Rebake"
+     notext="Close" />
   </notification>
 
   <notification
@@ -6255,26 +6323,6 @@ You cannot create objects here.
      type="notify">
     <unique/>
     Dynamic pathfinding is not enabled on this region.  Scripted objects using pathfinding LSL calls may not operate as expected on this region.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="PathfindingRebakeNavmesh"
-   type="alertmodal">
-    <unique/>
-    Changing certain objects in this region could cause other moving objects to behave incorrectly.  To make moving objects behave correctly, click the “Rebake region” button.  Choose “Help” for more information.
-    <url
-      option="1"
-      name="url"
-      target = "_external">
-      http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer
-    </url>
-    <usetemplate
-     name="okhelpignore"
-     ignoretext="Changing certain objects in this region could cause other moving objects to behave incorrectly."
-     yestext="OK"
-     helptext="Help"
-     />
   </notification>
 
   <notification
@@ -7441,46 +7489,10 @@ You locally updated a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME]
   </notification>
 
   <notification
-   icon="alertmodal.tga"
-   name="PathfindingLinksets_ChangeToFlexiblePath"
-   type="alertmodal">
-    The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh.
-    <tag>confirm</tag>
-    <usetemplate
-     ignoretext="The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh."
-     name="okcancelignore"
-     notext="Cancel"
-     yestext="OK"/>
-  </notification>
-
-  <notification
    icon="notify.tga"
    name="FirstAO"
    type="notify">
     For instructions, make a new template in the AO. Use the toolbar to toggle the AO on/off.
-  </notification>
-
-  <notification
- icon="notify.tga"
- name="FirstPhysicsWearable"
- priority="high"
- type="notify">
-By wearing a Physics Wearable certain server behavior will be enabled that many older viewers are incompatable with. On such viewers you may display incorrectly (often as 'Ruth').
-
-If you wish to keep compatability with old viewers then you must not wear a Physics Wearable during your session. If you have already worn one during this session remove it and reconnect.
-
-Click 'Wear' to attach the Physics Wearable, or click 'Cancel' if you wish to maintain compatability with legacy clients.
-    <unique/>
-    <form name="form">
-    <button
-     index="0"
-     name="Wear"
-     text="Wear"/>
-    <button
-     index="1"
-     name="Cancel"
-     text="Cancel"/>
-  </form>
   </notification>
 
   <notification
@@ -7580,6 +7592,134 @@ Only textures will upload as temporary on Agni and Aditi.
      notext="Permanent"
      yestext="Temporary"
      canceltext="Cancel"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_WarnOnPhantom"
+   type="alertmodal">
+Some selected linksets will have the Phantom flag toggled.
+
+Do you wish to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Some selected linksets phantom flag will be toggled."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_MismatchOnRestricted"
+   type="alertmodal">
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because of permission restrictions on the linkset.  These linksets will be set to be '[RESTRICTED_TYPE]' instead.
+
+Do you wish to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Some selected linksets cannot be set because of permission restrictions on the linkset."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_MismatchOnVolume"
+   type="alertmodal">
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because the shape is non-convex.
+
+Do you wish to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Some selected linksets cannot be set because the shape is non-convex"
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_WarnOnPhantom_MismatchOnRestricted"
+   type="alertmodal">
+Some selected linksets will have the Phantom flag toggled.
+
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because of permission restrictions on the linkset.  These linksets will be set to be '[RESTRICTED_TYPE]' instead.
+
+Do you wish to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Some selected linksets phantom flag will be toggled and others cannot be set because of permission restrictions on the linkset."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_WarnOnPhantom_MismatchOnVolume"
+   type="alertmodal">
+Some selected linksets will have the Phantom flag toggled.
+
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because the shape is non-convex.
+
+Do you wish to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Some selected linksets phantom flag will be toggled and others cannot be set because the shape is non-convex"
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_MismatchOnRestricted_MismatchOnVolume"
+   type="alertmodal">
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because of permission restrictions on the linkset.  These linksets will be set to be '[RESTRICTED_TYPE]' instead.
+
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because the shape is non-convex. These linksets&apos; use types will not change.
+
+Do you wish to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Some selected linksets cannot be set because of permission restrictions on the linkset and because the shape is non-convex."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_WarnOnPhantom_MismatchOnRestricted_MismatchOnVolume"
+   type="alertmodal">
+Some selected linksets will have the Phantom flag toggled.
+
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because of permission restrictions on the linkset.  These linksets will be set to be '[RESTRICTED_TYPE]' instead.
+
+Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because the shape is non-convex. These linksets&apos; use types will not change.
+
+Do you wish to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Some selected linksets phantom flag will be toggled and others cannot be set because of permission restrictions on the linkset and because the shape is non-convex."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PathfindingLinksets_ChangeToFlexiblePath"
+   type="alertmodal">
+    The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh.
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh."
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
   </notification>
 
   <global name="UnsupportedGLRequirements">

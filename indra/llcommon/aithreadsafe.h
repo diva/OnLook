@@ -479,9 +479,6 @@ public:
 	// Only for use by AITHREADSAFESIMPLE, see below.
 	AIThreadSafeSimple(T* object) { llassert(object == AIThreadSafeBits<T>::ptr()); }
 
-	// If MUTEX is a LLCondition then this can be used to wake up the waiting thread.
-	void signal() { mMutex.signal(); }
-
 #if LL_DEBUG
 	// Can only be locked when there still exists an AIAccess object that
 	// references this object and will access it upon destruction.
@@ -622,6 +619,8 @@ struct AIAccessConst
 
 	// If MUTEX is an LLCondition, then this can be used to wait for a signal.
 	void wait() { this->mWrapper.mMutex.wait(); }
+	// If MUTEX is a LLCondition then this can be used to wake up the waiting thread.
+	void signal() { this->mWrapper.mMutex.signal(); }
 
 protected:
 	AIThreadSafeSimple<T, MUTEX>& mWrapper;		//!< Reference to the object that we provide access to.

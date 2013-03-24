@@ -40,9 +40,9 @@ include_directories(
     )
 
 set(llaudio_SOURCE_FILES
+    llaudiodecodemgr.cpp
     llaudioengine.cpp
     lllistener.cpp
-    llaudiodecodemgr.cpp
     llvorbisdecode.cpp
     llvorbisencode.cpp
     )
@@ -50,9 +50,9 @@ set(llaudio_SOURCE_FILES
 set(llaudio_HEADER_FILES
     CMakeLists.txt
 
+    llaudiodecodemgr.h
     llaudioengine.h
     lllistener.h
-    llaudiodecodemgr.h
     llvorbisdecode.h
     llvorbisencode.h
     llwindgen.h

@@ -2,7 +2,7 @@
  * @file aistatemachine.h
  * @brief State machine base class
  *
- * Copyright (c) 2010, Aleric Inglewood.
+ * Copyright (c) 2010 - 2013, Aleric Inglewood.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,397 +26,290 @@
  *
  *   01/03/2010
  *   Initial version, written by Aleric Inglewood @ SL
+ *
+ *   28/02/2013
+ *   Rewritten from scratch to fully support threading.
  */
 
 #ifndef AISTATEMACHINE_H
 #define AISTATEMACHINE_H
 
 #include "aithreadsafe.h"
-#include "lltimer.h"
+#include <llpointer.h>
+#include <list>
 #include <boost/signals2.hpp>
 
-//!
-// A AIStateMachine is a base class that allows derived classes to
-// go through asynchronous states, while the code still appears to
-// be more or less sequential.
-//
-// These state machine objects can be reused to build more complex
-// objects.
-//
-// It is important to note that each state has a duality: the object
-// can have a state that will cause a corresponding function to be
-// called; and often that function will end with changing the state
-// again, to signal that it was handled. It is easy to confuse the
-// function of a state with the state at the end of the function.
-// For example, the state "initialize" could cause the member
-// function 'init()' to be called, and at the end one would be
-// inclined to set the state to "initialized". However, this is the
-// wrong approach: the correct use of state names does reflect the
-// functions that will be called, never the function that just was
-// called.
-//
-// Each (derived) class goes through a series of states as follows:
-//
-//   Creation
-//       |
-//       v
-//     (idle) <----.   		Idle until run() is called.
-//       |         |
-//   Initialize    |		Calls initialize_impl().
-//       |         |
-//       | (idle)  |		Idle until cont() or set_state() is called.
-//       |  |  ^   |
-//       v  v  |   |
-//   .-------. |   |
-//   |  Run  |_,   |		Call multiplex_impl() until idle(), abort() or finish() is called.
-//   '-------'     |
-//    |    |       |
-//    v    |       |
-//  Abort  |       |		Calls abort_impl().
-//    |    |       |
-//    v    v       |
-//    Finish       |		Calls finish_impl() (which may call kill()) or
-//    |    |       |		the callback function passed to run(), if any,
-//    |    v       |
-//    | Callback   |        which may call kill() and/or run().
-//    |  |   |     |
-//    |  |   `-----'
-//    v  v
-//  Killed					Delete the statemachine (all statemachines must be allocated with new).
-//
-// Each state causes corresponding code to be called.
-// Finish cleans up whatever is done by Initialize.
-// Abort should clean up additional things done by Run.
-//
-// The Run state is entered by calling run().
-//
-// While the base class is in the Run state, it is the derived class
-// that goes through different states. The state variable of the derived
-// class is only valid while the base class is in the state Run.
-//
-// A derived class can exit the Run state by calling one of two methods:
-// abort() in case of failure, or finish() in case of success.
-// Respectively these set the state to Abort and Finish.
-//
-// finish_impl may call kill() for a (default) destruction upon finish.
-// Even in that case the callback (passed to run()) may call run() again,
-// which overrides the request for a default kill. Or, if finish_impl
-// doesn't call kill() the callback may call kill() to request the
-// destruction of the state machine object.
-//
-// State machines are run from the "idle" part of the viewer main loop.
-// Often a state machine has nothing to do however. In that case it can
-// call the method idle(). This will stop the state machine until
-// external code changes it's state (by calling set_state()), or calls
-// cont() to continue with the last state.
-//
-// The methods of the derived class call set_state() to change their
-// own state within the bs_run state, or by calling either abort()
-// or finish().
-//
-// Restarting a finished state machine can also be done by calling run(),
-// which will cause a re-initialize.
-//
-// Derived classes should implement the following constants:
-//
-//   static state_type const min_state = first_state;
-//   static state_type const max_state = last_state + 1;
-//
-// Where first_state should be equal to BaseClass::max_state.
-// These should represent the minimum and (one past) the maximum
-// values of mRunState.
-//
-//   virtual void initialize_impl(void)
-//
-// Initializes the derived class.
-//
-//   virtual void multiplex_impl(void);
-//
-// This method should handle mRunState in a switch.
-// For example:
-//
-//   switch(mRunState)
-//   {
-//     case foo:
-//       handle_foo();
-//       break;
-//     case wait_state:
-//       if (still_waiting())
-//       {
-//         idle();
-//         break;
-//       }
-//       set_state(working);
-//       /*fall-through*/
-//     case working:
-//       do_work();
-//       if (failure())
-//         abort();
-//       break;
-//     case etc:
-//       etc();
-//       finish();
-//       break;
-//   }
-//
-// virtual void abort_impl(void);
-//
-//   A call to this method should bring the object to a state
-//   where finish_impl() can be called.
-//
-// virtual void finish_impl(void);
-//
-//   Should cleanup whatever init_impl() did, or any of the
-//   states of the object where multiplex_impl() calls finish().
-//   Call kill() from here to make that the default behavior
-//   (state machine is deleted unless the callback calls run()).
-//
-// virtual char const* state_str_impl(state_type run_state);
-//
-//   Should return a stringified value of run_state.
-//
-class AIStateMachine {
-	//! The type of mState
+class AIStateMachine;
+
+class AIEngine
+{
+  private:
+	struct QueueElementComp;
+	class QueueElement {
+	  private:
+		LLPointer<AIStateMachine> mStateMachine;
+
+	  public:
+		QueueElement(AIStateMachine* statemachine) : mStateMachine(statemachine) { }
+		friend bool operator==(QueueElement const& e1, QueueElement const& e2) { return e1.mStateMachine == e2.mStateMachine; }
+		friend bool operator!=(QueueElement const& e1, QueueElement const& e2) { return e1.mStateMachine != e2.mStateMachine; }
+		friend struct QueueElementComp;
+
+		AIStateMachine const& statemachine(void) const { return *mStateMachine; }
+		AIStateMachine& statemachine(void) { return *mStateMachine; }
+	};
+	struct QueueElementComp {
+	  inline bool operator()(QueueElement const& e1, QueueElement const& e2) const;
+	};
+
+  public:
+	typedef std::list<QueueElement> queued_type;
+	struct engine_state_type {
+	  queued_type list;
+	  bool waiting;
+	  engine_state_type(void) : waiting(false) { }
+	};
+
+  private:
+	AIThreadSafeSimpleDC<engine_state_type, LLCondition>	mEngineState;
+	typedef AIAccessConst<engine_state_type, LLCondition>	engine_state_type_crat;
+	typedef AIAccess<engine_state_type, LLCondition>		engine_state_type_rat;
+	typedef AIAccess<engine_state_type, LLCondition>		engine_state_type_wat;
+	char const* mName;
+
+	static U64 sMaxCount;
+
+  public:
+	AIEngine(char const* name) : mName(name) { }
+
+	void add(AIStateMachine* state_machine);
+
+	void mainloop(void);
+	void threadloop(void);
+	void wake_up(void);
+	void flush(void);
+
+	char const* name(void) const { return mName; }
+
+	static void setMaxCount(F32 StateMachineMaxTime);
+};
+
+extern AIEngine gMainThreadEngine;
+extern AIEngine gStateMachineThreadEngine;
+
+class AIStateMachine : public LLThreadSafeRefCount
+{
+  public:
+	typedef U32 state_type;		//!< The type of run_state
+
+  protected:
+	// The type of event that causes multiplex() to be called.
+	enum event_type {
+	  initial_run,
+	  schedule_run,
+	  normal_run,
+	  insert_abort
+	};
+	// The type of mState
 	enum base_state_type {
-	  bs_initialize,
-	  bs_run,
+	  bs_reset,				// Idle state before run() is called. Reference count is zero (except for a possible external LLPointer).
+	  bs_initialize,		// State after run() and before/during initialize_impl().
+	  bs_multiplex,			// State after initialize_impl() before finish() or abort().
 	  bs_abort,
 	  bs_finish,
 	  bs_callback,
 	  bs_killed
 	};
-	//! The type of mActive
-	enum active_type {
-	  as_idle,					// State machine is on neither list.
-	  as_queued,				// State machine is on continued_statemachines list.
-	  as_active					// State machine is on active_statemachines list.
-	};
-
-	//! Type of continued_statemachines.
-	typedef std::vector<AIStateMachine*> continued_statemachines_type;
-	//! Type of sContinuedStateMachinesAndMainloopEnabled.
-	struct csme_type
-	{
-	  continued_statemachines_type continued_statemachines;
-	  bool mainloop_enabled;
-	};
-
   public:
-	typedef U32 state_type;		//!< The type of mRunState
-
-	//! Integral value equal to the state with the lowest value.
-	static state_type const min_state = bs_initialize;
-	//! Integral value one more than the state with the highest value.
 	static state_type const max_state = bs_killed + 1;
 
+  protected:
+	struct multiplex_state_type {
+	  base_state_type	base_state;
+	  AIEngine*			current_engine;			// Current engine.
+	  multiplex_state_type(void) : base_state(bs_reset), current_engine(NULL) { }
+	};
+	struct sub_state_type {
+	  state_type		run_state;
+	  state_type		advance_state;
+	  bool				reset;
+	  bool				need_run;
+	  bool				idle;
+	  bool				skip_idle;
+	  bool				aborted;
+	  bool				finished;
+	};
+
   private:
-	base_state_type mState;						//!< State of the base class.
-	bool mIdle;									//!< True if this state machine is not running.
-	bool mAborted;								//!< True after calling abort() and before calling run().
-	active_type mActive;						//!< Whether statemachine is idle, queued to be added to the active list, or already on the active list.
-	S64 mSleep;									//!< Non-zero while the state machine is sleeping.
-	LLMutex mIdleActive;						//!< Used for atomic operations on the pair mIdle / mActive.
-#ifdef SHOW_ASSERT
-	AIThreadID mContThread;						//!< Thread that last called locked_cont().
-	bool mCalledThreadUnsafeIdle;				//!< Set to true when idle() is called.
-#endif
+	// Base state.
+	AIThreadSafeSimpleDC<multiplex_state_type>	mState;
+	typedef AIAccessConst<multiplex_state_type>	multiplex_state_type_crat;
+	typedef AIAccess<multiplex_state_type>		multiplex_state_type_rat;
+	typedef AIAccess<multiplex_state_type>		multiplex_state_type_wat;
+	// Sub state.
+	AIThreadSafeSimpleDC<sub_state_type>	mSubState;
+	typedef AIAccessConst<sub_state_type>	sub_state_type_crat;
+	typedef AIAccess<sub_state_type>		sub_state_type_rat;
+	typedef AIAccess<sub_state_type>		sub_state_type_wat;
+
+	// Mutex protecting everything below and making sure only one thread runs the state machine at a time.
+	LLMutex mMultiplexMutex;
+	// Mutex that is locked while calling *_impl() functions and the call back.
+	LLMutex mRunMutex;
+
+	S64 mSleep;                                 //!< Non-zero while the state machine is sleeping.
 
 	// Callback facilities.
 	// From within an other state machine:
-	AIStateMachine* mParent;					//!< The parent object that started this state machine, or NULL if there isn't any.
-	state_type mNewParentState;					//!< The state at which the parent should continue upon a successful finish.
-	bool mAbortParent;							//!< If true, abort parent on abort(). Otherwise continue as normal.
-	bool mOnAbortSignalParent;					//!< If true and mAbortParent is false, change state of parent even on abort.
+	LLPointer<AIStateMachine> mParent;			// The parent object that started this state machine, or NULL if there isn't any.
+	state_type mNewParentState;					// The state at which the parent should continue upon a successful finish.
+	bool mAbortParent;							// If true, abort parent on abort(). Otherwise continue as normal.
+	bool mOnAbortSignalParent;					// If true and mAbortParent is false, change state of parent even on abort.
 	// From outside a state machine:
 	struct callback_type {
-	  typedef boost::signals2::signal<void (bool)> signal_type;
-	  callback_type(signal_type::slot_type const& slot) { connection = signal.connect(slot); }
-	  ~callback_type() { connection.disconnect(); }
-	  void callback(bool success) const { signal(success); }
-	private:
-	  boost::signals2::connection connection;
-	  signal_type signal;
+		typedef boost::signals2::signal<void (bool)> signal_type;
+		callback_type(signal_type::slot_type const& slot) { connection = signal.connect(slot); }
+		~callback_type() { connection.disconnect(); }
+		void callback(bool success) const { signal(success); }
+	  private:
+		boost::signals2::connection connection;
+		signal_type signal;
 	};
-	callback_type* mCallback;					//!< Pointer to signal/connection, or NULL when not connected.
+	callback_type* mCallback;					// Pointer to signal/connection, or NULL when not connected.
 
-	static U64 sMaxCount;						//!< Number of cpu clocks below which we start a new state machine within the same frame.
-	static AIThreadSafeDC<csme_type> sContinuedStateMachinesAndMainloopEnabled;	//!< Read/write locked variable pair.
+	// Engine stuff.
+	AIEngine* mDefaultEngine;					// Default engine.
+	AIEngine* mYieldEngine;						// Requested engine.
 
-  protected:
-	LLMutex mSetStateLock;						//!< For critical areas in set_state() and locked_cont().
-
-	//! State of the derived class. Only valid if mState == bs_run. Call set_state to change.
-	volatile state_type mRunState;
-
-  public:
-	//! Create a non-running state machine.
-	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mActive(as_idle), mSleep(0), mParent(NULL), mCallback(NULL)
 #ifdef SHOW_ASSERT
-		, mContThread(AIThreadID::none), mCalledThreadUnsafeIdle(false)
+	// Debug stuff.
+	AIThreadID mThreadId;						// The thread currently running multiplex().
+	base_state_type mDebugLastState;			// The previous state that multiplex() had a normal run with.
+	bool mDebugShouldRun;						// Set if we found evidence that we should indeed call multiplex_impl().
+	bool mDebugAborted;							// True when abort() was called.
+	bool mDebugContPending;						// True while cont() was called by not handled yet.
+	bool mDebugSetStatePending;					// True while set_state() was called by not handled yet.
+	bool mDebugAdvanceStatePending;				// True while advance_state() was called by not handled yet.
+	bool mDebugRefCalled;						// True when ref() is called (or will be called within the critial area of mMultiplexMutex).
 #endif
-		{ }
+	U64 mRuntime;								// Total time spent running in the main thread (in clocks).
+
+  public:
+	AIStateMachine(void) : mCallback(NULL), mDefaultEngine(NULL), mYieldEngine(NULL),
+#ifdef SHOW_ASSERT
+		mThreadId(AIThreadID::none), mDebugLastState(bs_killed), mDebugShouldRun(false), mDebugAborted(false), mDebugContPending(false),
+		mDebugSetStatePending(false), mDebugAdvanceStatePending(false), mDebugRefCalled(false),
+#endif
+		mRuntime(0)
+	{ }
 
   protected:
-	//! The user should call 'kill()', not delete a AIStateMachine (derived) directly.
-	virtual ~AIStateMachine() { llassert((mState == bs_killed && mActive == as_idle) || mState == bs_initialize); }
-
+	// The user should call finish() (or abort(), or kill() from the call back when finish_impl() calls run()), not delete a class derived from AIStateMachine directly.
+	virtual ~AIStateMachine() { llassert(multiplex_state_type_rat(mState)->base_state == bs_killed); }
+ 
   public:
-	//! Halt the state machine until cont() is called (not thread-safe).
-	void idle(void);
+	// These functions may be called directly after creation, or from within finish_impl(), or from the call back function.
+	void run(LLPointer<AIStateMachine> parent, state_type new_parent_state, bool abort_parent = true, bool on_abort_signal_parent = true, AIEngine* default_engine = &gMainThreadEngine);
+	void run(callback_type::signal_type::slot_type const& slot, AIEngine* default_engine = &gMainThreadEngine);
+	void run(void) { run(NULL, 0, false, true, mDefaultEngine); }
 
-	//! Halt the state machine until cont() is called, provided it is still in 'current_run_state'.
-	void idle(state_type current_run_state);
-
-	//! Temporarily halt the state machine.
-	void yield_frame(unsigned int frames) { mSleep = -(S64)frames; }
-
-	//! Temporarily halt the state machine.
-	void yield_ms(unsigned int ms) { mSleep = get_clock_count() + calc_clock_frequency() * ms / 1000; }
-
-	//! Continue running after calling idle.
-	void cont(void)
-	{
-		mSetStateLock.lock();
-		// Ignore calls to cont() if the statemachine isn't idle. See comments in set_state().
-		// Calling cont() twice or after calling set_state(), without first calling idle(), is an error.
-		if (mState != bs_run || !mIdle) { llassert(mState != bs_run || !mContThread.equals_current_thread()); mSetStateLock.unlock(); return; }
-		locked_cont();
-	}
-  private:
-	void locked_cont(void);
-
-  public:
-	//---------------------------------------
-	// Changing the state.
-
-	//! Change state to <code>bs_run</code>. May only be called after creation or after returning from finish().
-	// If <code>parent</code> is non-NULL, change the parent state machine's state to <code>new_parent_state</code>
-	// upon finish, or in the case of an abort and when <code>abort_parent</code> is true, call parent->abort() instead.
-	void run(AIStateMachine* parent, state_type new_parent_state, bool abort_parent = true, bool on_abort_signal_parent = true);
-
-	//! Change state to 'bs_run'. May only be called after creation or after returning from finish().
-	// Does not cause a callback.
-	void run(void) { run(NULL, 0, false); }
-
-	//! The same as above, but pass the result of a boost::bind with _1.
-	//
-	// Here _1, if present, will be replaced with a bool indicating success.
-	//
-	// For example:
-	//
-	// <code>
-	// struct Foo { void callback(AIStateMachineDerived* ptr, bool success); };
-	// ...
-	//   AIStateMachineDerived* magic = new AIStateMachineDerived; // Deleted by callback
-	//   // Call foo_ptr->callback(magic, _1) on finish.
-	//   state_machine->run(boost::bind(&Foo::callback, foo_ptr, magic, _1));
-	// </code>
-	//
-	// or
-	//
-	// <code>
-	// struct Foo { void callback(bool success, AIStateMachineDerived const& magic); };
-	// ...
-	//   AIStateMachineDerived magic;
-	//   // Call foo_ptr->callback(_1, magic) on finish.
-	//   magic.run(boost::bind(&Foo::callback, foo_ptr, _1, magic));
-	// </code>
-	//
-	// or
-	//
-	// <code>
-	// static void callback(void* userdata);
-	// ...
-	//   AIStateMachineDerived magic;
-	//   // Call callback(userdata) on finish.
-	//   magic.run(boost::bind(&callback, userdata));
-	// </code>
-	void run(callback_type::signal_type::slot_type const& slot);
-
-	//! Change state to 'bs_abort'. May only be called while in the bs_run state.
-	void abort(void);
-
-	//! Change state to 'bs_finish'. May only be called while in the bs_run state.
-	void finish(void);
-
-	//! Refine state while in the bs_run state. May only be called while in the bs_run state.
-	void set_state(state_type run_state);
-
-	//! Change state to 'bs_killed'. May only be called while in the bs_finish state.
+	// This function may only be called from the call back function (and cancels a call to run() from finish_impl()).
 	void kill(void);
 
-	//---------------------------------------
-	// Other.
-
-	//! Called whenever the StateMachineMaxTime setting is changed.
-	static void setMaxCount(F32 StateMachineMaxTime);
-
-	//---------------------------------------
-	// Accessors.
-
-	//! Return true if state machine was aborted (can be used in finish_impl).
-	bool aborted(void) const { return mAborted; }
-
-	//! Return true if the derived class is running (also when we are idle).
-	bool running(void) const { return mState == bs_run; }
-
-	//! Return true if it's safe to call abort.
-	bool abortable(void) const { return mState == bs_run || mState == bs_initialize; }
-
-	//! Return true if the derived class is running but idle.
-	bool waiting(void) const { return mState == bs_run && mIdle; }
-
-	// Use some safebool idiom (http://www.artima.com/cppsource/safebool.html) rather than operator bool.
-	typedef volatile state_type AIStateMachine::* const bool_type;
-	//! Return true if state machine successfully finished.
-	operator bool_type() const { return ((mState == bs_initialize || mState == bs_callback) && !mAborted) ? &AIStateMachine::mRunState : 0; }
-
-	//! Return a stringified state, for debugging purposes.
-	char const* state_str(state_type state);
-
-  private:
-	static void add_continued_statemachines(AIReadAccess<csme_type>& csme_r);
-	static void dowork(void);
-	void multiplex(U64 current_time);
+  protected:
+	// This function can be called from initialize_impl() and multiplex_impl() (both called from within multiplex()).
+	void set_state(state_type new_state);									// Run this state the NEXT loop.
+	// These functions can only be called from within multiplex_impl().
+	void idle(void);														// Go idle unless cont() or advance_state() were called since the start of the current loop, or until they are called.
+	void finish(void);														// Mark that the state machine finished and schedule the call back.
+	void yield(void);														// Yield to give CPU to other state machines, but do not go idle.
+	void yield(AIEngine* engine);											// Yield to give CPU to other state machines, but do not go idle. Continue running from engine 'engine'.
+	void yield_frame(unsigned int frames);									// Run from the main-thread engine after at least 'frames' frames have passed.
+	void yield_ms(unsigned int ms);											// Run from the main-thread engine after roughly 'ms' miliseconds have passed.
 
   public:
-	//! Call this once per frame to give the statemachines CPU cycles.
-	static void mainloop(void)
+	// This function can be called from multiplex_imp(), but also by a child state machine and
+	// therefore by any thread. The child state machine should use an LLPointer<AIStateMachine>
+	// to access this state machine.
+	void abort(void);														// Abort the state machine (unsuccessful finish).
+
+	// These are the only two functions that can be called by any thread at any moment.
+	// Those threads should use an LLPointer<AIStateMachine> to access this state machine.
+	void cont(void);														// Guarantee at least one full run of multiplex() after this function is called. Cancels the last call to idle().
+	void advance_state(state_type new_state);								// Guarantee at least one full run of multiplex() after this function is called
+																			// iff new_state is larger than the last state that was processed.
+
+  public:
+	// Accessors.
+
+	// Return true if the derived class is running (also when we are idle).
+	bool running(void) const { return multiplex_state_type_crat(mState)->base_state == bs_multiplex; }
+	// Return true if the derived class is running and idle.
+	bool waiting(void) const
 	{
-	  {
-		AIReadAccess<csme_type> csme_r(sContinuedStateMachinesAndMainloopEnabled, true);
-		if (!csme_r->mainloop_enabled)
-		  return;
-		if (!csme_r->continued_statemachines.empty())
-		  add_continued_statemachines(csme_r);
-	  }
-	  dowork();
+	  multiplex_state_type_crat state_r(mState);
+	  return state_r->base_state == bs_multiplex && sub_state_type_crat(mSubState)->idle;
+	}
+	// Return true if the derived class is running and idle or already being aborted.
+	bool waiting_or_aborting(void) const
+	{
+	  multiplex_state_type_crat state_r(mState);
+	  return state_r->base_state == bs_abort || ( state_r->base_state == bs_multiplex && sub_state_type_crat(mSubState)->idle);
+	}
+	// Return true if are added to the engine.
+	bool active(AIEngine const* engine) const { return multiplex_state_type_crat(mState)->current_engine == engine; }
+	bool aborted(void) const { return sub_state_type_crat(mSubState)->aborted; }
+
+	// Use some safebool idiom (http://www.artima.com/cppsource/safebool.html) rather than operator bool.
+	typedef state_type AIStateMachine::* const bool_type;
+	// Return true if state machine successfully finished.
+	operator bool_type() const
+	{
+	  sub_state_type_crat sub_state_r(mSubState);
+	  return (sub_state_r->finished && !sub_state_r->aborted) ? &AIStateMachine::mNewParentState : 0;
 	}
 
-	//! Abort all running state machines and then run mainloop until all state machines are idle (called when application is exiting).
-	static void flush(void);
+	// Return stringified state, for debugging purposes.
+	char const* state_str(base_state_type state);
+#ifdef CWDEBUG
+	char const* event_str(event_type event);
+#endif
+
+	void add(U64 count) { mRuntime += count; }
+	U64 getRuntime(void) const { return mRuntime; }
 
   protected:
-	//---------------------------------------
-	// Derived class implementations.
-
-	// Handle initializing the object.
 	virtual void initialize_impl(void) = 0;
-
-	// Handle mRunState.
-	virtual void multiplex_impl(void) = 0;
-
-	// Handle aborting from current bs_run state.
-	virtual void abort_impl(void) = 0;
-
-	// Handle cleaning up from initialization (or post abort) state.
-	virtual void finish_impl(void) = 0;
-
-	// Implemenation of state_str for run states.
+	virtual void multiplex_impl(state_type run_state) = 0;
+	virtual void abort_impl(void) { }
+	virtual void finish_impl(void) { }
 	virtual char const* state_str_impl(state_type run_state) const = 0;
+
+  private:
+	void reset(void);														// Called from run() to (re)initialize a (re)start.
+	void multiplex(event_type event);										// Called from AIEngine to step through the states (and from reset() to kick start the state machine).
+	state_type begin_loop(base_state_type base_state);						// Called from multiplex() at the start of a loop.
+	void callback(void);													// Called when the state machine finished.
+	bool sleep(U64 current_time)											// Count frames if necessary and return true when the state machine is still sleeping.
+	{
+	  if (mSleep == 0)
+		return false;
+	  else if (mSleep < 0)
+		++mSleep;
+	  else if ((U64)mSleep >= current_time)
+		mSleep = 0;
+	  return mSleep != 0;
+	}
+
+	friend class AIEngine;						// Calls multiplex().
 };
 
-// This case be used in state_str_impl.
+bool AIEngine::QueueElementComp::operator()(QueueElement const& e1, QueueElement const& e2) const
+{
+  return e1.mStateMachine->getRuntime() < e2.mStateMachine->getRuntime();
+}
+
+// This can be used in state_str_impl.
 #define AI_CASE_RETURN(x) do { case x: return #x; } while(0)
 
 #endif

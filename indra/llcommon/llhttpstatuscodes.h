@@ -90,6 +90,16 @@ const S32 HTTP_VERSION_NOT_SUPPORTED = 505;
 // These status codes should not be sent over the wire
 //   and indicate something went wrong internally.
 // If you get these they are not normal.
-const S32 HTTP_INTERNAL_ERROR = 499;
+// Note that these are only related to curl, not to webkit.
+const S32 HTTP_INTERNAL_ERROR_LOW_SPEED = 494;				// The transfer (receiving data) stalled or was too slow.
+const S32 HTTP_INTERNAL_ERROR_CURL_LOCKUP = 495;			// Curl never returned at all for 10 minutes!?!
+const S32 HTTP_INTERNAL_ERROR_CURL_BADSOCKET = 496;			// Curl was aborted because the socket went bad!?!
+const S32 HTTP_INTERNAL_ERROR_CURL_TIMEOUT = 497;			// Curl returned a timeout error.
+const S32 HTTP_INTERNAL_ERROR_CURL_OTHER = 498;				// Any other curl error.
+const S32 HTTP_INTERNAL_ERROR_OTHER = 499;					// Every other internal error.
+
+// Return true if status is an internal error (not received from a server but generated internally).
+bool inline is_internal_http_error(S32 status) { return status >= HTTP_INTERNAL_ERROR_LOW_SPEED && status <= HTTP_INTERNAL_ERROR_OTHER; }
+bool inline is_internal_http_error_that_warrants_a_retry(S32 status) { return status >= HTTP_INTERNAL_ERROR_LOW_SPEED && status <= HTTP_INTERNAL_ERROR_CURL_OTHER; }
 
 #endif

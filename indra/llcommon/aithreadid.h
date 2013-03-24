@@ -63,6 +63,7 @@ public:
 	static void set_main_thread_id(void);					// Called once to set sMainThreadID.
 	static void set_current_thread_id(void);				// Called once for every thread to set lCurrentThread.
 #ifndef LL_DARWIN
+	LL_COMMON_API void clear(void);
 	LL_COMMON_API void reset(void);
 	LL_COMMON_API bool equals_current_thread(void) const;
 	LL_COMMON_API static bool in_main_thread(void);
@@ -74,6 +75,7 @@ public:
 	static apr_os_thread_t getCurrentThread_inline(void) { return lCurrentThread; }
 #else
 	// Both variants are inline on OS X.
+	void clear(void) { mID = undefinedID; }
 	void reset(void) { mID = apr_os_thread_current(); }
 	void reset_inline(void) { mID = apr_os_thread_current(); }
 	bool equals_current_thread(void) const { return apr_os_thread_equal(mID, apr_os_thread_current()); }

@@ -222,8 +222,8 @@ void LLFloaterWindLight::initCallbacks(void) {
 	childSetCommitCallback("WLStarAlpha", onStarAlphaMoved, NULL);
 
 	// next/prev buttons
-	childSetAction("next", onClickNext, this);
-	childSetAction("prev", onClickPrev, this);
+	//childSetAction("next", onClickNext, this);
+	//childSetAction("prev", onClickPrev, this);
 }
 
 void LLFloaterWindLight::onClickHelp(void* data)
@@ -322,7 +322,7 @@ void LLFloaterWindLight::syncMenu()
 
 	// blue horizon
 	param_mgr->mBlueHorizon = cur_params.getVector(param_mgr->mBlueHorizon.mName, err);
-	setColorSwatch("WLBlueHorizon", param_mgr->mBlueHorizon, WL_BLUE_HORIZON_DENSITY_SCALE);
+	//setColorSwatch("WLBlueHorizon", param_mgr->mBlueHorizon, WL_BLUE_HORIZON_DENSITY_SCALE);
 
 	// haze density, horizon, mult, and altitude
 	param_mgr->mHazeDensity = cur_params.getFloat(param_mgr->mHazeDensity.mName, err);
@@ -336,13 +336,13 @@ void LLFloaterWindLight::syncMenu()
 
 	// blue density
 	param_mgr->mBlueDensity = cur_params.getVector(param_mgr->mBlueDensity.mName, err);
-	setColorSwatch("WLBlueDensity", param_mgr->mBlueDensity, WL_BLUE_HORIZON_DENSITY_SCALE);
+	//setColorSwatch("WLBlueDensity", param_mgr->mBlueDensity, WL_BLUE_HORIZON_DENSITY_SCALE);
 
 	// Lighting
 
 	// sunlight
 	param_mgr->mSunlight = cur_params.getVector(param_mgr->mSunlight.mName, err);
-	setColorSwatch("WLSunlight", param_mgr->mSunlight, WL_SUN_AMBIENT_SLIDER_SCALE);
+	//setColorSwatch("WLSunlight", param_mgr->mSunlight, WL_SUN_AMBIENT_SLIDER_SCALE);
 
 	// glow
 	param_mgr->mGlow = cur_params.getVector(param_mgr->mGlow.mName, err);
@@ -351,7 +351,7 @@ void LLFloaterWindLight::syncMenu()
 		
 	// ambient
 	param_mgr->mAmbient = cur_params.getVector(param_mgr->mAmbient.mName, err);
-	setColorSwatch("WLAmbient", param_mgr->mAmbient, WL_SUN_AMBIENT_SLIDER_SCALE);
+	//setColorSwatch("WLAmbient", param_mgr->mAmbient, WL_SUN_AMBIENT_SLIDER_SCALE);
 
 	childSetValue("WLSunAngle", param_mgr->mCurParams.getFloat("sun_angle",err) / F_TWO_PI);
 	childSetValue("WLEastAngle", param_mgr->mCurParams.getFloat("east_angle",err) / F_TWO_PI);
@@ -360,7 +360,7 @@ void LLFloaterWindLight::syncMenu()
 
 	// Cloud Color
 	param_mgr->mCloudColor = cur_params.getVector(param_mgr->mCloudColor.mName, err);
-	setColorSwatch("WLCloudColor", param_mgr->mCloudColor, WL_CLOUD_SLIDER_SCALE);
+	//setColorSwatch("WLCloudColor", param_mgr->mCloudColor, WL_CLOUD_SLIDER_SCALE);
 
 	// Cloud
 	param_mgr->mCloudMain = cur_params.getVector(param_mgr->mCloudMain.mName, err);
@@ -875,14 +875,11 @@ bool LLFloaterWindLight::deleteAlertCallback(const LLSD& notification, const LLS
 	{
 		LLFloaterDayCycle* day_cycle = NULL;
 		LLComboBox* key_combo = NULL;
-		LLMultiSliderCtrl* mult_sldr = NULL;
 
 		if(LLFloaterDayCycle::isOpen()) 
 		{
 			day_cycle = LLFloaterDayCycle::instance();
-			key_combo = day_cycle->getChild<LLComboBox>( 
-				"WLKeyPresets");
-			mult_sldr = day_cycle->getChild<LLMultiSliderCtrl>("WLDayCycleKeys");
+			key_combo = day_cycle->getChild<LLComboBox>("WLKeyPresets");
 		}
 
 		std::string name(mSkyPresetCombo->getSelectedValue().asString());

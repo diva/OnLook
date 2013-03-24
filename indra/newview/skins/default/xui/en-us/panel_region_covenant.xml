@@ -16,7 +16,7 @@
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-45" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="20" left="120"
-	     mouse_opaque="false" name="estate_name_text" v_pad="0" width="150">
+	     mouse_opaque="false" name="estate_name_text" v_pad="0">
 		mainland
 	</text>
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
@@ -28,7 +28,7 @@
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-65" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="20" left="120"
-	     mouse_opaque="false" name="estate_owner_text" v_pad="0" width="150">
+	     mouse_opaque="false" name="estate_owner_text" v_pad="0">
 		(none)
 	</text>
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
@@ -47,8 +47,8 @@
 	     name="covenant_help" right="462" width="18" />
 	<text_editor type="string" length="1" bottom="-279" embedded_items="false" enabled="false"
 	     follows="left|top" font="SansSerifSmall" height="194"
-	     left="120" max_length="65535" mouse_opaque="true" name="covenant_editor"
-	     width="340" word_wrap="true" spell_check="true">
+	     left="15" max_length="65535" mouse_opaque="true" name="covenant_editor"
+	     width="443" word_wrap="true" spell_check="true">
 		There is no Covenant provided for this Estate.
 	</text_editor>
 	<button bottom_delta="-25" follows="left|top" font="SansSerifSmall" height="18"

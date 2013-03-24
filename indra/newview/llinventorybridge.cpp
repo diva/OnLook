@@ -108,8 +108,6 @@
 #include "llappviewer.h" // System Folders
 #include "llfloateranimpreview.h" // for reuploads
 #include "llfloaterimagepreview.h" // for reuploads
-//#include "llcheats.h"
-#include "hgfloatertexteditor.h"
 #include "statemachine/aifilepicker.h"
 // </edit>
 

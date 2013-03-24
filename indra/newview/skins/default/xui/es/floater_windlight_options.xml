@@ -73,7 +73,7 @@
 			<text name="MaxAltText">
 				Altitud Máx.
 			</text>
-			<button label="?" name="WLMaxAltitudeHelp">
+			<button label="?" name="WLMaxAltitudeHelp"/>
 			<slider label="" name="WLMaxAltitude"/>
 		</panel>
 		<panel label="Iluminación" name="Lighting">
@@ -93,7 +93,7 @@
 			<text name="BHText4">
 				I
 			</text>
-			<slider label=""name="WLSunlightR"/>
+			<slider label="" name="WLSunlightR"/>
 			<slider label="" name="WLSunlightG"/>
 			<slider label="" name="WLSunlightB"/>
 			<slider label="" name="WLSunlightI"/>
@@ -115,7 +115,7 @@
 			<text name="BHText7">
 				B
 			</text>
-			<textname="BHText8">
+			<text name="BHText8">
 				I
 			</text>
 			<slider label="" name="WLAmbientR"  />

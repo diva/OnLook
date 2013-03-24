@@ -1327,7 +1327,8 @@ void LLPanelEditWearable::setUIPermissions(U32 perm_mask, BOOL is_complete)
 
 	childSetEnabled("Save", is_modifiable && is_complete);
 	childSetEnabled("Save As", is_copyable && is_complete);
-	childSetEnabled("sex radio", is_modifiable && is_complete);
+	if (LLView* view = findChild<LLView>("sex radio"))
+		view->setEnabled(is_modifiable && is_complete);
 	for_each_picker_ctrl_entry <LLTextureCtrl>		(this, mType, boost::bind(set_enabled_texture_ctrl, is_copyable && is_modifiable && is_complete, _1, _2));
 	for_each_picker_ctrl_entry <LLColorSwatchCtrl>	(this, mType, boost::bind(set_enabled_color_swatch_ctrl, is_modifiable && is_complete, _1, _2));
 	for(string_texture_index_map_t::iterator iter = mAlphaCheckbox2Index.begin();

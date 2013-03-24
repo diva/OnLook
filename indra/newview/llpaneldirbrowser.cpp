@@ -107,13 +107,20 @@ LLPanelDirBrowser::LLPanelDirBrowser(const std::string& name, LLFloaterDirectory
 
 BOOL LLPanelDirBrowser::postBuild()
 {
-	childSetCommitCallback("results", onCommitList, this);
+	if (LLUICtrl* ctrl = findChild<LLUICtrl>("results"))
+		ctrl->setCommitCallback(onCommitList, this);
 
-	childSetAction("< Prev", onClickPrev, this);
-	childHide("< Prev");
+	if (LLButton* btn = findChild<LLButton>("< Prev"))
+	{
+		childSetAction("< Prev", onClickPrev, this);
+		btn->setVisible(false);
+	}
 
-	childSetAction("Next >", onClickNext, this);
-	childHide("Next >");
+	if (LLButton* btn = findChild<LLButton>("Next >"))
+	{
+		childSetAction("Next >", onClickNext, this);
+		btn->setVisible(false);
+	}
 
 	return TRUE;
 }
@@ -136,7 +143,7 @@ void LLPanelDirBrowser::draw()
 	if (mLastResultTimer.getElapsedTimeF32() > 0.5)
 	{
 		if (!mDidAutoSelect &&
-			!childHasFocus("results"))
+			hasChild("results") && !childHasFocus("results"))
 		{
 			LLCtrlListInterface *list = childGetListInterface("results");
 			if (list)
@@ -171,7 +178,8 @@ void LLPanelDirBrowser::nextPage()
 void LLPanelDirBrowser::prevPage()
 {
 	mSearchStart -= mResultsPerPage;
-	childSetVisible("< Prev", mSearchStart > 0);
+	if (LLUICtrl* ctrl = findChild<LLUICtrl>("< Prev"))
+		ctrl->setVisible(mSearchStart > 0);
 
 	performQuery();
 }
@@ -180,14 +188,17 @@ void LLPanelDirBrowser::prevPage()
 void LLPanelDirBrowser::resetSearchStart()
 {
 	mSearchStart = 0;
-	childHide("Next >");
-	childHide("< Prev");
+	if (LLUICtrl* ctrl = findChild<LLUICtrl>("Next >"))
+		ctrl->setVisible(false);
+	if (LLUICtrl* ctrl = findChild<LLUICtrl>("< Prev"))
+		ctrl->setVisible(false);
 }
 
 // protected
 void LLPanelDirBrowser::updateResultCount()
 {
-	LLScrollListCtrl* list = getChild<LLScrollListCtrl>("results");
+	LLScrollListCtrl* list = findChild<LLScrollListCtrl>("results");
+	if (!list) return;
 
 	S32 result_count = list->getItemCount();
 	std::string result_text;
@@ -218,7 +229,7 @@ void LLPanelDirBrowser::updateResultCount()
 	}
 	else
 	{
-		childEnable("results");
+		list->setEnabled(true);
 	}
 }
 
@@ -319,7 +330,7 @@ void LLPanelDirBrowser::updateMaturityCheckbox()
 
 void LLPanelDirBrowser::selectByUUID(const LLUUID& id)
 {
-	LLCtrlListInterface *list = childGetListInterface("results");
+	LLScrollListCtrl* list = findChild<LLScrollListCtrl>("results");
 	if (!list) return;
 	BOOL found = list->setCurrentByID(id);
 	if (found)
@@ -363,7 +374,7 @@ U32 LLPanelDirBrowser::getSelectedEventID() const
 
 void LLPanelDirBrowser::getSelectedInfo(LLUUID* id, S32 *type)
 {
-	LLCtrlListInterface *list = childGetListInterface("results");
+	LLScrollListCtrl* list = findChild<LLScrollListCtrl>("results");
 	if (!list) return;
 
 	LLSD id_sd = childGetValue("results");
@@ -379,7 +390,7 @@ void LLPanelDirBrowser::getSelectedInfo(LLUUID* id, S32 *type)
 void LLPanelDirBrowser::onCommitList(LLUICtrl* ctrl, void* data)
 {
 	LLPanelDirBrowser* self = (LLPanelDirBrowser*)data;
-	LLCtrlListInterface *list = self->childGetListInterface("results");
+	LLScrollListCtrl* list = self->findChild<LLScrollListCtrl>("results");
 	if (!list) return;
 
 	// Start with everyone invisible
@@ -515,7 +526,7 @@ void LLPanelDirBrowser::processDirPeopleReply(LLMessageSystem *msg, void**)
 
 	self->mHaveSearchResults = TRUE;
 
-	LLCtrlListInterface *list = self->childGetListInterface("results");
+	LLScrollListCtrl* list = self->findChild<LLScrollListCtrl>("results");
 	if (!list) return;
 
 	if (!list->getCanSelect())
@@ -610,7 +621,7 @@ void LLPanelDirBrowser::processDirPlacesReply(LLMessageSystem* msg, void**)
 
 	self->mHaveSearchResults = TRUE;
 
-	LLCtrlListInterface *list = self->childGetListInterface("results");
+	LLScrollListCtrl* list = self->findChild<LLScrollListCtrl>("results");
 	if (!list) return;
 
 	if (!list->getCanSelect())
@@ -696,7 +707,7 @@ void LLPanelDirBrowser::processDirEventsReply(LLMessageSystem* msg, void**)
 
 	self->mHaveSearchResults = TRUE;
 
-	LLCtrlListInterface *list = self->childGetListInterface("results");
+	LLScrollListCtrl* list = self->findChild<LLScrollListCtrl>("results");
 	if (!list) return;
 
 	if (!list->getCanSelect())
@@ -835,7 +846,7 @@ void LLPanelDirBrowser::processDirGroupsReply(LLMessageSystem* msg, void**)
 
 	self->mHaveSearchResults = TRUE;
 
-	LLCtrlListInterface *list = self->childGetListInterface("results");
+	LLScrollListCtrl* list = self->findChild<LLScrollListCtrl>("results");
 	if (!list) return;
 
 	if (!list->getCanSelect())
@@ -932,7 +943,7 @@ void LLPanelDirBrowser::processDirClassifiedReply(LLMessageSystem* msg, void**)
 
 	self->mHaveSearchResults = TRUE;
 
-	LLCtrlListInterface *list = self->childGetListInterface("results");
+	LLScrollListCtrl* list = self->findChild<LLScrollListCtrl>("results");
 	if (!list) return;
 
 	if (!list->getCanSelect())
@@ -1005,7 +1016,7 @@ void LLPanelDirBrowser::processDirLandReply(LLMessageSystem *msg, void**)
 
 	self->mHaveSearchResults = TRUE;
 
-	LLCtrlListInterface *list = self->childGetListInterface("results");
+	LLScrollListCtrl* list = self->findChild<LLScrollListCtrl>("results");
 	if (!list) return;
 
 	if (!list->getCanSelect())
@@ -1184,7 +1195,7 @@ LLSD LLPanelDirBrowser::createLandSale(const LLUUID& parcel_id, BOOL is_auction,
 
 void LLPanelDirBrowser::newClassified()
 {
-	LLCtrlListInterface *list = childGetListInterface("results");
+	LLScrollListCtrl* list = findChild<LLScrollListCtrl>("results");
 	if (!list) return;
 
 	if (mFloaterDirectory->mPanelClassifiedp)
@@ -1212,8 +1223,6 @@ void LLPanelDirBrowser::newClassified()
 
 void LLPanelDirBrowser::setupNewSearch()
 {
-	LLScrollListCtrl* list = getChild<LLScrollListCtrl>("results");
-
 	gDirBrowserInstances.removeData(mSearchID);
 	// Make a new query ID
 	mSearchID.generate();
@@ -1221,9 +1230,12 @@ void LLPanelDirBrowser::setupNewSearch()
 	gDirBrowserInstances.addData(mSearchID, this);
 
 	// ready the list for results
-	list->operateOnAll(LLCtrlListInterface::OP_DELETE);
-	list->setCommentText(LLTrans::getString("Searching"));
-	childDisable("results");
+	if (LLScrollListCtrl* list = findChild<LLScrollListCtrl>("results"))
+	{
+		list->operateOnAll(LLCtrlListInterface::OP_DELETE);
+		list->setCommentText(LLTrans::getString("Searching"));
+		list->setEnabled(false);
+	}
 
 	mResultsReceived = 0;
 	mHaveSearchResults = FALSE;

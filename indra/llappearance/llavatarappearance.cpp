@@ -169,8 +169,6 @@ LLAvatarAppearance::LLAvatarAppearance(LLWearableData* wearable_data) :
 	mRoot(NULL),
 	mWearableData(wearable_data)
 {
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
-
 	llassert_always(mWearableData);
 	mBakedTextureDatas.resize(LLAvatarAppearanceDefines::BAKED_NUM_INDICES);
 	for (U32 i = 0; i < mBakedTextureDatas.size(); i++ )
@@ -496,8 +494,6 @@ void LLAvatarAppearance::computeBodySize()
 //-----------------------------------------------------------------------------
 BOOL LLAvatarAppearance::parseSkeletonFile(const std::string& filename)
 {
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
-	
 	//-------------------------------------------------------------------------
 	// parse the file
 	//-------------------------------------------------------------------------
@@ -539,8 +535,6 @@ BOOL LLAvatarAppearance::parseSkeletonFile(const std::string& filename)
 //-----------------------------------------------------------------------------
 BOOL LLAvatarAppearance::setupBone(const LLAvatarBoneInfo* info, LLJoint* parent, S32 &volume_num, S32 &joint_num)
 {
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
-	
 	LLJoint* joint = NULL;
 
 	if (info->mIsJoint)
@@ -628,9 +622,6 @@ BOOL LLAvatarAppearance::allocateCharacterJoints( U32 num )
 //-----------------------------------------------------------------------------
 BOOL LLAvatarAppearance::buildSkeleton(const LLAvatarSkeletonInfo *info)
 {
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
-	
-
 	if (!info)
 		return FALSE;
 	//-------------------------------------------------------------------------
@@ -685,8 +676,6 @@ void LLAvatarAppearance::clearSkeleton()
 //-----------------------------------------------------------------------------
 void LLAvatarAppearance::buildCharacter()
 {
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
-	
 	//-------------------------------------------------------------------------
 	// remove all references to our existing skeleton
 	// so we can rebuild it
@@ -1471,6 +1460,7 @@ LLColor4 LLAvatarAppearance::getClothesColor( ETextureIndex te )
 	}
 	return color;
 }
+
 // static
 LLColor4 LLAvatarAppearance::getDummyColor()
 {

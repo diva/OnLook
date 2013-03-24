@@ -5,9 +5,6 @@
      that are returned from one component and may appear in many places-->
 <strings>
 
-	<string name="CURRENCY">L$</string>
-	<string name="GRID_OWNER">Linden Lab</string>
-
 	<string name="hippo_label_free">free</string>
 	<string name="hippo_label_week">week</string>
 	<string name="TeleportOfferMaturity">
@@ -16,9 +13,6 @@
 	<string name="TeleportLureMaturity">
 	  [NAME]'s teleport lure is to [DESTINATION]
 	</string>
-	<string name="AvatarIdle">
-	  Idle [MINUTES]min
-	</string>
 
 	<!-- Default Args - these arguments will be replaced in all strings -->
 	<string name="SECOND_LIFE">Second Life</string>
@@ -26,6 +20,9 @@
 	<string name="CAPITALIZED_APP_NAME">SINGULARITY VIEWER</string>
 	<string name="SECOND_LIFE_GRID">Second Life Grid</string>
 	<string name="SUPPORT_SITE">Second Life Support Portal</string>
+
+	<string name="CURRENCY">L$</string>
+	<string name="GRID_OWNER">Linden Lab</string>
 
 	<!-- starting up -->
 	<string name="StartupDetectingHardware">Detecting hardware...</string>
@@ -194,6 +191,7 @@
 	<!-- llvoavatar. Displayed in the avatar's chat bubble -->
 	<string name="AvatarEditingAppearance">(Editing Appearance)</string>
 	<string name="AvatarAway">Away</string>
+	<string name="AvatarIdle">Idle [MINUTES]min</string>
 	<string name="AvatarBusy">Busy</string>
 	<string name="AvatarMuted">Muted</string>
 	<!-- "AvatarLangolier" is used for an avatar that teleported into a Time Frozen scene (only their moving tag is visible).
@@ -1974,30 +1972,34 @@ list llGetStaticPath(vector start, vector end, float radius, list params)
 Returns a list of position vectors indicating pathfinding waypoints between positions at start and end, for a character of a given radius. The waypoints this function returns are for the 'static' nav mesh, meaning that dynamic objects are ignored.
 	</string>
 <!-- Not in LL list yes -->
-<string name="LSLTipText_llManageEstateAccess" translate="false">
+	<string name="LSLTipText_llManageEstateAccess" translate="false">
 integer llManageEstateAccess(integer action, key id)
 To add or remove agents from the estate's agent access or ban lists or groups from the estate's group access list.
 Only works for objects owned by the Estate Owner or an Estate Manager.
 Returns TRUE if successful and FALSE if throttled, on invalid action, on invalid or null id, or if object owner is not allowed to manage the estate.
 'action' can be any of: ESTATE_ACCESS_ALLOWED_[AGENT/GROUP]_[ADD/REMOVE] or ESTATE_ACCESS_BANNED_AGENT_[ADD/REMOVE]
-</string>
-<string name="LSLTipText_llGetAgentList" translate="false">
+	</string>
+	<string name="LSLTipText_llGetAgentList" translate="false">
 list llGetAgentList(integer scope, list options)
 Requests a list of agents currently in the region, limited by the scope parameter.
-</string>
-<string name="LSLTipText_llAttachToAvatarTemp" translate="false">
+	</string>
+	<string name="LSLTipText_llAttachToAvatarTemp" translate="false">
 llAttachToAvatarTemp(integer attach_point)
 Attaches the object to the avatar who has granted permission to the script, with the exception that the object will not create new inventory for the user, and will disappear on detach or disconnect.
-</string>
-<string name="LSLTipText_llTeleportAgent" translate="false">
+	</string>
+	<string name="LSLTipText_llTeleportAgent" translate="false">
 llTeleportAgent(key avatar, string landmark, vector position, vector look_at)
 Requests a teleport of avatar to a landmark stored in the object's inventory. If no landmark is provided (an empty string), the avatar is teleported to the location position in the current region. In either case, the avatar is turned to face the position given by look_at in local coordinates.
-</string>
-<string name="LSLTipText_llTeleportAgentGlobalCoords" translate="false">
+	</string>
+	<string name="LSLTipText_llTeleportAgentGlobalCoords" translate="false">
 llTeleportAgentGlobalCoords(key agent, vector global_coordinates, vector region_coordinates, vector look_at)
 Teleports an agent to set of a region_coordinates within a region at the specified global_coordinates. The agent lands facing the position defined by look_at local coordinates.
 A region's global coordinates can be retrieved using llRequestSimulatorData(region_name, DATA_SIM_POS)
-</string>
+	</string>
+	<string name="LSLTipText_llGetSimStats" translate="false">
+float llGetSimStats(integer stat_type)
+Returns the value of a particular simulator statistic.
+	</string>
 <!-- GOD FUNCTIONS -->
 	<string name="LSLTipText_llGodLikeRezObject">
 llGodLikeRezObject( key inventory, vector pos )
@@ -3222,6 +3224,8 @@ Drag folders to this area and click "Send to Marketplace" to list them for sale 
 	<string name="ATTACH_HUD_BOTTOM_LEFT">HUD Bottom Left</string>
 	<string name="ATTACH_HUD_BOTTOM">HUD Bottom</string>
 	<string name="ATTACH_HUD_BOTTOM_RIGHT">HUD Bottom Right</string>
+	<string name="ATTACH_NECK">Neck</string>
+	<string name="ATTACH_AVATAR_CENTER">Root</string>
 
 	<!-- panel contents -->
 	<string name="PanelContentsNewScript">New Script</string>

@@ -1644,11 +1644,9 @@ void LLFloaterWorldMap::onChangeMaturity()
 	bool can_access_adult = gAgent.canAccessAdult();
 	
 	childSetVisible("events_mature_icon", can_access_mature);
-	childSetVisible("events_mature_label", can_access_mature);
 	childSetVisible("event_mature_chk", can_access_mature);
 
 	childSetVisible("events_adult_icon", can_access_adult);
-	childSetVisible("events_adult_label", can_access_adult);
 	childSetVisible("event_adult_chk", can_access_adult);
 
 	// disable mature / adult events.

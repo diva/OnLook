@@ -36,9 +36,11 @@
 #include "llrefcount.h"
 #include "aicurlperhost.h"
 #include "aihttptimeout.h"
+#include "llhttpclient.h"
 
 class AIHTTPHeaders;
 class AICurlEasyRequestStateMachine;
+struct AITransferInfo;
 
 namespace AICurlPrivate {
 
@@ -212,6 +214,7 @@ class CurlEasyRequest : public CurlEasyHandle {
   private:
 	void setPost_raw(U32 size, char const* data, bool keepalive);
   public:
+	void setPut(U32 size, bool keepalive = true);
 	void setPost(U32 size, bool keepalive = true) { setPost_raw(size, NULL, keepalive); }
 	void setPost(AIPostFieldPtr const& postdata, U32 size, bool keepalive = true);
 	void setPost(char const* data, U32 size, bool keepalive = true) { setPost(new AIPostField(data), size, keepalive); }
@@ -297,6 +300,7 @@ class CurlEasyRequest : public CurlEasyHandle {
   protected:
 	curl_slist* mHeaders;
 	AICurlEasyHandleEvents* mHandleEventsTarget;
+	U32 mContentLength;		// Non-zero if known (only set for PUT and POST).
 	CURLcode mResult;		//AIFIXME: this does not belong in the request object, but belongs in the response object.
 
 	AIHTTPTimeoutPolicy const* mTimeoutPolicy;
@@ -319,12 +323,12 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// Accessor for mTimeout with optional creation of orphaned object (if lockobj != NULL).
 	LLPointer<curlthread::HTTPTimeout>& httptimeout(void) { if (!mTimeout) { create_timeout_object(); mTimeoutIsOrphan = true; } return mTimeout; }
 	// Return true if no data has been received on the latest socket (if any) for too long.
-	bool has_stalled(void) const { return mTimeout && mTimeout->has_stalled(); }
+	bool has_stalled(void) { return mTimeout && mTimeout->has_stalled(); }
 
   protected:
 	// This class may only be created as base class of BufferedCurlEasyRequest.
 	// Throws AICurlNoEasyHandle.
-	CurlEasyRequest(void) : mHeaders(NULL), mHandleEventsTarget(NULL), mResult(CURLE_FAILED_INIT), mTimeoutPolicy(NULL), mTimeoutIsOrphan(false)
+	CurlEasyRequest(void) : mHeaders(NULL), mHandleEventsTarget(NULL), mContentLength(0), mResult(CURLE_FAILED_INIT), mTimeoutPolicy(NULL), mTimeoutIsOrphan(false)
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 		, mDebugIsHeadOrGetMethod(false)
 #endif
@@ -402,8 +406,8 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	//U32 mBodyLimit;									// From the old LLURLRequestDetail::mBodyLimit, but never used.
 	U32 mStatus;										// HTTP status, decoded from the first header line.
 	std::string mReason;								// The "reason" from the same header line.
-	S32 mRequestTransferedBytes;
-	S32 mResponseTransferedBytes;
+	U32 mRequestTransferedBytes;
+	U32 mResponseTransferedBytes;
 	AIBufferedCurlEasyRequestEvents* mBufferEventsTarget;
 
   public:
@@ -433,7 +437,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	ThreadSafeBufferedCurlEasyRequest const* get_lockobj(void) const;
 	// Return true when an error code was received that can occur before the upload finished.
 	// So far the only such error I've seen is HTTP_BAD_REQUEST.
-	bool upload_error_status(void) const { return mStatus == HTTP_BAD_REQUEST /*&& mStatus != HTTP_INTERNAL_ERROR*/; }
+	bool upload_error_status(void) const { return mStatus == HTTP_BAD_REQUEST; }
 
 	// Return true when prepRequest was already called and the object has not been
 	// invalidated as a result of calling timed_out().

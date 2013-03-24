@@ -37,11 +37,11 @@
 #include "llsys.h"			// for LLOSInfo
 #include "llviewercontrol.h"	// settings_map_type
 
+class LLCommandLineParser;
 class LLTextureCache;
 class LLImageDecodeThread;
 class LLTextureFetch;
 class LLWatchdogTimeout;
-class LLCommandLineParser;
 
 class LLAppViewer : public LLApp
 {
@@ -278,13 +278,10 @@ const S32 AGENT_UPDATES_PER_SECOND  = 10;
 // "// llstartup" indicates that llstartup is the only client for this global.
 
 extern LLSD gDebugInfo;
-
-extern BOOL	gAllowTapTapHoldRun;
 extern BOOL	gShowObjectUpdates;
 
 extern BOOL gAcceptTOS;
 extern BOOL gAcceptCriticalMessage;
-
 
 typedef enum 
 {
@@ -331,8 +328,6 @@ extern LLUUID gSystemFolderAssets;
 // </edit>
 
 extern BOOL		gDisconnected;
-
-// Minimap scale in pixels per region
 
 extern LLFrameTimer	gRestoreGLTimer;
 extern BOOL			gRestoreGL;

@@ -76,7 +76,6 @@ typedef AIAccess<AIRegisteredStateMachines> registered_statemachines_wat;
 // static
 void AIEvent::Register(AIEvents event, AIStateMachine* statemachine, bool one_shot)
 {
-	statemachine->idle();
 	registered_statemachines_wat registered_statemachines_w(registered_statemachines_list[event]);
 	registered_statemachines_w->Register(statemachine, one_shot);
 }

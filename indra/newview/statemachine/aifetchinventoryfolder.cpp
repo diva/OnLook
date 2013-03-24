@@ -49,19 +49,20 @@ class AIInventoryFetchDescendentsObserver : public LLInventoryFetchDescendentsOb
   protected:
 	/*virtual*/ void done()
 	{
-	  mStateMachine->set_state(AIFetchInventoryFolder_folderCompleted);
+	  mStateMachine->advance_state(AIFetchInventoryFolder_folderCompleted);
 	  delete this;
 	}
 
   private:
-	AIStateMachine* mStateMachine;
+	LLPointer<AIStateMachine> mStateMachine;
 };
 
 AIInventoryFetchDescendentsObserver::AIInventoryFetchDescendentsObserver(AIStateMachine* statemachine, LLUUID const& folder) : 
 	mStateMachine(statemachine),
 	LLInventoryFetchDescendentsObserver(folder)
 {
-	mStateMachine->idle();
+	// Call idle() on the parent state machine before passing it.
+	llassert(mStateMachine->waiting());
 	startFetch();
 	if(isFinished())
 	{
@@ -97,14 +98,15 @@ void AIFetchInventoryFolder::initialize_impl(void)
   set_state(AIFetchInventoryFolder_checkFolderExists);
   if (!gInventory.isInventoryUsable())
   {
-	// This immediately calls this->idle(), and then when the event occurs cont().
+	idle();
+	// This calls this->cont() when the event occurs.
 	AIEvent::Register(AIEvent::LLInventoryModel_mIsAgentInvUsable_true, this);
   }
 }
 
-void AIFetchInventoryFolder::multiplex_impl(void)
+void AIFetchInventoryFolder::multiplex_impl(state_type run_state)
 {
-  switch (mRunState)
+  switch (run_state)
   {
 	case AIFetchInventoryFolder_checkFolderExists:
 	{
@@ -172,6 +174,7 @@ void AIFetchInventoryFolder::multiplex_impl(void)
 	}
 	case AIFetchInventoryFolder_fetchDescendents:
 	{
+	  idle();	// Wait till the state is set to AIFetchInventoryFolder_folderCompleted.
 	  // This sets the state to AIFetchInventoryFolder_folderCompleted once the folder is complete.
 	  new AIInventoryFetchDescendentsObserver(this, mFolderUUID);
 	  break;
@@ -191,10 +194,6 @@ void AIFetchInventoryFolder::multiplex_impl(void)
 	  break;
 	}
   }
-}
-
-void AIFetchInventoryFolder::abort_impl(void)
-{
 }
 
 void AIFetchInventoryFolder::finish_impl(void)

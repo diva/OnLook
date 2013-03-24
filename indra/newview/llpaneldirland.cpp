@@ -103,7 +103,6 @@ BOOL LLPanelDirLand::postBuild()
 	childSetAction("Search", onClickSearchCore, this);
 	setDefaultBtn("Search");
 
-	childSetTextArg("land", "[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 	childSetTextArg("pricecheck_symbol", "[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 	childSetLabelArg("pricecheck", "[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 
