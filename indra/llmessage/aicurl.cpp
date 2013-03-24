@@ -409,6 +409,16 @@ void initCurl(void)
 }
 
 // MAIN-THREAD
+void shutdownCurl(void)
+{
+  using namespace AICurlPrivate;
+
+  DoutEntering(dc::curl, "AICurlInterface::shutdownCurl()");
+
+  BufferedCurlEasyRequest::shutdown();
+}
+
+// MAIN-THREAD
 void cleanupCurl(void)
 {
   using namespace AICurlPrivate;
@@ -1293,6 +1303,8 @@ bool CurlEasyRequest::removeFromPerHostQueue(AICurlEasyRequest const& easy_reque
 static int const HTTP_REDIRECTS_DEFAULT = 10;
 
 LLChannelDescriptors const BufferedCurlEasyRequest::sChannels;
+LLMutex BufferedCurlEasyRequest::sResponderCallbackMutex;
+bool BufferedCurlEasyRequest::sShuttingDown = false;
 
 BufferedCurlEasyRequest::BufferedCurlEasyRequest() : mRequestTransferedBytes(0), mResponseTransferedBytes(0), mBufferEventsTarget(NULL), mStatus(HTTP_INTERNAL_ERROR_OTHER)
 {

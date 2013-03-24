@@ -1992,18 +1992,31 @@ void BufferedCurlEasyRequest::processOutput(void)
   {
 	print_diagnostics(code);
   }
-  if (mBufferEventsTarget)
+  sResponderCallbackMutex.lock();
+  if (!sShuttingDown)
   {
-	// Only the responder registers for these events.
-	llassert(mBufferEventsTarget == mResponder.get());
-	// Allow clients to parse result codes and headers before we attempt to parse
-	// the body and provide completed/result/error calls.
-	mBufferEventsTarget->completed_headers(responseCode, responseReason, (code == CURLE_FAILED_INIT) ? NULL : &info);
+	if (mBufferEventsTarget)
+	{
+	  // Only the responder registers for these events.
+	  llassert(mBufferEventsTarget == mResponder.get());
+	  // Allow clients to parse result codes and headers before we attempt to parse
+	  // the body and provide completed/result/error calls.
+	  mBufferEventsTarget->completed_headers(responseCode, responseReason, (code == CURLE_FAILED_INIT) ? NULL : &info);
+	}
+	mResponder->finished(code, responseCode, responseReason, sChannels, mOutput);
   }
-  mResponder->finished(code, responseCode, responseReason, sChannels, mOutput);
+  sResponderCallbackMutex.unlock();
   mResponder = NULL;
 
   resetState();
+}
+
+//static
+void BufferedCurlEasyRequest::shutdown(void)
+{
+  sResponderCallbackMutex.lock();
+  sShuttingDown = true;
+  sResponderCallbackMutex.unlock();
 }
 
 void BufferedCurlEasyRequest::received_HTTP_header(void)

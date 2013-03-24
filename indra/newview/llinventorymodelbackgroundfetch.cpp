@@ -618,18 +618,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 		if (fetch_info.mIsCategory)
 		{
 			const LLUUID &cat_id = fetch_info.mUUID;
-			if (cat_id.isNull()) //DEV-17797
-			{
-				LLSD folder_sd;
-				folder_sd["folder_id"]		= LLUUID::null.asString();
-				folder_sd["owner_id"]		= gAgent.getID();
-				folder_sd["sort_order"]		= (LLSD::Integer)sort_order;
-				folder_sd["fetch_folders"]	= (LLSD::Boolean)FALSE;
-				folder_sd["fetch_items"]	= (LLSD::Boolean)TRUE;
-				folder_request_body["folders"].append(folder_sd);
-				folder_count++;
-			}
-			else
+			if (!cat_id.isNull())
 			{
 				const LLViewerInventoryCategory* cat = gInventory.getCategory(cat_id);
 		
@@ -664,9 +653,9 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 						}
 					}
 				}
+				if (fetch_info.mRecursive)
+					recursive_cats.push_back(cat_id);
 			}
-			if (fetch_info.mRecursive)
-				recursive_cats.push_back(cat_id);
 		}
 		else
 		{
