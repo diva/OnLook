@@ -172,10 +172,12 @@ LLControlVariable::LLControlVariable(const std::string& name, eControlType type,
 	  mHideFromSettingsEditor(hidefromsettingseditor),
 	  mCommitSignal(new commit_signal_t),
 	  mValidateSignal(new validate_signal_t),
+#ifdef PROF_CTRL_CALLS
+	  mLookupCount(0),
+#endif //PROF_CTRL_CALLS
 	  mIsCOA(IsCOA),
 	  mIsCOAParent(false),
-	  mCOAConnectedVar(NULL),
-	  mLookupCount(0)
+	  mCOAConnectedVar(NULL)
 {
 	if (mPersist && mComment.empty())
 	{
