@@ -104,6 +104,7 @@ class LLIamHereVoice : public LLHTTPClient::ResponderWithResult
 		};
 
 		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return iamHereVoice_timeout; }
+		/*virtual*/ bool redirect_status_ok(void) const { return true; }
 		/*virtual*/ char const* getName(void) const { return "LLIamHereVoice"; }
 };
 

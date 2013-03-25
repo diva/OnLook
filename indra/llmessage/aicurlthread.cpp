@@ -806,7 +806,15 @@ void CurlSocketInfo::set_action(int action)
   if ((toggle_action & CURL_POLL_OUT))
   {
 	if ((action & CURL_POLL_OUT))
+	{
 	  mMultiHandle.mWritePollSet->add(this);
+	  if (mTimeout)
+	  {
+		  // Note that this detection normally doesn't work because mTimeout will be zero.
+		  // However, it works in the case of a redirect - and then we need it.
+		  mTimeout->upload_starting();			// Update timeout administration.
+	  }
+	}
 	else
 	{
 	  mMultiHandle.mWritePollSet->remove(this);
@@ -2140,6 +2148,11 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	self_w->received_HTTP_header();
 	self_w->setStatusAndReason(status, reason);
 	done = true;
+	if (status >= 300 && status < 400)
+	{
+	  // Timeout administration needs to know if we're being redirected.
+	  self_w->httptimeout()->being_redirected();
+	}
   }
   // Update timeout administration. This must be done after the status is already known.
   if (self_w->httptimeout()->data_received(header_len/*,*/ ASSERT_ONLY_COMMA(self_w->upload_error_status())))
