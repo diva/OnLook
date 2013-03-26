@@ -296,7 +296,7 @@ class AIStateMachine : public LLThreadSafeRefCount
 		return false;
 	  else if (mSleep < 0)
 		++mSleep;
-	  else if ((U64)mSleep >= current_time)
+	  else if ((U64)mSleep <= current_time)
 		mSleep = 0;
 	  return mSleep != 0;
 	}
