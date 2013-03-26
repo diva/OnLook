@@ -38,7 +38,6 @@
 #include <openssl/ssl.h>
 #include "aicurleasyrequeststatemachine.h"
 #include "llioutil.h"
-#include "llmemtype.h"
 #include "llpumpio.h"
 #include "llsd.h"
 #include "llstring.h"

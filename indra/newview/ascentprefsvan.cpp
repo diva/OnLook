@@ -57,7 +57,7 @@ LLPrefsAscentVan::LLPrefsAscentVan()
 {
     LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_vanity.xml");
 
-	childSetVisible("announce_streaming_metadata", gAudiop && gAudiop->getStreamingAudioImpl() && gAudiop->getStreamingAudioImpl()->supportsMetaData());
+	childSetVisible("announce_stream_metadata", gAudiop && gAudiop->getStreamingAudioImpl() && gAudiop->getStreamingAudioImpl()->supportsMetaData());
 
     childSetCommitCallback("tag_spoofing_combobox", onCommitClientTag, this);
 
@@ -219,14 +219,6 @@ void LLPrefsAscentVan::refreshValues()
 	mColorMutedChat         = gSavedSettings.getBOOL("ColorMutedChat");
 //	mColorCustomChat        = gSavedSettings.getBOOL("ColorCustomChat");
 
-    //Body Dynamics --------------------------------------------------------------------------
-    mBreastPhysicsToggle    = gSavedSettings.getBOOL("EmeraldBreastPhysicsToggle");
-    mBoobMass               = gSavedSettings.getF32("EmeraldBoobMass");
-    mBoobHardness           = gSavedSettings.getF32("EmeraldBoobHardness");
-    mBoobVelMax             = gSavedSettings.getF32("EmeraldBoobVelMax");
-    mBoobFriction           = gSavedSettings.getF32("EmeraldBoobFriction");
-    mBoobVelMin             = gSavedSettings.getF32("EmeraldBoobVelMin");
-
     mAvatarXModifier        = gSavedSettings.getF32("AscentAvatarXModifier");
     mAvatarYModifier        = gSavedSettings.getF32("AscentAvatarYModifier");
     mAvatarZModifier        = gSavedSettings.getF32("AscentAvatarZModifier");
@@ -252,13 +244,6 @@ void LLPrefsAscentVan::refresh()
     childSetValue("custom_tag_label_box", gSavedSettings.getString("AscentCustomTagLabel"));
     childSetEnabled("custom_tag_color_text",   mCustomTagOn);
     childSetEnabled("custom_tag_color_swatch", mCustomTagOn);
-
-    //Body Dynamics --------------------------------------------------------------------------
-    childSetEnabled("EmeraldBoobMass",     mBreastPhysicsToggle);
-    childSetEnabled("EmeraldBoobHardness", mBreastPhysicsToggle);
-    childSetEnabled("EmeraldBoobVelMax",   mBreastPhysicsToggle);
-    childSetEnabled("EmeraldBoobFriction", mBreastPhysicsToggle);
-    childSetEnabled("EmeraldBoobVelMin",   mBreastPhysicsToggle);
 }
 
 // Reset settings to local copy
@@ -301,14 +286,6 @@ void LLPrefsAscentVan::cancel()
     gSavedSettings.setBOOL("ColorLindenChat",            mColorLindenChat);
     gSavedSettings.setBOOL("ColorMutedChat",             mColorMutedChat);
 //	gSavedSettings.setBOOL("ColorCustomChat",            mColorCustomChat);
-
-    //Body Dynamics --------------------------------------------------------------------------
-    gSavedSettings.setBOOL("EmeraldBreastPhysicsToggle", mBreastPhysicsToggle);
-    gSavedSettings.setF32("EmeraldBoobMass",             mBoobMass);
-    gSavedSettings.setF32("EmeraldBoobHardness",         mBoobHardness);
-    gSavedSettings.setF32("EmeraldBoobVelMax",           mBoobVelMax);
-    gSavedSettings.setF32("EmeraldBoobFriction",         mBoobFriction);
-    gSavedSettings.setF32("EmeraldBoobVelMin",           mBoobVelMin);
 
     gSavedSettings.setF32("AscentAvatarXModifier",       mAvatarXModifier);
     gSavedSettings.setF32("AscentAvatarYModifier",       mAvatarYModifier);

@@ -45,9 +45,10 @@
 	<combo_box allow_text_entry="true" bottom="-361" follows="top" height="16" left="103" name="language_combobox" max_chars="32" width="140">
 		<combo_item name="System Default Language" value="default">System Default</combo_item>
 		<combo_item name="English" value="en-us">English</combo_item>		
-		<!-- After "System Default" and "English", please keep the rest of these combo_items in alphabetical order by the first character in the string.--> 
+		<!-- After "System Default" and "English", please keep the rest of these combo_items in alphabetical order by the first character in the string.-->
 		<combo_item name="Spanish" value="es">Español(Spanish)</combo_item>
 		<combo_item name="French" value="fr">Français(French)</combo_item>
+		<combo_item name="Portugese" value="pt">Portugués(Portuguese)</combo_item>
 		<!-- Also, with the above advice in mind, keep completed UI translations above this line.-->
 		<combo_item name="Danish" value="da">Dansk(Danish)*</combo_item>
 		<combo_item name="Deutsch(German)" value="de">Deutsch(German)*</combo_item>
@@ -55,7 +56,6 @@
 		<combo_item name="Hungarian" value="hu">Magyar(Hungarian)*</combo_item>
 		<combo_item name="Dutch" value="nl">Nederlands(Dutch)*</combo_item>
 		<combo_item name="Polish" value="pl">Polski(Polish)*</combo_item>
-		<combo_item name="Portugese" value="pt">Portugués(Portuguese)</combo_item>
  		<combo_item name="Russian" value="ru">Русский(Russian)*</combo_item>
 		<combo_item name="Turkish" value="tr">Türkçe(Turkish)*</combo_item>
  		<combo_item name="Ukrainian" value="uk">Українська(Ukrainian)*</combo_item>

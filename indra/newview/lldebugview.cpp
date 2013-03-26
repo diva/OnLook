@@ -37,7 +37,6 @@
 // library includes
 #include "llframestatview.h"
 #include "llfasttimerview.h"
-#include "llmemoryview.h"
 #include "llconsole.h"
 #include "lltextureview.h"
 #include "llresmgr.h"
@@ -83,13 +82,6 @@ LLDebugView::LLDebugView(const std::string& name, const LLRect &rect)
 	mFastTimerView->setFollowsLeft();
 	mFastTimerView->setVisible(FALSE);			// start invisible
 	addChild(mFastTimerView);
-
-	r.set(25, rect.getHeight() - 50, rect.getWidth()/2, rect.getHeight() - 450);
-	mMemoryView = new LLMemoryView("memory", r);
-	mMemoryView->setFollowsTop();
-	mMemoryView->setFollowsLeft();
-	mMemoryView->setVisible(FALSE);			// start invisible
-	addChild(mMemoryView);
 
 	r.set(150, rect.getHeight() - 50, 870, 100);
 	gTextureView = new LLTextureView("gTextureView", r);

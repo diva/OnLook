@@ -44,6 +44,15 @@
 #include "llimview.h"
 #include "llimpanel.h"
 #include "llstring.h"
+
+namespace
+{
+	void handleLocalChatBar(LLFloaterChat* floater_chat, bool show_bar)
+	{
+		floater_chat->childSetVisible("chat_layout_panel", show_bar || !gSavedSettings.getBOOL("ChatHistoryTornOff"));
+	}
+}
+
 //
 // LLFloaterMyFriends
 //
@@ -119,9 +128,9 @@ LLFloaterChatterBox::LLFloaterChatterBox(const LLSD& seed) :
 		addFloater(LLFloaterMyFriends::getInstance(0), TRUE);
 	}
 
+	LLFloaterChat* floater_chat = LLFloaterChat::getInstance();
 	if (gSavedSettings.getBOOL("ChatHistoryTornOff"))
 	{
-		LLFloaterChat* floater_chat = LLFloaterChat::getInstance();
 		// add then remove to set up relationship for re-attach
 		addFloater(floater_chat, FALSE);
 		removeFloater(floater_chat);
@@ -130,8 +139,9 @@ LLFloaterChatterBox::LLFloaterChatterBox(const LLSD& seed) :
 	}
 	else
 	{
-		addFloater(LLFloaterChat::getInstance(LLSD()), FALSE);
+		addFloater(floater_chat, FALSE);
 	}
+	gSavedSettings.getControl("ShowLocalChatFloaterBar")->getSignal()->connect(boost::bind(handleLocalChatBar, floater_chat, _2));
 	mTabContainer->lockTabs();
 }
 
@@ -235,6 +245,7 @@ void LLFloaterChatterBox::removeFloater(LLFloater* floaterp)
 		// only my friends floater now locked
 		mTabContainer->lockTabs(mTabContainer->getNumLockedTabs() - 1);
 		gSavedSettings.setBOOL("ChatHistoryTornOff", TRUE);
+		if (!gSavedSettings.getBOOL("ShowLocalChatFloaterBar")) floaterp->childSetVisible("chat_layout_panel", false);
 		floaterp->setCanClose(TRUE);
 	}
 	else if (floaterp->getName() == "floater_my_friends")
@@ -261,7 +272,7 @@ void LLFloaterChatterBox::addFloater(LLFloater* floaterp,
 	{
 		mTabContainer->unlockTabs();
 		// add chat history as second tab if contact window is present, first tab otherwise
-		if (getChildView("floater_my_friends"))
+		if (findChild<LLView>("floater_my_friends"))
 		{
 			// assuming contacts window is first tab, select it
 			mTabContainer->selectFirstTab();
@@ -276,6 +287,7 @@ void LLFloaterChatterBox::addFloater(LLFloater* floaterp,
 		// make sure first two tabs are now locked
 		mTabContainer->lockTabs(num_locked_tabs + 1);
 		gSavedSettings.setBOOL("ChatHistoryTornOff", FALSE);
+		floaterp->childSetVisible("chat_layout_panel", true);
 		floaterp->setCanClose(FALSE);
 	}
 	else if (floaterp->getName() == "floater_my_friends")

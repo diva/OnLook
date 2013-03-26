@@ -88,13 +88,7 @@ protected:
 	bool mColorLindenChat;
 	bool mColorMutedChat;
 //	bool mColorCustomChat;
-    //Body Dynamics
-    BOOL mBreastPhysicsToggle;
-    F32 mBoobMass;
-    F32 mBoobHardness;
-    F32 mBoobVelMax;
-    F32 mBoobFriction;
-    F32 mBoobVelMin;
+
     F32 mAvatarXModifier;
     F32 mAvatarYModifier;
     F32 mAvatarZModifier;

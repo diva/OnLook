@@ -113,7 +113,9 @@ BOOL LLPanelGeneral::postBuild()
 	childSetVisible("maturity_desired_combobox", can_choose);
 	childSetVisible("maturity_desired_textbox",	!can_choose);
 
-	childSetEnabled("afk_timeout_spinner", gSavedSettings.getBOOL("AllowIdleAFK"));
+	bool allow_idle = gSavedSettings.getBOOL("AllowIdleAFK");
+	childSetEnabled("afk_timeout_spinner", allow_idle);
+	childSetEnabled("seconds_textbox", allow_idle);
 	childSetCommitCallback("away_when_idle_checkbox", &onClickCheckbox, this);
 
 	childSetEnabled("no_transaction_clutter_checkbox", gSavedSettings.getBOOL("NotifyMoneyChange"));
@@ -179,7 +181,10 @@ void LLPanelGeneral::onClickCheckbox(LLUICtrl* ctrl, void* data)
 	LLPanelGeneral* self = (LLPanelGeneral*)data;
 	bool enabled = ctrl->getValue().asBoolean();
 	if(ctrl->getName() == "away_when_idle_checkbox")
+	{
 		self->childSetEnabled("afk_timeout_spinner", enabled);
+		self->childSetEnabled("seconds_textbox", enabled);
+	}
 	else if(ctrl->getName() == "notify_money_change_checkbox")
 		self->childSetEnabled("no_transaction_clutter_checkbox", enabled);
 }

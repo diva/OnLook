@@ -372,13 +372,10 @@ void hooked_process_sound_trigger(LLMessageSystem *msg, void **)
 // true when all initialization done.
 bool idle_startup()
 {
-	LLMemType mt1(LLMemType::MTYPE_STARTUP);
-	
 	const F32 PRECACHING_DELAY = gSavedSettings.getF32("PrecachingDelay");
 	const F32 TIMEOUT_SECONDS = 5.f;
 	const S32 MAX_TIMEOUT_COUNT = 3;
 	static LLTimer timeout;
-	static S32 timeout_count = 0;
 
 	static LLTimer login_time;
 
@@ -400,7 +397,6 @@ bool idle_startup()
 
 	// last location by default
 	static S32  agent_location_id = START_LOCATION_ID_LAST;
-	static S32  location_which = START_LOCATION_ID_LAST;
 
 	static bool show_connect_box = true;
 
@@ -841,9 +837,6 @@ bool idle_startup()
 		
 		gViewerWindow->getWindow()->setCursor(UI_CURSOR_ARROW);
 
-		timeout_count = 0;
-
-
 		// *NOTE: This is where LLViewerParcelMgr::getInstance() used to get allocated before becoming LLViewerParcelMgr::getInstance().
 
 		// *NOTE: This is where gHUDManager used to bet allocated before becoming LLHUDManager::getInstance().
@@ -1044,7 +1037,8 @@ bool idle_startup()
 		//Default the path if one isn't set.
 		if (gSavedPerAccountSettings.getString("InstantMessageLogPath").empty())
 		{
-			gDirUtilp->setChatLogsDir(gDirUtilp->getOSUserAppDir());
+			const std::string dir = gSavedSettings.getString("InstantMessageLogPathAnyAccount");
+			gDirUtilp->setChatLogsDir(dir.empty() ? gDirUtilp->getOSUserAppDir() : dir);
 			gSavedPerAccountSettings.setString("InstantMessageLogPath",gDirUtilp->getChatLogsDir());
 		}
 		else
@@ -1127,7 +1121,6 @@ bool idle_startup()
 		{
 			// Force login at the last location
 			agent_location_id = START_LOCATION_ID_LAST;
-			location_which = START_LOCATION_ID_LAST;
 			gSavedSettings.setBOOL("LoginLastLocation", FALSE);
 			
 			// Clear some things that would cause us to divert to a user-specified location
@@ -1139,21 +1132,14 @@ bool idle_startup()
 		{
 			// a startup URL was specified
 			agent_location_id = START_LOCATION_ID_URL;
-
-			// doesn't really matter what location_which is, since
-			// agent_start_look_at will be overwritten when the
-			// UserLoginLocationReply arrives
-			location_which = START_LOCATION_ID_LAST;
 		}
 		else if (gSavedSettings.getBOOL("LoginLastLocation"))
 		{
 			agent_location_id = START_LOCATION_ID_LAST;	// last location
-			location_which = START_LOCATION_ID_LAST;
 		}
 		else
 		{
 			agent_location_id = START_LOCATION_ID_HOME;	// home
-			location_which = START_LOCATION_ID_HOME;
 		}
 
 		gViewerWindow->getWindow()->setCursor(UI_CURSOR_WAIT);

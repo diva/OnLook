@@ -44,8 +44,8 @@ set(llprimitive_HEADER_FILES
     llprimtexturelist.h
     lltextureanim.h
     lltextureentry.h
-    lltreeparams.h
     lltree_common.h
+    lltreeparams.h
     llvolumemessage.h
     llvolumexml.h
     material_codes.h

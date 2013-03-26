@@ -35,7 +35,7 @@
 
 #include "v4color.h"
 #include "llresmgr.h"
-#include "llfont.h"
+#include "llfontfreetype.h"
 #include "llui.h"
 #include "lluiimage.h"
 

@@ -2046,7 +2046,6 @@ void LLFolderView::scrollToShowItem(LLFolderViewItem* item, const LLRect& constr
 	{
 		LLRect local_rect = item->getLocalRect();
 		LLRect item_scrolled_rect; // item position relative to display area of scroller
-		LLRect visible_doc_rect = mScrollContainer->getVisibleContentRect();
 		
 		S32 icon_height = mIcon.isNull() ? 0 : mIcon->getHeight(); 
 		S32 label_height = llround(getLabelFontForStyle(mLabelStyle)->getLineHeight()); 

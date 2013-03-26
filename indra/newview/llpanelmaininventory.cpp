@@ -115,7 +115,6 @@ LLInventoryView::LLInventoryView(const std::string& name,
 
 void LLInventoryView::init(LLInventoryModel* inventory)
 {
-	LLMemType mt(LLMemType::MTYPE_INVENTORY_VIEW_INIT);
 	// Callbacks
 	init_inventory_actions(this);
 
@@ -879,7 +878,6 @@ void LLInventoryView::setFilterTextFromFilter()
 
 void LLInventoryView::toggleFindOptions()
 {
-	LLMemType mt(LLMemType::MTYPE_INVENTORY_VIEW_TOGGLE);
 	LLFloater *floater = getFinder();
 	if (!floater)
 	{
@@ -1011,7 +1009,6 @@ void LLFloaterInventoryFinder::updateElementsFromFilter()
 
 void LLFloaterInventoryFinder::draw()
 {
-	LLMemType mt(LLMemType::MTYPE_INVENTORY_DRAW);
 	U32 filter = 0xffffffff;
 	BOOL filtered_by_all_types = TRUE;
 

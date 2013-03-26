@@ -133,6 +133,7 @@ scratch and wear it.
       <button bottom="-478" follows="right|bottom" font="SansSerif" halign="center"
 			     height="20" label="Save As..." label_selected="Save As..." left="209"
 			     mouse_opaque="true" name="Save As" scale_image="true" width="92" />
+      <button name="Take Off"/>
     </panel>
     <panel border="true" bottom="-482" follows="left|top|right|bottom" height="481"
 		     label="Skin" left="102" mouse_opaque="true" name="Skin" width="389">
@@ -227,6 +228,7 @@ scratch and wear it.
       <button bottom="-478" follows="right|bottom" font="SansSerif" halign="center"
 			     height="20" label="Revert" label_selected="Revert" left="305"
 			     mouse_opaque="true" name="Revert" scale_image="true" width="82" />
+      <button name="Take Off"/>
     </panel>
     <panel border="true" bottom="-482" follows="left|top|right|bottom" height="481"
 		     label="Hair" left="102" mouse_opaque="true" name="Hair" width="389">
@@ -313,6 +315,7 @@ scratch and wear it.
 			<button bottom="-478" follows="right|bottom" font="SansSerif" halign="center"
 			     height="20" label="Revert" label_selected="Revert" left="305"
 			     mouse_opaque="true" name="Revert" scale_image="true" width="82" />
+      <button name="Take Off"/>
 		</panel>
 		<panel border="true" bottom="-482" follows="left|top|right|bottom" height="481"
 		     label="Eyes" left="102" mouse_opaque="true" name="Eyes" width="389">
@@ -387,6 +390,7 @@ scratch and wear it.
       <button bottom="-478" follows="right|bottom" font="SansSerif" halign="center"
 			     height="20" label="Revert" label_selected="Revert" left="305"
 			     mouse_opaque="true" name="Revert" scale_image="true" width="82" />
+      <button name="Take Off"/>
     </panel>
     <panel label="Clothes" placeholder="true" name="clothes_placeholder" />
     <panel border="true" bottom="-482" follows="left|top|right|bottom" height="481"

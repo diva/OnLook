@@ -270,11 +270,6 @@ void LLFloaterReporter::draw()
 void LLFloaterReporter::enableControls(BOOL enable)
 {
 	childSetEnabled("category_combo", enable);
-	// bug reports never include the chat history
-	if (mReportType != BUG_REPORT)
-	{
-		childSetEnabled("chat_check", enable);
-	}
 	childSetEnabled("screen_check",	enable);
 	childDisable("screenshot");
 	childSetEnabled("pick_btn",		enable);

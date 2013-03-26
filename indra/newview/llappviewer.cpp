@@ -80,7 +80,7 @@
 #include "llfirstuse.h"
 #include "llrender.h"
 #include "llvector4a.h"
-#include "llfont.h"
+#include "llfontfreetype.h"
 #include "llvocache.h"
 #include "llvopartgroup.h"
 #include "llfloaterteleporthistory.h"
@@ -117,8 +117,6 @@
 #include "llimageworker.h"
 
 // <edit>
-#include "lldelayeduidelete.h"
-#include "llbuildnewviewsscheduler.h"
 #include "aicurleasyrequeststatemachine.h"
 #include "aihttptimeoutpolicy.h"
 // </edit>
@@ -246,7 +244,6 @@ const F32 DEFAULT_AFK_TIMEOUT = 5.f * 60.f; // time with no input before user fl
 F32 gSimLastTime; // Used in LLAppViewer::init and send_stats()
 F32 gSimFrames;
 
-BOOL gAllowTapTapHoldRun = TRUE;
 BOOL gShowObjectUpdates = FALSE;
 BOOL gUseQuickTime = TRUE;
 
@@ -286,9 +283,6 @@ LLUUID gSystemFolderAssets;
 
 BOOL				gDisconnected = FALSE;
 
-// Minimap scale in pixels per region
-
-
 // used to restore texture state after a mode switch
 LLFrameTimer	gRestoreGLTimer;
 BOOL			gRestoreGL = FALSE;
@@ -325,9 +319,6 @@ const std::string ERROR_MARKER_FILE_NAME("Singularity.error_marker");
 const std::string LLERROR_MARKER_FILE_NAME("Singularity.llerror_marker");
 const std::string LOGOUT_MARKER_FILE_NAME("Singularity.logout_marker");
 static BOOL gDoDisconnect = FALSE;
-// <edit>
-//static BOOL gBusyDisconnect = FALSE;
-// </edit>
 static std::string gLaunchFileOnQuit;
 
 // Used on Win32 for other apps to identify our window (eg, win_setup)
@@ -515,7 +506,6 @@ static void settings_to_globals()
 	gAgent.setHideGroupTitle(gSavedSettings.getBOOL("RenderHideGroupTitle"));
 		
 	gDebugWindowProc = gSavedSettings.getBOOL("DebugWindowProc");
-	gAllowTapTapHoldRun = gSavedSettings.getBOOL("AllowTapTapHoldRun");
 	gShowObjectUpdates = gSavedSettings.getBOOL("ShowObjectUpdates");
 	LLWorldMapView::sMapScale =  llmax(.1f,gSavedSettings.getF32("MapScale"));
 	LLHoverView::sShowHoverTips = gSavedSettings.getBOOL("ShowHoverTips");
@@ -644,9 +634,6 @@ bool LLAppViewer::init()
 	// Logging is initialized. Now it's safe to start the error thread.
 	startErrorThread();
 
-	gDeleteScheduler = new LLDeleteScheduler();
-	gBuildNewViewsScheduler = new LLBuildNewViewsScheduler();
-	// </edit>
 	//
 	// OK to write stuff to logs now, we've now crash reported if necessary
 	//
@@ -698,7 +685,36 @@ bool LLAppViewer::init()
     initThreads();
 	LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ;
 
+	// Load art UUID information, don't require these strings to be declared in code.
+	std::string colors_base_filename = gDirUtilp->findSkinnedFilename("colors_base.xml");
+	LL_DEBUGS("InitInfo") << "Loading base colors from " << colors_base_filename << LL_ENDL;
+	gColors.loadFromFileLegacy(colors_base_filename, FALSE, TYPE_COL4U);
 
+	// Load overrides from user colors file
+	std::string user_colors_filename = gDirUtilp->findSkinnedFilename("colors.xml");
+	LL_DEBUGS("InitInfo") << "Loading user colors from " << user_colors_filename << LL_ENDL;
+	if (gColors.loadFromFileLegacy(user_colors_filename, FALSE, TYPE_COL4U) == 0)
+	{
+		LL_DEBUGS("InitInfo") << "Cannot load user colors from " << user_colors_filename << LL_ENDL;
+	}
+
+	// Widget construction depends on LLUI being initialized
+	LLUI::initClass(&gSavedSettings,
+		&gSavedSettings,
+		&gColors,
+		LLUIImageList::getInstance(),
+		ui_audio_callback,
+		&LLUI::getScaleFactor());
+	LL_INFOS("InitInfo") << "UI initialized." << LL_ENDL ;
+
+	LLUICtrlFactory::getInstance()->setupPaths(); // update paths with correct language set
+
+	// Setup LLTrans after LLUI::initClass has been called.
+	LLTrans::parseStrings("strings.xml", default_trans_args);
+
+	// Setup notifications after LLUI::initClass() has been called.
+	LLNotifications::instance().createDefaultChannels();
+	LL_INFOS("InitInfo") << "Notifications initialized." << LL_ENDL ;
 	
     writeSystemInfo();
 
@@ -747,36 +763,7 @@ bool LLAppViewer::init()
 		LLError::setPrintLocation(true);
 	}
 	
-	// Load art UUID information, don't require these strings to be declared in code.
-	std::string colors_base_filename = gDirUtilp->findSkinnedFilename("colors_base.xml");
-	LL_DEBUGS("InitInfo") << "Loading base colors from " << colors_base_filename << LL_ENDL;
-	gColors.loadFromFileLegacy(colors_base_filename, FALSE, TYPE_COL4U);
-
-	// Load overrides from user colors file
-	std::string user_colors_filename = gDirUtilp->findSkinnedFilename("colors.xml");
-	LL_DEBUGS("InitInfo") << "Loading user colors from " << user_colors_filename << LL_ENDL;
-	if (gColors.loadFromFileLegacy(user_colors_filename, FALSE, TYPE_COL4U) == 0)
-	{
-		LL_DEBUGS("InitInfo") << "Cannot load user colors from " << user_colors_filename << LL_ENDL;
-	}
-
-	// Widget construction depends on LLUI being initialized
-	LLUI::initClass(&gSavedSettings, 
-					&gSavedSettings, 
-					&gColors, 
-					LLUIImageList::getInstance(),
-					ui_audio_callback,
-					&LLUI::getScaleFactor()
-					);
-				
-	// Setup notifications after LLUI::initClass() has been called.
-	LLNotifications::instance().createDefaultChannels();
-	LL_INFOS("InitInfo") << "Notifications initialized." << LL_ENDL ;
-	
 	LLWeb::initClass();			  // do this after LLUI
-
-	LLUICtrlFactory::getInstance()->setupPaths(); // update paths with correct language set
-	LLTrans::parseStrings("strings.xml", default_trans_args);
 
 	LLTextEditor::setURLCallbacks(&LLWeb::loadURL,
 				&LLURLDispatcher::dispatchFromTextEditor,
@@ -811,7 +798,7 @@ bool LLAppViewer::init()
 	// Modify settings based on system configuration and compile options
 	settings_modify();
 	// Work around for a crash bug when changing OpenGL settings
-	LLFont::sOpenGLcrashOnRestart = (getenv("LL_OPENGL_RESTART_CRASH_BUG") != NULL);
+	LLFontFreetype::sOpenGLcrashOnRestart = (getenv("LL_OPENGL_RESTART_CRASH_BUG") != NULL);
 
 	// Find partition serial number (Windows) or hardware serial (Mac)
 	mSerialNumber = generateSerialNumber();
@@ -1104,7 +1091,6 @@ static LLFastTimer::DeclareTimer FTM_STATEMACHINE("State Machine");
 
 bool LLAppViewer::mainLoop()
 {
-	LLMemType mt1(LLMemType::MTYPE_MAIN);
 	mMainloopTimeout = new LLWatchdogTimeout();
 	// *FIX:Mani - Make this a setting, once new settings exist in this branch.
 	
@@ -1224,7 +1210,6 @@ bool LLAppViewer::mainLoop()
 					&& !gViewerWindow->getShowProgress()
 					&& !gFocusMgr.focusLocked())
 				{
-					LLMemType mjk(LLMemType::MTYPE_JOY_KEY);
 					joystick->scanJoystick();
 					gKeyboard->scanKeyboard();
 					if(isCrouch)
@@ -1244,7 +1229,6 @@ bool LLAppViewer::mainLoop()
 
 					if (gAres != NULL && gAres->isInitialized())
 					{
-						LLMemType mt_ip(LLMemType::MTYPE_IDLE_PUMP);
 						pingMainloopTimeout("Main:ServicePump");				
 						LLFastTimer t4(FTM_PUMP);
 						{
@@ -1293,7 +1277,6 @@ bool LLAppViewer::mainLoop()
 
 			// Sleep and run background threads
 			{
-				LLMemType mt_sleep(LLMemType::MTYPE_SLEEP);
 				LLFastTimer t2(FTM_SLEEP);
 				static const LLCachedControl<bool> run_multiple_threads("RunMultipleThreads",false);
 				static const LLCachedControl<S32> yield_time("YieldTime", -1);
@@ -2216,7 +2199,6 @@ bool LLAppViewer::initConfiguration()
 	LLFirstUse::addConfigVariable("FirstSculptedPrim");
 	LLFirstUse::addConfigVariable("FirstVoice");
 	LLFirstUse::addConfigVariable("FirstMedia");
-	LLFirstUse::addConfigVariable("FirstPhysicsWearable");
 	
 // [RLVa:KB] - Checked: RLVa-1.0.3a (2009-09-10) | Added: RLVa-1.0.3a
 	//LLFirstUse::addConfigVariable(RLV_SETTING_FIRSTUSE_DETACH);
@@ -2711,25 +2693,15 @@ void LLAppViewer::cleanupSavedSettings()
 {
 	gSavedSettings.setBOOL("MouseSun", FALSE);
 
-	gSavedSettings.setBOOL("FlyBtnState", FALSE);
-
-	gSavedSettings.setBOOL("FirstPersonBtnState", FALSE);
-	gSavedSettings.setBOOL("ThirdPersonBtnState", TRUE);
-	gSavedSettings.setBOOL("BuildBtnState", FALSE);
-
 	gSavedSettings.setBOOL("UseEnergy", TRUE);				// force toggle to turn off, since sends message to simulator
 
 	gSavedSettings.setBOOL("DebugWindowProc", gDebugWindowProc);
 		
-	gSavedSettings.setBOOL("AllowTapTapHoldRun", gAllowTapTapHoldRun);
 	gSavedSettings.setBOOL("ShowObjectUpdates", gShowObjectUpdates);
 	
-	if (!gNoRender)
+	if (!gNoRender && gDebugView)
 	{
-		if (gDebugView)
-		{
-			gSavedSettings.setBOOL("ShowDebugConsole", gDebugView->mDebugConsolep->getVisible());
-		}
+		gSavedSettings.setBOOL("ShowDebugConsole", gDebugView->mDebugConsolep->getVisible());
 	}
 
 	// save window position if not fullscreen
@@ -3837,7 +3809,6 @@ static LLFastTimer::DeclareTimer FTM_VLMANAGER("VL Manager");
 ///////////////////////////////////////////////////////
 void LLAppViewer::idle()
 {
-	LLMemType mt_idle(LLMemType::MTYPE_IDLE);
 	pingMainloopTimeout("Main:Idle");
 	
 	// Update frame timers
@@ -4460,7 +4431,6 @@ static LLFastTimer::DeclareTimer FTM_DYNAMIC_THROTTLE("Dynamic Throttle");
 static LLFastTimer::DeclareTimer FTM_CHECK_REGION_CIRCUIT("Check Region Circuit");
 void LLAppViewer::idleNetwork()
 {
-	LLMemType mt_in(LLMemType::MTYPE_IDLE_NETWORK);
 	pingMainloopTimeout("idleNetwork");
 
 	gObjectList.mNumNewObjects = 0;

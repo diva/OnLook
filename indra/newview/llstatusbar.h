@@ -34,6 +34,7 @@
 #define LL_LLSTATUSBAR_H
 
 #include "llpanel.h"
+#include "llpathfindingnavmesh.h"
 
 // "Constants" loaded from settings.xml at start time
 extern S32 STATUS_BAR_HEIGHT;
@@ -47,6 +48,7 @@ class LLUICtrl;
 class LLUUID;
 class LLFrameTimer;
 class LLStatGraph;
+class LLPathfindingNavMeshStatus;
 
 class LLStatusBar
 :	public LLPanel
@@ -91,6 +93,10 @@ private:
 	static void onClickSearch(void* data);
 	static void onClickStatGraph(void* data);
 
+	void onRegionBoundaryCrossed();
+	void createNavMeshStatusListenerForCurrentRegion();
+	void onNavMeshStatusChange(const LLPathfindingNavMeshStatus &pNavMeshStatus);
+
 private:
 	LLTextBox	*mTextBalance;
 	LLTextBox	*mTextHealth;
@@ -109,6 +115,9 @@ private:
 	S32				mSquareMetersCommitted;
 	LLFrameTimer*	mBalanceTimer;
 	LLFrameTimer*	mHealthTimer;
+	boost::signals2::connection	mRegionCrossingSlot;
+	LLPathfindingNavMesh::navmesh_slot_t mNavMeshSlot;
+	bool mIsNavMeshDirty;
 	
 	static std::vector<std::string> sDays;
 	static std::vector<std::string> sMonths;

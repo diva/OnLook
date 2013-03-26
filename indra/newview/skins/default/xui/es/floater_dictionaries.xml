@@ -6,6 +6,7 @@ que puedes descargar desde el sitio de Imprudence.
 
 Selecciona el diccionario que deseas tener para instalar
 y luego presiona el botón Descargar
+	  </text>
 	  <combo_box name="Emerald_combo_dics" tool_tip=""/>
 	  <button label="Descargar" name="Emerald_dic_download"/>
-</floater> 
+</floater>

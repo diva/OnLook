@@ -107,17 +107,14 @@ LLFloaterChat::LLFloaterChat(const LLSD& seed)
 	mFactoryMap["chat_panel"] = LLCallbackMap(createChatPanel, NULL);
 	mFactoryMap["active_speakers_panel"] = LLCallbackMap(createSpeakersPanel, NULL);
 	// do not automatically open singleton floaters (as result of getInstance())
-	BOOL no_open = FALSE;
-	bool show_bar = gSavedSettings.getBOOL("ShowLocalChatFloaterBar");
-	LLUICtrlFactory::getInstance()->buildFloater(this, (show_bar ? "floater_chat_history.xml" : "floater_chat_history_barless.xml"), &getFactoryMap(), no_open);
+	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_chat_history.xml", &getFactoryMap(), /*no_open =*/false);
 
 	childSetCommitCallback("show mutes",onClickToggleShowMute,this); //show mutes
-	childSetCommitCallback("translate chat",onClickToggleTranslateChat,this);
-	childSetValue("translate chat", gSavedSettings.getBOOL("TranslateChat"));
+	//childSetCommitCallback("translate chat",onClickToggleTranslateChat,this);
+	//childSetValue("translate chat", gSavedSettings.getBOOL("TranslateChat"));
 	childSetVisible("Chat History Editor with mute",FALSE);
 	childSetAction("toggle_active_speakers_btn", onClickToggleActiveSpeakers, this);
 	childSetAction("chat_history_open", onClickChatHistoryOpen, this);
-	setDefaultBtn("Chat");
 }
 
 LLFloaterChat::~LLFloaterChat()
@@ -182,6 +179,8 @@ void LLFloaterChat::handleVisibilityChange(BOOL new_visibility)
 	if (new_visibility)
 	{
 		LLFloaterChatterBox::getInstance()->setFloaterFlashing(this, FALSE);
+		// Work around the chat bar no longer focusing from within the layout_stack
+		gFocusMgr.setKeyboardFocus(getChildView("Chat Editor"));
 	}
 
 	LLFloater::handleVisibilityChange(new_visibility);

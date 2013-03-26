@@ -117,7 +117,7 @@ static void agent_handle_doubletap_run(EKeystate s, LLAgent::EDoubleTapRunMode m
 			gAgent.clearTempRun();
 // [/RLVa:KB]
 	}
-	else if (gAllowTapTapHoldRun &&
+	else if (gSavedSettings.getBOOL("AllowTapTapHoldRun") &&
 		 KEYSTATE_DOWN == s &&
 		 !gAgent.getRunning())
 	{

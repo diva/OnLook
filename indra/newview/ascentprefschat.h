@@ -65,6 +65,7 @@ protected:
     BOOL mIMAnnounceIncoming;
     BOOL mHideTypingNotification;
     BOOL mShowGroupNameInChatIM;
+    bool mShowDisplayNameChanges;
     BOOL mPlayTypingSound;
     BOOL mHideNotificationsInChat;
     BOOL mEnableMUPose;

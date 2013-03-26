@@ -383,7 +383,6 @@ LLSpatialGroup::~LLSpatialGroup()
 		}
 	}
 
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	clearDrawMap();
 }
 
@@ -499,8 +498,6 @@ void LLSpatialGroup::validateDrawMap()
 
 BOOL LLSpatialGroup::updateInGroup(LLDrawable *drawablep, BOOL immediate)
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
-		
 	drawablep->updateSpatialExtents();
 
 	OctreeNode* parent = mOctreeNode->getOctParent();
@@ -522,7 +519,6 @@ BOOL LLSpatialGroup::updateInGroup(LLDrawable *drawablep, BOOL immediate)
 
 BOOL LLSpatialGroup::addObject(LLDrawable *drawablep, BOOL add_all, BOOL from_octree)
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	if (!from_octree)
 	{
 		mOctreeNode->insert(drawablep);
@@ -548,7 +544,6 @@ BOOL LLSpatialGroup::addObject(LLDrawable *drawablep, BOOL add_all, BOOL from_oc
 
 void LLSpatialGroup::rebuildGeom()
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	if (!isDead())
 	{
 		mSpatialPartition->rebuildGeom(this);
@@ -759,7 +754,6 @@ LLSpatialGroup* LLSpatialGroup::getParent()
 
 BOOL LLSpatialGroup::removeObject(LLDrawable *drawablep, BOOL from_octree)
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	unbound();
 	if (mOctreeNode && !from_octree)
 	{
@@ -796,7 +790,6 @@ BOOL LLSpatialGroup::removeObject(LLDrawable *drawablep, BOOL from_octree)
 
 void LLSpatialGroup::shift(const LLVector4a &offset)
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	LLVector4a t = mOctreeNode->getCenter();
 	t.add(offset);	
 	mOctreeNode->setCenter(t);
@@ -853,8 +846,6 @@ void LLSpatialGroup::setState(eSpatialState state)
 
 void LLSpatialGroup::setState(eSpatialState state, S32 mode) 
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
-
 	llassert(state <= LLSpatialGroup::STATE_MASK);
 	
 	if (mode > STATE_MODE_SINGLE)
@@ -911,8 +902,6 @@ void LLSpatialGroup::clearState(eSpatialState state, S32 mode)
 {
 	llassert(state <= LLSpatialGroup::STATE_MASK);
 
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
-	
 	if (mode > STATE_MODE_SINGLE)
 	{
 		if (mode == STATE_MODE_DIFF)
@@ -969,8 +958,6 @@ public:
 
 void LLSpatialGroup::setOcclusionState(eOcclusionState state, S32 mode) 
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
-	
 	if (mode > STATE_MODE_SINGLE)
 	{
 		if (mode == STATE_MODE_DIFF)
@@ -1035,8 +1022,6 @@ public:
 
 void LLSpatialGroup::clearOcclusionState(eOcclusionState state, S32 mode)
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
-	
 	if (mode > STATE_MODE_SINGLE)
 	{
 		if (mode == STATE_MODE_DIFF)
@@ -1084,7 +1069,6 @@ LLSpatialGroup::LLSpatialGroup(OctreeNode* node, LLSpatialPartition* part) :
 	ll_assert_aligned(this,16);
 	
 	sNodeCount++;
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 
 	mViewAngle.splat(0.f);
 	mLastUpdateViewAngle.splat(-1.f);
@@ -1271,7 +1255,6 @@ BOOL LLSpatialGroup::changeLOD()
 
 void LLSpatialGroup::handleInsertion(const TreeNode* node, LLDrawable* drawablep)
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	addObject(drawablep, FALSE, TRUE);
 	unbound();
 	setState(OBJECT_DIRTY);
@@ -1279,14 +1262,12 @@ void LLSpatialGroup::handleInsertion(const TreeNode* node, LLDrawable* drawablep
 
 void LLSpatialGroup::handleRemoval(const TreeNode* node, LLDrawable* drawable)
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	removeObject(drawable, TRUE);
 	setState(OBJECT_DIRTY);
 }
 
 void LLSpatialGroup::handleDestruction(const TreeNode* node)
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	setState(DEAD);
 	
 	{OctreeGuard guard(mOctreeNode);
@@ -1330,7 +1311,6 @@ void LLSpatialGroup::handleStateChange(const TreeNode* node)
 
 void LLSpatialGroup::handleChildAddition(const OctreeNode* parent, OctreeNode* child) 
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	if (child->getListenerCount() == 0)
 	{
 		new LLSpatialGroup(child, mSpatialPartition);
@@ -1681,7 +1661,6 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 LLSpatialPartition::LLSpatialPartition(U32 data_mask, BOOL render_by_group, U32 buffer_usage)
 : mRenderByGroup(render_by_group), mBridge(NULL)
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	mOcclusionEnabled = TRUE;
 	mDrawableType = 0;
 	mPartitionType = LLViewerRegion::PARTITION_NONE;
@@ -1705,8 +1684,6 @@ LLSpatialPartition::LLSpatialPartition(U32 data_mask, BOOL render_by_group, U32 
 
 LLSpatialPartition::~LLSpatialPartition()
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
-	
 	delete mOctree;
 	mOctree = NULL;
 }
@@ -1714,8 +1691,6 @@ LLSpatialPartition::~LLSpatialPartition()
 
 LLSpatialGroup *LLSpatialPartition::put(LLDrawable *drawablep, BOOL was_visible)
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
-		
 	drawablep->updateSpatialExtents();
 
 	//keep drawable from being garbage collected
@@ -1737,8 +1712,6 @@ LLSpatialGroup *LLSpatialPartition::put(LLDrawable *drawablep, BOOL was_visible)
 
 BOOL LLSpatialPartition::remove(LLDrawable *drawablep, LLSpatialGroup *curp)
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
-	
 	if (!curp->removeObject(drawablep))
 	{
 		OCT_ERRS << "Failed to remove drawable from octree!" << llendl;
@@ -1757,8 +1730,6 @@ BOOL LLSpatialPartition::remove(LLDrawable *drawablep, LLSpatialGroup *curp)
 
 void LLSpatialPartition::move(LLDrawable *drawablep, LLSpatialGroup *curp, BOOL immediate)
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
-		
 	// sanity check submitted by open source user bushing Spatula
 	// who was seeing crashing here. (See VWR-424 reported by Bunny Mayne)
 	if (!drawablep)
@@ -1815,7 +1786,6 @@ public:
 
 void LLSpatialPartition::shift(const LLVector4a &offset)
 { //shift octree node bounding boxes by offset
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	LLSpatialShift shifter(offset);
 	shifter.traverse(mOctree);
 }
@@ -2232,7 +2202,6 @@ public:
 
 void LLSpatialPartition::restoreGL()
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 }
 
 void LLSpatialPartition::resetVertexBuffers()
@@ -2274,7 +2243,6 @@ BOOL LLSpatialPartition::visibleObjectsInFrustum(LLCamera& camera)
 
 S32 LLSpatialPartition::cull(LLCamera &camera, std::vector<LLDrawable *>* results, BOOL for_select)
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 #if LL_OCTREE_PARANOIA_CHECK
 	((LLSpatialGroup*)mOctree->getListener(0))->checkStates();
 #endif
@@ -4240,8 +4208,6 @@ void LLSpatialPartition::renderDebug()
 		sCurMaxTexPriority = 0.f;
 	}
 
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
-	
 	LLGLDisable cullface(GL_CULL_FACE);
 	LLGLEnable blend(GL_BLEND);
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);
@@ -4374,9 +4340,6 @@ public:
 
 	virtual bool check(LLDrawable* drawable)
 	{	
-		LLVector3 local_start = mStart;
-		LLVector3 local_end = mEnd;
-
 		if (!drawable || !gPipeline.hasRenderType(drawable->getRenderType()) || !drawable->isVisible())
 		{
 			return false;

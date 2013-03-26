@@ -84,7 +84,7 @@ public:
 
 	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{
-		if (200 <= status && status < 300 || status == 405)		// Using HEAD may result in a 405 METHOD NOT ALLOWED, but still have the right Content-TYpe header.
+		if ((200 <= status && status < 300) || status == 405)		// Using HEAD may result in a 405 METHOD NOT ALLOWED, but still have the right Content-Type header.
 		{
 			std::string media_type;
 			if (headers.getFirstValue("content-type", media_type))

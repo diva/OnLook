@@ -294,8 +294,8 @@ BOOL	LLFloaterTools::postBuild()
 			llwarns << "Tool button not found! DOA Pending." << llendl;
 		}
 	}
-	mComboTreesGrass = getChild<LLComboBox>("trees_grass");
-	childSetCommitCallback("trees_grass", onSelectTreesGrass, (void*)0);
+	if ((mComboTreesGrass = findChild<LLComboBox>("trees_grass")))
+		childSetCommitCallback("trees_grass", onSelectTreesGrass, (void*)0);
 	mCheckCopySelection = getChild<LLCheckBoxCtrl>("checkbox copy selection");
 	childSetValue("checkbox copy selection",(BOOL)gSavedSettings.getBOOL("CreateToolCopySelection"));
 	mCheckSticky = getChild<LLCheckBoxCtrl>("checkbox sticky");
@@ -722,9 +722,10 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 	// Create buttons
 	BOOL create_visible = (tool == LLToolCompCreate::getInstance());
 
-	mBtnCreate	->setToggleState(	tool == LLToolCompCreate::getInstance() );
+	mBtnCreate	->setToggleState(create_visible);
 
-	updateTreeGrassCombo(create_visible);
+	if (mComboTreesGrass)
+		updateTreeGrassCombo(create_visible);
 
 	if (mCheckCopySelection
 		&& mCheckCopySelection->get())

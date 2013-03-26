@@ -75,7 +75,6 @@
 
 BOOL	LLPanelFace::postBuild()
 {
-	LLRect	rect = this->getRect();
 	LLTextureCtrl*	mTextureCtrl;
 	LLColorSwatchCtrl*	mColorSwatch;
 

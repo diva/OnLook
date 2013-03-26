@@ -155,8 +155,6 @@ LLFloaterPay::LLFloaterPay(const std::string& name,
 
 	
     childSetVisible("amount text", FALSE);	
-	childSetVisible("currency text", FALSE);
-	childSetTextArg("currency text", "[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 
 	std::string last_amount;
 	if(sLastAmount > 0)
@@ -213,14 +211,12 @@ void LLFloaterPay::processPayPriceReply(LLMessageSystem* msg, void **userdata)
 			self->childSetVisible("amount", FALSE);
 			self->childSetVisible("pay btn", FALSE);
 			self->childSetVisible("amount text", FALSE);
-			self->childSetVisible("currency text", FALSE);
 		}
 		else if (PAY_PRICE_DEFAULT == price)
 		{			
 			self->childSetVisible("amount", TRUE);
 			self->childSetVisible("pay btn", TRUE);
 			self->childSetVisible("amount text", TRUE);
-			self->childSetVisible("currency text", TRUE);
 		}
 		else
 		{
@@ -231,7 +227,6 @@ void LLFloaterPay::processPayPriceReply(LLMessageSystem* msg, void **userdata)
 			self->childSetVisible("pay btn", TRUE);
 			self->childSetEnabled("pay btn", TRUE);
 			self->childSetVisible("amount text", TRUE);
-			self->childSetVisible("currency text", TRUE);
 
 			self->childSetText("amount", llformat("%d", llabs(price)));
 		}
@@ -375,7 +370,6 @@ void LLFloaterPay::payDirectly(money_callback callback,
 	floater->childSetVisible("amount", TRUE);
 	floater->childSetVisible("pay btn", TRUE);
 	floater->childSetVisible("amount text", TRUE);
-	floater->childSetVisible("currency text", TRUE);
 
 	floater->childSetVisible("fastpay text",TRUE);
 	for(S32 i=0;i<MAX_PAY_BUTTONS;++i)

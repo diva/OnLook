@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel label="Ambiente" name="panel_env_info">
+	<text name="water_settings_title">
+		Selecione as configurações de Água e céu / Ciclo dos dias que todos os visitantes à sua
+região verão.  Mais informações
+	</text>
+	<radio_group name="region_settings_radio_group">
+		<radio_item name="use_sl_default_settings">Usar o padrão do Second Life</radio_item>
+		<radio_item name="use_my_settings">Usar as seguintes configurações</radio_item>
+	</radio_group>
+	<panel name="user_environment_settings">
+		<text name="water_settings_title">
+			Configuração de água
+		</text>
+		<combo_box name="water_settings_preset_combo">
+			<combo_item name="item0">-Selecione uma pré-configuração-</combo_item>
+		</combo_box>
+		<text name="sky_dayc_settings_title">
+			Ciclo céu / dia
+		</text>
+		<radio_group name="sky_dayc_settings_radio_group">
+			<radio_item name="my_sky_settings">Céu fixo</radio_item>
+			<radio_item name="my_dayc_settings">Ciclo dia</radio_item>
+		</radio_group>
+		<combo_box name="sky_settings_preset_combo">
+			<combo_item name="item0">-Selecione uma pré-configuração-</combo_item>
+		</combo_box>
+		<combo_box name="dayc_settings_preset_combo">
+			<combo_item name="item0">-Selecione uma pré-configuração-</combo_item>
+		</combo_box>
+	</panel>
+	<button label="Aplicar" name="apply_btn"/>
+	<button label="Cancelar" name="cancel_btn"/>
+</panel>

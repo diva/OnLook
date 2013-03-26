@@ -132,8 +132,8 @@ BOOL LLToolBar::postBuild()
 	childSetAction("chat_btn", onClickChat, this);
 	childSetControlName("chat_btn", "ChatVisible");
 
-	childSetAction("appearance_btn", onClickAppearance, this);
-	childSetControlName("appearance_btn", "");
+	//childSetAction("appearance_btn", onClickAppearance, this);
+	//childSetControlName("appearance_btn", "");
 
 	childSetAction("radar_list_btn", onClickRadarList, this);
 	childSetControlName("radar_list_btn", "ShowRadar");
@@ -141,8 +141,8 @@ BOOL LLToolBar::postBuild()
 	childSetAction("fly_btn", onClickFly, this);
 	childSetControlName("fly_btn", "FlyBtnState");
 
-	childSetAction("sit_btn", onClickSit, this);
-	childSetControlName("sit_btn", "SitBtnState");
+	//childSetAction("sit_btn", onClickSit, this);
+	//childSetControlName("sit_btn", "SitBtnState");
 
 	childSetAction("snapshot_btn", onClickSnapshot, this);
 	childSetControlName("snapshot_btn", "SnapshotBtnState");
@@ -167,7 +167,7 @@ BOOL LLToolBar::postBuild()
 	mBuildBtn.connect(this, "build_btn");
 	mMapBtn.connect(this, "map_btn");
 	mRadarBtn.connect(this, "radar_btn");
-	mInventoryBtn.connect(this, "inventory_button");
+	mInventoryBtn.connect(this, "inventory_btn");
 
 	for (child_list_const_iter_t child_iter = getChildList()->begin();
 		 child_iter != getChildList()->end(); ++child_iter)

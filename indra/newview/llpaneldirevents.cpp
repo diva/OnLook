@@ -75,8 +75,6 @@ BOOL LLPanelDirEvents::postBuild()
 
 	childSetAction("Today", onClickToday, this);
 
-	childSetCommitCallback("mature", onCommitMature, this);
-
 	childSetAction("Search", LLPanelDirBrowser::onClickSearchCore, this);
 	setDefaultBtn("Search");
 
@@ -293,14 +291,6 @@ void LLPanelDirEvents::onForwardBtn(void* data)
 	self->resetSearchStart();
 	self->setDay(self->mDay + 1);
 	self->performQuery();
-}
-
-
-// static
-void LLPanelDirEvents::onCommitMature(LLUICtrl* ctrl, void* data)
-{
-	// just perform another search
-	onClickSearchCore(data);
 }
 
 

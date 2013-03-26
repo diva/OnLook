@@ -114,11 +114,11 @@ BOOL LLFloaterGesture::postBuild()
 	
 	setTitle(label);
 
-	LLScrollListCtrl* gesture_list = getChild<LLScrollListCtrl>("avatar_list");
+	LLScrollListCtrl* gesture_list = getChild<LLScrollListCtrl>("gesture_list");
 	gesture_list->setCommitCallback(boost::bind(&LLFloaterGesture::onCommitList,this));
 	gesture_list->setDoubleClickCallback(boost::bind(&LLFloaterGesture::onClickPlay,this));
 
-	childSetAction("inventory_btn", onClickInventory, this);
+	//childSetAction("inventory_btn", onClickInventory, this);
 
 	childSetAction("edit_btn", onClickEdit, this);
 
@@ -323,6 +323,7 @@ void LLFloaterGesture::buildGestureList()
 	}
 }
 
+/*
 // static
 void LLFloaterGesture::onClickInventory(void* data)
 {
@@ -336,6 +337,7 @@ void LLFloaterGesture::onClickInventory(void* data)
 	if (!inv) return;
 	inv->getPanel()->setSelection(item_id, TRUE);
 }
+*/
 
 // static
 void LLFloaterGesture::onClickPlay(void* data)

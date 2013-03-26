@@ -553,7 +553,7 @@ std::string HippoGridInfo::getDirectoryFee() const
 {
 	std::string fee;
 	formatFee(fee, mDirectoryFee, true);
-	if (fee != LLTrans::getString("hippo_label_free")) fee += "/" + LLTrans::getString("hippo_label_week");
+	if (mDirectoryFee != 0) fee += "/" + LLTrans::getString("hippo_label_week");
 	return fee;
 }
 

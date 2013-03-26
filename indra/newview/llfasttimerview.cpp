@@ -420,7 +420,7 @@ void LLFastTimerView::draw()
 
 	S32 left, top, right, bottom;
 	S32 x, y, barw, barh, dx, dy;
-	S32 texth, textw;
+	S32 texth;
 	LLPointer<LLUIImage> box_imagep = LLUI::getUIImage("rounded_square.tga");
 
 	// Draw the window background
@@ -461,7 +461,6 @@ void LLFastTimerView::draw()
 
 		tdesc = llformat("Full bar = %s [Click to pause/reset] [SHIFT-Click to toggle]",modedesc[mDisplayMode]);
 		LLFontGL::getFontMonospace()->renderUTF8(tdesc, 0, x, y, LLColor4::white, LLFontGL::LEFT, LLFontGL::TOP);
-		textw = LLFontGL::getFontMonospace()->getWidth(tdesc);
 
 		x = xleft, y -= (texth + 2);
 		tdesc = llformat("Justification = %s [CTRL-Click to toggle]",centerdesc[mDisplayCenter]);
@@ -485,8 +484,8 @@ void LLFastTimerView::draw()
 	sTimerColors[&LLFastTimer::NamedTimer::getRootNamedTimer()] = LLColor4::grey;
 
 	F32 hue = 0.f;
-
-	for (timer_tree_iterator_t it = begin_timer_tree(LLFastTimer::NamedTimer::getRootNamedTimer());
+	// <ALCH:LL> Move color generation down to be in the next loop.
+	/*for (timer_tree_iterator_t it = begin_timer_tree(LLFastTimer::NamedTimer::getRootNamedTimer());
 		it != timer_tree_iterator_t();
 		++it)
 	{
@@ -503,7 +502,8 @@ void LLFastTimerView::draw()
 		child_color.setHSL(hue, saturation, lightness);
 
 		sTimerColors[idp] = child_color;
-	}
+	}*/
+	// </ALCH:LL>
 
 	const S32 LEGEND_WIDTH = 220;
 	{
@@ -517,6 +517,20 @@ void LLFastTimerView::draw()
 			++it)
 		{
 			LLFastTimer::NamedTimer* idp = (*it);
+			// <ALCH:LL> Move color generation down to be in the next loop.
+			const F32 HUE_INCREMENT = 0.23f;
+			hue = fmodf(hue + HUE_INCREMENT, 1.f);
+			// saturation increases with depth
+			F32 saturation = clamp_rescale((F32)idp->getDepth(), 0.f, 3.f, 0.f, 1.f);
+			// lightness alternates with depth
+			F32 lightness = idp->getDepth() % 2 ? 0.5f : 0.6f;
+
+			LLColor4 child_color;
+			child_color.setHSL(hue, saturation, lightness);
+
+			sTimerColors[idp] = child_color;
+			// </ALCH:LL>
+
 			// <FS:LO> Making the ledgend part of fast timers scrollable
 			if(mScrollOffset_tmp)
 			{
@@ -599,8 +613,6 @@ void LLFastTimerView::draw()
 											is_child_of_hover_item ? LLFontGL::BOLD : LLFontGL::NORMAL);
 
 			y -= (texth + 2);
-
-			textw = dx + LLFontGL::getFontMonospace()->getWidth(idp->getName()) + 40;
 
 			if (idp->getCollapsed()) 
 			{

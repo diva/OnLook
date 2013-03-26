@@ -87,7 +87,7 @@ const F32 AGENT_TYPING_TIMEOUT = 5.f;	// seconds
 LLChatBar *gChatBar = NULL;
 
 // legacy calllback glue
-void toggleChatHistory(void* user_data);
+void toggleChatHistory(LLUICtrl*, const LLSD&);
 //void send_chat_from_viewer(const std::string& utf8_out_text, EChatType type, S32 channel);
 // [RLVa:KB] - Checked: 2009-07-07 (RLVa-1.0.0d) | Modified: RLVa-0.2.2a
 void send_chat_from_viewer(std::string utf8_out_text, EChatType type, S32 channel);
@@ -137,19 +137,16 @@ LLChatBar::~LLChatBar()
 
 BOOL LLChatBar::postBuild()
 {
-	childSetAction("History", toggleChatHistory, this);
-	getChild<LLUICtrl>("Say")->setCommitCallback(boost::bind(&LLChatBar::onClickSay, this, _1));
+	if (LLUICtrl* history_ctrl = findChild<LLUICtrl>("History"))
+		history_ctrl->setCommitCallback(toggleChatHistory);
+	if (LLUICtrl* say_ctrl = getChild<LLUICtrl>("Say"))
+		say_ctrl->setCommitCallback(boost::bind(&LLChatBar::onClickSay, this, _1));
 
 	// attempt to bind to an existing combo box named gesture
-	setGestureCombo(getChild<LLComboBox>( "Gesture"));
+	if (LLComboBox* gesture_combo = findChild<LLComboBox>("Gesture"))
+		setGestureCombo(gesture_combo);
 
-	LLButton * sayp = getChild<LLButton>("Say");
-	if(sayp)
-	{
-		setDefaultBtn(sayp);
-	}
-
-	mInputEditor = getChild<LLLineEditor>("Chat Editor");
+	mInputEditor = findChild<LLLineEditor>("Chat Editor");
 	if (mInputEditor)
 	{
 		mInputEditor->setCallbackUserData(this);
@@ -164,9 +161,6 @@ BOOL LLChatBar::postBuild()
 
 		mInputEditor->setEnableLineHistory(TRUE);
 	}
-
-	mHistoryBtn.connect(this,"History");
-	mSayBtn.connect(this,"Say");
 
 	mIsBuilt = TRUE;
 
@@ -231,9 +225,11 @@ void LLChatBar::refresh()
 		gAgent.stopTyping();
 	}
 
-	mHistoryBtn->setValue(LLFloaterChat::instanceVisible(LLSD()));
+	if (LLUICtrl* history_ctrl = findChild<LLUICtrl>("History"))
+		history_ctrl->setValue(LLFloaterChat::instanceVisible());
 
-	mSayBtn->setEnabled(mInputEditor->getText().size() > 0);
+	if (LLUICtrl* say_ctrl = getChild<LLUICtrl>("Say"))
+		say_ctrl->setEnabled(mInputEditor->getText().size() > 0);
 	//childSetEnabled("Shout", mInputEditor->getText().size() > 0); createDummyWidget Making Dummy -HgB
 
 }
@@ -430,8 +426,6 @@ void LLChatBar::sendChat( EChatType type )
 			{
 				if (gSavedSettings.getBOOL("AscentAutoCloseOOC") && (utf8text.length() > 1))
 				{
-					// Chalice - OOC autoclosing patch based on code by Henri Beauchamp
-					int needsClosingType=0;
 					//Check if it needs the end-of-chat brackets -HgB
 					if (utf8text.find("((") == 0 && utf8text.find("))") == -1)
 					{
@@ -445,8 +439,7 @@ void LLChatBar::sendChat( EChatType type )
 							utf8text+=" ";
 						utf8text+="]]";
 					}
-					//Check if it needs the start-of-chat brackets -HgB
-					needsClosingType=0;
+
 					if (utf8text.find("((") == -1 && utf8text.find("))") == (utf8text.length() - 2))
 					{
 						if(utf8text.at(0) == '(')
@@ -897,7 +890,7 @@ void LLChatBar::onCommitGesture(LLUICtrl* ctrl)
 	}
 }
 
-void toggleChatHistory(void* user_data)
+void toggleChatHistory(LLUICtrl* ctrl, const LLSD&)
 {
 	LLFloaterChat::toggleInstance(LLSD());
 }

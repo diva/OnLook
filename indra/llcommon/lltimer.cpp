@@ -48,7 +48,7 @@
 // Locally used constants
 //
 const U32 SEC_PER_DAY = 86400;
-const F64 SEC_TO_MICROSEC = 1000000.f;
+const F64 SEC_TO_MICROSEC = 1000000.0;
 const U64 SEC_TO_MICROSEC_U64 = 1000000;
 const F64 USEC_TO_SEC_F64 = 0.000001;
 
