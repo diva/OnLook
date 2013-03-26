@@ -139,8 +139,10 @@ protected:
 
 struct RlvCommandOptionGetPath : public RlvCommandOption
 {
-	RlvCommandOptionGetPath(const RlvCommand& rlvCmd);
+	typedef boost::function<void(const uuid_vec_t&)> getpath_callback_t;
+	RlvCommandOptionGetPath(const RlvCommand& rlvCmd, getpath_callback_t cb = NULL);
 
+	bool              isCallback() const { return m_fCallback; }
 	/*virtual*/ bool  isEmpty() const	 { return m_idItems.empty(); }
 	const uuid_vec_t& getItemIDs() const { return m_idItems; }
 
@@ -148,6 +150,7 @@ struct RlvCommandOptionGetPath : public RlvCommandOption
 	static bool getItemIDs(LLWearableType::EType wtType, uuid_vec_t& idItems, bool fClear = true);
 
 protected:
+	bool       m_fCallback; // TRUE if a callback is schedueled
 	uuid_vec_t m_idItems;
 };
 
@@ -292,8 +295,8 @@ protected:
 	typedef std::map<S32, LLInventoryModel::item_array_t> addattachments_map_t;
 	addattachments_map_t             m_addAttachments;
 	LLInventoryModel::item_array_t   m_addGestures;
-	std::list<const LLViewerObject*> m_remAttachments;
-	std::list<const LLViewerWearable*>     m_remWearables;
+	std::vector<LLViewerObject*>     m_remAttachments;	// This should match the definition of LLAgentWearables::llvo_vec_t
+	std::list<const LLViewerWearable*> m_remWearables;
 	LLInventoryModel::item_array_t   m_remGestures;
 
 private:

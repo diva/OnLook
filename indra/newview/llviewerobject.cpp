@@ -1270,6 +1270,12 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 						mText->setColor(mHudTextColor);
 						mText->setString(mHudTextString);
 					}
+// [RLVa:KB] - Checked: 2010-03-27 (RLVa-1.4.0a) | Added: RLVa-1.0.0f
+					if (rlv_handler_t::isEnabled())
+					{
+						mText->setObjectText(mHudTextString);
+					}
+// [/RLVa:KB]
 	
 					setChanged(MOVED | SILHOUETTE);
 				}
@@ -1648,10 +1654,15 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 					coloru.mV[3] = 255 - coloru.mV[3];
 					mHudTextColor = LLColor4(coloru);	//Cache for reset on debug infodisplay toggle.
 					if(mText->getDoFade())	//Fade is disabled when this is being overridden by debug text.
+					mText->setColor(mHudTextColor);
+					mText->setString(mHudTextString);
+
+// [RLVa:KB] - Checked: 2010-03-27 (RLVa-1.4.0a) | Added: RLVa-1.0.0f
+					if (rlv_handler_t::isEnabled())
 					{
-						mText->setColor(mHudTextColor);
-						mText->setString(mHudTextString);
+						mText->setObjectText(mHudTextString);
 					}
+// [/RLVa:KB]
 					setChanged(TEXTURE);
 				}
 				else if(mText.notNull())

@@ -29,6 +29,8 @@
 #include "llvoavatar.h"
 #include "llworld.h"
 
+#include "../lscript/lscript_byteformat.h" //Need LSCRIPTRunTimePermissionBits and SCRIPT_PERMISSION_*
+
 #include "rlvcommon.h"
 #include "rlvhelper.h"
 #include "rlvhandler.h"
@@ -296,6 +298,8 @@ const char* RlvStrings::getStringFromReturnCode(ERlvCmdRet eRet)
 			return "unset";
 		case RLV_RET_SUCCESS_DUPLICATE:
 			return "duplicate";
+		case RLV_RET_SUCCESS_DELAYED:
+			return "delayed";
 		case RLV_RET_FAILED_SYNTAX:
 			return "syntax error";
 		case RLV_RET_FAILED_OPTION:
@@ -412,6 +416,28 @@ void RlvUtil::filterNames(std::string& strUTF8Text, bool fFilterLegacy)
 			}
 		}
 	}
+}
+
+// Checked: 2012-08-19 (RLVa-1.4.7)
+void RlvUtil::filterScriptQuestions(S32& nQuestions, LLSD& sdPayload)
+{
+	// Check SCRIPT_PERMISSION_ATTACH
+	if ( (!gRlvAttachmentLocks.canAttach()) && (LSCRIPTRunTimePermissionBits[SCRIPT_PERMISSION_ATTACH] & nQuestions) )
+	{
+		// Notify the user that we blocked it since they're not allowed to wear any new attachments
+		sdPayload["rlv_blocked"] = RLV_STRING_BLOCKED_PERMATTACH;
+		nQuestions &= ~LSCRIPTRunTimePermissionBits[SCRIPT_PERMISSION_ATTACH];		
+	}
+
+	// Check SCRIPT_PERMISSION_TELEPORT
+	if ( (gRlvHandler.hasBehaviour(RLV_BHVR_TPLOC)) && (LSCRIPTRunTimePermissionBits[SCRIPT_PERMISSION_TELEPORT] & nQuestions) )
+	{
+		// Notify the user that we blocked it since they're not allowed to teleport
+		sdPayload["rlv_blocked"] = RLV_STRING_BLOCKED_PERMTELEPORT;
+		nQuestions &= ~LSCRIPTRunTimePermissionBits[SCRIPT_PERMISSION_TELEPORT];		
+	}
+
+	sdPayload["questions"] = nQuestions;
 }
 
 // Checked: 2010-08-29 (RLVa-1.2.1c) | Added: RLVa-1.2.1c
@@ -582,14 +608,23 @@ bool RlvEnableIfNot::handleEvent(LLPointer<LLEvent>, const LLSD& userdata)
 // Selection functors
 //
 
-// Checked: 2010-04-11 (RLVa-1.2.0b) | Modified: RLVa-0.2.0g
+// Checked: 2011-05-28 (RLVa-1.4.6) | Modified: RLVa-1.4.0
+bool rlvCanDeleteOrReturn(const LLViewerObject* pObj)
+{
+	// Block if: @rez=n restricted and owned by us or a group *or* @unsit=n restricted and being sat on by us
+	return
+		( (!gRlvHandler.hasBehaviour(RLV_BHVR_REZ)) || ((!pObj->permYouOwner()) && (!pObj->permGroupOwner())) ) &&
+		( (!gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) || (!isAgentAvatarValid()) || (!pObj->getRootEdit()->isChild(gAgentAvatarp)) );
+}
+
+// Checked: 2011-05-28 (RLVa-1.4.6) | Modified: RLVa-1.4.0
 bool rlvCanDeleteOrReturn()
 {
 	if ( (gRlvHandler.hasBehaviour(RLV_BHVR_REZ)) || (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) )
 	{
 		struct RlvCanDeleteOrReturn : public LLSelectedObjectFunctor
 		{
-			/*virtual*/ bool apply(LLViewerObject* pObj) { return pObj->isReturnable(); }
+			/*virtual*/ bool apply(LLViewerObject* pObj) { return rlvCanDeleteOrReturn(pObj); }
 		} f;
 		LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
 		return (hSel.notNull()) && (0 != hSel->getRootObjectCount()) && (hSel->applyToRootObjects(&f, false));
@@ -652,7 +687,7 @@ bool rlvPredCanNotWearItem(const LLViewerInventoryItem* pItem, ERlvWearMask eWea
 }
 
 // Checked: 2010-03-22 (RLVa-1.2.0c) | Added: RLVa-1.2.0a
-bool rlvPredCanRemoveItem(const LLViewerInventoryItem* pItem)
+bool rlvPredCanRemoveItem(const LLInventoryItem* pItem)
 {
 	if ( (pItem) && (RlvForceWear::isWearableItem(pItem)) )
 	{
@@ -673,7 +708,7 @@ bool rlvPredCanRemoveItem(const LLViewerInventoryItem* pItem)
 }
 
 // Checked: 2010-03-22 (RLVa-1.2.0c) | Added: RLVa-1.2.0a
-bool rlvPredCanNotRemoveItem(const LLViewerInventoryItem* pItem)
+bool rlvPredCanNotRemoveItem(const LLInventoryItem* pItem)
 {
 	return !rlvPredCanRemoveItem(pItem);
 }

@@ -1209,11 +1209,7 @@ void LLAgentWearables::removeWearable(const LLWearableType::EType type, bool do_
 	{
 		LLViewerWearable* old_wearable = getViewerWearable(type,index);
 		
-//		if (old_wearable)
-// [RLVa:KB] - Checked: 2010-05-11 (RLVa-1.2.0c) | Modified: RLVa-1.2.0g
-		// NOTE: we block actual removal in removeWearableFinal(); all we really want here is to avoid showing the save notice
-		if ( (old_wearable) && ((!rlv_handler_t::isEnabled()) || (!gRlvWearableLocks.isLockedWearable(old_wearable))) )
-// [/RLVa:KB]
+		if (old_wearable)
 		{
 			if (old_wearable->isDirty())
 			{
@@ -1271,19 +1267,16 @@ void LLAgentWearables::removeWearableFinal( LLWearableType::EType type, bool do_
 		{
 			LLViewerWearable* old_wearable = getViewerWearable(type,i);
 			//queryWearableCache(); // moved below
-//			if (old_wearable)
-// [RLVa:KB] - Checked: 2010-05-14 (RLVa-1.2.0g) | Added: RLVa-1.2.0g
-			if ( (old_wearable) && ((!rlv_handler_t::isEnabled()) || (!gRlvWearableLocks.isLockedWearable(old_wearable))) )
-// [/RLVa:KB]
+			if (old_wearable)
 			{
 				popWearable(old_wearable);
 				old_wearable->removeFromAvatar(TRUE);
 			}
 		}
-//		mWearableDatas[type].clear();
-// [RLVa:KB] - Checked: 2010-05-14 (RLVa-1.2.0g) | Added: RLVa-1.2.0g
-		// The line above shouldn't be needed and would cause issues if we block removing one of the wearables
-		RLV_VERIFY( ((!rlv_handler_t::isEnabled()) || (!gRlvWearableLocks.hasLockedWearable(type))) ? mWearableDatas[type].empty() : true );
+//		clearWearableType(type);
+// [RLVa:KB] - Checked: 2010-05-14 (RLVa-1.2.0)
+		// The line above shouldn't be needed
+		RLV_VERIFY(0 == getWearableCount(type));
 // [/RLVa:KB]
 	}
 	else
@@ -1291,10 +1284,7 @@ void LLAgentWearables::removeWearableFinal( LLWearableType::EType type, bool do_
 		LLViewerWearable* old_wearable = getViewerWearable(type, index);
 		//queryWearableCache(); // moved below
 
-//		if (old_wearable)
-// [RLVa:KB] - Checked: 2010-05-14 (RLVa-1.2.0g) | Added: RLVa-1.2.0g
-		if ( (old_wearable) && ((!rlv_handler_t::isEnabled()) || (!gRlvWearableLocks.isLockedWearable(old_wearable))) )
-// [/RLVa:KB]
+		if (old_wearable)
 		{
 			popWearable(old_wearable);
 			old_wearable->removeFromAvatar(TRUE);
@@ -1356,12 +1346,6 @@ void LLAgentWearables::setWearableOutfit(const LLInventoryItem::item_array_t& it
 	S32 count = wearables.count();
 	llassert(items.count() == count);
 
-// [RLVa:KB] - Checked: 2010-06-08 (RLVa-1.2.0g) | Added: RLVa-1.2.0g
-	// If the user is @add/remoutfit restricted in any way then this function won't just work as-is, so instead of removing and re-adding
-	// we're stuck with any wearable type potentially having left-over (remove locked) clothing that we'll need to reorder in-place
-	S32 idxCurPerType[LLWearableType::WT_COUNT] = { 0 };
-// [/RLVa:KB]
-
 	S32 i;
 	for (i = 0; i < count; i++)
 	{
@@ -1386,51 +1370,10 @@ void LLAgentWearables::setWearableOutfit(const LLInventoryItem::item_array_t& it
 				// exactly one wearable per body part
 				setWearable(type,0,new_wearable);
 			}
-//			else
-//			{
-//				pushWearable(type,new_wearable);
-//			}
-// [RLVa:KB] - Checked: 2010-06-08 (RLVa-1.2.0g) | Added: RLVa-1.2.0g
-			else if ( (!rlv_handler_t::isEnabled()) || (!gRlvWearableLocks.hasLockedWearable(type)) || (!remove) )
-			{
-				// Sanity check: there shouldn't be any worn wearables for this type the first time we encounter it
-				RLV_ASSERT( (!remove) || (0 != idxCurPerType[type]) || (0 == getWearableCount(type)) );
-				pushWearable(type,new_wearable);
-			}
 			else
 			{
-				// Get the current index of the wearable (or add it if doesn't exist yet)
-				S32 idxCur = getWearableIndex(new_wearable);
-				if (MAX_CLOTHING_PER_TYPE == idxCur)
-				{
-					// Skip adding if @addoutfit=n restricted *unless* the wearable made it into COF [see LLAppMgr::updateAgentWearables()]
-					if ( (RLV_WEAR_LOCKED == gRlvWearableLocks.canWear(type)) && 
-						 (!gInventory.isObjectDescendentOf(new_item->getUUID(), LLAppearanceMgr::instance().getCOF())) )
-					{
-						continue;
-					}
-					idxCur = pushWearable(type,new_wearable);
-				}
-
-				// Since we're moving up from index 0 we just swap the two wearables and things will work out in the end (hopefully)
-				if (idxCurPerType[type] != idxCur)
-				{
-					wearableentry_map_t::iterator itWearable = mWearableDatas.find(type);
-					RLV_ASSERT(itWearable != mWearableDatas.end());
-					if (itWearable == mWearableDatas.end()) continue;
-					wearableentry_vec_t& typeWearable = itWearable->second;
-					RLV_ASSERT(typeWearable.size() >= 2);
-					if (typeWearable.size() < 2) continue;
-
-					typeWearable[idxCur] = typeWearable[idxCurPerType[type]];
-					typeWearable[idxCurPerType[type]] = new_wearable;
-					//wearableUpdated(new_wearable);
-					//checkWearableAgainstInventory(new_wearable);
-				}
+				pushWearable(type,new_wearable);
 			}
-			idxCurPerType[type]++;
-// [/RLVa:KB]
-
 			const BOOL removed = FALSE;
 			wearableUpdated(new_wearable, removed);
 		}
@@ -1475,7 +1418,7 @@ void LLAgentWearables::setWearableOutfit(const LLInventoryItem::item_array_t& it
 
 
 // User has picked "wear on avatar" from a menu.
-void LLAgentWearables::setWearableItem(LLInventoryItem* new_item, LLViewerWearable* new_wearable, bool do_append)
+/*void LLAgentWearables::setWearableItem(LLInventoryItem* new_item, LLViewerWearable* new_wearable, bool do_append)
 {
 	//LLAgentDumper dumper("setWearableItem");
 	if (isWearingItem(new_item->getUUID()))
@@ -1523,7 +1466,7 @@ void LLAgentWearables::setWearableItem(LLInventoryItem* new_item, LLViewerWearab
 	}
 
 	setWearableFinal(new_item, new_wearable, do_append);
-}
+}*/
 
 // static 
 bool LLAgentWearables::onSetWearableDialog(const LLSD& notification, const LLSD& response, LLViewerWearable* wearable)
@@ -1696,8 +1639,8 @@ void LLAgentWearables::invalidateBakedTextureHash(LLMD5& hash) const
 // Combines userRemoveAllAttachments() and userAttachMultipleAttachments() logic to
 // get attachments into desired state with minimal number of adds/removes.
 //void LLAgentWearables::userUpdateAttachments(LLInventoryModel::item_array_t& obj_item_array)
-// [SL:KB] - Patch: Appearance-SyncAttach | Checked: 2010-09-22 (Catznip-3.0.0a) | Added: Catznip-2.2.0a
-void LLAgentWearables::userUpdateAttachments(LLInventoryModel::item_array_t& obj_item_array, bool fAttachOnly)
+// [SL:KB] - Patch: Appearance-SyncAttach | Checked: 2010-09-22 (Catznip-2.2)
+void LLAgentWearables::userUpdateAttachments(LLInventoryModel::item_array_t& obj_item_array, bool attach_only)
 // [/SL:KB]
 {
 	// Possible cases:
@@ -1764,8 +1707,8 @@ void LLAgentWearables::userUpdateAttachments(LLInventoryModel::item_array_t& obj
 
 	// Remove everything in objects_to_remove
 //	userRemoveMultipleAttachments(objects_to_remove);
-// [SL:KB] - Patch: Appearance-SyncAttach | Checked: 2010-09-22 (Catznip-3.0.0a) | Added: Catznip-2.2.0a
-	if (!fAttachOnly)
+// [SL:KB] - Patch: Appearance-SyncAttach | Checked: 2010-09-22 (Catznip-2.2)
+	if (!attach_only)
 	{
 		userRemoveMultipleAttachments(objects_to_remove);
 	}
@@ -1779,12 +1722,12 @@ void LLAgentWearables::userRemoveMultipleAttachments(llvo_vec_t& objects_to_remo
 {
 	if (!isAgentAvatarValid()) return;
 
-// [RLVa:KB] - Checked: 2010-03-04 (RLVa-1.2.0a) | Modified: RLVa-1.2.0a
-	// RELEASE-RLVa: [SL-2.0.0] Check our callers and verify that erasing elements from the passed vector won't break random things
+// [RLVa:KB] - Checked: 2010-03-04 (RLVa-1.2.0)
+	// RELEASE-RLVa: [SL-3.4] Check our callers and verify that erasing elements from the passed vector won't break random things
 	if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_REMOVE)) )
 	{
 		llvo_vec_t::iterator itObj = objects_to_remove.begin();
-		while (itObj != objects_to_remove.end())
+		while (objects_to_remove.end() != itObj)
 		{
 			const LLViewerObject* pAttachObj = *itObj;
 			if (gRlvAttachmentLocks.isLockedAttachment(pAttachObj))
@@ -1792,12 +1735,12 @@ void LLAgentWearables::userRemoveMultipleAttachments(llvo_vec_t& objects_to_remo
 				itObj = objects_to_remove.erase(itObj);
 
 				// Fall-back code: re-add the attachment if it got removed from COF somehow (compensates for possible bugs elsewhere)
-				LLInventoryModel::cat_array_t folders; LLInventoryModel::item_array_t items;
-				LLLinkedItemIDMatches f(pAttachObj->getAttachmentItemID());
-				gInventory.collectDescendentsIf(LLAppearanceMgr::instance().getCOF(), folders, items, LLInventoryModel::EXCLUDE_TRASH, f);
-				RLV_ASSERT( 0 != items.count() );
-				if (0 == items.count())
+				bool fInCOF = LLAppearanceMgr::isLinkInCOF(pAttachObj->getAttachmentItemID());
+				RLV_ASSERT(fInCOF);
+				if (!fInCOF)
+				{
 					LLAppearanceMgr::instance().registerAttachment(pAttachObj->getAttachmentItemID());
+				}
 			}
 			else
 			{
@@ -1828,10 +1771,10 @@ void LLAgentWearables::userRemoveMultipleAttachments(llvo_vec_t& objects_to_remo
 
 void LLAgentWearables::userAttachMultipleAttachments(LLInventoryModel::item_array_t& obj_item_array)
 {
-// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1b) | Added: RLVa-1.3.1b
+// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1)
 	static bool sInitialAttachmentsRequested = false;
 
-	// RELEASE-RLVa: [SL-2.5.2] Check our callers and verify that erasing elements from the passed vector won't break random things
+	// RELEASE-RLVa: [SL-3.4] Check our callers and verify that erasing elements from the passed vector won't break random things
 	if ( (rlv_handler_t::isEnabled()) && (sInitialAttachmentsRequested) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_ANY)) )
 	{
 		// Fall-back code: everything should really already have been pruned before we get this far

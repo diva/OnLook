@@ -2876,9 +2876,9 @@ void LLAgent::buildFullnameAndTitle(std::string& name) const
 	}
 }
 
-BOOL LLAgent::isInGroup(const LLUUID& group_id) const
+BOOL LLAgent::isInGroup(const LLUUID& group_id, BOOL ignore_god_mode /* FALSE */) const
 {
-	if (isGodlike())
+	if (!ignore_god_mode && isGodlike())
 		return true;
 
 	S32 count = mGroups.count();
@@ -3102,13 +3102,13 @@ void LLAgent::sendAnimationRequest(const LLUUID &anim_id, EAnimRequest request)
 // [RLVa:KB] - Checked: 2011-05-11 (RLVa-1.3.0i) | Added: RLVa-1.3.0i
 void LLAgent::setAlwaysRun()
 {
-	mbAlwaysRun = true;//(!rlv_handler_t::isEnabled()) || (!gRlvHandler.hasBehaviour(RLV_BHVR_ALWAYSRUN));
+	mbAlwaysRun = (!rlv_handler_t::isEnabled()) || (!gRlvHandler.hasBehaviour(RLV_BHVR_ALWAYSRUN));
 	sendWalkRun();
 }
 
 void LLAgent::setTempRun()
 {
-	mbTempRun = true;//(!rlv_handler_t::isEnabled()) || (!gRlvHandler.hasBehaviour(RLV_BHVR_TEMPRUN));
+	mbTempRun = (!rlv_handler_t::isEnabled()) || (!gRlvHandler.hasBehaviour(RLV_BHVR_TEMPRUN));
 	sendWalkRun();
 }
 
@@ -4527,19 +4527,7 @@ void LLAgent::sendAgentSetAppearance()
 	// NOTE -- when we start correcting all of the other Havok geometry 
 	// to compensate for the COLLISION_TOLERANCE ugliness we will have 
 	// to tweak this number again
-	LLVector3 body_size = gAgentAvatarp->mBodySize;
-
-	static LLCachedControl<F32> x_off("AscentAvatarXModifier");
-	static LLCachedControl<F32> y_off("AscentAvatarYModifier");
-	static LLCachedControl<F32> z_off("AscentAvatarZModifier");
-
-	body_size.mV[VX] += x_off;
-	body_size.mV[VY] += y_off;
-	body_size.mV[VZ] += z_off; // Offset by RLVa, but not overridden.
-// [RLVa:KB] - Checked: 2010-10-11 (RLVa-1.2.0e) | Added: RLVa-1.2.0e
-	body_size.mV[VZ] += RlvSettings::getAvatarOffsetZ();
-// [/RLVa:KB]
-
+	const LLVector3 body_size = gAgentAvatarp->mBodySize + gAgentAvatarp->mAvatarOffset;
 	msg->addVector3Fast(_PREHASH_Size, body_size);	
 
 	// To guard against out of order packets

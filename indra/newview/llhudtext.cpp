@@ -492,7 +492,7 @@ LLVector2 LLHUDText::updateScreenPos(LLVector2 &offset)
 	LLVector3 x_pixel_vec;
 	LLVector3 y_pixel_vec;
 	LLViewerCamera::getInstance()->getPixelVectors(mPositionAgent, y_pixel_vec, x_pixel_vec);
-	LLVector3 world_pos = mPositionAgent + (offset.mV[VX] * x_pixel_vec) + (offset.mV[VY] * y_pixel_vec);
+//	LLVector3 world_pos = mPositionAgent + (offset.mV[VX] * x_pixel_vec) + (offset.mV[VY] * y_pixel_vec);
 //	if (!LLViewerCamera::getInstance()->projectPosAgentToScreen(world_pos, screen_pos, FALSE) && mVisibleOffScreen)
 //	{
 //		// bubble off-screen, so find a spot for it along screen edge
@@ -690,17 +690,14 @@ F32 LLHUDText::LLHUDTextSegment::getWidth(const LLFontGL* font)
 	}
 }
 
-// [RLVa:KB] - Checked: 2009-07-09 (RLVa-1.0.0f) | Added: RLVa-1.0.0f
+// [RLVa:KB] - Checked: 2010-03-27 (RLVa-1.4.0a) | Added: RLVa-1.0.0f
 void LLHUDText::refreshAllObjectText()
 {
-	for (TextObjectIterator itText = sTextObjects.begin(); itText != sTextObjects.end(); itText++)
+	for (TextObjectIterator itText = sTextObjects.begin(); itText != sTextObjects.end(); ++itText)
 	{
 		LLHUDText* pText = *itText;
-		if ( (pText) && (!pText->getPreFilteredText().empty() && ("" != pText->getPreFilteredText()) ) && 
-			 (pText->mSourceObject) && (LL_PCODE_VOLUME == pText->mSourceObject->getPCode()) )
-		{
-			pText->setString(pText->mPreFilteredText);
-		}
+		if ( (pText) && (!pText->mObjText.empty()) && (pText->mSourceObject) && (LL_PCODE_VOLUME == pText->mSourceObject->getPCode()) )
+			pText->setString(pText->mObjText);
 	}
 }
 // [/RLVa:KB]

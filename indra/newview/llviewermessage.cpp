@@ -1517,6 +1517,15 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 					 sizeof(mFolderID.mData));
 		// send the message
 		msg->sendReliable(mHost);
+			
+// [RLVa:KB] - Checked: 2010-09-23 (RLVa-1.2.1e) | Added: RLVa-1.2.1e
+			if (fRlvNotifyAccepted)
+			{
+				std::string::size_type idxToken = mDesc.find("'  ( http://");
+				if (std::string::npos != idxToken)
+					RlvBehaviourNotifyHandler::sendNotification("accepted_in_inv inv_offer " + mDesc.substr(1, idxToken - 1));
+			}
+// [/RLVa:KB]
 
 		//don't spam them if they are getting flooded
 		if (check_offer_throttle(mFromName, true))
@@ -6525,12 +6534,6 @@ void notify_cautioned_script_question(const LLSD& notification, const LLSD& resp
 			{
 				// got the region, so include the region and 3d coordinates of the object
 				notice.setArg("[REGIONNAME]", viewregion->getName());
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
-				if ( (rlv_handler_t::isEnabled()) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )
-				{
-					notice.setArg("[REGIONNAME]", RlvStrings::getString(RLV_STRING_HIDDEN_REGION));
-				}
-// [/RLVa:KB]
 				std::string formatpos = llformat("%.1f, %.1f,%.1f", objpos[VX], objpos[VY], objpos[VZ]);
 				notice.setArg("[REGIONPOS]", formatpos);
 
@@ -6538,7 +6541,15 @@ void notify_cautioned_script_question(const LLSD& notification, const LLSD& resp
 			}
 		}
 
-		if (!foundpos)
+// [RLVa:KB] - Checked: 2010-04-23 (RLVa-1.2.0g) | Modified: RLVa-1.0.0a
+		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
+		{
+			notice.setArg("[REGIONNAME]", RlvStrings::getString(RLV_STRING_HIDDEN_REGION));
+			notice.setArg("[REGIONPOS]", RlvStrings::getString(RLV_STRING_HIDDEN));
+		}
+		else if (!foundpos)
+// [/RLVa:KB]
+//		if (!foundpos)
 		{
 			// unable to determine location of the object
 			notice.setArg("[REGIONNAME]", "(unknown region)");
@@ -6552,7 +6563,11 @@ void notify_cautioned_script_question(const LLSD& notification, const LLSD& resp
 		std::string perms;
 		for (S32 i = 0; i < SCRIPT_PERMISSION_EOF; i++)
 		{
-			if ((orig_questions & LSCRIPTRunTimePermissionBits[i]) && SCRIPT_QUESTION_IS_CAUTION[i])
+//			if ((orig_questions & LSCRIPTRunTimePermissionBits[i]) && SCRIPT_QUESTION_IS_CAUTION[i])
+// [RLVa:KB] - Checked: 2012-07-28 (RLVa-1.4.7)
+			if ( (orig_questions & LSCRIPTRunTimePermissionBits[i]) && 
+				 ((SCRIPT_QUESTION_IS_CAUTION[i]) || (notification["payload"]["rlv_notify"].asBoolean())) )
+// [/RLVa:KB]
 			{
 				count++;
 				caution = TRUE;
