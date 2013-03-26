@@ -157,6 +157,7 @@ public:
 
 	static void filterLocation(std::string& strUTF8Text);							// @showloc
 	static void filterNames(std::string& strUTF8Text, bool fFilterLegacy = true);	// @shownames
+	static void filterScriptQuestions(S32& nQuestions, LLSD& sdPayload); 
 
 	static bool isForceTp()	{ return m_fForceTp; }
 	static void forceTp(const LLVector3d& posDest);									// Ignores restrictions that might otherwise prevent tp'ing
@@ -210,6 +211,7 @@ class RlvEnableIfNot : public LLMemberListener<LLView>
 //
 
 bool rlvCanDeleteOrReturn();
+bool rlvCanDeleteOrReturn(const LLViewerObject* pObj);
 
 struct RlvSelectHasLockedAttach : public LLSelectedNodeFunctor
 {
@@ -238,8 +240,8 @@ protected:
 
 bool rlvPredCanWearItem(const LLViewerInventoryItem* pItem, ERlvWearMask eWearMask);
 bool rlvPredCanNotWearItem(const LLViewerInventoryItem* pItem, ERlvWearMask eWearMask);
-bool rlvPredCanRemoveItem(const LLViewerInventoryItem* pItem);
-bool rlvPredCanNotRemoveItem(const LLViewerInventoryItem* pItem);
+bool rlvPredCanRemoveItem(const LLInventoryItem* pItem);
+bool rlvPredCanNotRemoveItem(const LLInventoryItem* pItem);
 
 struct RlvPredCanWearItem
 {

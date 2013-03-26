@@ -46,6 +46,11 @@
 #include "llmutelist.h"
 #include "llviewerobjectlist.h"
 #include "llvoavatarself.h"
+// [RLVa:KB] - Checked: 2010-03-04 (RLVa-1.2.2a)
+#include "llavatarnamecache.h"
+#include "rlvhandler.h"
+#include "rlvui.h"
+// [/RLVa:KB]
 
 // MAX ITEMS is based on (sizeof(uuid)+2) * count must be < MTUBYTES
 // or 18 * count < 1200 => count < 1200/18 => 66. I've cut it down a

@@ -463,9 +463,12 @@ void LLAvatarAppearance::computeBodySize()
 
 	LLVector3 foot  = mFootLeftp->getPosition();
 
-	F32 old_offset = mAvatarOffset.mV[VZ];
+	LLVector3 old_offset = mAvatarOffset;
 
-	mAvatarOffset.mV[VZ] = getVisualParamWeight(11001);
+// [RLVa:KB] - Checked: 2013-03-03 (RLVa-1.4.8)
+	mAvatarOffset = getAvatarOffset();
+// [/RLVa:KB]
+//	mAvatarOffset.mV[VZ] = getVisualParamWeight(11001);
 
 	mPelvisToFoot = hip.mV[VZ] * pelvis_scale.mV[VZ] -
 				 	knee.mV[VZ] * hip_scale.mV[VZ] -
@@ -486,15 +489,22 @@ void LLAvatarAppearance::computeBodySize()
 	new_body_size.mV[VX] = DEFAULT_AGENT_DEPTH;
 	new_body_size.mV[VY] = DEFAULT_AGENT_WIDTH;
 
-	mAvatarOffset.mV[VX] = 0.0f;
-	mAvatarOffset.mV[VY] = 0.0f;
+	//mAvatarOffset.mV[VX] = 0.0f;
+	//mAvatarOffset.mV[VY] = 0.0f;
 
-	if (new_body_size != mBodySize || old_offset != mAvatarOffset.mV[VZ])
+	if (new_body_size != mBodySize || old_offset != mAvatarOffset)
 	{
 		mBodySize = new_body_size;
 		bodySizeChanged();
 	}
 }
+
+// [RLVa:KB] - Checked: 2013-03-03 (RLVa-1.4.8)
+LLVector3 LLAvatarAppearance::getAvatarOffset() /*const*/
+{
+	return LLVector3(0.f,0.f,getVisualParamWeight(11001));
+}
+// [/RLVa:KB]
 
 //-----------------------------------------------------------------------------
 // parseSkeletonFile()

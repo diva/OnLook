@@ -687,17 +687,14 @@ F32 LLHUDText::LLHUDTextSegment::getWidth(const LLFontGL* font)
 	}
 }
 
-// [RLVa:KB] - Checked: 2009-07-09 (RLVa-1.0.0f) | Added: RLVa-1.0.0f
+// [RLVa:KB] - Checked: 2010-03-27 (RLVa-1.4.0a) | Added: RLVa-1.0.0f
 void LLHUDText::refreshAllObjectText()
 {
-	for (TextObjectIterator itText = sTextObjects.begin(); itText != sTextObjects.end(); itText++)
+	for (TextObjectIterator itText = sTextObjects.begin(); itText != sTextObjects.end(); ++itText)
 	{
 		LLHUDText* pText = *itText;
-		if ( (pText) && (!pText->getPreFilteredText().empty() && ("" != pText->getPreFilteredText()) ) && 
-			 (pText->mSourceObject) && (LL_PCODE_VOLUME == pText->mSourceObject->getPCode()) )
-		{
-			pText->setString(pText->mPreFilteredText);
-		}
+		if ( (pText) && (!pText->mObjText.empty()) && (pText->mSourceObject) && (LL_PCODE_VOLUME == pText->mSourceObject->getPCode()) )
+			pText->setString(pText->mObjText);
 	}
 }
 // [/RLVa:KB]

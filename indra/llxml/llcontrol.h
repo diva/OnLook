@@ -69,6 +69,10 @@
 # endif
 #endif
 
+#if LL_RELEASE_WITH_DEBUG_INFO
+#define PROF_CTRL_CALLS
+#endif //LL_RELEASE_WITH_DEBUG_INFO
+
 class LLVector3;
 class LLVector3d;
 class LLColor3;
@@ -179,6 +183,10 @@ public:
 			mValidateSignal = pConnect->mValidateSignal;
 		}
 	}
+#ifdef PROF_CTRL_CALLS
+public:
+	U32 mLookupCount;
+#endif //PROF_CTRL_CALLS
 private:
 	LLSD getComparableValue(const LLSD& value);
 	bool llsd_compare(const LLSD& a, const LLSD & b);
@@ -347,6 +355,10 @@ public:
 	void connectCOAVars(LLControlGroup &OtherGroup);
 	void updateCOASetting(bool coa_enabled);
 	bool handleCOASettingChange(const LLSD& newvalue);
+
+#ifdef PROF_CTRL_CALLS
+	void updateLookupMap(ctrl_name_table_t::const_iterator iter) const;
+#endif //PROF_CTRL_CALLS
 };
 
 

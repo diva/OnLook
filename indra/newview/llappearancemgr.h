@@ -239,7 +239,10 @@ private:
 	void setOutfitLocked(bool locked);
 
 // [SL:KB] - Checked: 2010-04-24 (RLVa-1.2.0f) | Added: RLVa-1.2.0f
-	void syncCOF(const LLInventoryModel::item_array_t& items, LLAssetType::EType type, LLCallAfterInventoryLinkMgr* link_waiter);
+	void purgeItems(const LLInventoryModel::item_array_t& items);
+	void purgeItemsOfType(LLAssetType::EType asset_type);
+	void syncCOF(const LLInventoryModel::item_array_t& items, 
+	             LLInventoryModel::item_array_t& items_to_add, LLInventoryModel::item_array_t& items_to_remove);
 // [/SL:KB]
 
 	bool mAttachmentInvLinkEnabled;

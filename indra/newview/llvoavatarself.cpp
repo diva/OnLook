@@ -162,6 +162,9 @@ LLVOAvatarSelf::LLVOAvatarSelf(const LLUUID& id,
 							   const LLPCode pcode,
 							   LLViewerRegion* regionp) :
 	LLVOAvatar(id, pcode, regionp),
+// [RLVa:KB] - Checked: 2012-07-28 (RLVa-1.4.7)
+	mAttachmentSignal(NULL),
+// [/RLVa:KB]
 	mScreenp(NULL),
 	mLastRegionHandle(0),
 	mRegionCrossingCount(0),
@@ -1119,6 +1122,14 @@ LLViewerObject* LLVOAvatarSelf::getWornAttachment(const LLUUID& inv_item_id)
 	return NULL;
 }
 
+// [RLVa:KB] - Checked: 2012-07-28 (RLVa-1.4.7)
+boost::signals2::connection LLVOAvatarSelf::setAttachmentCallback(const attachment_signal_t::slot_type& cb)
+{
+	if (!mAttachmentSignal)
+		mAttachmentSignal = new attachment_signal_t();
+	return mAttachmentSignal->connect(cb);
+}
+// [/RLVa:KB]
 // [RLVa:KB] - Checked: 2010-03-14 (RLVa-1.2.0a) | Modified: RLVa-1.2.0a
 LLViewerJointAttachment* LLVOAvatarSelf::getWornAttachmentPoint(const LLUUID& idItem) const
 {
@@ -1174,6 +1185,10 @@ const LLViewerJointAttachment *LLVOAvatarSelf::attachObject(LLViewerObject *view
 
 // [RLVa:KB] - Checked: 2010-08-22 (RLVa-1.2.1a) | Modified: RLVa-1.2.1a
 		// NOTE: RLVa event handlers should be invoked *after* LLVOAvatar::attachObject() calls LLViewerJointAttachment::addObject()
+		if (mAttachmentSignal)
+		{
+			(*mAttachmentSignal)(viewer_object, attachment, ACTION_ATTACH);
+		}
 		if (rlv_handler_t::isEnabled())
 		{
 			RlvAttachmentLockWatchdog::instance().onAttach(viewer_object, attachment);
@@ -1202,16 +1217,24 @@ BOOL LLVOAvatarSelf::detachObject(LLViewerObject *viewer_object)
 
 // [RLVa:KB] - Checked: 2010-03-05 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
 	// NOTE: RLVa event handlers should be invoked *before* LLVOAvatar::detachObject() calls LLViewerJointAttachment::removeObject()
-	if (rlv_handler_t::isEnabled())
+	
 	{
 		for (attachment_map_t::const_iterator itAttachPt = mAttachmentPoints.begin(); itAttachPt != mAttachmentPoints.end(); ++itAttachPt)
 		{
 			const LLViewerJointAttachment* pAttachPt = itAttachPt->second;
 			if (pAttachPt->isObjectAttached(viewer_object))
 			{
-				RlvAttachmentLockWatchdog::instance().onDetach(viewer_object, pAttachPt);
-				gRlvHandler.onDetach(viewer_object, pAttachPt);
+				if (rlv_handler_t::isEnabled())
+				{
+					RlvAttachmentLockWatchdog::instance().onDetach(viewer_object, pAttachPt);
+					gRlvHandler.onDetach(viewer_object, pAttachPt);
+				}
+				if (mAttachmentSignal)
+				{
+					(*mAttachmentSignal)(viewer_object, pAttachPt, ACTION_DETACH);
+				}
 			}
+			break;
 		}
 	}
 // [/RLVa:KB]
@@ -3196,6 +3219,22 @@ void LLVOAvatarSelf::dumpWearableInfo(LLAPRFile& outfile)
 	}
 	apr_file_printf( file, "\n</wearable_info>\n" );
 }
+
+
+// [RLVa:KB] - Checked: 2013-03-03 (RLVa-1.4.8)
+LLVector3 LLVOAvatarSelf::getAvatarOffset() /*const*/
+{
+	if(isUsingServerBakes())
+		return LLAvatarAppearance::getAvatarOffset();
+	else
+	{
+		static LLCachedControl<F32> x_off("AscentAvatarXModifier");
+		static LLCachedControl<F32> y_off("AscentAvatarYModifier");
+		static LLCachedControl<F32> z_off("AscentAvatarZModifier");
+		return LLVector3(x_off,y_off,z_off+RlvSettings::getAvatarOffsetZ());
+	}
+}
+// [/RLVa:KB]
 
 // static
 void LLVOAvatarSelf::onChangeSelfInvisible(bool invisible)

@@ -1722,12 +1722,11 @@ EAcceptance LLToolDragAndDrop::dad3dRezAttachmentFromInv(
 		return ACCEPT_NO;
 	}
 
-// [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.2.1f
-	if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_ANY)) )
+// [RLVa:KB] - Checked: 2013-02-13 (RLVa-1.4.8)
+	bool fReplace = !(mask & MASK_CONTROL);
+	if ( (rlv_handler_t::isEnabled()) && (!rlvPredCanWearItem(item, (fReplace) ? RLV_WEAR_REPLACE : RLV_WEAR_ADD)) )
 	{
-		ERlvWearMask eWearMask = gRlvAttachmentLocks.canAttach(item); bool fReplace = !(mask & MASK_CONTROL);
-		if ( ((!fReplace) && ((RLV_WEAR_ADD & eWearMask) == 0)) || ((fReplace) && ((RLV_WEAR_REPLACE & eWearMask) == 0)) )
-			return ACCEPT_NO_LOCKED;
+		return ACCEPT_NO_LOCKED;
 	}
 // [/RLVa:KB]
 
@@ -2086,12 +2085,11 @@ EAcceptance LLToolDragAndDrop::dad3dWearItem(
 			return ACCEPT_NO;
 		}
 
-// [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.2.1f
-		if ( (rlv_handler_t::isEnabled()) && (gRlvWearableLocks.hasLockedWearableType(RLV_LOCK_ANY)) )
+// [RLVa:KB] - Checked: 2013-02-13 (RLVa-1.4.8)
+		bool fReplace = (!(mask & MASK_CONTROL)) || (LLAssetType::AT_BODYPART == item->getType());	// Body parts should always replace
+		if ( (rlv_handler_t::isEnabled()) && (!rlvPredCanWearItem(item, (fReplace) ? RLV_WEAR_REPLACE : RLV_WEAR_ADD)) )
 		{
-			ERlvWearMask eWearMask = gRlvWearableLocks.canWear(item); bool fReplace = !(mask & MASK_CONTROL);
-			if ( ((!fReplace) && ((RLV_WEAR_ADD & eWearMask) == 0)) || ((fReplace) && ((RLV_WEAR_REPLACE & eWearMask) == 0)) )
-				return ACCEPT_NO_LOCKED;
+			return ACCEPT_NO_LOCKED;
 		}
 // [/RLVa:KB]
 
@@ -2107,7 +2105,10 @@ EAcceptance LLToolDragAndDrop::dad3dWearItem(
 
 			// TODO: investigate wearables may not be loaded at this point EXT-8231
 
-			LLAppearanceMgr::instance().wearItemOnAvatar(item->getUUID(),true, !(mask & MASK_CONTROL));
+// [RLVa:KB] - Checked: 2013-02-13 (RLVa-1.4.8)
+			LLAppearanceMgr::instance().wearItemOnAvatar(item->getUUID(), true, fReplace);
+// [/RLVa:KB]
+//			LLAppearanceMgr::instance().wearItemOnAvatar(item->getUUID(),true, !(mask & MASK_CONTROL));
 		}
 		return ACCEPT_YES_MULTI;
 	}

@@ -200,13 +200,24 @@ void invrepair()
 	gInventory.collectDescendents(gInventory.getRootFolderID(),cats,items,FALSE);//,objectnamematches);
 }
 
-
-#if PROF_CTRL_CALLS
-extern std::vector<std::pair<std::string, U32>> gSettingsCallMap;
-bool stort_calls(const std::pair<std::string, U32>& left, const std::pair<std::string, U32>& right)
+#ifdef PROF_CTRL_CALLS
+bool sort_calls(const std::pair<std::string, U32>& left, const std::pair<std::string, U32>& right)
 {
-	return left.second < right.second;
+	return left.second > right.second;
 }
+//Structure to be passed into LLControlGroup::applyToAll.
+// Doesn't actually modify control group, but rather uses the 'apply'
+// vfn to add each variable in the group to a list. This essentially
+// allows us to copy the private variable list without touching the controlgroup
+// class.
+struct ProfCtrlListAccum : public LLControlGroup::ApplyFunctor
+{
+	virtual void apply(const std::string& name, LLControlVariable* control)
+	{
+		mVariableList.push_back(std::make_pair(name,control->mLookupCount));
+	}
+	std::vector<std::pair<std::string, U32> > mVariableList;
+};
 #endif //PROF_CTRL_CALLS
 bool cmd_line_chat(std::string revised_text, EChatType type)
 {
@@ -445,13 +456,23 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 			{
 				invrepair();
 			}
-#if PROF_CTRL_CALLS
+#ifdef PROF_CTRL_CALLS
 			else if(command == "dumpcalls")
 			{
-				llinfos << "gSavedSettings lookup count (" << gFrameCount << "frames)" << llendl;
-				std::sort(gSettingsCallMap.begin(),gSettingsCallMap.end(),stort_calls);
-				for(U32 i = 0;i<gSettingsCallMap.size();i++)
-					llinfos << gSettingsCallMap[i].first << " : " << gSettingsCallMap[i].second << "  " << ((float)gSettingsCallMap[i].second / (float)gFrameCount) << "c/f" << llendl;
+				LLControlGroup::key_iter it = LLControlGroup::beginKeys();
+				LLControlGroup::key_iter end = LLControlGroup::endKeys();
+				for(;it!=end;++it)
+				{
+					ProfCtrlListAccum list;
+					LLControlGroup::getInstance(*it)->applyToAll(&list);
+					std::sort(list.mVariableList.begin(),list.mVariableList.end(),sort_calls);
+					LL_INFOS("") << *it << ": lookup count (" << gFrameCount << "frames)" << LL_ENDL;
+					for(U32 i = 0;i<list.mVariableList.size();i++)
+					{
+						if(list.mVariableList[i].second)
+							LL_INFOS("") << "  " << list.mVariableList[i].first << ":  " << list.mVariableList[i].second << " lookups, " << ((float)list.mVariableList[i].second / (float)gFrameCount) << "l/f\n" << LL_ENDL;
+					}
+				}
 				return false;
 			}
 #endif //PROF_CTRL_CALLS

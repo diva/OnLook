@@ -104,19 +104,12 @@ U32 LLWearableData::pushWearable(const LLWearableType::EType type,
 		llwarns << "Null wearable sent for type " << type << llendl;
 		return MAX_CLOTHING_PER_TYPE;
 	}
-//	if (type < LLWearableType::WT_COUNT || mWearableDatas[type].size() < MAX_CLOTHING_PER_TYPE)
-//	{
-//		mWearableDatas[type].push_back(wearable);
-//		wearableUpdated(wearable);
-//		checkWearableAgainstInventory(wearable);
-//		return mWearableDatas[type].size()-1;
-//	}
 // [RLVa:KB] - Checked: 2010-06-08 (RLVa-1.2.0g) | Added: RLVa-1.2.0g
 	if ( (type < LLWearableType::WT_COUNT) && (mWearableDatas[type].size() < MAX_CLOTHING_PER_TYPE) )
 	{
 		// Don't add the same wearable twice
 		U32 idxWearable = getWearableIndex(wearable);
-		//RLV_ASSERT(MAX_CLOTHING_PER_TYPE == idxWearable); // pushWearable() on an already added wearable is a bug *somewhere*
+		llassert(MAX_CLOTHING_PER_TYPE == idxWearable); // pushWearable() on an already added wearable is a bug *somewhere*
 		if (MAX_CLOTHING_PER_TYPE == idxWearable)
 		{
 			mWearableDatas[type].push_back(wearable);
@@ -128,8 +121,18 @@ U32 LLWearableData::pushWearable(const LLWearableType::EType type,
 			wearableUpdated(wearable, removed);
 		}
 		return idxWearable;
-// [/RLVa:KB]
 	}
+// [/RLVa:KB]
+//	if (type < LLWearableType::WT_COUNT || mWearableDatas[type].size() < MAX_CLOTHING_PER_TYPE)
+//	{
+//		mWearableDatas[type].push_back(wearable);
+//		if (trigger_updated)
+//		{
+//			const BOOL removed = FALSE;
+//			wearableUpdated(wearable, removed);
+//		}
+//		return mWearableDatas[type].size()-1;
+//	}
 	return MAX_CLOTHING_PER_TYPE;
 }
 
