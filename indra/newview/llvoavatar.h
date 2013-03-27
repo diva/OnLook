@@ -870,6 +870,8 @@ private:
 	U8			mStepMaterial;
 	LLVector3	mStepObjectVelocity;
 
+public:
+	bool		mHasPhysicsParameters; //If we receive no physics params from this av then reset and skip llphysicsmotion calculations.
 /**                    Physics
  **                                                                            **
  *******************************************************************************/
