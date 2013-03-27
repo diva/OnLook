@@ -1001,6 +1001,7 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mUseLocalAppearance(FALSE),
 	mUseServerBakes(FALSE), // FIXME DRANO consider using boost::optional, defaulting to unknown.
 	// <edit>
+	mHasPhysicsParameters( false ),
 	mIdleMinute(0),
 	mCCSChatTextOverride(false)
 	// </edit>
@@ -7997,6 +7998,8 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 	setCompositeUpdatesEnabled( FALSE );
 	gPipeline.markGLRebuild(this);
 
+	mHasPhysicsParameters = false;
+
 	// Apply visual params
 	if( num_params > 1)
 	{
@@ -8008,6 +8011,11 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		{
 			LLVisualParam* param = contents.mParams[i];
 			F32 newWeight = contents.mParamWeights[i];
+
+			if(param->getID() == 10000)
+			{
+				mHasPhysicsParameters = true;
+			} 
 
 			if (is_first_appearance_message || (param->getWeight() != newWeight))
 			{
