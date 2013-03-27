@@ -9,7 +9,8 @@
       <check_box label="Jouer le son typique pour le chat local" name="play_typing_sound_check"/>
       <check_box label="Ne pas afficher les notifs. de log dans le chat" name="hide_notifications_in_chat_check"/>
       <check_box label="Permet d'utiliser &#x22;/me&#x22; aussi bien que &#x22;:&#x22;" name="allow_mu_pose_check"/>
-      <check_box label="Ajoute automatiquement les fins des commentaires OOC (RP mode)" tool_tip="Ajoute automatiquement &#x22;))&#x22; &#xE0; chaque message commen&#xE7;ant par &#x22;((&#x22;, et vice-versa." name="close_ooc_check"/>
+      <check_box label="Ajoute les fins des commentaires (RP mode)" tool_tip="Ajoute automatiquement &#x22;))&#x22; &#xE0; chaque message commen&#xE7;ant par &#x22;((&#x22;, et vice-versa." name="close_ooc_check"/>
+      <check_box label="Montre les changements de display name" tool_tip="" name="display_name_change"/>
       <text name="objects_link_text_box3">Active un lien qui montre le nom du propri&#xE9;taire dans l'historique du chat pour :</text>
        <radio_group tool_tip="Enables a link to show you the owner of the speaking object." name="objects_link">
         <radio_item name="no_object">Aucun objet</radio_item>
