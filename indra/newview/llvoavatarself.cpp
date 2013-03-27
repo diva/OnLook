@@ -3220,21 +3220,27 @@ void LLVOAvatarSelf::dumpWearableInfo(LLAPRFile& outfile)
 	apr_file_printf( file, "\n</wearable_info>\n" );
 }
 
-
-// [RLVa:KB] - Checked: 2013-03-03 (RLVa-1.4.8)
-LLVector3 LLVOAvatarSelf::getAvatarOffset() /*const*/
+extern bool on_pose_stand;
+LLVector3 LLVOAvatarSelf::getLegacyAvatarOffset() const
 {
-	if(isUsingServerBakes())
-		return LLAvatarAppearance::getAvatarOffset();
-	else
+	static LLCachedControl<F32> x_off("AscentAvatarXModifier");
+	static LLCachedControl<F32> y_off("AscentAvatarYModifier");
+	static LLCachedControl<F32> z_off("AscentAvatarZModifier");
+	LLVector3 offset(x_off,y_off,z_off);
+
+// [RLVa:KB] Custom blah blah
+	if(rlv_handler_t::isEnabled())
 	{
-		static LLCachedControl<F32> x_off("AscentAvatarXModifier");
-		static LLCachedControl<F32> y_off("AscentAvatarYModifier");
-		static LLCachedControl<F32> z_off("AscentAvatarZModifier");
-		return LLVector3(x_off,y_off,z_off+RlvSettings::getAvatarOffsetZ());
+		F32 rlva_z_offs = RlvSettings::getAvatarOffsetZ();
+		if(fabs(rlva_z_offs) > F_APPROXIMATELY_ZERO)
+			offset.mV[VZ] = rlva_z_offs;
 	}
-}
 // [/RLVa:KB]
+	if(on_pose_stand)
+		offset.mV[VZ] += 7.5f;
+
+	return offset;
+}
 
 // static
 void LLVOAvatarSelf::onChangeSelfInvisible(bool invisible)

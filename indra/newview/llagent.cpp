@@ -4527,23 +4527,7 @@ void LLAgent::sendAgentSetAppearance()
 	// NOTE -- when we start correcting all of the other Havok geometry 
 	// to compensate for the COLLISION_TOLERANCE ugliness we will have 
 	// to tweak this number again
-	LLVector3 body_size = gAgentAvatarp->mBodySize + gAgentAvatarp->mAvatarOffset;
-
-	static LLCachedControl<F32> x_off("AscentAvatarXModifier");
-	static LLCachedControl<F32> y_off("AscentAvatarYModifier");
-	static LLCachedControl<F32> z_off("AscentAvatarZModifier");
-
-	body_size.mV[VX] += x_off;
-	body_size.mV[VY] += y_off;
-// [RLVa:KB] - Checked: 2010-10-11 (RLVa-1.2.0e) | Added: RLVa-1.2.0e
-	if (rlv_handler_t::isEnabled())
-	{
-		F32 rlvz_off = RlvSettings::getAvatarOffsetZ();
-		body_size.mV[VZ] += fabs(rlvz_off) ? rlvz_off : z_off;
-	}
-	else
-// [/RLVa:KB]
-		body_size.mV[VZ] += z_off;
+	LLVector3 body_size = gAgentAvatarp->mBodySize + gAgentAvatarp->getLegacyAvatarOffset();
 
 	msg->addVector3Fast(_PREHASH_Size, body_size);	
 

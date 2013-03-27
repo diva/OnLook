@@ -454,15 +454,12 @@ bool on_pose_stand;
 
 void set_current_pose(std::string anim)
 {
-	if (!on_pose_stand)
-	{
-		on_pose_stand = true;
-		gSavedSettings.setF32("AscentAvatarZModifier", gSavedSettings.getF32("AscentAvatarZModifier") + 7.5);
-	}
+	on_pose_stand = true;
 
 	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
 	current_pose.set(anim);
 	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+	gAgent.sendAgentSetAppearance();
 }
 void handle_pose_stand(void*)
 {
@@ -472,10 +469,10 @@ void handle_pose_stand_stop(void*)
 {
 	if (on_pose_stand)
 	{
-		gSavedSettings.setF32("AscentAvatarZModifier", gSavedSettings.getF32("AscentAvatarZModifier") - 7.5);
 		on_pose_stand = false;
 		gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
 		current_pose = LLUUID::null;
+		gAgent.sendAgentSetAppearance();
 	}
 }
 void cleanup_pose_stand(void)
