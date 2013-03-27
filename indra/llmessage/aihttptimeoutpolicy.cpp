@@ -707,6 +707,13 @@ AIHTTPTimeoutPolicyBase connect_40s(AIHTTPTimeoutPolicyBase::getDebugSettingsCur
 	connectOp40s
 	);
 
+// This used to be FETCHING_TIMEOUT (for HTTP textures), being a 15 second timeout from start of request till finishing receiving all data.
+// That seems way to demanding however; lets use a 15 second reply delay demand instead.
+Reply replyOp15s(15);
+AIHTTPTimeoutPolicyBase reply_15s(AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout(),
+	replyOp15s
+	);
+
 // End of policy definitions.
 //=======================================================================================================
 
@@ -899,7 +906,7 @@ P2(gamingDataReceived,							transfer_18s);
 P2(groupMemberDataResponder,					transfer_300s);
 P2(groupProposalBallotResponder,				transfer_300s);
 P(homeLocationResponder);
-P(HTTPGetResponder);
+P2(HTTPGetResponder,							reply_15s);
 P(iamHereLogin);
 P(iamHere);
 P(iamHereVoice);

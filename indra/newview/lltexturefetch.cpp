@@ -972,8 +972,6 @@ void LLTextureFetchWorker::startWork(S32 param)
 // Called from LLWorkerThread::processRequest()
 bool LLTextureFetchWorker::doWork(S32 param)
 {
-	static const F32 FETCHING_TIMEOUT = 15.f;//seconds
-
 	LLMutexLock lock(&mWorkMutex);
 
 	if ((mFetcher->isQuitting() || getFlags(LLWorkerClass::WCF_DELETE_REQUESTED)))
@@ -1304,8 +1302,6 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			bool res = false;
 			if (!mUrl.empty())
 			{
-				mRequestedTimer.reset();
-
 				mLoaded = FALSE;
 				mGetStatus = 0;
 				mGetReason.clear();
@@ -1533,13 +1529,6 @@ bool LLTextureFetchWorker::doWork(S32 param)
 		}
 		else
 		{
-			if(FETCHING_TIMEOUT < mRequestedTimer.getElapsedTimeF32())
-			{
-				//timeout, abort.
-				mState = DONE;
-				return true;
-			}
-
 			setPriority(LLWorkerThread::PRIORITY_LOW | mWorkPriority);
 			return false;
 		}
