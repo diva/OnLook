@@ -4779,10 +4779,12 @@ void LLCallingCardBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	}
 	else
 	{
+		/* Singu Note: Multiple profiles get opened in a multifloater
 		if ((flags & FIRST_SELECTED_ITEM) == 0)
 		{
 		disabled_items.push_back(std::string("Open"));
 		}
+		*/
 		addOpenRightClickMenuOption(items);
 		items.push_back(std::string("Properties"));
 
