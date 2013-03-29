@@ -536,7 +536,7 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 		childSetEnabled("CheckEveryoneMove",false);
 	}
 	childSetEnabled("CheckExport", supports_export && item->getType() != LLAssetType::AT_OBJECT && gAgent.getID() == item->getCreatorUUID()
-									&& !(base_mask & PERM_EXPORT && owner_mask & PERM_EXPORT && next_owner_mask & PERM_ITEM_UNRESTRICTED));
+									&& base_mask & PERM_EXPORT && owner_mask & PERM_EXPORT && next_owner_mask & PERM_ITEM_UNRESTRICTED);
 
 	// Set values.
 	BOOL is_group_copy = (group_mask & PERM_COPY) ? TRUE : FALSE;
