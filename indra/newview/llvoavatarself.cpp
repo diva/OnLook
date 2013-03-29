@@ -77,6 +77,9 @@
 
 LLPointer<LLVOAvatarSelf> gAgentAvatarp = NULL;
 
+BOOL object_attached(void *user_data);
+BOOL object_selected_and_point_valid(void *user_data);
+
 BOOL isAgentAvatarValid()
 {
 	return (gAgentAvatarp.notNull() && gAgentAvatarp->isValid() &&
