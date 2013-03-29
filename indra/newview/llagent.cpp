@@ -713,8 +713,14 @@ void LLAgent::setFlying(BOOL fly)
 //-----------------------------------------------------------------------------
 // toggleFlying()
 //-----------------------------------------------------------------------------
+// static
 void LLAgent::toggleFlying()
 {
+	if ( gAgent.mAutoPilot )
+	{
+		LLToolPie::instance().stopClickToWalk();
+	}
+
 	BOOL fly = !gAgent.getFlying();
 
 	gAgent.setFlying( fly );
@@ -1380,8 +1386,8 @@ void LLAgent::setAFK()
 //-----------------------------------------------------------------------------
 void LLAgent::clearAFK()
 {
+	if (gSavedSettings.getBOOL("FakeAway")) return;
 	gAwayTriggerTimer.reset();
-	if (gSavedSettings.getBOOL("FakeAway") == TRUE) return;
 
 	// Gods can sometimes get into away state (via gestures)
 	// without setting the appropriate control flag. JC
@@ -1877,8 +1883,7 @@ BOOL LLAgent::needsRenderHead()
 //-----------------------------------------------------------------------------
 void LLAgent::startTyping()
 {
-	if (gSavedSettings.getBOOL("FakeAway")) 
-		return;
+	if (gSavedSettings.getBOOL("FakeAway")) return;
 	mTypingTimer.reset();
 
 	if (getRenderState() & AGENT_STATE_TYPING)
