@@ -2076,7 +2076,8 @@ void LLMeshSkinInfo::fromLLSD(LLSD& skin)
 {
 	if (skin.has("joint_names"))
 	{
-		for (U32 i = 0; i < (U32)skin["joint_names"].size(); ++i)
+		const U32 joint_count = llmin((U32)skin["joint_names"].size(),(U32)64);
+		for (U32 i = 0; i < joint_count; ++i)
 		{
 			mJointNames.push_back(skin["joint_names"][i]);
 		}
