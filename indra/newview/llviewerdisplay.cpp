@@ -1516,6 +1516,7 @@ void render_ui_3d()
 	stop_glerror();
 }
 
+extern void check_blend_funcs();
 void render_ui_2d()
 {
 	LLGLSUIDefault gls_ui;
@@ -1561,7 +1562,9 @@ void render_ui_2d()
 		gGL.popMatrix();
 		stop_glerror();
 	}
+	if(gDebugGL)check_blend_funcs();
 	gViewerWindow->draw();
+	if(gDebugGL)check_blend_funcs();
 
 	// reset current origin for font rendering, in case of tiling render
 	LLFontGL::sCurOrigin.set(0, 0);
