@@ -351,6 +351,7 @@ void LLDrawPoolAlpha::render(S32 pass)
 			gHighlightProgram.unbind();
 		}
 	}
+	gGL.setSceneBlendType(LLRender::BT_ALPHA);
 }
 
 void LLDrawPoolAlpha::renderAlphaHighlight(U32 mask)

@@ -215,10 +215,12 @@ void LLDrawPoolTerrain::render(S32 pass)
 		else if (gGLManager.mNumTextureUnits < 4)
 		{
 			renderFull2TU();
+			gGL.setSceneBlendType(LLRender::BT_ALPHA);
 		} 
 		else 
 		{
 			renderFull4TU();
+			gGL.setSceneBlendType(LLRender::BT_ALPHA);
 		}
 	}
 
