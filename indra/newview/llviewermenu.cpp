@@ -3582,7 +3582,7 @@ bool enable_standup_self()
 bool enable_sitdown_self()
 {
 // [RLVa:KB] - Checked: 2010-08-28 (RLVa-1.2.1a) | Added: RLVa-1.2.1a
-	return isAgentAvatarValid() && !gAgentAvatarp->isSitting() && !gAgent.getFlying() && !gRlvHandler.hasBehaviour(RLV_BHVR_SIT);
+	return isAgentAvatarValid() && !gAgentAvatarp->isSitting() /*&& !gAgent.getFlying()*/ && !gRlvHandler.hasBehaviour(RLV_BHVR_SIT);
 // [/RLVa:KB]
 //    return isAgentAvatarValid() && !gAgentAvatarp->isSitting() && !gAgent.getFlying();
 }
@@ -3591,8 +3591,6 @@ class LLSelfEnableSitOrStand : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-//		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
-
 		std::string label;
 		std::string sit_text;
 		std::string stand_text;
@@ -3613,8 +3611,7 @@ class LLSelfEnableSitOrStand : public view_listener_t
 			new_value = false;
 
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
-		gMenuHolder->childSetText("Self Sit", label);
-		gMenuHolder->childSetText("Self Sit Attachment", label);
+		gMenuHolder->childSetText("Stand Up", label);
 
 		return true;
 	}
@@ -3974,6 +3971,7 @@ void near_sit_down_point(BOOL success, void *)
 {
 	if (success)
 	{
+		if (!gSavedSettings.getBOOL("LiruContinueFlyingOnUnsit"))
 		gAgent.setFlying(FALSE);
 		gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
 

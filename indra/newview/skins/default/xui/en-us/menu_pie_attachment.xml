@@ -12,8 +12,8 @@
 		<on_enable function="Object.EnableTouch" userdata="Touch" name="EnableTouch"/>
 	</menu_item_call>
 	<menu_item_call enabled="true" label="Stand Up" name="Stand Up">
-		<on_click function="Self.StandUp" userdata="" />
-		<on_enable function="Self.EnableStandUp" />
+		<on_click function="Self.SitOrStand"/>
+		<on_enable function="Self.EnableSitOrStand" userdata="Sit Down,Stand Up"/>
 	</menu_item_call>
 	<menu_item_call enabled="false" label="Detach" mouse_opaque="true" name="Detach">
 		<on_click function="Attachment.Detach" />
