@@ -67,6 +67,7 @@
 #include "lluictrlfactory.h"
 #include "roles_constants.h"
 #include "lltrans.h"
+#include "llinventoryfunctions.h"
 
 #include "lfsimfeaturehandler.h"
 #include "hippogridmanager.h"
@@ -76,6 +77,22 @@
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
+
+static bool is_asset_exportable(const LLUUID& asset_id)
+{
+	LLViewerInventoryCategory::cat_array_t cats;
+	LLViewerInventoryItem::item_array_t items;
+	LLAssetIDMatches asset_id_matches(asset_id);
+	gInventory.collectDescendentsIf(LLUUID::null, cats, items, true, asset_id_matches, false);
+
+	for (int i = 0; i < items.count(); ++i)
+	{
+		const LLPermissions perms = items[i]->getPermissions();
+		//if (gAgentID == getCreator()) return true; // Include this check?
+		if (perms.getMaskBase() & PERM_EXPORT && perms.getMaskOwner() & PERM_EXPORT && perms.getMaskEveryone() & PERM_EXPORT) return true;
+	}
+	return false;
+}
 
 ///----------------------------------------------------------------------------
 /// Class llpanelpermissions
@@ -718,10 +735,22 @@ void LLPanelPermissions::refresh()
 		childSetEnabled("checkbox allow everyone copy", FALSE);
 	}
 
+	bool base_ok = base_mask_on & PERM_EXPORT;
+	bool owner_ok = owner_mask_on & PERM_EXPORT;
+	bool next_ok = (next_owner_mask_on & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED;
+	llwarns << "Perm check" << llendl;
+	llwarns << "supports_export = " << supports_export << llendl;
+	llwarns << "self_owned = " << self_owned << llendl;
+	llwarns << "mCreatorID = " << mCreatorID << llendl;
+	llwarns << "mOwnerID = " << mOwnerID << llendl;
+	llwarns << "base_mask_on = " << base_ok << llendl;
+	llwarns << "owner_mask_on = " << owner_ok << llendl;
+	llwarns << "next_owner_mask_on = " << next_ok << llendl;
 	// Is this user allowed to toggle export on this object?
 	if (supports_export && self_owned && mCreatorID == mOwnerID
 	&& (base_mask_on & PERM_EXPORT && owner_mask_on & PERM_EXPORT && (next_owner_mask_on & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED)) //Base and Owner must have EXPORT, Next Owner must be UNRESTRICTED
 	{
+		llwarns << "First stage ok, now checking textures" << llendl;
 		bool can_export = true;
 		LLInventoryObject::object_list_t objects;
 		objectp->getInventoryContents(objects);
@@ -731,19 +760,15 @@ void LLPanelPermissions::refresh()
 			const LLPermissions& perm = item->getPermissions();
 			can_export = perm.getMaskBase() & PERM_EXPORT && perm.getMaskEveryone() & PERM_EXPORT;
 		}
+		llwarns << "can export is " << can_export << llendl;
 		for (U8 i = 0; can_export && i < objectp->getNumTEs(); ++i) // Can the textures be exported?
 			if (LLTextureEntry* texture = objectp->getTE(i))
 			{
 				const LLUUID id = texture->getID();
 				if (id.isNull()) continue; // Don't permission-check null textures
-				else if (LLViewerInventoryItem* item = gInventory.getItem(id))
-				{
-					const LLPermissions& perm = item->getPermissions();
-					can_export = perm.getMaskBase() & PERM_EXPORT && (perm.getMaskOwner() & PERM_EXPORT || perm.getMaskEveryone() & PERM_EXPORT);
-				}
-				else // Texture not in inventory
-					can_export = false;
+				can_export = is_asset_exportable(id);
 			}
+		llwarns << "final can export is " << can_export << llendl;
 		childSetEnabled("checkbox allow export", can_export);
 	}
 	else
