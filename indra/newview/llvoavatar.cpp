@@ -3252,7 +3252,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 					line.replace(index, 2, firstnameText);
 				while ((index = line.find("%l")) != std::string::npos)
 				{
-					llinfos << "'" <<  line.substr(index) << "'" <<  llendl;
+					//llinfos << "'" <<  line.substr(index) << "'" <<  llendl;
 					if(lastnameText.empty() && line[index+2] == ' ')	//Entire displayname string crammed into firstname
 						line.replace(index, 3, "");						//so eat the extra space.
 					else

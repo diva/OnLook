@@ -3743,6 +3743,7 @@ void LLPipeline::renderHighlights()
 //debug use
 U32 LLPipeline::sCurRenderPoolType = 0 ;
 
+extern void check_blend_funcs();
 void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 {
 	LLFastTimer t(FTM_RENDER_GEOMETRY);
@@ -3879,6 +3880,7 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 				for( S32 i = 0; i < poolp->getNumPasses(); i++ )
 				{
 					LLVertexBuffer::unbind();
+					if(gDebugGL)check_blend_funcs();
 					poolp->beginRenderPass(i);
 					for (iter2 = iter1; iter2 != mPools.end(); iter2++)
 					{
@@ -3887,10 +3889,10 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 						{
 							break;
 						}
-						
 						p->render(i);
 					}
 					poolp->endRenderPass(i);
+					if(gDebugGL)check_blend_funcs();
 					LLVertexBuffer::unbind();
 					if (gDebugGL)
 					{
@@ -7892,6 +7894,7 @@ void LLPipeline::renderDeferredLighting()
 				gGL.matrixMode(LLRender::MM_MODELVIEW);
 				gGL.popMatrix();
 			}
+			gGL.setSceneBlendType(LLRender::BT_ALPHA);
 		}
 
 		gGL.setColorMask(true, true);
