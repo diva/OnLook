@@ -2627,34 +2627,36 @@ void LLVOAvatarSelf::addLocalTextureStats( ETextureIndex type, LLViewerFetchedTe
 	// not restore this without some more targetted fix for the local
 	// textures failing to load issue.
 	//if (!covered_by_baked)
-	if (imagep->getID() != IMG_DEFAULT_AVATAR)
 	{
-		imagep->setNoDelete();
-		if (imagep->getDiscardLevel() != 0)
+		if (imagep->getID() != IMG_DEFAULT_AVATAR)
 		{
-			F32 desired_pixels;
-			desired_pixels = llmin(mPixelArea, (F32)getTexImageArea());
-
-			// DRANO what priority should wearable-based textures have?
-			if (isUsingLocalAppearance())
+			imagep->setNoDelete();
+			if (imagep->getDiscardLevel() != 0)
 			{
-				imagep->setBoostLevel(getAvatarBoostLevel());
-				imagep->setAdditionalDecodePriority(SELF_ADDITIONAL_PRI) ;
-			}
-			imagep->resetTextureStats();
-			imagep->setMaxVirtualSizeResetInterval(MAX_TEXTURE_VIRTURE_SIZE_RESET_INTERVAL);
-			imagep->addTextureStats( desired_pixels / texel_area_ratio );
-			imagep->forceUpdateBindStats() ;
-			if (imagep->getDiscardLevel() < 0)
-			{
-				mHasGrey = TRUE; // for statistics gathering
+				F32 desired_pixels;
+				desired_pixels = llmin(mPixelArea, (F32)getTexImageArea());
+	
+				// DRANO what priority should wearable-based textures have?
+				if (isUsingLocalAppearance())
+				{
+					imagep->setBoostLevel(getAvatarBoostLevel());
+					imagep->setAdditionalDecodePriority(SELF_ADDITIONAL_PRI) ;
+				}
+				imagep->resetTextureStats();
+				imagep->setMaxVirtualSizeResetInterval(MAX_TEXTURE_VIRTURE_SIZE_RESET_INTERVAL);
+				imagep->addTextureStats( desired_pixels / texel_area_ratio );
+				imagep->forceUpdateBindStats() ;
+				if (imagep->getDiscardLevel() < 0)
+				{
+					mHasGrey = TRUE; // for statistics gathering
+				}
 			}
 		}
-	}
-	else
-	{
-		// texture asset is missing
-		mHasGrey = TRUE; // for statistics gathering
+		else
+		{
+			// texture asset is missing
+			mHasGrey = TRUE; // for statistics gathering
+		}
 	}
 }
 
