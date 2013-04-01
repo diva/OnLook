@@ -233,8 +233,11 @@ void LLPrefsIMImpl::apply()
 	else
 	{
 		const std::string log_path = childGetText("log_path_string");
-		gSavedPerAccountSettings.setString("InstantMessageLogPathAnyAccount", log_path);
-		gDirUtilp->setChatLogsDir(log_path);
+		if (!log_path.empty())
+		{
+			gSavedSettings.setString("InstantMessageLogPathAnyAccount", log_path);
+			gDirUtilp->setChatLogsDir(log_path);
+		}
 	}
 }
 
