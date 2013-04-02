@@ -13096,6 +13096,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>DisableClickSitOtherOwner</key>
+    <map>
+      <key>Comment</key>
+      <string>Never sit by clicking a prim that isn't owned by you</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>PlayIMSound</key>
     <map>
       <key>Comment</key>

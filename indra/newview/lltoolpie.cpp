@@ -213,9 +213,17 @@ BOOL LLToolPie::handleLeftClickPick()
 			break;
 		case CLICK_ACTION_SIT:
 			{
-				if (!gSavedSettings.getBOOL("DisableClickSit"))
 				if (isAgentAvatarValid() && !gAgentAvatarp->isSitting()) // agent not already sitting
 				{
+					bool disable_click_sit = gSavedSettings.getBOOL("DisableClickSit");
+					if (!disable_click_sit)
+					{
+						if (gSavedSettings.getBOOL("DisableClickSitOtherOwner"))
+						{
+							disable_click_sit = !object->permYouOwner();
+						}
+					}
+					if (disable_click_sit) return true;
 					handle_object_sit_or_stand();
 					// put focus in world when sitting on an object
 					gFocusMgr.setKeyboardFocus(NULL);

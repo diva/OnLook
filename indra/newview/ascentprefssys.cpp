@@ -80,6 +80,9 @@ LLPrefsAscentSys::LLPrefsAscentSys()
     childSetCommitCallback("AscentCmdLineTP2", onCommitCmdLine, this);
     childSetCommitCallback("SinguCmdLineAway", onCommitCmdLine, this);
 
+	//Security ----------------------------------------------------------------------------
+	childSetCommitCallback("disable_click_sit_check", onCommitCheckBox, this);
+
 	//Build -------------------------------------------------------------------------------
 	childSetCommitCallback("next_owner_copy", onCommitCheckBox, this);
 	childSetEnabled("next_owner_transfer", gSavedSettings.getBOOL("NextOwnerCopy"));
@@ -129,59 +132,57 @@ LLPrefsAscentSys::~LLPrefsAscentSys()
 //static
 void LLPrefsAscentSys::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 {
-    LLPrefsAscentSys* self = (LLPrefsAscentSys*)user_data;	
+	LLPrefsAscentSys* self = static_cast<LLPrefsAscentSys*>(user_data);
     
 //    llinfos << "Change to " << ctrl->getControlName()  << " aka " << ctrl->getName() << llendl;
-    
-    if (ctrl->getName() == "speed_rez_check")
-    {
-        bool enabled = self->childGetValue("speed_rez_check").asBoolean();
-        self->childSetEnabled("speed_rez_interval", enabled);
-        self->childSetEnabled("speed_rez_seconds", enabled);
-    }
-    else if (ctrl->getName() == "double_click_teleport_check")
-    {
-        bool enabled = self->childGetValue("double_click_teleport_check").asBoolean();
-        self->childSetEnabled("center_after_teleport_check", enabled);
-        self->childSetEnabled("offset_teleport_check", enabled);
-    }
-    else if (ctrl->getName() == "system_folder_check")
-    {
-        bool enabled = self->childGetValue("system_folder_check").asBoolean();
-        self->childSetEnabled("temp_in_system_check", enabled);
-    }
-    else if (ctrl->getName() == "enable_clouds")
-    {
-        bool enabled = self->childGetValue("enable_clouds").asBoolean();
-        self->childSetEnabled("enable_classic_clouds", enabled);
-    }
-    else if (ctrl->getName() == "power_user_check")
-    {
-        bool enabled = self->childGetValue("power_user_check").asBoolean();
-        self->childSetEnabled("power_user_confirm_check", enabled);
-        self->childSetValue("power_user_confirm_check", false);
-    }
-    else if (ctrl->getName() == "power_user_confirm_check")
-    {
-        bool enabled = self->childGetValue("power_user_confirm_check").asBoolean();
 
-        gSavedSettings.setBOOL("AscentPowerfulWizard", enabled);
-
-        if (enabled)
-        {
-            LLVector3d lpos_global = gAgent.getPositionGlobal();
-            gAudiop->triggerSound(LLUUID("58a38e89-44c6-c52b-deb8-9f1ddc527319"), gAgent.getID(), 1.0f, LLAudioEngine::AUDIO_TYPE_UI, lpos_global);
-            LLChat chat;
-            chat.mSourceType = CHAT_SOURCE_SYSTEM;
-            chat.mText = LLTrans::getString("PowerUser1") + "\n" + LLTrans::getString("PowerUser2") + "\n" + LLTrans::getString("Unlocked:") + "\n" + LLTrans::getString("PowerUser3") + "\n- " + LLTrans::getString("RightClick") + " > " + LLTrans::getString("PowerUser4") + "\n- " + LLTrans::getString("RightClick") + " > " + LLTrans::getString("PowerUser5");
-            LLFloaterChat::addChat(chat);
-        }
-    }
-	else if (ctrl->getName() == "next_owner_copy")
+	const std::string name = ctrl->getName();
+	bool enabled = ctrl->getValue().asBoolean();
+	if (name == "speed_rez_check")
 	{
-		bool copy = gSavedSettings.getBOOL("NextOwnerCopy");
-		if (!copy)	gSavedSettings.setBOOL("NextOwnerTransfer", true);
-        self->childSetEnabled("next_owner_transfer", copy);
+		self->childSetEnabled("speed_rez_interval", enabled);
+		self->childSetEnabled("speed_rez_seconds", enabled);
+	}
+	else if (name == "double_click_teleport_check")
+	{
+		self->childSetEnabled("center_after_teleport_check", enabled);
+		self->childSetEnabled("offset_teleport_check", enabled);
+	}
+	else if (name == "system_folder_check")
+	{
+		self->childSetEnabled("temp_in_system_check", enabled);
+	}
+	else if (name == "enable_clouds")
+	{
+		self->childSetEnabled("enable_classic_clouds", enabled);
+	}
+	else if (name == "power_user_check")
+	{
+		self->childSetEnabled("power_user_confirm_check", enabled);
+		self->childSetValue("power_user_confirm_check", false);
+	}
+	else if (name == "power_user_confirm_check")
+	{
+		gSavedSettings.setBOOL("AscentPowerfulWizard", enabled);
+
+		if (enabled)
+		{
+			LLVector3d lpos_global = gAgent.getPositionGlobal();
+			gAudiop->triggerSound(LLUUID("58a38e89-44c6-c52b-deb8-9f1ddc527319"), gAgent.getID(), 1.0f, LLAudioEngine::AUDIO_TYPE_UI, lpos_global);
+			LLChat chat;
+			chat.mSourceType = CHAT_SOURCE_SYSTEM;
+			chat.mText = LLTrans::getString("PowerUser1") + "\n" + LLTrans::getString("PowerUser2") + "\n" + LLTrans::getString("Unlocked:") + "\n" + LLTrans::getString("PowerUser3") + "\n- " + LLTrans::getString("RightClick") + " > " + LLTrans::getString("PowerUser4") + "\n- " + LLTrans::getString("RightClick") + " > " + LLTrans::getString("PowerUser5");
+			LLFloaterChat::addChat(chat);
+		}
+	}
+	else if (name == "disable_click_sit_check")
+	{
+		self->childSetEnabled("disable_click_sit_own_check", !enabled);
+	}
+	else if (name == "next_owner_copy")
+	{
+		if (!enabled) gSavedSettings.setBOOL("NextOwnerTransfer", true);
+		self->childSetEnabled("next_owner_transfer", enabled);
 	}
 }
 
@@ -313,6 +314,7 @@ void LLPrefsAscentSys::refreshValues()
 	mDetachBridge				= gSavedSettings.getBOOL("SGDetachBridge");
     mRevokePermsOnStandUp		= gSavedSettings.getBOOL("RevokePermsOnStandUp");
     mDisableClickSit			= gSavedSettings.getBOOL("DisableClickSit");
+	mDisableClickSitOtherOwner	= gSavedSettings.getBOOL("DisableClickSitOtherOwner");
     mDisplayScriptJumps			= gSavedSettings.getBOOL("AscentDisplayTotalScriptJumps");
     mNumScriptDiff              = gSavedSettings.getF32("Ascentnumscriptdiff");
 
@@ -463,6 +465,7 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("SGDetachBridge",    			mDetachBridge);
     gSavedSettings.setBOOL("RevokePermsOnStandUp",          mRevokePermsOnStandUp);
     gSavedSettings.setBOOL("DisableClickSit",               mDisableClickSit);
+	gSavedSettings.setBOOL("DisableClickSitOtherOwner",     mDisableClickSitOtherOwner);
     gSavedSettings.setBOOL("AscentDisplayTotalScriptJumps", mDisplayScriptJumps);
     gSavedSettings.setF32("Ascentnumscriptdiff",            mNumScriptDiff);
 
