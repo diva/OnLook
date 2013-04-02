@@ -140,7 +140,7 @@ BOOL LLPanelPermissions::postBuild()
 
 	childSetCommitCallback("checkbox allow everyone copy",LLPanelPermissions::onCommitEveryoneCopy,this);
 
-	getChild<LLUICtrl>("checkbox allow export")->setCommitCallback(boost::bind(&LLPanelPermissions::onCommitExport, this));
+	getChild<LLUICtrl>("checkbox allow export")->setCommitCallback(boost::bind(&LLPanelPermissions::onCommitExport, this, _2));
 
 	childSetCommitCallback("checkbox for sale",LLPanelPermissions::onCommitSaleInfo,this);
 
@@ -1180,9 +1180,9 @@ void LLPanelPermissions::onCommitEveryoneCopy(LLUICtrl *ctrl, void *data)
 	onCommitPerm(ctrl, data, PERM_EVERYONE, PERM_COPY);
 }
 
-void LLPanelPermissions::onCommitExport()
+void LLPanelPermissions::onCommitExport(const LLSD& param)
 {
-	LLSelectMgr::getInstance()->selectionSetObjectPermissions(PERM_EVERYONE, childGetValue("checkbox allow export"), PERM_EXPORT);
+	LLSelectMgr::getInstance()->selectionSetObjectPermissions(PERM_EVERYONE, param, PERM_EXPORT);
 }
 
 // static
