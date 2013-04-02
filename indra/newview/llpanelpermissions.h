@@ -57,6 +57,7 @@ public:
 	virtual ~LLPanelPermissions();
 
 	virtual	BOOL	postBuild();
+	virtual void	handleVisibilityChange(BOOL new_visibility);
 
 	// MANIPULATORS
 	void refresh();							// refresh all labels as needed

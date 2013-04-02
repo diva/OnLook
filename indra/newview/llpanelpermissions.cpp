@@ -168,6 +168,14 @@ LLPanelPermissions::~LLPanelPermissions()
 	// base class will take care of everything
 }
 
+// virtual
+void LLPanelPermissions::handleVisibilityChange(BOOL new_visibility)
+{
+	llwarns << "Hey, does this warning show whenever you switch to this tab?" << llendl; // Find out if the addition of this function is actually worthwhile.
+	if (new_visibility)
+		refresh();
+	LLPanel::handleVisibilityChange(new_visibility);
+}
 
 void LLPanelPermissions::refresh()
 {
