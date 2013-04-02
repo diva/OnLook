@@ -756,18 +756,9 @@ void LLPanelPermissions::refresh()
 	bool base_ok = base_mask_on & PERM_EXPORT;
 	bool owner_ok = owner_mask_on & PERM_EXPORT;
 	bool next_ok = (next_owner_mask_on & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED;
-	llwarns << "Perm check" << llendl;
-	llwarns << "supports_export = " << supports_export << llendl;
-	llwarns << "self_owned = " << self_owned << llendl;
-	llwarns << "mCreatorID = " << mCreatorID << llendl;
-	llwarns << "mOwnerID = " << mOwnerID << llendl;
-	llwarns << "base_mask_on = " << base_ok << llendl;
-	llwarns << "owner_mask_on = " << owner_ok << llendl;
-	llwarns << "next_owner_mask_on = " << next_ok << llendl;
 	// Is this user allowed to toggle export on this object?
 	if (supports_export && self_owned && mCreatorID == mOwnerID && can_set_export(base_mask_on, owner_mask_on, next_owner_mask_on))
 	{
-		llwarns << "First stage ok, now checking contents" << llendl;
 		bool can_export = true;
 		LLInventoryObject::object_list_t objects;
 		objectp->getInventoryContents(objects);
@@ -776,11 +767,9 @@ void LLPanelPermissions::refresh()
 			LLViewerInventoryItem* item = static_cast<LLViewerInventoryItem*>(i->get()); //getInventoryContents() filters out categories, static_cast.
 			can_export = perms_allow_export(item->getPermissions());
 		}
-		llwarns << "can export is " << can_export << llendl;
 		for (U8 i = 0; can_export && i < objectp->getNumTEs(); ++i) // Can the textures be exported?
 			if (LLTextureEntry* texture = objectp->getTE(i))
 				can_export = is_asset_exportable(texture->getID());
-		llwarns << "final can export is " << can_export << llendl;
 		childSetEnabled("checkbox allow export", can_export);
 	}
 	else
