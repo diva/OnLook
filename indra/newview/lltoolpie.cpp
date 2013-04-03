@@ -1142,11 +1142,11 @@ BOOL LLToolPie::handleRightClickPick()
 				 (!gRlvHandler.hasBehaviour(RLV_BHVR_FARTOUCH)) )
 			{
 // [/RLVa:KB]
-				if (is_other_attachment)
+				/*if (is_other_attachment)
 				{
-					gPieAttachment->show(x, y, true);
+					gPieAttachmentOther->show(x, y, true);
 				}
-				else
+				else*/
 				{
 					gPieAvatar->show(x, y, true);
 				}
