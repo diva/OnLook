@@ -3758,7 +3758,7 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 		}
 
 		root_pos = gAgent.getPosGlobalFromAgent(getRenderPosition());
-		root_pos.mdV[VZ] += getVisualParamWeight(11001);
+		root_pos.mdV[VZ] += getVisualParamWeight(AVATAR_HOVER);
 
 
 		resolveHeightGlobal(root_pos, ground_under_pelvis, normal);
