@@ -86,8 +86,8 @@ LLToolPie::LLToolPie()
 	mMouseSteerY(-1),
 	mBlockClickToWalk(false),
 	mClickAction(0),
-	mClickActionBuyEnabled( gSavedSettings.getBOOL("ClickActionBuyEnabled") ),
-	mClickActionPayEnabled( gSavedSettings.getBOOL("ClickActionPayEnabled") )
+	mClickActionBuyEnabled("ClickActionBuyEnabled"),
+	mClickActionPayEnabled("ClickActionPayEnabled")
 {
 }
 

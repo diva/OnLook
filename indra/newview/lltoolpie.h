@@ -112,8 +112,8 @@ private:
 	LLPointer<LLViewerObject> mClickActionObject;
 	U8					mClickAction;
 	LLSafeHandle<LLObjectSelection> mLeftClickSelection;
-	BOOL				mClickActionBuyEnabled;
-	BOOL				mClickActionPayEnabled;
+	const LLCachedControl<bool> mClickActionBuyEnabled;
+	const LLCachedControl<bool> mClickActionPayEnabled;
 };
 
 #endif
