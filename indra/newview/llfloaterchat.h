@@ -63,6 +63,7 @@ public:
 	virtual void draw();
 	virtual BOOL postBuild();
 	virtual void onClose(bool app_quitting);
+	virtual void onFocusReceived();
 	virtual void handleVisibilityChange(BOOL cur_visibility);
 	virtual void setMinimized(BOOL);
 	void updateConsoleVisibility();
