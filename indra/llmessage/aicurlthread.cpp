@@ -264,9 +264,15 @@ void Command::reset(void)
 //
 // If at this point addRequest is called again, then it is detected that the ThreadSafeBufferedCurlEasyRequest is active.
 
+struct command_queue_st {
+  std::deque<Command> commands;		// The commands
+  size_t size;						// Number of add commands in the queue minus the number of remove commands.
+};
+
 // Multi-threaded queue for passing Command objects from the main-thread to the curl-thread.
-AIThreadSafeSimpleDC<std::deque<Command> > command_queue;
-typedef AIAccess<std::deque<Command> > command_queue_wat;
+AIThreadSafeSimpleDC<command_queue_st> command_queue;			// Fills 'size' with zero, because it's a global.
+typedef AIAccess<command_queue_st> command_queue_wat;
+typedef AIAccess<command_queue_st> command_queue_rat;
 
 AIThreadSafeDC<Command> command_being_processed;
 typedef AIWriteAccess<Command> command_being_processed_wat;
@@ -1289,7 +1295,7 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 	// Access command_queue, and move command to command_being_processed.
 	{
 	  command_queue_wat command_queue_w(command_queue);
-	  if (command_queue_w->empty())
+	  if (command_queue_w->commands.empty())
 	  {
 		mWakeUpFlagMutex.lock();
 		mWakeUpFlag = false;
@@ -1297,8 +1303,22 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 		break;
 	  }
 	  // Move the next command from the queue into command_being_processed.
-	  *command_being_processed_wat(command_being_processed) = command_queue_w->front();
-	  command_queue_w->pop_front();
+	  command_st command;
+	  {
+		command_being_processed_wat command_being_processed_w(command_being_processed);
+		*command_being_processed_w = command_queue_w->commands.front();
+		command = command_being_processed_w->command();
+	  }
+	  // Update the size: the number netto number of pending requests in the command queue.
+	  command_queue_w->commands.pop_front();
+	  if (command == cmd_add)
+	  {
+		command_queue_w->size--;
+	  }
+	  else if (command == cmd_remove)
+	  {
+		command_queue_w->size++;
+	  }
 	}
 	// Access command_being_processed only.
 	{
@@ -1929,7 +1949,8 @@ void clearCommandQueue(void)
 {
 	// Clear the command queue now in order to avoid the global deinitialization order fiasco.
 	command_queue_wat command_queue_w(command_queue);
-	command_queue_w->clear();
+	command_queue_w->commands.clear();
+	command_queue_w->size = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -2331,7 +2352,7 @@ void AICurlEasyRequest::addRequest(void)
 
 	// Find the last command added.
 	command_st cmd = cmd_none;
-	for (std::deque<Command>::iterator iter = command_queue_w->begin(); iter != command_queue_w->end(); ++iter)
+	for (std::deque<Command>::iterator iter = command_queue_w->commands.begin(); iter != command_queue_w->commands.end(); ++iter)
 	{
 	  if (*iter == *this)
 	  {
@@ -2357,7 +2378,8 @@ void AICurlEasyRequest::addRequest(void)
 	}
 #endif
 	// Add a command to add the new request to the multi session to the command queue.
-	command_queue_w->push_back(Command(*this, cmd_add));
+	command_queue_w->commands.push_back(Command(*this, cmd_add));
+	command_queue_w->size++;
 	AICurlEasyRequest_wat(*get())->add_queued();
   }
   // Something was added to the queue, wake up the thread to get it.
@@ -2381,7 +2403,7 @@ void AICurlEasyRequest::removeRequest(void)
 
 	// Find the last command added.
 	command_st cmd = cmd_none;
-	for (std::deque<Command>::iterator iter = command_queue_w->begin(); iter != command_queue_w->end(); ++iter)
+	for (std::deque<Command>::iterator iter = command_queue_w->commands.begin(); iter != command_queue_w->commands.end(); ++iter)
 	{
 	  if (*iter == *this)
 	  {
@@ -2418,7 +2440,8 @@ void AICurlEasyRequest::removeRequest(void)
 	}
 #endif
 	// Add a command to remove this request from the multi session to the command queue.
-	command_queue_w->push_back(Command(*this, cmd_remove));
+	command_queue_w->commands.push_back(Command(*this, cmd_remove));
+	command_queue_w->size--;
 	// Suppress warning that would otherwise happen if the callbacks are revoked before the curl thread removed the request.
 	AICurlEasyRequest_wat(*get())->remove_queued();
   }
