@@ -37,6 +37,7 @@
 namespace AICurlPrivate {
 
 PerHostRequestQueue::threadsafe_instance_map_type PerHostRequestQueue::sInstanceMap;
+LLAtomicS32 PerHostRequestQueue::sTotalQueued;
 U32 curl_concurrent_connections_per_host;
 
 //static
@@ -72,7 +73,7 @@ void PerHostRequestQueue::release(PerHostRequestQueuePtr& instance)
 	  return;
 	}
 	// The reference in the map is the last one; that means there can't be any curl easy requests queued for this host.
-	llassert(PerHostRequestQueue_wat(*instance)->mQueuedRequests.empty());
+	llassert(PerHostRequestQueue_rat(*instance)->mQueuedRequests.empty());
 	// Find the host and erase it from the map.
 	iterator const end = instance_map_w->end();
 	for(iterator iter = instance_map_w->begin(); iter != end; ++iter)
@@ -111,6 +112,7 @@ void PerHostRequestQueue::removed_from_multi_handle(void)
 void PerHostRequestQueue::queue(AICurlEasyRequest const& easy_request)
 {
   mQueuedRequests.push_back(easy_request.get_ptr());
+  sTotalQueued++;
 }
 
 bool PerHostRequestQueue::cancel(AICurlEasyRequest const& easy_request)
@@ -134,6 +136,8 @@ bool PerHostRequestQueue::cancel(AICurlEasyRequest const& easy_request)
 	prev = cur;
   }
   mQueuedRequests.pop_back();		// if this is safe.
+  --sTotalQueued;
+  llassert(sTotalQueued >= 0);
   return true;
 }
 
@@ -143,6 +147,8 @@ void PerHostRequestQueue::add_queued_to(curlthread::MultiHandle* multi_handle)
   {
 	multi_handle->add_easy_request(mQueuedRequests.front());
 	mQueuedRequests.pop_front();
+	--sTotalQueued;
+	llassert(sTotalQueued >= 0);
   }
 }
 
@@ -153,7 +159,11 @@ void PerHostRequestQueue::purge(void)
   for (iterator host = instance_map_w->begin(); host != instance_map_w->end(); ++host)
   {
 	Dout(dc::curl, "Purging queue of host \"" << host->first << "\".");
-	PerHostRequestQueue_wat(*host->second)->mQueuedRequests.clear();
+	PerHostRequestQueue_wat per_host_w(*host->second);
+	size_t s = per_host_w->mQueuedRequests.size();
+	per_host_w->mQueuedRequests.clear();
+	sTotalQueued -= s;
+	llassert(sTotalQueued >= 0);
   }
 }
 

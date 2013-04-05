@@ -100,6 +100,8 @@ class PerHostRequestQueue {
 	int mAdded;									// Number of active easy handles with this host.
 	queued_request_type mQueuedRequests;		// Waiting (throttled) requests.
 
+	static LLAtomicS32 sTotalQueued;			// The sum of mQueuedRequests.size() of all PerHostRequestQueue objects together.
+
   public:
 	void added_to_multi_handle(void);					// Called when an easy handle for this host has been added to the multi handle.
 	void removed_from_multi_handle(void);				// Called when an easy handle for this host is removed again from the multi handle.
@@ -110,6 +112,10 @@ class PerHostRequestQueue {
 
     void add_queued_to(curlthread::MultiHandle* mh);	// Add queued easy handle (if any) to the multi handle. The request is removed from the queue,
 														// followed by either a call to added_to_multi_handle() or to queue() to add it back.
+
+	S32 host_queued_plus_added_size(void) const { return mQueuedRequests.size() + mAdded; }
+	static S32 total_queued_size(void) { return sTotalQueued; }
+
   private:
 	// Disallow copying.
 	PerHostRequestQueue(PerHostRequestQueue const&) { }
