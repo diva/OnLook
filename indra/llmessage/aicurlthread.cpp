@@ -1581,6 +1581,8 @@ void AICurlThread::run(void)
 //-----------------------------------------------------------------------------
 // MultiHandle
 
+LLAtomicU32 MultiHandle::sTotalAdded;
+
 MultiHandle::MultiHandle(void) : mTimeout(-1), mReadPollSet(NULL), mWritePollSet(NULL)
 {
   mReadPollSet = new PollSet;
@@ -1717,6 +1719,8 @@ void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
   {												// ... to here.
 	std::pair<addedEasyRequests_type::iterator, bool> res = mAddedEasyRequests.insert(easy_request);
 	llassert(res.second);						// May not have been added before.
+	sTotalAdded++;
+	llassert(sTotalAdded == mAddedEasyRequests.size());
 	Dout(dc::curl, "MultiHandle::add_easy_request: Added AICurlEasyRequest " << (void*)easy_request.get_ptr().get() <<
 		"; now processing " << mAddedEasyRequests.size() << " easy handles [running_handles = " << AICurlInterface::Stats::running_handles << "].");
 	return;
@@ -1769,6 +1773,8 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
   ThreadSafeBufferedCurlEasyRequest* lockobj = iter->get_ptr().get();
 #endif
   mAddedEasyRequests.erase(iter);
+  --sTotalAdded;
+  llassert(sTotalAdded == mAddedEasyRequests.size());
 #if CWDEBUG
   Dout(dc::curl, "MultiHandle::remove_easy_request: Removed AICurlEasyRequest " << (void*)lockobj <<
 	  "; now processing " << mAddedEasyRequests.size() << " easy handles [running_handles = " << AICurlInterface::Stats::running_handles << "].");

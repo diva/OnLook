@@ -75,6 +75,7 @@ class MultiHandle : public CurlMultiHandle
 	typedef std::set<AICurlEasyRequest, AICurlEasyRequestCompare> addedEasyRequests_type;
 	addedEasyRequests_type mAddedEasyRequests;	// All easy requests currently added to the multi handle.
 	long mTimeout;								// The last timeout in ms as set by the callback CURLMOPT_TIMERFUNCTION.
+	static LLAtomicU32 sTotalAdded;				// The (sum of the) size of mAddedEasyRequests (of every MultiHandle, but there is only one).
 
   private:
 	// Store result and trigger events for easy request.
@@ -95,6 +96,9 @@ class MultiHandle : public CurlMultiHandle
 
 	// Called from the main loop every time select() timed out.
 	void handle_stalls(void);
+
+	// Return the total number of added curl requests.
+	static U32 total_added_size(void) { return sTotalAdded; }
 
   public:
 	//-----------------------------------------------------------------------------
