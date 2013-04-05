@@ -172,17 +172,6 @@
     <integer>1</integer>
   </map>
 	
-  <key>HTTPRequestRate</key>
-  <map>
-    <key>Comment</key>
-    <string>Number of HTTP texture requests fired per second.</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>U32</string>
-    <key>Value</key>
-    <integer>30</integer>
-  </map>
   <key>HTTPMaxRequests</key>
   <map>
     <key>Comment</key>

@@ -495,30 +495,6 @@ public:
 
 SGHostBlackList::blacklist_t SGHostBlackList::blacklist;
 
-#if 0
-//call every time a connection is opened
-//return true if connecting allowed
-static bool sgConnectionThrottle() {
-	const U32 THROTTLE_TIMESTEPS_PER_SECOND = 10;
-	static const LLCachedControl<U32> max_connections_per_second("HTTPRequestRate", 30);
-	U32 max_connections = max_connections_per_second/THROTTLE_TIMESTEPS_PER_SECOND;
-	const U32 timestep = USEC_PER_SEC/THROTTLE_TIMESTEPS_PER_SECOND;
-	U64 now = LLTimer::getTotalTime();
-	std::deque<U64> timestamps;
-	while(!timestamps.empty() && (timestamps[0]<=now-timestep)) {
-		timestamps.pop_front();
-	}
-	if(timestamps.size() < max_connections) {
-		//llinfos << "throttle pass" << llendl;
-		timestamps.push_back(now);
-		return true;
-	} else {
-		//llinfos << "throttle fail" << llendl;
-		return false;
-	}
-}
-#endif
-
 //////////////////////////////////////////////////////////////////////////////
 
 // Cross-thread messaging for asset metrics.
