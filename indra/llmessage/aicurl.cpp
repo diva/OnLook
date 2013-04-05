@@ -298,6 +298,7 @@ LLAtomicU32 Stats::easy_init_errors;
 LLAtomicU32 Stats::easy_cleanup_calls;
 LLAtomicU32 Stats::multi_calls;
 LLAtomicU32 Stats::multi_errors;
+LLAtomicU32 Stats::running_handles;
 LLAtomicU32 Stats::AICurlEasyRequest_count;
 LLAtomicU32 Stats::AICurlEasyRequestStateMachine_count;
 LLAtomicU32 Stats::BufferedCurlEasyRequest_count;
@@ -458,6 +459,12 @@ void setCAPath(std::string const& path)
 {
   CertificateAuthority_wat CertificateAuthority_w(gCertificateAuthority);
   CertificateAuthority_w->path = path;
+}
+
+// THREAD-SAFE
+U32 getNumHTTPRunning(void)
+{
+  return Stats::running_handles;
 }
 
 //static

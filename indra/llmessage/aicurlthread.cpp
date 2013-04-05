@@ -1653,6 +1653,7 @@ CURLMcode MultiHandle::socket_action(curl_socket_t sockfd, int ev_bitmask)
   }
   while(res == CURLM_CALL_MULTI_PERFORM);
   llassert(mAddedEasyRequests.size() >= (size_t)running_handles);
+  AICurlInterface::Stats::running_handles = running_handles;
   return res;
 }
 
@@ -1696,7 +1697,8 @@ void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
   {												// ... to here.
 	std::pair<addedEasyRequests_type::iterator, bool> res = mAddedEasyRequests.insert(easy_request);
 	llassert(res.second);						// May not have been added before.
-	Dout(dc::curl, "MultiHandle::add_easy_request: Added AICurlEasyRequest " << (void*)easy_request.get_ptr().get() << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
+	Dout(dc::curl, "MultiHandle::add_easy_request: Added AICurlEasyRequest " << (void*)easy_request.get_ptr().get() <<
+		"; now processing " << mAddedEasyRequests.size() << " easy handles [running_handles = " << AICurlInterface::Stats::running_handles << "].");
 	return;
   }
   // The request could not be added, we have to queue it.
@@ -1748,7 +1750,8 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
 #endif
   mAddedEasyRequests.erase(iter);
 #if CWDEBUG
-  Dout(dc::curl, "MultiHandle::remove_easy_request: Removed AICurlEasyRequest " << (void*)lockobj << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
+  Dout(dc::curl, "MultiHandle::remove_easy_request: Removed AICurlEasyRequest " << (void*)lockobj <<
+	  "; now processing " << mAddedEasyRequests.size() << " easy handles [running_handles = " << AICurlInterface::Stats::running_handles << "].");
 #endif
 
   // Attempt to add a queued request, if any.

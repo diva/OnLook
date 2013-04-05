@@ -64,6 +64,11 @@ LLTextureSizeView *gTextureCategoryView = NULL;
 //static
 std::set<LLViewerFetchedTexture*> LLTextureView::sDebugImages;
 
+// Forward declaration.
+namespace AICurlInterface {
+  U32 getNumHTTPRunning(void);
+} // namespace AICurlInterface
+
 ////////////////////////////////////////////////////////////////////////////
 
 static std::string title_string1a("Tex UUID Area  DDis(Req)  DecodePri(Fetch)     [download] pk/max");
@@ -601,7 +606,7 @@ void LLGLTexMemBar::draw()
 					LLLFSThread::sLocal->getPending(),
 					LLAppViewer::getImageDecodeThread()->getPending(),
 					LLImageRaw::sRawImageCount, LLImageRaw::sRawImageCachedCount,
-					LLAppViewer::getTextureFetch()->getNumHTTPRequests(),
+					AICurlInterface::getNumHTTPRunning(),
 					LLAppViewer::getImageDecodeThread()->getPending(), 
 					gTextureList.mCreateTextureList.size());
 
@@ -609,7 +614,13 @@ void LLGLTexMemBar::draw()
 									 text_color, LLFontGL::LEFT, LLFontGL::TOP);
 
 	left += LLFontGL::getFontMonospace()->getWidth(text);
+	// This bandwidth is averaged over roughly 10 seconds (in kbps) and therefore pretty inaccurate.
+	// Also, it only takes into account actual texture data (not headers etc). But all it is used for
+	// is for the color of some text in the texture console, so I guess it doesn't matter.
 	F32 bandwidth = LLAppViewer::getTextureFetch()->getTextureBandwidth();
+	// This is the maximum bandwidth allowed for curl transactions (of any type and averaged per second),
+	// that is actually used to limit the number of HTTP texture requests (and only those).
+	// Comparing that with 'bandwidth' is a bit like comparing apples and oranges, but again... who really cares.
 	F32 max_bandwidth = gSavedSettings.getF32("HTTPThrottleBandwidth");
 	color = bandwidth > max_bandwidth ? LLColor4::red : bandwidth > max_bandwidth*.75f ? LLColor4::yellow : text_color;
 	color[VALPHA] = text_color[VALPHA];

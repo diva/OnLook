@@ -1305,6 +1305,12 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				mLoaded = FALSE;
 				mGetStatus = 0;
 				mGetReason.clear();
+				// Note: comparing mFetcher->getTextureBandwidth() with throttle_bandwidth is a bit like
+				// comparing apples and oranges, but it's only debug output. The first is the averaged
+				// bandwidth used for the body of successfully downloaded textures, averaged over roughtly
+				// 10 seconds, in kbits/s. The latter is the limit of the actual http curl downloads,
+				// including header and failures for anything (not just textures), averaged over the last
+				// second, also in kbits/s.
 				static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
 				LL_DEBUGS("Texture") << "HTTP GET: " << mID << " Offset: " << mRequestedOffset
 									 << " Bytes: " << mRequestedSize
@@ -2257,15 +2263,6 @@ S32 LLTextureFetch::getNumRequests()
 	lockQueue() ;
 	S32 size = (S32)mRequestMap.size(); 
 	unlockQueue() ;
-
-	return size ;
-}
-
-S32 LLTextureFetch::getNumHTTPRequests() 
-{ 
-	mNetworkQueueMutex.lock() ;
-	S32 size = (S32)mHTTPTextureQueue.size(); 
-	mNetworkQueueMutex.unlock() ;
 
 	return size ;
 }

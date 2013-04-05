@@ -133,6 +133,7 @@ struct Stats {
   static LLAtomicU32 easy_cleanup_calls;
   static LLAtomicU32 multi_calls;
   static LLAtomicU32 multi_errors;
+  static LLAtomicU32 running_handles;
   static LLAtomicU32 AICurlEasyRequest_count;
   static LLAtomicU32 AICurlEasyRequestStateMachine_count;
   static LLAtomicU32 BufferedCurlEasyRequest_count;
@@ -184,6 +185,10 @@ void setCAFile(std::string const& file);
 // Not called from anywhere.
 // Can be used to set the path to the Certificate Authority file.
 void setCAPath(std::string const& file);
+
+// This used to be LLAppViewer::getTextureFetch()->getNumHTTPRequests().
+// Returns the number of active curl easy handles (that are actually attempting to download something).
+U32 getNumHTTPRunning(void);
 
 } // namespace AICurlInterface
 
