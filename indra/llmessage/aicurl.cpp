@@ -1091,56 +1091,6 @@ void CurlEasyRequest::applyDefaultOptions(void)
   );
 }
 
-// url must be of the form
-// (see http://www.ietf.org/rfc/rfc3986.txt Appendix A for definitions not given here):
-//
-// url			= sheme ":" hier-part [ "?" query ] [ "#" fragment ]
-// hier-part	= "//" authority path-abempty
-// authority     = [ userinfo "@" ] host [ ":" port ]
-// path-abempty  = *( "/" segment )
-//
-// That is, a hier-part of the form '/ path-absolute', '/ path-rootless' or
-// '/ path-empty' is NOT allowed here. This should be safe because we only
-// call this function for curl access, any file access would use APR.
-//
-// However, as a special exception, this function allows:
-//
-// url			= authority path-abempty
-//
-// without the 'sheme ":" "//"' parts.
-//
-// As follows from the ABNF (see RFC, Appendix A):
-// - authority is either terminated by a '/' or by the end of the string because
-//   neither userinfo, host nor port may contain a '/'.
-// - userinfo does not contain a '@', and if it exists, is always terminated by a '@'.
-// - port does not contain a ':', and if it exists is always prepended by a ':'.
-//
-// Only called by CurlEasyRequest::finalizeRequest.
-static std::string extract_canonical_hostname(std::string const& url)
-{
-  std::string::size_type pos;
-  std::string::size_type authority = 0;														// Default if there is no sheme.
-  if ((pos = url.find("://")) != url.npos && pos < url.find('/')) authority = pos + 3;		// Skip the "sheme://" if any, the second find is to avoid finding a "://" as part of path-abempty.
-  std::string::size_type host = authority;													// Default if there is no userinfo.
-  if ((pos = url.find('@', authority)) != url.npos) host = pos + 1;							// Skip the "userinfo@" if any.
-  authority = url.length() - 1;																// Default last character of host if there is no path-abempty.
-  if ((pos = url.find('/', host)) != url.npos) authority = pos - 1;							// Point to last character of host.
-  std::string::size_type len = url.find_last_not_of(":0123456789", authority) - host + 1;	// Skip trailing ":port", if any.
-  std::string hostname(url, host, len);
-#if APR_CHARSET_EBCDIC
-#error Not implemented
-#else
-  // Convert hostname to lowercase in a way that we compare two hostnames equal iff libcurl does.
-  for (std::string::iterator iter = hostname.begin(); iter != hostname.end(); ++iter)
-  {
-	int c = *iter;
-	if (c >= 'A' && c <= 'Z')
-	  *iter = c + ('a' - 'A');
-  }
-#endif
-  return hostname;
-}
-
 void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolicy const& policy, AICurlEasyRequestStateMachine* state_machine)
 {
   DoutCurlEntering("CurlEasyRequest::finalizeRequest(\"" << url << "\", " << policy.name() << ", " << (void*)state_machine << ")");
@@ -1164,7 +1114,7 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
   setopt(CURLOPT_HTTPHEADER, mHeaders);
   setoptString(CURLOPT_URL, url);
   llassert(!mPerHostPtr);
-  mLowercaseHostname = extract_canonical_hostname(url);
+  mLowercaseHostname = AIPerHostRequestQueue::extract_canonical_hostname(url);
   mTimeoutPolicy = &policy;
   state_machine->setTotalDelayTimeout(policy.getTotalDelay());
   // The following line is a bit tricky: we store a pointer to the object without increasing its reference count.
