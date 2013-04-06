@@ -490,7 +490,7 @@ void gl_draw_scaled_image_with_border(S32 x, S32 y, S32 width, S32 height, LLTex
 		pos[index].set(draw_center_rect.mRight, draw_center_rect.mBottom, 0.f);
 		index++;
 
-		uv[index].set(uv_center_rect.mLeft, uv_center_rect.mBottom);
+		uv[index] = LLVector2(uv_center_rect.mLeft, uv_center_rect.mBottom);
 		pos[index].set(draw_center_rect.mLeft, draw_center_rect.mBottom, 0.f);
 		index++;
 

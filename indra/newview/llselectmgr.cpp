@@ -937,6 +937,8 @@ LLObjectSelectionHandle LLSelectMgr::setHoverObject(LLViewerObject *objectp, S32
 
 	mHoverObjects->mPrimaryObject = objectp; 
 
+	LLViewerObject* primary_obj = objectp;
+
 	objectp = objectp->getRootEdit();
 
 	// is the requested object the same as the existing hover object root?
@@ -961,6 +963,8 @@ LLObjectSelectionHandle LLSelectMgr::setHoverObject(LLViewerObject *objectp, S32
 
 		requestObjectPropertiesFamily(objectp);
 	}
+
+	mHoverObjects->mPrimaryObject = primary_obj;
 
 	return mHoverObjects;
 }

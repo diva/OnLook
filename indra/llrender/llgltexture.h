@@ -140,7 +140,7 @@ public:
 	BOOL       getBoundRecently() const;
 	S32        getTextureMemory() const ;
 	LLGLenum   getPrimaryFormat() const;
-	BOOL       getIsAlphaMask() const ;
+	BOOL       getIsAlphaMask(const F32 max_rmse) const ;
 	LLTexUnit::eTextureType getTarget(void) const ;
 	BOOL       getMask(const LLVector2 &tc);
 	F32        getTimePassedSinceLastBound();
