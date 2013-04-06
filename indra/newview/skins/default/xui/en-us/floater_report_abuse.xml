@@ -125,7 +125,7 @@
     Fraud > Pyramid scheme or chain letter
     </combo_item><combo_item name="Fraud__US$" value="50">
     Fraud > US$
-    </combo_item><combo_item name="Ridiculous3" value="71">
+    </combo_item><combo_item name="Ridiculous3" value="100">
     Freud > User has taken an interest in their mother
     </combo_item><combo_item name="Harassment__Advert_farms___visual_spam" value="51">
     Harassment > Advert farms / visual spam
@@ -139,7 +139,7 @@
     Harassment > Solicting/inciting others to violate ToS
     </combo_item><combo_item name="Harassment__Verbal_abuse" value="56">
     Harassment > Verbal abuse
-    </combo_item><combo_item name="Ridiculous1" value="69">
+    </combo_item><combo_item name="Ridiculous1" value="100">
     Harassment > User keeps licking finger and touching me
     </combo_item><combo_item name="Indecency__Broadly_offensive_content_or_conduct" value="57">
     Indecency > Broadly offensive content or conduct
@@ -164,7 +164,7 @@
     Land > Encroachment > Particles
     </combo_item><combo_item name="Land__Encroachment__Trees_plants" value="65">
     Land > Encroachment > Trees/plants
-    </combo_item><combo_item name="Ridiculous2" value="70">
+    </combo_item><combo_item name="Ridiculous2" value="100">
     Land > Encroachment > User won't stay on their side of the car
     </combo_item><combo_item name="Wagering_gambling" value="67">
     Wagering/gambling

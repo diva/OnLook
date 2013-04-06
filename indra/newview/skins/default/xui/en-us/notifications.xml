@@ -4955,6 +4955,15 @@ Entering an accurate description helps us file and process bug reports.
 
   <notification
    icon="alertmodal.tga"
+   name="HelpReportNope"
+   type="alertmodal">
+Do not meddle in the affairs of wizards, for they are subtle and quick to anger. - J.R.R. Tolkien
+
+Please choose a legitimate category if you actually have something to report.
+  </notification>  
+
+  <notification
+   icon="alertmodal.tga"
    name="HelpReportAbuseContainsCopyright"
    type="alertmodal">
     Dear Resident,

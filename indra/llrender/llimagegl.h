@@ -142,7 +142,7 @@ public:
 	BOOL getHasGLTexture() const { return mTexName != 0; }
 	LLGLuint getTexName() const { return mTexName; }
 
-	BOOL getIsAlphaMask() const { return mIsMask; }
+	BOOL getIsAlphaMask(const F32 max_rmse) const { return mCanMask && (max_rmse < 0.f ? (bool)mIsMask : (mMaskRMSE <= max_rmse)); }
 
 	BOOL getIsResident(BOOL test_now = FALSE); // not const
 
@@ -192,7 +192,9 @@ private:
 	S8 mHasExplicitFormat; // If false (default), GL format is f(mComponents)
 	S8 mAutoGenMips;
 
+	BOOL mCanMask;
 	BOOL mIsMask;
+	F32  mMaskRMSE;
 	BOOL mNeedsAlphaAndPickMask;
 	S8   mAlphaStride ;
 	S8   mAlphaOffset ;

@@ -1587,6 +1587,9 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 
 	item = new LLMenuItemCheckGL("Automatic Alpha Masks (deferred)", menu_toggle_control, NULL, menu_check_control, (void*)"RenderAutoMaskAlphaDeferred");
 	menu->addChild(item);
+
+	item = new LLMenuItemCheckGL("Aggressive Alpha Masking", menu_toggle_control, NULL, menu_check_control, (void*)"SHUseRMSEAutoMask");
+	menu->addChild(item);
 	
 	item = new LLMenuItemCheckGL("Animate Textures", menu_toggle_control, NULL, menu_check_control, (void*)"AnimateTextures");
 	menu->addChild(item);
@@ -2296,8 +2299,12 @@ public:
 				for (S32 i = 0; i < img->getNumVolumes(); ++i)
 				{
 					LLVOVolume* volume = (*(img->getVolumeList()))[i];
-					if (volume && volume->isSculpted() && !volume->isMesh())
-						volume->notifyMeshLoaded();
+					if (volume && volume->isSculpted())
+					{
+						LLSculptParams *sculpt_params = (LLSculptParams *)volume->getParameterEntry(LLNetworkData::PARAMS_SCULPT);
+						if(sculpt_params->getSculptTexture() == id)
+							volume->notifyMeshLoaded();
+					}
 				}
 			}
 		}
@@ -2359,20 +2366,22 @@ class LLObjectReloadTextures : public view_listener_t
 		 iter != LLSelectMgr::getInstance()->getSelection()->valid_end(); iter++)
 		{
 			LLViewerObject* object = (*iter)->getObject();
+			object->markForUpdate(TRUE);
+
+			if(object->isSculpted() && !object->isMesh())
+			{
+				LLSculptParams *sculpt_params = (LLSculptParams *)object->getParameterEntry(LLNetworkData::PARAMS_SCULPT);
+				if(sculpt_params)
+				{
+					texture_list.addTexture(LLViewerTextureManager::getFetchedTexture(sculpt_params->getSculptTexture()));
+				}
+			}
 			
 			for (U8 i = 0; i < object->getNumTEs(); i++)
 			{
 				if((*iter)->isTESelected(i))
 				{
 					texture_list.addTexture(object->getTEImage(i));
-				}
-				if(object->isSculpted() && !object->isMesh())
-				{
-					LLSculptParams *sculpt_params = (LLSculptParams *)object->getParameterEntry(LLNetworkData::PARAMS_SCULPT);
-					if(sculpt_params)
-					{
-						texture_list.addTexture(LLViewerTextureManager::getFetchedTexture(sculpt_params->getSculptTexture()));
-					}
 				}
 			}
 		}
