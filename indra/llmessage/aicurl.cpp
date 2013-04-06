@@ -961,7 +961,7 @@ CurlEasyRequest::~CurlEasyRequest()
   revokeCallbacks();
   if (mPerHostPtr)
   {
-	 PerHostRequestQueue::release(mPerHostPtr);
+	 AIPerHostRequestQueue::release(mPerHostPtr);
   }
   // This wasn't freed yet if the request never finished.
   curl_slist_free_all(mHeaders);
@@ -1286,14 +1286,14 @@ void CurlEasyRequest::queued_for_removal(AICurlEasyRequest_wat& curl_easy_reques
 }
 #endif
 
-PerHostRequestQueuePtr CurlEasyRequest::getPerHostPtr(void)
+AIPerHostRequestQueuePtr CurlEasyRequest::getPerHostPtr(void)
 {
   if (!mPerHostPtr)
   {
 	// mPerHostPtr is really just a speed-up cache.
 	// The reason we can cache it is because mLowercaseHostname is only set
 	// in finalizeRequest which may only be called once: it never changes.
-	mPerHostPtr = PerHostRequestQueue::instance(mLowercaseHostname);
+	mPerHostPtr = AIPerHostRequestQueue::instance(mLowercaseHostname);
   }
   return mPerHostPtr;
 }

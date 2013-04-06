@@ -1,8 +1,8 @@
 /**
  * @file aiperhost.cpp
- * @brief Implementation of PerHostRequestQueue
+ * @brief Implementation of AIPerHostRequestQueue
  *
- * Copyright (c) 2012, Aleric Inglewood.
+ * Copyright (c) 2012, 2013, Aleric Inglewood.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,36 +26,60 @@
  *
  *   04/11/2012
  *   Initial version, written by Aleric Inglewood @ SL
+ *
+ *   06/04/2013
+ *   Renamed AICurlPrivate::PerHostRequestQueue[Ptr] to AIPerHostRequestQueue[Ptr]
+ *   to allow public access.
  */
 
 #include "sys.h"
 #include "aicurlperhost.h"
 #include "aicurlthread.h"
 
+AIPerHostRequestQueue::threadsafe_instance_map_type AIPerHostRequestQueue::sInstanceMap;
+LLAtomicS32 AIPerHostRequestQueue::sTotalQueued;
+
 #undef AICurlPrivate
 
 namespace AICurlPrivate {
 
-PerHostRequestQueue::threadsafe_instance_map_type PerHostRequestQueue::sInstanceMap;
-LLAtomicS32 PerHostRequestQueue::sTotalQueued;
 U32 curl_concurrent_connections_per_host;
 
+// Friend functions of RefCountedThreadSafePerHostRequestQueue
+
+void intrusive_ptr_add_ref(RefCountedThreadSafePerHostRequestQueue* per_host)
+{
+  per_host->mReferenceCount++;
+}
+
+void intrusive_ptr_release(RefCountedThreadSafePerHostRequestQueue* per_host)
+{
+  if (--per_host->mReferenceCount == 0)
+  {
+    delete per_host;
+  }
+}
+
+} // namespace AICurlPrivate
+
+using namespace AICurlPrivate;
+
 //static
-PerHostRequestQueuePtr PerHostRequestQueue::instance(std::string const& hostname)
+AIPerHostRequestQueuePtr AIPerHostRequestQueue::instance(std::string const& hostname)
 {
   llassert(!hostname.empty());
   instance_map_wat instance_map_w(sInstanceMap);
-  PerHostRequestQueue::iterator iter = instance_map_w->find(hostname);
+  AIPerHostRequestQueue::iterator iter = instance_map_w->find(hostname);
   if (iter == instance_map_w->end())
   {
 	iter = instance_map_w->insert(instance_map_type::value_type(hostname, new RefCountedThreadSafePerHostRequestQueue)).first;
   }
-  // Note: the creation of PerHostRequestQueuePtr MUST be protected by the lock on sInstanceMap (see release()).
+  // Note: the creation of AIPerHostRequestQueuePtr MUST be protected by the lock on sInstanceMap (see release()).
   return iter->second;
 }
 
 //static
-void PerHostRequestQueue::release(PerHostRequestQueuePtr& instance)
+void AIPerHostRequestQueue::release(AIPerHostRequestQueuePtr& instance)
 {
   if (instance->exactly_two_left())		// Being 'instance' and the one in sInstanceMap.
   {
@@ -91,31 +115,31 @@ void PerHostRequestQueue::release(PerHostRequestQueuePtr& instance)
   instance.reset();
 }
 
-bool PerHostRequestQueue::throttled() const
+bool AIPerHostRequestQueue::throttled() const
 {
   llassert(mAdded <= int(curl_concurrent_connections_per_host));
   return mAdded == int(curl_concurrent_connections_per_host);
 }
 
-void PerHostRequestQueue::added_to_multi_handle(void)
+void AIPerHostRequestQueue::added_to_multi_handle(void)
 {
   llassert(mAdded < int(curl_concurrent_connections_per_host));
   ++mAdded;
 }
 
-void PerHostRequestQueue::removed_from_multi_handle(void)
+void AIPerHostRequestQueue::removed_from_multi_handle(void)
 {
   --mAdded;
   llassert(mAdded >= 0);
 }
 
-void PerHostRequestQueue::queue(AICurlEasyRequest const& easy_request)
+void AIPerHostRequestQueue::queue(AICurlEasyRequest const& easy_request)
 {
   mQueuedRequests.push_back(easy_request.get_ptr());
   sTotalQueued++;
 }
 
-bool PerHostRequestQueue::cancel(AICurlEasyRequest const& easy_request)
+bool AIPerHostRequestQueue::cancel(AICurlEasyRequest const& easy_request)
 {
   queued_request_type::iterator const end = mQueuedRequests.end();
   queued_request_type::iterator cur = std::find(mQueuedRequests.begin(), end, easy_request.get_ptr());
@@ -128,7 +152,7 @@ bool PerHostRequestQueue::cancel(AICurlEasyRequest const& easy_request)
   // the back with swap (could just swap with the end immediately, but I don't
   // want to break the order in which requests where added). Swap is also not
   // thread-safe, but OK here because it only touches the objects in the deque,
-  // and the deque is protected by the lock on the PerHostRequestQueue object.
+  // and the deque is protected by the lock on the AIPerHostRequestQueue object.
   queued_request_type::iterator prev = cur;
   while (++cur != end)
   {
@@ -141,7 +165,7 @@ bool PerHostRequestQueue::cancel(AICurlEasyRequest const& easy_request)
   return true;
 }
 
-void PerHostRequestQueue::add_queued_to(curlthread::MultiHandle* multi_handle)
+void AIPerHostRequestQueue::add_queued_to(curlthread::MultiHandle* multi_handle)
 {
   if (!mQueuedRequests.empty())
   {
@@ -153,7 +177,7 @@ void PerHostRequestQueue::add_queued_to(curlthread::MultiHandle* multi_handle)
 }
 
 //static
-void PerHostRequestQueue::purge(void)
+void AIPerHostRequestQueue::purge(void)
 {
   instance_map_wat instance_map_w(sInstanceMap);
   for (iterator host = instance_map_w->begin(); host != instance_map_w->end(); ++host)
@@ -167,19 +191,3 @@ void PerHostRequestQueue::purge(void)
   }
 }
 
-// Friend functions of RefCountedThreadSafePerHostRequestQueue
-
-void intrusive_ptr_add_ref(RefCountedThreadSafePerHostRequestQueue* per_host)
-{
-  per_host->mReferenceCount++;
-}
-
-void intrusive_ptr_release(RefCountedThreadSafePerHostRequestQueue* per_host)
-{
-  if (--per_host->mReferenceCount == 0)
-  {
-    delete per_host;
-  }
-}
-
-} // namespace AICurlPrivate

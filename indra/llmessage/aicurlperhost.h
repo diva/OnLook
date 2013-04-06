@@ -1,8 +1,8 @@
 /**
  * @file aicurlperhost.h
- * @brief Definition of class PerHostRequestQueue
+ * @brief Definition of class AIPerHostRequestQueue
  *
- * Copyright (c) 2012, Aleric Inglewood.
+ * Copyright (c) 2012, 2013, Aleric Inglewood.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,10 @@
  *
  *   04/11/2012
  *   Initial version, written by Aleric Inglewood @ SL
+ *
+ *   06/04/2013
+ *   Renamed AIPrivate::PerHostRequestQueue[Ptr] to AIPerHostRequestQueue[Ptr]
+ *   to allow public access.
  */
 
 #ifndef AICURLPERHOST_H
@@ -39,68 +43,70 @@
 #include "aithreadsafe.h"
 
 class AICurlEasyRequest;
+class AIPerHostRequestQueue;
 
 namespace AICurlPrivate {
 namespace curlthread { class MultiHandle; }
 
-class PerHostRequestQueue;
 class RefCountedThreadSafePerHostRequestQueue;
 class ThreadSafeBufferedCurlEasyRequest;
 
 // Forward declaration of BufferedCurlEasyRequestPtr (see aicurlprivate.h).
 typedef boost::intrusive_ptr<ThreadSafeBufferedCurlEasyRequest> BufferedCurlEasyRequestPtr;
 
-// PerHostRequestQueue objects are created by the curl thread and destructed by the main thread.
+// AIPerHostRequestQueue objects are created by the curl thread and destructed by the main thread.
 // We need locking.
-typedef AIThreadSafeSimpleDC<PerHostRequestQueue> threadsafe_PerHostRequestQueue;
-typedef AIAccessConst<PerHostRequestQueue> PerHostRequestQueue_crat;
-typedef AIAccess<PerHostRequestQueue> PerHostRequestQueue_rat;
-typedef AIAccess<PerHostRequestQueue> PerHostRequestQueue_wat;
+typedef AIThreadSafeSimpleDC<AIPerHostRequestQueue> threadsafe_PerHostRequestQueue;
+typedef AIAccessConst<AIPerHostRequestQueue> PerHostRequestQueue_crat;
+typedef AIAccess<AIPerHostRequestQueue> PerHostRequestQueue_rat;
+typedef AIAccess<AIPerHostRequestQueue> PerHostRequestQueue_wat;
+
+} // namespace AICurlPrivate
 
 // We can't put threadsafe_PerHostRequestQueue in a std::map because you can't copy a mutex.
 // Therefore, use an intrusive pointer for the threadsafe type.
-typedef boost::intrusive_ptr<RefCountedThreadSafePerHostRequestQueue> PerHostRequestQueuePtr;
+typedef boost::intrusive_ptr<AICurlPrivate::RefCountedThreadSafePerHostRequestQueue> AIPerHostRequestQueuePtr;
 
 //-----------------------------------------------------------------------------
-// PerHostRequestQueue
+// AIPerHostRequestQueue
 
 // This class provides a static interface to create and maintain instances
-// of PerHostRequestQueue objects, so that at any moment there is at most
+// of AIPerHostRequestQueue objects, so that at any moment there is at most
 // one instance per hostname. Those instances then are used to queue curl
 // requests when the maximum number of connections for that host already
 // have been reached.
-class PerHostRequestQueue {
+class AIPerHostRequestQueue {
   private:
-	typedef std::map<std::string, PerHostRequestQueuePtr> instance_map_type;
+	typedef std::map<std::string, AIPerHostRequestQueuePtr> instance_map_type;
 	typedef AIThreadSafeSimpleDC<instance_map_type> threadsafe_instance_map_type;
 	typedef AIAccess<instance_map_type> instance_map_rat;
 	typedef AIAccess<instance_map_type> instance_map_wat;
 
-	static threadsafe_instance_map_type sInstanceMap;				// Map of PerHostRequestQueue instances with the hostname as key.
+	static threadsafe_instance_map_type sInstanceMap;				// Map of AIPerHostRequestQueue instances with the hostname as key.
 
-	friend class AIThreadSafeSimpleDC<PerHostRequestQueue>;			//threadsafe_PerHostRequestQueue
-	PerHostRequestQueue(void) : mAdded(0) { }
+	friend class AIThreadSafeSimpleDC<AIPerHostRequestQueue>;		//threadsafe_PerHostRequestQueue
+	AIPerHostRequestQueue(void) : mAdded(0) { }
 
   public:
 	typedef instance_map_type::iterator iterator;
 	typedef instance_map_type::const_iterator const_iterator;
 
 	// Return (possibly create) a unique instance for the given hostname.
-	static PerHostRequestQueuePtr instance(std::string const& hostname);
+	static AIPerHostRequestQueuePtr instance(std::string const& hostname);
 
 	// Release instance (object will be deleted if this was the last instance).
-	static void release(PerHostRequestQueuePtr& instance);
+	static void release(AIPerHostRequestQueuePtr& instance);
 
 	// Remove everything. Called upon viewer exit.
 	static void purge(void);
 
   private:
-	typedef std::deque<BufferedCurlEasyRequestPtr> queued_request_type;
+	typedef std::deque<AICurlPrivate::BufferedCurlEasyRequestPtr> queued_request_type;
 
 	int mAdded;									// Number of active easy handles with this host.
 	queued_request_type mQueuedRequests;		// Waiting (throttled) requests.
 
-	static LLAtomicS32 sTotalQueued;			// The sum of mQueuedRequests.size() of all PerHostRequestQueue objects together.
+	static LLAtomicS32 sTotalQueued;			// The sum of mQueuedRequests.size() of all AIPerHostRequestQueue objects together.
 
   public:
 	void added_to_multi_handle(void);					// Called when an easy handle for this host has been added to the multi handle.
@@ -110,7 +116,8 @@ class PerHostRequestQueue {
 	void queue(AICurlEasyRequest const& easy_request);	// Add easy_request to the queue.
 	bool cancel(AICurlEasyRequest const& easy_request);	// Remove easy_request from the queue (if it's there).
 
-    void add_queued_to(curlthread::MultiHandle* mh);	// Add queued easy handle (if any) to the multi handle. The request is removed from the queue,
+    void add_queued_to(AICurlPrivate::curlthread::MultiHandle* mh);
+														// Add queued easy handle (if any) to the multi handle. The request is removed from the queue,
 														// followed by either a call to added_to_multi_handle() or to queue() to add it back.
 
 	S32 host_queued_plus_added_size(void) const { return mQueuedRequests.size() + mAdded; }
@@ -118,8 +125,10 @@ class PerHostRequestQueue {
 
   private:
 	// Disallow copying.
-	PerHostRequestQueue(PerHostRequestQueue const&) { }
+	AIPerHostRequestQueue(AIPerHostRequestQueue const&) { }
 };
+
+namespace AICurlPrivate {
 
 class RefCountedThreadSafePerHostRequestQueue : public threadsafe_PerHostRequestQueue {
   public:
@@ -127,7 +136,7 @@ class RefCountedThreadSafePerHostRequestQueue : public threadsafe_PerHostRequest
 	bool exactly_two_left(void) const { return mReferenceCount == 2; }
 
   private:
-	// Used by PerHostRequestQueuePtr. Object is deleted when reference count reaches zero.
+	// Used by AIPerHostRequestQueuePtr. Object is deleted when reference count reaches zero.
 	LLAtomicU32 mReferenceCount;
 
 	friend void intrusive_ptr_add_ref(RefCountedThreadSafePerHostRequestQueue* p);

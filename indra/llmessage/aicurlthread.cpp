@@ -1573,7 +1573,7 @@ void AICurlThread::run(void)
 	  multi_handle_w->check_msg_queue();
 	}
 	// Clear the queued requests.
-	PerHostRequestQueue::purge();
+	AIPerHostRequestQueue::purge();
   }
   AICurlMultiHandle::destroyInstance();
 }
@@ -1700,7 +1700,7 @@ static U32 curl_max_total_concurrent_connections = 32;						// Initialized on st
 void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
 {
   bool throttled = true;		// Default.
-  PerHostRequestQueuePtr per_host;
+  AIPerHostRequestQueuePtr per_host;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
 	per_host = curl_easy_request_w->getPerHostPtr();
@@ -1759,7 +1759,7 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
 CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator const& iter, bool as_per_command)
 {
   CURLMcode res;
-  PerHostRequestQueuePtr per_host;
+  AIPerHostRequestQueuePtr per_host;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(**iter);
 	res = curl_easy_request_w->remove_handle_from_multi(curl_easy_request_w, mMultiHandle);
