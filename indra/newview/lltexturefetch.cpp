@@ -253,6 +253,7 @@ private:
 	LLUUID mID;
 	LLHost mHost;
 	std::string mUrl;
+	AIPerHostRequestQueuePtr mPerHostPtr;		// Pointer to the AIPerHostRequestQueue corresponding to the host of mUrl.
 	U8 mType;
 	F32 mImagePriority;
 	U32 mWorkPriority;
@@ -795,6 +796,17 @@ LLTextureFetchWorker::LLTextureFetchWorker(LLTextureFetch* fetcher,
 {
 	mCanUseNET = mUrl.empty() ;
 
+	if (!mCanUseNET)
+	{
+	  // Probably a file://, but well; in that case hostname will be empty.
+	  std::string hostname = AIPerHostRequestQueue::extract_canonical_hostname(mUrl);
+	  if (!hostname.empty())
+	  {
+		// Make sure mPerHostPtr is up to date with mUrl.
+		mPerHostPtr = AIPerHostRequestQueue::instance(hostname);
+	  }
+	}
+
 	calcWorkPriority();
 	mType = host.isOk() ? LLImageBase::TYPE_AVATAR_BAKE : LLImageBase::TYPE_NORMAL;
  	//llinfos << "Create: " << mID << " mHost:" << host << " Discard=" << discard << " URL:"<< mUrl << llendl;
@@ -1150,6 +1162,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				{
 					mUrl = http_url + "/?texture_id=" + mID.asString().c_str();
 					mWriteToCacheState = CAN_WRITE ; //because this texture has a fixed texture id.
+					mPerHostPtr = AIPerHostRequestQueue::instance(AIPerHostRequestQueue::extract_canonical_hostname(http_url));
 				}
 				else
 				{
