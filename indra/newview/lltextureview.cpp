@@ -66,6 +66,9 @@ std::set<LLViewerFetchedTexture*> LLTextureView::sDebugImages;
 
 // Forward declaration.
 namespace AICurlInterface {
+  U32 getNumHTTPCommands(void);
+  U32 getNumHTTPQueued(void);
+  U32 getNumHTTPAdded(void);
   U32 getNumHTTPRunning(void);
 } // namespace AICurlInterface
 
@@ -598,7 +601,7 @@ void LLGLTexMemBar::draw()
 #endif
 	//----------------------------------------------------------------------------
 
-	text = llformat("Textures: %d Fetch: %d(%d) Pkts:%d(%d) Cache R/W: %d/%d LFS:%d IW:%d RAW:%d(%d) HTP:%d DEC:%d CRE:%d ",
+	text = llformat("Textures: %d Fetch: %d(%d) Pkts:%d(%d) Cache R/W: %d/%d LFS:%d IW:%d RAW:%d(%d) HTTP:%d/%d/%d/%d DEC:%d CRE:%d ",
 					gTextureList.getNumImages(),
 					LLAppViewer::getTextureFetch()->getNumRequests(), LLAppViewer::getTextureFetch()->getNumDeletes(),
 					LLAppViewer::getTextureFetch()->mPacketCount, LLAppViewer::getTextureFetch()->mBadPacketCount, 
@@ -606,6 +609,9 @@ void LLGLTexMemBar::draw()
 					LLLFSThread::sLocal->getPending(),
 					LLAppViewer::getImageDecodeThread()->getPending(),
 					LLImageRaw::sRawImageCount, LLImageRaw::sRawImageCachedCount,
+					AICurlInterface::getNumHTTPCommands(),
+					AICurlInterface::getNumHTTPQueued(),
+					AICurlInterface::getNumHTTPAdded(),
 					AICurlInterface::getNumHTTPRunning(),
 					LLAppViewer::getImageDecodeThread()->getPending(), 
 					gTextureList.mCreateTextureList.size());

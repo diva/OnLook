@@ -2505,5 +2505,23 @@ bool handleNoVerifySSLCert(LLSD const& newvalue)
   return true;
 }
 
+U32 getNumHTTPCommands(void)
+{
+  using namespace AICurlPrivate;
+
+  command_queue_rat command_queue_r(command_queue);
+  return command_queue_r->size;
+}
+
+U32 getNumHTTPQueued(void)
+{
+  return AIPerHostRequestQueue::total_queued_size();
+}
+
+U32 getNumHTTPAdded(void)
+{
+  return AICurlPrivate::curlthread::MultiHandle::total_added_size();
+}
+
 } // namespace AICurlInterface
 

@@ -186,6 +186,15 @@ void setCAFile(std::string const& file);
 // Can be used to set the path to the Certificate Authority file.
 void setCAPath(std::string const& file);
 
+// Returns number of queued 'add' commands minus the number of queued 'remove' commands.
+U32 getNumHTTPCommands(void);
+
+// Returns the number of queued requests.
+U32 getNumHTTPQueued(void);
+
+// Returns the number of curl requests currently added to the multi handle.
+U32 getNumHTTPAdded(void);
+
 // This used to be LLAppViewer::getTextureFetch()->getNumHTTPRequests().
 // Returns the number of active curl easy handles (that are actually attempting to download something).
 U32 getNumHTTPRunning(void);
