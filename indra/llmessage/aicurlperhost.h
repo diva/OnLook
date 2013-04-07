@@ -85,7 +85,7 @@ class AIPerHostRequestQueue {
 	static threadsafe_instance_map_type sInstanceMap;				// Map of AIPerHostRequestQueue instances with the hostname as key.
 
 	friend class AIThreadSafeSimpleDC<AIPerHostRequestQueue>;		//threadsafe_PerHostRequestQueue
-	AIPerHostRequestQueue(void) : mAdded(0) { }
+	AIPerHostRequestQueue(void) : mQueuedCommands(0), mAdded(0) { }
 
   public:
 	typedef instance_map_type::iterator iterator;
@@ -106,12 +106,15 @@ class AIPerHostRequestQueue {
   private:
 	typedef std::deque<AICurlPrivate::BufferedCurlEasyRequestPtr> queued_request_type;
 
+	int mQueuedCommands;						// Number of add commands (minus remove commands) with this host in the command queue.
 	int mAdded;									// Number of active easy handles with this host.
 	queued_request_type mQueuedRequests;		// Waiting (throttled) requests.
 
 	static LLAtomicS32 sTotalQueued;			// The sum of mQueuedRequests.size() of all AIPerHostRequestQueue objects together.
 
   public:
+	void added_to_command_queue(void) { ++mQueuedCommands; }
+	void removed_from_command_queue(void) { --mQueuedCommands; llassert(mQueuedCommands >= 0); }
 	void added_to_multi_handle(void);					// Called when an easy handle for this host has been added to the multi handle.
 	void removed_from_multi_handle(void);				// Called when an easy handle for this host is removed again from the multi handle.
 	bool throttled(void) const;							// Returns true if the maximum number of allowed requests for this host have been added to the multi handle.
@@ -123,6 +126,7 @@ class AIPerHostRequestQueue {
 														// Add queued easy handle (if any) to the multi handle. The request is removed from the queue,
 														// followed by either a call to added_to_multi_handle() or to queue() to add it back.
 
+	S32 queued_commands(void) const { return mQueuedCommands; }
 	S32 host_queued_plus_added_size(void) const { return mQueuedRequests.size() + mAdded; }
 	static S32 total_queued_size(void) { return sTotalQueued; }
 

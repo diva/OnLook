@@ -1329,9 +1329,11 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 		case cmd_boost:	// FIXME: future stuff
 		  break;
 		case cmd_add:
+		  PerHostRequestQueue_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerHostPtr())->removed_from_command_queue();
 		  multi_handle_w->add_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()));
 		  break;
 		case cmd_remove:
+		  PerHostRequestQueue_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerHostPtr())->added_to_command_queue();		// Not really, but this has the same effect as 'removed a remove command'.
 		  multi_handle_w->remove_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()), true);
 		  break;
 	  }
@@ -2386,7 +2388,9 @@ void AICurlEasyRequest::addRequest(void)
 	// Add a command to add the new request to the multi session to the command queue.
 	command_queue_w->commands.push_back(Command(*this, cmd_add));
 	command_queue_w->size++;
-	AICurlEasyRequest_wat(*get())->add_queued();
+	AICurlEasyRequest_wat curl_easy_request_w(*get());
+	PerHostRequestQueue_wat(*curl_easy_request_w->getPerHostPtr())->added_to_command_queue();
+	curl_easy_request_w->add_queued();
   }
   // Something was added to the queue, wake up the thread to get it.
   wakeUpCurlThread();
@@ -2448,8 +2452,10 @@ void AICurlEasyRequest::removeRequest(void)
 	// Add a command to remove this request from the multi session to the command queue.
 	command_queue_w->commands.push_back(Command(*this, cmd_remove));
 	command_queue_w->size--;
+	AICurlEasyRequest_wat curl_easy_request_w(*get());
+	PerHostRequestQueue_wat(*curl_easy_request_w->getPerHostPtr())->removed_from_command_queue();	// Note really, but this has the same effect as 'added a remove command'.
 	// Suppress warning that would otherwise happen if the callbacks are revoked before the curl thread removed the request.
-	AICurlEasyRequest_wat(*get())->remove_queued();
+	curl_easy_request_w->remove_queued();
   }
   // Something was added to the queue, wake up the thread to get it.
   wakeUpCurlThread();
