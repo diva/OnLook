@@ -1271,7 +1271,8 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			}
 
 			// Let AICurl decide if we can process more HTTP requests at the moment or not.
-			if (!AIPerHostRequestQueue::wantsMoreHTTPRequestsFor(mPerHostPtr))
+			static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
+			if (!AIPerHostRequestQueue::wantsMoreHTTPRequestsFor(mPerHostPtr, mFetcher->getTextureBandwidth() > throttle_bandwidth))
 			{
 				return false ; //wait.
 			}

@@ -140,7 +140,7 @@ class AIPerHostRequestQueue {
 	// Returns true if curl can handle another request for this host.
 	// Should return false if the maximum allowed HTTP bandwidth is reached, or when
 	// the latency between request and actual delivery becomes too large.
-	static bool wantsMoreHTTPRequestsFor(AIPerHostRequestQueuePtr const& per_host);
+	static bool wantsMoreHTTPRequestsFor(AIPerHostRequestQueuePtr const& per_host, bool too_much_bandwidth);
 
   private:
 	// Disallow copying.

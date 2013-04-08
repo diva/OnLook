@@ -2560,7 +2560,7 @@ U32 getNumHTTPAdded(void)
 // running requests (in MultiHandle::mAddedEasyRequests)).
 //
 //static
-bool AIPerHostRequestQueue::wantsMoreHTTPRequestsFor(AIPerHostRequestQueuePtr const& per_host)
+bool AIPerHostRequestQueue::wantsMoreHTTPRequestsFor(AIPerHostRequestQueuePtr const& per_host, bool too_much_bandwidth)
 {
   using namespace AICurlPrivate;
   using namespace AICurlPrivate::curlthread;
@@ -2621,14 +2621,11 @@ bool AIPerHostRequestQueue::wantsMoreHTTPRequestsFor(AIPerHostRequestQueuePtr co
 	return false;
   }
   
-#if 0
-  //AITODO: better bandwidth check here.
-  static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
-  if (mFetcher->getTextureBandwidth() > throttle_bandwidth)
+  //AIFIXME: better bandwidth check here.
+  if (too_much_bandwidth)
   {
 	return false;	// wait
   }
-#endif
 
   // Check if it's ok to get a new request based on the total number of requests and increment the threshold if appropriate.
 
