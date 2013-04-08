@@ -204,6 +204,9 @@ int ioctlsocket(int fd, int, unsigned long* nonblocking_enable)
 
 namespace AICurlPrivate {
 
+LLAtomicS32 max_pipelined_requests(32);
+LLAtomicS32 max_pipelined_requests_per_host(8);
+
 enum command_st {
   cmd_none,
   cmd_add,
@@ -2476,6 +2479,8 @@ void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentCo
   curl_max_total_concurrent_connections = CurlMaxTotalConcurrentConnections;
   curl_concurrent_connections_per_host = CurlConcurrentConnectionsPerHost;
   gNoVerifySSLCert = NoVerifySSLCert;
+  max_pipelined_requests = curl_max_total_concurrent_connections;
+  max_pipelined_requests_per_host = curl_concurrent_connections_per_host;
 
   AICurlThread::sInstance = new AICurlThread;
   AICurlThread::sInstance->start();
@@ -2483,9 +2488,12 @@ void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentCo
 
 bool handleCurlMaxTotalConcurrentConnections(LLSD const& newvalue)
 {
+  using namespace AICurlPrivate;
   using namespace AICurlPrivate::curlthread;
 
+  U32 old = curl_max_total_concurrent_connections;
   curl_max_total_concurrent_connections = newvalue.asInteger();
+  max_pipelined_requests += curl_max_total_concurrent_connections - old;
   llinfos << "CurlMaxTotalConcurrentConnections set to " << curl_max_total_concurrent_connections << llendl;
   return true;
 }
@@ -2494,7 +2502,9 @@ bool handleCurlConcurrentConnectionsPerHost(LLSD const& newvalue)
 {
   using namespace AICurlPrivate;
 
+  U32 old = curl_concurrent_connections_per_host;
   curl_concurrent_connections_per_host = newvalue.asInteger();
+  max_pipelined_requests_per_host += curl_concurrent_connections_per_host - old;
   llinfos << "CurlConcurrentConnectionsPerHost set to " << curl_concurrent_connections_per_host << llendl;
   return true;
 }
@@ -2524,4 +2534,130 @@ U32 getNumHTTPAdded(void)
 }
 
 } // namespace AICurlInterface
+
+// Return true if we want at least one more HTTP request for this host.
+//
+// It's OK if this function is a bit fuzzy, but we don't want it to return
+// true a hundred times on a row when it is called fast in a loop.
+// Hence the following consideration:
+//
+// This function is called only from LLTextureFetchWorker::doWork, and when it returns true
+// then doWork will call LLHTTPClient::request with a NULL default engine (signaling that
+// it is OK to run in any thread).
+//
+// At the end, LLHTTPClient::request calls AIStateMachine::run, which in turn calls
+// AIStateMachine::reset at the end. Because NULL is passed as default_engine, reset will
+// call AIStateMachine::multiplex to immediately start running the state machine. This
+// causes it to go through the states bs_reset, bs_initialize and then bs_multiplex with
+// run state AICurlEasyRequestStateMachine_addRequest. Finally, in this state, multiplex
+// calls AICurlEasyRequestStateMachine::multiplex_impl which then calls AICurlEasyRequest::addRequest
+// which causes an increment of command_queue_w->size and AIPerHostRequestQueue::mQueuedCommands.
+//
+// It is therefore guaranteed that in one loop of LLTextureFetchWorker::doWork,
+// this size is incremented; stopping this function from returning true once we reached the
+// threshold of "pipelines" requests (the sum of requests in the command queue, the ones
+// throttled and queued in AIPerHostRequestQueue::mQueuedRequests and the already
+// running requests (in MultiHandle::mAddedEasyRequests)).
+//
+//static
+bool AIPerHostRequestQueue::wantsMoreHTTPRequestsFor(AIPerHostRequestQueuePtr const& per_host)
+{
+  using namespace AICurlPrivate;
+  using namespace AICurlPrivate::curlthread;
+
+  bool reject, equal, increment_threshold, decrement_threshold;
+
+  // Whether or not we're going to approve a new request, decrement the global threshold first, when appropriate.
+
+  // Atomic read max_pipelined_requests for the below calculations.
+  S32 const max_pipelined_requests_cache = max_pipelined_requests;
+  decrement_threshold = sQueueFull && !sQueueEmpty;
+  // Reset flags.
+  sQueueEmpty = sQueueFull = false;
+  if (decrement_threshold)
+  {
+	if (max_pipelined_requests_cache > curl_max_total_concurrent_connections)
+	{
+	  // Decrement the threshold because since the last call to this function at least one curl request finished
+	  // and was replaced with another request from the queue, but the queue never ran empty: we have too many
+	  // queued requests.
+	  --max_pipelined_requests;
+	}
+  }
+
+  // Check if it's ok to get a new request for this particular host and update the per-host threshold.
+
+  // Atomic read max_pipelined_requests_per_host for the below calculations.
+  S32 const max_pipelined_requests_per_host_cache = max_pipelined_requests_per_host;
+  {
+	PerHostRequestQueue_rat per_host_r(*per_host);
+	S32 const pipelined_requests_per_host = per_host_r->pipelined_requests();
+	reject = pipelined_requests_per_host >= max_pipelined_requests_per_host_cache;
+	equal = pipelined_requests_per_host == max_pipelined_requests_per_host_cache;
+	increment_threshold = per_host_r->mRequestStarvation;
+	decrement_threshold = per_host_r->mQueueFull && !per_host_r->mQueueEmpty;
+	// Reset flags.
+	per_host_r->mQueueFull = per_host_r->mQueueEmpty = per_host_r->mRequestStarvation = false;
+  }
+  if (decrement_threshold)
+  {
+	if (max_pipelined_requests_per_host_cache > curl_concurrent_connections_per_host)
+	{
+	  --max_pipelined_requests_per_host;
+	}
+  }
+  else if (increment_threshold && reject)
+  {
+	if (max_pipelined_requests_per_host_cache < 2 * curl_concurrent_connections_per_host)
+	{
+	  max_pipelined_requests_per_host++;
+	  // Immediately take the new threshold into account.
+	  reject = !equal;
+	}
+  }
+  if (reject)
+  {
+	// Too many request for this host already.
+	return false;
+  }
+  
+#if 0
+  //AITODO: better bandwidth check here.
+  static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
+  if (mFetcher->getTextureBandwidth() > throttle_bandwidth)
+  {
+	return false;	// wait
+  }
+#endif
+
+  // Check if it's ok to get a new request based on the total number of requests and increment the threshold if appropriate.
+
+  {
+	command_queue_rat command_queue_r(command_queue);
+	S32 const pipelined_requests = command_queue_r->size + sTotalQueued + MultiHandle::total_added_size();
+	// We can't take the command being processed (command_being_processed) into account without
+	// introducing relatively long waiting times for some mutex (namely between when the command
+	// is moved from command_queue to command_being_processed, till it's actually being added to
+	// mAddedEasyRequests). The whole purpose of command_being_processed is to reduce the time
+	// that things are locked to micro seconds, so we'll just accept an off-by-one fuzziness
+	// here instead.
+
+	// The maximum number of requests that may be queued in command_queue is equal to the total number of requests
+	// that may exist in the pipeline minus the number of requests queued in AIPerHostRequestQueue objects, minus
+	// the number of already running requests.
+	reject = pipelined_requests >= max_pipelined_requests_cache;
+	equal = pipelined_requests == max_pipelined_requests_cache;
+	increment_threshold = sRequestStarvation;
+  }
+  if (increment_threshold && reject)
+  {
+	if (max_pipelined_requests_cache < 2 * curl_max_total_concurrent_connections)
+	{
+	  max_pipelined_requests++;
+	  // Immediately take the new threshold into account.
+	  reject = !equal;
+	}
+  }
+  return !reject;
+}
 

@@ -171,29 +171,7 @@
     <key>Value</key>
     <integer>1</integer>
   </map>
-	
-  <key>HTTPMaxRequests</key>
-  <map>
-    <key>Comment</key>
-    <string>Maximum number of simultaneous HTTP requests in progress.</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>U32</string>
-    <key>Value</key>
-    <integer>12</integer>
-  </map>
-  <key>HTTPMinRequests</key>
-  <map>
-    <key>Comment</key>
-    <string>Attempt to maintain at least this many HTTP requests in progress by ignoring bandwidth</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>U32</string>
-    <key>Value</key>
-    <integer>2</integer>
-  </map>
+
   <key>HTTPThrottleBandwidth</key>
   <map>
     <key>Comment</key>

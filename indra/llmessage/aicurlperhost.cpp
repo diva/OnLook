@@ -38,6 +38,9 @@
 
 AIPerHostRequestQueue::threadsafe_instance_map_type AIPerHostRequestQueue::sInstanceMap;
 LLAtomicS32 AIPerHostRequestQueue::sTotalQueued;
+bool AIPerHostRequestQueue::sQueueEmpty;
+bool AIPerHostRequestQueue::sQueueFull;
+bool AIPerHostRequestQueue::sRequestStarvation;
 
 #undef AICurlPrivate
 
@@ -221,8 +224,37 @@ void AIPerHostRequestQueue::add_queued_to(curlthread::MultiHandle* multi_handle)
   {
 	multi_handle->add_easy_request(mQueuedRequests.front());
 	mQueuedRequests.pop_front();
-	--sTotalQueued;
-	llassert(sTotalQueued >= 0);
+	llassert(sTotalQueued > 0);
+	if (!--sTotalQueued)
+	{
+	  // We obtained a request from the queue, and after that there we no more request in any queue.
+	  sQueueEmpty = true;
+	}
+	else
+	{
+	  // We obtained a request from the queue, and even after that there was at least one more request in some queue.
+	  sQueueFull = true;
+	}
+	if (mQueuedRequests.empty())
+	{
+	  // We obtained a request from the queue, and after that there we no more request in the queue of this host.
+	  mQueueEmpty = true;
+	}
+	else
+	{
+	  // We obtained a request from the queue, and even after that there was at least one more request in the queue of this host.
+	  mQueueFull = true;
+	}
+  }
+  else
+  {
+	// We can add a new request, but there is none in the queue!
+	mRequestStarvation = true;
+	if (sTotalQueued == 0)
+	{
+	  // The queue of every host is empty!
+	  sRequestStarvation = true;
+	}
   }
 }
 

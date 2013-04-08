@@ -52,6 +52,7 @@
 #include "stdtypes.h"		// U16, S32, U32, F64
 #include "llatomic.h"		// LLAtomicU32
 #include "aithreadsafe.h"
+#include "aicurlperhost.h"	// AIPerHostRequestQueuePtr
 
 // Debug Settings.
 extern bool gNoVerifySSLCert;

@@ -85,7 +85,7 @@ class AIPerHostRequestQueue {
 	static threadsafe_instance_map_type sInstanceMap;				// Map of AIPerHostRequestQueue instances with the hostname as key.
 
 	friend class AIThreadSafeSimpleDC<AIPerHostRequestQueue>;		//threadsafe_PerHostRequestQueue
-	AIPerHostRequestQueue(void) : mQueuedCommands(0), mAdded(0) { }
+	AIPerHostRequestQueue(void) : mQueuedCommands(0), mAdded(0), mQueueEmpty(false), mQueueFull(false), mRequestStarvation(false) { }
 
   public:
 	typedef instance_map_type::iterator iterator;
@@ -112,6 +112,14 @@ class AIPerHostRequestQueue {
 
 	static LLAtomicS32 sTotalQueued;			// The sum of mQueuedRequests.size() of all AIPerHostRequestQueue objects together.
 
+	bool mQueueEmpty;							// Set to true when the queue becomes precisely empty.
+	bool mQueueFull;							// Set to true when the queue is popped and then still isn't empty;
+	bool mRequestStarvation;					// Set to true when the queue was about to be popped but was already empty.
+
+	static bool sQueueEmpty;					// Set to true when sTotalQueued becomes precisely zero as the result of popping any queue.
+	static bool sQueueFull;						// Set to true when sTotalQueued is still larger than zero after popping any queue.
+	static bool sRequestStarvation;				// Set to true when any queue was about to be popped when sTotalQueued was already zero.
+
   public:
 	void added_to_command_queue(void) { ++mQueuedCommands; }
 	void removed_from_command_queue(void) { --mQueuedCommands; llassert(mQueuedCommands >= 0); }
@@ -126,9 +134,13 @@ class AIPerHostRequestQueue {
 														// Add queued easy handle (if any) to the multi handle. The request is removed from the queue,
 														// followed by either a call to added_to_multi_handle() or to queue() to add it back.
 
-	S32 queued_commands(void) const { return mQueuedCommands; }
-	S32 host_queued_plus_added_size(void) const { return mQueuedRequests.size() + mAdded; }
+	S32 pipelined_requests(void) const { return mQueuedCommands + mQueuedRequests.size() + mAdded; }
 	static S32 total_queued_size(void) { return sTotalQueued; }
+
+	// Returns true if curl can handle another request for this host.
+	// Should return false if the maximum allowed HTTP bandwidth is reached, or when
+	// the latency between request and actual delivery becomes too large.
+	static bool wantsMoreHTTPRequestsFor(AIPerHostRequestQueuePtr const& per_host);
 
   private:
 	// Disallow copying.

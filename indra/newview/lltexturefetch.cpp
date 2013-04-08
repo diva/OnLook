@@ -1248,29 +1248,14 @@ bool LLTextureFetchWorker::doWork(S32 param)
 	{
 		if(mCanUseHTTP)
 		{
-			//NOTE:
-			//control the number of the http requests issued for:
-			//1, not opening too many file descriptors at the same time;
-			//2, control the traffic of http so udp gets bandwidth.
-			//
-			static const LLCachedControl<U32> max_http_requests("HTTPMaxRequests", 8);
-			static const LLCachedControl<U32> min_http_requests("HTTPMinRequests", 2);
-			static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
-			if(((U32)mFetcher->getNumHTTPRequests() >= max_http_requests) ||
-			   ((mFetcher->getTextureBandwidth() > throttle_bandwidth) &&
-				((U32)mFetcher->getNumHTTPRequests() > min_http_requests)))
-			{
-				return false ; //wait.
-			}
-
-			mFetcher->removeFromNetworkQueue(this, false);
-			
 			S32 cur_size = 0;
 			if (mFormattedImage.notNull())
 			{
 				cur_size = mFormattedImage->getDataSize(); // amount of data we already have
 				if (mFormattedImage->getDiscardLevel() == 0)
 				{
+					// Already have all data.
+					mFetcher->removeFromNetworkQueue(this, false);	// Note sure this is necessary, but it's what the old did --Aleric
 					if(cur_size > 0)
 					{
 						// We already have all the data, just decode it
@@ -1284,10 +1269,19 @@ bool LLTextureFetchWorker::doWork(S32 param)
 					}
 				}
 			}
+
+			// Let AICurl decide if we can process more HTTP requests at the moment or not.
+			if (!AIPerHostRequestQueue::wantsMoreHTTPRequestsFor(mPerHostPtr))
+			{
+				return false ; //wait.
+			}
+
+			mFetcher->removeFromNetworkQueue(this, false);
+
 			mRequestedSize = mDesiredSize - cur_size;
 			mRequestedDiscard = mDesiredDiscard;
 			mRequestedOffset = cur_size;
-			
+
 			bool res = false;
 			if (!mUrl.empty())
 			{
