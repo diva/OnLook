@@ -3612,6 +3612,7 @@ class LLSelfEnableSitOrStand : public view_listener_t
 
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		gMenuHolder->childSetText("Stand Up", label);
+		gMenuHolder->childSetText("Stand Up Self", label);
 
 		return true;
 	}
