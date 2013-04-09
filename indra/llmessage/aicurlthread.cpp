@@ -32,7 +32,7 @@
 #include "aicurlthread.h"
 #include "aihttptimeoutpolicy.h"
 #include "aihttptimeout.h"
-#include "aicurlperhost.h"
+#include "aicurlperservice.h"
 #include "lltimer.h"		// ms_sleep, get_clock_count
 #include "llhttpstatuscodes.h"
 #include "llbuffer.h"

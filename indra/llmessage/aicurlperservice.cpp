@@ -1,5 +1,5 @@
 /**
- * @file aiperhost.cpp
+ * @file aiperservice.cpp
  * @brief Implementation of AIPerHostRequestQueue
  *
  * Copyright (c) 2012, 2013, Aleric Inglewood.
@@ -33,7 +33,7 @@
  */
 
 #include "sys.h"
-#include "aicurlperhost.h"
+#include "aicurlperservice.h"
 #include "aicurlthread.h"
 
 AIPerHostRequestQueue::threadsafe_instance_map_type AIPerHostRequestQueue::sInstanceMap;

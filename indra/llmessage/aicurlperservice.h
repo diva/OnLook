@@ -1,5 +1,5 @@
 /**
- * @file aicurlperhost.h
+ * @file aicurlperservice.h
  * @brief Definition of class AIPerHostRequestQueue
  *
  * Copyright (c) 2012, 2013, Aleric Inglewood.

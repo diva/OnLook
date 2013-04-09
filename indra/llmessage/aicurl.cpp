@@ -58,7 +58,7 @@
 #include "aihttpheaders.h"
 #include "aihttptimeoutpolicy.h"
 #include "aicurleasyrequeststatemachine.h"
-#include "aicurlperhost.h"
+#include "aicurlperservice.h"
 
 //==================================================================================
 // Debug Settings
