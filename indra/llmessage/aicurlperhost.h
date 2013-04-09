@@ -91,8 +91,8 @@ class AIPerHostRequestQueue {
 	typedef instance_map_type::iterator iterator;
 	typedef instance_map_type::const_iterator const_iterator;
 
-	// Utility function; extract canonical (lowercase) hostname from url.
-	static std::string extract_canonical_hostname(std::string const& url);
+	// Utility function; extract canonical (lowercase) hostname and port from url.
+	static std::string extract_canonical_servicename(std::string const& url);
 
 	// Return (possibly create) a unique instance for the given hostname.
 	static AIPerHostRequestQueuePtr instance(std::string const& hostname);

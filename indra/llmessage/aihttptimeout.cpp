@@ -75,6 +75,7 @@ namespace AICurlPrivate {
 class BufferedCurlEasyRequest {
 public:
   char const* getLowercaseHostname(void) const { return "hostname.com"; }
+  char const* getLowercaseServicename(void) const { return "hostname.com:12047"; }
   void getinfo(const int&, double* p) { *p = 0.1; }
 };
 
@@ -435,7 +436,7 @@ bool HTTPTimeout::maybe_upload_finished(void)
 void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, char const* eff_url)
 {
 #ifndef HTTPTIMEOUT_TESTSUITE
-  llwarns << "Request to \"" << curl_easy_request->getLowercaseHostname() << "\" timed out for " << curl_easy_request->getTimeoutPolicy()->name() << llendl;
+  llwarns << "Request to \"" << curl_easy_request->getLowercaseServicename() << "\" timed out for " << curl_easy_request->getTimeoutPolicy()->name() << llendl;
   llinfos << "Effective URL: \"" << eff_url << "\"." << llendl;
   double namelookup_time, connect_time, appconnect_time, pretransfer_time, starttransfer_time;
   curl_easy_request->getinfo(CURLINFO_NAMELOOKUP_TIME, &namelookup_time);

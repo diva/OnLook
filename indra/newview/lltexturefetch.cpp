@@ -798,12 +798,12 @@ LLTextureFetchWorker::LLTextureFetchWorker(LLTextureFetch* fetcher,
 
 	if (!mCanUseNET)
 	{
-	  // Probably a file://, but well; in that case hostname will be empty.
-	  std::string hostname = AIPerHostRequestQueue::extract_canonical_hostname(mUrl);
-	  if (!hostname.empty())
+	  // Probably a file://, but well; in that case servicename will be empty.
+	  std::string servicename = AIPerHostRequestQueue::extract_canonical_servicename(mUrl);
+	  if (!servicename.empty())
 	  {
 		// Make sure mPerHostPtr is up to date with mUrl.
-		mPerHostPtr = AIPerHostRequestQueue::instance(hostname);
+		mPerHostPtr = AIPerHostRequestQueue::instance(servicename);
 	  }
 	}
 
@@ -1162,7 +1162,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				{
 					mUrl = http_url + "/?texture_id=" + mID.asString().c_str();
 					mWriteToCacheState = CAN_WRITE ; //because this texture has a fixed texture id.
-					mPerHostPtr = AIPerHostRequestQueue::instance(AIPerHostRequestQueue::extract_canonical_hostname(http_url));
+					mPerHostPtr = AIPerHostRequestQueue::instance(AIPerHostRequestQueue::extract_canonical_servicename(http_url));
 				}
 				else
 				{

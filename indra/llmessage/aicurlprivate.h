@@ -304,7 +304,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	CURLcode mResult;		//AIFIXME: this does not belong in the request object, but belongs in the response object.
 
 	AIHTTPTimeoutPolicy const* mTimeoutPolicy;
-	std::string mLowercaseHostname;				// Lowercase hostname (canonicalized) extracted from the url.
+	std::string mLowercaseServicename;			// Lowercase hostname:port (canonicalized) extracted from the url.
 	AIPerHostRequestQueuePtr mPerHostPtr;		// Pointer to the corresponding AIPerHostRequestQueue.
 	LLPointer<curlthread::HTTPTimeout> mTimeout;// Timeout administration object associated with last created CurlSocketInfo.
 	bool mTimeoutIsOrphan;						// Set to true when mTimeout is not (yet) associated with a CurlSocketInfo.
@@ -316,7 +316,8 @@ class CurlEasyRequest : public CurlEasyHandle {
   public:
 	// These two are only valid after finalizeRequest.
 	AIHTTPTimeoutPolicy const* getTimeoutPolicy(void) const { return mTimeoutPolicy; }
-	std::string const& getLowercaseHostname(void) const { return mLowercaseHostname; }
+	std::string const& getLowercaseServicename(void) const { return mLowercaseServicename; }
+	std::string getLowercaseHostname(void) const;
 	// Called by CurlSocketInfo to allow access to the last (after a redirect) HTTPTimeout object related to this request.
 	// This creates mTimeout (unless mTimeoutIsOrphan is set in which case it adopts the orphan).
 	LLPointer<curlthread::HTTPTimeout>& get_timeout_object(void);
@@ -349,7 +350,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 
 	// PerHost API.
 	AIPerHostRequestQueuePtr getPerHostPtr(void);					// (Optionally create and) return a pointer to the unique
-																	// AIPerHostRequestQueue corresponding to mLowercaseHostname.
+																	// AIPerHostRequestQueue corresponding to mLowercaseServicename.
 	bool removeFromPerHostQueue(AICurlEasyRequest const&) const;	// Remove this request from the per-host queue, if queued at all.
 																	// Returns true if it was queued.
   protected:

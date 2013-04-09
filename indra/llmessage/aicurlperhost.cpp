@@ -92,40 +92,86 @@ using namespace AICurlPrivate;
 // - port does not contain a ':', and if it exists is always prepended by a ':'.
 //
 //static
-std::string AIPerHostRequestQueue::extract_canonical_hostname(std::string const& url)
+std::string AIPerHostRequestQueue::extract_canonical_servicename(std::string const& url)
 {
-  std::string::size_type pos;
-  std::string::size_type authority = 0;														// Default if there is no sheme.
-  if ((pos = url.find("://")) != url.npos && pos < url.find('/')) authority = pos + 3;		// Skip the "sheme://" if any, the second find is to avoid finding a "://" as part of path-abempty.
-  std::string::size_type host = authority;													// Default if there is no userinfo.
-  if ((pos = url.find('@', authority)) != url.npos) host = pos + 1;							// Skip the "userinfo@" if any.
-  authority = url.length() - 1;																// Default last character of host if there is no path-abempty.
-  if ((pos = url.find('/', host)) != url.npos) authority = pos - 1;							// Point to last character of host.
-  std::string::size_type len = url.find_last_not_of(":0123456789", authority) - host + 1;	// Skip trailing ":port", if any.
-  std::string hostname(url, host, len);
+  char const* p = url.data();
+  char const* const end = p + url.size();
+  char const* sheme_colon = NULL;
+  char const* sheme_slash = NULL;
+  char const* first_ampersand = NULL;
+  char const* port_colon = NULL;
+  std::string servicename;
+  char const* hostname = p;                 // Default in the case there is no "sheme://userinfo@".
+  while (p < end)
+  {
+    int c = *p;
+    if (c == ':')
+    {
+      if (!port_colon && std::isdigit(p[1]))
+      {
+        port_colon = p;
+      }
+      else if (!sheme_colon && !sheme_slash && !first_ampersand && !port_colon)
+      {
+        // Found a colon before any slash or ampersand: this has to be the colon between the sheme and the hier-part.
+        sheme_colon = p;
+      }
+    }
+    else if (c == '/')
+    {
+      if (!sheme_slash && sheme_colon && sheme_colon == p - 1 && !first_ampersand && p[1] == '/')
+      {
+        // Found the first '/' in the first occurance of the sequence "://".
+        sheme_slash = p;
+        hostname = ++p + 1;                 // Point hostname to the start of the authority, the default when there is no "userinfo@" part.
+        servicename.clear();                // Remove the sheme.
+      }
+      else
+      {
+        // Found slash that is not part of the "sheme://" string. Signals end of authority.
+        // We're done.
+        break;
+      }
+    }
+    else if (c == '@')
+    {
+      if (!first_ampersand)
+      {
+        first_ampersand = p;
+        hostname = p + 1;
+        servicename.clear();                // Remove the "userinfo@"
+      }
+    }
+    if (p >= hostname)
+    {
+      // Convert hostname to lowercase in a way that we compare two hostnames equal iff libcurl does.
 #if APR_CHARSET_EBCDIC
 #error Not implemented
 #else
-  // Convert hostname to lowercase in a way that we compare two hostnames equal iff libcurl does.
-  for (std::string::iterator iter = hostname.begin(); iter != hostname.end(); ++iter)
-  {
-	int c = *iter;
-	if (c >= 'A' && c <= 'Z')
-	  *iter = c + ('a' - 'A');
-  }
+      if (c >= 'A' && c <= 'Z')
+        c += ('a' - 'A');
 #endif
-  return hostname;
+      servicename += c;
+    }
+    ++p;
+  }
+  // Strip of any trailing ":80".
+  if (p - 3 == port_colon && p[-1] == '0' && p[-2] == '8')
+  {
+    return servicename.substr(0, p - hostname - 3);
+  }
+  return servicename;
 }
 
 //static
-AIPerHostRequestQueuePtr AIPerHostRequestQueue::instance(std::string const& hostname)
+AIPerHostRequestQueuePtr AIPerHostRequestQueue::instance(std::string const& servicename)
 {
-  llassert(!hostname.empty());
+  llassert(!servicename.empty());
   instance_map_wat instance_map_w(sInstanceMap);
-  AIPerHostRequestQueue::iterator iter = instance_map_w->find(hostname);
+  AIPerHostRequestQueue::iterator iter = instance_map_w->find(servicename);
   if (iter == instance_map_w->end())
   {
-	iter = instance_map_w->insert(instance_map_type::value_type(hostname, new RefCountedThreadSafePerHostRequestQueue)).first;
+	iter = instance_map_w->insert(instance_map_type::value_type(servicename, new RefCountedThreadSafePerHostRequestQueue)).first;
   }
   // Note: the creation of AIPerHostRequestQueuePtr MUST be protected by the lock on sInstanceMap (see release()).
   return iter->second;

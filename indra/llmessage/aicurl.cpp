@@ -1114,7 +1114,7 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
   setopt(CURLOPT_HTTPHEADER, mHeaders);
   setoptString(CURLOPT_URL, url);
   llassert(!mPerHostPtr);
-  mLowercaseHostname = AIPerHostRequestQueue::extract_canonical_hostname(url);
+  mLowercaseServicename = AIPerHostRequestQueue::extract_canonical_servicename(url);
   mTimeoutPolicy = &policy;
   state_machine->setTotalDelayTimeout(policy.getTotalDelay());
   // The following line is a bit tricky: we store a pointer to the object without increasing its reference count.
@@ -1140,7 +1140,7 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
 // // get less connect time, while it still (also) has to wait for this DNS lookup.
 void CurlEasyRequest::set_timeout_opts(void)
 {
-  setopt(CURLOPT_CONNECTTIMEOUT, mTimeoutPolicy->getConnectTimeout(mLowercaseHostname));
+  setopt(CURLOPT_CONNECTTIMEOUT, mTimeoutPolicy->getConnectTimeout(getLowercaseHostname()));
   setopt(CURLOPT_TIMEOUT, mTimeoutPolicy->getCurlTransaction());
 }
 
@@ -1241,9 +1241,9 @@ AIPerHostRequestQueuePtr CurlEasyRequest::getPerHostPtr(void)
   if (!mPerHostPtr)
   {
 	// mPerHostPtr is really just a speed-up cache.
-	// The reason we can cache it is because mLowercaseHostname is only set
+	// The reason we can cache it is because mLowercaseServicename is only set
 	// in finalizeRequest which may only be called once: it never changes.
-	mPerHostPtr = AIPerHostRequestQueue::instance(mLowercaseHostname);
+	mPerHostPtr = AIPerHostRequestQueue::instance(mLowercaseServicename);
   }
   return mPerHostPtr;
 }
@@ -1252,6 +1252,11 @@ bool CurlEasyRequest::removeFromPerHostQueue(AICurlEasyRequest const& easy_reque
 {
   // Note that easy_request (must) represent(s) this object; it's just passed for convenience.
   return mPerHostPtr && PerHostRequestQueue_wat(*mPerHostPtr)->cancel(easy_request);
+}
+
+std::string CurlEasyRequest::getLowercaseHostname(void) const
+{
+  return mLowercaseServicename.substr(0, mLowercaseServicename.find_last_of(':'));
 }
 
 //-----------------------------------------------------------------------------
