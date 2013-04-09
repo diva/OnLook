@@ -1,6 +1,6 @@
 /**
  * @file aiperservice.cpp
- * @brief Implementation of AIPerHostRequestQueue
+ * @brief Implementation of AIPerServiceRequestQueue
  *
  * Copyright (c) 2012, 2013, Aleric Inglewood.
  *
@@ -30,36 +30,40 @@
  *   06/04/2013
  *   Renamed AICurlPrivate::PerHostRequestQueue[Ptr] to AIPerHostRequestQueue[Ptr]
  *   to allow public access.
+ *
+ *   09/04/2013
+ *   Renamed everything "host" to "service" and use "hostname:port" as key
+ *   instead of just "hostname".
  */
 
 #include "sys.h"
 #include "aicurlperservice.h"
 #include "aicurlthread.h"
 
-AIPerHostRequestQueue::threadsafe_instance_map_type AIPerHostRequestQueue::sInstanceMap;
-LLAtomicS32 AIPerHostRequestQueue::sTotalQueued;
-bool AIPerHostRequestQueue::sQueueEmpty;
-bool AIPerHostRequestQueue::sQueueFull;
-bool AIPerHostRequestQueue::sRequestStarvation;
+AIPerServiceRequestQueue::threadsafe_instance_map_type AIPerServiceRequestQueue::sInstanceMap;
+LLAtomicS32 AIPerServiceRequestQueue::sTotalQueued;
+bool AIPerServiceRequestQueue::sQueueEmpty;
+bool AIPerServiceRequestQueue::sQueueFull;
+bool AIPerServiceRequestQueue::sRequestStarvation;
 
 #undef AICurlPrivate
 
 namespace AICurlPrivate {
 
-U32 curl_concurrent_connections_per_host;
+U32 curl_concurrent_connections_per_service;
 
-// Friend functions of RefCountedThreadSafePerHostRequestQueue
+// Friend functions of RefCountedThreadSafePerServiceRequestQueue
 
-void intrusive_ptr_add_ref(RefCountedThreadSafePerHostRequestQueue* per_host)
+void intrusive_ptr_add_ref(RefCountedThreadSafePerServiceRequestQueue* per_service)
 {
-  per_host->mReferenceCount++;
+  per_service->mReferenceCount++;
 }
 
-void intrusive_ptr_release(RefCountedThreadSafePerHostRequestQueue* per_host)
+void intrusive_ptr_release(RefCountedThreadSafePerServiceRequestQueue* per_service)
 {
-  if (--per_host->mReferenceCount == 0)
+  if (--per_service->mReferenceCount == 0)
   {
-    delete per_host;
+    delete per_service;
   }
 }
 
@@ -92,7 +96,7 @@ using namespace AICurlPrivate;
 // - port does not contain a ':', and if it exists is always prepended by a ':'.
 //
 //static
-std::string AIPerHostRequestQueue::extract_canonical_servicename(std::string const& url)
+std::string AIPerServiceRequestQueue::extract_canonical_servicename(std::string const& url)
 {
   char const* p = url.data();
   char const* const end = p + url.size();
@@ -164,21 +168,21 @@ std::string AIPerHostRequestQueue::extract_canonical_servicename(std::string con
 }
 
 //static
-AIPerHostRequestQueuePtr AIPerHostRequestQueue::instance(std::string const& servicename)
+AIPerServiceRequestQueuePtr AIPerServiceRequestQueue::instance(std::string const& servicename)
 {
   llassert(!servicename.empty());
   instance_map_wat instance_map_w(sInstanceMap);
-  AIPerHostRequestQueue::iterator iter = instance_map_w->find(servicename);
+  AIPerServiceRequestQueue::iterator iter = instance_map_w->find(servicename);
   if (iter == instance_map_w->end())
   {
-	iter = instance_map_w->insert(instance_map_type::value_type(servicename, new RefCountedThreadSafePerHostRequestQueue)).first;
+	iter = instance_map_w->insert(instance_map_type::value_type(servicename, new RefCountedThreadSafePerServiceRequestQueue)).first;
   }
-  // Note: the creation of AIPerHostRequestQueuePtr MUST be protected by the lock on sInstanceMap (see release()).
+  // Note: the creation of AIPerServiceRequestQueuePtr MUST be protected by the lock on sInstanceMap (see release()).
   return iter->second;
 }
 
 //static
-void AIPerHostRequestQueue::release(AIPerHostRequestQueuePtr& instance)
+void AIPerServiceRequestQueue::release(AIPerServiceRequestQueuePtr& instance)
 {
   if (instance->exactly_two_left())		// Being 'instance' and the one in sInstanceMap.
   {
@@ -196,7 +200,7 @@ void AIPerHostRequestQueue::release(AIPerHostRequestQueuePtr& instance)
 	  return;
 	}
 	// The reference in the map is the last one; that means there can't be any curl easy requests queued for this host.
-	llassert(PerHostRequestQueue_rat(*instance)->mQueuedRequests.empty());
+	llassert(PerServiceRequestQueue_rat(*instance)->mQueuedRequests.empty());
 	// Find the host and erase it from the map.
 	iterator const end = instance_map_w->end();
 	for(iterator iter = instance_map_w->begin(); iter != end; ++iter)
@@ -214,31 +218,31 @@ void AIPerHostRequestQueue::release(AIPerHostRequestQueuePtr& instance)
   instance.reset();
 }
 
-bool AIPerHostRequestQueue::throttled() const
+bool AIPerServiceRequestQueue::throttled() const
 {
-  llassert(mAdded <= int(curl_concurrent_connections_per_host));
-  return mAdded == int(curl_concurrent_connections_per_host);
+  llassert(mAdded <= int(curl_concurrent_connections_per_service));
+  return mAdded == int(curl_concurrent_connections_per_service);
 }
 
-void AIPerHostRequestQueue::added_to_multi_handle(void)
+void AIPerServiceRequestQueue::added_to_multi_handle(void)
 {
-  llassert(mAdded < int(curl_concurrent_connections_per_host));
+  llassert(mAdded < int(curl_concurrent_connections_per_service));
   ++mAdded;
 }
 
-void AIPerHostRequestQueue::removed_from_multi_handle(void)
+void AIPerServiceRequestQueue::removed_from_multi_handle(void)
 {
   --mAdded;
   llassert(mAdded >= 0);
 }
 
-void AIPerHostRequestQueue::queue(AICurlEasyRequest const& easy_request)
+void AIPerServiceRequestQueue::queue(AICurlEasyRequest const& easy_request)
 {
   mQueuedRequests.push_back(easy_request.get_ptr());
   sTotalQueued++;
 }
 
-bool AIPerHostRequestQueue::cancel(AICurlEasyRequest const& easy_request)
+bool AIPerServiceRequestQueue::cancel(AICurlEasyRequest const& easy_request)
 {
   queued_request_type::iterator const end = mQueuedRequests.end();
   queued_request_type::iterator cur = std::find(mQueuedRequests.begin(), end, easy_request.get_ptr());
@@ -251,7 +255,7 @@ bool AIPerHostRequestQueue::cancel(AICurlEasyRequest const& easy_request)
   // the back with swap (could just swap with the end immediately, but I don't
   // want to break the order in which requests where added). Swap is also not
   // thread-safe, but OK here because it only touches the objects in the deque,
-  // and the deque is protected by the lock on the AIPerHostRequestQueue object.
+  // and the deque is protected by the lock on the AIPerServiceRequestQueue object.
   queued_request_type::iterator prev = cur;
   while (++cur != end)
   {
@@ -264,7 +268,7 @@ bool AIPerHostRequestQueue::cancel(AICurlEasyRequest const& easy_request)
   return true;
 }
 
-void AIPerHostRequestQueue::add_queued_to(curlthread::MultiHandle* multi_handle)
+void AIPerServiceRequestQueue::add_queued_to(curlthread::MultiHandle* multi_handle)
 {
   if (!mQueuedRequests.empty())
   {
@@ -305,15 +309,15 @@ void AIPerHostRequestQueue::add_queued_to(curlthread::MultiHandle* multi_handle)
 }
 
 //static
-void AIPerHostRequestQueue::purge(void)
+void AIPerServiceRequestQueue::purge(void)
 {
   instance_map_wat instance_map_w(sInstanceMap);
   for (iterator host = instance_map_w->begin(); host != instance_map_w->end(); ++host)
   {
 	Dout(dc::curl, "Purging queue of host \"" << host->first << "\".");
-	PerHostRequestQueue_wat per_host_w(*host->second);
-	size_t s = per_host_w->mQueuedRequests.size();
-	per_host_w->mQueuedRequests.clear();
+	PerServiceRequestQueue_wat per_service_w(*host->second);
+	size_t s = per_service_w->mQueuedRequests.size();
+	per_service_w->mQueuedRequests.clear();
 	sTotalQueued -= s;
 	llassert(sTotalQueued >= 0);
   }

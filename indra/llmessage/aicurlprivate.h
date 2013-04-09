@@ -305,7 +305,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 
 	AIHTTPTimeoutPolicy const* mTimeoutPolicy;
 	std::string mLowercaseServicename;			// Lowercase hostname:port (canonicalized) extracted from the url.
-	AIPerHostRequestQueuePtr mPerHostPtr;		// Pointer to the corresponding AIPerHostRequestQueue.
+	AIPerServiceRequestQueuePtr mPerServicePtr;		// Pointer to the corresponding AIPerServiceRequestQueue.
 	LLPointer<curlthread::HTTPTimeout> mTimeout;// Timeout administration object associated with last created CurlSocketInfo.
 	bool mTimeoutIsOrphan;						// Set to true when mTimeout is not (yet) associated with a CurlSocketInfo.
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
@@ -348,10 +348,10 @@ class CurlEasyRequest : public CurlEasyHandle {
 	inline ThreadSafeBufferedCurlEasyRequest* get_lockobj(void);
 	inline ThreadSafeBufferedCurlEasyRequest const* get_lockobj(void) const;
 
-	// PerHost API.
-	AIPerHostRequestQueuePtr getPerHostPtr(void);					// (Optionally create and) return a pointer to the unique
-																	// AIPerHostRequestQueue corresponding to mLowercaseServicename.
-	bool removeFromPerHostQueue(AICurlEasyRequest const&) const;	// Remove this request from the per-host queue, if queued at all.
+	// PerService API.
+	AIPerServiceRequestQueuePtr getPerServicePtr(void);					// (Optionally create and) return a pointer to the unique
+																	// AIPerServiceRequestQueue corresponding to mLowercaseServicename.
+	bool removeFromPerServiceQueue(AICurlEasyRequest const&) const;	// Remove this request from the per-host queue, if queued at all.
 																	// Returns true if it was queued.
   protected:
 	// Pass events to parent.

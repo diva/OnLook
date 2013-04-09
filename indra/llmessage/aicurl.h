@@ -52,7 +52,7 @@
 #include "stdtypes.h"		// U16, S32, U32, F64
 #include "llatomic.h"		// LLAtomicU32
 #include "aithreadsafe.h"
-#include "aicurlperservice.h"	// AIPerHostRequestQueuePtr
+#include "aicurlperservice.h"	// AIPerServiceRequestQueuePtr
 
 // Debug Settings.
 extern bool gNoVerifySSLCert;
@@ -155,7 +155,7 @@ struct Stats {
 
 // Called to handle changes in Debug Settings.
 bool handleCurlMaxTotalConcurrentConnections(LLSD const& newvalue);
-bool handleCurlConcurrentConnectionsPerHost(LLSD const& newvalue);
+bool handleCurlConcurrentConnectionsPerService(LLSD const& newvalue);
 bool handleNoVerifySSLCert(LLSD const& newvalue);
 
 // Called once at start of application (from newview/llappviewer.cpp by main thread (before threads are created)),
@@ -163,7 +163,7 @@ bool handleNoVerifySSLCert(LLSD const& newvalue);
 void initCurl(void);
 
 // Called once at start of application (from LLAppViewer::initThreads), starts AICurlThread.
-void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentConnectionsPerHost, bool NoVerifySSLCert);
+void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentConnectionsPerService, bool NoVerifySSLCert);
 
 // Called once at the end of application before terminating other threads (most notably the texture thread workers)
 // with the purpose to stop the curl thread from doing any call backs to running responders: the responders sometimes

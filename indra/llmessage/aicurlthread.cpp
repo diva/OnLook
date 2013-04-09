@@ -205,7 +205,7 @@ int ioctlsocket(int fd, int, unsigned long* nonblocking_enable)
 namespace AICurlPrivate {
 
 LLAtomicS32 max_pipelined_requests(32);
-LLAtomicS32 max_pipelined_requests_per_host(8);
+LLAtomicS32 max_pipelined_requests_per_service(8);
 
 enum command_st {
   cmd_none,
@@ -1332,11 +1332,11 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 		case cmd_boost:	// FIXME: future stuff
 		  break;
 		case cmd_add:
-		  PerHostRequestQueue_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerHostPtr())->removed_from_command_queue();
+		  PerServiceRequestQueue_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerServicePtr())->removed_from_command_queue();
 		  multi_handle_w->add_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()));
 		  break;
 		case cmd_remove:
-		  PerHostRequestQueue_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerHostPtr())->added_to_command_queue();		// Not really, but this has the same effect as 'removed a remove command'.
+		  PerServiceRequestQueue_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerServicePtr())->added_to_command_queue();		// Not really, but this has the same effect as 'removed a remove command'.
 		  multi_handle_w->remove_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()), true);
 		  break;
 	  }
@@ -1578,7 +1578,7 @@ void AICurlThread::run(void)
 	  multi_handle_w->check_msg_queue();
 	}
 	// Clear the queued requests.
-	AIPerHostRequestQueue::purge();
+	AIPerServiceRequestQueue::purge();
   }
   AICurlMultiHandle::destroyInstance();
 }
@@ -1705,17 +1705,17 @@ static U32 curl_max_total_concurrent_connections = 32;						// Initialized on st
 void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
 {
   bool throttled = true;		// Default.
-  AIPerHostRequestQueuePtr per_host;
+  AIPerServiceRequestQueuePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
-	per_host = curl_easy_request_w->getPerHostPtr();
-	PerHostRequestQueue_wat per_host_w(*per_host);
-	if (mAddedEasyRequests.size() < curl_max_total_concurrent_connections && !per_host_w->throttled())
+	per_service = curl_easy_request_w->getPerServicePtr();
+	PerServiceRequestQueue_wat per_service_w(*per_service);
+	if (mAddedEasyRequests.size() < curl_max_total_concurrent_connections && !per_service_w->throttled())
 	{
 	  curl_easy_request_w->set_timeout_opts();
 	  if (curl_easy_request_w->add_handle_to_multi(curl_easy_request_w, mMultiHandle) == CURLM_OK)
 	  {
-		per_host_w->added_to_multi_handle();	// (About to be) added to mAddedEasyRequests.
+		per_service_w->added_to_multi_handle();	// (About to be) added to mAddedEasyRequests.
 		throttled = false;						// Fall through...
 	  }
 	}
@@ -1731,7 +1731,7 @@ void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
 	return;
   }
   // The request could not be added, we have to queue it.
-  PerHostRequestQueue_wat(*per_host)->queue(easy_request);
+  PerServiceRequestQueue_wat(*per_service)->queue(easy_request);
 #ifdef SHOW_ASSERT
   // Not active yet, but it's no longer an error if next we try to remove the request.
   AICurlEasyRequest_wat(*easy_request)->mRemovedPerCommand = false;
@@ -1748,7 +1748,7 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
 #ifdef SHOW_ASSERT
 	bool removed =
 #endif
-	easy_request_w->removeFromPerHostQueue(easy_request);
+	easy_request_w->removeFromPerServiceQueue(easy_request);
 #ifdef SHOW_ASSERT
 	if (removed)
 	{
@@ -1764,12 +1764,12 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
 CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator const& iter, bool as_per_command)
 {
   CURLMcode res;
-  AIPerHostRequestQueuePtr per_host;
+  AIPerServiceRequestQueuePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(**iter);
 	res = curl_easy_request_w->remove_handle_from_multi(curl_easy_request_w, mMultiHandle);
-	per_host = curl_easy_request_w->getPerHostPtr();
-	PerHostRequestQueue_wat(*per_host)->removed_from_multi_handle();		// (About to be) removed from mAddedEasyRequests.
+	per_service = curl_easy_request_w->getPerServicePtr();
+	PerServiceRequestQueue_wat(*per_service)->removed_from_multi_handle();		// (About to be) removed from mAddedEasyRequests.
 #ifdef SHOW_ASSERT
 	curl_easy_request_w->mRemovedPerCommand = as_per_command;
 #endif
@@ -1786,7 +1786,7 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
 #endif
 
   // Attempt to add a queued request, if any.
-  PerHostRequestQueue_wat(*per_host)->add_queued_to(this);
+  PerServiceRequestQueue_wat(*per_service)->add_queued_to(this);
   return res;
 }
 
@@ -2392,7 +2392,7 @@ void AICurlEasyRequest::addRequest(void)
 	command_queue_w->commands.push_back(Command(*this, cmd_add));
 	command_queue_w->size++;
 	AICurlEasyRequest_wat curl_easy_request_w(*get());
-	PerHostRequestQueue_wat(*curl_easy_request_w->getPerHostPtr())->added_to_command_queue();
+	PerServiceRequestQueue_wat(*curl_easy_request_w->getPerServicePtr())->added_to_command_queue();
 	curl_easy_request_w->add_queued();
   }
   // Something was added to the queue, wake up the thread to get it.
@@ -2456,7 +2456,7 @@ void AICurlEasyRequest::removeRequest(void)
 	command_queue_w->commands.push_back(Command(*this, cmd_remove));
 	command_queue_w->size--;
 	AICurlEasyRequest_wat curl_easy_request_w(*get());
-	PerHostRequestQueue_wat(*curl_easy_request_w->getPerHostPtr())->removed_from_command_queue();	// Note really, but this has the same effect as 'added a remove command'.
+	PerServiceRequestQueue_wat(*curl_easy_request_w->getPerServicePtr())->removed_from_command_queue();	// Note really, but this has the same effect as 'added a remove command'.
 	// Suppress warning that would otherwise happen if the callbacks are revoked before the curl thread removed the request.
 	curl_easy_request_w->remove_queued();
   }
@@ -2468,7 +2468,7 @@ void AICurlEasyRequest::removeRequest(void)
 
 namespace AICurlInterface {
 
-void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentConnectionsPerHost, bool NoVerifySSLCert)
+void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentConnectionsPerService, bool NoVerifySSLCert)
 {
   using namespace AICurlPrivate;
   using namespace AICurlPrivate::curlthread;
@@ -2477,10 +2477,10 @@ void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentCo
 
   // Cache Debug Settings.
   curl_max_total_concurrent_connections = CurlMaxTotalConcurrentConnections;
-  curl_concurrent_connections_per_host = CurlConcurrentConnectionsPerHost;
+  curl_concurrent_connections_per_service = CurlConcurrentConnectionsPerService;
   gNoVerifySSLCert = NoVerifySSLCert;
   max_pipelined_requests = curl_max_total_concurrent_connections;
-  max_pipelined_requests_per_host = curl_concurrent_connections_per_host;
+  max_pipelined_requests_per_service = curl_concurrent_connections_per_service;
 
   AICurlThread::sInstance = new AICurlThread;
   AICurlThread::sInstance->start();
@@ -2498,14 +2498,14 @@ bool handleCurlMaxTotalConcurrentConnections(LLSD const& newvalue)
   return true;
 }
 
-bool handleCurlConcurrentConnectionsPerHost(LLSD const& newvalue)
+bool handleCurlConcurrentConnectionsPerService(LLSD const& newvalue)
 {
   using namespace AICurlPrivate;
 
-  U32 old = curl_concurrent_connections_per_host;
-  curl_concurrent_connections_per_host = newvalue.asInteger();
-  max_pipelined_requests_per_host += curl_concurrent_connections_per_host - old;
-  llinfos << "CurlConcurrentConnectionsPerHost set to " << curl_concurrent_connections_per_host << llendl;
+  U32 old = curl_concurrent_connections_per_service;
+  curl_concurrent_connections_per_service = newvalue.asInteger();
+  max_pipelined_requests_per_service += curl_concurrent_connections_per_service - old;
+  llinfos << "CurlConcurrentConnectionsPerService set to " << curl_concurrent_connections_per_service << llendl;
   return true;
 }
 
@@ -2525,7 +2525,7 @@ U32 getNumHTTPCommands(void)
 
 U32 getNumHTTPQueued(void)
 {
-  return AIPerHostRequestQueue::total_queued_size();
+  return AIPerServiceRequestQueue::total_queued_size();
 }
 
 U32 getNumHTTPAdded(void)
@@ -2551,16 +2551,16 @@ U32 getNumHTTPAdded(void)
 // causes it to go through the states bs_reset, bs_initialize and then bs_multiplex with
 // run state AICurlEasyRequestStateMachine_addRequest. Finally, in this state, multiplex
 // calls AICurlEasyRequestStateMachine::multiplex_impl which then calls AICurlEasyRequest::addRequest
-// which causes an increment of command_queue_w->size and AIPerHostRequestQueue::mQueuedCommands.
+// which causes an increment of command_queue_w->size and AIPerServiceRequestQueue::mQueuedCommands.
 //
 // It is therefore guaranteed that in one loop of LLTextureFetchWorker::doWork,
 // this size is incremented; stopping this function from returning true once we reached the
 // threshold of "pipelines" requests (the sum of requests in the command queue, the ones
-// throttled and queued in AIPerHostRequestQueue::mQueuedRequests and the already
+// throttled and queued in AIPerServiceRequestQueue::mQueuedRequests and the already
 // running requests (in MultiHandle::mAddedEasyRequests)).
 //
 //static
-bool AIPerHostRequestQueue::wantsMoreHTTPRequestsFor(AIPerHostRequestQueuePtr const& per_host, bool too_much_bandwidth)
+bool AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(AIPerServiceRequestQueuePtr const& per_service, bool too_much_bandwidth)
 {
   using namespace AICurlPrivate;
   using namespace AICurlPrivate::curlthread;
@@ -2587,30 +2587,30 @@ bool AIPerHostRequestQueue::wantsMoreHTTPRequestsFor(AIPerHostRequestQueuePtr co
 
   // Check if it's ok to get a new request for this particular host and update the per-host threshold.
 
-  // Atomic read max_pipelined_requests_per_host for the below calculations.
-  S32 const max_pipelined_requests_per_host_cache = max_pipelined_requests_per_host;
+  // Atomic read max_pipelined_requests_per_service for the below calculations.
+  S32 const max_pipelined_requests_per_service_cache = max_pipelined_requests_per_service;
   {
-	PerHostRequestQueue_rat per_host_r(*per_host);
-	S32 const pipelined_requests_per_host = per_host_r->pipelined_requests();
-	reject = pipelined_requests_per_host >= max_pipelined_requests_per_host_cache;
-	equal = pipelined_requests_per_host == max_pipelined_requests_per_host_cache;
-	increment_threshold = per_host_r->mRequestStarvation;
-	decrement_threshold = per_host_r->mQueueFull && !per_host_r->mQueueEmpty;
+	PerServiceRequestQueue_rat per_service_r(*per_service);
+	S32 const pipelined_requests_per_service = per_service_r->pipelined_requests();
+	reject = pipelined_requests_per_service >= max_pipelined_requests_per_service_cache;
+	equal = pipelined_requests_per_service == max_pipelined_requests_per_service_cache;
+	increment_threshold = per_service_r->mRequestStarvation;
+	decrement_threshold = per_service_r->mQueueFull && !per_service_r->mQueueEmpty;
 	// Reset flags.
-	per_host_r->mQueueFull = per_host_r->mQueueEmpty = per_host_r->mRequestStarvation = false;
+	per_service_r->mQueueFull = per_service_r->mQueueEmpty = per_service_r->mRequestStarvation = false;
   }
   if (decrement_threshold)
   {
-	if (max_pipelined_requests_per_host_cache > curl_concurrent_connections_per_host)
+	if (max_pipelined_requests_per_service_cache > curl_concurrent_connections_per_service)
 	{
-	  --max_pipelined_requests_per_host;
+	  --max_pipelined_requests_per_service;
 	}
   }
   else if (increment_threshold && reject)
   {
-	if (max_pipelined_requests_per_host_cache < 2 * curl_concurrent_connections_per_host)
+	if (max_pipelined_requests_per_service_cache < 2 * curl_concurrent_connections_per_service)
 	{
-	  max_pipelined_requests_per_host++;
+	  max_pipelined_requests_per_service++;
 	  // Immediately take the new threshold into account.
 	  reject = !equal;
 	}
@@ -2640,7 +2640,7 @@ bool AIPerHostRequestQueue::wantsMoreHTTPRequestsFor(AIPerHostRequestQueuePtr co
 	// here instead.
 
 	// The maximum number of requests that may be queued in command_queue is equal to the total number of requests
-	// that may exist in the pipeline minus the number of requests queued in AIPerHostRequestQueue objects, minus
+	// that may exist in the pipeline minus the number of requests queued in AIPerServiceRequestQueue objects, minus
 	// the number of already running requests.
 	reject = pipelined_requests >= max_pipelined_requests_cache;
 	equal = pipelined_requests == max_pipelined_requests_cache;

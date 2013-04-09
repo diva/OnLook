@@ -392,7 +392,7 @@ bool LLCrashLogger::init()
 
 	// Start curl thread.
 	AICurlInterface::startCurlThread(64,	// CurlMaxTotalConcurrentConnections
-									 8,		// CurlConcurrentConnectionsPerHost
+									 8,		// CurlConcurrentConnectionsPerService
 									 true);	// NoVerifySSLCert
 
 	// We assume that all the logs we're looking for reside on the current drive

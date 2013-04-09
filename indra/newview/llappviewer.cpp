@@ -1911,7 +1911,7 @@ bool LLAppViewer::initThreads()
 	startEngineThread();
 
 	AICurlInterface::startCurlThread(gSavedSettings.getU32("CurlMaxTotalConcurrentConnections"),
-		                             gSavedSettings.getU32("CurlConcurrentConnectionsPerHost"),
+		                             gSavedSettings.getU32("CurlConcurrentConnectionsPerService"),
 		                             gSavedSettings.getBOOL("NoVerifySSLCert"));
 
 	LLImage::initClass();

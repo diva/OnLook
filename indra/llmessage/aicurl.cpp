@@ -959,9 +959,9 @@ CurlEasyRequest::~CurlEasyRequest()
   // be available anymore.
   send_handle_events_to(NULL);
   revokeCallbacks();
-  if (mPerHostPtr)
+  if (mPerServicePtr)
   {
-	 AIPerHostRequestQueue::release(mPerHostPtr);
+	 AIPerServiceRequestQueue::release(mPerServicePtr);
   }
   // This wasn't freed yet if the request never finished.
   curl_slist_free_all(mHeaders);
@@ -1113,8 +1113,8 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
 #endif
   setopt(CURLOPT_HTTPHEADER, mHeaders);
   setoptString(CURLOPT_URL, url);
-  llassert(!mPerHostPtr);
-  mLowercaseServicename = AIPerHostRequestQueue::extract_canonical_servicename(url);
+  llassert(!mPerServicePtr);
+  mLowercaseServicename = AIPerServiceRequestQueue::extract_canonical_servicename(url);
   mTimeoutPolicy = &policy;
   state_machine->setTotalDelayTimeout(policy.getTotalDelay());
   // The following line is a bit tricky: we store a pointer to the object without increasing its reference count.
@@ -1236,22 +1236,22 @@ void CurlEasyRequest::queued_for_removal(AICurlEasyRequest_wat& curl_easy_reques
 }
 #endif
 
-AIPerHostRequestQueuePtr CurlEasyRequest::getPerHostPtr(void)
+AIPerServiceRequestQueuePtr CurlEasyRequest::getPerServicePtr(void)
 {
-  if (!mPerHostPtr)
+  if (!mPerServicePtr)
   {
-	// mPerHostPtr is really just a speed-up cache.
+	// mPerServicePtr is really just a speed-up cache.
 	// The reason we can cache it is because mLowercaseServicename is only set
 	// in finalizeRequest which may only be called once: it never changes.
-	mPerHostPtr = AIPerHostRequestQueue::instance(mLowercaseServicename);
+	mPerServicePtr = AIPerServiceRequestQueue::instance(mLowercaseServicename);
   }
-  return mPerHostPtr;
+  return mPerServicePtr;
 }
 
-bool CurlEasyRequest::removeFromPerHostQueue(AICurlEasyRequest const& easy_request) const
+bool CurlEasyRequest::removeFromPerServiceQueue(AICurlEasyRequest const& easy_request) const
 {
   // Note that easy_request (must) represent(s) this object; it's just passed for convenience.
-  return mPerHostPtr && PerHostRequestQueue_wat(*mPerHostPtr)->cancel(easy_request);
+  return mPerServicePtr && PerServiceRequestQueue_wat(*mPerServicePtr)->cancel(easy_request);
 }
 
 std::string CurlEasyRequest::getLowercaseHostname(void) const

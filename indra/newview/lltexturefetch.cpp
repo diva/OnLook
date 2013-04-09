@@ -253,7 +253,7 @@ private:
 	LLUUID mID;
 	LLHost mHost;
 	std::string mUrl;
-	AIPerHostRequestQueuePtr mPerHostPtr;		// Pointer to the AIPerHostRequestQueue corresponding to the host of mUrl.
+	AIPerServiceRequestQueuePtr mPerServicePtr;		// Pointer to the AIPerServiceRequestQueue corresponding to the host of mUrl.
 	U8 mType;
 	F32 mImagePriority;
 	U32 mWorkPriority;
@@ -799,11 +799,11 @@ LLTextureFetchWorker::LLTextureFetchWorker(LLTextureFetch* fetcher,
 	if (!mCanUseNET)
 	{
 	  // Probably a file://, but well; in that case servicename will be empty.
-	  std::string servicename = AIPerHostRequestQueue::extract_canonical_servicename(mUrl);
+	  std::string servicename = AIPerServiceRequestQueue::extract_canonical_servicename(mUrl);
 	  if (!servicename.empty())
 	  {
-		// Make sure mPerHostPtr is up to date with mUrl.
-		mPerHostPtr = AIPerHostRequestQueue::instance(servicename);
+		// Make sure mPerServicePtr is up to date with mUrl.
+		mPerServicePtr = AIPerServiceRequestQueue::instance(servicename);
 	  }
 	}
 
@@ -1162,7 +1162,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				{
 					mUrl = http_url + "/?texture_id=" + mID.asString().c_str();
 					mWriteToCacheState = CAN_WRITE ; //because this texture has a fixed texture id.
-					mPerHostPtr = AIPerHostRequestQueue::instance(AIPerHostRequestQueue::extract_canonical_servicename(http_url));
+					mPerServicePtr = AIPerServiceRequestQueue::instance(AIPerServiceRequestQueue::extract_canonical_servicename(http_url));
 				}
 				else
 				{
@@ -1272,7 +1272,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 
 			// Let AICurl decide if we can process more HTTP requests at the moment or not.
 			static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
-			if (!AIPerHostRequestQueue::wantsMoreHTTPRequestsFor(mPerHostPtr, mFetcher->getTextureBandwidth() > throttle_bandwidth))
+			if (!AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(mPerServicePtr, mFetcher->getTextureBandwidth() > throttle_bandwidth))
 			{
 				return false ; //wait.
 			}
