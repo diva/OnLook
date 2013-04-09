@@ -1545,8 +1545,8 @@ void AICurlThread::run(void)
 		continue;
 	  }
 	  // Clock count used for timeouts.
-	  HTTPTimeout::sClockCount = get_clock_count();
-	  Dout(dc::curl, "HTTPTimeout::sClockCount = " << HTTPTimeout::sClockCount);
+	  HTTPTimeout::sTime_10ms = get_clock_count() * HTTPTimeout::sClockWidth_10ms;
+	  Dout(dc::curl, "HTTPTimeout::sTime_10ms = " << HTTPTimeout::sTime_10ms);
 	  if (ready == 0)
 	  {
 		multi_handle_w->socket_action(CURL_SOCKET_TIMEOUT, 0);
