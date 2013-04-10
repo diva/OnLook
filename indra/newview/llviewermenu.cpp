@@ -9379,7 +9379,6 @@ void initialize_menus()
 	addMenu(new LLToolsTakeCopy(), "Tools.TakeCopy");
 	addMenu(new LLToolsTakeCopy(), "Tools.TakeCopy");
 
-	addMenu(new LLScriptDelete(), "Tools.ScriptDelete");
 	// <edit>
 	addMenu(new LLToolsEnableAdminDelete(), "Tools.EnableAdminDelete");
 	addMenu(new LLToolsAdminDelete(), "Tools.AdminDelete");
