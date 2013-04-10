@@ -92,29 +92,25 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(DARWIN 1)
 
   if(${CMAKE_GENERATOR} MATCHES Xcode)
-    execute_process(
-      COMMAND sh -c "xcodebuild -version | grep Xcode  | cut -d ' ' -f2 | cut -d'.' -f1-2"
-      OUTPUT_VARIABLE XCODE_VERSION )
-
-    # To support a different SDK update these Xcode settings:
-    if (XCODE_VERSION GREATER 4.2)
-      set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
-    else (XCODE_VERSION GREATER 4.2)
+    #SDK Compiler and Deployment targets for XCode
+    if (${XCODE_VERSION} VERSION_LESS 4.0.0)
+      set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.5.sdk)
       set(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
-    endif (XCODE_VERSION GREATER 4.2)
+    else (${XCODE_VERSION} VERSION_LESS 4.0.0)
+      set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.6.sdk)
+      set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
+    endif (${XCODE_VERSION} VERSION_LESS 4.0.0)
   else(${CMAKE_GENERATOR} MATCHES Xcode)
+    set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.6.sdk)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
   endif(${CMAKE_GENERATOR} MATCHES Xcode)
 
-  set(CMAKE_OSX_SYSROOT macosx10.6)
   set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvmgcc42")
 
   set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT dwarf-with-dsym)
 
   # Build only for i386 by default, system default on MacOSX 10.6 is x86_64
-  if (NOT CMAKE_OSX_ARCHITECTURES)
-    set(CMAKE_OSX_ARCHITECTURES i386)
-  endif (NOT CMAKE_OSX_ARCHITECTURES)
+  set(CMAKE_OSX_ARCHITECTURES i386)
   set(ARCH i386)
   set(WORD_SIZE 32)
 

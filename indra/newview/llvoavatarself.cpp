@@ -165,6 +165,9 @@ LLVOAvatarSelf::LLVOAvatarSelf(const LLUUID& id,
 							   const LLPCode pcode,
 							   LLViewerRegion* regionp) :
 	LLVOAvatar(id, pcode, regionp),
+// [RLVa:KB] - Checked: 2012-07-28 (RLVa-1.4.7)
+	mAttachmentSignal(NULL),
+// [/RLVa:KB]
 	mScreenp(NULL),
 	mLastRegionHandle(0),
 	mRegionCrossingCount(0),
@@ -1122,6 +1125,14 @@ LLViewerObject* LLVOAvatarSelf::getWornAttachment(const LLUUID& inv_item_id)
 	return NULL;
 }
 
+// [RLVa:KB] - Checked: 2012-07-28 (RLVa-1.4.7)
+boost::signals2::connection LLVOAvatarSelf::setAttachmentCallback(const attachment_signal_t::slot_type& cb)
+{
+	if (!mAttachmentSignal)
+		mAttachmentSignal = new attachment_signal_t();
+	return mAttachmentSignal->connect(cb);
+}
+// [/RLVa:KB]
 // [RLVa:KB] - Checked: 2010-03-14 (RLVa-1.2.0a) | Modified: RLVa-1.2.0a
 LLViewerJointAttachment* LLVOAvatarSelf::getWornAttachmentPoint(const LLUUID& idItem) const
 {
@@ -1177,6 +1188,10 @@ const LLViewerJointAttachment *LLVOAvatarSelf::attachObject(LLViewerObject *view
 
 // [RLVa:KB] - Checked: 2010-08-22 (RLVa-1.2.1a) | Modified: RLVa-1.2.1a
 		// NOTE: RLVa event handlers should be invoked *after* LLVOAvatar::attachObject() calls LLViewerJointAttachment::addObject()
+		if (mAttachmentSignal)
+		{
+			(*mAttachmentSignal)(viewer_object, attachment, ACTION_ATTACH);
+		}
 		if (rlv_handler_t::isEnabled())
 		{
 			RlvAttachmentLockWatchdog::instance().onAttach(viewer_object, attachment);
@@ -1205,16 +1220,24 @@ BOOL LLVOAvatarSelf::detachObject(LLViewerObject *viewer_object)
 
 // [RLVa:KB] - Checked: 2010-03-05 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
 	// NOTE: RLVa event handlers should be invoked *before* LLVOAvatar::detachObject() calls LLViewerJointAttachment::removeObject()
-	if (rlv_handler_t::isEnabled())
+	
 	{
 		for (attachment_map_t::const_iterator itAttachPt = mAttachmentPoints.begin(); itAttachPt != mAttachmentPoints.end(); ++itAttachPt)
 		{
 			const LLViewerJointAttachment* pAttachPt = itAttachPt->second;
 			if (pAttachPt->isObjectAttached(viewer_object))
 			{
-				RlvAttachmentLockWatchdog::instance().onDetach(viewer_object, pAttachPt);
-				gRlvHandler.onDetach(viewer_object, pAttachPt);
+				if (rlv_handler_t::isEnabled())
+				{
+					RlvAttachmentLockWatchdog::instance().onDetach(viewer_object, pAttachPt);
+					gRlvHandler.onDetach(viewer_object, pAttachPt);
+				}
+				if (mAttachmentSignal)
+				{
+					(*mAttachmentSignal)(viewer_object, pAttachPt, ACTION_DETACH);
+				}
 			}
+			break;
 		}
 	}
 // [/RLVa:KB]
@@ -1969,19 +1992,41 @@ void LLVOAvatarSelf::dumpTotalLocalTextureByteCount()
 
 BOOL LLVOAvatarSelf::getIsCloud() const
 {
-	// do we have our body parts?
-	if (gAgentWearables.getWearableCount(LLWearableType::WT_SHAPE) == 0 ||
-		gAgentWearables.getWearableCount(LLWearableType::WT_HAIR) == 0 ||
-		gAgentWearables.getWearableCount(LLWearableType::WT_EYES) == 0 ||
-		gAgentWearables.getWearableCount(LLWearableType::WT_SKIN) == 0)	
+	// Let people know why they're clouded without spamming them into oblivion.
+	bool do_warn = false;
+	static LLTimer time_since_notice;
+	F32 update_freq = 30.0;
+	if (time_since_notice.getElapsedTimeF32() > update_freq)
 	{
-		lldebugs << "No body parts" << llendl;
+		time_since_notice.reset();
+		do_warn = true;
+	}
+	
+	// do we have our body parts?
+	S32 shape_count = gAgentWearables.getWearableCount(LLWearableType::WT_SHAPE);
+	S32 hair_count = gAgentWearables.getWearableCount(LLWearableType::WT_HAIR);
+	S32 eye_count = gAgentWearables.getWearableCount(LLWearableType::WT_EYES);
+	S32 skin_count = gAgentWearables.getWearableCount(LLWearableType::WT_SKIN);
+	if (!shape_count || !hair_count || !eye_count || !skin_count)
+	{
+		if (do_warn)
+		{
+			llinfos << "Self is clouded due to missing one or more required body parts: "
+					<< (shape_count ? "" : "SHAPE ")
+					<< (hair_count ? "" : "HAIR ")
+					<< (eye_count ? "" : "EYES ")
+					<< (skin_count ? "" : "SKIN ")
+					<< llendl;
+		}
 		return TRUE;
 	}
 
 	if (!isTextureDefined(TEX_HAIR, 0))
 	{
-		lldebugs << "No hair texture" << llendl;
+		if (do_warn)
+		{
+			llinfos << "Self is clouded because of no hair texture" << llendl;
+		}
 		return TRUE;
 	}
 
@@ -1990,14 +2035,20 @@ BOOL LLVOAvatarSelf::getIsCloud() const
 		if (!isLocalTextureDataAvailable(getLayerSet(BAKED_LOWER)) &&
 			(!isTextureDefined(TEX_LOWER_BAKED, 0)))
 		{
-			lldebugs << "Lower textures not baked" << llendl;
+			if (do_warn)
+			{
+				llinfos << "Self is clouded because lower textures not baked" << llendl;
+			}
 			return TRUE;
 		}
 
 		if (!isLocalTextureDataAvailable(getLayerSet(BAKED_UPPER)) &&
 			(!isTextureDefined(TEX_UPPER_BAKED, 0)))
 		{
-			lldebugs << "Upper textures not baked" << llendl;
+			if (do_warn)
+			{
+				llinfos << "Self is clouded because upper textures not baked" << llendl;
+			}
 			return TRUE;
 		}
 
@@ -2014,7 +2065,11 @@ BOOL LLVOAvatarSelf::getIsCloud() const
 			const LLViewerTexture* baked_img = getImage( texture_data.mTextureIndex, 0 );
 			if (!baked_img || !baked_img->hasGLTexture())
 			{
-				lldebugs << "Texture at index " << i << " (texture index is " << texture_data.mTextureIndex << ") is not loaded" << llendl;
+				if (do_warn)
+				{
+					llinfos << "Self is clouded because texture at index " << i
+							<< " (texture index is " << texture_data.mTextureIndex << ") is not loaded" << llendl;
+				}
 				return TRUE;
 			}
 		}
@@ -2566,38 +2621,45 @@ BOOL LLVOAvatarSelf::canGrabBakedTexture(EBakedTextureIndex baked_index) const
 }
 
 void LLVOAvatarSelf::addLocalTextureStats( ETextureIndex type, LLViewerFetchedTexture* imagep,
-										   F32 texel_area_ratio, BOOL render_avatar, BOOL covered_by_baked, U32 index )
+										   F32 texel_area_ratio, BOOL render_avatar, BOOL covered_by_baked)
 {
 	if (!isIndexLocalTexture(type)) return;
 
-	if (getLocalTextureID(type, index) != IMG_DEFAULT_AVATAR)
+	// Sunshine - ignoring covered_by_baked will force local textures
+	// to always load.  Fix for SH-4001 and many related issues.  Do
+	// not restore this without some more targetted fix for the local
+	// textures failing to load issue.
+	//if (!covered_by_baked)
 	{
-		imagep->setNoDelete();
-		if (imagep->getDiscardLevel() != 0)
+		if (imagep->getID() != IMG_DEFAULT_AVATAR)
 		{
-			F32 desired_pixels;
-			desired_pixels = llmin(mPixelArea, (F32)getTexImageArea());
-
-			// DRANO what priority should wearable-based textures have?
-			if (isUsingLocalAppearance())
+			imagep->setNoDelete();
+			if (imagep->getDiscardLevel() != 0)
 			{
-				imagep->setBoostLevel(getAvatarBoostLevel());
-				imagep->setAdditionalDecodePriority(SELF_ADDITIONAL_PRI) ;
-			}
-			imagep->resetTextureStats();
-			imagep->setMaxVirtualSizeResetInterval(MAX_TEXTURE_VIRTURE_SIZE_RESET_INTERVAL);
-			imagep->addTextureStats( desired_pixels / texel_area_ratio );
-			imagep->forceUpdateBindStats() ;
-			if (imagep->getDiscardLevel() < 0)
-			{
-				mHasGrey = TRUE; // for statistics gathering
+				F32 desired_pixels;
+				desired_pixels = llmin(mPixelArea, (F32)getTexImageArea());
+	
+				// DRANO what priority should wearable-based textures have?
+				if (isUsingLocalAppearance())
+				{
+					imagep->setBoostLevel(getAvatarBoostLevel());
+					imagep->setAdditionalDecodePriority(SELF_ADDITIONAL_PRI) ;
+				}
+				imagep->resetTextureStats();
+				imagep->setMaxVirtualSizeResetInterval(MAX_TEXTURE_VIRTURE_SIZE_RESET_INTERVAL);
+				imagep->addTextureStats( desired_pixels / texel_area_ratio );
+				imagep->forceUpdateBindStats() ;
+				if (imagep->getDiscardLevel() < 0)
+				{
+					mHasGrey = TRUE; // for statistics gathering
+				}
 			}
 		}
-	}
-	else
-	{
-		// texture asset is missing
-		mHasGrey = TRUE; // for statistics gathering
+		else
+		{
+			// texture asset is missing
+			mHasGrey = TRUE; // for statistics gathering
+		}
 	}
 }
 
@@ -2962,8 +3024,9 @@ void LLVOAvatarSelf::onCustomizeStart(bool disable_camera_switch)
 		gAgentAvatarp->idleUpdateAppearanceAnimation();
 #endif
 		
-		gAgentAvatarp->invalidateAll();
-		gAgentAvatarp->updateMeshTextures();
+		gAgentAvatarp->invalidateAll(); // mark all bakes as dirty, request updates
+		gAgentAvatarp->updateMeshTextures(); // make sure correct textures are applied to the avatar mesh.
+		gAgentAvatarp->updateTextures(); // call updateTextureStats
 	}
 }
 
@@ -2988,7 +3051,10 @@ void LLVOAvatarSelf::onCustomizeEnd(bool disable_camera_switch)
 			gAgentCamera.resetView();
 		}
 
-		LLAppearanceMgr::instance().updateAppearanceFromCOF();
+		if (gAgent.getRegion() && gAgent.getRegion()->getCentralBakeVersion())
+		{
+			LLAppearanceMgr::instance().requestServerAppearanceUpdate();
+		}
 	}
 }
 
@@ -3162,6 +3228,28 @@ void LLVOAvatarSelf::dumpWearableInfo(LLAPRFile& outfile)
 		}
 	}
 	apr_file_printf( file, "\n</wearable_info>\n" );
+}
+
+extern bool on_pose_stand;
+LLVector3 LLVOAvatarSelf::getLegacyAvatarOffset() const
+{
+	static LLCachedControl<F32> x_off("AscentAvatarXModifier");
+	static LLCachedControl<F32> y_off("AscentAvatarYModifier");
+	static LLCachedControl<F32> z_off("AscentAvatarZModifier");
+	LLVector3 offset(x_off,y_off,z_off);
+
+// [RLVa:KB] Custom blah blah
+	if(rlv_handler_t::isEnabled())
+	{
+		F32 rlva_z_offs = RlvSettings::getAvatarOffsetZ();
+		if(fabs(rlva_z_offs) > F_APPROXIMATELY_ZERO)
+			offset.mV[VZ] = rlva_z_offs;
+	}
+// [/RLVa:KB]
+	if(on_pose_stand)
+		offset.mV[VZ] += 7.5f;
+
+	return offset;
 }
 
 // static

@@ -46,14 +46,6 @@
 #include "llwindowsdl.h"
 #endif
 
-
-enum filepicker_state_type {
-	AIFilePicker_initialize_plugin = AIStateMachine::max_state,
-	AIFilePicker_plugin_running,
-	AIFilePicker_canceled,
-	AIFilePicker_done
-};
-
 char const* AIFilePicker::state_str_impl(state_type run_state) const
 {
 	switch(run_state)
@@ -63,6 +55,7 @@ char const* AIFilePicker::state_str_impl(state_type run_state) const
 		AI_CASE_RETURN(AIFilePicker_canceled);
 		AI_CASE_RETURN(AIFilePicker_done);
 	}
+	llassert(false);
 	return "UNKNOWN STATE";
 }
 
@@ -361,6 +354,7 @@ void AIFilePicker::multiplex_impl(state_type run_state)
 		{
 			if (!plugin->isPluginRunning())
 			{
+				yield();
 				break;												// Still initializing.
 			}
 
@@ -457,7 +451,7 @@ void AIFilePicker::receivePluginMessage(const LLPluginMessage &message)
 		if (message_name == "canceled")
 		{
 			LL_DEBUGS("Plugin") << "received message \"canceled\"" << LL_ENDL;
-			advance_state(AIFilePicker_canceled);
+			set_state(AIFilePicker_canceled);
 		}
 		else if (message_name == "done")
 		{
@@ -468,7 +462,7 @@ void AIFilePicker::receivePluginMessage(const LLPluginMessage &message)
 			{
 				mFilenames.push_back(*filename);
 			}
-			advance_state(AIFilePicker_done);
+			set_state(AIFilePicker_done);
 		}
 		else
 		{

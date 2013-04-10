@@ -116,10 +116,10 @@ void LLPrefsAscentVan::onCommitClientTag(LLUICtrl* ctrl, void* userdata)
 //static
 void LLPrefsAscentVan::onCommitUpdateAvatarOffsets(LLUICtrl* ctrl, void* userdata)
 {
-    if (!gAgent.getID().isNull())
-    {
-        gAgent.sendAgentSetAppearance();
-    }
+    //if (!gAgent.getID().isNull())
+    //{
+    //    gAgent.sendAgentSetAppearance();
+    //}
 }
 
 //static

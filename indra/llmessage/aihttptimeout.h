@@ -77,9 +77,10 @@ class HTTPTimeout : public LLRefCount {
 	AIHTTPTimeoutPolicy const* mPolicy;			// A pointer to the used timeout policy.
 	std::vector<U32> mBuckets;					// An array with the number of bytes transfered in each second.
 	U16 mBucket;								// The bucket corresponding to mLastSecond.
-	bool mNothingReceivedYet;					// Set when created, reset when the HTML reply header from the server is received.
+	bool mNothingReceivedYet;					// Set when created, reset when the first HTML reply header from the server is received.
 	bool mLowSpeedOn;							// Set while uploading or downloading data.
 	bool mLastBytesSent;						// Set when the last bytes were sent to libcurl to be uploaded.
+	bool mBeingRedirected;						// Set when a 302 header is received, reset when upload finished is detected.
 	bool mUploadFinished;						// Used to keep track of whether upload_finished was called yet.
 	S32 mLastSecond;							// The time at which lowspeed() was last called, in seconds since mLowSpeedClock.
 	S32 mOverwriteSecond;						// The second at which the first bucket of this transfer will be overwritten.
@@ -95,11 +96,17 @@ class HTTPTimeout : public LLRefCount {
 
   public:
 	HTTPTimeout(AIHTTPTimeoutPolicy const* policy, ThreadSafeBufferedCurlEasyRequest* lock_obj) :
-		mPolicy(policy), mNothingReceivedYet(true), mLowSpeedOn(false), mLastBytesSent(false), mUploadFinished(false), mStalled((U64)-1)
+		mPolicy(policy), mNothingReceivedYet(true), mLowSpeedOn(false), mLastBytesSent(false), mBeingRedirected(false), mUploadFinished(false), mStalled((U64)-1)
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 		, mLockObj(lock_obj)
 #endif
 		{ }
+
+	// Called when a redirect header is received.
+	void being_redirected(void);
+
+	// Called when curl makes the socket writable (again).
+	void upload_starting(void);
 
 	// Called when everything we had to send to the server has been sent.
 	void upload_finished(void);

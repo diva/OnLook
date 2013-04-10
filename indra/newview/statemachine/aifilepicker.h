@@ -151,7 +151,21 @@ new AIFilePicker
 // Objects of this type can be reused multiple times, see
 // also the documentation of AIStateMachine.
 class AIFilePicker : public AIStateMachine {
+protected:
+	// The base class of this state machine.
+	typedef AIStateMachine direct_base_type;
+
+	enum filepicker_state_type {
+		AIFilePicker_initialize_plugin = direct_base_type::max_state,
+		AIFilePicker_plugin_running,
+		AIFilePicker_canceled,
+		AIFilePicker_done
+	};
 public:
+	static state_type const max_state = AIFilePicker_done + 1;    // One beyond the largest state.
+
+public:
+	// The derived class must have a default constructor.
 	AIFilePicker(void);
 
 	// Create a dynamically created AIFilePicker object.

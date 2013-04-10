@@ -352,8 +352,13 @@ void AIEngine::mainloop(void)
 
 void AIEngine::flush(void)
 {
-  DoutEntering(dc::statemachine, "AIEngine::flush [" << mName << "]");
   engine_state_type_wat engine_state_w(mEngineState);
+  DoutEntering(dc::statemachine, "AIEngine::flush [" << mName << "]: calling force_killed() on " << engine_state_w->list.size() << " state machines.");
+  for (queued_type::iterator iter = engine_state_w->list.begin(); iter != engine_state_w->list.end(); ++iter)
+  {
+	// To avoid an assertion in ~AIStateMachine.
+	iter->statemachine().force_killed();
+  }
   engine_state_w->list.clear();
 }
 
@@ -904,6 +909,12 @@ void AIStateMachine::callback(void)
 	// Not restarted by callback. Allow run() to be called later on.
 	mParent = NULL;
   }
+}
+
+void AIStateMachine::force_killed(void)
+{
+  multiplex_state_type_wat state_w(mState);
+  state_w->base_state = bs_killed;
 }
 
 void AIStateMachine::kill(void)

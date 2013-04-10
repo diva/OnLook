@@ -296,12 +296,13 @@ class AIStateMachine : public LLThreadSafeRefCount
 		return false;
 	  else if (mSleep < 0)
 		++mSleep;
-	  else if ((U64)mSleep >= current_time)
+	  else if ((U64)mSleep <= current_time)
 		mSleep = 0;
 	  return mSleep != 0;
 	}
+	void force_killed(void);												// Called from AIEngine::flush().
 
-	friend class AIEngine;						// Calls multiplex().
+	friend class AIEngine;						// Calls multiplex() and force_killed().
 };
 
 bool AIEngine::QueueElementComp::operator()(QueueElement const& e1, QueueElement const& e2) const

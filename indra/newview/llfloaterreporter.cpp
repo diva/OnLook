@@ -626,6 +626,11 @@ bool LLFloaterReporter::validateReport()
 	// Ensure user selected a category from the list
 	LLSD category_sd = childGetValue("category_combo");
 	U8 category = (U8)category_sd.asInteger();
+	if(category >= 100) //This is here for reasons (like shenanigans)
+	{
+		LLNotificationsUtil::add("HelpReportNope");
+		return false;
+	}
 	if (category == 0)
 	{
 		if ( mReportType != BUG_REPORT )

@@ -122,6 +122,8 @@ public:
 	LLViewerTexture(const LLImageRaw* raw, BOOL usemipmaps) ;
 	LLViewerTexture(const U32 width, const U32 height, const U8 components, BOOL usemipmaps) ;
 
+	void setNeedsAlphaAndPickMask(BOOL need_mask) { if(mGLTexturep)mGLTexturep->setNeedsAlphaAndPickMask(need_mask); }
+
 	virtual S8 getType() const;
 	virtual BOOL isMissingAsset()const ;
 	virtual void dump();	// debug info to llinfos

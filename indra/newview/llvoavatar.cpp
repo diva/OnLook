@@ -999,6 +999,7 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mUseLocalAppearance(FALSE),
 	mUseServerBakes(FALSE), // FIXME DRANO consider using boost::optional, defaulting to unknown.
 	// <edit>
+	mHasPhysicsParameters( false ),
 	mIdleMinute(0),
 	mCCSChatTextOverride(false)
 	// </edit>
@@ -3242,7 +3243,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 					line.replace(index, 2, firstnameText);
 				while ((index = line.find("%l")) != std::string::npos)
 				{
-					llinfos << "'" <<  line.substr(index) << "'" <<  llendl;
+					//llinfos << "'" <<  line.substr(index) << "'" <<  llendl;
 					if(lastnameText.empty() && line[index+2] == ' ')	//Entire displayname string crammed into firstname
 						line.replace(index, 3, "");						//so eat the extra space.
 					else
@@ -3413,12 +3414,12 @@ LLVector3 LLVOAvatar::idleUpdateNameTagPosition(const LLVector3& root_pos_last)
 	local_camera_up.normalize();
 	local_camera_up = local_camera_up * ~root_rot;
 
-	local_camera_up.scaleVec(mBodySize * 0.5f);
-	local_camera_at.scaleVec(mBodySize * 0.5f);
+	local_camera_up.scaleVec((mBodySize + mAvatarOffset) * 0.5f);
+	local_camera_at.scaleVec((mBodySize + mAvatarOffset) * 0.5f);
 
 	LLVector3 name_position = mRoot->getWorldPosition();
 	name_position[VZ] -= mPelvisToFoot;
-	name_position[VZ] += (mBodySize[VZ]* 0.55f);
+	name_position[VZ] += ((mBodySize[VZ] + mAvatarOffset[VZ])* 0.55f);
 	name_position += (local_camera_up * root_rot) - (projected_vec(local_camera_at * root_rot, camera_to_av));	
 	name_position += pixel_up_vec * 15.f;
 
@@ -3748,6 +3749,8 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 		}
 
 		root_pos = gAgent.getPosGlobalFromAgent(getRenderPosition());
+		root_pos.mdV[VZ] += getVisualParamWeight(AVATAR_HOVER);
+
 
 		resolveHeightGlobal(root_pos, ground_under_pelvis, normal);
 		F32 foot_to_ground = (F32) (root_pos.mdV[VZ] - mPelvisToFoot - ground_under_pelvis.mdV[VZ]);
@@ -4959,7 +4962,7 @@ void LLVOAvatar::updateTextures()
 				const EBakedTextureIndex baked_index = texture_dict->mBakedTextureIndex;
 				if (texture_dict->mIsLocalTexture)
 				{
-					addLocalTextureStats((ETextureIndex)texture_index, imagep, texel_area_ratio, render_avatar, layer_baked[baked_index]);
+					addLocalTextureStats((ETextureIndex)texture_index, imagep, texel_area_ratio, render_avatar, mBakedTextureDatas[baked_index].mIsUsed);
 				}
 			}
 		}
@@ -4992,7 +4995,7 @@ void LLVOAvatar::updateTextures()
 
 
 void LLVOAvatar::addLocalTextureStats( ETextureIndex idx, LLViewerFetchedTexture* imagep,
-									   F32 texel_area_ratio, BOOL render_avatar, BOOL covered_by_baked, U32 index )
+									   F32 texel_area_ratio, BOOL render_avatar, BOOL covered_by_baked)
 {
 	// No local texture stats for non-self avatars
 	return;
@@ -7865,6 +7868,8 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 	setCompositeUpdatesEnabled( FALSE );
 	gPipeline.markGLRebuild(this);
 
+	mHasPhysicsParameters = false;
+
 	// Apply visual params
 	if( num_params > 1)
 	{
@@ -7876,6 +7881,11 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		{
 			LLVisualParam* param = contents.mParams[i];
 			F32 newWeight = contents.mParamWeights[i];
+
+			if(param->getID() == 10000)
+			{
+				mHasPhysicsParameters = true;
+			} 
 
 			if (is_first_appearance_message || (param->getWeight() != newWeight))
 			{

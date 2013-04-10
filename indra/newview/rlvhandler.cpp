@@ -422,6 +422,10 @@ bool RlvHandler::handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& 
 		gAgent.sendReliableMessage();
 		return true;
 	}
+	else
+	{
+		m_idAgentGroup = gAgent.getGroupID();
+	}
 	return false;
 }
 
@@ -881,7 +885,7 @@ bool RlvHandler::redirectChatOrEmote(const std::string& strUTF8Text) const
 		if ( (getCompositeInfo(idItem, &strComposite, &pFolder)) && (cstrItemType != strComposite) )
 		{
 			LLUUID idCompositeItem;
-			if ((type = LLViewerWearable::typeNameToType(strComposite)) != WT_INVALID)
+			if ((type = LLWearable::typeNameToType(strComposite)) != WT_INVALID)
 			{
 				idCompositeItem = gAgent.getWearableItem(type);
 			}
@@ -1252,14 +1256,6 @@ ERlvCmdRet RlvHandler::processAddRemCommand(const RlvCommand& rlvCmd)
 					RlvBehaviourNotifyHandler::getInstance()->removeNotify(rlvCmd.getObjectID(), nChannel, strFilter);
 			}
 			break;
-		case RLV_BHVR_SETGROUP:				// @setgroup=n|y					- Checked: 2011-05-22 (RLVa-1.4.1a) | Added: RLVa-1.3.1b
-			{
-				VERIFY_OPTION_REF(strOption.empty());
-
-				// Save the currently active group UUID since we'll need it when the user joins (or creates) a new group
-				m_idAgentGroup = gAgent.getGroupID();
-			}
-			break;
 		case RLV_BHVR_SHOWHOVERTEXT:		// @showhovertext:<uuid>=n|y		- Checked: 2010-03-27 (RLVa-1.2.0b) | Modified: RLVa-1.1.0h
 			{
 				// There should be an option and it should specify a valid UUID
@@ -1273,8 +1269,8 @@ ERlvCmdRet RlvHandler::processAddRemCommand(const RlvCommand& rlvCmd)
 
 				// Clear/restore the object's hover text as needed
 				LLViewerObject* pObj = gObjectList.findObject(idException);
-				if ( (pObj) && (pObj->mText.notNull()) && (!pObj->mText->getPreFilteredText().empty()) )
-					pObj->mText->setString( (RLV_TYPE_ADD == eType) ? "" : pObj->mText->getPreFilteredText());
+				if ( (pObj) && (pObj->mText.notNull()) && (!pObj->mText->getObjectText().empty()) )
+					pObj->mText->setString( (RLV_TYPE_ADD == eType) ? "" : pObj->mText->getObjectText());
 			}
 			break;
 		// The following block is only valid if there's no option
@@ -1312,6 +1308,7 @@ ERlvCmdRet RlvHandler::processAddRemCommand(const RlvCommand& rlvCmd)
 		case RLV_BHVR_TOUCHALL:				// @touchall=n|y					- Checked: 2011-01-21 (RLVa-1.3.0e) | Added: RLVa-1.3.0e
 		case RLV_BHVR_TOUCHME:				// @touchme=n|y						- Checked: 2011-04-11 (RLVa-1.3.0h) | Added: RLVa-1.3.0h
 		case RLV_BHVR_FLY:					// @fly=n|y							- Checked: 2010-03-02 (RLVa-1.2.0a)
+		case RLV_BHVR_SETGROUP:				// @setgroup=n|y					- Checked: 2011-05-22 (RLVa-1.4.1a) | Added: RLVa-1.3.1b
 		case RLV_BHVR_ALWAYSRUN:			// @alwaysrun=n|y					- Checked: 2011-05-11 (RLVa-1.3.0i) | Added: RLVa-1.3.0i
 		case RLV_BHVR_TEMPRUN:				// @temprun=n|y						- Checked: 2011-05-11 (RLVa-1.3.0i) | Added: RLVa-1.3.0i
 		case RLV_BHVR_UNSIT:				// @unsit=n|y						- Checked: 2009-12-05 (RLVa-1.1.0h) | Modified: RLVa-1.1.0h
@@ -1641,15 +1638,9 @@ ERlvCmdRet RlvHandler::processForceCommand(const RlvCommand& rlvCmd) const
 		case RLV_BHVR_ATTACHALLTHISOVER:
 		case RLV_BHVR_DETACHALLTHIS:
 			{
-				RlvCommandOptionGetPath rlvGetPathOption(rlvCmd);
+				RlvCommandOptionGetPath rlvGetPathOption(rlvCmd, boost::bind(&RlvHandler::onForceWearCallback, this, _1, rlvCmd.getBehaviourType()));
 				VERIFY_OPTION(rlvGetPathOption.isValid());
-
-				LLInventoryModel::cat_array_t folders;
-				if (RlvInventory::instance().getPath(rlvGetPathOption.getItemIDs(), folders))
-				{
-					for (S32 idxFolder = 0, cntFolder = folders.count(); idxFolder < cntFolder; idxFolder++)
-						onForceWear(folders.get(idxFolder), rlvCmd.getBehaviourType());
-				}
+				eRet = (!rlvGetPathOption.isCallback()) ? RLV_RET_SUCCESS : RLV_RET_SUCCESS_DELAYED;
 			}
 			break;
 		case RLV_BHVR_DETACHME:		// @detachme=force						- Checked: 2010-09-04 (RLVa-1.2.1c) | Modified: RLVa-1.2.1c
@@ -1727,10 +1718,15 @@ ERlvCmdRet RlvHandler::onForceRemOutfit(const RlvCommand& rlvCmd) const
 // Checked: 2011-07-23 (RLVa-1.4.1a) | Modified: RLVa-1.4.1a
 ERlvCmdRet RlvHandler::onForceGroup(const RlvCommand& rlvCmd) const
 {
+	if (hasBehaviourExcept(RLV_BHVR_SETGROUP, rlvCmd.getObjectID()))
+	{
+		return RLV_RET_FAILED_LOCK;
+	}
+
 	LLUUID idGroup; bool fValid = false;
 	if (idGroup.set(rlvCmd.getOption()))
 	{
-		fValid = (idGroup.isNull()) || (gAgent.isInGroup(idGroup));
+		fValid = (idGroup.isNull()) || (gAgent.isInGroup(idGroup, true));
 	}
 	else
 	{
@@ -1742,16 +1738,15 @@ ERlvCmdRet RlvHandler::onForceGroup(const RlvCommand& rlvCmd) const
 
 	if (fValid)
 	{
-		if (!gRlvHandler.hasBehaviour(RLV_BHVR_SETGROUP))
-		{
-			LLMessageSystem* msg = gMessageSystem;
-			msg->newMessageFast(_PREHASH_ActivateGroup);
-			msg->nextBlockFast(_PREHASH_AgentData);
-			msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-			msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-			msg->addUUIDFast(_PREHASH_GroupID, idGroup);
-			gAgent.sendReliableMessage();
-		}
+		m_idAgentGroup = idGroup;
+
+		LLMessageSystem* msg = gMessageSystem;
+		msg->newMessageFast(_PREHASH_ActivateGroup);
+		msg->nextBlockFast(_PREHASH_AgentData);
+		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		msg->addUUIDFast(_PREHASH_GroupID, idGroup);
+		gAgent.sendReliableMessage();
 	}
 
 	return (fValid) ? RLV_RET_SUCCESS : RLV_RET_FAILED_OPTION;
@@ -1816,6 +1811,20 @@ ERlvCmdRet RlvHandler::onForceWear(const LLViewerInventoryCategory* pFolder, ERl
 
 	RlvForceWear::instance().forceFolder(pFolder, eAction, eFlags);
 	return RLV_RET_SUCCESS;
+}
+
+void RlvHandler::onForceWearCallback(const uuid_vec_t& idItems, ERlvBehaviour eBhvr) const
+{
+	LLInventoryModel::cat_array_t folders;
+	if (RlvInventory::instance().getPath(idItems, folders))
+	{
+		for (S32 idxFolder = 0, cntFolder = folders.count(); idxFolder < cntFolder; idxFolder++)
+			onForceWear(folders.get(idxFolder), eBhvr);
+
+		// If we're not executing a command then we're a delayed callback and need to manually call done()
+		if ( (!getCurrentCommand()) && (RlvForceWear::instanceExists()) )
+			RlvForceWear::instance().done();
+	}
 }
 
 // ============================================================================

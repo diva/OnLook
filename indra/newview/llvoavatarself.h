@@ -217,7 +217,7 @@ protected:
 	/*virtual*/ void	setBakedReady(LLAvatarAppearanceDefines::ETextureIndex type, BOOL baked_version_exists, U32 index);
 	void				localTextureLoaded(BOOL succcess, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata);
 	void				getLocalTextureByteCount(S32* gl_byte_count) const;
-	/*virtual*/ void	addLocalTextureStats(LLAvatarAppearanceDefines::ETextureIndex i, LLViewerFetchedTexture* imagep, F32 texel_area_ratio, BOOL rendered, BOOL covered_by_baked, U32 index);
+	/*virtual*/ void	addLocalTextureStats(LLAvatarAppearanceDefines::ETextureIndex i, LLViewerFetchedTexture* imagep, F32 texel_area_ratio, BOOL rendered, BOOL covered_by_baked);
 	LLLocalTextureObject* getLocalTextureObject(LLAvatarAppearanceDefines::ETextureIndex i, U32 index) const;
 
 private:
@@ -318,9 +318,17 @@ public:
 	/*virtual*/ BOOL 	detachObject(LLViewerObject *viewer_object);
 	static BOOL			detachAttachmentIntoInventory(const LLUUID& item_id);
 
+// [RLVa:KB] - Checked: 2012-07-28 (RLVa-1.4.7)
+	enum EAttachAction { ACTION_ATTACH, ACTION_DETACH };
+	typedef boost::signals2::signal<void (LLViewerObject*, const LLViewerJointAttachment*, EAttachAction)> attachment_signal_t;
+	boost::signals2::connection setAttachmentCallback(const attachment_signal_t::slot_type& cb);
+// [/RLVa:KB]
 private:
 	// Track attachments that have been requested but have not arrived yet.
 	mutable std::map<LLUUID,LLTimer> mAttachmentRequests;
+// [RLVa:KB] - Checked: 2012-07-28 (RLVa-1.4.7)
+	attachment_signal_t* mAttachmentSignal;
+// [/RLVa:KB]
 
 	//--------------------------------------------------------------------
 	// HUDs
@@ -346,6 +354,9 @@ public:
 	//--------------------------------------------------------------------
 public:
 	bool			sendAppearanceMessage(LLMessageSystem *mesgsys) const;
+
+public:
+	LLVector3		getLegacyAvatarOffset() const;
 
 /**                    Appearance
  **                                                                            **

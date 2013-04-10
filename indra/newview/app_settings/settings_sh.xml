@@ -50,7 +50,7 @@
       <key>Type</key>
       <string>U32</string>
       <key>Value</key>
-      <integer>15000</integer>
+      <integer>6000</integer>
     </map>
     <key>SHFMODExDecodeBufferSize</key>
     <map>
@@ -206,6 +206,28 @@
       <string>F32</string>
       <key>Value</key>
       <real>0.25</real>
+    </map>
+	<key>SHUseRMSEAutoMask</key>
+    <map>
+      <key>Comment</key>
+      <string>Use alternative method of detecing suitable textures for alphamasking. Less prone to excluding textures than standard method.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <real>1</real>
+    </map>
+	<key>SHAlphaMaskMaxRMSE</key>
+    <map>
+      <key>Comment</key>
+      <string>Sets the maximum random mean square error cutoff used when detecting suitable textures for alphamasking. (SHUseRMSEAutoMask must be TRUE for this to have any effect)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>0.09</real>
     </map>
   </map>
 </llsd>

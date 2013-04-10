@@ -271,6 +271,8 @@ extern void toggle_debug_menus(void*);
 // LLDebugText
 //
 
+extern std::map<LLGLuint, std::list<std::pair<std::string,std::string> > > sTextureMaskMap;
+
 class LLDebugText
 {
 private:
@@ -338,6 +340,45 @@ public:
 			S32 mins = (S32)((time - hours*(60*60)) / 60);
 			S32 secs = (S32)((time - hours*(60*60) - mins*60));
 			addText(xpos, ypos, llformat("Time: %d:%02d:%02d", hours,mins,secs)); ypos += y_inc;
+		}
+		static const LLCachedControl<bool> analyze_target_texture("AnalyzeTargetTexture", false);
+		if(analyze_target_texture)
+		{
+			LLSelectNode* nodep = LLSelectMgr::instance().getPrimaryHoverNode();
+			LLObjectSelectionHandle handle = LLSelectMgr::instance().getHoverObjects();
+			if(nodep || handle.notNull())
+			{
+				
+				LLViewerObject* obj1 = nodep ? nodep->getObject() : NULL;
+				LLViewerObject* obj2 = handle ? handle->getPrimaryObject() : NULL;
+				LLViewerObject* obj = obj1 ? obj1 : obj2;
+				//llinfos << std::hex << obj1 << " " << obj2 << std::dec << llendl;
+				if(obj)
+				{
+					S32 te = nodep ? nodep->getLastSelectedTE() : -1;
+					if(te > 0)
+					{
+						LLViewerTexture* imagep = obj->getTEImage(te);
+						if(imagep && imagep != (LLViewerTexture*)LLViewerFetchedTexture::sDefaultImagep.get())
+						{
+							LLGLuint tex = imagep->getTexName();
+							std::map<LLGLuint, std::list<std::pair<std::string,std::string> > >::iterator it = sTextureMaskMap.find(tex);
+							if(it != sTextureMaskMap.end())
+							{
+								std::list<std::pair<std::string,std::string> >::reverse_iterator it2 = it->second.rbegin();
+								for(;it2!=it->second.rend();++it2)
+								{
+									addText(xpos, ypos, llformat(" %s: %s", it2->first.c_str(), it2->second.c_str())); ypos += y_inc;
+								}
+							}
+							static const LLCachedControl<bool> use_rmse_auto_mask("SHUseRMSEAutoMask",false);
+							static const LLCachedControl<F32> alpha_mas_max_rmse("SHAlphaMaskMaxRMSE",.09f);
+							addText(xpos, ypos, llformat("Mask: %s", imagep->getIsAlphaMask(use_rmse_auto_mask ? alpha_mas_max_rmse : -1.f) ? "TRUE":"FALSE")); ypos += y_inc;
+							addText(xpos, ypos, llformat("ID: %s", imagep->getID().asString().c_str())); ypos += y_inc;
+						}
+					}
+				}
+			}
 		}
 		
 #if LL_WINDOWS
@@ -2347,6 +2388,7 @@ void LLViewerWindow::drawDebugText()
 	}
 }
 
+extern void check_blend_funcs();
 void LLViewerWindow::draw()
 {
 	
@@ -2425,7 +2467,9 @@ void LLViewerWindow::draw()
 
 		// Draw all nested UI views.
 		// No translation needed, this view is glued to 0,0
+		if(gDebugGL)check_blend_funcs();
 		mRootView->draw();
+		if(gDebugGL)check_blend_funcs();
 
 		// Draw optional on-top-of-everyone view
 		LLUICtrl* top_ctrl = gFocusMgr.getTopCtrl();
@@ -2437,7 +2481,9 @@ void LLViewerWindow::draw()
 			gGL.matrixMode(LLRender::MM_MODELVIEW);
 			LLUI::pushMatrix();
 			LLUI::translate( (F32) screen_x, (F32) screen_y);
+			if(gDebugGL)check_blend_funcs();
 			top_ctrl->draw();	
+			if(gDebugGL)check_blend_funcs();
 			LLUI::popMatrix();
 		}
 

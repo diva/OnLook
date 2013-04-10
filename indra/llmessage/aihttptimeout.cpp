@@ -133,6 +133,20 @@ void HTTPTimeout::reset_lowspeed(void)
   DoutCurl("reset_lowspeed: mLowSpeedClock = " << mLowSpeedClock << "; mStalled = -1");
 }
 
+void HTTPTimeout::being_redirected(void)
+{
+  mBeingRedirected = true;
+}
+
+void HTTPTimeout::upload_starting(void)
+{
+  // We're not supposed start with an upload when it already finished, unless we're being redirected.
+  llassert(!mUploadFinished || mBeingRedirected);
+  mUploadFinished = false;
+  // Apparently there is something to upload. Start detecting low speed timeouts.
+  reset_lowspeed();
+}
+
 // CURL-THREAD
 // This is called when everything we had to send to the server has been sent.
 //                                                    <-----mLowSpeedOn------>
@@ -143,7 +157,9 @@ void HTTPTimeout::upload_finished(void)
 {
   llassert(!mUploadFinished);	// If we get here twice, then the 'upload finished' detection failed.
   mUploadFinished = true;
-  // We finished uploading (if there was a body to upload at all), so not more transfer rate timeouts.
+  // Only accept a call to upload_starting() if being_redirected() is called after this point.
+  mBeingRedirected = false;
+  // We finished uploading (if there was a body to upload at all), so no more transfer rate timeouts.
   mLowSpeedOn = false;
   // Timeout if the server doesn't reply quick enough.
   mStalled = sClockCount + mPolicy->getReplyDelay() / sClockWidth;
@@ -179,11 +195,6 @@ bool HTTPTimeout::data_received(size_t n/*,*/
 	  // 'Upload finished' detection failed, generate it now.
 	  upload_finished();
 	}
-	// Turn this flag off again now that we received data, so that if 'upload_finished()' is called again
-	// for a future upload on the same descriptor, then that won't trigger an assert.
-	// Note that because we also set mNothingReceivedYet here, we won't enter this code block anymore,
-	// so it's safe to do this.
-	mUploadFinished = false;
 	// Mark that something was received.
 	mNothingReceivedYet = false;
 	// We received something; switch to getLowSpeedLimit()/getLowSpeedTime().

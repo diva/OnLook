@@ -1349,10 +1349,12 @@ void LLDrawPoolAvatar::updateRiggedFaceVertexBuffer(LLVOAvatar* avatar, LLFace* 
 		LLVector4a* norm = has_normal ? (LLVector4a*) normal.get() : NULL;
 		
 		//build matrix palette
-		LLMatrix4a mp[64];
+		static const size_t kMaxJoints = 64;
+		LLMatrix4a mp[kMaxJoints];
 		LLMatrix4* mat = (LLMatrix4*) mp;
 
-		for (U32 j = 0; j < skin->mJointNames.size(); ++j)
+		U32 maxJoints = llmin(skin->mJointNames.size(), kMaxJoints);
+		for (U32 j = 0; j < maxJoints; ++j)
 		{
 			LLJoint* joint = avatar->getJoint(skin->mJointNames[j]);
 			if (joint)
@@ -1480,9 +1482,11 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 		{
 			if (sShaderLevel > 0)
 			{ //upload matrix palette to shader
-				LLMatrix4 mat[64];
+				static const size_t kMaxJoints = 64;
+				LLMatrix4 mat[kMaxJoints];
 
-				for (U32 i = 0; i < skin->mJointNames.size(); ++i)
+				U32 maxJoints = llmin(skin->mJointNames.size(), kMaxJoints);
+				for (U32 i = 0; i < maxJoints; ++i)
 				{
 					LLJoint* joint = avatar->getJoint(skin->mJointNames[i]);
 					if (joint)
@@ -1495,7 +1499,7 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 				stop_glerror();
 
 				LLDrawPoolAvatar::sVertexProgram->uniformMatrix4fv("matrixPalette", 
-					skin->mJointNames.size(),
+					maxJoints,
 					FALSE,
 					(GLfloat*) mat[0].mMatrix);
 				
@@ -1639,6 +1643,7 @@ void LLDrawPoolAvatar::renderRiggedAlpha(LLVOAvatar* avatar)
 						LLRender::BF_ONE_MINUS_SOURCE_ALPHA);
 
 		renderRigged(avatar, RIGGED_ALPHA);
+		gGL.setSceneBlendType(LLRender::BT_ALPHA);
 		gGL.setColorMask(true, false);
 	}
 }
@@ -1656,6 +1661,7 @@ void LLDrawPoolAvatar::renderRiggedFullbrightAlpha(LLVOAvatar* avatar)
 						LLRender::BF_ONE_MINUS_SOURCE_ALPHA);
 
 		renderRigged(avatar, RIGGED_FULLBRIGHT_ALPHA);
+		gGL.setSceneBlendType(LLRender::BT_ALPHA);
 		gGL.setColorMask(true, false);
 	}
 }

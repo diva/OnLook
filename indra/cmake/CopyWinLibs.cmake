@@ -218,9 +218,10 @@ set(release_files
 
 if(FMODEX)
     find_path(FMODEX_BINARY_DIR fmodex.dll
-          ${release_src_dir}
-          ${FMODEX_SDK_DIR}/api
-          ${FMODEX_SDK_DIR}
+          "${release_src_dir}"
+          "${FMODEX_SDK_DIR}/api"
+          "${FMODEX_SDK_DIR}"
+          NO_DEFAULT_PATH
           )
 
     if(FMODEX_BINARY_DIR)

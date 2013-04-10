@@ -282,9 +282,12 @@ void LLPreviewTexture::draw()
 								interior.getHeight(),
 								mImage);
 
-			if (mAlphaMaskResult != mImage->getIsAlphaMask())
+			static const LLCachedControl<bool> use_rmse_auto_mask("SHUseRMSEAutoMask",false);
+			static const LLCachedControl<F32> alpha_mas_max_rmse("SHAlphaMaskMaxRMSE",.09f);
+			if (mAlphaMaskResult != mImage->getIsAlphaMask(use_rmse_auto_mask ? alpha_mas_max_rmse : -1.f))
 			{
-				if (!mImage->getIsAlphaMask())
+				mAlphaMaskResult = !mAlphaMaskResult;
+				if (!mAlphaMaskResult)
 				{
 					childSetColor("alphanote", LLColor4::green);
 					childSetText("alphanote", getString("No Alpha"));
@@ -294,7 +297,7 @@ void LLPreviewTexture::draw()
 					childSetColor("alphanote", LLColor4::red);
 					childSetText("alphanote", getString("Has Alpha"));
 				}
-				mAlphaMaskResult = mImage->getIsAlphaMask();
+				
 			}
 			// Pump the texture priority
 			F32 pixel_area = mLoadingFullImage ? (F32)MAX_IMAGE_AREA  : (F32)(interior.getWidth() * interior.getHeight() );
