@@ -3,10 +3,9 @@
  * @brief Dumping ground for viewer-side message system callbacks.
  *
  * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
+ * Second Life Viewer Source Code
  * Copyright (c) 2002-2009, Linden Research, Inc.
  * 
- * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
  * to you under the terms of the GNU General Public License, version 2.0
  * ("GPL"), unless you have obtained a separate licensing agreement
@@ -34,14 +33,10 @@
 #include "llviewermessage.h"
 #include <boost/lexical_cast.hpp>
 
-#include <deque>
-
 #include "llanimationstates.h"
 #include "llaudioengine.h" 
 #include "llavatarnamecache.h"
 #include "../lscript/lscript_byteformat.h"	//Need LSCRIPTRunTimePermissionBits and SCRIPT_PERMISSION_*
-
-#include "llcachename.h"
 #include "lleconomy.h"
 #include "llfocusmgr.h"
 #include "llfollowcamparams.h"
@@ -66,11 +61,9 @@
 #include "llfloaterchat.h"
 #include "llfloatergroupinfo.h"
 #include "llfloaterimagepreview.h"
-#include "llfloaterinventory.h"
 #include "llfloaterland.h"
 #include "llfloaterregioninfo.h"
 #include "llfloaterlandholdings.h"
-#include "llurldispatcher.h"
 #include "llfloatermute.h"
 #include "llfloaterpostcard.h"
 #include "llfloaterpreference.h"
@@ -86,6 +79,7 @@
 #include "llnotifications.h"
 #include "llnotificationsutil.h"
 #include "llpanelgrouplandmoney.h"
+#include "llpanelmaininventory.h"
 #include "llselectmgr.h"
 #include "llstartup.h"
 #include "llsky.h"
@@ -94,18 +88,13 @@
 #include "llimview.h"
 #include "llfloateractivespeakers.h"
 #include "lltrans.h"
-#include "lluploaddialog.h"
-#include "llviewercamera.h"
-#include "llviewerdisplay.h"
 #include "llviewerfoldertype.h"
 #include "llviewergenericmessage.h"
 #include "llviewermenu.h"
 #include "llviewerinventory.h"
 #include "llviewerjoystick.h"
-#include "llviewerobject.h"
 #include "llviewerobjectlist.h"
 #include "llviewerparcelmgr.h"
-#include "llviewerpartsource.h"
 #include "llviewerstats.h"
 #include "llviewertexteditor.h"
 #include "llviewerthrottle.h"
@@ -119,15 +108,12 @@
 #include "llkeythrottle.h"
 #include "llagentui.h"
 #include "llviewerregion.h"
-// <edit>
-#include "llviewernetwork.h"
-// </edit>
 
-// [RLVa:KB]
+// [RLVa:KB] - Checked: 2010-03-09 (RLVa-1.2.0a)
+#include "llfloateravatarinfo.h" // Checked: 2009-07-08 (RLVa-1.0.0e)
 #include "rlvhandler.h"
 #include "rlvinventory.h"
 #include "rlvui.h"
-#include "rlvcommon.h"
 // [/RLVa:KB]
 
 #if SHY_MOD //Command handler
@@ -139,9 +125,6 @@
 #include "hippofloaterxml.h"
 #include "sgversion.h"
 #include "m7wlinterface.h"
-
-#include "llwlparammanager.h"
-#include "llwaterparammanager.h"
 
 #include "llgiveinventory.h"
 
@@ -160,10 +143,6 @@ static const boost::regex NEWLINES("\\n{1}");
 // NaCl End
 
 extern AIHTTPTimeoutPolicy authHandler_timeout;
-
-// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
-#include "llfloateravatarinfo.h"
-// [/RLVa:KB]
 
 //
 // Constants
@@ -4974,7 +4953,7 @@ void process_sound_trigger(LLMessageSystem *msg, void **)
 	if (object_id == owner_id && !gSavedSettings.getBOOL("EnableGestureSounds"))
 	{
 		// Don't mute own gestures, if they're not muted.
-		if(owner_id != gAgent.getID() || !gSavedSettings.getBOOL("EnableGestureSoundsSelf"))
+		if (owner_id != gAgentID || !gSavedSettings.getBOOL("EnableGestureSoundsSelf"))
 			return;
 	}
 
