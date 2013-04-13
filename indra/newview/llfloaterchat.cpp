@@ -187,7 +187,10 @@ void LLFloaterChat::handleVisibilityChange(BOOL new_visibility)
 // virtual
 void LLFloaterChat::onFocusReceived()
 {
-	gFocusMgr.setKeyboardFocus(getChildView("Chat Editor")); // Work around the chat bar no longer focusing from within the layout_stack
+	LLView* chat_editor = getChildView("Chat Editor");
+	if (childIsVisible("Chat Editor"))
+		gFocusMgr.setKeyboardFocus(chat_editor);
+
 	LLFloater::onFocusReceived();
 }
 
@@ -740,3 +743,16 @@ void LLFloaterChat::hide(LLFloater* instance, const LLSD& key)
 		VisibilityPolicy<LLFloater>::hide(instance, key);
 	}
 }
+
+BOOL LLFloaterChat::focusFirstItem(BOOL prefer_text_fields, BOOL focus_flash )
+{
+	LLView* chat_editor = getChildView("Chat Editor");
+	if (childIsVisible("Chat Editor"))
+	{
+		gFocusMgr.setKeyboardFocus(chat_editor);
+		return TRUE;
+	}
+
+	return LLUICtrl::focusFirstItem(prefer_text_fields, focus_flash);
+}
+
