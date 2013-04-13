@@ -112,7 +112,7 @@ public:
 
 	BOOL	focusNextItem(BOOL text_entry_only);
 	BOOL	focusPrevItem(BOOL text_entry_only);
-	BOOL 	focusFirstItem(BOOL prefer_text_fields = FALSE, BOOL focus_flash = TRUE );
+	virtual BOOL 	focusFirstItem(BOOL prefer_text_fields = FALSE, BOOL focus_flash = TRUE );
 	BOOL	focusLastItem(BOOL prefer_text_fields = FALSE);
 
 	// Non Virtuals
