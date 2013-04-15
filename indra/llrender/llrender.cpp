@@ -1495,7 +1495,7 @@ void LLRender::translateUI(F32 x, F32 y, F32 z)
 		llerrs << "Need to push a UI translation frame before offsetting" << llendl;
 	}
 
-	LLVector4a add(x,y,x);
+	LLVector4a add(x,y,z);
 	mUIOffset.back()->add(add);
 }
 
@@ -1564,13 +1564,13 @@ LLVector3 LLRender::getUIScale()
 	{
 		return LLVector3(1,1,1);
 	}
-	return LLVector3(mUIOffset.back()->getF32ptr());
+	return LLVector3(mUIScale.back()->getF32ptr());
 }
 
 
 void LLRender::loadUIIdentity()
 {
-	if (mUIOffset.empty())
+	if (mUIOffset.empty() || mUIScale.empty())
 	{
 		llerrs << "Need to push UI translation frame before clearing offset." << llendl;
 	}
@@ -1730,8 +1730,10 @@ void LLRender::blendFunc(eBlendFactor color_sfactor, eBlendFactor color_dfactor,
 		mCurrBlendAlphaSFactor = alpha_sfactor;
 		mCurrBlendColorDFactor = color_dfactor;
 		mCurrBlendAlphaDFactor = alpha_dfactor;
-		blendfunc_debug[0]=blendfunc_debug[2]=color_sfactor;
-		blendfunc_debug[1]=blendfunc_debug[3]=alpha_sfactor;
+		blendfunc_debug[0]=color_sfactor;
+		blendfunc_debug[1]=alpha_sfactor;
+		blendfunc_debug[2]=color_dfactor;
+		blendfunc_debug[3]=alpha_dfactor;
 		flush();
 		glBlendFuncSeparateEXT(sGLBlendFactor[color_sfactor], sGLBlendFactor[color_dfactor],
 				       sGLBlendFactor[alpha_sfactor], sGLBlendFactor[alpha_dfactor]);
