@@ -4385,6 +4385,8 @@ bool process_login_success_response(std::string& password)
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setMaxAgentGroups(atoi(tmp.c_str()));
 	tmp = response["VoiceConnector"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setVoiceConnector(tmp);
+	tmp = response["upc_supported"].asString();
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setUPCSupported(true);
 	gHippoGridManager->saveFile();
 	gHippoLimits->setLimits();
 

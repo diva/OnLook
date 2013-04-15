@@ -82,6 +82,8 @@ public:
 	void setRenderCompat(bool compat);
 	void setMaxAgentGroups(int max)                   { mMaxAgentGroups = max;   }
 	void setVoiceConnector(const std::string& vc)     { mVoiceConnector = vc;    }
+	void setUPCSupported(bool on);
+	bool getUPCSupported();
 
 	void setCurrencySymbol(const std::string& sym);
 	void setRealCurrencySymbol(const std::string& sym);
@@ -116,6 +118,7 @@ private:
 	bool mRenderCompat;
 	bool mInvLinks;
 	bool mAutoUpdate;
+	bool mUPCSupported;
 	int mMaxAgentGroups;
 
 	std::string mCurrencySymbol;

@@ -58,7 +58,8 @@ HippoGridInfo::HippoGridInfo(const std::string& gridName) :
 	mMaxAgentGroups(-1),
 	mCurrencySymbol("OS$"),
 	mRealCurrencySymbol("US$"),
-	mDirectoryFee(30)
+	mDirectoryFee(30),
+	mUPCSupported(false)
 {
 }
 
@@ -674,6 +675,19 @@ bool HippoGridInfo::getAutoUpdate()
 void HippoGridInfo::setAutoUpdate(bool b)
 {
 	mAutoUpdate = b;
+}
+
+bool HippoGridInfo::getUPCSupported()
+{
+	if(isSecondLife())
+		return false;
+	else
+		return mUPCSupported;
+}
+
+void HippoGridInfo::setUPCSupported(bool b)
+{
+	mUPCSupported = b;
 }
 
 // ********************************************************************
