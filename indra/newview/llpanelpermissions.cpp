@@ -772,6 +772,8 @@ void LLPanelPermissions::refresh()
 	else
 	{
 		childSetEnabled("checkbox allow export", false);
+		if (!gHippoGridManager->getCurrentGrid()->isSecondLife())
+			childSetVisible("checkbox allow export", false);
 	}
 
 	if (has_change_sale_ability && (owner_mask_on & PERM_TRANSFER))

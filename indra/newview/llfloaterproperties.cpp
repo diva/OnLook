@@ -448,6 +448,8 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 	bool supports_export = LFSimFeatureHandler::instance().simSupportsExport();
 	childSetEnabled("CheckOwnerExport",false);
 	childSetValue("CheckOwnerExport", supports_export && owner_mask & PERM_EXPORT);
+	if (!gHippoGridManager->getCurrentGrid()->isSecondLife())
+		childSetVisible("CheckOwnerExport", false);
 
 	///////////////////////
 	// DEBUG PERMISSIONS //
