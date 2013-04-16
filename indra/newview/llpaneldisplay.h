@@ -202,7 +202,7 @@ protected:
 	static void onChangeCustom();
 	
 	void onCommitAutoDetectAspect(const LLSD& value);
-	void onKeystrokeAspectRatio();
+	static void onKeystrokeAspectRatio(LLLineEditor* caller, void *user_data);
 	void onSelectAspectRatio();
 	void onCommitWindowedMode();
 	static void updateSliderText(LLUICtrl* ctrl, LLTextBox* text_box);

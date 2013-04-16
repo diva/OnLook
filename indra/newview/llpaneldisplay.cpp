@@ -193,7 +193,8 @@ BOOL LLPanelDisplay::postBuild()
 	}
 
 	mCtrlAspectRatio = getChild<LLComboBox>( "aspect_ratio");
-	mCtrlAspectRatio->setTextEntryCallback(boost::bind(&LLPanelDisplay::onKeystrokeAspectRatio,this));
+	mCtrlAspectRatio->setTextEntryCallback(&LLPanelDisplay::onKeystrokeAspectRatio);
+	mCtrlAspectRatio->setCallbackUserData(this); 
 	mCtrlAspectRatio->setCommitCallback(boost::bind(&LLPanelDisplay::onSelectAspectRatio,this));
 	// add default aspect ratios
 	mCtrlAspectRatio->add(aspect_ratio_text, &mAspectRatio, ADD_TOP);
@@ -1030,9 +1031,11 @@ void LLPanelDisplay::onCommitAutoDetectAspect(const LLSD& value)
 	}
 }
 
-void LLPanelDisplay::onKeystrokeAspectRatio()
+void LLPanelDisplay::onKeystrokeAspectRatio(LLLineEditor* caller, void *user_data)
 {
-	mCtrlAutoDetectAspect->set(FALSE);
+	LLPanelDisplay* panel = (LLPanelDisplay*)user_data; 
+
+	panel->mCtrlAutoDetectAspect->set(FALSE);
 }
 
 void LLPanelDisplay::onSelectAspectRatio()
