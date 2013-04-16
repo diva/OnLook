@@ -162,9 +162,9 @@ public:
 	void setWebURL(std::string url);
 
 	void load(std::string url);
-	static void onURLKeystroke(LLLineEditor* editor, void* data);
-	static void onCommitLoad(LLUICtrl* ctrl, void* data);
-	static void onCommitURL(LLUICtrl* ctrl, void* data);
+	void onURLKeystroke(LLLineEditor* editor);
+	void onCommitLoad(const LLSD& value);
+	void onCommitURL(const LLSD& value);
 	static void onClickWebProfileHelp(void *);
 
 	// inherited from LLViewerMediaObserver

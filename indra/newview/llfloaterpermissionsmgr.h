@@ -64,15 +64,6 @@ protected:
 	static LLFloaterPermissionsMgr* sInstance;
 };
 
-class LLPermissionsData
-{
-public:
-	LLPermissionsData(const LLUUID& object_id, U32 permission_flags) : mObjectID(object_id), mPermFlags(permission_flags) {};
-	
-	LLUUID	mObjectID;
-	U32		mPermFlags;
-};
-
 class LLPermissionsView : public LLView
 {
 public:
@@ -83,11 +74,8 @@ public:
 	void clearPermissionsData();
 	void addPermissionsData(const std::string& object_name, const LLUUID& object_id, U32 permissions_flags);
 
-	static void revokePermissions(void *userdata);
-	static void findObject(void *userdata);
-
-protected:
-	std::map<LLUUID, LLPermissionsData*> mPermData;
+	static void revokePermissions(const LLUUID& object_id, U32 permission_flags);
+	//static void findObject(const LLUUID& object_id, U32 permission_flags);
 };
 
 

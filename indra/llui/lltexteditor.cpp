@@ -257,7 +257,7 @@ LLTextEditor::LLTextEditor(
 	const LLFontGL* font,
 	BOOL allow_embedded_items)
 	:	
-	LLUICtrl( name, rect, TRUE, NULL, NULL, FOLLOWS_TOP | FOLLOWS_LEFT ),
+	LLUICtrl( name, rect, TRUE, NULL, FOLLOWS_TOP | FOLLOWS_LEFT ),
 	mTextIsUpToDate(TRUE),
 	mMaxTextByteLength( max_length ),
 	mPopupMenuHandle(),
@@ -331,7 +331,7 @@ LLTextEditor::LLTextEditor(
 		lines_in_doc,						
 		0,						
 		page_size,
-		NULL, this );
+		NULL);
 	mScrollbar->setFollowsRight();
 	mScrollbar->setFollowsTop();
 	mScrollbar->setFollowsBottom();
@@ -2128,6 +2128,8 @@ void LLTextEditor::cut()
 	deleteSelection( FALSE );
 
 	needsReflow();
+	
+	onKeyStroke();
 }
 
 BOOL LLTextEditor::canCopy() const
@@ -2244,6 +2246,8 @@ void LLTextEditor::pasteHelper(bool is_primary)
 	deselect();
 
 	needsReflow();
+	
+	onKeyStroke();
 }
 
 
@@ -2506,6 +2510,10 @@ BOOL LLTextEditor::handleSpecialKey(const KEY key, const MASK mask, BOOL* return
 		break;
 	}
 
+	if (handled)
+	{
+		onKeyStroke();
+	}
 	return handled;
 }
 
@@ -2665,6 +2673,7 @@ BOOL LLTextEditor::handleUnicodeCharHere(llwchar uni_char)
 			deselect();
 
 			needsReflow();
+			onKeyStroke();
 		}
 	}
 
@@ -2723,6 +2732,7 @@ void LLTextEditor::doDelete()
 	}
 
 	needsReflow();
+	onKeyStroke();
 }
 
 //----------------------------------------------------------------------------
@@ -2766,6 +2776,7 @@ void LLTextEditor::undo()
 		setCursorPos(pos);
 
 	needsReflow();
+	onKeyStroke();
 }
 
 BOOL LLTextEditor::canRedo() const
@@ -2808,6 +2819,7 @@ void LLTextEditor::redo()
 		setCursorPos(pos);
 
 	needsReflow();
+	onKeyStroke();
 }
 
 void LLTextEditor::onFocusReceived()
@@ -5068,6 +5080,7 @@ void LLTextEditor::updatePreedit(const LLWString &preedit_string,
 
 	// Update of the preedit should be caused by some key strokes.
 	mKeystrokeTimer.reset();
+	onKeyStroke();
 }
 
 BOOL LLTextEditor::getPreeditLocation(S32 query_offset, LLCoordGL *coord, LLRect *bounds, LLRect *control) const
@@ -5225,4 +5238,14 @@ void LLTextEditor::markAsPreedit(S32 position, S32 length)
 S32 LLTextEditor::getPreeditFontSize() const
 {
 	return llround(mGLFont->getLineHeight() * LLUI::getScaleFactor().mV[VY]);
+}
+
+void LLTextEditor::setKeystrokeCallback(const keystroke_signal_t::slot_type& callback)
+{
+	mKeystrokeSignal.connect(callback);
+}
+
+void LLTextEditor::onKeyStroke()
+{
+	mKeystrokeSignal(this);
 }

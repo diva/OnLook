@@ -229,7 +229,7 @@ void LLPreviewTexture::init()
 			mCreatorKey = item->getCreatorUUID();
 			childSetCommitCallback("desc", LLPreview::onText, this);
 			childSetText("desc", item->getDescription());
-			childSetPrevalidate("desc", &LLLineEditor::prevalidatePrintableNotPipe);
+			getChild<LLLineEditor>("desc")->setPrevalidate(&LLLineEditor::prevalidatePrintableNotPipe);
 			childSetText("uuid", getItemID().asString());
 			childSetText("uploader", getItemCreatorName());
 			childSetText("uploadtime", getItemCreationDate());

@@ -85,6 +85,7 @@
 #include "llsdutil_math.h"
 #include "llsecondlifeurls.h"
 #include "llstring.h"
+#include "lltexteditor.h"
 #include "lluserrelations.h"
 #include "sgversion.h"
 #include "llviewercontrol.h"

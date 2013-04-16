@@ -92,8 +92,8 @@ LLFloaterAvatarPicker::LLFloaterAvatarPicker() :
 
 BOOL LLFloaterAvatarPicker::postBuild()
 {
-	childSetKeystrokeCallback("Edit", &LLFloaterAvatarPicker::editKeystroke, (void*)this);
-	childSetKeystrokeCallback("EditUUID", &LLFloaterAvatarPicker::editKeystroke, (void*)this);
+	getChild<LLLineEditor>("Edit")->setKeystrokeCallback(boost::bind(&LLFloaterAvatarPicker::editKeystroke,this,_1));
+	getChild<LLLineEditor>("EditUUID")->setKeystrokeCallback(boost::bind(&LLFloaterAvatarPicker::editKeystroke, this,_1));
 
 	childSetAction("Find", boost::bind(&LLFloaterAvatarPicker::onBtnFind, this));
 	getChildView("Find")->setEnabled(FALSE);
@@ -716,14 +716,12 @@ void LLFloaterAvatarPicker::processResponse(const LLUUID& query_id, const LLSD& 
 	search_results->setFocus(TRUE);
 }
 
-//static
-void LLFloaterAvatarPicker::editKeystroke(LLLineEditor* caller, void* user_data)
+void LLFloaterAvatarPicker::editKeystroke(LLLineEditor* caller)
 {
-	LLFloaterAvatarPicker* self = (LLFloaterAvatarPicker*)user_data;
 	if(caller->getName() == "Edit")
-		self->getChildView("Find")->setEnabled(caller->getText().size() >= 3);
+		getChildView("Find")->setEnabled(caller->getText().size() >= 3);
 	else
-		self->childSetEnabled("Select", caller->getValue().asUUID().notNull());
+		childSetEnabled("Select", caller->getValue().asUUID().notNull());
 }
 
 // virtual

@@ -233,8 +233,7 @@ public:
 
 	void			onInputEditorFocusReceived();
 	void			onInputEditorFocusLost();
-	static void		onInputEditorKeystroke(LLLineEditor* caller, void* userdata);
-	static void		onCommitChat(LLUICtrl* caller, void* userdata);
+	void			onInputEditorKeystroke(LLLineEditor* caller);
 	static void		onTabClick( void* userdata );
 
 	void			onClickProfile();
@@ -245,7 +244,6 @@ public:
 	static void		onClickClose( void* userdata );
 	static void		onClickStartCall( void* userdata );
 	static void		onClickEndCall( void* userdata );
-	static void		onClickSend( void* userdata );
 	void			onClickToggleActiveSpeakers(const LLSD& value);
 	static void*	createSpeakersPanel(void* data);
 
@@ -294,7 +292,7 @@ private:
 	void init(const std::string& session_label);
 
 	// Called by UI methods.
-	void sendMsg();
+	void onSendMsg();
 
 	// for adding agents via the UI. Return TRUE if possible, do it if 
 	BOOL dropCallingCard(LLInventoryItem* item, BOOL drop);

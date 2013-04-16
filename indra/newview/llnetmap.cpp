@@ -208,6 +208,19 @@ void LLNetMap::draw()
 
 	F32 rotation = 0;
 
+
+	gGL.pushMatrix();
+	gGL.pushUIMatrix();
+	
+	LLVector3 offset = gGL.getUITranslation();
+	LLVector3 scale = gGL.getUIScale();
+
+	gGL.loadIdentity();
+	gGL.loadUIIdentity();
+
+	gGL.scalef(scale.mV[0], scale.mV[1], scale.mV[2]);
+	gGL.translatef(offset.mV[0], offset.mV[1], offset.mV[2]);
+
 	// Prepare a scissor region
 	{
 		LLGLEnable scissor(GL_SCISSOR_TEST);
@@ -511,6 +524,9 @@ void LLNetMap::draw()
 			gGL.popMatrix();
 		}
 	}
+	
+	gGL.popMatrix();
+	gGL.popUIMatrix();
 	
 	// Rotation of 0 means that North is up
 	setDirectionPos( getChild<LLTextBox>("e_label"), rotation);

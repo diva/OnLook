@@ -34,7 +34,7 @@
 			Hitos
 		</combo_item>
 	</combo_box>
-	<line_editor label="Buscar por Nombre de Región" name="location" tool_tip="Escribe el nombre de la región"/>
+  <search_editor label="Buscar por Nombre de Región" name="location" tool_tip="Escribe el nombre de la región"/>
 	<button label="Buscar" name="DoSearch" tool_tip="Buscar Región"/>
 	<text name="search_label">
 		Resultados de la Búsqueda:

@@ -108,17 +108,19 @@ LLPanelDirBrowser::LLPanelDirBrowser(const std::string& name, LLFloaterDirectory
 BOOL LLPanelDirBrowser::postBuild()
 {
 	if (LLUICtrl* ctrl = findChild<LLUICtrl>("results"))
-		ctrl->setCommitCallback(onCommitList, this);
+	{
+		ctrl->setCommitCallback(boost::bind(&LLPanelDirBrowser::onCommitList,this));
+	}
 
 	if (LLButton* btn = findChild<LLButton>("< Prev"))
 	{
-		childSetAction("< Prev", onClickPrev, this);
+		btn->setClickedCallback(boost::bind(&LLPanelDirBrowser::prevPage,this));
 		btn->setVisible(false);
 	}
 
 	if (LLButton* btn = findChild<LLButton>("Next >"))
 	{
-		childSetAction("Next >", onClickNext, this);
+		btn->setClickedCallback(boost::bind(&LLPanelDirBrowser::nextPage,this));
 		btn->setVisible(false);
 	}
 
@@ -154,7 +156,7 @@ void LLPanelDirBrowser::draw()
 					childSetFocus("results", TRUE);
 				}
 				// Request specific data from the server
-				onCommitList(NULL, this);
+				onCommitList();
 			}
 		}
 		mDidAutoSelect = TRUE;
@@ -231,21 +233,6 @@ void LLPanelDirBrowser::updateResultCount()
 	{
 		list->setEnabled(true);
 	}
-}
-
-// static
-void LLPanelDirBrowser::onClickPrev(void* data)
-{
-	LLPanelDirBrowser* self = (LLPanelDirBrowser*)data;
-	self->prevPage();
-}
-
-
-// static
-void LLPanelDirBrowser::onClickNext(void* data)
-{
-	LLPanelDirBrowser* self = (LLPanelDirBrowser*)data;
-	self->nextPage();
 }
 
 // static
@@ -339,7 +326,7 @@ void LLPanelDirBrowser::selectByUUID(const LLUUID& id)
 		// Don't bother looking for this in the draw loop.
 		mWantSelectID.setNull();
 		// Make sure UI updates.
-		onCommitList(NULL, this);
+		onCommitList();
 	}
 	else
 	{
@@ -385,18 +372,15 @@ void LLPanelDirBrowser::getSelectedInfo(LLUUID* id, S32 *type)
 	*type = mResultsContents[id_str]["type"];
 }
 
-
-// static
-void LLPanelDirBrowser::onCommitList(LLUICtrl* ctrl, void* data)
+void LLPanelDirBrowser::onCommitList()
 {
-	LLPanelDirBrowser* self = (LLPanelDirBrowser*)data;
-	LLScrollListCtrl* list = self->findChild<LLScrollListCtrl>("results");
+	LLScrollListCtrl* list = findChild<LLScrollListCtrl>("results");
 	if (!list) return;
 
 	// Start with everyone invisible
-	if (self->mFloaterDirectory)
+	if (mFloaterDirectory)
 	{
-		self->mFloaterDirectory->hideAllDetailPanels();
+		mFloaterDirectory->hideAllDetailPanels();
 	}
 	
 	if (FALSE == list->getCanSelect())
@@ -404,28 +388,28 @@ void LLPanelDirBrowser::onCommitList(LLUICtrl* ctrl, void* data)
 		return;
 	}
 
-	std::string id_str = self->childGetValue("results").asString();
+	std::string id_str = childGetValue("results").asString();
 	if (id_str.empty())
 	{
 		return;
 	}
 
 	LLSD item_id = list->getCurrentID();
-	S32 type = self->mResultsContents[id_str]["type"];
+	S32 type = mResultsContents[id_str]["type"];
 	if (type == EVENT_CODE)
 	{
 		// all but events use the UUID above
-		item_id = self->mResultsContents[id_str]["event_id"];
+		item_id = mResultsContents[id_str]["event_id"];
 	}
 	//std::string name = self->mResultsContents[id_str]["name"].asString();
-	self->showDetailPanel(type, item_id);
+	showDetailPanel(type, item_id);
 
 	if (type == FOR_SALE_CODE)
 	{
-		std::string land_type = self->mResultsContents[id_str]["landtype"].asString();
-		if (self->mFloaterDirectory && self->mFloaterDirectory->mPanelPlaceSmallp)
+		std::string land_type = mResultsContents[id_str]["landtype"].asString();
+		if (mFloaterDirectory && mFloaterDirectory->mPanelPlaceSmallp)
 		{
-			self->mFloaterDirectory->mPanelPlaceSmallp->setLandTypeString(land_type);
+			mFloaterDirectory->mPanelPlaceSmallp->setLandTypeString(land_type);
 		}	
 	}
 }
@@ -1247,15 +1231,11 @@ void LLPanelDirBrowser::setupNewSearch()
 }
 
 
-// static
 // called from calssifieds, events, groups, land, people, and places
-void LLPanelDirBrowser::onClickSearchCore(void* userdata)
+void LLPanelDirBrowser::onClickSearchCore()
 {
-	LLPanelDirBrowser* self = (LLPanelDirBrowser*)userdata;
-	if (!self) return;
-
-	self->resetSearchStart();
-	self->performQuery();
+	resetSearchStart();
+	performQuery();
 
 	LLFloaterDirectory::sOldSearchCount++;
 }
@@ -1282,18 +1262,17 @@ void LLPanelDirBrowser::sendDirFindQuery(
 }
 
 
-void LLPanelDirBrowser::onKeystrokeName(LLLineEditor* line, void* data)
+void LLPanelDirBrowser::onKeystrokeName(LLLineEditor* line)
 {
-	LLPanelDirBrowser *self = (LLPanelDirBrowser*)data;
-	if (line->getLength() >= (S32)self->mMinSearchChars)
+	if (line->getLength() >= (S32)mMinSearchChars)
 	{
-		self->setDefaultBtn( "Search" );
-		self->childEnable("Search");
+		setDefaultBtn( "Search" );
+		childEnable("Search");
 	}
 	else
 	{
-		self->setDefaultBtn();
-		self->childDisable("Search");
+		setDefaultBtn();
+		childDisable("Search");
 	}
 }
 
@@ -1302,7 +1281,7 @@ void LLPanelDirBrowser::handleVisibilityChange(BOOL new_visibility)
 {
 	if (new_visibility)
 	{
-		onCommitList(NULL, this);
+		onCommitList();
 	}
 	LLPanel::handleVisibilityChange(new_visibility);
 }

@@ -59,15 +59,15 @@ public:
 
 protected:
 	//static void onClickNewClassified(void* data);
-	static void onClickDelete(void* data);
+	void onClickDelete();
 
 	// onClickNext and onClickPrev are special case searches
-	static void onClickSearch(void *userdata);
+	void onClickSearch();
 
-	static void onKeystrokeNameClassified(LLLineEditor* line, void* data);
+	void onKeystrokeNameClassified(LLLineEditor* line);
 	
 	// 
-	static void onClickCreateNewClassified(void* data);
+	void onClickCreateNewClassified();
 
 protected:
 };

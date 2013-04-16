@@ -37,6 +37,7 @@
 #include "llcolorswatch.h"
 //#include "llfirstuse.h"
 #include "llfloater.h"
+#include "llfiltereditor.h"
 #include "llscrolllistctrl.h"
 #include "llspinctrl.h"
 #include "lltexteditor.h"
@@ -107,7 +108,7 @@ BOOL LLFloaterSettingsDebug::postBuild()
 	getChild<LLUICtrl>("boolean_combo")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCommitSettings, this));
 	getChild<LLUICtrl>("copy_btn")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onCopyToClipboard, this));
 	getChild<LLUICtrl>("default_btn")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onClickDefault, this));
-	getChild<LLSearchEditor>("search_settings_input")->setSearchCallback(onUpdateFilter, this);
+	getChild<LLFilterEditor>("search_settings_input")->setCommitCallback(boost::bind(&LLFloaterSettingsDebug::onUpdateFilter, this, _2));
 	mComment = getChild<LLTextEditor>("comment_text");
 	return TRUE;
 }
@@ -532,9 +533,9 @@ void LLFloaterSettingsDebug::updateControl()
 
 }
 
-void LLFloaterSettingsDebug::onUpdateFilter(const std::string& searchTerm, void*)
+void LLFloaterSettingsDebug::onUpdateFilter(const LLSD& value)
 {
-	LLFloaterSettingsDebug::getInstance()->updateFilter(searchTerm);
+	updateFilter(value.asString());
 }
 
 void LLFloaterSettingsDebug::updateFilter(std::string searchTerm)

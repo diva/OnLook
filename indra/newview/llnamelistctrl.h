@@ -52,8 +52,6 @@ public:
 
 	LLNameListCtrl(const std::string& name,
 				   const LLRect& rect,
-				   LLUICtrlCallback callback,
-				   void* userdata,
 				   BOOL allow_multiple_selection,
 				   BOOL draw_border = TRUE,
 				   bool draw_heading = false,

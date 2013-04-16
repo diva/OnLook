@@ -81,7 +81,6 @@
 
 // newview includes
 #include "llagent.h"
-#include "llalertdialog.h"
 #include "llbox.h"
 #include "llchatbar.h"
 #include "llconsole.h"
@@ -2359,16 +2358,19 @@ void LLViewerWindow::drawDebugText()
 {
 	gGL.color4f(1,1,1,1);
 	gGL.pushMatrix();
+	gGL.pushUIMatrix();
 	if (LLGLSLShader::sNoFixedFunction)
 	{
 		gUIProgram.bind();
 	}
 	{
 		// scale view by UI global scale factor and aspect ratio correction factor
-		gGL.scalef(mDisplayScale.mV[VX], mDisplayScale.mV[VY], 1.f);
+		gGL.scaleUI(mDisplayScale.mV[VX], mDisplayScale.mV[VY], 1.f);
 		mDebugText->draw();
 	}
+	gGL.popUIMatrix();
 	gGL.popMatrix();
+
 	gGL.flush();
 	if (LLGLSLShader::sNoFixedFunction)
 	{

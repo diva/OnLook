@@ -3573,7 +3573,8 @@ void renderLights(LLDrawable* drawablep)
 		size.mul(0.5f);
 
 		{
-			LLGLDepthTest depth(GL_FALSE, GL_TRUE);
+			//LLGLDepthTest depth(GL_FALSE, GL_TRUE);
+			LLGLDepthTest depth(GL_TRUE, GL_TRUE, GL_ALWAYS);
 			gGL.diffuseColor4f(1,1,1,1);
 			drawBoxOutline(pos, size);
 		}
@@ -3782,7 +3783,8 @@ void renderRaycast(LLDrawable* drawablep)
 			size.setSub(ext[1], ext[0]);
 			size.mul(0.5f);
 
-			LLGLDepthTest depth(GL_FALSE, GL_TRUE);
+			//LLGLDepthTest depth(GL_FALSE, GL_TRUE);
+			LLGLDepthTest depth(GL_TRUE, GL_TRUE, GL_ALWAYS);
 			gGL.diffuseColor4f(0,0.5f,0.5f,1);
 			drawBoxOutline(pos, size);		
 		}

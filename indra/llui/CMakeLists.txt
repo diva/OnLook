@@ -32,6 +32,7 @@ set(llui_SOURCE_FILES
     llctrlselectioninterface.cpp
     lldraghandle.cpp
     lleditmenuhandler.cpp
+    llfiltereditor.cpp
     llfloater.cpp
     llfocusmgr.cpp
     llfunctorregistry.cpp
@@ -57,6 +58,7 @@ set(llui_SOURCE_FILES
     llscrollcontainer.cpp
     llscrollingpanellist.cpp
     llscrolllistctrl.cpp
+    llsearcheditor.cpp
     llslider.cpp
     llsliderctrl.cpp
     llspinctrl.cpp
@@ -91,6 +93,7 @@ set(llui_HEADER_FILES
     llctrlselectioninterface.h
     lldraghandle.h
     lleditmenuhandler.h
+    llfiltereditor.h 
     llfloater.h
     llfocusmgr.h
     llfunctorregistry.h
@@ -116,6 +119,7 @@ set(llui_HEADER_FILES
     llresizehandle.h
     llresmgr.h
     llrootview.h
+    llsearcheditor.h 
     llscrollbar.h
     llscrollcontainer.h
     llscrollingpanellist.h

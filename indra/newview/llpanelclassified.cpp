@@ -46,7 +46,6 @@
 #include "message.h"
 
 #include "llagent.h"
-#include "llalertdialog.h"
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
 #include "llclassifiedflags.h"

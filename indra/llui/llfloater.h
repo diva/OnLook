@@ -241,10 +241,10 @@ public:
 	    return LLNotification::Params(name).context(mNotificationContext); 
 	}
 
-	static void		onClickClose(void *userdata);
-	static void		onClickMinimize(void *userdata);
-	static void		onClickTearOff(void *userdata);
-	static void		onClickEdit(void *userdata);
+	void		onClickClose();
+	void		onClickMinimize();
+	void		onClickTearOff();
+	void		onClickEdit();
 
 	static void		setFloaterHost(LLMultiFloater* hostp) {sHostp = hostp; }
 	static void		setEditModeEnabled(BOOL enable);
@@ -317,8 +317,10 @@ private:
 	static std::string	sButtonPressedImageNames[BUTTON_COUNT];
 	static std::string	sButtonNames[BUTTON_COUNT];
 	static std::string	sButtonToolTips[BUTTON_COUNT];
-	typedef void (*click_callback)(void *);
-	static click_callback sButtonCallbacks[BUTTON_COUNT];
+	
+	typedef void (LLFloater::*button_callback)();
+
+	static button_callback sButtonCallbacks[BUTTON_COUNT];
 
 	typedef std::map<LLHandle<LLFloater>, LLFloater*> handle_map_t;
 	typedef std::map<LLHandle<LLFloater>, LLFloater*>::iterator handle_map_iter_t;

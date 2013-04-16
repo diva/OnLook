@@ -113,13 +113,14 @@ std::string	LLFloater::sButtonToolTips[BUTTON_COUNT] =
 	"Edit",		//BUTTON_EDIT
 };
 
-LLFloater::click_callback LLFloater::sButtonCallbacks[BUTTON_COUNT] =
+
+LLFloater::button_callback LLFloater::sButtonCallbacks[BUTTON_COUNT] =
 {
-	LLFloater::onClickClose,	//BUTTON_CLOSE
-	LLFloater::onClickMinimize, //BUTTON_RESTORE
-	LLFloater::onClickMinimize, //BUTTON_MINIMIZE
-	LLFloater::onClickTearOff,	//BUTTON_TEAR_OFF
-	LLFloater::onClickEdit,	//BUTTON_EDIT
+	&LLFloater::onClickClose,	//BUTTON_CLOSE
+	&LLFloater::onClickMinimize, //BUTTON_RESTORE
+	&LLFloater::onClickMinimize, //BUTTON_MINIMIZE
+	&LLFloater::onClickTearOff,	//BUTTON_TEAR_OFF
+	&LLFloater::onClickEdit,	//BUTTON_EDIT
 };
 
 LLMultiFloater* LLFloater::sHostp = NULL;
@@ -1286,60 +1287,49 @@ void LLFloater::setEditModeEnabled(BOOL enable)
 }
 
 
-// static
-void LLFloater::onClickMinimize(void *userdata)
+void LLFloater::onClickMinimize()
 {
-	LLFloater* self = (LLFloater*) userdata;
-	if (!self) return;
-
-	self->setMinimized( !self->isMinimized() );
+	setMinimized( !isMinimized() );
 }
 
-void LLFloater::onClickTearOff(void *userdata)
+void LLFloater::onClickTearOff()
 {
-	LLFloater* self = (LLFloater*) userdata;
-	if (!self) return;
-
-	LLMultiFloater* host_floater = self->getHost();
+	LLMultiFloater* host_floater = getHost();
 	if (host_floater) //Tear off
 	{
 		LLRect new_rect;
-		host_floater->removeFloater(self);
+		host_floater->removeFloater(this);
 		// reparent to floater view
-		gFloaterView->addChild(self);
+		gFloaterView->addChild(this);
 
-		self->open();	/* Flawfinder: ignore */
+		open();	/* Flawfinder: ignore */
 		
 		// only force position for floaters that don't have that data saved
-		if (self->getRectControl().empty())
+		if (getRectControl().empty())
 		{
-			new_rect.setLeftTopAndSize(host_floater->getRect().mLeft + 5, host_floater->getRect().mTop - LLFLOATER_HEADER_SIZE - 5, self->getRect().getWidth(), self->getRect().getHeight());
-			self->setRect(new_rect);
+			new_rect.setLeftTopAndSize(host_floater->getRect().mLeft + 5, host_floater->getRect().mTop - LLFLOATER_HEADER_SIZE - 5, getRect().getWidth(), getRect().getHeight());
+			setRect(new_rect);
 		}
-		gFloaterView->adjustToFitScreen(self, FALSE);
+		gFloaterView->adjustToFitScreen(this, FALSE);
 		// give focus to new window to keep continuity for the user
-		self->setFocus(TRUE);
+		setFocus(TRUE);
 	}
 	else  //Attach to parent.
 	{
-		LLMultiFloater* new_host = (LLMultiFloater*)self->mLastHostHandle.get();
+		LLMultiFloater* new_host = (LLMultiFloater*)mLastHostHandle.get();
 		if (new_host)
 		{
-			self->setMinimized(FALSE); // to reenable minimize button if it was minimized
-			new_host->showFloater(self);
+			setMinimized(FALSE); // to reenable minimize button if it was minimized
+			new_host->showFloater(this);
 			// make sure host is visible
 			new_host->open();
 		}
 	}
 }
 
-// static
-void LLFloater::onClickEdit(void *userdata)
+void LLFloater::onClickEdit()
 {
-	LLFloater* self = (LLFloater*) userdata;
-	if (!self) return;
-
-	self->mEditing = self->mEditing ? FALSE : TRUE;
+	mEditing = mEditing ? FALSE : TRUE;
 }
 
 // static 
@@ -1393,13 +1383,9 @@ void LLFloater::closeFocusedFloater()
 }
 
 
-// static
-void LLFloater::onClickClose( void* userdata )
+void LLFloater::onClickClose()
 {
-	LLFloater* self = (LLFloater*) userdata;
-	if (!self) return;
-
-	self->close();
+	close();
 }
 
 
@@ -1716,8 +1702,7 @@ void LLFloater::buildButtons()
 			sButtonActiveImageNames[i],
 			sButtonPressedImageNames[i],
 			LLStringUtil::null,
-			sButtonCallbacks[i],
-			this,
+			boost::bind(sButtonCallbacks[i],this),
 			LLFontGL::getFontSansSerif());
 
 		buttonp->setTabStop(FALSE);
@@ -1740,7 +1725,7 @@ void LLFloater::buildButtons()
 // LLFloaterView
 
 LLFloaterView::LLFloaterView( const std::string& name, const LLRect& rect )
-:	LLUICtrl( name, rect, FALSE, NULL, NULL, FOLLOWS_ALL ),
+:	LLUICtrl( name, rect, FALSE, NULL, FOLLOWS_ALL ),
 	mFocusCycleMode(FALSE),
 	mSnapOffsetBottom(0)
 {

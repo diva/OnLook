@@ -54,9 +54,8 @@ public:
 	typedef BOOL (*LLUICtrlValidate)(LLUICtrl* ctrl, void* userdata);
 
 	LLUICtrl();
-	LLUICtrl( const std::string& name, const LLRect& rect, BOOL mouse_opaque,
-		LLUICtrlCallback callback,
-		void* callback_userdata,
+	LLUICtrl( const std::string& name, const LLRect rect = LLRect(), BOOL mouse_opaque = TRUE,
+		commit_callback_t commit_callback = NULL,
 		U32 reshape=FOLLOWS_NONE);
 	/*virtual*/ ~LLUICtrl();
 

@@ -90,8 +90,8 @@ public:
 
 	void refresh();
 
-	static void	onBtnPlay(void*);
-	static void	onBtnStop(void*);
+	void	onBtnPlay();
+	void	onBtnStop();
 	static void setUploadAmount(S32 amount) { sUploadAmount = amount; }
 	static void onSliderMove(LLUICtrl*, void*);
 	static void onCommitBaseAnim(LLUICtrl*, void*);

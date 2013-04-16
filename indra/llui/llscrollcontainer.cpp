@@ -68,7 +68,7 @@ LLScrollableContainerView::LLScrollableContainerView( const std::string& name,
 													  LLView* scrolled_view,
 													  BOOL is_opaque,
 													  const LLColor4& bg_color ) :
-	LLUICtrl( name, rect, FALSE, NULL, NULL ),
+	LLUICtrl( name, rect, FALSE ),
 	mAutoScrolling( FALSE ),
 	mAutoScrollRate( 0.f ),
 	mBackgroundColor( bg_color ),
@@ -101,7 +101,7 @@ LLScrollableContainerView::LLScrollableContainerView( const std::string& name,
 											mInnerRect.getHeight(), 
 											0,
 											mInnerRect.getHeight(),
-											NULL, this,
+											NULL,
 											VERTICAL_MULTIPLE);
 	LLView::addChild( mScrollbar[VERTICAL] );
 	mScrollbar[VERTICAL]->setVisible( FALSE );
@@ -117,7 +117,7 @@ LLScrollableContainerView::LLScrollableContainerView( const std::string& name,
 											  mInnerRect.getWidth(),
 											  0,
 											  mInnerRect.getWidth(),
-											  NULL, this,
+											  NULL,
 											  HORIZONTAL_MULTIPLE);
 	LLView::addChild( mScrollbar[HORIZONTAL] );
 	mScrollbar[HORIZONTAL]->setVisible( FALSE );

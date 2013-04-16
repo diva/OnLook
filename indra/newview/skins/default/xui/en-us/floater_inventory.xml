@@ -3,7 +3,7 @@
      can_resize="true" height="563" left="882" min_height="150" min_width="240"
      mouse_opaque="true" name="Inventory" rect_control="FloaterInventoryRect"
      title="Inventory" width="467">
-	<search_editor bottom="-50" follows="left|top|right" height="16" label="Type here to search"
+	<filter_editor bottom="-50" follows="left|top|right" height="16" label="Type here to search"
 	    left="6" mouse_opaque="true" name="inventory search editor" width="455" />
   <button left="6" bottom_delta="-26" height="22" width="22" follows="left|top" halign="center"
     label="" image_overlay="inv_collapse_all.tga" name="collapse_btn" mouse_opaque="true" font="SansSerif"

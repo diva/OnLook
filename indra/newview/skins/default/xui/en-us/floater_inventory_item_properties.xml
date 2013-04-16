@@ -185,7 +185,7 @@
 	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom="-315"
 	     enabled="true" follows="left|top|right" font="SansSerifSmall" height="16"
 	     is_unicode="false" left_delta="56" max_length="25" mouse_opaque="true"
-	     name="EditPrice" width="242" />
+	     name="Edit Cost" width="242" />
 	<string name="unknown">
 		(unknown)
 	</string>

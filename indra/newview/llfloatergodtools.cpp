@@ -40,7 +40,6 @@
 #include "message.h"
 
 #include "llagent.h"
-#include "llalertdialog.h"
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
 #include "llcombobox.h"
@@ -448,9 +447,10 @@ LLPanelRegionTools::LLPanelRegionTools(const std::string& title)
 
 BOOL LLPanelRegionTools::postBuild()
 {
-	getChild<LLUICtrl>("region name")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	childSetKeystrokeCallback("region name", onChangeSimName, this);
-	childSetPrevalidate("region name", &LLLineEditor::prevalidatePrintableNotPipe);
+	LLLineEditor* region_name = getChild<LLLineEditor>("region name");
+	region_name->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	region_name->setKeystrokeCallback(boost::bind(&LLPanelRegionTools::onChangeSimName, this));
+	region_name->setPrevalidate(&LLLineEditor::prevalidatePrintableNotPipe);
 
 	getChild<LLUICtrl>("check prelude")->setCommitCallback(boost::bind(&LLPanelRegionTools:: onChangePrelude, this));
 	getChild<LLUICtrl>("check fixed sun")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
@@ -470,36 +470,42 @@ BOOL LLPanelRegionTools::postBuild()
 	childSetAction("Revert Terrain", boost::bind(&LLPanelRegionTools::onRevertTerrain, this));
 	childSetAction("Swap Terrain", boost::bind(&LLPanelRegionTools::onSwapTerrain, this));
 
-	getChild<LLUICtrl>("estate")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	childSetPrevalidate("estate", &LLLineEditor::prevalidatePositiveS32);
+	LLLineEditor* estate = getChild<LLLineEditor>("estate name");
+	estate->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	estate->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
 
-	getChild<LLUICtrl>("parentestate")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	childSetPrevalidate("parentestate", &LLLineEditor::prevalidatePositiveS32);
-	childDisable("parentestate");
+	LLLineEditor* parentestate = getChild<LLLineEditor>("parentestate");
+	parentestate->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	parentestate->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
+	parentestate->setEnabled(false);
 
-	getChild<LLUICtrl>("gridposx")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	childSetPrevalidate("gridposx", &LLLineEditor::prevalidatePositiveS32);
-	childDisable("gridposx");
+	LLLineEditor* gridposx = getChild<LLLineEditor>("gridposx");
+	gridposx->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	gridposx->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
+	gridposx->setEnabled(false);
 
-	getChild<LLUICtrl>("gridposy")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	childSetPrevalidate("gridposy", &LLLineEditor::prevalidatePositiveS32);
-	childDisable("gridposy");
+	LLLineEditor* gridposy = getChild<LLLineEditor>("gridposy");
+	gridposy->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	gridposy->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
+	gridposy->setEnabled(false);
 
-	getChild<LLUICtrl>("redirectx")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	childSetPrevalidate("redirectx", &LLLineEditor::prevalidatePositiveS32);
+	LLLineEditor* redirectx = getChild<LLLineEditor>("redirectx");
+	redirectx->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	redirectx->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
 
-	getChild<LLUICtrl>("redirecty")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	childSetPrevalidate("redirecty", &LLLineEditor::prevalidatePositiveS32);
+	LLLineEditor* redirecty = getChild<LLLineEditor>("redirecty");
+	redirecty->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	redirecty->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
 
 	getChild<LLUICtrl>("billable factor")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 
 	getChild<LLUICtrl>("land cost")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 
-	childSetAction("Refresh", boost::bind(&LLPanelRegionTools::onRefresh, this));
-	childSetAction("Apply", boost::bind(&LLPanelRegionTools::onApplyChanges, this));
+	getChild<LLButton>("Refresh")->setClickedCallback(boost::bind(&LLPanelRegionTools::onRefresh, this));
+	getChild<LLButton>("Apply")->setClickedCallback(boost::bind(&LLPanelRegionTools::onApplyChanges, this));
 
-	childSetAction("Select Region", boost::bind(&LLPanelRegionTools::onSelectRegion, this));
-	childSetAction("Autosave now", boost::bind(onSaveState, this));
+	getChild<LLButton>("Select Region")->setClickedCallback(boost::bind(&LLPanelRegionTools::onSelectRegion, this));
+	getChild<LLButton>("Autosave now")->setClickedCallback(boost::bind(&LLPanelRegionTools::onSaveState,(void*)NULL));
 			 
 	return TRUE;
 }
@@ -586,7 +592,8 @@ void LLPanelRegionTools::enableAllWidgets()
 	getChildView("Autosave now")->setEnabled(TRUE);
 }
 
-void LLPanelRegionTools::onSaveState(void* userdata)
+//static
+void LLPanelRegionTools::onSaveState(void*)
 {
 	if (gAgent.isGodlike())
 	{
@@ -820,13 +827,11 @@ void LLPanelRegionTools::onChangePrelude()
 	onChangeAnything();
 }
 
-// static
-void LLPanelRegionTools::onChangeSimName(LLLineEditor* caller, void* userdata )
+void LLPanelRegionTools::onChangeSimName()
 {
-	if (userdata && gAgent.isGodlike())
+	if ( gAgent.isGodlike())
 	{
-		LLPanelRegionTools* region_tools = (LLPanelRegionTools*) userdata;
-		region_tools->getChildView("Apply")->setEnabled(TRUE);
+		getChildView("Apply")->setEnabled(TRUE);
 	}
 }
 

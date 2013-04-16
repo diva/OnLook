@@ -61,7 +61,6 @@ class LLScrollableContainerView;
 class LLTextBox;
 class LLIconCtrl;
 class LLSaveFolderState;
-class LLSearchEditor;
 class LLInvPanelComplObserver;
 
 class LLInventoryPanel : public LLPanel

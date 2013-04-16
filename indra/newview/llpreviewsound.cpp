@@ -88,7 +88,7 @@ LLPreviewSound::LLPreviewSound(const std::string& name, const LLRect& rect, cons
 	
 	childSetCommitCallback("desc", LLPreview::onText, this);
 	childSetText("desc", item->getDescription());
-	childSetPrevalidate("desc", &LLLineEditor::prevalidatePrintableNotPipe);	
+	getChild<LLLineEditor>("desc")->setPrevalidate(&LLLineEditor::prevalidatePrintableNotPipe);
 	
 	// preload the sound
 	if(item && gAudiop)

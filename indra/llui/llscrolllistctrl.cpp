@@ -662,13 +662,12 @@ public:
 //---------------------------------------------------------------------------
 
 LLScrollListCtrl::LLScrollListCtrl(const std::string& name, const LLRect& rect,
-	void (*commit_callback)(LLUICtrl* ctrl, void* userdata),
-	void* callback_user_data,
+	commit_callback_t commit_callback,
 	BOOL allow_multiple_selection,
 	BOOL show_border,
 	bool draw_heading
 	)
- :	LLUICtrl(name, rect, TRUE, commit_callback, callback_user_data),
+ :	LLUICtrl(name, rect, TRUE, commit_callback),
 	mLineHeight(0),
 	mScrollLines(0),
 	mMouseWheelOpaque(true),
@@ -735,7 +734,7 @@ LLScrollListCtrl::LLScrollListCtrl(const std::string& name, const LLRect& rect,
 								  getItemCount(),
 								  mScrollLines,
 								  getLinesPerPage(),
-								  &LLScrollListCtrl::onScrollChange, this );
+								  boost::bind(&LLScrollListCtrl::onScrollChange, this, _1, _2) );
 	mScrollbar->setFollowsRight();
 	mScrollbar->setFollowsTop();
 	mScrollbar->setFollowsBottom();
@@ -2853,11 +2852,9 @@ S32	LLScrollListCtrl::getLinesPerPage()
 }
 
 // Called by scrollbar
-//static
-void LLScrollListCtrl::onScrollChange( S32 new_pos, LLScrollbar* scrollbar, void* userdata )
+void LLScrollListCtrl::onScrollChange( S32 new_pos, LLScrollbar* scrollbar )
 {
-	LLScrollListCtrl* self = (LLScrollListCtrl*) userdata;
-	self->mScrollLines = new_pos;
+	mScrollLines = new_pos;
 }
 
 
@@ -2932,7 +2929,7 @@ void LLScrollListCtrl::setScrollPos( S32 pos )
 {
 	mScrollbar->setDocPos( pos );
 
-	onScrollChange(mScrollbar->getDocPos(), mScrollbar, this);
+	onScrollChange(mScrollbar->getDocPos(), mScrollbar);
 }
 
 
@@ -3134,12 +3131,9 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 	BOOL mouse_wheel_opaque = TRUE;
 	node->getAttributeBOOL("mouse_wheel_opaque", mouse_wheel_opaque);
 
-	LLUICtrlCallback callback = NULL;
-
 	LLScrollListCtrl* scroll_list = new LLScrollListCtrl(
 		name,
 		rect,
-		callback,
 		NULL,
 		multi_select,
 		draw_border,
@@ -3868,7 +3862,7 @@ void LLScrollListCtrl::onFocusLost()
 }
 
 LLScrollColumnHeader::LLScrollColumnHeader(const std::string& label, const LLRect &rect, LLScrollListColumn* column, const LLFontGL* fontp) : 
-	LLComboBox(label, rect, label, NULL, NULL), 
+	LLComboBox(label, rect, label), 
 	mColumn(column),
 	mOrigLabel(label),
 	mShowSortOptions(FALSE),

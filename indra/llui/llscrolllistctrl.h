@@ -390,8 +390,7 @@ public:
 	LLScrollListCtrl(
 		const std::string& name,
 		const LLRect& rect,
-		void (*commit_callback)(LLUICtrl*, void*),
-		void* callback_userdata,
+		commit_callback_t commit_callback,
 		BOOL allow_multiple_selection,
 		BOOL draw_border = TRUE, bool draw_heading = false);
 
@@ -594,7 +593,7 @@ public:
 	LLRect			getCellRect(S32 row_index, S32 column_index);
 
 	// Used "internally" by the scroll bar.
-	static void		onScrollChange( S32 new_pos, LLScrollbar* src, void* userdata );
+	void			onScrollChange( S32 new_pos, LLScrollbar* src);
 
 	static void onClickColumn(void *userdata);
 

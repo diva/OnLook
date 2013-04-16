@@ -3859,7 +3859,7 @@ void handle_close_all_notifications(void*)
 
 void handle_area_search(void*)
 {
-	JCFloaterAreaSearch::toggle();
+	JCFloaterAreaSearch::toggleInstance();
 }
 
 void handle_fake_away_status(void*)
@@ -6755,7 +6755,7 @@ class LLShowFloater : public view_listener_t
 		}
 		else if (floater_name == "areasearch")
 		{
-			JCFloaterAreaSearch::toggle();
+			JCFloaterAreaSearch::toggleInstance();
 		}
 		else if (floater_name == "grid options")
 		{

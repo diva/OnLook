@@ -265,10 +265,9 @@ BOOL LLFloaterAnimPreview::postBuild()
 	mPlayButton = getChild<LLButton>( "play_btn");
 	if (!mPlayButton)
 	{
-		mPlayButton = new LLButton(std::string("play_btn"), LLRect(0,0,0,0));
+		mPlayButton = new LLButton("play_btn");
 	}
 	mPlayButton->setClickedCallback(boost::bind(&LLFloaterAnimPreview::onBtnPlay,this));
-
 	mPlayButton->setImages(std::string("button_anim_play.tga"),
 						   std::string("button_anim_play_selected.tga"));
 
@@ -280,10 +279,9 @@ BOOL LLFloaterAnimPreview::postBuild()
 	mStopButton = getChild<LLButton>( "stop_btn");
 	if (!mStopButton)
 	{
-		mStopButton = new LLButton(std::string("stop_btn"), LLRect(0,0,0,0));
+		mStopButton = new LLButton("stop_btn");
 	}
 	mStopButton->setClickedCallback(boost::bind(&LLFloaterAnimPreview::onBtnStop, this));
-
 	mStopButton->setImages(std::string("button_anim_stop.tga"),
 						   std::string("button_anim_stop_selected.tga"));
 
@@ -748,16 +746,15 @@ void LLFloaterAnimPreview::onMouseCaptureLost()
 //-----------------------------------------------------------------------------
 // onBtnPlay()
 //-----------------------------------------------------------------------------
-void LLFloaterAnimPreview::onBtnPlay(void* user_data)
+void LLFloaterAnimPreview::onBtnPlay()
 {
-	LLFloaterAnimPreview* previewp = (LLFloaterAnimPreview*)user_data;
-	if (!previewp->getEnabled())
+	if (!getEnabled())
 		return;
 
-	if (previewp->mMotionID.notNull())
+	if (mMotionID.notNull())
 	{
 		LLVOAvatar* avatarp;
-		if (previewp->mInWorld)
+		if (mInWorld)
 		{
 			if (!gAgentAvatarp)
 			{
@@ -767,27 +764,27 @@ void LLFloaterAnimPreview::onBtnPlay(void* user_data)
 		}
 		else
 		{
-			if (!previewp->mAnimPreview)
+			if (!mAnimPreview)
 			{
 				return;
 			}
-			avatarp = previewp->mAnimPreview->getDummyAvatar();
+			avatarp = mAnimPreview->getDummyAvatar();
 		}
 
-		if(!avatarp->isMotionActive(previewp->mMotionID))
+		if(!avatarp->isMotionActive(mMotionID))
 		{
-			previewp->resetMotion();
-			previewp->mPauseRequest = NULL;
+			resetMotion();
+			mPauseRequest = NULL;
 		}
 		else
 		{
 			if (avatarp->areAnimationsPaused())
 			{
-				previewp->mPauseRequest = NULL;
+				mPauseRequest = NULL;
 			}
 			else
 			{
-				previewp->mPauseRequest = avatarp->requestPause();
+				mPauseRequest = avatarp->requestPause();
 			}
 		}
 	}
@@ -796,16 +793,15 @@ void LLFloaterAnimPreview::onBtnPlay(void* user_data)
 //-----------------------------------------------------------------------------
 // onBtnStop()
 //-----------------------------------------------------------------------------
-void LLFloaterAnimPreview::onBtnStop(void* user_data)
+void LLFloaterAnimPreview::onBtnStop()
 {
-	LLFloaterAnimPreview* previewp = (LLFloaterAnimPreview*)user_data;
-	if (!previewp->getEnabled())
+	if (!getEnabled())
 		return;
 
-	if (previewp->mMotionID.notNull())
+	if (mMotionID.notNull())
 	{
 		LLVOAvatar* avatarp;
-		if (previewp->mInWorld)
+		if (mInWorld)
 		{
 			if (!gAgentAvatarp)
 			{
@@ -815,14 +811,14 @@ void LLFloaterAnimPreview::onBtnStop(void* user_data)
 		}
 		else
 		{
-			if (!previewp->mAnimPreview)
+			if (!mAnimPreview)
 			{
 				return;
 			}
-			avatarp = previewp->mAnimPreview->getDummyAvatar();
+			avatarp = mAnimPreview->getDummyAvatar();
 		}
-		previewp->resetMotion();
-		previewp->mPauseRequest = avatarp->requestPause();
+		resetMotion();
+		mPauseRequest = avatarp->requestPause();
 	}
 }
 

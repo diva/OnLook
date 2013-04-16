@@ -73,6 +73,10 @@ public:
 
 	virtual ~LLTextEditor();
 
+	typedef boost::signals2::signal<void (LLTextEditor* caller)> keystroke_signal_t;
+
+	void	setKeystrokeCallback(const keystroke_signal_t::slot_type& callback);
+
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
 	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, class LLUICtrlFactory *factory);
 	void    setTextEditorParameters(LLXMLNodePtr node);
@@ -480,6 +484,7 @@ private:
 	// Methods
 	//
 	void	                pasteHelper(bool is_primary);
+	void			onKeyStroke();
 
 	void			updateSegments();
 	void			pruneSegments();
@@ -603,6 +608,7 @@ private:
 	BOOL			mHandleEditKeysDirectly;  
 
 	LLCoordGL		mLastIMEPosition;		// Last position of the IME editor
+	keystroke_signal_t mKeystrokeSignal;
 }; // end class LLTextEditor
 
 

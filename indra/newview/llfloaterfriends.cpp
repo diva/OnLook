@@ -49,6 +49,7 @@
 #include "llfloateravatarpicker.h"
 #include "llviewerwindow.h"
 #include "llbutton.h"
+#include "llfiltereditor.h"
 #include "llfloateravatarinfo.h"
 #include "llinventorymodel.h"
 #include "llnamelistctrl.h"
@@ -353,14 +354,9 @@ void LLPanelFriends::filterContacts(const std::string& search_name)
 	mLastContactSearch = search_name;
 }
 
-//static
-void LLPanelFriends::onContactSearchEdit(const std::string& search_string, void* user_data)
+void LLPanelFriends::onContactFilterEdit(const std::string& search_string)
 {
-	LLPanelFriends* panelp = (LLPanelFriends*)user_data;
-	if (panelp)
-	{
-		panelp->filterContacts(search_string);
-	}
+	filterContacts(search_string);
 }
 
 /*void LLPanelFriends::onChangeContactGroup(LLUICtrl* ctrl, void* user_data)
@@ -387,10 +383,10 @@ BOOL LLPanelFriends::postBuild()
 	// <dogmode>
 	// Contact search and group system.
 	// 09/05/2010 - Charley Levenque
-	LLSearchEditor* contact = getChild<LLSearchEditor>("buddy_search_lineedit");
+	LLFilterEditor* contact = getChild<LLFilterEditor>("buddy_search_lineedit");
 	if (contact)
 	{
-		contact->setSearchCallback(&onContactSearchEdit, this);
+		contact->setCommitCallback(boost::bind(&LLPanelFriends::onContactFilterEdit, this, _2));
 	}
 
 	getChild<LLTextBox>("s_num")->setValue("0");

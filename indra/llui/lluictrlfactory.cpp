@@ -83,7 +83,7 @@ std::vector<std::string> LLUICtrlFactory::sXUIPaths;
 class LLUICtrlLocate : public LLUICtrl
 {
 public:
-	LLUICtrlLocate() : LLUICtrl(std::string("locate"), LLRect(0,0,0,0), FALSE, NULL, NULL) { setTabStop(FALSE); }
+	LLUICtrlLocate() : LLUICtrl(std::string("locate"), LLRect(0,0,0,0), FALSE) { setTabStop(FALSE); }
 	virtual void draw() { }
 
 	virtual LLXMLNodePtr getXML(bool save_children = true) const
