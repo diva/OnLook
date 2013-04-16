@@ -188,8 +188,13 @@ void LLFloaterChat::handleVisibilityChange(BOOL new_visibility)
 void LLFloaterChat::onFocusReceived()
 {
 	LLView* chat_editor = getChildView("Chat Editor");
-	if (childIsVisible("Chat Editor"))
+	if (getVisible() && childIsVisible("Chat Editor"))
+	{
 		gFocusMgr.setKeyboardFocus(chat_editor);
+
+        LLUICtrl * ctrl = static_cast<LLUICtrl*>(chat_editor);
+        ctrl->setFocus(TRUE);
+	}
 
 	LLFloater::onFocusReceived();
 }
@@ -747,9 +752,13 @@ void LLFloaterChat::hide(LLFloater* instance, const LLSD& key)
 BOOL LLFloaterChat::focusFirstItem(BOOL prefer_text_fields, BOOL focus_flash )
 {
 	LLView* chat_editor = getChildView("Chat Editor");
-	if (childIsVisible("Chat Editor"))
+	if (getVisible() && childIsVisible("Chat Editor"))
 	{
 		gFocusMgr.setKeyboardFocus(chat_editor);
+
+        LLUICtrl * ctrl = static_cast<LLUICtrl*>(chat_editor);
+        ctrl->setFocus(TRUE);
+
 		return TRUE;
 	}
 
