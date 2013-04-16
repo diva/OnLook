@@ -753,9 +753,6 @@ void LLPanelPermissions::refresh()
 		childSetEnabled("checkbox allow everyone copy", FALSE);
 	}
 
-	bool base_ok = base_mask_on & PERM_EXPORT;
-	bool owner_ok = owner_mask_on & PERM_EXPORT;
-	bool next_ok = (next_owner_mask_on & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED;
 	// Is this user allowed to toggle export on this object?
 	if (supports_export && self_owned && mCreatorID == mOwnerID && can_set_export(base_mask_on, owner_mask_on, next_owner_mask_on))
 	{
