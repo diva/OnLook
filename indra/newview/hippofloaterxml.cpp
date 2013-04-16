@@ -275,6 +275,16 @@ static void notifyCallback(void *c)
 	send_chat_from_viewer(msg, CHAT_TYPE_WHISPER, CHANNEL);
 }
 
+static void pickerCallback(void *c, void *t)
+{
+	LLUICtrl *ctrl = (LLUICtrl *)c;
+	const char *target = (const char *)t;
+
+	llinfos << "Picker called with " << target << llendl;
+
+	//send_chat_from_viewer(msg, CHAT_TYPE_WHISPER, CHANNEL);
+}
+
 void HippoFloaterXmlImpl::onClose(bool quitting)
 {
 	if (mIsNotifyOnClose)
@@ -331,6 +341,14 @@ bool HippoFloaterXmlImpl::execute(LLUICtrl *ctrl,
                         else
                             ctrl->setCommitCallback(0);
                     }
+				} else if (key == "picker") {
+					bool set = (value != "");
+					if (!dynamic_cast<HippoFloaterXmlImpl*>(ctrl)) {
+                        if (set)
+                            ctrl->setCommitCallback(boost::bind(&pickerCallback, _1, strdup(value.c_str())), ctrl);
+                        else
+                            ctrl->setCommitCallback(0);
+					}
 				}
 			}
 		}
