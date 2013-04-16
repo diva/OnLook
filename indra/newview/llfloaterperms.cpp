@@ -86,8 +86,10 @@ BOOL LLFloaterPerms::postBuild()
 		if (!gHippoGridManager->getCurrentGrid()->isSecondLife())
 			childSetVisible("everyone_export", false);
 
-		if (!next_owner_perms & PERM_COPY)
+		if (!(next_owner_perms & PERM_COPY))
+		{
 			childSetEnabled("next_owner_transfer", false);
+		}
 		else if (export_support)
 		{
 			bool export_off = !gSavedPerAccountSettings.getBOOL("EveryoneExport");
