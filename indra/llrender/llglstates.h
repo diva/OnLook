@@ -110,11 +110,13 @@ protected:
 	LLGLEnable mBlend, mAlphaTest;
 	LLGLDisable mCullFace;
 	LLGLDepthTest mDepthTest;
+	LLGLDisable mMSAA;
 public:
 	LLGLSUIDefault() 
 		: mBlend(GL_BLEND), mAlphaTest(GL_ALPHA_TEST),
 		  mCullFace(GL_CULL_FACE),
-		  mDepthTest(GL_FALSE, GL_TRUE, GL_LEQUAL)
+		  mDepthTest(GL_FALSE, GL_TRUE, GL_LEQUAL),
+		  mMSAA(GL_MULTISAMPLE_ARB)
 	{}
 };
 
