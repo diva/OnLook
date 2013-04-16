@@ -40,6 +40,8 @@
 #include <llradiogroup.h>
 #include <lluictrlfactory.h>
 
+#include "llavatarnamecache.h"
+#include "llfloateravatarpicker.h"
 #include "llviewerwindow.h"
 
 
@@ -58,7 +60,7 @@ class HippoFloaterXmlImpl : public LLFloater
 		BOOL postBuild();
 		void onClose(bool quitting);
 
-		static bool execute(LLUICtrl *ctrl,
+		static bool execute(LLFloater *floater, LLUICtrl *ctrl,
 							const std::string &cmds, std::string::size_type &offset,
 							std::string &response);
 
@@ -218,7 +220,7 @@ void HippoFloaterXml::execute(const std::string &cmds)
 		if (token == "{") {
 			if (floater) {
 				std::string response;
-				if (!floater->execute(floater, cmds, offset, response))
+				if (!floater->execute(floater, floater, cmds, offset, response))
 					break;
 				if (!response.empty())
 					send_chat_from_viewer(response, CHAT_TYPE_WHISPER, CHANNEL);
@@ -275,6 +277,30 @@ static void notifyCallback(void *c)
 	send_chat_from_viewer(msg, CHAT_TYPE_WHISPER, CHANNEL);
 }
 
+void callbackAvatarPick(void *c, const uuid_vec_t& ids, const std::vector<LLAvatarName>& names)
+{  
+	LLUICtrl *ctrl = (LLUICtrl *)c;
+
+	LLUUID id = ids[0];
+
+	std::string msg = "PICKER:";
+	msg += ctrl->getName();
+	msg += ':';
+	msg += id.asString();
+	msg += ':';
+	msg += names[0].getCompleteName();
+	send_chat_from_viewer(msg, CHAT_TYPE_WHISPER, CHANNEL);
+}
+
+static void pickerCallback(void *c, void *f)
+{
+	LLUICtrl *ctrl = (LLUICtrl *)c;
+	HippoFloaterXmlImpl* floaterp = (HippoFloaterXmlImpl*)f;
+
+    floaterp->addDependentFloater(LLFloaterAvatarPicker::show(boost::bind(&callbackAvatarPick, ctrl, _1, _2), FALSE, TRUE));
+	//send_chat_from_viewer(msg, CHAT_TYPE_WHISPER, CHANNEL);
+}
+
 void HippoFloaterXmlImpl::onClose(bool quitting)
 {
 	if (mIsNotifyOnClose)
@@ -283,11 +309,10 @@ void HippoFloaterXmlImpl::onClose(bool quitting)
 	LLFloater::onClose(quitting);
 }
 
-
 // ********************************************************************
 // execute commands on instance
 
-bool HippoFloaterXmlImpl::execute(LLUICtrl *ctrl,
+bool HippoFloaterXmlImpl::execute(LLFloater *floater, LLUICtrl *ctrl,
 								  const std::string &cmds, std::string::size_type &offset,
 								  std::string &response)
 {
@@ -313,7 +338,7 @@ bool HippoFloaterXmlImpl::execute(LLUICtrl *ctrl,
 					if (!child) return false;
 					if (!cmdGetToken(cmds, offset, token)) return false;
 					if (token != "{") return false;
-					if (!execute(child, cmds, offset, response))
+					if (!execute(floater, child, cmds, offset, response))
 						return false;
 				} else if (key == "setValue") {
 					ctrl->setValue(value);
@@ -331,6 +356,14 @@ bool HippoFloaterXmlImpl::execute(LLUICtrl *ctrl,
                         else
                             ctrl->setCommitCallback(0);
                     }
+				} else if (key == "picker") {
+					bool set = (value != "0");
+					if (!dynamic_cast<HippoFloaterXmlImpl*>(ctrl)) {
+                        if (set)
+                            ctrl->setCommitCallback(boost::bind(&pickerCallback, _1, floater), ctrl);
+                        else
+                            ctrl->setCommitCallback(0);
+					}
 				}
 			}
 		}
