@@ -85,7 +85,14 @@
 	</combo_box>
 	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" height="18" label="?"
 	     left="205" name="access_help" width="18" />
-	<button bottom_delta="-30" enabled="false" follows="left|top" height="20" label="Apply"
+    <check_box bottom_delta="52" follows="left|top" height="20" label="Use Estate Sun" left="250" name="use_estate_sun_check" width="200" />
+    <button bottom_delta="-2" follows="left|top" font="SansSerifSmall" height="18" label="?" name="use_estate_sun_help" left_delta="200" width="18" />
+    <check_box bottom_delta="-18" follows="left|top" height="20" label="Fixed Sun" left_delta="-200" name="fixed_sun_check" width="100" />
+    <button bottom_delta="-2" follows="left|top" font="SansSerifSmall" height="18" label="?" name="fixed_sun_help" left_delta="200" width="18" />
+    <icon bottom_delta="-23" follows="left|top" height="20" image_name="icon_day_cycle.tga" left_delta="-160" name="daycycle" width="160"/>
+    <slider bottom_delta="-15" follows="left|top" height="20" increment="0.001"
+     label="Phase" left_delta="-35" max_val="30" min_val="6" name="sun_hour_slider" show_text="false" width="200" />
+	<button bottom_delta="-20" enabled="false" follows="left|top" height="20" label="Apply"
 	     left="108" name="apply_btn" width="100" />
 	<button bottom_delta="-60" follows="left|top" height="20"
 	     label="Teleport Home One User..." left="10" name="kick_btn" width="250" />
