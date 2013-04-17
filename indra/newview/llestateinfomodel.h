@@ -56,7 +56,8 @@ public:
 	const std::string&	getName()					const { return mName; }
 	const LLUUID&		getOwnerID()				const { return mOwnerID; }
 	U32					getID()						const { return mID; }
-	F32					getSunHour()				const { return getUseFixedSun() ? mSunHour : 0.f; }
+	F32					getSunHour()				const { return mSunHour; }
+	bool				getGlobalTime()				const { return !(mSunHour || getUseFixedSun()); }
 
 	// setters
 	void setUseFixedSun(bool val);
