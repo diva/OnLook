@@ -372,7 +372,7 @@ public:
 							static const LLCachedControl<bool> use_rmse_auto_mask("SHUseRMSEAutoMask",false);
 							static const LLCachedControl<F32> alpha_mas_max_rmse("SHAlphaMaskMaxRMSE",.09f);
 							addText(xpos, ypos, llformat("Mask: %s", imagep->getIsAlphaMask(use_rmse_auto_mask ? alpha_mas_max_rmse : -1.f) ? "TRUE":"FALSE")); ypos += y_inc;
-							addText(xpos, ypos, llformat("ID: %s", imagep->getID().asString())); ypos += y_inc;
+							addText(xpos, ypos, llformat("ID: %s", imagep->getID().asString().c_str())); ypos += y_inc;
 						}
 					}
 				}
