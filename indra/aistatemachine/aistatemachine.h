@@ -271,7 +271,7 @@ class AIStateMachine : public LLThreadSafeRefCount
 
 	// Return stringified state, for debugging purposes.
 	char const* state_str(base_state_type state);
-#ifdef CWDEBUG
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 	char const* event_str(event_type event);
 #endif
 
