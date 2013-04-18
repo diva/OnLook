@@ -19,31 +19,23 @@
 	<check_box label="Masquer mon nom sur mon écran" name="show_my_name_checkbox"/>
 	<text name="group_titles_textbox">Titres de groupe :</text>
 	<check_box label="Masquer tous les titres de groupe" name="show_all_title_checkbox"/>
-	<check_box label="Masquer mon titre de groupe" name="show_my_title_checkbox"/>
-	<color_swatch label="" name="effect_color_swatch" tool_tip="Cliquez pour ouvrir le sélecteur de couleurs"/>
-	<text name="UI Size:">Taille de l'interface :</text>
-	<slider name="ui_scale_slider"/>
 	<check_box label="Utiliser une échelle indépendante de la résolution" name="ui_auto_scale"/>
 	<spinner label="Absent(e) après :" name="afk_timeout_spinner"/>
 	<check_box label="Avertir lorsque je dépense ou reçois des L$" name="notify_money_change_checkbox"/>
 	<check_box label="Sans afficher dans le coin" name="no_transaction_clutter_checkbox" tool_tip="Toujours présente mais momentanément affichée en bas"/>
 	<text name="maturity_desired_label">Catégories :</text>
-	<text name="maturity_desired_prompt">Acc&#xE8;s au contenu classé :</text>
+	<text name="maturity_desired_prompt">Acc&#xE8;s au contenu classé :</text>
 	<combo_box name="maturity_desired_combobox" left="340">
 		<combo_item name="Desired_Adult">PG, Mature, Adulte</combo_item>
 		<combo_item name="Desired_Mature">PG et Mature</combo_item>
 		<combo_item name="Desired_PG">PG uniquement</combo_item>
 	</combo_box>
 	<text name="maturity_desired_textbox" left="340">PG uniquement</text>
-	<text name="start_location_textbox">Lieu de départ :</text>
-	<text name="show_names_textbox">Afficher les noms :</text>
-	<text bottom="-174" name="effects_color_textbox">
-Couleur du faisceau
-de sélection :
-	</text>
+	<text name="start_location_textbox">Lieu de départ :</text>
+	<text name="show_names_textbox">Afficher les noms :</text>
 	<text name="seconds_textbox">secondes</text>
 	<text name="crash_report_textbox">Rapports de crash :</text>
-	<text name="language_textbox">Langue :</text>
+	<text name="language_textbox">Langue :</text>
 	<text left_delta="313" name="language_textbox2">(redémarrage requis)</text>
 	<combo_box name="language_combobox" width="166">
 		<combo_item name="System Default Language">Choix par défaut</combo_item>

@@ -27,21 +27,6 @@
 				Leyla Linden
 			</text>
 			<button label="Profil..." label_selected="Profil..." name="Profile..."/>
-			<string name="group_owned_text">
-				(Propriété du Groupe)
-			</string>
-			<string name="profile_text">
-				Profil...
-			</string>
-			<string name="info_text">
-				Infos...
-			</string>
-			<string name="public_text">
-				(public)
-			</string>
-			<string name="none_text">
-				(aucun)
-			</string>
 			<text name="Group:">
 				Groupe:
 			</text>
@@ -91,6 +76,7 @@
 			</text>
 			<button label="Acheter le terrain" label_selected="Achat du terrain" left="130" name="Buy Land..." width="125"/>
 			<button label="Acheter pour le groupe" label_selected="Achat du terrain pour le groupe" name="Buy For Group..."/>
+			<button name="Scripts..." width="110"/>
 			<button label="Acheter un pass" label_selected="Achat d&#x27;un pass" left="130" name="Buy Pass..." tool_tip="Un pass vous donne un accès temporaire à ce terrain." width="125"/>
 			<button label="Abandonner le terrain" label_selected="Abandon du terrain" name="Abandon Land..."/>
 			<button label="Redemander le terrain" label_selected="Redemande le terrain" name="Reclaim Land..."/>
@@ -112,6 +98,21 @@
 			</string>
 			<string name="need_tier_to_modify">
 				Pour modifier ce terrain, vous devez approuver votre achat.
+			</string>
+			<string name="group_owned_text">
+				(Propriété du Groupe)
+			</string>
+			<string name="profile_text">
+				Profil...
+			</string>
+			<string name="info_text">
+				Infos...
+			</string>
+			<string name="public_text">
+				(public)
+			</string>
+			<string name="none_text">
+				(aucun)
 			</string>
 			<string name="sale_pending_text">
 				(vente en cours)
@@ -290,12 +291,6 @@ Allez dans le menu Monde &gt; A propos du terrain ou sélectionnez une autre par
 				Options du terrain:
 			</text>
 			<check_box label="Sécurisé (pas de dégâts)" name="check safe" tool_tip="Si cette option est cochée, le terrain est sécurisé et il n'y pas de risques de dommages causés par des combats. Si elle est décochée, des dommages causés par les combats peuvent avoir lieu."/>
-			<string name="push_restrict_text">
-				Pas de bousculades
-			</string>
-			<string name="push_restrict_region_text">
-				Pas de bousculades (les règles de la région priment)
-			</string>
 			<check_box label="Pas de bousculades" name="PushRestrictCheck" tool_tip="Empêche l'utilisation de scripts causant des bousculades. Cette option est utile pour empêcher les comportements abusifs sur votre terrain." bottom="-140" left="14"/>
 			<check_box label="Afficher dans la recherche ([DIRECTORYFEE]) sous" name="ShowDirectoryCheck" tool_tip="Affiche la parcelle dans les résultats de recherche" bottom="-160"/>
 			<string name="search_enabled_tooltip">
@@ -444,6 +439,12 @@ Seules les parcelles de grande taille peuvent apparaître dans la recherche.
 					Lieu d'arrivée libre
 				</combo_item>
 			</combo_box>
+			<string name="push_restrict_text">
+				Pas de bousculades
+			</string>
+			<string name="push_restrict_region_text">
+				Pas de bousculades (les règles de la région priment)
+			</string>
 		</panel>
 		<panel label="Médias" name="land_media_panel">
 			<text name="with media:" width="70">
@@ -495,17 +496,6 @@ Select the thumbnail to choose a different texture.
 			<text name="pixels">
 				Pixels
 			</text>
-			<text name="Interaction:">
-				  Interaction:
-			</text>
-			<radio_group name="radio_navigate_allow">
-				<radio_item name="Anyone" tool_tip="Chaque résident peut intervenir sur le média.">
-					Tous
-				</radio_item>
-				<radio_item name="Group" tool_tip="Les permissions du groupe contrôlent qui peux intervenir sur le média.">
-					Groupe
-				</radio_item>
-			</radio_group>
 		</panel>
 		<panel name="land_audio_panel">
 			<text name="MusicURL:">
