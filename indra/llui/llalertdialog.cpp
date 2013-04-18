@@ -107,7 +107,7 @@ static const LLFONT_ID FONT_NAME = LLFONT_SANSSERIF;
 LLAlertDialog::LLAlertDialog( LLNotificationPtr notification, bool modal)
 	:	LLModalDialog( notification->getLabel(), 100, 100, modal ),  // dummy size.  Will reshape below.
 		LLInstanceTracker<LLAlertDialog, LLUUID>(notification->getID()),
-		mDefaultOption( 0 ),
+		mDefaultButton( NULL ),
 		mCheck(NULL),
 		mCaution(notification->getPriority() >= NOTIFICATION_PRIORITY_HIGH),
 		mLabel(notification->getName()),
@@ -126,35 +126,24 @@ LLAlertDialog::LLAlertDialog( LLNotificationPtr notification, bool modal)
 	setBackgroundVisible(TRUE);
 	setBackgroundOpaque(TRUE);
 
-
-	typedef std::vector<std::pair<std::string, std::string> > options_t;
-	options_t supplied_options;
+	typedef std::list<ButtonData> options_t;
+	options_t options;
 
 	// for now, get LLSD to iterator over form elements
 	LLSD form_sd = form->asLLSD();
 
-	S32 option_index = 0;
 	for (LLSD::array_const_iterator it = form_sd.beginArray(); it != form_sd.endArray(); ++it)
 	{
 		std::string type = (*it)["type"].asString();
 		if (type == "button")
 		{
-			if((*it)["default"])
-			{
-				mDefaultOption = option_index;
-			}
-
-			supplied_options.push_back(std::make_pair((*it)["name"].asString(), (*it)["text"].asString()));
-
-			ButtonData data;
-			data.mSelf = this;
-			if (option_index == mNote->getURLOption())
-			{
-				data.mURL = mNote->getURL();
-			}
-
-			mButtonData.push_back(data);
-			option_index++;
+			options.push_back(ButtonData());
+			ButtonData& button_data = options.back();
+			button_data.mName = (*it)["name"].asString();
+			button_data.mText = (*it)["text"].asString();
+			button_data.mDefault = (*it)["default"].asBoolean();
+			if(options.size()-1 == mNote->getURLOption())
+				button_data.mUrl = mNote->getURL();
 		}
 		else if (type == "text")
 		{
@@ -168,23 +157,14 @@ LLAlertDialog::LLAlertDialog( LLNotificationPtr notification, bool modal)
 			is_password = true;
 		}
 	}
-
 	// Buttons
-	options_t options;
-	if (supplied_options.empty())
+	if (options.empty())
 	{
-		options.push_back(std::make_pair(std::string("close"), std::string("Close")));
-
-		// add data for ok button.
-		ButtonData ok_button;
-		ok_button.mSelf = this;
-		
-		mButtonData.push_back(ok_button);
-		mDefaultOption = 0;
-	}
-	else
-	{
-		options = supplied_options;
+		options.push_back(ButtonData());
+		ButtonData& button_data = options.back();
+		button_data.mName = "close";
+		button_data.mText = "Close";
+		button_data.mDefault = true;
 	}
 
 	S32 num_options = options.size();
@@ -192,9 +172,9 @@ LLAlertDialog::LLAlertDialog( LLNotificationPtr notification, bool modal)
 	// Calc total width of buttons
 	S32 button_width = 0;
 	S32 sp = font->getWidth(std::string("OO"));
-	for( S32 i = 0; i < num_options; i++ )
+	for( options_t::iterator it = options.begin(); it != options.end(); it++ )
 	{
-		S32 w = S32(font->getWidth( options[i].second ) + 0.99f) + sp + 2 * LLBUTTON_H_PAD;
+		S32 w = S32(font->getWidth( it->mText ) + 0.99f) + sp + 2 * LLBUTTON_H_PAD;
 		button_width = llmax( w, button_width );
 	}
 	S32 btn_total_width = button_width;
@@ -261,32 +241,36 @@ LLAlertDialog::LLAlertDialog( LLNotificationPtr notification, bool modal)
 	// Buttons	
 	S32 button_left = (getRect().getWidth() - btn_total_width) / 2;
 
-	for( S32 i = 0; i < num_options; i++ )
+	for( options_t::iterator it = options.begin(); it != options.end(); it++ )
 	{
 		LLRect button_rect;
 		button_rect.setOriginAndSize( button_left, VPAD, button_width, BTN_HEIGHT );
 
+		ButtonData& button_data = *it;
+
 		LLButton* btn = new LLButton(
-			options[i].first, button_rect,
+			button_data.mName, button_rect,
 			"","", "", 
 			NULL, NULL,
 			font,
-			options[i].second, 
-			options[i].second);
+			button_data.mText, 
+			button_data.mText);
 
-		mButtonData[i].mButton = btn;
-
-		btn->setClickedCallback(&LLAlertDialog::onButtonPressed, (void*)(&mButtonData[i]));
+		btn->setClickedCallback(boost::bind(&LLAlertDialog::onButtonPressed, this, _1, button_data.mUrl));
 
 		addChild(btn);
 
-		if( i == mDefaultOption )
+		if(!mDefaultButton || button_data.mDefault)
 		{
-			btn->setFocus(TRUE);
+			mDefaultButton = btn;
 		}
 
 		button_left += button_width + BTN_HPAD;
 	}
+
+	llassert(mDefaultButton); //'options' map should never be empty, thus mDefaultButton should always get set in the above loop.
+	mDefaultButton->setFocus(TRUE);
+
 
 	// (Optional) Edit Box	
 	if (!edit_text_name.empty())
@@ -346,7 +330,7 @@ bool LLAlertDialog::show()
 		mLineEditor->setFocus(TRUE);
 		mLineEditor->selectAll();
 	}
-	if(mDefaultOption >= 0)
+	if(mDefaultButton)
 	{
 		// delay before enabling default button
 		mDefaultBtnTimer.start(DEFAULT_BUTTON_DELAY);
@@ -385,7 +369,8 @@ bool LLAlertDialog::setCheckBox( const std::string& check_title, const std::stri
 	check_rect.setOriginAndSize(msg_x, VPAD+BTN_HEIGHT+LINE_HEIGHT/2, 
 								max_msg_width, LINE_HEIGHT);
 
-	mCheck = new LLCheckboxCtrl(std::string("check"), check_rect, check_title, font, onClickIgnore, this);
+	mCheck = new LLCheckboxCtrl(std::string("check"), check_rect, check_title, font);
+	mCheck->setCommitCallback(boost::bind(&LLAlertDialog::onClickIgnore, this, _1));
 	addChild(mCheck);
 
 	return true;
@@ -402,8 +387,49 @@ void LLAlertDialog::setVisible( BOOL visible )
 	}
 }
 
+//Fixing a hole in alert logic. If the alert isn't modal, clicking 'x' to close its floater would result
+//in a dangling notification. To address this we try to find the most reasonable button to emulate clicking.
+//Close tends to be the best, as it's most accurate, and is the default for alerts that lack defined buttons.
+//Next up is cancel, which is the correct behavior for a majority of alert notifications
+//After that, try 'ok', which is the only button that exists for a few alert notifications. 'ok' for these equates to 'dismiss'.
+//Finally, if none of the above are found, issue the respond procedure with the dummy button name 'close'.
 void LLAlertDialog::onClose(bool app_quitting)
 {
+	if(mNote.get() && !mNote->isRespondedTo() && !mNote->isIgnored())
+	{
+		LLButton* btn = NULL;
+		bool found_cancel = false;
+		for(child_list_const_iter_t it = beginChild(); it != endChild(); ++it)
+		{
+			LLButton* cur_btn = dynamic_cast<LLButton*>(*it);
+			if(!cur_btn)
+				continue;
+			if(	LLStringUtil::compareInsensitive(cur_btn->getName(), "close") == 0 )//prefer 'close' over anything else.
+			{
+				btn = cur_btn;
+				break;
+			}
+			else if(LLStringUtil::compareInsensitive(cur_btn->getName(), "cancel") == 0 )//prefer 'cancel' over 'ok'.
+			{
+				btn = cur_btn;
+				found_cancel = true;
+			}
+			else if(!found_cancel && LLStringUtil::compareInsensitive(cur_btn->getName(), "ok") == 0 )//accept 'ok' as last resort.
+			{
+				btn = cur_btn;
+			}
+		}
+		LLSD response = mNote->getResponseTemplate();
+		if(btn)
+			response[btn->getName()] = true;
+		else
+		{	//We found no acceptable button so just feed it a fake one.
+			//LLNotification::getSelectedOption will return -1 in notification callbacks.
+			response["Close"] = true;
+		}
+		mNote->respond(response);
+
+	}
 	LLModalDialog::onClose(app_quitting);
 }
 
@@ -458,7 +484,7 @@ void LLAlertDialog::draw()
 	if(mDefaultBtnTimer.hasExpired() && mDefaultBtnTimer.getStarted())
 	{
 		mDefaultBtnTimer.stop();  // prevent this block from being run more than once
-		setDefaultBtn(mButtonData[mDefaultOption].mButton);
+		setDefaultBtn(mDefaultButton);
 	}
 
 	static LLColor4 shadow_color = LLUI::sColorsGroup->getColor("ColorDropShadow");
@@ -483,44 +509,37 @@ void LLAlertDialog::setEditTextArgs(const LLSD& edit_args)
 	}
 }
 
-// static 
-void LLAlertDialog::onButtonPressed( void* userdata )
+void LLAlertDialog::onButtonPressed( LLUICtrl* ctrl, const std::string url )
 {
-	ButtonData* button_data = (ButtonData*)userdata;
-	LLAlertDialog* self = button_data->mSelf;
-
-	LLSD response = self->mNote->getResponseTemplate();
-	if (self->mLineEditor)
+	LLSD response = mNote->getResponseTemplate();
+	if (mLineEditor)
 	{
-		response[self->mLineEditor->getName()] = self->mLineEditor->getValue();
+		response[mLineEditor->getName()] = mLineEditor->getValue();
 	}
-	response[button_data->mButton->getName()] = true;
+	response[ctrl->getName()] = true;
 
 	// If we declared a URL and chose the URL option, go to the url
-	if (!button_data->mURL.empty() && sURLLoader != NULL)
+	if (!url.empty() && sURLLoader != NULL)
 	{
-		sURLLoader->load(button_data->mURL);
+		sURLLoader->load(url);
 	}
 
-	self->mNote->respond(response); // new notification reponse
-	self->close(); // deletes self
+	mNote->respond(response); // new notification reponse
+	close(); // deletes self
 }
 
-//static 
-void LLAlertDialog::onClickIgnore(LLUICtrl* ctrl, void* user_data)
+void LLAlertDialog::onClickIgnore(LLUICtrl* ctrl)
 {
-	LLAlertDialog* self = (LLAlertDialog*)user_data;
-
 	// checkbox sometimes means "hide and do the default" and
 	// other times means "warn me again".  Yuck. JC
 	BOOL check = ctrl->getValue();
-	if (self->mNote->getForm()->getIgnoreType() == LLNotificationForm::IGNORE_SHOW_AGAIN)
+	if (mNote->getForm()->getIgnoreType() == LLNotificationForm::IGNORE_SHOW_AGAIN)
 	{
 		// question was "show again" so invert value to get "ignore"
 		check = !check;
 	}
 
-	self->mNote->setIgnored(check);
+	mNote->setIgnored(check);
 }
 
 
