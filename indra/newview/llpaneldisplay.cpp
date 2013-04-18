@@ -885,7 +885,7 @@ void LLPanelDisplay::apply()
 
 void LLPanelDisplay::onChangeQuality(LLUICtrl* caller)
 {
-	LLSliderCtrl* sldr = static_cast<LLSliderCtrl*>(caller);
+	LLSlider* sldr = dynamic_cast<LLSlider*>(caller);
 
 	if(sldr == NULL)
 	{
