@@ -218,7 +218,7 @@
       <key>Value</key>
       <real>1</real>
     </map>
-	<key>SHAlphaMaskMaxRMSE</key>
+	<key>SHAutoMaskMaxRMSE</key>
     <map>
       <key>Comment</key>
       <string>Sets the maximum random mean square error cutoff used when detecting suitable textures for alphamasking. (SHUseRMSEAutoMask must be TRUE for this to have any effect)</string>

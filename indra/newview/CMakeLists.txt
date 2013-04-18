@@ -97,6 +97,7 @@ set(viewer_SOURCE_FILES
     hippopanelgrids.cpp
     importtracker.cpp
     jcfloaterareasearch.cpp
+    lfsimfeaturehandler.cpp
     lggdicdownload.cpp
     lgghunspell_wrapper.cpp
     llaccountingcostmanager.cpp
@@ -597,6 +598,7 @@ set(viewer_HEADER_FILES
     hippopanelgrids.h
     importtracker.h
     jcfloaterareasearch.h
+    lfsimfeaturehandler.h
     lggdicdownload.h
     lgghunspell_wrapper.h
     llaccountingcostmanager.h

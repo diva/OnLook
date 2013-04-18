@@ -283,8 +283,8 @@ void LLPreviewTexture::draw()
 								mImage);
 
 			static const LLCachedControl<bool> use_rmse_auto_mask("SHUseRMSEAutoMask",false);
-			static const LLCachedControl<F32> alpha_mas_max_rmse("SHAlphaMaskMaxRMSE",.09f);
-			if (mAlphaMaskResult != mImage->getIsAlphaMask(use_rmse_auto_mask ? alpha_mas_max_rmse : -1.f))
+			static const LLCachedControl<F32> auto_mask_max_rmse("SHAutoMaskMaxRMSE",.09f);
+			if (mAlphaMaskResult != mImage->getIsAlphaMask(use_rmse_auto_mask ? auto_mask_max_rmse : -1.f))
 			{
 				mAlphaMaskResult = !mAlphaMaskResult;
 				if (!mAlphaMaskResult)

@@ -123,7 +123,7 @@ void LLViewerParcelMedia::update(LLParcel* parcel)
 			if(	! mediaUrl.empty() && gSavedSettings.getWarning("FirstStreamingVideo") )
 			{
 				LLNotificationsUtil::add("ParcelCanPlayMedia", LLSD(), LLSD(),
-					boost::bind(callback_play_media, _1, _2, parcel));
+					boost::bind(&callback_play_media, _1, _2, parcel));
 				return;
 
 			}
@@ -903,35 +903,43 @@ void callback_media_alert(const LLSD &notification, const LLSD &response, LLParc
 			LLViewerParcelMedia::playStreamingMusic(parcel, false);
 		}
 	}
-	else if (option == 1 || option == 2) // Deny or Blacklist
+	else 
 	{
-		LLViewerParcelMedia::sDeniedMedia.insert(domain);
-		if (ip != domain && domain.find('/') == std::string::npos)
-		{
-			LLViewerParcelMedia::sDeniedMedia.insert(ip);
-		}
 		if (type == 1)
 		{
 			LLViewerParcelMedia::stopStreamingMusic();
 		}
-		if (option == 1) // Deny
+		else
 		{
-			LLNotificationsUtil::add("MediaBlocked", args);
+			LLViewerParcelMedia::stopStreamingMusic();
 		}
-		else // Blacklist
+		if (option == 1 || option == 2) // Deny or Blacklist
 		{
-			LLSD newmedia;
-			newmedia["domain"] = domain;
-			newmedia["action"] = "deny";
-			LLViewerParcelMedia::sMediaFilterList.append(newmedia);
+			LLViewerParcelMedia::sDeniedMedia.insert(domain);
 			if (ip != domain && domain.find('/') == std::string::npos)
 			{
-				newmedia["domain"] = ip;
-				LLViewerParcelMedia::sMediaFilterList.append(newmedia);
+				LLViewerParcelMedia::sDeniedMedia.insert(ip);
 			}
-			LLViewerParcelMedia::saveDomainFilterList();
-			args["LISTED"] = "blacklisted";
-			LLNotificationsUtil::add("MediaListed", args);
+			
+			if (option == 1) // Deny
+			{
+				LLNotificationsUtil::add("MediaBlocked", args);
+			}
+			else // Blacklist
+			{
+				LLSD newmedia;
+				newmedia["domain"] = domain;
+				newmedia["action"] = "deny";
+				LLViewerParcelMedia::sMediaFilterList.append(newmedia);
+				if (ip != domain && domain.find('/') == std::string::npos)
+				{
+					newmedia["domain"] = ip;
+					LLViewerParcelMedia::sMediaFilterList.append(newmedia);
+				}
+				LLViewerParcelMedia::saveDomainFilterList();
+				args["LISTED"] = "blacklisted";
+				LLNotificationsUtil::add("MediaListed", args);
+			}
 		}
 	}
 
