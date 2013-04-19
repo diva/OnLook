@@ -1142,28 +1142,6 @@ Please select a history item to view.
   </notification>
 
   <notification
-   icon="alertmodal.tga"
-   name="ResetShowNextTimeDialogs"
-   type="alertmodal">
-Would you like to re-enable all these popups, which you previously indicated &apos;Don&apos;t show me again&apos;?
-    <usetemplate
-     name="okcancelbuttons"
-     notext="Cancel"
-     yestext="OK"/>
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="SkipShowNextTimeDialogs"
-   type="alertmodal">
-Would you like to disable all popups which can be skipped?
-    <usetemplate
-     name="okcancelbuttons"
-     notext="Cancel"
-     yestext="OK"/>
-  </notification>
-
-  <notification
    icon="notify.tga"
    name="CacheWillClear"
    type="notify">
