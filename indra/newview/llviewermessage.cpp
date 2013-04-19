@@ -162,6 +162,7 @@ extern bool gShiftFrame;
 
 // function prototypes
 bool check_offer_throttle(const std::string& from_name, bool check_only);
+bool check_asset_previewable(const LLAssetType::EType asset_type);
 void callbackCacheEstateOwnerName(const LLUUID& id, const LLAvatarName& av_name);
 static void process_money_balance_reply_extended(LLMessageSystem* msg);
 
@@ -1145,46 +1146,78 @@ bool check_offer_throttle(const std::string& from_name, bool check_only)
 	}
 }
 
-void open_inventory_offer(const uuid_vec_t& items, const std::string& from_name)
+// Return "true" if we have a preview method for that asset type, "false" otherwise
+bool check_asset_previewable(const LLAssetType::EType asset_type)
 {
-	uuid_vec_t::const_iterator it = items.begin();
-	uuid_vec_t::const_iterator end = items.end();
-	LLInventoryItem* item;
-	for(; it != end; ++it)
-	{
-		item = gInventory.getItem(*it);
-		if(!item)
-		{
-			LL_WARNS("Messaging") << "Unable to show inventory item: " << *it << LL_ENDL;
-			continue;
-		}
-		if(!highlight_offered_object(item->getUUID()))
-		{
-			continue;
-		}
-		LLAssetType::EType asset_type = item->getType();
+	return	(asset_type == LLAssetType::AT_NOTECARD)  ||
+			(asset_type == LLAssetType::AT_LANDMARK)  ||
+			(asset_type == LLAssetType::AT_TEXTURE)   ||
+			(asset_type == LLAssetType::AT_ANIMATION) ||
+			(asset_type == LLAssetType::AT_SCRIPT)    ||
+			(asset_type == LLAssetType::AT_SOUND);
+}
 
-		//if we are throttled, don't display them
-		if (check_offer_throttle(from_name, false))
+void open_inventory_offer(const uuid_vec_t& objects, const std::string& from_name)
+{
+	for (uuid_vec_t::const_iterator obj_iter = objects.begin();
+		 obj_iter != objects.end();
+		 ++obj_iter)
+	{
+		const LLUUID& obj_id = (*obj_iter);
+		if(!highlight_offered_object(obj_id))
 		{
-			// I'm not sure this is a good idea - Definitely a bad idea. HB
-			//bool show_keep_discard = item->getPermissions().getCreator() != gAgent.getID();
-			bool show_keep_discard = true;
-			switch(asset_type)
+			continue;
+		}
+
+		const LLInventoryObject *obj = gInventory.getObject(obj_id);
+		if (!obj)
+		{
+			llwarns << "Cannot find object [ itemID:" << obj_id << " ] to open." << llendl;
+			continue;
+		}
+
+		const LLAssetType::EType asset_type = obj->getActualType();
+
+		// Either an inventory item or a category.
+		const LLInventoryItem* item = dynamic_cast<const LLInventoryItem*>(obj);
+		if (item && check_asset_previewable(asset_type))
+		{
+			////////////////////////////////////////////////////////////////////////////////
+			// Special handling for various types.
+			if (check_offer_throttle(from_name, false)) // If we are throttled, don't display
 			{
-			case LLAssetType::AT_NOTECARD:
-				open_notecard((LLViewerInventoryItem*)item, std::string("Note: ") + item->getName(), LLUUID::null, show_keep_discard, LLUUID::null, FALSE);
-				break;
-			case LLAssetType::AT_LANDMARK:
-				open_landmark((LLViewerInventoryItem*)item, std::string("Landmark: ") + item->getName(), show_keep_discard, LLUUID::null, FALSE);
-				break;
-			case LLAssetType::AT_TEXTURE:
-				open_texture(*it, std::string("Texture: ") + item->getName(), show_keep_discard, LLUUID::null, FALSE);
-				break;
-			default:
-				break;
+				// I'm not sure this is a good idea - Definitely a bad idea. HB
+				//bool show_keep_discard = item->getPermissions().getCreator() != gAgent.getID();
+				bool show_keep_discard = true;
+				switch(asset_type)
+				{
+					case LLAssetType::AT_NOTECARD:
+					{
+						open_notecard((LLViewerInventoryItem*)item, std::string("Note: ") + item->getName(), LLUUID::null, show_keep_discard, LLUUID::null, FALSE);
+						break;
+					}
+					case LLAssetType::AT_LANDMARK:
+					{
+						open_landmark((LLViewerInventoryItem*)item, std::string("Landmark: ") + item->getName(), show_keep_discard, LLUUID::null, FALSE);
+					}
+					break;
+					case LLAssetType::AT_TEXTURE:
+					{
+						open_texture(obj_id, std::string("Texture: ") + item->getName(), show_keep_discard, LLUUID::null, FALSE);
+						break;
+					}
+					case LLAssetType::AT_ANIMATION:
+					case LLAssetType::AT_SCRIPT:
+					case LLAssetType::AT_SOUND:
+						LLInvFVBridgeAction::doAction(asset_type, obj_id, &gInventory);
+						break;
+					default:
+						LL_DEBUGS("Messaging") << "No preview method for previewable asset type : " << LLAssetType::lookupHumanReadable(asset_type)  << LL_ENDL;
+						break;
+				}
 			}
 		}
+
 		//highlight item, if it's not in the trash or lost+found
 		
 		// Don't auto-open the inventory floater
@@ -1194,42 +1227,28 @@ void open_inventory_offer(const uuid_vec_t& items, const std::string& from_name)
 			return;
 		}
 
-		if(gSavedSettings.getBOOL("ShowInInventory") &&
+		//Trash Check
+		if ((gInventory.isObjectDescendentOf(obj_id, gInventory.findCategoryUUIDForType(LLFolderType::FT_TRASH)))
+		// don't select lost and found items if the user is active
+		|| (gAwayTimer.getStarted() && gInventory.isObjectDescendentOf(obj_id, gInventory.findCategoryUUIDForType(LLFolderType::FT_LOST_AND_FOUND))))
+		{
+			return;
+		}
+
+		if (gSavedSettings.getBOOL("ShowInInventory") &&
 		   asset_type != LLAssetType::AT_CALLINGCARD &&
 		   item->getInventoryType() != LLInventoryType::IT_ATTACHMENT &&
 		   !from_name.empty())
 		{
 			LLInventoryView::showAgentInventory(TRUE);
 		}
-		//Trash Check
-		LLUUID trash_id;
-		trash_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_TRASH);
-		if(gInventory.isObjectDescendentOf(item->getUUID(), trash_id))
-		{
-			return;
-		}
-		LLUUID lost_and_found_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LOST_AND_FOUND);
-		//BOOL inventory_has_focus = gFocusMgr.childHasKeyboardFocus(view);
-		BOOL user_is_away = gAwayTimer.getStarted();
-
-		// don't select lost and found items if the user is active
-		if (gInventory.isObjectDescendentOf(item->getUUID(), lost_and_found_id)
-			&& !user_is_away)
-		{
-			return;
-		}
-
 
 		////////////////////////////////////////////////////////////////////////////////
 		// Highlight item
-		//Not sure about this check.  Could make it easy to miss incoming items.
-		//don't dick with highlight while the user is working
-		//if(inventory_has_focus && !user_is_away)
-		//	break;
-		LL_DEBUGS("Messaging") << "Highlighting" << item->getUUID()  << LL_ENDL;
+		LL_DEBUGS("Messaging") << "Highlighting" << obj_id  << LL_ENDL;
 
 		LLFocusableElement* focus_ctrl = gFocusMgr.getKeyboardFocus();
-		view->getPanel()->setSelection(item->getUUID(), TAKE_FOCUS_NO);
+		view->getPanel()->setSelection(obj_id, TAKE_FOCUS_NO);
 		gFocusMgr.setKeyboardFocus(focus_ctrl);
 	}
 }
