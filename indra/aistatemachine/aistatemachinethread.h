@@ -158,6 +158,9 @@ class AIThreadImpl {
   public:
 	char const* getName(void) const { return mName; }
 #endif
+
+  protected:
+	virtual ~AIThreadImpl() { }
 };
 
 // The base class for statemachine threads.
