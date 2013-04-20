@@ -95,7 +95,19 @@ public:
 namespace
 {
 #if LL_WINDOWS
-typedef std::filebuf						_Myfb;
+//typedef std::filebuf						_Myfb;
+//Singu note: Wrap around std::filebuf to override the open procedure.
+// The client encodes filepaths in UTF-8, however Windows uses UTF-16 encoding natively.
+// Need to convert paths to UTF-16 before calling std::filebuf::open.
+struct _Myfb : public std::filebuf
+{
+	_Myfb() : std::filebuf() {}
+	_Myfb(_Filet* file) : std::filebuf(file) {}
+	_Myt *open(const char *filename, std::ios_base::openmode mode, int prot = (int)std::ios_base::_Openprot)
+	{
+		return std::filebuf::open(utf8str_to_utf16str(filename).c_str(),mode,prot);
+	}
+};
 #else
 typedef  __gnu_cxx::stdio_filebuf< char >	_Myfb;
 typedef std::__c_file						_Filet;
