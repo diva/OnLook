@@ -622,6 +622,12 @@ void region_change();
 void parse_simulator_features();
 void custom_selected(void* user_data);
 
+void reset_vertex_buffers(void *user_data)
+{
+	gPipeline.clearRebuildGroups();
+	gPipeline.resetVertexBuffers();
+}
+
 class LLMenuParcelObserver : public LLParcelObserver
 {
 public:
@@ -1593,6 +1599,8 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	item = new LLMenuItemCheckGL("Aggressive Alpha Masking", menu_toggle_control, NULL, menu_check_control, (void*)"SHUseRMSEAutoMask");
 	menu->addChild(item);
 	
+	menu->addChild(new LLMenuItemCallGL("Rebuild Vertex Buffers", reset_vertex_buffers, NULL, NULL, 'V', MASK_CONTROL | MASK_SHIFT));
+
 	item = new LLMenuItemCheckGL("Animate Textures", menu_toggle_control, NULL, menu_check_control, (void*)"AnimateTextures");
 	menu->addChild(item);
 	
