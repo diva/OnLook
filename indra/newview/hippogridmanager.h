@@ -40,6 +40,7 @@ public:
 	bool isOpenSimulator() const;
 	bool isAurora() const;
 	bool isSecondLife() const;
+	bool isAvination() const;
 	bool isInProductionGrid() const;		// Should only be called if isSecondLife() returns true.
 	const std::string& getGridName()        const;
 	const std::string& getGridOwner()       const;	
@@ -113,6 +114,7 @@ private:
 	std::string mSearchUrl;
 	std::string mVoiceConnector;
 	bool mIsInProductionGrid;
+	bool mIsInAvination;
 	bool mRenderCompat;
 	bool mInvLinks;
 	bool mAutoUpdate;

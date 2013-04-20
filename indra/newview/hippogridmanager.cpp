@@ -52,6 +52,7 @@ HippoGridInfo::HippoGridInfo(const std::string& gridName) :
 	mXmlState(XML_VOID),
 	mVoiceConnector("SLVoice"),
 	mIsInProductionGrid(false),
+	mIsInAvination(false),
 	mRenderCompat(true),
 	mInvLinks(false),
 	mAutoUpdate(false),
@@ -90,6 +91,11 @@ bool HippoGridInfo::isInProductionGrid() const
 {
 	llassert(mPlatform == HippoGridInfo::PLATFORM_SECONDLIFE);
 	return mIsInProductionGrid;
+}
+
+bool HippoGridInfo::isAvination() const
+{
+	return mIsInAvination;
 }
 
 const std::string& HippoGridInfo::getGridName() const
@@ -240,6 +246,10 @@ void HippoGridInfo::setGridNick(std::string gridNick)
 	{
 		mIsInProductionGrid = true;
 	}
+	if(gridNick == "avination")
+	{
+		mIsInAvination = true;
+	}
 }
 
 void HippoGridInfo::setLoginUri(const std::string& loginUri)
@@ -249,6 +259,11 @@ void HippoGridInfo::setLoginUri(const std::string& loginUri)
 	if (utf8str_tolower(LLURI(uri).hostName()) == "login.agni.lindenlab.com")
 	{
 		mIsInProductionGrid = true;
+	}
+	if (utf8str_tolower(LLURI(uri).hostName()) == "login.avination.com" ||
+		utf8str_tolower(LLURI(uri).hostName()) == "login.avination.net")
+	{
+		mIsInAvination = true;
 	}
 }
 
