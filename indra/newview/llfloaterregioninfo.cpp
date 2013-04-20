@@ -160,6 +160,39 @@ void unpack_request_params(
 */
 
 
+namespace
+{
+	void on_caps_received(LLTabContainer* tab)
+	{
+		if (!tab) return;
+		const LLViewerRegion* region = gAgent.getRegion();
+		tab->enableTabButton(tab->getIndexForPanel(tab->getPanelByName("panel_env_info")), region && !region->getCapability("EnvironmentSettings").empty());
+	}
+
+	void handle_opposite(const bool& off, LLUICtrl* opposite)
+	{
+		opposite->setEnabled(!off);
+		if (off) opposite->setValue(false);
+	}
+
+	void on_change_use_other_sun(const LLSD& param, LLUICtrl* opposite, LLUICtrl* slider)
+	{
+		handle_opposite(param.asBoolean(), opposite);
+		slider->setEnabled(false);
+	}
+
+	void on_change_fixed_sun(const LLSD& param, LLUICtrl* opposite, LLUICtrl* slider)
+	{
+		bool fixed_sun = param.asBoolean();
+		handle_opposite(fixed_sun, opposite);
+		slider->setEnabled(fixed_sun);
+	}
+
+	const float get_sun_hour(const LLUICtrl* sun_hour)
+	{
+		return sun_hour->getEnabled() ? sun_hour->getValue().asFloat() : 0.f;
+	}
+}
 
 bool estate_dispatch_initialized = false;
 
@@ -350,6 +383,15 @@ void LLFloaterRegionInfo::processRegionInfo(LLMessageSystem* msg)
 	{
 		msg->getString("RegionInfo2", "ProductName", sim_type);
 		LLTrans::findString(sim_type, sim_type); // try localizing sim product name
+	}
+
+	// Disable Environment Tab when not supported
+	if (region)
+	{
+		if (region->capabilitiesReceived())
+			on_caps_received(tab);
+		else
+			region->setCapabilitiesReceivedCallback(boost::bind(on_caps_received, tab));
 	}
 
 	// GENERAL PANEL
@@ -629,6 +671,27 @@ bool LLPanelRegionGeneralInfo::refreshFromRegion(LLViewerRegion* region)
 	getChildView("im_btn")->setEnabled(allow_modify);
 	getChildView("manage_telehub_btn")->setEnabled(allow_modify);
 
+	// Support Legacy Region Environment
+	{
+		const LLRegionInfoModel& region_info = LLRegionInfoModel::instance();
+		bool estate_sun = region_info.mUseEstateSun;
+		getChild<LLUICtrl>("use_estate_sun_check")->setValue(estate_sun);
+		getChild<LLUICtrl>("fixed_sun_check")->setEnabled(allow_modify && !estate_sun);
+		getChild<LLUICtrl>("sun_hour_slider")->setEnabled(allow_modify && !estate_sun);
+		if (estate_sun)
+		{
+			getChild<LLUICtrl>("use_estate_sun_check")->setEnabled(allow_modify);
+			getChild<LLUICtrl>("fixed_sun_check")->setValue(false);
+		}
+		else
+		{
+			bool fixed_sun = region_info.getUseFixedSun();
+			getChild<LLUICtrl>("use_estate_sun_check")->setEnabled(allow_modify && !fixed_sun);
+			getChild<LLUICtrl>("fixed_sun_check")->setValue(fixed_sun);
+			getChild<LLUICtrl>("sun_hour_slider")->setValue(region_info.mSunHour);
+		}
+	}
+
 	// Data gets filled in by processRegionInfo
 
 	return LLPanelRegionInfo::refreshFromRegion(region);
@@ -647,6 +710,9 @@ BOOL LLPanelRegionGeneralInfo::postBuild()
 	initCtrl("access_combo");
 	initCtrl("restrict_pushobject");
 	initCtrl("block_parcel_search_check");
+	initCtrl("use_estate_sun_check");
+	initCtrl("fixed_sun_check");
+	initCtrl("sun_hour_slider");
 
 	initHelpBtn("terraform_help",		"HelpRegionBlockTerraform");
 	initHelpBtn("fly_help",				"HelpRegionBlockFly");
@@ -658,11 +724,22 @@ BOOL LLPanelRegionGeneralInfo::postBuild()
 	initHelpBtn("land_resell_help",	"HelpRegionLandResell");
 	initHelpBtn("parcel_changes_help", "HelpParcelChanges");
 	initHelpBtn("parcel_search_help", "HelpRegionSearch");
+	initHelpBtn("use_estate_sun_help",	"HelpRegionUseEstateSun");
+	initHelpBtn("fixed_sun_help",		"HelpRegionFixedSun");
 
 	childSetAction("kick_btn", boost::bind(&LLPanelRegionGeneralInfo::onClickKick, this));
 	childSetAction("kick_all_btn", onClickKickAll, this);
 	childSetAction("im_btn", onClickMessage, this);
 	childSetAction("manage_telehub_btn", boost::bind(&LLPanelRegionGeneralInfo::onClickManageTelehub, this));
+
+	// Set up the Legacy Region Environment checkboxes
+	{
+		LLUICtrl* estate_sun = getChild<LLUICtrl>("use_estate_sun_check");
+		LLUICtrl* fixed_sun = getChild<LLUICtrl>("fixed_sun_check");
+		LLUICtrl* hour_slider = getChild<LLUICtrl>("sun_hour_slider");
+		estate_sun->setCommitCallback(boost::bind(on_change_use_other_sun, _2, fixed_sun, hour_slider));
+		fixed_sun->setCommitCallback(boost::bind(on_change_fixed_sun, _2, estate_sun, hour_slider));
+	}
 
 	return LLPanelRegionInfo::postBuild();
 }
@@ -838,6 +915,13 @@ BOOL LLPanelRegionGeneralInfo::sendUpdate()
 		LLUUID invoice(LLFloaterRegionInfo::getLastInvoice());
 		sendEstateOwnerMessage(gMessageSystem, "setregioninfo", invoice, strings);
 	}
+
+	// Send the Legacy Region Environment
+	LLRegionInfoModel& region_info = LLRegionInfoModel::instance();
+	region_info.mUseEstateSun = getChild<LLUICtrl>("use_estate_sun_check")->getValue().asBoolean();
+	region_info.setUseFixedSun(getChild<LLUICtrl>("fixed_sun_check")->getValue().asBoolean());
+	region_info.mSunHour = get_sun_hour(getChild<LLUICtrl>("sun_hour_slider"));
+	region_info.sendRegionTerrain(LLFloaterRegionInfo::getLastInvoice());
 
 	// if we changed access levels, tell user about it
 	LLViewerRegion* region = gAgent.getRegion();
@@ -2015,17 +2099,31 @@ BOOL LLPanelEstateInfo::postBuild()
 {
 	// set up the callbacks for the generic controls
 	initCtrl("externally_visible_check");
+	initCtrl("use_global_time_check");
+	initCtrl("fixed_sun_check");
+	initCtrl("sun_hour_slider");
 	initCtrl("allow_direct_teleport");
 	initCtrl("limit_payment");
 	initCtrl("limit_age_verified");
 	initCtrl("voice_chat_check");
 	initHelpBtn("estate_manager_help",			"HelpEstateEstateManager");
+	initHelpBtn("use_global_time_help",			"HelpEstateUseGlobalTime");
+	initHelpBtn("fixed_sun_help",				"HelpEstateFixedSun");
 	initHelpBtn("externally_visible_help",		"HelpEstateExternallyVisible");
 	initHelpBtn("allow_direct_teleport_help",	"HelpEstateAllowDirectTeleport");
 	initHelpBtn("allow_resident_help",			"HelpEstateAllowResident");
 	initHelpBtn("allow_group_help",				"HelpEstateAllowGroup");
 	initHelpBtn("ban_resident_help",			"HelpEstateBanResident");
 	initHelpBtn("voice_chat_help",                  "HelpEstateVoiceChat");
+
+	// Set up the Legacy Estate Environment checkboxes
+	{
+		LLUICtrl* global_time = getChild<LLUICtrl>("use_global_time_check");
+		LLUICtrl* fixed_sun = getChild<LLUICtrl>("fixed_sun_check");
+		LLUICtrl* hour_slider = getChild<LLUICtrl>("sun_hour_slider");
+		global_time->setCommitCallback(boost::bind(on_change_use_other_sun, _2, fixed_sun, hour_slider));
+		fixed_sun->setCommitCallback(boost::bind(on_change_fixed_sun, _2, global_time, hour_slider));
+	}
 
 	getChild<LLUICtrl>("allowed_avatar_name_list")->setCommitCallback(boost::bind(&LLPanelEstateInfo::onChangeChildCtrl, this, _1));
 	LLNameListCtrl *avatar_name_list = getChild<LLNameListCtrl>("allowed_avatar_name_list");
@@ -2106,14 +2204,36 @@ void LLPanelEstateInfo::refreshFromEstate()
 	getChild<LLUICtrl>("limit_payment")->setValue(estate_info.getDenyAnonymous());
 	getChild<LLUICtrl>("limit_age_verified")->setValue(estate_info.getDenyAgeUnverified());
 
-	// Ensure appriopriate state of the management UI
+	// Ensure appropriate state of the management UI
 	updateControls(gAgent.getRegion());
+	// Support Legacy Estate Environment
+	{
+		const LLEstateInfoModel& estate_info = LLEstateInfoModel::instance();
+		bool global_time = estate_info.getGlobalTime();
+		getChild<LLUICtrl>("use_global_time_check")->setValue(global_time);
+		getChild<LLUICtrl>("fixed_sun_check")->setEnabled(!global_time);
+		getChild<LLUICtrl>("sun_hour_slider")->setEnabled(!global_time);
+		if (global_time)
+		{
+			getChild<LLUICtrl>("use_global_time_check")->setEnabled(true);
+			getChild<LLUICtrl>("fixed_sun_check")->setValue(false);
+		}
+		else
+		{
+			bool fixed_sun = estate_info.getUseFixedSun();
+			getChild<LLUICtrl>("use_global_time_check")->setEnabled(!fixed_sun);
+			getChild<LLUICtrl>("fixed_sun_check")->setValue(fixed_sun);
+			F32 sun_hour = estate_info.getSunHour();
+			if (sun_hour < 6.0f) sun_hour += 24.0f;
+			getChild<LLUICtrl>("sun_hour_slider")->setValue(sun_hour);
+		}
+	}
 	refresh();
 }
 
 BOOL LLPanelEstateInfo::sendUpdate()
 {
-	llinfos << "LLPanelEsateInfo::sendUpdate()" << llendl;
+	llinfos << "LLPanelEstateInfo::sendUpdate()" << llendl;
 
 	LLNotification::Params params("ChangeLindenEstate");
 	params.functor(boost::bind(&LLPanelEstateInfo::callbackChangeLindenEstate, this, _1, _2));
@@ -2141,8 +2261,9 @@ bool LLPanelEstateInfo::callbackChangeLindenEstate(const LLSD& notification, con
 			LLEstateInfoModel& estate_info = LLEstateInfoModel::instance();
 
 			// update model
-			estate_info.setUseFixedSun(false); // we don't support fixed sun estates anymore
 			estate_info.setIsExternallyVisible(getChild<LLUICtrl>("externally_visible_check")->getValue().asBoolean());
+			estate_info.setUseFixedSun(getChild<LLUICtrl>("fixed_sun_check")->getValue().asBoolean());
+			estate_info.setSunHour(get_sun_hour(getChild<LLUICtrl>("sun_hour_slider")));
 			estate_info.setAllowDirectTeleport(getChild<LLUICtrl>("allow_direct_teleport")->getValue().asBoolean());
 			estate_info.setDenyAnonymous(getChild<LLUICtrl>("limit_payment")->getValue().asBoolean());
 			estate_info.setDenyAgeUnverified(getChild<LLUICtrl>("limit_age_verified")->getValue().asBoolean());
