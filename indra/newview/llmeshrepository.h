@@ -433,7 +433,7 @@ enum AIMeshUpload_state_type {
 class AIMeshUpload : public AIStateMachine
 {
 private:
-	AIStateMachineThread<LLMeshUploadThread> mMeshUpload;
+	LLPointer<AIStateMachineThread<LLMeshUploadThread> > mMeshUpload;
 	std::string mWholeModelUploadURL;
 
 public:
