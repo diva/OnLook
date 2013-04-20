@@ -234,7 +234,8 @@ const std::string SCRIPT_QUESTIONS[SCRIPT_PERMISSION_EOF] =
 	"ChangePermissions",
 	"TrackYourCamera",
 	"ControlYourCamera",
-	"TeleportYourAgent"
+	"TeleportYourAgent",
+	"OverrideAnimations"
 };
 
 const BOOL SCRIPT_QUESTION_IS_CAUTION[SCRIPT_PERMISSION_EOF] = 
@@ -250,7 +251,8 @@ const BOOL SCRIPT_QUESTION_IS_CAUTION[SCRIPT_PERMISSION_EOF] =
 	FALSE,	// ChangePermissions
 	FALSE,	// TrackYourCamera,
 	FALSE,	// ControlYourCamera
-	FALSE   // TeleportYourAgent
+	FALSE,	// TeleportYourAgent
+	FALSE	// OverrideAnimations
 };
 
 bool friendship_offer_callback(const LLSD& notification, const LLSD& response)
