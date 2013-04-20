@@ -141,7 +141,7 @@ class AIStateMachineThreadBase;
 // Derive from this to implement the code that must run in another thread.
 class AIThreadImpl {
   private:
-    template<typename THREAD_IMPL> friend struct AIStateMachineThread;
+    template<typename THREAD_IMPL> friend class AIStateMachineThread;
 	typedef AIAccess<AIStateMachineThreadBase*> StateMachineThread_wat;
 	AIThreadSafeSimpleDC<AIStateMachineThreadBase*> mStateMachineThread;
 
