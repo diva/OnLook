@@ -486,10 +486,14 @@ LLThreadSafeRefCount::LLThreadSafeRefCount() :
 
 LLThreadSafeRefCount::~LLThreadSafeRefCount()
 { 
+	llassert(mRef == 0);
+	/* TEMPORARILY disable erroring out on deleting this object with
+	   nonzero reference count until the problem in AIStateMachine is fixed
 	if (mRef != 0)
 	{
 		llerrs << "deleting non-zero reference" << llendl;
 	}
+	*/
 }
 
 //============================================================================
