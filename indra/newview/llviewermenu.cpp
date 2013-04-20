@@ -900,8 +900,10 @@ void init_menus()
 	ins->setVisible(false);
 	ins = gMenuBarView->getChildView("insert_tools", true, false);
 	ins->setVisible(false);
-	/* Singu Note: When the advanced menu is made xml, this should be uncommented.
+	/* Singu Note: When the advanced and/or admin menu is made xml, this should be uncommented.
 	ins = gMenuBarView->getChildView("insert_advanced", true, false);
+	ins->setVisible(false);
+	ins = gMenuBarView->getChildView("insert_admin", true, false);
 	ins->setVisible(false);*/
 
 	LLEnvManagerNew::instance().setRegionChangeCallback(&region_change);
@@ -1814,6 +1816,12 @@ void init_server_menu(LLMenuGL* menu)
 	}	
 	menu->addChild(new LLMenuItemCallGL( "God Tools...", 
 		&LLFloaterGodTools::show, &enable_god_basic, NULL));
+
+	{
+		LLMenuItemCallGL* item = new LLMenuItemCallGL("insert_admin", NULL);
+		item->setVisible(false);
+		menu->addChild(item);
+	}
 
 	menu->addSeparator();
 
