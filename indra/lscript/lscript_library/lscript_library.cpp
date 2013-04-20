@@ -532,6 +532,14 @@ void LLScriptLibrary::init()
 	addFunction(10.f, 0.f, dummy_func, "llUpdateCharacter", NULL, "l");
 	addFunction(10.f, 0.f, dummy_func, "llWanderWithin", NULL, "vvl");
 
+	// Server RC LeTigre 12.10.12.265819 new function
+	addFunction(0.f, 0.f, dummy_func, "llGetSimStats", "f", "i");
+
+	// Server RC LeTigre 13.03.22.272565 new function
+	addFunction(0.f, 0.f, dummy_func, "llSetAnimationOverride", NULL, "ss");
+	addFunction(0.f, 0.f, dummy_func, "llGetAnimationOverride", "s", "s");
+	addFunction(0.f, 0.f, dummy_func, "llResetAnimationOverride", NULL, "s");
+
 	// SL-LSL Functions to be added above this line
 	// ---------------------------------------------
 	// NOTE bytecode placement no longer applies, viewers do not compile scripts anymore (confirmed with LL, also noted by Phoenix/Firestorm team.)

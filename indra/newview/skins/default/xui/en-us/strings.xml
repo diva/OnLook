@@ -1828,15 +1828,15 @@ Returns a list consisting of the following three values for each hit: UUID, Link
 	</string>
 	<string name="LSLTipText_llRegionSayTo">
 llRegionSayTo(key target, integer channel, string msg)
-Sends msg on channel (not DEBUG_CHANNEL) directly to prim or avatar target anywhere within the region
+Sends msg on channel (not DEBUG_CHANNEL) directly to prim or avatar target anywhere within the region.
 	</string>
 	<string name="LSLTipText_llGetSPMaxMemory">
 integer llGetSPMaxMemory()
-Returns the integer of the most bytes used while llScriptProfiler was last active.
+Returns the maximum used memory for the current script. Only valid after using PROFILE_SCRIPT_MEMORY. Non-mono scripts always use 16k.
 	</string>
 	<string name="LSLTipText_llGetUsedMemory">
 integer llGetUsedMemory()
-Returns the integer of the number of bytes of memory currently in use by the script.
+Returns the current used memory for the current script. Non-mono scripts always use 16k.
 	</string>
 	<string name="LSLTipText_llScriptProfiler">
 llScriptProfiler(integer flags)
@@ -1844,11 +1844,15 @@ Enables or disables script profiling options. Currently only supports PROFILE_SC
 MAY SIGNIFICANTLY REDUCE SCRIPT PERFORMANCE!
 	</string>
 	<string name="LSLTipText_llSetMemoryLimit">
-integer llSetMemoryLimit(integer mem)
-Request ''limit'' bytes to be reserved for this script.
+integer llSetMemoryLimit(integer limit)
+Request limit bytes to be reserved for this script.
+Returns a success/failure flag (STATUS_OK when sucessful, another of the STATUS_* flags on failure) for whether the memory limit was set.
+Only relevant for Mono-compiled scripts.
 	</string>
 	<string name="LSLTipText_llGetMemoryLimit">
 integer llGetMemoryLimit()
+Get the maximum memory a script can use.
+Returns the integer amount of memory the script can use in bytes.
 	</string>
 	<string name="LSLTipText_llSetLinkMedia">
 llSetLinkMedia(integer link, integer face, list params)
@@ -1863,11 +1867,12 @@ integer llClearLinkMedia(integer link, integer face)
 Clears (deletes) the media and all params from the given face on linked prim(s).
 	</string>
 	<string name="LSLTipText_llSetContentType">
-llSetContentType(key request_id, integer content_type)
+llSetContentType(key id, integer content_type)
 Set the Internet media type of an LSL HTTP server response.
+content_type may be one of CONTENT_TYPE_TEXT (default) "text/plain", or CONTENT_TYPE_HTML "text/html", only valid for embedded browsers on content owned by the person viewing. Falls back to "text/plain" otherwise.
 	</string>
 	<string name="LSLTipText_llLinkSitTarget">
-llLinkSitTarget(integer link, vector offset, rotation rot );
+llLinkSitTarget(integer link, vector offset, rotation rot)
 Set the sit location for the linked prim(s). The sit location is relative to the prim's position and rotation.
 	</string>
 	<string name="LSLTipText_llAvatarOnLinkSitTarget">
@@ -1876,7 +1881,8 @@ If an avatar is sitting on the sit target, return the avatar&apos;s key, NULL_KE
 	</string>
 	<string name="LSLTipText_llSetLinkCamera">
 llSetLinkCamera(integer link, vector eye, vector at)
-Sets the camera eye offset, and the offset that the camera is looking at, for avatars that sit on the linked prim.
+Sets the camera eye offset, and the offset that camera is looking at, for avatars that sit on the linked prim.
+The two vector parameters are offsets relative to the object's center and expressed in local coordinates.
 	</string>
 	<string name="LSLTipText_llSetVelocity">
 llSetVelocity(vector velocity, integer local)
@@ -1897,8 +1903,8 @@ llGetPhysicsMaterial() returns the gravity multiplier, restitution, friction, an
 llGetMassMKS() returns the mass of the linkset in kilograms.
 	</string>
 	<string name="LSLTipText_llGenerateKey">
-llGenerateKey()
-Retun a unique generated key
+key llGenerateKey()
+Return a unique generated key
 	</string>
 	<string name="LSLTipText_llSetKeyframedMotion">
 llSetKeyframedMotion(list keyframes, list options)
@@ -1924,13 +1930,6 @@ For AI Character: Navigate to destination.
 llCreateCharacter(list options)
 Convert linkset to AI Character which can navigate the world.
 	</string>
-	<!-- Pathfinding -->
-	<string name="Pathfinding_Wiki_URL">http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer</string>
-	<string name="Pathfinding_Object_Attr_None">None</string>
-	<string name="Pathfinding_Object_Attr_Permanent">Affects navmesh</string>
-	<string name="Pathfinding_Object_Attr_Character">Character</string>
-	<string name="Pathfinding_Object_Attr_MultiSelect">(Multiple)</string>
-
 	<string name="LSLTipText_llPursue">
 llPursue(key target, list options)
 For AI Character: Chase after a target.
@@ -1999,6 +1998,18 @@ A region's global coordinates can be retrieved using llRequestSimulatorData(regi
 	<string name="LSLTipText_llGetSimStats" translate="false">
 float llGetSimStats(integer stat_type)
 Returns the value of a particular simulator statistic.
+	</string>
+	<string name="LSLTipText_llSetAnimationOverride">
+llSetAnimationOverride(string anim_state, string anim)
+Set the animation (anim) that will play for the given animation state (anim_state).
+	</string>
+	<string name="LSLTipText_llGetAnimationOverride">
+string llGetAnimationOverride(string anim_state)
+Returns a string that is the name of the animation that is being used for the specified animation state (anim_state).
+	</string>
+	<string name="LSLTipText_llResetAnimationOverride">
+llResetAnimationOverride(string anim_state)
+Resets the animation override of the specified animation state (anim_state) to the corresponding default value.
 	</string>
 <!-- GOD FUNCTIONS -->
 	<string name="LSLTipText_llGodLikeRezObject">
