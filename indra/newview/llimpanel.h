@@ -231,6 +231,9 @@ public:
 						   void *cargo_data, EAcceptance *accept,
 						   std::string& tooltip_msg);
 
+	BOOL    focusFirstItem(BOOL prefer_text_fields = FALSE, BOOL focus_flash = TRUE );
+
+	void            onFocusReceived();
 	void			onInputEditorFocusReceived();
 	void			onInputEditorFocusLost();
 	static void		onInputEditorKeystroke(LLLineEditor* caller, void* userdata);

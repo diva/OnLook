@@ -98,6 +98,8 @@ public:
 	LLPanelActiveSpeakers* mPanel;
 	BOOL mScrolledToEnd;
 
+	BOOL    focusFirstItem(BOOL prefer_text_fields = FALSE, BOOL focus_flash = TRUE );
+
 	CachedUICtrl<LLButton> mToggleActiveSpeakersBtn;
 	CachedUICtrl<LLChatBar> mChatPanel;
 };

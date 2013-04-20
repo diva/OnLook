@@ -52,6 +52,9 @@ const PermissionBit PERM_MODIFY				= (1 << 14); // 0x00004000
 // objects, allow copy
 const PermissionBit PERM_COPY				= (1 << 15); // 0x00008000
 
+// objects, allow exporting
+const PermissionBit PERM_EXPORT				= (1 << 16); // 0x00010000
+
 // parcels, allow entry, deprecated
 //const PermissionBit PERM_ENTER			= (1 << 16); // 0x00010000
 
