@@ -1329,9 +1329,10 @@ void LLMeshUploadThread::preStart()
 }
 
 AIMeshUpload::AIMeshUpload(LLMeshUploadThread::instance_list& data, LLVector3& scale, bool upload_textures, bool upload_skin, bool upload_joints, std::string const& upload_url, bool do_upload,
-	LLHandle<LLWholeModelFeeObserver> const& fee_observer, LLHandle<LLWholeModelUploadObserver> const& upload_observer) : mWholeModelUploadURL(upload_url)
+	LLHandle<LLWholeModelFeeObserver> const& fee_observer, LLHandle<LLWholeModelUploadObserver> const& upload_observer) :
+		mMeshUpload(new AIStateMachineThread<LLMeshUploadThread>), mWholeModelUploadURL(upload_url)
 {
-	mMeshUpload->init(data, scale, upload_textures, upload_skin, upload_joints, do_upload, fee_observer, upload_observer);
+	mMeshUpload->thread_impl().init(data, scale, upload_textures, upload_skin, upload_joints, do_upload, fee_observer, upload_observer);
 }
 
 char const* AIMeshUpload::state_str_impl(state_type run_state) const
@@ -1347,7 +1348,7 @@ char const* AIMeshUpload::state_str_impl(state_type run_state) const
 
 void AIMeshUpload::initialize_impl()
 {
-	mMeshUpload->preStart();
+	mMeshUpload->thread_impl().preStart();
 	set_state(AIMeshUpload_start);
 }
 
@@ -1356,11 +1357,11 @@ void AIMeshUpload::multiplex_impl(state_type run_state)
 	switch (run_state)
 	{
 		case AIMeshUpload_start:
-			mMeshUpload.run(this, AIMeshUpload_threadFinished);
+			mMeshUpload->run(this, AIMeshUpload_threadFinished);
 			idle();										// Wait till the thread finished.
 			break;
 		case AIMeshUpload_threadFinished:
-			mMeshUpload->postRequest(mWholeModelUploadURL, this);
+			mMeshUpload->thread_impl().postRequest(mWholeModelUploadURL, this);
 			idle();										// Wait till the responder finished.
 			break;
 		case AIMeshUpload_responderFinished:
