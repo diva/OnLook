@@ -60,6 +60,7 @@
 #include "llstartup.h"
 #include "llsdserialize.h"
 #include "llbuffer.h"
+#include "hippogridmanager.h"
 
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy HTTPGetResponder_timeout;
@@ -1267,11 +1268,22 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			static const LLCachedControl<U32> max_http_requests("HTTPMaxRequests", 8);
 			static const LLCachedControl<U32> min_http_requests("HTTPMinRequests", 2);
 			static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
-			if(((U32)mFetcher->getNumHTTPRequests() >= max_http_requests) ||
-			   ((mFetcher->getTextureBandwidth() > throttle_bandwidth) &&
-				((U32)mFetcher->getNumHTTPRequests() > min_http_requests)))
+			// Don't control http bandwidth in Avination, they do it serverside
+			if(!gHippoGridManager->getConnectedGrid()->isAvination())
 			{
-				return false ; //wait.
+				if(((U32)mFetcher->getNumHTTPRequests() >= max_http_requests) ||
+				   ((mFetcher->getTextureBandwidth() > throttle_bandwidth) &&
+					((U32)mFetcher->getNumHTTPRequests() > min_http_requests)))
+				{
+					return false ; //wait.
+				}
+			}
+			else
+			{
+				if(((U32)mFetcher->getNumHTTPRequests() >= max_http_requests))
+				{
+					return false ; //wait.
+				}
 			}
 
 			mFetcher->removeFromNetworkQueue(this, false);
