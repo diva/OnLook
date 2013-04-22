@@ -1280,7 +1280,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			}
 			else
 			{
-				if(((U32)mFetcher->getNumHTTPRequests() >= max_http_requests))
+				if(((U32)mFetcher->getNumHTTPRequests() >= 2))
 				{
 					return false ; //wait.
 				}
