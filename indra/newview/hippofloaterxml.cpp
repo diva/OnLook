@@ -356,6 +356,8 @@ bool HippoFloaterXmlImpl::execute(LLFloater *floater, LLUICtrl *ctrl,
 					/*ctrl->setLabel(value);*/
 				} else if (key == "setVisible") {
 					ctrl->setVisible(value != "0");
+				} else if (key == "setEnabled") {
+					ctrl->setEnabled(value != "0");
 				} else if (key == "notify") {
 					bool set = (value != "0");
 					if (HippoFloaterXmlImpl *floaterp = dynamic_cast<HippoFloaterXmlImpl*>(ctrl)) {
