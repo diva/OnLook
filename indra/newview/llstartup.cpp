@@ -212,6 +212,7 @@
 #include "llinventorybridge.h"
 #include "llappearancemgr.h"
 #include "jcfloaterareasearch.h"
+#include "generichandlers.h"
 
 // <edit>
 #include "llpanellogin.h"
@@ -842,6 +843,8 @@ bool idle_startup()
 		// *NOTE: This is where gHUDManager used to bet allocated before becoming LLHUDManager::getInstance().
 
 		// *NOTE: This is where gMuteList used to get allocated before becoming LLMuteList::getInstance().
+
+		gGenericHandlers = new GenericHandlers();
 
 		// Initialize UI
 		if (!gNoRender)
