@@ -27,6 +27,8 @@
 #include "llviewergenericmessage.h"
 #include "llviewerinventory.h"
 #include "llappearancemgr.h"
+#include "llviewerregion.h"
+#include "llagent.h"
 
 GenericHandlers *gGenericHandlers = NULL;
 
@@ -49,6 +51,17 @@ public:
 			LLAppearanceMgr::instance().wearInventoryCategory(cat, FALSE, FALSE);
 			success = true;
 		}
+
+		LLViewerRegion* regionp = gAgent.getRegion();
+		if (!regionp) return true;
+
+		std::string url = regionp->getCapability("WearablesLoaded");
+		if (url.empty()) return true;
+
+		LLSD data = LLSD(success);
+
+		LLHTTPClient::post(url, data, new LLHTTPClient::ResponderIgnore);
+
 		return true;
 	}
 };
