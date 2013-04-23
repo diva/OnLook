@@ -3010,13 +3010,29 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="InventoryOutboxNotMerchant">
 If you'd like to become a merchant, you'll need to
 	</string>
-    <string name="InventoryOutboxNotMerchantSubs">create a Marketplace store.</string>
+	<string name="InventoryOutboxNotMerchantSubs">create a Marketplace store</string>
+	<string name="InventoryOutboxNotMerchant2">.</string>
 	<string name="InventoryOutboxNoItemsTitle">Your outbox is empty.</string>
 	<string name="InventoryOutboxNoItemsTooltip"></string>
 	<string name="InventoryOutboxNoItems">
 Drag folders to this area and click "Send to Marketplace" to list them for sale on the
 	</string>
-    <string name="InventoryOutboxNoItemsSubs">Marketplace.</string>
+	<string name="InventoryOutboxNoItemsSubs">Marketplace</string>
+	<string name="InventoryOutboxNoItems2">.</string>
+	<string name="InventoryOutboxInitializingTitle">Initializing Marketplace.</string>
+	<string name="InventoryOutboxInitializingTooltip"></string>
+	<string name="InventoryOutboxInitializing">
+We are accessing your account on the
+	</string>
+	<string name="InventoryOutboxInitializingSubs">Marketplace store</string>
+	<string name="InventoryOutboxInitializing2">.</string>
+	<string name="InventoryOutboxErrorTitle">Marketplace Errors.</string>
+	<string name="InventoryOutboxErrorTooltip"></string>
+	<string name="InventoryOutboxError">
+The
+	</string>
+	<string name="InventoryOutboxErrorSubs">Marketplace store</string>
+	<string name="InventoryOutboxError2">is returning errors.</string>
 
 	<!-- use value="" because they have preceding spaces -->
 	<string name="no_transfer" value=" (no transfer)" />
