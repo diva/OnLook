@@ -225,7 +225,7 @@ void HippoFloaterXml::execute(const std::string &cmds)
 				if (!floater->execute(floater, floater, cmds, offset, response))
 					break;
 				if (!response.empty())
-					send_chat_from_viewer(response, CHAT_TYPE_WHISPER, CHANNEL);
+					send_chat_from_viewer(response, CHAT_TYPE_WHISPER, floater->mChannel);
 			}
 		} else
 
