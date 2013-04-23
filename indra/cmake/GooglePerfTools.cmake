@@ -1,4 +1,5 @@
 # -*- cmake -*-
+
 include(Prebuilt)
 
 if(WORD_SIZE EQUAL 64)
@@ -47,9 +48,14 @@ else (USE_GOOGLE_PERFTOOLS)
 endif (USE_GOOGLE_PERFTOOLS)
 
 if (NOT(DISABLE_TCMALLOC OR USE_GOOGLE_PERFTOOLS OR STANDALONE))
-  message(STATUS "Building with Google TCMalloc")
-	set(TCMALLOC_FLAG -DLL_USE_TCMALLOC=1)
-	include_directories(${GOOGLE_PERFTOOLS_INCLUDE_DIR})
-	set(GOOGLE_PERFTOOLS_LIBRARIES ${TCMALLOC_LIBRARIES})
+  if (NOT STATUS_Building_with_Google_TCMalloc)
+    message(STATUS "Building with Google TCMalloc")
+	set(STATUS_Building_with_Google_TCMalloc true PARENT_SCOPE)
+  endif (NOT STATUS_Building_with_Google_TCMalloc)
+  set(TCMALLOC_FLAG -DLL_USE_TCMALLOC=1)
+  include_directories(${GOOGLE_PERFTOOLS_INCLUDE_DIR})
+  set(GOOGLE_PERFTOOLS_LIBRARIES ${TCMALLOC_LIBRARIES})
   set(GOOGLE_PERFTOOLS_LINKER_FLAGS ${TCMALLOC_LINKER_FLAGS})
 endif()
+
+add_definitions(${TCMALLOC_FLAG})
