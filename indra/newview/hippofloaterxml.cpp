@@ -225,7 +225,7 @@ void HippoFloaterXml::execute(const std::string &cmds)
 				if (!floater->execute(floater, floater, cmds, offset, response))
 					break;
 				if (!response.empty())
-					send_chat_from_viewer(response, CHAT_TYPE_WHISPER, CHANNEL);
+					send_chat_from_viewer(response, CHAT_TYPE_WHISPER, floater->mChannel);
 			}
 		} else
 
@@ -356,6 +356,8 @@ bool HippoFloaterXmlImpl::execute(LLFloater *floater, LLUICtrl *ctrl,
 					/*ctrl->setLabel(value);*/
 				} else if (key == "setVisible") {
 					ctrl->setVisible(value != "0");
+				} else if (key == "setEnabled") {
+					ctrl->setEnabled(value != "0");
 				} else if (key == "notify") {
 					bool set = (value != "0");
 					if (HippoFloaterXmlImpl *floaterp = dynamic_cast<HippoFloaterXmlImpl*>(ctrl)) {

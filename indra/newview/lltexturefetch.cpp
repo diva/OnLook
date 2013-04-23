@@ -60,6 +60,7 @@
 #include "llstartup.h"
 #include "llsdserialize.h"
 #include "llbuffer.h"
+#include "hippogridmanager.h"
 
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy HTTPGetResponder_timeout;

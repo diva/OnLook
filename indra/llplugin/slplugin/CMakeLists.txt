@@ -6,7 +6,6 @@ include(LLPlugin)
 include(Linking)
 include(PluginAPI)
 include(LLMessage)
-include(GooglePerfTools)
 
 include_directories(
     ${LLPLUGIN_INCLUDE_DIRS}

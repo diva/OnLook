@@ -2159,7 +2159,7 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	std::string::iterator pos3 = std::find(pos2, end, '\r');
 	U32 status = 0;
 	std::string reason;
-	if (pos3 != end && std::isdigit(*pos1))
+	if (pos3 != end && LLStringOps::isDigit(*pos1))
 	{
 	  status = atoi(&header_line[pos1 - begin]);
 	  reason.assign(pos2, pos3);
@@ -2576,7 +2576,7 @@ bool AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(AIPerServiceRequestQueue
   sQueueEmpty = sQueueFull = false;
   if (decrement_threshold)
   {
-	if (max_pipelined_requests_cache > curl_max_total_concurrent_connections)
+	if (max_pipelined_requests_cache > (S32)curl_max_total_concurrent_connections)
 	{
 	  // Decrement the threshold because since the last call to this function at least one curl request finished
 	  // and was replaced with another request from the queue, but the queue never ran empty: we have too many
@@ -2601,14 +2601,14 @@ bool AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(AIPerServiceRequestQueue
   }
   if (decrement_threshold)
   {
-	if (max_pipelined_requests_per_service_cache > curl_concurrent_connections_per_service)
+	if (max_pipelined_requests_per_service_cache > (S32)curl_concurrent_connections_per_service)
 	{
 	  --max_pipelined_requests_per_service;
 	}
   }
   else if (increment_threshold && reject)
   {
-	if (max_pipelined_requests_per_service_cache < 2 * curl_concurrent_connections_per_service)
+	if (max_pipelined_requests_per_service_cache < 2 * (S32)curl_concurrent_connections_per_service)
 	{
 	  max_pipelined_requests_per_service++;
 	  // Immediately take the new threshold into account.
@@ -2648,7 +2648,7 @@ bool AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(AIPerServiceRequestQueue
   }
   if (increment_threshold && reject)
   {
-	if (max_pipelined_requests_cache < 2 * curl_max_total_concurrent_connections)
+	if (max_pipelined_requests_cache < 2 * (S32)curl_max_total_concurrent_connections)
 	{
 	  max_pipelined_requests++;
 	  // Immediately take the new threshold into account.

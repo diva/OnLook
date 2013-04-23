@@ -405,7 +405,7 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<scroll_list name="results">
 				<column label="" name="icon"/>
 				<column label="" name="type"/>
-				<column abel="Nombre" name="name" />
+				<column label="Nombre" name="name" />
 				<column label="Tráfico" name="dwell"/>
 			</scroll_list>
 			<button label="Sig. &gt;" label_selected="Sig. &gt;" name="Next &gt;"/>

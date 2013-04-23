@@ -38,7 +38,6 @@ include(LLXML)
 #include(LScript)
 include(Linking)
 include(NDOF)
-include(GooglePerfTools)
 include(StateMachine)
 include(TemplateCheck)
 include(UI)
@@ -90,6 +89,7 @@ set(viewer_SOURCE_FILES
     floaterao.cpp
     floaterlocalassetbrowse.cpp
     floatervoicelicense.cpp
+	generichandlers.cpp
     hbfloatergrouptitles.cpp
     hippofloaterxml.cpp
     hippogridmanager.cpp
@@ -591,6 +591,7 @@ set(viewer_HEADER_FILES
     floaterao.h
     floaterlocalassetbrowse.h
     floatervoicelicense.h
+	generichandlers.h
     hbfloatergrouptitles.h
     hippofloaterxml.h
     hippogridmanager.h
