@@ -111,7 +111,7 @@ std::string AIPerServiceRequestQueue::extract_canonical_servicename(std::string 
     int c = *p;
     if (c == ':')
     {
-      if (!port_colon && std::isdigit(p[1]))
+      if (!port_colon && LLStringOps::isDigit(p[1]))
       {
         port_colon = p;
       }
