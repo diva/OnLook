@@ -171,40 +171,7 @@
     <key>Value</key>
     <integer>1</integer>
   </map>
-	
-  <key>HTTPRequestRate</key>
-  <map>
-    <key>Comment</key>
-    <string>Number of HTTP texture requests fired per second.</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>U32</string>
-    <key>Value</key>
-    <integer>30</integer>
-  </map>
-  <key>HTTPMaxRequests</key>
-  <map>
-    <key>Comment</key>
-    <string>Maximum number of simultaneous HTTP requests in progress.</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>U32</string>
-    <key>Value</key>
-    <integer>12</integer>
-  </map>
-  <key>HTTPMinRequests</key>
-  <map>
-    <key>Comment</key>
-    <string>Attempt to maintain at least this many HTTP requests in progress by ignoring bandwidth</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>U32</string>
-    <key>Value</key>
-    <integer>2</integer>
-  </map>
+
   <key>HTTPThrottleBandwidth</key>
   <map>
     <key>Comment</key>
@@ -4481,10 +4448,10 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>64</integer>
     </map>
-    <key>CurlConcurrentConnectionsPerHost</key>
+    <key>CurlConcurrentConnectionsPerService</key>
     <map>
       <key>Comment</key>
-      <string>Maximum number of simultaneous curl connections per host</string>
+      <string>Maximum number of simultaneous curl connections per host:port service</string>
       <key>Persist</key>
       <integer>0</integer>
       <key>Type</key>

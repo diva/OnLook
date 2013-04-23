@@ -34,7 +34,7 @@
 #include <sstream>
 #include "llatomic.h"
 #include "llrefcount.h"
-#include "aicurlperhost.h"
+#include "aicurlperservice.h"
 #include "aihttptimeout.h"
 #include "llhttpclient.h"
 
@@ -304,8 +304,8 @@ class CurlEasyRequest : public CurlEasyHandle {
 	CURLcode mResult;		//AIFIXME: this does not belong in the request object, but belongs in the response object.
 
 	AIHTTPTimeoutPolicy const* mTimeoutPolicy;
-	std::string mLowercaseHostname;				// Lowercase hostname (canonicalized) extracted from the url.
-	PerHostRequestQueuePtr mPerHostPtr;			// Pointer to the corresponding PerHostRequestQueue.
+	std::string mLowercaseServicename;			// Lowercase hostname:port (canonicalized) extracted from the url.
+	AIPerServiceRequestQueuePtr mPerServicePtr;		// Pointer to the corresponding AIPerServiceRequestQueue.
 	LLPointer<curlthread::HTTPTimeout> mTimeout;// Timeout administration object associated with last created CurlSocketInfo.
 	bool mTimeoutIsOrphan;						// Set to true when mTimeout is not (yet) associated with a CurlSocketInfo.
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
@@ -316,7 +316,8 @@ class CurlEasyRequest : public CurlEasyHandle {
   public:
 	// These two are only valid after finalizeRequest.
 	AIHTTPTimeoutPolicy const* getTimeoutPolicy(void) const { return mTimeoutPolicy; }
-	std::string const& getLowercaseHostname(void) const { return mLowercaseHostname; }
+	std::string const& getLowercaseServicename(void) const { return mLowercaseServicename; }
+	std::string getLowercaseHostname(void) const;
 	// Called by CurlSocketInfo to allow access to the last (after a redirect) HTTPTimeout object related to this request.
 	// This creates mTimeout (unless mTimeoutIsOrphan is set in which case it adopts the orphan).
 	LLPointer<curlthread::HTTPTimeout>& get_timeout_object(void);
@@ -347,10 +348,10 @@ class CurlEasyRequest : public CurlEasyHandle {
 	inline ThreadSafeBufferedCurlEasyRequest* get_lockobj(void);
 	inline ThreadSafeBufferedCurlEasyRequest const* get_lockobj(void) const;
 
-	// PerHost API.
-	PerHostRequestQueuePtr getPerHostPtr(void);						// (Optionally create and) return a pointer to the unique
-																	// PerHostRequestQueue corresponding to mLowercaseHostname.
-	bool removeFromPerHostQueue(AICurlEasyRequest const&) const;	// Remove this request from the per-host queue, if queued at all.
+	// PerService API.
+	AIPerServiceRequestQueuePtr getPerServicePtr(void);					// (Optionally create and) return a pointer to the unique
+																	// AIPerServiceRequestQueue corresponding to mLowercaseServicename.
+	bool removeFromPerServiceQueue(AICurlEasyRequest const&) const;	// Remove this request from the per-host queue, if queued at all.
 																	// Returns true if it was queued.
   protected:
 	// Pass events to parent.

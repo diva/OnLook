@@ -58,7 +58,7 @@
 #include "aihttpheaders.h"
 #include "aihttptimeoutpolicy.h"
 #include "aicurleasyrequeststatemachine.h"
-#include "aicurlperhost.h"
+#include "aicurlperservice.h"
 
 //==================================================================================
 // Debug Settings
@@ -298,6 +298,7 @@ LLAtomicU32 Stats::easy_init_errors;
 LLAtomicU32 Stats::easy_cleanup_calls;
 LLAtomicU32 Stats::multi_calls;
 LLAtomicU32 Stats::multi_errors;
+LLAtomicU32 Stats::running_handles;
 LLAtomicU32 Stats::AICurlEasyRequest_count;
 LLAtomicU32 Stats::AICurlEasyRequestStateMachine_count;
 LLAtomicU32 Stats::BufferedCurlEasyRequest_count;
@@ -458,6 +459,12 @@ void setCAPath(std::string const& path)
 {
   CertificateAuthority_wat CertificateAuthority_w(gCertificateAuthority);
   CertificateAuthority_w->path = path;
+}
+
+// THREAD-SAFE
+U32 getNumHTTPRunning(void)
+{
+  return Stats::running_handles;
 }
 
 //static
@@ -952,9 +959,9 @@ CurlEasyRequest::~CurlEasyRequest()
   // be available anymore.
   send_handle_events_to(NULL);
   revokeCallbacks();
-  if (mPerHostPtr)
+  if (mPerServicePtr)
   {
-	 PerHostRequestQueue::release(mPerHostPtr);
+	 AIPerServiceRequestQueue::release(mPerServicePtr);
   }
   // This wasn't freed yet if the request never finished.
   curl_slist_free_all(mHeaders);
@@ -1084,56 +1091,6 @@ void CurlEasyRequest::applyDefaultOptions(void)
   );
 }
 
-// url must be of the form
-// (see http://www.ietf.org/rfc/rfc3986.txt Appendix A for definitions not given here):
-//
-// url			= sheme ":" hier-part [ "?" query ] [ "#" fragment ]
-// hier-part	= "//" authority path-abempty
-// authority     = [ userinfo "@" ] host [ ":" port ]
-// path-abempty  = *( "/" segment )
-//
-// That is, a hier-part of the form '/ path-absolute', '/ path-rootless' or
-// '/ path-empty' is NOT allowed here. This should be safe because we only
-// call this function for curl access, any file access would use APR.
-//
-// However, as a special exception, this function allows:
-//
-// url			= authority path-abempty
-//
-// without the 'sheme ":" "//"' parts.
-//
-// As follows from the ABNF (see RFC, Appendix A):
-// - authority is either terminated by a '/' or by the end of the string because
-//   neither userinfo, host nor port may contain a '/'.
-// - userinfo does not contain a '@', and if it exists, is always terminated by a '@'.
-// - port does not contain a ':', and if it exists is always prepended by a ':'.
-//
-// Only called by CurlEasyRequest::finalizeRequest.
-static std::string extract_canonical_hostname(std::string const& url)
-{
-  std::string::size_type pos;
-  std::string::size_type authority = 0;														// Default if there is no sheme.
-  if ((pos = url.find("://")) != url.npos && pos < url.find('/')) authority = pos + 3;		// Skip the "sheme://" if any, the second find is to avoid finding a "://" as part of path-abempty.
-  std::string::size_type host = authority;													// Default if there is no userinfo.
-  if ((pos = url.find('@', authority)) != url.npos) host = pos + 1;							// Skip the "userinfo@" if any.
-  authority = url.length() - 1;																// Default last character of host if there is no path-abempty.
-  if ((pos = url.find('/', host)) != url.npos) authority = pos - 1;							// Point to last character of host.
-  std::string::size_type len = url.find_last_not_of(":0123456789", authority) - host + 1;	// Skip trailing ":port", if any.
-  std::string hostname(url, host, len);
-#if APR_CHARSET_EBCDIC
-#error Not implemented
-#else
-  // Convert hostname to lowercase in a way that we compare two hostnames equal iff libcurl does.
-  for (std::string::iterator iter = hostname.begin(); iter != hostname.end(); ++iter)
-  {
-	int c = *iter;
-	if (c >= 'A' && c <= 'Z')
-	  *iter = c + ('a' - 'A');
-  }
-#endif
-  return hostname;
-}
-
 void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolicy const& policy, AICurlEasyRequestStateMachine* state_machine)
 {
   DoutCurlEntering("CurlEasyRequest::finalizeRequest(\"" << url << "\", " << policy.name() << ", " << (void*)state_machine << ")");
@@ -1156,8 +1113,8 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
 #endif
   setopt(CURLOPT_HTTPHEADER, mHeaders);
   setoptString(CURLOPT_URL, url);
-  llassert(!mPerHostPtr);
-  mLowercaseHostname = extract_canonical_hostname(url);
+  llassert(!mPerServicePtr);
+  mLowercaseServicename = AIPerServiceRequestQueue::extract_canonical_servicename(url);
   mTimeoutPolicy = &policy;
   state_machine->setTotalDelayTimeout(policy.getTotalDelay());
   // The following line is a bit tricky: we store a pointer to the object without increasing its reference count.
@@ -1183,7 +1140,7 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
 // // get less connect time, while it still (also) has to wait for this DNS lookup.
 void CurlEasyRequest::set_timeout_opts(void)
 {
-  setopt(CURLOPT_CONNECTTIMEOUT, mTimeoutPolicy->getConnectTimeout(mLowercaseHostname));
+  setopt(CURLOPT_CONNECTTIMEOUT, mTimeoutPolicy->getConnectTimeout(getLowercaseHostname()));
   setopt(CURLOPT_TIMEOUT, mTimeoutPolicy->getCurlTransaction());
 }
 
@@ -1279,22 +1236,27 @@ void CurlEasyRequest::queued_for_removal(AICurlEasyRequest_wat& curl_easy_reques
 }
 #endif
 
-PerHostRequestQueuePtr CurlEasyRequest::getPerHostPtr(void)
+AIPerServiceRequestQueuePtr CurlEasyRequest::getPerServicePtr(void)
 {
-  if (!mPerHostPtr)
+  if (!mPerServicePtr)
   {
-	// mPerHostPtr is really just a speed-up cache.
-	// The reason we can cache it is because mLowercaseHostname is only set
+	// mPerServicePtr is really just a speed-up cache.
+	// The reason we can cache it is because mLowercaseServicename is only set
 	// in finalizeRequest which may only be called once: it never changes.
-	mPerHostPtr = PerHostRequestQueue::instance(mLowercaseHostname);
+	mPerServicePtr = AIPerServiceRequestQueue::instance(mLowercaseServicename);
   }
-  return mPerHostPtr;
+  return mPerServicePtr;
 }
 
-bool CurlEasyRequest::removeFromPerHostQueue(AICurlEasyRequest const& easy_request) const
+bool CurlEasyRequest::removeFromPerServiceQueue(AICurlEasyRequest const& easy_request) const
 {
   // Note that easy_request (must) represent(s) this object; it's just passed for convenience.
-  return mPerHostPtr && PerHostRequestQueue_wat(*mPerHostPtr)->cancel(easy_request);
+  return mPerServicePtr && PerServiceRequestQueue_wat(*mPerServicePtr)->cancel(easy_request);
+}
+
+std::string CurlEasyRequest::getLowercaseHostname(void) const
+{
+  return mLowercaseServicename.substr(0, mLowercaseServicename.find_last_of(':'));
 }
 
 //-----------------------------------------------------------------------------

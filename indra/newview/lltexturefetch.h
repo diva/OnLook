@@ -88,7 +88,6 @@ public:
 					  U32& fetch_priority_p, F32& fetch_dtime_p, F32& request_dtime_p, bool& can_use_http);
 	void dump();
 	S32 getNumRequests() ;
-	S32 getNumHTTPRequests() ;
 	U32 getTotalNumHTTPRequests() ;
 	
 	// Public for access by callbacks

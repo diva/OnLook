@@ -24,7 +24,7 @@ include_directories(
 set(llmessage_SOURCE_FILES
     aicurl.cpp
     aicurleasyrequeststatemachine.cpp
-    aicurlperhost.cpp
+    aicurlperservice.cpp
     aicurlthread.cpp
     aihttpheaders.cpp
     aihttptimeout.cpp
@@ -111,7 +111,7 @@ set(llmessage_HEADER_FILES
 
     aicurl.h
     aicurleasyrequeststatemachine.h
-    aicurlperhost.h
+    aicurlperservice.h
     aicurlprivate.h
     aicurlthread.h
     aihttpheaders.h

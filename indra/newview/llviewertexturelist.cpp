@@ -1342,6 +1342,7 @@ void LLViewerTextureList::receiveImageHeader(LLMessageSystem *msg, void **user_d
 	{
 		received_size = msg->getReceiveSize() ;		
 	}
+	// Only used for statistics and texture console.
 	gTextureList.sTextureBits += received_size * 8;
 	gTextureList.sTexturePackets++;
 	

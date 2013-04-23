@@ -52,6 +52,7 @@
 #include "stdtypes.h"		// U16, S32, U32, F64
 #include "llatomic.h"		// LLAtomicU32
 #include "aithreadsafe.h"
+#include "aicurlperservice.h"	// AIPerServiceRequestQueuePtr
 
 // Debug Settings.
 extern bool gNoVerifySSLCert;
@@ -133,6 +134,7 @@ struct Stats {
   static LLAtomicU32 easy_cleanup_calls;
   static LLAtomicU32 multi_calls;
   static LLAtomicU32 multi_errors;
+  static LLAtomicU32 running_handles;
   static LLAtomicU32 AICurlEasyRequest_count;
   static LLAtomicU32 AICurlEasyRequestStateMachine_count;
   static LLAtomicU32 BufferedCurlEasyRequest_count;
@@ -153,7 +155,7 @@ struct Stats {
 
 // Called to handle changes in Debug Settings.
 bool handleCurlMaxTotalConcurrentConnections(LLSD const& newvalue);
-bool handleCurlConcurrentConnectionsPerHost(LLSD const& newvalue);
+bool handleCurlConcurrentConnectionsPerService(LLSD const& newvalue);
 bool handleNoVerifySSLCert(LLSD const& newvalue);
 
 // Called once at start of application (from newview/llappviewer.cpp by main thread (before threads are created)),
@@ -161,7 +163,7 @@ bool handleNoVerifySSLCert(LLSD const& newvalue);
 void initCurl(void);
 
 // Called once at start of application (from LLAppViewer::initThreads), starts AICurlThread.
-void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentConnectionsPerHost, bool NoVerifySSLCert);
+void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentConnectionsPerService, bool NoVerifySSLCert);
 
 // Called once at the end of application before terminating other threads (most notably the texture thread workers)
 // with the purpose to stop the curl thread from doing any call backs to running responders: the responders sometimes
@@ -184,6 +186,19 @@ void setCAFile(std::string const& file);
 // Not called from anywhere.
 // Can be used to set the path to the Certificate Authority file.
 void setCAPath(std::string const& file);
+
+// Returns number of queued 'add' commands minus the number of queued 'remove' commands.
+U32 getNumHTTPCommands(void);
+
+// Returns the number of queued requests.
+U32 getNumHTTPQueued(void);
+
+// Returns the number of curl requests currently added to the multi handle.
+U32 getNumHTTPAdded(void);
+
+// This used to be LLAppViewer::getTextureFetch()->getNumHTTPRequests().
+// Returns the number of active curl easy handles (that are actually attempting to download something).
+U32 getNumHTTPRunning(void);
 
 } // namespace AICurlInterface
 

@@ -254,6 +254,7 @@ private:
 	LLUUID mID;
 	LLHost mHost;
 	std::string mUrl;
+	AIPerServiceRequestQueuePtr mPerServicePtr;		// Pointer to the AIPerServiceRequestQueue corresponding to the host of mUrl.
 	U8 mType;
 	F32 mImagePriority;
 	U32 mWorkPriority;
@@ -495,30 +496,6 @@ public:
 };
 
 SGHostBlackList::blacklist_t SGHostBlackList::blacklist;
-
-#if 0
-//call every time a connection is opened
-//return true if connecting allowed
-static bool sgConnectionThrottle() {
-	const U32 THROTTLE_TIMESTEPS_PER_SECOND = 10;
-	static const LLCachedControl<U32> max_connections_per_second("HTTPRequestRate", 30);
-	U32 max_connections = max_connections_per_second/THROTTLE_TIMESTEPS_PER_SECOND;
-	const U32 timestep = USEC_PER_SEC/THROTTLE_TIMESTEPS_PER_SECOND;
-	U64 now = LLTimer::getTotalTime();
-	std::deque<U64> timestamps;
-	while(!timestamps.empty() && (timestamps[0]<=now-timestep)) {
-		timestamps.pop_front();
-	}
-	if(timestamps.size() < max_connections) {
-		//llinfos << "throttle pass" << llendl;
-		timestamps.push_back(now);
-		return true;
-	} else {
-		//llinfos << "throttle fail" << llendl;
-		return false;
-	}
-}
-#endif
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -819,6 +796,17 @@ LLTextureFetchWorker::LLTextureFetchWorker(LLTextureFetch* fetcher,
 	  mCacheWriteCount(0U)
 {
 	mCanUseNET = mUrl.empty() ;
+
+	if (!mCanUseNET)
+	{
+	  // Probably a file://, but well; in that case servicename will be empty.
+	  std::string servicename = AIPerServiceRequestQueue::extract_canonical_servicename(mUrl);
+	  if (!servicename.empty())
+	  {
+		// Make sure mPerServicePtr is up to date with mUrl.
+		mPerServicePtr = AIPerServiceRequestQueue::instance(servicename);
+	  }
+	}
 
 	calcWorkPriority();
 	mType = host.isOk() ? LLImageBase::TYPE_AVATAR_BAKE : LLImageBase::TYPE_NORMAL;
@@ -1175,6 +1163,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				{
 					mUrl = http_url + "/?texture_id=" + mID.asString().c_str();
 					mWriteToCacheState = CAN_WRITE ; //because this texture has a fixed texture id.
+					mPerServicePtr = AIPerServiceRequestQueue::instance(AIPerServiceRequestQueue::extract_canonical_servicename(http_url));
 				}
 				else
 				{
@@ -1260,40 +1249,14 @@ bool LLTextureFetchWorker::doWork(S32 param)
 	{
 		if(mCanUseHTTP)
 		{
-			//NOTE:
-			//control the number of the http requests issued for:
-			//1, not opening too many file descriptors at the same time;
-			//2, control the traffic of http so udp gets bandwidth.
-			//
-			static const LLCachedControl<U32> max_http_requests("HTTPMaxRequests", 8);
-			static const LLCachedControl<U32> min_http_requests("HTTPMinRequests", 2);
-			static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
-			// Don't control http bandwidth in Avination, they do it serverside
-			if(!gHippoGridManager->getConnectedGrid()->isAvination())
-			{
-				if(((U32)mFetcher->getNumHTTPRequests() >= max_http_requests) ||
-				   ((mFetcher->getTextureBandwidth() > throttle_bandwidth) &&
-					((U32)mFetcher->getNumHTTPRequests() > min_http_requests)))
-				{
-					return false ; //wait.
-				}
-			}
-			else
-			{
-				if(((U32)mFetcher->getNumHTTPRequests() >= 2))
-				{
-					return false ; //wait.
-				}
-			}
-
-			mFetcher->removeFromNetworkQueue(this, false);
-			
 			S32 cur_size = 0;
 			if (mFormattedImage.notNull())
 			{
 				cur_size = mFormattedImage->getDataSize(); // amount of data we already have
 				if (mFormattedImage->getDiscardLevel() == 0)
 				{
+					// Already have all data.
+					mFetcher->removeFromNetworkQueue(this, false);	// Note sure this is necessary, but it's what the old did --Aleric
 					if(cur_size > 0)
 					{
 						// We already have all the data, just decode it
@@ -1307,16 +1270,32 @@ bool LLTextureFetchWorker::doWork(S32 param)
 					}
 				}
 			}
+
+			// Let AICurl decide if we can process more HTTP requests at the moment or not.
+			static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
+			if (!AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(mPerServicePtr, mFetcher->getTextureBandwidth() > throttle_bandwidth))
+			{
+				return false ; //wait.
+			}
+
+			mFetcher->removeFromNetworkQueue(this, false);
+
 			mRequestedSize = mDesiredSize - cur_size;
 			mRequestedDiscard = mDesiredDiscard;
 			mRequestedOffset = cur_size;
-			
+
 			bool res = false;
 			if (!mUrl.empty())
 			{
 				mLoaded = FALSE;
 				mGetStatus = 0;
 				mGetReason.clear();
+				// Note: comparing mFetcher->getTextureBandwidth() with throttle_bandwidth is a bit like
+				// comparing apples and oranges, but it's only debug output. The first is the averaged
+				// bandwidth used for the body of successfully downloaded textures, averaged over roughtly
+				// 10 seconds, in kbits/s. The latter is the limit of the actual http curl downloads,
+				// including header and failures for anything (not just textures), averaged over the last
+				// second, also in kbits/s.
 				static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
 				LL_DEBUGS("Texture") << "HTTP GET: " << mID << " Offset: " << mRequestedOffset
 									 << " Bytes: " << mRequestedSize
@@ -2269,15 +2248,6 @@ S32 LLTextureFetch::getNumRequests()
 	lockQueue() ;
 	S32 size = (S32)mRequestMap.size(); 
 	unlockQueue() ;
-
-	return size ;
-}
-
-S32 LLTextureFetch::getNumHTTPRequests() 
-{ 
-	mNetworkQueueMutex.lock() ;
-	S32 size = (S32)mHTTPTextureQueue.size(); 
-	mNetworkQueueMutex.unlock() ;
 
 	return size ;
 }
