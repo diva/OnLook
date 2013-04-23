@@ -4732,11 +4732,6 @@ void LLPipeline::rebuildPools()
 		}
 		max_count--;
 	}
-
-	if (isAgentAvatarValid())
-	{
-		gAgentAvatarp->rebuildHUD();
-	}
 }
 
 void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )

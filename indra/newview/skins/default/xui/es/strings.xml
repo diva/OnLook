@@ -2967,7 +2967,6 @@ Arrastra carpetas a esta zona y pulsa "Enviar al Mercado" para listarlos y poner
 	<string name="Right Pec">Pectoral Derecho</string>
     <string name="Neck">Cuello</string>
     <string name="Root">Base</string>
-	<string name="unsupported point">Punto no soportado</string>
 	<string name="Invalid Attachment">Punto de anexión inválido</string>
 
   <!-- HUD Position -->

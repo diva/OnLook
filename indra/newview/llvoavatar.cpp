@@ -931,8 +931,6 @@ F32 LLVOAvatar::sLODFactor = 1.f;
 F32 LLVOAvatar::sPhysicsLODFactor = 1.f;
 BOOL LLVOAvatar::sUseImpostors = FALSE;
 BOOL LLVOAvatar::sJointDebug = FALSE;
-
-
 F32 LLVOAvatar::sUnbakedTime = 0.f;
 F32 LLVOAvatar::sUnbakedUpdateTime = 0.f;
 F32 LLVOAvatar::sGreyTime = 0.f;
@@ -2481,13 +2479,6 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 	LLJoint::sNumUpdates = 0;
 	LLJoint::sNumTouches = 0;
 
-	/*// *NOTE: this is necessary for the floating name text above your head.
-	// NOTE NOTE: This doesn't seem to be needed any more?
-	if (mDrawable && mDrawable.notNull())
-	{
-		gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_SHADOW, TRUE);
-	}*/
-
 	BOOL visible = isVisible() || mNeedsAnimUpdate;
 
 	// update attachments positions
@@ -2930,7 +2921,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 		}
 		return;
 	}
-	
+
 	if (!mNameText)
 	{
 		mNameText = static_cast<LLHUDNameTag*>( LLHUDObject::addHUDObject(
@@ -4939,31 +4930,6 @@ void LLVOAvatar::updateTextures()
 		}
 	}
 
-	/*
-	// JAMESDEBUG
-	if (isSelf())
-	{
-		S32 null_count = 0;
-		S32 default_count = 0;
-		for (U32 i = 0; i < getNumTEs(); i++)
-		{
-			const LLTextureEntry* te = getTE(i);
-			if (te)
-			{
-				if (te->getID() == LLUUID::null)
-				{
-					null_count++;
-				}
-				else if (te->getID() == IMG_DEFAULT_AVATAR)
-				{
-					default_count++;
-				}
-			}
-		}
-		llinfos << "JAMESDEBUG my avatar TE null " << null_count << " default " << default_count << llendl;
-	}
-	*/
-
 	mMaxPixelArea = 0.f;
 	mMinPixelArea = 99999999.f;
 	mHasGrey = FALSE; // debug
@@ -5240,10 +5206,7 @@ const LLUUID& LLVOAvatar::getStepSound() const
 //-----------------------------------------------------------------------------
 void LLVOAvatar::processAnimationStateChanges()
 {
-	if ((gNoRender)||(gAgent.isTPosed())) //isTPosed is meant to stop animation updates while force-TPosed.
-	{
-		return;
-	}
+	if (gNoRender) return;
 
 	if ( isAnyAnimationSignaled(AGENT_WALK_ANIMS, NUM_AGENT_WALK_ANIMS) )
 	{
@@ -6191,32 +6154,6 @@ const LLViewerJointAttachment *LLVOAvatar::attachObject(LLViewerObject *viewer_o
 {
 	LLViewerJointAttachment* attachment = getTargetAttachmentPoint(viewer_object);
 
-	// <edit> testzone attachpt
-	if(!attachment)
-	{
-		llwarns << "Failed to find attachment." << llendl;
-		S32 attachmentID = ATTACHMENT_ID_FROM_STATE(viewer_object->getState());
-		LLUUID item_id;
-		LLNameValue* item_id_nv = viewer_object->getNVPair("AttachItemID");
-		if( item_id_nv )
-		{
-			const char* s = item_id_nv->getString();
-			if(s)
-				item_id.set(s);
-		}
-		if(!item_id.isNull())
-		{
-			mUnsupportedAttachmentPoints[attachmentID] = std::pair<LLUUID,LLUUID>(item_id,viewer_object->getID());
-			if (viewer_object->isSelected())
-			{
-				LLSelectMgr::getInstance()->updateSelectionCenter();
-				LLSelectMgr::getInstance()->updatePointAt();
-			}
-		}
-		else
-			llwarns << "No item ID" << llendl;
-	}
-	// </edit>
 	if (!attachment || !attachment->addObject(viewer_object))
 	{
 		return 0;
@@ -6393,57 +6330,6 @@ BOOL LLVOAvatar::detachObject(LLViewerObject *viewer_object)
 		mPendingAttachment.erase(iter);
 		return TRUE;
 	}
-
-
-	// <edit> testzone attachpt
-	LLUUID item_id;
-	LLNameValue* item_id_nv = viewer_object->getNVPair("AttachItemID");
-	if( item_id_nv )
-	{
-		const char* s = item_id_nv->getString();
-		if(s)
-			item_id.set(s);
-	}
-	if(!item_id.isNull())
-	{
-		std::map<S32, std::pair<LLUUID,LLUUID> >::iterator iter = mUnsupportedAttachmentPoints.begin();
-		std::map<S32, std::pair<LLUUID,LLUUID> >::iterator end = mUnsupportedAttachmentPoints.end();
-		for( ; iter != end; ++iter)
-		{
-			if((*iter).second.first == item_id)
-			{
-				mUnsupportedAttachmentPoints.erase((*iter).first);
-				if (isSelf())
-				{
-					// the simulator should automatically handle
-					// permission revocation
-
-					stopMotionFromSource(viewer_object->getID());
-					LLFollowCamMgr::setCameraActive(viewer_object->getID(), FALSE);
-
-					LLViewerObject::const_child_list_t& child_list = viewer_object->getChildren();
-					for (LLViewerObject::child_list_t::const_iterator iter = child_list.begin();
-						 iter != child_list.end(); iter++)
-					{
-						LLViewerObject* child_objectp = *iter;
-						// the simulator should automatically handle
-						// permissions revocation
-
-						stopMotionFromSource(child_objectp->getID());
-						LLFollowCamMgr::setCameraActive(child_objectp->getID(), FALSE);
-					}
-					// Then make sure the inventory is in sync with the avatar.
-					gInventory.addChangedMask(LLInventoryObserver::LABEL, item_id);
-					gInventory.notifyObservers();
-				}
-				return TRUE;
-			}
-		}
-		llwarns << "Not found" << llendl;
-	}
-	else
-		llwarns << "No item ID" << llendl;
-	// </edit>
 	
 	return FALSE;
 }
@@ -6687,19 +6573,6 @@ BOOL LLVOAvatar::isWearingAttachment( const LLUUID& inv_item_id )
 	return FALSE;
 }
 
-// <edit> testzone attachpt
-BOOL LLVOAvatar::isWearingUnsupportedAttachment( const LLUUID& inv_item_id )
-{
-	std::map<S32, std::pair<LLUUID,LLUUID> >::iterator end = mUnsupportedAttachmentPoints.end();
-	for(std::map<S32, std::pair<LLUUID,LLUUID> >::iterator iter = mUnsupportedAttachmentPoints.begin(); iter != end; ++iter)
-	{
-		if((*iter).second.first == inv_item_id)
-		{
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
 //-----------------------------------------------------------------------------
 // getWornAttachment()
 //-----------------------------------------------------------------------------
@@ -6736,6 +6609,7 @@ const std::string LLVOAvatar::getAttachedPointName(const LLUUID& inv_item_id)
 	return LLStringUtil::null;
 }
 
+// virtual
 void LLVOAvatar::invalidateComposite( LLTexLayerSet* layerset, BOOL upload_result )
 {
 }
@@ -7587,10 +7461,6 @@ LLBBox LLVOAvatar::getHUDBBox() const
 	return bbox;
 }
 
-void LLVOAvatar::rebuildHUD()
-{
-}
-
 //-----------------------------------------------------------------------------
 // onFirstTEMessageReceived()
 //-----------------------------------------------------------------------------
@@ -8117,6 +7987,7 @@ void LLVOAvatar::getAnimNames( LLDynamicArray<std::string>* names )
 	names->put( "enter_away_from_keyboard_state" );
 }
 
+// static
 void LLVOAvatar::onBakedTextureMasksLoaded( BOOL success, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata )
 {
 	if (!userdata) return;
@@ -8210,7 +8081,7 @@ void LLVOAvatar::onInitialBakedTextureLoaded( BOOL success, LLViewerFetchedTextu
 {
 	LLUUID *avatar_idp = (LLUUID *)userdata;
 	LLVOAvatar *selfp = gObjectList.findAvatar(*avatar_idp);
-	
+
 	if (selfp)
 	{
 		LL_DEBUGS("Avatar") << selfp->avString() << "discard_level " << discard_level << " success " << success << " final " << final << LL_ENDL;
@@ -8231,7 +8102,7 @@ void LLVOAvatar::onBakedTextureLoaded(BOOL success,
 									  LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src,
 									  S32 discard_level, BOOL final, void* userdata)
 {
-	// llinfos << "onBakedTextureLoaded: " << src_vi->getID() << llendl;
+	LL_DEBUGS("Avatar") << "onBakedTextureLoaded: " << src_vi->getID() << LL_ENDL;
 
 	LLUUID id = src_vi->getID();
 	LLUUID *avatar_idp = (LLUUID *)userdata;
@@ -8261,7 +8132,6 @@ void LLVOAvatar::onBakedTextureLoaded(BOOL success,
 // Called when baked texture is loaded and also when we start up with a baked texture
 void LLVOAvatar::useBakedTexture( const LLUUID& id )
 {
-
 	for (U32 i = 0; i < mBakedTextureDatas.size(); i++)
 	{
 		LLViewerTexture* image_baked = getImage( mBakedTextureDatas[i].mTextureIndex, 0 );
