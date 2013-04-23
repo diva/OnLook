@@ -39,7 +39,7 @@ public:
 		const LLUUID& invoice,
 		const sparam_t& strings)
 	{
-		if (strings.size() != 2) return false;
+		if (strings.size() != 1) return false;
 		LLUUID folder_id(strings[0]);
 
 		bool success = false;
