@@ -152,8 +152,8 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 			<< ")!  You should be using FMOD Ex" << FMOD_VERSION << LL_ENDL;
 	}
 
-	result = mSystem->setSoftwareFormat(44100, FMOD_SOUND_FORMAT_PCM16, 0, 0, FMOD_DSP_RESAMPLER_LINEAR);
-	Check_FMOD_Error(result,"FMOD::System::setSoftwareFormat");
+//	result = mSystem->setSoftwareFormat(44100, FMOD_SOUND_FORMAT_PCM16, 0, 0, FMOD_DSP_RESAMPLER_LINEAR);
+//	Check_FMOD_Error(result,"FMOD::System::setSoftwareFormat");
 
 	// In this case, all sounds, PLUS wind and stream will be software.
 	result = mSystem->setSoftwareChannels(num_channels + 2);
