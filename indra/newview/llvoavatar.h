@@ -814,6 +814,7 @@ public:
 	void			stopTyping() { mTyping = FALSE; mIdleTimer.reset();}
 private:
 	BOOL			mVisibleChat;
+	bool			mVisibleTyping;
 
 	//--------------------------------------------------------------------
 	// Lip synch morphs
