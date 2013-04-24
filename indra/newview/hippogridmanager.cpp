@@ -68,42 +68,6 @@ HippoGridInfo::HippoGridInfo(const std::string& gridName) :
 // ********************************************************************
 // Getters
 
-HippoGridInfo::Platform HippoGridInfo::getPlatform()
-{
-	return mPlatform;
-}
-
-bool HippoGridInfo::isOpenSimulator() const
-{
-	return (mPlatform == HippoGridInfo::PLATFORM_OPENSIM || mPlatform == HippoGridInfo::PLATFORM_AURORA);
-}
-
-bool HippoGridInfo::isAurora() const
-{
-	return (mPlatform == HippoGridInfo::PLATFORM_AURORA);
-}
-
-bool HippoGridInfo::isSecondLife() const
-{
-	return (mPlatform == HippoGridInfo::PLATFORM_SECONDLIFE);
-}
-
-bool HippoGridInfo::isInProductionGrid() const
-{
-	llassert(mPlatform == HippoGridInfo::PLATFORM_SECONDLIFE);
-	return mIsInProductionGrid;
-}
-
-bool HippoGridInfo::isAvination() const
-{
-	return mIsInAvination;
-}
-
-const std::string& HippoGridInfo::getGridName() const
-{
-	return mGridName;
-}
-
 const std::string& HippoGridInfo::getGridOwner() const
 {
 	if(isSecondLife())
@@ -116,68 +80,6 @@ const std::string& HippoGridInfo::getGridOwner() const
 		return this->getGridName();
 	}	
 }
-
-const std::string& HippoGridInfo::getLoginUri() const
-{
-	return mLoginUri;
-}
-
-const std::string& HippoGridInfo::getLoginPage() const
-{
-	return mLoginPage;
-}
-
-const std::string& HippoGridInfo::getHelperUri() const
-{
-	return mHelperUri;
-}
-
-const std::string& HippoGridInfo::getWebSite() const
-{
-	return mWebSite;
-}
-
-const std::string& HippoGridInfo::getSupportUrl() const
-{
-	return mSupportUrl;
-}
-
-const std::string& HippoGridInfo::getRegisterUrl() const
-{
-	return mRegisterUrl;
-}
-
-const std::string& HippoGridInfo::getPasswordUrl() const
-{
-	return mPasswordUrl;
-}
-
-const std::string& HippoGridInfo::getSearchUrl() const
-{
-	return mSearchUrl;
-}
-
-const std::string& HippoGridInfo::getGridMessage() const
-{
-	return mGridMessage;
-}
-
-bool HippoGridInfo::isRenderCompat() const
-{
-	return mRenderCompat;
-}
-
-const std::string& HippoGridInfo::getCurrencySymbol() const
-{
-	return mCurrencySymbol;
-}
-
-const std::string& HippoGridInfo::getRealCurrencySymbol() const
-{
-	return mRealCurrencySymbol;
-}
-
-
 
 // ********************************************************************
 // Setters
