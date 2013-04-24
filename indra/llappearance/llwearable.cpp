@@ -731,6 +731,7 @@ LLVisualParam* LLWearable::getVisualParam(S32 index) const
 
 void LLWearable::getVisualParams(visual_param_vec_t &list)
 {
+	list.reserve(mVisualParamIndexMap.size());
 	visual_param_index_map_t::iterator iter = mVisualParamIndexMap.begin();
 	visual_param_index_map_t::iterator end = mVisualParamIndexMap.end();
 
@@ -783,7 +784,7 @@ void LLWearable::writeToAvatar(LLAvatarAppearance* avatarp)
 	if (!avatarp) return;
 
 	// Pull params
-	for( LLVisualParam* param = avatarp->getFirstVisualParam(); param; param = avatarp->getNextVisualParam() )
+	/*for( LLVisualParam* param = avatarp->getFirstVisualParam(); param; param = avatarp->getNextVisualParam() )
 	{
 		// cross-wearable parameters are not authoritative, as they are driven by a different wearable. So don't copy the values to the
 		// avatar object if cross wearable. Cross wearable params get their values from the avatar, they shouldn't write the other way.
@@ -794,6 +795,12 @@ void LLWearable::writeToAvatar(LLAvatarAppearance* avatarp)
 
 			avatarp->setVisualParamWeight( param_id, weight, FALSE );
 		}
+	}*/
+	for( visual_param_index_map_t::iterator it = mVisualParamIndexMap.begin(); it != mVisualParamIndexMap.end(); ++it )
+	{
+		LLVisualParam* param = it->second;
+		if(!((LLViewerVisualParam*)param)->getCrossWearable())
+			avatarp->setVisualParamWeight( param->getID(), param->getWeight(), FALSE );
 	}
 }
 
