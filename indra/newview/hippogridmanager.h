@@ -157,7 +157,8 @@ public:
 	void discardAndReload();
 
 	HippoGridInfo* getGrid(const std::string& grid) const;
-	HippoGridInfo* getConnectedGrid()               const;
+	HippoGridInfo* getConnectedGrid()               const { return mConnectedGrid ? mConnectedGrid : getCurrentGrid(); }
+
 	HippoGridInfo* getCurrentGrid()                 const;
 	const std::string& getDefaultGridNick()         const;
 	const std::string& getCurrentGridNick()         const;

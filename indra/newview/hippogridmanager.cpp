@@ -678,13 +678,6 @@ HippoGridInfo* HippoGridManager::getGrid(const std::string& grid) const
 	}
 }
 
-
-HippoGridInfo* HippoGridManager::getConnectedGrid() const
-{
-	return (mConnectedGrid)? mConnectedGrid: getCurrentGrid();
-}
-
-
 HippoGridInfo* HippoGridManager::getCurrentGrid() const
 {
 	HippoGridInfo* grid = getGrid(mCurrentGrid);

@@ -97,8 +97,9 @@ namespace curlthread {
 // HTTPTimeout
 
 //static
-F64 const HTTPTimeout::sClockWidth_10ms = 100.0 / calc_clock_frequency();	// Time between two clock ticks, in 10ms units.
-U64 HTTPTimeout::sTime_10ms;												// Time in 10ms units, set once per select() exit.
+F64 const HTTPTimeout::sClockWidth_10ms = 100.0 / calc_clock_frequency();		// Time between two clock ticks, in 10ms units.
+F64 const HTTPTimeout::sClockWidth_40ms = HTTPTimeout::sClockWidth_10ms * 0.25;	// Time between two clock ticks, in 40ms units.
+U64 HTTPTimeout::sTime_10ms;													// Time in 10ms units, set once per select() exit.
 
 // CURL-THREAD
 // This is called when body data was sent to the server socket.

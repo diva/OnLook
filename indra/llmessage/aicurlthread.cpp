@@ -33,6 +33,7 @@
 #include "aihttptimeoutpolicy.h"
 #include "aihttptimeout.h"
 #include "aicurlperservice.h"
+#include "aiaverage.h"
 #include "lltimer.h"		// ms_sleep, get_clock_count
 #include "llhttpstatuscodes.h"
 #include "llbuffer.h"
@@ -1829,6 +1830,8 @@ void MultiHandle::check_msg_queue(void)
 void MultiHandle::finish_easy_request(AICurlEasyRequest const& easy_request, CURLcode result)
 {
   AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
+  // Final body bandwidth update.
+  curl_easy_request_w->update_body_bandwidth();
   // Store the result in the easy handle.
   curl_easy_request_w->storeResult(result);
 #ifdef CWDEBUG
@@ -2023,10 +2026,10 @@ void BufferedCurlEasyRequest::processOutput(void)
 	if (responseCode == HTTP_INTERNAL_ERROR_LOW_SPEED)
 	{
 		// Rewrite error to something understandable.
-		responseReason = llformat("Connection to \"%s\" stalled: download speed dropped below %u bytes/s for %u seconds (up till that point, %s received a total of %u bytes). "
+		responseReason = llformat("Connection to \"%s\" stalled: download speed dropped below %u bytes/s for %u seconds (up till that point, %s received a total of %lu bytes). "
 			"To change these values, go to Advanced --> Debug Settings and change CurlTimeoutLowSpeedLimit and CurlTimeoutLowSpeedTime respectively.",
 			mResponder->getURL().c_str(), mResponder->getHTTPTimeoutPolicy().getLowSpeedLimit(), mResponder->getHTTPTimeoutPolicy().getLowSpeedTime(),
-			mResponder->getName(), mResponseTransferedBytes);
+			mResponder->getName(), mTotalRawBytes);
 	}
 	setopt(CURLOPT_FRESH_CONNECT, TRUE);
   }
@@ -2093,13 +2096,34 @@ size_t BufferedCurlEasyRequest::curlWriteCallback(char* data, size_t size, size_
   // BufferedCurlEasyRequest::setBodyLimit is never called, so buffer_w->mBodyLimit is infinite.
   //S32 bytes = llmin(size * nmemb, buffer_w->mBodyLimit); buffer_w->mBodyLimit -= bytes;
   self_w->getOutput()->append(sChannels.in(), (U8 const*)data, bytes);
-  self_w->mResponseTransferedBytes += bytes;						// Accumulate data received from the server.
+  // Update HTTP bandwith.
+  self_w->update_body_bandwidth();
+  // Update timeout administration.
   if (self_w->httptimeout()->data_received(bytes))					// Update timeout administration.
   {
 	// Transfer timed out. Return 0 which will abort with error CURLE_WRITE_ERROR.
 	return 0;
   }
   return bytes;
+}
+
+void BufferedCurlEasyRequest::update_body_bandwidth(void)
+{
+  double size_download;	// Total amount of raw bytes received so far (ie. still compressed, 'bytes' is uncompressed).
+  getinfo(CURLINFO_SIZE_DOWNLOAD, &size_download);
+  size_t total_raw_bytes = size_download;
+  size_t raw_bytes = total_raw_bytes - mTotalRawBytes;
+  mTotalRawBytes = total_raw_bytes;
+  // Note that in some cases (like HTTP_PARTIAL_CONTENT), the output of CURLINFO_SIZE_DOWNLOAD lags
+  // behind and will return 0 the first time, and the value of the previous chunk the next time.
+  // The last call from MultiHandle::finish_easy_request recorrects this, in that case.
+  if (raw_bytes > 0)
+  {
+	U64 const sTime_40ms = curlthread::HTTPTimeout::sTime_10ms >> 2;
+	AIAverage& http_bandwidth(PerServiceRequestQueue_wat(*getPerServicePtr())->bandwidth());
+	http_bandwidth.addData(raw_bytes, sTime_40ms);
+	sHTTPBandwidth.addData(raw_bytes, sTime_40ms);
+  }
 }
 
 //static
@@ -2189,6 +2213,11 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	  self_w->httptimeout()->being_redirected();
 	}
   }
+  // Update HTTP bandwidth.
+  U64 const sTime_40ms = curlthread::HTTPTimeout::sTime_10ms >> 2;
+  AIAverage& http_bandwidth(PerServiceRequestQueue_wat(*self_w->getPerServicePtr())->bandwidth());
+  http_bandwidth.addData(header_len, sTime_40ms);
+  sHTTPBandwidth.addData(header_len, sTime_40ms);
   // Update timeout administration. This must be done after the status is already known.
   if (self_w->httptimeout()->data_received(header_len/*,*/ ASSERT_ONLY_COMMA(self_w->upload_error_status())))
   {
@@ -2533,6 +2562,14 @@ U32 getNumHTTPAdded(void)
   return AICurlPrivate::curlthread::MultiHandle::total_added_size();
 }
 
+size_t getHTTPBandwidth(void)
+{
+  using namespace AICurlPrivate;
+
+  U64 const sTime_40ms = get_clock_count() * curlthread::HTTPTimeout::sClockWidth_40ms;
+  return BufferedCurlEasyRequest::sHTTPBandwidth.truncateData(sTime_40ms);
+}
+
 } // namespace AICurlInterface
 
 // Return true if we want at least one more HTTP request for this host.
@@ -2560,7 +2597,7 @@ U32 getNumHTTPAdded(void)
 // running requests (in MultiHandle::mAddedEasyRequests)).
 //
 //static
-bool AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(AIPerServiceRequestQueuePtr const& per_service, bool too_much_bandwidth)
+bool AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(AIPerServiceRequestQueuePtr const& per_service, F32 max_kbps, bool no_bandwidth_throttling)
 {
   using namespace AICurlPrivate;
   using namespace AICurlPrivate::curlthread;
@@ -2587,17 +2624,21 @@ bool AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(AIPerServiceRequestQueue
 
   // Check if it's ok to get a new request for this particular host and update the per-host threshold.
 
+  AIAverage* http_bandwidth_ptr;
+
   // Atomic read max_pipelined_requests_per_service for the below calculations.
   S32 const max_pipelined_requests_per_service_cache = max_pipelined_requests_per_service;
   {
-	PerServiceRequestQueue_rat per_service_r(*per_service);
-	S32 const pipelined_requests_per_service = per_service_r->pipelined_requests();
+	PerServiceRequestQueue_wat per_service_w(*per_service);
+	S32 const pipelined_requests_per_service = per_service_w->pipelined_requests();
 	reject = pipelined_requests_per_service >= max_pipelined_requests_per_service_cache;
 	equal = pipelined_requests_per_service == max_pipelined_requests_per_service_cache;
-	increment_threshold = per_service_r->mRequestStarvation;
-	decrement_threshold = per_service_r->mQueueFull && !per_service_r->mQueueEmpty;
+	increment_threshold = per_service_w->mRequestStarvation;
+	decrement_threshold = per_service_w->mQueueFull && !per_service_w->mQueueEmpty;
 	// Reset flags.
-	per_service_r->mQueueFull = per_service_r->mQueueEmpty = per_service_r->mRequestStarvation = false;
+	per_service_w->mQueueFull = per_service_w->mQueueEmpty = per_service_w->mRequestStarvation = false;
+	// Grab per service bandwidth object.
+	http_bandwidth_ptr = &per_service_w->bandwidth();
   }
   if (decrement_threshold)
   {
@@ -2621,10 +2662,69 @@ bool AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(AIPerServiceRequestQueue
 	return false;
   }
   
-  //AIFIXME: better bandwidth check here.
-  if (too_much_bandwidth)
+  if (!no_bandwidth_throttling)
   {
-	return false;	// wait
+	// Throttle on bandwidth usage.
+
+	static size_t throttle_fraction = 1024;	// A value between 0 and 1024: each service is throttled when it uses more than max_bandwidth * (throttle_fraction/1024) bandwidth.
+	static AIAverage fraction(25);			// Average over 25 * 40ms = 1 second.
+	static U64 last_sTime_40ms = 0;
+
+	// Truncate the sums to the last second, and get their value.
+	U64 const sTime_40ms = get_clock_count() * HTTPTimeout::sClockWidth_40ms;							// Time in 40ms units.
+	size_t const max_bandwidth = 125.f * max_kbps;														// Convert kbps to bytes per second.
+	size_t const total_bandwidth = BufferedCurlEasyRequest::sHTTPBandwidth.truncateData(sTime_40ms);	// Bytes received in the past second.
+	size_t const service_bandwidth = http_bandwidth_ptr->truncateData(sTime_40ms);						// Idem for just this service.
+	if (sTime_40ms > last_sTime_40ms)
+	{
+	  // Only add throttle_fraction once every 40 ms at most.
+	  // It's ok to ignore other values in the same 40 ms because the value only changes on the scale of 1 second.
+	  fraction.addData(throttle_fraction, sTime_40ms);
+	  last_sTime_40ms = sTime_40ms;
+	}
+	double fraction_avg = fraction.getAverage(1024.0);													// throttle_fraction averaged over the past second, or 1024 if there is no data.
+
+	// Adjust throttle_fraction based on total bandwidth usage.
+	if (total_bandwidth == 0)
+	  throttle_fraction = 1024;
+	else
+	{
+	  // This is the main formula. It can be made plausible by assuming
+	  // an equilibrium where total_bandwidth == max_bandwidth and
+	  // thus throttle_fraction == fraction_avg for more than a second.
+	  //
+	  // Then, more bandwidth is being used (for example because another
+	  // service starts downloading). Assuming that all services that use
+	  // a significant portion of the bandwidth, the new service included,
+	  // must be throttled (all using the same bandwidth; note that the
+	  // new service is immediately throttled at the same value), then
+	  // the limit should be reduced linear with the fraction:
+	  // max_bandwidth / total_bandwidth.
+	  //
+	  // For example, let max_bandwidth be 1. Let there be two throttled
+	  // services, each using 0.5 (fraction_avg = 1024/2). Lets the new
+	  // service use what it can: also 0.5 - then without reduction the
+	  // total_bandwidth would become 1.5, and throttle_fraction would
+	  // become (1024/2) * 1/1.5 = 1024/3: from 2 to 3 services.
+	  //
+	  // In reality, total_bandwidth would rise linear from 1.0 to 1.5 in
+	  // one second if the throttle fraction wasn't changed. However it is
+	  // changed here. The end result is that any change more or less
+	  // linear fades away in one second.
+	  throttle_fraction = fraction_avg * max_bandwidth / total_bandwidth;
+	}
+	if (throttle_fraction > 1024)
+	  throttle_fraction = 1024;
+	if (total_bandwidth > max_bandwidth)
+	{
+	  throttle_fraction *= 0.95;
+	}
+
+	// Throttle this service if it uses too much bandwidth.
+	if (service_bandwidth > (max_bandwidth * throttle_fraction / 1024))
+	{
+	  return false;	// wait
+	}
   }
 
   // Check if it's ok to get a new request based on the total number of requests and increment the threshold if appropriate.

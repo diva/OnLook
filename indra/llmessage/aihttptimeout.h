@@ -89,6 +89,7 @@ class HTTPTimeout : public LLRefCount {
 	U64 mStalled;								// The time (sTime_10ms) at which this transaction is considered to be stalling if nothing is transfered anymore.
   public:
 	static F64 const sClockWidth_10ms;			// Time between two clock ticks in 10 ms units.
+	static F64 const sClockWidth_40ms;			// Time between two clock ticks in 40 ms units.
 	static U64 sTime_10ms;						// Time since the epoch in 10 ms units.
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 	ThreadSafeBufferedCurlEasyRequest* mLockObj;
