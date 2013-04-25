@@ -374,8 +374,11 @@ void HippoGridInfo::onXmlCharacterData(void* userData, const XML_Char* s, int le
 	{
 		case XML_GRIDNICK:
 		{
-			if (self->mGridNick == "") self->mGridNick.assign(s, len);
-			self->mGridNick = sanitizeGridNick(self->mGridNick);
+			if (self->mGridNick == "")
+			{
+			  self->mGridNick.assign(s, len);
+			  self->mGridNick = sanitizeGridNick(self->mGridNick);
+			}
 			break;
 		}
 
@@ -407,7 +410,15 @@ void HippoGridInfo::onXmlCharacterData(void* userData, const XML_Char* s, int le
 			break;
 		}
 
-		case XML_GRIDNAME: self->mGridName.assign(s, len); break;
+		case XML_GRIDNAME:
+		{
+		  if (self->mGridName == "")
+		  {
+			self->mGridName.assign(s, len);
+		  }
+		  break;
+		}
+
 		case XML_LOGINPAGE: self->mLoginPage.assign(s, len); break;
 		case XML_WEBSITE: self->mWebSite.assign(s, len); break;
 		case XML_SUPPORT: self->mSupportUrl.assign(s, len); break;
