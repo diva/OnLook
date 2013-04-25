@@ -396,6 +396,9 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
     // Post-initialization, set the parent to pass the events to.
     void send_buffer_events_to(AIBufferedCurlEasyRequestEvents* target) { mBufferEventsTarget = target; }
 
+	// Called whenever new body data was (might be) received. Keeps track of the used HTTP bandwidth.
+	void update_body_bandwidth(void);
+
   protected:
 	// Events from this class.
 	/*virtual*/ void received_HTTP_header(void);
@@ -411,13 +414,14 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	U32 mStatus;										// HTTP status, decoded from the first header line.
 	std::string mReason;								// The "reason" from the same header line.
 	U32 mRequestTransferedBytes;
-	U32 mResponseTransferedBytes;
+	size_t mTotalRawBytes;								// Raw body data (still, possibly, compressed) received from the server so far.
 	AIBufferedCurlEasyRequestEvents* mBufferEventsTarget;
 
   public:
 	static LLChannelDescriptors const sChannels;		// Channel object for mInput (channel out()) and mOutput (channel in()).
 	static LLMutex sResponderCallbackMutex;				// Locked while calling back any overridden ResponderBase::finished and/or accessing sShuttingDown.
 	static bool sShuttingDown;							// If true, no additional calls to ResponderBase::finished will be made anymore.
+	static AIAverage sHTTPBandwidth;					// HTTP bandwidth usage of all services combined.
 
   private:
 	// This class may only be created by constructing a ThreadSafeBufferedCurlEasyRequest.

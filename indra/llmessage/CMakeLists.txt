@@ -22,6 +22,7 @@ include_directories(
     )
 
 set(llmessage_SOURCE_FILES
+    aiaverage.cpp
     aicurl.cpp
     aicurleasyrequeststatemachine.cpp
     aicurlperservice.cpp
@@ -109,6 +110,7 @@ set(llmessage_SOURCE_FILES
 set(llmessage_HEADER_FILES
     CMakeLists.txt
 
+    aiaverage.h
     aicurl.h
     aicurleasyrequeststatemachine.h
     aicurlperservice.h

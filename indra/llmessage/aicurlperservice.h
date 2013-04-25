@@ -45,6 +45,7 @@
 #include <map>
 #include <boost/intrusive_ptr.hpp>
 #include "aithreadsafe.h"
+#include "aiaverage.h"
 
 class AICurlEasyRequest;
 class AIPerServiceRequestQueue;
@@ -89,7 +90,7 @@ class AIPerServiceRequestQueue {
 	static threadsafe_instance_map_type sInstanceMap;				// Map of AIPerServiceRequestQueue instances with the hostname as key.
 
 	friend class AIThreadSafeSimpleDC<AIPerServiceRequestQueue>;		//threadsafe_PerServiceRequestQueue
-	AIPerServiceRequestQueue(void) : mQueuedCommands(0), mAdded(0), mQueueEmpty(false), mQueueFull(false), mRequestStarvation(false) { }
+	AIPerServiceRequestQueue(void) : mQueuedCommands(0), mAdded(0), mQueueEmpty(false), mQueueFull(false), mRequestStarvation(false), mHTTPBandwidth(25) { }	// 25 = 1000 ms / 40 ms.
 
   public:
 	typedef instance_map_type::iterator iterator;
@@ -124,6 +125,8 @@ class AIPerServiceRequestQueue {
 	static bool sQueueFull;						// Set to true when sTotalQueued is still larger than zero after popping any queue.
 	static bool sRequestStarvation;				// Set to true when any queue was about to be popped when sTotalQueued was already zero.
 
+	AIAverage mHTTPBandwidth;				// Keeps track on number of bytes received for this service in the past second.
+
   public:
 	void added_to_command_queue(void) { ++mQueuedCommands; }
 	void removed_from_command_queue(void) { --mQueuedCommands; llassert(mQueuedCommands >= 0); }
@@ -141,14 +144,17 @@ class AIPerServiceRequestQueue {
 	S32 pipelined_requests(void) const { return mQueuedCommands + mQueuedRequests.size() + mAdded; }
 	static S32 total_queued_size(void) { return sTotalQueued; }
 
+	AIAverage& bandwidth(void) { return mHTTPBandwidth; }
+	AIAverage const& bandwidth(void) const { return mHTTPBandwidth; }
+
 	// Returns true if curl can handle another request for this host.
 	// Should return false if the maximum allowed HTTP bandwidth is reached, or when
 	// the latency between request and actual delivery becomes too large.
-	static bool wantsMoreHTTPRequestsFor(AIPerServiceRequestQueuePtr const& per_service, bool too_much_bandwidth);
+	static bool wantsMoreHTTPRequestsFor(AIPerServiceRequestQueuePtr const& per_service, F32 max_kbps, bool no_bandwidth_throttling);
 
   private:
 	// Disallow copying.
-	AIPerServiceRequestQueue(AIPerServiceRequestQueue const&) { }
+	AIPerServiceRequestQueue(AIPerServiceRequestQueue const&) : mHTTPBandwidth(0) { }
 };
 
 namespace AICurlPrivate {
