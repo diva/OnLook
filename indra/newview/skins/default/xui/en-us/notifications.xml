@@ -1735,9 +1735,9 @@ Unable to create output file: [FILE]
 
   <notification
    icon="alertmodal.tga"
-   name="DoNotSupportBulkAnimationUpload"
+   name="DoNotSupportBulkBVHAnimationUpload"
    type="alertmodal">
-We do not currently support bulk upload of animation files.
+We do not currently support bulk upload of BVH animation files.
   </notification>
 
   <notification

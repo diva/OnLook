@@ -696,8 +696,8 @@ Assurez-vous que le fichier a l&apos;extension correcte.
 	<notification name="UnableToCreateOutputFile">
 		Impossible de créer le fichier de sortie : [FILE]
 	</notification>
-	<notification name="DoNotSupportBulkAnimationUpload">
-		Nous ne prenons pas en charge le chargement de lots de fichiers d&apos;animation. (Chaque animation ayant ses propres réglages)
+	<notification name="DoNotSupportBulkBVHAnimationUpload">
+		Nous ne prenons pas en charge le chargement de lots de fichiers d&apos;BVH animation. (Chaque animation ayant ses propres réglages)
 	</notification>
 	<notification name="CannotUploadReason">
 		Impossible de charger [FILE] suite au problème suivant : [REASON]

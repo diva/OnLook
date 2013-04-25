@@ -54,7 +54,7 @@
 #include "llagentcamera.h"
 #include "llcallingcard.h"
 #include "llfirstuse.h"
-#include "llfloateranimpreview.h"
+#include "llfloaterbvhpreview.h"
 #include "llfloaterbump.h"
 #include "llfloaterbuycurrency.h"
 #include "llfloaterbuyland.h"
@@ -6549,7 +6549,7 @@ void process_economy_data(LLMessageSystem *msg, void** /*user_data*/)
 	LL_INFOS_ONCE("Messaging") << "EconomyData message arrived; upload cost is L$" << upload_cost << LL_ENDL;
 
 	LLFloaterImagePreview::setUploadAmount(upload_cost);
-	LLFloaterAnimPreview::setUploadAmount(upload_cost);
+	LLFloaterBvhPreview::setUploadAmount(upload_cost);
 
 	std::string fee = gHippoGridManager->getConnectedGrid()->getUploadFee();
 	gMenuHolder->childSetLabelArg("Upload Image", "[UPLOADFEE]", fee);
