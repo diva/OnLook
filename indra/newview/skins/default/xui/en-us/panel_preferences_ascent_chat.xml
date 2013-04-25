@@ -24,6 +24,7 @@
       <check_box bottom_delta="-20" follows="left|top" control_name="OptionShowGroupNameInChatIM" initial_value="false"
         label="Show group name in chat" tool_tip="The name of the group will also be displayed if the IM is from group chat." name="append_group_name_check"/>
       <check_box bottom_delta="-20" follows="left|top" control_name="ShowDisplayNameChanges" label="Show display name changes" tool_tip="When checked, a notification will come up in chat whenever someone's display name changes." name="display_name_change"/>
+      <check_box bottom_delta="-20" follows="left|top" control_name="UseTypingBubbles" label="Use overhead typing indicator bubbles" name="use_typing_bubbles"/>
       <text bottom="-150" left="10" follows="left|top" name="objects_link_text_box3">Show links on chatting object names in chat history for:</text>
       <radio_group bottom_delta="-26" control_name="LinksForChattingObjects" tool_tip="Enables a link to show you the owner of the speaking object."
         follows="top" height="20" left="20" name="objects_link" width="350">
