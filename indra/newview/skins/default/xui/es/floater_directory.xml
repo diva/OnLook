@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="directory" title="Buscar en Second Life">
 	<tab_container name="Directory Tabs">
-		<panel label="Todo" name="find_all_panel">
+		<!-- ======================== -->
+		<panel label="Todos" name="find_all_panel">
 			<string name="searching_text">
 				Buscando...
 			</string>
@@ -36,6 +37,7 @@
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
+			<check_box name="filter_gaming" label="Ocultar Juegos de azar" />			
 			<button label="?" label_selected="?" name="?"/>
 			<string name="loading_text">
 				Cargando...
@@ -50,6 +52,7 @@
 				http://secondlife.com/app/search/index.php?
 			</string>
 		</panel>
+		<!-- ======================== -->
 		<panel label="Clasificados" name="classified_panel">
 			<string name="searching_text">
 				Buscando...
@@ -64,6 +67,7 @@
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
+			<check_box name="filter_gaming" label="Ocultar Juegos de azar" />			
 			<combo_box name="Category">
 				<combo_item name="AnyCategory">
 					Cualquier Categoría
@@ -107,6 +111,7 @@
 			<button label="Siguiente &gt;" label_selected="Siguiente &gt;" name="Next &gt;"/>
 			<button label="&lt; Anterior" label_selected="&lt; Anterior" name="&lt; Prev"/>
 		</panel>
+		<!-- ======================== -->
 		<panel label="Eventos" name="events_panel">
 			<string name="searching_text">
 				Buscando...
@@ -117,7 +122,6 @@
 			<text name="text2">
 				Buscar:
 			</text>
-			<line_editor name="event_search_text"/>
 			<radio_group name="date_mode">
 				<radio_item name="current">
 					En curso y próximos
@@ -176,6 +180,7 @@
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
+			<check_box name="filter_gaming" label="Ocultar Juegos de Azar"/>			
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
 			<button label="Borrar" label_selected="Borrar" name="Delete"/>
 			<scroll_list name="results">
@@ -186,6 +191,7 @@
 			<button label="Siguiente &gt;" label_selected="Siguiente &gt;" name="Next &gt;"/>
 			<button label="&lt; Anterior" label_selected="&lt; Anterior" name="&lt; Prev"/>
 		</panel>
+		<!-- ======================== -->
 		<panel label="Escaparate" name="showcase_panel">
 			<string name="searching_text">
 				Buscando...
@@ -195,6 +201,8 @@
 			</string>
 			<button label="" name="back_btn"/>
 			<button label="" name="forward_btn"/>
+			<button label="" name="reload_btn"/>
+        <!-- No hay checkboxes de calificación, el escaparate es completamente PG -->			
 			<string name="loading_text">
 				Cargando...
 			</string>
@@ -208,6 +216,7 @@
 				"http://secondlife.com/app/showcase/index.php?"
 			</string>
 		</panel>
+		<!-- ======================== -->
 		<panel label="Venta de Terrenos" name="land_sales_panel">
 			<string name="searching_text">
 				Buscando...
@@ -216,8 +225,7 @@
 				Ninguno encontrado.
 			</string>
 			<string name="land_help_text">
-				El terreno puede comprarse directamente en la moneda del mundo ([CURRENCY]) , o con [CURRENCY] o [REALCURRENCY]. en una
-subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno en la barra superior del visor.					
+				El terreno puede comprarse directamente en la moneda del mundo ([CURRENCY]), o en una subasta con [CURRENCY] o [REALCURRENCY]. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno en la barra superior del visor.					
 			</string>
 			<text name="find">
 				Buscar:
@@ -225,6 +233,7 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
+			<check_box name="filter_gaming" label="Ocultar Juegos de Azar"/>			
 			<combo_box name="type">
 				<combo_item name="AllTypes">
 					Todos los tipos
@@ -239,11 +248,11 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 					En Venta - Estado
 				</combo_item>
 			</combo_box>
-			<check_box label="Precio " name="pricecheck"/>
+			<check_box label="Precio &#8804;" name="pricecheck"/>
 			<text name="pricecheck_symbol">
 				[CURRENCY]
 			</text>
-			<check_box label="Superficie " name="areacheck"/>
+			<check_box label="Superficie &#8805;" name="areacheck"/>
 			<text name="areacheck_symbol" left="180">
 				m²
 			</text>
@@ -260,6 +269,7 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<button label="Siguiente &gt;" label_selected="Siguiente &gt;" name="Next &gt;"/>
 			<button label="&lt; Anterior" label_selected="&lt; Anterior" name="&lt; Prev"/>
 		</panel>
+		<!-- ======================== -->
 		<panel label="Lugares" name="places_panel">
 			<string name="searching_text">
 				  Buscando...
@@ -273,6 +283,7 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
+			<check_box name="filter_gaming" label="Ocultar Juegos de Azar"/>			
 			<combo_box name="Category">
 				<combo_item name="AnyCategory">
 					Cualquier Categoría
@@ -369,6 +380,7 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<button label="Siguiente &gt;" label_selected="Siguiente &gt;" name="Next &gt;"/>
 			<button label="&lt; Anterior" label_selected="&lt; Anterior" name="&lt; Prev"/>
 		</panel>
+		<!-- ======================== -->
 		<panel label="Personas" name="people_panel">
 			<string name="searching_text">
 				Buscando...
@@ -386,6 +398,7 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<button label="Siguiente &gt;" label_selected="Siguiente &gt;" name="Next &gt;"/>
 			<button label="&lt; Anterior" label_selected="&lt; Anterior" name="&lt; Prev"/>
 		</panel>
+		<!-- ======================== -->
 		<panel label="Grupos" name="groups_panel">
 			<string name="searching_text">
 				Buscando...
@@ -408,6 +421,15 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 				<column label="Miembros" name="members"/>
 			</scroll_list>
 		</panel>
+		<!-- ======================== -->
+		<panel label="Mercado en línea" name="market_panel">
+			<button label="" name="back_btn"/>
+			<button label="" name="forward_btn"/>
+			<button label="" name="reload_btn"/>		
+			<string name="loading_text">Cargando...</string>
+      <string name="done_text">Hecho</string>
+      <string name="redirect_404_url">https://marketplace.secondlife.com/notfound</string>
+      <string name="default_search_page">https://marketplace.secondlife.com/</string>
+    </panel>		
 	</tab_container>
-	<panel name="Panel Avatar"/>
 </floater>

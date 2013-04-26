@@ -36,4 +36,7 @@
 	<string name="server_forbidden_text">
 		La información de esta ubicación no está disponible debido a la restricción de acceso. Por favor, verifica tus permisos con el propietario de la parcela.
 	</string>
+	<string name="internal_timeout_text">
+		La información de esta ubicación no está disponible debido a que se ha agotado el tiempo de espera de la red, por favor, intenta de nuevo mas tarde.
+	</string>	
 </panel>

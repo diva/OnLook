@@ -2,7 +2,6 @@
 <panel name="Adv_Settings">
 	<panel filename="panel_bg_tab.xml"/>
 	<slider label="Dist. Dibujo:" name="DrawDistance" tool_tip="Cambiar la distancia máxima de dibujo"/>
-	<slider label="Ancho Banda:" name="max_bandwidth" tool_tip="Definir el ancho de banda de tu conexión en kbps (kilobits por segundos)"/>
 	<slider label="Partículas:" name="MaxParticleCount" tool_tip="Cantidad de Partículas a Renderizar"/>
 	<slider label="Max Avs:" name="RenderAvatarMaxVisible" tool_tip="Cuantos avatares se renderizarán en forma completa. Disminuyendo este valor incrementará los FPS en lugares saturados. Requiere que Avatar Impostors esté activado. [Por Defecto 35]"/>
 	<slider label="Detalle Obj.:" name="Object Detail" tool_tip="Controla el nivel de detalle de los prims (multiplicar por el área de pantalla utilizado para calcular el nivel de detalle[0.5 to 2.0 es un valor  estable])"/>

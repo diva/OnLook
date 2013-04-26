@@ -4,14 +4,16 @@
 		<menu_item_call label="Imagen ([UPLOADFEE])..." name="Upload Image"/>
 		<menu_item_call label="Sonido ([UPLOADFEE])..." name="Upload Sound"/>
 		<menu_item_call label="Animación ([UPLOADFEE])..." name="Upload Animation"/>
+		<menu_item_call label="Subir Malla..." name="Upload Mesh"/>
 		<menu_item_call label="Masiva ([UPLOADFEE] por archivo)..." name="Bulk Upload"/>
 		<menu_item_call label="Importar XML" name="Import"/>
 		<menu_item_call label="Importar con Texturas" name="Import2"/>
+		<menu_item_call label="Cambiar Texturas Locales" name="Change Local Textures"/>
 		<menu_item_call label="Definir Permisos por Defecto..." name="perm prefs"/>
+		<menu_item_call label="Minimize All Windows" name="Minimizar todas las Ventanas"/>	
 		<menu_item_call label="Cerrar Ventana" name="Close Window"/>
 		<menu_item_call label="Cerrar todas las Ventanas" name="Close All Windows"/>
-		<menu_item_separator label="-----------" name="separator2"/>
-		<menu_item_call label="Guardar Vista Previa Como..." name="Save Preview As..."/>
+		<menu_item_call label="Guardar Vista Previa Como (TGA)..." name="Save Preview As..."/>
 		<menu_item_call label="Guardar Vista Previa Como (PNG)..." name="Save Preview AsPNG..."/>
 		<menu_item_call label="Hacer una Foto" name="Take Snapshot"/>
 		<menu_item_call label="Guardar Foto en Disco" name="Snapshot to Disk"/>
@@ -65,7 +67,7 @@
 		<menu_item_call label="Mirar al último que habló" name="Look at Last Chatter"/>
 		<menu_item_check label="Barra de Herramientas" name="Toolbar"/>
 		<menu_item_check label="Chat Local" name="Chat History"/>
-		<menu_item_check label="Comunicarse" name="Instant Message"/>
+		<menu_item_check label="Comunicación" name="Instant Message"/>
 		<menu_item_check label="Inventario" name="Inventory"/>
 		<menu_item_check label="Participantes Activos" name="Active Speakers"/>
 		<menu_item_check label="Lista de Ignorados" name="Mute List"/>
@@ -74,7 +76,7 @@
 		<menu_item_check label="Controles de Cámara" name="Camera Controls"/>
 		<menu_item_check label="Controles de Movimiento" name="Movement Controls"/>
 		<menu_item_check label="Mapa del Mundo" name="World Map"/>
-		<menu_item_check label="MiniMapa" name="Mini-Map"/>
+		<menu_item_check label="Mini Mapa" name="Mini-Map"/>
 		<menu_item_check label="Radar" name="Radar"/>
 		<menu_item_check label="Estadísticas" name="Statistics Bar"/>
 		<menu_item_check label="Búsqueda en Área" name="Area Search"/>
@@ -90,11 +92,9 @@
 		<menu_item_check name="beacons" label="Balizas"/>
 		<menu_item_check label="Ocultar Partículas" name="Hide Particles"/>
 		<menu_item_check label="Mostrar los HUD en uso" name="Show HUD Attachments"/>
-		<menu_item_separator label="-----------" name="separator5"/>
 		<menu_item_call label="Acercar Zoom" name="Zoom In"/>
 		<menu_item_call label="Zoom Predeterminado" name="Zoom Default"/>
 		<menu_item_call label="Alejar Zoom" name="Zoom Out"/>
-		<menu_item_separator label="-----------" name="separator6" />
 		<menu_item_call label="Pantalla Completa" name="Toggle Fullscreen"/>
 		<menu_item_call label="Interfaz en tamaño Predeterminado" name="Set UI Size to Default"/>
 	</menu>
@@ -106,7 +106,7 @@
 		<menu_item_check label="Volar" name="Fly"/>
 		<menu_item_call label="Crear un Hito Aquí" name="Create Landmark Here"/>
 		<menu_item_call label="Fijar Base Aquí" name="Set Home to Here"/>
-		<menu_item_call label="Teleport a Base" name="Teleport Home"/>
+		<menu_item_call label="Teleportar a Base" name="Teleport Home"/>
 		<menu_item_call label="Falso Estado Ausente" name="Fake Away Status"/>
 		<menu_item_call label="Pasar a Estado Ausente" name="Set Away"/>
 		<menu_item_call label="Pasar a Estado Ocupado" name="Set Busy"/>
@@ -116,6 +116,8 @@
 		<menu_item_call label="Administrar mi Cuenta..." name="Manage My Account..."/>
         <menu_item_check label="Buzón de Salida de Comerciante..." name="MerchantOutbox"/>
 		<menu_item_call label="Comprar [CURRENCY]..." name="Buy and Sell L$..."/>
+        <menu_item_call label="Mis Vestuarios" name="My Outfits"/>
+        <menu_item_call label="Favoritos" name="Favorites"/>
 		<menu_item_call label="Mi Terreno..." name="My Land..."/>
 		<menu_item_call label="Acerca del Terreno..." name="About Land..."/>
 		<menu_item_call label="Comprar Terreno..." name="Buy Land..."/>
@@ -148,12 +150,12 @@
 		<menu_item_check label="Mostrar radio de luz de la selección" name="Show Light Radius for Selection"/>
 		<menu_item_check label="Mostrar rayo indicador" name="Show Selection Beam"/>
 		<menu_item_check label="Ajustar a la cuadrícula" name="Snap to Grid"/>
-		<menu_item_call label="Ajustar Objetos a los Ejes XY de la cuadrícula" name="Snap Object XY to Grid"/>
+		<menu_item_call label="Ajustar Objetos XY a la cuadrícula" name="Snap Object XY to Grid"/>
 		<menu_item_call label="Usar Seleccionado como cuadrícula" name="Use Selection for Grid"/>
 		<menu_item_call label="Opciones de la Cuadrícula..." name="Grid Options..."/>
 		<menu_item_check label="Editar partes enlazadas" name="Edit Linked Parts"/>
 		<menu label="Seleccionar partes enlazadas" name="Select Linked Parts" >
-			<menu_item_call label="Seleccionar parte siguiente" name="Select Next Part"/>
+			<menu_item_call label="Seleccionar Parte Siguiente" name="Select Next Part"/>
 			<menu_item_call label="Seleccionar Parte  Anterior" name="Select Previous Part"/>
 			<menu_item_call label="Incluir Parte Siguiente" name="Include Next Part"/>
 			<menu_item_call label="Incluir Parte Anterior" name="Include Previous Part"/>
@@ -162,10 +164,12 @@
 		<menu_item_call label="Desenlazar" name="Unlink"/>
 		<menu_item_call label="Foco en la Selección" name="Focus on Selection"/>
 		<menu_item_call label="Zoom en lo Seleccionado" name="Zoom to Selection"/>
-		<menu_item_call label="Comprar Objeto" name="Menu Object Take"/>
-		<menu_item_call label="Agarrar una Copia" name="Take Copy"/>
+		<menu_item_call label="Comprar Objeto" name="Menu Object Take">
+			<on_enable function="Tools.EnableBuyOrTake" userdata="Comprar,Recoger" name="EnableBuyOrTake"/>
+		</menu_item_call>			
+		<menu_item_call label="Recoger una Copia" name="Take Copy"/>
 		<menu_item_call label="Devolver Objeto" name="Return..."/>
-		<menu_item_call label="Devolver el Objeto al Contenido de Objetos" name="Save Object Back to Object Contents"/>
+		<menu_item_call label="Devolver Objeto al Contenido de Objetos" name="Save Object Back to Object Contents"/>
 		<menu_item_call label="Administrador - Borrar" name="Admin Delete"/>
 		<menu_item_call label="Mostrar ventana de avisos/errores de Script " name="Show Script Warning/Error Window"/>
 		<menu label="Recompilar Scripts de la Selección" name="Recompile Scripts in Selection">
@@ -176,7 +180,11 @@
 		<menu_item_call label="Definir Ejecución de Scripts en la Selección" name="Set Scripts to Running in Selection"/>
 		<menu_item_call label="Definir la no ejecución de Scripts en la Selección" name="Set Scripts to Not Running in Selection"/>
 		<menu_item_call label="Borrar Scripts en la Selección" name="Remove Scripts in Selection"/>
-		<menu_item_call label="Rebake de Región" name="pathfinding_rebake_navmesh_item"/>
+		<menu label="Pathfinding" name="Pathfinding">
+			<menu_item_check label="Conjuntos de Enlaces..." name="pathfinding_linksets_menu_item"/>
+			<menu_item_check label="Personajes..." name="pathfinding_characters_menu_item"/>
+			<menu_item_call label="Rebake de Región" name="pathfinding_rebake_navmesh_item"/>
+		</menu>
 	</menu>
 	<!-- =========================================== -->  
 	<menu label="Ayuda" left="227" name="Help" >
