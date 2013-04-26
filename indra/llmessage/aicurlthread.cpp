@@ -37,6 +37,7 @@
 #include "lltimer.h"		// ms_sleep, get_clock_count
 #include "llhttpstatuscodes.h"
 #include "llbuffer.h"
+#include "llcontrol.h"
 #include <sys/types.h>
 #if !LL_WINDOWS
 #include <sys/select.h>
@@ -2497,7 +2498,9 @@ void AICurlEasyRequest::removeRequest(void)
 
 namespace AICurlInterface {
 
-void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentConnectionsPerService, bool NoVerifySSLCert)
+LLControlGroup* sConfigGroup;
+
+void startCurlThread(LLControlGroup* control_group)
 {
   using namespace AICurlPrivate;
   using namespace AICurlPrivate::curlthread;
@@ -2505,9 +2508,10 @@ void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentCo
   llassert(is_main_thread());
 
   // Cache Debug Settings.
-  curl_max_total_concurrent_connections = CurlMaxTotalConcurrentConnections;
-  curl_concurrent_connections_per_service = CurlConcurrentConnectionsPerService;
-  gNoVerifySSLCert = NoVerifySSLCert;
+  sConfigGroup = control_group;
+  curl_max_total_concurrent_connections = sConfigGroup->getU32("CurlMaxTotalConcurrentConnections");
+  curl_concurrent_connections_per_service = sConfigGroup->getU32("CurlConcurrentConnectionsPerService");
+  gNoVerifySSLCert = sConfigGroup->getBOOL("NoVerifySSLCert");
   max_pipelined_requests = curl_max_total_concurrent_connections;
   max_pipelined_requests_per_service = curl_concurrent_connections_per_service;
 
