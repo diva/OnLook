@@ -39,6 +39,7 @@
 #include "sys.h"
 #include "aicurlperservice.h"
 #include "aicurlthread.h"
+#include "llcontrol.h"
 
 AIPerServiceRequestQueue::threadsafe_instance_map_type AIPerServiceRequestQueue::sInstanceMap;
 LLAtomicS32 AIPerServiceRequestQueue::sTotalQueued;
@@ -50,7 +51,8 @@ bool AIPerServiceRequestQueue::sRequestStarvation;
 
 namespace AICurlPrivate {
 
-U32 curl_concurrent_connections_per_service;
+// Cached value of CurlConcurrentConnectionsPerService.
+U32 CurlConcurrentConnectionsPerService;
 
 // Friend functions of RefCountedThreadSafePerServiceRequestQueue
 
@@ -70,6 +72,14 @@ void intrusive_ptr_release(RefCountedThreadSafePerServiceRequestQueue* per_servi
 } // namespace AICurlPrivate
 
 using namespace AICurlPrivate;
+
+AIPerServiceRequestQueue::AIPerServiceRequestQueue(void) :
+		mQueuedCommands(0), mAdded(0), mQueueEmpty(false),
+		mQueueFull(false), mRequestStarvation(false), mHTTPBandwidth(25),	// 25 = 1000 ms / 40 ms.
+		mConcurrectConnections(CurlConcurrentConnectionsPerService),
+		mMaxPipelinedRequests(CurlConcurrentConnectionsPerService)
+{
+}
 
 // url must be of the form
 // (see http://www.ietf.org/rfc/rfc3986.txt Appendix A for definitions not given here):
@@ -220,13 +230,11 @@ void AIPerServiceRequestQueue::release(AIPerServiceRequestQueuePtr& instance)
 
 bool AIPerServiceRequestQueue::throttled() const
 {
-  llassert(mAdded <= int(curl_concurrent_connections_per_service));
-  return mAdded == int(curl_concurrent_connections_per_service);
+  return mAdded >= mConcurrectConnections;
 }
 
 void AIPerServiceRequestQueue::added_to_multi_handle(void)
 {
-  llassert(mAdded < int(curl_concurrent_connections_per_service));
   ++mAdded;
 }
 
@@ -320,6 +328,20 @@ void AIPerServiceRequestQueue::purge(void)
 	per_service_w->mQueuedRequests.clear();
 	sTotalQueued -= s;
 	llassert(sTotalQueued >= 0);
+  }
+}
+
+//static
+void AIPerServiceRequestQueue::adjust_concurrent_connections(int increment)
+{
+  instance_map_wat instance_map_w(sInstanceMap);
+  for (AIPerServiceRequestQueue::iterator iter = instance_map_w->begin(); iter != instance_map_w->end(); ++iter)
+  {
+	PerServiceRequestQueue_wat per_service_w(*iter->second);
+	U32 old_concurrent_connections = per_service_w->mConcurrectConnections;
+	per_service_w->mConcurrectConnections = llclamp(old_concurrent_connections + increment, (U32)1, CurlConcurrentConnectionsPerService);
+	increment = per_service_w->mConcurrectConnections - old_concurrent_connections;
+	per_service_w->mMaxPipelinedRequests = llmax(per_service_w->mMaxPipelinedRequests + increment, 0);
   }
 }
 

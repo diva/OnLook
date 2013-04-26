@@ -207,7 +207,6 @@ int ioctlsocket(int fd, int, unsigned long* nonblocking_enable)
 namespace AICurlPrivate {
 
 LLAtomicS32 max_pipelined_requests(32);
-LLAtomicS32 max_pipelined_requests_per_service(8);
 
 enum command_st {
   cmd_none,
@@ -2510,10 +2509,9 @@ void startCurlThread(LLControlGroup* control_group)
   // Cache Debug Settings.
   sConfigGroup = control_group;
   curl_max_total_concurrent_connections = sConfigGroup->getU32("CurlMaxTotalConcurrentConnections");
-  curl_concurrent_connections_per_service = sConfigGroup->getU32("CurlConcurrentConnectionsPerService");
+  CurlConcurrentConnectionsPerService = sConfigGroup->getU32("CurlConcurrentConnectionsPerService");
   gNoVerifySSLCert = sConfigGroup->getBOOL("NoVerifySSLCert");
   max_pipelined_requests = curl_max_total_concurrent_connections;
-  max_pipelined_requests_per_service = curl_concurrent_connections_per_service;
 
   AICurlThread::sInstance = new AICurlThread;
   AICurlThread::sInstance->start();
@@ -2535,10 +2533,10 @@ bool handleCurlConcurrentConnectionsPerService(LLSD const& newvalue)
 {
   using namespace AICurlPrivate;
 
-  U32 old = curl_concurrent_connections_per_service;
-  curl_concurrent_connections_per_service = newvalue.asInteger();
-  max_pipelined_requests_per_service += curl_concurrent_connections_per_service - old;
-  llinfos << "CurlConcurrentConnectionsPerService set to " << curl_concurrent_connections_per_service << llendl;
+  U32 new_concurrent_connections = newvalue.asInteger();
+  AIPerServiceRequestQueue::adjust_concurrent_connections(new_concurrent_connections - CurlConcurrentConnectionsPerService);
+  CurlConcurrentConnectionsPerService = new_concurrent_connections;
+  llinfos << "CurlConcurrentConnectionsPerService set to " << CurlConcurrentConnectionsPerService << llendl;
   return true;
 }
 
@@ -2630,34 +2628,32 @@ bool AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(AIPerServiceRequestQueue
 
   AIAverage* http_bandwidth_ptr;
 
-  // Atomic read max_pipelined_requests_per_service for the below calculations.
-  S32 const max_pipelined_requests_per_service_cache = max_pipelined_requests_per_service;
   {
 	PerServiceRequestQueue_wat per_service_w(*per_service);
 	S32 const pipelined_requests_per_service = per_service_w->pipelined_requests();
-	reject = pipelined_requests_per_service >= max_pipelined_requests_per_service_cache;
-	equal = pipelined_requests_per_service == max_pipelined_requests_per_service_cache;
+	reject = pipelined_requests_per_service >= per_service_w->mMaxPipelinedRequests;
+	equal = pipelined_requests_per_service == per_service_w->mMaxPipelinedRequests;
 	increment_threshold = per_service_w->mRequestStarvation;
 	decrement_threshold = per_service_w->mQueueFull && !per_service_w->mQueueEmpty;
 	// Reset flags.
 	per_service_w->mQueueFull = per_service_w->mQueueEmpty = per_service_w->mRequestStarvation = false;
 	// Grab per service bandwidth object.
 	http_bandwidth_ptr = &per_service_w->bandwidth();
-  }
-  if (decrement_threshold)
-  {
-	if (max_pipelined_requests_per_service_cache > (S32)curl_concurrent_connections_per_service)
+	if (decrement_threshold)
 	{
-	  --max_pipelined_requests_per_service;
+	  if (per_service_w->mMaxPipelinedRequests > per_service_w->mConcurrectConnections)
+	  {
+		per_service_w->mMaxPipelinedRequests--;
+	  }
 	}
-  }
-  else if (increment_threshold && reject)
-  {
-	if (max_pipelined_requests_per_service_cache < 2 * (S32)curl_concurrent_connections_per_service)
+	else if (increment_threshold && reject)
 	{
-	  max_pipelined_requests_per_service++;
-	  // Immediately take the new threshold into account.
-	  reject = !equal;
+	  if (per_service_w->mMaxPipelinedRequests < 2 * per_service_w->mConcurrectConnections)
+	  {
+		per_service_w->mMaxPipelinedRequests++;
+		// Immediately take the new threshold into account.
+		reject = !equal;
+	  }
 	}
   }
   if (reject)

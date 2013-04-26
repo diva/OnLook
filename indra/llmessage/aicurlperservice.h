@@ -90,7 +90,7 @@ class AIPerServiceRequestQueue {
 	static threadsafe_instance_map_type sInstanceMap;				// Map of AIPerServiceRequestQueue instances with the hostname as key.
 
 	friend class AIThreadSafeSimpleDC<AIPerServiceRequestQueue>;		//threadsafe_PerServiceRequestQueue
-	AIPerServiceRequestQueue(void) : mQueuedCommands(0), mAdded(0), mQueueEmpty(false), mQueueFull(false), mRequestStarvation(false), mHTTPBandwidth(25) { }	// 25 = 1000 ms / 40 ms.
+	AIPerServiceRequestQueue(void);
 
   public:
 	typedef instance_map_type::iterator iterator;
@@ -125,7 +125,9 @@ class AIPerServiceRequestQueue {
 	static bool sQueueFull;						// Set to true when sTotalQueued is still larger than zero after popping any queue.
 	static bool sRequestStarvation;				// Set to true when any queue was about to be popped when sTotalQueued was already zero.
 
-	AIAverage mHTTPBandwidth;				// Keeps track on number of bytes received for this service in the past second.
+	AIAverage mHTTPBandwidth;					// Keeps track on number of bytes received for this service in the past second.
+	int mConcurrectConnections;					// The maximum number of allowed concurrent connections to this service.
+	int mMaxPipelinedRequests;					// The maximum number of accepted requests that didn't finish yet.
 
   public:
 	void added_to_command_queue(void) { ++mQueuedCommands; }
@@ -146,6 +148,9 @@ class AIPerServiceRequestQueue {
 
 	AIAverage& bandwidth(void) { return mHTTPBandwidth; }
 	AIAverage const& bandwidth(void) const { return mHTTPBandwidth; }
+
+	// Called when CurlConcurrentConnectionsPerService changes.
+	static void adjust_concurrent_connections(int increment);
 
 	// Returns true if curl can handle another request for this host.
 	// Should return false if the maximum allowed HTTP bandwidth is reached, or when
@@ -172,7 +177,7 @@ class RefCountedThreadSafePerServiceRequestQueue : public threadsafe_PerServiceR
 	friend void intrusive_ptr_release(RefCountedThreadSafePerServiceRequestQueue* p);
 };
 
-extern U32 curl_concurrent_connections_per_service;
+extern U32 CurlConcurrentConnectionsPerService;
 
 } // namespace AICurlPrivate
 
