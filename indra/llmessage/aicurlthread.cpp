@@ -1579,7 +1579,7 @@ void AICurlThread::run(void)
 	  multi_handle_w->check_msg_queue();
 	}
 	// Clear the queued requests.
-	AIPerServiceRequestQueue::purge();
+	AIPerService::purge();
   }
   AICurlMultiHandle::destroyInstance();
 }
@@ -1706,7 +1706,7 @@ static U32 curl_max_total_concurrent_connections = 32;						// Initialized on st
 void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
 {
   bool throttled = true;		// Default.
-  AIPerServiceRequestQueuePtr per_service;
+  AIPerServicePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
 	per_service = curl_easy_request_w->getPerServicePtr();
@@ -1765,7 +1765,7 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
 CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator const& iter, bool as_per_command)
 {
   CURLMcode res;
-  AIPerServiceRequestQueuePtr per_service;
+  AIPerServicePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(**iter);
 	res = curl_easy_request_w->remove_handle_from_multi(curl_easy_request_w, mMultiHandle);
@@ -2534,7 +2534,7 @@ bool handleCurlConcurrentConnectionsPerService(LLSD const& newvalue)
   using namespace AICurlPrivate;
 
   U32 new_concurrent_connections = newvalue.asInteger();
-  AIPerServiceRequestQueue::adjust_concurrent_connections(new_concurrent_connections - CurlConcurrentConnectionsPerService);
+  AIPerService::adjust_concurrent_connections(new_concurrent_connections - CurlConcurrentConnectionsPerService);
   CurlConcurrentConnectionsPerService = new_concurrent_connections;
   llinfos << "CurlConcurrentConnectionsPerService set to " << CurlConcurrentConnectionsPerService << llendl;
   return true;
@@ -2556,7 +2556,7 @@ U32 getNumHTTPCommands(void)
 
 U32 getNumHTTPQueued(void)
 {
-  return AIPerServiceRequestQueue::total_queued_size();
+  return AIPerService::total_queued_size();
 }
 
 U32 getNumHTTPAdded(void)
@@ -2590,16 +2590,16 @@ size_t getHTTPBandwidth(void)
 // causes it to go through the states bs_reset, bs_initialize and then bs_multiplex with
 // run state AICurlEasyRequestStateMachine_addRequest. Finally, in this state, multiplex
 // calls AICurlEasyRequestStateMachine::multiplex_impl which then calls AICurlEasyRequest::addRequest
-// which causes an increment of command_queue_w->size and AIPerServiceRequestQueue::mQueuedCommands.
+// which causes an increment of command_queue_w->size and AIPerService::mQueuedCommands.
 //
 // It is therefore guaranteed that in one loop of LLTextureFetchWorker::doWork,
 // this size is incremented; stopping this function from returning true once we reached the
 // threshold of "pipelines" requests (the sum of requests in the command queue, the ones
-// throttled and queued in AIPerServiceRequestQueue::mQueuedRequests and the already
+// throttled and queued in AIPerService::mQueuedRequests and the already
 // running requests (in MultiHandle::mAddedEasyRequests)).
 //
 //static
-bool AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(AIPerServiceRequestQueuePtr const& per_service, F32 max_kbps, bool no_bandwidth_throttling)
+bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service, F32 max_kbps, bool no_bandwidth_throttling)
 {
   using namespace AICurlPrivate;
   using namespace AICurlPrivate::curlthread;
@@ -2740,7 +2740,7 @@ bool AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(AIPerServiceRequestQueue
 	// here instead.
 
 	// The maximum number of requests that may be queued in command_queue is equal to the total number of requests
-	// that may exist in the pipeline minus the number of requests queued in AIPerServiceRequestQueue objects, minus
+	// that may exist in the pipeline minus the number of requests queued in AIPerService objects, minus
 	// the number of already running requests.
 	reject = pipelined_requests >= max_pipelined_requests_cache;
 	equal = pipelined_requests == max_pipelined_requests_cache;
