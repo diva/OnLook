@@ -61,6 +61,7 @@ public:
 	int getMaxAgentGroups() const { return mMaxAgentGroups; }
 
 	const std::string& getCurrencySymbol()     const;
+	const std::string& getCurrencyText()     const;
 	const std::string& getRealCurrencySymbol() const;
 	std::string getUploadFee()                 const;
 	std::string getGroupCreationFee()          const;
@@ -87,6 +88,7 @@ public:
 	bool getUPCSupported();
 
 	void setCurrencySymbol(const std::string& sym);
+	void setCurrencyText(const std::string& text);
 	void setRealCurrencySymbol(const std::string& sym);
 	void setDirectoryFee(int fee);
 	bool supportsInvLinks();
@@ -124,6 +126,7 @@ private:
 	int mMaxAgentGroups;
 
 	std::string mCurrencySymbol;
+	std::string mCurrencyText;
 	std::string mRealCurrencySymbol;
 	int mDirectoryFee;
 	std::string mGridMessage;

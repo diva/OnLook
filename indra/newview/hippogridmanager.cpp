@@ -58,6 +58,7 @@ HippoGridInfo::HippoGridInfo(const std::string& gridName) :
 	mAutoUpdate(false),
 	mMaxAgentGroups(-1),
 	mCurrencySymbol("OS$"),
+	mCurrencyText("OS Dollars"),
 	mRealCurrencySymbol("US$"),
 	mDirectoryFee(30),
 	mUPCSupported(false)
@@ -172,6 +173,11 @@ const std::string& HippoGridInfo::getCurrencySymbol() const
 	return mCurrencySymbol;
 }
 
+const std::string& HippoGridInfo::getCurrencyText() const
+{
+	return mCurrencyText;
+}
+
 const std::string& HippoGridInfo::getRealCurrencySymbol() const
 {
 	return mRealCurrencySymbol;
@@ -188,6 +194,7 @@ void HippoGridInfo::setPlatform(Platform platform)
 	if (mPlatform == PLATFORM_SECONDLIFE)
 	{
 		mCurrencySymbol = "L$";
+		mCurrencyText = "Linden Dollars";
 	}
 }
 
@@ -317,6 +324,11 @@ void HippoGridInfo::setRenderCompat(bool compat)
 void HippoGridInfo::setCurrencySymbol(const std::string& sym)
 {
 	mCurrencySymbol = sym.substr(0, 3);
+}
+
+void HippoGridInfo::setCurrencyText(const std::string& text)
+{
+	mCurrencyText = text;
 }
 
 void HippoGridInfo::setRealCurrencySymbol(const std::string& sym)
