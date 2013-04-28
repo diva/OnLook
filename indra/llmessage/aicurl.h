@@ -52,7 +52,7 @@
 #include "stdtypes.h"		// U16, S32, U32, F64
 #include "llatomic.h"		// LLAtomicU32
 #include "aithreadsafe.h"
-#include "aicurlperservice.h"	// AIPerServiceRequestQueuePtr
+#include "aicurlperservice.h"	// AIPerServicePtr
 
 // Debug Settings.
 extern bool gNoVerifySSLCert;
@@ -61,6 +61,7 @@ class LLSD;
 class LLBufferArray;
 class LLChannelDescriptors;
 class AIHTTPTimeoutPolicy;
+class LLControlGroup;
 
 // Some pretty printing for curl easy handle related things:
 // Print the lock object related to the current easy handle in every debug output.
@@ -163,7 +164,7 @@ bool handleNoVerifySSLCert(LLSD const& newvalue);
 void initCurl(void);
 
 // Called once at start of application (from LLAppViewer::initThreads), starts AICurlThread.
-void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentConnectionsPerService, bool NoVerifySSLCert);
+void startCurlThread(LLControlGroup* control_group);
 
 // Called once at the end of application before terminating other threads (most notably the texture thread workers)
 // with the purpose to stop the curl thread from doing any call backs to running responders: the responders sometimes
@@ -199,6 +200,9 @@ U32 getNumHTTPAdded(void);
 // This used to be LLAppViewer::getTextureFetch()->getNumHTTPRequests().
 // Returns the number of active curl easy handles (that are actually attempting to download something).
 U32 getNumHTTPRunning(void);
+
+// Cache for gSavedSettings so we have access from llmessage.
+extern LLControlGroup* sConfigGroup;
 
 } // namespace AICurlInterface
 

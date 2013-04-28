@@ -254,7 +254,7 @@ private:
 	LLUUID mID;
 	LLHost mHost;
 	std::string mUrl;
-	AIPerServiceRequestQueuePtr mPerServicePtr;		// Pointer to the AIPerServiceRequestQueue corresponding to the host of mUrl.
+	AIPerServicePtr mPerServicePtr;		// Pointer to the AIPerService corresponding to the host of mUrl.
 	U8 mType;
 	F32 mImagePriority;
 	U32 mWorkPriority;
@@ -800,11 +800,11 @@ LLTextureFetchWorker::LLTextureFetchWorker(LLTextureFetch* fetcher,
 	if (!mCanUseNET)
 	{
 	  // Probably a file://, but well; in that case servicename will be empty.
-	  std::string servicename = AIPerServiceRequestQueue::extract_canonical_servicename(mUrl);
+	  std::string servicename = AIPerService::extract_canonical_servicename(mUrl);
 	  if (!servicename.empty())
 	  {
 		// Make sure mPerServicePtr is up to date with mUrl.
-		mPerServicePtr = AIPerServiceRequestQueue::instance(servicename);
+		mPerServicePtr = AIPerService::instance(servicename);
 	  }
 	}
 
@@ -1163,7 +1163,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				{
 					mUrl = http_url + "/?texture_id=" + mID.asString().c_str();
 					mWriteToCacheState = CAN_WRITE ; //because this texture has a fixed texture id.
-					mPerServicePtr = AIPerServiceRequestQueue::instance(AIPerServiceRequestQueue::extract_canonical_servicename(http_url));
+					mPerServicePtr = AIPerService::instance(AIPerService::extract_canonical_servicename(http_url));
 				}
 				else
 				{
@@ -1274,7 +1274,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			// Let AICurl decide if we can process more HTTP requests at the moment or not.
 			static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
 			bool const no_bandwidth_throttling = gHippoGridManager->getConnectedGrid()->isAvination();
-			if (!AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(mPerServicePtr, throttle_bandwidth, no_bandwidth_throttling))
+			if (!AIPerService::wantsMoreHTTPRequestsFor(mPerServicePtr, throttle_bandwidth, no_bandwidth_throttling))
 			{
 				return false ; //wait.
 			}

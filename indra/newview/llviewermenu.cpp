@@ -63,7 +63,7 @@
 #include "llfirstuse.h"
 #include "llfloaterabout.h"
 #include "llfloateractivespeakers.h"
-#include "llfloateranimpreview.h"
+#include "llfloaterbvhpreview.h"
 #include "llfloateravatarinfo.h"
 #include "llfloateravatarlist.h"
 #include "llfloateravatartextures.h"

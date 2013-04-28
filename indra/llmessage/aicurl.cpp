@@ -961,7 +961,7 @@ CurlEasyRequest::~CurlEasyRequest()
   revokeCallbacks();
   if (mPerServicePtr)
   {
-	 AIPerServiceRequestQueue::release(mPerServicePtr);
+	 AIPerService::release(mPerServicePtr);
   }
   // This wasn't freed yet if the request never finished.
   curl_slist_free_all(mHeaders);
@@ -1114,7 +1114,7 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
   setopt(CURLOPT_HTTPHEADER, mHeaders);
   setoptString(CURLOPT_URL, url);
   llassert(!mPerServicePtr);
-  mLowercaseServicename = AIPerServiceRequestQueue::extract_canonical_servicename(url);
+  mLowercaseServicename = AIPerService::extract_canonical_servicename(url);
   mTimeoutPolicy = &policy;
   state_machine->setTotalDelayTimeout(policy.getTotalDelay());
   // The following line is a bit tricky: we store a pointer to the object without increasing its reference count.
@@ -1236,14 +1236,14 @@ void CurlEasyRequest::queued_for_removal(AICurlEasyRequest_wat& curl_easy_reques
 }
 #endif
 
-AIPerServiceRequestQueuePtr CurlEasyRequest::getPerServicePtr(void)
+AIPerServicePtr CurlEasyRequest::getPerServicePtr(void)
 {
   if (!mPerServicePtr)
   {
 	// mPerServicePtr is really just a speed-up cache.
 	// The reason we can cache it is because mLowercaseServicename is only set
 	// in finalizeRequest which may only be called once: it never changes.
-	mPerServicePtr = AIPerServiceRequestQueue::instance(mLowercaseServicename);
+	mPerServicePtr = AIPerService::instance(mLowercaseServicename);
   }
   return mPerServicePtr;
 }

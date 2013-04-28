@@ -4,7 +4,7 @@
 #include "llfloaterexploreanimations.h"
 #include "lluictrlfactory.h"
 #include "llscrolllistctrl.h"
-#include "llfloateranimpreview.h"
+#include "llfloaterbvhpreview.h"
 #include "llvoavatar.h"
 #include "lllocalinventory.h"
 #include "llviewercamera.h"
