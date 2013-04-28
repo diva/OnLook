@@ -687,8 +687,6 @@ void LLViewerTextureList::updateImages(F32 max_time)
 	}
 	cleared = FALSE;
 
-	LLAppViewer::getTextureFetch()->setTextureBandwidth(LLViewerStats::getInstance()->mTextureKBitStat.getMeanPerSec());
-
 	S32 global_raw_memory;
 	{
 		global_raw_memory = *AIAccess<S32>(LLImageRaw::sGlobalRawMemory);

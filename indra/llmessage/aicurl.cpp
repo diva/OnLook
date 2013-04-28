@@ -1267,8 +1267,9 @@ static int const HTTP_REDIRECTS_DEFAULT = 10;
 LLChannelDescriptors const BufferedCurlEasyRequest::sChannels;
 LLMutex BufferedCurlEasyRequest::sResponderCallbackMutex;
 bool BufferedCurlEasyRequest::sShuttingDown = false;
+AIAverage BufferedCurlEasyRequest::sHTTPBandwidth(25);
 
-BufferedCurlEasyRequest::BufferedCurlEasyRequest() : mRequestTransferedBytes(0), mResponseTransferedBytes(0), mBufferEventsTarget(NULL), mStatus(HTTP_INTERNAL_ERROR_OTHER)
+BufferedCurlEasyRequest::BufferedCurlEasyRequest() : mRequestTransferedBytes(0), mTotalRawBytes(0), mBufferEventsTarget(NULL), mStatus(HTTP_INTERNAL_ERROR_OTHER)
 {
   AICurlInterface::Stats::BufferedCurlEasyRequest_count++;
 }
@@ -1332,7 +1333,7 @@ void BufferedCurlEasyRequest::resetState(void)
   mOutput.reset();
   mInput.reset();
   mRequestTransferedBytes = 0;
-  mResponseTransferedBytes = 0;
+  mTotalRawBytes = 0;
   mBufferEventsTarget = NULL;
   mStatus = HTTP_INTERNAL_ERROR_OTHER;
 }

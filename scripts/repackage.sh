@@ -5,7 +5,7 @@ usage() {
 	echo "Usage: repackage PLATFORM FILEIN.tar.bz2 [FILEOUT.tar.bz2]
 Repackage an archive from llautobuild format into singularity format
 
-PLATTFORM can be one of windows, linux, linux64, mac.
+PLATFORM can be one of windows, linux, linux64, mac.
 "
 	exit 0
 }

@@ -70,6 +70,7 @@ namespace AICurlInterface {
   U32 getNumHTTPQueued(void);
   U32 getNumHTTPAdded(void);
   U32 getNumHTTPRunning(void);
+  size_t getHTTPBandwidth(void);
 } // namespace AICurlInterface
 
 ////////////////////////////////////////////////////////////////////////////
@@ -620,17 +621,15 @@ void LLGLTexMemBar::draw()
 									 text_color, LLFontGL::LEFT, LLFontGL::TOP);
 
 	left += LLFontGL::getFontMonospace()->getWidth(text);
-	// This bandwidth is averaged over roughly 10 seconds (in kbps) and therefore pretty inaccurate.
-	// Also, it only takes into account actual texture data (not headers etc). But all it is used for
-	// is for the color of some text in the texture console, so I guess it doesn't matter.
-	F32 bandwidth = LLAppViewer::getTextureFetch()->getTextureBandwidth();
+	// This bandwidth is averaged over 1 seconds (in kbps).
+	F32 bandwidth = AICurlInterface::getHTTPBandwidth() / 125.f;		// Convert from bytes/s to kbps.
 	// This is the maximum bandwidth allowed for curl transactions (of any type and averaged per second),
 	// that is actually used to limit the number of HTTP texture requests (and only those).
 	// Comparing that with 'bandwidth' is a bit like comparing apples and oranges, but again... who really cares.
-	F32 max_bandwidth = gSavedSettings.getF32("HTTPThrottleBandwidth");
+	static const LLCachedControl<F32> max_bandwidth("HTTPThrottleBandwidth", 2000);
 	color = bandwidth > max_bandwidth ? LLColor4::red : bandwidth > max_bandwidth*.75f ? LLColor4::yellow : text_color;
 	color[VALPHA] = text_color[VALPHA];
-	text = llformat("BW:%.0f/%.0f",bandwidth, max_bandwidth);
+	text = llformat("BW:%.0f/%.0f", bandwidth, max_bandwidth.get());
 	LLFontGL::getFontMonospace()->renderUTF8(text, 0, left, v_offset + line_height*2,
 											 color, LLFontGL::LEFT, LLFontGL::TOP);
 	

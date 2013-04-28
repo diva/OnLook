@@ -36,33 +36,33 @@ public:
 
 	explicit HippoGridInfo(const std::string& gridName);
 
-	Platform           getPlatform();
-	bool isOpenSimulator() const;
-	bool isAurora() const;
-	bool isSecondLife() const;
-	bool isAvination() const;
-	bool isInProductionGrid() const;		// Should only be called if isSecondLife() returns true.
-	const std::string& getGridName()        const;
+	Platform getPlatform() { return mPlatform; }
+	bool isOpenSimulator() const { return (mPlatform == PLATFORM_OPENSIM || mPlatform == PLATFORM_AURORA); }
+	bool isAurora() const { return (mPlatform == PLATFORM_AURORA); }
+	bool isSecondLife() const { return (mPlatform == PLATFORM_SECONDLIFE); }
+	bool isAvination() const { return mIsInAvination; }
+	bool isInProductionGrid() const { llassert(mPlatform == PLATFORM_SECONDLIFE); return mIsInProductionGrid; } // Should only be called if isSecondLife() returns true.
+	const std::string& getGridName()        const { return mGridName; }
 	const std::string& getGridOwner()       const;	
-	const std::string& getLoginUri()        const;
-	const std::string& getLoginPage()       const;
-	const std::string& getHelperUri()       const;
-	const std::string& getWebSite()         const;
-	const std::string& getSupportUrl()      const;
-	const std::string& getRegisterUrl()     const;
-	const std::string& getPasswordUrl()     const;
+	const std::string& getLoginUri()        const { return mLoginUri; }
+	const std::string& getLoginPage()       const { return mLoginPage; }
+	const std::string& getHelperUri()       const { return mHelperUri; }
+	const std::string& getWebSite()         const { return mWebSite; }
+	const std::string& getSupportUrl()      const { return mSupportUrl; }
+	const std::string& getRegisterUrl()     const { return mRegisterUrl; }
+	const std::string& getPasswordUrl()     const { return mPasswordUrl; }
 	// Returns the url base used for the Web Search tab
-	const std::string& getSearchUrl()       const;
-	const std::string& getGridMessage()     const;
+	const std::string& getSearchUrl()       const { return mSearchUrl; }
+	const std::string& getGridMessage()     const { return mGridMessage; }
 	const std::string& getVoiceConnector()  const { return mVoiceConnector; }
 	std::string getSearchUrl(SearchType ty, bool is_web) const;
-	bool isRenderCompat()                   const;
-	std::string getGridNick();	
+	bool isRenderCompat()                   const { return mRenderCompat; }
+	std::string getGridNick();
 	int getMaxAgentGroups() const { return mMaxAgentGroups; }
 
-	const std::string& getCurrencySymbol()     const;
-	const std::string& getCurrencyText()     const;
-	const std::string& getRealCurrencySymbol() const;
+	const std::string& getCurrencySymbol()     const { return mCurrencySymbol; }
+	const std::string& getCurrencyText()       const { return mCurrencyText; }
+	const std::string& getRealCurrencySymbol() const { return mRealCurrencySymbol; }
 	std::string getUploadFee()                 const;
 	std::string getGroupCreationFee()          const;
 	std::string getDirectoryFee()              const;
@@ -160,7 +160,8 @@ public:
 	void discardAndReload();
 
 	HippoGridInfo* getGrid(const std::string& grid) const;
-	HippoGridInfo* getConnectedGrid()               const;
+	HippoGridInfo* getConnectedGrid()               const { return mConnectedGrid ? mConnectedGrid : getCurrentGrid(); }
+
 	HippoGridInfo* getCurrentGrid()                 const;
 	const std::string& getDefaultGridNick()         const;
 	const std::string& getCurrentGridNick()         const;

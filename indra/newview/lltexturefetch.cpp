@@ -36,7 +36,7 @@
 
 #include "lltexturefetch.h"
 
-#include "llcurl.h"
+#include "aicurl.h"
 #include "lldir.h"
 #include "llhttpclient.h"
 #include "llhttpstatuscodes.h"
@@ -1273,7 +1273,8 @@ bool LLTextureFetchWorker::doWork(S32 param)
 
 			// Let AICurl decide if we can process more HTTP requests at the moment or not.
 			static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
-			if (!AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(mPerServicePtr, mFetcher->getTextureBandwidth() > throttle_bandwidth))
+			bool const no_bandwidth_throttling = gHippoGridManager->getConnectedGrid()->isAvination();
+			if (!AIPerServiceRequestQueue::wantsMoreHTTPRequestsFor(mPerServicePtr, throttle_bandwidth, no_bandwidth_throttling))
 			{
 				return false ; //wait.
 			}
@@ -1290,16 +1291,8 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				mLoaded = FALSE;
 				mGetStatus = 0;
 				mGetReason.clear();
-				// Note: comparing mFetcher->getTextureBandwidth() with throttle_bandwidth is a bit like
-				// comparing apples and oranges, but it's only debug output. The first is the averaged
-				// bandwidth used for the body of successfully downloaded textures, averaged over roughtly
-				// 10 seconds, in kbits/s. The latter is the limit of the actual http curl downloads,
-				// including header and failures for anything (not just textures), averaged over the last
-				// second, also in kbits/s.
-				static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
 				LL_DEBUGS("Texture") << "HTTP GET: " << mID << " Offset: " << mRequestedOffset
 									 << " Bytes: " << mRequestedSize
-									 << " Bandwidth(kbps): " << mFetcher->getTextureBandwidth() << "/" << throttle_bandwidth
 									 << LL_ENDL;
 				setPriority(LLWorkerThread::PRIORITY_LOW | mWorkPriority);
 				mState = WAIT_HTTP_REQ;	
@@ -2041,7 +2034,6 @@ LLTextureFetch::LLTextureFetch(LLTextureCache* cache, LLImageDecodeThread* image
 	  mBadPacketCount(0),
 	  mTextureCache(cache),
 	  mImageDecodeThread(imagedecodethread),
-	  mTextureBandwidth(0),
 	  mHTTPTextureBits(0),
 	  mTotalHTTPRequests(0),
 	  mQAMode(qa_mode),
