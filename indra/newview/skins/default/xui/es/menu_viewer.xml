@@ -10,7 +10,7 @@
 		<menu_item_call label="Importar con Texturas" name="Import2"/>
 		<menu_item_call label="Cambiar Texturas Locales" name="Change Local Textures"/>
 		<menu_item_call label="Definir Permisos por Defecto..." name="perm prefs"/>
-		<menu_item_call label="Minimize All Windows" name="Minimizar todas las Ventanas"/>	
+		<menu_item_call label="Minimizar todas las Ventanas" name="Minimize All Windows"/>	
 		<menu_item_call label="Cerrar Ventana" name="Close Window"/>
 		<menu_item_call label="Cerrar todas las Ventanas" name="Close All Windows"/>
 		<menu_item_call label="Guardar Vista Previa Como (TGA)..." name="Save Preview As..."/>
