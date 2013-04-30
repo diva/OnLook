@@ -163,8 +163,6 @@ private:
 	cancel_queue_t mCancelQueue;
 	LLTextureInfo mTextureInfo;
 
-	U32 mHTTPTextureBits;
-
 	//debug use
 	U32 mTotalHTTPRequests ;
 

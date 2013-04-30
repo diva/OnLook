@@ -2034,7 +2034,6 @@ LLTextureFetch::LLTextureFetch(LLTextureCache* cache, LLImageDecodeThread* image
 	  mBadPacketCount(0),
 	  mTextureCache(cache),
 	  mImageDecodeThread(imagedecodethread),
-	  mHTTPTextureBits(0),
 	  mTotalHTTPRequests(0),
 	  mQAMode(qa_mode),
 	  mTotalCacheReadCount(0U),
@@ -2186,7 +2185,6 @@ void LLTextureFetch::removeFromHTTPQueue(const LLUUID& id, S32 received_size)
 {
 	LLMutexLock lock(&mNetworkQueueMutex);
 	mHTTPTextureQueue.erase(id);
-	mHTTPTextureBits += received_size * 8; // Approximate - does not include header bits	
 }
 
 void LLTextureFetch::deleteRequest(const LLUUID& id, bool cancel)
@@ -2399,15 +2397,6 @@ void LLTextureFetch::commonUpdate()
 //virtual
 S32 LLTextureFetch::update(F32 max_time_ms)
 {
-	{
-		mNetworkQueueMutex.lock() ;
-
-		gTextureList.sTextureBits += mHTTPTextureBits ;
-		mHTTPTextureBits = 0 ;
-
-		mNetworkQueueMutex.unlock() ;
-	}
-
 	S32 res = LLWorkerThread::update(max_time_ms);
 	
 	if (!mDebugPause)

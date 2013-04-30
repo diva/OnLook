@@ -263,7 +263,7 @@ void LLFloaterStats::buildStats()
 	stat_barp->mTickSpacing = 128.f;
 	stat_barp->mLabelSpacing = 256.f;
 
-	stat_barp = net_statviewp->addStat("Objects", &(LLViewerStats::getInstance()->mObjectKBitStat), "DebugStatModeObjects");
+	stat_barp = net_statviewp->addStat("Objects (UDP)", &(LLViewerStats::getInstance()->mObjectKBitStat), "DebugStatModeObjects");
 	stat_barp->setUnitLabel(" kbps");
 	stat_barp->mMinBar = 0.f;
 	stat_barp->mMaxBar = 1024.f;
