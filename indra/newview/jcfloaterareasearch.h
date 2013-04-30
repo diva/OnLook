@@ -60,6 +60,7 @@ public:
 
 	static void results();
 	static void toggle();
+	static BOOL visible();
 	static JCFloaterAreaSearch* getInstance() { return sInstance; }
 	static void processObjectPropertiesFamily(LLMessageSystem* msg, void** user_data);
 

@@ -358,7 +358,6 @@ void handle_singleton_toggle(void *)
 
 // <edit>
 void handle_fake_away_status(void*);
-void handle_area_search(void*);
 
 // <dogmode> for pose stand
 LLUUID current_pose = LLUUID::null;
@@ -404,13 +403,8 @@ BOOL handle_check_pose(void* userdata) {
 }
 
 
-void handle_force_ground_sit(void*);
 void handle_hide_typing_notification(void*);
-void handle_close_all_notifications(void*);
 void handle_open_message_log(void*);
-void handle_edit_ao(void*);
-void handle_sounds_explorer(void*);
-void handle_blacklist(void*);
 // </edit>
 
 void handle_reset_view();
@@ -706,32 +700,6 @@ void init_menus()
 	// TomY TODO convert these two
 	LLMenuGL*menu;
 
-	menu = new LLMenuGL("Singularity");
-	menu->setCanTearOff(TRUE);
-	menu->addChild(new LLMenuItemCallGL(	"Close All Dialogs", 
-										&handle_close_all_notifications, NULL, NULL, 'D', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
-	menu->addSeparator();
-	menu->addChild(new LLMenuItemCallGL(  "Fake Away Status", &handle_fake_away_status, NULL));
-	menu->addChild(new LLMenuItemCallGL(  "Force Ground Sit", &handle_force_ground_sit, NULL));
-
-	menu->addSeparator();
-	menu->addChild(new LLMenuItemCallGL( "Animation Override...",
-									&handle_edit_ao, NULL));
-	menu->addChild(new LLMenuItemCheckGL( "Nimble",
-										&menu_toggle_control,
-										NULL,
-										&menu_check_control,
-										(void*)"Nimble"));
-	menu->addSeparator();
-	menu->addChild(new LLMenuItemCallGL(	"Object Area Search", &handle_area_search, NULL));
-
-	menu->addChild(new LLMenuItemCallGL(	"Sound Explorer",
-											&handle_sounds_explorer, NULL));
-	menu->addChild(new LLMenuItemCallGL(	"Asset Blacklist",
-											&handle_blacklist, NULL));
-	menu->addChild(new LLMenuItemCheckGL(  "Streaming Audio Display", 
-											&handle_ticker_toggle, &handle_ticker_enabled, &handle_singleton_check<SHFloaterMediaTicker>, NULL ));
-	
 	// <dogmode>
 	// Add in the pose stand -------------------------------------------
 	/*LLMenuGL* sub = new LLMenuGL("Pose Stand...");
@@ -745,12 +713,6 @@ void init_menus()
 	sub->addChild(new LLMenuItemCallGL(  "Legs Half Arms Out", &handle_pose_stand_lhao, NULL));
 	sub->addChild(new LLMenuItemCallGL(  "Stop Pose Stand", &handle_pose_stand_stop, NULL));
 	// </dogmode> ------------------------------------------------------*/
-
-	menu->addChild(new LLMenuItemCheckGL("Pose Stand",&handle_toggle_pose, NULL, &handle_check_pose, NULL));
-
-	//these should always be last in a sub menu
-	menu->createJumpKeys();
-	gMenuBarView->addChild( menu );
 
 	menu = new LLMenuGL(CLIENT_MENU_NAME);
 	menu->setCanTearOff(TRUE);
@@ -1588,7 +1550,7 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 									   (void*)LLPipeline::RENDER_DEBUG_ATTACHMENT_BYTES));
 	menu->addChild(new LLMenuItemToggleGL( "Debug Rotation", &LLVOAvatar::sDebugAvatarRotation));
 	menu->addChild(new LLMenuItemCallGL("Dump Attachments", handle_dump_attachments));
-	menu->addChild(new LLMenuItemCallGL("Rebake Textures", handle_rebake_textures, NULL, NULL, 'R', MASK_ALT | MASK_CONTROL ));
+	menu->addChild(new LLMenuItemCallGL("Rebake Textures", handle_rebake_textures));
 #ifndef LL_RELEASE_FOR_DOWNLOAD
 	menu->addChild(new LLMenuItemCallGL("Debug Avatar Textures", handle_debug_avatar_textures, NULL, NULL, 'A', MASK_SHIFT|MASK_CONTROL|MASK_ALT));
 	menu->addChild(new LLMenuItemCallGL("Dump Local Textures", handle_dump_avatar_local_textures, NULL, NULL, 'M', MASK_SHIFT|MASK_ALT ));	
@@ -3739,57 +3701,11 @@ void handle_open_message_log(void*)
 	LLFloaterMessageLog::show();
 }
 
-void handle_edit_ao(void*)
-{
-	LLFloaterAO::show(NULL);
-}
-
-void handle_sounds_explorer(void*)
-{
-	LLFloaterExploreSounds::toggle();
-}
-
-void handle_blacklist(void*)
-{
-	LLFloaterBlacklist::show();
-}
-
-void handle_close_all_notifications(void*)
-{
-	LLView::child_list_t child_list(*(gNotifyBoxView->getChildList()));
-	for(LLView::child_list_iter_t iter = child_list.begin();
-		iter != child_list.end();
-		iter++)
-	{
-		gNotifyBoxView->removeChild(*iter);
-	}
-}
-
-void handle_area_search(void*)
-{
-	JCFloaterAreaSearch::toggle();
-}
-
 void handle_fake_away_status(void*)
 {
 	bool fake_away = gSavedSettings.getBOOL("FakeAway");
 	gAgent.sendAnimationRequest(ANIM_AGENT_AWAY, fake_away ? ANIM_REQUEST_STOP : ANIM_REQUEST_START);
 	gSavedSettings.setBOOL("FakeAway", !fake_away);
-}
-
-void handle_force_ground_sit(void*)
-{
-	if (isAgentAvatarValid())
-	{
-		if (!gAgentAvatarp->isSitting())
-		{
-			gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
-		} 
-		else
-		{
-			gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
-		}
-	}
 }
 
 // </edit>
@@ -6704,6 +6620,18 @@ class LLFloaterVisible : public view_listener_t
 		{
 			new_value = LLFloaterPathfindingCharacters::instanceVisible(LLSD());
 		}
+		else if (floater_name == "object_area_search")
+		{
+			new_value = JCFloaterAreaSearch::visible();
+		}
+		else if (floater_name == "sound_explorer")
+		{
+			new_value = LLFloaterExploreSounds::visible();
+		}
+		else if (floater_name == "asset_blacklist")
+		{
+			new_value = LLFloaterBlacklist::visible();
+		}
 		gMenuHolder->findControl(control_name)->setValue(new_value);
 		return true;
 	}
@@ -9269,6 +9197,192 @@ class LLWorldDayCycle : public view_listener_t
 	}
 };
 
+
+class SinguCloseAllDialogs : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLView::child_list_t child_list(*(gNotifyBoxView->getChildList()));
+		for(LLView::child_list_iter_t iter = child_list.begin();
+			iter != child_list.end();
+			iter++)
+		{
+			gNotifyBoxView->removeChild(*iter);
+		}
+		return true;
+	}
+};
+
+class SinguForceGroundSit : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		if (isAgentAvatarValid())
+		{
+			if (!gAgentAvatarp->isSitting())
+			{
+				gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
+			} 
+			else
+			{
+				gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
+			}
+		}
+		return true;
+	}
+};
+
+class SinguAnimationOverride : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLFloaterAO::show(NULL);
+
+		return true;
+	}
+};
+
+class SinguNimble : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+        BOOL checked = gSavedSettings.getBOOL("Nimble");
+        gSavedSettings.setBOOL("Nimble", !checked);
+
+		return true;
+	}
+};
+
+class SinguCheckNimble : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+        BOOL checked = gSavedSettings.getBOOL("Nimble");
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(checked);
+
+		return true;
+	}
+};
+
+class SinguObjectAreaSearch : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		JCFloaterAreaSearch::toggle();
+
+		return true;
+	}
+};
+
+class SinguSoundExplorer : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLFloaterExploreSounds::toggle();
+
+		return true;
+	}
+};
+
+class SinguAssetBlacklist : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLFloaterBlacklist::toggle();
+
+		return true;
+	}
+};
+
+class SinguStreamingAudioDisplay : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		handle_ticker_toggle(NULL);
+
+		return true;
+	}
+};
+
+class SinguCheckStreamingAudioDisplay : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool checked =  handle_singleton_check<SHFloaterMediaTicker>(NULL);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(checked);
+
+		return true;
+	}
+};
+
+class SinguEnableStreamingAudioDisplay : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		return handle_ticker_enabled(NULL);
+	}
+};
+
+class SinguPoseStand : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		handle_toggle_pose(NULL);
+
+		return true;
+	}
+};
+
+class SinguCheckPoseStand : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool checked = handle_check_pose(NULL);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(checked);
+		return true;
+	}
+};
+
+class SinguRebake : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		handle_rebake_textures(NULL);
+		return true;
+	}
+};
+
+class SinguDebugConsole : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		handle_singleton_toggle<LLFloaterRegionDebugConsole>(NULL);
+		return true;
+	}
+};
+
+class SinguCheckDebugConsole : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool checked = handle_singleton_check<LLFloaterRegionDebugConsole>(NULL);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(checked);
+		return true;
+	}
+};
+
+class SinguVisibleDebugConsole : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool visible = !(gAgent.getRegion()->getCapability("SimConsoleAsync").empty());
+		LLView* item = gMenuBarView->getChildView("Region Debug Console", true, false);
+		item->setVisible(visible);
+
+		return true;
+	}
+};
+
 void addMenu(view_listener_t *menu, const std::string& name)
 {
 	sMenus.push_back(menu);
@@ -9543,6 +9657,26 @@ void initialize_menus()
 	addMenu(new LLSomethingSelectedNoHUD(), "SomethingSelectedNoHUD");
 	addMenu(new LLEditableSelected(), "EditableSelected");
 	addMenu(new LLEditableSelectedMono(), "EditableSelectedMono");
+
+	// Singularity menu
+	addMenu(new SinguCloseAllDialogs(), "CloseAllDialogs");
+	// ---- Fake away handled elsewhere
+	addMenu(new SinguForceGroundSit(), "ForceGroundSit");
+	addMenu(new SinguAnimationOverride(), "AnimationOverride");
+	addMenu(new SinguNimble(), "Nimble");
+	addMenu(new SinguCheckNimble(), "CheckNimble");
+	addMenu(new SinguObjectAreaSearch(), "ObjectAreaSearch");
+	addMenu(new SinguSoundExplorer(), "SoundExplorer");
+	addMenu(new SinguAssetBlacklist(), "AssetBlacklist");
+	addMenu(new SinguStreamingAudioDisplay(), "StreamingAudioDisplay");
+	addMenu(new SinguEnableStreamingAudioDisplay(), "EnableStreamingAudioDisplay");
+	addMenu(new SinguCheckStreamingAudioDisplay(), "CheckStreamingAudioDisplay");
+	addMenu(new SinguPoseStand(), "PoseStand");
+	addMenu(new SinguCheckPoseStand(), "CheckPoseStand");
+	addMenu(new SinguRebake(), "Rebake");
+	addMenu(new SinguDebugConsole(), "RegionDebugConsole");
+	addMenu(new SinguCheckDebugConsole(), "CheckRegionDebugConsole");
+	addMenu(new SinguVisibleDebugConsole(), "VisibleRegionDebugConsole");
 
 // [RLVa:KB] - Checked: 2010-01-18 (RLVa-1.1.0m) | Added: RLVa-1.1.0m | OK
 	if (rlv_handler_t::isEnabled())

@@ -145,6 +145,14 @@ void JCFloaterAreaSearch::toggle()
 }
 
 // static
+BOOL JCFloaterAreaSearch::visible()
+{
+	if (sInstance)
+		return sInstance->getVisible();
+	return FALSE;
+}
+
+// static
 void JCFloaterAreaSearch::onDoubleClick(void *userdata)
 {
 	JCFloaterAreaSearch *self = (JCFloaterAreaSearch*)userdata;

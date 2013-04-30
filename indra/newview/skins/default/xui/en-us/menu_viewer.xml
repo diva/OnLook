@@ -979,4 +979,75 @@
 			<on_click function="ShowFloater" userdata="about" />
 		</menu_item_call>
 	</menu>
+	<menu create_jump_keys="true" drop_shadow="true" enabled="true"
+			label="Singularity" mouse_opaque="false" name="Singularity"
+			opaque="true" tear_off="true">
+		<menu_item_call enabled="true" label="Close All Dialogs"
+				mouse_opaque="true" name="Close All Dialogs"
+				shortcut="control|alt|shift|D">
+			<on_click function="CloseAllDialogs" userdata="" />
+		</menu_item_call>
+		<menu_item_separator enabled="true" label="-----------"
+			    mouse_opaque="true" name="separators1" />
+		<menu_item_call enabled="true" label="Fake Away Status"
+				mouse_opaque="true" name="Fake Away Status">
+			<on_click function="World.FakeAway" userdata="" />
+		</menu_item_call>
+		<menu_item_call enabled="true" label="Force Ground Sit"
+				mouse_opaque="true" name="Force Ground Sit">
+			<on_click function="ForceGroundSit" userdata="" />
+		</menu_item_call>
+		<menu_item_separator enabled="true" label="-----------"
+			    mouse_opaque="true" name="separators2" />
+		<menu_item_call enabled="true" label="Animation Override ..."
+				mouse_opaque="true" name="Animation Override ...">
+			<on_click function="AnimationOverride" userdata="" />
+		</menu_item_call>
+		<menu_item_check enabled="true" label="Nimble"
+				mouse_opaque="true" name="Nimble">
+			<on_click function="Nimble" userdata="" />
+			<on_check function="CheckNimble" userdata="" />
+		</menu_item_check>
+		<menu_item_separator enabled="true" label="-----------"
+			    mouse_opaque="true" name="separators3" />
+		<menu_item_check enabled="true" label="Object Area Search"
+				mouse_opaque="true" name="Object Area Search">
+			<on_click function="ObjectAreaSearch" userdata="" />
+			<on_check function="FloaterVisible" userdata="object_area_search" />
+		</menu_item_check>
+		<menu_item_check enabled="true" label="Sound Explorer"
+				mouse_opaque="true" name="Sound Explorer">
+			<on_click function="SoundExplorer" userdata="" />
+			<on_check function="FloaterVisible" userdata="sound_explorer" />
+		</menu_item_check>
+		<menu_item_check enabled="true" label="Asset Blacklist"
+				mouse_opaque="true" name="Asset Blacklist">
+			<on_click function="AssetBlacklist" userdata="" />
+			<on_check function="FloaterVisible" userdata="asset_blacklist" />
+		</menu_item_check>
+		<menu_item_check enabled="true" label="Streaming Audio Display"
+				mouse_opaque="true" name="Streaming Audio Display">
+			<on_click function="StreamingAudioDisplay" userdata="" />
+			<on_check function="CheckStreamingAudioDisplay" userdata="" />
+			<on_enable function="EnableStreamingAudioDisplay" />
+		</menu_item_check>
+		<menu_item_check enabled="true" label="Pose Stand"
+				mouse_opaque="true" name="Pose Stand">
+			<on_click function="PoseStand" userdata="" />
+			<on_check function="CheckPoseStand" userdata="" />
+		</menu_item_check>
+		<menu_item_check enabled="true" label="Region Debug Console"
+				mouse_opaque="true" name="Region Debug Console">
+			<on_click function="RegionDebugConsole" userdata="" />
+			<on_check function="CheckRegionDebugConsole" userdata="" />
+			<on_visible function="VisibleRegionDebugConsole" userdata="" />
+		</menu_item_check>
+		<menu_item_separator enabled="true" label="-----------"
+			    mouse_opaque="true" name="separators3" />
+		<menu_item_call enabled="true" label="Rebake"
+				mouse_opaque="true" name="Pose Stand"
+				shortcut="control|alt|R">
+			<on_click function="Rebake" userdata="" />
+		</menu_item_call>
+	</menu>
 </menu_bar>
