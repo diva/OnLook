@@ -37,6 +37,9 @@
 		<on_click function="Object.ImportUpload" />
 		<on_enable function="Object.EnableImport" />
 	</menu_item_call>
+	<menu_item_call label="Change Local Textures" mouse_opaque="true" name="Change Local Textures">
+		<on_click function="File.LocalAssetBrowser"/>
+	</menu_item_call>
     <menu_item_separator enabled="true" label="-----------" mouse_opaque="true" name="separator" />
     <menu_item_call enabled="true" label="Set Default Permissions..." 
         mouse_opaque="true" name="perm prefs" >
@@ -44,6 +47,9 @@
     </menu_item_call>
 		<menu_item_separator bottom="-94" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator" width="243" />
+		<menu_item_call label="Minimize All Windows" mouse_opaque="true" name="Minimize All Windows">
+			<on_click function="File.MinimizeAllWindows"/>
+		</menu_item_call>
 		<menu_item_call bottom="-113" enabled="true" height="19" label="Close Window" left="0"
 		     mouse_opaque="true" name="Close Window" shortcut="control|W" width="243">
 			<on_click function="File.CloseWindow" userdata="" />

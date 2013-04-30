@@ -1238,6 +1238,7 @@ void open_inventory_offer(const uuid_vec_t& objects, const std::string& from_nam
 		}
 
 		if (gSavedSettings.getBOOL("ShowInInventory") &&
+		   objects.size() == 1 && item != NULL &&
 		   asset_type != LLAssetType::AT_CALLINGCARD &&
 		   item->getInventoryType() != LLInventoryType::IT_ATTACHMENT &&
 		   !from_name.empty())
