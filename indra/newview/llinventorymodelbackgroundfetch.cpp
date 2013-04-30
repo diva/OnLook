@@ -37,6 +37,7 @@
 #include "llviewermessage.h"
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
+#include "hippogridmanager.h"
 
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy inventoryModelFetchDescendentsResponder_timeout;
@@ -201,10 +202,20 @@ void LLInventoryModelBackgroundFetch::backgroundFetch()
 		std::string url = region->getCapability("FetchInventory2");
 		if (gSavedSettings.getBOOL("UseHTTPInventory") && !url.empty())
 		{
+			if (!mPerServicePtr)
+			{
+				// One time initialization needed for bulkFetch().
+				std::string servicename = AIPerService::extract_canonical_servicename(url);
+				if (!servicename.empty())
+				{
+					llinfos << "Initialized service name for bulk inventory fetching with \"" << servicename << "\"." << llendl;
+					mPerServicePtr = AIPerService::instance(servicename);
+				}
+			}
 			bulkFetch();
 			return;
 		}
-		
+
 #if 1
 		//--------------------------------------------------------------------------------
 		// DEPRECATED OLD CODE
@@ -578,28 +589,20 @@ BOOL LLInventoryModelFetchDescendentsResponder::getIsRecursive(const LLUUID& cat
 }
 
 // Bundle up a bunch of requests to send all at once.
-// static   
 void LLInventoryModelBackgroundFetch::bulkFetch()
 {
 	//Background fetch is called from gIdleCallbacks in a loop until background fetch is stopped.
 	//If there are items in mFetchQueue, we want to check the time since the last bulkFetch was 
 	//sent.  If it exceeds our retry time, go ahead and fire off another batch.  
 	LLViewerRegion* region = gAgent.getRegion();
-	if (!region) return;
+	if (gDisconnected || !region) return;
 
-	S16 max_concurrent_fetches=8;
-	F32 new_min_time = 0.5f;			//HACK!  Clean this up when old code goes away entirely.
-	if (mMinTimeBetweenFetches < new_min_time) 
+	static LLCachedControl<F32> const throttle_bandwidth("HTTPThrottleBandwidth", 2000);
+	bool const no_bandwidth_throttling = gHippoGridManager->getConnectedGrid()->isAvination();
+	if (!AIPerService::wantsMoreHTTPRequestsFor(mPerServicePtr, throttle_bandwidth, no_bandwidth_throttling))
 	{
-		mMinTimeBetweenFetches=new_min_time;  //HACK!  See above.
+		return;		// Wait.
 	}
-	
-	if (gDisconnected ||
-		(mFetchCount > max_concurrent_fetches) ||
-		(mFetchTimer.getElapsedTimeF32() < mMinTimeBetweenFetches))
-	{
-		return; // just bail if we are disconnected
-	}	
 
 	U32 item_count=0;
 	U32 folder_count=0;

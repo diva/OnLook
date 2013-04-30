@@ -29,6 +29,7 @@
 
 #include "llsingleton.h"
 #include "lluuid.h"
+#include "aicurlperservice.h"
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLInventoryModelBackgroundFetch
@@ -80,6 +81,8 @@ private:
 	S16 mFetchCount;
 	BOOL mTimelyFetchPending;
 	S32  mNumFetchRetries;
+
+	AIPerServicePtr mPerServicePtr;		// Pointer to the AIPerService corresponding to the FetchInventory2 capability.
 
 	LLFrameTimer mFetchTimer;
 	F32 mMinTimeBetweenFetches;
