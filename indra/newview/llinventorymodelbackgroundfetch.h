@@ -75,7 +75,7 @@ private:
 	BOOL mRecursiveLibraryFetchStarted;
 	BOOL mAllFoldersFetched;
 
-	BOOL mBackgroundFetchActive;
+	BOOL mBackgroundFetchActive;		// TRUE if LLInventoryModelBackgroundFetch::backgroundFetchCB is being called from idle().
 	bool mFolderFetchActive;
 	S16 mFetchCount;
 	BOOL mTimelyFetchPending;

@@ -115,7 +115,6 @@ void LLInventoryModelBackgroundFetch::start(const LLUUID& id, BOOL recursive)
 	{	// it's a folder, do a bulk fetch
 		LL_DEBUGS("InventoryFetch") << "Start fetching category: " << id << ", recursive: " << recursive << LL_ENDL;
 
-		mBackgroundFetchActive = TRUE;
 		mFolderFetchActive = true;
 		if (id.isNull())
 		{
@@ -124,12 +123,14 @@ void LLInventoryModelBackgroundFetch::start(const LLUUID& id, BOOL recursive)
 				mRecursiveInventoryFetchStarted |= recursive;
 				mFetchQueue.push_back(FetchQueueInfo(gInventory.getRootFolderID(), recursive));
 				gIdleCallbacks.addFunction(&LLInventoryModelBackgroundFetch::backgroundFetchCB, NULL);
+				mBackgroundFetchActive = TRUE;
 			}
 			if (!mRecursiveLibraryFetchStarted)
 			{
 				mRecursiveLibraryFetchStarted |= recursive;
 				mFetchQueue.push_back(FetchQueueInfo(gInventory.getLibraryRootFolderID(), recursive));
 				gIdleCallbacks.addFunction(&LLInventoryModelBackgroundFetch::backgroundFetchCB, NULL);
+				mBackgroundFetchActive = TRUE;
 			}
 		}
 		else
@@ -139,6 +140,7 @@ void LLInventoryModelBackgroundFetch::start(const LLUUID& id, BOOL recursive)
 			{
 				mFetchQueue.push_front(FetchQueueInfo(id, recursive));
 				gIdleCallbacks.addFunction(&LLInventoryModelBackgroundFetch::backgroundFetchCB, NULL);
+				mBackgroundFetchActive = TRUE;
 			}
 			if (id == gInventory.getLibraryRootFolderID())
 			{
@@ -178,6 +180,11 @@ void LLInventoryModelBackgroundFetch::setAllFoldersFetched()
 		mAllFoldersFetched = TRUE;
 	}
 	mFolderFetchActive = false;
+	if (mBackgroundFetchActive)
+	{
+	  gIdleCallbacks.deleteFunction(&LLInventoryModelBackgroundFetch::backgroundFetchCB, NULL);
+	  mBackgroundFetchActive = FALSE;
+	}
 }
 
 void LLInventoryModelBackgroundFetch::backgroundFetchCB(void *)
@@ -207,10 +214,7 @@ void LLInventoryModelBackgroundFetch::backgroundFetch()
 		if (mFetchQueue.empty())
 		{
 			llinfos << "Inventory fetch completed" << llendl;
-
 			setAllFoldersFetched();
-			mBackgroundFetchActive = false;
-			mFolderFetchActive = false;
 
 			return;
 		}
@@ -395,7 +399,6 @@ class LLInventoryModelFetchDescendentsResponder : public LLHTTPClient::Responder
 		mRequestSD(request_sd),
 		mRecursiveCatUUIDs(recursive_cats)
 	{};
-	//LLInventoryModelFetchDescendentsResponder() {};
 	/*virtual*/ void result(const LLSD& content);
 	/*virtual*/ void error(U32 status, const std::string& reason);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return inventoryModelFetchDescendentsResponder_timeout; }
@@ -750,6 +753,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 
 	else if (isBulkFetchProcessingComplete())
 	{
+		llinfos << "Inventory fetch completed" << llendl;
 		setAllFoldersFetched();
 	}
 }
