@@ -93,6 +93,9 @@ class AIPerService {
 	AIPerService(void);
 
   public:
+	~AIPerService();
+
+  public:
 	typedef instance_map_type::iterator iterator;
 	typedef instance_map_type::const_iterator const_iterator;
 
@@ -159,7 +162,7 @@ class AIPerService {
 
   private:
 	// Disallow copying.
-	AIPerService(AIPerService const&) : mHTTPBandwidth(0) { }
+	AIPerService(AIPerService const&);
 };
 
 namespace AICurlPrivate {
