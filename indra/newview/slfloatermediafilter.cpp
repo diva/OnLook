@@ -45,7 +45,7 @@ SLFloaterMediaFilter* SLFloaterMediaFilter::sInstance = NULL;
 bool SLFloaterMediaFilter::sIsWhitelist = false;
 bool SLFloaterMediaFilter::sShowIPs = false;
 
-SLFloaterMediaFilter::SLFloaterMediaFilter() : LLFloater(std::string("media filter")), mIsDirty(false)
+SLFloaterMediaFilter::SLFloaterMediaFilter(const LLSD& key) : LLFloater(std::string("media filter")), mIsDirty(false)
 {
     LLUICtrlFactory::getInstance()->buildFloater(this, "floater_media_filter.xml");
 }
@@ -203,38 +203,6 @@ void SLFloaterMediaFilter::setDirty()
 	{
 		sInstance->mIsDirty = true;
 		sInstance->draw();
-	}
-}
-
-BOOL SLFloaterMediaFilter::instanceVisible()
-{
-	if (sInstance)
-	{
-		return sInstance->getVisible();
-	}
-	else
-	{
-		return FALSE;
-	}
-}
-
-void SLFloaterMediaFilter::toggleInstance()
-{
-	if (sInstance)
-	{
-		if (sInstance->getVisible())
-		{
-			sInstance->destroy();
-		}
-		else
-		{
-			sInstance->open();
-		}
-	}
-	else
-	{
-		sInstance = new SLFloaterMediaFilter();
-    	sInstance->open();
 	}
 }
 

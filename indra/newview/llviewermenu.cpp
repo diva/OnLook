@@ -6643,6 +6643,64 @@ void handle_viewer_disable_message_log(void*)
 	gMessageSystem->stopLogging();
 }
 
+struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
+{
+	typedef std::map<const std::string, std::pair<boost::function<void ()>, boost::function<bool ()> > > menu_floater_map_t;
+	menu_floater_map_t mEntries;
+	MenuFloaterDict()
+	{
+		registerFloater("about",		boost::bind(&LLFloaterAbout::show,(void*)NULL));
+		//registerFloater("about region", boost::bind(&LLFloaterRegionInfo::showInstance,LLSD()));
+		registerFloater("buy currency", boost::bind(&LLFloaterBuyCurrency::buyCurrency));
+		registerFloater("displayname",	boost::bind(&LLFloaterDisplayName::show));
+		//registerFloater("friends",		boost::bind(&LLFloaterMyFriends::toggleInstance,0),			boost::bind(&LLFloaterMyFriends::instanceVisible,0));
+		registerFloater("gestures",		boost::bind(&LLFloaterGesture::toggleVisibility),			boost::bind(&LLFloaterGesture::instanceVisible));
+		registerFloater("grid options",	boost::bind(&LLFloaterBuildOptions::show,(void*)NULL));
+		registerFloater("help tutorial",boost::bind(&LLFloaterHUD::showHUD));
+		registerFloater("im",			boost::bind(&LLFloaterChatterBox::toggleInstance,LLSD()),	boost::bind(&LLFloaterMyFriends::instanceVisible,0));
+		//registerFloater("lag meter",	boost::bind(&LLFloaterLagMeter::showInstance,LLSD()));
+		registerFloater("my land",		boost::bind(&LLFloaterLandHoldings::show,(void*)NULL));
+		registerFloater("preferences",	boost::bind(&LLFloaterPreference::show,(void*)NULL));
+		registerFloater("script errors",boost::bind(&LLFloaterScriptDebug::show,LLUUID::null));
+		//registerFloater("script info",	boost::bind(&LLFloaterScriptLimits::showInstance,LLSD()));
+		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
+		registerFloater("toolbar",		boost::bind(&LLToolBar::toggle,(void*)NULL),				boost::bind(&LLToolBar::visible,(void*)NULL));
+		registerFloater("world map",	boost::bind(&LLFloaterWorldMap::toggle,(void*)NULL));
+		
+		registerFloater<LLFloaterLand>				("about land");
+		registerFloater<LLFloaterRegionInfo>		("about region");
+		registerFloater<LLFloaterActiveSpeakers>	("active speakers");
+		registerFloater<JCFloaterAreaSearch>		("areasearch");
+		registerFloater<LLFloaterBeacons>			("beacons");
+		registerFloater<LLFloaterCamera>			("camera controls");
+		registerFloater<LLFloaterChat>				("chat history");
+		registerFloater<LLFloaterChatterBox>		("communicate");
+		registerFloater<LLFloaterMyFriends>			("friends",0);
+		registerFloater<LLFloaterLagMeter>			("lag meter");
+		registerFloater<SLFloaterMediaFilter>		("media filter");
+		registerFloater<LLFloaterMap>				("mini map");
+		registerFloater<LLFloaterMove>				("movement controls");
+		registerFloater<LLFloaterMute>				("mute list");
+		registerFloater<LLFloaterOutbox>			("outbox");
+		registerFloater<LLFloaterPerms>				("perm prefs");
+		registerFloater<LLFloaterScriptLimits>		("script info");
+		registerFloater<LLFloaterStats>				("stat bar");
+		registerFloater<LLFloaterTeleportHistory>	("teleport history");
+		registerFloater<LLFloaterPathfindingCharacters>	("pathfinding_characters");
+		registerFloater<LLFloaterPathfindingLinksets>	("pathfinding_linksets");
+	}
+	void registerFloater(const std::string& name, boost::function<void ()> show, boost::function<bool ()> visible = NULL)
+	{
+		mEntries.insert( std::make_pair( name, std::make_pair( show, visible ) ) ); 
+	}
+	template <typename T>
+	void registerFloater(const std::string& name, const LLSD& key = LLSD())
+	{
+		registerFloater(name, boost::bind(&T::toggleInstance,key), boost::bind(&T::instanceVisible,key));
+	}
+
+};
+
 // TomY TODO: Move!
 class LLShowFloater : public view_listener_t
 {
@@ -6650,9 +6708,10 @@ class LLShowFloater : public view_listener_t
 	{
 		std::string floater_name = userdata.asString();
 		if (floater_name.empty()) return false;
-		if (floater_name == "gestures")
+		MenuFloaterDict::menu_floater_map_t::iterator it = MenuFloaterDict::instance().mEntries.find(floater_name);
+		if(it != MenuFloaterDict::instance().mEntries.end() && it->second.first != NULL)
 		{
-			LLFloaterGesture::toggleVisibility();
+			it->second.first();
 		}
 		else if (floater_name == "appearance")
 		{
@@ -6665,74 +6724,9 @@ class LLShowFloater : public view_listener_t
 		{
 			new LLMakeOutfitDialog(false);
 		}
-		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
-		else if (floater_name == "displayname")
-		{
-			LLFloaterDisplayName::show();
-		}
-		else if (floater_name == "friends")
-		{
-			LLFloaterMyFriends::toggleInstance(0);
-		}
-		else if (floater_name == "preferences")
-		{
-			LLFloaterPreference::show(NULL);
-		}
-		else if (floater_name == "toolbar")
-		{
-			LLToolBar::toggle(NULL);
-		}
-		else if (floater_name == "chat history")
-		{
-			LLFloaterChat::toggleInstance(LLSD());
-		}
-		else if (floater_name == "teleport history")
-		{
-			LLFloaterTeleportHistory::toggleInstance();
-		}
-		else if (floater_name == "im")
-		{
-			LLFloaterChatterBox::toggleInstance(LLSD());
-		}
 		else if (floater_name == "inventory")
 		{
 			LLInventoryView::toggleVisibility(NULL);
-		}
-		else if (floater_name == "mute list")
-		{
-			LLFloaterMute::toggleInstance();
-		}
-		else if (floater_name == "media filter")
-		{
-			SLFloaterMediaFilter::toggleInstance();
-		}
-		else if (floater_name == "camera controls")
-		{
-			LLFloaterCamera::toggleInstance();
-		}
-		else if (floater_name == "movement controls")
-		{
-			LLFloaterMove::toggleInstance();
-		}
-		else if (floater_name == "world map")
-		{
-			LLFloaterWorldMap::toggle(NULL);
-		}
-		else if (floater_name == "mini map")
-		{
-			LLFloaterMap::toggleInstance();
-		}
-		else if (floater_name == "stat bar")
-		{
-			LLFloaterStats::toggleInstance();
-		}
-		else if (floater_name == "my land")
-		{
-			LLFloaterLandHoldings::show(NULL);
-		}
-		else if (floater_name == "about land")
-		{
-			LLFloaterLand::showInstance();
 		}
 		else if (floater_name == "buy land")
 		{
@@ -6749,35 +6743,13 @@ class LLShowFloater : public view_listener_t
 			
 			LLViewerParcelMgr::getInstance()->startBuyLand();
 		}
-		else if (floater_name == "about region")
-		{
-			LLFloaterRegionInfo::showInstance();
-		}
-		else if (floater_name == "areasearch")
-		{
-			JCFloaterAreaSearch::toggleInstance();
-		}
-		else if (floater_name == "grid options")
-		{
-			LLFloaterBuildOptions::show(NULL);
-		}
-		else if (floater_name == "script errors")
-		{
-			LLFloaterScriptDebug::show(LLUUID::null);
-		}
-		else if (floater_name == "script info")
-		{
-			LLFloaterScriptLimits::showInstance();
-		}
+
 		else if (floater_name == "help f1")
 		{
 			llinfos << "Spawning HTML help window" << llendl;
 			gViewerHtmlHelp.show();
 		}
-		else if (floater_name == "help tutorial")
-		{
-			LLFloaterHUD::showHUD();
-		}
+
 		else if (floater_name == "complaint reporter")
 		{
 			// Prevent menu from appearing in screen shot.
@@ -6791,47 +6763,11 @@ class LLShowFloater : public view_listener_t
 				LLFloaterBump::show(NULL);
 			}
 		}
-		else if (floater_name == "lag meter")
-		{
-			LLFloaterLagMeter::showInstance();
-		}
 		else if (floater_name == "bug reporter")
 		{
 			// Prevent menu from appearing in screen shot.
 			gMenuHolder->hideMenus();
 			LLFloaterReporter::showFromMenu(BUG_REPORT);
-		}
-		else if (floater_name == "buy currency")
-		{
-			LLFloaterBuyCurrency::buyCurrency();
-		}
-		else if (floater_name == "about")
-		{
-			LLFloaterAbout::show(NULL);
-		}
-		else if (floater_name == "active speakers")
-		{
-			LLFloaterActiveSpeakers::toggleInstance(LLSD());
-		}
-		else if (floater_name == "beacons")
-		{
-			LLFloaterBeacons::toggleInstance(LLSD());
-		}
-		else if (floater_name == "perm prefs")
-		{
-			LLFloaterPerms::toggleInstance(LLSD());
-		}
-		else if (floater_name == "outbox")
-		{
-			LLFloaterOutbox::toggleInstance(LLSD());
-		}
-		else if (floater_name == "pathfinding_linksets")
-		{
-			LLFloaterPathfindingLinksets::toggleInstance(LLSD());
-		}
-		else if (floater_name == "pathfinding_characters")
-		{
-			LLFloaterPathfindingCharacters::toggleInstance(LLSD());
 		}
 		else // Simple codeless floater
 		{
@@ -6852,80 +6788,15 @@ class LLFloaterVisible : public view_listener_t
 		std::string control_name = userdata["control"].asString();
 		std::string floater_name = userdata["data"].asString();
 		bool new_value = false;
-		if (floater_name == "friends")
+		MenuFloaterDict::menu_floater_map_t::iterator it = MenuFloaterDict::instance().mEntries.find(floater_name);
+		if(it != MenuFloaterDict::instance().mEntries.end() && it->second.second != NULL)
 		{
-			new_value = LLFloaterMyFriends::instanceVisible(0);
-		}
-		else if (floater_name == "communicate")
-		{
-			new_value = LLFloaterChatterBox::instanceVisible();
-		}
-		else if (floater_name == "toolbar")
-		{
-			new_value = LLToolBar::visible(NULL);
-		}
-		else if (floater_name == "chat history")
-		{
-			new_value = LLFloaterChat::instanceVisible();
-		}
-		else if (floater_name == "teleport history")
-		{
-			new_value = LLFloaterTeleportHistory::instanceVisible();
-		}
-		else if (floater_name == "im")
-		{
-			new_value = LLFloaterMyFriends::instanceVisible(0);
-		}
-		else if (floater_name == "mute list")
-		{
-			new_value = LLFloaterMute::instanceVisible();
-		}
-		else if (floater_name == "media filter")
-		{
-			new_value = SLFloaterMediaFilter::instanceVisible();
-		}
-		else if (floater_name == "camera controls")
-		{
-			new_value = LLFloaterCamera::instanceVisible();
-		}
-		else if (floater_name == "movement controls")
-		{
-			new_value = LLFloaterMove::instanceVisible();
-		}
-		else if (floater_name == "stat bar")
-		{
-			new_value = LLFloaterStats::instanceVisible();
-		}
-		else if (floater_name == "active speakers")
-		{
-			new_value = LLFloaterActiveSpeakers::instanceVisible(LLSD());
-		}
-		else if (floater_name == "beacons")
-		{
-			new_value = LLFloaterBeacons::instanceVisible(LLSD());
+			new_value = it->second.second();
 		}
 		else if (floater_name == "inventory")
 		{
 			LLInventoryView* iv = LLInventoryView::getActiveInventory(); 
 			new_value = (NULL != iv && TRUE == iv->getVisible());
-		}
-		else if (floater_name == "areasearch")
-		{
-			JCFloaterAreaSearch* instn = JCFloaterAreaSearch::getInstance();
-			if (!instn) new_value = false;
-			else new_value = instn->getVisible();
-		}
-		else if (floater_name == "outbox")
-		{
-			new_value = LLFloaterOutbox::instanceVisible(LLSD());
-		}
-		else if (floater_name == "pathfinding_linksets")
-		{
-			new_value = LLFloaterPathfindingLinksets::instanceVisible(LLSD());
-		}
-		else if (floater_name == "pathfinding_characters")
-		{
-			new_value = LLFloaterPathfindingCharacters::instanceVisible(LLSD());
 		}
 		gMenuHolder->findControl(control_name)->setValue(new_value);
 		return true;

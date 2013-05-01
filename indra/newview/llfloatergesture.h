@@ -64,6 +64,7 @@ public:
 	static void show();
 	static void toggleVisibility();
 	static void refreshAll();
+	static bool instanceVisible();
 
 protected:
 	// Reads from the gesture manager's list of active gestures
