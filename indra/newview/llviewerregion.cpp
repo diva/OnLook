@@ -247,6 +247,14 @@ public:
 		LLSD::map_const_iterator iter;
 		for(iter = content.beginMap(); iter != content.endMap(); ++iter)
 		{
+			if (!gSavedSettings.getBOOL("UseHTTPInventory"))
+			{
+				if (iter->first == "FetchLib2" ||
+					iter->first == "FetchLibDescendents2" ||
+					iter->first == "FetchInventory2" ||
+					iter->first == "FetchInventoryDescendents2")
+					continue;
+			}
 			regionp->setCapability(iter->first, iter->second);
 			LL_DEBUGS2("AppInit", "Capabilities") << "got capability for " 
 				<< iter->first << LL_ENDL;
