@@ -1172,7 +1172,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			}
 			else
 			{
-				// This will happen if not logged in or if a region deoes not have HTTP Texture enabled
+				// This will happen if not logged in or if a region does not have HTTP Texture enabled
 				//llwarns << "Region not found for host: " << mHost << llendl;
 				mCanUseHTTP = false;
 			}

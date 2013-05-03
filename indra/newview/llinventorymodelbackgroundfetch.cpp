@@ -198,23 +198,26 @@ void LLInventoryModelBackgroundFetch::backgroundFetch()
 	LLViewerRegion* region = gAgent.getRegion();
 	if (mBackgroundFetchActive && region && region->capabilitiesReceived())
 	{
-		// If we'll be using the capability, we'll be sending batches and the background thing isn't as important.
-		std::string url = region->getCapability("FetchInventory2");
-		if (gSavedSettings.getBOOL("UseHTTPInventory") && !url.empty())
+		if (gSavedSettings.getBOOL("UseHTTPInventory"))
 		{
-			if (!mPerServicePtr)
+			// If we'll be using the capability, we'll be sending batches and the background thing isn't as important.
+			std::string url = region->getCapability("FetchInventory2");
+			if (!url.empty())
 			{
-				// One time initialization needed for bulkFetch().
-				std::string servicename = AIPerService::extract_canonical_servicename(url);
-				if (!servicename.empty())
+				if (!mPerServicePtr)
 				{
-					llinfos << "Initialized service name for bulk inventory fetching with \"" << servicename << "\"." << llendl;
-					mPerServicePtr = AIPerService::instance(servicename);
+					// One time initialization needed for bulkFetch().
+					std::string servicename = AIPerService::extract_canonical_servicename(url);
+					if (!servicename.empty())
+					{
+						llinfos << "Initialized service name for bulk inventory fetching with \"" << servicename << "\"." << llendl;
+						mPerServicePtr = AIPerService::instance(servicename);
+					}
 				}
+				bulkFetch();
+				return;
 			}
-			bulkFetch();
-			return;
-		}
+	  }
 
 #if 1
 		//--------------------------------------------------------------------------------
@@ -714,6 +717,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 			{
 				mFetchCount++;
 				url = region->getCapability("FetchInventory2");
+				llassert(!url.empty());
 				if (!url.empty())
 				{
 					LLSD body;
@@ -722,18 +726,6 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 
 					LLHTTPClient::post(url, body, new LLInventoryModelFetchItemResponder(body));
 				}
-				//else
-				//{
-				//	LLMessageSystem* msg = gMessageSystem;
-				//	msg->newMessage("FetchInventory");
-				//	msg->nextBlock("AgentData");
-				//	msg->addUUID("AgentID", gAgent.getID());
-				//	msg->addUUID("SessionID", gAgent.getSessionID());
-				//	msg->nextBlock("InventoryData");
-				//	msg->addUUID("OwnerID", mPermissions.getOwner());
-				//	msg->addUUID("ItemID", mUUID);
-				//	gAgent.sendReliableMessage();
-				//}
 			}
 
 			if (item_request_body_lib.size())
@@ -741,6 +733,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 				mFetchCount++;
 
 				url = region->getCapability("FetchLib2");
+				llassert(!url.empty());
 				if (!url.empty())
 				{
 					LLSD body;
