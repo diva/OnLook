@@ -1066,6 +1066,10 @@ bool LLFace::canRenderAsMask()
 	}
 
 	const LLTextureEntry* te = getTextureEntry();
+	if( !te || !getViewerObject() || !getTexture() )
+	{
+		return false;
+	}
 
 	static const LLCachedControl<bool> use_rmse_auto_mask("SHUseRMSEAutoMask",false);
 	static const LLCachedControl<F32> auto_mask_max_rmse("SHAutoMaskMaxRMSE",.09f);

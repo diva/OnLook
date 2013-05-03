@@ -30,7 +30,7 @@
 #include "llavatarappearancedefines.h"
 #include "llwearable.h"
 #include "llerror.h"
-#include "boost/array.hpp"
+#include <boost/array.hpp>
 
 class LLAvatarAppearance;
 
