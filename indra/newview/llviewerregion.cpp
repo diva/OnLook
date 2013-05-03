@@ -1638,15 +1638,10 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("EnvironmentSettings");
 	capabilityNames.append("EstateChangeInfo");
 	capabilityNames.append("EventQueueGet");
-	
-	if (gSavedSettings.getBOOL("UseHTTPInventory")) //Caps suffixed with 2 by LL. Don't update until rest of fetch system is updated first.
-	{
-		capabilityNames.append("FetchLib2");
-		capabilityNames.append("FetchLibDescendents2");
-		capabilityNames.append("FetchInventory2");
-		capabilityNames.append("FetchInventoryDescendents2");
-	}
-
+	capabilityNames.append("FetchLib2");
+	capabilityNames.append("FetchLibDescendents2");
+	capabilityNames.append("FetchInventory2");
+	capabilityNames.append("FetchInventoryDescendents2");
 	capabilityNames.append("GamingData"); //Used by certain grids.
 	capabilityNames.append("GetDisplayNames");
 	capabilityNames.append("GetMesh");

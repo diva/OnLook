@@ -81,6 +81,15 @@ AIPerService::AIPerService(void) :
 {
 }
 
+AIPerService::~AIPerService()
+{
+}
+
+// Fake copy constructor.
+AIPerService::AIPerService(AIPerService const&) : mHTTPBandwidth(0)
+{
+}
+
 // url must be of the form
 // (see http://www.ietf.org/rfc/rfc3986.txt Appendix A for definitions not given here):
 //

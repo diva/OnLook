@@ -141,7 +141,7 @@ if [ -n "$LL_TCMALLOC" ]; then
 fi
 
 export VIEWER_BINARY='singularity-do-not-run-directly'
-BINARY_TYPE=$(expr match "$(file -b bin/$VIEWER_BINARY)" '\(.*executable\)')
+BINARY_TYPE=$(expr match "$(file -b bin/$VIEWER_BINARY)" '\(.*executable\)' | sed -e 's/  / /g')
 if [ "${BINARY_TYPE}" == "ELF 64-bit LSB executable" ]; then
 	SL_ENV+='LD_LIBRARY_PATH="`pwd`/lib64:`pwd`/lib32:$LD_LIBRARY_PATH"'
 else
@@ -154,7 +154,7 @@ export SL_OPT="`cat gridargs.dat` $@"
 eval ${SL_ENV} ${SL_CMD} ${SL_OPT} || LL_RUN_ERR=runerr
 
 # Handle any resulting errors
-if [ -n "$LL_RUN_ERR" = "runerr" ]; then
+if [ -n "$LL_RUN_ERR" ]; then
 	# generic error running the binary
 	echo '*** Bad shutdown. ***'
 fi

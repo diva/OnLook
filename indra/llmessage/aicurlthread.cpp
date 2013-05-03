@@ -2624,7 +2624,7 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service, 
 	}
   }
 
-  // Check if it's ok to get a new request for this particular host and update the per-host threshold.
+  // Check if it's ok to get a new request for this particular service and update the per-service threshold.
 
   AIAverage* http_bandwidth_ptr;
 
