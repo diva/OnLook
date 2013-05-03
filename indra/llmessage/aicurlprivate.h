@@ -34,7 +34,7 @@
 #include <sstream>
 #include "llatomic.h"
 #include "llrefcount.h"
-#include "aicurlperhost.h"
+#include "aicurlperservice.h"
 #include "aihttptimeout.h"
 #include "llhttpclient.h"
 
@@ -304,8 +304,8 @@ class CurlEasyRequest : public CurlEasyHandle {
 	CURLcode mResult;		//AIFIXME: this does not belong in the request object, but belongs in the response object.
 
 	AIHTTPTimeoutPolicy const* mTimeoutPolicy;
-	std::string mLowercaseHostname;				// Lowercase hostname (canonicalized) extracted from the url.
-	PerHostRequestQueuePtr mPerHostPtr;			// Pointer to the corresponding PerHostRequestQueue.
+	std::string mLowercaseServicename;			// Lowercase hostname:port (canonicalized) extracted from the url.
+	AIPerServicePtr mPerServicePtr;				// Pointer to the corresponding AIPerService.
 	LLPointer<curlthread::HTTPTimeout> mTimeout;// Timeout administration object associated with last created CurlSocketInfo.
 	bool mTimeoutIsOrphan;						// Set to true when mTimeout is not (yet) associated with a CurlSocketInfo.
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
@@ -316,7 +316,8 @@ class CurlEasyRequest : public CurlEasyHandle {
   public:
 	// These two are only valid after finalizeRequest.
 	AIHTTPTimeoutPolicy const* getTimeoutPolicy(void) const { return mTimeoutPolicy; }
-	std::string const& getLowercaseHostname(void) const { return mLowercaseHostname; }
+	std::string const& getLowercaseServicename(void) const { return mLowercaseServicename; }
+	std::string getLowercaseHostname(void) const;
 	// Called by CurlSocketInfo to allow access to the last (after a redirect) HTTPTimeout object related to this request.
 	// This creates mTimeout (unless mTimeoutIsOrphan is set in which case it adopts the orphan).
 	LLPointer<curlthread::HTTPTimeout>& get_timeout_object(void);
@@ -347,10 +348,10 @@ class CurlEasyRequest : public CurlEasyHandle {
 	inline ThreadSafeBufferedCurlEasyRequest* get_lockobj(void);
 	inline ThreadSafeBufferedCurlEasyRequest const* get_lockobj(void) const;
 
-	// PerHost API.
-	PerHostRequestQueuePtr getPerHostPtr(void);						// (Optionally create and) return a pointer to the unique
-																	// PerHostRequestQueue corresponding to mLowercaseHostname.
-	bool removeFromPerHostQueue(AICurlEasyRequest const&) const;	// Remove this request from the per-host queue, if queued at all.
+	// PerService API.
+	AIPerServicePtr getPerServicePtr(void);							// (Optionally create and) return a pointer to the unique
+																	// AIPerService corresponding to mLowercaseServicename.
+	bool removeFromPerServiceQueue(AICurlEasyRequest const&) const;	// Remove this request from the per-host queue, if queued at all.
 																	// Returns true if it was queued.
   protected:
 	// Pass events to parent.
@@ -395,6 +396,9 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
     // Post-initialization, set the parent to pass the events to.
     void send_buffer_events_to(AIBufferedCurlEasyRequestEvents* target) { mBufferEventsTarget = target; }
 
+	// Called whenever new body data was (might be) received. Keeps track of the used HTTP bandwidth.
+	void update_body_bandwidth(void);
+
   protected:
 	// Events from this class.
 	/*virtual*/ void received_HTTP_header(void);
@@ -410,13 +414,14 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	U32 mStatus;										// HTTP status, decoded from the first header line.
 	std::string mReason;								// The "reason" from the same header line.
 	U32 mRequestTransferedBytes;
-	U32 mResponseTransferedBytes;
+	size_t mTotalRawBytes;								// Raw body data (still, possibly, compressed) received from the server so far.
 	AIBufferedCurlEasyRequestEvents* mBufferEventsTarget;
 
   public:
 	static LLChannelDescriptors const sChannels;		// Channel object for mInput (channel out()) and mOutput (channel in()).
 	static LLMutex sResponderCallbackMutex;				// Locked while calling back any overridden ResponderBase::finished and/or accessing sShuttingDown.
 	static bool sShuttingDown;							// If true, no additional calls to ResponderBase::finished will be made anymore.
+	static AIAverage sHTTPBandwidth;					// HTTP bandwidth usage of all services combined.
 
   private:
 	// This class may only be created by constructing a ThreadSafeBufferedCurlEasyRequest.

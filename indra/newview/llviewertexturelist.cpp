@@ -663,13 +663,15 @@ static LLFastTimer::DeclareTimer FTM_IMAGE_MEDIA("Media");
 void LLViewerTextureList::updateImages(F32 max_time)
 {
 	static BOOL cleared = FALSE;
-	static const LLCachedControl<bool> hide_tp_screen("AscentDisableTeleportScreens",false);
+	//Singu note: Don't clear vbos on local tp until some serious geom rebuild bugs are stomped out.
+	//Currently it causes prims to fail to rebuild when they should be popping back into visiblity.
+	//static const LLCachedControl<bool> hide_tp_screen("AscentDisableTeleportScreens",false);
 
 	//Can't check gTeleportDisplay due to a process_teleport_local(), which sets it to true for local teleports... so:
 	// Do this case if IS teleporting but NOT local teleporting, AND either the TP screen is set to appear OR we just entered the sim (TELEPORT_START_ARRIVAL)
 	LLAgent::ETeleportState state = gAgent.getTeleportState();
 	if(state != LLAgent::TELEPORT_NONE && state != LLAgent::TELEPORT_LOCAL && state != LLAgent::TELEPORT_PENDING &&
-		(!hide_tp_screen || state == LLAgent::TELEPORT_START_ARRIVAL || state == LLAgent::TELEPORT_ARRIVING))
+		(/*!hide_tp_screen ||*/ state == LLAgent::TELEPORT_START_ARRIVAL || state == LLAgent::TELEPORT_ARRIVING))
 	{
 		if(!cleared)
 		{
@@ -684,8 +686,6 @@ void LLViewerTextureList::updateImages(F32 max_time)
 		return;
 	}
 	cleared = FALSE;
-
-	LLAppViewer::getTextureFetch()->setTextureBandwidth(LLViewerStats::getInstance()->mTextureKBitStat.getMeanPerSec());
 
 	S32 global_raw_memory;
 	{
@@ -1340,6 +1340,7 @@ void LLViewerTextureList::receiveImageHeader(LLMessageSystem *msg, void **user_d
 	{
 		received_size = msg->getReceiveSize() ;		
 	}
+	// Only used for statistics and texture console.
 	gTextureList.sTextureBits += received_size * 8;
 	gTextureList.sTexturePackets++;
 	

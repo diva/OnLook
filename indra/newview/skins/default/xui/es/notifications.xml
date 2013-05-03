@@ -968,8 +968,8 @@ Podría ser [VALIDS]
 		No se ha podido crear el archivo de salida: [FILE]
 	</notification>
 	
-	<notification name="DoNotSupportBulkAnimationUpload">
-		Actualmente, no ofrecemos la posibilidad de subida masiva de archivos de animación.
+	<notification name="DoNotSupportBulkBVHAnimationUpload">
+		Actualmente, no ofrecemos la posibilidad de subida masiva de archivos de BVH animación.
 	</notification>
 	
 	<notification name="CannotUploadReason">

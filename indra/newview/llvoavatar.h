@@ -336,7 +336,6 @@ public:
 
 	S32				mLastRezzedStatus;
 
-	
 	void 			startPhase(const std::string& phase_name);
 	void 			stopPhase(const std::string& phase_name, bool err_check = true);
 	void			clearPhases();
@@ -371,6 +370,7 @@ protected:
 /**                    State
  **                                                                            **
  *******************************************************************************/
+
 /********************************************************************************
  **                                                                            **
  **                    SKELETON
@@ -755,7 +755,6 @@ public:
 public:
 	BOOL 				hasHUDAttachment() const;
 	LLBBox 				getHUDBBox() const;
-	void 				rebuildHUD();
 	void 				resetHUDAttachments();
 	BOOL				canAttachMoreObjects() const;
 	BOOL				canAttachMoreObjects(U32 n) const;
@@ -767,17 +766,10 @@ protected:
 	//--------------------------------------------------------------------
 public:
 	BOOL 			isWearingAttachment( const LLUUID& inv_item_id );
-	// <edit> testzone attachpt
-	BOOL 			isWearingUnsupportedAttachment( const LLUUID& inv_item_id );
-	// </edit>
 	LLViewerObject* getWornAttachment( const LLUUID& inv_item_id );
 
 	const std::string getAttachedPointName(const LLUUID& inv_item_id);
 
-	// <edit>
-	std::map<S32, std::pair<LLUUID/*inv*/,LLUUID/*object*/> > mUnsupportedAttachmentPoints;
-	// </edit>
-	
 /**                    Wearables
  **                                                                            **
  *******************************************************************************/
@@ -822,6 +814,7 @@ public:
 	void			stopTyping() { mTyping = FALSE; mIdleTimer.reset();}
 private:
 	BOOL			mVisibleChat;
+	bool			mVisibleTyping;
 
 	//--------------------------------------------------------------------
 	// Lip synch morphs

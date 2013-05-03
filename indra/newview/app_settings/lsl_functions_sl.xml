@@ -1013,5 +1013,12 @@
 <!-- Server RC LeTigre 12.10.12.265819 new function -->
    <key>llGetSimStats</key>
    <map/>
+<!-- Server RC LeTigre 13.03.22.272565 new function -->
+   <key>llSetAnimationOverride</key>
+   <map/>
+   <key>llGetAnimationOverride</key>
+   <map/>
+   <key>llResetAnimationOverride</key>
+   <map/>
   </map>
 </llsd>

@@ -390,11 +390,6 @@ bool LLCrashLogger::init()
 	// Start state machine thread.
 	startEngineThread();
 
-	// Start curl thread.
-	AICurlInterface::startCurlThread(64,	// CurlMaxTotalConcurrentConnections
-									 8,		// CurlConcurrentConnectionsPerHost
-									 true);	// NoVerifySSLCert
-
 	// We assume that all the logs we're looking for reside on the current drive
 	gDirUtilp->initAppDirs("SecondLife");
 
@@ -413,6 +408,9 @@ bool LLCrashLogger::init()
 		llinfos << "Crash behavior is never_send, quitting" << llendl;
 		return false;
 	}
+
+	// Start curl thread.
+	AICurlInterface::startCurlThread(&mCrashSettings);
 
 	gServicePump = new LLPumpIO;
 

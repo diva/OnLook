@@ -2403,6 +2403,17 @@ BOOL LLPipeline::updateDrawableGeom(LLDrawable* drawablep, BOOL priority)
 	BOOL update_complete = drawablep->updateGeometry(priority);
 	if (update_complete && assertInitialized())
 	{
+		//Workaround for 'missing prims' until it's fixed upstream by LL.
+		//Sometimes clearing CLEAR_INVISIBLE and FORCE_INVISIBLE in LLPipeline::stateSort was too late. Do it here instead, before
+		//the rebuild state is picked up on and LLVolumeGeometryManager::rebuildGeom is called.
+		//If the FORCE_INVISIBLE isn't cleared before the rebuildGeom call, the geometry will NOT BE REBUILT!
+		if(drawablep->isState(LLDrawable::CLEAR_INVISIBLE))
+		{
+			// clear invisible flag here to avoid single frame glitch
+			drawablep->clearState(LLDrawable::FORCE_INVISIBLE|LLDrawable::CLEAR_INVISIBLE);
+			return false; //Defer to next mBuildQ1 iteration
+		}
+
 		drawablep->setState(LLDrawable::BUILT);
 		//Workaround for 'missing prims' until it's fixed upstream by LL.
 		//Sometimes clearing CLEAR_INVISIBLE and FORCE_INVISIBLE in LLPipeline::stateSort was too late. Do it here instead, before
@@ -4728,11 +4739,6 @@ void LLPipeline::rebuildPools()
 			iter1++;
 		}
 		max_count--;
-	}
-
-	if (isAgentAvatarValid())
-	{
-		gAgentAvatarp->rebuildHUD();
 	}
 }
 

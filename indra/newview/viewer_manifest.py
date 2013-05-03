@@ -1,35 +1,36 @@
-#!/usr/bin/python
-# @file viewer_manifest.py
-# @author Ryan Williams
-# @brief Description of all installer viewer files, and methods for packaging
-#        them into installers for all supported platforms.
-#
-# $LicenseInfo:firstyear=2006&license=viewergpl$
-#
-# Copyright (c) 2006-2009, Linden Research, Inc.
-#
-# Second Life Viewer Source Code
-# The source code in this file ("Source Code") is provided by Linden Lab
-# to you under the terms of the GNU General Public License, version 2.0
-# ("GPL"), unless you have obtained a separate licensing agreement
-# ("Other License"), formally executed by you and Linden Lab.  Terms of
-# the GPL can be found in doc/GPL-license.txt in this distribution, or
-# online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
-#
-# There are special exceptions to the terms and conditions of the GPL as
-# it is applied to this Source Code. View the full text of the exception
-# in the file doc/FLOSS-exception.txt in this software distribution, or
-# online at
-# http://secondlifegrid.net/programs/open_source/licensing/flossexception
-#
-# By copying, modifying or distributing this software, you acknowledge
-# that you have read and understood your obligations described above,
-# and agree to abide by those obligations.
-#
-# ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
-# WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
-# COMPLETENESS OR PERFORMANCE.
-# $/LicenseInfo$
+#!/usr/bin/env python
+"""\
+@file viewer_manifest.py
+@author Ryan Williams
+@brief Description of all installer viewer files, and methods for packaging
+       them into installers for all supported platforms.
+
+$LicenseInfo:firstyear=2006&license=viewergpl$
+Second Life Viewer Source Code
+Copyright (c) 2006-2009, Linden Research, Inc.
+
+The source code in this file ("Source Code") is provided by Linden Lab
+to you under the terms of the GNU General Public License, version 2.0
+("GPL"), unless you have obtained a separate licensing agreement
+("Other License"), formally executed by you and Linden Lab.  Terms of
+the GPL can be found in doc/GPL-license.txt in this distribution, or
+online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+
+There are special exceptions to the terms and conditions of the GPL as
+it is applied to this Source Code. View the full text of the exception
+in the file doc/FLOSS-exception.txt in this software distribution, or
+online at
+http://secondlifegrid.net/programs/open_source/licensing/flossexception
+
+By copying, modifying or distributing this software, you acknowledge
+that you have read and understood your obligations described above,
+and agree to abide by those obligations.
+
+ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
+WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
+COMPLETENESS OR PERFORMANCE.
+$/LicenseInfo$
+"""
 import sys
 import os.path
 import re
@@ -56,10 +57,13 @@ class ViewerManifest(LLManifest):
 
             # include the entire shaders directory recursively
             self.path("shaders")
+
             # ... and the entire windlight directory
             self.path("windlight")
+
             # ... and the hunspell dictionaries
             self.path("dictionaries")
+
             self.end_prefix("app_settings")
 
         if self.prefix(src="character"):
@@ -104,6 +108,7 @@ class ViewerManifest(LLManifest):
                 self.path("*/*/*.html")
                 self.path("*/*/*.gif")
                 self.end_prefix("*/html")
+
             self.end_prefix("skins")
 
         # Files in the newview/ directory
@@ -359,6 +364,7 @@ class WindowsManifest(ViewerManifest):
                 result += 'File ' + pkg_file + '\n'
             else:
                 result += 'Delete ' + wpath(os.path.join('$INSTDIR', rel_file)) + '\n'
+
         # at the end of a delete, just rmdir all the directories
         if not install:
             deleted_file_dirs = [os.path.dirname(pair[1].replace(self.get_dst_prefix()+os.path.sep,'')) for pair in self.file_list]
@@ -695,6 +701,9 @@ class LinuxManifest(ViewerManifest):
             self.path("wrapper.sh",self.wrapper_name())
             self.path("handle_secondlifeprotocol.sh")
             self.path("register_secondlifeprotocol.sh")
+            self.path("refresh_desktop_app_entry.sh")
+            self.path("launch_url.sh")
+            self.path("install.sh")
             self.end_prefix("linux_tools")
 
         # Create an appropriate gridargs.dat for this package, denoting required grid.
@@ -707,7 +716,6 @@ class LinuxManifest(ViewerManifest):
             self.path("secondlife-bin","bin/"+self.binary_name())
             self.path("../linux_crash_logger/linux-crash-logger","linux-crash-logger.bin")
 
-        self.path("linux_tools/launch_url.sh","launch_url.sh")
         self.path("../llplugin/slplugin/SLPlugin", "bin/SLPlugin")
         if self.prefix("res-sdl"):
             self.path("*")
