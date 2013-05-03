@@ -141,7 +141,7 @@ if [ -n "$LL_TCMALLOC" ]; then
 fi
 
 export VIEWER_BINARY='singularity-do-not-run-directly'
-BINARY_TYPE=$(expr match "$(file -b bin/$VIEWER_BINARY)" '\(.*executable\)')
+BINARY_TYPE=$(expr match "$(file -b bin/$VIEWER_BINARY)" '\(.*executable\)' | sed -e 's/  / /g')
 if [ "${BINARY_TYPE}" == "ELF 64-bit LSB executable" ]; then
 	SL_ENV+='LD_LIBRARY_PATH="`pwd`/lib64:`pwd`/lib32:$LD_LIBRARY_PATH"'
 else
