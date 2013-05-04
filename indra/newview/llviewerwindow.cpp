@@ -3671,6 +3671,15 @@ LLPickInfo LLViewerWindow::pickImmediate(S32 x, S32 y_from_bot,  BOOL pick_trans
 		return LLPickInfo();
 	}
 
+	// push back pick info object
+	BOOL in_build_mode = gFloaterTools && gFloaterTools->getVisible();
+	if (in_build_mode || LLDrawPoolAlpha::sShowDebugAlpha)
+	{
+		// build mode allows interaction with all transparent objects
+		// "Show Debug Alpha" means no object actually transparent
+		pick_transparent = TRUE;
+	}
+
 	// shortcut queueing in mPicks and just update mLastPick in place
 	MASK	key_mask = gKeyboard->currentMask(TRUE);
 	mLastPick = LLPickInfo(LLCoordGL(x, y_from_bot), key_mask, pick_transparent, TRUE, NULL);
