@@ -237,7 +237,7 @@ namespace
 		if (!content.get("events") ||
 			!content.get("id"))
 		{
-			llwarns << "received event poll with no events or id key" << llendl;
+			//llwarns << "received event poll with no events or id key" << llendl;
 			makeRequest();
 			return;
 		}

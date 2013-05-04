@@ -35,6 +35,7 @@
 // viewer
 #include "llagent.h"
 #include "llviewerregion.h"
+#include "llestateinfomodel.h" // For supporting legacy environment
 
 void LLRegionInfoModel::reset()
 {
@@ -107,6 +108,17 @@ void LLRegionInfoModel::sendRegionTerrain(const LLUUID& invoice) const
 	strings.push_back(buffer);
 	buffer = llformat("%f", mSunHour);
 	strings.push_back(buffer);
+	if (mUseEstateSun)
+	{
+		// Grab estate info, the user decided to set the region back to estate time. JC
+		LLEstateInfoModel& estate_info = LLEstateInfoModel::instance();
+		estate_global_time = estate_info.getGlobalTime();
+		if (!estate_global_time)
+		{
+			estate_fixed_sun = estate_info.getUseFixedSun();
+			estate_sun_hour = estate_info.getSunHour();
+		}
+	}
 	buffer = llformat("%s", (estate_global_time ? "Y" : "N") );
 	strings.push_back(buffer);
 	buffer = llformat("%s", (estate_fixed_sun ? "Y" : "N") );

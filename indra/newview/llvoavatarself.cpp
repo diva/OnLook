@@ -77,6 +77,9 @@
 
 LLPointer<LLVOAvatarSelf> gAgentAvatarp = NULL;
 
+BOOL object_attached(void *user_data);
+BOOL object_selected_and_point_valid(void *user_data);
+
 BOOL isAgentAvatarValid()
 {
 	return (gAgentAvatarp.notNull() && gAgentAvatarp->isValid() &&
@@ -2618,38 +2621,45 @@ BOOL LLVOAvatarSelf::canGrabBakedTexture(EBakedTextureIndex baked_index) const
 }
 
 void LLVOAvatarSelf::addLocalTextureStats( ETextureIndex type, LLViewerFetchedTexture* imagep,
-										   F32 texel_area_ratio, BOOL render_avatar, BOOL covered_by_baked, U32 index )
+										   F32 texel_area_ratio, BOOL render_avatar, BOOL covered_by_baked)
 {
 	if (!isIndexLocalTexture(type)) return;
 
-	if (getLocalTextureID(type, index) != IMG_DEFAULT_AVATAR)
+	// Sunshine - ignoring covered_by_baked will force local textures
+	// to always load.  Fix for SH-4001 and many related issues.  Do
+	// not restore this without some more targetted fix for the local
+	// textures failing to load issue.
+	//if (!covered_by_baked)
 	{
-		imagep->setNoDelete();
-		if (imagep->getDiscardLevel() != 0)
+		if (imagep->getID() != IMG_DEFAULT_AVATAR)
 		{
-			F32 desired_pixels;
-			desired_pixels = llmin(mPixelArea, (F32)getTexImageArea());
-
-			// DRANO what priority should wearable-based textures have?
-			if (isUsingLocalAppearance())
+			imagep->setNoDelete();
+			if (imagep->getDiscardLevel() != 0)
 			{
-				imagep->setBoostLevel(getAvatarBoostLevel());
-				imagep->setAdditionalDecodePriority(SELF_ADDITIONAL_PRI) ;
-			}
-			imagep->resetTextureStats();
-			imagep->setMaxVirtualSizeResetInterval(MAX_TEXTURE_VIRTURE_SIZE_RESET_INTERVAL);
-			imagep->addTextureStats( desired_pixels / texel_area_ratio );
-			imagep->forceUpdateBindStats() ;
-			if (imagep->getDiscardLevel() < 0)
-			{
-				mHasGrey = TRUE; // for statistics gathering
+				F32 desired_pixels;
+				desired_pixels = llmin(mPixelArea, (F32)getTexImageArea());
+	
+				// DRANO what priority should wearable-based textures have?
+				if (isUsingLocalAppearance())
+				{
+					imagep->setBoostLevel(getAvatarBoostLevel());
+					imagep->setAdditionalDecodePriority(SELF_ADDITIONAL_PRI) ;
+				}
+				imagep->resetTextureStats();
+				imagep->setMaxVirtualSizeResetInterval(MAX_TEXTURE_VIRTURE_SIZE_RESET_INTERVAL);
+				imagep->addTextureStats( desired_pixels / texel_area_ratio );
+				imagep->forceUpdateBindStats() ;
+				if (imagep->getDiscardLevel() < 0)
+				{
+					mHasGrey = TRUE; // for statistics gathering
+				}
 			}
 		}
-	}
-	else
-	{
-		// texture asset is missing
-		mHasGrey = TRUE; // for statistics gathering
+		else
+		{
+			// texture asset is missing
+			mHasGrey = TRUE; // for statistics gathering
+		}
 	}
 }
 
@@ -3014,9 +3024,9 @@ void LLVOAvatarSelf::onCustomizeStart(bool disable_camera_switch)
 		gAgentAvatarp->idleUpdateAppearanceAnimation();
 #endif
 		
-		gAgentAvatarp->updateTextures(); // call updateTextureStats
 		gAgentAvatarp->invalidateAll(); // mark all bakes as dirty, request updates
 		gAgentAvatarp->updateMeshTextures(); // make sure correct textures are applied to the avatar mesh.
+		gAgentAvatarp->updateTextures(); // call updateTextureStats
 	}
 }
 

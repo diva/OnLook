@@ -47,7 +47,6 @@
 	<menu_item_call name="Properties" label="Propriétés"/>
 	<menu_item_call name="Rename" label="Renommer"/>
 	<menu_item_call name="Copy Asset UUID" label="Copier l'UUID (identifiant universel unique)"/>
-	<menu_item_call name="Reupload..." label="Reupload..."/>
 	<menu_item_call name="Acquire Asset ID" label="Acquérir Asset ID"/>
 	<menu_item_call name="Copy" label="Copier"/>
 	<menu_item_call name="Paste" label="Coller"/>

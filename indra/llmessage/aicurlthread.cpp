@@ -32,10 +32,12 @@
 #include "aicurlthread.h"
 #include "aihttptimeoutpolicy.h"
 #include "aihttptimeout.h"
-#include "aicurlperhost.h"
+#include "aicurlperservice.h"
+#include "aiaverage.h"
 #include "lltimer.h"		// ms_sleep, get_clock_count
 #include "llhttpstatuscodes.h"
 #include "llbuffer.h"
+#include "llcontrol.h"
 #include <sys/types.h>
 #if !LL_WINDOWS
 #include <sys/select.h>
@@ -204,6 +206,8 @@ int ioctlsocket(int fd, int, unsigned long* nonblocking_enable)
 
 namespace AICurlPrivate {
 
+LLAtomicS32 max_pipelined_requests(32);
+
 enum command_st {
   cmd_none,
   cmd_add,
@@ -264,9 +268,15 @@ void Command::reset(void)
 //
 // If at this point addRequest is called again, then it is detected that the ThreadSafeBufferedCurlEasyRequest is active.
 
+struct command_queue_st {
+  std::deque<Command> commands;		// The commands
+  size_t size;						// Number of add commands in the queue minus the number of remove commands.
+};
+
 // Multi-threaded queue for passing Command objects from the main-thread to the curl-thread.
-AIThreadSafeSimpleDC<std::deque<Command> > command_queue;
-typedef AIAccess<std::deque<Command> > command_queue_wat;
+AIThreadSafeSimpleDC<command_queue_st> command_queue;			// Fills 'size' with zero, because it's a global.
+typedef AIAccess<command_queue_st> command_queue_wat;
+typedef AIAccess<command_queue_st> command_queue_rat;
 
 AIThreadSafeDC<Command> command_being_processed;
 typedef AIWriteAccess<Command> command_being_processed_wat;
@@ -1289,7 +1299,7 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 	// Access command_queue, and move command to command_being_processed.
 	{
 	  command_queue_wat command_queue_w(command_queue);
-	  if (command_queue_w->empty())
+	  if (command_queue_w->commands.empty())
 	  {
 		mWakeUpFlagMutex.lock();
 		mWakeUpFlag = false;
@@ -1297,8 +1307,22 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 		break;
 	  }
 	  // Move the next command from the queue into command_being_processed.
-	  *command_being_processed_wat(command_being_processed) = command_queue_w->front();
-	  command_queue_w->pop_front();
+	  command_st command;
+	  {
+		command_being_processed_wat command_being_processed_w(command_being_processed);
+		*command_being_processed_w = command_queue_w->commands.front();
+		command = command_being_processed_w->command();
+	  }
+	  // Update the size: the number netto number of pending requests in the command queue.
+	  command_queue_w->commands.pop_front();
+	  if (command == cmd_add)
+	  {
+		command_queue_w->size--;
+	  }
+	  else if (command == cmd_remove)
+	  {
+		command_queue_w->size++;
+	  }
 	}
 	// Access command_being_processed only.
 	{
@@ -1309,9 +1333,11 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 		case cmd_boost:	// FIXME: future stuff
 		  break;
 		case cmd_add:
+		  PerServiceRequestQueue_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerServicePtr())->removed_from_command_queue();
 		  multi_handle_w->add_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()));
 		  break;
 		case cmd_remove:
+		  PerServiceRequestQueue_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerServicePtr())->added_to_command_queue();		// Not really, but this has the same effect as 'removed a remove command'.
 		  multi_handle_w->remove_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()), true);
 		  break;
 	  }
@@ -1520,8 +1546,8 @@ void AICurlThread::run(void)
 		continue;
 	  }
 	  // Clock count used for timeouts.
-	  HTTPTimeout::sClockCount = get_clock_count();
-	  Dout(dc::curl, "HTTPTimeout::sClockCount = " << HTTPTimeout::sClockCount);
+	  HTTPTimeout::sTime_10ms = get_clock_count() * HTTPTimeout::sClockWidth_10ms;
+	  Dout(dc::curl, "HTTPTimeout::sTime_10ms = " << HTTPTimeout::sTime_10ms);
 	  if (ready == 0)
 	  {
 		multi_handle_w->socket_action(CURL_SOCKET_TIMEOUT, 0);
@@ -1553,13 +1579,15 @@ void AICurlThread::run(void)
 	  multi_handle_w->check_msg_queue();
 	}
 	// Clear the queued requests.
-	PerHostRequestQueue::purge();
+	AIPerService::purge();
   }
   AICurlMultiHandle::destroyInstance();
 }
 
 //-----------------------------------------------------------------------------
 // MultiHandle
+
+LLAtomicU32 MultiHandle::sTotalAdded;
 
 MultiHandle::MultiHandle(void) : mTimeout(-1), mReadPollSet(NULL), mWritePollSet(NULL)
 {
@@ -1653,6 +1681,7 @@ CURLMcode MultiHandle::socket_action(curl_socket_t sockfd, int ev_bitmask)
   }
   while(res == CURLM_CALL_MULTI_PERFORM);
   llassert(mAddedEasyRequests.size() >= (size_t)running_handles);
+  AICurlInterface::Stats::running_handles = running_handles;
   return res;
 }
 
@@ -1677,17 +1706,17 @@ static U32 curl_max_total_concurrent_connections = 32;						// Initialized on st
 void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
 {
   bool throttled = true;		// Default.
-  PerHostRequestQueuePtr per_host;
+  AIPerServicePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
-	per_host = curl_easy_request_w->getPerHostPtr();
-	PerHostRequestQueue_wat per_host_w(*per_host);
-	if (mAddedEasyRequests.size() < curl_max_total_concurrent_connections && !per_host_w->throttled())
+	per_service = curl_easy_request_w->getPerServicePtr();
+	PerServiceRequestQueue_wat per_service_w(*per_service);
+	if (mAddedEasyRequests.size() < curl_max_total_concurrent_connections && !per_service_w->throttled())
 	{
 	  curl_easy_request_w->set_timeout_opts();
 	  if (curl_easy_request_w->add_handle_to_multi(curl_easy_request_w, mMultiHandle) == CURLM_OK)
 	  {
-		per_host_w->added_to_multi_handle();	// (About to be) added to mAddedEasyRequests.
+		per_service_w->added_to_multi_handle();	// (About to be) added to mAddedEasyRequests.
 		throttled = false;						// Fall through...
 	  }
 	}
@@ -1696,11 +1725,14 @@ void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
   {												// ... to here.
 	std::pair<addedEasyRequests_type::iterator, bool> res = mAddedEasyRequests.insert(easy_request);
 	llassert(res.second);						// May not have been added before.
-	Dout(dc::curl, "MultiHandle::add_easy_request: Added AICurlEasyRequest " << (void*)easy_request.get_ptr().get() << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
+	sTotalAdded++;
+	llassert(sTotalAdded == mAddedEasyRequests.size());
+	Dout(dc::curl, "MultiHandle::add_easy_request: Added AICurlEasyRequest " << (void*)easy_request.get_ptr().get() <<
+		"; now processing " << mAddedEasyRequests.size() << " easy handles [running_handles = " << AICurlInterface::Stats::running_handles << "].");
 	return;
   }
   // The request could not be added, we have to queue it.
-  PerHostRequestQueue_wat(*per_host)->queue(easy_request);
+  PerServiceRequestQueue_wat(*per_service)->queue(easy_request);
 #ifdef SHOW_ASSERT
   // Not active yet, but it's no longer an error if next we try to remove the request.
   AICurlEasyRequest_wat(*easy_request)->mRemovedPerCommand = false;
@@ -1717,7 +1749,7 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
 #ifdef SHOW_ASSERT
 	bool removed =
 #endif
-	easy_request_w->removeFromPerHostQueue(easy_request);
+	easy_request_w->removeFromPerServiceQueue(easy_request);
 #ifdef SHOW_ASSERT
 	if (removed)
 	{
@@ -1733,12 +1765,12 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
 CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator const& iter, bool as_per_command)
 {
   CURLMcode res;
-  PerHostRequestQueuePtr per_host;
+  AIPerServicePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(**iter);
 	res = curl_easy_request_w->remove_handle_from_multi(curl_easy_request_w, mMultiHandle);
-	per_host = curl_easy_request_w->getPerHostPtr();
-	PerHostRequestQueue_wat(*per_host)->removed_from_multi_handle();		// (About to be) removed from mAddedEasyRequests.
+	per_service = curl_easy_request_w->getPerServicePtr();
+	PerServiceRequestQueue_wat(*per_service)->removed_from_multi_handle();		// (About to be) removed from mAddedEasyRequests.
 #ifdef SHOW_ASSERT
 	curl_easy_request_w->mRemovedPerCommand = as_per_command;
 #endif
@@ -1747,12 +1779,15 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
   ThreadSafeBufferedCurlEasyRequest* lockobj = iter->get_ptr().get();
 #endif
   mAddedEasyRequests.erase(iter);
+  --sTotalAdded;
+  llassert(sTotalAdded == mAddedEasyRequests.size());
 #if CWDEBUG
-  Dout(dc::curl, "MultiHandle::remove_easy_request: Removed AICurlEasyRequest " << (void*)lockobj << "; now processing " << mAddedEasyRequests.size() << " easy handles.");
+  Dout(dc::curl, "MultiHandle::remove_easy_request: Removed AICurlEasyRequest " << (void*)lockobj <<
+	  "; now processing " << mAddedEasyRequests.size() << " easy handles [running_handles = " << AICurlInterface::Stats::running_handles << "].");
 #endif
 
   // Attempt to add a queued request, if any.
-  PerHostRequestQueue_wat(*per_host)->add_queued_to(this);
+  PerServiceRequestQueue_wat(*per_service)->add_queued_to(this);
   return res;
 }
 
@@ -1795,6 +1830,8 @@ void MultiHandle::check_msg_queue(void)
 void MultiHandle::finish_easy_request(AICurlEasyRequest const& easy_request, CURLcode result)
 {
   AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
+  // Final body bandwidth update.
+  curl_easy_request_w->update_body_bandwidth();
   // Store the result in the easy handle.
   curl_easy_request_w->storeResult(result);
 #ifdef CWDEBUG
@@ -1926,7 +1963,8 @@ void clearCommandQueue(void)
 {
 	// Clear the command queue now in order to avoid the global deinitialization order fiasco.
 	command_queue_wat command_queue_w(command_queue);
-	command_queue_w->clear();
+	command_queue_w->commands.clear();
+	command_queue_w->size = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -1988,10 +2026,10 @@ void BufferedCurlEasyRequest::processOutput(void)
 	if (responseCode == HTTP_INTERNAL_ERROR_LOW_SPEED)
 	{
 		// Rewrite error to something understandable.
-		responseReason = llformat("Connection to \"%s\" stalled: download speed dropped below %u bytes/s for %u seconds (up till that point, %s received a total of %u bytes). "
+		responseReason = llformat("Connection to \"%s\" stalled: download speed dropped below %u bytes/s for %u seconds (up till that point, %s received a total of %lu bytes). "
 			"To change these values, go to Advanced --> Debug Settings and change CurlTimeoutLowSpeedLimit and CurlTimeoutLowSpeedTime respectively.",
 			mResponder->getURL().c_str(), mResponder->getHTTPTimeoutPolicy().getLowSpeedLimit(), mResponder->getHTTPTimeoutPolicy().getLowSpeedTime(),
-			mResponder->getName(), mResponseTransferedBytes);
+			mResponder->getName(), mTotalRawBytes);
 	}
 	setopt(CURLOPT_FRESH_CONNECT, TRUE);
   }
@@ -2058,13 +2096,34 @@ size_t BufferedCurlEasyRequest::curlWriteCallback(char* data, size_t size, size_
   // BufferedCurlEasyRequest::setBodyLimit is never called, so buffer_w->mBodyLimit is infinite.
   //S32 bytes = llmin(size * nmemb, buffer_w->mBodyLimit); buffer_w->mBodyLimit -= bytes;
   self_w->getOutput()->append(sChannels.in(), (U8 const*)data, bytes);
-  self_w->mResponseTransferedBytes += bytes;						// Accumulate data received from the server.
+  // Update HTTP bandwith.
+  self_w->update_body_bandwidth();
+  // Update timeout administration.
   if (self_w->httptimeout()->data_received(bytes))					// Update timeout administration.
   {
 	// Transfer timed out. Return 0 which will abort with error CURLE_WRITE_ERROR.
 	return 0;
   }
   return bytes;
+}
+
+void BufferedCurlEasyRequest::update_body_bandwidth(void)
+{
+  double size_download;	// Total amount of raw bytes received so far (ie. still compressed, 'bytes' is uncompressed).
+  getinfo(CURLINFO_SIZE_DOWNLOAD, &size_download);
+  size_t total_raw_bytes = size_download;
+  size_t raw_bytes = total_raw_bytes - mTotalRawBytes;
+  mTotalRawBytes = total_raw_bytes;
+  // Note that in some cases (like HTTP_PARTIAL_CONTENT), the output of CURLINFO_SIZE_DOWNLOAD lags
+  // behind and will return 0 the first time, and the value of the previous chunk the next time.
+  // The last call from MultiHandle::finish_easy_request recorrects this, in that case.
+  if (raw_bytes > 0)
+  {
+	U64 const sTime_40ms = curlthread::HTTPTimeout::sTime_10ms >> 2;
+	AIAverage& http_bandwidth(PerServiceRequestQueue_wat(*getPerServicePtr())->bandwidth());
+	http_bandwidth.addData(raw_bytes, sTime_40ms);
+	sHTTPBandwidth.addData(raw_bytes, sTime_40ms);
+  }
 }
 
 //static
@@ -2124,7 +2183,7 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	std::string::iterator pos3 = std::find(pos2, end, '\r');
 	U32 status = 0;
 	std::string reason;
-	if (pos3 != end && std::isdigit(*pos1))
+	if (pos3 != end && LLStringOps::isDigit(*pos1))
 	{
 	  status = atoi(&header_line[pos1 - begin]);
 	  reason.assign(pos2, pos3);
@@ -2154,6 +2213,11 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	  self_w->httptimeout()->being_redirected();
 	}
   }
+  // Update HTTP bandwidth.
+  U64 const sTime_40ms = curlthread::HTTPTimeout::sTime_10ms >> 2;
+  AIAverage& http_bandwidth(PerServiceRequestQueue_wat(*self_w->getPerServicePtr())->bandwidth());
+  http_bandwidth.addData(header_len, sTime_40ms);
+  sHTTPBandwidth.addData(header_len, sTime_40ms);
   // Update timeout administration. This must be done after the status is already known.
   if (self_w->httptimeout()->data_received(header_len/*,*/ ASSERT_ONLY_COMMA(self_w->upload_error_status())))
   {
@@ -2328,7 +2392,7 @@ void AICurlEasyRequest::addRequest(void)
 
 	// Find the last command added.
 	command_st cmd = cmd_none;
-	for (std::deque<Command>::iterator iter = command_queue_w->begin(); iter != command_queue_w->end(); ++iter)
+	for (std::deque<Command>::iterator iter = command_queue_w->commands.begin(); iter != command_queue_w->commands.end(); ++iter)
 	{
 	  if (*iter == *this)
 	  {
@@ -2354,8 +2418,11 @@ void AICurlEasyRequest::addRequest(void)
 	}
 #endif
 	// Add a command to add the new request to the multi session to the command queue.
-	command_queue_w->push_back(Command(*this, cmd_add));
-	AICurlEasyRequest_wat(*get())->add_queued();
+	command_queue_w->commands.push_back(Command(*this, cmd_add));
+	command_queue_w->size++;
+	AICurlEasyRequest_wat curl_easy_request_w(*get());
+	PerServiceRequestQueue_wat(*curl_easy_request_w->getPerServicePtr())->added_to_command_queue();
+	curl_easy_request_w->add_queued();
   }
   // Something was added to the queue, wake up the thread to get it.
   wakeUpCurlThread();
@@ -2378,7 +2445,7 @@ void AICurlEasyRequest::removeRequest(void)
 
 	// Find the last command added.
 	command_st cmd = cmd_none;
-	for (std::deque<Command>::iterator iter = command_queue_w->begin(); iter != command_queue_w->end(); ++iter)
+	for (std::deque<Command>::iterator iter = command_queue_w->commands.begin(); iter != command_queue_w->commands.end(); ++iter)
 	{
 	  if (*iter == *this)
 	  {
@@ -2415,9 +2482,12 @@ void AICurlEasyRequest::removeRequest(void)
 	}
 #endif
 	// Add a command to remove this request from the multi session to the command queue.
-	command_queue_w->push_back(Command(*this, cmd_remove));
+	command_queue_w->commands.push_back(Command(*this, cmd_remove));
+	command_queue_w->size--;
+	AICurlEasyRequest_wat curl_easy_request_w(*get());
+	PerServiceRequestQueue_wat(*curl_easy_request_w->getPerServicePtr())->removed_from_command_queue();	// Note really, but this has the same effect as 'added a remove command'.
 	// Suppress warning that would otherwise happen if the callbacks are revoked before the curl thread removed the request.
-	AICurlEasyRequest_wat(*get())->remove_queued();
+	curl_easy_request_w->remove_queued();
   }
   // Something was added to the queue, wake up the thread to get it.
   wakeUpCurlThread();
@@ -2427,7 +2497,9 @@ void AICurlEasyRequest::removeRequest(void)
 
 namespace AICurlInterface {
 
-void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentConnectionsPerHost, bool NoVerifySSLCert)
+LLControlGroup* sConfigGroup;
+
+void startCurlThread(LLControlGroup* control_group)
 {
   using namespace AICurlPrivate;
   using namespace AICurlPrivate::curlthread;
@@ -2435,9 +2507,11 @@ void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentCo
   llassert(is_main_thread());
 
   // Cache Debug Settings.
-  curl_max_total_concurrent_connections = CurlMaxTotalConcurrentConnections;
-  curl_concurrent_connections_per_host = CurlConcurrentConnectionsPerHost;
-  gNoVerifySSLCert = NoVerifySSLCert;
+  sConfigGroup = control_group;
+  curl_max_total_concurrent_connections = sConfigGroup->getU32("CurlMaxTotalConcurrentConnections");
+  CurlConcurrentConnectionsPerService = sConfigGroup->getU32("CurlConcurrentConnectionsPerService");
+  gNoVerifySSLCert = sConfigGroup->getBOOL("NoVerifySSLCert");
+  max_pipelined_requests = curl_max_total_concurrent_connections;
 
   AICurlThread::sInstance = new AICurlThread;
   AICurlThread::sInstance->start();
@@ -2445,19 +2519,24 @@ void startCurlThread(U32 CurlMaxTotalConcurrentConnections, U32 CurlConcurrentCo
 
 bool handleCurlMaxTotalConcurrentConnections(LLSD const& newvalue)
 {
+  using namespace AICurlPrivate;
   using namespace AICurlPrivate::curlthread;
 
+  U32 old = curl_max_total_concurrent_connections;
   curl_max_total_concurrent_connections = newvalue.asInteger();
+  max_pipelined_requests += curl_max_total_concurrent_connections - old;
   llinfos << "CurlMaxTotalConcurrentConnections set to " << curl_max_total_concurrent_connections << llendl;
   return true;
 }
 
-bool handleCurlConcurrentConnectionsPerHost(LLSD const& newvalue)
+bool handleCurlConcurrentConnectionsPerService(LLSD const& newvalue)
 {
   using namespace AICurlPrivate;
 
-  curl_concurrent_connections_per_host = newvalue.asInteger();
-  llinfos << "CurlConcurrentConnectionsPerHost set to " << curl_concurrent_connections_per_host << llendl;
+  U32 new_concurrent_connections = newvalue.asInteger();
+  AIPerService::adjust_concurrent_connections(new_concurrent_connections - CurlConcurrentConnectionsPerService);
+  CurlConcurrentConnectionsPerService = new_concurrent_connections;
+  llinfos << "CurlConcurrentConnectionsPerService set to " << CurlConcurrentConnectionsPerService << llendl;
   return true;
 }
 
@@ -2467,5 +2546,215 @@ bool handleNoVerifySSLCert(LLSD const& newvalue)
   return true;
 }
 
+U32 getNumHTTPCommands(void)
+{
+  using namespace AICurlPrivate;
+
+  command_queue_rat command_queue_r(command_queue);
+  return command_queue_r->size;
+}
+
+U32 getNumHTTPQueued(void)
+{
+  return AIPerService::total_queued_size();
+}
+
+U32 getNumHTTPAdded(void)
+{
+  return AICurlPrivate::curlthread::MultiHandle::total_added_size();
+}
+
+size_t getHTTPBandwidth(void)
+{
+  using namespace AICurlPrivate;
+
+  U64 const sTime_40ms = get_clock_count() * curlthread::HTTPTimeout::sClockWidth_40ms;
+  return BufferedCurlEasyRequest::sHTTPBandwidth.truncateData(sTime_40ms);
+}
+
 } // namespace AICurlInterface
+
+// Return true if we want at least one more HTTP request for this host.
+//
+// It's OK if this function is a bit fuzzy, but we don't want it to return
+// true a hundred times on a row when it is called fast in a loop.
+// Hence the following consideration:
+//
+// This function is called only from LLTextureFetchWorker::doWork, and when it returns true
+// then doWork will call LLHTTPClient::request with a NULL default engine (signaling that
+// it is OK to run in any thread).
+//
+// At the end, LLHTTPClient::request calls AIStateMachine::run, which in turn calls
+// AIStateMachine::reset at the end. Because NULL is passed as default_engine, reset will
+// call AIStateMachine::multiplex to immediately start running the state machine. This
+// causes it to go through the states bs_reset, bs_initialize and then bs_multiplex with
+// run state AICurlEasyRequestStateMachine_addRequest. Finally, in this state, multiplex
+// calls AICurlEasyRequestStateMachine::multiplex_impl which then calls AICurlEasyRequest::addRequest
+// which causes an increment of command_queue_w->size and AIPerService::mQueuedCommands.
+//
+// It is therefore guaranteed that in one loop of LLTextureFetchWorker::doWork,
+// this size is incremented; stopping this function from returning true once we reached the
+// threshold of "pipelines" requests (the sum of requests in the command queue, the ones
+// throttled and queued in AIPerService::mQueuedRequests and the already
+// running requests (in MultiHandle::mAddedEasyRequests)).
+//
+//static
+bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service, F32 max_kbps, bool no_bandwidth_throttling)
+{
+  using namespace AICurlPrivate;
+  using namespace AICurlPrivate::curlthread;
+
+  bool reject, equal, increment_threshold, decrement_threshold;
+
+  // Whether or not we're going to approve a new request, decrement the global threshold first, when appropriate.
+
+  // Atomic read max_pipelined_requests for the below calculations.
+  S32 const max_pipelined_requests_cache = max_pipelined_requests;
+  decrement_threshold = sQueueFull && !sQueueEmpty;
+  // Reset flags.
+  sQueueEmpty = sQueueFull = false;
+  if (decrement_threshold)
+  {
+	if (max_pipelined_requests_cache > (S32)curl_max_total_concurrent_connections)
+	{
+	  // Decrement the threshold because since the last call to this function at least one curl request finished
+	  // and was replaced with another request from the queue, but the queue never ran empty: we have too many
+	  // queued requests.
+	  --max_pipelined_requests;
+	}
+  }
+
+  // Check if it's ok to get a new request for this particular service and update the per-service threshold.
+
+  AIAverage* http_bandwidth_ptr;
+
+  {
+	PerServiceRequestQueue_wat per_service_w(*per_service);
+	S32 const pipelined_requests_per_service = per_service_w->pipelined_requests();
+	reject = pipelined_requests_per_service >= per_service_w->mMaxPipelinedRequests;
+	equal = pipelined_requests_per_service == per_service_w->mMaxPipelinedRequests;
+	increment_threshold = per_service_w->mRequestStarvation;
+	decrement_threshold = per_service_w->mQueueFull && !per_service_w->mQueueEmpty;
+	// Reset flags.
+	per_service_w->mQueueFull = per_service_w->mQueueEmpty = per_service_w->mRequestStarvation = false;
+	// Grab per service bandwidth object.
+	http_bandwidth_ptr = &per_service_w->bandwidth();
+	if (decrement_threshold)
+	{
+	  if (per_service_w->mMaxPipelinedRequests > per_service_w->mConcurrectConnections)
+	  {
+		per_service_w->mMaxPipelinedRequests--;
+	  }
+	}
+	else if (increment_threshold && reject)
+	{
+	  if (per_service_w->mMaxPipelinedRequests < 2 * per_service_w->mConcurrectConnections)
+	  {
+		per_service_w->mMaxPipelinedRequests++;
+		// Immediately take the new threshold into account.
+		reject = !equal;
+	  }
+	}
+  }
+  if (reject)
+  {
+	// Too many request for this host already.
+	return false;
+  }
+  
+  if (!no_bandwidth_throttling)
+  {
+	// Throttle on bandwidth usage.
+
+	static size_t throttle_fraction = 1024;	// A value between 0 and 1024: each service is throttled when it uses more than max_bandwidth * (throttle_fraction/1024) bandwidth.
+	static AIAverage fraction(25);			// Average over 25 * 40ms = 1 second.
+	static U64 last_sTime_40ms = 0;
+
+	// Truncate the sums to the last second, and get their value.
+	U64 const sTime_40ms = get_clock_count() * HTTPTimeout::sClockWidth_40ms;							// Time in 40ms units.
+	size_t const max_bandwidth = 125.f * max_kbps;														// Convert kbps to bytes per second.
+	size_t const total_bandwidth = BufferedCurlEasyRequest::sHTTPBandwidth.truncateData(sTime_40ms);	// Bytes received in the past second.
+	size_t const service_bandwidth = http_bandwidth_ptr->truncateData(sTime_40ms);						// Idem for just this service.
+	if (sTime_40ms > last_sTime_40ms)
+	{
+	  // Only add throttle_fraction once every 40 ms at most.
+	  // It's ok to ignore other values in the same 40 ms because the value only changes on the scale of 1 second.
+	  fraction.addData(throttle_fraction, sTime_40ms);
+	  last_sTime_40ms = sTime_40ms;
+	}
+	double fraction_avg = fraction.getAverage(1024.0);													// throttle_fraction averaged over the past second, or 1024 if there is no data.
+
+	// Adjust throttle_fraction based on total bandwidth usage.
+	if (total_bandwidth == 0)
+	  throttle_fraction = 1024;
+	else
+	{
+	  // This is the main formula. It can be made plausible by assuming
+	  // an equilibrium where total_bandwidth == max_bandwidth and
+	  // thus throttle_fraction == fraction_avg for more than a second.
+	  //
+	  // Then, more bandwidth is being used (for example because another
+	  // service starts downloading). Assuming that all services that use
+	  // a significant portion of the bandwidth, the new service included,
+	  // must be throttled (all using the same bandwidth; note that the
+	  // new service is immediately throttled at the same value), then
+	  // the limit should be reduced linear with the fraction:
+	  // max_bandwidth / total_bandwidth.
+	  //
+	  // For example, let max_bandwidth be 1. Let there be two throttled
+	  // services, each using 0.5 (fraction_avg = 1024/2). Lets the new
+	  // service use what it can: also 0.5 - then without reduction the
+	  // total_bandwidth would become 1.5, and throttle_fraction would
+	  // become (1024/2) * 1/1.5 = 1024/3: from 2 to 3 services.
+	  //
+	  // In reality, total_bandwidth would rise linear from 1.0 to 1.5 in
+	  // one second if the throttle fraction wasn't changed. However it is
+	  // changed here. The end result is that any change more or less
+	  // linear fades away in one second.
+	  throttle_fraction = fraction_avg * max_bandwidth / total_bandwidth;
+	}
+	if (throttle_fraction > 1024)
+	  throttle_fraction = 1024;
+	if (total_bandwidth > max_bandwidth)
+	{
+	  throttle_fraction *= 0.95;
+	}
+
+	// Throttle this service if it uses too much bandwidth.
+	if (service_bandwidth > (max_bandwidth * throttle_fraction / 1024))
+	{
+	  return false;	// wait
+	}
+  }
+
+  // Check if it's ok to get a new request based on the total number of requests and increment the threshold if appropriate.
+
+  {
+	command_queue_rat command_queue_r(command_queue);
+	S32 const pipelined_requests = command_queue_r->size + sTotalQueued + MultiHandle::total_added_size();
+	// We can't take the command being processed (command_being_processed) into account without
+	// introducing relatively long waiting times for some mutex (namely between when the command
+	// is moved from command_queue to command_being_processed, till it's actually being added to
+	// mAddedEasyRequests). The whole purpose of command_being_processed is to reduce the time
+	// that things are locked to micro seconds, so we'll just accept an off-by-one fuzziness
+	// here instead.
+
+	// The maximum number of requests that may be queued in command_queue is equal to the total number of requests
+	// that may exist in the pipeline minus the number of requests queued in AIPerService objects, minus
+	// the number of already running requests.
+	reject = pipelined_requests >= max_pipelined_requests_cache;
+	equal = pipelined_requests == max_pipelined_requests_cache;
+	increment_threshold = sRequestStarvation;
+  }
+  if (increment_threshold && reject)
+  {
+	if (max_pipelined_requests_cache < 2 * (S32)curl_max_total_concurrent_connections)
+	{
+	  max_pipelined_requests++;
+	  // Immediately take the new threshold into account.
+	  reject = !equal;
+	}
+  }
+  return !reject;
+}
 

@@ -88,10 +88,6 @@
 
 #include "lltrans.h"
 
-// <edit>
-#include "llviewercontrol.h"
-// </edit>
-
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]

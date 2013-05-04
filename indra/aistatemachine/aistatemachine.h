@@ -146,12 +146,15 @@ class AIStateMachine : public LLThreadSafeRefCount
 	typedef AIAccessConst<multiplex_state_type>	multiplex_state_type_crat;
 	typedef AIAccess<multiplex_state_type>		multiplex_state_type_rat;
 	typedef AIAccess<multiplex_state_type>		multiplex_state_type_wat;
+
+  protected:
 	// Sub state.
 	AIThreadSafeSimpleDC<sub_state_type>	mSubState;
 	typedef AIAccessConst<sub_state_type>	sub_state_type_crat;
 	typedef AIAccess<sub_state_type>		sub_state_type_rat;
 	typedef AIAccess<sub_state_type>		sub_state_type_wat;
 
+  private:
 	// Mutex protecting everything below and making sure only one thread runs the state machine at a time.
 	LLMutex mMultiplexMutex;
 	// Mutex that is locked while calling *_impl() functions and the call back.
@@ -271,7 +274,7 @@ class AIStateMachine : public LLThreadSafeRefCount
 
 	// Return stringified state, for debugging purposes.
 	char const* state_str(base_state_type state);
-#ifdef CWDEBUG
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 	char const* event_str(event_type event);
 #endif
 
@@ -300,8 +303,9 @@ class AIStateMachine : public LLThreadSafeRefCount
 		mSleep = 0;
 	  return mSleep != 0;
 	}
+	void force_killed(void);												// Called from AIEngine::flush().
 
-	friend class AIEngine;						// Calls multiplex().
+	friend class AIEngine;						// Calls multiplex() and force_killed().
 };
 
 bool AIEngine::QueueElementComp::operator()(QueueElement const& e1, QueueElement const& e2) const

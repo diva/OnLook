@@ -22,9 +22,10 @@ include_directories(
     )
 
 set(llmessage_SOURCE_FILES
+    aiaverage.cpp
     aicurl.cpp
     aicurleasyrequeststatemachine.cpp
-    aicurlperhost.cpp
+    aicurlperservice.cpp
     aicurlthread.cpp
     aihttpheaders.cpp
     aihttptimeout.cpp
@@ -109,9 +110,10 @@ set(llmessage_SOURCE_FILES
 set(llmessage_HEADER_FILES
     CMakeLists.txt
 
+    aiaverage.h
     aicurl.h
     aicurleasyrequeststatemachine.h
-    aicurlperhost.h
+    aicurlperservice.h
     aicurlprivate.h
     aicurlthread.h
     aihttpheaders.h

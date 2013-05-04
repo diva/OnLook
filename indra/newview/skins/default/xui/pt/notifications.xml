@@ -773,8 +773,8 @@ Esperada [VALIDS]
 		Incapaz de criar arquivo de saída: [FILE]
 	</notification>
 
-	<notification name="DoNotSupportBulkAnimationUpload">
-		Atualmente, não suportamos o envio de arquivos de animação em massa.
+	<notification name="DoNotSupportBulkBVHAnimationUpload">
+		Atualmente, não suportamos o envio de arquivos de BVH animação em massa.
 	</notification>
 
 	<notification name="CannotUploadReason">

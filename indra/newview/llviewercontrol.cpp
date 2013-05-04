@@ -792,7 +792,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("AscentAvatarZModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _2));
 
 	gSavedSettings.getControl("CurlMaxTotalConcurrentConnections")->getSignal()->connect(boost::bind(&AICurlInterface::handleCurlMaxTotalConcurrentConnections, _2));
-	gSavedSettings.getControl("CurlConcurrentConnectionsPerHost")->getSignal()->connect(boost::bind(&AICurlInterface::handleCurlConcurrentConnectionsPerHost, _2));
+	gSavedSettings.getControl("CurlConcurrentConnectionsPerService")->getSignal()->connect(boost::bind(&AICurlInterface::handleCurlConcurrentConnectionsPerService, _2));
 	gSavedSettings.getControl("NoVerifySSLCert")->getSignal()->connect(boost::bind(&AICurlInterface::handleNoVerifySSLCert, _2));
 
 	gSavedSettings.getControl("CurlTimeoutDNSLookup")->getValidateSignal()->connect(boost::bind(&validateCurlTimeoutDNSLookup, _2));

@@ -43,6 +43,25 @@ void LLFloaterBlacklist::show()
 		sInstance->open();
 	}
 }
+// static
+void LLFloaterBlacklist::toggle()
+{
+	if (sInstance && sInstance->getVisible())
+	{
+		delete sInstance;
+	}
+	else
+	{
+		show();
+	}
+}
+// static
+BOOL LLFloaterBlacklist::visible()
+{
+	if (sInstance && sInstance->getVisible())
+		return TRUE;
+	return FALSE;
+}
 BOOL LLFloaterBlacklist::postBuild()
 {
 	childSetAction("add_btn", onClickAdd, this);

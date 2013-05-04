@@ -60,12 +60,15 @@
 
 #include "lluictrlfactory.h"
 
+#include "lfsimfeaturehandler.h"
 #include "hippogridmanager.h"
 
 
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
+
+bool can_set_export(const U32& base, const U32& own, const U32& next);
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLPropertiesObserver
@@ -178,6 +181,9 @@ BOOL LLFloaterProperties::postBuild()
 	// everyone permissions
 	getChild<LLUICtrl>("CheckEveryoneCopy")->setCommitCallback(boost::bind(&LLFloaterProperties::onCommitPermissions, this));
 	getChild<LLUICtrl>("CheckEveryoneMove")->setCommitCallback(boost::bind(&LLFloaterProperties::onCommitPermissions, this));
+	getChild<LLUICtrl>("CheckExport")->setCommitCallback(boost::bind(&LLFloaterProperties::onCommitPermissions, this));
+	if (!gHippoGridManager->getCurrentGrid()->isSecondLife())
+		LFSimFeatureHandler::instance().setSupportsExportCallback(boost::bind(&LLFloaterProperties::refresh, this));
 	// next owner permissions
 	getChild<LLUICtrl>("CheckNextOwnerModify")->setCommitCallback(boost::bind(&LLFloaterProperties::onCommitPermissions, this));
 	getChild<LLUICtrl>("CheckNextOwnerCopy")->setCommitCallback(boost::bind(&LLFloaterProperties::onCommitPermissions, this));
@@ -223,11 +229,13 @@ void LLFloaterProperties::refresh()
 			"CheckOwnerModify",
 			"CheckOwnerCopy",
 			"CheckOwnerTransfer",
+			"CheckOwnerExport",
 			"CheckGroupCopy",
 			"CheckGroupMod",
 			"CheckGroupMove",
 			"CheckEveryoneCopy",
 			"CheckEveryoneMove",
+			"CheckExport",
 			"CheckNextOwnerModify",
 			"CheckNextOwnerCopy",
 			"CheckNextOwnerTransfer",
@@ -411,6 +419,12 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 	getChildView("CheckOwnerTransfer")->setEnabled(FALSE);
 	getChild<LLUICtrl>("CheckOwnerTransfer")->setValue(LLSD((BOOL)(owner_mask & PERM_TRANSFER)));
 
+	bool supports_export = LFSimFeatureHandler::instance().simSupportsExport();
+	getChildView("CheckOwnerExport")->setEnabled(false);
+	getChild<LLUICtrl>("CheckOwnerExport")->setValue(LLSD((BOOL)(supports_export && owner_mask & PERM_EXPORT)));
+	if (!gHippoGridManager->getCurrentGrid()->isSecondLife())
+		getChildView("CheckOwnerExport")->setVisible(false);
+
 	///////////////////////
 	// DEBUG PERMISSIONS //
 	///////////////////////
@@ -433,11 +447,15 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 
 		perm_string = "B: ";
 		perm_string += mask_to_string(base_mask);
+		if (!supports_export && base_mask & PERM_EXPORT) // Hide Export when not available
+			perm_string.erase(perm_string.find_last_of("E"));
 		getChild<LLUICtrl>("BaseMaskDebug")->setValue(perm_string);
 		getChildView("BaseMaskDebug")->setVisible(TRUE);
 		
 		perm_string = "O: ";
 		perm_string += mask_to_string(owner_mask);
+		if (!supports_export && owner_mask & PERM_EXPORT) // Hide Export when not available
+			perm_string.erase(perm_string.find_last_of("E"));
 		getChild<LLUICtrl>("OwnerMaskDebug")->setValue(perm_string);
 		getChildView("OwnerMaskDebug")->setVisible(TRUE);
 		
@@ -450,9 +468,11 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 		perm_string = "E";
 		perm_string += overwrite_everyone ? "*: " : ": ";
 		perm_string += mask_to_string(everyone_mask);
+		if (!supports_export && everyone_mask & PERM_EXPORT) // Hide Export when not available
+			perm_string.erase(perm_string.find_last_of("E"));
 		getChild<LLUICtrl>("EveryoneMaskDebug")->setValue(perm_string);
 		getChildView("EveryoneMaskDebug")->setVisible(TRUE);
-		
+			
 		perm_string = "N";
 		perm_string += slam_perm ? "*: " : ": ";
 		perm_string += mask_to_string(next_owner_mask);
@@ -493,6 +513,8 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 		getChild<LLUICtrl>("CheckEveryoneCopy")->setEnabled(FALSE);
 		getChild<LLUICtrl>("CheckEveryoneMove")->setEnabled(FALSE);
 	}
+	getChild<LLUICtrl>("CheckExport")->setEnabled(supports_export && item->getType() != LLAssetType::AT_OBJECT && gAgentID == item->getCreatorUUID()
+									&& can_set_export(base_mask, owner_mask, next_owner_mask));
 
 	// Set values.
 	BOOL is_group_copy = (group_mask & PERM_COPY) ? TRUE : FALSE;
@@ -505,6 +527,7 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 	
 	getChild<LLUICtrl>("CheckEveryoneCopy")->setValue(LLSD((BOOL)(everyone_mask & PERM_COPY)));
 	getChild<LLUICtrl>("CheckEveryoneMove")->setValue(LLSD((BOOL)(everyone_mask & PERM_MOVE)));
+	getChild<LLUICtrl>("CheckExport")->setValue(LLSD((BOOL)(supports_export && everyone_mask & PERM_EXPORT)));
 
 	///////////////
 	// SALE INFO //
@@ -519,10 +542,11 @@ void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 		getChildView("SaleLabel")->setEnabled(is_complete);
 		getChildView("CheckPurchase")->setEnabled(is_complete);
 
-		getChildView("NextOwnerLabel")->setEnabled(TRUE);
-		getChildView("CheckNextOwnerModify")->setEnabled((base_mask & PERM_MODIFY) && !cannot_restrict_permissions);
-		getChildView("CheckNextOwnerCopy")->setEnabled((base_mask & PERM_COPY) && !cannot_restrict_permissions);
-		getChildView("CheckNextOwnerTransfer")->setEnabled((next_owner_mask & PERM_COPY) && !cannot_restrict_permissions);
+		bool no_export = !(everyone_mask & PERM_EXPORT); // Next owner perms can't be changed if set
+		getChildView("NextOwnerLabel")->setEnabled(no_export);
+		getChildView("CheckNextOwnerModify")->setEnabled(no_export && (base_mask & PERM_MODIFY) && !cannot_restrict_permissions);
+		getChildView("CheckNextOwnerCopy")->setEnabled(no_export && (base_mask & PERM_COPY) && !cannot_restrict_permissions);
+		getChildView("CheckNextOwnerTransfer")->setEnabled(no_export && (next_owner_mask & PERM_COPY) && !cannot_restrict_permissions);
 
 		getChildView("RadioSaleType")->setEnabled(is_complete && is_for_sale);
 		getChildView("TextPrice")->setEnabled(is_complete && is_for_sale);
@@ -670,7 +694,6 @@ void LLFloaterProperties::onCommitDescription()
 	}
 }
 
-// static
 void LLFloaterProperties::onCommitPermissions()
 {
 	//llinfos << "LLFloaterProperties::onCommitPermissions()" << llendl;
@@ -709,6 +732,11 @@ void LLFloaterProperties::onCommitPermissions()
 	{
 		perm.setEveryoneBits(gAgent.getID(), gAgent.getGroupID(),
 						 CheckEveryoneCopy->get(), PERM_COPY);
+	}
+	LLCheckBoxCtrl* CheckExport = getChild<LLCheckBoxCtrl>("CheckExport");
+	if(CheckExport)
+	{
+		perm.setEveryoneBits(gAgent.getID(), gAgent.getGroupID(), CheckExport->get(), PERM_EXPORT);
 	}
 
 	LLCheckBoxCtrl* CheckNextOwnerModify = getChild<LLCheckBoxCtrl>("CheckNextOwnerModify");

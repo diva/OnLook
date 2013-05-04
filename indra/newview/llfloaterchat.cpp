@@ -179,11 +179,24 @@ void LLFloaterChat::handleVisibilityChange(BOOL new_visibility)
 	if (new_visibility)
 	{
 		LLFloaterChatterBox::getInstance()->setFloaterFlashing(this, FALSE);
-		// Work around the chat bar no longer focusing from within the layout_stack
-		gFocusMgr.setKeyboardFocus(getChildView("Chat Editor"));
 	}
 
 	LLFloater::handleVisibilityChange(new_visibility);
+}
+
+// virtual
+void LLFloaterChat::onFocusReceived()
+{
+	LLView* chat_editor = getChildView("Chat Editor");
+	if (getVisible() && childIsVisible("Chat Editor"))
+	{
+		gFocusMgr.setKeyboardFocus(chat_editor);
+
+        LLUICtrl * ctrl = static_cast<LLUICtrl*>(chat_editor);
+        ctrl->setFocus(TRUE);
+	}
+
+	LLFloater::onFocusReceived();
 }
 
 void LLFloaterChat::setMinimized(BOOL minimized)
@@ -735,3 +748,20 @@ void LLFloaterChat::hide(LLFloater* instance, const LLSD& key)
 		VisibilityPolicy<LLFloater>::hide(instance, key);
 	}
 }
+
+BOOL LLFloaterChat::focusFirstItem(BOOL prefer_text_fields, BOOL focus_flash )
+{
+	LLView* chat_editor = getChildView("Chat Editor");
+	if (getVisible() && childIsVisible("Chat Editor"))
+	{
+		gFocusMgr.setKeyboardFocus(chat_editor);
+
+        LLUICtrl * ctrl = static_cast<LLUICtrl*>(chat_editor);
+        ctrl->setFocus(TRUE);
+
+		return TRUE;
+	}
+
+	return LLUICtrl::focusFirstItem(prefer_text_fields, focus_flash);
+}
+

@@ -180,7 +180,6 @@ template <typename T>
 //Singu note: This has been generalized to support a broader range of map-esque containers
 inline bool is_in_map(const T& inmap, typename const T::key_type& key)
 {
-	typedef typename T::const_iterator map_iter;
 	if(inmap.find(key) == inmap.end())
 	{
 		return false;

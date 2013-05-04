@@ -2590,3 +2590,32 @@ const bool LLFloaterIMPanel::isModerator(const LLUUID& speaker_id)
 	return FALSE;
 }
 
+BOOL LLFloaterIMPanel::focusFirstItem(BOOL prefer_text_fields, BOOL focus_flash )
+{
+    LLView* chat_editor = getChildView("chat_editor");
+    if (getVisible() && childIsVisible("chat_editor"))
+    {
+        gFocusMgr.setKeyboardFocus(chat_editor);
+
+		LLUICtrl * ctrl = static_cast<LLUICtrl*>(chat_editor);
+		ctrl->setFocus(TRUE);
+
+        return TRUE;
+    }
+
+    return LLUICtrl::focusFirstItem(prefer_text_fields, focus_flash);
+}
+
+void LLFloaterIMPanel::onFocusReceived()
+{
+    LLView* chat_editor = getChildView("chat_editor");
+    if (getVisible() && childIsVisible("chat_editor"))
+	{
+        gFocusMgr.setKeyboardFocus(chat_editor);
+
+		LLUICtrl * ctrl = static_cast<LLUICtrl*>(chat_editor);
+		ctrl->setFocus(TRUE);
+	}
+
+	LLFloater::onFocusReceived();
+}

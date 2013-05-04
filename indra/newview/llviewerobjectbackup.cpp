@@ -55,7 +55,7 @@
 #include "llappviewer.h" 
 #include "llassetuploadresponders.h"
 #include "statemachine/aifilepicker.h"
-#include "llfloateranimpreview.h"
+#include "llfloaterbvhpreview.h"
 #include "llfloaterbuycurrency.h"
 #include "llfloaterimagepreview.h"
 #include "llfloaternamedesc.h"

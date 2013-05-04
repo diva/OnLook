@@ -47,7 +47,6 @@ public:
 	void cancel();
 	static void onClickOK(void*);
 	static void onClickCancel(void*);
-	static void onCommitCopy(LLUICtrl* ctrl, void* data);
 	// Convenience methods to get current permission preference bitfields from saved settings:
 	static U32 getEveryonePerms(std::string prefix=""); // prefix + "EveryoneCopy"
 	static U32 getGroupPerms(std::string prefix=""); // prefix + "ShareWithGroup"

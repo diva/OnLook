@@ -71,6 +71,7 @@
       <check_box label="Prendre discr&#xE8;tement un photo, sur votre disque dur" tool_tip="Permet de prendre une photo en mode &#x22;espionnage&#x22;, sans bruit d&#x27;appareil, ni mouvement de cam&#xE9;ra, ni gesture. (Uniquement vers le disque dur)." name="quiet_snapshots_check"/>
       <check_box label="En vous levant, annule les permissions que l&#x27;objet a sur votre avatar" tool_tip="Evite que l&#x27;objet garde le contr&#xF4;le de votre avatar, comme par exemple les animations." name="revoke_perms_on_stand_up_check"/>
       <check_box label="D&#xE9;sactive le &#x22;Click to sit&#x22; automatique" tool_tip="D&#xE9;sactive llSitTarget. Vous devrez s&#xE9;lectionner vous m&#xEA;me la fonction &#x22;sit&#x22; sur l&#x27;objet." name="disable_click_sit_check"/>
+      <check_box left_delta="210" label="Sur les objets qui ne sont pas a vous" tool_tip="" name="disable_click_sit_own_check"/>
       <check_box label="Affiche les changements de d&#xE9;comptes de scripts de la r&#xE9;gion." name="totalscriptjumps" tool_tip="D&#xE9;pendant du seuil que vous choisissez dans la fen&#xEA;tre &#xE0; droite."/>
       <spinner left_delta="350" name="ScriptJumpCount" tool_tip="Threshold for the script jump message [Default: 100]"/>
     </panel>

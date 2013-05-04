@@ -113,10 +113,10 @@ static bool nameSplit(const std::string& full, std::string& first, std::string& 
 	first = fragments[0];
 	if (fragments.size() == 1)
 	{
-		if (gHippoGridManager->getConnectedGrid()->isSecondLife())
-			last = "Resident";
-		else
+		if (gHippoGridManager->getConnectedGrid()->isAurora())
 			last = "";
+		else
+			last = "Resident";
 	}
 	else
 		last = fragments[1];

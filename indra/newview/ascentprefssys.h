@@ -104,6 +104,7 @@ protected:
 	BOOL mDetachBridge;
 	BOOL mRevokePermsOnStandUp;
     BOOL mDisableClickSit;
+	bool mDisableClickSitOtherOwner;
     BOOL mDisplayScriptJumps;
     F32 mNumScriptDiff;
 	//Build -------------------------------------------------------------------------------

@@ -38,7 +38,6 @@ include(LLXML)
 #include(LScript)
 include(Linking)
 include(NDOF)
-include(GooglePerfTools)
 include(StateMachine)
 include(TemplateCheck)
 include(UI)
@@ -90,6 +89,7 @@ set(viewer_SOURCE_FILES
     floaterao.cpp
     floaterlocalassetbrowse.cpp
     floatervoicelicense.cpp
+	generichandlers.cpp
     hbfloatergrouptitles.cpp
     hippofloaterxml.cpp
     hippogridmanager.cpp
@@ -97,6 +97,7 @@ set(viewer_SOURCE_FILES
     hippopanelgrids.cpp
     importtracker.cpp
     jcfloaterareasearch.cpp
+    lfsimfeaturehandler.cpp
     lggdicdownload.cpp
     lgghunspell_wrapper.cpp
     llaccountingcostmanager.cpp
@@ -184,6 +185,7 @@ set(viewer_SOURCE_FILES
     llfloaterbuycontents.cpp
     llfloaterbuycurrency.cpp
     llfloaterbuyland.cpp
+    llfloaterbvhpreview.cpp
     llfloatercamera.cpp
     llfloaterchat.cpp
     llfloaterchatterbox.cpp
@@ -590,6 +592,7 @@ set(viewer_HEADER_FILES
     floaterao.h
     floaterlocalassetbrowse.h
     floatervoicelicense.h
+	generichandlers.h
     hbfloatergrouptitles.h
     hippofloaterxml.h
     hippogridmanager.h
@@ -597,6 +600,7 @@ set(viewer_HEADER_FILES
     hippopanelgrids.h
     importtracker.h
     jcfloaterareasearch.h
+    lfsimfeaturehandler.h
     lggdicdownload.h
     lgghunspell_wrapper.h
     llaccountingcostmanager.h
@@ -685,6 +689,7 @@ set(viewer_HEADER_FILES
     llfloaterbuycontents.h
     llfloaterbuycurrency.h
     llfloaterbuyland.h
+    llfloaterbvhpreview.h
     llfloatercamera.h
     llfloaterchat.h
     llfloaterchatterbox.h

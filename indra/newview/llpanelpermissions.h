@@ -57,6 +57,7 @@ public:
 	virtual ~LLPanelPermissions();
 
 	virtual	BOOL	postBuild();
+	virtual void	handleVisibilityChange(BOOL new_visibility);
 
 	// MANIPULATORS
 	void refresh();							// refresh all labels as needed
@@ -86,6 +87,7 @@ protected:
 	static void onCommitEveryoneMove(LLUICtrl *ctrl, void *data);
 	static void onCommitEveryoneCopy(LLUICtrl *ctrl, void *data);
 	//static void onCommitEveryoneModify(LLUICtrl *ctrl, void *data);
+	void onCommitExport(const LLSD& param);
 
 	static void onCommitNextOwnerModify(LLUICtrl* ctrl, void* data);
 	static void onCommitNextOwnerCopy(LLUICtrl* ctrl, void* data);
