@@ -206,8 +206,6 @@ int ioctlsocket(int fd, int, unsigned long* nonblocking_enable)
 
 namespace AICurlPrivate {
 
-LLAtomicS32 max_pipelined_requests(32);
-
 enum command_st {
   cmd_none,
   cmd_add,
@@ -2511,7 +2509,7 @@ void startCurlThread(LLControlGroup* control_group)
   curl_max_total_concurrent_connections = sConfigGroup->getU32("CurlMaxTotalConcurrentConnections");
   CurlConcurrentConnectionsPerService = sConfigGroup->getU32("CurlConcurrentConnectionsPerService");
   gNoVerifySSLCert = sConfigGroup->getBOOL("NoVerifySSLCert");
-  max_pipelined_requests = curl_max_total_concurrent_connections;
+  AIPerService::maxPipelinedRequests() = curl_max_total_concurrent_connections;
 
   AICurlThread::sInstance = new AICurlThread;
   AICurlThread::sInstance->start();
@@ -2524,7 +2522,7 @@ bool handleCurlMaxTotalConcurrentConnections(LLSD const& newvalue)
 
   U32 old = curl_max_total_concurrent_connections;
   curl_max_total_concurrent_connections = newvalue.asInteger();
-  max_pipelined_requests += curl_max_total_concurrent_connections - old;
+  AIPerService::maxPipelinedRequests() += curl_max_total_concurrent_connections - old;
   llinfos << "CurlMaxTotalConcurrentConnections set to " << curl_max_total_concurrent_connections << llendl;
   return true;
 }
@@ -2574,6 +2572,14 @@ size_t getHTTPBandwidth(void)
 
 } // namespace AICurlInterface
 
+// Global AIPerService members.
+U64 AIPerService::sLastTime_sMaxPipelinedRequests_increment = 0;
+U64 AIPerService::sLastTime_sMaxPipelinedRequests_decrement = 0;
+LLAtomicS32 AIPerService::sMaxPipelinedRequests(32);
+U64 AIPerService::sLastTime_ThrottleFractionAverage_add = 0;
+size_t AIPerService::sThrottleFraction = 1024;
+AIAverage AIPerService::sThrottleFractionAverage(25);
+
 // Return true if we want at least one more HTTP request for this host.
 //
 // It's OK if this function is a bit fuzzy, but we don't want it to return
@@ -2606,21 +2612,27 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service, 
 
   bool reject, equal, increment_threshold, decrement_threshold;
 
+  // Do certain things at most once every 40ms.
+  U64 const sTime_40ms = get_clock_count() * HTTPTimeout::sClockWidth_40ms;							// Time in 40ms units.
+
+  // Atomic read sMaxPipelinedRequests for the below calculations.
+  S32 const max_pipelined_requests_cache = sMaxPipelinedRequests;
+
   // Whether or not we're going to approve a new request, decrement the global threshold first, when appropriate.
 
-  // Atomic read max_pipelined_requests for the below calculations.
-  S32 const max_pipelined_requests_cache = max_pipelined_requests;
   decrement_threshold = sQueueFull && !sQueueEmpty;
-  // Reset flags.
-  sQueueEmpty = sQueueFull = false;
+  sQueueEmpty = sQueueFull = false;		// Reset flags.
   if (decrement_threshold)
   {
-	if (max_pipelined_requests_cache > (S32)curl_max_total_concurrent_connections)
+	if (max_pipelined_requests_cache > (S32)curl_max_total_concurrent_connections &&
+		sTime_40ms > sLastTime_sMaxPipelinedRequests_decrement)
 	{
 	  // Decrement the threshold because since the last call to this function at least one curl request finished
 	  // and was replaced with another request from the queue, but the queue never ran empty: we have too many
 	  // queued requests.
-	  --max_pipelined_requests;
+	  --sMaxPipelinedRequests;
+	  // Do this at most once every 40 ms.
+	  sLastTime_sMaxPipelinedRequests_decrement = sTime_40ms;
 	}
   }
 
@@ -2666,32 +2678,27 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service, 
   {
 	// Throttle on bandwidth usage.
 
-	static size_t throttle_fraction = 1024;	// A value between 0 and 1024: each service is throttled when it uses more than max_bandwidth * (throttle_fraction/1024) bandwidth.
-	static AIAverage fraction(25);			// Average over 25 * 40ms = 1 second.
-	static U64 last_sTime_40ms = 0;
-
 	// Truncate the sums to the last second, and get their value.
-	U64 const sTime_40ms = get_clock_count() * HTTPTimeout::sClockWidth_40ms;							// Time in 40ms units.
 	size_t const max_bandwidth = 125.f * max_kbps;														// Convert kbps to bytes per second.
 	size_t const total_bandwidth = BufferedCurlEasyRequest::sHTTPBandwidth.truncateData(sTime_40ms);	// Bytes received in the past second.
 	size_t const service_bandwidth = http_bandwidth_ptr->truncateData(sTime_40ms);						// Idem for just this service.
-	if (sTime_40ms > last_sTime_40ms)
+	if (sTime_40ms > sLastTime_ThrottleFractionAverage_add)
 	{
-	  // Only add throttle_fraction once every 40 ms at most.
+	  sThrottleFractionAverage.addData(sThrottleFraction, sTime_40ms);
+	  // Only add sThrottleFraction once every 40 ms at most.
 	  // It's ok to ignore other values in the same 40 ms because the value only changes on the scale of 1 second.
-	  fraction.addData(throttle_fraction, sTime_40ms);
-	  last_sTime_40ms = sTime_40ms;
+	  sLastTime_ThrottleFractionAverage_add = sTime_40ms;
 	}
-	double fraction_avg = fraction.getAverage(1024.0);													// throttle_fraction averaged over the past second, or 1024 if there is no data.
+	double fraction_avg = sThrottleFractionAverage.getAverage(1024.0);									// sThrottleFraction averaged over the past second, or 1024 if there is no data.
 
-	// Adjust throttle_fraction based on total bandwidth usage.
+	// Adjust sThrottleFraction based on total bandwidth usage.
 	if (total_bandwidth == 0)
-	  throttle_fraction = 1024;
+	  sThrottleFraction = 1024;
 	else
 	{
 	  // This is the main formula. It can be made plausible by assuming
 	  // an equilibrium where total_bandwidth == max_bandwidth and
-	  // thus throttle_fraction == fraction_avg for more than a second.
+	  // thus sThrottleFraction == fraction_avg for more than a second.
 	  //
 	  // Then, more bandwidth is being used (for example because another
 	  // service starts downloading). Assuming that all services that use
@@ -2704,24 +2711,24 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service, 
 	  // For example, let max_bandwidth be 1. Let there be two throttled
 	  // services, each using 0.5 (fraction_avg = 1024/2). Lets the new
 	  // service use what it can: also 0.5 - then without reduction the
-	  // total_bandwidth would become 1.5, and throttle_fraction would
+	  // total_bandwidth would become 1.5, and sThrottleFraction would
 	  // become (1024/2) * 1/1.5 = 1024/3: from 2 to 3 services.
 	  //
 	  // In reality, total_bandwidth would rise linear from 1.0 to 1.5 in
 	  // one second if the throttle fraction wasn't changed. However it is
 	  // changed here. The end result is that any change more or less
 	  // linear fades away in one second.
-	  throttle_fraction = fraction_avg * max_bandwidth / total_bandwidth;
+	  sThrottleFraction = fraction_avg * max_bandwidth / total_bandwidth;
 	}
-	if (throttle_fraction > 1024)
-	  throttle_fraction = 1024;
+	if (sThrottleFraction > 1024)
+	  sThrottleFraction = 1024;
 	if (total_bandwidth > max_bandwidth)
 	{
-	  throttle_fraction *= 0.95;
+	  sThrottleFraction *= 0.95;
 	}
 
 	// Throttle this service if it uses too much bandwidth.
-	if (service_bandwidth > (max_bandwidth * throttle_fraction / 1024))
+	if (service_bandwidth > (max_bandwidth * sThrottleFraction / 1024))
 	{
 	  return false;	// wait
 	}
@@ -2748,9 +2755,11 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service, 
   }
   if (increment_threshold && reject)
   {
-	if (max_pipelined_requests_cache < 2 * (S32)curl_max_total_concurrent_connections)
+	if (max_pipelined_requests_cache < 2 * (S32)curl_max_total_concurrent_connections &&
+		sTime_40ms > sLastTime_sMaxPipelinedRequests_increment)
 	{
-	  max_pipelined_requests++;
+	  sMaxPipelinedRequests++;
+	  sLastTime_sMaxPipelinedRequests_increment = sTime_40ms;
 	  // Immediately take the new threshold into account.
 	  reject = !equal;
 	}

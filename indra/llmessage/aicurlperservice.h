@@ -130,7 +130,14 @@ class AIPerService {
 
 	AIAverage mHTTPBandwidth;					// Keeps track on number of bytes received for this service in the past second.
 	int mConcurrectConnections;					// The maximum number of allowed concurrent connections to this service.
-	int mMaxPipelinedRequests;					// The maximum number of accepted requests that didn't finish yet.
+	int mMaxPipelinedRequests;					// The maximum number of accepted requests for this service that didn't finish yet.
+
+	static LLAtomicS32 sMaxPipelinedRequests;				// The maximum total number of accepted requests that didn't finish yet.
+	static U64 sLastTime_sMaxPipelinedRequests_increment;	// Last time that sMaxPipelinedRequests was incremented.
+	static U64 sLastTime_sMaxPipelinedRequests_decrement;	// Last time that sMaxPipelinedRequests was decremented.
+	static U64 sLastTime_ThrottleFractionAverage_add;		// Last time that sThrottleFraction was added to sThrottleFractionAverage.
+	static size_t sThrottleFraction;						// A value between 0 and 1024: each service is throttled when it uses more than max_bandwidth * (sThrottleFraction/1024) bandwidth.
+	static AIAverage sThrottleFractionAverage;				// Average of sThrottleFraction over 25 * 40ms = 1 second.
 
   public:
 	void added_to_command_queue(void) { ++mQueuedCommands; }
@@ -159,6 +166,9 @@ class AIPerService {
 	// Should return false if the maximum allowed HTTP bandwidth is reached, or when
 	// the latency between request and actual delivery becomes too large.
 	static bool wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service, F32 max_kbps, bool no_bandwidth_throttling);
+
+	// Accessor for when curl_max_total_concurrent_connections changes.
+	static LLAtomicS32& maxPipelinedRequests(void) { return sMaxPipelinedRequests; }
 
   private:
 	// Disallow copying.
