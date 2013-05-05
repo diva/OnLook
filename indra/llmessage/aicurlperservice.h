@@ -172,6 +172,8 @@ class AIPerService {
 	// Should return false if the maximum allowed HTTP bandwidth is reached, or when
 	// the latency between request and actual delivery becomes too large.
 	static bool wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service);
+	// Return true if too much bandwidth is being used.
+	static bool checkBandwidthUsage(U64 sTime_40ms, AIAverage* http_bandwidth_ptr);
 
 	// Accessor for when curl_max_total_concurrent_connections changes.
 	static LLAtomicS32& maxPipelinedRequests(void) { return sMaxPipelinedRequests; }

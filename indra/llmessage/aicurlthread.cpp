@@ -2673,68 +2673,15 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
   }
   if (reject)
   {
-	// Too many request for this host already.
+	// Too many request for this service already.
 	return false;
   }
   
-  if (!sNoHTTPBandwidthThrottling)
+  // Throttle on bandwidth usage.
+  if (checkBandwidthUsage(sTime_40ms, http_bandwidth_ptr))
   {
-	// Throttle on bandwidth usage.
-
-	// Truncate the sums to the last second, and get their value.
-	size_t const max_bandwidth = AIPerService::getHTTPThrottleBandwidth125();
-	size_t const total_bandwidth = BufferedCurlEasyRequest::sHTTPBandwidth.truncateData(sTime_40ms);	// Bytes received in the past second.
-	size_t const service_bandwidth = http_bandwidth_ptr->truncateData(sTime_40ms);						// Idem for just this service.
-	if (sTime_40ms > sLastTime_ThrottleFractionAverage_add)
-	{
-	  sThrottleFractionAverage.addData(sThrottleFraction, sTime_40ms);
-	  // Only add sThrottleFraction once every 40 ms at most.
-	  // It's ok to ignore other values in the same 40 ms because the value only changes on the scale of 1 second.
-	  sLastTime_ThrottleFractionAverage_add = sTime_40ms;
-	}
-	double fraction_avg = sThrottleFractionAverage.getAverage(1024.0);									// sThrottleFraction averaged over the past second, or 1024 if there is no data.
-
-	// Adjust sThrottleFraction based on total bandwidth usage.
-	if (total_bandwidth == 0)
-	  sThrottleFraction = 1024;
-	else
-	{
-	  // This is the main formula. It can be made plausible by assuming
-	  // an equilibrium where total_bandwidth == max_bandwidth and
-	  // thus sThrottleFraction == fraction_avg for more than a second.
-	  //
-	  // Then, more bandwidth is being used (for example because another
-	  // service starts downloading). Assuming that all services that use
-	  // a significant portion of the bandwidth, the new service included,
-	  // must be throttled (all using the same bandwidth; note that the
-	  // new service is immediately throttled at the same value), then
-	  // the limit should be reduced linear with the fraction:
-	  // max_bandwidth / total_bandwidth.
-	  //
-	  // For example, let max_bandwidth be 1. Let there be two throttled
-	  // services, each using 0.5 (fraction_avg = 1024/2). Let the new
-	  // service use what it can: also 0.5 - then without reduction the
-	  // total_bandwidth would become 1.5, and sThrottleFraction would
-	  // become (1024/2) * 1/1.5 = 1024/3: from 2 to 3 services.
-	  //
-	  // In reality, total_bandwidth would rise linear from 1.0 to 1.5 in
-	  // one second if the throttle fraction wasn't changed. However it is
-	  // changed here. The end result is that any change more or less
-	  // linear fades away in one second.
-	  sThrottleFraction = fraction_avg * max_bandwidth / total_bandwidth;
-	}
-	if (sThrottleFraction > 1024)
-	  sThrottleFraction = 1024;
-	if (total_bandwidth > max_bandwidth)
-	{
-	  sThrottleFraction *= 0.95;
-	}
-
-	// Throttle this service if it uses too much bandwidth.
-	if (service_bandwidth > (max_bandwidth * sThrottleFraction / 1024))
-	{
-	  return false;	// wait
-	}
+	// Too much bandwidth is being used, either in total or for this service.
+	return false;
   }
 
   // Check if it's ok to get a new request based on the total number of requests and increment the threshold if appropriate.
@@ -2768,5 +2715,65 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
 	}
   }
   return !reject;
+}
+
+bool AIPerService::checkBandwidthUsage(U64 sTime_40ms, AIAverage* http_bandwidth_ptr)
+{
+  if (sNoHTTPBandwidthThrottling)
+	return false;
+
+  using namespace AICurlPrivate;
+
+  // Truncate the sums to the last second, and get their value.
+  size_t const max_bandwidth = AIPerService::getHTTPThrottleBandwidth125();
+  size_t const total_bandwidth = BufferedCurlEasyRequest::sHTTPBandwidth.truncateData(sTime_40ms);	// Bytes received in the past second.
+  size_t const service_bandwidth = http_bandwidth_ptr->truncateData(sTime_40ms);						// Idem for just this service.
+  if (sTime_40ms > sLastTime_ThrottleFractionAverage_add)
+  {
+	sThrottleFractionAverage.addData(sThrottleFraction, sTime_40ms);
+	// Only add sThrottleFraction once every 40 ms at most.
+	// It's ok to ignore other values in the same 40 ms because the value only changes on the scale of 1 second.
+	sLastTime_ThrottleFractionAverage_add = sTime_40ms;
+  }
+  double fraction_avg = sThrottleFractionAverage.getAverage(1024.0);									// sThrottleFraction averaged over the past second, or 1024 if there is no data.
+
+  // Adjust sThrottleFraction based on total bandwidth usage.
+  if (total_bandwidth == 0)
+	sThrottleFraction = 1024;
+  else
+  {
+	// This is the main formula. It can be made plausible by assuming
+	// an equilibrium where total_bandwidth == max_bandwidth and
+	// thus sThrottleFraction == fraction_avg for more than a second.
+	//
+	// Then, more bandwidth is being used (for example because another
+	// service starts downloading). Assuming that all services that use
+	// a significant portion of the bandwidth, the new service included,
+	// must be throttled (all using the same bandwidth; note that the
+	// new service is immediately throttled at the same value), then
+	// the limit should be reduced linear with the fraction:
+	// max_bandwidth / total_bandwidth.
+	//
+	// For example, let max_bandwidth be 1. Let there be two throttled
+	// services, each using 0.5 (fraction_avg = 1024/2). Let the new
+	// service use what it can: also 0.5 - then without reduction the
+	// total_bandwidth would become 1.5, and sThrottleFraction would
+	// become (1024/2) * 1/1.5 = 1024/3: from 2 to 3 services.
+	//
+	// In reality, total_bandwidth would rise linear from 1.0 to 1.5 in
+	// one second if the throttle fraction wasn't changed. However it is
+	// changed here. The end result is that any change more or less
+	// linear fades away in one second.
+	sThrottleFraction = fraction_avg * max_bandwidth / total_bandwidth;
+  }
+  if (sThrottleFraction > 1024)
+	sThrottleFraction = 1024;
+  if (total_bandwidth > max_bandwidth)
+  {
+	sThrottleFraction *= 0.95;
+  }
+
+  // Throttle this service if it uses too much bandwidth.
+  return (service_bandwidth > (max_bandwidth * sThrottleFraction / 1024));
 }
 
