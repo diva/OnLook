@@ -1708,8 +1708,11 @@ void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
   {
 	AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
 	per_service = curl_easy_request_w->getPerServicePtr();
+	bool too_much_bandwidth = curl_easy_request_w->queueIfTooMuchBandwidthUsage() &&
+		AIPerService::checkBandwidthUsage(get_clock_count() * HTTPTimeout::sClockWidth_40ms,
+										  PerServiceRequestQueue_wat(*per_service)->bandwidth());
 	PerServiceRequestQueue_wat per_service_w(*per_service);
-	if (mAddedEasyRequests.size() < curl_max_total_concurrent_connections && !per_service_w->throttled())
+	if (!too_much_bandwidth && mAddedEasyRequests.size() < curl_max_total_concurrent_connections && !per_service_w->throttled())
 	{
 	  curl_easy_request_w->set_timeout_opts();
 	  if (curl_easy_request_w->add_handle_to_multi(curl_easy_request_w, mMultiHandle) == CURLM_OK)
@@ -2578,7 +2581,7 @@ U64 AIPerService::sLastTime_sMaxPipelinedRequests_increment = 0;
 U64 AIPerService::sLastTime_sMaxPipelinedRequests_decrement = 0;
 LLAtomicS32 AIPerService::sMaxPipelinedRequests(32);
 U64 AIPerService::sLastTime_ThrottleFractionAverage_add = 0;
-size_t AIPerService::sThrottleFraction = 1024;
+AIThreadSafeSimpleDC<size_t> AIPerService::sThrottleFraction(1024);
 AIAverage AIPerService::sThrottleFractionAverage(25);
 size_t AIPerService::sHTTPThrottleBandwidth125 = 250000;
 bool AIPerService::sNoHTTPBandwidthThrottling;
@@ -2678,7 +2681,7 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
   }
   
   // Throttle on bandwidth usage.
-  if (checkBandwidthUsage(sTime_40ms, http_bandwidth_ptr))
+  if (checkBandwidthUsage(sTime_40ms, *http_bandwidth_ptr))
   {
 	// Too much bandwidth is being used, either in total or for this service.
 	return false;
@@ -2717,7 +2720,7 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
   return !reject;
 }
 
-bool AIPerService::checkBandwidthUsage(U64 sTime_40ms, AIAverage* http_bandwidth_ptr)
+bool AIPerService::checkBandwidthUsage(U64 sTime_40ms, AIAverage& http_bandwidth)
 {
   if (sNoHTTPBandwidthThrottling)
 	return false;
@@ -2727,19 +2730,21 @@ bool AIPerService::checkBandwidthUsage(U64 sTime_40ms, AIAverage* http_bandwidth
   // Truncate the sums to the last second, and get their value.
   size_t const max_bandwidth = AIPerService::getHTTPThrottleBandwidth125();
   size_t const total_bandwidth = BufferedCurlEasyRequest::sHTTPBandwidth.truncateData(sTime_40ms);	// Bytes received in the past second.
-  size_t const service_bandwidth = http_bandwidth_ptr->truncateData(sTime_40ms);						// Idem for just this service.
+  size_t const service_bandwidth = http_bandwidth.truncateData(sTime_40ms);							// Idem for just this service.
+  AIAccess<size_t> throttle_fraction_w(sThrottleFraction);
+  // Note that sLastTime_ThrottleFractionAverage_add is protected by the lock on sThrottleFraction...
   if (sTime_40ms > sLastTime_ThrottleFractionAverage_add)
   {
-	sThrottleFractionAverage.addData(sThrottleFraction, sTime_40ms);
+	sThrottleFractionAverage.addData(*throttle_fraction_w, sTime_40ms);
 	// Only add sThrottleFraction once every 40 ms at most.
 	// It's ok to ignore other values in the same 40 ms because the value only changes on the scale of 1 second.
 	sLastTime_ThrottleFractionAverage_add = sTime_40ms;
   }
-  double fraction_avg = sThrottleFractionAverage.getAverage(1024.0);									// sThrottleFraction averaged over the past second, or 1024 if there is no data.
+  double fraction_avg = sThrottleFractionAverage.getAverage(1024.0);								// sThrottleFraction averaged over the past second, or 1024 if there is no data.
 
   // Adjust sThrottleFraction based on total bandwidth usage.
   if (total_bandwidth == 0)
-	sThrottleFraction = 1024;
+	*throttle_fraction_w = 1024;
   else
   {
 	// This is the main formula. It can be made plausible by assuming
@@ -2764,16 +2769,16 @@ bool AIPerService::checkBandwidthUsage(U64 sTime_40ms, AIAverage* http_bandwidth
 	// one second if the throttle fraction wasn't changed. However it is
 	// changed here. The end result is that any change more or less
 	// linear fades away in one second.
-	sThrottleFraction = fraction_avg * max_bandwidth / total_bandwidth;
+	*throttle_fraction_w = fraction_avg * max_bandwidth / total_bandwidth + 0.5;
   }
-  if (sThrottleFraction > 1024)
-	sThrottleFraction = 1024;
+  if (*throttle_fraction_w > 1024)
+	*throttle_fraction_w = 1024;
   if (total_bandwidth > max_bandwidth)
   {
-	sThrottleFraction *= 0.95;
+	*throttle_fraction_w *= 0.95;
   }
 
   // Throttle this service if it uses too much bandwidth.
-  return (service_bandwidth > (max_bandwidth * sThrottleFraction / 1024));
+  return (service_bandwidth > (max_bandwidth * *throttle_fraction_w / 1024));
 }
 

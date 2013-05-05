@@ -697,14 +697,14 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 			if (folder_request_body["folders"].size())
 			{
 				LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body, recursive_cats);
-				LLHTTPClient::post(url, folder_request_body, fetcher);
+				LLHTTPClient::post_nb(url, folder_request_body, fetcher);
 			}
 			if (folder_request_body_lib["folders"].size())
 			{
 				std::string url_lib = gAgent.getRegion()->getCapability("FetchLibDescendents2");
 
 				LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body_lib, recursive_cats);
-				LLHTTPClient::post(url_lib, folder_request_body_lib, fetcher);
+				LLHTTPClient::post_nb(url_lib, folder_request_body_lib, fetcher);
 			}
 		}
 		if (item_count)
@@ -722,7 +722,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 					body["agent_id"]	= gAgent.getID();
 					body["items"] = item_request_body;
 
-					LLHTTPClient::post(url, body, new LLInventoryModelFetchItemResponder(body));
+					LLHTTPClient::post_nb(url, body, new LLInventoryModelFetchItemResponder(body));
 				}
 			}
 
@@ -738,13 +738,12 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 					body["agent_id"]	= gAgent.getID();
 					body["items"] = item_request_body_lib;
 
-					LLHTTPClient::post(url, body, new LLInventoryModelFetchItemResponder(body));
+					LLHTTPClient::post_nb(url, body, new LLInventoryModelFetchItemResponder(body));
 				}
 			}
 		}
 		mFetchTimer.reset();
 	}
-
 	else if (isBulkFetchProcessingComplete())
 	{
 		llinfos << "Inventory fetch completed" << llendl;

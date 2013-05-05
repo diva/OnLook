@@ -75,11 +75,11 @@ typedef boost::intrusive_ptr<AICurlPrivate::RefCountedThreadSafePerServiceReques
 //-----------------------------------------------------------------------------
 // AIPerService
 
-// This class provides a static interface to create and maintain instances
-// of AIPerService objects, so that at any moment there is at most
-// one instance per hostname:port. Those instances then are used to queue curl
-// requests when the maximum number of connections for that host already
-// have been reached.
+// This class provides a static interface to create and maintain instances of AIPerService objects,
+// so that at any moment there is at most one instance per service (hostname:port).
+// Those instances then are used to queue curl requests when the maximum number of connections
+// for that service already have been reached. And to keep track of the bandwidth usage, and the
+// number of queued requests in the pipeline, for this service.
 class AIPerService {
   private:
 	typedef std::map<std::string, AIPerServicePtr> instance_map_type;
@@ -136,7 +136,7 @@ class AIPerService {
 	static U64 sLastTime_sMaxPipelinedRequests_increment;	// Last time that sMaxPipelinedRequests was incremented.
 	static U64 sLastTime_sMaxPipelinedRequests_decrement;	// Last time that sMaxPipelinedRequests was decremented.
 	static U64 sLastTime_ThrottleFractionAverage_add;		// Last time that sThrottleFraction was added to sThrottleFractionAverage.
-	static size_t sThrottleFraction;						// A value between 0 and 1024: each service is throttled when it uses more than max_bandwidth * (sThrottleFraction/1024) bandwidth.
+	static AIThreadSafeSimpleDC<size_t> sThrottleFraction;	// A value between 0 and 1024: each service is throttled when it uses more than max_bandwidth * (sThrottleFraction/1024) bandwidth.
 	static AIAverage sThrottleFractionAverage;				// Average of sThrottleFraction over 25 * 40ms = 1 second.
 	static size_t sHTTPThrottleBandwidth125;				// HTTPThrottleBandwidth times 125 (in bytes/s).
 	static bool sNoHTTPBandwidthThrottling;					// Global override to disable bandwidth throttling.
@@ -173,7 +173,7 @@ class AIPerService {
 	// the latency between request and actual delivery becomes too large.
 	static bool wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service);
 	// Return true if too much bandwidth is being used.
-	static bool checkBandwidthUsage(U64 sTime_40ms, AIAverage* http_bandwidth_ptr);
+	static bool checkBandwidthUsage(U64 sTime_40ms, AIAverage& http_bandwidth_ptr);
 
 	// Accessor for when curl_max_total_concurrent_connections changes.
 	static LLAtomicS32& maxPipelinedRequests(void) { return sMaxPipelinedRequests; }
