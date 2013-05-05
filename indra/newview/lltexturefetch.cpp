@@ -1272,9 +1272,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			}
 
 			// Let AICurl decide if we can process more HTTP requests at the moment or not.
-			static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
-			bool const no_bandwidth_throttling = gHippoGridManager->getConnectedGrid()->isAvination();
-			if (!AIPerService::wantsMoreHTTPRequestsFor(mPerServicePtr, throttle_bandwidth, no_bandwidth_throttling))
+			if (!AIPerService::wantsMoreHTTPRequestsFor(mPerServicePtr))
 			{
 				return false ; //wait.
 			}

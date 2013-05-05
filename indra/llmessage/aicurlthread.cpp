@@ -2510,6 +2510,7 @@ void startCurlThread(LLControlGroup* control_group)
   CurlConcurrentConnectionsPerService = sConfigGroup->getU32("CurlConcurrentConnectionsPerService");
   gNoVerifySSLCert = sConfigGroup->getBOOL("NoVerifySSLCert");
   AIPerService::maxPipelinedRequests() = curl_max_total_concurrent_connections;
+  AIPerService::setHTTPThrottleBandwidth(sConfigGroup->getF32("HTTPThrottleBandwidth"));
 
   AICurlThread::sInstance = new AICurlThread;
   AICurlThread::sInstance->start();
@@ -2579,6 +2580,8 @@ LLAtomicS32 AIPerService::sMaxPipelinedRequests(32);
 U64 AIPerService::sLastTime_ThrottleFractionAverage_add = 0;
 size_t AIPerService::sThrottleFraction = 1024;
 AIAverage AIPerService::sThrottleFractionAverage(25);
+size_t AIPerService::sHTTPThrottleBandwidth125 = 250000;
+bool AIPerService::sNoHTTPBandwidthThrottling;
 
 // Return true if we want at least one more HTTP request for this host.
 //
@@ -2605,7 +2608,7 @@ AIAverage AIPerService::sThrottleFractionAverage(25);
 // running requests (in MultiHandle::mAddedEasyRequests)).
 //
 //static
-bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service, F32 max_kbps, bool no_bandwidth_throttling)
+bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
 {
   using namespace AICurlPrivate;
   using namespace AICurlPrivate::curlthread;
@@ -2674,12 +2677,12 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service, 
 	return false;
   }
   
-  if (!no_bandwidth_throttling)
+  if (!sNoHTTPBandwidthThrottling)
   {
 	// Throttle on bandwidth usage.
 
 	// Truncate the sums to the last second, and get their value.
-	size_t const max_bandwidth = 125.f * max_kbps;														// Convert kbps to bytes per second.
+	size_t const max_bandwidth = AIPerService::getHTTPThrottleBandwidth125();
 	size_t const total_bandwidth = BufferedCurlEasyRequest::sHTTPBandwidth.truncateData(sTime_40ms);	// Bytes received in the past second.
 	size_t const service_bandwidth = http_bandwidth_ptr->truncateData(sTime_40ms);						// Idem for just this service.
 	if (sTime_40ms > sLastTime_ThrottleFractionAverage_add)
@@ -2709,7 +2712,7 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service, 
 	  // max_bandwidth / total_bandwidth.
 	  //
 	  // For example, let max_bandwidth be 1. Let there be two throttled
-	  // services, each using 0.5 (fraction_avg = 1024/2). Lets the new
+	  // services, each using 0.5 (fraction_avg = 1024/2). Let the new
 	  // service use what it can: also 0.5 - then without reduction the
 	  // total_bandwidth would become 1.5, and sThrottleFraction would
 	  // become (1024/2) * 1/1.5 = 1024/3: from 2 to 3 services.

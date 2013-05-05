@@ -37,6 +37,7 @@
 #include "llimageworker.h"
 #include "llrender.h"
 
+#include "aicurlperservice.h"
 #include "llappviewer.h"
 #include "llselectmgr.h"
 #include "llviewertexlayer.h"
@@ -621,18 +622,15 @@ void LLGLTexMemBar::draw()
 									 text_color, LLFontGL::LEFT, LLFontGL::TOP);
 
 	left += LLFontGL::getFontMonospace()->getWidth(text);
-	// This bandwidth is averaged over 1 seconds (in kbps).
-	F32 bandwidth = AICurlInterface::getHTTPBandwidth() / 125.f;		// Convert from bytes/s to kbps.
-	// This is the maximum bandwidth allowed for curl transactions (of any type and averaged per second),
-	// that is actually used to limit the number of HTTP texture requests (and only those).
-	// Comparing that with 'bandwidth' is a bit like comparing apples and oranges, but again... who really cares.
-	static const LLCachedControl<F32> max_bandwidth("HTTPThrottleBandwidth", 2000);
-	color = bandwidth > max_bandwidth ? LLColor4::red : bandwidth > max_bandwidth*.75f ? LLColor4::yellow : text_color;
+	// This bandwidth is averaged over 1 seconds (in bytes/s).
+	size_t const bandwidth = AICurlInterface::getHTTPBandwidth();
+	size_t const max_bandwidth = AIPerService::getHTTPThrottleBandwidth125();
+	color = (bandwidth > max_bandwidth) ? LLColor4::red : ((bandwidth > max_bandwidth * .75f) ? LLColor4::yellow : text_color);
 	color[VALPHA] = text_color[VALPHA];
-	text = llformat("BW:%.0f/%.0f", bandwidth, max_bandwidth.get());
+	text = llformat("BW:%lu/%lu", bandwidth / 125, max_bandwidth / 125);
 	LLFontGL::getFontMonospace()->renderUTF8(text, 0, left, v_offset + line_height*2,
 											 color, LLFontGL::LEFT, LLFontGL::TOP);
-	
+
 	S32 dx1 = 0;
 	if (LLAppViewer::getTextureFetch()->mDebugPause)
 	{

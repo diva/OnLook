@@ -89,7 +89,7 @@ class AIPerService {
 
 	static threadsafe_instance_map_type sInstanceMap;				// Map of AIPerService instances with the hostname as key.
 
-	friend class AIThreadSafeSimpleDC<AIPerService>;		//threadsafe_PerServiceRequestQueue
+	friend class AIThreadSafeSimpleDC<AIPerService>;	// threadsafe_PerServiceRequestQueue
 	AIPerService(void);
 
   public:
@@ -138,6 +138,8 @@ class AIPerService {
 	static U64 sLastTime_ThrottleFractionAverage_add;		// Last time that sThrottleFraction was added to sThrottleFractionAverage.
 	static size_t sThrottleFraction;						// A value between 0 and 1024: each service is throttled when it uses more than max_bandwidth * (sThrottleFraction/1024) bandwidth.
 	static AIAverage sThrottleFractionAverage;				// Average of sThrottleFraction over 25 * 40ms = 1 second.
+	static size_t sHTTPThrottleBandwidth125;				// HTTPThrottleBandwidth times 125 (in bytes/s).
+	static bool sNoHTTPBandwidthThrottling;					// Global override to disable bandwidth throttling.
 
   public:
 	void added_to_command_queue(void) { ++mQueuedCommands; }
@@ -159,13 +161,17 @@ class AIPerService {
 	AIAverage& bandwidth(void) { return mHTTPBandwidth; }
 	AIAverage const& bandwidth(void) const { return mHTTPBandwidth; }
 
+	static void setNoHTTPBandwidthThrottling(bool nb) { sNoHTTPBandwidthThrottling = nb; }
+	static void setHTTPThrottleBandwidth(F32 max_kbps) { sHTTPThrottleBandwidth125 = 125.f * max_kbps; }
+	static size_t getHTTPThrottleBandwidth125(void) { return sHTTPThrottleBandwidth125; }
+
 	// Called when CurlConcurrentConnectionsPerService changes.
 	static void adjust_concurrent_connections(int increment);
 
 	// Returns true if curl can handle another request for this host.
 	// Should return false if the maximum allowed HTTP bandwidth is reached, or when
 	// the latency between request and actual delivery becomes too large.
-	static bool wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service, F32 max_kbps, bool no_bandwidth_throttling);
+	static bool wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service);
 
 	// Accessor for when curl_max_total_concurrent_connections changes.
 	static LLAtomicS32& maxPipelinedRequests(void) { return sMaxPipelinedRequests; }

@@ -600,9 +600,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 	LLViewerRegion* region = gAgent.getRegion();
 	if (gDisconnected || !region) return;
 
-	static LLCachedControl<F32> const throttle_bandwidth("HTTPThrottleBandwidth", 2000);
-	bool const no_bandwidth_throttling = gHippoGridManager->getConnectedGrid()->isAvination();
-	if (!AIPerService::wantsMoreHTTPRequestsFor(mPerServicePtr, throttle_bandwidth, no_bandwidth_throttling))
+	if (!AIPerService::wantsMoreHTTPRequestsFor(mPerServicePtr))
 	{
 		return;		// Wait.
 	}
