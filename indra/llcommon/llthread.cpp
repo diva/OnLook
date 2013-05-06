@@ -23,7 +23,7 @@
  * $/LicenseInfo$
  */
 
-#ifdef __GNUC__
+#ifdef LL_GNUC
 // Generate code for inlines from llthread.h (needed for is_main_thread()).
 #pragma implementation "llthread.h"
 #endif
