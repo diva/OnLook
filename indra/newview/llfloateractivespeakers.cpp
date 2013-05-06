@@ -1051,7 +1051,9 @@ void LLSpeakerMgr::update(BOOL resort_ok)
 	{
 		LLUUID speaker_id = speaker_it->first;
 		LLSpeaker* speakerp = speaker_it->second;
-		
+
+		speaker_it++;
+
 		if (voice_channel_active && gVoiceClient->getVoiceEnabled(speaker_id))
 		{
 			speakerp->mSpeechVolume = gVoiceClient->getCurrentPower(speaker_id);
