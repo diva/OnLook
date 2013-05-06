@@ -159,6 +159,11 @@ if (LINUX)
       add_definitions(-Wno-unused-but-set-variable)
     endif (NOT ${CXX_VERSION} LESS 460)
 
+    #gcc 4.8 boost spam wall
+    if(NOT ${CXX_VERSION} LESS 480)
+      add_definitions(-Wno-unused-local-typedefs)
+    endif (NOT ${CXX_VERSION} LESS 480)
+
     # End of hacks.
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
