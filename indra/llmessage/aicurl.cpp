@@ -1270,7 +1270,7 @@ bool BufferedCurlEasyRequest::sShuttingDown = false;
 AIAverage BufferedCurlEasyRequest::sHTTPBandwidth(25);
 
 BufferedCurlEasyRequest::BufferedCurlEasyRequest() :
-	mRequestTransferedBytes(0), mTotalRawBytes(0), mBufferEventsTarget(NULL), mStatus(HTTP_INTERNAL_ERROR_OTHER), mQueueIfTooMuchBandwidthUsage(false)
+	mRequestTransferedBytes(0), mTotalRawBytes(0), mStatus(HTTP_INTERNAL_ERROR_OTHER), mBufferEventsTarget(NULL), mQueueIfTooMuchBandwidthUsage(false)
 {
   AICurlInterface::Stats::BufferedCurlEasyRequest_count++;
 }

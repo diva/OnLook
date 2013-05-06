@@ -888,7 +888,7 @@ AICurlThread* AICurlThread::sInstance = NULL;
 AICurlThread::AICurlThread(void) : LLThread("AICurlThread"),
     mWakeUpFd_in(CURL_SOCKET_BAD),
 	mWakeUpFd(CURL_SOCKET_BAD),
-	mZeroTimeout(0), mRunning(true), mWakeUpFlag(false)
+	mZeroTimeout(0), mWakeUpFlag(false), mRunning(true)
 {
   create_wakeup_fds();
   sInstance = this;
@@ -1724,7 +1724,10 @@ void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
   } // Release the lock on easy_request.
   if (!throttled)
   {												// ... to here.
-	std::pair<addedEasyRequests_type::iterator, bool> res = mAddedEasyRequests.insert(easy_request);
+#ifdef SHOW_ASSERT
+	std::pair<addedEasyRequests_type::iterator, bool> res =
+#endif
+		mAddedEasyRequests.insert(easy_request);
 	llassert(res.second);						// May not have been added before.
 	sTotalAdded++;
 	llassert(sTotalAdded == mAddedEasyRequests.size());
