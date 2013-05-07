@@ -2650,7 +2650,7 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
   {
 	PerService_wat per_service_w(*per_service);
 	S32 const pipelined_requests_per_service = per_service_w->pipelined_requests();
-	llassert(pipelined_requests_per_service >= 0 && pipelined_requests_per_service <= 16);
+	//llassert(pipelined_requests_per_service >= 0 && pipelined_requests_per_service <= 16);
 	reject = pipelined_requests_per_service >= per_service_w->mMaxPipelinedRequests;
 	equal = pipelined_requests_per_service == per_service_w->mMaxPipelinedRequests;
 	increment_threshold = per_service_w->mRequestStarvation;
@@ -2678,7 +2678,7 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
 	  // Before releasing the lock on per_service, stop other threads from getting a
 	  // too small value from pipelined_requests() and approving too many requests.
 	  per_service_w->mApprovedRequests++;
-	  llassert(per_service_w->mApprovedRequests <= 16);
+	  //llassert(per_service_w->mApprovedRequests <= 16);
 	}
   }
   if (reject)
