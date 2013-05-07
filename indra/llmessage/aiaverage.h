@@ -52,7 +52,8 @@ class AIAverage {
 	U32 mN;							// The number of calls to operator().
 	int const mNrOfBuckets;			// Size of mData.
 	std::vector<Data> mData;		// The buckets.
-	LLMutex mLock;					// Mutex for all of the above data.
+
+	mutable LLMutex mLock;			// Mutex for all of the above data.
 
   public:
 	AIAverage(int number_of_buckets) : mCurrentClock(~(U64)0), mTail(0), mCurrentBucket(0), mSum(0), mN(0), mNrOfBuckets(number_of_buckets), mData(number_of_buckets)
@@ -88,7 +89,7 @@ class AIAverage {
 	  mLock.unlock();
 	  return sum;
 	}
-	double getAverage(double avg_no_data)
+	double getAverage(double avg_no_data) const
 	{
 	  mLock.lock();
 	  double avg = mSum;
