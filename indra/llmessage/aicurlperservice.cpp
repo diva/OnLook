@@ -42,10 +42,7 @@
 #include "llcontrol.h"
 
 AIPerService::threadsafe_instance_map_type AIPerService::sInstanceMap;
-LLAtomicS32 AIPerService::sTotalQueued;
-bool AIPerService::sQueueEmpty;
-bool AIPerService::sQueueFull;
-bool AIPerService::sRequestStarvation;
+AIThreadSafeSimpleDC<AIPerService::TotalQueued> AIPerService::sTotalQueued;
 
 #undef AICurlPrivate
 
@@ -54,14 +51,14 @@ namespace AICurlPrivate {
 // Cached value of CurlConcurrentConnectionsPerService.
 U32 CurlConcurrentConnectionsPerService;
 
-// Friend functions of RefCountedThreadSafePerServiceRequestQueue
+// Friend functions of RefCountedThreadSafePerService
 
-void intrusive_ptr_add_ref(RefCountedThreadSafePerServiceRequestQueue* per_service)
+void intrusive_ptr_add_ref(RefCountedThreadSafePerService* per_service)
 {
   per_service->mReferenceCount++;
 }
 
-void intrusive_ptr_release(RefCountedThreadSafePerServiceRequestQueue* per_service)
+void intrusive_ptr_release(RefCountedThreadSafePerService* per_service)
 {
   if (--per_service->mReferenceCount == 0)
   {
@@ -194,7 +191,7 @@ AIPerServicePtr AIPerService::instance(std::string const& servicename)
   AIPerService::iterator iter = instance_map_w->find(servicename);
   if (iter == instance_map_w->end())
   {
-	iter = instance_map_w->insert(instance_map_type::value_type(servicename, new RefCountedThreadSafePerServiceRequestQueue)).first;
+	iter = instance_map_w->insert(instance_map_type::value_type(servicename, new RefCountedThreadSafePerService)).first;
   }
   // Note: the creation of AIPerServicePtr MUST be protected by the lock on sInstanceMap (see release()).
   return iter->second;
@@ -219,7 +216,7 @@ void AIPerService::release(AIPerServicePtr& instance)
 	  return;
 	}
 	// The reference in the map is the last one; that means there can't be any curl easy requests queued for this host.
-	llassert(PerServiceRequestQueue_rat(*instance)->mQueuedRequests.empty());
+	llassert(PerService_rat(*instance)->mQueuedRequests.empty());
 	// Find the host and erase it from the map.
 	iterator const end = instance_map_w->end();
 	for(iterator iter = instance_map_w->begin(); iter != end; ++iter)
@@ -256,7 +253,7 @@ void AIPerService::removed_from_multi_handle(void)
 void AIPerService::queue(AICurlEasyRequest const& easy_request)
 {
   mQueuedRequests.push_back(easy_request.get_ptr());
-  sTotalQueued++;
+  TotalQueued_wat(sTotalQueued)->count++;
 }
 
 bool AIPerService::cancel(AICurlEasyRequest const& easy_request)
@@ -280,8 +277,9 @@ bool AIPerService::cancel(AICurlEasyRequest const& easy_request)
 	prev = cur;
   }
   mQueuedRequests.pop_back();		// if this is safe.
-  --sTotalQueued;
-  llassert(sTotalQueued >= 0);
+  TotalQueued_wat total_queued_w(sTotalQueued);
+  total_queued_w->count--;
+  llassert(total_queued_w->count >= 0);
   return true;
 }
 
@@ -291,17 +289,6 @@ void AIPerService::add_queued_to(curlthread::MultiHandle* multi_handle)
   {
 	multi_handle->add_easy_request(mQueuedRequests.front());
 	mQueuedRequests.pop_front();
-	llassert(sTotalQueued > 0);
-	if (!--sTotalQueued)
-	{
-	  // We obtained a request from the queue, and after that there we no more request in any queue.
-	  sQueueEmpty = true;
-	}
-	else
-	{
-	  // We obtained a request from the queue, and even after that there was at least one more request in some queue.
-	  sQueueFull = true;
-	}
 	if (mQueuedRequests.empty())
 	{
 	  // We obtained a request from the queue, and after that there we no more request in the queue of this host.
@@ -312,15 +299,28 @@ void AIPerService::add_queued_to(curlthread::MultiHandle* multi_handle)
 	  // We obtained a request from the queue, and even after that there was at least one more request in the queue of this host.
 	  mQueueFull = true;
 	}
+	TotalQueued_wat total_queued_w(sTotalQueued);
+	llassert(total_queued_w->count > 0);
+	if (!--(total_queued_w->count))
+	{
+	  // We obtained a request from the queue, and after that there we no more request in any queue.
+	  total_queued_w->empty = true;
+	}
+	else
+	{
+	  // We obtained a request from the queue, and even after that there was at least one more request in some queue.
+	  total_queued_w->full = true;
+	}
   }
   else
   {
 	// We can add a new request, but there is none in the queue!
 	mRequestStarvation = true;
-	if (sTotalQueued == 0)
+	TotalQueued_wat total_queued_w(sTotalQueued);
+	if (total_queued_w->count == 0)
 	{
 	  // The queue of every host is empty!
-	  sRequestStarvation = true;
+	  total_queued_w->starvation = true;
 	}
   }
 }
@@ -332,11 +332,12 @@ void AIPerService::purge(void)
   for (iterator host = instance_map_w->begin(); host != instance_map_w->end(); ++host)
   {
 	Dout(dc::curl, "Purging queue of host \"" << host->first << "\".");
-	PerServiceRequestQueue_wat per_service_w(*host->second);
+	PerService_wat per_service_w(*host->second);
 	size_t s = per_service_w->mQueuedRequests.size();
 	per_service_w->mQueuedRequests.clear();
-	sTotalQueued -= s;
-	llassert(sTotalQueued >= 0);
+	TotalQueued_wat total_queued_w(sTotalQueued);
+	total_queued_w->count -= s;
+	llassert(total_queued_w->count >= 0);
   }
 }
 
@@ -346,7 +347,7 @@ void AIPerService::adjust_concurrent_connections(int increment)
   instance_map_wat instance_map_w(sInstanceMap);
   for (AIPerService::iterator iter = instance_map_w->begin(); iter != instance_map_w->end(); ++iter)
   {
-	PerServiceRequestQueue_wat per_service_w(*iter->second);
+	PerService_wat per_service_w(*iter->second);
 	U32 old_concurrent_connections = per_service_w->mConcurrectConnections;
 	per_service_w->mConcurrectConnections = llclamp(old_concurrent_connections + increment, (U32)1, CurlConcurrentConnectionsPerService);
 	increment = per_service_w->mConcurrectConnections - old_concurrent_connections;
