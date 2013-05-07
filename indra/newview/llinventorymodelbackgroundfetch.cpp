@@ -604,6 +604,10 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 	{
 		return;		// Wait.
 	}
+	// If AIPerService::wantsMoreHTTPRequestsFor returns true, then it approved ONE request.
+	// The code below might fire off zero, one or even more than one requests however!
+	// This object keeps track of that.
+	AIPerService::Approvement approvement(mPerServicePtr);
 
 	U32 item_count=0;
 	U32 folder_count=0;
@@ -698,6 +702,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 			{
 				LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body, recursive_cats);
 				LLHTTPClient::post_nb(url, folder_request_body, fetcher);
+				approvement.honored();
 			}
 			if (folder_request_body_lib["folders"].size())
 			{
@@ -705,6 +710,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 
 				LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body_lib, recursive_cats);
 				LLHTTPClient::post_nb(url_lib, folder_request_body_lib, fetcher);
+				approvement.honored();
 			}
 		}
 		if (item_count)
@@ -723,6 +729,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 					body["items"] = item_request_body;
 
 					LLHTTPClient::post_nb(url, body, new LLInventoryModelFetchItemResponder(body));
+					approvement.honored();
 				}
 			}
 
@@ -739,6 +746,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 					body["items"] = item_request_body_lib;
 
 					LLHTTPClient::post_nb(url, body, new LLInventoryModelFetchItemResponder(body));
+					approvement.honored();
 				}
 			}
 		}

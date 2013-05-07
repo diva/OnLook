@@ -175,7 +175,10 @@
   <key>HTTPThrottleBandwidth</key>
   <map>
     <key>Comment</key>
-    <string>The bandwidth (in kbit/s) to strive for</string>
+    <string>The bandwidth (in kbit/s) to strive for. Smaller values might reduce network
+ congestion (sim ping time, aka avatar responsiveness). Higher values might download
+ textures and the inventory faster, although in some cases a too high value might
+ actually slow that down due to serverside throttling. If unsure, choose 2000.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -4468,7 +4471,7 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Type</key>
       <string>U32</string>
       <key>Value</key>
-      <integer>16</integer>
+      <integer>8</integer>
     </map>
     <key>CurlTimeoutDNSLookup</key>
     <map>

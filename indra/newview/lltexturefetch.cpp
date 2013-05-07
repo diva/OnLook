@@ -1276,6 +1276,9 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			{
 				return false ; //wait.
 			}
+			// If AIPerService::wantsMoreHTTPRequestsFor returns true then it approved ONE request.
+			// This object keeps track of whether or not that is honored.
+			AIPerService::Approvement approvement(mPerServicePtr);
 
 			mFetcher->removeFromNetworkQueue(this, false);
 
@@ -1322,6 +1325,8 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				LLHTTPClient::request(mUrl, LLHTTPClient::HTTP_GET, NULL,
 					new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, mRequestedOffset, true),
 					headers/*,*/ DEBUG_CURLIO_PARAM(debug_off), keep_alive, no_does_authentication, allow_compressed_reply, NULL, 0, NULL, false);
+				// Now the request was added to the command queue.
+				approvement.honored();
 				res = true;
 			}
 			if (!res)

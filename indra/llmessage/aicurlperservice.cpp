@@ -71,7 +71,7 @@ void intrusive_ptr_release(RefCountedThreadSafePerService* per_service)
 using namespace AICurlPrivate;
 
 AIPerService::AIPerService(void) :
-		mQueuedCommands(0), mAdded(0), mQueueEmpty(false),
+		mApprovedRequests(0), mQueuedCommands(0), mAdded(0), mQueueEmpty(false),
 		mQueueFull(false), mRequestStarvation(false), mHTTPBandwidth(25),	// 25 = 1000 ms / 40 ms.
 		mConcurrectConnections(CurlConcurrentConnectionsPerService),
 		mMaxPipelinedRequests(CurlConcurrentConnectionsPerService)
@@ -352,6 +352,17 @@ void AIPerService::adjust_concurrent_connections(int increment)
 	per_service_w->mConcurrectConnections = llclamp(old_concurrent_connections + increment, (U32)1, CurlConcurrentConnectionsPerService);
 	increment = per_service_w->mConcurrectConnections - old_concurrent_connections;
 	per_service_w->mMaxPipelinedRequests = llmax(per_service_w->mMaxPipelinedRequests + increment, 0);
+  }
+}
+
+void AIPerService::Approvement::honored(void)
+{
+  if (!mHonored)
+  {
+	mHonored = true;
+	AICurlPrivate::PerService_wat per_service_w(*mPerServicePtr);
+	llassert(per_service_w->mApprovedRequests > 0);
+	per_service_w->mApprovedRequests--;
   }
 }
 

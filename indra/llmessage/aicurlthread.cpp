@@ -2650,6 +2650,7 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
   {
 	PerService_wat per_service_w(*per_service);
 	S32 const pipelined_requests_per_service = per_service_w->pipelined_requests();
+	llassert(pipelined_requests_per_service >= 0 && pipelined_requests_per_service <= 16);
 	reject = pipelined_requests_per_service >= per_service_w->mMaxPipelinedRequests;
 	equal = pipelined_requests_per_service == per_service_w->mMaxPipelinedRequests;
 	increment_threshold = per_service_w->mRequestStarvation;
@@ -2672,6 +2673,13 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
 		reject = !equal;
 	  }
 	}
+	if (!reject)
+	{
+	  // Before releasing the lock on per_service, stop other threads from getting a
+	  // too small value from pipelined_requests() and approving too many requests.
+	  per_service_w->mApprovedRequests++;
+	  llassert(per_service_w->mApprovedRequests <= 16);
+	}
   }
   if (reject)
   {
@@ -2683,6 +2691,7 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
   if (checkBandwidthUsage(per_service, sTime_40ms))
   {
 	// Too much bandwidth is being used, either in total or for this service.
+	PerService_wat(*per_service)->mApprovedRequests--;		// Not approved after all.
 	return false;
   }
 
@@ -2713,6 +2722,10 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
 	  // Immediately take the new threshold into account.
 	  reject = !equal;
 	}
+  }
+  if (reject)
+  {
+	PerService_wat(*per_service)->mApprovedRequests--;		// Not approved after all.
   }
   return !reject;
 }
@@ -2773,6 +2786,8 @@ bool AIPerService::checkBandwidthUsage(AIPerServicePtr const& per_service, U64 s
   }
 
   // Throttle this service if it uses too much bandwidth.
+  // Warning: this requires max_bandwidth * 1024 to fit in a size_t.
+  // On 32 bit that means that HTTPThrottleBandwidth must be less than 33554 kbps.
   return (service_bandwidth > (max_bandwidth * throttle_fraction_w->fraction / 1024));
 }
 

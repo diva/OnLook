@@ -114,6 +114,7 @@ class AIPerService {
   private:
 	typedef std::deque<AICurlPrivate::BufferedCurlEasyRequestPtr> queued_request_type;
 
+	int mApprovedRequests;						// The number of approved requests by wantsMoreHTTPRequestsFor that were not added to the command queue yet.
 	int mQueuedCommands;						// Number of add commands (minus remove commands) with this host in the command queue.
 	int mAdded;									// Number of active easy handles with this host.
 	queued_request_type mQueuedRequests;		// Waiting (throttled) requests.
@@ -188,7 +189,7 @@ class AIPerService {
 														// Add queued easy handle (if any) to the multi handle. The request is removed from the queue,
 														// followed by either a call to added_to_multi_handle() or to queue() to add it back.
 
-	S32 pipelined_requests(void) const { return mQueuedCommands + mQueuedRequests.size() + mAdded; }
+	S32 pipelined_requests(void) const { return mApprovedRequests + mQueuedCommands + mQueuedRequests.size() + mAdded; }
 
 	AIAverage& bandwidth(void) { return mHTTPBandwidth; }
 	AIAverage const& bandwidth(void) const { return mHTTPBandwidth; }
@@ -211,6 +212,17 @@ class AIPerService {
 	static bool wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service);
 	// Return true if too much bandwidth is being used.
 	static bool checkBandwidthUsage(AIPerServicePtr const& per_service, U64 sTime_40ms);
+
+	// A helper class to decrement mApprovedRequests after requests approved by wantsMoreHTTPRequestsFor were handled.
+	class Approvement {
+	  private:
+		AIPerServicePtr mPerServicePtr;
+		bool mHonored;
+	  public:
+		Approvement(AIPerServicePtr const& per_service) : mPerServicePtr(per_service), mHonored(false) { }
+		~Approvement() { honored(); }
+		void honored(void);
+	};
 
   private:
 	// Disallow copying.
