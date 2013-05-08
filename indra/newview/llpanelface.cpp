@@ -491,7 +491,7 @@ void LLPanelFace::sendTextureInfo()
 				return (object->mDrawable) ? object->mDrawable->getFace(te): NULL;
 			}
 		} get_last_face_func;
-		LLFace* last_face;
+		LLFace* last_face(NULL);
 		LLSelectMgr::getInstance()->getSelection()->getSelectedTEValue(&get_last_face_func, last_face);
 
 		LLPanelFaceSetAlignedTEFunctor setfunc(this, last_face);
@@ -654,7 +654,7 @@ void LLPanelFace::getState()
 						return (object->mDrawable) ? object->mDrawable->getFace(te): NULL;
 					}
 				} get_te_face_func;
-				LLFace* last_face;
+				LLFace* last_face(NULL);
 				LLSelectMgr::getInstance()->getSelection()->getSelectedTEValue(&get_te_face_func, last_face);
 				LLPanelFaceGetIsAlignedTEFunctor get_is_aligend_func(last_face);
 				// this will determine if the texture param controls are tentative:
