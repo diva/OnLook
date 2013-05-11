@@ -375,6 +375,9 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	void resetState(void);
 	void prepRequest(AICurlEasyRequest_wat& buffered_curl_easy_request_w, AIHTTPHeaders const& headers, LLHTTPClient::ResponderPtr responder);
 
+	// Called if this request should be queued on the curl thread when too much bandwidth is being used.
+	void queue_if_too_much_bandwidth_usage(void) { mQueueIfTooMuchBandwidthUsage = true; }
+
 	buffer_ptr_t& getInput(void) { return mInput; }
 	buffer_ptr_t& getOutput(void) { return mOutput; }
 
@@ -416,6 +419,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	U32 mRequestTransferedBytes;
 	size_t mTotalRawBytes;								// Raw body data (still, possibly, compressed) received from the server so far.
 	AIBufferedCurlEasyRequestEvents* mBufferEventsTarget;
+	bool mQueueIfTooMuchBandwidthUsage;					// Set if the curl thread should check bandwidth usage and queue this request if too much is being used.
 
   public:
 	static LLChannelDescriptors const sChannels;		// Channel object for mInput (channel out()) and mOutput (channel in()).
@@ -452,6 +456,9 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	// Return true when prepRequest was already called and the object has not been
 	// invalidated as a result of calling timed_out().
 	bool isValid(void) const { return mResponder; }
+
+	// Returns true when this request should be queued by the curl thread when too much bandwidth is being used.
+	bool queueIfTooMuchBandwidthUsage(void) const { return mQueueIfTooMuchBandwidthUsage; }
 };
 
 inline ThreadSafeBufferedCurlEasyRequest* CurlEasyRequest::get_lockobj(void)

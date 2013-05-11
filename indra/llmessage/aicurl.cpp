@@ -1251,7 +1251,7 @@ AIPerServicePtr CurlEasyRequest::getPerServicePtr(void)
 bool CurlEasyRequest::removeFromPerServiceQueue(AICurlEasyRequest const& easy_request) const
 {
   // Note that easy_request (must) represent(s) this object; it's just passed for convenience.
-  return mPerServicePtr && PerServiceRequestQueue_wat(*mPerServicePtr)->cancel(easy_request);
+  return mPerServicePtr && PerService_wat(*mPerServicePtr)->cancel(easy_request);
 }
 
 std::string CurlEasyRequest::getLowercaseHostname(void) const
@@ -1269,7 +1269,8 @@ LLMutex BufferedCurlEasyRequest::sResponderCallbackMutex;
 bool BufferedCurlEasyRequest::sShuttingDown = false;
 AIAverage BufferedCurlEasyRequest::sHTTPBandwidth(25);
 
-BufferedCurlEasyRequest::BufferedCurlEasyRequest() : mRequestTransferedBytes(0), mTotalRawBytes(0), mBufferEventsTarget(NULL), mStatus(HTTP_INTERNAL_ERROR_OTHER)
+BufferedCurlEasyRequest::BufferedCurlEasyRequest() :
+	mRequestTransferedBytes(0), mTotalRawBytes(0), mStatus(HTTP_INTERNAL_ERROR_OTHER), mBufferEventsTarget(NULL), mQueueIfTooMuchBandwidthUsage(false)
 {
   AICurlInterface::Stats::BufferedCurlEasyRequest_count++;
 }

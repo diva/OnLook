@@ -403,8 +403,8 @@ void LLCondition::broadcast()
 
 //============================================================================
 LLMutexBase::LLMutexBase() :
-	mLockingThread(AIThreadID::sNone),
-	mCount(0)
+	mCount(0),
+	mLockingThread(AIThreadID::sNone)
 {
 }
 
