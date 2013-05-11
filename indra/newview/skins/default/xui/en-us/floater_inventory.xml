@@ -72,6 +72,9 @@
 			     name="Open" width="128">
 				<on_click filter="" function="Inventory.DoToSelected" userdata="open" />
 			</menu_item_call>
+			<menu_item_call label="Update Outfit" mouse_opaque="true" name="Update Outfit">
+				<on_click filter="" function="Inventory.DoCreate" userdata="update outfit"/>
+			</menu_item_call>
 			<menu_item_separator bottom_delta="-8" height="8" left="0" mouse_opaque="true" name="separator"
 			     width="128" />
 			<menu_item_call bottom_delta="-18" height="18" label="New Window" left="0" mouse_opaque="true"
