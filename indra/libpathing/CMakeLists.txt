@@ -1,7 +1,16 @@
 # -*- cmake -*-
 
 project(libpathing)
+
 include(00-Common)
+include(LLCommon)
+include(LLMath)
+
+include_directories(
+    ${LLCOMMON_INCLUDE_DIRS}
+    ${LLMATH_INCLUDE_DIRS}
+)
+
 
 if( MSVC )
    add_definitions(-D_SECURE_SCL=0 -D_CRT_SECURE_NO_WARNINGS=1)
