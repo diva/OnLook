@@ -204,7 +204,8 @@ void LLInventoryModelBackgroundFetch::backgroundFetch()
 			std::string url = region->getCapability("FetchInventory2");
 			if (!url.empty())
 			{
-				if (!mPerServicePtr)
+				bool mPerServicePtr_initialized = !!mPerServicePtr;
+				if (!mPerServicePtr_initialized)
 				{
 					// One time initialization needed for bulkFetch().
 					std::string servicename = AIPerService::extract_canonical_servicename(url);
@@ -212,10 +213,14 @@ void LLInventoryModelBackgroundFetch::backgroundFetch()
 					{
 						llinfos << "Initialized service name for bulk inventory fetching with \"" << servicename << "\"." << llendl;
 						mPerServicePtr = AIPerService::instance(servicename);
+						mPerServicePtr_initialized = true;
 					}
 				}
-				bulkFetch();
-				return;
+				if (mPerServicePtr_initialized)
+				{
+					bulkFetch();
+					return;
+				}
 			}
 	  }
 
@@ -698,6 +703,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 		{
 			std::string url = region->getCapability("FetchInventoryDescendents2");   
 			mFetchCount++;
+			llassert(!url.empty());
 			if (folder_request_body["folders"].size())
 			{
 				LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body, recursive_cats);
