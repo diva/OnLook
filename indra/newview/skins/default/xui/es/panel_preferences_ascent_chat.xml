@@ -15,6 +15,8 @@
 			<check_box label="Ejecutar sonido de escritura en chat local" tool_tip="Silencia el sonido de escritura, haciendo que determinadas cosas sean mas tranquilas, como las actuaciones en vivo." name="play_typing_sound_check"/>
 			<check_box label="No Mostrar/registrar notificaciones en chat" name="hide_notifications_in_chat_check"/>
 			<check_box label="Mostrar nombre del grupo en el chat" tool_tip="El nombre del grupo también será mostrado si el MI es de un chat de grupo." name="append_group_name_check"/>
+			<check_box label="Mostrar cambios en Nombres Mostrados" tool_tip="Estando marcado, se mostrará una notificación en el chat local cuando un residente en la misma región cambie su nombre a mostrar." name="display_name_change"/>		
+			<check_box label="Usar burbuja indicadora de escritura" name="use_typing_bubbles"/>			
 			<text name="objects_link_text_box3">
 				Mostrar en el historial de chat links de chat de objetos para:
 			</text>

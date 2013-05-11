@@ -5,6 +5,7 @@
 			<button label="Expulsar a todos los usuarios" label_selected="Expulsar a todos los usuarios" name="Kick all users" width="200"/>
 			<button label="Vaciar caché de visibilidad del Mapa de esta Región" label_selected="Vaciar caché de visibilidad del Mapa de esta Región" name="Flush This Region&apos;s Map Visibility Caches" width="350"/>
 		</panel>
+		<!-- ======================== -->
 		<panel label="Región" name="region">
 			<text name="Sim Name:">
 				Nombre del Sim:
@@ -17,6 +18,8 @@
 			<check_box label="Bloquear Seguimiento de Tráfico" name="block dwell" tool_tip="Marcar aquí para que esta región no compute el tráfico"/>
 			<check_box label="Bloquear Terraformado" name="block terraform" tool_tip="Marcar aquí para impedir que los usuarios puedan terraformar sus terrenos"/>
 			<check_box label="Sandbox" name="is sandbox" tool_tip="Definir cuando esta región es o no un sandbox."/>
+			<check_box name="is gaming" label="Juegos de Azar" tool_tip="Marcar si es o no una región de juegos de azar."/>
+			<check_box name="hide from search" label="Ocultar Región en las búsquedas" tool_tip="Marcar si esta región aparecerá o no en las búsquedas."/>
 			<button label="Resguardar Terreno" label_selected="Resguardar Terreno" name="Bake Terrain" tool_tip="Guardar el terreno actual como predefinido"/>
 			<button label="Revertir Terreno" label_selected="Revertir Terreno" name="Revert Terrain" tool_tip="Sustituir el terreno actual por el predefinido"/>
 			<button label="Intercambiar Terreno" label_selected="Intercambiar Terreno" name="Swap Terrain" tool_tip="Intercambiar terreno por el predefinido"/>
@@ -26,7 +29,7 @@
 			<text name="parent id">
 				ID del padre:
 			</text>
-			<line_editor name="parentestate" tool_tip="Esta es una propiedad padre para esta región"/>
+			<line_editor name="parentestate" tool_tip="Este es un Estado padre para esta región"/>
 			<text name="Grid Pos: ">
 				Pos. del Grid:
 			</text>
@@ -46,7 +49,11 @@
 			<button label="Seleccionar Región" label_selected="Seleccionar Región" name="Select Region" tool_tip="Seccionar toda la región con la herramienta de terreno"/>
 			<button label="Guardado Automático Ahora" label_selected="Guardado Automático Ahora" name="Autosave now" tool_tip="Guardar con gzip el estado actual en el directorio de guardado automático"/>
 		</panel>
+		<!-- ======================== -->
 		<panel label="Objetos" name="objects">
+			<string name="no_target">
+				(ningún objetivo)
+			</string>		
 			<text name="Sim Name:">
 				Nombre del Sim:
 			</text>
@@ -68,6 +75,7 @@
 			<button label="Obtener Principales Scripts" label_selected="Obtener Principales Scripts" name="Get Top Scripts" tool_tip="Obtiene una lista de los objetos que consumen mas tiempo ejecutando scripts"/>
 			<button label="Compilación de Scripts" label_selected="Compilación de Scripts" name="Scripts digest" tool_tip="Obtener un listado de todos los scripts y número de ocurrencias de cada uno."/>
 		</panel>
+		<!-- ======================== -->
 		<panel label="Solicitar" name="request">
 			<text name="Destination:">
 				Destino:

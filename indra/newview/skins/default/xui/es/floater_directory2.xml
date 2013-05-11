@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="directory" title="Buscar en Second Life">
 	<tab_container name="Directory Tabs">
-		<panel label="Todo" name="find_all_old_panel">
+		<panel label="Todos" name="find_all_old_panel">
 			<string name="searching_text">
 				Buscando...
 			</string>
@@ -17,6 +17,7 @@
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
+			<check_box name="filter_gaming" label="Ocultar Juegos de Azar"/>			
 			<scroll_list name="results">
 				<column label="" name="icon"/>
 				<column label="Nombre" name="name"/>
@@ -30,6 +31,7 @@
 				<column label="Miembros" name="members"/>
 			</scroll_list>
 		</panel>
+		<!-- ======================== -->
 		<panel label="Clasificados" name="classified_panel">
 			<string name="searching_text">
 				Buscando...
@@ -43,12 +45,13 @@
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
+			<check_box name="filter_gaming" label="Ocultar Juegos de Azar"/>			
 			<combo_box name="Category">
 				<combo_item name="AnyCategory">
 					Cualquier Categoría
 				</combo_item>
 				<combo_item name="Shopping">
-					Compra
+					Compras
 				</combo_item>
 				<combo_item name="LandRental">
 					Terreno en alquiler
@@ -88,6 +91,7 @@
 			<button label="Sig. &gt;" label_selected="Sig. &gt;" name="Next &gt;"/>
 			<button label="&lt; Ant." label_selected="&lt; Ant." name="&lt; Prev"/>
 		</panel>
+		<!-- ======================== -->
 		<panel label="Eventos" name="events_panel">
 			<string name="searching_text">
 				Buscando...
@@ -156,6 +160,7 @@
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adult" name="incadult"/>
+			<check_box name="filter_gaming" label="Ocultar Juegos de Azar"/>			
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
 			<button label="Borrar" label_selected="Borrar" name="Delete"/>
 			<scroll_list name="results">
@@ -169,6 +174,7 @@
 			<button label="Sig. &gt;" label_selected="Sig. &gt;" name="Next &gt;"/>
 			<button label="&lt; Ant." label_selected="&lt; Ant." name="&lt; Prev"/>
 		</panel>
+		<!-- ======================== -->
 		<panel label="Venta de Terrenos" name="land_sales_panel">
 			<string name="searching_text">
 				Buscando...
@@ -177,8 +183,7 @@
 				Ninguno Encontrado.
 			</string>
 			<string name="land_help_text">
-				El terreno puede comprarse directamente en la moneda del mundo ([CURRENCY]) , o con [CURRENCY] o [REALCURRENCY]. en una
-subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno en la barra superior del visor.				
+				El terreno puede comprarse directamente en la moneda del mundo ([CURRENCY]) , o en una subasta con [CURRENCY] o [REALCURRENCY]. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno en la barra superior del visor.				
 			</string>
 			<text name="find">
 				Buscar:
@@ -186,6 +191,7 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adult" name="incadult"/>
+			<check_box name="filter_gaming" label="Ocultar Juegos de Azar"/>			
 			<combo_box name="type">
 				<combo_item name="AllTypes">
 					Todos los tipos
@@ -221,6 +227,7 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<button label="Sig. &gt;" label_selected="Sig. &gt;" name="Next &gt;"/>
 			<button label="&lt; Ant." label_selected="&lt; Ant." name="&lt; Prev"/>
 		</panel>
+		<!-- ======================== -->	
 		<panel label="Lugares" name="places_panel">
 			<string name="searching_text">
 				Buscando...
@@ -234,6 +241,7 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
+            <check_box name="filter_gaming" label="Ocultar Juegos de Azar"/>			
 			<combo_box name="Category">
 				<combo_item name="AnyCategory">
 					Cualquier Categoría
@@ -326,12 +334,13 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<scroll_list name="results">
 				<column label="" name="icon"/>
 				<column label="" name="type"/>
-				<column label="Nombre" name="name" />
+				<column abel="Nombre" name="name" />
 				<column label="Tráfico" name="dwell"/>
 			</scroll_list>
 			<button label="Sig. &gt;" label_selected="Sig. &gt;" name="Next &gt;"/>
 			<button label="&lt; Ant." label_selected="&lt; Ant." name="&lt; Prev"/>
 		</panel>
+		<!-- ======================== -->	
 		<panel label="Personas" name="people_panel">
 			<string name="searching_text">
 				Buscando...
@@ -351,6 +360,7 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<button label="Sig. &gt;" label_selected="Sig. &gt;" name="Next &gt;"/>
 			<button label="&lt; Ant." label_selected="&lt; Ant." name="&lt; Prev"/>
 		</panel>
+		<!-- ======================== -->	
 		<panel label="Grupos" name="groups_panel">
 			<string name="searching_text">
 				Buscando...
@@ -367,6 +377,7 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
+			<check_box name="filter_gaming" label="Ocultar Juegos de Azar"/>			
 			<scroll_list name="results">
 				<column label="" name="icon"/>
 				<column label="" name="type"/>
@@ -376,12 +387,4 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			</scroll_list>
 		</panel>
 	</tab_container>
-	<panel name="classified_details_panel"/>
-	<panel name="Panel Avatar"/>
-	<panel name="event_details_panel"/>
-	<panel name="group_details_panel_holder">
-		<panel name="group_details_panel"/>
-	</panel>
-	<panel name="place_details_panel"/>
-	<panel name="place_details_small_panel"/>
 </floater>

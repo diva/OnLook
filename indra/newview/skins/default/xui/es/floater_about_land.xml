@@ -49,10 +49,10 @@
 				En venta a: [BUYER]
 			</text>
 			<text name="Sell with landowners objects in parcel.">
-				  Los objetos se incluyen en la venta.
+				Objetos incluidos en la venta.
 			</text>
 			<text name="Selling with no objects in parcel.">
-				  Los objetos no se incluyen en la venta.
+				Objetos NO incluidos en la venta.
 			</text>
 			<button label="Cancelar la venta del terreno" label_selected="Cancelar la venta del terreno" name="Cancel Land Sale"/>
 			<text name="Claimed:">
@@ -74,6 +74,7 @@
 				0
 			</text>
 			<button label="Comprar terreno..." label_selected="Comprar terreno..." name="Buy Land..." width="120"/>
+			<button name="Scripts..." label="Info de Scripts"/>			
 			<button label="Comprar para el grupo..." label_selected="Comprar para el grupo..." name="Buy For Group..." width="160" left="280"/>
 			<button label="Comprar un Pase..." label_selected="Comprar un Pase..." name="Buy Pass..." tool_tip="Un pase te da acceso temporario a este terreno." width="120"/>
 			<button label="Abandonar terreno..." label_selected="Abandonar terreno..." name="Abandon Land..." width="160" left="280"/>
@@ -414,7 +415,7 @@ Sólo las parcelas más grandes pueden listarse en la búsqueda.
 			<text name="allow_label5">
 				Permitir a residentes en otras parcelas:
 			</text>
-			<check_box label="Ver Avatares" name="SeeAvatarsCheck" tool_tip="Premite a los residentes en otras parcelas ver y conversar con los residentes en esta parcela, y tu prodrás verlos y conversar también con ellos."/>
+			<check_box label="Ver Avatares" name="SeeAvatarsCheck" tool_tip="Permite a los residentes en otras parcelas ver y conversar con los residentes en esta parcela, y tu prodrás verlos y conversar también con ellos."/>
 			<text name="Snapshot:">
 				 Foto:
 			</text>
@@ -479,7 +480,7 @@ Sólo las parcelas más grandes pueden listarse en la búsqueda.
 			<texture_picker label="" name="media texture" tool_tip="Pulsa aquí para elegir una textura"/>
 			<text name="replace_texture_help">
 				Los objetos que usen esta textura mostrarán la
-película o la web cuando pulse la flecha de ejecución.
+película o la web al pulsar la flecha de ejecución.
 
 Selecciona la miniatura para elegir una textura diferente.
 			</text>
