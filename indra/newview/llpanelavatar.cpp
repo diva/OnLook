@@ -1876,11 +1876,9 @@ void LLPanelAvatar::onClickGetKey(void *userdata)
 	LLPanelAvatar* self = (LLPanelAvatar*)userdata;
 	LLUUID agent_id = self->getAvatarID();
 
-	char buffer[UUID_STR_LENGTH];		/*Flawfinder: ignore*/
-	agent_id.toString(buffer);
-	llinfos << "Copy agent id: " << agent_id << " buffer: " << buffer << llendl;
+	llinfos << "Copy agent id: " << agent_id << llendl;
 
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
+	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(agent_id.asString()));
 }
 
 // static

@@ -1385,12 +1385,7 @@ void LLFloaterAvatarList::onClickGetKey()
 
 	if (NULL == item) return;
 
-	LLUUID agent_id = item->getUUID();
-
-	char buffer[UUID_STR_LENGTH];		/*Flawfinder: ignore*/
-	agent_id.toString(buffer);
-
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
+	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(item->getUUID().asString()));
 }
 
 void LLFloaterAvatarList::sendKeys()

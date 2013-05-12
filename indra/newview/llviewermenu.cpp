@@ -3247,10 +3247,7 @@ class LLAvatarCopyUUID : public view_listener_t
 		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
 		if(!avatar) return true;
 		
-		LLUUID uuid = avatar->getID();
-		char buffer[UUID_STR_LENGTH];		/*Flawfinder: ignore*/
-		uuid.toString(buffer);
-		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
+		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(avatar->getID().asString()));
 		return true;
 	}
 };
