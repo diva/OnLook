@@ -605,30 +605,29 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 	LLViewerRegion* region = gAgent.getRegion();
 	if (gDisconnected || !region) return;
 
-	// AIPerService::approveHTTPRequestFor returns approvement for ONE request.
-	// The code below might fire off zero, one or even more than one requests however!
-	// This object keeps track of that.
-	LLPointer<AIPerService::Approvement> approved = AIPerService::approveHTTPRequestFor(mPerServicePtr);
-	if (!approved)
-	{
-		return;		// Wait.
-	}
-
-	U32 item_count=0;
-	U32 folder_count=0;
-	U32 max_batch_size=5;
+	U32 const max_batch_size = 5;
 
 	U32 sort_order = gSavedSettings.getU32(LLInventoryPanel::DEFAULT_SORT_ORDER) & 0x1;
 
 	uuid_vec_t recursive_cats;
+
+	U32 folder_count=0;
+	U32 folder_lib_count=0;
+	U32 item_count=0;
+	U32 item_lib_count=0;
+
+	// This function can do up to four requests at once.
+	LLPointer<AIPerService::Approvement> approved_folder;
+	LLPointer<AIPerService::Approvement> approved_folder_lib;
+	LLPointer<AIPerService::Approvement> approved_item;
+	LLPointer<AIPerService::Approvement> approved_item_lib;
 
 	LLSD folder_request_body;
 	LLSD folder_request_body_lib;
 	LLSD item_request_body;
 	LLSD item_request_body_lib;
 
-	while (!mFetchQueue.empty() 
-			&& (item_count + folder_count) < max_batch_size)
+	while (!mFetchQueue.empty())
 	{
 		const FetchQueueInfo& fetch_info = mFetchQueue.front();
 		if (fetch_info.mIsCategory)
@@ -650,10 +649,27 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 						folder_sd["fetch_items"]	= (LLSD::Boolean)TRUE;
 				    
 						if (ALEXANDRIA_LINDEN_ID == cat->getOwnerID())
+						{
+							if (folder_lib_count == max_batch_size ||
+								(folder_lib_count == 0 &&
+								 !(approved_folder_lib = AIPerService::approveHTTPRequestFor(mPerServicePtr))))
+							{
+								break;
+							}
 							folder_request_body_lib["folders"].append(folder_sd);
+							++folder_lib_count;
+						}
 						else
+						{
+							if (folder_count == max_batch_size ||
+								(folder_count == 0 &&
+								 !(approved_folder = AIPerService::approveHTTPRequestFor(mPerServicePtr))))
+							{
+								break;
+							}
 							folder_request_body["folders"].append(folder_sd);
-						folder_count++;
+							++folder_count;
+						}
 					}
 					// May already have this folder, but append child folders to list.
 					if (fetch_info.mRecursive)
@@ -683,74 +699,69 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 				item_sd["item_id"] = itemp->getUUID();
 				if (itemp->getPermissions().getOwner() == gAgent.getID())
 				{
+					if (item_count == max_batch_size ||
+						(item_count == 0 &&
+						 !(approved_item = AIPerService::approveHTTPRequestFor(mPerServicePtr))))
+					{
+						break;
+					}
 					item_request_body.append(item_sd);
+					++item_count;
 				}
 				else
 				{
+					if (item_lib_count == max_batch_size ||
+						(item_lib_count == 0 &&
+						 !(approved_item_lib = AIPerService::approveHTTPRequestFor(mPerServicePtr))))
+					{
+						break;
+					}
 					item_request_body_lib.append(item_sd);
+					++item_lib_count;
 				}
-				//itemp->fetchFromServer();
-				item_count++;
 			}
 		}
 
 		mFetchQueue.pop_front();
 	}
 		
-	if (item_count + folder_count > 0)
+	if (item_count + folder_count + item_lib_count + folder_lib_count > 0)
 	{
 		if (folder_count)
 		{
 			std::string url = region->getCapability("FetchInventoryDescendents2");   
-			mFetchCount++;
 			llassert(!url.empty());
-			if (folder_request_body["folders"].size())
-			{
-				LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body, recursive_cats);
-				LLHTTPClient::post_approved(url, folder_request_body, fetcher, approved);
-			}
-			if (folder_request_body_lib["folders"].size())
-			{
-				std::string url_lib = gAgent.getRegion()->getCapability("FetchLibDescendents2");
-
-				LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body_lib, recursive_cats);
-				LLHTTPClient::post_approved(url_lib, folder_request_body_lib, fetcher, approved);
-			}
+			++mFetchCount;
+			LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body, recursive_cats);
+			LLHTTPClient::post_approved(url, folder_request_body, fetcher, approved_folder);
+		}
+		if (folder_lib_count)
+		{
+			std::string url = gAgent.getRegion()->getCapability("FetchLibDescendents2");
+			llassert(!url.empty());
+			++mFetchCount;
+			LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body_lib, recursive_cats);
+			LLHTTPClient::post_approved(url, folder_request_body_lib, fetcher, approved_folder_lib);
 		}
 		if (item_count)
 		{
-			std::string url;
-
-			if (item_request_body.size())
-			{
-				mFetchCount++;
-				url = region->getCapability("FetchInventory2");
-				llassert(!url.empty());
-				if (!url.empty())
-				{
-					LLSD body;
-					body["agent_id"]	= gAgent.getID();
-					body["items"] = item_request_body;
-
-					LLHTTPClient::post_approved(url, body, new LLInventoryModelFetchItemResponder(body), approved);
-				}
-			}
-
-			if (item_request_body_lib.size())
-			{
-				mFetchCount++;
-
-				url = region->getCapability("FetchLib2");
-				llassert(!url.empty());
-				if (!url.empty())
-				{
-					LLSD body;
-					body["agent_id"]	= gAgent.getID();
-					body["items"] = item_request_body_lib;
-
-					LLHTTPClient::post_approved(url, body, new LLInventoryModelFetchItemResponder(body), approved);
-				}
-			}
+			std::string url = region->getCapability("FetchInventory2");
+			llassert(!url.empty());
+			++mFetchCount;
+			LLSD body;
+			body["agent_id"] = gAgent.getID();
+			body["items"] = item_request_body;
+			LLHTTPClient::post_approved(url, body, new LLInventoryModelFetchItemResponder(body), approved_item);
+		}
+		if (item_lib_count)
+		{
+			std::string url = region->getCapability("FetchLib2");
+			llassert(!url.empty());
+			++mFetchCount;
+			LLSD body;
+			body["agent_id"] = gAgent.getID();
+			body["items"] = item_request_body_lib;
+			LLHTTPClient::post_approved(url, body, new LLInventoryModelFetchItemResponder(body), approved_item_lib);
 		}
 		mFetchTimer.reset();
 	}
