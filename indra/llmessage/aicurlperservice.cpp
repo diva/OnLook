@@ -366,3 +366,9 @@ void AIPerService::Approvement::honored(void)
   }
 }
 
+void AIPerService::Approvement::not_honored(void)
+{
+  honored();
+  llwarns << "Approvement for has not been honored." << llendl;
+}
+

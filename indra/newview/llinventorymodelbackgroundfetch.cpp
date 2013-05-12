@@ -605,14 +605,14 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 	LLViewerRegion* region = gAgent.getRegion();
 	if (gDisconnected || !region) return;
 
-	if (!AIPerService::wantsMoreHTTPRequestsFor(mPerServicePtr))
+	// AIPerService::approveHTTPRequestFor returns approvement for ONE request.
+	// The code below might fire off zero, one or even more than one requests however!
+	// This object keeps track of that.
+	LLPointer<AIPerService::Approvement> approved = AIPerService::approveHTTPRequestFor(mPerServicePtr);
+	if (!approved)
 	{
 		return;		// Wait.
 	}
-	// If AIPerService::wantsMoreHTTPRequestsFor returns true, then it approved ONE request.
-	// The code below might fire off zero, one or even more than one requests however!
-	// This object keeps track of that.
-	AIPerService::Approvement approvement(mPerServicePtr);
 
 	U32 item_count=0;
 	U32 folder_count=0;
@@ -707,16 +707,14 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 			if (folder_request_body["folders"].size())
 			{
 				LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body, recursive_cats);
-				LLHTTPClient::post_nb(url, folder_request_body, fetcher);
-				approvement.honored();
+				LLHTTPClient::post_approved(url, folder_request_body, fetcher, approved);
 			}
 			if (folder_request_body_lib["folders"].size())
 			{
 				std::string url_lib = gAgent.getRegion()->getCapability("FetchLibDescendents2");
 
 				LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body_lib, recursive_cats);
-				LLHTTPClient::post_nb(url_lib, folder_request_body_lib, fetcher);
-				approvement.honored();
+				LLHTTPClient::post_approved(url_lib, folder_request_body_lib, fetcher, approved);
 			}
 		}
 		if (item_count)
@@ -734,8 +732,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 					body["agent_id"]	= gAgent.getID();
 					body["items"] = item_request_body;
 
-					LLHTTPClient::post_nb(url, body, new LLInventoryModelFetchItemResponder(body));
-					approvement.honored();
+					LLHTTPClient::post_approved(url, body, new LLInventoryModelFetchItemResponder(body), approved);
 				}
 			}
 
@@ -751,8 +748,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 					body["agent_id"]	= gAgent.getID();
 					body["items"] = item_request_body_lib;
 
-					LLHTTPClient::post_nb(url, body, new LLInventoryModelFetchItemResponder(body));
-					approvement.honored();
+					LLHTTPClient::post_approved(url, body, new LLInventoryModelFetchItemResponder(body), approved);
 				}
 			}
 		}
