@@ -140,7 +140,7 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// and revoking of the callbacks is harmless (and happens for the raw non-statemachine version).
 	void remove_queued(void) { mQueuedForRemoval = true; }
 	// In case it's added after being removed.
-	void add_queued(void) { mQueuedForRemoval = false; if (mApproved) { mApproved->honored(); mApproved = NULL; } }
+	void add_queued(void) { mQueuedForRemoval = false; if (mApproved) { mApproved->honored(); } }
 
 #ifdef DEBUG_CURLIO
 	void debug(bool debug) { if (mDebug) debug_curl_remove_easy(mEasyHandle); if (debug) debug_curl_add_easy(mEasyHandle); mDebug = debug; }
