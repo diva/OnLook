@@ -1331,7 +1331,7 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 		case cmd_boost:	// FIXME: future stuff
 		  break;
 		case cmd_add:
-		  multi_handle_w->add_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()));
+		  multi_handle_w->add_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()), false);
 		  PerService_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerServicePtr())->removed_from_command_queue();
 		  break;
 		case cmd_remove:
@@ -1701,7 +1701,7 @@ CURLMsg const* MultiHandle::info_read(int* msgs_in_queue) const
 
 static U32 curl_max_total_concurrent_connections = 32;						// Initialized on start up by startCurlThread().
 
-void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
+bool MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request, bool from_queue)
 {
   bool throttled = true;		// Default.
   AIPerServicePtr per_service;
@@ -1731,7 +1731,12 @@ void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
 	llassert(sTotalAdded == mAddedEasyRequests.size());
 	Dout(dc::curl, "MultiHandle::add_easy_request: Added AICurlEasyRequest " << (void*)easy_request.get_ptr().get() <<
 		"; now processing " << mAddedEasyRequests.size() << " easy handles [running_handles = " << AICurlInterface::Stats::running_handles << "].");
-	return;
+	return true;
+  }
+  if (from_queue)
+  {
+	// Throttled. Do not add to queue, because it is already in the queue.
+	return false;
   }
   // The request could not be added, we have to queue it.
   PerService_wat(*per_service)->queue(easy_request);
@@ -1739,6 +1744,7 @@ void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
   // Not active yet, but it's no longer an error if next we try to remove the request.
   AICurlEasyRequest_wat(*easy_request)->mRemovedPerCommand = false;
 #endif
+  return true;
 }
 
 CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request, bool as_per_command)

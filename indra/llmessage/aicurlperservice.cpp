@@ -287,7 +287,11 @@ void AIPerService::add_queued_to(curlthread::MultiHandle* multi_handle)
 {
   if (!mQueuedRequests.empty())
   {
-	multi_handle->add_easy_request(mQueuedRequests.front());
+	if (!multi_handle->add_easy_request(mQueuedRequests.front(), true))
+	{
+	  // Throttled.
+	  return;
+	}
 	mQueuedRequests.pop_front();
 	if (mQueuedRequests.empty())
 	{
