@@ -13,26 +13,26 @@
 
 	<check_box label="Zoom" name="radio zoom"/>
 	<check_box label="Órbita (Ctrl)" name="radio orbit"/>
-	<check_box label="Panorámica (Ctrl-Shift)" name="radio pan"/>
+	<check_box label="Panorámica (Ctrl-Mayús)" name="radio pan"/>
 
 <!-- Move panel -->
 
 	<check_box label="Mover" name="radio move"/>
 	<check_box label="Elevar (Ctrl)" name="radio lift"/>
-	<check_box label="Rotar (Ctrl-Shift)" name="radio spin"/>
+	<check_box label="Rotar (Ctrl-Mayús)" name="radio spin"/>
 
 <!-- Edit panel -->
 	<check_box label="Posición" name="radio position"/>
 	<check_box label="Girar (Ctrl)" name="radio rotate"/>
-	<check_box label="Estirar (Ctrl-Shift)" name="radio stretch"/>
+	<check_box label="Estirar (Ctrl-Mayús)" name="radio stretch"/>
 	<check_box label="Elegir Cara" name="radio select face"/>
 	<check_box label="Alinear (Ctrl-A)" name="radio align"/>
 	<check_box label="Editar partes enlazadas" name="checkbox edit linked parts"/>
 	<text name="text ruler mode">
 		Regla:
 	</text>
-	<combo_box name="combobox grid mode">
-		<combo_item name="World" value="World">
+	<combo_box name="combobox grid mode" left_delta="35">
+		<combo_item name="World">
 			Mundo
 		</combo_item>
 		<combo_item name="Local">
@@ -44,8 +44,8 @@
 	</combo_box>
 	<check_box label="Estirar ambos lados" name="checkbox uniform"/>
 	<check_box label="Estirar Texturas" name="checkbox stretch textures"/>
-	<check_box label="Limitar dist. Arrastre" name="checkbox limit drag distance"/>
-	<check_box label="Editar Ejes Raíz" name="checkbox actual root"/>
+	<check_box label="Limitar Dist. Arrastre" name="checkbox limit drag distance"/>
+	<check_box label="Editar Ejes en Raíz" name="checkbox actual root"/>
 	<check_box label="Mostrar Resaltado" name="checkbox show highlight"/>
 	<check_box label="Usar Cuadrícula" name="checkbox snap to grid"/>	
 	<button label="Opciones..." label_selected="Opciones..." name="Options..."/>
@@ -154,8 +154,12 @@
 				Transferir
 			</string>
 			<button label="Transferir..." label_selected="Transferir..." name="button deed" tool_tip="Los objetos compartidos por el grupo pueden ser transferidos por un oficial del grupo."/>
-			<check_box label="Permitir que cualquiera lo mueva" name="checkbox allow everyone move"/>
-			<check_box label="Permitir a cualquiera copiarlo" name="checkbox allow everyone copy"/>
+			<text name="text anyone can">
+				Cualquiera puede:
+			</text>
+			<check_box label="Moverlo" name="checkbox allow everyone move"/>
+			<check_box label="Copiarlo" name="checkbox allow everyone copy"/>
+			<check_box name="checkbox allow export" label="Exportarlo"/>			
 			<check_box label="Mostrar en la Búsqueda" name="search_check" tool_tip="Permitir que este objeto aparezca en los resultados de la búsqueda"/>
 			<check_box label="En Venta" name="checkbox for sale"/>
 			<text name="Cost">
@@ -177,13 +181,12 @@
 			</text>
 			<check_box label="Modificarlo" name="checkbox next owner can modify"/>
 			<check_box label="Copiarlo" name="checkbox next owner can copy"/>
-			<check_box label="Revenderlo/Darlo" name="checkbox next owner can transfer"/>
+			<check_box label="Transferirlo" name="checkbox next owner can transfer"/>
 			<text name="label click action">
 				Al pulsarlo con botón izquierdo:
 			</text>
 			<combo_box name="clickaction">
-			     <!-- Do not reorder these items, the index numbers are
-					used internally. JC -->
+			     <!-- Do not reorder these items, the index numbers are used internally. JC -->
 			<combo_item name="Touch/grab(default)">
 					Tocar/Agarrar (Por Defecto)
 				</combo_item>
@@ -210,9 +213,6 @@
       		<text name="B:">
 				B:
 			</text>
-			<text name="O:">
-				O;
-			</text>
 			<text name="G:">
 				G:
 			</text>
@@ -225,13 +225,13 @@
 			<text name="F:">
 				F:
 			</text>
-			<!-- ========================  -->
+			<!-- =======================  -->
 			<panel name="pathfinding_attrs_panel">
 				<text name="pathfinding_attributes_label">
 					Atributos de Pathfinding:
 				</text>
 				<text name="pathfinding_attributes_value">
-					Test
+					Prueba
 				</text>
 			</panel>
 			<string name="text modify info 1">
@@ -529,7 +529,7 @@
 			
 			<texture_picker label="" name="light texture control" tool_tip="Pulsa para escoger una proyección de imagen (sólo tiene efecto con el renderizado diferido activado"/>
 			<spinner label="Intensidad" name="Light Intensity" label_width="55"/>
-			<spinner label="CDV" name="Light FOV"/>
+			<spinner label="FOV" name="Light FOV"/>
 			<spinner label="Radio" name="Light Radius" label_width="55"/>
 			<spinner label="Visión" name="Light Focus"/>
 			<spinner label="Atenuación" name="Light Falloff" label_width="55"/>

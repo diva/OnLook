@@ -32,6 +32,7 @@
 #include "lluuid.h"
 #include "llviewertexture.h"
 #include "llvolume.h"
+#include "sguuidhash.h"
 
 #define LLCONVEXDECOMPINTER_STATIC 1
 
@@ -433,7 +434,7 @@ enum AIMeshUpload_state_type {
 class AIMeshUpload : public AIStateMachine
 {
 private:
-	AIStateMachineThread<LLMeshUploadThread> mMeshUpload;
+	LLPointer<AIStateMachineThread<LLMeshUploadThread> > mMeshUpload;
 	std::string mWholeModelUploadURL;
 
 public:
@@ -505,8 +506,8 @@ public:
 
 	typedef std::map<LLVolumeParams, std::set<LLUUID> > mesh_load_map;
 	mesh_load_map mLoadingMeshes[4];
-	
-	typedef std::map<LLUUID, LLMeshSkinInfo> skin_map;
+
+	typedef boost::unordered_map<LLUUID, LLMeshSkinInfo> skin_map;
 	skin_map mSkinMap;
 
 	typedef std::map<LLUUID, LLModel::Decomposition*> decomposition_map;

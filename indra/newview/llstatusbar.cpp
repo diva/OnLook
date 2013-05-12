@@ -68,6 +68,7 @@
 #include "llworld.h"
 #include "llstatgraph.h"
 #include "llviewercontrol.h"
+#include "llviewergenericmessage.h"
 #include "llviewermenu.h"	// for gMenuBarView
 #include "llviewerparcelmgr.h"
 #include "llviewerthrottle.h"
@@ -137,9 +138,27 @@ std::vector<std::string> LLStatusBar::sDays;
 std::vector<std::string> LLStatusBar::sMonths;
 const U32 LLStatusBar::MAX_DATE_STRING_LENGTH = 2000;
 
+class LLDispatchUPCBalance : public LLDispatchHandler
+{
+public:
+	virtual bool operator()(
+		const LLDispatcher* dispatcher,
+		const std::string& key,
+		const LLUUID& invoice,
+		const sparam_t& strings)
+	{
+		S32 upc = atoi(strings[0].c_str());
+		gStatusBar->setUPC(upc);
+		return true;
+	}
+};
+
+static LLDispatchUPCBalance sDispatchUPCBalance;
+
 LLStatusBar::LLStatusBar(const std::string& name, const LLRect& rect)
 :	LLPanel(name, LLRect(), FALSE),		// not mouse opaque
 mBalance(0),
+mUPC(0),
 mHealth(100),
 mSquareMetersCredit(0),
 mSquareMetersCommitted(0),
@@ -147,6 +166,11 @@ mRegionCrossingSlot(),
 mNavMeshSlot(),
 mIsNavMeshDirty(false)
 {
+	mUPCSupported = gHippoGridManager->getConnectedGrid()->getUPCSupported();
+
+	if (mUPCSupported)
+		gGenericDispatcher.addHandler("upcbalance", &sDispatchUPCBalance);
+
 	// status bar can possible overlay menus?
 	setMouseOpaque(FALSE);
 	setIsChrome(TRUE);
@@ -168,9 +192,13 @@ mIsNavMeshDirty(false)
 
 	mTextParcelName = getChild<LLTextBox>("ParcelNameText" );
 	mTextBalance = getChild<LLTextBox>("BalanceText" );
+	mTextUPC = getChild<LLTextBox>("UPCText" );
 
 	mTextHealth = getChild<LLTextBox>("HealthText" );
 	mTextTime = getChild<LLTextBox>("TimeText" );
+
+	if (!mUPCSupported)
+		mTextUPC->setVisible(false);
 
 	childSetAction("scriptout", onClickScriptDebug, this);
 	childSetAction("health", onClickHealth, this);
@@ -595,6 +623,14 @@ void LLStatusBar::refresh()
 	}
 
 	// Set rects of money, buy money, time
+	if (mUPCSupported)
+	{
+		childGetRect("UPCText", r);
+		r.translate( new_right - r.mRight, 0);
+		childSetRect("UPCText", r);
+		new_right -= r.getWidth() - 18;
+	}
+
 	childGetRect("BalanceText", r);
 	r.translate( new_right - r.mRight, 0);
 	childSetRect("BalanceText", r);
@@ -631,6 +667,8 @@ void LLStatusBar::refresh()
 void LLStatusBar::setVisibleForMouselook(bool visible)
 {
 	mTextBalance->setVisible(visible);
+	if (mUPCSupported)
+		mTextUPC->setVisible(visible);
 	mTextTime->setVisible(visible);
 	childSetVisible("buycurrency", visible);
 	childSetVisible("search_editor", visible);
@@ -653,7 +691,7 @@ void LLStatusBar::creditBalance(S32 credit)
 void LLStatusBar::setBalance(S32 balance)
 {
 	mTextBalance->setText(gHippoGridManager->getConnectedGrid()->getCurrencySymbol().c_str() +
-		LLResMgr::getInstance()->getMonetaryString(balance));
+		LLResMgr::getInstance()->getMonetaryString(balance - mUPC));
 
 	if (mBalance && (fabs((F32)(mBalance - balance)) > gSavedSettings.getF32("UISndMoneyChangeThreshold")))
 	{
@@ -670,6 +708,14 @@ void LLStatusBar::setBalance(S32 balance)
 	}
 }
 
+void LLStatusBar::setUPC(S32 upc)
+{
+	mTextUPC->setText("UPC " + LLResMgr::getInstance()->getMonetaryString(upc));
+
+	mUPC = upc;
+
+	setBalance(mBalance);
+}
 
 // static
 void LLStatusBar::sendMoneyBalanceRequest()

@@ -212,6 +212,7 @@
 #include "llinventorybridge.h"
 #include "llappearancemgr.h"
 #include "jcfloaterareasearch.h"
+#include "generichandlers.h"
 
 // <edit>
 #include "llpanellogin.h"
@@ -843,6 +844,8 @@ bool idle_startup()
 
 		// *NOTE: This is where gMuteList used to get allocated before becoming LLMuteList::getInstance().
 
+		gGenericHandlers = new GenericHandlers();
+
 		// Initialize UI
 		if (!gNoRender)
 		{
@@ -999,11 +1002,14 @@ bool idle_startup()
 		if(!gHippoGridManager->getConnectedGrid()->isSecondLife())
 		{
 			LLTrans::setDefaultArg("[CURRENCY]",gHippoGridManager->getConnectedGrid()->getCurrencySymbol());	//replace [CURRENCY] with OS$, not L$ for instance.
+			LLTrans::setDefaultArg("[CURRENCY_TEXT]",gHippoGridManager->getConnectedGrid()->getCurrencyText());	//replace [CURRENCYTEXT] with OS DOllars, not Linden Dollars for instance.
 			LLTrans::setDefaultArg("[SECOND_LIFE]", gHippoGridManager->getConnectedGrid()->getGridName());
 			LLTrans::setDefaultArg("[SECOND_LIFE_GRID]", gHippoGridManager->getConnectedGrid()->getGridName() + " Grid");
 			LLTrans::setDefaultArg("[GRID_OWNER]", gHippoGridManager->getConnectedGrid()->getGridOwner());
 			LLScriptEdCore::parseFunctions("lsl_functions_os.xml"); //Singu Note: This appends to the base functions parsed from lsl_functions_sl.xml
 		}
+		// Avination doesn't want the viewer to do bandwidth throttling (it is done serverside, taking UDP into account too).
+		AIPerService::setNoHTTPBandwidthThrottling(gHippoGridManager->getConnectedGrid()->isAvination());
 
 		// create necessary directories
 		// *FIX: these mkdir's should error check
@@ -4375,6 +4381,8 @@ bool process_login_success_response(std::string& password)
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setSearchUrl(tmp);
 	tmp = response["currency"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setCurrencySymbol(tmp);
+	tmp = response["currency_text"].asString();
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setCurrencyText(tmp);
 	tmp = response["real_currency"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setRealCurrencySymbol(tmp);
 	tmp = response["directory_fee"].asString();
@@ -4385,6 +4393,8 @@ bool process_login_success_response(std::string& password)
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setMaxAgentGroups(atoi(tmp.c_str()));
 	tmp = response["VoiceConnector"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setVoiceConnector(tmp);
+	tmp = response["upc_supported"].asString();
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setUPCSupported(true);
 	gHippoGridManager->saveFile();
 	gHippoLimits->setLimits();
 

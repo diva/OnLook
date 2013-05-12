@@ -38,6 +38,7 @@
 #include "llagentcamera.h"
 #include "statemachine/aifilepicker.h"
 #include "llfloateranimpreview.h"
+#include "llfloaterbvhpreview.h"
 #include "llfloaterimagepreview.h"
 #include "llfloatermodelpreview.h"
 #include "llfloaternamedesc.h"
@@ -348,8 +349,17 @@ class LLFileUploadAnim : public view_listener_t, public AIFileUpload
 	// Inherited from AIFileUpload.
 	/*virtual*/ void handle_event(std::string const& filename)
 	{
-		LLFloaterAnimPreview* floaterp = new LLFloaterAnimPreview(filename);
-		LLUICtrlFactory::getInstance()->buildFloater(floaterp, "floater_animation_preview.xml");
+		int len = filename.size();
+		if (len >= 5 && filename.substr(len - 5, 5) == ".anim")
+		{
+		  LLFloaterAnimPreview* floaterp = new LLFloaterAnimPreview(filename);
+		  LLUICtrlFactory::getInstance()->buildFloater(floaterp, "floater_animation_anim_preview.xml");
+		  floaterp->childSetLabelArg("ok_btn", "[AMOUNT]", llformat("%s%d", gHippoGridManager->getConnectedGrid()->getCurrencySymbol().c_str(), LLGlobalEconomy::Singleton::getInstance()->getPriceUpload()));
+		}
+		else
+		{
+		  LLUICtrlFactory::getInstance()->buildFloater(new LLFloaterBvhPreview(filename), "floater_animation_bvh_preview.xml");
+		}
 	}
 };
 
@@ -871,8 +881,8 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 	}
 	else if (exten == "bvh")
 	{
-		error_message = llformat("We do not currently support bulk upload of animation files\n");
-		upload_error(error_message, "DoNotSupportBulkAnimationUpload", filename, args);
+		error_message = llformat("We do not currently support bulk upload of BVH animation files\n");
+		upload_error(error_message, "DoNotSupportBulkBVHAnimationUpload", filename, args);
 		return;
 	}
 	// <edit>

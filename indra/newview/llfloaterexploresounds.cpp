@@ -68,6 +68,13 @@ void LLFloaterExploreSounds::toggle()
 	else LLFloaterExploreSounds::sInstance = new LLFloaterExploreSounds();
 }
 
+BOOL LLFloaterExploreSounds::visible()
+{
+	if (LLFloaterExploreSounds::sInstance)
+		return TRUE;
+	return FALSE;
+}
+
 void LLFloaterExploreSounds::close(bool app_quitting)
 {
 	LLFloater::close(app_quitting);

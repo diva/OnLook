@@ -171,44 +171,14 @@
     <key>Value</key>
     <integer>1</integer>
   </map>
-	
-  <key>HTTPRequestRate</key>
-  <map>
-    <key>Comment</key>
-    <string>Number of HTTP texture requests fired per second.</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>U32</string>
-    <key>Value</key>
-    <integer>30</integer>
-  </map>
-  <key>HTTPMaxRequests</key>
-  <map>
-    <key>Comment</key>
-    <string>Maximum number of simultaneous HTTP requests in progress.</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>U32</string>
-    <key>Value</key>
-    <integer>12</integer>
-  </map>
-  <key>HTTPMinRequests</key>
-  <map>
-    <key>Comment</key>
-    <string>Attempt to maintain at least this many HTTP requests in progress by ignoring bandwidth</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>U32</string>
-    <key>Value</key>
-    <integer>2</integer>
-  </map>
+
   <key>HTTPThrottleBandwidth</key>
   <map>
     <key>Comment</key>
-    <string>The bandwidth (in kbit/s) to strive for</string>
+    <string>The bandwidth (in kbit/s) to strive for. Smaller values might reduce network
+ congestion (sim ping time, aka avatar responsiveness). Higher values might download
+ textures and the inventory faster, although in some cases a too high value might
+ actually slow that down due to serverside throttling. If unsure, choose 2000.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -4503,16 +4473,16 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>64</integer>
     </map>
-    <key>CurlConcurrentConnectionsPerHost</key>
+    <key>CurlConcurrentConnectionsPerService</key>
     <map>
       <key>Comment</key>
-      <string>Maximum number of simultaneous curl connections per host</string>
+      <string>Maximum number of simultaneous curl connections per host:port service</string>
       <key>Persist</key>
       <integer>0</integer>
       <key>Type</key>
       <string>U32</string>
       <key>Value</key>
-      <integer>16</integer>
+      <integer>8</integer>
     </map>
     <key>CurlTimeoutDNSLookup</key>
     <map>
@@ -4965,7 +4935,18 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>-1</integer>
     </map>
-    <key>DebugStatModeTexture</key>
+    <key>DebugStatModeHTTPTexture</key>
+    <map>
+      <key>Comment</key>
+      <string>Mode of stat in Statistics floater</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>-1</integer>
+    </map>
+    <key>DebugStatModeUDPTexture</key>
     <map>
       <key>Comment</key>
       <string>Mode of stat in Statistics floater</string>

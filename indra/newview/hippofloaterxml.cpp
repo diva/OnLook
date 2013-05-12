@@ -64,6 +64,8 @@ class HippoFloaterXmlImpl : public LLFloater
 							const std::string &cmds, std::string::size_type &offset,
 							std::string &response);
 
+		U32 mChannel;
+
 	private:
 		std::string mName;
 		bool mIsNotifyOnClose;
@@ -162,7 +164,7 @@ void XmlData::release(const std::string &floaterName)
 // create HippoFloaterXmlImpl
 
 HippoFloaterXmlImpl::HippoFloaterXmlImpl(const std::string &name, const std::string &xml) :
-	mName(name), mIsNotifyOnClose(false)
+	mName(name), mIsNotifyOnClose(false), mChannel(CHANNEL)
 {
 	gInstances[mName] = this;
 	LLUICtrlFactory::getInstance()->buildFloaterFromBuffer(this, xml);
@@ -223,7 +225,7 @@ void HippoFloaterXml::execute(const std::string &cmds)
 				if (!floater->execute(floater, floater, cmds, offset, response))
 					break;
 				if (!response.empty())
-					send_chat_from_viewer(response, CHAT_TYPE_WHISPER, CHANNEL);
+					send_chat_from_viewer(response, CHAT_TYPE_WHISPER, floater->mChannel);
 			}
 		} else
 
@@ -267,18 +269,22 @@ void HippoFloaterXml::execute(const std::string &cmds)
 // ********************************************************************
 // generic notification callbacks
 
-static void notifyCallback(void *c)
+static void notifyCallback(void *c, void *f)
 {
+	HippoFloaterXmlImpl* floaterp = (HippoFloaterXmlImpl*)f;
+
 	LLUICtrl *ctrl = (LLUICtrl *)c;
 	std::string msg = "NOTIFY:";
 	msg += ctrl->getName();
 	msg += ':';
 	msg += ctrl->getValue().asString();
-	send_chat_from_viewer(msg, CHAT_TYPE_WHISPER, CHANNEL);
+	send_chat_from_viewer(msg, CHAT_TYPE_WHISPER, floaterp->mChannel);
 }
 
-void callbackAvatarPick(void *c, const uuid_vec_t& ids, const std::vector<LLAvatarName>& names)
+void callbackAvatarPick(void *c, void *f, const uuid_vec_t& ids, const std::vector<LLAvatarName>& names)
 {  
+	HippoFloaterXmlImpl* floaterp = (HippoFloaterXmlImpl*)f;
+
 	LLUICtrl *ctrl = (LLUICtrl *)c;
 
 	LLUUID id = ids[0];
@@ -289,7 +295,7 @@ void callbackAvatarPick(void *c, const uuid_vec_t& ids, const std::vector<LLAvat
 	msg += id.asString();
 	msg += ':';
 	msg += names[0].getCompleteName();
-	send_chat_from_viewer(msg, CHAT_TYPE_WHISPER, CHANNEL);
+	send_chat_from_viewer(msg, CHAT_TYPE_WHISPER, floaterp->mChannel);
 }
 
 static void pickerCallback(void *c, void *f)
@@ -297,7 +303,7 @@ static void pickerCallback(void *c, void *f)
 	LLUICtrl *ctrl = (LLUICtrl *)c;
 	HippoFloaterXmlImpl* floaterp = (HippoFloaterXmlImpl*)f;
 
-    floaterp->addDependentFloater(LLFloaterAvatarPicker::show(boost::bind(&callbackAvatarPick, ctrl, _1, _2), FALSE, TRUE));
+    floaterp->addDependentFloater(LLFloaterAvatarPicker::show(boost::bind(&callbackAvatarPick, ctrl, floaterp, _1, _2), FALSE, TRUE));
 	//send_chat_from_viewer(msg, CHAT_TYPE_WHISPER, CHANNEL);
 }
 
@@ -305,7 +311,7 @@ void HippoFloaterXmlImpl::onClose(bool quitting)
 {
 	if (mIsNotifyOnClose)
 		send_chat_from_viewer("NOTIFY:" + mName + ":closed",
-							  CHAT_TYPE_WHISPER, CHANNEL);
+							  CHAT_TYPE_WHISPER, mChannel);
 	LLFloater::onClose(quitting);
 }
 
@@ -342,17 +348,23 @@ bool HippoFloaterXmlImpl::execute(LLFloater *floater, LLUICtrl *ctrl,
 						return false;
 				} else if (key == "setValue") {
 					ctrl->setValue(value);
+				} else if (key == "channel") {
+					if (HippoFloaterXmlImpl *floater = dynamic_cast<HippoFloaterXmlImpl*>(ctrl)) {
+						floater->mChannel = atoi(value.c_str());
+					}
 				} else if (key == "setLabel") {
 					/*ctrl->setLabel(value);*/
 				} else if (key == "setVisible") {
 					ctrl->setVisible(value != "0");
+				} else if (key == "setEnabled") {
+					ctrl->setEnabled(value != "0");
 				} else if (key == "notify") {
 					bool set = (value != "0");
-					if (HippoFloaterXmlImpl *floater = dynamic_cast<HippoFloaterXmlImpl*>(ctrl)) {
-						floater->mIsNotifyOnClose = set;
+					if (HippoFloaterXmlImpl *floaterp = dynamic_cast<HippoFloaterXmlImpl*>(ctrl)) {
+						floaterp->mIsNotifyOnClose = set;
                     } else {
                         if (set)
-                            ctrl->setCommitCallback(boost::bind(&notifyCallback, _1), ctrl);
+                            ctrl->setCommitCallback(boost::bind(&notifyCallback, _1, floater), ctrl);
                         else
                             ctrl->setCommitCallback(0);
                     }

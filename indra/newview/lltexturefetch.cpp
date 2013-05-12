@@ -36,7 +36,7 @@
 
 #include "lltexturefetch.h"
 
-#include "llcurl.h"
+#include "aicurl.h"
 #include "lldir.h"
 #include "llhttpclient.h"
 #include "llhttpstatuscodes.h"
@@ -60,6 +60,7 @@
 #include "llstartup.h"
 #include "llsdserialize.h"
 #include "llbuffer.h"
+#include "hippogridmanager.h"
 
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy HTTPGetResponder_timeout;
@@ -253,6 +254,7 @@ private:
 	LLUUID mID;
 	LLHost mHost;
 	std::string mUrl;
+	AIPerServicePtr mPerServicePtr;		// Pointer to the AIPerService corresponding to the host of mUrl.
 	U8 mType;
 	F32 mImagePriority;
 	U32 mWorkPriority;
@@ -494,30 +496,6 @@ public:
 };
 
 SGHostBlackList::blacklist_t SGHostBlackList::blacklist;
-
-#if 0
-//call every time a connection is opened
-//return true if connecting allowed
-static bool sgConnectionThrottle() {
-	const U32 THROTTLE_TIMESTEPS_PER_SECOND = 10;
-	static const LLCachedControl<U32> max_connections_per_second("HTTPRequestRate", 30);
-	U32 max_connections = max_connections_per_second/THROTTLE_TIMESTEPS_PER_SECOND;
-	const U32 timestep = USEC_PER_SEC/THROTTLE_TIMESTEPS_PER_SECOND;
-	U64 now = LLTimer::getTotalTime();
-	std::deque<U64> timestamps;
-	while(!timestamps.empty() && (timestamps[0]<=now-timestep)) {
-		timestamps.pop_front();
-	}
-	if(timestamps.size() < max_connections) {
-		//llinfos << "throttle pass" << llendl;
-		timestamps.push_back(now);
-		return true;
-	} else {
-		//llinfos << "throttle fail" << llendl;
-		return false;
-	}
-}
-#endif
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -818,6 +796,17 @@ LLTextureFetchWorker::LLTextureFetchWorker(LLTextureFetch* fetcher,
 	  mCacheWriteCount(0U)
 {
 	mCanUseNET = mUrl.empty() ;
+
+	if (!mCanUseNET)
+	{
+	  // Probably a file://, but well; in that case servicename will be empty.
+	  std::string servicename = AIPerService::extract_canonical_servicename(mUrl);
+	  if (!servicename.empty())
+	  {
+		// Make sure mPerServicePtr is up to date with mUrl.
+		mPerServicePtr = AIPerService::instance(servicename);
+	  }
+	}
 
 	calcWorkPriority();
 	mType = host.isOk() ? LLImageBase::TYPE_AVATAR_BAKE : LLImageBase::TYPE_NORMAL;
@@ -1174,6 +1163,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				{
 					mUrl = http_url + "/?texture_id=" + mID.asString().c_str();
 					mWriteToCacheState = CAN_WRITE ; //because this texture has a fixed texture id.
+					mPerServicePtr = AIPerService::instance(AIPerService::extract_canonical_servicename(http_url));
 				}
 				else
 				{
@@ -1182,7 +1172,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			}
 			else
 			{
-				// This will happen if not logged in or if a region deoes not have HTTP Texture enabled
+				// This will happen if not logged in or if a region does not have HTTP Texture enabled
 				//llwarns << "Region not found for host: " << mHost << llendl;
 				mCanUseHTTP = false;
 			}
@@ -1259,29 +1249,14 @@ bool LLTextureFetchWorker::doWork(S32 param)
 	{
 		if(mCanUseHTTP)
 		{
-			//NOTE:
-			//control the number of the http requests issued for:
-			//1, not opening too many file descriptors at the same time;
-			//2, control the traffic of http so udp gets bandwidth.
-			//
-			static const LLCachedControl<U32> max_http_requests("HTTPMaxRequests", 8);
-			static const LLCachedControl<U32> min_http_requests("HTTPMinRequests", 2);
-			static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
-			if(((U32)mFetcher->getNumHTTPRequests() >= max_http_requests) ||
-			   ((mFetcher->getTextureBandwidth() > throttle_bandwidth) &&
-				((U32)mFetcher->getNumHTTPRequests() > min_http_requests)))
-			{
-				return false ; //wait.
-			}
-
-			mFetcher->removeFromNetworkQueue(this, false);
-			
 			S32 cur_size = 0;
 			if (mFormattedImage.notNull())
 			{
 				cur_size = mFormattedImage->getDataSize(); // amount of data we already have
 				if (mFormattedImage->getDiscardLevel() == 0)
 				{
+					// Already have all data.
+					mFetcher->removeFromNetworkQueue(this, false);	// Note sure this is necessary, but it's what the old did --Aleric
 					if(cur_size > 0)
 					{
 						// We already have all the data, just decode it
@@ -1295,20 +1270,30 @@ bool LLTextureFetchWorker::doWork(S32 param)
 					}
 				}
 			}
+
+			// Let AICurl decide if we can process more HTTP requests at the moment or not.
+			if (!AIPerService::wantsMoreHTTPRequestsFor(mPerServicePtr))
+			{
+				return false ; //wait.
+			}
+			// If AIPerService::wantsMoreHTTPRequestsFor returns true then it approved ONE request.
+			// This object keeps track of whether or not that is honored.
+			AIPerService::Approvement approvement(mPerServicePtr);
+
+			mFetcher->removeFromNetworkQueue(this, false);
+
 			mRequestedSize = mDesiredSize - cur_size;
 			mRequestedDiscard = mDesiredDiscard;
 			mRequestedOffset = cur_size;
-			
+
 			bool res = false;
 			if (!mUrl.empty())
 			{
 				mLoaded = FALSE;
 				mGetStatus = 0;
 				mGetReason.clear();
-				static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
 				LL_DEBUGS("Texture") << "HTTP GET: " << mID << " Offset: " << mRequestedOffset
 									 << " Bytes: " << mRequestedSize
-									 << " Bandwidth(kbps): " << mFetcher->getTextureBandwidth() << "/" << throttle_bandwidth
 									 << LL_ENDL;
 				setPriority(LLWorkerThread::PRIORITY_LOW | mWorkPriority);
 				mState = WAIT_HTTP_REQ;	
@@ -1339,7 +1324,9 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				}
 				LLHTTPClient::request(mUrl, LLHTTPClient::HTTP_GET, NULL,
 					new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, mRequestedOffset, true),
-					headers/*,*/ DEBUG_CURLIO_PARAM(debug_off), keep_alive, no_does_authentication, allow_compressed_reply, NULL, 0, NULL);
+					headers/*,*/ DEBUG_CURLIO_PARAM(debug_off), keep_alive, no_does_authentication, allow_compressed_reply, NULL, 0, NULL, false);
+				// Now the request was added to the command queue.
+				approvement.honored();
 				res = true;
 			}
 			if (!res)
@@ -2050,8 +2037,6 @@ LLTextureFetch::LLTextureFetch(LLTextureCache* cache, LLImageDecodeThread* image
 	  mBadPacketCount(0),
 	  mTextureCache(cache),
 	  mImageDecodeThread(imagedecodethread),
-	  mTextureBandwidth(0),
-	  mHTTPTextureBits(0),
 	  mTotalHTTPRequests(0),
 	  mQAMode(qa_mode),
 	  mTotalCacheReadCount(0U),
@@ -2203,7 +2188,6 @@ void LLTextureFetch::removeFromHTTPQueue(const LLUUID& id, S32 received_size)
 {
 	LLMutexLock lock(&mNetworkQueueMutex);
 	mHTTPTextureQueue.erase(id);
-	mHTTPTextureBits += received_size * 8; // Approximate - does not include header bits	
 }
 
 void LLTextureFetch::deleteRequest(const LLUUID& id, bool cancel)
@@ -2257,15 +2241,6 @@ S32 LLTextureFetch::getNumRequests()
 	lockQueue() ;
 	S32 size = (S32)mRequestMap.size(); 
 	unlockQueue() ;
-
-	return size ;
-}
-
-S32 LLTextureFetch::getNumHTTPRequests() 
-{ 
-	mNetworkQueueMutex.lock() ;
-	S32 size = (S32)mHTTPTextureQueue.size(); 
-	mNetworkQueueMutex.unlock() ;
 
 	return size ;
 }
@@ -2425,15 +2400,6 @@ void LLTextureFetch::commonUpdate()
 //virtual
 S32 LLTextureFetch::update(F32 max_time_ms)
 {
-	{
-		mNetworkQueueMutex.lock() ;
-
-		gTextureList.sTextureBits += mHTTPTextureBits ;
-		mHTTPTextureBits = 0 ;
-
-		mNetworkQueueMutex.unlock() ;
-	}
-
 	S32 res = LLWorkerThread::update(max_time_ms);
 	
 	if (!mDebugPause)

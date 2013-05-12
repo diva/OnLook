@@ -30,8 +30,6 @@ include(BuildVersion)
 
 include(UnixInstall)
 
-set (DISABLE_FATAL_WARNINGS CACHE BOOL TRUE)
-
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING
       "Build type.  One of: Debug Release RelWithDebInfo" FORCE)

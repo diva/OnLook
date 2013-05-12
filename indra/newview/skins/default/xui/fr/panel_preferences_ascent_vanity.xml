@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel label="Vanity" name="ascvan">
-  <tab_container label="Singularity Vanity" name="Ascent Vanity">
+<panel name="ascvan">
+  <tab_container name="Ascent Vanity">
     <panel label="Principal" name="General">
       <check_box label="Lorsque c'est possible, sauver le setting personnalisé par compte." tool_tip="Sauve le settings customis&#xE9; pour chaque alt." name="use_account_settings_check"/>
       <check_box label="Masquer la barre de 'TP in progress'" tool_tip="Ceci permet de continuer des lire vos IMs durant le TP." name="disable_tp_screen_check"/>
@@ -46,13 +46,7 @@
       <check_box name="color_linden_check" tool_tip="Color Linden Chat"/>
       <check_box name="color_muted_check" tool_tip="Color Muted Chat"/>
     </panel>
-    <panel label="Body Dyn. (Bouger les n&#xE9;n&#xE9;s)" name="Body Dynamics">
-      <check_box label="Activer les &#x22;physics&#x22; des n&#xE9;n&#xE9;s voire du popotin des avatars ^^" name="EmBreastsToggle"/>
-      <slider name="EmeraldBoobMass" label="Masse :" />
-      <slider name="EmeraldBoobHardness" label="Rebond :"/>
-      <slider name="EmeraldBoobVelMax" label="V&#xE9;locit&#xE9; max :"/>
-      <slider name="EmeraldBoobFriction" label="Friction :"/>
-      <slider name="EmeraldBoobVelMin" label="V&#xE9;locit&#xE9; min :"/>
+    <panel label="Body Dyn.(Offset de l'avatar)" name="Body Dynamics">
       <text name="av_mod_textbox" follows="top">Modifier l'offset de l'avatar</text>
       <spinner label="X Modif." name="X Modifier"/>
       <spinner label="Y Modif." name="Y Modifier"/>

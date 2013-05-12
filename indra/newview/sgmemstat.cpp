@@ -18,7 +18,7 @@
 #include "llviewerprecompiledheaders.h"
 #include "sgmemstat.h"
 
-#if (!(LL_LINUX || LL_USE_TCMALLOC))
+#if (!LL_LINUX && !LL_USE_TCMALLOC)
 bool SGMemStat::haveStat() {
 	return false;
 }
