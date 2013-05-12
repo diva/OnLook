@@ -38,54 +38,32 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "llfloaterchat.h"
-#include "llfloateractivespeakers.h"
-#include "llfloaterscriptdebug.h"
-
-#include "llchat.h"
-#include "llfontgl.h"
-#include "llrect.h"
-#include "llerror.h"
-#include "llstring.h"
-#include "message.h"
-
-// project include
-#include "llagent.h"
-#include "llbutton.h"
-#include "llcheckboxctrl.h"
-#include "llcombobox.h"
-#include "llconsole.h"
-#include "llfloaterchatterbox.h"
-#include "llfloatermute.h"
-#include "llkeyboard.h"
-//#include "lllineeditor.h"
-#include "llmutelist.h"
-//#include "llresizehandle.h"
-#include "llchatbar.h"
-#include "llstatusbar.h"
-#include "llviewertexteditor.h"
-#include "llviewergesture.h"			// for triggering gestures
-#include "llviewermessage.h"
-#include "llviewerwindow.h"
-#include "llviewercontrol.h"
-#include "lluictrlfactory.h"
-#include "llchatbar.h"
-#include "lllogchat.h"
-#include "lltexteditor.h"
-#include "lltextparser.h"
-#include "llfloaterhtml.h"
-#include "llweb.h"
-#include "llstylemap.h"
-#include "ascentkeyword.h"
 
 // linden library includes
 #include "llaudioengine.h"
-#include "llchat.h"
-#include "llfontgl.h"
-#include "llrect.h"
-#include "llerror.h"
-#include "llstring.h"
+#include "llcheckboxctrl.h"
+#include "llcombobox.h"
+#include "lltextparser.h"
+#include "lltrans.h"
 #include "llwindow.h"
-#include "message.h"
+
+// project include
+#include "ascentkeyword.h"
+#include "llagent.h"
+#include "llchatbar.h"
+#include "llconsole.h"
+#include "llfloateractivespeakers.h"
+#include "llfloaterchatterbox.h"
+#include "llfloatermute.h"
+#include "llfloaterscriptdebug.h"
+#include "lllogchat.h"
+#include "llmutelist.h"
+#include "llstylemap.h"
+#include "lluictrlfactory.h"
+#include "llviewermessage.h"
+#include "llviewertexteditor.h"
+#include "llviewerwindow.h"
+#include "llweb.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -227,9 +205,9 @@ void add_timestamped_line(LLViewerTextEditor* edit, LLChat chat, const LLColor4&
 	// If the msg is from an agent (not yourself though),
 	// extract out the sender name and replace it with the hotlinked name.
 	if (chat.mSourceType == CHAT_SOURCE_AGENT &&
-//		chat.mFromID != LLUUID::null)
+//		chat.mFromID.notNull())
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e)
-		chat.mFromID != LLUUID::null && 
+		chat.mFromID.notNull() &&
 		(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) )
 // [/RLVa:KB]
 	{
@@ -238,20 +216,27 @@ void add_timestamped_line(LLViewerTextEditor* edit, LLChat chat, const LLColor4&
 
 	if(chat.mSourceType == CHAT_SOURCE_OBJECT && !chat.mFromName.length())
 	{
-		chat.mFromName = "(no name)";
+		chat.mFromName = LLTrans::getString("Unnamed");
 		line = chat.mFromName + line;
 	}
+
+	static const LLCachedControl<bool> italicize("LiruItalicizeActions");
+	bool is_irc = italicize && chat.mChatStyle == CHAT_STYLE_IRC;
 	// If the chat line has an associated url, link it up to the name.
 	if (!chat.mURL.empty()
 		&& (line.length() > chat.mFromName.length() && line.find(chat.mFromName,0) == 0))
 	{
 		std::string start_line = line.substr(0, chat.mFromName.length() + 1);
 		line = line.substr(chat.mFromName.length() + 1);
-		const LLStyleSP &sourceStyle = LLStyleMap::instance().lookup(chat.mFromID,chat.mURL);
+		LLStyleSP sourceStyle = LLStyleMap::instance().lookup(chat.mFromID,chat.mURL);
+		sourceStyle->mItalic = is_irc;
 		edit->appendStyledText(start_line, false, prepend_newline, sourceStyle);
 		prepend_newline = false;
 	}
-	edit->appendColoredText(line, false, prepend_newline, color);
+	LLStyleSP style(new LLStyle);
+	style->setColor(color);
+	style->mItalic = is_irc;
+	edit->appendStyledText(line, false, prepend_newline, style);
 }
 
 void log_chat_text(const LLChat& chat)

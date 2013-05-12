@@ -1186,7 +1186,7 @@ void LLFloaterAvatarList::onClickTrack()
 
 	if (mTracking && mTrackedAvatar == agent_id)
 	{
-		LLTracker::stopTracking(NULL);
+		LLTracker::stopTracking(false);
 		mTracking = FALSE;
 	}
 	else
@@ -1203,7 +1203,7 @@ void LLFloaterAvatarList::refreshTracker()
 {
 	if (!mTracking) return;
 
-	if (LLTracker::isTracking(NULL))
+	if (LLTracker::isTracking())
 	{
 		if(LLAvatarListEntry* entry = getAvatarEntry(mTrackedAvatar))
 		{
@@ -1215,7 +1215,7 @@ void LLFloaterAvatarList::refreshTracker()
 	}
 	else
 	{	// Tracker stopped.
-		LLTracker::stopTracking(NULL);
+		LLTracker::stopTracking(false);
 		mTracking = FALSE;
 //		llinfos << "Tracking stopped." << llendl;
 	}

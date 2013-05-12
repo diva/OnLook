@@ -75,7 +75,7 @@ void handle_track_avatar(const LLUUID& agent_id, const std::string& name)
 	LLAvatarTracker::instance().track(agent_id, name);
 
 	LLFloaterDirectory::hide(NULL);
-	LLFloaterWorldMap::show(NULL, TRUE);
+	LLFloaterWorldMap::show(true);
 }
 
 void handle_pay_by_id(const LLUUID& agent_id)
@@ -92,7 +92,7 @@ void handle_mouselook(void*)
 
 void handle_map(void*)
 {
-	LLFloaterWorldMap::toggle(NULL);
+	LLFloaterWorldMap::toggle();
 }
 
 void handle_mini_map(void*)

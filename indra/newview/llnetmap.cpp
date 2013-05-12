@@ -955,7 +955,7 @@ BOOL LLNetMap::handleDoubleClick( S32 x, S32 y, MASK mask )
 {
 	LLVector3d pos_global = viewPosToGlobal(x, y, gSavedSettings.getBOOL( "MiniMapRotate" ));
 	BOOL new_target = FALSE;
-	if (!LLTracker::isTracking(NULL))
+	if (!LLTracker::isTracking())
 	{
 		gFloaterWorldMap->trackLocation(pos_global);
 		new_target = TRUE;
@@ -967,7 +967,7 @@ BOOL LLNetMap::handleDoubleClick( S32 x, S32 y, MASK mask )
 	}
 	else 
 	{
-		LLFloaterWorldMap::show(NULL, new_target);
+		LLFloaterWorldMap::show(new_target);
 	}
 	return TRUE;
 }
@@ -1108,14 +1108,14 @@ bool LLNetMap::LLCheckRotateMap::handleEvent(LLPointer<LLEvent> event, const LLS
 
 bool LLNetMap::LLStopTracking::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 {
-	LLTracker::stopTracking(NULL);
+	LLTracker::stopTracking(false);
 	return true;
 }
 
 bool LLNetMap::LLEnableTracking::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 {
 	LLNetMap *self = mPtr;
-	self->findControl(userdata["control"].asString())->setValue(LLTracker::isTracking(NULL));
+	self->findControl(userdata["control"].asString())->setValue(LLTracker::isTracking());
 	return true;
 }
 

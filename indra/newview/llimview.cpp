@@ -1436,7 +1436,7 @@ public:
 					floaterp->processSessionUpdate(body["session_info"]);
 				}
 
-				//aply updates we've possibly received previously
+				//apply updates we've possibly received previously
 				floaterp->updateSpeakersList(
 					gIMMgr->getPendingAgentListUpdates(session_id));
 			}
@@ -1614,8 +1614,9 @@ public:
 			{
 				separator_string = "";
 				message_offset = 3;
+				chat.mChatStyle = CHAT_STYLE_IRC;
 			}
-			
+
 			chat.mMuted = is_muted && !is_linden;
 			chat.mFromID = from_id;
 			chat.mFromName = name;
@@ -1719,7 +1720,7 @@ public:
 			{
 				return;
 			}
-			
+
 			if(!LLVoiceClient::voiceEnabled())
 			{
 				// Don't display voice invites unless the user has voice enabled.

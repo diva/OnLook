@@ -44,11 +44,7 @@
 #include "lltexturectrl.h"
 #include "lluictrlfactory.h"
 #include "llviewercontrol.h"
-#include "llstartup.h"
 #include "lltrans.h"
-
-LLDropTarget* mBuildDropTarget;
-LLPrefsAscentSys* LLPrefsAscentSys::sInst;
 
 LLPrefsAscentSys::LLPrefsAscentSys()
 {
@@ -91,42 +87,12 @@ LLPrefsAscentSys::LLPrefsAscentSys()
 	getChild<LLTextureCtrl>("texture control")->setDefaultImageAssetID(LLUUID(gSavedSettings.getString("EmeraldBuildPrefs_Texture")));
 	childSetCommitCallback("texture control", onCommitTexturePicker, this);
 
-	if(sInst)delete sInst; sInst = this;
-	LLView* target_view = getChild<LLView>("build_item_drop_target_rect");
-	if (target_view)
-	{
-		const std::string drop="drop target";
-		if (mBuildDropTarget)	delete mBuildDropTarget;
-		mBuildDropTarget = new LLDropTarget(drop, target_view->getRect(), SinguBuildItemDrop);//, mAvatarID);
-		addChild(mBuildDropTarget);
-	}
-
-	if (LLStartUp::getStartupState() == STATE_STARTED)
-	{
-		LLUUID itemid = (LLUUID)gSavedPerAccountSettings.getString("EmeraldBuildPrefs_Item");
-		LLViewerInventoryItem* item = gInventory.getItem(itemid);
-
-		if (item)
-		{
-			LLStringUtil::format_map_t args;
-			args["[ITEM]"] = item->getName();
-			childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlySetTo", args));
-		}
-		else if (itemid.isNull())
-			childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlyNotSet"));
-		else
-			childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlySetToAnItemNotOnThisAccount"));
-	}
-	else	childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("NotLoggedIn"));
-
 	refreshValues();
     refresh();
 }
 
 LLPrefsAscentSys::~LLPrefsAscentSys()
 {
-	sInst=NULL;
-	delete mBuildDropTarget; mBuildDropTarget=NULL;
 }
 
 //static
@@ -253,21 +219,13 @@ void LLPrefsAscentSys::onCommitTexturePicker(LLUICtrl* ctrl, void* userdata)
 	if(image_ctrl)	gSavedSettings.setString("EmeraldBuildPrefs_Texture", image_ctrl->getImageAssetID().asString());
 }
 
-//static
-void LLPrefsAscentSys::SinguBuildItemDrop(LLViewerInventoryItem* item)
-{
-	gSavedPerAccountSettings.setString("EmeraldBuildPrefs_Item", item->getUUID().asString());
-	LLStringUtil::format_map_t args;
-	args["[ITEM]"] = item->getName();
-	sInst->childSetValue("build_item_add_disp_rect_txt", LLTrans::getString("CurrentlySetTo", args));
-}
-
 void LLPrefsAscentSys::refreshValues()
 {
     //General -----------------------------------------------------------------------------
     mDoubleClickTeleport		= gSavedSettings.getBOOL("DoubleClickTeleport");
         mResetCameraAfterTP		= gSavedSettings.getBOOL("OptionRotateCamAfterLocalTP");
         mOffsetTPByUserHeight	= gSavedSettings.getBOOL("OptionOffsetTPByAgentHeight");
+	mClearBeaconAfterTeleport	= gSavedSettings.getBOOL("ClearBeaconAfterTeleport");
     mLiruFlyAfterTeleport		= gSavedSettings.getBOOL("LiruFlyAfterTeleport");
     mLiruContinueFlying			= gSavedSettings.getBOOL("LiruContinueFlyingOnUnsit");
     mPreviewAnimInWorld			= gSavedSettings.getBOOL("PreviewAnimInWorld");
@@ -323,6 +281,7 @@ void LLPrefsAscentSys::refreshValues()
 	mColor						= gSavedSettings.getColor4("EmeraldBuildPrefs_Color");
 	mFullBright					= gSavedSettings.getBOOL("EmeraldBuildPrefs_FullBright");
 	mGlow						= gSavedSettings.getF32("EmeraldBuildPrefs_Glow");
+	mItem						= gSavedPerAccountSettings.getString("EmeraldBuildPrefs_Item");
 	mMaterial					= gSavedSettings.getString("BuildPrefs_Material");
 	mNextCopy					= gSavedSettings.getBOOL("NextOwnerCopy");
 	mNextMod					= gSavedSettings.getBOOL("NextOwnerModify");
@@ -420,6 +379,7 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("DoubleClickTeleport", mDoubleClickTeleport);
         gSavedSettings.setBOOL("OptionRotateCamAfterLocalTP", mResetCameraAfterTP);
         gSavedSettings.setBOOL("OptionOffsetTPByAgentHeight", mOffsetTPByUserHeight);
+	gSavedSettings.setBOOL("ClearBeaconAfterTeleport", mClearBeaconAfterTeleport);
     gSavedSettings.setBOOL("LiruFlyAfterTeleport", mLiruFlyAfterTeleport);
     gSavedSettings.setBOOL("LiruContinueFlyingOnUnsit", mLiruContinueFlying);
     gSavedSettings.setBOOL("PreviewAnimInWorld", mPreviewAnimInWorld);
@@ -474,6 +434,7 @@ void LLPrefsAscentSys::cancel()
 	gSavedSettings.setColor4("EmeraldBuildPrefs_Color",     mColor);
 	gSavedSettings.setBOOL("EmeraldBuildPrefs_FullBright",  mFullBright);
 	gSavedSettings.setF32("EmeraldBuildPrefs_Glow",         mGlow);
+	gSavedPerAccountSettings.setString("EmeraldBuildPrefs_Item",      mItem);
 	gSavedSettings.setString("BuildPrefs_Material",         mMaterial);
 	gSavedSettings.setBOOL("NextOwnerCopy",                 mNextCopy);
 	gSavedSettings.setBOOL("NextOwnerModify",               mNextMod);

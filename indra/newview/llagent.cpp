@@ -3862,7 +3862,7 @@ bool LLAgent::teleportCore(bool is_local)
 
 	// close the map panel so we can see our destination.
 	// we don't close search floater, see EXT-5840.
-	LLFloaterWorldMap::hide(NULL);
+	LLFloaterWorldMap::hide();
 
 	// hide land floater too - it'll be out of date
 	LLFloaterLand::hideInstance();

@@ -507,7 +507,7 @@ void LLPanelPick::onClickMap(void* data)
 {
 	LLPanelPick* self = (LLPanelPick*)data;
 	gFloaterWorldMap->trackLocation(self->mPosGlobal);
-	LLFloaterWorldMap::show(NULL, TRUE);
+	LLFloaterWorldMap::show(true);
 }
 
 // static

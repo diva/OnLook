@@ -353,7 +353,7 @@ void LLFloaterTeleportHistory::onShowOnMap(void* data)
 
 	// point world map at position
 	gFloaterWorldMap->trackURL(region, x, y, z);
-	LLFloaterWorldMap::show(NULL, TRUE);
+	LLFloaterWorldMap::show(true);
 }
 
 // static

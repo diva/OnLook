@@ -300,7 +300,7 @@ void LLFloaterLandHoldings::buttonCore(S32 which)
 		break;
 	case 1:
 		gFloaterWorldMap->trackLocation(pos_global);
-		LLFloaterWorldMap::show(NULL, TRUE);
+		LLFloaterWorldMap::show(true);
 		break;
 	default:
 		break;

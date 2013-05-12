@@ -6478,7 +6478,7 @@ class LLShowFloater : public view_listener_t
 		}
 		else if (floater_name == "world map")
 		{
-			LLFloaterWorldMap::toggle(NULL);
+			LLFloaterWorldMap::toggle();
 		}
 		else if (floater_name == "mini map")
 		{

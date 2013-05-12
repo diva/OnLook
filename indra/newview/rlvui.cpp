@@ -277,7 +277,7 @@ void RlvUIEnabler::onToggleShowWorldMap()
 
 	// Simulate clicking the Map button [see LLToolBar::onClickMap()]
 	if ((!fEnable) && gFloaterWorldMap->getVisible())
-		LLFloaterWorldMap::toggle(NULL);
+		LLFloaterWorldMap::toggle();
 }
 
 // Checked: 2010-08-22 (RLVa-1.2.1a) | Added: RLVa-1.2.1a
