@@ -136,7 +136,10 @@ protected:
 	typedef std::map<S32, F32> param_map_t;
 	param_map_t mSavedVisualParamMap; // last saved version of visual params
 
+public:
 	typedef std::map<S32, LLVisualParam *>    visual_param_index_map_t;
+
+protected:
 	visual_param_index_map_t mVisualParamIndexMap;
 
 	te_map_t mTEMap;				// maps TE to LocalTextureObject
