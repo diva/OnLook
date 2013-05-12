@@ -600,12 +600,14 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 	LLViewerRegion* region = gAgent.getRegion();
 	if (gDisconnected || !region) return;
 
-	static LLCachedControl<F32> const throttle_bandwidth("HTTPThrottleBandwidth", 2000);
-	bool const no_bandwidth_throttling = gHippoGridManager->getConnectedGrid()->isAvination();
-	if (!AIPerService::wantsMoreHTTPRequestsFor(mPerServicePtr, throttle_bandwidth, no_bandwidth_throttling))
+	if (!AIPerService::wantsMoreHTTPRequestsFor(mPerServicePtr))
 	{
 		return;		// Wait.
 	}
+	// If AIPerService::wantsMoreHTTPRequestsFor returns true, then it approved ONE request.
+	// The code below might fire off zero, one or even more than one requests however!
+	// This object keeps track of that.
+	AIPerService::Approvement approvement(mPerServicePtr);
 
 	U32 item_count=0;
 	U32 folder_count=0;
@@ -699,14 +701,16 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 			if (folder_request_body["folders"].size())
 			{
 				LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body, recursive_cats);
-				LLHTTPClient::post(url, folder_request_body, fetcher);
+				LLHTTPClient::post_nb(url, folder_request_body, fetcher);
+				approvement.honored();
 			}
 			if (folder_request_body_lib["folders"].size())
 			{
 				std::string url_lib = gAgent.getRegion()->getCapability("FetchLibDescendents2");
 
 				LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(folder_request_body_lib, recursive_cats);
-				LLHTTPClient::post(url_lib, folder_request_body_lib, fetcher);
+				LLHTTPClient::post_nb(url_lib, folder_request_body_lib, fetcher);
+				approvement.honored();
 			}
 		}
 		if (item_count)
@@ -724,7 +728,8 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 					body["agent_id"]	= gAgent.getID();
 					body["items"] = item_request_body;
 
-					LLHTTPClient::post(url, body, new LLInventoryModelFetchItemResponder(body));
+					LLHTTPClient::post_nb(url, body, new LLInventoryModelFetchItemResponder(body));
+					approvement.honored();
 				}
 			}
 
@@ -740,13 +745,13 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 					body["agent_id"]	= gAgent.getID();
 					body["items"] = item_request_body_lib;
 
-					LLHTTPClient::post(url, body, new LLInventoryModelFetchItemResponder(body));
+					LLHTTPClient::post_nb(url, body, new LLInventoryModelFetchItemResponder(body));
+					approvement.honored();
 				}
 			}
 		}
 		mFetchTimer.reset();
 	}
-
 	else if (isBulkFetchProcessingComplete())
 	{
 		llinfos << "Inventory fetch completed" << llendl;

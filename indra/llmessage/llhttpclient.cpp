@@ -208,7 +208,8 @@ void LLHTTPClient::request(
 	EAllowCompressedReply allow_compression,
 	AIStateMachine* parent,
 	AIStateMachine::state_type new_parent_state,
-	AIEngine* default_engine)
+	AIEngine* default_engine,
+	bool queue_if_too_much_bandwidth_usage)
 {
 	llassert(responder);
 
@@ -221,7 +222,7 @@ void LLHTTPClient::request(
 	LLURLRequest* req;
 	try
 	{
-		req = new LLURLRequest(method, url, body_injector, responder, headers, keepalive, does_auth, allow_compression);
+		req = new LLURLRequest(method, url, body_injector, responder, headers, keepalive, does_auth, allow_compression, queue_if_too_much_bandwidth_usage);
 #ifdef DEBUG_CURLIO
 		req->mCurlEasyRequest.debug(debug);
 #endif
@@ -699,6 +700,11 @@ void LLHTTPClient::put(std::string const& url, LLSD const& body, ResponderPtr re
 void LLHTTPClient::post(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug), EKeepAlive keepalive, AIStateMachine* parent, AIStateMachine::state_type new_parent_state)
 {
 	request(url, HTTP_POST, new LLSDInjector(body), responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive, no_does_authentication, allow_compressed_reply, parent, new_parent_state);
+}
+
+void LLHTTPClient::post_nb(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug), EKeepAlive keepalive, AIStateMachine* parent, AIStateMachine::state_type new_parent_state)
+{
+	request(url, HTTP_POST, new LLSDInjector(body), responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive, no_does_authentication, allow_compressed_reply, parent, new_parent_state, &gMainThreadEngine, false);
 }
 
 void LLHTTPClient::postXMLRPC(std::string const& url, XMLRPC_REQUEST xmlrpc_request, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug), EKeepAlive keepalive)

@@ -277,8 +277,6 @@ if (LINUX OR DARWIN)
     set(UNIX_CXX_WARNINGS "${UNIX_WARNINGS}")
   endif ()
   
-  # Use -DDISABLE_FATAL_WARNINGS:BOOL=FALSE during configuration to enable fatal warnings.
-  set(DISABLE_FATAL_WARNINGS TRUE CACHE BOOL "Set this to FALSE to enable fatal warnings.")
   if (NOT DISABLE_FATAL_WARNINGS)
     set(UNIX_WARNINGS "${UNIX_WARNINGS} -Werror")
     set(UNIX_CXX_WARNINGS "${UNIX_CXX_WARNINGS} -Werror")

@@ -49,6 +49,10 @@
             <on_click function="Object.ScriptCount" />
             <on_visible function="Object.VisibleScriptCount" />
           </menu_item_call>
+          <menu_item_call label="Script Info" mouse_opaque="true" name="Script Info">
+            <on_click function="ShowFloater" userdata="script info" />
+            <on_visible function="Self.VisibleScriptInfo" />
+          </menu_item_call>
         </pie_menu>
 		<menu_item_call enabled="true" label="Inspect" mouse_opaque="true" name="Object Inspect">
 			<on_click function="Object.Inspect" />

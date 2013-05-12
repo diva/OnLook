@@ -53,7 +53,7 @@ class AIPerService;
 namespace AICurlPrivate {
 namespace curlthread { class MultiHandle; }
 
-class RefCountedThreadSafePerServiceRequestQueue;
+class RefCountedThreadSafePerService;
 class ThreadSafeBufferedCurlEasyRequest;
 
 // Forward declaration of BufferedCurlEasyRequestPtr (see aicurlprivate.h).
@@ -61,25 +61,25 @@ typedef boost::intrusive_ptr<ThreadSafeBufferedCurlEasyRequest> BufferedCurlEasy
 
 // AIPerService objects are created by the curl thread and destructed by the main thread.
 // We need locking.
-typedef AIThreadSafeSimpleDC<AIPerService> threadsafe_PerServiceRequestQueue;
-typedef AIAccessConst<AIPerService> PerServiceRequestQueue_crat;
-typedef AIAccess<AIPerService> PerServiceRequestQueue_rat;
-typedef AIAccess<AIPerService> PerServiceRequestQueue_wat;
+typedef AIThreadSafeSimpleDC<AIPerService> threadsafe_PerService;
+typedef AIAccessConst<AIPerService> PerService_crat;
+typedef AIAccess<AIPerService> PerService_rat;
+typedef AIAccess<AIPerService> PerService_wat;
 
 } // namespace AICurlPrivate
 
-// We can't put threadsafe_PerServiceRequestQueue in a std::map because you can't copy a mutex.
+// We can't put threadsafe_PerService in a std::map because you can't copy a mutex.
 // Therefore, use an intrusive pointer for the threadsafe type.
-typedef boost::intrusive_ptr<AICurlPrivate::RefCountedThreadSafePerServiceRequestQueue> AIPerServicePtr;
+typedef boost::intrusive_ptr<AICurlPrivate::RefCountedThreadSafePerService> AIPerServicePtr;
 
 //-----------------------------------------------------------------------------
 // AIPerService
 
-// This class provides a static interface to create and maintain instances
-// of AIPerService objects, so that at any moment there is at most
-// one instance per hostname:port. Those instances then are used to queue curl
-// requests when the maximum number of connections for that host already
-// have been reached.
+// This class provides a static interface to create and maintain instances of AIPerService objects,
+// so that at any moment there is at most one instance per service (hostname:port).
+// Those instances then are used to queue curl requests when the maximum number of connections
+// for that service already have been reached. And to keep track of the bandwidth usage, and the
+// number of queued requests in the pipeline, for this service.
 class AIPerService {
   private:
 	typedef std::map<std::string, AIPerServicePtr> instance_map_type;
@@ -89,7 +89,7 @@ class AIPerService {
 
 	static threadsafe_instance_map_type sInstanceMap;				// Map of AIPerService instances with the hostname as key.
 
-	friend class AIThreadSafeSimpleDC<AIPerService>;		//threadsafe_PerServiceRequestQueue
+	friend class AIThreadSafeSimpleDC<AIPerService>;	// threadsafe_PerService
 	AIPerService(void);
 
   public:
@@ -114,23 +114,66 @@ class AIPerService {
   private:
 	typedef std::deque<AICurlPrivate::BufferedCurlEasyRequestPtr> queued_request_type;
 
+	int mApprovedRequests;						// The number of approved requests by wantsMoreHTTPRequestsFor that were not added to the command queue yet.
 	int mQueuedCommands;						// Number of add commands (minus remove commands) with this host in the command queue.
 	int mAdded;									// Number of active easy handles with this host.
 	queued_request_type mQueuedRequests;		// Waiting (throttled) requests.
-
-	static LLAtomicS32 sTotalQueued;			// The sum of mQueuedRequests.size() of all AIPerService objects together.
 
 	bool mQueueEmpty;							// Set to true when the queue becomes precisely empty.
 	bool mQueueFull;							// Set to true when the queue is popped and then still isn't empty;
 	bool mRequestStarvation;					// Set to true when the queue was about to be popped but was already empty.
 
-	static bool sQueueEmpty;					// Set to true when sTotalQueued becomes precisely zero as the result of popping any queue.
-	static bool sQueueFull;						// Set to true when sTotalQueued is still larger than zero after popping any queue.
-	static bool sRequestStarvation;				// Set to true when any queue was about to be popped when sTotalQueued was already zero.
-
 	AIAverage mHTTPBandwidth;					// Keeps track on number of bytes received for this service in the past second.
 	int mConcurrectConnections;					// The maximum number of allowed concurrent connections to this service.
-	int mMaxPipelinedRequests;					// The maximum number of accepted requests that didn't finish yet.
+	int mMaxPipelinedRequests;					// The maximum number of accepted requests for this service that didn't finish yet.
+
+	// Global administration of the total number of queued requests of all services combined.
+  private:
+	struct TotalQueued {
+		S32 count;								// The sum of mQueuedRequests.size() of all AIPerService objects together.
+		bool empty;								// Set to true when count becomes precisely zero as the result of popping any queue.
+		bool full;								// Set to true when count is still larger than zero after popping any queue.
+		bool starvation;						// Set to true when any queue was about to be popped when count was already zero.
+		TotalQueued(void) : count(0), empty(false), full(false), starvation(false) { }
+	};
+	static AIThreadSafeSimpleDC<TotalQueued> sTotalQueued;
+	typedef AIAccessConst<TotalQueued> TotalQueued_crat;
+	typedef AIAccess<TotalQueued> TotalQueued_rat;
+	typedef AIAccess<TotalQueued> TotalQueued_wat;
+  public:
+	static S32 total_queued_size(void) { return TotalQueued_rat(sTotalQueued)->count; }
+
+	// Global administration of the maximum number of pipelined requests of all services combined.
+  private:
+	struct MaxPipelinedRequests {
+		S32 count;								// The maximum total number of accepted requests that didn't finish yet.
+		U64 last_increment;						// Last time that sMaxPipelinedRequests was incremented.
+		U64 last_decrement;						// Last time that sMaxPipelinedRequests was decremented.
+		MaxPipelinedRequests(void) : count(32), last_increment(0), last_decrement(0) { }
+	};
+	static AIThreadSafeSimpleDC<MaxPipelinedRequests> sMaxPipelinedRequests;
+	typedef AIAccessConst<MaxPipelinedRequests> MaxPipelinedRequests_crat;
+	typedef AIAccess<MaxPipelinedRequests> MaxPipelinedRequests_rat;
+	typedef AIAccess<MaxPipelinedRequests> MaxPipelinedRequests_wat;
+  public:
+	static void setMaxPipelinedRequests(S32 count) { MaxPipelinedRequests_wat(sMaxPipelinedRequests)->count = count; }
+	static void incrementMaxPipelinedRequests(S32 increment) { MaxPipelinedRequests_wat(sMaxPipelinedRequests)->count += increment; }
+
+	// Global administration of throttle fraction (which is the same for all services).
+  private:
+	struct ThrottleFraction {
+	  U32 fraction;								// A value between 0 and 1024: each service is throttled when it uses more than max_bandwidth * (sThrottleFraction/1024) bandwidth.
+	  AIAverage average;						// Average of fraction over 25 * 40ms = 1 second.
+	  U64 last_add;								// Last time that faction was added to average.
+	  ThrottleFraction(void) : fraction(1024), average(25), last_add(0) { }
+	};
+	static AIThreadSafeSimpleDC<ThrottleFraction> sThrottleFraction;
+	typedef AIAccessConst<ThrottleFraction> ThrottleFraction_crat;
+	typedef AIAccess<ThrottleFraction> ThrottleFraction_rat;
+	typedef AIAccess<ThrottleFraction> ThrottleFraction_wat;
+
+	static LLAtomicU32 sHTTPThrottleBandwidth125;			// HTTPThrottleBandwidth times 125 (in bytes/s).
+	static bool sNoHTTPBandwidthThrottling;					// Global override to disable bandwidth throttling.
 
   public:
 	void added_to_command_queue(void) { ++mQueuedCommands; }
@@ -146,19 +189,40 @@ class AIPerService {
 														// Add queued easy handle (if any) to the multi handle. The request is removed from the queue,
 														// followed by either a call to added_to_multi_handle() or to queue() to add it back.
 
-	S32 pipelined_requests(void) const { return mQueuedCommands + mQueuedRequests.size() + mAdded; }
-	static S32 total_queued_size(void) { return sTotalQueued; }
+	S32 pipelined_requests(void) const { return mApprovedRequests + mQueuedCommands + mQueuedRequests.size() + mAdded; }
 
 	AIAverage& bandwidth(void) { return mHTTPBandwidth; }
 	AIAverage const& bandwidth(void) const { return mHTTPBandwidth; }
 
+	static void setNoHTTPBandwidthThrottling(bool nb) { sNoHTTPBandwidthThrottling = nb; }
+	static void setHTTPThrottleBandwidth(F32 max_kbps) { sHTTPThrottleBandwidth125 = 125.f * max_kbps; }
+	static size_t getHTTPThrottleBandwidth125(void) { return sHTTPThrottleBandwidth125; }
+
 	// Called when CurlConcurrentConnectionsPerService changes.
 	static void adjust_concurrent_connections(int increment);
+
+	// The two following functions are static and have the AIPerService object passed
+	// as first argument as an AIPerServicePtr because that avoids the need of having
+	// the AIPerService object locked for the whole duration of the call.
+	// The functions only lock it when access is required.
 
 	// Returns true if curl can handle another request for this host.
 	// Should return false if the maximum allowed HTTP bandwidth is reached, or when
 	// the latency between request and actual delivery becomes too large.
-	static bool wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service, F32 max_kbps, bool no_bandwidth_throttling);
+	static bool wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service);
+	// Return true if too much bandwidth is being used.
+	static bool checkBandwidthUsage(AIPerServicePtr const& per_service, U64 sTime_40ms);
+
+	// A helper class to decrement mApprovedRequests after requests approved by wantsMoreHTTPRequestsFor were handled.
+	class Approvement {
+	  private:
+		AIPerServicePtr mPerServicePtr;
+		bool mHonored;
+	  public:
+		Approvement(AIPerServicePtr const& per_service) : mPerServicePtr(per_service), mHonored(false) { }
+		~Approvement() { honored(); }
+		void honored(void);
+	};
 
   private:
 	// Disallow copying.
@@ -167,17 +231,17 @@ class AIPerService {
 
 namespace AICurlPrivate {
 
-class RefCountedThreadSafePerServiceRequestQueue : public threadsafe_PerServiceRequestQueue {
+class RefCountedThreadSafePerService : public threadsafe_PerService {
   public:
-	RefCountedThreadSafePerServiceRequestQueue(void) : mReferenceCount(0) { }
+	RefCountedThreadSafePerService(void) : mReferenceCount(0) { }
 	bool exactly_two_left(void) const { return mReferenceCount == 2; }
 
   private:
 	// Used by AIPerServicePtr. Object is deleted when reference count reaches zero.
 	LLAtomicU32 mReferenceCount;
 
-	friend void intrusive_ptr_add_ref(RefCountedThreadSafePerServiceRequestQueue* p);
-	friend void intrusive_ptr_release(RefCountedThreadSafePerServiceRequestQueue* p);
+	friend void intrusive_ptr_add_ref(RefCountedThreadSafePerService* p);
+	friend void intrusive_ptr_release(RefCountedThreadSafePerService* p);
 };
 
 extern U32 CurlConcurrentConnectionsPerService;

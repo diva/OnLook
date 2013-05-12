@@ -1597,8 +1597,9 @@ void LLViewerRegion::unpackRegionHandshake()
 		// all of our terrain stuff, by
 		if (compp->getParamsReady())
 		{
-			//this line creates frame stalls on region crossing and removing it appears to have no effect
-			//getLand().dirtyAllPatches();
+			// The following line was commented out in http://hg.secondlife.com/viewer-development/commits/448b02f5b56f9e608952c810df5454f83051a992
+			// by davep. However, this is needed to see changes in region/estate texture elevation ranges, and to update the terrain textures after terraforming.
+			getLand().dirtyAllPatches();
 		}
 		else
 		{
