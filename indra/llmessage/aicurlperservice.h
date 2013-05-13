@@ -114,7 +114,7 @@ class AIPerService {
   private:
 	typedef std::deque<AICurlPrivate::BufferedCurlEasyRequestPtr> queued_request_type;
 
-	int mApprovedRequests;						// The number of approved requests by wantsMoreHTTPRequestsFor that were not added to the command queue yet.
+	int mApprovedRequests;						// The number of approved requests by approveHTTPRequestFor that were not added to the command queue yet.
 	int mQueuedCommands;						// Number of add commands (minus remove commands) with this host in the command queue.
 	int mAdded;									// Number of active easy handles with this host.
 	queued_request_type mQueuedRequests;		// Waiting (throttled) requests.
@@ -201,28 +201,29 @@ class AIPerService {
 	// Called when CurlConcurrentConnectionsPerService changes.
 	static void adjust_concurrent_connections(int increment);
 
-	// The two following functions are static and have the AIPerService object passed
-	// as first argument as an AIPerServicePtr because that avoids the need of having
-	// the AIPerService object locked for the whole duration of the call.
-	// The functions only lock it when access is required.
-
-	// Returns true if curl can handle another request for this host.
-	// Should return false if the maximum allowed HTTP bandwidth is reached, or when
-	// the latency between request and actual delivery becomes too large.
-	static bool wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service);
-	// Return true if too much bandwidth is being used.
-	static bool checkBandwidthUsage(AIPerServicePtr const& per_service, U64 sTime_40ms);
-
-	// A helper class to decrement mApprovedRequests after requests approved by wantsMoreHTTPRequestsFor were handled.
-	class Approvement {
+	// A helper class to decrement mApprovedRequests after requests approved by approveHTTPRequestFor were handled.
+	class Approvement : public LLThreadSafeRefCount {
 	  private:
 		AIPerServicePtr mPerServicePtr;
 		bool mHonored;
 	  public:
 		Approvement(AIPerServicePtr const& per_service) : mPerServicePtr(per_service), mHonored(false) { }
-		~Approvement() { honored(); }
+		~Approvement() { if (!mHonored) not_honored(); }
 		void honored(void);
+		void not_honored(void);
 	};
+
+	// The two following functions are static and have the AIPerService object passed
+	// as first argument as an AIPerServicePtr because that avoids the need of having
+	// the AIPerService object locked for the whole duration of the call.
+	// The functions only lock it when access is required.
+
+	// Returns approvement if curl can handle another request for this host.
+	// Should return NULL if the maximum allowed HTTP bandwidth is reached, or when
+	// the latency between request and actual delivery becomes too large.
+	static Approvement* approveHTTPRequestFor(AIPerServicePtr const& per_service);
+	// Return true if too much bandwidth is being used.
+	static bool checkBandwidthUsage(AIPerServicePtr const& per_service, U64 sTime_40ms);
 
   private:
 	// Disallow copying.

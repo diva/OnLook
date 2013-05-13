@@ -130,11 +130,17 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// Pause and unpause a connection.
 	CURLcode pause(int bitmask);
 
+	// Called if this request should be queued on the curl thread when too much bandwidth is being used.
+	void setApproved(AIPerService::Approvement* approved) { mApproved = approved; }
+
+	// Returns false when this request should be queued by the curl thread when too much bandwidth is being used.
+	bool approved(void) const { return mApproved; }
+
 	// Called when a request is queued for removal. In that case a race between the actual removal
 	// and revoking of the callbacks is harmless (and happens for the raw non-statemachine version).
 	void remove_queued(void) { mQueuedForRemoval = true; }
 	// In case it's added after being removed.
-	void add_queued(void) { mQueuedForRemoval = false; }
+	void add_queued(void) { mQueuedForRemoval = false; if (mApproved) { mApproved->honored(); } }
 
 #ifdef DEBUG_CURLIO
 	void debug(bool debug) { if (mDebug) debug_curl_remove_easy(mEasyHandle); if (debug) debug_curl_add_easy(mEasyHandle); mDebug = debug; }
@@ -146,6 +152,7 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	mutable char* mErrorBuffer;
 	AIPostFieldPtr mPostField;		// This keeps the POSTFIELD data alive for as long as the easy handle exists.
 	bool mQueuedForRemoval;			// Set if the easy handle is (probably) added to the multi handle, but is queued for removal.
+	LLPointer<AIPerService::Approvement> mApproved;		// When not set then the curl thread should check bandwidth usage and queue this request if too much is being used.
 #ifdef DEBUG_CURLIO
 	bool mDebug;
 #endif
@@ -375,9 +382,6 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	void resetState(void);
 	void prepRequest(AICurlEasyRequest_wat& buffered_curl_easy_request_w, AIHTTPHeaders const& headers, LLHTTPClient::ResponderPtr responder);
 
-	// Called if this request should be queued on the curl thread when too much bandwidth is being used.
-	void queue_if_too_much_bandwidth_usage(void) { mQueueIfTooMuchBandwidthUsage = true; }
-
 	buffer_ptr_t& getInput(void) { return mInput; }
 	buffer_ptr_t& getOutput(void) { return mOutput; }
 
@@ -419,7 +423,6 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	U32 mRequestTransferedBytes;
 	size_t mTotalRawBytes;								// Raw body data (still, possibly, compressed) received from the server so far.
 	AIBufferedCurlEasyRequestEvents* mBufferEventsTarget;
-	bool mQueueIfTooMuchBandwidthUsage;					// Set if the curl thread should check bandwidth usage and queue this request if too much is being used.
 
   public:
 	static LLChannelDescriptors const sChannels;		// Channel object for mInput (channel out()) and mOutput (channel in()).
@@ -456,9 +459,6 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	// Return true when prepRequest was already called and the object has not been
 	// invalidated as a result of calling timed_out().
 	bool isValid(void) const { return mResponder; }
-
-	// Returns true when this request should be queued by the curl thread when too much bandwidth is being used.
-	bool queueIfTooMuchBandwidthUsage(void) const { return mQueueIfTooMuchBandwidthUsage; }
 };
 
 inline ThreadSafeBufferedCurlEasyRequest* CurlEasyRequest::get_lockobj(void)

@@ -1331,8 +1331,8 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 		case cmd_boost:	// FIXME: future stuff
 		  break;
 		case cmd_add:
+		  multi_handle_w->add_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()), false);
 		  PerService_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerServicePtr())->removed_from_command_queue();
-		  multi_handle_w->add_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()));
 		  break;
 		case cmd_remove:
 		  PerService_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerServicePtr())->added_to_command_queue();		// Not really, but this has the same effect as 'removed a remove command'.
@@ -1701,14 +1701,14 @@ CURLMsg const* MultiHandle::info_read(int* msgs_in_queue) const
 
 static U32 curl_max_total_concurrent_connections = 32;						// Initialized on start up by startCurlThread().
 
-void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
+bool MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request, bool from_queue)
 {
   bool throttled = true;		// Default.
   AIPerServicePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
 	per_service = curl_easy_request_w->getPerServicePtr();
-	bool too_much_bandwidth = curl_easy_request_w->queueIfTooMuchBandwidthUsage() && AIPerService::checkBandwidthUsage(per_service, get_clock_count() * HTTPTimeout::sClockWidth_40ms);
+	bool too_much_bandwidth = !curl_easy_request_w->approved() && AIPerService::checkBandwidthUsage(per_service, get_clock_count() * HTTPTimeout::sClockWidth_40ms);
 	PerService_wat per_service_w(*per_service);
 	if (!too_much_bandwidth && mAddedEasyRequests.size() < curl_max_total_concurrent_connections && !per_service_w->throttled())
 	{
@@ -1731,7 +1731,12 @@ void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
 	llassert(sTotalAdded == mAddedEasyRequests.size());
 	Dout(dc::curl, "MultiHandle::add_easy_request: Added AICurlEasyRequest " << (void*)easy_request.get_ptr().get() <<
 		"; now processing " << mAddedEasyRequests.size() << " easy handles [running_handles = " << AICurlInterface::Stats::running_handles << "].");
-	return;
+	return true;
+  }
+  if (from_queue)
+  {
+	// Throttled. Do not add to queue, because it is already in the queue.
+	return false;
   }
   // The request could not be added, we have to queue it.
   PerService_wat(*per_service)->queue(easy_request);
@@ -1739,6 +1744,7 @@ void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
   // Not active yet, but it's no longer an error if next we try to remove the request.
   AICurlEasyRequest_wat(*easy_request)->mRemovedPerCommand = false;
 #endif
+  return true;
 }
 
 CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request, bool as_per_command)
@@ -2608,7 +2614,7 @@ bool AIPerService::sNoHTTPBandwidthThrottling;
 // running requests (in MultiHandle::mAddedEasyRequests)).
 //
 //static
-bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
+AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr const& per_service)
 {
   using namespace AICurlPrivate;
   using namespace AICurlPrivate::curlthread;
@@ -2684,7 +2690,7 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
   if (reject)
   {
 	// Too many request for this service already.
-	return false;
+	return NULL;
   }
   
   // Throttle on bandwidth usage.
@@ -2692,7 +2698,7 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
   {
 	// Too much bandwidth is being used, either in total or for this service.
 	PerService_wat(*per_service)->mApprovedRequests--;		// Not approved after all.
-	return false;
+	return NULL;
   }
 
   // Check if it's ok to get a new request based on the total number of requests and increment the threshold if appropriate.
@@ -2726,8 +2732,9 @@ bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service)
   if (reject)
   {
 	PerService_wat(*per_service)->mApprovedRequests--;		// Not approved after all.
+	return NULL;
   }
-  return !reject;
+  return new Approvement(per_service);
 }
 
 bool AIPerService::checkBandwidthUsage(AIPerServicePtr const& per_service, U64 sTime_40ms)

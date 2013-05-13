@@ -287,7 +287,11 @@ void AIPerService::add_queued_to(curlthread::MultiHandle* multi_handle)
 {
   if (!mQueuedRequests.empty())
   {
-	multi_handle->add_easy_request(mQueuedRequests.front());
+	if (!multi_handle->add_easy_request(mQueuedRequests.front(), true))
+	{
+	  // Throttled.
+	  return;
+	}
 	mQueuedRequests.pop_front();
 	if (mQueuedRequests.empty())
 	{
@@ -364,5 +368,11 @@ void AIPerService::Approvement::honored(void)
 	llassert(per_service_w->mApprovedRequests > 0);
 	per_service_w->mApprovedRequests--;
   }
+}
+
+void AIPerService::Approvement::not_honored(void)
+{
+  honored();
+  llwarns << "Approvement for has not been honored." << llendl;
 }
 
