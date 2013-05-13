@@ -4,8 +4,9 @@
   <check_box label="Afficher après avoir accepté" name="show_new_inventory"/>
   <check_box label="Ouvrir l'inventaire et sélectionner les objets reçus" name="show_in_inventory"/>
   <text name="show_label">Toujours montrer:</text>
-  <button label="Tout activer" name="reset_dialogs_btn" tool_tip="Activer tous les pop ups optionnels ainsi que les notifications d'un premier usage"/>
-  <button label="Tout désactiver la première fois" name="skip_frst_btn" tool_tip="Désactive les notifications envoyées lors d'un premier usage."/>
-  <button label="Tout désactiver" name="skip_dialogs_btn" tool_tip="Désactive tous les pop-ups et les notifications envoyées lors d'un premier usage."/>
+  <button label="Active tous" left="20" name="reset_dialogs_btn" tool_tip="Active tous les pop-ups et les notifications envoyées lors d'un premier usage." width="100"/>
+  <button label="Désact. les 'premiers usages'" name="skip_frst_btn" tool_tip="Désactive les notifications envoyées lors d'un premier usage." width="180"/>
+  <button left_delta="185" name="disable_popup"/>
+  <button label="Désactive tous" name="skip_dialogs_btn" tool_tip="Désactive tous les pop-ups et les notifications envoyées lors d'un premier usage."/>
   <text name="dont_show_label">Ne jamais montrer:</text>
 </panel>
