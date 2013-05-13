@@ -1,11 +1,10 @@
-<?xml version="1.0" ?><notifications>
+<?xml version="1.0" ?>
+<notifications>
   <global name="skipnexttime">
-
 		Don&apos;t show me this again
   </global>
 
   <global name="alwayschoose">
-
 		Always choose this option
   </global>
 
