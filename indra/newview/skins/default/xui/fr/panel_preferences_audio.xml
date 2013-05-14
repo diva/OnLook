@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Audio et vidéo" name="Media panel">
-	<text name="muting_text">Volume:</text>
 	<text name="audio_prefs_text"></text>
-	<text bottom="-187" name="streaming_prefs_text">
-		Médias et Audio :&#10;&#10;&#10;&#10;&#10;&#10;&#10;( Filtre de Sécurité des Médias )
-	</text>
-	<panel name="Volume Panel"/>
+	<text bottom="-187" name="streaming_prefs_text">Médias et Audio :&#10;&#10;&#10;&#10;&#10;&#10;&#10;( Filtre de Sécurité des Médias )</text>
 	<check_box bottom="-200" height="32" label="Jouer la musique disponible &#10;
 (Gourmand en bande passante)" name="streaming_music"/>
 	<check_box bottom_delta="-32" height="32" label="Jouer le média disponible &#10;
