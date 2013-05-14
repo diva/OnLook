@@ -30,4 +30,5 @@ set_source_files_properties(${libpathing_HEADER_FILES}
                             PROPERTIES HEADER_FILE_ONLY TRUE)
 
 add_library(nd_Pathing STATIC ${libpathing_SOURCE_FILES} ${libpathing_HEADER_FILES} )
+add_dependencies(nd_Pathing prepare)
 
