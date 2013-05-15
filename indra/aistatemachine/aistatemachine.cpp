@@ -614,6 +614,8 @@ void AIStateMachine::multiplex(event_type event)
 				// Continue in bs_multiplex.
 				// If the state is bs_multiplex we only need to run again when need_run was set again in the meantime or when this state machine isn't idle.
 				need_new_run = sub_state_r->need_run || !sub_state_r->idle;
+				// If this fails then the run state didn't change and neither idle() nor yield() was called.
+				llassert_always(!(need_new_run && !mYieldEngine && sub_state_r->run_state == run_state));
 			  }
 			  break;
 			case bs_abort:
@@ -786,10 +788,10 @@ AIStateMachine::state_type AIStateMachine::begin_loop(base_state_type base_state
   return sub_state_w->run_state;
 }
 
-void AIStateMachine::run(LLPointer<AIStateMachine> parent, state_type new_parent_state, bool abort_parent, bool on_abort_signal_parent, AIEngine* default_engine)
+void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bool abort_parent, bool on_abort_signal_parent, AIEngine* default_engine)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::run(" <<
-	  (void*)parent.get() << ", " <<
+	  (void*)parent << ", " <<
 	  (parent ? parent->state_str_impl(new_parent_state) : "NA") <<
 	  ", abort_parent = " << (abort_parent ? "true" : "false") <<
 	  ", on_abort_signal_parent = " << (on_abort_signal_parent ? "true" : "false") <<
