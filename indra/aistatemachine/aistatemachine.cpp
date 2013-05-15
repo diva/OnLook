@@ -1007,6 +1007,15 @@ void AIStateMachine::advance_state(state_type new_state)
 	  Dout(dc::statemachine, "Ignored, because " << state_str_impl(sub_state_w->advance_state) << " >= " << state_str_impl(new_state) << ".");
 	  return;
 	}
+	// Ignore call to advance_state when the current state is greater than the requested state: the new state would be
+	// ignored in begin_loop(), as is already remarked there: an advanced state that is not honored is not a reason to run.
+	// This call might as well not have happened. Not returning here is a bug because that is effectively a cont(), while
+	// the state change is and should be being ignored: the statemachine would start running it's current state (again).
+	if (sub_state_w->run_state > new_state)
+	{
+	  Dout(dc::statemachine, "Ignored, because " << state_str_impl(sub_state_w->run_state) << " > " << state_str_impl(new_state) << " (current state).");
+	  return;
+	}
 	// Increment state.
 	sub_state_w->advance_state = new_state;
 	// Void last call to idle(), if any.
@@ -1018,6 +1027,16 @@ void AIStateMachine::advance_state(state_type new_state)
 #ifdef SHOW_ASSERT
 	// From this moment on.
 	mDebugAdvanceStatePending = true;
+	// If the new state is equal to the current state, then this should be considered to be a cont()
+	// because also equal states are ignored in begin_loop(). However, unlike a cont() we ignore a call
+	// to idle() when the statemachine is already running in this state (because that is a race condition
+	// and ignoring the idle() is the most logical thing to do then). Hence we treated this as a full
+	// fletched advance_state but need to tell the debug code that it's really also a cont().
+	if (sub_state_w->run_state == new_state)
+	{
+	  // From this moment.
+	  mDebugContPending = true;
+	}
 #endif
   }
   if (!mMultiplexMutex.isSelfLocked())
