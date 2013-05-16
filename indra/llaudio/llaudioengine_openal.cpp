@@ -314,7 +314,7 @@ void LLAudioChannelOpenAL::update3DPosition()
 	alSourcef(mALSource, AL_GAIN, mCurrentSourcep->getGain() * getSecondaryGain());
 }
 
-LLAudioBufferOpenAL::LLAudioBufferOpenAL()
+LLAudioBufferOpenAL::LLAudioBufferOpenAL() : LLAudioBuffer()
 {
 	mALBuffer = AL_NONE;
 }

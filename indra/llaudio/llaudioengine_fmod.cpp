@@ -647,7 +647,7 @@ bool LLAudioChannelFMOD::isPlaying()
 //
 
 
-LLAudioBufferFMOD::LLAudioBufferFMOD()
+LLAudioBufferFMOD::LLAudioBufferFMOD() : LLAudioBuffer()
 {
 	mSamplep = NULL;
 }
