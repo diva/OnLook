@@ -2437,10 +2437,10 @@ void LLPipeline::updateGL()
 		}
 	}
 
-	/*{ //seed VBO Pools
+	{ //seed VBO Pools
 		LLFastTimer t(FTM_SEED_VBO_POOLS);
 		LLVertexBuffer::seedPools();
-	}*/
+	}
 }
 
 void LLPipeline::clearRebuildGroups()
