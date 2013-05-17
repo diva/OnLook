@@ -2062,7 +2062,7 @@ void LLFolderView::scrollToShowItem(LLFolderViewItem* item, const LLRect& constr
 	}
 }
 
-void LLFolderView::setScrollContainer(LLScrollableContainerView* parent)
+void LLFolderView::setScrollContainer(LLScrollContainer* parent)
 {
 	mScrollContainer = parent;
 	parent->setPassBackToChildren(false);

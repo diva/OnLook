@@ -135,7 +135,6 @@ set(viewer_SOURCE_FILES
     llcompilequeue.cpp
     llconfirmationmanager.cpp
     llconsole.cpp
-    llcontainerview.cpp
     llcurrencyuimanager.cpp
     llcylinder.cpp
     lldaycyclemanager.cpp
@@ -417,12 +416,8 @@ set(viewer_SOURCE_FILES
     llsky.cpp
     llspatialpartition.cpp
     llsprite.cpp
-    llsrv.cpp
     llstartup.cpp
-    llstatbar.cpp
-    llstatgraph.cpp
     llstatusbar.cpp
-    llstatview.cpp
     llstylemap.cpp
     llsurface.cpp
     llsurfacepatch.cpp
@@ -639,7 +634,6 @@ set(viewer_HEADER_FILES
     llcompilequeue.h
     llconfirmationmanager.h
     llconsole.h
-    llcontainerview.h
     llcurrencyuimanager.h
     llcylinder.h
     lldaycyclemanager.h
@@ -923,12 +917,8 @@ set(viewer_HEADER_FILES
     llsky.h
     llspatialpartition.h
     llsprite.h
-    llsrv.h
     llstartup.h
-    llstatbar.h
-    llstatgraph.h
     llstatusbar.h
-    llstatview.h
     llstylemap.h
     llsurface.h
     llsurfacepatch.h

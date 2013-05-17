@@ -60,14 +60,15 @@ BOOL gShowTextEditCursor = TRUE;
 std::map<std::string, std::string> gTranslation;
 std::list<std::string> gUntranslated;
 
-LLControlGroup* LLUI::sConfigGroup = NULL;
-LLControlGroup* LLUI::sIgnoresGroup = NULL;
-LLControlGroup* LLUI::sColorsGroup = NULL;
-LLUIAudioCallback LLUI::sAudioCallback = NULL;
-LLWindow*		LLUI::sWindow = NULL;
-LLHtmlHelp*		LLUI::sHtmlHelp = NULL;
-BOOL            LLUI::sShowXUINames = FALSE;
-BOOL            LLUI::sQAMode = FALSE;
+/*static*/ LLControlGroup* LLUI::sConfigGroup = NULL;
+/*static*/ LLControlGroup* LLUI::sIgnoresGroup = NULL;
+/*static*/ LLControlGroup* LLUI::sColorsGroup = NULL;
+/*static*/ LLUIAudioCallback LLUI::sAudioCallback = NULL;
+/*static*/ LLWindow*		LLUI::sWindow = NULL;
+/*static*/ LLView*			LLUI::sRootView = NULL;
+/*static*/ LLHtmlHelp*		LLUI::sHtmlHelp = NULL;
+/*static*/ BOOL            LLUI::sShowXUINames = FALSE;
+/*static*/ BOOL            LLUI::sQAMode = FALSE;
 
 //
 // Functions

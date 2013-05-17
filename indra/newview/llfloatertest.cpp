@@ -83,7 +83,7 @@ private:
 	LLRadioGroup* mRadioGroup;
 	LLRadioCtrl* mRadio1;
 	LLRadioCtrl* mRadio2;
-	LLScrollableContainerView* mScroll;
+	LLScrollContainer* mScroll;
 	LLScrollListCtrl* mScrollList;
 	LLTabContainer* mTab;
 	LLTextEditor* mTextEditor;

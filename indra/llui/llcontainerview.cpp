@@ -30,7 +30,7 @@
  * $/LicenseInfo$
  */
 
-#include "llviewerprecompiledheaders.h"
+#include "linden_common.h"
 
 #include "llcontainerview.h"
 
@@ -41,6 +41,7 @@
 #include "llresmgr.h"
 #include "llstring.h"
 #include "llscrollcontainer.h"
+#include "lluictrlfactory.h"
 
 LLContainerView::LLContainerView(const LLContainerView::Params& p)
 :	LLView(p),
@@ -287,7 +288,7 @@ void LLContainerView::setDisplayChildren(const BOOL displayChildren)
 	}
 }
 
-void LLContainerView::setScrollContainer(LLScrollableContainerView* scroll)
+void LLContainerView::setScrollContainer(LLScrollContainer* scroll)
 {
 	mScrollContainer = scroll;
 	scroll->setPassBackToChildren(false);

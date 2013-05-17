@@ -57,7 +57,7 @@ class LLInventoryFVBridgeBuilder;
 class LLMenuBarGL;
 class LLCheckBoxCtrl;
 class LLSpinCtrl;
-class LLScrollableContainerView;
+class LLScrollContainer;
 class LLTextBox;
 class LLIconCtrl;
 class LLSaveFolderState;
@@ -126,7 +126,7 @@ public:
 	// This method is called when something has changed about the inventory.
 	void modelChanged(U32 mask);
 	LLFolderView* getRootFolder();
-	LLScrollableContainerView* getScrollableContainer() { return mScroller; }
+	LLScrollContainer* getScrollableContainer() { return mScroller; }
 	
 	void onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action);
 	
@@ -164,7 +164,7 @@ protected:
 	
 	BOOL 						mAllowMultiSelect;
 	LLFolderView*				mFolderRoot;
-	LLScrollableContainerView*	mScroller;
+	LLScrollContainer*	mScroller;
 
 	/**
 	 * Pointer to LLInventoryFVBridgeBuilder.

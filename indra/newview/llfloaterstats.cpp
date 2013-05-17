@@ -728,7 +728,7 @@ LLFloaterStats::LLFloaterStats(const LLSD& val)
 
 	LLRect scroll_rect(LL_SCROLL_BORDER, getRect().getHeight() - LLFLOATER_HEADER_SIZE - LL_SCROLL_BORDER,
 					   getRect().getWidth() - LL_SCROLL_BORDER, LL_SCROLL_BORDER);
-		mScrollContainer = new LLScrollableContainerView(std::string("statistics_scroll"), scroll_rect, mStatsContainer);
+		mScrollContainer = new LLScrollContainer(std::string("statistics_scroll"), scroll_rect, mStatsContainer);
 	mScrollContainer->setFollowsAll();
 	mScrollContainer->setReserveScrollCorner(TRUE);
 

@@ -80,6 +80,8 @@ public:
 	static std::string getLanguage();
 
 	//helper functions (should probably move free standing rendering helper functions here)
+	static LLView* getRootView() { return sRootView; }
+	static void setRootView(LLView* view) { sRootView = view; }
 	static std::string locateSkin(const std::string& filename);
 	static void setMousePositionScreen(S32 x, S32 y);
 	static void getMousePositionScreen(S32 *x, S32 *y);
@@ -107,6 +109,7 @@ public:
 	static LLControlGroup* sColorsGroup;
 	static LLUIAudioCallback sAudioCallback;
 	static LLWindow*		sWindow;
+	static LLView*			sRootView;
 	static BOOL             sShowXUINames;
 	static LLHtmlHelp*		sHtmlHelp;
 

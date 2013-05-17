@@ -1629,7 +1629,7 @@ void LLPanelObjectInventory::reset()
 	mFolders->getFilter()->setShowFolderState(LLInventoryFilter::SHOW_ALL_FOLDERS);
 
 	LLRect scroller_rect(0, getRect().getHeight(), getRect().getWidth(), 0);
-	mScroller = new LLScrollableContainerView(std::string("task inventory scroller"), scroller_rect, mFolders );
+	mScroller = new LLScrollContainer(std::string("task inventory scroller"), scroller_rect, mFolders );
 	mScroller->setFollowsAll();
 	addChild(mScroller);
 

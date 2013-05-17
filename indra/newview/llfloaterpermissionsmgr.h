@@ -36,7 +36,7 @@
 #include "llfloater.h"
 #include <vector>
 
-class LLScrollableContainerView;
+class LLScrollContainer;
 class LLPermissionsView;
 
 class LLFloaterPermissionsMgr
@@ -59,7 +59,7 @@ public:
 	LLPermissionsView*				mPermissions;
 
 protected:
-	LLScrollableContainerView*		mScroller;
+	LLScrollContainer*		mScroller;
 
 	static LLFloaterPermissionsMgr* sInstance;
 };

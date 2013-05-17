@@ -558,8 +558,8 @@ const S32 HEADER_HEIGHT = 3 * (LINE_HEIGHT + LLFLOATER_VPAD) + (2 * LLPANEL_BORD
 
 void LLFloaterCustomize::initScrollingPanelList()
 {
-	LLScrollableContainerView* scroll_container =
-		getChild<LLScrollableContainerView>("panel_container");
+	LLScrollContainer* scroll_container =
+		getChild<LLScrollContainer>("panel_container");
 	// LLScrollingPanelList's do not import correctly 
 // 	mScrollingPanelList = LLUICtrlFactory::getScrollingPanelList(this, "panel_list");
 	mScrollingPanelList = new LLScrollingPanelList(std::string("panel_list"), LLRect());

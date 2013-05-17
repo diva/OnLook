@@ -35,7 +35,6 @@
 
 #include "llview.h"
 #include "llframetimer.h"
-#include "llviewercontrol.h"
 
 class LLStat;
 

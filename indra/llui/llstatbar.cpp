@@ -30,7 +30,8 @@
  * $/LicenseInfo$
  */
 
-#include "llviewerprecompiledheaders.h"
+//#include "llviewerprecompiledheaders.h"
+#include "linden_common.h"
 
 #include "llstatbar.h"
 
@@ -40,6 +41,7 @@
 #include "llfontgl.h"
 
 #include "llstat.h"
+#include "lluictrlfactory.h"
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -63,7 +65,7 @@ LLStatBar::LLStatBar(const std::string& name, const LLRect& rect, const std::str
 	S32 mode = -1;
 	if (mSetting.length() > 0)
 	{
-		mode = gSavedSettings.getS32(mSetting);
+		mode = LLUI::sConfigGroup->getS32(mSetting);
 
 	}
 
@@ -114,7 +116,7 @@ BOOL LLStatBar::handleMouseDown(S32 x, S32 y, MASK mask)
 			mode |= STAT_HISTORY_FLAG;
 		}
 
-		gSavedSettings.setS32(mSetting, mode);
+		LLUI::sConfigGroup->setS32(mSetting, mode);
 	}
 	
 	

@@ -81,7 +81,7 @@ LLFloaterPermissionsMgr::LLFloaterPermissionsMgr() :
 	LLRect scrollable_container_rect(0, y, getRect().getWidth(), 0);
 	LLRect permissions_rect(0, 0, getRect().getWidth() - HPAD - HPAD, 0);
 	mPermissions = new LLPermissionsView(permissions_rect);
-	mScroller = new LLScrollableContainerView(
+	mScroller = new LLScrollContainer(
 				std::string("permissions container"),
 				scrollable_container_rect,
 				mPermissions

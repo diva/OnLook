@@ -30,7 +30,7 @@
  * $/LicenseInfo$
  */
 
-#include "llviewerprecompiledheaders.h"
+#include "linden_common.h"
 
 #include "llstatview.h"
 
@@ -39,11 +39,9 @@
 #include "llfontgl.h"
 #include "llgl.h"
 #include "llui.h"
+#include "lluictrlfactory.h"
 
 #include "llstatbar.h"
-#include "llviewercontrol.h"
-
-#include "lluictrlfactory.h"
 
 LLStatView::LLStatView(const LLStatView::Params& p)
 :	LLContainerView(p),
@@ -53,7 +51,7 @@ LLStatView::LLStatView(const LLStatView::Params& p)
 	BOOL isopen = getDisplayChildren();
 	if (mSetting.length() > 0)
 	{
-		isopen = gSavedSettings.getBOOL(mSetting);
+		isopen = LLUI::sConfigGroup->getBOOL(mSetting);
 	}
 	setDisplayChildren(isopen);
 }
@@ -64,7 +62,7 @@ LLStatView::~LLStatView()
 	if (mSetting.length() > 0)
 	{
 		BOOL isopen = getDisplayChildren();
-		gSavedSettings.setBOOL(mSetting, isopen);		/* Flawfinder: ignore */
+		LLUI::sConfigGroup->setBOOL(mSetting, isopen);		/* Flawfinder: ignore */
 	}
 }
 

@@ -1164,7 +1164,7 @@ void LLView::drawChildren()
 	}*/
 	if (!mChildList.empty())
 	{
-		LLView* rootp = getRootView();		
+		LLView* rootp = LLUI::getRootView();		
 		++sDepth;
 
 		for (child_list_const_reverse_iter_t child_iter = mChildList.rbegin(); child_iter != mChildList.rend(); ++child_iter)

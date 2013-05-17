@@ -29,6 +29,7 @@ set(llui_SOURCE_FILES
     llcheckboxctrl.cpp
     llclipboard.cpp
     llcombobox.cpp
+    llcontainerview.cpp
     llctrlselectioninterface.cpp
     lldraghandle.cpp
     lleditmenuhandler.cpp
@@ -62,6 +63,9 @@ set(llui_SOURCE_FILES
     llslider.cpp
     llsliderctrl.cpp
     llspinctrl.cpp
+    llstatbar.cpp
+    llstatgraph.cpp
+    llstatview.cpp
     llstyle.cpp
     lltabcontainer.cpp
     lltextbox.cpp
@@ -90,6 +94,7 @@ set(llui_HEADER_FILES
     llcheckboxctrl.h
     llclipboard.h
     llcombobox.h
+    llcontainerview.h
     llctrlselectioninterface.h
     lldraghandle.h
     lleditmenuhandler.h
@@ -127,6 +132,9 @@ set(llui_HEADER_FILES
     llslider.h
     llsliderctrl.h
     llspinctrl.h
+    llstatbar.h
+    llstatgraph.h
+    llstatview.h
     llstyle.h
     lltabcontainer.h
     lltextbox.h
