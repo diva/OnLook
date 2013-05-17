@@ -25,3 +25,4 @@
 qtcreator-build/
 /.pc
 /build-*
+/viewer-*
