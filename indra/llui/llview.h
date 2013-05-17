@@ -307,7 +307,9 @@ public:
 	// remove the specified child from the view, and set it's parent to NULL.
 	virtual void	removeChild(LLView* view);
 
-	child_tab_order_t getCtrlOrder() const		{ return mCtrlOrder; }
+	virtual BOOL	postBuild() { return TRUE; }
+
+	const child_tab_order_t& getCtrlOrder() const		{ return mCtrlOrder; }
 	ctrl_list_t getCtrlList() const;
 	ctrl_list_t getCtrlListSorted() const;
 	
@@ -409,6 +411,8 @@ public:
 	std::string getShowNamesToolTip();
 
 	virtual void	draw();
+
+	void parseFollowsFlags(const LLView::Params& params);
 
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
 	//FIXME: make LLView non-instantiable from XML

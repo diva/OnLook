@@ -48,6 +48,7 @@
 #include "llviewertexturelist.h"
 #include "llvovolume.h"
 #include "llviewerstats.h"
+#include "lluictrlfactory.h"
 
 // For avatar texture view
 #include "llvoavatarself.h"
@@ -96,12 +97,20 @@ public:
 	S32 mHilite;
 
 public:
-	LLTextureBar(const std::string& name, const LLRect& r, LLTextureView* texview)
-		: LLView(name, r, FALSE),
-		  mHilite(0),
-		  mTextureView(texview)
+	struct Params : public LLInitParam::Block<Params, LLView::Params>
 	{
-	}
+		Mandatory<LLTextureView*> texture_view;
+		Params()
+		:	texture_view("texture_view")
+		{
+			changeDefault(mouse_opaque, false);
+		}
+	};
+	LLTextureBar(const Params& p)
+	:	LLView(p),
+		mHilite(0),
+		mTextureView(p.texture_view)
+	{}
 
 	virtual void draw();
 	virtual BOOL handleMouseDown(S32 x, S32 y, MASK mask);
@@ -393,14 +402,21 @@ LLRect LLTextureBar::getRequiredRect()
 class LLAvatarTexBar : public LLView
 {
 public:
-
-	LLAvatarTexBar(const std::string& name, LLTextureView* texview)
-	:	LLView(name, FALSE),
-		mTextureView(texview)
+	struct Params : public LLInitParam::Block<Params, LLView::Params>
 	{
-		S32 line_height = (S32)(LLFontGL::getFontMonospace()->getLineHeight() + .5f);
-		setRect(LLRect(0,0,100,line_height * 4));
-	}
+		Mandatory<LLTextureView*>	texture_view;
+		Params()
+		:	texture_view("texture_view")
+		{
+			S32 line_height = (S32)(LLFontGL::getFontMonospace()->getLineHeight() + .5f);
+			changeDefault(rect, LLRect(0,0,100,line_height * 4));
+		}
+	};
+
+	LLAvatarTexBar(const Params& p)
+	:	LLView(p),
+		mTextureView(p.texture_view)
+	{}
 
 	virtual void draw();	
 	virtual BOOL handleMouseDown(S32 x, S32 y, MASK mask);
@@ -485,13 +501,21 @@ LLRect LLAvatarTexBar::getRequiredRect()
 class LLGLTexMemBar : public LLView
 {
 public:
-	LLGLTexMemBar(const std::string& name, LLTextureView* texview)
-		: LLView(name, FALSE),
-		  mTextureView(texview)
+	struct Params : public LLInitParam::Block<Params, LLView::Params>
 	{
-		S32 line_height = (S32)(LLFontGL::getFontMonospace()->getLineHeight() + .5f);
-		setRect(LLRect(0,0,100,line_height * 4));
-	}
+		Mandatory<LLTextureView*>	texture_view;
+		Params()
+		:	texture_view("texture_view")
+		{
+			S32 line_height = (S32)(LLFontGL::getFontMonospace()->getLineHeight() + .5f);
+			changeDefault(rect, LLRect(0,0,100,line_height * 4));
+		}
+	};
+
+	LLGLTexMemBar(const Params& p)
+	:	LLView(p),
+		mTextureView(p.texture_view)
+	{}
 
 	virtual void draw();	
 	virtual BOOL handleMouseDown(S32 x, S32 y, MASK mask);
@@ -744,8 +768,8 @@ void LLGLTexSizeBar::draw()
 }
 ////////////////////////////////////////////////////////////////////////////
 
-LLTextureView::LLTextureView(const std::string& name, const LLRect& rect)
-	:	LLContainerView(name, rect),
+LLTextureView::LLTextureView(const LLTextureView::Params& p)
+	:	LLContainerView(p),
 		mFreezeView(FALSE),
 		mOrderFetch(FALSE),
 		mPrintList(FALSE),
@@ -971,11 +995,24 @@ void LLTextureView::draw()
 		else
 			sortChildren(LLTextureBar::sort());
 
-		mGLTexMemBar = new LLGLTexMemBar("gl texmem bar", this);
+		LLGLTexMemBar::Params tmbp;
+		LLRect tmbr;
+		tmbp.name("gl texmem bar");
+		tmbp.rect(tmbr);
+		tmbp.follows.flags = FOLLOWS_LEFT|FOLLOWS_TOP;
+		tmbp.texture_view(this);
+		mGLTexMemBar = LLUICtrlFactory::create<LLGLTexMemBar>(tmbp);
 		addChild(mGLTexMemBar);
-	
-		mAvatarTexBar = new LLAvatarTexBar("gl avatartex bar", this);
+		//sendChildToFront(mGLTexMemBar);
+
+		LLAvatarTexBar::Params atbp;
+		LLRect atbr;
+		atbp.name("gl avatartex bar");
+		atbp.texture_view(this);
+		atbp.rect(atbr);
+		mAvatarTexBar = LLUICtrlFactory::create<LLAvatarTexBar>(atbp);
 		addChild(mAvatarTexBar);
+		//sendChildToFront(mAvatarTexBar);
 		
 		reshape(getRect().getWidth(), getRect().getHeight(), TRUE);
 
@@ -1011,7 +1048,11 @@ BOOL LLTextureView::addBar(LLViewerFetchedTexture *imagep, S32 hilite)
 
 	mNumTextureBars++;
 
-	barp = new LLTextureBar("texture bar", r, this);
+	LLTextureBar::Params tbp;
+	tbp.name("texture bar");
+	tbp.rect(r);
+	tbp.texture_view(this);
+	barp = LLUICtrlFactory::create<LLTextureBar>(tbp);
 	barp->mImagep = imagep;	
 	barp->mHilite = hilite;
 
@@ -1057,10 +1098,8 @@ BOOL LLTextureView::handleKey(KEY key, MASK mask, BOOL called_from_parent)
 }
 
 //-----------------------------------------------------------------
-LLTextureSizeView::LLTextureSizeView(const std::string& name) : LLContainerView(name, LLRect())
+LLTextureSizeView::LLTextureSizeView(const Params& p) : LLContainerView(p)
 {
-	setVisible(FALSE) ;
-
 	mTextureSizeBarWidth = 30 ;
 }
 

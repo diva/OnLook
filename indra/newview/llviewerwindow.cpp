@@ -1656,7 +1656,12 @@ LLViewerWindow::LLViewerWindow(
 								LLUICtrlFactory::getXUIPaths());
 	}
 	// Create container for all sub-views
-	mRootView = new LLRootView("root", mWindowRectScaled, FALSE);
+	LLView::Params rvp;
+	rvp.name("root");
+	rvp.rect(mWindowRectScaled);
+	rvp.mouse_opaque(false);
+	rvp.follows.flags(FOLLOWS_NONE);
+	mRootView = LLUICtrlFactory::create<LLRootView>(rvp);
 
 	// Make avatar head look forward at start
 	mCurrentMousePoint.mX = getWindowWidthScaled() / 2;

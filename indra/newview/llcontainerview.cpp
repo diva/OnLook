@@ -42,18 +42,26 @@
 #include "llstring.h"
 #include "llscrollcontainer.h"
 
-LLContainerView::LLContainerView(const std::string& name, const LLRect& rect)
-:	LLView(name, rect, FALSE)
+LLContainerView::LLContainerView(const LLContainerView::Params& p)
+:	LLView(p),
+	mShowLabel(p.show_label),
+	mLabel(p.label),
+	mDisplayChildren(p.display_children)
 {
-	mShowLabel = TRUE;
 	mCollapsible = TRUE;
-	mDisplayChildren = TRUE;
 	mScrollContainer = NULL;
 }
 
 LLContainerView::~LLContainerView()
 {
 	// Children all cleaned up by default view destructor.
+}
+
+BOOL LLContainerView::postBuild()
+{
+	setDisplayChildren(mDisplayChildren);
+	reshape(getRect().getWidth(), getRect().getHeight(), FALSE);
+	return TRUE;
 }
 
 BOOL LLContainerView::handleMouseDown(S32 x, S32 y, MASK mask)

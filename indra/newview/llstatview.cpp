@@ -43,19 +43,19 @@
 #include "llstatbar.h"
 #include "llviewercontrol.h"
 
-LLStatView::LLStatView(const std::string& name, const std::string& label, const std::string& setting, const LLRect& rect)
-	:	LLContainerView(name, rect),
-		mNumStatBars(0),
-		mSetting(setting)
+#include "lluictrlfactory.h"
+
+LLStatView::LLStatView(const LLStatView::Params& p)
+:	LLContainerView(p),
+	mNumStatBars(0),
+	mSetting(p.setting)
 {
-	setFollows(FOLLOWS_TOP | FOLLOWS_LEFT);
-	setLabel(label);
-	BOOL open = FALSE;
+	BOOL isopen = getDisplayChildren();
 	if (mSetting.length() > 0)
 	{
-		open = gSavedSettings.getBOOL(mSetting);
+		isopen = gSavedSettings.getBOOL(mSetting);
 	}
-	setDisplayChildren(open);		/* Flawfinder: ignore */
+	setDisplayChildren(isopen);
 }
 
 LLStatView::~LLStatView()
@@ -63,8 +63,8 @@ LLStatView::~LLStatView()
 	// Children all cleaned up by default view destructor.
 	if (mSetting.length() > 0)
 	{
-		BOOL open = getDisplayChildren();
-		gSavedSettings.setBOOL(mSetting, open);		/* Flawfinder: ignore */
+		BOOL isopen = getDisplayChildren();
+		gSavedSettings.setBOOL(mSetting, isopen);		/* Flawfinder: ignore */
 	}
 }
 
@@ -73,12 +73,6 @@ LLStatBar *LLStatView::addStat(const std::string& name, LLStat *statp,
 {
 	LLStatBar *stat_barp;
 	LLRect r;
-
-//	if (getStatBar(name))
-//	{
-//		llinfos << "LLStatView::addStat - Stat already exists!" << llendl;
-//		return NULL;
-//	}
 
 	mNumStatBars++;
 
@@ -94,27 +88,10 @@ LLStatBar *LLStatView::addStat(const std::string& name, LLStat *statp,
 	return stat_barp;
 }
 
-LLStatView *LLStatView::addStatView(const std::string& name, const std::string& label, const std::string& setting, const LLRect& rect)
+LLStatView *LLStatView::addStatView(LLStatView::Params& p)
 {
-	LLStatView *statview = new LLStatView(name, label, setting, rect);
+	LLStatView* statview = LLUICtrlFactory::create<LLStatView>(p);
 	statview->setVisible(mDisplayChildren);
 	addChildInBack(statview);
 	return statview;
-}
-
-
-LLStatBar *LLStatView::getStatBar(const std::string& name)
-{
-	sb_vector_t::iterator iter;
-	for(iter = mStatBars.begin(); iter != mStatBars.end(); ++iter)
-	{
-		LLStatBar *stat_barp = *iter;
-		if (stat_barp->getLabel() == name)
-		{
-			return stat_barp;
-		}
-	}
-
-	// Not found!
-	return NULL;
 }

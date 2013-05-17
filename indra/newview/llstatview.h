@@ -42,20 +42,25 @@ class LLStatBar;
 class LLStatView : public LLContainerView
 {
 public:
-	LLStatView(const std::string& name, const std::string& label, const std::string& setting, const LLRect& rect);
+	struct Params : public LLInitParam::Block<Params, LLContainerView::Params>
+	{
+		Optional<std::string> setting;
+		Params() 
+		:	setting("setting")
+		{
+			changeDefault(follows.flags, FOLLOWS_TOP | FOLLOWS_LEFT);
+		}
+	};
 	~LLStatView();
 
-/*
-	virtual void draw();
-	virtual void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
-	virtual LLRect getRequiredRect();	// Return the height of this object, given the set options.
-*/
+protected:
+	LLStatView(const Params&);
+	friend class LLUICtrlFactory;
+public:
 
 	LLStatBar *addStat(const std::string& name, LLStat *statp,
 					   const std::string& setting = std::string(), BOOL default_bar = FALSE, BOOL default_history = FALSE);
-	LLStatBar *getStatBar(const std::string& name);
-	LLStatView *addStatView(const std::string& name, const std::string& label, const std::string& setting, const LLRect& rect);
-
+	LLStatView *addStatView(LLStatView::Params& p);
 protected:
 	typedef std::vector<LLStatBar *> sb_vector_t;
 	sb_vector_t mStatBars;

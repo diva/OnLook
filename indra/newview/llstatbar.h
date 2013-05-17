@@ -64,12 +64,12 @@ public:
 	F32 mTickSpacing;
 	F32 mLabelSpacing;
 	U32 mPrecision;
+	F32 mUpdatesPerSec;
 	BOOL mPerSec;				// Use the per sec stats.
 	BOOL mDisplayBar;			// Display the bar graph.
 	BOOL mDisplayHistory;
 	BOOL mDisplayMean;			// If true, display mean, if false, display current value
 
-	F32 mUpdatesPerSec;
 	LLStat *mStatp;
 private:
 	LLFrameTimer mUpdateTimer;

@@ -63,7 +63,14 @@ void LLFloaterStats::buildStats()
 	//
 	// Viewer Basic
 	//
-	stat_viewp = new LLStatView("basic stat view", "Basic",	"OpenDebugStatBasic", rect);
+	LLStatView::Params params;
+	params.name("basic stat view");
+	params.show_label(true);
+	params.label("Basic");
+	params.setting("OpenDebugStatBasic");
+	params.rect(rect);
+
+	stat_viewp = LLUICtrlFactory::create<LLStatView>(params);
 	addStatView(stat_viewp);
 
 	stat_barp = stat_viewp->addStat("FPS", &(LLViewerStats::getInstance()->mFPSStat),
@@ -113,11 +120,20 @@ void LLFloaterStats::buildStats()
 		stat_barp->mDisplayMean = FALSE;
 	}
 
-	stat_viewp = new LLStatView("advanced stat view", "Advanced", "OpenDebugStatAdvanced", rect);
+	params.name("advanced stat view");
+	params.show_label(true);
+	params.label("Advanced");
+	params.setting("OpenDebugStatAdvanced");
+	params.rect(rect);
+	stat_viewp = LLUICtrlFactory::create<LLStatView>(params);
 	addStatView(stat_viewp);
 
-	
-	LLStatView *render_statviewp = stat_viewp->addStatView("render stat view", "Render", "OpenDebugStatRender", rect);
+	params.name("render stat view");
+	params.show_label(true);
+	params.label("Render");
+	params.setting("OpenDebugStatRender");
+	params.rect(rect);
+	LLStatView *render_statviewp = stat_viewp->addStatView(params);
 
 	stat_barp = render_statviewp->addStat("KTris Drawn", &(LLViewerStats::getInstance()->mTrianglesDrawnStat), "DebugStatModeKTrisDrawnFr");
 	stat_barp->setUnitLabel("/fr");
@@ -162,7 +178,12 @@ void LLFloaterStats::buildStats()
 	stat_barp->mPerSec = FALSE;	
 
 	// Texture statistics
-	LLStatView *texture_statviewp = render_statviewp->addStatView("texture stat view", "Texture", "OpenDebugStatTexture", rect);
+	params.name("texture stat view");
+	params.show_label(true);
+	params.label("Texture");
+	params.setting("OpenDebugStatTexture");
+	params.rect(rect);
+	LLStatView *texture_statviewp = render_statviewp->addStatView(params);
 
 	stat_barp = texture_statviewp->addStat("Cache Hit Rate", &(LLTextureFetch::sCacheHitRate), std::string(), false, true);
 	stat_barp->setLabel("Cache Hit Rate");
@@ -233,10 +254,14 @@ void LLFloaterStats::buildStats()
 	stat_barp->mLabelSpacing = 200.f;
 	stat_barp->mPrecision = 1;
 	stat_barp->mPerSec = FALSE;
-
 	
 	// Network statistics
-	LLStatView *net_statviewp = stat_viewp->addStatView("network stat view", "Network", "OpenDebugStatNet", rect);
+	params.name("network stat view");
+	params.show_label(true);
+	params.label("Network");
+	params.setting("OpenDebugStatNet");
+	params.rect(rect);
+	LLStatView *net_statviewp = stat_viewp->addStatView(params);
 
 	stat_barp = net_statviewp->addStat("UDP Packets In", &(LLViewerStats::getInstance()->mPacketsInStat), "DebugStatModePacketsIn");
 	stat_barp->setUnitLabel("/sec");
@@ -307,7 +332,12 @@ void LLFloaterStats::buildStats()
 
 
 	// Simulator stats
-	LLStatView *sim_statviewp = new LLStatView("sim stat view", "Simulator", "OpenDebugStatSim", rect);
+	params.name("sim stat view");
+	params.show_label(true);
+	params.label("Simulator");
+	params.setting("OpenDebugStatSim");
+	params.rect(rect);
+	LLStatView *sim_statviewp = LLUICtrlFactory::create<LLStatView>(params);
 	addStatView(sim_statviewp);
 
 	stat_barp = sim_statviewp->addStat("Time Dilation", &(LLViewerStats::getInstance()->mSimTimeDilation), "DebugStatModeTimeDialation");
@@ -336,7 +366,12 @@ void LLFloaterStats::buildStats()
 	stat_barp->mPerSec = FALSE;
 	stat_barp->mDisplayMean = FALSE;
 
-	LLStatView *phys_details_viewp = sim_statviewp->addStatView("phys detail view", "Physics Details", "OpenDebugStatPhysicsDetails", rect);
+	params.name("phys detail view");
+	params.show_label(true);
+	params.label("Physics Details");
+	params.setting("OpenDebugStatPhysicsDetails");
+	params.rect(rect);
+	LLStatView *phys_details_viewp = sim_statviewp->addStatView(params);
 
 	stat_barp = phys_details_viewp->addStat("Pinned Objects", &(LLViewerStats::getInstance()->mPhysicsPinnedTasks), "DebugStatModePinnedObjects");
 	stat_barp->mPrecision = 0;
@@ -439,7 +474,12 @@ void LLFloaterStats::buildStats()
 	stat_barp->mPerSec = FALSE;
 	stat_barp->mDisplayMean = FALSE;
 
-	LLStatView *pathfinding_viewp = sim_statviewp->addStatView("pathfinding view", "Pathfinding Details", std::string(), rect);
+	params.name("pathfinding view");
+	params.show_label(true);
+	params.label("Pathfinding Details");
+	params.rect(rect);
+	LLStatView *pathfinding_viewp = sim_statviewp->addStatView(params);
+
 	stat_barp = pathfinding_viewp->addStat("AI Step Time", &(LLViewerStats::getInstance()->mSimSimAIStepMsec));
 	stat_barp->setUnitLabel("ms");
 	stat_barp->mPrecision = 3;
@@ -516,7 +556,12 @@ void LLFloaterStats::buildStats()
 	stat_barp->mPerSec = FALSE;
 	stat_barp->mDisplayMean = FALSE;
 
-	LLStatView *sim_time_viewp = sim_statviewp->addStatView("sim perf view", "Time (ms)", "OpenDebugStatSimTime", rect);
+	params.name("sim perf view");
+	params.show_label(true);
+	params.label("Time (ms)");
+	params.setting("OpenDebugStatSimTime");
+	params.rect(rect);
+	LLStatView *sim_time_viewp = sim_statviewp->addStatView(params);
 
 	stat_barp = sim_time_viewp->addStat("Total Frame Time", &(LLViewerStats::getInstance()->mSimFrameMsec), "DebugStatModeSimFrameMsec");
 	stat_barp->setUnitLabel("ms");
@@ -600,7 +645,12 @@ void LLFloaterStats::buildStats()
 
 	
 	// 2nd level time blocks under 'Details' second
-	LLStatView *detailed_time_viewp = sim_time_viewp->addStatView("sim perf view", "Time Details (ms)", "OpenDebugStatSimTimeDetails", rect);
+	params.name("sim perf view");
+	params.show_label(true);
+	params.label("Time (ms)");
+	params.setting("OpenDebugStatSimTimeDetails");
+	params.rect(rect);
+	LLStatView *detailed_time_viewp = sim_time_viewp->addStatView(params);
 	{
 		stat_barp = detailed_time_viewp->addStat("  Physics Step", &(LLViewerStats::getInstance()->mSimSimPhysicsStepMsec), "DebugStatModeSimSimPhysicsStepMsec");
 		stat_barp->setUnitLabel("ms");
@@ -670,8 +720,11 @@ LLFloaterStats::LLFloaterStats(const LLSD& val)
 	
 	LLRect stats_rect(0, getRect().getHeight() - LLFLOATER_HEADER_SIZE,
 					  getRect().getWidth() - LLFLOATER_CLOSE_BOX_SIZE, 0);
-	mStatsContainer = new LLContainerView("statistics_view", stats_rect);
-	mStatsContainer->showLabel(FALSE);
+
+	LLContainerView::Params rvp;
+	rvp.name("statistics_view");
+	rvp.rect(stats_rect);
+	mStatsContainer = LLUICtrlFactory::create<LLContainerView>(rvp);
 
 	LLRect scroll_rect(LL_SCROLL_BORDER, getRect().getHeight() - LLFLOATER_HEADER_SIZE - LL_SCROLL_BORDER,
 					   getRect().getWidth() - LL_SCROLL_BORDER, LL_SCROLL_BORDER);

@@ -2244,6 +2244,11 @@ void LLMenuGL::removeChild( LLView* ctrl)
 	return LLUICtrl::removeChild(ctrl);
 }
 
+BOOL LLMenuGL::postBuild()
+{
+	return LLUICtrl::postBuild();
+}
+
 // are we the childmost active menu and hence our jump keys should be enabled?
 // or are we a free-standing torn-off menu (which uses jump keys too)
 BOOL LLMenuGL::jumpKeysActive()

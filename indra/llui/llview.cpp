@@ -146,7 +146,7 @@ void LLView::init(const LLView::Params& p)
 	
 	// create rect first, as this will supply initial follows flags
 	setShape(p.rect);
-	mReshapeFlags = p.follows.flags;
+	parseFollowsFlags(p);
 }
 
 LLView::LLView()
@@ -2408,6 +2408,78 @@ LLControlVariable *LLView::findControl(const std::string& name)
 const S32 FLOATER_H_MARGIN = 15;
 const S32 MIN_WIDGET_HEIGHT = 10;
 const S32 VPAD = 4;
+
+void LLView::initFromParams(const LLView::Params& params)
+{
+	LLRect required_rect = getRequiredRect();
+
+	S32 width = llmax(getRect().getWidth(), required_rect.getWidth());
+	S32 height = llmax(getRect().getHeight(), required_rect.getHeight());
+
+	reshape(width, height);
+
+	// call virtual methods with most recent data
+	// use getters because these values might not come through parameter block
+	setEnabled(getEnabled());
+	setVisible(getVisible());
+
+	if (!params.name().empty())
+	{
+		setName(params.name());
+	}
+}
+
+void LLView::parseFollowsFlags(const LLView::Params& params)
+{
+	// preserve follows flags set by code if user did not override
+	/*if (!params.follows.isProvided()) 
+	{
+		return;
+	}*/
+
+	// interpret either string or bitfield version of follows
+	if (params.follows.string.isChosen())
+	{
+		setFollows(FOLLOWS_NONE);
+
+		std::string follows = params.follows.string;
+
+		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+		boost::char_separator<char> sep("|");
+		tokenizer tokens(follows, sep);
+		tokenizer::iterator token_iter = tokens.begin();
+
+		while(token_iter != tokens.end())
+		{
+			const std::string& token_str = *token_iter;
+			if (token_str == "left")
+			{
+				setFollowsLeft();
+			}
+			else if (token_str == "right")
+			{
+				setFollowsRight();
+			}
+			else if (token_str == "top")
+			{
+				setFollowsTop();
+			}
+			else if (token_str == "bottom")
+			{
+				setFollowsBottom();
+			}
+			else if (token_str == "all")
+			{
+				setFollowsAll();
+			}
+			++token_iter;
+		}
+	}
+	else if (params.follows.flags.isChosen())
+	{
+		setFollows(params.follows.flags);
+	}
+}
 
 // static
 U32 LLView::createRect(LLXMLNodePtr node, LLRect &rect, LLView* parent_view, const LLRect &required_rect)

@@ -41,15 +41,27 @@ class LLScrollableContainerView;
 
 class LLContainerView : public LLView
 {
+public:
+	struct Params : public LLInitParam::Block<Params, LLView::Params>
+	{
+		Optional<std::string> label;
+		Optional<bool> show_label;
+		Optional<bool> display_children;
+		Params()
+			: label("label"),
+			  show_label("show_label", FALSE),
+			  display_children("display_children", TRUE)
+		{
+			changeDefault(mouse_opaque, false);
+		}
+	};
 protected:
-	BOOL mDisplayChildren;
-	std::string mLabel;
+	LLContainerView(const Params& p);
+	friend class LLUICtrlFactory;
 public:
-	BOOL mCollapsible;
-public:
-	LLContainerView(const std::string& name, const LLRect& rect);
 	~LLContainerView();
 
+	/*virtual*/ BOOL postBuild();
 	virtual BOOL handleMouseDown(S32 x, S32 y, MASK mask);
 	virtual BOOL handleMouseUp(S32 x, S32 y, MASK mask);
 
@@ -67,5 +79,12 @@ public:
 	LLScrollableContainerView* mScrollContainer;
 	void arrange(S32 width, S32 height, BOOL called_from_parent = TRUE);
 	BOOL mShowLabel;
+
+protected:
+	BOOL mDisplayChildren;
+	std::string mLabel;
+public:
+	BOOL mCollapsible;
+
 };
 #endif // LL_CONTAINERVIEW_
