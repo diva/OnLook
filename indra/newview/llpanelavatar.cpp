@@ -360,6 +360,13 @@ void LLPanelAvatarSecondLife::enableControls(BOOL self)
 {
 	childSetEnabled("img", self);
 	childSetEnabled("about", self);
+	if (self) // We can't give inventory to self
+	{
+		if (LLDropTarget* drop_target = findChild<LLDropTarget>("drop_target_rect"))
+			removeChild(drop_target);
+		if (LLTextBox* text_box = findChild<LLTextBox>("Give item:"))
+			removeChild(text_box);
+	}
 	childSetVisible("allow_publish", self);
 	childSetEnabled("allow_publish", self);
 	childSetVisible("?", self);
