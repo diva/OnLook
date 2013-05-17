@@ -2430,7 +2430,9 @@ void LLFloaterIMPanel::processIMTyping(const LLIMInfo* im_info, BOOL typing)
 	if (typing)
 	{
 		// other user started typing
-		addTypingIndicator(im_info->mName);
+		std::string name;
+		if (!LLAvatarNameCache::getPNSName(im_info->mFromID, name)) name = im_info->mName;
+		addTypingIndicator(name);
 	}
 	else
 	{
