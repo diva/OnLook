@@ -126,6 +126,7 @@
 #pragma warning (disable:4702)
 #endif
 
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/lexical_cast.hpp>
 
 using namespace LLAvatarAppearanceDefines;
@@ -3142,6 +3143,23 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 			//	LLFontGL::getFontSansSerifSmall());
 		}
 
+		// On SecondLife we can take a shortcut through getPNSName, which will strip out Resident
+		if (gHippoGridManager->getConnectedGrid()->isSecondLife())
+		{
+			if (!LLAvatarNameCache::getPNSName(getID(), firstnameText))
+			{
+				// ...call this function back when the name arrives and force a rebuild
+				LLAvatarNameCache::get(getID(), boost::bind(&LLVOAvatar::clearNameTag, this));
+			}
+// [RLVa:KB] - Checked: 2010-10-31 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
+			else if (fRlvShowNames && !isSelf())
+			{
+				firstnameText = RlvStrings::getAnonym(firstnameText);
+			}
+// [/RLVa:KB]
+		}
+		else
+		{
 	//	static LLUICachedControl<bool> show_display_names("NameTagShowDisplayNames");
 	//	static LLUICachedControl<bool> show_usernames("NameTagShowUsernames");
 
@@ -3214,6 +3232,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 // [/RLVa:KB]
 
 		}
+		}
 		
 		static const LLCachedControl<bool> allow_nameplate_override ("CCSAllowNameplateOverride", true);
 		std::string client_name = SHClientTagMgr::instance().getClientName(this, is_friend);
@@ -3228,7 +3247,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 		else if(allow_nameplate_override && !mCCSAttachmentText.empty())
 			tag_format=mCCSAttachmentText;
 		else
-			tag_format=sRenderGroupTitles ? "%g\n%f %l %t" : "%f\n%l %t";
+			tag_format=sRenderGroupTitles ? "%g\n%f %l %t" : "%f %l %t";
 
 		// replace first name, last name and title
 		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
@@ -3246,21 +3265,18 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 				addNameTagLine(client_name, name_tag_color, LLFontGL::NORMAL, LLFontGL::getFontSansSerifSmall());
 			else
 			{
-				std::string::size_type index;
-				while ((index = line.find("%f")) != std::string::npos)
-					line.replace(index, 2, firstnameText);
-				while ((index = line.find("%l")) != std::string::npos)
+				boost::algorithm::replace_all(line, "%f", firstnameText);
+				if (lastnameText.empty()) //Entire displayname string crammed into firstname so eat the extra space.
 				{
-					//llinfos << "'" <<  line.substr(index) << "'" <<  llendl;
-					if(lastnameText.empty() && line[index+2] == ' ')	//Entire displayname string crammed into firstname
-						line.replace(index, 3, "");						//so eat the extra space.
-					else
-						line.replace(index, 2, lastnameText);
+					boost::algorithm::replace_all(line, " %l", "");
+					boost::algorithm::replace_all(line, "%l", "");
 				}
-				while ((index = line.find("%g")) != std::string::npos)
-					line.replace(index, 2, groupText);
-				while ((index = line.find("%t")) != std::string::npos)
-					line.replace(index, 2, client_name);
+				else
+				{
+					boost::algorithm::replace_all(line, "%l", lastnameText);
+				}
+				boost::algorithm::replace_all(line, "%g", groupText);
+				boost::algorithm::replace_all(line, "%t", client_name);
 				LLStringUtil::trim(line);
 				if(!line.empty())
 					addNameTagLine(line, name_tag_color, LLFontGL::NORMAL, LLFontGL::getFontSansSerif());
@@ -3288,7 +3304,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 		std::deque<LLChat>::iterator chat_iter = mChats.begin();
 		mNameText->clearString();
 
-		LLColor4 new_chat = gColors.getColor( "AvatarNameColor" );
+		LLColor4 new_chat = getNameTagColor(is_friend);
 		if (mVisibleChat)
 		{
 		LLColor4 normal_chat = lerp(new_chat, LLColor4(0.8f, 0.8f, 0.8f, 1.f), 0.7f);
