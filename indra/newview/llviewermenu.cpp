@@ -2338,18 +2338,19 @@ bool enable_object_edit()
 		enable = LLViewerParcelMgr::getInstance()->allowAgentBuild()
 			|| LLSelectMgr::getInstance()->getSelection()->isAttachment();
 	}
-	else if (LLSelectMgr::getInstance()->selectGetAllValidAndObjectsFound())
+	// Singu Note: The following check is wasteful, bypass it
+	// The following RLVa patch has been modified from its original version. It been formatted to run in the time allotted.
+	//else if (LLSelectMgr::getInstance()->selectGetAllValidAndObjectsFound())
+// [RLVa:KB] - Checked: 2010-11-29 (RLVa-1.3.0c) | Modified after RLVa-1.3.0c on 2013-05-18
+	else if (!rlv_handler_t::isEnabled() || (!gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) && (!gRlvHandler.hasBehaviour(RLV_BHVR_EDITOBJ)))
 	{
-//		enable = true;
-// [RLVa:KB] - Checked: 2010-11-29 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
-		bool fRlvCanEdit = (!gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) && (!gRlvHandler.hasBehaviour(RLV_BHVR_EDITOBJ));
-		if (!fRlvCanEdit)
-		{
-			LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
-			RlvSelectIsEditable f;
-			fRlvCanEdit = (hSel.notNull()) && ((hSel->getFirstRootNode(&f, TRUE)) == NULL);
-		}
-		enable = fRlvCanEdit;
+		enable = true;
+	}
+	else // Restrictions disallow edit, check for an exception for the selection
+	{
+		LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
+		RlvSelectIsEditable f;
+		enable = (hSel.notNull()) && ((hSel->getFirstRootNode(&f, TRUE)) == NULL);
 // [/RLVa:KB]
 	}
 
