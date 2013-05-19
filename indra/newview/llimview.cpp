@@ -482,13 +482,6 @@ void LLIMMgr::addMessage(
 		return;
 	}
 
-	//not sure why...but if it is from ourselves we set the target_id
-	//to be NULL, which seems to be breaking links on group chats, so let's not there.
-	if (other_participant_id == gAgent.getID() && !gAgent.isInGroup(session_id))
-	{
-		other_participant_id = LLUUID::null;
-	}
-
 	LLFloaterIMPanel* floater;
 	LLUUID new_session_id = session_id;
 	if (new_session_id.isNull())
