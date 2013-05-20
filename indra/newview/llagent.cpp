@@ -666,11 +666,13 @@ void LLAgent::setFlying(BOOL fly)
 			return;
 		}
 
+		/* Singu Note: We don't take off while sitting, don't bother with this check, let us toggle fly whenever.
 		// don't allow taking off while sitting
 		if (fly && gAgentAvatarp->isSitting())
 		{
 			return;
 		}
+		*/
 	}
 
 	if (fly)

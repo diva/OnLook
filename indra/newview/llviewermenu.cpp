@@ -3984,7 +3984,12 @@ class LLWorldEnableFly : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		BOOL sitting = FALSE;
-		if (gAgentAvatarp)
+		static LLCachedControl<bool> continue_flying_on_unsit("LiruContinueFlyingOnUnsit");
+		if (continue_flying_on_unsit)
+		{
+			sitting = false;
+		}
+		else if (gAgentAvatarp)
 		{
 			sitting = gAgentAvatarp->isSitting();
 		}
