@@ -77,8 +77,8 @@ void LLFloaterStats::buildStats()
 									"DebugStatModeFPS", TRUE, TRUE);
 	stat_barp->setUnitLabel(" fps");
 	stat_barp->mMinBar = 0.f;
-	stat_barp->mMaxBar = 45.f;
-	stat_barp->mTickSpacing = 7.5f;
+	stat_barp->mMaxBar = 60.f;
+	stat_barp->mTickSpacing = 3.f;
 	stat_barp->mLabelSpacing = 15.f;
 	stat_barp->mPrecision = 1;
 
@@ -138,7 +138,7 @@ void LLFloaterStats::buildStats()
 	stat_barp = render_statviewp->addStat("KTris Drawn", &(LLViewerStats::getInstance()->mTrianglesDrawnStat), "DebugStatModeKTrisDrawnFr");
 	stat_barp->setUnitLabel("/fr");
 	stat_barp->mMinBar = 0.f;
-	stat_barp->mMaxBar = 500.f;
+	stat_barp->mMaxBar = 3000.f;
 	stat_barp->mTickSpacing = 100.f;
 	stat_barp->mLabelSpacing = 500.f;
 	stat_barp->mPrecision = 1;
@@ -147,9 +147,9 @@ void LLFloaterStats::buildStats()
 	stat_barp = render_statviewp->addStat("KTris Drawn", &(LLViewerStats::getInstance()->mTrianglesDrawnStat), "DebugStatModeKTrisDrawnSec");
 	stat_barp->setUnitLabel("/sec");
 	stat_barp->mMinBar = 0.f;
-	stat_barp->mMaxBar = 3000.f;
-	stat_barp->mTickSpacing = 250.f;
-	stat_barp->mLabelSpacing = 1000.f;
+	stat_barp->mMaxBar = 100000.f;
+	stat_barp->mTickSpacing = 4000.f;
+	stat_barp->mLabelSpacing = 20000.f;
 	stat_barp->mPrecision = 1;
 
 	stat_barp = render_statviewp->addStat("Total Objs", &(LLViewerStats::getInstance()->mNumObjectsStat), "DebugStatModeTotalObjs");
