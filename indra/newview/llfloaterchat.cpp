@@ -72,7 +72,8 @@
 //
 // Global statics
 //
-LLColor4 get_text_color(const LLChat& chat);
+LLColor4 agent_chat_color(const LLUUID& id, const std::string&, bool local_chat = true);
+LLColor4 get_text_color(const LLChat& chat, bool from_im = false);
 
 //
 // Member Functions
@@ -165,13 +166,12 @@ void LLFloaterChat::handleVisibilityChange(BOOL new_visibility)
 // virtual
 void LLFloaterChat::onFocusReceived()
 {
-	LLView* chat_editor = getChildView("Chat Editor");
-	if (getVisible() && childIsVisible("Chat Editor"))
+	LLUICtrl* chat_editor = getChild<LLUICtrl>("Chat Editor");
+	if (getVisible() && chat_editor->getVisible())
 	{
 		gFocusMgr.setKeyboardFocus(chat_editor);
 
-        LLUICtrl * ctrl = static_cast<LLUICtrl*>(chat_editor);
-        ctrl->setFocus(TRUE);
+        chat_editor->setFocus(TRUE);
 	}
 
 	LLFloater::onFocusReceived();
@@ -424,7 +424,7 @@ void LLFloaterChat::addChat(const LLChat& chat,
 			  BOOL from_instant_message, 
 			  BOOL local_agent)
 {
-	LLColor4 text_color = get_text_color(chat);
+	LLColor4 text_color = get_text_color(chat, from_instant_message);
 
 	BOOL invisible_script_debug_chat = 
 			chat.mChatType == CHAT_TYPE_DEBUG_MSG
@@ -459,14 +459,6 @@ void LLFloaterChat::addChat(const LLChat& chat,
 		&& gConsole 
 		&& !local_agent)
 	{
-		if (chat.mSourceType == CHAT_SOURCE_SYSTEM)
-		{
-			text_color = gSavedSettings.getColor("SystemChatColor");
-		}
-		else if(from_instant_message)
-		{
-			text_color = gSavedSettings.getColor("IMChatColor");
-		}
 		// We display anything if it's not an IM. If it's an IM, check pref...
 		if	( !from_instant_message || gSavedSettings.getBOOL("IMInChatConsole") ) 
 		{
@@ -532,7 +524,7 @@ void LLFloaterChat::triggerAlerts(const std::string& text)
 	}
 }
 
-LLColor4 get_text_color(const LLChat& chat)
+LLColor4 get_text_color(const LLChat& chat, bool from_im)
 {
 	LLColor4 text_color;
 
@@ -552,48 +544,7 @@ LLColor4 get_text_color(const LLChat& chat)
 			text_color = gSavedSettings.getColor4("SystemChatColor");
 			break;
 		case CHAT_SOURCE_AGENT:
-			if (chat.mFromID.isNull())
-			{
-				text_color = gSavedSettings.getColor4("SystemChatColor");
-			}
-			else
-			{
-				if(gAgent.getID() == chat.mFromID)
-				{
-					text_color = gSavedSettings.getColor4("UserChatColor");
-				}
-				else
-				{
-					static LLCachedControl<bool> color_linden_chat("ColorLindenChat");
-					if (color_linden_chat && LLMuteList::getInstance()->isLinden(chat.mFromName))
-					{
-						text_color = gSavedSettings.getColor4("AscentLindenColor");
-					}
-					else if (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
-					{
-						static LLCachedControl<bool> color_friend_chat("ColorFriendChat");
-						static LLCachedControl<bool> color_eo_chat("ColorEstateOwnerChat");
-						if (color_friend_chat && LLAvatarTracker::instance().isBuddy(chat.mFromID))
-						{
-							text_color = gSavedSettings.getColor4("AscentFriendColor");
-						}
-						else if (color_eo_chat)
-						{
-							LLViewerRegion* parent_estate = gAgent.getRegion();
-							if (parent_estate && parent_estate->isAlive() && chat.mFromID == parent_estate->getOwner())
-								text_color = gSavedSettings.getColor4("AscentEstateOwnerColor");
-							else
-								text_color = gSavedSettings.getColor4("AgentChatColor");
-						}
-						else
-							text_color = gSavedSettings.getColor4("AgentChatColor");
-					}
-					else
-					{
-						text_color = gSavedSettings.getColor4("AgentChatColor");
-					}
-				}
-			}
+			text_color = agent_chat_color(chat.mFromID, chat.mFromName, !from_im);
 			break;
 		case CHAT_SOURCE_OBJECT:
 			if (chat.mChatType == CHAT_TYPE_DEBUG_MSG)
@@ -736,13 +687,12 @@ void LLFloaterChat::hide(LLFloater* instance, const LLSD& key)
 
 BOOL LLFloaterChat::focusFirstItem(BOOL prefer_text_fields, BOOL focus_flash )
 {
-	LLView* chat_editor = getChildView("Chat Editor");
-	if (getVisible() && childIsVisible("Chat Editor"))
+	LLUICtrl* chat_editor = getChild<LLUICtrl>("Chat Editor");
+	if (getVisible() && chat_editor->getVisible())
 	{
 		gFocusMgr.setKeyboardFocus(chat_editor);
 
-        LLUICtrl * ctrl = static_cast<LLUICtrl*>(chat_editor);
-        ctrl->setFocus(TRUE);
+        chat_editor->setFocus(TRUE);
 
 		return TRUE;
 	}
