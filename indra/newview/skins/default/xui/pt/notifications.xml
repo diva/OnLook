@@ -2297,27 +2297,9 @@ O dono da região resolverá as reportagens baseado nas regras locais desta regi
 A resolução desta reportagem se aplica apenas a esta região; o acesso de Residentes às outras áreas do [SECOND_LIFE_GRID] não será afetado pelas decisões desta reportagem. Apenas a [GRID_OWNER] pode restringir acesso a todo o [SECOND_LIFE_GRID].
 	</notification>
 
-	<notification name="HelpReportBug">
-		Use esta ferramenta para reportar *apenas* características técnicas que não atuem como descrito ou esperado.
-Por favor, forneça tantos detalhes quanto possível. Você pode responder ao e-mail de resposta automática para adicionar mais detalhes à sua reportagem.
-
-Todas as reportagens de bugs são investigadas e avaliadas. Nenhum e-mail de resposta será enviado.
-
-Se você estiver tendo uma dificuldade técnica, por favor contate o Suporte em:
-
-http://secondlife.com/community/support.php
-
-Nota: reportagens incompletas não serão investigadas
-	</notification>
-
 	<notification name="HelpReportAbuseSelectCategory">
 		Por favor, selecione uma categoria para a reportagem deste abuso.
 A seleção de uma categoria nos ajuda a arquivar e processar as reportagens de abuso.
-	</notification>
-
-	<notification name="HelpReportBugSelectCategory">
-		Por favor, selecione uma categoria para este bug.
-A seleção de uma categoria nos ajuda a arquivar e processar as reportagens de bugs.
 	</notification>
 
 	<notification name="HelpReportAbuseAbuserNameEmpty">
@@ -2335,20 +2317,10 @@ Entrando com um valor preciso, nos ajuda a arquivar e processar as reportagens d
 Fazer um resumo detalhado nos ajuda a arquivar e processar as reportagens de abuso.
 	</notification>
 
-	<notification name="HelpReportBugSummaryEmpty">
-		Por favor, digite um resumo do bug. Realizar um resumo detalhado nos ajuda a arquivar e processar as reportagens de abuso.
-	</notification>
-
 	<notification name="HelpReportAbuseDetailsEmpty">
 		Por favor, digite uma descrição detalhada do abuso que ocorreu.
 Seja tão específico quanto você puder, incluindo nomes e os detalhes do incidente que está denunciando.
 Fazer uma descrição precisa nos ajuda a arquivar e processar as reportagens de abuso.
-	</notification>
-
-	<notification name="HelpReportBugDetailsEmpty">
-		Por favor, digite uma descrição detalhada do bug.
-Seja tão específico quanto você puder, incluindo as etapas para reproduzir o bug, se possível.
-Fazer uma descrição precisa nos ajuda a arquivar e processar os relatórios de bugs.
 	</notification>
 
 	<notification name="HelpReportAbuseContainsCopyright">

@@ -4850,34 +4850,10 @@ The resolution of this report applies only to this Region; Residents access to o
 
   <notification
    icon="alertmodal.tga"
-   name="HelpReportBug"
-   type="alertmodal">
-Use this tool to *only* report technical features that do not perform as described or expected, please provide as much detail as possible.
-You may reply to the auto-response email to add more details to your report.
-
-All bug reports are investigated and assessed. No email response will be sent.
-
-If you are having a technical difficulty, please contact Support at:
-
-http://secondlife.com/community/support.php
-
-Note: Incomplete reports will not be investigated
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
    name="HelpReportAbuseSelectCategory"
    type="alertmodal">
 Please select a category for this abuse report.
 Selecting a category helps us file and process abuse reports.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="HelpReportBugSelectCategory"
-   type="alertmodal">
-Please select a category for this bug.
-Selecting a category helps us file and process bug reports.
   </notification>
 
   <notification
@@ -4906,28 +4882,11 @@ Entering an accurate summary helps us file and process abuse reports.
 
   <notification
    icon="alertmodal.tga"
-   name="HelpReportBugSummaryEmpty"
-   type="alertmodal">
-Please enter a summary of the bug.
-Entering an accurate summary helps us file and process bug reports.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
    name="HelpReportAbuseDetailsEmpty"
    type="alertmodal">
 Please enter a detailed description of the abuse that took place.
 Be as specific as you can, including names and the details of the incident you are reporting.
 Entering an accurate description helps us file and process abuse reports.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="HelpReportBugDetailsEmpty"
-   type="alertmodal">
-Please enter a detailed description of the bug.
-Be as specific as you can, including steps to reproduce the bug if possible.
-Entering an accurate description helps us file and process bug reports.
   </notification>
 
   <notification

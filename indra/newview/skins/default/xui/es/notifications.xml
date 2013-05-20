@@ -2736,27 +2736,9 @@ El propietario de la región resolverá las denuncias basándose en las reglas l
 La resolución de esta denuncia se aplica exclusivamente a esta región; el acceso de los residentes a otras áreas de [SECOND_LIFE_GRID] no se verá afectado por el resultado de esta denuncia. Únicamente [GRID_OWNER] puede impedir el acceso a la totalidad de [SECOND_LIFE_GRID].
 	</notification>
 	
-	<notification name="HelpReportBug">
-		Usa esta herramienta *sólo* para informar de cuestiones técnicas que no se comportan como se describe o era esperable. Por favor, aporta todos los detalles que puedas.
-Deberás responder al correo electrónico de auto respuesta para añadir más detalles a tu informe.
-
-Todos los informes de fallos serán investigados y evaluados. No se contestará por correo electrónico.
-
-Si tienes algún problema técnico, por favor, contacta con Soporte en:
-
-http://secondlife.com/community/support.php
-
-Nota: no se investigarán los informes incompletos.
-	</notification>
-	
 	<notification name="HelpReportAbuseSelectCategory">
 		Por favor, elige una categoría para esta denuncia de infracción.
 Seleccionar una categoría nos ayuda a clasificar y procesar las denuncias de infracciones.
-	</notification>
-	
-	<notification name="HelpReportBugSelectCategory">
-		Por favor, elige una categoría para este fallo.
-Seleccionar una categoría nos ayuda a clasificar y procesar los informes de fallos.
 	</notification>
 	
 	<notification name="HelpReportAbuseAbuserNameEmpty">
@@ -2774,21 +2756,10 @@ Aportar el dato preciso nos ayuda a clasificar y procesar las denuncias de infra
 Aportar un resumen preciso nos ayuda a clasificar y procesar las denuncias de infracciones.
 	</notification>
 	
-	<notification name="HelpReportBugSummaryEmpty">
-		Por favor, escribe un resumen del fallo.
-Aportar un resumen preciso nos ayuda a clasificar y procesar los informes de fallos.
-	</notification>
-	
 	<notification name="HelpReportAbuseDetailsEmpty">
 		Por favor, escribe una descripción minuciosa de la infracción que ha habido.
 Se tan específico como puedas, incluyendo los nombres y los detalles implicados en el incidente que denuncias.
 Aportar una descripción precisa nos ayuda a clasificar y procesar las denuncias de infracciones.
-	</notification>
-	
-	<notification name="HelpReportBugDetailsEmpty">
-		Por favor, escribe una descripción minuciosa del fallo.
-Se tan específico como puedas, incluyendo -si es posible- los pasos que permitan reproducir el fallo.
-Aportar una descripción precisa nos ayuda a clasificar y procesar los informes de fallos.
 	</notification>
 	
 	<notification name="HelpReportNope">

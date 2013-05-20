@@ -6501,12 +6501,6 @@ class LLShowFloater : public view_listener_t
 		{
 			LLFloaterLagMeter::showInstance();
 		}
-		else if (floater_name == "bug reporter")
-		{
-			// Prevent menu from appearing in screen shot.
-			gMenuHolder->hideMenus();
-			LLFloaterReporter::showFromMenu(BUG_REPORT);
-		}
 		else if (floater_name == "buy currency")
 		{
 			LLFloaterBuyCurrency::buyCurrency();

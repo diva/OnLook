@@ -2390,27 +2390,9 @@ Le propriétaire de la région traitera les rapports en fonction des règles de 
 La résolution de ce rapport ne s'applique qu'à cette région ; L'accès aux autres endroits de Second Life ne sera pas affecté par les résultats de cette enquête. Seul Linden Lab peut interdire l'accès à l'ensemble de Second Life.
 	</notification>
 
-	<notification name="HelpReportBug">
-N'utilisez cet outil que pour signaler des problèmes techniques et soyez aussi précis que possible.
-Vous pouvez répondre à l'e-mail automatique pour ajouter des détails à votre rapport.
-
-Tous les bugs signalés sont reproduits et évalués. Aucune réponse ne sera envoyée par e-mail.
-
-Si vous avez un problème technique, veuillez contacter le service clientèle à :
-
-http://secondlife.com/community/support.php
-
-Remarque : les rapports incomplets ne feront pas l'objet d'une enquête.
-	</notification>
-
 	<notification name="HelpReportAbuseSelectCategory">
 Veuillez choisir une catégorie pour ce rapport d'infraction.
 Le choix d'une catégorie nous permet de traiter les rapports d'infraction plus rapidement.
-	</notification>
-
-	<notification name="HelpReportBugSelectCategory">
-Veuillez choisir une catégorie pour ce bug.
-Le choix d'une catégorie nous permet de traiter les bugs plus rapidement.
 	</notification>
 
 	<notification name="HelpReportAbuseAbuserNameEmpty">
@@ -2428,21 +2410,10 @@ Veuillez saisir un récapitulatif de l'infraction.
 Les récapitulatifs précis nous permettent de traiter les rapports plus rapidement.
 	</notification>
 
-	<notification name="HelpReportBugSummaryEmpty">
-Veuillez saisir un récapitulatif du bug.
-Les récapitulatifs précis nous permettent de résoudre les bugs plus rapidement.
-	</notification>
-
 	<notification name="HelpReportAbuseDetailsEmpty">
 Veuillez saisir une description détaillée de l'infraction.
 Soyez aussi précis que possible et essayez de fournir des noms ainsi que des détails sur l'incident que vous signalez.
 Les descriptions précises nous permettent de traiter les rapports plus rapidement.
-	</notification>
-
-	<notification name="HelpReportBugDetailsEmpty">
-Veuillez saisir une description détaillée du bug.
-Soyez aussi spécifique que possible et essayez d'indiquer les étapes à suivre pour reproduire le bug.
-Les descriptions précises nous permettent de résoudre les bugs plus rapidement.
 	</notification>
 
 	<notification name="HelpReportAbuseContainsCopyright">
