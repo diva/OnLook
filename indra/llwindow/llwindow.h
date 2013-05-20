@@ -41,8 +41,8 @@ class LLPreeditor;
 class LLWindowCallbacks;
 
 
-static const S32 MIN_WINDOW_WIDTH = 864;
-static const S32 MIN_WINDOW_HEIGHT = 472;
+const S32 MIN_WINDOW_WIDTH = 256;
+const S32 MIN_WINDOW_HEIGHT = 256;
 
 // Refer to llwindow_test in test/common/llwindow for usage example
 
