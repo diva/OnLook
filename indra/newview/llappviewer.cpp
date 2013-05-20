@@ -689,6 +689,7 @@ bool LLAppViewer::init()
 
 	// Widget construction depends on LLUI being initialized
 	LLUI::initClass(&gSavedSettings,
+		&gSavedPerAccountSettings,
 		&gSavedSettings,
 		&gColors,
 		LLUIImageList::getInstance(),

@@ -373,8 +373,6 @@ LLTextEditor::~LLTextEditor()
 	gFocusMgr.releaseFocusIfNeeded( this ); // calls onCommit()
 
 	// Scrollbar is deleted by LLView
-	mHoverSegment = NULL;
-	std::for_each(mSegments.begin(), mSegments.end(), DeletePointer());
 
 	std::for_each(mUndoStack.begin(), mUndoStack.end(), DeletePointer());
 	//LLView::deleteViewByHandle(mPopupMenuHandle);
@@ -949,7 +947,7 @@ const LLTextSegment*	LLTextEditor::getPreviousSegment() const
 	return idx >= 0 ? mSegments[idx] : NULL;
 }
 
-void LLTextEditor::getSelectedSegments(std::vector<const LLTextSegment*>& segments) const
+void LLTextEditor::getSelectedSegments(std::vector<const LLTextSegmentPtr>& segments) const
 {
 	S32 left = hasSelection() ? llmin(mSelectionStart, mSelectionEnd) : mCursorPos;
 	S32 right = hasSelection() ? llmax(mSelectionStart, mSelectionEnd) : mCursorPos;
@@ -1527,7 +1525,7 @@ BOOL LLTextEditor::handleHover(S32 x, S32 y, MASK mask)
 		// Check to see if we're over an HTML-style link
 		if( !mSegments.empty() )
 		{
-			const LLTextSegment* cur_segment = getSegmentAtLocalPos( x, y );
+			LLTextSegment* cur_segment = getSegmentAtLocalPos( x, y );
 			if( cur_segment )
 			{
 				if(cur_segment->getStyle()->isLink())
@@ -3647,7 +3645,6 @@ void LLTextEditor::onTabInto()
 void LLTextEditor::clear()
 {
 	setText(LLStringUtil::null);
-	std::for_each(mSegments.begin(), mSegments.end(), DeletePointer());
 	mSegments.clear();
 }
 
@@ -4165,7 +4162,7 @@ void LLTextEditor::appendText(const std::string &new_text, bool allow_undo, bool
 	{
 		S32 segment_start = old_length;
 		S32 segment_end = getLength();
-		LLTextSegment* segment = new LLTextSegment(stylep, segment_start, segment_end );
+		LLTextSegmentPtr segment = new LLTextSegment(stylep, segment_start, segment_end );
 		mSegments.push_back(segment);
 	}
 	
@@ -4383,13 +4380,12 @@ void LLTextEditor::updateSegments()
 	// Make sure we have at least one segment
 	if (mSegments.size() == 1 && mSegments[0]->getIsDefault())
 	{
-		delete mSegments[0];
 		mSegments.clear(); // create default segment
 	}
 	if (mSegments.empty())
 	{
 		LLColor4& text_color = ( mReadOnly ? mReadOnlyFgColor : mFgColor );
-		LLTextSegment* default_segment = new LLTextSegment( text_color, 0, mWText.length() );
+		LLTextSegmentPtr default_segment = new LLTextSegment( text_color, 0, mWText.length() );
 		default_segment->setIsDefault(TRUE);
 		mSegments.push_back(default_segment);
 	}
@@ -4420,7 +4416,6 @@ void LLTextEditor::pruneSegments()
 	{
 		// erase invalid segments
 		++iter;
-		std::for_each(iter, mSegments.end(), DeletePointer());
 		mSegments.erase(iter, mSegments.end());
 	}
 	else
@@ -4432,7 +4427,6 @@ void LLTextEditor::pruneSegments()
 void LLTextEditor::findEmbeddedItemSegments()
 {
 	mHoverSegment = NULL;
-	std::for_each(mSegments.begin(), mSegments.end(), DeletePointer());
 	mSegments.clear();
 
 	BOOL found_embedded_items = FALSE;
@@ -4513,7 +4507,7 @@ BOOL LLTextEditor::handleMouseUpOverSegment(S32 x, S32 y, MASK mask)
 
 
 // Finds the text segment (if any) at the give local screen position
-const LLTextSegment* LLTextEditor::getSegmentAtLocalPos( S32 x, S32 y ) const
+LLTextSegment* LLTextEditor::getSegmentAtLocalPos( S32 x, S32 y ) const
 {
 	// Find the cursor position at the requested local screen position
 	S32 offset = getCursorPosFromLocalCoord( x, y, FALSE );

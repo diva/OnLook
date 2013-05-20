@@ -869,7 +869,7 @@ BOOL LLViewerTextEditor::handleHover(S32 x, S32 y, MASK mask)
 		// Check to see if we're over an HTML-style link
 		if( !mSegments.empty() )
 		{
-			const LLTextSegment* cur_segment = getSegmentAtLocalPos( x, y );
+			LLTextSegment* cur_segment = getSegmentAtLocalPos( x, y );
 			if( cur_segment )
 			{
 				if(cur_segment->getStyle()->isLink())

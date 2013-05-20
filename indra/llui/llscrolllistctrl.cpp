@@ -3888,11 +3888,14 @@ LLScrollColumnHeader::LLScrollColumnHeader(const std::string& label, const LLRec
 
 	// resize handles on left and right
 	const S32 RESIZE_BAR_THICKNESS = 3;
-	mResizeBar = new LLResizeBar( 
-		std::string("resizebar"),
-		this,
-		LLRect( getRect().getWidth() - RESIZE_BAR_THICKNESS, getRect().getHeight(), getRect().getWidth(), 0), 
-		MIN_COLUMN_WIDTH, S32_MAX, LLResizeBar::RIGHT );
+	LLResizeBar::Params p;
+	p.name = "resizebar";
+	p.resizing_view = this;
+	p.rect = LLRect( getRect().getWidth() - RESIZE_BAR_THICKNESS, getRect().getHeight(), getRect().getWidth(), 0);
+	p.min_size = MIN_COLUMN_WIDTH;
+	p.max_size = S32_MAX;
+	p.side = LLResizeBar::RIGHT;
+	mResizeBar = LLUICtrlFactory::create<LLResizeBar>(p);
 	addChild(mResizeBar);
 
 	mResizeBar->setEnabled(FALSE);

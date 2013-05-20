@@ -293,7 +293,7 @@ public:
 	
 	const LLTextSegment*	getCurrentSegment() const { return getSegmentAtOffset(mCursorPos); }
 	const LLTextSegment*	getPreviousSegment() const;
-	void getSelectedSegments(std::vector<const LLTextSegment*>& segments) const;
+	void getSelectedSegments(std::vector<const LLTextSegmentPtr>& segments) const;
 
 	static bool		isPartOfWord(llwchar c) { return ( (c == '_')  || (c == '\'') || LLStringOps::isAlnum((char)c)); }
 
@@ -327,7 +327,7 @@ protected:
 	void			unindentLineBeforeCloseBrace();
 
 	S32				getSegmentIdxAtOffset(S32 offset) const;
-	const LLTextSegment*	getSegmentAtLocalPos(S32 x, S32 y) const;
+	LLTextSegment*	getSegmentAtLocalPos(S32 x, S32 y) const;
 	const LLTextSegment*	getSegmentAtOffset(S32 offset) const;
 
 	void			reportBadKeystroke() { make_ui_sound("UISndBadKeystroke"); }
@@ -462,9 +462,9 @@ protected:
 	BOOL			mParseHighlights;
 	std::string		mHTML;
 
-	typedef std::vector<LLTextSegment *> segment_list_t;
+	typedef std::vector<LLTextSegmentPtr> segment_list_t;
 	segment_list_t mSegments;
-	const LLTextSegment*	mHoverSegment;
+	LLTextSegmentPtr	mHoverSegment;
 	
 	// Scrollbar data
 	class LLScrollbar*	mScrollbar;
@@ -613,7 +613,7 @@ private:
 
 
 
-class LLTextSegment
+class LLTextSegment : public LLRefCount
 {
 public:
 	// for creating a compare value

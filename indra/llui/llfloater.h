@@ -269,6 +269,8 @@ private:
 	void			updateButtons();
 	void			buildButtons();
 	BOOL			offerClickToButton(S32 x, S32 y, MASK mask, EFloaterButtons index);
+	void			addResizeCtrls();
+	void			layoutResizeCtrls();
 
 	LLRect			mExpandedRect;
 	LLDragHandle*	mDragHandle;

@@ -160,7 +160,6 @@ void LLFloaterStats::buildStats()
 	stat_barp->mPerSec = FALSE;
 
 	stat_barp = render_statviewp->addStat("New Objs", &(LLViewerStats::getInstance()->mNumNewObjectsStat), "DebugStatModeNewObjs");
-	stat_barp->setLabel("New Objs");
 	stat_barp->setUnitLabel("/sec");
 	stat_barp->mMinBar = 0.f;
 	stat_barp->mMaxBar = 1000.f;
@@ -169,7 +168,6 @@ void LLFloaterStats::buildStats()
 	stat_barp->mPerSec = TRUE;
 
 	stat_barp = render_statviewp->addStat("Object Cache Hit Rate", &(LLViewerStats::getInstance()->mNumNewObjectsStat), std::string(), false, true);
-	stat_barp->setLabel("Object Cache Hit Rate");
 	stat_barp->setUnitLabel("%");
 	stat_barp->mMinBar = 0.f;
 	stat_barp->mMaxBar = 100.f;
@@ -186,7 +184,6 @@ void LLFloaterStats::buildStats()
 	LLStatView *texture_statviewp = render_statviewp->addStatView(params);
 
 	stat_barp = texture_statviewp->addStat("Cache Hit Rate", &(LLTextureFetch::sCacheHitRate), std::string(), false, true);
-	stat_barp->setLabel("Cache Hit Rate");
 	stat_barp->setUnitLabel("%");
 	stat_barp->mMinBar = 0.f;
 	stat_barp->mMaxBar = 100.f;

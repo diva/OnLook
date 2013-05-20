@@ -1053,7 +1053,13 @@ struct LLLayoutStack::LLEmbeddedPanel
 		{
 			min_dim = mMinWidth;
 		}
-		mResizeBar = new LLResizeBar(std::string("resizer"), mPanel, LLRect(), min_dim, S32_MAX, side);
+		LLResizeBar::Params p;
+		p.name = "resizer";
+		p.resizing_view = mPanel;
+		p.min_size = min_dim;
+		p.max_size = S32_MAX;
+		p.side = side;
+		mResizeBar = LLUICtrlFactory::create<LLResizeBar>(p);
 		mResizeBar->setEnableSnapping(FALSE);
 		// panels initialized as hidden should not start out partially visible
 		if (!mPanel->getVisible())

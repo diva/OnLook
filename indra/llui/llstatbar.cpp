@@ -48,19 +48,19 @@
 LLStatBar::LLStatBar(const std::string& name, const LLRect& rect, const std::string& setting,
 					 BOOL default_bar, BOOL default_history)
 	:	LLView(name, rect, TRUE),
-		mSetting(setting)
+		mSetting(setting),
+		mLabel(name),
+		mMinBar(0.f),
+		mMaxBar(50.f),
+		mStatp(NULL),
+		mTickSpacing(10.f),
+		mLabelSpacing(10.f),
+		mPrecision(0),
+		mUpdatesPerSec(5),
+		mPerSec(true),
+		mDisplayMean(true)
 {
-	mMinBar = 0.f;
-	mMaxBar = 50.f;
-	mStatp = NULL;
-	mTickSpacing = 10.f;
-	mLabelSpacing = 10.f;
-	mPrecision = 0;
-	mUpdatesPerSec = 5;
-	mLabel = name;
-	mPerSec = TRUE;
 	mValue = 0.f;
-	mDisplayMean = TRUE;
 
 	S32 mode = -1;
 	if (mSetting.length() > 0)
@@ -296,16 +296,6 @@ void LLStatBar::draw()
 	LLView::draw();
 }
 
-const std::string& LLStatBar::getLabel() const
-{
-	return mLabel;
-}
-
-void LLStatBar::setLabel(const std::string& label)
-{
-	mLabel = label;
-}
-
 void LLStatBar::setUnitLabel(const std::string& unit_label)
 {
 	mUnitLabel = unit_label;
@@ -319,7 +309,7 @@ LLRect LLStatBar::getRequiredRect()
 	{
 		if (mDisplayHistory)
 		{
-			rect.mTop = 67;
+			rect.mTop = 35 + mStatp->getNumBins();
 		}
 		else
 		{

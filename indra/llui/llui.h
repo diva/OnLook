@@ -62,6 +62,7 @@ public:
 	// Methods
 	//
 	static void initClass(LLControlGroup* config, 
+						  LLControlGroup* account,
 						  LLControlGroup* ignores,
 						  LLControlGroup* colors, 
 						  LLImageProviderInterface* image_provider,
@@ -99,12 +100,15 @@ public:
 	static void glPointToScreen(S32 gl_x, S32 gl_y, S32 *screen_x, S32 *screen_y);
 	static void screenRectToGL(const LLRect& screen, LLRect *gl);
 	static void glRectToScreen(const LLRect& gl, LLRect *screen);
+	// Returns the control group containing the control name, or the default group
+	static LLControlGroup& getControlControlGroup (const std::string& controlname);
 	static void setHtmlHelp(LLHtmlHelp* html_help);
 
 	//
 	// Data
 	//
 	static LLControlGroup* sConfigGroup;
+	static LLControlGroup* sAccountGroup;
 	static LLControlGroup* sIgnoresGroup;
 	static LLControlGroup* sColorsGroup;
 	static LLUIAudioCallback sAudioCallback;
@@ -390,6 +394,24 @@ private:
 
 template <typename T> LLRegisterWith<LLInitClassList> LLInitClass<T>::sRegister(&T::initClass);
 template <typename T> LLRegisterWith<LLDestroyClassList> LLDestroyClass<T>::sRegister(&T::destroyClass);
+
+
+template <class T>
+class LLUICachedControl : public LLCachedControl<T>
+{
+public:
+	// This constructor will declare a control if it doesn't exist in the contol group
+	LLUICachedControl(const std::string& name,
+					  const T& default_value,
+					  const std::string& comment = "Declared In Code")
+	:	LLCachedControl<T>(LLUI::getControlControlGroup(name), name, default_value, comment)
+	{}
+
+	// This constructor will signal an error if the control doesn't exist in the control group
+	LLUICachedControl(const std::string& name)
+	:	LLCachedControl<T>(LLUI::getControlControlGroup(name), name)
+	{}
+};
 
 
 template <typename DERIVED>

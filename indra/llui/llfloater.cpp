@@ -314,67 +314,7 @@ void LLFloater::initFloater(const std::string& title,
 
 	if( mResizable )
 	{
-		// Resize bars (sides)
-		const S32 RESIZE_BAR_THICKNESS = 3;
-		mResizeBar[LLResizeBar::LEFT] = new LLResizeBar( 
-			std::string("resizebar_left"),
-			this,
-			LLRect( 0, getRect().getHeight(), RESIZE_BAR_THICKNESS, 0), 
-			min_width, S32_MAX, LLResizeBar::LEFT );
-		addChild( mResizeBar[0] );
-
-		mResizeBar[LLResizeBar::TOP] = new LLResizeBar( 
-			std::string("resizebar_top"),
-			this,
-			LLRect( 0, getRect().getHeight(), getRect().getWidth(), getRect().getHeight() - RESIZE_BAR_THICKNESS), 
-			min_height, S32_MAX, LLResizeBar::TOP );
-		addChild( mResizeBar[1] );
-
-		mResizeBar[LLResizeBar::RIGHT] = new LLResizeBar( 
-			std::string("resizebar_right"),
-			this,
-			LLRect( getRect().getWidth() - RESIZE_BAR_THICKNESS, getRect().getHeight(), getRect().getWidth(), 0), 
-			min_width, S32_MAX, LLResizeBar::RIGHT );
-		addChild( mResizeBar[2] );
-
-		mResizeBar[LLResizeBar::BOTTOM] = new LLResizeBar( 
-			std::string("resizebar_bottom"),
-			this,
-			LLRect( 0, RESIZE_BAR_THICKNESS, getRect().getWidth(), 0), 
-			min_height, S32_MAX, LLResizeBar::BOTTOM );
-		addChild( mResizeBar[3] );
-
-
-		// Resize handles (corners)
-		mResizeHandle[0] = new LLResizeHandle( 
-			std::string("Resize Handle"),
-			LLRect( getRect().getWidth() - RESIZE_HANDLE_WIDTH, RESIZE_HANDLE_HEIGHT, getRect().getWidth(), 0),
-			min_width,
-			min_height,
-			LLResizeHandle::RIGHT_BOTTOM);
-		addChild(mResizeHandle[0]);
-
-		mResizeHandle[1] = new LLResizeHandle(
-			std::string("resize"), 
-			LLRect( getRect().getWidth() - RESIZE_HANDLE_WIDTH, getRect().getHeight(), getRect().getWidth(), getRect().getHeight() - RESIZE_HANDLE_HEIGHT),
-			min_width,
-			min_height,
-			LLResizeHandle::RIGHT_TOP );
-		addChild(mResizeHandle[1]);
-		
-		mResizeHandle[2] = new LLResizeHandle( std::string("resize"), 
-											   LLRect( 0, RESIZE_HANDLE_HEIGHT, RESIZE_HANDLE_WIDTH, 0 ),
-											   min_width,
-											   min_height,
-											   LLResizeHandle::LEFT_BOTTOM );
-		addChild(mResizeHandle[2]);
-
-		mResizeHandle[3] = new LLResizeHandle( std::string("resize"), 
-			LLRect( 0, getRect().getHeight(), RESIZE_HANDLE_WIDTH, getRect().getHeight() - RESIZE_HANDLE_HEIGHT ),
-			min_width,
-			min_height,
-			LLResizeHandle::LEFT_TOP );
-		addChild(mResizeHandle[3]);
+		addResizeCtrls();
 	}
 
 	// Close button.
@@ -412,6 +352,94 @@ void LLFloater::initFloater(const std::string& title,
 	{
 		gFloaterView->addChild(this);
 	}
+}
+
+void LLFloater::addResizeCtrls()
+{	
+	// Resize bars (sides)
+	LLResizeBar::Params p;
+	p.name("resizebar_left");
+	p.resizing_view(this);
+	p.min_size(mMinWidth);
+	p.side(LLResizeBar::LEFT);
+	mResizeBar[LLResizeBar::LEFT] = LLUICtrlFactory::create<LLResizeBar>(p);
+	addChild( mResizeBar[LLResizeBar::LEFT] );
+
+	p.name("resizebar_top");
+	p.min_size(mMinHeight);
+	p.side(LLResizeBar::TOP);
+
+	mResizeBar[LLResizeBar::TOP] = LLUICtrlFactory::create<LLResizeBar>(p);
+	addChild( mResizeBar[LLResizeBar::TOP] );
+
+	p.name("resizebar_right");
+	p.min_size(mMinWidth);
+	p.side(LLResizeBar::RIGHT);	
+	mResizeBar[LLResizeBar::RIGHT] = LLUICtrlFactory::create<LLResizeBar>(p);
+	addChild( mResizeBar[LLResizeBar::RIGHT] );
+
+	p.name("resizebar_bottom");
+	p.min_size(mMinHeight);
+	p.side(LLResizeBar::BOTTOM);
+	mResizeBar[LLResizeBar::BOTTOM] = LLUICtrlFactory::create<LLResizeBar>(p);
+	addChild( mResizeBar[LLResizeBar::BOTTOM] );
+
+	// Resize handles (corners)
+	LLResizeHandle::Params handle_p;
+	// handles must not be mouse-opaque, otherwise they block hover events
+	// to other buttons like the close box. JC
+	handle_p.mouse_opaque(false);
+	handle_p.min_width(mMinWidth);
+	handle_p.min_height(mMinHeight);
+	handle_p.corner(LLResizeHandle::RIGHT_BOTTOM);
+	mResizeHandle[0] = LLUICtrlFactory::create<LLResizeHandle>(handle_p);
+	addChild(mResizeHandle[0]);
+
+	handle_p.corner(LLResizeHandle::RIGHT_TOP);
+	mResizeHandle[1] = LLUICtrlFactory::create<LLResizeHandle>(handle_p);
+	addChild(mResizeHandle[1]);
+	
+	handle_p.corner(LLResizeHandle::LEFT_BOTTOM);
+	mResizeHandle[2] = LLUICtrlFactory::create<LLResizeHandle>(handle_p);
+	addChild(mResizeHandle[2]);
+
+	handle_p.corner(LLResizeHandle::LEFT_TOP);
+	mResizeHandle[3] = LLUICtrlFactory::create<LLResizeHandle>(handle_p);
+	addChild(mResizeHandle[3]);
+
+	layoutResizeCtrls();
+}
+
+void LLFloater::layoutResizeCtrls()
+{
+	LLRect rect;
+
+	// Resize bars (sides)
+	const S32 RESIZE_BAR_THICKNESS = 3;
+	rect = LLRect( 0, getRect().getHeight(), RESIZE_BAR_THICKNESS, 0);
+	mResizeBar[LLResizeBar::LEFT]->setRect(rect);
+
+	rect = LLRect( 0, getRect().getHeight(), getRect().getWidth(), getRect().getHeight() - RESIZE_BAR_THICKNESS);
+	mResizeBar[LLResizeBar::TOP]->setRect(rect);
+
+	rect = LLRect(getRect().getWidth() - RESIZE_BAR_THICKNESS, getRect().getHeight(), getRect().getWidth(), 0);
+	mResizeBar[LLResizeBar::RIGHT]->setRect(rect);
+
+	rect = LLRect(0, RESIZE_BAR_THICKNESS, getRect().getWidth(), 0);
+	mResizeBar[LLResizeBar::BOTTOM]->setRect(rect);
+
+	// Resize handles (corners)
+	rect = LLRect( getRect().getWidth() - RESIZE_HANDLE_WIDTH, RESIZE_HANDLE_HEIGHT, getRect().getWidth(), 0);
+	mResizeHandle[0]->setRect(rect);
+
+	rect = LLRect( getRect().getWidth() - RESIZE_HANDLE_WIDTH, getRect().getHeight(), getRect().getWidth(), getRect().getHeight() - RESIZE_HANDLE_HEIGHT);
+	mResizeHandle[1]->setRect(rect);
+	
+	rect = LLRect( 0, RESIZE_HANDLE_HEIGHT, RESIZE_HANDLE_WIDTH, 0 );
+	mResizeHandle[2]->setRect(rect);
+
+	rect = LLRect( 0, getRect().getHeight(), RESIZE_HANDLE_WIDTH, getRect().getHeight() - RESIZE_HANDLE_HEIGHT );
+	mResizeHandle[3]->setRect(rect);
 }
 
 void LLFloater::enableResizeCtrls(bool enable, bool width, bool height)
@@ -1547,66 +1575,7 @@ void	LLFloater::setCanResize(BOOL can_resize)
 	}
 	else if (!mResizable && can_resize)
 	{
-		// Resize bars (sides)
-		const S32 RESIZE_BAR_THICKNESS = 3;
-		mResizeBar[0] = new LLResizeBar( 
-			std::string("resizebar_left"),
-			this,
-			LLRect( 0, getRect().getHeight(), RESIZE_BAR_THICKNESS, 0), 
-			mMinWidth, S32_MAX, LLResizeBar::LEFT );
-		addChild( mResizeBar[0] );
-
-		mResizeBar[1] = new LLResizeBar( 
-			std::string("resizebar_top"),
-			this,
-			LLRect( 0, getRect().getHeight(), getRect().getWidth(), getRect().getHeight() - RESIZE_BAR_THICKNESS), 
-			mMinHeight, S32_MAX, LLResizeBar::TOP );
-		addChild( mResizeBar[1] );
-
-		mResizeBar[2] = new LLResizeBar( 
-			std::string("resizebar_right"),
-			this,
-			LLRect( getRect().getWidth() - RESIZE_BAR_THICKNESS, getRect().getHeight(), getRect().getWidth(), 0), 
-			mMinWidth, S32_MAX, LLResizeBar::RIGHT );
-		addChild( mResizeBar[2] );
-
-		mResizeBar[3] = new LLResizeBar( 
-			std::string("resizebar_bottom"),
-			this,
-			LLRect( 0, RESIZE_BAR_THICKNESS, getRect().getWidth(), 0), 
-			mMinHeight, S32_MAX, LLResizeBar::BOTTOM );
-		addChild( mResizeBar[3] );
-
-
-		// Resize handles (corners)
-		mResizeHandle[0] = new LLResizeHandle( 
-			std::string("Resize Handle"),
-			LLRect( getRect().getWidth() - RESIZE_HANDLE_WIDTH, RESIZE_HANDLE_HEIGHT, getRect().getWidth(), 0),
-			mMinWidth,
-			mMinHeight,
-			LLResizeHandle::RIGHT_BOTTOM);
-		addChild(mResizeHandle[0]);
-
-		mResizeHandle[1] = new LLResizeHandle( std::string("resize"), 
-			LLRect( getRect().getWidth() - RESIZE_HANDLE_WIDTH, getRect().getHeight(), getRect().getWidth(), getRect().getHeight() - RESIZE_HANDLE_HEIGHT),
-			mMinWidth,
-			mMinHeight,
-			LLResizeHandle::RIGHT_TOP );
-		addChild(mResizeHandle[1]);
-		
-		mResizeHandle[2] = new LLResizeHandle( std::string("resize"), 
-											   LLRect( 0, RESIZE_HANDLE_HEIGHT, RESIZE_HANDLE_WIDTH, 0 ),
-											   mMinWidth,
-											   mMinHeight,
-											   LLResizeHandle::LEFT_BOTTOM );
-		addChild(mResizeHandle[2]);
-
-		mResizeHandle[3] = new LLResizeHandle( std::string("resize"), 
-			LLRect( 0, getRect().getHeight(), RESIZE_HANDLE_WIDTH, getRect().getHeight() - RESIZE_HANDLE_HEIGHT ),
-			mMinWidth,
-			mMinHeight,
-			LLResizeHandle::LEFT_TOP );
-		addChild(mResizeHandle[3]);
+		addResizeCtrls();
 		enableResizeCtrls(can_resize);
 	}
 	mResizable = can_resize;

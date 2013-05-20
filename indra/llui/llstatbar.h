@@ -53,8 +53,6 @@ public:
 	virtual void draw();
 	virtual BOOL handleMouseDown(S32 x, S32 y, MASK mask);
 
-	const std::string& getLabel() const;
-	void setLabel(const std::string& label);
 	void setUnitLabel(const std::string& unit_label);
 	/*virtual*/ LLRect getRequiredRect();	// Return the height of this object, given the set options.
 
@@ -72,7 +70,7 @@ public:
 	LLStat *mStatp;
 private:
 	LLFrameTimer mUpdateTimer;
-	std::string mLabel;
+	LLUIString mLabel;
 	std::string mUnitLabel;
 	F32 mValue;
 	std::string mSetting;

@@ -61,6 +61,7 @@ std::map<std::string, std::string> gTranslation;
 std::list<std::string> gUntranslated;
 
 /*static*/ LLControlGroup* LLUI::sConfigGroup = NULL;
+/*static*/ LLControlGroup* LLUI::sAccountGroup = NULL;
 /*static*/ LLControlGroup* LLUI::sIgnoresGroup = NULL;
 /*static*/ LLControlGroup* LLUI::sColorsGroup = NULL;
 /*static*/ LLUIAudioCallback LLUI::sAudioCallback = NULL;
@@ -116,6 +117,7 @@ bool handleShowXUINamesChanged(const LLSD& newvalue)
 }
 
 void LLUI::initClass(LLControlGroup* config, 
+					 LLControlGroup* account, 
 					 LLControlGroup* ignores, 
 					 LLControlGroup* colors, 
 					 LLImageProviderInterface* image_provider,
@@ -126,10 +128,12 @@ void LLUI::initClass(LLControlGroup* config,
 {
 	LLRender2D::initClass(image_provider, scale_factor);
 	sConfigGroup = config;
+	sAccountGroup = account;
 	sIgnoresGroup = ignores;
 	sColorsGroup = colors;
 
 	if (sConfigGroup == NULL
+		|| sAccountGroup == NULL
 		|| sIgnoresGroup == NULL
 		|| sColorsGroup == NULL)
 	{
@@ -285,6 +289,20 @@ void LLUI::glRectToScreen(const LLRect& gl, LLRect *screen)
 {
 	glPointToScreen(gl.mLeft, gl.mTop, &screen->mLeft, &screen->mTop);
 	glPointToScreen(gl.mRight, gl.mBottom, &screen->mRight, &screen->mBottom);
+}
+
+
+LLControlGroup& LLUI::getControlControlGroup (const std::string& controlname)
+{
+	if(sConfigGroup->controlExists(controlname))
+		return *sConfigGroup;
+	if(sAccountGroup->controlExists(controlname))
+		return *sAccountGroup;
+	//if(sIgnoresGroup->controlExists(controlname)) //Identical to sConfigGroup currently.
+	//	return *sIgnoresGroup;
+	if(sColorsGroup->controlExists(controlname))
+		return *sColorsGroup;
+	return *sConfigGroup;
 }
 
 // static 
