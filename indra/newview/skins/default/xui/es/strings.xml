@@ -1905,7 +1905,7 @@ Requests that a nonphysical object be keyframed according to keyframe list.
 	</string>
 	<string name="LSLTipText_llTransferLindenDollars">
 key llTransferLindenDollars(key destination, integer amount)
-Transfer amount of linden dollars (L$) from script owner to destination. Returns a key to a corresponding transaction_result event for the success of the transfer.
+Transfer amount of linden dollars ([CURRENCY]) from script owner to destination. Returns a key to a corresponding transaction_result event for the success of the transfer.
 	</string>
 	<string name="LSLTipText_llGetParcelMusicURL">
 string llGetParcelMusicURL()
@@ -1913,7 +1913,7 @@ Gets the streaming audio URL for the parcel of land on which the object is locat
 	</string>
 	<string name="LSLTipText_llSetRegionPos">
 integer llSetRegionPos(vector pos)
-Sets the position anywhere within the region (if the object isn&apos;t physical)
+Sets the position anywhere within the region (if the object isn't physical)
 	</string>
 	<string name="LSLTipText_llNavigateTo">
 llNavigateTo(vector point, list options)
@@ -4065,16 +4065,16 @@ Si continuas recibiendo este mensaje, contacta con [SUPPORT_SITE].
 	<string name="Home position set.">Posición de la Base definida.</string>
 
 <!-- Financial operations strings -->
-	<string name="paid_you_ldollars">[NAME] te ha pagado L$[AMOUNT] [REASON].</string>
-	<string name="paid_you_ldollars_no_reason">[NAME] te ha pagado L$[AMOUNT].</string>
-	<string name="you_paid_ldollars">Has pagado a [NAME] L$[AMOUNT] [REASON].</string>
-	<string name="you_paid_ldollars_no_info">Has pagado L$[AMOUNT].</string>
-	<string name="you_paid_ldollars_no_reason">Has pagado a [NAME] L$[AMOUNT].</string>
-	<string name="you_paid_ldollars_no_name">Has pagado L$[AMOUNT] [REASON].</string>
-	<string name="you_paid_failure_ldollars">Ha fallado tu pago [NAME] L$[AMOUNT] [REASON].</string>
-	<string name="you_paid_failure_ldollars_no_info">Ha fallado tu pago de L$[AMOUNT].</string>
-	<string name="you_paid_failure_ldollars_no_reason">Ha fallado tu pago a [NAME] L$[AMOUNT].</string>
-	<string name="you_paid_failure_ldollars_no_name">Ha fallado tu pago de L$[AMOUNT] [REASON].</string>
+	<string name="paid_you_ldollars">[NAME] te ha pagado [CURRENCY][AMOUNT] [REASON].</string>
+	<string name="paid_you_ldollars_no_reason">[NAME] te ha pagado [CURRENCY][AMOUNT].</string>
+	<string name="you_paid_ldollars">Has pagado a [NAME] [CURRENCY][AMOUNT] [REASON].</string>
+	<string name="you_paid_ldollars_no_info">Has pagado [CURRENCY][AMOUNT].</string>
+	<string name="you_paid_ldollars_no_reason">Has pagado a [NAME] [CURRENCY][AMOUNT].</string>
+	<string name="you_paid_ldollars_no_name">Has pagado [CURRENCY][AMOUNT] [REASON].</string>
+	<string name="you_paid_failure_ldollars">Ha fallado tu pago [NAME] [CURRENCY][AMOUNT] [REASON].</string>
+	<string name="you_paid_failure_ldollars_no_info">Ha fallado tu pago de [CURRENCY][AMOUNT].</string>
+	<string name="you_paid_failure_ldollars_no_reason">Ha fallado tu pago a [NAME] [CURRENCY][AMOUNT].</string>
+	<string name="you_paid_failure_ldollars_no_name">Ha fallado tu pago de [CURRENCY][AMOUNT] [REASON].</string>
 	<string name="for item">para[ITEM]</string>
 	<string name="for a parcel of land">por una parcela de terreno</string>
 	<string name="for a land access pass">por acceso a una parcela</string>
