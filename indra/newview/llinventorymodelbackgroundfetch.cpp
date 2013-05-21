@@ -420,6 +420,7 @@ class LLInventoryModelFetchDescendentsResponder : public LLHTTPClient::Responder
 	{};
 	/*virtual*/ void result(const LLSD& content);
 	/*virtual*/ void error(U32 status, const std::string& reason);
+	/*virtual*/ AICapabilityType capability_type(void) const { return cap_inventory; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return inventoryModelFetchDescendentsResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLInventoryModelFetchDescendentsResponder"; }
 
@@ -652,7 +653,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 						{
 							if (folder_lib_count == max_batch_size ||
 								(folder_lib_count == 0 &&
-								 !(approved_folder_lib = AIPerService::approveHTTPRequestFor(mPerServicePtr))))
+								 !(approved_folder_lib = AIPerService::approveHTTPRequestFor(mPerServicePtr, cap_inventory))))
 							{
 								break;
 							}
@@ -663,7 +664,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 						{
 							if (folder_count == max_batch_size ||
 								(folder_count == 0 &&
-								 !(approved_folder = AIPerService::approveHTTPRequestFor(mPerServicePtr))))
+								 !(approved_folder = AIPerService::approveHTTPRequestFor(mPerServicePtr, cap_inventory))))
 							{
 								break;
 							}
@@ -701,7 +702,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 				{
 					if (item_count == max_batch_size ||
 						(item_count == 0 &&
-						 !(approved_item = AIPerService::approveHTTPRequestFor(mPerServicePtr))))
+						 !(approved_item = AIPerService::approveHTTPRequestFor(mPerServicePtr, cap_inventory))))
 					{
 						break;
 					}
@@ -712,7 +713,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch()
 				{
 					if (item_lib_count == max_batch_size ||
 						(item_lib_count == 0 &&
-						 !(approved_item_lib = AIPerService::approveHTTPRequestFor(mPerServicePtr))))
+						 !(approved_item_lib = AIPerService::approveHTTPRequestFor(mPerServicePtr, cap_inventory))))
 					{
 						break;
 					}

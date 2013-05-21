@@ -413,11 +413,8 @@ public:
 		}
 	}
 	
-	/*virtual*/ bool followRedir() const
-	{
-		return mFollowRedir;
-	}
-	
+	/*virtual*/ bool followRedir() const { return mFollowRedir; }
+	/*virtual*/ AICapabilityType capability_type(void) const { return cap_texture; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return HTTPGetResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "HTTPGetResponder"; }
 
@@ -1275,7 +1272,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 
 			// AIPerService::approveHTTPRequestFor returns approvement for ONE request.
 			// This object keeps track of whether or not that is honored.
-			LLPointer<AIPerService::Approvement> approved = AIPerService::approveHTTPRequestFor(mPerServicePtr);
+			LLPointer<AIPerService::Approvement> approved = AIPerService::approveHTTPRequestFor(mPerServicePtr, cap_texture);
 			if (!approved)
 			{
 				return false ; //wait.

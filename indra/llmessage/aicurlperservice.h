@@ -73,6 +73,18 @@ typedef AIAccess<AIPerService> PerService_wat;
 typedef boost::intrusive_ptr<AICurlPrivate::RefCountedThreadSafePerService> AIPerServicePtr;
 
 //-----------------------------------------------------------------------------
+//
+
+enum AICapabilityType {		// {Capabilities} [Responders]
+  cap_texture	= 0,		// GetTexture [HTTPGetResponder]
+  cap_inventory	= 1,		// { FetchInventory2, FetchLib2 } [LLInventoryModel::fetchInventoryResponder], { FetchInventoryDescendents2, FetchLibDescendents2 } [LLInventoryModelFetchDescendentsResponder]
+  cap_mesh		= 2,		// GetMesh [LLMeshSkinInfoResponder, LLMeshDecompositionResponder, LLMeshPhysicsShapeResponder, LLMeshHeaderResponder, LLMeshLODResponder]
+  cap_other		= 3,		// All other capabilities
+
+  number_of_capability_types = 4
+};
+
+//-----------------------------------------------------------------------------
 // AIPerService
 
 // This class provides a static interface to create and maintain instances of AIPerService objects,
@@ -93,9 +105,6 @@ class AIPerService {
 	AIPerService(void);
 
   public:
-	~AIPerService();
-
-  public:
 	typedef instance_map_type::iterator iterator;
 	typedef instance_map_type::const_iterator const_iterator;
 
@@ -112,20 +121,36 @@ class AIPerService {
 	static void purge(void);
 
   private:
-	typedef std::deque<AICurlPrivate::BufferedCurlEasyRequestPtr> queued_request_type;
+	static U16 const ctf_empty = 1;
+	static U16 const ctf_full = 2;
+	static U16 const ctf_starvation = 4;
 
-	int mApprovedRequests;						// The number of approved requests by approveHTTPRequestFor that were not added to the command queue yet.
-	int mQueuedCommands;						// Number of add commands (minus remove commands) with this host in the command queue.
-	int mAdded;									// Number of active easy handles with this host.
-	queued_request_type mQueuedRequests;		// Waiting (throttled) requests.
+	struct CapabilityType {
+	  typedef std::deque<AICurlPrivate::BufferedCurlEasyRequestPtr> queued_request_type;
 
-	bool mQueueEmpty;							// Set to true when the queue becomes precisely empty.
-	bool mQueueFull;							// Set to true when the queue is popped and then still isn't empty;
-	bool mRequestStarvation;					// Set to true when the queue was about to be popped but was already empty.
+	  queued_request_type mQueuedRequests;		// Waiting (throttled) requests.
+	  U16 mApprovedRequests;					// The number of approved requests by approveHTTPRequestFor that were not added to the command queue yet.
+	  U16 mQueuedCommands;						// Number of add commands (minus remove commands), for this service, in the command queue.
+	  U16 mAdded;								// Number of active easy handles with this service.
+	  U16 mFlags;								// ctf_empty: Set to true when the queue becomes precisely empty.
+	  											// ctf_full : Set to true when the queue is popped and then still isn't empty;
+												// ctf_starvation: Set to true when the queue was about to be popped but was already empty.
+	  U32 mMaxPipelinedRequests;				// The maximum number of accepted requests for this service and (approved) capability type, that didn't finish yet.
+
+	  // Declare, not define, constructor and destructor - in order to avoid instantiation of queued_request_type from header.
+	  CapabilityType(void);
+	  ~CapabilityType();
+
+	  S32 pipelined_requests(void) const { return mApprovedRequests + mQueuedCommands + mQueuedRequests.size() + mAdded; }
+	};
+
+	CapabilityType mCapabilityType[number_of_capability_types];
 
 	AIAverage mHTTPBandwidth;					// Keeps track on number of bytes received for this service in the past second.
 	int mConcurrectConnections;					// The maximum number of allowed concurrent connections to this service.
-	int mMaxPipelinedRequests;					// The maximum number of accepted requests for this service that didn't finish yet.
+	int mTotalAdded;							// Number of active easy handles with this host.
+	int mApprovedFirst;							// First capability type to try.
+	int mUnapprovedFirst;						// First capability type to try after all approved types were tried.
 
 	// Global administration of the total number of queued requests of all services combined.
   private:
@@ -176,20 +201,20 @@ class AIPerService {
 	static bool sNoHTTPBandwidthThrottling;					// Global override to disable bandwidth throttling.
 
   public:
-	void added_to_command_queue(void) { ++mQueuedCommands; }
-	void removed_from_command_queue(void) { --mQueuedCommands; llassert(mQueuedCommands >= 0); }
-	void added_to_multi_handle(void);					// Called when an easy handle for this host has been added to the multi handle.
-	void removed_from_multi_handle(void);				// Called when an easy handle for this host is removed again from the multi handle.
+	void added_to_command_queue(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mQueuedCommands; }
+	void removed_from_command_queue(AICapabilityType capability_type) { --mCapabilityType[capability_type].mQueuedCommands; llassert(mCapabilityType[capability_type].mQueuedCommands >= 0); }
+	void added_to_multi_handle(AICapabilityType capability_type);					// Called when an easy handle for this host has been added to the multi handle.
+	void removed_from_multi_handle(AICapabilityType capability_type);				// Called when an easy handle for this host is removed again from the multi handle.
 	bool throttled(void) const;							// Returns true if the maximum number of allowed requests for this host have been added to the multi handle.
 
-	void queue(AICurlEasyRequest const& easy_request);	// Add easy_request to the queue.
-	bool cancel(AICurlEasyRequest const& easy_request);	// Remove easy_request from the queue (if it's there).
+	void queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type);	// Add easy_request to the queue.
+	bool cancel(AICurlEasyRequest const& easy_request, AICapabilityType capability_type);	// Remove easy_request from the queue (if it's there).
 
-    void add_queued_to(AICurlPrivate::curlthread::MultiHandle* mh);
+    void add_queued_to(AICurlPrivate::curlthread::MultiHandle* mh, bool recursive = false);
 														// Add queued easy handle (if any) to the multi handle. The request is removed from the queue,
 														// followed by either a call to added_to_multi_handle() or to queue() to add it back.
 
-	S32 pipelined_requests(void) const { return mApprovedRequests + mQueuedCommands + mQueuedRequests.size() + mAdded; }
+	S32 pipelined_requests(AICapabilityType capability_type) const { return mCapabilityType[capability_type].pipelined_requests(); }
 
 	AIAverage& bandwidth(void) { return mHTTPBandwidth; }
 	AIAverage const& bandwidth(void) const { return mHTTPBandwidth; }
@@ -205,9 +230,10 @@ class AIPerService {
 	class Approvement : public LLThreadSafeRefCount {
 	  private:
 		AIPerServicePtr mPerServicePtr;
+		AICapabilityType mCapabilityType;
 		bool mHonored;
 	  public:
-		Approvement(AIPerServicePtr const& per_service) : mPerServicePtr(per_service), mHonored(false) { }
+		Approvement(AIPerServicePtr const& per_service, AICapabilityType capability_type) : mPerServicePtr(per_service), mCapabilityType(capability_type), mHonored(false) { }
 		~Approvement() { if (!mHonored) not_honored(); }
 		void honored(void);
 		void not_honored(void);
@@ -221,7 +247,7 @@ class AIPerService {
 	// Returns approvement if curl can handle another request for this host.
 	// Should return NULL if the maximum allowed HTTP bandwidth is reached, or when
 	// the latency between request and actual delivery becomes too large.
-	static Approvement* approveHTTPRequestFor(AIPerServicePtr const& per_service);
+	static Approvement* approveHTTPRequestFor(AIPerServicePtr const& per_service, AICapabilityType capability_type);
 	// Return true if too much bandwidth is being used.
 	static bool checkBandwidthUsage(AIPerServicePtr const& per_service, U64 sTime_40ms);
 

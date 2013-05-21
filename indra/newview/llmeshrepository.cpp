@@ -229,6 +229,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshHeaderResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLMeshHeaderResponder"; }
 };
@@ -256,6 +257,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshLODResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLMeshLODResponder"; }
 };
@@ -276,6 +278,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshSkinInfoResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLMeshSkinInfoResponder"; }
 };
@@ -296,6 +299,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshDecompositionResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLMeshDecompositionResponder"; }
 };
@@ -316,6 +320,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshPhysicsShapeResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLMeshPhysicsShapeResponder"; }
 };

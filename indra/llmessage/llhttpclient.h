@@ -224,6 +224,9 @@ public:
 		// If this function returns false then we generate an error when a redirect status (300..399) is received.
 		virtual bool redirect_status_ok(void) const { return followRedir(); }
 
+		// Returns the capability type used by this responder.
+		virtual AICapabilityType capability_type(void) const { return cap_other; }
+
 		// Timeout policy to use.
 		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const = 0;
 

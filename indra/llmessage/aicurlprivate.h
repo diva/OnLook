@@ -358,8 +358,8 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// PerService API.
 	AIPerServicePtr getPerServicePtr(void);							// (Optionally create and) return a pointer to the unique
 																	// AIPerService corresponding to mLowercaseServicename.
-	bool removeFromPerServiceQueue(AICurlEasyRequest const&) const;	// Remove this request from the per-host queue, if queued at all.
-																	// Returns true if it was queued.
+	bool removeFromPerServiceQueue(AICurlEasyRequest const&, AICapabilityType capability_type) const;	// Remove this request from the per-host queue, if queued at all.
+																										// Returns true if it was queued.
   protected:
 	// Pass events to parent.
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
@@ -417,6 +417,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	U8* mLastRead;										// Pointer into mInput where we last stopped reading (or NULL to start at the beginning).
 	buffer_ptr_t mOutput;
 	LLHTTPClient::ResponderPtr mResponder;
+	AICapabilityType mCapabilityType;
 	//U32 mBodyLimit;									// From the old LLURLRequestDetail::mBodyLimit, but never used.
 	U32 mStatus;										// HTTP status, decoded from the first header line.
 	std::string mReason;								// The "reason" from the same header line.
@@ -459,6 +460,9 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	// Return true when prepRequest was already called and the object has not been
 	// invalidated as a result of calling timed_out().
 	bool isValid(void) const { return mResponder; }
+
+	// Return the capability type of this request.
+	AICapabilityType capability_type(void) const { llassert(mCapabilityType != number_of_capability_types); return mCapabilityType; }
 };
 
 inline ThreadSafeBufferedCurlEasyRequest* CurlEasyRequest::get_lockobj(void)

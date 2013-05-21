@@ -71,14 +71,24 @@ void intrusive_ptr_release(RefCountedThreadSafePerService* per_service)
 using namespace AICurlPrivate;
 
 AIPerService::AIPerService(void) :
-		mApprovedRequests(0), mQueuedCommands(0), mAdded(0), mQueueEmpty(false),
-		mQueueFull(false), mRequestStarvation(false), mHTTPBandwidth(25),	// 25 = 1000 ms / 40 ms.
+		mHTTPBandwidth(25),	// 25 = 1000 ms / 40 ms.
 		mConcurrectConnections(CurlConcurrentConnectionsPerService),
+		mTotalAdded(0),
+		mApprovedFirst(0),
+		mUnapprovedFirst(0)
+{
+}
+
+AIPerService::CapabilityType::CapabilityType(void) :
+  		mApprovedRequests(0),
+		mQueuedCommands(0),
+		mAdded(0),
+		mFlags(0),
 		mMaxPipelinedRequests(CurlConcurrentConnectionsPerService)
 {
 }
 
-AIPerService::~AIPerService()
+AIPerService::CapabilityType::~CapabilityType()
 {
 }
 
@@ -212,12 +222,20 @@ void AIPerService::release(AIPerServicePtr& instance)
 	// Therefore, recheck the condition now that we have locked sInstanceMap.
 	if (!instance->exactly_two_left())
 	{
-	  // Some other thread added this host in the meantime.
+	  // Some other thread added this service in the meantime.
 	  return;
 	}
-	// The reference in the map is the last one; that means there can't be any curl easy requests queued for this host.
-	llassert(PerService_rat(*instance)->mQueuedRequests.empty());
-	// Find the host and erase it from the map.
+#ifdef SHOW_ASSERT
+	{
+	  // The reference in the map is the last one; that means there can't be any curl easy requests queued for this service.
+	  PerService_rat per_service_r(*instance);
+	  for (int i = 0; i < number_of_capability_types; ++i)
+	  {
+	  	llassert(per_service_r->mCapabilityType[i].mQueuedRequests.empty());
+	  }
+	}
+#endif
+	// Find the service and erase it from the map.
 	iterator const end = instance_map_w->end();
 	for(iterator iter = instance_map_w->begin(); iter != end; ++iter)
 	{
@@ -228,7 +246,7 @@ void AIPerService::release(AIPerServicePtr& instance)
 		return;
 	  }
 	}
-	// We should always find the host.
+	// We should always find the service.
 	llassert(false);
   }
   instance.reset();
@@ -236,30 +254,32 @@ void AIPerService::release(AIPerServicePtr& instance)
 
 bool AIPerService::throttled() const
 {
-  return mAdded >= mConcurrectConnections;
+  return mTotalAdded >= mConcurrectConnections;
 }
 
-void AIPerService::added_to_multi_handle(void)
+void AIPerService::added_to_multi_handle(AICapabilityType capability_type)
 {
-  ++mAdded;
+  ++mCapabilityType[capability_type].mAdded;
+  ++mTotalAdded;
 }
 
-void AIPerService::removed_from_multi_handle(void)
+void AIPerService::removed_from_multi_handle(AICapabilityType capability_type)
 {
-  --mAdded;
-  llassert(mAdded >= 0);
+  --mCapabilityType[capability_type].mAdded;
+  --mTotalAdded;
+  llassert(mTotalAdded >= 0 && mCapabilityType[capability_type].mAdded >= 0);
 }
 
-void AIPerService::queue(AICurlEasyRequest const& easy_request)
+void AIPerService::queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type)
 {
-  mQueuedRequests.push_back(easy_request.get_ptr());
+  mCapabilityType[capability_type].mQueuedRequests.push_back(easy_request.get_ptr());
   TotalQueued_wat(sTotalQueued)->count++;
 }
 
-bool AIPerService::cancel(AICurlEasyRequest const& easy_request)
+bool AIPerService::cancel(AICurlEasyRequest const& easy_request, AICapabilityType capability_type)
 {
-  queued_request_type::iterator const end = mQueuedRequests.end();
-  queued_request_type::iterator cur = std::find(mQueuedRequests.begin(), end, easy_request.get_ptr());
+  CapabilityType::queued_request_type::iterator const end = mCapabilityType[capability_type].mQueuedRequests.end();
+  CapabilityType::queued_request_type::iterator cur = std::find(mCapabilityType[capability_type].mQueuedRequests.begin(), end, easy_request.get_ptr());
 
   if (cur == end)
 	return false;		// Not found.
@@ -270,62 +290,122 @@ bool AIPerService::cancel(AICurlEasyRequest const& easy_request)
   // want to break the order in which requests where added). Swap is also not
   // thread-safe, but OK here because it only touches the objects in the deque,
   // and the deque is protected by the lock on the AIPerService object.
-  queued_request_type::iterator prev = cur;
+  CapabilityType::queued_request_type::iterator prev = cur;
   while (++cur != end)
   {
 	prev->swap(*cur);				// This is safe,
 	prev = cur;
   }
-  mQueuedRequests.pop_back();		// if this is safe.
+  mCapabilityType[capability_type].mQueuedRequests.pop_back();		// if this is safe.
   TotalQueued_wat total_queued_w(sTotalQueued);
   total_queued_w->count--;
   llassert(total_queued_w->count >= 0);
   return true;
 }
 
-void AIPerService::add_queued_to(curlthread::MultiHandle* multi_handle)
+void AIPerService::add_queued_to(curlthread::MultiHandle* multi_handle, bool recursive)
 {
-  if (!mQueuedRequests.empty())
+  int order[number_of_capability_types];
+  // The first two types are approved types, they should be the first to try.
+  // Try the one that has the largest queue first, if they the queues have equal size, try mApprovedFirst first.
+  size_t s0 = mCapabilityType[0].mQueuedRequests.size();
+  size_t s1 = mCapabilityType[1].mQueuedRequests.size();
+  if (s0 == s1)
   {
-	if (!multi_handle->add_easy_request(mQueuedRequests.front(), true))
-	{
-	  // Throttled.
-	  return;
-	}
-	mQueuedRequests.pop_front();
-	if (mQueuedRequests.empty())
-	{
-	  // We obtained a request from the queue, and after that there we no more request in the queue of this host.
-	  mQueueEmpty = true;
-	}
-	else
-	{
-	  // We obtained a request from the queue, and even after that there was at least one more request in the queue of this host.
-	  mQueueFull = true;
-	}
-	TotalQueued_wat total_queued_w(sTotalQueued);
-	llassert(total_queued_w->count > 0);
-	if (!--(total_queued_w->count))
-	{
-	  // We obtained a request from the queue, and after that there we no more request in any queue.
-	  total_queued_w->empty = true;
-	}
-	else
-	{
-	  // We obtained a request from the queue, and even after that there was at least one more request in some queue.
-	  total_queued_w->full = true;
-	}
+	order[0] = mApprovedFirst;
+	mApprovedFirst = 1 - mApprovedFirst;
+	order[1] = mApprovedFirst;
+  }
+  else if (s0 > s1)
+  {
+	order[0] = 0;
+	order[1] = 1;
   }
   else
   {
-	// We can add a new request, but there is none in the queue!
-	mRequestStarvation = true;
-	TotalQueued_wat total_queued_w(sTotalQueued);
-	if (total_queued_w->count == 0)
+	order[0] = 1;
+	order[1] = 0;
+  }
+  // The next two types are unapproved types. Here, try them alternating regardless of queue size.
+  int n = mUnapprovedFirst;
+  for (int i = 2; i < number_of_capability_types; ++i, n = (n + 1) % (number_of_capability_types - 2))
+  {
+	order[i] = 2 + n;
+  }
+  mUnapprovedFirst = (mUnapprovedFirst + 1) % (number_of_capability_types - 2);
+
+  for (int i = 0; i < number_of_capability_types; ++i)
+  {
+	CapabilityType& ct(mCapabilityType[order[i]]);
+	if (!ct.mQueuedRequests.empty())
 	{
-	  // The queue of every host is empty!
-	  total_queued_w->starvation = true;
+	  if (!multi_handle->add_easy_request(ct.mQueuedRequests.front(), true))
+	  {
+		// Throttled. If this failed then every capability type will fail: we either are using too much bandwidth, or too many total connections.
+		// However, it MAY be that this service was thottled for using too much bandwidth by itself. Look if other services can be added.
+		break;
+	  }
+	  // Request was added, remove it from the queue.
+	  ct.mQueuedRequests.pop_front();
+	  if (ct.mQueuedRequests.empty())
+	  {
+		// We obtained a request from the queue, and after that there we no more request in the queue of this service.
+		ct.mFlags |= ctf_empty;
+	  }
+	  else
+	  {
+		// We obtained a request from the queue, and even after that there was at least one more request in the queue of this service.
+		ct.mFlags |= ctf_full;
+	  }
+	  TotalQueued_wat total_queued_w(sTotalQueued);
+	  llassert(total_queued_w->count > 0);
+	  if (!--(total_queued_w->count))
+	  {
+		// We obtained a request from the queue, and after that there we no more request in any queue.
+		total_queued_w->empty = true;
+	  }
+	  else
+	  {
+		// We obtained a request from the queue, and even after that there was at least one more request in some queue.
+		total_queued_w->full = true;
+	  }
+	  // We added something from a queue, so we're done.
+	  return;
 	}
+	else
+	{
+	  // We could add a new request, but there is none in the queue!
+	  // Note that if this service does not serve this capability type,
+	  // then obviously this queue was empty; however, in that case
+	  // this variable will never be looked at, so it's ok to set it.
+	  ct.mFlags |= ctf_starvation;
+	}
+	if (i == number_of_capability_types - 1)
+	{
+	  // Last entry also empty. All queues of this service were empty. Check total connections.
+	  TotalQueued_wat total_queued_w(sTotalQueued);
+	  if (total_queued_w->count == 0)
+	  {
+		// The queue of every service is empty!
+		total_queued_w->starvation = true;
+		return;
+	  }
+	}
+  }
+  if (recursive)
+  {
+	return;
+  }
+  // Nothing from this service could be added, try other services.
+  instance_map_wat instance_map_w(sInstanceMap);
+  for (iterator service = instance_map_w->begin(); service != instance_map_w->end(); ++service)
+  {
+	PerService_wat per_service_w(*service->second);
+	if (&*per_service_w == this)
+	{
+	  continue;
+	}
+	per_service_w->add_queued_to(multi_handle, true);
   }
 }
 
@@ -333,15 +413,18 @@ void AIPerService::add_queued_to(curlthread::MultiHandle* multi_handle)
 void AIPerService::purge(void)
 {
   instance_map_wat instance_map_w(sInstanceMap);
-  for (iterator host = instance_map_w->begin(); host != instance_map_w->end(); ++host)
+  for (iterator service = instance_map_w->begin(); service != instance_map_w->end(); ++service)
   {
-	Dout(dc::curl, "Purging queue of host \"" << host->first << "\".");
-	PerService_wat per_service_w(*host->second);
-	size_t s = per_service_w->mQueuedRequests.size();
-	per_service_w->mQueuedRequests.clear();
+	Dout(dc::curl, "Purging queues of service \"" << service->first << "\".");
+	PerService_wat per_service_w(*service->second);
 	TotalQueued_wat total_queued_w(sTotalQueued);
-	total_queued_w->count -= s;
-	llassert(total_queued_w->count >= 0);
+	for (int i = 0; i < number_of_capability_types; ++i)
+	{
+	  size_t s = per_service_w->mCapabilityType[i].mQueuedRequests.size();
+	  per_service_w->mCapabilityType[i].mQueuedRequests.clear();
+	  total_queued_w->count -= s;
+	  llassert(total_queued_w->count >= 0);
+	}
   }
 }
 
@@ -355,7 +438,10 @@ void AIPerService::adjust_concurrent_connections(int increment)
 	U32 old_concurrent_connections = per_service_w->mConcurrectConnections;
 	per_service_w->mConcurrectConnections = llclamp(old_concurrent_connections + increment, (U32)1, CurlConcurrentConnectionsPerService);
 	increment = per_service_w->mConcurrectConnections - old_concurrent_connections;
-	per_service_w->mMaxPipelinedRequests = llmax(per_service_w->mMaxPipelinedRequests + increment, 0);
+	for (int i = 0; i < number_of_capability_types; ++i)
+	{
+	  per_service_w->mCapabilityType[i].mMaxPipelinedRequests = llmax(per_service_w->mCapabilityType[i].mMaxPipelinedRequests + increment, (U32)0);
+	}
   }
 }
 
@@ -365,8 +451,8 @@ void AIPerService::Approvement::honored(void)
   {
 	mHonored = true;
 	AICurlPrivate::PerService_wat per_service_w(*mPerServicePtr);
-	llassert(per_service_w->mApprovedRequests > 0);
-	per_service_w->mApprovedRequests--;
+	llassert(per_service_w->mCapabilityType[mCapabilityType].mApprovedRequests > 0);
+	per_service_w->mCapabilityType[mCapabilityType].mApprovedRequests--;
   }
 }
 

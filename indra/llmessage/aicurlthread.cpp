@@ -1325,19 +1325,30 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 	// Access command_being_processed only.
 	{
 	  command_being_processed_rat command_being_processed_r(command_being_processed);
+	  AICapabilityType capability_type;
+	  AIPerServicePtr per_service;
+	  {
+		AICurlEasyRequest_wat easy_request_w(*command_being_processed_r->easy_request());
+		capability_type = easy_request_w->capability_type();
+		per_service = easy_request_w->getPerServicePtr();
+	  }
 	  switch(command_being_processed_r->command())
 	  {
 		case cmd_none:
 		case cmd_boost:	// FIXME: future stuff
 		  break;
 		case cmd_add:
+		{
 		  multi_handle_w->add_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()), false);
-		  PerService_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerServicePtr())->removed_from_command_queue();
+		  PerService_wat(*per_service)->removed_from_command_queue(capability_type);
 		  break;
+		}
 		case cmd_remove:
-		  PerService_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerServicePtr())->added_to_command_queue();		// Not really, but this has the same effect as 'removed a remove command'.
+		{
+		  PerService_wat(*per_service)->added_to_command_queue(capability_type);		// Not really, but this has the same effect as 'removed a remove command'.
 		  multi_handle_w->remove_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()), true);
 		  break;
+		}
 	  }
 	  // Done processing.
 	  command_being_processed_wat command_being_processed_w(command_being_processed_r);
@@ -1704,18 +1715,21 @@ static U32 curl_max_total_concurrent_connections = 32;						// Initialized on st
 bool MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request, bool from_queue)
 {
   bool throttled = true;		// Default.
+  AICapabilityType capability_type;
   AIPerServicePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
+	capability_type = curl_easy_request_w->capability_type();
 	per_service = curl_easy_request_w->getPerServicePtr();
-	bool too_much_bandwidth = !curl_easy_request_w->approved() && AIPerService::checkBandwidthUsage(per_service, get_clock_count() * HTTPTimeout::sClockWidth_40ms);
+	// Never throttle on bandwidth if there are no handles running (sTotalAdded == 1, the long poll connection).
+	bool too_much_bandwidth = sTotalAdded > 1 && !curl_easy_request_w->approved() && AIPerService::checkBandwidthUsage(per_service, get_clock_count() * HTTPTimeout::sClockWidth_40ms);
 	PerService_wat per_service_w(*per_service);
-	if (!too_much_bandwidth && mAddedEasyRequests.size() < curl_max_total_concurrent_connections && !per_service_w->throttled())
+	if (!too_much_bandwidth && sTotalAdded < curl_max_total_concurrent_connections && !per_service_w->throttled())
 	{
 	  curl_easy_request_w->set_timeout_opts();
 	  if (curl_easy_request_w->add_handle_to_multi(curl_easy_request_w, mMultiHandle) == CURLM_OK)
 	  {
-		per_service_w->added_to_multi_handle();	// (About to be) added to mAddedEasyRequests.
+		per_service_w->added_to_multi_handle(capability_type);	// (About to be) added to mAddedEasyRequests.
 		throttled = false;						// Fall through...
 	  }
 	}
@@ -1739,7 +1753,7 @@ bool MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request, bool f
 	return false;
   }
   // The request could not be added, we have to queue it.
-  PerService_wat(*per_service)->queue(easy_request);
+  PerService_wat(*per_service)->queue(easy_request, capability_type);
 #ifdef SHOW_ASSERT
   // Not active yet, but it's no longer an error if next we try to remove the request.
   AICurlEasyRequest_wat(*easy_request)->mRemovedPerCommand = false;
@@ -1757,7 +1771,7 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
 #ifdef SHOW_ASSERT
 	bool removed =
 #endif
-	easy_request_w->removeFromPerServiceQueue(easy_request);
+	easy_request_w->removeFromPerServiceQueue(easy_request, easy_request_w->capability_type());
 #ifdef SHOW_ASSERT
 	if (removed)
 	{
@@ -1773,12 +1787,14 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
 CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator const& iter, bool as_per_command)
 {
   CURLMcode res;
+  AICapabilityType capability_type;
   AIPerServicePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(**iter);
 	res = curl_easy_request_w->remove_handle_from_multi(curl_easy_request_w, mMultiHandle);
+	capability_type = curl_easy_request_w->capability_type();
 	per_service = curl_easy_request_w->getPerServicePtr();
-	PerService_wat(*per_service)->removed_from_multi_handle();		// (About to be) removed from mAddedEasyRequests.
+	PerService_wat(*per_service)->removed_from_multi_handle(capability_type);		// (About to be) removed from mAddedEasyRequests.
 #ifdef SHOW_ASSERT
 	curl_easy_request_w->mRemovedPerCommand = as_per_command;
 #endif
@@ -2429,7 +2445,7 @@ void AICurlEasyRequest::addRequest(void)
 	command_queue_w->commands.push_back(Command(*this, cmd_add));
 	command_queue_w->size++;
 	AICurlEasyRequest_wat curl_easy_request_w(*get());
-	PerService_wat(*curl_easy_request_w->getPerServicePtr())->added_to_command_queue();
+	PerService_wat(*curl_easy_request_w->getPerServicePtr())->added_to_command_queue(curl_easy_request_w->capability_type());
 	curl_easy_request_w->add_queued();
   }
   // Something was added to the queue, wake up the thread to get it.
@@ -2493,7 +2509,7 @@ void AICurlEasyRequest::removeRequest(void)
 	command_queue_w->commands.push_back(Command(*this, cmd_remove));
 	command_queue_w->size--;
 	AICurlEasyRequest_wat curl_easy_request_w(*get());
-	PerService_wat(*curl_easy_request_w->getPerServicePtr())->removed_from_command_queue();	// Note really, but this has the same effect as 'added a remove command'.
+	PerService_wat(*curl_easy_request_w->getPerServicePtr())->removed_from_command_queue(curl_easy_request_w->capability_type());	// Note really, but this has the same effect as 'added a remove command'.
 	// Suppress warning that would otherwise happen if the callbacks are revoked before the curl thread removed the request.
 	curl_easy_request_w->remove_queued();
   }
@@ -2614,7 +2630,7 @@ bool AIPerService::sNoHTTPBandwidthThrottling;
 // running requests (in MultiHandle::mAddedEasyRequests)).
 //
 //static
-AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr const& per_service)
+AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr const& per_service, AICapabilityType capability_type)
 {
   using namespace AICurlPrivate;
   using namespace AICurlPrivate::curlthread;
@@ -2650,31 +2666,30 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
 	}
   }
 
-  // Check if it's ok to get a new request for this particular service and update the per-service threshold.
+  // Check if it's ok to get a new request for this particular capability type and update the per-capability-type threshold.
 
   bool reject, equal, increment_threshold;
   {
 	PerService_wat per_service_w(*per_service);
-	S32 const pipelined_requests_per_service = per_service_w->pipelined_requests();
-	//llassert(pipelined_requests_per_service >= 0 && pipelined_requests_per_service <= 16);
-	reject = pipelined_requests_per_service >= per_service_w->mMaxPipelinedRequests;
-	equal = pipelined_requests_per_service == per_service_w->mMaxPipelinedRequests;
-	increment_threshold = per_service_w->mRequestStarvation;
-	decrement_threshold = per_service_w->mQueueFull && !per_service_w->mQueueEmpty;
-	// Reset flags.
-	per_service_w->mQueueFull = per_service_w->mQueueEmpty = per_service_w->mRequestStarvation = false;
+	CapabilityType& ct(per_service_w->mCapabilityType[capability_type]);
+	S32 const pipelined_requests_per_capability_type = ct.pipelined_requests();
+	reject = pipelined_requests_per_capability_type >= ct.mMaxPipelinedRequests;
+	equal = pipelined_requests_per_capability_type == ct.mMaxPipelinedRequests;
+	increment_threshold = ct.mFlags & ctf_starvation;
+	decrement_threshold = (ct.mFlags & (ctf_empty | ctf_full)) == ctf_full;
+	ct.mFlags = 0;
 	if (decrement_threshold)
 	{
-	  if (per_service_w->mMaxPipelinedRequests > per_service_w->mConcurrectConnections)
+	  if (ct.mMaxPipelinedRequests > per_service_w->mConcurrectConnections)
 	  {
-		per_service_w->mMaxPipelinedRequests--;
+		ct.mMaxPipelinedRequests--;
 	  }
 	}
 	else if (increment_threshold && reject)
 	{
-	  if (per_service_w->mMaxPipelinedRequests < 2 * per_service_w->mConcurrectConnections)
+	  if (ct.mMaxPipelinedRequests < 2 * per_service_w->mConcurrectConnections)
 	  {
-		per_service_w->mMaxPipelinedRequests++;
+		ct.mMaxPipelinedRequests++;
 		// Immediately take the new threshold into account.
 		reject = !equal;
 	  }
@@ -2683,8 +2698,7 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
 	{
 	  // Before releasing the lock on per_service, stop other threads from getting a
 	  // too small value from pipelined_requests() and approving too many requests.
-	  per_service_w->mApprovedRequests++;
-	  //llassert(per_service_w->mApprovedRequests <= 16);
+	  ct.mApprovedRequests++;
 	}
   }
   if (reject)
@@ -2697,7 +2711,7 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
   if (checkBandwidthUsage(per_service, sTime_40ms))
   {
 	// Too much bandwidth is being used, either in total or for this service.
-	PerService_wat(*per_service)->mApprovedRequests--;		// Not approved after all.
+	PerService_wat(*per_service)->mCapabilityType[capability_type].mApprovedRequests--;		// Not approved after all.
 	return NULL;
   }
 
@@ -2731,10 +2745,10 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
   }
   if (reject)
   {
-	PerService_wat(*per_service)->mApprovedRequests--;		// Not approved after all.
+	PerService_wat(*per_service)->mCapabilityType[capability_type].mApprovedRequests--;		// Not approved after all.
 	return NULL;
   }
-  return new Approvement(per_service);
+  return new Approvement(per_service, capability_type);
 }
 
 bool AIPerService::checkBandwidthUsage(AIPerServicePtr const& per_service, U64 sTime_40ms)
