@@ -31,11 +31,14 @@
  */
 
 #include "llviewerprecompiledheaders.h"
+
 #include "llagentwearables.h"
+#include "llappearancemgr.h"
+#include "llfoldervieweventlistener.h"
 #include "llimview.h"
-#include "llinventoryfunctions.h"
 #include "llinventorybridge.h"
 #include "llinventoryclipboard.h"
+#include "llinventoryfunctions.h"
 #include "llinventorymodelbackgroundfetch.h"
 #include "llinventorypanel.h"
 #include "llmakeoutfitdialog.h"
@@ -43,7 +46,6 @@
 #include "llpanelmaininventory.h"
 #include "llpanelobjectinventory.h"
 #include "llpreview.h" // For LLMultiPreview
-#include "llfoldervieweventlistener.h"
 #include "lltrans.h"
 #include "llvoavatarself.h"
 
@@ -317,7 +319,7 @@ void do_create(LLInventoryModel *model, LLInventoryPanel *ptr, std::string type,
 							LLInventoryType::IT_GESTURE,
 							PERM_ALL);
 	}
-	else if ("outfit" == type)
+	else if ("outfit" == type || ("update outfit" == type && !LLAppearanceMgr::getInstance()->updateBaseOutfit())) // If updateBaseOutfit fails, prompt to make a new outfit
 	{
 		new LLMakeOutfitDialog(false);
 		return;

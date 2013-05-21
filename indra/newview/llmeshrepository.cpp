@@ -2514,7 +2514,7 @@ void LLMeshRepository::notifyMeshUnavailable(const LLVolumeParams& mesh_params, 
 }
 
 S32 LLMeshRepository::getActualMeshLOD(const LLVolumeParams& mesh_params, S32 lod)
-{ 
+{
 	return mThread->getActualMeshLOD(mesh_params, lod);
 }
 

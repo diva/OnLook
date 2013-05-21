@@ -666,11 +666,13 @@ void LLAgent::setFlying(BOOL fly)
 			return;
 		}
 
+		/* Singu Note: We don't take off while sitting, don't bother with this check, let us toggle fly whenever.
 		// don't allow taking off while sitting
 		if (fly && gAgentAvatarp->isSitting())
 		{
 			return;
 		}
+		*/
 	}
 
 	if (fly)
@@ -3862,7 +3864,7 @@ bool LLAgent::teleportCore(bool is_local)
 
 	// close the map panel so we can see our destination.
 	// we don't close search floater, see EXT-5840.
-	LLFloaterWorldMap::hide(NULL);
+	LLFloaterWorldMap::hide();
 
 	// hide land floater too - it'll be out of date
 	LLFloaterLand::hideInstance();

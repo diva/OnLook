@@ -373,8 +373,6 @@ public:
 
 	std::list<LLPanelAvatarTab*> mAvatarPanelList;
 
-	LLDropTarget* 				mDropTarget;
-
 	// Teen users are not allowed to see or enter data into the first life page,
 	// or their own about/interests text entry fields.
 	static BOOL sAllowFirstLife;

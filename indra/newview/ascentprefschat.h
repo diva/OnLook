@@ -34,8 +34,6 @@
 
 
 #include "llpanel.h"
-#include "lldroptarget.h"
-
 
 class LLPrefsAscentChat : public LLPanel
 {
@@ -55,7 +53,6 @@ protected:
     static void onSpellEditCustom(void* data);
     static void onSpellBaseComboBoxCommit(LLUICtrl* ctrl, void* userdata);
     static void onCommitTimeDate(LLUICtrl* ctrl, void *userdata);
-    static void onCommitAutoResponse(LLUICtrl* ctrl, void* user_data);
 	static void onCommitResetAS(LLUICtrl*,void*);
 	static void onCommitEnableAS(LLUICtrl*, void*);
 	static void onCommitDialogBlock(LLUICtrl*, void*);
@@ -64,6 +61,7 @@ protected:
     //Chat/IM -----------------------------------------------------------------------------
     BOOL mIMAnnounceIncoming;
     BOOL mHideTypingNotification;
+    bool mInstantMessagesFriendsOnly;
     BOOL mShowGroupNameInChatIM;
     bool mShowDisplayNameChanges;
     bool mUseTypingBubbles;
@@ -79,15 +77,6 @@ protected:
     BOOL mSecondsInChatAndIMs;
     BOOL mSecondsInLog;
 
-    BOOL mIMResponseAnyone;
-    BOOL mIMResponseFriends;
-    BOOL mIMResponseMuted;
-    BOOL mIMShowOnTyping;
-    BOOL mIMShowResponded;
-    BOOL mIMResponseRepeat;
-    BOOL mIMResponseItem;
-    std::string mIMResponseText;
-
     //Chat UI -----------------------------------------------------------------------------
 	bool mWoLfVerticalIMTabs;
 	bool mOtherChatsTornOff;
@@ -97,6 +86,13 @@ protected:
 	bool mOneLineGroupButt;
 	bool mOneLineConfButt;
 	bool mOnlyComm;
+	bool mItalicizeActions;
+
+	//Autoresponse ------------------------------------------------------------------------
+	std::string mIMResponseAnyoneItemID;
+	std::string mIMResponseNonFriendsItemID;
+	std::string mIMResponseMutedItemID;
+	std::string mIMResponseBusyItemID;
 
     //Spam --------------------------------------------------------------------------------
     BOOL mEnableAS;
@@ -128,9 +124,6 @@ protected:
     LLColor4 mKeywordsColor;
     BOOL mKeywordsPlaySound;
     LLUUID mKeywordsSound;
-private:
-	static LLPrefsAscentChat* sInst;
-	static void SinguIMResponseItemDrop(LLViewerInventoryItem* item);
 };
 
 #endif

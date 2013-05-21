@@ -88,6 +88,36 @@ LLIMMgr* gIMMgr = NULL;
 //
 // Helper Functions
 //
+LLColor4 agent_chat_color(const LLUUID& id, const std::string& name, bool local_chat)
+{
+	if (id.isNull() || (name == SYSTEM_FROM))
+		return gSavedSettings.getColor4("SystemChatColor");
+
+	if (id == gAgentID)
+		return gSavedSettings.getColor4("UserChatColor");
+
+	static const LLCachedControl<bool> color_linden_chat("ColorLindenChat");
+	if (color_linden_chat && LLMuteList::getInstance()->isLinden(name))
+		return gSavedSettings.getColor4("AscentLindenColor");
+
+	// [RLVa:LF] Chat colors would identify names, don't use them in local chat if restricted
+	if (local_chat && rlv_handler_t::isEnabled() && gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
+		return gSavedSettings.getColor4("AgentChatColor");
+
+	static const LLCachedControl<bool> color_friend_chat("ColorFriendChat");
+	if (color_friend_chat && LLAvatarTracker::instance().isBuddy(id))
+		return gSavedSettings.getColor4("AscentFriendColor");
+
+	static const LLCachedControl<bool> color_eo_chat("ColorEstateOwnerChat");
+	if (color_eo_chat)
+	{
+		const LLViewerRegion* parent_estate = gAgent.getRegion();
+		if (parent_estate && id == parent_estate->getOwner())
+			return gSavedSettings.getColor4("AscentEstateOwnerColor");
+	}
+
+	return local_chat ? gSavedSettings.getColor4("AgentChatColor") : gSavedSettings.getColor("IMChatColor");
+}
 
 // returns true if a should appear before b
 //static BOOL group_dictionary_sort( LLGroupData* a, LLGroupData* b )
@@ -482,13 +512,6 @@ void LLIMMgr::addMessage(
 		return;
 	}
 
-	//not sure why...but if it is from ourselves we set the target_id
-	//to be NULL, which seems to be breaking links on group chats, so let's not there.
-	if (other_participant_id == gAgent.getID() && !gAgent.isInGroup(session_id))
-	{
-		other_participant_id = LLUUID::null;
-	}
-
 	LLFloaterIMPanel* floater;
 	LLUUID new_session_id = session_id;
 	if (new_session_id.isNull())
@@ -572,34 +595,13 @@ void LLIMMgr::addMessage(
 	}
 
 	// now add message to floater
-	bool is_from_system = target_id.isNull() || (from == SYSTEM_FROM);
-
-	static LLCachedControl<bool> color_linden_chat("ColorLindenChat");
-	bool linden = color_linden_chat && LLMuteList::getInstance()->isLinden(from);
-
-	static LLCachedControl<bool> color_friend_chat("ColorFriendChat");
-	bool contact = color_friend_chat && LLAvatarTracker::instance().isBuddy(other_participant_id);
-
-	static LLCachedControl<bool> color_eo_chat("ColorEstateOwnerChat");
-	bool estate_owner = false;
-	if (color_eo_chat)
-	{
-		LLViewerRegion* parent_estate = gAgent.getRegion();
-		estate_owner = (parent_estate && parent_estate->isAlive() && other_participant_id == parent_estate->getOwner());
-	}
-
-	const LLColor4& color = ( is_from_system ? gSavedSettings.getColor4("SystemChatColor")
-							: linden ? gSavedSettings.getColor4("AscentLindenColor")
-							: contact ? gSavedSettings.getColor4("AscentFriendColor")
-							: estate_owner ? gSavedSettings.getColor4("AscentEstateOwnerColor")
-							: gSavedSettings.getColor("IMChatColor"));
+	const LLColor4& color = agent_chat_color(other_participant_id, from, false);
 	if ( !link_name )
 	{
 		floater->addHistoryLine(msg,color); // No name to prepend, so just add the message normally
 	}
 	else
 	{
-		
 		if( other_participant_id == session_id )
 		{
 			// The name can be bogus on InWorldz
@@ -1436,7 +1438,7 @@ public:
 					floaterp->processSessionUpdate(body["session_info"]);
 				}
 
-				//aply updates we've possibly received previously
+				//apply updates we've possibly received previously
 				floaterp->updateSpeakersList(
 					gIMMgr->getPendingAgentListUpdates(session_id));
 			}
@@ -1614,8 +1616,9 @@ public:
 			{
 				separator_string = "";
 				message_offset = 3;
+				chat.mChatStyle = CHAT_STYLE_IRC;
 			}
-			
+
 			chat.mMuted = is_muted && !is_linden;
 			chat.mFromID = from_id;
 			chat.mFromName = name;
@@ -1719,7 +1722,7 @@ public:
 			{
 				return;
 			}
-			
+
 			if(!LLVoiceClient::voiceEnabled())
 			{
 				// Don't display voice invites unless the user has voice enabled.

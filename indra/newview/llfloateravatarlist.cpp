@@ -1186,7 +1186,7 @@ void LLFloaterAvatarList::onClickTrack()
 
 	if (mTracking && mTrackedAvatar == agent_id)
 	{
-		LLTracker::stopTracking(NULL);
+		LLTracker::stopTracking(false);
 		mTracking = FALSE;
 	}
 	else
@@ -1203,7 +1203,7 @@ void LLFloaterAvatarList::refreshTracker()
 {
 	if (!mTracking) return;
 
-	if (LLTracker::isTracking(NULL))
+	if (LLTracker::isTracking())
 	{
 		if(LLAvatarListEntry* entry = getAvatarEntry(mTrackedAvatar))
 		{
@@ -1215,7 +1215,7 @@ void LLFloaterAvatarList::refreshTracker()
 	}
 	else
 	{	// Tracker stopped.
-		LLTracker::stopTracking(NULL);
+		LLTracker::stopTracking(false);
 		mTracking = FALSE;
 //		llinfos << "Tracking stopped." << llendl;
 	}
@@ -1385,12 +1385,7 @@ void LLFloaterAvatarList::onClickGetKey()
 
 	if (NULL == item) return;
 
-	LLUUID agent_id = item->getUUID();
-
-	char buffer[UUID_STR_LENGTH];		/*Flawfinder: ignore*/
-	agent_id.toString(buffer);
-
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
+	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(item->getUUID().asString()));
 }
 
 void LLFloaterAvatarList::sendKeys()

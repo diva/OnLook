@@ -91,18 +91,12 @@ private:
 	void doCheckUncheckAll(BOOL check);
 
 private:
-	// UI
-	LLScrollListCtrl* mMessages;
-	LLButton* mCloseBtn;
-
 	// Object Queue
 	LLDynamicArray<LLUUID> mObjectIDs;
 	LLUUID mCurrentObjectID;
 	BOOL mDone;
 
 	LLUUID mID;
-
-	const char* mStartString;
 };
 
 #endif
