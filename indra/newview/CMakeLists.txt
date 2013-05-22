@@ -227,7 +227,6 @@ set(viewer_SOURCE_FILES
     llfloatermodeluploadbase.cpp
     llfloatermute.cpp
     llfloaternamedesc.cpp
-    llfloaternewim.cpp
     llfloaternotificationsconsole.cpp
     llfloaterobjectiminfo.cpp
     llfloateropenobject.cpp
@@ -731,7 +730,6 @@ set(viewer_HEADER_FILES
     llfloatermodeluploadbase.h
     llfloatermute.h
     llfloaternamedesc.h
-    llfloaternewim.h
     llfloaternotificationsconsole.h
     llfloaterobjectiminfo.h
     llfloateropenobject.h

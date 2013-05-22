@@ -1359,7 +1359,7 @@ Por favor, escolha se o seu avatar é feminino ou masculino. Você pode mudar de
 	</notification>
 
 	<notification name="NotEnoughCurrency">
-		[NAME] L$ [PRICE] Você não possui suficientes [CURRENCY] para fazer isso.
+		[NAME] [CURRENCY] [PRICE] Você não possui suficientes [CURRENCY] para fazer isso.
 	</notification>
 
 	<notification name="GrantedModifyRights">
@@ -1722,7 +1722,7 @@ Proceder?
 	<notification label="Mudar o acesso à propriedade Linden" name="ChangeLindenAccess">
 		Você está prestes a mudar a lista de acessos de uma propriedade pertencente a Linden (continente, teen grid, orientação, etc.).
 
-Isto é PERIGOSO e deveria ser feito apenas para utilizar uma brecha que permita que objetos/L$ sejam transferidos para dentro/fora da grade.
+Isto é PERIGOSO e deveria ser feito apenas para utilizar uma brecha que permita que objetos/[CURRENCY] sejam transferidos para dentro/fora da grade.
 Isto mudará milhares de regiões e fará o spaceserver soluçar.
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
 	</notification>
