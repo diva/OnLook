@@ -3009,7 +3009,12 @@ class LLScriptCount : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		ScriptCounter::serializeSelection(false);
+		if (LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject())
+		{
+			ScriptCounter* sc = new ScriptCounter(false, object);
+			sc->requestInventories();
+			// sc will destroy itself
+		}
 		return true;
 	}
 };
@@ -3018,7 +3023,12 @@ class LLScriptDelete : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		ScriptCounter::serializeSelection(true);
+		if (LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject())
+		{
+			ScriptCounter* sc = new ScriptCounter(true, object);
+			sc->requestInventories();
+			// sc will destroy itself
+		}
 		return true;
 	}
 };
@@ -9552,6 +9562,7 @@ void initialize_menus()
 	addMenu(new LLObjectMeasure(), "Object.Measure");
 	addMenu(new LLObjectData(), "Object.Data");
 	addMenu(new LLScriptCount(), "Object.ScriptCount");
+	addMenu(new LLObjectVisibleScriptCount(), "Object.VisibleScriptCount");
 	addMenu(new LLKillEmAll(), "Object.Destroy");
 	addMenu(new LLPowerfulWizard(), "Object.Explode");
 	addMenu(new LLCanIHasKillEmAll(), "Object.EnableDestroy");
