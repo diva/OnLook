@@ -354,7 +354,7 @@ private:
 	/**
 	 * @brief TRUE when Updating
 	 */
-	bool mUpdate;
+	const LLCachedControl<bool> mUpdate;
 
 	/**
 	 * @brief Update rate (if min frames per update)
