@@ -3,10 +3,9 @@
  * @brief Panel for roles information about a particular group.
  *
  * $LicenseInfo:firstyear=2006&license=viewergpl$
- * 
+ * Second Life Viewer Source Code
  * Copyright (c) 2006-2009, Linden Research, Inc.
  * 
- * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
  * to you under the terms of the GNU General Public License, version 2.0
  * ("GPL"), unless you have obtained a separate licensing agreement
@@ -35,6 +34,7 @@
 #include "llcheckboxctrl.h"
 
 #include "llagent.h"
+#include "llavatarnamecache.h"
 #include "llbutton.h"
 #include "llfloateravatarinfo.h"
 #include "llfloatergroupinvite.h"
@@ -1619,11 +1619,60 @@ void LLPanelGroupMembersSubTab::update(LLGroupChange gc)
 	}
 }
 
+void LLPanelGroupMembersSubTab::addMemberToList(LLGroupMemberData* data)
+{
+	if (!data) return;
+	// Build the donated tier string.
+	std::ostringstream donated;
+	donated << data->getContribution() << " sq. m.";
+
+	LLSD item_params;
+	item_params["id"] = data->getID();
+
+	item_params["columns"][0]["column"] = "name";
+	// value is filled in by name list control
+
+	item_params["columns"][1]["column"] = "donated";
+	item_params["columns"][1]["value"] = donated.str();
+
+	item_params["columns"][2]["column"] = "online";
+	item_params["columns"][2]["value"] = data->getOnlineStatus();
+	item_params["columns"][2]["font"] = "SANSSERIF_SMALL";
+	mMembersList->addNameItem(item_params);
+
+	mHasMatch = TRUE;
+}
+
+void LLPanelGroupMembersSubTab::onNameCache(/*const LLUUID& update_id,*/ LLGroupMemberData* member, const LLAvatarName& av_name)
+{
+	/* Singu Note: We don't have a getMemberVersion, yet, don't bother with these
+	LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(mGroupID);
+	if (!gdatap
+		|| gdatap->getMemberVersion() != update_id
+	*/
+	if (!member)
+	{
+		return;
+	}
+
+	// trying to avoid unnecessary hash lookups
+	std::string name;
+	LLAvatarNameCache::getPNSName(av_name, name); // Singu Note: Diverge from LL Viewer and filter by name displayed
+	if (matchesSearchFilter(name))
+	{
+		addMemberToList(member);
+		if(!mMembersList->getEnabled())
+		{
+			mMembersList->setEnabled(TRUE);
+		}
+	}
+}
+
 void LLPanelGroupMembersSubTab::updateMembers()
 {
 	mPendingMemberUpdate = FALSE;
 
-	lldebugs << "LLPanelGroupMembersSubTab::updateMembers()" << llendl;
+	// Rebuild the members list.
 
 	LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(mGroupID);
 	if (!gdatap) 
@@ -1640,48 +1689,36 @@ void LLPanelGroupMembersSubTab::updateMembers()
 	{
 		return;
 	}
-		
+
+	//cleanup list only for first iteration
+	if(mMemberProgress == gdatap->mMembers.begin())
+	{
+		mMembersList->deleteAllItems();
+	}
+
+
 	LLGroupMgrGroupData::member_list_t::iterator end = gdatap->mMembers.end();
 
-	S32 i = 0;
-	for( ; mMemberProgress != end && i<UPDATE_MEMBERS_PER_FRAME; 
-			++mMemberProgress, ++i)
+	for(S32 i = 0; mMemberProgress != end && i<UPDATE_MEMBERS_PER_FRAME; ++mMemberProgress, ++i)
 	{
 		if (!mMemberProgress->second)
 			continue;
-		// Do filtering on name if it is already in the cache.
-		bool add_member = true;
 
+		// Do filtering on name if it is already in the cache.
+		// Singu Note: Diverge from LL Viewer and filter by name displayed
 		std::string fullname;
-		if (gCacheName->getFullName(mMemberProgress->first, fullname))
+		if (LLAvatarNameCache::getPNSName(mMemberProgress->first, fullname))
 		{
-			if ( !matchesSearchFilter(fullname) )
+			if (matchesSearchFilter(fullname))
 			{
-				add_member = false;
+				addMemberToList(mMemberProgress->second);
 			}
 		}
-
-		if (add_member)
+		else
 		{
-			// Build the donated tier string.
-			std::ostringstream donated;
-			donated << mMemberProgress->second->getContribution() << " sq. m.";
-
-			LLSD row;
-			row["id"] = (*mMemberProgress).first;
-
-			row["columns"][0]["column"] = "name";
-			// value is filled in by name list control
-
-			row["columns"][1]["column"] = "donated";
-			row["columns"][1]["value"] = donated.str();
-
-			row["columns"][2]["column"] = "online";
-			row["columns"][2]["value"] = mMemberProgress->second->getOnlineStatus();
-			row["columns"][2]["font"] = "SANSSERIF_SMALL";
-
-			mMembersList->addNameItem(row);
-			mHasMatch = TRUE;
+			// If name is not cached, onNameCache() should be called when it is cached and add this member to list.
+			LLAvatarNameCache::get(mMemberProgress->first, boost::bind(&LLPanelGroupMembersSubTab::onNameCache,
+									this, /*gdatap->getMemberVersion(),*/ mMemberProgress->second, _2));
 		}
 	}
 
