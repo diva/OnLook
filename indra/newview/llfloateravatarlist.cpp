@@ -529,7 +529,7 @@ void LLFloaterAvatarList::updateAvatarList()
 	//llinfos << "radar refresh: updating map" << llendl;
 
 	// Check whether updates are enabled
-	if (mUpdate)
+	if (!mUpdate)
 	{
 		refreshTracker();
 		return;
