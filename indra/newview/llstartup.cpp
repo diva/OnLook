@@ -221,7 +221,6 @@
 #include "wlfPanel_AdvSettings.h" //Lower right Windlight and Rendering options
 #include "lldaycyclemanager.h"
 #include "llfloaterblacklist.h"
-#include "scriptcounter.h"
 #include "shfloatermediaticker.h"
 #include "llpacketring.h"
 // </edit>
@@ -3225,7 +3224,6 @@ void pass_processObjectPropertiesFamily(LLMessageSystem *msg, void**)
 	// Send the result to the corresponding requesters.
 	LLSelectMgr::processObjectPropertiesFamily(msg, NULL);
 	JCFloaterAreaSearch::processObjectPropertiesFamily(msg, NULL);
-	ScriptCounter::processObjectPropertiesFamily(msg,0);
 }
 
 void register_viewer_callbacks(LLMessageSystem* msg)
