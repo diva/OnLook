@@ -328,6 +328,7 @@ void LLPrefsAscentChat::refreshValues()
 	//Chat UI -----------------------------------------------------------------------------
 	mWoLfVerticalIMTabs             = gSavedSettings.getBOOL("WoLfVerticalIMTabs");
 	mOtherChatsTornOff              = gSavedSettings.getBOOL("OtherChatsTornOff");
+	mIMAnnounceStealFocus           = gSavedSettings.getBOOL("PhoenixIMAnnounceStealFocus");
 	mShowLocalChatFloaterBar        = gSavedSettings.getBOOL("ShowLocalChatFloaterBar");
 	mHorizButt                      = gSavedSettings.getBOOL("ContactsUseHorizontalButtons");
 	mOneLineIMButt                  = gSavedSettings.getBOOL("UseConciseIMButtons");
@@ -561,6 +562,7 @@ void LLPrefsAscentChat::cancel()
 	//Chat UI -----------------------------------------------------------------------------
 	gSavedSettings.setBOOL("WoLfVerticalIMTabs",                   mWoLfVerticalIMTabs);
 	gSavedSettings.setBOOL("OtherChatsTornOff",                    mOtherChatsTornOff);
+	gSavedSettings.setBOOL("PhoenixIMAnnounceStealFocus",          mIMAnnounceStealFocus);
 	gSavedSettings.setBOOL("ShowLocalChatFloaterBar",              mShowLocalChatFloaterBar);
 	gSavedSettings.setBOOL("ContactsUseHorizontalButtons",         mHorizButt);
 	gSavedSettings.setBOOL("UseConciseIMButtons",                  mOneLineIMButt);
