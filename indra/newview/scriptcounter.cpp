@@ -97,7 +97,7 @@ void ScriptCounter::requestInventories()
 				if (LLViewerObject* object = selectNode->getObject())
 					requestInventoriesFor(object);
 	}
-	cmdline_printchat(LLTrans::getString("ScriptCounting"));
+	if (!doDelete) cmdline_printchat(LLTrans::getString("ScriptCounting"));
 	requesting = false;
 }
 
@@ -130,7 +130,8 @@ void ScriptCounter::inventoryChanged(LLViewerObject* obj, LLInventoryObject::obj
 {
 	obj->removeInventoryListener(this);
 	--inventories;
-	//llinfos << "Counting scripts in " << obj->getID() << llendl;
+	//const LLUUID& objid = obj->getID();
+	//llinfos << "Counting scripts in " << objid << llendl;
 
 	if (inv)
 	{
@@ -144,7 +145,11 @@ void ScriptCounter::inventoryChanged(LLViewerObject* obj, LLInventoryObject::obj
 					{
 						const LLUUID& id = asset->getUUID();
 						if (id.notNull())
+						{
+							//llinfos << "Deleting script " << id << " in " << objid << llendl;
 							obj->removeInventory(id);
+							--i; // Avoid iteration when removing, everything has shifted
+						}
 					}
 				}
 	}
