@@ -4352,6 +4352,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <real>0.700</real>
     </map>
+    <key>ConsoleBottomOffset</key>
+    <map>
+      <key>Comment</key>
+      <string>User definable offset between the bottom of the chat console and the bottom of the window; increase to move text in the console up</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <real>0</real>
+    </map>
     <key>ConsoleBufferSize</key>
     <map>
       <key>Comment</key>
