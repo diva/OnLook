@@ -451,6 +451,7 @@ void gl_draw_scaled_image_with_border(S32 x, S32 y, S32 width, S32 height, LLTex
 	gGL.getTexUnit(0)->bind(image, true);
 
 	gGL.color4fv(color.mV);
+	gGL.diffuseColor4fv(color.mV); //workaround: Intel HD 4000
 	
 	const S32 NUM_VERTICES = 9 * 4; // 9 quads
 	LLVector2 uv[NUM_VERTICES];
