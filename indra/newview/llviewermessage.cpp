@@ -3693,6 +3693,9 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			chat.mText = from_name;
 			mesg = mesg.substr(3);
 			ircstyle = TRUE;
+			// This block was moved up to allow bubbles with italicized chat
+			// set CHAT_STYLE_IRC to avoid adding Avatar Name as author of message. See EXT-656
+			chat.mChatStyle = CHAT_STYLE_IRC;
 		}
 		chat.mText += mesg;
 
@@ -3720,12 +3723,23 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			return;
 		}
 
+		// We have a real utterance now, so can stop showing "..." and proceed.
+		if (chatter && chatter->isAvatar())
+		{
+			LLLocalSpeakerMgr::getInstance()->setSpeakerTyping(from_id, FALSE);
+			static_cast<LLVOAvatar*>(chatter)->stopTyping();
+
+			if (!is_muted && !is_busy)
+			{
+				static const LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
+				visible_in_chat_bubble = use_chat_bubbles;
+				static_cast<LLVOAvatar*>(chatter)->addChat(chat);
+			}
+		}
+
 		// Look for IRC-style emotes
 		if (ircstyle)
 		{
-			// set CHAT_STYLE_IRC to avoid adding Avatar Name as author of message. See EXT-656
-			chat.mChatStyle = CHAT_STYLE_IRC;
-
 			// Do nothing, ircstyle is fixed above for chat bubbles
 		}
 		else
@@ -3850,20 +3864,6 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			}
 
 			chat.mText = from_name + verb + mesg;
-		}
-
-		// We have a real utterance now, so can stop showing "..." and proceed.
-		if (chatter && chatter->isAvatar())
-		{
-			LLLocalSpeakerMgr::getInstance()->setSpeakerTyping(from_id, FALSE);
-			((LLVOAvatar*)chatter)->stopTyping();
-
-			if (!is_muted && !is_busy)
-			{
-				static const LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
-				visible_in_chat_bubble = use_chat_bubbles;
-				((LLVOAvatar*)chatter)->addChat(chat);
-			}
 		}
 
 		if (chatter)
@@ -5286,7 +5286,7 @@ void process_avatar_animation(LLMessageSystem *mesgsys, void **user_data)
 	if (!avatarp)
 	{
 		// no agent by this ID...error?
-		LL_WARNS("Messaging") << "Received animation state for unknown avatar" << uuid << LL_ENDL;
+		LL_WARNS("Messaging") << "Received animation state for unknown avatar " << uuid << LL_ENDL;
 		return;
 	}
 

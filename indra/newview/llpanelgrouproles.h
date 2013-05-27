@@ -3,10 +3,9 @@
  * @brief Panel for roles information about a particular group.
  *
  * $LicenseInfo:firstyear=2006&license=viewergpl$
- * 
+ * Second Life Viewer Source Code
  * Copyright (c) 2006-2009, Linden Research, Inc.
  * 
- * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
  * to you under the terms of the GNU General Public License, version 2.0
  * ("GPL"), unless you have obtained a separate licensing agreement
@@ -35,6 +34,7 @@
 
 #include "llpanelgroup.h"
 
+class LLAvatarName;
 class LLNameListCtrl;
 class LLPanelGroupSubTab;
 class LLPanelGroupMembersSubTab;
@@ -196,6 +196,9 @@ public:
 	void updateMembers();
 
 	virtual void draw();
+
+	void addMemberToList(LLGroupMemberData* data);
+	void onNameCache(/*const LLUUID& update_id,*/ LLGroupMemberData* member, const LLAvatarName& av_name);
 
 protected:
 	typedef std::map<LLUUID, LLRoleMemberChangeType> role_change_data_map_t;
