@@ -40,7 +40,12 @@
 // viewer project includes
 #include "llagentdata.h"
 #include "llcommandhandler.h"
+#include "llimview.h"
+#include "llfloaterfriends.h"
+#include "llfloatermute.h"
+#include "llmenucommands.h"
 #include "llpanelavatar.h"
+#include "llviewermessage.h"
 #include "lluictrlfactory.h"
 #include "llweb.h"
 
@@ -97,13 +102,18 @@ public:
 	bool handle(const LLSD& params, const LLSD& query_map,
 				LLMediaCtrl* web)
 	{
-		if (params.size() < 2) return false;
+		if (params.size() < 2)
+		{
+			return false;
+		}
 		LLUUID agent_id;
 		if (!agent_id.set(params[0], FALSE))
 		{
 			return false;
 		}
 
+		const std::string verb = params[1].asString();
+		if (verb == "about")
 		{
 			LLFloaterAvatarInfo::show(agent_id);
 			return true;
@@ -140,7 +150,6 @@ public:
 			}
 			return true;
 		}
-
 
 		return false;
 	}
