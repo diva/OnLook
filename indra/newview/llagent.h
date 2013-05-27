@@ -242,7 +242,7 @@ private:
 	//--------------------------------------------------------------------
 public:
 	void			setRegion(LLViewerRegion *regionp);
-	LLViewerRegion	*getRegion() const;
+	LLViewerRegion	*getRegion() const  	{ return mRegionp; }
 	const LLHost&	getRegionHost() const;
 	BOOL			inPrelude();
 	std::string		getSLURL() const; //Return uri for current region

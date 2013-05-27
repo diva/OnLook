@@ -52,6 +52,7 @@
       <check_box bottom_delta="-25" left="10" follows="top" initial_value="false" control_name="WoLfVerticalIMTabs"
         label="Use Vertical IMs (Requires a restart)" name="use_vertical_ims_check"/>
       <check_box bottom_delta="-20" follows="top" control_name="OtherChatsTornOff" label="Open new IMs in separate floaters" name="chats_torn_off"/>
+      <check_box bottom_delta="-20" follows="top" control_name="PhoenixIMAnnounceStealFocus" label="Focus new instant messages" name="chat_steal_focus"/>
       <check_box bottom_delta="-20" follows="left|top" control_name="ShowLocalChatFloaterBar" label="Show chat bar in torn-off local chat floater" name="show_local_chat_floater_bar"/>
       <check_box bottom_delta="-20" control_name="ContactsUseHorizontalButtons" follows="top" height="16" label="Use horizontal buttons for contacts floater (Needs restart)" tool_tip="When enabled, the buttons on the Friends and Groups panels will be at the bottom, horizontally arranged, instead of vertically arranged on the right." name="horiz_butt"/>	  
       <check_box bottom_delta="-20" control_name="UseConciseIMButtons" follows="top" height="16" label="Buttons on the same line as name for IMs (Affects new IMs)" name="im_concise_butt"/>

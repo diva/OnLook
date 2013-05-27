@@ -420,6 +420,7 @@ void AIFilePicker::multiplex_impl(state_type run_state)
 			// Store folder of first filename as context.
 			AIFilePicker::store_folder(mContext, getFolder());
 			finish();
+			break;
 		}
 	}
 }

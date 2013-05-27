@@ -4378,9 +4378,17 @@ bool process_login_success_response(std::string& password)
 	tmp = response["search"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setSearchUrl(tmp);
 	tmp = response["currency"].asString();
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setCurrencySymbol(tmp);
+	if (!tmp.empty())
+	{
+		LLTrans::setDefaultArg("[CURRENCY]", tmp);
+		gHippoGridManager->getConnectedGrid()->setCurrencySymbol(tmp);
+	}
 	tmp = response["currency_text"].asString();
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setCurrencyText(tmp);
+	if (!tmp.empty())
+	{
+		LLTrans::setDefaultArg("[CURRENCY_TEXT]", tmp);
+		gHippoGridManager->getConnectedGrid()->setCurrencyText(tmp);
+	}
 	tmp = response["real_currency"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setRealCurrencySymbol(tmp);
 	tmp = response["directory_fee"].asString();
