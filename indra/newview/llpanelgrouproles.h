@@ -35,6 +35,7 @@
 #include "llpanelgroup.h"
 
 class LLAvatarName;
+class LLFilterEditor;
 class LLNameListCtrl;
 class LLPanelGroupSubTab;
 class LLPanelGroupMembersSubTab;
@@ -42,6 +43,8 @@ class LLPanelGroupRolesSubTab;
 class LLPanelGroupActionsSubTab;
 class LLScrollListCtrl;
 class LLScrollListItem;
+class LLTextEditor;
+class LLGroupMemberData;
 
 // Forward declare for friend usage.
 //virtual BOOL LLPanelGroupSubTab::postBuildSubTab(LLView*);
@@ -64,7 +67,7 @@ public:
 	virtual BOOL isVisibleByAgent(LLAgent* agentp);
 
 	static void* createTab(void* data);
-	void handleClickSubTab();
+	bool handleSubTabSwitch(const LLSD& data);
 
 	// Checks if the current tab needs to be applied, and tries to switch to the requested tab.
 	BOOL attemptTransition();
@@ -109,15 +112,7 @@ public:
 	virtual BOOL postBuild();
 
 	// This allows sub-tabs to collect child widgets from a higher level in the view hierarchy.
-	virtual BOOL postBuildSubTab(LLView* root) { return TRUE; }
-
-	static void onSearchKeystroke(LLLineEditor* caller, void* user_data);
-	void handleSearchKeystroke(LLLineEditor* caller);
-
-	static void onClickSearch(void*);
-	void handleClickSearch();
-	static void onClickShowAll(void*);
-	void handleClickShowAll();
+	virtual BOOL postBuildSubTab(LLView* root);
 
 	virtual void setSearchFilter( const std::string& filter );
 
@@ -126,6 +121,9 @@ public:
 
 	// Helper functions
 	bool matchesActionSearchFilter(std::string action);
+
+	void setFooterEnabled(BOOL enable);
+protected:
 	void buildActionsList(LLScrollListCtrl* ctrl,
 								 U64 allowed_by_some,
 								 U64 allowed_by_all,
@@ -142,18 +140,17 @@ public:
 									BOOL filter,
 									BOOL is_owner_role);
 
-	void setFooterEnabled(BOOL enable);
 protected:
 	LLPanel* mHeader;
 	LLPanel* mFooter;
 
-	LLLineEditor*	mSearchLineEditor;
-	LLButton*		mSearchButton;
-	LLButton*		mShowAllButton;
+	LLFilterEditor*	mSearchEditor;
 
 	std::string mSearchFilter;
 
 	icon_map_t	mActionIcons;
+
+	bool mActivated;
 
 	void setOthersVisible(BOOL b);
 };
@@ -198,7 +195,7 @@ public:
 	virtual void draw();
 
 	void addMemberToList(LLGroupMemberData* data);
-	void onNameCache(/*const LLUUID& update_id,*/ LLGroupMemberData* member, const LLAvatarName& av_name);
+	void onNameCache(const LLUUID& update_id, LLGroupMemberData* member, const LLAvatarName& av_name);
 
 protected:
 	typedef std::map<LLUUID, LLRoleMemberChangeType> role_change_data_map_t;
@@ -252,8 +249,9 @@ public:
 
 	static void onPropertiesKey(LLLineEditor*, void*);
 
+	void onDescriptionKeyStroke(LLTextEditor* caller);
+
 	static void onDescriptionCommit(LLUICtrl*, void*);
-	void		onDescriptionFocus();
 
 	static void onMemberVisibilityChange(LLUICtrl*, void*);
 	void handleMemberVisibilityChange(bool value);
@@ -264,7 +262,7 @@ public:
 	static void onDeleteRole(void*);
 	void handleDeleteRole();
 
-	void saveRoleChanges();
+	void saveRoleChanges(bool select_saved_role);
 protected:
 	void handleActionCheck(LLUICtrl* ctrl, bool force);
 	LLSD createRoleItem(const LLUUID& role_id, std::string name, std::string title, S32 members);

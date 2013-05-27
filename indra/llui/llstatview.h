@@ -1,5 +1,5 @@
 /** 
- * @file llcontainerview.h
+ * @file llstatview.h
  * @brief Container for all statistics info.
  *
  * $LicenseInfo:firstyear=2001&license=viewergpl$
@@ -30,42 +30,41 @@
  * $/LicenseInfo$
  */
 
-#ifndef LL_LLCONTAINERVIEW_H
-#define LL_LLCONTAINERVIEW_H
+#ifndef LL_LLSTATVIEW_H
+#define LL_LLSTATVIEW_H
 
-#include "stdtypes.h"
-#include "lltextbox.h"
 #include "llstatbar.h"
+#include "llcontainerview.h"
+#include <vector>
 
-class LLScrollableContainerView;
+class LLStatBar;
 
-class LLContainerView : public LLView
+class LLStatView : public LLContainerView
 {
+public:
+	struct Params : public LLInitParam::Block<Params, LLContainerView::Params>
+	{
+		Optional<std::string> setting;
+		Params() 
+		:	setting("setting")
+		{
+			changeDefault(follows.flags, FOLLOWS_TOP | FOLLOWS_LEFT);
+		}
+	};
+	~LLStatView();
+
 protected:
-	BOOL mDisplayChildren;
-	std::string mLabel;
+	LLStatView(const Params&);
+	friend class LLUICtrlFactory;
 public:
-	BOOL mCollapsible;
-public:
-	LLContainerView(const std::string& name, const LLRect& rect);
-	~LLContainerView();
 
-	virtual BOOL handleMouseDown(S32 x, S32 y, MASK mask);
-	virtual BOOL handleMouseUp(S32 x, S32 y, MASK mask);
-
-	virtual void draw();
-	virtual void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
-	virtual LLRect getRequiredRect();	// Return the height of this object, given the set options.
-
-	void setLabel(const std::string& label);
-	void showLabel(BOOL show) { mShowLabel = show; }
-	void setDisplayChildren(const BOOL displayChildren);
-	BOOL getDisplayChildren() { return mDisplayChildren; }
-	void setScrollContainer(LLScrollableContainerView* scroll);
-
- private:
-	LLScrollableContainerView* mScrollContainer;
-	void arrange(S32 width, S32 height, BOOL called_from_parent = TRUE);
-	BOOL mShowLabel;
+	LLStatBar *addStat(const std::string& name, LLStat *statp,
+					   const std::string& setting = std::string(), BOOL default_bar = FALSE, BOOL default_history = FALSE);
+	LLStatView *addStatView(LLStatView::Params& p);
+protected:
+	typedef std::vector<LLStatBar *> sb_vector_t;
+	sb_vector_t mStatBars;
+	U32 mNumStatBars;
+	std::string mSetting;
 };
-#endif // LL_CONTAINERVIEW_
+#endif // LL_STATVIEW_H

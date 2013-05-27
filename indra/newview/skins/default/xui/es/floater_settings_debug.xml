@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="settings_debug" title="Configurar Depurador">
-    <search_editor label="Buscar" name="search_settings_input" tool_tip="Escribe aquí el término que estás buscando. Los resultados mostrarán las coincidencias parciales del texto buscado ya sea en los nombres de clave o en los comentarios."/>
+  <filter_editor label="Buscar" name="search_settings_input" tool_tip="Escribe aquí el término que estás buscando. Los resultados mostrarán las coincidencias parciales del texto buscado ya sea en los nombres de clave o en los comentarios."/>
 
 	<radio_group name="boolean_combo">
 		<radio_item name="TRUE">

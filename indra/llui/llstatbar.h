@@ -1,6 +1,6 @@
 /** 
- * @file llstatview.h
- * @brief Container for all statistics info.
+ * @file llstatbar.h
+ * @brief A little map of the world with network information
  *
  * $LicenseInfo:firstyear=2001&license=viewergpl$
  * 
@@ -30,36 +30,50 @@
  * $/LicenseInfo$
  */
 
-#ifndef LL_LLSTATVIEW_H
-#define LL_LLSTATVIEW_H
+#ifndef LL_LLSTATBAR_H
+#define LL_LLSTATBAR_H
 
-#include "llstatbar.h"
-#include "llcontainerview.h"
-#include <vector>
+#include "llview.h"
+#include "llframetimer.h"
 
-class LLStatBar;
+class LLStat;
 
-class LLStatView : public LLContainerView
+class LLStatBar : public LLView
 {
+	enum STAT_MODE_FLAG
+	{
+		STAT_BAR_FLAG = 1,
+		STAT_HISTORY_FLAG = 2
+	};
+	
 public:
-	LLStatView(const std::string& name, const std::string& label, const std::string& setting, const LLRect& rect);
-	~LLStatView();
+	LLStatBar(const std::string& name, const LLRect& rect, const std::string& setting = std::string(),
+			  BOOL default_bar = FALSE, BOOL default_history = FALSE);
 
-/*
 	virtual void draw();
-	virtual void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
-	virtual LLRect getRequiredRect();	// Return the height of this object, given the set options.
-*/
+	virtual BOOL handleMouseDown(S32 x, S32 y, MASK mask);
 
-	LLStatBar *addStat(const std::string& name, LLStat *statp,
-					   const std::string& setting = std::string(), BOOL default_bar = FALSE, BOOL default_history = FALSE);
-	LLStatBar *getStatBar(const std::string& name);
-	LLStatView *addStatView(const std::string& name, const std::string& label, const std::string& setting, const LLRect& rect);
+	void setUnitLabel(const std::string& unit_label);
+	/*virtual*/ LLRect getRequiredRect();	// Return the height of this object, given the set options.
 
-protected:
-	typedef std::vector<LLStatBar *> sb_vector_t;
-	sb_vector_t mStatBars;
-	U32 mNumStatBars;
+	F32 mMinBar;
+	F32 mMaxBar;
+	F32 mTickSpacing;
+	F32 mLabelSpacing;
+	U32 mPrecision;
+	F32 mUpdatesPerSec;
+	BOOL mPerSec;				// Use the per sec stats.
+	BOOL mDisplayBar;			// Display the bar graph.
+	BOOL mDisplayHistory;
+	BOOL mDisplayMean;			// If true, display mean, if false, display current value
+
+	LLStat *mStatp;
+private:
+	LLFrameTimer mUpdateTimer;
+	LLUIString mLabel;
+	std::string mUnitLabel;
+	F32 mValue;
 	std::string mSetting;
 };
-#endif // LL_STATVIEW_H
+
+#endif

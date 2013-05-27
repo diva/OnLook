@@ -399,8 +399,7 @@ BOOL LLPreviewGesture::postBuild()
 	LLCheckBoxCtrl* check;
 
 	edit = getChild<LLLineEditor>("trigger_editor");
-	edit->setKeystrokeCallback(onKeystrokeCommit);
-	edit->setCallbackUserData(this);
+	edit->setKeystrokeCallback(boost::bind(&onKeystrokeCommit,_1,this));
 	edit->setCommitCallback(boost::bind(&LLPreviewGesture::onCommitSetDirty,this));
 	edit->setCommitOnFocusLost(TRUE);
 	edit->setIgnoreTab(TRUE);
@@ -412,8 +411,7 @@ BOOL LLPreviewGesture::postBuild()
 
 	edit = getChild<LLLineEditor>("replace_editor");
 	edit->setEnabled(FALSE);
-	edit->setKeystrokeCallback(onKeystrokeCommit);
-	edit->setCallbackUserData(this);
+	edit->setKeystrokeCallback(boost::bind(&onKeystrokeCommit,_1,this));
 	edit->setCommitCallback(boost::bind(&LLPreviewGesture::onCommitSetDirty,this));
 	edit->setCommitOnFocusLost(TRUE);
 
@@ -537,7 +535,7 @@ BOOL LLPreviewGesture::postBuild()
 	{
 		childSetCommitCallback("desc", LLPreview::onText, this);
 		childSetText("desc", item->getDescription());
-		childSetPrevalidate("desc", &LLLineEditor::prevalidatePrintableNotPipe);
+		getChild<LLLineEditor>("desc")->setPrevalidate(&LLLineEditor::prevalidatePrintableNotPipe);
 	}
 
 	return TRUE;

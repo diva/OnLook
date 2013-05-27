@@ -89,7 +89,7 @@ BOOL LLProgressView::postBuild()
 
 	getChild<LLTextBox>("title_text")->setText(LLStringExplicit(LLAppViewer::instance()->getSecondLifeTitle()));
 
-	getChild<LLTextBox>("message_text")->setClickedCallback(onClickMessage, this);
+	getChild<LLTextBox>("message_text")->setClickedCallback(boost::bind(&LLProgressView::onClickMessage, this));
 
 	sInstance = this;
 	return TRUE;

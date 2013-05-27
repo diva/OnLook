@@ -1129,11 +1129,10 @@ BOOL LLPanelLandObjects::postBuild()
 	mCleanOtherObjectsTime = getChild<LLLineEditor>("clean other time");
 
 	mCleanOtherObjectsTime->setFocusLostCallback(boost::bind(&LLPanelLandObjects::onLostFocus, _1, this));
-	mCleanOtherObjectsTime->setCommitCallback(onCommitClean);
+	mCleanOtherObjectsTime->setCommitCallback(onCommitClean, this);
 
-	childSetPrevalidate("clean other time", LLLineEditor::prevalidateNonNegativeS32);
-	childSetUserData("clean other time", this);
-	
+	mCleanOtherObjectsTime->setPrevalidate(LLLineEditor::prevalidateNonNegativeS32);
+
 	mBtnRefresh = getChild<LLButton>("Refresh List");
 	mBtnRefresh->setClickedCallback(onClickRefresh, this);
 	

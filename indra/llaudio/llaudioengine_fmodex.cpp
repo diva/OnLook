@@ -525,15 +525,16 @@ bool LLAudioChannelFMODEX::updateBuffer()
 	}
 
 	// If we have a source for the channel, we need to update its gain.
-	if (mCurrentSourcep)
+	if (mCurrentSourcep && mChannelp)
 	{
 		// SJB: warnings can spam and hurt framerate, disabling
 		FMOD_RESULT result;
 
-		result = mChannelp->setVolume(getSecondaryGain() * mCurrentSourcep->getGain());
-		//Check_FMOD_Error(result, "FMOD::Channel::setVolume");
 
+		result = mChannelp->setVolume(getSecondaryGain() * mCurrentSourcep->getGain());
+		Check_FMOD_Error(result, "FMOD::Channel::setVolume");
 		result = mChannelp->setMode(mCurrentSourcep->isLoop() ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
+		Check_FMOD_Error(result, "FMOD::Channel::setMode");
 		/*if(Check_FMOD_Error(result, "FMOD::Channel::setMode"))
 		{
 			S32 index;
@@ -595,7 +596,7 @@ void LLAudioChannelFMODEX::updateLoop()
 	// yield false negatives.
 	//
 	U32 cur_pos;
-	mChannelp->getPosition(&cur_pos,FMOD_TIMEUNIT_PCMBYTES);
+	Check_FMOD_Error(mChannelp->getPosition(&cur_pos,FMOD_TIMEUNIT_PCMBYTES),"FMOD::Channel::getPosition");
 
 	if (cur_pos < (U32)mLastSamplePos)
 	{
@@ -629,12 +630,12 @@ void LLAudioChannelFMODEX::play()
 		return;
 	}
 
-	Check_FMOD_Error(mChannelp->setPaused(false), "FMOD::Channel::pause");
+	Check_FMOD_Error(mChannelp->setPaused(false), "FMOD::Channel::setPaused");
 
 	getSource()->setPlayedOnce(true);
 
 	if(LLAudioEngine_FMODEX::mChannelGroups[getSource()->getType()])
-		mChannelp->setChannelGroup(LLAudioEngine_FMODEX::mChannelGroups[getSource()->getType()]);
+		Check_FMOD_Error(mChannelp->setChannelGroup(LLAudioEngine_FMODEX::mChannelGroups[getSource()->getType()]),"FMOD::Channel::setChannelGroup");
 }
 
 
@@ -669,8 +670,8 @@ bool LLAudioChannelFMODEX::isPlaying()
 	}
 
 	bool paused, playing;
-	mChannelp->getPaused(&paused);
-	mChannelp->isPlaying(&playing);
+	Check_FMOD_Error(mChannelp->getPaused(&paused),"FMOD::Channel::getPaused");
+	Check_FMOD_Error(mChannelp->isPlaying(&playing),"FMOD::Channel::isPlaying");
 	return !paused && playing;
 }
 
@@ -680,7 +681,7 @@ bool LLAudioChannelFMODEX::isPlaying()
 //
 
 
-LLAudioBufferFMODEX::LLAudioBufferFMODEX(FMOD::System *system) : mSystemp(system), mSoundp(NULL)
+LLAudioBufferFMODEX::LLAudioBufferFMODEX(FMOD::System *system) : LLAudioBuffer(), mSystemp(system), mSoundp(NULL)
 {
 }
 
@@ -689,7 +690,7 @@ LLAudioBufferFMODEX::~LLAudioBufferFMODEX()
 {
 	if(mSoundp)
 	{
-		mSoundp->release();
+		Check_FMOD_Error(mSoundp->release(),"FMOD::Sound::Release");
 		mSoundp = NULL;
 	}
 }
@@ -714,7 +715,7 @@ bool LLAudioBufferFMODEX::loadWAV(const std::string& filename)
 	if (mSoundp)
 	{
 		// If there's already something loaded in this buffer, clean it up.
-		mSoundp->release();
+		Check_FMOD_Error(mSoundp->release(),"FMOD::Sound::release");
 		mSoundp = NULL;
 	}
 
@@ -757,7 +758,7 @@ U32 LLAudioBufferFMODEX::getLength()
 	}
 
 	U32 length;
-	mSoundp->getLength(&length, FMOD_TIMEUNIT_PCMBYTES);
+	Check_FMOD_Error(mSoundp->getLength(&length, FMOD_TIMEUNIT_PCMBYTES),"FMOD::Sound::getLength");
 	return length;
 }
 
@@ -765,7 +766,7 @@ U32 LLAudioBufferFMODEX::getLength()
 void LLAudioChannelFMODEX::set3DMode(bool use3d)
 {
 	FMOD_MODE current_mode;
-	if(mChannelp->getMode(&current_mode) != FMOD_OK)
+	if(Check_FMOD_Error(mChannelp->getMode(&current_mode),"FMOD::Channel::getMode"))
 		return;
 	FMOD_MODE new_mode = current_mode;	
 	new_mode &= ~(use3d ? FMOD_2D : FMOD_3D);
@@ -773,7 +774,7 @@ void LLAudioChannelFMODEX::set3DMode(bool use3d)
 
 	if(current_mode != new_mode)
 	{
-		mChannelp->setMode(new_mode);
+		Check_FMOD_Error(mChannelp->setMode(new_mode),"FMOD::Channel::setMode");
 	}
 }
 

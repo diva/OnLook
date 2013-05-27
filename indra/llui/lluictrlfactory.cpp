@@ -32,6 +32,7 @@
 
 #include "linden_common.h"
 
+#define LLUICTRLFACTORY_CPP
 #include "lluictrlfactory.h"
 
 #include <fstream>
@@ -70,6 +71,10 @@
 #include "lluiimage.h"
 #include "llviewborder.h"
 
+LLFastTimer::DeclareTimer FTM_WIDGET_CONSTRUCTION("Widget Construction");
+LLFastTimer::DeclareTimer FTM_INIT_FROM_PARAMS("Widget InitFromParams");
+LLFastTimer::DeclareTimer FTM_WIDGET_SETUP("Widget Setup");
+
 const char XML_HEADER[] = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\" ?>\n";
 
 const S32 HPAD = 4;
@@ -83,7 +88,7 @@ std::vector<std::string> LLUICtrlFactory::sXUIPaths;
 class LLUICtrlLocate : public LLUICtrl
 {
 public:
-	LLUICtrlLocate() : LLUICtrl(std::string("locate"), LLRect(0,0,0,0), FALSE, NULL, NULL) { setTabStop(FALSE); }
+	LLUICtrlLocate() : LLUICtrl(std::string("locate"), LLRect(0,0,0,0), FALSE) { setTabStop(FALSE); }
 	virtual void draw() { }
 
 	virtual LLXMLNodePtr getXML(bool save_children = true) const
@@ -109,6 +114,9 @@ public:
 
 static LLRegisterWidget<LLUICtrlLocate> r1("locate");
 static LLRegisterWidget<LLUICtrlLocate> r2("pad");
+
+// Build time optimization, generate this once in .cpp file
+template class LLUICtrlFactory* LLSingleton<class LLUICtrlFactory>::getInstance();
 
 //-----------------------------------------------------------------------------
 // LLUICtrlFactory()
@@ -556,10 +564,17 @@ LLView* LLUICtrlFactory::createWidget(LLPanel *parent, LLXMLNodePtr node)
 
 	if (view)
 	{
-		parent->addChild(view, tab_group);
+		setCtrlParent(view, parent, tab_group);
 	}
 
 	return view;
+}
+
+//static
+void LLUICtrlFactory::setCtrlParent(LLView* view, LLView* parent, S32 tab_group)
+{
+	if (tab_group == S32_MAX) tab_group = parent->getLastTabGroup();
+	parent->addChild(view, tab_group);
 }
 
 //-----------------------------------------------------------------------------

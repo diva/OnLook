@@ -596,12 +596,13 @@ BOOL LLPanelAvatarNotes::postBuild(void)
 
 BOOL LLPanelAvatarWeb::postBuild(void)
 {
-	childSetKeystrokeCallback("url_edit", onURLKeystroke, this);
-	childSetCommitCallback("load", onCommitLoad, this);
+	LLLineEditor* url_edit = getChild<LLLineEditor>("url_edit");
+	url_edit->setKeystrokeCallback(boost::bind(&LLPanelAvatarWeb::onURLKeystroke,this,_1));
+	url_edit->setCommitCallback(boost::bind(&LLPanelAvatarWeb::onCommitURL,this,_2));
+
+	getChild<LLLineEditor>("load")->setCommitCallback(boost::bind(&LLPanelAvatarWeb::onCommitLoad,this,_2));
 
 	childSetAction("web_profile_help",onClickWebProfileHelp,this);
-
-	childSetCommitCallback("url_edit",onCommitURL,this);
 
 	childSetControlName("auto_load","AutoLoadWebProfiles");
 
@@ -752,14 +753,9 @@ void LLPanelAvatarWeb::setWebURL(std::string url)
 }
 
 
-// static
-void LLPanelAvatarWeb::onCommitURL(LLUICtrl* ctrl, void* data)
+void LLPanelAvatarWeb::onCommitURL(const LLSD& value)
 {
-	LLPanelAvatarWeb* self = (LLPanelAvatarWeb*)data;
-
-	if (!self) return;
-	
-	self->load( self->childGetText("url_edit") );
+	load(value.asString());
 }
 
 // static
@@ -783,31 +779,20 @@ void LLPanelAvatarWeb::load(std::string url)
 	}
 }
 
-
-
-
-//static
-void LLPanelAvatarWeb::onURLKeystroke(LLLineEditor* editor, void* data)
+void LLPanelAvatarWeb::onURLKeystroke(LLLineEditor* editor)
 {
-	LLPanelAvatarWeb* self = (LLPanelAvatarWeb*)data;
-	if (!self) return;
 	LLSD::String url = editor->getText();
-	self->childSetEnabled("load", url.length() > 0);
+	childSetEnabled("load", url.length() > 0);
 	return;
 }
 
-// static
-void LLPanelAvatarWeb::onCommitLoad(LLUICtrl* ctrl, void* data)
+void LLPanelAvatarWeb::onCommitLoad(const LLSD& value)
 {
-	LLPanelAvatarWeb* self = (LLPanelAvatarWeb*)data;
-
-	if (!self) return;
-
-	LLSD::String valstr = ctrl->getValue().asString();
-	LLSD::String urlstr = self->childGetText("url_edit");
+	LLSD::String valstr = value.asString();
+	LLSD::String urlstr = childGetText("url_edit");
 	if (valstr == "") // load url string into browser panel
 	{
-		self->load(urlstr);
+		load(urlstr);
 	}
 	else if (valstr == "open") // open in user's external browser
 	{
@@ -818,9 +803,9 @@ void LLPanelAvatarWeb::onCommitLoad(LLUICtrl* ctrl, void* data)
 	}
 	else if (valstr == "home") // reload profile owner's home page
 	{
-		if (!self->mHome.empty())
+		if (!mHome.empty())
 		{
-			self->load(self->mHome);
+			load(mHome);
 		}
 	}
 }

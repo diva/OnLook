@@ -1349,12 +1349,12 @@ BOOL LLFloaterIMPanel::postBuild()
 		mInputEditor = getChild<LLLineEditor>("chat_editor");
 		mInputEditor->setFocusReceivedCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusReceived, this) );
 		mFocusLostSignal = mInputEditor->setFocusLostCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusLost, this) );
-		mInputEditor->setKeystrokeCallback( onInputEditorKeystroke );
-		mInputEditor->setCommitCallback( onCommitChat );
-		mInputEditor->setCallbackUserData(this);
+		mInputEditor->setKeystrokeCallback( boost::bind(&LLFloaterIMPanel::onInputEditorKeystroke, this, _1) );
+		mInputEditor->setCommitCallback( boost::bind(&LLFloaterIMPanel::onSendMsg,this) );
 		mInputEditor->setCommitOnFocusLost( FALSE );
 		mInputEditor->setRevertOnEsc( FALSE );
 		mInputEditor->setReplaceNewlinesWithSpaces( FALSE );
+		mInputEditor->setPassDelete( TRUE );
 
 		if (LLButton* btn = findChild<LLButton>("profile_callee_btn"))
 		{
@@ -1371,7 +1371,7 @@ BOOL LLFloaterIMPanel::postBuild()
 
 		childSetAction("start_call_btn", onClickStartCall, this);
 		childSetAction("end_call_btn", onClickEndCall, this);
-		childSetAction("send_btn", onClickSend, this);
+		getChild<LLButton>("send_btn")->setCommitCallback(boost::bind(&LLFloaterIMPanel::onSendMsg,this));
 		if (LLButton* btn = findChild<LLButton>("toggle_active_speakers_btn"))
 			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickToggleActiveSpeakers, this, _2));
 
@@ -1746,7 +1746,7 @@ BOOL LLFloaterIMPanel::handleKeyHere( KEY key, MASK mask )
 	BOOL handled = FALSE;
 	if( KEY_RETURN == key && mask == MASK_NONE)
 	{
-		sendMsg();
+		onSendMsg();
 		handled = TRUE;
 
 		// Close talk panels on hitting return
@@ -1951,23 +1951,9 @@ void LLFloaterIMPanel::onClickEndCall(void* userdata)
 	self->getVoiceChannel()->deactivate();
 }
 
-// static
-void LLFloaterIMPanel::onClickSend(void* userdata)
-{
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*)userdata;
-	self->sendMsg();
-}
-
 void LLFloaterIMPanel::onClickToggleActiveSpeakers(const LLSD& value)
 {
 	childSetVisible("active_speakers_panel", !value);
-}
-
-// static
-void LLFloaterIMPanel::onCommitChat(LLUICtrl* caller, void* userdata)
-{
-	LLFloaterIMPanel* self= (LLFloaterIMPanel*) userdata;
-	self->sendMsg();
 }
 
 void LLFloaterIMPanel::onInputEditorFocusReceived()
@@ -1980,19 +1966,17 @@ void LLFloaterIMPanel::onInputEditorFocusLost()
 	setTyping(FALSE);
 }
 
-// static
-void LLFloaterIMPanel::onInputEditorKeystroke(LLLineEditor* caller, void* userdata)
+void LLFloaterIMPanel::onInputEditorKeystroke(LLLineEditor* caller)
 {
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*)userdata;
-	std::string text = self->mInputEditor->getText();
+	std::string text = caller->getText();
 	if (!text.empty())
 	{
-		self->setTyping(TRUE);
+		setTyping(TRUE);
 	}
 	else
 	{
 		// Deleting all text counts as stopping typing.
-		self->setTyping(FALSE);
+		setTyping(FALSE);
 	}
 }
 
@@ -2099,7 +2083,7 @@ void deliver_message(const std::string& utf8_text,
 	}
 }
 
-void LLFloaterIMPanel::sendMsg()
+void LLFloaterIMPanel::onSendMsg()
 {
 	if (!gAgent.isGodlike() 
 		&& (mDialog == IM_NOTHING_SPECIAL)

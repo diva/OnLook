@@ -34,6 +34,7 @@
 #define LL_LLPANELGROUPGENERAL_H
 
 #include "llpanelgroup.h"
+#include "llavatarnamecache.h"
 
 class LLLineEditor;
 class LLTextBox;
@@ -45,6 +46,7 @@ class LLCheckBoxCtrl;
 class LLComboBox;
 class LLNameBox;
 class LLSpinCtrl;
+class LLGroupMemberData;
 
 class LLPanelGroupGeneral : public LLPanelGroupTab
 {
@@ -66,6 +68,7 @@ public:
 	
 	virtual void draw();
 
+	void onNameCache(const LLUUID& update_id, LLGroupMemberData* member, const LLAvatarName& av_name);
 private:
 	void onFocusEdit();
 	void onCommitAny();
@@ -76,6 +79,7 @@ private:
 	static void onClickInfo(void* userdata);
 	static void onReceiveNotices(LLUICtrl* ctrl, void* data);
 	static void openProfile(void* data);
+	void addMember(LLGroupMemberData* member);
 
     static bool joinDlgCB(const LLSD& notification, const LLSD& response);
 

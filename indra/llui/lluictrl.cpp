@@ -54,23 +54,24 @@ LLUICtrl::LLUICtrl() :
 {
 }
 
-LLUICtrl::LLUICtrl(const std::string& name, const LLRect& rect, BOOL mouse_opaque,
-	void (*on_commit_callback)(LLUICtrl*, void*),
-	void* callback_userdata,
+LLUICtrl::LLUICtrl(const std::string& name, const LLRect rect, BOOL mouse_opaque,
+	commit_callback_t commit_callback,
 	U32 reshape)
 :	// can't make this automatically follow top and left, breaks lots
 	// of buttons in the UI. JC 7/20/2002
 	LLView( name, rect, mouse_opaque, reshape ),
 	mCommitSignal(NULL),
 	mValidateSignal(NULL),
+	mCommitCallback(NULL),
 	mViewModel(LLViewModelPtr(new LLViewModel)),
-	mCommitCallback( on_commit_callback),
 	mValidateCallback( NULL ),
-	mCallbackUserData( callback_userdata ),
+	mCallbackUserData( NULL ),
 	mTentative( FALSE ),
 	mTabStop( TRUE ),
 	mIsChrome(FALSE)
 {
+	if(commit_callback)
+		setCommitCallback(commit_callback);
 }
 
 LLUICtrl::~LLUICtrl()

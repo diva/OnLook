@@ -39,17 +39,16 @@
 class LLScrollListCtrl;
 class LLButton;
 
-class SLFloaterMediaFilter : public LLFloater
+class SLFloaterMediaFilter : public LLFloater, public LLFloaterSingleton<SLFloaterMediaFilter>
 {
+	friend class LLUISingleton<SLFloaterMediaFilter, VisibilityPolicy<LLFloater> >;
 public:
-	SLFloaterMediaFilter();
+	SLFloaterMediaFilter(const LLSD& key = LLSD());
 	BOOL postBuild();
 	virtual void draw();
 	virtual ~SLFloaterMediaFilter();
 
 	static void setDirty();
-	static BOOL instanceVisible();
-	static void toggleInstance();
 
 	static void onClearLists(void*);
 	static void onShowIPs(void*);

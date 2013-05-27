@@ -104,7 +104,7 @@ LLPanelDebug::LLPanelDebug(const std::string& name, const LLRect& rect)
 								  TRUE,
 								  TRUE,
 								  FALSE,
-								  NULL, NULL,
+								  NULL,
 								  (F32)gSavedSettings.getS32("DropShadowFloater"), 
 								  0.f, 10.f, 1.0f, 
 								  std::string("DropShadowFloater"));
@@ -122,7 +122,7 @@ LLPanelDebug::LLPanelDebug(const std::string& name, const LLRect& rect)
 								  TRUE,
 								  TRUE,
 								  FALSE,
-								  NULL, NULL,
+								  NULL,
 								  (F32)gSavedSettings.getS32("DropShadowButton"), 
 								  0.f, 10.f, 1.0f, 
 								  std::string("DropShadowButton"));
@@ -135,7 +135,7 @@ LLPanelDebug::LLPanelDebug(const std::string& name, const LLRect& rect)
 							   LLRect(LEFT, cur_y, RIGHT, cur_y - 20),
 							   std::string("Left Click Shows Menu Unless Interactive"),
 							   font,
-							   NULL, NULL,
+							   NULL,
 							   gSavedSettings.getBOOL("LeftClickShowMenu"));
 	check->setFollows(FOLLOWS_LEFT|FOLLOWS_TOP);
 	addChild(check);

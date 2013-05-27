@@ -1008,11 +1008,11 @@
 			<on_check function="FloaterVisible" userdata="areasearch"/>
 		</menu_item_check>
 		<menu_item_check label="Sound Explorer" mouse_opaque="true" name="Sound Explorer">
-			<on_click function="SoundExplorer"/>
+			<on_click function="ShowFloater" userdata="sound_explorer"/>
 			<on_check function="FloaterVisible" userdata="sound_explorer"/>
 		</menu_item_check>
 		<menu_item_check label="Asset Blacklist" mouse_opaque="true" name="Asset Blacklist">
-			<on_click function="AssetBlacklist"/>
+			<on_click function="ShowFloater" userdata="asset_blacklist"/>
 			<on_check function="FloaterVisible" userdata="asset_blacklist"/>
 		</menu_item_check>
 		<menu_item_check label="Streaming Audio Display" mouse_opaque="true" name="Streaming Audio Display">

@@ -78,7 +78,6 @@
 
 // newview includes
 #include "llagent.h"
-#include "llalertdialog.h"
 #include "llbox.h"
 #include "llchatbar.h"
 #include "llconsole.h"
@@ -1657,7 +1656,13 @@ LLViewerWindow::LLViewerWindow(
 								LLUICtrlFactory::getXUIPaths());
 	}
 	// Create container for all sub-views
-	mRootView = new LLRootView("root", mWindowRectScaled, FALSE);
+	LLView::Params rvp;
+	rvp.name("root");
+	rvp.rect(mWindowRectScaled);
+	rvp.mouse_opaque(false);
+	rvp.follows.flags(FOLLOWS_NONE);
+	mRootView = LLUICtrlFactory::create<LLRootView>(rvp);
+	LLUI::setRootView(mRootView);
 
 	// Make avatar head look forward at start
 	mCurrentMousePoint.mX = getWindowWidthScaled() / 2;
@@ -2370,15 +2375,17 @@ void LLViewerWindow::drawDebugText()
 {
 	gGL.color4f(1,1,1,1);
 	gGL.pushMatrix();
+	gGL.pushUIMatrix();
 	if (LLGLSLShader::sNoFixedFunction)
 	{
 		gUIProgram.bind();
 	}
 	{
 		// scale view by UI global scale factor and aspect ratio correction factor
-		gGL.scalef(mDisplayScale.mV[VX], mDisplayScale.mV[VY], 1.f);
+		gGL.scaleUI(mDisplayScale.mV[VX], mDisplayScale.mV[VY], 1.f);
 		mDebugText->draw();
 	}
+	gGL.popUIMatrix();
 	gGL.popMatrix();
 
 	gGL.flush();

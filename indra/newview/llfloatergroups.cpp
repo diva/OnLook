@@ -51,7 +51,6 @@
 #include "llfloatergroupinfo.h"
 #include "llfloaterdirectory.h"
 #include "llfocusmgr.h"
-#include "llalertdialog.h"
 #include "llselectmgr.h"
 #include "llscrolllistctrl.h"
 #include "llnotificationsutil.h"
