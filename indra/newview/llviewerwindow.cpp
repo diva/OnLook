@@ -1586,7 +1586,15 @@ LLViewerWindow::LLViewerWindow(
 	F32 ui_scale_factor = gSavedSettings.getF32("UIScaleFactor");
 	
 	mDisplayScale.setVec(llmax(1.f / mWindow->getPixelAspectRatio(), 1.f), llmax(mWindow->getPixelAspectRatio(), 1.f));
-	mDisplayScale *= ui_scale_factor;
+	if(mWindow->getFullscreen())
+	{
+		F32 height_normalization = gSavedSettings.getBOOL("UIAutoScale") ? ((F32)mWindowRectRaw.getHeight() / mDisplayScale.mV[VY]) / 768.f : 1.f;
+		mDisplayScale *= (ui_scale_factor * height_normalization);
+	}
+	else
+	{
+		mDisplayScale *= ui_scale_factor;
+	}
 	LLUI::setScaleFactor(mDisplayScale);
 
 	{
