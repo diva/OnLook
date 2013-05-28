@@ -2100,7 +2100,7 @@ BOOL LLWorldMapView::handleHover( S32 x, S32 y, MASK mask )
 	{
 		// While we're waiting for data from the tracker, we're busy. JC
 		LLVector3d pos_global = LLTracker::getTrackedPositionGlobal();
-		if (LLTracker::isTracking(NULL)
+		if (LLTracker::isTracking()
 			&& pos_global.isExactlyZero())
 		{
 			gViewerWindow->setCursor( UI_CURSOR_WAIT );

@@ -280,8 +280,6 @@ void LLMultiSliderCtrl::updateText()
 
 void LLMultiSliderCtrl::onEditorCommit(const LLSD& value)
 {
-	llassert( caller == mEditor );
-
 	BOOL success = FALSE;
 	F32 val = mCurValue;
 	F32 saved_val = mCurValue;

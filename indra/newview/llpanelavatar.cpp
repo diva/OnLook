@@ -70,11 +70,8 @@
 #include "llstatusbar.h"
 #include "lltabcontainer.h"
 #include "llimview.h"
-#include "lltooldraganddrop.h"
-#include "lluiconstants.h"
 #include "llvoavatar.h"
 #include "llviewercontrol.h"
-#include "llviewermenu.h"		// *FIX: for is_agent_friend()
 #include "llviewergenericmessage.h"	// send_generic_message
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
@@ -82,7 +79,6 @@
 #include "llinventorymodel.h"
 #include "roles_constants.h"
 #include "lluictrlfactory.h"
-#include "llviewermenu.h"
 #include "llavatarnamecache.h"
 #include "lldroptarget.h"
 
@@ -105,6 +101,8 @@ BOOL LLPanelAvatar::sAllowFirstLife = FALSE;
 extern void callback_invite_to_group(LLUUID group_id, void *user_data);
 extern void handle_lure(const LLUUID& invitee);
 extern void handle_pay_by_id(const LLUUID& payee);
+BOOL is_agent_friend(const LLUUID& agent_id);
+BOOL is_agent_mappable(const LLUUID& agent_id);
 
 
 //-----------------------------------------------------------------------------
@@ -362,6 +360,13 @@ void LLPanelAvatarSecondLife::enableControls(BOOL self)
 {
 	childSetEnabled("img", self);
 	childSetEnabled("about", self);
+	if (self) // We can't give inventory to self
+	{
+		if (LLDropTarget* drop_target = findChild<LLDropTarget>("drop_target_rect"))
+			removeChild(drop_target);
+		if (LLTextBox* text_box = findChild<LLTextBox>("Give item:"))
+			removeChild(text_box);
+	}
 	childSetVisible("allow_publish", self);
 	childSetEnabled("allow_publish", self);
 	childSetVisible("?", self);
@@ -1419,7 +1424,6 @@ LLPanelAvatar::LLPanelAvatar(
 	mPanelNotes(NULL),
 	mPanelFirstLife(NULL),
 	mPanelWeb(NULL),
-	mDropTarget(NULL),
 	mAvatarID( LLUUID::null ),	// mAvatarID is set with 'setAvatar' or 'setAvatarID'
 	mHaveProperties(FALSE),
 	mHaveStatistics(FALSE),
@@ -1580,16 +1584,16 @@ void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name
 {
 	if (avatar_id.isNull()) return;
 
-	BOOL avatar_changed = FALSE;
+	//BOOL avatar_changed = FALSE;
 	if (avatar_id != mAvatarID)
 	{
-		avatar_changed = TRUE;
+		//avatar_changed = TRUE;
 		if(mAvatarID.notNull())
 		{
 			LLAvatarPropertiesProcessor::getInstance()->removeObserver(mAvatarID, this);
 		}
+		mAvatarID = avatar_id;
 	}
-	mAvatarID = avatar_id;
 
 	LLAvatarPropertiesProcessor::getInstance()->addObserver(mAvatarID, this);
 
@@ -1613,18 +1617,8 @@ void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name
 	// Teens don't have this.
 	if (mPanelFirstLife) mPanelFirstLife->enableControls(own_avatar && mAllowEdit);
 
-	LLView *target_view = getChild<LLView>("drop_target_rect");
-	if(target_view)
-	{
-		if (mDropTarget)
-		{
-			delete mDropTarget;
-		}
-		mDropTarget = new LLDropTarget("drop target", target_view->getRect(), mAvatarID);
-		addChild(mDropTarget);
-		mDropTarget->setAgentID(mAvatarID);
-	}
-	
+	getChild<LLDropTarget>("drop_target_rect")->setEntityID(mAvatarID);
+
 	LLNameEditor* name_edit = getChild<LLNameEditor>("name");
 	if(name_edit)
 	{
@@ -1711,8 +1705,6 @@ void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name
 			childSetEnabled("Mute",FALSE);
 			childSetVisible("Offer Teleport...",FALSE);
 			childSetEnabled("Offer Teleport...",FALSE);
-			childSetVisible("drop target",FALSE);
-			childSetEnabled("drop target",FALSE);
 			childSetVisible("Find on Map",FALSE);
 			childSetEnabled("Find on Map",FALSE);
 			childSetVisible("Add Friend...",FALSE);
@@ -1735,8 +1727,6 @@ void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name
 			childSetVisible("Mute",TRUE);
 			childSetEnabled("Mute",FALSE);
 
-			childSetVisible("drop target",TRUE);
-			childSetEnabled("drop target",FALSE);
 
 			childSetVisible("Find on Map",TRUE);
 			// Note: we don't always know online status, so always allow gods to try to track
@@ -1878,11 +1868,9 @@ void LLPanelAvatar::onClickGetKey(void *userdata)
 	LLPanelAvatar* self = (LLPanelAvatar*)userdata;
 	LLUUID agent_id = self->getAvatarID();
 
-	char buffer[UUID_STR_LENGTH];		/*Flawfinder: ignore*/
-	agent_id.toString(buffer);
-	llinfos << "Copy agent id: " << agent_id << " buffer: " << buffer << llendl;
+	llinfos << "Copy agent id: " << agent_id << llendl;
 
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
+	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(agent_id.asString()));
 }
 
 // static
@@ -1899,7 +1887,7 @@ void LLPanelAvatar::onClickTrack(void* userdata)
 		LLNameEditor* nameedit = self->mPanelSecondLife->getChild<LLNameEditor>("name");
 		if (nameedit) name = nameedit->getText();
 		gFloaterWorldMap->trackAvatar(self->mAvatarID, name);
-		LLFloaterWorldMap::show(NULL, TRUE);
+		LLFloaterWorldMap::show(true);
 	}
 }
 
@@ -2061,8 +2049,6 @@ void LLPanelAvatar::processProperties(void* data, EAvatarProcessorType type)
 			childSetEnabled("GroupInvite_Button",TRUE);
 			childSetEnabled("Pay...",TRUE);
 			childSetEnabled("Mute",TRUE);
-
-			childSetEnabled("drop target",TRUE);
 
 			mHaveProperties = TRUE;
 			enableOKIfReady();

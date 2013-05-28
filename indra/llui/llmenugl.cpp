@@ -2397,7 +2397,6 @@ void LLMenuGL::arrange( void )
 
 		// Scrolling support
 		item_list_t::iterator first_visible_item_iter;
-		item_list_t::iterator first_hidden_item_iter = mItems.end();
 		//S32 height_before_first_visible_item = -1;
 		//S32 visible_items_height = 0;
 		//U32 scrollable_items_cnt = 0;
@@ -2895,9 +2894,6 @@ LLMenuItemGL* LLMenuGL::highlightNextItem(LLMenuItemGL* cur_item, BOOL skip_disa
 		next_item_iter = cur_item_iter;
 		next_item_iter++;
 
-		// First visible item position in the items list
-		item_list_t::iterator first_visible_item_iter = std::find(mItems.begin(), mItems.end(), mFirstVisibleItem);
-
 		if (next_item_iter == mItems.end())
 		{
 			next_item_iter = mItems.begin();
@@ -2972,9 +2968,6 @@ LLMenuItemGL* LLMenuGL::highlightPrevItem(LLMenuItemGL* cur_item, BOOL skip_disa
 	{
 		prev_item_iter = cur_item_iter;
 		prev_item_iter++;
-
-		// First visible item reverse position in the items list
-		item_list_t::reverse_iterator first_visible_item_iter = std::find(mItems.rbegin(), mItems.rend(), mFirstVisibleItem);
 
 		if (prev_item_iter == mItems.rend())
 		{

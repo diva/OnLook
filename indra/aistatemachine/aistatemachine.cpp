@@ -614,6 +614,8 @@ void AIStateMachine::multiplex(event_type event)
 				// Continue in bs_multiplex.
 				// If the state is bs_multiplex we only need to run again when need_run was set again in the meantime or when this state machine isn't idle.
 				need_new_run = sub_state_r->need_run || !sub_state_r->idle;
+				// If this fails then the run state didn't change and neither idle() nor yield() was called.
+				llassert_always(!(need_new_run && !mYieldEngine && sub_state_r->run_state == run_state));
 			  }
 			  break;
 			case bs_abort:
@@ -786,10 +788,10 @@ AIStateMachine::state_type AIStateMachine::begin_loop(base_state_type base_state
   return sub_state_w->run_state;
 }
 
-void AIStateMachine::run(LLPointer<AIStateMachine> parent, state_type new_parent_state, bool abort_parent, bool on_abort_signal_parent, AIEngine* default_engine)
+void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bool abort_parent, bool on_abort_signal_parent, AIEngine* default_engine)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::run(" <<
-	  (void*)parent.get() << ", " <<
+	  (void*)parent << ", " <<
 	  (parent ? parent->state_str_impl(new_parent_state) : "NA") <<
 	  ", abort_parent = " << (abort_parent ? "true" : "false") <<
 	  ", on_abort_signal_parent = " << (on_abort_signal_parent ? "true" : "false") <<
@@ -1007,6 +1009,15 @@ void AIStateMachine::advance_state(state_type new_state)
 	  Dout(dc::statemachine, "Ignored, because " << state_str_impl(sub_state_w->advance_state) << " >= " << state_str_impl(new_state) << ".");
 	  return;
 	}
+	// Ignore call to advance_state when the current state is greater than the requested state: the new state would be
+	// ignored in begin_loop(), as is already remarked there: an advanced state that is not honored is not a reason to run.
+	// This call might as well not have happened. Not returning here is a bug because that is effectively a cont(), while
+	// the state change is and should be being ignored: the statemachine would start running it's current state (again).
+	if (sub_state_w->run_state > new_state)
+	{
+	  Dout(dc::statemachine, "Ignored, because " << state_str_impl(sub_state_w->run_state) << " > " << state_str_impl(new_state) << " (current state).");
+	  return;
+	}
 	// Increment state.
 	sub_state_w->advance_state = new_state;
 	// Void last call to idle(), if any.
@@ -1018,6 +1029,16 @@ void AIStateMachine::advance_state(state_type new_state)
 #ifdef SHOW_ASSERT
 	// From this moment on.
 	mDebugAdvanceStatePending = true;
+	// If the new state is equal to the current state, then this should be considered to be a cont()
+	// because also equal states are ignored in begin_loop(). However, unlike a cont() we ignore a call
+	// to idle() when the statemachine is already running in this state (because that is a race condition
+	// and ignoring the idle() is the most logical thing to do then). Hence we treated this as a full
+	// fletched advance_state but need to tell the debug code that it's really also a cont().
+	if (sub_state_w->run_state == new_state)
+	{
+	  // From this moment.
+	  mDebugContPending = true;
+	}
 #endif
   }
   if (!mMultiplexMutex.isSelfLocked())

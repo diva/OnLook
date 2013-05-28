@@ -597,11 +597,11 @@ void LLScriptEdCore::updateDynamicHelp(BOOL immediate)
 	}
 
 	const LLTextSegment* segment = NULL;
-	std::vector<const LLTextSegmentPtr> selected_segments;
+	std::vector<LLTextSegmentPtr> selected_segments;
 	mEditor->getSelectedSegments(selected_segments);
 
 	// try segments in selection range first
-	std::vector<const LLTextSegmentPtr>::iterator segment_iter;
+	std::vector<LLTextSegmentPtr>::iterator segment_iter;
 	for (segment_iter = selected_segments.begin(); segment_iter != selected_segments.end(); ++segment_iter)
 	{
 		if((*segment_iter)->getToken() && (*segment_iter)->getToken()->getType() == LLKeywordToken::WORD)

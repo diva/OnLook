@@ -122,12 +122,12 @@ void LLPermissionsView::addPermissionsData(const std::string& object_name, const
 	y -= LINE + VPAD;
 
 	LLRect btn_rect(HPAD, y + BTN_HEIGHT, 120, y);
-	LLButton* button = new LLButton(std::string("Revoke permissions"), btn_rect, LLStringUtil::null, std::bind(&LLPermissionsView::revokePermissions, object_id, permissions_flags));
+	LLButton* button = new LLButton(std::string("Revoke permissions"), btn_rect, LLStringUtil::null, boost::bind(&LLPermissionsView::revokePermissions, object_id, permissions_flags));
 	button->setFollows(FOLLOWS_LEFT | FOLLOWS_BOTTOM);
 	addChild(button);
 
 	/*btn_rect.set(HPAD + 120 + HPAD, y + BTN_HEIGHT, HPAD + 120 + HPAD + 120, y);
-	button = new LLButton(std::string("Find in world"), btn_rect, LLStringUtil::null, std::bind(&LLPermissionsView::findObject, object_id, permissions_flags));
+	button = new LLButton(std::string("Find in world"), btn_rect, LLStringUtil::null, boost::bind(&LLPermissionsView::findObject, object_id, permissions_flags));
 	button->setFollows(FOLLOWS_LEFT | FOLLOWS_BOTTOM);
 	addChild(button);*/
 }

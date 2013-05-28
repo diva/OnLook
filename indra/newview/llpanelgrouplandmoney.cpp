@@ -293,7 +293,7 @@ void LLPanelGroupLandMoney::impl::onMapButton()
 	LLVector3d pos_global(global_x, global_y, global_z);
 	gFloaterWorldMap->trackLocation(pos_global);
 
-	LLFloaterWorldMap::show(NULL, TRUE);
+	LLFloaterWorldMap::show(true);
 }
 
 bool LLPanelGroupLandMoney::impl::applyContribution()

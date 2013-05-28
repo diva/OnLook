@@ -1248,10 +1248,10 @@ AIPerServicePtr CurlEasyRequest::getPerServicePtr(void)
   return mPerServicePtr;
 }
 
-bool CurlEasyRequest::removeFromPerServiceQueue(AICurlEasyRequest const& easy_request) const
+bool CurlEasyRequest::removeFromPerServiceQueue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type) const
 {
   // Note that easy_request (must) represent(s) this object; it's just passed for convenience.
-  return mPerServicePtr && PerServiceRequestQueue_wat(*mPerServicePtr)->cancel(easy_request);
+  return mPerServicePtr && PerService_wat(*mPerServicePtr)->cancel(easy_request, capability_type);
 }
 
 std::string CurlEasyRequest::getLowercaseHostname(void) const
@@ -1269,7 +1269,8 @@ LLMutex BufferedCurlEasyRequest::sResponderCallbackMutex;
 bool BufferedCurlEasyRequest::sShuttingDown = false;
 AIAverage BufferedCurlEasyRequest::sHTTPBandwidth(25);
 
-BufferedCurlEasyRequest::BufferedCurlEasyRequest() : mRequestTransferedBytes(0), mTotalRawBytes(0), mBufferEventsTarget(NULL), mStatus(HTTP_INTERNAL_ERROR_OTHER)
+BufferedCurlEasyRequest::BufferedCurlEasyRequest() :
+	mRequestTransferedBytes(0), mTotalRawBytes(0), mStatus(HTTP_INTERNAL_ERROR_OTHER), mBufferEventsTarget(NULL), mCapabilityType(number_of_capability_types)
 {
   AICurlInterface::Stats::BufferedCurlEasyRequest_count++;
 }
@@ -1401,6 +1402,9 @@ void BufferedCurlEasyRequest::prepRequest(AICurlEasyRequest_wat& curl_easy_reque
 
   // Keep responder alive.
   mResponder = responder;
+  // Cache capability type, because it will be needed even after the responder was removed.
+  mCapabilityType = responder->capability_type();
+
   // Send header events to responder if needed.
   if (mResponder->needsHeaders())
   {

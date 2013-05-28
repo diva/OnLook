@@ -34,8 +34,6 @@
 
 
 #include "llpanel.h"
-#include "lldroptarget.h"
-
 
 class LLPrefsAscentSys : public LLPanel
 {
@@ -58,6 +56,7 @@ protected:
     BOOL mDoubleClickTeleport;
         BOOL mResetCameraAfterTP;
         BOOL mOffsetTPByUserHeight;
+    bool mClearBeaconAfterTeleport;
     bool mLiruFlyAfterTeleport;
     bool mLiruContinueFlying;
     BOOL mPreviewAnimInWorld;
@@ -107,11 +106,13 @@ protected:
 	bool mDisableClickSitOtherOwner;
     BOOL mDisplayScriptJumps;
     F32 mNumScriptDiff;
+
 	//Build -------------------------------------------------------------------------------
 	F32 mAlpha;
 	LLColor4 mColor;
 	BOOL mFullBright;
 	F32 mGlow;
+	std::string mItem;
 	std::string mMaterial;
 	BOOL mNextCopy;
 	BOOL mNextMod;
@@ -124,9 +125,6 @@ protected:
 	F32 mXsize;
 	F32 mYsize;
 	F32 mZsize;
-private:
-	static LLPrefsAscentSys* sInst;
-	static void SinguBuildItemDrop(LLViewerInventoryItem* item);
 };
 
 #endif

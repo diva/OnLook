@@ -52,7 +52,7 @@ class LLTextBox;
 
 class LLPropertiesObserver;
 
-class LLFloaterProperties : public LLFloater, LLInstanceTracker<LLFloaterProperties, LLUUID>
+class LLFloaterProperties : public LLFloater, public LLInstanceTracker<LLFloaterProperties, LLUUID>
 {
 public:
 	static LLFloaterProperties* find(const LLUUID& item_id,

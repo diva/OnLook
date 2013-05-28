@@ -944,10 +944,10 @@ const LLTextSegment*	LLTextEditor::getPreviousSegment() const
 {
 	// find segment index at character to left of cursor (or rightmost edge of selection)
 	S32 idx = llmax(0, getSegmentIdxAtOffset(mCursorPos) - 1);
-	return idx >= 0 ? mSegments[idx] : NULL;
+	return idx >= 0 ? mSegments[idx] : LLTextSegmentPtr();
 }
 
-void LLTextEditor::getSelectedSegments(std::vector<const LLTextSegmentPtr>& segments) const
+void LLTextEditor::getSelectedSegments(std::vector<LLTextSegmentPtr>& segments) const
 {
 	S32 left = hasSelection() ? llmin(mSelectionStart, mSelectionEnd) : mCursorPos;
 	S32 right = hasSelection() ? llmax(mSelectionStart, mSelectionEnd) : mCursorPos;
@@ -4512,13 +4512,13 @@ LLTextSegment* LLTextEditor::getSegmentAtLocalPos( S32 x, S32 y ) const
 	// Find the cursor position at the requested local screen position
 	S32 offset = getCursorPosFromLocalCoord( x, y, FALSE );
 	S32 idx = getSegmentIdxAtOffset(offset);
-	return idx >= 0 ? mSegments[idx] : NULL;
+	return idx >= 0 ? mSegments[idx] : LLTextSegmentPtr();
 }
 
 const LLTextSegment* LLTextEditor::getSegmentAtOffset(S32 offset) const
 {
 	S32 idx = getSegmentIdxAtOffset(offset);
-	return idx >= 0 ? mSegments[idx] : NULL;
+	return idx >= 0 ? mSegments[idx] : LLTextSegmentPtr();
 }
 
 S32 LLTextEditor::getSegmentIdxAtOffset(S32 offset) const

@@ -169,20 +169,8 @@
 			     mouse_opaque="true" name="Give item:" v_pad="0" width="75">
 				Give item:
 			</text>
-			<view_border blevel_style="in" border_thickness="0" bottom="-490" follows="left|top"
-			     height="466" left_delta="4" mouse_opaque="false" name="drop_target_rect"
-			     width="409" />
-			<view_border blevel_style="in" bottom="-427" follows="left|top" height="16" left_delta="75"
-			     mouse_opaque="false" name="drop_target_rect_vis" width="321" />
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom_delta="0" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="center" height="16" left_delta="0"
-			     mouse_opaque="true" name="Give inventory"
-			     tool_tip="Drop inventory items here to give them to this person." v_pad="2"
-			     width="321">
-				Drop inventory item here.
-			</text>
-			<check_box bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="16"
+			<drop_target bottom="-425" height="15" left_delta="81" width="318" fill_parent="true" name="drop_target_rect" label="Drop inventory item here." tool_tip="Drop inventory items here to give them to this person."/>
+			<check_box bottom="-447" follows="left|top" font="SansSerifSmall" height="16"
 			     initial_value="false" label="Show in search" left="75" mouse_opaque="true"
 			     name="allow_publish"
 			     tool_tip="Publish extra profile information such as description and image in Search."

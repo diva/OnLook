@@ -85,7 +85,6 @@ LLFloaterTOS::LLFloaterTOS(ETOSType type, const std::string & message)
 :	LLModalDialog( std::string(" "), 100, 100 ),
 	mType(type),
 	mMessage(message),
-	mWebBrowserWindowId( 0 ),
 	mLoadCompleteCount( 0 )
 {
 }

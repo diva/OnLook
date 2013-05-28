@@ -252,7 +252,6 @@ private:
 	LLButton* mUploadBtn;
 
 	LLScrollListCtrl* mBitmapList;
-	LLScrollListCtrl* mUsedList;
 	LLTextureCtrl*    mTextureView;
 	LLCheckBoxCtrl*   mUpdateChkBox;
 

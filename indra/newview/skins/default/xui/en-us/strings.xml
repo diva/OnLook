@@ -2966,6 +2966,10 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="NotLoggedIn">Not logged in</string>
 
     <!-- Non-standard LLChat strings -->
+    <string name="ScriptCounting">Counting scripts, please wait...</string>
+    <string name="ScriptCountAvatar">Counted [SCRIPTS] scripts in [OBJECTS] attachments on [NAME].</string>
+    <string name="ScriptCountObject">Counted [SCRIPTS] scripts in [OBJECTS] objects.</string>
+    <string name="ScriptDeleteObject">Deleted [SCRIPTS] scripts in [OBJECTS] objects.</string>
     <string name="took_a_snapshot">took a snapshot</string>
 
   <!-- Avatar busy/away mode -->
@@ -3001,7 +3005,7 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<!-- inventory -->
 	<string name="InventoryNoMatchingItems">No matching items found in inventory.</string>
 	<string name="MarketplaceURL">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/</string>
-	<string name="MarketplaceURL_CreateStore">http://community.secondlife.com/t5/English-Knowledge-Base/Selling-in-the-Marketplace/ta-p/700193#Section_.4</string>
+	<string name="MarketplaceURL_CreateStore">http://community.secondlife.com/t5/English-Knowledge-Base/Selling-in-the-Marketplace/ta-p/700193#Section_.3</string>
 	<string name="MarketplaceURL_Dashboard">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/merchants/store/dashboard</string>
 	<string name="MarketplaceURL_Imports">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/merchants/store/imports</string>
 	<string name="MarketplaceURL_LearnMore">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/learn_more</string>
@@ -3981,6 +3985,7 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 	<!-- IM system messages -->
 	<string name="IM_announce_incoming">has begun an IM session with you.</string>
 	<string name="IM_autoresponded_to">Autoresponse sent to</string>
+	<string name="IM_autoresponse_minutes">[MINS] minutes</string>
 	<string name="IM_autoresponse_sent_item">was sent auto-response item</string>
 	<string name="Unnamed">(Unnamed)</string>
 	<string name="inventory_item_offered_to">Inventory item offered to</string>

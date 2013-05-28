@@ -3,10 +3,9 @@
  * @brief LLVOVolume class implementation
  *
  * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
+ * Second Life Viewer Source Code
  * Copyright (c) 2001-2009, Linden Research, Inc.
  * 
- * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
  * to you under the terms of the GNU General Public License, version 2.0
  * ("GPL"), unless you have obtained a separate licensing agreement
@@ -252,7 +251,7 @@ U32 LLVOVolume::processUpdateMessage(LLMessageSystem *mesgsys,
 			S32 res2 = unpackTEMessage(*dp);
 			if (TEM_INVALID == res2)
 			{
-				// Well, crap, there's something bogus in the data that we're unpacking.
+				// There's something bogus in the data that we're unpacking.
 				dp->dumpBufferToLog();
 				llwarns << "Flushing cache files" << llendl;
 
@@ -3108,7 +3107,7 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 					F32 w = wght[k];
 
 					LLMatrix4a src;
-					// Insure ref'd bone is in our clamped array of mats
+					// Ensure ref'd bone is in our clamped array of mats
 					llassert(idx[k] < kMaxJoints);
 					// clamp k to kMaxJoints to avoid reading garbage off stack in release
 					src.setMul(mp[idx[(k < kMaxJoints) ? k : 0]], w);

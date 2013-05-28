@@ -5397,7 +5397,8 @@ void LLViewerWindow::calcDisplayScale()
 
 S32 LLViewerWindow::getChatConsoleBottomPad()
 {
-	S32 offset = 0;
+	static const LLCachedControl<S32> user_offset("ConsoleBottomOffset");
+	S32 offset = user_offset;
 
 	if(gToolBar && gToolBar->getVisible())
 		offset += TOOL_BAR_HEIGHT;

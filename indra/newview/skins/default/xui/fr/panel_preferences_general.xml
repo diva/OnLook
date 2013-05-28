@@ -19,10 +19,11 @@
 	<check_box label="Masquer mon nom sur mon écran" name="show_my_name_checkbox"/>
 	<text name="group_titles_textbox">Titres de groupe :</text>
 	<check_box label="Masquer tous les titres de groupe" name="show_all_title_checkbox"/>
+	<check_box label="Cacher le titre de mon groupe" name="show_my_title_checkbox"/>
 	<check_box label="Utiliser une échelle indépendante de la résolution" name="ui_auto_scale"/>
 	<spinner label="Absent(e) après :" name="afk_timeout_spinner"/>
-	<check_box label="Avertir lorsque je dépense ou reçois des L$" name="notify_money_change_checkbox"/>
-	<check_box label="Sans afficher dans le coin" name="no_transaction_clutter_checkbox" tool_tip="Toujours présente mais momentanément affichée en bas"/>
+	<check_box label="M'avertir lors de transactions d'argent" name="notify_money_change_checkbox"/>
+	<check_box left="225" label="Ne pas afficher les transactions en haut à droite" name="no_transaction_clutter_checkbox" tool_tip="A la place d'être affiché en haut à droite, le message des transactions sera brièvement affiché en bas à droite, de la même façon que lorsqu'un ami se connecte ou se déconnecte."/>
 	<text name="maturity_desired_label">Catégories :</text>
 	<text name="maturity_desired_prompt">Acc&#xE8;s au contenu classé :</text>
 	<combo_box name="maturity_desired_combobox" left="340">
@@ -65,5 +66,5 @@
 		<combo_item name="Neversend">Ne jamais envoyer</combo_item>
 	</combo_box>
   <check_box label="Partager la langue avec les objets" name="language_is_public" tool_tip="Cette option permet de faire connaître aux objets du Monde votre langue favorite."/>
-  <button label="Re initialiser tous les Settings (réglages)" name="clear_settings" width="250" />
+  <button label="Réinitialiser tous les Settings (réglages)" name="clear_settings" width="250" />
 </panel>

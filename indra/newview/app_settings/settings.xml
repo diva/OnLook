@@ -9,6 +9,17 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+    <key>PhoenixIMAnnounceStealFocus</key>
+    <map>
+      <key>Comment</key>
+      <string>Open a new IM tab when another person begins typing to you and announce that they are doing so.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>UseNewTargetOmegaCode</key>
     <map>
       <key>Comment</key>
@@ -175,7 +186,10 @@
   <key>HTTPThrottleBandwidth</key>
   <map>
     <key>Comment</key>
-    <string>The bandwidth (in kbit/s) to strive for</string>
+    <string>The bandwidth (in kbit/s) to strive for. Smaller values might reduce network
+ congestion (sim ping time, aka avatar responsiveness). Higher values might download
+ textures and the inventory faster, although in some cases a too high value might
+ actually slow that down due to serverside throttling. If unsure, choose 2000.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -641,6 +655,17 @@
     <map>
       <key>Comment</key>
       <string>Fly after standing up, if you were flying when you sat down</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LiruItalicizeActions</key>
+    <map>
+      <key>Comment</key>
+	  <string>When enabled, /me chat will be italicized.</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -4338,6 +4363,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <real>0.700</real>
     </map>
+    <key>ConsoleBottomOffset</key>
+    <map>
+      <key>Comment</key>
+      <string>User definable offset between the bottom of the chat console and the bottom of the window; increase to move text in the console up</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <real>0</real>
+    </map>
     <key>ConsoleBufferSize</key>
     <map>
       <key>Comment</key>
@@ -4468,7 +4504,7 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Type</key>
       <string>U32</string>
       <key>Value</key>
-      <integer>16</integer>
+      <integer>8</integer>
     </map>
     <key>CurlTimeoutDNSLookup</key>
     <map>
@@ -6838,6 +6874,19 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>RadarUpdateEnabled</key>
+    <map>
+      <key>Comment</key>
+      <string>When false, pauses the radar until further notice, good for banning someone who just left.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>HideFromEditor</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
     </map>
     <key>RadarUpdateRate</key>
     <map>
@@ -15546,6 +15595,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>InstantMessagesFriendsOnly</key>
+    <map>
+      <key>Comment</key>
+      <string>Only accept instant messages from residents on your friends list</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>AutoDisengageMic</key>
     <map>
       <key>Comment</key>
@@ -16386,6 +16446,17 @@ This should be as low as possible, but too low may break functionality</string>
     <map>
       <key>Comment</key>
       <string>Keep beacons when closing floater</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>ClearBeaconAfterTeleport</key>
+    <map>
+      <key>Comment</key>
+      <string>Clear the red tracker beacon after you teleport</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

@@ -885,7 +885,7 @@ void LLPanelClassified::onClickMap(void* data)
 {
 	LLPanelClassified* self = (LLPanelClassified*)data;
 	gFloaterWorldMap->trackLocation(self->mPosGlobal);
-	LLFloaterWorldMap::show(NULL, TRUE);
+	LLFloaterWorldMap::show(true);
 
 	self->sendClassifiedClickMessage("map");
 }

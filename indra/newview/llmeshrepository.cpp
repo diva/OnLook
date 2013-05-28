@@ -229,6 +229,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshHeaderResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLMeshHeaderResponder"; }
 };
@@ -256,6 +257,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshLODResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLMeshLODResponder"; }
 };
@@ -276,6 +278,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshSkinInfoResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLMeshSkinInfoResponder"; }
 };
@@ -296,6 +299,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshDecompositionResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLMeshDecompositionResponder"; }
 };
@@ -316,6 +320,7 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
+	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshPhysicsShapeResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLMeshPhysicsShapeResponder"; }
 };
@@ -2509,7 +2514,7 @@ void LLMeshRepository::notifyMeshUnavailable(const LLVolumeParams& mesh_params, 
 }
 
 S32 LLMeshRepository::getActualMeshLOD(const LLVolumeParams& mesh_params, S32 lod)
-{ 
+{
 	return mThread->getActualMeshLOD(mesh_params, lod);
 }
 
@@ -2660,7 +2665,7 @@ void LLMeshRepository::uploadModel(std::vector<LLModelInstance>& data, LLVector3
 		return;
 	}
 	AIMeshUpload* uploader = new AIMeshUpload(data, scale, upload_textures, upload_skin, upload_joints, upload_url, do_upload, fee_observer, upload_observer);
-	uploader->run();
+	uploader->run(NULL, 0, false, true, &gMainThreadEngine);
 }
 
 S32 LLMeshRepository::getMeshSize(const LLUUID& mesh_id, S32 lod)

@@ -1,5 +1,5 @@
 /** 
- * @file shinyWaterF.glsl
+ * @file solidcolorV.glsl
  *
  * $LicenseInfo:firstyear=2007&license=viewerlgpl$
  * Second Life Viewer Source Code
@@ -22,12 +22,21 @@
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
+
+uniform mat4 modelview_projection_matrix;
+
+uniform vec4 color;
  
+ATTRIBUTE vec3 position;
+ATTRIBUTE vec2 texcoord0;
 
+VARYING vec4 vertex_color;
+VARYING vec2 vary_texcoord0;
 
-void shiny_lighting_water();
-
-void main() 
+void main()
 {
-	shiny_lighting_water();
+	gl_Position = modelview_projection_matrix * vec4(position.xyz, 1.0);
+	vertex_color = color;
+	vary_texcoord0 = texcoord0;
 }
+

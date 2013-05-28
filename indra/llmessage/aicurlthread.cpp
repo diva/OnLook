@@ -206,8 +206,6 @@ int ioctlsocket(int fd, int, unsigned long* nonblocking_enable)
 
 namespace AICurlPrivate {
 
-LLAtomicS32 max_pipelined_requests(32);
-
 enum command_st {
   cmd_none,
   cmd_add,
@@ -890,7 +888,7 @@ AICurlThread* AICurlThread::sInstance = NULL;
 AICurlThread::AICurlThread(void) : LLThread("AICurlThread"),
     mWakeUpFd_in(CURL_SOCKET_BAD),
 	mWakeUpFd(CURL_SOCKET_BAD),
-	mZeroTimeout(0), mRunning(true), mWakeUpFlag(false)
+	mZeroTimeout(0), mWakeUpFlag(false), mRunning(true)
 {
   create_wakeup_fds();
   sInstance = this;
@@ -1327,19 +1325,30 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 	// Access command_being_processed only.
 	{
 	  command_being_processed_rat command_being_processed_r(command_being_processed);
+	  AICapabilityType capability_type;
+	  AIPerServicePtr per_service;
+	  {
+		AICurlEasyRequest_wat easy_request_w(*command_being_processed_r->easy_request());
+		capability_type = easy_request_w->capability_type();
+		per_service = easy_request_w->getPerServicePtr();
+	  }
 	  switch(command_being_processed_r->command())
 	  {
 		case cmd_none:
 		case cmd_boost:	// FIXME: future stuff
 		  break;
 		case cmd_add:
-		  PerServiceRequestQueue_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerServicePtr())->removed_from_command_queue();
-		  multi_handle_w->add_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()));
+		{
+		  multi_handle_w->add_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()), false);
+		  PerService_wat(*per_service)->removed_from_command_queue(capability_type);
 		  break;
+		}
 		case cmd_remove:
-		  PerServiceRequestQueue_wat(*AICurlEasyRequest_wat(*command_being_processed_r->easy_request())->getPerServicePtr())->added_to_command_queue();		// Not really, but this has the same effect as 'removed a remove command'.
+		{
+		  PerService_wat(*per_service)->added_to_command_queue(capability_type);		// Not really, but this has the same effect as 'removed a remove command'.
 		  multi_handle_w->remove_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()), true);
 		  break;
+		}
 	  }
 	  // Done processing.
 	  command_being_processed_wat command_being_processed_w(command_being_processed_r);
@@ -1703,40 +1712,53 @@ CURLMsg const* MultiHandle::info_read(int* msgs_in_queue) const
 
 static U32 curl_max_total_concurrent_connections = 32;						// Initialized on start up by startCurlThread().
 
-void MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
+bool MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request, bool from_queue)
 {
   bool throttled = true;		// Default.
+  AICapabilityType capability_type;
   AIPerServicePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
+	capability_type = curl_easy_request_w->capability_type();
 	per_service = curl_easy_request_w->getPerServicePtr();
-	PerServiceRequestQueue_wat per_service_w(*per_service);
-	if (mAddedEasyRequests.size() < curl_max_total_concurrent_connections && !per_service_w->throttled())
+	// Never throttle on bandwidth if there are no handles running (sTotalAdded == 1, the long poll connection).
+	bool too_much_bandwidth = sTotalAdded > 1 && !curl_easy_request_w->approved() && AIPerService::checkBandwidthUsage(per_service, get_clock_count() * HTTPTimeout::sClockWidth_40ms);
+	PerService_wat per_service_w(*per_service);
+	if (!too_much_bandwidth && sTotalAdded < curl_max_total_concurrent_connections && !per_service_w->throttled())
 	{
 	  curl_easy_request_w->set_timeout_opts();
 	  if (curl_easy_request_w->add_handle_to_multi(curl_easy_request_w, mMultiHandle) == CURLM_OK)
 	  {
-		per_service_w->added_to_multi_handle();	// (About to be) added to mAddedEasyRequests.
+		per_service_w->added_to_multi_handle(capability_type);	// (About to be) added to mAddedEasyRequests.
 		throttled = false;						// Fall through...
 	  }
 	}
   } // Release the lock on easy_request.
   if (!throttled)
   {												// ... to here.
-	std::pair<addedEasyRequests_type::iterator, bool> res = mAddedEasyRequests.insert(easy_request);
+#ifdef SHOW_ASSERT
+	std::pair<addedEasyRequests_type::iterator, bool> res =
+#endif
+		mAddedEasyRequests.insert(easy_request);
 	llassert(res.second);						// May not have been added before.
 	sTotalAdded++;
 	llassert(sTotalAdded == mAddedEasyRequests.size());
 	Dout(dc::curl, "MultiHandle::add_easy_request: Added AICurlEasyRequest " << (void*)easy_request.get_ptr().get() <<
 		"; now processing " << mAddedEasyRequests.size() << " easy handles [running_handles = " << AICurlInterface::Stats::running_handles << "].");
-	return;
+	return true;
+  }
+  if (from_queue)
+  {
+	// Throttled. Do not add to queue, because it is already in the queue.
+	return false;
   }
   // The request could not be added, we have to queue it.
-  PerServiceRequestQueue_wat(*per_service)->queue(easy_request);
+  PerService_wat(*per_service)->queue(easy_request, capability_type);
 #ifdef SHOW_ASSERT
   // Not active yet, but it's no longer an error if next we try to remove the request.
   AICurlEasyRequest_wat(*easy_request)->mRemovedPerCommand = false;
 #endif
+  return true;
 }
 
 CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request, bool as_per_command)
@@ -1749,7 +1771,7 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
 #ifdef SHOW_ASSERT
 	bool removed =
 #endif
-	easy_request_w->removeFromPerServiceQueue(easy_request);
+	easy_request_w->removeFromPerServiceQueue(easy_request, easy_request_w->capability_type());
 #ifdef SHOW_ASSERT
 	if (removed)
 	{
@@ -1765,12 +1787,14 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
 CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator const& iter, bool as_per_command)
 {
   CURLMcode res;
+  AICapabilityType capability_type;
   AIPerServicePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(**iter);
 	res = curl_easy_request_w->remove_handle_from_multi(curl_easy_request_w, mMultiHandle);
+	capability_type = curl_easy_request_w->capability_type();
 	per_service = curl_easy_request_w->getPerServicePtr();
-	PerServiceRequestQueue_wat(*per_service)->removed_from_multi_handle();		// (About to be) removed from mAddedEasyRequests.
+	PerService_wat(*per_service)->removed_from_multi_handle(capability_type);		// (About to be) removed from mAddedEasyRequests.
 #ifdef SHOW_ASSERT
 	curl_easy_request_w->mRemovedPerCommand = as_per_command;
 #endif
@@ -1787,7 +1811,7 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
 #endif
 
   // Attempt to add a queued request, if any.
-  PerServiceRequestQueue_wat(*per_service)->add_queued_to(this);
+  PerService_wat(*per_service)->add_queued_to(this);
   return res;
 }
 
@@ -2120,7 +2144,7 @@ void BufferedCurlEasyRequest::update_body_bandwidth(void)
   if (raw_bytes > 0)
   {
 	U64 const sTime_40ms = curlthread::HTTPTimeout::sTime_10ms >> 2;
-	AIAverage& http_bandwidth(PerServiceRequestQueue_wat(*getPerServicePtr())->bandwidth());
+	AIAverage& http_bandwidth(PerService_wat(*getPerServicePtr())->bandwidth());
 	http_bandwidth.addData(raw_bytes, sTime_40ms);
 	sHTTPBandwidth.addData(raw_bytes, sTime_40ms);
   }
@@ -2215,7 +2239,7 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
   }
   // Update HTTP bandwidth.
   U64 const sTime_40ms = curlthread::HTTPTimeout::sTime_10ms >> 2;
-  AIAverage& http_bandwidth(PerServiceRequestQueue_wat(*self_w->getPerServicePtr())->bandwidth());
+  AIAverage& http_bandwidth(PerService_wat(*self_w->getPerServicePtr())->bandwidth());
   http_bandwidth.addData(header_len, sTime_40ms);
   sHTTPBandwidth.addData(header_len, sTime_40ms);
   // Update timeout administration. This must be done after the status is already known.
@@ -2421,7 +2445,7 @@ void AICurlEasyRequest::addRequest(void)
 	command_queue_w->commands.push_back(Command(*this, cmd_add));
 	command_queue_w->size++;
 	AICurlEasyRequest_wat curl_easy_request_w(*get());
-	PerServiceRequestQueue_wat(*curl_easy_request_w->getPerServicePtr())->added_to_command_queue();
+	PerService_wat(*curl_easy_request_w->getPerServicePtr())->added_to_command_queue(curl_easy_request_w->capability_type());
 	curl_easy_request_w->add_queued();
   }
   // Something was added to the queue, wake up the thread to get it.
@@ -2485,7 +2509,7 @@ void AICurlEasyRequest::removeRequest(void)
 	command_queue_w->commands.push_back(Command(*this, cmd_remove));
 	command_queue_w->size--;
 	AICurlEasyRequest_wat curl_easy_request_w(*get());
-	PerServiceRequestQueue_wat(*curl_easy_request_w->getPerServicePtr())->removed_from_command_queue();	// Note really, but this has the same effect as 'added a remove command'.
+	PerService_wat(*curl_easy_request_w->getPerServicePtr())->removed_from_command_queue(curl_easy_request_w->capability_type());	// Note really, but this has the same effect as 'added a remove command'.
 	// Suppress warning that would otherwise happen if the callbacks are revoked before the curl thread removed the request.
 	curl_easy_request_w->remove_queued();
   }
@@ -2511,7 +2535,8 @@ void startCurlThread(LLControlGroup* control_group)
   curl_max_total_concurrent_connections = sConfigGroup->getU32("CurlMaxTotalConcurrentConnections");
   CurlConcurrentConnectionsPerService = sConfigGroup->getU32("CurlConcurrentConnectionsPerService");
   gNoVerifySSLCert = sConfigGroup->getBOOL("NoVerifySSLCert");
-  max_pipelined_requests = curl_max_total_concurrent_connections;
+  AIPerService::setMaxPipelinedRequests(curl_max_total_concurrent_connections);
+  AIPerService::setHTTPThrottleBandwidth(sConfigGroup->getF32("HTTPThrottleBandwidth"));
 
   AICurlThread::sInstance = new AICurlThread;
   AICurlThread::sInstance->start();
@@ -2524,7 +2549,7 @@ bool handleCurlMaxTotalConcurrentConnections(LLSD const& newvalue)
 
   U32 old = curl_max_total_concurrent_connections;
   curl_max_total_concurrent_connections = newvalue.asInteger();
-  max_pipelined_requests += curl_max_total_concurrent_connections - old;
+  AIPerService::incrementMaxPipelinedRequests(curl_max_total_concurrent_connections - old);
   llinfos << "CurlMaxTotalConcurrentConnections set to " << curl_max_total_concurrent_connections << llendl;
   return true;
 }
@@ -2574,6 +2599,12 @@ size_t getHTTPBandwidth(void)
 
 } // namespace AICurlInterface
 
+// Global AIPerService members.
+AIThreadSafeSimpleDC<AIPerService::MaxPipelinedRequests> AIPerService::sMaxPipelinedRequests;
+AIThreadSafeSimpleDC<AIPerService::ThrottleFraction> AIPerService::sThrottleFraction;
+LLAtomicU32 AIPerService::sHTTPThrottleBandwidth125(250000);
+bool AIPerService::sNoHTTPBandwidthThrottling;
+
 // Return true if we want at least one more HTTP request for this host.
 //
 // It's OK if this function is a bit fuzzy, but we don't want it to return
@@ -2599,162 +2630,185 @@ size_t getHTTPBandwidth(void)
 // running requests (in MultiHandle::mAddedEasyRequests)).
 //
 //static
-bool AIPerService::wantsMoreHTTPRequestsFor(AIPerServicePtr const& per_service, F32 max_kbps, bool no_bandwidth_throttling)
+AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr const& per_service, AICapabilityType capability_type)
 {
   using namespace AICurlPrivate;
   using namespace AICurlPrivate::curlthread;
 
-  bool reject, equal, increment_threshold, decrement_threshold;
+  // Do certain things at most once every 40ms.
+  U64 const sTime_40ms = get_clock_count() * HTTPTimeout::sClockWidth_40ms;							// Time in 40ms units.
+
+  // Cache all sTotalQueued info.
+  bool starvation, decrement_threshold;
+  S32 total_queued_or_added = MultiHandle::total_added_size();
+  {
+	TotalQueued_wat total_queued_w(sTotalQueued);
+	total_queued_or_added += total_queued_w->count;
+	starvation = total_queued_w->starvation;
+	decrement_threshold = total_queued_w->full && !total_queued_w->empty;
+	total_queued_w->empty = total_queued_w->full = false;		// Reset flags.
+  }
 
   // Whether or not we're going to approve a new request, decrement the global threshold first, when appropriate.
 
-  // Atomic read max_pipelined_requests for the below calculations.
-  S32 const max_pipelined_requests_cache = max_pipelined_requests;
-  decrement_threshold = sQueueFull && !sQueueEmpty;
-  // Reset flags.
-  sQueueEmpty = sQueueFull = false;
   if (decrement_threshold)
   {
-	if (max_pipelined_requests_cache > (S32)curl_max_total_concurrent_connections)
+	MaxPipelinedRequests_wat max_pipelined_requests_w(sMaxPipelinedRequests);
+	if (max_pipelined_requests_w->count > (S32)curl_max_total_concurrent_connections &&
+		sTime_40ms > max_pipelined_requests_w->last_decrement)
 	{
 	  // Decrement the threshold because since the last call to this function at least one curl request finished
 	  // and was replaced with another request from the queue, but the queue never ran empty: we have too many
 	  // queued requests.
-	  --max_pipelined_requests;
+	  max_pipelined_requests_w->count--;
+	  // Do this at most once every 40 ms.
+	  max_pipelined_requests_w->last_decrement = sTime_40ms;
 	}
   }
 
-  // Check if it's ok to get a new request for this particular service and update the per-service threshold.
+  // Check if it's ok to get a new request for this particular capability type and update the per-capability-type threshold.
 
-  AIAverage* http_bandwidth_ptr;
-
+  bool reject, equal, increment_threshold;
   {
-	PerServiceRequestQueue_wat per_service_w(*per_service);
-	S32 const pipelined_requests_per_service = per_service_w->pipelined_requests();
-	reject = pipelined_requests_per_service >= per_service_w->mMaxPipelinedRequests;
-	equal = pipelined_requests_per_service == per_service_w->mMaxPipelinedRequests;
-	increment_threshold = per_service_w->mRequestStarvation;
-	decrement_threshold = per_service_w->mQueueFull && !per_service_w->mQueueEmpty;
-	// Reset flags.
-	per_service_w->mQueueFull = per_service_w->mQueueEmpty = per_service_w->mRequestStarvation = false;
-	// Grab per service bandwidth object.
-	http_bandwidth_ptr = &per_service_w->bandwidth();
+	PerService_wat per_service_w(*per_service);
+	CapabilityType& ct(per_service_w->mCapabilityType[capability_type]);
+	S32 const pipelined_requests_per_capability_type = ct.pipelined_requests();
+	reject = pipelined_requests_per_capability_type >= (S32)ct.mMaxPipelinedRequests;
+	equal = pipelined_requests_per_capability_type == ct.mMaxPipelinedRequests;
+	increment_threshold = ct.mFlags & ctf_starvation;
+	decrement_threshold = (ct.mFlags & (ctf_empty | ctf_full)) == ctf_full;
+	ct.mFlags = 0;
 	if (decrement_threshold)
 	{
-	  if (per_service_w->mMaxPipelinedRequests > per_service_w->mConcurrectConnections)
+	  if ((int)ct.mMaxPipelinedRequests > per_service_w->mConcurrectConnections)
 	  {
-		per_service_w->mMaxPipelinedRequests--;
+		ct.mMaxPipelinedRequests--;
 	  }
 	}
 	else if (increment_threshold && reject)
 	{
-	  if (per_service_w->mMaxPipelinedRequests < 2 * per_service_w->mConcurrectConnections)
+	  if ((int)ct.mMaxPipelinedRequests < 2 * per_service_w->mConcurrectConnections)
 	  {
-		per_service_w->mMaxPipelinedRequests++;
+		ct.mMaxPipelinedRequests++;
 		// Immediately take the new threshold into account.
 		reject = !equal;
 	  }
 	}
+	if (!reject)
+	{
+	  // Before releasing the lock on per_service, stop other threads from getting a
+	  // too small value from pipelined_requests() and approving too many requests.
+	  ct.mApprovedRequests++;
+	}
   }
   if (reject)
   {
-	// Too many request for this host already.
-	return false;
+	// Too many request for this service already.
+	return NULL;
   }
   
-  if (!no_bandwidth_throttling)
+  // Throttle on bandwidth usage.
+  if (checkBandwidthUsage(per_service, sTime_40ms))
   {
-	// Throttle on bandwidth usage.
-
-	static size_t throttle_fraction = 1024;	// A value between 0 and 1024: each service is throttled when it uses more than max_bandwidth * (throttle_fraction/1024) bandwidth.
-	static AIAverage fraction(25);			// Average over 25 * 40ms = 1 second.
-	static U64 last_sTime_40ms = 0;
-
-	// Truncate the sums to the last second, and get their value.
-	U64 const sTime_40ms = get_clock_count() * HTTPTimeout::sClockWidth_40ms;							// Time in 40ms units.
-	size_t const max_bandwidth = 125.f * max_kbps;														// Convert kbps to bytes per second.
-	size_t const total_bandwidth = BufferedCurlEasyRequest::sHTTPBandwidth.truncateData(sTime_40ms);	// Bytes received in the past second.
-	size_t const service_bandwidth = http_bandwidth_ptr->truncateData(sTime_40ms);						// Idem for just this service.
-	if (sTime_40ms > last_sTime_40ms)
-	{
-	  // Only add throttle_fraction once every 40 ms at most.
-	  // It's ok to ignore other values in the same 40 ms because the value only changes on the scale of 1 second.
-	  fraction.addData(throttle_fraction, sTime_40ms);
-	  last_sTime_40ms = sTime_40ms;
-	}
-	double fraction_avg = fraction.getAverage(1024.0);													// throttle_fraction averaged over the past second, or 1024 if there is no data.
-
-	// Adjust throttle_fraction based on total bandwidth usage.
-	if (total_bandwidth == 0)
-	  throttle_fraction = 1024;
-	else
-	{
-	  // This is the main formula. It can be made plausible by assuming
-	  // an equilibrium where total_bandwidth == max_bandwidth and
-	  // thus throttle_fraction == fraction_avg for more than a second.
-	  //
-	  // Then, more bandwidth is being used (for example because another
-	  // service starts downloading). Assuming that all services that use
-	  // a significant portion of the bandwidth, the new service included,
-	  // must be throttled (all using the same bandwidth; note that the
-	  // new service is immediately throttled at the same value), then
-	  // the limit should be reduced linear with the fraction:
-	  // max_bandwidth / total_bandwidth.
-	  //
-	  // For example, let max_bandwidth be 1. Let there be two throttled
-	  // services, each using 0.5 (fraction_avg = 1024/2). Lets the new
-	  // service use what it can: also 0.5 - then without reduction the
-	  // total_bandwidth would become 1.5, and throttle_fraction would
-	  // become (1024/2) * 1/1.5 = 1024/3: from 2 to 3 services.
-	  //
-	  // In reality, total_bandwidth would rise linear from 1.0 to 1.5 in
-	  // one second if the throttle fraction wasn't changed. However it is
-	  // changed here. The end result is that any change more or less
-	  // linear fades away in one second.
-	  throttle_fraction = fraction_avg * max_bandwidth / total_bandwidth;
-	}
-	if (throttle_fraction > 1024)
-	  throttle_fraction = 1024;
-	if (total_bandwidth > max_bandwidth)
-	{
-	  throttle_fraction *= 0.95;
-	}
-
-	// Throttle this service if it uses too much bandwidth.
-	if (service_bandwidth > (max_bandwidth * throttle_fraction / 1024))
-	{
-	  return false;	// wait
-	}
+	// Too much bandwidth is being used, either in total or for this service.
+	PerService_wat(*per_service)->mCapabilityType[capability_type].mApprovedRequests--;		// Not approved after all.
+	return NULL;
   }
 
   // Check if it's ok to get a new request based on the total number of requests and increment the threshold if appropriate.
 
-  {
-	command_queue_rat command_queue_r(command_queue);
-	S32 const pipelined_requests = command_queue_r->size + sTotalQueued + MultiHandle::total_added_size();
-	// We can't take the command being processed (command_being_processed) into account without
-	// introducing relatively long waiting times for some mutex (namely between when the command
-	// is moved from command_queue to command_being_processed, till it's actually being added to
-	// mAddedEasyRequests). The whole purpose of command_being_processed is to reduce the time
-	// that things are locked to micro seconds, so we'll just accept an off-by-one fuzziness
-	// here instead.
+  S32 const pipelined_requests = command_queue_rat(command_queue)->size + total_queued_or_added;
+  // We can't take the command being processed (command_being_processed) into account without
+  // introducing relatively long waiting times for some mutex (namely between when the command
+  // is moved from command_queue to command_being_processed, till it's actually being added to
+  // mAddedEasyRequests). The whole purpose of command_being_processed is to reduce the time
+  // that things are locked to micro seconds, so we'll just accept an off-by-one fuzziness
+  // here instead.
 
-	// The maximum number of requests that may be queued in command_queue is equal to the total number of requests
-	// that may exist in the pipeline minus the number of requests queued in AIPerService objects, minus
-	// the number of already running requests.
-	reject = pipelined_requests >= max_pipelined_requests_cache;
-	equal = pipelined_requests == max_pipelined_requests_cache;
-	increment_threshold = sRequestStarvation;
-  }
+  // The maximum number of requests that may be queued in command_queue is equal to the total number of requests
+  // that may exist in the pipeline minus the number of requests queued in AIPerService objects, minus
+  // the number of already running requests.
+  MaxPipelinedRequests_wat max_pipelined_requests_w(sMaxPipelinedRequests);
+  reject = pipelined_requests >= max_pipelined_requests_w->count;
+  equal = pipelined_requests == max_pipelined_requests_w->count;
+  increment_threshold = starvation;
   if (increment_threshold && reject)
   {
-	if (max_pipelined_requests_cache < 2 * (S32)curl_max_total_concurrent_connections)
+	if (max_pipelined_requests_w->count < 2 * (S32)curl_max_total_concurrent_connections &&
+		sTime_40ms > max_pipelined_requests_w->last_increment)
 	{
-	  max_pipelined_requests++;
+	  max_pipelined_requests_w->count++;
+	  max_pipelined_requests_w->last_increment = sTime_40ms;
 	  // Immediately take the new threshold into account.
 	  reject = !equal;
 	}
   }
-  return !reject;
+  if (reject)
+  {
+	PerService_wat(*per_service)->mCapabilityType[capability_type].mApprovedRequests--;		// Not approved after all.
+	return NULL;
+  }
+  return new Approvement(per_service, capability_type);
+}
+
+bool AIPerService::checkBandwidthUsage(AIPerServicePtr const& per_service, U64 sTime_40ms)
+{
+  if (sNoHTTPBandwidthThrottling)
+	return false;
+
+  using namespace AICurlPrivate;
+
+  // Truncate the sums to the last second, and get their value.
+  size_t const max_bandwidth = AIPerService::getHTTPThrottleBandwidth125();
+  size_t const total_bandwidth = BufferedCurlEasyRequest::sHTTPBandwidth.truncateData(sTime_40ms);		// Bytes received in the past second.
+  size_t const service_bandwidth = PerService_wat(*per_service)->bandwidth().truncateData(sTime_40ms);	// Idem for just this service.
+  ThrottleFraction_wat throttle_fraction_w(sThrottleFraction);
+  if (sTime_40ms > throttle_fraction_w->last_add)
+  {
+	throttle_fraction_w->average.addData(throttle_fraction_w->fraction, sTime_40ms);
+	// Only add throttle_fraction_w->fraction once every 40 ms at most.
+	// It's ok to ignore other values in the same 40 ms because the value only changes on the scale of 1 second.
+	throttle_fraction_w->last_add = sTime_40ms;
+  }
+  double fraction_avg = throttle_fraction_w->average.getAverage(1024.0);	// throttle_fraction_w->fraction averaged over the past second, or 1024 if there is no data.
+
+  // Adjust the fraction based on total bandwidth usage.
+  if (total_bandwidth == 0)
+	throttle_fraction_w->fraction = 1024;
+  else
+  {
+	// This is the main formula. It can be made plausible by assuming
+	// an equilibrium where total_bandwidth == max_bandwidth and
+	// thus fraction == fraction_avg for more than a second.
+	//
+	// Then, more bandwidth is being used (for example because another
+	// service starts downloading). Assuming that all services that use
+	// a significant portion of the bandwidth, the new service included,
+	// must be throttled (all using the same bandwidth; note that the
+	// new service is immediately throttled at the same value), then
+	// the limit should be reduced linear with the fraction:
+	// max_bandwidth / total_bandwidth.
+	//
+	// For example, let max_bandwidth be 1. Let there be two throttled
+	// services, each using 0.5 (fraction_avg = 1024/2). Let the new
+	// service use what it can: also 0.5 - then without reduction the
+	// total_bandwidth would become 1.5, and fraction would
+	// become (1024/2) * 1/1.5 = 1024/3: from 2 to 3 services.
+	//
+	// In reality, total_bandwidth would rise linear from 1.0 to 1.5 in
+	// one second if the throttle fraction wasn't changed. However it is
+	// changed here. The end result is that any change more or less
+	// linear fades away in one second.
+	throttle_fraction_w->fraction = llmin(1024., fraction_avg * max_bandwidth / total_bandwidth + 0.5);
+  }
+  if (total_bandwidth > max_bandwidth)
+  {
+	throttle_fraction_w->fraction *= 0.95;
+  }
+
+  // Throttle this service if it uses too much bandwidth.
+  // Warning: this requires max_bandwidth * 1024 to fit in a size_t.
+  // On 32 bit that means that HTTPThrottleBandwidth must be less than 33554 kbps.
+  return (service_bandwidth > (max_bandwidth * throttle_fraction_w->fraction / 1024));
 }
 

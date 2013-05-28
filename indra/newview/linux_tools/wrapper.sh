@@ -154,7 +154,7 @@ export SL_OPT="`cat gridargs.dat` $@"
 eval ${SL_ENV} ${SL_CMD} ${SL_OPT} || LL_RUN_ERR=runerr
 
 # Handle any resulting errors
-if [ -n "$LL_RUN_ERR" ]; then
+if [ "$LL_RUN_ERR" = "runerr" ]; then
 	# generic error running the binary
 	echo '*** Bad shutdown. ***'
 fi

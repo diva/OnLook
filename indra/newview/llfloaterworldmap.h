@@ -63,10 +63,10 @@ public:
 
 	/*virtual*/ void onClose(bool app_quitting);
 
-	static void show(void*, BOOL center_on_target );
+	static void show(bool center_on_target);
 	static void reloadIcons(void*);
-	static void toggle(void*);
-	static void hide(void*); 
+	static void toggle();
+	static void hide();
 
 	/*virtual*/ void reshape( S32 width, S32 height, BOOL called_from_parent = TRUE );
 	/*virtual*/ BOOL handleHover(S32 x, S32 y, MASK mask);

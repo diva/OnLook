@@ -221,7 +221,6 @@
 #include "wlfPanel_AdvSettings.h" //Lower right Windlight and Rendering options
 #include "lldaycyclemanager.h"
 #include "llfloaterblacklist.h"
-#include "scriptcounter.h"
 #include "shfloatermediaticker.h"
 #include "llpacketring.h"
 // </edit>
@@ -1008,6 +1007,8 @@ bool idle_startup()
 			LLTrans::setDefaultArg("[GRID_OWNER]", gHippoGridManager->getConnectedGrid()->getGridOwner());
 			LLScriptEdCore::parseFunctions("lsl_functions_os.xml"); //Singu Note: This appends to the base functions parsed from lsl_functions_sl.xml
 		}
+		// Avination doesn't want the viewer to do bandwidth throttling (it is done serverside, taking UDP into account too).
+		AIPerService::setNoHTTPBandwidthThrottling(gHippoGridManager->getConnectedGrid()->isAvination());
 
 		// create necessary directories
 		// *FIX: these mkdir's should error check
@@ -3223,7 +3224,6 @@ void pass_processObjectPropertiesFamily(LLMessageSystem *msg, void**)
 	// Send the result to the corresponding requesters.
 	LLSelectMgr::processObjectPropertiesFamily(msg, NULL);
 	JCFloaterAreaSearch::processObjectPropertiesFamily(msg, NULL);
-	ScriptCounter::processObjectPropertiesFamily(msg,0);
 }
 
 void register_viewer_callbacks(LLMessageSystem* msg)
@@ -4378,9 +4378,17 @@ bool process_login_success_response(std::string& password)
 	tmp = response["search"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setSearchUrl(tmp);
 	tmp = response["currency"].asString();
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setCurrencySymbol(tmp);
+	if (!tmp.empty())
+	{
+		LLTrans::setDefaultArg("[CURRENCY]", tmp);
+		gHippoGridManager->getConnectedGrid()->setCurrencySymbol(tmp);
+	}
 	tmp = response["currency_text"].asString();
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setCurrencyText(tmp);
+	if (!tmp.empty())
+	{
+		LLTrans::setDefaultArg("[CURRENCY_TEXT]", tmp);
+		gHippoGridManager->getConnectedGrid()->setCurrencyText(tmp);
+	}
 	tmp = response["real_currency"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setRealCurrencySymbol(tmp);
 	tmp = response["directory_fee"].asString();

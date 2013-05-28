@@ -54,7 +54,6 @@
 #include "llpanelnetwork.h"
 #include "llpanelaudioprefs.h"
 #include "llpaneldisplay.h"
-#include "llpaneldebug.h"
 #include "llpanelgeneral.h"
 #include "llpanelinput.h"
 #include "llpanellogin.h"

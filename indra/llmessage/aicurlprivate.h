@@ -130,11 +130,17 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// Pause and unpause a connection.
 	CURLcode pause(int bitmask);
 
+	// Called if this request should be queued on the curl thread when too much bandwidth is being used.
+	void setApproved(AIPerService::Approvement* approved) { mApproved = approved; }
+
+	// Returns false when this request should be queued by the curl thread when too much bandwidth is being used.
+	bool approved(void) const { return mApproved; }
+
 	// Called when a request is queued for removal. In that case a race between the actual removal
 	// and revoking of the callbacks is harmless (and happens for the raw non-statemachine version).
 	void remove_queued(void) { mQueuedForRemoval = true; }
 	// In case it's added after being removed.
-	void add_queued(void) { mQueuedForRemoval = false; }
+	void add_queued(void) { mQueuedForRemoval = false; if (mApproved) { mApproved->honored(); } }
 
 #ifdef DEBUG_CURLIO
 	void debug(bool debug) { if (mDebug) debug_curl_remove_easy(mEasyHandle); if (debug) debug_curl_add_easy(mEasyHandle); mDebug = debug; }
@@ -146,6 +152,7 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	mutable char* mErrorBuffer;
 	AIPostFieldPtr mPostField;		// This keeps the POSTFIELD data alive for as long as the easy handle exists.
 	bool mQueuedForRemoval;			// Set if the easy handle is (probably) added to the multi handle, but is queued for removal.
+	LLPointer<AIPerService::Approvement> mApproved;		// When not set then the curl thread should check bandwidth usage and queue this request if too much is being used.
 #ifdef DEBUG_CURLIO
 	bool mDebug;
 #endif
@@ -351,8 +358,8 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// PerService API.
 	AIPerServicePtr getPerServicePtr(void);							// (Optionally create and) return a pointer to the unique
 																	// AIPerService corresponding to mLowercaseServicename.
-	bool removeFromPerServiceQueue(AICurlEasyRequest const&) const;	// Remove this request from the per-host queue, if queued at all.
-																	// Returns true if it was queued.
+	bool removeFromPerServiceQueue(AICurlEasyRequest const&, AICapabilityType capability_type) const;	// Remove this request from the per-host queue, if queued at all.
+																										// Returns true if it was queued.
   protected:
 	// Pass events to parent.
 	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat& curl_easy_request_w);
@@ -410,6 +417,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	U8* mLastRead;										// Pointer into mInput where we last stopped reading (or NULL to start at the beginning).
 	buffer_ptr_t mOutput;
 	LLHTTPClient::ResponderPtr mResponder;
+	AICapabilityType mCapabilityType;
 	//U32 mBodyLimit;									// From the old LLURLRequestDetail::mBodyLimit, but never used.
 	U32 mStatus;										// HTTP status, decoded from the first header line.
 	std::string mReason;								// The "reason" from the same header line.
@@ -452,6 +460,9 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	// Return true when prepRequest was already called and the object has not been
 	// invalidated as a result of calling timed_out().
 	bool isValid(void) const { return mResponder; }
+
+	// Return the capability type of this request.
+	AICapabilityType capability_type(void) const { llassert(mCapabilityType != number_of_capability_types); return mCapabilityType; }
 };
 
 inline ThreadSafeBufferedCurlEasyRequest* CurlEasyRequest::get_lockobj(void)

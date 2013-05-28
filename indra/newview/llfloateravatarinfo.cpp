@@ -40,7 +40,12 @@
 // viewer project includes
 #include "llagentdata.h"
 #include "llcommandhandler.h"
+#include "llimview.h"
+#include "llfloaterfriends.h"
+#include "llfloatermute.h"
+#include "llmenucommands.h"
 #include "llpanelavatar.h"
+#include "llviewermessage.h"
 #include "lluictrlfactory.h"
 #include "llweb.h"
 
@@ -60,24 +65,92 @@ const LLRect FAI_RECT(0, 530, 420, 0);
 class LLAgentHandler : public LLCommandHandler
 {
 public:
+	void verbCallback(const std::string& verb, LLUUID agent_id, const LLAvatarName& avatar_name)
+	{
+		if (verb == "im")
+		{
+			gIMMgr->setFloaterOpen(TRUE);
+			gIMMgr->addSession( avatar_name.getCompleteName(), IM_NOTHING_SPECIAL, agent_id);
+			return;
+		}
+
+		if (verb == "requestfriend")
+		{
+			LLPanelFriends::requestFriendshipDialog( agent_id, avatar_name.getCompleteName() );
+			return;
+		}
+
+		if (verb == "mute")
+		{
+			LLFloaterMute::getInstance()->open();
+			LLMute mute(agent_id, avatar_name.getCompleteName(), LLMute::AGENT);
+			LLMuteList::getInstance()->add(mute);
+			return;
+		}
+
+		if (verb == "unmute")
+		{
+			LLMute mute(agent_id, avatar_name.getCompleteName(), LLMute::AGENT);
+			LLMuteList::getInstance()->remove(mute);
+			return;
+		}
+	}
+
 	// requires trusted browser to trigger
 	LLAgentHandler() : LLCommandHandler("agent", true) { }
 
 	bool handle(const LLSD& params, const LLSD& query_map,
 				LLMediaCtrl* web)
 	{
-		if (params.size() < 2) return false;
+		if (params.size() < 2)
+		{
+			return false;
+		}
 		LLUUID agent_id;
 		if (!agent_id.set(params[0], FALSE))
 		{
 			return false;
 		}
 
-		if (params[1].asString() == "about")
+		const std::string verb = params[1].asString();
+		if (verb == "about")
 		{
 			LLFloaterAvatarInfo::show(agent_id);
 			return true;
 		}
+
+		if (verb == "pay")
+		{
+			handle_pay_by_id(agent_id);
+			return true;
+		}
+
+		if (verb == "offerteleport")
+		{
+			handle_lure(agent_id);
+			return true;
+		}
+
+		if ((verb == "im") || (verb == "requestfriend") || (verb == "unmute"))
+		{
+			LLAvatarNameCache::get(agent_id,   boost::bind(&LLAgentHandler::verbCallback, this, verb, _1, _2));
+			return true;
+		}
+		
+		if (verb == "mute")
+		{
+			if (LLMuteList::getInstance()->isMuted(agent_id))
+			{
+				LLFloaterMute::getInstance()->open();
+				LLFloaterMute::getInstance()->selectMute(agent_id);
+			}
+			else
+			{
+				LLAvatarNameCache::get(agent_id, boost::bind(&LLAgentHandler::verbCallback, this, verb, _1, _2));
+			}
+			return true;
+		}
+
 		return false;
 	}
 };

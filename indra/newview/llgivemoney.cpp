@@ -101,7 +101,7 @@ LLFloaterPay::LLFloaterPay(const std::string& name,
 	for(U32 i = 0; i < MAX_PAY_BUTTONS; ++i)
 	{
 		mQuickPayButton[i] = getChild<LLButton>("fastpay " + boost::lexical_cast<std::string>(mQuickPayInfo[i]));
-		mQuickPayButton[i]->setClickedCallback(boost::bind(&LLFloaterPay::onGive,this,std::ref(mQuickPayInfo[i])));
+		mQuickPayButton[i]->setClickedCallback(boost::bind(&LLFloaterPay::onGive,this,boost::ref(mQuickPayInfo[i])));
 		mQuickPayButton[i]->setVisible(FALSE);
 		mQuickPayButton[i]->setLabelArg("[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 	}
@@ -122,7 +122,7 @@ LLFloaterPay::LLFloaterPay(const std::string& name,
 
 
 	LLButton* pay_btn = getChild<LLButton>("pay btn");
-	pay_btn->setClickedCallback(boost::bind(&LLFloaterPay::onGive,this,std::ref(mDefaultValue)));
+	pay_btn->setClickedCallback(boost::bind(&LLFloaterPay::onGive,this,boost::ref(mDefaultValue)));
 	setDefaultBtn(pay_btn);
 	pay_btn->setVisible(false);
 	pay_btn->setEnabled(sLastAmount > 0);

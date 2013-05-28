@@ -3,10 +3,9 @@
  * @brief Panel for roles information about a particular group.
  *
  * $LicenseInfo:firstyear=2006&license=viewergpl$
- * 
+ * Second Life Viewer Source Code
  * Copyright (c) 2006-2009, Linden Research, Inc.
  * 
- * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
  * to you under the terms of the GNU General Public License, version 2.0
  * ("GPL"), unless you have obtained a separate licensing agreement
@@ -1564,9 +1563,11 @@ void LLPanelGroupMembersSubTab::onNameCache(const LLUUID& update_id, LLGroupMemb
 	{
 		return;
 	}
-	
+
 	// trying to avoid unnecessary hash lookups
-	if (matchesSearchFilter(av_name.getLegacyName()))
+	std::string name;
+	LLAvatarNameCache::getPNSName(av_name, name); // Singu Note: Diverge from LL Viewer and filter by name displayed
+	if (matchesSearchFilter(name))
 	{
 		addMemberToList(member);
 		if(!mMembersList->getEnabled())
@@ -1574,13 +1575,13 @@ void LLPanelGroupMembersSubTab::onNameCache(const LLUUID& update_id, LLGroupMemb
 			mMembersList->setEnabled(TRUE);
 		}
 	}
-	
 }
+
 void LLPanelGroupMembersSubTab::updateMembers()
 {
 	mPendingMemberUpdate = FALSE;
 
-	lldebugs << "LLPanelGroupMembersSubTab::updateMembers()" << llendl;
+	// Rebuild the members list.
 
 	LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(mGroupID);
 	if (!gdatap) 
@@ -1598,7 +1599,7 @@ void LLPanelGroupMembersSubTab::updateMembers()
 		return;
 	}
 
-	//cleanup list only for first iretation
+	//cleanup list only for first iteration
 	if(mMemberProgress == gdatap->mMembers.begin())
 	{
 		mMembersList->deleteAllItems();
@@ -1616,10 +1617,11 @@ void LLPanelGroupMembersSubTab::updateMembers()
 			continue;
 
 		// Do filtering on name if it is already in the cache.
-		LLAvatarName av_name;
-		if (LLAvatarNameCache::get(mMemberProgress->first, &av_name))
+		// Singu Note: Diverge from LL Viewer and filter by name displayed
+		std::string fullname;
+		if (LLAvatarNameCache::getPNSName(mMemberProgress->first, fullname))
 		{
-			if (matchesSearchFilter(av_name.getLegacyName()))
+			if (matchesSearchFilter(fullname))
 			{
 				addMemberToList(mMemberProgress->second);
 			}

@@ -63,7 +63,6 @@
 #include "llfirstuse.h"
 #include "llfloaterabout.h"
 #include "llfloateractivespeakers.h"
-#include "llfloaterbvhpreview.h"
 #include "llfloateravatarinfo.h"
 #include "llfloateravatarlist.h"
 #include "llfloateravatartextures.h"
@@ -403,7 +402,7 @@ BOOL handle_check_pose(void* userdata) {
 }
 
 
-void handle_hide_typing_notification(void*);
+void handle_close_all_notifications(void*);
 void handle_open_message_log(void*);
 // </edit>
 
@@ -761,7 +760,7 @@ void init_menus()
 	ins->setVisible(false);
 	ins = gMenuBarView->getChildView("insert_tools", true, false);
 	ins->setVisible(false);
-	/* Singu Note: When the advanced and/or admin menu is made xml, this should be uncommented.
+	/* Singu Note: When the advanced and/or admin menus are made xml, these should be uncommented.
 	ins = gMenuBarView->getChildView("insert_advanced", true, false);
 	ins->setVisible(false);
 	ins = gMenuBarView->getChildView("insert_admin", true, false);
@@ -2339,18 +2338,19 @@ bool enable_object_edit()
 		enable = LLViewerParcelMgr::getInstance()->allowAgentBuild()
 			|| LLSelectMgr::getInstance()->getSelection()->isAttachment();
 	}
-	else if (LLSelectMgr::getInstance()->selectGetAllValidAndObjectsFound())
+	// Singu Note: The following check is wasteful, bypass it
+	// The following RLVa patch has been modified from its original version. It been formatted to run in the time allotted.
+	//else if (LLSelectMgr::getInstance()->selectGetAllValidAndObjectsFound())
+// [RLVa:KB] - Checked: 2010-11-29 (RLVa-1.3.0c) | Modified after RLVa-1.3.0c on 2013-05-18
+	else if (!rlv_handler_t::isEnabled() || (!gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) && (!gRlvHandler.hasBehaviour(RLV_BHVR_EDITOBJ)))
 	{
-//		enable = true;
-// [RLVa:KB] - Checked: 2010-11-29 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
-		bool fRlvCanEdit = (!gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) && (!gRlvHandler.hasBehaviour(RLV_BHVR_EDITOBJ));
-		if (!fRlvCanEdit)
-		{
-			LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
-			RlvSelectIsEditable f;
-			fRlvCanEdit = (hSel.notNull()) && ((hSel->getFirstRootNode(&f, TRUE)) == NULL);
-		}
-		enable = fRlvCanEdit;
+		enable = true;
+	}
+	else // Restrictions disallow edit, check for an exception for the selection
+	{
+		LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
+		RlvSelectIsEditable f;
+		enable = (hSel.notNull()) && ((hSel->getFirstRootNode(&f, TRUE)) == NULL);
 // [/RLVa:KB]
 	}
 
@@ -3009,7 +3009,12 @@ class LLScriptCount : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		ScriptCounter::serializeSelection(false);
+		if (LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject())
+		{
+			ScriptCounter* sc = new ScriptCounter(false, object);
+			sc->requestInventories();
+			// sc will destroy itself
+		}
 		return true;
 	}
 };
@@ -3018,7 +3023,12 @@ class LLScriptDelete : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		ScriptCounter::serializeSelection(true);
+		if (LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject())
+		{
+			ScriptCounter* sc = new ScriptCounter(true, object);
+			sc->requestInventories();
+			// sc will destroy itself
+		}
 		return true;
 	}
 };
@@ -3225,10 +3235,7 @@ class LLAvatarCopyUUID : public view_listener_t
 		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
 		if(!avatar) return true;
 		
-		LLUUID uuid = avatar->getID();
-		char buffer[UUID_STR_LENGTH];		/*Flawfinder: ignore*/
-		uuid.toString(buffer);
-		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
+		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(avatar->getID().asString()));
 		return true;
 	}
 };
@@ -3701,6 +3708,17 @@ void handle_open_message_log(void*)
 	LLFloaterMessageLog::show();
 }
 
+void handle_close_all_notifications(void*)
+{
+	LLView::child_list_t child_list(*(gNotifyBoxView->getChildList()));
+	for(LLView::child_list_iter_t iter = child_list.begin();
+		iter != child_list.end();
+		iter++)
+	{
+		gNotifyBoxView->removeChild(*iter);
+	}
+}
+
 void handle_fake_away_status(void*)
 {
 	bool fake_away = gSavedSettings.getBOOL("FakeAway");
@@ -3971,7 +3989,12 @@ class LLWorldEnableFly : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		BOOL sitting = FALSE;
-		if (gAgentAvatarp)
+		static LLCachedControl<bool> continue_flying_on_unsit("LiruContinueFlyingOnUnsit");
+		if (continue_flying_on_unsit)
+		{
+			sitting = false;
+		}
+		else if (gAgentAvatarp)
 		{
 			sitting = gAgentAvatarp->isSitting();
 		}
@@ -6359,7 +6382,8 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		//registerFloater("script info",	boost::bind(&LLFloaterScriptLimits::showInstance,LLSD()));
 		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
 		registerFloater("toolbar",		boost::bind(&LLToolBar::toggle,(void*)NULL),				boost::bind(&LLToolBar::visible,(void*)NULL));
-		registerFloater("world map",	boost::bind(&LLFloaterWorldMap::toggle,(void*)NULL));
+		registerFloater("world map",	boost::bind(&LLFloaterWorldMap::toggle));
+		registerFloater("sound_explorer",	boost::bind(&LLFloaterExploreSounds::toggle),			boost::bind(&LLFloaterExploreSounds::visible));
 		registerFloater("asset_blacklist",	boost::bind(&LLFloaterBlacklist::toggle),				boost::bind(&LLFloaterBlacklist::visible));
 
 		registerFloater<LLFloaterLand>				("about land");
@@ -6383,12 +6407,11 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterTeleportHistory>	("teleport history");
 		registerFloater<LLFloaterPathfindingCharacters>	("pathfinding_characters");
 		registerFloater<LLFloaterPathfindingLinksets>	("pathfinding_linksets");
-		registerFloater<JCFloaterAreaSearch>		("object_area_search");
-		
+
 	}
 	void registerFloater(const std::string& name, boost::function<void ()> show, boost::function<bool ()> visible = NULL)
 	{
-		mEntries.insert( std::make_pair( name, std::make_pair( show, visible ) ) ); 
+		mEntries.insert( std::make_pair( name, std::make_pair( show, visible ) ) );
 	}
 	template <typename T>
 	void registerFloater(const std::string& name, const LLSD& key = LLSD())
@@ -6458,12 +6481,6 @@ class LLShowFloater : public view_listener_t
 			{
 				LLFloaterBump::show(NULL);
 			}
-		}
-		else if (floater_name == "bug reporter")
-		{
-			// Prevent menu from appearing in screen shot.
-			gMenuHolder->hideMenus();
-			LLFloaterReporter::showFromMenu(BUG_REPORT);
 		}
 		else // Simple codeless floater
 		{
@@ -9064,32 +9081,7 @@ class SinguCloseAllDialogs : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLView::child_list_t child_list(*(gNotifyBoxView->getChildList()));
-		for(LLView::child_list_iter_t iter = child_list.begin();
-			iter != child_list.end();
-			iter++)
-		{
-			gNotifyBoxView->removeChild(*iter);
-		}
-		return true;
-	}
-};
-
-class SinguForceGroundSit : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		if (isAgentAvatarValid())
-		{
-			if (!gAgentAvatarp->isSitting())
-			{
-				gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
-			} 
-			else
-			{
-				gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
-			}
-		}
+		handle_close_all_notifications(NULL);
 		return true;
 	}
 };
@@ -9108,8 +9100,7 @@ class SinguNimble : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-        BOOL checked = gSavedSettings.getBOOL("Nimble");
-        gSavedSettings.setBOOL("Nimble", !checked);
+		gSavedSettings.setBOOL("Nimble", !gSavedSettings.getBOOL("Nimble"));
 
 		return true;
 	}
@@ -9119,28 +9110,7 @@ class SinguCheckNimble : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-        BOOL checked = gSavedSettings.getBOOL("Nimble");
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(checked);
-
-		return true;
-	}
-};
-
-class SinguObjectAreaSearch : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		JCFloaterAreaSearch::toggleInstance();
-
-		return true;
-	}
-};
-
-class SinguSoundExplorer : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLFloaterExploreSounds::toggle();
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(gSavedSettings.getBOOL("Nimble"));
 
 		return true;
 	}
@@ -9170,8 +9140,7 @@ class SinguCheckStreamingAudioDisplay : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool checked =  handle_singleton_check<SHFloaterMediaTicker>(NULL);
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(checked);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(handle_singleton_check<SHFloaterMediaTicker>(NULL));
 
 		return true;
 	}
@@ -9199,8 +9168,7 @@ class SinguCheckPoseStand : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool checked = handle_check_pose(NULL);
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(checked);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(handle_check_pose(NULL));
 		return true;
 	}
 };
@@ -9227,8 +9195,7 @@ class SinguCheckDebugConsole : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool checked = handle_singleton_check<LLFloaterRegionDebugConsole>(NULL);
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(checked);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(handle_singleton_check<LLFloaterRegionDebugConsole>(NULL));
 		return true;
 	}
 };
@@ -9237,10 +9204,11 @@ class SinguVisibleDebugConsole : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool visible = !(gAgent.getRegion()->getCapability("SimConsoleAsync").empty());
-		LLView* item = gMenuBarView->getChildView("Region Debug Console", true, false);
-		item->setVisible(visible);
-
+		if (LLViewerRegion* region = gAgent.getRegion())
+		{
+			if (LLView* item = gMenuBarView->getChildView("Region Debug Console", true, false))
+				item->setVisible(!(region->getCapability("SimConsoleAsync").empty() || region->getCapability("SimConsole").empty()));
+		}
 		return true;
 	}
 };
@@ -9445,6 +9413,7 @@ void initialize_menus()
 	addMenu(new LLObjectMeasure(), "Object.Measure");
 	addMenu(new LLObjectData(), "Object.Data");
 	addMenu(new LLScriptCount(), "Object.ScriptCount");
+	addMenu(new LLObjectVisibleScriptCount(), "Object.VisibleScriptCount");
 	addMenu(new LLKillEmAll(), "Object.Destroy");
 	addMenu(new LLPowerfulWizard(), "Object.Explode");
 	addMenu(new LLCanIHasKillEmAll(), "Object.EnableDestroy");
@@ -9523,13 +9492,9 @@ void initialize_menus()
 	// Singularity menu
 	addMenu(new SinguCloseAllDialogs(), "CloseAllDialogs");
 	// ---- Fake away handled elsewhere
-	addMenu(new SinguForceGroundSit(), "ForceGroundSit");
 	addMenu(new SinguAnimationOverride(), "AnimationOverride");
 	addMenu(new SinguNimble(), "Nimble");
 	addMenu(new SinguCheckNimble(), "CheckNimble");
-	addMenu(new SinguObjectAreaSearch(), "ObjectAreaSearch");
-	addMenu(new SinguSoundExplorer(), "SoundExplorer");
-	addMenu(new SinguAssetBlacklist(), "AssetBlacklist");
 	addMenu(new SinguStreamingAudioDisplay(), "StreamingAudioDisplay");
 	addMenu(new SinguEnableStreamingAudioDisplay(), "EnableStreamingAudioDisplay");
 	addMenu(new SinguCheckStreamingAudioDisplay(), "CheckStreamingAudioDisplay");

@@ -42,23 +42,44 @@
 
 #include "stdtypes.h"
 #include "llview.h"
-class LLViewerInventoryItem;
+
 class LLDropTarget : public LLView
 {
 public:
-	LLDropTarget(const std::string& name, const LLRect& rect, void (*callback)(LLViewerInventoryItem*));
-	LLDropTarget(const std::string& name, const LLRect& rect, const LLUUID& agent_id);
+	struct Params : public LLInitParam::Block<Params, LLView::Params>
+	{
+		Optional<std::string> control_name; // Control to change on item drop (Per Account only)
+		Optional<std::string> label; // Label for the LLTextBox, used when label doesn't dynamically change on drop
+		Optional<bool> fill_parent; // Whether or not to fill the direct parent, to have a larger drop target.  If true, the next sibling must explicitly define its rect without deltas.
+		Params()
+		:	control_name("control_name", "")
+		,	label("label", "")
+		,	fill_parent("fill_parent", false)
+		{
+			changeDefault(mouse_opaque, false);
+			changeDefault(follows.flags, FOLLOWS_ALL);
+		}
+	};
+
+	LLDropTarget(const Params& p = Params());
 	~LLDropTarget();
 
-	void doDrop(EDragAndDropType cargo_type, void* cargo_data);
+	virtual void doDrop(EDragAndDropType cargo_type, void* cargo_data);
 
 	//
 	// LLView functionality
 	virtual BOOL handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop, EDragAndDropType cargo_type, void* cargo_data, EAcceptance* accept, std::string& tooltip_msg);
-	void setAgentID(const LLUUID &agent_id){ mAgentID = agent_id;}
+	static LLView* fromXML(LLXMLNodePtr node, LLView* parent, class LLUICtrlFactory* factory);
+	virtual void initFromXML(LLXMLNodePtr node, LLView* parent);
+	virtual void setControlName(const std::string& control, LLView* context);	
+
+	void fillParent(const LLView* parent);
+	void setEntityID(const LLUUID& id) { mEntityID = id;}
 protected:
-	LLUUID mAgentID;
-	void	(*mDownCallback)(LLViewerInventoryItem*);
+	LLUUID mEntityID;
+private:
+	LLControlVariable* mControl;
+	class LLTextBox* mText;
 };
 
 #endif // LLDROPTARGET_H

@@ -4740,7 +4740,7 @@ void LLSelectMgr::packPermissions(LLSelectNode* node, void *user_data)
 	gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, node->getObject()->getLocalID());
 
 	gMessageSystem->addU8Fast(_PREHASH_Field,	data->mField);
-	gMessageSystem->addBOOLFast(_PREHASH_Set,		data->mSet);
+	gMessageSystem->addU8Fast(_PREHASH_Set,		data->mSet ? PERM_SET_TRUE : PERM_SET_FALSE);
 	gMessageSystem->addU32Fast(_PREHASH_Mask,		data->mMask);
 }
 
@@ -5144,10 +5144,9 @@ void LLSelectMgr::processObjectPropertiesFamily(LLMessageSystem* msg, void** use
 	msg->getStringFast(_PREHASH_ObjectData, _PREHASH_Description, desc);
 
 	// the reporter widget askes the server for info about picked objects
-	if (request_flags & (COMPLAINT_REPORT_REQUEST | BUG_REPORT_REQUEST))
+	if (request_flags & COMPLAINT_REPORT_REQUEST)
 	{
-		EReportType report_type = (COMPLAINT_REPORT_REQUEST & request_flags) ? COMPLAINT_REPORT : BUG_REPORT;
-		LLFloaterReporter *reporterp = LLFloaterReporter::getReporter(report_type);
+		LLFloaterReporter *reporterp = LLFloaterReporter::getInstance();
 		if (reporterp)
 		{
 			std::string fullname;

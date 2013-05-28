@@ -413,11 +413,8 @@ public:
 		}
 	}
 	
-	/*virtual*/ bool followRedir() const
-	{
-		return mFollowRedir;
-	}
-	
+	/*virtual*/ bool followRedir() const { return mFollowRedir; }
+	/*virtual*/ AICapabilityType capability_type(void) const { return cap_texture; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return HTTPGetResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "HTTPGetResponder"; }
 
@@ -1272,9 +1269,11 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			}
 
 			// Let AICurl decide if we can process more HTTP requests at the moment or not.
-			static const LLCachedControl<F32> throttle_bandwidth("HTTPThrottleBandwidth", 2000);
-			bool const no_bandwidth_throttling = gHippoGridManager->getConnectedGrid()->isAvination();
-			if (!AIPerService::wantsMoreHTTPRequestsFor(mPerServicePtr, throttle_bandwidth, no_bandwidth_throttling))
+
+			// AIPerService::approveHTTPRequestFor returns approvement for ONE request.
+			// This object keeps track of whether or not that is honored.
+			LLPointer<AIPerService::Approvement> approved = AIPerService::approveHTTPRequestFor(mPerServicePtr, cap_texture);
+			if (!approved)
 			{
 				return false ; //wait.
 			}
@@ -1323,7 +1322,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				}
 				LLHTTPClient::request(mUrl, LLHTTPClient::HTTP_GET, NULL,
 					new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, mRequestedOffset, true),
-					headers/*,*/ DEBUG_CURLIO_PARAM(debug_off), keep_alive, no_does_authentication, allow_compressed_reply, NULL, 0, NULL);
+					headers, approved/*,*/ DEBUG_CURLIO_PARAM(debug_off), keep_alive, no_does_authentication, allow_compressed_reply, NULL, 0, NULL);
 				res = true;
 			}
 			if (!res)

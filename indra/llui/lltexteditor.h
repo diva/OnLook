@@ -293,7 +293,7 @@ public:
 	
 	const LLTextSegment*	getCurrentSegment() const { return getSegmentAtOffset(mCursorPos); }
 	const LLTextSegment*	getPreviousSegment() const;
-	void getSelectedSegments(std::vector<const LLTextSegmentPtr>& segments) const;
+	void getSelectedSegments(std::vector<LLTextSegmentPtr>& segments) const;
 
 	static bool		isPartOfWord(llwchar c) { return ( (c == '_')  || (c == '\'') || LLStringOps::isAlnum((char)c)); }
 

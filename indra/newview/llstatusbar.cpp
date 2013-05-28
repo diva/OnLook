@@ -505,9 +505,9 @@ void LLStatusBar::refresh()
 	if (region)
 	{
 		bool pf_disabled = !region->dynamicPathfindingEnabled();
-		getChild<LLUICtrl>("pf_dirty")->setVisible(mIsNavMeshDirty);
+		getChild<LLUICtrl>("pf_dirty")->setVisible(!pf_disabled && mIsNavMeshDirty);
 		getChild<LLUICtrl>("pf_disabled")->setVisible(pf_disabled);
-		const std::string pf_icon = mIsNavMeshDirty ? "pf_dirty" : pf_disabled ? "pf_disabled" : "";
+		const std::string pf_icon = pf_disabled ? "pf_disabled" : mIsNavMeshDirty ? "pf_dirty" : "";
 		if (!pf_icon.empty())
 		{
 			x += 6;
