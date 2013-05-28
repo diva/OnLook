@@ -2441,10 +2441,11 @@ void LLViewerWindow::draw()
 	}
 
 	gGL.pushMatrix();
+	LLUI::pushMatrix();
 	{
 		
 		// scale view by UI global scale factor and aspect ratio correction factor
-		gGL.scalef(mDisplayScale.mV[VX], mDisplayScale.mV[VY], 1.f);
+		gGL.scaleUI(mDisplayScale.mV[VX], mDisplayScale.mV[VY], 1.f);
 
 		LLVector2 old_scale_factor = LLUI::getScaleFactor();
 		// apply camera zoom transform (for high res screenshots)
@@ -2534,6 +2535,7 @@ void LLViewerWindow::draw()
 
 		LLUI::setScaleFactor(old_scale_factor);
 	}
+	LLUI::popMatrix();
 	gGL.popMatrix();
 
 	if (LLGLSLShader::sNoFixedFunction)
@@ -5353,9 +5355,9 @@ void LLViewerWindow::calcDisplayScale()
 	F32 ui_scale_factor = gSavedSettings.getF32("UIScaleFactor");
 	LLVector2 display_scale;
 	display_scale.setVec(llmax(1.f / mWindow->getPixelAspectRatio(), 1.f), llmax(mWindow->getPixelAspectRatio(), 1.f));
-	F32 height_normalization = gSavedSettings.getBOOL("UIAutoScale") ? ((F32)mWindowRectRaw.getHeight() / display_scale.mV[VY]) / 768.f : 1.f;
 	if(mWindow->getFullscreen())
 	{
+		F32 height_normalization = gSavedSettings.getBOOL("UIAutoScale") ? ((F32)mWindowRectRaw.getHeight() / display_scale.mV[VY]) / 768.f : 1.f;
 		display_scale *= (ui_scale_factor * height_normalization);
 	}
 	else
