@@ -191,6 +191,7 @@ void LLPrefsAscentVan::refreshValues()
 	mTurnAround = gSavedSettings.getBOOL("TurnAroundWhenWalkingBackwards");
 	mAnnounceSnapshots = gSavedSettings.getBOOL("AnnounceSnapshots");
 	mAnnounceStreamMetadata = gSavedSettings.getBOOL("AnnounceStreamMetadata");
+	mUnfocusedFloatersOpaque = gSavedSettings.getBOOL("FloaterUnfocusedBackgroundOpaque");
 
     //Tags\Colors ----------------------------------------------------------------------------
     mAscentBroadcastTag     = gSavedSettings.getBOOL("AscentBroadcastTag");
@@ -259,6 +260,7 @@ void LLPrefsAscentVan::cancel()
 	gSavedSettings.setBOOL("TurnAroundWhenWalkingBackwards", mTurnAround);
 	gSavedSettings.setBOOL("AnnounceSnapshots", mAnnounceSnapshots);
 	gSavedSettings.setBOOL("AnnounceStreamMetadata", mAnnounceStreamMetadata);
+	gSavedSettings.setBOOL("FloaterUnfocusedBackgroundOpaque", mUnfocusedFloatersOpaque);
 
     //Tags\Colors ----------------------------------------------------------------------------
     gSavedSettings.setBOOL("AscentBroadcastTag",         mAscentBroadcastTag);
