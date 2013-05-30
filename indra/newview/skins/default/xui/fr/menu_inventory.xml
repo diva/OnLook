@@ -54,6 +54,7 @@
 	<menu_item_call name="Restore to Last Position" label="Remettre au dernier emplacement"/>
 	<menu_item_call name="Remove Link" label="Supprimer Lien"/>
 	<menu_item_call name="Delete" label="Supprimer"/>
+	<menu_item_call name="Delete System Folder" label="Supprimer le dossier système"/>
 	<menu_item_call name="Wear Items" label="Porter l'ensemble"/>
 	<menu_item_call name="Add To Outfit" label="Ajouter à l'ensemble"/>
 	<menu_item_call name="Replace Outfit" label="Remplacer l'ensemble"/>
