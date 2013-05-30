@@ -2896,7 +2896,7 @@ void LLFolderBridge::performAction(LLInventoryModel* model, std::string action)
 		restoreItem();
 		return;
 	}
-#ifndef LL_RELEASE_FOR_DOWNLOAD
+#ifdef DELETE_SYSTEM_FOLDERS
 	else if ("delete_system_folder" == action)
 	{
 		removeSystemFolder();
@@ -3455,7 +3455,7 @@ void LLFolderBridge::buildContextMenuFolderOptions(U32 flags)
 		mDisabledItems.push_back(std::string("Delete"));
 	}
 
-#ifndef LL_RELEASE_FOR_DOWNLOAD
+#ifdef DELETE_SYSTEM_FOLDERS
 	if (LLFolderType::lookupIsProtectedType(type))
 	{
 		mItems.push_back(std::string("Delete System Folder"));
