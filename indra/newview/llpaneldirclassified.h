@@ -65,9 +65,6 @@ protected:
 	void onClickSearch();
 
 	void onKeystrokeNameClassified(LLLineEditor* line);
-	
-	// 
-	void onClickCreateNewClassified();
 
 protected:
 };

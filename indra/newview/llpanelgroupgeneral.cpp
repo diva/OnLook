@@ -36,8 +36,8 @@
 
 #include "lluictrlfactory.h"
 #include "llagent.h"
+#include "llavataractions.h"
 #include "roles_constants.h"
-#include "llfloateravatarinfo.h"
 #include "llfloatergroupinfo.h"
 
 // UI elements
@@ -394,7 +394,7 @@ void LLPanelGroupGeneral::openProfile(void* data)
 		LLScrollListItem* selected = self->mListVisibleMembers->getFirstSelected();
 		if (selected)
 		{
-			LLFloaterAvatarInfo::showFromDirectory( selected->getUUID() );
+			LLAvatarActions::showProfile(selected->getUUID());
 		}
 	}
 }

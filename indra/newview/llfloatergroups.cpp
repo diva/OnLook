@@ -376,7 +376,6 @@ void LLPanelGroups::info()
 
 void LLPanelGroups::startIM()
 {
-	//llinfos << "LLPanelFriends::onClickIM()" << llendl;
 	LLCtrlListInterface *group_list = childGetListInterface("group list");
 	LLUUID group_id;
 

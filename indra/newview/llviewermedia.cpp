@@ -39,6 +39,7 @@
 #include "lldiriterator.h"
 #include "llevent.h"		// LLSimpleListener
 #include "llhoverview.h"
+#include "llhttpclient.h"
 #include "llkeyboard.h"
 #include "llmimetypes.h"
 #include "llnotifications.h"
@@ -57,7 +58,7 @@
 #include "llweb.h"
 #include "llwebprofile.h"
 
-#include "llfloateravatarinfo.h"	// for getProfileURL() function
+std::string getProfileURL(const std::string& agent_name);
 //#include "viewerversion.h"
 
 class AIHTTPTimeoutPolicy;

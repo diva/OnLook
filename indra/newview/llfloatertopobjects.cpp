@@ -38,9 +38,9 @@
 #include "llfontgl.h"
 
 #include "llagent.h"
+#include "llavataractions.h"
 #include "llbutton.h"
 #include "llfloatergodtools.h"
-#include "llfloateravatarinfo.h"
 #include "llnotificationsutil.h"
 #include "llparcel.h"
 #include "llscrolllistctrl.h"
@@ -481,8 +481,7 @@ void LLFloaterTopObjects::onProfile(void* data)
 		if (!list) return;
 	LLScrollListItem* first_selected = list->getFirstSelected();
 	if (!first_selected) return;
-	LLUUID taskid = first_selected->getUUID();
-	LLFloaterAvatarInfo::showFromDirectory(taskid);
+	LLAvatarActions::showProfile(first_selected->getUUID());
 }
 
 void LLFloaterTopObjects::onKickBtn(void* data)

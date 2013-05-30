@@ -36,7 +36,6 @@
 
 #include "llfontgl.h"
 #include "llrect.h"
-#include "llerror.h"
 #include "llbutton.h"
 #include "llhttpclient.h"
 #include "llsdutil_math.h"
@@ -46,6 +45,7 @@
 
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llavataractions.h"
 #include "llcallingcard.h"
 #include "llchat.h"
 #include "llresmgr.h"
@@ -53,24 +53,15 @@
 #include "llfloaterchatterbox.h"
 #include "llhttpnode.h"
 #include "llimpanel.h"
-#include "llresizebar.h"
 #include "llsdserialize.h"
 #include "lltabcontainer.h"
-#include "llviewercontrol.h"
-#include "llfloater.h"
 #include "llmutelist.h"
 #include "llresizehandle.h"
-#include "llkeyboard.h"
-#include "llui.h"
 #include "llviewermenu.h"
-#include "llcallingcard.h"
-#include "lltoolbar.h"
 #include "llviewermessage.h"
 #include "llviewerwindow.h"
 #include "llnotify.h"
 #include "llviewerregion.h"
-
-#include "llfirstuse.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -402,7 +393,7 @@ bool inviteUserResponse(const LLSD& notification, const LLSD& response)
 EInstantMessage LLIMMgr::defaultIMTypeForAgent(const LLUUID& agent_id)
 {
 	EInstantMessage type = IM_NOTHING_SPECIAL;
-	if(is_agent_friend(agent_id))
+	if (LLAvatarActions::isFriend(agent_id))
 	{
 		if(LLAvatarTracker::instance().isBuddyOnline(agent_id))
 		{

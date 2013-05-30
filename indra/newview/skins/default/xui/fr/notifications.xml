@@ -1130,13 +1130,6 @@ Impossible d'acheter du terrain pour le groupe :
 Vous n'avez pas le droit d'acheter de terrain pour votre groupe.
 	</notification>
 
-	<notification label="Devenir amis" name="AddFriend">
-Vous pouvez suivre les déplacements de vos amis sur la carte et voir lorsqu'ils se connectent.
-
-Proposer à [NAME] de devenir votre ami(e).
-		<usetemplate name="okcancelbuttons" notext="Annuler" yestext="OK"/>
-	</notification>
-
 	<notification label="Devenir amis" name="AddFriendWithMessage">
 Vous pouvez suivre les déplacements de vos amis sur la carte et voir lorsqu'ils se connectent.
 
@@ -3383,6 +3376,10 @@ L'objet [OBJECTFROMNAME] appartenant à un utilisateur inconnu vous a donné un(
 			<button name="Accept" text="Accepter"/>
 			<button name="Decline" text="Refuser"/>
 		</form>
+	</notification>
+
+	<notification name="FriendshipOffered">
+		Vous avez proposé à [TO_NAME] de devenir votre ami(e)
 	</notification>
 
 	<notification name="OfferFriendshipNoMessage">

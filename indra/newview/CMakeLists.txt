@@ -118,6 +118,7 @@ set(viewer_SOURCE_FILES
     llassetuploadresponders.cpp
     llattachmentsmgr.cpp
     llaudiosourcevo.cpp
+    llavataractions.cpp
     llavatarpropertiesprocessor.cpp
     llbox.cpp
     llcallbacklist.cpp
@@ -615,6 +616,7 @@ set(viewer_HEADER_FILES
     llassetuploadresponders.h
     llattachmentsmgr.h
     llaudiosourcevo.h
+    llavataractions.h
     llavatarpropertiesprocessor.h
     llbox.h
     llcallbacklist.h

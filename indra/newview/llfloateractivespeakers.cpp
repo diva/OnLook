@@ -36,26 +36,23 @@
 
 #include "llagent.h"
 #include "llappviewer.h"
-#include "llimview.h"
-#include "llsdutil.h"
-#include "llfloateravatarinfo.h"
-#include "lluictrlfactory.h"
-#include "llviewercontrol.h"
-#include "llscrolllistctrl.h"
+#include "llavataractions.h"
 #include "llbutton.h"
-#include "lltextbox.h"
-#include "llmutelist.h"
-#include "llviewerobjectlist.h"
-#include "llvoavatar.h"
 #include "llimpanel.h" // LLVoiceChannel
+#include "llimview.h"
+#include "llmutelist.h"
+#include "llscrolllistctrl.h"
+#include "llsdutil.h"
+#include "lltextbox.h"
+#include "lluictrlfactory.h"
+#include "llviewerobjectlist.h"
 #include "llviewerwindow.h"
+#include "llvoavatar.h"
 #include "llworld.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
-
-#include "llavatarname.h"
 
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy muteVoiceResponder_timeout;
@@ -770,32 +767,14 @@ void LLPanelActiveSpeakers::onClickProfile(void* user_data)
 // [/RLVa:KB]
 
 	LLPanelActiveSpeakers* panelp = (LLPanelActiveSpeakers*)user_data;
-	LLUUID speaker_id = panelp->mSpeakerList->getValue().asUUID();
-
-	LLFloaterAvatarInfo::showFromDirectory(speaker_id);
+	LLAvatarActions::showProfile(panelp->mSpeakerList->getValue().asUUID());
 }
 
 //static
 void LLPanelActiveSpeakers::onDoubleClickSpeaker(void* user_data)
 {
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g) | Added: RLVa-1.0.0g
-	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
-	{
-		return;
-	}
-// [/RLVa:KB]
-
 	LLPanelActiveSpeakers* panelp = (LLPanelActiveSpeakers*)user_data;
-	LLUUID speaker_id = panelp->mSpeakerList->getValue().asUUID();
-
-	LLPointer<LLSpeaker> speakerp = panelp->mSpeakerMgr->findSpeaker(speaker_id);
-
-	if (speaker_id != gAgent.getID() && speakerp.notNull() && !speakerp->mLegacyName.empty())
-	{
-		// Changed for display name support
-		//gIMMgr->addSession(speakerp->mDisplayName, IM_NOTHING_SPECIAL, speaker_id);
-		gIMMgr->addSession(speakerp->mLegacyName, IM_NOTHING_SPECIAL, speaker_id);
-	}
+	LLAvatarActions::startIM(panelp->mSpeakerList->getValue().asUUID());
 }
 
 //static

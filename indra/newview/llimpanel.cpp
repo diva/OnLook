@@ -45,13 +45,12 @@
 #include "llnotificationsutil.h"
 
 #include "llagent.h"
+#include "llavataractions.h"
 #include "llbutton.h"
 #include "llcallingcard.h"
 #include "llchat.h"
 #include "llconsole.h"
-#include "llfloater.h"
 #include "llfloateractivespeakers.h"
-#include "llfloateravatarinfo.h"
 #include "llfloaterchat.h"
 #include "llfloatergroupinfo.h"
 #include "llimview.h"
@@ -1358,11 +1357,11 @@ BOOL LLFloaterIMPanel::postBuild()
 
 		if (LLButton* btn = findChild<LLButton>("profile_callee_btn"))
 		{
-			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickProfile, this));
+			btn->setCommitCallback(boost::bind(LLAvatarActions::showProfile, mOtherParticipantUUID));
 			if (!mProfileButtonEnabled) btn->setEnabled(false);
 		}
 		if (LLButton* btn = findChild<LLButton>("profile_tele_btn"))
-			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickTeleport, this));
+			btn->setCommitCallback(boost::bind(static_cast<void(*)(const LLUUID&)>(LLAvatarActions::offerTeleport), mOtherParticipantUUID));
 		if (LLButton* btn = findChild<LLButton>("group_info_btn"))
 			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickGroupInfo, this));
 		childSetAction("history_btn", onClickHistory, this);
@@ -1875,25 +1874,6 @@ void LLFloaterIMPanel::onTabClick(void* userdata)
 	self->setInputFocus(TRUE);
 }
 
-
-void LLFloaterIMPanel::onClickProfile()
-{
-	//  Bring up the Profile window
-	if (mOtherParticipantUUID.notNull())
-	{
-		LLFloaterAvatarInfo::showFromDirectory(mOtherParticipantUUID);
-	}
-}
-
-void LLFloaterIMPanel::onClickTeleport()
-{
-	if (mOtherParticipantUUID.notNull())
-	{
-		handle_lure(mOtherParticipantUUID);
-		//do a teleport to other part id
-		//LLFloaterAvatarInfo::showFromDirectory(mOtherParticipantID);
-	}
-}
 
 void LLFloaterIMPanel::onRPMode(const LLSD& value)
 {

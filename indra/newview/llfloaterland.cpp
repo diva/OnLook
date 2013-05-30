@@ -47,13 +47,13 @@
 
 #include "llagent.h"
 #include "llagentaccess.h"
+#include "llavataractions.h"
 #include "llavatarconstants.h" //For new Online check - HgB
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
 #include "llradiogroup.h"
 #include "llcombobox.h"
 #include "llfloaterauction.h"
-#include "llfloateravatarinfo.h"
 #include "llfloateravatarpicker.h"
 #include "llfloatergroups.h"
 #include "llfloatergroupinfo.h"
@@ -864,8 +864,7 @@ void LLPanelLandGeneral::onClickProfile()
 	}
 	else
 	{
-		const LLUUID& avatar_id = parcel->getOwnerID();
-		LLFloaterAvatarInfo::showFromObject(avatar_id);
+		LLAvatarActions::showProfile(parcel->getOwnerID());
 	}
 }
 
@@ -1183,7 +1182,7 @@ void LLPanelLandObjects::onDoubleClickOwner(void *userdata)
 		}
 		else
 		{
-			LLFloaterAvatarInfo::showFromDirectory(owner_id);
+			LLAvatarActions::showProfile(owner_id);
 		}
 	}
 }

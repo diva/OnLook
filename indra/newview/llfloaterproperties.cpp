@@ -41,18 +41,19 @@
 #include "llinventorydefines.h"
 
 #include "llagent.h"
+#include "llavataractions.h"
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
-#include "llfloateravatarinfo.h"
 #include "llfloatergroupinfo.h"
 #include "llinventorymodel.h"
+#include "llinventoryobserver.h"
 #include "lllineeditor.h"
 #include "llradiogroup.h"
 #include "llresmgr.h"
 #include "roles_constants.h"
 #include "llselectmgr.h"
 #include "lltextbox.h"
-#include "lluiconstants.h"
+#include "lltrans.h"
 #include "llviewerinventory.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
@@ -593,10 +594,7 @@ void LLFloaterProperties::onClickCreator()
 {
 	LLInventoryItem* item = findItem();
 	if(!item) return;
-	if(!item->getCreatorUUID().isNull())
-	{
-		LLFloaterAvatarInfo::showFromObject(item->getCreatorUUID());
-	}
+	LLAvatarActions::showProfile(item->getCreatorUUID());
 }
 
 // static
@@ -610,12 +608,11 @@ void LLFloaterProperties::onClickOwner()
 	}
 	else
 	{
-//		if(!item->getPermissions().getOwner().isNull())
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
-		if ( (!item->getPermissions().getOwner().isNull()) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) )
+		if (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 // [/RLVa:KB]
 		{
-			LLFloaterAvatarInfo::showFromObject(item->getPermissions().getOwner());
+			LLAvatarActions::showProfile(item->getPermissions().getOwner());
 		}
 	}
 }
@@ -970,7 +967,7 @@ void LLFloaterProperties::dirtyAll()
 /// LLMultiProperties
 ///----------------------------------------------------------------------------
 
-LLMultiProperties::LLMultiProperties(const LLRect &rect) : LLMultiFloater(std::string("Properties"), rect)
+LLMultiProperties::LLMultiProperties(const LLRect &rect) : LLMultiFloater(LLTrans::getString("MultiPropertiesTitle"), rect)
 {
 }
 

@@ -303,8 +303,7 @@ public:
 
 	// Fill in the avatar ID and handle some field fill-in, as well as 
 	// button enablement.
-	// Pass one of the ONLINE_STATUS_foo constants above.
-	void setAvatarID(const LLUUID &avatar_id, const std::string &name, EOnlineStatus online_status);
+	void setAvatarID(const LLUUID &avatar_id);
 
 	void setOnlineStatus(EOnlineStatus online_status);
 
@@ -328,30 +327,14 @@ public:
 	BOOL haveData() { return mHaveProperties && mHaveStatistics; }
 	BOOL isEditable() const { return mAllowEdit; }
 
-	static void onClickTrack(	void *userdata);
-	static void onClickIM(		void *userdata);
-	static void onClickGroupInvite( void *userdata);
-	static void onClickOfferTeleport(	void *userdata);
-	static void onClickPay(	void *userdata);
 	static void onClickGetKey(void *userdata);
-	static void onClickAddFriend(void* userdata);
 	static void onClickOK(		void *userdata);
 	static void onClickCancel(	void *userdata);
-	static void onClickKick(	void *userdata);
-	static void onClickFreeze(	void *userdata);
-	static void onClickUnfreeze(void *userdata);
-	static void onClickCSR(		void *userdata);
 	static void onClickMute(	void *userdata);
-	static void onCommitKey(LLUICtrl* ctrl, void* data);
 
 private:
 	void enableOKIfReady();
 
-	static bool finishKick(const LLSD& notification, const LLSD& response);
-	static bool finishFreeze(const LLSD& notification, const LLSD& response);
-	static bool finishUnfreeze(const LLSD& notification, const LLSD& response);
-
-	static void showProfileCallback(S32 option, void *userdata);
 	static	void*	createPanelAvatar(void*	data);
 	static	void*	createFloaterAvatarInfo(void*	data);
 	static	void*	createPanelAvatarSecondLife(void*	data);
@@ -392,9 +375,5 @@ private:
 	typedef std::list<LLPanelAvatar*> panel_list_t;
 	static panel_list_t sAllPanels;
 };
-
-// helper funcs
-void add_left_label(LLPanel *panel, const std::string& name, S32 y);
-
 
 #endif // LL_LLPANELAVATAR_H

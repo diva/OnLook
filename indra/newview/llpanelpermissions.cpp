@@ -36,16 +36,14 @@
 
 #include "llpanelpermissions.h"
 
-#include "lluuid.h"
 #include "llpermissions.h"
-#include "llcategory.h"
 #include "llclickaction.h"
 #include "llfocusmgr.h"
 #include "llnotificationsutil.h"
-#include "llstring.h"
+#include "lltrans.h"
+#include "llwindow.h"
 
 #include "llviewerwindow.h"
-#include "llwindow.h"
 #include "llresmgr.h"
 #include "lltextbox.h"
 #include "llbutton.h"
@@ -53,20 +51,16 @@
 #include "llviewerobject.h"
 #include "llselectmgr.h"
 #include "llagent.h"
-#include "llstatusbar.h"		// for getBalance()
+#include "llavataractions.h"
 #include "lllineeditor.h"
 #include "llradiogroup.h"
 #include "llcombobox.h"
-#include "llfloateravatarinfo.h"
-#include "lluiconstants.h"
 #include "lldbstrings.h"
 #include "llfloatergroupinfo.h"
 #include "llfloatergroups.h"
 #include "llnamebox.h"
-#include "llviewercontrol.h"
 #include "lluictrlfactory.h"
 #include "roles_constants.h"
-#include "lltrans.h"
 #include "llinventoryfunctions.h"
 
 #include "lfsimfeaturehandler.h"
@@ -1007,7 +1001,7 @@ void LLPanelPermissions::onClickCreator(void *data)
 {
 	LLPanelPermissions *self = (LLPanelPermissions *)data;
 
-	LLFloaterAvatarInfo::showFromObject(self->mCreatorID);
+	LLAvatarActions::showProfile(self->mCreatorID);
 }
 
 // static
@@ -1026,18 +1020,17 @@ void LLPanelPermissions::onClickOwner(void *data)
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
 		if (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 		{
-			LLFloaterAvatarInfo::showFromObject(self->mOwnerID);
+			LLAvatarActions::showProfile(self->mOwnerID);
 		}
 // [/RLVa:KB]
-//		LLFloaterAvatarInfo::showFromObject(self->mOwnerID);
+//		LLAvatarActions::showProfile(self->mOwnerID);
 	}
 }
 
 void LLPanelPermissions::onClickLastOwner(void *data)
 {
 	LLPanelPermissions *self = (LLPanelPermissions *)data;
-	if(self->mLastOwnerID.notNull())
-		LLFloaterAvatarInfo::showFromObject(self->mLastOwnerID);
+	LLAvatarActions::showProfile(self->mLastOwnerID);
 }
 
 void LLPanelPermissions::onClickGroup(void* data)

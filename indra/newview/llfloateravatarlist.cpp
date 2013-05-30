@@ -25,21 +25,17 @@
 #include "llwindow.h"
 #include "llscrolllistctrl.h"
 #include "llradiogroup.h"
-#include "llviewercontrol.h"
 #include "llnotificationsutil.h"
 
 #include "llvoavatar.h"
 #include "llimview.h"
-#include "llfloateravatarinfo.h"
-#include "llregionflags.h"
 #include "llfloaterreporter.h"
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llavataractions.h"
 #include "llfloaterregioninfo.h"
 #include "llviewerregion.h"
 #include "lltracker.h"
-#include "llviewerstats.h"
-#include "llerror.h"
 #include "llchat.h"
 #include "llfloaterchat.h"
 #include "llviewermessage.h"
@@ -882,7 +878,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 			name_color = ascent_estate_owner_color;
 		}
 		//without these dots, SL would suck.
-		else if(is_agent_friend(av_id))
+		else if(LLAvatarActions::isFriend(av_id))
 		{
 			static const LLCachedControl<LLColor4> ascent_friend_color("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
 			name_color = ascent_friend_color;
@@ -1142,22 +1138,12 @@ void LLFloaterAvatarList::onClickIM()
 		if (ids.size() == 1)
 		{
 			// Single avatar
-			LLUUID agent_id = ids[0];
-
-			std::string avatar_name;
-			if (gCacheName->getFullName(agent_id, avatar_name))
-			{
-				gIMMgr->setFloaterOpen(TRUE);
-				gIMMgr->addSession(avatar_name,IM_NOTHING_SPECIAL,agent_id);
-			}
+			LLAvatarActions::startIM(ids[0]);
 		}
 		else
 		{
 			// Group IM
-			LLUUID session_id;
-			session_id.generate();
-			gIMMgr->setFloaterOpen(TRUE);
-			gIMMgr->addSession("Avatars Conference", IM_SESSION_CONFERENCE_START, ids[0], ids);
+			LLAvatarActions::startConference(ids);
 		}
 	}
 }
@@ -1265,30 +1251,7 @@ BOOL LLFloaterAvatarList::handleKeyHere(KEY key, MASK mask)
 
 	if (( KEY_RETURN == key ) && (MASK_SHIFT == mask))
 	{
-		uuid_vec_t ids = mAvatarList->getSelectedIDs();
-		if (ids.size() > 0)
-		{
-			if (ids.size() == 1)
-			{
-				// Single avatar
-				LLUUID agent_id = ids[0];
-
-				std::string avatar_name;
-				if (gCacheName->getFullName(agent_id, avatar_name))
-				{
-					gIMMgr->setFloaterOpen(TRUE);
-					gIMMgr->addSession(avatar_name,IM_NOTHING_SPECIAL,agent_id);
-				}
-			}
-			else
-			{
-				// Group IM
-				LLUUID session_id;
-				session_id.generate();
-				gIMMgr->setFloaterOpen(TRUE);
-				gIMMgr->addSession("Avatars Conference", IM_SESSION_CONFERENCE_START, ids[0], ids);
-			}
-		}
+		onClickIM();
 	}
 	return LLPanel::handleKeyHere(key, mask);
 }
@@ -1553,7 +1516,7 @@ static void cmd_append_names(const LLAvatarListEntry* entry, std::string &str, s
 															{ if(!str.empty())str.append(sep);str.append(entry->getName()); }
 static void cmd_toggle_mark(LLAvatarListEntry* entry)		{ entry->toggleMark(); }
 static void cmd_ar(const LLAvatarListEntry* entry)			{ LLFloaterReporter::showFromObject(entry->getID()); }
-static void cmd_profile(const LLAvatarListEntry* entry)		{ LLFloaterAvatarInfo::showFromDirectory(entry->getID()); }
+static void cmd_profile(const LLAvatarListEntry* entry)		{ LLAvatarActions::showProfile(entry->getID()); }
 static void cmd_teleport(const LLAvatarListEntry* entry)	{ gAgent.teleportViaLocation(entry->getPosition()); }
 static void cmd_freeze(const LLAvatarListEntry* entry)		{ send_freeze(entry->getID(), true); }
 static void cmd_unfreeze(const LLAvatarListEntry* entry)	{ send_freeze(entry->getID(), false); }

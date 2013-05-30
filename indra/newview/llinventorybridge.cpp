@@ -39,9 +39,9 @@
 #include "llagentwearables.h"
 #include "llappearancemgr.h"
 #include "llattachmentsmgr.h"
+#include "llavataractions.h"
 #include "llcallingcard.h"
 #include "llfirstuse.h"
-#include "llfloateravatarinfo.h"
 #include "llfloaterchat.h"
 #include "llfloatercustomize.h"
 #include "llfloateropenobject.h"
@@ -4730,7 +4730,7 @@ void LLCallingCardBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 
 		LLInventoryItem* item = getItem();
 		BOOL good_card = (item
-						  && (LLUUID::null != item->getCreatorUUID())
+						  && (item->getCreatorUUID().notNull())
 						  && (item->getCreatorUUID() != gAgent.getID()));
 		BOOL user_online = FALSE;
 		if (item)
@@ -6441,10 +6441,9 @@ public:
 	virtual void doIt()
 	{
 		LLViewerInventoryItem* item = getItem();
-		if (item && item->getCreatorUUID().notNull())
+		if (item)
 		{
-			bool online = LLAvatarTracker::instance().isBuddyOnline(item->getCreatorUUID());
-			LLFloaterAvatarInfo::showFromFriend(item->getCreatorUUID(), online);
+			LLAvatarActions::showProfile(item->getCreatorUUID());
 		}
 		LLInvFVBridgeAction::doIt();
 	}

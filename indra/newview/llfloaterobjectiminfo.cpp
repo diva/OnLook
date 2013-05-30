@@ -35,10 +35,9 @@
 #include "llfloaterobjectiminfo.h"
 
 #include "llagentdata.h"
+#include "llavataractions.h"
 #include "llcachename.h"
 #include "llcommandhandler.h"
-#include "llfloater.h"
-#include "llfloateravatarinfo.h"
 #include "llfloatergroupinfo.h"
 #include "llfloatermute.h"
 #include "llmutelist.h"
@@ -154,7 +153,7 @@ void LLFloaterObjectIMInfo::onClickOwner(void* data)
 	else if ( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) || (!RlvUtil::isNearbyAgent(self->mOwnerID)) )
 // [/RLVa:KB]
 	{
-		LLFloaterAvatarInfo::showFromObject(self->mOwnerID);
+		LLAvatarActions::showProfile(self->mOwnerID);
 	}
 }
 
