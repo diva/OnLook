@@ -843,6 +843,14 @@ void LLPanelFriends::updateColumns(void* user_data)
 	}
 }
 
+static void on_avatar_name_cache_start_im(const LLUUID& agent_id, const LLAvatarName& av_name)
+{
+	static LLCachedControl<bool> tear_off("OtherChatsTornOff");
+	if (!tear_off) gIMMgr->setFloaterOpen(true);
+	gIMMgr->addSession(LLCacheName::cleanFullName(av_name.getLegacyName()), IM_NOTHING_SPECIAL, agent_id);
+	make_ui_sound("UISndStartIM");
+}
+
 void LLPanelFriends::onClickIM(void* user_data)
 {
 	LLPanelFriends* panelp = (LLPanelFriends*)user_data;
@@ -851,23 +859,17 @@ void LLPanelFriends::onClickIM(void* user_data)
 	const uuid_vec_t ids = panelp->mFriendsList->getSelectedIDs();
 	if(!ids.empty())
 	{
-		static LLCachedControl<bool> tear_off("OtherChatsTornOff");
-		if(!tear_off) gIMMgr->setFloaterOpen(TRUE);
 		if(ids.size() == 1)
 		{
-			LLUUID agent_id = ids[0];
-			const LLRelationship* info = LLAvatarTracker::instance().getBuddyInfo(agent_id);
-			std::string fullname;
-			if(info && gCacheName->getFullName(agent_id, fullname))
-			{
-				gIMMgr->addSession(fullname, IM_NOTHING_SPECIAL, agent_id);
-			}
+			LLAvatarNameCache::get(ids[0], boost::bind(&on_avatar_name_cache_start_im, _1, _2));
 		}
 		else
 		{
+			static LLCachedControl<bool> tear_off("OtherChatsTornOff");
+			if (!tear_off) gIMMgr->setFloaterOpen(true);
 			gIMMgr->addSession("Friends Conference", IM_SESSION_CONFERENCE_START, ids[0], ids);
+			make_ui_sound("UISndStartIM");
 		}
-		make_ui_sound("UISndStartIM");
 	}
 }
 
