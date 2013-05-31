@@ -37,6 +37,7 @@
 
 class LLViewerTexture ;
 class LLEventPump;
+class LLSLURL;
 
 #include "llviewerstats.h"
 
@@ -133,14 +134,14 @@ public:
 		// the viewer, dispatch it
 
 	static void postStartupState();
-	static std::string sSLURLCommand;
-		// *HACK: On startup, if we were passed a secondlife://app/do/foo
-		// command URL, store it for later processing.
+	static void setStartSLURL(const LLSLURL& slurl); 
+	static LLSLURL& getStartSLURL();
 
 	static bool startLLProxy(); // Initialize the SOCKS 5 proxy	
 
 	static LLViewerStats::PhaseMap& getPhases() { return *sPhases; }
 private:
+	static LLSLURL sStartSLURL;
 
 	static std::string startupStateToString(EStartupState state);
 	static EStartupState gStartupState; // Do not set directly, use LLStartup::setStartupState

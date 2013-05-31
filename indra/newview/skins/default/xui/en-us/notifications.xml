@@ -2678,12 +2678,32 @@ Display settings have been set to recommended levels based on your system config
 [ERROR_MESSAGE]
   </notification>
 
+ <notification
+   icon="alertmodal.tga"
+   name="AvatarMovedDesired"
+   type="alertmodal">
+   <tag>fail</tag>
+Your desired location is not currently available.
+You have been moved into a nearby region.
+  </notification>
+
   <notification
    icon="alertmodal.tga"
-   name="AvatarMoved"
-   type="notify">
-Your [TYPE] location is not currently available. [HELP]
+   name="AvatarMovedLast"
+   type="alertmodal">
+   <tag>fail</tag>
+Your requested location is not currently available.
 You have been moved into a nearby region.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="AvatarMovedHome"
+   type="alertmodal">
+   <tag>fail</tag>
+Your home location is not currently available.
+You have been moved into a nearby region.
+You may want to set a new home location.
   </notification>
 
   <notification
@@ -3482,6 +3502,16 @@ Join me in [REGION]
 
   <notification
    icon="alertmodal.tga"
+   name="TooManyTeleportOffers"
+   type="alertmodal">
+You attempted to make [OFFERS] teleport offers
+which exceeds the limit of [LIMIT].
+    <tag>group</tag>
+    <tag>fail</tag>
+  <usetemplate
+     name="okbutton"
+     yestext="OK"/>
+  </notification>
    name="OfferTeleportFromGod"
    type="alertmodal">
 God summon user to your location?
@@ -7305,6 +7335,24 @@ An error has occurred while trying to connect to voice chat for [VOICE_CHANNEL_N
     </unique>
   </notification>
 
+ <notification
+   icon="notifytip.tga"
+   name="UnsupportedCommandSLURL"
+   priority="high"
+   type="notifytip">
+The SLurl you clicked on is not supported.
+  <tag>fail</tag>
+  </notification>
+
+ <notification
+   icon="notifytip.tga"
+   name="BlockedSLURL"
+   priority="high"
+   type="notifytip">
+   <tag>security</tag>
+A SLurl was received from an untrusted browser and has been blocked for your security.
+  </notification>
+
   <notification
    duration="10"
    icon="notifytip.tga"
@@ -7313,14 +7361,17 @@ An error has occurred while trying to connect to voice chat for [VOICE_CHANNEL_N
    type="notifytip">
 The region you have entered is running a different simulator version. Click this message for details.
   </notification>
-
-  <notification
-   icon="notifytip.tga"
-   name="UnableToOpenCommandURL"
-   priority="high"
-   type="notifytip">
-The URL you clicked cannot be opened from this web browser.
-  </notification>
+     <notification
+ icon="alertmodal.tga"
+ name="ObjectMediaFailure"
+ type="alertmodal">
+Server Error: Media update or get failed.
+&apos;[ERROR]&apos;
+  <tag>fail</tag>
+        <usetemplate
+         name="okbutton"
+         yestext="OK"/>
+    </notification>
 
   <notification
     name="MeshUploadError"

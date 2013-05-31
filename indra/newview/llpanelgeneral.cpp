@@ -39,7 +39,6 @@
 #include "llcolorswatch.h"
 #include "llcombobox.h"
 #include "lluictrlfactory.h"
-#include "llurlsimstring.h"
 #include "llviewercontrol.h"
 
 #include "llagent.h"
@@ -164,8 +163,6 @@ void LLPanelGeneral::apply()
 	gSavedSettings.setF32("UIScaleFactor", childGetValue("ui_scale_slider").asReal());
 	gSavedSettings.setBOOL("UIAutoScale", childGetValue("ui_auto_scale"));
 	gSavedSettings.setString("Language", childGetValue("language_combobox"));
-
-	LLURLSimString::setString(childGetValue("location_combobox"));
 
 	LLComboBox* crash_behavior_combobox = getChild<LLComboBox>("crash_behavior_combobox");
 	gCrashSettings.setS32(CRASH_BEHAVIOR_SETTING, crash_behavior_combobox->getCurrentIndex());

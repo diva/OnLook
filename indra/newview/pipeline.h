@@ -370,6 +370,10 @@ public:
 	static void toggleRenderSoundBeacons(void* data);
 	static BOOL getRenderSoundBeacons(void* data);
 
+	static void setRenderMOAPBeacons(BOOL val);
+	static void toggleRenderMOAPBeacons(void * data);
+	static BOOL getRenderMOAPBeacons(void * data);
+
 	static void setRenderPhysicalBeacons(BOOL val);
 	static void toggleRenderPhysicalBeacons(void* data);
 	static BOOL getRenderPhysicalBeacons(void* data);
@@ -778,6 +782,7 @@ protected:
 	S32						mLightingDetail;
 		
 	static BOOL				sRenderPhysicalBeacons;
+	static BOOL				sRenderMOAPBeacons;
 	static BOOL				sRenderScriptedTouchBeacons;
 	static BOOL				sRenderScriptedBeacons;
 	static BOOL				sRenderParticleBeacons;

@@ -219,7 +219,6 @@ set(viewer_SOURCE_FILES
     llfloaterlandholdings.cpp
     llfloaterlandmark.cpp
     llfloatermap.cpp
-    llfloatermediabrowser.cpp
     llfloatermemleak.cpp
     llfloatermessagelog.cpp
     llfloatermodelpreview.cpp
@@ -260,6 +259,7 @@ set(viewer_SOURCE_FILES
     llfloaterurlentry.cpp
     llfloatervoicedevicesettings.cpp
     llfloaterwater.cpp
+    llfloaterwebcontent.cpp
     llfloaterwindlight.cpp
     llfloaterworldmap.cpp
     llfolderview.cpp
@@ -314,6 +314,7 @@ set(viewer_SOURCE_FILES
     llmarketplacefunctions.cpp
     llmarketplacenotifications.cpp
     llmediactrl.cpp
+    llmediadataclient.cpp
     llmediaremotectrl.cpp
     llmenucommands.cpp
     llmenuoptionpathfindingrebakenavmesh.cpp
@@ -364,7 +365,6 @@ set(viewer_SOURCE_FILES
     llpanellogin.cpp
     llpanelmaininventory.cpp
     llpanelmarketplaceoutboxinventory.cpp
-    llpanelmediahud.cpp
     llpanelmorph.cpp
     llpanelmsgs.cpp
     llpanelnetwork.cpp
@@ -373,6 +373,7 @@ set(viewer_SOURCE_FILES
     llpanelpermissions.cpp
     llpanelpick.cpp
     llpanelplace.cpp
+    llpanelprimmediacontrols.cpp
     llpanelprofile.cpp
     llpanelskins.cpp
     llpanelvolume.cpp
@@ -412,6 +413,7 @@ set(viewer_SOURCE_FILES
     llscrollingpanelparambase.cpp
     llselectmgr.cpp
     llsky.cpp
+    llslurl.cpp
     llspatialpartition.cpp
     llsprite.cpp
     llstartup.cpp
@@ -479,9 +481,7 @@ set(viewer_SOURCE_FILES
     llviewerlayer.cpp
     llviewermedia.cpp
     llviewermedia_streamingaudio.cpp
-    llviewermediaeventemitter.cpp
     llviewermediafocus.cpp
-    llviewermediaobserver.cpp
     llviewermenu.cpp
     llviewermenufile.cpp
     llviewermessage.cpp
@@ -716,7 +716,6 @@ set(viewer_HEADER_FILES
     llfloaterlandholdings.h
     llfloaterlandmark.h
     llfloatermap.h
-    llfloatermediabrowser.h
     llfloatermemleak.h
     llfloatermessagelog.h
     llfloatermodelpreview.h
@@ -757,6 +756,7 @@ set(viewer_HEADER_FILES
     llfloaterurlentry.h
     llfloatervoicedevicesettings.h
     llfloaterwater.h
+    llfloaterwebcontent.h
     llfloaterwindlight.h
     llfloaterworldmap.h
     llfolderview.h
@@ -811,6 +811,7 @@ set(viewer_HEADER_FILES
     llmarketplacefunctions.h
     llmarketplacenotifications.h
     llmediactrl.h
+    llmediadataclient.h
     llmediaremotectrl.h
     llmenucommands.h
     llmenuoptionpathfindingrebakenavmesh.h
@@ -861,7 +862,6 @@ set(viewer_HEADER_FILES
     llpanellogin.h
     llpanelmaininventory.h
     llpanelmarketplaceoutboxinventory.h
-    llpanelmediahud.h
     llpanelmorph.h
     llpanelmsgs.h
     llpanelnetwork.h
@@ -870,6 +870,7 @@ set(viewer_HEADER_FILES
     llpanelpermissions.h
     llpanelpick.h
     llpanelplace.h
+    llpanelprimmediacontrols.h
     llpanelprofile.h
     llpanelskins.h
     llpanelvolume.h
@@ -911,6 +912,7 @@ set(viewer_HEADER_FILES
     llselectmgr.h
     llsimplestat.h
     llsky.h
+    llslurl.h
     llspatialpartition.h
     llsprite.h
     llstartup.h
@@ -980,7 +982,6 @@ set(viewer_HEADER_FILES
     llviewerkeyboard.h
     llviewerlayer.h
     llviewermedia.h
-    llviewermediaeventemitter.h
     llviewermediafocus.h
     llviewermediaobserver.h
     llviewermenu.h

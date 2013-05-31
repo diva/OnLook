@@ -151,13 +151,9 @@ BOOL LLPanelDirFind::postBuild()
 	if (mWebBrowser)
 	{
 		mWebBrowser->addObserver(this);
-		
-		// new pages appear in same window as the results page now
-		mWebBrowser->setOpenInInternalBrowser( false );
-		mWebBrowser->setOpenInExternalBrowser( false );	
 
 		// need to handle secondlife:///app/ URLs for direct teleports
-		mWebBrowser->setTrusted( true );
+		mWebBrowser->setTrustedContent( true );
 
 		// redirect 404 pages from S3 somewhere else
 		mWebBrowser->set404RedirectUrl( getString("redirect_404_url") );

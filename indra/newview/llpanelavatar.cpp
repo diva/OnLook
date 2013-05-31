@@ -610,7 +610,7 @@ BOOL LLPanelAvatarWeb::postBuild(void)
 	mWebBrowser->addObserver(this);
 
 	// links open in internally 
-	mWebBrowser->setOpenInExternalBrowser( false );
+	//mWebBrowser->setOpenInExternalBrowser( false );
 
 	return TRUE;
 }

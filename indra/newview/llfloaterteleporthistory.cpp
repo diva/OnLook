@@ -44,15 +44,17 @@
 #include "llappviewer.h"
 #include "llfloaterteleporthistory.h"
 #include "llfloaterworldmap.h"
+#include "llslurl.h"
 #include "lltimer.h"
 #include "lluictrlfactory.h"
 #include "llurldispatcher.h"
-#include "llurlsimstring.h"
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
 #include "llwindow.h"
 #include "llweb.h"
 #include "llsdserialize.h"
+#include "llurlaction.h"
+
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -137,12 +139,12 @@ void LLFloaterTeleportHistory::addPendingEntry(std::string regionName, S16 x, S1
 	// Set pending position
 	mPendingPosition = llformat("%d, %d, %d", x, y, z);
 
+	LLSLURL slurl(regionName, LLVector3(x, y, z));
 	// prepare simstring for later parsing
-	mPendingSimString = regionName + llformat("/%d/%d/%d", x, y, z); 
-	mPendingSimString = LLWeb::escapeURL(mPendingSimString);
+	mPendingSimString = LLWeb::escapeURL(slurl.getLocationString());
 
 	// Prepare the SLURL
-	mPendingSLURL = LLURLDispatcher::buildSLURL(regionName, x, y, z);
+	mPendingSLURL = slurl.getSLURLString();
 }
 
 void LLFloaterTeleportHistory::addEntry(std::string parcelName)
@@ -332,9 +334,8 @@ void LLFloaterTeleportHistory::onTeleport(void* data)
 	LLFloaterTeleportHistory* self = (LLFloaterTeleportHistory*) data;
 
 	// build secondlife::/app link from simstring for instant teleport to destination
-	std::string slapp = "secondlife:///app/teleport/" + self->mPlacesList->getFirstSelected()->getColumn(LIST_SIMSTRING)->getValue().asString();
-	LLMediaCtrl* web = NULL;
-	LLURLDispatcher::dispatch(slapp, web, TRUE);
+	std::string slapp = "secondlife:///app/teleport/" + self->mPlacesList->getFirstSelected()->getColumn(LIST_SLURL)->getValue().asString();
+	LLUrlAction::teleportToLocation(slapp);
 }
 
 // static
@@ -344,15 +345,11 @@ void LLFloaterTeleportHistory::onShowOnMap(void* data)
 
 	// get simstring from selected entry and parse it for its components
 	std::string simString = self->mPlacesList->getFirstSelected()->getColumn(LIST_SIMSTRING)->getValue().asString();
-	std::string region = "";
-	S32 x = 128;
-	S32 y = 128;
-	S32 z = 20;
 
-	LLURLSimString::parse(simString, &region, &x, &y, &z);
+	LLSLURL slurl(simString);
 
 	// point world map at position
-	gFloaterWorldMap->trackURL(region, x, y, z);
+	gFloaterWorldMap->trackURL(slurl.getRegion(), slurl.getPosition().mV[VX], slurl.getPosition().mV[VY], slurl.getPosition().mV[VZ]);
 	LLFloaterWorldMap::show(true);
 }
 

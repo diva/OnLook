@@ -1562,4 +1562,3 @@ std::ostream& operator<<(std::ostream& s, const LLNotification& notification)
 	s << notification.summarize();
 	return s;
 }
-

@@ -32,6 +32,7 @@
 #include "llcontrol.h"
 #include "llcoord.h"
 #include "v2math.h"
+#include "llregistry.h"
 #include "llrender2dutils.h"
 #include "llpointer.h"
 #include "lluiimage.h"
@@ -102,6 +103,7 @@ public:
 	static void glRectToScreen(const LLRect& gl, LLRect *screen);
 	// Returns the control group containing the control name, or the default group
 	static LLControlGroup& getControlControlGroup (const std::string& controlname);
+	static LLWindow* getWindow() { return sWindow; }
 	static void setHtmlHelp(LLHtmlHelp* html_help);
 
 	//

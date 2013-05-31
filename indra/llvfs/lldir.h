@@ -140,7 +140,17 @@ class LLDir
 	// Utility routine
 	std::string buildSLOSCacheDir() const;
 
+	/// Append specified @a name to @a destpath, separated by getDirDelimiter()
+	/// if both are non-empty.
+	void append(std::string& destpath, const std::string& name) const;
+	/// Append specified @a name to @a path, separated by getDirDelimiter()
+	/// if both are non-empty. Return result, leaving @a path unmodified.
+	std::string add(const std::string& path, const std::string& name) const;
+
 protected:
+	// Does an add() or append() call need a directory delimiter?
+	typedef std::pair<bool, unsigned short> SepOff;
+	SepOff needSep(const std::string& path, const std::string& name) const;
 	std::string mAppName;               // install directory under progams/ ie "SecondLife"   
 	std::string mExecutablePathAndName; // full path + Filename of .exe
 	std::string mExecutableFilename;    // Filename of .exe

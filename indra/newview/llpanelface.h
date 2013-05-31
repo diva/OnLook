@@ -56,6 +56,8 @@ public:
 	virtual ~LLPanelFace();
 
 	void			refresh();
+	void			setMediaURL(const std::string& url);
+	void			setMediaType(const std::string& mime_type);
 
 protected:
 	void			getState();
@@ -69,6 +71,7 @@ protected:
 	void			sendShiny();			// applies and sends shininess
 	void			sendFullbright();		// applies and sends full bright
 	void            sendGlow();
+	void			sendMedia();
 
 	// this function is to return TRUE if the dra should succeed.
 	static BOOL onDragTexture(LLUICtrl* ctrl, LLInventoryItem* item, void* ud);

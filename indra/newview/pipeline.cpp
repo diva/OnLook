@@ -82,6 +82,7 @@
 #include "lltool.h"
 #include "lltoolmgr.h"
 #include "llviewercamera.h"
+#include "llviewermediafocus.h"
 #include "llviewertexturelist.h"
 #include "llviewerobject.h"
 #include "llviewerobjectlist.h"
@@ -295,6 +296,7 @@ S32		LLPipeline::sCompiles = 0;
 BOOL	LLPipeline::sPickAvatar = TRUE;
 BOOL	LLPipeline::sDynamicLOD = TRUE;
 BOOL	LLPipeline::sShowHUDAttachments = TRUE;
+BOOL	LLPipeline::sRenderMOAPBeacons = FALSE;
 BOOL	LLPipeline::sRenderPhysicalBeacons = TRUE;
 BOOL	LLPipeline::sRenderScriptedBeacons = FALSE;
 BOOL	LLPipeline::sRenderScriptedTouchBeacons = TRUE;
@@ -1416,7 +1418,7 @@ U32 LLPipeline::getPoolTypeFromTE(const LLTextureEntry* te, LLViewerTexture* ima
 	bool alpha = te->getColor().mV[3] < 0.999f;
 	if (imagep)
 	{
-		alpha = alpha || (imagep->getComponents() == 4 && ! imagep->mIsMediaTexture) || (imagep->getComponents() == 2);
+		alpha = alpha || (imagep->getComponents() == 4 && imagep->getType() != LLViewerTexture::MEDIA_TEXTURE) || (imagep->getComponents() == 2);
 	}
 
 	if (alpha)
@@ -3328,6 +3330,47 @@ void renderPhysicalBeacons(LLDrawable* drawablep)
 	}
 }
 
+void renderMOAPBeacons(LLDrawable* drawablep)
+{
+	LLViewerObject *vobj = drawablep->getVObj();
+
+	if(!vobj || vobj->isAvatar())
+		return;
+
+	BOOL beacon=FALSE;
+	U8 tecount=vobj->getNumTEs();
+	for(int x=0;x<tecount;x++)
+	{
+		if(vobj->getTE(x)->hasMedia())
+		{
+			beacon=TRUE;
+			break;
+		}
+	}
+	if(beacon==TRUE)
+	{
+		if (gPipeline.sRenderBeacons)
+		{
+			static const LLCachedControl<S32> DebugBeaconLineWidth("DebugBeaconLineWidth",1);
+			gObjectList.addDebugBeacon(vobj->getPositionAgent(), "", LLColor4(1.f, 1.f, 1.f, 0.5f), LLColor4(1.f, 1.f, 1.f, 0.5f), DebugBeaconLineWidth);
+		}
+
+		if (gPipeline.sRenderHighlight)
+		{
+			S32 face_id;
+			S32 count = drawablep->getNumFaces();
+			for (face_id = 0; face_id < count; face_id++)
+			{
+				LLFace * facep = drawablep->getFace(face_id);
+				if (facep)
+				{
+					gPipeline.mHighlightFaces.push_back(facep);
+			}
+		}
+	}
+}
+}
+
 void renderParticleBeacons(LLDrawable* drawablep)
 {
 	// Look for attachments, objects, etc.
@@ -3539,6 +3582,11 @@ void LLPipeline::postSort(LLCamera& camera)
 		{
 			// Only show the beacon on the root object.
 			forAllVisibleDrawables(renderPhysicalBeacons);
+		}
+
+		if(sRenderMOAPBeacons)
+		{
+			forAllVisibleDrawables(renderMOAPBeacons);
 		}
 
 		if (sRenderParticleBeacons)
@@ -6008,6 +6056,24 @@ BOOL LLPipeline::getRenderScriptedTouchBeacons(void*)
 }
 
 // static
+void LLPipeline::setRenderMOAPBeacons(BOOL val)
+{
+	sRenderMOAPBeacons = val;
+}
+
+// static
+void LLPipeline::toggleRenderMOAPBeacons(void*)
+{
+	sRenderMOAPBeacons = !sRenderMOAPBeacons;
+}
+
+// static
+BOOL LLPipeline::getRenderMOAPBeacons(void*)
+{
+	return sRenderMOAPBeacons;
+}
+
+// static
 void LLPipeline::setRenderPhysicalBeacons(BOOL val)
 {
 	sRenderPhysicalBeacons = val;
@@ -6727,7 +6793,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 			LLVector3 focus_point;
 
-			/*LLViewerObject* obj = LLViewerMediaFocus::getInstance()->getFocusedObject();
+			LLViewerObject* obj = LLViewerMediaFocus::getInstance()->getFocusedObject();
 			if (obj && obj->mDrawable && obj->isSelected())
 			{ //focus on selected media object
 				S32 face_idx = LLViewerMediaFocus::getInstance()->getFocusedFace();
@@ -6739,7 +6805,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 						focus_point = face->getPositionAgent();
 					}
 				}
-			}*/
+			}
 		
 			if (focus_point.isExactlyZero())
 			{

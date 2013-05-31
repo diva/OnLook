@@ -40,6 +40,7 @@
 #include <boost/function.hpp>
 #include <boost/signals2.hpp>
 
+#include "llinitparam.h"
 #include "llviewmodel.h"		// *TODO move dependency to .cpp file
 
 class LLUICtrl
@@ -48,6 +49,7 @@ class LLUICtrl
 public:
 	typedef boost::function<void (LLUICtrl* ctrl, const LLSD& param)> commit_callback_t;
 	typedef boost::signals2::signal<void (LLUICtrl* ctrl, const LLSD& param)> commit_signal_t;
+	typedef boost::function<bool (LLUICtrl* ctrl, const LLSD& param)> enable_callback_t;
 	typedef boost::signals2::signal<bool (LLUICtrl* ctrl, const LLSD& param), boost_boolean_combiner> enable_signal_t;
 
 	typedef void (*LLUICtrlCallback)(LLUICtrl* ctrl, void* userdata);
@@ -148,6 +150,13 @@ public:
 			return filterResult_t(view->isCtrl() && static_cast<const LLUICtrl *>(view)->acceptsTextInput(), TRUE);
 		}
 	};
+
+	template <typename F, typename DERIVED> class CallbackRegistry : public LLRegistrySingleton<std::string, F, DERIVED >
+	{};	
+
+	class CommitCallbackRegistry : public CallbackRegistry<commit_callback_t, CommitCallbackRegistry>{};
+	// the enable callback registry is also used for visiblity callbacks
+	class EnableCallbackRegistry : public CallbackRegistry<enable_callback_t, EnableCallbackRegistry>{};
 
 protected:
 

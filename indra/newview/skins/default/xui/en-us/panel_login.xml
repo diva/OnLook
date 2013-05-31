@@ -2,6 +2,8 @@
 <panel bottom="0" follows="left|top|right|bottom" height="600" left="0"
      mouse_opaque="true" name="panel_login" width="800">
 	<web_browser border_visible="false" bottom="0" follows="top|left|bottom|right" left="0"
+	     tab_stop="false"
+	     trusted_content="true"
 	     name="login_html" right="-1"
 	     start_url="data:text/html,%3Chtml%3E%3Chead%3E%3C/head%3E%3Cbody bgcolor=%22#000000%22 text=%22ffffff%22%3E%3Ch1%3E%3Ctt%3Eloading...%3C/tt%3E%3C/h1%3E %3C/body%3E %3C/html%3E"
 	     top="-1" />
@@ -60,11 +62,6 @@
 	     left="475" mouse_opaque="true" name="start_location_text" v_pad="0" width="120">
 		Start Location:
 	</text>
-
-	<combo_box allow_text_entry="true" bevel_style="in" border_style="line" border_thickness="1" 
-	     follows="left|bottom" font="SansSerif" handle_edit_keys_directly="true"
-	     height="20" hidden="false" left="529" bottom_delta="-24" max_chars="256"  mouse_opaque="true"
-	     name="regionuri_edit" select_all_on_focus_received="true" width="240" />
 	<combo_box allow_text_entry="true" bottom_delta="0" left="475" follows="left|bottom" height="20"
 	     max_chars="128" mouse_opaque="true" name="start_location_combo" width="155">
 		<combo_item name="MyHome" value="My Home">

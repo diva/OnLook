@@ -5430,6 +5430,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>DisableTextHyperlinkActions</key>
+    <map>
+      <key>Comment</key>
+      <string>Disable highlighting and linking of URLs in XUI text boxes</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>DisableVerticalSync</key>
     <map>
       <key>Comment</key>
@@ -16431,6 +16442,28 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
+	<key>SLURLDragNDrop</key>
+	<map>
+		<key>Comment</key>
+		<string>Enable drag and drop of SLURLs onto the viewer</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+    <key>SLURLPassToOtherInstance</key>
+    <map>
+    <key>Comment</key>
+    <string>Pass execution to prevoius viewer instances if there is a given slurl</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+    </map>
     <key>soundsbeacon</key>
     <map>
       <key>Comment</key>
@@ -16508,6 +16541,19 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>180</integer>
     </map>
+    
+    <key>SLURLTeleportDirectly</key>
+    <map>
+      <key>Comment</key>
+      <string>Clicking on a slurl will teleport you directly instead of opening places panel</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    
     <key>UseHTTPInventory</key>
     <map>
       <key>Comment</key>

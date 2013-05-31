@@ -2487,8 +2487,13 @@ LLView* LLFloater::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *f
 
 	if (filename.empty())
 	{
+		// for local registry callbacks; define in constructor, referenced in XUI or postBuild
+		floaterp->getCommitCallbackRegistrar().pushScope();
+		floaterp->getEnableCallbackRegistrar().pushScope();
 		// Load from node
 		floaterp->initFloaterXML(node, parent, factory);
+		floaterp->getCommitCallbackRegistrar().popScope();
+		floaterp->getEnableCallbackRegistrar().popScope();
 	}
 	else
 	{

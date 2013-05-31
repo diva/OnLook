@@ -86,7 +86,6 @@
 #include "llfloatergroupinvite.h"
 #include "llfloatergroups.h"
 #include "llfloaterhtmlcurrency.h"
-#include "llfloatermediabrowser.h"			// gViewerHtmlHelp
 #include "llfloaterhud.h"
 #include "llfloaterinspect.h"
 #include "llfloaterinventory.h"
@@ -115,6 +114,7 @@
 #include "llfloatertest.h"
 #include "llfloatertools.h"
 #include "llfloaterwater.h"
+#include "llfloaterwebcontent.h"
 #include "llfloaterwindlight.h"
 #include "llfloaterworldmap.h"
 #include "llfloatermemleak.h"
@@ -6463,11 +6463,12 @@ class LLShowFloater : public view_listener_t
 			LLViewerParcelMgr::getInstance()->startBuyLand();
 		}
 
-		else if (floater_name == "help f1")
+		//Singu TODO: Re-implement f1 help.
+		/*else if (floater_name == "help f1")
 		{
 			llinfos << "Spawning HTML help window" << llendl;
 			gViewerHtmlHelp.show();
-		}
+		}*/
 
 		else if (floater_name == "complaint reporter")
 		{
@@ -8725,7 +8726,7 @@ static void handle_load_from_xml_continued(AIFilePicker* filepicker)
 
 void handle_web_browser_test(void*)
 {
-	LLFloaterMediaBrowser::showInstance("http://secondlife.com/app/search/slurls.html");
+	LLWeb::loadURL("http://secondlife.com/app/search/slurls.html");
 }
 
 void handle_buy_currency_test(void*)

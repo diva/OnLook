@@ -54,11 +54,12 @@ const LLRect FGI_RECT(0, 530, 420, 0);
 //
 std::map<LLUUID, LLFloaterGroupInfo*> LLFloaterGroupInfo::sInstances;
 
+//moved to llgroupactions.cpp in v2
 class LLGroupHandler : public LLCommandHandler
 {
 public:
 	// requires trusted browser to trigger
-	LLGroupHandler() : LLCommandHandler("group", true) { }
+	LLGroupHandler() : LLCommandHandler("group", UNTRUSTED_THROTTLE) { }
 	bool handle(const LLSD& tokens, const LLSD& query_map,
 				LLMediaCtrl* web)
 	{

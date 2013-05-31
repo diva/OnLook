@@ -53,6 +53,8 @@
 #include "llface.h"
 #include "llinventorymodel.h" //Perms check for texture params
 #include "lllineeditor.h"
+#include "llmediaentry.h"
+#include "llnotificationsutil.h"
 #include "llresmgr.h"
 #include "llselectmgr.h"
 #include "llspinctrl.h"
@@ -66,8 +68,10 @@
 #include "llviewerobject.h"
 #include "llviewerregion.h"
 #include "llviewerstats.h"
+#include "llvovolume.h"
 #include "lluictrlfactory.h"
 #include "llpluginclassmedia.h"
+#include "llviewertexturelist.h"
 
 //
 // Methods
@@ -549,20 +553,43 @@ void LLPanelFace::getState()
 			LLUUID id;
 			struct f1 : public LLSelectedTEGetFunctor<LLUUID>
 			{
-				LLUUID get(LLViewerObject* object, S32 te)
+				LLUUID get(LLViewerObject* object, S32 te_index)
 				{
+					LLUUID id;
 					//LLViewerTexture* image = object->getTEImage(te);
-					LLTextureEntry* image = object->getTE(te);	//Singu Note: Use this instead of the above.
-																//The above actually returns LLViewerFetchedTexture::sDefaultImagep when
-																//the texture id is null, which gives us IMG_DEFAULT, not LLUUID::null
-																//Such behavior prevents the 'None' button from ever greying out in the face panel.
-					return image ? image->getID() : LLUUID::null;
+					LLTextureEntry* image = object->getTE(te_index);	//Singu Note: Use this instead of the above.
+																		//The above actually returns LLViewerFetchedTexture::sDefaultImagep when
+																		//the texture id is null, which gives us IMG_DEFAULT, not LLUUID::null
+																		//Such behavior prevents the 'None' button from ever greying out in the face panel.
+					if (image) id = image->getID();
 					
-					
+					if (!id.isNull() && LLViewerMedia::textureHasMedia(id))
+					{
+						LLTextureEntry *te = object->getTE(te_index);
+						if (te)
+						{
+							LLViewerTexture* tex = te->getID().notNull() ? gTextureList.findImage(te->getID()) : NULL ;
+							if(!tex)
+							{
+								tex = LLViewerFetchedTexture::sDefaultImagep;
+							}
+							if (tex)
+							{
+								id = tex->getID();
+							}
+						}
+					}
+					return id;
 				}
 			} func;
 			identical = LLSelectMgr::getInstance()->getSelection()->getSelectedTEValue( &func, id );
 
+			if(LLViewerMedia::textureHasMedia(id))
+			{
+				getChildView("textbox autofix")->setEnabled(editable);
+				getChildView("button align")->setEnabled(editable);
+			}
+			
 			if (identical)
 			{
 				// All selected have the same texture
@@ -593,13 +620,6 @@ void LLPanelFace::getState()
 					}
 				}
 			}
-
-			if(LLViewerMedia::textureHasMedia(id))
-			{
-				childSetEnabled("textbox autofix",editable);
-				childSetEnabled("button align",editable);
-			}
-
 		}
 
 		
@@ -1149,9 +1169,21 @@ struct LLPanelFaceSetMediaFunctor : public LLSelectedTEFunctor
 {
 	virtual bool apply(LLViewerObject* object, S32 te)
 	{
-		// TODO: the media impl pointer should actually be stored by the texture
-		viewer_media_t pMediaImpl = LLViewerMedia::getMediaImplFromTextureID(object->getTE ( te )->getID());
-		// only do this if it's a media texture
+		viewer_media_t pMediaImpl;
+				
+		const LLTextureEntry* tep = object->getTE(te);
+		const LLMediaEntry* mep = tep->hasMedia() ? tep->getMediaData() : NULL;
+		if ( mep )
+		{
+			pMediaImpl = LLViewerMedia::getMediaImplFromTextureID(mep->getMediaID());
+		}
+		
+		if ( pMediaImpl.isNull())
+		{
+			// If we didn't find face media for this face, check whether this face is showing parcel media.
+			pMediaImpl = LLViewerMedia::getMediaImplFromTextureID(tep->getID());
+		}
+		
 		if ( pMediaImpl.notNull())
 		{
 			LLPluginClassMedia *media = pMediaImpl->getMediaPlugin();
@@ -1183,6 +1215,17 @@ void LLPanelFace::onClickAutoFix(void* userdata)
 	LLPanelFaceSendFunctor sendfunc;
 	LLSelectMgr::getInstance()->getSelection()->applyToObjects(&sendfunc);
 }
+
+
+
+// TODO: I don't know who put these in or what these are for???
+void LLPanelFace::setMediaURL(const std::string& url)
+{
+}
+void LLPanelFace::setMediaType(const std::string& mime_type)
+{
+}
+
 // static
 void LLPanelFace::onCommitPlanarAlign(LLUICtrl* ctrl, void* userdata)
 {

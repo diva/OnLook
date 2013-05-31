@@ -744,12 +744,7 @@ void LLViewerTextureList::updateImages(F32 max_time)
 			}
 		}
 	}
-	//Required for old media system
-	if (!gNoRender && !gGLManager.mIsDisabled)
-	{
-		LLFastTimer t(FTM_IMAGE_MEDIA);
-		LLViewerMedia::updateMedia();
-	}
+
 	{
 		LLFastTimer t(FTM_IMAGE_STATS);
 		updateImagesUpdateStats();

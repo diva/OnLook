@@ -227,11 +227,12 @@ void LLWorldMapMessage::processMapBlockReply(LLMessageSystem* msg, void**)
 			gFloaterWorldMap->trackLocation(pos_global);
 		}
 
+		U64 handle = to_region_handle(x_world, y_world);
 		// Handle the SLURL callback if any
 		url_callback_t callback = LLWorldMapMessage::getInstance()->mSLURLCallback;
 		if(callback != NULL)
 		{
-			U64 handle = to_region_handle(x_world, y_world);
+			
 			// Check if we reached the requested region
 			if ((LLStringUtil::compareInsensitive(LLWorldMapMessage::getInstance()->mSLURLRegionName, name)==0)
 				|| (LLWorldMapMessage::getInstance()->mSLURLRegionHandle == handle))
@@ -244,8 +245,7 @@ void LLWorldMapMessage::processMapBlockReply(LLMessageSystem* msg, void**)
 			}
 		}
 		if(	gAgent.mPendingLure &&
-			(U16)(gAgent.mPendingLure->mPosGlobal.mdV[0] / REGION_WIDTH_UNITS) == x_regions &&
-			(U16)(gAgent.mPendingLure->mPosGlobal.mdV[1] / REGION_WIDTH_UNITS) == y_regions )
+			gAgent.mPendingLure->mRegionHandle == handle)
 		{
 			gAgent.onFoundLureDestination();
 		}

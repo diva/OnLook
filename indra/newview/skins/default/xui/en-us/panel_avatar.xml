@@ -224,7 +224,8 @@
 			     tool_tip="Automatically load ALL profile webpages without asking first."
 			     width="127" />
 			<web_browser border_visible="false" bottom="-444" follows="top|left|right" height="400"
-			     ignore_ui_scale="false" left="10" name="profile_html" start_url=""
+			     left="10" name="profile_html" start_url=""
+           trusted_content="true"
 			     width="400" />
 			<text bottom="5" follows="bottom|left|right" left="15" name="status_text" right="-70"
 			     top="25" />

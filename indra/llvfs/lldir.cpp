@@ -332,15 +332,11 @@ std::string LLDir::getExpandedFilename(ELLPath location, const std::string& subd
 		break;
 
 	case LL_PATH_APP_SETTINGS:
-		prefix = getAppRODataDir();
-		prefix += mDirDelimiter;
-		prefix += "app_settings";
+		prefix = add(getAppRODataDir(), "app_settings");
 		break;
 	
 	case LL_PATH_CHARACTER:
-		prefix = getAppRODataDir();
-		prefix += mDirDelimiter;
-		prefix += "character";
+		prefix = add(getAppRODataDir(), "character");
 		break;
 		
 	case LL_PATH_HELP:
@@ -352,9 +348,7 @@ std::string LLDir::getExpandedFilename(ELLPath location, const std::string& subd
 		break;
 		
 	case LL_PATH_USER_SETTINGS:
-		prefix = getOSUserAppDir();
-		prefix += mDirDelimiter;
-		prefix += "user_settings";
+		prefix = add(getOSUserAppDir(), "user_settings");
 		break;
 
 	case LL_PATH_PER_SL_ACCOUNT:
@@ -370,9 +364,7 @@ std::string LLDir::getExpandedFilename(ELLPath location, const std::string& subd
 		break;
 
 	case LL_PATH_LOGS:
-		prefix = getOSUserAppDir();
-		prefix += mDirDelimiter;
-		prefix += "logs";
+		prefix = add(getOSUserAppDir(), "logs");
 		break;
 
 	case LL_PATH_TEMP:
@@ -396,9 +388,7 @@ std::string LLDir::getExpandedFilename(ELLPath location, const std::string& subd
 		break;
 
 	case LL_PATH_LOCAL_ASSETS:
-		prefix = getAppRODataDir();
-		prefix += mDirDelimiter;
-		prefix += "local_assets";
+		prefix = add(getAppRODataDir(), "local_assets");
 		break;
 
 	case LL_PATH_EXECUTABLE:
@@ -406,9 +396,7 @@ std::string LLDir::getExpandedFilename(ELLPath location, const std::string& subd
 		break;
 		
 	case LL_PATH_FONTS:
-		prefix = getAppRODataDir();
-		prefix += mDirDelimiter;
-		prefix += "fonts";
+		prefix = add(getAppRODataDir(), "fonts");
 		break;
 		
 	default:
@@ -418,12 +406,12 @@ std::string LLDir::getExpandedFilename(ELLPath location, const std::string& subd
 	std::string filename = in_filename;
 	if (!subdir2.empty())
 	{
-		filename = subdir2 + mDirDelimiter + filename;
+		filename = add(subdir2, filename);
 	}
 
 	if (!subdir1.empty())
 	{
-		filename = subdir1 + mDirDelimiter + filename;
+		filename = add(subdir1, filename);
 	}
 
 	if (prefix.empty())
@@ -436,9 +424,7 @@ std::string LLDir::getExpandedFilename(ELLPath location, const std::string& subd
 	{
 		if (!prefix.empty())
 		{
-			expanded_filename += prefix;
-			expanded_filename += mDirDelimiter;
-			expanded_filename += filename;
+			expanded_filename = add(prefix, filename);
 		}
 		else
 		{
@@ -530,12 +516,7 @@ std::string LLDir::getTempFilename() const
 	random_uuid.generate();
 	random_uuid.toString(uuid_str);
 
-	std::string temp_filename = getTempDir();
-	temp_filename += mDirDelimiter;
-	temp_filename += uuid_str;
-	temp_filename += ".tmp";
-
-	return temp_filename;
+	return add(getTempDir(), uuid_str + ".tmp");
 }
 
 // static
@@ -572,15 +553,9 @@ void LLDir::setLindenUserDir(const std::string &grid, const std::string &first, 
 	{
 		// some platforms have case-sensitive filesystems, so be
 		// utterly consistent with our firstname/lastname case.
-		std::string firstlower(first);
-		LLStringUtil::toLower(firstlower);
-		std::string lastlower(last);
-		LLStringUtil::toLower(lastlower);
-		mLindenUserDir = getOSUserAppDir();
-		mLindenUserDir += mDirDelimiter;
-		mLindenUserDir += firstlower;
-		mLindenUserDir += "_";
-		mLindenUserDir += lastlower;
+		std::string userlower(first+"_"+last);
+		LLStringUtil::toLower(userlower);
+		mLindenUserDir = add(getOSUserAppDir(), userlower);
 		
 		if (!grid.empty())
 		{
@@ -617,16 +592,9 @@ void LLDir::setPerAccountChatLogsDir(const std::string &grid, const std::string 
 	{
 		// some platforms have case-sensitive filesystems, so be
 		// utterly consistent with our firstname/lastname case.
-		std::string firstlower(first);
-		LLStringUtil::toLower(firstlower);
-		std::string lastlower(last);
-		LLStringUtil::toLower(lastlower);
-		mPerAccountChatLogsDir = getChatLogsDir();
-		mPerAccountChatLogsDir += mDirDelimiter;
-		mPerAccountChatLogsDir += firstlower;
-		mPerAccountChatLogsDir += "_";
-		mPerAccountChatLogsDir += lastlower;
-
+		std::string userlower(first+"_"+last);
+		LLStringUtil::toLower(userlower);
+		mPerAccountChatLogsDir = add(getChatLogsDir(), userlower);
 		if (!grid.empty())
 		{
 			std::string gridlower(grid);
@@ -644,22 +612,18 @@ void LLDir::setPerAccountChatLogsDir(const std::string &grid, const std::string 
 void LLDir::setSkinFolder(const std::string &skin_folder)
 {
 	mSkinDir = getSkinBaseDir();
-	mSkinDir += mDirDelimiter;
-	mSkinDir += skin_folder;
+	append(mSkinDir, skin_folder);
 
 	// user modifications to current skin
 	// e.g. c:\documents and settings\users\username\application data\second life\skins\dazzle
 	mUserSkinDir = getOSUserAppDir();
-	mUserSkinDir += mDirDelimiter;
-	mUserSkinDir += "skins_sg1";
-	mUserSkinDir += mDirDelimiter;	
-	mUserSkinDir += skin_folder;
+	append(mUserSkinDir, "skins_sg1");
+	append(mUserSkinDir, skin_folder);
 
 	// base skin which is used as fallback for all skinned files
 	// e.g. c:\program files\secondlife\skins\default
 	mDefaultSkinDir = getSkinBaseDir();
-	mDefaultSkinDir += mDirDelimiter;	
-	mDefaultSkinDir += "default";
+	append(mDefaultSkinDir, "default");
 }
 
 bool LLDir::setCacheDir(const std::string &path)
@@ -673,7 +637,7 @@ bool LLDir::setCacheDir(const std::string &path)
 	else
 	{
 		LLFile::mkdir(path);
-		std::string tempname = path + mDirDelimiter + "temp";
+		std::string tempname = add(path, "temp");
 		LLFILE* file = LLFile::fopen(tempname,"wt");
 		if (file)
 		{
@@ -706,6 +670,57 @@ void LLDir::dumpCurrentDirectories()
 	LL_DEBUGS2("AppInit","Directories") << "  SkinDir:               " << getSkinDir() << LL_ENDL;
 }
 
+std::string LLDir::add(const std::string& path, const std::string& name) const
+{
+	std::string destpath(path);
+	append(destpath, name);
+	return destpath;
+}
+
+void LLDir::append(std::string& destpath, const std::string& name) const
+{
+	// Delegate question of whether we need a separator to helper method.
+	SepOff sepoff(needSep(destpath, name));
+	if (sepoff.first)               // do we need a separator?
+	{
+		destpath += mDirDelimiter;
+	}
+	// If destpath ends with a separator, AND name starts with one, skip
+	// name's leading separator.
+	destpath += name.substr(sepoff.second);
+}
+
+LLDir::SepOff LLDir::needSep(const std::string& path, const std::string& name) const
+{
+	if (path.empty() || name.empty())
+	{
+		// If either path or name are empty, we do not need a separator
+		// between them.
+		return SepOff(false, 0);
+	}
+	// Here we know path and name are both non-empty. But if path already ends
+	// with a separator, or if name already starts with a separator, we need
+	// not add one.
+	std::string::size_type seplen(mDirDelimiter.length());
+	bool path_ends_sep(path.substr(path.length() - seplen) == mDirDelimiter);
+	bool name_starts_sep(name.substr(0, seplen) == mDirDelimiter);
+	if ((! path_ends_sep) && (! name_starts_sep))
+	{
+		// If neither path nor name brings a separator to the junction, then
+		// we need one.
+		return SepOff(true, 0);
+	}
+	if (path_ends_sep && name_starts_sep)
+	{
+		// But if BOTH path and name bring a separator, we need not add one.
+		// Moreover, we should actually skip the leading separator of 'name'.
+		return SepOff(false, seplen);
+	}
+	// Here we know that either path_ends_sep or name_starts_sep is true --
+	// but not both. So don't add a separator, and don't skip any characters:
+	// simple concatenation will do the trick.
+	return SepOff(false, 0);
+}
 
 void dir_exists_or_crash(const std::string &dir_name)
 {

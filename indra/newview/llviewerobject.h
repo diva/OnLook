@@ -156,8 +156,9 @@ public:
 	// Return codes for processUpdateMessage
 	enum { 
 		MEDIA_URL_REMOVED = 0x1, 
-		MEDIA_URL_ADDED = 0x2, 
-		MEDIA_URL_UPDATED = 0x4, 
+        MEDIA_URL_ADDED = 0x2, 
+        MEDIA_URL_UPDATED = 0x4, 
+        MEDIA_FLAGS_CHANGED = 0x8,
 		INVALID_UPDATE = 0x80000000 
 	};
 

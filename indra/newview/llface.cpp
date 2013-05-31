@@ -190,8 +190,9 @@ void LLFace::init(LLDrawable* drawablep, LLViewerObject* objp)
 
 	mImportanceToCamera = 0.f ;
 	mBoundingSphereRadius = 0.0f ;
-}
 
+	mHasMedia = FALSE ;
+}
 
 void LLFace::destroy()
 {
@@ -2065,6 +2066,20 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	return TRUE;
 }
 
+//check if the face has a media
+BOOL LLFace::hasMedia() const 
+{
+	if(mHasMedia)
+	{
+		return TRUE ;
+	}
+	if(mTexture.notNull()) 
+	{
+		return mTexture->hasParcelMedia() ;  //if has a parcel media
+	}
+
+	return FALSE ; //no media.
+}
 const F32 LEAST_IMPORTANCE = 0.05f ;
 const F32 LEAST_IMPORTANCE_FOR_LARGE_IMAGE = 0.3f ;
 
@@ -2134,7 +2149,7 @@ BOOL LLFace::calcPixelArea(F32& cos_angle_to_view_dir, F32& radius)
 	t.load3(camera->getOrigin().mV);
 	lookAt.setSub(center, t);
 	F32 dist = lookAt.getLength3().getF32();
-	dist = llmax(dist-size.getLength3().getF32(), 0.f);
+	dist = llmax(dist-size.getLength3().getF32(), 0.001f);
 	lookAt.normalize3fast() ;	
 
 	//get area of circle around node
@@ -2145,9 +2160,33 @@ BOOL LLFace::calcPixelArea(F32& cos_angle_to_view_dir, F32& radius)
 	x_axis.load3(camera->getXAxis().mV);
 	cos_angle_to_view_dir = lookAt.dot3(x_axis).getF32();
 
+	//if has media, check if the face is out of the view frustum.	
+	if(hasMedia())
+	{
+		if(!camera->AABBInFrustum(center, size)) 
+		{
+			mImportanceToCamera = 0.f ;
+			return false ;
+		}
+		if(cos_angle_to_view_dir > camera->getCosHalfFov()) //the center is within the view frustum
+		{
+			cos_angle_to_view_dir = 1.0f ;
+		}
+		else
+		{		
+			LLVector4a d;
+			d.setSub(lookAt, x_axis);
+
+			if(dist * dist * d.dot3(d) < size_squared)
+			{
+				cos_angle_to_view_dir = 1.0f ;
+			}
+		}
+	}
+
 	if(dist < mBoundingSphereRadius) //camera is very close
 	{
-		cos_angle_to_view_dir = 1.0f;
+		cos_angle_to_view_dir = 1.0f ;
 		mImportanceToCamera = 1.0f;
 	}
 	else
