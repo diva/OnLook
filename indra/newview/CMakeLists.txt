@@ -91,6 +91,7 @@ set(viewer_SOURCE_FILES
     floatervoicelicense.cpp
 	generichandlers.cpp
     hbfloatergrouptitles.cpp
+    groupchatlistener.cpp
     hippofloaterxml.cpp
     hippogridmanager.cpp
     hippolimits.cpp
@@ -272,6 +273,7 @@ set(viewer_SOURCE_FILES
     llgiveinventory.cpp
     llgivemoney.cpp
     llglsandbox.cpp
+    llgroupactions.cpp
     llgroupmgr.cpp
     llgroupnotify.cpp
     llhomelocationresponder.cpp
@@ -587,6 +589,7 @@ set(viewer_HEADER_FILES
     floaterlocalassetbrowse.h
     floatervoicelicense.h
 	generichandlers.h
+    groupchatlistener.h
     hbfloatergrouptitles.h
     hippofloaterxml.h
     hippogridmanager.h
@@ -770,6 +773,7 @@ set(viewer_HEADER_FILES
     llgesturemgr.h
     llgiveinventory.h
     llgivemoney.h
+    llgroupactions.h
     llgroupmgr.h
     llgroupnotify.h
     llhomelocationresponder.h

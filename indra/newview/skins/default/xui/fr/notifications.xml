@@ -264,6 +264,12 @@ Voulez-vous continuer ?
 		<usetemplate name="okcancelbuttons" notext="Annuler" yestext="Rejoindre"/>
 	</notification>
 
+	<notification name="JoinGroupNoCost">
+Vous vous apprêtez à rejoindre le groupe [NAME].
+Voulez-vous continuer ?
+		<usetemplate name="okcancelbuttons" notext="Annuler" yestext="Fusionner"/>
+	</notification>
+
 	<notification name="JoinGroupCannotAfford">
 Rejoindre ce groupe coûte [COST] [CURRENCY].
 Vous n'avez pas suffisamment de [CURRENCY] pour rejoindre ce groupe.
@@ -1604,6 +1610,11 @@ Pour quitter un groupe, sélectionnez l'option Groupe dans le menu Éditer.
 [NAME] vous invite à rejoindre un groupe.
 [INVITE]
 		<usetemplate name="okcancelbuttons" notext="Refuser" yestext="Rejoindre"/>
+	</notification>
+
+	<notification name="JoinedTooManyGroups">
+Vous avez atteint le nombre de groupes maximum. Vous devez en quitter un avant d'en rejoindre ou d'en créer un nouveau.
+		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 
 	<notification name="KickUser">

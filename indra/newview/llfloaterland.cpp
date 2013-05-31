@@ -58,6 +58,7 @@
 #include "llfloatergroups.h"
 #include "llfloatergroupinfo.h"
 #include "llfloaterscriptlimits.h"
+#include "llgroupactions.h"
 #include "lllineeditor.h"
 #include "llnamelistctrl.h"
 #include "llnotify.h"
@@ -848,8 +849,7 @@ void LLPanelLandGeneral::onClickInfoGroup(void* userdata)
 	LLPanelLandGeneral* panelp = (LLPanelLandGeneral*)userdata;
 	LLParcel* parcel = panelp->mParcel->getParcel();
 	if (!parcel) return;
-	LLUUID id = parcel->getGroupID();
-	if(id.notNull())LLFloaterGroupInfo::showFromUUID(parcel->getGroupID());
+	LLGroupActions::show(parcel->getGroupID());
 }
 
 void LLPanelLandGeneral::onClickProfile()
@@ -859,8 +859,7 @@ void LLPanelLandGeneral::onClickProfile()
 
 	if (parcel->getIsGroupOwned())
 	{
-		const LLUUID& group_id = parcel->getGroupID();
-		LLFloaterGroupInfo::showFromUUID(group_id);
+		LLGroupActions::show(parcel->getGroupID());
 	}
 	else
 	{
@@ -1178,7 +1177,7 @@ void LLPanelLandObjects::onDoubleClickOwner(void *userdata)
 		BOOL is_group = cell->getValue().asString() == OWNER_GROUP;
 		if (is_group)
 		{
-			LLFloaterGroupInfo::showFromUUID(owner_id);
+			LLGroupActions::show(owner_id);
 		}
 		else
 		{

@@ -713,6 +713,21 @@ Do you wish to proceed?
 
   <notification
    icon="alertmodal.tga"
+   name="JoinGroupNoCost"
+   type="alertmodal">
+You are joining group [NAME].
+Do you wish to proceed?
+    <tag>group</tag>
+    <tag>confirm</tag>
+    <usetemplate
+     name="okcancelbuttons"
+     notext="Cancel"
+     yestext="Join"/>
+  </notification>
+
+
+  <notification
+   icon="alertmodal.tga"
    name="JoinGroupCannotAfford"
    type="alertmodal">
 Joining this group costs [CURRENCY][COST].
@@ -3278,6 +3293,18 @@ To leave a group select the &apos;Groups...&apos; option from the &apos;Edit&apo
      name="okcancelbuttons"
      notext="Decline"
      yestext="Join"/>
+  </notification>
+
+  <notification
+   icon="alert.tga"
+   name="JoinedTooManyGroups"
+   type="alert">
+You have reached your maximum number of groups. Please leave some group before joining or creating a new one.
+    <tag>group</tag>
+    <tag>fail</tag>
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
   </notification>
 
   <notification

@@ -40,11 +40,11 @@
 #include "llcommandhandler.h"
 #include "llfloatergroupinfo.h"
 #include "llfloatermute.h"
+#include "llgroupactions.h"
 #include "llmutelist.h"
 #include "llsdutil.h"
 #include "lluictrlfactory.h"
 #include "llurldispatcher.h"
-#include "llviewercontrol.h"
 
 // [RLVa:KB] - Version: 1.23.4
 #include "rlvhandler.h"
@@ -146,7 +146,7 @@ void LLFloaterObjectIMInfo::onClickOwner(void* data)
 	LLFloaterObjectIMInfo* self = (LLFloaterObjectIMInfo*)data;
 	if (self->mOwnerIsGroup)
 	{
-		LLFloaterGroupInfo::showFromUUID(self->mOwnerID);
+		LLGroupActions::show(self->mOwnerID);
 	}
 //	else
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g

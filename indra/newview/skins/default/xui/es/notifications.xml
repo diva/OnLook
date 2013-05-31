@@ -391,6 +391,12 @@ Los demás residentes podrán visitar la URL que hayas elegido cuando vean tu pe
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Unirse"/>
 	</notification>
 	
+	<notification name="JoinGroupNoCost">
+		Vas a entrar al grupo [NAME].
+¿Quieres seguir?
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Entrar"/>
+	</notification>
+
 	<notification name="JoinGroupCannotAfford">
 		Unirse a este grupo cuesta [CURRENCY][COST].
 No tienes suficientes [CURRENCY] para unirte a este grupo.
@@ -1879,6 +1885,11 @@ Se ocultará el chat y los mensajes instantáneos. Los mensajes instantáneos re
 		<usetemplate name="okcancelbuttons" notext="Rehusar" yestext="Entrar"/>
 	</notification>
 	
+	<notification name="JoinedTooManyGroups">
+		Has superado tu número máximo de grupos. Por favor, sal de al menos uno de ellos antes de crear uno nuevo o entrar en alguno.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+
 	<notification name="KickUser">
 		¿Con qué mensaje se expulsará a este usuario?
 		<form name="form">

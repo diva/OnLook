@@ -43,6 +43,7 @@
 #include "llfirstuse.h"
 #include "llfloatercamera.h"
 #include "llfloatertools.h"
+#include "llgroupactions.h"
 #include "llgroupmgr.h"
 #include "llhomelocationresponder.h"
 #include "llhudmanager.h"
@@ -3247,7 +3248,7 @@ BOOL LLAgent::downGrabbed() const
 
 void update_group_floaters(const LLUUID& group_id)
 {
-	LLFloaterGroupInfo::refreshGroup(group_id);
+	LLGroupActions::refresh(group_id);
 
 	// update avatar info
 	LLFloaterAvatarInfo* fa = LLFloaterAvatarInfo::getInstance(gAgent.getID());
@@ -3300,7 +3301,7 @@ void LLAgent::processAgentDropGroup(LLMessageSystem *msg, void **)
 
 		LLGroupMgr::getInstance()->clearGroupData(group_id);
 		// close the floater for this group, if any.
-		LLFloaterGroupInfo::closeGroup(group_id);
+		LLGroupActions::closeGroup(group_id);
 		// refresh the group panel of the search window, if necessary.
 		LLFloaterDirectory::refreshGroup(group_id);
 	}
@@ -3379,7 +3380,7 @@ class LLAgentDropGroupViewerNode : public LLHTTPNode
 
 				LLGroupMgr::getInstance()->clearGroupData(group_id);
 				// close the floater for this group, if any.
-				LLFloaterGroupInfo::closeGroup(group_id);
+				LLGroupActions::closeGroup(group_id);
 				// refresh the group panel of the search window,
 				//if necessary.
 				LLFloaterDirectory::refreshGroup(group_id);

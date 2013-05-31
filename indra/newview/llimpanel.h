@@ -241,8 +241,6 @@ public:
 
 	static void		onClickHistory( void* userdata );
 	void			onRPMode(const LLSD& value);
-	void			onClickGroupInfo();
-	static void		onClickClose( void* userdata );
 	static void		onClickStartCall( void* userdata );
 	static void		onClickEndCall( void* userdata );
 	void			onClickToggleActiveSpeakers(const LLSD& value);

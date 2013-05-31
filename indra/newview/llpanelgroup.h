@@ -58,10 +58,7 @@ class LLPanelGroup : public LLPanel,
 					 public LLPanelGroupTabObserver
 {
 public:
-	LLPanelGroup(const std::string& filename,
-				 const std::string& name,
-				 const LLUUID& group_id,
-				 const std::string& initial_tab_selected = std::string());
+	LLPanelGroup(const LLUUID& group_id);
 	virtual ~LLPanelGroup();
 
 	virtual BOOL postBuild();
@@ -118,9 +115,6 @@ protected:
 	LLTimer mRefreshTimer;
 
 	BOOL mForceClose;
-
-	std::string mInitialTab;
-	std::string mFilename;
 
 	std::string mDefaultNeedsApplyMesg;
 	std::string mWantApplyMesg;

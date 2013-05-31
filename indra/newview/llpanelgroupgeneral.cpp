@@ -37,8 +37,9 @@
 #include "lluictrlfactory.h"
 #include "llagent.h"
 #include "llavataractions.h"
+#include "llfloatergroups.h"
+#include "llgroupactions.h"
 #include "roles_constants.h"
-#include "llfloatergroupinfo.h"
 
 // UI elements
 #include "llbutton.h"
@@ -133,13 +134,13 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mBtnJoinGroup = getChild<LLButton>("join_button", recurse);
 	if ( mBtnJoinGroup )
 	{
-		mBtnJoinGroup->setClickedCallback(boost::bind(&LLPanelGroupGeneral::onClickJoin, this));
+		mBtnJoinGroup->setClickedCallback(boost::bind(LLGroupActions::join, mGroupID));
 	}
 
 	mBtnInfo = getChild<LLButton>("info_button", recurse);
 	if ( mBtnInfo )
 	{
-		mBtnInfo->setClickedCallback(boost::bind(&LLPanelGroupGeneral::onClickInfo, this));
+		mBtnInfo->setClickedCallback(boost::bind(LLGroupActions::show, mGroupID));
 	}
 
 	LLTextBox* founder = getChild<LLTextBox>("founder_name");
@@ -154,7 +155,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mListVisibleMembers = getChild<LLNameListCtrl>("visible_members", recurse);
 	if (mListVisibleMembers)
 	{
-		mListVisibleMembers->setDoubleClickCallback(boost::bind(&LLPanelGroupGeneral::openProfile,this));
+		mListVisibleMembers->setDoubleClickCallback(boost::bind(LLAvatarActions::showProfile, boost::bind(&LLScrollListCtrl::getCurrentID, mListVisibleMembers)));
 	}
 
 	// Options
@@ -320,83 +321,6 @@ void LLPanelGroupGeneral::onCommitTitle()
 	LLGroupMgr::getInstance()->sendGroupTitleUpdate(mGroupID,mComboActiveTitle->getCurrentID());
 	update(GC_TITLES);
 	mComboActiveTitle->resetDirty();
-}
-
-// static
-void LLPanelGroupGeneral::onClickInfo(void *userdata)
-{
-	LLPanelGroupGeneral *self = (LLPanelGroupGeneral *)userdata;
-
-	if ( !self ) return;
-
-	lldebugs << "open group info: " << self->mGroupID << llendl;
-
-	LLFloaterGroupInfo::showFromUUID(self->mGroupID);
-}
-
-// static
-void LLPanelGroupGeneral::onClickJoin(void *userdata)
-{
-	LLPanelGroupGeneral *self = (LLPanelGroupGeneral *)userdata;
-
-	if ( !self ) return;
-
-	lldebugs << "joining group: " << self->mGroupID << llendl;
-
-	LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(self->mGroupID);
-
-	if (gdatap)
-	{
-		S32 cost = gdatap->mMembershipFee;
-		LLSD args;
-		args["COST"] = llformat("%d", cost);
-		LLSD payload;
-		payload["group_id"] = self->mGroupID;
-
-		if (can_afford_transaction(cost))
-		{
-			LLNotificationsUtil::add("JoinGroupCanAfford", args, payload, LLPanelGroupGeneral::joinDlgCB);
-		}
-		else
-		{
-			LLNotificationsUtil::add("JoinGroupCannotAfford", args, payload);
-		}
-	}
-	else
-	{
-		llwarns << "LLGroupMgr::getInstance()->getGroupData(" << self->mGroupID
-			<< ") was NULL" << llendl;
-	}
-}
-
-// static
-bool LLPanelGroupGeneral::joinDlgCB(const LLSD& notification, const LLSD& response)
-{
-	S32 option = LLNotification::getSelectedOption(notification, response);
-
-	if (option == 1)
-	{
-		// user clicked cancel
-		return false;
-	}
-
-	LLGroupMgr::getInstance()->sendGroupMemberJoin(notification["payload"]["group_id"].asUUID());
-	return false;
-}
-
-// static
-void LLPanelGroupGeneral::openProfile(void* data)
-{
-	LLPanelGroupGeneral* self = (LLPanelGroupGeneral*)data;
-
-	if (self && self->mListVisibleMembers)
-	{
-		LLScrollListItem* selected = self->mListVisibleMembers->getFirstSelected();
-		if (selected)
-		{
-			LLAvatarActions::showProfile(selected->getUUID());
-		}
-	}
 }
 
 bool LLPanelGroupGeneral::needsApply(std::string& mesg)

@@ -60,7 +60,6 @@
 #include "llfloaterbuycurrency.h"
 #include "llfloaterbuyland.h"
 #include "llfloaterchat.h"
-#include "llfloatergroupinfo.h"
 #include "llfloaterimagepreview.h"
 #include "llfloaterland.h"
 #include "llfloaterregioninfo.h"
@@ -69,6 +68,7 @@
 #include "llfloaterpostcard.h"
 #include "llfloaterpreference.h"
 #include "llfloaterteleporthistory.h"
+#include "llgroupactions.h"
 #include "llhudeffecttrail.h"
 #include "llhudmanager.h"
 #include "llimpanel.h"
@@ -639,7 +639,7 @@ bool join_group_response(const LLSD& notification, const LLSD& response)
 
 	if (option == 2 && !group_id.isNull())
 	{
-		LLFloaterGroupInfo::showFromUUID(group_id);
+		LLGroupActions::show(group_id);
 		LLSD args;
 		args["MESSAGE"] = message;
 		LLNotificationsUtil::add("JoinGroup", args, notification["payload"]);
@@ -1780,7 +1780,7 @@ bool group_vote_callback(const LLSD& notification, const LLSD& response)
 	case 0:
 		// Vote Now
 		// Open up the voting tab
-		LLFloaterGroupInfo::showFromUUID(group_id, "voting_tab");
+		LLGroupActions::showTab(group_id, "voting_tab");
 		break;
 	default:
 		// Vote Later or
@@ -2528,16 +2528,6 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				args["SUBJECT"] = subj;
 				args["MESSAGE"] = mes;
 				LLNotifications::instance().add(LLNotification::Params("GroupNotice").substitutions(args).payload(payload).timestamp(timestamp));
-			}
-
-			// Also send down the old path for now.
-			if (IM_GROUP_NOTICE_REQUESTED == dialog)
-			{
-				LLFloaterGroupInfo::showNotice(subj,mes,group_id,has_inventory,item_name,info);
-			}
-			else
-			{
-				delete info;
 			}
 		}
 		break;

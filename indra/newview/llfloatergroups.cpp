@@ -51,6 +51,7 @@
 #include "llfloatergroupinfo.h"
 #include "llfloaterdirectory.h"
 #include "llfocusmgr.h"
+#include "llgroupactions.h"
 #include "llselectmgr.h"
 #include "llscrolllistctrl.h"
 #include "llnotificationsutil.h"
@@ -218,23 +219,23 @@ BOOL LLPanelGroups::postBuild()
 	init_group_list(group_list, gAgent.getGroupID(), none_text);
 	group_list->setCommitCallback(boost::bind(&LLPanelGroups::onGroupList,this));
 	group_list->setSortChangedCallback(boost::bind(&LLPanelGroups::onGroupSortChanged,this)); //Force 'none' to always be first entry.
-	group_list->setDoubleClickCallback(boost::bind(&LLPanelGroups::onBtnIM,this));
+	group_list->setDoubleClickCallback(boost::bind(LLGroupActions::startIM, boost::bind(&LLScrollListCtrl::getCurrentID, group_list)));
 
-	childSetAction("Activate", onBtnActivate, this);
+	getChild<LLUICtrl>("Activate")->setCommitCallback(boost::bind(LLGroupActions::activate, boost::bind(&LLScrollListCtrl::getCurrentID, group_list)));
 
-	childSetAction("Info", onBtnInfo, this);
+	getChild<LLUICtrl>("Info")->setCommitCallback(boost::bind(LLGroupActions::show, boost::bind(&LLScrollListCtrl::getCurrentID, group_list)));
 
-	childSetAction("IM", onBtnIM, this);
+	getChild<LLUICtrl>("IM")->setCommitCallback(boost::bind(LLGroupActions::startIM, boost::bind(&LLScrollListCtrl::getCurrentID, group_list)));
 
-	childSetAction("Leave", onBtnLeave, this);
+	getChild<LLUICtrl>("Leave")->setCommitCallback(boost::bind(LLGroupActions::leave, boost::bind(&LLScrollListCtrl::getCurrentID, group_list)));
 
-	childSetAction("Create", onBtnCreate, this);
+	getChild<LLUICtrl>("Create")->setCommitCallback(boost::bind(LLGroupActions::createGroup));
 
-	childSetAction("Search...", onBtnSearch, this);
+	getChild<LLUICtrl>("Search...")->setCommitCallback(boost::bind(LLGroupActions::search));
 	
 	childSetAction("Invite...", onBtnInvite, this);
 
-	childSetAction("Titles...", onBtnTitles, this);
+	getChild<LLUICtrl>("Titles...")->setCommitCallback(boost::bind(HBFloaterGroupTitles::toggle));
 
 	setDefaultBtn("IM");
 
@@ -291,145 +292,10 @@ void LLPanelGroups::enableButtons()
 }
 
 
-void LLPanelGroups::onBtnCreate(void* userdata)
-{
-	LLPanelGroups* self = (LLPanelGroups*)userdata;
-	if(self) self->create();
-}
-
 void LLPanelGroups::onBtnInvite(void* userdata)
 {
 	LLPanelGroups* self = (LLPanelGroups*)userdata;
 	if(self) self->invite();
-}
-
-void LLPanelGroups::onBtnActivate(void* userdata)
-{
-	LLPanelGroups* self = (LLPanelGroups*)userdata;
-	if(self) self->activate();
-}
-
-void LLPanelGroups::onBtnInfo(void* userdata)
-{
-	LLPanelGroups* self = (LLPanelGroups*)userdata;
-	if(self) self->info();
-}
-
-void LLPanelGroups::onBtnIM(void* userdata)
-{
-	LLPanelGroups* self = (LLPanelGroups*)userdata;
-	if(self) self->startIM();
-}
-
-void LLPanelGroups::onBtnLeave(void* userdata)
-{
-	LLPanelGroups* self = (LLPanelGroups*)userdata;
-	if(self) self->leave();
-}
-
-void LLPanelGroups::onBtnSearch(void* userdata)
-{
-	LLPanelGroups* self = (LLPanelGroups*)userdata;
-	if(self) self->search();
-}
-
-void LLPanelGroups::onBtnTitles(void* userdata)
-{
-	LLPanelGroups* self = (LLPanelGroups*)userdata;
-	if(self) self->titles();
-}
-
-void LLPanelGroups::create()
-{
-	llinfos << "LLPanelGroups::create" << llendl;
-	LLFloaterGroupInfo::showCreateGroup(NULL);
-}
-
-void LLPanelGroups::activate()
-{
-	llinfos << "LLPanelGroups::activate" << llendl;
-	LLCtrlListInterface *group_list = childGetListInterface("group list");
-	LLUUID group_id;
-	if (group_list)
-	{
-		group_id = group_list->getCurrentID();
-	}
-	LLMessageSystem* msg = gMessageSystem;
-	msg->newMessageFast(_PREHASH_ActivateGroup);
-	msg->nextBlockFast(_PREHASH_AgentData);
-	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-	msg->addUUIDFast(_PREHASH_GroupID, group_id);
-	gAgent.sendReliableMessage();
-}
-
-void LLPanelGroups::info()
-{
-	llinfos << "LLPanelGroups::info" << llendl;
-	LLCtrlListInterface *group_list = childGetListInterface("group list");
-	LLUUID group_id;
-	if (group_list && (group_id = group_list->getCurrentID()).notNull())
-	{
-		LLFloaterGroupInfo::showFromUUID(group_id);
-	}
-}
-
-void LLPanelGroups::startIM()
-{
-	LLCtrlListInterface *group_list = childGetListInterface("group list");
-	LLUUID group_id;
-
-	if (group_list && (group_id = group_list->getCurrentID()).notNull())
-	{
-		LLGroupData group_data;
-		if (gAgent.getGroupData(group_id, group_data))
-		{
-			static LLCachedControl<bool> tear_off("OtherChatsTornOff");
-			if (!tear_off)
-				gIMMgr->setFloaterOpen(TRUE);
-			gIMMgr->addSession(
-				group_data.mName,
-				IM_SESSION_GROUP_START,
-				group_id);
-			make_ui_sound("UISndStartIM");
-		}
-		else
-		{
-			// this should never happen, as starting a group IM session
-			// relies on you belonging to the group and hence having the group data
-			make_ui_sound("UISndInvalidOp");
-		}
-	}
-}
-
-void LLPanelGroups::leave()
-{
-	llinfos << "LLPanelGroups::leave" << llendl;
-	LLCtrlListInterface *group_list = childGetListInterface("group list");
-	LLUUID group_id;
-	if (group_list && (group_id = group_list->getCurrentID()).notNull())
-	{
-		S32 count = gAgent.mGroups.count();
-		S32 i;
-		for(i = 0; i < count; ++i)
-		{
-			if(gAgent.mGroups.get(i).mID == group_id)
-				break;
-		}
-		if(i < count)
-		{
-			LLSD args;
-			args["GROUP"] = gAgent.mGroups.get(i).mName;
-			LLSD payload;
-			payload["group_id"] = group_id;
-			LLNotificationsUtil::add("GroupLeaveConfirmMember", args, payload, callbackLeaveGroup);
-		}
-	}
-}
-
-void LLPanelGroups::search()
-{
-	LLFloaterDirectory::showGroups();
 }
 
 void LLPanelGroups::invite()
@@ -445,31 +311,6 @@ void LLPanelGroups::invite()
 	}
 
 		LLFloaterGroupInvite::showForGroup(group_id);
-}
-
-void LLPanelGroups::titles()
-{
-	HBFloaterGroupTitles::toggle();
-}
-
-
-// static
-bool LLPanelGroups::callbackLeaveGroup(const LLSD& notification, const LLSD& response)
-{
-	S32 option = LLNotification::getSelectedOption(notification, response);
-	LLUUID group_id = notification["payload"]["group_id"].asUUID();
-	if(option == 0)
-	{
-		LLMessageSystem* msg = gMessageSystem;
-		msg->newMessageFast(_PREHASH_LeaveGroupRequest);
-		msg->nextBlockFast(_PREHASH_AgentData);
-		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-		msg->nextBlockFast(_PREHASH_GroupData);
-		msg->addUUIDFast(_PREHASH_GroupID, group_id);
-		gAgent.sendReliableMessage();
-	}
-	return false;
 }
 
 void LLPanelGroups::onGroupSortChanged()

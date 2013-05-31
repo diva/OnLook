@@ -52,12 +52,12 @@
 #include "llselectmgr.h"
 #include "llagent.h"
 #include "llavataractions.h"
+#include "llfloatergroups.h"
+#include "llgroupactions.h"
 #include "lllineeditor.h"
 #include "llradiogroup.h"
 #include "llcombobox.h"
 #include "lldbstrings.h"
-#include "llfloatergroupinfo.h"
-#include "llfloatergroups.h"
 #include "llnamebox.h"
 #include "lluictrlfactory.h"
 #include "roles_constants.h"
@@ -1013,7 +1013,7 @@ void LLPanelPermissions::onClickOwner(void *data)
 	{
 		LLUUID group_id;
 		LLSelectMgr::getInstance()->selectGetGroup(group_id);
-		LLFloaterGroupInfo::showFromUUID(group_id);
+		LLGroupActions::show(group_id);
 	}
 	else
 	{
@@ -1064,7 +1064,7 @@ void LLPanelPermissions::onClickOpenGroup(void* data)
 	LLUUID group_id;
 	LLSelectMgr::getInstance()->selectGetGroup(group_id);
 	
-	LLFloaterGroupInfo::showFromUUID(group_id);
+	LLGroupActions::show(group_id);
 }
 
 // static

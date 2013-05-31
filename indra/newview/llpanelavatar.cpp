@@ -51,6 +51,7 @@
 #include "llfloatergroupinfo.h"
 #include "llfloatermute.h"
 #include "llfloateravatarinfo.h"
+#include "llgroupactions.h"
 #include "lllineeditor.h"
 #include "llnameeditor.h"
 #include "llnotificationsutil.h"
@@ -430,18 +431,14 @@ void LLPanelAvatarSecondLife::onClickImage(void* data)
 void LLPanelAvatarSecondLife::onDoubleClickGroup(void* data)
 {
 	LLPanelAvatarSecondLife* self = (LLPanelAvatarSecondLife*)data;
-
 	
 	LLScrollListCtrl*	group_list =  self->getChild<LLScrollListCtrl>("groups"); 
 	if(group_list)
 	{
 		LLScrollListItem* item = group_list->getFirstSelected();
-		
-		if(item && item->getUUID().notNull())
+		if (item)
 		{
-			llinfos << "Show group info " << item->getUUID() << llendl;
-
-			LLFloaterGroupInfo::showFromUUID(item->getUUID());
+			LLGroupActions::show(item->getUUID());
 		}
 	}
 }
