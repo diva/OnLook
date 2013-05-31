@@ -157,7 +157,7 @@ void HBFloaterGroupTitles::onActivate(void* userdata)
 	// Set the title
 	LLGroupMgr::getInstance()->sendGroupTitleUpdate(group_id, item->getUUID());
 	// Force a refresh via the observer
-	if (group_id == LLUUID::null)
+	if (group_id.isNull())
 	{
 		group_id = old_group_id;
 	}

@@ -133,7 +133,7 @@ private:
 	static bool callbackAddFriend(const LLSD& notification, const LLSD& response);
 	static bool callbackAddFriendWithMessage(const LLSD& notification, const LLSD& response);
 	static void onPickAvatar(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names );
-	static void onContactSearchEdit(const std::string& search_string, void* user_data);
+	void onContactFilterEdit(const std::string& search_string);
 	static void onClickIM(void* user_data);
 	static void onClickAssign(void* user_data);
 	static void onClickExpand(void* user_data);

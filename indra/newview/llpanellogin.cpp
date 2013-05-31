@@ -227,11 +227,11 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	// instance management
 	if (LLPanelLogin::sInstance)
 	{
-		llwarns << "Duplicate instance of login view deleted" << llendl;
-		delete LLPanelLogin::sInstance;
-
+		LL_WARNS("AppInit") << "Duplicate instance of login view deleted" << LL_ENDL;
 		// Don't leave bad pointer in gFocusMgr
 		gFocusMgr.setDefaultKeyboardFocus(NULL);
+
+		delete LLPanelLogin::sInstance;
 	}
 
 	LLPanelLogin::sInstance = this;
@@ -259,16 +259,16 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	name_combo->setSuppressAutoComplete(true);
 
 	childSetCommitCallback("remember_name_check", onNameCheckChanged);
-	childSetCommitCallback("password_edit", mungePassword);
-	childSetKeystrokeCallback("password_edit", onPassKey, this);
-	childSetUserData("password_edit", this);
+
+	LLLineEditor* password_edit(getChild<LLLineEditor>("password_edit"));
+	password_edit->setKeystrokeCallback(onPassKey);
+	// STEAM-14: When user presses Enter with this field in focus, initiate login
+	password_edit->setCommitCallback(mungePassword, this);
+	password_edit->setDrawAsterixes(TRUE);
 
 	// change z sort of clickable text to be behind buttons
 	sendChildToBack(getChildView("channel_text"));
 	sendChildToBack(getChildView("forgot_password_text"));
-
-	LLLineEditor* edit = getChild<LLLineEditor>("password_edit");
-	if (edit) edit->setDrawAsterixes(TRUE);
 
 	//OGPX : This keeps the uris in a history file 
 	//OGPX TODO: should this be inside an OGP only check?
@@ -347,14 +347,14 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	LLTextBox* channel_text = getChild<LLTextBox>("channel_text");
 	channel_text->setTextArg("[CHANNEL]", channel); // though not displayed
 	channel_text->setTextArg("[VERSION]", version);
-	channel_text->setClickedCallback(onClickVersion);
-	channel_text->setCallbackUserData(this);
+	channel_text->setClickedCallback(boost::bind(&LLPanelLogin::onClickVersion,(void*)NULL));
 	
 	LLTextBox* forgot_password_text = getChild<LLTextBox>("forgot_password_text");
-	forgot_password_text->setClickedCallback(onClickForgotPassword);
+	forgot_password_text->setClickedCallback(boost::bind(&onClickForgotPassword));
 
+	
 	LLTextBox* create_new_account_text = getChild<LLTextBox>("create_new_account_text");
-	create_new_account_text->setClickedCallback(onClickNewAccount);
+	create_new_account_text->setClickedCallback(boost::bind(&onClickNewAccount));
 #endif    
 	
 	// get the web browser control
@@ -371,16 +371,7 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	// make links open in external browser
 	web_browser->setOpenInExternalBrowser( true );
 
-	// force the size to be correct (XML doesn't seem to be sufficient to do this) (with some padding so the other login screen doesn't show through)
-	LLRect htmlRect = getRect();
-#if USE_VIEWER_AUTH
-	htmlRect.setCenterAndSize( getRect().getCenterX() - 2, getRect().getCenterY(), getRect().getWidth() + 6, getRect().getHeight());
-#else
-	htmlRect.setCenterAndSize( getRect().getCenterX() - 2, getRect().getCenterY() + 40, getRect().getWidth() + 6, getRect().getHeight() - 78 );
-#endif
-	web_browser->setRect( htmlRect );
-	web_browser->reshape( htmlRect.getWidth(), htmlRect.getHeight(), TRUE );
-	reshape( getRect().getWidth(), getRect().getHeight(), 1 );
+	reshapeBrowser();
 
 	updateGridCombo();
 
@@ -453,6 +444,26 @@ void LLPanelLogin::mungePassword(LLUICtrl* caller, void* user_data)
 		pass.hex_digest(munged_password);
 		self->mMungedPassword = munged_password;
 	}
+}
+
+// force the size to be correct (XML doesn't seem to be sufficient to do this)
+// (with some padding so the other login screen doesn't show through)
+void LLPanelLogin::reshapeBrowser()
+{
+	LLMediaCtrl* web_browser = getChild<LLMediaCtrl>("login_html");
+	LLRect rect = gViewerWindow->getWindowRectScaled();
+	LLRect html_rect;
+	html_rect.setCenterAndSize(
+#if USE_VIEWER_AUTH
+		rect.getCenterX() - 2, rect.getCenterY(),
+		rect.getWidth() + 6, rect.getHeight());
+#else
+		rect.getCenterX() - 2, rect.getCenterY() + 40,
+		rect.getWidth() + 6, rect.getHeight() - 78 );
+#endif
+	web_browser->setRect( html_rect );
+	web_browser->reshape( html_rect.getWidth(), html_rect.getHeight(), TRUE );
+	reshape( rect.getWidth(), rect.getHeight(), 1 );
 }
 
 LLPanelLogin::~LLPanelLogin()
@@ -603,33 +614,37 @@ void LLPanelLogin::giveFocus()
 	if( sInstance )
 	{
 		// Grab focus and move cursor to first blank input field
-		std::string first = sInstance->getChild<LLComboBox>("name_combo")->getTextEntry();
-		std::string pass = sInstance->childGetText("password_edit");
+		std::string username = sInstance->getChild<LLUICtrl>("username_combo")->getValue().asString();
+		std::string pass = sInstance->getChild<LLUICtrl>("password_edit")->getValue().asString();
 
-		BOOL have_first = !first.empty();
+		BOOL have_username = !username.empty();
 		BOOL have_pass = !pass.empty();
 
-		if (!have_first)
+		LLLineEditor* edit = NULL;
+		LLUICtrl* combo = NULL;
+		if (have_username)
 		{
-			// User doesn't have a name, so start there.
-			LLComboBox* combo = sInstance->getChild<LLComboBox>("name_combo");
-			combo->setFocusText(TRUE);
-		}
-		else if (!have_pass)
-		{
-			LLLineEditor* edit = NULL;
+			if(have_pass)
+				combo = sInstance->getChild<LLButton>("connect_btn");
+			else
 			// User saved his name but not his password.  Move
 			// focus to password field.
 			edit = sInstance->getChild<LLLineEditor>("password_edit");
-			edit->setFocus(TRUE);
-			edit->selectAll();
 		}
 		else
 		{
-			// else, we have both name and password.
-			// We get here waiting for the login to happen.
-			LLButton* connect_btn = sInstance->getChild<LLButton>("connect_btn");
-			connect_btn->setFocus(TRUE);
+			// User doesn't have a name, so start there.
+			combo = sInstance->getChild<LLComboBox>("username_combo");
+		}
+
+		if (edit)
+		{
+			edit->setFocus(TRUE);
+			edit->selectAll();
+		}
+		else if (combo)
+		{
+			combo->setFocus(TRUE);
 		}
 	}
 #endif
@@ -827,13 +842,14 @@ void LLPanelLogin::close()
 // static
 void LLPanelLogin::setAlwaysRefresh(bool refresh)
 {
-	if (LLStartUp::getStartupState() >= STATE_LOGIN_CLEANUP) return;
-
-	LLMediaCtrl* web_browser = sInstance->getChild<LLMediaCtrl>("login_html");
-
-	if (web_browser)
+	if (sInstance && LLStartUp::getStartupState() < STATE_LOGIN_CLEANUP)
 	{
-		web_browser->setAlwaysRefresh(refresh);
+		LLMediaCtrl* web_browser = sInstance->getChild<LLMediaCtrl>("login_html");
+
+		if (web_browser)
+		{
+			web_browser->setAlwaysRefresh(refresh);
+		}
 	}
 }
 
@@ -893,7 +909,7 @@ void LLPanelLogin::loadLoginPage()
 	if (!sInstance) return;
 
 	sInstance->updateGridCombo();
-	std::ostringstream oStr;
+	std::ostringstream login_uri;
 
 	std::string login_page = gHippoGridManager->getConnectedGrid()->getLoginPage();
 	if (login_page.empty())
@@ -902,7 +918,7 @@ void LLPanelLogin::loadLoginPage()
 		return;
 	}
 
-	oStr << login_page;
+	login_uri << login_page;
 
 	// Use the right delimeter depending on how LLURI parses the URL
 	LLURI login_page_uri = LLURI(login_page);
@@ -914,20 +930,20 @@ void LLPanelLogin::loadLoginPage()
 
 	// Language
 	std::string language = LLUI::getLanguage();
-	oStr << first_query_delimiter<<"lang=" << language;
+	login_uri << first_query_delimiter<<"lang=" << language;
 
 	// First Login?
 	if (gSavedSettings.getBOOL("FirstLoginThisInstall"))
 	{
-		oStr << "&firstlogin=TRUE";
+		login_uri << "&firstlogin=TRUE";
 	}
 
 	std::string version = llformat("%d.%d.%d (%d)",
 						gVersionMajor, gVersionMinor, gVersionPatch, gVersionBuild);
 
 	if(login_page.find("secondlife.com") == -1) {
-		oStr << "&channel=" << LLWeb::curlEscape(gVersionChannel);
-		oStr << "&version=" << LLWeb::curlEscape(version);
+		login_uri << "&channel=" << LLWeb::curlEscape(gVersionChannel);
+		login_uri << "&version=" << LLWeb::curlEscape(version);
 	}
 
 	// Grid
@@ -944,16 +960,16 @@ void LLPanelLogin::loadLoginPage()
 				i = tmp.rfind('/');
 			if (i != std::string::npos) {
 				tmp = tmp.substr(i+1);
-				oStr << "&grid=" << LLWeb::curlEscape(tmp);
+				login_uri << "&grid=" << LLWeb::curlEscape(tmp);
 			}
 		}
 	}
 	else if (gHippoGridManager->getConnectedGrid()->isOpenSimulator()){
-		oStr << "&grid=" << gHippoGridManager->getConnectedGrid()->getGridNick();
+		login_uri << "&grid=" << gHippoGridManager->getConnectedGrid()->getGridNick();
 	}
 	else if (gHippoGridManager->getConnectedGrid()->getPlatform() == HippoGridInfo::PLATFORM_AURORA)
 	{
-		oStr << "&grid=" << LLWeb::curlEscape(LLViewerLogin::getInstance()->getGridLabel());
+		login_uri << "&grid=" << LLWeb::curlEscape(LLViewerLogin::getInstance()->getGridLabel());
 	}
 		
 	
@@ -1011,59 +1027,47 @@ void LLPanelLogin::loadLoginPage()
 	
 	std::string curl_region = LLWeb::curlEscape(region);
 
-	oStr <<"firstname=" << firstname <<
+	login_uri <<"firstname=" << firstname <<
 		"&lastname=" << lastname << "&location=" << location <<	"&region=" << curl_region;
 	
 	if (!password.empty())
 	{
-		oStr << "&password=" << password;
+		login_uri << "&password=" << password;
 	}
 	else if (!(password = load_password_from_disk()).empty())
 	{
-		oStr << "&password=$1$" << password;
+		login_uri << "&password=$1$" << password;
 	}
 	if (gAutoLogin)
 	{
-		oStr << "&auto_login=TRUE";
+		login_uri << "&auto_login=TRUE";
 	}
 	if (gSavedSettings.getBOOL("ShowStartLocation"))
 	{
-		oStr << "&show_start_location=TRUE";
+		login_uri << "&show_start_location=TRUE";
 	}	
 	if (gSavedSettings.getBOOL("RememberPassword"))
 	{
-		oStr << "&remember_password=TRUE";
+		login_uri << "&remember_password=TRUE";
 	}	
 	BOOL show_server = sInstance ? sInstance->mShowServerCombo : FALSE;
 	if (show_server || gSavedSettings.getBOOL("ForceShowGrid"))
 	{
-		oStr << "&show_grid=TRUE";
+		login_uri << "&show_grid=TRUE";
 	}
 #endif
 	
 	LLMediaCtrl* web_browser = sInstance->getChild<LLMediaCtrl>("login_html");
 	
-	// navigate to the "real" page 
-	web_browser->navigateTo( oStr.str(), "text/html" );
+	if (web_browser->getCurrentNavUrl() != login_uri.str())
+	{
+		LL_DEBUGS("AppInit") << "loading:    " << login_uri << LL_ENDL;
+		web_browser->navigateTo( login_uri.str(), "text/html" );
+	}
 }
 
 void LLPanelLogin::handleMediaEvent(LLPluginClassMedia* /*self*/, EMediaEvent event)
 {
-	if(event == MEDIA_EVENT_NAVIGATE_COMPLETE)
-	{
-		LLMediaCtrl* web_browser = sInstance->getChild<LLMediaCtrl>("login_html");
-		if (web_browser)
-		{
-			// *HACK HACK HACK HACK!
-			/* Stuff a Tab key into the browser now so that the first field will
-			** get the focus!  The embedded javascript on the page that properly
-			** sets the initial focus in a real web browser is not working inside
-			** the viewer, so this is an UGLY HACK WORKAROUND for now.
-			*/
-			// Commented out as it's not reliable
-			//web_browser->handleKey(KEY_TAB, MASK_NONE, false);
-		}
-	}
 }
 
 
@@ -1141,7 +1145,7 @@ bool LLPanelLogin::newAccountAlertCallback(const LLSD& notification, const LLSD&
 
 
 // static
-void LLPanelLogin::onClickNewAccount(void*)
+void LLPanelLogin::onClickNewAccount()
 {
 	const std::string &url = gHippoGridManager->getConnectedGrid()->getRegisterUrl();
 	if (!url.empty()) {
@@ -1191,7 +1195,7 @@ void LLPanelLogin::onClickVersion(void*)
 }
 
 //static
-void LLPanelLogin::onClickForgotPassword(void*)
+void LLPanelLogin::onClickForgotPassword()
 {
 	if (sInstance )
 	{
@@ -1205,7 +1209,7 @@ void LLPanelLogin::onClickForgotPassword(void*)
 }
 
 // static
-void LLPanelLogin::onPassKey(LLLineEditor* caller, void* user_data)
+void LLPanelLogin::onPassKey(LLLineEditor* caller)
 {
 	if (gKeyboard->getKeyDown(KEY_CAPSLOCK) && sCapslockDidNotification == FALSE)
 	{

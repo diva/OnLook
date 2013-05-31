@@ -78,7 +78,6 @@
 
 // newview includes
 #include "llagent.h"
-#include "llalertdialog.h"
 #include "llbox.h"
 #include "llchatbar.h"
 #include "llconsole.h"
@@ -1657,7 +1656,13 @@ LLViewerWindow::LLViewerWindow(
 								LLUICtrlFactory::getXUIPaths());
 	}
 	// Create container for all sub-views
-	mRootView = new LLRootView("root", mWindowRectScaled, FALSE);
+	LLView::Params rvp;
+	rvp.name("root");
+	rvp.rect(mWindowRectScaled);
+	rvp.mouse_opaque(false);
+	rvp.follows.flags(FOLLOWS_NONE);
+	mRootView = LLUICtrlFactory::create<LLRootView>(rvp);
+	LLUI::setRootView(mRootView);
 
 	// Make avatar head look forward at start
 	mCurrentMousePoint.mX = getWindowWidthScaled() / 2;
@@ -2370,15 +2375,17 @@ void LLViewerWindow::drawDebugText()
 {
 	gGL.color4f(1,1,1,1);
 	gGL.pushMatrix();
+	gGL.pushUIMatrix();
 	if (LLGLSLShader::sNoFixedFunction)
 	{
 		gUIProgram.bind();
 	}
 	{
 		// scale view by UI global scale factor and aspect ratio correction factor
-		gGL.scalef(mDisplayScale.mV[VX], mDisplayScale.mV[VY], 1.f);
+		gGL.scaleUI(mDisplayScale.mV[VX], mDisplayScale.mV[VY], 1.f);
 		mDebugText->draw();
 	}
+	gGL.popUIMatrix();
 	gGL.popMatrix();
 
 	gGL.flush();
@@ -2434,10 +2441,11 @@ void LLViewerWindow::draw()
 	}
 
 	gGL.pushMatrix();
+	LLUI::pushMatrix();
 	{
 		
 		// scale view by UI global scale factor and aspect ratio correction factor
-		gGL.scalef(mDisplayScale.mV[VX], mDisplayScale.mV[VY], 1.f);
+		gGL.scaleUI(mDisplayScale.mV[VX], mDisplayScale.mV[VY], 1.f);
 
 		LLVector2 old_scale_factor = LLUI::getScaleFactor();
 		// apply camera zoom transform (for high res screenshots)
@@ -2527,6 +2535,7 @@ void LLViewerWindow::draw()
 
 		LLUI::setScaleFactor(old_scale_factor);
 	}
+	LLUI::popMatrix();
 	gGL.popMatrix();
 
 	if (LLGLSLShader::sNoFixedFunction)
@@ -5346,9 +5355,9 @@ void LLViewerWindow::calcDisplayScale()
 	F32 ui_scale_factor = gSavedSettings.getF32("UIScaleFactor");
 	LLVector2 display_scale;
 	display_scale.setVec(llmax(1.f / mWindow->getPixelAspectRatio(), 1.f), llmax(mWindow->getPixelAspectRatio(), 1.f));
-	F32 height_normalization = gSavedSettings.getBOOL("UIAutoScale") ? ((F32)mWindowRectRaw.getHeight() / display_scale.mV[VY]) / 768.f : 1.f;
 	if(mWindow->getFullscreen())
 	{
+		F32 height_normalization = gSavedSettings.getBOOL("UIAutoScale") ? ((F32)mWindowRectRaw.getHeight() / display_scale.mV[VY]) / 768.f : 1.f;
 		display_scale *= (ui_scale_factor * height_normalization);
 	}
 	else
@@ -5380,7 +5389,8 @@ void LLViewerWindow::calcDisplayScale()
 
 S32 LLViewerWindow::getChatConsoleBottomPad()
 {
-	S32 offset = 0;
+	static const LLCachedControl<S32> user_offset("ConsoleBottomOffset");
+	S32 offset = user_offset;
 
 	if(gToolBar && gToolBar->getVisible())
 		offset += TOOL_BAR_HEIGHT;

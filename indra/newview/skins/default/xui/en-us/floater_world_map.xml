@@ -115,7 +115,7 @@
 	<icon bottom_delta="-25" color="0.5, 0, 0, 1" follows="top|right" height="16"
 	     image_name="map_track_16.tga" left="1013" mouse_opaque="true"
 	     name="location_icon" width="16" />
-	<line_editor bottom_delta="0" follows="top|right" height="20" label="Search by Region Name"
+	<search_editor bottom_delta="0" follows="top|right" height="20" label="Search by Region Name"
 	     left_delta="20" name="location" select_on_focus="true"
 	     tool_tip="Type the name of a region" width="140" />
 	<button bottom_delta="0" follows="top|right" font="SansSerif" halign="center"

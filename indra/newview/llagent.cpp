@@ -885,11 +885,6 @@ void LLAgent::setRegion(LLViewerRegion *regionp)
 //-----------------------------------------------------------------------------
 // getRegion()
 //-----------------------------------------------------------------------------
-LLViewerRegion *LLAgent::getRegion() const
-{
-	return mRegionp;
-}
-
 
 const LLHost& LLAgent::getRegionHost() const
 {

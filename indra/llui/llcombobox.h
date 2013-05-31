@@ -68,11 +68,13 @@ public:
 		const std::string& name, 
 		const LLRect &rect,
 		const std::string& label,
-		void (*commit_callback)(LLUICtrl*, void*) = NULL,
-		void *callback_userdata = NULL
+		commit_callback_t commit_callback = NULL
 		);
 	virtual ~LLComboBox(); 
+protected:
+void	prearrangeList(std::string filter = "");
 
+public:
 	// LLView interface
 
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
@@ -176,15 +178,16 @@ public:
 	
 	void*			getCurrentUserdata();
 
-	void			setPrearrangeCallback( void (*cb)(LLUICtrl*,void*) ) { mPrearrangeCallback = cb; }
-	void			setTextEntryCallback( void (*cb)(LLLineEditor*, void*) ) { mTextEntryCallback = cb; }
+	void			setPrearrangeCallback( commit_callback_t cb ) { mPrearrangeCallback = cb; }
+	void			setTextEntryCallback( commit_callback_t cb ) { mTextEntryCallback = cb; }
+
 
 	void			setButtonVisible(BOOL visible);
 
-	static void		onButtonDown(void *userdata);
-	static void		onItemSelected(LLUICtrl* item, void *userdata);
-	static void		onTextEntry(LLLineEditor* line_editor, void* user_data);
-	static void		onTextCommit(LLUICtrl* caller, void* user_data);
+	void			onButtonMouseDown();
+	void			onItemSelected();
+
+	void			onTextCommit(const LLSD& data);
 
 	void			setSuppressTentative(bool suppress);
 	void			setSuppressAutoComplete(bool suppress);
@@ -193,8 +196,11 @@ public:
 	virtual void	showList();
 	virtual void	hideList();
 
+	virtual void	onTextEntry(LLLineEditor* line_editor);
+	
 protected:
 	LLButton*			mButton;
+	LLLineEditor*		mTextEntry;
 	LLScrollListCtrl*	mList;
 	EPreferredPosition	mListPosition;
 	LLPointer<LLUIImage>	mArrowImage;
@@ -202,14 +208,13 @@ protected:
 	LLColor4				mListColor;
 
 private:
-	LLLineEditor*		mTextEntry;
 	BOOL				mAllowTextEntry;
 	S32					mMaxChars;
 	BOOL				mTextEntryTentative;
 	bool				mSuppressAutoComplete;
 	bool				mSuppressTentative;
-	void				(*mPrearrangeCallback)(LLUICtrl*,void*);
-	void				(*mTextEntryCallback)(LLLineEditor*, void*);
+	commit_callback_t	mPrearrangeCallback;
+	commit_callback_t	mTextEntryCallback;
 	boost::signals2::connection mTopLostSignalConnection;
 };
 
@@ -219,9 +224,7 @@ public:
 	LLFlyoutButton(
 		const std::string& name, 
 		const LLRect &rect,
-		const std::string& label,
-		void (*commit_callback)(LLUICtrl*, void*) = NULL,
-		void *callback_userdata = NULL);
+		const std::string& label);
 
 	virtual void	updateLayout();
 	virtual void	draw();
@@ -231,8 +234,8 @@ public:
 
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
 	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
-	static void		onActionButtonClick(void *userdata);
-	static void		onSelectAction(LLUICtrl* ctrl, void *userdata);
+	void		onActionButtonClick();
+	void		onSelectAction(LLUICtrl* ctrl);
 
 protected:
 	LLButton*				mActionButton;

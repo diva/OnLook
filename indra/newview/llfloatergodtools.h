@@ -135,8 +135,8 @@ public:
 
 	/*virtual*/ void refresh();
 
-	static void onSaveState(void* userdata);
-	static void onChangeSimName(LLLineEditor* caller, void* userdata);
+	static void onSaveState(void*);
+	void onChangeSimName();
 	
 	void onChangeAnything();
 	void onChangePrelude();

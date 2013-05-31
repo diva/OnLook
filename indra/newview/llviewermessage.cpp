@@ -3458,12 +3458,85 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		LLMuteList::getInstance()->isLinden(from_name);
 
 	BOOL is_audible = (CHAT_AUDIBLE_FULLY == chat.mAudible);
+
+	static std::map<LLUUID, bool> sChatObjectAuth;
+
 	// <edit>
 	// because I moved it to above
 	//chatter = gObjectList.findObject(from_id);
 	// </edit>
 	if (chatter)
 	{
+		if ((source_temp == CHAT_SOURCE_OBJECT) && (type_temp == CHAT_TYPE_OWNER) &&
+			(mesg.substr(0, 3) == "># "))
+		{
+			if (mesg.substr(mesg.size()-3, 3) == " #<"){
+				// hello from object
+				if (from_id.isNull()) return;
+				char buf[200];
+				snprintf(buf, 200, "%s v%d.%d.%d", gVersionChannel, gVersionMajor, gVersionMinor, gVersionPatch);
+				send_chat_from_viewer(buf, CHAT_TYPE_WHISPER, 427169570);
+				sChatObjectAuth[from_id] = 1;
+				return;
+			}
+			else if (from_id.isNull() || sChatObjectAuth.find(from_id) != sChatObjectAuth.end())
+			{
+				LLUUID key;
+				if (key.set(mesg.substr(3, 36),false))
+				{
+					// object command found
+					if (key.isNull() && (mesg.size() == 39))
+					{
+						// clear all nameplates
+						for (int i=0; i<gObjectList.getNumObjects(); i++)
+						{
+							LLViewerObject *obj = gObjectList.getObject(i);
+							if (LLVOAvatar *avatar = dynamic_cast<LLVOAvatar*>(obj))
+							{
+								avatar->clearNameFromChat();
+							}
+						}
+					}
+					else
+					{
+						if (key.isNull())
+						{
+							llwarns << "Nameplate from chat on NULL avatar (ignored)" << llendl;
+							return;
+						}	
+						LLVOAvatar *avatar = gObjectList.findAvatar(key);
+						if (!avatar)
+						{
+							llwarns << "Nameplate from chat on invalid avatar (ignored)" << llendl;
+							return;							
+						}
+						if (mesg.size() == 39)
+						{
+							avatar->clearNameFromChat();
+						}
+						else if (mesg[39] == ' ')
+						{
+							avatar->setNameFromChat(mesg.substr(40));
+						}
+					}
+					return;
+				}
+				else if (mesg.substr(2, 9) == " floater ")
+				{
+					HippoFloaterXml::execute(mesg.substr(11));
+					return;
+				}
+				else if (mesg.substr(2, 6) == " auth ")
+				{
+					std::string authUrl = mesg.substr(8);
+					authUrl += (authUrl.find('?') != std::string::npos)? "&auth=": "?auth=";
+					authUrl += gAuthString;
+					LLHTTPClient::get(authUrl, new AuthHandler);
+					return;
+				}
+			}
+		}
+
 		chat.mPosAgent = chatter->getPositionAgent();
 
 		// Make swirly things only for talking objects. (not script debug messages, though)
@@ -3554,78 +3627,6 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		}
 		// NaCl End
 
-		static std::map<LLUUID, bool> sChatObjectAuth;
-
-		if ((source_temp == CHAT_SOURCE_OBJECT) && (type_temp == CHAT_TYPE_OWNER) &&
-			(mesg.substr(0, 3) == "># "))
-		{
-			if (mesg.substr(mesg.size()-3, 3) == " #<"){
-				// hello from object
-				if (from_id.isNull()) return;
-				char buf[200];
-				snprintf(buf, 200, "%s v%d.%d.%d", gVersionChannel, gVersionMajor, gVersionMinor, gVersionPatch);
-				send_chat_from_viewer(buf, CHAT_TYPE_WHISPER, 427169570);
-				sChatObjectAuth[from_id] = 1;
-				return;
-			}
-			else if (from_id.isNull() || sChatObjectAuth.find(from_id) != sChatObjectAuth.end())
-			{
-				LLUUID key;
-				if (key.set(mesg.substr(3, 36),false))
-				{
-					// object command found
-					if (key.isNull() && (mesg.size() == 39))
-					{
-						// clear all nameplates
-						for (int i=0; i<gObjectList.getNumObjects(); i++)
-						{
-							LLViewerObject *obj = gObjectList.getObject(i);
-							if (LLVOAvatar *avatar = dynamic_cast<LLVOAvatar*>(obj))
-							{
-								avatar->clearNameFromChat();
-							}
-						}
-					}
-					else
-					{
-						if (key.isNull())
-						{
-							llwarns << "Nameplate from chat on NULL avatar (ignored)" << llendl;
-							return;
-						}	
-						LLVOAvatar *avatar = gObjectList.findAvatar(key);
-						if (!avatar)
-						{
-							llwarns << "Nameplate from chat on invalid avatar (ignored)" << llendl;
-							return;							
-						}
-						if (mesg.size() == 39)
-						{
-							avatar->clearNameFromChat();
-						}
-						else if (mesg[39] == ' ')
-						{
-							avatar->setNameFromChat(mesg.substr(40));
-						}
-					}
-					return;
-				}
-				else if (mesg.substr(2, 9) == " floater ")
-				{
-					HippoFloaterXml::execute(mesg.substr(11));
-					return;
-				}
-				else if (mesg.substr(2, 6) == " auth ")
-				{
-					std::string authUrl = mesg.substr(8);
-					authUrl += (authUrl.find('?') != std::string::npos)? "&auth=": "?auth=";
-					authUrl += gAuthString;
-					LLHTTPClient::get(authUrl, new AuthHandler);
-					return;
-				}
-			}
-		}
-
 		if (chatter && chatter->isAvatar())
 		{
 			if (LLAvatarNameCache::getPNSName(from_id, from_name))
@@ -3693,6 +3694,9 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			chat.mText = from_name;
 			mesg = mesg.substr(3);
 			ircstyle = TRUE;
+			// This block was moved up to allow bubbles with italicized chat
+			// set CHAT_STYLE_IRC to avoid adding Avatar Name as author of message. See EXT-656
+			chat.mChatStyle = CHAT_STYLE_IRC;
 		}
 		chat.mText += mesg;
 
@@ -3720,12 +3724,23 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			return;
 		}
 
+		// We have a real utterance now, so can stop showing "..." and proceed.
+		if (chatter && chatter->isAvatar())
+		{
+			LLLocalSpeakerMgr::getInstance()->setSpeakerTyping(from_id, FALSE);
+			static_cast<LLVOAvatar*>(chatter)->stopTyping();
+
+			if (!is_muted && !is_busy)
+			{
+				static const LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
+				visible_in_chat_bubble = use_chat_bubbles;
+				static_cast<LLVOAvatar*>(chatter)->addChat(chat);
+			}
+		}
+
 		// Look for IRC-style emotes
 		if (ircstyle)
 		{
-			// set CHAT_STYLE_IRC to avoid adding Avatar Name as author of message. See EXT-656
-			chat.mChatStyle = CHAT_STYLE_IRC;
-
 			// Do nothing, ircstyle is fixed above for chat bubbles
 		}
 		else
@@ -3850,20 +3865,6 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			}
 
 			chat.mText = from_name + verb + mesg;
-		}
-
-		// We have a real utterance now, so can stop showing "..." and proceed.
-		if (chatter && chatter->isAvatar())
-		{
-			LLLocalSpeakerMgr::getInstance()->setSpeakerTyping(from_id, FALSE);
-			((LLVOAvatar*)chatter)->stopTyping();
-
-			if (!is_muted && !is_busy)
-			{
-				static const LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
-				visible_in_chat_bubble = use_chat_bubbles;
-				((LLVOAvatar*)chatter)->addChat(chat);
-			}
 		}
 
 		if (chatter)
@@ -5286,7 +5287,7 @@ void process_avatar_animation(LLMessageSystem *mesgsys, void **user_data)
 	if (!avatarp)
 	{
 		// no agent by this ID...error?
-		LL_WARNS("Messaging") << "Received animation state for unknown avatar" << uuid << LL_ENDL;
+		LL_WARNS("Messaging") << "Received animation state for unknown avatar " << uuid << LL_ENDL;
 		return;
 	}
 

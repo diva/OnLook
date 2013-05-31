@@ -1,6 +1,6 @@
 /** 
- * @file llpaneldebug.h
- * @brief Debug preferences panel for preferences floater
+ * @file llstatview.h
+ * @brief Container for all statistics info.
  *
  * $LicenseInfo:firstyear=2001&license=viewergpl$
  * 
@@ -30,24 +30,41 @@
  * $/LicenseInfo$
  */
 
-#ifndef LL_LLPANELDEBUG_H
-#define LL_LLPANELDEBUG_H
+#ifndef LL_LLSTATVIEW_H
+#define LL_LLSTATVIEW_H
 
-#include "llpanel.h"
+#include "llstatbar.h"
+#include "llcontainerview.h"
+#include <vector>
 
-class LLCheckBoxCtrl;
+class LLStatBar;
 
-class LLPanelDebug : public LLPanel
+class LLStatView : public LLContainerView
 {
 public:
-	LLPanelDebug(const std::string& name, const LLRect& rect);
-	virtual ~LLPanelDebug();
-
-	void apply();	// Apply the changed values.
-	void cancel();	// Cancel the changed values.
+	struct Params : public LLInitParam::Block<Params, LLContainerView::Params>
+	{
+		Optional<std::string> setting;
+		Params() 
+		:	setting("setting")
+		{
+			changeDefault(follows.flags, FOLLOWS_TOP | FOLLOWS_LEFT);
+		}
+	};
+	~LLStatView();
 
 protected:
-	LLCheckBoxCtrl*	mLeftClickCheck;
-};
+	LLStatView(const Params&);
+	friend class LLUICtrlFactory;
+public:
 
-#endif // LL_LLPANELDEBUG_H
+	LLStatBar *addStat(const std::string& name, LLStat *statp,
+					   const std::string& setting = std::string(), BOOL default_bar = FALSE, BOOL default_history = FALSE);
+	LLStatView *addStatView(LLStatView::Params& p);
+protected:
+	typedef std::vector<LLStatBar *> sb_vector_t;
+	sb_vector_t mStatBars;
+	U32 mNumStatBars;
+	std::string mSetting;
+};
+#endif // LL_STATVIEW_H

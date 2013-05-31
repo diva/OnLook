@@ -2966,6 +2966,10 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="NotLoggedIn">Not logged in</string>
 
     <!-- Non-standard LLChat strings -->
+    <string name="ScriptCounting">Counting scripts, please wait...</string>
+    <string name="ScriptCountAvatar">Counted [SCRIPTS] scripts in [OBJECTS] attachments on [NAME].</string>
+    <string name="ScriptCountObject">Counted [SCRIPTS] scripts in [OBJECTS] objects.</string>
+    <string name="ScriptDeleteObject">Deleted [SCRIPTS] scripts in [OBJECTS] objects.</string>
     <string name="took_a_snapshot">took a snapshot</string>
 
   <!-- Avatar busy/away mode -->

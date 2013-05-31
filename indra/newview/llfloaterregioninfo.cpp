@@ -49,7 +49,6 @@
 #include "llradiogroup.h"
 
 #include "llagent.h"
-#include "llalertdialog.h"
 #include "llappviewer.h"
 #include "llavatarnamecache.h"
 #include "llfloateravatarpicker.h"

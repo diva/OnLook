@@ -251,7 +251,7 @@ LLAlertDialog::LLAlertDialog( LLNotificationPtr notification, bool modal)
 		LLButton* btn = new LLButton(
 			button_data.mName, button_rect,
 			"","", "", 
-			NULL, NULL,
+			NULL,
 			font,
 			button_data.mText, 
 			button_data.mText);
@@ -369,8 +369,7 @@ bool LLAlertDialog::setCheckBox( const std::string& check_title, const std::stri
 	check_rect.setOriginAndSize(msg_x, VPAD+BTN_HEIGHT+LINE_HEIGHT/2, 
 								max_msg_width, LINE_HEIGHT);
 
-	mCheck = new LLCheckboxCtrl(std::string("check"), check_rect, check_title, font);
-	mCheck->setCommitCallback(boost::bind(&LLAlertDialog::onClickIgnore, this, _1));
+	mCheck = new LLCheckboxCtrl(std::string("check"), check_rect, check_title, font, boost::bind(&LLAlertDialog::onClickIgnore, this, _1));
 	addChild(mCheck);
 
 	return true;

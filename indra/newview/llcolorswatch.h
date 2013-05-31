@@ -56,12 +56,7 @@ public:
 		COLOR_CANCEL
 	} EColorPickOp;
 
-	LLColorSwatchCtrl(const std::string& name, const LLRect& rect, const LLColor4& color,
-		void (*on_commit_callback)(LLUICtrl* ctrl, void* userdata),
-		void* callback_userdata);
-	LLColorSwatchCtrl(const std::string& name, const LLRect& rect, const std::string& label, const LLColor4& color,
-		void (*on_commit_callback)(LLUICtrl* ctrl, void* userdata),
-		void* callback_userdata);
+	LLColorSwatchCtrl(const std::string& name, const LLRect& rect, const std::string& label, const LLColor4& color);
 
 	~LLColorSwatchCtrl ();
 

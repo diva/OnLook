@@ -1005,6 +1005,8 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mCCSChatTextOverride(false)
 	// </edit>
 {
+	mAttachedObjectsVector.reserve(MAX_AGENT_ATTACHMENTS);
+
 	static LLCachedControl<bool> const freeze_time("FreezeTime", false);
 	mFreezeTimeLangolier = freeze_time;
 
@@ -1114,7 +1116,7 @@ LLVOAvatar::~LLVOAvatar()
 	lldebugs << "LLVOAvatar Destructor (0x" << this << ") id:" << mID << llendl;
 
 	std::for_each(mAttachmentPoints.begin(), mAttachmentPoints.end(), DeletePairedPointer());
-	mAttachmentPoints.clear();
+	//mAttachmentPoints.clear();
 	
 	mDead = TRUE;
 	
@@ -1644,7 +1646,7 @@ void LLVOAvatar::getSpatialExtents(LLVector4a& newMin, LLVector4a& newMax)
 	mPixelArea = LLPipeline::calcPixelArea(center, size, *LLViewerCamera::getInstance());
 
 	//stretch bounding box by attachments
-	for (attachment_map_t::iterator iter = mAttachmentPoints.begin();
+	/*for (attachment_map_t::iterator iter = mAttachmentPoints.begin();
 		iter != mAttachmentPoints.end();
 		++iter)
 	{
@@ -1659,7 +1661,13 @@ void LLVOAvatar::getSpatialExtents(LLVector4a& newMin, LLVector4a& newMax)
 			 attachment_iter != attachment->mAttachedObjects.end();
 			 ++attachment_iter)
 		{
-			const LLViewerObject* attached_object = (*attachment_iter);
+			const LLViewerObject* attached_object = (*attachment_iter);*/
+	std::vector<std::pair<LLViewerObject*,LLViewerJointAttachment*> >::iterator attachment_iter = mAttachedObjectsVector.begin();
+	for(;attachment_iter!=mAttachedObjectsVector.end();++attachment_iter)
+	{
+		if(attachment_iter->second->getValid())
+		{
+			const LLViewerObject* attached_object = attachment_iter->first;
 			if (attached_object && !attached_object->isHUDAttachment())
 			{
 				LLDrawable* drawable = attached_object->mDrawable;
@@ -2486,7 +2494,7 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 	if (detailed_update || !sUseImpostors)
 	{
 		LLFastTimer t(FTM_ATTACHMENT_UPDATE);
-		for (attachment_map_t::iterator iter = mAttachmentPoints.begin(); 
+		/*for (attachment_map_t::iterator iter = mAttachmentPoints.begin(); 
 			 iter != mAttachmentPoints.end();
 			 ++iter)
 		{
@@ -2496,7 +2504,12 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 				 attachment_iter != attachment->mAttachedObjects.end();
 				 ++attachment_iter)
 			{
-				LLViewerObject* attached_object = (*attachment_iter);
+				LLViewerObject* attached_object = (*attachment_iter);*/
+		std::vector<std::pair<LLViewerObject*,LLViewerJointAttachment*> >::iterator attachment_iter = mAttachedObjectsVector.begin();
+		for(;attachment_iter!=mAttachedObjectsVector.end();++attachment_iter)
+		{{
+				LLViewerJointAttachment* attachment = attachment_iter->second;
+				LLViewerObject* attached_object = attachment_iter->first;
 				BOOL visibleAttachment = visible || (attached_object && 
 													!(attached_object->mDrawable->getSpatialBridge() &&
 													  attached_object->mDrawable->getSpatialBridge()->getRadius() < 2.0));
@@ -2964,7 +2977,7 @@ void LLVOAvatar::idleCCSUpdateAttachmentText(bool render_name)
 		if(!mCCSUpdateAttachmentTimer.checkExpirationAndReset(SECS_BETWEEN_UPDATES))
 			return;
 
-		for (attachment_map_t::iterator it=mAttachmentPoints.begin(); it!=mAttachmentPoints.end(); ++it)
+		/*for (attachment_map_t::iterator it=mAttachmentPoints.begin(); it!=mAttachmentPoints.end(); ++it)
 		{
 			// get attached object
 			LLViewerJointAttachment *joint = it->second;
@@ -2973,8 +2986,14 @@ void LLVOAvatar::idleCCSUpdateAttachmentText(bool render_name)
 			for(std::vector<LLViewerObject *>::const_iterator parent_it = joint->mAttachedObjects.begin();
 				parent_it != joint->mAttachedObjects.end(); ++parent_it) 
 			{
-				LLViewerObject* pObject = (*parent_it);
-				const LLTextureEntry *te = pObject ? pObject->getTE(0) : NULL;
+				LLViewerObject* pObject = (*parent_it);*/
+		std::vector<std::pair<LLViewerObject*,LLViewerJointAttachment*> >::iterator parent_it = mAttachedObjectsVector.begin();
+		for(;parent_it!=mAttachedObjectsVector.end();++parent_it)
+		{{
+				LLViewerObject* pObject = parent_it->first;
+				if(!pObject)
+					continue;
+				const LLTextureEntry *te = pObject->getTE(0);
 				if(!te)	continue;
 				const LLColor4 &col = te->getColor();
 				if(	(fabs(col[0] - 0.012f) < 0.001f) &&
@@ -3318,6 +3337,13 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 		{
 			F32 chat_fade_amt = llclamp((F32)((LLFrameTimer::getElapsedSeconds() - chat_iter->mTime) / CHAT_FADE_TIME), 0.f, 4.f);
 			LLFontGL::StyleFlags style;
+
+			// Singu Note: The following tweak may be a bad idea, though they've asked for actions to be italicized, the chat type for actions becomes irrelevant
+			// If LLFontGL::StyleFlags wasn't the parameter type, font styles could be combined and underline could be used, but that may be unnatural...
+			static const LLCachedControl<bool> italicize("LiruItalicizeActions");
+			if (italicize && chat_iter->mChatStyle == CHAT_STYLE_IRC)
+				style = LLFontGL::ITALIC;
+			else
 			switch(chat_iter->mChatType)
 			{
 			case CHAT_TYPE_WHISPER:
@@ -6192,6 +6218,8 @@ const LLViewerJointAttachment *LLVOAvatar::attachObject(LLViewerObject *viewer_o
 		LLSelectMgr::getInstance()->updatePointAt();
 	}
 
+	mAttachedObjectsVector.push_back(std::make_pair(viewer_object,attachment));
+
 	return attachment;
 }
 
@@ -6346,6 +6374,13 @@ BOOL LLVOAvatar::detachObject(LLViewerObject *viewer_object)
 		{
 			cleanupAttachedMesh( viewer_object );
 			attachment->removeObject(viewer_object);
+			std::vector<std::pair<LLViewerObject*,LLViewerJointAttachment*> >::iterator it = std::find(mAttachedObjectsVector.begin(),mAttachedObjectsVector.end(),std::make_pair(viewer_object,attachment));
+			if(it != mAttachedObjectsVector.end())
+			{
+				(*it) = mAttachedObjectsVector.back();
+				mAttachedObjectsVector.pop_back();
+			}
+
 			lldebugs << "Detaching object " << viewer_object->mID << " from " << attachment->getName() << llendl;
 			return TRUE;
 		}
@@ -8652,7 +8687,7 @@ void LLVOAvatar::idleUpdateRenderCost()
 
 		std::set<LLUUID> textures;
 
-		attachment_map_t::const_iterator iter;
+		/*attachment_map_t::const_iterator iter;
 		for (iter = mAttachmentPoints.begin();
 				iter != mAttachmentPoints.end();
 				++iter)
@@ -8662,7 +8697,11 @@ void LLVOAvatar::idleUpdateRenderCost()
 					attachment_iter != attachment->mAttachedObjects.end();
 					++attachment_iter)
 			{
-				const LLViewerObject* object = (*attachment_iter);
+				const LLViewerObject* object = (*attachment_iter);*/
+		std::vector<std::pair<LLViewerObject*,LLViewerJointAttachment*> >::iterator attachment_iter = mAttachedObjectsVector.begin();
+		for(;attachment_iter!=mAttachedObjectsVector.end();++attachment_iter)
+		{{
+				const LLViewerObject* object = attachment_iter->first;
 				if (object && !object->isHUDAttachment())
 				{
 					LLDrawable* drawable = object->mDrawable;
@@ -8714,7 +8753,7 @@ void LLVOAvatar::idleUpdateRenderCost()
 		}
 
 
-		for (attachment_map_t::const_iterator iter = mAttachmentPoints.begin();
+		/*for (attachment_map_t::const_iterator iter = mAttachmentPoints.begin();
 				iter != mAttachmentPoints.end();
 				++iter)
 		{
@@ -8723,7 +8762,11 @@ void LLVOAvatar::idleUpdateRenderCost()
 					attachment_iter != attachment->mAttachedObjects.end();
 					++attachment_iter)
 			{
-				const LLViewerObject* attached_object = (*attachment_iter);
+				const LLViewerObject* attached_object = (*attachment_iter);*/
+		std::vector<std::pair<LLViewerObject*,LLViewerJointAttachment*> >::iterator attachment_iter = mAttachedObjectsVector.begin();
+		for(;attachment_iter!=mAttachedObjectsVector.end();++attachment_iter)
+		{{
+				const LLViewerObject* attached_object = attachment_iter->first;
 				if (attached_object && !attached_object->isHUDAttachment())
 				{
 					textures.clear();

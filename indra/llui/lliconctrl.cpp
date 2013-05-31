@@ -49,7 +49,7 @@ LLIconCtrl::LLIconCtrl(const std::string& name, const LLRect &rect, const LLUUID
 :	LLUICtrl(name, 
 			 rect, 
 			 FALSE, // mouse opaque
-			 NULL, NULL, 
+			 NULL, 
 			 FOLLOWS_LEFT | FOLLOWS_TOP),
 	mColor( LLColor4::white )
 {
@@ -61,7 +61,7 @@ LLIconCtrl::LLIconCtrl(const std::string& name, const LLRect &rect, const std::s
 :	LLUICtrl(name, 
 			 rect, 
 			 FALSE, // mouse opaque
-			 NULL, NULL, 
+			 NULL,
 			 FOLLOWS_LEFT | FOLLOWS_TOP),
 	mColor( LLColor4::white ),
 	mImageName(image_name)

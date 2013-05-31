@@ -54,7 +54,7 @@ class LLJoint;
 class LLLineEditor;
 class LLMakeOutfitDialog;
 class LLRadioGroup;
-class LLScrollableContainerView;
+class LLScrollContainer;
 class LLScrollingPanelList;
 class LLTabContainer;
 class LLTextBox;
@@ -142,7 +142,7 @@ private:
 	LLWearableType::EType			mCurrentWearableType;
 
 	LLScrollingPanelList*			mScrollingPanelList;
-	LLScrollableContainerView*		mScrollContainer;
+	LLScrollContainer*		mScrollContainer;
 	LLPointer<LLVisualParamReset>	mResetParams;
 
 	LLInventoryObserver*			mInventoryObserver;

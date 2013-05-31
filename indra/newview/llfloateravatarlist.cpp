@@ -315,7 +315,7 @@ const LLAvatarListEntry::ACTIVITY_TYPE LLAvatarListEntry::getActivity()
 
 LLFloaterAvatarList::LLFloaterAvatarList() :  LLFloater(std::string("radar")), 
 	mTracking(false),
-	mUpdate(true),
+	mUpdate("RadarUpdateEnabled"),
 	mDirtyAvatarSorting(false),
 	mUpdateRate(gSavedSettings.getU32("RadarUpdateRate") * 3 + 3),
 	mAvatarList(NULL)
@@ -415,12 +415,12 @@ BOOL LLFloaterAvatarList::postBuild()
 	getChild<LLRadioGroup>("update_rate")->setSelectedIndex(gSavedSettings.getU32("RadarUpdateRate"));
 	getChild<LLRadioGroup>("update_rate")->setCommitCallback(boost::bind(&LLFloaterAvatarList::onCommitUpdateRate, this));
 
-	getChild<LLCheckboxCtrl>("hide_mark")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
-	getChild<LLCheckboxCtrl>("hide_pos")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
-	getChild<LLCheckboxCtrl>("hide_alt")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
-	getChild<LLCheckboxCtrl>("hide_act")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
-	getChild<LLCheckboxCtrl>("hide_age")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
-	getChild<LLCheckboxCtrl>("hide_time")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	gSavedSettings.getControl("RadarColumnMarkHidden")->getSignal()->connect(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	gSavedSettings.getControl("RadarColumnPositionHidden")->getSignal()->connect(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	gSavedSettings.getControl("RadarColumnAltitudeHidden")->getSignal()->connect(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	gSavedSettings.getControl("RadarColumnActivityHidden")->getSignal()->connect(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	gSavedSettings.getControl("RadarColumnAgeHidden")->getSignal()->connect(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	gSavedSettings.getControl("RadarColumnTimeHidden")->getSignal()->connect(boost::bind(&LLFloaterAvatarList::assessColumns, this));
 
 	// Get a pointer to the scroll list from the interface
 	mAvatarList = getChild<LLScrollListCtrl>("avatar_list");
@@ -438,7 +438,7 @@ BOOL LLFloaterAvatarList::postBuild()
 	if(gHippoGridManager->getConnectedGrid()->isSecondLife())
 		childSetVisible("hide_client", false);
 	else
-		getChild<LLCheckboxCtrl>("hide_client")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+		gSavedSettings.getControl("RadarColumnClientHidden")->getSignal()->connect(boost::bind(&LLFloaterAvatarList::assessColumns, this));
 
 	return TRUE;
 }
@@ -529,16 +529,10 @@ void LLFloaterAvatarList::updateAvatarList()
 	//llinfos << "radar refresh: updating map" << llendl;
 
 	// Check whether updates are enabled
-	LLCheckboxCtrl* check = getChild<LLCheckboxCtrl>("update_enabled_cb");
-	if (check && !check->getValue())
+	if (!mUpdate)
 	{
-		mUpdate = FALSE;
 		refreshTracker();
 		return;
-	}
-	else
-	{
-		mUpdate = TRUE;
 	}
 	//moved to pipeline to prevent a crash
 	//gPipeline.forAllVisibleDrawables(updateParticleActivity);
@@ -1248,19 +1242,18 @@ LLAvatarListEntry * LLFloaterAvatarList::getAvatarEntry(LLUUID avatar)
 
 BOOL LLFloaterAvatarList::handleKeyHere(KEY key, MASK mask)
 {
-	LLFloaterAvatarList* self = getInstance();
-	LLScrollListItem* item = self->mAvatarList->getFirstSelected();
+	LLScrollListItem* item = mAvatarList->getFirstSelected();
 	if(item)
 	{
 		LLUUID agent_id = item->getUUID();
 		if (( KEY_RETURN == key ) && (MASK_NONE == mask))
 		{
-			self->setFocusAvatar(agent_id);
+			setFocusAvatar(agent_id);
 			return TRUE;
 		}
 		else if (( KEY_RETURN == key ) && (MASK_CONTROL == mask))
 		{
-			LLAvatarListEntry* entry = self->getAvatarEntry(agent_id);
+			const LLAvatarListEntry* entry = getAvatarEntry(agent_id);
 			if (entry)
 			{
 //				llinfos << "Trying to teleport to " << entry->getName() << " at " << entry->getPosition() << llendl;
@@ -1272,7 +1265,7 @@ BOOL LLFloaterAvatarList::handleKeyHere(KEY key, MASK mask)
 
 	if (( KEY_RETURN == key ) && (MASK_SHIFT == mask))
 	{
-		uuid_vec_t ids = self->mAvatarList->getSelectedIDs();
+		uuid_vec_t ids = mAvatarList->getSelectedIDs();
 		if (ids.size() > 0)
 		{
 			if (ids.size() == 1)
@@ -1414,11 +1407,11 @@ void LLFloaterAvatarList::sendKeys()
 	std::ostringstream ids;
 	int num_ids = 0;
 
-	for (int i = 0; i < regionp->mMapAvatarIDs.count(); i++)
+	for (int i = 0; i < regionp->mMapAvatarIDs.count(); ++i)
 	{
 		const LLUUID &id = regionp->mMapAvatarIDs.get(i);
 
-		ids << "," << id.asString();
+		ids << "," << id;
 		++num_ids;
 
 

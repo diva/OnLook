@@ -40,7 +40,7 @@ static LLRegisterWidget<LLTextBox> r("text");
 
 LLTextBox::LLTextBox(const std::string& name, const LLRect& rect, const std::string& text,
 					 const LLFontGL* font, BOOL mouse_opaque)
-:	LLUICtrl(name, rect, mouse_opaque, NULL, NULL, FOLLOWS_LEFT | FOLLOWS_TOP ),
+:	LLUICtrl(name, rect, mouse_opaque, NULL, FOLLOWS_LEFT | FOLLOWS_TOP ),
 	mFontGL(font ? font : LLFontGL::getFontSansSerifSmall())
 {
 	initDefaults();
@@ -50,7 +50,7 @@ LLTextBox::LLTextBox(const std::string& name, const LLRect& rect, const std::str
 
 LLTextBox::LLTextBox(const std::string& name, const std::string& text, F32 max_width,
 					 const LLFontGL* font, BOOL mouse_opaque) :
-	LLUICtrl(name, LLRect(0, 0, 1, 1), mouse_opaque, NULL, NULL, FOLLOWS_LEFT | FOLLOWS_TOP),	
+	LLUICtrl(name, LLRect(0, 0, 1, 1), mouse_opaque, NULL, FOLLOWS_LEFT | FOLLOWS_TOP),	
 	mFontGL(font ? font : LLFontGL::getFontSansSerifSmall())
 {
 	initDefaults();
@@ -60,7 +60,7 @@ LLTextBox::LLTextBox(const std::string& name, const std::string& text, F32 max_w
 }
 
 LLTextBox::LLTextBox(const std::string& name_and_label, const LLRect& rect) :
-	LLUICtrl(name_and_label, rect, TRUE, NULL, NULL, FOLLOWS_LEFT | FOLLOWS_TOP),	
+	LLUICtrl(name_and_label, rect, TRUE, NULL, FOLLOWS_LEFT | FOLLOWS_TOP),	
 	mFontGL(LLFontGL::getFontSansSerifSmall())
 {
 	initDefaults();
@@ -89,7 +89,6 @@ void LLTextBox::initDefaults()
 	mHAlign = LLFontGL::LEFT;
 	mVAlign = LLFontGL::TOP;
 	mClickedCallback = NULL;
-	mCallbackUserData = NULL;
 }
 
 BOOL LLTextBox::handleMouseDown(S32 x, S32 y, MASK mask)
@@ -140,7 +139,7 @@ BOOL LLTextBox::handleMouseUp(S32 x, S32 y, MASK mask)
 		// If mouseup in the widget, it's been clicked
 		if (mClickedCallback)
 		{
-			(*mClickedCallback)( mCallbackUserData );
+			mClickedCallback();
 		}
 	}
 
@@ -298,8 +297,7 @@ void LLTextBox::draw()
 
 	if (mBackgroundVisible)
 	{
-		LLRect r( 0, getRect().getHeight(), getRect().getWidth(), 0 );
-		gl_rect_2d( r, mBackgroundColor );
+		gl_rect_2d( getLocalRect(), mBackgroundColor );
 	}
 
 	S32 text_x = 0;

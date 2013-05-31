@@ -59,6 +59,7 @@
 #include "llnotificationsutil.h"
 #include "llregionhandle.h"
 #include "llscrolllistctrl.h"
+#include "llsearcheditor.h"
 #include "lltextbox.h"
 #include "lltracker.h"
 #include "lltrans.h"
@@ -208,23 +209,22 @@ BOOL LLFloaterWorldMap::postBuild()
 
 	LLComboBox *avatar_combo = getChild<LLComboBox>("friend combo");
 	avatar_combo->selectFirstItem();
-	avatar_combo->setPrearrangeCallback( onAvatarComboPrearrange );
-	avatar_combo->setTextEntryCallback( onComboTextEntry  );
+	avatar_combo->setPrearrangeCallback( boost::bind(&LLFloaterWorldMap::onAvatarComboPrearrange,this) );
+	avatar_combo->setTextEntryCallback( boost::bind(&LLFloaterWorldMap::onComboTextEntry,this) );
 	mListFriendCombo = dynamic_cast<LLCtrlListInterface *>(avatar_combo);
 	
-	LLLineEditor *location_editor = getChild<LLLineEditor>("location");
+	LLSearchEditor *location_editor = getChild<LLSearchEditor>("location");
 	location_editor->setFocusChangedCallback(boost::bind(&LLFloaterWorldMap::onLocationFocusChanged, this, _1));
-	location_editor->setKeystrokeCallback( onSearchTextEntry );
+	location_editor->setKeystrokeCallback( boost::bind(&LLFloaterWorldMap::onSearchTextEntry, this));
 	
 	LLScrollListCtrl* search_results = getChild<LLScrollListCtrl>("search_results");
 	search_results->setDoubleClickCallback(boost::bind(&LLFloaterWorldMap::onClickTeleportBtn,this));
 	mListSearchResults = dynamic_cast<LLCtrlListInterface *>(search_results);
 
 	LLComboBox *landmark_combo = getChild<LLComboBox>( "landmark combo");
-
 	landmark_combo->selectFirstItem();
-	landmark_combo->setPrearrangeCallback( onLandmarkComboPrearrange );
-	landmark_combo->setTextEntryCallback( onComboTextEntry );
+	landmark_combo->setPrearrangeCallback( boost::bind(&LLFloaterWorldMap::onLandmarkComboPrearrange, this) );
+	landmark_combo->setTextEntryCallback( boost::bind(&LLFloaterWorldMap::onComboTextEntry, this) );
 	mListLandmarkCombo = dynamic_cast<LLCtrlListInterface *>(landmark_combo);
 	
 	avatar_combo->setCommitCallback( boost::bind(&LLFloaterWorldMap::onAvatarComboCommit,this) );
@@ -1078,22 +1078,20 @@ void LLFloaterWorldMap::onGoHome()
 }
 
 
-// static 
-void LLFloaterWorldMap::onLandmarkComboPrearrange( LLUICtrl* ctrl, void* userdata )
+void LLFloaterWorldMap::onLandmarkComboPrearrange( )
 {
-	LLFloaterWorldMap* self = gFloaterWorldMap;
-	if( !self || self->mIsClosing )
+	if( mIsClosing )
 	{
 		return;
 	}
-
-	LLCtrlListInterface *list = self->childGetListInterface("landmark combo");
+	
+	LLCtrlListInterface *list = mListLandmarkCombo;
 	if (!list) return;
-
+	
 	LLUUID current_choice = list->getCurrentID();
-
-	gFloaterWorldMap->buildLandmarkIDLists();
-
+	
+	buildLandmarkIDLists();
+	
 	if( current_choice.isNull() || !list->setCurrentByID( current_choice ) )
 	{
 		LLTracker::stopTracking(false);
@@ -1101,7 +1099,7 @@ void LLFloaterWorldMap::onLandmarkComboPrearrange( LLUICtrl* ctrl, void* userdat
 
 }
 
-void LLFloaterWorldMap::onComboTextEntry( LLLineEditor* ctrl, void* userdata )
+void LLFloaterWorldMap::onComboTextEntry()
 {
 	// Reset the tracking whenever we start typing into any of the search fields,
 	// so that hitting <enter> does an auto-complete versus teleporting us to the
@@ -1109,11 +1107,10 @@ void LLFloaterWorldMap::onComboTextEntry( LLLineEditor* ctrl, void* userdata )
 	LLTracker::stopTracking(false);
 }
 
-// static
-void LLFloaterWorldMap::onSearchTextEntry( LLLineEditor* ctrl, void* userdata )
+void LLFloaterWorldMap::onSearchTextEntry( )
 {
-	onComboTextEntry(ctrl, userdata);
-	gFloaterWorldMap->updateSearchEnabled();
+	onComboTextEntry();
+	updateSearchEnabled();
 }
 
 // static 
@@ -1164,26 +1161,25 @@ void LLFloaterWorldMap::onLandmarkComboCommit()
 }
 
 // static 
-void LLFloaterWorldMap::onAvatarComboPrearrange( LLUICtrl* ctrl, void* userdata )
+void LLFloaterWorldMap::onAvatarComboPrearrange( )
 {
-	LLFloaterWorldMap* self = gFloaterWorldMap;
-	if( !self || self->mIsClosing )
+	if( mIsClosing )
 	{
 		return;
 	}
-
-	LLCtrlListInterface *list = self->childGetListInterface("friend combo");
+	
+	LLCtrlListInterface *list = mListFriendCombo;
 	if (!list) return;
-
+	
 	LLUUID current_choice;
-
+	
 	if( LLAvatarTracker::instance().haveTrackingInfo() )
 	{
 		current_choice = LLAvatarTracker::instance().getAvatarID();
 	}
-
-	self->buildAvatarIDList();
-
+	
+	buildAvatarIDList();
+	
 	if( !list->setCurrentByID( current_choice ) || current_choice.isNull() )
 	{
 		LLTracker::stopTracking(false);

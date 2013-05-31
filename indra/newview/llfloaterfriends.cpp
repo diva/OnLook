@@ -49,6 +49,7 @@
 #include "llfloateravatarpicker.h"
 #include "llviewerwindow.h"
 #include "llbutton.h"
+#include "llfiltereditor.h"
 #include "llfloateravatarinfo.h"
 #include "llinventorymodel.h"
 #include "llnamelistctrl.h"
@@ -353,14 +354,9 @@ void LLPanelFriends::filterContacts(const std::string& search_name)
 	mLastContactSearch = search_name;
 }
 
-//static
-void LLPanelFriends::onContactSearchEdit(const std::string& search_string, void* user_data)
+void LLPanelFriends::onContactFilterEdit(const std::string& search_string)
 {
-	LLPanelFriends* panelp = (LLPanelFriends*)user_data;
-	if (panelp)
-	{
-		panelp->filterContacts(search_string);
-	}
+	filterContacts(search_string);
 }
 
 /*void LLPanelFriends::onChangeContactGroup(LLUICtrl* ctrl, void* user_data)
@@ -387,10 +383,10 @@ BOOL LLPanelFriends::postBuild()
 	// <dogmode>
 	// Contact search and group system.
 	// 09/05/2010 - Charley Levenque
-	LLSearchEditor* contact = getChild<LLSearchEditor>("buddy_search_lineedit");
+	LLFilterEditor* contact = getChild<LLFilterEditor>("buddy_search_lineedit");
 	if (contact)
 	{
-		contact->setSearchCallback(&onContactSearchEdit, this);
+		contact->setCommitCallback(boost::bind(&LLPanelFriends::onContactFilterEdit, this, _2));
 	}
 
 	getChild<LLTextBox>("s_num")->setValue("0");
@@ -847,6 +843,14 @@ void LLPanelFriends::updateColumns(void* user_data)
 	}
 }
 
+static void on_avatar_name_cache_start_im(const LLUUID& agent_id, const LLAvatarName& av_name)
+{
+	static LLCachedControl<bool> tear_off("OtherChatsTornOff");
+	if (!tear_off) gIMMgr->setFloaterOpen(true);
+	gIMMgr->addSession(LLCacheName::cleanFullName(av_name.getLegacyName()), IM_NOTHING_SPECIAL, agent_id);
+	make_ui_sound("UISndStartIM");
+}
+
 void LLPanelFriends::onClickIM(void* user_data)
 {
 	LLPanelFriends* panelp = (LLPanelFriends*)user_data;
@@ -855,23 +859,17 @@ void LLPanelFriends::onClickIM(void* user_data)
 	const uuid_vec_t ids = panelp->mFriendsList->getSelectedIDs();
 	if(!ids.empty())
 	{
-		static LLCachedControl<bool> tear_off("OtherChatsTornOff");
-		if(!tear_off) gIMMgr->setFloaterOpen(TRUE);
 		if(ids.size() == 1)
 		{
-			LLUUID agent_id = ids[0];
-			const LLRelationship* info = LLAvatarTracker::instance().getBuddyInfo(agent_id);
-			std::string fullname;
-			if(info && gCacheName->getFullName(agent_id, fullname))
-			{
-				gIMMgr->addSession(fullname, IM_NOTHING_SPECIAL, agent_id);
-			}
+			LLAvatarNameCache::get(ids[0], boost::bind(&on_avatar_name_cache_start_im, _1, _2));
 		}
 		else
 		{
+			static LLCachedControl<bool> tear_off("OtherChatsTornOff");
+			if (!tear_off) gIMMgr->setFloaterOpen(true);
 			gIMMgr->addSession("Friends Conference", IM_SESSION_CONFERENCE_START, ids[0], ids);
+			make_ui_sound("UISndStartIM");
 		}
-		make_ui_sound("UISndStartIM");
 	}
 }
 

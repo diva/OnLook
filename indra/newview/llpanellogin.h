@@ -103,15 +103,16 @@ public:
 	/*virtual*/ void handleMediaEvent(LLPluginClassMedia* self, EMediaEvent event);
 
 private:
+	void reshapeBrowser();
 	static void onClickConnect(void*);
-	static void onClickNewAccount(void*);
+	static void onClickNewAccount();
 	static bool newAccountAlertCallback(const LLSD& notification, const LLSD& response);
 	static void onClickGrids(void*);
 	static void onSelectGrid(LLUICtrl *ctrl, void*);
 	static void onClickQuit(void*);
 	static void onClickVersion(void*);
-	static void onClickForgotPassword(void*);
-	static void onPassKey(LLLineEditor* caller, void* user_data);
+	static void onClickForgotPassword();
+	static void onPassKey(LLLineEditor* caller);
 	//static void onSelectServer(LLUICtrl*, void*);
 	//static void onServerComboLostFocus(LLFocusableElement*, void*);
 	static void onSelectLoginEntry(LLUICtrl*, void*);

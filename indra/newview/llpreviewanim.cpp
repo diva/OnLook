@@ -97,7 +97,7 @@ BOOL LLPreviewAnim::postBuild()
 	childSetAction("Anim audition btn",auditionAnim,this);
 
 	childSetCommitCallback("desc", LLPreview::onText, this);
-	childSetPrevalidate("desc", &LLLineEditor::prevalidatePrintableNotPipe);
+	getChild<LLLineEditor>("desc")->setPrevalidate(&LLLineEditor::prevalidatePrintableNotPipe);
 	
 	return LLPreview::postBuild();
 }

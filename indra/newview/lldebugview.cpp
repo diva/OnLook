@@ -44,6 +44,7 @@
 #include "llvelocitybar.h"
 #include "llviewerwindow.h"
 #include "llfloaterstats.h"
+#include "lluictrlfactory.h"
 
 //
 // Globals
@@ -84,29 +85,30 @@ LLDebugView::LLDebugView(const std::string& name, const LLRect &rect)
 	addChild(mFastTimerView);
 
 	r.set(150, rect.getHeight() - 50, 870, 100);
-	gTextureView = new LLTextureView("gTextureView", r);
-	gTextureView->setRect(r);
-	gTextureView->setFollowsBottom();
-	gTextureView->setFollowsLeft();
+	LLTextureView::Params tvp;
+	tvp.name("gTextureView");
+	tvp.rect(r);
+	tvp.visible(false);
+	gTextureView = LLUICtrlFactory::create<LLTextureView>(tvp);
 	addChild(gTextureView);
 	//gTextureView->reshape(r.getWidth(), r.getHeight(), TRUE);
 
 	if(gAuditTexture)
 	{
 		r.set(150, rect.getHeight() - 50, 900 + LLImageGL::sTextureLoadedCounter.size() * 30, 100);
-		gTextureSizeView = new LLTextureSizeView("gTextureSizeView");
-		gTextureSizeView->setRect(r);
-		gTextureSizeView->setFollowsBottom();
-		gTextureSizeView->setFollowsLeft();
-		gTextureSizeView->setType(LLTextureSizeView::TEXTURE_MEM_OVER_SIZE) ;
+		LLTextureSizeView::Params tsvp;
+		tsvp.name = "gTextureSizeView";
+		tsvp.rect = r;
+		tsvp.type = LLTextureSizeView::TEXTURE_MEM_OVER_SIZE;
+		gTextureSizeView = LLUICtrlFactory::create<LLTextureSizeView>(tsvp);
 		addChild(gTextureSizeView);
 
 		r.set(150, rect.getHeight() - 50, 900 + LLImageGL::sTextureMemByCategory.size() * 30, 100);
-		gTextureCategoryView = new LLTextureSizeView("gTextureCategoryView");
-		gTextureCategoryView->setRect(r);
-		gTextureCategoryView->setFollowsBottom();
-		gTextureCategoryView->setFollowsLeft();
-		gTextureCategoryView->setType(LLTextureSizeView::TEXTURE_MEM_OVER_CATEGORY);
+		LLTextureSizeView::Params tscp;
+		tscp.name = "gTextureCategoryView";
+		tscp.rect = r;
+		tscp.type = LLTextureSizeView::TEXTURE_MEM_OVER_CATEGORY;
+		gTextureSizeView = LLUICtrlFactory::create<LLTextureSizeView>(tscp);
 		addChild(gTextureCategoryView);
 	}
 

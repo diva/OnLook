@@ -37,13 +37,11 @@
 #pragma warning (disable : 4263)
 #pragma warning (disable : 4264)
 #endif
-#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #include "dae.h"
 #include "dae/daeErrorHandler.h"
 #include "dom/domConstants.h"
 #include "dom/domMesh.h"
-#pragma GCC diagnostic pop
 #if LL_MSVC
 #pragma warning (pop)
 #endif

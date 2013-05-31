@@ -30,7 +30,8 @@
  * $/LicenseInfo$
  */
 
-#include "llviewerprecompiledheaders.h"
+//#include "llviewerprecompiledheaders.h"
+#include "linden_common.h"
 
 #include "llstatgraph.h"
 #include "llrender.h"
@@ -40,7 +41,7 @@
 #include "llstat.h"
 #include "llgl.h"
 #include "llglheaders.h"
-#include "llviewercontrol.h"
+//#include "llviewercontrol.h"
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -109,7 +110,7 @@ void LLStatGraph::draw()
 	//				gColors.getColor("ColorDropShadow"), 
 	//				(S32) gSavedSettings.getF32("DropShadowFloater") );
 
-	static const LLCachedControl<LLColor4> menu_default_color(gColors,"MenuDefaultBgColor",LLColor4(0.f,0.f,0.f,1.f));
+	static const LLCachedControl<LLColor4> menu_default_color(*LLUI::sColorsGroup,"MenuDefaultBgColor",LLColor4(0.f,0.f,0.f,1.f));
 	color = menu_default_color;
 	gGL.color4fv(color.mV);
 	gl_rect_2d(0, getRect().getHeight(), getRect().getWidth(), 0, TRUE);

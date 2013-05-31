@@ -144,6 +144,7 @@ public:
 	void initChildrenXML(LLXMLNodePtr node, LLUICtrlFactory* factory);
 	void setPanelParameters(LLXMLNodePtr node, LLView *parentp);
 
+	bool hasString(const std::string& name);
 	std::string getString(const std::string& name, const LLStringUtil::format_map_t& args) const;
 	std::string getString(const std::string& name) const;
 
@@ -205,14 +206,13 @@ public:
 	void childSetText(const std::string& id, const LLStringExplicit& text) { childSetValue(id, LLSD(text)); }
 	std::string childGetText(const std::string& id) const { return childGetValue(id).asString(); }
 
-	// LLLineEditor
-	void childSetKeystrokeCallback(const std::string& id, void (*keystroke_callback)(LLLineEditor* caller, void* user_data), void *user_data);
-	void childSetPrevalidate(const std::string& id, BOOL (*func)(const LLWString &) );
-
 	// LLButton
 	void childSetAction(const std::string& id, boost::function<void(void*)> function, void* value);
 	void childSetAction(const std::string& id, const commit_signal_t::slot_type& function);
-	void childSetActionTextbox(const std::string& id, void(*function)(void*), void* value = NULL);
+
+	// LLTextBox
+	void childSetActionTextbox(const std::string& id, boost::function<void(void*)> function, void* value = NULL);
+
 	void childSetControlName(const std::string& id, const std::string& control_name);
 
 	// Error reporting

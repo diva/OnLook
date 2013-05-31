@@ -2,7 +2,7 @@
 <floater can_close="true" can_drag_on_left="false" can_minimize="false"
      can_resize="true" height="220" name="settings_debug" min_height="220" min_width="285"
      title="Debug Settings" width="300" rect_control="FloaterDebugSettingsRect">
-    <search_editor bottom="-40" follows="top|left|right" height="20" label="Search" left="10" right="-10" max_chars="255" name="search_settings_input" tool_tip="Type the search term you are interested in here. Results will be displayed for partial fulltext matches within the setting's name or comment."/>
+    <filter_editor bottom="-40" follows="top|left|right" height="20" label="Search" left="10" right="-10" max_chars="255" name="search_settings_input" tool_tip="Type the search term you are interested in here. Results will be displayed for partial fulltext matches within the setting's name or comment."/>
 	<scroll_list height="20" bottom_delta="-24" follows="all" left="10" right="-10" name="settings_scroll_list" />
 	<text_editor follows="left|right" bottom_delta="-64" enabled="false" height="60" width="320" left="10" right="-10" hide_scrollbar="true"
 	     name="comment_text" word_wrap="true" />

@@ -257,7 +257,7 @@ LLTextEditor::LLTextEditor(
 	const LLFontGL* font,
 	BOOL allow_embedded_items)
 	:	
-	LLUICtrl( name, rect, TRUE, NULL, NULL, FOLLOWS_TOP | FOLLOWS_LEFT ),
+	LLUICtrl( name, rect, TRUE, NULL, FOLLOWS_TOP | FOLLOWS_LEFT ),
 	mTextIsUpToDate(TRUE),
 	mMaxTextByteLength( max_length ),
 	mPopupMenuHandle(),
@@ -331,7 +331,7 @@ LLTextEditor::LLTextEditor(
 		lines_in_doc,						
 		0,						
 		page_size,
-		NULL, this );
+		NULL);
 	mScrollbar->setFollowsRight();
 	mScrollbar->setFollowsTop();
 	mScrollbar->setFollowsBottom();
@@ -373,8 +373,6 @@ LLTextEditor::~LLTextEditor()
 	gFocusMgr.releaseFocusIfNeeded( this ); // calls onCommit()
 
 	// Scrollbar is deleted by LLView
-	mHoverSegment = NULL;
-	std::for_each(mSegments.begin(), mSegments.end(), DeletePointer());
 
 	std::for_each(mUndoStack.begin(), mUndoStack.end(), DeletePointer());
 	//LLView::deleteViewByHandle(mPopupMenuHandle);
@@ -946,10 +944,10 @@ const LLTextSegment*	LLTextEditor::getPreviousSegment() const
 {
 	// find segment index at character to left of cursor (or rightmost edge of selection)
 	S32 idx = llmax(0, getSegmentIdxAtOffset(mCursorPos) - 1);
-	return idx >= 0 ? mSegments[idx] : NULL;
+	return idx >= 0 ? mSegments[idx] : LLTextSegmentPtr();
 }
 
-void LLTextEditor::getSelectedSegments(std::vector<const LLTextSegment*>& segments) const
+void LLTextEditor::getSelectedSegments(std::vector<LLTextSegmentPtr>& segments) const
 {
 	S32 left = hasSelection() ? llmin(mSelectionStart, mSelectionEnd) : mCursorPos;
 	S32 right = hasSelection() ? llmax(mSelectionStart, mSelectionEnd) : mCursorPos;
@@ -1527,7 +1525,7 @@ BOOL LLTextEditor::handleHover(S32 x, S32 y, MASK mask)
 		// Check to see if we're over an HTML-style link
 		if( !mSegments.empty() )
 		{
-			const LLTextSegment* cur_segment = getSegmentAtLocalPos( x, y );
+			LLTextSegment* cur_segment = getSegmentAtLocalPos( x, y );
 			if( cur_segment )
 			{
 				if(cur_segment->getStyle()->isLink())
@@ -2128,6 +2126,8 @@ void LLTextEditor::cut()
 	deleteSelection( FALSE );
 
 	needsReflow();
+	
+	onKeyStroke();
 }
 
 BOOL LLTextEditor::canCopy() const
@@ -2244,6 +2244,8 @@ void LLTextEditor::pasteHelper(bool is_primary)
 	deselect();
 
 	needsReflow();
+	
+	onKeyStroke();
 }
 
 
@@ -2506,6 +2508,10 @@ BOOL LLTextEditor::handleSpecialKey(const KEY key, const MASK mask, BOOL* return
 		break;
 	}
 
+	if (handled)
+	{
+		onKeyStroke();
+	}
 	return handled;
 }
 
@@ -2665,6 +2671,7 @@ BOOL LLTextEditor::handleUnicodeCharHere(llwchar uni_char)
 			deselect();
 
 			needsReflow();
+			onKeyStroke();
 		}
 	}
 
@@ -2723,6 +2730,7 @@ void LLTextEditor::doDelete()
 	}
 
 	needsReflow();
+	onKeyStroke();
 }
 
 //----------------------------------------------------------------------------
@@ -2766,6 +2774,7 @@ void LLTextEditor::undo()
 		setCursorPos(pos);
 
 	needsReflow();
+	onKeyStroke();
 }
 
 BOOL LLTextEditor::canRedo() const
@@ -2808,6 +2817,7 @@ void LLTextEditor::redo()
 		setCursorPos(pos);
 
 	needsReflow();
+	onKeyStroke();
 }
 
 void LLTextEditor::onFocusReceived()
@@ -3635,7 +3645,6 @@ void LLTextEditor::onTabInto()
 void LLTextEditor::clear()
 {
 	setText(LLStringUtil::null);
-	std::for_each(mSegments.begin(), mSegments.end(), DeletePointer());
 	mSegments.clear();
 }
 
@@ -4153,7 +4162,7 @@ void LLTextEditor::appendText(const std::string &new_text, bool allow_undo, bool
 	{
 		S32 segment_start = old_length;
 		S32 segment_end = getLength();
-		LLTextSegment* segment = new LLTextSegment(stylep, segment_start, segment_end );
+		LLTextSegmentPtr segment = new LLTextSegment(stylep, segment_start, segment_end );
 		mSegments.push_back(segment);
 	}
 	
@@ -4371,13 +4380,12 @@ void LLTextEditor::updateSegments()
 	// Make sure we have at least one segment
 	if (mSegments.size() == 1 && mSegments[0]->getIsDefault())
 	{
-		delete mSegments[0];
 		mSegments.clear(); // create default segment
 	}
 	if (mSegments.empty())
 	{
 		LLColor4& text_color = ( mReadOnly ? mReadOnlyFgColor : mFgColor );
-		LLTextSegment* default_segment = new LLTextSegment( text_color, 0, mWText.length() );
+		LLTextSegmentPtr default_segment = new LLTextSegment( text_color, 0, mWText.length() );
 		default_segment->setIsDefault(TRUE);
 		mSegments.push_back(default_segment);
 	}
@@ -4408,7 +4416,6 @@ void LLTextEditor::pruneSegments()
 	{
 		// erase invalid segments
 		++iter;
-		std::for_each(iter, mSegments.end(), DeletePointer());
 		mSegments.erase(iter, mSegments.end());
 	}
 	else
@@ -4420,7 +4427,6 @@ void LLTextEditor::pruneSegments()
 void LLTextEditor::findEmbeddedItemSegments()
 {
 	mHoverSegment = NULL;
-	std::for_each(mSegments.begin(), mSegments.end(), DeletePointer());
 	mSegments.clear();
 
 	BOOL found_embedded_items = FALSE;
@@ -4501,18 +4507,18 @@ BOOL LLTextEditor::handleMouseUpOverSegment(S32 x, S32 y, MASK mask)
 
 
 // Finds the text segment (if any) at the give local screen position
-const LLTextSegment* LLTextEditor::getSegmentAtLocalPos( S32 x, S32 y ) const
+LLTextSegment* LLTextEditor::getSegmentAtLocalPos( S32 x, S32 y ) const
 {
 	// Find the cursor position at the requested local screen position
 	S32 offset = getCursorPosFromLocalCoord( x, y, FALSE );
 	S32 idx = getSegmentIdxAtOffset(offset);
-	return idx >= 0 ? mSegments[idx] : NULL;
+	return idx >= 0 ? mSegments[idx] : LLTextSegmentPtr();
 }
 
 const LLTextSegment* LLTextEditor::getSegmentAtOffset(S32 offset) const
 {
 	S32 idx = getSegmentIdxAtOffset(offset);
-	return idx >= 0 ? mSegments[idx] : NULL;
+	return idx >= 0 ? mSegments[idx] : LLTextSegmentPtr();
 }
 
 S32 LLTextEditor::getSegmentIdxAtOffset(S32 offset) const
@@ -5068,6 +5074,7 @@ void LLTextEditor::updatePreedit(const LLWString &preedit_string,
 
 	// Update of the preedit should be caused by some key strokes.
 	mKeystrokeTimer.reset();
+	onKeyStroke();
 }
 
 BOOL LLTextEditor::getPreeditLocation(S32 query_offset, LLCoordGL *coord, LLRect *bounds, LLRect *control) const
@@ -5225,4 +5232,14 @@ void LLTextEditor::markAsPreedit(S32 position, S32 length)
 S32 LLTextEditor::getPreeditFontSize() const
 {
 	return llround(mGLFont->getLineHeight() * LLUI::getScaleFactor().mV[VY]);
+}
+
+void LLTextEditor::setKeystrokeCallback(const keystroke_signal_t::slot_type& callback)
+{
+	mKeystrokeSignal.connect(callback);
+}
+
+void LLTextEditor::onKeyStroke()
+{
+	mKeystrokeSignal(this);
 }

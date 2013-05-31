@@ -97,7 +97,7 @@ public:
 			return false;
 		}
 
-		if (tokens[1].asString() == "about")
+		if ((tokens[1].asString() == "about") || (tokens[1].asString() == "inspect"))
 		{
 			LLFloaterGroupInfo::showFromUUID(group_id);
 			return true;
@@ -114,6 +114,10 @@ LLFloaterGroupInfo::LLFloaterGroupInfo(const std::string& name, const LLRect &re
 :	LLFloater(name, rect, title),
 	mGroupID( group_id )
 {
+	llinfos << name << " : " << title << llendl;
+	llinfos << rect << llendl;
+	llinfos << getRect() << llendl;
+	llinfos << getLocalRect() << llendl;
 	// Construct the filename of the group panel xml definition file.
 	mPanelGroupp = new LLPanelGroup("panel_group.xml",
 									"PanelGroup",

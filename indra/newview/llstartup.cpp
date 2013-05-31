@@ -85,6 +85,7 @@
 #include "llsdutil_math.h"
 #include "llsecondlifeurls.h"
 #include "llstring.h"
+#include "lltexteditor.h"
 #include "lluserrelations.h"
 #include "sgversion.h"
 #include "llviewercontrol.h"
@@ -156,7 +157,6 @@
 #include "llsecondlifeurls.h"
 #include "llselectmgr.h"
 #include "llsky.h"
-#include "llsrv.h"
 #include "llstatview.h"
 #include "llstatusbar.h"		// sendMoneyBalanceRequest(), owns L$ balance
 #include "llsurface.h"
@@ -221,7 +221,6 @@
 #include "wlfPanel_AdvSettings.h" //Lower right Windlight and Rendering options
 #include "lldaycyclemanager.h"
 #include "llfloaterblacklist.h"
-#include "scriptcounter.h"
 #include "shfloatermediaticker.h"
 #include "llpacketring.h"
 // </edit>
@@ -3225,7 +3224,6 @@ void pass_processObjectPropertiesFamily(LLMessageSystem *msg, void**)
 	// Send the result to the corresponding requesters.
 	LLSelectMgr::processObjectPropertiesFamily(msg, NULL);
 	JCFloaterAreaSearch::processObjectPropertiesFamily(msg, NULL);
-	ScriptCounter::processObjectPropertiesFamily(msg,0);
 }
 
 void register_viewer_callbacks(LLMessageSystem* msg)
@@ -4380,9 +4378,17 @@ bool process_login_success_response(std::string& password)
 	tmp = response["search"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setSearchUrl(tmp);
 	tmp = response["currency"].asString();
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setCurrencySymbol(tmp);
+	if (!tmp.empty())
+	{
+		LLTrans::setDefaultArg("[CURRENCY]", tmp);
+		gHippoGridManager->getConnectedGrid()->setCurrencySymbol(tmp);
+	}
 	tmp = response["currency_text"].asString();
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setCurrencyText(tmp);
+	if (!tmp.empty())
+	{
+		LLTrans::setDefaultArg("[CURRENCY_TEXT]", tmp);
+		gHippoGridManager->getConnectedGrid()->setCurrencyText(tmp);
+	}
 	tmp = response["real_currency"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setRealCurrencySymbol(tmp);
 	tmp = response["directory_fee"].asString();

@@ -103,10 +103,12 @@ if (LINUX)
       -pthread
       )
 
-    # Don't catch SIGCHLD in our base application class for the viewer
-    # some of our 3rd party libs may need their *own* SIGCHLD handler to work.  Sigh!  
-    # The viewer doesn't need to catch SIGCHLD anyway.
-    add_definitions(-DLL_IGNORE_SIGCHLD)
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -D_FORTIFY_SOURCE=2 ")
+
+  # Don't catch SIGCHLD in our base application class for the viewer
+  # some of our 3rd party libs may need their *own* SIGCHLD handler to work.  Sigh!
+  # The viewer doesn't need to catch SIGCHLD anyway.
+  add_definitions(-DLL_IGNORE_SIGCHLD)
 
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     find_program(GXX g++)
@@ -135,16 +137,6 @@ if (LINUX)
         COMMAND head -1
         OUTPUT_VARIABLE CXX_VERSION
         OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    # Here's a giant hack for Fedora 8, where we can't use
-    # _FORTIFY_SOURCE if we're using a compiler older than gcc 4.1.
-    if (${GXX_VERSION} STREQUAL ${CXX_VERSION})
-      add_definitions(-D_FORTIFY_SOURCE=2)
-    else (${GXX_VERSION} STREQUAL ${CXX_VERSION})
-      if (NOT ${GXX_VERSION} MATCHES " 4.1.*Red Hat")
-        add_definitions(-D_FORTIFY_SOURCE=2)
-      endif (NOT ${GXX_VERSION} MATCHES " 4.1.*Red Hat")
-    endif (${GXX_VERSION} STREQUAL ${CXX_VERSION})
 
     #Lets actually get a numerical version of gxx's version
     STRING(REGEX REPLACE ".* ([0-9])\\.([0-9])\\.([0-9]).*" "\\1\\2\\3" CXX_VERSION ${CXX_VERSION})
@@ -190,10 +182,6 @@ if (LINUX)
       set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
     endif (${ARCH} STREQUAL "x86_64")
   elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    add_definitions(
-        -D_FORTIFY_SOURCE=2
-        )
-
     if (NOT STANDALONE)
       # this stops us requiring a really recent glibc at runtime
       add_definitions(-fno-stack-protector)
@@ -206,9 +194,6 @@ if (LINUX)
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -msse2")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -msse2")
   elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-    add_definitions(
-        -D_FORTIFY_SOURCE=2
-        )
 
     if (NOT STANDALONE)
       # this stops us requiring a really recent glibc at runtime

@@ -51,7 +51,6 @@
 #include "llresmgr.h"
 #include "llfloaterchat.h"
 #include "llfloaterchatterbox.h"
-#include "llfloaternewim.h"
 #include "llhttpnode.h"
 #include "llimpanel.h"
 #include "llresizebar.h"
@@ -767,7 +766,10 @@ LLUUID LLIMMgr::addSession(
 		floater->open();
 	}
 	//mTabContainer->selectTabPanel(panel);
-	floater->setInputFocus(TRUE);
+	if(gSavedSettings.getBOOL("PhoenixIMAnnounceStealFocus"))
+	{	
+		floater->setInputFocus(TRUE);
+	}
 	return floater->getSessionID();
 }
 
@@ -817,7 +819,10 @@ LLUUID LLIMMgr::addSession(
 		floater->open();
 	}
 	//mTabContainer->selectTabPanel(panel);
-	floater->setInputFocus(TRUE);
+	if(gSavedSettings.getBOOL("PhoenixIMAnnounceStealFocus"))
+	{
+		floater->setInputFocus(TRUE);
+	}
 	return floater->getSessionID();
 }
 
