@@ -149,7 +149,8 @@ BOOL LLPanelPermissions::postBuild()
 	childSetCommitCallback("clickaction",LLPanelPermissions::onCommitClickAction,this);
 	childSetCommitCallback("search_check",LLPanelPermissions::onCommitIncludeInSearch,this);
 	
-	mLabelGroupName = getChild<LLNameBox>("Group Name Proxy");
+	mLabelGroupName = new LLNameBox("Group Name", getChild<LLTextBox>("Group Name Proxy")->getRect());
+	addChild(mLabelGroupName);
 
 	if (!gHippoGridManager->getCurrentGrid()->isSecondLife())
 		LFSimFeatureHandler::instance().setSupportsExportCallback(boost::bind(&LLPanelPermissions::refresh, this));
