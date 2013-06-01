@@ -108,7 +108,7 @@ static bool nameSplit(const std::string& full, std::string& first, std::string& 
 	first = fragments[0];
 	if (fragments.size() == 1)
 	{
-		if (gHippoGridManager->getConnectedGrid()->isAurora())
+		if (gHippoGridManager->getCurrentGrid()->isAurora())
 			last = "";
 		else
 			last = "Resident";
@@ -183,6 +183,8 @@ class LLIamHereLogin : public LLHTTPClient::ResponderHeadersOnly
 		{
 			if (mParent)
 			{
+				if(200 <= status && status < 300)
+					llinfos << "Found site" << llendl;
 				mParent->setSiteIsAlive(200 <= status && status < 300);
 			}
 		}
@@ -276,7 +278,7 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 		LLSLURL defaultStart(defaultStartLocation);
 		if ( defaultStart.isSpatial() )
 		{
-			LLStartUp::setStartSLURL(defaultStart);
+			LLStartUp::setStartSLURL(defaultStart);	// calls onUpdateStartSLURL
 		}
 		else
 		{
@@ -284,34 +286,11 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 			LLSLURL homeStart(LLSLURL::SIM_LOCATION_HOME);
 			LLStartUp::setStartSLURL(homeStart);
 		}
+		start_slurl = LLStartUp::getStartSLURL();	// calls onUpdateStartSLURL
 	}
 	else
 	{
 		LLPanelLogin::onUpdateStartSLURL(start_slurl); // updates grid if needed
-	}
-
-	// The XML file loads the combo with the following labels:
-	// 0 - "My Home"
-	// 1 - "My Last Location"
-	// 2 - "<Type region name>"
-
-	BOOL login_last = gSavedSettings.getBOOL("LoginLastLocation");
-	std::string sim_string = start_slurl.getRegion();
-	if (!sim_string.empty())
-	{
-		// Replace "<Type region name>" with this region name
-		location_combo->remove(2);
-		location_combo->add( sim_string );
-		location_combo->setTextEntry(sim_string);
-		location_combo->setCurrentByIndex( 2 );
-	}
-	else if (login_last)
-	{
-		location_combo->setCurrentByIndex( 1 );
-	}
-	else
-	{
-		location_combo->setCurrentByIndex( 0 );
 	}
 
 	childSetAction("connect_btn", onClickConnect, this);
@@ -342,16 +321,13 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	// get the web browser control
 	LLMediaCtrl* web_browser = getChild<LLMediaCtrl>("login_html");
 	web_browser->addObserver(this);
+	web_browser->setBackgroundColor(LLColor4::black);
 
 	reshapeBrowser();
 
-	childSetVisible("create_new_account_text",
-		!gHippoGridManager->getConnectedGrid()->getRegisterUrl().empty());
-	childSetVisible("forgot_password_text",
-		!gHippoGridManager->getConnectedGrid()->getPasswordUrl().empty());
-		
 	loadLoginPage();
 
+	refreshLoginPage();
 }
 
 void LLPanelLogin::setSiteIsAlive( bool alive )
@@ -374,6 +350,8 @@ void LLPanelLogin::setSiteIsAlive( bool alive )
 		{
 			// hide browser control (revealing default one)
 			web_browser->setVisible( FALSE );
+			std::string str = LLWeb::escapeURL("data:text/html,<html><body bgcolor=\"rgb(0,0,0)\"></body></html>");
+			web_browser->navigateTo( str, "text/html" );
 		}
 	}
 }
@@ -402,8 +380,8 @@ void LLPanelLogin::reshapeBrowser()
 	LLRect rect = gViewerWindow->getWindowRectScaled();
 	LLRect html_rect;
 	html_rect.setCenterAndSize(
-	rect.getCenterX() - 2, rect.getCenterY() + 40,
-	rect.getWidth() + 6, rect.getHeight() - 78 );
+	rect.getCenterX() /*- 2*/, rect.getCenterY() + 40,
+	rect.getWidth() /*+ 6*/, rect.getHeight() - 78 );
 	web_browser->setRect( html_rect );
 	web_browser->reshape( html_rect.getWidth(), html_rect.getHeight(), TRUE );
 	reshape( rect.getWidth(), rect.getHeight(), 1 );
@@ -761,7 +739,7 @@ void LLPanelLogin::onUpdateStartSLURL(const LLSLURL& new_start_slurl)
 	switch ( new_slurl_type )
 	{
 	case LLSLURL::LOCATION:
-	  {
+	{
 		location_combo->setCurrentByIndex( 2 );
 		location_combo->setTextEntry(new_start_slurl.getLocationString());
 	}
@@ -845,7 +823,7 @@ void LLPanelLogin::loadLoginPage()
 
  	sInstance->updateGridCombo();
 
-	std::string login_page_str = gHippoGridManager->getConnectedGrid()->getLoginPage();
+	std::string login_page_str = gHippoGridManager->getCurrentGrid()->getLoginPage();
 	if (login_page_str.empty())
 	{
 		sInstance->setSiteIsAlive(false);
@@ -876,10 +854,10 @@ void LLPanelLogin::loadLoginPage()
 
 	// Grid
 
-	if (gHippoGridManager->getConnectedGrid()->isSecondLife()) {
+	if (gHippoGridManager->getCurrentGrid()->isSecondLife()) {
 		// find second life grid from login URI
 		// yes, this is heuristic, but hey, it is just to get the right login page...
-		std::string tmp = gHippoGridManager->getConnectedGrid()->getLoginUri();
+		std::string tmp = gHippoGridManager->getCurrentGrid()->getLoginUri();
 		int i = tmp.find(".lindenlab.com");
 		if (i != std::string::npos) {
 			tmp = tmp.substr(0, i);
@@ -892,11 +870,11 @@ void LLPanelLogin::loadLoginPage()
 			}
 		}
 	}
-	else if (gHippoGridManager->getConnectedGrid()->isOpenSimulator())
+	else if (gHippoGridManager->getCurrentGrid()->isOpenSimulator())
 	{
-		params["grid"] = gHippoGridManager->getConnectedGrid()->getGridNick();
+		params["grid"] = gHippoGridManager->getCurrentGrid()->getGridNick();
 	}
-	else if (gHippoGridManager->getConnectedGrid()->getPlatform() == HippoGridInfo::PLATFORM_AURORA)
+	else if (gHippoGridManager->getCurrentGrid()->getPlatform() == HippoGridInfo::PLATFORM_AURORA)
 	{
 		params["grid"] = LLViewerLogin::getInstance()->getGridLabel();
 	}
@@ -970,7 +948,7 @@ void LLPanelLogin::onClickConnect(void *)
 		}
 		else
 		{
-			if (gHippoGridManager->getConnectedGrid()->getRegisterUrl().empty()) {
+			if (gHippoGridManager->getCurrentGrid()->getRegisterUrl().empty()) {
 				LLNotificationsUtil::add("MustHaveAccountToLogInNoLinks");
 			} else {
 				LLNotificationsUtil::add("MustHaveAccountToLogIn", LLSD(), LLSD(),
@@ -1001,7 +979,7 @@ bool LLPanelLogin::newAccountAlertCallback(const LLSD& notification, const LLSD&
 // static
 void LLPanelLogin::onClickNewAccount()
 {
-	const std::string &url = gHippoGridManager->getConnectedGrid()->getRegisterUrl();
+	const std::string &url = gHippoGridManager->getCurrentGrid()->getRegisterUrl();
 	if (!url.empty()) {
 		llinfos << "Going to account creation URL." << llendl;
 		LLWeb::loadURLExternal(url);
@@ -1030,7 +1008,7 @@ void LLPanelLogin::onClickForgotPassword()
 {
 	if (sInstance )
 	{
-		const std::string &url = gHippoGridManager->getConnectedGrid()->getPasswordUrl();
+		const std::string &url = gHippoGridManager->getCurrentGrid()->getPasswordUrl();
 		if (!url.empty()) {
 			LLWeb::loadURLExternal(url);
 		} else {
@@ -1059,17 +1037,31 @@ void LLPanelLogin::refreshLoginPage()
 	sInstance->updateGridCombo();
 
 	sInstance->childSetVisible("create_new_account_text",
-		!gHippoGridManager->getConnectedGrid()->getRegisterUrl().empty());
+		!gHippoGridManager->getCurrentGrid()->getRegisterUrl().empty());
 	sInstance->childSetVisible("forgot_password_text",
-		!gHippoGridManager->getConnectedGrid()->getPasswordUrl().empty());
+		!gHippoGridManager->getCurrentGrid()->getPasswordUrl().empty());
 
-	// kick off a request to grab the url manually
-	gResponsePtr = LLIamHereLogin::build(sInstance);
+	std::string login_page = gHippoGridManager->getCurrentGrid()->getLoginPage();
+	if (!login_page.empty())
+	{
+		LLMediaCtrl* web_browser = sInstance->getChild<LLMediaCtrl>("login_html");
+		if (web_browser->getCurrentNavUrl() != login_page)
+		{
+			if(gResponsePtr)
+				gResponsePtr->setParent(0);	//Tell our previous responder that we no longer require its result.
+			gResponsePtr.reset();			//Deref previous responder
 
-	std::string login_page = gHippoGridManager->getConnectedGrid()->getLoginPage();
-	if (!login_page.empty()) {
-		LLHTTPClient::head(login_page, gResponsePtr.get());
-	} else {
+			llinfos << "Firing off lookup for " << login_page << llendl;
+			// kick off a request to grab the url manually
+			gResponsePtr = LLIamHereLogin::build(sInstance);
+			LLHTTPClient::head(login_page, gResponsePtr.get());
+		}
+	}
+	else
+	{
+		if(gResponsePtr)
+			gResponsePtr->setParent(0);	//Tell our previous responder that we no longer require its result.
+		gResponsePtr.reset();			//Deref previous responder
 		sInstance->setSiteIsAlive(false);
 	}
 }

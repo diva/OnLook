@@ -403,8 +403,6 @@ bool idle_startup()
 
 	static bool show_connect_box = true;
 
-	static bool samename = false;
-
 	// HACK: These are things from the main loop that usually aren't done
 	// until initialization is complete, but need to be done here for things
 	// to work.
@@ -1096,9 +1094,9 @@ bool idle_startup()
 			/*std::string location;
 			LLPanelLogin::getLocation( location );
 			LLURLSimString::setString( location );
-
+			*/
 			// END TODO
-			LLPanelLogin::close();*/
+			LLPanelLogin::close();
 		}
 
 		//For HTML parsing in text boxes.
@@ -1305,26 +1303,31 @@ bool idle_startup()
 		progress += 0.02f;
 		display_startup();
 		
+		LLSLURL start_slurl = LLStartUp::getStartSLURL();
 		std::stringstream start;
-		if (LLURLSimString::parse())
+		LLSLURL::SLURL_TYPE start_slurl_type = start_slurl.getType();
+		switch ( start_slurl_type )
 		{
+		case LLSLURL::LOCATION:
+			{
 			// a startup URL was specified
 			std::stringstream unescaped_start;
 			unescaped_start << "uri:" 
-							<< LLURLSimString::sInstance.mSimName << "&" 
-							<< LLURLSimString::sInstance.mX << "&" 
-							<< LLURLSimString::sInstance.mY << "&" 
-							<< LLURLSimString::sInstance.mZ;
+							<< start_slurl.getRegion() << "&" 
+							<< start_slurl.getPosition().mV[VX] << "&" 
+							<< start_slurl.getPosition().mV[VY] << "&" 
+							<< start_slurl.getPosition().mV[VZ];
 			start << xml_escape_string(unescaped_start.str());
-			
-		}
-		else if (gSavedSettings.getBOOL("LoginLastLocation"))
-		{
-			start << "last";
-		}
-		else
-		{
+			}
+			break;
+		case LLSLURL::HOME_LOCATION:
 			start << "home";
+			break;
+		case LLSLURL::LAST_LOCATION:
+			start << "last";
+			break;
+		default:
+			break;
 		}
 
 		char hashed_mac_string[MD5HEX_STR_SIZE];		/* Flawfinder: ignore */

@@ -61,7 +61,11 @@ BOOL LLPanelGeneral::postBuild()
 	LLComboBox* namesystem_combobox = getChild<LLComboBox>("namesystem_combobox");
 	namesystem_combobox->setCurrentByIndex(gSavedSettings.getS32("PhoenixNameSystem"));
 
-	childSetValue("default_start_location", gSavedSettings.getBOOL("LoginLastLocation") ? "MyLastLocation" : "MyHome");
+	std::string login_location = gSavedSettings.getString("LoginLocation");
+	if(login_location != "last" && login_location != "home")
+		login_location = "last";
+
+	childSetValue("default_start_location", login_location);
 	childSetValue("show_location_checkbox", gSavedSettings.getBOOL("ShowStartLocation"));
 	childSetValue("show_all_title_checkbox", gSavedSettings.getBOOL("RenderHideGroupTitleAll"));
 	childSetValue("language_is_public", gSavedSettings.getBOOL("LanguageIsPublic"));
@@ -147,7 +151,7 @@ void LLPanelGeneral::apply()
 		}
 	}
 
-	gSavedSettings.setBOOL("LoginLastLocation", childGetValue("default_start_location").asString() == "MyLastLocation");
+	gSavedSettings.setString("LoginLocation", childGetValue("default_start_location").asString());
 	gSavedSettings.setBOOL("ShowStartLocation", childGetValue("show_location_checkbox"));
 	gSavedSettings.setBOOL("RenderHideGroupTitleAll", childGetValue("show_all_title_checkbox"));
 	gSavedSettings.setBOOL("LanguageIsPublic", childGetValue("language_is_public"));

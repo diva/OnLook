@@ -492,9 +492,9 @@ void LLUICtrl::initFromXML(LLXMLNodePtr node, LLView* parent)
 			if (func)
 			{
 				if(child_node->getAttributeString("parameter",attrib_str))
-					setCommitCallback(boost::bind((*func), this, LLSD(attrib_str)));
+					setValidateCallback(boost::bind((*func), this, LLSD(attrib_str)));
 				else
-					setCommitCallback(commit_signal_t::slot_type(*func));
+					setValidateCallback(enable_signal_t::slot_type(*func));
 			}
 		}
 	}

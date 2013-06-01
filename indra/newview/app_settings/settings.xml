@@ -2225,6 +2225,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <real>0.075</real>
     </map>
+	<key>AudioStreamingMedia</key>
+    <map>
+      <key>Comment</key>
+      <string>Enable streaming</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
     <key>AudioStreamingMusic</key>
     <map>
       <key>Comment</key>
@@ -2691,23 +2702,23 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
-    <key>PluginAttachDebuggerToPlugins</key>
+    <key>BrowserEnableJSObject</key>
     <map>
       <key>Comment</key>
-      <string>Opens a terminal window with a debugger and attach it, every time a new SLPlugin process is started.</string>
+      <string>(WARNING: Advanced feature. Use if you are aware of the implications). Enable or disable the viewer to Javascript bridge object.</string>
       <key>Persist</key>
-      <integer>1</integer>
+      <integer>0</integer>
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-	  <integer>0</integer>
+      <integer>0</integer>
     </map>
     <key>BlockAvatarAppearanceMessages</key>
-    <map>
-      <key>Comment</key>
-      <string>Ignores appearance messages (for simulating Ruth)</string>
-      <key>Persist</key>
-      <integer>1</integer>
+        <map>
+        <key>Comment</key>
+            <string>Ignores appearance messages (for simulating Ruth)</string>
+        <key>Persist</key>
+            <integer>1</integer>
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
@@ -3768,17 +3779,6 @@ This should be as low as possible, but too low may break functionality</string>
       <array>
         <string/>
       </array>
-    </map>
-    <key>CmdLineRegionURI</key>
-    <map>
-      <key>Comment</key>
-      <string>URL of region to connect to through Agent Domain.</string>
-      <key>Persist</key>
-      <integer>0</integer>
-      <key>Type</key>
-      <string>String</string>
-      <key>Value</key>
-      <string/>
     </map>
     <key>ColorPaletteEntry01</key>
     <map>
@@ -5419,6 +5419,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>DisableExternalBrowser</key>
+    <map>
+      <key>Comment</key>
+      <string>Disable opening an external browser.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>DisableRendering</key>
     <map>
       <key>Comment</key>
@@ -6014,17 +6025,6 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
-    <key>FirstLoginThisInstall</key>
-    <map>
-      <key>Comment</key>
-      <string>Specifies that you have not successfully logged in since you installed the latest update</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
     <key>FirstName</key>
     <map>
       <key>Comment</key>
@@ -6062,6 +6062,17 @@ This should be as low as possible, but too low may break functionality</string>
     <map>
       <key>Comment</key>
       <string>Specifies that you have not run the viewer since you installed the latest update</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>FirstLoginThisInstall</key>
+    <map>
+      <key>Comment</key>
+      <string>Specifies that you have not successfully logged in since you installed the latest update</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -9109,16 +9120,16 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
-    <key>LoginLastLocation</key>
+    <key>LoginLocation</key>
     <map>
       <key>Comment</key>
-      <string>Login at same location you last logged out</string>
+      <string>Default Login location ('last', 'home') preference</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
-      <string>Boolean</string>
+      <string>String</string>
       <key>Value</key>
-      <integer>1</integer>
+      <string>last</string>
     </map>
     <key>LoginPage</key>
     <map>
@@ -9435,13 +9446,68 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
-    <key>MemoryFailurePreventionEnabled</key>
-    <map>
-      <key>Comment</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>MediaPerformanceManagerDebug</key>
+  <map>
+    <key>Comment</key>
+    <string>Whether to show debug data for the media performance manager in the nearby media list.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>MediaShowOnOthers</key>
+  <map>
+    <key>Comment</key>
+    <string>Whether or not to show media on other avatars</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>MediaShowOutsideParcel</key>
+  <map>
+    <key>Comment</key>
+    <string>Whether or not to show media from outside the current parcel</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>MediaShowWithinParcel</key>
+  <map>
+    <key>Comment</key>
+    <string>Whether or not to show media within the current parcel</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>MediaTentativeAutoPlay</key>
+  <map>
+    <key>Comment</key>
+    <string>This is a tentative flag that may be temporarily set off by the user, until she teleports</string>
+    <key>Persist</key>
+    <integer>0</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>MemoryFailurePreventionEnabled</key>
+  <map>
+    <key>Comment</key>
       <string>If set, the viewer will quit to avoid crash when memory failure happens</string>
       <key>Persist</key>
       <integer>1</integer>
@@ -10426,6 +10492,86 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>PluginAttachDebuggerToPlugins</key>
+    <map>
+      <key>Comment</key>
+      <string>If true, attach a debugger session to each plugin process as it's launched.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>PluginInstancesCPULimit</key>
+    <map>
+      <key>Comment</key>
+      <string>Amount of total plugin CPU usage before inworld plugins start getting turned down to "slideshow" priority.  Set to 0 to disable this check.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>0.9</real>
+    </map>
+    
+   <key>PlainTextChatHistory</key>
+    <map>
+      <key>Comment</key>
+      <string>Enable/Disable plain text chat history style</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    
+    <key>PluginInstancesLow</key>
+    <map>
+      <key>Comment</key>
+      <string>Limit on the number of inworld media plugins that will run at "low" priority</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>4</integer>
+    </map>
+    <key>PluginInstancesNormal</key>
+    <map>
+      <key>Comment</key>
+      <string>Limit on the number of inworld media plugins that will run at "normal" or higher priority</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>2</integer>
+    </map>
+    <key>PluginInstancesTotal</key>
+    <map>
+      <key>Comment</key>
+      <string>Hard limit on the number of plugins that will be instantiated at once for inworld media</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>8</integer>
+    </map>
+
+   <key>PluginUseReadThread</key>
+    <map>
+      <key>Comment</key>
+      <string>Use a separate thread to read incoming messages from plugins</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>PlayTypingSound</key>
     <map>
       <key>Comment</key>
@@ -10629,6 +10775,94 @@ This should be as low as possible, but too low may break functionality</string>
     </array>
   </map>
 
+  <key>PrimMediaMasterEnabled</key>
+	<map>
+	  <key>Comment</key>
+      <string>Whether or not Media on a Prim is enabled.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+	<key>PrimMediaControlsUseHoverControlSet</key>
+	<map>
+	  <key>Comment</key>
+      <string>Whether or not hovering over prim media uses minimal "hover" controls or the authored control set.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>PrimMediaDragNDrop</key>
+	<map>
+		<key>Comment</key>
+		<string>Enable drag and drop of URLs onto prim faces</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+     <key>PrimMediaMaxRetries</key>
+    <map>
+      <key>Comment</key>
+      <string>Maximum number of retries for media queries.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>4</integer>
+    </map>
+    <key>PrimMediaRequestQueueDelay</key>
+    <map>
+      <key>Comment</key>
+      <string>Timer delay for fetching media from the queue (in seconds).</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>1.0</real>
+    </map>
+    <key>PrimMediaRetryTimerDelay</key>
+    <map>
+      <key>Comment</key>
+      <string>Timer delay for retrying on media queries (in seconds).</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>5.0</real>
+    </map>
+	<key>PrimMediaMaxSortedQueueSize</key>
+    <map>
+      <key>Comment</key>
+      <string>Maximum number of objects the viewer will load media for initially</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>100000</integer>
+    </map>
+	<key>PrimMediaMaxRoundRobinQueueSize</key>
+    <map>
+      <key>Comment</key>
+      <string>Maximum number of objects the viewer will continuously update media for</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>100000</integer>
+    </map>
     <key>PreviewAnimRect</key>
     <map>
       <key>Comment</key>
@@ -10937,6 +11171,50 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <real>1.0</real>
     </map>
+    <key>WebContentWindowLimit</key>
+    <map>
+      <key>Comment</key>
+      <string>Maximum number of web browser windows that can be open at once in the Web content floater (0 for no limit)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>5</integer>
+    </map>
+  <key>MediaRollOffRate</key>
+  <map>
+    <key>Comment</key>
+    <string>Multiplier to change rate of media attenuation</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>0.125</real>
+  </map>
+  <key>MediaRollOffMin</key>
+  <map>
+    <key>Comment</key>
+    <string>Adjusts the distance at which media attentuation starts</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>5.0</real>
+  </map>
+  <key>MediaRollOffMax</key>
+  <map>
+    <key>Comment</key>
+    <string>Distance at which media volume is set to 0</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>30.0</real>
+  </map>
     <key>RecentItemsSortOrder</key>
     <map>
       <key>Comment</key>

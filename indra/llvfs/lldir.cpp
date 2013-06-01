@@ -41,6 +41,17 @@
 #include "lluuid.h"
 
 #include "lldiriterator.h"
+#include "stringize.h"
+#include <boost/foreach.hpp>
+#include <boost/range/begin.hpp>
+#include <boost/range/end.hpp>
+#include <boost/assign/list_of.hpp>
+#include <boost/bind.hpp>
+#include <boost/ref.hpp>
+#include <algorithm>
+
+using boost::assign::list_of;
+using boost::assign::map_list_of;
 
 #if LL_WINDOWS
 #include "lldir_win32.h"
@@ -86,12 +97,17 @@ S32 LLDir::deleteFilesInDir(const std::string &dirname, const std::string &mask)
 	std::string fullpath;
 	S32 result;
 
+	// File masks starting with "/" will match nothing, so we consider them invalid.
+	if (LLStringUtil::startsWith(mask, getDirDelimiter()))
+	{
+		llwarns << "Invalid file mask: " << mask << llendl;
+		llassert(!"Invalid file mask");
+	}
+
 	LLDirIterator iter(dirname, mask);
 	while (iter.next(filename))
 	{
-		fullpath = dirname;
-		fullpath += getDirDelimiter();
-		fullpath += filename;
+		fullpath = add(dirname, filename);
 
 		if(LLFile::isdir(fullpath))
 		{
@@ -259,12 +275,12 @@ std::string LLDir::buildSLOSCacheDir() const
 		}
 		else
 		{
-			res = getOSUserAppDir() + mDirDelimiter + "cache_sg1";
+			res = add(getOSUserAppDir(), "cache_sg1");
 		}
 	}
 	else
 	{
-		res = getOSCacheDir() + mDirDelimiter + "SingularityViewer";
+		res = add(getOSCacheDir(), "SingularityViewer");
 	}
 	return res;
 }
@@ -310,6 +326,39 @@ const std::string LLDir::getSkinBaseDir() const
 const std::string &LLDir::getLLPluginDir() const
 {
 	return mLLPluginDir;
+}
+
+static std::string ELLPathToString(ELLPath location)
+{
+	typedef std::map<ELLPath, const char*> ELLPathMap;
+#define ENT(symbol) (symbol, #symbol)
+	static const ELLPathMap sMap = map_list_of
+		ENT(LL_PATH_NONE)
+		ENT(LL_PATH_USER_SETTINGS)
+		ENT(LL_PATH_APP_SETTINGS)
+		ENT(LL_PATH_PER_SL_ACCOUNT) // returns/expands to blank string if we don't know the account name yet
+		ENT(LL_PATH_CACHE)
+		ENT(LL_PATH_CHARACTER)
+		ENT(LL_PATH_HELP)
+		ENT(LL_PATH_LOGS)
+		ENT(LL_PATH_TEMP)
+		ENT(LL_PATH_SKINS)
+		ENT(LL_PATH_TOP_SKIN)
+		ENT(LL_PATH_CHAT_LOGS)
+		ENT(LL_PATH_PER_ACCOUNT_CHAT_LOGS)
+		ENT(LL_PATH_USER_SKIN)
+		ENT(LL_PATH_LOCAL_ASSETS)
+		ENT(LL_PATH_EXECUTABLE)
+		ENT(LL_PATH_DEFAULT_SKIN)
+		ENT(LL_PATH_FONTS)
+		ENT(LL_PATH_LAST)
+	;
+#undef ENT
+
+	ELLPathMap::const_iterator found = sMap.find(location);
+	if (found != sMap.end())
+		return found->second;
+	return STRINGIZE("Invalid ELLPath value " << location);
 }
 
 std::string LLDir::getExpandedFilename(ELLPath location, const std::string& filename) const
@@ -403,45 +452,29 @@ std::string LLDir::getExpandedFilename(ELLPath location, const std::string& subd
 		llassert(0);
 	}
 
-	std::string filename = in_filename;
-	if (!subdir2.empty())
-	{
-		filename = add(subdir2, filename);
-	}
-
-	if (!subdir1.empty())
-	{
-		filename = add(subdir1, filename);
-	}
-
 	if (prefix.empty())
 	{
-		llwarns << "prefix is empty, possible bad filename" << llendl;
-	}
-	
-	std::string expanded_filename;
-	if (!filename.empty())
-	{
-		if (!prefix.empty())
-		{
-			expanded_filename = add(prefix, filename);
-		}
-		else
-		{
-			expanded_filename = filename;
-		}
-	}
-	else if (!prefix.empty())
-	{
-		// Directory only, no file name.
-		expanded_filename = prefix;
-	}
-	else
-	{
-		expanded_filename.assign("");
+		llwarns << ELLPathToString(location)
+				<< ", '" << subdir1 << "', '" << subdir2 << "', '" << in_filename
+				<< "': prefix is empty, possible bad filename" << llendl;
 	}
 
-	//llinfos << "*** EXPANDED FILENAME: <" << expanded_filename << ">" << llendl;
+	std::string expanded_filename = add(add(prefix, subdir1), subdir2);
+	if (expanded_filename.empty() && in_filename.empty())
+	{
+		return "";
+	}
+	// Use explicit concatenation here instead of another add() call. Callers
+	// passing in_filename as "" expect to obtain a pathname ending with
+	// mDirSeparator so they can later directly concatenate with a specific
+	// filename. A caller using add() doesn't care, but there's still code
+	// loose in the system that uses std::string::operator+().
+	expanded_filename += mDirDelimiter;
+	expanded_filename += in_filename;
+
+	LL_DEBUGS("LLDir") << ELLPathToString(location)
+					   << ", '" << subdir1 << "', '" << subdir2 << "', '" << in_filename
+					   << "' => '" << expanded_filename << "'" << LL_ENDL;
 	return expanded_filename;
 }
 

@@ -78,13 +78,12 @@ void LLPanel::init()
 
 	setTabStop(FALSE);
 	mVisibleSignal = NULL;
-	
-	mCommitCallbackRegistrar = false;
-	mEnableCallbackRegistrar = false;
 }
 
 LLPanel::LLPanel()
-: mRectControl()
+: mRectControl(),
+	mCommitCallbackRegistrar(false),
+	mEnableCallbackRegistrar(false)
 {
 	init();
 	setName(std::string("panel"));
@@ -92,7 +91,9 @@ LLPanel::LLPanel()
 
 LLPanel::LLPanel(const std::string& name)
 :	LLUICtrl(name),
-	mRectControl()
+	mRectControl(),
+	mCommitCallbackRegistrar(false),
+	mEnableCallbackRegistrar(false)
 {
 	init();
 }
@@ -100,7 +101,9 @@ LLPanel::LLPanel(const std::string& name)
 
 LLPanel::LLPanel(const std::string& name, const LLRect& rect, BOOL bordered)
 :	LLUICtrl(name,rect),
-	mRectControl()
+	mRectControl(),
+	mCommitCallbackRegistrar(false),
+	mEnableCallbackRegistrar(false)
 {
 	init();
 	if (bordered)
@@ -112,7 +115,9 @@ LLPanel::LLPanel(const std::string& name, const LLRect& rect, BOOL bordered)
 
 LLPanel::LLPanel(const std::string& name, const std::string& rect_control, BOOL bordered)
 :	LLUICtrl(name, LLUI::sConfigGroup->getRect(rect_control)),
-	mRectControl( rect_control )
+	mRectControl( rect_control ),
+	mCommitCallbackRegistrar(false),
+	mEnableCallbackRegistrar(false)
 {
 	init();
 	if (bordered)

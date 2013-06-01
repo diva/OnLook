@@ -134,9 +134,7 @@ LLMediaCtrl::LLMediaCtrl( const Params& p) :
 	}*/
 		
 
-	LLRect border_rect( 0, getRect().getHeight() + 2, getRect().getWidth() + 2, 0 );
-	mBorder = new LLViewBorder( std::string("web control border"), border_rect, LLViewBorder::BEVEL_IN );
-	addChild( mBorder );
+	//LLRect border_rect( 0, getRect().getHeight() + 2, getRect().getWidth() + 2, 0 );
 }
 
 LLMediaCtrl::~LLMediaCtrl()
@@ -152,10 +150,13 @@ LLMediaCtrl::~LLMediaCtrl()
 //
 void LLMediaCtrl::setBorderVisible( BOOL border_visible )
 {
-	if ( mBorder )
+	if(border_visible && !mBorder)
 	{
-		mBorder->setVisible( border_visible );
-	};
+		mBorder = new LLViewBorder( std::string("web control border"), getLocalRect(), LLViewBorder::BEVEL_IN );
+		addChild( mBorder );
+	}
+	if(mBorder)
+		mBorder->setVisible(border_visible);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -705,7 +706,6 @@ LLPluginClassMedia* LLMediaCtrl::getMediaPlugin()
 //
 void LLMediaCtrl::draw()
 {
-
 	if ( gRestoreGL == 1 )
 	{
 		LLRect r = getRect();

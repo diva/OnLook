@@ -980,6 +980,8 @@ bool LLAppViewer::init()
 	LLEnvManagerNew::instance().usePrefs();
 
 	gGLActive = FALSE;
+	LLViewerMedia::initClass();
+	LL_INFOS("InitInfo") << "Viewer media initialized." << LL_ENDL ;
 	return true;
 }
 
@@ -1706,8 +1708,7 @@ bool LLAppViewer::cleanup()
 	if (mPurgeOnExit)
 	{
 		llinfos << "Purging all cache files on exit" << llendflush;
-		std::string mask = gDirUtilp->getDirDelimiter() + "*.*";
-		gDirUtilp->deleteFilesInDir(gDirUtilp->getExpandedFilename(LL_PATH_CACHE,""),mask);
+		gDirUtilp->deleteFilesInDir(gDirUtilp->getExpandedFilename(LL_PATH_CACHE,""),"*.*");
 	}
 
 	removeMarkerFile(); // Any crashes from here on we'll just have to ignore
@@ -2669,8 +2670,7 @@ void LLAppViewer::cleanupSavedSettings()
 
 void LLAppViewer::removeCacheFiles(const std::string& file_mask)
 {
-	std::string mask = gDirUtilp->getDirDelimiter() + file_mask;
-	gDirUtilp->deleteFilesInDir(gDirUtilp->getExpandedFilename(LL_PATH_CACHE, ""), mask);
+	gDirUtilp->deleteFilesInDir(gDirUtilp->getExpandedFilename(LL_PATH_CACHE, ""), file_mask);
 }
 
 void LLAppViewer::writeSystemInfo()

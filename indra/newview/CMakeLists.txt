@@ -455,7 +455,6 @@ set(viewer_SOURCE_FILES
     llurl.cpp
     llurldispatcher.cpp
     llurlhistory.cpp
-    llurlsimstring.cpp
     llurlwhitelist.cpp
     lluserauth.cpp
     llvectorperfoptions.cpp
@@ -957,7 +956,6 @@ set(viewer_HEADER_FILES
     llurl.h
     llurldispatcher.h
     llurlhistory.h
-    llurlsimstring.h
     llurlwhitelist.h
     lluserauth.h
     llvectorperfoptions.h

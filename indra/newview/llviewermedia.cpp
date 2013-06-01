@@ -3046,8 +3046,8 @@ void LLViewerMediaImpl::setVisible(bool visible)
 		if(plugin && plugin->isPluginExited())
 		{
 			destroyMediaSource();
+			plugin = NULL;
 		}
-		
 		if(!plugin)
 		{
 			createMediaSource();
@@ -3716,10 +3716,9 @@ void LLViewerMediaImpl::setPriority(EPriority priority)
 			mPreviousMediaTime = plugin->getCurrentTime();
 			
 			destroyMediaSource();
+			plugin = NULL;
 		}
 	}
-
-	
 
 	if(plugin)
 	{
