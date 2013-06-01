@@ -1060,7 +1060,6 @@ set(viewer_HEADER_FILES
     noise.h
     pipeline.h
     qtoolalign.h
-    randgauss.h
     rlvcommon.h
     rlvdefines.h
     rlvextensions.h
