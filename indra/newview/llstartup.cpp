@@ -167,7 +167,6 @@
 #include "lltrans.h"
 #include "llui.h"
 #include "llurldispatcher.h"
-#include "llurlsimstring.h"
 #include "llurlhistory.h"
 #include "llurlwhitelist.h"
 #include "lluserauth.h"
@@ -394,6 +393,7 @@ bool idle_startup()
 	static LLUUID web_login_key;
 	static std::string password;
 	static std::vector<const char*> requested_options;
+	static std::string redirect_uri;
 
 	static LLVector3 initial_sun_direction(1.f, 0.f, 0.f);
 	static LLVector3 agent_start_position_region(10.f, 10.f, 10.f);		// default for when no space server
@@ -1234,69 +1234,10 @@ bool idle_startup()
 		auth_method = "login_to_simulator";
 		
 		auth_desc = LLTrans::getString("LoginInProgress");
+		set_startup_status(progress, auth_desc, auth_message);
 		LLStartUp::setStartupState( STATE_XMLRPC_LEGACY_LOGIN ); // XMLRPC
 	}
 
-	// OGPX : Note that this uses existing STATE_LOGIN_AUTHENTICATE in viewer, 
-	// and also inserts two new states for LEGACY (where Legacy in this case
-	// was LLSD HTTP Post in OGP9, and not XML-RPC). 
-	//
-	// The OGP login daisy chains together several POSTs that must complete successfully 
-	// in order for startup state to finally get set to STATE_LOGIN_PROCESS_RESPONSE. 
-	//
-
-	if (STATE_LOGIN_AUTHENTICATE == LLStartUp::getStartupState())
-	{
-		LL_DEBUGS("AppInit") << "STATE_LOGIN_AUTHENTICATE" << LL_ENDL;
-		set_startup_status(progress, auth_desc, auth_message);
-		
-		LLSD args;
-		LLSD identifier;
-		LLSD authenticator;
-
-		identifier["type"] = "agent";
-		identifier["first_name"] = firstname;
-		identifier["last_name"] = lastname;
-		authenticator["type"] = "hash";
-		authenticator["algorithm"] = "md5";
-		authenticator["secret"] = password;
-		args["identifier"] = identifier;
-		args["authenticator"] = authenticator;
-	
-
-		//args["firstname"] = firstname;
-		//args["lastname"] = lastname;
-		//args["md5-password"] = password;
-		
-		// allows you to 'suggest' which agent service you'd like to use
-		std::string	agenturi = gSavedSettings.getString("CmdLineAgentURI");
-		if (!agenturi.empty())
-		{
-			 args["agent_url"] = agenturi;
-		}
-
-		char hashed_mac_string[MD5HEX_STR_SIZE];		/* Flawfinder: ignore */
-		LLMD5 hashed_mac;
-		hashed_mac.update( gMACAddress, MAC_ADDRESS_BYTES );
-		hashed_mac.finalize();
-		hashed_mac.hex_digest(hashed_mac_string);
-		args["mac_address"] = hashed_mac_string;
-
-		args["id0"] = LLAppViewer::instance()->getSerialNumber();
-
-		args["agree_to_tos"] = gAcceptTOS;
-		args["read_critical"] = gAcceptCriticalMessage;
-
-		LLViewerLogin* vl = LLViewerLogin::getInstance();
-		std::string grid_uri = vl->getCurrentGridURI();
-
-		gAcceptTOS = FALSE;
-		gAcceptCriticalMessage = FALSE;
-
-		LLStartUp::setStartupState(STATE_WAIT_LEGACY_LOGIN);
-		return FALSE;
-	}
-	
 	if (STATE_XMLRPC_LEGACY_LOGIN == LLStartUp::getStartupState())
 	{
 		lldebugs << "STATE_XMLRPC_LEGACY_LOGIN" << llendl;
@@ -1336,9 +1277,11 @@ bool idle_startup()
 		hashed_mac.finalize();
 		hashed_mac.hex_digest(hashed_mac_string);
 
-
 		LLViewerLogin* vl = LLViewerLogin::getInstance();
 		std::string grid_uri = vl->getCurrentGridURI();
+		if(!redirect_uri.empty())
+			grid_uri = redirect_uri;
+		redirect_uri.clear();
 
 		llinfos << "Authenticating with " << grid_uri << llendl;
 
@@ -1451,6 +1394,11 @@ bool idle_startup()
 			reason_response = response["reason"].asString();
 			message_response = response["message"].asString();
 			message_id = response["message_id"].asString();
+			{
+			std::stringstream dump_str;
+			dump_str << response;
+			llinfos << dump_str.str() << llendl;
+			}
 			
 			if(login_response == "true")
 			{
@@ -1458,8 +1406,20 @@ bool idle_startup()
 				successful_login = true;
 				Debug(if (gCurlIo) dc::curlio.off());		// Login succeeded: restore dc::curlio to original state.
 			}
+			else if(login_response == "indeterminate")
+			{
+				progress += 0.01f;
+				auth_message = message_response;
+				set_startup_status(progress, auth_desc, auth_message);
+
+				auth_method = response["next_method"].asString();
+				redirect_uri = response["next_url"].asString();
+				LLStartUp::setStartupState(STATE_XMLRPC_LEGACY_LOGIN );
+				return false;
+			}
 			else
 			{
+				
 				emsg << LLTrans::getString("LoginFailed") + "\n";
 
 				if (!message_response.empty())
@@ -1482,6 +1442,7 @@ bool idle_startup()
 					if (show_connect_box)
 					{
 						LL_DEBUGS("AppInit") << "Need tos agreement" << LL_ENDL;
+
 						LLStartUp::setStartupState( STATE_UPDATE_CHECK );
 						LLFloaterTOS* tos_dialog = LLFloaterTOS::show(LLFloaterTOS::TOS_TOS,
 																	message_response);
@@ -3424,8 +3385,6 @@ std::string LLStartUp::startupStateToString(EStartupState state)
 		RTNENUM( STATE_LOGIN_VOICE_LICENSE );
 		RTNENUM( STATE_UPDATE_CHECK );
 		RTNENUM( STATE_LOGIN_AUTH_INIT );
-		RTNENUM( STATE_LOGIN_AUTHENTICATE );
-		RTNENUM( STATE_WAIT_LEGACY_LOGIN );
 		RTNENUM( STATE_XMLRPC_LEGACY_LOGIN );
 		RTNENUM( STATE_LOGIN_NO_DATA_YET );
 		RTNENUM( STATE_LOGIN_DOWNLOADING );
