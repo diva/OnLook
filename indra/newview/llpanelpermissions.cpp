@@ -261,7 +261,7 @@ void LLPanelPermissions::disableAll()
 		combo_click_action->clear();
 	}
 	getChildView("B:")->setVisible(								FALSE);
-	getChildView("O:")->setVisible(								FALSE);
+	//getChildView("O:")->setVisible(								FALSE);
 	getChildView("G:")->setVisible(								FALSE);
 	getChildView("E:")->setVisible(								FALSE);
 	getChildView("N:")->setVisible(								FALSE);
@@ -666,8 +666,8 @@ void LLPanelPermissions::refresh()
 			perm_string = mask_to_string(owner_mask_on);
 			if (!supports_export && owner_mask_on & PERM_EXPORT) // Hide Export when not available
 				perm_string.erase(perm_string.find_last_of("E"));
-			getChild<LLUICtrl>("O:")->setValue("O: " + perm_string);
-			getChildView("O:")->setVisible(							TRUE);
+			//getChild<LLUICtrl>("O:")->setValue("O: " + perm_string);
+			//getChildView("O:")->setVisible(							TRUE);
 			
 			getChild<LLUICtrl>("G:")->setValue("G: " + mask_to_string(group_mask_on));
 			getChildView("G:")->setVisible(							TRUE);
@@ -695,7 +695,7 @@ void LLPanelPermissions::refresh()
 	{
 		childSetVisible("perm_modify", true);
 		getChildView("B:")->setVisible(								FALSE);
-		getChildView("O:")->setVisible(								FALSE);
+		//getChildView("O:")->setVisible(								FALSE);
 		getChildView("G:")->setVisible(								FALSE);
 		getChildView("E:")->setVisible(								FALSE);
 		getChildView("N:")->setVisible(								FALSE);
