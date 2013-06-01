@@ -84,6 +84,7 @@ AIPerService::CapabilityType::CapabilityType(void) :
 		mQueuedCommands(0),
 		mAdded(0),
 		mFlags(0),
+		mDownloading(0),
 		mMaxPipelinedRequests(CurlConcurrentConnectionsPerService)
 {
 }
@@ -263,11 +264,16 @@ void AIPerService::added_to_multi_handle(AICapabilityType capability_type)
   ++mTotalAdded;
 }
 
-void AIPerService::removed_from_multi_handle(AICapabilityType capability_type)
+void AIPerService::removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something)
 {
+  llassert(mTotalAdded > 0 && mCapabilityType[capability_type].mAdded > 0);
   --mCapabilityType[capability_type].mAdded;
+  if (downloaded_something)
+  {
+	llassert(mCapabilityType[capability_type].mDownloading > 0);
+	--mCapabilityType[capability_type].mDownloading;
+  }
   --mTotalAdded;
-  llassert(mTotalAdded >= 0 && mCapabilityType[capability_type].mAdded >= 0);
 }
 
 void AIPerService::queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type)
@@ -450,7 +456,7 @@ void AIPerService::Approvement::honored(void)
   if (!mHonored)
   {
 	mHonored = true;
-	AICurlPrivate::PerService_wat per_service_w(*mPerServicePtr);
+	PerService_wat per_service_w(*mPerServicePtr);
 	llassert(per_service_w->mCapabilityType[mCapabilityType].mApprovedRequests > 0);
 	per_service_w->mCapabilityType[mCapabilityType].mApprovedRequests--;
   }
