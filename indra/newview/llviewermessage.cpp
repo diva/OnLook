@@ -2529,6 +2529,16 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				args["MESSAGE"] = mes;
 				LLNotifications::instance().add(LLNotification::Params("GroupNotice").substitutions(args).payload(payload).timestamp(timestamp));
 			}
+
+			// Also send down the old path for now.
+			if (IM_GROUP_NOTICE_REQUESTED == dialog)
+			{
+				LLGroupActions::showNotice(subj,mes,group_id,has_inventory,item_name,info);
+			}
+			else
+			{
+				delete info;
+			}
 		}
 		break;
 	case IM_GROUP_INVITATION:

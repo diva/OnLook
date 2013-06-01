@@ -28,6 +28,7 @@
 #define LL_LLGROUPACTIONS_H
 
 class LLFloaterGroupInfo;
+class LLOfferInfo;
 
 /**
  * Group-related actions (join, leave, new, delete, etc)
@@ -62,6 +63,11 @@ public:
 	 * Show group information panel, with specific tab open.
 	 */
 	static void showTab(const LLUUID& group_id, const std::string& tab_name);
+
+	/**
+	 * Show group notice that has come in.
+	 */
+	static void showNotice(const std::string& subj, const std::string& mes, const LLUUID& group_id, const bool& has_inventory, const std::string& item_name, LLOfferInfo* info);
 
 	/**
 	 * Show group inspector floater.

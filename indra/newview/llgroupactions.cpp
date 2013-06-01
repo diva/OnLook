@@ -38,14 +38,13 @@
 #include "llimview.h" // for gIMMgr
 #include "llnotificationsutil.h"
 #include "llpanelgroup.h"
+#include "llviewermessage.h"
 #include "groupchatlistener.h"
 #include "hippolimits.h" // for getMaxAgentGroups
 // [RLVa:KB] - Checked: 2011-03-28 (RLVa-1.3.0f)
 //#include "llslurl.h"
 #include "rlvhandler.h"
 // [/RLVa:KB]
-
-BOOL can_afford_transaction(S32 cost);
 
 //
 // Globals
@@ -309,6 +308,23 @@ void LLGroupActions::showTab(const LLUUID& group_id, const std::string& tab_name
 	if (group_id.isNull()) return;
 
 	openGroupProfile(group_id)->selectTabByName(tab_name);
+}
+
+// static
+void LLGroupActions::showNotice(const std::string& subj, const std::string& mes, const LLUUID& group_id, const bool& has_inventory, const std::string& item_name, LLOfferInfo* info)
+{
+	if (LLFloaterGroupInfo* fgi = LLFloaterGroupInfo::getInstance(group_id))
+	{
+		fgi->mPanelGroupp->showNotice(subj, mes, has_inventory, item_name, info);
+	}
+	else
+	{
+		// We need to clean up that inventory offer.
+		if (info)
+		{
+			info->forceResponse(IOR_DECLINE);
+		}
+	}
 }
 
 /* Singu Note: How could this ever work with a null id, it's only used by llnotificationgrouphandler.cpp which we don't have
