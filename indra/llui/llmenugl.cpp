@@ -3749,9 +3749,9 @@ void LLPieMenu::draw()
 	F32 center_y = height/2;
 	S32 steps = 100;
 
-	gGL.pushMatrix();
+	gGL.pushUIMatrix();
 	{
-		gGL.translatef(center_x, center_y, 0.f);
+		gGL.translateUI(center_x, center_y, 0.f);
 
 		F32 line_width = LLUI::sConfigGroup->getF32("PieMenuLineWidth");
 		LLColor4 line_color = LLUI::sColorsGroup->getColor("PieMenuLineColor");
@@ -3799,7 +3799,7 @@ void LLPieMenu::draw()
 
 		LLUI::setLineWidth(1.0f);
 	}
-	gGL.popMatrix();
+	gGL.popUIMatrix();
 
 	mHoverThisFrame = FALSE;
 
@@ -3815,9 +3815,9 @@ void LLPieMenu::drawBackground(LLMenuItemGL* itemp, LLColor4& color)
 	S32 steps = 100;
 
 	gGL.color4fv( color.mV );
-	gGL.pushMatrix();
+	gGL.pushUIMatrix();
 	{
-		gGL.translatef(center_x - itemp->getRect().mLeft, center_y - itemp->getRect().mBottom, 0.f);
+		gGL.translateUI(center_x - itemp->getRect().mLeft, center_y - itemp->getRect().mBottom, 0.f);
 
 		item_list_t::iterator item_iter;
 		S32 i = 0;
@@ -3837,7 +3837,7 @@ void LLPieMenu::drawBackground(LLMenuItemGL* itemp, LLColor4& color)
 			i++;
 		}
 	}
-	gGL.popMatrix();
+	gGL.popUIMatrix();
 }
 
 // virtual
