@@ -60,6 +60,7 @@
 #include "llviewermenu.h"
 #include "llviewermessage.h"
 #include "llviewerwindow.h"
+#include "llvoicechannel.h"
 #include "llnotify.h"
 #include "llviewerregion.h"
 

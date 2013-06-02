@@ -3,10 +3,9 @@
  * @brief Implementation of LLVoiceClient class which is the interface to the voice client process.
  *
  * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
+ * Second Life Viewer Source Code
  * Copyright (c) 2001-2009, Linden Research, Inc.
  * 
- * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
  * to you under the terms of the GNU General Public License, version 2.0
  * ("GPL"), unless you have obtained a separate licensing agreement
@@ -60,12 +59,12 @@
 #include "llagent.h"
 #include "llcachename.h"
 #include "llimview.h" // for LLIMMgr
-#include "llimpanel.h" // for LLVoiceChannel
 #include "llparcel.h"
 #include "llviewerparcelmgr.h"
 #include "llfirstuse.h"
 #include "llviewerwindow.h"
 #include "llviewercamera.h"
+#include "llvoicechannel.h"
 #include "llnotificationsutil.h"
 
 #include "llfloaterfriends.h"  //VIVOX, inorder to refresh communicate panel

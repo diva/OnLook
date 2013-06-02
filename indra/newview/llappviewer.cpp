@@ -78,7 +78,7 @@
 #include "llfirstuse.h"
 #include "llrender.h"
 #include "llvector4a.h"
-#include "llimpanel.h" // For LLVoiceClient and LLVoiceChannel
+#include "llvoicechannel.h"
 #include "llvoavatarself.h"
 #include "llprogressview.h"
 #include "llvocache.h"

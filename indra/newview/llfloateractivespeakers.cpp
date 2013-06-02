@@ -38,7 +38,7 @@
 #include "llappviewer.h"
 #include "llavataractions.h"
 #include "llbutton.h"
-#include "llimpanel.h" // LLVoiceChannel
+#include "llimpanel.h" // LLFloaterIMPanel
 #include "llimview.h"
 #include "llmutelist.h"
 #include "llscrolllistctrl.h"
@@ -48,6 +48,7 @@
 #include "llviewerobjectlist.h"
 #include "llviewerwindow.h"
 #include "llvoavatar.h"
+#include "llvoicechannel.h"
 #include "llworld.h"
 
 // [RLVa:KB]

@@ -44,8 +44,8 @@
 #include "llprefsvoice.h"
 #include "llsliderctrl.h"
 #include "llviewercontrol.h"
+#include "llvoicechannel.h"
 #include "llvoiceclient.h"
-#include "llimpanel.h"
 
 // Library includes (after viewer)
 #include "lluictrlfactory.h"
