@@ -64,7 +64,7 @@ LLPanelVoiceDeviceSettings::LLPanelVoiceDeviceSettings()
 
 	// ask for new device enumeration
 	// now do this in onOpen() instead...
-	//gVoiceClient->refreshDeviceLists();
+	//LLVoiceClient::getInstance()->refreshDeviceLists();
 }
 
 LLPanelVoiceDeviceSettings::~LLPanelVoiceDeviceSettings()
@@ -86,12 +86,12 @@ BOOL LLPanelVoiceDeviceSettings::postBuild()
 void LLPanelVoiceDeviceSettings::draw()
 {
 	// let user know that volume indicator is not yet available
-	bool is_in_tuning_mode = gVoiceClient->inTuningMode();
+	bool is_in_tuning_mode = LLVoiceClient::getInstance()->inTuningMode();
 	childSetVisible("wait_text", !is_in_tuning_mode);
 
 	LLPanel::draw();
 
-	F32 voice_power = gVoiceClient->tuningGetEnergy();
+	F32 voice_power = LLVoiceClient::getInstance()->tuningGetEnergy();
 	S32 discrete_power = 0;
 
 	if (!is_in_tuning_mode)
@@ -174,13 +174,13 @@ void LLPanelVoiceDeviceSettings::refresh()
 	LLSlider* volume_slider = getChild<LLSlider>("mic_volume_slider");
 	// set mic volume tuning slider based on last mic volume setting
 	F32 current_volume = (F32)volume_slider->getValue().asReal();
-	gVoiceClient->tuningSetMicVolume(current_volume);
+	LLVoiceClient::getInstance()->tuningSetMicVolume(current_volume);
 
 	// Fill in popup menus
 	mCtrlInputDevices = getChild<LLComboBox>("voice_input_device");
 	mCtrlOutputDevices = getChild<LLComboBox>("voice_output_device");
 
-	if(!gVoiceClient->deviceSettingsAvailable())
+	if(!LLVoiceClient::getInstance()->deviceSettingsAvailable())
 	{
 		// The combo boxes are disabled, since we can't get the device settings from the daemon just now.
 		// Put the currently set default (ONLY) in the box, and select it.
@@ -208,7 +208,7 @@ void LLPanelVoiceDeviceSettings::refresh()
 			mCtrlInputDevices->removeall();
 			mCtrlInputDevices->add( getString("default_text"), ADD_BOTTOM );
 
-			devices = gVoiceClient->getCaptureDevices();
+			devices = LLVoiceClient::getInstance()->getCaptureDevices();
 			for(iter=devices->begin(); iter != devices->end(); iter++)
 			{
 				mCtrlInputDevices->add( *iter, ADD_BOTTOM );
@@ -225,7 +225,7 @@ void LLPanelVoiceDeviceSettings::refresh()
 			mCtrlOutputDevices->removeall();
 			mCtrlOutputDevices->add( getString("default_text"), ADD_BOTTOM );
 
-			devices = gVoiceClient->getRenderDevices();
+			devices = LLVoiceClient::getInstance()->getRenderDevices();
 			for(iter=devices->begin(); iter != devices->end(); iter++)
 			{
 				mCtrlOutputDevices->add( *iter, ADD_BOTTOM );
@@ -248,34 +248,34 @@ void LLPanelVoiceDeviceSettings::onOpen()
 	mDevicesUpdated = FALSE;
 
 	// ask for new device enumeration
-	gVoiceClient->refreshDeviceLists();
+	LLVoiceClient::getInstance()->refreshDeviceLists();
 
 	// put voice client in "tuning" mode
-	gVoiceClient->tuningStart();
+	LLVoiceClient::getInstance()->tuningStart();
 	LLVoiceChannel::suspend();
 }
 
 void LLPanelVoiceDeviceSettings::onClose(bool app_quitting)
 {
-	gVoiceClient->tuningStop();
+	LLVoiceClient::getInstance()->tuningStop();
 	LLVoiceChannel::resume();
 }
 
 // static
 void LLPanelVoiceDeviceSettings::onCommitInputDevice(LLUICtrl* ctrl, void* user_data)
 {
-	if(gVoiceClient)
+	if(LLVoiceClient::instanceExists())
 	{
-		gVoiceClient->setCaptureDevice(ctrl->getValue().asString());
+		LLVoiceClient::getInstance()->setCaptureDevice(ctrl->getValue().asString());
 	}
 }
 
 // static
 void LLPanelVoiceDeviceSettings::onCommitOutputDevice(LLUICtrl* ctrl, void* user_data)
 {
-	if(gVoiceClient)
+	if(LLVoiceClient::instanceExists())
 	{
-		gVoiceClient->setRenderDevice(ctrl->getValue().asString());
+		LLVoiceClient::getInstance()->setRenderDevice(ctrl->getValue().asString());
 	}
 }
 

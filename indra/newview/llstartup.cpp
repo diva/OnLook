@@ -1592,7 +1592,7 @@ bool idle_startup()
 				}
 				gViewerWindow->getWindow()->setTitle(LLAppViewer::instance()->getWindowTitle() + "- " + name);
 							// Pass the user information to the voice chat server interface.
-				gVoiceClient->userAuthorized(firstname, lastname, gAgentID);
+				LLVoiceClient::getInstance()->userAuthorized(firstname, lastname, gAgentID);
 				LLStartUp::setStartupState( STATE_WORLD_INIT );
 			}
 			else

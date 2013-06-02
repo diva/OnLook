@@ -93,7 +93,7 @@ class LLVoiceClient: public LLSingleton<LLVoiceClient>
 
 	public:
 		
-		static F32 OVERDRIVEN_POWER_LEVEL;
+		static const F32 OVERDRIVEN_POWER_LEVEL;
 
 		void updateSettings(); // call after loading settings and whenever they change
 	
@@ -461,9 +461,8 @@ static	void updatePosition(void);
 		void removeObserver(LLFriendObserver* observer);
 		
 		void lookupName(const LLUUID &id);
-		static void onAvatarNameLookup(const LLUUID& id, const std::string& full_name);
 		void avatarNameResolved(const LLUUID &id, const std::string &name);
-		
+
 		typedef std::vector<std::string> deviceList;
 
 		deviceList *getCaptureDevices();
@@ -747,8 +746,6 @@ static	std::string nameFromsipURI(const std::string &uri);
 		friend_observer_set_t mFriendObservers;
 		void notifyFriendObservers();
 };
-
-extern LLVoiceClient *gVoiceClient;
 
 #endif //LL_VOICE_CLIENT_H
 

@@ -28,6 +28,7 @@
  * COMPLETENESS OR PERFORMANCE.
  * $/LicenseInfo$
  */
+
 #include "llviewerprecompiledheaders.h"
 
 #if LL_LINUX && defined(LL_STANDALONE)
@@ -86,14 +87,12 @@ extern AIHTTPTimeoutPolicy viewerVoiceAccountProvisionResponder_timeout;
 extern AIHTTPTimeoutPolicy voiceClientCapResponder_timeout;
 
 static bool sConnectingToAgni = false;
-F32 LLVoiceClient::OVERDRIVEN_POWER_LEVEL = 0.7f;
+const F32 LLVoiceClient::OVERDRIVEN_POWER_LEVEL = 0.7f;
 
 const F32 SPEAKING_TIMEOUT = 1.f;
 
 const int VOICE_MAJOR_VERSION = 1;
 const int VOICE_MINOR_VERSION = 0;
-
-LLVoiceClient *gVoiceClient = NULL;
 
 // Don't retry connecting to the daemon more frequently than this:
 const F32 CONNECT_THROTTLE_SECONDS = 1.0f;
@@ -155,19 +154,19 @@ public:
 		if ( mRetries > 0 )
 		{
 			LL_WARNS("Voice") << "ProvisionVoiceAccountRequest returned an error, retrying.  status = " << status << ", reason = \"" << reason << "\"" << LL_ENDL;
-			if ( gVoiceClient ) gVoiceClient->requestVoiceAccountProvision(
+			if (LLVoiceClient::instanceExists()) LLVoiceClient::getInstance()->requestVoiceAccountProvision(
 				mRetries - 1);
 		}
 		else
 		{
 			LL_WARNS("Voice") << "ProvisionVoiceAccountRequest returned an error, too many retries (giving up).  status = " << status << ", reason = \"" << reason << "\"" << LL_ENDL;
-			if ( gVoiceClient ) gVoiceClient->giveUp();
+			if (LLVoiceClient::instanceExists()) LLVoiceClient::getInstance()->giveUp();
 		}
 	}
 
 	/*virtual*/ void result(const LLSD& content)
 	{
-		if ( gVoiceClient )
+		if (LLVoiceClient::instanceExists())
 		{
 			std::string voice_sip_uri_hostname;
 			std::string voice_account_server_uri;
@@ -181,7 +180,7 @@ public:
 			if(content.has("voice_account_server_name"))
 				voice_account_server_uri = content["voice_account_server_name"].asString();
 			
-			gVoiceClient->login(
+			LLVoiceClient::getInstance()->login(
 				content["username"].asString(),
 				content["password"].asString(),
 				voice_sip_uri_hostname,
@@ -384,7 +383,7 @@ LLIOPipe::EStatus LLVivoxProtocolParser::process_impl(
 
 	LL_DEBUGS("VivoxProtocolParser") << "at end, mInput is: " << mInput << LL_ENDL;
 	
-	if(!gVoiceClient->mConnected)
+	if(!LLVoiceClient::getInstance()->mConnected)
 	{
 		// If voice has been disabled, we just want to close the socket.  This does so.
 		LL_INFOS("Voice") << "returning STATUS_STOP" << LL_ENDL;
@@ -484,23 +483,23 @@ void LLVivoxProtocolParser::StartTag(const char *tag, const char **attr)
 			}
 			else if (!stricmp("CaptureDevices", tag))
 			{
-				gVoiceClient->clearCaptureDevices();
+				LLVoiceClient::getInstance()->clearCaptureDevices();
 			}
 			else if (!stricmp("RenderDevices", tag))
 			{
-				gVoiceClient->clearRenderDevices();
+				LLVoiceClient::getInstance()->clearRenderDevices();
 			}
 			else if (!stricmp("Buddies", tag))
 			{
-				gVoiceClient->deleteAllBuddies();
+				LLVoiceClient::getInstance()->deleteAllBuddies();
 			}
 			else if (!stricmp("BlockRules", tag))
 			{
-				gVoiceClient->deleteAllBlockRules();
+				LLVoiceClient::getInstance()->deleteAllBlockRules();
 			}
 			else if (!stricmp("AutoAcceptRules", tag))
 			{
-				gVoiceClient->deleteAllAutoAcceptRules();
+				LLVoiceClient::getInstance()->deleteAllAutoAcceptRules();
 			}
 			
 		}
@@ -608,19 +607,19 @@ void LLVivoxProtocolParser::EndTag(const char *tag)
 		}
 		else if (!stricmp("CaptureDevice", tag))
 		{
-			gVoiceClient->addCaptureDevice(textBuffer);
+			LLVoiceClient::getInstance()->addCaptureDevice(textBuffer);
 		}
 		else if (!stricmp("RenderDevice", tag))
 		{
-			gVoiceClient->addRenderDevice(textBuffer);
+			LLVoiceClient::getInstance()->addRenderDevice(textBuffer);
 		}
 		else if (!stricmp("Buddy", tag))
 		{
-			gVoiceClient->processBuddyListEntry(uriString, displayNameString);
+			LLVoiceClient::getInstance()->processBuddyListEntry(uriString, displayNameString);
 		}
 		else if (!stricmp("BlockRule", tag))
 		{
-			gVoiceClient->addBlockRule(blockMask, presenceOnly);
+			LLVoiceClient::getInstance()->addBlockRule(blockMask, presenceOnly);
 		}
 		else if (!stricmp("BlockMask", tag))
 			blockMask = string;
@@ -628,7 +627,7 @@ void LLVivoxProtocolParser::EndTag(const char *tag)
 			presenceOnly = string;
 		else if (!stricmp("AutoAcceptRule", tag))
 		{
-			gVoiceClient->addAutoAcceptRule(autoAcceptMask, autoAddAsBuddy);
+			LLVoiceClient::getInstance()->addAutoAcceptRule(autoAcceptMask, autoAddAsBuddy);
 		}
 		else if (!stricmp("AutoAcceptMask", tag))
 			autoAcceptMask = string;
@@ -701,7 +700,7 @@ void LLVivoxProtocolParser::processResponse(std::string tag)
 		const char *eventTypeCstr = eventTypeString.c_str();
 		if (!stricmp(eventTypeCstr, "AccountLoginStateChangeEvent"))
 		{
-			gVoiceClient->accountLoginStateChangeEvent(accountHandle, statusCode, statusString, state);
+			LLVoiceClient::getInstance()->accountLoginStateChangeEvent(accountHandle, statusCode, statusString, state);
 		}
 		else if (!stricmp(eventTypeCstr, "SessionAddedEvent"))
 		{
@@ -715,15 +714,15 @@ void LLVivoxProtocolParser::processResponse(std::string tag)
 				<ChannelName />
 			</Event>
 			*/
-			gVoiceClient->sessionAddedEvent(uriString, alias, sessionHandle, sessionGroupHandle, isChannel, incoming, nameString, applicationString);
+			LLVoiceClient::getInstance()->sessionAddedEvent(uriString, alias, sessionHandle, sessionGroupHandle, isChannel, incoming, nameString, applicationString);
 		}
 		else if (!stricmp(eventTypeCstr, "SessionRemovedEvent"))
 		{
-			gVoiceClient->sessionRemovedEvent(sessionHandle, sessionGroupHandle);
+			LLVoiceClient::getInstance()->sessionRemovedEvent(sessionHandle, sessionGroupHandle);
 		}
 		else if (!stricmp(eventTypeCstr, "SessionGroupAddedEvent"))
 		{
-			gVoiceClient->sessionGroupAddedEvent(sessionGroupHandle);
+			LLVoiceClient::getInstance()->sessionGroupAddedEvent(sessionGroupHandle);
 		}
 		else if (!stricmp(eventTypeCstr, "MediaStreamUpdatedEvent"))
 		{
@@ -737,7 +736,7 @@ void LLVivoxProtocolParser::processResponse(std::string tag)
 				<Incoming>false</Incoming>
 			</Event>
 			*/
-			gVoiceClient->mediaStreamUpdatedEvent(sessionHandle, sessionGroupHandle, statusCode, statusString, state, incoming);
+			LLVoiceClient::getInstance()->mediaStreamUpdatedEvent(sessionHandle, sessionGroupHandle, statusCode, statusString, state, incoming);
 		}		
 		else if (!stricmp(eventTypeCstr, "TextStreamUpdatedEvent"))
 		{
@@ -750,7 +749,7 @@ void LLVivoxProtocolParser::processResponse(std::string tag)
 				<Incoming>true</Incoming>
 			</Event>
 			*/
-			gVoiceClient->textStreamUpdatedEvent(sessionHandle, sessionGroupHandle, enabled, state, incoming);
+			LLVoiceClient::getInstance()->textStreamUpdatedEvent(sessionHandle, sessionGroupHandle, enabled, state, incoming);
 		}
 		else if (!stricmp(eventTypeCstr, "ParticipantAddedEvent"))
 		{
@@ -764,7 +763,7 @@ void LLVivoxProtocolParser::processResponse(std::string tag)
 				<ParticipantType>0</ParticipantType>
 			</Event>
 			*/
-			gVoiceClient->participantAddedEvent(sessionHandle, sessionGroupHandle, uriString, alias, nameString, displayNameString, participantType);
+			LLVoiceClient::getInstance()->participantAddedEvent(sessionHandle, sessionGroupHandle, uriString, alias, nameString, displayNameString, participantType);
 		}
 		else if (!stricmp(eventTypeCstr, "ParticipantRemovedEvent"))
 		{
@@ -776,7 +775,7 @@ void LLVivoxProtocolParser::processResponse(std::string tag)
 				<AccountName>xtx7YNV-3SGiG7rA1fo5Ndw==</AccountName>
 			</Event>
 			*/
-			gVoiceClient->participantRemovedEvent(sessionHandle, sessionGroupHandle, uriString, alias, nameString);
+			LLVoiceClient::getInstance()->participantRemovedEvent(sessionHandle, sessionGroupHandle, uriString, alias, nameString);
 		}
 		else if (!stricmp(eventTypeCstr, "ParticipantUpdatedEvent"))
 		{
@@ -795,21 +794,21 @@ void LLVivoxProtocolParser::processResponse(std::string tag)
 			// These happen so often that logging them is pretty useless.
 			squelchDebugOutput = true;
 			
-			gVoiceClient->participantUpdatedEvent(sessionHandle, sessionGroupHandle, uriString, alias, isModeratorMuted, isSpeaking, volume, energy);
+			LLVoiceClient::getInstance()->participantUpdatedEvent(sessionHandle, sessionGroupHandle, uriString, alias, isModeratorMuted, isSpeaking, volume, energy);
 		}
 		else if (!stricmp(eventTypeCstr, "AuxAudioPropertiesEvent"))
 		{
-			gVoiceClient->auxAudioPropertiesEvent(energy);
+			LLVoiceClient::getInstance()->auxAudioPropertiesEvent(energy);
 		}
 		else if (!stricmp(eventTypeCstr, "BuddyPresenceEvent"))
 		{
-			gVoiceClient->buddyPresenceEvent(uriString, alias, statusString, applicationString);
+			LLVoiceClient::getInstance()->buddyPresenceEvent(uriString, alias, statusString, applicationString);
 		}
 		else if (!stricmp(eventTypeCstr, "BuddyAndGroupListChangedEvent"))
 		{
 			// The buddy list was updated during parsing.
 			// Need to recheck against the friends list.
-			gVoiceClient->buddyListChanged();
+			LLVoiceClient::getInstance()->buddyListChanged();
 		}
 		else if (!stricmp(eventTypeCstr, "BuddyChangedEvent"))
 		{
@@ -827,15 +826,15 @@ void LLVivoxProtocolParser::processResponse(std::string tag)
 		}
 		else if (!stricmp(eventTypeCstr, "MessageEvent"))  
 		{
-			gVoiceClient->messageEvent(sessionHandle, uriString, alias, messageHeader, messageBody, applicationString);
+			LLVoiceClient::getInstance()->messageEvent(sessionHandle, uriString, alias, messageHeader, messageBody, applicationString);
 		}
 		else if (!stricmp(eventTypeCstr, "SessionNotificationEvent"))  
 		{
-			gVoiceClient->sessionNotificationEvent(sessionHandle, uriString, notificationType);
+			LLVoiceClient::getInstance()->sessionNotificationEvent(sessionHandle, uriString, notificationType);
 		}
 		else if (!stricmp(eventTypeCstr, "SubscriptionEvent"))  
 		{
-			gVoiceClient->subscriptionEvent(uriString, subscriptionHandle, alias, displayNameString, applicationString, subscriptionType);
+			LLVoiceClient::getInstance()->subscriptionEvent(uriString, subscriptionHandle, alias, displayNameString, applicationString, subscriptionType);
 		}
 		else if (!stricmp(eventTypeCstr, "SessionUpdatedEvent"))  
 		{
@@ -874,39 +873,39 @@ void LLVivoxProtocolParser::processResponse(std::string tag)
 		const char *actionCstr = actionString.c_str();
 		if (!stricmp(actionCstr, "Connector.Create.1"))
 		{
-			gVoiceClient->connectorCreateResponse(statusCode, statusString, connectorHandle, versionID);
+			LLVoiceClient::getInstance()->connectorCreateResponse(statusCode, statusString, connectorHandle, versionID);
 		}
 		else if (!stricmp(actionCstr, "Account.Login.1"))
 		{
-			gVoiceClient->loginResponse(statusCode, statusString, accountHandle, numberOfAliases);
+			LLVoiceClient::getInstance()->loginResponse(statusCode, statusString, accountHandle, numberOfAliases);
 		}
 		else if (!stricmp(actionCstr, "Session.Create.1"))
 		{
-			gVoiceClient->sessionCreateResponse(requestId, statusCode, statusString, sessionHandle);			
+			LLVoiceClient::getInstance()->sessionCreateResponse(requestId, statusCode, statusString, sessionHandle);
 		}
 		else if (!stricmp(actionCstr, "SessionGroup.AddSession.1"))
 		{
-			gVoiceClient->sessionGroupAddSessionResponse(requestId, statusCode, statusString, sessionHandle);			
+			LLVoiceClient::getInstance()->sessionGroupAddSessionResponse(requestId, statusCode, statusString, sessionHandle);
 		}
 		else if (!stricmp(actionCstr, "Session.Connect.1"))
 		{
-			gVoiceClient->sessionConnectResponse(requestId, statusCode, statusString);			
+			LLVoiceClient::getInstance()->sessionConnectResponse(requestId, statusCode, statusString);
 		}
 		else if (!stricmp(actionCstr, "Account.Logout.1"))
 		{
-			gVoiceClient->logoutResponse(statusCode, statusString);			
+			LLVoiceClient::getInstance()->logoutResponse(statusCode, statusString);
 		}
 		else if (!stricmp(actionCstr, "Connector.InitiateShutdown.1"))
 		{
-			gVoiceClient->connectorShutdownResponse(statusCode, statusString);			
+			LLVoiceClient::getInstance()->connectorShutdownResponse(statusCode, statusString);
 		}
 		else if (!stricmp(actionCstr, "Account.ListBlockRules.1"))
 		{
-			gVoiceClient->accountListBlockRulesResponse(statusCode, statusString);						
+			LLVoiceClient::getInstance()->accountListBlockRulesResponse(statusCode, statusString);
 		}
 		else if (!stricmp(actionCstr, "Account.ListAutoAcceptRules.1"))
 		{
-			gVoiceClient->accountListAutoAcceptRulesResponse(statusCode, statusString);						
+			LLVoiceClient::getInstance()->accountListAutoAcceptRulesResponse(statusCode, statusString);
 		}
 		else if (!stricmp(actionCstr, "Session.Set3DPosition.1"))
 		{
@@ -916,7 +915,7 @@ void LLVivoxProtocolParser::processResponse(std::string tag)
 /*
 		else if (!stricmp(actionCstr, "Account.ChannelGetList.1"))
 		{
-			gVoiceClient->channelGetListResponse(statusCode, statusString);
+			LLVoiceClient::getInstance()->channelGetListResponse(statusCode, statusString);
 		}
 		else if (!stricmp(actionCstr, "Connector.AccountCreate.1"))
 		{
@@ -998,13 +997,13 @@ void LLVivoxProtocolParser::processResponse(std::string tag)
 
 class LLVoiceClientMuteListObserver : public LLMuteListObserver
 {
-	/* virtual */ void onChange()  { gVoiceClient->muteListChanged();}
+	/* virtual */ void onChange()  { LLVoiceClient::getInstance()->muteListChanged();}
 };
 
 class LLVoiceClientFriendsObserver : public LLFriendObserver
 {
 public:
-	/* virtual */ void changed(U32 mask) { gVoiceClient->updateFriends(mask);}
+	/* virtual */ void changed(U32 mask) { LLVoiceClient::getInstance()->updateFriends(mask);}
 };
 
 static LLVoiceClientMuteListObserver mutelist_listener;
@@ -1055,7 +1054,7 @@ void LLVoiceClientCapResponder::result(const LLSD& content)
 				voice_credentials["channel_credentials"].asString();
 		}
 
-		gVoiceClient->setSpatialChannel(uri, credentials);
+		LLVoiceClient::getInstance()->setSpatialChannel(uri, credentials);
 	}
 }
 
@@ -1115,8 +1114,7 @@ static void killGateway()
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 LLVoiceClient::LLVoiceClient()
-{	
-	gVoiceClient = this;
+{
 	mWriteInProgress = false;
 	mAreaVoiceDisabled = false;
 	mPTT = false;
@@ -1197,30 +1195,23 @@ LLVoiceClient::~LLVoiceClient()
 
 void LLVoiceClient::init(LLPumpIO *pump)
 {
-	// constructor will set up gVoiceClient
 	LLVoiceClient::getInstance()->mPump = pump;
 	LLVoiceClient::getInstance()->updateSettings();
 }
 
 void LLVoiceClient::terminate()
 {
-	if(gVoiceClient)
+	if(LLVoiceClient::instanceExists())
 	{
-//		gVoiceClient->leaveAudioSession();
-		gVoiceClient->logout();
+//		LLVoiceClient::getInstance()->leaveAudioSession();
+		LLVoiceClient::getInstance()->logout();
 		// As of SDK version 4885, this should no longer be necessary.  It will linger after the socket close if it needs to.
 		// ms_sleep(2000);
-		gVoiceClient->connectorShutdown();
-		gVoiceClient->closeSocket();		// Need to do this now -- bad things happen if the destructor does it later.
+		LLVoiceClient::getInstance()->connectorShutdown();
+		LLVoiceClient::getInstance()->closeSocket();		// Need to do this now -- bad things happen if the destructor does it later.
 		
 		// This will do unpleasant things on windows.
 //		killGateway();
-		
-		// Don't do this anymore -- LLSingleton will take care of deleting the object.		
-//		delete gVoiceClient;
-		
-		// Hint to other code not to access the voice client anymore.
-		gVoiceClient = NULL;
 	}
 }
 
@@ -5725,7 +5716,7 @@ void LLVoiceClient::enforceTether(void)
 void LLVoiceClient::updatePosition(void)
 {
 	
-	if(gVoiceClient)
+	if(LLVoiceClient::instanceExists())
 	{
 		LLVOAvatar *agent = gAgentAvatarp;
 		LLViewerRegion *region = gAgent.getRegion();
@@ -5741,7 +5732,7 @@ void LLVoiceClient::updatePosition(void)
 			rot.setRows(LLViewerCamera::getInstance()->getAtAxis(), LLViewerCamera::getInstance()->getLeftAxis (),  LLViewerCamera::getInstance()->getUpAxis());		
 			pos = gAgent.getRegion()->getPosGlobalFromRegion(LLViewerCamera::getInstance()->getOrigin());
 			
-			gVoiceClient->setCameraPosition(
+			LLVoiceClient::getInstance()->setCameraPosition(
 					pos,				// position
 					LLVector3::zero, 	// velocity
 					rot);				// rotation matrix
@@ -5754,7 +5745,7 @@ void LLVoiceClient::updatePosition(void)
 //			pos += LLVector3d(mHeadOffset);
 			pos += LLVector3d(0.f, 0.f, 1.f);
 		
-			gVoiceClient->setAvatarPosition(
+			LLVoiceClient::getInstance()->setAvatarPosition(
 					pos,				// position
 					LLVector3::zero, 	// velocity
 					rot);				// rotation matrix
@@ -6958,16 +6949,7 @@ void LLVoiceClient::notifyFriendObservers()
 
 void LLVoiceClient::lookupName(const LLUUID &id)
 {
-	gCacheName->get(id, false, boost::bind(&LLVoiceClient::onAvatarNameLookup,_1,_2));
-}
-
-//static
-void LLVoiceClient::onAvatarNameLookup(const LLUUID& id, const std::string& full_name)
-{
-	if(gVoiceClient)
-	{
-		gVoiceClient->avatarNameResolved(id, full_name);
-	}
+	gCacheName->get(id, false, boost::bind(&LLVoiceClient::avatarNameResolved,this,_1,_2));
 }
 
 void LLVoiceClient::avatarNameResolved(const LLUUID &id, const std::string &name)
@@ -7066,7 +7048,7 @@ class LLViewerParcelVoiceInfo : public LLHTTPNode
 						voice_credentials["channel_credentials"].asString();
 				}
 
-				gVoiceClient->setSpatialChannel(uri, credentials);
+				LLVoiceClient::getInstance()->setSpatialChannel(uri, credentials);
 			}
 		}
 	}
@@ -7089,7 +7071,7 @@ class LLViewerRequiredVoiceVersion : public LLHTTPNode
 // 			int minor_voice_version =
 // 				input["body"]["minor_version"].asInteger();
 
-			if (gVoiceClient &&
+			if (LLVoiceClient::instanceExists() &&
 				(major_voice_version > VOICE_MAJOR_VERSION) )
 			{
 				if (!sAlertedUser)

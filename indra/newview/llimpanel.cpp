@@ -515,13 +515,13 @@ LLFloaterIMPanel::~LLFloaterIMPanel()
 	mSpeakers = NULL;
 	
 	// End the text IM session if necessary
-	if(gVoiceClient && mOtherParticipantUUID.notNull())
+	if(LLVoiceClient::instanceExists() && mOtherParticipantUUID.notNull())
 	{
 		switch(mDialog)
 		{
 			case IM_NOTHING_SPECIAL:
 			case IM_SESSION_P2P_INVITE:
-				gVoiceClient->endUserIMSession(mOtherParticipantUUID);
+				LLVoiceClient::getInstance()->endUserIMSession(mOtherParticipantUUID);
 			break;
 			
 			default:
@@ -651,7 +651,7 @@ void LLFloaterIMPanel::onVolumeChange(LLUICtrl* source, void* user_data)
 	LLFloaterIMPanel* floaterp = (LLFloaterIMPanel*)user_data;
 	if (floaterp)
 	{
-		gVoiceClient->setUserVolume(floaterp->mOtherParticipantUUID, (F32)source->getValue().asReal());
+		LLVoiceClient::getInstance()->setUserVolume(floaterp->mOtherParticipantUUID, (F32)source->getValue().asReal());
 	}
 }
 
@@ -734,7 +734,7 @@ void LLFloaterIMPanel::draw()
 	{
 		// refresh volume and mute checkbox
 		mVolumeSlider->setVisible(LLVoiceClient::voiceEnabled() && mVoiceChannel->isActive());
-		mVolumeSlider->setValue(gVoiceClient->getUserVolume(mOtherParticipantUUID));
+		mVolumeSlider->setValue(LLVoiceClient::getInstance()->getUserVolume(mOtherParticipantUUID));
 
 		mMuteBtn->setValue(LLMuteList::getInstance()->isMuted(mOtherParticipantUUID, LLMute::flagVoiceChat));
 		mMuteBtn->setVisible(LLVoiceClient::voiceEnabled() && mVoiceChannel->isActive());
@@ -752,7 +752,8 @@ public:
 
 	/*virtual*/ void error(U32 statusNum, const std::string& reason)
 	{
-		llinfos << "Error inviting all agents to session" << llendl;
+		llwarns << "Error inviting all agents to session [status:"
+				<< statusNum << "]: " << reason << llendl;
 		//throw something back to the viewer here?
 	}
 
@@ -1197,7 +1198,7 @@ void deliver_message(const std::string& utf8_text,
 	if((offline == IM_OFFLINE) && (LLVoiceClient::getInstance()->isOnlineSIP(other_participant_id)))
 	{
 		// User is online through the OOW connector, but not with a regular viewer.  Try to send the message via SLVoice.
-		sent = gVoiceClient->sendTextMessage(other_participant_id, utf8_text);
+		sent = LLVoiceClient::getInstance()->sendTextMessage(other_participant_id, utf8_text);
 	}
 
 	if(!sent)
