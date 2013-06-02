@@ -45,13 +45,13 @@
 #include "llnotificationsutil.h"
 
 #include "llagent.h"
+#include "llavataractions.h"
 #include "llbutton.h"
 #include "llcallingcard.h"
 #include "llchat.h"
 #include "llconsole.h"
-#include "llfloater.h"
+#include "llgroupactions.h"
 #include "llfloateractivespeakers.h"
-#include "llfloateravatarinfo.h"
 #include "llfloaterchat.h"
 #include "llfloatergroupinfo.h"
 #include "llimview.h"
@@ -1358,13 +1358,13 @@ BOOL LLFloaterIMPanel::postBuild()
 
 		if (LLButton* btn = findChild<LLButton>("profile_callee_btn"))
 		{
-			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickProfile, this));
+			btn->setCommitCallback(boost::bind(LLAvatarActions::showProfile, mOtherParticipantUUID));
 			if (!mProfileButtonEnabled) btn->setEnabled(false);
 		}
 		if (LLButton* btn = findChild<LLButton>("profile_tele_btn"))
-			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickTeleport, this));
+			btn->setCommitCallback(boost::bind(static_cast<void(*)(const LLUUID&)>(LLAvatarActions::offerTeleport), mOtherParticipantUUID));
 		if (LLButton* btn = findChild<LLButton>("group_info_btn"))
-			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickGroupInfo, this));
+			btn->setCommitCallback(boost::bind(LLGroupActions::show, mSessionUUID));
 		childSetAction("history_btn", onClickHistory, this);
 		if (LLUICtrl* ctrl = findChild<LLUICtrl>("rp_mode"))
 			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onRPMode, this, _2));
@@ -1374,9 +1374,6 @@ BOOL LLFloaterIMPanel::postBuild()
 		getChild<LLButton>("send_btn")->setCommitCallback(boost::bind(&LLFloaterIMPanel::onSendMsg,this));
 		if (LLButton* btn = findChild<LLButton>("toggle_active_speakers_btn"))
 			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickToggleActiveSpeakers, this, _2));
-
-		//LLButton* close_btn = getChild<LLButton>("close_btn");
-		//close_btn->setClickedCallback(&LLFloaterIMPanel::onClickClose, this);
 
 		mHistoryEditor = getChild<LLViewerTextEditor>("im_history");
 		mHistoryEditor->setParseHTML(TRUE);
@@ -1876,25 +1873,6 @@ void LLFloaterIMPanel::onTabClick(void* userdata)
 }
 
 
-void LLFloaterIMPanel::onClickProfile()
-{
-	//  Bring up the Profile window
-	if (mOtherParticipantUUID.notNull())
-	{
-		LLFloaterAvatarInfo::showFromDirectory(mOtherParticipantUUID);
-	}
-}
-
-void LLFloaterIMPanel::onClickTeleport()
-{
-	if (mOtherParticipantUUID.notNull())
-	{
-		handle_lure(mOtherParticipantUUID);
-		//do a teleport to other part id
-		//LLFloaterAvatarInfo::showFromDirectory(mOtherParticipantID);
-	}
-}
-
 void LLFloaterIMPanel::onRPMode(const LLSD& value)
 {
 	mRPMode = value.asBoolean();
@@ -1916,22 +1894,6 @@ void LLFloaterIMPanel::onClickHistory( void* userdata )
 		gViewerWindow->getWindow()->ShellEx(command);
 
 		llinfos << command << llendl;
-	}
-}
-
-void LLFloaterIMPanel::onClickGroupInfo()
-{
-	//  Bring up the Profile window
-	LLFloaterGroupInfo::showFromUUID(mSessionUUID);
-}
-
-// static
-void LLFloaterIMPanel::onClickClose( void* userdata )
-{
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*) userdata;
-	if(self)
-	{
-		self->close();
 	}
 }
 

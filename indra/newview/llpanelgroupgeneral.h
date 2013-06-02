@@ -75,13 +75,8 @@ private:
 	void onCommitUserOnly();
 	void onCommitTitle();
 	void onCommitEnrollment();
-	static void onClickJoin(void* userdata);
-	static void onClickInfo(void* userdata);
 	static void onReceiveNotices(LLUICtrl* ctrl, void* data);
-	static void openProfile(void* data);
 	void addMember(LLGroupMemberData* member);
-
-    static bool joinDlgCB(const LLSD& notification, const LLSD& response);
 
 	void updateMembers();
 	void updateChanged();

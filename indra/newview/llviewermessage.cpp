@@ -60,7 +60,6 @@
 #include "llfloaterbuycurrency.h"
 #include "llfloaterbuyland.h"
 #include "llfloaterchat.h"
-#include "llfloatergroupinfo.h"
 #include "llfloaterimagepreview.h"
 #include "llfloaterland.h"
 #include "llfloaterregioninfo.h"
@@ -69,6 +68,7 @@
 #include "llfloaterpostcard.h"
 #include "llfloaterpreference.h"
 #include "llfloaterteleporthistory.h"
+#include "llgroupactions.h"
 #include "llhudeffecttrail.h"
 #include "llhudmanager.h"
 #include "llimpanel.h"
@@ -639,7 +639,7 @@ bool join_group_response(const LLSD& notification, const LLSD& response)
 
 	if (option == 2 && !group_id.isNull())
 	{
-		LLFloaterGroupInfo::showFromUUID(group_id);
+		LLGroupActions::show(group_id);
 		LLSD args;
 		args["MESSAGE"] = message;
 		LLNotificationsUtil::add("JoinGroup", args, notification["payload"]);
@@ -1780,7 +1780,7 @@ bool group_vote_callback(const LLSD& notification, const LLSD& response)
 	case 0:
 		// Vote Now
 		// Open up the voting tab
-		LLFloaterGroupInfo::showFromUUID(group_id, "voting_tab");
+		LLGroupActions::showTab(group_id, "voting_tab");
 		break;
 	default:
 		// Vote Later or
@@ -2533,7 +2533,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			// Also send down the old path for now.
 			if (IM_GROUP_NOTICE_REQUESTED == dialog)
 			{
-				LLFloaterGroupInfo::showNotice(subj,mes,group_id,has_inventory,item_name,info);
+				LLGroupActions::showNotice(subj,mes,group_id,has_inventory,item_name,info);
 			}
 			else
 			{
@@ -2680,9 +2680,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	case IM_INVENTORY_ACCEPTED:
 	{
 //		args["NAME"] = name;
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.0b
+// [RLVa:KB] - Checked: 2010-11-02 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
+		// Only anonymize the name if the agent is nearby, there isn't an open IM session to them and their profile isn't open
 		bool fRlvFilterName = (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(from_id)) &&
-			(!LLFloaterAvatarInfo::getInstance(from_id));
+			(!RlvUIEnabler::hasOpenProfile(from_id)) && (!RlvUIEnabler::hasOpenIM(from_id));
 		args["NAME"] = (!fRlvFilterName) ? name : RlvStrings::getAnonym(name);
 // [/RLVa:KB]
 		LLNotificationsUtil::add("InventoryAccepted", args);
@@ -2691,9 +2692,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	case IM_INVENTORY_DECLINED:
 	{
 //		args["NAME"] = name;
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.0b
+// [RLVa:KB] - Checked: 2010-11-02 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
+		// Only anonymize the name if the agent is nearby, there isn't an open IM session to them and their profile isn't open
 		bool fRlvFilterName = (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(from_id)) &&
-			(!LLFloaterAvatarInfo::getInstance(from_id));
+			(!RlvUIEnabler::hasOpenProfile(from_id)) && (!RlvUIEnabler::hasOpenIM(from_id));
 		args["NAME"] = (!fRlvFilterName) ? name : RlvStrings::getAnonym(name);
 // [/RLVa:KB]
 		LLNotificationsUtil::add("InventoryDeclined", args);

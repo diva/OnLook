@@ -31,7 +31,8 @@
  */
 
 #include "llviewerprecompiledheaders.h"
-#include "llfloateravatarinfo.h"
+
+#include "llavataractions.h"
 #include "llfloaterinspect.h"
 #include "llfloatertools.h"
 #include "llcachename.h"
@@ -39,7 +40,6 @@
 #include "llselectmgr.h"
 #include "lltoolcomp.h"
 #include "lltoolmgr.h"
-#include "llviewercontrol.h"
 #include "llviewerobject.h"
 #include "lluictrlfactory.h"
 
@@ -123,7 +123,7 @@ void LLFloaterInspect::onClickCreatorProfile(void* ctrl)
 		LLSelectNode* node = sInstance->mObjectSelection->getFirstNode(&func);
 		if(node)
 		{
-			LLFloaterAvatarInfo::showFromDirectory(node->mPermissions->getCreator());
+			LLAvatarActions::showProfile(node->mPermissions->getCreator());
 		}
 	}
 }
@@ -153,10 +153,10 @@ void LLFloaterInspect::onClickOwnerProfile(void* ctrl)
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
 			if (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 			{
-				LLFloaterAvatarInfo::showFromDirectory(owner_id);
+				LLAvatarActions::showProfile(owner_id);
 			}
 // [/RLVa:KB]
-//			LLFloaterAvatarInfo::showFromDirectory(owner_id);
+//			LLAvatarActions::showProfile(owner_id);
 		}
 	}
 }

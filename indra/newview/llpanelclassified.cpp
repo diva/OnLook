@@ -46,20 +46,18 @@
 #include "message.h"
 
 #include "llagent.h"
+#include "llavataractions.h"
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
 #include "llclassifiedflags.h"
 #include "llclassifiedstatsresponder.h"
 #include "llcommandhandler.h" // for classified HTML detail page click tracking
-#include "llviewercontrol.h"
 #include "lllineeditor.h"
-#include "llfloateravatarinfo.h"
 #include "llfloaterclassified.h"
 #include "lltextbox.h"
 #include "llcombobox.h"
 #include "llviewertexteditor.h"
 #include "lltexturectrl.h"
-#include "lluiconstants.h"
 #include "llurldispatcher.h"	// for classified HTML detail click teleports
 #include "lluictrlfactory.h"
 #include "llviewerparcelmgr.h"
@@ -894,7 +892,7 @@ void LLPanelClassified::onClickMap(void* data)
 void LLPanelClassified::onClickProfile(void* data)
 {
 	LLPanelClassified* self = (LLPanelClassified*)data;
-	LLFloaterAvatarInfo::showFromDirectory(self->mCreatorID);
+	LLAvatarActions::showProfile(self->mCreatorID);
 	self->sendClassifiedClickMessage("profile");
 }
 

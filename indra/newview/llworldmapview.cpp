@@ -1238,7 +1238,7 @@ void LLWorldMapView::drawAgents()
 			// Show Individual agents (or little stacks where real agents are)
 
 			// Here's how we'd choose the color if info.mID were available but it's not being sent:
-			// LLColor4 color = (agent_count == 1 && is_agent_friend(info.mID)) ? friend_color : avatar_color;
+			// LLColor4 color = (agent_count == 1 && LLAvatarActions::isFriend(info.mID)) ? friend_color : avatar_color;
 			// Reduce the stack size as you zoom out - always display at lease one agent where there is one or more
 			S32 agent_count = (S32)(((it->getCount()-1) * agents_scale + (it->getCount()-1) * 0.1f)+.1f) + 1;
 			drawImageStack(it->getGlobalPosition(), sAvatarSmallImage, agent_count, 3.f, avatar_color);

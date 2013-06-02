@@ -608,11 +608,13 @@ void LLViewerInventoryCategory::removeFromServer( void )
 	llinfos << "Removing inventory category " << mUUID << " from server."
 			<< llendl;
 	// communicate that change with the server.
+#ifndef DELETE_SYSTEM_FOLDERS
 	if(LLFolderType::lookupIsProtectedType(mPreferredType))
 	{
 		LLNotificationsUtil::add("CannotRemoveProtectedCategories");
 		return;
 	}
+#endif
 
 	LLInventoryModel::LLCategoryUpdate up(mParentUUID, -1);
 	gInventory.accountForUpdate(up);

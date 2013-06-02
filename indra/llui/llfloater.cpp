@@ -1074,7 +1074,8 @@ void LLFloater::setForeground(BOOL front)
 			releaseFocus();
 		}
 
-		setBackgroundOpaque( front ); 
+		if (front || !LLUI::sConfigGroup->getBOOL("FloaterUnfocusedBackgroundOpaque")) // Singu Note: This can be removed when InactiveFloaterTransparency is added
+			setBackgroundOpaque( front );
 	}
 }
 

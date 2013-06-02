@@ -3273,6 +3273,10 @@ The
 	<string name="Region">Region</string>
 	<string name="RegionSettings">Region Settings</string>
 
+	<!-- Multi Preview Floater -->
+	<string name="MultiPreviewTitle">Preview</string>
+	<string name="MultiPropertiesTitle">Properties</string>
+
 	<!-- inventory offer -->
 	<string name="InvOfferAnObjectNamed">An object named</string>
 	<string name="InvOfferOwnedByGroup">owned by the group</string>
@@ -4015,6 +4019,9 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
   <string name="answering-im">
     Connecting...
   </string>
+  <string name="conference-title">
+    Multi-person chat
+  </string>
   <string name="inventory_item_offered-im">
     Inventory item offered
   </string>
@@ -4246,6 +4253,8 @@ Try enclosing path to the editor with double quotes.
   <string name="BeaconSound">Viewing sound beacons (yellow)</string>
   <string name="BeaconMedia">Viewing media beacons (white)</string>
   <string name="ParticleHiding">Hiding Particles</string>
+
+  <string name="Command_Profile_Label">Profile</string>
 
   <!-- Pathfinding -->
   <string name="Pathfinding_Wiki_URL">http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer</string>

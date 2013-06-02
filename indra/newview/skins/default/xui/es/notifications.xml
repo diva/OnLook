@@ -391,6 +391,12 @@ Los demás residentes podrán visitar la URL que hayas elegido cuando vean tu pe
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Unirse"/>
 	</notification>
 	
+	<notification name="JoinGroupNoCost">
+		Vas a entrar al grupo [NAME].
+¿Quieres seguir?
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Entrar"/>
+	</notification>
+
 	<notification name="JoinGroupCannotAfford">
 		Unirse a este grupo cuesta [CURRENCY][COST].
 No tienes suficientes [CURRENCY] para unirte a este grupo.
@@ -1384,13 +1390,6 @@ Aún puedes ver el chat y los MI existentes pulsando &apos;Ver MI y Chat&apos;. 
 No tienes el permiso de comprar terreno para el grupo que tienes activado actualmente.
 	</notification>
 	
-	<notification label="Añadir como amigo" name="AddFriend">
-		Los amigos pueden darse permiso para localizarse en el mapa y para saber si el otro está conectado.
-
-¿Ofrecer a [NAME] que sea tu amigo?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
-	</notification>
-	
 	<notification label="Añadir como amigo" name="AddFriendWithMessage">
 		Los amigos pueden darse permiso para localizarse en el mapa y para saber si el otro está conectado.
 
@@ -1886,6 +1885,11 @@ Se ocultará el chat y los mensajes instantáneos. Los mensajes instantáneos re
 		<usetemplate name="okcancelbuttons" notext="Rehusar" yestext="Entrar"/>
 	</notification>
 	
+	<notification name="JoinedTooManyGroups">
+		Has superado tu número máximo de grupos. Por favor, sal de al menos uno de ellos antes de crear uno nuevo o entrar en alguno.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+
 	<notification name="KickUser">
 		¿Con qué mensaje se expulsará a este usuario?
 		<form name="form">
@@ -3752,7 +3756,11 @@ Por favor, reinténtalo en unos momentos.
 			<button name="Decline" text="Rehusar"/>
 		</form>
 	</notification>
-	
+
+	<notification name="FriendshipOffered">
+		Has ofrecido amistad a [TO_NAME]
+	</notification>
+
 	<notification name="OfferFriendshipNoMessage">
 		[NAME] te está ofreciendo amistad.
 

@@ -29,9 +29,13 @@
 
 #ifdef AI_UNUSED
 #include "llagent.h"
+#endif // AI_UNUSED
 #include "llavataractions.h"
+#ifdef AI_UNUSED
 #include "llfloaterreg.h"
+#endif // AI_UNUSED
 #include "llcommandhandler.h"
+#ifdef AI_UNUSED
 #include "llnotificationsutil.h"
 #include "llpanelpicks.h"
 #include "lltabcontainer.h"
@@ -75,12 +79,13 @@ public:
 	}
 };
 LLProfileHandler gProfileHandler;
+#endif // AI_UNUSED
 
 class LLAgentHandler : public LLCommandHandler
 {
 public:
 	// requires trusted browser to trigger
-	LLAgentHandler() : LLCommandHandler("agent", UNTRUSTED_THROTTLE) { }
+	LLAgentHandler() : LLCommandHandler("agent", true/*UNTRUSTED_THROTTLE*/) { }
 
 	bool handle(const LLSD& params, const LLSD& query_map,
 		LLMediaCtrl* web)
@@ -99,11 +104,13 @@ public:
 			return true;
 		}
 
+		/* Singu TODO
 		if (verb == "inspect")
 		{
 			LLFloaterReg::showInstance("inspect_avatar", LLSD().with("avatar_id", avatar_id));
 			return true;
 		}
+		*/
 
 		if (verb == "im")
 		{
@@ -113,11 +120,13 @@ public:
 
 		if (verb == "pay")
 		{
+			/*
 			if (!LLUI::sSettingGroups["config"]->getBOOL("EnableAvatarPay"))
 			{
 				LLNotificationsUtil::add("NoAvatarPay", LLSD(), LLSD(), std::string("SwitchToStandardSkinAndQuit"));
 				return true;
 			}
+			*/
 
 			LLAvatarActions::pay(avatar_id);
 			return true;
@@ -159,6 +168,7 @@ public:
 LLAgentHandler gAgentHandler;
 
 
+#ifdef AI_UNUSED
 //-- LLPanelProfile::ChildStack begins ----------------------------------------
 LLPanelProfile::ChildStack::ChildStack()
 :	mParent(NULL)

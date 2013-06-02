@@ -92,6 +92,7 @@ set(viewer_SOURCE_FILES
     floatervoicelicense.cpp
 	generichandlers.cpp
     hbfloatergrouptitles.cpp
+    groupchatlistener.cpp
     hippofloaterxml.cpp
     hippogridmanager.cpp
     hippolimits.cpp
@@ -119,6 +120,7 @@ set(viewer_SOURCE_FILES
     llassetuploadresponders.cpp
     llattachmentsmgr.cpp
     llaudiosourcevo.cpp
+    llavataractions.cpp
     llavatarpropertiesprocessor.cpp
     llbox.cpp
     llcallbacklist.cpp
@@ -272,6 +274,7 @@ set(viewer_SOURCE_FILES
     llgiveinventory.cpp
     llgivemoney.cpp
     llglsandbox.cpp
+    llgroupactions.cpp
     llgroupmgr.cpp
     llgroupnotify.cpp
     llhomelocationresponder.cpp
@@ -588,6 +591,7 @@ set(viewer_HEADER_FILES
     floaterlocalassetbrowse.h
     floatervoicelicense.h
 	generichandlers.h
+    groupchatlistener.h
     hbfloatergrouptitles.h
     hippofloaterxml.h
     hippogridmanager.h
@@ -617,6 +621,7 @@ set(viewer_HEADER_FILES
     llassetuploadresponders.h
     llattachmentsmgr.h
     llaudiosourcevo.h
+    llavataractions.h
     llavatarpropertiesprocessor.h
     llbox.h
     llcallbacklist.h
@@ -770,6 +775,7 @@ set(viewer_HEADER_FILES
     llgesturemgr.h
     llgiveinventory.h
     llgivemoney.h
+    llgroupactions.h
     llgroupmgr.h
     llgroupnotify.h
     llhomelocationresponder.h
@@ -1056,7 +1062,6 @@ set(viewer_HEADER_FILES
     noise.h
     pipeline.h
     qtoolalign.h
-    randgauss.h
     rlvcommon.h
     rlvdefines.h
     rlvextensions.h

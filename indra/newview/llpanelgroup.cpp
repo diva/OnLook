@@ -125,18 +125,14 @@ void LLPanelGroupTab::handleClickHelp()
 	}
 }
 
-LLPanelGroup::LLPanelGroup(const std::string& filename,
-						   const std::string& name,
-						   const LLUUID& group_id,
-						   const std::string& initial_tab_selected)
-:	LLPanel(name, LLRect(), FALSE),
+LLPanelGroup::LLPanelGroup(const LLUUID& group_id)
+:	LLPanel("PanelGroup", LLRect(), FALSE),
 	LLGroupMgrObserver( group_id ),
 	mCurrentTab( NULL ),
 	mRequestedTab( NULL ),
 	mTabContainer( NULL ),
 	mIgnoreTransition( FALSE ),
 	mForceClose( FALSE ),
-	mInitialTab(initial_tab_selected),
 	mAllowEdit( TRUE ),
 	mShowingNotifyDialog( FALSE )
 {
@@ -159,18 +155,14 @@ LLPanelGroup::LLPanelGroup(const std::string& filename,
 	LLGroupMgr::getInstance()->addObserver(this);
 
 	// Pass on construction of this panel to the control factory.
-	LLUICtrlFactory::getInstance()->buildPanel(this, filename, &getFactoryMap());
-	mFilename = filename;
+	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_group.xml", &getFactoryMap());
 }
 
 LLPanelGroup::~LLPanelGroup()
 {
 	LLGroupMgr::getInstance()->removeObserver(this);
 
-	int i;
-	int tab_count = mTabContainer->getTabCount();
-
-	for (i = tab_count - 1; i >=0; --i)
+	for (int i = mTabContainer->getTabCount() - 1; i >=0; --i)
 	{
 		LLPanelGroupTab* panelp =
 			(LLPanelGroupTab*) mTabContainer->getPanelByIndex(i);
@@ -181,10 +173,7 @@ LLPanelGroup::~LLPanelGroup()
 
 void LLPanelGroup::updateTabVisibility()
 {
-	S32 i;
-	S32 tab_count = mTabContainer->getTabCount();
-
-	for (i = tab_count - 1; i >=0; --i)
+	for (int i = mTabContainer->getTabCount() - 1; i >=0; --i)
 	{
 		LLPanelGroupTab* panelp =
 			(LLPanelGroupTab*) mTabContainer->getPanelByIndex(i);
@@ -211,38 +200,23 @@ BOOL LLPanelGroup::postBuild()
 
 	if (mTabContainer)
 	{
-		// Select the initial tab specified via constructor
-		const BOOL recurse = TRUE;
-		LLPanelGroupTab* tabp = 
-			getChild<LLPanelGroupTab>(mInitialTab, recurse);
+		//our initial tab selection was invalid, just select the
+		//first tab then or default to selecting the initial
+		//selected tab specified in the layout file
+		LLPanelGroupTab* tabp = (LLPanelGroupTab*) mTabContainer->getCurrentPanel();
 
+		//no tab was initially selected through constructor
+		//or the XML, select the first tab
 		if (!tabp)
 		{
-			//our initial tab selection was invalid, just select the
-			//first tab then or default to selecting the initial
-			//selected tab specified in the layout file
+			mTabContainer->selectFirstTab();
 			tabp = (LLPanelGroupTab*) mTabContainer->getCurrentPanel();
-
-			//no tab was initially selected through constructor
-			//or the XML, select the first tab
-			if (!tabp)
-			{
-				mTabContainer->selectFirstTab();
-				tabp = (LLPanelGroupTab*) mTabContainer->getCurrentPanel();
-			}
-		}
-		else
-		{
-			mTabContainer->selectTabPanel(tabp);
 		}
 
 		mCurrentTab = tabp;
 
 		// Add click callbacks.
-		S32 i;
-		S32 tab_count = mTabContainer->getTabCount();
-
-		for (i = tab_count - 1; i >=0; --i)
+		for (int i = mTabContainer->getTabCount() - 1; i >=0; --i)
 		{
 			LLPanel* tab_panel = mTabContainer->getPanelByIndex(i);
 			LLPanelGroupTab* panelp =(LLPanelGroupTab*)tab_panel; // bit of a hack
@@ -342,8 +316,6 @@ void LLPanelGroup::handleClickTab()
 
 void LLPanelGroup::setGroupID(const LLUUID& group_id)
 {
-	LLRect rect(getRect());
-
 	LLGroupMgr::getInstance()->removeObserver(this);
 	mID = group_id;
 	LLGroupMgr::getInstance()->addObserver(this);
@@ -355,7 +327,7 @@ void LLPanelGroup::setGroupID(const LLUUID& group_id)
 	// For now, rebuild panel
 	//delete children and rebuild panel
 	deleteAllChildren();
-	LLUICtrlFactory::getInstance()->buildPanel(this, mFilename, &getFactoryMap());
+	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_group.xml", &getFactoryMap());
 }
 
 void LLPanelGroup::selectTab(std::string tab_name)

@@ -274,6 +274,11 @@ Outros residentes podem visitar a URL que você definiu, quando eles olharem seu
 Deseja prosseguir?
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Unir-se"/>
 	</notification>
+	<notification name="JoinGroupNoCost">
+		Você está prestes a entrar no grupo [NAME].
+Deseja continuar?
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Entrar"/>
+	</notification>
 	<notification name="JoinGroupCannotAfford">
 		Associar-se a este grupo custa [CURRENCY][COST].
 Você não tem [CURRENCY] suficientes para associar-se a este grupo.
@@ -1146,13 +1151,6 @@ Você ainda pode olhar o bate-papo e as mensagens instantâneas existentes, clic
 Você não tem permissão para comprar o terreno para o seu grupo ativado.
 	</notification>
 
-	<notification label="Adicionar amigo" name="AddFriend">
-		Amigos podem dar permissões de rastrear um ao outro pelo mapa e receber atualizações de status online.
-
-Oferecer amizade para [NAME]?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Oferecer"/>
-	</notification>
-
 	<notification label="Adicionar amigo" name="AddFriendWithMessage">
 		Amigos podem dar permissões de rastrear um ao outro pelo mapa e receber atualizações de status online.
 
@@ -1628,6 +1626,11 @@ Bate-papo e mensagens instantâneas serão escondidas. Mensagens instantâneas i
 [NAME] convidou você para entrar num grupo como membro.
 [INVITE]
 		<usetemplate name="okcancelbuttons" notext="Recusar" yestext="Entrar"/>
+	</notification>
+
+	<notification name="JoinedTooManyGroups">
+		Você atingiu o limite máximo de grupos. Sai de um grupo para entrar ou criar outro.
+		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 
 	<notification name="KickUser">
@@ -3172,6 +3175,10 @@ Por favor, tente novamente em alguns instantes.
 			<button name="Accept" text="Aceitar"/>
 			<button name="Decline" text="Recusar"/>
 		</form>
+	</notification>
+
+	<notification name="FriendshipOffered">
+		Você convidou [TO_NAME] para ser seu amigo(a)
 	</notification>
 
 	<notification name="OfferFriendshipNoMessage">

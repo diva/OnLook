@@ -112,8 +112,6 @@ BOOL LLPanelDirClassified::postBuild()
 	getChild<LLButton>("Browse")->setClickedCallback(boost::bind(&LLPanelDirBrowser::onClickSearchCore,this));
 	setDefaultBtn( "Browse" );
 
-	getChild<LLButton>("Place an Ad...")->setClickedCallback(boost::bind(&LLPanelDirClassified::onClickCreateNewClassified,this));
-
 	getChild<LLButton>("Delete")->setClickedCallback(boost::bind(&LLPanelDirClassified::onClickDelete,this));
 	childDisable("Delete");
 	childHide("Delete");
@@ -147,11 +145,6 @@ void LLPanelDirClassified::refresh()
 	childSetEnabled("Delete", godlike);
 
 	updateMaturityCheckbox();
-}
-
-void LLPanelDirClassified::onClickCreateNewClassified()
-{
-	LLFloaterAvatarInfo::showFromObject(gAgent.getID(), "Classified");
 }
 
 void LLPanelDirClassified::onClickDelete()

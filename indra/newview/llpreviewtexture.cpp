@@ -35,6 +35,7 @@
 #include "llpreviewtexture.h"
 
 #include "llagent.h"
+#include "llavataractions.h"
 #include "llbutton.h"
 #include "llcombobox.h"
 #include "statemachine/aifilepicker.h"
@@ -47,12 +48,10 @@
 #include "lltrans.h"
 #include "lltextbox.h"
 #include "lltextureview.h"
-#include "llui.h"
 #include "llviewertexturelist.h"
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
 #include "lllineeditor.h"
-#include "llfloateravatarinfo.h"
 
 const S32 PREVIEW_TEXTURE_MIN_WIDTH = 300;
 const S32 PREVIEW_TEXTURE_MIN_HEIGHT = 120;
@@ -672,8 +671,7 @@ bool LLPreviewTexture::setAspectRatio(const F32 width, const F32 height)
 void LLPreviewTexture::onClickProfile(void* userdata)
 {
 	LLPreviewTexture* self = (LLPreviewTexture*) userdata;
-	LLUUID key =  self->mCreatorKey;
-	if (!key.isNull()) LLFloaterAvatarInfo::showFromDirectory(key);
+	LLAvatarActions::showProfile(self->mCreatorKey);
 }
 
 void LLPreviewTexture::onAspectRatioCommit(LLUICtrl* ctrl, void* userdata)

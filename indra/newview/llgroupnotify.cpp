@@ -39,13 +39,13 @@
 #include "llbutton.h"
 #include "lliconctrl.h"
 #include "llfloaterchat.h"	// for add_chat_history()
+#include "llgroupactions.h"
 #include "llnotify.h"
 #include "lltextbox.h"
 #include "llviewertexteditor.h"
 #include "lluiconstants.h"
 #include "llui.h"
 #include "llviewercontrol.h"
-#include "llfloatergroupinfo.h"
 #include "llinventoryicon.h"
 #include "llinventory.h"
 #include "lltrans.h"
@@ -279,7 +279,7 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 								wide_btn_width,
 								BTN_HEIGHT);
 
-	btn = new LLButton(LLTrans::getString("GroupNotifyGroupNotices"), btn_rect, LLStringUtil::null, boost::bind(&LLGroupNotifyBox::onClickGroupInfo,this));
+	btn = new LLButton(LLTrans::getString("GroupNotifyGroupNotices"), btn_rect, LLStringUtil::null, boost::bind(LLGroupActions::showTab, mGroupID, "notices_tab"));
 	btn->setToolTip(LLTrans::getString("GroupNotifyViewPastNotices"));
 	addChild(btn, -1);
 
@@ -455,12 +455,6 @@ LLRect LLGroupNotifyBox::getGroupNotifyRect()
 void LLGroupNotifyBox::onClickOk()
 {
 	close();
-}
-
-void LLGroupNotifyBox::onClickGroupInfo()
-{
-	LLFloaterGroupInfo::showFromUUID(mGroupID, "notices_tab");
-	//Leave notice open until explicitly closed
 }
 
 void LLGroupNotifyBox::onClickSaveInventory()

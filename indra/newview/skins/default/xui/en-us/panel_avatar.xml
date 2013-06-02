@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel bottom="-600" height="525" left="350" name="Panel Avatar" width="430">
-	<tab_container bottom="-486" height="490" left="0" mouse_opaque="false" name="tab"
+	<tab_container bottom="-498" height="498" left="0" mouse_opaque="false" name="tab"
 	     tab_min_width="50" tab_position="top" width="420">
 		<panel border="true" bottom="-580" follows="left|top|right|bottom" height="525"
 		     label="2nd Life" left="1" mouse_opaque="true" name="2nd Life" width="418">
@@ -57,14 +57,9 @@
 			     mouse_opaque="true" name="Name:" v_pad="0" width="70">
         Name:
       </text>
-      <name_editor bevel_style="in" border_style="line"
-			     border_thickness="1" bottom="-48" enabled="false" follows="left|top"
-			     font="SansSerifSmall" height="16" is_unicode="false" left_delta="75"
-			     max_length="254" mouse_opaque="false" name="name"
-			     width="180" visible="false" />
 			<line_editor bevel_style="in" border_style="line"
 				 border_thickness="1" bottom="-48" enabled="false" follows="left|top"
-				 font="SansSerifSmall" height="16" is_unicode="false" left_delta="0"
+				 font="SansSerifSmall" height="16" is_unicode="false" left_delta="75"
 				 max_length="254" mouse_opaque="false" name="dnname"
 				 width="180" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
@@ -129,7 +124,7 @@
 			     default_image_name="None" follows="left|top" height="151" label=""
 			     left="79" mouse_opaque="true" name="img"
 			     tool_tip="Click to choose a picture" width="180" />
-			<button bottom_delta="-37" follows="bottom|left" font="SansSerif" halign="center"
+			<button bottom="-230" follows="bottom|left" font="SansSerif" halign="center"
 			     height="32" label="" left_delta="-40"  width="32"  scale_image="true"
 			 image_selected="tool_zoom.tga" 
 			 image_unselected="tool_zoom.tga" 
@@ -187,17 +182,17 @@
 			<button bottom="-452" font="SansSerif" halign="center" height="20"
 			     label="Add Friend..." label_selected="Add Friend..." left_delta="142"
 			     mouse_opaque="true" name="Add Friend..." width="130" />
-			<button bottom_delta="-70" font="SansSerif" halign="center" height="20" label="Pay..."
+			<button bottom="-470" font="SansSerif" halign="center" height="20" label="Pay..."
 			     label_selected="Pay..." left="24" mouse_opaque="true" name="Pay..."
 			     width="70" />
-			<button bottom_delta="0" font="SansSerif" halign="center" height="20"
+			<button bottom="-470" font="SansSerif" halign="center" height="20"
 			     label="Instant Message..." label_selected="Instant Message..."
 			     left_delta="71" mouse_opaque="true" name="Instant Message..."
 			     tool_tip="Instant Message (IM)" width="140" />
-			<button bottom_delta="0" font="SansSerif" halign="center" height="20" label="Mute"
+			<button bottom="-470" ffont="SansSerif" halign="center" height="20" label="Mute"
 			     label_selected="Mute" left_delta="141" mouse_opaque="true" name="Mute"
 			     width="60" />
-			<button bottom_delta="0" font="SansSerif" halign="center" height="20" label="Invite to Group"
+			<button bottom="-470" font="SansSerif" halign="center" height="20" label="Invite to Group"
 			     label_selected="Invite to Group" left_delta="61" mouse_opaque="true"
 			     name="GroupInvite_Button" width="100" />
 		</panel>

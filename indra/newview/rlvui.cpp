@@ -16,6 +16,7 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llagent.h"
+#include "llavataractions.h"			// LLAvatarActions::profileVisible()
 #include "llavatarnamecache.h"
 #include "llenvmanager.h"
 #include "llhudtext.h"					// LLHUDText::refreshAllObjectText()
@@ -471,10 +472,10 @@ bool RlvUIEnabler::canViewRegionProperties()
 }
 
 // Checked: 2010-04-20 (RLVa-1.2.0f) | Added: RLVa-1.2.0f
-/*bool RlvUIEnabler::hasOpenIM(const LLUUID& idAgent)
+bool RlvUIEnabler::hasOpenIM(const LLUUID& idAgent)
 {
 	LLUUID idSession = LLIMMgr::computeSessionID(IM_NOTHING_SPECIAL, idAgent);
-	return (NULL != LLFloaterReg::findInstance("impanel", idSession));
+	return gIMMgr->hasSession(idSession);
 }
 
 // Checked: 2011-11-04 (RLVa-1.4.4a) | Modified: RLVa-1.4.4a
@@ -486,7 +487,7 @@ bool RlvUIEnabler::hasOpenProfile(const LLUUID& idAgent)
 
 	// Check if the user has the specified agent's profile open
 	return LLAvatarActions::profileVisible(idAgent);
-}*/
+}
 
 // Checked: 2010-09-11 (RLVa-1.2.1d) | Added: RLVa-1.2.1d
 bool RlvUIEnabler::isBuildEnabled()
