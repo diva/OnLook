@@ -197,6 +197,9 @@ U32 getNumHTTPQueued(void);
 // Returns the number of curl requests currently added to the multi handle.
 U32 getNumHTTPAdded(void);
 
+// Return the maximum number of total allowed added curl requests.
+U32 getMaxHTTPAdded(void);
+
 // This used to be LLAppViewer::getTextureFetch()->getNumHTTPRequests().
 // Returns the number of active curl easy handles (that are actually attempting to download something).
 U32 getNumHTTPRunning(void);

@@ -51,6 +51,7 @@ LLContainerView::LLContainerView(const LLContainerView::Params& p)
 {
 	mCollapsible = TRUE;
 	mScrollContainer = NULL;
+	mRectAlpha = 0.25;
 }
 
 LLContainerView::~LLContainerView()
@@ -100,7 +101,7 @@ void LLContainerView::draw()
 	{
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
-		gl_rect_2d(0, getRect().getHeight(), getRect().getWidth(), 0, LLColor4(0.f, 0.f, 0.f, 0.25f));
+		gl_rect_2d(0, getRect().getHeight(), getRect().getWidth(), 0, LLColor4(0.f, 0.f, 0.f, mRectAlpha));
 	}
 		
 	// Draw the label

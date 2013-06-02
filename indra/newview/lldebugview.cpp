@@ -39,6 +39,7 @@
 #include "llfasttimerview.h"
 #include "llconsole.h"
 #include "lltextureview.h"
+#include "aihttpview.h"
 #include "llresmgr.h"
 #include "imageids.h"
 #include "llvelocitybar.h"
@@ -93,6 +94,16 @@ LLDebugView::LLDebugView(const std::string& name, const LLRect &rect)
 	addChild(gTextureView);
 	//gTextureView->reshape(r.getWidth(), r.getHeight(), TRUE);
 
+	r.set(150, rect.getHeight() - 50, 870, 100);
+	AIHTTPView::Params hvp;
+	hvp.name("gHttpView");
+	hvp.rect(r);
+	hvp.visible(false);
+	gHttpView = LLUICtrlFactory::create<AIHTTPView>(hvp);
+	//gHttpView->setFollowsBottom();
+	//gHttpView->setFollowsLeft();
+	addChild(gHttpView);
+
 	if(gAuditTexture)
 	{
 		r.set(150, rect.getHeight() - 50, 900 + LLImageGL::sTextureLoadedCounter.size() * 30, 100);
@@ -129,6 +140,7 @@ LLDebugView::~LLDebugView()
 	// These have already been deleted.  Fix the globals appropriately.
 	gDebugView = NULL;
 	gTextureView = NULL;
+	gHttpView = NULL;
 	gTextureSizeView = NULL;
 	gTextureCategoryView = NULL;
 }

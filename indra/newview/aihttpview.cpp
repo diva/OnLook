@@ -1,0 +1,311 @@
+/**
+ * @file aihttpview.cpp
+ * @brief Definition of class AIHTTPView.
+ *
+ * Copyright (c) 2013, Aleric Inglewood.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * There are special exceptions to the terms and conditions of the GPL as
+ * it is applied to this Source Code. View the full text of the exception
+ * in the file doc/FLOSS-exception.txt in this software distribution.
+ *
+ * CHANGELOG
+ *   and additional copyright holders.
+ *
+ *   28/05/2013
+ *   Initial version, written by Aleric Inglewood @ SL
+ */
+
+#include "llviewerprecompiledheaders.h"
+#include "aihttpview.h"
+#include "llrect.h"
+#include "llerror.h"
+#include "aicurlperservice.h"
+#include "llviewerstats.h"
+#include "llfontgl.h"
+#include "aihttptimeout.h"
+
+AIHTTPView* gHttpView = NULL;
+static S32 sLineHeight;
+
+// Forward declaration.
+namespace AICurlInterface {
+  size_t getHTTPBandwidth(void);
+  U32 getNumHTTPAdded(void);
+  U32 getMaxHTTPAdded(void);
+} // namespace AICurlInterface
+
+//=============================================================================
+
+	//PerService_crat per_service_r(*service.second);
+class AIServiceBar : public LLView
+{
+  private:
+	AIHTTPView* mHTTPView;
+	std::string mName;
+	AIPerServicePtr mPerService;
+
+  public:
+	AIServiceBar(AIHTTPView* httpview, AIPerService::instance_map_type::value_type const& service)
+		: LLView("aiservice bar", LLRect(), FALSE), mHTTPView(httpview), mName(service.first), mPerService(service.second) { }
+
+	/*virtual*/ void draw(void);
+	/*virtual*/ LLRect getRequiredRect(void);
+};
+
+int const mc_col = number_of_capability_types;				// Maximum connections column.
+int const bw_col = number_of_capability_types + 1;			// Bandwidth column.
+
+void AIServiceBar::draw()
+{
+  LLColor4 text_color = LLColor4::white;
+  F32 height = getRect().getHeight();
+  U32 start = 4;
+  LLFontGL::getFontMonospace()->renderUTF8(mName, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
+  start += LLFontGL::getFontMonospace()->getWidth(mName);
+  std::string text;
+  PerService_rat per_service_r(*mPerService);
+  for (int col = 0; col < number_of_capability_types; ++col)
+  {
+	AIPerService::CapabilityType& ct(per_service_r->mCapabilityType[col]);
+	start = mHTTPView->updateColumn(col, start);
+	if (col < 2)
+	{
+	  text = llformat(" | %hu-%hu-%lu,{%hu,%u}/%u", ct.mApprovedRequests, ct.mQueuedCommands, ct.mQueuedRequests.size(), ct.mAdded, ct.mDownloading, ct.mMaxPipelinedRequests);
+	}
+	else
+	{
+	  text = llformat(" | --%hu-%lu,{%hu,%u}", ct.mQueuedCommands, ct.mQueuedRequests.size(), ct.mAdded, ct.mDownloading);
+	}
+	LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
+	start += LLFontGL::getFontMonospace()->getWidth(text);
+  }
+  start = mHTTPView->updateColumn(mc_col, start);
+  text = llformat(" | %d/%d", per_service_r->mTotalAdded, per_service_r->mConcurrectConnections);
+  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
+  start += LLFontGL::getFontMonospace()->getWidth(text);
+  start = mHTTPView->updateColumn(bw_col, start);
+  size_t bandwidth = per_service_r->bandwidth().truncateData(AIHTTPView::getTime_40ms());
+  size_t max_bandwidth = mHTTPView->mMaxBandwidthPerService;
+  text = " | ";
+  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
+  start += LLFontGL::getFontMonospace()->getWidth(text);
+  text = llformat("%lu", bandwidth / 125);
+  LLColor4 color = (bandwidth > max_bandwidth) ? LLColor4::red : ((bandwidth > max_bandwidth * .75f) ? LLColor4::yellow : text_color);
+  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, color, LLFontGL::LEFT, LLFontGL::TOP);
+  start += LLFontGL::getFontMonospace()->getWidth(text);
+  text = llformat("/%lu", max_bandwidth / 125);
+  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
+}
+
+LLRect AIServiceBar::getRequiredRect(void)
+{
+  LLRect rect;
+  rect.mTop = sLineHeight;
+  return rect;
+}
+
+//=============================================================================
+
+static int const number_of_header_lines = 2;
+
+class AIGLHTTPHeaderBar : public LLView
+{
+  public:
+	AIGLHTTPHeaderBar(std::string const& name, AIHTTPView* httpview) :
+		LLView(name, FALSE), mHTTPView(httpview)
+	{
+	  sLineHeight = llround(LLFontGL::getFontMonospace()->getLineHeight());
+	  setRect(LLRect(0, 0, 200, sLineHeight * number_of_header_lines));
+	}
+
+	/*virtual*/ void draw(void);	
+	/*virtual*/ BOOL handleMouseDown(S32 x, S32 y, MASK mask);
+	/*virtual*/ LLRect getRequiredRect(void);
+
+  private:
+	AIHTTPView* mHTTPView;
+};
+
+void AIGLHTTPHeaderBar::draw(void)
+{
+  S32 const v_offset = -1;		// Offset from the bottom. Move header one pixel down.
+  S32 const h_offset = 4;
+
+  LLGLSUIDefault gls_ui;
+
+  LLColor4 text_color(1.f, 1.f, 1.f, 0.75f);
+  std::string text;
+
+  // First header line.
+  F32 height = v_offset + sLineHeight * number_of_header_lines;
+  text = "HTTP console -- [approved]-commandQ-curlQ,{added,downloading}[/max]";
+  LLFontGL::getFontMonospace()->renderUTF8(text, 0, h_offset, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
+  text = " | Added/Max";
+  U32 start = mHTTPView->updateColumn(mc_col, 100);
+  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, LLColor4::green, LLFontGL::LEFT, LLFontGL::TOP);
+  start += LLFontGL::getFontMonospace()->getWidth(text);
+  text = " | Tot/Max BW (kbit/s)";
+  start = mHTTPView->updateColumn(bw_col, start);
+  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, LLColor4::green, LLFontGL::LEFT, LLFontGL::TOP);
+  mHTTPView->setWidth(start + LLFontGL::getFontMonospace()->getWidth(text) + h_offset);
+
+  // Second header line.
+  height -= sLineHeight;
+  start = h_offset;
+  text = "Service (host:port)";
+  static char const* caption[number_of_capability_types] = {
+	" | Textures", " | Inventory", " | Mesh", " | Other"
+  };
+  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, LLColor4::green, LLFontGL::LEFT, LLFontGL::TOP);
+  start += LLFontGL::getFontMonospace()->getWidth(text);
+  for (int col = 0; col < number_of_capability_types; ++col)
+  {
+	start = mHTTPView->updateColumn(col, start);
+	text = caption[col];
+	LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, LLColor4::green, LLFontGL::LEFT, LLFontGL::TOP);
+	start += LLFontGL::getFontMonospace()->getWidth(text);
+  }
+  start = mHTTPView->updateColumn(mc_col, start);
+  text = llformat(" | %u/%u", AICurlInterface::getNumHTTPAdded(), AICurlInterface::getMaxHTTPAdded());
+  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
+  start += LLFontGL::getFontMonospace()->getWidth(text);
+
+  // This bandwidth is averaged over 1 seconds (in bytes/s).
+  size_t const bandwidth = AICurlInterface::getHTTPBandwidth();
+  size_t const max_bandwidth = AIPerService::getHTTPThrottleBandwidth125();
+  mHTTPView->mMaxBandwidthPerService = max_bandwidth * AIPerService::throttleFraction();
+  LLColor4 color = (bandwidth > max_bandwidth) ? LLColor4::red : ((bandwidth > max_bandwidth * .75f) ? LLColor4::yellow : text_color);
+  color[VALPHA] = text_color[VALPHA];
+  start = mHTTPView->updateColumn(bw_col, start);
+  text = " | ";
+  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, LLColor4::green, LLFontGL::LEFT, LLFontGL::TOP);
+  start += LLFontGL::getFontMonospace()->getWidth(text);
+  text = llformat("%lu", bandwidth / 125);
+  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, color, LLFontGL::LEFT, LLFontGL::TOP);
+  start += LLFontGL::getFontMonospace()->getWidth(text);
+  text = llformat("/%lu", max_bandwidth / 125);
+  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
+}
+
+BOOL AIGLHTTPHeaderBar::handleMouseDown(S32 x, S32 y, MASK mask)
+{
+  return FALSE;
+}
+
+LLRect AIGLHTTPHeaderBar::getRequiredRect()
+{
+  LLRect rect;
+  rect.mTop = sLineHeight * number_of_header_lines;
+  return rect;
+}
+
+//=============================================================================
+
+AIHTTPView::AIHTTPView(AIHTTPView::Params const& p) :
+	LLContainerView(p), mGLHTTPHeaderBar(NULL), mWidth(200)
+{
+  setVisible(FALSE);
+  setRectAlpha(0.5);
+}
+
+AIHTTPView::~AIHTTPView()
+{
+  delete mGLHTTPHeaderBar;
+  mGLHTTPHeaderBar = NULL;
+}
+
+U32 AIHTTPView::updateColumn(int col, U32 start)
+{
+  llassert(col <= mStartColumn.size());
+  if (col == mStartColumn.size())
+  {
+	mStartColumn.push_back(start);
+  }
+  else if (mStartColumn[col] < start)
+  {
+	mStartColumn[col] = start;
+  }
+  return mStartColumn[col];
+}
+
+U64 AIHTTPView::sTime_40ms;
+
+struct KillView
+{
+  void operator()(LLView* viewp)
+  {
+	viewp->getParent()->removeChild(viewp);
+	viewp->die();
+  }
+};
+
+struct CreateServiceBar
+{
+  AIHTTPView* mHTTPView;
+
+  CreateServiceBar(AIHTTPView* httpview) : mHTTPView(httpview) { }
+
+  void operator()(AIPerService::instance_map_type::value_type const& service)
+  {
+	AIServiceBar* service_bar = new AIServiceBar(mHTTPView, service);
+	mHTTPView->addChild(service_bar);
+	mHTTPView->mServiceBars.push_back(service_bar);
+  }
+};
+
+void AIHTTPView::draw()
+{
+  for_each(mServiceBars.begin(), mServiceBars.end(), KillView());
+  mServiceBars.clear();
+	  
+  if (mGLHTTPHeaderBar)
+  {
+	removeChild(mGLHTTPHeaderBar);
+	mGLHTTPHeaderBar->die();
+  }
+
+  CreateServiceBar functor(this);
+  AIPerService::copy_forEach(functor);
+
+  sTime_40ms = get_clock_count() * AICurlPrivate::curlthread::HTTPTimeout::sClockWidth_40ms;
+
+  mGLHTTPHeaderBar = new AIGLHTTPHeaderBar("gl httpheader bar", this);
+  addChild(mGLHTTPHeaderBar);
+
+  reshape(mWidth, getRect().getHeight(), TRUE);
+
+  for (child_list_const_iter_t child_iter = getChildList()->begin(); child_iter != getChildList()->end(); ++child_iter)
+  {
+	LLView* viewp = *child_iter;
+	if (viewp->getRect().mBottom < 0)
+	{
+	  viewp->setVisible(FALSE);
+	}
+  }
+
+  LLContainerView::draw();
+}
+
+BOOL AIHTTPView::handleMouseUp(S32 x, S32 y, MASK mask)
+{
+  return FALSE;
+}
+
+BOOL AIHTTPView::handleKey(KEY key, MASK mask, BOOL called_from_parent)
+{
+  return FALSE;
+}
+

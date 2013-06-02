@@ -43,12 +43,15 @@
 #include <string>
 #include <deque>
 #include <map>
+#include <iterator>
+#include <algorithm>
 #include <boost/intrusive_ptr.hpp>
 #include "aithreadsafe.h"
 #include "aiaverage.h"
 
 class AICurlEasyRequest;
 class AIPerService;
+class AIServiceBar;
 
 namespace AICurlPrivate {
 namespace curlthread { class MultiHandle; }
@@ -59,14 +62,14 @@ class ThreadSafeBufferedCurlEasyRequest;
 // Forward declaration of BufferedCurlEasyRequestPtr (see aicurlprivate.h).
 typedef boost::intrusive_ptr<ThreadSafeBufferedCurlEasyRequest> BufferedCurlEasyRequestPtr;
 
+} // namespace AICurlPrivate
+
 // AIPerService objects are created by the curl thread and destructed by the main thread.
 // We need locking.
 typedef AIThreadSafeSimpleDC<AIPerService> threadsafe_PerService;
 typedef AIAccessConst<AIPerService> PerService_crat;
 typedef AIAccess<AIPerService> PerService_rat;
 typedef AIAccess<AIPerService> PerService_wat;
-
-} // namespace AICurlPrivate
 
 // We can't put threadsafe_PerService in a std::map because you can't copy a mutex.
 // Therefore, use an intrusive pointer for the threadsafe type.
@@ -93,12 +96,13 @@ enum AICapabilityType {		// {Capabilities} [Responders]
 // for that service already have been reached. And to keep track of the bandwidth usage, and the
 // number of queued requests in the pipeline, for this service.
 class AIPerService {
-  private:
+  public:
 	typedef std::map<std::string, AIPerServicePtr> instance_map_type;
 	typedef AIThreadSafeSimpleDC<instance_map_type> threadsafe_instance_map_type;
 	typedef AIAccess<instance_map_type> instance_map_rat;
 	typedef AIAccess<instance_map_type> instance_map_wat;
 
+  private:
 	static threadsafe_instance_map_type sInstanceMap;				// Map of AIPerService instances with the hostname as key.
 
 	friend class AIThreadSafeSimpleDC<AIPerService>;	// threadsafe_PerService
@@ -120,6 +124,10 @@ class AIPerService {
 	// Remove everything. Called upon viewer exit.
 	static void purge(void);
 
+	// Make a copy of the instanceMap and then run 'action(per_service)' on each AIPerService object.
+	template<class Action>
+	static void copy_forEach(Action const& action);
+
   private:
 	static U16 const ctf_empty = 1;
 	static U16 const ctf_full = 2;
@@ -135,6 +143,7 @@ class AIPerService {
 	  U16 mFlags;								// ctf_empty: Set to true when the queue becomes precisely empty.
 	  											// ctf_full : Set to true when the queue is popped and then still isn't empty;
 												// ctf_starvation: Set to true when the queue was about to be popped but was already empty.
+	  U32 mDownloading;							// The number of active easy handles with this service for which data was received.
 	  U32 mMaxPipelinedRequests;				// The maximum number of accepted requests for this service and (approved) capability type, that didn't finish yet.
 
 	  // Declare, not define, constructor and destructor - in order to avoid instantiation of queued_request_type from header.
@@ -144,6 +153,7 @@ class AIPerService {
 	  S32 pipelined_requests(void) const { return mApprovedRequests + mQueuedCommands + mQueuedRequests.size() + mAdded; }
 	};
 
+	friend class AIServiceBar;
 	CapabilityType mCapabilityType[number_of_capability_types];
 
 	AIAverage mHTTPBandwidth;					// Keeps track on number of bytes received for this service in the past second.
@@ -203,8 +213,9 @@ class AIPerService {
   public:
 	void added_to_command_queue(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mQueuedCommands; }
 	void removed_from_command_queue(AICapabilityType capability_type) { --mCapabilityType[capability_type].mQueuedCommands; llassert(mCapabilityType[capability_type].mQueuedCommands >= 0); }
-	void added_to_multi_handle(AICapabilityType capability_type);					// Called when an easy handle for this host has been added to the multi handle.
-	void removed_from_multi_handle(AICapabilityType capability_type);				// Called when an easy handle for this host is removed again from the multi handle.
+	void added_to_multi_handle(AICapabilityType capability_type);									// Called when an easy handle for this host has been added to the multi handle.
+	void removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something);	// Called when an easy handle for this host is removed again from the multi handle.
+	void download_started(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mDownloading; }
 	bool throttled(void) const;							// Returns true if the maximum number of allowed requests for this host have been added to the multi handle.
 
 	void queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type);	// Add easy_request to the queue.
@@ -222,6 +233,7 @@ class AIPerService {
 	static void setNoHTTPBandwidthThrottling(bool nb) { sNoHTTPBandwidthThrottling = nb; }
 	static void setHTTPThrottleBandwidth(F32 max_kbps) { sHTTPThrottleBandwidth125 = 125.f * max_kbps; }
 	static size_t getHTTPThrottleBandwidth125(void) { return sHTTPThrottleBandwidth125; }
+	static F32 throttleFraction(void) { return ThrottleFraction_wat(sThrottleFraction)->fraction / 1024.f; }
 
 	// Called when CurlConcurrentConnectionsPerService changes.
 	static void adjust_concurrent_connections(int increment);
@@ -274,5 +286,18 @@ class RefCountedThreadSafePerService : public threadsafe_PerService {
 extern U32 CurlConcurrentConnectionsPerService;
 
 } // namespace AICurlPrivate
+
+template<class Action>
+void AIPerService::copy_forEach(Action const& action)
+{
+  // Make a copy so we don't need to keep the lock on sInstanceMap for too long.
+  std::vector<std::pair<instance_map_type::key_type, instance_map_type::mapped_type> > current_services;
+  {
+	instance_map_rat instance_map_r(sInstanceMap);
+	std::copy(instance_map_r->begin(), instance_map_r->end(), std::back_inserter(current_services));
+  }
+  // Apply the functor on each of the services.
+  std::for_each(current_services.begin(), current_services.end(), action);
+}
 
 #endif // AICURLPERSERVICE_H
