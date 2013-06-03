@@ -981,7 +981,6 @@ set(viewer_HEADER_FILES
     llviewerlayer.h
     llviewermedia.h
     llviewermediafocus.h
-    llviewermediaobserver.h
     llviewermenu.h
     llviewermenufile.h
     llviewermessage.h

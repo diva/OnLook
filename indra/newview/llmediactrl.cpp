@@ -68,7 +68,7 @@ static LLRegisterWidget<LLMediaCtrl> r("web_browser");
 
 LLMediaCtrl::Params::Params()
 :	start_url("start_url"),
-	border_visible("border_visible", true),
+	border_visible("border_visible", false),
 	decouple_texture_size("decouple_texture_size", false),
 	texture_width("texture_width", 1024),
 	texture_height("texture_height", 1024),

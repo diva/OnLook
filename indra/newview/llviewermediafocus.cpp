@@ -419,13 +419,13 @@ void LLViewerMediaFocus::update()
 		// We have an object and impl to point at.
 		
 		// Make sure the media HUD object exists.
-		if(! mMediaControls.get())
+		/*if(! mMediaControls.get())
 		{
 			LLPanelPrimMediaControls* media_controls = new LLPanelPrimMediaControls();
 			mMediaControls = media_controls->getHandle();
 			gHUDView->addChild(media_controls);	
 		}
-		mMediaControls.get()->setMediaFace(viewer_object, face, media_impl, normal);
+		mMediaControls.get()->setMediaFace(viewer_object, face, media_impl, normal);*/
 	}
 	else
 	{

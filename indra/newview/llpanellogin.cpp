@@ -350,8 +350,7 @@ void LLPanelLogin::setSiteIsAlive( bool alive )
 		{
 			// hide browser control (revealing default one)
 			web_browser->setVisible( FALSE );
-			std::string str = LLWeb::escapeURL("data:text/html,<html><body bgcolor=\"rgb(0,0,0)\"></body></html>");
-			web_browser->navigateTo( str, "text/html" );
+			web_browser->navigateTo( "data:text/html,%3Chtml%3E%3Cbody%20bgcolor=%22#000000%22%3E%3C/body%3E%3C/html%3E", "text/html" );
 		}
 	}
 }

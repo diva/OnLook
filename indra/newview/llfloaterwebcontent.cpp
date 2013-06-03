@@ -74,7 +74,7 @@ LLFloaterWebContent::LLFloaterWebContent( const Params& params )
 	mCommitCallbackRegistrar.add( "WebContent.Stop", boost::bind( &LLFloaterWebContent::onClickStop, this ));
 	mCommitCallbackRegistrar.add( "WebContent.EnterAddress", boost::bind( &LLFloaterWebContent::onEnterAddress, this ));
 	mCommitCallbackRegistrar.add( "WebContent.PopExternal", boost::bind( &LLFloaterWebContent::onPopExternal, this ));
-	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_media_browser.xml");
+	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_web_content.xml");
 	mAgeTimer.reset();
 }
 
@@ -424,7 +424,7 @@ void LLFloaterWebContent::handleMediaEvent(LLPluginClassMedia* self, EMediaEvent
 	else if(event == MEDIA_EVENT_PROGRESS_UPDATED )
 	{
 		int percent = (int)self->getProgressPercent();
-		mStatusBarProgress->setValue( percent );
+		mStatusBarProgress->setPercent( percent );
 	}
 	else if(event == MEDIA_EVENT_NAME_CHANGED )
 	{

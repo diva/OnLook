@@ -128,7 +128,7 @@ void LLPluginClassMedia::reset_impl(void)
 
 void LLPluginClassMedia::idle_impl(void)
 {
-	if((mMediaWidth == -1) || (!mTextureParamsReceived) || (mPlugin == NULL) || (mPlugin->isBlocked()))
+	if((mMediaWidth == -1) || (!mTextureParamsReceived) || (mPlugin == NULL) || (mPlugin->isBlocked()) || (mOwner == NULL))
 	{
 		// Can't process a size change at this time
 	}

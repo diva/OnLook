@@ -193,7 +193,7 @@ void LLViewerParcelMedia::play(LLParcel* parcel, bool filter)
 
 	if (!parcel) return;
 
-	if (!gSavedSettings.getBOOL("AudioStreamingVideo"))
+	if (!gSavedSettings.getBOOL("AudioStreamingMedia"))
 		return;
 
 	std::string media_url = parcel->getMediaURL();
@@ -662,12 +662,12 @@ bool callback_play_media(const LLSD& notification, const LLSD& response, LLParce
 	S32 option = LLNotification::getSelectedOption(notification, response);
 	if (option == 0)
 	{
-		gSavedSettings.setBOOL("AudioStreamingVideo", TRUE);
+		gSavedSettings.setBOOL("AudioStreamingMedia", TRUE);
 		LLViewerParcelMedia::play(parcel);
 	}
 	else
 	{
-		gSavedSettings.setBOOL("AudioStreamingVideo", FALSE);
+		gSavedSettings.setBOOL("AudioStreamingMedia", FALSE);
 	}
 	gSavedSettings.setWarning("FirstStreamingVideo", FALSE);
 	return false;

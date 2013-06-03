@@ -45,6 +45,7 @@
 #include "llbutton.h"
 #include "llface.h"
 #include "llcombobox.h"
+#include "lllayoutstack.h"
 #include "llslider.h"
 #include "llhudview.h"
 #include "lliconctrl.h"
@@ -100,6 +101,28 @@ LLPanelPrimMediaControls::LLPanelPrimMediaControls() :
 	mVolumeSliderVisible(0),
 	mHideImmediately(false)
 {
+	mCommitCallbackRegistrar.add("MediaCtrl.Close",		boost::bind(&LLPanelPrimMediaControls::onClickClose, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.Back",		boost::bind(&LLPanelPrimMediaControls::onClickBack, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.Forward",	boost::bind(&LLPanelPrimMediaControls::onClickForward, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.Home",		boost::bind(&LLPanelPrimMediaControls::onClickHome, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.Stop",		boost::bind(&LLPanelPrimMediaControls::onClickStop, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.MediaStop",		boost::bind(&LLPanelPrimMediaControls::onClickMediaStop, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.Reload",	boost::bind(&LLPanelPrimMediaControls::onClickReload, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.Play",		boost::bind(&LLPanelPrimMediaControls::onClickPlay, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.Pause",		boost::bind(&LLPanelPrimMediaControls::onClickPause, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.Open",		boost::bind(&LLPanelPrimMediaControls::onClickOpen, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.Zoom",		boost::bind(&LLPanelPrimMediaControls::onClickZoom, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.CommitURL",	boost::bind(&LLPanelPrimMediaControls::onCommitURL, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.JumpProgress",		boost::bind(&LLPanelPrimMediaControls::onCommitSlider, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.CommitVolumeUp",	boost::bind(&LLPanelPrimMediaControls::onCommitVolumeUp, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.CommitVolumeDown",	boost::bind(&LLPanelPrimMediaControls::onCommitVolumeDown, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.Volume",	boost::bind(&LLPanelPrimMediaControls::onCommitVolumeSlider, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.ToggleMute",		boost::bind(&LLPanelPrimMediaControls::onToggleMute, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.ShowVolumeSlider",		boost::bind(&LLPanelPrimMediaControls::showVolumeSlider, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.HideVolumeSlider",		boost::bind(&LLPanelPrimMediaControls::hideVolumeSlider, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.SkipBack",		boost::bind(&LLPanelPrimMediaControls::onClickSkipBack, this));
+	mCommitCallbackRegistrar.add("MediaCtrl.SkipForward",	boost::bind(&LLPanelPrimMediaControls::onClickSkipForward, this));
+	
 	//LLUICtrlFactory::getInstance()->buildPanel(this, "panel_media_hud.xml");
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_prim_media_controls.xml");
 	mInactivityTimer.reset();
