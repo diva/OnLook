@@ -80,6 +80,7 @@ protected:
     //Chat UI -----------------------------------------------------------------------------
 	bool mWoLfVerticalIMTabs;
 	bool mOtherChatsTornOff;
+	bool mIMAnnounceStealFocus;
 	bool mShowLocalChatFloaterBar;
 	bool mHorizButt;
 	bool mOneLineIMButt;

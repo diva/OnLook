@@ -87,7 +87,7 @@ const F32 AGENT_TYPING_TIMEOUT = 5.f;	// seconds
 LLChatBar *gChatBar = NULL;
 
 // legacy calllback glue
-void toggleChatHistory(LLUICtrl*, const LLSD&);
+void toggleChatHistory();
 //void send_chat_from_viewer(const std::string& utf8_out_text, EChatType type, S32 channel);
 // [RLVa:KB] - Checked: 2009-07-07 (RLVa-1.0.0d) | Modified: RLVa-0.2.2a
 void send_chat_from_viewer(std::string utf8_out_text, EChatType type, S32 channel);
@@ -138,7 +138,7 @@ LLChatBar::~LLChatBar()
 BOOL LLChatBar::postBuild()
 {
 	if (LLUICtrl* history_ctrl = findChild<LLUICtrl>("History"))
-		history_ctrl->setCommitCallback(toggleChatHistory);
+		history_ctrl->setCommitCallback(boost::bind(&toggleChatHistory));
 	if (LLUICtrl* say_ctrl = getChild<LLUICtrl>("Say"))
 		say_ctrl->setCommitCallback(boost::bind(&LLChatBar::onClickSay, this, _1));
 
@@ -149,8 +149,7 @@ BOOL LLChatBar::postBuild()
 	mInputEditor = findChild<LLLineEditor>("Chat Editor");
 	if (mInputEditor)
 	{
-		mInputEditor->setCallbackUserData(this);
-		mInputEditor->setKeystrokeCallback(&onInputEditorKeystroke);
+		mInputEditor->setKeystrokeCallback(boost::bind(&LLChatBar::onInputEditorKeystroke,this));
 		mInputEditor->setFocusLostCallback(boost::bind(&LLChatBar::onInputEditorFocusLost));
 		mInputEditor->setFocusReceivedCallback(boost::bind(&LLChatBar::onInputEditorGainFocus));
 		mInputEditor->setCommitOnFocusLost( FALSE );
@@ -545,13 +544,10 @@ void LLChatBar::stopChat()
 	gSavedSettings.setBOOL("ChatVisible", FALSE);
 }
 
-// static
-void LLChatBar::onInputEditorKeystroke( LLLineEditor* caller, void* userdata )
+void LLChatBar::onInputEditorKeystroke()
 {
-	LLChatBar* self = (LLChatBar *)userdata;
-
 	LLWString raw_text;
-	if (self->mInputEditor) raw_text = self->mInputEditor->getWText();
+	if (mInputEditor) raw_text = mInputEditor->getWText();
 
 	// Can't trim the end, because that will cause autocompletion
 	// to eat trailing spaces that might be part of a gesture.
@@ -580,8 +576,8 @@ void LLChatBar::onInputEditorKeystroke( LLLineEditor* caller, void* userdata )
 		// the selection will already be deleted, but we need to trim
 		// off the character before
 		std::string new_text = raw_text.substr(0, length-1);
-		self->mInputEditor->setText( new_text );
-		self->mInputEditor->setCursorToEnd();
+		mInputEditor->setText( new_text );
+		mInputEditor->setCursorToEnd();
 		length = length - 1;
 	}
 	*/
@@ -600,15 +596,15 @@ void LLChatBar::onInputEditorKeystroke( LLLineEditor* caller, void* userdata )
 
 		if (LLGestureMgr::instance().matchPrefix(utf8_trigger, &utf8_out_str))
 		{
-			if (self->mInputEditor)
+			if (mInputEditor)
 			{
 				std::string rest_of_match = utf8_out_str.substr(utf8_trigger.size());
-				self->mInputEditor->setText(utf8_trigger + rest_of_match); // keep original capitalization for user-entered part
-				S32 outlength = self->mInputEditor->getLength(); // in characters
+				mInputEditor->setText(utf8_trigger + rest_of_match); // keep original capitalization for user-entered part
+				S32 outlength = mInputEditor->getLength(); // in characters
 			
 				// Select to end of line, starting from the character
 				// after the last one the user typed.
-				self->mInputEditor->setSelection(length, outlength);
+				mInputEditor->setSelection(length, outlength);
 			}
 		}
 
@@ -890,7 +886,7 @@ void LLChatBar::onCommitGesture(LLUICtrl* ctrl)
 	}
 }
 
-void toggleChatHistory(LLUICtrl* ctrl, const LLSD&)
+void toggleChatHistory()
 {
 	LLFloaterChat::toggleInstance(LLSD());
 }

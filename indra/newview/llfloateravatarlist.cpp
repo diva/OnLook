@@ -25,21 +25,17 @@
 #include "llwindow.h"
 #include "llscrolllistctrl.h"
 #include "llradiogroup.h"
-#include "llviewercontrol.h"
 #include "llnotificationsutil.h"
 
 #include "llvoavatar.h"
 #include "llimview.h"
-#include "llfloateravatarinfo.h"
-#include "llregionflags.h"
 #include "llfloaterreporter.h"
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llavataractions.h"
 #include "llfloaterregioninfo.h"
 #include "llviewerregion.h"
 #include "lltracker.h"
-#include "llviewerstats.h"
-#include "llerror.h"
 #include "llchat.h"
 #include "llfloaterchat.h"
 #include "llviewermessage.h"
@@ -315,7 +311,7 @@ const LLAvatarListEntry::ACTIVITY_TYPE LLAvatarListEntry::getActivity()
 
 LLFloaterAvatarList::LLFloaterAvatarList() :  LLFloater(std::string("radar")), 
 	mTracking(false),
-	mUpdate(true),
+	mUpdate("RadarUpdateEnabled"),
 	mDirtyAvatarSorting(false),
 	mUpdateRate(gSavedSettings.getU32("RadarUpdateRate") * 3 + 3),
 	mAvatarList(NULL)
@@ -415,12 +411,12 @@ BOOL LLFloaterAvatarList::postBuild()
 	getChild<LLRadioGroup>("update_rate")->setSelectedIndex(gSavedSettings.getU32("RadarUpdateRate"));
 	getChild<LLRadioGroup>("update_rate")->setCommitCallback(boost::bind(&LLFloaterAvatarList::onCommitUpdateRate, this));
 
-	getChild<LLCheckboxCtrl>("hide_mark")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
-	getChild<LLCheckboxCtrl>("hide_pos")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
-	getChild<LLCheckboxCtrl>("hide_alt")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
-	getChild<LLCheckboxCtrl>("hide_act")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
-	getChild<LLCheckboxCtrl>("hide_age")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
-	getChild<LLCheckboxCtrl>("hide_time")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	gSavedSettings.getControl("RadarColumnMarkHidden")->getSignal()->connect(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	gSavedSettings.getControl("RadarColumnPositionHidden")->getSignal()->connect(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	gSavedSettings.getControl("RadarColumnAltitudeHidden")->getSignal()->connect(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	gSavedSettings.getControl("RadarColumnActivityHidden")->getSignal()->connect(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	gSavedSettings.getControl("RadarColumnAgeHidden")->getSignal()->connect(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+	gSavedSettings.getControl("RadarColumnTimeHidden")->getSignal()->connect(boost::bind(&LLFloaterAvatarList::assessColumns, this));
 
 	// Get a pointer to the scroll list from the interface
 	mAvatarList = getChild<LLScrollListCtrl>("avatar_list");
@@ -438,7 +434,7 @@ BOOL LLFloaterAvatarList::postBuild()
 	if(gHippoGridManager->getConnectedGrid()->isSecondLife())
 		childSetVisible("hide_client", false);
 	else
-		getChild<LLCheckboxCtrl>("hide_client")->setCommitCallback(boost::bind(&LLFloaterAvatarList::assessColumns, this));
+		gSavedSettings.getControl("RadarColumnClientHidden")->getSignal()->connect(boost::bind(&LLFloaterAvatarList::assessColumns, this));
 
 	return TRUE;
 }
@@ -529,16 +525,10 @@ void LLFloaterAvatarList::updateAvatarList()
 	//llinfos << "radar refresh: updating map" << llendl;
 
 	// Check whether updates are enabled
-	LLCheckboxCtrl* check = getChild<LLCheckboxCtrl>("update_enabled_cb");
-	if (check && !check->getValue())
+	if (!mUpdate)
 	{
-		mUpdate = FALSE;
 		refreshTracker();
 		return;
-	}
-	else
-	{
-		mUpdate = TRUE;
 	}
 	//moved to pipeline to prevent a crash
 	//gPipeline.forAllVisibleDrawables(updateParticleActivity);
@@ -888,7 +878,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 			name_color = ascent_estate_owner_color;
 		}
 		//without these dots, SL would suck.
-		else if(is_agent_friend(av_id))
+		else if(LLAvatarActions::isFriend(av_id))
 		{
 			static const LLCachedControl<LLColor4> ascent_friend_color("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
 			name_color = ascent_friend_color;
@@ -1148,22 +1138,12 @@ void LLFloaterAvatarList::onClickIM()
 		if (ids.size() == 1)
 		{
 			// Single avatar
-			LLUUID agent_id = ids[0];
-
-			std::string avatar_name;
-			if (gCacheName->getFullName(agent_id, avatar_name))
-			{
-				gIMMgr->setFloaterOpen(TRUE);
-				gIMMgr->addSession(avatar_name,IM_NOTHING_SPECIAL,agent_id);
-			}
+			LLAvatarActions::startIM(ids[0]);
 		}
 		else
 		{
 			// Group IM
-			LLUUID session_id;
-			session_id.generate();
-			gIMMgr->setFloaterOpen(TRUE);
-			gIMMgr->addSession("Avatars Conference", IM_SESSION_CONFERENCE_START, ids[0], ids);
+			LLAvatarActions::startConference(ids);
 		}
 	}
 }
@@ -1248,19 +1228,18 @@ LLAvatarListEntry * LLFloaterAvatarList::getAvatarEntry(LLUUID avatar)
 
 BOOL LLFloaterAvatarList::handleKeyHere(KEY key, MASK mask)
 {
-	LLFloaterAvatarList* self = getInstance();
-	LLScrollListItem* item = self->mAvatarList->getFirstSelected();
+	LLScrollListItem* item = mAvatarList->getFirstSelected();
 	if(item)
 	{
 		LLUUID agent_id = item->getUUID();
 		if (( KEY_RETURN == key ) && (MASK_NONE == mask))
 		{
-			self->setFocusAvatar(agent_id);
+			setFocusAvatar(agent_id);
 			return TRUE;
 		}
 		else if (( KEY_RETURN == key ) && (MASK_CONTROL == mask))
 		{
-			LLAvatarListEntry* entry = self->getAvatarEntry(agent_id);
+			const LLAvatarListEntry* entry = getAvatarEntry(agent_id);
 			if (entry)
 			{
 //				llinfos << "Trying to teleport to " << entry->getName() << " at " << entry->getPosition() << llendl;
@@ -1272,30 +1251,7 @@ BOOL LLFloaterAvatarList::handleKeyHere(KEY key, MASK mask)
 
 	if (( KEY_RETURN == key ) && (MASK_SHIFT == mask))
 	{
-		uuid_vec_t ids = self->mAvatarList->getSelectedIDs();
-		if (ids.size() > 0)
-		{
-			if (ids.size() == 1)
-			{
-				// Single avatar
-				LLUUID agent_id = ids[0];
-
-				std::string avatar_name;
-				if (gCacheName->getFullName(agent_id, avatar_name))
-				{
-					gIMMgr->setFloaterOpen(TRUE);
-					gIMMgr->addSession(avatar_name,IM_NOTHING_SPECIAL,agent_id);
-				}
-			}
-			else
-			{
-				// Group IM
-				LLUUID session_id;
-				session_id.generate();
-				gIMMgr->setFloaterOpen(TRUE);
-				gIMMgr->addSession("Avatars Conference", IM_SESSION_CONFERENCE_START, ids[0], ids);
-			}
-		}
+		onClickIM();
 	}
 	return LLPanel::handleKeyHere(key, mask);
 }
@@ -1414,11 +1370,11 @@ void LLFloaterAvatarList::sendKeys()
 	std::ostringstream ids;
 	int num_ids = 0;
 
-	for (int i = 0; i < regionp->mMapAvatarIDs.count(); i++)
+	for (int i = 0; i < regionp->mMapAvatarIDs.count(); ++i)
 	{
 		const LLUUID &id = regionp->mMapAvatarIDs.get(i);
 
-		ids << "," << id.asString();
+		ids << "," << id;
 		++num_ids;
 
 
@@ -1560,7 +1516,7 @@ static void cmd_append_names(const LLAvatarListEntry* entry, std::string &str, s
 															{ if(!str.empty())str.append(sep);str.append(entry->getName()); }
 static void cmd_toggle_mark(LLAvatarListEntry* entry)		{ entry->toggleMark(); }
 static void cmd_ar(const LLAvatarListEntry* entry)			{ LLFloaterReporter::showFromObject(entry->getID()); }
-static void cmd_profile(const LLAvatarListEntry* entry)		{ LLFloaterAvatarInfo::showFromDirectory(entry->getID()); }
+static void cmd_profile(const LLAvatarListEntry* entry)		{ LLAvatarActions::showProfile(entry->getID()); }
 static void cmd_teleport(const LLAvatarListEntry* entry)	{ gAgent.teleportViaLocation(entry->getPosition()); }
 static void cmd_freeze(const LLAvatarListEntry* entry)		{ send_freeze(entry->getID(), true); }
 static void cmd_unfreeze(const LLAvatarListEntry* entry)	{ send_freeze(entry->getID(), false); }

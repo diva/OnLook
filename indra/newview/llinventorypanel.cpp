@@ -201,7 +201,7 @@ BOOL LLInventoryPanel::postBuild()
 		// scroller
 		LLRect scroller_view_rect = getRect();
 		scroller_view_rect.translate(-scroller_view_rect.mLeft, -scroller_view_rect.mBottom);
-		mScroller = new LLScrollableContainerView(std::string("Inventory Scroller"),
+		mScroller = new LLScrollContainer(std::string("Inventory Scroller"),
 												   scroller_view_rect,
 												  mFolderRoot);
 		mScroller->setFollowsAll();
@@ -871,8 +871,7 @@ BOOL LLInventoryPanel::handleHover(S32 x, S32 y, MASK mask)
 	BOOL handled = LLView::handleHover(x, y, mask);
 	if(handled)
 	{
-		ECursorType cursor = getWindow()->getCursor();
-		if (LLInventoryModelBackgroundFetch::instance().folderFetchActive() && cursor == UI_CURSOR_ARROW)
+		if (LLInventoryModelBackgroundFetch::instance().folderFetchActive())
 		{
 			// replace arrow cursor with arrow and hourglass cursor
 			getWindow()->setCursor(UI_CURSOR_WORKING);

@@ -287,6 +287,7 @@
 	<string name="connected">Conectado</string>
 	<string name="unavailable">Chat de Voz no disponible en esta ubicación</string>
 	<string name="hang_up">Desconectado del Chat de Voz</string>
+	<string name="conference-title">Chat multi-persona</string>
 	<string name="ScriptTakeMoney">Transferir moneda de tu cuenta</string>
 	<string name="ActOnControlInputs">Actuar en tus controles de entrada</string>
 	<string name="RemapControlInputs">Reconfigurar tus controles de entrada</string>
@@ -2953,7 +2954,7 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<!-- inventory -->
 	<string name="InventoryNoMatchingItems">Elementos no hallados en el inventario.</string>
 	<string name="MarketplaceURL">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/</string>
-	<string name="MarketplaceURL_CreateStore">http://community.secondlife.com/t5/English-Knowledge-Base/Selling-in-the-Marketplace/ta-p/700193#Section_.4</string>
+	<string name="MarketplaceURL_CreateStore">http://community.secondlife.com/t5/English-Knowledge-Base/Selling-in-the-Marketplace/ta-p/700193#Section_.3</string>
 	<string name="MarketplaceURL_Dashboard">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/merchants/store/dashboard</string>
 	<string name="MarketplaceURL_Imports">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/merchants/store/imports</string>
 	<string name="MarketplaceURL_LearnMore">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/learn_more</string>
@@ -3222,6 +3223,10 @@ La
 	<string name="LocalSettings">Configuración Local</string>
 	<string name="Region">Región</string>
 	<string name="RegionSettings">Configuración de Región</string>
+
+	<!-- Multi Preview Floater -->
+	<string name="MultiPreviewTitle">Vista previa</string>
+	<string name="MultiPropertiesTitle">Propiedades</string>
 
 	<!-- inventory offer -->
 	<string name="InvOfferAnObjectNamed">Un objeto llamado</string>
@@ -4208,6 +4213,8 @@ Intenta entrecomillando el camino al editor.
 	<string name="BeaconSound">Viendo balizas de sonidos (amarillo)</string>
 	<string name="BeaconMedia">Viendo balizas de medios (blanco)</string>
 	<string name="ParticleHiding">Oocultando PartículasHiding Particlesstring>
+
+	<string name="Command_Profile_Label">Perfil</string>
 
 	<!-- Pathfinding -->
 	<string name="Pathfinding_Wiki_URL">http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer</string>

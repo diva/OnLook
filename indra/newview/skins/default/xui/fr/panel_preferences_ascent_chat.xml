@@ -5,6 +5,7 @@
     <panel label="Chat/IM" name="Chat/IM">
       <check_box label="Annonce les IMs entrants" name="quickstart_im_check"/>
       <check_box label="Ne pas envoyer &#x22;[Machin Truc] is typing..." name="hide_typing_check"/>
+      <check_box label="N'accepter les IMs que de ses amis" name="InstantMessagesFriendsOnly"/>
       <check_box label="Montrer le nom du groupe dans le chat" name="append_group_name_check"/>
       <check_box label="Jouer le son typique pour le chat local" name="play_typing_sound_check"/>
       <check_box label="Ne pas afficher les notifs. de log dans le chat" name="hide_notifications_in_chat_check"/>

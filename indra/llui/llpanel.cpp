@@ -36,7 +36,6 @@
 
 #include "llpanel.h"
 
-#include "llalertdialog.h"
 #include "llfocusmgr.h"
 #include "llfontgl.h"
 #include "lllocalcliprect.h"
@@ -92,7 +91,7 @@ LLPanel::LLPanel()
 }
 
 LLPanel::LLPanel(const std::string& name)
-:	LLUICtrl(name, LLRect(0, 0, 0, 0), TRUE, NULL, NULL),
+:	LLUICtrl(name),
 	mRectControl()
 {
 	init();
@@ -100,7 +99,7 @@ LLPanel::LLPanel(const std::string& name)
 
 
 LLPanel::LLPanel(const std::string& name, const LLRect& rect, BOOL bordered)
-:	LLUICtrl(name, rect, TRUE, NULL, NULL),
+:	LLUICtrl(name,rect),
 	mRectControl()
 {
 	init();
@@ -112,7 +111,7 @@ LLPanel::LLPanel(const std::string& name, const LLRect& rect, BOOL bordered)
 
 
 LLPanel::LLPanel(const std::string& name, const std::string& rect_control, BOOL bordered)
-:	LLUICtrl(name, LLUI::sConfigGroup->getRect(rect_control), TRUE, NULL, NULL),
+:	LLUICtrl(name, LLUI::sConfigGroup->getRect(rect_control)),
 	mRectControl( rect_control )
 {
 	init();
@@ -186,19 +185,14 @@ void LLPanel::draw()
 	// draw background
 	if( mBgVisible )
 	{
-		//RN: I don't see the point of this
-		S32 left = 0;//LLPANEL_BORDER_WIDTH;
-		S32 top = getRect().getHeight();// - LLPANEL_BORDER_WIDTH;
-		S32 right = getRect().getWidth();// - LLPANEL_BORDER_WIDTH;
-		S32 bottom = 0;//LLPANEL_BORDER_WIDTH;
-
+		LLRect local_rect = getLocalRect();
 		if (mBgOpaque )
 		{
-			gl_rect_2d( left, top, right, bottom, mBgColorOpaque );
+			gl_rect_2d( local_rect, mBgColorOpaque );
 		}
 		else
 		{
-			gl_rect_2d( left, top, right, bottom, mBgColorAlpha );
+			gl_rect_2d( local_rect, mBgColorAlpha );
 		}
 	}
 
@@ -611,6 +605,11 @@ void LLPanel::setPanelParameters(LLXMLNodePtr node, LLView* parent)
 	setLabel(label);
 }
 
+bool LLPanel::hasString(const std::string& name)
+{
+	return mUIStrings.find(name) != mUIStrings.end();
+}
+
 std::string LLPanel::getString(const std::string& name, const LLStringUtil::format_map_t& args) const
 {
 	ui_string_map_t::const_iterator found_it = mUIStrings.find(name);
@@ -916,29 +915,6 @@ LLPanel *LLPanel::childGetVisibleTab(const std::string& id) const
 	}
 	return NULL;
 }
-
-void LLPanel::childSetKeystrokeCallback(const std::string& id, void (*keystroke_callback)(LLLineEditor* caller, void* user_data), void *user_data)
-{
-	LLLineEditor* child = getChild<LLLineEditor>(id);
-	if (child)
-	{
-		child->setKeystrokeCallback(keystroke_callback);
-		if (user_data)
-		{
-			child->setCallbackUserData(user_data);
-		}
-	}
-}
-
-void LLPanel::childSetPrevalidate(const std::string& id, BOOL (*func)(const LLWString &) )
-{
-	LLLineEditor* child = getChild<LLLineEditor>(id);
-	if (child)
-	{
-		child->setPrevalidate(func);
-	}
-}
-
 void LLPanel::childSetWrappedText(const std::string& id, const std::string& text, bool visible)
 {
 	LLTextBox* child = getChild<LLTextBox>(id);
@@ -949,14 +925,7 @@ void LLPanel::childSetWrappedText(const std::string& id, const std::string& text
 	}
 }
 
-void LLPanel::childSetAction(const std::string& id, boost::function<void(void*)> function, void* value)
-{
-	LLButton* button = getChild<LLButton>(id);
-	if (button)
-	{
-		button->setClickedCallback(function, value);
-	}
-}
+
 
 void LLPanel::childSetAction(const std::string& id, const commit_signal_t::slot_type& function)
 {
@@ -967,12 +936,21 @@ void LLPanel::childSetAction(const std::string& id, const commit_signal_t::slot_
 	}
 }
 
-void LLPanel::childSetActionTextbox(const std::string& id, void(*function)(void*), void* value)
+void LLPanel::childSetAction(const std::string& id, boost::function<void(void*)> function, void* value)
+{
+	LLButton* button = getChild<LLButton>(id);
+	if (button)
+	{
+		button->setClickedCallback(boost::bind(function, value));
+	}
+}
+
+void LLPanel::childSetActionTextbox(const std::string& id, boost::function<void(void*)> function, void* value)
 {
 	LLTextBox* textbox = getChild<LLTextBox>(id);
 	if (textbox)
 	{
-		textbox->setClickedCallback(function, value);
+		textbox->setClickedCallback(boost::bind(function, value));
 	}
 }
 
@@ -1075,7 +1053,13 @@ struct LLLayoutStack::LLEmbeddedPanel
 		{
 			min_dim = mMinWidth;
 		}
-		mResizeBar = new LLResizeBar(std::string("resizer"), mPanel, LLRect(), min_dim, S32_MAX, side);
+		LLResizeBar::Params p;
+		p.name = "resizer";
+		p.resizing_view = mPanel;
+		p.min_size = min_dim;
+		p.max_size = S32_MAX;
+		p.side = side;
+		mResizeBar = LLUICtrlFactory::create<LLResizeBar>(p);
 		mResizeBar->setEnableSnapping(FALSE);
 		// panels initialized as hidden should not start out partially visible
 		if (!mPanel->getVisible())

@@ -36,9 +36,10 @@
 
 #include "lluictrlfactory.h"
 #include "llagent.h"
+#include "llavataractions.h"
+#include "llfloatergroups.h"
+#include "llgroupactions.h"
 #include "roles_constants.h"
-#include "llfloateravatarinfo.h"
-#include "llfloatergroupinfo.h"
 
 // UI elements
 #include "llbutton.h"
@@ -133,13 +134,13 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mBtnJoinGroup = getChild<LLButton>("join_button", recurse);
 	if ( mBtnJoinGroup )
 	{
-		mBtnJoinGroup->setClickedCallback(boost::bind(&LLPanelGroupGeneral::onClickJoin, this));
+		mBtnJoinGroup->setClickedCallback(boost::bind(LLGroupActions::join, mGroupID));
 	}
 
 	mBtnInfo = getChild<LLButton>("info_button", recurse);
 	if ( mBtnInfo )
 	{
-		mBtnInfo->setClickedCallback(boost::bind(&LLPanelGroupGeneral::onClickInfo, this));
+		mBtnInfo->setClickedCallback(boost::bind(LLGroupActions::show, mGroupID));
 	}
 
 	LLTextBox* founder = getChild<LLTextBox>("founder_name");
@@ -154,7 +155,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mListVisibleMembers = getChild<LLNameListCtrl>("visible_members", recurse);
 	if (mListVisibleMembers)
 	{
-		mListVisibleMembers->setDoubleClickCallback(boost::bind(&LLPanelGroupGeneral::openProfile,this));
+		mListVisibleMembers->setDoubleClickCallback(boost::bind(LLAvatarActions::showProfile, boost::bind(&LLScrollListCtrl::getCurrentID, mListVisibleMembers)));
 	}
 
 	// Options
@@ -320,83 +321,6 @@ void LLPanelGroupGeneral::onCommitTitle()
 	LLGroupMgr::getInstance()->sendGroupTitleUpdate(mGroupID,mComboActiveTitle->getCurrentID());
 	update(GC_TITLES);
 	mComboActiveTitle->resetDirty();
-}
-
-// static
-void LLPanelGroupGeneral::onClickInfo(void *userdata)
-{
-	LLPanelGroupGeneral *self = (LLPanelGroupGeneral *)userdata;
-
-	if ( !self ) return;
-
-	lldebugs << "open group info: " << self->mGroupID << llendl;
-
-	LLFloaterGroupInfo::showFromUUID(self->mGroupID);
-}
-
-// static
-void LLPanelGroupGeneral::onClickJoin(void *userdata)
-{
-	LLPanelGroupGeneral *self = (LLPanelGroupGeneral *)userdata;
-
-	if ( !self ) return;
-
-	lldebugs << "joining group: " << self->mGroupID << llendl;
-
-	LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(self->mGroupID);
-
-	if (gdatap)
-	{
-		S32 cost = gdatap->mMembershipFee;
-		LLSD args;
-		args["COST"] = llformat("%d", cost);
-		LLSD payload;
-		payload["group_id"] = self->mGroupID;
-
-		if (can_afford_transaction(cost))
-		{
-			LLNotificationsUtil::add("JoinGroupCanAfford", args, payload, LLPanelGroupGeneral::joinDlgCB);
-		}
-		else
-		{
-			LLNotificationsUtil::add("JoinGroupCannotAfford", args, payload);
-		}
-	}
-	else
-	{
-		llwarns << "LLGroupMgr::getInstance()->getGroupData(" << self->mGroupID
-			<< ") was NULL" << llendl;
-	}
-}
-
-// static
-bool LLPanelGroupGeneral::joinDlgCB(const LLSD& notification, const LLSD& response)
-{
-	S32 option = LLNotification::getSelectedOption(notification, response);
-
-	if (option == 1)
-	{
-		// user clicked cancel
-		return false;
-	}
-
-	LLGroupMgr::getInstance()->sendGroupMemberJoin(notification["payload"]["group_id"].asUUID());
-	return false;
-}
-
-// static
-void LLPanelGroupGeneral::openProfile(void* data)
-{
-	LLPanelGroupGeneral* self = (LLPanelGroupGeneral*)data;
-
-	if (self && self->mListVisibleMembers)
-	{
-		LLScrollListItem* selected = self->mListVisibleMembers->getFirstSelected();
-		if (selected)
-		{
-			LLFloaterAvatarInfo::showFromDirectory( selected->getUUID() );
-		}
-	}
 }
 
 bool LLPanelGroupGeneral::needsApply(std::string& mesg)
@@ -568,7 +492,7 @@ void LLPanelGroupGeneral::cancel()
 // invoked from callbackConfirmMature
 bool LLPanelGroupGeneral::confirmMatureApply(const LLSD& notification, const LLSD& response)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	// 0 == Yes
 	// 1 == No
 	// 2 == Cancel
@@ -593,7 +517,7 @@ bool LLPanelGroupGeneral::confirmMatureApply(const LLSD& notification, const LLS
 // static
 bool LLPanelGroupGeneral::createGroupCallback(const LLSD& notification, const LLSD& response)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	switch(option)
 	{
 	case 0:
@@ -683,6 +607,11 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 
 		mComboActiveTitle->resetDirty();
 	}
+
+	// After role member data was changed in Roles->Members
+	// need to update role titles. See STORM-918.
+	if (gc == GC_ROLE_MEMBER_DATA)
+		LLGroupMgr::getInstance()->sendGroupTitlesRequest(mGroupID);
 
 	// If this was just a titles update, we are done.
 	if (gc == GC_TITLES) return;
@@ -867,77 +796,93 @@ void LLPanelGroupGeneral::updateMembers()
 
 	LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(mGroupID);
 
-	if (!mListVisibleMembers || !gdatap 
-		|| !gdatap->isMemberDataComplete())
+	if (!mListVisibleMembers 
+		|| !gdatap 
+		|| !gdatap->isMemberDataComplete()
+		|| gdatap->mMembers.empty())
 	{
 		return;
 	}
 
-	static LLTimer all_timer;
-	static LLTimer sd_timer;
-	static LLTimer element_timer;
+	LLTimer update_time;
+	update_time.setTimerExpirySec(UPDATE_MEMBERS_SECONDS_PER_FRAME);
 
-	all_timer.reset();
-	S32 i = 0;
+	LLAvatarName av_name;
 
-	for( ; mMemberProgress != gdatap->mMembers.end() && i<UPDATE_MEMBERS_PER_FRAME; 
-			++mMemberProgress, ++i)
+	for( ; mMemberProgress != gdatap->mMembers.end() && !update_time.hasExpired(); 
+			++mMemberProgress)
 	{
-		lldebugs << "Adding " << mMemberProgress->first << ", " << mMemberProgress->second->getTitle() << llendl;
 		LLGroupMemberData* member = mMemberProgress->second;
 		if (!member)
 		{
 			continue;
 		}
-		// Owners show up in bold.
-		std::string style = "NORMAL";
-		if ( member->isOwner() )
+
+		if (LLAvatarNameCache::get(mMemberProgress->first, &av_name))
 		{
-			style = "BOLD";
+			addMember(mMemberProgress->second);
 		}
-		
-		sd_timer.reset();
-		LLSD row;
-		row["id"] = member->getID();
-
-		row["columns"][0]["column"] = "name";
-		row["columns"][0]["font-style"] = style;
-
-		// value is filled in by name list control
-
-		row["columns"][1]["column"] = "title";
-		row["columns"][1]["value"] = member->getTitle();
-		row["columns"][1]["font-style"] = style;
-		
-
-		row["columns"][2]["column"] = "online";
-		row["columns"][2]["value"] = member->getOnlineStatus();
-		row["columns"][2]["font-style"] = style;
-
-
-		sSDTime += sd_timer.getElapsedTimeF32();
-
-		element_timer.reset();
-		mListVisibleMembers->addNameItem(row);
-		sElementTime += element_timer.getElapsedTimeF32();
+		else
+		{
+			// If name is not cached, onNameCache() should be called when it is cached and add this member to list.
+			LLAvatarNameCache::get(mMemberProgress->first, 
+									boost::bind(&LLPanelGroupGeneral::onNameCache,
+												this, gdatap->getMemberVersion(), member, _2));
+		}
 	}
-	sAllTime += all_timer.getElapsedTimeF32();
 
-	lldebugs << "Updated " << i << " of " << UPDATE_MEMBERS_PER_FRAME << "members in the list." << llendl;
 	if (mMemberProgress == gdatap->mMembers.end())
 	{
 		lldebugs << "   member list completed." << llendl;
 		mListVisibleMembers->setEnabled(TRUE);
-
-		lldebugs << "All Time: " << sAllTime << llendl;
-		lldebugs << "SD Time: " << sSDTime << llendl;
-		lldebugs << "Element Time: " << sElementTime << llendl;
 	}
 	else
 	{
 		mPendingMemberUpdate = TRUE;
 		mListVisibleMembers->setEnabled(FALSE);
 	}
+}
+
+void LLPanelGroupGeneral::addMember(LLGroupMemberData* member)
+{
+	// Owners show up in bold.
+	std::string style = "NORMAL";
+	if ( member->isOwner() )
+	{
+		style = "BOLD";
+	}
+	LLSD row;
+	row["id"] = member->getID();
+
+	row["columns"][0]["column"] = "name";
+	row["columns"][0]["font-style"] = style;
+	row["columns"][0]["font"] = "SANSSERIF_SMALL";
+	row["columns"][1]["column"] = "title";
+	row["columns"][1]["value"] = member->getTitle();
+	row["columns"][1]["font-style"] = style;
+	row["columns"][1]["font"] = "SANSSERIF_SMALL";	
+
+	row["columns"][2]["column"] = "online";
+	row["columns"][2]["value"] = member->getOnlineStatus();
+	row["columns"][2]["font-style"] = style;
+	row["columns"][1]["font"] = "SANSSERIF_SMALL";	
+
+	mListVisibleMembers->addNameItemRow(row);
+}
+
+void LLPanelGroupGeneral::onNameCache(const LLUUID& update_id, LLGroupMemberData* member, const LLAvatarName& av_name)
+{
+	LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(mGroupID);
+
+	if (!gdatap
+		|| !gdatap->isMemberDataComplete()
+		|| gdatap->getMemberVersion() != update_id)
+	{
+		// Stale data
+		return;
+	}
+
+	addMember(member);
 }
 
 void LLPanelGroupGeneral::updateChanged()

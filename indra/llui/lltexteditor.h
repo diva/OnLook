@@ -73,6 +73,10 @@ public:
 
 	virtual ~LLTextEditor();
 
+	typedef boost::signals2::signal<void (LLTextEditor* caller)> keystroke_signal_t;
+
+	void	setKeystrokeCallback(const keystroke_signal_t::slot_type& callback);
+
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
 	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, class LLUICtrlFactory *factory);
 	void    setTextEditorParameters(LLXMLNodePtr node);
@@ -289,7 +293,7 @@ public:
 	
 	const LLTextSegment*	getCurrentSegment() const { return getSegmentAtOffset(mCursorPos); }
 	const LLTextSegment*	getPreviousSegment() const;
-	void getSelectedSegments(std::vector<const LLTextSegment*>& segments) const;
+	void getSelectedSegments(std::vector<LLTextSegmentPtr>& segments) const;
 
 	static bool		isPartOfWord(llwchar c) { return ( (c == '_')  || (c == '\'') || LLStringOps::isAlnum((char)c)); }
 
@@ -323,7 +327,7 @@ protected:
 	void			unindentLineBeforeCloseBrace();
 
 	S32				getSegmentIdxAtOffset(S32 offset) const;
-	const LLTextSegment*	getSegmentAtLocalPos(S32 x, S32 y) const;
+	LLTextSegment*	getSegmentAtLocalPos(S32 x, S32 y) const;
 	const LLTextSegment*	getSegmentAtOffset(S32 offset) const;
 
 	void			reportBadKeystroke() { make_ui_sound("UISndBadKeystroke"); }
@@ -458,9 +462,9 @@ protected:
 	BOOL			mParseHighlights;
 	std::string		mHTML;
 
-	typedef std::vector<LLTextSegment *> segment_list_t;
+	typedef std::vector<LLTextSegmentPtr> segment_list_t;
 	segment_list_t mSegments;
-	const LLTextSegment*	mHoverSegment;
+	LLTextSegmentPtr	mHoverSegment;
 	
 	// Scrollbar data
 	class LLScrollbar*	mScrollbar;
@@ -480,6 +484,7 @@ private:
 	// Methods
 	//
 	void	                pasteHelper(bool is_primary);
+	void			onKeyStroke();
 
 	void			updateSegments();
 	void			pruneSegments();
@@ -603,11 +608,12 @@ private:
 	BOOL			mHandleEditKeysDirectly;  
 
 	LLCoordGL		mLastIMEPosition;		// Last position of the IME editor
+	keystroke_signal_t mKeystrokeSignal;
 }; // end class LLTextEditor
 
 
 
-class LLTextSegment
+class LLTextSegment : public LLRefCount
 {
 public:
 	// for creating a compare value

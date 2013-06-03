@@ -42,6 +42,7 @@
 #include "llcombobox.h"
 #include "llbutton.h"
 #include "lldraghandle.h"
+#include "llfiltereditor.h"
 #include "llfocusmgr.h"
 #include "llfolderview.h"
 #include "llfoldervieweventlistener.h"
@@ -172,7 +173,7 @@ public:
 		   void		onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action);
 	static void		onShowFolders(LLUICtrl* ctrl, void* userdata);
 	static void		onApplyImmediateCheck(LLUICtrl* ctrl, void* userdata);
-	static void		onSearchEdit(const std::string& search_string, void* user_data );
+	void			onFilterEdit(const std::string& filter_string );
 		   void		onTextureSelect( const LLTextureEntry& te );
 
 	// tag: vaa emerald local_asset_browser [begin]
@@ -209,7 +210,7 @@ protected:
 	BOOL				mIsDirty;
 	BOOL				mActive;
 
-	LLSearchEditor*		mSearchEdit;
+	LLFilterEditor*		mFilterEdit;
 	LLInventoryPanel*	mInventoryPanel;
 	PermissionMask		mImmediateFilterPermMask;
 	PermissionMask		mNonImmediateFilterPermMask;
@@ -247,7 +248,7 @@ LLFloaterTexturePicker::LLFloaterTexturePicker(
 	mResolutionLabel(NULL),
 	mIsDirty( FALSE ),
 	mActive( TRUE ),
-	mSearchEdit(NULL),
+	mFilterEdit(NULL),
 	mImmediateFilterPermMask(immediate_filter_perm_mask),
 	mNonImmediateFilterPermMask(non_immediate_filter_perm_mask),
 	mContextConeOpacity(0.f),
@@ -398,9 +399,9 @@ BOOL LLFloaterTexturePicker::handleKeyHere(KEY key, MASK mask)
 {
 	LLFolderView* root_folder = mInventoryPanel->getRootFolder();
 
-	if (root_folder && mSearchEdit)
+	if (root_folder && mFilterEdit)
 	{
-		if (mSearchEdit->hasFocus() 
+		if (mFilterEdit->hasFocus() 
 			&& (key == KEY_RETURN || key == KEY_DOWN) 
 			&& mask == MASK_NONE)
 		{
@@ -425,7 +426,7 @@ BOOL LLFloaterTexturePicker::handleKeyHere(KEY key, MASK mask)
 		
 		if (root_folder->hasFocus() && key == KEY_UP)
 		{
-			mSearchEdit->focusFirstItem(TRUE);
+			mFilterEdit->focusFirstItem(TRUE);
 		}
 	}
 
@@ -490,8 +491,8 @@ BOOL LLFloaterTexturePicker::postBuild()
 	childSetCommitCallback("show_folders_check", onShowFolders, this);
 	childSetVisible("show_folders_check", FALSE);
 	
-	mSearchEdit = getChild<LLSearchEditor>("inventory search editor");
-	mSearchEdit->setSearchCallback(onSearchEdit, this);
+	mFilterEdit = getChild<LLFilterEditor>("inventory search editor");
+	mFilterEdit->setCommitCallback(boost::bind(&LLFloaterTexturePicker::onFilterEdit, this, _2));
 		
 	mInventoryPanel = getChild<LLInventoryPanel>("inventory panel");
 
@@ -611,7 +612,7 @@ void LLFloaterTexturePicker::draw()
 	childSetValue("Pipette", LLToolMgr::getInstance()->getCurrentTool() == LLToolPipette::getInstance());
 
 	//RN: reset search bar to reflect actual search query (all caps, for example)
-	mSearchEdit->setText(mInventoryPanel->getFilterSubString());
+	mFilterEdit->setText(mInventoryPanel->getFilterSubString());
 
 	//BOOL allow_copy = FALSE;
 	if( mOwner ) 
@@ -878,7 +879,7 @@ void LLFloaterTexturePicker::switchModes(bool localmode, void *userdata)
 	self->childSetVisible("Default", !localmode);
 	self->childSetVisible("None", !localmode);
 	self->childSetVisible("Blank", !localmode);
-	self->mSearchEdit->setVisible(!localmode);
+	self->mFilterEdit->setVisible(!localmode);
 	self->mInventoryPanel->setVisible(!localmode);
 	
 	// localmode widgets
@@ -1014,40 +1015,38 @@ void LLFloaterTexturePicker::updateFilterPermMask()
 	//mInventoryPanel->setFilterPermMask( getFilterPermMask() );  Commented out due to no-copy texture loss.
 }
 
-void LLFloaterTexturePicker::onSearchEdit(const std::string& search_string, void* user_data )
+void LLFloaterTexturePicker::onFilterEdit(const std::string& search_string )
 {
-	LLFloaterTexturePicker* picker = (LLFloaterTexturePicker*)user_data;
-
 	std::string upper_case_search_string = search_string;
 	LLStringUtil::toUpper(upper_case_search_string);
 
 	if (upper_case_search_string.empty())
 	{
-		if (picker->mInventoryPanel->getFilterSubString().empty())
+		if (mInventoryPanel->getFilterSubString().empty())
 		{
 			// current filter and new filter empty, do nothing
 			return;
 		}
 
-		picker->mSavedFolderState.setApply(TRUE);
-		picker->mInventoryPanel->getRootFolder()->applyFunctorRecursively(picker->mSavedFolderState);
+		mSavedFolderState.setApply(TRUE);
+		mInventoryPanel->getRootFolder()->applyFunctorRecursively(mSavedFolderState);
 		// add folder with current item to list of previously opened folders
 		LLOpenFoldersWithSelection opener;
-		picker->mInventoryPanel->getRootFolder()->applyFunctorRecursively(opener);
-		picker->mInventoryPanel->getRootFolder()->scrollToShowSelection();
+		mInventoryPanel->getRootFolder()->applyFunctorRecursively(opener);
+		mInventoryPanel->getRootFolder()->scrollToShowSelection();
 
 	}
-	else if (picker->mInventoryPanel->getFilterSubString().empty())
+	else if (mInventoryPanel->getFilterSubString().empty())
 	{
 		// first letter in search term, save existing folder open state
-		if (!picker->mInventoryPanel->getRootFolder()->isFilterModified())
+		if (!mInventoryPanel->getRootFolder()->isFilterModified())
 		{
-			picker->mSavedFolderState.setApply(FALSE);
-			picker->mInventoryPanel->getRootFolder()->applyFunctorRecursively(picker->mSavedFolderState);
+			mSavedFolderState.setApply(FALSE);
+			mInventoryPanel->getRootFolder()->applyFunctorRecursively(mSavedFolderState);
 		}
 	}
 
-	picker->mInventoryPanel->setFilterSubString(upper_case_search_string);
+	mInventoryPanel->setFilterSubString(upper_case_search_string);
 }
 
 void LLFloaterTexturePicker::onTextureSelect( const LLTextureEntry& te )
@@ -1092,7 +1091,7 @@ LLTextureCtrl::LLTextureCtrl(
 	const LLUUID &default_image_id, 
 	const std::string& default_image_name )
 	:	
-	LLUICtrl(name, rect, TRUE, NULL, NULL, FOLLOWS_LEFT | FOLLOWS_TOP),
+	LLUICtrl(name, rect, TRUE, NULL, FOLLOWS_LEFT | FOLLOWS_TOP),
 	mDragCallback(NULL),
 	mDropCallback(NULL),
 	mOnCancelCallback(NULL),

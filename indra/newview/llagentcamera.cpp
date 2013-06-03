@@ -1493,7 +1493,7 @@ void LLAgentCamera::updateCamera()
 
 		gAgentAvatarp->mRoot->updateWorldMatrixChildren();
 
-		for (LLVOAvatar::attachment_map_t::iterator iter = gAgentAvatarp->mAttachmentPoints.begin(); 
+		/*for (LLVOAvatar::attachment_map_t::iterator iter = gAgentAvatarp->mAttachmentPoints.begin();  //Can be an array.
 			 iter != gAgentAvatarp->mAttachmentPoints.end(); )
 		{
 			LLVOAvatar::attachment_map_t::iterator curiter = iter++;
@@ -1502,7 +1502,11 @@ void LLAgentCamera::updateCamera()
 				 attachment_iter != attachment->mAttachedObjects.end();
 				 ++attachment_iter)
 			{
-				LLViewerObject *attached_object = (*attachment_iter);
+				LLViewerObject *attached_object = (*attachment_iter);*/
+		std::vector<std::pair<LLViewerObject*,LLViewerJointAttachment*> >::iterator attachment_iter = gAgentAvatarp->mAttachedObjectsVector.begin();
+		for(;attachment_iter!=gAgentAvatarp->mAttachedObjectsVector.end();++attachment_iter)
+		{{
+				LLViewerObject* attached_object = attachment_iter->first;
 				if (attached_object && !attached_object->isDead() && attached_object->mDrawable.notNull())
 				{
 					// clear any existing "early" movements of attachment

@@ -49,8 +49,7 @@ static LLRegisterWidget<LLSlider> r2("volume_slider");
 LLSlider::LLSlider( 
 	const std::string& name,
 	const LLRect& rect,
-	void (*on_commit_callback)(LLUICtrl* ctrl, void* userdata),
-	void* callback_userdata,
+	commit_callback_t commit_callback,
 	F32 initial_value,
 	F32 min_value,
 	F32 max_value,
@@ -58,7 +57,7 @@ LLSlider::LLSlider(
 	BOOL volume,
 	const std::string& control_name)
 	:
-	LLUICtrl( name, rect, TRUE,	on_commit_callback, callback_userdata, 
+	LLUICtrl( name, rect, TRUE,	commit_callback, 
 		FOLLOWS_LEFT | FOLLOWS_TOP),
 	mValue( initial_value ),
 	mInitialValue( initial_value ),
@@ -349,7 +348,6 @@ LLView* LLSlider::fromXML(LLXMLNodePtr node, LLView *parent, class LLUICtrlFacto
 
 	LLSlider* slider = new LLSlider(name,
 							rect,
-							NULL,
 							NULL,
 							initial_value,
 							min_value,

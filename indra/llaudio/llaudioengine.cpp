@@ -368,7 +368,7 @@ void LLAudioEngine::idle(F32 max_decode_time)
 			if (channelp)
 			{
 				channelp->updateBuffer();
-				sourcep->getChannel()->play();
+				channelp->play();
 			}
 			continue;
 		}
@@ -391,8 +391,12 @@ void LLAudioEngine::idle(F32 max_decode_time)
 
 				// Actually play the associated data.
 				sourcep->setupChannel();
-				channelp->updateBuffer();
-				sourcep->getChannel()->play();
+				channelp = sourcep->getChannel();
+				if (channelp)
+				{
+					channelp->updateBuffer();
+					channelp->play();
+				}
 			}
 			else if (sourcep->isLoop())
 			{
@@ -405,7 +409,12 @@ void LLAudioEngine::idle(F32 max_decode_time)
 					// Actually, should do a time sync so if we're a loop master/slave
 					// we don't drift away.
 					sourcep->setupChannel();
-					sourcep->getChannel()->play();
+					channelp = sourcep->getChannel();
+					if (channelp)
+					{
+						channelp->updateBuffer();
+						channelp->play();
+					}
 				}
 			}
 		}
@@ -597,6 +606,14 @@ LLAudioBuffer * LLAudioEngine::getFreeBuffer()
 		lldebugs << "Taking over unused buffer " << buffer_id << llendl;
 		//llinfos << "Flushing unused buffer!" << llendl;
 		mBuffers[buffer_id]->mAudioDatap->mBufferp = NULL;
+		for (U32 i = 0; i < MAX_CHANNELS; i++)
+		{
+			LLAudioChannel* channelp = mChannels[i];
+			if(channelp && channelp->mCurrentBufferp == mBuffers[buffer_id])
+			{
+				channelp->cleanup();
+			}
+		}
 		delete mBuffers[buffer_id];
 		mBuffers[buffer_id] = createBuffer();
 		return mBuffers[buffer_id];
@@ -1374,14 +1391,14 @@ void LLAudioSource::update()
 		return ; //no need to update
 	}
 
-	if (!getCurrentBuffer())
+	//if (!getCurrentBuffer()) // Same as !adp->getBuffer()
 	{
 		LLAudioData *adp = getCurrentData();
-		if (adp)
+		if (adp && !adp->getBuffer())
 		{
 			// Hack - try and load the sound.  Will do this as a callback
 			// on decode later.
-			if (adp->load() && adp->getBuffer())
+			if (adp->load())
 			{
 				play(adp->getID());
 			}
@@ -1847,8 +1864,8 @@ bool LLAudioData::load()
 	if (!mBufferp)
 	{
 		// No free buffers, abort.
-		llinfos << "Not able to allocate a new audio buffer, aborting." << llendl;
-		return true;
+		lldebugs << "Not able to allocate a new audio buffer, aborting." << llendl;
+		return false;
 	}
 
 	std::string uuid_str;

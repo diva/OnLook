@@ -389,9 +389,7 @@ void* LLFloaterDirectory::createEventDetail(void* userdata)
 void* LLFloaterDirectory::createGroupDetail(void* userdata)
 {
 	LLFloaterDirectory *self = (LLFloaterDirectory*)userdata;
-	self->mPanelGroupp = new LLPanelGroup("panel_group.xml",
-										  "PanelGroup",
-										  gAgent.getGroupID());
+	self->mPanelGroupp = new LLPanelGroup(gAgent.getGroupID());
 	self->mPanelGroupp->setAllowEdit(FALSE || gAgent.isGodlike()); // Gods can always edit panels
 	self->mPanelGroupp->setVisible(FALSE);
 	return self->mPanelGroupp;

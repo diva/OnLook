@@ -36,7 +36,6 @@
 
 // linden library includes
 #include "indra_constants.h"
-#include "llalertdialog.h"
 #include "llapr.h"
 #include "llcallbacklist.h"
 #include "lldir.h"

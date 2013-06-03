@@ -92,8 +92,8 @@ LLFloaterAvatarPicker::LLFloaterAvatarPicker() :
 
 BOOL LLFloaterAvatarPicker::postBuild()
 {
-	childSetKeystrokeCallback("Edit", &LLFloaterAvatarPicker::editKeystroke, (void*)this);
-	childSetKeystrokeCallback("EditUUID", &LLFloaterAvatarPicker::editKeystroke, (void*)this);
+	getChild<LLLineEditor>("Edit")->setKeystrokeCallback(boost::bind(&LLFloaterAvatarPicker::editKeystroke,this,_1));
+	getChild<LLLineEditor>("EditUUID")->setKeystrokeCallback(boost::bind(&LLFloaterAvatarPicker::editKeystroke, this,_1));
 
 	childSetAction("Find", boost::bind(&LLFloaterAvatarPicker::onBtnFind, this));
 	getChildView("Find")->setEnabled(FALSE);
@@ -557,7 +557,10 @@ BOOL LLFloaterAvatarPicker::handleDragAndDrop(S32 x, S32 y, MASK mask,
 				std::string avatar_name = selection->getColumn(0)->getValue().asString();
 				if (dest_agent_id.notNull() && dest_agent_id != gAgentID)
 				{
-					if (drop)
+//					if (drop)
+// [RLVa:KB] - Checked: 2011-04-11 (RLVa-1.3.0h) | Added: RLVa-1.3.0h
+					if ( (drop) && ( (!rlv_handler_t::isEnabled()) || (gRlvHandler.canStartIM(dest_agent_id)) ) )
+// [/RLVa:KB]
 					{
 						// Start up IM before give the item
 						session_id = gIMMgr->addSession(avatar_name, IM_NOTHING_SPECIAL, dest_agent_id);
@@ -716,14 +719,12 @@ void LLFloaterAvatarPicker::processResponse(const LLUUID& query_id, const LLSD& 
 	search_results->setFocus(TRUE);
 }
 
-//static
-void LLFloaterAvatarPicker::editKeystroke(LLLineEditor* caller, void* user_data)
+void LLFloaterAvatarPicker::editKeystroke(LLLineEditor* caller)
 {
-	LLFloaterAvatarPicker* self = (LLFloaterAvatarPicker*)user_data;
 	if(caller->getName() == "Edit")
-		self->getChildView("Find")->setEnabled(caller->getText().size() >= 3);
+		getChildView("Find")->setEnabled(caller->getText().size() >= 3);
 	else
-		self->childSetEnabled("Select", caller->getValue().asUUID().notNull());
+		childSetEnabled("Select", caller->getValue().asUUID().notNull());
 }
 
 // virtual

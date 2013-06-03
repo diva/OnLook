@@ -45,13 +45,13 @@
 #include "llnotificationsutil.h"
 
 #include "llagent.h"
+#include "llavataractions.h"
 #include "llbutton.h"
 #include "llcallingcard.h"
 #include "llchat.h"
 #include "llconsole.h"
-#include "llfloater.h"
+#include "llgroupactions.h"
 #include "llfloateractivespeakers.h"
-#include "llfloateravatarinfo.h"
 #include "llfloaterchat.h"
 #include "llfloatergroupinfo.h"
 #include "llimview.h"
@@ -1349,34 +1349,31 @@ BOOL LLFloaterIMPanel::postBuild()
 		mInputEditor = getChild<LLLineEditor>("chat_editor");
 		mInputEditor->setFocusReceivedCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusReceived, this) );
 		mFocusLostSignal = mInputEditor->setFocusLostCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusLost, this) );
-		mInputEditor->setKeystrokeCallback( onInputEditorKeystroke );
-		mInputEditor->setCommitCallback( onCommitChat );
-		mInputEditor->setCallbackUserData(this);
+		mInputEditor->setKeystrokeCallback( boost::bind(&LLFloaterIMPanel::onInputEditorKeystroke, this, _1) );
+		mInputEditor->setCommitCallback( boost::bind(&LLFloaterIMPanel::onSendMsg,this) );
 		mInputEditor->setCommitOnFocusLost( FALSE );
 		mInputEditor->setRevertOnEsc( FALSE );
 		mInputEditor->setReplaceNewlinesWithSpaces( FALSE );
+		mInputEditor->setPassDelete( TRUE );
 
 		if (LLButton* btn = findChild<LLButton>("profile_callee_btn"))
 		{
-			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickProfile, this));
+			btn->setCommitCallback(boost::bind(LLAvatarActions::showProfile, mOtherParticipantUUID));
 			if (!mProfileButtonEnabled) btn->setEnabled(false);
 		}
 		if (LLButton* btn = findChild<LLButton>("profile_tele_btn"))
-			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickTeleport, this));
+			btn->setCommitCallback(boost::bind(static_cast<void(*)(const LLUUID&)>(LLAvatarActions::offerTeleport), mOtherParticipantUUID));
 		if (LLButton* btn = findChild<LLButton>("group_info_btn"))
-			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickGroupInfo, this));
+			btn->setCommitCallback(boost::bind(LLGroupActions::show, mSessionUUID));
 		childSetAction("history_btn", onClickHistory, this);
 		if (LLUICtrl* ctrl = findChild<LLUICtrl>("rp_mode"))
 			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onRPMode, this, _2));
 
 		childSetAction("start_call_btn", onClickStartCall, this);
 		childSetAction("end_call_btn", onClickEndCall, this);
-		childSetAction("send_btn", onClickSend, this);
+		getChild<LLButton>("send_btn")->setCommitCallback(boost::bind(&LLFloaterIMPanel::onSendMsg,this));
 		if (LLButton* btn = findChild<LLButton>("toggle_active_speakers_btn"))
 			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickToggleActiveSpeakers, this, _2));
-
-		//LLButton* close_btn = getChild<LLButton>("close_btn");
-		//close_btn->setClickedCallback(&LLFloaterIMPanel::onClickClose, this);
 
 		mHistoryEditor = getChild<LLViewerTextEditor>("im_history");
 		mHistoryEditor->setParseHTML(TRUE);
@@ -1746,7 +1743,7 @@ BOOL LLFloaterIMPanel::handleKeyHere( KEY key, MASK mask )
 	BOOL handled = FALSE;
 	if( KEY_RETURN == key && mask == MASK_NONE)
 	{
-		sendMsg();
+		onSendMsg();
 		handled = TRUE;
 
 		// Close talk panels on hitting return
@@ -1876,25 +1873,6 @@ void LLFloaterIMPanel::onTabClick(void* userdata)
 }
 
 
-void LLFloaterIMPanel::onClickProfile()
-{
-	//  Bring up the Profile window
-	if (mOtherParticipantUUID.notNull())
-	{
-		LLFloaterAvatarInfo::showFromDirectory(mOtherParticipantUUID);
-	}
-}
-
-void LLFloaterIMPanel::onClickTeleport()
-{
-	if (mOtherParticipantUUID.notNull())
-	{
-		handle_lure(mOtherParticipantUUID);
-		//do a teleport to other part id
-		//LLFloaterAvatarInfo::showFromDirectory(mOtherParticipantID);
-	}
-}
-
 void LLFloaterIMPanel::onRPMode(const LLSD& value)
 {
 	mRPMode = value.asBoolean();
@@ -1919,22 +1897,6 @@ void LLFloaterIMPanel::onClickHistory( void* userdata )
 	}
 }
 
-void LLFloaterIMPanel::onClickGroupInfo()
-{
-	//  Bring up the Profile window
-	LLFloaterGroupInfo::showFromUUID(mSessionUUID);
-}
-
-// static
-void LLFloaterIMPanel::onClickClose( void* userdata )
-{
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*) userdata;
-	if(self)
-	{
-		self->close();
-	}
-}
-
 // static
 void LLFloaterIMPanel::onClickStartCall(void* userdata)
 {
@@ -1951,23 +1913,9 @@ void LLFloaterIMPanel::onClickEndCall(void* userdata)
 	self->getVoiceChannel()->deactivate();
 }
 
-// static
-void LLFloaterIMPanel::onClickSend(void* userdata)
-{
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*)userdata;
-	self->sendMsg();
-}
-
 void LLFloaterIMPanel::onClickToggleActiveSpeakers(const LLSD& value)
 {
 	childSetVisible("active_speakers_panel", !value);
-}
-
-// static
-void LLFloaterIMPanel::onCommitChat(LLUICtrl* caller, void* userdata)
-{
-	LLFloaterIMPanel* self= (LLFloaterIMPanel*) userdata;
-	self->sendMsg();
 }
 
 void LLFloaterIMPanel::onInputEditorFocusReceived()
@@ -1980,19 +1928,17 @@ void LLFloaterIMPanel::onInputEditorFocusLost()
 	setTyping(FALSE);
 }
 
-// static
-void LLFloaterIMPanel::onInputEditorKeystroke(LLLineEditor* caller, void* userdata)
+void LLFloaterIMPanel::onInputEditorKeystroke(LLLineEditor* caller)
 {
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*)userdata;
-	std::string text = self->mInputEditor->getText();
+	std::string text = caller->getText();
 	if (!text.empty())
 	{
-		self->setTyping(TRUE);
+		setTyping(TRUE);
 	}
 	else
 	{
 		// Deleting all text counts as stopping typing.
-		self->setTyping(FALSE);
+		setTyping(FALSE);
 	}
 }
 
@@ -2099,7 +2045,7 @@ void deliver_message(const std::string& utf8_text,
 	}
 }
 
-void LLFloaterIMPanel::sendMsg()
+void LLFloaterIMPanel::onSendMsg()
 {
 	if (!gAgent.isGodlike() 
 		&& (mDialog == IM_NOTHING_SPECIAL)

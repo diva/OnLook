@@ -78,12 +78,6 @@ void handle_track_avatar(const LLUUID& agent_id, const std::string& name)
 	LLFloaterWorldMap::show(true);
 }
 
-void handle_pay_by_id(const LLUUID& agent_id)
-{
-	const BOOL is_group = FALSE;
-	LLFloaterPay::payDirectly(&give_money, agent_id, is_group);
-}
-
 void handle_mouselook(void*)
 {
 	gAgentCamera.changeCameraToMouselook();

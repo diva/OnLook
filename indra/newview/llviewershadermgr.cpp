@@ -2565,6 +2565,11 @@ BOOL LLViewerShaderMgr::loadShadersInterface()
 	{
 		gSolidColorProgram.mName = "Solid Color Shader";
 		gSolidColorProgram.mShaderFiles.clear();
+#if LL_WINDOWS
+		if(gGLManager.mIsIntel && gGLManager.mGLVersion >= 4.f)
+			gSolidColorProgram.mShaderFiles.push_back(make_pair("interface/solidcolorIntelV.glsl", GL_VERTEX_SHADER_ARB));
+		else
+#endif
 		gSolidColorProgram.mShaderFiles.push_back(make_pair("interface/solidcolorV.glsl", GL_VERTEX_SHADER_ARB));
 		gSolidColorProgram.mShaderFiles.push_back(make_pair("interface/solidcolorF.glsl", GL_FRAGMENT_SHADER_ARB));
 		gSolidColorProgram.mShaderLevel = mVertexShaderLevel[SHADER_INTERFACE];

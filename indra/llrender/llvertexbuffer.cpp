@@ -36,9 +36,6 @@
 #include "llshadermgr.h"
 #include "llglslshader.h"
 #include "llmemory.h"
-#include "llfasttimer.h"
-
-#define LL_VBO_POOLING 0
 
 //Next Highest Power Of Two
 //helper function, returns first number > v that is a power of 2, or v if v is already a power of 2
@@ -67,6 +64,7 @@ U32 wpo2(U32 i)
 
 
 const U32 LL_VBO_BLOCK_SIZE = 2048;
+const U32 LL_VBO_POOL_MAX_SEED_SIZE = 256*1024;
 
 U32 vbo_block_size(U32 size)
 { //what block size will fit size?
@@ -79,6 +77,7 @@ U32 vbo_block_index(U32 size)
 	return vbo_block_size(size)/LL_VBO_BLOCK_SIZE;
 }
 
+const U32 LL_VBO_POOL_SEED_COUNT = vbo_block_index(LL_VBO_POOL_MAX_SEED_SIZE);
 
 
 //============================================================================
@@ -91,6 +90,11 @@ LLVBOPool LLVertexBuffer::sDynamicIBOPool(GL_DYNAMIC_DRAW_ARB, GL_ELEMENT_ARRAY_
 
 U32 LLVBOPool::sBytesPooled = 0;
 U32 LLVBOPool::sIndexBytesPooled = 0;
+U32 LLVBOPool::sCurGLName = 1;
+
+std::list<U32> LLVertexBuffer::sAvailableVAOName;
+U32 LLVertexBuffer::sCurVAOName = 1;
+
 U32 LLVertexBuffer::sAllocatedIndexBytes = 0;
 U32 LLVertexBuffer::sIndexCount = 0;
 
@@ -116,13 +120,53 @@ bool LLVertexBuffer::sUseVAO = false;
 bool LLVertexBuffer::sPreferStreamDraw = false;
 
 
-volatile U8* LLVBOPool::allocate(U32& name, U32 size)
+U32 LLVBOPool::genBuffer()
+{
+	U32 ret = 0;
+
+	if (mGLNamePool.empty())
+	{
+		ret = sCurGLName++;
+	}
+	else
+	{
+		ret = mGLNamePool.front();
+		mGLNamePool.pop_front();
+	}
+
+	return ret;
+}
+
+void LLVBOPool::deleteBuffer(U32 name)
+{
+	if (gGLManager.mInited)
+	{
+		LLVertexBuffer::unbind();
+
+		glBindBufferARB(mType, name);
+		glBufferDataARB(mType, 0, NULL, mUsage);
+
+		llassert(std::find(mGLNamePool.begin(), mGLNamePool.end(), name) == mGLNamePool.end());
+
+		mGLNamePool.push_back(name);
+
+		glBindBufferARB(mType, 0);
+	}
+}
+
+
+LLVBOPool::LLVBOPool(U32 vboUsage, U32 vboType)
+: mUsage(vboUsage), mType(vboType)
+{
+	mMissCount.resize(LL_VBO_POOL_SEED_COUNT);
+	std::fill(mMissCount.begin(), mMissCount.end(), 0);
+}
+
+volatile U8* LLVBOPool::allocate(U32& name, U32 size, bool for_seed)
 {
 	llassert(vbo_block_size(size) == size);
 	
 	volatile U8* ret = NULL;
-
-#if LL_VBO_POOLING
 
 	U32 i = vbo_block_index(size);
 
@@ -131,11 +175,17 @@ volatile U8* LLVBOPool::allocate(U32& name, U32 size)
 		mFreeList.resize(i+1);
 	}
 
-	if (mFreeList[i].empty())
+	if (mFreeList[i].empty() || for_seed)
 	{
 		//make a new buffer
-		glGenBuffersARB(1, &name);
+		name = genBuffer();
+		
 		glBindBufferARB(mType, name);
+
+		if (!for_seed && i < LL_VBO_POOL_SEED_COUNT)
+		{ //record this miss
+			mMissCount[i]++;	
+		}
 
 		if (mType == GL_ARRAY_BUFFER_ARB)
 		{
@@ -157,6 +207,25 @@ volatile U8* LLVBOPool::allocate(U32& name, U32 size)
 		}
 
 		glBindBufferARB(mType, 0);
+
+		if (for_seed)
+		{ //put into pool for future use
+			llassert(mFreeList.size() > i);
+
+			Record rec;
+			rec.mGLName = name;
+			rec.mClientData = ret;
+	
+			if (mType == GL_ARRAY_BUFFER_ARB)
+			{
+			sBytesPooled += size;
+		}
+		else
+		{
+			sIndexBytesPooled += size;
+			}
+			mFreeList[i].push_back(rec);
+		}
 	}
 	else
 	{
@@ -174,33 +243,6 @@ volatile U8* LLVBOPool::allocate(U32& name, U32 size)
 
 		mFreeList[i].pop_front();
 	}
-#else //no pooling
-
-	glGenBuffersARB(1, &name);
-	glBindBufferARB(mType, name);
-
-	if (mType == GL_ARRAY_BUFFER_ARB)
-	{
-		LLVertexBuffer::sAllocatedBytes += size;
-	}
-	else
-	{
-		LLVertexBuffer::sAllocatedIndexBytes += size;
-	}
-
-	if (LLVertexBuffer::sDisableVBOMapping || mUsage != GL_DYNAMIC_DRAW_ARB)
-	{
-		glBufferDataARB(mType, size, 0, mUsage);
-		ret = (U8*) ll_aligned_malloc_16(size);
-	}
-	else
-	{ //always use a true hint of static draw when allocating non-client-backed buffers
-		glBufferDataARB(mType, size, 0, GL_STATIC_DRAW_ARB);
-	}
-
-	glBindBufferARB(mType, 0);
-
-#endif
 
 	return ret;
 }
@@ -209,34 +251,7 @@ void LLVBOPool::release(U32 name, volatile U8* buffer, U32 size)
 {
 	llassert(vbo_block_size(size) == size);
 
-#if LL_VBO_POOLING
-
-	U32 i = vbo_block_index(size);
-
-	llassert(mFreeList.size() > i);
-
-	Record rec;
-	rec.mGLName = name;
-	rec.mClientData = buffer;
-	
-	if (buffer == NULL)
-	{
-		glDeleteBuffersARB(1, &rec.mGLName);
-	}
-	else
-	{
-		if (mType == GL_ARRAY_BUFFER_ARB)
-		{
-			sBytesPooled += size;
-		}
-		else
-		{
-			sIndexBytesPooled += size;
-		}
-		mFreeList[i].push_back(rec);
-	}
-#else //no pooling
-	glDeleteBuffersARB(1, &name);
+	deleteBuffer(name);
 	ll_aligned_free_16((U8*) buffer);
 
 	if (mType == GL_ARRAY_BUFFER_ARB)
@@ -247,12 +262,37 @@ void LLVBOPool::release(U32 name, volatile U8* buffer, U32 size)
 	{
 		LLVertexBuffer::sAllocatedIndexBytes -= size;
 	}
-#endif
 }
+
+void LLVBOPool::seedPool()
+{
+	U32 dummy_name = 0;
+
+	if (mFreeList.size() < LL_VBO_POOL_SEED_COUNT)
+	{
+		mFreeList.resize(LL_VBO_POOL_SEED_COUNT);
+	}
+
+	for (U32 i = 0; i < LL_VBO_POOL_SEED_COUNT; i++)
+	{
+		if (mMissCount[i] > mFreeList[i].size())
+		{ 
+			U32 size = i*LL_VBO_BLOCK_SIZE;
+		
+			S32 count = mMissCount[i] - mFreeList[i].size();
+			for (S32 j = 0; j < count; ++j)
+			{
+				allocate(dummy_name, size, true);
+			}
+		}
+	}
+}
+
+
 
 void LLVBOPool::cleanup()
 {
-	U32 size = 1;
+	U32 size = LL_VBO_BLOCK_SIZE;
 
 	for (U32 i = 0; i < mFreeList.size(); ++i)
 	{
@@ -262,8 +302,8 @@ void LLVBOPool::cleanup()
 		{
 			Record& r = l.front();
 
-			glDeleteBuffersARB(1, &r.mGLName);
-
+			deleteBuffer(r.mGLName);
+			
 			if (r.mClientData)
 			{
 				ll_aligned_free_16((void*) r.mClientData);
@@ -283,8 +323,11 @@ void LLVBOPool::cleanup()
 			}
 		}
 
-		size *= 2;
+		size += LL_VBO_BLOCK_SIZE;
 	}
+
+	//reset miss counts
+	std::fill(mMissCount.begin(), mMissCount.end(), 0);
 }
 
 
@@ -318,6 +361,41 @@ U32 LLVertexBuffer::sGLMode[LLRender::NUM_MODES] =
 	GL_LINE_LOOP,
 };
 
+//static
+U32 LLVertexBuffer::getVAOName()
+{
+	U32 ret = 0;
+
+	if (!sAvailableVAOName.empty())
+	{
+		ret = sAvailableVAOName.front();
+		sAvailableVAOName.pop_front();
+	}
+	else
+	{
+#ifdef GL_ARB_vertex_array_object
+		glGenVertexArrays(1, &ret);
+#endif
+	}
+
+	return ret;		
+}
+
+//static
+void LLVertexBuffer::releaseVAOName(U32 name)
+{
+	sAvailableVAOName.push_back(name);
+}
+
+
+//static
+void LLVertexBuffer::seedPools()
+{ 
+	sStreamVBOPool.seedPool();
+	sDynamicVBOPool.seedPool();
+	sStreamIBOPool.seedPool();
+	sDynamicIBOPool.seedPool();
+}
 
 //static
 void LLVertexBuffer::setupClientArrays(U32 data_mask)
@@ -473,8 +551,21 @@ void LLVertexBuffer::drawArrays(U32 mode, const std::vector<LLVector3>& pos, con
 	gGL.syncMatrices();
 
 	U32 count = pos.size();
-	llassert_always(norm.size() >= pos.size());
-	llassert_always(count > 0);
+	
+	llassert(norm.size() >= pos.size());
+	llassert(count > 0);
+
+	if( count == 0 )
+	{
+		llwarns << "Called drawArrays with 0 vertices" << llendl;
+		return;
+	}
+
+	if( norm.size() < pos.size() )
+	{
+		llwarns << "Called drawArrays with #" << norm.size() << " normals and #" << pos.size() << " vertices" << llendl;
+		return;
+	}
 
 	unbind();
 	
@@ -690,6 +781,7 @@ void LLVertexBuffer::draw(U32 mode, U32 count, U32 indices_offset) const
 	placeFence();
 }
 
+static LLFastTimer::DeclareTimer FTM_GL_DRAW_ARRAYS("GL draw arrays");
 void LLVertexBuffer::drawArrays(U32 mode, U32 first, U32 count) const
 {
 	llassert(!LLGLSLShader::sNoFixedFunction || LLGLSLShader::sCurBoundShaderPtr != NULL);
@@ -724,8 +816,11 @@ void LLVertexBuffer::drawArrays(U32 mode, U32 first, U32 count) const
 		return;
 	}
 
-	stop_glerror();
-	glDrawArrays(sGLMode[mode], first, count);
+	{
+		LLFastTimer t2(FTM_GL_DRAW_ARRAYS);
+		stop_glerror();
+		glDrawArrays(sGLMode[mode], first, count);
+	}
 	stop_glerror();
 	placeFence();
 }
@@ -920,7 +1015,7 @@ LLVertexBuffer::~LLVertexBuffer()
 	if (mGLArray)
 	{
 #if GL_ARB_vertex_array_object
-		glDeleteVertexArrays(1, &mGLArray);
+		releaseVAOName(mGLArray);
 #endif
 	}
 
@@ -1193,7 +1288,7 @@ void LLVertexBuffer::allocateBuffer(S32 nverts, S32 nindices, bool create)
 		if (gGLManager.mHasVertexArrayObject && useVBOs() && (LLRender::sGLCoreProfile || sUseVAO))
 		{
 #if GL_ARB_vertex_array_object
-			glGenVertexArrays(1, &mGLArray);
+			mGLArray = getVAOName();
 #endif
 			setupVertexArray();
 		}

@@ -55,12 +55,11 @@ static LLRegisterWidget<LLCheckBoxCtrl> r("check_box");
 LLCheckBoxCtrl::LLCheckBoxCtrl(const std::string& name, const LLRect& rect, 
 							    const std::string& label, 
 								const LLFontGL* font,
-								void (*commit_callback)(LLUICtrl* ctrl, void* userdata),
-								void* callback_user_data,
+								commit_callback_t commit_callback,
 								BOOL initial_value,
 								BOOL use_radio_style,
 								const std::string& control_which)
-:	LLUICtrl(name, rect, TRUE, commit_callback, callback_user_data, FOLLOWS_LEFT | FOLLOWS_TOP),
+:	LLUICtrl(name, rect, TRUE, commit_callback, FOLLOWS_LEFT | FOLLOWS_TOP),
 	mTextEnabledColor( LLUI::sColorsGroup->getColor( "LabelTextColor" ) ),
 	mTextDisabledColor( LLUI::sColorsGroup->getColor( "LabelDisabledColor" ) ),
 	mRadioStyle( use_radio_style ),
@@ -122,7 +121,7 @@ LLCheckBoxCtrl::LLCheckBoxCtrl(const std::string& name, const LLRect& rect,
 
 	mButton = new LLButton(	button_name, btn_rect,
 							active_false_id, active_true_id, control_which,
-							&LLCheckBoxCtrl::onButtonPress, this, LLFontGL::getFontSansSerif() ); 
+							boost::bind(&LLCheckBoxCtrl::onButtonPress, this, _2), LLFontGL::getFontSansSerif() ); 
 
 	mButton->setImageDisabledSelected(LLUI::getUIImage(inactive_true_id));
 	mButton->setImageDisabled(LLUI::getUIImage(inactive_false_id));
@@ -144,10 +143,14 @@ LLCheckBoxCtrl::~LLCheckBoxCtrl()
 
 
 // static
-void LLCheckBoxCtrl::onButtonPress( void *userdata )
+void LLCheckBoxCtrl::onButtonPress( const LLSD& data )
 {
-	LLCheckBoxCtrl* self = (LLCheckBoxCtrl*)userdata;
-	self->onCommit();
+	//if (mRadioStyle)
+	//{
+	//	setValue(TRUE);
+	//}
+
+	onCommit();
 }
 
 void LLCheckBoxCtrl::onCommit()
@@ -315,8 +318,6 @@ LLView* LLCheckBoxCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 	BOOL radio_style = FALSE;
 	node->getAttributeBOOL("radio_style", radio_style);
 
-	LLUICtrlCallback callback = NULL;
-
 	if (label.empty())
 	{
 		label.assign(node->getTextContents());
@@ -329,7 +330,6 @@ LLView* LLCheckBoxCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 		rect, 
 		label,
 		font,
-		callback,
 		NULL,
 		FALSE,
 		radio_style); // if true, draw radio button style icons

@@ -1238,7 +1238,7 @@ void LLWorldMapView::drawAgents()
 			// Show Individual agents (or little stacks where real agents are)
 
 			// Here's how we'd choose the color if info.mID were available but it's not being sent:
-			// LLColor4 color = (agent_count == 1 && is_agent_friend(info.mID)) ? friend_color : avatar_color;
+			// LLColor4 color = (agent_count == 1 && LLAvatarActions::isFriend(info.mID)) ? friend_color : avatar_color;
 			// Reduce the stack size as you zoom out - always display at lease one agent where there is one or more
 			S32 agent_count = (S32)(((it->getCount()-1) * agents_scale + (it->getCount()-1) * 0.1f)+.1f) + 1;
 			drawImageStack(it->getGlobalPosition(), sAvatarSmallImage, agent_count, 3.f, avatar_color);
@@ -1259,28 +1259,56 @@ void LLWorldMapView::drawFrustum()
 	F32 half_width_meters = far_clip_meters * tan( horiz_fov / 2 );
 	F32 half_width_pixels = half_width_meters * meters_to_pixels;
 	
-	F32 ctr_x = getRect().getWidth() * 0.5f + sPanX;
-	F32 ctr_y = getRect().getHeight() * 0.5f + sPanY;
+	// Compute the frustum coordinates. Take the UI scale into account.
+	static LLCachedControl<F32> ui_scale_factor("UIScaleFactor");
+	F32 ctr_x = (getLocalRect().getWidth() * 0.5f + sPanX)  * ui_scale_factor;
+	F32 ctr_y = (getLocalRect().getHeight() * 0.5f + sPanY) * ui_scale_factor;
 
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
 	// Since we don't rotate the map, we have to rotate the frustum.
 	gGL.pushMatrix();
+	{
 		gGL.translatef( ctr_x, ctr_y, 0 );
-		gGL.rotatef( atan2( LLViewerCamera::getInstance()->getAtAxis().mV[VX], LLViewerCamera::getInstance()->getAtAxis().mV[VY] ) * RAD_TO_DEG, 0.f, 0.f, -1.f);
 
 		// Draw triangle with more alpha in far pixels to make it 
 		// fade out in distance.
 		gGL.begin( LLRender::TRIANGLES  );
+		{
+			// get camera look at and left axes
+			LLVector3 at_axis = LLViewerCamera::instance().getAtAxis();
+			LLVector3 left_axis = LLViewerCamera::instance().getLeftAxis();
+
+			// grab components along XY plane
+			LLVector2 cam_lookat(at_axis.mV[VX], at_axis.mV[VY]);
+			LLVector2 cam_left(left_axis.mV[VX], left_axis.mV[VY]);
+
+			// but, when looking near straight up or down...
+			if (is_approx_zero(cam_lookat.magVecSquared()))
+			{
+				//...just fall back to looking down the x axis
+				cam_lookat = LLVector2(1.f, 0.f); // x axis
+				cam_left = LLVector2(0.f, 1.f); // y axis
+			}
+
+			// normalize to unit length
+			cam_lookat.normVec();
+			cam_left.normVec();
+
 			gGL.color4f(1.f, 1.f, 1.f, 0.25f);
 			gGL.vertex2f( 0, 0 );
 
 			gGL.color4f(1.f, 1.f, 1.f, 0.02f);
-			gGL.vertex2f( -half_width_pixels, far_clip_pixels );
+			
+			// use 2d camera vectors to render frustum triangle
+			LLVector2 vert = cam_lookat * far_clip_pixels + cam_left * half_width_pixels;
+			gGL.vertex2f(vert.mV[VX], vert.mV[VY]);
 
-			gGL.color4f(1.f, 1.f, 1.f, 0.02f);
-			gGL.vertex2f(  half_width_pixels, far_clip_pixels );
+			vert = cam_lookat * far_clip_pixels - cam_left * half_width_pixels;
+			gGL.vertex2f(vert.mV[VX], vert.mV[VY]);
+		}
 		gGL.end();
+	}
 	gGL.popMatrix();
 }
 LLVector3 LLWorldMapView::globalPosToView( const LLVector3d& global_pos )

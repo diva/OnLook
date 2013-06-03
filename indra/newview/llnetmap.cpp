@@ -35,8 +35,6 @@
 
 #include "llnetmap.h"
 
-#include "indra_constants.h"
-#include "llui.h"
 #include "llmath.h"		// clampf()
 #include "llfocusmgr.h"
 #include "lllocalcliprect.h"
@@ -46,11 +44,10 @@
 
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llavataractions.h"
 #include "llavatarnamecache.h"
 #include "llcallingcard.h"
 #include "llcolorscheme.h"
-#include "llviewercontrol.h"
-#include "llfloateravatarinfo.h"
 #include "llfloaterworldmap.h"
 #include "llframetimer.h"
 #include "lltracker.h"
@@ -58,7 +55,6 @@
 #include "llsurface.h"
 #include "lltextbox.h"
 #include "lluictrlfactory.h"
-#include "lluuid.h"
 #include "llviewercamera.h"
 #include "llviewertexturelist.h"
 #include "llviewermenu.h"
@@ -207,6 +203,19 @@ void LLNetMap::draw()
 	}
 
 	F32 rotation = 0;
+
+
+	gGL.pushMatrix();
+	gGL.pushUIMatrix();
+	
+	LLVector3 offset = gGL.getUITranslation();
+	LLVector3 scale = gGL.getUIScale();
+
+	gGL.loadIdentity();
+	gGL.loadUIIdentity();
+
+	gGL.scalef(scale.mV[0], scale.mV[1], scale.mV[2]);
+	gGL.translatef(offset.mV[0], offset.mV[1], offset.mV[2]);
 
 	// Prepare a scissor region
 	{
@@ -419,7 +428,7 @@ void LLNetMap::draw()
 				avColor = em_color;
 			}
 			//without these dots, SL would suck.
-			else if(is_agent_friend(id))
+			else if(LLAvatarActions::isFriend(id))
 			{
 				avColor = friend_color;
 			}
@@ -511,6 +520,9 @@ void LLNetMap::draw()
 			gGL.popMatrix();
 		}
 	}
+	
+	gGL.popMatrix();
+	gGL.popUIMatrix();
 	
 	// Rotation of 0 means that North is up
 	setDirectionPos( getChild<LLTextBox>("e_label"), rotation);
@@ -1134,10 +1146,10 @@ bool LLNetMap::LLShowAgentProfile::handleEvent(LLPointer<LLEvent> event, const L
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.0b
 	if (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 	{
-		LLFloaterAvatarInfo::show(self->mClosestAgentAtLastRightClick);
+		LLAvatarActions::showProfile(self->mClosestAgentAtLastRightClick);
 	}
 // [/RLVa:KB]
-	//LLFloaterAvatarInfo::show(self->mClosestAgentAtLastRightClick);
+	//LLAvatarActions::showProfile(self->mClosestAgentAtLastRightClick);
 	return true;
 }
 

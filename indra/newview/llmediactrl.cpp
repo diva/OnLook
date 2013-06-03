@@ -63,7 +63,7 @@ const S32 MAX_TEXTURE_DIMENSION = 2048;
 static LLRegisterWidget<LLMediaCtrl> r("web_browser");
 
 LLMediaCtrl::LLMediaCtrl( const std::string& name, const LLRect& rect ) :
-	LLUICtrl( name, rect, FALSE, NULL, NULL),
+	LLUICtrl( name, rect, FALSE),
 	LLInstanceTracker<LLMediaCtrl, LLUUID>(LLUUID::generateNewID()),
 	mTextureDepthBytes( 4 ),
 	mWebBrowserImage( 0 ),
@@ -718,17 +718,20 @@ void LLMediaCtrl::draw()
 	}
 	if(draw_media)
 	{
-		gGL.pushMatrix();
+		gGL.pushUIMatrix();
 		{
-			if (mIgnoreUIScale)
+			/*if (mIgnoreUIScale)
 			{
+				gGL.pushUIMatrix();
+				gGL.loadUIIdentity();
+				gGL.pushMatrix();
 				gGL.loadIdentity();
 				// font system stores true screen origin, need to scale this by UI scale factor
 				// to get render origin for this view (with unit scale)
 				gGL.translatef(floorf(LLFontGL::sCurOrigin.mX * LLUI::getScaleFactor().mV[VX]), 
 							floorf(LLFontGL::sCurOrigin.mY * LLUI::getScaleFactor().mV[VY]), 
 							LLFontGL::sCurDepth);
-			}
+			}*/
 
 			// scale texture to fit the space using texture coords
 			gGL.getTexUnit(0)->bind(media_texture);
@@ -776,13 +779,13 @@ void LLMediaCtrl::draw()
 			x_offset = (r.getWidth() - width) / 2;
 			y_offset = (r.getHeight() - height) / 2;		
 
-			if (mIgnoreUIScale)
+			/*if (mIgnoreUIScale)
 			{
 				x_offset = llround((F32)x_offset * LLUI::getScaleFactor().mV[VX]);
 				y_offset = llround((F32)y_offset * LLUI::getScaleFactor().mV[VY]);
 				width = llround((F32)width * LLUI::getScaleFactor().mV[VX]);
 				height = llround((F32)height * LLUI::getScaleFactor().mV[VY]);
-			}
+			}*/
 
 			// draw the browser
 			gGL.setSceneBlendType(LLRender::BT_REPLACE);
@@ -819,8 +822,13 @@ void LLMediaCtrl::draw()
 			}
 			gGL.end();
 			gGL.setSceneBlendType(LLRender::BT_ALPHA);
+			/*if (mIgnoreUIScale)
+			{
+				gGL.popUIMatrix();
+				gGL.popMatrix();
+			}*/
 		}
-		gGL.popMatrix();
+		gGL.popUIMatrix();
 	}
 	// highlight if keyboard focus here. (TODO: this needs some work)
 	if ( mBorder && mBorder->getVisible() )
@@ -1370,9 +1378,9 @@ LLView* LLMediaCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory 
 		web_browser->setCaretColor( colorU.mV[0], colorU.mV[1], colorU.mV[2] );
 	}
 
-	BOOL ignore_ui_scale = web_browser->getIgnoreUIScale();
-	node->getAttributeBOOL("ignore_ui_scale", ignore_ui_scale);
-	web_browser->setIgnoreUIScale((bool)ignore_ui_scale);
+	//BOOL ignore_ui_scale = web_browser->getIgnoreUIScale();
+	//node->getAttributeBOOL("ignore_ui_scale", ignore_ui_scale);
+	//web_browser->setIgnoreUIScale((bool)ignore_ui_scale);
 
 	web_browser->initFromXML(node, parent);
 

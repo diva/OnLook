@@ -463,6 +463,9 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 
 	// Return the capability type of this request.
 	AICapabilityType capability_type(void) const { llassert(mCapabilityType != number_of_capability_types); return mCapabilityType; }
+
+	// Return true if any data was received.
+	bool received_data(void) const { return mTotalRawBytes > 0; }
 };
 
 inline ThreadSafeBufferedCurlEasyRequest* CurlEasyRequest::get_lockobj(void)

@@ -39,7 +39,6 @@
 #pragma warning (disable : 4263)
 #pragma warning (disable : 4264)
 #endif
-#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #include "dae.h"
 //#include "dom.h"
@@ -62,7 +61,6 @@
 #include "dom/domScale.h"
 #include "dom/domTranslate.h"
 #include "dom/domVisual_scene.h"
-#pragma GCC diagnostic pop
 #if LL_MSVC
 #pragma warning (pop)
 #endif

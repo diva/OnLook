@@ -1721,8 +1721,7 @@ bool MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request, bool f
 	AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
 	capability_type = curl_easy_request_w->capability_type();
 	per_service = curl_easy_request_w->getPerServicePtr();
-	// Never throttle on bandwidth if there are no handles running (sTotalAdded == 1, the long poll connection).
-	bool too_much_bandwidth = sTotalAdded > 1 && !curl_easy_request_w->approved() && AIPerService::checkBandwidthUsage(per_service, get_clock_count() * HTTPTimeout::sClockWidth_40ms);
+	bool too_much_bandwidth = !curl_easy_request_w->approved() && AIPerService::checkBandwidthUsage(per_service, get_clock_count() * HTTPTimeout::sClockWidth_40ms);
 	PerService_wat per_service_w(*per_service);
 	if (!too_much_bandwidth && sTotalAdded < curl_max_total_concurrent_connections && !per_service_w->throttled())
 	{
@@ -1791,10 +1790,11 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
   AIPerServicePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(**iter);
+	bool downloaded_something = curl_easy_request_w->received_data();
 	res = curl_easy_request_w->remove_handle_from_multi(curl_easy_request_w, mMultiHandle);
 	capability_type = curl_easy_request_w->capability_type();
 	per_service = curl_easy_request_w->getPerServicePtr();
-	PerService_wat(*per_service)->removed_from_multi_handle(capability_type);		// (About to be) removed from mAddedEasyRequests.
+	PerService_wat(*per_service)->removed_from_multi_handle(capability_type, downloaded_something);		// (About to be) removed from mAddedEasyRequests.
 #ifdef SHOW_ASSERT
 	curl_easy_request_w->mRemovedPerCommand = as_per_command;
 #endif
@@ -2137,6 +2137,12 @@ void BufferedCurlEasyRequest::update_body_bandwidth(void)
   getinfo(CURLINFO_SIZE_DOWNLOAD, &size_download);
   size_t total_raw_bytes = size_download;
   size_t raw_bytes = total_raw_bytes - mTotalRawBytes;
+  if (mTotalRawBytes == 0 && total_raw_bytes > 0)
+  {
+	// Update service/capability type administration for the HTTP Debug Console.
+	PerService_wat per_service_w(*mPerServicePtr);
+	per_service_w->download_started(mCapabilityType);
+  }
   mTotalRawBytes = total_raw_bytes;
   // Note that in some cases (like HTTP_PARTIAL_CONTENT), the output of CURLINFO_SIZE_DOWNLOAD lags
   // behind and will return 0 the first time, and the value of the previous chunk the next time.
@@ -2589,6 +2595,11 @@ U32 getNumHTTPAdded(void)
   return AICurlPrivate::curlthread::MultiHandle::total_added_size();
 }
 
+U32 getMaxHTTPAdded(void)
+{
+  return AICurlPrivate::curlthread::curl_max_total_concurrent_connections;
+}
+
 size_t getHTTPBandwidth(void)
 {
   using namespace AICurlPrivate;
@@ -2673,21 +2684,21 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
 	PerService_wat per_service_w(*per_service);
 	CapabilityType& ct(per_service_w->mCapabilityType[capability_type]);
 	S32 const pipelined_requests_per_capability_type = ct.pipelined_requests();
-	reject = pipelined_requests_per_capability_type >= ct.mMaxPipelinedRequests;
+	reject = pipelined_requests_per_capability_type >= (S32)ct.mMaxPipelinedRequests;
 	equal = pipelined_requests_per_capability_type == ct.mMaxPipelinedRequests;
 	increment_threshold = ct.mFlags & ctf_starvation;
 	decrement_threshold = (ct.mFlags & (ctf_empty | ctf_full)) == ctf_full;
 	ct.mFlags = 0;
 	if (decrement_threshold)
 	{
-	  if (ct.mMaxPipelinedRequests > per_service_w->mConcurrectConnections)
+	  if ((int)ct.mMaxPipelinedRequests > per_service_w->mConcurrectConnections)
 	  {
 		ct.mMaxPipelinedRequests--;
 	  }
 	}
 	else if (increment_threshold && reject)
 	{
-	  if (ct.mMaxPipelinedRequests < 2 * per_service_w->mConcurrectConnections)
+	  if ((int)ct.mMaxPipelinedRequests < 2 * per_service_w->mConcurrectConnections)
 	  {
 		ct.mMaxPipelinedRequests++;
 		// Immediately take the new threshold into account.

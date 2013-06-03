@@ -63,7 +63,6 @@
 #include "llfirstuse.h"
 #include "llfloaterabout.h"
 #include "llfloateractivespeakers.h"
-#include "llfloateravatarinfo.h"
 #include "llfloateravatarlist.h"
 #include "llfloateravatartextures.h"
 #include "llfloaterbeacons.h"
@@ -79,12 +78,9 @@
 #include "llfloaterdirectory.h"
 #include "llfloatereditui.h"
 #include "llfloaterchatterbox.h"
-#include "llfloaterfriends.h"
 #include "llfloaterfonttest.h"
 #include "llfloatergesture.h"
 #include "llfloatergodtools.h"
-#include "llfloatergroupinvite.h"
-#include "llfloatergroups.h"
 #include "llfloaterhtmlcurrency.h"
 #include "llfloatermediabrowser.h"			// gViewerHtmlHelp
 #include "llfloaterhud.h"
@@ -120,6 +116,7 @@
 #include "llfloatermemleak.h"
 #include "llframestats.h"
 #include "llgivemoney.h"
+#include "llavataractions.h"
 #include "llgroupmgr.h"
 #include "llhoverview.h"
 #include "llhudeffecttrail.h"
@@ -221,6 +218,8 @@ void handle_test_load_url(void*);
 //
 // Evil hackish imported globals
 
+class AIHTTPView;
+
 //extern BOOL	gHideSelectedObjects;
 //extern BOOL gAllowSelectAvatar;
 //extern BOOL gDebugAvatarRotation;
@@ -229,6 +228,7 @@ extern BOOL gDebugWindowProc;
 extern BOOL gDebugTextEditorTips;
 extern BOOL gShowOverlayTitle;
 extern BOOL gOcclusionCull;
+extern AIHTTPView* gHttpView;
 //
 // Globals
 //
@@ -816,6 +816,13 @@ void init_client_menu(LLMenuGL* menu)
 										(void*)gTextureCategoryView,
 									   	'6', MASK_CONTROL|MASK_SHIFT ) );
 		}
+
+		sub->addChild(new LLMenuItemCheckGL("HTTP Console", 
+										&toggle_visibility,
+										NULL,
+										&get_visibility,
+										(void*)gHttpView,
+									   	'7', MASK_CONTROL|MASK_SHIFT ) );
 
 		sub->addChild(new LLMenuItemCheckGL("Region Debug Console", handle_singleton_toggle<LLFloaterRegionDebugConsole>, NULL, handle_singleton_check<LLFloaterRegionDebugConsole>,NULL,'`', MASK_CONTROL|MASK_SHIFT));
 
@@ -3009,7 +3016,12 @@ class LLScriptCount : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		ScriptCounter::serializeSelection(false);
+		if (LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject())
+		{
+			ScriptCounter* sc = new ScriptCounter(false, object);
+			sc->requestInventories();
+			// sc will destroy itself
+		}
 		return true;
 	}
 };
@@ -3018,7 +3030,12 @@ class LLScriptDelete : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		ScriptCounter::serializeSelection(true);
+		if (LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject())
+		{
+			ScriptCounter* sc = new ScriptCounter(true, object);
+			sc->requestInventories();
+			// sc will destroy itself
+		}
 		return true;
 	}
 };
@@ -3709,11 +3726,6 @@ void handle_close_all_notifications(void*)
 	}
 }
 
-void handle_area_search(void*)
-{
-	JCFloaterAreaSearch::toggle();
-}
-
 void handle_fake_away_status(void*)
 {
 	bool fake_away = gSavedSettings.getBOOL("FakeAway");
@@ -3758,11 +3770,6 @@ bool LLHaveCallingcard::operator()(LLInventoryCategory* cat,
 }
 */
 
-BOOL is_agent_friend(const LLUUID& agent_id)
-{
-	return (LLAvatarTracker::instance().getBuddyInfo(agent_id) != NULL);
-}
-
 BOOL is_agent_mappable(const LLUUID& agent_id)
 {
 	const LLRelationship* buddy_info = LLAvatarTracker::instance().getBuddyInfo(agent_id);
@@ -3780,9 +3787,9 @@ class LLAvatarEnableAddFriend : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		LLVOAvatar* avatar = find_avatar_from_object(LLSelectMgr::getInstance()->getSelection()->getPrimaryObject());
-//		bool new_value = avatar && !is_agent_friend(avatar->getID());
+//		bool new_value = avatar && !LLAvatarActions::isFriend(avatar->getID());
 // [RLVa:KB] - Checked: 2010-04-20 (RLVa-1.2.0f) | Modified: RLVa-1.2.0f
-		bool new_value = avatar && !is_agent_friend(avatar->getID()) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES));
+		bool new_value = avatar && !LLAvatarActions::isFriend(avatar->getID()) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES));
 // [/RLVa:KB]
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
@@ -3804,7 +3811,7 @@ void request_friendship(const LLUUID& dest_id)
 		}
 		if (!full_name.empty())
 		{
-			LLPanelFriends::requestFriendshipDialog(dest_id, full_name);
+			LLAvatarActions::requestFriendshipDialog(dest_id, full_name);
 		}
 		else
 		{
@@ -6084,30 +6091,6 @@ void handle_look_at_selection(const LLSD& param)
 	}
 }
 
-void callback_invite_to_group(LLUUID group_id, void *user_data)
-{
-	std::vector<LLUUID> agent_ids;
-	agent_ids.push_back(*(LLUUID *)user_data);
-	
-	LLFloaterGroupInvite::showForGroup(group_id, &agent_ids);
-}
-
-void invite_to_group(const LLUUID& dest_id)
-{
-	LLViewerObject* dest = gObjectList.findObject(dest_id);
-	if(dest && dest->isAvatar())
-	{
-		LLFloaterGroupPicker* widget;
-		widget = LLFloaterGroupPicker::showInstance(LLSD(gAgent.getID()));
-		if (widget)
-		{
-			widget->center();
-			widget->setPowersMask(GP_MEMBER_INVITE);
-			widget->setSelectCallback(callback_invite_to_group, (void *)&dest_id);
-		}
-	}
-}
-
 class LLAvatarInviteToGroup : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -6118,7 +6101,7 @@ class LLAvatarInviteToGroup : public view_listener_t
 		if ( (avatar) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) )
 // [/RLVa:KB]
 		{
-			invite_to_group(avatar->getID());
+			LLAvatarActions::inviteToGroup(avatar->getID());
 		}
 		return true;
 	}
@@ -6129,9 +6112,9 @@ class LLAvatarAddFriend : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
-//		if(avatar && !is_agent_friend(avatar->getID()))
+//		if(avatar && !LLAvatarActions::isFriend(avatar->getID()))
 // [RLVa:KB] - Checked: 2010-04-20 (RLVa-1.2.0f) | Modified: RLVa-1.2.0f
-		if ( (avatar && !is_agent_friend(avatar->getID())) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) )
+		if ( (avatar && !LLAvatarActions::isFriend(avatar->getID())) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) )
 // [/RLVa:KB]
 		{
 			request_friendship(avatar->getID());
@@ -6355,6 +6338,67 @@ void handle_viewer_disable_message_log(void*)
 	gMessageSystem->stopLogging();
 }
 
+struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
+{
+	typedef std::map<const std::string, std::pair<boost::function<void ()>, boost::function<bool ()> > > menu_floater_map_t;
+	menu_floater_map_t mEntries;
+	MenuFloaterDict()
+	{
+		registerFloater("about",		boost::bind(&LLFloaterAbout::show,(void*)NULL));
+		//registerFloater("about region", boost::bind(&LLFloaterRegionInfo::showInstance,LLSD()));
+		registerFloater("buy currency", boost::bind(&LLFloaterBuyCurrency::buyCurrency));
+		registerFloater("displayname",	boost::bind(&LLFloaterDisplayName::show));
+		//registerFloater("friends",		boost::bind(&LLFloaterMyFriends::toggleInstance,0),			boost::bind(&LLFloaterMyFriends::instanceVisible,0));
+		registerFloater("gestures",		boost::bind(&LLFloaterGesture::toggleVisibility),			boost::bind(&LLFloaterGesture::instanceVisible));
+		registerFloater("grid options",	boost::bind(&LLFloaterBuildOptions::show,(void*)NULL));
+		registerFloater("help tutorial",boost::bind(&LLFloaterHUD::showHUD));
+		registerFloater("im",			boost::bind(&LLFloaterChatterBox::toggleInstance,LLSD()),	boost::bind(&LLFloaterMyFriends::instanceVisible,0));
+		//registerFloater("lag meter",	boost::bind(&LLFloaterLagMeter::showInstance,LLSD()));
+		registerFloater("my land",		boost::bind(&LLFloaterLandHoldings::show,(void*)NULL));
+		registerFloater("preferences",	boost::bind(&LLFloaterPreference::show,(void*)NULL));
+		registerFloater("script errors",boost::bind(&LLFloaterScriptDebug::show,LLUUID::null));
+		//registerFloater("script info",	boost::bind(&LLFloaterScriptLimits::showInstance,LLSD()));
+		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
+		registerFloater("toolbar",		boost::bind(&LLToolBar::toggle,(void*)NULL),				boost::bind(&LLToolBar::visible,(void*)NULL));
+		registerFloater("world map",	boost::bind(&LLFloaterWorldMap::toggle));
+		registerFloater("sound_explorer",	boost::bind(&LLFloaterExploreSounds::toggle),			boost::bind(&LLFloaterExploreSounds::visible));
+		registerFloater("asset_blacklist",	boost::bind(&LLFloaterBlacklist::toggle),				boost::bind(&LLFloaterBlacklist::visible));
+
+		registerFloater<LLFloaterLand>				("about land");
+		registerFloater<LLFloaterRegionInfo>		("about region");
+		registerFloater<LLFloaterActiveSpeakers>	("active speakers");
+		registerFloater<JCFloaterAreaSearch>		("areasearch");
+		registerFloater<LLFloaterBeacons>			("beacons");
+		registerFloater<LLFloaterCamera>			("camera controls");
+		registerFloater<LLFloaterChat>				("chat history");
+		registerFloater<LLFloaterChatterBox>		("communicate");
+		registerFloater<LLFloaterMyFriends>			("friends",0);
+		registerFloater<LLFloaterLagMeter>			("lag meter");
+		registerFloater<SLFloaterMediaFilter>		("media filter");
+		registerFloater<LLFloaterMap>				("mini map");
+		registerFloater<LLFloaterMove>				("movement controls");
+		registerFloater<LLFloaterMute>				("mute list");
+		registerFloater<LLFloaterOutbox>			("outbox");
+		registerFloater<LLFloaterPerms>				("perm prefs");
+		registerFloater<LLFloaterScriptLimits>		("script info");
+		registerFloater<LLFloaterStats>				("stat bar");
+		registerFloater<LLFloaterTeleportHistory>	("teleport history");
+		registerFloater<LLFloaterPathfindingCharacters>	("pathfinding_characters");
+		registerFloater<LLFloaterPathfindingLinksets>	("pathfinding_linksets");
+
+	}
+	void registerFloater(const std::string& name, boost::function<void ()> show, boost::function<bool ()> visible = NULL)
+	{
+		mEntries.insert( std::make_pair( name, std::make_pair( show, visible ) ) );
+	}
+	template <typename T>
+	void registerFloater(const std::string& name, const LLSD& key = LLSD())
+	{
+		registerFloater(name, boost::bind(&T::toggleInstance,key), boost::bind(&T::instanceVisible,key));
+	}
+
+};
+
 // TomY TODO: Move!
 class LLShowFloater : public view_listener_t
 {
@@ -6362,9 +6406,10 @@ class LLShowFloater : public view_listener_t
 	{
 		std::string floater_name = userdata.asString();
 		if (floater_name.empty()) return false;
-		if (floater_name == "gestures")
+		MenuFloaterDict::menu_floater_map_t::iterator it = MenuFloaterDict::instance().mEntries.find(floater_name);
+		if(it != MenuFloaterDict::instance().mEntries.end() && it->second.first != NULL)
 		{
-			LLFloaterGesture::toggleVisibility();
+			it->second.first();
 		}
 		else if (floater_name == "appearance")
 		{
@@ -6377,74 +6422,9 @@ class LLShowFloater : public view_listener_t
 		{
 			new LLMakeOutfitDialog(false);
 		}
-		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
-		else if (floater_name == "displayname")
-		{
-			LLFloaterDisplayName::show();
-		}
-		else if (floater_name == "friends")
-		{
-			LLFloaterMyFriends::toggleInstance(0);
-		}
-		else if (floater_name == "preferences")
-		{
-			LLFloaterPreference::show(NULL);
-		}
-		else if (floater_name == "toolbar")
-		{
-			LLToolBar::toggle(NULL);
-		}
-		else if (floater_name == "chat history")
-		{
-			LLFloaterChat::toggleInstance(LLSD());
-		}
-		else if (floater_name == "teleport history")
-		{
-			LLFloaterTeleportHistory::toggleInstance();
-		}
-		else if (floater_name == "im")
-		{
-			LLFloaterChatterBox::toggleInstance(LLSD());
-		}
 		else if (floater_name == "inventory")
 		{
 			LLInventoryView::toggleVisibility(NULL);
-		}
-		else if (floater_name == "mute list")
-		{
-			LLFloaterMute::toggleInstance();
-		}
-		else if (floater_name == "media filter")
-		{
-			SLFloaterMediaFilter::toggleInstance();
-		}
-		else if (floater_name == "camera controls")
-		{
-			LLFloaterCamera::toggleInstance();
-		}
-		else if (floater_name == "movement controls")
-		{
-			LLFloaterMove::toggleInstance();
-		}
-		else if (floater_name == "world map")
-		{
-			LLFloaterWorldMap::toggle();
-		}
-		else if (floater_name == "mini map")
-		{
-			LLFloaterMap::toggleInstance();
-		}
-		else if (floater_name == "stat bar")
-		{
-			LLFloaterStats::toggleInstance();
-		}
-		else if (floater_name == "my land")
-		{
-			LLFloaterLandHoldings::show(NULL);
-		}
-		else if (floater_name == "about land")
-		{
-			LLFloaterLand::showInstance();
 		}
 		else if (floater_name == "buy land")
 		{
@@ -6460,35 +6440,13 @@ class LLShowFloater : public view_listener_t
 			}
 			LLViewerParcelMgr::getInstance()->startBuyLand();
 		}
-		else if (floater_name == "about region")
-		{
-			LLFloaterRegionInfo::showInstance();
-		}
-		else if (floater_name == "areasearch")
-		{
-			JCFloaterAreaSearch::toggle();
-		}
-		else if (floater_name == "grid options")
-		{
-			LLFloaterBuildOptions::show(NULL);
-		}
-		else if (floater_name == "script errors")
-		{
-			LLFloaterScriptDebug::show(LLUUID::null);
-		}
-		else if (floater_name == "script info")
-		{
-			LLFloaterScriptLimits::showInstance();
-		}
+
 		else if (floater_name == "help f1")
 		{
 			llinfos << "Spawning HTML help window" << llendl;
 			gViewerHtmlHelp.show();
 		}
-		else if (floater_name == "help tutorial")
-		{
-			LLFloaterHUD::showHUD();
-		}
+
 		else if (floater_name == "complaint reporter")
 		{
 			// Prevent menu from appearing in screen shot.
@@ -6501,42 +6459,6 @@ class LLShowFloater : public view_listener_t
 			{
 				LLFloaterBump::show(NULL);
 			}
-		}
-		else if (floater_name == "lag meter")
-		{
-			LLFloaterLagMeter::showInstance();
-		}
-		else if (floater_name == "buy currency")
-		{
-			LLFloaterBuyCurrency::buyCurrency();
-		}
-		else if (floater_name == "about")
-		{
-			LLFloaterAbout::show(NULL);
-		}
-		else if (floater_name == "active speakers")
-		{
-			LLFloaterActiveSpeakers::toggleInstance(LLSD());
-		}
-		else if (floater_name == "beacons")
-		{
-			LLFloaterBeacons::toggleInstance(LLSD());
-		}
-		else if (floater_name == "perm prefs")
-		{
-			LLFloaterPerms::toggleInstance(LLSD());
-		}
-		else if (floater_name == "outbox")
-		{
-			LLFloaterOutbox::toggleInstance(LLSD());
-		}
-		else if (floater_name == "pathfinding_linksets")
-		{
-			LLFloaterPathfindingLinksets::toggleInstance(LLSD());
-		}
-		else if (floater_name == "pathfinding_characters")
-		{
-			LLFloaterPathfindingCharacters::toggleInstance(LLSD());
 		}
 		else // Simple codeless floater
 		{
@@ -6557,88 +6479,15 @@ class LLFloaterVisible : public view_listener_t
 		std::string control_name = userdata["control"].asString();
 		std::string floater_name = userdata["data"].asString();
 		bool new_value = false;
-		if (floater_name == "friends")
+		MenuFloaterDict::menu_floater_map_t::iterator it = MenuFloaterDict::instance().mEntries.find(floater_name);
+		if(it != MenuFloaterDict::instance().mEntries.end() && it->second.second != NULL)
 		{
-			new_value = LLFloaterMyFriends::instanceVisible(0);
-		}
-		else if (floater_name == "communicate")
-		{
-			new_value = LLFloaterChatterBox::instanceVisible();
-		}
-		else if (floater_name == "toolbar")
-		{
-			new_value = LLToolBar::visible(NULL);
-		}
-		else if (floater_name == "chat history")
-		{
-			new_value = LLFloaterChat::instanceVisible();
-		}
-		else if (floater_name == "teleport history")
-		{
-			new_value = LLFloaterTeleportHistory::instanceVisible();
-		}
-		else if (floater_name == "im")
-		{
-			new_value = LLFloaterMyFriends::instanceVisible(0);
-		}
-		else if (floater_name == "mute list")
-		{
-			new_value = LLFloaterMute::instanceVisible();
-		}
-		else if (floater_name == "media filter")
-		{
-			new_value = SLFloaterMediaFilter::instanceVisible();
-		}
-		else if (floater_name == "camera controls")
-		{
-			new_value = LLFloaterCamera::instanceVisible();
-		}
-		else if (floater_name == "movement controls")
-		{
-			new_value = LLFloaterMove::instanceVisible();
-		}
-		else if (floater_name == "stat bar")
-		{
-			new_value = LLFloaterStats::instanceVisible();
-		}
-		else if (floater_name == "active speakers")
-		{
-			new_value = LLFloaterActiveSpeakers::instanceVisible(LLSD());
-		}
-		else if (floater_name == "beacons")
-		{
-			new_value = LLFloaterBeacons::instanceVisible(LLSD());
+			new_value = it->second.second();
 		}
 		else if (floater_name == "inventory")
 		{
 			LLInventoryView* iv = LLInventoryView::getActiveInventory(); 
 			new_value = (NULL != iv && TRUE == iv->getVisible());
-		}
-		else if (floater_name == "areasearch")
-		{
-			JCFloaterAreaSearch* instn = JCFloaterAreaSearch::getInstance();
-			if (!instn) new_value = false;
-			else new_value = instn->getVisible();
-		}
-		else if (floater_name == "outbox")
-		{
-			new_value = LLFloaterOutbox::instanceVisible(LLSD());
-		}
-		else if (floater_name == "pathfinding_linksets")
-		{
-			new_value = LLFloaterPathfindingLinksets::instanceVisible(LLSD());
-		}
-		else if (floater_name == "pathfinding_characters")
-		{
-			new_value = LLFloaterPathfindingCharacters::instanceVisible(LLSD());
-		}
-		else if (floater_name == "sound_explorer")
-		{
-			new_value = LLFloaterExploreSounds::visible();
-		}
-		else if (floater_name == "asset_blacklist")
-		{
-			new_value = LLFloaterBlacklist::visible();
 		}
 		gMenuHolder->findControl(control_name)->setValue(new_value);
 		return true;
@@ -6747,7 +6596,7 @@ class LLShowAgentProfile : public view_listener_t
 		if ( (avatar) && ((!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) || (gAgent.getID() == agent_id)) )
 // [/RLVa:KB]
 		{
-			LLFloaterAvatarInfo::show(avatar->getID());
+			LLAvatarActions::showProfile(avatar->getID());
 		}
 		return true;
 	}
@@ -7398,28 +7247,12 @@ class LLAvatarSendIM : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
-// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | OK
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
-		{
-			return true;
-		}
+//		if(avatar)
+// [RLVa:KB] - Checked: 2010-06-04 (RLVa-1.2.0d) | Added: RLVa-1.2.0d
+		if ((avatar) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)))
 // [/RLVa:KB]
-		if(avatar)
 		{
-			std::string name("IM");
-			LLNameValue *first = avatar->getNVPair("FirstName");
-			LLNameValue *last = avatar->getNVPair("LastName");
-			if (first && last)
-			{
-				name.assign( first->getString() );
-				name.append(" ");
-				name.append( last->getString() );
-			}
-
-			gIMMgr->setFloaterOpen(TRUE);
-			//EInstantMessage type = have_agent_callingcard(gLastHitObjectID)
-			//	? IM_SESSION_ADD : IM_SESSION_CARDLESS_START;
-			gIMMgr->addSession(LLCacheName::cleanFullName(name),IM_NOTHING_SPECIAL,avatar->getID());
+			LLAvatarActions::startIM(avatar->getID());
 		}
 		return true;
 	}
@@ -9245,16 +9078,6 @@ class SinguCheckNimble : public view_listener_t
 	}
 };
 
-class SinguSoundExplorer : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLFloaterExploreSounds::toggle();
-
-		return true;
-	}
-};
-
 class SinguAssetBlacklist : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9552,6 +9375,7 @@ void initialize_menus()
 	addMenu(new LLObjectMeasure(), "Object.Measure");
 	addMenu(new LLObjectData(), "Object.Data");
 	addMenu(new LLScriptCount(), "Object.ScriptCount");
+	addMenu(new LLObjectVisibleScriptCount(), "Object.VisibleScriptCount");
 	addMenu(new LLKillEmAll(), "Object.Destroy");
 	addMenu(new LLPowerfulWizard(), "Object.Explode");
 	addMenu(new LLCanIHasKillEmAll(), "Object.EnableDestroy");
@@ -9633,8 +9457,6 @@ void initialize_menus()
 	addMenu(new SinguAnimationOverride(), "AnimationOverride");
 	addMenu(new SinguNimble(), "Nimble");
 	addMenu(new SinguCheckNimble(), "CheckNimble");
-	addMenu(new SinguSoundExplorer(), "SoundExplorer");
-	addMenu(new SinguAssetBlacklist(), "AssetBlacklist");
 	addMenu(new SinguStreamingAudioDisplay(), "StreamingAudioDisplay");
 	addMenu(new SinguEnableStreamingAudioDisplay(), "EnableStreamingAudioDisplay");
 	addMenu(new SinguCheckStreamingAudioDisplay(), "CheckStreamingAudioDisplay");

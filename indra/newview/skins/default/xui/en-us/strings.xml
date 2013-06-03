@@ -2966,6 +2966,10 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="NotLoggedIn">Not logged in</string>
 
     <!-- Non-standard LLChat strings -->
+    <string name="ScriptCounting">Counting scripts, please wait...</string>
+    <string name="ScriptCountAvatar">Counted [SCRIPTS] scripts in [OBJECTS] attachments on [NAME].</string>
+    <string name="ScriptCountObject">Counted [SCRIPTS] scripts in [OBJECTS] objects.</string>
+    <string name="ScriptDeleteObject">Deleted [SCRIPTS] scripts in [OBJECTS] objects.</string>
     <string name="took_a_snapshot">took a snapshot</string>
 
   <!-- Avatar busy/away mode -->
@@ -3001,7 +3005,7 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<!-- inventory -->
 	<string name="InventoryNoMatchingItems">No matching items found in inventory.</string>
 	<string name="MarketplaceURL">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/</string>
-	<string name="MarketplaceURL_CreateStore">http://community.secondlife.com/t5/English-Knowledge-Base/Selling-in-the-Marketplace/ta-p/700193#Section_.4</string>
+	<string name="MarketplaceURL_CreateStore">http://community.secondlife.com/t5/English-Knowledge-Base/Selling-in-the-Marketplace/ta-p/700193#Section_.3</string>
 	<string name="MarketplaceURL_Dashboard">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/merchants/store/dashboard</string>
 	<string name="MarketplaceURL_Imports">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/merchants/store/imports</string>
 	<string name="MarketplaceURL_LearnMore">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/learn_more</string>
@@ -3268,6 +3272,10 @@ The
 	<string name="LocalSettings">Local Settings</string>
 	<string name="Region">Region</string>
 	<string name="RegionSettings">Region Settings</string>
+
+	<!-- Multi Preview Floater -->
+	<string name="MultiPreviewTitle">Preview</string>
+	<string name="MultiPropertiesTitle">Properties</string>
 
 	<!-- inventory offer -->
 	<string name="InvOfferAnObjectNamed">An object named</string>
@@ -4011,6 +4019,9 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
   <string name="answering-im">
     Connecting...
   </string>
+  <string name="conference-title">
+    Multi-person chat
+  </string>
   <string name="inventory_item_offered-im">
     Inventory item offered
   </string>
@@ -4242,6 +4253,8 @@ Try enclosing path to the editor with double quotes.
   <string name="BeaconSound">Viewing sound beacons (yellow)</string>
   <string name="BeaconMedia">Viewing media beacons (white)</string>
   <string name="ParticleHiding">Hiding Particles</string>
+
+  <string name="Command_Profile_Label">Profile</string>
 
   <!-- Pathfinding -->
   <string name="Pathfinding_Wiki_URL">http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer</string>

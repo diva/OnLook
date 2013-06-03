@@ -84,10 +84,9 @@
 	class LLFakeResizeHandle : public LLResizeHandle
 	{
 	public:
-		LLFakeResizeHandle(const std::string& name, const LLRect& rect, S32 min_width, S32 min_height, ECorner corner = RIGHT_BOTTOM )
-		: LLResizeHandle(name, rect, min_width, min_height, corner )
-		{
-			
+		LLFakeResizeHandle(const LLResizeHandle::Params& p)
+			: LLResizeHandle(p)
+		{	
 		}
 
 		virtual BOOL	handleHover(S32 x, S32 y, MASK mask)   { return FALSE; };
@@ -183,9 +182,13 @@ BOOL LLToolBar::postBuild()
 #if LL_DARWIN
 	if(mResizeHandle == NULL)
 	{
-		LLRect rect(0, 0, RESIZE_HANDLE_WIDTH, RESIZE_HANDLE_HEIGHT);
-		mResizeHandle = new LLFakeResizeHandle(std::string(""), rect, RESIZE_HANDLE_WIDTH, RESIZE_HANDLE_HEIGHT);
-		this->addChildInBack(mResizeHandle);
+		LLResizeHandle::Params p;
+		p.rect(LLRect(0, 0, RESIZE_HANDLE_WIDTH, RESIZE_HANDLE_HEIGHT));
+		p.name(std::string(""));
+		p.min_width(RESIZE_HANDLE_WIDTH);
+		p.min_height(RESIZE_HANDLE_HEIGHT);
+		p.corner(LLResizeHandle::RIGHT_BOTTOM);
+		mResizeHandle = new LLFakeResizeHandle(p);		this->addChildInBack(mResizeHandle);
 		LLLayoutStack* toolbar_stack = getChild<LLLayoutStack>("toolbar_stack");
 		toolbar_stack->reshape(toolbar_stack->getRect().getWidth() - RESIZE_HANDLE_WIDTH, toolbar_stack->getRect().getHeight());
 	}

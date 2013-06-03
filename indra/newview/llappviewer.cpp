@@ -53,6 +53,7 @@
 #include "llmarketplacenotifications.h"
 #include "llmd5.h"
 #include "llmeshrepository.h"
+#include "llmodaldialog.h"
 #include "llpumpio.h"
 #include "llmimetypes.h"
 #include "llstartup.h"
@@ -688,6 +689,7 @@ bool LLAppViewer::init()
 
 	// Widget construction depends on LLUI being initialized
 	LLUI::initClass(&gSavedSettings,
+		&gSavedPerAccountSettings,
 		&gSavedSettings,
 		&gColors,
 		LLUIImageList::getInstance(),

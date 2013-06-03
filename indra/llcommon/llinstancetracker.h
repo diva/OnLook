@@ -54,7 +54,10 @@ protected:
 	template<typename STATICDATA, class TRACKED>
 	static STATICDATA& getStatic()
 	{
-		void *& instances = getInstances(typeid(TRACKED));
+		//Singu note: Don't de-static the instances variable. getInstances is incredibly
+		//expensive. Calling getInstances once and caching the result is sufficient
+		//to avoid the instance-per-module issue noted above.
+		static void *& instances = getInstances(typeid(TRACKED));
 		if (! instances)
 		{
 			instances = new STATICDATA;

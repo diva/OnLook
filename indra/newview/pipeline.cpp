@@ -2415,14 +2415,6 @@ BOOL LLPipeline::updateDrawableGeom(LLDrawable* drawablep, BOOL priority)
 		}
 
 		drawablep->setState(LLDrawable::BUILT);
-		//Workaround for 'missing prims' until it's fixed upstream by LL.
-		//Sometimes clearing CLEAR_INVISIBLE and FORCE_INVISIBLE in LLPipeline::stateSort was too late. Do it here instead, before
-		//the rebuild state is picked up on and LLVolumeGeometryManager::rebuildGeom is called.
-		//If the FORCE_INVISIBLE isn't cleared before the rebuildGeom call, the geometry will NOT BE REBUILT!
-		if(drawablep->isState(LLDrawable::CLEAR_INVISIBLE))
-		{
-			drawablep->clearState(LLDrawable::FORCE_INVISIBLE|LLDrawable::CLEAR_INVISIBLE);
-		}
 		mGeometryChanges++;
 	}
 	return update_complete;
@@ -2445,10 +2437,10 @@ void LLPipeline::updateGL()
 		}
 	}
 
-	/*{ //seed VBO Pools
+	{ //seed VBO Pools
 		LLFastTimer t(FTM_SEED_VBO_POOLS);
 		LLVertexBuffer::seedPools();
-	}*/
+	}
 }
 
 void LLPipeline::clearRebuildGroups()
@@ -9622,7 +9614,7 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar)
 		markVisible(avatar->mDrawable, *viewer_camera);
 		LLVOAvatar::sUseImpostors = FALSE;
 
-		LLVOAvatar::attachment_map_t::iterator iter;
+		/*LLVOAvatar::attachment_map_t::iterator iter;
 		for (iter = avatar->mAttachmentPoints.begin();
 			iter != avatar->mAttachmentPoints.end();
 			++iter)
@@ -9632,7 +9624,12 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar)
 				 attachment_iter != attachment->mAttachedObjects.end();
 				 ++attachment_iter)
 			{
-				if (LLViewerObject* attached_object = (*attachment_iter))
+				if (LLViewerObject* attached_object = (*attachment_iter))*/
+		std::vector<std::pair<LLViewerObject*,LLViewerJointAttachment*> >::iterator attachment_iter = avatar->mAttachedObjectsVector.begin();
+		std::vector<std::pair<LLViewerObject*,LLViewerJointAttachment*> >::iterator end = avatar->mAttachedObjectsVector.end();
+		for(;attachment_iter != end;++attachment_iter)
+		{{
+				if (LLViewerObject* attached_object = attachment_iter->first)
 				{
 					markVisible(attached_object->mDrawable->getSpatialBridge(), *viewer_camera);
 				}

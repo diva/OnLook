@@ -4740,7 +4740,7 @@ void LLSelectMgr::packPermissions(LLSelectNode* node, void *user_data)
 	gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, node->getObject()->getLocalID());
 
 	gMessageSystem->addU8Fast(_PREHASH_Field,	data->mField);
-	gMessageSystem->addBOOLFast(_PREHASH_Set,		data->mSet);
+	gMessageSystem->addU8Fast(_PREHASH_Set,		data->mSet ? PERM_SET_TRUE : PERM_SET_FALSE);
 	gMessageSystem->addU32Fast(_PREHASH_Mask,		data->mMask);
 }
 

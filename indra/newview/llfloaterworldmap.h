@@ -116,14 +116,14 @@ public:
 protected:	
 	void			onGoHome();
 
-	static void		onLandmarkComboPrearrange( LLUICtrl* ctrl, void* data );
+	void			onLandmarkComboPrearrange();
 	void			onLandmarkComboCommit();
 
-	static void		onAvatarComboPrearrange( LLUICtrl* ctrl, void* data );
+	void			onAvatarComboPrearrange();
 	void		    onAvatarComboCommit();
 
-	static void		onComboTextEntry( LLLineEditor* ctrl, void* data );
-	static void		onSearchTextEntry( LLLineEditor* ctrl, void* data );
+	void			onComboTextEntry( );
+	void			onSearchTextEntry( );
 
 	void			onClearBtn();
 	void			onClickTeleportBtn();

@@ -30,7 +30,7 @@
  * $/LicenseInfo$
  */
 
-#include "llviewerprecompiledheaders.h"
+#include "linden_common.h"
 
 #include "llcontainerview.h"
 
@@ -41,19 +41,29 @@
 #include "llresmgr.h"
 #include "llstring.h"
 #include "llscrollcontainer.h"
+#include "lluictrlfactory.h"
 
-LLContainerView::LLContainerView(const std::string& name, const LLRect& rect)
-:	LLView(name, rect, FALSE)
+LLContainerView::LLContainerView(const LLContainerView::Params& p)
+:	LLView(p),
+	mShowLabel(p.show_label),
+	mLabel(p.label),
+	mDisplayChildren(p.display_children)
 {
-	mShowLabel = TRUE;
 	mCollapsible = TRUE;
-	mDisplayChildren = TRUE;
 	mScrollContainer = NULL;
+	mRectAlpha = 0.25;
 }
 
 LLContainerView::~LLContainerView()
 {
 	// Children all cleaned up by default view destructor.
+}
+
+BOOL LLContainerView::postBuild()
+{
+	setDisplayChildren(mDisplayChildren);
+	reshape(getRect().getWidth(), getRect().getHeight(), FALSE);
+	return TRUE;
 }
 
 BOOL LLContainerView::handleMouseDown(S32 x, S32 y, MASK mask)
@@ -91,7 +101,7 @@ void LLContainerView::draw()
 	{
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
-		gl_rect_2d(0, getRect().getHeight(), getRect().getWidth(), 0, LLColor4(0.f, 0.f, 0.f, 0.25f));
+		gl_rect_2d(0, getRect().getHeight(), getRect().getWidth(), 0, LLColor4(0.f, 0.f, 0.f, mRectAlpha));
 	}
 		
 	// Draw the label
@@ -279,7 +289,7 @@ void LLContainerView::setDisplayChildren(const BOOL displayChildren)
 	}
 }
 
-void LLContainerView::setScrollContainer(LLScrollableContainerView* scroll)
+void LLContainerView::setScrollContainer(LLScrollContainer* scroll)
 {
 	mScrollContainer = scroll;
 	scroll->setPassBackToChildren(false);
