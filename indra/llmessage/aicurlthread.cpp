@@ -2196,6 +2196,7 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	return header_len;
   }
   std::string header(header_line, header_len);
+  bool being_redirected = false;
   bool done = false;
   if (!LLStringUtil::_isASCII(header))
   {
@@ -2240,7 +2241,7 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	if (status >= 300 && status < 400)
 	{
 	  // Timeout administration needs to know if we're being redirected.
-	  self_w->httptimeout()->being_redirected();
+	  being_redirected = true;
 	}
   }
   // Update HTTP bandwidth.
@@ -2253,6 +2254,14 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
   {
 	// Transfer timed out. Return 0 which will abort with error CURLE_WRITE_ERROR.
 	return 0;
+  }
+  if (being_redirected)
+  {
+	  // Call this after data_received(), because that might reset mBeingRedirected if it causes a late- upload_finished!
+	  // Ie, when the upload finished was not detected and this is a redirect header then the call to data_received()
+	  // will call upload_finished() which sets HTTPTimeout::mUploadFinished (and resets HTTPTimeout::mBeingRedirected),
+	  // after which we set HTTPTimeout::mBeingRedirected here because we ARE being redirected.
+	  self_w->httptimeout()->being_redirected();
   }
   if (done)
   {
