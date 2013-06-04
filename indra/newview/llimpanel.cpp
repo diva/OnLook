@@ -663,12 +663,12 @@ void LLFloaterIMPanel::draw()
 	
 	BOOL enable_connect = (region && region->getCapability("ChatSessionRequest") != "")
 					  && mSessionInitialized
-					  && LLVoiceClient::voiceEnabled()
+					  && LLVoiceClient::getInstance()->voiceEnabled()
 					  && mCallBackEnabled;
 
 	// hide/show start call and end call buttons
-	mEndCallBtn->setVisible(LLVoiceClient::voiceEnabled() && mVoiceChannel->getState() >= LLVoiceChannel::STATE_CALL_STARTED);
-	mStartCallBtn->setVisible(LLVoiceClient::voiceEnabled() && mVoiceChannel->getState() < LLVoiceChannel::STATE_CALL_STARTED);
+	mEndCallBtn->setVisible(LLVoiceClient::getInstance()->voiceEnabled() && mVoiceChannel->getState() >= LLVoiceChannel::STATE_CALL_STARTED);
+	mStartCallBtn->setVisible(LLVoiceClient::getInstance()->voiceEnabled() && mVoiceChannel->getState() < LLVoiceChannel::STATE_CALL_STARTED);
 	mStartCallBtn->setEnabled(enable_connect);
 	mSendBtn->setEnabled(!childGetValue("chat_editor").asString().empty());
 	
@@ -733,11 +733,11 @@ void LLFloaterIMPanel::draw()
 	else
 	{
 		// refresh volume and mute checkbox
-		mVolumeSlider->setVisible(LLVoiceClient::voiceEnabled() && mVoiceChannel->isActive());
+		mVolumeSlider->setVisible(LLVoiceClient::getInstance()->voiceEnabled() && mVoiceChannel->isActive());
 		mVolumeSlider->setValue(LLVoiceClient::getInstance()->getUserVolume(mOtherParticipantUUID));
 
 		mMuteBtn->setValue(LLMuteList::getInstance()->isMuted(mOtherParticipantUUID, LLMute::flagVoiceChat));
-		mMuteBtn->setVisible(LLVoiceClient::voiceEnabled() && mVoiceChannel->isActive());
+		mMuteBtn->setVisible(LLVoiceClient::getInstance()->voiceEnabled() && mVoiceChannel->isActive());
 	}
 	LLFloater::draw();
 }

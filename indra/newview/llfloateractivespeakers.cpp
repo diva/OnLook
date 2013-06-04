@@ -3,10 +3,9 @@
  * @brief Management interface for muting and controlling volume of residents currently speaking
  *
  * $LicenseInfo:firstyear=2005&license=viewergpl$
- * 
+ * Second Life Viewer Source Code
  * Copyright (c) 2005-2009, Linden Research, Inc.
  * 
- * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
  * to you under the terms of the GNU General Public License, version 2.0
  * ("GPL"), unless you have obtained a separate licensing agreement
@@ -94,7 +93,6 @@ LLSpeaker::LLSpeaker(const LLUUID& id, const std::string& name, const ESpeakerTy
 		mDisplayName = name;
 		mLegacyName = name;
 	}
-	LLVoiceClient::getInstance()->setUserVolume(id, LLMuteList::getInstance()->getSavedResidentVolume(id));
 	mActivityTimer.reset(SPEAKER_TIMEOUT);
 }
 
@@ -224,7 +222,7 @@ BOOL LLFloaterActiveSpeakers::postBuild()
 	return TRUE;
 }
 
-void LLFloaterActiveSpeakers::onChange()
+void LLFloaterActiveSpeakers::onParticipantsChanged()
 {
 	//refresh();
 }
@@ -598,7 +596,7 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 	if (mMuteVoiceCtrl)
 	{
 		mMuteVoiceCtrl->setValue(LLMuteList::getInstance()->isMuted(selected_id, LLMute::flagVoiceChat));
-		mMuteVoiceCtrl->setEnabled(LLVoiceClient::voiceEnabled()
+		mMuteVoiceCtrl->setEnabled(LLVoiceClient::getInstance()->voiceEnabled()
 									&& LLVoiceClient::getInstance()->getVoiceEnabled(selected_id)
 									&& selected_id.notNull() 
 									&& selected_id != gAgent.getID() 
@@ -618,7 +616,7 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 								&& !LLMuteList::getInstance()->isLinden(selected_speakerp->mLegacyName));
 	}
 	mVolumeSlider->setValue(LLVoiceClient::getInstance()->getUserVolume(selected_id));
-	mVolumeSlider->setEnabled(LLVoiceClient::voiceEnabled()
+	mVolumeSlider->setEnabled(LLVoiceClient::getInstance()->voiceEnabled()
 					&& LLVoiceClient::getInstance()->getVoiceEnabled(selected_id)
 					&& selected_id.notNull() 
 					&& selected_id != gAgent.getID() 
@@ -752,9 +750,6 @@ void LLPanelActiveSpeakers::onVolumeChange(LLUICtrl* source, void* user_data)
 
 	F32 new_volume = (F32)panelp->childGetValue("speaker_volume").asReal();
 	LLVoiceClient::getInstance()->setUserVolume(speaker_id, new_volume);
-
-	// store this volume setting for future sessions
-	LLMuteList::getInstance()->setSavedResidentVolume(speaker_id, new_volume);
 }
 
 //static 
@@ -1145,17 +1140,19 @@ void LLSpeakerMgr::updateSpeakerList()
 	// are we bound to the currently active voice channel?
 	if ((!mVoiceChannel && LLVoiceClient::getInstance()->inProximalChannel()) || (mVoiceChannel && mVoiceChannel->isActive()))
 	{
-		LLVoiceClient::participantMap* participants = LLVoiceClient::getInstance()->getParticipantList();
-		if(participants)
+		std::set<LLUUID> participants;
+		LLVoiceClient::getInstance()->getParticipantList(participants);
+		// add new participants to our list of known speakers
+		for (std::set<LLUUID>::iterator participant_it = participants.begin();
+			 participant_it != participants.end();
+			 ++participant_it)
 		{
-			LLVoiceClient::participantMap::iterator participant_it;
+				setSpeaker(*participant_it,
+						   LLVoiceClient::getInstance()->getDisplayName(*participant_it),
+						   LLSpeaker::STATUS_VOICE_ACTIVE,
+						   (LLVoiceClient::getInstance()->isParticipantAvatar(*participant_it)?LLSpeaker::SPEAKER_AGENT:LLSpeaker::SPEAKER_EXTERNAL));
 
-			// add new participants to our list of known speakers
-			for (participant_it = participants->begin(); participant_it != participants->end(); ++participant_it)
-			{
-				LLVoiceClient::participantState* participantp = participant_it->second;
-				setSpeaker(participantp->mAvatarID, participantp->mDisplayName, LLSpeaker::STATUS_VOICE_ACTIVE, (participantp->isAvatar()?LLSpeaker::SPEAKER_AGENT:LLSpeaker::SPEAKER_EXTERNAL));
-			}
+
 		}
 	}
 }
@@ -1216,7 +1213,7 @@ void LLSpeakerMgr::speakerChatted(const LLUUID& speaker_id)
 BOOL LLSpeakerMgr::isVoiceActive()
 {
 	// mVoiceChannel = NULL means current voice channel, whatever it is
-	return LLVoiceClient::voiceEnabled() && mVoiceChannel && mVoiceChannel->isActive();
+	return LLVoiceClient::getInstance()->voiceEnabled() && mVoiceChannel && mVoiceChannel->isActive();
 }
 
 

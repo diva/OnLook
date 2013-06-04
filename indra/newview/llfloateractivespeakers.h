@@ -3,10 +3,9 @@
  * @brief Management interface for muting and controlling volume of residents currently speaking
  *
  * $LicenseInfo:firstyear=2005&license=viewergpl$
- * 
+ * Second Life Viewer Source Code
  * Copyright (c) 2005-2009, Linden Research, Inc.
  * 
- * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
  * to you under the terms of the GNU General Public License, version 2.0
  * ("GPL"), unless you have obtained a separate licensing agreement
@@ -199,7 +198,7 @@ public:
 	/*virtual*/ void onClose(bool app_quitting);
 	/*virtual*/ void draw();
 
-	/*virtual*/ void onChange();
+	/*virtual*/ void onParticipantsChanged();
 
 	static void* createSpeakersPanel(void* data);
 

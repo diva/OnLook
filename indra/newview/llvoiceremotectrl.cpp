@@ -166,7 +166,7 @@ void LLVoiceRemoteCtrl::draw()
 
 	LLVoiceChannel* current_channel = LLVoiceChannel::getCurrentVoiceChannel();
 	if (LLButton* end_call_btn = findChild<LLButton>("end_call_btn"))
-		end_call_btn->setEnabled(LLVoiceClient::voiceEnabled()
+		end_call_btn->setEnabled(LLVoiceClient::getInstance()->voiceEnabled()
 								&& current_channel
 								&& current_channel->isActive()
 								&& current_channel != LLVoiceChannelProximal::getInstance());

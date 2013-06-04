@@ -2373,10 +2373,10 @@ void LLVOAvatar::idleUpdateVoiceVisualizer(bool voice_enabled)
 {
 	bool render_visualizer = voice_enabled;
 	
-	// Don't render the user's own voice visualizer when in mouselook
+	// Don't render the user's own voice visualizer when in mouselook, or when opening the mic is disabled.
 	if(isSelf())
 	{
-		if(gAgentCamera.cameraMouselook()/* || gSavedSettings.getBOOL("VoiceDisableMic")*/)
+		if(gAgentCamera.cameraMouselook() || gSavedSettings.getBOOL("VoiceDisableMic"))
 		{
 			render_visualizer = false;
 		}

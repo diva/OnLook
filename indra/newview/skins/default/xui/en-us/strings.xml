@@ -4110,6 +4110,8 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 
   <string name="Home position set.">Home position set.</string>
 
+  <string name="voice_morphing_url">http://secondlife.com/landing/voicemorphing</string>
+
   <!-- Financial operations strings -->
   <string name="paid_you_ldollars">[NAME] paid you [CURRENCY][AMOUNT] [REASON].</string>
   <string name="paid_you_ldollars_no_reason">[NAME] paid you [CURRENCY][AMOUNT].</string>

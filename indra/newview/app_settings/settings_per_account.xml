@@ -574,6 +574,17 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>VoiceEffectDefault</key>
+    <map>
+        <key>Comment</key>
+            <string>Selected Voice Morph</string>
+        <key>Persist</key>
+            <integer>1</integer>
+        <key>Type</key>
+            <string>String</string>
+        <key>Value</key>
+            <string>00000000-0000-0000-0000-000000000000</string>
+    </map>
 	<key>LogFileNamewithDate</key>
 	<map>
 		<key>Comment</key>

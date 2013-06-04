@@ -277,6 +277,7 @@ void LLVoiceChannel::deactivate()
 			LLVoiceClient::getInstance()->getUserPTTState())
 		{
 			gSavedSettings.setBOOL("PTTCurrentlyEnabled", true);
+			LLVoiceClient::getInstance()->inputUserControlState(true);
 		}
 	}
 
@@ -464,6 +465,12 @@ void LLVoiceChannelGroup::activate()
 		LLVoiceClient::getInstance()->setNonSpatialChannel(
 			mURI,
 			mCredentials);
+
+		//Mic default state is OFF on initiating/joining Ad-Hoc/Group calls
+		if (LLVoiceClient::getInstance()->getUserPTTState() && LLVoiceClient::getInstance()->getPTTIsToggle())
+		{
+			LLVoiceClient::getInstance()->inputUserControlState(true);
+		}
 	}
 }
 
@@ -653,6 +660,8 @@ void LLVoiceChannelProximal::handleStatusChange(EStatusType status)
 		// do not notify user when leaving proximal channel
 		return;
 	case STATUS_VOICE_DISABLED:
+		//skip showing "Voice not available at your current location" when agent voice is disabled (EXT-4749)
+		if(LLVoiceClient::getInstance()->voiceEnabled() && LLVoiceClient::getInstance()->isVoiceWorking())
 		{
 			gIMMgr->addSystemMessage(LLUUID::null, "unavailable", mNotifyArgs);
 		}
@@ -787,6 +796,12 @@ void LLVoiceChannelP2P::activate()
 			
 			// using the session handle invalidates it.  Clear it out here so we can't reuse it by accident.
 			mSessionHandle.clear();
+		}
+
+		//Default mic is ON on initiating/joining P2P calls
+		if (!LLVoiceClient::getInstance()->getUserPTTState() && LLVoiceClient::getInstance()->getPTTIsToggle())
+		{
+			LLVoiceClient::getInstance()->inputUserControlState(true);
 		}
 	}
 }

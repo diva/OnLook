@@ -7285,6 +7285,56 @@ We are creating a voice channel for you. This may take up to one minute.
   </notification>
 
   <notification
+   icon="notify.tga"
+   name="VoiceEffectsExpired"
+   sound="UISndAlert"
+   persist="true"
+   type="notify">
+    <unique/>
+One or more of your subscribed Voice Morphs has expired.
+[[URL] Click here] to renew your subscription.
+  <tag>fail</tag>
+  <tag>voice</tag>
+  </notification>
+
+  <notification
+   icon="notify.tga"
+   name="VoiceEffectsExpiredInUse"
+   sound="UISndAlert"
+   persist="true"
+   type="notify">
+    <unique/>
+The active Voice Morph has expired, your normal voice settings have been applied.
+[[URL] Click here] to renew your subscription.
+    <tag>fail</tag>
+    <tag>voice</tag>
+  </notification>
+
+  <notification
+   icon="notify.tga"
+   name="VoiceEffectsWillExpire"
+   sound="UISndAlert"
+   persist="true"
+   type="notify">
+    <unique/>
+One or more of your Voice Morphs will expire in less than [INTERVAL] days.
+[[URL] Click here] to renew your subscription.
+  <tag>fail</tag>
+    <tag>voice</tag>
+  </notification>
+
+  <notification
+   icon="notify.tga"
+   name="VoiceEffectsNew"
+   sound="UISndAlert"
+   persist="true"
+   type="notify">
+    <unique/>
+New Voice Morphs are available!
+   <tag>voice</tag>
+  </notification>
+
+  <notification
    icon="notifytip.tga"
    name="Cannot enter parcel: not a group member"
    type="notifytip">
@@ -7420,6 +7470,23 @@ Avatar '[NAME]' left after [TIME] seconds as cloud.
    type="notifytip">
 ( [EXISTENCE] seconds alive )
 Avatar '[NAME]' entered appearance mode.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="NoVoiceConnect"
+   type="alertmodal">
+We're having trouble connecting to your voice server:
+
+[HOSTID]
+
+Voice communications will not be available.
+Please check your network and firewall setup.
+    <tag>voice</tag>
+  <tag>fail</tag>
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
   </notification>
 
   <notification
