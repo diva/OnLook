@@ -56,30 +56,6 @@
 
 ////////////////////////////////////////////////////////////////////////////
 // LLFloaterObjectIMInfo
-class LLFloaterObjectIMInfo : public LLFloater, public LLFloaterSingleton<LLFloaterObjectIMInfo>
-{
-public:
-	LLFloaterObjectIMInfo(const LLSD& sd);
-	virtual ~LLFloaterObjectIMInfo() { };
-
-	BOOL postBuild(void);
-
-	void update(LLSD& payload);
-
-	// UI Handlers
-	static void onClickMap(void* data);
-	static void onClickOwner(void* data);
-	static void onClickMute(void* data);
-
-	void nameCallback(const LLUUID& id, const std::string& full_name, bool is_group);
-
-private:
-	LLUUID mObjectID;
-	LLUUID mOwnerID;
-	std::string mSLurl;
-	std::string mName;
-	bool mGroupOwned;
-};
 
 LLFloaterObjectIMInfo::LLFloaterObjectIMInfo(const LLSD& seed)
 : mObjectID(), mName(), mSLurl(), mOwnerID(), mGroupOwned(false)

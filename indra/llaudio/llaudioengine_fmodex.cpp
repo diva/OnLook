@@ -55,8 +55,6 @@
 #include <DelayImp.h>
 #pragma comment(lib, "delayimp.lib")
 
-static bool sVerboseDebugging = false;
-
 bool attemptDelayLoad()
 {
 	__try
@@ -71,6 +69,8 @@ bool attemptDelayLoad()
 	return true;
 }
 #endif
+
+static bool sVerboseDebugging = false;
 
 FMOD_RESULT F_CALLBACK windCallback(FMOD_DSP_STATE *dsp_state, float *inbuffer, float *outbuffer, unsigned int length, int inchannels, int outchannels);
 
@@ -171,7 +171,7 @@ public:
 				llcont << llendl;
 			}
 			mDeadSounds.insert(sound);
-			mActiveSounds.erase(it);
+			mActiveSounds.erase(sound);
 		}
 	}
 	void addNewChannelToSound(FMOD::Sound* sound,FMOD::Channel* channel)
@@ -206,7 +206,7 @@ public:
 				it2->second.erase(channel);
 			}
 			mDeadChannels.insert(*it);
-			mActiveChannels.erase(it);
+			mActiveChannels.erase(channel);
 		}
 	}
 } gSoundCheck;
