@@ -228,6 +228,28 @@ std::string LLAudioEngine::getInternetStreamURL()
 	else return std::string();
 }
 
+void LLAudioEngine::checkStates()
+{
+#ifdef SHOW_ASSERT
+	for (S32 i = 0; i < MAX_BUFFERS; i++)
+	{
+		if (mBuffers[i])
+		{
+			bool buf_has_ref = false;
+			for (S32 j = 0; j < MAX_CHANNELS; j++)
+			{
+				if (mChannels[j])
+				{
+					if(mChannels[j]->mCurrentBufferp == mBuffers[i])
+						buf_has_ref = true;
+				}
+			}
+			if(buf_has_ref)
+				llassert(mBuffers[i]->mInUse);
+		}
+	}
+#endif //SHOW_ASSERT
+}
 
 void LLAudioEngine::updateChannels()
 {
@@ -239,8 +261,31 @@ void LLAudioEngine::updateChannels()
 			mChannels[i]->updateBuffer();
 			mChannels[i]->update3DPosition();
 			mChannels[i]->updateLoop();
+#ifdef SHOW_ASSERT
+			if(mChannels[i]->getSource())
+				llassert(mChannels[i]->mCurrentBufferp == mChannels[i]->getSource()->getCurrentBuffer());
+			if(mChannels[i]->mCurrentBufferp)
+			{
+				bool found_buffer = false;
+				for (S32 j = 0; j < MAX_BUFFERS; j++)
+				{
+					if (mBuffers[j])
+					{
+						if(mChannels[i]->mCurrentBufferp == mBuffers[j])
+							found_buffer = true;
+					}
+				}
+				llassert(found_buffer);
+				if(!mChannels[i]->mCurrentBufferp->mInUse)
+				{
+					llassert(!mChannels[i]->isPlaying());
+					llassert(!mChannels[i]->isWaiting());
+				}
+			}
+#endif //SHOW_ASSERT
 		}
 	}
+	checkStates();
 }
 
 static const F32 default_max_decode_time = .002f; // 2 ms
@@ -312,7 +357,14 @@ void LLAudioEngine::idle(F32 max_decode_time)
 		if (channelp)
 		{
 			LL_DEBUGS("AudioEngine") << "Replacing source in channel due to priority!" << llendl;
+			llassert(max_sourcep->getChannel() == NULL);
+
+			llassert(channelp->mCurrentBufferp == NULL);
 			channelp->setSource(max_sourcep);
+
+			llassert(max_sourcep == channelp->getSource());
+			llassert(channelp->mCurrentBufferp == max_sourcep->getCurrentBuffer());
+
 			if (max_sourcep->isSyncSlave())
 			{
 				// A sync slave, it doesn't start playing until it's synced up with the master.
@@ -529,6 +581,8 @@ void LLAudioEngine::enableWind(bool enable)
 
 LLAudioBuffer * LLAudioEngine::getFreeBuffer()
 {
+	//checkStates();	//Fails
+
 	S32 i;
 	for (i = 0; i < MAX_BUFFERS; i++)
 	{
@@ -539,6 +593,7 @@ LLAudioBuffer * LLAudioEngine::getFreeBuffer()
 		}
 	}
 
+	//checkStates();	// Fails
 
 	// Grab the oldest unused buffer
 	F32 max_age = -1.f;
@@ -558,6 +613,8 @@ LLAudioBuffer * LLAudioEngine::getFreeBuffer()
 		}
 	}
 
+	//checkStates();	//Fails
+
 	if (buffer_id >= 0)
 	{
 		LL_DEBUGS("AudioEngine") << "Taking over unused buffer! max_age=" << max_age << llendl;
@@ -568,12 +625,15 @@ LLAudioBuffer * LLAudioEngine::getFreeBuffer()
 			if(channelp && channelp->mCurrentBufferp == mBuffers[buffer_id])
 			{
 				channelp->cleanup();
+				llassert(channelp->mCurrentBufferp == NULL);
 			}
 		}
 		delete mBuffers[buffer_id];
 		mBuffers[buffer_id] = createBuffer();
 		return mBuffers[buffer_id];
 	}
+
+	//checkStates();	//Fails
 	return NULL;
 }
 
@@ -1422,6 +1482,8 @@ bool LLAudioSource::setupChannel()
 	}
 
 	mChannelp->setSource(this);
+	llassert(this == mChannelp->getSource());
+	llassert(mChannelp->mCurrentBufferp == getCurrentBuffer());
 	return true;
 }
 
@@ -1433,6 +1495,7 @@ bool LLAudioSource::play(const LLUUID &audio_uuid)
 	{
 		if (getChannel())
 		{
+			llassert(this == getChannel()->getSource());
 			getChannel()->setSource(NULL);
 			if (!isMuted())
 			{
@@ -1685,6 +1748,8 @@ LLAudioChannel::LLAudioChannel() :
 
 LLAudioChannel::~LLAudioChannel()
 {
+	llassert(mCurrentBufferp == NULL);
+	
 	// Need to disconnect any sources which are using this channel.
 	//llinfos << "Cleaning up audio channel" << llendl;
 	cleanup();
@@ -1762,6 +1827,8 @@ bool LLAudioChannel::updateBuffer()
 	cleanup();
 	mCurrentSourcep = source;
 	mCurrentSourcep->setChannel(this);
+
+	llassert(mCurrentBufferp == NULL);
 
 	mCurrentBufferp = bufferp;
 	if (bufferp)
