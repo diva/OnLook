@@ -93,7 +93,7 @@ inline bool Check_FMOD_Error(FMOD_RESULT result, const char *string)
 {
 	if(result == FMOD_OK)
 		return false;
-	llwarns << string << " Error: " << FMOD_ErrorString(result) << llendl;
+	LL_WARNS("AudioImpl") << string << " Error: " << FMOD_ErrorString(result) << llendl;
 	return true;
 }
 
@@ -101,11 +101,11 @@ void* F_STDCALL decode_alloc(unsigned int size, FMOD_MEMORY_TYPE type, const cha
 {
 	if(type & FMOD_MEMORY_STREAM_DECODE)
 	{
-		llinfos << "Decode buffer size: " << size << llendl;
+		LL_INFOS("AudioImpl") << "Decode buffer size: " << size << llendl;
 	}
 	else if(type & FMOD_MEMORY_STREAM_FILE)
 	{
-		llinfos << "Strean buffer size: " << size << llendl;
+		LL_INFOS("AudioImpl") << "Stream buffer size: " << size << llendl;
 	}
 	return new char[size];
 }
@@ -344,7 +344,7 @@ void LLAudioEngine_FMODEX::allocateListener(void)
 	mListenerp = (LLListener *) new LLListener_FMODEX(mSystem);
 	if (!mListenerp)
 	{
-		llwarns << "Listener creation failed" << llendl;
+		LL_WARNS("AudioImpl") << "Listener creation failed" << llendl;
 	}
 }
 
@@ -353,13 +353,13 @@ void LLAudioEngine_FMODEX::shutdown()
 {
 	stopInternetStream();
 
-	llinfos << "About to LLAudioEngine::shutdown()" << llendl;
+	LL_INFOS("AudioImpl") << "About to LLAudioEngine::shutdown()" << llendl;
 	LLAudioEngine::shutdown();
 	
-	llinfos << "LLAudioEngine_FMODEX::shutdown() closing FMOD Ex" << llendl;
+	LL_INFOS("AudioImpl") << "LLAudioEngine_FMODEX::shutdown() closing FMOD Ex" << llendl;
 	mSystem->close();
 	mSystem->release();
-	llinfos << "LLAudioEngine_FMODEX::shutdown() done closing FMOD Ex" << llendl;
+	LL_INFOS("AudioImpl") << "LLAudioEngine_FMODEX::shutdown() done closing FMOD Ex" << llendl;
 
 	delete mListenerp;
 	mListenerp = NULL;
@@ -493,6 +493,27 @@ LLAudioChannelFMODEX::~LLAudioChannelFMODEX()
 	cleanup();
 }
 
+static FMOD_RESULT F_CALLBACK channel_callback(FMOD_CHANNEL *channel, FMOD_CHANNEL_CALLBACKTYPE type, void *commanddata1, void *commanddata2)
+{
+	if(type == FMOD_CHANNEL_CALLBACKTYPE_END)
+	{
+		FMOD::Channel* chan = reinterpret_cast<FMOD::Channel*>(channel);
+		LLAudioChannelFMODEX* audio_channel = NULL;
+		chan->getUserData((void**)&audio_channel);
+		if(audio_channel)
+		{
+			audio_channel->onRelease();
+		}
+	}
+	return FMOD_OK;
+}
+
+void LLAudioChannelFMODEX::onRelease()
+{
+	mChannelp = NULL;	//Null out channel here so cleanup doesn't try to redundantly stop it.
+	cleanup();
+}
+
 bool LLAudioChannelFMODEX::updateBuffer()
 {
 	if (LLAudioChannel::updateBuffer())
@@ -508,7 +529,7 @@ bool LLAudioChannelFMODEX::updateBuffer()
 		{
 			// This is bad, there should ALWAYS be a sound associated with a legit
 			// buffer.
-			llerrs << "No FMOD sound!" << llendl;
+			LL_ERRS("AudioImpl") << "No FMOD sound!" << llendl;
 			return false;
 		}
 
@@ -519,9 +540,13 @@ bool LLAudioChannelFMODEX::updateBuffer()
 		{
 			FMOD_RESULT result = getSystem()->playSound(FMOD_CHANNEL_FREE, soundp, true, &mChannelp);
 			Check_FMOD_Error(result, "FMOD::System::playSound");
-		}
+			if(result == FMOD_OK)
+			{
 
-		//llinfos << "Setting up channel " << std::hex << mChannelID << std::dec << llendl;
+				mChannelp->setCallback(&channel_callback);
+				mChannelp->setUserData(this);
+			}
+		}
 	}
 
 	// If we have a source for the channel, we need to update its gain.
@@ -535,13 +560,6 @@ bool LLAudioChannelFMODEX::updateBuffer()
 		Check_FMOD_Error(result, "FMOD::Channel::setVolume");
 		result = mChannelp->setMode(mCurrentSourcep->isLoop() ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 		Check_FMOD_Error(result, "FMOD::Channel::setMode");
-		/*if(Check_FMOD_Error(result, "FMOD::Channel::setMode"))
-		{
-			S32 index;
-			mChannelp->getIndex(&index);
- 			llwarns << "Channel " << index << "Source ID: " << mCurrentSourcep->getID()
- 					<< " at " << mCurrentSourcep->getPositionGlobal() << llendl;		
-		}*/
 	}
 
 	return true;
@@ -608,16 +626,17 @@ void LLAudioChannelFMODEX::updateLoop()
 
 void LLAudioChannelFMODEX::cleanup()
 {
+	LLAudioChannel::cleanup();
+
 	if (!mChannelp)
 	{
 		//llinfos << "Aborting cleanup with no channel handle." << llendl;
 		return;
 	}
 
-	//llinfos << "Cleaning up channel: " << mChannelID << llendl;
+	mChannelp->setCallback(NULL);
 	Check_FMOD_Error(mChannelp->stop(),"FMOD::Channel::stop");
 
-	mCurrentBufferp = NULL;
 	mChannelp = NULL;
 }
 
@@ -626,7 +645,7 @@ void LLAudioChannelFMODEX::play()
 {
 	if (!mChannelp)
 	{
-		llwarns << "Playing without a channel handle, aborting" << llendl;
+		LL_WARNS("AudioImpl") << "Playing without a channel handle, aborting" << llendl;
 		return;
 	}
 
@@ -734,7 +753,7 @@ bool LLAudioBufferFMODEX::loadWAV(const std::string& filename)
 	if (result != FMOD_OK)
 	{
 		// We failed to load the file for some reason.
-		llwarns << "Could not load data '" << filename << "': " << FMOD_ErrorString(result) << llendl;
+		LL_WARNS("AudioImpl") << "Could not load data '" << filename << "': " << FMOD_ErrorString(result) << llendl;
 
 		//
 		// If we EVER want to load wav files provided by end users, we need

@@ -95,7 +95,7 @@ class LLAudioChannelFMODEX : public LLAudioChannel
 public:
 	LLAudioChannelFMODEX(FMOD::System *audioengine);
 	virtual ~LLAudioChannelFMODEX();
-
+	void onRelease();
 protected:
 	/*virtual*/ void play();
 	/*virtual*/ void playSynced(LLAudioChannel *channelp);

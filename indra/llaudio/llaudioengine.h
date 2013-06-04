@@ -447,7 +447,7 @@ public:
 protected:
 	virtual void play() = 0;
 	virtual void playSynced(LLAudioChannel *channelp) = 0;
-	virtual void cleanup() = 0;
+	virtual void cleanup();
 	void setWaiting(bool waiting)               { mWaiting = waiting; }
 
 public:
