@@ -32,154 +32,16 @@
 #ifndef LL_LLFLOATERACTIVESPEAKERS_H
 #define LL_LLFLOATERACTIVESPEAKERS_H
 
-#include "llavatarnamecache.h"
 #include "llfloater.h"
-#include "llmemory.h"
 #include "llvoiceclient.h"
 #include "llframetimer.h"
 #include "llevent.h"
-
-#include <list>
-#include <boost/signals2.hpp>
 
 class LLScrollListCtrl;
 class LLButton;
 class LLPanelActiveSpeakers;
 class LLSpeakerMgr;
-class LLVoiceChannel;
-class LLSlider;
 class LLTextBox;
-class LLCheckBoxCtrl;
-
-
-// data for a given participant in a voice channel
-class LLSpeaker : public LLRefCount, public LLOldEvents::LLObservable, public LLHandleProvider<LLSpeaker>, public boost::signals2::trackable
-{
-public:
-	typedef enum e_speaker_type
-	{
-		SPEAKER_AGENT,
-		SPEAKER_OBJECT,
-		SPEAKER_EXTERNAL	// Speaker that doesn't map to an avatar or object (i.e. PSTN caller in a group)
-	} ESpeakerType;
-
-	typedef enum e_speaker_status
-	{
-		STATUS_SPEAKING,
-		STATUS_HAS_SPOKEN,
-		STATUS_VOICE_ACTIVE,
-		STATUS_TEXT_ONLY,
-		STATUS_NOT_IN_CHANNEL,
-		STATUS_MUTED
-	} ESpeakerStatus;
-
-
-	LLSpeaker(const LLUUID& id, const std::string& name = LLStringUtil::null, const ESpeakerType type = SPEAKER_AGENT);
-	~LLSpeaker() {};
-	void lookupName();
-	void onNameCache(const LLAvatarName& avatar_name);
-
-	ESpeakerStatus	mStatus;			// current activity status in speech group
-	F32				mLastSpokeTime;		// timestamp when this speaker last spoke
-	F32				mSpeechVolume;		// current speech amplitude (timea average rms amplitude?)
-	std::string		mDisplayName;		// cache user name for this speaker
-	LLFrameTimer	mActivityTimer;	// time out speakers when they are not part of current voice channel
-	BOOL			mHasSpoken;			// has this speaker said anything this session?
-	LLColor4		mDotColor;
-	LLUUID			mID;
-	BOOL			mTyping;
-	S32				mSortIndex;
-	ESpeakerType	mType;
-	BOOL			mIsModerator;
-	BOOL			mModeratorMutedVoice;
-	BOOL			mModeratorMutedText;
-	std::string     mLegacyName;
-	bool			mNameRequested;
-};
-
-class LLSpeakerTextModerationEvent : public LLOldEvents::LLEvent
-{
-public:
-	LLSpeakerTextModerationEvent(LLSpeaker* source);
-	/*virtual*/ LLSD getValue();
-};
-
-class LLSpeakerVoiceModerationEvent : public LLOldEvents::LLEvent
-{
-public:
-	LLSpeakerVoiceModerationEvent(LLSpeaker* source);
-	/*virtual*/ LLSD getValue();
-};
-
-class LLSpeakerListChangeEvent : public LLOldEvents::LLEvent
-{
-public:
-	LLSpeakerListChangeEvent(LLSpeakerMgr* source, const LLUUID& speaker_id);
-	/*virtual*/ LLSD getValue();
-
-private:
-	const LLUUID& mSpeakerID;
-};
-
-class LLSpeakerMgr : public LLOldEvents::LLObservable
-{
-public:
-	LLSpeakerMgr(LLVoiceChannel* channelp);
-	virtual ~LLSpeakerMgr();
-
-	const LLPointer<LLSpeaker> findSpeaker(const LLUUID& avatar_id);
-	void update(BOOL resort_ok);
-	void setSpeakerTyping(const LLUUID& speaker_id, BOOL typing);
-	void speakerChatted(const LLUUID& speaker_id);
-	LLPointer<LLSpeaker> setSpeaker(const LLUUID& id, 
-					const std::string& name = LLStringUtil::null, 
-					LLSpeaker::ESpeakerStatus status = LLSpeaker::STATUS_TEXT_ONLY, 
-					LLSpeaker::ESpeakerType = LLSpeaker::SPEAKER_AGENT);
-
-	BOOL isVoiceActive();
-
-	typedef std::vector<LLPointer<LLSpeaker> > speaker_list_t;
-	void getSpeakerList(speaker_list_t* speaker_list, BOOL include_text);
-	const LLUUID getSessionID();
-
-protected:
-	virtual void updateSpeakerList();
-
-	typedef std::map<LLUUID, LLPointer<LLSpeaker> > speaker_map_t;
-	speaker_map_t		mSpeakers;
-
-	speaker_list_t		mSpeakersSorted;
-	LLFrameTimer		mSpeechTimer;
-	LLVoiceChannel*		mVoiceChannel;
-};
-
-class LLIMSpeakerMgr : public LLSpeakerMgr
-{
-public:
-	LLIMSpeakerMgr(LLVoiceChannel* channel);
-	
-	void updateSpeakers(const LLSD& update);
-	void setSpeakers(const LLSD& speakers);
-protected:
-	virtual void updateSpeakerList();
-};
-
-class LLActiveSpeakerMgr : public LLSpeakerMgr, public LLSingleton<LLActiveSpeakerMgr>
-{
-public:
-	LLActiveSpeakerMgr();
-protected:
-	virtual void updateSpeakerList();
-};
-
-class LLLocalSpeakerMgr : public LLSpeakerMgr, public LLSingleton<LLLocalSpeakerMgr>
-{
-public:
-	LLLocalSpeakerMgr();
-	~LLLocalSpeakerMgr ();
-protected:
-	virtual void updateSpeakerList();
-};
 
 
 class LLFloaterActiveSpeakers : 
@@ -217,11 +79,6 @@ public:
 
 	void handleSpeakerSelect();
 	void refreshSpeakers();
-	
-	void setSpeaker(const LLUUID& id, 
-					const std::string& name = LLStringUtil::null, 
-					LLSpeaker::ESpeakerStatus status = LLSpeaker::STATUS_TEXT_ONLY, 
-					LLSpeaker::ESpeakerType = LLSpeaker::SPEAKER_AGENT);
 
 	void setVoiceModerationCtrlMode(const BOOL& moderated_voice);
 	

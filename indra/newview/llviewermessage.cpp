@@ -87,7 +87,7 @@
 #include "llstatenums.h"
 #include "llstatusbar.h"
 #include "llimview.h"
-#include "llfloateractivespeakers.h"
+#include "llspeakers.h"
 #include "lltrans.h"
 #include "llviewerfoldertype.h"
 #include "llviewergenericmessage.h"

@@ -131,6 +131,7 @@ public:
 	void processSessionUpdate(const LLSD& update);
 	void setSpeakers(const LLSD& speaker_list);
 	LLVoiceChannel* getVoiceChannel() { return mVoiceChannel; }
+	LLIMSpeakerMgr* getSpeakerManager() const { return mSpeakers; } // Singu TODO: LLIMModel::getSpeakerManager
 	EInstantMessage getDialogType() const { return mDialog; }
 
 	void requestAutoConnect();

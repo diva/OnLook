@@ -52,7 +52,6 @@
 #include "llgroupactions.h"
 #include "llfloateractivespeakers.h"
 #include "llfloaterchat.h"
-#include "llfloatergroupinfo.h"
 #include "llimview.h"
 #include "llinventory.h"
 #include "llinventoryfunctions.h"
@@ -62,6 +61,7 @@
 #include "lllineeditor.h"
 #include "llnotify.h"
 #include "llresmgr.h"
+#include "llspeakers.h"
 #include "lltrans.h"
 #include "lltabcontainer.h"
 #include "llviewertexteditor.h"
@@ -1478,7 +1478,7 @@ void LLFloaterIMPanel::processSessionUpdate(const LLSD& session_update)
 
 
 		//update the speakers dropdown too
-		mSpeakerPanel->setVoiceModerationCtrlMode(voice_moderated);
+		mSpeakerPanel->setVoiceModerationCtrlMode(session_update);
 	}
 }
 

@@ -129,7 +129,7 @@ void LLPanelVoiceDeviceSettings::draw()
 				}
 				else
 				{
-					color = gSavedSettings.getColor4("FocusBackgroundColor");
+					color = LLUI::sColorsGroup->getColor("FocusBackgroundColor");
 				}
 
 				LLRect color_rect = bar_view->getRect();

@@ -416,6 +416,7 @@ set(viewer_SOURCE_FILES
     llselectmgr.cpp
     llsky.cpp
     llspatialpartition.cpp
+    llspeakers.cpp
     llsprite.cpp
     llstartup.cpp
     llstatusbar.cpp
@@ -920,6 +921,7 @@ set(viewer_HEADER_FILES
     llsimplestat.h
     llsky.h
     llspatialpartition.h
+    llspeakers.h
     llsprite.h
     llstartup.h
     llstatusbar.h

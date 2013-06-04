@@ -40,15 +40,17 @@
 // Viewer includes
 #include "llmutelist.h"  // to check for muted avatars
 #include "llagent.h"
+#include "llimpanel.h" // for LLFloaterIMPanel
 #include "llimview.h" // for LLIMMgr
 #include "llparcel.h"
 #include "llviewerparcelmgr.h"
 //#include "llfirstuse.h"
-#include "llvoicechannel.h" // Singu TODO: break out llspeakers.h
+#include "llspeakers.h"
 #include "lltrans.h"
 #include "llviewercamera.h"
 
 #include "llviewernetwork.h"
+#include "llvoicechannel.h"
 #include "llnotificationsutil.h"
 
 #include "stringize.h"
@@ -3850,9 +3852,12 @@ void LLVivoxVoiceClient::participantUpdatedEvent(
 			// ignore session ID of local chat
 			if (voice_cnl && voice_cnl->getSessionID().notNull())
 			{
-				/* Singu TODO: Voice Update: LLIMModel
+				/* Singu TODO: LLIMModel::getSpeakerManager
 				LLSpeakerMgr* speaker_manager = LLIMModel::getInstance()->getSpeakerManager(voice_cnl->getSessionID());
 				if (speaker_manager)
+				*/
+				if (LLFloaterIMPanel* floaterp = gIMMgr->findFloaterBySession(voice_cnl->getSessionID()))
+				if (LLSpeakerMgr* speaker_manager = floaterp->getSpeakerManager())
 				{
 					speaker_manager->update(true);
 
@@ -3863,7 +3868,6 @@ void LLVivoxVoiceClient::participantUpdatedEvent(
 						speaker_manager->initVoiceModerateMode();
 					}
 				}
-				*/
 			}
 		}
 		else

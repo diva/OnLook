@@ -58,6 +58,7 @@
 #include "llsdutil.h"
 #include "llsky.h"
 #include "llsmoothstep.h"
+#include "llspeakers.h"
 #include "llstartup.h"
 #include "llstatusbar.h"
 #include "lltool.h"

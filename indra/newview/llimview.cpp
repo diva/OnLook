@@ -54,9 +54,9 @@
 #include "llhttpnode.h"
 #include "llimpanel.h"
 #include "llsdserialize.h"
+#include "llspeakers.h"
 #include "lltabcontainer.h"
 #include "llmutelist.h"
-#include "llresizehandle.h"
 #include "llviewermenu.h"
 #include "llviewermessage.h"
 #include "llviewerwindow.h"
@@ -1552,10 +1552,16 @@ public:
 		const LLSD& context,
 		const LLSD& input) const
 	{
-		LLFloaterIMPanel* floaterp = gIMMgr->findFloaterBySession(input["body"]["session_id"].asUUID());
+		LLUUID session_id = input["body"]["session_id"].asUUID();
+		LLFloaterIMPanel* floaterp = gIMMgr->findFloaterBySession(session_id);
 		if (floaterp)
 		{
 			floaterp->processSessionUpdate(input["body"]["info"]);
+		}
+		LLIMSpeakerMgr* im_mgr = floaterp ? floaterp->getSpeakerManager() : NULL; //LLIMModel::getInstance()->getSpeakerManager(session_id);
+		if (im_mgr)
+		{
+			im_mgr->processSessionUpdate(input["body"]["info"]);
 		}
 	}
 };

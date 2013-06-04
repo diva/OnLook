@@ -58,6 +58,7 @@
 #include "llfloaterscriptdebug.h"
 #include "lllogchat.h"
 #include "llmutelist.h"
+#include "llspeakers.h"
 #include "llstylemap.h"
 #include "lluictrlfactory.h"
 #include "llviewermessage.h"
@@ -324,7 +325,7 @@ void LLFloaterChat::addChatHistory(const LLChat& chat, bool log_to_file)
 	// add objects as transient speakers that can be muted
 	if (chat.mSourceType == CHAT_SOURCE_OBJECT)
 	{
-		chat_floater->mPanel->setSpeaker(chat.mFromID, chat.mFromName, LLSpeaker::STATUS_NOT_IN_CHANNEL, LLSpeaker::SPEAKER_OBJECT);
+		LLLocalSpeakerMgr::getInstance()->setSpeaker(chat.mFromID, chat.mFromName, LLSpeaker::STATUS_NOT_IN_CHANNEL, LLSpeaker::SPEAKER_OBJECT);
 	}
 
 	// start tab flashing on incoming text from other users (ignoring system text, etc)
