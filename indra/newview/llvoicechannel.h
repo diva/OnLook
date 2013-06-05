@@ -43,6 +43,21 @@ public:
 		STATE_CONNECTED
 	} EState;
 
+	typedef enum e_voice_channel_direction
+	{
+		INCOMING_CALL,
+		OUTGOING_CALL
+	} EDirection;
+
+	typedef boost::signals2::signal<void(const EState& old_state, const EState& new_state, const EDirection& direction, bool ended_by_agent)> state_changed_signal_t;
+
+	// on current channel changed signal
+	typedef boost::function<void(const LLUUID& session_id)> channel_changed_callback_t;
+	typedef boost::signals2::signal<void(const LLUUID& session_id)> channel_changed_signal_t;
+	static channel_changed_signal_t sCurrentVoiceChannelChangedSignal;
+	static boost::signals2::connection setCurrentVoiceChannelChangedCallback(channel_changed_callback_t cb, bool at_front = false);
+
+
 
 	LLVoiceChannel(const LLUUID& session_id, const std::string& session_name);
 	virtual ~LLVoiceChannel();
@@ -60,11 +75,21 @@ public:
 	virtual BOOL isActive();
 	virtual BOOL callStarted();
 
+	// Session name is a UI label used for feedback about which person,
+	// group, or phone number you are talking to
+	const std::string& getSessionName() const { return mSessionName; }
+
+	boost::signals2::connection setStateChangedCallback(const state_changed_signal_t::slot_type& callback)
+	{ return mStateChangedCallback.connect(callback); }
+
 	const LLUUID getSessionID() { return mSessionID; }
 	EState getState() { return mState; }
 
 	void updateSessionID(const LLUUID& new_session_id);
 	const LLSD& getNotifyArgs() { return mNotifyArgs; }
+
+	void setCallDirection(EDirection direction) {mCallDirection = direction;}
+	EDirection getCallDirection() {return mCallDirection;}
 
 	static LLVoiceChannel* getChannelByID(const LLUUID& session_id);
 	static LLVoiceChannel* getChannelByURI(std::string uri);
@@ -77,7 +102,14 @@ public:
 
 protected:
 	virtual void setState(EState state);
+	/**
+	 * Use this method if you want mStateChangedCallback to be executed while state is changed
+	 */
+	void doSetState(const EState& state);
 	void setURI(std::string uri);
+
+	// there can be two directions INCOMING and OUTGOING
+	EDirection mCallDirection;
 
 	std::string	mURI;
 	std::string	mCredentials;
@@ -85,6 +117,9 @@ protected:
 	EState		mState;
 	std::string	mSessionName;
 	LLSD mNotifyArgs;
+	//LLSD mCallDialogPayload;
+	// true if call was ended by agent
+	bool mCallEndedByAgent;
 	BOOL		mIgnoreNextSessionLeave;
 	LLHandle<LLPanel> mLoginNotificationHandle;
 
@@ -97,6 +132,9 @@ protected:
 	static LLVoiceChannel* sCurrentVoiceChannel;
 	static LLVoiceChannel* sSuspendedVoiceChannel;
 	static BOOL sSuspended;
+
+private:
+	state_changed_signal_t mStateChangedCallback;
 };
 
 class LLVoiceChannelGroup : public LLVoiceChannel
@@ -151,6 +189,12 @@ protected:
 	virtual void setState(EState state);
 
 private:
+
+	/**
+	* Add the caller to the list of people with which we've recently interacted
+	*
+	void addToTheRecentPeopleList();
+	**/
 
 	std::string	mSessionHandle;
 	LLUUID		mOtherUserID;
