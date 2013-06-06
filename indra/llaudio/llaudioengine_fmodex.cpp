@@ -131,17 +131,18 @@ public:
 	}
 	void addNewSound(FMOD::Sound* sound)
 	{
-		STATUS status = getPtrStatus(sound);
-		llassert(status != ACTIVE);
+		llassert(getPtrStatus(sound) != ACTIVE);
 
 		mDeadSounds.erase(sound);
 		mActiveSounds.insert(std::make_pair(sound,std::set<FMOD::Channel*>()));
 	}
 	void removeSound(FMOD::Sound* sound)
 	{
+#ifdef SHOW_ASSERT
 		STATUS status = getPtrStatus(sound);
 		llassert(status != DEAD);
 		llassert(status != UNKNOWN);
+#endif
 
 		active_sounds_t::const_iterator it = mActiveSounds.find(sound);
 		llassert(it != mActiveSounds.end());
@@ -187,17 +188,21 @@ public:
 	}
 	void removeChannel(FMOD::Channel* channel)
 	{
+#ifdef SHOW_ASSERT
 		STATUS status = getPtrStatus(channel);
 		llassert(status != DEAD);
 		llassert(status != UNKNOWN);
+#endif
 
 		active_channels_t::const_iterator it = mActiveChannels.find(channel);
 		llassert(it != mActiveChannels.end());
 		if(it != mActiveChannels.end())
 		{
+#ifdef SHOW_ASSERT
 			STATUS status = getPtrStatus(it->second);
 			llassert(status != DEAD);
 			llassert(status != UNKNOWN);
+#endif
 
 			active_sounds_t::iterator it2 = mActiveSounds.find(it->second);
 			llassert(it2 != mActiveSounds.end());
@@ -512,8 +517,11 @@ void LLAudioEngine_FMODEX::shutdown()
 	LLAudioEngine::shutdown();
 	
 	LL_INFOS("AudioImpl") << "LLAudioEngine_FMODEX::shutdown() closing FMOD Ex" << llendl;
+	if ( mSystem ) // speculative fix for MAINT-2657
+	{
 	mSystem->close();
 	mSystem->release();
+	}
 	LL_INFOS("AudioImpl") << "LLAudioEngine_FMODEX::shutdown() done closing FMOD Ex" << llendl;
 
 	delete mListenerp;
