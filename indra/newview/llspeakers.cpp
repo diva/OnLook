@@ -419,7 +419,7 @@ void LLSpeakerMgr::update(BOOL resort_ok)
 			if(speakerp->mType == LLSpeaker::SPEAKER_EXTERNAL)
 			{
 				// external speakers should be timed out when they leave the voice channel (since they only exist via SLVoice)
-				speakerp->mStatus = LLSpeaker::STATUS_NOT_IN_CHANNEL;
+				setSpeakerNotInChannel(speakerp); // Singu Note: Don't just flag, call the flagging function and get them on the removal timer!
 			}
 			else
 			{
@@ -903,7 +903,7 @@ void LLActiveSpeakerMgr::updateSpeakerList()
 		if (speakerp->mStatus == LLSpeaker::STATUS_TEXT_ONLY)
 		{
 			// automatically flag text only speakers for removal
-			speakerp->mStatus = LLSpeaker::STATUS_NOT_IN_CHANNEL;
+			setSpeakerNotInChannel(speakerp); // Singu Note: Don't just flag, call the flagging function and get them on the removal timer!
 		}
 	}
 

@@ -46,8 +46,7 @@ class LLViewerTextEditor;
 class LLInventoryItem;
 class LLInventoryCategory;
 class LLIMSpeakerMgr;
-class LLPanelActiveSpeakers;
-class LLPanel;
+class LLParticipantList;
 class LLButton;
 class LLVoiceChannel;
 
@@ -244,7 +243,7 @@ private:
 	BOOL mCallBackEnabled;
 
 	LLIMSpeakerMgr* mSpeakers;
-	LLPanelActiveSpeakers* mSpeakerPanel;
+	LLParticipantList* mSpeakerPanel;
 	
 	// Optimization:  Don't send "User is typing..." until the
 	// user has actually been typing for a little while.  Prevents

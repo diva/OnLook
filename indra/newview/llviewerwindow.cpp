@@ -58,7 +58,6 @@
 
 // linden library includes
 #include "llaudioengine.h"		// mute on minimize
-#include "indra_constants.h"
 #include "llassetstorage.h"
 #include "llfontgl.h"
 #include "llmousehandler.h"
@@ -77,12 +76,9 @@
 #include "raytrace.h"
 
 // newview includes
-#include "llagent.h"
 #include "llbox.h"
 #include "llchatbar.h"
 #include "llconsole.h"
-#include "llviewercontrol.h"
-#include "llcylinder.h"
 #include "lldebugview.h"
 #include "lldir.h"
 #include "lldrawable.h"
@@ -93,20 +89,11 @@
 #include "llface.h"
 #include "llfeaturemanager.h"
 #include "statemachine/aifilepicker.h"
-#include "llfloater.h"
-#include "llfloateractivespeakers.h"
-#include "llfloaterbuildoptions.h"
-#include "llfloaterbuyland.h"
 #include "llfloatercamera.h"
 #include "llfloaterchat.h"
 #include "llfloaterchatterbox.h"
 #include "llfloatercustomize.h"
 #include "llfloatereditui.h" // HACK JAMESDEBUG for ui editor
-#include "llfloaterland.h"
-#include "llfloaterinspect.h"
-#include "llfloaterinventory.h"
-#include "llfloaternamedesc.h"
-#include "llfloaterpreference.h"
 #include "llfloatersnapshot.h"
 #include "llfloaterteleporthistory.h"
 #include "llfloatertools.h"
@@ -196,7 +183,6 @@
 #include "llnotifications.h"
 #include "llnotificationsutil.h"
 
-#include "llfloatertest.h" // HACK!
 #include "llfloaternotificationsconsole.h"
 
 // [RLVa:KB]

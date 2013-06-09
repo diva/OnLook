@@ -381,6 +381,7 @@ set(viewer_SOURCE_FILES
     llpanelvolume.cpp
     llpanelweb.cpp
     llparcelselection.cpp
+    llparticipantlist.cpp
     llpatchvertexarray.cpp
     llpathfindingcharacter.cpp
     llpathfindingcharacterlist.cpp
@@ -884,6 +885,7 @@ set(viewer_HEADER_FILES
     llpanelvolume.h
     llpanelweb.h
     llparcelselection.h
+    llparticipantlist.h
     llpatchvertexarray.h
     llpathfindingcharacter.h
     llpathfindingcharacterlist.h

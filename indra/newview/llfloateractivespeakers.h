@@ -34,15 +34,8 @@
 
 #include "llfloater.h"
 #include "llvoiceclient.h"
-#include "llframetimer.h"
-#include "llevent.h"
 
-class LLScrollListCtrl;
-class LLButton;
-class LLPanelActiveSpeakers;
-class LLSpeakerMgr;
-class LLTextBox;
-
+class LLParticipantList;
 
 class LLFloaterActiveSpeakers : 
 	public LLFloaterSingleton<LLFloaterActiveSpeakers>, 
@@ -67,95 +60,7 @@ public:
 protected:
 	LLFloaterActiveSpeakers(const LLSD& seed);
 
-	LLPanelActiveSpeakers*	mPanel;
+	LLParticipantList* mPanel;
 };
-
-class LLPanelActiveSpeakers : public LLPanel
-{
-public:
-	LLPanelActiveSpeakers(LLSpeakerMgr* data_source, BOOL show_text_chatters);
-
-	/*virtual*/ BOOL postBuild();
-
-	void handleSpeakerSelect();
-	void refreshSpeakers();
-
-	void setVoiceModerationCtrlMode(const BOOL& moderated_voice);
-	
-	static void onClickMuteVoiceCommit(LLUICtrl* ctrl, void* user_data);
-	static void onClickMuteTextCommit(LLUICtrl* ctrl, void* user_data);
-	static void onVolumeChange(LLUICtrl* source, void* user_data);
-	static void onClickProfile(void* user_data);
-	static void onDoubleClickSpeaker(void* user_data);
-	static void onSortChanged(void* user_data);
-	static void	onModeratorMuteVoice(LLUICtrl* ctrl, void* user_data);
-	static void	onModeratorMuteText(LLUICtrl* ctrl, void* user_data);
-	static void	onChangeModerationMode(LLUICtrl* ctrl, void* user_data);
-
-protected:
-	class SpeakerMuteListener : public LLOldEvents::LLSimpleListener
-	{
-	public:
-		SpeakerMuteListener(LLPanelActiveSpeakers* panel) : mPanel(panel) {}
-
-		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
-
-		LLPanelActiveSpeakers* mPanel;
-	};
-
-	friend class SpeakerAddListener;
-	class SpeakerAddListener : public LLOldEvents::LLSimpleListener
-	{
-	public:
-		SpeakerAddListener(LLPanelActiveSpeakers* panel) : mPanel(panel) {}
-
-		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
-
-		LLPanelActiveSpeakers* mPanel;
-	};
-
-	friend class SpeakerRemoveListener;
-	class SpeakerRemoveListener : public LLOldEvents::LLSimpleListener
-	{
-	public:
-		SpeakerRemoveListener(LLPanelActiveSpeakers* panel) : mPanel(panel) {}
-
-		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
-
-		LLPanelActiveSpeakers* mPanel;
-	};
-
-
-	friend class SpeakerClearListener;
-	class SpeakerClearListener : public LLOldEvents::LLSimpleListener
-	{
-	public:
-		SpeakerClearListener(LLPanelActiveSpeakers* panel) : mPanel(panel) {}
-
-		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
-
-		LLPanelActiveSpeakers* mPanel;
-	};
-
-	void addSpeaker(const LLUUID& id);
-	void removeSpeaker(const LLUUID& id);
-
-
-	LLScrollListCtrl*	mSpeakerList;
-	LLUICtrl*			mMuteVoiceCtrl;
-	LLUICtrl*			mMuteTextCtrl;
-	LLTextBox*			mNameText;
-	LLButton*			mProfileBtn;
-	BOOL				mShowTextChatters;
-	LLSpeakerMgr*		mSpeakerMgr;
-	LLFrameTimer		mIconAnimationTimer;
-	LLPointer<SpeakerMuteListener> mSpeakerMuteListener;
-	LLPointer<SpeakerAddListener> mSpeakerAddListener;
-	LLPointer<SpeakerRemoveListener> mSpeakerRemoveListener;
-	LLPointer<SpeakerClearListener> mSpeakerClearListener;
-
-	CachedUICtrl<LLUICtrl> mVolumeSlider;
-};
-
 
 #endif // LL_LLFLOATERACTIVESPEAKERS_H

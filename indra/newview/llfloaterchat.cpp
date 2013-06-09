@@ -52,12 +52,12 @@
 #include "llagent.h"
 #include "llchatbar.h"
 #include "llconsole.h"
-#include "llfloateractivespeakers.h"
 #include "llfloaterchatterbox.h"
 #include "llfloatermute.h"
 #include "llfloaterscriptdebug.h"
 #include "lllogchat.h"
 #include "llmutelist.h"
+#include "llparticipantlist.h"
 #include "llspeakers.h"
 #include "llstylemap.h"
 #include "lluictrlfactory.h"
@@ -127,7 +127,7 @@ void LLFloaterChat::draw()
 
 BOOL LLFloaterChat::postBuild()
 {
-	mPanel = (LLPanelActiveSpeakers*)getChild<LLPanel>("active_speakers_panel");
+	mPanel = getChild<LLParticipantList>("active_speakers_panel");
 
 	LLChatBar* chat_barp = getChild<LLChatBar>("chat_panel", TRUE);
 	if (chat_barp)
@@ -628,7 +628,7 @@ void LLFloaterChat::chatFromLogFile(LLLogChat::ELogLineType type , std::string l
 //static
 void* LLFloaterChat::createSpeakersPanel(void* data)
 {
-	return new LLPanelActiveSpeakers(LLLocalSpeakerMgr::getInstance(), TRUE);
+	return new LLParticipantList(LLLocalSpeakerMgr::getInstance(), true);
 }
 
 //static

@@ -77,6 +77,7 @@
 #include "llviewerstats.h"
 #include "llviewerwindow.h"
 #include "llvoavatarself.h"
+#include "llvoiceclient.h"
 #include "llworld.h"
 #include "llworldmap.h"
 #include "llworldmapmessage.h"
@@ -85,11 +86,9 @@
 #include "llurldispatcher.h"
 #include "llimview.h" //For gIMMgr
 //Floaters
-#include "llfloateractivespeakers.h"
 #include "llfloateravatarinfo.h"
 #include "llfloaterchat.h"
 #include "llfloaterdirectory.h"
-#include "llfloatergroupinfo.h"
 #include "llfloatergroups.h"
 #include "llfloaterland.h"
 #include "llfloatermap.h"

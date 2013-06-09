@@ -50,7 +50,6 @@
 #include "llchat.h"
 #include "llconsole.h"
 #include "llgroupactions.h"
-#include "llfloateractivespeakers.h"
 #include "llfloaterchat.h"
 #include "llimview.h"
 #include "llinventory.h"
@@ -60,6 +59,7 @@
 #include "llkeyboard.h"
 #include "lllineeditor.h"
 #include "llnotify.h"
+#include "llparticipantlist.h"
 #include "llresmgr.h"
 #include "llspeakers.h"
 #include "lltrans.h"
@@ -621,7 +621,7 @@ BOOL LLFloaterIMPanel::postBuild()
 void* LLFloaterIMPanel::createSpeakersPanel(void* data)
 {
 	LLFloaterIMPanel* floaterp = (LLFloaterIMPanel*)data;
-	floaterp->mSpeakerPanel = new LLPanelActiveSpeakers(floaterp->mSpeakers, TRUE);
+	floaterp->mSpeakerPanel = new LLParticipantList(floaterp->mSpeakers, true);
 	return floaterp->mSpeakerPanel;
 }
 
