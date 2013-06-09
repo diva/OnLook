@@ -158,13 +158,17 @@ void LLVoiceRemoteCtrl::draw()
 	}
 
 	LLFloater* voice_floater = LLFloaterChatterBox::getInstance()->getCurrentVoiceFloater();
+	LLVoiceChannel* current_channel = LLVoiceChannel::getCurrentVoiceChannel();
+	if (!voice_floater) // Maybe it's undocked
+	{
+		voice_floater = gIMMgr->findFloaterBySession(current_channel->getSessionID());
+	}
 	std::string active_channel_name;
 	if (voice_floater)
 	{
 		active_channel_name = voice_floater->getShortTitle();
 	}
 
-	LLVoiceChannel* current_channel = LLVoiceChannel::getCurrentVoiceChannel();
 	if (LLButton* end_call_btn = findChild<LLButton>("end_call_btn"))
 		end_call_btn->setEnabled(LLVoiceClient::getInstance()->voiceEnabled()
 								&& current_channel
@@ -290,5 +294,16 @@ void LLVoiceRemoteCtrl::onClickSpeakers()
 //static 
 void LLVoiceRemoteCtrl::onClickVoiceChannel()
 {
-	LLFloaterChatterBox::showInstance();
+	if (LLFloater* floater = LLFloaterChatterBox::getInstance()->getCurrentVoiceFloater())
+	{
+		if (LLMultiFloater* mf = floater->getHost()) // Docked
+			mf->showFloater(floater);
+		else // Probably only local chat
+			floater->open();
+	}
+	else if (LLVoiceChannel* chan = LLVoiceChannel::getCurrentVoiceChannel()) // Detached chat floater
+	{
+		if (LLFloaterIMPanel* floater = gIMMgr->findFloaterBySession(chan->getSessionID()))
+			floater->open();
+	}
 }
