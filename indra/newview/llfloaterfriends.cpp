@@ -1064,7 +1064,11 @@ void LLPanelFriends::onClickPay(void* user_data)
 void LLPanelFriends::confirmModifyRights(rights_map_t& rights, EGrantRevoke command)
 {
 	if (rights.empty()) return;
-	
+
+	// Make a copy on the heap: rights is allocated on the stack.
+	// This copy will be deleted in LLPanelFriends::modifyRightsConfirmation.
+	rights_map_t* heap_rights = new rights_map_t(rights);
+
 	// for single friend, show their name
 	if (rights.size() == 1)
 	{
@@ -1078,14 +1082,14 @@ void LLPanelFriends::confirmModifyRights(rights_map_t& rights, EGrantRevoke comm
 			LLNotificationsUtil::add("GrantModifyRights",
 					args,
 					LLSD(),
-					boost::bind(&LLPanelFriends::modifyRightsConfirmation, this, _1, _2, &rights));
+					boost::bind(&LLPanelFriends::modifyRightsConfirmation, this, _1, _2, heap_rights));
 		}
 		else
 		{
 			LLNotificationsUtil::add("RevokeModifyRights",
 					args,
 					LLSD(),
-					boost::bind(&LLPanelFriends::modifyRightsConfirmation, this, _1, _2, &rights));
+					boost::bind(&LLPanelFriends::modifyRightsConfirmation, this, _1, _2, heap_rights));
 		}
 	}
 	else
@@ -1095,14 +1099,14 @@ void LLPanelFriends::confirmModifyRights(rights_map_t& rights, EGrantRevoke comm
 			LLNotificationsUtil::add("GrantModifyRightsMultiple",
 					LLSD(),
 					LLSD(),
-					boost::bind(&LLPanelFriends::modifyRightsConfirmation, this, _1, _2, &rights));
+					boost::bind(&LLPanelFriends::modifyRightsConfirmation, this, _1, _2, heap_rights));
 		}
 		else
 		{
 			LLNotificationsUtil::add("RevokeModifyRightsMultiple",
 					LLSD(),
 					LLSD(),
-					boost::bind(&LLPanelFriends::modifyRightsConfirmation, this, _1, _2, &rights));
+					boost::bind(&LLPanelFriends::modifyRightsConfirmation, this, _1, _2, heap_rights));
 		}
 	}
 }
