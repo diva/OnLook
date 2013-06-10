@@ -5163,11 +5163,6 @@ la región está llena.
 			Necesitas actualizar tu visor para comprar esta parcela.
 	</notification>
 
-	<notification name="LandBuyAccessBlocked">
-		<tag>fail</tag>
-			No puedes comprar este terreno por tu nivel de calificación. Necesitas validar tu edad y/o instalar un visor actualizado. Por favor dirígete a la base de conocimientos para más detalles sobre como acceder a áreas con calificación de edad.
-	</notification>
-
 	<notification name="CantBuyParcelNotForSale">
 		<tag>fail</tag>
 			Incapaz de comprar, esta parcela no está en venta.
