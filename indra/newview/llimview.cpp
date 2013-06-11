@@ -1703,7 +1703,9 @@ public:
 			std::string saved;
 			if(offline == IM_OFFLINE)
 			{
-				saved = llformat("(Saved %s) ", formatted_time(timestamp).c_str());
+				LLStringUtil::format_map_t args;
+				args["[LONG_TIMESTAMP]"] = formatted_time(timestamp);
+				saved = LLTrans::getString("Saved_message", args);
 			}
 			std::string buffer = separator_string + saved + message.substr(message_offset);
 
