@@ -102,13 +102,13 @@ public:
 			return true;
 		}
 
-		/* Singu TODO
 		if (verb == "inspect")
 		{
-			LLFloaterReg::showInstance("inspect_avatar", LLSD().with("avatar_id", avatar_id));
+			LLAvatarActions::showProfile(avatar_id);
+			//Singu TODO: inspect?
+			//LLFloaterReg::showInstance("inspect_avatar", LLSD().with("avatar_id", avatar_id));
 			return true;
 		}
-		*/
 
 		if (verb == "im")
 		{
