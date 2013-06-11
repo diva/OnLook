@@ -28,7 +28,7 @@
 #define LL_LLGROUPACTIONS_H
 
 class LLFloaterGroupInfo;
-struct LLOfferInfo;
+class LLOfferInfo;
 
 /**
  * Group-related actions (join, leave, new, delete, etc)
