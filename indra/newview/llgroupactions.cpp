@@ -128,7 +128,6 @@ void LLGroupActions::search()
 	LLFloaterDirectory::showGroups();
 }
 
-/* Singu TODO: Voice refactor
 // static
 void LLGroupActions::startCall(const LLUUID& group_id)
 {
@@ -162,7 +161,6 @@ void LLGroupActions::startCall(const LLUUID& group_id)
 
 	make_ui_sound("UISndStartIM");
 }
-*/
 
 // static
 void LLGroupActions::join(const LLUUID& group_id)

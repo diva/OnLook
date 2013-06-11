@@ -36,12 +36,12 @@
 #include "llmultifloater.h"
 #include "llinstantmessage.h"
 #include "lluuid.h"
+#include "llvoicechannel.h"
+
 
 class LLFloaterChatterBox;
-class LLUUID;
 class LLFloaterIMPanel;
 class LLFriendObserver;
-class LLFloaterIM;
 
 class LLIMMgr : public LLSingleton<LLIMMgr>
 {
@@ -131,6 +131,9 @@ public:
 	void notifyNewIM();
 	void clearNewIMNotification();
 
+	// automatically start a call once the session has initialized
+	void autoStartCallOnStartup(const LLUUID& session_id);
+
 	// IM received that you haven't seen yet
 	BOOL getIMReceived() const;
 	int getIMUnreadCount();
@@ -163,6 +166,7 @@ public:
 
 	void clearPendingInvitation(const LLUUID& session_id);
 
+	void processAgentListUpdates(const LLUUID& session_id, const LLSD& body);
 	LLSD getPendingAgentListUpdates(const LLUUID& session_id);
 	void addPendingAgentListUpdates(
 		const LLUUID& sessioN_id,
@@ -177,6 +181,18 @@ public:
 	void updateIgnoreGroup(const LLUUID& group_id, bool ignore);
 	// Returns true if group chat is ignored for the UUID, false if not
 	bool getIgnoreGroup(const LLUUID& group_id) const;
+
+	/**
+	 * Start call in a session
+	 * @return false if voice channel doesn't exist
+	 **/
+	bool startCall(const LLUUID& session_id, LLVoiceChannel::EDirection direction = LLVoiceChannel::OUTGOING_CALL);
+
+	/**
+	 * End call in a session
+	 * @return false if voice channel doesn't exist
+	 **/
+	bool endCall(const LLUUID& session_id);
 
 private:
 	// create a panel and update internal representation for

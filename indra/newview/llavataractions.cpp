@@ -204,11 +204,10 @@ void LLAvatarActions::endIM(const LLUUID& id)
 	}
 }
 
-/* Singu TODO: Voice refactor
 static void on_avatar_name_cache_start_call(const LLUUID& agent_id,
 											const LLAvatarName& av_name)
 {
-	LLUUID session_id = gIMMgr->addSession(LLCacheName::cleanFullName(av_name.getLegacyName()), IM_NOTHING_SPECIAL, agent_id, true);
+	LLUUID session_id = gIMMgr->addSession(LLCacheName::cleanFullName(av_name.getLegacyName()), IM_NOTHING_SPECIAL, agent_id);
 	if (session_id.notNull())
 	{
 		gIMMgr->startCall(session_id);
@@ -270,7 +269,7 @@ void LLAvatarActions::startAdhocCall(const uuid_vec_t& ids)
 	// create the new ad hoc voice session
 	const std::string title = LLTrans::getString("conference-title");
 	LLUUID session_id = gIMMgr->addSession(title, IM_SESSION_CONFERENCE_START,
-										   ids[0], id_array, true);
+										   ids[0], id_array);
 	if (session_id.isNull())
 	{
 		return;
@@ -280,7 +279,6 @@ void LLAvatarActions::startAdhocCall(const uuid_vec_t& ids)
 
 	make_ui_sound("UISndStartIM");
 }
-*/
 
 /* AD *TODO: Is this function needed any more?
 	I fixed it a bit(added check for canCall), but it appears that it is not used

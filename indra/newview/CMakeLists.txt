@@ -521,6 +521,7 @@ set(viewer_SOURCE_FILES
     llvoclouds.cpp
     llvograss.cpp
     llvoground.cpp
+    llvoicecallhandler.cpp
     llvoicechannel.cpp
     llvoiceclient.cpp
     llvoiceremotectrl.cpp
