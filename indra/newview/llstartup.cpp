@@ -392,6 +392,7 @@ bool idle_startup()
 	static LLUUID web_login_key;
 	static std::string password;
 	static std::vector<const char*> requested_options;
+	static std::string redirect_uri; 
 
 	static LLVector3 initial_sun_direction(1.f, 0.f, 0.f);
 	static LLVector3 agent_start_position_region(10.f, 10.f, 10.f);		// default for when no space server
@@ -1256,6 +1257,8 @@ bool idle_startup()
 
 	if (STATE_LOGIN_AUTHENTICATE == LLStartUp::getStartupState())
 	{
+		redirect_uri.clear();
+
 		LL_DEBUGS("AppInit") << "STATE_LOGIN_AUTHENTICATE" << LL_ENDL;
 		set_startup_status(progress, auth_desc, auth_message);
 		
@@ -1343,6 +1346,9 @@ bool idle_startup()
 
 		LLViewerLogin* vl = LLViewerLogin::getInstance();
 		std::string grid_uri = vl->getCurrentGridURI();
+		if(!redirect_uri.empty())
+			grid_uri = redirect_uri;
+		//redirect_uri.clear();	//Should this be cleared immediately after consumption? Doing this will break retrying on http error.
 
 		llinfos << "Authenticating with " << grid_uri << llendl;
 
@@ -1460,6 +1466,24 @@ bool idle_startup()
 				// Yay, login!
 				successful_login = true;
 				Debug(if (gCurlIo) dc::curlio.off());		// Login succeeded: restore dc::curlio to original state.
+			}
+			else if(login_response == "indeterminate")
+			{
+				progress += 0.01f;
+				auth_message = message_response;
+				auth_method = response["next_method"].asString();
+				redirect_uri = response["next_url"].asString();
+				if(auth_method.substr(0, 5) == "login")
+				{
+					auth_desc = LLTrans::getString("LoginAuthenticating");
+				}
+				else
+				{
+					auth_desc = LLTrans::getString("LoginMaintenance");
+				}
+				set_startup_status(progress, auth_desc, auth_message);
+				LLStartUp::setStartupState(STATE_XMLRPC_LEGACY_LOGIN );
+				return false;
 			}
 			else
 			{

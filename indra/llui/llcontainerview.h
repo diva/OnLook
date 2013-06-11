@@ -75,17 +75,17 @@ public:
 	void setDisplayChildren(const BOOL displayChildren);
 	BOOL getDisplayChildren() { return mDisplayChildren; }
 	void setScrollContainer(LLScrollContainer* scroll);
+	void setRectAlpha(F32 alpha) { mRectAlpha = alpha; }
 
  private:
 	LLScrollContainer* mScrollContainer;
 	void arrange(S32 width, S32 height, BOOL called_from_parent = TRUE);
 	BOOL mShowLabel;
-
+	F32 mRectAlpha;
 protected:
 	BOOL mDisplayChildren;
 	std::string mLabel;
 public:
 	BOOL mCollapsible;
-
 };
 #endif // LL_CONTAINERVIEW_

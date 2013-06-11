@@ -218,6 +218,8 @@ void handle_test_load_url(void*);
 //
 // Evil hackish imported globals
 
+class AIHTTPView;
+
 //extern BOOL	gHideSelectedObjects;
 //extern BOOL gAllowSelectAvatar;
 //extern BOOL gDebugAvatarRotation;
@@ -226,6 +228,7 @@ extern BOOL gDebugWindowProc;
 extern BOOL gDebugTextEditorTips;
 extern BOOL gShowOverlayTitle;
 extern BOOL gOcclusionCull;
+extern AIHTTPView* gHttpView;
 //
 // Globals
 //
@@ -813,6 +816,13 @@ void init_client_menu(LLMenuGL* menu)
 										(void*)gTextureCategoryView,
 									   	'6', MASK_CONTROL|MASK_SHIFT ) );
 		}
+
+		sub->addChild(new LLMenuItemCheckGL("HTTP Console", 
+										&toggle_visibility,
+										NULL,
+										&get_visibility,
+										(void*)gHttpView,
+									   	'7', MASK_CONTROL|MASK_SHIFT ) );
 
 		sub->addChild(new LLMenuItemCheckGL("Region Debug Console", handle_singleton_toggle<LLFloaterRegionDebugConsole>, NULL, handle_singleton_check<LLFloaterRegionDebugConsole>,NULL,'`', MASK_CONTROL|MASK_SHIFT));
 

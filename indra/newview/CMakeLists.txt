@@ -79,6 +79,7 @@ include_directories(
 
 set(viewer_SOURCE_FILES
     NACLantispam.cpp
+    aihttpview.cpp
     aoremotectrl.cpp
     ascentfloatercontactgroups.cpp
     ascentkeyword.cpp
@@ -582,6 +583,7 @@ set(viewer_HEADER_FILES
     ViewerInstall.cmake
 
     NACLantispam.h
+    aihttpview.h
     aoremotectrl.h
     ascentfloatercontactgroups.h
     ascentkeyword.h
