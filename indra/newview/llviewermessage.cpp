@@ -1321,8 +1321,7 @@ void inventory_offer_mute_callback(const LLUUID& blocked_id,
 }
 
 LLOfferInfo::LLOfferInfo()
- : LLNotificationResponderInterface()
- , mFromGroup(FALSE)
+ : mFromGroup(FALSE)
  , mFromObject(FALSE)
  , mIM(IM_NOTHING_SPECIAL)
  , mType(LLAssetType::AT_NONE)
