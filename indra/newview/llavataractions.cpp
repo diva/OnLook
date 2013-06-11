@@ -46,6 +46,7 @@
 #include "lltrans.h"
 #include "llvoiceclient.h"
 #include "llweb.h"
+#include "llslurl.h"			// IDEVO
 // [RLVa:KB] - Checked: 2011-04-11 (RLVa-1.3.0h) | Added: RLVa-1.3.0h
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -177,7 +178,7 @@ void LLAvatarActions::startIM(const LLUUID& id)
 		if ( (idSession.notNull()) && (!gIMMgr->hasSession(idSession)) )
 		{
 			make_ui_sound("UISndInvalidOp");
-			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTIM, LLSD().with("RECIPIENT", id/*LLSLURL("agent", id, "completename").getSLURLString()*/));
+			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTIM, LLSD().with("RECIPIENT", LLSLURL("agent", id, "completename").getSLURLString()));
 			return;
 		}
 	}
@@ -231,7 +232,7 @@ void LLAvatarActions::startCall(const LLUUID& id)
 		if ( (idSession.notNull()) && (!gIMMgr->hasSession(idSession)) )
 		{
 			make_ui_sound("UISndInvalidOp");
-			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTIM, LLSD().with("RECIPIENT", id));//LLSLURL("agent", id, "completename").getSLURLString()));
+			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTIM, LLSD().with("RECIPIENT", LLSLURL("agent", id, "completename").getSLURLString()));
 			return;
 		}
 	}
@@ -258,7 +259,7 @@ void LLAvatarActions::startAdhocCall(const uuid_vec_t& ids)
 		if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStartIM(idAgent)) )
 		{
 			make_ui_sound("UISndInvalidOp");
-			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTCONF, LLSD().with("RECIPIENT", idAgent));//LLSLURL("agent", idAgent, "completename").getSLURLString()));
+			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTCONF, LLSD().with("RECIPIENT", LLSLURL("agent", idAgent, "completename").getSLURLString()));
 			return;
 		}
 		id_array.push_back(idAgent);
@@ -312,7 +313,7 @@ void LLAvatarActions::startConference(const uuid_vec_t& ids)
 		if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStartIM(idAgent)) )
 		{
 			make_ui_sound("UISndInvalidOp");
-			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTCONF, LLSD().with("RECIPIENT", idAgent/*LLSLURL("agent", idAgent, "completename").getSLURLString()*/));
+			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTCONF, LLSD().with("RECIPIENT", LLSLURL("agent", idAgent, "completename").getSLURLString()));
 			return;
 		}
 // [/RLVa:KB]

@@ -42,7 +42,7 @@
 #include "groupchatlistener.h"
 #include "hippolimits.h" // for getMaxAgentGroups
 // [RLVa:KB] - Checked: 2011-03-28 (RLVa-1.3.0f)
-//#include "llslurl.h"
+#include "llslurl.h"
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
@@ -55,7 +55,7 @@ class LLGroupHandler : public LLCommandHandler
 {
 public:
 	// requires trusted browser to trigger
-	LLGroupHandler() : LLCommandHandler("group", true/*UNTRUSTED_THROTTLE*/) { }
+	LLGroupHandler() : LLCommandHandler("group", UNTRUSTED_THROTTLE) { }
 	bool handle(const LLSD& tokens, const LLSD& query_map,
 				LLMediaCtrl* web)
 	{
@@ -402,7 +402,7 @@ LLUUID LLGroupActions::startIM(const LLUUID& group_id)
 	if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStartIM(group_id)) && (!gIMMgr->hasSession(group_id)) )
 	{
 		make_ui_sound("UISndInvalidOp");
-		RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTIM, LLSD().with("RECIPIENT", group_id/*LLSLURL("group", group_id, "about").getSLURLString()*/));
+		RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTIM, LLSD().with("RECIPIENT", LLSLURL("group", group_id, "about").getSLURLString()));
 		return LLUUID::null;
 	}
 // [/RLVa:KB]

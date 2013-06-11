@@ -35,6 +35,7 @@
 #include "lldbstrings.h"
 #include "lleconomy.h"
 #include "llgl.h"
+#include "llmediaentry.h"
 #include "llrender.h"
 #include "llnotifications.h"
 #include "llpermissions.h"
@@ -1895,47 +1896,79 @@ void LLSelectMgr::selectionSetFullbright(U8 fullbright)
 	getSelection()->applyToObjects(&sendfunc);
 }
 
-void LLSelectMgr::selectionSetMediaTypeAndURL(U8 media_type, const std::string& media_url)
-{
-	U8 media_flags = LLTextureEntry::MF_NONE;
-	if (media_type == LLViewerObject::MEDIA_SET)
-	{
-		media_flags = LLTextureEntry::MF_HAS_MEDIA;
-	}
-	
+// This function expects media_data to be a map containing relevant
+// media data name/value pairs (e.g. home_url, etc.)
+void LLSelectMgr::selectionSetMedia(U8 media_type, const LLSD &media_data)
+{	
 	struct f : public LLSelectedTEFunctor
 	{
 		U8 mMediaFlags;
-		f(const U8& t) : mMediaFlags(t) {}
+		const LLSD &mMediaData;
+		f(const U8& t, const LLSD& d) : mMediaFlags(t), mMediaData(d) {}
 		bool apply(LLViewerObject* object, S32 te)
 		{
 			if (object->permModify())
 			{
-				// update viewer side color in anticipation of update from simulator
-				object->setTEMediaFlags(te, mMediaFlags);
+				// If we are adding media, then check the current state of the
+				// media data on this face.  
+				//  - If it does not have media, AND we are NOT setting the HOME URL, then do NOT add media to this
+				// face.
+				//  - If it does not have media, and we ARE setting the HOME URL, add media to this face.
+				//  - If it does already have media, add/update media to/on this face
+				// If we are removing media, just do it (ignore the passed-in LLSD).
+				if (mMediaFlags & LLTextureEntry::MF_HAS_MEDIA)
+				{
+					llassert(mMediaData.isMap());
+					const LLTextureEntry *texture_entry = object->getTE(te);
+					if (!mMediaData.isMap() ||
+						(NULL != texture_entry) && !texture_entry->hasMedia() && !mMediaData.has(LLMediaEntry::HOME_URL_KEY))
+					{
+						// skip adding/updating media
+					}
+					else {
+						// Add/update media
+						object->setTEMediaFlags(te, mMediaFlags);
+						LLVOVolume *vo = dynamic_cast<LLVOVolume*>(object);
+						llassert(NULL != vo);
+						if (NULL != vo) 
+						{
+							vo->syncMediaData(te, mMediaData, true/*merge*/, true/*ignore_agent*/);
+						}
+					}
+				}
+				else
+				{
+					// delete media (or just set the flags)
+					object->setTEMediaFlags(te, mMediaFlags);
+				}
 			}
 			return true;
 		}
-	} setfunc(media_flags);
+	} setfunc(media_type, media_data);
 	getSelection()->applyToTEs(&setfunc);
-
-	struct g : public LLSelectedObjectFunctor
+	
+	struct f2 : public LLSelectedObjectFunctor
 	{
-		U8 media_type;
-		const std::string& media_url ;
-		g(U8 a, const std::string& b) : media_type(a), media_url(b) {}
 		virtual bool apply(LLViewerObject* object)
 		{
 			if (object->permModify())
 			{
 				object->sendTEUpdate();
-				object->setMediaType(media_type);
-				object->setMediaURL(media_url);
+				LLVOVolume *vo = dynamic_cast<LLVOVolume*>(object);
+				llassert(NULL != vo);
+				// It's okay to skip this object if hasMedia() is false...
+				// the sendTEUpdate() above would remove all media data if it were
+				// there.
+                if (NULL != vo && vo->hasMedia())
+                {
+                    // Send updated media data FOR THE ENTIRE OBJECT
+                    vo->sendMediaDataUpdate();
+                }
 			}
 			return true;
 		}
-	} sendfunc(media_type, media_url);
-	getSelection()->applyToObjects(&sendfunc);
+	} func2;
+	mSelectedObjects->applyToObjects( &func2 );
 }
 
 void LLSelectMgr::selectionSetGlow(F32 glow)
@@ -4097,6 +4130,7 @@ void LLSelectMgr::deselectAllIfTooFar()
 	if ( (gSavedSettings.getBOOL("LimitSelectDistance") || (fRlvFartouch) )
 // [/RLVa:KB]
 		&& (!mSelectedObjects->getPrimaryObject() || !mSelectedObjects->getPrimaryObject()->isAvatar())
+		&& (mSelectedObjects->getPrimaryObject() != LLViewerMediaFocus::getInstance()->getFocusedObject())
 		&& !mSelectedObjects->isAttachment()
 		&& !selectionCenter.isExactlyZero())
 	{
@@ -5538,7 +5572,7 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 	{
 		LLUUID inspect_item_id = LLFloaterInspect::getSelectedUUID();
 
-		LLUUID focus_item_id = LLViewerMediaFocus::getInstance()->getSelectedUUID();
+		LLUUID focus_item_id = LLViewerMediaFocus::getInstance()->getFocusedObjectID();
 		// <edit>
 		//for (S32 pass = 0; pass < 2; pass++)
 		//{

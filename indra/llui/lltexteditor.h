@@ -258,10 +258,6 @@ public:
 
 	// Callbacks
 	static void		setLinkColor(LLColor4 color) { mLinkColor = color; }
-	static void		setURLCallbacks(void (*callback1) (const std::string& url), 
-									bool (*callback2) (const std::string& url),      
-									bool (*callback3) (const std::string& url)	) 
-									{ mURLcallback = callback1; mSecondlifeURLcallback = callback2; mSecondlifeURLcallbackRightClick = callback3;}
 
 	void			setOnScrollEndCallback(void (*callback)(void*), void* userdata);
 
@@ -509,9 +505,6 @@ private:
 	//
 	LLKeywords		mKeywords;
 	static LLColor4 mLinkColor;
-	static void			(*mURLcallback) (const std::string& url);
-	static bool			(*mSecondlifeURLcallback) (const std::string& url);
-	static bool			(*mSecondlifeURLcallbackRightClick) (const std::string& url);
 
 	// Concrete LLTextCmd sub-classes used by the LLTextEditor base class
 	class LLTextCmdInsert;

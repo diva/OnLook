@@ -100,6 +100,7 @@
 #include "llinstancetracker.h"
 
 // and we need this to manage the notification callbacks
+#include "llavatarname.h"
 #include "llevents.h"
 #include "llfunctorregistry.h"
 #include "llui.h"
@@ -791,7 +792,5 @@ private:
 
 	LLNotificationMap mUniqueNotifications;
 };
-
-
 #endif//LL_LLNOTIFICATIONS_H
 

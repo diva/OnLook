@@ -163,7 +163,8 @@ public:
 	/*virtual*/ BOOL handleRightMouseUp(LLWindow *window,  LLCoordGL pos, MASK mask);
 	/*virtual*/ BOOL handleMiddleMouseDown(LLWindow *window,  LLCoordGL pos, MASK mask);
 	/*virtual*/ BOOL handleMiddleMouseUp(LLWindow *window,  LLCoordGL pos, MASK mask);
-	/*virtual*/ void handleMouseMove(LLWindow *window,  LLCoordGL pos, MASK mask);
+	/*virtual*/ LLWindowCallbacks::DragNDropResult handleDragNDrop(LLWindow *window, LLCoordGL pos, MASK mask, LLWindowCallbacks::DragNDropAction action, std::string data);
+				void handleMouseMove(LLWindow *window,  LLCoordGL pos, MASK mask);
 	/*virtual*/ void handleMouseLeave(LLWindow *window);
 	/*virtual*/ void handleResize(LLWindow *window,  S32 x,  S32 y);
 	/*virtual*/ void handleFocus(LLWindow *window);
@@ -282,8 +283,10 @@ public:
 
 	void			updateObjectUnderCursor();
 
-	void			updateUI();							// Once per frame, update UI based on mouse position
+	void			updateUI();		// Once per frame, update UI based on mouse position, calls following update* functions
+	void				updateLayout();						
 	void				updateMouseDelta();		
+	void				updateKeyboardFocus();		
 
 	BOOL			handleKey(KEY key, MASK mask);
 	void			handleScrollWheel	(S32 clicks);
@@ -434,8 +437,6 @@ protected:
 	// Variables used for tool override switching based on modifier keys.  JC
 	MASK			mLastMask;			// used to detect changes in modifier mask
 	LLTool*			mToolStored;		// the tool we're overriding
-	BOOL			mSuppressToolbox;	// sometimes hide the toolbox, despite
-										// having a camera tool selected
 	BOOL			mHideCursorPermanent;	// true during drags, mouselook
 	BOOL            mCursorHidden;
 	LLPickInfo		mLastPick;
@@ -462,6 +463,9 @@ protected:
 	static std::string sSnapshotDir;
 
 	static std::string sMovieBaseName;
+
+	// Object temporarily hovered over while dragging
+	LLPointer<LLViewerObject>	mDragHoveredObject;
 };	
 
 class LLBottomPanel : public LLPanel

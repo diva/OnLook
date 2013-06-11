@@ -93,7 +93,7 @@ class LLPreferencesHandler : public LLCommandHandler
 {
 public:
 	// requires trusted browser
-	LLPreferencesHandler() : LLCommandHandler("preferences", true) { }
+	LLPreferencesHandler() : LLCommandHandler("preferences", UNTRUSTED_BLOCK) { }
 	bool handle(const LLSD& tokens, const LLSD& query_map,
 				LLMediaCtrl* web)
 	{
@@ -469,7 +469,7 @@ void LLFloaterPreference::onBtnOK( void* userdata )
 		llinfos << "Can't close preferences!" << llendl;
 	}
 
-	LLPanelLogin::refreshLocation( false );
+	LLPanelLogin::updateLocationSelectorsVisibility();
 }
 
 
@@ -480,14 +480,14 @@ void LLFloaterPreference::onBtnApply( void* userdata )
 	if (fp->hasFocus())
 	{
 		LLUICtrl* cur_focus = dynamic_cast<LLUICtrl*>(gFocusMgr.getKeyboardFocus());
-		if (cur_focus->acceptsTextInput())
+		if (cur_focus && cur_focus->acceptsTextInput())
 		{
 			cur_focus->onCommit();
 		}
 	}
 	fp->apply();
 
-	LLPanelLogin::refreshLocation( false );
+	LLPanelLogin::updateLocationSelectorsVisibility();
 }
 
 

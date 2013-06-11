@@ -181,7 +181,7 @@ class LLRegionHandler : public LLCommandHandler
 {
 public:
 	// requests will be throttled from a non-trusted browser
-	LLRegionHandler() : LLCommandHandler("region", /*V3: UNTRUSTED_THROTTLE*/ true) {}
+	LLRegionHandler() : LLCommandHandler("region", UNTRUSTED_THROTTLE) {}
 
 	bool handle(const LLSD& params, const LLSD& query_map, LLMediaCtrl* web)
 	{
@@ -204,7 +204,7 @@ public:
 		}
 
 		// Process the SLapp as if it was a secondlife://{PLACE} SLurl
-		LLURLDispatcher::dispatch(url, /*V3: "clicked",*/ web, true);
+		LLURLDispatcher::dispatch(url, "clicked", web, true);
 		return true;
 	}
 };
@@ -1658,8 +1658,8 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("MeshUploadFlag");
 	capabilityNames.append("NavMeshGenerationStatus");
 	capabilityNames.append("NewFileAgentInventory");
-	/*capabilityNames.append("ObjectMedia");
-	capabilityNames.append("ObjectMediaNavigate");*/
+	capabilityNames.append("ObjectMedia");
+	capabilityNames.append("ObjectMediaNavigate");
 	capabilityNames.append("ObjectNavMeshProperties");
 	capabilityNames.append("ParcelNavigateMedia"); //Singu Note: Removed by Baker, do we need this?
 	capabilityNames.append("ParcelPropertiesUpdate");

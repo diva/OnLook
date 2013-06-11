@@ -132,7 +132,7 @@
                              halign="center" height="18" label="?" label_selected="?" left="-25"
                              mouse_opaque="true" name="?" width="18" />
 			<web_browser bottom="25" follows="top|left|bottom|right" font="SansSerifSmall" left="10"
-			     name="find_browser" right="-10" top="-60" />
+			     name="find_browser" trusted_content="true" right="-10" top="-60" />
 			<text bottom="5" follows="bottom|left" halign="left" height="16" left="10"
 			     name="status_text" width="150" />
 			<string name="loading_text">
@@ -391,6 +391,7 @@
         <web_browser name="showcase_browser"
           bottom="25"
           follows="top|left|bottom|right"
+          trusted_content="true"
           font="SansSerifSmall"
           left="10"
           right="-10"
@@ -749,7 +750,7 @@ To buy direct, visit the land and click on the place name in the title bar.
       <button bottom_delta="0" follows="top|left" height="25" label="" left_delta="27" name="forward_btn" width="25" image_overlay="go-next-4.png" />
       <button bottom_delta="0" follows="top|left" height="25" label="" left_delta="27" name="reload_btn" width="25" image_overlay="view-refresh-5.png"/>
       <button bottom_delta="0" follows="top|left" height="25" label="" tooltip="reset" left_delta="27" name="reset_btn" width="25" image_overlay="go-home-4.png"/>
-      <web_browser name="market_browser" bottom="25" follows="all" left="10" right="-10" top="-40"/>
+      <web_browser name="market_browser" trusted_content="true" bottom="25" follows="all" left="10" right="-10" top="-40"/>
       <text bottom="5" follows="bottom|left" left="10" height="16" name="status_text"/>
       <string name="loading_text">Loading...</string>
       <string name="done_text">Done</string>

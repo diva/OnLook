@@ -75,6 +75,7 @@
 #include "llmapimagetype.h"
 #include "llweb.h"
 #include "llwindow.h"			// copyTextToClipboard()
+#include "llslurl.h"
 
 
 // [RLVa:KB]
@@ -728,7 +729,7 @@ void LLFloaterWorldMap::updateLocation()
 				
 				// Figure out where user is
 				// Set the current SLURL
-				mSLURL = LLURLDispatcher::buildSLURL(agent_sim_name, x, y, z);
+				mSLURL = LLSLURL(agent_sim_name, LLVector3(x, y, z)).getSLURLString();
 
 // [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
 				if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
@@ -774,7 +775,7 @@ void LLFloaterWorldMap::updateLocation()
 			S32 x = llround( (F32)fmod( (F32)coord_pos[VX], (F32)REGION_WIDTH_METERS ) );
 			S32 y = llround( (F32)fmod( (F32)coord_pos[VY], (F32)REGION_WIDTH_METERS ) );
 			S32 z = llround( (F32)coord_pos[VZ] );
-			mSLURL = LLURLDispatcher::buildSLURL(sim_name, x, y, z);
+			mSLURL = LLSLURL(sim_name, LLVector3(x, y, z)).getSLURLString();
 		}
 		else
 		{	// Empty SLURL will disable the "Copy SLURL to clipboard" button

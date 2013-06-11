@@ -285,8 +285,12 @@ void LLUICtrlFactory::buildFloaterInternal(LLFloater *floaterp, LLXMLNodePtr &ro
 		mFactoryStack.push_front(factory_map);
 	}
 
+	// for local registry callbacks; define in constructor, referenced in XUI or postBuild
+	floaterp->getCommitCallbackRegistrar().pushScope();
+	floaterp->getEnableCallbackRegistrar().pushScope();
 	floaterp->initFloaterXML(root, NULL, this, open);	/* Flawfinder: ignore */
-
+	floaterp->getCommitCallbackRegistrar().popScope();
+	floaterp->getEnableCallbackRegistrar().popScope();
 	if (LLUI::sShowXUINames)
 	{
 		floaterp->setToolTip(filename);
@@ -381,8 +385,13 @@ BOOL LLUICtrlFactory::buildPanelInternal(LLPanel* panelp, LLXMLNodePtr &root, co
 		mFactoryStack.push_front(factory_map);
 	}
 
+	// for local registry callbacks; define in constructor, referenced in XUI or postBuild
+	panelp->getCommitCallbackRegistrar().pushScope();
+	panelp->getEnableCallbackRegistrar().pushScope();
 	didPost = panelp->initPanelXML(root, NULL, this);
-	
+	panelp->getCommitCallbackRegistrar().popScope();
+	panelp->getEnableCallbackRegistrar().popScope();
+
 	if (LLUI::sShowXUINames)
 	{
 		panelp->setToolTip(filename);

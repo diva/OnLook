@@ -528,7 +528,7 @@ public:
 	void selectionSetTexGen( U8 texgen );
 	void selectionSetShiny( U8 shiny );
 	void selectionSetFullbright( U8 fullbright );
-	void selectionSetMediaTypeAndURL(U8 media_type, const std::string& media_url);
+	void selectionSetMedia( U8 media_type, const LLSD &media_data );
 	void selectionSetClickAction(U8 action);
 	void selectionSetIncludeInSearch(bool include_in_search);
 	void selectionSetGlow(const F32 glow);
@@ -663,6 +663,8 @@ public:
 	void sendAttach(U8 attachment_point, bool replace=true);
 	void sendDetach();
 	void sendDropAttachment();
+	void sendLink();
+	void sendDelink();
 	//void sendHinge(U8 type);
 	//void sendDehinge();
 	void sendSelect();
@@ -703,8 +705,7 @@ private:
 							void (*pack_body)(LLSelectNode* node, void *user_data), 
 							void *user_data,
 							ESendType send_type);
-	void sendLink();
-	void sendDelink();
+
 
 	static void packAgentID(	void *);
 	static void packAgentAndSessionID(void* user_data);

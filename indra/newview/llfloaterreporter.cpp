@@ -51,9 +51,11 @@
 
 // viewer project includes
 #include "llagent.h"
+#include "llagentui.h"
 #include "llbutton.h"
 #include "lltexturectrl.h"
 #include "llscrolllistctrl.h"
+#include "llslurl.h"
 #include "lldispatcher.h"
 #include "llviewerobject.h"
 #include "llviewerregion.h"
@@ -122,7 +124,9 @@ void LLFloaterReporter::processRegionInfo(LLMessageSystem* msg)
 // virtual
 BOOL LLFloaterReporter::postBuild()
 {
-	getChild<LLUICtrl>("abuse_location_edit")->setValue(gAgent.getSLURL());
+	LLSLURL slurl;
+	LLAgentUI::buildSLURL(slurl);
+	getChild<LLUICtrl>("abuse_location_edit")->setValue(slurl.getSLURLString());
 
 	enableControls(TRUE);
 

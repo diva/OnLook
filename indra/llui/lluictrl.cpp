@@ -467,6 +467,37 @@ void LLUICtrl::initFromXML(LLXMLNodePtr node, LLView* parent)
 
 	setTabStop(has_tab_stop);
 
+	std::string str = node->getName()->mString;
+	std::string attrib_str;
+	LLXMLNodePtr child_node;
+	if(node->getChild((str+".commit_callback").c_str(),child_node,false))
+	{
+		if(child_node->getAttributeString("function",attrib_str))
+		{
+			commit_callback_t* func = (CommitCallbackRegistry::getValue(attrib_str));
+			if (func)
+			{
+				if(child_node->getAttributeString("parameter",attrib_str))
+					setCommitCallback(boost::bind((*func), this, LLSD(attrib_str)));
+				else
+					setCommitCallback(commit_signal_t::slot_type(*func));
+			}
+		}
+	}
+	if(node->getChild((str+".validate_callback").c_str(),child_node,false))
+	{
+		if(child_node->getAttributeString("function",attrib_str))
+		{
+			enable_callback_t* func = (EnableCallbackRegistry::getValue(attrib_str));
+			if (func)
+			{
+				if(child_node->getAttributeString("parameter",attrib_str))
+					setValidateCallback(boost::bind((*func), this, LLSD(attrib_str)));
+				else
+					setValidateCallback(enable_signal_t::slot_type(*func));
+			}
+		}
+	}
 	LLView::initFromXML(node, parent);
 }
 

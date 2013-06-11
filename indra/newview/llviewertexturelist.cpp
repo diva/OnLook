@@ -185,9 +185,7 @@ void LLViewerTextureList::doPreloadImages()
 
 static std::string get_texture_list_name()
 {
-	//return std::string("texture_list_") + gSavedSettings.getString("LoginLocation") + ".xml";
-	bool login_last = gSavedSettings.getBOOL("LoginLastLocation");
-	return std::string("texture_list_") + (login_last?"last":"home") + ".xml";
+	return std::string("texture_list_") + gSavedSettings.getString("LoginLocation") + ".xml";
 }
 
 void LLViewerTextureList::doPrefetchImages()
@@ -744,12 +742,7 @@ void LLViewerTextureList::updateImages(F32 max_time)
 			}
 		}
 	}
-	//Required for old media system
-	if (!gNoRender && !gGLManager.mIsDisabled)
-	{
-		LLFastTimer t(FTM_IMAGE_MEDIA);
-		LLViewerMedia::updateMedia();
-	}
+
 	{
 		LLFastTimer t(FTM_IMAGE_STATS);
 		updateImagesUpdateStats();
