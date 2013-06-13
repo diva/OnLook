@@ -2459,6 +2459,7 @@ void LLViewerWindow::reshape(S32 width, S32 height)
 		LLViewerStats::getInstance()->setStat(LLViewerStats::ST_WINDOW_WIDTH, (F64)width);
 		LLViewerStats::getInstance()->setStat(LLViewerStats::ST_WINDOW_HEIGHT, (F64)height);
 		gResizeScreenTexture = TRUE;
+		LLLayoutStack::updateClass();
 	}
 }
 
@@ -3038,6 +3039,8 @@ void LLViewerWindow::updateUI()
 	LLFastTimer t(ftm);
 
 	static std::string last_handle_msg;
+	// animate layout stacks so we have up to date rect for world view
+	LLLayoutStack::updateClass();
 
 	LLView::sMouseHandlerMessage.clear();
 

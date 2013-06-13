@@ -64,11 +64,7 @@
 			<panel background_visible="false" border="false" bottom="0" name="voice_remote" />
 		</layout_panel>
 		<layout_panel auto_resize="false" bottom="0" mouse_opaque="false"
-		     name="AdvSettings_container" use_bounding_rect="true" user_resize="false" min_width="30" >
-			<panel background_visible="false" border="false" bottom="0" name="Adv_Settings" />
-		</layout_panel>
-		<layout_panel auto_resize="false" bottom="0" mouse_opaque="false"
-		     name="AdvSettings_container_exp" use_bounding_rect="true" user_resize="false" min_width="200" >
+		     name="AdvSettings_container" use_bounding_rect="true" user_resize="false" min_width="30" width="30" >
 			<panel background_visible="false" border="false" bottom="0" name="Adv_Settings" />
 		</layout_panel>
 	</layout_stack>

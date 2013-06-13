@@ -34,6 +34,7 @@
 #define LL_LLOVERLAYBAR_H
 
 #include "llpanel.h"
+#include "lllayoutstack.h"
 
 // "Constants" loaded from settings.xml at start time
 extern S32 STATUS_BAR_HEIGHT;
@@ -55,7 +56,7 @@ class AORemoteCtrl;
 class LLChatBar;
 
 class LLOverlayBar
-:	public LLPanel
+:	public LLLayoutPanel
 {
 public:
 	LLOverlayBar();
@@ -112,7 +113,6 @@ protected:
 	LLMediaRemoteCtrl*	mMediaRemote;
 	LLVoiceRemoteCtrl*	mVoiceRemote;
 	LLButton*	mCancelBtn;
-	wlfPanel_AdvSettings*	mAdvSettings;
 	AORemoteCtrl*			mAORemote;
 	bool mBuilt;	// dialog constructed yet?
 	enum { STOPPED=0, PLAYING=1, PAUSED=2 };

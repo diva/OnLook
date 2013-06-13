@@ -35,7 +35,7 @@
         follows="left|top"
 	height="25"
 	label=""
-	image_overlay="go-previous-4.png"
+	image_overlay="go-previous.png"
 	left="0"
 	name="back"
         width="25" >
@@ -46,7 +46,7 @@
         bottom_delta="0"
 	follows="left|top"
 	height="25" label=""
-	image_overlay="go-next-4.png"
+	image_overlay="go-next.png"
 	left_delta="27"
         name="forward"
 	width="25" >
@@ -59,7 +59,7 @@
 	follows="left|top"
 	height="25"
 	label=""
-	image_overlay="media_btn_stoploading.png"
+	image_overlay="go-stop.png"
 	name="stop"
 	left_delta="27"
 	width="25">
@@ -71,7 +71,7 @@
 	follows="left|top"
 	height="25"
 	label=""
-	image_overlay="view-refresh-5.png" 
+	image_overlay="go-reload.png" 
 	name="reload"
 	left_delta="0"
 	width="25" >

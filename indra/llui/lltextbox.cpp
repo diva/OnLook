@@ -197,12 +197,16 @@ void LLTextBox::setWrappedText(const LLStringExplicit& in_text, F32 max_width)
 	{
 		max_width = (F32)getRect().getWidth();
 	}
+	if(max_width <= 0.0f)
+	{
+		return;	//It makes no sense to try to wrap text to fit zero-width columns. (In fact, it causes infinite recursion in the following while loop!)
+	}
 
 	LLWString wtext = utf8str_to_wstring(in_text);
 	LLWString final_wtext;
 
 	LLWString::size_type  cur = 0;;
-	LLWString::size_type  len = wtext.size();
+	LLWString::size_type  len = wtext.length();
 
 	while (cur < len)
 	{

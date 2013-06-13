@@ -24,10 +24,7 @@
 		<layout_panel name="voice_remote_container">
 			<panel name="voice_remote"/>
 		</layout_panel>
-		<layout_panel name="AdvSettings_container">
-			<panel name="Adv_Settings"/>
-		</layout_panel>
-		<layout_panel name="AdvSettings_container_exp" min_width="230">
+		<layout_panel name="AdvSettings_container" expanded_min_dim="230">
 			<panel name="Adv_Settings"/>
 		</layout_panel>
 	</layout_stack>

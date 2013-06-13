@@ -115,9 +115,7 @@ void* LLOverlayBar::createVoiceRemote(void* userdata)
 
 void* LLOverlayBar::createAdvSettings(void* userdata)
 {
-	LLOverlayBar *self = (LLOverlayBar*)userdata;	
-	self->mAdvSettings = new wlfPanel_AdvSettings();
-	return self->mAdvSettings;
+	return wlfPanel_AdvSettings::getInstance();
 }
 
 void* LLOverlayBar::createAORemote(void* userdata)
@@ -134,7 +132,7 @@ void* LLOverlayBar::createChatBar(void* userdata)
 }
 
 LLOverlayBar::LLOverlayBar()
-	:	LLPanel(),
+	:	LLLayoutPanel(),
 		mMediaRemote(NULL),
 		mVoiceRemote(NULL),
 		mAORemote(NULL),
@@ -159,8 +157,18 @@ LLOverlayBar::LLOverlayBar()
 bool updateAdvSettingsPopup(const LLSD &data)
 {
 	LLOverlayBar::sAdvSettingsPopup = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
-	gOverlayBar->childSetVisible("AdvSettings_container", !LLOverlayBar::sAdvSettingsPopup);
-	gOverlayBar->childSetVisible("AdvSettings_container_exp", LLOverlayBar::sAdvSettingsPopup);
+	wlfPanel_AdvSettings::updateClass();
+	if(LLLayoutStack* layout_stack = gOverlayBar->findChild<LLLayoutStack>("overlay_layout_panel"))
+	{
+		LLLayoutPanel* layout_panel = layout_stack->findChild<LLLayoutPanel>("AdvSettings_container");
+		if(layout_panel)
+		{
+			layout_stack->collapsePanel(layout_panel,LLOverlayBar::sAdvSettingsPopup);
+			if(!LLOverlayBar::sAdvSettingsPopup)
+				layout_panel->setTargetDim(layout_panel->getChild<LLView>("Adv_Settings")->getBoundingRect().getWidth());
+		}
+	}
+	
 	return true;
 }
 
@@ -210,10 +218,19 @@ BOOL LLOverlayBar::postBuild()
 	gSavedSettings.getControl("wlfAdvSettingsPopup")->getSignal()->connect(boost::bind(&updateAdvSettingsPopup,_2));
 	gSavedSettings.getControl("ChatVisible")->getSignal()->connect(boost::bind(&updateChatVisible,_2));
 	gSavedSettings.getControl("EnableAORemote")->getSignal()->connect(boost::bind(&updateAORemote,_2));
-	childSetVisible("AdvSettings_container", !sAdvSettingsPopup);
-	childSetVisible("AdvSettings_container_exp", sAdvSettingsPopup);
 	childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));	
 
+	wlfPanel_AdvSettings::updateClass();
+	if(LLLayoutStack* layout_stack = findChild<LLLayoutStack>("overlay_layout_panel"))
+	{
+		LLLayoutPanel* layout_panel = layout_stack->findChild<LLLayoutPanel>("AdvSettings_container");
+		if(layout_panel)
+		{
+			layout_stack->collapsePanel(layout_panel,LLOverlayBar::sAdvSettingsPopup);
+			if(!LLOverlayBar::sAdvSettingsPopup)
+				layout_panel->setTargetDim(layout_panel->getChild<LLView>("Adv_Settings")->getBoundingRect().getWidth());
+		}
+	}
 
 	return TRUE;
 }
@@ -342,7 +359,6 @@ void LLOverlayBar::refresh()
 			childSetVisible("media_remote_container", FALSE);
 			childSetVisible("voice_remote_container", FALSE);
 			childSetVisible("AdvSettings_container", FALSE);
-			childSetVisible("AdvSettings_container_exp", FALSE);
 			childSetVisible("ao_remote_container", FALSE);
 			childSetVisible("state_management_buttons_container", FALSE);
 		}
@@ -351,8 +367,7 @@ void LLOverlayBar::refresh()
 			// update "remotes"
 			childSetVisible("media_remote_container", TRUE);
 			childSetVisible("voice_remote_container", LLVoiceClient::voiceEnabled());
-			childSetVisible("AdvSettings_container", !sAdvSettingsPopup);//!gSavedSettings.getBOOL("wlfAdvSettingsPopup")); 
-			childSetVisible("AdvSettings_container_exp", sAdvSettingsPopup);//gSavedSettings.getBOOL("wlfAdvSettingsPopup")); 
+			childSetVisible("AdvSettings_container", TRUE);
 			childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));
 			childSetVisible("state_management_buttons_container", TRUE);
 		}

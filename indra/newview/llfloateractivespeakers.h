@@ -39,6 +39,7 @@
 #include "llvoiceclient.h"
 #include "llframetimer.h"
 #include "llevent.h"
+#include "lllayoutstack.h"
 
 #include <list>
 #include <boost/signals2.hpp>
@@ -209,7 +210,7 @@ protected:
 	LLPanelActiveSpeakers*	mPanel;
 };
 
-class LLPanelActiveSpeakers : public LLPanel
+class LLPanelActiveSpeakers : public LLLayoutPanel
 {
 public:
 	LLPanelActiveSpeakers(LLSpeakerMgr* data_source, BOOL show_text_chatters);

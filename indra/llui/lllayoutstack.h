@@ -29,6 +29,7 @@
 #define LL_LLLAYOUTSTACK_H
 
 #include "llpanel.h"
+#include "llresizebar.h"
 
 
 class LLLayoutPanel;
@@ -41,73 +42,138 @@ public:
 	{
 		HORIZONTAL,
 		VERTICAL
-	} eLayoutOrientation;
+	} ELayoutOrientation;
 
-	LLLayoutStack(eLayoutOrientation orientation);
+	LLLayoutStack(ELayoutOrientation orientation, S32 border_size, bool animate, bool clip, F32 open_time_constant, F32 close_time_constant, F32 resize_bar_overlap);
 	virtual ~LLLayoutStack();
 
 	/*virtual*/ void draw();
-	/*virtual*/ LLXMLNodePtr getXML(bool save_children = true) const;
-	/*virtual*/ void removeChild(LLView* ctrl);
+	/*virtual*/ void removeChild(LLView*);
+	/*virtual*/ BOOL postBuild();
+	/*virtual*/ bool addChild(LLView* child, S32 tab_groupdatefractuiona = 0);
+	/*virtual*/ void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
 
+	/*virtual*/ LLXMLNodePtr getXML(bool save_children = true) const;
 	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
 
-	S32 getMinWidth() const { return mMinWidth; }
-	S32 getMinHeight() const { return mMinHeight; }
-	
 	typedef enum e_animate
 	{
 		NO_ANIMATE,
 		ANIMATE
 	} EAnimate;
 
-	void addPanel(LLPanel* panel, S32 min_width, S32 min_height, BOOL auto_resize, BOOL user_resize, EAnimate animate = NO_ANIMATE, S32 index = S32_MAX);
-	void removePanel(LLPanel* panel);
+	void addPanel(LLLayoutPanel* panel, EAnimate animate = NO_ANIMATE);
 	void collapsePanel(LLPanel* panel, BOOL collapsed = TRUE);
 	S32 getNumPanels() { return mPanels.size(); }
 
-	void updateLayout(BOOL force_resize = FALSE);
+	void updateLayout();
 
 	S32 getPanelSpacing() const { return mPanelSpacing; }
-private:
 	
-	void calcMinExtents();
-	S32 getDefaultHeight(S32 cur_height);
-	S32 getDefaultWidth(S32 cur_width);
+	static void updateClass();
 
-	const eLayoutOrientation mOrientation;
+protected:
+	LLLayoutStack(const Params&);
+	friend class LLUICtrlFactory;
+	friend class LLLayoutPanel;
+
+private:
+	void updateResizeBarLimits();
+	bool animatePanels();
+	void createResizeBar(LLLayoutPanel* panel);
+
+	const ELayoutOrientation mOrientation;
 
 	typedef std::vector<LLLayoutPanel*> e_panel_list_t;
 	e_panel_list_t mPanels;
-	LLLayoutPanel* findEmbeddedPanel(LLPanel* panelp) const;
 
-	S32 mMinWidth;
-	S32 mMinHeight;
+	LLLayoutPanel* findEmbeddedPanel(LLPanel* panelp) const;
+	LLLayoutPanel* findEmbeddedPanelByName(const std::string& name) const;
+	void updateFractionalSizes();
+	void normalizeFractionalSizes();
+	void updatePanelRect( LLLayoutPanel* param1, const LLRect& new_rect );
+
 	S32 mPanelSpacing;
+
+	// true if we already applied animation this frame
+	bool mAnimatedThisFrame;
+	bool mAnimate;
+	bool mClip;
+	F32  mOpenTimeConstant;
+	F32  mCloseTimeConstant;
+	bool mNeedsLayout;
+	S32  mResizeBarOverlap;
 }; // end class LLLayoutStack
 
-class LLLayoutPanel
-{
-	friend class LLLayoutStack;
-	friend class LLUICtrlFactory;
-	friend struct DeletePointer;
-	LLLayoutPanel(LLPanel* panelp, LLLayoutStack::eLayoutOrientation orientation, S32 min_width, S32 min_height, BOOL auto_resize, BOOL user_resize);
 
+class LLLayoutPanel : public LLPanel
+{
+friend class LLLayoutStack;
+friend class LLUICtrlFactory;
+public:
 	~LLLayoutPanel();
 
-	F32 getCollapseFactor();
-	LLPanel* mPanel;
-	S32 mMinWidth;
-	S32 mMinHeight;
-	bool mAutoResize;
-	bool mUserResize;
-	bool mCollapsed;
+	void initFromParams(const Params& p);
+	static LLView* fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFactory *factory);
 
+	void handleReshape(const LLRect& new_rect, bool by_user);
 
-	F32 mVisibleAmt;
-	F32 mCollapseAmt;
-	LLLayoutStack::eLayoutOrientation mOrientation;
+	void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
+	
+
+	void setVisible(BOOL visible);
+
+	S32 getLayoutDim() const;
+	S32 getTargetDim() const;
+	void setTargetDim(S32 value);
+	S32 getMinDim() const { return llmax(0, mMinDim); }
+	void setMinDim(S32 value) { mMinDim = value; }
+
+	S32 getExpandedMinDim() const { return mExpandedMinDim >= 0 ? mExpandedMinDim : getMinDim(); }
+	void setExpandedMinDim(S32 value) { mExpandedMinDim = value; }
+	
+	S32 getRelevantMinDim() const
+	{
+		S32 min_dim = mMinDim;
+		
+		if (!mCollapsed)
+		{
+			min_dim = getExpandedMinDim();
+		}
+		
+		return min_dim;
+	}
+
+	F32 getAutoResizeFactor() const;
+	F32 getVisibleAmount() const;
+	S32 getVisibleDim() const;
+	LLResizeBar* getResizeBar() { return mResizeBar; }
+
+	bool isCollapsed() const { return mCollapsed;}
+
+	void setOrientation(LLLayoutStack::ELayoutOrientation orientation);
+	void storeOriginalDim();
+
+	void setIgnoreReshape(bool ignore) { mIgnoreReshape = ignore; }
+
+protected:
+	LLLayoutPanel(S32 min_dim=-1, BOOL auto_resize=TRUE, BOOL user_resize=TRUE, LLRect rect = LLRect());
+	BOOL initPanelXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
+	
+	bool	mAutoResize;
+	bool	mUserResize;
+
+	S32		mExpandedMinDim;
+	S32		mMinDim;
+	bool	mCollapsed;
+	F32		mVisibleAmt;
+	F32		mCollapseAmt;
+	F32		mFractionalSize;
+	S32		mTargetDim;
+	bool	mIgnoreReshape;
+	LLLayoutStack::ELayoutOrientation mOrientation;
 	class LLResizeBar* mResizeBar;
 };
 
-#endif //LL_LLLAYOUTSTACK_H
+
+#endif

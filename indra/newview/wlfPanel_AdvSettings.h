@@ -37,7 +37,7 @@
 class LLComboBox;
 class LLSliderCtrl;
 
-class wlfPanel_AdvSettings : public LLPanel
+class wlfPanel_AdvSettings : public LLPanel, public LLSingleton<wlfPanel_AdvSettings>
 {
 public:
 	wlfPanel_AdvSettings ();
@@ -46,7 +46,7 @@ public:
 	BOOL postBuild();
 	void draw();
 	void refresh();
-	static void fixPanel();
+	static void updateClass();
 
 	static void onClickExpandBtn(void* user_data);
 	static void onChangeWWPresetName(LLUICtrl* ctrl, void* userData);
@@ -75,6 +75,8 @@ protected:
 	LLComboBox*		mSkyPresetCombo;
 	// LLComboBox*		mDayCyclePresetCombo;
 	LLSliderCtrl*		mTimeSlider;
+
+	bool mBuilt;
 };
 
 #endif // LL_wlfPanel_AdvSettings_H

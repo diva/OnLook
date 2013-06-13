@@ -57,17 +57,23 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
-BOOL firstBuildDone;
-void* fixPointer;
-
-wlfPanel_AdvSettings::wlfPanel_AdvSettings()
+wlfPanel_AdvSettings::wlfPanel_AdvSettings() : mBuilt(false)
 {
 	setIsChrome(TRUE);
 	setFocusRoot(TRUE);
-	build();
 }
+
+//static
+void wlfPanel_AdvSettings::updateClass()
+{
+	if(!wlfPanel_AdvSettings::instanceExists())
+		return;
+	wlfPanel_AdvSettings::getInstance()->build(); 
+}
+
 void wlfPanel_AdvSettings::build()
 {
+
 	deleteAllChildren();
 	std::string ButtonState;
 	if (!gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
@@ -131,16 +137,6 @@ void wlfPanel_AdvSettings::refreshLists()
 	updateTimeSlider();
 }
 
-void wlfPanel_AdvSettings::fixPanel()
-{
-	if(!firstBuildDone)
-	{
-		llinfos << "firstbuild done" << llendl;
-		firstBuildDone = TRUE;
-		onClickExpandBtn(fixPointer);
-	}
-}
-
 BOOL wlfPanel_AdvSettings::postBuild()
 {
 	childSetAction("expand", onClickExpandBtn, this);
@@ -180,8 +176,6 @@ BOOL wlfPanel_AdvSettings::postBuild()
 		mTimeSlider->setCommitCallback(onChangeDayTime);
 		updateTimeSlider();
 	}
-	
-	fixPointer = this;
 	return TRUE;
 }
 
@@ -198,9 +192,6 @@ wlfPanel_AdvSettings::~wlfPanel_AdvSettings ()
 void wlfPanel_AdvSettings::onClickExpandBtn(void* user_data)
 {
 	gSavedSettings.setBOOL("wlfAdvSettingsPopup",!gSavedSettings.getBOOL("wlfAdvSettingsPopup"));
-	wlfPanel_AdvSettings* remotep = (wlfPanel_AdvSettings*)user_data;
-	remotep->build();
-	gOverlayBar->layoutButtons();
 }
 
 void wlfPanel_AdvSettings::onUseRegionSettings(LLUICtrl* ctrl, void* userdata)

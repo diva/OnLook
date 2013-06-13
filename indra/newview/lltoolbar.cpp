@@ -115,7 +115,7 @@ F32	LLToolBar::sInventoryAutoOpenTime = 1.f;
 //
 
 LLToolBar::LLToolBar()
-:	LLPanel()
+:	LLLayoutPanel()
 #if LL_DARWIN
 	, mResizeHandle(NULL)
 #endif // LL_DARWIN

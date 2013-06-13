@@ -36,6 +36,7 @@
 #include "llpanel.h"
 #include "llframetimer.h"
 #include "llchat.h"
+#include "lllayoutstack.h"
 
 class LLLineEditor;
 class LLMessageSystem;
@@ -46,7 +47,7 @@ class LLChatBarGestureObserver;
 class LLComboBox;
 
 class LLChatBar
-:	public LLPanel
+:	public LLLayoutPanel
 {
 public:
 	// constructor for inline chat-bars (e.g. hosted in chat history window)

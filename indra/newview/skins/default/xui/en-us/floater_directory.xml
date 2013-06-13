@@ -27,11 +27,11 @@
 			     select_on_focus="false" tab_group="1" tool_tip="Search Second Life"
 			     width="160" spell_check="true" />
       <button bottom="-26" follows="top|right" font="SansSerifSmall" height="25"
-           label="" left="230" name="back_btn" width="25" image_overlay="go-previous-4.png"/>
+           label="" left="230" name="back_btn" width="25" image_overlay="go-previous.png"/>
       <button bottom="-26" follows="top|right" font="SansSerifSmall" height="25"
-			     label="" left_delta="27" name="forward_btn" width="25" image_overlay="go-next-4.png" />
+			     label="" left_delta="27" name="forward_btn" width="25" image_overlay="go-next.png" />
       <button bottom="-26" follows="top|right" font="SansSerifSmall" height="25"
-			     label="" left_delta="27" name="reload_btn" width="25" image_overlay="view-refresh-5.png"/>
+			     label="" left_delta="27" name="reload_btn" width="25" image_overlay="go-reload.png"/>
 			<button bottom="-48" follows="top|right" font="SansSerif" height="20"
 			     label="Search" left="121" name="search_btn" width="95" />
 			<combo_box allow_text_entry="false" bottom="-46" follows="right|top" height="18"
@@ -318,17 +318,17 @@
         <string name="not_found_text">None Found.</string>
         <button bottom="-30" follows="top|left" font="SansSerifSmall" height="25"
           label=""
-          image_overlay="go-previous-4.png"
+          image_overlay="go-previous.png"
           left="10"
           name="back_btn" width="25" />
         <button bottom_delta="0" follows="top|left" font="SansSerifSmall" height="25"
           label=""
-          image_overlay="go-next-4.png"
+          image_overlay="go-next.png"
           left_delta="27"
           name="forward_btn" width="25" />
         <button bottom_delta="0" follows="top|left" font="SansSerifSmall" height="25"
          label=""
-         image_overlay="view-refresh-5.png"
+         image_overlay="go-reload.png"
          left_delta="27"
          name="reload_btn" width="25" />
         <!-- No mature content checkbox, showcase is all PG -->
@@ -690,9 +690,9 @@ To buy direct, visit the land and click on the place name in the title bar.
 			     mouse_opaque="true" name="result_text" v_pad="0" width="328" />
     </panel>
     <panel bottom="-549" follows="all" height="533" label="Marketplace" left="1" mouse_opaque="false" name="market_panel" width="778">
-      <button bottom="-30" follows="top|left" height="25" label="" left="10" name="back_btn" width="25" image_overlay="go-previous-4.png"/>
-      <button bottom_delta="0" follows="top|left" height="25" label="" left_delta="27" name="forward_btn" width="25" image_overlay="go-next-4.png" />
-      <button bottom_delta="0" follows="top|left" height="25" label="" left_delta="27" name="reload_btn" width="25" image_overlay="view-refresh-5.png"/>
+      <button bottom="-30" follows="top|left" height="25" label="" left="10" name="back_btn" width="25" image_overlay="go-previous.png"/>
+      <button bottom_delta="0" follows="top|left" height="25" label="" left_delta="27" name="forward_btn" width="25" image_overlay="go-next.png" />
+      <button bottom_delta="0" follows="top|left" height="25" label="" left_delta="27" name="reload_btn" width="25" image_overlay="go-reload.png"/>
       <web_browser name="market_browser" trusted_content="true" bottom="25" follows="all" left="10" right="-10" top="-40"/>
       <text bottom="5" follows="bottom|left" left="10" height="16" name="status_text"/>
       <string name="loading_text">Loading...</string>
