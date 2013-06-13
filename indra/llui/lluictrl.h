@@ -70,6 +70,8 @@ public:
 	/*virtual*/ LLXMLNodePtr getXML(bool save_children = true) const;
 	/*virtual*/ BOOL	setLabelArg( const std::string& key, const LLStringExplicit& text );
 	/*virtual*/ BOOL	isCtrl() const;
+	/*virtual*/ void	onMouseEnter(S32 x, S32 y, MASK mask);
+	/*virtual*/ void	onMouseLeave(S32 x, S32 y, MASK mask);
 
 	// From LLFocusableElement
 	/*virtual*/ void	setFocus( BOOL b );
@@ -127,7 +129,9 @@ public:
 	//Start using these!
 	boost::signals2::connection setCommitCallback( const commit_signal_t::slot_type& cb );
 	boost::signals2::connection setValidateCallback( const enable_signal_t::slot_type& cb );
-
+	
+	boost::signals2::connection setMouseEnterCallback( const commit_signal_t::slot_type& cb );
+	boost::signals2::connection setMouseLeaveCallback( const commit_signal_t::slot_type& cb );
 	// *TODO: Deprecate; for backwards compatability only:
 	//Keeping userdata around with legacy setCommitCallback because it's used ALL OVER THE PLACE.
 	void*			getCallbackUserData() const								{ return mCallbackUserData; }
@@ -162,6 +166,9 @@ protected:
 
 	commit_signal_t*		mCommitSignal;
 	enable_signal_t*		mValidateSignal;
+
+	commit_signal_t*		mMouseEnterSignal;
+	commit_signal_t*		mMouseLeaveSignal;
 	
     LLViewModelPtr  mViewModel;
 	void			(*mCommitCallback)( LLUICtrl* ctrl, void* userdata );

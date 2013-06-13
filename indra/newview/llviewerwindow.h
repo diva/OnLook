@@ -433,6 +433,8 @@ protected:
 
 	BOOL			mMouseInWindow;				// True if the mouse is over our window or if we have captured the mouse.
 	BOOL			mFocusCycleMode;
+	typedef std::set<LLHandle<LLView> > view_handle_set_t;
+	view_handle_set_t mMouseHoverViews;
 
 	// Variables used for tool override switching based on modifier keys.  JC
 	MASK			mLastMask;			// used to detect changes in modifier mask

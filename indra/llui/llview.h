@@ -55,6 +55,7 @@
 #include "lluistring.h"
 #include "llcursortypes.h"
 #include "llinitparam.h"
+#include "lltreeiterators.h"
 #include "llfocusmgr.h"
 #include <boost/unordered_map.hpp>
 #include "ailist.h"
@@ -378,7 +379,24 @@ public:
 	BOOL		hasAncestor(const LLView* parentp) const;
 	BOOL		hasChild(const std::string& childname, BOOL recurse = FALSE) const;
 	BOOL 		childHasKeyboardFocus( const std::string& childname ) const;
+	
+	// these iterators are used for collapsing various tree traversals into for loops
+	typedef LLTreeDFSIter<LLView, child_list_const_iter_t> tree_iterator_t;
+	tree_iterator_t beginTreeDFS();
+	tree_iterator_t endTreeDFS();
 
+	typedef LLTreeDFSPostIter<LLView, child_list_const_iter_t> tree_post_iterator_t;
+	tree_post_iterator_t beginTreeDFSPost();
+	tree_post_iterator_t endTreeDFSPost();
+
+	typedef LLTreeBFSIter<LLView, child_list_const_iter_t> bfs_tree_iterator_t;
+	bfs_tree_iterator_t beginTreeBFS();
+	bfs_tree_iterator_t endTreeBFS();
+
+
+	typedef LLTreeDownIter<LLView> root_to_view_iterator_t;
+	root_to_view_iterator_t beginRootToView();
+	root_to_view_iterator_t endRootToView();
 
 	//
 	// UTILITIES
@@ -489,6 +507,9 @@ public:
 
 	virtual		LLView*	childFromPoint(S32 x, S32 y, bool recur=false);
 
+	// view-specific handlers 
+	virtual void	onMouseEnter(S32 x, S32 y, MASK mask);
+	virtual void	onMouseLeave(S32 x, S32 y, MASK mask);
 	template <class T> T* findChild(const std::string& name)
 	{
 		return getChild<T>(name,true,false);
@@ -607,6 +628,13 @@ public:
 
 	//send custom notification to LLView parent
 	virtual S32	notifyParent(const LLSD& info);
+
+	//send custom notification to all view childrend
+	// return true if _any_ children return true. otherwise false.
+	virtual bool	notifyChildren(const LLSD& info);
+
+	//send custom notification to current view
+	virtual S32	notify(const LLSD& info) { return 0;};
 protected:
 	void			drawDebugRect();
 	void			drawChild(LLView* childp, S32 x_offset = 0, S32 y_offset = 0, BOOL force_draw = FALSE);

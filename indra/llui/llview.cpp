@@ -677,6 +677,16 @@ BOOL LLView::handleHover(S32 x, S32 y, MASK mask)
 }
 
 
+void LLView::onMouseEnter(S32 x, S32 y, MASK mask)
+{
+	//llinfos << "Mouse entered " << getName() << llendl;
+}
+
+void LLView::onMouseLeave(S32 x, S32 y, MASK mask)
+{
+	//llinfos << "Mouse left " << getName() << llendl;
+}
+
 std::string LLView::getShowNamesToolTip()
 {
 	LLView* view = getParent();
@@ -2481,6 +2491,56 @@ void LLView::parseFollowsFlags(const LLView::Params& params)
 	}
 }
 
+LLView::tree_iterator_t LLView::beginTreeDFS() 
+{ 
+	return tree_iterator_t(this, 
+							boost::bind(boost::mem_fn(&LLView::beginChild), _1), 
+							boost::bind(boost::mem_fn(&LLView::endChild), _1)); 
+}
+
+LLView::tree_iterator_t LLView::endTreeDFS() 
+{ 
+	// an empty iterator is an "end" iterator
+	return tree_iterator_t();
+}
+
+LLView::tree_post_iterator_t LLView::beginTreeDFSPost() 
+{ 
+	return tree_post_iterator_t(this, 
+							boost::bind(boost::mem_fn(&LLView::beginChild), _1), 
+							boost::bind(boost::mem_fn(&LLView::endChild), _1)); 
+}
+
+LLView::tree_post_iterator_t LLView::endTreeDFSPost() 
+{ 
+	// an empty iterator is an "end" iterator
+	return tree_post_iterator_t();
+}
+
+LLView::bfs_tree_iterator_t LLView::beginTreeBFS() 
+{ 
+	return bfs_tree_iterator_t(this, 
+							boost::bind(boost::mem_fn(&LLView::beginChild), _1), 
+							boost::bind(boost::mem_fn(&LLView::endChild), _1)); 
+}
+
+LLView::bfs_tree_iterator_t LLView::endTreeBFS() 
+{ 
+	// an empty iterator is an "end" iterator
+	return bfs_tree_iterator_t();
+}
+
+
+LLView::root_to_view_iterator_t LLView::beginRootToView()
+{
+	return root_to_view_iterator_t(this, boost::bind(&LLView::getParent, _1));
+}
+
+LLView::root_to_view_iterator_t LLView::endRootToView()
+{
+	return root_to_view_iterator_t();
+}
+
 // static
 U32 LLView::createRect(LLXMLNodePtr node, LLRect &rect, LLView* parent_view, const LLRect &required_rect)
 {
@@ -2944,6 +3004,16 @@ S32	LLView::notifyParent(const LLSD& info)
 		return parent->notifyParent(info);
 	return 0;
 }
+bool	LLView::notifyChildren(const LLSD& info)
+{
+	bool ret = false;
+	BOOST_FOREACH(LLView* childp, mChildList)
+	{
+		ret = ret || childp->notifyChildren(info);
+	}
+	return ret;
+}
+
 LLView* LLView::createWidget(LLXMLNodePtr xml_node) const
 {
 	// forward requests to ui ctrl factory

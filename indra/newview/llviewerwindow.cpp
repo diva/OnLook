@@ -3074,8 +3074,134 @@ void LLViewerWindow::updateUI()
 	BOOL handled = FALSE;
 
 	LLUICtrl* top_ctrl = gFocusMgr.getTopCtrl();
-
 	LLMouseHandler* mouse_captor = gFocusMgr.getMouseCapture();
+	LLView* captor_view = dynamic_cast<LLView*>(mouse_captor);
+
+	//FIXME: only include captor and captor's ancestors if mouse is truly over them --RN
+
+	//build set of views containing mouse cursor by traversing UI hierarchy and testing 
+	//screen rect against mouse cursor
+	view_handle_set_t mouse_hover_set;
+
+	// constraint mouse enter events to children of mouse captor
+	LLView* root_view = captor_view;
+
+	// if mouse captor doesn't exist or isn't a LLView
+	// then allow mouse enter events on entire UI hierarchy
+	if (!root_view)
+	{
+		root_view = mRootView;
+	}
+
+	// only update mouse hover set when UI is visible (since we shouldn't send hover events to invisible UI
+//	if (gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_UI))
+	{
+		// include all ancestors of captor_view as automatically having mouse
+		if (captor_view)
+		{
+			LLView* captor_parent_view = captor_view->getParent();
+			while(captor_parent_view)
+			{
+				mouse_hover_set.insert(captor_parent_view->getHandle());
+				captor_parent_view = captor_parent_view->getParent();
+			}
+		}
+
+		// while the top_ctrl contains the mouse cursor, only it and its descendants will receive onMouseEnter events
+		if (top_ctrl && top_ctrl->calcScreenBoundingRect().pointInRect(x, y))
+		{
+			// iterator over contents of top_ctrl, and throw into mouse_hover_set
+			for (LLView::tree_iterator_t it = top_ctrl->beginTreeDFS();
+				it != top_ctrl->endTreeDFS();
+				++it)
+			{
+				LLView* viewp = *it;
+				if (viewp->getVisible()
+					&& viewp->calcScreenBoundingRect().pointInRect(x, y))
+				{
+					// we have a view that contains the mouse, add it to the set
+					mouse_hover_set.insert(viewp->getHandle());
+				}
+				else
+				{
+					// skip this view and all of its children
+					it.skipDescendants();
+				}
+			}
+		}
+		else
+		{
+			// walk UI tree in depth-first order
+			for (LLView::tree_iterator_t it = root_view->beginTreeDFS();
+				it != root_view->endTreeDFS();
+				++it)
+			{
+				LLView* viewp = *it;
+				// calculating the screen rect involves traversing the parent, so this is less than optimal
+				if (viewp->getVisible()
+					&& viewp->calcScreenBoundingRect().pointInRect(x, y))
+				{
+
+					// if this view is mouse opaque, nothing behind it should be in mouse_hover_set
+					if (viewp->getMouseOpaque())
+					{
+						// constrain further iteration to children of this widget
+						it = viewp->beginTreeDFS();
+					}
+		
+					// we have a view that contains the mouse, add it to the set
+					mouse_hover_set.insert(viewp->getHandle());
+				}
+				else
+				{
+					// skip this view and all of its children
+					it.skipDescendants();
+				}
+			}
+		}
+	}
+
+	typedef std::vector<LLHandle<LLView> > view_handle_list_t;
+
+	// call onMouseEnter() on all views which contain the mouse cursor but did not before
+	view_handle_list_t mouse_enter_views;
+	std::set_difference(mouse_hover_set.begin(), mouse_hover_set.end(),
+						mMouseHoverViews.begin(), mMouseHoverViews.end(),
+						std::back_inserter(mouse_enter_views));
+	for (view_handle_list_t::iterator it = mouse_enter_views.begin();
+		it != mouse_enter_views.end();
+		++it)
+	{
+		LLView* viewp = it->get();
+		if (viewp)
+		{
+			LLRect view_screen_rect = viewp->calcScreenRect();
+			viewp->onMouseEnter(x - view_screen_rect.mLeft, y - view_screen_rect.mBottom, mask);
+		}
+	}
+
+	// call onMouseLeave() on all views which no longer contain the mouse cursor
+	view_handle_list_t mouse_leave_views;
+	std::set_difference(mMouseHoverViews.begin(), mMouseHoverViews.end(),
+						mouse_hover_set.begin(), mouse_hover_set.end(),
+						std::back_inserter(mouse_leave_views));
+	for (view_handle_list_t::iterator it = mouse_leave_views.begin();
+		it != mouse_leave_views.end();
+		++it)
+	{
+		LLView* viewp = it->get();
+		if (viewp)
+		{
+			LLRect view_screen_rect = viewp->calcScreenRect();
+			viewp->onMouseLeave(x - view_screen_rect.mLeft, y - view_screen_rect.mBottom, mask);
+		}
+	}
+
+	// store resulting hover set for next frame
+	swap(mMouseHoverViews, mouse_hover_set);
+
+	// only handle hover events when UI is enabled
+//	if (gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_UI))
 	{	
 
 		if( mouse_captor )
