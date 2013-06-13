@@ -5,10 +5,11 @@
      width="250">
 	<panel bottom="0" follows="left|top|right|bottom" left="0" mouse_opaque="false"
 	     name="active_speakers_panel" right="250" top="300">
-		<scroll_list bottom="35" can_resize="true" column_padding="0" draw_heading="true"
+        <panel top="-18" left="11" right="-9" name="panel_voice_effect" visiblity_control="VoiceMorphingEnabled" filename="panel_voice_effect.xml" follows="top|right|left"/>
+		<scroll_list bottom="32" can_resize="true" column_padding="0" draw_heading="true"
 		     draw_stripes="false" follows="left|top|bottom|right" left="10"
 		     multi_select="false" name="speakers_list" right="-10" search_column="1"
-		     sort_column="2" top="-20">
+		     sort_column="2" top="-46">
 			<column name="icon_speaking_status" sort="speaking_status" width="20" />
 			<column dynamicwidth="true" label="Name" name="speaker_name" />
 			<column label="" name="speaking_status" width="0" />

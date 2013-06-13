@@ -381,6 +381,7 @@ set(viewer_SOURCE_FILES
     llpanelprofile.cpp
     llpanelskins.cpp
     llpanelvoicedevicesettings.cpp
+    llpanelvoiceeffect.cpp
     llpanelvolume.cpp
     llpanelweb.cpp
     llparcelselection.cpp
@@ -887,6 +888,7 @@ set(viewer_HEADER_FILES
     llpanelprofile.h
     llpanelskins.h
     llpanelvoicedevicesettings.h
+    llpanelvoiceeffect.h
     llpanelvolume.h
     llpanelweb.h
     llparcelselection.h
