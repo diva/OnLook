@@ -260,6 +260,7 @@ set(viewer_SOURCE_FILES
     llfloatertos.cpp
     llfloaterurldisplay.cpp
     llfloaterurlentry.cpp
+    llfloatervoiceeffect.cpp
     llfloaterwater.cpp
     llfloaterwebcontent.cpp
     llfloaterwindlight.cpp
@@ -765,6 +766,7 @@ set(viewer_HEADER_FILES
     llfloatertos.h
     llfloaterurldisplay.h
     llfloaterurlentry.h
+    llfloatervoiceeffect.h
     llfloaterwater.h
     llfloaterwebcontent.h
     llfloaterwindlight.h

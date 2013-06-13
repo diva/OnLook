@@ -109,6 +109,7 @@
 #include "llfloaterteleporthistory.h"
 #include "llfloatertest.h"
 #include "llfloatertools.h"
+#include "llfloatervoiceeffect.h"
 #include "llfloaterwater.h"
 #include "llfloaterwebcontent.h"
 #include "llfloaterwindlight.h"
@@ -6383,6 +6384,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterScriptLimits>		("script info");
 		registerFloater<LLFloaterStats>				("stat bar");
 		registerFloater<LLFloaterTeleportHistory>	("teleport history");
+		registerFloater<LLFloaterVoiceEffect>		("voice effect");
 		registerFloater<LLFloaterPathfindingCharacters>	("pathfinding_characters");
 		registerFloater<LLFloaterPathfindingLinksets>	("pathfinding_linksets");
 
