@@ -71,11 +71,11 @@ public:
 	LLFloaterTools();
 	virtual ~LLFloaterTools();
 
-	virtual void onOpen();
-	virtual BOOL canClose();
-	virtual void onClose(bool app_quitting);
+	/*virtual*/ void onOpen();
+	/*virtual*/ BOOL canClose();
+	/*virtual*/ void onClose(bool app_quitting);
 	/*virtual*/ void draw();
-	virtual void onFocusReceived();
+	/*virtual*/ void onFocusReceived();
 
 	// call this once per frame to handle visibility, rect location,
 	// button highlights, etc.
@@ -100,6 +100,7 @@ public:
 
 	void setStatusText(const std::string& text);
 	static void setEditTool(void* data);
+	void setTool(const LLSD& user_data);
 	void saveLastTool();
 
 private:

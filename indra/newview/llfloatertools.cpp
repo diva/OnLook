@@ -103,23 +103,21 @@ const std::string PANEL_NAMES[LLFloaterTools::PANEL_COUNT] =
 
 
 // Local prototypes
-void commit_grid_mode(LLUICtrl *ctrl, void*);
-void commit_select_component(LLUICtrl *ctrl, void *data);
+void commit_grid_mode(LLUICtrl *ctrl);
+void commit_select_component(void *data);
 void click_show_more(void*);
 void click_popup_info(void*);
 void click_popup_done(void*);
 void click_popup_minimize(void*);
-void click_popup_grab_drag(LLUICtrl *, void*);
-void click_popup_grab_lift(LLUICtrl *, void*);
-void click_popup_grab_spin(LLUICtrl *, void*);
-void click_popup_dozer_mode(LLUICtrl *, void *user);
-void commit_slider_dozer_size(LLUICtrl *, void*);
-void commit_slider_dozer_force(LLUICtrl *, void*);
+void commit_slider_dozer_size(LLUICtrl *);
+void commit_slider_dozer_force(LLUICtrl *);
 void click_apply_to_selection(void*);
-void commit_radio_zoom(LLUICtrl *, void*);
-void commit_radio_orbit(LLUICtrl *, void*);
-void commit_radio_pan(LLUICtrl *, void*);
-void commit_slider_zoom(LLUICtrl *ctrl, void*);
+void commit_radio_group_focus(LLUICtrl* ctrl);
+void commit_radio_group_move(LLUICtrl* ctrl);
+void commit_radio_group_edit(LLUICtrl* ctrl);
+void commit_radio_group_land(LLUICtrl* ctrl);
+
+void commit_slider_zoom(LLUICtrl *ctrl);
 void commit_select_tool(LLUICtrl *ctrl, void *data);
 
 
@@ -224,58 +222,39 @@ BOOL	LLFloaterTools::postBuild()
 
 	LLRect rect;
 	mBtnFocus			= getChild<LLButton>("button focus");//btn;
-	childSetAction("button focus",LLFloaterTools::setEditTool, (void*)LLToolCamera::getInstance());
 	mBtnMove			= getChild<LLButton>("button move");
-	childSetAction("button move",LLFloaterTools::setEditTool, (void*)LLToolGrab::getInstance());
 	mBtnEdit			= getChild<LLButton>("button edit");
-	childSetAction("button edit",LLFloaterTools::setEditTool, (void*)LLToolCompTranslate::getInstance());
 	mBtnCreate			= getChild<LLButton>("button create");
-	childSetAction("button create",LLFloaterTools::setEditTool, (void*)LLToolCompCreate::getInstance());
 	mBtnLand			= getChild<LLButton>("button land" );
-	childSetAction("button land",LLFloaterTools::setEditTool, (void*)LLToolSelectLand::getInstance());
 	mTextStatus			= getChild<LLTextBox>("text status");
 
-	childSetCommitCallback("slider zoom",commit_slider_zoom,this);
 
 	mRadioZoom				= getChild<LLCheckBoxCtrl>("radio zoom");
-	childSetCommitCallback("radio zoom",commit_radio_zoom,this);
 	mRadioOrbit				= getChild<LLCheckBoxCtrl>("radio orbit");
-	childSetCommitCallback("radio orbit",commit_radio_orbit,this);
 	mRadioPan				= getChild<LLCheckBoxCtrl>("radio pan");
-	childSetCommitCallback("radio pan",commit_radio_pan,this);
 
 	mRadioMove				= getChild<LLCheckBoxCtrl>("radio move");
-	childSetCommitCallback("radio move",click_popup_grab_drag,this);
 	mRadioLift				= getChild<LLCheckBoxCtrl>("radio lift");
-	childSetCommitCallback("radio lift",click_popup_grab_lift,this);
 	mRadioSpin				= getChild<LLCheckBoxCtrl>("radio spin");
-	childSetCommitCallback("radio spin",click_popup_grab_spin,NULL);
 	mRadioPosition			= getChild<LLCheckBoxCtrl>("radio position");
-	childSetCommitCallback("radio position",commit_select_tool,NULL);
 	mRadioRotate			= getChild<LLCheckBoxCtrl>("radio rotate");
-	childSetCommitCallback("radio rotate",commit_select_tool,NULL);
 	mRadioStretch			= getChild<LLCheckBoxCtrl>("radio stretch");
-	childSetCommitCallback("radio stretch",commit_select_tool,NULL);
 	mRadioSelectFace		= getChild<LLCheckBoxCtrl>("radio select face");
-	childSetCommitCallback("radio select face",commit_select_tool,NULL);
 	mRadioAlign				= getChild<LLCheckBoxCtrl>("radio align");
-	childSetCommitCallback("radio align",commit_select_tool,NULL);
+	
 	mCheckSelectIndividual	= getChild<LLCheckBoxCtrl>("checkbox edit linked parts");
-	childSetValue("checkbox edit linked parts",(BOOL)gSavedSettings.getBOOL("EditLinkedParts"));
-	childSetCommitCallback("checkbox edit linked parts",commit_select_component,this);
+	getChild<LLUICtrl>("checkbox edit linked parts")->setValue((BOOL)gSavedSettings.getBOOL("EditLinkedParts"));
 	mCheckSnapToGrid		= getChild<LLCheckBoxCtrl>("checkbox snap to grid");
-	childSetValue("checkbox snap to grid",(BOOL)gSavedSettings.getBOOL("SnapEnabled"));
+	getChild<LLUICtrl>("checkbox snap to grid")->setValue((BOOL)gSavedSettings.getBOOL("SnapEnabled"));
 	mBtnGridOptions			= getChild<LLButton>("Options...");
-	childSetAction("Options...",onClickGridOptions, this);
 	mCheckStretchUniform	= getChild<LLCheckBoxCtrl>("checkbox uniform");
-	childSetValue("checkbox uniform",(BOOL)gSavedSettings.getBOOL("ScaleUniform"));
+	getChild<LLUICtrl>("checkbox uniform")->setValue((BOOL)gSavedSettings.getBOOL("ScaleUniform"));
 	mCheckStretchTexture	= getChild<LLCheckBoxCtrl>("checkbox stretch textures");
-	childSetValue("checkbox stretch textures",(BOOL)gSavedSettings.getBOOL("ScaleStretchTextures"));
+	getChild<LLUICtrl>("checkbox stretch textures")->setValue((BOOL)gSavedSettings.getBOOL("ScaleStretchTextures"));
 	mCheckLimitDrag			= getChild<LLCheckBoxCtrl>("checkbox limit drag distance");
 	childSetValue("checkbox limit drag distance",(BOOL)gSavedSettings.getBOOL("LimitDragDistance"));
 	mTextGridMode			= getChild<LLTextBox>("text ruler mode");
 	mComboGridMode			= getChild<LLComboBox>("combobox grid mode");
-	childSetCommitCallback("combobox grid mode",commit_grid_mode, this);
 
 	mCheckShowHighlight = getChild<LLCheckBoxCtrl>("checkbox show highlight");
 	mCheckActualRoot = getChild<LLCheckBoxCtrl>("checkbox actual root");
@@ -297,38 +276,28 @@ BOOL	LLFloaterTools::postBuild()
 	if ((mComboTreesGrass = findChild<LLComboBox>("trees_grass")))
 		childSetCommitCallback("trees_grass", onSelectTreesGrass, (void*)0);
 	mCheckCopySelection = getChild<LLCheckBoxCtrl>("checkbox copy selection");
-	childSetValue("checkbox copy selection",(BOOL)gSavedSettings.getBOOL("CreateToolCopySelection"));
+	getChild<LLUICtrl>("checkbox copy selection")->setValue((BOOL)gSavedSettings.getBOOL("CreateToolCopySelection"));
 	mCheckSticky = getChild<LLCheckBoxCtrl>("checkbox sticky");
-	childSetValue("checkbox sticky",(BOOL)gSavedSettings.getBOOL("CreateToolKeepSelected"));
+	getChild<LLUICtrl>("checkbox sticky")->setValue((BOOL)gSavedSettings.getBOOL("CreateToolKeepSelected"));
 	mCheckCopyCenters = getChild<LLCheckBoxCtrl>("checkbox copy centers");
-	childSetValue("checkbox copy centers",(BOOL)gSavedSettings.getBOOL("CreateToolCopyCenters"));
+	getChild<LLUICtrl>("checkbox copy centers")->setValue((BOOL)gSavedSettings.getBOOL("CreateToolCopyCenters"));
 	mCheckCopyRotates = getChild<LLCheckBoxCtrl>("checkbox copy rotates");
-	childSetValue("checkbox copy rotates",(BOOL)gSavedSettings.getBOOL("CreateToolCopyRotates"));
+	getChild<LLUICtrl>("checkbox copy rotates")->setValue((BOOL)gSavedSettings.getBOOL("CreateToolCopyRotates"));
 	mRadioSelectLand = getChild<LLCheckBoxCtrl>("radio select land");
-	childSetCommitCallback("radio select land",commit_select_tool, NULL);
 	mRadioDozerFlatten = getChild<LLCheckBoxCtrl>("radio flatten");
-	childSetCommitCallback("radio flatten",click_popup_dozer_mode,  (void*)0);
 	mRadioDozerRaise = getChild<LLCheckBoxCtrl>("radio raise");
-	childSetCommitCallback("radio raise",click_popup_dozer_mode,  (void*)1);
 	mRadioDozerLower = getChild<LLCheckBoxCtrl>("radio lower");
-	childSetCommitCallback("radio lower",click_popup_dozer_mode,  (void*)2);
 	mRadioDozerSmooth = getChild<LLCheckBoxCtrl>("radio smooth");
-	childSetCommitCallback("radio smooth",click_popup_dozer_mode,  (void*)3);
 	mRadioDozerNoise = getChild<LLCheckBoxCtrl>("radio noise");
-	childSetCommitCallback("radio noise",click_popup_dozer_mode,  (void*)4);
 	mRadioDozerRevert = getChild<LLCheckBoxCtrl>("radio revert");
-	childSetCommitCallback("radio revert",click_popup_dozer_mode,  (void*)5);
 	mBtnApplyToSelection = getChild<LLButton>("button apply to selection");
-	childSetAction("button apply to selection",click_apply_to_selection,  (void*)0);
 
 	mSliderDozerSize		= getChild<LLSlider>("slider brush size");
-	childSetCommitCallback("slider brush size", commit_slider_dozer_size,  (void*)0);
-	childSetValue( "slider brush size", gSavedSettings.getF32("LandBrushSize"));
+	getChild<LLUICtrl>("slider brush size")->setValue(gSavedSettings.getF32("LandBrushSize"));
 
 	mSliderDozerForce		= getChild<LLSlider>("slider force");
-	childSetCommitCallback("slider force",commit_slider_dozer_force,  (void*)0);
 	// the setting stores the actual force multiplier, but the slider is logarithmic, so we convert here
-	childSetValue("slider force", log10(gSavedSettings.getF32("LandBrushForce")));
+	getChild<LLUICtrl>("slider force")->setValue(log10(gSavedSettings.getF32("LandBrushForce")));
 
 	mTab = getChild<LLTabContainer>("Object Info Tabs");
 	if(mTab)
@@ -431,6 +400,19 @@ LLFloaterTools::LLFloaterTools()
 	factory_map["ContentsInventory"] = LLCallbackMap(createPanelContentsInventory, this);//LLPanelContents
 	factory_map["land info panel"] = LLCallbackMap(createPanelLandInfo, this);//LLPanelLandInfo
 
+	mCommitCallbackRegistrar.add("BuildTool.setTool",			boost::bind(&LLFloaterTools::setTool,this, _2));	
+	mCommitCallbackRegistrar.add("BuildTool.commitDozerSize",	boost::bind(&commit_slider_dozer_size, _1));
+	mCommitCallbackRegistrar.add("BuildTool.commitZoom",		boost::bind(&commit_slider_zoom, _1));
+	mCommitCallbackRegistrar.add("BuildTool.commitRadioFocus",	boost::bind(&commit_radio_group_focus, _1));
+	mCommitCallbackRegistrar.add("BuildTool.commitRadioMove",	boost::bind(&commit_radio_group_move,_1));
+	mCommitCallbackRegistrar.add("BuildTool.commitRadioEdit",	boost::bind(&commit_radio_group_edit,_1));
+
+	mCommitCallbackRegistrar.add("BuildTool.gridMode",			boost::bind(&commit_grid_mode,_1));
+	mCommitCallbackRegistrar.add("BuildTool.selectComponent",	boost::bind(&commit_select_component, this));
+	mCommitCallbackRegistrar.add("BuildTool.gridOptions",		boost::bind(&LLFloaterTools::onClickGridOptions,this));
+	mCommitCallbackRegistrar.add("BuildTool.applyToSelection",	boost::bind(&click_apply_to_selection, this));
+	mCommitCallbackRegistrar.add("BuildTool.commitRadioLand",	boost::bind(&commit_radio_group_land,_1));
+	mCommitCallbackRegistrar.add("BuildTool.LandBrushForce",	boost::bind(&commit_slider_dozer_force,_1));
 	LLUICtrlFactory::getInstance()->buildFloater(this,"floater_tools.xml",&factory_map,FALSE);
 }
 
@@ -809,13 +791,13 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 	if (mSliderDozerSize)
 	{
 		mSliderDozerSize	->setVisible( land_visible );
-		childSetVisible("Bulldozer:", land_visible);
-		childSetVisible("Dozer Size:", land_visible);
+		getChildView("Bulldozer:")->setVisible( land_visible);
+		getChildView("Dozer Size:")->setVisible( land_visible);
 	}
 	if (mSliderDozerForce)
 	{
 		mSliderDozerForce	->setVisible( land_visible );
-		childSetVisible("Strength:", land_visible);
+		getChildView("Strength:")->setVisible( land_visible);
 	}
 	
 	childSetVisible("link_num_obj_count", !land_visible);
@@ -903,66 +885,63 @@ void click_popup_done(void*)
 	handle_reset_view();
 }
 
-void click_popup_grab_drag(LLUICtrl*, void*)
+void commit_radio_group_move(LLUICtrl* ctrl)
 {
-	gGrabBtnVertical = FALSE;
-	gGrabBtnSpin = FALSE;
+	std::string selected = ctrl->getName();
+	if (selected == "radio move")
+	{
+		gGrabBtnVertical = FALSE;
+		gGrabBtnSpin = FALSE;
+	}
+	else if (selected == "radio lift")
+	{
+		gGrabBtnVertical = TRUE;
+		gGrabBtnSpin = FALSE;
+	}
+	else if (selected == "radio spin")
+	{
+		gGrabBtnVertical = FALSE;
+		gGrabBtnSpin = TRUE;
+	}
 }
 
-void click_popup_grab_lift(LLUICtrl*, void*)
+void commit_radio_group_focus(LLUICtrl* ctrl)
 {
-	gGrabBtnVertical = TRUE;
-	gGrabBtnSpin = FALSE;
+	std::string selected = ctrl->getName();
+	if (selected == "radio zoom")
+	{
+		gCameraBtnZoom = TRUE;
+		gCameraBtnOrbit = FALSE;
+		gCameraBtnPan = FALSE;
+	}
+	else if (selected == "radio orbit")
+	{
+		gCameraBtnZoom = FALSE;
+		gCameraBtnOrbit = TRUE;
+		gCameraBtnPan = FALSE;
+	}
+	else if (selected == "radio pan")
+	{
+		gCameraBtnZoom = FALSE;
+		gCameraBtnOrbit = FALSE;
+		gCameraBtnPan = TRUE;
+	}
 }
 
-void click_popup_grab_spin(LLUICtrl*, void*)
-{
-	gGrabBtnVertical = FALSE;
-	gGrabBtnSpin = TRUE;
-}
-
-void commit_radio_zoom(LLUICtrl *, void*)
-{
-	gCameraBtnZoom = TRUE;
-	gCameraBtnOrbit = FALSE;
-	gCameraBtnPan = FALSE;
-}
-
-void commit_radio_orbit(LLUICtrl *, void*)
-{
-	gCameraBtnZoom = FALSE;
-	gCameraBtnOrbit = TRUE;
-	gCameraBtnPan = FALSE;
-}
-
-void commit_radio_pan(LLUICtrl *, void*)
-{
-	gCameraBtnZoom = FALSE;
-	gCameraBtnOrbit = FALSE;
-	gCameraBtnPan = TRUE;
-}
-
-void commit_slider_zoom(LLUICtrl *ctrl, void*)
+void commit_slider_zoom(LLUICtrl *ctrl)
 {
 	// renormalize value, since max "volume" level is 0.5 for some reason
 	F32 zoom_level = (F32)ctrl->getValue().asReal() * 2.f; // / 0.5f;
 	gAgentCamera.setCameraZoomFraction(zoom_level);
 }
 
-void click_popup_dozer_mode(LLUICtrl *, void *user)
-{
-	S32 mode = (S32)(intptr_t) user;
-	gFloaterTools->setEditTool( LLToolBrushLand::getInstance() );
-	gSavedSettings.setS32("RadioLandBrushAction", mode);
-}
-
-void commit_slider_dozer_size(LLUICtrl *ctrl, void*)
+void commit_slider_dozer_size(LLUICtrl *ctrl)
 {
 	F32 size = (F32)ctrl->getValue().asReal();
 	gSavedSettings.setF32("LandBrushSize", size);
 }
 
-void commit_slider_dozer_force(LLUICtrl *ctrl, void*)
+void commit_slider_dozer_force(LLUICtrl *ctrl)
 {
 	// the slider is logarithmic, so we exponentiate to get the actual force multiplier
 	F32 dozer_force = pow(10.f, (F32)ctrl->getValue().asReal());
@@ -974,12 +953,11 @@ void click_apply_to_selection(void*)
 	LLToolBrushLand::getInstance()->modifyLandInSelectionGlobal();
 }
 
-void commit_select_tool(LLUICtrl *ctrl, void *data)
+void commit_radio_group_edit(LLUICtrl *ctrl)
 {
 	S32 show_owners = gSavedSettings.getBOOL("ShowParcelOwners");
 
-	LLCheckBoxCtrl* group = (LLCheckBoxCtrl*)ctrl;
-	std::string selected = group->getName();
+	std::string selected = ctrl->getName();
 	if (selected == "radio position")
 	{
 		LLFloaterTools::setEditTool( LLToolCompTranslate::getInstance() );
@@ -1000,14 +978,37 @@ void commit_select_tool(LLUICtrl *ctrl, void *data)
 	{
 		LLFloaterTools::setEditTool( QToolAlign::getInstance() );
 	}
-	else if (selected == "radio select land")
-	{
-		LLFloaterTools::setEditTool( LLToolSelectLand::getInstance());
-	}
 	gSavedSettings.setBOOL("ShowParcelOwners", show_owners);
 }
 
-void commit_select_component(LLUICtrl *ctrl, void *data)
+void commit_radio_group_land(LLUICtrl* ctrl)
+{
+	std::string selected = ctrl->getName();
+	if (selected == "radio select land")
+	{
+		LLFloaterTools::setEditTool( LLToolSelectLand::getInstance() );
+	}
+	else
+	{
+		LLFloaterTools::setEditTool( LLToolBrushLand::getInstance() );
+		S32 dozer_mode = gSavedSettings.getS32("RadioLandBrushAction");
+		if (selected == "radio flatten")
+			dozer_mode = 0;
+		else if (selected == "radio raise")
+			dozer_mode = 1;
+		else if (selected == "radio lower")
+			dozer_mode = 2;
+		else if (selected == "radio smooth")
+			dozer_mode = 3;
+		else if (selected == "radio noise")
+			dozer_mode = 4;
+		else if (selected == "radio revert")
+			dozer_mode = 5;
+		gSavedSettings.setS32("RadioLandBrushAction", dozer_mode);
+	}
+}
+
+void commit_select_component(void *data)
 {
 	LLFloaterTools* floaterp = (LLFloaterTools*)data;
 
@@ -1039,7 +1040,7 @@ void LLFloaterTools::setObjectType( LLPCode pcode )
 	gFocusMgr.setMouseCapture(NULL);
 }
 
-void commit_grid_mode(LLUICtrl *ctrl, void *data)
+void commit_grid_mode(LLUICtrl *ctrl)
 {
 	LLComboBox* combo = (LLComboBox*)ctrl;
 
@@ -1055,10 +1056,28 @@ void LLFloaterTools::onClickGridOptions(void* data)
 	//floaterp->addDependentFloater(LLFloaterBuildOptions::getInstance(), FALSE);
 }
 
+// static
 void LLFloaterTools::setEditTool(void* tool_pointer)
 {
 	LLTool *tool = (LLTool *)tool_pointer;
 	LLToolMgr::getInstance()->getCurrentToolset()->selectTool( tool );
+}
+
+void LLFloaterTools::setTool(const LLSD& user_data)
+{
+	std::string control_name = user_data.asString();
+	if(control_name == "Focus")
+		LLToolMgr::getInstance()->getCurrentToolset()->selectTool((LLTool *) LLToolCamera::getInstance() );
+	else if (control_name == "Move" )
+		LLToolMgr::getInstance()->getCurrentToolset()->selectTool( (LLTool *)LLToolGrab::getInstance() );
+	else if (control_name == "Edit" )
+		LLToolMgr::getInstance()->getCurrentToolset()->selectTool( (LLTool *) LLToolCompTranslate::getInstance());
+	else if (control_name == "Create" )
+		LLToolMgr::getInstance()->getCurrentToolset()->selectTool( (LLTool *) LLToolCompCreate::getInstance());
+	else if (control_name == "Land" )
+		LLToolMgr::getInstance()->getCurrentToolset()->selectTool( (LLTool *) LLToolSelectLand::getInstance());
+	else
+		llwarns<<" no parameter name "<<control_name<<" found!! No Tool selected!!"<< llendl;
 }
 
 void LLFloaterTools::onFocusReceived()
