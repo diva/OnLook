@@ -892,7 +892,6 @@ bool LLToolPie::handleMediaClick(const LLPickInfo& pick)
 		pick.mObjectFace < 0 || 
 		pick.mObjectFace >= objectp->getNumTEs()) 
 	{
-		LLSelectMgr::getInstance()->deselect();
 		LLViewerMediaFocus::getInstance()->clearFocus();
 
 		return false;
@@ -930,7 +929,6 @@ bool LLToolPie::handleMediaClick(const LLPickInfo& pick)
 		return true;
 	}
 
-	LLSelectMgr::getInstance()->deselect();
 	LLViewerMediaFocus::getInstance()->clearFocus();
 
 	return false;

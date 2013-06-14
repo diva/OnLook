@@ -959,6 +959,12 @@ BOOL LLViewerWindow::handleAnyMouseClick(LLWindow *window,  LLCoordGL pos, MASK 
 			handled = top_ctrl->pointInView(local_x, local_y) && top_ctrl->handleMouseUp(local_x, local_y, mask);
 	}
 
+		// Mark the click as handled and return if we aren't within the root view to avoid spurious bugs
+		if( !mRootView->pointInView(x, y) )
+		{
+			return TRUE;
+		}
+
 	// Give the UI views a chance to process the click
 	if( mRootView->handleAnyMouseClick(x, y, mask, clicktype, down) )
 	{
@@ -973,43 +979,17 @@ BOOL LLViewerWindow::handleAnyMouseClick(LLWindow *window,  LLCoordGL pos, MASK 
 		llinfos << buttonname << " Mouse " << buttonstatestr << " not handled by view" << llendl;
 	}
 
-	if (down)
+	// Do not allow tool manager to handle mouseclicks if we have disconnected	
+	if(!gDisconnected && LLToolMgr::getInstance()->getCurrentTool()->handleAnyMouseClick( x, y, mask, clicktype, down ) )
 	{
-		// Do not allow tool manager to handle mouseclicks if we have disconnected
-		if (gDisconnected)
-		{
-			return FALSE;
-		}
-
-		if (LLToolMgr::getInstance()->getCurrentTool()->handleAnyMouseClick( x, y, mask, clicktype, down ) )
-		{
-			// This is necessary to force clicks in the world to cause edit
-			// boxes that might have keyboard focus to relinquish it, and hence
-			// cause a commit to update their value.  JC
-			gFocusMgr.setKeyboardFocus(NULL);
-			return TRUE;
-		}
+		return TRUE;
 	}
-	else
-	{
-		mWindow->releaseMouse();
+	
 
-		LLTool *tool = LLToolMgr::getInstance()->getCurrentTool();
-		if( !handled )
-		{
-			handled = mRootView->handleAnyMouseClick(x, y, mask, clicktype, down);
-		}
-
-		if( !handled )
-		{
-			if (tool)
-			{
-				handled = tool->handleAnyMouseClick(x, y, mask, clicktype, down);
-			}
-		}
-	}
-
-	return (!down);
+	// If we got this far on a down-click, it wasn't handled.
+	// Up-clicks, though, are always handled as far as the OS is concerned.
+	BOOL default_rtn = !down;
+	return default_rtn;
 }
 
 BOOL LLViewerWindow::handleMouseDown(LLWindow *window,  LLCoordGL pos, MASK mask)
@@ -1023,8 +1003,12 @@ BOOL LLViewerWindow::handleDoubleClick(LLWindow *window,  LLCoordGL pos, MASK ma
 	// try handling as a double-click first, then a single-click if that
 	// wasn't handled.
 	BOOL down = TRUE;
-	return handleAnyMouseClick(window, pos, mask, LLMouseHandler::CLICK_DOUBLELEFT, down) ||
-		handleMouseDown(window, pos, mask);
+	if (handleAnyMouseClick(window, pos, mask,
+				LLMouseHandler::CLICK_DOUBLELEFT, down))
+	{
+		return TRUE;
+	}
+	return handleMouseDown(window, pos, mask);
 }
 
 BOOL LLViewerWindow::handleMouseUp(LLWindow *window,  LLCoordGL pos, MASK mask)

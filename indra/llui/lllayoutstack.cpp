@@ -348,12 +348,6 @@ void LLLayoutStack::collapsePanel(LLPanel* panel, BOOL collapsed)
 {
 	LLLayoutPanel* panel_container = findEmbeddedPanel(panel);
 	if (!panel_container) return;
-
-	if(collapsed)
-		LL_INFOS("WL_PANEL") << "Collapsed layout panel" << LL_ENDL;
-	else
-		LL_INFOS("WL_PANEL") << "Expanded layout panel" << LL_ENDL;
-
 	panel_container->mCollapsed = collapsed;
 	mNeedsLayout = true;
 }
