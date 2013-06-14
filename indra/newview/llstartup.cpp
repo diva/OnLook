@@ -211,6 +211,7 @@
 #include "llwearable.h"
 #include "llinventorybridge.h"
 #include "llappearancemgr.h"
+#include "llvoicechannel.h"
 #include "jcfloaterareasearch.h"
 #include "generichandlers.h"
 
@@ -1615,8 +1616,10 @@ bool idle_startup()
 					name += " " + lastname;
 				}
 				gViewerWindow->getWindow()->setTitle(LLAppViewer::instance()->getWindowTitle() + "- " + name);
-							// Pass the user information to the voice chat server interface.
-				gVoiceClient->userAuthorized(firstname, lastname, gAgentID);
+				// Pass the user information to the voice chat server interface.
+				LLVoiceClient::getInstance()->userAuthorized(name, gAgentID);
+				// create the default proximal channel
+				LLVoiceChannel::initClass();
 				LLStartUp::setStartupState( STATE_WORLD_INIT );
 			}
 			else
@@ -1901,6 +1904,11 @@ bool idle_startup()
 		display_startup();
 
 		LLStartUp::initNameCache();
+		display_startup();
+
+		// update the voice settings *after* gCacheName initialization
+		// so that we can construct voice UI that relies on the name cache
+		LLVoiceClient::getInstance()->updateSettings();
 		display_startup();
 
 		// *Note: this is where gWorldMap used to be initialized.

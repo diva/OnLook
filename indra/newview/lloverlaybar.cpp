@@ -350,7 +350,7 @@ void LLOverlayBar::refresh()
 		{
 			// update "remotes"
 			childSetVisible("media_remote_container", TRUE);
-			childSetVisible("voice_remote_container", LLVoiceClient::voiceEnabled());
+			childSetVisible("voice_remote_container", LLVoiceClient::getInstance()->voiceEnabled());
 			childSetVisible("AdvSettings_container", !sAdvSettingsPopup);//!gSavedSettings.getBOOL("wlfAdvSettingsPopup")); 
 			childSetVisible("AdvSettings_container_exp", sAdvSettingsPopup);//gSavedSettings.getBOOL("wlfAdvSettingsPopup")); 
 			childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));
@@ -358,7 +358,7 @@ void LLOverlayBar::refresh()
 		}
 	}
 	if(!in_mouselook)
-		mVoiceRemoteContainer->setVisible(LLVoiceClient::voiceEnabled());
+		mVoiceRemoteContainer->setVisible(LLVoiceClient::getInstance()->voiceEnabled());
 
 	// always let user toggle into and out of chatbar
 	static const LLCachedControl<bool> chat_visible("ChatVisible",true);

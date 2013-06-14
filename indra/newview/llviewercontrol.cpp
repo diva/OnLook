@@ -547,6 +547,12 @@ bool handleEffectColorChanged(const LLSD& newvalue)
 	return true;
 }
 
+bool handleVoiceClientPrefsChanged(const LLSD& newvalue)
+{
+	LLVoiceClient::getInstance()->updateSettings();
+	return true;
+}
+
 bool handleVelocityInterpolate(const LLSD& newvalue)
 {
 	LLMessageSystem* msg = gMessageSystem;
@@ -567,15 +573,6 @@ bool handleVelocityInterpolate(const LLSD& newvalue)
 		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
 		gAgent.sendReliableMessage();
 		llinfos << "Velocity Interpolation Off" << llendl;
-	}
-	return true;
-}
-
-bool handleVoiceClientPrefsChanged(const LLSD& newvalue)
-{
-	if(gVoiceClient)
-	{
-		gVoiceClient->updateSettings();
 	}
 	return true;
 }

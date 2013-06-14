@@ -54,12 +54,13 @@
 #include "llhttpnode.h"
 #include "llimpanel.h"
 #include "llsdserialize.h"
+#include "llspeakers.h"
 #include "lltabcontainer.h"
 #include "llmutelist.h"
-#include "llresizehandle.h"
 #include "llviewermenu.h"
 #include "llviewermessage.h"
 #include "llviewerwindow.h"
+#include "llvoicechannel.h"
 #include "llnotify.h"
 #include "llviewerregion.h"
 
@@ -354,10 +355,10 @@ bool inviteUserResponse(const LLSD& notification, const LLSD& response)
 	{
 		if (type == IM_SESSION_P2P_INVITE)
 		{
-			if(gVoiceClient)
+			if(LLVoiceClient::instanceExists())
 			{
 				std::string s = payload["session_handle"].asString();
-				gVoiceClient->declineInvite(s);
+				LLVoiceClient::getInstance()->declineInvite(s);
 			}
 		}
 		else
@@ -1551,10 +1552,16 @@ public:
 		const LLSD& context,
 		const LLSD& input) const
 	{
-		LLFloaterIMPanel* floaterp = gIMMgr->findFloaterBySession(input["body"]["session_id"].asUUID());
+		LLUUID session_id = input["body"]["session_id"].asUUID();
+		LLFloaterIMPanel* floaterp = gIMMgr->findFloaterBySession(session_id);
 		if (floaterp)
 		{
 			floaterp->processSessionUpdate(input["body"]["info"]);
+		}
+		LLIMSpeakerMgr* im_mgr = floaterp ? floaterp->getSpeakerManager() : NULL; //LLIMModel::getInstance()->getSpeakerManager(session_id);
+		if (im_mgr)
+		{
+			im_mgr->processSessionUpdate(input["body"]["info"]);
 		}
 	}
 };
@@ -1719,7 +1726,7 @@ public:
 				return;
 			}
 
-			if(!LLVoiceClient::voiceEnabled())
+			if(!LLVoiceClient::getInstance()->voiceEnabled())
 			{
 				// Don't display voice invites unless the user has voice enabled.
 				return;
