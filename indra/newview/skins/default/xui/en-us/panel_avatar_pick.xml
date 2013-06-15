@@ -18,12 +18,4 @@
 	     name="pick_teleport_btn" width="70" />
 	<button bottom_delta="0" follows="left|top" height="20" label="Show on Map" left="80"
 	     name="pick_map_btn" width="100" />
-	<text bottom_delta="0" follows="left|top" height="20" left="290"
-	     name="sort_order_text" width="30">
-		Sort:
-	</text>
-	<line_editor bottom_delta="5" follows="left|top" height="16" left="280"
-	     name="sort_order_editor" width="25" />
-	<check_box bottom_delta="0" follows="left|top" height="20" label="Enabled" left="360"
-	     name="enabled_check" width="80" />
 </panel>

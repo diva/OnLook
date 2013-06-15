@@ -1214,7 +1214,7 @@ void LLPanelAvatarPicks::processProperties(void* data, EAvatarProcessorType type
 			for(LLAvatarPicks::picks_list_t::iterator it = picks->picks_list.begin();
 				it != picks->picks_list.end(); ++it)
 			{
-				LLPanelPick* panel_pick = new LLPanelPick(FALSE);
+				LLPanelPick* panel_pick = new LLPanelPick();
 				panel_pick->setPickID(it->first, mAvatarID);
 
 				// This will request data from the server when the pick is first
@@ -1259,7 +1259,7 @@ void LLPanelAvatarPicks::onClickNew(void* data)
 	}
 // [/RLVa:KB]
 	LLPanelAvatarPicks* self = (LLPanelAvatarPicks*)data;
-	LLPanelPick* panel_pick = new LLPanelPick(FALSE);
+	LLPanelPick* panel_pick = new LLPanelPick();
 	LLTabContainer* tabs =  self->getChild<LLTabContainer>("picks tab");
 
 	panel_pick->initNewPick();
@@ -1275,7 +1275,7 @@ void LLPanelAvatarPicks::onClickNew(void* data)
 void LLPanelAvatarPicks::onClickImport(void* data)
 {
 	LLPanelAvatarPicks* self = (LLPanelAvatarPicks*)data;
-	self->mPanelPick = new LLPanelPick(FALSE);
+	self->mPanelPick = new LLPanelPick();
 	self->mPanelPick->importNewPick(&LLPanelAvatarPicks::onClickImport_continued, data);
 }
 
