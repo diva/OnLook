@@ -246,14 +246,13 @@ BOOL LLPanelGroup::postBuild()
 	if (button)
 	{
 		button->setClickedCallback(boost::bind(&LLPanelGroup::onBtnCancel,this));
-		button->setVisible(mAllowEdit);
+		button->setEnabled(mAllowEdit); // Cancel should always be enabled for standalone group floater, this is expected behavior and may be used for simply closing
 	}
 
 	button = getChild<LLButton>("btn_apply");
 	if (button)
 	{
 		button->setClickedCallback(boost::bind(&LLPanelGroup::onBtnApply,this));
-		button->setVisible(mAllowEdit);
 		button->setEnabled(FALSE);
 
 		mApplyBtn = button;
@@ -263,7 +262,6 @@ BOOL LLPanelGroup::postBuild()
 	if (button)
 	{
 		button->setClickedCallback(boost::bind(&LLPanelGroup::onBtnRefresh,this));
-		button->setVisible(mAllowEdit);
 	}
 
 	return TRUE;
@@ -286,11 +284,15 @@ void LLPanelGroup::tabChanged()
 {
 	//some tab information has changed,....enable/disable the apply button
 	//based on if they need an apply
+	std::string str;
+	const bool need = mCurrentTab->needsApply(str);
 	if ( mApplyBtn )
 	{
-		std::string mesg;
-		mApplyBtn->setEnabled(mCurrentTab->needsApply(mesg));
+		mApplyBtn->setEnabled(need);
 	}
+	if (mAllowEdit) return; // Cancel should always be enabled for standalone group floater, this is expected behavior and may be used for simply closing
+	if (LLUICtrl* ctrl = getChild<LLUICtrl>("btn_cancel"))
+		ctrl->setEnabled(need);
 }
 
 void LLPanelGroup::handleClickTab()
@@ -477,7 +479,10 @@ void LLPanelGroup::onBtnOK(void* user_data)
 void LLPanelGroup::onBtnCancel(void* user_data)
 {
 	LLPanelGroup* self = static_cast<LLPanelGroup*>(user_data);
-	self->close();
+	if (self->mAllowEdit) // We're in a standalone floater
+		self->close();
+	else // We're in search, we can't close out, just refreshData to kill changes
+		self->refreshData();
 }
 
 // static

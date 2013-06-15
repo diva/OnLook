@@ -198,7 +198,7 @@ BOOL LLPanelGroupRoles::isVisibleByAgent(LLAgent* agentp)
 								   GP_MEMBER_EJECT |
 								   GP_MEMBER_OPTIONS );
 	*/
-	return mAllowEdit && agentp->isInGroup(mGroupID);
+	return agentp->isInGroup(mGroupID);
 								   
 }
 
