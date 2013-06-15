@@ -38,9 +38,7 @@
 #include "llpanel.h"
 #include "llavatarpropertiesprocessor.h"
 
-class LLButton;
 class LLLineEditor;
-class LLTextBox;
 class LLTextEditor;
 class LLTextureCtrl;
 class AIFilePicker;
@@ -111,8 +109,9 @@ protected:
     LLTextEditor*	mDescEditor;
     LLLineEditor*	mLocationEditor;
 
-    LLButton* mTeleportBtn;
-    LLButton* mSetBtn;
+	LLUICtrl* mTeleportBtn;
+	LLUICtrl* mSetBtn;
+	LLUICtrl* mOpenBtn;
 
     typedef std::list<LLPanelPick*> panel_list_t;
 	static panel_list_t sAllPanels;

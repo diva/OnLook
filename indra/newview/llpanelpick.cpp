@@ -30,46 +30,43 @@
  * $/LicenseInfo$
  */
 
-// Display of a "Top Pick" used both for the global top picks in the 
-// Find directory, and also for each individual user's picks in their
-// profile.
+// Display of each individual user's picks in their profile.
 
 #include "llviewerprecompiledheaders.h"
 
 #include "llpanelpick.h"
 
-#include "lldir.h"
+#include "lllineeditor.h"
+#include "llnotificationsutil.h"
 #include "llparcel.h"
-#include "message.h"
+#include "lltexteditor.h"
+#include "lltexturectrl.h"
+#include "lluictrlfactory.h"
 
 #include "llagent.h"
-#include "llbutton.h"
-#include "llcheckboxctrl.h"
-#include "llviewercontrol.h"
-#include "lllineeditor.h"
-#include "lltextbox.h"
-#include "llviewertexteditor.h"
-#include "lltexturectrl.h"
-#include "lluiconstants.h"
-#include "llviewergenericmessage.h"
-#include "lluictrlfactory.h"
-#include "llviewerparcelmgr.h"
-#include "llworldmap.h"
 #include "llfloaterworldmap.h"
+#include "llpreviewtexture.h"
+#include "llviewerparcelmgr.h"
 #include "llviewerregion.h"
-#include "llviewerwindow.h"
-#include "llnotificationsutil.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
-
 //For pick import and export - RK
 #include "statemachine/aifilepicker.h"
-#include "llviewernetwork.h"
-#include "llsdserialize.h"
 #include "hippogridmanager.h"
+#include "llsdserialize.h"
+
+void show_picture(const LLUUID& id, const std::string& name)
+{
+	// Try to show and focus existing preview
+	if (LLPreview::show(id)) return;
+	// If there isn't one, make a new preview
+	LLPreview* preview = new LLPreviewTexture("preview texture", gSavedSettings.getRect("PreviewTextureRect"), name, id);
+	preview->setFocus(true);
+}
+
 //static
 std::list<LLPanelPick*> LLPanelPick::sAllPanels;
 
@@ -78,14 +75,15 @@ LLPanelPick::LLPanelPick()
 	mPickID(),
 	mCreatorID(),
 	mParcelID(),
-	mDataRequested(FALSE),
-	mDataReceived(FALSE),
+	mDataRequested(false),
+	mDataReceived(false),
     mPosGlobal(),
     mSnapshotCtrl(NULL),
     mNameEditor(NULL),
     mDescEditor(NULL),
     mLocationEditor(NULL),
     mSetBtn(NULL),
+	mOpenBtn(NULL),
 	mImporting(0)
 {
     sAllPanels.push_back(this);
@@ -115,8 +113,8 @@ void LLPanelPick::reset()
 	mParcelID.setNull();
 
 	// Don't request data, this isn't valid
-	mDataRequested = TRUE;
-	mDataReceived = FALSE;
+	mDataRequested = true;
+	mDataReceived = false;
 
 	mPosGlobal.clearVec();
 
@@ -130,18 +128,21 @@ BOOL LLPanelPick::postBuild()
 	mSnapshotCtrl->setCommitCallback(boost::bind(&LLPanelPick::onCommitAny, this));
 
     mNameEditor = getChild<LLLineEditor>("given_name_editor");
-	mNameEditor->setCommitOnFocusLost(TRUE);
+	mNameEditor->setCommitOnFocusLost(true);
 	mNameEditor->setCommitCallback(boost::bind(&LLPanelPick::onCommitAny, this));
 
     mDescEditor = getChild<LLTextEditor>("desc_editor");
-	mDescEditor->setCommitOnFocusLost(TRUE);
+	mDescEditor->setCommitOnFocusLost(true);
 	mDescEditor->setCommitCallback(boost::bind(&LLPanelPick::onCommitAny, this));
-	mDescEditor->setTabsToNextField(TRUE);
+	mDescEditor->setTabsToNextField(true);
 
     mLocationEditor = getChild<LLLineEditor>("location_editor");
 
-    mSetBtn = getChild<LLButton>( "set_location_btn");
-    mSetBtn->setCommitCallback(boost::bind(&LLPanelPick::onClickSet,this));
+	mSetBtn = getChild<LLUICtrl>( "set_location_btn");
+	mSetBtn->setCommitCallback(boost::bind(&LLPanelPick::onClickSet,this));
+
+	mOpenBtn = getChild<LLUICtrl>("open_picture_btn");
+	mOpenBtn->setCommitCallback(boost::bind(show_picture, boost::bind(&LLTextureCtrl::getImageAssetID, mSnapshotCtrl), boost::bind(&LLLineEditor::getText, mNameEditor)));
 
 	getChild<LLUICtrl>("pick_teleport_btn")->setCommitCallback(boost::bind(&LLPanelPick::onClickTeleport,this));
 	getChild<LLUICtrl>("pick_map_btn")->setCommitCallback(boost::bind(&LLPanelPick::onClickMap,this));
@@ -182,7 +183,7 @@ void LLPanelPick::processProperties(void* data, EAvatarProcessorType type)
 	S32 region_z = llround((F32)pick_info->pos_global.mdV[VZ]);
     location_text.append(llformat("(%d, %d, %d)", region_x, region_y, region_z));
 
-	mDataReceived = TRUE;
+	mDataReceived = true;
 
     // Found the panel, now fill in the information
 	mPickID = pick_info->pick_id;
@@ -299,8 +300,8 @@ void LLPanelPick::setPickID(const LLUUID& pick_id, const LLUUID& creator_id)
 // from the server next time it is drawn.
 void LLPanelPick::markForServerRequest()
 {
-	mDataRequested = FALSE;
-	mDataReceived = FALSE;
+	mDataRequested = false;
+	mDataReceived = false;
 }
 
 
@@ -309,7 +310,7 @@ void LLPanelPick::sendPickInfoRequest()
 	LLAvatarPropertiesProcessor::getInstance()->addObserver(mCreatorID, this);
 	LLAvatarPropertiesProcessor::getInstance()->sendPickInfoRequest(mCreatorID, mPickID);
 
-	mDataRequested = TRUE;
+	mDataRequested = true;
 }
 
 
@@ -359,6 +360,7 @@ void LLPanelPick::draw()
 // [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
 	mSetBtn->setEnabled(is_self && !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC));
 // [/RLVa]
+	mOpenBtn->setVisible(!is_self);
 
 	LLPanel::draw();
 }
