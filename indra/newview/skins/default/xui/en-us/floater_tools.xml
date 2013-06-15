@@ -1510,12 +1510,12 @@
 			     initial_value="false" label="Flip" left_delta="170" mouse_opaque="true"
 			     name="checkbox flip t" width="70" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-228" drop_shadow_visible="true" follows="left|top"
+			     bottom="-208" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
 			     mouse_opaque="true" name="tex rotate" v_pad="0" width="102">
 				Rotation (degrees)
 			</text>
-			<spinner bottom="-234" decimal_digits="2" follows="left|top" height="16" increment="1"
+			<spinner bottom="-214" decimal_digits="2" follows="left|top" height="16" increment="1"
 			     initial_val="0" left="112" max_val="9999" min_val="-9999"
 			     mouse_opaque="true" name="TexRot" width="68" />
 			<string name="string repeats per meter">
@@ -1525,40 +1525,127 @@
 				Repeats Per Face
 			</string>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-250" drop_shadow_visible="true" follows="left|top"
+			     bottom="-226" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
 			     mouse_opaque="true" name="rpt" v_pad="0" width="160">
 				Repeats Per Meter
 			</text>
-			<spinner bottom="-256" decimal_digits="1" follows="left|top" height="16" increment="0.1"
+			<spinner bottom="-232" decimal_digits="1" follows="left|top" height="16" increment="0.1"
 			     initial_val="1" left="112" max_val="10" min_val="0.1" mouse_opaque="true"
 			     name="rptctrl" width="68" />
-			<button bottom="-256" follows="left|top" font="SansSerifSmall" halign="center"
+			<button bottom="-232" follows="left|top" font="SansSerifSmall" halign="center"
 			     height="20" label="Apply" label_selected="Apply" left_delta="78"
-			     mouse_opaque="true" name="button apply" scale_image="TRUE" width="75" />
+			     mouse_opaque="true" name="button apply" scale_image="TRUE" width="68" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-288" drop_shadow_visible="true" follows="left|top"
+			     bottom="-244" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
 			     mouse_opaque="true" name="tex offset" v_pad="0" width="160">
 				Offset
 			</text>
-			<spinner bottom="-308" decimal_digits="4" follows="top" height="16" increment="0.01" initial_val="0" label="Horizontal (U)" label_width="90" left="20"
+			<spinner bottom="-264" decimal_digits="4" follows="top" height="16" increment="0.01" initial_val="0" label="Horizontal (U)" label_width="90" left="20"
 			     max_val="1" min_val="-1" mouse_opaque="true" name="TexOffsetU" width="160"/>
 			<spinner bottom_delta="-18" decimal_digits="4" follows="top" height="16" increment="0.01" initial_val="0" label="Vertical (V)" label_width="90"
 			     left="20" max_val="1" min_val="-1" name="TexOffsetV"
 			     width="160"/>
-			<text bottom="-352" height="20" left="10" name="textbox autofix" v_pad="0" width="160">Align media texture
-(must load first)</text>
-			<button bottom="-360" follows="left|top" font="SansSerifSmall" halign="center"
-			     height="20" label="Align" label_selected="Align" left="112"
-			     mouse_opaque="true" name="button align" scale_image="TRUE" width="68" />
-			<text bottom="-322" drop_shadow_visible="true" follows="left|top" height="20" left="185" name="textbox params">Texture Params</text>
-			<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
+			<text bottom="-244" v_pad="0" drop_shadow_visible="true" follows="left|top" height="10" left="185" width="85" name="textbox params">Texture Params</text>
+			<button bottom_delta="-24" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="20" label="Copy" left_delta="5" mouse_opaque="true" name="copytextures"  enabled="true"
-			     tool_tip="Copy Testure Params from Clipboard"  width="68" />
+			     tool_tip="Copy Texture Params from Clipboard"  width="68" />
 	  		<button bottom_delta="-20" follows="top" height="20" label="Paste" name="pastetextures" tool_tip="Paste Texture Params from Clipboard"  width="68" />
-    	</panel>
-    	<panel border="true" bottom="-383" follows="left|top|right|bottom" height="367"
+        
+	<text
+             type="string"
+             length="1"
+             follows="left|top"
+             height="18"
+	     bottom="-307"
+             left="10"
+             top_pad="3"
+             name="media_tex"
+             width="190">
+              Media:
+	</text>
+	<panel
+         border="true"
+         follows="left|top"
+         mouse_opaque="false"
+         background_visible="false"
+         name="Add_Media"
+         left="5"
+	 bottom="-358"
+         height="54"
+         width="260">
+			<button
+			 follows="top|left"
+			 height="20"
+			 label="Add"
+			 name="add_media"
+			 tab_stop="false"
+			 top_delta="0"
+			 tool_tip="Add Media"
+			 left="153"
+			 bottom="-25"
+			 width="35">
+				<button.commit_callback
+				function="BuildTool.AddMedia"/>
+			</button>
+			<button
+			 follows="top|left"
+			 height="20"
+			 label="Rem"
+			 name="delete_media"
+			 tool_tip="Delete this media texture"
+			 left="188"
+			 bottom="-25"
+			 width="40">
+				<button.commit_callback
+				function="BuildTool.DeleteMedia"/>
+			</button>
+			<button
+			 follows="top|left"
+			 tool_tip="Edit this Media"
+			 height="20"
+			 label=">>"
+			 name="edit_media"
+			 left="228"
+			 bottom="-25"
+			 width="30">
+				<button.commit_callback
+				function="BuildTool.EditMedia"/>
+			</button>
+      <text
+			 follows="left|top|right"
+			 height="18"
+			 left="10"
+			 bottom="-46"
+                         use_ellipses="true"
+			 read_only="true"
+			 name="media_info"
+			 width="180" />
+      <web_browser
+        visible="false"
+        enabled="false"
+        border_visible="true"
+        bottom_delta="0"
+        follows="top|left"
+        bottom="-5"
+        name="title_media"
+        width="4"
+        height="4"
+        start_url="about:blank"
+        decouple_texture_size="true" />
+     <button
+			 follows="right|top"
+			 height="20"
+			 label="Align"
+			 left="166"
+			 name="button align"
+			 bottom="-48"
+			 tool_tip="Align media texture (must load first)"
+			 width="80" />
+		</panel>
+	   </panel>
+       <panel border="true" bottom="-383" follows="left|top|right|bottom" height="367"
 		     label="Content" left="1" mouse_opaque="false" name="Contents" width="270">
       		<button bottom="-30" follows="left|top" font="SansSerif" halign="center" height="20" label="New Script" label_selected="New Script" left="10" name="button new script" scale_image="TRUE" width="100"/>
       <button bottom_delta="0" left_delta="110" width="100" height="20" follows="left|top"

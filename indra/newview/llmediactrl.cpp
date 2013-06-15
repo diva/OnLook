@@ -1161,7 +1161,7 @@ LLView* LLMediaCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory 
 	if(node->getAttributeBOOL("focus_on_click", bval))
 		p.focus_on_click = bval;
 	if(node->getAttributeBOOL("decouple_texture_size", bval))
-		p.focus_on_click = bval;
+		p.decouple_texture_size = bval;
 	if(node->getAttributeBOOL("trusted_content", bval))
 		p.trusted_content = bval;
 	if(node->getAttributeS32("texture_width", ival))

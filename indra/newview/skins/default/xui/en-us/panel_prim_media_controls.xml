@@ -268,7 +268,8 @@
 		  follows="top|right"
 		  height="20"
 		  width="38"
-		  right="-1"
+		  left="140"
+      bottom="0"
 		  border_size="0"
 		  mouse_opaque="false"
 		  orientation="horizontal">
@@ -281,9 +282,9 @@
 			  name="media_whitelist_flag"
 			  follows="top|right"
 			  height="16"
-			  image_name="Flag"
+			  image_name="Flag.png"
 			  layout="topleft"
-			  bottom="-22"
+			  bottom="-16"
 			  width="16" />
 		</layout_panel>
 		<layout_panel
@@ -295,7 +296,7 @@
 			  name="media_secure_lock_flag"
 			  height="16"
 			  image_name="lock.png"
-			  bottom="-22"
+			  bottom="-16"
 			  width="16" />
 		</layout_panel>
 	  </layout_stack>
