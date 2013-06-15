@@ -1514,7 +1514,10 @@ void LLPanelAvatar::setOnlineStatus(EOnlineStatus online_status)
 void LLPanelAvatar::onAvatarNameResponse(const LLUUID& agent_id, const LLAvatarName& av_name)
 {
 	std::string name;
-	LLAvatarNameCache::getPNSName(av_name, name);
+	if (gSavedSettings.getBOOL("SinguCompleteNameProfiles"))
+		name = av_name.getCompleteName();
+	else
+		LLAvatarNameCache::getPNSName(av_name, name);
 	getChild<LLLineEditor>("dnname")->setText(name);
 }
 
