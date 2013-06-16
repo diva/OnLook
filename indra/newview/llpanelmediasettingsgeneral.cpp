@@ -203,7 +203,7 @@ void LLPanelMediaSettingsGeneral::clearValues( void* userdata, bool editable)
 	self->mAutoPlay->clear();
 	self->mAutoScale->clear();
 	self->mAutoZoom ->clear();
-	self->mCurrentURL->clear();
+	self->mCurrentURL->setValue("");
 	self->mFirstClick->clear();
 	self->mHeightPixels->clear();
 	self->mHomeURL->clear();
