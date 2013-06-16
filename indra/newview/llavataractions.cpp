@@ -299,7 +299,7 @@ bool LLAvatarActions::isCalling(const LLUUID &id)
 //static
 bool LLAvatarActions::canCall()
 {
-	return LLVoiceClient::getInstance()->voiceEnabled() /*&& LLVoiceClient::getInstance()->isVoiceWorking()*/;
+	return LLVoiceClient::getInstance()->voiceEnabled() && LLVoiceClient::getInstance()->isVoiceWorking();
 }
 
 // static
@@ -507,6 +507,26 @@ void LLAvatarActions::toggleBlock(const LLUUID& id)
 	else
 	{
 		LLMuteList::getInstance()->add(mute);
+	}
+}
+
+// static
+void LLAvatarActions::toggleMuteVoice(const LLUUID& id)
+{
+	std::string name;
+	gCacheName->getFullName(id, name); // needed for mute
+
+	LLMuteList* mute_list = LLMuteList::getInstance();
+	bool is_muted = mute_list->isMuted(id, LLMute::flagVoiceChat);
+
+	LLMute mute(id, name, LLMute::AGENT);
+	if (!is_muted)
+	{
+		mute_list->add(mute, LLMute::flagVoiceChat);
+	}
+	else
+	{
+		mute_list->remove(mute, LLMute::flagVoiceChat);
 	}
 }
 
@@ -722,6 +742,12 @@ bool LLAvatarActions::isFriend(const LLUUID& id)
 bool LLAvatarActions::isBlocked(const LLUUID& id)
 {
 	return LLMuteList::getInstance()->isMuted(id);
+}
+
+// static
+bool LLAvatarActions::isVoiceMuted(const LLUUID& id)
+{
+	return LLMuteList::getInstance()->isMuted(id, LLMute::flagVoiceChat);
 }
 
 // static

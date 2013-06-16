@@ -3284,6 +3284,15 @@ Autorizar este pedido?
 		</form>
 	</notification>
 
+	<notification name="NoVoiceConnect">
+		Estamos tendo problemas de conexão com o seu servidor de voz:
+
+[HOSTID]
+
+Talvez não seja possível se comunicar via voz.
+Verifique a configuração da sua rede e firewall.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
 
 	<notification name="FirstBalanceIncrease">
 		Você recebeu uma quantia de [CURRENCY][AMOUNT].
@@ -3461,6 +3470,25 @@ Clique Aceitar para juntar-se à chamada ou Recusar para recusar o convite. Cliq
 
 	<notification name="VoiceLoginRetry">
 		Estamos criando uma canal de voz para você. Isto pode levar até um minuto.
+	</notification>
+
+	<notification name="VoiceEffectsExpired">
+		Um ou mais serviços de distorção de voz que você assinou veceu.
+[[URL] Clique aqui] para renovar o serviço.
+	</notification>
+
+	<notification name="VoiceEffectsExpiredInUse">
+		A Distorção de voz ativa expirou. Suas configurações de voz padrão foram ativadas.
+[[URL] Clique aqui] para renovar o serviço.
+	</notification>
+
+	<notification name="VoiceEffectsWillExpire">
+		Uma ou mais das suas distorções de voz tem vencimento em menos de [INTERVAL] dias.
+[[URL] Clique aqui] para renovar o serviço.
+	</notification>
+
+	<notification name="VoiceEffectsNew">
+		Novas Distorções de voz!
 	</notification>
 
 	<notification name="Cannot enter parcel: not a group member">

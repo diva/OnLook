@@ -58,6 +58,7 @@
 #include "llsdutil.h"
 #include "llsky.h"
 #include "llsmoothstep.h"
+#include "llspeakers.h"
 #include "llstartup.h"
 #include "llstatusbar.h"
 #include "lltool.h"
@@ -76,6 +77,7 @@
 #include "llviewerstats.h"
 #include "llviewerwindow.h"
 #include "llvoavatarself.h"
+#include "llvoiceclient.h"
 #include "llworld.h"
 #include "llworldmap.h"
 #include "llworldmapmessage.h"
@@ -84,11 +86,9 @@
 #include "llurldispatcher.h"
 #include "llimview.h" //For gIMMgr
 //Floaters
-#include "llfloateractivespeakers.h"
 #include "llfloateravatarinfo.h"
 #include "llfloaterchat.h"
 #include "llfloaterdirectory.h"
-#include "llfloatergroupinfo.h"
 #include "llfloatergroups.h"
 #include "llfloaterland.h"
 #include "llfloatermap.h"
@@ -258,6 +258,56 @@ void LLAgent::parcelChangedCallback()
 	bool can_edit = LLToolMgr::getInstance()->canEdit();
 
 	gAgent.mCanEditParcel = can_edit;
+}
+
+// static
+bool LLAgent::isActionAllowed(const LLSD& sdname)
+{
+	bool retval = false;
+
+	const std::string& param = sdname.asString();
+
+	if (param == "speak")
+	{
+		if ( gAgent.isVoiceConnected() &&
+			LLViewerParcelMgr::getInstance()->allowAgentVoice() &&
+				! LLVoiceClient::getInstance()->inTuningMode() )
+		{
+			retval = true;
+		}
+		else
+		{
+			retval = false;
+		}
+	}
+
+	return retval;
+}
+
+// static
+void LLAgent::pressMicrophone(const LLSD& name)
+{
+	//LLFirstUse::speak(false);
+
+	LLVoiceClient::getInstance()->inputUserControlState(true);
+}
+
+// static
+void LLAgent::releaseMicrophone(const LLSD& name)
+{
+	LLVoiceClient::getInstance()->inputUserControlState(false);
+}
+
+// static
+void LLAgent::toggleMicrophone(const LLSD& name)
+{
+	LLVoiceClient::getInstance()->toggleUserPTTState();
+}
+
+// static
+bool LLAgent::isMicrophoneOn(const LLSD& sdname)
+{
+	return LLVoiceClient::getInstance()->getUserPTTState();
 }
 
 // ************************************************************
@@ -3909,7 +3959,7 @@ bool LLAgent::teleportCore(bool is_local)
 	
 	// MBW -- Let the voice client know a teleport has begun so it can leave the existing channel.
 	// This was breaking the case of teleporting within a single sim.  Backing it out for now.
-//	gVoiceClient->leaveChannel();
+//	LLVoiceClient::getInstance()->leaveChannel();
 	
 	return true;
 }

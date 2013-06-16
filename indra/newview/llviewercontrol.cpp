@@ -170,7 +170,7 @@ static bool handleRenderPerfTestChanged(const LLSD& newvalue)
                                                                          LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS,
                                                                          LLPipeline::RENDER_TYPE_HUD_PARTICLES,
                                                                          LLPipeline::END_RENDER_TYPES); 
-               gPipeline.setRenderDebugFeatureControl(LLPipeline::RENDER_DEBUG_FEATURE_UI, false);
+               gPipeline.setRenderDebugFeatureControl(~(U32)0, false);	// Reset all RENDER_DEBUG_FEATURE_* flags.
        }
        else 
        {
@@ -547,6 +547,12 @@ bool handleEffectColorChanged(const LLSD& newvalue)
 	return true;
 }
 
+bool handleVoiceClientPrefsChanged(const LLSD& newvalue)
+{
+	LLVoiceClient::getInstance()->updateSettings();
+	return true;
+}
+
 bool handleVelocityInterpolate(const LLSD& newvalue)
 {
 	LLMessageSystem* msg = gMessageSystem;
@@ -567,15 +573,6 @@ bool handleVelocityInterpolate(const LLSD& newvalue)
 		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
 		gAgent.sendReliableMessage();
 		llinfos << "Velocity Interpolation Off" << llendl;
-	}
-	return true;
-}
-
-bool handleVoiceClientPrefsChanged(const LLSD& newvalue)
-{
-	if(gVoiceClient)
-	{
-		gVoiceClient->updateSettings();
 	}
 	return true;
 }

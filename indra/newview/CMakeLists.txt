@@ -261,7 +261,6 @@ set(viewer_SOURCE_FILES
     llfloatertos.cpp
     llfloaterurldisplay.cpp
     llfloaterurlentry.cpp
-    llfloatervoicedevicesettings.cpp
     llfloaterwater.cpp
     llfloaterwindlight.cpp
     llfloaterworldmap.cpp
@@ -379,9 +378,11 @@ set(viewer_SOURCE_FILES
     llpanelplace.cpp
     llpanelprofile.cpp
     llpanelskins.cpp
+    llpanelvoicedevicesettings.cpp
     llpanelvolume.cpp
     llpanelweb.cpp
     llparcelselection.cpp
+    llparticipantlist.cpp
     llpatchvertexarray.cpp
     llpathfindingcharacter.cpp
     llpathfindingcharacterlist.cpp
@@ -417,6 +418,7 @@ set(viewer_SOURCE_FILES
     llselectmgr.cpp
     llsky.cpp
     llspatialpartition.cpp
+    llspeakers.cpp
     llsprite.cpp
     llstartup.cpp
     llstatusbar.cpp
@@ -520,9 +522,11 @@ set(viewer_SOURCE_FILES
     llvoclouds.cpp
     llvograss.cpp
     llvoground.cpp
+    llvoicechannel.cpp
     llvoiceclient.cpp
     llvoiceremotectrl.cpp
     llvoicevisualizer.cpp
+    llvoicevivox.cpp
     llvoinventorylistener.cpp
     llvopartgroup.cpp
     llvosky.cpp
@@ -762,7 +766,6 @@ set(viewer_HEADER_FILES
     llfloatertos.h
     llfloaterurldisplay.h
     llfloaterurlentry.h
-    llfloatervoicedevicesettings.h
     llfloaterwater.h
     llfloaterwindlight.h
     llfloaterworldmap.h
@@ -880,9 +883,11 @@ set(viewer_HEADER_FILES
     llpanelplace.h
     llpanelprofile.h
     llpanelskins.h
+    llpanelvoicedevicesettings.h
     llpanelvolume.h
     llpanelweb.h
     llparcelselection.h
+    llparticipantlist.h
     llpatchvertexarray.h
     llpathfindingcharacter.h
     llpathfindingcharacterlist.h
@@ -920,6 +925,7 @@ set(viewer_HEADER_FILES
     llsimplestat.h
     llsky.h
     llspatialpartition.h
+    llspeakers.h
     llsprite.h
     llstartup.h
     llstatusbar.h
@@ -1026,9 +1032,11 @@ set(viewer_HEADER_FILES
     llvoclouds.h
     llvograss.h
     llvoground.h
+    llvoicechannel.h
     llvoiceclient.h
     llvoiceremotectrl.h
     llvoicevisualizer.h
+    llvoicevivox.h
     llvoinventorylistener.h
     llvopartgroup.h
     llvosky.h

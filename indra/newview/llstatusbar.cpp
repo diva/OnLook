@@ -73,7 +73,6 @@
 #include "llviewerparcelmgr.h"
 #include "llviewerthrottle.h"
 #include "lluictrlfactory.h"
-#include "llvoiceclient.h"	// for gVoiceClient
 #include "llagentui.h"
 
 #include "lltoolmgr.h"

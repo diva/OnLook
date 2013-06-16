@@ -36,7 +36,7 @@
 #include "llpanel.h"
 #include "lltimer.h"
 
-struct LLOfferInfo;
+class LLOfferInfo;
 
 const F32 UPDATE_MEMBERS_SECONDS_PER_FRAME = 0.005; // 5ms
 
