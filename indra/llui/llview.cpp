@@ -74,6 +74,7 @@ BOOL	LLView::sForceReshape = FALSE;
 LLView*	LLView::sEditingUIView = NULL;
 S32		LLView::sLastLeftXML = S32_MIN;
 S32		LLView::sLastBottomXML = S32_MIN;
+std::vector<LLViewDrawContext*> LLViewDrawContext::sDrawContextStack;
 
 LLView::DrilldownFunc LLView::sDrilldown =
 	boost::bind(&LLView::pointInView, _1, _2, _3, HIT_TEST_USE_BOUNDING_RECT);
@@ -3012,6 +3013,22 @@ bool	LLView::notifyChildren(const LLSD& info)
 		ret = ret || childp->notifyChildren(info);
 	}
 	return ret;
+}
+
+// convenient accessor for draw context
+const LLViewDrawContext& LLView::getDrawContext()
+{
+	return LLViewDrawContext::getCurrentContext();
+}
+
+const LLViewDrawContext& LLViewDrawContext::getCurrentContext()
+{
+	static LLViewDrawContext default_context;
+
+	if (sDrawContextStack.empty())
+		return default_context;
+		
+	return *sDrawContextStack.back();
 }
 
 LLView* LLView::createWidget(LLXMLNodePtr xml_node) const

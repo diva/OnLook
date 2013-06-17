@@ -131,6 +131,35 @@ public:
 	}
 };
 
+// maintains render state during traversal of UI tree
+class LLViewDrawContext
+{
+public:
+	F32 mAlpha;
+
+	LLViewDrawContext(F32 alpha = 1.f)
+	:	mAlpha(alpha)
+	{
+		if (!sDrawContextStack.empty())
+		{
+			LLViewDrawContext* context_top = sDrawContextStack.back();
+			// merge with top of stack
+			mAlpha *= context_top->mAlpha;
+		}
+		sDrawContextStack.push_back(this);
+	}
+
+	~LLViewDrawContext()
+	{
+		sDrawContextStack.pop_back();
+	}
+
+	static const LLViewDrawContext& getCurrentContext();
+
+private:
+	static std::vector<LLViewDrawContext*> sDrawContextStack;
+};
+
 class LLView 
 :	public LLMouseHandler,			// handles mouse events
 	public LLFocusableElement,		// handles keyboard events
@@ -635,6 +664,9 @@ public:
 
 	//send custom notification to current view
 	virtual S32	notify(const LLSD& info) { return 0;};
+
+	static const LLViewDrawContext& getDrawContext();
+	
 protected:
 	void			drawDebugRect();
 	void			drawChild(LLView* childp, S32 x_offset = 0, S32 y_offset = 0, BOOL force_draw = FALSE);

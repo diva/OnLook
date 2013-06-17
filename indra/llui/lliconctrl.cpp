@@ -106,7 +106,8 @@ void LLIconCtrl::draw()
 {
 	if( mImagep.notNull() )
 	{
-		mImagep->draw(getLocalRect(), mColor );
+		const F32 alpha = getDrawContext().mAlpha;
+		mImagep->draw(getLocalRect(), mColor % alpha );
 	}
 
 	LLUICtrl::draw();

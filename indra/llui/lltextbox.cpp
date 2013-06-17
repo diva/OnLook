@@ -286,6 +286,7 @@ BOOL LLTextBox::setTextArg( const std::string& key, const LLStringExplicit& text
 
 void LLTextBox::draw()
 {
+	F32 alpha = getDrawContext().mAlpha;
 	if (mBorderVisible)
 	{
 		gl_rect_2d_offset_local(getLocalRect(), 2, FALSE);
@@ -296,12 +297,12 @@ void LLTextBox::draw()
 		static LLColor4 color_drop_shadow = LLUI::sColorsGroup->getColor("ColorDropShadow");
 		static S32 drop_shadow_tooltip = LLUI::sConfigGroup->getS32("DropShadowTooltip");
 		gl_drop_shadow(0, getRect().getHeight(), getRect().getWidth(), 0,
-			color_drop_shadow, drop_shadow_tooltip);
+			color_drop_shadow % alpha, drop_shadow_tooltip);
 	}
 
 	if (mBackgroundVisible)
 	{
-		gl_rect_2d( getLocalRect(), mBackgroundColor );
+		gl_rect_2d( getLocalRect(), mBackgroundColor % alpha );
 	}
 
 	S32 text_x = 0;
@@ -324,16 +325,16 @@ void LLTextBox::draw()
 	{
 		if(mHasHover)
 		{
-			drawText( text_x, text_y, mHoverColor );
+			drawText( text_x, text_y, mHoverColor % alpha );
 		}
 		else
 		{
-			drawText( text_x, text_y, mTextColor );
+			drawText( text_x, text_y, mTextColor % alpha );
 		}				
 	}
 	else
 	{
-		drawText( text_x, text_y, mDisabledColor );
+		drawText( text_x, text_y, mDisabledColor % alpha );
 	}
 
 	if (sDebugRects)
