@@ -97,10 +97,10 @@ LLSLURL::LLSLURL(const std::string& slurl)
 				if(gHippoGridManager->getCurrentGrid()->isInProductionGrid())
 					fixed_slurl = MAIN_GRID_SLURL_BASE;
 				else
-					fixed_slurl = llformat(SYSTEM_GRID_SLURL_BASE, gHippoGridManager->getCurrentGridNick());
+					fixed_slurl = llformat(SYSTEM_GRID_SLURL_BASE, gHippoGridManager->getCurrentGridNick().c_str());
 			}
 			else
-				fixed_slurl = llformat(DEFAULT_SLURL_BASE, gHippoGridManager->getCurrentGridNick());
+				fixed_slurl = llformat(DEFAULT_SLURL_BASE, gHippoGridManager->getCurrentGridNick().c_str());
 			
 			//std::string fixed_slurl = MAIN_GRID_SLURL_BASE;
 
@@ -423,10 +423,10 @@ std::string LLSLURL::getSLURLString() const
 					if(gHippoGridManager->getCurrentGrid()->isInProductionGrid())
 						fixed_slurl = MAIN_GRID_SLURL_BASE;
 					else
-						fixed_slurl = llformat(SYSTEM_GRID_SLURL_BASE, gHippoGridManager->getCurrentGridNick());
+						fixed_slurl = llformat(SYSTEM_GRID_SLURL_BASE, gHippoGridManager->getCurrentGridNick().c_str());
 				}
 				else
-					fixed_slurl = llformat(DEFAULT_SLURL_BASE, gHippoGridManager->getCurrentGridNick());
+					fixed_slurl = llformat(DEFAULT_SLURL_BASE, gHippoGridManager->getCurrentGridNick().c_str());
 				return fixed_slurl +
 				LLURI::escape(mRegion) + llformat("/%d/%d/%d",x,y,z); 
 			}
@@ -438,7 +438,7 @@ std::string LLSLURL::getSLURLString() const
 			if(gHippoGridManager->getCurrentGrid()->isSecondLife())
 				app_url << SYSTEM_GRID_APP_SLURL_BASE << "/" << mAppCmd;
 			else
-				app_url << llformat(DEFAULT_APP_SLURL_BASE, gHippoGridManager->getCurrentGridNick()) << "/" << mAppCmd;
+				app_url << llformat(DEFAULT_APP_SLURL_BASE, gHippoGridManager->getCurrentGridNick().c_str()) << "/" << mAppCmd;
 			for(LLSD::array_const_iterator i = mAppPath.beginArray();
 				i != mAppPath.endArray();
 				i++)
