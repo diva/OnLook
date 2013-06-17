@@ -130,7 +130,8 @@ static std::string nameJoin(const std::string& first,const std::string& last, bo
 }
 
 static std::string getDisplayString(const std::string& first, const std::string& last, const std::string& grid, bool is_secondlife) {
-	if(grid == gHippoGridManager->getDefaultGridNick())
+	//grid comes via LLSavedLoginEntry, which uses full grid names, not nicks
+	if(grid == gHippoGridManager->getDefaultGridName())	
 		return nameJoin(first, last, is_secondlife);
 	else
 		return nameJoin(first, last, is_secondlife) + " (" + grid + ")";
@@ -633,7 +634,9 @@ void LLPanelLogin::setFields(const LLSavedLoginEntry& entry, bool takeFocus)
 	//sInstance->childSetText("name_combo", fullname);
 
 	std::string grid = entry.getGrid();
-	if(!grid.empty() && gHippoGridManager->getGrid(grid) && grid != gHippoGridManager->getCurrentGridNick()) {
+	//grid comes via LLSavedLoginEntry, which uses full grid names, not nicks
+	if(!grid.empty() && gHippoGridManager->getGrid(grid) && grid != gHippoGridManager->getCurrentGridName())
+	{
 		gHippoGridManager->setCurrentGrid(grid);
 		LLPanelLogin::refreshLoginPage();
 	}
@@ -791,27 +794,34 @@ void LLPanelLogin::setAlwaysRefresh(bool refresh)
 
 void LLPanelLogin::updateGridCombo()
 {
-	const std::string &defaultGrid = gHippoGridManager->getDefaultGridNick();
-	const std::string &currentGrid = gHippoGridManager->getCurrentGridNick();
+	const std::string &defaultGrid = gHippoGridManager->getDefaultGridName();
+
 	LLComboBox *grids = getChild<LLComboBox>("grids_combo");
-	S32 selectIndex = -1, i = 0;
+	std::string top_entry;
+
 	grids->removeall();
-	if (defaultGrid != "") {
-		grids->add(defaultGrid);
-		selectIndex = i++;
-	}
+
+	const HippoGridInfo *curGrid = gHippoGridManager->getCurrentGrid();
+	const HippoGridInfo *defGrid = gHippoGridManager->getGrid(defaultGrid);
+
 	HippoGridManager::GridIterator it, end = gHippoGridManager->endGrid();
-	for (it = gHippoGridManager->beginGrid(); it != end; ++it) {
+	for (it = gHippoGridManager->beginGrid(); it != end; ++it)
+	{
 		std::string grid = it->second->getGridName();
-		if (grid != defaultGrid) {
-			grids->add(grid);
-			if (grid == currentGrid) selectIndex = i;
-			i++;
-		}
+		if(grid.empty() || it->second == defGrid || it->second == curGrid)
+			continue;
+		grids->add(grid,it->second->getGridNick());
 	}
-	if (selectIndex >= 0) {
-		grids->setCurrentByIndex(selectIndex);
-	} else {
+	if(curGrid || defGrid)
+	{
+		if(defGrid)
+			grids->add(defGrid->getGridName(),defGrid->getGridNick(),ADD_TOP);
+		if(curGrid && defGrid != curGrid)
+			grids->add(curGrid->getGridName(),curGrid->getGridNick(),ADD_TOP);
+		grids->setCurrentByIndex(0);
+	}
+	else
+	{
 		grids->setLabel(LLStringExplicit(""));  // LLComboBox::removeall() does not clear the label
 	}
 }

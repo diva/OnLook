@@ -3918,11 +3918,11 @@ bool process_login_success_response(std::string& password)
 		std::string history_file = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "saved_logins_sg2.xml");
 
 		LLSavedLogins history_data = LLSavedLogins::loadFile(history_file);
-		std::string grid_nick = gHippoGridManager->getConnectedGrid()->getGridName();
-		history_data.deleteEntry(firstname, lastname, grid_nick);
+		std::string grid_name = gHippoGridManager->getConnectedGrid()->getGridName();
+		history_data.deleteEntry(firstname, lastname, grid_name);
 		if (gSavedSettings.getBOOL("RememberLogin"))
 		{
-			LLSavedLoginEntry login_entry(firstname, lastname, password, grid_nick);
+			LLSavedLoginEntry login_entry(firstname, lastname, password, grid_name);
 			history_data.addEntry(login_entry);
 		}
 		else
