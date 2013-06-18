@@ -76,7 +76,7 @@ BOOL LLPanelMediaSettingsPermissions::postBuild()
     mPermsWorldInteract = getChild< LLCheckBoxCtrl >( LLPanelContents::PERMS_ANYONE_INTERACT_KEY );
     mPermsWorldControl = getChild< LLCheckBoxCtrl >( LLPanelContents::PERMS_ANYONE_CONTROL_KEY );
 
-	//mPermsGroupName = getChild< LLNameBox >( "perms_group_name" );
+	mPermsGroupName = getChild< LLNameBox >( "perms_group_name" );
 
     return true;
 }
@@ -94,7 +94,7 @@ void LLPanelMediaSettingsPermissions::draw()
 	// housekeeping
 	LLPanel::draw();
 
-	//getChild<LLUICtrl>("perms_group_name")->setValue(LLStringUtil::null);
+	getChild<LLUICtrl>("perms_group_name")->setValue(LLStringUtil::null);
 	LLUUID group_id;
 	BOOL groups_identical = LLSelectMgr::getInstance()->selectGetGroup(group_id);
 	if (groups_identical)
@@ -139,7 +139,7 @@ void LLPanelMediaSettingsPermissions::clearValues( void* userdata, bool editable
 	self->getChild< LLTextBox >("controls_label")->setEnabled(editable);
 	self->getChild< LLTextBox >("owner_label")->setEnabled(editable);
 	self->getChild< LLTextBox >("group_label")->setEnabled(editable);
-	//self->getChild< LLNameBox >("perms_group_name")->setEnabled(editable);
+	self->getChild< LLNameBox >("perms_group_name")->setEnabled(editable);
 	self->getChild< LLTextBox >("anyone_label")->setEnabled(editable);
 }
 
@@ -218,7 +218,7 @@ void LLPanelMediaSettingsPermissions::initValues( void* userdata, const LLSD& me
 	self->getChild< LLTextBox >("controls_label")->setEnabled(editable);
 	self->getChild< LLTextBox >("owner_label")->setEnabled(editable);
 	self->getChild< LLTextBox >("group_label")->setEnabled(editable);
-	//self->getChild< LLNameBox >("perms_group_name")->setEnabled(editable);
+	self->getChild< LLNameBox >("perms_group_name")->setEnabled(editable);
 	self->getChild< LLTextBox >("anyone_label")->setEnabled(editable);
 }
 

@@ -4207,8 +4207,6 @@ bool process_login_success_response(std::string& password)
 		LLViewerMedia::openIDSetup(openid_url, openid_token);
 	}
 
-	gIMMgr->loadIgnoreGroup();
-
 	bool success = false;
 	// JC: gesture loading done below, when we have an asset system
 	// in place.  Don't delete/clear user_credentials until then.

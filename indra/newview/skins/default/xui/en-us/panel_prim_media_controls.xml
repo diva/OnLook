@@ -48,7 +48,7 @@
 		  height="8"
 		  top="0"
                   left="0"
-		  />
+		  tool_tip="Media is Loading"/>
 	</layout_panel>
 	<layout_panel
 		name="right_bookend_bottom"
@@ -87,6 +87,7 @@
                   image_overlay="go-previous.png"
                   auto_resize="false"
                   label=""
+		  tool_tip="Navigate back"
 		  bottom="-22"
                   left="0"
 		  width="22"
@@ -111,7 +112,8 @@
                   label=""
 		  bottom="-22"
                   height="22"
-                  width="22">
+                  width="22"
+		  tool_tip="Navigate forward">
                 <button.commit_callback
                         function="MediaCtrl.Forward" />
           </button>
@@ -130,6 +132,7 @@
 		  follows="top"
 		  image_overlay="go-home.png"
 	          label=""
+		  tool_tip="Home page"
 		  bottom="-22"
 	          height="22"
 	          width="22">
@@ -151,6 +154,7 @@
 		  follows="top"
 	          image_overlay="go-media-stop.png"
 	          label=""
+		  tool_tip="Stop media"
 		  bottom="-22"
 		  height="22"
 	          width="22">
@@ -172,6 +176,7 @@
 		  follows="top"
 		  image_overlay="go-reload.png"
 		  label=""
+		  tool_tip="Reload"
 		  bottom="-22"
 		  height="22"
 		  width="22">
@@ -193,6 +198,7 @@
 		  follows="top"
 		  image_overlay="go-stop.png"
 		  label=""
+		  tool_tip = "Stop loading"
 		  bottom="-22"
                   height="22"
                   width="22">
@@ -214,6 +220,7 @@
 		  follows="top"
 		  image_overlay="go-media-play.png"
 		  label=""
+		   tool_tip = "Play media"
 		  bottom="-22"
 		  height="22"
 		  width="22">
@@ -258,6 +265,7 @@
 		  follows="top|left|right" 
 		  height="22"
 		  bottom="-22"
+		  tool_tip="Media URL"
 		  text_pad_right="16"> 
 		<line_editor.commit_callback
 			function="MediaCtrl.CommitURL"/>
@@ -269,7 +277,7 @@
 		  height="20"
 		  width="38"
 		  left="140"
-      bottom="0"
+		  bottom="0"
 		  border_size="0"
 		  mouse_opaque="false"
 		  orientation="horizontal">
@@ -284,6 +292,7 @@
 			  height="16"
 			  image_name="Flag.png"
 			  layout="topleft"
+			  tool_tip="White List enabled"
 			  bottom="-16"
 			  width="16" />
 		</layout_panel>
@@ -297,6 +306,7 @@
 			  height="16"
 			  image_name="lock.png"
 			  bottom="-16"
+			  tool_tip="Secured Browsing"
 			  width="16" />
 		</layout_panel>
 	  </layout_stack>
@@ -317,6 +327,7 @@
 		  height="22"
 		  increment="0.01"
 		  initial_value="0.5"
+		  tool_tip="Movie play progress"
 		  width="200">
 		<slider_bar.commit_callback
 			function="MediaCtrl.JumpProgress" />
@@ -337,6 +348,7 @@
 		  bottom="-22"
 		  auto_resize="false"
 		  height="22"
+		  tool_tip="Step back"
 		  width="22">
 		<button.commit_callback
 			function="MediaCtrl.SkipBack" />
@@ -356,6 +368,7 @@
 		  label=""
 		  bottom="-22"
 		  height="22"
+		  tool_tip="Step forward"
 		  width="22">
 		<button.commit_callback
 			function="MediaCtrl.SkipForward" />
@@ -383,6 +396,7 @@
 		  hover_glow_amount="0.15"
 		  is_toggle="true"
 		  scale_image="false"
+		  tool_tip="Mute This Media"
 		  left_delta="5"
 		  bottom="-22"
 		  draw_border="true"
@@ -430,6 +444,7 @@
 		  label=""
 		  bottom="-22"
 		  height="22"
+		  tool_tip="Zoom into media"
 		  width="22">
 		<button.commit_callback
 			function="MediaCtrl.Zoom" />
@@ -449,6 +464,7 @@
 		  image_overlay="go-media-unzoom.png"
 		  label=""
 		  height="22"
+		  tool_tip ="Zoom Back"
 		  bottom="-22"
 		  width="21">
 		<button.commit_callback
@@ -469,6 +485,7 @@
 		  label=""
 		  bottom="-22"
 		  height="22"
+		  tool_tip = "Open URL in browser"
 		  width="24" >
 		<button.commit_callback
 			function="MediaCtrl.Open" />

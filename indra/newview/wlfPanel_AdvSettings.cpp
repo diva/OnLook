@@ -76,7 +76,7 @@ void wlfPanel_AdvSettings::build()
 
 	deleteAllChildren();
 	std::string ButtonState;
-	if (!gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
+	if (gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
 	{
 		LLUICtrlFactory::getInstance()->buildPanel(this, "wlfPanel_AdvSettings_expanded.xml", &getFactoryMap());
 		ButtonState = "arrow_down.tga";
@@ -92,7 +92,7 @@ void wlfPanel_AdvSettings::build()
 void wlfPanel_AdvSettings::refresh()
 {
 // [RLVa:KB] - Checked: 2009-09-19
-	if (rlv_handler_t::isEnabled() && !gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
+	if (rlv_handler_t::isEnabled() && gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
 	{
 		if (!findChild<LLView>("use_estate_wl")) return; // Singu Note: Not certain why, but sometimes none of these exist even though the above setting implies they should
 		childSetEnabled("use_estate_wl", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
@@ -141,7 +141,7 @@ BOOL wlfPanel_AdvSettings::postBuild()
 {
 	childSetAction("expand", onClickExpandBtn, this);
 
-	if (!gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
+	if (gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
 	{
 		getChild<LLCheckBoxCtrl>("use_estate_wl")->setCommitCallback(onUseRegionSettings);
 

@@ -483,13 +483,14 @@
 				mouse_opaque="true" name="Group:" v_pad="0" width="78">
 				Group:
 			</text>
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			    bottom="-126" drop_shadow_visible="true" follows="left|top"
-			    font="SansSerifSmall" h_pad="0" halign="left" height="16" left_delta="78"
-			    mouse_opaque="true" name="Group Name Proxy" v_pad="0" visible="false"
-			    width="88">
-				The Lindens
-			</text>
+			<name_box
+			    follows="left|top"
+			    height="16" 
+			    initial_value="Loading..."
+			    bottom="-126" 
+			    left_delta="78"
+			    name="Group Name Proxy"
+			    width="142"/>
 			<button bottom="-126" follows="top|right" font="SansSerifSmall" halign="center"
 			    height="16" label="Set" label_selected="Set..." left_delta="94"
 			    mouse_opaque="true" name="button set group" scale_image="TRUE" width="30" />

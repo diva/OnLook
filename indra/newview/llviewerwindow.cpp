@@ -199,6 +199,8 @@
 #include "llfloatertest.h" // HACK!
 #include "llfloaternotificationsconsole.h"
 
+#include "llpanelnearbymedia.h"
+
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -2107,11 +2109,24 @@ void LLViewerWindow::adjustControlRectanglesForFirstUse(const LLRect& window)
 void LLViewerWindow::initWorldUI()
 {
 	pre_init_menus();
+	if(!gMenuHolder)
+	{
+		//
+		// Tools for building
+		//
+		init_menus();
+	}
+}
 
+// initWorldUI that wasn't before logging in. Some of this may require the access the 'LindenUserDir'.
+void LLViewerWindow::initWorldUI_postLogin()
+{
 	S32 height = mRootView->getRect().getHeight();
 	S32 width = mRootView->getRect().getWidth();
 	LLRect full_window(0, height, width, 0);
 
+	//============================================
+	//Begin LLViewerWindow::initWorlUI
 	// Don't re-enter if objects are alreay created
 	if (gBottomPanel == NULL)
 	{
@@ -2119,18 +2134,15 @@ void LLViewerWindow::initWorldUI()
 		gBottomPanel = new LLBottomPanel(mRootView->getRect());
 		mRootView->addChild(gBottomPanel);
 
+		LLFloaterNearbyMedia::updateClass();	//Dependent on the overlay panel being fully initialized.
+
 		// View for hover information
 		gHoverView = new LLHoverView(std::string("gHoverView"), full_window);
 		gHoverView->setVisible(TRUE);
 		mRootView->addChild(gHoverView);
 
 		gIMMgr = LLIMMgr::getInstance();
-
-		//
-		// Tools for building
-		//
-
-		init_menus();
+		gIMMgr->loadIgnoreGroup();
 
 		// Toolbox floater
 		gFloaterTools = new LLFloaterTools();
@@ -2149,19 +2161,16 @@ void LLViewerWindow::initWorldUI()
 		// put behind everything else in the UI
 		mRootView->addChildInBack(gHUDView);
 	}
+	//End LLViewerWindow::initWorlUI
+	//============================================
+	
 
 	LLPanel* panel_ssf_container = getRootView()->getChild<LLPanel>("state_management_buttons_container");
 	panel_ssf_container->setVisible(TRUE);
 
 	LLMenuOptionPathfindingRebakeNavmesh::getInstance()->initialize();
-}
 
-// initWorldUI that wasn't before logging in. Some of this may require the access the 'LindenUserDir'.
-void LLViewerWindow::initWorldUI_postLogin()
-{
-	S32 height = mRootView->getRect().getHeight();
-	S32 width = mRootView->getRect().getWidth();
-	LLRect full_window(0, height, width, 0);
+
 
 	// Don't re-enter if objects are alreay created.
 	if (!gStatusBar)
@@ -2236,7 +2245,8 @@ void LLViewerWindow::shutdownViews()
 	mRootView = NULL;
 	llinfos << "RootView deleted." << llendl ;
 
-	LLMenuOptionPathfindingRebakeNavmesh::getInstance()->quit();
+	if(LLMenuOptionPathfindingRebakeNavmesh::instanceExists())
+		LLMenuOptionPathfindingRebakeNavmesh::getInstance()->quit();
 
 	// Automatically deleted as children of mRootView.  Fix the globals.
 	gFloaterTools = NULL;
@@ -3440,7 +3450,7 @@ void LLViewerWindow::updateLayout()
 	}
 
 	// Update rectangles for the various toolbars
-	if (gOverlayBar && gNotifyBoxView && gConsole && gToolBar)
+	if (gOverlayBar && gNotifyBoxView && gConsole && gToolBar && gHUDView)
 	{
 		LLRect bar_rect(-1, STATUS_BAR_HEIGHT, getWindowWidth()+1, -1);
 

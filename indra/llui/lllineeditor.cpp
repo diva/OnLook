@@ -2555,9 +2555,6 @@ LLXMLNodePtr LLLineEditor::getXML(bool save_children) const
 // static
 LLView* LLLineEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("line_editor");
-	node->getAttributeString("name", name);
-
 	LLRect rect;
 	createRect(node, rect, parent, LLRect());
 
@@ -2584,7 +2581,7 @@ LLView* LLLineEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory
 	S32 border_thickness = 1;
 	node->getAttributeS32("border_thickness", border_thickness);
 
-	LLLineEditor* line_editor = new LLLineEditor(name,
+	LLLineEditor* line_editor = new LLLineEditor("line_editor",
 								rect, 
 								text, 
 								font,

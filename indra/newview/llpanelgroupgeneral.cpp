@@ -142,14 +142,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 		mBtnInfo->setClickedCallback(boost::bind(&LLPanelGroupGeneral::onClickInfo, this));
 	}
 
-	LLTextBox* founder = getChild<LLTextBox>("founder_name");
-	if (founder)
-	{
-		mFounderName = new LLNameBox(founder->getName(),founder->getRect(),LLUUID::null,FALSE,founder->getFont(),founder->getMouseOpaque());
-		removeChild(founder);
-		delete founder;
-		addChild(mFounderName);
-	}
+	mFounderName = getChild<LLNameBox>("founder_name");
 
 	mListVisibleMembers = getChild<LLNameListCtrl>("visible_members", recurse);
 	if (mListVisibleMembers)

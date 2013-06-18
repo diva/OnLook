@@ -91,7 +91,7 @@
     Group:
   </text>
   
- <!-- <name_box 
+  <name_box 
    bottom_delta="-5" 
    enabled="false" 
    follows="left|top" 
@@ -100,7 +100,7 @@
    name="perms_group_name"
    text_readonly_color="LabelDisabledColor"
    value ="" 
-   width="200" />-->
+   width="200" />
    
   <check_box 
    bottom_delta="-22" 

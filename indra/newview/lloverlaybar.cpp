@@ -69,7 +69,7 @@
 #include "llmediactrl.h"
 #include "llselectmgr.h"
 #include "wlfPanel_AdvSettings.h"
-
+#include "llpanelnearbymedia.h"
 
 
 
@@ -90,7 +90,6 @@ LLOverlayBar *gOverlayBar = NULL;
 extern S32 MENU_BAR_HEIGHT;
 extern ImportTracker gImportTracker;
 
-BOOL LLOverlayBar::sAdvSettingsPopup;
 BOOL LLOverlayBar::sChatVisible;
 
 //
@@ -156,15 +155,15 @@ LLOverlayBar::LLOverlayBar()
 
 bool updateAdvSettingsPopup(const LLSD &data)
 {
-	LLOverlayBar::sAdvSettingsPopup = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
+	bool wfl_adv_settings_popup = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
 	wlfPanel_AdvSettings::updateClass();
 	if(LLLayoutStack* layout_stack = gOverlayBar->findChild<LLLayoutStack>("overlay_layout_panel"))
 	{
 		LLLayoutPanel* layout_panel = layout_stack->findChild<LLLayoutPanel>("AdvSettings_container");
 		if(layout_panel)
 		{
-			layout_stack->collapsePanel(layout_panel,LLOverlayBar::sAdvSettingsPopup);
-			if(!LLOverlayBar::sAdvSettingsPopup)
+			layout_stack->collapsePanel(layout_panel,!wfl_adv_settings_popup);
+			if(wfl_adv_settings_popup)
 				layout_panel->setTargetDim(layout_panel->getChild<LLView>("Adv_Settings")->getBoundingRect().getWidth());
 		}
 	}
@@ -184,6 +183,11 @@ bool updateAORemote(const LLSD &data)
 	return true;
 }
 
+bool updateNearbyMediaFloater(const LLSD &data)
+{
+	LLFloaterNearbyMedia::updateClass();
+	return true;
+}
 
 BOOL LLOverlayBar::postBuild()
 {
@@ -212,22 +216,26 @@ BOOL LLOverlayBar::postBuild()
 
 	layoutButtons();
 
-	sAdvSettingsPopup = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
 	sChatVisible = gSavedSettings.getBOOL("ChatVisible");
 
-	gSavedSettings.getControl("wlfAdvSettingsPopup")->getSignal()->connect(boost::bind(&updateAdvSettingsPopup,_2));
+	LLControlVariable* wfl_adv_settings_popupp = gSavedSettings.getControl("wlfAdvSettingsPopup");
+	wfl_adv_settings_popupp->getSignal()->connect(boost::bind(&updateAdvSettingsPopup,_2));
 	gSavedSettings.getControl("ChatVisible")->getSignal()->connect(boost::bind(&updateChatVisible,_2));
 	gSavedSettings.getControl("EnableAORemote")->getSignal()->connect(boost::bind(&updateAORemote,_2));
+	gSavedSettings.getControl("ShowNearbyMediaFloater")->getSignal()->connect(boost::bind(&updateNearbyMediaFloater,_2));
+
 	childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));	
 
 	wlfPanel_AdvSettings::updateClass();
+	
+	bool wfl_adv_settings_popup = wfl_adv_settings_popupp->getValue().asBoolean();
 	if(LLLayoutStack* layout_stack = findChild<LLLayoutStack>("overlay_layout_panel"))
 	{
 		LLLayoutPanel* layout_panel = layout_stack->findChild<LLLayoutPanel>("AdvSettings_container");
 		if(layout_panel)
 		{
-			layout_stack->collapsePanel(layout_panel,LLOverlayBar::sAdvSettingsPopup);
-			if(!LLOverlayBar::sAdvSettingsPopup)
+			layout_stack->collapsePanel(layout_panel,!wfl_adv_settings_popup);
+			if(wfl_adv_settings_popup)
 				layout_panel->setTargetDim(layout_panel->getChild<LLView>("Adv_Settings")->getBoundingRect().getWidth());
 		}
 	}

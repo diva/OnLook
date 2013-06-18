@@ -388,6 +388,69 @@ void LLTextBox::reshapeToFitText()
 }
 
 // virtual
+void LLTextBox::initFromXML(LLXMLNodePtr node, LLView* parent)
+{
+	LLUICtrl::initFromXML(node, parent);
+	
+	LLFontGL* font = LLView::selectFont(node);
+	if(font)
+		mFontGL = font;
+		
+	setText(node->getTextContents());
+	
+	LLFontGL::HAlign halign = LLView::selectFontHAlign(node);
+	setHAlign(halign);
+
+	node->getAttributeS32("line_spacing", mLineSpacing);
+
+	std::string font_style;
+	if (node->getAttributeString("font-style", font_style))
+	{
+		mFontStyle = LLFontGL::getStyleFromString(font_style);
+	}
+
+	if (node->getAttributeString("font-shadow", font_style))
+	{
+		if(font_style == "soft")
+			mFontShadow = LLFontGL::DROP_SHADOW_SOFT;
+		else if(font_style == "hard")
+			mFontShadow = LLFontGL::DROP_SHADOW;
+		else 
+			mFontShadow = LLFontGL::NO_SHADOW;
+	}
+
+	BOOL mouse_opaque = getMouseOpaque();
+	if (node->getAttributeBOOL("mouse_opaque", mouse_opaque))
+	{
+		setMouseOpaque(mouse_opaque);
+	}	
+
+	if(node->hasAttribute("text_color"))
+	{
+		LLColor4 color;
+		LLUICtrlFactory::getAttributeColor(node, "text_color", color);
+		setColor(color);
+	}
+
+	if(node->hasAttribute("hover_color"))
+	{
+		LLColor4 color;
+		LLUICtrlFactory::getAttributeColor(node, "hover_color", color);
+		setHoverColor(color);
+		setHoverActive(true);
+	}
+
+	BOOL hover_active = FALSE;
+	if(node->getAttributeBOOL("hover", hover_active))
+	{
+		setHoverActive(hover_active);
+	}
+
+	node->getAttributeBOOL("use_ellipses", mUseEllipses);
+	
+}
+
+// virtual
 LLXMLNodePtr LLTextBox::getXML(bool save_children) const
 {
 	LLXMLNodePtr node = LLUICtrl::getXML();
@@ -416,68 +479,8 @@ LLXMLNodePtr LLTextBox::getXML(bool save_children) const
 // static
 LLView* LLTextBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("text_box");
-	node->getAttributeString("name", name);
-	LLFontGL* font = LLView::selectFont(node);
-
-	std::string text = node->getTextContents();
-
-	LLTextBox* text_box = new LLTextBox(name,
-		LLRect(),
-		text,
-		font,
-		FALSE);
-		
-
-	LLFontGL::HAlign halign = LLView::selectFontHAlign(node);
-	text_box->setHAlign(halign);
-
+	LLTextBox* text_box = new LLTextBox("text_box", LLRect(), "" , NULL, FALSE);
 	text_box->initFromXML(node, parent);
-
-	node->getAttributeS32("line_spacing", text_box->mLineSpacing);
-
-	std::string font_style;
-	if (node->getAttributeString("font-style", font_style))
-	{
-		text_box->mFontStyle = LLFontGL::getStyleFromString(font_style);
-	}
-
-	if (node->getAttributeString("font-shadow", font_style))
-	{
-		if(font_style == "soft")
-			text_box->mFontShadow = LLFontGL::DROP_SHADOW_SOFT;
-		else if(font_style == "hard")
-			text_box->mFontShadow = LLFontGL::DROP_SHADOW;
-		else 
-			text_box->mFontShadow = LLFontGL::NO_SHADOW;
-	}
-
-	BOOL mouse_opaque = text_box->getMouseOpaque();
-	if (node->getAttributeBOOL("mouse_opaque", mouse_opaque))
-	{
-		text_box->setMouseOpaque(mouse_opaque);
-	}	
-
-	if(node->hasAttribute("text_color"))
-	{
-		LLColor4 color;
-		LLUICtrlFactory::getAttributeColor(node, "text_color", color);
-		text_box->setColor(color);
-	}
-
-	if(node->hasAttribute("hover_color"))
-	{
-		LLColor4 color;
-		LLUICtrlFactory::getAttributeColor(node, "hover_color", color);
-		text_box->setHoverColor(color);
-		text_box->setHoverActive(true);
-	}
-
-	BOOL hover_active = FALSE;
-	if(node->getAttributeBOOL("hover", hover_active))
-	{
-		text_box->setHoverActive(hover_active);
-	}
 
 	return text_box;
 }

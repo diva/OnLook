@@ -370,6 +370,7 @@ set(viewer_SOURCE_FILES
     llpanelmediasettingsgeneral.cpp
     llpanelmediasettingspermissions.cpp
     llpanelmediasettingssecurity.cpp
+    llpanelnearbymedia.cpp
     llpanelmorph.cpp
     llpanelmsgs.cpp
     llpanelnetwork.cpp
@@ -871,6 +872,7 @@ set(viewer_HEADER_FILES
     llpanelmediasettingsgeneral.h
     llpanelmediasettingspermissions.h
     llpanelmediasettingssecurity.h
+    llpanelnearbymedia.h
     llpanelmorph.h
     llpanelmsgs.h
     llpanelnetwork.h

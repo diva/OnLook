@@ -147,9 +147,6 @@ void LLSearchEditor::handleKeystroke()
 // static
 LLView* LLSearchEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("search_editor");
-	node->getAttributeString("name", name);
-
 	LLRect rect;
 	createRect(node, rect, parent, LLRect());
 
@@ -158,7 +155,7 @@ LLView* LLSearchEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 
 	std::string text = node->getValue().substr(0, max_text_length - 1);
 
-	LLSearchEditor* search_editor = new LLSearchEditor(name,
+	LLSearchEditor* search_editor = new LLSearchEditor("search_editor",
 								rect, 
 								max_text_length);
 

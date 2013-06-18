@@ -352,9 +352,6 @@ LLXMLNodePtr LLRadioGroup::getXML(bool save_children) const
 // static
 LLView* LLRadioGroup::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("radio_group");
-	node->getAttributeString("name", name);
-
 	U32 initial_value = 0;
 	node->getAttributeU32("initial_value", initial_value);
 
@@ -364,7 +361,7 @@ LLView* LLRadioGroup::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory
 	LLRect rect;
 	createRect(node, rect, parent, LLRect());
 
-	LLRadioGroup* radio_group = new LLRadioGroup(name, 
+	LLRadioGroup* radio_group = new LLRadioGroup("radio_group", 
 		rect,
 		initial_value,
 		NULL,
@@ -408,10 +405,8 @@ LLView* LLRadioGroup::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory
 				LLRect item_rect;
 				createRect(child, item_rect, radio_group, rect);
 
-				std::string radioname("radio");
-				child->getAttributeString("name", radioname);
 				std::string item_label = child->getTextContents();
-				LLRadioCtrl* radio = radio_group->addRadioButton(radioname, item_label, item_rect, font);
+				LLRadioCtrl* radio = radio_group->addRadioButton("radio", item_label, item_rect, font);
 
 				radio->initFromXML(child, radio_group);
 			}

@@ -99,7 +99,6 @@ public:
 	void setCancelTPButtonVisible(BOOL b, const std::string& label);
 
 	static BOOL sChatVisible;
-	static BOOL sAdvSettingsPopup;
 protected:	
 	static void* createMediaRemote(void* userdata);
 	static void* createVoiceRemote(void* userdata);
@@ -110,6 +109,7 @@ protected:
 	void enableMediaButtons();
 
 protected:
+	friend class LLFloaterNearbyMedia; //Crappy workaround to access mMediaRemote
 	LLMediaRemoteCtrl*	mMediaRemote;
 	LLVoiceRemoteCtrl*	mVoiceRemote;
 	LLButton*	mCancelBtn;

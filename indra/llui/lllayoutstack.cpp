@@ -976,8 +976,6 @@ LLView* LLLayoutStack::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactor
 	layout_stackp->setName(name);
 	layout_stackp->initFromXML(node, parent);
 
-	llinfos << "Created layout stack '"<<name<<"' clip="<<clip<<" border_size="<<border_size<<" rect="<<layout_stackp->getRect()<<llendl;
-
 	LLXMLNodePtr child;
 	for (child = node->getFirstChild(); child.notNull(); child = child->getNextSibling())
 	{
@@ -1020,7 +1018,6 @@ LLView* LLLayoutPanel::fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFactor
 		panelp->initPanelXML(node, parent, factory);
 		panelp->mCommitCallbackRegistrar.popScope();
 		panelp->mEnableCallbackRegistrar.popScope();
-		llinfos << "Created standard layout panel '"<<name<<"'"<<" rect="<<panelp->getRect()<<llendl;
 		
 	}
 	else
@@ -1033,11 +1030,6 @@ LLView* LLLayoutPanel::fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFactor
 			panelp->initPanelXML(node, parent, factory);
 			panelp->mCommitCallbackRegistrar.popScope();
 			panelp->mEnableCallbackRegistrar.popScope();
-			llinfos << "Created factory layout panel '"<<name<<"'"<<" rect="<<panelp->getRect()<<llendl;
-		}
-		else
-		{
-			llinfos << "Factory layout panel already inited '"<<name<<"'"<<" rect="<<panelp->getRect()<<llendl;
 		}
 	}
 	panelp->setOrigin(0, 0);

@@ -4150,13 +4150,10 @@ LLXMLNodePtr LLMenuBarGL::getXML(bool save_children) const
 
 LLView* LLMenuBarGL::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("menu");
-	node->getAttributeString("name", name);
-
 	BOOL opaque = FALSE;
 	node->getAttributeBOOL("opaque", opaque);
 
-	LLMenuBarGL *menubar = new LLMenuBarGL(name);
+	LLMenuBarGL *menubar = new LLMenuBarGL("menu");
 
 	LLHandle<LLFloater> parent_handle;
 	LLFloater* parent_floater = dynamic_cast<LLFloater*>(parent);

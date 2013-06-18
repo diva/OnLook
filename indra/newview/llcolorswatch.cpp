@@ -352,9 +352,6 @@ LLXMLNodePtr LLColorSwatchCtrl::getXML(bool save_children) const
 
 LLView* LLColorSwatchCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("colorswatch");
-	node->getAttributeString("name", name);
-
 	std::string label;
 	node->getAttributeString("label", label);
 
@@ -373,7 +370,7 @@ LLView* LLColorSwatchCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFa
 	}
 
 	LLColorSwatchCtrl* color_swatch = new LLColorSwatchCtrl(
-		name, 
+		"colorswatch", 
 		rect,
 		label,
 		color );

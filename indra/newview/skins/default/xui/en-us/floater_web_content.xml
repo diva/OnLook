@@ -32,6 +32,7 @@
       width="815">
       <button
         bottom="0"
+	tool_tip="Navigate back"
         follows="left|top"
 	height="25"
 	label=""
@@ -43,6 +44,7 @@
           function="WebContent.Back" />
         </button>
         <button
+	tool_tip="Navigate forward"
         bottom_delta="0"
 	follows="left|top"
 	height="25" label=""
@@ -55,6 +57,7 @@
         </button>
       <button
         bottom_delta="0"
+	tool_tip="Stop navigation"
 	enabled="true"
 	follows="left|top"
 	height="25"
@@ -67,6 +70,7 @@
           function="WebContent.Stop" />
       </button>
       <button
+	tool_tip="Reload page"
         bottom_delta="0"
 	follows="left|top"
 	height="25"
@@ -86,20 +90,31 @@
         left_delta="29"
 	max_chars="1024"
 	name="address"
+	tool_tip="Enter URL here"
 	select_all_on_focus_received="true"
 	bottom_delta="4"
 	width="706">
         <combo_box.commit_callback
           function="WebContent.EnterAddress" />
       </combo_box>
+      <icon
+        name="media_secure_lock_flag"
+        height="16"
+	follows="top|right"
+	image_name="lock.png"
+	left_delta="667"
+	bottom="6"
+        tool_tip="Secured Browsing"
+        width="16" />
       <button
-        bottom_delta="-4"
+        bottom_delta="-6"
+	tool_tip="Open current URL in your desktop browser"
 	follows="right|top"
 	enabled="true" 
 	height="25"
 	label=""
 	image_overlay="media_btn_newwindow.png"
-	left_delta="709"
+	left_delta="41"
 	name="popexternal"
 	width="25">
         <button.commit_callback
@@ -117,7 +132,7 @@
       width="540">
       <web_browser
         bottom="0"
-	follows="left|right|top|bottom"
+	follows="all"
 	left="0"
 	name="webbrowser"
 	border_visible="false"

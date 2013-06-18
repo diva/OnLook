@@ -50,7 +50,7 @@
 		</layout_panel>
 		<layout_panel auto_resize="false" bottom="0" left="0" min_width="96" mouse_opaque="false"
 			name="ao_remote_container" use_bounding_rect="true" user_resize="false"
-			width="100">
+			width="96">
 			<panel background_visible="false" border="false" bottom="0" name="ao_remote" />
 		</layout_panel>
 		<layout_panel auto_resize="false" bottom="0" left="0" min_width="220" mouse_opaque="false"

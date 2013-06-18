@@ -158,9 +158,6 @@ LLXMLNodePtr LLIconCtrl::getXML(bool save_children) const
 
 LLView* LLIconCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("icon");
-	node->getAttributeString("name", name);
-
 	LLRect rect;
 	createRect(node, rect, parent, LLRect());
 
@@ -173,7 +170,7 @@ LLView* LLIconCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *
 	LLColor4 color(LLColor4::white);
 	LLUICtrlFactory::getAttributeColor(node,"color", color);
 
-	LLIconCtrl* icon = new LLIconCtrl(name, rect, image_name);
+	LLIconCtrl* icon = new LLIconCtrl("icon", rect, image_name);
 
 	icon->setColor(color);
 

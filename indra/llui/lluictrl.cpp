@@ -485,6 +485,10 @@ BOOL LLUICtrl::handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sticky_rect
 
 void LLUICtrl::initFromXML(LLXMLNodePtr node, LLView* parent)
 {
+	std::string name;
+	if(node->getAttributeString("name", name))
+		setName(name);
+
 	BOOL has_tab_stop = hasTabStop();
 	node->getAttributeBOOL("tab_stop", has_tab_stop);
 
