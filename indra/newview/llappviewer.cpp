@@ -263,12 +263,6 @@ LLTimer gLogoutTimer;
 static const F32 LOGOUT_REQUEST_TIME = 6.f;  // this will be cut short by the LogoutReply msg.
 F32 gLogoutMaxTime = LOGOUT_REQUEST_TIME;
 
-// <edit>
-LLUUID gSystemFolderRoot;
-LLUUID gSystemFolderSettings;
-LLUUID gSystemFolderAssets;
-// </edit>
-
 BOOL				gDisconnected = FALSE;
 
 // used to restore texture state after a mode switch
