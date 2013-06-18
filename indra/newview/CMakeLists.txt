@@ -115,7 +115,6 @@ set(viewer_SOURCE_FILES
     llanimstatelabels.cpp
     llappearancemgr.cpp
     llappviewer.cpp
-    llassetconverter.cpp
     llassetuploadqueue.cpp
     llassetuploadresponders.cpp
     llattachmentsmgr.cpp
@@ -304,7 +303,6 @@ set(viewer_SOURCE_FILES
     llinventorypanel.cpp
     lljoystickbutton.cpp
     lllandmarklist.cpp
-    lllocalinventory.cpp
     lllogchat.cpp
     llloginhandler.cpp
     llmainlooprepeater.cpp
@@ -620,7 +618,6 @@ set(viewer_HEADER_FILES
     llappearance.h
     llappearancemgr.h
     llappviewer.h
-    llassetconverter.h
     llassetuploadqueue.h
     llassetuploadresponders.h
     llattachmentsmgr.h
@@ -809,7 +806,6 @@ set(viewer_HEADER_FILES
     lljoystickbutton.h
     lllandmarklist.h
     lllightconstants.h
-    lllocalinventory.h
     lllogchat.h
     llloginhandler.h
     llmainlooprepeater.h

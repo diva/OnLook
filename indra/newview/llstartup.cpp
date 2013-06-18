@@ -2193,41 +2193,6 @@ bool idle_startup()
  		}
 		display_startup();
 
-		// <edit> testing adding a local inventory folder...
-		if (gSavedSettings.getBOOL("AscentUseSystemFolder"))
-		{
-			LLViewerInventoryCategory* system_folder = new LLViewerInventoryCategory(gAgent.getID());
-			system_folder->rename(std::string("System Inventory"));
-			LLUUID system_folder_id = LLUUID("00000000-0000-0000-0000-000000000001");//"FFFFFFFF-0000-F113-7357-000000000001");
-			system_folder->setUUID(system_folder_id);
-			gSystemFolderRoot = system_folder_id;
-			system_folder->setParent(LLUUID::null);
-			system_folder->setPreferredType(LLFolderType::FT_NONE);
-			gInventory.addCategory(system_folder);
-
-			LLViewerInventoryCategory* settings_folder = new LLViewerInventoryCategory(gAgent.getID());
-			settings_folder->rename(std::string("Settings"));
-			LLUUID settings_folder_id;
-			settings_folder_id.generate();
-			settings_folder->setUUID(settings_folder_id);
-			gSystemFolderSettings = settings_folder_id;
-			settings_folder->setParent(gSystemFolderRoot);
-			settings_folder->setPreferredType(LLFolderType::FT_NONE);
-			gInventory.addCategory(settings_folder);
-
-			LLViewerInventoryCategory* assets_folder = new LLViewerInventoryCategory(gAgent.getID());
-			assets_folder->rename(std::string("Assets"));
-			LLUUID assets_folder_id;
-			assets_folder_id.generate();
-			assets_folder->setUUID(assets_folder_id);
-			gSystemFolderAssets = assets_folder_id;
-			assets_folder->setParent(gSystemFolderRoot);
-			assets_folder->setPreferredType(LLFolderType::FT_NONE);
-			gInventory.addCategory(assets_folder);
-		}
-		display_startup();
-		// </edit>
-
 		LLSD buddy_list = response["buddy-list"];
  		if(buddy_list.isDefined())
  		{

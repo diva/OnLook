@@ -54,8 +54,8 @@ protected:
 
     //General -----------------------------------------------------------------------------
     BOOL mDoubleClickTeleport;
-        BOOL mResetCameraAfterTP;
-        BOOL mOffsetTPByUserHeight;
+    BOOL mResetCameraAfterTP;
+    BOOL mOffsetTPByUserHeight;
     bool mClearBeaconAfterTeleport;
     bool mLiruFlyAfterTeleport;
     bool mLiruContinueFlying;
@@ -66,14 +66,12 @@ protected:
     BOOL mAlwaysShowFly;
     BOOL mDisableMinZoom;
     BOOL mPowerUser;
-    BOOL mUseSystemFolder;
-        BOOL mUploadToSystem;
     BOOL mFetchInventoryOnLogin;
     BOOL mEnableLLWind;
     BOOL mEnableClouds;
-        BOOL mEnableClassicClouds;
+    BOOL mEnableClassicClouds;
     BOOL mSpeedRez;
-        U32 mSpeedRezInterval;
+    U32 mSpeedRezInterval;
 
     //Command Line ------------------------------------------------------------------------
     BOOL mCmdLine;

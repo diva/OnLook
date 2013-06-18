@@ -5,8 +5,8 @@
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="General" name="User Interface">
       <check_box left="10" bottom_delta="-25" control_name="DoubleClickTeleport" follows="top" initial_value="false"
         label="Enable teleporting via double-click in-world" tool_tip="Double-clicking on an object/person will teleport you to that location." name="double_click_teleport_check"/>
-	<check_box left="20" bottom_delta="-18" control_name="OptionRotateCamAfterLocalTP" follows="top" initial_value="false"
-		label="Reset camera after teleporting" tool_tip="Centers the camera behind you after a local teleport." name="center_after_teleport_check"/>
+      <check_box left="20" bottom_delta="-18" control_name="OptionRotateCamAfterLocalTP" follows="top" initial_value="false"
+        label="Reset camera after teleporting" tool_tip="Centers the camera behind you after a local teleport." name="center_after_teleport_check"/>
       <check_box bottom_delta="-18" control_name="OptionOffsetTPByAgentHeight" follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
         label="Offset TP target by half agent height" tool_tip="Tries to aim the TP so that your feet land at the point you're aiming for." name="offset_teleport_check"/>
       <check_box left="10" follows="top" bottom_delta="-18" control_name="ClearBeaconAfterTeleport" name="clear_beacon_after_tp" label="Clear red destination beacon after teleporting"/>
@@ -28,10 +28,6 @@
         label="Enable Power User functionality" tool_tip="Adds features deemed too dangerous for normal use. These features can wreak havoc or do bad things if misused - Mostly to yourself or your belongings. If you're sure, activate the checkbox below as well." name="power_user_check"/>
       <check_box bottom_delta="-18" enabled="true" follows="top" left="20" initial_value="true"
         label="Confirm Power User functionality" tool_tip="Confirms Power User activation. Turn this on at your own risk, and use any features it enables responsibly. Singularity devs won't replace anything you break. We recommend having a backup copy of anything to be victim to these powers. Unlike most checkboxes, you must click Apply or OK before this will activate." name="power_user_confirm_check"/>
-      <check_box bottom_delta="-18" control_name="AscentUseSystemFolder" follows="top" left="10" initial_value="true"
-        label="Enable Ascent System Inventory (Requires Restart)" tool_tip="Creates a new folder in the inventory for storing settings files and non-permanent assets." name="system_folder_check"/>
-      <check_box bottom_delta="-18" control_name="AscentSystemTemporary" follows="top" left="20" initial_value="false"
-        label="Temporary uploads go in the System Asset folder." tool_tip="Puts temporary uploads in the Asset folder which separates them from actual uploads, making them easier to find." name="temp_in_system_check"/>
       <check_box bottom_delta="-18" control_name="FetchInventoryOnLogin" follows="top" left="10" initial_value="true"
         label="Automatically fetch the inventory in the background after login" tool_tip="Inventory will preload when you log in, so you don't have to wait for it to load when doing an initial search." name="fetch_inventory_on_login_check"/>
       <check_box bottom_delta="-18" control_name="WindEnabled" follows="left|top" initial_value="false" label="Enable Wind Effects" name="enable_wind"/>
@@ -117,9 +113,9 @@
         <combo_item name="Rubber" value="Rubber">Rubber</combo_item>
       </combo_box>
       <text bottom="-19" left_delta="85" name="text_box7" halign="center" width="115">Next Owner Perms</text>
-        <check_box follows="top" height="16" initial_value="false" label="Copy permission" tool_tip="Next owner can make copies of creations" name="next_owner_copy" control_name="NextOwnerCopy"/>
-        <check_box follows="top" height="16" initial_value="false" label="Modify permission" tool_tip="Next owner can edit creations" name="next_owner_modify" control_name="NextOwnerModify"/>
-        <check_box follows="top" height="16" initial_value="true" label="Transfer permission" tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer" control_name="NextOwnerTransfer"/>
+      <check_box follows="top" height="16" initial_value="false" label="Copy permission" tool_tip="Next owner can make copies of creations" name="next_owner_copy" control_name="NextOwnerCopy"/>
+      <check_box follows="top" height="16" initial_value="false" label="Modify permission" tool_tip="Next owner can edit creations" name="next_owner_modify" control_name="NextOwnerModify"/>
+      <check_box follows="top" height="16" initial_value="true" label="Transfer permission" tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer" control_name="NextOwnerTransfer"/>
       <check_box bottom="-131" left="5" follows="top" height="16" label="Phantom" name="EmPhantomToggle" control_name="EmeraldBuildPrefs_Phantom"/>
       <check_box follows="top" height="16" label="Physical" name="EmPhysicalToggle" control_name="EmeraldBuildPrefs_Physical"/>
       <check_box follows="top" height="16" label="Temporary" name="EmTemporaryToggle" control_name="EmeraldBuildPrefs_Temporary"/>
@@ -136,7 +132,7 @@
         <combo_item name="High" value="High">High</combo_item>
       </combo_box>
       <check_box name="EmeraldBuildPrefsEmbedItem" left="5" bottom_delta="-20" follows="top" initial_value="false" label="Put an item into new objects" control_name="EmeraldBuildPrefs_EmbedItem"/>
-       <drop_target control_name="EmeraldBuildPrefs_Item" bottom_delta="-5" left="10" height="15" name="build_item_add_disp_rect" width="270"/>
+      <drop_target control_name="EmeraldBuildPrefs_Item" bottom_delta="-5" left="10" height="15" name="build_item_add_disp_rect" width="270"/>
       <check_box bottom_delta="4" follows="top" left_delta="274" label="Highlight selected prims" name="EmBuildPrefsRenderHighlight_toggle" control_name="RenderHighlightSelections"/>
       <check_box bottom_delta="-20" follows="top" initial_value="false" label="Axis arrow on root prim position" tool_tip="Default behaviour is to show the axis on the center of mass of a linkset. If enabled, the axis will be shown on the root prim of the linkset instead." name="EmBuildPrefsActualRoot_toggle" control_name="AscentBuildPrefs_ActualRoot"/>
     </panel>
