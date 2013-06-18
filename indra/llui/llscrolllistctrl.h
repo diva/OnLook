@@ -241,10 +241,9 @@ public:
 	void enableResizeBar(BOOL enable);
 	std::string getLabel() { return mOrigLabel; }
 
-	static void onSelectSort(LLUICtrl* ctrl, void* user_data);
-	static void onClick(void* user_data);
-	static void onMouseDown(void* user_data);
-	static void onHeldDown(void* user_data);
+	void onSelectSort();
+	void onClick();
+	void onMouseDown();
 
 private:
 	LLScrollListColumn* mColumn;
