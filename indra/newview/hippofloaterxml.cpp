@@ -363,23 +363,23 @@ bool HippoFloaterXmlImpl::execute(LLFloater *floater, LLUICtrl *ctrl,
 					if (HippoFloaterXmlImpl *floaterp = dynamic_cast<HippoFloaterXmlImpl*>(ctrl)) {
 						floaterp->mIsNotifyOnClose = set;
                     } else {
-						HippoFloaterXmlImpl *floaterp = static_cast<HippoFloaterXmlImpl*>(floater);
+						HippoFloaterXmlImpl *thisFloater = static_cast<HippoFloaterXmlImpl*>(floater);
                         if (set) {
 							notice_ptr_t connptr(new notice_connection_t(ctrl->setCommitCallback(boost::bind(&notifyCallback, _1, floater), ctrl)));
-							floaterp->mNotices[ctrl] = connptr;
+							thisFloater->mNotices[ctrl] = connptr;
 						} else {
-							floaterp->mNotices.erase(ctrl);
+							thisFloater->mNotices.erase(ctrl);
 						}
                     }
 				} else if (key == "picker") {
 					bool set = (value != "0");
 					if (!dynamic_cast<HippoFloaterXmlImpl*>(ctrl)) {
-						HippoFloaterXmlImpl *floaterp = static_cast<HippoFloaterXmlImpl*>(floater);
+						HippoFloaterXmlImpl *thisFloater = static_cast<HippoFloaterXmlImpl*>(floater);
                         if (set) {
 							notice_ptr_t connptr(new notice_connection_t(ctrl->setCommitCallback(boost::bind(&pickerCallback, _1, floater), ctrl)));
-							floaterp->mNotices[ctrl] = connptr;
+							thisFloater->mNotices[ctrl] = connptr;
 						} else {
-							floaterp->mNotices.erase(ctrl);
+							thisFloater->mNotices.erase(ctrl);
 						}
 					}
 				}
