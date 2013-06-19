@@ -30,17 +30,17 @@
 			Mostrar:
 		</text>
 		<combo_box name="show_combo">
-			<combo_box.item label="Tudo" name="All"/>
-			<combo_box.item label="Neste lote" name="WithinParcel"/>
-			<combo_box.item label="Fora deste lote" name="OutsideParcel"/>
-			<combo_box.item label="Nos outros avatares" name="OnOthers"/>
+			<combo_item name="All">Tudo</combo_item>
+			<combo_item name="WithinParcel">Neste lote</combo_item>
+			<combo_item name="OutsideParcel">Fora deste lote</combo_item>
+			<combo_item name="OnOthers">Nos outros avatares</combo_item>
 		</combo_box>
 		<scroll_list name="media_list">
-			<scroll_list.columns label="Proximidade" name="media_proximity"/>
-			<scroll_list.columns label="Visíveis" name="media_visibility"/>
-			<scroll_list.columns label="Classe" name="media_class"/>
-			<scroll_list.columns label="Nome" name="media_name"/>
-			<scroll_list.columns label="Depurar" name="media_debug"/>
+			<column label="Proximidade" name="media_proximity"/>
+			<column label="Visíveis" name="media_visibility"/>
+			<column label="Classe" name="media_class"/>
+			<column label="Nome" name="media_name"/>
+			<column label="Depurar" name="media_debug"/>
 		</scroll_list>
 		<panel name="media_controls_panel">
 			<layout_stack name="media_controls">

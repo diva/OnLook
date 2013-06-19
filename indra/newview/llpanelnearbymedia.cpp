@@ -478,7 +478,7 @@ void LLPanelNearByMedia::updateListItem(LLScrollListItem* item,
 		
 		// *TODO: Make these font styles/colors configurable via XUI
 		U8 font_style = LLFontGL::NORMAL;
-		LLColor4 cell_color = LLColor4::black;
+		LLColor4 cell_color = LLUI::sColorsGroup->getColor("DefaultListText");
 		
 		// Only colorize by class in debug
 		if (mDebugInfoVisible)
@@ -503,7 +503,7 @@ void LLPanelNearByMedia::updateListItem(LLScrollListItem* item,
 			if (mDebugInfoVisible)
 			{
 				font_style |= LLFontGL::ITALIC;
-				cell_color = LLColor4::black;
+				cell_color = LLUI::sColorsGroup->getColor("DefaultListText");
 			}
 			else {
 				// Dim it if it is disabled
@@ -973,7 +973,7 @@ void LLPanelNearByMedia::onAdvancedButtonClick()
 		LLTabContainer* tabcontainer = prefsfloater->getChild<LLTabContainer>("pref core");
 		if (tabcontainer)
 		{
-			tabcontainer->selectTabByName("Media Panel");
+			tabcontainer->selectTabByName("Media panel");
 		}
 	}
 }
@@ -984,7 +984,8 @@ void LLPanelNearByMedia::onMoreLess()
 	mNearbyMediaPanel->setVisible(is_more);
 
 	// enable resizing when expanded
-	getChildView("resizebar_bottom")->setEnabled(is_more);
+	if(mStandalonePanel)
+		getChildView("resizebar_bottom")->setEnabled(is_more);
 
 	LLRect new_rect = is_more ? mMoreRect : mLessRect;
 	new_rect.translate(getRect().mRight - new_rect.mRight, getRect().mTop - new_rect.mTop);

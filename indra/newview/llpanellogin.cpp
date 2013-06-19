@@ -810,14 +810,14 @@ void LLPanelLogin::updateGridCombo()
 		std::string grid = it->second->getGridName();
 		if(grid.empty() || it->second == defGrid || it->second == curGrid)
 			continue;
-		grids->add(grid,it->second->getGridNick());
+		grids->add(grid);
 	}
 	if(curGrid || defGrid)
 	{
 		if(defGrid)
-			grids->add(defGrid->getGridName(),defGrid->getGridNick(),ADD_TOP);
+			grids->add(defGrid->getGridName(),ADD_TOP);
 		if(curGrid && defGrid != curGrid)
-			grids->add(curGrid->getGridName(),curGrid->getGridNick(),ADD_TOP);
+			grids->add(curGrid->getGridName(),ADD_TOP);
 		grids->setCurrentByIndex(0);
 	}
 	else
