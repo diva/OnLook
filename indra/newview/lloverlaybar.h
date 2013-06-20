@@ -130,8 +130,8 @@ protected:
 private:
 	
 
-	/*static void	updateAdvSettingsPopup(const LLSD &data);
-	static void	updateChatVisible(const LLSD &data);*/
+	bool	updateAdvSettingsPopup();
+	//static void	updateChatVisible(const LLSD &data);
 
 };
 

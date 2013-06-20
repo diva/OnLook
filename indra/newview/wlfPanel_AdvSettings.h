@@ -34,6 +34,11 @@
 
 #include "llpanel.h"
 
+
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
+
 class LLComboBox;
 class LLSliderCtrl;
 
@@ -45,7 +50,10 @@ public:
 	~wlfPanel_AdvSettings ();
 	BOOL postBuild();
 	void draw();
-	void refresh();
+
+	void updateRlvVisibility();
+	void onRlvBehaviorChange(ERlvBehaviour eBhvr, ERlvParamType eType);
+
 	static void updateClass();
 
 	static void onClickExpandBtn(void* user_data);
@@ -76,7 +84,7 @@ protected:
 	// LLComboBox*		mDayCyclePresetCombo;
 	LLSliderCtrl*		mTimeSlider;
 
-	bool mBuilt;
+	bool mExpanded;
 };
 
 #endif // LL_wlfPanel_AdvSettings_H

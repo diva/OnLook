@@ -153,11 +153,11 @@ LLOverlayBar::LLOverlayBar()
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_overlaybar.xml", &factory_map);
 }
 
-bool updateAdvSettingsPopup(const LLSD &data)
+bool LLOverlayBar::updateAdvSettingsPopup()
 {
 	bool wfl_adv_settings_popup = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
 	wlfPanel_AdvSettings::updateClass();
-	if(LLLayoutStack* layout_stack = gOverlayBar->findChild<LLLayoutStack>("overlay_layout_panel"))
+	if(LLLayoutStack* layout_stack = findChild<LLLayoutStack>("overlay_layout_panel"))
 	{
 		LLLayoutPanel* layout_panel = layout_stack->findChild<LLLayoutPanel>("AdvSettings_container");
 		if(layout_panel)
@@ -218,27 +218,14 @@ BOOL LLOverlayBar::postBuild()
 
 	sChatVisible = gSavedSettings.getBOOL("ChatVisible");
 
-	LLControlVariable* wfl_adv_settings_popupp = gSavedSettings.getControl("wlfAdvSettingsPopup");
-	wfl_adv_settings_popupp->getSignal()->connect(boost::bind(&updateAdvSettingsPopup,_2));
+	gSavedSettings.getControl("wlfAdvSettingsPopup")->getSignal()->connect(boost::bind(&LLOverlayBar::updateAdvSettingsPopup,this));
 	gSavedSettings.getControl("ChatVisible")->getSignal()->connect(boost::bind(&updateChatVisible,_2));
 	gSavedSettings.getControl("EnableAORemote")->getSignal()->connect(boost::bind(&updateAORemote,_2));
 	gSavedSettings.getControl("ShowNearbyMediaFloater")->getSignal()->connect(boost::bind(&updateNearbyMediaFloater,_2));
 
 	childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));	
 
-	wlfPanel_AdvSettings::updateClass();
-	
-	bool wfl_adv_settings_popup = wfl_adv_settings_popupp->getValue().asBoolean();
-	if(LLLayoutStack* layout_stack = findChild<LLLayoutStack>("overlay_layout_panel"))
-	{
-		LLLayoutPanel* layout_panel = layout_stack->findChild<LLLayoutPanel>("AdvSettings_container");
-		if(layout_panel)
-		{
-			layout_stack->collapsePanel(layout_panel,!wfl_adv_settings_popup);
-			if(wfl_adv_settings_popup)
-				layout_panel->setTargetDim(layout_panel->getChild<LLView>("Adv_Settings")->getBoundingRect().getWidth());
-		}
-	}
+	updateAdvSettingsPopup();
 
 	return TRUE;
 }
