@@ -102,7 +102,8 @@ LLMediaCtrl::LLMediaCtrl( const Params& p) :
 	mHomePageMimeType(p.initial_mime_type),
 	mErrorPageURL(p.error_page_url),
 	mTrusted(p.trusted_content),
-	mHoverTextChanged(false)
+	mHoverTextChanged(false),
+	mContextMenu()
 {
 	{
 		LLColor4 color = p.caret_color().get();
@@ -308,6 +309,14 @@ BOOL LLMediaCtrl::handleRightMouseDown( S32 x, S32 y, MASK mask )
 		setFocus( TRUE );
 	}
 
+	LLMenuGL* menu = (LLMenuGL*)mContextMenu.get();
+	if (menu)
+	{
+		menu->buildDrawLabels();
+		menu->updateParent(LLMenuGL::sMenuContainer);
+		LLMenuGL::showPopup(this,menu, x, y);
+	}
+
 	return TRUE;
 }
 
@@ -370,6 +379,12 @@ void LLMediaCtrl::onFocusLost()
 //
 BOOL LLMediaCtrl::postBuild ()
 {
+	LLMenuGL* menu = LLUICtrlFactory::getInstance()->buildMenu("menu_media_ctrl.xml",LLMenuGL::sMenuContainer);
+	if(menu)
+	{
+		mContextMenu = menu->getHandle();
+	}
+
 	setVisibleCallback(boost::bind(&LLMediaCtrl::onVisibilityChange, this, _2));
 	return true;
 }

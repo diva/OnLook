@@ -209,6 +209,7 @@ public:
 		viewer_media_t mMediaSource;
 		S32 mTextureWidth,
 			mTextureHeight;
+		LLHandle<LLView> mContextMenu;
 };
 
 #endif // LL_LLMediaCtrl_H
