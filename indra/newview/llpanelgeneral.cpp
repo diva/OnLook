@@ -47,6 +47,7 @@
 #include "llavatarnamecache.h"
 #include "llvoavatar.h"
 #include "llcallingcard.h"
+#include "llnotifications.h"
 
 LLPanelGeneral::LLPanelGeneral()
 {

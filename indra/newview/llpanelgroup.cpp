@@ -119,9 +119,7 @@ void LLPanelGroupTab::handleClickHelp()
 		LLSD args;
 		args["MESSAGE"] = help_text;
 		LLFloater* parent_floater = gFloaterView->getParentFloater(this);
-		LLNotification::Params params(parent_floater->contextualNotification("GenericAlert"));
-		params.substitutions(args);
-		LLNotifications::instance().add(params);
+		parent_floater->addContextualNotification("GenericAlert",args);
 	}
 }
 

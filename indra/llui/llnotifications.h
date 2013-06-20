@@ -106,6 +106,7 @@
 #include "llui.h"
 #include "llxmlnode.h"
 #include "llnotificationptr.h"
+#include "llnotificationcontext.h"
 
 typedef enum e_notification_priority
 {
@@ -120,26 +121,6 @@ typedef boost::function<void (const LLSD&, const LLSD&)> LLNotificationResponder
 
 typedef LLFunctorRegistry<LLNotificationResponder> LLNotificationFunctorRegistry;
 typedef LLFunctorRegistration<LLNotificationResponder> LLNotificationFunctorRegistration;
-
-// context data that can be looked up via a notification's payload by the display logic
-// derive from this class to implement specific contexts
-class LLNotificationContext : public LLInstanceTracker<LLNotificationContext, LLUUID>
-{
-public:
-	LLNotificationContext() : LLInstanceTracker<LLNotificationContext, LLUUID>(LLUUID::generateNewID())
-	{
-	}
-
-	virtual ~LLNotificationContext() {}
-
-	LLSD asLLSD() const
-	{
-		return getKey();
-	}
-
-private:
-
-};
 
 // Contains notification form data, such as buttons and text fields along with
 // manipulator functions
