@@ -158,7 +158,7 @@ public:
 
 protected:
 	LLLayoutPanel(S32 min_dim=-1, BOOL auto_resize=TRUE, BOOL user_resize=TRUE, LLRect rect = LLRect());
-	BOOL initPanelXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
+	/*virtual*/ BOOL initPanelXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
 	
 	bool	mAutoResize;
 	bool	mUserResize;

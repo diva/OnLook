@@ -142,7 +142,7 @@ public:
 
 	CommitCallbackRegistry::ScopedRegistrar& getCommitCallbackRegistrar() { return mCommitCallbackRegistrar; }
 	EnableCallbackRegistry::ScopedRegistrar& getEnableCallbackRegistrar() { return mEnableCallbackRegistrar; }
-	BOOL initPanelXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
+	virtual BOOL initPanelXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
 	void initChildrenXML(LLXMLNodePtr node, LLUICtrlFactory* factory);
 	void setPanelParameters(LLXMLNodePtr node, LLView *parentp);
 
