@@ -641,9 +641,6 @@ Only large parcels can be listed in search.
 			<string name="search_disabled_permissions_tooltip">
 				This option is disabled because you cannot modify this parcel&apos;s options.
 			</string>
-			<string name="see_avs_text">
-				See and chat with residents on this parcel
-			</string>
 			<combo_box allow_text_entry="false" bottom="-140" enabled="false" follows="left|top"
 			     height="18" left="255" max_chars="20" mouse_opaque="true"
 			     name="land category with adult" width="130" visible="false">
@@ -765,7 +762,7 @@ Only large parcels can be listed in search.
 				Allow Residents on other parcels to:
 			</text>
 			<check_box bottom="-196" enabled="false" follows="left|top" font="SansSerifSmall"
-			     height="16" initial_value="false" label="See Avatars" left="14"
+			     height="16" initial_value="false" label="See and chat with residents on this parcel" left="14"
 			     mouse_opaque="true" name="SeeAvatarsCheck" radio_style="false"
 			     tool_tip="Allows residents on other parcels to see and chat with residents on this parcel, and you to see and chat with them."
 			     width="107" />
