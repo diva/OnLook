@@ -55,6 +55,7 @@ LLFloaterAvatarInfo::LLFloaterAvatarInfo(const std::string& name, const LLUUID &
 	LLCallbackMap::map_t factory_map;
 	factory_map["Panel Avatar"] = LLCallbackMap(createPanelAvatar, this);
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_profile.xml", &factory_map);
+	setTitle(name);
 }
 
 // virtual

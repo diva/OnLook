@@ -33,17 +33,11 @@
 
 #include "llviewerprecompiledheaders.h"
 
-#include "lllineeditor.h"
+#include "slfloatermediafilter.h"
+
 #include "llscrolllistctrl.h"
 #include "lluictrlfactory.h" 
-
-#include "slfloatermediafilter.h"
-#include "llviewercontrol.h"
 #include "llviewerparcelmedia.h"
-
-SLFloaterMediaFilter* SLFloaterMediaFilter::sInstance = NULL;
-bool SLFloaterMediaFilter::sIsWhitelist = false;
-bool SLFloaterMediaFilter::sShowIPs = false;
 
 SLFloaterMediaFilter::SLFloaterMediaFilter(const LLSD& key) : LLFloater(std::string("media filter")), mIsDirty(false)
 {
@@ -52,7 +46,6 @@ SLFloaterMediaFilter::SLFloaterMediaFilter(const LLSD& key) : LLFloater(std::str
 
 SLFloaterMediaFilter::~SLFloaterMediaFilter()
 {
-    sInstance = NULL;
 }
 
 BOOL SLFloaterMediaFilter::postBuild()
@@ -62,15 +55,13 @@ BOOL SLFloaterMediaFilter::postBuild()
 
 	if (mWhitelistSLC && mBlacklistSLC)
 	{
-		childSetAction("clear_lists", onClearLists, this);
-		childSetAction("show_ips", onShowIPs, this);
-		childSetAction("add_whitelist", onWhitelistAdd, this);
-		childSetAction("remove_whitelist", onWhitelistRemove, this);
-		childSetAction("add_blacklist", onBlacklistAdd, this);
-		childSetAction("remove_blacklist", onBlacklistRemove, this);
-		childSetAction("commit_domain", onCommitDomain, this);
-		childSetUserData("whitelist_list", this);
-		childSetUserData("blacklist_list", this);
+		getChild<LLUICtrl>("clear_lists")->setCommitCallback(boost::bind(LLViewerParcelMedia::clearDomainFilterList));
+		getChild<LLUICtrl>("show_ips")->setCommitCallback(boost::bind(&SLFloaterMediaFilter::onShowIPs, this));
+		getChild<LLUICtrl>("add_whitelist")->setCommitCallback(boost::bind(&SLFloaterMediaFilter::onWhitelistAdd, this));
+		getChild<LLUICtrl>("remove_whitelist")->setCommitCallback(boost::bind(&SLFloaterMediaFilter::onWhitelistRemove, this));
+		getChild<LLUICtrl>("add_blacklist")->setCommitCallback(boost::bind(&SLFloaterMediaFilter::onBlacklistAdd, this));
+		getChild<LLUICtrl>("remove_blacklist")->setCommitCallback(boost::bind(&SLFloaterMediaFilter::onBlacklistRemove, this));
+		getChild<LLUICtrl>("commit_domain")->setCommitCallback(boost::bind(&SLFloaterMediaFilter::onCommitDomain, this));
 		mIsDirty = true;
 	}
 
@@ -96,7 +87,7 @@ void SLFloaterMediaFilter::draw()
 		for (S32 i = 0; i < (S32)LLViewerParcelMedia::sMediaFilterList.size(); i++)
 		{
 			domain = LLViewerParcelMedia::sMediaFilterList[i]["domain"].asString();
-			if (sShowIPs)
+			if (mShowIPs)
 			{
 				host.setHostByName(domain);
 				ip = host.getIPString();
@@ -137,7 +128,7 @@ void SLFloaterMediaFilter::draw()
 		for (it = LLViewerParcelMedia::sAllowedMedia.begin(); it != LLViewerParcelMedia::sAllowedMedia.end(); it++)
 		{
 			domain = *it;
-			if (sShowIPs)
+			if (mShowIPs)
 			{
 				host.setHostByName(domain);
 				ip = host.getIPString();
@@ -156,7 +147,7 @@ void SLFloaterMediaFilter::draw()
 		for (it = LLViewerParcelMedia::sDeniedMedia.begin(); it != LLViewerParcelMedia::sDeniedMedia.end(); it++)
 		{
 			domain = *it;
-			if (sShowIPs)
+			if (mShowIPs)
 			{
 				host.setHostByName(domain);
 				ip = host.getIPString();
@@ -191,7 +182,7 @@ void SLFloaterMediaFilter::draw()
 		}
 
 		mIsDirty = false;
-		sShowIPs = false;
+		mShowIPs = false;
 	}
 
 	LLFloater::draw();
@@ -199,55 +190,38 @@ void SLFloaterMediaFilter::draw()
 
 void SLFloaterMediaFilter::setDirty()
 {
-    if (sInstance)
-	{
-		sInstance->mIsDirty = true;
-		sInstance->draw();
-	}
+	mIsDirty = true;
 }
 
-void SLFloaterMediaFilter::onClearLists(void* data)
+void SLFloaterMediaFilter::onShowIPs()
 {
-	LLViewerParcelMedia::clearDomainFilterList();
+	mShowIPs = true;
+	mIsDirty = true;
 }
 
-void SLFloaterMediaFilter::onShowIPs(void* data)
+void SLFloaterMediaFilter::onWhitelistAdd()
 {
-	sShowIPs = true;
-	setDirty();
+	childDisable("clear_lists");
+	childDisable("show_ips");
+	childDisable("blacklist_list");
+	childDisable("whitelist_list");
+	childDisable("remove_whitelist");
+	childDisable("add_whitelist");
+	childDisable("remove_blacklist");
+	childDisable("add_blacklist");
+	childEnable("input_domain");
+	childEnable("commit_domain");
+	childSetText("add_text", std::string("Enter the domain/url to add to the white list:"));
+	mIsWhitelist = true;
 }
 
-void SLFloaterMediaFilter::onWhitelistAdd(void* data)
+void SLFloaterMediaFilter::onWhitelistRemove()
 {
-    if (!sInstance)
-	{
-		return;
-	}
-	sInstance->childDisable("clear_lists");
-	sInstance->childDisable("show_ips");
-	sInstance->childDisable("blacklist_list");
-	sInstance->childDisable("whitelist_list");
-	sInstance->childDisable("remove_whitelist");
-	sInstance->childDisable("add_whitelist");
-	sInstance->childDisable("remove_blacklist");
-	sInstance->childDisable("add_blacklist");
-	sInstance->childEnable("input_domain");
-	sInstance->childEnable("commit_domain");
-	sInstance->childSetText("add_text", std::string("Enter the domain/url to add to the white list:"));
-	sIsWhitelist = true;
-}
-
-void SLFloaterMediaFilter::onWhitelistRemove(void* data)
-{
-    if (!sInstance)
-	{
-		return;
-	}
-	LLScrollListItem* selected = sInstance->mWhitelistSLC->getFirstSelected();
+	LLScrollListItem* selected = mWhitelistSLC->getFirstSelected();
 
 	if (selected)
 	{
-		std::string domain = sInstance->mWhitelistSLC->getSelectedItemLabel();
+		std::string domain = mWhitelistSLC->getSelectedItemLabel();
 		size_t pos = domain.find(' ');
 		if (pos != std::string::npos)
 		{
@@ -265,7 +239,7 @@ void SLFloaterMediaFilter::onWhitelistRemove(void* data)
 			}
 		}
 
-		if (sInstance->childGetValue("match_ip") && domain.find('/') == std::string::npos)
+		if (childGetValue("match_ip") && domain.find('/') == std::string::npos)
 		{
 			LLHost host;
 			host.setHostByName(domain);
@@ -291,37 +265,29 @@ void SLFloaterMediaFilter::onWhitelistRemove(void* data)
 	}
 }
 
-void SLFloaterMediaFilter::onBlacklistAdd(void* data)
+void SLFloaterMediaFilter::onBlacklistAdd()
 {
-    if (!sInstance)
-	{
-		return;
-	}
-	sInstance->childDisable("clear_lists");
-	sInstance->childDisable("show_ips");
-	sInstance->childDisable("blacklist_list");
-	sInstance->childDisable("whitelist_list");
-	sInstance->childDisable("remove_whitelist");
-	sInstance->childDisable("add_whitelist");
-	sInstance->childDisable("remove_blacklist");
-	sInstance->childDisable("add_blacklist");
-	sInstance->childEnable("input_domain");
-	sInstance->childEnable("commit_domain");
-	sInstance->childSetText("add_text", std::string("Enter the domain/url to add to the black list:"));
-	sIsWhitelist = false;
+	childDisable("clear_lists");
+	childDisable("show_ips");
+	childDisable("blacklist_list");
+	childDisable("whitelist_list");
+	childDisable("remove_whitelist");
+	childDisable("add_whitelist");
+	childDisable("remove_blacklist");
+	childDisable("add_blacklist");
+	childEnable("input_domain");
+	childEnable("commit_domain");
+	childSetText("add_text", std::string("Enter the domain/url to add to the black list:"));
+	mIsWhitelist = false;
 }
 
-void SLFloaterMediaFilter::onBlacklistRemove(void* data)
+void SLFloaterMediaFilter::onBlacklistRemove()
 {	
-    if (!sInstance)
-	{
-		return;
-	}
-	LLScrollListItem* selected = sInstance->mBlacklistSLC->getFirstSelected();
+	LLScrollListItem* selected = mBlacklistSLC->getFirstSelected();
 
 	if (selected)
 	{
-		std::string domain = sInstance->mBlacklistSLC->getSelectedItemLabel();
+		std::string domain = mBlacklistSLC->getSelectedItemLabel();
 		size_t pos = domain.find(' ');
 		if (pos != std::string::npos)
 		{
@@ -339,7 +305,7 @@ void SLFloaterMediaFilter::onBlacklistRemove(void* data)
 			}
 		}
 
-		if (sInstance->childGetValue("match_ip") && domain.find('/') == std::string::npos)
+		if (childGetValue("match_ip") && domain.find('/') == std::string::npos)
 		{
 			LLHost host;
 			host.setHostByName(domain);
@@ -365,18 +331,14 @@ void SLFloaterMediaFilter::onBlacklistRemove(void* data)
 	}
 }	
 
-void SLFloaterMediaFilter::onCommitDomain(void* data)
+void SLFloaterMediaFilter::onCommitDomain()
 {
-    if (!sInstance)
-	{
-		return;
-	}
-	std::string domain = sInstance->childGetText("input_domain");
+	std::string domain = childGetText("input_domain");
 	domain = LLViewerParcelMedia::extractDomain(domain);
 	LLHost host;
 	host.setHostByName(domain);
 	std::string ip = host.getIPString();
-	bool match_ip = (sInstance->childGetValue("match_ip") && ip != domain && domain.find('/') == std::string::npos);
+	bool match_ip = (childGetValue("match_ip") && ip != domain && domain.find('/') == std::string::npos);
 
 	if (!domain.empty())
 	{
@@ -403,7 +365,7 @@ void SLFloaterMediaFilter::onCommitDomain(void* data)
 		}
 		LLSD newmedia;
 		newmedia["domain"] = domain;
-		if (sIsWhitelist)
+		if (mIsWhitelist)
 		{
 			newmedia["action"] = "allow";
 		}
@@ -420,17 +382,17 @@ void SLFloaterMediaFilter::onCommitDomain(void* data)
 		LLViewerParcelMedia::saveDomainFilterList();
 	}
 
-	sInstance->childEnable("clear_lists");
-	sInstance->childEnable("show_ips");
-	sInstance->childEnable("blacklist_list");
-	sInstance->childEnable("whitelist_list");
-	sInstance->childEnable("remove_whitelist");
-	sInstance->childEnable("add_whitelist");
-	sInstance->childEnable("remove_blacklist");
-	sInstance->childEnable("add_blacklist");
-	sInstance->childDisable("input_domain");
-	sInstance->childDisable("commit_domain");
-	sInstance->childSetText("add_text", std::string("New domain:"));
-	sInstance->childSetText("input_domain", std::string(""));
+	childEnable("clear_lists");
+	childEnable("show_ips");
+	childEnable("blacklist_list");
+	childEnable("whitelist_list");
+	childEnable("remove_whitelist");
+	childEnable("add_whitelist");
+	childEnable("remove_blacklist");
+	childEnable("add_blacklist");
+	childDisable("input_domain");
+	childDisable("commit_domain");
+	childSetText("add_text", std::string("New domain:"));
+	childSetText("input_domain", std::string(""));
 	setDirty();
 }

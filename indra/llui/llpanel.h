@@ -172,7 +172,6 @@ public:
 	
 	void childSetCommitCallback(const std::string& id, void (*cb)(LLUICtrl*, void*), void* userdata = NULL );
 	void childSetValidate(const std::string& id, BOOL (*cb)(LLUICtrl*, void*) );
-	void childSetUserData(const std::string& id, void* userdata);
 
 	void childSetColor(const std::string& id, const LLColor4& color);
 	void childSetAlpha(const std::string& id, F32 alpha);

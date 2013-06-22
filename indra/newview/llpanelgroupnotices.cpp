@@ -222,8 +222,7 @@ BOOL LLPanelGroupNotices::postBuild()
 
 	mNoticesList = getChild<LLScrollListCtrl>("notice_list",recurse);
 	mNoticesList->setCommitOnSelectionChange(TRUE);
-	mNoticesList->setCommitCallback(onSelectNotice);
-	mNoticesList->setCallbackUserData(this);
+	mNoticesList->setCommitCallback(boost::bind(&LLPanelGroupNotices::onSelectNotice, this));
 
 	mBtnNewMessage = getChild<LLButton>("create_new_notice",recurse);
 	mBtnNewMessage->setClickedCallback(boost::bind(&LLPanelGroupNotices::onClickNewMessage,this));
@@ -494,14 +493,11 @@ void LLPanelGroupNotices::processNotices(LLMessageSystem* msg)
 	mNoticesList->updateSort();
 }
 
-void LLPanelGroupNotices::onSelectNotice(LLUICtrl* ctrl, void* data)
+void LLPanelGroupNotices::onSelectNotice()
 {
-	LLPanelGroupNotices* self = (LLPanelGroupNotices*)data;
-
-	if(!self) return;
-	LLScrollListItem* item = self->mNoticesList->getFirstSelected();
+	LLScrollListItem* item = mNoticesList->getFirstSelected();
 	if (!item) return;
-	
+
 	LLMessageSystem* msg = gMessageSystem;
 	msg->newMessage("GroupNoticeRequest");
 	msg->nextBlock("AgentData");

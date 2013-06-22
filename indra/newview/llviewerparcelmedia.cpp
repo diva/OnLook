@@ -766,9 +766,9 @@ void LLViewerParcelMedia::filterMedia(LLParcel* parcel, U32 type)
 			sDeniedMedia.erase(ip);
 			dirty = true;
 		}
-		if (dirty)
+		if (dirty && SLFloaterMediaFilter::findInstance())
 		{
-			SLFloaterMediaFilter::setDirty();
+			SLFloaterMediaFilter::getInstance()->setDirty();
 		}
 	}
 
@@ -944,7 +944,7 @@ void callback_media_alert(const LLSD &notification, const LLSD &response, LLParc
 	}
 
 	LLViewerParcelMedia::sMediaQueries.erase(domain);
-	SLFloaterMediaFilter::setDirty();
+	if (SLFloaterMediaFilter::findInstance()) SLFloaterMediaFilter::getInstance()->setDirty();
 }
 
 void LLViewerParcelMedia::saveDomainFilterList()
@@ -975,7 +975,7 @@ bool LLViewerParcelMedia::loadDomainFilterList()
 		llifstream medialistFile(medialist_filename);
 		LLSDSerialize::fromXML(sMediaFilterList, medialistFile);
 		medialistFile.close();
-		SLFloaterMediaFilter::setDirty();
+		if (SLFloaterMediaFilter::findInstance()) SLFloaterMediaFilter::getInstance()->setDirty();
 		return true;
 	}
 	else
@@ -991,7 +991,7 @@ void LLViewerParcelMedia::clearDomainFilterList()
 	sDeniedMedia.clear();
 	saveDomainFilterList();
 	LLNotificationsUtil::add("MediaFiltersCleared");
-	SLFloaterMediaFilter::setDirty();
+	if (SLFloaterMediaFilter::findInstance()) SLFloaterMediaFilter::getInstance()->setDirty();
 }
 
 std::string LLViewerParcelMedia::extractDomain(std::string url)

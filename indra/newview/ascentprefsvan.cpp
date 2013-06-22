@@ -192,6 +192,7 @@ void LLPrefsAscentVan::refreshValues()
 	mAnnounceSnapshots = gSavedSettings.getBOOL("AnnounceSnapshots");
 	mAnnounceStreamMetadata = gSavedSettings.getBOOL("AnnounceStreamMetadata");
 	mUnfocusedFloatersOpaque = gSavedSettings.getBOOL("FloaterUnfocusedBackgroundOpaque");
+	mCompleteNameProfiles   = gSavedSettings.getBOOL("SinguCompleteNameProfiles");
 
     //Tags\Colors ----------------------------------------------------------------------------
     mAscentBroadcastTag     = gSavedSettings.getBOOL("AscentBroadcastTag");
@@ -261,6 +262,7 @@ void LLPrefsAscentVan::cancel()
 	gSavedSettings.setBOOL("AnnounceSnapshots", mAnnounceSnapshots);
 	gSavedSettings.setBOOL("AnnounceStreamMetadata", mAnnounceStreamMetadata);
 	gSavedSettings.setBOOL("FloaterUnfocusedBackgroundOpaque", mUnfocusedFloatersOpaque);
+	gSavedSettings.setBOOL("SinguCompleteNameProfiles",     mCompleteNameProfiles);
 
     //Tags\Colors ----------------------------------------------------------------------------
     gSavedSettings.setBOOL("AscentBroadcastTag",         mAscentBroadcastTag);

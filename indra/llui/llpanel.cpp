@@ -759,8 +759,7 @@ void LLPanel::childSetCommitCallback(const std::string& id, void (*cb)(LLUICtrl*
 	LLUICtrl* child = getChild<LLUICtrl>(id, true);
 	if (child)
 	{
-		child->setCommitCallback(cb);
-		child->setCallbackUserData(userdata);
+		child->setCommitCallback(cb, userdata);
 	}
 }
 
@@ -770,15 +769,6 @@ void LLPanel::childSetValidate(const std::string& id, BOOL (*cb)(LLUICtrl*, void
 	if (child)
 	{
 		child->setValidateBeforeCommit(cb);
-	}
-}
-
-void LLPanel::childSetUserData(const std::string& id, void* userdata)
-{
-	LLUICtrl* child = getChild<LLUICtrl>(id, true);
-	if (child)
-	{
-		child->setCallbackUserData(userdata);
 	}
 }
 

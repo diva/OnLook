@@ -390,7 +390,7 @@ void* LLFloaterDirectory::createGroupDetail(void* userdata)
 {
 	LLFloaterDirectory *self = (LLFloaterDirectory*)userdata;
 	self->mPanelGroupp = new LLPanelGroup(gAgent.getGroupID());
-	self->mPanelGroupp->setAllowEdit(FALSE || gAgent.isGodlike()); // Gods can always edit panels
+	self->mPanelGroupp->setAllowEdit(false); // Singu Note: This setting actually just tells the panel whether or not it is in search
 	self->mPanelGroupp->setVisible(FALSE);
 	return self->mPanelGroupp;
 }
