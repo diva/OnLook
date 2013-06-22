@@ -111,7 +111,7 @@ private:
 //
 
 LLChatBar::LLChatBar() 
-:	LLLayoutPanel(),
+:	LLPanel(),
 	mInputEditor(NULL),
 	mGestureLabelTimer(),
 	mLastSpecialChatChannel(0),

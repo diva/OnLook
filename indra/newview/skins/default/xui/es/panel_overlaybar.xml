@@ -12,7 +12,9 @@
 					<button label="Pararse" label_selected="Pararse" name="Stand Up" tool_tip="Pulsa aquí para pararte"/>
 					<button label="Cancelar TP" label_selected="Cancelar TP" name="Cancel TP" tool_tip="Pulsa aquí para cancerla el proceso de teleporte actual"/>
 				</layout_panel>
-				<layout_panel name="chat_bar"/>
+				<layout_panel name="chat_bar_layout_panel">
+          <panel name="chat_bar"/>
+        </layout_panel>
 			</layout_stack>
 		</layout_panel>
 		<layout_panel name="ao_remote_container">

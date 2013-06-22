@@ -46,8 +46,7 @@ class LLFrameTimer;
 class LLChatBarGestureObserver;
 class LLComboBox;
 
-class LLChatBar
-:	public LLLayoutPanel
+class LLChatBar : public LLPanel
 {
 public:
 	// constructor for inline chat-bars (e.g. hosted in chat history window)
