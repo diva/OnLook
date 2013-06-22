@@ -103,7 +103,7 @@ class AIPerService {
 	typedef AIAccess<instance_map_type> instance_map_wat;
 
   private:
-	static threadsafe_instance_map_type sInstanceMap;				// Map of AIPerService instances with the hostname as key.
+	static threadsafe_instance_map_type sInstanceMap;	// Map of AIPerService instances with the canonical hostname:port as key.
 
 	friend class AIThreadSafeSimpleDC<AIPerService>;	// threadsafe_PerService
 	AIPerService(void);
@@ -115,7 +115,7 @@ class AIPerService {
 	// Utility function; extract canonical (lowercase) hostname and port from url.
 	static std::string extract_canonical_servicename(std::string const& url);
 
-	// Return (possibly create) a unique instance for the given hostname.
+	// Return (possibly create) a unique instance for the given hostname:port combination.
 	static AIPerServicePtr instance(std::string const& servicename);
 
 	// Release instance (object will be deleted if this was the last instance).
@@ -158,7 +158,7 @@ class AIPerService {
 
 	AIAverage mHTTPBandwidth;					// Keeps track on number of bytes received for this service in the past second.
 	int mConcurrectConnections;					// The maximum number of allowed concurrent connections to this service.
-	int mTotalAdded;							// Number of active easy handles with this host.
+	int mTotalAdded;							// Number of active easy handles with this service.
 	int mApprovedFirst;							// First capability type to try.
 	int mUnapprovedFirst;						// First capability type to try after all approved types were tried.
 
@@ -213,10 +213,10 @@ class AIPerService {
   public:
 	void added_to_command_queue(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mQueuedCommands; }
 	void removed_from_command_queue(AICapabilityType capability_type) { --mCapabilityType[capability_type].mQueuedCommands; llassert(mCapabilityType[capability_type].mQueuedCommands >= 0); }
-	void added_to_multi_handle(AICapabilityType capability_type);									// Called when an easy handle for this host has been added to the multi handle.
-	void removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something);	// Called when an easy handle for this host is removed again from the multi handle.
+	void added_to_multi_handle(AICapabilityType capability_type);									// Called when an easy handle for this service has been added to the multi handle.
+	void removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something);	// Called when an easy handle for this service is removed again from the multi handle.
 	void download_started(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mDownloading; }
-	bool throttled(void) const;							// Returns true if the maximum number of allowed requests for this host have been added to the multi handle.
+	bool throttled(void) const;							// Returns true if the maximum number of allowed requests for this service have been added to the multi handle.
 
 	void queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type);	// Add easy_request to the queue.
 	bool cancel(AICurlEasyRequest const& easy_request, AICapabilityType capability_type);	// Remove easy_request from the queue (if it's there).
@@ -256,7 +256,7 @@ class AIPerService {
 	// the AIPerService object locked for the whole duration of the call.
 	// The functions only lock it when access is required.
 
-	// Returns approvement if curl can handle another request for this host.
+	// Returns approvement if curl can handle another request for this service.
 	// Should return NULL if the maximum allowed HTTP bandwidth is reached, or when
 	// the latency between request and actual delivery becomes too large.
 	static Approvement* approveHTTPRequestFor(AIPerServicePtr const& per_service, AICapabilityType capability_type);
