@@ -301,10 +301,17 @@ void AIPerService::removed_from_multi_handle(AICapabilityType capability_type, b
   --mTotalAdded;
 }
 
-void AIPerService::queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type)
+// Returns true if the request was queued.
+bool AIPerService::queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type, bool force_queuing)
 {
-  mCapabilityType[capability_type].mQueuedRequests.push_back(easy_request.get_ptr());
-  TotalQueued_wat(sTotalQueued)->count++;
+  CapabilityType::queued_request_type& queued_requests(mCapabilityType[capability_type].mQueuedRequests);
+  bool needs_queuing = force_queuing || !queued_requests.empty();
+  if (needs_queuing)
+  {
+	queued_requests.push_back(easy_request.get_ptr());
+	TotalQueued_wat(sTotalQueued)->count++;
+  }
+  return needs_queuing;
 }
 
 bool AIPerService::cancel(AICurlEasyRequest const& easy_request, AICapabilityType capability_type)

@@ -218,8 +218,8 @@ class AIPerService {
 	void download_started(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mDownloading; }
 	bool throttled(void) const;							// Returns true if the maximum number of allowed requests for this service have been added to the multi handle.
 
-	void queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type);	// Add easy_request to the queue.
-	bool cancel(AICurlEasyRequest const& easy_request, AICapabilityType capability_type);	// Remove easy_request from the queue (if it's there).
+	bool queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type, bool force_queuing = true);	// Add easy_request to the queue if queue is empty or force_queuing.
+	bool cancel(AICurlEasyRequest const& easy_request, AICapabilityType capability_type);							// Remove easy_request from the queue (if it's there).
 
     void add_queued_to(AICurlPrivate::curlthread::MultiHandle* mh, bool recursive = false);
 														// Add queued easy handle (if any) to the multi handle. The request is removed from the queue,

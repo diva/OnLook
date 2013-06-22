@@ -1721,6 +1721,19 @@ bool MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request, bool f
 	AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
 	capability_type = curl_easy_request_w->capability_type();
 	per_service = curl_easy_request_w->getPerServicePtr();
+	if (!from_queue)
+	{
+	  // Add the request to the back of a non-empty queue.
+	  if (PerService_wat(*per_service)->queue(easy_request, capability_type, false))
+	  {
+		// The queue was not empty, therefore the request was queued.
+#ifdef SHOW_ASSERT
+		// Not active yet, but it's no longer an error if next we try to remove the request.
+		curl_easy_request_w->mRemovedPerCommand = false;
+#endif
+		return true;
+	  }
+	}
 	bool too_much_bandwidth = !curl_easy_request_w->approved() && AIPerService::checkBandwidthUsage(per_service, get_clock_count() * HTTPTimeout::sClockWidth_40ms);
 	PerService_wat per_service_w(*per_service);
 	if (!too_much_bandwidth && sTotalAdded < curl_max_total_concurrent_connections && !per_service_w->throttled())
