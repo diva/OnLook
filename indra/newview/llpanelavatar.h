@@ -216,8 +216,6 @@ public:
 	/*virtual*/ void processProperties(void* data, EAvatarProcessorType type){}
 
 	void clearControls();
-
-	static void onCommitNotes(LLUICtrl* field, void* userdata);
 };
 
 
