@@ -64,6 +64,7 @@ protected:
 	bool mAnnounceStreamMetadata;
 	bool mUnfocusedFloatersOpaque;
 	bool mCompleteNameProfiles;
+	bool mScriptErrorsStealFocus;
     //Tags\Colors
     BOOL mAscentBroadcastTag;
     std::string mReportClientUUID;

@@ -1155,7 +1155,8 @@ void LLScriptEdCore::onErrorList(LLUICtrl*, void* user_data)
 		//llinfos << "LLScriptEdCore::onErrorList() - " << row << ", "
 		//<< column << llendl;
 		self->mEditor->setCursor(row, column);
-		self->mEditor->setFocus(TRUE);
+		if (gSavedSettings.getBOOL("LiruScriptErrorsStealFocus"))
+			self->mEditor->setFocus(TRUE);
 	}
 }
 

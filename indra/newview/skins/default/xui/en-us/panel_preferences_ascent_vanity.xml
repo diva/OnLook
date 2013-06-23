@@ -13,6 +13,7 @@
       <check_box bottom_delta="-20" control_name="AnnounceStreamMetadata" follows="top" height="16" label="Announce music stream's metadata in local chat when tuned in" tool_tip="When a new song comes on, a message will be displayed in local chat with available information about the track." name="announce_stream_metadata"/>
       <check_box bottom_delta="-20" control_name="FloaterUnfocusedBackgroundOpaque" follows="top" height="16" label="Make unfocused floaters opaque (requires refocusing each floater to take effect)" tool_tip="When a floater loses focus, it won't turn transparent with this enabled.  This may conflict with some skins." name="unfocused_floaters_opaque"/>
       <check_box bottom_delta="-20" control_name="SinguCompleteNameProfiles" follows="top" height="16" label="Show complete names (display name and username) in profiles" tool_tip="Disregards the global name display settings, will not work if display names are switched off." name="complete_name_profiles"/>
+      <check_box bottom_delta="-20" control_name="LiruScriptErrorsStealFocus" follows="top" height="16" label="Let scripts steal focus when they can't compile due to errors"/>
     </panel>
     <panel border="true" left="1" bottom="-190" height="180" width="500" label="Tags/Colors" name="TagsColors">
       <!-- Client tag options -->
