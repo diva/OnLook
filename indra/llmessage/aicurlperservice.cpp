@@ -85,7 +85,8 @@ AIPerService::CapabilityType::CapabilityType(void) :
 		mAdded(0),
 		mFlags(0),
 		mDownloading(0),
-		mMaxPipelinedRequests(CurlConcurrentConnectionsPerService)
+		mMaxPipelinedRequests(CurlConcurrentConnectionsPerService),
+		mConcurrectConnections(CurlConcurrentConnectionsPerService)
 {
 }
 
@@ -278,9 +279,10 @@ void AIPerService::release(AIPerServicePtr& instance)
   instance.reset();
 }
 
-bool AIPerService::throttled() const
+bool AIPerService::throttled(AICapabilityType capability_type) const
 {
-  return mTotalAdded >= mConcurrectConnections;
+  return mTotalAdded >= mConcurrectConnections ||
+		 mCapabilityType[capability_type].mAdded >= mCapabilityType[capability_type].mConcurrectConnections;
 }
 
 void AIPerService::added_to_multi_handle(AICapabilityType capability_type)
@@ -479,7 +481,10 @@ void AIPerService::adjust_concurrent_connections(int increment)
 	increment = per_service_w->mConcurrectConnections - old_concurrent_connections;
 	for (int i = 0; i < number_of_capability_types; ++i)
 	{
-	  per_service_w->mCapabilityType[i].mMaxPipelinedRequests = llmax(per_service_w->mCapabilityType[i].mMaxPipelinedRequests + increment, (U32)0);
+	  per_service_w->mCapabilityType[i].mMaxPipelinedRequests = llmax(per_service_w->mCapabilityType[i].mMaxPipelinedRequests + increment, 0);
+	  int new_concurrent_connections_per_capability_type =
+		  llclamp((new_concurrent_connections * per_service_w->mCapabilityType[i].mConcurrectConnections + old_concurrent_connections / 2) / old_concurrent_connections, 1, new_concurrent_connections);
+	  per_service_w->mCapabilityType[i].mConcurrectConnections = (U16)new_concurrent_connections_per_capability_type;
 	}
   }
 }

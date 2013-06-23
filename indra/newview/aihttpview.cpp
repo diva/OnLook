@@ -83,11 +83,11 @@ void AIServiceBar::draw()
 	start = mHTTPView->updateColumn(col, start);
 	if (col < 2)
 	{
-	  text = llformat(" | %hu-%hu-%lu,{%hu,%u}/%u", ct.mApprovedRequests, ct.mQueuedCommands, ct.mQueuedRequests.size(), ct.mAdded, ct.mDownloading, ct.mMaxPipelinedRequests);
+	  text = llformat(" | %hu-%hu-%lu,{%hu/%hu,%u}/%u", ct.mApprovedRequests, ct.mQueuedCommands, ct.mQueuedRequests.size(), ct.mAdded, ct.mConcurrectConnections, ct.mDownloading, ct.mMaxPipelinedRequests);
 	}
 	else
 	{
-	  text = llformat(" | --%hu-%lu,{%hu,%u}", ct.mQueuedCommands, ct.mQueuedRequests.size(), ct.mAdded, ct.mDownloading);
+	  text = llformat(" | --%hu-%lu,{%hu/%hu,%u}", ct.mQueuedCommands, ct.mQueuedRequests.size(), ct.mAdded, ct.mConcurrectConnections, ct.mDownloading);
 	}
 	LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
 	start += LLFontGL::getFontMonospace()->getWidth(text);
@@ -151,7 +151,7 @@ void AIGLHTTPHeaderBar::draw(void)
 
   // First header line.
   F32 height = v_offset + sLineHeight * number_of_header_lines;
-  text = "HTTP console -- [approved]-commandQ-curlQ,{added,downloading}[/max]";
+  text = "HTTP console -- [approved]-commandQ-curlQ,{added/max,downloading}[/max]";
   LLFontGL::getFontMonospace()->renderUTF8(text, 0, h_offset, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
   text = " | Added/Max";
   U32 start = mHTTPView->updateColumn(mc_col, 100);

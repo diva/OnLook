@@ -144,7 +144,8 @@ class AIPerService {
 	  											// ctf_full : Set to true when the queue is popped and then still isn't empty;
 												// ctf_starvation: Set to true when the queue was about to be popped but was already empty.
 	  U32 mDownloading;							// The number of active easy handles with this service for which data was received.
-	  U32 mMaxPipelinedRequests;				// The maximum number of accepted requests for this service and (approved) capability type, that didn't finish yet.
+	  U16 mMaxPipelinedRequests;				// The maximum number of accepted requests for this service and (approved) capability type, that didn't finish yet.
+	  U16 mConcurrectConnections;				// The maximum number of allowed concurrent connections to the service of this capability type.
 
 	  // Declare, not define, constructor and destructor - in order to avoid instantiation of queued_request_type from header.
 	  CapabilityType(void);
@@ -216,7 +217,7 @@ class AIPerService {
 	void added_to_multi_handle(AICapabilityType capability_type);									// Called when an easy handle for this service has been added to the multi handle.
 	void removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something);	// Called when an easy handle for this service is removed again from the multi handle.
 	void download_started(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mDownloading; }
-	bool throttled(void) const;							// Returns true if the maximum number of allowed requests for this service have been added to the multi handle.
+	bool throttled(AICapabilityType capability_type) const;		// Returns true if the maximum number of allowed requests for this service/capability type have been added to the multi handle.
 
 	bool queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type, bool force_queuing = true);	// Add easy_request to the queue if queue is empty or force_queuing.
 	bool cancel(AICurlEasyRequest const& easy_request, AICapabilityType capability_type);							// Remove easy_request from the queue (if it's there).
