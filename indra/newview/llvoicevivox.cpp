@@ -26,6 +26,9 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llvoicevivox.h"
+#if LL_LINUX && defined(LL_STANDALONE)
+#include <glib.h>		// g_find_program_in_path
+#endif
 
 #include "llsdutil.h"
 

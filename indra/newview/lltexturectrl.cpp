@@ -186,7 +186,7 @@ public:
 	static void     onBtnRemove( void* userdata );
 	static void     onBtnBrowser( void* userdata );
 
-	static void     onLocalScrollCommit ( LLUICtrl* ctrl, void *userdata );
+	void			onLocalScrollCommit();
 	// tag: vaa emerald local_asset_browser [end]
 
 protected:
@@ -486,8 +486,7 @@ BOOL LLFloaterTexturePicker::postBuild()
 	childSetAction("Browser", LLFloaterTexturePicker::onBtnBrowser, this);
 
 	mLocalScrollCtrl = getChild<LLScrollListCtrl>("local_name_list");
-	mLocalScrollCtrl->setCallbackUserData(this);                            
-	mLocalScrollCtrl->setCommitCallback(onLocalScrollCommit);
+	mLocalScrollCtrl->setCommitCallback(boost::bind(&LLFloaterTexturePicker::onLocalScrollCommit, this));
 	LocalAssetBrowser::UpdateTextureCtrlList( mLocalScrollCtrl );
 	// tag: vaa emerald local_asset_browser [end]	
 		
@@ -909,15 +908,14 @@ void LLFloaterTexturePicker::onBtnBrowser(void *userdata)
 	FloaterLocalAssetBrowser::show(NULL);
 }
 
-// static, reacts to user clicking a valid field in the local scroll list.
-void LLFloaterTexturePicker::onLocalScrollCommit(LLUICtrl *ctrl, void *userdata)
+// reacts to user clicking a valid field in the local scroll list.
+void LLFloaterTexturePicker::onLocalScrollCommit()
 {
-	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*) userdata;
-	LLUUID id = (LLUUID)self->mLocalScrollCtrl->getSelectedItemLabel( LOCALLIST_COL_ID ); 
+	LLUUID id(mLocalScrollCtrl->getSelectedItemLabel(LOCALLIST_COL_ID));
 
-	self->mOwner->setImageAssetID( id );
-	if ( self->childGetValue("apply_immediate_check").asBoolean() )
-	{ self->mOwner->onFloaterCommit(LLTextureCtrl::TEXTURE_CHANGE, id); } // calls an overridden function.
+	mOwner->setImageAssetID(id);
+	if (childGetValue("apply_immediate_check").asBoolean())
+		mOwner->onFloaterCommit(LLTextureCtrl::TEXTURE_CHANGE, id); // calls an overridden function.
 }
 
 // tag: vaa emerald local_asset_browser [end]

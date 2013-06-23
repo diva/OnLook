@@ -122,6 +122,20 @@ AIPerService::AIPerService(AIPerService const&) : mHTTPBandwidth(0)
 // - userinfo does not contain a '@', and if it exists, is always terminated by a '@'.
 // - port does not contain a ':', and if it exists is always prepended by a ':'.
 //
+// This function also needs to deal with full paths, in which case it should return
+// an empty string.
+//
+// Full paths can have the form: "/something..."
+//                           or  "C:\something..."
+//               and maybe even  "C:/something..."
+//
+// The first form leads to an empty string being returned because the '/' signals the
+// end of the authority and we'll return immediately.
+// The second one will abort when hitting the backslash because that is an illegal
+// character in an url (before the first '/' anyway).
+// The third will abort because "C:" would be the hostname and a colon in the hostname
+// is not legal.
+//
 //static
 std::string AIPerService::extract_canonical_servicename(std::string const& url)
 {
@@ -159,8 +173,13 @@ std::string AIPerService::extract_canonical_servicename(std::string const& url)
       }
       else
       {
-        // Found slash that is not part of the "sheme://" string. Signals end of authority.
+        // Found a slash that is not part of the "sheme://" string. Signals end of authority.
         // We're done.
+        if (hostname < sheme_colon)
+        {
+          // This happens when windows filenames are passed to this function of the form "C:/..."
+          servicename.clear();
+        }
         break;
       }
     }
@@ -172,6 +191,12 @@ std::string AIPerService::extract_canonical_servicename(std::string const& url)
         hostname = p + 1;
         servicename.clear();                // Remove the "userinfo@"
       }
+    }
+    else if (c == '\\')
+    {
+      // Found a backslash, which is an illegal character for an URL. This is a windows path... reject it.
+      servicename.clear();
+      break;
     }
     if (p >= hostname)
     {

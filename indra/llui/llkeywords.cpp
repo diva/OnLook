@@ -367,7 +367,7 @@ void LLKeywords::findSegments(std::vector<LLTextSegmentPtr>* seg_list, const LLW
 		return;
 	}
 	
-	S32 text_len = wtext.size() + 1;
+	S32 text_len = wtext.size();
 
 	seg_list->push_back( new LLTextSegment( LLColor3(defaultColor), 0, text_len ) ); 
 
@@ -584,6 +584,7 @@ void LLKeywords::insertSegment(std::vector<LLTextSegmentPtr>& seg_list, LLTextSe
 {
 	LLTextSegmentPtr last = seg_list.back();
 	S32 new_seg_end = new_segment->getEnd();
+	llassert(new_seg_end <= text_len);
 
 	if( new_segment->getStart() == last->getStart() )
 	{

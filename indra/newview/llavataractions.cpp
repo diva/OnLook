@@ -338,7 +338,7 @@ static void on_avatar_name_show_profile(const LLUUID& agent_id, const LLAvatarNa
 		LLFloaterAvatarInfo* floater = LLFloaterAvatarInfo::getInstance(agent_id);
 		if(!floater)
 		{
-			floater = new LLFloaterAvatarInfo(LLTrans::getString("Command_Profile_Label")+" "+av_name.getCompleteName(), agent_id);
+			floater = new LLFloaterAvatarInfo(av_name.getCompleteName()+" - "+LLTrans::getString("Command_Profile_Label"), agent_id);
 			floater->center();
 		}
 

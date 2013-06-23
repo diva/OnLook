@@ -249,7 +249,7 @@ void LLParticipantList::refreshSpeakers()
 			if (speakerp->mStatus == LLSpeaker::STATUS_MUTED)
 			{
 				icon_cell->setValue("mute_icon.tga");
-				static const LLCachedControl<LLColor4> sAscentMutedColor(gColors, "AscentMutedColor");
+				static const LLCachedControl<LLColor4> sAscentMutedColor("AscentMutedColor");
 				icon_cell->setColor(speakerp->mModeratorMutedVoice ? /*LLColor4::grey*/sAscentMutedColor : LLColor4(1.f, 71.f / 255.f, 71.f / 255.f, 1.f));
 			}
 			else

@@ -684,6 +684,17 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>LiruLegacyOutfitStoreObjChanges</key>
+    <map>
+      <key>Comment</key>
+      <string>While true, automatic detach is performed upon all copyable attachments just before legacy outfit creation to preserve any modifications to them.  As a last resort, setting this false allows creating a legacy outfit that won't save changes made to copyable attachments since wearing them or login.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
     <key>LiruNoTransactionClutter</key>
     <map>
       <key>Comment</key>
