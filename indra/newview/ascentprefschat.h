@@ -47,16 +47,14 @@ public:
     void refreshValues();
 
 protected:
-    static void onSpellAdd(void* data);
-    static void onSpellRemove(void* data);
-    static void onSpellGetMore(void* data);
-    static void onSpellEditCustom(void* data);
-    static void onSpellBaseComboBoxCommit(LLUICtrl* ctrl, void* userdata);
-    static void onCommitTimeDate(LLUICtrl* ctrl, void *userdata);
-	static void onCommitResetAS(LLUICtrl*,void*);
-	static void onCommitEnableAS(LLUICtrl*, void*);
-	static void onCommitDialogBlock(LLUICtrl*, void*);
-    static void onCommitKeywords(LLUICtrl* ctrl, void* user_data);
+	void onSpellAdd();
+	void onSpellRemove();
+	void onSpellEditCustom();
+	void onSpellBaseComboBoxCommit(const LLSD& value);
+	void onCommitTimeDate(LLUICtrl* ctrl);
+	void onCommitEnableAS(const LLSD& value);
+	void onCommitDialogBlock(LLUICtrl* ctrl, const LLSD& value);
+	void onCommitKeywords(LLUICtrl* ctrl);
 
     //Chat/IM -----------------------------------------------------------------------------
     BOOL mIMAnnounceIncoming;
