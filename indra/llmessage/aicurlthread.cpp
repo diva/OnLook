@@ -2561,7 +2561,7 @@ void startCurlThread(LLControlGroup* control_group)
   // Cache Debug Settings.
   sConfigGroup = control_group;
   curl_max_total_concurrent_connections = sConfigGroup->getU32("CurlMaxTotalConcurrentConnections");
-  CurlConcurrentConnectionsPerService = sConfigGroup->getU32("CurlConcurrentConnectionsPerService");
+  CurlConcurrentConnectionsPerService = (U16)sConfigGroup->getU32("CurlConcurrentConnectionsPerService");
   gNoVerifySSLCert = sConfigGroup->getBOOL("NoVerifySSLCert");
   AIPerService::setMaxPipelinedRequests(curl_max_total_concurrent_connections);
   AIPerService::setHTTPThrottleBandwidth(sConfigGroup->getF32("HTTPThrottleBandwidth"));
@@ -2586,10 +2586,19 @@ bool handleCurlConcurrentConnectionsPerService(LLSD const& newvalue)
 {
   using namespace AICurlPrivate;
 
-  U32 new_concurrent_connections = newvalue.asInteger();
-  AIPerService::adjust_concurrent_connections(new_concurrent_connections - CurlConcurrentConnectionsPerService);
-  CurlConcurrentConnectionsPerService = new_concurrent_connections;
-  llinfos << "CurlConcurrentConnectionsPerService set to " << CurlConcurrentConnectionsPerService << llendl;
+  U16 new_concurrent_connections = (U16)newvalue.asInteger();
+  U16 const maxCurlConcurrentConnectionsPerService = 32;
+  if (new_concurrent_connections < 1 || new_concurrent_connections > maxCurlConcurrentConnectionsPerService)
+  {
+	sConfigGroup->setU32("CurlConcurrentConnectionsPerService", static_cast<U32>((new_concurrent_connections < 1) ? 1 : maxCurlConcurrentConnectionsPerService));
+  }
+  else
+  {
+	int increment = new_concurrent_connections - CurlConcurrentConnectionsPerService;
+	CurlConcurrentConnectionsPerService = new_concurrent_connections;
+	AIPerService::adjust_concurrent_connections(increment);
+	llinfos << "CurlConcurrentConnectionsPerService set to " << CurlConcurrentConnectionsPerService << llendl;
+  }
   return true;
 }
 

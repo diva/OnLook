@@ -283,7 +283,7 @@ class RefCountedThreadSafePerService : public threadsafe_PerService {
 	friend void intrusive_ptr_release(RefCountedThreadSafePerService* p);
 };
 
-extern U32 CurlConcurrentConnectionsPerService;
+extern U16 CurlConcurrentConnectionsPerService;
 
 } // namespace AICurlPrivate
 

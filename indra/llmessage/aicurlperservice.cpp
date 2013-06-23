@@ -49,7 +49,7 @@ AIThreadSafeSimpleDC<AIPerService::TotalQueued> AIPerService::sTotalQueued;
 namespace AICurlPrivate {
 
 // Cached value of CurlConcurrentConnectionsPerService.
-U32 CurlConcurrentConnectionsPerService;
+U16 CurlConcurrentConnectionsPerService;
 
 // Friend functions of RefCountedThreadSafePerService
 
@@ -473,8 +473,9 @@ void AIPerService::adjust_concurrent_connections(int increment)
   for (AIPerService::iterator iter = instance_map_w->begin(); iter != instance_map_w->end(); ++iter)
   {
 	PerService_wat per_service_w(*iter->second);
-	U32 old_concurrent_connections = per_service_w->mConcurrectConnections;
-	per_service_w->mConcurrectConnections = llclamp(old_concurrent_connections + increment, (U32)1, CurlConcurrentConnectionsPerService);
+	U16 old_concurrent_connections = per_service_w->mConcurrectConnections;
+	int new_concurrent_connections = llclamp(old_concurrent_connections + increment, 1, (int)CurlConcurrentConnectionsPerService);
+	per_service_w->mConcurrectConnections = (U16)new_concurrent_connections;
 	increment = per_service_w->mConcurrectConnections - old_concurrent_connections;
 	for (int i = 0; i < number_of_capability_types; ++i)
 	{
