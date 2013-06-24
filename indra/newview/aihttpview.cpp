@@ -109,7 +109,7 @@ void AIServiceBar::draw()
 	{
 	  text = llformat(" | --%hu-%lu,{%hu/%hu,%u}", ct.mQueuedCommands, ct.mQueuedRequests.size(), ct.mAdded, ct.mConcurrectConnections, ct.mDownloading);
 	}
-	LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, ((is_inuse & mask) == 0) ? LLColor4::grey : text_color, LLFontGL::LEFT, LLFontGL::TOP);
+	LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, ((is_inuse & mask) == 0) ? LLColor4::grey2 : text_color, LLFontGL::LEFT, LLFontGL::TOP);
 	start += LLFontGL::getFontMonospace()->getWidth(text);
   }
   start = mHTTPView->updateColumn(mc_col, start);
@@ -122,11 +122,15 @@ void AIServiceBar::draw()
   LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
   start += LLFontGL::getFontMonospace()->getWidth(text);
   text = llformat("%lu", bandwidth / 125);
+  if (bandwidth == 0)
+  {
+	text_color = LLColor4::grey2;
+  }
   LLColor4 color = (bandwidth > max_bandwidth) ? LLColor4::red : ((bandwidth > max_bandwidth * .75f) ? LLColor4::yellow : text_color);
   LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, color, LLFontGL::LEFT, LLFontGL::TOP);
   start += LLFontGL::getFontMonospace()->getWidth(text);
   text = llformat("/%lu", max_bandwidth / 125);
-  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, (bandwidth == 0) ? LLColor4::grey : text_color, LLFontGL::LEFT, LLFontGL::TOP);
+  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
 }
 
 LLRect AIServiceBar::getRequiredRect(void)
