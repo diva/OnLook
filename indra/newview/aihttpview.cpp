@@ -76,12 +76,32 @@ void AIServiceBar::draw()
   LLFontGL::getFontMonospace()->renderUTF8(mName, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
   start += LLFontGL::getFontMonospace()->getWidth(mName);
   std::string text;
-  PerService_rat per_service_r(*mPerService);
+  AIPerService::CapabilityType const* cts;
+  U32 is_used;
+  U32 is_inuse;
+  int total_added;
+  int concurrent_connections;
+  size_t bandwidth;
+  {
+	PerService_rat per_service_r(*mPerService);
+	is_used = per_service_r->is_used();
+	is_inuse = per_service_r->is_inuse();
+	total_added = per_service_r->mTotalAdded;
+	concurrent_connections = per_service_r->mConcurrectConnections;
+	bandwidth = per_service_r->bandwidth().truncateData(AIHTTPView::getTime_40ms());
+	cts = per_service_r->mCapabilityType;	// Not thread-safe, but we're only reading from it and only using the results to show in a debug console.
+  }
   for (int col = 0; col < number_of_capability_types; ++col)
   {
-	AIPerService::CapabilityType& ct(per_service_r->mCapabilityType[col]);
+	AICapabilityType capability_type = static_cast<AICapabilityType>(col);
+	AIPerService::CapabilityType const& ct(cts[capability_type]);
 	start = mHTTPView->updateColumn(col, start);
-	if (col < 2)
+	U32 mask = AIPerService::CT2mask(capability_type);
+	if (!(is_used & mask))
+	{
+	  text = " |              ";
+	}
+	else if (col < 2)
 	{
 	  text = llformat(" | %hu-%hu-%lu,{%hu/%hu,%u}/%u", ct.mApprovedRequests, ct.mQueuedCommands, ct.mQueuedRequests.size(), ct.mAdded, ct.mConcurrectConnections, ct.mDownloading, ct.mMaxPipelinedRequests);
 	}
@@ -89,15 +109,14 @@ void AIServiceBar::draw()
 	{
 	  text = llformat(" | --%hu-%lu,{%hu/%hu,%u}", ct.mQueuedCommands, ct.mQueuedRequests.size(), ct.mAdded, ct.mConcurrectConnections, ct.mDownloading);
 	}
-	LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
+	LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, ((is_inuse & mask) == 0) ? LLColor4::grey : text_color, LLFontGL::LEFT, LLFontGL::TOP);
 	start += LLFontGL::getFontMonospace()->getWidth(text);
   }
   start = mHTTPView->updateColumn(mc_col, start);
-  text = llformat(" | %d/%d", per_service_r->mTotalAdded, per_service_r->mConcurrectConnections);
+  text = llformat(" | %d/%d", total_added, concurrent_connections);
   LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
   start += LLFontGL::getFontMonospace()->getWidth(text);
   start = mHTTPView->updateColumn(bw_col, start);
-  size_t bandwidth = per_service_r->bandwidth().truncateData(AIHTTPView::getTime_40ms());
   size_t max_bandwidth = mHTTPView->mMaxBandwidthPerService;
   text = " | ";
   LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
@@ -107,7 +126,7 @@ void AIServiceBar::draw()
   LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, color, LLFontGL::LEFT, LLFontGL::TOP);
   start += LLFontGL::getFontMonospace()->getWidth(text);
   text = llformat("/%lu", max_bandwidth / 125);
-  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
+  LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, (bandwidth == 0) ? LLColor4::grey : text_color, LLFontGL::LEFT, LLFontGL::TOP);
 }
 
 LLRect AIServiceBar::getRequiredRect(void)
@@ -241,6 +260,18 @@ U32 AIHTTPView::updateColumn(int col, U32 start)
   return mStartColumn[col];
 }
 
+//static
+void AIHTTPView::toggle_visibility(void* user_data)
+{
+  LLView* viewp = (LLView*)user_data;
+  bool visible = !viewp->getVisible();
+  if (visible)
+  {
+	AIPerService::resetUsed();
+  }
+  viewp->setVisible(visible);
+}
+
 U64 AIHTTPView::sTime_40ms;
 
 struct KillView
@@ -260,6 +291,8 @@ struct CreateServiceBar
 
   void operator()(AIPerService::instance_map_type::value_type const& service)
   {
+	if (!PerService_rat(*service.second)->is_used())
+	  return;
 	AIServiceBar* service_bar = new AIServiceBar(mHTTPView, service);
 	mHTTPView->addChild(service_bar);
 	mHTTPView->mServiceBars.push_back(service_bar);

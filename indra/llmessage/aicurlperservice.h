@@ -163,6 +163,48 @@ class AIPerService {
 	int mApprovedFirst;							// First capability type to try.
 	int mUnapprovedFirst;						// First capability type to try after all approved types were tried.
 
+	U32 mUsedCT;								// Bit mask with one bit per capability type. A '1' means the capability was in use since the last resetUsedCT().
+	U32 mCTInUse;								// Bit mask with one bit per capability type. A '1' means the capability is in use right now.
+
+	// Helper struct, used in the static resetUsed.
+	struct ResetUsed { void operator()(instance_map_type::value_type const& service) const; };
+
+	void redivide_connections(void);
+	void mark_inuse(AICapabilityType capability_type)
+	{
+	  U32 bit = CT2mask(capability_type);
+	  if ((mCTInUse & bit) == 0)			// If this CT went from unused to used
+	  {
+		mCTInUse |= bit;
+		mUsedCT |= bit;
+		if (mUsedCT != bit)					// and more than one CT use this service.
+		{
+		  redivide_connections();
+		}
+	  }
+	}
+	void mark_unused(AICapabilityType capability_type)
+	{
+	  U32 bit = CT2mask(capability_type);
+	  if ((mCTInUse & bit) != 0)			// If this CT went from used to unused
+	  {
+		mCTInUse &= ~bit;
+		if (mCTInUse && mUsedCT != bit)		// and more than one CT use this service, and at least one is in use.
+		{
+		  redivide_connections();
+		}
+	  }
+	}
+  public:
+	static U32 CT2mask(AICapabilityType capability_type) { return (U32)1 << capability_type; }
+	void resetUsedCt(void) { mUsedCT = mCTInUse; }
+	bool is_used(AICapabilityType capability_type) const { return (mUsedCT & CT2mask(capability_type)); }
+	bool is_inuse(AICapabilityType capability_type) const { return (mCTInUse & CT2mask(capability_type)); }
+
+	static void resetUsed(void) { copy_forEach(ResetUsed()); }
+	U32 is_used(void) const { return mUsedCT; }						// Non-zero if this service was used for any capability type.
+	U32 is_inuse(void) const { return mCTInUse; }					// Non-zero if this service is in use for any capability type.
+
 	// Global administration of the total number of queued requests of all services combined.
   private:
 	struct TotalQueued {
@@ -212,7 +254,7 @@ class AIPerService {
 	static bool sNoHTTPBandwidthThrottling;					// Global override to disable bandwidth throttling.
 
   public:
-	void added_to_command_queue(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mQueuedCommands; }
+	void added_to_command_queue(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mQueuedCommands; mark_inuse(capability_type); }
 	void removed_from_command_queue(AICapabilityType capability_type) { --mCapabilityType[capability_type].mQueuedCommands; llassert(mCapabilityType[capability_type].mQueuedCommands >= 0); }
 	void added_to_multi_handle(AICapabilityType capability_type);									// Called when an easy handle for this service has been added to the multi handle.
 	void removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something);	// Called when an easy handle for this service is removed again from the multi handle.

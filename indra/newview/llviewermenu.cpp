@@ -169,6 +169,7 @@
 #include "llfloatermessagelog.h"
 #include "shfloatermediaticker.h"
 #include "llpacketring.h"
+#include "aihttpview.h"
 // </edit>
 
 #include "scriptcounter.h"
@@ -818,7 +819,7 @@ void init_client_menu(LLMenuGL* menu)
 		}
 
 		sub->addChild(new LLMenuItemCheckGL("HTTP Console", 
-										&toggle_visibility,
+										&AIHTTPView::toggle_visibility,
 										NULL,
 										&get_visibility,
 										(void*)gHttpView,
