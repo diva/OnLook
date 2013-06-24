@@ -49,7 +49,7 @@ AIThreadSafeSimpleDC<AIPerService::TotalQueued> AIPerService::sTotalQueued;
 namespace AICurlPrivate {
 
 // Cached value of CurlConcurrentConnectionsPerService.
-U32 CurlConcurrentConnectionsPerService;
+U16 CurlConcurrentConnectionsPerService;
 
 // Friend functions of RefCountedThreadSafePerService
 
@@ -75,7 +75,9 @@ AIPerService::AIPerService(void) :
 		mConcurrectConnections(CurlConcurrentConnectionsPerService),
 		mTotalAdded(0),
 		mApprovedFirst(0),
-		mUnapprovedFirst(0)
+		mUnapprovedFirst(0),
+		mUsedCT(0),
+		mCTInUse(0)
 {
 }
 
@@ -85,7 +87,8 @@ AIPerService::CapabilityType::CapabilityType(void) :
 		mAdded(0),
 		mFlags(0),
 		mDownloading(0),
-		mMaxPipelinedRequests(CurlConcurrentConnectionsPerService)
+		mMaxPipelinedRequests(CurlConcurrentConnectionsPerService),
+		mConcurrectConnections(CurlConcurrentConnectionsPerService)
 {
 }
 
@@ -278,9 +281,57 @@ void AIPerService::release(AIPerServicePtr& instance)
   instance.reset();
 }
 
-bool AIPerService::throttled() const
+void AIPerService::redivide_connections(void)
 {
-  return mTotalAdded >= mConcurrectConnections;
+  // Priority order.
+  static AICapabilityType order[number_of_capability_types] = { cap_inventory, cap_texture, cap_mesh, cap_other };
+  // Count the number of capability types that are currently in use and store the types in an array.
+  AICapabilityType used_order[number_of_capability_types];
+  int number_of_capability_types_in_use = 0;
+  for (int i = 0; i < number_of_capability_types; ++i)
+  {
+	U32 const mask = CT2mask(order[i]);
+	if ((mCTInUse & mask))
+	{
+	  used_order[number_of_capability_types_in_use++] = order[i];
+	}
+	else
+	{
+	  // Give every other type (that is not in use) one connection, so they can be used (at which point they'll get more).
+	  mCapabilityType[order[i]].mConcurrectConnections = 1;
+	}
+  }
+  // Keep one connection in reserve for currently unused capability types (that have been used before).
+  int reserve = (mUsedCT != mCTInUse) ? 1 : 0;
+  // Distribute (mConcurrectConnections - reserve) over number_of_capability_types_in_use.
+  U16 max_connections_per_CT = (mConcurrectConnections - reserve) / number_of_capability_types_in_use + 1;
+  // The first count CTs get max_connections_per_CT connections.
+  int count = (mConcurrectConnections - reserve) % number_of_capability_types_in_use;
+  for(int i = 1, j = 0;; --i)
+  {
+	while (j < count)
+	{
+	  mCapabilityType[used_order[j++]].mConcurrectConnections = max_connections_per_CT;
+	}
+	if (i == 0)
+	{
+	  break;
+	}
+	// Finish the loop till all used CTs are assigned.
+	count = number_of_capability_types_in_use;
+	// Never assign 0 as maximum.
+	if (max_connections_per_CT > 1)
+	{
+	  // The remaining CTs get one connection less so that the sum of all assigned connections is mConcurrectConnections - reserve.
+	  --max_connections_per_CT;
+	}
+  }
+}
+
+bool AIPerService::throttled(AICapabilityType capability_type) const
+{
+  return mTotalAdded >= mConcurrectConnections ||
+		 mCapabilityType[capability_type].mAdded >= mCapabilityType[capability_type].mConcurrectConnections;
 }
 
 void AIPerService::added_to_multi_handle(AICapabilityType capability_type)
@@ -291,20 +342,32 @@ void AIPerService::added_to_multi_handle(AICapabilityType capability_type)
 
 void AIPerService::removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something)
 {
-  llassert(mTotalAdded > 0 && mCapabilityType[capability_type].mAdded > 0);
-  --mCapabilityType[capability_type].mAdded;
+  CapabilityType& ct(mCapabilityType[capability_type]);
+  llassert(mTotalAdded > 0 && ct.mAdded > 0);
+  bool done = --ct.mAdded == 0;
   if (downloaded_something)
   {
-	llassert(mCapabilityType[capability_type].mDownloading > 0);
-	--mCapabilityType[capability_type].mDownloading;
+	llassert(ct.mDownloading > 0);
+	--ct.mDownloading;
   }
   --mTotalAdded;
+  if (done && ct.pipelined_requests() == 0)
+  {
+	mark_unused(capability_type);
+  }
 }
 
-void AIPerService::queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type)
+// Returns true if the request was queued.
+bool AIPerService::queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type, bool force_queuing)
 {
-  mCapabilityType[capability_type].mQueuedRequests.push_back(easy_request.get_ptr());
-  TotalQueued_wat(sTotalQueued)->count++;
+  CapabilityType::queued_request_type& queued_requests(mCapabilityType[capability_type].mQueuedRequests);
+  bool needs_queuing = force_queuing || !queued_requests.empty();
+  if (needs_queuing)
+  {
+	queued_requests.push_back(easy_request.get_ptr());
+	TotalQueued_wat(sTotalQueued)->count++;
+  }
+  return needs_queuing;
 }
 
 bool AIPerService::cancel(AICurlEasyRequest const& easy_request, AICapabilityType capability_type)
@@ -466,14 +529,23 @@ void AIPerService::adjust_concurrent_connections(int increment)
   for (AIPerService::iterator iter = instance_map_w->begin(); iter != instance_map_w->end(); ++iter)
   {
 	PerService_wat per_service_w(*iter->second);
-	U32 old_concurrent_connections = per_service_w->mConcurrectConnections;
-	per_service_w->mConcurrectConnections = llclamp(old_concurrent_connections + increment, (U32)1, CurlConcurrentConnectionsPerService);
+	U16 old_concurrent_connections = per_service_w->mConcurrectConnections;
+	int new_concurrent_connections = llclamp(old_concurrent_connections + increment, 1, (int)CurlConcurrentConnectionsPerService);
+	per_service_w->mConcurrectConnections = (U16)new_concurrent_connections;
 	increment = per_service_w->mConcurrectConnections - old_concurrent_connections;
 	for (int i = 0; i < number_of_capability_types; ++i)
 	{
-	  per_service_w->mCapabilityType[i].mMaxPipelinedRequests = llmax(per_service_w->mCapabilityType[i].mMaxPipelinedRequests + increment, (U32)0);
+	  per_service_w->mCapabilityType[i].mMaxPipelinedRequests = llmax(per_service_w->mCapabilityType[i].mMaxPipelinedRequests + increment, 0);
+	  int new_concurrent_connections_per_capability_type =
+		  llclamp((new_concurrent_connections * per_service_w->mCapabilityType[i].mConcurrectConnections + old_concurrent_connections / 2) / old_concurrent_connections, 1, new_concurrent_connections);
+	  per_service_w->mCapabilityType[i].mConcurrectConnections = (U16)new_concurrent_connections_per_capability_type;
 	}
   }
+}
+
+void AIPerService::ResetUsed::operator()(AIPerService::instance_map_type::value_type const& service) const
+{
+  PerService_wat(*service.second)->resetUsedCt();
 }
 
 void AIPerService::Approvement::honored(void)

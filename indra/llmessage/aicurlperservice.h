@@ -103,7 +103,7 @@ class AIPerService {
 	typedef AIAccess<instance_map_type> instance_map_wat;
 
   private:
-	static threadsafe_instance_map_type sInstanceMap;				// Map of AIPerService instances with the hostname as key.
+	static threadsafe_instance_map_type sInstanceMap;	// Map of AIPerService instances with the canonical hostname:port as key.
 
 	friend class AIThreadSafeSimpleDC<AIPerService>;	// threadsafe_PerService
 	AIPerService(void);
@@ -115,7 +115,7 @@ class AIPerService {
 	// Utility function; extract canonical (lowercase) hostname and port from url.
 	static std::string extract_canonical_servicename(std::string const& url);
 
-	// Return (possibly create) a unique instance for the given hostname.
+	// Return (possibly create) a unique instance for the given hostname:port combination.
 	static AIPerServicePtr instance(std::string const& servicename);
 
 	// Release instance (object will be deleted if this was the last instance).
@@ -144,7 +144,8 @@ class AIPerService {
 	  											// ctf_full : Set to true when the queue is popped and then still isn't empty;
 												// ctf_starvation: Set to true when the queue was about to be popped but was already empty.
 	  U32 mDownloading;							// The number of active easy handles with this service for which data was received.
-	  U32 mMaxPipelinedRequests;				// The maximum number of accepted requests for this service and (approved) capability type, that didn't finish yet.
+	  U16 mMaxPipelinedRequests;				// The maximum number of accepted requests for this service and (approved) capability type, that didn't finish yet.
+	  U16 mConcurrectConnections;				// The maximum number of allowed concurrent connections to the service of this capability type.
 
 	  // Declare, not define, constructor and destructor - in order to avoid instantiation of queued_request_type from header.
 	  CapabilityType(void);
@@ -158,9 +159,51 @@ class AIPerService {
 
 	AIAverage mHTTPBandwidth;					// Keeps track on number of bytes received for this service in the past second.
 	int mConcurrectConnections;					// The maximum number of allowed concurrent connections to this service.
-	int mTotalAdded;							// Number of active easy handles with this host.
+	int mTotalAdded;							// Number of active easy handles with this service.
 	int mApprovedFirst;							// First capability type to try.
 	int mUnapprovedFirst;						// First capability type to try after all approved types were tried.
+
+	U32 mUsedCT;								// Bit mask with one bit per capability type. A '1' means the capability was in use since the last resetUsedCT().
+	U32 mCTInUse;								// Bit mask with one bit per capability type. A '1' means the capability is in use right now.
+
+	// Helper struct, used in the static resetUsed.
+	struct ResetUsed { void operator()(instance_map_type::value_type const& service) const; };
+
+	void redivide_connections(void);
+	void mark_inuse(AICapabilityType capability_type)
+	{
+	  U32 bit = CT2mask(capability_type);
+	  if ((mCTInUse & bit) == 0)			// If this CT went from unused to used
+	  {
+		mCTInUse |= bit;
+		mUsedCT |= bit;
+		if (mUsedCT != bit)					// and more than one CT use this service.
+		{
+		  redivide_connections();
+		}
+	  }
+	}
+	void mark_unused(AICapabilityType capability_type)
+	{
+	  U32 bit = CT2mask(capability_type);
+	  if ((mCTInUse & bit) != 0)			// If this CT went from used to unused
+	  {
+		mCTInUse &= ~bit;
+		if (mCTInUse && mUsedCT != bit)		// and more than one CT use this service, and at least one is in use.
+		{
+		  redivide_connections();
+		}
+	  }
+	}
+  public:
+	static U32 CT2mask(AICapabilityType capability_type) { return (U32)1 << capability_type; }
+	void resetUsedCt(void) { mUsedCT = mCTInUse; }
+	bool is_used(AICapabilityType capability_type) const { return (mUsedCT & CT2mask(capability_type)); }
+	bool is_inuse(AICapabilityType capability_type) const { return (mCTInUse & CT2mask(capability_type)); }
+
+	static void resetUsed(void) { copy_forEach(ResetUsed()); }
+	U32 is_used(void) const { return mUsedCT; }						// Non-zero if this service was used for any capability type.
+	U32 is_inuse(void) const { return mCTInUse; }					// Non-zero if this service is in use for any capability type.
 
 	// Global administration of the total number of queued requests of all services combined.
   private:
@@ -211,15 +254,15 @@ class AIPerService {
 	static bool sNoHTTPBandwidthThrottling;					// Global override to disable bandwidth throttling.
 
   public:
-	void added_to_command_queue(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mQueuedCommands; }
+	void added_to_command_queue(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mQueuedCommands; mark_inuse(capability_type); }
 	void removed_from_command_queue(AICapabilityType capability_type) { --mCapabilityType[capability_type].mQueuedCommands; llassert(mCapabilityType[capability_type].mQueuedCommands >= 0); }
-	void added_to_multi_handle(AICapabilityType capability_type);									// Called when an easy handle for this host has been added to the multi handle.
-	void removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something);	// Called when an easy handle for this host is removed again from the multi handle.
+	void added_to_multi_handle(AICapabilityType capability_type);									// Called when an easy handle for this service has been added to the multi handle.
+	void removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something);	// Called when an easy handle for this service is removed again from the multi handle.
 	void download_started(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mDownloading; }
-	bool throttled(void) const;							// Returns true if the maximum number of allowed requests for this host have been added to the multi handle.
+	bool throttled(AICapabilityType capability_type) const;		// Returns true if the maximum number of allowed requests for this service/capability type have been added to the multi handle.
 
-	void queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type);	// Add easy_request to the queue.
-	bool cancel(AICurlEasyRequest const& easy_request, AICapabilityType capability_type);	// Remove easy_request from the queue (if it's there).
+	bool queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type, bool force_queuing = true);	// Add easy_request to the queue if queue is empty or force_queuing.
+	bool cancel(AICurlEasyRequest const& easy_request, AICapabilityType capability_type);							// Remove easy_request from the queue (if it's there).
 
     void add_queued_to(AICurlPrivate::curlthread::MultiHandle* mh, bool recursive = false);
 														// Add queued easy handle (if any) to the multi handle. The request is removed from the queue,
@@ -256,7 +299,7 @@ class AIPerService {
 	// the AIPerService object locked for the whole duration of the call.
 	// The functions only lock it when access is required.
 
-	// Returns approvement if curl can handle another request for this host.
+	// Returns approvement if curl can handle another request for this service.
 	// Should return NULL if the maximum allowed HTTP bandwidth is reached, or when
 	// the latency between request and actual delivery becomes too large.
 	static Approvement* approveHTTPRequestFor(AIPerServicePtr const& per_service, AICapabilityType capability_type);
@@ -283,7 +326,7 @@ class RefCountedThreadSafePerService : public threadsafe_PerService {
 	friend void intrusive_ptr_release(RefCountedThreadSafePerService* p);
 };
 
-extern U32 CurlConcurrentConnectionsPerService;
+extern U16 CurlConcurrentConnectionsPerService;
 
 } // namespace AICurlPrivate
 

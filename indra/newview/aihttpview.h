@@ -66,6 +66,7 @@ class AIHTTPView : public LLContainerView
 
   public:
 	static U64 getTime_40ms(void) { return sTime_40ms; }
+	static void toggle_visibility(void* user_data);
 };
 
 extern AIHTTPView *gHttpView;

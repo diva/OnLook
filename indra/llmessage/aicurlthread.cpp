@@ -1721,9 +1721,22 @@ bool MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request, bool f
 	AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
 	capability_type = curl_easy_request_w->capability_type();
 	per_service = curl_easy_request_w->getPerServicePtr();
+	if (!from_queue)
+	{
+	  // Add the request to the back of a non-empty queue.
+	  if (PerService_wat(*per_service)->queue(easy_request, capability_type, false))
+	  {
+		// The queue was not empty, therefore the request was queued.
+#ifdef SHOW_ASSERT
+		// Not active yet, but it's no longer an error if next we try to remove the request.
+		curl_easy_request_w->mRemovedPerCommand = false;
+#endif
+		return true;
+	  }
+	}
 	bool too_much_bandwidth = !curl_easy_request_w->approved() && AIPerService::checkBandwidthUsage(per_service, get_clock_count() * HTTPTimeout::sClockWidth_40ms);
 	PerService_wat per_service_w(*per_service);
-	if (!too_much_bandwidth && sTotalAdded < curl_max_total_concurrent_connections && !per_service_w->throttled())
+	if (!too_much_bandwidth && sTotalAdded < curl_max_total_concurrent_connections && !per_service_w->throttled(capability_type))
 	{
 	  curl_easy_request_w->set_timeout_opts();
 	  if (curl_easy_request_w->add_handle_to_multi(curl_easy_request_w, mMultiHandle) == CURLM_OK)
@@ -2548,7 +2561,7 @@ void startCurlThread(LLControlGroup* control_group)
   // Cache Debug Settings.
   sConfigGroup = control_group;
   curl_max_total_concurrent_connections = sConfigGroup->getU32("CurlMaxTotalConcurrentConnections");
-  CurlConcurrentConnectionsPerService = sConfigGroup->getU32("CurlConcurrentConnectionsPerService");
+  CurlConcurrentConnectionsPerService = (U16)sConfigGroup->getU32("CurlConcurrentConnectionsPerService");
   gNoVerifySSLCert = sConfigGroup->getBOOL("NoVerifySSLCert");
   AIPerService::setMaxPipelinedRequests(curl_max_total_concurrent_connections);
   AIPerService::setHTTPThrottleBandwidth(sConfigGroup->getF32("HTTPThrottleBandwidth"));
@@ -2573,10 +2586,19 @@ bool handleCurlConcurrentConnectionsPerService(LLSD const& newvalue)
 {
   using namespace AICurlPrivate;
 
-  U32 new_concurrent_connections = newvalue.asInteger();
-  AIPerService::adjust_concurrent_connections(new_concurrent_connections - CurlConcurrentConnectionsPerService);
-  CurlConcurrentConnectionsPerService = new_concurrent_connections;
-  llinfos << "CurlConcurrentConnectionsPerService set to " << CurlConcurrentConnectionsPerService << llendl;
+  U16 new_concurrent_connections = (U16)newvalue.asInteger();
+  U16 const maxCurlConcurrentConnectionsPerService = 32;
+  if (new_concurrent_connections < 1 || new_concurrent_connections > maxCurlConcurrentConnectionsPerService)
+  {
+	sConfigGroup->setU32("CurlConcurrentConnectionsPerService", static_cast<U32>((new_concurrent_connections < 1) ? 1 : maxCurlConcurrentConnectionsPerService));
+  }
+  else
+  {
+	int increment = new_concurrent_connections - CurlConcurrentConnectionsPerService;
+	CurlConcurrentConnectionsPerService = new_concurrent_connections;
+	AIPerService::adjust_concurrent_connections(increment);
+	llinfos << "CurlConcurrentConnectionsPerService set to " << CurlConcurrentConnectionsPerService << llendl;
+  }
   return true;
 }
 
@@ -2625,29 +2647,24 @@ AIThreadSafeSimpleDC<AIPerService::ThrottleFraction> AIPerService::sThrottleFrac
 LLAtomicU32 AIPerService::sHTTPThrottleBandwidth125(250000);
 bool AIPerService::sNoHTTPBandwidthThrottling;
 
-// Return true if we want at least one more HTTP request for this host.
+// Return Approvement if we want at least one more HTTP request for this service.
 //
 // It's OK if this function is a bit fuzzy, but we don't want it to return
-// true a hundred times on a row when it is called fast in a loop.
+// approvement a hundred times on a row when it is called in a tight loop.
 // Hence the following consideration:
 //
-// This function is called only from LLTextureFetchWorker::doWork, and when it returns true
-// then doWork will call LLHTTPClient::request with a NULL default engine (signaling that
-// it is OK to run in any thread).
-//
-// At the end, LLHTTPClient::request calls AIStateMachine::run, which in turn calls
-// AIStateMachine::reset at the end. Because NULL is passed as default_engine, reset will
-// call AIStateMachine::multiplex to immediately start running the state machine. This
-// causes it to go through the states bs_reset, bs_initialize and then bs_multiplex with
-// run state AICurlEasyRequestStateMachine_addRequest. Finally, in this state, multiplex
-// calls AICurlEasyRequestStateMachine::multiplex_impl which then calls AICurlEasyRequest::addRequest
-// which causes an increment of command_queue_w->size and AIPerService::mQueuedCommands.
+// If this function returns non-NULL, a Approvement object was created and
+// the corresponding AIPerService::CapabilityType::mApprovedRequests was
+// incremented. The Approvement object is passed to LLHTTPClient::request,
+// and once the request is added to the command queue, used to update the counters.
 //
 // It is therefore guaranteed that in one loop of LLTextureFetchWorker::doWork,
-// this size is incremented; stopping this function from returning true once we reached the
-// threshold of "pipelines" requests (the sum of requests in the command queue, the ones
-// throttled and queued in AIPerService::mQueuedRequests and the already
-// running requests (in MultiHandle::mAddedEasyRequests)).
+// or LLInventoryModelBackgroundFetch::bulkFetch (the two functions currently
+// calling this function) this function will stop returning aprovement once we
+// reached the threshold of "pipelined" requests (the sum of approved requests,
+// requests in the command queue, the ones throttled and queued in
+// AIPerService::mQueuedRequests and the already running requests
+// (in MultiHandle::mAddedEasyRequests)).
 //
 //static
 AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr const& per_service, AICapabilityType capability_type)
@@ -2690,7 +2707,7 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
 
   bool reject, equal, increment_threshold;
   {
-	PerService_wat per_service_w(*per_service);
+	PerService_wat per_service_w(*per_service);		// Keep this lock for the duration of accesses to ct.
 	CapabilityType& ct(per_service_w->mCapabilityType[capability_type]);
 	S32 const pipelined_requests_per_capability_type = ct.pipelined_requests();
 	reject = pipelined_requests_per_capability_type >= (S32)ct.mMaxPipelinedRequests;
@@ -2700,14 +2717,14 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
 	ct.mFlags = 0;
 	if (decrement_threshold)
 	{
-	  if ((int)ct.mMaxPipelinedRequests > per_service_w->mConcurrectConnections)
+	  if ((int)ct.mMaxPipelinedRequests > ct.mConcurrectConnections)
 	  {
 		ct.mMaxPipelinedRequests--;
 	  }
 	}
 	else if (increment_threshold && reject)
 	{
-	  if ((int)ct.mMaxPipelinedRequests < 2 * per_service_w->mConcurrectConnections)
+	  if ((int)ct.mMaxPipelinedRequests < 2 * ct.mConcurrectConnections)
 	  {
 		ct.mMaxPipelinedRequests++;
 		// Immediately take the new threshold into account.

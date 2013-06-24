@@ -31,7 +31,7 @@
       <key>Type</key>
       <string>U32</string>
       <key>Value</key>
-      <integer>16</integer>
+      <integer>8</integer>
     </map>
     <key>NoVerifySSLCert</key>
     <map>
