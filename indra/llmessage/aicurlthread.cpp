@@ -2707,7 +2707,7 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
 
   bool reject, equal, increment_threshold;
   {
-	PerService_wat per_service_w(*per_service);
+	PerService_wat per_service_w(*per_service);		// Keep this lock for the duration of accesses to ct.
 	CapabilityType& ct(per_service_w->mCapabilityType[capability_type]);
 	S32 const pipelined_requests_per_capability_type = ct.pipelined_requests();
 	reject = pipelined_requests_per_capability_type >= (S32)ct.mMaxPipelinedRequests;
@@ -2717,14 +2717,14 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
 	ct.mFlags = 0;
 	if (decrement_threshold)
 	{
-	  if ((int)ct.mMaxPipelinedRequests > per_service_w->mConcurrectConnections)
+	  if ((int)ct.mMaxPipelinedRequests > ct.mConcurrectConnections)
 	  {
 		ct.mMaxPipelinedRequests--;
 	  }
 	}
 	else if (increment_threshold && reject)
 	{
-	  if ((int)ct.mMaxPipelinedRequests < 2 * per_service_w->mConcurrectConnections)
+	  if ((int)ct.mMaxPipelinedRequests < 2 * ct.mConcurrectConnections)
 	  {
 		ct.mMaxPipelinedRequests++;
 		// Immediately take the new threshold into account.
