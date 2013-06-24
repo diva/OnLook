@@ -2647,29 +2647,24 @@ AIThreadSafeSimpleDC<AIPerService::ThrottleFraction> AIPerService::sThrottleFrac
 LLAtomicU32 AIPerService::sHTTPThrottleBandwidth125(250000);
 bool AIPerService::sNoHTTPBandwidthThrottling;
 
-// Return true if we want at least one more HTTP request for this host.
+// Return Approvement if we want at least one more HTTP request for this service.
 //
 // It's OK if this function is a bit fuzzy, but we don't want it to return
-// true a hundred times on a row when it is called fast in a loop.
+// approvement a hundred times on a row when it is called in a tight loop.
 // Hence the following consideration:
 //
-// This function is called only from LLTextureFetchWorker::doWork, and when it returns true
-// then doWork will call LLHTTPClient::request with a NULL default engine (signaling that
-// it is OK to run in any thread).
-//
-// At the end, LLHTTPClient::request calls AIStateMachine::run, which in turn calls
-// AIStateMachine::reset at the end. Because NULL is passed as default_engine, reset will
-// call AIStateMachine::multiplex to immediately start running the state machine. This
-// causes it to go through the states bs_reset, bs_initialize and then bs_multiplex with
-// run state AICurlEasyRequestStateMachine_addRequest. Finally, in this state, multiplex
-// calls AICurlEasyRequestStateMachine::multiplex_impl which then calls AICurlEasyRequest::addRequest
-// which causes an increment of command_queue_w->size and AIPerService::mQueuedCommands.
+// If this function returns non-NULL, a Approvement object was created and
+// the corresponding AIPerService::CapabilityType::mApprovedRequests was
+// incremented. The Approvement object is passed to LLHTTPClient::request,
+// and once the request is added to the command queue, used to update the counters.
 //
 // It is therefore guaranteed that in one loop of LLTextureFetchWorker::doWork,
-// this size is incremented; stopping this function from returning true once we reached the
-// threshold of "pipelines" requests (the sum of requests in the command queue, the ones
-// throttled and queued in AIPerService::mQueuedRequests and the already
-// running requests (in MultiHandle::mAddedEasyRequests)).
+// or LLInventoryModelBackgroundFetch::bulkFetch (the two functions currently
+// calling this function) this function will stop returning aprovement once we
+// reached the threshold of "pipelined" requests (the sum of approved requests,
+// requests in the command queue, the ones throttled and queued in
+// AIPerService::mQueuedRequests and the already running requests
+// (in MultiHandle::mAddedEasyRequests)).
 //
 //static
 AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr const& per_service, AICapabilityType capability_type)
