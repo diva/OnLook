@@ -60,6 +60,7 @@ LLPanelVoiceDeviceSettings::LLPanelVoiceDeviceSettings()
 
 LLPanelVoiceDeviceSettings::~LLPanelVoiceDeviceSettings()
 {
+	if (getVisible()) cleanup(); // Singu Note: If we're still visible, we'll need to cleanup
 }
 
 BOOL LLPanelVoiceDeviceSettings::postBuild()
