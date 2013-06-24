@@ -1675,8 +1675,6 @@ bool idle_startup()
 		// object is created.  I think this must be done after setting the region.  JC
 		gAgent.setPositionAgent(agent_start_position_region);
 
-		wlfPanel_AdvSettings::fixPanel();
-
 		display_startup();
 		LLStartUp::setStartupState( STATE_MULTIMEDIA_INIT );
 		return FALSE;
@@ -3935,11 +3933,11 @@ bool process_login_success_response(std::string& password)
 		std::string history_file = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "saved_logins_sg2.xml");
 
 		LLSavedLogins history_data = LLSavedLogins::loadFile(history_file);
-		std::string grid_nick = gHippoGridManager->getConnectedGrid()->getGridName();
-		history_data.deleteEntry(firstname, lastname, grid_nick);
+		std::string grid_name = gHippoGridManager->getConnectedGrid()->getGridName();
+		history_data.deleteEntry(firstname, lastname, grid_name);
 		if (gSavedSettings.getBOOL("RememberLogin"))
 		{
-			LLSavedLoginEntry login_entry(firstname, lastname, password, grid_nick);
+			LLSavedLoginEntry login_entry(firstname, lastname, password, grid_name);
 			history_data.addEntry(login_entry);
 		}
 		else
@@ -4223,8 +4221,6 @@ bool process_login_success_response(std::string& password)
 		std::string openid_token = response["openid_token"];
 		LLViewerMedia::openIDSetup(openid_url, openid_token);
 	}
-
-	gIMMgr->loadIgnoreGroup();
 
 	bool success = false;
 	// JC: gesture loading done below, when we have an asset system

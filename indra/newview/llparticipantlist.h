@@ -27,13 +27,13 @@
 #ifndef LL_PARTICIPANTLIST_H
 #define LL_PARTICIPANTLIST_H
 
-#include "llpanel.h"
+#include "lllayoutstack.h"
 
 class LLSpeakerMgr;
 class LLScrollListCtrl;
 class LLUICtrl;
 
-class LLParticipantList : public LLPanel
+class LLParticipantList : public LLLayoutPanel
 {
 	LOG_CLASS(LLParticipantList);
 public:

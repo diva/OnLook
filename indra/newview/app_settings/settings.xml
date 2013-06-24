@@ -425,7 +425,19 @@
     </array>
   </map>
 
-  <!-- Begin: AO-->
+    <key>ShowNearbyMediaFloater</key>
+    <map>
+      <key>Comment</key>
+      <string>Show nearby media floter</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    
+    <!-- Begin: AO-->
 
   <key>ShowAOSitPopup</key>
   <map>
@@ -1147,7 +1159,7 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Comment</key>
       <string>Show Windlight popup</string>
       <key>Persist</key>
-      <integer>0</integer>
+      <integer>1</integer>
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
@@ -8821,6 +8833,17 @@ This should be as low as possible, but too low may break functionality</string>
     <map>
       <key>Comment</key>
       <string>Last selected tab in preferences window</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LastMediaSettingsTab</key>
+    <map>
+      <key>Comment</key>
+      <string>Last selected tab in media settings window</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -17088,6 +17111,22 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>473</integer>
       </array>
     </map>
+    <key>FloaterNearbyMediaRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for nearby media floater.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>0</integer>
+        <integer>0</integer>
+        <integer>0</integer>
+      </array>
+    </map>    
     <key>WindEnabled</key>
     <map>
       <key>Comment</key>

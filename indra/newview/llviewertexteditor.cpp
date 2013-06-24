@@ -1633,9 +1633,6 @@ LLXMLNodePtr LLViewerTextEditor::getXML(bool save_children) const
 
 LLView* LLViewerTextEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("text_editor");
-	node->getAttributeString("name", name);
-
 	LLRect rect;
 	createRect(node, rect, parent, LLRect());
 
@@ -1656,7 +1653,7 @@ LLView* LLViewerTextEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlF
 		text.erase(max_text_length);
 	}
 
-	LLViewerTextEditor* text_editor = new LLViewerTextEditor(name, 
+	LLViewerTextEditor* text_editor = new LLViewerTextEditor("text_editor", 
 								rect,
 								max_text_length,
 								LLStringUtil::null,

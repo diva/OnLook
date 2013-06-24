@@ -96,9 +96,9 @@ private:
 	S32				mMouseOffset;
 	LLRect			mDragStartThumbRect;
 
-	LLUIImage*		mThumbImage;
-	LLUIImage*		mTrackImage;
-	LLUIImage*		mTrackHighlightImage;
+	LLPointer<LLUIImage>	mThumbImage;
+	LLPointer<LLUIImage>		mTrackImage;
+	LLPointer<LLUIImage>		mTrackHighlightImage;
 
 	LLRect			mThumbRect;
 	LLColor4		mTrackColor;

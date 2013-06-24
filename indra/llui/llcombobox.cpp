@@ -149,9 +149,6 @@ LLXMLNodePtr LLComboBox::getXML(bool save_children) const
 // static
 LLView* LLComboBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("combo_box");
-	node->getAttributeString("name", name);
-
 	std::string label("");
 	node->getAttributeString("label", label);
 
@@ -164,7 +161,7 @@ LLView* LLComboBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *
 	S32 max_chars = 20;
 	node->getAttributeS32("max_chars", max_chars);
 
-	LLComboBox* combo_box = new LLComboBox(name,
+	LLComboBox* combo_box = new LLComboBox("combo_box",
 							rect, 
 							label);
 	combo_box->setAllowTextEntry(allow_text_entry, max_chars);
@@ -1245,16 +1242,13 @@ LLXMLNodePtr LLFlyoutButton::getXML(bool save_children) const
 //static 
 LLView* LLFlyoutButton::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name = "flyout_button";
-	node->getAttributeString("name", name);
-
 	std::string label("");
 	node->getAttributeString("label", label);
 
 	LLRect rect;
 	createRect(node, rect, parent, LLRect());
 
-	LLFlyoutButton* flyout_button = new LLFlyoutButton(name,
+	LLFlyoutButton* flyout_button = new LLFlyoutButton("flyout_button",
 							rect, 
 							label);
 

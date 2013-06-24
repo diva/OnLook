@@ -69,7 +69,7 @@
 #include "llmediactrl.h"
 #include "llselectmgr.h"
 #include "wlfPanel_AdvSettings.h"
-
+#include "llpanelnearbymedia.h"
 
 
 
@@ -90,7 +90,6 @@ LLOverlayBar *gOverlayBar = NULL;
 extern S32 MENU_BAR_HEIGHT;
 extern ImportTracker gImportTracker;
 
-BOOL LLOverlayBar::sAdvSettingsPopup;
 BOOL LLOverlayBar::sChatVisible;
 
 //
@@ -115,9 +114,7 @@ void* LLOverlayBar::createVoiceRemote(void* userdata)
 
 void* LLOverlayBar::createAdvSettings(void* userdata)
 {
-	LLOverlayBar *self = (LLOverlayBar*)userdata;	
-	self->mAdvSettings = new wlfPanel_AdvSettings();
-	return self->mAdvSettings;
+	return wlfPanel_AdvSettings::getInstance();
 }
 
 void* LLOverlayBar::createAORemote(void* userdata)
@@ -134,7 +131,7 @@ void* LLOverlayBar::createChatBar(void* userdata)
 }
 
 LLOverlayBar::LLOverlayBar()
-	:	LLPanel(),
+	:	LLLayoutPanel(),
 		mMediaRemote(NULL),
 		mVoiceRemote(NULL),
 		mAORemote(NULL),
@@ -156,11 +153,21 @@ LLOverlayBar::LLOverlayBar()
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_overlaybar.xml", &factory_map);
 }
 
-bool updateAdvSettingsPopup(const LLSD &data)
+bool LLOverlayBar::updateAdvSettingsPopup()
 {
-	LLOverlayBar::sAdvSettingsPopup = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
-	gOverlayBar->childSetVisible("AdvSettings_container", !LLOverlayBar::sAdvSettingsPopup);
-	gOverlayBar->childSetVisible("AdvSettings_container_exp", LLOverlayBar::sAdvSettingsPopup);
+	bool wfl_adv_settings_popup = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
+	wlfPanel_AdvSettings::updateClass();
+	if(LLLayoutStack* layout_stack = findChild<LLLayoutStack>("overlay_layout_panel"))
+	{
+		LLLayoutPanel* layout_panel = layout_stack->findChild<LLLayoutPanel>("AdvSettings_container");
+		if(layout_panel)
+		{
+			layout_stack->collapsePanel(layout_panel,!wfl_adv_settings_popup);
+			if(wfl_adv_settings_popup)
+				layout_panel->setTargetDim(layout_panel->getChild<LLView>("Adv_Settings")->getBoundingRect().getWidth());
+		}
+	}
+	
 	return true;
 }
 
@@ -176,6 +183,11 @@ bool updateAORemote(const LLSD &data)
 	return true;
 }
 
+bool updateNearbyMediaFloater(const LLSD &data)
+{
+	LLFloaterNearbyMedia::updateClass();
+	return true;
+}
 
 BOOL LLOverlayBar::postBuild()
 {
@@ -204,16 +216,16 @@ BOOL LLOverlayBar::postBuild()
 
 	layoutButtons();
 
-	sAdvSettingsPopup = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
 	sChatVisible = gSavedSettings.getBOOL("ChatVisible");
 
-	gSavedSettings.getControl("wlfAdvSettingsPopup")->getSignal()->connect(boost::bind(&updateAdvSettingsPopup,_2));
+	gSavedSettings.getControl("wlfAdvSettingsPopup")->getSignal()->connect(boost::bind(&LLOverlayBar::updateAdvSettingsPopup,this));
 	gSavedSettings.getControl("ChatVisible")->getSignal()->connect(boost::bind(&updateChatVisible,_2));
 	gSavedSettings.getControl("EnableAORemote")->getSignal()->connect(boost::bind(&updateAORemote,_2));
-	childSetVisible("AdvSettings_container", !sAdvSettingsPopup);
-	childSetVisible("AdvSettings_container_exp", sAdvSettingsPopup);
+	gSavedSettings.getControl("ShowNearbyMediaFloater")->getSignal()->connect(boost::bind(&updateNearbyMediaFloater,_2));
+
 	childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));	
 
+	updateAdvSettingsPopup();
 
 	return TRUE;
 }
@@ -342,7 +354,6 @@ void LLOverlayBar::refresh()
 			childSetVisible("media_remote_container", FALSE);
 			childSetVisible("voice_remote_container", FALSE);
 			childSetVisible("AdvSettings_container", FALSE);
-			childSetVisible("AdvSettings_container_exp", FALSE);
 			childSetVisible("ao_remote_container", FALSE);
 			childSetVisible("state_management_buttons_container", FALSE);
 		}
@@ -351,8 +362,7 @@ void LLOverlayBar::refresh()
 			// update "remotes"
 			childSetVisible("media_remote_container", TRUE);
 			childSetVisible("voice_remote_container", LLVoiceClient::getInstance()->voiceEnabled());
-			childSetVisible("AdvSettings_container", !sAdvSettingsPopup);//!gSavedSettings.getBOOL("wlfAdvSettingsPopup")); 
-			childSetVisible("AdvSettings_container_exp", sAdvSettingsPopup);//gSavedSettings.getBOOL("wlfAdvSettingsPopup")); 
+			childSetVisible("AdvSettings_container", TRUE);
 			childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));
 			childSetVisible("state_management_buttons_container", TRUE);
 		}

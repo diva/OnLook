@@ -71,6 +71,8 @@
 #include "llviewerregion.h"
 #include "llwindow.h"
 
+#include "llnotifications.h"
+
 const char* market_panel = "market_panel";
 
 class LLPanelDirMarket : public LLPanelDirFind

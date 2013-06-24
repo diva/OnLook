@@ -1702,6 +1702,7 @@ void LLLineEditor::drawMisspelled(LLRect background)
 
 		if (glggHunSpell->getSpellCheckHighlight())
 		{
+			F32 alpha = getDrawContext().mAlpha;
 			for (int i =0; i<(int)misspellLocations.size(); i++)
 			{
 				S32 wstart =findPixelNearestPos( misspellLocations[i]-getCursor());
@@ -1716,7 +1717,7 @@ void LLLineEditor::drawMisspelled(LLRect background)
 				{
 					wstart = maxw;
 				}
-				gGL.color4ub(255,0,0,200);
+				gGL.color4ub(255,0,0,200*alpha);
 				//3 line zig zags..
 				while (wstart < wend)
 				{
@@ -1733,6 +1734,7 @@ void LLLineEditor::drawMisspelled(LLRect background)
 
 void LLLineEditor::draw()
 {
+	F32 alpha = getDrawContext().mAlpha;
 	S32 text_len = mText.length();
 
 	std::string saved_text;
@@ -1776,7 +1778,7 @@ void LLLineEditor::draw()
 				bg_color = mWriteableBgColor;
 			}
 		}
-		gl_rect_2d(background, bg_color);
+		gl_rect_2d(background, bg_color % alpha);
 	}
 #endif
 
@@ -1801,7 +1803,9 @@ void LLLineEditor::draw()
 	{
 		text_color = mReadOnlyFgColor;
 	}
-	LLColor4 label_color = mTentativeFgColor;
+
+	text_color %= alpha;
+	LLColor4 label_color = mTentativeFgColor % alpha;
 
 	if (hasPreeditString())
 	{
@@ -1824,7 +1828,7 @@ void LLLineEditor::draw()
 						background.mBottom + PREEDIT_STANDOUT_POSITION,
 						preedit_pixels_right - PREEDIT_STANDOUT_GAP - 1,
 						background.mBottom + PREEDIT_STANDOUT_POSITION - PREEDIT_STANDOUT_THICKNESS,
-						(text_color * PREEDIT_STANDOUT_BRIGHTNESS + bg_color * (1 - PREEDIT_STANDOUT_BRIGHTNESS)).setAlpha(1.0f));
+						(text_color * PREEDIT_STANDOUT_BRIGHTNESS + bg_color * (1 - PREEDIT_STANDOUT_BRIGHTNESS)).setAlpha(alpha));
 				}
 				else
 				{
@@ -1832,7 +1836,7 @@ void LLLineEditor::draw()
 						background.mBottom + PREEDIT_MARKER_POSITION,
 						preedit_pixels_right - PREEDIT_MARKER_GAP - 1,
 						background.mBottom + PREEDIT_MARKER_POSITION - PREEDIT_MARKER_THICKNESS,
-						(text_color * PREEDIT_MARKER_BRIGHTNESS + bg_color * (1 - PREEDIT_MARKER_BRIGHTNESS)).setAlpha(1.0f));
+						(text_color * PREEDIT_MARKER_BRIGHTNESS + bg_color * (1 - PREEDIT_MARKER_BRIGHTNESS)).setAlpha(alpha));
 				}
 			}
 		}
@@ -1874,7 +1878,7 @@ void LLLineEditor::draw()
 		
 		if( (rendered_pixels_right < (F32)mMaxHPixels) && (rendered_text < text_len) )
 		{
-			LLColor4 color(1.f - bg_color.mV[0], 1.f - bg_color.mV[1], 1.f - bg_color.mV[2], 1.f);
+			LLColor4 color(1.f - bg_color.mV[0], 1.f - bg_color.mV[1], 1.f - bg_color.mV[2], alpha );
 			// selected middle
 			S32 width = mGLFont->getWidth(mText.getWString().c_str(), mScrollHPos + rendered_text, select_right - mScrollHPos - rendered_text);
 			width = llmin(width, mMaxHPixels - llround(rendered_pixels_right));
@@ -1883,7 +1887,7 @@ void LLLineEditor::draw()
 			rendered_text += mGLFont->render( 
 				mText, mScrollHPos + rendered_text,
 				rendered_pixels_right, text_bottom,
-				LLColor4( 1.f - text_color.mV[0], 1.f - text_color.mV[1], 1.f - text_color.mV[2], 1 ),
+				LLColor4( 1.f - text_color.mV[0], 1.f - text_color.mV[1], 1.f - text_color.mV[2], alpha ),
 				LLFontGL::LEFT, LLFontGL::BOTTOM,
 				LLFontGL::NORMAL,
 				LLFontGL::NO_SHADOW,
@@ -1953,7 +1957,7 @@ void LLLineEditor::draw()
 				if (LL_KIM_OVERWRITE == gKeyboard->getInsertMode() && !hasSelection())
 				{
 					mGLFont->render(mText, getCursor(), (F32)(cursor_left + UI_LINEEDITOR_CURSOR_THICKNESS / 2), text_bottom, 
-						LLColor4( 1.f - text_color.mV[0], 1.f - text_color.mV[1], 1.f - text_color.mV[2], 1 ),
+						LLColor4( 1.f - text_color.mV[0], 1.f - text_color.mV[1], 1.f - text_color.mV[2], alpha ),
 						LLFontGL::LEFT, LLFontGL::BOTTOM,
 						LLFontGL::NORMAL,
 						LLFontGL::NO_SHADOW,
@@ -2551,9 +2555,6 @@ LLXMLNodePtr LLLineEditor::getXML(bool save_children) const
 // static
 LLView* LLLineEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("line_editor");
-	node->getAttributeString("name", name);
-
 	LLRect rect;
 	createRect(node, rect, parent, LLRect());
 
@@ -2580,7 +2581,7 @@ LLView* LLLineEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory
 	S32 border_thickness = 1;
 	node->getAttributeS32("border_thickness", border_thickness);
 
-	LLLineEditor* line_editor = new LLLineEditor(name,
+	LLLineEditor* line_editor = new LLLineEditor("line_editor",
 								rect, 
 								text, 
 								font,

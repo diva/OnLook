@@ -53,55 +53,67 @@
 #include "llwlparamset.h"
 #include "llwlparammanager.h"
 
-// [RLVa:KB]
-#include "rlvhandler.h"
-// [/RLVa:KB]
-
-BOOL firstBuildDone;
-void* fixPointer;
-
-wlfPanel_AdvSettings::wlfPanel_AdvSettings()
+wlfPanel_AdvSettings::wlfPanel_AdvSettings() : mExpanded(false)
 {
+	setVisible(false);
 	setIsChrome(TRUE);
 	setFocusRoot(TRUE);
-	build();
+	if(rlv_handler_t::isEnabled())
+		gRlvHandler.setBehaviourToggleCallback(boost::bind(&wlfPanel_AdvSettings::onRlvBehaviorChange, this, _1, _2));
 }
+
+//static
+void wlfPanel_AdvSettings::updateClass()
+{
+	if(!wlfPanel_AdvSettings::instanceExists())
+		return;
+	wlfPanel_AdvSettings::getInstance()->build(); 
+}
+
 void wlfPanel_AdvSettings::build()
 {
 	deleteAllChildren();
 	std::string ButtonState;
-	if (!gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
+	if (gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
 	{
+		mExpanded = true;
 		LLUICtrlFactory::getInstance()->buildPanel(this, "wlfPanel_AdvSettings_expanded.xml", &getFactoryMap());
 		ButtonState = "arrow_down.tga";
 	}
 	else
 	{
+		mExpanded = false;
 		LLUICtrlFactory::getInstance()->buildPanel(this, "wlfPanel_AdvSettings.xml", &getFactoryMap());
 		ButtonState = "arrow_up.tga";
 	}
 	getChild<LLButton>("expand")->setImageOverlay(ButtonState);
 }
 
-void wlfPanel_AdvSettings::refresh()
+// [RLVa:KB] - Checked: 2013-06-20
+void wlfPanel_AdvSettings::updateRlvVisibility()
 {
-// [RLVa:KB] - Checked: 2009-09-19
-	if (rlv_handler_t::isEnabled() && !gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
-	{
-		if (!findChild<LLView>("use_estate_wl")) return; // Singu Note: Not certain why, but sometimes none of these exist even though the above setting implies they should
-		childSetEnabled("use_estate_wl", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
-		childSetEnabled("EnvAdvancedWaterButton", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
-		childSetEnabled("WLWaterPresetsCombo", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
-		childSetEnabled("WWprev", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
-		childSetEnabled("WWnext", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
-		childSetEnabled("EnvAdvancedSkyButton", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
-		childSetEnabled("WLSkyPresetsCombo", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
-		childSetEnabled("WLprev", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
-		childSetEnabled("WLnext", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
-		childSetEnabled("EnvTimeSlider", !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV));
-	}
-// [/RLVa:KB]
+	if(!mExpanded || !rlv_handler_t::isEnabled())
+		return;
+
+	bool enable = !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV);
+	childSetEnabled("use_estate_wl", enable);
+	childSetEnabled("EnvAdvancedWaterButton", enable);
+	childSetEnabled("WLWaterPresetsCombo", enable);
+	childSetEnabled("WWprev", enable);
+	childSetEnabled("WWnext", enable);
+	childSetEnabled("EnvAdvancedSkyButton", enable);
+	childSetEnabled("WLSkyPresetsCombo", enable);
+	childSetEnabled("WLprev", enable);
+	childSetEnabled("WLnext", enable);
+	childSetEnabled("EnvTimeSlider", enable);
 }
+
+void wlfPanel_AdvSettings::onRlvBehaviorChange(ERlvBehaviour eBhvr, ERlvParamType eType)
+{
+	if(eBhvr == RLV_BHVR_SETENV)
+		updateRlvVisibility();
+}
+// [/RLVa:KB]
 
 void wlfPanel_AdvSettings::refreshLists()
 {
@@ -131,21 +143,12 @@ void wlfPanel_AdvSettings::refreshLists()
 	updateTimeSlider();
 }
 
-void wlfPanel_AdvSettings::fixPanel()
-{
-	if(!firstBuildDone)
-	{
-		llinfos << "firstbuild done" << llendl;
-		firstBuildDone = TRUE;
-		onClickExpandBtn(fixPointer);
-	}
-}
-
 BOOL wlfPanel_AdvSettings::postBuild()
 {
+	setVisible(true);
 	childSetAction("expand", onClickExpandBtn, this);
 
-	if (!gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
+	if (mExpanded)
 	{
 		getChild<LLCheckBoxCtrl>("use_estate_wl")->setCommitCallback(onUseRegionSettings);
 
@@ -179,9 +182,8 @@ BOOL wlfPanel_AdvSettings::postBuild()
 		mTimeSlider = getChild<LLSliderCtrl>("EnvTimeSlider");
 		mTimeSlider->setCommitCallback(onChangeDayTime);
 		updateTimeSlider();
+		updateRlvVisibility();
 	}
-	
-	fixPointer = this;
 	return TRUE;
 }
 
@@ -198,9 +200,6 @@ wlfPanel_AdvSettings::~wlfPanel_AdvSettings ()
 void wlfPanel_AdvSettings::onClickExpandBtn(void* user_data)
 {
 	gSavedSettings.setBOOL("wlfAdvSettingsPopup",!gSavedSettings.getBOOL("wlfAdvSettingsPopup"));
-	wlfPanel_AdvSettings* remotep = (wlfPanel_AdvSettings*)user_data;
-	remotep->build();
-	gOverlayBar->layoutButtons();
 }
 
 void wlfPanel_AdvSettings::onUseRegionSettings(LLUICtrl* ctrl, void* userdata)

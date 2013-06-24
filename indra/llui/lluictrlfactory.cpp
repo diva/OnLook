@@ -102,11 +102,8 @@ public:
 
 	static LLView *fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 	{
-		std::string name("pad");
-		node->getAttributeString("name", name);
-
 		LLUICtrlLocate *new_ctrl = new LLUICtrlLocate();
-		new_ctrl->setName(name);
+		new_ctrl->setName("pad");
 		new_ctrl->initFromXML(node, parent);
 		return new_ctrl;
 	}

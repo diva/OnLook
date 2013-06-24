@@ -48,6 +48,7 @@
 #include "llpreview.h" // For LLMultiPreview
 #include "lltrans.h"
 #include "llvoavatarself.h"
+#include "llnotifications.h"
 
 extern LLUUID gAgentID;
 

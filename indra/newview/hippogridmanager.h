@@ -57,7 +57,7 @@ public:
 	const std::string& getVoiceConnector()  const { return mVoiceConnector; }
 	std::string getSearchUrl(SearchType ty, bool is_web) const;
 	bool isRenderCompat()                   const { return mRenderCompat; }
-	std::string getGridNick();
+	std::string getGridNick() const;
 	int getMaxAgentGroups() const { return mMaxAgentGroups; }
 
 	const std::string& getCurrencySymbol()     const { return mCurrencySymbol; }
@@ -99,7 +99,7 @@ public:
 	bool retrieveGridInfo();
 
 	static const char* getPlatformString(Platform platform);
-	static std::string sanitizeGridNick(std::string &gridnick);
+	static std::string sanitizeGridNick(const std::string &gridnick);
 
 	static HippoGridInfo FALLBACK_GRIDINFO;
 	static void initFallback();
@@ -163,8 +163,10 @@ public:
 	HippoGridInfo* getConnectedGrid()               const { return mConnectedGrid ? mConnectedGrid : getCurrentGrid(); }
 
 	HippoGridInfo* getCurrentGrid()                 const;
-	const std::string& getDefaultGridNick()         const;
-	const std::string& getCurrentGridNick()         const;
+	std::string	   getDefaultGridNick()         const;
+	std::string	   getCurrentGridNick()         const;
+	const std::string&	   getDefaultGridName()         const;
+	const std::string&	   getCurrentGridName()         const;
 
 	void setDefaultGrid(const std::string& grid);
 	void setCurrentGrid(const std::string& grid);

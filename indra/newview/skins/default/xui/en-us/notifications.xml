@@ -952,6 +952,20 @@ This entire region is damage enabled.
 Scripts must be allowed to run for weapons to work.
   </notification>
 
+<notification
+   icon="alertmodal.tga"
+   name="MultipleFacesSelected"
+   type="alertmodal">
+Multiple faces are currently selected.
+If you continue this action, separate instances of media will be set on multiple faces of the object.
+To place the media on only one face, choose Select Face and click on the desired face of that object then click Add.
+    <tag>confirm</tag>
+    <usetemplate
+      ignoretext="Media will be set on multiple selected faces"
+      name="okcancelignore"
+      notext="Cancel"
+      yestext="OK"/>
+  </notification>
   <notification
    icon="alertmodal.tga"
    name="MustBeInParcel"
@@ -1105,6 +1119,21 @@ There is no reimbursement for fees paid.
      name="okcancelbuttons"
      notext="Cancel"
      yestext="OK"/>
+  </notification>
+
+
+<notification
+   icon="alertmodal.tga"
+   name="DeleteMedia"
+   type="alertmodal">
+You have selected to delete the media associated with this face.
+Are you sure you want to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Confirm before I delete media from an object"
+     name="okcancelignore"
+     notext="No"
+     yestext="Yes"/>
   </notification>
 
   <notification
@@ -7610,6 +7639,23 @@ Your shape, skin, hair or eyes might be defect.
 	<usetemplate
 	 name="okbutton"
 	 yestext="OK"/>
+  </notification>
+
+  <notification
+  name="PopupAttempt"
+  icon="alertmodal.tga"
+  type="browser">
+    A pop-up was prevented from opening.
+    <form name="form">
+      <ignore name="ignore"
+              control="MediaEnablePopups"
+              invert_control="true"
+              text="Enable all pop-ups"/>
+      <button default="true"
+              index="0"
+              name="open"
+              text="Open pop-up window"/>
+    </form>
   </notification>
 
   <notification

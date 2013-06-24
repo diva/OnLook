@@ -222,6 +222,7 @@ set(viewer_SOURCE_FILES
     llfloaterlandholdings.cpp
     llfloaterlandmark.cpp
     llfloatermap.cpp
+    llfloatermediasettings.cpp
     llfloatermemleak.cpp
     llfloatermessagelog.cpp
     llfloatermodelpreview.cpp
@@ -263,6 +264,7 @@ set(viewer_SOURCE_FILES
     llfloatervoiceeffect.cpp
     llfloaterwater.cpp
     llfloaterwebcontent.cpp
+    llfloaterwhitelistentry.cpp
     llfloaterwindlight.cpp
     llfloaterworldmap.cpp
     llfolderview.cpp
@@ -369,6 +371,10 @@ set(viewer_SOURCE_FILES
     llpanellogin.cpp
     llpanelmaininventory.cpp
     llpanelmarketplaceoutboxinventory.cpp
+    llpanelmediasettingsgeneral.cpp
+    llpanelmediasettingspermissions.cpp
+    llpanelmediasettingssecurity.cpp
+    llpanelnearbymedia.cpp
     llpanelmorph.cpp
     llpanelmsgs.cpp
     llpanelnetwork.cpp
@@ -729,6 +735,7 @@ set(viewer_HEADER_FILES
     llfloaterlandholdings.h
     llfloaterlandmark.h
     llfloatermap.h
+    llfloatermediasettings.h
     llfloatermemleak.h
     llfloatermessagelog.h
     llfloatermodelpreview.h
@@ -770,6 +777,7 @@ set(viewer_HEADER_FILES
     llfloatervoiceeffect.h
     llfloaterwater.h
     llfloaterwebcontent.h
+    llfloaterwhitelistentry.h
     llfloaterwindlight.h
     llfloaterworldmap.h
     llfolderview.h
@@ -876,6 +884,10 @@ set(viewer_HEADER_FILES
     llpanellogin.h
     llpanelmaininventory.h
     llpanelmarketplaceoutboxinventory.h
+    llpanelmediasettingsgeneral.h
+    llpanelmediasettingspermissions.h
+    llpanelmediasettingssecurity.h
+    llpanelnearbymedia.h
     llpanelmorph.h
     llpanelmsgs.h
     llpanelnetwork.h

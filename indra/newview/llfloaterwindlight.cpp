@@ -231,7 +231,7 @@ void LLFloaterWindLight::onClickHelp(void* data)
 	LLFloaterWindLight* self = LLFloaterWindLight::instance();
 
 	const std::string xml_alert = *(std::string*)data;
-	LLNotifications::instance().add(self->contextualNotification(xml_alert));
+	self->addContextualNotification(xml_alert);
 }
 
 void LLFloaterWindLight::initHelpBtn(const std::string& name, const std::string& xml_alert)

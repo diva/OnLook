@@ -48,6 +48,8 @@ LLUICtrl::LLUICtrl() :
 	mCommitCallback(NULL),
 	mValidateCallback(NULL),
 	mCallbackUserData(NULL),
+	mMouseEnterSignal(NULL),
+	mMouseLeaveSignal(NULL),
 	mTentative(FALSE),
 	mTabStop(TRUE),
 	mIsChrome(FALSE)
@@ -66,6 +68,8 @@ LLUICtrl::LLUICtrl(const std::string& name, const LLRect rect, BOOL mouse_opaque
 	mViewModel(LLViewModelPtr(new LLViewModel)),
 	mValidateCallback( NULL ),
 	mCallbackUserData( NULL ),
+	mMouseEnterSignal(NULL),
+	mMouseLeaveSignal(NULL),
 	mTentative( FALSE ),
 	mTabStop( TRUE ),
 	mIsChrome(FALSE)
@@ -86,6 +90,25 @@ LLUICtrl::~LLUICtrl()
 
 	delete mCommitSignal;
 	delete mValidateSignal;
+}
+
+
+// virtual
+void LLUICtrl::onMouseEnter(S32 x, S32 y, MASK mask)
+{
+	if (mMouseEnterSignal)
+	{
+		(*mMouseEnterSignal)(this, getValue());
+	}
+}
+
+// virtual
+void LLUICtrl::onMouseLeave(S32 x, S32 y, MASK mask)
+{
+	if(mMouseLeaveSignal)
+	{
+		(*mMouseLeaveSignal)(this, getValue());
+	}
 }
 
 void LLUICtrl::onCommit()
@@ -462,6 +485,10 @@ BOOL LLUICtrl::handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sticky_rect
 
 void LLUICtrl::initFromXML(LLXMLNodePtr node, LLView* parent)
 {
+	std::string name;
+	if(node->getAttributeString("name", name))
+		setName(name);
+
 	BOOL has_tab_stop = hasTabStop();
 	node->getAttributeBOOL("tab_stop", has_tab_stop);
 
@@ -470,20 +497,36 @@ void LLUICtrl::initFromXML(LLXMLNodePtr node, LLView* parent)
 	std::string str = node->getName()->mString;
 	std::string attrib_str;
 	LLXMLNodePtr child_node;
-	if(node->getChild((str+".commit_callback").c_str(),child_node,false))
+
+	//Since so many other callback 'types' piggyback off of the commitcallback registrar as well as use the same callback signature
+	//we can assemble a nice little static list to iterate down instead of copy-pasting mostly similar code for each instance.
+	//Validate/enable callbacks differ, as it uses its own registry/callback signature. This could be worked around with a template, but keeping
+	//all the code local to this scope is more beneficial.
+	typedef boost::signals2::connection (LLUICtrl::*commit_fn)( const commit_signal_t::slot_type& cb );
+	static std::pair<std::string,commit_fn> sCallbackRegistryMap[3] = 
 	{
-		if(child_node->getAttributeString("function",attrib_str))
+		std::pair<std::string,commit_fn>(".commit_callback",&LLUICtrl::setCommitCallback),
+		std::pair<std::string,commit_fn>(".mouseenter_callback",&LLUICtrl::setMouseEnterCallback),
+		std::pair<std::string,commit_fn>(".mouseleave_callback",&LLUICtrl::setMouseLeaveCallback)
+	};
+	for(S32 i= 0; i < sizeof(sCallbackRegistryMap)/sizeof(sCallbackRegistryMap[0]);++i)
+	{
+		if(node->getChild((str+sCallbackRegistryMap[i].first).c_str(),child_node,false))
 		{
-			commit_callback_t* func = (CommitCallbackRegistry::getValue(attrib_str));
-			if (func)
+			if(child_node->getAttributeString("function",attrib_str))
 			{
-				if(child_node->getAttributeString("parameter",attrib_str))
-					setCommitCallback(boost::bind((*func), this, LLSD(attrib_str)));
-				else
-					setCommitCallback(commit_signal_t::slot_type(*func));
+				commit_callback_t* func = (CommitCallbackRegistry::getValue(attrib_str));
+				if (func)
+				{
+					if(child_node->getAttributeString("parameter",attrib_str))
+						(this->*sCallbackRegistryMap[i].second)(boost::bind((*func), this, LLSD(attrib_str)));
+					else
+						(this->*sCallbackRegistryMap[i].second)(commit_signal_t::slot_type(*func));
+				}
 			}
 		}
 	}
+
 	if(node->getChild((str+".validate_callback").c_str(),child_node,false))
 	{
 		if(child_node->getAttributeString("function",attrib_str))
@@ -586,4 +629,16 @@ boost::signals2::connection LLUICtrl::setValidateCallback( const enable_signal_t
 { 
 	if (!mValidateSignal) mValidateSignal = new enable_signal_t();
 	return mValidateSignal->connect(cb); 
+}
+
+boost::signals2::connection LLUICtrl::setMouseEnterCallback( const commit_signal_t::slot_type& cb ) 
+{ 
+	if (!mMouseEnterSignal) mMouseEnterSignal = new commit_signal_t();
+	return mMouseEnterSignal->connect(cb); 
+}
+
+boost::signals2::connection LLUICtrl::setMouseLeaveCallback( const commit_signal_t::slot_type& cb ) 
+{ 
+	if (!mMouseLeaveSignal) mMouseLeaveSignal = new commit_signal_t();
+	return mMouseLeaveSignal->connect(cb); 
 }

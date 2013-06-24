@@ -1173,9 +1173,6 @@ LLXMLNodePtr LLTextureCtrl::getXML(bool save_children) const
 
 LLView* LLTextureCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("texture_picker");
-	node->getAttributeString("name", name);
-
 	LLRect rect;
 	createRect(node, rect, parent);
 
@@ -1206,7 +1203,7 @@ LLView* LLTextureCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactor
 	}
 
 	LLTextureCtrl* texture_picker = new LLTextureCtrl(
-									name, 
+									"texture_picker", 
 									rect,
 									label,
 									LLUUID(image_id),

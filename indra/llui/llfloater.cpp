@@ -58,6 +58,7 @@
 #include "v2math.h"
 #include "llfasttimer.h"
 #include "airecursive.h"
+#include "llnotifications.h"
 
 const S32 MINIMIZED_WIDTH = 160;
 const S32 CLOSE_BOX_FROM_TOP = 1;
@@ -1411,6 +1412,10 @@ void LLFloater::closeFocusedFloater()
 	}
 }
 
+LLNotificationPtr LLFloater::addContextualNotification(const std::string& name, const LLSD& substitutions)
+{
+	return LLNotifications::instance().add(LLNotification::Params(name).context(mNotificationContext).substitutions(substitutions));
+}
 
 void LLFloater::onClickClose()
 {

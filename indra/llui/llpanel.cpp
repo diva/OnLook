@@ -58,6 +58,8 @@
 #include "llnotificationsutil.h"
 #include "llfasttimer.h"
 
+#include "llnotifications.h"
+
 // LLLayoutStack
 #include "llresizebar.h"
 #include "llcriticaldamp.h"

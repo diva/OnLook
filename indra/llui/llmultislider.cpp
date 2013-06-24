@@ -624,9 +624,6 @@ LLXMLNodePtr LLMultiSlider::getXML(bool save_children) const
 //static
 LLView* LLMultiSlider::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("multi_slider_bar");
-	node->getAttributeString("name", name);
-
 	LLRect rect;
 	createRect(node, rect, parent, LLRect());
 
@@ -654,7 +651,7 @@ LLView* LLMultiSlider::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactor
 	BOOL use_triangle = FALSE;
 	node->getAttributeBOOL("use_triangle", use_triangle);
 
-	LLMultiSlider* multiSlider = new LLMultiSlider(name,
+	LLMultiSlider* multiSlider = new LLMultiSlider("multi_slider_bar",
 							rect,
 							NULL,
 							initial_value,

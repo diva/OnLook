@@ -34,10 +34,15 @@
 
 #include "llpanel.h"
 
+
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
+
 class LLComboBox;
 class LLSliderCtrl;
 
-class wlfPanel_AdvSettings : public LLPanel
+class wlfPanel_AdvSettings : public LLPanel, public LLSingleton<wlfPanel_AdvSettings>
 {
 public:
 	wlfPanel_AdvSettings ();
@@ -45,8 +50,11 @@ public:
 	~wlfPanel_AdvSettings ();
 	BOOL postBuild();
 	void draw();
-	void refresh();
-	static void fixPanel();
+
+	void updateRlvVisibility();
+	void onRlvBehaviorChange(ERlvBehaviour eBhvr, ERlvParamType eType);
+
+	static void updateClass();
 
 	static void onClickExpandBtn(void* user_data);
 	static void onChangeWWPresetName(LLUICtrl* ctrl, void* userData);
@@ -75,6 +83,8 @@ protected:
 	LLComboBox*		mSkyPresetCombo;
 	// LLComboBox*		mDayCyclePresetCombo;
 	LLSliderCtrl*		mTimeSlider;
+
+	bool mExpanded;
 };
 
 #endif // LL_wlfPanel_AdvSettings_H

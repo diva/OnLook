@@ -124,9 +124,7 @@
 			<text name="Group:">
 				Grupo:
 			</text>
-			<text name="Group Name Proxy">
-				The Lindens
-			</text>
+      <name_box initial_value="Carregando..." name="Group Name Proxy"></name_box>
 			<button label="Definir..." label_selected="Definir..." name="button set group"/>
 			<text name="Permissions:">
 				Permissões:

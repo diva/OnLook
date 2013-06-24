@@ -53,11 +53,14 @@ const char* LLSLURL::SLURL_REGION_PATH           = "region";
 const char* LLSLURL::SIM_LOCATION_HOME           = "home";
 const char* LLSLURL::SIM_LOCATION_LAST           = "last";
 
-
 const std::string MAIN_GRID_SLURL_BASE = "http://maps.secondlife.com/secondlife/";
 const std::string SYSTEM_GRID_APP_SLURL_BASE = "secondlife:///app";
-#define MAINGRID "util.agni.lindenlab.com"
 
+const char* SYSTEM_GRID_SLURL_BASE = "secondlife://%s/secondlife/";
+const char* DEFAULT_SLURL_BASE = "https://%s/region/";
+const char* DEFAULT_APP_SLURL_BASE = "x-grid-location-info://%s/app";
+
+#define MAINGRID "secondlife"
 // resolve a simstring from a slurl
 LLSLURL::LLSLURL(const std::string& slurl)
 {
@@ -87,7 +90,19 @@ LLSLURL::LLSLURL(const std::string& slurl)
 			// where the user can type in <regionname>/<x>/<y>/<z>
 			//std::string fixed_slurl = LLGridManager::getInstance()->getSLURLBase();
 			//Singu TODO: Implement LLHippoGridMgr::getSLURLBase some day. For now it's hardcoded.
-			std::string fixed_slurl = MAIN_GRID_SLURL_BASE;
+			std::string fixed_slurl;
+			
+			if(gHippoGridManager->getCurrentGrid()->isSecondLife())
+			{
+				if(gHippoGridManager->getCurrentGrid()->isInProductionGrid())
+					fixed_slurl = MAIN_GRID_SLURL_BASE;
+				else
+					fixed_slurl = llformat(SYSTEM_GRID_SLURL_BASE, gHippoGridManager->getCurrentGridNick().c_str());
+			}
+			else
+				fixed_slurl = llformat(DEFAULT_SLURL_BASE, gHippoGridManager->getCurrentGridNick().c_str());
+			
+			//std::string fixed_slurl = MAIN_GRID_SLURL_BASE;
 
 			// the slurl that was passed in might have a prepended /, or not.  So,
 			// we strip off the prepended '/' so we don't end up with http://slurl.com/secondlife/<region>/<x>/<y>/<z>
@@ -147,7 +162,15 @@ LLSLURL::LLSLURL(const std::string& slurl)
 				// so parse the grid name to derive the grid ID
 				if (!slurl_uri.hostName().empty())
 				{
-					mGrid = gHippoGridManager->getGrid(slurl_uri.hostName())->getGridNick();
+					if(slurl_uri.hostName() == "util.agni.lindenlab.com")
+						mGrid = MAINGRID;
+					else if(slurl_uri.hostName() == "util.aditi.lindenlab.com")
+						mGrid = "secondlife_beta";
+					else
+					{
+						HippoGridInfo* grid = gHippoGridManager->getGrid(slurl_uri.hostName());
+						mGrid = grid ? grid->getGridNick() : gHippoGridManager->getDefaultGridNick();
+					}
 				}
 				else if(path_array[0].asString() == LLSLURL::SLURL_SECONDLIFE_PATH)
 				{
@@ -353,8 +376,8 @@ LLSLURL::LLSLURL(const std::string& grid,
 		 const std::string& region, 
 		 const LLVector3d& global_position)
 {
-	HippoGridInfo* target_grid = gHippoGridManager->getGrid(grid);
-	*this = LLSLURL((target_grid ? target_grid->getGridNick() : ""),
+	HippoGridInfo* gridp = gHippoGridManager->getGrid(grid);
+	*this = LLSLURL(gridp ? gridp->getGridNick() : gHippoGridManager->getDefaultGridNick(),
 		  region, LLVector3(global_position.mdV[VX],
 				    global_position.mdV[VY],
 				    global_position.mdV[VZ]));
@@ -394,7 +417,17 @@ std::string LLSLURL::getSLURLString() const
 				S32 z = llround( (F32)mPosition[VZ] );	
 				//return LLGridManager::getInstance()->getSLURLBase(mGrid) + 
 				//Singu TODO: Implement LLHippoGridMgr::getSLURLBase some day. For now it's hardcoded.
-				return MAIN_GRID_SLURL_BASE +
+				std::string fixed_slurl;
+				if(gHippoGridManager->getCurrentGrid()->isSecondLife())
+				{
+					if(gHippoGridManager->getCurrentGrid()->isInProductionGrid())
+						fixed_slurl = MAIN_GRID_SLURL_BASE;
+					else
+						fixed_slurl = llformat(SYSTEM_GRID_SLURL_BASE, gHippoGridManager->getCurrentGridNick().c_str());
+				}
+				else
+					fixed_slurl = llformat(DEFAULT_SLURL_BASE, gHippoGridManager->getCurrentGridNick().c_str());
+				return fixed_slurl +
 				LLURI::escape(mRegion) + llformat("/%d/%d/%d",x,y,z); 
 			}
 		case APP:
@@ -402,7 +435,10 @@ std::string LLSLURL::getSLURLString() const
 			std::ostringstream app_url;
 			//app_url << LLGridManager::getInstance()->getAppSLURLBase() << "/" << mAppCmd;
 			//Singu TODO: Implement LLHippoGridMgr::getAppSLURLBase some day. For now it's hardcoded.
-			app_url << SYSTEM_GRID_APP_SLURL_BASE << "/" << mAppCmd;
+			if(gHippoGridManager->getCurrentGrid()->isSecondLife())
+				app_url << SYSTEM_GRID_APP_SLURL_BASE << "/" << mAppCmd;
+			else
+				app_url << llformat(DEFAULT_APP_SLURL_BASE, gHippoGridManager->getCurrentGridNick().c_str()) << "/" << mAppCmd;
 			for(LLSD::array_const_iterator i = mAppPath.beginArray();
 				i != mAppPath.endArray();
 				i++)

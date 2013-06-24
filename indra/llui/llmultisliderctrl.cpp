@@ -472,9 +472,6 @@ LLXMLNodePtr LLMultiSliderCtrl::getXML(bool save_children) const
 
 LLView* LLMultiSliderCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("multi_slider");
-	node->getAttributeString("name", name);
-
 	std::string label;
 	node->getAttributeString("label", label);
 
@@ -558,7 +555,7 @@ LLView* LLMultiSliderCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFa
 		label.assign(node->getTextContents());
 	}
 
-	LLMultiSliderCtrl* slider = new LLMultiSliderCtrl(name,
+	LLMultiSliderCtrl* slider = new LLMultiSliderCtrl("multi_slider",
 							rect,
 							label,
 							font,

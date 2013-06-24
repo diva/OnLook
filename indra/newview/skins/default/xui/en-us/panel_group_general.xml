@@ -28,12 +28,11 @@ Hover your mouse over the options for more help.
 	<text font="SansSerifSmall" name="prepend_founded_by">
 		Founded by
 	</text>
-	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	<name_box bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom_delta="-6" drop_shadow_visible="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="16" left_delta="63"
-	     mouse_opaque="true" name="founder_name" v_pad="0" width="200">
-		(waiting)
-	</text>
+	     mouse_opaque="true" name="founder_name" v_pad="0" width="200" initial_value="Loading..."
+  />
 	<text font="SansSerifSmall" name="group_key_text" follows="left|top" left="7" bottom="-50">
 		Group Key:
 	</text>

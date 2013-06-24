@@ -730,7 +730,7 @@ void LLPanelPrimMediaControls::draw()
 		}
 	}
 
-	F32 alpha = 1.f;
+	F32 alpha = getDrawContext().mAlpha;
 	if(mHideImmediately)
 	{
 		//hide this panel
@@ -781,7 +781,7 @@ void LLPanelPrimMediaControls::draw()
 	}
 	
 	{
-		//LLViewDrawContext context(alpha);
+		LLViewDrawContext context(alpha);
 		LLPanel::draw();
 	}
 }

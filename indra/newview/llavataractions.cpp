@@ -30,6 +30,7 @@
 #include "llavataractions.h"
 
 #include "llavatarnamecache.h"	// IDEVO
+#include "llnotifications.h"
 #include "llnotificationsutil.h"	// for LLNotificationsUtil
 #include "roles_constants.h"    // for GP_MEMBER_INVITE
 

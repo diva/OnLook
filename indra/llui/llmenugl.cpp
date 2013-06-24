@@ -1928,6 +1928,7 @@ LLXMLNodePtr LLMenuGL::getXML(bool save_children) const
 
 void LLMenuGL::parseChildXML(LLXMLNodePtr child, LLView *parent, LLUICtrlFactory *factory)
 {
+	std::string name(child->getName()->mString);
 	if (child->hasName(LL_MENU_GL_TAG))
 	{
 		// SUBMENU
@@ -2025,7 +2026,7 @@ void LLMenuGL::parseChildXML(LLXMLNodePtr child, LLView *parent, LLUICtrlFactory
 
 			for (call_child = child->getFirstChild(); call_child.notNull(); call_child = call_child->getNextSibling())
 			{
-				if (call_child->hasName("on_check"))
+				if (call_child->hasName("on_check") || call_child->hasName(name+".on_check"))
 				{
 					std::string callback_name;
 					std::string control_name;
@@ -2083,7 +2084,7 @@ void LLMenuGL::parseChildXML(LLXMLNodePtr child, LLView *parent, LLUICtrlFactory
 
 		for (call_child = child->getFirstChild(); call_child.notNull(); call_child = call_child->getNextSibling())
 		{
-			if (call_child->hasName("on_click"))
+			if (call_child->hasName("on_click") || call_child->hasName(name+".on_click"))
 			{
 				std::string callback_name;
 				call_child->getAttributeString("function", callback_name);
@@ -2104,7 +2105,7 @@ void LLMenuGL::parseChildXML(LLXMLNodePtr child, LLView *parent, LLUICtrlFactory
 
 				new_item->addListener(callback, "on_click", callback_data);
 			}
-			if (call_child->hasName("on_enable"))
+			if (call_child->hasName("on_enable") || call_child->hasName(name+".on_enable"))
 			{
 				std::string callback_name;
 				std::string control_name;
@@ -2148,7 +2149,7 @@ void LLMenuGL::parseChildXML(LLXMLNodePtr child, LLView *parent, LLUICtrlFactory
 				}
 				new_item->setEnabledControl(control_name, parent);
 			}
-			if (call_child->hasName("on_visible"))
+			if (call_child->hasName("on_visible") || call_child->hasName(name+".on_visible"))
 			{
 				std::string callback_name;
 				std::string control_name;
@@ -2322,7 +2323,7 @@ LLView* LLMenuGL::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *fa
 		++token_count;
 	}
 
-	BOOL opaque = FALSE;
+	BOOL opaque = TRUE;
 	node->getAttributeBOOL("opaque", opaque);
 
 	LLMenuGL *menu = new LLMenuGL(name, new_menu_label);
@@ -4150,13 +4151,10 @@ LLXMLNodePtr LLMenuBarGL::getXML(bool save_children) const
 
 LLView* LLMenuBarGL::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("menu");
-	node->getAttributeString("name", name);
-
 	BOOL opaque = FALSE;
 	node->getAttributeBOOL("opaque", opaque);
 
-	LLMenuBarGL *menubar = new LLMenuBarGL(name);
+	LLMenuBarGL *menubar = new LLMenuBarGL("menu");
 
 	LLHandle<LLFloater> parent_handle;
 	LLFloater* parent_floater = dynamic_cast<LLFloater*>(parent);

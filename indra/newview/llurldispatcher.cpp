@@ -216,9 +216,9 @@ void LLURLDispatcherImpl::regionHandleCallback(U64 region_handle, const LLSLURL&
 	{
 		LLSD args;
 		args["SLURL"] = slurl.getLocationString();
-		args["CURRENT_GRID"] = gHippoGridManager->getCurrentGridNick();
+		args["CURRENT_GRID"] = gHippoGridManager->getCurrentGrid()->getGridName();
 
-		std::string grid_label = new_grid ? new_grid->getGridNick() : "";
+		std::string grid_label = new_grid ? new_grid->getGridName() : "";
 		
 		if(!grid_label.empty())
 		{
@@ -226,7 +226,7 @@ void LLURLDispatcherImpl::regionHandleCallback(U64 region_handle, const LLSLURL&
 		}
 		else 
 		{
-			args["GRID"] = slurl.getGrid();
+			args["GRID"] = slurl.getGrid() + " (Unrecognized)";
 		}
 		LLNotificationsUtil::add("CantTeleportToGrid", args);
 		return;
@@ -255,8 +255,7 @@ void LLURLDispatcherImpl::regionHandleCallback(U64 region_handle, const LLSLURL&
 		{
 			url_displayp->setSnapshotDisplay(snapshot_id);
 		}
-		LLVector3 pos = slurl.getPosition();
-		std::string locationString = llformat("%s %d, %d, %d", slurl.getRegion().c_str(), local_pos.mV[VX],local_pos.mV[VY],local_pos.mV[VZ]);
+		std::string locationString = llformat("%s %i, %i, %i", slurl.getRegion().c_str(), (S32)local_pos.mV[VX],(S32)local_pos.mV[VY],(S32)local_pos.mV[VZ]);
 		url_displayp->setLocationString(locationString);
 	}
 }
