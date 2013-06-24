@@ -47,11 +47,10 @@ public:
     void refreshValues();
 
 protected:
-    static void onCommitClientTag(LLUICtrl* ctrl, void* userdata);
-    static void onCommitUpdateAvatarOffsets(LLUICtrl* ctrl, void* userdata);
-    static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
-    static void onCommitTextModified(LLUICtrl* ctrl, void* userdata);
-    static void onManualClientUpdate(void* data);
+	void onCommitClientTag(LLUICtrl* ctrl);
+	void onCommitCheckBox(LLUICtrl* ctrl, const LLSD& value);
+	void onCommitTextModified(LLUICtrl* ctrl, const LLSD& value);
+	static void onManualClientUpdate();
     //Main
     BOOL mUseAccountSettings;
     BOOL mShowTPScreen;
@@ -64,6 +63,7 @@ protected:
 	bool mAnnounceStreamMetadata;
 	bool mUnfocusedFloatersOpaque;
 	bool mCompleteNameProfiles;
+	bool mScriptErrorsStealFocus;
     //Tags\Colors
     BOOL mAscentBroadcastTag;
     std::string mReportClientUUID;

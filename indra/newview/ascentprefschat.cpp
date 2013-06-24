@@ -51,14 +51,14 @@ LLPrefsAscentChat::LLPrefsAscentChat()
 {
     LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_chat.xml");
 
-    childSetCommitCallback("SpellBase", onSpellBaseComboBoxCommit, this);
-    childSetAction("EmSpell_EditCustom", onSpellEditCustom, this);
-    childSetAction("EmSpell_GetMore", onSpellGetMore, this);
-    childSetAction("EmSpell_Add", onSpellAdd, this);
-    childSetAction("EmSpell_Remove", onSpellRemove, this);
+	getChild<LLUICtrl>("SpellBase")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onSpellBaseComboBoxCommit, this, _2));
+	getChild<LLUICtrl>("EmSpell_EditCustom")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onSpellEditCustom, this));
+	getChild<LLUICtrl>("EmSpell_GetMore")->setCommitCallback(boost::bind(&lggHunSpell_Wrapper::getMoreButton, glggHunSpell, this));
+	getChild<LLUICtrl>("EmSpell_Add")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onSpellAdd, this));
+	getChild<LLUICtrl>("EmSpell_Remove")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onSpellRemove, this));
 
-    childSetCommitCallback("time_format_combobox", onCommitTimeDate, this);
-    childSetCommitCallback("date_format_combobox", onCommitTimeDate, this);
+	getChild<LLUICtrl>("time_format_combobox")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitTimeDate, this, _1));
+	getChild<LLUICtrl>("date_format_combobox")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitTimeDate, this, _1));
 
 	bool started = (LLStartUp::getStartupState() == STATE_STARTED);
 	if (!started) // Disable autoresponse when not logged in
@@ -87,19 +87,19 @@ LLPrefsAscentChat::LLPrefsAscentChat()
 	childSetValue("BusyModeResponseShow",                gSavedPerAccountSettings.getBOOL("BusyModeResponseShow"));
 
 	childSetEnabled("reset_antispam", started);
-	childSetCommitCallback("reset_antispam", onCommitResetAS, this);
-	childSetCommitCallback("enable_as", onCommitEnableAS, this);
-	childSetCommitCallback("antispam_checkbox", onCommitDialogBlock, this);
-	childSetCommitCallback("Group Invites", onCommitDialogBlock, this);
+	getChild<LLUICtrl>("reset_antispam")->setCommitCallback(boost::bind(NACLAntiSpamRegistry::purgeAllQueues));
+	getChild<LLUICtrl>("enable_as")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitEnableAS, this, _2));
+	getChild<LLUICtrl>("antispam_checkbox")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitDialogBlock, this, _1, _2));
+	getChild<LLUICtrl>("Group Invites")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitDialogBlock, this, _1, _2));
 
-    childSetCommitCallback("KeywordsOn", onCommitKeywords, this);
-    childSetCommitCallback("KeywordsList", onCommitKeywords, this);
-    childSetCommitCallback("KeywordsSound", onCommitKeywords, this);
-    childSetCommitCallback("KeywordsInChat", onCommitKeywords, this);
-    childSetCommitCallback("KeywordsInIM", onCommitKeywords, this);
-    childSetCommitCallback("KeywordsChangeColor", onCommitKeywords, this);
-    childSetCommitCallback("KeywordsColor", onCommitKeywords, this);
-    childSetCommitCallback("KeywordsPlaySound", onCommitKeywords, this);
+	getChild<LLUICtrl>("KeywordsOn")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitKeywords, this, _1));
+	getChild<LLUICtrl>("KeywordsList")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitKeywords, this, _1));
+	getChild<LLUICtrl>("KeywordsSound")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitKeywords, this, _1));
+	getChild<LLUICtrl>("KeywordsInChat")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitKeywords, this, _1));
+	getChild<LLUICtrl>("KeywordsInIM")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitKeywords, this, _1));
+	getChild<LLUICtrl>("KeywordsChangeColor")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitKeywords, this, _1));
+	getChild<LLUICtrl>("KeywordsColor")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitKeywords, this, _1));
+	getChild<LLUICtrl>("KeywordsPlaySound")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitKeywords, this, _1));
 
     refreshValues();
     refresh();
@@ -109,73 +109,43 @@ LLPrefsAscentChat::~LLPrefsAscentChat()
 {
 }
 
-//static
-void LLPrefsAscentChat::onSpellAdd(void* data)
+void LLPrefsAscentChat::onSpellAdd()
 {
-    LLPrefsAscentChat* self = (LLPrefsAscentChat*)data;
-
-    if(self)
-    {
-        glggHunSpell->addButton(self->childGetValue("EmSpell_Avail").asString());
-    }
-
-    self->refresh();
+	glggHunSpell->addButton(childGetValue("EmSpell_Avail").asString());
+	refresh();
 }
 
-//static
-void LLPrefsAscentChat::onSpellRemove(void* data)
+void LLPrefsAscentChat::onSpellRemove()
 {
-    LLPrefsAscentChat* self = (LLPrefsAscentChat*)data;
-
-    if(self)
-    {
-        glggHunSpell->removeButton(self->childGetValue("EmSpell_Installed").asString());
-    }
-
-    self->refresh();
+	glggHunSpell->removeButton(childGetValue("EmSpell_Installed").asString());
+	refresh();
 }
 
-//static
-void LLPrefsAscentChat::onSpellGetMore(void* data)
+void LLPrefsAscentChat::onSpellEditCustom()
 {
-    glggHunSpell->getMoreButton(data);
+	glggHunSpell->editCustomButton();
 }
 
-//static
-void LLPrefsAscentChat::onSpellEditCustom(void* data)
+void LLPrefsAscentChat::onSpellBaseComboBoxCommit(const LLSD& value)
 {
-    glggHunSpell->editCustomButton();
+	glggHunSpell->newDictSelection(value.asString());
 }
 
-//static
-void LLPrefsAscentChat::onSpellBaseComboBoxCommit(LLUICtrl* ctrl, void* userdata)
+void LLPrefsAscentChat::onCommitTimeDate(LLUICtrl* ctrl)
 {
-    LLComboBox* box = (LLComboBox*)ctrl;
-
-    if (box)
-    {
-        glggHunSpell->newDictSelection(box->getValue().asString());
-    }
-}
-
-//static
-void LLPrefsAscentChat::onCommitTimeDate(LLUICtrl* ctrl, void* userdata)
-{
-    LLPrefsAscentChat* self = (LLPrefsAscentChat*)userdata;
-
-    LLComboBox* combo = (LLComboBox*)ctrl;
+	LLComboBox* combo = static_cast<LLComboBox*>(ctrl);
     if (ctrl->getName() == "time_format_combobox")
     {
-        self->tempTimeFormat = combo->getCurrentIndex();
+		tempTimeFormat = combo->getCurrentIndex();
     }
     else if (ctrl->getName() == "date_format_combobox")
     {
-        self->tempDateFormat = combo->getCurrentIndex();
+		tempDateFormat = combo->getCurrentIndex();
     }
 
     std::string short_date, long_date, short_time, long_time, timestamp;
 
-    if (self->tempTimeFormat == 0)
+	if (tempTimeFormat == 0)
     {
         short_time = "%H:%M";
         long_time  = "%H:%M:%S";
@@ -188,13 +158,13 @@ void LLPrefsAscentChat::onCommitTimeDate(LLUICtrl* ctrl, void* userdata)
         timestamp  = " %I:%M %p";
     }
 
-    if (self->tempDateFormat == 0)
+	if (tempDateFormat == 0)
     {
         short_date = "%Y-%m-%d";
         long_date  = "%A %d %B %Y";
         timestamp  = "%a %d %b %Y" + timestamp;
     }
-    else if (self->tempDateFormat == 1)
+	else if (tempDateFormat == 1)
     {
         short_date = "%d/%m/%Y";
         long_date  = "%A %d %B %Y";
@@ -214,70 +184,57 @@ void LLPrefsAscentChat::onCommitTimeDate(LLUICtrl* ctrl, void* userdata)
     gSavedSettings.setString("TimestampFormat", timestamp);
 }
 
-//static
-void LLPrefsAscentChat::onCommitResetAS(LLUICtrl*, void*)
+void LLPrefsAscentChat::onCommitEnableAS(const LLSD& value)
 {
-	NACLAntiSpamRegistry::purgeAllQueues();
+	bool enabled = value.asBoolean();
+	childSetEnabled("spammsg_checkbox",          enabled);
+	childSetEnabled("antispamtime",              enabled);
+	childSetEnabled("antispamamount",            enabled);
+	childSetEnabled("antispamsoundmulti",        enabled);
+	childSetEnabled("antispamsoundpreloadmulti", enabled);
+	childSetEnabled("antispamnewlines",          enabled);
+	childSetEnabled("Notify On Spam",            enabled);
 }
 
-//static
-void LLPrefsAscentChat::onCommitEnableAS(LLUICtrl* ctrl, void* user_data)
+void LLPrefsAscentChat::onCommitDialogBlock(LLUICtrl* ctrl, const LLSD& value)
 {
-	LLPrefsAscentChat* self = (LLPrefsAscentChat*)user_data;
-	bool enabled = ctrl->getValue().asBoolean();
-	self->childSetEnabled("spammsg_checkbox",          enabled);
-	self->childSetEnabled("antispamtime",              enabled);
-	self->childSetEnabled("antispamamount",            enabled);
-	self->childSetEnabled("antispamsoundmulti",        enabled);
-	self->childSetEnabled("antispamsoundpreloadmulti", enabled);
-	self->childSetEnabled("antispamnewlines",          enabled);
-	self->childSetEnabled("Notify On Spam",            enabled);
-}
-
-//static
-void LLPrefsAscentChat::onCommitDialogBlock(LLUICtrl* ctrl, void* user_data)
-{
-	LLPrefsAscentChat* self = (LLPrefsAscentChat*)user_data;
-	self->childSetEnabled("Group Fee Invites", !self->childGetValue("antispam_checkbox").asBoolean() && !self->childGetValue("Group Invites").asBoolean());
-	bool enabled = ctrl->getValue().asBoolean();
+	childSetEnabled("Group Fee Invites", !childGetValue("antispam_checkbox").asBoolean() && !childGetValue("Group Invites").asBoolean());
+	bool enabled = value.asBoolean();
 	if (ctrl->getName() == "antispam_checkbox")
 	{
-		self->childSetEnabled("Block All Dialogs From", !enabled);
-		self->childSetEnabled("Alerts",                 !enabled);
-		self->childSetEnabled("Friendship Offers",      !enabled);
-		self->childSetEnabled("Group Invites",          !enabled);
-		self->childSetEnabled("Group Notices",          !enabled);
-		self->childSetEnabled("Item Offers",            !enabled);
-		self->childSetEnabled("Scripts",                !enabled);
-		self->childSetEnabled("Teleport Offers",        !enabled);
+		childSetEnabled("Block All Dialogs From", !enabled);
+		childSetEnabled("Alerts",                 !enabled);
+		childSetEnabled("Friendship Offers",      !enabled);
+		childSetEnabled("Group Invites",          !enabled);
+		childSetEnabled("Group Notices",          !enabled);
+		childSetEnabled("Item Offers",            !enabled);
+		childSetEnabled("Scripts",                !enabled);
+		childSetEnabled("Teleport Offers",        !enabled);
 	}
 }
 
-//static
-void LLPrefsAscentChat::onCommitKeywords(LLUICtrl* ctrl, void* user_data)
+void LLPrefsAscentChat::onCommitKeywords(LLUICtrl* ctrl)
 {
-    LLPrefsAscentChat* self = (LLPrefsAscentChat*)user_data;
-
     if (ctrl->getName() == "KeywordsOn")
     {
-        bool enabled = self->childGetValue("KeywordsOn").asBoolean();
-        self->childSetEnabled("KeywordsList",        enabled);
-        self->childSetEnabled("KeywordsInChat",      enabled);
-        self->childSetEnabled("KeywordsInIM",        enabled);
-        self->childSetEnabled("KeywordsChangeColor", enabled);
-        self->childSetEnabled("KeywordsColor",       enabled);
-        self->childSetEnabled("KeywordsPlaySound",   enabled);
-        self->childSetEnabled("KeywordsSound",       enabled);
+		bool enabled = childGetValue("KeywordsOn").asBoolean();
+		childSetEnabled("KeywordsList",        enabled);
+		childSetEnabled("KeywordsInChat",      enabled);
+		childSetEnabled("KeywordsInIM",        enabled);
+		childSetEnabled("KeywordsChangeColor", enabled);
+		childSetEnabled("KeywordsColor",       enabled);
+		childSetEnabled("KeywordsPlaySound",   enabled);
+		childSetEnabled("KeywordsSound",       enabled);
     }
 
-    gSavedPerAccountSettings.setBOOL("KeywordsOn",          self->childGetValue("KeywordsOn"));
-    gSavedPerAccountSettings.setString("KeywordsList",      self->childGetValue("KeywordsList"));
-    gSavedPerAccountSettings.setBOOL("KeywordsInChat",      self->childGetValue("KeywordsInChat"));
-    gSavedPerAccountSettings.setBOOL("KeywordsInIM",        self->childGetValue("KeywordsInIM"));
-    gSavedPerAccountSettings.setBOOL("KeywordsChangeColor", self->childGetValue("KeywordsChangeColor"));
-    gSavedPerAccountSettings.setColor4("KeywordsColor",     self->childGetValue("KeywordsColor"));
-    gSavedPerAccountSettings.setBOOL("KeywordsPlaySound",   self->childGetValue("KeywordsPlaySound"));
-    gSavedPerAccountSettings.setString("KeywordsSound",     self->childGetValue("KeywordsSound"));
+	gSavedPerAccountSettings.setBOOL("KeywordsOn",          childGetValue("KeywordsOn"));
+	gSavedPerAccountSettings.setString("KeywordsList",      childGetValue("KeywordsList"));
+	gSavedPerAccountSettings.setBOOL("KeywordsInChat",      childGetValue("KeywordsInChat"));
+	gSavedPerAccountSettings.setBOOL("KeywordsInIM",        childGetValue("KeywordsInIM"));
+	gSavedPerAccountSettings.setBOOL("KeywordsChangeColor", childGetValue("KeywordsChangeColor"));
+	gSavedPerAccountSettings.setColor4("KeywordsColor",     childGetValue("KeywordsColor"));
+	gSavedPerAccountSettings.setBOOL("KeywordsPlaySound",   childGetValue("KeywordsPlaySound"));
+	gSavedPerAccountSettings.setString("KeywordsSound",     childGetValue("KeywordsSound"));
 }
 
 // Store current settings for cancel

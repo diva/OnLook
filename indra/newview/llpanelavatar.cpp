@@ -546,7 +546,7 @@ BOOL LLPanelAvatarFirstLife::postBuild(void)
 
 BOOL LLPanelAvatarNotes::postBuild(void)
 {
-	childSetCommitCallback("notes edit",onCommitNotes,this);
+	getChild<LLUICtrl>("notes edit")->setCommitCallback(boost::bind(&LLPanelAvatar::sendAvatarNotesUpdate, getPanelAvatar()));
 	
 	LLTextEditor*	te = getChild<LLTextEditor>("notes edit");
 	if(te) te->setCommitOnFocusLost(TRUE);
@@ -895,14 +895,6 @@ void LLPanelAvatarNotes::clearControls()
 {
 	childSetText("notes edit", getString("Loading"));
 	childSetEnabled("notes edit", false);
-}
-
-// static
-void LLPanelAvatarNotes::onCommitNotes(LLUICtrl*, void* userdata)
-{
-	LLPanelAvatarNotes* self = (LLPanelAvatarNotes*)userdata;
-
-	self->getPanelAvatar()->sendAvatarNotesUpdate();
 }
 
 
