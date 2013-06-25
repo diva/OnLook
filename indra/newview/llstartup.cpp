@@ -1097,7 +1097,7 @@ bool idle_startup()
 			LLURLSimString::setString( location );
 			*/
 			// END TODO
-			LLPanelLogin::close();
+			//LLPanelLogin::close();
 		}
 
 		//For HTML parsing in text boxes.
@@ -1151,6 +1151,7 @@ bool idle_startup()
 		gViewerWindow->setShowProgress(!gSavedSettings.getBOOL("AscentDisableLogoutScreens"));
 		gViewerWindow->setProgressCancelButtonVisible(TRUE, LLTrans::getString("Quit"));
 
+		gViewerWindow->revealIntroPanel();
 		// Poke the VFS, which could potentially block for a while if
 		// Windows XP is acting up
 		set_startup_status(0.07f, LLTrans::getString("LoginVerifyingCache"), LLStringUtil::null);
@@ -1796,9 +1797,6 @@ bool idle_startup()
 			handleCloudSettingsChanged(LLSD());
 			display_startup();
 			
-			// Move the progress view in front of the UI
-			gViewerWindow->moveProgressViewToFront();
-			display_startup();
 			
 			LLError::logToFixedBuffer(gDebugView->mDebugConsolep);
 			display_startup();
@@ -2656,7 +2654,8 @@ bool idle_startup()
 		gViewerWindow->getWindow()->resetBusyCount();
 		gViewerWindow->getWindow()->setCursor(UI_CURSOR_ARROW);
 		LL_DEBUGS("AppInit") << "Done releasing bitmap" << LL_ENDL;
-		gViewerWindow->setShowProgress(FALSE);
+
+		gViewerWindow->setStartupComplete();
 		gViewerWindow->setProgressCancelButtonVisible(FALSE);
 		display_startup();
 

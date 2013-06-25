@@ -65,7 +65,7 @@
 	  bottom="-45"
 	  left="0"
 	  border_size="0"
-	  mouse_opaque="true"
+	  mouse_opaque="false"
 	  orientation="horizontal">
 	<!-- outer layout_panels center the inner one -->
 	<layout_panel
