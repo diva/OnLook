@@ -1653,7 +1653,8 @@ LLViewerWindow::LLViewerWindow(
 	mResDirty(false),
 	//mStatesDirty(false),	//Singu Note: No longer needed. State update is now in restoreGL.
 	mIsFullscreenChecked(false),
-	mCurrResolutionIndex(0)
+	mCurrResolutionIndex(0),
+	mProgressView(NULL)
 {
 	LLNotificationChannel::buildChannel("VW_alerts", "Visible", LLNotificationFilters::filterBy<std::string>(&LLNotification::getType, "alert"));
 	LLNotificationChannel::buildChannel("VW_alertmodal", "Visible", LLNotificationFilters::filterBy<std::string>(&LLNotification::getType, "alertmodal"));
@@ -2218,6 +2219,7 @@ void LLViewerWindow::initWorldUI_postLogin()
 
 		LLFloaterChatterBox::createInstance(LLSD());
 	}
+	mRootView->sendChildToFront(mProgressView);
 }
 
 // Destroy the UI
@@ -5159,6 +5161,13 @@ void LLViewerWindow::setup3DViewport(S32 x_offset, S32 y_offset)
 	glViewport(gGLViewport[0], gGLViewport[1], gGLViewport[2], gGLViewport[3]);
 }
 
+void LLViewerWindow::revealIntroPanel()
+{
+	if (mProgressView)
+	{
+		mProgressView->revealIntroPanel();
+	}
+}
 
 void LLViewerWindow::setShowProgress(const BOOL show)
 {
@@ -5168,12 +5177,11 @@ void LLViewerWindow::setShowProgress(const BOOL show)
 	}
 }
 
-void LLViewerWindow::moveProgressViewToFront()
+void LLViewerWindow::setStartupComplete()
 {
-	if (mProgressView && mRootView)
+	if (mProgressView)
 	{
-		mRootView->removeChild(mProgressView);
-		mRootView->addChild(mProgressView);
+		mProgressView->setStartupComplete();
 	}
 }
 
