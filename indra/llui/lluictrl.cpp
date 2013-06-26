@@ -45,9 +45,6 @@ LLUICtrl::LLUICtrl() :
 	mViewModel(LLViewModelPtr(new LLViewModel)),
 	mCommitSignal(NULL),
 	mValidateSignal(NULL),
-	mCommitCallback(NULL),
-	mValidateCallback(NULL),
-	mCallbackUserData(NULL),
 	mTentative(FALSE),
 	mTabStop(TRUE),
 	mIsChrome(FALSE)
@@ -62,10 +59,7 @@ LLUICtrl::LLUICtrl(const std::string& name, const LLRect rect, BOOL mouse_opaque
 	LLView( name, rect, mouse_opaque, reshape ),
 	mCommitSignal(NULL),
 	mValidateSignal(NULL),
-	mCommitCallback(NULL),
 	mViewModel(LLViewModelPtr(new LLViewModel)),
-	mValidateCallback( NULL ),
-	mCallbackUserData( NULL ),
 	mTentative( FALSE ),
 	mTabStop( TRUE ),
 	mIsChrome(FALSE)
@@ -90,10 +84,6 @@ LLUICtrl::~LLUICtrl()
 
 void LLUICtrl::onCommit()
 {
-	if( mCommitCallback )
-	{
-		mCommitCallback( this, mCallbackUserData );
-	}
 	if (mCommitSignal)
 		(*mCommitSignal)(this, getValue());
 }

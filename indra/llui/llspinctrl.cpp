@@ -198,8 +198,7 @@ void LLSpinCtrl::onUpBtn( const LLSD& data )
 		
 		F32 saved_val = (F32)getValue().asReal();
 		setValue(val);
-		if( (mValidateCallback 	&& !mValidateCallback( this, mCallbackUserData ) ) ||
-			(mValidateSignal		&& !(*mValidateSignal)( this, val ) ))
+		if( mValidateSignal && !(*mValidateSignal)( this, val ) )
 		{
 			setValue( saved_val );
 			reportInvalidData();
@@ -227,8 +226,7 @@ void LLSpinCtrl::onDownBtn( const LLSD& data )
 
 		F32 saved_val = (F32)getValue().asReal();
 		setValue(val);
-		if( (mValidateCallback 	&& !mValidateCallback( this, mCallbackUserData ) ) ||
-			(mValidateSignal && !(*mValidateSignal)( this, val ) ))
+		if( mValidateSignal && !(*mValidateSignal)( this, val ) )
 		{
 			setValue( saved_val );
 			reportInvalidData();
@@ -317,9 +315,7 @@ void LLSpinCtrl::onEditorCommit( const LLSD& data )
 
 		F32 saved_val = mValue;
 		mValue = val;
-			
-		if(	(!mValidateCallback	|| mValidateCallback( this, mCallbackUserData )) &&
-			(!mValidateSignal || (*mValidateSignal)(this, val) ))
+		if( !mValidateSignal || (*mValidateSignal)( this, val ) )
 		{
 			success = TRUE;
 			onCommit();

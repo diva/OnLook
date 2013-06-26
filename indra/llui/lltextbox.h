@@ -139,7 +139,6 @@ private:
 
 	std::vector<S32> mLineLengthList;
 	callback_t			mClickedCallback;
-	void*			mCallbackUserData;
 };
 
 #endif

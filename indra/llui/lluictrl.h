@@ -50,9 +50,6 @@ public:
 	typedef boost::signals2::signal<void (LLUICtrl* ctrl, const LLSD& param)> commit_signal_t;
 	typedef boost::signals2::signal<bool (LLUICtrl* ctrl, const LLSD& param), boost_boolean_combiner> enable_signal_t;
 
-	typedef void (*LLUICtrlCallback)(LLUICtrl* ctrl, void* userdata);
-	typedef BOOL (*LLUICtrlValidate)(LLUICtrl* ctrl, void* userdata);
-
 	LLUICtrl();
 	LLUICtrl( const std::string& name, const LLRect rect = LLRect(), BOOL mouse_opaque = TRUE,
 		commit_callback_t commit_callback = NULL,
@@ -127,13 +124,6 @@ public:
 	boost::signals2::connection setValidateCallback( const enable_signal_t::slot_type& cb );
 
 	// *TODO: Deprecate; for backwards compatability only:
-	//Keeping userdata around with legacy setCommitCallback because it's used ALL OVER THE PLACE.
-	void*			getCallbackUserData() const								{ return mCallbackUserData; }
-	void			setCallbackUserData( void* data )						{ mCallbackUserData = data; }
-	
-	void			setCommitCallback( void (*cb)(LLUICtrl*, void*) )		{ mCommitCallback = cb; }
-	void			setValidateBeforeCommit( BOOL(*cb)(LLUICtrl*, void*) )	{ mValidateCallback = cb; }
-	// *TODO: Deprecate; for backwards compatability only:
 	boost::signals2::connection setCommitCallback( boost::function<void (LLUICtrl*,void*)> cb, void* data);	
 	boost::signals2::connection setValidateBeforeCommit( boost::function<bool (const LLSD& data)> cb );
 	
@@ -155,10 +145,6 @@ protected:
 	enable_signal_t*		mValidateSignal;
 	
     LLViewModelPtr  mViewModel;
-	void			(*mCommitCallback)( LLUICtrl* ctrl, void* userdata );
-	BOOL			(*mValidateCallback)( LLUICtrl* ctrl, void* userdata );
-
-	void*			mCallbackUserData;
 
 private:
 
