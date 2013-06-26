@@ -509,7 +509,7 @@ void LLChatBar::sendChat( EChatType type )
 // static 
 void LLChatBar::startChat(const char* line)
 {
-	gChatBar->setVisible(TRUE);
+	gChatBar->getParent()->setVisible(TRUE);
 	gChatBar->setKeyboardFocus(TRUE);
 	gSavedSettings.setBOOL("ChatVisible", TRUE);
 
@@ -540,7 +540,7 @@ void LLChatBar::stopChat()
 	gAgent.stopTyping();
 
 	// hide chat bar so it doesn't grab focus back
-	gChatBar->setVisible(FALSE);
+	gChatBar->getParent()->setVisible(FALSE);
 	gSavedSettings.setBOOL("ChatVisible", FALSE);
 }
 

@@ -87,11 +87,6 @@
 
 LLOverlayBar *gOverlayBar = NULL;
 
-extern S32 MENU_BAR_HEIGHT;
-extern ImportTracker gImportTracker;
-
-BOOL LLOverlayBar::sChatVisible;
-
 //
 // Functions
 //
@@ -153,33 +148,30 @@ LLOverlayBar::LLOverlayBar()
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_overlaybar.xml", &factory_map);
 }
 
-bool LLOverlayBar::updateAdvSettingsPopup()
+bool LLOverlayBar::updateAdvSettingsPopup(const LLSD &data)
 {
-	bool wfl_adv_settings_popup = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
+	bool wfl_adv_settings_popup = data.asBoolean();
 	wlfPanel_AdvSettings::updateClass();
-	if(LLLayoutStack* layout_stack = findChild<LLLayoutStack>("overlay_layout_panel"))
+	LLLayoutPanel* layout_panel = dynamic_cast<LLLayoutPanel*>((LLPanel*)mAdvSettingsContainer);
+	if(layout_panel)
 	{
-		LLLayoutPanel* layout_panel = layout_stack->findChild<LLLayoutPanel>("AdvSettings_container");
-		if(layout_panel)
-		{
-			layout_stack->collapsePanel(layout_panel,!wfl_adv_settings_popup);
-			if(wfl_adv_settings_popup)
-				layout_panel->setTargetDim(layout_panel->getChild<LLView>("Adv_Settings")->getBoundingRect().getWidth());
-		}
+		((LLLayoutStack*)layout_panel->getParent())->collapsePanel(layout_panel,!wfl_adv_settings_popup);
+		if(wfl_adv_settings_popup)
+			layout_panel->setTargetDim(layout_panel->getChild<LLView>("Adv_Settings")->getBoundingRect().getWidth());
 	}
 	
 	return true;
 }
 
-bool updateChatVisible(const LLSD &data)
+bool LLOverlayBar::updateChatVisible(const LLSD &data)
 {
-	LLOverlayBar::sChatVisible = data.asBoolean();
+	mChatBar->getParent()->setVisible(data.asBoolean());
 	return true;
 }
 
-bool updateAORemote(const LLSD &data)
+bool LLOverlayBar::updateAORemoteVisible(const LLSD &data)
 {
-	gOverlayBar->childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));	
+	mAORemoteContainer->setVisible(data.asBoolean());
 	return true;
 }
 
@@ -189,6 +181,7 @@ bool updateNearbyMediaFloater(const LLSD &data)
 	return true;
 }
 
+
 BOOL LLOverlayBar::postBuild()
 {
 	childSetAction("New IM",onClickIMReceived,this);
@@ -197,11 +190,12 @@ BOOL LLOverlayBar::postBuild()
 	childSetAction("Stand Up",onClickStandUp,this);
 	childSetAction("Cancel TP",onClickCancelTP,this);
  	childSetAction("Flycam",onClickFlycam,this);
-	childSetVisible("chat_bar", gSavedSettings.getBOOL("ChatVisible"));
 
 	mCancelBtn = getChild<LLButton>("Cancel TP");
 	setFocusRoot(TRUE);
 	mBuilt = true;
+
+	mUnreadCountStringPlural = getString("unread_count_string_plural");
 
 	mChatbarAndButtons.connect(this,"chatbar_and_buttons");
 	mNewIM.connect(this,"New IM");
@@ -211,21 +205,27 @@ BOOL LLOverlayBar::postBuild()
 	mFlyCam.connect(this,"Flycam");
 	mChatBar.connect(this,"chat_bar");
 	mVoiceRemoteContainer.connect(this,"voice_remote_container");
+	mStateManagementContainer.connect(this,"state_management_buttons_container");
+	mAORemoteContainer.connect(this,"ao_remote_container");
+	mAdvSettingsContainer.connect(this,"AdvSettings_container");
+	mMediaRemoteContainer.connect(this,"media_remote_container");
+
+	updateAdvSettingsPopup(gSavedSettings.getBOOL("wlfAdvSettingsPopup"));
+	updateChatVisible(gSavedSettings.getBOOL("ChatVisible"));
+	updateAORemoteVisible(gSavedSettings.getBOOL("EnableAORemote"));
 
 	mOriginalIMLabel = mNewIM->getLabelSelected();
 
 	layoutButtons();
 
-	sChatVisible = gSavedSettings.getBOOL("ChatVisible");
-
-	gSavedSettings.getControl("wlfAdvSettingsPopup")->getSignal()->connect(boost::bind(&LLOverlayBar::updateAdvSettingsPopup,this));
-	gSavedSettings.getControl("ChatVisible")->getSignal()->connect(boost::bind(&updateChatVisible,_2));
-	gSavedSettings.getControl("EnableAORemote")->getSignal()->connect(boost::bind(&updateAORemote,_2));
+	gSavedSettings.getControl("wlfAdvSettingsPopup")->getSignal()->connect(boost::bind(&LLOverlayBar::updateAdvSettingsPopup,this,_2));
+	gSavedSettings.getControl("ChatVisible")->getSignal()->connect(boost::bind(&LLOverlayBar::updateChatVisible,this,_2));
+	gSavedSettings.getControl("EnableAORemote")->getSignal()->connect(boost::bind(&LLOverlayBar::updateAORemoteVisible,this,_2));
 	gSavedSettings.getControl("ShowNearbyMediaFloater")->getSignal()->connect(boost::bind(&updateNearbyMediaFloater,_2));
 
-	childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));	
+	mAORemoteContainer->setVisible(gSavedSettings.getBOOL("EnableAORemote"));
 
-	updateAdvSettingsPopup();
+
 
 	return TRUE;
 }
@@ -254,12 +254,10 @@ void LLOverlayBar::reshape(S32 width, S32 height, BOOL called_from_parent)
 
 void LLOverlayBar::layoutButtons()
 {
-	LLView* state_buttons_panel = getChildView("state_management_buttons_container");
-
-	if (state_buttons_panel->getVisible())
+	if (mStateManagementContainer->getVisible())
 	{
 		U32 button_count = 0;
-		const child_list_t& view_list = *(state_buttons_panel->getChildList());
+		const child_list_t& view_list = *(mStateManagementContainer->getChildList());
 		BOOST_FOREACH(LLView* viewp, view_list)
 		{
 			if(!viewp->getEnabled())
@@ -267,7 +265,7 @@ void LLOverlayBar::layoutButtons()
 			++button_count;
 		}
 		const S32 MAX_BAR_WIDTH = 600;
-		S32 bar_width = llclamp(state_buttons_panel->getRect().getWidth(), 0, MAX_BAR_WIDTH);
+		S32 bar_width = llclamp(mStateManagementContainer->getRect().getWidth(), 0, MAX_BAR_WIDTH);
 
 		// calculate button widths
 		const S32 MAX_BUTTON_WIDTH = 150;
@@ -318,7 +316,7 @@ void LLOverlayBar::refresh()
 			if (unread_count > 1)
 			{
 				std::stringstream ss;
-				ss << unread_count << " " << getString("unread_count_string_plural");
+				ss << unread_count << " " << mUnreadCountStringPlural;
 				button->setLabel(ss.str());
 			}
 			else
@@ -349,30 +347,16 @@ void LLOverlayBar::refresh()
 	if(last_mouselook != in_mouselook)
 	{
 		last_mouselook = in_mouselook;
-		if (in_mouselook)
-		{
-			childSetVisible("media_remote_container", FALSE);
-			childSetVisible("voice_remote_container", FALSE);
-			childSetVisible("AdvSettings_container", FALSE);
-			childSetVisible("ao_remote_container", FALSE);
-			childSetVisible("state_management_buttons_container", FALSE);
-		}
-		else
-		{
-			// update "remotes"
-			childSetVisible("media_remote_container", TRUE);
-			childSetVisible("voice_remote_container", LLVoiceClient::voiceEnabled());
-			childSetVisible("AdvSettings_container", TRUE);
-			childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));
-			childSetVisible("state_management_buttons_container", TRUE);
-		}
+
+		static const LLCachedControl<bool> enable_ao_remote("EnableAORemote", true);
+		mMediaRemoteContainer->setVisible(!in_mouselook);
+		mVoiceRemoteContainer->setVisible(!in_mouselook && LLVoiceClient::voiceEnabled());
+		mAdvSettingsContainer->setVisible(!in_mouselook);
+		mAORemoteContainer->setVisible(!in_mouselook && enable_ao_remote);
+		mStateManagementContainer->setVisible(!in_mouselook);
 	}
 	if(!in_mouselook)
 		mVoiceRemoteContainer->setVisible(LLVoiceClient::voiceEnabled());
-
-	// always let user toggle into and out of chatbar
-	static const LLCachedControl<bool> chat_visible("ChatVisible",true);
-	mChatBar->setVisible(chat_visible);
 
 	if (buttons_changed)
 	{

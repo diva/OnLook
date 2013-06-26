@@ -5865,7 +5865,9 @@ void LLVoiceClient::setVoiceEnabled(bool enabled)
 
 bool LLVoiceClient::voiceEnabled()
 {
-	return gSavedSettings.getBOOL("EnableVoiceChat") && !gSavedSettings.getBOOL("CmdLineDisableVoice");
+	static const LLCachedControl<bool> enable_voice_chat("EnableVoiceChat",true);
+	static const LLCachedControl<bool> cmdline_disable_voce("CmdLineDisableVoice",false);
+	return enable_voice_chat && !cmdline_disable_voce;
 }
 
 void LLVoiceClient::setLipSyncEnabled(BOOL enabled)
