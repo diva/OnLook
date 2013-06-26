@@ -3,10 +3,9 @@
  * @brief LLColorSwatch class implementation
  *
  * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
+ * Second Life Viewer Source Code
  * Copyright (c) 2001-2009, Linden Research, Inc.
  * 
- * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
  * to you under the terms of the GNU General Public License, version 2.0
  * ("GPL"), unless you have obtained a separate licensing agreement
@@ -277,11 +276,11 @@ void LLColorSwatchCtrl::onColorChanged ( void* data, EColorPickOp pick_op )
 
 			if (pick_op == COLOR_CANCEL && subject->mOnCancelCallback)
 			{
-				subject->mOnCancelCallback(subject, subject->mCallbackUserData);
+				subject->mOnCancelCallback(subject, LLSD());
 			}
 			else if (pick_op == COLOR_SELECT && subject->mOnSelectCallback)
 			{
-				subject->mOnSelectCallback(subject, subject->mCallbackUserData);
+				subject->mOnSelectCallback(subject, LLSD());
 			}
 			else
 			{

@@ -339,11 +339,10 @@ BOOL	LLPanelObject::postBuild()
 	if (mCtrlSculptTexture)
 	{
 		mCtrlSculptTexture->setDefaultImageAssetID(LLUUID(SCULPT_DEFAULT_TEXTURE));
-		mCtrlSculptTexture->setCommitCallback( LLPanelObject::onCommitSculpt );
-		mCtrlSculptTexture->setOnCancelCallback( LLPanelObject::onCancelSculpt );
-		mCtrlSculptTexture->setOnSelectCallback( LLPanelObject::onSelectSculpt );
-		mCtrlSculptTexture->setDropCallback(LLPanelObject::onDropSculpt);
-		mCtrlSculptTexture->setCallbackUserData( this );
+		mCtrlSculptTexture->setCommitCallback( boost::bind(&LLPanelObject::onCommitSculpt, this, _2 ));
+		mCtrlSculptTexture->setOnCancelCallback( boost::bind(&LLPanelObject::onCancelSculpt, this, _2 ));
+		mCtrlSculptTexture->setOnSelectCallback( boost::bind(&LLPanelObject::onSelectSculpt, this, _2 ));
+		mCtrlSculptTexture->setDropCallback( boost::bind(&LLPanelObject::onDropSculpt, this, _2 ));
 		// Don't allow (no copy) or (no transfer) textures to be selected during immediate mode
 		mCtrlSculptTexture->setImmediateFilterPermMask(PERM_COPY | PERM_TRANSFER);
 		// Allow any texture to be used during non-immediate mode.
@@ -2361,60 +2360,49 @@ void LLPanelObject::onCommitPhantom( LLUICtrl* ctrl, void* userdata )
 	self->sendIsPhantom();
 }
 
-// static
-void LLPanelObject::onSelectSculpt(LLUICtrl* ctrl, void* userdata)
+void LLPanelObject::onSelectSculpt(const LLSD& data)
 {
-	LLPanelObject* self = (LLPanelObject*) userdata;
-
-    LLTextureCtrl* mTextureCtrl = self->getChild<LLTextureCtrl>("sculpt texture control");
+    LLTextureCtrl* mTextureCtrl = getChild<LLTextureCtrl>("sculpt texture control");
 
 	if (mTextureCtrl)
 	{
-		self->mSculptTextureRevert = mTextureCtrl->getImageAssetID();
+		mSculptTextureRevert = mTextureCtrl->getImageAssetID();
 	}
 	
-	self->sendSculpt();
+	sendSculpt();
 }
 
 
-void LLPanelObject::onCommitSculpt( LLUICtrl* ctrl, void* userdata )
+void LLPanelObject::onCommitSculpt( const LLSD& data )
 {
-	LLPanelObject* self = (LLPanelObject*) userdata;
-
-	self->sendSculpt();
+	sendSculpt();
 }
 
-// static
-BOOL LLPanelObject::onDropSculpt(LLUICtrl*, LLInventoryItem* item, void* userdata)
+BOOL LLPanelObject::onDropSculpt(LLInventoryItem* item)
 {
-	LLPanelObject* self = (LLPanelObject*) userdata;
-
-    LLTextureCtrl* mTextureCtrl = self->getChild<LLTextureCtrl>("sculpt texture control");
+    LLTextureCtrl* mTextureCtrl = getChild<LLTextureCtrl>("sculpt texture control");
 
 	if (mTextureCtrl)
 	{
 		LLUUID asset = item->getAssetUUID();
 
 		mTextureCtrl->setImageAssetID(asset);
-		self->mSculptTextureRevert = asset;
+		mSculptTextureRevert = asset;
 	}
 
 	return TRUE;
 }
 
 
-// static
-void LLPanelObject::onCancelSculpt(LLUICtrl* ctrl, void* userdata)
+void LLPanelObject::onCancelSculpt(const LLSD& data)
 {
-	LLPanelObject* self = (LLPanelObject*) userdata;
-
-	LLTextureCtrl* mTextureCtrl = self->getChild<LLTextureCtrl>("sculpt texture control");
+	LLTextureCtrl* mTextureCtrl = getChild<LLTextureCtrl>("sculpt texture control");
 	if(!mTextureCtrl)
 		return;
 	
-	mTextureCtrl->setImageAssetID(self->mSculptTextureRevert);
+	mTextureCtrl->setImageAssetID(mSculptTextureRevert);
 	
-	self->sendSculpt();
+	sendSculpt();
 }
 
 // static
