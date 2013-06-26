@@ -126,16 +126,14 @@ BOOL LLFloaterTopObjects::postBuild()
 	if (line_editor)
 	{
 		line_editor->setCommitOnFocusLost(FALSE);
-		line_editor->setCommitCallback(onGetByOwnerName);
-		line_editor->setCallbackUserData(this);
+		line_editor->setCommitCallback(onGetByOwnerName, this);
 	}
 
 	line_editor = getChild<LLLineEditor>("object_name_editor");
 	if (line_editor)
 	{
 		line_editor->setCommitOnFocusLost(FALSE);
-		line_editor->setCommitCallback(onGetByObjectName);
-		line_editor->setCallbackUserData(this);
+		line_editor->setCommitCallback(onGetByObjectName, this);
 	}*/
 
 	mCurrentMode = STAT_REPORT_TOP_SCRIPTS;

@@ -127,8 +127,7 @@ BOOL LLFloaterMediaBrowser::postBuild()
 	mBrowser->addObserver(this);
 
 	mAddressCombo = getChild<LLComboBox>("address");
-	mAddressCombo->setCommitCallback(onEnterAddress);
-	mAddressCombo->setCallbackUserData(this);
+	mAddressCombo->setCommitCallback(onEnterAddress, this);
 	mAddressCombo->sortByName();
 
 	childSetAction("back", onClickBack, this);
