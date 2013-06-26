@@ -202,9 +202,9 @@ namespace {
 	boost::intrusive_ptr< LLIamHereLogin > gResponsePtr = 0;
 };
 
-void set_start_location(LLUICtrl* ctrl, void* data)
+void set_start_location(const LLSD& value)
 {
-    LLURLSimString::setString(ctrl->getValue().asString());
+    LLURLSimString::setString(value.asString());
 }
 
 //---------------------------------------------------------------------------
@@ -252,7 +252,7 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 
 #if !USE_VIEWER_AUTH
 	LLComboBox* name_combo = sInstance->getChild<LLComboBox>("name_combo");
-	name_combo->setCommitCallback(onSelectLoginEntry);
+	name_combo->setCommitCallback(boost::bind(LLPanelLogin::onSelectLoginEntry, _1, this));
 	name_combo->setFocusLostCallback(boost::bind(&LLPanelLogin::onLoginComboLostFocus, this, name_combo));
 	name_combo->setPrevalidate(LLLineEditor::prevalidatePrintableNotPipe);
 	name_combo->setSuppressTentative(true);
@@ -327,7 +327,7 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 		combo->setCurrentByIndex( 0 );
 	}
 
-	combo->setCommitCallback( &set_start_location );
+	combo->setCommitCallback(boost::bind(set_start_location, _2));
 
 	childSetAction("connect_btn", onClickConnect, this);
 

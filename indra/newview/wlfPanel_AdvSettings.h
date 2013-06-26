@@ -49,20 +49,18 @@ public:
 	static void fixPanel();
 
 	static void onClickExpandBtn(void* user_data);
-	static void onChangeWWPresetName(LLUICtrl* ctrl, void* userData);
-	static void onChangeWLPresetName(LLUICtrl* ctrl, void* userData);
+	void onChangeWWPresetName(const LLSD& value);
+	void onChangeWLPresetName(const LLSD& value);
 
 protected:
 	void build();
 
-	static void onUseRegionSettings(LLUICtrl* ctrl, void* userdata);
-	static void onClickWWNext(void* user_data);
-	static void onClickWWPrev(void* user_data);
-	static void onClickWLNext(void* user_data);
-	static void onClickWLPrev(void* user_data);
-	static void onOpenAdvancedSky(void* userData);
-	static void onOpenAdvancedWater(void* userData);
-	static void onChangeDayTime(LLUICtrl* ctrl, void* userData);
+	void onUseRegionSettings(const LLSD& value);
+	void onClickWWNext();
+	void onClickWWPrev();
+	void onClickWLNext();
+	void onClickWLPrev();
+	void onChangeDayTime(const LLSD& value);
 
 	void refreshLists(); /// update controls with user prefs
 

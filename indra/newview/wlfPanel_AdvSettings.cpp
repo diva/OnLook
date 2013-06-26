@@ -147,16 +147,16 @@ BOOL wlfPanel_AdvSettings::postBuild()
 
 	if (!gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
 	{
-		getChild<LLCheckBoxCtrl>("use_estate_wl")->setCommitCallback(onUseRegionSettings);
+		getChild<LLCheckBoxCtrl>("use_estate_wl")->setCommitCallback(boost::bind(&wlfPanel_AdvSettings::onUseRegionSettings, this, _2));
 
 		mWaterPresetCombo = getChild<LLComboBox>("WLWaterPresetsCombo");
-		mWaterPresetCombo->setCommitCallback(onChangeWWPresetName);
+		mWaterPresetCombo->setCommitCallback(boost::bind(&wlfPanel_AdvSettings::onChangeWWPresetName, this, _2));
 
 		mSkyPresetCombo = getChild<LLComboBox>("WLSkyPresetsCombo");
-		mSkyPresetCombo->setCommitCallback(onChangeWLPresetName);
+		mSkyPresetCombo->setCommitCallback(boost::bind(&wlfPanel_AdvSettings::onChangeWLPresetName, this, _2));
 
 		// mDayCyclePresetCombo = getChild<LLComboBox>("DCPresetsCombo");
-		// mDayCyclePresetCombo->setCommitCallback(onChangeDCPresetName);
+		// mDayCyclePresetCombo->setCommitCallback(boost::bind(&wlfPanel_AdvSettings::onChangeDCPresetName, this, _2));
 
 		LLEnvManagerNew::instance().setPreferencesChangeCallback(boost::bind(&wlfPanel_AdvSettings::refreshLists, this));
 		LLWaterParamManager::getInstance()->setPresetListChangeCallback(boost::bind(&wlfPanel_AdvSettings::populateWaterPresetsList, this));
@@ -168,16 +168,16 @@ BOOL wlfPanel_AdvSettings::postBuild()
 		//populateDayCyclePresetsList();
 
 		// next/prev buttons
-		childSetAction("WWnext", onClickWWNext, this);
-		childSetAction("WWprev", onClickWWPrev, this);
-		childSetAction("WLnext", onClickWLNext, this);
-		childSetAction("WLprev", onClickWLPrev, this);
+		getChild<LLUICtrl>("WWnext")->setCommitCallback(boost::bind(&wlfPanel_AdvSettings::onClickWWNext, this));
+		getChild<LLUICtrl>("WWprev")->setCommitCallback(boost::bind(&wlfPanel_AdvSettings::onClickWWPrev, this));
+		getChild<LLUICtrl>("WLnext")->setCommitCallback(boost::bind(&wlfPanel_AdvSettings::onClickWLNext, this));
+		getChild<LLUICtrl>("WLprev")->setCommitCallback(boost::bind(&wlfPanel_AdvSettings::onClickWLPrev, this));
 
-		childSetAction("EnvAdvancedSkyButton", onOpenAdvancedSky, NULL);
-		childSetAction("EnvAdvancedWaterButton", onOpenAdvancedWater, NULL);
+		getChild<LLUICtrl>("EnvAdvancedSkyButton")->setCommitCallback(boost::bind(LLFloaterWindLight::show));
+		getChild<LLUICtrl>("EnvAdvancedWaterButton")->setCommitCallback(boost::bind(LLFloaterWater::show));
 
 		mTimeSlider = getChild<LLSliderCtrl>("EnvTimeSlider");
-		mTimeSlider->setCommitCallback(onChangeDayTime);
+		mTimeSlider->setCommitCallback(boost::bind(&wlfPanel_AdvSettings::onChangeDayTime, this, _2));
 		updateTimeSlider();
 	}
 	
@@ -203,21 +203,15 @@ void wlfPanel_AdvSettings::onClickExpandBtn(void* user_data)
 	gOverlayBar->layoutButtons();
 }
 
-void wlfPanel_AdvSettings::onUseRegionSettings(LLUICtrl* ctrl, void* userdata)
+void wlfPanel_AdvSettings::onUseRegionSettings(const LLSD& value)
 {
-	LLEnvManagerNew::instance().setUseRegionSettings(gSavedSettings.getBOOL("UseEnvironmentFromRegion"), gSavedSettings.getBOOL("PhoenixInterpolateSky"));
+	LLEnvManagerNew::instance().setUseRegionSettings(value.asBoolean(), gSavedSettings.getBOOL("PhoenixInterpolateSky"));
 }
 
-void wlfPanel_AdvSettings::onChangeWWPresetName(LLUICtrl* ctrl, void * userData)
+void wlfPanel_AdvSettings::onChangeWWPresetName(const LLSD& value)
 {
-	LLComboBox * combo_box = static_cast<LLComboBox*>(ctrl);
-	
-	if(combo_box->getSimple() == "")
-	{
-		return;
-	}
-
-	const std::string& wwset = combo_box->getSelectedValue().asString();
+	const std::string& wwset = value.asString();
+	if (wwset.empty()) return;
 	if (LLWaterParamManager::getInstance()->hasParamSet(wwset))
 	{
 		LLEnvManagerNew::instance().setUseWaterPreset(wwset, gSavedSettings.getBOOL("PhoenixInterpolateWater"));
@@ -230,19 +224,14 @@ void wlfPanel_AdvSettings::onChangeWWPresetName(LLUICtrl* ctrl, void * userData)
 	}
 }
 
-void wlfPanel_AdvSettings::onChangeWLPresetName(LLUICtrl* ctrl, void * userData)
+void wlfPanel_AdvSettings::onChangeWLPresetName(const LLSD& value)
 {
-	LLComboBox * combo_box = static_cast<LLComboBox*>(ctrl);
-	
-	if(combo_box->getSimple() == "")
-	{
-		return;
-	}
-
-	const LLWLParamKey key(combo_box->getSelectedValue().asString(), LLEnvKey::SCOPE_LOCAL);
+	const std::string& wlset = value.asString();
+	if (wlset.empty()) return;
+	const LLWLParamKey key(wlset, LLEnvKey::SCOPE_LOCAL);
 	if (LLWLParamManager::getInstance()->hasParamSet(key))
 	{
-		LLEnvManagerNew::instance().setUseSkyPreset(key.name, gSavedSettings.getBOOL("PhoenixInterpolateSky"));
+		LLEnvManagerNew::instance().setUseSkyPreset(wlset, gSavedSettings.getBOOL("PhoenixInterpolateSky"));
 	}
 	else
 	{
@@ -252,86 +241,63 @@ void wlfPanel_AdvSettings::onChangeWLPresetName(LLUICtrl* ctrl, void * userData)
 	}
 }
 
-void wlfPanel_AdvSettings::onClickWWNext(void* user_data)
+void wlfPanel_AdvSettings::onClickWWNext()
 {
-	wlfPanel_AdvSettings* self = (wlfPanel_AdvSettings*) user_data;
-
-	S32 index = self->mWaterPresetCombo->getCurrentIndex();
-	index++;
-	if (index == self->mWaterPresetCombo->getItemCount())
+	S32 index = mWaterPresetCombo->getCurrentIndex();
+	++index;
+	if (index == mWaterPresetCombo->getItemCount())
 		index = 0;
-	self->mWaterPresetCombo->setCurrentByIndex(index);
+	mWaterPresetCombo->setCurrentByIndex(index);
 
-	wlfPanel_AdvSettings::onChangeWWPresetName(self->mWaterPresetCombo, self);
+	wlfPanel_AdvSettings::onChangeWWPresetName(mWaterPresetCombo->getSelectedValue());
 }
 
-void wlfPanel_AdvSettings::onClickWWPrev(void* user_data)
+void wlfPanel_AdvSettings::onClickWWPrev()
 {
-	wlfPanel_AdvSettings* self = (wlfPanel_AdvSettings*) user_data;
-
-	S32 index = self->mWaterPresetCombo->getCurrentIndex();
+	S32 index = mWaterPresetCombo->getCurrentIndex();
 	if (index == 0)
-		index = self->mWaterPresetCombo->getItemCount();
-	index--;
-	self->mWaterPresetCombo->setCurrentByIndex(index);
+		index = mWaterPresetCombo->getItemCount();
+	--index;
+	mWaterPresetCombo->setCurrentByIndex(index);
 
-	wlfPanel_AdvSettings::onChangeWWPresetName(self->mWaterPresetCombo, self);
+	wlfPanel_AdvSettings::onChangeWWPresetName(mWaterPresetCombo->getSelectedValue());
 }
 
-void wlfPanel_AdvSettings::onClickWLNext(void* user_data)
+void wlfPanel_AdvSettings::onClickWLNext()
 {
-	wlfPanel_AdvSettings* self = (wlfPanel_AdvSettings*) user_data;
-
-	S32 index = self->mSkyPresetCombo->getCurrentIndex();
-	index++;
-	if (index == self->mSkyPresetCombo->getItemCount())
+	S32 index = mSkyPresetCombo->getCurrentIndex();
+	++index;
+	if (index == mSkyPresetCombo->getItemCount())
 		index = 0;
-	self->mSkyPresetCombo->setCurrentByIndex(index);
+	mSkyPresetCombo->setCurrentByIndex(index);
 
-	wlfPanel_AdvSettings::onChangeWLPresetName(self->mSkyPresetCombo, self);
+	wlfPanel_AdvSettings::onChangeWLPresetName(mSkyPresetCombo->getSelectedValue());
 }
 
-void wlfPanel_AdvSettings::onClickWLPrev(void* user_data)
+void wlfPanel_AdvSettings::onClickWLPrev()
 {
-	wlfPanel_AdvSettings* self = (wlfPanel_AdvSettings*) user_data;
-
-	S32 index = self->mSkyPresetCombo->getCurrentIndex();
+	S32 index = mSkyPresetCombo->getCurrentIndex();
 	if (index == 0)
-		index = self->mSkyPresetCombo->getItemCount();
-	index--;
-	self->mSkyPresetCombo->setCurrentByIndex(index);
+		index = mSkyPresetCombo->getItemCount();
+	--index;
+	mSkyPresetCombo->setCurrentByIndex(index);
 
-	wlfPanel_AdvSettings::onChangeWLPresetName(self->mSkyPresetCombo, self);
+	wlfPanel_AdvSettings::onChangeWLPresetName(mSkyPresetCombo->getSelectedValue());
 }
 
-void wlfPanel_AdvSettings::onOpenAdvancedSky(void* userData)
+void wlfPanel_AdvSettings::onChangeDayTime(const LLSD& value)
 {
-	LLFloaterWindLight::show();
-}
+	// deactivate animator
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
-void wlfPanel_AdvSettings::onOpenAdvancedWater(void* userData)
-{
-	LLFloaterWater::show();
-}
-
-void wlfPanel_AdvSettings::onChangeDayTime(LLUICtrl* ctrl, void* userData)
-{
-	LLSliderCtrl* sldr = static_cast<LLSliderCtrl*>(ctrl);
-
-	if (sldr) {
-		// deactivate animator
-		LLWLParamManager::getInstance()->mAnimator.deactivate();
-
-		F32 val = sldr->getValueF32() + 0.25f;
-		if(val > 1.0) 
-		{
-			val--;
-		}
-
-		LLWLParamManager::getInstance()->mAnimator.setDayTime((F64)val);
-		LLWLParamManager::getInstance()->mAnimator.update(
-			LLWLParamManager::getInstance()->mCurParams);
+	F32 val = value.asFloat() + 0.25f;
+	if(val > 1.0)
+	{
+		val--;
 	}
+
+	LLWLParamManager::getInstance()->mAnimator.setDayTime((F64)val);
+	LLWLParamManager::getInstance()->mAnimator.update(LLWLParamManager::getInstance()->mCurParams);
 }
 
 void wlfPanel_AdvSettings::populateWaterPresetsList()
