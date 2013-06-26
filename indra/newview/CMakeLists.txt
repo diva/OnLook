@@ -172,7 +172,6 @@ set(viewer_SOURCE_FILES
     llflexibleobject.cpp
     llfloaterabout.cpp
     llfloateractivespeakers.cpp
-    llfloateranimpreview.cpp
     llfloaterauction.cpp
     llfloateravatarinfo.cpp
     llfloateravatarlist.cpp
@@ -677,7 +676,6 @@ set(viewer_HEADER_FILES
     llflexibleobject.h
     llfloaterabout.h
     llfloateractivespeakers.h
-    llfloateranimpreview.h
     llfloaterauction.h
     llfloateravatarinfo.h
     llfloateravatarlist.h
