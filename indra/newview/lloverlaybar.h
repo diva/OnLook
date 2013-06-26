@@ -98,7 +98,6 @@ public:
 
 	void setCancelTPButtonVisible(BOOL b, const std::string& label);
 
-	static BOOL sChatVisible;
 protected:	
 	static void* createMediaRemote(void* userdata);
 	static void* createVoiceRemote(void* userdata);
@@ -118,6 +117,7 @@ protected:
 	enum { STOPPED=0, PLAYING=1, PAUSED=2 };
 	S32 mMusicState;
 	std::string			mOriginalIMLabel;
+	std::string			mUnreadCountStringPlural;
 	
 	CachedUICtrl<LLView> mChatbarAndButtons;
 	CachedUICtrl<LLButton> mNewIM;
@@ -127,12 +127,14 @@ protected:
 	CachedUICtrl<LLButton> mFlyCam;
 	CachedUICtrl<LLChatBar> mChatBar;
 	CachedUICtrl<LLPanel> mVoiceRemoteContainer;
+	CachedUICtrl<LLPanel> mStateManagementContainer;
+	CachedUICtrl<LLPanel> mAORemoteContainer;
+	CachedUICtrl<LLPanel> mAdvSettingsContainer;
+	CachedUICtrl<LLPanel> mMediaRemoteContainer;
 private:
-	
-
-	bool	updateAdvSettingsPopup();
-	//static void	updateChatVisible(const LLSD &data);
-
+	bool	updateChatVisible(const LLSD &data);
+	bool	updateAORemoteVisible(const LLSD &data);
+	bool	updateAdvSettingsPopup(const LLSD &data);
 };
 
 extern LLOverlayBar* gOverlayBar;

@@ -263,8 +263,8 @@ void LLLayoutStack::draw()
 			// only force drawing invisible children if visible amount is non-zero
 			drawChild(panelp, 0, 0, !clip_rect.isEmpty());
 			
-			//if (sDebugRects)
-			/*{
+			if (sDebugRects)
+			{
 				LLUI::pushMatrix();
 				{
 					// drawing solids requires texturing be disabled
@@ -280,11 +280,11 @@ void LLLayoutStack::draw()
 					}
 				}
 				LLUI::popMatrix();
-			}*/
+			}
 		}
 	}
-	//if (sDebugRects)
-	/*{
+	if (sDebugRects)
+	{
 		drawDebugRect();
 
 		// Check for bogus rectangle
@@ -292,7 +292,7 @@ void LLLayoutStack::draw()
 		{
 			llwarns << "Bogus rectangle for " << getName() << " with " << getRect() << llendl;
 		}
-	}*/
+	}
 }
 
 void LLLayoutStack::removeChild(LLView* view)
