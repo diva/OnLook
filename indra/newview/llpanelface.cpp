@@ -113,10 +113,9 @@ BOOL	LLPanelFace::postBuild()
 	{
 		mTextureCtrl->setDefaultImageAssetID(LLUUID( gSavedSettings.getString( "DefaultObjectTexture" )));
 		mTextureCtrl->setCommitCallback( boost::bind(&LLPanelFace::onCommitTexture, this, _2) );
-		mTextureCtrl->setOnCancelCallback( LLPanelFace::onCancelTexture );
-		mTextureCtrl->setOnSelectCallback( LLPanelFace::onSelectTexture );
-		mTextureCtrl->setDragCallback(LLPanelFace::onDragTexture);
-		mTextureCtrl->setCallbackUserData( this );
+		mTextureCtrl->setOnCancelCallback( boost::bind(&LLPanelFace::onCancelTexture, this, _2) );
+		mTextureCtrl->setOnSelectCallback( boost::bind(&LLPanelFace::onSelectTexture, this, _2) );
+		mTextureCtrl->setDragCallback(boost::bind(&LLPanelFace::onDragTexture, this, _2));
 		mTextureCtrl->setFollowsTop();
 		mTextureCtrl->setFollowsLeft();
 		// Don't allow (no copy) or (no transfer) textures to be selected during immediate mode
@@ -144,9 +143,8 @@ BOOL	LLPanelFace::postBuild()
 	if(mColorSwatch)
 	{
 		mColorSwatch->setCommitCallback(boost::bind(&LLPanelFace::onCommitColor, this, _2));
-		mColorSwatch->setOnCancelCallback(LLPanelFace::onCancelColor);
-		mColorSwatch->setOnSelectCallback(LLPanelFace::onSelectColor);
-		mColorSwatch->setCallbackUserData( this );
+		mColorSwatch->setOnCancelCallback(boost::bind(&LLPanelFace::onCancelColor, this, _2));
+		mColorSwatch->setOnSelectCallback(boost::bind(&LLPanelFace::onSelectColor, this, _2));
 		mColorSwatch->setFollowsTop();
 		mColorSwatch->setFollowsLeft();
 		mColorSwatch->setCanApplyImmediately(TRUE);
@@ -1046,18 +1044,15 @@ void LLPanelFace::onCommitAlpha(const LLSD& data)
 	sendAlpha();
 }
 
-// static
-void LLPanelFace::onCancelColor(LLUICtrl* ctrl, void* userdata)
+void LLPanelFace::onCancelColor(const LLSD& data)
 {
 	LLSelectMgr::getInstance()->selectionRevertColors();
 }
 
-// static
-void LLPanelFace::onSelectColor(LLUICtrl* ctrl, void* userdata)
+void LLPanelFace::onSelectColor(const LLSD& data)
 {
-	LLPanelFace* self = (LLPanelFace*) userdata;
 	LLSelectMgr::getInstance()->saveSelectedObjectColors();
-	self->sendColor();
+	sendColor();
 }
 
 // static
@@ -1096,7 +1091,7 @@ void LLPanelFace::onCommitGlow(LLUICtrl* ctrl, void* userdata)
 }
 
 // static
-BOOL LLPanelFace::onDragTexture(LLUICtrl*, LLInventoryItem* item, void*)
+BOOL LLPanelFace::onDragTexture(LLUICtrl*, LLInventoryItem* item)
 {
 	BOOL accept = TRUE;
 	for (LLObjectSelection::root_iterator iter = LLSelectMgr::getInstance()->getSelection()->root_begin();
@@ -1119,18 +1114,15 @@ void LLPanelFace::onCommitTexture( const LLSD& data )
 	sendTexture();
 }
 
-// static
-void LLPanelFace::onCancelTexture(LLUICtrl* ctrl, void* userdata)
+void LLPanelFace::onCancelTexture(const LLSD& data)
 {
 	LLSelectMgr::getInstance()->selectionRevertTextures();
 }
 
-// static
-void LLPanelFace::onSelectTexture(LLUICtrl* ctrl, void* userdata)
+void LLPanelFace::onSelectTexture(const LLSD& data)
 {
-	LLPanelFace* self = (LLPanelFace*) userdata;
- 	LLSelectMgr::getInstance()->saveSelectedObjectTextures();
-	self->sendTexture();
+	LLSelectMgr::getInstance()->saveSelectedObjectTextures();
+	sendTexture();
 }
 
 
