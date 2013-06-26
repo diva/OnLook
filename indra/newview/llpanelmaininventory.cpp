@@ -209,7 +209,7 @@ BOOL LLInventoryView::postBuild()
 
 	if (mQuickFilterCombo)
 	{
-		mQuickFilterCombo->setCommitCallback(onQuickFilterCommit);
+		mQuickFilterCombo->setCommitCallback(boost::bind(LLInventoryView::onQuickFilterCommit, _1, this));
 	}
 
 

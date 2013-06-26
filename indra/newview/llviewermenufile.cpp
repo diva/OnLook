@@ -37,7 +37,6 @@
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "statemachine/aifilepicker.h"
-#include "llfloateranimpreview.h"
 #include "llfloaterbvhpreview.h"
 #include "llfloaterimagepreview.h"
 #include "llfloatermodelpreview.h"
@@ -217,7 +216,7 @@ bool AIFileUpload::is_valid(std::string const& filename, ELoadFilter type)
 		// No extension
 		LLSD args;
 		args["FILE"] = short_name;
-		LLNotifications::instance().add("NoFileExtension", args);
+		LLNotificationsUtil::add("NoFileExtension", args);
 		return false;
 	}
 	else
@@ -260,7 +259,7 @@ bool AIFileUpload::is_valid(std::string const& filename, ELoadFilter type)
 			LLSD args;
 			args["EXTENSION"] = ext;
 			args["VALIDS"] = valid_extensions;
-			LLNotifications::instance().add("InvalidFileExtension", args);
+			LLNotificationsUtil::add("InvalidFileExtension", args);
 			return false;
 		}
 	}//end else (non-null extension)
@@ -279,7 +278,7 @@ bool AIFileUpload::is_valid(std::string const& filename, ELoadFilter type)
 			llinfos << error_msg << ": " << filename << llendl;
 			LLSD args;
 			args["FILE"] = filename;
-			LLNotifications::instance().add( error_msg, args );
+			LLNotificationsUtil::add( error_msg, args );
 			return false;
 		}
 	}//end if a wave/sound file
@@ -331,9 +330,7 @@ class LLFileUploadSound : public view_listener_t, public AIFileUpload
 	// Inherited from AIFileUpload.
 	/*virtual*/ void handle_event(std::string const& filename)
 	{
-		LLFloaterNameDesc* floaterp = new LLFloaterNameDesc(filename);
-		LLUICtrlFactory::getInstance()->buildFloater(floaterp, "floater_sound_preview.xml");
-		floaterp->childSetLabelArg("ok_btn", "[AMOUNT]", llformat("%d", LLGlobalEconomy::Singleton::getInstance()->getPriceUpload() ));
+		LLUICtrlFactory::getInstance()->buildFloater(new LLFloaterSoundPreview(LLSD(filename)), "floater_sound_preview.xml");
 	}
 };
 
@@ -349,19 +346,33 @@ class LLFileUploadAnim : public view_listener_t, public AIFileUpload
 	// Inherited from AIFileUpload.
 	/*virtual*/ void handle_event(std::string const& filename)
 	{
-		int len = filename.size();
-		if (len >= 5 && filename.substr(len - 5, 5) == ".anim")
+		if (filename.rfind(".anim") != std::string::npos)
 		{
-		  LLFloaterAnimPreview* floaterp = new LLFloaterAnimPreview(filename);
-		  LLUICtrlFactory::getInstance()->buildFloater(floaterp, "floater_animation_anim_preview.xml");
-		  floaterp->childSetLabelArg("ok_btn", "[AMOUNT]", llformat("%s%d", gHippoGridManager->getConnectedGrid()->getCurrencySymbol().c_str(), LLGlobalEconomy::Singleton::getInstance()->getPriceUpload()));
+			LLUICtrlFactory::getInstance()->buildFloater(new LLFloaterAnimPreview(LLSD(filename)), "floater_animation_anim_preview.xml");
 		}
 		else
 		{
-		  LLUICtrlFactory::getInstance()->buildFloater(new LLFloaterBvhPreview(filename), "floater_animation_bvh_preview.xml");
+			LLUICtrlFactory::getInstance()->buildFloater(new LLFloaterBvhPreview(LLSD(filename)), "floater_animation_bvh_preview.xml");
 		}
 	}
 };
+
+/* Singu TODO? LL made a class to upload scripts, but never actually hooked everything up, it'd be nice for us to offer such a thing.
+class LLFileUploadScript : public view_listener_t, public AIFileUpload
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		start_filepicker(FFLOAD_SCRIPT, "script");
+		return true;
+	}
+
+  protected:
+	// Inherited from AIFileUpload.
+	virtual void handle_event(std::string const& filename)
+	{
+		LLUICtrlFactory::getInstance()->buildFloater(new LLFloaterScriptPreview(LLSD(filename)), "floater_script_preview.xml");
+	}
+};*/
 
 class LLFileUploadBulk : public view_listener_t
 {
@@ -386,13 +397,13 @@ class LLFileUploadBulk : public view_listener_t
 		const char* notification_type = expected_upload_cost ? "BulkTemporaryUpload" : "BulkTemporaryUploadFree";
 		LLSD args;
 		args["UPLOADCOST"] = gHippoGridManager->getConnectedGrid()->getUploadFee();
-		LLNotifications::instance().add(notification_type, args, LLSD(), onConfirmBulkUploadTemp);
+		LLNotificationsUtil::add(notification_type, args, LLSD(), onConfirmBulkUploadTemp);
 		return true;
 	}
 
 	static bool onConfirmBulkUploadTemp(const LLSD& notification, const LLSD& response )
 	{
-		S32 option = LLNotification::getSelectedOption(notification, response);
+		S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 		bool enabled;
 		if (option == 0)		// yes
 			enabled = true;
@@ -446,7 +457,7 @@ class LLFileUploadBulk : public view_listener_t
 void upload_error(const std::string& error_message, const std::string& label, const std::string& filename, const LLSD& args) 
 {
 	llwarns << error_message << llendl;
-	LLNotifications::instance().add(label, args);
+	LLNotificationsUtil::add(label, args);
 	if(LLFile::remove(filename) == -1)
 	{
 		lldebugs << "unable to remove temp file" << llendl;
@@ -1361,6 +1372,7 @@ void init_menu_file()
 	(new LLFileUploadImage())->registerListener(gMenuHolder, "File.UploadImage");
 	(new LLFileUploadSound())->registerListener(gMenuHolder, "File.UploadSound");
 	(new LLFileUploadAnim())->registerListener(gMenuHolder, "File.UploadAnim");
+	//(new LLFileUploadScript())->registerListener(gMenuHolder, "File.UploadScript"); // Singu TODO?
 	(new LLFileUploadModel())->registerListener(gMenuHolder, "File.UploadModel");
 	(new LLFileUploadBulk())->registerListener(gMenuHolder, "File.UploadBulk");
 	(new LLFileCloseWindow())->registerListener(gMenuHolder, "File.CloseWindow");

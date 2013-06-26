@@ -786,9 +786,9 @@ void LLPanel::childSetCommitCallback(const std::string& id, boost::function<void
 	}
 }
 
-void LLPanel::childSetValidate(const std::string& id, BOOL (*cb)(LLUICtrl*, void*))
+void LLPanel::childSetValidate(const std::string& id, boost::function<bool (const LLSD& data)> cb)
 {
-	LLUICtrl* child = getChild<LLUICtrl>(id, true);
+	LLUICtrl* child = findChild<LLUICtrl>(id);
 	if (child)
 	{
 		child->setValidateBeforeCommit(cb);

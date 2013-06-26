@@ -291,9 +291,8 @@ void LLMultiSliderCtrl::onEditorCommit(const LLSD& value)
 		val = (F32) atof( text.c_str() );
 		if( mMultiSlider->getMinValue() <= val && val <= mMultiSlider->getMaxValue() )
 		{
-			setCurSliderValue( val );
-			if(	(!mValidateCallback	|| mValidateCallback( this, mCallbackUserData )) &&
-				(!mValidateSignal	|| (*(mValidateSignal))(this, val)))
+			setCurSliderValue( val );  // set the value temporarily so that the callback can retrieve it.
+			if( !mValidateSignal || (*(mValidateSignal))( this, val ) )
 			{
 				success = TRUE;
 			}
@@ -322,8 +321,7 @@ void LLMultiSliderCtrl::onSliderCommit(const LLSD& value)
 	F32 new_val = mMultiSlider->getCurSliderValue();
 
 	mCurValue = new_val;  // set the value temporarily so that the callback can retrieve it.
-	if(	(!mValidateCallback	||	mValidateCallback( this, mCallbackUserData )) &&
-		(!mValidateSignal || (*mValidateSignal)(this, new_val ) ))
+	if( !mValidateSignal || (*(mValidateSignal))( this, new_val ) )
 	{
 			success = TRUE;
 	}
