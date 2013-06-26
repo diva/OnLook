@@ -72,7 +72,7 @@ using namespace AICurlPrivate;
 
 AIPerService::AIPerService(void) :
 		mHTTPBandwidth(25),	// 25 = 1000 ms / 40 ms.
-		mConcurrectConnections(CurlConcurrentConnectionsPerService),
+		mConcurrentConnections(CurlConcurrentConnectionsPerService),
 		mTotalAdded(0),
 		mApprovedFirst(0),
 		mUnapprovedFirst(0),
@@ -88,7 +88,7 @@ AIPerService::CapabilityType::CapabilityType(void) :
 		mFlags(0),
 		mDownloading(0),
 		mMaxPipelinedRequests(CurlConcurrentConnectionsPerService),
-		mConcurrectConnections(CurlConcurrentConnectionsPerService)
+		mConcurrentConnections(CurlConcurrentConnectionsPerService)
 {
 }
 
@@ -298,20 +298,20 @@ void AIPerService::redivide_connections(void)
 	else
 	{
 	  // Give every other type (that is not in use) one connection, so they can be used (at which point they'll get more).
-	  mCapabilityType[order[i]].mConcurrectConnections = 1;
+	  mCapabilityType[order[i]].mConcurrentConnections = 1;
 	}
   }
   // Keep one connection in reserve for currently unused capability types (that have been used before).
   int reserve = (mUsedCT != mCTInUse) ? 1 : 0;
-  // Distribute (mConcurrectConnections - reserve) over number_of_capability_types_in_use.
-  U16 max_connections_per_CT = (mConcurrectConnections - reserve) / number_of_capability_types_in_use + 1;
+  // Distribute (mConcurrentConnections - reserve) over number_of_capability_types_in_use.
+  U16 max_connections_per_CT = (mConcurrentConnections - reserve) / number_of_capability_types_in_use + 1;
   // The first count CTs get max_connections_per_CT connections.
-  int count = (mConcurrectConnections - reserve) % number_of_capability_types_in_use;
+  int count = (mConcurrentConnections - reserve) % number_of_capability_types_in_use;
   for(int i = 1, j = 0;; --i)
   {
 	while (j < count)
 	{
-	  mCapabilityType[used_order[j++]].mConcurrectConnections = max_connections_per_CT;
+	  mCapabilityType[used_order[j++]].mConcurrentConnections = max_connections_per_CT;
 	}
 	if (i == 0)
 	{
@@ -322,7 +322,7 @@ void AIPerService::redivide_connections(void)
 	// Never assign 0 as maximum.
 	if (max_connections_per_CT > 1)
 	{
-	  // The remaining CTs get one connection less so that the sum of all assigned connections is mConcurrectConnections - reserve.
+	  // The remaining CTs get one connection less so that the sum of all assigned connections is mConcurrentConnections - reserve.
 	  --max_connections_per_CT;
 	}
   }
@@ -330,8 +330,8 @@ void AIPerService::redivide_connections(void)
 
 bool AIPerService::throttled(AICapabilityType capability_type) const
 {
-  return mTotalAdded >= mConcurrectConnections ||
-		 mCapabilityType[capability_type].mAdded >= mCapabilityType[capability_type].mConcurrectConnections;
+  return mTotalAdded >= mConcurrentConnections ||
+		 mCapabilityType[capability_type].mAdded >= mCapabilityType[capability_type].mConcurrentConnections;
 }
 
 void AIPerService::added_to_multi_handle(AICapabilityType capability_type)
@@ -529,16 +529,16 @@ void AIPerService::adjust_concurrent_connections(int increment)
   for (AIPerService::iterator iter = instance_map_w->begin(); iter != instance_map_w->end(); ++iter)
   {
 	PerService_wat per_service_w(*iter->second);
-	U16 old_concurrent_connections = per_service_w->mConcurrectConnections;
+	U16 old_concurrent_connections = per_service_w->mConcurrentConnections;
 	int new_concurrent_connections = llclamp(old_concurrent_connections + increment, 1, (int)CurlConcurrentConnectionsPerService);
-	per_service_w->mConcurrectConnections = (U16)new_concurrent_connections;
-	increment = per_service_w->mConcurrectConnections - old_concurrent_connections;
+	per_service_w->mConcurrentConnections = (U16)new_concurrent_connections;
+	increment = per_service_w->mConcurrentConnections - old_concurrent_connections;
 	for (int i = 0; i < number_of_capability_types; ++i)
 	{
 	  per_service_w->mCapabilityType[i].mMaxPipelinedRequests = llmax(per_service_w->mCapabilityType[i].mMaxPipelinedRequests + increment, 0);
 	  int new_concurrent_connections_per_capability_type =
-		  llclamp((new_concurrent_connections * per_service_w->mCapabilityType[i].mConcurrectConnections + old_concurrent_connections / 2) / old_concurrent_connections, 1, new_concurrent_connections);
-	  per_service_w->mCapabilityType[i].mConcurrectConnections = (U16)new_concurrent_connections_per_capability_type;
+		  llclamp((new_concurrent_connections * per_service_w->mCapabilityType[i].mConcurrentConnections + old_concurrent_connections / 2) / old_concurrent_connections, 1, new_concurrent_connections);
+	  per_service_w->mCapabilityType[i].mConcurrentConnections = (U16)new_concurrent_connections_per_capability_type;
 	}
   }
 }

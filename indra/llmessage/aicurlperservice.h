@@ -145,7 +145,7 @@ class AIPerService {
 												// ctf_starvation: Set to true when the queue was about to be popped but was already empty.
 	  U32 mDownloading;							// The number of active easy handles with this service for which data was received.
 	  U16 mMaxPipelinedRequests;				// The maximum number of accepted requests for this service and (approved) capability type, that didn't finish yet.
-	  U16 mConcurrectConnections;				// The maximum number of allowed concurrent connections to the service of this capability type.
+	  U16 mConcurrentConnections;				// The maximum number of allowed concurrent connections to the service of this capability type.
 
 	  // Declare, not define, constructor and destructor - in order to avoid instantiation of queued_request_type from header.
 	  CapabilityType(void);
@@ -158,7 +158,7 @@ class AIPerService {
 	CapabilityType mCapabilityType[number_of_capability_types];
 
 	AIAverage mHTTPBandwidth;					// Keeps track on number of bytes received for this service in the past second.
-	int mConcurrectConnections;					// The maximum number of allowed concurrent connections to this service.
+	int mConcurrentConnections;					// The maximum number of allowed concurrent connections to this service.
 	int mTotalAdded;							// Number of active easy handles with this service.
 	int mApprovedFirst;							// First capability type to try.
 	int mUnapprovedFirst;						// First capability type to try after all approved types were tried.
