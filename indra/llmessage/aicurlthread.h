@@ -39,6 +39,8 @@
 namespace AICurlPrivate {
 namespace curlthread {
 
+extern U32 curl_max_total_concurrent_connections;
+
 class PollSet;
 
 // For ordering a std::set with AICurlEasyRequest objects.
@@ -99,6 +101,9 @@ class MultiHandle : public CurlMultiHandle
 
 	// Return the total number of added curl requests.
 	static U32 total_added_size(void) { return sTotalAdded; }
+
+	// Return true if we reached the global maximum number of connections.
+	static bool added_maximum(void) { return sTotalAdded >= curl_max_total_concurrent_connections; }
 
   public:
 	//-----------------------------------------------------------------------------

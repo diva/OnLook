@@ -160,8 +160,6 @@ class AIPerService {
 	AIAverage mHTTPBandwidth;					// Keeps track on number of bytes received for this service in the past second.
 	int mConcurrentConnections;					// The maximum number of allowed concurrent connections to this service.
 	int mTotalAdded;							// Number of active easy handles with this service.
-	int mApprovedFirst;							// First capability type to try.
-	int mUnapprovedFirst;						// First capability type to try after all approved types were tried.
 
 	U32 mUsedCT;								// Bit mask with one bit per capability type. A '1' means the capability was in use since the last resetUsedCT().
 	U32 mCTInUse;								// Bit mask with one bit per capability type. A '1' means the capability is in use right now.
@@ -260,11 +258,12 @@ class AIPerService {
 	void removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something);	// Called when an easy handle for this service is removed again from the multi handle.
 	void download_started(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mDownloading; }
 	bool throttled(AICapabilityType capability_type) const;		// Returns true if the maximum number of allowed requests for this service/capability type have been added to the multi handle.
+	bool nothing_added(AICapabilityType capability_type) const { return mCapabilityType[capability_type].mAdded == 0; }
 
 	bool queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type, bool force_queuing = true);	// Add easy_request to the queue if queue is empty or force_queuing.
 	bool cancel(AICurlEasyRequest const& easy_request, AICapabilityType capability_type);							// Remove easy_request from the queue (if it's there).
 
-    void add_queued_to(AICurlPrivate::curlthread::MultiHandle* mh, bool recursive = false);
+    void add_queued_to(AICurlPrivate::curlthread::MultiHandle* mh, bool only_this_service = false);
 														// Add queued easy handle (if any) to the multi handle. The request is removed from the queue,
 														// followed by either a call to added_to_multi_handle() or to queue() to add it back.
 

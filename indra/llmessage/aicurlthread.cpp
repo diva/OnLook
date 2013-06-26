@@ -1710,7 +1710,7 @@ CURLMsg const* MultiHandle::info_read(int* msgs_in_queue) const
   return ret;
 }
 
-static U32 curl_max_total_concurrent_connections = 32;						// Initialized on start up by startCurlThread().
+U32 curl_max_total_concurrent_connections = 32;						// Initialized on start up by startCurlThread().
 
 bool MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request, bool from_queue)
 {
@@ -1724,13 +1724,23 @@ bool MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request, bool f
 	if (!from_queue)
 	{
 	  // Add the request to the back of a non-empty queue.
-	  if (PerService_wat(*per_service)->queue(easy_request, capability_type, false))
+	  PerService_wat per_service_w(*per_service);
+	  if (per_service_w->queue(easy_request, capability_type, false))
 	  {
 		// The queue was not empty, therefore the request was queued.
 #ifdef SHOW_ASSERT
 		// Not active yet, but it's no longer an error if next we try to remove the request.
 		curl_easy_request_w->mRemovedPerCommand = false;
 #endif
+		// This is a fail-safe. Normally, if there is anything in the queue then things should
+		// be running (normally an attempt is made to add from the queue whenever a request
+		// finishes). However, it CAN happen on occassion that things get 'stuck' with
+		// nothing running, so nothing will ever finish and therefore the queue would never
+		// be checked. Only do this when there is indeed nothing running (added) though.
+		if (per_service_w->nothing_added(capability_type))
+		{
+		  per_service_w->add_queued_to(this);
+		}
 		return true;
 	  }
 	}
