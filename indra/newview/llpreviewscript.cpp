@@ -1155,8 +1155,7 @@ void LLScriptEdCore::onErrorList(LLUICtrl*, void* user_data)
 		//llinfos << "LLScriptEdCore::onErrorList() - " << row << ", "
 		//<< column << llendl;
 		self->mEditor->setCursor(row, column);
-		if (gSavedSettings.getBOOL("LiruScriptErrorsStealFocus"))
-			self->mEditor->setFocus(TRUE);
+		self->mEditor->setFocus(TRUE);
 	}
 }
 
@@ -1187,7 +1186,8 @@ void LLScriptEdCore::selectFirstError()
 {
 	// Select the first item;
 	mErrorList->selectFirstItem();
-	onErrorList(mErrorList, this);
+	if (gSavedSettings.getBOOL("LiruScriptErrorsStealFocus"))
+		onErrorList(mErrorList, this);
 }
 
 
