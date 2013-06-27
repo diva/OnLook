@@ -39,6 +39,7 @@ set(llui_SOURCE_FILES
     llfunctorregistry.cpp
     lliconctrl.cpp
     llkeywords.cpp
+    lllayoutstack.cpp
     lllineeditor.cpp
     lllocalcliprect.cpp
     llmenugl.cpp
@@ -78,6 +79,10 @@ set(llui_SOURCE_FILES
     lluictrlfactory.cpp
     lluistring.cpp
     llundo.cpp
+    llurlaction.cpp
+    llurlentry.cpp
+    llurlmatch.cpp
+    llurlregistry.cpp
     llview.cpp
     llviewborder.cpp
     llviewmodel.cpp
@@ -105,6 +110,7 @@ set(llui_HEADER_FILES
     llhtmlhelp.h
     lliconctrl.h
     llkeywords.h
+    lllayoutstack.h
     lllineeditor.h
     lllocalcliprect.h
     llmemberlistener.h
@@ -150,6 +156,10 @@ set(llui_HEADER_FILES
     lluistring.h
     lluixmltags.h
     llundo.h
+    llurlaction.h
+    llurlentry.h
+    llurlmatch.h
+    llurlregistry.h
     llview.h
     llviewborder.h
     llviewmodel.h

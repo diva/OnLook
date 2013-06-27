@@ -132,6 +132,8 @@ public:
 
 	void			setImmediateFilterPermMask(PermissionMask mask)
 					{ mImmediateFilterPermMask = mask; }
+	void			setDnDFilterPermMask(PermissionMask mask)
+						{ mDnDFilterPermMask = mask; }
 	void			setNonImmediateFilterPermMask(PermissionMask mask)
 					{ mNonImmediateFilterPermMask = mask; }
 	PermissionMask	getImmediateFilterPermMask() { return mImmediateFilterPermMask; }
@@ -185,6 +187,7 @@ private:
 	BOOL					 mAllowInvisibleTexture; // If true, the user can select "Invisible" as an option
 	LLCoordGL				 mLastFloaterLeftTop;
 	PermissionMask			 mImmediateFilterPermMask;
+	PermissionMask				mDnDFilterPermMask;
 	PermissionMask			 mNonImmediateFilterPermMask;
 	BOOL					 mCanApplyImmediately;
 	BOOL					 mNeedsRawImageData;

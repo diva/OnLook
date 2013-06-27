@@ -63,6 +63,7 @@ public:
 
 	virtual ~LLTextBox() {}
 
+	virtual void initFromXML(LLXMLNodePtr node, LLView* parent);
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
 	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, class LLUICtrlFactory *factory);
 

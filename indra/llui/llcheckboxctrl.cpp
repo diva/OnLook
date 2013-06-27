@@ -307,9 +307,6 @@ LLXMLNodePtr LLCheckBoxCtrl::getXML(bool save_children) const
 // static
 LLView* LLCheckBoxCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("checkbox");
-	node->getAttributeString("name", name);
-
 	std::string label("");
 	node->getAttributeString("label", label);
 
@@ -326,7 +323,7 @@ LLView* LLCheckBoxCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 	LLRect rect;
 	createRect(node, rect, parent, LLRect());
 
-	LLCheckBoxCtrl* checkbox = new LLCheckboxCtrl(name, 
+	LLCheckBoxCtrl* checkbox = new LLCheckboxCtrl("checkbox",
 		rect, 
 		label,
 		font,

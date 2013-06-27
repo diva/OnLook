@@ -7,4 +7,5 @@
 	<slider label="Sonidos" name="SFX Volume"/>
 	<slider label="Ambiente" name="Wind Volume"/>
 	<slider label="UI" name="UI Volume"/>
+	<button label="Media cercanos" name="nearby_media"/>
 </panel>

@@ -53,6 +53,7 @@
 #include "llfloaterchatterbox.h"
 #include "llhttpnode.h"
 #include "llimpanel.h"
+#include "llnotificationsutil.h"
 #include "llsdserialize.h"
 #include "llspeakers.h"
 #include "lltabcontainer.h"
@@ -60,7 +61,6 @@
 #include "llviewermenu.h"
 #include "llviewermessage.h"
 #include "llviewerwindow.h"
-#include "llvoicechannel.h"
 #include "llnotify.h"
 #include "llviewerregion.h"
 
@@ -115,6 +115,7 @@ LLColor4 agent_chat_color(const LLUUID& id, const std::string& name, bool local_
 //{
 //	return (LLStringUtil::compareDict( a->mName, b->mName ) < 0);
 //}
+
 class LLViewerChatterBoxInvitationAcceptResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
@@ -130,10 +131,9 @@ public:
 	{
 		if ( gIMMgr)
 		{
-			LLFloaterIMPanel* floaterp =
-				gIMMgr->findFloaterBySession(mSessionID);
-
-			if (floaterp)
+			LLFloaterIMPanel* floater = gIMMgr->findFloaterBySession(mSessionID);
+			LLIMSpeakerMgr* speaker_mgr = floater ? floater->getSpeakerManager() : NULL;
+			if (speaker_mgr)
 			{
 				//we've accepted our invitation
 				//and received a list of agents that were
@@ -147,26 +147,26 @@ public:
 				//but unfortunately, our base that we are receiving here
 				//may not be the most up to date.  It was accurate at
 				//some point in time though.
-				floaterp->setSpeakers(content);
+				speaker_mgr->setSpeakers(content);
 
 				//we now have our base of users in the session
 				//that was accurate at some point, but maybe not now
 				//so now we apply all of the udpates we've received
 				//in case of race conditions
-				floaterp->updateSpeakersList(
-					gIMMgr->getPendingAgentListUpdates(mSessionID));
+				speaker_mgr->updateSpeakers(gIMMgr->getPendingAgentListUpdates(mSessionID));
+			}
 
-				if ( mInvitiationType == LLIMMgr::INVITATION_TYPE_VOICE )
-				{
-					floaterp->requestAutoConnect();
-					LLFloaterIMPanel::onClickStartCall(floaterp);
-					// always open IM window when connecting to voice
-					LLFloaterChatterBox::showInstance(TRUE);
-				}
-				else if ( mInvitiationType == LLIMMgr::INVITATION_TYPE_IMMEDIATE )
-				{
-					LLFloaterChatterBox::showInstance(TRUE);
-				}
+			if (LLIMMgr::INVITATION_TYPE_VOICE == mInvitiationType)
+			{
+				gIMMgr->startCall(mSessionID, LLVoiceChannel::INCOMING_CALL);
+			}
+
+			if ((mInvitiationType == LLIMMgr::INVITATION_TYPE_VOICE
+				|| mInvitiationType == LLIMMgr::INVITATION_TYPE_IMMEDIATE)
+				&& gIMMgr->hasSession(mSessionID))
+			{
+				// always open IM window when connecting to voice
+				LLFloaterChatterBox::showInstance(TRUE);
 			}
 
 			gIMMgr->clearPendingAgentListUpdates(mSessionID);
@@ -176,6 +176,8 @@ public:
 
 	/*virtual*/ void error(U32 statusNum, const std::string& reason)
 	{
+		llwarns << "LLViewerChatterBoxInvitationAcceptResponder error [status:"
+				<< statusNum << "]: " << reason << llendl;
 		//throw something back to the viewer here?
 		if ( gIMMgr )
 		{
@@ -286,11 +288,14 @@ protected:
 
 bool inviteUserResponse(const LLSD& notification, const LLSD& response)
 {
+	if (!gIMMgr)
+		return false;
+
 	const LLSD& payload = notification["payload"];
 	LLUUID session_id = payload["session_id"].asUUID();
 	EInstantMessage type = (EInstantMessage)payload["type"].asInteger();
 	LLIMMgr::EInvitationType inv_type = (LLIMMgr::EInvitationType)payload["inv_type"].asInteger();
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	switch(option) 
 	{
 	case 0: // accept
@@ -304,16 +309,10 @@ bool inviteUserResponse(const LLSD& notification, const LLSD& response)
 					payload["session_handle"].asString(),
 					payload["session_uri"].asString());
 
-				LLFloaterIMPanel* im_floater =
-					gIMMgr->findFloaterBySession(
-						session_id);
-				if (im_floater)
-				{
-					im_floater->requestAutoConnect();
-					LLFloaterIMPanel::onClickStartCall(im_floater);
-					// always open IM window when connecting to voice
-					LLFloaterChatterBox::showInstance(session_id);
-				}
+				gIMMgr->startCall(session_id);
+
+				// always open IM window when connecting to voice
+				LLFloaterChatterBox::showInstance(session_id);
 
 				gIMMgr->clearPendingAgentListUpdates(session_id);
 				gIMMgr->clearPendingInvitation(session_id);
@@ -355,11 +354,8 @@ bool inviteUserResponse(const LLSD& notification, const LLSD& response)
 	{
 		if (type == IM_SESSION_P2P_INVITE)
 		{
-			if(LLVoiceClient::instanceExists())
-			{
-				std::string s = payload["session_handle"].asString();
-				LLVoiceClient::getInstance()->declineInvite(s);
-			}
+			std::string s = payload["session_handle"].asString();
+			LLVoiceClient::getInstance()->declineInvite(s);
 		}
 		else
 		{
@@ -686,6 +682,22 @@ BOOL LLIMMgr::isIMSessionOpen(const LLUUID& uuid)
 	LLFloaterIMPanel* floater = findFloaterBySession(uuid);
 	if(floater) return TRUE;
 	return FALSE;
+}
+
+void LLIMMgr::autoStartCallOnStartup(const LLUUID& session_id)
+{
+	// Singu TODO: LLIMModel
+	LLFloaterIMPanel* floater = findFloaterBySession(session_id);
+	if (!floater) return;
+
+	if (floater->getSessionInitialized())
+	{
+		startCall(session_id);
+	}
+	else
+	{
+		floater->mStartCallOnInitialize = true;
+	}
 }
 
 LLUUID LLIMMgr::addP2PSession(const std::string& name,
@@ -1025,6 +1037,31 @@ void LLIMMgr::clearPendingInvitation(const LLUUID& session_id)
 	}
 }
 
+void LLIMMgr::processAgentListUpdates(const LLUUID& session_id, const LLSD& body)
+{
+	LLFloaterIMPanel* im_floater = gIMMgr->findFloaterBySession(session_id);
+	if (!im_floater) return;
+	LLIMSpeakerMgr* speaker_mgr = im_floater->getSpeakerManager();
+	if (speaker_mgr)
+	{
+		speaker_mgr->updateSpeakers(body);
+
+		// also the same call is added into LLVoiceClient::participantUpdatedEvent because
+		// sometimes it is called AFTER LLViewerChatterBoxSessionAgentListUpdates::post()
+		// when moderation state changed too late. See EXT-3544.
+		speaker_mgr->update(true);
+	}
+	else
+	{
+		//we don't have a speaker manager yet..something went wrong
+		//we are probably receiving an update here before
+		//a start or an acceptance of an invitation.  Race condition.
+		gIMMgr->addPendingAgentListUpdates(
+			session_id,
+			body);
+	}
+}
+
 LLSD LLIMMgr::getPendingAgentListUpdates(const LLUUID& session_id)
 {
 	if ( mPendingAgentListUpdates.has(session_id.asString()) )
@@ -1103,6 +1140,39 @@ void LLIMMgr::clearPendingAgentListUpdates(const LLUUID& session_id)
 	{
 		mPendingAgentListUpdates.erase(session_id.asString());
 	}
+}
+
+bool LLIMMgr::startCall(const LLUUID& session_id, LLVoiceChannel::EDirection direction)
+{
+	// Singu TODO: LLIMModel
+	LLFloaterIMPanel* floater = gIMMgr->findFloaterBySession(session_id);
+	if (!floater) return false;
+
+	LLVoiceChannel* voice_channel = floater->getVoiceChannel();
+	if (!voice_channel) return false;
+
+	voice_channel->setCallDirection(direction);
+	voice_channel->activate();
+	return true;
+}
+
+bool LLIMMgr::endCall(const LLUUID& session_id)
+{
+	// Singu TODO: LLIMModel
+	LLFloaterIMPanel* floater = gIMMgr->findFloaterBySession(session_id);
+	if (!floater) return false;
+
+	LLVoiceChannel* voice_channel = floater->getVoiceChannel();
+	if (!voice_channel) return false;
+
+	voice_channel->deactivate();
+	/*LLIMModel::LLIMSession* im_session = LLIMModel::getInstance()->findIMSession(session_id);
+	if (im_session)*/
+	{
+		// need to update speakers' state
+		floater->getSpeakerManager()->update(FALSE);
+	}
+	return true;
 }
 
 // create a floater and update internal representation for
@@ -1418,35 +1488,30 @@ public:
 		if ( success )
 		{
 			session_id = body["session_id"].asUUID();
-			gIMMgr->updateFloaterSessionID(
-				temp_session_id,
-				session_id);
-			LLFloaterIMPanel* floaterp = gIMMgr->findFloaterBySession(session_id);
-			if (floaterp)
+			// Singu TODO: LLIMModel
+			gIMMgr->updateFloaterSessionID(temp_session_id, session_id);
+
+			LLFloaterIMPanel* im_floater = gIMMgr->findFloaterBySession(session_id);
+			LLIMSpeakerMgr* speaker_mgr = im_floater ? im_floater->getSpeakerManager() : NULL;
+			if (speaker_mgr)
 			{
-				floaterp->setSpeakers(body);
+				speaker_mgr->setSpeakers(body);
+				speaker_mgr->updateSpeakers(gIMMgr->getPendingAgentListUpdates(session_id));
+			}
 
-				//apply updates we've possibly received previously
-				floaterp->updateSpeakersList(
-					gIMMgr->getPendingAgentListUpdates(session_id));
-
+			if (im_floater)
+			{
 				if ( body.has("session_info") )
 				{
-					floaterp->processSessionUpdate(body["session_info"]);
+					im_floater->processSessionUpdate(body["session_info"]);
 				}
-
-				//apply updates we've possibly received previously
-				floaterp->updateSpeakersList(
-					gIMMgr->getPendingAgentListUpdates(session_id));
 			}
+
 			gIMMgr->clearPendingAgentListUpdates(session_id);
 		}
 		else
 		{
-			//throw an error dialog and close the temp session's floater
-			LLFloaterIMPanel* floater = gIMMgr->findFloaterBySession(temp_session_id);
-
-			if ( floater )
+			if (LLFloaterIMPanel* floater = gIMMgr->findFloaterBySession(temp_session_id))
 			{
 				floater->showSessionStartError(body["error"].asString());
 			}
@@ -1526,21 +1591,8 @@ public:
 		const LLSD& context,
 		const LLSD& input) const
 	{
-		LLFloaterIMPanel* floaterp = gIMMgr->findFloaterBySession(input["body"]["session_id"].asUUID());
-		if (floaterp)
-		{
-			floaterp->updateSpeakersList(
-				input["body"]);
-		}
-		else
-		{
-			//we don't have a floater yet..something went wrong
-			//we are probably receiving an update here before
-			//a start or an acceptance of an invitation.  Race condition.
-			gIMMgr->addPendingAgentListUpdates(
-				input["body"]["session_id"].asUUID(),
-				input["body"]);
-		}
+		const LLUUID& session_id = input["body"]["session_id"].asUUID();
+		gIMMgr->processAgentListUpdates(session_id, input["body"]);
 	}
 };
 
@@ -1553,12 +1605,12 @@ public:
 		const LLSD& input) const
 	{
 		LLUUID session_id = input["body"]["session_id"].asUUID();
-		LLFloaterIMPanel* floaterp = gIMMgr->findFloaterBySession(session_id);
-		if (floaterp)
+		LLFloaterIMPanel* im_floater = gIMMgr->findFloaterBySession(session_id);
+		if ( im_floater )
 		{
-			floaterp->processSessionUpdate(input["body"]["info"]);
+			im_floater->processSessionUpdate(input["body"]["info"]);
 		}
-		LLIMSpeakerMgr* im_mgr = floaterp ? floaterp->getSpeakerManager() : NULL; //LLIMModel::getInstance()->getSpeakerManager(session_id);
+		LLIMSpeakerMgr* im_mgr = im_floater ? im_floater->getSpeakerManager() : NULL; //LLIMModel::getInstance()->getSpeakerManager(session_id);
 		if (im_mgr)
 		{
 			im_mgr->processSessionUpdate(input["body"]["info"]);
@@ -1651,7 +1703,9 @@ public:
 			std::string saved;
 			if(offline == IM_OFFLINE)
 			{
-				saved = llformat("(Saved %s) ", formatted_time(timestamp).c_str());
+				LLStringUtil::format_map_t args;
+				args["[LONG_TIMESTAMP]"] = formatted_time(timestamp);
+				saved = LLTrans::getString("Saved_message", args);
 			}
 			std::string buffer = separator_string + saved + message.substr(message_offset);
 

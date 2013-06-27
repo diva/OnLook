@@ -91,6 +91,7 @@ BOOL LLPanelLandMedia::postBuild()
 	mMediaTextureCtrl->setCommitCallback( onCommitAny, this );
 	mMediaTextureCtrl->setAllowNoTexture ( TRUE );
 	mMediaTextureCtrl->setImmediateFilterPermMask(PERM_COPY | PERM_TRANSFER);
+	mMediaTextureCtrl->setDnDFilterPermMask(PERM_COPY | PERM_TRANSFER);
 	mMediaTextureCtrl->setNonImmediateFilterPermMask(PERM_COPY | PERM_TRANSFER);
 
 	mMediaAutoScaleCheck = getChild<LLCheckBoxCtrl>("media_auto_scale");
@@ -156,7 +157,7 @@ void LLPanelLandMedia::refresh()
 		std::string mime_type = parcel->getMediaType();
 		if (mime_type.empty())
 		{
-			mime_type = "none/none";
+			mime_type = LLMIMETypes::getDefaultMimeType();
 		}
 		setMediaType(mime_type);
 		mMediaTypeCombo->setEnabled( can_change_media );
@@ -202,17 +203,17 @@ void LLPanelLandMedia::refresh()
 		mSetURLButton->setEnabled( can_change_media );
 		mResetURLButton->setEnabled( can_change_media );
 
-		LLFloaterURLEntry* floater_url_entry = (LLFloaterURLEntry*)mURLEntryFloater.get();
+		/*LLFloaterURLEntry* floater_url_entry = (LLFloaterURLEntry*)mURLEntryFloater.get();
 		if (floater_url_entry)
 		{
 			floater_url_entry->updateFromLandMediaPanel();
-		}
+		}*/
 	}
 }
 
 void LLPanelLandMedia::populateMIMECombo()
 {
-	std::string default_mime_type = "none/none";
+	std::string default_mime_type = LLMIMETypes::getDefaultMimeType();
 	std::string default_label;
 	LLMIMETypes::mime_widget_set_map_t::const_iterator it;
 	for (it = LLMIMETypes::sWidgetMap.begin(); it != LLMIMETypes::sWidgetMap.end(); ++it)
@@ -326,7 +327,7 @@ void LLPanelLandMedia::onCommitAny(LLUICtrl*, void *userdata)
 void LLPanelLandMedia::onSetBtn(void *userdata)
 {
 	LLPanelLandMedia *self = (LLPanelLandMedia *)userdata;
-	self->mURLEntryFloater = LLFloaterURLEntry::show( self->getHandle() );
+	self->mURLEntryFloater = LLFloaterURLEntry::show( self->getHandle(), self->getMediaURL() );
 	LLFloater* parent_floater = gFloaterView->getParentFloater(self);
 	if (parent_floater)
 	{

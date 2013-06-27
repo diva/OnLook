@@ -59,7 +59,6 @@ std::string getProfileURL(const std::string& agent_name)
 	return url;
 }
 
-#ifdef AI_UNUSED
 class LLProfileHandler : public LLCommandHandler
 {
 public:
@@ -79,13 +78,12 @@ public:
 	}
 };
 LLProfileHandler gProfileHandler;
-#endif // AI_UNUSED
 
 class LLAgentHandler : public LLCommandHandler
 {
 public:
 	// requires trusted browser to trigger
-	LLAgentHandler() : LLCommandHandler("agent", true/*UNTRUSTED_THROTTLE*/) { }
+	LLAgentHandler() : LLCommandHandler("agent", UNTRUSTED_THROTTLE) { }
 
 	bool handle(const LLSD& params, const LLSD& query_map,
 		LLMediaCtrl* web)
@@ -104,13 +102,13 @@ public:
 			return true;
 		}
 
-		/* Singu TODO
 		if (verb == "inspect")
 		{
-			LLFloaterReg::showInstance("inspect_avatar", LLSD().with("avatar_id", avatar_id));
+			LLAvatarActions::showProfile(avatar_id);
+			//Singu TODO: inspect?
+			//LLFloaterReg::showInstance("inspect_avatar", LLSD().with("avatar_id", avatar_id));
 			return true;
 		}
-		*/
 
 		if (verb == "im")
 		{

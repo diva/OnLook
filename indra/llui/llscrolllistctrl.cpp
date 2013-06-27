@@ -3104,9 +3104,6 @@ void LLScrollListCtrl::setScrollListParameters(LLXMLNodePtr node)
 // static
 LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("scroll_list");
-	node->getAttributeString("name", name);
-
 	LLRect rect;
 	createRect(node, rect, parent, LLRect());
 
@@ -3132,7 +3129,7 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 	node->getAttributeBOOL("mouse_wheel_opaque", mouse_wheel_opaque);
 
 	LLScrollListCtrl* scroll_list = new LLScrollListCtrl(
-		name,
+		"scroll_list",
 		rect,
 		NULL,
 		multi_select,

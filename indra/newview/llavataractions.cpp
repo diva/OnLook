@@ -30,6 +30,7 @@
 #include "llavataractions.h"
 
 #include "llavatarnamecache.h"	// IDEVO
+#include "llnotifications.h"
 #include "llnotificationsutil.h"	// for LLNotificationsUtil
 #include "roles_constants.h"    // for GP_MEMBER_INVITE
 
@@ -46,6 +47,7 @@
 #include "lltrans.h"
 #include "llvoiceclient.h"
 #include "llweb.h"
+#include "llslurl.h"			// IDEVO
 // [RLVa:KB] - Checked: 2011-04-11 (RLVa-1.3.0h) | Added: RLVa-1.3.0h
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -177,7 +179,7 @@ void LLAvatarActions::startIM(const LLUUID& id)
 		if ( (idSession.notNull()) && (!gIMMgr->hasSession(idSession)) )
 		{
 			make_ui_sound("UISndInvalidOp");
-			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTIM, LLSD().with("RECIPIENT", id/*LLSLURL("agent", id, "completename").getSLURLString()*/));
+			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTIM, LLSD().with("RECIPIENT", LLSLURL("agent", id, "completename").getSLURLString()));
 			return;
 		}
 	}
@@ -203,11 +205,10 @@ void LLAvatarActions::endIM(const LLUUID& id)
 	}
 }
 
-/* Singu TODO: Voice refactor
 static void on_avatar_name_cache_start_call(const LLUUID& agent_id,
 											const LLAvatarName& av_name)
 {
-	LLUUID session_id = gIMMgr->addSession(LLCacheName::cleanFullName(av_name.getLegacyName()), IM_NOTHING_SPECIAL, agent_id, true);
+	LLUUID session_id = gIMMgr->addSession(LLCacheName::cleanFullName(av_name.getLegacyName()), IM_NOTHING_SPECIAL, agent_id);
 	if (session_id.notNull())
 	{
 		gIMMgr->startCall(session_id);
@@ -231,7 +232,7 @@ void LLAvatarActions::startCall(const LLUUID& id)
 		if ( (idSession.notNull()) && (!gIMMgr->hasSession(idSession)) )
 		{
 			make_ui_sound("UISndInvalidOp");
-			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTIM, LLSD().with("RECIPIENT", id));//LLSLURL("agent", id, "completename").getSLURLString()));
+			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTIM, LLSD().with("RECIPIENT", LLSLURL("agent", id, "completename").getSLURLString()));
 			return;
 		}
 	}
@@ -258,7 +259,7 @@ void LLAvatarActions::startAdhocCall(const uuid_vec_t& ids)
 		if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStartIM(idAgent)) )
 		{
 			make_ui_sound("UISndInvalidOp");
-			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTCONF, LLSD().with("RECIPIENT", idAgent));//LLSLURL("agent", idAgent, "completename").getSLURLString()));
+			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTCONF, LLSD().with("RECIPIENT", LLSLURL("agent", idAgent, "completename").getSLURLString()));
 			return;
 		}
 		id_array.push_back(idAgent);
@@ -269,7 +270,7 @@ void LLAvatarActions::startAdhocCall(const uuid_vec_t& ids)
 	// create the new ad hoc voice session
 	const std::string title = LLTrans::getString("conference-title");
 	LLUUID session_id = gIMMgr->addSession(title, IM_SESSION_CONFERENCE_START,
-										   ids[0], id_array, true);
+										   ids[0], id_array);
 	if (session_id.isNull())
 	{
 		return;
@@ -279,7 +280,6 @@ void LLAvatarActions::startAdhocCall(const uuid_vec_t& ids)
 
 	make_ui_sound("UISndStartIM");
 }
-*/
 
 /* AD *TODO: Is this function needed any more?
 	I fixed it a bit(added check for canCall), but it appears that it is not used
@@ -312,7 +312,7 @@ void LLAvatarActions::startConference(const uuid_vec_t& ids)
 		if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStartIM(idAgent)) )
 		{
 			make_ui_sound("UISndInvalidOp");
-			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTCONF, LLSD().with("RECIPIENT", idAgent/*LLSLURL("agent", idAgent, "completename").getSLURLString()*/));
+			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTCONF, LLSD().with("RECIPIENT", LLSLURL("agent", idAgent, "completename").getSLURLString()));
 			return;
 		}
 // [/RLVa:KB]

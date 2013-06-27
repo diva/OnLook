@@ -520,7 +520,7 @@ void LLAlertDialog::onButtonPressed( LLUICtrl* ctrl, const std::string url )
 	// If we declared a URL and chose the URL option, go to the url
 	if (!url.empty() && sURLLoader != NULL)
 	{
-		sURLLoader->load(url);
+		sURLLoader->load(url, false);
 	}
 
 	mNote->respond(response); // new notification reponse

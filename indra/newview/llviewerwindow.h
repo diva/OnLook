@@ -163,7 +163,8 @@ public:
 	/*virtual*/ BOOL handleRightMouseUp(LLWindow *window,  LLCoordGL pos, MASK mask);
 	/*virtual*/ BOOL handleMiddleMouseDown(LLWindow *window,  LLCoordGL pos, MASK mask);
 	/*virtual*/ BOOL handleMiddleMouseUp(LLWindow *window,  LLCoordGL pos, MASK mask);
-	/*virtual*/ void handleMouseMove(LLWindow *window,  LLCoordGL pos, MASK mask);
+	/*virtual*/ LLWindowCallbacks::DragNDropResult handleDragNDrop(LLWindow *window, LLCoordGL pos, MASK mask, LLWindowCallbacks::DragNDropAction action, std::string data);
+				void handleMouseMove(LLWindow *window,  LLCoordGL pos, MASK mask);
 	/*virtual*/ void handleMouseLeave(LLWindow *window);
 	/*virtual*/ void handleResize(LLWindow *window,  S32 x,  S32 y);
 	/*virtual*/ void handleFocus(LLWindow *window);
@@ -273,17 +274,20 @@ public:
 													
 	void			setShowProgress(const BOOL show);
 	BOOL			getShowProgress() const;
-	void			moveProgressViewToFront();
 	void			setProgressString(const std::string& string);
 	void			setProgressPercent(const F32 percent);
 	void			setProgressMessage(const std::string& msg);
 	void			setProgressCancelButtonVisible( BOOL b, const std::string& label = LLStringUtil::null );
 	LLProgressView *getProgressView() const;
+	void			revealIntroPanel();
+	void			setStartupComplete();
 
 	void			updateObjectUnderCursor();
 
-	void			updateUI();							// Once per frame, update UI based on mouse position
+	void			updateUI();		// Once per frame, update UI based on mouse position, calls following update* functions
+	void				updateLayout();						
 	void				updateMouseDelta();		
+	void				updateKeyboardFocus();		
 
 	BOOL			handleKey(KEY key, MASK mask);
 	void			handleScrollWheel	(S32 clicks);
@@ -430,12 +434,12 @@ protected:
 
 	BOOL			mMouseInWindow;				// True if the mouse is over our window or if we have captured the mouse.
 	BOOL			mFocusCycleMode;
+	typedef std::set<LLHandle<LLView> > view_handle_set_t;
+	view_handle_set_t mMouseHoverViews;
 
 	// Variables used for tool override switching based on modifier keys.  JC
 	MASK			mLastMask;			// used to detect changes in modifier mask
 	LLTool*			mToolStored;		// the tool we're overriding
-	BOOL			mSuppressToolbox;	// sometimes hide the toolbox, despite
-										// having a camera tool selected
 	BOOL			mHideCursorPermanent;	// true during drags, mouselook
 	BOOL            mCursorHidden;
 	LLPickInfo		mLastPick;
@@ -462,6 +466,9 @@ protected:
 	static std::string sSnapshotDir;
 
 	static std::string sMovieBaseName;
+
+	// Object temporarily hovered over while dragging
+	LLPointer<LLViewerObject>	mDragHoveredObject;
 };	
 
 class LLBottomPanel : public LLPanel

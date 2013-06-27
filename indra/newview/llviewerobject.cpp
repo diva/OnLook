@@ -97,6 +97,7 @@
 #include "llviewernetwork.h"
 #include "llvowlsky.h"
 #include "llmanip.h"
+#include "llmediaentry.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"

@@ -111,7 +111,7 @@ private:
 //
 
 LLChatBar::LLChatBar() 
-:	LLPanel(LLStringUtil::null, LLRect(), BORDER_NO),
+:	LLPanel(),
 	mInputEditor(NULL),
 	mGestureLabelTimer(),
 	mLastSpecialChatChannel(0),
@@ -509,7 +509,7 @@ void LLChatBar::sendChat( EChatType type )
 // static 
 void LLChatBar::startChat(const char* line)
 {
-	gChatBar->setVisible(TRUE);
+	gChatBar->getParent()->setVisible(TRUE);
 	gChatBar->setKeyboardFocus(TRUE);
 	gSavedSettings.setBOOL("ChatVisible", TRUE);
 
@@ -540,7 +540,7 @@ void LLChatBar::stopChat()
 	gAgent.stopTyping();
 
 	// hide chat bar so it doesn't grab focus back
-	gChatBar->setVisible(FALSE);
+	gChatBar->getParent()->setVisible(FALSE);
 	gSavedSettings.setBOOL("ChatVisible", FALSE);
 }
 
@@ -896,7 +896,7 @@ class LLChatHandler : public LLCommandHandler
 {
 public:
 	// not allowed from outside the app
-	LLChatHandler() : LLCommandHandler("chat", true) { }
+	LLChatHandler() : LLCommandHandler("chat",  UNTRUSTED_BLOCK) { }
 
     // Your code here
 	bool handle(const LLSD& tokens, const LLSD& query_map,

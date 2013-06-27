@@ -121,19 +121,14 @@ public:
 	static void*	createSpeakersPanel(void* data);
 
 	//callbacks for P2P muting and volume control
-	static void onClickMuteVoice(void* user_data);
-	static void onVolumeChange(LLUICtrl* source, void* user_data);
+	void onClickMuteVoice();
 
 	const LLUUID& getSessionID() const { return mSessionUUID; }
 	const LLUUID& getOtherParticipantID() const { return mOtherParticipantUUID; }
-	void updateSpeakersList(const LLSD& speaker_updates);
 	void processSessionUpdate(const LLSD& update);
-	void setSpeakers(const LLSD& speaker_list);
 	LLVoiceChannel* getVoiceChannel() { return mVoiceChannel; }
 	LLIMSpeakerMgr* getSpeakerManager() const { return mSpeakers; } // Singu TODO: LLIMModel::getSpeakerManager
 	EInstantMessage getDialogType() const { return mDialog; }
-
-	void requestAutoConnect();
 
 	void sessionInitReplyReceived(const LLUUID& im_session_id);
 
@@ -160,6 +155,10 @@ public:
 	bool isAdHocSessionType() const { return mSessionType == ADHOC_SESSION;}
 	bool isGroupSessionType() const { return mSessionType == GROUP_SESSION;}
 	SType mSessionType;
+
+	// LLIMModel Functionality
+	bool getSessionInitialized() const { return mSessionInitialized; }
+	bool mStartCallOnInitialize;
 
 private:
 	// called by constructors
@@ -236,8 +235,6 @@ private:
 
 	BOOL mShowSpeakersOnConnect;
 
-	BOOL mAutoConnect;
-	
 	BOOL mTextIMPossible;
 	BOOL mProfileButtonEnabled;
 	BOOL mCallBackEnabled;

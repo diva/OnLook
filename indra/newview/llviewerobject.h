@@ -156,8 +156,9 @@ public:
 	// Return codes for processUpdateMessage
 	enum { 
 		MEDIA_URL_REMOVED = 0x1, 
-		MEDIA_URL_ADDED = 0x2, 
-		MEDIA_URL_UPDATED = 0x4, 
+        MEDIA_URL_ADDED = 0x2, 
+        MEDIA_URL_UPDATED = 0x4, 
+        MEDIA_FLAGS_CHANGED = 0x8,
 		INVALID_UPDATE = 0x80000000 
 	};
 
@@ -324,7 +325,7 @@ public:
 	/*virtual*/ S32     setTEGlow(const U8 te, const F32 glow);
 	/*virtual*/	BOOL	setMaterial(const U8 material);
 	virtual		void	setTEImage(const U8 te, LLViewerTexture *imagep); // Not derived from LLPrimitive
-	void                changeTEImage(S32 index, LLViewerTexture* new_image)  ;
+	virtual     void	changeTEImage(S32 index, LLViewerTexture* new_image)  ;
 	LLViewerTexture		*getTEImage(const U8 te) const;
 	
 	void fitFaceTexture(const U8 face);

@@ -120,6 +120,7 @@ public:
 		const LLRect& rect,
 		const std::string& label,
 		PermissionMask immediate_filter_perm_mask,
+		PermissionMask dnd_filter_perm_mask,
 		PermissionMask non_immediate_filter_perm_mask,
 		BOOL can_apply_immediately,
 		const std::string& fallback_image_name);
@@ -211,6 +212,7 @@ protected:
 	LLFilterEditor*		mFilterEdit;
 	LLInventoryPanel*	mInventoryPanel;
 	PermissionMask		mImmediateFilterPermMask;
+	PermissionMask		mDnDFilterPermMask;
 	PermissionMask		mNonImmediateFilterPermMask;
 	BOOL				mCanApplyImmediately;
 	BOOL				mNoCopyTextureSelected;
@@ -225,6 +227,7 @@ LLFloaterTexturePicker::LLFloaterTexturePicker(
 	const LLRect& rect,
 	const std::string& label,
 	PermissionMask immediate_filter_perm_mask,
+	PermissionMask dnd_filter_perm_mask,
 	PermissionMask non_immediate_filter_perm_mask,
 	BOOL can_apply_immediately,
 	const std::string& fallback_image_name)
@@ -248,6 +251,7 @@ LLFloaterTexturePicker::LLFloaterTexturePicker(
 	mActive( TRUE ),
 	mFilterEdit(NULL),
 	mImmediateFilterPermMask(immediate_filter_perm_mask),
+	mDnDFilterPermMask(dnd_filter_perm_mask),
 	mNonImmediateFilterPermMask(non_immediate_filter_perm_mask),
 	mContextConeOpacity(0.f),
 	mSelectedItemPinned(FALSE)
@@ -363,8 +367,8 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
 		if (mod)  item_perm_mask |= PERM_MODIFY;
 		if (xfer) item_perm_mask |= PERM_TRANSFER;
 		
-
-		PermissionMask filter_perm_mask = mImmediateFilterPermMask;
+		//PermissionMask filter_perm_mask = getFilterPermMask();  Commented out due to no-copy texture loss.
+		PermissionMask filter_perm_mask = mDnDFilterPermMask;
 		if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
 		{
 			if (drop)
@@ -1166,9 +1170,6 @@ LLXMLNodePtr LLTextureCtrl::getXML(bool save_children) const
 
 LLView* LLTextureCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("texture_picker");
-	node->getAttributeString("name", name);
-
 	LLRect rect;
 	createRect(node, rect, parent);
 
@@ -1199,7 +1200,7 @@ LLView* LLTextureCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactor
 	}
 
 	LLTextureCtrl* texture_picker = new LLTextureCtrl(
-									name, 
+									"texture_picker", 
 									rect,
 									label,
 									LLUUID(image_id),
@@ -1332,6 +1333,7 @@ void LLTextureCtrl::showPicker(BOOL take_focus)
 			rect,
 			mLabel,
 			mImmediateFilterPermMask,
+			mDnDFilterPermMask,
 			mNonImmediateFilterPermMask,
 			mCanApplyImmediately,
 			mFallbackImageName);

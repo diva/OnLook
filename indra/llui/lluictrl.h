@@ -40,6 +40,7 @@
 #include <boost/function.hpp>
 #include <boost/signals2.hpp>
 
+#include "llinitparam.h"
 #include "llviewmodel.h"		// *TODO move dependency to .cpp file
 
 class LLUICtrl
@@ -48,6 +49,7 @@ class LLUICtrl
 public:
 	typedef boost::function<void (LLUICtrl* ctrl, const LLSD& param)> commit_callback_t;
 	typedef boost::signals2::signal<void (LLUICtrl* ctrl, const LLSD& param)> commit_signal_t;
+	typedef boost::function<bool (LLUICtrl* ctrl, const LLSD& param)> enable_callback_t;
 	typedef boost::signals2::signal<bool (LLUICtrl* ctrl, const LLSD& param), boost_boolean_combiner> enable_signal_t;
 
 	LLUICtrl();
@@ -65,6 +67,8 @@ public:
 	/*virtual*/ LLXMLNodePtr getXML(bool save_children = true) const;
 	/*virtual*/ BOOL	setLabelArg( const std::string& key, const LLStringExplicit& text );
 	/*virtual*/ BOOL	isCtrl() const;
+	/*virtual*/ void	onMouseEnter(S32 x, S32 y, MASK mask);
+	/*virtual*/ void	onMouseLeave(S32 x, S32 y, MASK mask);
 
 	// From LLFocusableElement
 	/*virtual*/ void	setFocus( BOOL b );
@@ -122,7 +126,9 @@ public:
 	//Start using these!
 	boost::signals2::connection setCommitCallback( const commit_signal_t::slot_type& cb );
 	boost::signals2::connection setValidateCallback( const enable_signal_t::slot_type& cb );
-
+	
+	boost::signals2::connection setMouseEnterCallback( const commit_signal_t::slot_type& cb );
+	boost::signals2::connection setMouseLeaveCallback( const commit_signal_t::slot_type& cb );
 	// *TODO: Deprecate; for backwards compatability only:
 	boost::signals2::connection setCommitCallback( boost::function<void (LLUICtrl*,void*)> cb, void* data);	
 	boost::signals2::connection setValidateBeforeCommit( boost::function<bool (const LLSD& data)> cb );
@@ -139,10 +145,20 @@ public:
 		}
 	};
 
+	template <typename F, typename DERIVED> class CallbackRegistry : public LLRegistrySingleton<std::string, F, DERIVED >
+	{};	
+
+	class CommitCallbackRegistry : public CallbackRegistry<commit_callback_t, CommitCallbackRegistry>{};
+	// the enable callback registry is also used for visiblity callbacks
+	class EnableCallbackRegistry : public CallbackRegistry<enable_callback_t, EnableCallbackRegistry>{};
+
 protected:
 
 	commit_signal_t*		mCommitSignal;
 	enable_signal_t*		mValidateSignal;
+
+	commit_signal_t*		mMouseEnterSignal;
+	commit_signal_t*		mMouseLeaveSignal;
 	
     LLViewModelPtr  mViewModel;
 

@@ -29,6 +29,7 @@
 #include "llagent.h"
 #include "llhttpclient.h"
 #include "llimview.h"
+#include "llnotifications.h"
 #include "llnotificationsutil.h"
 #include "llvoicechannel.h"
 

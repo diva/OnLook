@@ -76,6 +76,7 @@ set(llcommon_SOURCE_FILES
     llrun.cpp
     llscopedvolatileaprpool.h
     llsd.cpp
+    llsdparam.cpp
     llsdserialize.cpp
     llsdserialize_xml.cpp
     llsdutil.cpp
@@ -204,10 +205,11 @@ set(llcommon_HEADER_FILES
     llqueuedthread.h
     llrand.h
     llrefcount.h
-    llrefcount.h
+    llregistry.h
     llrun.h
     llsafehandle.h
     llsd.h
+    llsdparam.h
     llsdserialize.h
     llsdserialize_xml.h
     llsdutil.h

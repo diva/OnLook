@@ -189,7 +189,7 @@ LLWindowSDL::LLWindowSDL(LLWindowCallbacks* callbacks,
 			 const std::string& title, S32 x, S32 y, S32 width,
 			 S32 height, U32 flags,
 			 BOOL fullscreen, BOOL clearBg,
-			 BOOL disable_vsync, BOOL use_gl,
+			 BOOL disable_vsync,
 			 BOOL ignore_pixel_depth, U32 fsaa_samples)
 	: LLWindow(callbacks, fullscreen, flags),
 	  Lock_Display(NULL),
@@ -200,7 +200,6 @@ LLWindowSDL::LLWindowSDL(LLWindowCallbacks* callbacks,
 	gKeyboard->setCallbacks(callbacks);
 	// Note that we can't set up key-repeat until after SDL has init'd video
 
-	// Ignore use_gl for now, only used for drones on PC
 	mWindow = NULL;
 	mNeedsResize = FALSE;
 	mOverrideAspectRatio = 0.f;
@@ -975,7 +974,7 @@ BOOL LLWindowSDL::setPosition(const LLCoordScreen position)
 	return TRUE;
 }
 
-BOOL LLWindowSDL::setSize(const LLCoordScreen size)
+BOOL LLWindowSDL::setSizeImpl(const LLCoordScreen size)
 {
 	if(mWindow)
 	{
@@ -992,6 +991,25 @@ BOOL LLWindowSDL::setSize(const LLCoordScreen size)
 		
 	return FALSE;
 }
+
+BOOL LLWindowSDL::setSizeImpl(const LLCoordWindow size)
+{
+	if(mWindow)
+	{
+		// Push a resize event onto SDL's queue - we'll handle it
+		// when it comes out again.
+		SDL_Event event;
+		event.type = SDL_VIDEORESIZE;
+		event.resize.w = size.mX;
+		event.resize.h = size.mY;
+		SDL_PushEvent(&event); // copied into queue
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 
 void LLWindowSDL::swapBuffers()
 {
@@ -1043,6 +1061,25 @@ BOOL LLWindowSDL::isCursorHidden()
 void LLWindowSDL::setMouseClipping( BOOL b )
 {
     //SDL_WM_GrabInput(b ? SDL_GRAB_ON : SDL_GRAB_OFF);
+}
+
+// virtual
+void LLWindowSDL::setMinSize(U32 min_width, U32 min_height, bool enforce_immediately)
+{
+	LLWindow::setMinSize(min_width, min_height, enforce_immediately);
+
+#if LL_X11
+	// Set the minimum size limits for X11 window
+	// so the window manager doesn't allow resizing below those limits.
+	XSizeHints* hints = XAllocSizeHints();
+	hints->flags |= PMinSize;
+	hints->min_width = mMinWindowWidth;
+	hints->min_height = mMinWindowHeight;
+
+	XSetWMNormalHints(mSDL_Display, mSDL_XWindowID, hints);
+
+	XFree(hints);
+#endif
 }
 
 BOOL LLWindowSDL::setCursorPosition(const LLCoordWindow position)
@@ -1859,8 +1896,8 @@ void LLWindowSDL::gatherInput()
             llinfos << "Handling a resize event: " << event.resize.w <<
                        "x" << event.resize.h << llendl;
 
-            S32 width = llmax(event.resize.w, MIN_WINDOW_WIDTH);
-            S32 height = llmax(event.resize.h, MIN_WINDOW_HEIGHT);
+			S32 width = llmax(event.resize.w, (S32)mMinWindowWidth);
+			S32 height = llmax(event.resize.h, (S32)mMinWindowHeight);
 
             if (width != mWindow->w || height != mWindow->h)
             {
@@ -2488,6 +2525,23 @@ void exec_cmd(const std::string& cmd, const std::string& arg)
 // Must begin with protocol identifier.
 void LLWindowSDL::spawnWebBrowser(const std::string& escaped_url, bool async)
 {
+	bool found = false;
+	S32 i;
+	for (i = 0; i < gURLProtocolWhitelistCount; i++)
+	{
+		if (escaped_url.find(gURLProtocolWhitelist[i]) != std::string::npos)
+		{
+			found = true;
+			break;
+		}
+	}
+
+	if (!found)
+	{
+		llwarns << "spawn_web_browser called for url with protocol not on whitelist: " << escaped_url << llendl;
+		return;
+	}
+
 	llinfos << "spawn_web_browser: " << escaped_url << llendl;
 	
 #if LL_LINUX || LL_SOLARIS
@@ -2623,9 +2677,9 @@ std::vector<std::string> LLWindowSDL::getDynamicFallbackFontList()
 	if (sortpat)
 	{
 		// Sort the list of system fonts from most-to-least-desirable.
-		FcResult fresult;
+		FcResult result;
 		fs = FcFontSort(NULL, sortpat, elide_unicode_coverage,
-				NULL, &fresult);
+				NULL, &result);
 		FcPatternDestroy(sortpat);
 	}
 

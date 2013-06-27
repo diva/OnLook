@@ -140,7 +140,9 @@ public:
 
 	const LLCallbackMap::map_t& getFactoryMap() const { return mFactoryMap; }
 
-	BOOL initPanelXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
+	CommitCallbackRegistry::ScopedRegistrar& getCommitCallbackRegistrar() { return mCommitCallbackRegistrar; }
+	EnableCallbackRegistry::ScopedRegistrar& getEnableCallbackRegistrar() { return mEnableCallbackRegistrar; }
+	virtual BOOL initPanelXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
 	void initChildrenXML(LLXMLNodePtr node, LLUICtrlFactory* factory);
 	void setPanelParameters(LLXMLNodePtr node, LLView *parentp);
 
@@ -230,6 +232,8 @@ protected:
 	// Override to set not found list
 	LLButton*		getDefaultButton() { return mDefaultBtn; }
 	LLCallbackMap::map_t mFactoryMap;
+	CommitCallbackRegistry::ScopedRegistrar mCommitCallbackRegistrar;
+	EnableCallbackRegistry::ScopedRegistrar mEnableCallbackRegistrar;
 
 	commit_signal_t* mVisibleSignal;		// Called when visibility changes, passes new visibility as LLSD()
 private:
@@ -257,57 +261,5 @@ private:
 	std::string		mRequirementsError;
 
 }; // end class LLPanel
-
-
-class LLLayoutStack : public LLView
-{
-public:
-	typedef enum e_layout_orientation
-	{
-		HORIZONTAL,
-		VERTICAL
-	} eLayoutOrientation;
-
-	LLLayoutStack(eLayoutOrientation orientation);
-	virtual ~LLLayoutStack();
-
-	/*virtual*/ void draw();
-	/*virtual*/ LLXMLNodePtr getXML(bool save_children = true) const;
-	/*virtual*/ void removeChild(LLView* ctrl);
-
-	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
-
-	S32 getMinWidth() const { return mMinWidth; }
-	S32 getMinHeight() const { return mMinHeight; }
-	
-	typedef enum e_animate
-	{
-		NO_ANIMATE,
-		ANIMATE
-	} EAnimate;
-
-	void addPanel(LLPanel* panel, S32 min_width, S32 min_height, BOOL auto_resize, BOOL user_resize, EAnimate animate = NO_ANIMATE, S32 index = S32_MAX);
-	void removePanel(LLPanel* panel);
-	void collapsePanel(LLPanel* panel, BOOL collapsed = TRUE);
-	S32 getNumPanels() { return mPanels.size(); }
-
-private:
-	struct LLEmbeddedPanel;
-
-	void updateLayout(BOOL force_resize = FALSE);
-	void calcMinExtents();
-	S32 getDefaultHeight(S32 cur_height);
-	S32 getDefaultWidth(S32 cur_width);
-
-	const eLayoutOrientation mOrientation;
-
-	typedef std::vector<LLEmbeddedPanel*> e_panel_list_t;
-	e_panel_list_t mPanels;
-	LLEmbeddedPanel* findEmbeddedPanel(LLPanel* panelp) const;
-
-	S32 mMinWidth;
-	S32 mMinHeight;
-	S32 mPanelSpacing;
-}; // end class LLLayoutStack
 
 #endif

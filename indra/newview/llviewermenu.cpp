@@ -82,7 +82,6 @@
 #include "llfloatergesture.h"
 #include "llfloatergodtools.h"
 #include "llfloaterhtmlcurrency.h"
-#include "llfloatermediabrowser.h"			// gViewerHtmlHelp
 #include "llfloaterhud.h"
 #include "llfloaterinspect.h"
 #include "llfloaterinventory.h"
@@ -110,7 +109,9 @@
 #include "llfloaterteleporthistory.h"
 #include "llfloatertest.h"
 #include "llfloatertools.h"
+#include "llfloatervoiceeffect.h"
 #include "llfloaterwater.h"
+#include "llfloaterwebcontent.h"
 #include "llfloaterwindlight.h"
 #include "llfloaterworldmap.h"
 #include "llfloatermemleak.h"
@@ -3355,15 +3356,6 @@ class LLAvatarGiveCard : public view_listener_t
 	}
 };
 
-
-void login_done(S32 which, void *user)
-{
-	llinfos << "Login done " << which << llendl;
-
-	LLPanelLogin::close();
-}
-
-
 bool callback_leave_group(const LLSD& notification, const LLSD& response)
 {
 	S32 option = LLNotification::getSelectedOption(notification, response);
@@ -6384,6 +6376,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterScriptLimits>		("script info");
 		registerFloater<LLFloaterStats>				("stat bar");
 		registerFloater<LLFloaterTeleportHistory>	("teleport history");
+		registerFloater<LLFloaterVoiceEffect>		("voice effect");
 		registerFloater<LLFloaterPathfindingCharacters>	("pathfinding_characters");
 		registerFloater<LLFloaterPathfindingLinksets>	("pathfinding_linksets");
 
@@ -6442,11 +6435,12 @@ class LLShowFloater : public view_listener_t
 			LLViewerParcelMgr::getInstance()->startBuyLand();
 		}
 
-		else if (floater_name == "help f1")
+		//Singu TODO: Re-implement f1 help.
+		/*else if (floater_name == "help f1")
 		{
 			llinfos << "Spawning HTML help window" << llendl;
 			gViewerHtmlHelp.show();
-		}
+		}*/
 
 		else if (floater_name == "complaint reporter")
 		{
@@ -8688,7 +8682,7 @@ static void handle_load_from_xml_continued(AIFilePicker* filepicker)
 
 void handle_web_browser_test(void*)
 {
-	LLFloaterMediaBrowser::showInstance("http://secondlife.com/app/search/slurls.html");
+	LLWeb::loadURL("http://secondlife.com/app/search/slurls.html");
 }
 
 void handle_buy_currency_test(void*)

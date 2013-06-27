@@ -515,9 +515,6 @@ LLXMLNodePtr LLSpinCtrl::getXML(bool save_children) const
 
 LLView* LLSpinCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("spinner");
-	node->getAttributeString("name", name);
-
 	std::string label;
 	node->getAttributeString("label", label);
 
@@ -552,7 +549,7 @@ LLView* LLSpinCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *
 		label.assign( node->getValue() );
 	}
 
-	LLSpinCtrl* spinner = new LLSpinCtrl(name,
+	LLSpinCtrl* spinner = new LLSpinCtrl("spinner",
 							rect,
 							label,
 							font,

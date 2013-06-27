@@ -250,6 +250,8 @@ BOOL LLSlider::handleKeyHere(KEY key, MASK mask)
 
 void LLSlider::draw()
 {
+	F32 alpha = getDrawContext().mAlpha;
+
 	// since thumb image might still be decoding, need thumb to accomodate image size
 	updateThumbRect();
 
@@ -258,31 +260,47 @@ void LLSlider::draw()
 	// drawing solids requires texturing be disabled
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
-	F32 opacity = getEnabled() ? 1.f : 0.3f;
-	LLColor4 center_color = (mThumbCenterColor % opacity);
-
 	// Track
 	LLRect track_rect(mThumbImage->getWidth() / 2, 
 						getLocalRect().getCenterY() + (mTrackImage->getHeight() / 2), 
 						getRect().getWidth() - mThumbImage->getWidth() / 2, 
 						getLocalRect().getCenterY() - (mTrackImage->getHeight() / 2) );
 	LLRect highlight_rect(track_rect.mLeft, track_rect.mTop, mThumbRect.getCenterX(), track_rect.mBottom);
-	mTrackImage->draw(track_rect);
-	mTrackHighlightImage->draw(highlight_rect);
+	mTrackImage->draw(track_rect, LLColor4::white % alpha);
+	mTrackHighlightImage->draw(highlight_rect, LLColor4::white % alpha);
 
 	// Thumb
-	if( hasMouseCapture() )
-	{
-		// Show ghost where thumb was before dragging began.
-		mThumbImage->draw(mDragStartThumbRect, mThumbCenterColor % 0.3f);
-	}
 	if (hasFocus())
 	{
 		// Draw focus highlighting.
-		mThumbImage->drawBorder(mThumbRect, gFocusMgr.getFocusColor(), gFocusMgr.getFocusFlashWidth());
+		mThumbImage->drawBorder(mThumbRect, gFocusMgr.getFocusColor() % alpha, gFocusMgr.getFocusFlashWidth());
+	}
+
+	if( hasMouseCapture() )
+	{
+		// Show ghost where thumb was before dragging began.
+		if (mThumbImage.notNull())
+		{
+			mThumbImage->draw(mDragStartThumbRect, mThumbCenterColor % (0.3f * alpha));
+			mThumbImage->draw(mThumbRect, mThumbOutlineColor % alpha);
+		}
+	}
+	else if(!getEnabled())
+	{
+		if (mThumbImage.notNull())
+		{
+			mThumbImage->draw(mThumbRect, mThumbCenterColor % (0.3f * alpha));
+		}
+	}
+	else
+	{
+		if (mThumbImage.notNull())
+		{
+			mThumbImage->draw(mThumbRect, mThumbCenterColor % alpha);
+		}
 	}
 	// Fill in the thumb.
-	mThumbImage->draw(mThumbRect, hasMouseCapture() ? mThumbOutlineColor : center_color);
+	
 
 	LLUICtrl::draw();
 }
@@ -325,9 +343,6 @@ boost::signals2::connection LLSlider::setMouseUpCallback(	const commit_signal_t:
 //static
 LLView* LLSlider::fromXML(LLXMLNodePtr node, LLView *parent, class LLUICtrlFactory *factory)
 {
-	std::string name("slider_bar");
-	node->getAttributeString("name", name);
-
 	LLRect rect;
 	createRect(node, rect, parent, LLRect());
 
@@ -346,7 +361,7 @@ LLView* LLSlider::fromXML(LLXMLNodePtr node, LLView *parent, class LLUICtrlFacto
 	BOOL volume = node->hasName("volume_slider") ? TRUE : FALSE;
 	node->getAttributeBOOL("volume", volume);
 
-	LLSlider* slider = new LLSlider(name,
+	LLSlider* slider = new LLSlider("slider_bar",
 							rect,
 							NULL,
 							initial_value,

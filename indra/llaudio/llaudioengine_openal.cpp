@@ -186,10 +186,9 @@ LLAudioChannelOpenAL::~LLAudioChannelOpenAL()
 
 void LLAudioChannelOpenAL::cleanup()
 {
+	LLAudioChannel::cleanup();
 	alSourceStop(mALSource);
 	alSourcei(mALSource, AL_BUFFER, AL_NONE);
-
-	mCurrentBufferp = NULL;
 }
 
 void LLAudioChannelOpenAL::play()

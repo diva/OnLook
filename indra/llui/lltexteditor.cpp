@@ -42,6 +42,7 @@
 #include "llui.h"
 #include "lluictrlfactory.h"
 #include "lluiimage.h"
+#include "llurlaction.h"
 #include "llrect.h"
 #include "llfocusmgr.h"
 #include "lltimer.h"
@@ -96,10 +97,6 @@ const S32	PREEDIT_STANDOUT_THICKNESS = 2;
 
 
 LLColor4 LLTextEditor::mLinkColor = LLColor4::blue;
-void (* LLTextEditor::mURLcallback)(const std::string&)   = NULL;
-bool (* LLTextEditor::mSecondlifeURLcallback)(const std::string&)   = NULL;
-bool (* LLTextEditor::mSecondlifeURLcallbackRightClick)(const std::string&)   = NULL;
-
 
 ///////////////////////////////////////////////////////////////////
 
@@ -4350,11 +4347,15 @@ void LLTextEditor::loadKeywords(const std::string& filename,
 			std::string name = utf8str_trim(funcs[i]);
 			mKeywords.addToken(LLKeywordToken::WORD, name, color, tooltips[i] );
 		}
+		segment_list_t segment_list;
+		mKeywords.findSegments(&segment_list, getWText(), mDefaultColor);
 
-		mKeywords.findSegments( &mSegments, mWText, mDefaultColor );
-
-		llassert( mSegments.front()->getStart() == 0 );
-		llassert( mSegments.back()->getEnd() == getLength() );
+		mSegments.clear();
+		segment_list_t::iterator insert_it = mSegments.begin();
+		for (segment_list_t::iterator list_it = segment_list.begin(); list_it != segment_list.end(); ++list_it)
+		{
+			insert_it = mSegments.insert(insert_it, *list_it);
+		}
 	}
 }
 
@@ -4493,11 +4494,7 @@ BOOL LLTextEditor::handleMouseUpOverSegment(S32 x, S32 y, MASK mask)
 		// and launch it if we did.
 		if (mParseHTML && mHTML.length() > 0)
 		{
-				//Special handling for slurls
-			if ( (mSecondlifeURLcallback!=NULL) && !(*mSecondlifeURLcallback)(mHTML) )
-			{
-				if (mURLcallback!=NULL) (*mURLcallback)(mHTML);
-			}
+			LLUrlAction::clickAction(mHTML);
 			mHTML.clear();
 		}
 	}
@@ -4751,9 +4748,6 @@ LLXMLNodePtr LLTextEditor::getXML(bool save_children) const
 // static
 LLView* LLTextEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("text_editor");
-	node->getAttributeString("name", name);
-
 	LLRect rect;
 	createRect(node, rect, parent, LLRect());
 
@@ -4767,7 +4761,7 @@ LLView* LLTextEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory
 
 	std::string text = node->getTextContents().substr(0, max_text_length - 1);
 
-	LLTextEditor* text_editor = new LLTextEditor(name, 
+	LLTextEditor* text_editor = new LLTextEditor("text_editor", 
 								rect,
 								max_text_length,
 								text,

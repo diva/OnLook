@@ -40,7 +40,8 @@
 #include "llpanel.h"
 #include "lluuid.h"
 #include "lltabcontainer.h"
-#include "llnotifications.h"
+#include "llnotificationcontext.h"
+#include "llnotificationptr.h"
 #include <set>
 
 class LLDragHandle;
@@ -232,10 +233,7 @@ public:
 	// handle refocusing.
 	static void		closeFocusedFloater();
 
-	LLNotification::Params contextualNotification(const std::string& name) 
-	{ 
-	    return LLNotification::Params(name).context(mNotificationContext); 
-	}
+	LLNotificationPtr	addContextualNotification(const std::string& name, const LLSD& substitutions = LLSD());
 
 	void		onClickClose();
 	void		onClickMinimize();

@@ -124,6 +124,7 @@ public:
 	static void closeWithoutSaving();
 
 protected:
+	friend class LLPanelNearByMedia;
 	LLPreferenceCore		*mPreferenceCore;
 
 	/*virtual*/ void		onClose(bool app_quitting);

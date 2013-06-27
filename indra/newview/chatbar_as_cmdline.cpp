@@ -60,6 +60,8 @@
 #include "lltooldraganddrop.h"
 #include "llinventorymodel.h"
 #include "llselectmgr.h"
+#include "llslurl.h"
+#include "llurlaction.h"
 
 #include <iosfwd>
 
@@ -374,7 +376,6 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					S32 agent_y = llround( (F32)fmod( agentPos.mdV[VY], (F64)REGION_WIDTH_METERS ) );
 					S32 agent_z = llround( (F32)agentPos.mdV[VZ] );
 					std::string region_name = LLWeb::escapeURL(revised_text.substr(command.length()+1));
-					std::string url;
 
 					if(!sAscentCmdLineMapToKeepPos)
 					{
@@ -383,8 +384,8 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 						agent_z = 0;
 					}
 
-					url = llformat("secondlife:///app/teleport/%s/%d/%d/%d",region_name.c_str(),agent_x,agent_y,agent_z);
-					LLURLDispatcher::dispatch(url, NULL, true);
+					LLSLURL slurl(region_name,LLVector3(agent_x,agent_y,agent_z));
+					LLUrlAction::teleportToLocation(std::string("secondlife:///app/teleport/")+slurl.getLocationString());
 				}
 				return false;
 			}

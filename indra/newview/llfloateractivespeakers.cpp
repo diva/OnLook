@@ -34,12 +34,22 @@
 #include "llfloateractivespeakers.h"
 
 #include "llparticipantlist.h"
+#include "llpanelvoiceeffect.h"
 #include "llspeakers.h"
 #include "lluictrlfactory.h"
+
+namespace
+{
+	void* createEffectPanel(void*)
+	{
+		return new LLPanelVoiceEffect;
+	}
+}
 
 LLFloaterActiveSpeakers::LLFloaterActiveSpeakers(const LLSD& seed) : mPanel(NULL)
 {
 	mFactoryMap["active_speakers_panel"] = LLCallbackMap(createSpeakersPanel, NULL);
+	mFactoryMap["panel_voice_effect"] = LLCallbackMap(createEffectPanel, NULL);
 	// do not automatically open singleton floaters (as result of getInstance())
 	BOOL no_open = FALSE;
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_active_speakers.xml", &getFactoryMap(), no_open);	

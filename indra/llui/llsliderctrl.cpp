@@ -401,9 +401,6 @@ LLXMLNodePtr LLSliderCtrl::getXML(bool save_children) const
 
 LLView* LLSliderCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("slider");
-	node->getAttributeString("name", name);
-
 	std::string label;
 	node->getAttributeString("label", label);
 
@@ -478,7 +475,7 @@ LLView* LLSliderCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory
 		label.assign(node->getTextContents());
 	}
 
-	LLSliderCtrl* slider = new LLSliderCtrl(name,
+	LLSliderCtrl* slider = new LLSliderCtrl("slider",
 							rect,
 							label,
 							font,

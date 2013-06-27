@@ -82,6 +82,7 @@
 #include "llselectmgr.h"
 #include "llstartup.h"
 #include "llsky.h"
+#include "llslurl.h"
 #include "llstatenums.h"
 #include "llstatusbar.h"
 #include "llimview.h"
@@ -1860,6 +1861,63 @@ bool goto_url_callback(const LLSD& notification, const LLSD& response)
 	return false;
 }
 static LLNotificationFunctorRegistration goto_url_callback_reg("GotoURL", goto_url_callback);
+static bool parse_lure_bucket(const std::string& bucket,
+							  U64& region_handle,
+							  LLVector3& pos,
+							  LLVector3& look_at,
+							  U8& region_access)
+{
+	// tokenize the bucket
+	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+	boost::char_separator<char> sep("|", "", boost::keep_empty_tokens);
+	tokenizer tokens(bucket, sep);
+	tokenizer::iterator iter = tokens.begin();
+
+	S32 gx,gy,rx,ry,rz,lx,ly,lz;
+	try
+	{
+		gx = boost::lexical_cast<S32>((*(iter)).c_str());
+		gy = boost::lexical_cast<S32>((*(++iter)).c_str());
+		rx = boost::lexical_cast<S32>((*(++iter)).c_str());
+		ry = boost::lexical_cast<S32>((*(++iter)).c_str());
+		rz = boost::lexical_cast<S32>((*(++iter)).c_str());
+		lx = boost::lexical_cast<S32>((*(++iter)).c_str());
+		ly = boost::lexical_cast<S32>((*(++iter)).c_str());
+		lz = boost::lexical_cast<S32>((*(++iter)).c_str());
+	}
+	catch( boost::bad_lexical_cast& )
+	{
+		LL_WARNS("parse_lure_bucket")
+			<< "Couldn't parse lure bucket."
+			<< LL_ENDL;
+		return false;
+	}
+	// Grab region access
+	region_access = SIM_ACCESS_MIN;
+	if (++iter != tokens.end())
+	{
+		std::string access_str((*iter).c_str());
+		LLStringUtil::trim(access_str);
+		if ( access_str == "A" )
+		{
+			region_access = SIM_ACCESS_ADULT;
+		}
+		else if ( access_str == "M" )
+		{
+			region_access = SIM_ACCESS_MATURE;
+		}
+		else if ( access_str == "PG" )
+		{
+			region_access = SIM_ACCESS_PG;
+		}
+	}
+
+	pos.setVec((F32)rx, (F32)ry, (F32)rz);
+	look_at.setVec((F32)lx, (F32)ly, (F32)lz);
+
+	region_handle = to_region_handle(gx, gy);
+	return true;
+}
 
 // Strip out "Resident" for display, but only if the message came from a user
 // (rather than a script)
@@ -1978,8 +2036,11 @@ std::string replace_wildcards(std::string autoresponse, const LLUUID& id, const 
 	// Add in their legacy name
 	boost::algorithm::replace_all(autoresponse, "#n", name);
 
+	LLSLURL slurl;
+	LLAgentUI::buildSLURL(slurl);
+
 	// Add in our location's slurl
-	boost::algorithm::replace_all(autoresponse, "#r", gAgent.getSLURL());
+	boost::algorithm::replace_all(autoresponse, "#r", slurl.getSLURLString());
 
 	// Add in their display name
 	LLAvatarName av_name;
@@ -2783,7 +2844,9 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		std::string saved;
 		if(offline == IM_OFFLINE)
 		{
-			saved = llformat("(Saved %s) ", formatted_time(timestamp).c_str());
+			LLStringUtil::format_map_t args;
+			args["[LONG_TIMESTAMP]"] = formatted_time(timestamp);
+			saved = LLTrans::getString("Saved_message", args);
 		}
 		buffer = separator_string + saved + message.substr(message_offset);
 		gIMMgr->addMessage(
@@ -2959,15 +3022,69 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 					}
 				}
 // [/RLVa:KB]
+				LLVector3 pos, look_at;
+				U64 region_handle(0);
+				U8 region_access(SIM_ACCESS_MIN);
+				std::string region_info = ll_safe_string((char*)binary_bucket, binary_bucket_size);
+				std::string region_access_str = LLStringUtil::null;
+				std::string region_access_icn = LLStringUtil::null;
+				std::string region_access_lc  = LLStringUtil::null;
 
+				bool canUserAccessDstRegion = true;
+				bool doesUserRequireMaturityIncrease = false;
+
+				if (parse_lure_bucket(region_info, region_handle, pos, look_at, region_access))
+				{
+					region_access_str = LLViewerRegion::accessToString(region_access);
+					region_access_icn = LLViewerRegion::getAccessIcon(region_access);
+					region_access_lc  = region_access_str;
+					LLStringUtil::toLower(region_access_lc);
+
+					if (!gAgent.isGodlike())
+					{
+						switch (region_access)
+						{
+						case SIM_ACCESS_MIN :
+						case SIM_ACCESS_PG :
+							break;
+						case SIM_ACCESS_MATURE :
+							if (gAgent.isTeen())
+							{
+								canUserAccessDstRegion = false;
+							}
+							else if (gAgent.prefersPG())
+							{
+								doesUserRequireMaturityIncrease = true;
+							}
+							break;
+						case SIM_ACCESS_ADULT :
+							if (!gAgent.isAdult())
+							{
+								canUserAccessDstRegion = false;
+							}
+							else if (!gAgent.prefersAdult())
+							{
+								doesUserRequireMaturityIncrease = true;
+							}
+							break;
+						default :
+							llassert(0);
+							break;
+						}
+					}
+				}
 				LLSD args;
 				// *TODO: Translate -> [FIRST] [LAST] (maybe)
 				args["NAME"] = name;
 				args["MESSAGE"] = message;
+				args["MATURITY_STR"] = region_access_str;
+				args["MATURITY_ICON"] = region_access_icn;
+				args["REGION_CONTENT_MATURITY"] = region_access_lc;
 				LLSD payload;
 				payload["from_id"] = from_id;
 				payload["lure_id"] = session_id;
 				payload["godlike"] = FALSE;
+				payload["region_maturity"] = region_access;
 				//LLNotificationsUtil::add("TeleportOffered", args, payload);
 
 // [RLVa:KB] - Checked: 2010-12-11 (RLVa-1.2.2c) | Modified: RLVa-1.2.2c
@@ -2982,62 +3099,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				{
 					LLNotificationsUtil::add("TeleportOffered", args, payload);
 					// <edit>
-					if(binary_bucket_size)
-					{
-						char* dest = new char[binary_bucket_size];
-						strncpy(dest, (char*)binary_bucket, binary_bucket_size-1);		/* Flawfinder: ignore */
-						dest[binary_bucket_size-1] = '\0';
-	
-						llinfos << "IM_LURE_USER binary_bucket " << dest << llendl;
-	
-						std::string str(dest);
-						typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-						boost::char_separator<char> sep("|","",boost::keep_empty_tokens);
-						tokenizer tokens(str, sep);
-						tokenizer::iterator iter = tokens.begin();
-						std::string global_x_str(*iter++);
-						std::string global_y_str(*iter++);
-						std::string x_str(*iter++);
-						std::string y_str(*iter++);
-						std::string z_str(*iter++);
-						// skip what I think must be LookAt
-						if(iter != tokens.end())
-							iter++; // x
-						if(iter != tokens.end())
-							iter++; // y
-						if(iter != tokens.end())
-							iter++; // z
-						std::string mat_str("");
-						if(iter != tokens.end())
-							mat_str.assign(*iter++);
-						mat_str = utf8str_trim(mat_str);
-	
-						llinfos << "IM_LURE_USER tokenized " << global_x_str << "|" << global_y_str << "|" << x_str << "|" << y_str << "|" << z_str << "|" << mat_str << llendl;
-	
-						std::istringstream gxstr(global_x_str);
-						int global_x;
-						gxstr >> global_x;
-	
-						std::istringstream gystr(global_y_str);
-						int global_y;
-						gystr >> global_y;
-	
-						std::istringstream xstr(x_str);
-						int x;
-						xstr >> x;
-	
-						std::istringstream ystr(y_str);
-						int y;
-						ystr >> y;
-	
-						std::istringstream zstr(z_str);
-						int z;
-						zstr >> z;
-	
-						llinfos << "IM_LURE_USER parsed " << global_x << "|" << global_y << "|" << x << "|" << y << "|" << z << "|" << mat_str << llendl;
-	
-						gAgent.showLureDestination(name, global_x, global_y, x, y, z, mat_str);
-					}
+					gAgent.showLureDestination(name, region_handle, pos.mV[VX], pos.mV[VY], pos.mV[VZ]);
 					// </edit>
 				}
 // [/RLVa:KB]
@@ -3048,10 +3110,71 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 
 	case IM_GODLIKE_LURE_USER:
 		{
+			LLVector3 pos, look_at;
+			U64 region_handle(0);
+			U8 region_access(SIM_ACCESS_MIN);
+			std::string region_info = ll_safe_string((char*)binary_bucket, binary_bucket_size);
+			std::string region_access_str = LLStringUtil::null;
+			std::string region_access_icn = LLStringUtil::null;
+			std::string region_access_lc  = LLStringUtil::null;
+
+			bool canUserAccessDstRegion = true;
+			bool doesUserRequireMaturityIncrease = false;
+
+			if (parse_lure_bucket(region_info, region_handle, pos, look_at, region_access))
+			{
+				region_access_str = LLViewerRegion::accessToString(region_access);
+				region_access_icn = LLViewerRegion::getAccessIcon(region_access);
+				region_access_lc  = region_access_str;
+				LLStringUtil::toLower(region_access_lc);
+
+				if (!gAgent.isGodlike())
+				{
+					switch (region_access)
+					{
+					case SIM_ACCESS_MIN :
+					case SIM_ACCESS_PG :
+						break;
+					case SIM_ACCESS_MATURE :
+						if (gAgent.isTeen())
+						{
+							canUserAccessDstRegion = false;
+						}
+						else if (gAgent.prefersPG())
+						{
+							doesUserRequireMaturityIncrease = true;
+						}
+						break;
+					case SIM_ACCESS_ADULT :
+						if (!gAgent.isAdult())
+						{
+							canUserAccessDstRegion = false;
+						}
+						else if (!gAgent.prefersAdult())
+						{
+							doesUserRequireMaturityIncrease = true;
+						}
+						break;
+					default :
+						llassert(0);
+						break;
+					}
+				}
+			}
+
+			LLSD args;
+			// *TODO: Translate -> [FIRST] [LAST] (maybe)
+			args["NAME"] = name;
+			args["MESSAGE"] = message;
+			args["MATURITY_STR"] = region_access_str;
+			args["MATURITY_ICON"] = region_access_icn;
+			args["REGION_CONTENT_MATURITY"] = region_access_lc;
 			LLSD payload;
 			payload["from_id"] = from_id;
 			payload["lure_id"] = session_id;
 			payload["godlike"] = TRUE;
+			payload["region_maturity"] = region_access;
+
 			// do not show a message box, because you're about to be
 			// teleported.
 			LLNotifications::instance().forceResponse(LLNotification::Params("TeleportOffered").payload(payload), 0);
@@ -4320,7 +4443,9 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 		{
 			// Chat the "back" SLURL. (DEV-4907)
 
-			LLChat chat(LLTrans::getString("completed_from") + " " + gAgent.getTeleportSourceSLURL());
+			LLSLURL slurl;
+			gAgent.getTeleportSourceSLURL(slurl);
+			LLChat chat(LLTrans::getString("completed_from") + " " + slurl.getSLURLString());
 			chat.mSourceType = CHAT_SOURCE_SYSTEM;
 			LLFloaterChat::addChatHistory(chat);
 
@@ -7181,8 +7306,23 @@ void send_group_notice(const LLUUID& group_id,
 
 bool handle_lure_callback(const LLSD& notification, const LLSD& response)
 {
+	static const unsigned OFFER_RECIPIENT_LIMIT = 250;
+	if(notification["payload"]["ids"].size() > OFFER_RECIPIENT_LIMIT) 
+	{
+		// More than OFFER_RECIPIENT_LIMIT targets will overload the message
+		// producing an llerror.
+		LLSD args;
+		args["OFFERS"] = notification["payload"]["ids"].size();
+		args["LIMIT"] = static_cast<int>(OFFER_RECIPIENT_LIMIT);
+		LLNotificationsUtil::add("TooManyTeleportOffers", args);
+		return false;
+	}
+	
 	std::string text = response["message"].asString();
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	LLSLURL slurl;
+	LLAgentUI::buildSLURL(slurl);
+	text.append("\r\n").append(slurl.getSLURLString());
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 
 	if(0 == option)
 	{

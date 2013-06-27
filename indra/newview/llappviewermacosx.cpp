@@ -43,7 +43,6 @@
 #include "llviewernetwork.h"
 #include "llviewercontrol.h"
 #include "llmd5.h"
-#include "llurlsimstring.h"
 #include "llfloaterworldmap.h"
 #include "llurldispatcher.h"
 #include <Carbon/Carbon.h>
@@ -476,7 +475,7 @@ OSErr AEGURLHandler(const AppleEvent *messagein, AppleEvent *reply, long refIn)
 		
 		LLMediaCtrl* web = NULL;
 		const bool trusted_browser = false;
-		LLURLDispatcher::dispatch(url, web, trusted_browser);
+		LLURLDispatcher::dispatch(url, "", web, trusted_browser);
 	}
 	
 	return(result);

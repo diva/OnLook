@@ -315,7 +315,7 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 	mSentTypingState(TRUE),
 	mNumUnreadMessages(0),
 	mShowSpeakersOnConnect(TRUE),
-	mAutoConnect(FALSE),
+	mStartCallOnInitialize(false),
 	mTextIMPossible(TRUE),
 	mProfileButtonEnabled(TRUE),
 	mCallBackEnabled(TRUE),
@@ -352,7 +352,7 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 	mTypingLineStartIndex(0),
 	mSentTypingState(TRUE),
 	mShowSpeakersOnConnect(TRUE),
-	mAutoConnect(FALSE),
+	mStartCallOnInitialize(false),
 	mTextIMPossible(TRUE),
 	mProfileButtonEnabled(TRUE),
 	mCallBackEnabled(TRUE),
@@ -574,8 +574,8 @@ BOOL LLFloaterIMPanel::postBuild()
 		if (LLUICtrl* ctrl = findChild<LLUICtrl>("rp_mode"))
 			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onRPMode, this, _2));
 
-		childSetAction("start_call_btn", onClickStartCall, this);
-		childSetAction("end_call_btn", onClickEndCall, this);
+		getChild<LLButton>("start_call_btn")->setCommitCallback(boost::bind(&LLIMMgr::startCall, gIMMgr, mSessionUUID, LLVoiceChannel::OUTGOING_CALL));
+		getChild<LLButton>("end_call_btn")->setCommitCallback(boost::bind(&LLIMMgr::endCall, gIMMgr, mSessionUUID));
 		getChild<LLButton>("send_btn")->setCommitCallback(boost::bind(&LLFloaterIMPanel::onSendMsg,this));
 		if (LLButton* btn = findChild<LLButton>("toggle_active_speakers_btn"))
 			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickToggleActiveSpeakers, this, _2));
@@ -600,8 +600,8 @@ BOOL LLFloaterIMPanel::postBuild()
 
 		if (mDialog == IM_NOTHING_SPECIAL)
 		{
-			childSetAction("mute_btn", onClickMuteVoice, this);
-			childSetCommitCallback("speaker_volume", onVolumeChange, this);
+			getChild<LLUICtrl>("mute_btn")->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickMuteVoice, this));
+			getChild<LLUICtrl>("speaker_volume")->setCommitCallback(boost::bind(&LLVoiceClient::setUserVolume, LLVoiceClient::getInstance(), mOtherParticipantUUID, _2));
 		}
 
 		setDefaultBtn("send_btn");
@@ -625,33 +625,16 @@ void* LLFloaterIMPanel::createSpeakersPanel(void* data)
 	return floaterp->mSpeakerPanel;
 }
 
-//static 
-void LLFloaterIMPanel::onClickMuteVoice(void* user_data)
+void LLFloaterIMPanel::onClickMuteVoice()
 {
-	LLFloaterIMPanel* floaterp = (LLFloaterIMPanel*)user_data;
-	if (floaterp)
+	LLMute mute(mOtherParticipantUUID, getTitle(), LLMute::AGENT);
+	if (!LLMuteList::getInstance()->isMuted(mOtherParticipantUUID, LLMute::flagVoiceChat))
 	{
-		BOOL is_muted = LLMuteList::getInstance()->isMuted(floaterp->mOtherParticipantUUID, LLMute::flagVoiceChat);
-
-		LLMute mute(floaterp->mOtherParticipantUUID, floaterp->getTitle(), LLMute::AGENT);
-		if (!is_muted)
-		{
-			LLMuteList::getInstance()->add(mute, LLMute::flagVoiceChat);
-		}
-		else
-		{
-			LLMuteList::getInstance()->remove(mute, LLMute::flagVoiceChat);
-		}
+		LLMuteList::getInstance()->add(mute, LLMute::flagVoiceChat);
 	}
-}
-
-//static 
-void LLFloaterIMPanel::onVolumeChange(LLUICtrl* source, void* user_data)
-{
-	LLFloaterIMPanel* floaterp = (LLFloaterIMPanel*)user_data;
-	if (floaterp)
+	else
 	{
-		LLVoiceClient::getInstance()->setUserVolume(floaterp->mOtherParticipantUUID, (F32)source->getValue().asReal());
+		LLMuteList::getInstance()->remove(mute, LLMute::flagVoiceChat);
 	}
 }
 
@@ -670,7 +653,7 @@ void LLFloaterIMPanel::draw()
 	mEndCallBtn->setVisible(LLVoiceClient::getInstance()->voiceEnabled() && mVoiceChannel->getState() >= LLVoiceChannel::STATE_CALL_STARTED);
 	mStartCallBtn->setVisible(LLVoiceClient::getInstance()->voiceEnabled() && mVoiceChannel->getState() < LLVoiceChannel::STATE_CALL_STARTED);
 	mStartCallBtn->setEnabled(enable_connect);
-	mSendBtn->setEnabled(!childGetValue("chat_editor").asString().empty());
+	mSendBtn->setEnabled(!mInputEditor->getValue().asString().empty());
 	
 	LLPointer<LLSpeaker> self_speaker = mSpeakers->findSpeaker(gAgent.getID());
 	if(!mTextIMPossible)
@@ -687,12 +670,6 @@ void LLFloaterIMPanel::draw()
 	{
 		mInputEditor->setEnabled(TRUE);
 		mInputEditor->setLabel(getString("default_text_label"));
-	}
-
-	if (mAutoConnect && enable_connect)
-	{
-		onClickStartCall(this);
-		mAutoConnect = FALSE;
 	}
 
 	// show speakers window when voice first connects
@@ -1111,14 +1088,6 @@ void LLFloaterIMPanel::onClickStartCall(void* userdata)
 	self->mVoiceChannel->activate();
 }
 
-// static
-void LLFloaterIMPanel::onClickEndCall(void* userdata)
-{
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*) userdata;
-
-	self->getVoiceChannel()->deactivate();
-}
-
 void LLFloaterIMPanel::onClickToggleActiveSpeakers(const LLSD& value)
 {
 	childSetVisible("active_speakers_panel", !value);
@@ -1454,11 +1423,6 @@ LL_WARNS("Splitting") << "Pos: " << pos << " next_split: " << next_split << LL_E
 	mSentTypingState = TRUE;
 }
 
-void LLFloaterIMPanel::updateSpeakersList(const LLSD& speaker_updates)
-{
-	mSpeakers->updateSpeakers(speaker_updates); 
-}
-
 void LLFloaterIMPanel::processSessionUpdate(const LLSD& session_update)
 {
 	if (
@@ -1480,11 +1444,6 @@ void LLFloaterIMPanel::processSessionUpdate(const LLSD& session_update)
 		//update the speakers dropdown too
 		mSpeakerPanel->setVoiceModerationCtrlMode(session_update);
 	}
-}
-
-void LLFloaterIMPanel::setSpeakers(const LLSD& speaker_list)
-{
-	mSpeakers->setSpeakers(speaker_list);
 }
 
 void LLFloaterIMPanel::sessionInitReplyReceived(const LLUUID& session_id)
@@ -1512,11 +1471,12 @@ void LLFloaterIMPanel::sessionInitReplyReceived(const LLUUID& session_id)
 			mOtherParticipantUUID,
 			mDialog);
 	}
-}
 
-void LLFloaterIMPanel::requestAutoConnect()
-{
-	mAutoConnect = TRUE;
+	// auto-start the call on session initialization?
+	if (mStartCallOnInitialize)
+	{
+		gIMMgr->startCall(mSessionUUID);
+	}
 }
 
 void LLFloaterIMPanel::setTyping(BOOL typing)

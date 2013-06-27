@@ -45,6 +45,7 @@
 #include "llscrollingpanelparam.h"
 #include "llradiogroup.h"
 #include "llnotificationsutil.h"
+#include "llnotifications.h"
 
 #include "llcolorswatch.h"
 #include "lltexturectrl.h"

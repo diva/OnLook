@@ -164,7 +164,7 @@ BOOL HippoPanelGridsImpl::postBuild()
 // called internally too
 void HippoPanelGridsImpl::refresh()
 {
-	const std::string &defaultGrid = gHippoGridManager->getDefaultGridNick();
+	const std::string &defaultGrid = gHippoGridManager->getDefaultGridName();
 
 	LLComboBox *grids = getChild<LLComboBox>("grid_selector");
 	S32 selectIndex = -1, i = 0;
@@ -365,7 +365,7 @@ bool HippoPanelGridsImpl::saveCurGrid()
 void HippoPanelGridsImpl::reset()
 {
 	mState = NORMAL;
-	mCurGrid = gHippoGridManager->getCurrentGridNick();
+	mCurGrid = gHippoGridManager->getCurrentGridName();
 	loadCurGrid();
 }
 

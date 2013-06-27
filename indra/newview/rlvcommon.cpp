@@ -28,6 +28,7 @@
 #include "llviewerstats.h"
 #include "llvoavatar.h"
 #include "llworld.h"
+#include "llnotifications.h"
 
 #include "../lscript/lscript_byteformat.h" //Need LSCRIPTRunTimePermissionBits and SCRIPT_PERMISSION_*
 

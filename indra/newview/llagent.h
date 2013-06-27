@@ -68,6 +68,7 @@ class LLPickInfo;
 class LLViewerObject;
 class LLAgentDropGroupViewerNode;
 class LLAgentAccess;
+class LLSLURL;
 class LLSimInfo;
 class LLTeleportRequest;
 
@@ -245,20 +246,18 @@ public:
 	LLViewerRegion	*getRegion() const  	{ return mRegionp; }
 	const LLHost&	getRegionHost() const;
 	BOOL			inPrelude();
-	std::string		getSLURL() const; //Return uri for current region
-	
+
 	// <edit>
 	struct SHLureRequest
 	{
-		SHLureRequest(const std::string& avatar_name, const LLVector3d& pos_global, const int x, const int y, const int z) :
-			mAvatarName(avatar_name), mPosGlobal(pos_global)
-			{ mPosLocal[0] = x; mPosLocal[1] = y; mPosLocal[2] = z;}
+		SHLureRequest(const std::string& avatar_name, U64& handle, const U32 x, const U32 y, const U32 z) :
+			mAvatarName(avatar_name), mRegionHandle(handle), mPosLocal(x,y,z) {}
 		const std::string mAvatarName;
-		const LLVector3d mPosGlobal;
-		int mPosLocal[3];
+		const U64 mRegionHandle;
+		LLVector3 mPosLocal;
 	};
 	SHLureRequest *mPendingLure;
-	void showLureDestination(const std::string fromname, const int global_x, const int global_y, const int x, const int y, const int z, const std::string maturity);
+	void showLureDestination(const std::string fromname, U64& handle, U32 x, U32 y, U32 z);
 	void onFoundLureDestination(LLSimInfo *siminfo = NULL);
 	// </edit>
 	
@@ -584,13 +583,14 @@ public:
 
 public:
 	static void 	parseTeleportMessages(const std::string& xml_filename);
-	const std::string& getTeleportSourceSLURL() const { return mTeleportSourceSLURL; }
+	const void getTeleportSourceSLURL(LLSLURL& slurl) const;
 public:
 	// ! TODO ! Define ERROR and PROGRESS enums here instead of exposing the mappings.
 	static std::map<std::string, std::string> sTeleportErrorMessages;
 	static std::map<std::string, std::string> sTeleportProgressMessages;
-public:
-	std::string		mTeleportSourceSLURL;			// SLURL where last TP began.
+private:
+	LLSLURL * mTeleportSourceSLURL; 			// SLURL where last TP began
+
 	//--------------------------------------------------------------------
 	// Teleport Actions
 	//--------------------------------------------------------------------

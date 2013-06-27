@@ -132,9 +132,6 @@ LLXMLNodePtr LLNameEditor::getXML(bool save_children) const
 
 LLView* LLNameEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
-	std::string name("name_editor");
-	node->getAttributeString("name", name);
-
 	LLRect rect;
 	createRect(node, rect, parent, LLRect());
 
@@ -143,7 +140,7 @@ LLView* LLNameEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory
 
 	LLFontGL* font = LLView::selectFont(node);
 
-	LLNameEditor* line_editor = new LLNameEditor(name,
+	LLNameEditor* line_editor = new LLNameEditor("name_editor",
 								rect, 
 								LLUUID::null, FALSE,
 								font,

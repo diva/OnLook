@@ -506,7 +506,7 @@ void HippoGridInfo::formatFee(std::string &fee, int cost, bool showFree) const
 }
 
 //static
-std::string HippoGridInfo::sanitizeGridNick(std::string &gridnick)
+std::string HippoGridInfo::sanitizeGridNick(const std::string &gridnick)
 {
 	std::string tmp;
 	int size = gridnick.size();
@@ -529,7 +529,7 @@ std::string HippoGridInfo::sanitizeGridNick(std::string &gridnick)
 }
 
 
-std::string HippoGridInfo::getGridNick()
+std::string HippoGridInfo::getGridNick() const
 {
 	if(!mGridNick.empty())
 	{
@@ -684,42 +684,57 @@ void HippoGridManager::discardAndReload()
 
 HippoGridInfo* HippoGridManager::getGrid(const std::string& grid) const
 {
+	if(grid.empty())
+		return NULL;
+
 	std::map<std::string, HippoGridInfo*>::const_iterator it;
 	it = mGridInfo.find(grid);
+
+	//The grids are keyed by 'name' which equates to something like "Second Life"
+	//Try to match such first.
 	if (it != mGridInfo.end()) 
 	{
 		return it->second;
 	} 
-	else 
+	else //Fall back to nick short names. (so something like "secondlife" will work)
 	{
-		return 0;
+		for(it = mGridInfo.begin(); it != mGridInfo.end(); ++it)
+		{
+			if(it->second && LLStringUtil::compareInsensitive(it->second->getGridNick(), grid)==0)
+				return it->second;
+		}
 	}
+	return NULL;
 }
 
 HippoGridInfo* HippoGridManager::getCurrentGrid() const
 {
 	HippoGridInfo* grid = getGrid(mCurrentGrid);
-	if (grid) 
+	if(!grid) 
 	{
-		return grid;
-	} 
-	else 
-	{
-		return &HippoGridInfo::FALLBACK_GRIDINFO;
+		grid = getGrid(mDefaultGrid);
 	}
+	return grid ? grid : &HippoGridInfo::FALLBACK_GRIDINFO;
 }
 
-const std::string& HippoGridManager::getDefaultGridNick() const
+std::string HippoGridManager::getDefaultGridNick() const
+{
+	HippoGridInfo* grid = getGrid(mDefaultGrid);
+	return grid ? grid->getGridNick() : HippoGridInfo::FALLBACK_GRIDINFO.getGridNick();
+}
+
+std::string HippoGridManager::getCurrentGridNick() const
+{
+	return getCurrentGrid()->getGridNick();
+}
+
+const std::string& HippoGridManager::getDefaultGridName() const
 {
 	return mDefaultGrid;
 }
 
-const std::string& HippoGridManager::getCurrentGridNick() const
+const std::string& HippoGridManager::getCurrentGridName() const
 {
-	if (mCurrentGrid.empty())
-	{
-		return mDefaultGrid;
-	}
 	return mCurrentGrid;
 }
 

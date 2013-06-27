@@ -159,7 +159,7 @@ void LLFloaterWater::onClickHelp(void* data)
 	LLFloaterWater* self = LLFloaterWater::instance();
 
 	const std::string* xml_alert = (std::string*)data;
-	LLNotifications::instance().add(self->contextualNotification(*xml_alert));
+	self->addContextualNotification(*xml_alert);
 }
 
 void LLFloaterWater::initHelpBtn(const std::string& name, const std::string& xml_alert)
@@ -175,7 +175,7 @@ bool LLFloaterWater::newPromptCallback(const LLSD& notification, const LLSD& res
 		return false;
 	}
 
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	if(option == 0)
 	{
 		LLWaterParamManager * param_mgr = LLWaterParamManager::getInstance();

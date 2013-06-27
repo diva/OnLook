@@ -131,9 +131,7 @@
 			<text name="Group:">
 				Groupe :
 			</text>
-			<text name="Group Name Proxy">
-				Les Lindens
-			</text>
+      <name_box initial_value="Chargement..." name="Group Name Proxy"></name_box>
 			<button label="Définir" label_selected="Définir" name="button set group"/>
 			<button label="Voir" name="button open group"/>
 			<text name="Permissions :">
