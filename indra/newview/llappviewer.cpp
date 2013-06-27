@@ -647,7 +647,7 @@ bool LLAppViewer::init()
 		AIHTTPTimeoutPolicy policy_tmp(
 			"CurlTimeout* Debug Settings",
 			gSavedSettings.getU32("CurlTimeoutDNSLookup"),
-			gSavedSettings.getU32("CurlTimeoutConnect"),
+			/*gSavedSettings.getU32("CurlTimeoutConnect")   Temporary HACK: 30 is the current max*/ 30,
 			gSavedSettings.getU32("CurlTimeoutReplyDelay"),
 			gSavedSettings.getU32("CurlTimeoutLowSpeedTime"),
 			gSavedSettings.getU32("CurlTimeoutLowSpeedLimit"),
