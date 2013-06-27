@@ -16,8 +16,6 @@
       <check_box label="D&#xE9;sactiver la distance minimum de la cam&#xE9;ra" tool_tip="La cam&#xE9;ra zoome de tr&#xE9;s pr&#xE8;s." name="disable_camera_zoom_check"/>
       <check_box label="Activer les fonctions Power User - &#xE0; vos risques et p&#xE9;rils !" tool_tip="Ajoute des fonctions consid&#xE9;r&#xE9;es trop dangereuses pour une utilisation normale. Ces fonctions peuvent faire des ravages si employ&#xE9;es improprement." name="power_user_check"/>
       <check_box label="Confirmer les fonctions Power User" tool_tip="Confirme les fonctions Power User. A vos risques et p&#xE9;rils. Singularity n'est pas responsable de cette utilisation." name="power_user_confirm_check"/>
-      <check_box label="Activer l'Ascent System Inventory (Red&#xE9;marrage n&#xE9;cessaire)" tool_tip="Cr&#xE9;e un nouveau dossier dans l'inventaire afin de stocker les fichiers de settings et les assets non permanents." name="system_folder_check"/>
-      <check_box label="Les t&#xE9;l&#xE9;chargements temporaires vont dans le dossier : System Inventory &#x3E; Assets" tool_tip="Place les t&#xE9;l&#xE9;chargements temporaires dans le dossier : System Inventory &#x3E; Assets ce qui permet de les retrouver plus ais&#xE9;ment" name="temp_in_system_check"/>
       <check_box label="Pr&#xE9;charger l'inventaire &#xE0; la connection" tool_tip="R&#xE9;duit l'attente lors de votre recherche initiale dans l'inventaire" name="fetch_inventory_on_login_check"/>
       <check_box label="Activer les effets de vent" name="enable_wind"/>
       <check_box label="Activer les nuages" name="enable_clouds"/>
