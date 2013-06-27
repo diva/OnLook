@@ -5,7 +5,7 @@
  layout="topleft"
  name="Anim Preview"
  help_topic="animation_anim_preview"
- title="ANIMATION.ANIM"
+ title="Upload Raw Animation"
  width="300">
     <text
      type="string"
@@ -16,7 +16,7 @@
      left="10"
      mouse_opaque="false"
      name="name_label"
-     top="20"
+     bottom="-40"
      width="275">
         Name:
     </text>
@@ -60,18 +60,19 @@
      height="22"
      label="Upload ([UPLOADFEE])"
      layout="topleft"
-     left="45"
+     left="15"
      name="ok_btn"
-     top_pad="60"
-     width="150" />
+     bottom_delta="-60"
+     width="130" />
     <button
      follows="right|bottom"
+     bottom_delta="0"
      height="22"
      label="Cancel"
      label_selected="Cancel"
      layout="topleft"
      name="cancel_btn"
-     left_pad="5"
-     width="90" />
+     left_delta="135"
+     width="130" />
 </floater>
 
