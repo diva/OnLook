@@ -223,8 +223,8 @@ void LLPrefsAscentSys::refreshValues()
 {
     //General -----------------------------------------------------------------------------
     mDoubleClickTeleport		= gSavedSettings.getBOOL("DoubleClickTeleport");
-    mResetCameraAfterTP		= gSavedSettings.getBOOL("OptionRotateCamAfterLocalTP");
-    mOffsetTPByUserHeight	= gSavedSettings.getBOOL("OptionOffsetTPByAgentHeight");
+        mResetCameraAfterTP		= gSavedSettings.getBOOL("OptionRotateCamAfterLocalTP");
+        mOffsetTPByUserHeight	= gSavedSettings.getBOOL("OptionOffsetTPByAgentHeight");
 	mClearBeaconAfterTeleport	= gSavedSettings.getBOOL("ClearBeaconAfterTeleport");
     mLiruFlyAfterTeleport		= gSavedSettings.getBOOL("LiruFlyAfterTeleport");
     mLiruContinueFlying			= gSavedSettings.getBOOL("LiruContinueFlyingOnUnsit");
@@ -238,9 +238,9 @@ void LLPrefsAscentSys::refreshValues()
     mFetchInventoryOnLogin		= gSavedSettings.getBOOL("FetchInventoryOnLogin");
     mEnableLLWind				= gSavedSettings.getBOOL("WindEnabled");
     mEnableClouds				= gSavedSettings.getBOOL("CloudsEnabled");
-    mEnableClassicClouds		= gSavedSettings.getBOOL("SkyUseClassicClouds");
+        mEnableClassicClouds		= gSavedSettings.getBOOL("SkyUseClassicClouds");
     mSpeedRez					= gSavedSettings.getBOOL("SpeedRez");
-    mSpeedRezInterval			= gSavedSettings.getU32("SpeedRezInterval");
+        mSpeedRezInterval			= gSavedSettings.getU32("SpeedRezInterval");
 
     //Command Line ------------------------------------------------------------------------
     mCmdLine                    = gSavedSettings.getBOOL("AscentCmdLine");
@@ -374,8 +374,8 @@ void LLPrefsAscentSys::cancel()
 {
     //General -----------------------------------------------------------------------------
     gSavedSettings.setBOOL("DoubleClickTeleport", mDoubleClickTeleport);
-    gSavedSettings.setBOOL("OptionRotateCamAfterLocalTP", mResetCameraAfterTP);
-    gSavedSettings.setBOOL("OptionOffsetTPByAgentHeight", mOffsetTPByUserHeight);
+        gSavedSettings.setBOOL("OptionRotateCamAfterLocalTP", mResetCameraAfterTP);
+        gSavedSettings.setBOOL("OptionOffsetTPByAgentHeight", mOffsetTPByUserHeight);
 	gSavedSettings.setBOOL("ClearBeaconAfterTeleport", mClearBeaconAfterTeleport);
     gSavedSettings.setBOOL("LiruFlyAfterTeleport", mLiruFlyAfterTeleport);
     gSavedSettings.setBOOL("LiruContinueFlyingOnUnsit", mLiruContinueFlying);
@@ -388,9 +388,9 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("FetchInventoryOnLogin", mFetchInventoryOnLogin);
     gSavedSettings.setBOOL("WindEnabled", mEnableLLWind);
     gSavedSettings.setBOOL("CloudsEnabled", mEnableClouds);
-    gSavedSettings.setBOOL("SkyUseClassicClouds", mEnableClassicClouds);
+        gSavedSettings.setBOOL("SkyUseClassicClouds", mEnableClassicClouds);
     gSavedSettings.setBOOL("SpeedRez", mSpeedRez);
-    gSavedSettings.setU32("SpeedRezInterval", mSpeedRezInterval);
+        gSavedSettings.setU32("SpeedRezInterval", mSpeedRezInterval);
 
     //Command Line ------------------------------------------------------------------------
     gSavedSettings.setBOOL("AscentCmdLine",                 mCmdLine);
