@@ -87,7 +87,7 @@ void AIServiceBar::draw()
 	is_used = per_service_r->is_used();
 	is_inuse = per_service_r->is_inuse();
 	total_added = per_service_r->mTotalAdded;
-	concurrent_connections = per_service_r->mConcurrectConnections;
+	concurrent_connections = per_service_r->mConcurrentConnections;
 	bandwidth = per_service_r->bandwidth().truncateData(AIHTTPView::getTime_40ms());
 	cts = per_service_r->mCapabilityType;	// Not thread-safe, but we're only reading from it and only using the results to show in a debug console.
   }
@@ -103,11 +103,11 @@ void AIServiceBar::draw()
 	}
 	else if (col < 2)
 	{
-	  text = llformat(" | %hu-%hu-%lu,{%hu/%hu,%u}/%u", ct.mApprovedRequests, ct.mQueuedCommands, ct.mQueuedRequests.size(), ct.mAdded, ct.mConcurrectConnections, ct.mDownloading, ct.mMaxPipelinedRequests);
+	  text = llformat(" | %hu-%hu-%lu,{%hu/%hu,%u}/%u", ct.mApprovedRequests, ct.mQueuedCommands, ct.mQueuedRequests.size(), ct.mAdded, ct.mConcurrentConnections, ct.mDownloading, ct.mMaxPipelinedRequests);
 	}
 	else
 	{
-	  text = llformat(" | --%hu-%lu,{%hu/%hu,%u}", ct.mQueuedCommands, ct.mQueuedRequests.size(), ct.mAdded, ct.mConcurrectConnections, ct.mDownloading);
+	  text = llformat(" | --%hu-%lu,{%hu/%hu,%u}", ct.mQueuedCommands, ct.mQueuedRequests.size(), ct.mAdded, ct.mConcurrentConnections, ct.mDownloading);
 	}
 	LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, ((is_inuse & mask) == 0) ? LLColor4::grey2 : text_color, LLFontGL::LEFT, LLFontGL::TOP);
 	start += LLFontGL::getFontMonospace()->getWidth(text);
