@@ -73,6 +73,7 @@ using namespace AICurlPrivate;
 AIPerService::AIPerService(void) :
 		mHTTPBandwidth(25),	// 25 = 1000 ms / 40 ms.
 		mConcurrentConnections(CurlConcurrentConnectionsPerService),
+		mApprovedRequests(0),
 		mTotalAdded(0),
 		mUsedCT(0),
 		mCTInUse(0)
@@ -363,7 +364,10 @@ bool AIPerService::queue(AICurlEasyRequest const& easy_request, AICapabilityType
   if (needs_queuing)
   {
 	queued_requests.push_back(easy_request.get_ptr());
-	TotalQueued_wat(sTotalQueued)->count++;
+	if (is_approved(capability_type))
+	{
+	  TotalQueued_wat(sTotalQueued)->approved++;
+	}
   }
   return needs_queuing;
 }
@@ -389,9 +393,12 @@ bool AIPerService::cancel(AICurlEasyRequest const& easy_request, AICapabilityTyp
 	prev = cur;
   }
   mCapabilityType[capability_type].mQueuedRequests.pop_back();		// if this is safe.
-  TotalQueued_wat total_queued_w(sTotalQueued);
-  total_queued_w->count--;
-  llassert(total_queued_w->count >= 0);
+  if (is_approved(capability_type))
+  {
+	TotalQueued_wat total_queued_w(sTotalQueued);
+	llassert(total_queued_w->approved > 0);
+	total_queued_w->approved--;
+  }
   return true;
 }
 
@@ -458,23 +465,26 @@ void AIPerService::add_queued_to(curlthread::MultiHandle* multi_handle, bool onl
 	  // Mark that at least one request of this CT was successfully added.
 	  success |= mask;
 	  success_this_pass = true;
-	  // Update count and the empty flag of sTotalQueued.
-	  TotalQueued_wat total_queued_w(sTotalQueued);
-	  llassert(total_queued_w->count > 0);
-	  if (!--(total_queued_w->count))
+	  // Update approved count.
+	  if (is_approved((AICapabilityType)i))
 	  {
-		// We obtained a request from the queue, and after that there we no more request in any queue.
-		total_queued_w->empty = true;
-		// Since there is no request left anywhere anymore, abort looking for one.
-		break;
+		TotalQueued_wat total_queued_w(sTotalQueued);
+		llassert(total_queued_w->approved > 0);
+		total_queued_w->approved--;
 	  }
 	}
   }
 
+  size_t queuedapproved_size = 0;
   for (int i = 0; i < number_of_capability_types; ++i)
   {
 	CapabilityType& ct(mCapabilityType[i]);
 	U32 mask = CT2mask((AICapabilityType)i);
+	// Add up the size of all queues with approved requests.
+	if ((approved_mask & mask))
+	{
+	  queuedapproved_size += ct.mQueuedRequests.size();
+	}
 	// Skip CTs that we didn't add anything for.
 	if (!(success & mask))
 	{
@@ -487,20 +497,25 @@ void AIPerService::add_queued_to(curlthread::MultiHandle* multi_handle, bool onl
 	}
   }
 
-  // Update the starvation and full flags of sTotalQueued.
+  // Update the flags of sTotalQueued.
   {
 	TotalQueued_wat total_queued_w(sTotalQueued);
-	if (total_queued_w->count == 0)
+	if (total_queued_w->approved == 0)
 	{
-	  if (!success)
+	  if ((success & approved_mask))
 	  {
-		// The queue of every service is empty!
+		// We obtained an approved request from the queue, and after that there were no more requests in any (approved) queue.
+		total_queued_w->empty = true;
+	  }
+	  else
+	  {
+		// Every queue of every approved CT is empty!
 		total_queued_w->starvation = true;
 	  }
 	}
-	else if (success)
+	else if ((success & approved_mask))
 	{
-	  // We obtained a request from the queue, and even after that there was at least one more request in some queue.
+	  // We obtained an approved request from the queue, and even after that there was at least one more request in some (approved) queue.
 	  total_queued_w->full = true;
 	}
   }
@@ -537,8 +552,11 @@ void AIPerService::purge(void)
 	{
 	  size_t s = per_service_w->mCapabilityType[i].mQueuedRequests.size();
 	  per_service_w->mCapabilityType[i].mQueuedRequests.clear();
-	  total_queued_w->count -= s;
-	  llassert(total_queued_w->count >= 0);
+	  if (is_approved((AICapabilityType)i))
+	  {
+		llassert(total_queued_w->approved >= s);
+		total_queued_w->approved -= s;
+	  }
 	}
   }
 }
@@ -575,8 +593,9 @@ void AIPerService::Approvement::honored(void)
   {
 	mHonored = true;
 	PerService_wat per_service_w(*mPerServicePtr);
-	llassert(per_service_w->mCapabilityType[mCapabilityType].mApprovedRequests > 0);
+	llassert(per_service_w->mCapabilityType[mCapabilityType].mApprovedRequests > 0 && per_service_w->mApprovedRequests > 0);
 	per_service_w->mCapabilityType[mCapabilityType].mApprovedRequests--;
+	per_service_w->mApprovedRequests--;
   }
 }
 

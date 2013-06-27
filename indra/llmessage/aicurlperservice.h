@@ -87,6 +87,8 @@ enum AICapabilityType {		// {Capabilities} [Responders]
   number_of_capability_types = 4
 };
 
+static U32 const approved_mask = 3;		// The mask of cap_texture OR-ed with the mask of cap_inventory.
+
 //-----------------------------------------------------------------------------
 // AIPerService
 
@@ -137,7 +139,7 @@ class AIPerService {
 	  typedef std::deque<AICurlPrivate::BufferedCurlEasyRequestPtr> queued_request_type;
 
 	  queued_request_type mQueuedRequests;		// Waiting (throttled) requests.
-	  U16 mApprovedRequests;					// The number of approved requests by approveHTTPRequestFor that were not added to the command queue yet.
+	  U16 mApprovedRequests;					// The number of approved requests for this CT by approveHTTPRequestFor that were not added to the command queue yet.
 	  U16 mQueuedCommands;						// Number of add commands (minus remove commands), for this service, in the command queue.
 	  U16 mAdded;								// Number of active easy handles with this service.
 	  U16 mFlags;								// ctf_empty: Set to true when the queue becomes precisely empty.
@@ -159,6 +161,7 @@ class AIPerService {
 
 	AIAverage mHTTPBandwidth;					// Keeps track on number of bytes received for this service in the past second.
 	int mConcurrentConnections;					// The maximum number of allowed concurrent connections to this service.
+	int mApprovedRequests;						// The number of approved requests for this service by approveHTTPRequestFor that were not added to the command queue yet.
 	int mTotalAdded;							// Number of active easy handles with this service.
 
 	U32 mUsedCT;								// Bit mask with one bit per capability type. A '1' means the capability was in use since the last resetUsedCT().
@@ -194,6 +197,7 @@ class AIPerService {
 	  }
 	}
   public:
+	static bool is_approved(AICapabilityType capability_type) { return (((U32)1 << capability_type) & approved_mask); }
 	static U32 CT2mask(AICapabilityType capability_type) { return (U32)1 << capability_type; }
 	void resetUsedCt(void) { mUsedCT = mCTInUse; }
 	bool is_used(AICapabilityType capability_type) const { return (mUsedCT & CT2mask(capability_type)); }
@@ -206,34 +210,34 @@ class AIPerService {
 	// Global administration of the total number of queued requests of all services combined.
   private:
 	struct TotalQueued {
-		S32 count;								// The sum of mQueuedRequests.size() of all AIPerService objects together.
-		bool empty;								// Set to true when count becomes precisely zero as the result of popping any queue.
-		bool full;								// Set to true when count is still larger than zero after popping any queue.
-		bool starvation;						// Set to true when any queue was about to be popped when count was already zero.
-		TotalQueued(void) : count(0), empty(false), full(false), starvation(false) { }
+		S32 approved;							// The sum of mQueuedRequests.size() of all AIPerService::CapabilityType objects of approved types.
+		bool empty;								// Set to true when approved becomes precisely zero as the result of popping any queue.
+		bool full;								// Set to true when approved is still larger than zero after popping any queue.
+		bool starvation;						// Set to true when any queue was about to be popped when approved was already zero.
+		TotalQueued(void) : approved(0), empty(false), full(false), starvation(false) { }
 	};
 	static AIThreadSafeSimpleDC<TotalQueued> sTotalQueued;
 	typedef AIAccessConst<TotalQueued> TotalQueued_crat;
 	typedef AIAccess<TotalQueued> TotalQueued_rat;
 	typedef AIAccess<TotalQueued> TotalQueued_wat;
   public:
-	static S32 total_queued_size(void) { return TotalQueued_rat(sTotalQueued)->count; }
+	static S32 total_approved_queue_size(void) { return TotalQueued_rat(sTotalQueued)->approved; }
 
 	// Global administration of the maximum number of pipelined requests of all services combined.
   private:
 	struct MaxPipelinedRequests {
-		S32 count;								// The maximum total number of accepted requests that didn't finish yet.
+		S32 threshold;							// The maximum total number of accepted requests that didn't finish yet.
 		U64 last_increment;						// Last time that sMaxPipelinedRequests was incremented.
 		U64 last_decrement;						// Last time that sMaxPipelinedRequests was decremented.
-		MaxPipelinedRequests(void) : count(32), last_increment(0), last_decrement(0) { }
+		MaxPipelinedRequests(void) : threshold(32), last_increment(0), last_decrement(0) { }
 	};
 	static AIThreadSafeSimpleDC<MaxPipelinedRequests> sMaxPipelinedRequests;
 	typedef AIAccessConst<MaxPipelinedRequests> MaxPipelinedRequests_crat;
 	typedef AIAccess<MaxPipelinedRequests> MaxPipelinedRequests_rat;
 	typedef AIAccess<MaxPipelinedRequests> MaxPipelinedRequests_wat;
   public:
-	static void setMaxPipelinedRequests(S32 count) { MaxPipelinedRequests_wat(sMaxPipelinedRequests)->count = count; }
-	static void incrementMaxPipelinedRequests(S32 increment) { MaxPipelinedRequests_wat(sMaxPipelinedRequests)->count += increment; }
+	static void setMaxPipelinedRequests(S32 threshold) { MaxPipelinedRequests_wat(sMaxPipelinedRequests)->threshold = threshold; }
+	static void incrementMaxPipelinedRequests(S32 increment) { MaxPipelinedRequests_wat(sMaxPipelinedRequests)->threshold += increment; }
 
 	// Global administration of throttle fraction (which is the same for all services).
   private:
