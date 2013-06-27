@@ -70,7 +70,6 @@
 #include "lltrans.h"
 // <edit>
 #include "llmenugl.h"
-#include "lllocalinventory.h"
 // </edit>
 
 // tag: vaa emerald local_asset_browser [begin]

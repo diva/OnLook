@@ -1777,10 +1777,6 @@ bool LLInventoryModel::isCategoryComplete(const LLUUID& cat_id) const
 		}
 	}
 
-	// <edit>
-	if((cat_id == gSystemFolderRoot) || gInventory.isObjectDescendentOf(cat_id, gSystemFolderRoot)) return true;
-	// </edit>
-
 	return false;
 }
 

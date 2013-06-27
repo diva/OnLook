@@ -66,8 +66,6 @@ protected:
     BOOL mAlwaysShowFly;
     BOOL mDisableMinZoom;
     BOOL mPowerUser;
-    BOOL mUseSystemFolder;
-        BOOL mUploadToSystem;
     BOOL mFetchInventoryOnLogin;
     BOOL mEnableLLWind;
     BOOL mEnableClouds;

@@ -218,8 +218,6 @@ void LLPrefsAscentSys::refreshValues()
     mAlwaysShowFly				= gSavedSettings.getBOOL("AscentFlyAlwaysEnabled");
     mDisableMinZoom				= gSavedSettings.getBOOL("AscentDisableMinZoomDist");
     mPowerUser					= gSavedSettings.getBOOL("AscentPowerfulWizard");
-    mUseSystemFolder			= gSavedSettings.getBOOL("AscentUseSystemFolder");
-        mUploadToSystem				= gSavedSettings.getBOOL("AscentSystemTemporary");
     mFetchInventoryOnLogin		= gSavedSettings.getBOOL("FetchInventoryOnLogin");
     mEnableLLWind				= gSavedSettings.getBOOL("WindEnabled");
     mEnableClouds				= gSavedSettings.getBOOL("CloudsEnabled");
@@ -286,7 +284,6 @@ void LLPrefsAscentSys::refresh()
     childSetEnabled("offset_teleport_check",		mDoubleClickTeleport);
     childSetValue("power_user_check",				mPowerUser);
     childSetValue("power_user_confirm_check",		mPowerUser);
-    childSetEnabled("temp_in_system_check",			mUseSystemFolder);
     childSetEnabled("speed_rez_interval",           mSpeedRez);
     childSetEnabled("speed_rez_seconds",            mSpeedRez);
 
@@ -371,8 +368,6 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("AscentBuildAlwaysEnabled", mBuildAlwaysEnabled);
     gSavedSettings.setBOOL("AscentFlyAlwaysEnabled", mAlwaysShowFly);
     gSavedSettings.setBOOL("AscentDisableMinZoomDist", mDisableMinZoom);
-    gSavedSettings.setBOOL("AscentUseSystemFolder", mUseSystemFolder);
-        gSavedSettings.setBOOL("AscentSystemTemporary", mUploadToSystem);
     gSavedSettings.setBOOL("FetchInventoryOnLogin", mFetchInventoryOnLogin);
     gSavedSettings.setBOOL("WindEnabled", mEnableLLWind);
     gSavedSettings.setBOOL("CloudsEnabled", mEnableClouds);

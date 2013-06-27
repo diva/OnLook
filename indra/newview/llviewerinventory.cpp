@@ -293,9 +293,6 @@ void LLViewerInventoryItem::cloneViewerItem(LLPointer<LLViewerInventoryItem>& ne
 
 void LLViewerInventoryItem::removeFromServer()
 {
-	// <edit> this check is ghetto
-	if((mParentUUID == gSystemFolderRoot) || (gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot))) return;
-	// </edit>
 	lldebugs << "Removing inventory item " << mUUID << " from server."
 			 << llendl;
 
@@ -314,9 +311,6 @@ void LLViewerInventoryItem::removeFromServer()
 
 void LLViewerInventoryItem::updateServer(BOOL is_new) const
 {
-	// <edit>
-	if((mParentUUID == gSystemFolderRoot) || (gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot))) return;
-	// </edit>
 	if(!mIsComplete)
 	{
 		// *FIX: deal with this better.
@@ -492,9 +486,6 @@ bool LLViewerInventoryItem::exportFileLocal(LLFILE* fp) const
 
 void LLViewerInventoryItem::updateParentOnServer(BOOL restamp) const
 {
-	// <edit>
-	if(gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot)) return;
-	// </edit>
 	LLMessageSystem* msg = gMessageSystem;
 	msg->newMessageFast(_PREHASH_MoveInventoryItem);
 	msg->nextBlockFast(_PREHASH_AgentData);
@@ -564,9 +555,6 @@ void LLViewerInventoryCategory::copyViewerCategory(const LLViewerInventoryCatego
 
 void LLViewerInventoryCategory::updateParentOnServer(BOOL restamp) const
 {
-	// <edit>
-	if(gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot)) return;
-	// </edit>
 	LLMessageSystem* msg = gMessageSystem;
 	msg->newMessageFast(_PREHASH_MoveInventoryFolder);
 	msg->nextBlockFast(_PREHASH_AgentData);
@@ -631,9 +619,6 @@ void LLViewerInventoryCategory::removeFromServer( void )
 
 bool LLViewerInventoryCategory::fetch()
 {
-	// <edit>
-	if((mUUID == gSystemFolderRoot) || (gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot))) return false;
-	// </edit>
 	if((VERSION_UNKNOWN == getVersion()) &&
 		(!mDescendentsRequested.getStarted() ||
 		mDescendentsRequested.hasExpired()))	//Expired check prevents multiple downloads.
