@@ -72,6 +72,7 @@ void wlfPanel_AdvSettings::updateClass()
 
 void wlfPanel_AdvSettings::build()
 {
+	mConnections.clear();
 	deleteAllChildren();
 	std::string ButtonState;
 	if (gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
@@ -161,9 +162,9 @@ BOOL wlfPanel_AdvSettings::postBuild()
 		// mDayCyclePresetCombo = getChild<LLComboBox>("DCPresetsCombo");
 		// mDayCyclePresetCombo->setCommitCallback(boost::bind(&wlfPanel_AdvSettings::onChangeDCPresetName, this, _2));
 
-		LLEnvManagerNew::instance().setPreferencesChangeCallback(boost::bind(&wlfPanel_AdvSettings::refreshLists, this));
-		LLWaterParamManager::getInstance()->setPresetListChangeCallback(boost::bind(&wlfPanel_AdvSettings::populateWaterPresetsList, this));
-		LLWLParamManager::getInstance()->setPresetListChangeCallback(boost::bind(&wlfPanel_AdvSettings::populateSkyPresetsList, this));
+		mConnections.push_front(new boost::signals2::scoped_connection(LLEnvManagerNew::instance().setPreferencesChangeCallback(boost::bind(&wlfPanel_AdvSettings::refreshLists, this))));
+		mConnections.push_front(new boost::signals2::scoped_connection(LLWaterParamManager::getInstance()->setPresetListChangeCallback(boost::bind(&wlfPanel_AdvSettings::populateWaterPresetsList, this))));
+		mConnections.push_front(new boost::signals2::scoped_connection(LLWLParamManager::getInstance()->setPresetListChangeCallback(boost::bind(&wlfPanel_AdvSettings::populateSkyPresetsList, this))));
 		// LLDayCycleManager::instance().setModifyCallback(boost::bind(&wlfPanel_AdvSettings::populateDayCyclePresetsList, this));
 
 		populateWaterPresetsList();
