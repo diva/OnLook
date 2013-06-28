@@ -3,10 +3,9 @@
  * @brief LLIMPanel class definition
  *
  * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
+ * Second Life Viewer Source Code
  * Copyright (c) 2001-2009, Linden Research, Inc.
  * 
- * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
  * to you under the terms of the GNU General Public License, version 2.0
  * ("GPL"), unless you have obtained a separate licensing agreement
@@ -47,134 +46,9 @@ class LLViewerTextEditor;
 class LLInventoryItem;
 class LLInventoryCategory;
 class LLIMSpeakerMgr;
-class LLPanelActiveSpeakers;
-class LLPanel;
+class LLParticipantList;
 class LLButton;
-
-class LLVoiceChannel : public LLVoiceClientStatusObserver
-{
-public:
-	typedef enum e_voice_channel_state
-	{
-		STATE_NO_CHANNEL_INFO,
-		STATE_ERROR,
-		STATE_HUNG_UP,
-		STATE_READY,
-		STATE_CALL_STARTED,
-		STATE_RINGING,
-		STATE_CONNECTED
-	} EState;
-
-	LLVoiceChannel(const LLUUID& session_id, const std::string& session_name);
-	virtual ~LLVoiceChannel();
-
-	/*virtual*/ void onChange(EStatusType status, const std::string &channelURI, bool proximal);
-
-	virtual void handleStatusChange(EStatusType status);
-	virtual void handleError(EStatusType status);
-	virtual void deactivate();
-	virtual void activate();
-	virtual void setChannelInfo(
-		const std::string& uri,
-		const std::string& credentials);
-	virtual void getChannelInfo();
-	virtual BOOL isActive();
-	virtual BOOL callStarted();
-
-	const LLUUID getSessionID() { return mSessionID; }
-	EState getState() { return mState; }
-
-	void updateSessionID(const LLUUID& new_session_id);
-	const LLSD& getNotifyArgs() { return mNotifyArgs; }
-
-	static LLVoiceChannel* getChannelByID(const LLUUID& session_id);
-	static LLVoiceChannel* getChannelByURI(std::string uri);
-	static LLVoiceChannel* getCurrentVoiceChannel() { return sCurrentVoiceChannel; }
-	static void initClass();
-	
-	static void suspend();
-	static void resume();
-
-protected:
-	virtual void setState(EState state);
-	void setURI(std::string uri);
-
-	std::string	mURI;
-	std::string	mCredentials;
-	LLUUID		mSessionID;
-	EState		mState;
-	std::string	mSessionName;
-	LLSD mNotifyArgs;
-	BOOL		mIgnoreNextSessionLeave;
-	LLHandle<LLPanel> mLoginNotificationHandle;
-
-	typedef std::map<LLUUID, LLVoiceChannel*> voice_channel_map_t;
-	static voice_channel_map_t sVoiceChannelMap;
-
-	typedef std::map<std::string, LLVoiceChannel*> voice_channel_map_uri_t;
-	static voice_channel_map_uri_t sVoiceChannelURIMap;
-
-	static LLVoiceChannel* sCurrentVoiceChannel;
-	static LLVoiceChannel* sSuspendedVoiceChannel;
-	static BOOL sSuspended;
-};
-
-class LLVoiceChannelGroup : public LLVoiceChannel
-{
-public:
-	LLVoiceChannelGroup(const LLUUID& session_id, const std::string& session_name);
-
-	/*virtual*/ void handleStatusChange(EStatusType status);
-	/*virtual*/ void handleError(EStatusType status);
-	/*virtual*/ void activate();
-	/*virtual*/ void deactivate();
-	/*vritual*/ void setChannelInfo(
-		const std::string& uri,
-		const std::string& credentials);
-	/*virtual*/ void getChannelInfo();
-
-protected:
-	virtual void setState(EState state);
-
-private:
-	U32 mRetries;
-	BOOL mIsRetrying;
-};
-
-class LLVoiceChannelProximal : public LLVoiceChannel, public LLSingleton<LLVoiceChannelProximal>
-{
-public:
-	LLVoiceChannelProximal();
-
-	/*virtual*/ void onChange(EStatusType status, const std::string &channelURI, bool proximal);
-	/*virtual*/ void handleStatusChange(EStatusType status);
-	/*virtual*/ void handleError(EStatusType status);
-	/*virtual*/ BOOL isActive();
-	/*virtual*/ void activate();
-	/*virtual*/ void deactivate();
-
-};
-
-class LLVoiceChannelP2P : public LLVoiceChannelGroup
-{
-public:
-	LLVoiceChannelP2P(const LLUUID& session_id, const std::string& session_name, const LLUUID& other_user_id);
-
-	/*virtual*/ void handleStatusChange(EStatusType status);
-	/*virtual*/ void handleError(EStatusType status);
-    /*virtual*/ void activate();
-	/*virtual*/ void getChannelInfo();
-
-	void setSessionHandle(const std::string& handle, const std::string &inURI);
-
-protected:
-	virtual void setState(EState state);
-
-private:
-	std::string	mSessionHandle;
-	LLUUID		mOtherUserID;
-	BOOL		mReceivedCall;
-};
+class LLVoiceChannel;
 
 class LLFloaterIMPanel : public LLFloater
 {
@@ -239,30 +113,22 @@ public:
 	void			onInputEditorKeystroke(LLLineEditor* caller);
 	static void		onTabClick( void* userdata );
 
-	void			onClickProfile();
 	static void		onClickHistory( void* userdata );
 	void			onRPMode(const LLSD& value);
-	void			onClickTeleport();
-	void			onClickGroupInfo();
-	static void		onClickClose( void* userdata );
 	static void		onClickStartCall( void* userdata );
 	static void		onClickEndCall( void* userdata );
 	void			onClickToggleActiveSpeakers(const LLSD& value);
 	static void*	createSpeakersPanel(void* data);
 
 	//callbacks for P2P muting and volume control
-	static void onClickMuteVoice(void* user_data);
-	static void onVolumeChange(LLUICtrl* source, void* user_data);
+	void onClickMuteVoice();
 
 	const LLUUID& getSessionID() const { return mSessionUUID; }
 	const LLUUID& getOtherParticipantID() const { return mOtherParticipantUUID; }
-	void updateSpeakersList(const LLSD& speaker_updates);
 	void processSessionUpdate(const LLSD& update);
-	void setSpeakers(const LLSD& speaker_list);
 	LLVoiceChannel* getVoiceChannel() { return mVoiceChannel; }
+	LLIMSpeakerMgr* getSpeakerManager() const { return mSpeakers; } // Singu TODO: LLIMModel::getSpeakerManager
 	EInstantMessage getDialogType() const { return mDialog; }
-
-	void requestAutoConnect();
 
 	void sessionInitReplyReceived(const LLUUID& im_session_id);
 
@@ -289,6 +155,10 @@ public:
 	bool isAdHocSessionType() const { return mSessionType == ADHOC_SESSION;}
 	bool isGroupSessionType() const { return mSessionType == GROUP_SESSION;}
 	SType mSessionType;
+
+	// LLIMModel Functionality
+	bool getSessionInitialized() const { return mSessionInitialized; }
+	bool mStartCallOnInitialize;
 
 private:
 	// called by constructors
@@ -365,14 +235,12 @@ private:
 
 	BOOL mShowSpeakersOnConnect;
 
-	BOOL mAutoConnect;
-	
 	BOOL mTextIMPossible;
 	BOOL mProfileButtonEnabled;
 	BOOL mCallBackEnabled;
 
 	LLIMSpeakerMgr* mSpeakers;
-	LLPanelActiveSpeakers* mSpeakerPanel;
+	LLParticipantList* mSpeakerPanel;
 	
 	// Optimization:  Don't send "User is typing..." until the
 	// user has actually been typing for a little while.  Prevents

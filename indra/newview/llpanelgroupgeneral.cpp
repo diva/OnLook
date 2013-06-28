@@ -36,9 +36,10 @@
 
 #include "lluictrlfactory.h"
 #include "llagent.h"
+#include "llavataractions.h"
+#include "llfloatergroups.h"
+#include "llgroupactions.h"
 #include "roles_constants.h"
-#include "llfloateravatarinfo.h"
-#include "llfloatergroupinfo.h"
 
 // UI elements
 #include "llbutton.h"
@@ -133,13 +134,13 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mBtnJoinGroup = getChild<LLButton>("join_button", recurse);
 	if ( mBtnJoinGroup )
 	{
-		mBtnJoinGroup->setClickedCallback(boost::bind(&LLPanelGroupGeneral::onClickJoin, this));
+		mBtnJoinGroup->setClickedCallback(boost::bind(LLGroupActions::join, mGroupID));
 	}
 
 	mBtnInfo = getChild<LLButton>("info_button", recurse);
 	if ( mBtnInfo )
 	{
-		mBtnInfo->setClickedCallback(boost::bind(&LLPanelGroupGeneral::onClickInfo, this));
+		mBtnInfo->setClickedCallback(boost::bind(LLGroupActions::show, mGroupID));
 	}
 
 	mFounderName = getChild<LLNameBox>("founder_name");
@@ -147,7 +148,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mListVisibleMembers = getChild<LLNameListCtrl>("visible_members", recurse);
 	if (mListVisibleMembers)
 	{
-		mListVisibleMembers->setDoubleClickCallback(boost::bind(&LLPanelGroupGeneral::openProfile,this));
+		mListVisibleMembers->setDoubleClickCallback(boost::bind(LLAvatarActions::showProfile, boost::bind(&LLScrollListCtrl::getCurrentID, mListVisibleMembers)));
 	}
 
 	// Options
@@ -290,8 +291,7 @@ void LLPanelGroupGeneral::onCommitEnrollment()
 	}
 
 	// Make sure the agent can change enrollment info.
-	if (!gAgent.hasPowerInGroup(mGroupID,GP_MEMBER_OPTIONS)
-		|| !mAllowEdit)
+	if (!gAgent.hasPowerInGroup(mGroupID,GP_MEMBER_OPTIONS))
 	{
 		return;
 	}
@@ -309,87 +309,10 @@ void LLPanelGroupGeneral::onCommitEnrollment()
 
 void LLPanelGroupGeneral::onCommitTitle()
 {
-	if (mGroupID.isNull() || !mAllowEdit) return;
+	if (mGroupID.isNull()) return;
 	LLGroupMgr::getInstance()->sendGroupTitleUpdate(mGroupID,mComboActiveTitle->getCurrentID());
 	update(GC_TITLES);
 	mComboActiveTitle->resetDirty();
-}
-
-// static
-void LLPanelGroupGeneral::onClickInfo(void *userdata)
-{
-	LLPanelGroupGeneral *self = (LLPanelGroupGeneral *)userdata;
-
-	if ( !self ) return;
-
-	lldebugs << "open group info: " << self->mGroupID << llendl;
-
-	LLFloaterGroupInfo::showFromUUID(self->mGroupID);
-}
-
-// static
-void LLPanelGroupGeneral::onClickJoin(void *userdata)
-{
-	LLPanelGroupGeneral *self = (LLPanelGroupGeneral *)userdata;
-
-	if ( !self ) return;
-
-	lldebugs << "joining group: " << self->mGroupID << llendl;
-
-	LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(self->mGroupID);
-
-	if (gdatap)
-	{
-		S32 cost = gdatap->mMembershipFee;
-		LLSD args;
-		args["COST"] = llformat("%d", cost);
-		LLSD payload;
-		payload["group_id"] = self->mGroupID;
-
-		if (can_afford_transaction(cost))
-		{
-			LLNotificationsUtil::add("JoinGroupCanAfford", args, payload, LLPanelGroupGeneral::joinDlgCB);
-		}
-		else
-		{
-			LLNotificationsUtil::add("JoinGroupCannotAfford", args, payload);
-		}
-	}
-	else
-	{
-		llwarns << "LLGroupMgr::getInstance()->getGroupData(" << self->mGroupID
-			<< ") was NULL" << llendl;
-	}
-}
-
-// static
-bool LLPanelGroupGeneral::joinDlgCB(const LLSD& notification, const LLSD& response)
-{
-	S32 option = LLNotification::getSelectedOption(notification, response);
-
-	if (option == 1)
-	{
-		// user clicked cancel
-		return false;
-	}
-
-	LLGroupMgr::getInstance()->sendGroupMemberJoin(notification["payload"]["group_id"].asUUID());
-	return false;
-}
-
-// static
-void LLPanelGroupGeneral::openProfile(void* data)
-{
-	LLPanelGroupGeneral* self = (LLPanelGroupGeneral*)data;
-
-	if (self && self->mListVisibleMembers)
-	{
-		LLScrollListItem* selected = self->mListVisibleMembers->getFirstSelected();
-		if (selected)
-		{
-			LLFloaterAvatarInfo::showFromDirectory( selected->getUUID() );
-		}
-	}
 }
 
 bool LLPanelGroupGeneral::needsApply(std::string& mesg)
@@ -633,7 +556,6 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 	if (mComboActiveTitle)
 	{
 		mComboActiveTitle->setVisible(is_member);
-		mComboActiveTitle->setEnabled(mAllowEdit);
 		
 		if ( mActiveTitleLabel) mActiveTitleLabel->setVisible(is_member);
 
@@ -693,7 +615,7 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 	if (mCtrlShowInGroupList) 
 	{
 		mCtrlShowInGroupList->set(gdatap->mShowInList);
-		mCtrlShowInGroupList->setEnabled(mAllowEdit && can_change_ident);
+		mCtrlShowInGroupList->setEnabled(can_change_ident);
 		mCtrlShowInGroupList->resetDirty();
 
 	}
@@ -707,20 +629,20 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 		{
 			mComboMature->setCurrentByIndex(NON_MATURE_CONTENT);
 		}
-		mComboMature->setEnabled(mAllowEdit && can_change_ident);
+		mComboMature->setEnabled(can_change_ident);
 		mComboMature->setVisible( !gAgent.isTeen() );
 		mComboMature->resetDirty();
 	}
 	if (mCtrlOpenEnrollment) 
 	{
 		mCtrlOpenEnrollment->set(gdatap->mOpenEnrollment);
-		mCtrlOpenEnrollment->setEnabled(mAllowEdit && can_change_member_opts);
+		mCtrlOpenEnrollment->setEnabled(can_change_member_opts);
 		mCtrlOpenEnrollment->resetDirty();
 	}
 	if (mCtrlEnrollmentFee) 
 	{	
 		mCtrlEnrollmentFee->set(gdatap->mMembershipFee > 0);
-		mCtrlEnrollmentFee->setEnabled(mAllowEdit && can_change_member_opts);
+		mCtrlEnrollmentFee->setEnabled(can_change_member_opts);
 		mCtrlEnrollmentFee->resetDirty();
 	}
 	
@@ -728,9 +650,7 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 	{
 		S32 fee = gdatap->mMembershipFee;
 		mSpinEnrollmentFee->set((F32)fee);
-		mSpinEnrollmentFee->setEnabled( mAllowEdit &&
-						(fee > 0) &&
-						can_change_member_opts);
+		mSpinEnrollmentFee->setEnabled(fee && can_change_member_opts);
 		mSpinEnrollmentFee->resetDirty();
 	}
 	if ( mBtnJoinGroup )
@@ -762,7 +682,6 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 			mCtrlReceiveNotices->setVisible(is_member);
 			if (is_member)
 			{
-				mCtrlReceiveNotices->setEnabled(mAllowEdit);
 				if(!mCtrlReceiveNotices->isDirty())	//If the user hasn't edited this then refresh it. Value may have changed in groups panel, etc.
 				{
 					mCtrlReceiveNotices->set(agent_gdatap.mAcceptNotices);
@@ -776,7 +695,6 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 			mCtrlListGroup->setVisible(is_member);
 			if (is_member)
 			{
-				mCtrlListGroup->setEnabled(mAllowEdit);
 				if(!mCtrlListGroup->isDirty())	//If the user hasn't edited this then refresh it. Value may have changed in groups panel, etc.
 				{
 					mCtrlListGroup->set(agent_gdatap.mListInProfile);
@@ -790,7 +708,6 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 			mCtrlReceiveChat->setVisible(is_member);
 			if (is_member)
 			{
-				mCtrlReceiveChat->setEnabled(mAllowEdit);
 				if(!mCtrlReceiveChat->isDirty())	//If the user hasn't edited this then refresh it. Value may have changed in groups panel, etc.
 				{
 					mCtrlReceiveChat->set(!gIMMgr->getIgnoreGroup(mGroupID));
@@ -799,8 +716,8 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 			}
 		}
 
-		if (mInsignia) mInsignia->setEnabled(mAllowEdit && can_change_ident);
-		if (mEditCharter) mEditCharter->setEnabled(mAllowEdit && can_change_ident);
+		if (mInsignia) mInsignia->setEnabled(can_change_ident);
+		if (mEditCharter) mEditCharter->setEnabled(can_change_ident);
 	
 		if (mGroupName) mGroupName->setText(gdatap->mName);
 		if (mGroupNameEditor) mGroupNameEditor->setVisible(FALSE);

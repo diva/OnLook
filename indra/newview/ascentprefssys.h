@@ -47,10 +47,10 @@ public:
     void refreshValues();
 
 protected:
-    static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
-    static void onCommitCmdLine(LLUICtrl* ctrl, void* user_data);
-    static void onCommitComboBox(LLUICtrl* ctrl, void* user_data);
-    static void onCommitTexturePicker(LLUICtrl* ctrl, void* user_data);
+	void onCommitCheckBox(LLUICtrl* ctrl, const LLSD& value);
+	void onCommitCmdLine(LLUICtrl* ctrl, const LLSD& value);
+	void onCommitComboBox(LLUICtrl* ctrl, const LLSD& value);
+	void onCommitTexturePicker(LLUICtrl* ctrl);
 
     //General -----------------------------------------------------------------------------
     BOOL mDoubleClickTeleport;
@@ -66,8 +66,6 @@ protected:
     BOOL mAlwaysShowFly;
     BOOL mDisableMinZoom;
     BOOL mPowerUser;
-    BOOL mUseSystemFolder;
-        BOOL mUploadToSystem;
     BOOL mFetchInventoryOnLogin;
     BOOL mEnableLLWind;
     BOOL mEnableClouds;

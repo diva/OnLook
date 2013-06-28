@@ -79,6 +79,7 @@ include_directories(
 
 set(viewer_SOURCE_FILES
     NACLantispam.cpp
+    aihttpview.cpp
     aoremotectrl.cpp
     ascentfloatercontactgroups.cpp
     ascentkeyword.cpp
@@ -91,6 +92,7 @@ set(viewer_SOURCE_FILES
     floatervoicelicense.cpp
 	generichandlers.cpp
     hbfloatergrouptitles.cpp
+    groupchatlistener.cpp
     hippofloaterxml.cpp
     hippogridmanager.cpp
     hippolimits.cpp
@@ -113,11 +115,11 @@ set(viewer_SOURCE_FILES
     llanimstatelabels.cpp
     llappearancemgr.cpp
     llappviewer.cpp
-    llassetconverter.cpp
     llassetuploadqueue.cpp
     llassetuploadresponders.cpp
     llattachmentsmgr.cpp
     llaudiosourcevo.cpp
+    llavataractions.cpp
     llavatarpropertiesprocessor.cpp
     llbox.cpp
     llcallbacklist.cpp
@@ -169,7 +171,6 @@ set(viewer_SOURCE_FILES
     llflexibleobject.cpp
     llfloaterabout.cpp
     llfloateractivespeakers.cpp
-    llfloateranimpreview.cpp
     llfloaterauction.cpp
     llfloateravatarinfo.cpp
     llfloateravatarlist.cpp
@@ -258,7 +259,7 @@ set(viewer_SOURCE_FILES
     llfloatertos.cpp
     llfloaterurldisplay.cpp
     llfloaterurlentry.cpp
-    llfloatervoicedevicesettings.cpp
+    llfloatervoiceeffect.cpp
     llfloaterwater.cpp
     llfloaterwebcontent.cpp
     llfloaterwhitelistentry.cpp
@@ -273,6 +274,7 @@ set(viewer_SOURCE_FILES
     llgiveinventory.cpp
     llgivemoney.cpp
     llglsandbox.cpp
+    llgroupactions.cpp
     llgroupmgr.cpp
     llgroupnotify.cpp
     llhomelocationresponder.cpp
@@ -303,7 +305,6 @@ set(viewer_SOURCE_FILES
     llinventorypanel.cpp
     lljoystickbutton.cpp
     lllandmarklist.cpp
-    lllocalinventory.cpp
     lllogchat.cpp
     llloginhandler.cpp
     llmainlooprepeater.cpp
@@ -382,9 +383,12 @@ set(viewer_SOURCE_FILES
     llpanelprimmediacontrols.cpp
     llpanelprofile.cpp
     llpanelskins.cpp
+    llpanelvoicedevicesettings.cpp
+    llpanelvoiceeffect.cpp
     llpanelvolume.cpp
     llpanelweb.cpp
     llparcelselection.cpp
+    llparticipantlist.cpp
     llpatchvertexarray.cpp
     llpathfindingcharacter.cpp
     llpathfindingcharacterlist.cpp
@@ -421,6 +425,7 @@ set(viewer_SOURCE_FILES
     llsky.cpp
     llslurl.cpp
     llspatialpartition.cpp
+    llspeakers.cpp
     llsprite.cpp
     llstartup.cpp
     llstatusbar.cpp
@@ -521,9 +526,12 @@ set(viewer_SOURCE_FILES
     llvoclouds.cpp
     llvograss.cpp
     llvoground.cpp
+    llvoicecallhandler.cpp
+    llvoicechannel.cpp
     llvoiceclient.cpp
     llvoiceremotectrl.cpp
     llvoicevisualizer.cpp
+    llvoicevivox.cpp
     llvoinventorylistener.cpp
     llvopartgroup.cpp
     llvosky.cpp
@@ -580,6 +588,7 @@ set(viewer_HEADER_FILES
     ViewerInstall.cmake
 
     NACLantispam.h
+    aihttpview.h
     aoremotectrl.h
     ascentfloatercontactgroups.h
     ascentkeyword.h
@@ -591,6 +600,7 @@ set(viewer_HEADER_FILES
     floaterlocalassetbrowse.h
     floatervoicelicense.h
 	generichandlers.h
+    groupchatlistener.h
     hbfloatergrouptitles.h
     hippofloaterxml.h
     hippogridmanager.h
@@ -615,11 +625,11 @@ set(viewer_HEADER_FILES
     llappearance.h
     llappearancemgr.h
     llappviewer.h
-    llassetconverter.h
     llassetuploadqueue.h
     llassetuploadresponders.h
     llattachmentsmgr.h
     llaudiosourcevo.h
+    llavataractions.h
     llavatarpropertiesprocessor.h
     llbox.h
     llcallbacklist.h
@@ -671,7 +681,6 @@ set(viewer_HEADER_FILES
     llflexibleobject.h
     llfloaterabout.h
     llfloateractivespeakers.h
-    llfloateranimpreview.h
     llfloaterauction.h
     llfloateravatarinfo.h
     llfloateravatarlist.h
@@ -760,7 +769,7 @@ set(viewer_HEADER_FILES
     llfloatertos.h
     llfloaterurldisplay.h
     llfloaterurlentry.h
-    llfloatervoicedevicesettings.h
+    llfloatervoiceeffect.h
     llfloaterwater.h
     llfloaterwebcontent.h
     llfloaterwhitelistentry.h
@@ -775,6 +784,7 @@ set(viewer_HEADER_FILES
     llgesturemgr.h
     llgiveinventory.h
     llgivemoney.h
+    llgroupactions.h
     llgroupmgr.h
     llgroupnotify.h
     llhomelocationresponder.h
@@ -805,7 +815,6 @@ set(viewer_HEADER_FILES
     lljoystickbutton.h
     lllandmarklist.h
     lllightconstants.h
-    lllocalinventory.h
     lllogchat.h
     llloginhandler.h
     llmainlooprepeater.h
@@ -884,9 +893,12 @@ set(viewer_HEADER_FILES
     llpanelprimmediacontrols.h
     llpanelprofile.h
     llpanelskins.h
+    llpanelvoicedevicesettings.h
+    llpanelvoiceeffect.h
     llpanelvolume.h
     llpanelweb.h
     llparcelselection.h
+    llparticipantlist.h
     llpatchvertexarray.h
     llpathfindingcharacter.h
     llpathfindingcharacterlist.h
@@ -925,6 +937,7 @@ set(viewer_HEADER_FILES
     llsky.h
     llslurl.h
     llspatialpartition.h
+    llspeakers.h
     llsprite.h
     llstartup.h
     llstatusbar.h
@@ -1028,9 +1041,11 @@ set(viewer_HEADER_FILES
     llvoclouds.h
     llvograss.h
     llvoground.h
+    llvoicechannel.h
     llvoiceclient.h
     llvoiceremotectrl.h
     llvoicevisualizer.h
+    llvoicevivox.h
     llvoinventorylistener.h
     llvopartgroup.h
     llvosky.h
@@ -1064,7 +1079,6 @@ set(viewer_HEADER_FILES
     noise.h
     pipeline.h
     qtoolalign.h
-    randgauss.h
     rlvcommon.h
     rlvdefines.h
     rlvextensions.h

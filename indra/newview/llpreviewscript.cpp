@@ -1186,7 +1186,8 @@ void LLScriptEdCore::selectFirstError()
 {
 	// Select the first item;
 	mErrorList->selectFirstItem();
-	onErrorList(mErrorList, this);
+	if (gSavedSettings.getBOOL("LiruScriptErrorsStealFocus"))
+		onErrorList(mErrorList, this);
 }
 
 

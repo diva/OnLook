@@ -39,9 +39,9 @@
 #include "llagentwearables.h"
 #include "llappearancemgr.h"
 #include "llattachmentsmgr.h"
+#include "llavataractions.h"
 #include "llcallingcard.h"
 #include "llfirstuse.h"
-#include "llfloateravatarinfo.h"
 #include "llfloaterchat.h"
 #include "llfloatercustomize.h"
 #include "llfloateropenobject.h"
@@ -87,8 +87,6 @@
 #include "rlvhandler.h"
 #include "rlvlocks.h"
 // [/RLVa:KB]
-
-extern LLUUID gSystemFolderRoot;
 
 // Marketplace outbox current disabled
 #define ENABLE_MERCHANT_OUTBOX_CONTEXT_MENU	1
@@ -385,33 +383,26 @@ void LLInvFVBridge::removeBatchNoCheck(LLDynamicArray<LLFolderViewEventListener*
 			move_ids.push_back(item->getUUID());
 			--update[item->getParentUUID()];
 			++update[trash_id];
-			// <edit>
-			if(!gInventory.isObjectDescendentOf(item->getUUID(), gSystemFolderRoot))
+			if(start_new_message)
 			{
-			// </edit>
-				if(start_new_message)
-				{
-					start_new_message = false;
-					msg->newMessageFast(_PREHASH_MoveInventoryItem);
-					msg->nextBlockFast(_PREHASH_AgentData);
-					msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-					msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-					msg->addBOOLFast(_PREHASH_Stamp, TRUE);
-				}
-				msg->nextBlockFast(_PREHASH_InventoryData);
-				msg->addUUIDFast(_PREHASH_ItemID, item->getUUID());
-				msg->addUUIDFast(_PREHASH_FolderID, trash_id);
-				msg->addString("NewName", NULL);
-				if(msg->isSendFullFast(_PREHASH_InventoryData))
-				{
-					start_new_message = true;
-					gAgent.sendReliableMessage();
-					gInventory.accountForUpdate(update);
-					update.clear();
-				}
-			// <edit>
+				start_new_message = false;
+				msg->newMessageFast(_PREHASH_MoveInventoryItem);
+				msg->nextBlockFast(_PREHASH_AgentData);
+				msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+				msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+				msg->addBOOLFast(_PREHASH_Stamp, TRUE);
 			}
-			// </edit>
+			msg->nextBlockFast(_PREHASH_InventoryData);
+			msg->addUUIDFast(_PREHASH_ItemID, item->getUUID());
+			msg->addUUIDFast(_PREHASH_FolderID, trash_id);
+			msg->addString("NewName", NULL);
+			if(msg->isSendFullFast(_PREHASH_InventoryData))
+			{
+				start_new_message = true;
+				gAgent.sendReliableMessage();
+				gInventory.accountForUpdate(update);
+				update.clear();
+			}
 		}
 	}
 	if(!start_new_message)
@@ -433,32 +424,25 @@ void LLInvFVBridge::removeBatchNoCheck(LLDynamicArray<LLFolderViewEventListener*
 			move_ids.push_back(cat->getUUID());
 			--update[cat->getParentUUID()];
 			++update[trash_id];
-			// <edit>
-			if(!gInventory.isObjectDescendentOf(cat->getUUID(), gSystemFolderRoot))	//Avoid fake items.
+			if(start_new_message)
 			{
-			// </edit>
-				if(start_new_message)
-				{
-					start_new_message = false;
-					msg->newMessageFast(_PREHASH_MoveInventoryFolder);
-					msg->nextBlockFast(_PREHASH_AgentData);
-					msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-					msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-					msg->addBOOL("Stamp", TRUE);
-				}
-				msg->nextBlockFast(_PREHASH_InventoryData);
-				msg->addUUIDFast(_PREHASH_FolderID, cat->getUUID());
-				msg->addUUIDFast(_PREHASH_ParentID, trash_id);
-				if(msg->isSendFullFast(_PREHASH_InventoryData))
-				{
-					start_new_message = true;
-					gAgent.sendReliableMessage();
-					gInventory.accountForUpdate(update);
-					update.clear();
-				}
-			// <edit>
+				start_new_message = false;
+				msg->newMessageFast(_PREHASH_MoveInventoryFolder);
+				msg->nextBlockFast(_PREHASH_AgentData);
+				msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+				msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+				msg->addBOOL("Stamp", TRUE);
 			}
-			// </edit>
+			msg->nextBlockFast(_PREHASH_InventoryData);
+			msg->addUUIDFast(_PREHASH_FolderID, cat->getUUID());
+			msg->addUUIDFast(_PREHASH_ParentID, trash_id);
+			if(msg->isSendFullFast(_PREHASH_InventoryData))
+			{
+				start_new_message = true;
+				gAgent.sendReliableMessage();
+				gInventory.accountForUpdate(update);
+				update.clear();
+			}
 		}
 	}
 	if(!start_new_message)
@@ -472,37 +456,6 @@ void LLInvFVBridge::removeBatchNoCheck(LLDynamicArray<LLFolderViewEventListener*
 	uuid_vec_t::iterator end = move_ids.end();
 	for(; it != end; ++it)
 	{
-		// <edit> trash problem
-		if(gInventory.isObjectDescendentOf(*it, gSystemFolderRoot))
-		{
-			// if it's a category, delete descendents
-			if(gInventory.getCategory(*it))
-			{
-				LLViewerInventoryCategory* cat = gInventory.getCategory(*it);
-				cat->setDescendentCount(0);
-				LLInventoryModel::cat_array_t categories;
-				LLInventoryModel::item_array_t items;
-				gInventory.collectDescendents(cat->getUUID(),
-								   categories,
-								   items,
-								   false); // include trash?
-				S32 count = items.count();
-				S32 i;
-				for(i = 0; i < count; ++i)
-				{
-					gInventory.deleteObject(items.get(i)->getUUID());
-				}
-				count = categories.count();
-				for(i = 0; i < count; ++i)
-				{
-					gInventory.deleteObject(categories.get(i)->getUUID());
-				}
-			}
-			// delete it
-			gInventory.deleteObject(*it);
-		}
-		else
-		// </edit>
 		gInventory.moveObject((*it), trash_id);
 	}
 
@@ -1520,9 +1473,6 @@ void LLItemBridge::selectItem()
 	LLViewerInventoryItem* item = static_cast<LLViewerInventoryItem*>(getItem());
 	if(item && !item->isFinished())
 	{
-		// <edit>
-		if(!(gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot)))
-		// </edit>
 		//item->fetchFromServer();
 		LLInventoryModelBackgroundFetch::instance().start(item->getUUID(), false);
 	}
@@ -1793,16 +1743,6 @@ BOOL LLItemBridge::removeItem()
 
 	// Already in trash
 	if (model->isObjectDescendentOf(mUUID, trash_id)) return FALSE;
-
-		// <edit> trash problem
-		if(gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot))
-		{
-			LLInventoryModel::LLCategoryUpdate up(item->getParentUUID(), -1);
-			gInventory.deleteObject(mUUID);
-			gInventory.accountForUpdate(up);
-			gInventory.notifyObservers();
-		}
-		// </edit>
 
 	LLNotification::Params params("ConfirmItemDeleteHasLinks");
 	params.functor(boost::bind(&LLItemBridge::confirmRemoveItem, this, _1, _2));
@@ -2896,7 +2836,7 @@ void LLFolderBridge::performAction(LLInventoryModel* model, std::string action)
 		restoreItem();
 		return;
 	}
-#ifndef LL_RELEASE_FOR_DOWNLOAD
+#ifdef DELETE_SYSTEM_FOLDERS
 	else if ("delete_system_folder" == action)
 	{
 		removeSystemFolder();
@@ -3455,7 +3395,7 @@ void LLFolderBridge::buildContextMenuFolderOptions(U32 flags)
 		mDisabledItems.push_back(std::string("Delete"));
 	}
 
-#ifndef LL_RELEASE_FOR_DOWNLOAD
+#ifdef DELETE_SYSTEM_FOLDERS
 	if (LLFolderType::lookupIsProtectedType(type))
 	{
 		mItems.push_back(std::string("Delete System Folder"));
@@ -4730,7 +4670,7 @@ void LLCallingCardBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 
 		LLInventoryItem* item = getItem();
 		BOOL good_card = (item
-						  && (LLUUID::null != item->getCreatorUUID())
+						  && (item->getCreatorUUID().notNull())
 						  && (item->getCreatorUUID() != gAgent.getID()));
 		BOOL user_online = FALSE;
 		if (item)
@@ -6441,10 +6381,9 @@ public:
 	virtual void doIt()
 	{
 		LLViewerInventoryItem* item = getItem();
-		if (item && item->getCreatorUUID().notNull())
+		if (item)
 		{
-			bool online = LLAvatarTracker::instance().isBuddyOnline(item->getCreatorUUID());
-			LLFloaterAvatarInfo::showFromFriend(item->getCreatorUUID(), online);
+			LLAvatarActions::showProfile(item->getCreatorUUID());
 		}
 		LLInvFVBridgeAction::doIt();
 	}

@@ -56,6 +56,7 @@
 	<menu_item_call name="Restore to Last Position" label="Restaurar en el mundo"/>
 	<menu_item_call name="Remove Link" label="Borrar Enlace"/>
 	<menu_item_call name="Delete" label="Borrar"/>
+	<menu_item_call name="Delete System Folder" label="Borrar carpeta del sistema"/>
 	<menu_item_call name="Wear Items" label="Vestirse objetos"/>
 	<menu_item_call name="Add To Outfit" label="Añadir al vestuario"/>
 	<menu_item_call name="Replace Outfit" label="Reemplazar Vestuario"/>

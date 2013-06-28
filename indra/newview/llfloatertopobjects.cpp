@@ -38,9 +38,9 @@
 #include "llfontgl.h"
 
 #include "llagent.h"
+#include "llavataractions.h"
 #include "llbutton.h"
 #include "llfloatergodtools.h"
-#include "llfloateravatarinfo.h"
 #include "llnotificationsutil.h"
 #include "llparcel.h"
 #include "llscrolllistctrl.h"
@@ -126,16 +126,14 @@ BOOL LLFloaterTopObjects::postBuild()
 	if (line_editor)
 	{
 		line_editor->setCommitOnFocusLost(FALSE);
-		line_editor->setCommitCallback(onGetByOwnerName);
-		line_editor->setCallbackUserData(this);
+		line_editor->setCommitCallback(onGetByOwnerName, this);
 	}
 
 	line_editor = getChild<LLLineEditor>("object_name_editor");
 	if (line_editor)
 	{
 		line_editor->setCommitOnFocusLost(FALSE);
-		line_editor->setCommitCallback(onGetByObjectName);
-		line_editor->setCallbackUserData(this);
+		line_editor->setCommitCallback(onGetByObjectName, this);
 	}*/
 
 	mCurrentMode = STAT_REPORT_TOP_SCRIPTS;
@@ -481,8 +479,7 @@ void LLFloaterTopObjects::onProfile(void* data)
 		if (!list) return;
 	LLScrollListItem* first_selected = list->getFirstSelected();
 	if (!first_selected) return;
-	LLUUID taskid = first_selected->getUUID();
-	LLFloaterAvatarInfo::showFromDirectory(taskid);
+	LLAvatarActions::showProfile(first_selected->getUUID());
 }
 
 void LLFloaterTopObjects::onKickBtn(void* data)

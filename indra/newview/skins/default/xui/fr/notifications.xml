@@ -264,6 +264,12 @@ Voulez-vous continuer ?
 		<usetemplate name="okcancelbuttons" notext="Annuler" yestext="Rejoindre"/>
 	</notification>
 
+	<notification name="JoinGroupNoCost">
+Vous vous apprêtez à rejoindre le groupe [NAME].
+Voulez-vous continuer ?
+		<usetemplate name="okcancelbuttons" notext="Annuler" yestext="Fusionner"/>
+	</notification>
+
 	<notification name="JoinGroupCannotAfford">
 Rejoindre ce groupe coûte [COST] [CURRENCY].
 Vous n'avez pas suffisamment de [CURRENCY] pour rejoindre ce groupe.
@@ -1130,13 +1136,6 @@ Impossible d'acheter du terrain pour le groupe :
 Vous n'avez pas le droit d'acheter de terrain pour votre groupe.
 	</notification>
 
-	<notification label="Devenir amis" name="AddFriend">
-Vous pouvez suivre les déplacements de vos amis sur la carte et voir lorsqu'ils se connectent.
-
-Proposer à [NAME] de devenir votre ami(e).
-		<usetemplate name="okcancelbuttons" notext="Annuler" yestext="OK"/>
-	</notification>
-
 	<notification label="Devenir amis" name="AddFriendWithMessage">
 Vous pouvez suivre les déplacements de vos amis sur la carte et voir lorsqu'ils se connectent.
 
@@ -1611,6 +1610,11 @@ Pour quitter un groupe, sélectionnez l'option Groupe dans le menu Éditer.
 [NAME] vous invite à rejoindre un groupe.
 [INVITE]
 		<usetemplate name="okcancelbuttons" notext="Refuser" yestext="Rejoindre"/>
+	</notification>
+
+	<notification name="JoinedTooManyGroups">
+Vous avez atteint le nombre de groupes maximum. Vous devez en quitter un avant d'en rejoindre ou d'en créer un nouveau.
+		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 
 	<notification name="KickUser">
@@ -3385,6 +3389,10 @@ L'objet [OBJECTFROMNAME] appartenant à un utilisateur inconnu vous a donné un(
 		</form>
 	</notification>
 
+	<notification name="FriendshipOffered">
+		Vous avez proposé à [TO_NAME] de devenir votre ami(e)
+	</notification>
+
 	<notification name="OfferFriendshipNoMessage">
 [NAME] vous demande de devenir son ami.
 
@@ -3666,6 +3674,25 @@ Echec de la connexion avec [VOICE_CHANNEL_NAME], veuillez réessayer ultérieure
 Nous sommes en train de créer un canal vocal pour vous. Veuillez patienter quelques instants.
 	</notification>
 
+	<notification name="VoiceEffectsExpired">
+Au moins l'un des effets de voix auxquels vous êtes abonné a expiré.
+[[URL] Cliquez ici] pour renouveler votre abonnement.
+	</notification>
+
+	<notification name="VoiceEffectsExpiredInUse">
+L'effet de voix actif a expiré. Vos paramètres de voix normaux ont été rétablis.
+[[URL] Cliquez ici] pour renouveler votre abonnement.
+	</notification>
+
+	<notification name="VoiceEffectsWillExpire">
+Au moins l'un de vos effets de voix expirera dans moins de [INTERVAL] jours.
+[[URL] Cliquez ici] pour renouveler votre abonnement.
+	</notification>
+
+	<notification name="VoiceEffectsNew">
+De nouveaux effets de voix sont disponibles !
+	</notification>
+
 	<notification name="Cannot enter parcel: not a group member">
 Vous ne pouvez pas pénétrer sur ce terrain car vous n'êtes pas membre du groupe adéquat.
 	</notification>
@@ -3811,6 +3838,15 @@ votre display name doit contenir des lettres autres que de la simple ponctuation
 [OLD_NAME] ([SLID]) est maintenant connu(e) comme [NEW_NAME].
   </notification>
 
+  <notification name="NoVoiceConnect">
+Problèmes de connexion à votre serveur vocal :
+
+[HOSTID]
+
+Aucune communication vocale n&apos;est disponible.
+Veuillez vérifier la configuration de votre réseau et de votre pare-feu.
+    <usetemplate name="okbutton" yestext="OK"/>
+  </notification>
 
   <notification
   icon="alertmodal.tga"

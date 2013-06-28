@@ -182,19 +182,19 @@ void audio_update_volume(bool force_update)
 	LLViewerMedia::setVolume( mute_media ? 0.0f : media_volume );
 
 	// Voice
-	if (gVoiceClient)
+	if (LLVoiceClient::instanceExists())
 	{
 		F32 voice_volume = mute_volume * master_volume * audio_level_voice;
-		gVoiceClient->setVoiceVolume(mute_voice ? 0.f : voice_volume);
-		gVoiceClient->setMicGain(mute_voice ? 0.f : audio_level_mic);
+		LLVoiceClient::getInstance()->setVoiceVolume(mute_voice ? 0.f : voice_volume);
+		LLVoiceClient::getInstance()->setMicGain(mute_voice ? 0.f : audio_level_mic);
 
 		if (!gViewerWindow->getActive() && mute_when_minimized)
 		{
-			gVoiceClient->setMuteMic(true);
+			LLVoiceClient::getInstance()->setMuteMic(true);
 		}
 		else
 		{
-			gVoiceClient->setMuteMic(false);
+			LLVoiceClient::getInstance()->setMuteMic(false);
 		}
 	}
 }

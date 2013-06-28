@@ -350,13 +350,13 @@ void LLOverlayBar::refresh()
 
 		static const LLCachedControl<bool> enable_ao_remote("EnableAORemote", true);
 		mMediaRemoteContainer->setVisible(!in_mouselook);
-		mVoiceRemoteContainer->setVisible(!in_mouselook && LLVoiceClient::voiceEnabled());
+		mVoiceRemoteContainer->setVisible(!in_mouselook && LLVoiceClient::getInstance()->voiceEnabled());
 		mAdvSettingsContainer->setVisible(!in_mouselook);
 		mAORemoteContainer->setVisible(!in_mouselook && enable_ao_remote);
 		mStateManagementContainer->setVisible(!in_mouselook);
 	}
 	if(!in_mouselook)
-		mVoiceRemoteContainer->setVisible(LLVoiceClient::voiceEnabled());
+		mVoiceRemoteContainer->setVisible(LLVoiceClient::getInstance()->voiceEnabled());
 
 	if (buttons_changed)
 	{

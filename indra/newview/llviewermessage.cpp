@@ -55,13 +55,10 @@
 #include "llagentcamera.h"
 #include "llcallingcard.h"
 #include "llfirstuse.h"
-#include "llfloaterbvhpreview.h"
 #include "llfloaterbump.h"
 #include "llfloaterbuycurrency.h"
 #include "llfloaterbuyland.h"
 #include "llfloaterchat.h"
-#include "llfloatergroupinfo.h"
-#include "llfloaterimagepreview.h"
 #include "llfloaterland.h"
 #include "llfloaterregioninfo.h"
 #include "llfloaterlandholdings.h"
@@ -69,6 +66,7 @@
 #include "llfloaterpostcard.h"
 #include "llfloaterpreference.h"
 #include "llfloaterteleporthistory.h"
+#include "llgroupactions.h"
 #include "llhudeffecttrail.h"
 #include "llhudmanager.h"
 #include "llimpanel.h"
@@ -88,7 +86,7 @@
 #include "llstatenums.h"
 #include "llstatusbar.h"
 #include "llimview.h"
-#include "llfloateractivespeakers.h"
+#include "llspeakers.h"
 #include "lltrans.h"
 #include "llviewerfoldertype.h"
 #include "llviewergenericmessage.h"
@@ -640,7 +638,7 @@ bool join_group_response(const LLSD& notification, const LLSD& response)
 
 	if (option == 2 && !group_id.isNull())
 	{
-		LLFloaterGroupInfo::showFromUUID(group_id);
+		LLGroupActions::show(group_id);
 		LLSD args;
 		args["MESSAGE"] = message;
 		LLNotificationsUtil::add("JoinGroup", args, notification["payload"]);
@@ -1321,6 +1319,14 @@ void inventory_offer_mute_callback(const LLUUID& blocked_id,
 	gNotifyBoxView->purgeMessagesMatching(OfferMatcher(blocked_id));
 }
 
+LLOfferInfo::LLOfferInfo()
+ : mFromGroup(FALSE)
+ , mFromObject(FALSE)
+ , mIM(IM_NOTHING_SPECIAL)
+ , mType(LLAssetType::AT_NONE)
+{
+}
+
 LLOfferInfo::LLOfferInfo(const LLSD& sd)
 {
 	mIM = (EInstantMessage)sd["im_type"].asInteger();
@@ -1334,6 +1340,21 @@ LLOfferInfo::LLOfferInfo(const LLSD& sd)
 	mFromName = sd["from_name"].asString();
 	mDesc = sd["description"].asString();
 	mHost = LLHost(sd["sender"].asString());
+}
+
+LLOfferInfo::LLOfferInfo(const LLOfferInfo& info)
+{
+	mIM = info.mIM;
+	mFromID = info.mFromID;
+	mFromGroup = info.mFromGroup;
+	mFromObject = info.mFromObject;
+	mTransactionID = info.mTransactionID;
+	mFolderID = info.mFolderID;
+	mObjectID = info.mObjectID;
+	mType = info.mType;
+	mFromName = info.mFromName;
+	mDesc = info.mDesc;
+	mHost = info.mHost;
 }
 
 LLSD LLOfferInfo::asLLSD()
@@ -1781,7 +1802,7 @@ bool group_vote_callback(const LLSD& notification, const LLSD& response)
 	case 0:
 		// Vote Now
 		// Open up the voting tab
-		LLFloaterGroupInfo::showFromUUID(group_id, "voting_tab");
+		LLGroupActions::showTab(group_id, "voting_tab");
 		break;
 	default:
 		// Vote Later or
@@ -2594,7 +2615,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			// Also send down the old path for now.
 			if (IM_GROUP_NOTICE_REQUESTED == dialog)
 			{
-				LLFloaterGroupInfo::showNotice(subj,mes,group_id,has_inventory,item_name,info);
+				LLGroupActions::showNotice(subj,mes,group_id,has_inventory,item_name,info);
 			}
 			else
 			{
@@ -2741,9 +2762,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	case IM_INVENTORY_ACCEPTED:
 	{
 //		args["NAME"] = name;
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.0b
+// [RLVa:KB] - Checked: 2010-11-02 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
+		// Only anonymize the name if the agent is nearby, there isn't an open IM session to them and their profile isn't open
 		bool fRlvFilterName = (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(from_id)) &&
-			(!LLFloaterAvatarInfo::getInstance(from_id));
+			(!RlvUIEnabler::hasOpenProfile(from_id)) && (!RlvUIEnabler::hasOpenIM(from_id));
 		args["NAME"] = (!fRlvFilterName) ? name : RlvStrings::getAnonym(name);
 // [/RLVa:KB]
 		LLNotificationsUtil::add("InventoryAccepted", args);
@@ -2752,9 +2774,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	case IM_INVENTORY_DECLINED:
 	{
 //		args["NAME"] = name;
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.0b
+// [RLVa:KB] - Checked: 2010-11-02 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
+		// Only anonymize the name if the agent is nearby, there isn't an open IM session to them and their profile isn't open
 		bool fRlvFilterName = (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(from_id)) &&
-			(!LLFloaterAvatarInfo::getInstance(from_id));
+			(!RlvUIEnabler::hasOpenProfile(from_id)) && (!RlvUIEnabler::hasOpenIM(from_id));
 		args["NAME"] = (!fRlvFilterName) ? name : RlvStrings::getAnonym(name);
 // [/RLVa:KB]
 		LLNotificationsUtil::add("InventoryDeclined", args);
@@ -2821,7 +2844,9 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		std::string saved;
 		if(offline == IM_OFFLINE)
 		{
-			saved = llformat("(Saved %s) ", formatted_time(timestamp).c_str());
+			LLStringUtil::format_map_t args;
+			args["[LONG_TIMESTAMP]"] = formatted_time(timestamp);
+			saved = LLTrans::getString("Saved_message", args);
 		}
 		buffer = separator_string + saved + message.substr(message_offset);
 		gIMMgr->addMessage(
@@ -3586,78 +3611,81 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 	// because I moved it to above
 	//chatter = gObjectList.findObject(from_id);
 	// </edit>
-	if (chatter)
+
+	msg->getStringFast(_PREHASH_ChatData, _PREHASH_Message, mesg);
+
+	if ((source_temp == CHAT_SOURCE_OBJECT) && (type_temp == CHAT_TYPE_OWNER) &&
+		(mesg.substr(0, 3) == "># "))
 	{
-		if ((source_temp == CHAT_SOURCE_OBJECT) && (type_temp == CHAT_TYPE_OWNER) &&
-			(mesg.substr(0, 3) == "># "))
+		if (mesg.substr(mesg.size()-3, 3) == " #<"){
+			// hello from object
+			if (from_id.isNull()) return;
+			char buf[200];
+			snprintf(buf, 200, "%s v%d.%d.%d", gVersionChannel, gVersionMajor, gVersionMinor, gVersionPatch);
+			send_chat_from_viewer(buf, CHAT_TYPE_WHISPER, 427169570);
+			sChatObjectAuth[from_id] = 1;
+			return;
+		}
+		else if (from_id.isNull() || sChatObjectAuth.find(from_id) != sChatObjectAuth.end())
 		{
-			if (mesg.substr(mesg.size()-3, 3) == " #<"){
-				// hello from object
-				if (from_id.isNull()) return;
-				char buf[200];
-				snprintf(buf, 200, "%s v%d.%d.%d", gVersionChannel, gVersionMajor, gVersionMinor, gVersionPatch);
-				send_chat_from_viewer(buf, CHAT_TYPE_WHISPER, 427169570);
-				sChatObjectAuth[from_id] = 1;
-				return;
-			}
-			else if (from_id.isNull() || sChatObjectAuth.find(from_id) != sChatObjectAuth.end())
+			LLUUID key;
+			if (key.set(mesg.substr(3, 36),false))
 			{
-				LLUUID key;
-				if (key.set(mesg.substr(3, 36),false))
+				// object command found
+				if (key.isNull() && (mesg.size() == 39))
 				{
-					// object command found
-					if (key.isNull() && (mesg.size() == 39))
+					// clear all nameplates
+					for (int i=0; i<gObjectList.getNumObjects(); i++)
 					{
-						// clear all nameplates
-						for (int i=0; i<gObjectList.getNumObjects(); i++)
-						{
-							LLViewerObject *obj = gObjectList.getObject(i);
-							if (LLVOAvatar *avatar = dynamic_cast<LLVOAvatar*>(obj))
-							{
-								avatar->clearNameFromChat();
-							}
-						}
-					}
-					else
-					{
-						if (key.isNull())
-						{
-							llwarns << "Nameplate from chat on NULL avatar (ignored)" << llendl;
-							return;
-						}	
-						LLVOAvatar *avatar = gObjectList.findAvatar(key);
-						if (!avatar)
-						{
-							llwarns << "Nameplate from chat on invalid avatar (ignored)" << llendl;
-							return;							
-						}
-						if (mesg.size() == 39)
+						LLViewerObject *obj = gObjectList.getObject(i);
+						if (LLVOAvatar *avatar = dynamic_cast<LLVOAvatar*>(obj))
 						{
 							avatar->clearNameFromChat();
 						}
-						else if (mesg[39] == ' ')
-						{
-							avatar->setNameFromChat(mesg.substr(40));
-						}
 					}
-					return;
 				}
-				else if (mesg.substr(2, 9) == " floater ")
+				else
 				{
-					HippoFloaterXml::execute(mesg.substr(11));
-					return;
+					if (key.isNull())
+					{
+						llwarns << "Nameplate from chat on NULL avatar (ignored)" << llendl;
+						return;
+					}	
+					LLVOAvatar *avatar = gObjectList.findAvatar(key);
+					if (!avatar)
+					{
+						llwarns << "Nameplate from chat on invalid avatar (ignored)" << llendl;
+						return;							
+					}
+					if (mesg.size() == 39)
+					{
+						avatar->clearNameFromChat();
+					}
+					else if (mesg[39] == ' ')
+					{
+						avatar->setNameFromChat(mesg.substr(40));
+					}
 				}
-				else if (mesg.substr(2, 6) == " auth ")
-				{
-					std::string authUrl = mesg.substr(8);
-					authUrl += (authUrl.find('?') != std::string::npos)? "&auth=": "?auth=";
-					authUrl += gAuthString;
-					LLHTTPClient::get(authUrl, new AuthHandler);
-					return;
-				}
+				return;
+			}
+			else if (mesg.substr(2, 9) == " floater ")
+			{
+				HippoFloaterXml::execute(mesg.substr(11));
+				return;
+			}
+			else if (mesg.substr(2, 6) == " auth ")
+			{
+				std::string authUrl = mesg.substr(8);
+				authUrl += (authUrl.find('?') != std::string::npos)? "&auth=": "?auth=";
+				authUrl += gAuthString;
+				LLHTTPClient::get(authUrl, new AuthHandler);
+				return;
 			}
 		}
+	}
 
+	if (chatter)
+	{
 		chat.mPosAgent = chatter->getPositionAgent();
 
 		// Make swirly things only for talking objects. (not script debug messages, though)
@@ -3726,8 +3754,6 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 
 	if (is_audible)
 	{
-		msg->getStringFast(_PREHASH_ChatData, _PREHASH_Message, mesg);
-
 		// NaCl - Newline flood protection
 		static LLCachedControl<bool> AntiSpamEnabled(gSavedSettings,"AntiSpamEnabled",false);
 		if (AntiSpamEnabled && can_block(from_id))
@@ -6618,9 +6644,6 @@ void process_economy_data(LLMessageSystem *msg, void** /*user_data*/)
 	S32 upload_cost = LLGlobalEconomy::Singleton::getInstance()->getPriceUpload();
 
 	LL_INFOS_ONCE("Messaging") << "EconomyData message arrived; upload cost is L$" << upload_cost << LL_ENDL;
-
-	LLFloaterImagePreview::setUploadAmount(upload_cost);
-	LLFloaterBvhPreview::setUploadAmount(upload_cost);
 
 	std::string fee = gHippoGridManager->getConnectedGrid()->getUploadFee();
 	gMenuHolder->childSetLabelArg("Upload Image", "[UPLOADFEE]", fee);

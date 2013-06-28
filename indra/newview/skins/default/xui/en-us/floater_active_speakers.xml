@@ -4,8 +4,9 @@
      rect_control="FloaterActiveSpeakersRect" title="Active Speakers"
      width="250">
   <layout_stack bottom="0" follows="all" mouse_opaque="false" left="5" right="-4" top="280" name="active_speakers_stack">
-    <layout_panel mouse_opaque="false" auto_resize="true" user_resize="false" name="active_speakers_panel" height="280">
-      <scroll_list bottom="25" top="280" left="0" right="-1"
+    <layout_panel name="panel_voice_effect" auto_resize="false" user_resize="false" visiblity_control="VoiceMorphingEnabled" filename="panel_voice_effect.xml" height="23"/>
+    <layout_panel mouse_opaque="false" auto_resize="true" user_resize="false" name="active_speakers_panel" height="232">
+      <scroll_list bottom="25" top="232" left="0" right="-1"
 		       draw_stripes="false" follows="all" can_resize="true" column_padding="0" draw_heading="true"
 		       multi_select="false" name="speakers_list" search_column="1" sort_column="2">
         <column name="icon_speaking_status" sort="speaking_status" width="20" />

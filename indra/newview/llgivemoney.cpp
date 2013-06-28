@@ -347,17 +347,15 @@ void LLFloaterPay::onCacheOwnerName(const LLUUID& owner_id,
 									const std::string& full_name,
 									bool is_group)
 {
-	if (is_group)
+	if (LLView* view = findChild<LLView>("payee_group"))
 	{
-		childSetVisible("payee_group",true);
-		childSetVisible("payee_resident",false);
+		view->setVisible(is_group);
 	}
-	else
+	if (LLView* view = findChild<LLView>("payee_resident"))
 	{
-		childSetVisible("payee_group",false);
-		childSetVisible("payee_resident",true);
+		view->setVisible(!is_group);
 	}
-	
+
 	childSetTextArg("payee_name", "[NAME]", full_name);
 }
 

@@ -348,6 +348,7 @@ class WindowsManifest(ViewerManifest):
 
         result = ""
         dest_files = [pair[1] for pair in self.file_list if pair[0] and os.path.isfile(pair[1])]
+        dest_files = list(set(dest_files)) # remove duplicates
         # sort deepest hierarchy first
         dest_files.sort(lambda a,b: cmp(a.count(os.path.sep),b.count(os.path.sep)) or cmp(a,b))
         dest_files.reverse()

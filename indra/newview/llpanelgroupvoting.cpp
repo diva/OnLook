@@ -1491,7 +1491,7 @@ LLPanelGroupVoting::~LLPanelGroupVoting()
 BOOL LLPanelGroupVoting::isVisibleByAgent(LLAgent* agentp)
 {
 	 //if they are in the group, the panel is viewable
-	return mAllowEdit && agentp->isInGroup(mGroupID);
+	return agentp->isInGroup(mGroupID);
 }
 
 BOOL LLPanelGroupVoting::postBuild()

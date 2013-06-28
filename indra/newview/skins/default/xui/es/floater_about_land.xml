@@ -306,9 +306,6 @@ Sólo las parcelas más grandes pueden listarse en la búsqueda.
 			<string name="search_disabled_permissions_tooltip">
 				Esta opción no esta activada porque no puedes modificar las opciones de la parcela.
 			</string>
-			<string name="see_avs_text">
-				Ver y conversar con residentes en esta parcela
-			</string>			
 			<combo_box name="land category with adult" left="280">
 				<combo_item name="AnyCategory">
 					Cualquier Categoría
@@ -415,7 +412,7 @@ Sólo las parcelas más grandes pueden listarse en la búsqueda.
 			<text name="allow_label5">
 				Permitir a residentes en otras parcelas:
 			</text>
-			<check_box label="Ver Avatares" name="SeeAvatarsCheck" tool_tip="Permite a los residentes en otras parcelas ver y conversar con los residentes en esta parcela, y tu prodrás verlos y conversar también con ellos."/>
+			<check_box label="Ver y conversar con residentes en esta parcela" name="SeeAvatarsCheck" tool_tip="Permite a los residentes en otras parcelas ver y conversar con los residentes en esta parcela, y tu prodrás verlos y conversar también con ellos."/>
 			<text name="Snapshot:">
 				 Foto:
 			</text>

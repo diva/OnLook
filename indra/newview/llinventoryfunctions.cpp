@@ -409,10 +409,12 @@ BOOL get_is_category_removable(const LLInventoryModel* model, const LLUUID& id)
 
 	const LLFolderType::EType folder_type = category->getPreferredType();
 	
+#ifndef DELETE_SYSTEM_FOLDERS
 	if (LLFolderType::lookupIsProtectedType(folder_type))
 	{
 		return FALSE;
 	}
+#endif
 
 	// Can't delete the outfit that is currently being worn.
 	if (folder_type == LLFolderType::FT_OUTFIT)

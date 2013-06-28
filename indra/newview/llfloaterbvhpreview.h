@@ -3,10 +3,9 @@
  * @brief LLFloaterBvhPreview class definition
  *
  * $LicenseInfo:firstyear=2004&license=viewergpl$
- * 
+ * Second Life Viewer Source Code
  * Copyright (c) 2004-2009, Linden Research, Inc.
  * 
- * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
  * to you under the terms of the GNU General Public License, version 2.0
  * ("GPL"), unless you have obtained a separate licensing agreement
@@ -92,22 +91,21 @@ public:
 
 	void	onBtnPlay();
 	void	onBtnStop();
-	static void setUploadAmount(S32 amount) { sUploadAmount = amount; }
-	static void onSliderMove(LLUICtrl*, void*);
-	static void onCommitBaseAnim(LLUICtrl*, void*);
-	static void onCommitLoop(LLUICtrl*, void*);
-	static void onCommitLoopIn(LLUICtrl*, void*);
-	static void onCommitLoopOut(LLUICtrl*, void*);
-	static BOOL validateLoopIn(LLUICtrl*, void*);
-	static BOOL validateLoopOut(LLUICtrl*, void*);
-	static void onCommitName(LLUICtrl*, void*);
-	static void onCommitHandPose(LLUICtrl*, void*);
-	static void onCommitEmote(LLUICtrl*, void*);
-	static void onCommitPriority(LLUICtrl*, void*);
-	static void onCommitEaseIn(LLUICtrl*, void*);
-	static void onCommitEaseOut(LLUICtrl*, void*);
-	static BOOL validateEaseIn(LLUICtrl*, void*);
-	static BOOL validateEaseOut(LLUICtrl*, void*);
+	void onSliderMove();
+	void onCommitBaseAnim();
+	void onCommitLoop();
+	void onCommitLoopIn();
+	void onCommitLoopOut();
+	bool validateLoopIn(const LLSD& data);
+	bool validateLoopOut(const LLSD& data);
+	void onCommitName();
+	void onCommitHandPose();
+	void onCommitEmote();
+	void onCommitPriority();
+	void onCommitEaseIn();
+	void onCommitEaseOut();
+	bool validateEaseIn(const LLSD& data);
+	bool validateEaseOut(const LLSD& data);
 	static void	onBtnOK(void*);
 	static void onSaveComplete(const LLUUID& asset_uuid,
 									   LLAssetType::EType type,
@@ -129,14 +127,10 @@ protected:
 	LLRectf				mPreviewImageRect;
 	LLAssetID			mMotionID;
 	LLTransactionID		mTransactionID;
-	BOOL				mEnabled;
 	BOOL				mInWorld;
 	LLAnimPauseRequest	mPauseRequest;
 
 	std::map<std::string, LLUUID>	mIDList;
-
-	static S32 sUploadAmount;
-
 	//<edit>
 	void* mItem;
 	//</edit>

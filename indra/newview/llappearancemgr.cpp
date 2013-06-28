@@ -3664,6 +3664,7 @@ public:
 		if (!LLApp::isRunning() || mFailed)
 			return;
 
+		/* Singu Note: This wasn't working when we detached copyable attachments early, changeOutfit instead
 		LLInventoryModel::item_array_t body_items, wear_items, obj_items, gest_items;
 		for(std::set<LLUUID>::const_iterator it = mWearItems.begin(); it != mWearItems.end(); ++it)
 		{
@@ -3692,6 +3693,8 @@ public:
 		
 		if(!body_items.empty() || !wear_items.empty() || !obj_items.empty() || !gest_items.empty())
 			LLAppearanceMgr::instance().updateCOF(body_items, wear_items, obj_items, gest_items, false);
+		*/
+		LLAppearanceMgr::instance().changeOutfit(true, mFolderID, false);
 	}
 private:
 	class LLCreateBase : public LLInventoryCallback
@@ -3880,6 +3883,7 @@ LLUUID LLAppearanceMgr::makeNewOutfitLegacy(const std::string& new_folder_name, 
 	LLInventoryModel::item_array_t remove_items;
 
 	LLPointer<LLCreateLegacyOutfit> cb = new LLCreateLegacyOutfit(folder_id,boost::bind(&scroll_to_folder,folder_id),boost::bind(&show_created_outfit,folder_id,true));
+	uuid_vec_t obj_ids; // Collect the uuids of copyable objects, in order to keep any changes made in the copies
 
 	for (LLInventoryModel::item_array_t::const_iterator iter = items.begin();
 		 iter != items.end();
@@ -3888,8 +3892,9 @@ LLUUID LLAppearanceMgr::makeNewOutfitLegacy(const std::string& new_folder_name, 
 		LLViewerInventoryItem* item = (*iter);
 		LLViewerInventoryItem* base_item = item->getLinkedItem() ? item->getLinkedItem() : item;
 		bool is_copy = base_item->getPermissions().allowCopyBy(gAgent.getID());
+		bool is_obj = base_item->getInventoryType() == LLInventoryType::IT_OBJECT;
 		//Just treat 'object' type as modifiable... permission slam screws them up pretty well.
-		bool is_mod = base_item->getInventoryType() == LLInventoryType::IT_OBJECT || base_item->getPermissions().allowModifyBy(gAgent.getID());
+		bool is_mod = is_obj || base_item->getPermissions().allowModifyBy(gAgent.getID());
 		//If it's multi-worn we want to create a copy of the item if possible AND create a new link to that new copy with the same desc as the old link.
 		bool is_multi = base_item->isWearableType() && gAgentWearables.getWearableCount(base_item->getWearableType()) > 1 ;
 
@@ -3899,9 +3904,12 @@ LLUUID LLAppearanceMgr::makeNewOutfitLegacy(const std::string& new_folder_name, 
 		}
 		else if( is_copy )
 		{
+			if (is_obj) obj_ids.push_back(base_item->getUUID()); // If it's a copyable object, store it for later
 			cb->makeCopy(item,is_multi && use_links);
 		}
 	}
+	if (gSavedSettings.getBOOL("LiruLegacyOutfitStoreObjChanges")) // As a last resort, someone may create a legacy outfit to undo attachment changes
+		LLAppearanceMgr::instance().removeItemsFromAvatar(obj_ids); // The avatar will have to go without these for now
 	cb->dispatch();
 
 	return folder_id;

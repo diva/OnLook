@@ -208,7 +208,6 @@ protected:
 	LLColor4				mListColor;
 
 private:
-	S32					mButtonPadding;
 	BOOL				mAllowTextEntry;
 	S32					mMaxChars;
 	BOOL				mTextEntryTentative;

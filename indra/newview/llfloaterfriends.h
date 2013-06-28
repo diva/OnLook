@@ -76,15 +76,6 @@ public:
 
 	virtual BOOL postBuild();
 
-	// Show a dialog explaining what friendship entails, then request
-	// friendship. JC
-	static void requestFriendshipDialog(const LLUUID& target_id, 
-										const std::string& target_name);
-
-	// Just request friendship, no dialog.
-	static void requestFriendship(const LLUUID& target_id,
-								  const std::string& target_name, const std::string& message);
-
 	void populateContactGroupSelect();
 
 private:
@@ -130,8 +121,6 @@ private:
 	// callback methods
 	static void onSelectName(LLUICtrl* ctrl, void* user_data);
 	static void onChangeContactGroup(LLUICtrl* ctrl, void* user_data);
-	static bool callbackAddFriend(const LLSD& notification, const LLSD& response);
-	static bool callbackAddFriendWithMessage(const LLSD& notification, const LLSD& response);
 	static void onPickAvatar(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names );
 	void onContactFilterEdit(const std::string& search_string);
 	static void onClickIM(void* user_data);
@@ -140,7 +129,6 @@ private:
 	static void updateColumns(void* user_data);
 	static void onClickProfile(void* user_data);
 	static void onClickAddFriend(void* user_data);
-	static void onClickRemove(void* user_data);
 	static void onClickExport(void* user_data);
 	static void onClickExport_continued(void* user_data, AIFilePicker* filepicker);
 	static void onClickImport(void* user_data);
@@ -148,12 +136,9 @@ private:
 public:
 	static void FriendImportState(LLUUID id, bool accepted);
 private:
-	static void onClickOfferTeleport(void* user_data);
 	static void onClickPay(void* user_data);
 
 	static void onClickModifyStatus(LLUICtrl* ctrl, void* user_data);
-
-	static bool handleRemove(const LLSD& notification, const LLSD& response);
 	bool modifyRightsConfirmation(const LLSD& notification, const LLSD& response, rights_map_t* rights);
 
 private:
@@ -168,7 +153,6 @@ private:
 	S32 mNumRightsChanged;
 	S32 mNumOnline;
 	std::string mLastContactSearch;
-	static bool merging;
 };
 
 

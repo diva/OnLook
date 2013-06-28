@@ -88,8 +88,7 @@ BOOL LLPanelLandMedia::postBuild()
 {
 
 	mMediaTextureCtrl = getChild<LLTextureCtrl>("media texture");
-	mMediaTextureCtrl->setCommitCallback( onCommitAny );
-	mMediaTextureCtrl->setCallbackUserData( this );
+	mMediaTextureCtrl->setCommitCallback( onCommitAny, this );
 	mMediaTextureCtrl->setAllowNoTexture ( TRUE );
 	mMediaTextureCtrl->setImmediateFilterPermMask(PERM_COPY | PERM_TRANSFER);
 	mMediaTextureCtrl->setDnDFilterPermMask(PERM_COPY | PERM_TRANSFER);

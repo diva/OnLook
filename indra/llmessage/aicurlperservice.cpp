@@ -49,7 +49,7 @@ AIThreadSafeSimpleDC<AIPerService::TotalQueued> AIPerService::sTotalQueued;
 namespace AICurlPrivate {
 
 // Cached value of CurlConcurrentConnectionsPerService.
-U32 CurlConcurrentConnectionsPerService;
+U16 CurlConcurrentConnectionsPerService;
 
 // Friend functions of RefCountedThreadSafePerService
 
@@ -72,10 +72,11 @@ using namespace AICurlPrivate;
 
 AIPerService::AIPerService(void) :
 		mHTTPBandwidth(25),	// 25 = 1000 ms / 40 ms.
-		mConcurrectConnections(CurlConcurrentConnectionsPerService),
+		mConcurrentConnections(CurlConcurrentConnectionsPerService),
+		mApprovedRequests(0),
 		mTotalAdded(0),
-		mApprovedFirst(0),
-		mUnapprovedFirst(0)
+		mUsedCT(0),
+		mCTInUse(0)
 {
 }
 
@@ -84,7 +85,9 @@ AIPerService::CapabilityType::CapabilityType(void) :
 		mQueuedCommands(0),
 		mAdded(0),
 		mFlags(0),
-		mMaxPipelinedRequests(CurlConcurrentConnectionsPerService)
+		mDownloading(0),
+		mMaxPipelinedRequests(CurlConcurrentConnectionsPerService),
+		mConcurrentConnections(CurlConcurrentConnectionsPerService)
 {
 }
 
@@ -120,6 +123,20 @@ AIPerService::AIPerService(AIPerService const&) : mHTTPBandwidth(0)
 //   neither userinfo, host nor port may contain a '/'.
 // - userinfo does not contain a '@', and if it exists, is always terminated by a '@'.
 // - port does not contain a ':', and if it exists is always prepended by a ':'.
+//
+// This function also needs to deal with full paths, in which case it should return
+// an empty string.
+//
+// Full paths can have the form: "/something..."
+//                           or  "C:\something..."
+//               and maybe even  "C:/something..."
+//
+// The first form leads to an empty string being returned because the '/' signals the
+// end of the authority and we'll return immediately.
+// The second one will abort when hitting the backslash because that is an illegal
+// character in an url (before the first '/' anyway).
+// The third will abort because "C:" would be the hostname and a colon in the hostname
+// is not legal.
 //
 //static
 std::string AIPerService::extract_canonical_servicename(std::string const& url)
@@ -158,8 +175,13 @@ std::string AIPerService::extract_canonical_servicename(std::string const& url)
       }
       else
       {
-        // Found slash that is not part of the "sheme://" string. Signals end of authority.
+        // Found a slash that is not part of the "sheme://" string. Signals end of authority.
         // We're done.
+        if (hostname < sheme_colon)
+        {
+          // This happens when windows filenames are passed to this function of the form "C:/..."
+          servicename.clear();
+        }
         break;
       }
     }
@@ -171,6 +193,12 @@ std::string AIPerService::extract_canonical_servicename(std::string const& url)
         hostname = p + 1;
         servicename.clear();                // Remove the "userinfo@"
       }
+    }
+    else if (c == '\\')
+    {
+      // Found a backslash, which is an illegal character for an URL. This is a windows path... reject it.
+      servicename.clear();
+      break;
     }
     if (p >= hostname)
     {
@@ -252,9 +280,57 @@ void AIPerService::release(AIPerServicePtr& instance)
   instance.reset();
 }
 
-bool AIPerService::throttled() const
+void AIPerService::redivide_connections(void)
 {
-  return mTotalAdded >= mConcurrectConnections;
+  // Priority order.
+  static AICapabilityType order[number_of_capability_types] = { cap_inventory, cap_texture, cap_mesh, cap_other };
+  // Count the number of capability types that are currently in use and store the types in an array.
+  AICapabilityType used_order[number_of_capability_types];
+  int number_of_capability_types_in_use = 0;
+  for (int i = 0; i < number_of_capability_types; ++i)
+  {
+	U32 const mask = CT2mask(order[i]);
+	if ((mCTInUse & mask))
+	{
+	  used_order[number_of_capability_types_in_use++] = order[i];
+	}
+	else
+	{
+	  // Give every other type (that is not in use) one connection, so they can be used (at which point they'll get more).
+	  mCapabilityType[order[i]].mConcurrentConnections = 1;
+	}
+  }
+  // Keep one connection in reserve for currently unused capability types (that have been used before).
+  int reserve = (mUsedCT != mCTInUse) ? 1 : 0;
+  // Distribute (mConcurrentConnections - reserve) over number_of_capability_types_in_use.
+  U16 max_connections_per_CT = (mConcurrentConnections - reserve) / number_of_capability_types_in_use + 1;
+  // The first count CTs get max_connections_per_CT connections.
+  int count = (mConcurrentConnections - reserve) % number_of_capability_types_in_use;
+  for(int i = 1, j = 0;; --i)
+  {
+	while (j < count)
+	{
+	  mCapabilityType[used_order[j++]].mConcurrentConnections = max_connections_per_CT;
+	}
+	if (i == 0)
+	{
+	  break;
+	}
+	// Finish the loop till all used CTs are assigned.
+	count = number_of_capability_types_in_use;
+	// Never assign 0 as maximum.
+	if (max_connections_per_CT > 1)
+	{
+	  // The remaining CTs get one connection less so that the sum of all assigned connections is mConcurrentConnections - reserve.
+	  --max_connections_per_CT;
+	}
+  }
+}
+
+bool AIPerService::throttled(AICapabilityType capability_type) const
+{
+  return mTotalAdded >= mConcurrentConnections ||
+		 mCapabilityType[capability_type].mAdded >= mCapabilityType[capability_type].mConcurrentConnections;
 }
 
 void AIPerService::added_to_multi_handle(AICapabilityType capability_type)
@@ -263,17 +339,37 @@ void AIPerService::added_to_multi_handle(AICapabilityType capability_type)
   ++mTotalAdded;
 }
 
-void AIPerService::removed_from_multi_handle(AICapabilityType capability_type)
+void AIPerService::removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something)
 {
-  --mCapabilityType[capability_type].mAdded;
+  CapabilityType& ct(mCapabilityType[capability_type]);
+  llassert(mTotalAdded > 0 && ct.mAdded > 0);
+  bool done = --ct.mAdded == 0;
+  if (downloaded_something)
+  {
+	llassert(ct.mDownloading > 0);
+	--ct.mDownloading;
+  }
   --mTotalAdded;
-  llassert(mTotalAdded >= 0 && mCapabilityType[capability_type].mAdded >= 0);
+  if (done && ct.pipelined_requests() == 0)
+  {
+	mark_unused(capability_type);
+  }
 }
 
-void AIPerService::queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type)
+// Returns true if the request was queued.
+bool AIPerService::queue(AICurlEasyRequest const& easy_request, AICapabilityType capability_type, bool force_queuing)
 {
-  mCapabilityType[capability_type].mQueuedRequests.push_back(easy_request.get_ptr());
-  TotalQueued_wat(sTotalQueued)->count++;
+  CapabilityType::queued_request_type& queued_requests(mCapabilityType[capability_type].mQueuedRequests);
+  bool needs_queuing = force_queuing || !queued_requests.empty();
+  if (needs_queuing)
+  {
+	queued_requests.push_back(easy_request.get_ptr());
+	if (is_approved(capability_type))
+	{
+	  TotalQueued_wat(sTotalQueued)->approved++;
+	}
+  }
+  return needs_queuing;
 }
 
 bool AIPerService::cancel(AICurlEasyRequest const& easy_request, AICapabilityType capability_type)
@@ -297,105 +393,139 @@ bool AIPerService::cancel(AICurlEasyRequest const& easy_request, AICapabilityTyp
 	prev = cur;
   }
   mCapabilityType[capability_type].mQueuedRequests.pop_back();		// if this is safe.
-  TotalQueued_wat total_queued_w(sTotalQueued);
-  total_queued_w->count--;
-  llassert(total_queued_w->count >= 0);
+  if (is_approved(capability_type))
+  {
+	TotalQueued_wat total_queued_w(sTotalQueued);
+	llassert(total_queued_w->approved > 0);
+	total_queued_w->approved--;
+  }
   return true;
 }
 
-void AIPerService::add_queued_to(curlthread::MultiHandle* multi_handle, bool recursive)
+void AIPerService::add_queued_to(curlthread::MultiHandle* multi_handle, bool only_this_service)
 {
-  int order[number_of_capability_types];
-  // The first two types are approved types, they should be the first to try.
-  // Try the one that has the largest queue first, if they the queues have equal size, try mApprovedFirst first.
-  size_t s0 = mCapabilityType[0].mQueuedRequests.size();
-  size_t s1 = mCapabilityType[1].mQueuedRequests.size();
-  if (s0 == s1)
+  U32 success = 0;									// The CTs that we successfully added a request for from the queue.
+  bool success_this_pass = false;
+  int i = 0;
+  // The first pass we only look at CTs with 0 requests added to the multi handle. Subsequent passes only non-zero ones.
+  for (int pass = 0;; ++i)
   {
-	order[0] = mApprovedFirst;
-	mApprovedFirst = 1 - mApprovedFirst;
-	order[1] = mApprovedFirst;
-  }
-  else if (s0 > s1)
-  {
-	order[0] = 0;
-	order[1] = 1;
-  }
-  else
-  {
-	order[0] = 1;
-	order[1] = 0;
-  }
-  // The next two types are unapproved types. Here, try them alternating regardless of queue size.
-  int n = mUnapprovedFirst;
-  for (int i = 2; i < number_of_capability_types; ++i, n = (n + 1) % (number_of_capability_types - 2))
-  {
-	order[i] = 2 + n;
-  }
-  mUnapprovedFirst = (mUnapprovedFirst + 1) % (number_of_capability_types - 2);
-
-  for (int i = 0; i < number_of_capability_types; ++i)
-  {
-	CapabilityType& ct(mCapabilityType[order[i]]);
-	if (!ct.mQueuedRequests.empty())
+	if (i == number_of_capability_types)
 	{
-	  if (!multi_handle->add_easy_request(ct.mQueuedRequests.front(), true))
+	  i = 0;
+	  // Keep trying until we couldn't add anything anymore.
+	  if (pass++ && !success_this_pass)
 	  {
-		// Throttled. If this failed then every capability type will fail: we either are using too much bandwidth, or too many total connections.
-		// However, it MAY be that this service was thottled for using too much bandwidth by itself. Look if other services can be added.
+		// Done.
 		break;
 	  }
-	  // Request was added, remove it from the queue.
-	  ct.mQueuedRequests.pop_front();
-	  if (ct.mQueuedRequests.empty())
-	  {
-		// We obtained a request from the queue, and after that there we no more request in the queue of this service.
-		ct.mFlags |= ctf_empty;
-	  }
-	  else
-	  {
-		// We obtained a request from the queue, and even after that there was at least one more request in the queue of this service.
-		ct.mFlags |= ctf_full;
-	  }
-	  TotalQueued_wat total_queued_w(sTotalQueued);
-	  llassert(total_queued_w->count > 0);
-	  if (!--(total_queued_w->count))
-	  {
-		// We obtained a request from the queue, and after that there we no more request in any queue.
-		total_queued_w->empty = true;
-	  }
-	  else
-	  {
-		// We obtained a request from the queue, and even after that there was at least one more request in some queue.
-		total_queued_w->full = true;
-	  }
-	  // We added something from a queue, so we're done.
-	  return;
+	  success_this_pass = false;
 	}
-	else
+	CapabilityType& ct(mCapabilityType[i]);
+	if (!pass != !ct.mAdded)						// Does mAdded match what we're looking for (first mAdded == 0, then mAdded != 0)?
+	{
+	  continue;
+	}
+	if (multi_handle->added_maximum())
+	{
+	  // We hit the maximum number of global connections. Abort every attempt to add anything.
+	  only_this_service = true;
+	  break;
+	}
+	if (mTotalAdded >= mConcurrentConnections)
+	{
+	  // We hit the maximum number of connections for this service. Abort any attempt to add anything to this service.
+	  break;
+	}
+	if (ct.mAdded >= ct.mConcurrentConnections)
+	{
+	  // We hit the maximum number of connections for this capability type. Try the next one.
+	  continue;
+	}
+	U32 mask = CT2mask((AICapabilityType)i);
+	if (ct.mQueuedRequests.empty())					// Is there anything in the queue (left) at all?
 	{
 	  // We could add a new request, but there is none in the queue!
 	  // Note that if this service does not serve this capability type,
 	  // then obviously this queue was empty; however, in that case
 	  // this variable will never be looked at, so it's ok to set it.
-	  ct.mFlags |= ctf_starvation;
+	  ct.mFlags |= ((success & mask) ? ctf_empty : ctf_starvation);
 	}
-	if (i == number_of_capability_types - 1)
+	else
 	{
-	  // Last entry also empty. All queues of this service were empty. Check total connections.
-	  TotalQueued_wat total_queued_w(sTotalQueued);
-	  if (total_queued_w->count == 0)
+	  // Attempt to add the front of the queue.
+	  if (!multi_handle->add_easy_request(ct.mQueuedRequests.front(), true))
 	  {
-		// The queue of every service is empty!
-		total_queued_w->starvation = true;
-		return;
+		// If that failed then we got throttled on bandwidth because the maximum number of connections were not reached yet.
+		// Therefore this will keep failing for this service, we abort any additional attempt to add something for this service.
+		break;
+	  }
+	  // Request was added, remove it from the queue.
+	  ct.mQueuedRequests.pop_front();
+	  // Mark that at least one request of this CT was successfully added.
+	  success |= mask;
+	  success_this_pass = true;
+	  // Update approved count.
+	  if (is_approved((AICapabilityType)i))
+	  {
+		TotalQueued_wat total_queued_w(sTotalQueued);
+		llassert(total_queued_w->approved > 0);
+		total_queued_w->approved--;
 	  }
 	}
   }
-  if (recursive)
+
+  size_t queuedapproved_size = 0;
+  for (int i = 0; i < number_of_capability_types; ++i)
+  {
+	CapabilityType& ct(mCapabilityType[i]);
+	U32 mask = CT2mask((AICapabilityType)i);
+	// Add up the size of all queues with approved requests.
+	if ((approved_mask & mask))
+	{
+	  queuedapproved_size += ct.mQueuedRequests.size();
+	}
+	// Skip CTs that we didn't add anything for.
+	if (!(success & mask))
+	{
+	  continue;
+	}
+	if (!ct.mQueuedRequests.empty())
+	{
+	  // We obtained one or more requests from the queue, and even after that there was at least one more request in the queue of this CT.
+	  ct.mFlags |= ctf_full;
+	}
+  }
+
+  // Update the flags of sTotalQueued.
+  {
+	TotalQueued_wat total_queued_w(sTotalQueued);
+	if (total_queued_w->approved == 0)
+	{
+	  if ((success & approved_mask))
+	  {
+		// We obtained an approved request from the queue, and after that there were no more requests in any (approved) queue.
+		total_queued_w->empty = true;
+	  }
+	  else
+	  {
+		// Every queue of every approved CT is empty!
+		total_queued_w->starvation = true;
+	  }
+	}
+	else if ((success & approved_mask))
+	{
+	  // We obtained an approved request from the queue, and even after that there was at least one more request in some (approved) queue.
+	  total_queued_w->full = true;
+	}
+  }
+ 
+  // Don't try other services if anything was added successfully.
+  if (success || only_this_service)
   {
 	return;
   }
+
   // Nothing from this service could be added, try other services.
   instance_map_wat instance_map_w(sInstanceMap);
   for (iterator service = instance_map_w->begin(); service != instance_map_w->end(); ++service)
@@ -422,8 +552,11 @@ void AIPerService::purge(void)
 	{
 	  size_t s = per_service_w->mCapabilityType[i].mQueuedRequests.size();
 	  per_service_w->mCapabilityType[i].mQueuedRequests.clear();
-	  total_queued_w->count -= s;
-	  llassert(total_queued_w->count >= 0);
+	  if (is_approved((AICapabilityType)i))
+	  {
+		llassert(total_queued_w->approved >= s);
+		total_queued_w->approved -= s;
+	  }
 	}
   }
 }
@@ -435,14 +568,23 @@ void AIPerService::adjust_concurrent_connections(int increment)
   for (AIPerService::iterator iter = instance_map_w->begin(); iter != instance_map_w->end(); ++iter)
   {
 	PerService_wat per_service_w(*iter->second);
-	U32 old_concurrent_connections = per_service_w->mConcurrectConnections;
-	per_service_w->mConcurrectConnections = llclamp(old_concurrent_connections + increment, (U32)1, CurlConcurrentConnectionsPerService);
-	increment = per_service_w->mConcurrectConnections - old_concurrent_connections;
+	U16 old_concurrent_connections = per_service_w->mConcurrentConnections;
+	int new_concurrent_connections = llclamp(old_concurrent_connections + increment, 1, (int)CurlConcurrentConnectionsPerService);
+	per_service_w->mConcurrentConnections = (U16)new_concurrent_connections;
+	increment = per_service_w->mConcurrentConnections - old_concurrent_connections;
 	for (int i = 0; i < number_of_capability_types; ++i)
 	{
-	  per_service_w->mCapabilityType[i].mMaxPipelinedRequests = llmax(per_service_w->mCapabilityType[i].mMaxPipelinedRequests + increment, (U32)0);
+	  per_service_w->mCapabilityType[i].mMaxPipelinedRequests = llmax(per_service_w->mCapabilityType[i].mMaxPipelinedRequests + increment, 0);
+	  int new_concurrent_connections_per_capability_type =
+		  llclamp((new_concurrent_connections * per_service_w->mCapabilityType[i].mConcurrentConnections + old_concurrent_connections / 2) / old_concurrent_connections, 1, new_concurrent_connections);
+	  per_service_w->mCapabilityType[i].mConcurrentConnections = (U16)new_concurrent_connections_per_capability_type;
 	}
   }
+}
+
+void AIPerService::ResetUsed::operator()(AIPerService::instance_map_type::value_type const& service) const
+{
+  PerService_wat(*service.second)->resetUsedCt();
 }
 
 void AIPerService::Approvement::honored(void)
@@ -450,9 +592,10 @@ void AIPerService::Approvement::honored(void)
   if (!mHonored)
   {
 	mHonored = true;
-	AICurlPrivate::PerService_wat per_service_w(*mPerServicePtr);
-	llassert(per_service_w->mCapabilityType[mCapabilityType].mApprovedRequests > 0);
+	PerService_wat per_service_w(*mPerServicePtr);
+	llassert(per_service_w->mCapabilityType[mCapabilityType].mApprovedRequests > 0 && per_service_w->mApprovedRequests > 0);
 	per_service_w->mCapabilityType[mCapabilityType].mApprovedRequests--;
+	per_service_w->mApprovedRequests--;
   }
 }
 

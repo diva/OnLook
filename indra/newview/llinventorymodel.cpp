@@ -1062,14 +1062,13 @@ void LLInventoryModel::moveObject(const LLUUID& object_id, const LLUUID& cat_id)
 		return;
 	}
 
-	cat_map_t::iterator it;
-	if((object_id == cat_id) || (it = mCategoryMap.find(cat_id))==mCategoryMap.end())
+	if((object_id == cat_id) || !is_in_map(mCategoryMap, cat_id))
 	{
 		llwarns << "Could not move inventory object " << object_id << " to "
 				<< cat_id << llendl;
 		return;
 	}
-	LLViewerInventoryCategory* cat = it->second;
+	LLViewerInventoryCategory* cat = getCategory(object_id);
 	if(cat && (cat->getParentUUID() != cat_id))
 	{
 		cat_array_t* cat_array;
@@ -1777,10 +1776,6 @@ bool LLInventoryModel::isCategoryComplete(const LLUUID& cat_id) const
 			return true;
 		}
 	}
-
-	// <edit>
-	if((cat_id == gSystemFolderRoot) || gInventory.isObjectDescendentOf(cat_id, gSystemFolderRoot)) return true;
-	// </edit>
 
 	return false;
 }

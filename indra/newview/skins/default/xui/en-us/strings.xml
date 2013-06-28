@@ -3037,6 +3037,7 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 
 	<!-- inventory -->
 	<string name="InventoryNoMatchingItems">No matching items found in inventory.</string>
+	<string name="InventoryNoTexture">You do not have a copy of this texture in your inventory</string>
 	<string name="MarketplaceURL">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/</string>
 	<string name="MarketplaceURL_CreateStore">http://community.secondlife.com/t5/English-Knowledge-Base/Selling-in-the-Marketplace/ta-p/700193#Section_.3</string>
 	<string name="MarketplaceURL_Dashboard">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/merchants/store/dashboard</string>
@@ -3305,6 +3306,10 @@ The
 	<string name="LocalSettings">Local Settings</string>
 	<string name="Region">Region</string>
 	<string name="RegionSettings">Region Settings</string>
+
+	<!-- Multi Preview Floater -->
+	<string name="MultiPreviewTitle">Preview</string>
+	<string name="MultiPropertiesTitle">Properties</string>
 
 	<!-- inventory offer -->
 	<string name="InvOfferAnObjectNamed">An object named</string>
@@ -4052,6 +4057,9 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
   <string name="answering-im">
     Connecting...
   </string>
+  <string name="conference-title">
+    Multi-person chat
+  </string>
   <string name="inventory_item_offered-im">
     Inventory item offered
   </string>
@@ -4139,6 +4147,8 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
   </string>
 
   <string name="Home position set.">Home position set.</string>
+
+  <string name="voice_morphing_url">http://secondlife.com/landing/voicemorphing</string>
 
   <!-- Financial operations strings -->
   <string name="paid_you_ldollars">[NAME] paid you [CURRENCY][AMOUNT] [REASON].</string>
@@ -4283,6 +4293,8 @@ Try enclosing path to the editor with double quotes.
   <string name="BeaconSound">Viewing sound beacons (yellow)</string>
   <string name="BeaconMedia">Viewing media beacons (white)</string>
   <string name="ParticleHiding">Hiding Particles</string>
+
+  <string name="Command_Profile_Label">Profile</string>
 
   <!-- Pathfinding -->
   <string name="Pathfinding_Wiki_URL">http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer</string>

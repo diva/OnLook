@@ -321,12 +321,6 @@ extern LLTimer gLogoutTimer;
 extern F32 gSimLastTime; 
 extern F32 gSimFrames;
 
-// <edit>
-extern LLUUID gSystemFolderRoot;
-extern LLUUID gSystemFolderSettings;
-extern LLUUID gSystemFolderAssets;
-// </edit>
-
 extern BOOL		gDisconnected;
 
 extern LLFrameTimer	gRestoreGLTimer;

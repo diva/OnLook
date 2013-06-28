@@ -172,9 +172,13 @@ public:
 	void childSetFocus(const std::string& id, BOOL focus = TRUE);
 	BOOL childHasFocus(const std::string& id);
 	
-	void childSetCommitCallback(const std::string& id, void (*cb)(LLUICtrl*, void*), void* userdata = NULL );
-	void childSetValidate(const std::string& id, BOOL (*cb)(LLUICtrl*, void*) );
-	void childSetUserData(const std::string& id, void* userdata);
+	// *TODO: Deprecate; for backwards compatability only:
+	// Prefer getChild<LLUICtrl>("foo")->setCommitCallback(boost:bind(...)),
+	// which takes a generic slot.  Or use mCommitCallbackRegistrar.add() with
+	// a named callback and reference it in XML.
+	void childSetCommitCallback(const std::string& id, boost::function<void (LLUICtrl*,void*)> cb, void* data = NULL);
+
+	void childSetValidate(const std::string& id, boost::function<bool (const LLSD& data)> cb );
 
 	void childSetColor(const std::string& id, const LLColor4& color);
 	void childSetAlpha(const std::string& id, F32 alpha);

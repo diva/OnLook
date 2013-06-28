@@ -391,6 +391,12 @@ Los demás residentes podrán visitar la URL que hayas elegido cuando vean tu pe
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Unirse"/>
 	</notification>
 	
+	<notification name="JoinGroupNoCost">
+		Vas a entrar al grupo [NAME].
+¿Quieres seguir?
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Entrar"/>
+	</notification>
+
 	<notification name="JoinGroupCannotAfford">
 		Unirse a este grupo cuesta [CURRENCY][COST].
 No tienes suficientes [CURRENCY] para unirte a este grupo.
@@ -1384,13 +1390,6 @@ Aún puedes ver el chat y los MI existentes pulsando &apos;Ver MI y Chat&apos;. 
 No tienes el permiso de comprar terreno para el grupo que tienes activado actualmente.
 	</notification>
 	
-	<notification label="Añadir como amigo" name="AddFriend">
-		Los amigos pueden darse permiso para localizarse en el mapa y para saber si el otro está conectado.
-
-¿Ofrecer a [NAME] que sea tu amigo?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
-	</notification>
-	
 	<notification label="Añadir como amigo" name="AddFriendWithMessage">
 		Los amigos pueden darse permiso para localizarse en el mapa y para saber si el otro está conectado.
 
@@ -1886,6 +1885,11 @@ Se ocultará el chat y los mensajes instantáneos. Los mensajes instantáneos re
 		<usetemplate name="okcancelbuttons" notext="Rehusar" yestext="Entrar"/>
 	</notification>
 	
+	<notification name="JoinedTooManyGroups">
+		Has superado tu número máximo de grupos. Por favor, sal de al menos uno de ellos antes de crear uno nuevo o entrar en alguno.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+
 	<notification name="KickUser">
 		¿Con qué mensaje se expulsará a este usuario?
 		<form name="form">
@@ -3752,7 +3756,11 @@ Por favor, reinténtalo en unos momentos.
 			<button name="Decline" text="Rehusar"/>
 		</form>
 	</notification>
-	
+
+	<notification name="FriendshipOffered">
+		Has ofrecido amistad a [TO_NAME]
+	</notification>
+
 	<notification name="OfferFriendshipNoMessage">
 		[NAME] te está ofreciendo amistad.
 
@@ -4069,6 +4077,25 @@ Pulsa Aceptar para entrar al chat o Rehusar para declinar la invitación. Pulsa 
 	<notification name="VoiceLoginRetry">
 		Estamos creando un canal de voz para ti. Esto puede tardar hasta un minuto.
 	</notification>
+
+	<notification name="VoiceEffectsExpired">
+		Una o más de las transformaciones de voz a las que estás suscrito han caducado.
+[Pulsa aquí [URL]] para renovar la suscripción.
+	</notification>
+
+	<notification name="VoiceEffectsExpiredInUse">
+		La transformación de voz activa ha caducado y se ha aplicado tu configuración de voz normal.
+[Pulsa aquí [URL]] para renovar la suscripción.
+	</notification>
+
+	<notification name="VoiceEffectsWillExpire">
+		Una o más de tus transformaciones de voz caducarán en menos de [INTERVAL] días.
+[Pulsa aquí [URL]] para renovar la suscripción.
+	</notification>
+
+	<notification name="VoiceEffectsNew">
+		Están disponibles nuevas transformaciones de voz.
+	</notification>
 	
 	<notification name="Cannot enter parcel: not a group member">
 		No puedes entrar en esta parcela, no eres miembro del grupo adecuado.
@@ -4149,6 +4176,16 @@ Avatar '[NAME]' se fué después de [TIME] segundos siendo nube.
 Avatar '[NAME]' ha entrado en edición de Apariencia.
 	</notification>
 	
+	<notification name="NoVoiceConnect">
+		Tenemos problemas de conexión con tu servidor de voz:
+
+[HOSTID]
+
+No podrás establecer comunicaciones de voz.
+Comprueba la configuración de la red y del servidor de seguridad.
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+
 	<notification name="AvatarRezLeftAppearanceNotification">
 		( [EXISTENCE] segundos vivo )
 Avatar '[NAME]' ha abandonado la edición de su Apariencia.
@@ -5124,11 +5161,6 @@ la región está llena.
 	<notification name="UpdateViewerBuyParcel">
 		<tag>fail</tag>
 			Necesitas actualizar tu visor para comprar esta parcela.
-	</notification>
-
-	<notification name="LandBuyAccessBlocked">
-		<tag>fail</tag>
-			No puedes comprar este terreno por tu nivel de calificación. Necesitas validar tu edad y/o instalar un visor actualizado. Por favor dirígete a la base de conocimientos para más detalles sobre como acceder a áreas con calificación de edad.
 	</notification>
 
 	<notification name="CantBuyParcelNotForSale">

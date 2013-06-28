@@ -157,9 +157,6 @@
 			<button bottom="-48" follows="right|top" font="SansSerif" halign="center" height="20"
 			     label="Search" label_selected="Search" left="121" mouse_opaque="true" name="Search"
 			     visible="false" width="95" />
-			<button bottom="-46" follows="right|top" font="SansSerif" halign="center" height="20"
-			     label="Place an Ad..." label_selected="Place an Ad..." left="630"
-			     mouse_opaque="true" name="Place an Ad..." width="145" />
 			<button bottom="-533" follows="left|bottom" font="SansSerif" halign="center"
 			     height="20" label="Delete" label_selected="Delete" left="80"
 			     mouse_opaque="true" name="Delete" width="80" />
@@ -707,7 +704,7 @@ To buy direct, visit the land and click on the place name in the title bar.
 	     width="430" />
 	<panel bottom="-560" follows="right|top" height="470" left="340"
 	     name="event_details_panel" width="440" />
-	<panel bottom="-580" follows="right|top" height="515" left="350"
+	<panel bottom="-570" follows="right|top" height="515" left="350"
 	     name="group_details_panel_holder" width="430">
 		<panel bottom="0" follows="right|top" height="470" left="0" name="group_details_panel"
 		     width="430" />

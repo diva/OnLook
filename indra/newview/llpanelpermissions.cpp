@@ -36,16 +36,14 @@
 
 #include "llpanelpermissions.h"
 
-#include "lluuid.h"
 #include "llpermissions.h"
-#include "llcategory.h"
 #include "llclickaction.h"
 #include "llfocusmgr.h"
 #include "llnotificationsutil.h"
-#include "llstring.h"
+#include "lltrans.h"
+#include "llwindow.h"
 
 #include "llviewerwindow.h"
-#include "llwindow.h"
 #include "llresmgr.h"
 #include "lltextbox.h"
 #include "llbutton.h"
@@ -53,20 +51,16 @@
 #include "llviewerobject.h"
 #include "llselectmgr.h"
 #include "llagent.h"
-#include "llstatusbar.h"		// for getBalance()
+#include "llavataractions.h"
+#include "llfloatergroups.h"
+#include "llgroupactions.h"
 #include "lllineeditor.h"
 #include "llradiogroup.h"
 #include "llcombobox.h"
-#include "llfloateravatarinfo.h"
-#include "lluiconstants.h"
 #include "lldbstrings.h"
-#include "llfloatergroupinfo.h"
-#include "llfloatergroups.h"
 #include "llnamebox.h"
-#include "llviewercontrol.h"
 #include "lluictrlfactory.h"
 #include "roles_constants.h"
-#include "lltrans.h"
 #include "llinventoryfunctions.h"
 
 #include "lfsimfeaturehandler.h"
@@ -267,7 +261,7 @@ void LLPanelPermissions::disableAll()
 		combo_click_action->clear();
 	}
 	getChildView("B:")->setVisible(								FALSE);
-	getChildView("O:")->setVisible(								FALSE);
+	//getChildView("O:")->setVisible(								FALSE);
 	getChildView("G:")->setVisible(								FALSE);
 	getChildView("E:")->setVisible(								FALSE);
 	getChildView("N:")->setVisible(								FALSE);
@@ -672,8 +666,8 @@ void LLPanelPermissions::refresh()
 			perm_string = mask_to_string(owner_mask_on);
 			if (!supports_export && owner_mask_on & PERM_EXPORT) // Hide Export when not available
 				perm_string.erase(perm_string.find_last_of("E"));
-			getChild<LLUICtrl>("O:")->setValue("O: " + perm_string);
-			getChildView("O:")->setVisible(							TRUE);
+			//getChild<LLUICtrl>("O:")->setValue("O: " + perm_string);
+			//getChildView("O:")->setVisible(							TRUE);
 			
 			getChild<LLUICtrl>("G:")->setValue("G: " + mask_to_string(group_mask_on));
 			getChildView("G:")->setVisible(							TRUE);
@@ -701,7 +695,7 @@ void LLPanelPermissions::refresh()
 	{
 		childSetVisible("perm_modify", true);
 		getChildView("B:")->setVisible(								FALSE);
-		getChildView("O:")->setVisible(								FALSE);
+		//getChildView("O:")->setVisible(								FALSE);
 		getChildView("G:")->setVisible(								FALSE);
 		getChildView("E:")->setVisible(								FALSE);
 		getChildView("N:")->setVisible(								FALSE);
@@ -1007,7 +1001,7 @@ void LLPanelPermissions::onClickCreator(void *data)
 {
 	LLPanelPermissions *self = (LLPanelPermissions *)data;
 
-	LLFloaterAvatarInfo::showFromObject(self->mCreatorID);
+	LLAvatarActions::showProfile(self->mCreatorID);
 }
 
 // static
@@ -1019,25 +1013,24 @@ void LLPanelPermissions::onClickOwner(void *data)
 	{
 		LLUUID group_id;
 		LLSelectMgr::getInstance()->selectGetGroup(group_id);
-		LLFloaterGroupInfo::showFromUUID(group_id);
+		LLGroupActions::show(group_id);
 	}
 	else
 	{
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
 		if (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 		{
-			LLFloaterAvatarInfo::showFromObject(self->mOwnerID);
+			LLAvatarActions::showProfile(self->mOwnerID);
 		}
 // [/RLVa:KB]
-//		LLFloaterAvatarInfo::showFromObject(self->mOwnerID);
+//		LLAvatarActions::showProfile(self->mOwnerID);
 	}
 }
 
 void LLPanelPermissions::onClickLastOwner(void *data)
 {
 	LLPanelPermissions *self = (LLPanelPermissions *)data;
-	if(self->mLastOwnerID.notNull())
-		LLFloaterAvatarInfo::showFromObject(self->mLastOwnerID);
+	LLAvatarActions::showProfile(self->mLastOwnerID);
 }
 
 void LLPanelPermissions::onClickGroup(void* data)
@@ -1071,7 +1064,7 @@ void LLPanelPermissions::onClickOpenGroup(void* data)
 	LLUUID group_id;
 	LLSelectMgr::getInstance()->selectGetGroup(group_id);
 	
-	LLFloaterGroupInfo::showFromUUID(group_id);
+	LLGroupActions::show(group_id);
 }
 
 // static

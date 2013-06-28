@@ -74,28 +74,27 @@ protected:
 	void			sendMedia();
 
 	// this function is to return TRUE if the drag should succeed.
-	static BOOL onDragTexture(LLUICtrl* ctrl, LLInventoryItem* item, void* ud);
+	static BOOL onDragTexture(LLUICtrl* ctrl, LLInventoryItem* item);
 
 	void 	onCommitTexture(const LLSD& data);
-	static void 	onCancelTexture(			LLUICtrl* ctrl, void* userdata);
-	static void 	onSelectTexture(			LLUICtrl* ctrl, void* userdata);
+	void 	onCancelTexture(const LLSD& data);
+	void 	onSelectTexture(const LLSD& data);
 	void 	onCommitColor(const LLSD& data);
 	void 	onCommitAlpha(const LLSD& data);
-	static void 	onCancelColor(			LLUICtrl* ctrl, void* userdata);
-	static void 	onSelectColor(			LLUICtrl* ctrl, void* userdata);
-	
-	static 	void onCommitTextureInfo( 		LLUICtrl* ctrl, void* userdata);
+	void 	onCancelColor(const LLSD& data);
+	void 	onSelectColor(const LLSD& data);
+	static void 	onCommitTextureInfo(	LLUICtrl* ctrl, void* userdata);
 	static void		onCommitBump(			LLUICtrl* ctrl, void* userdata);
 	static void		onCommitTexGen(			LLUICtrl* ctrl, void* userdata);
 	static void		onCommitShiny(			LLUICtrl* ctrl, void* userdata);
 	static void		onCommitFullbright(		LLUICtrl* ctrl, void* userdata);
 	static void     onCommitGlow(           LLUICtrl* ctrl, void *userdata);
 	static void		onCommitPlanarAlign(	LLUICtrl* ctrl, void* userdata);
-
 	static void		onClickApply(void*);
 	static void		onClickAutoFix(void*);
 	static void		onClickCopy(void*);
 	static void		onClickPaste(void*);
+
 	static F32      valueGlow(LLViewerObject* object, S32 face);
 };
 

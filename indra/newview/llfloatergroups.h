@@ -52,7 +52,6 @@ class LLUICtrl;
 class LLTextBox;
 class LLScrollListCtrl;
 class LLButton;
-class LLFloaterGroupPicker;
 
 class LLFloaterGroupPicker : public LLFloater, public LLUIFactory<LLFloaterGroupPicker, LLFloaterGroupPicker, VisibilityPolicy<LLFloater> >
 {
@@ -105,29 +104,8 @@ protected:
 
 	void onGroupSortChanged();
 	void onGroupList();
-	static void onBtnCreate(void* userdata);
-	static void onBtnActivate(void* userdata);
-	static void onBtnInfo(void* userdata);
-	static void onBtnIM(void* userdata);
-	static void onBtnLeave(void* userdata);
-	static void onBtnSearch(void* userdata);
-	static void onBtnVote(void* userdata);
 	static void onBtnInvite(void* userdata);
-	static void onBtnTitles(void* userdata);
-	static void onDoubleClickGroup(void* userdata);
-
-	void create();
-	void activate();
-	void info();
-	void startIM();
-	void leave();
-	void search();
-	void callVote();
 	void invite();
-	void titles();
-
-	static bool callbackLeaveGroup(const LLSD& notification, const LLSD& response);
-
 };
 
 

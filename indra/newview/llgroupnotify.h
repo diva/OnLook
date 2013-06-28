@@ -90,7 +90,6 @@ protected:
 
 	// internal handler for button being clicked
 	void onClickOk();
-	void onClickGroupInfo();
 	void onClickSaveInventory();
 
 	// for "next" button

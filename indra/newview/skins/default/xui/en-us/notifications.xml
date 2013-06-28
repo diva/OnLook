@@ -713,6 +713,21 @@ Do you wish to proceed?
 
   <notification
    icon="alertmodal.tga"
+   name="JoinGroupNoCost"
+   type="alertmodal">
+You are joining group [NAME].
+Do you wish to proceed?
+    <tag>group</tag>
+    <tag>confirm</tag>
+    <usetemplate
+     name="okcancelbuttons"
+     notext="Cancel"
+     yestext="Join"/>
+  </notification>
+
+
+  <notification
+   icon="alertmodal.tga"
    name="JoinGroupCannotAfford"
    type="alertmodal">
 Joining this group costs [CURRENCY][COST].
@@ -2384,20 +2399,6 @@ You do not have permission to buy land for your active group.
   <notification
    icon="alertmodal.tga"
    label="Add Friend"
-   name="AddFriend"
-   type="alertmodal">
-Friends can give permissions to track each other on the map and receive online status updates.
-
-Offer friendship to [NAME]?
-    <usetemplate
-     name="okcancelbuttons"
-     notext="Cancel"
-     yestext="OK"/>
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   label="Add Friend"
    name="AddFriendWithMessage"
    type="alertmodal">
 Friends can give permissions to track each other on the map and receive online status updates.
@@ -3350,6 +3351,18 @@ To leave a group select the &apos;Groups...&apos; option from the &apos;Edit&apo
      name="okcancelbuttons"
      notext="Decline"
      yestext="Join"/>
+  </notification>
+
+  <notification
+   icon="alert.tga"
+   name="JoinedTooManyGroups"
+   type="alert">
+You have reached your maximum number of groups. Please leave some group before joining or creating a new one.
+    <tag>group</tag>
+    <tag>fail</tag>
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
   </notification>
 
   <notification
@@ -6733,6 +6746,13 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
 
   <notification
    icon="notify.tga"
+   name="FriendshipOffered"
+   type="notifytip">
+	You have offered friendship to [TO_NAME]
+  </notification>
+
+  <notification
+   icon="notify.tga"
    name="OfferFriendshipNoMessage"
    type="notify">
 [NAME] is offering friendship.
@@ -7336,6 +7356,56 @@ We are creating a voice channel for you. This may take up to one minute.
   </notification>
 
   <notification
+   icon="notify.tga"
+   name="VoiceEffectsExpired"
+   sound="UISndAlert"
+   persist="true"
+   type="notify">
+    <unique/>
+One or more of your subscribed Voice Morphs has expired.
+[[URL] Click here] to renew your subscription.
+  <tag>fail</tag>
+  <tag>voice</tag>
+  </notification>
+
+  <notification
+   icon="notify.tga"
+   name="VoiceEffectsExpiredInUse"
+   sound="UISndAlert"
+   persist="true"
+   type="notify">
+    <unique/>
+The active Voice Morph has expired, your normal voice settings have been applied.
+[[URL] Click here] to renew your subscription.
+    <tag>fail</tag>
+    <tag>voice</tag>
+  </notification>
+
+  <notification
+   icon="notify.tga"
+   name="VoiceEffectsWillExpire"
+   sound="UISndAlert"
+   persist="true"
+   type="notify">
+    <unique/>
+One or more of your Voice Morphs will expire in less than [INTERVAL] days.
+[[URL] Click here] to renew your subscription.
+  <tag>fail</tag>
+    <tag>voice</tag>
+  </notification>
+
+  <notification
+   icon="notify.tga"
+   name="VoiceEffectsNew"
+   sound="UISndAlert"
+   persist="true"
+   type="notify">
+    <unique/>
+New Voice Morphs are available!
+   <tag>voice</tag>
+  </notification>
+
+  <notification
    icon="notifytip.tga"
    name="Cannot enter parcel: not a group member"
    type="notifytip">
@@ -7502,6 +7572,23 @@ Avatar '[NAME]' left after [TIME] seconds as cloud.
    type="notifytip">
 ( [EXISTENCE] seconds alive )
 Avatar '[NAME]' entered appearance mode.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="NoVoiceConnect"
+   type="alertmodal">
+We're having trouble connecting to your voice server:
+
+[HOSTID]
+
+Voice communications will not be available.
+Please check your network and firewall setup.
+    <tag>voice</tag>
+  <tag>fail</tag>
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
   </notification>
 
   <notification
@@ -9095,14 +9182,6 @@ Only the first 10 selected objects have been disabled. Refresh and make addition
    type="notify">
    <tag>fail</tag>
 You need to update your viewer to buy this parcel.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="LandBuyAccessBlocked"
-   type="notify">
-   <tag>fail</tag>
-You can't buy this land due to your maturity Rating. You may need to validate your age and/or install the latest Viewer. Please go to the Knowledge Base for details on accessing areas with this maturity Rating.
   </notification>
 
   <notification

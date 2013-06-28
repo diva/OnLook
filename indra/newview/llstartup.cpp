@@ -211,6 +211,7 @@
 #include "llwearable.h"
 #include "llinventorybridge.h"
 #include "llappearancemgr.h"
+#include "llvoicechannel.h"
 #include "jcfloaterareasearch.h"
 #include "generichandlers.h"
 
@@ -1282,7 +1283,7 @@ bool idle_startup()
 		std::string grid_uri = vl->getCurrentGridURI();
 		if(!redirect_uri.empty())
 			grid_uri = redirect_uri;
-		redirect_uri.clear();
+		//redirect_uri.clear();	//Should this be cleared immediately after consumption? Doing this will break retrying on http error.
 
 		llinfos << "Authenticating with " << grid_uri << llendl;
 
@@ -1411,10 +1412,17 @@ bool idle_startup()
 			{
 				progress += 0.01f;
 				auth_message = message_response;
-				set_startup_status(progress, auth_desc, auth_message);
-
 				auth_method = response["next_method"].asString();
 				redirect_uri = response["next_url"].asString();
+				if(auth_method.substr(0, 5) == "login")
+				{
+					auth_desc = LLTrans::getString("LoginAuthenticating");
+				}
+				else
+				{
+					auth_desc = LLTrans::getString("LoginMaintenance");
+				}
+				set_startup_status(progress, auth_desc, auth_message);
 				LLStartUp::setStartupState(STATE_XMLRPC_LEGACY_LOGIN );
 				return false;
 			}
@@ -1543,8 +1551,10 @@ bool idle_startup()
 					name += " " + lastname;
 				}
 				gViewerWindow->getWindow()->setTitle(LLAppViewer::instance()->getWindowTitle() + "- " + name);
-							// Pass the user information to the voice chat server interface.
-				gVoiceClient->userAuthorized(firstname, lastname, gAgentID);
+				// Pass the user information to the voice chat server interface.
+				LLVoiceClient::getInstance()->userAuthorized(name, gAgentID);
+				// create the default proximal channel
+				LLVoiceChannel::initClass();
 				LLStartUp::setStartupState( STATE_WORLD_INIT );
 			}
 			else
@@ -1824,6 +1834,11 @@ bool idle_startup()
 		display_startup();
 
 		LLStartUp::initNameCache();
+		display_startup();
+
+		// update the voice settings *after* gCacheName initialization
+		// so that we can construct voice UI that relies on the name cache
+		LLVoiceClient::getInstance()->updateSettings();
 		display_startup();
 
 		// *Note: this is where gWorldMap used to be initialized.
@@ -2107,41 +2122,6 @@ bool idle_startup()
  			}
  		}
 		display_startup();
-
-		// <edit> testing adding a local inventory folder...
-		if (gSavedSettings.getBOOL("AscentUseSystemFolder"))
-		{
-			LLViewerInventoryCategory* system_folder = new LLViewerInventoryCategory(gAgent.getID());
-			system_folder->rename(std::string("System Inventory"));
-			LLUUID system_folder_id = LLUUID("00000000-0000-0000-0000-000000000001");//"FFFFFFFF-0000-F113-7357-000000000001");
-			system_folder->setUUID(system_folder_id);
-			gSystemFolderRoot = system_folder_id;
-			system_folder->setParent(LLUUID::null);
-			system_folder->setPreferredType(LLFolderType::FT_NONE);
-			gInventory.addCategory(system_folder);
-
-			LLViewerInventoryCategory* settings_folder = new LLViewerInventoryCategory(gAgent.getID());
-			settings_folder->rename(std::string("Settings"));
-			LLUUID settings_folder_id;
-			settings_folder_id.generate();
-			settings_folder->setUUID(settings_folder_id);
-			gSystemFolderSettings = settings_folder_id;
-			settings_folder->setParent(gSystemFolderRoot);
-			settings_folder->setPreferredType(LLFolderType::FT_NONE);
-			gInventory.addCategory(settings_folder);
-
-			LLViewerInventoryCategory* assets_folder = new LLViewerInventoryCategory(gAgent.getID());
-			assets_folder->rename(std::string("Assets"));
-			LLUUID assets_folder_id;
-			assets_folder_id.generate();
-			assets_folder->setUUID(assets_folder_id);
-			gSystemFolderAssets = assets_folder_id;
-			assets_folder->setParent(gSystemFolderRoot);
-			assets_folder->setPreferredType(LLFolderType::FT_NONE);
-			gInventory.addCategory(assets_folder);
-		}
-		display_startup();
-		// </edit>
 
 		LLSD buddy_list = response["buddy-list"];
  		if(buddy_list.isDefined())

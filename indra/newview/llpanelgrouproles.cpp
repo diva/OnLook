@@ -34,10 +34,10 @@
 #include "llcheckboxctrl.h"
 
 #include "llagent.h"
+#include "llavataractions.h"
 #include "llavatarnamecache.h"
 #include "llbutton.h"
 #include "llfiltereditor.h"
-#include "llfloateravatarinfo.h"
 #include "llfloatergroupinvite.h"
 #include "lliconctrl.h"
 #include "lllineeditor.h"
@@ -198,7 +198,7 @@ BOOL LLPanelGroupRoles::isVisibleByAgent(LLAgent* agentp)
 								   GP_MEMBER_EJECT |
 								   GP_MEMBER_OPTIONS );
 	*/
-	return mAllowEdit && agentp->isInGroup(mGroupID);
+	return agentp->isInGroup(mGroupID);
 								   
 }
 
@@ -1202,8 +1202,7 @@ void LLPanelGroupMembersSubTab::handleMemberDoubleClick()
 	LLScrollListItem* selected = mMembersList->getFirstSelected();
 	if (selected)
 	{
-		LLUUID member_id = selected->getUUID();
-		LLFloaterAvatarInfo::showFromDirectory( member_id );
+		LLAvatarActions::showProfile(selected->getUUID());
 	}
 }
 

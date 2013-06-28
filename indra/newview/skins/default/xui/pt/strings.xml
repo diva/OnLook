@@ -205,4 +205,22 @@
 	<string name="load_files">Carregar Arquivos</string>
 	<string name="choose_the_directory">Escolher Diretório</string>
 
+	<string name="InventoryNoTexture">
+		Você não possui uma cópia desta textura no seu inventário
+	</string>
+
+	<string name="conference-title">
+		Bate-papo com várias pessoas
+	</string>
+
+	<string name="MultiPreviewTitle">
+		Preview
+	</string>
+	<string name="MultiPropertiesTitle">
+		Propriedades
+	</string>
+
+	<string name="Command_Profile_Label">
+		Perfil
+	</string>
 </strings>

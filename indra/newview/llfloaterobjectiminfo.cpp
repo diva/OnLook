@@ -35,12 +35,12 @@
 #include "llfloaterobjectiminfo.h"
 
 #include "llagentdata.h"
+#include "llavataractions.h"
 #include "llcachename.h"
 #include "llcommandhandler.h"
-#include "llfloater.h"
-#include "llfloateravatarinfo.h"
 #include "llfloatergroupinfo.h"
 #include "llfloatermute.h"
+#include "llgroupactions.h"
 #include "llmutelist.h"
 #include "llslurl.h"
 #include "lltrans.h"
@@ -126,14 +126,14 @@ void LLFloaterObjectIMInfo::onClickOwner(void* data)
 	LLFloaterObjectIMInfo* self = (LLFloaterObjectIMInfo*)data;
 	if (self->mGroupOwned)
 	{
-		LLFloaterGroupInfo::showFromUUID(self->mOwnerID);
+		LLGroupActions::show(self->mOwnerID);
 	}
 //	else
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g
 	else if ( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) || (!RlvUtil::isNearbyAgent(self->mOwnerID)) )
 // [/RLVa:KB]
 	{
-		LLFloaterAvatarInfo::showFromObject(self->mOwnerID);
+		LLAvatarActions::showProfile(self->mOwnerID);
 	}
 }
 

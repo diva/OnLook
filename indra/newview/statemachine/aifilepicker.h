@@ -151,6 +151,7 @@ new AIFilePicker
 // Objects of this type can be reused multiple times, see
 // also the documentation of AIStateMachine.
 class AIFilePicker : public AIStateMachine {
+	LOG_CLASS(AIFilePicker);
 protected:
 	// The base class of this state machine.
 	typedef AIStateMachine direct_base_type;

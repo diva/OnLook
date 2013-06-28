@@ -455,4 +455,19 @@
 	<string name="choose_the_directory">
 		Choisir le r&#xE9;pertoire
 	</string>
+	<string name="InventoryNoTexture">
+		Vous n&apos;avez pas de copie de cette texture dans votre inventaire
+	</string>
+	<string name="conference-title">
+		Chat à plusieurs
+	</string>
+	<string name="MultiPreviewTitle">
+		Prévisualiser
+	</string>
+	<string name="MultiPropertiesTitle">
+		Propriétés
+	</string>
+	<string name="Command_Profile_Label">
+		Profil
+	</string>
 </strings>

@@ -773,31 +773,25 @@ BOOL LLPanel::childHasFocus(const std::string& id)
 	}
 }
 
-void LLPanel::childSetCommitCallback(const std::string& id, void (*cb)(LLUICtrl*, void*), void *userdata )
+// *TODO: Deprecate; for backwards compatability only:
+// Prefer getChild<LLUICtrl>("foo")->setCommitCallback(boost:bind(...)),
+// which takes a generic slot.  Or use mCommitCallbackRegistrar.add() with
+// a named callback and reference it in XML.
+void LLPanel::childSetCommitCallback(const std::string& id, boost::function<void (LLUICtrl*,void*)> cb, void* data)
 {
-	LLUICtrl* child = getChild<LLUICtrl>(id, true);
+	LLUICtrl* child = findChild<LLUICtrl>(id);
 	if (child)
 	{
-		child->setCommitCallback(cb);
-		child->setCallbackUserData(userdata);
+		child->setCommitCallback(boost::bind(cb, child, data));
 	}
 }
 
-void LLPanel::childSetValidate(const std::string& id, BOOL (*cb)(LLUICtrl*, void*))
+void LLPanel::childSetValidate(const std::string& id, boost::function<bool (const LLSD& data)> cb)
 {
-	LLUICtrl* child = getChild<LLUICtrl>(id, true);
+	LLUICtrl* child = findChild<LLUICtrl>(id);
 	if (child)
 	{
 		child->setValidateBeforeCommit(cb);
-	}
-}
-
-void LLPanel::childSetUserData(const std::string& id, void* userdata)
-{
-	LLUICtrl* child = getChild<LLUICtrl>(id, true);
-	if (child)
-	{
-		child->setCallbackUserData(userdata);
 	}
 }
 

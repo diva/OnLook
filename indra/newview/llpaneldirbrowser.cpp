@@ -422,7 +422,7 @@ void LLPanelDirBrowser::showDetailPanel(S32 type, LLSD id)
 		if (mFloaterDirectory && mFloaterDirectory->mPanelAvatarp)
 		{
 			mFloaterDirectory->mPanelAvatarp->setVisible(TRUE);
-			mFloaterDirectory->mPanelAvatarp->setAvatarID(id.asUUID(), LLStringUtil::null, ONLINE_STATUS_NO);
+			mFloaterDirectory->mPanelAvatarp->setAvatarID(id.asUUID());
 		}
 		break;
 	case EVENT_CODE:

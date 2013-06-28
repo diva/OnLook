@@ -239,7 +239,7 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	reshape(rect.getWidth(), rect.getHeight());
 
 	LLComboBox* name_combo = sInstance->getChild<LLComboBox>("name_combo");
-	name_combo->setCommitCallback(onSelectLoginEntry);
+	name_combo->setCommitCallback(boost::bind(LLPanelLogin::onSelectLoginEntry, _1, this));
 	name_combo->setFocusLostCallback(boost::bind(&LLPanelLogin::onLoginComboLostFocus, this, name_combo));
 	name_combo->setPrevalidate(LLLineEditor::prevalidatePrintableNotPipe);
 	name_combo->setSuppressTentative(true);

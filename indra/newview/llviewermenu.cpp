@@ -63,7 +63,6 @@
 #include "llfirstuse.h"
 #include "llfloaterabout.h"
 #include "llfloateractivespeakers.h"
-#include "llfloateravatarinfo.h"
 #include "llfloateravatarlist.h"
 #include "llfloateravatartextures.h"
 #include "llfloaterbeacons.h"
@@ -79,12 +78,9 @@
 #include "llfloaterdirectory.h"
 #include "llfloatereditui.h"
 #include "llfloaterchatterbox.h"
-#include "llfloaterfriends.h"
 #include "llfloaterfonttest.h"
 #include "llfloatergesture.h"
 #include "llfloatergodtools.h"
-#include "llfloatergroupinvite.h"
-#include "llfloatergroups.h"
 #include "llfloaterhtmlcurrency.h"
 #include "llfloaterhud.h"
 #include "llfloaterinspect.h"
@@ -113,6 +109,7 @@
 #include "llfloaterteleporthistory.h"
 #include "llfloatertest.h"
 #include "llfloatertools.h"
+#include "llfloatervoiceeffect.h"
 #include "llfloaterwater.h"
 #include "llfloaterwebcontent.h"
 #include "llfloaterwindlight.h"
@@ -120,6 +117,7 @@
 #include "llfloatermemleak.h"
 #include "llframestats.h"
 #include "llgivemoney.h"
+#include "llavataractions.h"
 #include "llgroupmgr.h"
 #include "llhoverview.h"
 #include "llhudeffecttrail.h"
@@ -172,6 +170,7 @@
 #include "llfloatermessagelog.h"
 #include "shfloatermediaticker.h"
 #include "llpacketring.h"
+#include "aihttpview.h"
 // </edit>
 
 #include "scriptcounter.h"
@@ -221,6 +220,8 @@ void handle_test_load_url(void*);
 //
 // Evil hackish imported globals
 
+class AIHTTPView;
+
 //extern BOOL	gHideSelectedObjects;
 //extern BOOL gAllowSelectAvatar;
 //extern BOOL gDebugAvatarRotation;
@@ -229,6 +230,7 @@ extern BOOL gDebugWindowProc;
 extern BOOL gDebugTextEditorTips;
 extern BOOL gShowOverlayTitle;
 extern BOOL gOcclusionCull;
+extern AIHTTPView* gHttpView;
 //
 // Globals
 //
@@ -816,6 +818,13 @@ void init_client_menu(LLMenuGL* menu)
 										(void*)gTextureCategoryView,
 									   	'6', MASK_CONTROL|MASK_SHIFT ) );
 		}
+
+		sub->addChild(new LLMenuItemCheckGL("HTTP Console", 
+										&AIHTTPView::toggle_visibility,
+										NULL,
+										&get_visibility,
+										(void*)gHttpView,
+									   	'7', MASK_CONTROL|MASK_SHIFT ) );
 
 		sub->addChild(new LLMenuItemCheckGL("Region Debug Console", handle_singleton_toggle<LLFloaterRegionDebugConsole>, NULL, handle_singleton_check<LLFloaterRegionDebugConsole>,NULL,'`', MASK_CONTROL|MASK_SHIFT));
 
@@ -3754,11 +3763,6 @@ bool LLHaveCallingcard::operator()(LLInventoryCategory* cat,
 }
 */
 
-BOOL is_agent_friend(const LLUUID& agent_id)
-{
-	return (LLAvatarTracker::instance().getBuddyInfo(agent_id) != NULL);
-}
-
 BOOL is_agent_mappable(const LLUUID& agent_id)
 {
 	const LLRelationship* buddy_info = LLAvatarTracker::instance().getBuddyInfo(agent_id);
@@ -3776,9 +3780,9 @@ class LLAvatarEnableAddFriend : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		LLVOAvatar* avatar = find_avatar_from_object(LLSelectMgr::getInstance()->getSelection()->getPrimaryObject());
-//		bool new_value = avatar && !is_agent_friend(avatar->getID());
+//		bool new_value = avatar && !LLAvatarActions::isFriend(avatar->getID());
 // [RLVa:KB] - Checked: 2010-04-20 (RLVa-1.2.0f) | Modified: RLVa-1.2.0f
-		bool new_value = avatar && !is_agent_friend(avatar->getID()) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES));
+		bool new_value = avatar && !LLAvatarActions::isFriend(avatar->getID()) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES));
 // [/RLVa:KB]
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
@@ -3800,7 +3804,7 @@ void request_friendship(const LLUUID& dest_id)
 		}
 		if (!full_name.empty())
 		{
-			LLPanelFriends::requestFriendshipDialog(dest_id, full_name);
+			LLAvatarActions::requestFriendshipDialog(dest_id, full_name);
 		}
 		else
 		{
@@ -6080,30 +6084,6 @@ void handle_look_at_selection(const LLSD& param)
 	}
 }
 
-void callback_invite_to_group(LLUUID group_id, void *user_data)
-{
-	std::vector<LLUUID> agent_ids;
-	agent_ids.push_back(*(LLUUID *)user_data);
-	
-	LLFloaterGroupInvite::showForGroup(group_id, &agent_ids);
-}
-
-void invite_to_group(const LLUUID& dest_id)
-{
-	LLViewerObject* dest = gObjectList.findObject(dest_id);
-	if(dest && dest->isAvatar())
-	{
-		LLFloaterGroupPicker* widget;
-		widget = LLFloaterGroupPicker::showInstance(LLSD(gAgent.getID()));
-		if (widget)
-		{
-			widget->center();
-			widget->setPowersMask(GP_MEMBER_INVITE);
-			widget->setSelectCallback(callback_invite_to_group, (void *)&dest_id);
-		}
-	}
-}
-
 class LLAvatarInviteToGroup : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -6114,7 +6094,7 @@ class LLAvatarInviteToGroup : public view_listener_t
 		if ( (avatar) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) )
 // [/RLVa:KB]
 		{
-			invite_to_group(avatar->getID());
+			LLAvatarActions::inviteToGroup(avatar->getID());
 		}
 		return true;
 	}
@@ -6125,9 +6105,9 @@ class LLAvatarAddFriend : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
-//		if(avatar && !is_agent_friend(avatar->getID()))
+//		if(avatar && !LLAvatarActions::isFriend(avatar->getID()))
 // [RLVa:KB] - Checked: 2010-04-20 (RLVa-1.2.0f) | Modified: RLVa-1.2.0f
-		if ( (avatar && !is_agent_friend(avatar->getID())) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) )
+		if ( (avatar && !LLAvatarActions::isFriend(avatar->getID())) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) )
 // [/RLVa:KB]
 		{
 			request_friendship(avatar->getID());
@@ -6396,6 +6376,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterScriptLimits>		("script info");
 		registerFloater<LLFloaterStats>				("stat bar");
 		registerFloater<LLFloaterTeleportHistory>	("teleport history");
+		registerFloater<LLFloaterVoiceEffect>		("voice effect");
 		registerFloater<LLFloaterPathfindingCharacters>	("pathfinding_characters");
 		registerFloater<LLFloaterPathfindingLinksets>	("pathfinding_linksets");
 
@@ -6610,7 +6591,7 @@ class LLShowAgentProfile : public view_listener_t
 		if ( (avatar) && ((!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) || (gAgent.getID() == agent_id)) )
 // [/RLVa:KB]
 		{
-			LLFloaterAvatarInfo::show(avatar->getID());
+			LLAvatarActions::showProfile(avatar->getID());
 		}
 		return true;
 	}
@@ -7261,28 +7242,12 @@ class LLAvatarSendIM : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
-// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | OK
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
-		{
-			return true;
-		}
+//		if(avatar)
+// [RLVa:KB] - Checked: 2010-06-04 (RLVa-1.2.0d) | Added: RLVa-1.2.0d
+		if ((avatar) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)))
 // [/RLVa:KB]
-		if(avatar)
 		{
-			std::string name("IM");
-			LLNameValue *first = avatar->getNVPair("FirstName");
-			LLNameValue *last = avatar->getNVPair("LastName");
-			if (first && last)
-			{
-				name.assign( first->getString() );
-				name.append(" ");
-				name.append( last->getString() );
-			}
-
-			gIMMgr->setFloaterOpen(TRUE);
-			//EInstantMessage type = have_agent_callingcard(gLastHitObjectID)
-			//	? IM_SESSION_ADD : IM_SESSION_CARDLESS_START;
-			gIMMgr->addSession(LLCacheName::cleanFullName(name),IM_NOTHING_SPECIAL,avatar->getID());
+			LLAvatarActions::startIM(avatar->getID());
 		}
 		return true;
 	}

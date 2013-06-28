@@ -47,6 +47,7 @@
 #include "llevent.h"		// LLSimpleListener
 #include "llfloaterwebcontent.h"	// for handling window close requests and geometry change requests in media browser windows.
 #include "llfocusmgr.h"
+#include "llhttpclient.h"
 #include "llkeyboard.h"
 #include "llmarketplacefunctions.h"
 #include "llmediaentry.h"
@@ -82,6 +83,8 @@
 
 #include <boost/bind.hpp>	// for SkinFolder listener
 #include <boost/signals2.hpp>
+
+std::string getProfileURL(const std::string& agent_name);
 
 /*static*/ const char* LLViewerMedia::AUTO_PLAY_MEDIA_SETTING = "ParcelMediaAutoPlayEnable";
 /*static*/ const char* LLViewerMedia::SHOW_MEDIA_ON_OTHERS_SETTING = "MediaShowOnOthers";

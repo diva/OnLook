@@ -6,7 +6,6 @@
 #include "llscrolllistctrl.h"
 #include "llfloaterbvhpreview.h"
 #include "llvoavatar.h"
-#include "lllocalinventory.h"
 #include "llviewercamera.h"
 #include "llviewerwindow.h"
 #include "lltoolmgr.h"

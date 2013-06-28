@@ -73,7 +73,6 @@ public:
 	void onClose(bool app_quitting) { setVisible(FALSE); }
 
 private:
-	static void onCommitResponse(LLUICtrl* ctrl, void* data) { ((LLFloaterNotification*)data)->respond(); }
 	LLNotification* mNote;
 };
 #endif

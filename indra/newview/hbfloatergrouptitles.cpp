@@ -40,6 +40,7 @@
 #include "hbfloatergrouptitles.h"
 
 #include "llagent.h"
+#include "llgroupactions.h"
 #include "lluictrlfactory.h"
 #include "llviewercontrol.h"
 
@@ -145,13 +146,7 @@ void HBFloaterGroupTitles::onActivate(void* userdata)
 	LLUUID group_id = item->getColumn(LIST_GROUP_ID)->getValue().asUUID();
 	if (group_id != old_group_id)
 	{
-		LLMessageSystem* msg = gMessageSystem;
-		msg->newMessageFast(_PREHASH_ActivateGroup);
-		msg->nextBlockFast(_PREHASH_AgentData);
-		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-		msg->addUUIDFast(_PREHASH_GroupID, group_id);
-		gAgent.sendReliableMessage();
+		LLGroupActions::activate(group_id);
 	}
 
 	// Set the title

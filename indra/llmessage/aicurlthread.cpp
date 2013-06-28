@@ -1710,7 +1710,7 @@ CURLMsg const* MultiHandle::info_read(int* msgs_in_queue) const
   return ret;
 }
 
-static U32 curl_max_total_concurrent_connections = 32;						// Initialized on start up by startCurlThread().
+U32 curl_max_total_concurrent_connections = 32;						// Initialized on start up by startCurlThread().
 
 bool MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request, bool from_queue)
 {
@@ -1721,10 +1721,32 @@ bool MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request, bool f
 	AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
 	capability_type = curl_easy_request_w->capability_type();
 	per_service = curl_easy_request_w->getPerServicePtr();
-	// Never throttle on bandwidth if there are no handles running (sTotalAdded == 1, the long poll connection).
-	bool too_much_bandwidth = sTotalAdded > 1 && !curl_easy_request_w->approved() && AIPerService::checkBandwidthUsage(per_service, get_clock_count() * HTTPTimeout::sClockWidth_40ms);
+	if (!from_queue)
+	{
+	  // Add the request to the back of a non-empty queue.
+	  PerService_wat per_service_w(*per_service);
+	  if (per_service_w->queue(easy_request, capability_type, false))
+	  {
+		// The queue was not empty, therefore the request was queued.
+#ifdef SHOW_ASSERT
+		// Not active yet, but it's no longer an error if next we try to remove the request.
+		curl_easy_request_w->mRemovedPerCommand = false;
+#endif
+		// This is a fail-safe. Normally, if there is anything in the queue then things should
+		// be running (normally an attempt is made to add from the queue whenever a request
+		// finishes). However, it CAN happen on occassion that things get 'stuck' with
+		// nothing running, so nothing will ever finish and therefore the queue would never
+		// be checked. Only do this when there is indeed nothing running (added) though.
+		if (per_service_w->nothing_added(capability_type))
+		{
+		  per_service_w->add_queued_to(this);
+		}
+		return true;
+	  }
+	}
+	bool too_much_bandwidth = !curl_easy_request_w->approved() && AIPerService::checkBandwidthUsage(per_service, get_clock_count() * HTTPTimeout::sClockWidth_40ms);
 	PerService_wat per_service_w(*per_service);
-	if (!too_much_bandwidth && sTotalAdded < curl_max_total_concurrent_connections && !per_service_w->throttled())
+	if (!too_much_bandwidth && sTotalAdded < curl_max_total_concurrent_connections && !per_service_w->throttled(capability_type))
 	{
 	  curl_easy_request_w->set_timeout_opts();
 	  if (curl_easy_request_w->add_handle_to_multi(curl_easy_request_w, mMultiHandle) == CURLM_OK)
@@ -1791,10 +1813,11 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
   AIPerServicePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(**iter);
+	bool downloaded_something = curl_easy_request_w->received_data();
 	res = curl_easy_request_w->remove_handle_from_multi(curl_easy_request_w, mMultiHandle);
 	capability_type = curl_easy_request_w->capability_type();
 	per_service = curl_easy_request_w->getPerServicePtr();
-	PerService_wat(*per_service)->removed_from_multi_handle(capability_type);		// (About to be) removed from mAddedEasyRequests.
+	PerService_wat(*per_service)->removed_from_multi_handle(capability_type, downloaded_something);		// (About to be) removed from mAddedEasyRequests.
 #ifdef SHOW_ASSERT
 	curl_easy_request_w->mRemovedPerCommand = as_per_command;
 #endif
@@ -2137,6 +2160,12 @@ void BufferedCurlEasyRequest::update_body_bandwidth(void)
   getinfo(CURLINFO_SIZE_DOWNLOAD, &size_download);
   size_t total_raw_bytes = size_download;
   size_t raw_bytes = total_raw_bytes - mTotalRawBytes;
+  if (mTotalRawBytes == 0 && total_raw_bytes > 0)
+  {
+	// Update service/capability type administration for the HTTP Debug Console.
+	PerService_wat per_service_w(*mPerServicePtr);
+	per_service_w->download_started(mCapabilityType);
+  }
   mTotalRawBytes = total_raw_bytes;
   // Note that in some cases (like HTTP_PARTIAL_CONTENT), the output of CURLINFO_SIZE_DOWNLOAD lags
   // behind and will return 0 the first time, and the value of the previous chunk the next time.
@@ -2190,6 +2219,7 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	return header_len;
   }
   std::string header(header_line, header_len);
+  bool being_redirected = false;
   bool done = false;
   if (!LLStringUtil::_isASCII(header))
   {
@@ -2234,7 +2264,7 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	if (status >= 300 && status < 400)
 	{
 	  // Timeout administration needs to know if we're being redirected.
-	  self_w->httptimeout()->being_redirected();
+	  being_redirected = true;
 	}
   }
   // Update HTTP bandwidth.
@@ -2247,6 +2277,14 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
   {
 	// Transfer timed out. Return 0 which will abort with error CURLE_WRITE_ERROR.
 	return 0;
+  }
+  if (being_redirected)
+  {
+	  // Call this after data_received(), because that might reset mBeingRedirected if it causes a late- upload_finished!
+	  // Ie, when the upload finished was not detected and this is a redirect header then the call to data_received()
+	  // will call upload_finished() which sets HTTPTimeout::mUploadFinished (and resets HTTPTimeout::mBeingRedirected),
+	  // after which we set HTTPTimeout::mBeingRedirected here because we ARE being redirected.
+	  self_w->httptimeout()->being_redirected();
   }
   if (done)
   {
@@ -2533,7 +2571,7 @@ void startCurlThread(LLControlGroup* control_group)
   // Cache Debug Settings.
   sConfigGroup = control_group;
   curl_max_total_concurrent_connections = sConfigGroup->getU32("CurlMaxTotalConcurrentConnections");
-  CurlConcurrentConnectionsPerService = sConfigGroup->getU32("CurlConcurrentConnectionsPerService");
+  CurlConcurrentConnectionsPerService = (U16)sConfigGroup->getU32("CurlConcurrentConnectionsPerService");
   gNoVerifySSLCert = sConfigGroup->getBOOL("NoVerifySSLCert");
   AIPerService::setMaxPipelinedRequests(curl_max_total_concurrent_connections);
   AIPerService::setHTTPThrottleBandwidth(sConfigGroup->getF32("HTTPThrottleBandwidth"));
@@ -2558,10 +2596,19 @@ bool handleCurlConcurrentConnectionsPerService(LLSD const& newvalue)
 {
   using namespace AICurlPrivate;
 
-  U32 new_concurrent_connections = newvalue.asInteger();
-  AIPerService::adjust_concurrent_connections(new_concurrent_connections - CurlConcurrentConnectionsPerService);
-  CurlConcurrentConnectionsPerService = new_concurrent_connections;
-  llinfos << "CurlConcurrentConnectionsPerService set to " << CurlConcurrentConnectionsPerService << llendl;
+  U16 new_concurrent_connections = (U16)newvalue.asInteger();
+  U16 const maxCurlConcurrentConnectionsPerService = 32;
+  if (new_concurrent_connections < 1 || new_concurrent_connections > maxCurlConcurrentConnectionsPerService)
+  {
+	sConfigGroup->setU32("CurlConcurrentConnectionsPerService", static_cast<U32>((new_concurrent_connections < 1) ? 1 : maxCurlConcurrentConnectionsPerService));
+  }
+  else
+  {
+	int increment = new_concurrent_connections - CurlConcurrentConnectionsPerService;
+	CurlConcurrentConnectionsPerService = new_concurrent_connections;
+	AIPerService::adjust_concurrent_connections(increment);
+	llinfos << "CurlConcurrentConnectionsPerService set to " << CurlConcurrentConnectionsPerService << llendl;
+  }
   return true;
 }
 
@@ -2581,12 +2628,17 @@ U32 getNumHTTPCommands(void)
 
 U32 getNumHTTPQueued(void)
 {
-  return AIPerService::total_queued_size();
+  return AIPerService::total_approved_queue_size();
 }
 
 U32 getNumHTTPAdded(void)
 {
   return AICurlPrivate::curlthread::MultiHandle::total_added_size();
+}
+
+U32 getMaxHTTPAdded(void)
+{
+  return AICurlPrivate::curlthread::curl_max_total_concurrent_connections;
 }
 
 size_t getHTTPBandwidth(void)
@@ -2605,29 +2657,69 @@ AIThreadSafeSimpleDC<AIPerService::ThrottleFraction> AIPerService::sThrottleFrac
 LLAtomicU32 AIPerService::sHTTPThrottleBandwidth125(250000);
 bool AIPerService::sNoHTTPBandwidthThrottling;
 
-// Return true if we want at least one more HTTP request for this host.
+// Return Approvement if we want at least one more HTTP request for this service.
 //
 // It's OK if this function is a bit fuzzy, but we don't want it to return
-// true a hundred times on a row when it is called fast in a loop.
+// approvement a hundred times on a row when it is called in a tight loop.
 // Hence the following consideration:
 //
-// This function is called only from LLTextureFetchWorker::doWork, and when it returns true
-// then doWork will call LLHTTPClient::request with a NULL default engine (signaling that
-// it is OK to run in any thread).
-//
-// At the end, LLHTTPClient::request calls AIStateMachine::run, which in turn calls
-// AIStateMachine::reset at the end. Because NULL is passed as default_engine, reset will
-// call AIStateMachine::multiplex to immediately start running the state machine. This
-// causes it to go through the states bs_reset, bs_initialize and then bs_multiplex with
-// run state AICurlEasyRequestStateMachine_addRequest. Finally, in this state, multiplex
-// calls AICurlEasyRequestStateMachine::multiplex_impl which then calls AICurlEasyRequest::addRequest
-// which causes an increment of command_queue_w->size and AIPerService::mQueuedCommands.
+// If this function returns non-NULL, a Approvement object was created and
+// the corresponding AIPerService::CapabilityType::mApprovedRequests was
+// incremented. The Approvement object is passed to LLHTTPClient::request,
+// and once the request is added to the command queue, used to update the counters.
 //
 // It is therefore guaranteed that in one loop of LLTextureFetchWorker::doWork,
-// this size is incremented; stopping this function from returning true once we reached the
-// threshold of "pipelines" requests (the sum of requests in the command queue, the ones
-// throttled and queued in AIPerService::mQueuedRequests and the already
-// running requests (in MultiHandle::mAddedEasyRequests)).
+// or LLInventoryModelBackgroundFetch::bulkFetch (the two functions currently
+// calling this function) this function will stop returning aprovement once we
+// reached the threshold of "pipelined" requests (the sum of approved requests,
+// requests in the command queue, the ones throttled and queued in
+// AIPerService::mQueuedRequests and the already running requests
+// (in MultiHandle::mAddedEasyRequests)).
+//
+// A request has two types of reasons why it can be throttled:
+// 1) The number of connections.
+// 2) Bandwidth usage.
+// And three levels where each can occur:
+// a) Global
+// b) Service
+// c) Capability Type (CT)
+// Currently, not all of those are in use. The ones that are used are:
+//
+//                               | Global | Service |   CT
+//                               +--------+---------+--------
+// 1) The number of connections  |   X    |    X    |    X
+// 2) Bandwidth usage            |   X    |         |
+//
+// Pre-approved requests have the bandwidth tested here, and the
+// connections tested in the curl thread, right before they are
+// added to the multi handle.
+//
+// The "pipeline" is as follows:
+//
+// <approvement>				// If the number of requests in the pipeline is less than a threshold
+//       |          			// and the global bandwidth usage is not too large.
+//       V
+// <command queue>
+//       |
+//       V
+//  <CT queue>
+//       |
+//       V
+// <added to multi handle>		// If the number of connections at all three levels allow it.
+//       |
+//       V
+// <removed from multi handle>
+//
+// Every time this function is called, but not more often than once every 40 ms, the state
+// of the CT queue is checked to be starvation, empty or full. If it is starvation
+// then the threshold for allowed number of connections is incremented by one,
+// if it is empty then nother is done and when it is full then the threshold is
+// decremented by one.
+//
+// Starvation means that we could add a request from the queue to the multi handle,
+// but the queue was empty. Empty means that after adding one or more requests to the
+// multi handle the queue became empty, and full means that after adding one of more
+// requests to the multi handle the queue still wasn't empty (see AIPerService::add_queued_to).
 //
 //static
 AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr const& per_service, AICapabilityType capability_type)
@@ -2640,13 +2732,13 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
 
   // Cache all sTotalQueued info.
   bool starvation, decrement_threshold;
-  S32 total_queued_or_added = MultiHandle::total_added_size();
+  S32 total_approved_queuedapproved_or_added = MultiHandle::total_added_size();
   {
 	TotalQueued_wat total_queued_w(sTotalQueued);
-	total_queued_or_added += total_queued_w->count;
+	total_approved_queuedapproved_or_added += total_queued_w->approved;
 	starvation = total_queued_w->starvation;
 	decrement_threshold = total_queued_w->full && !total_queued_w->empty;
-	total_queued_w->empty = total_queued_w->full = false;		// Reset flags.
+	total_queued_w->starvation = total_queued_w->empty = total_queued_w->full = false;				// Reset flags.
   }
 
   // Whether or not we're going to approve a new request, decrement the global threshold first, when appropriate.
@@ -2654,13 +2746,13 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
   if (decrement_threshold)
   {
 	MaxPipelinedRequests_wat max_pipelined_requests_w(sMaxPipelinedRequests);
-	if (max_pipelined_requests_w->count > (S32)curl_max_total_concurrent_connections &&
+	if (max_pipelined_requests_w->threshold > (S32)curl_max_total_concurrent_connections &&
 		sTime_40ms > max_pipelined_requests_w->last_decrement)
 	{
 	  // Decrement the threshold because since the last call to this function at least one curl request finished
 	  // and was replaced with another request from the queue, but the queue never ran empty: we have too many
 	  // queued requests.
-	  max_pipelined_requests_w->count--;
+	  max_pipelined_requests_w->threshold--;
 	  // Do this at most once every 40 ms.
 	  max_pipelined_requests_w->last_decrement = sTime_40ms;
 	}
@@ -2670,7 +2762,7 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
 
   bool reject, equal, increment_threshold;
   {
-	PerService_wat per_service_w(*per_service);
+	PerService_wat per_service_w(*per_service);		// Keep this lock for the duration of accesses to ct.
 	CapabilityType& ct(per_service_w->mCapabilityType[capability_type]);
 	S32 const pipelined_requests_per_capability_type = ct.pipelined_requests();
 	reject = pipelined_requests_per_capability_type >= (S32)ct.mMaxPipelinedRequests;
@@ -2680,14 +2772,14 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
 	ct.mFlags = 0;
 	if (decrement_threshold)
 	{
-	  if ((int)ct.mMaxPipelinedRequests > per_service_w->mConcurrectConnections)
+	  if ((int)ct.mMaxPipelinedRequests > ct.mConcurrentConnections)
 	  {
 		ct.mMaxPipelinedRequests--;
 	  }
 	}
 	else if (increment_threshold && reject)
 	{
-	  if ((int)ct.mMaxPipelinedRequests < 2 * per_service_w->mConcurrectConnections)
+	  if ((int)ct.mMaxPipelinedRequests < 2 * ct.mConcurrentConnections)
 	  {
 		ct.mMaxPipelinedRequests++;
 		// Immediately take the new threshold into account.
@@ -2699,7 +2791,9 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
 	  // Before releasing the lock on per_service, stop other threads from getting a
 	  // too small value from pipelined_requests() and approving too many requests.
 	  ct.mApprovedRequests++;
+	  per_service_w->mApprovedRequests++;
 	}
+	total_approved_queuedapproved_or_added += per_service_w->mApprovedRequests;
   }
   if (reject)
   {
@@ -2711,13 +2805,15 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
   if (checkBandwidthUsage(per_service, sTime_40ms))
   {
 	// Too much bandwidth is being used, either in total or for this service.
-	PerService_wat(*per_service)->mCapabilityType[capability_type].mApprovedRequests--;		// Not approved after all.
+	PerService_wat per_service_w(*per_service);
+	per_service_w->mCapabilityType[capability_type].mApprovedRequests--;		// Not approved after all.
+	per_service_w->mApprovedRequests--;
 	return NULL;
   }
 
   // Check if it's ok to get a new request based on the total number of requests and increment the threshold if appropriate.
 
-  S32 const pipelined_requests = command_queue_rat(command_queue)->size + total_queued_or_added;
+  S32 const pipelined_requests = command_queue_rat(command_queue)->size + total_approved_queuedapproved_or_added;
   // We can't take the command being processed (command_being_processed) into account without
   // introducing relatively long waiting times for some mutex (namely between when the command
   // is moved from command_queue to command_being_processed, till it's actually being added to
@@ -2726,18 +2822,19 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
   // here instead.
 
   // The maximum number of requests that may be queued in command_queue is equal to the total number of requests
-  // that may exist in the pipeline minus the number of requests queued in AIPerService objects, minus
-  // the number of already running requests.
+  // that may exist in the pipeline minus the number approved requests not yet added to the command queue, minus the
+  // number of requests queued in AIPerService objects, minus the number of already running requests
+  // (excluding non-approved requests queued in their CT queue).
   MaxPipelinedRequests_wat max_pipelined_requests_w(sMaxPipelinedRequests);
-  reject = pipelined_requests >= max_pipelined_requests_w->count;
-  equal = pipelined_requests == max_pipelined_requests_w->count;
+  reject = pipelined_requests >= max_pipelined_requests_w->threshold;
+  equal = pipelined_requests == max_pipelined_requests_w->threshold;
   increment_threshold = starvation;
   if (increment_threshold && reject)
   {
-	if (max_pipelined_requests_w->count < 2 * (S32)curl_max_total_concurrent_connections &&
+	if (max_pipelined_requests_w->threshold < 2 * (S32)curl_max_total_concurrent_connections &&
 		sTime_40ms > max_pipelined_requests_w->last_increment)
 	{
-	  max_pipelined_requests_w->count++;
+	  max_pipelined_requests_w->threshold++;
 	  max_pipelined_requests_w->last_increment = sTime_40ms;
 	  // Immediately take the new threshold into account.
 	  reject = !equal;
@@ -2745,7 +2842,9 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
   }
   if (reject)
   {
-	PerService_wat(*per_service)->mCapabilityType[capability_type].mApprovedRequests--;		// Not approved after all.
+	PerService_wat per_service_w(*per_service);
+	per_service_w->mCapabilityType[capability_type].mApprovedRequests--;		// Not approved after all.
+	per_service_w->mApprovedRequests--;
 	return NULL;
   }
   return new Approvement(per_service, capability_type);

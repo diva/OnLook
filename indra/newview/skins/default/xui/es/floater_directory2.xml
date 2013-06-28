@@ -80,7 +80,6 @@
 			</combo_box>
 			<button label="Navegar" label_selected="Navegar" name="Browse"/>
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
-			<button label="Poner un Anuncio..." label_selected="Poner un Anuncio..." name="Place an Ad..."/>
 			<button label="Borrar" label_selected="Borrar" name="Delete"/>
 			<scroll_list name="results">
 				<column label="" name="icon"/>
