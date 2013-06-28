@@ -30,11 +30,12 @@
 
 #include "llpanel.h"
 #include "llvoiceclient.h"
+#include "lllayoutstack.h"
 
 class LLComboBox;
 
 class LLPanelVoiceEffect
-	: public LLPanel
+	: public LLLayoutPanel
 	, public LLVoiceEffectObserver
 {
 public:

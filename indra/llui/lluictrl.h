@@ -80,6 +80,8 @@ public:
 	virtual class LLCtrlSelectionInterface* getSelectionInterface();
 	virtual class LLCtrlListInterface* getListInterface();
 	virtual class LLCtrlScrollInterface* getScrollInterface();
+	void setMakeVisibleControlVariable(LLControlVariable* control);
+	void setMakeInvisibleControlVariable(LLControlVariable* control);
 
 	virtual void	setTentative(BOOL b);
 	virtual BOOL	getTentative() const;
@@ -116,6 +118,7 @@ public:
 	BOOL	focusLastItem(BOOL prefer_text_fields = FALSE);
 
 	// Non Virtuals
+	LLHandle<LLUICtrl> getHandle() const { return getDerivedHandle<LLUICtrl>(); }
 	BOOL			getIsChrome() const;
 	
 	void			setTabStop( BOOL b );
@@ -151,8 +154,10 @@ public:
 	class CommitCallbackRegistry : public CallbackRegistry<commit_callback_t, CommitCallbackRegistry>{};
 	// the enable callback registry is also used for visiblity callbacks
 	class EnableCallbackRegistry : public CallbackRegistry<enable_callback_t, EnableCallbackRegistry>{};
-
+		
 protected:
+
+	static bool controlListener(const LLSD& newvalue, LLHandle<LLUICtrl> handle, std::string type);
 
 	commit_signal_t*		mCommitSignal;
 	enable_signal_t*		mValidateSignal;
@@ -162,6 +167,10 @@ protected:
 	
     LLViewModelPtr  mViewModel;
 
+	LLControlVariable* mMakeVisibleControlVariable;
+	boost::signals2::connection mMakeVisibleControlConnection;
+	LLControlVariable* mMakeInvisibleControlVariable;
+	boost::signals2::connection mMakeInvisibleControlConnection;
 private:
 
 	BOOL			mTabStop;

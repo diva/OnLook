@@ -43,6 +43,8 @@ static LLRegisterWidget<LLUICtrl> r("ui_ctrl");
 
 LLUICtrl::LLUICtrl() :
 	mViewModel(LLViewModelPtr(new LLViewModel)),
+	mMakeVisibleControlVariable(NULL),
+	mMakeInvisibleControlVariable(NULL),
 	mCommitSignal(NULL),
 	mValidateSignal(NULL),
 	mMouseEnterSignal(NULL),
@@ -144,6 +146,56 @@ LLViewModel* LLUICtrl::getViewModel() const
 {
 	return mViewModel;
 }
+
+void LLUICtrl::setMakeVisibleControlVariable(LLControlVariable* control)
+{
+	if (mMakeVisibleControlVariable)
+	{
+		mMakeVisibleControlConnection.disconnect(); // disconnect current signal
+		mMakeVisibleControlVariable = NULL;
+	}
+	if (control)
+	{
+		mMakeVisibleControlVariable = control;
+		mMakeVisibleControlConnection = mMakeVisibleControlVariable->getSignal()->connect(boost::bind(&controlListener, _2, getHandle(), std::string("visible")));
+		setVisible(mMakeVisibleControlVariable->getValue().asBoolean());
+	}
+}
+
+void LLUICtrl::setMakeInvisibleControlVariable(LLControlVariable* control)
+{
+	if (mMakeInvisibleControlVariable)
+	{
+		mMakeInvisibleControlConnection.disconnect(); // disconnect current signal
+		mMakeInvisibleControlVariable = NULL;
+	}
+	if (control)
+	{
+		mMakeInvisibleControlVariable = control;
+		mMakeInvisibleControlConnection = mMakeInvisibleControlVariable->getSignal()->connect(boost::bind(&controlListener, _2, getHandle(), std::string("invisible")));
+		setVisible(!(mMakeInvisibleControlVariable->getValue().asBoolean()));
+	}
+}
+// static
+bool LLUICtrl::controlListener(const LLSD& newvalue, LLHandle<LLUICtrl> handle, std::string type)
+{
+	LLUICtrl* ctrl = handle.get();
+	if (ctrl)
+	{
+		if (type == "visible")
+		{
+			ctrl->setVisible(newvalue.asBoolean());
+			return true;
+		}
+		else if (type == "invisible")
+		{
+			ctrl->setVisible(!newvalue.asBoolean());
+			return true;
+		}
+	}
+	return false;
+}
+
 // virtual
 BOOL LLUICtrl::setTextArg( const std::string& key, const LLStringExplicit& text ) 
 { 
@@ -532,6 +584,19 @@ void LLUICtrl::initFromXML(LLXMLNodePtr node, LLView* parent)
 		}
 	}
 	LLView::initFromXML(node, parent);
+	
+	if(node->getAttributeString("visibility_control",attrib_str) || node->getAttributeString("visiblity_control",attrib_str))
+	{
+		LLControlVariable* control = findControl(attrib_str);
+		if (control)
+			setMakeVisibleControlVariable(control);
+	}
+	if(node->getAttributeString("invisibility_control",attrib_str) || node->getAttributeString("invisiblity_control",attrib_str))
+	{
+		LLControlVariable* control = findControl(attrib_str);
+		if (control)
+			setMakeInvisibleControlVariable(control);
+	}
 }
 
 LLXMLNodePtr LLUICtrl::getXML(bool save_children) const
