@@ -244,6 +244,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	if (mGroupID.isNull())
 	{
 		mGroupNameEditor->setEnabled(TRUE);
+		getChildView("copy_uri")->setVisible(false); // New group has no uri
 		mEditCharter->setEnabled(TRUE);
 
 		mCtrlShowInGroupList->setEnabled(TRUE);
