@@ -148,7 +148,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mListVisibleMembers = getChild<LLNameListCtrl>("visible_members", recurse);
 	if (mListVisibleMembers)
 	{
-		mListVisibleMembers->setDoubleClickCallback(boost::bind(LLAvatarActions::showProfile, boost::bind(&LLScrollListCtrl::getCurrentID, mListVisibleMembers)));
+		mListVisibleMembers->setDoubleClickCallback(boost::bind(LLAvatarActions::showProfile, boost::bind(&LLScrollListCtrl::getCurrentID, mListVisibleMembers), false));
 	}
 
 	// Options

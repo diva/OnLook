@@ -74,7 +74,6 @@ LLFloaterWebContent::LLFloaterWebContent( const Params& params )
 	mCommitCallbackRegistrar.add( "WebContent.Stop", boost::bind( &LLFloaterWebContent::onClickStop, this ));
 	mCommitCallbackRegistrar.add( "WebContent.EnterAddress", boost::bind( &LLFloaterWebContent::onEnterAddress, this ));
 	mCommitCallbackRegistrar.add( "WebContent.PopExternal", boost::bind( &LLFloaterWebContent::onPopExternal, this ));
-	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_web_content.xml");
 	mAgeTimer.reset();
 }
 
@@ -175,7 +174,7 @@ void LLFloaterWebContent::showInstance(const std::string& window_class, Params& 
 	assert(!old_inst);
 
 	if(!old_inst)
-		LLFloaterWebContent::create(p);
+		LLUICtrlFactory::getInstance()->buildFloater(LLFloaterWebContent::create(p), "floater_web_content.xml");
 }
 
 //static
@@ -304,6 +303,12 @@ void LLFloaterWebContent::open_media(const Params& p)
 	if (!p.show_chrome)
 	{
 		setResizeLimits(100, 100);
+	}
+	else
+	{
+		// Singu Note: currently only true with normal browser floater, if this changes, this workaround breaks
+		setRectControl("FloaterMediaRect");
+		applyRectControl();
 	}
 
 	if (!p.preferred_media_size().isEmpty())

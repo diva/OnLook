@@ -25,6 +25,7 @@
 			<text name="speed_rez_seconds">
 				segundos
 			</text>
+            <check_box name="use_web_profiles" label="Usar perfiles web por defecto" tool_tip="Muestra los perfiles como una página web en vez de usar los paneles de estilo V1"/>
 		</panel>
 		<!-- ====================================== -->
 		<panel label="Línea de Comandos" name="Command Line">

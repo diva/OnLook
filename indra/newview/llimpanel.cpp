@@ -563,7 +563,7 @@ BOOL LLFloaterIMPanel::postBuild()
 
 		if (LLButton* btn = findChild<LLButton>("profile_callee_btn"))
 		{
-			btn->setCommitCallback(boost::bind(LLAvatarActions::showProfile, mOtherParticipantUUID));
+			btn->setCommitCallback(boost::bind(LLAvatarActions::showProfile, mOtherParticipantUUID, false));
 			if (!mProfileButtonEnabled) btn->setEnabled(false);
 		}
 		if (LLButton* btn = findChild<LLButton>("profile_tele_btn"))

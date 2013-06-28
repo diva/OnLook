@@ -36,21 +36,15 @@
 			<string name="NotAgeVerified">
 				Not Age-verified
 			</string>
-      <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-24" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="4"
-			     mouse_opaque="true" name="Key:" v_pad="0" width="70">
-        Key:
-      </text>
+      <button bottom="-24" follows="left|top" halign="right" height="16" label="Copy Key:" left="4" font="SansSerifSmall" tool_tip="Copy key to clipboard" name="copy_key" width="70"/>
       <name_editor bevel_style="in" border_style="line"
 			     border_thickness="1" bottom="-24" enabled="false" follows="left|top"
 			     font="SansSerifSmall" height="16" is_unicode="false" left_delta="75"
 			     max_length="36" mouse_opaque="false" name="avatar_key"
-			     width="256" />
-	  <button bottom="-24" follows="left|top" halign="center"
-				height="16" label="Copy" left_delta="256"
-				tool_tip="Copy key to clipboard" 
-				mouse_opaque="true" name="copy_key" width="70" />
+			     width="204" />
+      <button bottom="-24" height="16" width="106" left_delta="204" name="web_profile" label="Web Profile">
+         <button.commit_callback function="Profile.Web"/>
+      </button>
       <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-48" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="4"

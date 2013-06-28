@@ -4061,7 +4061,7 @@ bool process_login_success_response(std::string& password)
 	if(gHippoGridManager->getConnectedGrid()->isOpenSimulator())
 	{
 		std::string web_profile_url = response["web_profile_url"];
-		if(!web_profile_url.empty())
+		//if(!web_profile_url.empty()) // Singu Note: We're using this to check if this grid supports web profiles at all, so set empty if empty.
 			gSavedSettings.setString("WebProfileURL", web_profile_url);
 	}
 	else if(!gHippoGridManager->getConnectedGrid()->isInProductionGrid())

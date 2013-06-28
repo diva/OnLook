@@ -39,11 +39,13 @@
 #include "llfloateravatarinfo.h"
 #include "llfloatergroupinvite.h"
 #include "llfloatergroups.h"
+#include "llfloaterwebprofile.h"
 #include "llfloaterworldmap.h"
 #include "llgivemoney.h"
 #include "llimview.h"			// for gIMMgr
 #include "llinventoryobserver.h"
 #include "llmutelist.h"
+#include "llpanelprofile.h"
 #include "lltrans.h"
 #include "llvoiceclient.h"
 #include "llweb.h"
@@ -324,18 +326,16 @@ void LLAvatarActions::startConference(const uuid_vec_t& ids)
 	make_ui_sound("UISndStartIM");
 }
 
-/* Singu TODO: Web Profiles
 static const char* get_profile_floater_name(const LLUUID& avatar_id)
 {
 	// Use different floater XML for our profile to be able to save its rect.
 	return avatar_id == gAgentID ? "my_profile" : "profile";
 }
-*/
 
-static void on_avatar_name_show_profile(const LLUUID& agent_id, const LLAvatarName& av_name)
+static void on_avatar_name_show_profile(const LLUUID& agent_id, const LLAvatarName& av_name, bool web)
 {
-	//if (!gSavedSettings.getBOOL("UseWebProfiles")
-	//{
+	if (gSavedSettings.getString("WebProfileURL").empty() || !(web || gSavedSettings.getBOOL("UseWebProfiles")))
+	{
 		LLFloaterAvatarInfo* floater = LLFloaterAvatarInfo::getInstance(agent_id);
 		if(!floater)
 		{
@@ -345,8 +345,7 @@ static void on_avatar_name_show_profile(const LLUUID& agent_id, const LLAvatarNa
 
 		// ...bring that window to front
 		floater->open();	/*Flawfinder: ignore*/
-	//}
-	/*
+	}
 	else
 	{
 		std::string username = av_name.mUsername;
@@ -362,21 +361,20 @@ static void on_avatar_name_show_profile(const LLUUID& agent_id, const LLAvatarNa
 		LLFloaterWebContent::Params p;
 		p.url(url).
 			id(agent_id.asString());
-		LLFloaterReg::showInstance(get_profile_floater_name(agent_id), p);
+		LLFloaterWebProfile::showInstance(get_profile_floater_name(agent_id), p);
 	}
-	*/
 }
 
 // static
-void LLAvatarActions::showProfile(const LLUUID& id)
+void LLAvatarActions::showProfile(const LLUUID& id, bool web)
 {
 	if (id.notNull())
 	{
 		LLAvatarName av_name;
 		if (LLAvatarNameCache::get(id, &av_name)) // Bypass expiration, open NOW!
-			on_avatar_name_show_profile(id, av_name);
+			on_avatar_name_show_profile(id, av_name, web);
 		else
-			LLAvatarNameCache::get(id, boost::bind(&on_avatar_name_show_profile, _1, _2));
+			LLAvatarNameCache::get(id, boost::bind(&on_avatar_name_show_profile, _1, _2, web));
 	}
 }
 
@@ -391,12 +389,11 @@ bool LLAvatarActions::profileVisible(const LLUUID& id)
 LLFloater* LLAvatarActions::getProfileFloater(const LLUUID& id)
 {
 	LLFloater* browser;
-	//if (!gSavedSettings.getBOOL("UseWebProfiles")
+	if (gSavedSettings.getString("WebProfileURL").empty() || !gSavedSettings.getBOOL("UseWebProfiles"))
 		browser = LLFloaterAvatarInfo::getInstance(id);
-	/*else
-		browser = dynamic_cast<LLFloaterWebContent*>
-			(LLFloaterReg::findInstance(get_profile_floater_name(id), LLSD().with("id", id)));
-	*/
+	else
+		browser =
+			LLFloaterWebProfile::getInstance(id.asString());
 	return browser;
 }
 
