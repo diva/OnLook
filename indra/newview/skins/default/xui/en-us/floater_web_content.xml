@@ -142,6 +142,7 @@
     <layout_panel name="status_bar" 
                   height="23"
 		  mouse_opaque="false"
+                  user_resize="false"
                   auto_resize="false">
       <text
         type="string"
