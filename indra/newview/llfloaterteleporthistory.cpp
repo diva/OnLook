@@ -334,7 +334,7 @@ void LLFloaterTeleportHistory::onTeleport(void* data)
 	LLFloaterTeleportHistory* self = (LLFloaterTeleportHistory*) data;
 
 	// build secondlife::/app link from simstring for instant teleport to destination
-	std::string slapp = "secondlife:///app/teleport/" + self->mPlacesList->getFirstSelected()->getColumn(LIST_SLURL)->getValue().asString();
+	std::string slapp = "secondlife:///app/teleport/" + self->mPlacesList->getFirstSelected()->getColumn(LIST_SIMSTRING)->getValue().asString();
 	LLUrlAction::teleportToLocation(slapp);
 }
 
