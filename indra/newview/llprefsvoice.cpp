@@ -140,8 +140,6 @@ BOOL LLPrefsVoice::postBuild()
 	childSetValue("ear_location", gSavedSettings.getS32("VoiceEarLocation"));
 	childSetValue("enable_lip_sync_check", gSavedSettings.getBOOL("LipSyncEnabled"));
 
-	gSavedSettings.getControl("ShowDeviceSettings")->getSignal()->connect(boost::bind(&LLPanel::childSetVisible, this, "device_settings_panel", _2)); // Singu TODO: visibility_control
-
 	return TRUE;
 }
 

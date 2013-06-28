@@ -16,5 +16,5 @@
 	<check_box bottom_delta="-20" follows="top" height="16" initial_value="false" label="Only accept voice calls from people on My Friends list" name="voice_call_friends_only_check"/>
 	<check_box bottom_delta="-18" follows="top" height="16" initial_value="false" label="Switch off microphone when ending IM calls" name="auto_disengage_mic_check"/>
 	<button control_name="ShowDeviceSettings" toggle="true" bottom_delta="-40" follows="top" height="20" label="Device Settings" mouse_opaque="true" name="device_settings_btn" width="155" tool_tip="Running the Device Settings will temporarily disconnect you from Voice Chat, and changes you make will be immediately applied."/>
-	<panel name="device_settings_panel" filename="panel_sound_devices.xml" follows="all" visible="false"/>
+	<panel visibility_control="ShowDeviceSettings" name="device_settings_panel" filename="panel_sound_devices.xml" follows="all"/>
 </panel>
