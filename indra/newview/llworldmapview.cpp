@@ -122,7 +122,9 @@ F32 CONE_SIZE = 0.6f;
 
 std::map<std::string,std::string> LLWorldMapView::sStringsMap;
 
-F32 DRAW_TEXT_THRESHOLD = 96.f;
+// Fetch and draw info thresholds
+const F32 DRAW_TEXT_THRESHOLD = 96.f;		// Don't draw text under that resolution value (res = width region in meters)
+const S32 DRAW_SIMINFO_THRESHOLD = 3;		// Max level for which we load or display sim level information (level in LLWorldMipmap sense)
 
 const int SIM_MAP_AGENT_SCALE=32; // width in pixels, where we start drawing agents
 const int SIM_DATA_SCALE=32; // width in pixels where we start requesting sim info
@@ -310,6 +312,10 @@ void LLWorldMapView::setPan( S32 x, S32 y, BOOL snap )
 	sVisibleTilesLoaded = false;
 }
 
+bool LLWorldMapView::showRegionInfo()
+{
+	return (LLWorldMipmap::scaleToLevel(sMapScale) <= DRAW_SIMINFO_THRESHOLD ? true : false);
+}
 
 ///////////////////////////////////////////////////////////////////////////////////
 // HELPERS
