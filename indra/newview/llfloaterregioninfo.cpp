@@ -1338,7 +1338,7 @@ void LLPanelRegionTerrainInfo::onClickDownloadRaw(void* data)
 	LLPanelRegionTerrainInfo* self = (LLPanelRegionTerrainInfo*)data;
 	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open("terrain.raw", FFSAVE_RAW);
-	filepicker->run(boost::bind(&LLPanelRegionTerrainInfo::onClickUploadRaw_continued, self, filepicker));
+	filepicker->run(boost::bind(&LLPanelRegionTerrainInfo::onClickDownloadRaw_continued, self, filepicker));
 }
 
 void LLPanelRegionTerrainInfo::onClickDownloadRaw_continued(AIFilePicker* filepicker)
