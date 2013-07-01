@@ -4151,6 +4151,7 @@ bool process_login_success_response(std::string& password)
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setPasswordUrl(tmp);
 	tmp = response["search"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setSearchUrl(tmp);
+	if (gHippoGridManager->getConnectedGrid()->isOpenSimulator()) gSavedSettings.setString("SearchURL", tmp); // Singu Note: For web search purposes, always set this setting
 	tmp = response["currency"].asString();
 	if (!tmp.empty())
 	{

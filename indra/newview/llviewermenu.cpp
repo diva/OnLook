@@ -188,6 +188,8 @@
 
 #include "hippogridmanager.h"
 
+void toggle_search_floater();
+
 using namespace LLOldEvents;
 using namespace LLAvatarAppearanceDefines;
 void init_client_menu(LLMenuGL* menu);
@@ -5546,7 +5548,7 @@ class LLEditSearch : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLFloaterDirectory::toggleFind(NULL);
+		toggle_search_floater();
 		return true;
 	}
 };

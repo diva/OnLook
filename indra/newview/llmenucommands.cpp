@@ -70,6 +70,8 @@
 #include "llworldmap.h"
 #include "llfocusmgr.h"
 
+void toggle_search_floater();
+
 void handle_track_avatar(const LLUUID& agent_id, const std::string& name)
 {	
 	LLAvatarTracker::instance().track(agent_id, name);
@@ -97,7 +99,7 @@ void handle_mini_map(void*)
 
 void handle_find(void*)
 {
-	LLFloaterDirectory::toggleFind(NULL);
+	toggle_search_floater();
 }
 
 

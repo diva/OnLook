@@ -34,6 +34,7 @@
 
 #include "llfloaterdirectory.h"
 
+#include "llfloatersearch.h" // For callback to open web search
 #include "llpaneldirfind.h"
 #include "llpaneldirevents.h"
 #include "llpaneldirland.h"
@@ -42,36 +43,19 @@
 #include "llpaneldirgroups.h"
 #include "llpaneldirplaces.h"
 #include "llpaneldirclassified.h"
-#include "llresizehandle.h"
-#include "llresmgr.h"
-#include "llscrollbar.h"
-#include "llbutton.h"
-
-#include "llkeyboard.h"
-#include "llscrollcontainer.h"
-#include "llcheckboxctrl.h"
-#include "lluiconstants.h"
-#include "llviewercontrol.h"
 
 #include "llagent.h"
 #include "llpanelavatar.h"
 #include "llpanelevent.h"
 #include "llpanelclassified.h"
 #include "llpanelgroup.h"
-#include "llpanelpick.h"
 #include "llpanelplace.h"
-#include "llpaneldirland.h"
-#include "llfloateravatarinfo.h"
-#include "lldir.h"
 #include "lluictrlfactory.h"
 
 #include "hippogridmanager.h"
 #include "llenvmanager.h"
 #include "llnotificationsutil.h"
 #include "llviewerregion.h"
-#include "llwindow.h"
-
-#include "llnotifications.h"
 
 const char* market_panel = "market_panel";
 
@@ -140,7 +124,7 @@ public:
 				else
 				{
 					LLNotificationsUtil::add("MarketplaceURLChanged", LLSD(), LLSD(),
-							boost::bind(&LLPanelDirMarket::onConfirmChangeMarketplaceURL, this, boost::bind(LLNotification::getSelectedOption, _1, _2), url));
+							boost::bind(&LLPanelDirMarket::onConfirmChangeMarketplaceURL, this, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2), url));
 				}
 			}
 			else if (!mMarketplaceURL.empty())
@@ -239,6 +223,7 @@ LLFloaterDirectory::LLFloaterDirectory(const std::string& name)
 	
 	if (enableWebSearch)
 	{
+		mCommitCallbackRegistrar.add("Search.WebFloater", boost::bind(&LLFloaterSearch::open, boost::bind(LLFloaterSearch::getInstance)));
 		if (enableClassicAllSearch)
 			LLUICtrlFactory::getInstance()->buildFloater(this, "floater_directory3.xml", &factory_map);
 		else
@@ -452,6 +437,11 @@ void LLFloaterDirectory::showClassified(const LLUUID& classified_id)
 	}
 }
 
+// static
+void LLFloaterDirectory::showClassified(const std::string& search_text)
+{
+	performQueryOn("classified_panel", search_text);
+}
 
 // static
 void LLFloaterDirectory::showEvents(S32 event_id)
@@ -471,6 +461,12 @@ void LLFloaterDirectory::showEvents(S32 event_id)
 }
 
 // static
+void LLFloaterDirectory::showEvents(const std::string& search_text)
+{
+	performQueryOn("events_panel", search_text);
+}
+
+// static
 void LLFloaterDirectory::showLandForSale(const LLUUID& parcel_id)
 {
 	showPanel("land_sales_panel");
@@ -482,9 +478,37 @@ void LLFloaterDirectory::showLandForSale(const LLUUID& parcel_id)
 }
 
 // static
-void LLFloaterDirectory::showGroups()
+void LLFloaterDirectory::showDestinations()
 {
-	showPanel("groups_panel");
+	showPanel("showcase_panel");
+}
+
+// static
+void LLFloaterDirectory::showGroups(const std::string& search_text)
+{
+	performQueryOn("groups_panel", search_text);
+}
+
+// static
+void LLFloaterDirectory::showPeople(const std::string& search_text)
+{
+	performQueryOn("people_panel", search_text);
+}
+
+// static
+void LLFloaterDirectory::showPlaces(const std::string& search_text)
+{
+	performQueryOn("places_panel", search_text);
+}
+
+//static
+void LLFloaterDirectory::performQueryOn(const std::string& name, const std::string& search_text)
+{
+	showPanel(name);
+	if (search_text.empty()) return; // We're done here.
+	LLPanelDirBrowser* panel = sInstance->getChild<LLPanelDirBrowser>(name);
+	panel->getChild<LLUICtrl>("name")->setValue(search_text);
+	panel->performQuery();
 }
 
 // static

@@ -7310,6 +7310,22 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
       </array>
     </map>
+    <key>FloaterSearchRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for web search browser window</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>16</integer>
+        <integer>650</integer>
+        <integer>600</integer>
+        <integer>128</integer>
+      </array>
+    </map>
     <key>FloaterSnapshotRect</key>
     <map>
       <key>Comment</key>
@@ -8214,6 +8230,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>String</string>
       <key>Value</key>
       <string>help/index.html</string>
+    </map>
+    <key>SearchURL</key>
+    <map>
+      <key>Comment</key>
+      <string>URL for Search website, displayed in the Find floater</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>http://search.secondlife.com/viewer/[CATEGORY]/?q=[QUERY]&amp;p=[AUTH_TOKEN]&amp;r=[MATURITY]&amp;lang=[LANGUAGE]&amp;g=[GODLIKE]&amp;sid=[SESSION_ID]&amp;rid=[REGION_ID]&amp;pid=[PARCEL_ID]&amp;channel=[CHANNEL]&amp;version=[VERSION]&amp;major=[VERSION_MAJOR]&amp;minor=[VERSION_MINOR]&amp;patch=[VERSION_PATCH]&amp;build=[VERSION_BUILD]</string>
     </map>
     <key>WebProfileURL</key>
     <map>

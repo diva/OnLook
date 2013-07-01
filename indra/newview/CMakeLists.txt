@@ -246,6 +246,7 @@ set(viewer_SOURCE_FILES
     llfloaterreporter.cpp
     llfloaterscriptdebug.cpp
     llfloaterscriptlimits.cpp
+    llfloatersearch.cpp
     llfloatersearchreplace.cpp
     llfloatersellland.cpp
     llfloatersettingsdebug.cpp
@@ -757,6 +758,7 @@ set(viewer_HEADER_FILES
     llfloaterreporter.h
     llfloaterscriptdebug.h
     llfloaterscriptlimits.h
+    llfloatersearch.h
     llfloatersearchreplace.h
     llfloatersellland.h
     llfloatersettingsdebug.h

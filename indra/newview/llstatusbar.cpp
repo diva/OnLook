@@ -41,12 +41,12 @@
 #include "llenvmanager.h"
 #include "llfloaterbuycurrency.h"
 #include "llfloaterchat.h"
-#include "llfloaterdirectory.h"		// to spawn search
 #include "llfloaterinventory.h"
 #include "llfloaterlagmeter.h"
 #include "llfloaterland.h"
 #include "llfloaterregioninfo.h"
 #include "llfloaterscriptdebug.h"
+#include "llfloatersearch.h"
 #include "llhudicon.h"
 #include "llkeyboard.h"
 #include "lllineeditor.h"
@@ -994,8 +994,9 @@ void LLStatusBar::onCommitSearch(LLUICtrl*, void* data)
 void LLStatusBar::onClickSearch(void* data)
 {
 	LLStatusBar* self = (LLStatusBar*)data;
-	std::string search_text = self->childGetText("search_editor");
-	LLFloaterDirectory::showFindAll(search_text);
+	LLFloaterSearch::SearchQuery search;
+	search.query = self->childGetText("search_editor");
+	LLFloaterSearch::showInstance(search);
 }
 
 // static

@@ -110,7 +110,7 @@
 			<text name="text2" width="60">
 				Encontrar:
 			</text>
-			<line_editor left="69" name="event_search_text" width="150" />
+			<line_editor left="69" name="name" width="150" />
 			<radio_group name="date_mode">
 				<radio_item name="current">
 					Em progresso e processando

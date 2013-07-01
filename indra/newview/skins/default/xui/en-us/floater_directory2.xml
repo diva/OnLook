@@ -173,7 +173,7 @@
 			</text>
 			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom="-24"
 			     follows="left|right|top" font="SansSerif" height="18" left="56"
-			     max_length="63" mouse_opaque="true" name="event_search_text" width="160" spell_check="true" />
+			     max_length="63" mouse_opaque="true" name="name" width="160" spell_check="true" />
 			<radio_group bottom="-40" draw_border="false" follows="right|top" height="40" left="560"
 			     mouse_opaque="true" name="date_mode" width="300">
 				<radio_item bottom="-20" follows="left|top" height="20" left="0" mouse_opaque="true"

@@ -116,7 +116,6 @@
 			<text name="text2">
 				Trouver
 			</text>
-			<line_editor name="event_search_text"/>
 			<radio_group name="date_mode">
 				<radio_item name="current">
 					En cours et futurs

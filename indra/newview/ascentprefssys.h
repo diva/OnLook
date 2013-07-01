@@ -73,6 +73,7 @@ protected:
     BOOL mSpeedRez;
         U32 mSpeedRezInterval;
 	bool mUseWebProfiles;
+	bool mUseWebSearch;
 
     //Command Line ------------------------------------------------------------------------
     BOOL mCmdLine;

@@ -53,7 +53,6 @@ LLPrefsAscentSys::LLPrefsAscentSys()
     //General -----------------------------------------------------------------------------
 	getChild<LLUICtrl>("speed_rez_check")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitCheckBox, this, _1, _2));
 	getChild<LLUICtrl>("double_click_teleport_check")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitCheckBox, this, _1, _2));
-	getChild<LLUICtrl>("system_folder_check")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitCheckBox, this, _1, _2));
 	getChild<LLUICtrl>("show_look_at_check")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitCheckBox, this, _1, _2));
 	getChild<LLUICtrl>("enable_clouds")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitCheckBox, this, _1, _2));
 	getChild<LLUICtrl>("power_user_check")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitCheckBox, this, _1, _2));
@@ -110,10 +109,6 @@ void LLPrefsAscentSys::onCommitCheckBox(LLUICtrl* ctrl, const LLSD& value)
 	{
 		childSetEnabled("center_after_teleport_check", enabled);
 		childSetEnabled("offset_teleport_check", enabled);
-	}
-	else if (name == "system_folder_check")
-	{
-		childSetEnabled("temp_in_system_check", enabled);
 	}
 	else if (name == "enable_clouds")
 	{
@@ -225,6 +220,7 @@ void LLPrefsAscentSys::refreshValues()
     mSpeedRez					= gSavedSettings.getBOOL("SpeedRez");
         mSpeedRezInterval			= gSavedSettings.getU32("SpeedRezInterval");
 	mUseWebProfiles				= gSavedSettings.getBOOL("UseWebProfiles");
+	mUseWebSearch				= gSavedSettings.getBOOL("UseWebSearch");
 
     //Command Line ------------------------------------------------------------------------
     mCmdLine                    = gSavedSettings.getBOOL("AscentCmdLine");
@@ -376,6 +372,7 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("SpeedRez", mSpeedRez);
         gSavedSettings.setU32("SpeedRezInterval", mSpeedRezInterval);
 	gSavedSettings.setBOOL("UseWebProfiles", mUseWebProfiles);
+	gSavedSettings.setBOOL("UseWebSearch", mUseWebSearch);
 
     //Command Line ------------------------------------------------------------------------
     gSavedSettings.setBOOL("AscentCmdLine",                 mCmdLine);

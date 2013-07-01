@@ -32,8 +32,8 @@
 #include "llagent.h"
 #include "llcommandhandler.h"
 #include "llfloaterchatterbox.h" // for LLFloaterMyFriends
-#include "llfloaterdirectory.h"
 #include "llfloatergroupinfo.h"
+#include "llfloatersearch.h"
 #include "llgroupmgr.h"
 #include "llimview.h" // for gIMMgr
 #include "llnotificationsutil.h"
@@ -125,7 +125,9 @@ LLGroupHandler gGroupHandler;
 void LLGroupActions::search()
 {
 	//LLFloaterReg::showInstance("search", LLSD().with("category", "groups"));
-	LLFloaterDirectory::showGroups();
+	LLFloaterSearch::SearchQuery search;
+	search.category = "groups";
+	LLFloaterSearch::showInstance(search);
 }
 
 // static

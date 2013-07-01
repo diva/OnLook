@@ -215,7 +215,7 @@ void LLPanelDirEvents::performQueryOrDelete(U32 event_id)
 	U32 cat_id = childGetValue("category combo").asInteger();
 
 	params << cat_id << "|";
-	params << childGetValue("event_search_text").asString();
+	params << childGetValue("name").asString();
 
 	// send the message
 	if (0 == event_id)
