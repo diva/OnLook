@@ -34,6 +34,7 @@
 #include "aihttptimeout.h"
 #include "aicurlperservice.h"
 #include "aiaverage.h"
+#include "aicurltimer.h"
 #include "lltimer.h"		// ms_sleep, get_clock_count
 #include "llhttpstatuscodes.h"
 #include "llbuffer.h"
@@ -1433,21 +1434,35 @@ void AICurlThread::run(void)
 #endif
 	  int ready = 0;
 	  struct timeval timeout;
+	  // Update AICurlTimer::sTime_1ms.
+	  AICurlTimer::sTime_1ms = get_clock_count() * AICurlTimer::sClockWidth_1ms;
+	  Dout(dc::curl, "AICurlTimer::sTime_1ms = " << AICurlTimer::sTime_1ms);
+	  // Get the time in ms that libcurl wants us to wait for socket actions - at most - before proceeding.
 	  long timeout_ms = multi_handle_w->getTimeout();
-	  // If no timeout is set, sleep 1 second.
+	  // Set libcurl_timeout iff the shortest timeout is that of libcurl.
+	  bool libcurl_timeout = timeout_ms == 0 || (timeout_ms > 0 && !AICurlTimer::expiresBefore(timeout_ms));
+	  // If no curl timeout is set, sleep at most 4 seconds.
 	  if (LL_UNLIKELY(timeout_ms < 0))
-		timeout_ms = 1000;
-	  if (LL_UNLIKELY(timeout_ms == 0))
+		timeout_ms = 4000;
+	  // Check if some AICurlTimer expires first.
+	  if (AICurlTimer::expiresBefore(timeout_ms))
 	  {
-		if (mZeroTimeout >= 10000)
+		timeout_ms = AICurlTimer::nextExpiration();
+	  }
+	  // If we have to continue immediately, then just set a zero timeout, but only for 100 calls on a row;
+	  // after that start sleeping 1ms and later even 10ms (this should never happen).
+	  if (LL_UNLIKELY(timeout_ms <= 0))
+	  {
+		if (mZeroTimeout >= 1000)
 		{
-		  if (mZeroTimeout == 10000)
-			llwarns << "Detected more than 10000 zero-timeout calls of select() by curl thread (more than 101 seconds)!" << llendl;
-		}
-		else if (mZeroTimeout >= 1000)
+		  if (mZeroTimeout % 10000 == 0)
+			llwarns << "Detected " << mZeroTimeout << " zero-timeout calls of select() by curl thread (more than 101 seconds)!" << llendl;
 		  timeout_ms = 10;
+		}
 		else if (mZeroTimeout >= 100)
 		  timeout_ms = 1;
+		else
+		  timeout_ms = 0;
 	  }
 	  else
 	  {
@@ -1554,12 +1569,28 @@ void AICurlThread::run(void)
 		}
 		continue;
 	  }
-	  // Clock count used for timeouts.
-	  HTTPTimeout::sTime_10ms = get_clock_count() * HTTPTimeout::sClockWidth_10ms;
-	  Dout(dc::curl, "HTTPTimeout::sTime_10ms = " << HTTPTimeout::sTime_10ms);
+	  // Update the clocks.
+	  AICurlTimer::sTime_1ms = get_clock_count() * AICurlTimer::sClockWidth_1ms;
+	  Dout(dc::curl, "AICurlTimer::sTime_1ms = " << AICurlTimer::sTime_1ms);
+	  HTTPTimeout::sTime_10ms = AICurlTimer::sTime_1ms / 10;
 	  if (ready == 0)
 	  {
-		multi_handle_w->socket_action(CURL_SOCKET_TIMEOUT, 0);
+		if (libcurl_timeout)
+		{
+		  multi_handle_w->socket_action(CURL_SOCKET_TIMEOUT, 0);
+		}
+		else
+		{
+		  // Update MultiHandle::mTimeout because next loop we need to sleep timeout_ms shorter.
+		  multi_handle_w->update_timeout(timeout_ms);
+		  Dout(dc::curl, "MultiHandle::mTimeout set to " << multi_handle_w->getTimeout() << " ms.");
+		}
+		// Handle timers.
+		if (AICurlTimer::expiresBefore(1))
+		{
+		  AICurlTimer::handleExpiration();
+		}
+		// Handle stalling transactions.
 		multi_handle_w->handle_stalls();
 	  }
 	  else
