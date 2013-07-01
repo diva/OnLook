@@ -1392,6 +1392,10 @@ void BufferedCurlEasyRequest::prepRequest(AICurlEasyRequest_wat& curl_easy_reque
 	// to id.secondlife.com for marketplace.secondlife.com.
 	allow_cookies = true;
   }
+  if (responder->forbidReuse())
+  {
+	curl_easy_request_w->setopt(CURLOPT_FORBID_REUSE, 1);
+  }
   if (allow_cookies)
   {
 	// Given an empty or non-existing file or by passing the empty string (""),
