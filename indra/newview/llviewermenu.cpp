@@ -1509,8 +1509,7 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 	sub_menu->setCanTearOff(TRUE);
 	sub_menu->addChild(new LLMenuItemCheckGL("Go Away/AFK When Idle", menu_toggle_control, NULL, menu_check_control, (void*)"AllowIdleAFK"));
 
-	sub_menu->addChild(new LLMenuItemCallGL("Appearance To XML", 
-		&handle_dump_archetype_xml,&enable_dump_archetype_xm));
+	sub_menu->addChild(new LLMenuItemCallGL("Appearance To XML", &handle_dump_archetype_xml));
 
 	// HACK for easy testing of avatar geometry
 	sub_menu->addChild(new LLMenuItemCallGL( "Toggle Character Geometry", 
