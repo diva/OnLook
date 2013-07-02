@@ -339,7 +339,7 @@ void AIPerService::added_to_multi_handle(AICapabilityType capability_type)
   ++mTotalAdded;
 }
 
-void AIPerService::removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something)
+void AIPerService::removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something, bool success)
 {
   CapabilityType& ct(mCapabilityType[capability_type]);
   llassert(mTotalAdded > 0 && ct.mAdded > 0);
@@ -353,6 +353,10 @@ void AIPerService::removed_from_multi_handle(AICapabilityType capability_type, b
   if (done && ct.pipelined_requests() == 0)
   {
 	mark_unused(capability_type);
+  }
+  if (success)
+  {
+	ct.mFlags |= ctf_success;
   }
 }
 

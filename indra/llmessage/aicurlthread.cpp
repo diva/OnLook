@@ -1647,7 +1647,7 @@ MultiHandle::~MultiHandle()
   // Curl demands that all handles are removed from the multi session handle before calling curl_multi_cleanup.
   for(addedEasyRequests_type::iterator iter = mAddedEasyRequests.begin(); iter != mAddedEasyRequests.end(); iter = mAddedEasyRequests.begin())
   {
-	finish_easy_request(*iter, CURLE_OK);	// Error code is not used anyway.
+	finish_easy_request(*iter, CURLE_GOT_NOTHING);	// Error code is not used anyway.
 	remove_easy_request(*iter);
   }
   delete mWritePollSet;
@@ -1848,7 +1848,9 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
 	res = curl_easy_request_w->remove_handle_from_multi(curl_easy_request_w, mMultiHandle);
 	capability_type = curl_easy_request_w->capability_type();
 	per_service = curl_easy_request_w->getPerServicePtr();
-	PerService_wat(*per_service)->removed_from_multi_handle(capability_type, downloaded_something);		// (About to be) removed from mAddedEasyRequests.
+	CURLcode code;
+	curl_easy_request_w->getResult(&code, NULL);
+	PerService_wat(*per_service)->removed_from_multi_handle(capability_type, downloaded_something, code == CURLE_OK);		// (About to be) removed from mAddedEasyRequests.
 #ifdef SHOW_ASSERT
 	curl_easy_request_w->mRemovedPerCommand = as_per_command;
 #endif
@@ -2200,7 +2202,7 @@ void BufferedCurlEasyRequest::update_body_bandwidth(void)
   mTotalRawBytes = total_raw_bytes;
   // Note that in some cases (like HTTP_PARTIAL_CONTENT), the output of CURLINFO_SIZE_DOWNLOAD lags
   // behind and will return 0 the first time, and the value of the previous chunk the next time.
-  // The last call from MultiHandle::finish_easy_request recorrects this, in that case.
+  // The last call from MultiHandle::finish_easy_request corrects this, in that case.
   if (raw_bytes > 0)
   {
 	U64 const sTime_40ms = curlthread::HTTPTimeout::sTime_10ms >> 2;
@@ -2800,7 +2802,7 @@ AIPerService::Approvement* AIPerService::approveHTTPRequestFor(AIPerServicePtr c
 	equal = pipelined_requests_per_capability_type == ct.mMaxPipelinedRequests;
 	increment_threshold = ct.mFlags & ctf_starvation;
 	decrement_threshold = (ct.mFlags & (ctf_empty | ctf_full)) == ctf_full;
-	ct.mFlags = 0;
+	ct.mFlags &= ~(ctf_empty|ctf_full|ctf_starvation);
 	if (decrement_threshold)
 	{
 	  if ((int)ct.mMaxPipelinedRequests > ct.mConcurrentConnections)

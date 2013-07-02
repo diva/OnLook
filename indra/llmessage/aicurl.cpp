@@ -977,7 +977,6 @@ void CurlEasyRequest::resetState(void)
   mTimeoutPolicy = NULL;
   mTimeout = NULL;
   mHandleEventsTarget = NULL;
-  mResult = CURLE_FAILED_INIT;
   applyDefaultOptions();
 }
 

@@ -134,6 +134,11 @@ class AIPerService {
 	static U16 const ctf_empty = 1;
 	static U16 const ctf_full = 2;
 	static U16 const ctf_starvation = 4;
+	// Flags used by the HTTP debug console.
+	static U16 const ctf_success = 8;
+	static U16 const ctf_progress_mask = 0x70;
+	static U16 const ctf_progress_shift = 4;
+	static U16 const ctf_grey = 0x80;
 
 	struct CapabilityType {
 	  typedef std::deque<AICurlPrivate::BufferedCurlEasyRequestPtr> queued_request_type;
@@ -145,6 +150,7 @@ class AIPerService {
 	  U16 mFlags;								// ctf_empty: Set to true when the queue becomes precisely empty.
 	  											// ctf_full : Set to true when the queue is popped and then still isn't empty;
 												// ctf_starvation: Set to true when the queue was about to be popped but was already empty.
+												// ctf_success: Set to true when a curl request finished successfully.
 	  U32 mDownloading;							// The number of active easy handles with this service for which data was received.
 	  U16 mMaxPipelinedRequests;				// The maximum number of accepted requests for this service and (approved) capability type, that didn't finish yet.
 	  U16 mConcurrentConnections;				// The maximum number of allowed concurrent connections to the service of this capability type.
@@ -259,7 +265,7 @@ class AIPerService {
 	void added_to_command_queue(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mQueuedCommands; mark_inuse(capability_type); }
 	void removed_from_command_queue(AICapabilityType capability_type) { --mCapabilityType[capability_type].mQueuedCommands; llassert(mCapabilityType[capability_type].mQueuedCommands >= 0); }
 	void added_to_multi_handle(AICapabilityType capability_type);									// Called when an easy handle for this service has been added to the multi handle.
-	void removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something);	// Called when an easy handle for this service is removed again from the multi handle.
+	void removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something, bool success);	// Called when an easy handle for this service is removed again from the multi handle.
 	void download_started(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mDownloading; }
 	bool throttled(AICapabilityType capability_type) const;		// Returns true if the maximum number of allowed requests for this service/capability type have been added to the multi handle.
 	bool nothing_added(AICapabilityType capability_type) const { return mCapabilityType[capability_type].mAdded == 0; }
