@@ -109,6 +109,7 @@ LLFloaterSearch::_Params::_Params()
 	changeDefault(trusted_content, true);
 	changeDefault(allow_address_entry, false);
 	changeDefault(window_class, "search"); // Don't include this in the count with "web_content"
+	changeDefault(id, "search"); // Don't include this in the count with "web_content"
 }
 
 LLFloaterSearch::LLFloaterSearch(const Params& key) :
@@ -193,11 +194,11 @@ void LLFloaterSearch::showInstance(const SearchQuery& search, bool web)
 
 void LLFloaterSearch::onClose(bool app_quitting)
 {
-	if (!app_quitting) // Singu Note: Copy the behavior of the legacy search singleton retaining last search when reopened
+	/*if (!app_quitting) // Singu Note: Copy the behavior of the legacy search singleton retaining last search when reopened
 	{
 		setVisible(false);
 		return;
-	}
+	}*/
 	LLFloaterWebContent::onClose(app_quitting);
 	// tear down the web view so we don't show the previous search
 	// result when the floater is opened next time
