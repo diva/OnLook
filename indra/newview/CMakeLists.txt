@@ -262,6 +262,7 @@ set(viewer_SOURCE_FILES
     llfloatervoiceeffect.cpp
     llfloaterwater.cpp
     llfloaterwebcontent.cpp
+    llfloaterwebprofile.cpp
     llfloaterwhitelistentry.cpp
     llfloaterwindlight.cpp
     llfloaterworldmap.cpp
@@ -772,6 +773,7 @@ set(viewer_HEADER_FILES
     llfloatervoiceeffect.h
     llfloaterwater.h
     llfloaterwebcontent.h
+    llfloaterwebprofile.h
     llfloaterwhitelistentry.h
     llfloaterwindlight.h
     llfloaterworldmap.h

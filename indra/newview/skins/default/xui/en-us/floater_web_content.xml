@@ -8,7 +8,6 @@
  min_height="140"
  min_width="467"
  name="floater_web_content"
- rect_control="FloaterMediaRect"
  title="Web Browser"
  initial_mime_type="text/html"
  width="820">
@@ -142,6 +141,7 @@
     <layout_panel name="status_bar" 
                   height="23"
 		  mouse_opaque="false"
+                  user_resize="false"
                   auto_resize="false">
       <text
         type="string"

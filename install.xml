@@ -55,7 +55,7 @@
             <key>md5sum</key>
             <string>9552782ad333c819c91d31087750db64</string>
             <key>url</key>
-            <uri>https://bitbucket.org/Siana/singularityviewer/downloads/glod-1.0pre4-linux-x86_64-20120609.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/glod-1.0pre4-linux-x86_64-20120609.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -237,7 +237,7 @@
             <key>md5sum</key>
             <string>bab6e7fea2411dd375d76bb4ce9118a5</string>
             <key>url</key>
-            <uri>https://bitbucket.org/Siana/singularityviewer/downloads/colladadom-2.2-linux-x86_64-20120719.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-linux-x86_64-20120719.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>

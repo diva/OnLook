@@ -34,10 +34,7 @@
 			<string name="NotAgeVerified">
 				Edad No Verificada
 			</string>
-			<text name="Key:">
-				Key:
-			</text>
-			<button label="Copiar" tool_tip="Copyiar key al portapapeles" name="copy_key"/>
+			<button label="Copiar Key:" tool_tip="Copyiar key al portapapeles" name="copy_key"/>
 			<text name="Name:" >
 				Nombre:
 			</text>

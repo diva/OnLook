@@ -33,20 +33,26 @@
 
 #include "llpanelgroup.h"
 
-#include "llagent.h"
+// Library includes
 #include "llbutton.h"
+#include "lltabcontainer.h"
+#include "lltextbox.h"
+#include "lluictrlfactory.h"
+#include "llwindow.h"
+
+// Viewer includes
+#include "llviewermessage.h"
+#include "llviewerwindow.h"
+#include "llappviewer.h"
+#include "llnotificationsutil.h"
+
+#include "llagent.h"
+
+#include "llpanelgroupnotices.h"
 #include "llpanelgroupgeneral.h"
 #include "llpanelgrouproles.h"
 #include "llpanelgroupvoting.h"
 #include "llpanelgrouplandmoney.h"
-#include "llpanelgroupnotices.h"
-#include "lltabcontainer.h"
-#include "lltextbox.h"
-#include "llviewermessage.h"
-#include "lluictrlfactory.h"
-#include "llviewerwindow.h"
-#include "llappviewer.h"
-#include "llnotificationsutil.h"
 
 // static
 void* LLPanelGroupTab::createTab(void* data)
@@ -123,6 +129,11 @@ void LLPanelGroupTab::handleClickHelp()
 	}
 }
 
+static void copy_group_profile_uri(const LLUUID& id)
+{
+	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring("secondlife:///app/group/"+id.asString()+"/about"));
+}
+
 LLPanelGroup::LLPanelGroup(const LLUUID& group_id)
 :	LLPanel("PanelGroup", LLRect(), FALSE),
 	LLGroupMgrObserver( group_id ),
@@ -152,6 +163,7 @@ LLPanelGroup::LLPanelGroup(const LLUUID& group_id)
 
 	LLGroupMgr::getInstance()->addObserver(this);
 
+	mCommitCallbackRegistrar.add("Group.CopyURI", boost::bind(copy_group_profile_uri, group_id));
 	// Pass on construction of this panel to the control factory.
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_group.xml", &getFactoryMap());
 }

@@ -1392,6 +1392,7 @@ LLPanelAvatar::LLPanelAvatar(
 	factory_map["1st Life"] = LLCallbackMap(createPanelAvatarFirstLife, this);
 	factory_map["My Notes"] = LLCallbackMap(createPanelAvatarNotes, this);
 	
+	mCommitCallbackRegistrar.add("Profile.Web", boost::bind(LLAvatarActions::showProfile, boost::bind(&LLPanelAvatar::getAvatarID, this), true));
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_avatar.xml", &factory_map);
 
 	selectTab(0);
@@ -1408,6 +1409,7 @@ BOOL LLPanelAvatar::postBuild(void)
 	childSetAction("Cancel", onClickCancel, this);
 
 	childSetAction("copy_key",onClickGetKey,this);
+	getChildView("web_profile")->setVisible(!gSavedSettings.getString("WebProfileURL").empty());
 
 	if(mTab && !sAllowFirstLife)
 	{

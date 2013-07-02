@@ -33,7 +33,7 @@
 #define LL_wlfPanel_AdvSettings_H
 
 #include "llpanel.h"
-
+#include <boost/ptr_container/ptr_list.hpp>
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -83,6 +83,8 @@ protected:
 	LLSliderCtrl*		mTimeSlider;
 
 	bool mExpanded;
+
+	boost::ptr_list<boost::signals2::scoped_connection> mConnections;
 };
 
 #endif // LL_wlfPanel_AdvSettings_H

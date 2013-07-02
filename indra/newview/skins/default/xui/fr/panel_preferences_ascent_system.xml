@@ -23,6 +23,7 @@
       <check_box label="Activer le rezz rapide par rapport &#xE0; une distance progressive" name="speed_rez_check" tool_tip="Active, cette fonction charge progressivement les textures du plus pr&#xE8;s au plus loin"/>
       <spinner label="Intervalle distance/affichage:" name="speed_rez_interval"/>
       <text name="speed_rez_seconds">secondes</text>
+      <check_box name="use_web_profiles" label="Utiliser le profil web par défaut" tool_tip="Affiche les profils comme une page web plutôt que comme une fenêtre style v1"/>
     </panel>
 
     <panel label="Commandes Texte" name="Command Line">

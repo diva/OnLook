@@ -224,6 +224,7 @@ void LLPrefsAscentSys::refreshValues()
         mEnableClassicClouds		= gSavedSettings.getBOOL("SkyUseClassicClouds");
     mSpeedRez					= gSavedSettings.getBOOL("SpeedRez");
         mSpeedRezInterval			= gSavedSettings.getU32("SpeedRezInterval");
+	mUseWebProfiles				= gSavedSettings.getBOOL("UseWebProfiles");
 
     //Command Line ------------------------------------------------------------------------
     mCmdLine                    = gSavedSettings.getBOOL("AscentCmdLine");
@@ -374,6 +375,7 @@ void LLPrefsAscentSys::cancel()
         gSavedSettings.setBOOL("SkyUseClassicClouds", mEnableClassicClouds);
     gSavedSettings.setBOOL("SpeedRez", mSpeedRez);
         gSavedSettings.setU32("SpeedRezInterval", mSpeedRezInterval);
+	gSavedSettings.setBOOL("UseWebProfiles", mUseWebProfiles);
 
     //Command Line ------------------------------------------------------------------------
     gSavedSettings.setBOOL("AscentCmdLine",                 mCmdLine);

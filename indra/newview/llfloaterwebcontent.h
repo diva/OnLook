@@ -81,6 +81,7 @@ public:
 	/* virtual */ void draw();
 
 protected:
+	friend class LLFloaterWebProfile;
 	// inherited from LLViewerMediaObserver
 	/*virtual*/ void handleMediaEvent(LLPluginClassMedia* self, EMediaEvent event);
 

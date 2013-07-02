@@ -15,6 +15,7 @@ Coloca el cursor sobre las opciones para más información.
 	<text name="group_name">
 		Escribe aquí el nombre de tu nuevo grupo
 	</text>
+	<button name="copy_uri" label="Copiar URI"/>
 	<text name="prepend_founded_by">
 		Creado por
 	</text>

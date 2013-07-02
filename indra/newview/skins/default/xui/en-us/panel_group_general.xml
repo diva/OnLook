@@ -40,7 +40,10 @@ Hover your mouse over the options for more help.
 			     border_thickness="1" bottom="-55" enabled="false" follows="left|top"
 			     font="SansSerifSmall" height="16" is_unicode="false" left_delta="65"
 			     max_length="254" mouse_opaque="false" name="group_key"
-			     width="256" />
+			     width="240" />
+    <button bottom_delta="0" height="16" width="100" left_delta="240" name="copy_uri" label="Copy URI">
+      <button.commit_callback function="Group.CopyURI"/>
+    </button>
 	<text bottom_delta="-20" font="SansSerifSmall" halign="left" height="16"
 	     name="group_charter_label" right="410" width="265">
 		Group Charter

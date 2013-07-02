@@ -148,7 +148,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mListVisibleMembers = getChild<LLNameListCtrl>("visible_members", recurse);
 	if (mListVisibleMembers)
 	{
-		mListVisibleMembers->setDoubleClickCallback(boost::bind(LLAvatarActions::showProfile, boost::bind(&LLScrollListCtrl::getCurrentID, mListVisibleMembers)));
+		mListVisibleMembers->setDoubleClickCallback(boost::bind(LLAvatarActions::showProfile, boost::bind(&LLScrollListCtrl::getCurrentID, mListVisibleMembers), false));
 	}
 
 	// Options
@@ -244,6 +244,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	if (mGroupID.isNull())
 	{
 		mGroupNameEditor->setEnabled(TRUE);
+		getChildView("copy_uri")->setVisible(false); // New group has no uri
 		mEditCharter->setEnabled(TRUE);
 
 		mCtrlShowInGroupList->setEnabled(TRUE);

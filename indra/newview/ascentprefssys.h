@@ -72,6 +72,7 @@ protected:
         BOOL mEnableClassicClouds;
     BOOL mSpeedRez;
         U32 mSpeedRezInterval;
+	bool mUseWebProfiles;
 
     //Command Line ------------------------------------------------------------------------
     BOOL mCmdLine;

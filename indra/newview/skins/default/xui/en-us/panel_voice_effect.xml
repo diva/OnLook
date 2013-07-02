@@ -5,6 +5,9 @@
  height="23"
  layout="topleft"
  name="panel_voice_effect"
+ auto_resize="false"
+ user_resize="false"
+ visiblity_control="VoiceMorphingEnabled" 
  width="200">
   <string name="no_voice_effect">
     Voice Morphing Off
