@@ -539,6 +539,7 @@ BOOL LLFloaterTexturePicker::postBuild()
 	childSetAction("Cancel", LLFloaterTexturePicker::onBtnCancel,this);
 	childSetAction("Select", LLFloaterTexturePicker::onBtnSelect,this);
 
+	mFilterEdit->setFocus(true);
 	// update permission filter once UI is fully initialized
 	updateFilterPermMask();
 	LLToolPipette::getInstance()->setToolSelectCallback(boost::bind(&LLFloaterTexturePicker::onTextureSelect, this, _1));
