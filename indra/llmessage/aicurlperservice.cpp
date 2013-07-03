@@ -75,6 +75,7 @@ AIPerService::AIPerService(void) :
 		mConcurrentConnections(CurlConcurrentConnectionsPerService),
 		mApprovedRequests(0),
 		mTotalAdded(0),
+		mEstablishedConnections(0),
 		mUsedCT(0),
 		mCTInUse(0)
 {
@@ -230,6 +231,7 @@ AIPerServicePtr AIPerService::instance(std::string const& servicename)
   if (iter == instance_map_w->end())
   {
 	iter = instance_map_w->insert(instance_map_type::value_type(servicename, new RefCountedThreadSafePerService)).first;
+	Dout(dc::curlio, "Created new service \"" << servicename << "\" [" << (void*)&*PerService_rat(*iter->second) << "]");
   }
   // Note: the creation of AIPerServicePtr MUST be protected by the lock on sInstanceMap (see release()).
   return iter->second;

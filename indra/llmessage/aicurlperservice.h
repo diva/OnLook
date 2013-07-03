@@ -169,6 +169,7 @@ class AIPerService {
 	int mConcurrentConnections;					// The maximum number of allowed concurrent connections to this service.
 	int mApprovedRequests;						// The number of approved requests for this service by approveHTTPRequestFor that were not added to the command queue yet.
 	int mTotalAdded;							// Number of active easy handles with this service.
+	int mEstablishedConnections;				// Number of connected sockets to this service.
 
 	U32 mUsedCT;								// Bit mask with one bit per capability type. A '1' means the capability was in use since the last resetUsedCT().
 	U32 mCTInUse;								// Bit mask with one bit per capability type. A '1' means the capability is in use right now.
@@ -203,6 +204,9 @@ class AIPerService {
 	  }
 	}
   public:
+	int connection_established(void) { mEstablishedConnections++; return mEstablishedConnections; }
+	int connection_closed(void) { mEstablishedConnections--; return mEstablishedConnections; }
+
 	static bool is_approved(AICapabilityType capability_type) { return (((U32)1 << capability_type) & approved_mask); }
 	static U32 CT2mask(AICapabilityType capability_type) { return (U32)1 << capability_type; }
 	void resetUsedCt(void) { mUsedCT = mCTInUse; }

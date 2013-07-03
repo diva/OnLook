@@ -80,6 +80,7 @@ void AIServiceBar::draw()
   U32 is_used;
   U32 is_inuse;
   int total_added;
+  int established_connections;
   int concurrent_connections;
   size_t bandwidth;
   {
@@ -87,6 +88,7 @@ void AIServiceBar::draw()
 	is_used = per_service_r->is_used();
 	is_inuse = per_service_r->is_inuse();
 	total_added = per_service_r->mTotalAdded;
+	established_connections = per_service_r->mEstablishedConnections;
 	concurrent_connections = per_service_r->mConcurrentConnections;
 	bandwidth = per_service_r->bandwidth().truncateData(AIHTTPView::getTime_40ms());
 	cts = per_service_r->mCapabilityType;	// Not thread-safe, but we're only reading from it and only using the results to show in a debug console.
@@ -145,7 +147,11 @@ void AIServiceBar::draw()
 	start += LLFontGL::getFontMonospace()->getWidth(text);
   }
   start = mHTTPView->updateColumn(mc_col, start);
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+  text = llformat(" | %d,%d/%d", total_added, established_connections, concurrent_connections);
+#else
   text = llformat(" | %d/%d", total_added, concurrent_connections);
+#endif
   LLFontGL::getFontMonospace()->renderUTF8(text, 0, start, height, text_color, LLFontGL::LEFT, LLFontGL::TOP);
   start += LLFontGL::getFontMonospace()->getWidth(text);
   start = mHTTPView->updateColumn(bw_col, start);

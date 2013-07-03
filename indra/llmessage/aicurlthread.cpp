@@ -1845,12 +1845,11 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
   {
 	AICurlEasyRequest_wat curl_easy_request_w(**iter);
 	bool downloaded_something = curl_easy_request_w->received_data();
+	bool success = curl_easy_request_w->success();
 	res = curl_easy_request_w->remove_handle_from_multi(curl_easy_request_w, mMultiHandle);
 	capability_type = curl_easy_request_w->capability_type();
 	per_service = curl_easy_request_w->getPerServicePtr();
-	CURLcode code;
-	curl_easy_request_w->getResult(&code, NULL);
-	PerService_wat(*per_service)->removed_from_multi_handle(capability_type, downloaded_something, code == CURLE_OK);		// (About to be) removed from mAddedEasyRequests.
+	PerService_wat(*per_service)->removed_from_multi_handle(capability_type, downloaded_something, success);		// (About to be) removed from mAddedEasyRequests.
 #ifdef SHOW_ASSERT
 	curl_easy_request_w->mRemovedPerCommand = as_per_command;
 #endif
@@ -2355,6 +2354,58 @@ int debug_callback(CURL* handle, curl_infotype infotype, char* buf, size_t size,
   if (infotype == CURLINFO_HEADER_OUT && size >= 5 && (strncmp(buf, "GET ", 4) == 0 || strncmp(buf, "HEAD ", 5) == 0))
   {
 	request->mDebugIsHeadOrGetMethod = true;
+  }
+  if (infotype == CURLINFO_TEXT)
+  {
+	if (!strncmp(buf, "STATE: WAITCONNECT => ", 22))
+	{
+	  if (buf[22] == 'P' || buf[22] == 'D')		// PROTOCONNECT or DO.
+	  {
+		int n = size - 1;
+		while (buf[n] != ')')
+		{
+		  llassert(n > 56);
+		  --n;
+		}
+		int connectionnr = 0;
+		int factor = 1;
+		do
+		{
+		  llassert(n > 56);
+		  --n;
+		  connectionnr += factor * (buf[n] - '0');
+		  factor *= 10;
+		}
+		while(buf[n - 1] != '#');
+		// A new connection was established.
+		request->connection_established(connectionnr);
+	  }
+	  else
+	  {
+	  	llassert(buf[22] == 'C');				// COMPLETED (connection failure).
+	  }
+	}
+	else if (!strncmp(buf, "Closing connection", 18))
+	{
+	  int n = size - 1;
+	  while (!std::isdigit(buf[n]))
+	  {
+		llassert(n > 20);
+		--n;
+	  }
+	  int connectionnr = 0;
+	  int factor = 1;
+	  do
+	  {
+		llassert(n > 19);
+		connectionnr += factor * (buf[n] - '0');
+		factor *= 10;
+		--n;
+	  }
+	  while(buf[n] != '#');
+	  // A connection was closed.
+	  request->connection_closed(connectionnr);
+	}
   }
 
 #ifdef DEBUG_CURLIO
