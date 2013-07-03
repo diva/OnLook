@@ -216,15 +216,8 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	setBackgroundVisible(FALSE);
 	setBackgroundOpaque(TRUE);
 
-	// instance management
-	if (LLPanelLogin::sInstance)
-	{
-		LL_WARNS("AppInit") << "Duplicate instance of login view deleted" << LL_ENDL;
-		// Don't leave bad pointer in gFocusMgr
-		gFocusMgr.setDefaultKeyboardFocus(NULL);
-
-		delete LLPanelLogin::sInstance;
-	}
+	gViewerWindow->abortShowProgress();	//Kill previous instance. It might still be alive, and if so, its probably pending
+										//deletion via the progressviews idle callback. Kill it now and unregister said idle callback.
 
 	LLPanelLogin::sInstance = this;
 
