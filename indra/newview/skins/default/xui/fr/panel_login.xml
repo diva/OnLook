@@ -23,9 +23,6 @@
 		<combo_item name="MyLastLocation">
 			Dernier emplacement
 		</combo_item>
-		<combo_item name="&lt;Typeregionname&gt;">
-			&lt;Choisir région&gt;
-		</combo_item>
 		<combo_item name="Typeregionname">
 			&lt;Nom de la région&gt;
 		</combo_item>

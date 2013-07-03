@@ -29,7 +29,7 @@
 		<combo_item name="MyLastLocation" value="My Last Location">
 			Mi Última Ubicación
 		</combo_item>
-		<combo_item name="Typeregionname" value="&lt;Type region name&gt;">
+		<combo_item name="Typeregionname">
 			&lt;Escribe el Nombre de la Región&gt;
 		</combo_item>
 	</combo_box>
