@@ -738,6 +738,7 @@ void LLPanelLogin::onUpdateStartSLURL(const LLSLURL& new_start_slurl)
 		location_combo->setCurrentByIndex( 2 );
 		location_combo->setTextEntry(new_start_slurl.getLocationString());
 	}
+	break;
 	case LLSLURL::HOME_LOCATION:
 		location_combo->setCurrentByIndex( 0 );	// home location
 		break;
