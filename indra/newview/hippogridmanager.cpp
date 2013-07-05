@@ -639,7 +639,8 @@ HippoGridManager::HippoGridManager() :
 	mConnectedGrid(0),
 	mDefaultGridsVersion(0),
 	mCurrentGrid("Local Host"),
-	mDefaultGrid("Local Host")
+	mDefaultGrid("Local Host"),
+	mCurrentGridChangeSignal(NULL)
 {
 }
 
