@@ -2264,7 +2264,8 @@ class LLObjectReloadTextures : public view_listener_t
 			object_list.push_back((*iter)->getObject());
 		}
 
-		reload_objects(LLTextureReloader(),object_list,false);
+		LLTextureReloader reloader;
+		reload_objects(reloader,object_list,false);
 
 		return true;
 	}
