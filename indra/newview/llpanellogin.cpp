@@ -278,9 +278,8 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 		{
 			LL_INFOS("AppInit")<<"no valid LoginLocation, using home"<<LL_ENDL;
 			LLSLURL homeStart(LLSLURL::SIM_LOCATION_HOME);
-			LLStartUp::setStartSLURL(homeStart);
+			LLStartUp::setStartSLURL(homeStart); // calls onUpdateStartSLURL
 		}
-		start_slurl = LLStartUp::getStartSLURL();	// calls onUpdateStartSLURL
 	}
 	else
 	{
@@ -319,9 +318,9 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 
 	reshapeBrowser();
 
-	loadLoginPage();
-
 	refreshLoginPage();
+
+	gHippoGridManager->setCurrentGridChangeCallback(boost::bind(&LLPanelLogin::onCurGridChange,this,_1,_2));
 }
 
 void LLPanelLogin::setSiteIsAlive( bool alive )
@@ -631,7 +630,6 @@ void LLPanelLogin::setFields(const LLSavedLoginEntry& entry, bool takeFocus)
 	if(!grid.empty() && gHippoGridManager->getGrid(grid) && grid != gHippoGridManager->getCurrentGridName())
 	{
 		gHippoGridManager->setCurrentGrid(grid);
-		LLPanelLogin::refreshLoginPage();
 	}
 	
 	if (entry.getPassword().empty())
@@ -702,13 +700,10 @@ void LLPanelLogin::updateLocationSelectorsVisibility()
 	#endif // RLV_EXTENSION_STARTLOCATION
 // [/RLVa:KB]
 
-	sInstance->getChild<LLComboBox>("start_location_combo")->setVisible(show_start); // maintain ShowStartLocation if legacy
-	sInstance->getChild<LLTextBox>("start_location_text")->setVisible(show_start);
+		sInstance->getChildView("location_panel")->setVisible(show_start);
 	
-	bool show_server = true;
-	sInstance->getChild<LLComboBox>("grids_combo")->setVisible(show_server);
-	sInstance->getChild<LLTextBox>("grids_text")->setVisible(show_server);
-	sInstance->getChild<LLButton>("grids_btn")->setVisible(show_server);
+		bool show_server = true;
+		sInstance->getChildView("grids_panel")->setVisible(show_server);
 	}
 	
 }
@@ -1030,6 +1025,17 @@ void LLPanelLogin::onPassKey(LLLineEditor* caller)
 	}
 }
 
+void LLPanelLogin::onCurGridChange(HippoGridInfo* new_grid, HippoGridInfo* old_grid)
+{
+	refreshLoginPage();
+	if(old_grid != new_grid)	//Changed grid? Reset the location combobox
+	{
+		std::string defaultStartLocation = gSavedSettings.getString("LoginLocation");
+		LLSLURL defaultStart(defaultStartLocation);
+		LLStartUp::setStartSLURL(defaultStart.isSpatial() ? defaultStart : LLSLURL(LLSLURL::SIM_LOCATION_HOME));	// calls onUpdateStartSLURL
+	}
+}
+
 // static
 //void LLPanelLogin::updateServer()
 void LLPanelLogin::refreshLoginPage()
@@ -1074,7 +1080,6 @@ void LLPanelLogin::refreshLoginPage()
 void LLPanelLogin::onSelectGrid(LLUICtrl *ctrl)
 {
 	gHippoGridManager->setCurrentGrid(ctrl->getValue());
-	LLPanelLogin::refreshLoginPage();
 }
 
 void LLPanelLogin::onLocationSLURL()

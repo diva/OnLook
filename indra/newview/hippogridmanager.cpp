@@ -646,6 +646,8 @@ HippoGridManager::HippoGridManager() :
 HippoGridManager::~HippoGridManager()
 {
 	cleanup();
+	if(mCurrentGridChangeSignal)
+		delete mCurrentGridChangeSignal;
 }
 
 
@@ -805,6 +807,7 @@ void HippoGridManager::setDefaultGrid(const std::string& grid)
 
 void HippoGridManager::setCurrentGrid(const std::string& grid)
 {
+	HippoGridInfo* prevGrid = getGrid(mCurrentGrid);
 	GridIterator it = mGridInfo.find(grid);
 	if (it != mGridInfo.end()) 
 	{
@@ -815,6 +818,8 @@ void HippoGridManager::setCurrentGrid(const std::string& grid)
 		llwarns << "Unknown grid '" << grid << "'. Setting to default grid." << llendl;
 	    mCurrentGrid = mDefaultGrid;
 	}
+	if(mCurrentGridChangeSignal)
+		(*mCurrentGridChangeSignal)(getGrid(mCurrentGrid),prevGrid);
 }
 
 

@@ -2332,7 +2332,6 @@ bool LLAppViewer::initConfiguration()
 		if(LLStartUp::getStartSLURL().getType() == LLSLURL::LOCATION) 
 		{  
 			gHippoGridManager->setCurrentGrid(LLStartUp::getStartSLURL().getGrid());
-			
 		}  
     }
     else if(clp.hasOption("slurl"))
