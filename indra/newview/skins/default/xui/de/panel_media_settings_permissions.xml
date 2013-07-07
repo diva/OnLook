@@ -15,7 +15,7 @@
 
   <text name="group_label">Gruppe:</text>
   
-  <name_box name="perms_group_name"/>
+  
    
   <check_box label="Naviation &amp; Interaktion zulassen" name="perms_group_interact"/>
 

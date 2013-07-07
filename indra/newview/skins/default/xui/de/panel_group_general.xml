@@ -10,11 +10,11 @@ Bewegen Sie die Maus über die Optionen, um weitere Informationen anzuzeigen.</s
 	<line_editor label="Neuen Gruppennamen hier eingeben" name="group_name_editor"/>
 	<text name="group_name">Neuen Gruppennamen hier eingeben</text>
 	<text name="prepend_founded_by">Gegründet von</text>
-	<name_box name="founder_name"/>
+	
 	<text name="group_key_text">Gruppen-UUID:</text>
-      <name_editor name="group_key"/>
+      
     <button name="copy_uri" label="URI kopieren">
-      <button.commit_callback/>
+      
     </button>
 	<text name="group_charter_label">Gruppencharta</text>
 	<texture_picker label="Gruppeninsignien" name="insignia" tool_tip="Zum Auswählen eines Bildes hier klicken"/>

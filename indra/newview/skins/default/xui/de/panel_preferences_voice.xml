@@ -9,7 +9,7 @@
 	<text name="push_to_talk_heading">Zum Sprechen drücken</text>
 	<check_box label="„Zum-Sprechen-drücken“ im Umschaltmodus verwenden" name="push_to_talk_toggle_check" tool_tip="When enabled, press the push-to-talk trigger to switch your microphone on and off. When disabled, the microphone is off unless the trigger is being held down."/>
 	<text name="push_to_talk_label">Auslöser für „Zum-Sprechen-drücken“:</text>
-	<line_editor name="modifier_combo"/>
+	
 	<button label="Taste festlegen" name="set_voice_hotkey_button"/>
 	<button label="Mittlere Maustaste" name="set_voice_middlemouse_button"/>
 	<check_box label="Enable lip sync animation" name="enable_lip_sync_check"/>

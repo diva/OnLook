@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="preview_texture">
 	<text name="desc txt">Beschreibung:</text>
-	<line_editor name="desc"/>
+	
 	<text name="uuid txt">UUID:</text>
-	<line_editor name="uuid"/>
+	
 	<text name="uploader txt">Hochgeladen von:</text>
-	<line_editor name="uploader"/>
+	
 	<button label="Profil" name="openprofile"/>
 	<text name="uploadtime txt">Hochgeladen am:</text>
-	<line_editor name="uploadtime"/>
+	
 	<text name="alphanote">Wird geladen...</text>
 	<string name="No Alpha">Kein Alpha</string>
 	<string name="Has Alpha">Hat Alpha</string>

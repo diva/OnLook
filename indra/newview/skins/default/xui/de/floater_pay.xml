@@ -10,7 +10,7 @@
 	<text name="payee_name">[NAME]</text>
 	<text name="fastpay text">Schnellzahlung:</text>
 	<text name="message text">Nachricht:</text>
-	<line_editor name="message"/>
+	
 	<text name="amount text">Betrag:</text>
-	<line_editor name="amount"/>
+	
 </floater>

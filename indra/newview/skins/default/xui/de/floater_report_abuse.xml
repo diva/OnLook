@@ -21,20 +21,20 @@ dann auf das Objekt:</text>
     <combo_item name="Other">Andere</combo_item>
     </combo_box>
 	<text name="abuser_name_title">Name des Beschuldigten:</text>
-	<line_editor name="abuser_name_edit"/>
+	
 	<button label="Einwohner auswählen" label_selected="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="select_abuser" tool_tip="Den Namen des Beschuldigten aus einer Liste wählen"/>
 
 	<check_box label="Name des Täters ist nicht bekannt" name="omit_abuser_name" tool_tip="Wählen Sie diese Option, wenn Ihnen der Name des Täters unbekannt ist"/>
 
 	<text name="abuser_name_title2">Ort des Missbrauchs:</text>
-	<line_editor name="abuse_location_edit"/>
+	
 	<text name="sum_title">Zusammenfassung:</text>
-	<line_editor name="summary_edit"/>
+	
 	<text name="dscr_title">Details:</text>
 	<text name="bug_aviso">Machen Sie genaue Angaben zu Datum, Ort und Art des 
 Missbrauchs, relevantem Chat/IM und wählen Sie das 
 Objekt, wenn möglich.</text>
-	<text_editor name="details_edit"/>
+	
 	<text name="incomplete_title">Hinweis: Unvollständige Meldungen werden nicht bearbeitet.</text>
 	<button label="Abbrechen" label_selected="Abbrechen" name="cancel_btn"/>
 	<button label="Missbrauch melden" label_selected="Missbrauch melden" name="send_btn"/>

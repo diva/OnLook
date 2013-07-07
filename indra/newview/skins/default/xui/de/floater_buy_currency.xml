@@ -3,10 +3,10 @@
 	<text name="info_buying">Kaufe Geld:</text>
 	<text name="info_cannot_buy">Kaufen jetzt nicht möglich:</text>
 	<text name="info_need_more">Sie brauchen mehr Geld:</text>
-	<icon name="step_error"/>
+	
 	<text name="error_message">Irgendetwas stimmt nicht.</text>
 	<button label="Gehe zu Website" name="error_web"/>
-	<icon name="step_1"/>
+	
 	<text name="contacting">LindeX wird kontaktiert...</text>
 	<text name="buy_action_unknown">L$ an der LindeX kaufen</text>
 	<text name="buy_action">[NAME] L$ [PRICE]</text>

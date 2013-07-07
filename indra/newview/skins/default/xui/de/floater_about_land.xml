@@ -3,9 +3,9 @@
 	<tab_container name="landtab">
 		<panel label="Allgemein" name="land_general_panel">
 			<text name="Name:">Name:</text>
-			<line_editor name="Name"/>
+			
 			<text name="Description:">Beschreibung:</text>
-			<text_editor name="Description"/>
+			
 			<text name="LandType">Typ:</text>
 			<text name="LandTypeText">Mainland / Homestead</text>
 			<text name="ContentRating">Einstufung:</text>
@@ -14,7 +14,7 @@
 			<text name="OwnerText">Leyla Linden</text>
 			<button label="Profil..." label_selected="Profil..." name="Profile..."/>
 			<text name="Group:">Gruppe:</text>
-			<text name="GroupText"/>
+			
 			<button label="Einstellen..." label_selected="Einstellen..." name="Set..."/>
 			<button label="Info" name="group_profile"/>
 			<check_box label="Übertragung an Gruppe zulassen" name="check deed" tool_tip="Ein Gruppen-Officer kann dieses Land der Gruppe übertragen. Das Land wird dann über die Landzuteilung der Gruppe verwaltet."/>
@@ -23,7 +23,7 @@
 			<text name="For Sale:">Zum Verkauf:</text>
 			<text name="Not for sale.">Nicht zu verkaufen.</text>
 			<text name="For Sale: Price L$[PRICE].">Preis: [PRICE] L$ ([PRICE_PER_SQM] L$/qm.).</text>
-			<text name="SalePending"/>
+			
 			<button label="Land verkaufen..." label_selected="Land verkaufen..." name="Sell Land..."/>
 			<text name="For sale to">Zum Verkauf an: [BUYER]</text>
 			<text name="Sell with landowners objects in parcel.">Objekte sind im Verkauf eingeschlossen.</text>
@@ -106,13 +106,13 @@
 			<text name="Selected / sat upon:">Ausgewählt/gesessen auf:</text>
 			<text name="selected_objects_text">[COUNT]</text>
 			<text name="Autoreturn">Objekte anderer Einwohner automatisch zurückgeben (Minuten, 0 für aus):</text>
-			<line_editor name="clean other time"/>
+			
 			<text name="Object Owners:">Objekteigentümer:</text>
 			<button label="Aktualisieren" label_selected="Aktualisieren" name="Refresh List"/>
 			<button label="Objekte zurückgeben..." label_selected="Objekte zurückgeben..." name="Return objects..."/>
 			<name_list name="owner list">
 				<column name="type" label="Typ"/>
-				<column name="online_status"/>
+				
 				<column name="name" label="Name"/>
 				<column name="count" label="Anzahl"/>
 				<column name="mostrecent" label="Aktuellster"/>
@@ -202,12 +202,12 @@ Nur große Parzellen können in der Suche aufgeführt werden.</string>
 		<panel label="Medien" name="land_media_panel">
 			<text name="with media:">Typ:</text>
 			<combo_box name="media type" tool_tip="Geben Sie einen URL für den Film, die Webseite oder ein anderes Medium ein"/>
-			<text name="mime_type"/>
+			
 			<text name="at URL:">Medien-URL:</text>
-			<line_editor name="media_url"/>
+			
 			<button label="Einstellen..." label_selected="Einstellen..." name="set_media_url"/>
 			<text name="at URL2:">Aktuelle URL:</text>
-			<text name="current_url"/>
+			
 			<button label="Zurücksetzen" label_selected="Zurücksetzen" name="reset_media_url"/>
 			<text name="media_reset" tool_tip="Zeit nach der die Parzelle automatisch zur Default-URL zurückkehrt (0 für nie)">Zurück auf Default-URL nach:</text>
 			<spinner name="media_reset_time" tool_tip="Zeit nach der die Parzelle automatisch zur Default-URL zurückkehrt (0 für nie)"/>
@@ -229,7 +229,7 @@ Optionen:</text>
 		</panel>
 		<panel label="Audio" name="land_audio_panel">
 			<text name="MusicURL:">Musik-URL:</text>
-			<line_editor name="music_url"/>
+			
 			<text name="Sound:">Sound</text>
 			<check_box label="Beschränke Gesten- und Objektsounds auf diese Parzelle" name="check_sound_local"/>
 			<button label="?" label_selected="?" name="?"/>

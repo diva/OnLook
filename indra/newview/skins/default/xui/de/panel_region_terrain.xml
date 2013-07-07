@@ -8,12 +8,12 @@
     <button label="?" name="terrain_raise_help"/>
     <spinner label="Untere Terraingrenze" name="terrain_lower_spin"/>
     <button label="?" name="terrain_lower_help"/>
-    <view_border/>
+    
     <text name="detail_texture_text">Terrain Textures</text>
-    <texture_picker name="texture_detail_0"/>
-    <texture_picker name="texture_detail_1"/>
-    <texture_picker name="texture_detail_2"/>
-    <texture_picker name="texture_detail_3"/>
+    
+    
+    
+    
     <text name="height_text_lbl">1 (niedrig)</text>
     <text name="height_text_lbl2">2</text>
     <text name="height_text_lbl3">3</text>

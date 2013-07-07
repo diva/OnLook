@@ -14,11 +14,11 @@
 			<button label="Anrufen" name="start_call_btn"/>
 			<button label="Anruf beenden" name="end_call_btn"/>
 			<button label="&lt; &lt;" label_selected="&gt; &gt;" name="toggle_active_speakers_btn" tool_tip="Klicken Sie hier um eine Liste der aktiven Teilnehmer dieser IM-Sitzung anzuzeigen."/>
-			<text_editor name="im_history"/>
+			
 			<line_editor label="Für Instant Message hier klicken" name="chat_editor"/>
 			<button label="Senden" name="send_btn"/>
 		</layout_panel>
-		<layout_panel name="active_speakers_panel"/>
+		
 	</layout_stack>
 	<string name="live_help_dialog">*** Willkommen bei Help Request ***  
 Bitte werfen Sie zuerst einen Blick auf unsere SL-Hilfeseiten. Drücken Sie dazu F1. Oder rufen Sie unter http://secondlife.com/knowledgebase/ die Knowledge Base auf. 

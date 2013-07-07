@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="preview_anim">
-	<line_editor name="desc"/>
+	
 	<text name="desc txt">Beschreibung:</text>
 	<!--<button bottom="-66" enabled="true" font="SansSerif" halign="center" height="19"
 	     label="Play in World" label_selected="Stop" left="27" mouse_opaque="true"

@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="worldmap" title="Weltkarte">
-	<panel name="objects_mapview"/>
-	<icon name="self"/>
+	
+	
 	<text name="you_label">Sie</text>
-	<icon name="home"/>
+	
 	<text name="home_label">Zuhause</text>
-	<icon name="square2"/>
+	
 	<text name="auction_label">Auktion</text>
-	<icon name="square"/>
+	
 	<text name="land_for_sale_label">Land erhaeltlich</text>
 	<button label="Nach Hause" label_selected="Nach Hause" name="Go Home" tool_tip="Nach Hause teleportieren"/>
-	<icon name="person"/>
+	
 	<check_box label="Einwohner" name="people_chk"/>
-	<icon name="infohub"/>
+	
 	<check_box label="Infohub" name="infohub_chk"/>
-	<icon name="telehub"/>
+	
 	<check_box label="Telehub" name="telehubchk"/>
-	<icon name="landforsale"/>
+	
 	<check_box label="Land zu verkaufen" name="land_for_sale_chk"/>
 	<text name="events_label">Events:</text>
-	<icon name="event"/>
+	
 	<check_box label="PG" name="event_chk"/>
-	<icon name="events_mature_icon"/>
+	
 	<check_box label="Mature" name="event_mature_chk"/>
-	<icon name="events_adult_icon"/>
+	
 	<check_box label="Adult" name="event_adult_chk"/>
-	<icon name="avatar_icon"/>
+	
 	<combo_box label="Online-Freunde" name="friend combo" tool_tip="Freund, der auf Karte angezeigt werden soll">
 		<combo_item name="none_selected">Online-Freunde</combo_item>
 	</combo_box>
-	<icon name="landmark_icon"/>
+	
 	<combo_box label="Landmarken" name="landmark combo" tool_tip="Landmarke, die auf Karte angezeigt werden soll">
 		<combo_item name="none_selected">Landmarken</combo_item>
 	</combo_box>
-	<icon name="location_icon"/>
+	
 	<search_editor label="Nach Regionsname suchen" name="location" tool_tip="Geben Sie den Namen einer Region ein"/>
 	<button label="Suche" name="DoSearch" tool_tip="Nach einer Region suchen"/>
 	<text name="search_label">Suchergebnisse:</text>

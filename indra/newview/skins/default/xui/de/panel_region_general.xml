@@ -35,7 +35,7 @@
     <button label="?" name="use_estate_sun_help"/>
     <check_box label="Sonne fest" name="fixed_sun_check"/>
     <button label="?" name="fixed_sun_help"/>
-    <icon name="daycycle"/>
+    
     <slider label="Phase" name="sun_hour_slider"/>
 	<button label="Übernehmen" name="apply_btn"/>
 	<button label="Einen Benutzer nach Hause teleportieren..." name="kick_btn"/>

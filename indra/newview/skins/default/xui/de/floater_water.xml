@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="Water Floater" title="Erweiterter Wasser-Editor">
 	<text name="KeyFramePresetsText">Voreinstellungen:</text>
-	<combo_box name="WaterPresetsCombo"/>
+	
 	<button label="Neu" label_selected="Neu" name="WaterNewPreset"/>
 	<button label="Speichern" label_selected="Speichern" name="WaterSavePreset"/>
 	<button label="Löschen" label_selected="Löschen" name="WaterDeletePreset"/>

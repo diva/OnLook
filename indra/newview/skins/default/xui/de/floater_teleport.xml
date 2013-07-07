@@ -5,7 +5,7 @@
 	<text name="teleport_text">Öffentlicher Regionscode:</text>
 
 
-	<combo_box name="teleport_edit"/>
+	
 
 	<button name="teleport_btn" label="Teleportieren"/>
 	<button label="Abbrechen" name="cancel_btn"/>

@@ -30,37 +30,37 @@
     <panel label="Kommandozeile" name="Command Line">
       <check_box label="Chat-Eingabezeile zur Kommandoeingabe verwenden" name="chat_cmd_toggle"/>
       <text name="cmd_line_text_2">Teleport in Region (Befehl: cmd x z y)</text>
-      <line_editor name="AscentCmdLinePos"/>
+      
       <text name="cmd_line_text_3">Teleport zur Oberfläche (Befehl: cmd)</text>
-      <line_editor name="AscentCmdLineGround"/>
+      
       <text name="cmd_line_text_4">Teleport auf Höhe (Befehl: cmd z)</text>
-      <line_editor name="AscentCmdLineHeight"/>
+      
       <text name="cmd_line_text_5">Teleport nach Hause (Befehl: cmd)</text>
-      <line_editor name="AscentCmdLineTeleportHome"/>
+      
       <text name="cmd_line_text_6">Plattform rezzen (Befehl: cmd 0 - 30)</text>
-      <line_editor name="AscentCmdLineRezPlatform"/>
+      
       <slider name="AscentPlatformSize" label="Standardbreite:" tool_tip="Wie groß soll die Plattform sein?"/>
       <text name="cmd_line_text_8">Berechnet mathematische Ausdrücke (Benutzung: cmd 2 + 2)</text>
-      <line_editor name="AscentCmdLineCalc"/>
+      
       <text name="cmd_line_text_15">Chat-Historie löschen (Befehl: cmd)</text>
       <line_editor tool_tip="Löscht die Chat-Historie um Lag durch Spammer vorzubeugen." name="AscentCmdLineClearChat"/>
       <!-- Column Split -->
-      <view_border name="CmdDivisor"/>
+      
       <text name="cmd_line_text_9">Ändert die Draw-Distance (Benutzung: cmd Distanz in Metern)</text>
-      <line_editor name="AscentCmdLineDrawDistance"/>
+      
       <text name="cmd_line_text_10">Teleport zur Kameraposition (Befehl: cmd)</text>
-      <line_editor name="AscentCmdTeleportToCam"/>
+      
       <text name="cmd_line_text_11">Avatarname anhand UUID bestimmen (Befehl: cmd key)</text>
-      <line_editor name="AscentCmdLineKeyToName"/>
+      
       <text name="cmd_line_text_12">Avatar Teleport anbieten (Befehl: cmd key)</text>
-      <line_editor name="AscentCmdLineOfferTp"/>
+      
       <text name="cmd_line_text_7">Teleport zu Region x (cmd regionname)</text>
-      <line_editor name="AscentCmdLineMapTo"/>
+      
       <check_box label="Selbe Position auf neuer Region" name="map_to_keep_pos"/>
       <text name="cmd_line_text_13">Teleport zu Avatar (Befehl: cmd name)</text>
       <line_editor tool_tip="Die Syntax dieses Befehls erlaubt partielle Avatarnamen und unterscheidet nicht zwischen Groß- und Kleinschreibung." name="AscentCmdLineTP2"/>
       <text name="cmd_line_text_14">Toggle Fake Away Status (usage: cmd)</text>
-      <line_editor name="SinguCmdLineAway"/>
+      
     </panel>
 
     <panel label="Sicherheit" name="Security">
@@ -118,7 +118,7 @@
         <combo_item name="High">Hoch</combo_item>
       </combo_box>
       <check_box name="EmeraldBuildPrefsEmbedItem" label="Put an item into new objects"/>
-       <drop_target name="build_item_add_disp_rect"/>
+       
       <check_box label="Highlight selected prims" name="EmBuildPrefsRenderHighlight_toggle"/>
       <check_box label="Axis arrow on root prim position" tool_tip="Standardverhalten ist, die Achse am Massenzentrum eines Linksets anzuzeigen. Aktivieren, um die Achse am Wurzel-Prim anzuzeigen." name="EmBuildPrefsActualRoot_toggle"/>
     </panel>

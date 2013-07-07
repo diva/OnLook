@@ -4,14 +4,14 @@
 	<string name="real_url">http://secondlife.com/app/login/</string>
 	<string name="forgot_password_url">http://secondlife.com/account/request.php?lang=de</string>
 	<text name="name_label">Name or Username:</text>
-	<combo_box name="name_combo"/>
+	
 	<text name="password_text">Kennwort:</text>
-	<line_editor name="password_edit"/>
+	
 	<check_box label="Remember name" name="remember_name_check"/>
 	<check_box label="Kennwort merken" name="remember_check"/>
 
 	<text name="grids_combo_text">Grid:</text>
-	<combo_box name="grids_combo"/>
+	
 
 	<button name="grids_btn" label="Grid Manager"/>		 
 

@@ -6,7 +6,7 @@
     <text name="owner_text">Estate owner:</text>
     <text name="estate_owner">(unbekannt)</text>
 
-    <view_border/>
+    
 
     <check_box label="Freien Zugang erlauben" name="externally_visible_check"/>
     <button label="?" name="externally_visible_help"/>
@@ -20,7 +20,7 @@
     <button label="?" name="use_global_time_help"/>
     <check_box label="Sonne fest" name="fixed_sun_check"/>
     <button label="?" name="fixed_sun_help"/>
-    <icon name="daycycle"/>
+    
     <slider label="Phase" name="sun_hour_slider"/>
     <button label="Übernehmen" name="apply_btn"/>
 
@@ -34,12 +34,12 @@
     <button label="?" name="allow_resident_help"/>
 
     <!-- Estate Managers box -->
-    <view_border/>
-    <name_list name="estate_manager_name_list"/>
+    
+    
 
     <!-- Allowed Residents box -->
-    <view_border/>
-    <name_list name="allowed_avatar_name_list"/>
+    
+    
 
     <!-- Estate Managers buttons -->
     <button label="Hinzufügen..." name="add_estate_manager_btn"/>
@@ -55,12 +55,12 @@
     <button label="?" name="ban_resident_help"/>
 
     <!-- Allowed Groups box -->
-    <view_border/>
-    <name_list name="allowed_group_name_list"/>
+    
+    
 
     <!-- Banned Residents box -->
-    <view_border/>
-    <name_list name="banned_avatar_name_list"/>
+    
+    
 
     <!-- Allowed Groups buttons -->
     <button label="Hinzufügen..." name="add_allowed_group_btn"/>

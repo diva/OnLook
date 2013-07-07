@@ -20,7 +20,7 @@
 	<text name="text_box3">Chat-Konsole:</text>
 	<spinner label="Chat ausblenden nach" name="fade_chat_time"/>
 	<text name="text_box4">(Sekunden)</text>
-	<spinner name="max_chat_count"/>
+	
 	<text name="text_box5">(# Zeilen)</text>
 	<spinner name="chat_bottom_offset" label="Bottom offset" tool_tip="Offset in pixels between the chat console and the bottom of the viewer."/>
 	<slider label="Deckkraft" name="console_opacity"/>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="WindLight floater" title="Erweiterter Himmel-Editor">
 	<text name="KeyFramePresetsText">Voreinstellungen:</text>
-	<combo_box name="WLPresetsCombo"/>
+	
 	<button label="Neu" label_selected="Neu" name="WLNewPreset"/>
 	<button label="Speichern" label_selected="Speichern" name="WLSavePreset"/>
 	<button label="Löschen" label_selected="Löschen" name="WLDeletePreset"/>
@@ -57,7 +57,7 @@
 			<slider label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="WLSunlightI"/>
 			<text name="TODText">Sonne/Mond-Stand</text>
 			<button label="?" name="WLTimeOfDayHelp"/>
-			<icon name="SkyDayCycle"/>
+			
 			<slider label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="WLSunAngle"/>
 			<text name="WLAmbientText">Umgebung</text>
 			<button label="?" name="WLAmbientHelp"/>

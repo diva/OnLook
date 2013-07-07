@@ -33,8 +33,8 @@
 			<!--check_box bottom_delta="-15" enabled="true" follows="left|top" font="SansSerifSmall" height="20" initial_value="false" label="Translate Chat (powered by Google)" name="translate chat" width="100"/-->
 			<button label="Teleport Historie" name="chat_history_open" tool_tip="Klicken Sie hier zur Anzeige des Gesprächsverlaufs im externen Editor"/>
 			<button label="&lt; &lt;" label_selected="&gt; &gt;" name="toggle_active_speakers_btn" tool_tip="Klicken Sie hier, um eine Liste der aktiven Teilnehmer an dieser IM-Sitzung anzuzeigen."/>
-			<text_editor name="Chat History Editor"/>
-			<text_editor name="Chat History Editor with mute"/>
+			
+			
           </layout_panel>
           <layout_panel name="chat_layout_panel">
 			<panel name="chat_panel">
@@ -49,6 +49,6 @@
           </layout_panel>
          </layout_stack>
 		</layout_panel>
-		<layout_panel name="active_speakers_panel"/>
+		
 	</layout_stack>
 </floater>

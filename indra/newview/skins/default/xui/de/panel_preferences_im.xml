@@ -18,5 +18,5 @@
 	<check_box label="Datum mit Zeitstempeln hinzufügen" name="log_date_timestamp"/>
 	<check_box label="Append date to log filename" name="logfile_name_datestamp"/>
 	<button label="Pfad ändern" label_selected="Pfad ändern" name="log_path_button"/>
-	<line_editor name="log_path_string"/>
+	
 </panel>

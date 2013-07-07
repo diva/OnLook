@@ -6,7 +6,7 @@
 		<column name="icon1" label="icon1"/>
 	</scroll_list>
 	<button name="filter_choice_btn" label="…"/>
-	<line_editor name="filter_edit"/>
+	
 	<button name="filter_apply_btn" label="✔"/>
 	<button name="clear_log_btn" label="de_DE.UTF-8"/>
 	<scroll_list name="message_log">
@@ -21,8 +21,6 @@
 		<column name="flag_ack" label="ack" width="8"/>-->
 		<column name="summary" label="summary"/>
 	</scroll_list>
-	<text name="log_status_text">
-	</text>
-	<text_editor name="net_info">
-	</text_editor>
+	
+	
 </floater>
