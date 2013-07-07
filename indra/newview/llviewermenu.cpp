@@ -507,8 +507,8 @@ BOOL is_god_customer_service(void*);
 void menu_toggle_attached_lights(void* user_data);
 void menu_toggle_attached_particles(void* user_data);
 
-BOOL enable_dump_archetype_xm(void*);
 void handle_dump_archetype_xml(void *);
+void handle_dump_archetype_xml_continued(LLVOAvatar* avatar, AIFilePicker* filepicker);
 
 void region_change();
 void parse_simulator_features();
@@ -4366,11 +4366,6 @@ void handle_claim_public_land(void*)
 	gAgent.sendReliableMessage();
 }
 
-BOOL enable_dump_archetype_xm(void*)
-{
-	return gSavedSettings.getBOOL("DebugAvatarAppearanceMessage");
-}
-
 void handle_dump_archetype_xml(void *)
 {
 	std::string emptyname;
@@ -4380,8 +4375,24 @@ void handle_dump_archetype_xml(void *)
 	{
 		avatar = gAgentAvatarp;
 	}
-	avatar->dumpArchetypeXML(emptyname);
+
+	std::string file_name = avatar->getFullname() + (avatar->isSelf() ? "_s" : "_o") + ".xml";
+	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "");
+
+	AIFilePicker* filepicker = AIFilePicker::create();
+	filepicker->open(file_name, FFSAVE_XML, default_path, "archetype");
+	filepicker->run(boost::bind(&handle_dump_archetype_xml_continued, avatar, filepicker));
 };
+
+void handle_dump_archetype_xml_continued(LLVOAvatar* avatar, AIFilePicker* filepicker)
+{
+	if (!filepicker->hasFilename())
+	{
+		llwarns << "No file" << llendl;
+		return;
+	}
+	avatar->dumpArchetypeXML_cont(filepicker->getFilename(), false);
+}
 
 // HACK for easily testing new avatar geometry
 void handle_god_request_avatar_geometry(void *)

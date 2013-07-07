@@ -987,6 +987,7 @@ private:
 	//--------------------------------------------------------------------
 public:
 	void				dumpArchetypeXML(const std::string& prefix, bool group_by_wearables = false);
+	void				dumpArchetypeXML_cont(std::string const& fullpath, bool group_by_wearables);
 	void 				dumpAppearanceMsgParams( const std::string& dump_prefix,
 												 const std::vector<F32>& paramsForDump,
 												 const LLTEContents& tec);

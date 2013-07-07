@@ -8282,14 +8282,15 @@ void LLVOAvatar::dumpArchetypeXML(const std::string& prefix, bool group_by_weara
 	{
 		outprefix = getFullname() + (isSelf()?"_s":"_o");
 	}
-	if (outprefix.empty())
-	{
-		outprefix = std::string("new_archetype");
-	}
 	std::string outfilename = get_sequential_numbered_file_name(outprefix,".xml");
 	
-	LLAPRFile outfile;
 	std::string fullpath = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,outfilename);
+	dumpArchetypeXML_cont(fullpath, group_by_wearables);
+}
+
+void LLVOAvatar::dumpArchetypeXML_cont(std::string const& fullpath, bool group_by_wearables )
+{
+	LLAPRFile outfile;
 	outfile.open(fullpath, LL_APR_WB );
 	apr_file_t* file = outfile.getFileHandle();
 	if (!file)
