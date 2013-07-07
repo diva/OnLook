@@ -31,6 +31,10 @@
 #include "v3math.h"
 #include "llvector4a.h"
 #include <vector>
+#ifdef TIME_UTC
+//Singu note: TIME_UTC is defined as '1' in time.h, and boost thread (1.49) tries to use it as an enum member.
+#undef TIME_UTC
+#endif
 #include <boost/pool/pool.hpp>
 
 #if LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
