@@ -10,7 +10,7 @@
 		<column name="icon_visible_online_theirs" tool_tip="You can see when they are online (only updates on login)"/>
 		<column name="icon_visible_map_theirs" tool_tip="Du kannst die Position dieses Freundes auf der Karte sehen."/>
 		<column name="icon_edit_theirs" tool_tip="Sie können die Objekte dieses Freunds bearbeiten"/>
-		<column name="friend_last_update_generation"/>
+		
 	</scroll_list>
 	<!--text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" name="friends" width="110">Contact Group:</text-->
 	<!--combo_box allow_text_entry="false" enabled="true" follows="right|top" bottom_delta="20" height="18" hidden="false" left="-255" max_chars="20" tool_tip="Buddy group" name="buddy_group_combobox" width="130">

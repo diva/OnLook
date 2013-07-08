@@ -8,7 +8,7 @@
 	<button label="Mit Telehub verbinden" name="connect_btn"/>
 	<button label="Trennen" name="disconnect_btn"/>
 	<text name="spawn_points_text">Spawn-Punkte (Positionen, nicht Objekte):</text>
-	<scroll_list name="spawn_points_list"/>
+	
 	<button label="Spawn hinzufügen" name="add_spawn_point_btn"/>
 	<button label="Spawn entfernen" name="remove_spawn_point_btn"/>
 	<text name="spawn_point_help">Wählen Sie ein Objekt und klicken zur

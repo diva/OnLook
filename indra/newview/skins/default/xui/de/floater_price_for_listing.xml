@@ -8,7 +8,7 @@ ab, wie viel Sie bezahlen. Je mehr Sie zahlen,
 desto weiter oben wird die Anzeige in der Liste 
 und in Suchergebnissen platziert.</text>
 	<text name="price_text">Anzeigenpreis ([CURRENCY]):</text>
-	<line_editor name="price_edit"/>
+	
 	<button label="Abbrechen" name="cancel_btn"/>
 	<button label="Preis festlegen" name="set_price_btn"/>
 </floater>

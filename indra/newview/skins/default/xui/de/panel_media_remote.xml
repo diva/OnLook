@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="media_remote">
-	<panel/>
-	<panel/>
+	
+	
 	<string name="Title">Titel</string>
 	<string name="Artist">Artist</string>
 	<string name="Now_playing">Now playing</string>

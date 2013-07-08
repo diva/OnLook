@@ -3,25 +3,25 @@
 
   <text name="applyto">Inhaltsarten</text>
 
-  <icon name="icon_animation"/>
+  
   <check_box label="Animation" name="check_animation"/>
-  <icon name="icon_bodypart"/>
+  
   <check_box label="Körperteile" name="check_bodypart"/>
-  <icon name="icon_clothing"/>
+  
   <check_box label="Kleidung" name="check_clothing"/>
-  <icon name="icon_gesture"/>
+  
   <check_box label="Gesten" name="check_gesture"/>
-  <icon name="icon_landmark"/>
+  
   <check_box label="Landmarken" name="check_landmark"/>
-  <icon name="icon_notecard"/>
+  
   <check_box label="Notizkarten" name="check_notecard"/>
-  <icon name="icon_object"/>
+  
   <check_box label="Objekte" name="check_object"/>
-  <icon name="icon_script"/>
+  
   <check_box label="Skripts" name="check_script"/>
-  <icon name="icon_sound"/>
+  
   <check_box label="Sounds" name="check_sound"/>
-  <icon name="icon_texture"/>
+  
   <check_box label="Texturen" name="check_texture"/>
 
   <button label="Alle auswählen" label_selected="Alle" name="check_all"/>
@@ -36,7 +36,7 @@
   <check_box label="Kopieren" name="next_owner_copy"/>
   <check_box label="Verkaufen/Weggeben" name="next_owner_transfer"/>
 
-  <scroll_list name="queue output"/>
+  
 
   <button label="Hilfe" name="help"/>
 

@@ -31,7 +31,7 @@
 			<spinner label="Min." name="WLCurKeyMin"/>
 			<text name="WLCurKeyTimeText2">Key-Voreinstellung:</text>
 			<combo_box label="Voreinstellung" name="WLKeyPresets"/>
-			<view_border/>
+			
 			<text name="DayCycleText">Einrasten:</text>
 			<combo_box label="5 min" name="WLSnapOptions"/>
 			<text name="DayCycleText2">Zykluslänge:</text>
@@ -43,7 +43,7 @@
 			<button label="Stopp" label_selected="Stop" name="WLStopAnimSky"/>
 			<button label="Grundstückszeit verw" label_selected="Zur Grundstückszeit" name="WLUseLindenTime"/>
 			<text name="KeyFramePresetsText">Voreinstellungen:</text>
-			<combo_box name="DayCyclePresetsCombo"/>
+			
 			<button label="Neu" label_selected="Neu" name="DayCycleNewPreset"/>
 			<button label="Speichern" label_selected="Speichern" name="DayCycleSavePreset"/>
 			<button label="Löschen" label_selected="Löschen" name="DayCycleDeletePreset"/>

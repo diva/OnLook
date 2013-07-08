@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="Postcard" title="Foto per E-Mail senden">
 	<text name="to_label">E-Mail des Empfängers:</text>
-	<line_editor name="to_form"/>
+	
 	<text name="from_label">Ihre E-Mail:</text>
-	<line_editor name="from_form"/>
+	
 	<text name="name_label">Ihr Name:</text>
-	<line_editor name="name_form"/>
+	
 	<text name="subject_label">Betreff:</text>
 	<line_editor label="Betreff hier eingeben." name="subject_form"/>
 	<text name="msg_label">Nachricht:</text>

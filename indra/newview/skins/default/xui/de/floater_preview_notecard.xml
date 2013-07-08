@@ -2,9 +2,9 @@
 <floater name="preview notecard" title="Hinweis:">
 	<button label="Lade Objekte" label_selected="Lade Objekte" name="Get Items"/>
 	<!--<check_box follows="left|bottom" bottom_delta="0" left_delta="110" name="https_chk" label="Saves via HTTPS" />-->
-	<icon name="lock"/>
+	
 	<text name="desc txt">Beschreibung:</text>
-	<line_editor name="desc"/>
+	
 	<menu_bar name="motecard_menu">
 		<menu name="Edit">
 			<menu_item_call label="Rückgängig" name="Undo"/>

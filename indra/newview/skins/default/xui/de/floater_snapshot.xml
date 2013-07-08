@@ -72,7 +72,7 @@
 	<spinner label="Höhe" name="snapshot_height"/>
 	<slider label="Bildqualität" name="image_quality_slider"/>
 	<check_box label="Aspektverhältnis beibehalten:" name="keep_aspect" tool_tip="Achtung: Das Setzen der Auflösung auf nicht-benutzerdefiniert oder das setzen des Aspektverhältnis auf Default setzt diese Checkbox zurück, da sie nicht kompatibel sind."/>
-	<text name="type_label3"/>
+	
 	<combo_box label="Aspekt" name="feed_aspect_combo">
 		<combo_item name="Default">Standard</combo_item>
 		<combo_item name="Custom">Benutzerdefiniert</combo_item>

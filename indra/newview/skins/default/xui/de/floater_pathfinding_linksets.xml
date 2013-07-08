@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="floater_pathfinding_linksets" title="Pathfinding Linksets">
-  <string name="messaging_initial"/>
+  
   <string name="messaging_get_inprogress">Suche nach Pathfinding Linksets ...</string>
   <string name="messaging_get_error">Fehler während Suche nach Pathfinding Linksets.</string>
   <string name="messaging_set_inprogress">Bearbeite gewählte Pathfinding Linksets ...</string>
@@ -34,9 +34,9 @@
   <panel name="pathfinding_linksets_main">
     <text name="linksets_filter_label">Filtere nach:</text>
     <text name="linksets_name_label">Name</text>
-    <line_editor name="filter_by_name"/>
+    
     <text name="linksets_desc_label">Beschreibung</text>
-    <line_editor name="filter_by_description"/>
+    
     <combo_box name="filter_by_linkset_use">
       <combo_item name="filter_by_linkset_use_none">Filtere nach Linkset-Nutzung ...</combo_item>
       <combo_item name="filter_by_linkset_use_walkable">Begehbar</combo_item>
@@ -66,7 +66,7 @@
     <button label="Alle auswählen" name="select_all_objects"/>
     <button label="Nichts auswählen" name="select_none_objects"/>
   </panel>
-  <view_border name="horiz_separator"/>
+  
   <panel name="pathfinding_linksets_actions">
     <text name="linksets_actions_label">Aktionen auf gewählten Linksets (wenn ein Linkset aus der Welt entfernt wird, können auch dessen Attribute verloren gehen):</text>
     <check_box label="Beacon anzeigen" name="show_beacon"/>
@@ -76,11 +76,10 @@
     <button label="Zurückgeben" name="return_objects"/>
     <button label="Löschen" name="delete_objects"/>
   </panel>
-  <view_border name="horiz_separator"/>
+  
   <panel name="pathfinding_linksets_attributes">
     <text name="linksets_attributes_label">Attribute des gewählten Linksets bearbeiten und Knopf drücken um Änderungen zu speichern</text>
-    <combo_box name="edit_linkset_use">
-    </combo_box>
+    
     <text name="walkability_coefficients_label">Begehbarkeit:</text>
     <text name="edit_a_label">A</text>
     <line_editor name="edit_a_value" tool_tip="Begehbarkeit für Charaktere von Typ A.  Beispiel für diesen Charaktertyp ist Humanoid."/>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="item properties" title="Inventarobjekt-Eigenschaften">
-	<icon name="IconLocked"/>
+	
 	<text name="LabelItemNameTitle">Name:</text>
-	<line_editor name="LabelItemName"/>
+	
 	<text name="LabelItemDescTitle">Beschreibung:</text>
-	<line_editor name="LabelItemDesc"/>
+	
 	<text name="LabelCreatorTitle">Ersteller:</text>
 	<text name="LabelCreatorName">Nicole Linden</text>
 	<button label="Profil..." label_selected="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="BtnCreator"/>
@@ -42,7 +42,7 @@
 		<radio_item name="radio2">Kopieren</radio_item>
 	</radio_group>
 	<text name="TextPrice">Preis:  L$</text>
-	<line_editor name="Edit Cost"/>
+	
 	<string name="unknown">(unbekannt)</string>
 	<string name="public">(öffentlich)</string>
 	<string name="you_can">Sie können:</string>

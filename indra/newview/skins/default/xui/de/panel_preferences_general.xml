@@ -21,7 +21,7 @@
 	<check_box label="Alle Gruppentitel ausblenden" name="show_all_title_checkbox"/>
 	<check_box label="Meinen Gruppentitel ausblenden" name="show_my_title_checkbox"/>
 	<text name="UI Size:">UI-Größe:</text>
-	<slider name="ui_scale_slider"/>
+	
 	<check_box label="Auflösungsunabhängigen Maßstab verwenden" name="ui_auto_scale"/>
 	<check_box label="Go away when idle" name="away_when_idle_checkbox"/>
 	<spinner label="Timeout für Abwesenheit:" name="afk_timeout_spinner"/>

@@ -125,7 +125,7 @@
 	<string name="TooltipObjectIMUrl">Anklicken, um Beschreibung des Objekts anzuzeigen</string>
 	<string name="TooltipMapUrl">Klicken, um diese Position auf der Karte anzuzeigen</string>
 	<string name="TooltipSLAPP">Anklicken, um Befehl secondlife:// auszuführen</string>
-	<string name="CurrentURL"/>
+	
 
 	<!-- text for SLURL labels -->
 	<string name="SLurlLabelTeleport">Teleportieren zu</string>
@@ -1816,79 +1816,79 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="MarketplaceURL_Imports">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/merchants/store/imports</string>
 	<string name="MarketplaceURL_LearnMore">https://marketplace.[MARKETPLACE_DOMAIN_NAME]/learn_more</string>
 	<string name="InventoryOutboxNotMerchantTitle">Jeder kann Artikel im Marktplatz verkaufen.</string>
-	<string name="InventoryOutboxNotMerchantTooltip"/>
+	
 	<string name="InventoryOutboxNotMerchant">If you'd like to become a merchant, you'll need to</string>
 	<string name="InventoryOutboxNotMerchantSubs">create a Marketplace store</string>
 	<string name="InventoryOutboxNotMerchant2">.</string>
 	<string name="InventoryOutboxNoItemsTitle">Ihre Outbox ist leer.</string>
-	<string name="InventoryOutboxNoItemsTooltip"/>
+	
 	<string name="InventoryOutboxNoItems">Drag folders to this area and click "Send to Marketplace" to list them for sale on the</string>
 	<string name="InventoryOutboxNoItemsSubs">Einkaufen</string>
 	<string name="InventoryOutboxNoItems2">.</string>
 	<string name="InventoryOutboxInitializingTitle">Initializing Marketplace.</string>
-	<string name="InventoryOutboxInitializingTooltip"/>
+	
 	<string name="InventoryOutboxInitializing">We are accessing your account on the</string>
 	<string name="InventoryOutboxInitializingSubs">Marketplace store</string>
 	<string name="InventoryOutboxInitializing2">.</string>
 	<string name="InventoryOutboxErrorTitle">Marketplace Errors.</string>
-	<string name="InventoryOutboxErrorTooltip"/>
+	
 	<string name="InventoryOutboxError">The</string>
 	<string name="InventoryOutboxErrorSubs">Marketplace store</string>
 	<string name="InventoryOutboxError2">is returning errors.</string>
 
 	<!-- use value="" because they have preceding spaces -->
-	<string name="no_transfer"/>
-	<string name="no_modify"/>
-	<string name="no_copy"/>
-	<string name="temporary"/>
-	<string name="worn"/>
-	<string name="locked"/>
-	<string name="link"/>
-	<string name="broken_link"/>
+	
+	
+	
+	
+	
+	
+	
+	
 	<string name="LoadingContents">Inhalte werden geladen...</string>
 	<string name="NoContents">Keine Inhalte</string>
-	<string name="WornOnAttachmentPoint"/>
-	<string name="LockedOnAttachmentPoint"/>
-	<string name="ActiveGesture"/>
+	
+	
+	
 	<!-- Inventory permissions -->
 	<string name="PermYes">Ja</string>
 	<string name="PermNo">Nein</string>
 
 	<!-- Gestures labels -->
     <!-- use value="" because they have preceding spaces -->
-    <string name="Chat Message"/>
-    <string name="Sound"/>
-	<string name="Wait"/>
-	<string name="AnimFlagStop"/>
-	<string name="AnimFlagStart"/>
-	<string name="Wave"/>
-	<string name="GestureActionNone"/>
-	<string name="HelloAvatar"/>
-	<string name="ViewAllGestures"/>
-	<string name="GetMoreGestures"/>
+    
+    
+	
+	
+	
+	
+	
+	
+	
+	
 
 	<!-- inventory filter -->
     <!-- use value="" because they have preceding spaces -->
-	<string name="Animations"/>
-	<string name="Calling Cards"/>
-	<string name="Clothing"/>
-	<string name="Gestures"/>
-	<string name="Landmarks"/>
-	<string name="Notecards"/>
-	<string name="Objects"/>
-	<string name="Scripts"/>
-	<string name="Sounds"/>
-	<string name="Textures"/>
-	<string name="Snapshots"/>
-	<string name="No Filters"/>
-	<string name="Since Logoff"/>
-	<string name="Worn"/>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 
 	<!-- inventory FVBridge -->
 	<!--  This is used in llpanelinventory.cpp when constructing a context menu for an item for Sale  -->
 	<string name="Buy">Kaufen</string>
-	<string name="Buyfor"/><!-- Grid currency is appended automatically -->
+	<!-- Grid currency is appended automatically -->
 
 	<string name="Stone">Stein</string>
 	<string name="Metal">Metall</string>
@@ -1972,12 +1972,12 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="GodToolsObjectOwnedBy">Objekt [OBJECT], Besitzer [OWNER]</string>
 
 	<!-- groups -->
-	<string name="Group"/>
+	
 	<string name="Unknown">(unbekannt)</string>
-	<string name="SummaryForTheWeek"/>
-	<string name="NextStipendDay"/>
-	<string name="GroupIndividualShare"/>
-	<string name="GroupColumn"/>
+	
+	
+	
+	
 
 	<!-- floater IM bonus_info: When a Linden with Admin/god status receives a new IM this displays the estate (Mainland vs. teen grid) of the source avatar.
 		This is to help Lindens when answering questions. -->
@@ -2059,7 +2059,7 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<!-- Region/Estate Covenant -->
 	<string name="RegionNoCovenant">Für diesen Grundbesitz fehlt der Vertrag.</string>
 	<string name="RegionNoCovenantOtherOwner">Für diesen Grundbesitz liegt kein Vertrag vor. Das Land auf diesem Grundbesitz wird vom Grundbesitzer und nicht von Linden Lab verkauft.  Für Informationen zum Verkauf setzen Sie sich bitte mit dem Grundbesitzer in Verbindung.</string>
-	<string name="none_text"/>
+	
 
 	<!-- Environment settings -->
 	<string name="Local">Lokal</string>
@@ -2771,7 +2771,7 @@ Falls diese Meldung weiterhin angezeigt wird, wenden Sie sich bitte an [SUPPORT_
 	<string name="IM_autoresponse_sent_item">was sent auto-response item</string>
 	<string name="Unnamed">(Nicht benannt)</string>
 	<string name="inventory_item_offered_to">Inventory item offered to</string>
-	<string name="Saved_message"/>
+	
 	<string name="StartPointSet">Start point set</string>
 	<string name="EndPointSet">End point set</string>
 	<string name="MeasuredDistance">Distance: [DIST]</string>

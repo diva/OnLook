@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="Place" title="Platzieren">
-	<texture_picker name="snapshot_ctrl"/>
+	
 	<text name="name_label">Name:</text>
-	<text name="name_editor"/>
+	
 	<text name="description_label">Beschreibung:</text>
-	<text_editor name="desc_editor"/>
+	
 	<text name="information_label">Information:</text>
-	<text name="info_editor"/>
+	
 	<text name="land_type_label">Landart:</text>
-	<text name="land_type_display"/>
+	
 	<text name="location_label">Standort:</text>
-	<text name="location_editor"/>
+	
 	<button label="Teleportieren" name="teleport_btn"/>
 	<button label="Auf Karte zeigen" name="map_btn"/>
 	<button label="Gebote..." name="auction_btn"/>

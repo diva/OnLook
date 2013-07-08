@@ -22,56 +22,54 @@
 <!-- Focus panel -->
 
 	<check_box label="Zoom" name="radio zoom">
-	    <check_box.commit_callback/>
+	    
 	</check_box>
 	     
-	<volume_slider name="slider zoom">
-	 <volume_slider.commit_callback/>
-	</volume_slider>
+	
 	<check_box label="Orbit (Strg)" name="radio orbit">
-	    <check_box.commit_callback/>
+	    
 	</check_box>
 	<check_box label="Schwenken (Strg-Umschalt)" name="radio pan">
-	    <check_box.commit_callback/>
+	    
 	</check_box>
 
 <!-- Move panel -->
 
 	<check_box label="Bewegen" name="radio move">
-	    <check_box.commit_callback/>
+	    
 	</check_box>
 	<check_box label="Heben (Strg)" name="radio lift">
-	    <check_box.commit_callback/>
+	    
 	</check_box>
 	<check_box label="Rotieren (Strg-Umschalt)" name="radio spin">
-	    <check_box.commit_callback/>
+	    
 	</check_box>
 
 <!-- Edit panel -->
 	<check_box label="Position" name="radio position">
-	    <check_box.commit_callback/>
+	    
 	</check_box>
 	<check_box label="Drehen (Strg)" name="radio rotate">
-	    <check_box.commit_callback/>
+	    
 	</check_box>
 	<check_box label="Dehnen (Strg-Umschalt)" name="radio stretch">
-	    <check_box.commit_callback/>
+	    
 	</check_box>
 	<check_box label="Textur auswählen" name="radio select face">
-	    <check_box.commit_callback/>
+	    
 	</check_box>
 	<check_box label="Ausrichten (Strg-A)" name="radio align">
-	    <check_box.commit_callback/>
+	    
 	</check_box>
 	<check_box label="Verknüpfte Teile bearbeiten" name="checkbox edit linked parts">
-	    <check_box.commit_callback/>
+	    
 	</check_box>
 	<text name="text ruler mode">Lineal:</text>
 	<combo_box name="combobox grid mode">
 		<combo_item name="World">Welt</combo_item>
 		<combo_item name="Local">Lokal</combo_item>
 		<combo_item name="Reference">Referenz</combo_item>
-	    	<combo_box.commit_callback/>
+	    	
 	</combo_box>
 	<check_box label="Beide Seiten dehnen" name="checkbox uniform"/>
 	<check_box label="Texturen dehnen" name="checkbox stretch textures"/>
@@ -80,7 +78,7 @@
 	<check_box label="Zeige Hervorhebung" name="checkbox show highlight"/>
 	<check_box label="Raster verwenden" name="checkbox snap to grid"/>
 	<button label="Optionen..." label_selected="Optionen..." name="Options...">
-	 	<button.commit_callback/>
+	 	
 	</button>
 
 <!-- Help text -->
@@ -112,49 +110,45 @@
 <!-- Land panel -->
 
 	<check_box label="Land auswählen" name="radio select land">
-	     <check_box.commit_callback/>
+	     
 	</check_box>
 	<check_box label="Einebnen" name="radio flatten">
-	     <check_box.commit_callback/>
+	     
 	</check_box>
 	<check_box label="Anheben" name="radio raise">
-	     <check_box.commit_callback/>
+	     
 	</check_box>
 	<check_box label="Absenken" name="radio lower">
-	     <check_box.commit_callback/>
+	     
 	</check_box>
 	<check_box label="Glätten" name="radio smooth">
-	     <check_box.commit_callback/>
+	     
 	</check_box>
 	<check_box label="Aufrauen" name="radio noise">
-	     <check_box.commit_callback/>
+	     
 	</check_box>
 	<check_box label="Zurücksetzen" name="radio revert">
-	     <check_box.commit_callback/>
+	     
 	</check_box>
 	<button label="Übernehmen" label_selected="Übernehmen" name="button apply to selection" tool_tip="Ausgewähltes Land ändern">
-	     <button.commit_callback/>
+	     
     	</button>
 	<text name="Bulldozer:">Planierraupe:</text>
 	<text name="Dozer Size:">Größe</text>
-	<volume_slider name="slider brush size">
-	     <volume_slider.commit_callback/>
-    	</volume_slider>
+	
 	<text name="Strength:">Stärke</text>
-	<volume_slider name="slider force">
-	     <volume_slider.commit_callback/>
-    	</volume_slider>
+	
 	<text name="link_num_obj_count">[DESC] [NUM]</text>
-	<text name="prim_count"/>
+	
 
 <!-- Sub-tabs -->
 
 	<tab_container name="Object Info Tabs">
 		<panel label="Allgemein" name="General">
 			<text name="Name:">Name:</text>
-			<line_editor name="Object Name"/>
+			
 			<text name="Description:">Beschreibung:</text>
-			<line_editor name="Object Description"/>
+			
 			<text name="Creator:">Ersteller:</text>
 			<text name="Creator Name">Thrax Linden</text>
       		<button label="Profil..." label_selected="Profil..." name="button creator profile"/>
@@ -165,7 +159,7 @@
 			<text name="Last Owner Name">Thrax Linden</text>
 			<button label="Profil..." label_selected="Profil..." name="button last owner profile"/>
 			<text name="Group:">Gruppe:</text>
-			<name_box name="Group Name Proxy"/>
+			
 			<button label="Festlegen" label_selected="Einstellen..." name="button set group"/>
 			<button label="Ansicht" label_selected="Öffnen" name="button open group"/>
 			<text name="Permissions:">Berechtigungen:</text>
@@ -181,7 +175,7 @@
 			<check_box label="In Suche anzeigen" name="search_check" tool_tip="Dieses Objekt in Suchergebnissen anzeigen"/>
 			<check_box label="Zum Verkauf" name="checkbox for sale"/>
 			<text name="Cost">Preis:  L$</text>
-			<line_editor name="Edit Cost"/>
+			
 			<radio_group name="sale type">
 				<radio_item name="Original">Original</radio_item>
 				<radio_item name="Copy">Kopieren</radio_item>
@@ -209,7 +203,7 @@
 			<text name="E:">E:</text>
 			<text name="N:">N:</text>
 			<text name="F:">F:</text>
-      <panel/>
+      
       <panel name="pathfinding_attrs_panel">
         <text name="pathfinding_attributes_label">Pathfinding-Attribute:</text>
         <text name="pathfinding_attributes_value">Test</text>
@@ -231,8 +225,7 @@
 <!-- Object sub-tab -->
 
 		<panel label="Objekt" name="Object">
-			<text name="select_single">
-			</text>
+			
 			<button label="Verknüpfen" name="link_obj" tool_tip="Verknüpfen"/>
 			<button label="Verknüpfung auflösen" name="unlink_obj" tool_tip="Verknüpfung aufheben."/>
 			<check_box label="Gesperrt" name="checkbox locked" tool_tip="Verhindert, dass Objekt verschoben oder gelöscht wird. Oft beim Bauen nützlich, um unbeabsichtigte Bearbeitungen zu vermeiden."/>
@@ -304,8 +297,8 @@
 			<spinner label="O" name="cut end"/>
 			<text name="text hollow">Hohl</text>
 			<text name="text skew">Versatz</text>
-			<spinner name="Scale 1"/>
-			<spinner name="Skew"/>
+			
+			
 			<text name="Hollow Shape">Hohlform</text>
 			<combo_box name="hole">
 				<combo_item name="Default">Standard</combo_item>
@@ -333,8 +326,8 @@
 			<spinner label="Y" name="Taper Y"/>
 			<text name="text radius delta">Radius</text>
 			<text name="text revolutions">Umdrehungen</text>
-			<spinner name="Radius Offset"/>
-			<spinner name="Revolutions"/>
+			
+			
 			<texture_picker label="Textur für gestaltetes  Primitiv" name="sculpt texture control" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
             <check_box label="Spiegeln" name="sculpt mirror control" tool_tip="Geformtes Primitiv entlang der X-Achse spiegeln."/>
             <check_box label="Wenden" name="sculpt invert control" tool_tip="Dreht die Normalen des geformten Primitivs von innen nach außen."/>
@@ -394,9 +387,9 @@
 			<texture_picker label="Textur" name="texture control" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
 			<color_swatch label="Farbe" name="colorswatch" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
 			<text name="color trans">Transparenz %</text>
-			<spinner name="ColorTrans"/>
+			
 			<text name="glow label">Leuchten</text>
-			<spinner name="glow"/>
+			
 			<check_box label="Ganz hell" name="checkbox fullbright"/>
 			<text name="tex gen">Zuordnung</text>
 			<combo_box name="combobox texgen">
@@ -438,11 +431,11 @@
 			<spinner label="Vertikal (V)" name="TexScaleV"/>
 			<check_box label="Umkehren" name="checkbox flip t"/>
 			<text name="tex rotate">Rotation (Grad)</text>
-			<spinner name="TexRot"/>
+			
 			<string name="string repeats per meter">Kacheln pro Meter</string>
 			<string name="string repeats per face">Wiederholungen pro Fläche</string>
 			<text name="rpt">Kacheln pro Meter</text>
-			<spinner name="rptctrl"/>
+			
 			<button label="Übernehmen" label_selected="Übernehmen" name="button apply"/>
 			<text name="tex offset">Versatz</text>
 			<spinner label="Horizontal (U)" name="TexOffsetU"/>
@@ -454,13 +447,13 @@
 	<text name="media_tex">Medien</text>
 	<panel name="Add_Media">
 			<button label="Hinzufügen" name="add_media" tool_tip="Medien hinzufügen">
-				<button.commit_callback/>
+				
 			</button>
 			<button label="Löschen" name="delete_media" tool_tip="Lösche Medientextur">
-				<button.commit_callback/>
+				
 			</button>
 			<button tool_tip="Ändere dieses Medium" label="&gt;&gt; " name="edit_media">
-				<button.commit_callback/>
+				
 			</button>
       <text read_only="true" name="media_info"/>
       <web_browser name="title_media" decouple_texture_size="true"/>
@@ -470,7 +463,7 @@
        <panel label="Inhalt" name="Contents">
       		<button label="Neues Skript" label_selected="Neues Skript" name="button new script"/>
       <button label="Berechtigungen..." name="button permissions"/>
-			<panel name="ContentsInventory"/>
+			
 		</panel>
 	</tab_container>
 
