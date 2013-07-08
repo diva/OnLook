@@ -59,7 +59,7 @@ static U64 const NEVER = ((U64)1) << 60;	// The year 36,560,871.
 //static
 F64 const AICurlTimer::sClockWidth_1ms = 1000.0 / calc_clock_frequency();       // Time between two clock ticks, in 1ms units.
 U64 AICurlTimer::sTime_1ms;														// Time in 1ms units, set once per select() entry.
-U64 AICurlTimer::sNextExpiration;
+U64 AICurlTimer::sNextExpiration = NEVER;
 AICurlTimer::timer_list_type AICurlTimer::sTimerList;
 
 void AICurlTimer::create(deltams_type expiration, signal_type::slot_type const& slot)
