@@ -158,47 +158,6 @@ public:
 
 LLLoginRefreshHandler gLoginRefreshHandler;
 
-// helper class that trys to download a URL from a web site and calls a method 
-// on parent class indicating if the web server is working or not
-class LLIamHereLogin : public LLHTTPClient::ResponderHeadersOnly
-{
-	private:
-		LLIamHereLogin( LLPanelLogin* parent ) :
-		   mParent( parent )
-		{}
-
-		LLPanelLogin* mParent;
-
-	public:
-		static boost::intrusive_ptr< LLIamHereLogin > build( LLPanelLogin* parent )
-		{
-			return boost::intrusive_ptr< LLIamHereLogin >( new LLIamHereLogin( parent ) );
-		};
-
-		virtual void  setParent( LLPanelLogin* parentIn )
-		{
-			mParent = parentIn;
-		};
-
-		/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
-		{
-			if (mParent)
-			{
-				if(200 <= status && status < 300)
-					llinfos << "Found site" << llendl;
-				mParent->setSiteIsAlive(200 <= status && status < 300);
-			}
-		}
-
-		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return iamHereLogin_timeout; }
-
-		/*virtual*/ char const* getName(void) const { return "LLIamHereLogin"; }
-};
-
-// this is global and not a class member to keep crud out of the header file
-namespace {
-	boost::intrusive_ptr< LLIamHereLogin > gResponsePtr = 0;
-};
 
 //---------------------------------------------------------------------------
 // Public methods
@@ -382,10 +341,6 @@ void LLPanelLogin::reshapeBrowser()
 LLPanelLogin::~LLPanelLogin()
 {
 	LLPanelLogin::sInstance = NULL;
-
-	// tell the responder we're not here anymore
-	if ( gResponsePtr )
-		gResponsePtr->setParent( 0 );
 
 	if ( gFocusMgr.getDefaultKeyboardFocus() == this )
 	{
@@ -931,10 +886,6 @@ void LLPanelLogin::onClickConnect(void *)
 	if (sInstance && sInstance->mCallback)
 	{
 
-		// tell the responder we're not here anymore
-		if ( gResponsePtr )
-			gResponsePtr->setParent( 0 );
-
 		// JC - Make sure the fields all get committed.
 		sInstance->setFocus(FALSE);
 
@@ -1056,21 +1007,12 @@ void LLPanelLogin::refreshLoginPage()
 		LLMediaCtrl* web_browser = sInstance->getChild<LLMediaCtrl>("login_html");
 		if (web_browser->getCurrentNavUrl() != login_page)
 		{
-			if(gResponsePtr)
-				gResponsePtr->setParent(0);	//Tell our previous responder that we no longer require its result.
-			gResponsePtr.reset();			//Deref previous responder
-
-			llinfos << "Firing off lookup for " << login_page << llendl;
-			// kick off a request to grab the url manually
-			gResponsePtr = LLIamHereLogin::build(sInstance);
-			LLHTTPClient::head(login_page, gResponsePtr.get());
+			//Singu note: No idea if site is alive, but we no longer check before loading.
+			sInstance->setSiteIsAlive(true);
 		}
 	}
 	else
 	{
-		if(gResponsePtr)
-			gResponsePtr->setParent(0);	//Tell our previous responder that we no longer require its result.
-		gResponsePtr.reset();			//Deref previous responder
 		sInstance->setSiteIsAlive(false);
 	}
 }
