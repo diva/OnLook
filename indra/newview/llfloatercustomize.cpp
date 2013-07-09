@@ -343,8 +343,8 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 				llwarns << "Bad parameters list: early end of file" << llendl;
 				return;
 			}
-			gAgentAvatarp->setVisualParamWeight( param_id, param_weight, TRUE);
-			gAgentAvatarp->updateVisualParams();
+			LLWearable* wearable = gAgentWearables.getTopWearable((LLWearableType::EType)typ);
+			wearable->setVisualParamWeight(param_id, param_weight, TRUE);
 		}
 	}
 
