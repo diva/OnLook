@@ -131,6 +131,10 @@ public:
 
 	void setIsTransparent(BOOL is_transparent) { mIsTransparent = is_transparent; }
 
+	// <edit>
+public:
+	LLFace* getFace() { return mFace; }
+	// </edit>
 private:
 	// Allocate skin data
 	BOOL allocateSkinData( U32 numSkinJoints );

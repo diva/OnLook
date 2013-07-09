@@ -248,6 +248,11 @@ protected:
 	polymesh_map_t 									mPolyMeshes;
 	avatar_joint_list_t								mMeshLOD;
 
+// <edit>
+public:
+	const virtual avatar_joint_list_t& getMeshLOD() const { return mMeshLOD; }
+// </edit>
+
 /**                    Meshes
  **                                                                            **
  *******************************************************************************/
