@@ -1153,7 +1153,18 @@ void LLPanelEditWearable::onTexturePickerCommit(const LLUICtrl* ctrl)
 		if (entry)
 		{
 			// Set the new version
-			LLViewerFetchedTexture* image = LLViewerTextureManager::getFetchedTexture(texture_ctrl->getImageAssetID());
+			setNewImageID(entry->mTextureIndex, texture_ctrl->getImageAssetID());
+		}
+		else
+		{
+			llwarns << "could not get texture picker dictionary entry for wearable of type: " << type << llendl;
+		}
+	}
+}
+
+void LLPanelEditWearable::setNewImageID(ETextureIndex te_index, LLUUID const& uuid)
+{
+			LLViewerFetchedTexture* image = LLViewerTextureManager::getFetchedTexture(uuid);
 			if( image->getID() == IMG_DEFAULT )
 			{
 				image = LLViewerTextureManager::getFetchedTexture(IMG_DEFAULT_AVATAR);
@@ -1161,20 +1172,14 @@ void LLPanelEditWearable::onTexturePickerCommit(const LLUICtrl* ctrl)
 			if (getWearable())
 			{
 				U32 index = gAgentWearables.getWearableIndex(getWearable());
-				gAgentAvatarp->setLocalTexture(entry->mTextureIndex, image, FALSE, index);
+				gAgentAvatarp->setLocalTexture(te_index, image, FALSE, index);
 				LLVisualParamHint::requestHintUpdates();
-				gAgentAvatarp->wearableUpdated(type, FALSE);
+				gAgentAvatarp->wearableUpdated(mType, FALSE);
 			}
 			if (mType == LLWearableType::WT_ALPHA && image->getID() != IMG_INVISIBLE)
 			{
-				mPreviousAlphaTexture[entry->mTextureIndex] = image->getID();
+				mPreviousAlphaTexture[te_index] = image->getID();
 			}	
-		}
-		else
-		{
-			llwarns << "could not get texture picker dictionary entry for wearable of type: " << type << llendl;
-		}
-	}
 }
 
 void LLPanelEditWearable::onColorSwatchCommit(const LLUICtrl* base_ctrl )

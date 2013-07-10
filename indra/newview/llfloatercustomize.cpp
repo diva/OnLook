@@ -358,26 +358,46 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 	// Parse the XML content.
 	static LLStdStringHandle const id_string = LLXmlTree::addAttributeString("id");
 	static LLStdStringHandle const value_string = LLXmlTree::addAttributeString("value");
+	static LLStdStringHandle const te_string = LLXmlTree::addAttributeString("te");
+	static LLStdStringHandle const uuid_string = LLXmlTree::addAttributeString("uuid");
 	for(LLXmlTreeNode* child = archetype_node->getFirstChild(); child; child = archetype_node->getNextChild())
 	{
-		if (!child->hasName("param"))
+		if (child->hasName("param"))
 		{
-		  continue;
+			std::string id_s;
+			U32 id;
+			std::string value_s;
+			F32 value;
+			if (!child->getFastAttributeString(id_string, id_s) || !LLStringUtil::convertToU32(id_s, id) ||
+				!child->getFastAttributeString(value_string, value_s) || !LLStringUtil::convertToF32(value_s, value))
+			{
+			  llwarns << "Possible syntax error or corruption for <param id=... value=... /> node in " << filename << llendl;
+			  continue;
+			}
+			LLVisualParam* visual_param = edit_wearable->getVisualParam(id);
+			if (visual_param)
+			{
+				visual_param->setWeight(value, FALSE);
+			}
 		}
-		std::string id_s;
-		U32 id;
-		std::string value_s;
-		F32 value;
-		if (!child->getFastAttributeString(id_string, id_s) || !LLStringUtil::convertToU32(id_s, id) ||
-			!child->getFastAttributeString(value_string, value_s) || !LLStringUtil::convertToF32(value_s, value))
+		else if (child->hasName("texture"))
 		{
-		  llwarns << "Possible syntax error or corruption for <param id=... value=... /> node in " << filename << llendl;
-		  continue;
-		}
-		LLVisualParam* visual_param = edit_wearable->getVisualParam(id);
-		if (visual_param)
-		{
-			visual_param->setWeight(value, FALSE);
+			std::string te_s;
+			S32 te;
+			std::string uuid_s;
+			LLUUID uuid;
+			if (!child->getFastAttributeString(te_string, te_s) || !LLStringUtil::convertToS32(te_s, te) || te < 0 || te >= TEX_NUM_INDICES ||
+				!child->getFastAttributeString(uuid_string, uuid_s) || !uuid.set(uuid_s, TRUE))
+			{
+			  llwarns << "Possible syntax error or corruption for <texture te=... uuid=... /> node in " << filename << llendl;
+			  continue;
+			}
+			ETextureIndex te_index = (ETextureIndex)te;
+			LLWearableType::EType te_wearable_type = LLAvatarAppearanceDictionary::getTEWearableType(te_index);
+			if (te_wearable_type == edit_wearable->getType())
+			{
+				panel_edit_wearable->setNewImageID(te_index, uuid);
+			}
 		}
 	}
 	edit_wearable->writeToAvatar(gAgentAvatarp);

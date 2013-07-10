@@ -110,6 +110,7 @@ public:
 
 	void				onColorSwatchCommit(const LLUICtrl*);
 	void				onTexturePickerCommit(const LLUICtrl*);
+	void				setNewImageID(ETextureIndex te_index, LLUUID const& uuid);	//Singu note: this used to be part of onTexturePickerCommit.
 	
 	//alpha mask checkboxes
 	void configureAlphaCheckbox(LLAvatarAppearanceDefines::ETextureIndex te, const std::string& name);
