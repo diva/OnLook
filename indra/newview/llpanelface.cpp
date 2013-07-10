@@ -518,7 +518,6 @@ void LLPanelFace::getState()
 		BOOL editable = objectp->permModify() && !objectp->isPermanentEnforced();
 
 		// only turn on auto-adjust button if there is a media renderer and the media is loaded
-		getChildView("textbox autofix")->setEnabled(editable);
 		getChildView("button align")->setEnabled(editable);
 		
 		//if ( LLMediaEngine::getInstance()->getMediaRenderer () )
@@ -579,7 +578,6 @@ void LLPanelFace::getState()
 
 			if(LLViewerMedia::textureHasMedia(id))
 			{
-				getChildView("textbox autofix")->setEnabled(editable);
 				getChildView("button align")->setEnabled(editable);
 			}
 			
@@ -997,9 +995,6 @@ void LLPanelFace::getState()
 		getChildView("tex gen")->setEnabled(FALSE);
 		getChildView("label shininess")->setEnabled(FALSE);
 		getChildView("label bumpiness")->setEnabled(FALSE);
-
-		getChildView("textbox autofix")->setEnabled(FALSE);
-
 		getChildView("button align")->setEnabled(FALSE);
 		getChildView("button apply")->setEnabled(FALSE);
 		//getChildView("has media")->setEnabled(FALSE);
