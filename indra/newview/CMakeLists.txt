@@ -86,6 +86,7 @@ set(viewer_SOURCE_FILES
     ascentprefschat.cpp
     ascentprefssys.cpp
     ascentprefsvan.cpp
+    awavefront.cpp
     chatbar_as_cmdline.cpp
     floaterao.cpp
     floaterlocalassetbrowse.cpp
@@ -597,6 +598,7 @@ set(viewer_HEADER_FILES
     ascentprefschat.h
     ascentprefssys.h
     ascentprefsvan.h
+    awavefront.h
     chatbar_as_cmdline.h
     floaterao.h
     floaterlocalassetbrowse.h

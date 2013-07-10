@@ -10,7 +10,7 @@
 		<column name="icon_visible_online_theirs" tool_tip="You can see when they are online (only updates on login)"/>
    		<column name="icon_visible_map_theirs" tool_tip="Du kannst die Position dieses Freundes auf der Karte sehen."/>
 		<column name="icon_edit_theirs" tool_tip="Sie können die Objekte dieses Freunds bearbeiten"/>
-		<column name="friend_last_update_generation"/>
+		
 	</scroll_list>
 	<!--text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" name="friends" width="110">Contact Group:</text-->
 	<!--combo_box allow_text_entry="false" enabled="true" follows="right|top" bottom_delta="20" height="18" hidden="false" left="-255" max_chars="20" tool_tip="Buddy group" name="buddy_group_combobox" width="130">
@@ -19,7 +19,7 @@
 	<!--text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" name="Contact Search:" width="110">Contact Search:</text-->
   <filter_editor name="buddy_search_lineedit" label="Contact Search" tool_tip="The friend name you want to search for"/>
 	<button label="0" name="expand_collapse_btn" tool_tip="Expand/Collapse extra info"/>
-	<pad/>
+	
 	<!--button bottom_delta="-25" follows="top|right" height="22" label="Set Contact" name="assign_btn" tool_tip="Assign a friend to a Contact Group" width="80"/-->
 	<button label="IM/Anruf" name="im_btn" tool_tip="Öffnet eine Instant-Message-Sitzung"/>
 	<button label="Profil" name="profile_btn" tool_tip="Zeigt dir Bilder, Gruppen und andere Informationen"/>

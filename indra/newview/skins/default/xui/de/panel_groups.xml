@@ -10,7 +10,7 @@
 	</scroll_list>
 	<text name="groupdesc">Die derzeit aktive Gruppe ist fett hervorgehoben.</text>
 	<text name="groupcount">Sie sind Mitglied bei [COUNT] Gruppen (von max. [MAX]).</text>
-	<pad/>
+	
 	<button label="IM/Anruf" name="IM" tool_tip="Öffnet eine Instant-Message-Sitzung"/>
 	<button label="Info" name="Info"/>
 	<button label="Aktivieren" name="Activate"/>

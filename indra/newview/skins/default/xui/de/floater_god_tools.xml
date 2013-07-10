@@ -7,7 +7,7 @@
 		</panel>
 		<panel label="Region" name="region">
 			<text name="Sim Name:">Sim-Name:</text>
-			<line_editor name="region name"/>
+			
 			<check_box label="Startbereich Einleitung" name="check prelude" tool_tip="Diese Region zu einem Startbereich machen."/>
 			<check_box label="Sonne fest" name="check fixed sun" tool_tip="Fixiert den Sonnenstand (wie in „Region/Grundstück“ &gt; „Terrain“."/>
 			<check_box label="Zuhause auf Teleport zurücksetzen" name="check reset home" tool_tip="Wenn Einwohner wegteleportieren, ihr Zuhause auf Zielposition setzen."/>
@@ -22,18 +22,18 @@
 			<button label="Terrain zurücksetzen" label_selected="Terrain zurücksetzen" name="Revert Terrain" tool_tip="Das aktuelle Terrain mit dem Standard ersetzen."/>
 			<button label="Terrain tauschen" label_selected="Terrain tauschen" name="Swap Terrain" tool_tip="Aktuelles Terrain gegen Standard austauschen."/>
 			<text name="estate id">Grundbesitz-ID:</text>
-			<line_editor name="estate"/>
+			
 			<text name="parent id">Parent ID:</text>
 			<line_editor name="parentestate" tool_tip="Der übergeordnete Grundbesitz dieser Region"/>
 			<text name="Grid Pos: ">Raster-Pos.:</text>
 			<line_editor name="gridposx" tool_tip="Die X-Rasterposition dieser Region"/>
 			<line_editor name="gridposy" tool_tip="Die Y-Rasterposition dieser Region"/>
 			<text name="Redirect to Grid: ">Auf Raster umleiten:</text>
-			<line_editor name="redirectx"/>
-			<line_editor name="redirecty"/>
-			<spinner name="billable factor"/>
+			
+			
+			
 			<text name="billable factor text">Abrechnungsfaktor:</text>
-			<spinner name="land cost"/>
+			
 			<text name="land cost text">L$ pro qm:</text>
 			<button label="Aktualisieren" label_selected="Aktualisieren" name="Refresh" tool_tip="Klicken Sie hier, um die obigen Informationen zu aktualisieren."/>
 			<button label="Übernehmen" label_selected="Übernehmen" name="Apply" tool_tip="Klicken Sie hier, um die obigen Änderungen zu übernehmen."/>
@@ -71,7 +71,7 @@
 				<combo_item name="rez&lt;asset_id&gt;">lt;asset_id&gt; erstellen</combo_item>
 			</combo_box>
 			<text name="Parameter:">Parameter:</text>
-			<line_editor name="parameter"/>
+			
 			<button label="Anfrage" label_selected="Anfrage" name="Make Request"/>
 		</panel>
 	</tab_container>

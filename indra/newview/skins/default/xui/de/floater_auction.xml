@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="floater_auction" title="Linden-Landverkauf starten">
-	<icon name="snapshot_icon"/>
-	<text name="parcel_text"/>
+	
+	
 	<check_box label="Gelben Auswahlrahmen einschließen" name="fence_check"/>
 	<button label="Foto" label_selected="Foto" name="snapshot_btn"/>
 	<button label="OK" label_selected="OK" name="ok_btn"/>

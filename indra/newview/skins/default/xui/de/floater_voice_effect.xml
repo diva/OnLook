@@ -54,13 +54,13 @@
  <text name="preview_text">Zur Vorschau</text>
   <text name="status_text">Stimme aufnehmen und auf einen Effekt klicken, um diesen auf Ihre Stimme anzuwenden.</text>
   <button label="Aufnehmen" name="record_btn" tool_tip="Nehmen Sie Ihre Stimme auf.">
-    <button.commit_callback/>
+    
   </button>
   <button label="Stop" name="record_stop_btn">
-    <button.commit_callback/>
+    
   </button>
   <button label="Aktivieren" name="activate_btn">
-    <button.commit_callback/>
+    
   </button>
   <text_editor name="voice_morphing_link">Jetzt eintragen</text_editor>
   <scroll_list name="voice_effect_list" tool_tip="Nehmen Sie Ihre Stimme auf und klicken Sie dann auf einen Effekt, um diesen auszuprobieren.">

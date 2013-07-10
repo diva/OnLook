@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="floater_pathfinding_characters" title="Pathfinding Charaktere">
-  <string name="messaging_initial"/>
+  
   <string name="messaging_get_inprogress">Suche nach Pathfinding Charakteren ... </string>
   <string name="messaging_get_error">Fehler bei Anfrage nach Pathfinding Characteren.</string>
-  <string name="messaging_set_inprogress"/>
-  <string name="messaging_set_error"/>
+  
+  
   <string name="messaging_complete_none_found">Keine Pathfinding Charaktere</string>
   <string name="messaging_complete_available">[NUM_SELECTED] Charaktere von [NUM_TOTAL] gewählt.</string>
   <string name="messaging_not_enabled">Diese Region unterstützt kein Pathfinding.</string>
@@ -25,7 +25,7 @@
     <button label="Alle auswählen" name="select_all_objects"/>
     <button label="Nichts auswählen" name="select_none_objects"/>
   </panel>
-  <view_border name="horiz_separator"/>
+  
   <panel name="pathfinding_chars_actions">
     <text name="actions_label">Aktionen auf gewählten Charakteren:</text>
     <check_box label="Beacon anzeigen" name="show_beacon"/>

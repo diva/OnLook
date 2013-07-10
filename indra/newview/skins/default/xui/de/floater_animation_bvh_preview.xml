@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="Animation Preview" title="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;">
-	<pad/>
+	
 	<text name="name_label">Name:</text>
-	<line_editor name="name_form"/>
+	
 	<text name="description_label">Beschreibung:</text>
-	<line_editor name="description_form"/>
-	<pad/>
+	
+	
 	<spinner label="Priorität" name="priority" tool_tip="Steuert, welche Animationen von dieser Animation überschrieben werden können."/>
 	<check_box label="Schleife" name="loop_check" tool_tip="Erzeugt eine Animationsschleife."/>
 	<spinner label="Ein (%)" name="loop_in_point" tool_tip="Anfang einer Animationsschleife festlegen."/>

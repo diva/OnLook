@@ -6,6 +6,6 @@
 	<button label="Alle ersetzen" label_selected="Alle ersetzen" name="replace_all_btn"/>
 	<text name="txt">Suche</text>
 	<text name="txt2">Ersetzung</text>
-	<line_editor name="search_text"/>
-	<line_editor name="replace_text"/>
+	
+	
 </floater>

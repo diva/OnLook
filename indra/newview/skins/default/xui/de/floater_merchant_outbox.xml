@@ -16,14 +16,14 @@
       width="333"-->
       <panel name="outbox_inventory_placeholder_panel">
         <text name="outbox_inventory_placeholder_title">Wird geladen...</text>
-        <text_editor name="outbox_inventory_placeholder_text"/>
+        
       </panel>
-      <inventory_panel name="panel_outbox_inventory"/>
+      
     <panel name="panel_2">
       <panel name="outbox_generic_drag_target">
         <text name="text_1">Objekte hier ablegen, um Ordner zu erstellen</text>
       </panel>
-      <text name="outbox_folder_count"/>
+      
       <button label="In Marktplatz übertragen" tool_tip="In meinen Marktplatz-Laden verschieben" name="outbox_import_btn"/>
     </panel>
 	<text name="import_progress_indicator">Importfortschritt</text>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="preview notecard" title="Hinweis:">
-	<icon name="lock"/>
+	
 	<text name="desc txt">Beschreibung:</text>
-	<line_editor name="desc"/>
+	
 	<menu_bar name="motecard_menu">
 		<menu name="Edit">
 			<menu_item_call label="Rückgängig" name="Undo"/>

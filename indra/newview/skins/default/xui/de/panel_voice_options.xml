@@ -8,7 +8,7 @@
 	<check_box label="Voice-Anrufe nur meinen Freunden erlauben" name="friends_only_check"/>
 	<check_box label="„Zum-Sprechen-drücken“ im Umschaltmodus verwenden" name="push_to_talk_toggle_check"/>
 	<text name="push_to_talk_label">Auslöser für „Zum-Sprechen-drücken“:</text>
-	<line_editor name="modifier_combo"/>
+	
 	<button label="Taste festlegen" name="set_voice_hotkey_button"/>
 	<button label="Mittlere Maustaste" name="set_voice_middlemouse_button"/>
 </panel>

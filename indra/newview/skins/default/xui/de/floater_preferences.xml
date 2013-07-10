@@ -5,5 +5,5 @@
 	<button label="Übernehmen" label_selected="Übernehmen" name="Apply"/>
 	<button label="Info" label_selected="Info" name="About..."/>
 	<button label="Hilfe" label_selected="Hilfe" name="Help"/>
-	<tab_container name="pref core"/>
+	
 </floater>

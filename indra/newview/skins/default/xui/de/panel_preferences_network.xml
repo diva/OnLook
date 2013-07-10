@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Netzwerk" name="network">
 	<text name="text_box">Maximale Bandbreite:</text>
-	<slider name="max_bandwidth"/>
+	
 	<text name="text_box2">kbit/s (Kilobit pro Sekunde)</text>
 	<text name="text_box3">Texture Bandwidth:</text>
-	<slider name="tex_bandwidth"/>
+	
 	<text name="text_box4">kbit/s (Kilobit pro Sekunde)</text>
 	<text name="use_http_for">Use HTTP for:</text>
 	<check_box label="Texturen" name="http_textures"/>
 	<check_box label="Inventar" name="http_inventory"/>
 	<text name="cache_size_label_l">Disk Cache Size:</text>
-	<slider name="cache_size"/>
+	
 	<text name="text_box5">MB</text>
 	<button label="Cache leeren" name="clear_cache"/>
 	<text name="cache_location_label">Festplatten-Cache-Verzeichnis:</text>
-	<line_editor name="cache_location"/>
+	
 	<button label="Festlegen" label_selected="Festlegen" name="set_cache"/>
 	<button label="Zurücksetzen" label_selected="Festlegen" name="reset_cache"/>
 	<check_box label="Benutzerdefinierter Port" name="connection_port_enabled"/>

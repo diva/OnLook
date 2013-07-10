@@ -12,5 +12,5 @@
 	<button label="-" name="combo_group_remove"/>
 	<button label="Neu" name="combo_group_create"/>
 	<text name="contact_list_text">Aktuell in:</text>
-	<scroll_list name="group_scroll_list"/>
+	
 </floater>

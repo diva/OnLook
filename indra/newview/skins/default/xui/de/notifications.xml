@@ -113,7 +113,7 @@ Bitte &#xFC;berpr&#xFC;fen Sie Ihre Netzwerkverbindung.<usetemplate name="okbutt
   <notification name="WearableSave">&#xC4;nderung an aktueller Kleidung/K&#xF6;rperteil speichern?<usetemplate canceltext="Abbrechen" name="yesnocancelbuttons" yestext="Speichern"/></notification>
   <notification name="ConfirmNoCopyToOutbox">Sie haben nicht die n&#xF6;tigen Rechte eines oder mehrere diese Objekte in das H&#xE4;ndler Ausgangsfach zu kopieren. Sie k&#xF6;nnen sie verschieben oder zur&#xFC;cklassen.<usetemplate name="okcancelbuttons" yestext="Objekt(e) verschieben"/></notification>
 
-  <notification name="OutboxFolderCreated">F&#xFC;r jedes Objekt da&#xDF; Sie in die oberste Ebene Ihres H&#xE4;ndler Ausgangsfaches gelegt haben wurde ein Ordner angelegt.<unique/><usetemplate name="okignore" yestext="OK"/></notification>
+  <notification name="OutboxFolderCreated">F&#xFC;r jedes Objekt da&#xDF; Sie in die oberste Ebene Ihres H&#xE4;ndler Ausgangsfaches gelegt haben wurde ein Ordner angelegt.<usetemplate name="okignore" yestext="OK"/></notification>
 
   <notification name="OutboxImportComplete">ErfolgreichAlle Ordner wurden erfolgreich an den Marktplatz gesandt.<usetemplate name="okignore" yestext="OK"/></notification>
 
@@ -1165,7 +1165,7 @@ welches die maximale anzahl an gleichzeitigen anfragen von [LIMIT] &#xFC;berstei
   <notification name="TeleportFromLandmark">M&#xF6;chten Sie sich wirklich teleportieren?<usetemplate name="okcancelignore" yestext="Teleportieren"/></notification>
 
   <notification label="Nachricht an alle auf diesem Grundst&#xFC;ck" name="MessageEstate">Geben Sie eine kurze Nachricht ein, die an jede Person auf Ihrem Grundst&#xFC;ck gesendet wird.<form name="form">
-      <input name="message"/>
+      
       <button name="OK" text="OK"/>
       <button name="Cancel" text="Abbrechen"/>
     </form></notification>
@@ -1321,7 +1321,7 @@ Anzeige f&#xFC;r [AMOUNT] L$ ver&#xF6;ffentlichen?<usetemplate name="okcancelbut
   <notification label="Neustart best&#xE4;tigen" name="ConfirmRestart">M&#xF6;chten Sie diese Region in 2 Minuten neu starten?<usetemplate name="okcancelbuttons" yestext="OK"/></notification>
 
   <notification label="Nachricht an alle in dieser Region" name="MessageRegion">Geben Sie eine kurze Nachricht ein, die an jede Person in dieser Region gesendet wird.<form name="form">
-      <input name="message"/>
+      
       <button name="OK" text="OK"/>
       <button name="Cancel" text="Abbrechen"/>
     </form></notification>
@@ -1550,7 +1550,7 @@ M&#xF6;chten Sie diesen Kauf fortsetzen?<usetemplate name="okcancelbuttons" yest
 
 M&#xF6;chten Sie diesen Kauf fortsetzen?
 Geben Sie Ihr Kennwort erneut ein und klicken Sie auf OK.<form name="form">
-      <input name="message"/>
+      
       <button name="ConfirmPurchase" text="OK"/>
       <button name="Cancel" text="Abbrechen"/>
     </form></notification>
@@ -2022,26 +2022,26 @@ Nicht transferierbare an die Gruppe &#xFC;bertragene Objekte wurden gel&#xF6;sch
   <notification name="UnOwnedObjectsReturned">Alle Objekte auf der ausgew&#xE4;hlten Parzelle, die NICHT Ihnen geh&#xF6;ren, wurden ihren Eigent&#xFC;mern zur&#xFC;ckgegeben.</notification>
 
   <notification name="NotSafe">Auf diesem Land ist Schaden aktiviert (&#x201E;Unsicher&#x201C;).
-Verletzungen sind m&#xF6;glich. Wenn Sie sterben, werden Sie zu Ihrem Heimatstandort teleportiert.<unique/></notification>
+Verletzungen sind m&#xF6;glich. Wenn Sie sterben, werden Sie zu Ihrem Heimatstandort teleportiert.</notification>
 
   <notification name="NoFly">Auf diesem Land ist Fliegen deaktiviert (&#x201E;Fliegen aus&#x201C;).
-Fliegen ist hier nicht m&#xF6;glich.<unique/></notification>
+Fliegen ist hier nicht m&#xF6;glich.</notification>
 
   <notification name="PushRestricted">Auf diesem Land gilt &#x201E;Kein Sto&#xDF;en&#x201C;.
-Sie k&#xF6;nnen keine anderen Personen sto&#xDF;en, au&#xDF;er Ihnen geh&#xF6;rt das Land.<unique/></notification>
+Sie k&#xF6;nnen keine anderen Personen sto&#xDF;en, au&#xDF;er Ihnen geh&#xF6;rt das Land.</notification>
 
-  <notification name="NoVoice">Auf diesem Land ist Voice deaktiviert.<unique/></notification>
+  <notification name="NoVoice">Auf diesem Land ist Voice deaktiviert.</notification>
 
   <notification name="NoBuild">Auf diesem Land ist Bauen deaktiviert (&#x201E;Bauen aus&#x201C;).
-Sie k&#xF6;nnen hier keine Objekte erstellen.<unique/></notification>
+Sie k&#xF6;nnen hier keine Objekte erstellen.</notification>
 
-  <notification name="PathfindingDirty">Die Region hat noch Pathfinding &#xC4;nderungen die nicht ausgef&#xFC;hrt wurden. Wenn du Baurechte hast, kannst du mit dem Druck auf Rebake die Region neu Einlesen.<unique/><usetemplate name="okcancelbuttons" yestext="Rebake"/></notification>
+  <notification name="PathfindingDirty">Die Region hat noch Pathfinding &#xC4;nderungen die nicht ausgef&#xFC;hrt wurden. Wenn du Baurechte hast, kannst du mit dem Druck auf Rebake die Region neu Einlesen.<usetemplate name="okcancelbuttons" yestext="Rebake"/></notification>
 
-  <notification name="DynamicPathfindingDisabled">Dynamisches Pathfinding ist in dieser Region nicht aktviert. Gescriptete Objekte, die Pathfinding-LSL-Aufrufe benutzen werden sehr wahrscheinlich nicht korrekt funktionieren.<unique/></notification>
+  <notification name="DynamicPathfindingDisabled">Dynamisches Pathfinding ist in dieser Region nicht aktviert. Gescriptete Objekte, die Pathfinding-LSL-Aufrufe benutzen werden sehr wahrscheinlich nicht korrekt funktionieren.</notification>
 
-  <notification name="PathfindingCannotRebakeNavmesh">Ein Fehler ist aufgetreten. Es kann ein Netzwerk oder Serverproblem sein, oder du hast keine Baurechte. Manchmal hilft es sich aus und neu ein zu loggen um das Problem zu beheben.<unique/><usetemplate name="okbutton" yestext="OK"/></notification>
+  <notification name="PathfindingCannotRebakeNavmesh">Ein Fehler ist aufgetreten. Es kann ein Netzwerk oder Serverproblem sein, oder du hast keine Baurechte. Manchmal hilft es sich aus und neu ein zu loggen um das Problem zu beheben.<usetemplate name="okbutton" yestext="OK"/></notification>
 
-  <notification name="SeeAvatars">Dieses Grundst&#xFC;ck versteckt Avatar und Text Chat vor anderen Grundst&#xFC;cken. Du kannst weder andere User ausserhalb des Grundst&#xFC;cks sehen, noch k&#xF6;nnen die dich sehen. Normaler Chat auf Kanal 0 ist ebenfalls geblockt.<unique/></notification>
+  <notification name="SeeAvatars">Dieses Grundst&#xFC;ck versteckt Avatar und Text Chat vor anderen Grundst&#xFC;cken. Du kannst weder andere User ausserhalb des Grundst&#xFC;cks sehen, noch k&#xF6;nnen die dich sehen. Normaler Chat auf Kanal 0 ist ebenfalls geblockt.</notification>
 
   <notification name="ScriptsStopped">Ein Administrator hat die Skriptausf&#xFC;hrung in dieser Region vor&#xFC;bergehend deaktiviert.</notification>
 
@@ -2235,8 +2235,7 @@ Anfrage gestatten?<form name="form">
 
   <notification name="ScriptTextBoxDialog">[NAME]'s '[TITLE]'
 [MESSAGE]<form name="form">
-      <input name="message">
-      </input>
+      
       <button name="Ignore" text="Ignorieren"/>
       <button name="Send" text="Senden"/>
     </form></notification>
@@ -2322,9 +2321,7 @@ Do you want to enable this feature?<usetemplate name="okcancelbuttonscanceldefau
 von der Liste ausw&#xE4;hlen.</notification>
 
   <notification name="VoiceInviteP2P">[NAME] l&#xE4;dt Sie zu einem Voice-Chat ein.
-Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Gespr&#xE4;ch beizutreten, oder auf &#x201E;Ablehnen&#x201C;, um die Einladung auszuschlagen. Klicken Sie auf &#x201E;Stummschalten&#x201C;, um diesen Anrufer stumm zu schalten.<unique>
-      <context/>
-    </unique><form name="form">
+Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Gespr&#xE4;ch beizutreten, oder auf &#x201E;Ablehnen&#x201C;, um die Einladung auszuschlagen. Klicken Sie auf &#x201E;Stummschalten&#x201C;, um diesen Anrufer stumm zu schalten.<form name="form">
       <button name="Accept" text="Akzeptieren"/>
       <button name="Decline" text="Ablehnen"/>
       <button name="Mute" text="Blockieren"/>
@@ -2337,71 +2334,52 @@ Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Gespr&#xE4;ch beizutreten, o
   <notification name="AutoUnmuteByInventory">[FIRST] [LAST] wurde ein Inventarobjekt angeboten; die Stummschaltung wurde aufgehoben.</notification>
 
   <notification name="VoiceInviteGroup">[NAME] ist einem Voice-Chat mit der Gruppe [GROUP] beigetreten.
-Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Gespr&#xE4;ch beizutreten, oder auf &#x201E;Ablehnen&#x201C;, um die Einladung auszuschlagen. Klicken Sie auf &#x201E;Stummschalten&#x201C;, um diesen Anrufer stumm zu schalten.<unique>
-      <context/>
-      <context/>
-    </unique><form name="form">
+Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Gespr&#xE4;ch beizutreten, oder auf &#x201E;Ablehnen&#x201C;, um die Einladung auszuschlagen. Klicken Sie auf &#x201E;Stummschalten&#x201C;, um diesen Anrufer stumm zu schalten.<form name="form">
       <button name="Accept" text="Akzeptieren"/>
       <button name="Decline" text="Ablehnen"/>
       <button name="Mute" text="Blockieren"/>
     </form></notification>
 
   <notification name="VoiceInviteAdHoc">[NAME] ist einem Voice-Konferenz-Chat beigetreten.
-Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Gespr&#xE4;ch beizutreten, oder auf &#x201E;Ablehnen&#x201C;, um die Einladung auszuschlagen. Klicken Sie auf &#x201E;Stummschalten&#x201C;, um diesen Benutzer stumm zu schalten.<unique>
-      <context/>
-    </unique><form name="form">
+Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Gespr&#xE4;ch beizutreten, oder auf &#x201E;Ablehnen&#x201C;, um die Einladung auszuschlagen. Klicken Sie auf &#x201E;Stummschalten&#x201C;, um diesen Benutzer stumm zu schalten.<form name="form">
       <button name="Accept" text="Akzeptieren"/>
       <button name="Decline" text="Ablehnen"/>
       <button name="Mute" text="Blockieren"/>
     </form></notification>
 
   <notification name="InviteAdHoc">[NAME] l&#xE4;dt Sie zu einem Konferenz-Chat ein.
-Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Chat beizutreten, oder auf &#x201E;Ablehnen&#x201C;, um die Einladung auszuschlagen. Klicken Sie auf &#x201E;Stummschalten&#x201C;, um diesen Benutzer stumm zu schalten.<unique>
-      <context/>
-    </unique><form name="form">
+Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Chat beizutreten, oder auf &#x201E;Ablehnen&#x201C;, um die Einladung auszuschlagen. Klicken Sie auf &#x201E;Stummschalten&#x201C;, um diesen Benutzer stumm zu schalten.<form name="form">
       <button name="Accept" text="Akzeptieren"/>
       <button name="Decline" text="Ablehnen"/>
       <button name="Mute" text="Blockieren"/>
     </form></notification>
 
-  <notification name="VoiceChannelFull">Der Voice-Chat, dem Sie beitreten m&#xF6;chten, [VOICE_CHANNEL_NAME], hat seine maximale Teilnehmerzahl erreicht. Bitte versuchen Sie es erneut.<unique>
-      <context/>
-    </unique></notification>
+  <notification name="VoiceChannelFull">Der Voice-Chat, dem Sie beitreten m&#xF6;chten, [VOICE_CHANNEL_NAME], hat seine maximale Teilnehmerzahl erreicht. Bitte versuchen Sie es erneut.</notification>
 
-  <notification name="ProximalVoiceChannelFull">Es tut uns Leid.  Dieses Gebiet hat seine maximale Kapazit&#xE4;t f&#xFC;r Voice-Gespr&#xE4;che erreicht.  Bitte versuchen Sie es in einem anderen Gebiet.<unique/></notification>
+  <notification name="ProximalVoiceChannelFull">Es tut uns Leid.  Dieses Gebiet hat seine maximale Kapazit&#xE4;t f&#xFC;r Voice-Gespr&#xE4;che erreicht.  Bitte versuchen Sie es in einem anderen Gebiet.</notification>
 
-  <notification name="VoiceChannelDisconnected">Sie haben [VOICE_CHANNEL_NAME] verlassen.  Sie werden nun wieder mit dem Umgebungs-Voice-Chat verbunden.<unique>
-      <context/>
-    </unique></notification>
+  <notification name="VoiceChannelDisconnected">Sie haben [VOICE_CHANNEL_NAME] verlassen.  Sie werden nun wieder mit dem Umgebungs-Voice-Chat verbunden.</notification>
 
-  <notification name="VoiceChannelDisconnectedP2P">[VOICE_CHANNEL_NAME] hat das Gespr&#xE4;ch beendet.  Sie werden nun wieder mit dem Umgebungs-Voice-Chat verbunden.<unique>
-      <context/>
-    </unique></notification>
+  <notification name="VoiceChannelDisconnectedP2P">[VOICE_CHANNEL_NAME] hat das Gespr&#xE4;ch beendet.  Sie werden nun wieder mit dem Umgebungs-Voice-Chat verbunden.</notification>
 
-  <notification name="P2PCallDeclined">[VOICE_CHANNEL_NAME] hat Ihren Anruf abgelehnt.  Sie werden nun wieder mit dem Umgebungs-Voice-Chat verbunden.<unique>
-      <context/>
-    </unique></notification>
+  <notification name="P2PCallDeclined">[VOICE_CHANNEL_NAME] hat Ihren Anruf abgelehnt.  Sie werden nun wieder mit dem Umgebungs-Voice-Chat verbunden.</notification>
 
-  <notification name="P2PCallNoAnswer">[VOICE_CHANNEL_NAME] ist zurzeit nicht erreichbar.  Sie werden nun wieder mit dem Umgebungs-Voice-Chat verbunden.<unique>
-      <context/>
-    </unique></notification>
+  <notification name="P2PCallNoAnswer">[VOICE_CHANNEL_NAME] ist zurzeit nicht erreichbar.  Sie werden nun wieder mit dem Umgebungs-Voice-Chat verbunden.</notification>
 
-  <notification name="VoiceChannelJoinFailed">Verbindung zu [VOICE_CHANNEL_NAME] nicht m&#xF6;glich. Bitte versuchen Sie es sp&#xE4;ter.  Sie werden nun wieder mit dem Umgebungs-Voice-Chat verbunden.<unique>
-      <context/>
-    </unique></notification>
+  <notification name="VoiceChannelJoinFailed">Verbindung zu [VOICE_CHANNEL_NAME] nicht m&#xF6;glich. Bitte versuchen Sie es sp&#xE4;ter.  Sie werden nun wieder mit dem Umgebungs-Voice-Chat verbunden.</notification>
 
-  <notification name="VoiceLoginRetry">Wir erstellen einen Voice-Kanal f&#xFC;r Sie. Bitte warten Sie einen Moment.<unique/></notification>
+  <notification name="VoiceLoginRetry">Wir erstellen einen Voice-Kanal f&#xFC;r Sie. Bitte warten Sie einen Moment.</notification>
 
   <notification name="VoiceEffectsExpired">One or more of your subscribed Voice Morphs has expired.
-[[URL] Click here] to renew your subscription.<unique/><tag>fehlgeschlagen</tag><tag>voice</tag></notification>
+[[URL] Click here] to renew your subscription.<tag>fehlgeschlagen</tag><tag>voice</tag></notification>
 
   <notification name="VoiceEffectsExpiredInUse">The active Voice Morph has expired, your normal voice settings have been applied.
-[[URL] Click here] to renew your subscription.<unique/><tag>fehlgeschlagen</tag><tag>voice</tag></notification>
+[[URL] Click here] to renew your subscription.<tag>fehlgeschlagen</tag><tag>voice</tag></notification>
 
   <notification name="VoiceEffectsWillExpire">One or more of your Voice Morphs will expire in less than [INTERVAL] days.
-[[URL] Click here] to renew your subscription.<unique/><tag>fehlgeschlagen</tag><tag>voice</tag></notification>
+[[URL] Click here] to renew your subscription.<tag>fehlgeschlagen</tag><tag>voice</tag></notification>
 
-  <notification name="VoiceEffectsNew">New Voice Morphs are available!<unique/><tag>voice</tag></notification>
+  <notification name="VoiceEffectsNew">New Voice Morphs are available!<tag>voice</tag></notification>
 
   <notification name="Cannot enter parcel: not a group member">Zugang zur Parzelle verweigert, Sie geh&#xF6;ren keiner berechtigten Gruppe an.</notification>
 
@@ -2409,13 +2387,9 @@ Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Chat beizutreten, oder auf &
 
   <notification name="Cannot enter parcel: not on access list">Zugang zur Parzelle verweigert. Sie stehen nicht auf der Zugangsliste.</notification>
 
-  <notification name="VoiceNotAllowed">Sie sind nicht berechtigt, einem Voice-Chat in [VOICE_CHANNEL_NAME] beizutreten.<unique>
-      <context/>
-    </unique></notification>
+  <notification name="VoiceNotAllowed">Sie sind nicht berechtigt, einem Voice-Chat in [VOICE_CHANNEL_NAME] beizutreten.</notification>
 
-  <notification name="VoiceCallGenericError">Fehler beim Versuch, eine Voice-Chat-Verbindung zu [VOICE_CHANNEL_NAME] herzustellen.  Bitte versuchen Sie es erneut.<unique>
-      <context/>
-    </unique></notification>
+  <notification name="VoiceCallGenericError">Fehler beim Versuch, eine Voice-Chat-Verbindung zu [VOICE_CHANNEL_NAME] herzustellen.  Bitte versuchen Sie es erneut.</notification>
 
  <notification name="UnsupportedCommandSLURL">The SLurl you clicked on is not supported.<tag>fehlgeschlagen</tag></notification>
 

@@ -18,11 +18,11 @@
 
   <!-- left side done, right side begin -->
 
-  <line_editor name="path_text"/>
+  
   
   <text name="path_caption_text">Lokaler Pfad:</text>
 
-  <line_editor name="uuid_text"/>
+  
 
   <text name="uuid_caption_text">Lokale UUID:</text>
 
@@ -50,6 +50,6 @@
 
   <text name="name_caption_text">Name:</text>
 
-  <line_editor name="name_text"/>
+  
 
 </floater>

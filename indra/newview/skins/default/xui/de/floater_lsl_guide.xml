@@ -4,5 +4,5 @@
 	<combo_box label="Sperren" name="history_combo"/>
 	<button label="Zurück" name="back_btn"/>
 	<button label="Weiter" name="fwd_btn"/>
-	<web_browser name="lsl_guide_html"/>
+	
 </floater>

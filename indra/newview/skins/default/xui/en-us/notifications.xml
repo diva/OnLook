@@ -9637,4 +9637,22 @@ Would you like to enable announcing keys to objects in the sim?
      canceltext="No, don't ask again!"/>
   </notification>
 
+  <notification
+   icon="alert.tga"
+   name="WavefrontExportFailed"
+   type="alert">
+Export to Wavefront OBJ file failed:
+
+[REASON]
+  </notification>
+
+  <notification
+   icon="notify.tga"
+   name="WavefrontExportSuccess"
+   type="notify">
+Object successfully exported in Wavefront OBJ format to:
+
+[FILENAME]
+  </notification>
+
 </notifications>

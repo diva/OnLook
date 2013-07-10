@@ -63,11 +63,6 @@
     <anonym>An unknown person</anonym>
   </anonyms>
 
-  <behaviour-notifications>
-    <!-- 
-    <notification behaviour="defaultwear" type="add">Text goes here</notification>
-    <notification behaviour="defaultwear" type="rem">Text goes here</notification>
-    -->
-  </behaviour-notifications>
+  
 
 </rlva_strings>
