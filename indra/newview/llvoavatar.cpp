@@ -7618,33 +7618,32 @@ bool LLVOAvatar::visualParamWeightsAreDefault()
 	return rtn;
 }
 
-void dump_visual_param(apr_file_t* file, LLVisualParam* viewer_param, F32 value)
+void dump_visual_param(LLAPRFile& file, LLVisualParam const* viewer_param, F32 value)
 {
 	std::string type_string = "unknown";
-	if (dynamic_cast<LLTexLayerParamAlpha*>(viewer_param))
+	if (dynamic_cast<LLTexLayerParamAlpha const*>(viewer_param))
 		type_string = "param_alpha";
-	if (dynamic_cast<LLTexLayerParamColor*>(viewer_param))
+	if (dynamic_cast<LLTexLayerParamColor const*>(viewer_param))
 		type_string = "param_color";
-	if (dynamic_cast<LLDriverParam*>(viewer_param))
+	if (dynamic_cast<LLDriverParam const*>(viewer_param))
 		type_string = "param_driver";
-	if (dynamic_cast<LLPolyMorphTarget*>(viewer_param))
+	if (dynamic_cast<LLPolyMorphTarget const*>(viewer_param))
 		type_string = "param_morph";
-	if (dynamic_cast<LLPolySkeletalDistortion*>(viewer_param))
+	if (dynamic_cast<LLPolySkeletalDistortion const*>(viewer_param))
 		type_string = "param_skeleton";
 	S32 wtype = -1;
-	LLViewerVisualParam *vparam = dynamic_cast<LLViewerVisualParam*>(viewer_param);
+	LLViewerVisualParam const* vparam = dynamic_cast<LLViewerVisualParam const*>(viewer_param);
 	if (vparam)
 	{
 		wtype = vparam->getWearableType();
 	}
 	S32 u8_value = F32_to_U8(value,viewer_param->getMinWeight(),viewer_param->getMaxWeight());
-	apr_file_printf(file, "\t\t<param id=\"%d\" name=\"%s\" value=\"%.3f\" u8=\"%d\" type=\"%s\" wearable=\"%s\"/>\n",
+	apr_file_printf(file.getFileHandle(), "\t\t<param id=\"%d\" name=\"%s\" value=\"%.3f\" u8=\"%d\" type=\"%s\" wearable=\"%s\"/>\n",
 					viewer_param->getID(), viewer_param->getName().c_str(), value, u8_value, type_string.c_str(),
 					LLWearableType::getTypeName(LLWearableType::EType(wtype)).c_str()
 //					param_location_name(vparam->getParamLocation()).c_str()
 		);
 }
-
 
 void LLVOAvatar::dumpAppearanceMsgParams( const std::string& dump_prefix,
 										  const std::vector<F32>& params_for_dump,
@@ -7675,7 +7674,7 @@ void LLVOAvatar::dumpAppearanceMsgParams( const std::string& dump_prefix,
 		}
 		LLViewerVisualParam* viewer_param = (LLViewerVisualParam*)param;
 		F32 value = params_for_dump[i];
-		dump_visual_param(file, viewer_param, value);
+		dump_visual_param(outfile, viewer_param, value);
 		param = getNextVisualParam();
 	}
 	for (U32 i = 0; i < tec.face_count; i++)
@@ -8301,7 +8300,24 @@ void LLVOAvatar::dumpArchetypeXML(const std::string& prefix, bool group_by_weara
 	dumpArchetypeXML_cont(fullpath, group_by_wearables);
 }
 
-void LLVOAvatar::dumpArchetypeXML_cont(std::string const& fullpath, bool group_by_wearables )
+//static
+void LLVOAvatar::dumpArchetypeXML_header(LLAPRFile& file)
+{
+	apr_file_t* fp = file.getFileHandle();
+	apr_file_printf(fp, "<?xml version=\"1.0\" encoding=\"US-ASCII\" standalone=\"yes\"?>\n");
+	apr_file_printf(fp, "<linden_genepool version=\"1.0\">\n");
+	apr_file_printf(fp, "\n\t<archetype name=\"???\">\n");
+}
+
+//static
+void LLVOAvatar::dumpArchetypeXML_footer(LLAPRFile& file)
+{
+	apr_file_t* fp = file.getFileHandle();
+	apr_file_printf(fp, "\t</archetype>\n");
+	apr_file_printf(fp, "\n</linden_genepool>\n");
+}
+
+void LLVOAvatar::dumpArchetypeXML_cont(std::string const& fullpath, bool group_by_wearables)
 {
 	LLAPRFile outfile;
 	outfile.open(fullpath, LL_APR_WB );
@@ -8315,9 +8331,7 @@ void LLVOAvatar::dumpArchetypeXML_cont(std::string const& fullpath, bool group_b
 		llinfos << "xmlfile write handle obtained : " << fullpath << llendl;
 	}
 
-	apr_file_printf( file, "<?xml version=\"1.0\" encoding=\"US-ASCII\" standalone=\"yes\"?>\n" );
-	apr_file_printf( file, "<linden_genepool version=\"1.0\">\n" );
-	apr_file_printf( file, "\n\t<archetype name=\"???\">\n" );
+	LLVOAvatar::dumpArchetypeXML_header(outfile);
 
 	if (group_by_wearables)
 	{
@@ -8332,7 +8346,7 @@ void LLVOAvatar::dumpArchetypeXML_cont(std::string const& fullpath, bool group_b
 				if( (viewer_param->getWearableType() == type) && 
 					(viewer_param->isTweakable() ) )
 				{
-					dump_visual_param(file, viewer_param, viewer_param->getWeight());
+					dump_visual_param(outfile, viewer_param, viewer_param->getWeight());
 				}
 			}
 
@@ -8358,7 +8372,7 @@ void LLVOAvatar::dumpArchetypeXML_cont(std::string const& fullpath, bool group_b
 		for (LLVisualParam* param = getFirstVisualParam(); param; param = getNextVisualParam())
 		{
 			LLViewerVisualParam* viewer_param = (LLViewerVisualParam*)param;
-			dump_visual_param(file, viewer_param, viewer_param->getWeight());
+			dump_visual_param(outfile, viewer_param, viewer_param->getWeight());
 		}
 
 		for (U8 te = 0; te < TEX_NUM_INDICES; te++)
@@ -8376,8 +8390,8 @@ void LLVOAvatar::dumpArchetypeXML_cont(std::string const& fullpath, bool group_b
 		}
 
 	}
-	apr_file_printf( file, "\t</archetype>\n" );
-	apr_file_printf( file, "\n</linden_genepool>\n" );
+
+	LLVOAvatar::dumpArchetypeXML_footer(outfile);
 
 	bool ultra_verbose = false;
 	if (isSelf() && ultra_verbose)
@@ -8387,7 +8401,6 @@ void LLVOAvatar::dumpArchetypeXML_cont(std::string const& fullpath, bool group_b
 	}
 	// File will close when handle goes out of scope
 }
-
 
 void LLVOAvatar::setVisibilityRank(U32 rank)
 {

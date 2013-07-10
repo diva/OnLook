@@ -62,10 +62,12 @@ public:
 	
 	// changes camera angle to default for selected subpart
 	void				changeCamera(U8 subpart);
+	bool				updatePermissions();
 
 	const std::string&	getLabel()	{ return LLWearableType::getTypeLabel( mType ); }
 	LLWearableType::EType		getType() const{ return mType; }
 	LLViewerWearable* 		getWearable() 	const;
+	U32	 getIndex() const;
 
 	void			onTabChanged(LLUICtrl* ctrl);
 	bool			onTabPrecommit();

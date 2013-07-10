@@ -4439,7 +4439,7 @@ void LLAgent::requestLeaveGodMode()
 	sendReliableMessage();
 }
 
-extern void dump_visual_param(apr_file_t* file, LLVisualParam* viewer_param, F32 value);
+extern void dump_visual_param(LLAPRFile& file, LLVisualParam const* viewer_param, F32 value);
 extern std::string get_sequential_numbered_file_name(const std::string& prefix,
 													 const std::string& suffix);
 
@@ -4465,7 +4465,7 @@ void LLAgent::dumpSentAppearance(const std::string& dump_prefix)
 	if (appearance_version_param)
 	{
 		F32 value = appearance_version_param->getWeight();
-		dump_visual_param(file, appearance_version_param, value);
+		dump_visual_param(outfile, appearance_version_param, value);
 	}
 	for (LLAvatarAppearanceDictionary::Textures::const_iterator iter = LLAvatarAppearanceDictionary::getInstance()->getTextures().begin();
 		 iter != LLAvatarAppearanceDictionary::getInstance()->getTextures().end();

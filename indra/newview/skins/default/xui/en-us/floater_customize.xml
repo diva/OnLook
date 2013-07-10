@@ -1435,10 +1435,12 @@ one from scratch and wear it.
 	</text>
     <button name="Import" label="Import"
           bottom="-486" left="10" height="20" width="70"
-          follows="left|bottom" font="SansSerif" halign="center" />
+		  follows="left|bottom" font="SansSerif" halign="center"
+		  tool_tip="Import to currently selected wearable; current wearable must be modifiable" />
     <button name="Export" label="Export"
 	      bottom="-506" left="10" height="20" width="70"
-          follows="left|bottom" font="SansSerif" halign="center" />	
+		  follows="left|bottom" font="SansSerif" halign="center"
+		  tool_tip="Export currently selected wearable; asset must be copy/mod/trans and you need to be the creator" />
 	<button bottom="-536" follows="right|bottom" font="SansSerif" halign="center"
 	     height="20" label="Cancel" label_selected="Cancel" mouse_opaque="true"
 	     name="Cancel" right="-10" scale_image="true" width="100" />
