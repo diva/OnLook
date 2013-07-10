@@ -50,7 +50,6 @@
 #include "llresizebar.h"
 #include "lldate.h"
 // <edit>
-#include "lllineeditor.h"
 #include <boost/function.hpp>
 // </edit>
 
@@ -193,30 +192,6 @@ public:
 private:
 	LLDate		mDate;
 };
-
-// <edit>
-class LLScrollListLineEditor : public LLScrollListCell
-{
-public:
-	LLScrollListLineEditor( LLLineEditor* line_editor, S32 width = 0);
-	/*virtual*/ ~LLScrollListLineEditor();
-	virtual void	draw(const LLColor4& color, const LLColor4& highlight_color) const;
-	virtual S32		getHeight() const			{ return 0; } 
-	virtual const LLSD	getValue() const { return mLineEditor->getValue(); }
-	virtual void	setValue(const LLSD& value) { mLineEditor->setValue(value); }
-	virtual void	onCommit() { mLineEditor->onCommit(); }
-	virtual BOOL	handleClick();
-	virtual BOOL	handleUnicodeChar(llwchar uni_char, BOOL called_from_parent);
-	virtual BOOL	handleUnicodeCharHere(llwchar uni_char );
-	virtual void	setEnabled(BOOL enable)		{ mLineEditor->setEnabled(enable); }
-
-	LLLineEditor*	getLineEditor()				{ return mLineEditor; }
-	virtual BOOL	isText() const				{ return FALSE; }
-
-private:
-	LLLineEditor* mLineEditor;
-};
-// </edit>
 
 class LLScrollListColumn;
 class LLScrollColumnHeader : public LLComboBox
