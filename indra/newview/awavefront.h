@@ -1,7 +1,7 @@
 /**
  * @file awavefront.h
  * @brief A system which allows saving in-world objects to Wavefront .OBJ files for offline texturizing/shading.
- * @author Apelsin
+ * @authors Apelsin, Lirusaito
  *
  * $LicenseInfo:firstyear=2011&license=LGPLV3$
  * Copyright (C) 2011-2013 Apelsin
@@ -23,14 +23,6 @@
 
 #ifndef AWAVEFRONT
 #define AWAVEFRONT
-
-#include <vector>
-#include "v3math.h"
-#include "v2math.h"
-#include "llface.h"
-#include "llvolume.h"
-
-using namespace std;
 
 class LLFace;
 class LLPolyMesh;
