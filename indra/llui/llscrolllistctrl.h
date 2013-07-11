@@ -136,7 +136,6 @@ private:
 class LLScrollListIcon : public LLScrollListCell
 {
 public:
-	LLScrollListIcon( LLUIImagePtr icon, S32 width = 0);
 	LLScrollListIcon(const LLSD& value, S32 width = 0);
 	/*virtual*/ ~LLScrollListIcon();
 	/*virtual*/ void	draw(const LLColor4& color, const LLColor4& highlight_color) const;
@@ -303,12 +302,6 @@ public:
 	// specified width in pixels.
 	void	addColumn( const std::string& text, const LLFontGL* font, S32 width = 0 , U8 font_style = LLFontGL::NORMAL, LLFontGL::HAlign font_alignment = LLFontGL::LEFT, BOOL visible = TRUE)
 				{ mColumns.push_back( new LLScrollListText(text, font, width, font_style, font_alignment, LLColor4::black, FALSE, visible) ); }
-
-	void	addColumn( LLUIImagePtr icon, S32 width = 0 )
-				{ mColumns.push_back( new LLScrollListIcon(icon, width) ); }
-
-	void	addColumn( LLCheckBoxCtrl* check, S32 width = 0 )
-				{ mColumns.push_back( new LLScrollListCheck(check,width) ); }
 
 	void	setNumColumns(S32 columns);
 

@@ -112,16 +112,6 @@ struct SortScrollListItem
 //
 // LLScrollListIcon
 //
-LLScrollListIcon::LLScrollListIcon(LLUIImagePtr icon, S32 width)
-	: LLScrollListCell(width),
-	  mIcon(icon),
-	  // <edit>
-	  mCallback(NULL),
-	  // </edit>
-	  mColor(LLColor4::white)
-{
-}
-
 LLScrollListIcon::LLScrollListIcon(const LLSD& value, S32 width)
 	: LLScrollListCell(width),
 	  // <edit>
