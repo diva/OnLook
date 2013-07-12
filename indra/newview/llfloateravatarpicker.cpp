@@ -36,6 +36,9 @@
 #include "llviewercontrol.h"
 #include "llviewerregion.h"		// getCapability()
 #include "llworld.h"
+// [RLVa:KB] - Checked: 2010-06-04 (RLVa-1.2.2a)
+#include "rlvhandler.h"
+// [/RLVa:KB]
 
 // Linden libraries
 #include "llavatarnamecache.h"	// IDEVO
@@ -48,9 +51,6 @@
 #include "lluictrlfactory.h"
 #include "message.h"
 
-// [RLVa:KB]
-#include "rlvhandler.h"
-// [/RLVa:KB]
 
 //put it back as a member once the legacy path is out?
 static std::map<LLUUID, LLAvatarName> sAvatarNameMap;
@@ -82,12 +82,13 @@ LLFloaterAvatarPicker* LLFloaterAvatarPicker::show(select_callback_t callback,
 }
 
 // Default constructor
-LLFloaterAvatarPicker::LLFloaterAvatarPicker() :
-	LLFloater(),
+LLFloaterAvatarPicker::LLFloaterAvatarPicker()
+  : LLFloater(),
 	mNumResultsReturned(0),
 	mNearMeListComplete(FALSE),
 	mCloseOnSelect(FALSE)
 {
+	mCommitCallbackRegistrar.add("Refresh.FriendList", boost::bind(&LLFloaterAvatarPicker::populateFriend, this));
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_avatar_picker.xml", NULL);
 }
 
@@ -112,7 +113,6 @@ BOOL LLFloaterAvatarPicker::postBuild()
 
 	LLScrollListCtrl* friends = getChild<LLScrollListCtrl>("Friends");
 	friends->setDoubleClickCallback(boost::bind(&LLFloaterAvatarPicker::onBtnSelect, this));
-	childSetAction("RefreshFriends", boost::bind(&LLFloaterAvatarPicker::populateFriend, this));
 	getChild<LLUICtrl>("Friends")->setCommitCallback(boost::bind(&LLFloaterAvatarPicker::onList, this));
 
 	childSetAction("ok_btn", boost::bind(&LLFloaterAvatarPicker::onBtnSelect, this));
@@ -131,7 +131,7 @@ BOOL LLFloaterAvatarPicker::postBuild()
 	getChild<LLScrollListCtrl>("SearchResults")->setCommentText(getString("no_results"));
 
 	getChild<LLTabContainer>("ResidentChooserTabs")->setCommitCallback(
-		boost::bind(&LLFloaterAvatarPicker::onTabChanged,this));
+		boost::bind(&LLFloaterAvatarPicker::onTabChanged, this));
 	
 	setAllowMultiple(FALSE);
 	
@@ -199,7 +199,6 @@ static void getSelectedAvatarData(const LLUICtrl* from, uuid_vec_t& avatar_ids, 
 	else
 		addAvatarUUID(from->getValue().asUUID(), avatar_ids, avatar_names);
 }
-
 
 void LLFloaterAvatarPicker::onBtnSelect()
 {
@@ -272,6 +271,22 @@ void LLFloaterAvatarPicker::onRangeAdjust()
 void LLFloaterAvatarPicker::onList()
 {
 	getChildView("ok_btn")->setEnabled(isSelectBtnEnabled());
+
+// [RLVa:KB] - Checked: 2010-06-05 (RLVa-1.2.2a) | Modified: RLVa-1.2.0d
+	if (rlv_handler_t::isEnabled())
+	{
+		LLTabContainer* pTabs = getChild<LLTabContainer>("ResidentChooserTabs");
+		LLPanel* pNearMePanel = getChild<LLPanel>("NearMePanel");
+		RLV_ASSERT( (pTabs) && (pNearMePanel) );
+		if ( (pTabs) && (pNearMePanel) )
+		{
+			bool fRlvEnable = !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES);
+			pTabs->enableTabButton(pTabs->getIndexForPanel(pNearMePanel), fRlvEnable);
+			if ( (!fRlvEnable) && (pTabs->getCurrentPanel() == pNearMePanel) )
+				pTabs->selectTabByName("SearchPanel");
+		}
+	}
+// [/RLVa:KB]
 }
 
 void LLFloaterAvatarPicker::populateNearMe()
@@ -365,31 +380,7 @@ void LLFloaterAvatarPicker::draw()
 	}
 
 	LLFloater::draw();
-
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-1.0.0e
-	// TODO-RLVa: this code needs revisiting
-	if (rlv_handler_t::isEnabled())
-	{
-		LLPanel* pNearMePanel = getChild<LLPanel>("NearMePanel");
-		if ( (pNearMePanel) && (childGetVisibleTab("ResidentChooserTabs") == pNearMePanel) )
-		{
-			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
-			{
-				if (mNearMeListComplete)
-				{
-					getChild<LLScrollListCtrl>("NearMe")->deleteAllItems();
-					childSetEnabled("Select", false);
-				}
-				mNearMeListComplete = FALSE;
-				pNearMePanel->setCtrlsEnabled(FALSE);
-				return;
-			}
-			pNearMePanel->setCtrlsEnabled(TRUE);
-		}
-	}
-// [/RLVa:KB]
-
-	if (!mNearMeListComplete &&  getChild<LLTabContainer>("ResidentChooserTabs")->getCurrentPanel() == getChild<LLPanel>("NearMePanel"))
+	if (!mNearMeListComplete && getChild<LLTabContainer>("ResidentChooserTabs")->getCurrentPanel() == getChild<LLPanel>("NearMePanel"))
 	{
 		populateNearMe();
 	}
@@ -426,7 +417,7 @@ public:
 	LLUUID mQueryID;
 
 	LLAvatarPickerResponder(const LLUUID& id) : mQueryID(id) { }
-	
+
 	/*virtual*/ void completed(U32 status, const std::string& reason, const LLSD& content)
 	{
 		//std::ostringstream ss;
@@ -444,8 +435,7 @@ public:
 		}
 		else
 		{
-			llinfos << "avatar picker failed " << status
-					<< " reason " << reason << llendl;
+			llwarns << "avatar picker failed " << status << " reason " << reason << llendl;
 			
 		}
 	}
@@ -606,7 +596,7 @@ void LLFloaterAvatarPicker::processAvatarPickerReply(LLMessageSystem* msg, void*
 
 	if(!instanceExists())
 		return;
-	LLFloaterAvatarPicker *floater = getInstance();
+	LLFloaterAvatarPicker* floater = getInstance();
 
 	// floater is closed or these are not results from our last request
 	if (NULL == floater || query_id != floater->mQueryID)
@@ -761,6 +751,7 @@ bool LLFloaterAvatarPicker::isSelectBtnEnabled()
 		std::string active_panel_name;
 		LLUICtrl* list =  NULL;
 		LLPanel* active_panel = getChild<LLTabContainer>("ResidentChooserTabs")->getCurrentPanel();
+
 		if(active_panel)
 		{
 			active_panel_name = active_panel->getName();
@@ -784,8 +775,8 @@ bool LLFloaterAvatarPicker::isSelectBtnEnabled()
 
 		if(list)
 		{
-			uuid_vec_t			avatar_ids;
-			std::vector<LLAvatarName>	avatar_names;
+			uuid_vec_t avatar_ids;
+			std::vector<LLAvatarName> avatar_names;
 			getSelectedAvatarData(list, avatar_ids, avatar_names);
 			return mOkButtonValidateSignal(avatar_ids);
 		}
