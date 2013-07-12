@@ -189,10 +189,15 @@ public:
 
 	static void updateClass();
 
+	/*virtual*/ BOOL postBuild();
 	/*virtual*/ void onClose(bool app_quitting);
 	/*virtual*/ void onOpen();
 
 	virtual void handleReshape(const LLRect& new_rect, bool by_user);
+
+	LLPanelNearByMedia* getMediaPanel() { return mPanel; }
+private:
+	LLPanelNearByMedia* mPanel;
 };
 
 #endif // LL_LLPANELNEARBYMEDIA_H

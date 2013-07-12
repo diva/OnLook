@@ -87,6 +87,7 @@
 std::string getProfileURL(const std::string& agent_name);
 
 /*static*/ const char* LLViewerMedia::AUTO_PLAY_MEDIA_SETTING = "ParcelMediaAutoPlayEnable";
+/*static*/ const char* LLViewerMedia::AUTO_PLAY_PRIM_MEDIA_SETTING = "PrimMediaAutoPlayEnable";
 /*static*/ const char* LLViewerMedia::SHOW_MEDIA_ON_OTHERS_SETTING = "MediaShowOnOthers";
 /*static*/ const char* LLViewerMedia::SHOW_MEDIA_WITHIN_PARCEL_SETTING = "MediaShowWithinParcel";
 /*static*/ const char* LLViewerMedia::SHOW_MEDIA_OUTSIDE_PARCEL_SETTING = "MediaShowOutsideParcel";
@@ -1103,7 +1104,7 @@ void LLViewerMedia::setAllMediaEnabled(bool val)
 			}
 			else
 			{
-				gAudiop->startInternetStream(LLViewerMedia::getParcelAudioURL());
+				LLViewerParcelMedia::playStreamingMusic(LLViewerParcelMgr::getInstance()->getAgentParcel());
 			}
 		}
 	}
@@ -3857,9 +3858,19 @@ void LLViewerMediaImpl::setTextureID(LLUUID id)
 //
 bool LLViewerMediaImpl::isAutoPlayable() const
 {
-	return (mMediaAutoPlay && 
-			gSavedSettings.getBOOL(LLViewerMedia::AUTO_PLAY_MEDIA_SETTING) &&
-			gSavedSettings.getBOOL("MediaTentativeAutoPlay"));
+	static const LLCachedControl<bool> media_tentative_auto_play("MediaTentativeAutoPlay",false);
+	static const LLCachedControl<bool> auto_play_parcel_media(LLViewerMedia::AUTO_PLAY_MEDIA_SETTING,false);
+	static const LLCachedControl<bool> auto_play_prim_media(LLViewerMedia::AUTO_PLAY_PRIM_MEDIA_SETTING,false);
+	if(mMediaAutoPlay && media_tentative_auto_play)
+	{
+		if(getUsedInUI())
+			return true;
+		else if(isParcelMedia() && auto_play_parcel_media)
+			return true;
+		else if(auto_play_prim_media)
+			return true;
+	}
+	return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
