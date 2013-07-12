@@ -37,10 +37,11 @@
 #include <boost/tokenizer.hpp>
 
 #include "llavatarnamecache.h"
-
 #include "llcachename.h"
 #include "llagent.h"
 #include "llinventory.h"
+#include "llscrolllistitem.h"
+#include "llscrolllistcolumn.h"
 #include "lltrans.h"
 
 static LLRegisterWidget<LLNameListCtrl> r("name_list");

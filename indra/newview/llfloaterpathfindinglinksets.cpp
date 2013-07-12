@@ -43,7 +43,7 @@
 #include "llpathfindinglinkset.h"
 #include "llpathfindinglinksetlist.h"
 #include "llpathfindingmanager.h"
-#include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "llsd.h"
 #include "lltextbox.h"
 #include "llui.h"

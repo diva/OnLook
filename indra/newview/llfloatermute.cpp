@@ -34,27 +34,15 @@
 
 #include "llfloatermute.h"
 
-#include "llfontgl.h"
-#include "llrect.h"
-#include "llerror.h"
-#include "llstring.h"
-#include "message.h"
+#include "llavatarname.h"
 #include "llnotificationsutil.h"
+#include "llscrolllistitem.h"
+#include "lluictrlfactory.h"
 
 // project include
-#include "llagent.h"
-#include "llavatarnamecache.h"
 #include "llfloateravatarpicker.h"
-#include "llbutton.h"
-#include "lllineeditor.h"
 #include "llmutelist.h"
 #include "llnamelistctrl.h"
-#include "llresizehandle.h"
-#include "lltextbox.h"
-#include "llviewertexteditor.h"
-#include "llviewerwindow.h"
-#include "lluictrlfactory.h"
-#include "llfocusmgr.h"
 
 #include <boost/lexical_cast.hpp>
 

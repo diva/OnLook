@@ -32,6 +32,7 @@
 #include "llcheckboxctrl.h"
 #include "llnotificationsutil.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "lluictrlfactory.h"
 #include "llwindow.h"
 #include "llviewerwindow.h"

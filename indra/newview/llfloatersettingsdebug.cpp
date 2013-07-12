@@ -39,6 +39,7 @@
 #include "llfloater.h"
 #include "llfiltereditor.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "llspinctrl.h"
 #include "lltexteditor.h"
 #include "lluictrlfactory.h"

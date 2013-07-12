@@ -43,6 +43,7 @@
 #include "llgroupmgr.h"
 #include "llnamelistctrl.h"
 #include "llnotificationsutil.h"
+#include "llscrolllistitem.h"
 #include "llspinctrl.h"
 #include "lltextbox.h"
 #include "llviewerobject.h"

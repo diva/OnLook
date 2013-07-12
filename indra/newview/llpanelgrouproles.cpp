@@ -46,6 +46,7 @@
 #include "llnotificationsutil.h"
 #include "llpanelgrouproles.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "lltabcontainer.h"
 #include "lltextbox.h"
 #include "lltexteditor.h"
@@ -503,13 +504,11 @@ void LLPanelGroupSubTab::setSearchFilter(const std::string& filter)
 
 void LLPanelGroupSubTab::activate()
 {
-	lldebugs << "LLPanelGroupSubTab::activate()" << llendl;
 	setOthersVisible(TRUE);
 }
 
 void LLPanelGroupSubTab::deactivate()
 {
-	lldebugs << "LLPanelGroupSubTab::deactivate()" << llendl;
 	setOthersVisible(FALSE);
 }
 
@@ -519,18 +518,10 @@ void LLPanelGroupSubTab::setOthersVisible(BOOL b)
 	{
 		mHeader->setVisible( b );
 	}
-	else
-	{
-		llwarns << "LLPanelGroupSubTab missing header!" << llendl;
-	}
 
 	if (mFooter)
 	{
 		mFooter->setVisible( b );
-	}
-	else
-	{
-		llwarns << "LLPanelGroupSubTab missing footer!" << llendl;
 	}
 }
 
@@ -1068,7 +1059,7 @@ void LLPanelGroupMembersSubTab::onEjectMembers(void *userdata)
 void LLPanelGroupMembersSubTab::handleEjectMembers()
 {
 	//send down an eject message
-	std::vector<LLUUID> selected_members;
+	uuid_vec_t selected_members;
 
 	std::vector<LLScrollListItem*> selection = mMembersList->getAllSelected();
 	if (selection.empty()) return;
@@ -1111,6 +1102,7 @@ void LLPanelGroupMembersSubTab::handleRoleCheck(const LLUUID& role_id,
 	for (std::vector<LLScrollListItem*>::iterator itor = selection.begin() ; 
 		 itor != selection.end(); ++itor)
 	{
+
 		member_id = (*itor)->getUUID();
 
 		//see if we requested a change for this member before
@@ -1403,7 +1395,7 @@ U64 LLPanelGroupMembersSubTab::getAgentPowersBasedOnRoleChanges(const LLUUID& ag
 
 	if ( role_change_datap )
 	{
-		std::vector<LLUUID> roles_to_be_removed;
+		uuid_vec_t roles_to_be_removed;
 
 		for (role_change_data_map_t::iterator role = role_change_datap->begin();
 			 role != role_change_datap->end(); ++ role)
@@ -1678,6 +1670,7 @@ LLPanelGroupRolesSubTab::LLPanelGroupRolesSubTab(const std::string& name, const 
 	mMemberVisibleCheck(NULL),
 	mDeleteRoleButton(NULL),
 	mCreateRoleButton(NULL),
+
 	mHasRoleChange(FALSE)
 {
 }
@@ -2084,8 +2077,8 @@ void LLPanelGroupRolesSubTab::buildMembersList()
 			LLGroupRoleData* rdatap = (*rit).second;
 			if (rdatap)
 			{
-				std::vector<LLUUID>::const_iterator mit = rdatap->getMembersBegin();
-				std::vector<LLUUID>::const_iterator end = rdatap->getMembersEnd();
+				uuid_vec_t::const_iterator mit = rdatap->getMembersBegin();
+				uuid_vec_t::const_iterator end = rdatap->getMembersEnd();
 				for ( ; mit != end; ++mit)
 				{
 					mAssignedMembersList->addNameItem((*mit));
@@ -2423,9 +2416,7 @@ BOOL LLPanelGroupActionsSubTab::postBuildSubTab(LLView* root)
 void LLPanelGroupActionsSubTab::activate()
 {
 	LLPanelGroupSubTab::activate();
-	lldebugs << "LLPanelGroupActionsSubTab::activate()" << llendl;
 
-	
 	update(GC_ALL);
 }
 

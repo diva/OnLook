@@ -37,7 +37,6 @@
 #include <algorithm>
 #include <functional>
 
-#include "llcachename.h"
 #include "lldir.h"
 #include "lldispatcher.h"
 #include "llglheaders.h"
@@ -69,6 +68,7 @@
 #include "llnotifications.h"
 #include "llnotificationsutil.h"
 #include "llregioninfomodel.h"
+#include "llscrolllistitem.h"
 #include "llsliderctrl.h"
 #include "llspinctrl.h"
 #include "lltabcontainer.h"

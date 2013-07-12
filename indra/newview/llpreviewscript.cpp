@@ -40,28 +40,28 @@
 #include "llcheckboxctrl.h"
 #include "llcombobox.h"
 #include "lldir.h"
+#include "llexternaleditor.h"
+#include "statemachine/aifilepicker.h"
 #include "llinventorydefines.h"
 #include "llinventorymodel.h"
 #include "llkeyboard.h"
 #include "lllineeditor.h"
-
 #include "lllivefile.h"
-#include "llexternaleditor.h"
 #include "llnotificationsutil.h"
 #include "llresmgr.h"
 #include "llscrollbar.h"
 #include "llscrollcontainer.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "llslider.h"
 //#include "lscript_rt_interface.h"
+//#include "lscript_library.h"
 //#include "lscript_export.h"
 #include "lltextbox.h"
 #include "lltooldraganddrop.h"
 #include "llvfile.h"
-#include "statemachine/aifilepicker.h"
 
 #include "llagent.h"
-#include "llnotify.h"
 #include "llmenugl.h"
 #include "roles_constants.h"
 #include "llselectmgr.h"
@@ -80,7 +80,6 @@
 #include "llslider.h"
 #include "lldir.h"
 #include "llcombobox.h"
-//#include "llfloaterchat.h"
 #include "llfloatersearchreplace.h"
 #include "llviewerstats.h"
 #include "llviewertexteditor.h"
@@ -91,7 +90,6 @@
 #include "lltrans.h"
 #include "llviewercontrol.h"
 #include "llappviewer.h"
-#include "llpanelobjectinventory.h"
 
 #include "llsdserialize.h"
 
@@ -750,7 +748,7 @@ BOOL LLScriptEdCore::canClose()
 
 bool LLScriptEdCore::handleSaveChangesDialog(const LLSD& notification, const LLSD& response )
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	switch( option )
 	{
 	case 0:  // "Yes"
@@ -782,7 +780,7 @@ bool LLScriptEdCore::handleSaveChangesDialog(const LLSD& notification, const LLS
 // static 
 bool LLScriptEdCore::onHelpWebDialog(const LLSD& notification, const LLSD& response)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 
 	switch(option)
 	{
@@ -1142,8 +1140,7 @@ void LLScriptEdCore::onErrorList(LLUICtrl*, void* user_data)
 	LLScrollListItem* item = self->mErrorList->getFirstSelected();
 	if(item)
 	{
-		// *FIX: This fucked up little hack is here because we don't
-		// have a grep library. This is very brittle code.
+		// *FIX: replace with boost grep
 		S32 row = 0;
 		S32 column = 0;
 		const LLScrollListCell* cell = item->getColumn(0);
@@ -1161,7 +1158,7 @@ void LLScriptEdCore::onErrorList(LLUICtrl*, void* user_data)
 
 bool LLScriptEdCore::handleReloadFromServerDialog(const LLSD& notification, const LLSD& response )
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	switch( option )
 	{
 	case 0: // "Yes"
@@ -1454,8 +1451,7 @@ void LLPreviewLSL::onSave(void* userdata, BOOL close_after_save)
 
 // Save needs to compile the text in the buffer. If the compile
 // succeeds, then save both assets out to the database. If the compile
-// fails, go ahead and save the text anyway so that the user doesn't
-// get too fucked.
+// fails, go ahead and save the text anyway.
 void LLPreviewLSL::saveIfNeeded()
 {
 	// llinfos << "LLPreviewLSL::saveIfNeeded()" << llendl;

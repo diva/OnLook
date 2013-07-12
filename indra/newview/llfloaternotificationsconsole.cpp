@@ -36,6 +36,7 @@
 #include "lluictrlfactory.h"
 #include "llbutton.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "llpanel.h"
 #include "llcombobox.h"
 #include "llviewertexteditor.h"

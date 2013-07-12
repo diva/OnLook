@@ -31,6 +31,7 @@
 #include "llmutelist.h"
 #include "llparticipantlist.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "llspeakers.h"
 #include "llviewerwindow.h"
 #include "llvoiceclient.h"

@@ -49,6 +49,7 @@
 #include "llpathfindingmanager.h"
 #include "llresmgr.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "llselectmgr.h"
 #include "llsd.h"
 #include "llstring.h"

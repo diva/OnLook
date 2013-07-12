@@ -54,6 +54,7 @@
 #include "llgroupactions.h"
 #include "llselectmgr.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "llnotificationsutil.h"
 #include "lltextbox.h"
 #include "lluictrlfactory.h"

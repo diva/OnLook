@@ -158,6 +158,7 @@
 // Included so that constants/settings might be initialized
 // in save_settings_to_globals()
 #include "llbutton.h"
+#include "llcombobox.h"
 #include "llstatusbar.h"
 #include "llsurface.h"
 #include "llvosky.h"

@@ -60,6 +60,7 @@
 #include "llpreviewtexture.h"
 #include "llpluginclassmedia.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "lltabcontainer.h"
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"

@@ -43,6 +43,7 @@
 #include "llcachename.h"
 #include "lllineeditor.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "lltabcontainer.h"
 #include "lluictrlfactory.h"
 #include "message.h"

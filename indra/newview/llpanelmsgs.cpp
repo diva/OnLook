@@ -33,10 +33,12 @@
 
 #include "llpanelmsgs.h"
 
-#include "llscrolllistctrl.h"
-#include "lluictrlfactory.h"
-#include "llfirstuse.h"
 #include "llnotificationtemplate.h"
+#include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
+#include "lluictrlfactory.h"
+
+#include "llfirstuse.h"
 
 LLPanelMsgs::LLPanelMsgs()
 {

@@ -45,6 +45,7 @@
 #include "lllineeditor.h"
 #include "llproductinforequest.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "lltextbox.h"
 #include "lltabcontainer.h"
 #include "lltexteditor.h"

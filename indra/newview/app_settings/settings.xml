@@ -4326,17 +4326,6 @@ This should be as low as possible, but too low may break functionality</string>
         <real>1.0</real>
       </array>
     </map>
-    <key>ColumnHeaderDropDownDelay</key>
-    <map>
-      <key>Comment</key>
-      <string>Time in seconds of mouse click before column header shows sort options list</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>F32</string>
-      <key>Value</key>
-      <real>0.300000011921</real>
-    </map>
     <key>CompileOutputRect</key>
     <map>
       <key>Comment</key>

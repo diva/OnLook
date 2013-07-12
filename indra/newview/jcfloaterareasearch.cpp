@@ -33,16 +33,16 @@
 
 #include "llviewerprecompiledheaders.h"
 
-#include "lluuid.h"
-#include "lluictrlfactory.h"
+#include "jcfloaterareasearch.h"
+
+#include "llfiltereditor.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
+#include "lluictrlfactory.h"
 
 #include "llagent.h"
-#include "llfiltereditor.h"
 #include "lltracker.h"
 #include "llviewerobjectlist.h"
-#include "llviewercontrol.h"
-#include "jcfloaterareasearch.h"
 
 const std::string request_string = "JCFloaterAreaSearch::Requested_\xF8\xA7\xB5";
 const F32 min_refresh_interval = 0.25f;	// Minimum interval between list refreshes in seconds.

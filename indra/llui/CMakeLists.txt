@@ -35,6 +35,7 @@ set(llui_SOURCE_FILES
     lleditmenuhandler.cpp
     llfiltereditor.cpp
     llfloater.cpp
+    llflyoutbutton.cpp
     llfocusmgr.cpp
     llfunctorregistry.cpp
     lliconctrl.cpp
@@ -59,7 +60,10 @@ set(llui_SOURCE_FILES
     llscrollbar.cpp
     llscrollcontainer.cpp
     llscrollingpanellist.cpp
+    llscrolllistcell.cpp
+    llscrolllistcolumn.cpp
     llscrolllistctrl.cpp
+    llscrolllistitem.cpp
     llsearcheditor.cpp
     llslider.cpp
     llsliderctrl.cpp
@@ -105,6 +109,7 @@ set(llui_HEADER_FILES
     lleditmenuhandler.h
     llfiltereditor.h 
     llfloater.h
+    llflyoutbutton.h
     llfocusmgr.h
     llfunctorregistry.h
     llhtmlhelp.h
@@ -134,7 +139,10 @@ set(llui_HEADER_FILES
     llscrollbar.h
     llscrollcontainer.h
     llscrollingpanellist.h
+    llscrolllistcell.h
+    llscrolllistcolumn.h
     llscrolllistctrl.h
+    llscrolllistitem.h
     llslider.h
     llsliderctrl.h
     llspinctrl.h

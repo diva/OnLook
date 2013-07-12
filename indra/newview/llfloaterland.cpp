@@ -66,6 +66,7 @@
 #include "llpanellandmedia.h"
 #include "llradiogroup.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "llselectmgr.h"
 #include "llspinctrl.h"
 #include "lltabcontainer.h"

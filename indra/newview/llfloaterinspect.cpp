@@ -37,6 +37,7 @@
 #include "llfloatertools.h"
 #include "llcachename.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "llselectmgr.h"
 #include "lltoolcomp.h"
 #include "lltoolmgr.h"

@@ -3,15 +3,16 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "llfloaterexploresounds.h"
-#include "lluictrlfactory.h"
+
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
+#include "lluictrlfactory.h"
+
 #include "llagent.h"
 #include "llagentcamera.h"
-#include "llviewerwindow.h"
+#include "llfloaterblacklist.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
-#include "llfloaterchat.h"
-#include "llfloaterblacklist.h"
 
 static const size_t num_collision_sounds = 29;
 const LLUUID collision_sounds[num_collision_sounds] =

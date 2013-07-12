@@ -53,6 +53,7 @@
 #include "llviewerstats.h"
 #include "lluictrlfactory.h"
 #include "llselectmgr.h"
+#include "llcheckboxctrl.h"
 #include "llnotificationsutil.h"
 
 #include "roles_constants.h" // for GP_OBJECT_MANIPULATE

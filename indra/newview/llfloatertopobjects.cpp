@@ -44,6 +44,7 @@
 #include "llnotificationsutil.h"
 #include "llparcel.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "lllineeditor.h"
 #include "lltextbox.h"
 #include "lltracker.h"
