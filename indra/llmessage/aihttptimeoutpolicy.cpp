@@ -941,6 +941,7 @@ P(lcl_responder);
 P(MPImportGetResponder);
 P(MPImportPostResponder);
 P(mapLayerResponder);
+P(materialsResponder);
 P2(maturityPreferences,							transfer_30s_connect_10s);
 P(mediaDataClientResponder);
 P(mediaTypeResponder);

@@ -318,6 +318,7 @@ set(viewer_SOURCE_FILES
     llmapresponders.cpp
     llmarketplacefunctions.cpp
     llmarketplacenotifications.cpp
+    llmaterialmgr.cpp
     llmediactrl.cpp
     llmediadataclient.cpp
     llmediaremotectrl.cpp
@@ -830,6 +831,7 @@ set(viewer_HEADER_FILES
     llmapresponders.h
     llmarketplacefunctions.h
     llmarketplacenotifications.h
+    llmaterialmgr.h
     llmediactrl.h
     llmediadataclient.h
     llmediaremotectrl.h
