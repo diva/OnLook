@@ -55,6 +55,7 @@
 #include "llfloaterbuyland.h"
 #include "llfloatergroups.h"
 //#include "llfloaterhtml.h"
+#include "llpanelnearbymedia.h"
 #include "llfloatersellland.h"
 #include "llfloaterteleporthistory.h"
 #include "llfloatertools.h"
@@ -1799,6 +1800,9 @@ void optionally_start_music(LLParcel* parcel)
 {
 	if (gSavedSettings.getBOOL("AudioStreamingMusic"))
 	{
+		
+	
+	
 		// Make the user click the start button on the overlay bar. JC
 		//		llinfos << "Starting parcel music " << parcel->getMusicURL() << llendl;
 
@@ -1806,8 +1810,19 @@ void optionally_start_music(LLParcel* parcel)
 		// changed as part of SL-4878
 		if (gOverlayBar && gOverlayBar->musicPlaying())
 		{
-			LLViewerParcelMedia::playStreamingMusic(parcel);
+			LLPanelNearByMedia* nearby_media_panel = LLFloaterNearbyMedia::instanceExists() ? LLFloaterNearbyMedia::getInstance()->getMediaPanel() : NULL;
+			if ((nearby_media_panel &&
+			     nearby_media_panel->getParcelAudioAutoStart()) ||
+			    // or they have expressed no opinion in the UI, but have autoplay on...
+			    (!nearby_media_panel &&
+			     /*gSavedSettings.getBOOL(LLViewerMedia::AUTO_PLAY_MEDIA_SETTING) &&*/
+				 gSavedSettings.getBOOL("MediaTentativeAutoPlay")))
+			{
+				LLViewerParcelMedia::playStreamingMusic(parcel);
+				return;
+			}
 		}
+		gAudiop->startInternetStream(LLStringUtil::null); 
 	}
 }
 
