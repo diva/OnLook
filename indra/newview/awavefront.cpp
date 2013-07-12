@@ -1,7 +1,7 @@
 /**
  * @file awavefront.cpp
  * @brief A system which allows saving in-world objects to Wavefront .OBJ files for offline texturizing/shading.
- * @author Apelsin
+ * @authors Apelsin, Lirusaito
  *
  * $LicenseInfo:firstyear=2011&license=LGPLV3$
  * Copyright (C) 2011-2013 Apelsin
@@ -27,13 +27,14 @@
 
 // library includes
 #include "aifilepicker.h"
+#include "llnotificationsutil.h"
 
 // newview includes
+#include "lfsimfeaturehandler.h"
 #include "llavatarappearancedefines.h"
 #include "llface.h"
 #include "llvoavatar.h"
-
-typedef std::vector<LLAvatarJoint*> avatar_joint_list_t;
+#include "llvovolume.h"
 
 // menu includes
 #include "llevent.h"
@@ -42,7 +43,10 @@ typedef std::vector<LLAvatarJoint*> avatar_joint_list_t;
 #include "llselectmgr.h"
 
 LLVOAvatar* find_avatar_from_object(LLViewerObject* object);
+extern LLUUID gAgentID;
 
+//Typedefs used in other files, using here for consistency.
+typedef std::vector<LLAvatarJoint*> avatar_joint_list_t;
 typedef LLMemberListener<LLView> view_listener_t;
 
 namespace
@@ -57,6 +61,8 @@ namespace
 			{
 				wfsaver->saveFile(fp);
 				llinfos << "OBJ file saved to " << selected_filename << llendl;
+				if (gSavedSettings.getBOOL("OBJExportNotifySuccess"))
+					LLNotificationsUtil::add("WavefrontExportSuccess", LLSD().with("FILENAME", selected_filename));
 				fclose(fp);
 			}
 			else llerrs << "can't open: " << selected_filename << llendl;
@@ -192,21 +198,41 @@ void WavefrontSaver::Add(const LLViewerObject* some_vo)
 	normfix.setRotation(v_form.getRotation()); //Should work...
 	Add(some_vo->getVolume(), &v_form, &normfix);
 }
-
 namespace
 {
-	class LLSaveSelectedObjects : public view_listener_t
+	bool can_export_node(const LLSelectNode* node)
+	{
+		if (const LLPermissions* perms = node->mPermissions)
+		{
+			if (!(gAgentID == perms->getCreator() || (LFSimFeatureHandler::instance().simSupportsExport() && gAgentID == perms->getOwner() && perms->getMaskEveryone() & PERM_EXPORT)))
+			{
+				static const LLCachedControl<bool> notify("OBJExportNotifyFailed", false);
+				if (notify) LLNotificationsUtil::add("WavefrontExportPartial", LLSD().with("OBJECT", node->mName));
+			}
+			else return true;
+		}
+		return false;
+	}
+	class LFSaveSelectedObjects : public view_listener_t
 	{
 		bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata)
 		{
 			if (LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection())
 			{
-				WavefrontSaver* wfsaver = new WavefrontSaver; //deleted in callback
+				WavefrontSaver* wfsaver = new WavefrontSaver; // deleted in callback
 				wfsaver->offset = -selection->getFirstRootObject()->getRenderPosition();
 				for (LLObjectSelection::iterator iter = selection->begin(); iter != selection->end(); ++iter)
 				{
 					LLSelectNode* node = *iter;
+					if (!can_export_node(node)) continue;
 					wfsaver->Add(node->getObject());
+				}
+				if (wfsaver->obj_v.empty())
+				{
+					if (gSavedSettings.getBOOL("OBJExportNotifyFailed"))
+						LLNotificationsUtil::add("ExportFailed");
+					delete wfsaver;
+					return true;
 				}
 
 				AIFilePicker* filepicker = AIFilePicker::create();
@@ -221,7 +247,7 @@ namespace
 void WavefrontSaver::Add(const LLVOAvatar* av_vo) //adds attachments, too!
 {
 	offset = -av_vo->getRenderPosition();
-	avatar_joint_list_t vjv = av_vo->getMeshLOD();
+	avatar_joint_list_t vjv = av_vo->mMeshLOD;
 	for (avatar_joint_list_t::const_iterator itervj = vjv.begin(); itervj != vjv.end(); ++itervj)
 	{
 		const LLViewerJoint* vj = dynamic_cast<LLViewerJoint*>(*itervj);
@@ -231,7 +257,7 @@ void WavefrontSaver::Add(const LLVOAvatar* av_vo) //adds attachments, too!
 		if (!vjm) continue;
 
 		vjm->updateJointGeometry();
-		LLFace* face = vjm->getFace();
+		LLFace* face = vjm->mFace;
 		if (!face) continue;
 
 		//Beware: this is a hack because LLFace has multiple LODs
@@ -271,6 +297,11 @@ void WavefrontSaver::Add(const LLVOAvatar* av_vo) //adds attachments, too!
 			{
 				const LLViewerObject* c = *iterc;
 				if (!c) continue;
+				if (const LLSelectNode* n = LLSelectMgr::getInstance()->getSelection()->findNode(const_cast<LLViewerObject*>(c)))
+				{
+					if (!can_export_node(n)) continue;
+				}
+				else continue;
 				const LLVolume* vol = c->getVolume();
 				if (!vol) continue;
 
@@ -293,17 +324,28 @@ void WavefrontSaver::Add(const LLVOAvatar* av_vo) //adds attachments, too!
 		}
 	}
 }
-
 namespace
 {
-	class LLSaveSelectedAvatar : public view_listener_t
+	class LFSaveSelectedAvatar : public view_listener_t
 	{
 		bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata)
 		{
 			if (const LLVOAvatar* avatar = find_avatar_from_object(LLSelectMgr::getInstance()->getSelection()->getPrimaryObject()))
 			{
-				WavefrontSaver* wfsaver = new WavefrontSaver; //deleted in callback
+				if (!avatar->isSelf())
+				{
+					if (gSavedSettings.getBOOL("OBJExportNotifyFailed")) LLNotificationsUtil::add("ExportFailed");
+					return true;
+				}
+				WavefrontSaver* wfsaver = new WavefrontSaver; // deleted in callback
 				wfsaver->Add(avatar);
+				if (wfsaver->obj_v.empty())
+				{
+					if (gSavedSettings.getBOOL("OBJExportNotifyFailed"))
+						LLNotificationsUtil::add("ExportFailed");
+					delete wfsaver;
+					return true;
+				}
 
 				AIFilePicker* filepicker = AIFilePicker::create();
 				filepicker->open(avatar->getFullname()+OBJ);
@@ -383,9 +425,9 @@ bool WavefrontSaver::saveFile(LLFILE* fp)
 }
 
 void addMenu(view_listener_t* menu, const std::string& name);
-void add_wave_listeners() //Called in llviewermenu with other addMenu calls, function linked against
+void add_wave_listeners() // Called in llviewermenu with other addMenu calls, function linked against
 {
-	addMenu(new LLSaveSelectedObjects(), "Object.SaveAsOBJ");
-	addMenu(new LLSaveSelectedAvatar(), "Avatar.SaveAsOBJ");
+	addMenu(new LFSaveSelectedObjects(), "Object.SaveAsOBJ");
+	addMenu(new LFSaveSelectedAvatar(), "Avatar.SaveAsOBJ");
 }
 

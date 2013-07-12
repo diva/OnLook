@@ -9638,21 +9638,17 @@ Would you like to enable announcing keys to objects in the sim?
   </notification>
 
   <notification
-   icon="alert.tga"
-   name="WavefrontExportFailed"
-   type="alert">
-Export to Wavefront OBJ file failed:
-
-[REASON]
+   icon="notify.tga"
+   name="WavefrontExportPartial"
+   type="notify">
+Unable to include [OBJECT] in export, insufficient permissions.
   </notification>
 
   <notification
-   icon="notify.tga"
+   icon="notifytip.tga"
    name="WavefrontExportSuccess"
-   type="notify">
-Object successfully exported in Wavefront OBJ format to:
-
-[FILENAME]
+   type="notifytip">
+Object successfully exported to: [FILENAME]
   </notification>
 
 </notifications>

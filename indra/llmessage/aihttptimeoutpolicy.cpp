@@ -932,7 +932,6 @@ P2(groupMemberDataResponder,					transfer_300s);
 P2(groupProposalBallotResponder,				transfer_300s);
 P(homeLocationResponder);
 P2(HTTPGetResponder,							reply_15s);
-P(iamHereLogin);
 P(iamHere);
 P(iamHereVoice);
 P2(inventoryModelFetchDescendentsResponder,		transfer_300s);
