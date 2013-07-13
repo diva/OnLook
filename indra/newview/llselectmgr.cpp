@@ -3292,6 +3292,7 @@ void LLSelectMgr::selectDelete()
 		return;
 	}
 // [/RLVa:KB]
+
 	S32 deleteable_count = 0;
 
 	BOOL locked_but_deleteable_object = FALSE;
@@ -4069,7 +4070,6 @@ void LLSelectMgr::deselectUnused()
 	}
 }
 
-
 void LLSelectMgr::convertTransient()
 {
 	LLObjectSelection::iterator node_it;
@@ -4080,23 +4080,23 @@ void LLSelectMgr::convertTransient()
 	}
 }
 
-
 void LLSelectMgr::deselectAllIfTooFar()
 {
 // [RLVa:KB] - Checked: 2010-11-29 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
 	if ( (!mSelectedObjects->isEmpty()) && ((gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_EDITOBJ))) )
 	{
-		struct NotTransientOrEditable : public LLSelectedNodeFunctor
+		struct NotTransientOrFocusedMediaOrEditable : public LLSelectedNodeFunctor
 		{
 			bool apply(LLSelectNode* pNode)
 			{
 				const LLViewerObject* pObj = pNode->getObject();
-				return (!pNode->isTransient()) && (pObj) && (!gRlvHandler.canEdit(pObj));
- 			}
- 		} f;
- 		if (mSelectedObjects->getFirstRootNode(&f, TRUE))
- 			deselectAll();
- 	}
+				return (!pNode->isTransient()) && (pObj) && (!gRlvHandler.canEdit(pObj)) &&
+					(pObj->getID() != LLViewerMediaFocus::getInstance()->getFocusedObjectID());
+			}
+		} f;
+		if (mSelectedObjects->getFirstRootNode(&f, TRUE))
+			deselectAll();
+	}
 // [/RLVa:KB]
 
 	if (mSelectedObjects->isEmpty() || mSelectedObjects->mSelectType == SELECT_TYPE_HUD)
@@ -4123,9 +4123,8 @@ void LLSelectMgr::deselectAllIfTooFar()
 	}
 
 	LLVector3d selectionCenter = getSelectionCenterGlobal();
-
 //	if (gSavedSettings.getBOOL("LimitSelectDistance")
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g) | Modified: RLVa-0.2.0f
+// [RLVa:KB] - Checked: 2010-04-11 (RLVa-1.2.0e) | Modified: RLVa-0.2.0f
 	BOOL fRlvFartouch = gRlvHandler.hasBehaviour(RLV_BHVR_FARTOUCH) && gFloaterTools->getVisible();
 	if ( (gSavedSettings.getBOOL("LimitSelectDistance") || (fRlvFartouch) )
 // [/RLVa:KB]
@@ -4135,7 +4134,7 @@ void LLSelectMgr::deselectAllIfTooFar()
 		&& !selectionCenter.isExactlyZero())
 	{
 //		F32 deselect_dist = gSavedSettings.getF32("MaxSelectDistance");
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g) | Modified: RLVa-0.2.0f
+// [RLVa:KB] - Checked: 2010-04-11 (RLVa-1.2.0e) | Modified: RLVa-0.2.0f
 		F32 deselect_dist = (!fRlvFartouch) ? gSavedSettings.getF32("MaxSelectDistance") : 1.5f;
 // [/RLVa:KB]
 		F32 deselect_dist_sq = deselect_dist * deselect_dist;
@@ -4156,6 +4155,7 @@ void LLSelectMgr::deselectAllIfTooFar()
 		}
 	}
 }
+
 
 void LLSelectMgr::selectionSetObjectName(const std::string& name)
 {
@@ -4333,6 +4333,7 @@ void LLSelectMgr::sendDelink()
 		}
 	} sendfunc;
 	getSelection()->applyToObjects(&sendfunc);
+
 
 	// Delink needs to send individuals so you can unlink a single object from
 	// a linked set.
@@ -5047,6 +5048,7 @@ void LLSelectMgr::processObjectProperties(LLMessageSystem* msg, void** user_data
 			}
 		}
 
+
 		// Iterate through nodes at end, since it can be on both the regular AND hover list
 		struct f : public LLSelectedNodeFunctor
 		{
@@ -5059,7 +5061,11 @@ void LLSelectMgr::processObjectProperties(LLMessageSystem* msg, void** user_data
 		} func(id);
 		LLSelectNode* node = LLSelectMgr::getInstance()->getSelection()->getFirstNode(&func);
 
-		if (node)
+		if (!node)
+		{
+			llwarns << "Couldn't find object " << id << " selected." << llendl;
+		}
+		else
 		{
 			if (node->mInventorySerial != inv_serial)
 			{
@@ -5570,13 +5576,18 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 	}
 	if (mSelectedObjects->getNumNodes())
 	{
-		LLUUID inspect_item_id = LLFloaterInspect::getSelectedUUID();
+		LLUUID inspect_item_id= LLUUID::null;
+		LLFloaterInspect* inspect_instance = LLFloaterInspect::instanceExists() ? LLFloaterInspect::getInstance() : NULL;
+		if(inspect_instance && inspect_instance->getVisible())
+		{
+			inspect_item_id = inspect_instance->getSelectedUUID();
+		}
 
 		LLUUID focus_item_id = LLViewerMediaFocus::getInstance()->getFocusedObjectID();
 		// <edit>
 		//for (S32 pass = 0; pass < 2; pass++)
-		//{
 		// </edit>
+		{
 			for (LLObjectSelection::iterator iter = mSelectedObjects->begin();
 				 iter != mSelectedObjects->end(); iter++)
 			{
@@ -5612,9 +5623,7 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 					node->renderOneSilhouette(sSilhouetteChildColor);
 				}
 			}
-		// <edit>
-		//}
-		// </edit>
+		}
 	}
 
 	if (mHighlightedObjects->getNumNodes())
@@ -6271,7 +6280,6 @@ void LLSelectNode::renderOneSilhouette(const LLColor4 &color)
 
 // Update everyone who cares about the selection list
 void dialog_refresh_all()
-
 {
 	// This is the easiest place to fire the update signal, as it will
 	// make cleaning up the functions below easier.  Also, sometimes entities
@@ -6300,7 +6308,12 @@ void dialog_refresh_all()
 	}
 
 	LLFloaterProperties::dirtyAll();
-	LLFloaterInspect::dirty();
+
+	LLFloaterInspect* inspect_instance = LLFloaterInspect::instanceExists() ? LLFloaterInspect::getInstance() : NULL;
+	if(inspect_instance)
+	{
+		inspect_instance->dirty();
+	}
 }
 
 S32 get_family_count(LLViewerObject *parent)
