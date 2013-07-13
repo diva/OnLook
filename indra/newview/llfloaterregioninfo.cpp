@@ -1081,8 +1081,10 @@ void LLPanelRegionDebugInfo::onClickTopColliders(void* data)
 	strings_t strings;
 	strings.push_back("1");	// one physics step
 	LLUUID invoice(LLFloaterRegionInfo::getLastInvoice());
-	LLFloaterTopObjects::show();
-	LLFloaterTopObjects::clearList();
+	LLFloaterTopObjects* instance = LLFloaterTopObjects::getInstance();
+	if(!instance) return;
+	instance->open();
+	instance->clearList();
 	self->sendEstateOwnerMessage(gMessageSystem, "colliders", invoice, strings);
 }
 
@@ -1093,8 +1095,10 @@ void LLPanelRegionDebugInfo::onClickTopScripts(void* data)
 	strings_t strings;
 	strings.push_back("6");	// top 5 scripts
 	LLUUID invoice(LLFloaterRegionInfo::getLastInvoice());
-	LLFloaterTopObjects::show();
-	LLFloaterTopObjects::clearList();
+	LLFloaterTopObjects* instance = LLFloaterTopObjects::getInstance();
+	if(!instance) return;
+	instance->open();
+	instance->clearList();
 	self->sendEstateOwnerMessage(gMessageSystem, "scripts", invoice, strings);
 }
 
