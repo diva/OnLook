@@ -3208,6 +3208,7 @@ The
 	<string name="GodToolsObjectOwnedBy">Object [OBJECT] owned by [OWNER]</string>
 
 	<!-- groups -->
+	<string name="GroupsNone">none</string>
 	<string name="Group" value=" (group)" />
 	<string name="Unknown">(Unknown)</string>
 	<string name="SummaryForTheWeek"    value="Summary for this week, beginning on " />

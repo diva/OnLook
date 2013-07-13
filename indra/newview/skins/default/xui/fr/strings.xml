@@ -458,6 +458,9 @@
 	<string name="InventoryNoTexture">
 		Vous n&apos;avez pas de copie de cette texture dans votre inventaire
 	</string>
+	<string name="GroupsNone">
+		aucun
+	</string>
 	<string name="conference-title">
 		Chat à plusieurs
 	</string>

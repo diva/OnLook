@@ -1972,7 +1972,9 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="GodToolsObjectOwnedBy">Objekt [OBJECT], Besitzer [OWNER]</string>
 
 	<!-- groups -->
-	
+	<string name="GroupsNone">
+		keine
+	</string>
 	<string name="Unknown">(unbekannt)</string>
 	
 	

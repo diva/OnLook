@@ -209,6 +209,10 @@
 		Você não possui uma cópia desta textura no seu inventário
 	</string>
 
+	<string name="GroupsNone">
+		nenhum
+	</string>
+
 	<string name="conference-title">
 		Bate-papo com várias pessoas
 	</string>
