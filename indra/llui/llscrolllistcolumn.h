@@ -30,48 +30,36 @@
 
 #include "llrect.h"
 #include "lluistring.h"
-#include "llcombobox.h"
+#include "llbutton.h"
 
 class LLScrollListColumn;
 class LLResizeBar;
 class LLScrollListCtrl;
 
-class LLScrollColumnHeader : public LLComboBox
+class LLScrollColumnHeader : public LLButton
 {
 public:
-	LLScrollColumnHeader(const std::string& label, const LLRect& rect, LLScrollListColumn* column, const LLFontGL* font = NULL);
+	LLScrollColumnHeader(const std::string& name, const LLRect& rect, LLScrollListColumn* column);
 	~LLScrollColumnHeader();
 
 	/*virtual*/ void draw();
 	/*virtual*/ BOOL handleDoubleClick(S32 x, S32 y, MASK mask);
 
-	/*virtual*/ void showList() {}; // block the normal showList() behavior
 	/*virtual*/ LLView*	findSnapEdge(S32& new_edge_val, const LLCoordGL& mouse_dir, ESnapEdge snap_edge, ESnapType snap_type, S32 threshold, S32 padding);
 	/*virtual*/ void handleReshape(const LLRect& new_rect, bool by_user = false);
 
-	void setImage(const std::string& image_name);
-	void setImageOverlay(const std::string& overlay_image, LLFontGL::HAlign alignment = LLFontGL::HCENTER, const LLColor4& color = LLColor4::white);
 	LLScrollListColumn* getColumn() { return mColumn; }
 	void setHasResizableElement(BOOL resizable);
 	void updateResizeBars();
 	BOOL canResize();
 	void enableResizeBar(BOOL enable);
-	std::string getLabel() { return mOrigLabel; }
 
-	void onSelectSort();
 	void onClick(const LLSD& data);
 
 private:
 	LLScrollListColumn* mColumn;
 	LLResizeBar*		mResizeBar;
-	std::string			mOrigLabel;
-	LLUIString			mAscendingText;
-	LLUIString			mDescendingText;
 	BOOL				mHasResizableElement;
-
-	LLPointer<LLUIImage>	mImageOverlay;
-	LLFontGL::HAlign		mImageOverlayAlignment;
-	LLColor4				mImageOverlayColor;
 };
 
 /*

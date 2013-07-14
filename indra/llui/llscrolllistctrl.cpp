@@ -2853,7 +2853,7 @@ void LLScrollListCtrl::addColumn(const LLSD& column, EAddPosition pos)
 
 			if(!column["image"].asString().empty())
 			{
-				new_column->mHeader->setImage(column["image"].asString());
+				new_column->mHeader->setImages(column["image"].asString(), column["image"].asString());
 			}
 			else if(!column["image_overlay"].asString().empty())
 			{
