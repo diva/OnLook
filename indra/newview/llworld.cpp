@@ -293,6 +293,7 @@ void LLWorld::removeRegion(const LLHost &host)
 	mCulledRegionList.remove(regionp);
 	mVisibleRegionList.remove(regionp);
 
+	mRegionRemovedSignal(regionp);
 	//double check all objects of this region are removed.
 	gObjectList.clearAllMapObjectsInRegion(regionp) ;
 	//llassert_always(!gObjectList.hasMapObjectInRegion(regionp)) ;
@@ -420,6 +421,19 @@ LLViewerRegion* LLWorld::getRegionFromHandle(const U64 &handle)
 	return NULL;
 }
 
+LLViewerRegion* LLWorld::getRegionFromID(const LLUUID& region_id)
+{
+	for (region_list_t::iterator iter = mRegionList.begin();
+		 iter != mRegionList.end(); ++iter)
+	{
+		LLViewerRegion* regionp = *iter;
+		if (regionp->getRegionID() == region_id)
+		{
+			return regionp;
+		}
+	}
+	return NULL;
+}
 
 void LLWorld::updateAgentOffset(const LLVector3d &offset_global)
 {
@@ -1504,6 +1518,11 @@ bool LLWorld::isRegionListed(const LLViewerRegion* region) const
 {
 	region_list_t::const_iterator it = find(mRegionList.begin(), mRegionList.end(), region);
 	return it != mRegionList.end();
+}
+
+boost::signals2::connection LLWorld::setRegionRemovedCallback(const region_remove_signal_t::slot_type& cb)
+{
+	return mRegionRemovedSignal.connect(cb);
 }
 
 LLHTTPRegistration<LLEstablishAgentCommunication>

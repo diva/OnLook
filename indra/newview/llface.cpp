@@ -1072,6 +1072,12 @@ bool LLFace::canRenderAsMask()
 		return false;
 	}
 
+	LLMaterial* mat = te->getMaterialParams();
+	if (mat && mat->getDiffuseAlphaMode() == LLMaterial::DIFFUSE_ALPHA_MODE_BLEND)
+	{
+		return false;
+	}
+
 	static const LLCachedControl<bool> use_rmse_auto_mask("SHUseRMSEAutoMask",false);
 	static const LLCachedControl<F32> auto_mask_max_rmse("SHAutoMaskMaxRMSE",.09f);
 	if ((te->getColor().mV[3] == 1.0f) && // can't treat as mask if we have face alpha
