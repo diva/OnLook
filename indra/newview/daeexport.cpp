@@ -142,7 +142,7 @@ namespace DAEExportUtil
 			{
 				total++;
 				LLSelectNode* node = *iter;
-				if (!canExportNode(node)) continue;
+				if (!canExportNode(node) || !node->getObject()->getVolume()) continue;
 				included++;
 				daesaver->Add(node->getObject(), node->mName);
 			}
