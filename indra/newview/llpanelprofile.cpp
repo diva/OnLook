@@ -52,6 +52,7 @@ static const std::string PANEL_PICKS = "panel_picks";
 std::string getProfileURL(const std::string& agent_name)
 {
 	std::string url = gSavedSettings.getString("WebProfileURL");
+	llassert(!url.empty());
 	LLSD subs;
 	subs["AGENT_NAME"] = agent_name;
 	url = LLWeb::expandURLSubstitutions(url,subs);

@@ -1447,20 +1447,24 @@ void LLViewerMedia::setOpenIDCookie()
 		
 		getCookieStore()->setCookiesFromHost(sOpenIDCookie, authority.substr(host_start, host_end - host_start));
 
-		// Do a web profile get so we can store the cookie 
-		AIHTTPHeaders headers;
-		headers.addHeader("Accept", "*/*");
-		headers.addHeader("Cookie", sOpenIDCookie);
-		headers.addHeader("User-Agent", getCurrentUserAgent());
+		// Does grid supports web profiles at all?
+		if (!gSavedSettings.getString("WebProfileURL").empty())
+		{
+			// Do a web profile get so we can store the cookie 
+			AIHTTPHeaders headers;
+			headers.addHeader("Accept", "*/*");
+			headers.addHeader("Cookie", sOpenIDCookie);
+			headers.addHeader("User-Agent", getCurrentUserAgent());
 
-		std::string profile_url = getProfileURL("");
-		LLURL raw_profile_url( profile_url.c_str() );
+			std::string profile_url = getProfileURL("");
+			LLURL raw_profile_url( profile_url.c_str() );
 
-		LL_DEBUGS("MediaAuth") << "Requesting " << profile_url << llendl;
-		LL_DEBUGS("MediaAuth") << "sOpenIDCookie = [" << sOpenIDCookie << "]" << llendl;
-		LLHTTPClient::get(profile_url,  
-			new LLViewerMediaWebProfileResponder(raw_profile_url.getAuthority()),
-			headers);
+			LL_DEBUGS("MediaAuth") << "Requesting " << profile_url << llendl;
+			LL_DEBUGS("MediaAuth") << "sOpenIDCookie = [" << sOpenIDCookie << "]" << llendl;
+			LLHTTPClient::get(profile_url,  
+				new LLViewerMediaWebProfileResponder(raw_profile_url.getAuthority()),
+				headers);
+		}
 	}
 }
 
