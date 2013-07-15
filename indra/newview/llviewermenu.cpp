@@ -225,6 +225,7 @@ void handle_test_load_url(void*);
 class AIHTTPView;
 
 void add_wave_listeners();
+void add_dae_listeners();
 //extern BOOL	gHideSelectedObjects;
 //extern BOOL gAllowSelectAvatar;
 //extern BOOL gDebugAvatarRotation;
@@ -9409,6 +9410,7 @@ void initialize_menus()
 	addMenu(new LLCanIHasKillEmAll(), "Object.EnableDestroy");
 	addMenu(new LLOHGOD(), "Object.EnableExplode");
 	add_wave_listeners();
+	add_dae_listeners();
 	// </edit>
 	addMenu(new LLObjectMute(), "Object.Mute");
 	addMenu(new LLObjectBuy(), "Object.Buy");

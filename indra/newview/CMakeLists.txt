@@ -88,6 +88,7 @@ set(viewer_SOURCE_FILES
     ascentprefsvan.cpp
     awavefront.cpp
     chatbar_as_cmdline.cpp
+    daeexport.cpp
     floaterao.cpp
     floaterlocalassetbrowse.cpp
     floatervoicelicense.cpp
@@ -601,6 +602,7 @@ set(viewer_HEADER_FILES
     ascentprefsvan.h
     awavefront.h
     chatbar_as_cmdline.h
+    daeexport.h
     floaterao.h
     floaterlocalassetbrowse.h
     floatervoicelicense.h
