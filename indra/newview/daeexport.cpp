@@ -184,19 +184,6 @@ void DAESaver::Add(const LLViewerObject* prim, const std::string name)
 	mObjects.push_back(std::pair<LLViewerObject*,std::string>((LLViewerObject*)prim, name));
 }
 
-void DAESaver::DAESaveAccessor(domAccessor* acc, int numValues, std::string params)
-{
-	acc->setCount(numValues);
-	acc->setStride(params.size());
-
-	for (std::string::iterator p_iter = params.begin(); p_iter != params.end(); ++p_iter)
-	{
-		domElement* pX = acc->add("param");
-		pX->setAttribute("name", llformat("%c", *p_iter).c_str());
-		pX->setAttribute("type", "float");
-	}
-}
-
 class v4adapt
 {
 private:
@@ -208,6 +195,33 @@ public:
 		return LLVector3((F32*)&mV4aStrider[i]);
 	}
 };
+
+void DAESaver::addSource(daeElement* mesh, const char* src_id, std::string params, const std::vector<F32> &vals)
+{
+	daeElement* source = mesh->add("source");
+	source->setAttribute("id", src_id);
+	daeElement* src_array = source->add("float_array");
+
+	src_array->setAttribute("id", llformat("%s-%s", src_id, "array").c_str());
+	src_array->setAttribute("count", llformat("%d", vals.size()).c_str());
+
+	for (S32 i = 0; i < vals.size(); i++)
+	{
+		((domFloat_array*)src_array)->getValue().append(vals[i]);
+	}
+
+	domAccessor* acc = daeSafeCast<domAccessor>(source->add("technique_common accessor"));
+	acc->setSource(llformat("#%s-%s", src_id, "array").c_str());
+	acc->setCount(vals.size());
+	acc->setStride(params.size());
+
+	for (std::string::iterator p_iter = params.begin(); p_iter != params.end(); ++p_iter)
+	{
+		domElement* pX = acc->add("param");
+		pX->setAttribute("name", llformat("%c", *p_iter).c_str());
+		pX->setAttribute("type", "float");
+	}
+}
 
 bool DAESaver::saveDAE(std::string filename)
 {
@@ -254,17 +268,9 @@ bool DAESaver::saveDAE(std::string filename)
 		geom->setAttribute("id", llformat("%s-%s", geomID, "mesh").c_str());
 		daeElement* mesh = geom->add("mesh");
 
-		daeElement* positionsSource = mesh->add("source");
-		positionsSource->setAttribute("id", llformat("%s-%s", geomID, "positions").c_str());
-		daeElement* positionsArray = positionsSource->add("float_array");
-
-		daeElement* uvSource = mesh->add("source");
-		uvSource->setAttribute("id", llformat("%s-%s", geomID, "map-0").c_str());
-		daeElement* uvArray = uvSource->add("float_array");
-
-		daeElement* normalsSource = mesh->add("source");
-		normalsSource->setAttribute("id", llformat("%s-%s", geomID, "normals").c_str());
-		daeElement* normalsArray = normalsSource->add("float_array");
+		std::vector<F32> position_data;
+		std::vector<F32> normal_data;
+		std::vector<F32> uv_data;
 
 		S32 num_faces = obj->getVolume()->getNumVolumeFaces();
 		for (S32 face_num = 0; face_num < num_faces; face_num++)
@@ -272,50 +278,30 @@ bool DAESaver::saveDAE(std::string filename)
 			const LLVolumeFace* face = (LLVolumeFace*)&obj->getVolume()->getVolumeFace(face_num);
 			total_num_vertices += face->mNumVertices;
 
-			// Positions
 			v4adapt verts(face->mPositions);
-			for (S32 i=0; i < face->mNumVertices; i++)
-			{
-				((domFloat_array*)positionsArray)->getValue().append3(verts[i].mV[VX], verts[i].mV[VY], verts[i].mV[VZ]);
-			}
-
-			// UV map
-			for (S32 i=0; i < face->mNumVertices; i++)
-			{
-				((domFloat_array*)uvArray)->getValue().append2(face->mTexCoords[i].mV[VX], face->mTexCoords[i].mV[VY]);
-			}
-
-
-			// Normals
 			v4adapt norms(face->mNormals);
 			for (S32 i=0; i < face->mNumVertices; i++)
 			{
-				const LLVector3 n = norms[i];
-				((domFloat_array*)normalsArray)->getValue().append3(n[0], n[1], n[2]);
+				const LLVector3 v = verts[i];
+				position_data.push_back(v.mV[VX]);
+				position_data.push_back(v.mV[VY]);
+				position_data.push_back(v.mV[VZ]);
 
+				const LLVector3 n = norms[i];
+				normal_data.push_back(n.mV[VX]);
+				normal_data.push_back(n.mV[VY]);
+				normal_data.push_back(n.mV[VZ]);
+
+				const LLVector2 uv = face->mTexCoords[i];
+				uv_data.push_back(uv.mV[VX]);
+				uv_data.push_back(uv.mV[VY]);
 			}
 		}
-
-		// Save positions
-		positionsArray->setAttribute("id", llformat("%s-%s", geomID, "positions-array").c_str());
-		positionsArray->setAttribute("count", llformat("%d", total_num_vertices * 3).c_str());
-		domAccessor* positionsAcc = daeSafeCast<domAccessor>(positionsSource->add("technique_common accessor"));
-		positionsAcc->setSource(llformat("#%s-%s", geomID, "positions-array").c_str());
-		this->DAESaveAccessor(positionsAcc, total_num_vertices, "XYZ");
-
-		// Save UV map
-		uvArray->setAttribute("id", llformat("%s-%s", geomID, "map-0-array").c_str());
-		uvArray->setAttribute("count", llformat("%d", total_num_vertices * 2).c_str());
-		domAccessor* uvAcc = daeSafeCast<domAccessor>(uvSource->add("technique_common accessor"));
-		uvAcc->setSource(llformat("#%s-%s", geomID, "map-0-array").c_str());
-		this->DAESaveAccessor(uvAcc, total_num_vertices, "ST");
-
-		// Save normals
-		normalsArray->setAttribute("id", llformat("%s-%s", geomID, "normals-array").c_str());
-		normalsArray->setAttribute("count", llformat("%d", total_num_vertices * 3).c_str());
-		domAccessor* normalsAcc = daeSafeCast<domAccessor>(normalsSource->add("technique_common accessor"));
-		normalsAcc->setSource(llformat("#%s-%s", geomID, "normals-array").c_str());
-		DAESaveAccessor(normalsAcc, total_num_vertices, "XYZ");
+		
+		
+		addSource(mesh, llformat("%s-%s", geomID, "positions").c_str(), "XYZ", position_data);
+		addSource(mesh, llformat("%s-%s", geomID, "normals").c_str(), "XYZ", normal_data);
+		addSource(mesh, llformat("%s-%s", geomID, "map0").c_str(), "ST", uv_data);
 
 		// Add the <vertices> element
 		{

@@ -40,7 +40,7 @@ public:
 	bool saveDAE(std::string filename);
 
 private:
-	void DAESaveAccessor(domAccessor* acc, int numValues, std::string params);
+	void addSource(daeElement* mesh, const char* src_id, std::string params, const std::vector<F32> &vals);
 };
 
 #endif // DAEEXPORT_H_
