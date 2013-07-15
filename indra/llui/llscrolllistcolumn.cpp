@@ -55,6 +55,8 @@ LLScrollColumnHeader::LLScrollColumnHeader(const std::string& name, const LLRect
 		setImageDisabled(unselected);
 		setImageDisabledSelected(selected);
 	}
+	setFont(LLFontGL::getFontSansSerifSmall());
+	setHAlign(LLFontGL::LEFT);
 
 	// resize handles on left and right
 	const S32 RESIZE_BAR_THICKNESS = 3;
