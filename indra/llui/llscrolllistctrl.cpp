@@ -1594,7 +1594,7 @@ BOOL LLScrollListCtrl::handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sti
 		LLScrollListCell* hit_cell = hit_item->getColumn(column_index);
 		if (!hit_cell) return FALSE;
 		if (hit_cell 
-			&& hit_cell->isText()
+			//&& hit_cell->isText() // Singu Note: We welcome tooltips on any kind of cell
 			&& hit_cell->needsToolTip())
 		{
 			S32 row_index = getItemIndex(hit_item);
