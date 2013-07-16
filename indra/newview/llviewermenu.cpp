@@ -4377,7 +4377,7 @@ void handle_dump_archetype_xml(void *)
 		avatar = gAgentAvatarp;
 	}
 
-	std::string file_name = avatar->getFullname() + (avatar->isSelf() ? "_s" : "_o") + ".xml";
+	std::string file_name = avatar->getFullname() + (avatar->isSelf() ? "_s" : "_o") + "?000.xml";
 	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "");
 
 	AIFilePicker* filepicker = AIFilePicker::create();

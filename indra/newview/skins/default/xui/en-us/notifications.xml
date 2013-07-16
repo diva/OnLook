@@ -9638,10 +9638,16 @@ Would you like to enable announcing keys to objects in the sim?
   </notification>
 
   <notification
-   icon="notify.tga"
+   icon="alertmodal.tga"
    name="WavefrontExportPartial"
-   type="notify">
-Unable to include [OBJECT] in export, insufficient permissions.
+   type="alertmodal">
+Unable to include [FAILED] out of [TOTAL] objects in export due to insufficient permissions.
+
+Do you wish to export anyway?
+    <usetemplate
+     name="okcancelbuttons"
+     yestext="Proceed"
+     notext="Cancel" />
   </notification>
 
   <notification

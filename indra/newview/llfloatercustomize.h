@@ -125,9 +125,9 @@ private:
 	void			onBtnOk();
 	void			onBtnMakeOutfit();
 	void			onBtnImport();
-	static void		onBtnImport_continued(AIFilePicker* filepicker);
+	void			onBtnImport_continued(AIFilePicker* filepicker);
 	void			onBtnExport();
-	static void		onBtnExport_continued(AIFilePicker* filepicker);
+	static void		onBtnExport_continued(LLViewerWearable* edit_wearable, AIFilePicker* filepicker);
 	void			onTabChanged( const LLSD& param );
 	bool			onTabPrecommit( LLUICtrl* ctrl, const LLSD& param );
 	bool			onSaveDialog(const LLSD& notification, const LLSD& response);

@@ -3195,7 +3195,7 @@ void LLVOAvatarSelf::dumpScratchTextureByteCount()
 	llinfos << "Scratch Texture GL: " << (sScratchTexBytes/1024) << "KB" << llendl;
 }
 
-void dump_visual_param(apr_file_t* file, LLVisualParam* viewer_param, F32 value);
+void dump_visual_param(LLAPRFile& file, LLVisualParam const* viewer_param, F32 value);
 
 void LLVOAvatarSelf::dumpWearableInfo(LLAPRFile& outfile)
 {
@@ -3223,7 +3223,7 @@ void LLVOAvatarSelf::dumpWearableInfo(LLAPRFile& outfile)
 				 it != v_params.end(); ++it)
 			{
 				LLVisualParam *param = *it;
-				dump_visual_param(file, param, param->getWeight());
+				dump_visual_param(outfile, param, param->getWeight());
 			}
 		}
 	}

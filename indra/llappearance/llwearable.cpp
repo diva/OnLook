@@ -33,6 +33,7 @@
 #include "llvisualparam.h"
 #include "llavatarappearancedefines.h"
 #include "llwearable.h"
+#include "lldate.h"
 
 using namespace LLAvatarAppearanceDefines;
 
@@ -68,47 +69,42 @@ LLAssetType::EType LLWearable::getAssetType() const
 	return LLWearableType::getAssetType(mType);
 }
 
-// reX: new function
-BOOL LLWearable::FileExportParams( FILE* file ) const
+extern void dump_visual_param(LLAPRFile& file, LLVisualParam const* viewer_param, F32 value);
+
+// Replace '--' with '- -', see http://en.wikipedia.org/wiki/XML#Comments
+std::string XMLCommentEscape(std::string const& comment)
 {
-	// wearable type 
-	S32 type = (S32)mType;
-	fprintf( file, "type %d\n", type );
-
-	// parameters
-	S32 num_parameters = mVisualParamIndexMap.size();
-	fprintf( file, "parameters %d\n", num_parameters );
-
-	for (visual_param_index_map_t::const_iterator iter = mVisualParamIndexMap.begin();
-		 iter != mVisualParamIndexMap.end(); ++iter)
-	{
-		S32 param_id = iter->first;
-		F32 param_weight = iter->second->getWeight();
-		fprintf( file, "%d %s\n", param_id, terse_F32_to_string(param_weight).c_str() );
-	}
-
-	return TRUE;
+  std::string result = comment;
+  std::string::size_type off = std::string::npos;
+  while ((off = result.rfind("--", off)) != std::string::npos)
+  {
+	result.replace(off, 2, "- -");
+  }
+  return result;
 }
 
-// reX: new function
-BOOL LLWearable::FileExportTextures( FILE* file ) const
+void LLWearable::archetypeExport(LLAPRFile& file) const
 {
-	// wearable type 
-	S32 type = (S32)mType;
-	fprintf( file, "type %d\n", type );
+	apr_file_t* fp = file.getFileHandle();
 
-	// texture entries
-	S32 num_textures = mTEMap.size();
-	fprintf( file, "textures %d\n", num_textures );
-	
-	for (te_map_t::const_iterator iter = mTEMap.begin();
-		 iter != mTEMap.end(); ++iter)
+	apr_file_printf(fp, "\n\t\t<!--    wearable: %s -->\n", getTypeName().c_str());
+	apr_file_printf(fp,   "\t\t<!-- Name       : %s -->\n", XMLCommentEscape(mName).c_str());
+	apr_file_printf(fp,   "\t\t<!-- Description: %s -->\n", XMLCommentEscape(mDescription).c_str());
+	apr_file_printf(fp,   "\t\t<!--        date: %s -->\n", LLDate::now().asString().c_str());
+
+	for (visual_param_index_map_t::const_iterator iter = mVisualParamIndexMap.begin(); iter != mVisualParamIndexMap.end(); ++iter)
+	{
+		LLVisualParam const* param = iter->second;
+		dump_visual_param(file, param, param->getWeight());
+	}
+	for (te_map_t::const_iterator iter = mTEMap.begin(); iter != mTEMap.end(); ++iter)
 	{
 		S32 te = iter->first;
-		fprintf( file, "%d %s\n", te, iter->second->getID().asString().c_str() );
-    }
+		LLUUID const& image_id = iter->second->getID();
+		apr_file_printf(fp,   "\t\t<texture te=\"%i\" uuid=\"%s\"/>\n", te, image_id.asString().c_str());
+	}
 
-	return TRUE;
+	apr_file_printf(fp, "\n");
 }
 
 BOOL LLWearable::exportFile(LLFILE* fp) const

@@ -953,22 +953,8 @@ void LLPanelEditWearable::setWearableIndex(S32 index)
 	if(mActiveModal)
 		mActiveModal->close();
 
-	U32 perm_mask = wearable ? PERM_NONE : PERM_ALL;
-	BOOL is_complete = wearable ? FALSE : TRUE;
-	if(wearable)
-	{
-		LLViewerInventoryItem* item = (LLViewerInventoryItem*)gInventory.getItem(wearable->getItemID());
-		if(item)
-		{
-			perm_mask = item->getPermissions().getMaskOwner();
-			is_complete = item->isComplete();
-			if(!is_complete)
-			{
-				item->fetchFromServer();
-			}
-		}
-	}
-	setUIPermissions(perm_mask, is_complete);
+	bool editable = updatePermissions();
+
 	if (mType == LLWearableType::WT_ALPHA)
 	{
 		initPreviousAlphaTextures();
@@ -980,7 +966,7 @@ void LLPanelEditWearable::setWearableIndex(S32 index)
 	if(subpart_entry)
 	{
 		value_map_t sorted_params;
-		getSortedParams(sorted_params, subpart_entry->mEditGroup, ((perm_mask & PERM_MODIFY) && is_complete) ? TRUE : FALSE);
+		getSortedParams(sorted_params, subpart_entry->mEditGroup, editable);
 		buildParamList(mCustomizeFloater->getScrollingPanelList(), sorted_params);
 	}
 
@@ -1144,6 +1130,10 @@ LLViewerWearable* LLPanelEditWearable::getWearable() const
 	return mCurrentWearable;//gAgentWearables.getWearable(mType, mCurrentIndex);	// TODO: MULTI-WEARABLE
 }
 
+U32 LLPanelEditWearable::getIndex() const
+{
+	return mCurrentIndex;
+}
 
 void LLPanelEditWearable::onTexturePickerCommit(const LLUICtrl* ctrl)
 {
@@ -1163,7 +1153,18 @@ void LLPanelEditWearable::onTexturePickerCommit(const LLUICtrl* ctrl)
 		if (entry)
 		{
 			// Set the new version
-			LLViewerFetchedTexture* image = LLViewerTextureManager::getFetchedTexture(texture_ctrl->getImageAssetID());
+			setNewImageID(entry->mTextureIndex, texture_ctrl->getImageAssetID());
+		}
+		else
+		{
+			llwarns << "could not get texture picker dictionary entry for wearable of type: " << type << llendl;
+		}
+	}
+}
+
+void LLPanelEditWearable::setNewImageID(ETextureIndex te_index, LLUUID const& uuid)
+{
+			LLViewerFetchedTexture* image = LLViewerTextureManager::getFetchedTexture(uuid);
 			if( image->getID() == IMG_DEFAULT )
 			{
 				image = LLViewerTextureManager::getFetchedTexture(IMG_DEFAULT_AVATAR);
@@ -1171,20 +1172,14 @@ void LLPanelEditWearable::onTexturePickerCommit(const LLUICtrl* ctrl)
 			if (getWearable())
 			{
 				U32 index = gAgentWearables.getWearableIndex(getWearable());
-				gAgentAvatarp->setLocalTexture(entry->mTextureIndex, image, FALSE, index);
+				gAgentAvatarp->setLocalTexture(te_index, image, FALSE, index);
 				LLVisualParamHint::requestHintUpdates();
-				gAgentAvatarp->wearableUpdated(type, FALSE);
+				gAgentAvatarp->wearableUpdated(mType, FALSE);
 			}
 			if (mType == LLWearableType::WT_ALPHA && image->getID() != IMG_INVISIBLE)
 			{
-				mPreviousAlphaTexture[entry->mTextureIndex] = image->getID();
+				mPreviousAlphaTexture[te_index] = image->getID();
 			}	
-		}
-		else
-		{
-			llwarns << "could not get texture picker dictionary entry for wearable of type: " << type << llendl;
-		}
-	}
 }
 
 void LLPanelEditWearable::onColorSwatchCommit(const LLUICtrl* base_ctrl )
@@ -1386,39 +1381,11 @@ void LLPanelEditWearable::changeCamera(U8 subpart)
 	}
 	
 	// Update the thumbnails we display
-	LLViewerWearable* wearable = getWearable();
-	LLViewerInventoryItem* item = wearable ? gInventory.getItem(wearable->getItemID()) : NULL;
-	U32 perm_mask = 0x0;
-	BOOL is_complete = FALSE;
-	bool can_export = false;
-	bool can_import = false;
-	if(item)
-	{
-		perm_mask = item->getPermissions().getMaskOwner();
-		is_complete = item->isComplete();
-		
-		if (subpart_e < SUBPART_EYES) // body parts only
-		{
-			can_import = true;
-	
-			if (is_complete && 
-				gAgent.getID() == item->getPermissions().getOwner() &&
-				gAgent.getID() == item->getPermissions().getCreator() &&
-				(PERM_ITEM_UNRESTRICTED &
-				perm_mask) == PERM_ITEM_UNRESTRICTED)
-			{
-				can_export = true;
-			}
-		}
-	}
-	setUIPermissions(perm_mask, is_complete);
-	
+	bool editable = updatePermissions();
 	value_map_t sorted_params;
-	getSortedParams(sorted_params, subpart_entry->mEditGroup, ((perm_mask & PERM_MODIFY) && is_complete) ? TRUE : FALSE);
+	getSortedParams(sorted_params, subpart_entry->mEditGroup, editable);
 	buildParamList(mCustomizeFloater->getScrollingPanelList(), sorted_params);
 	updateScrollingPanelUI();
-	mCustomizeFloater->childSetEnabled("Export", can_export);
-	mCustomizeFloater->childSetEnabled("Import", can_import);
 	
 	// Update the camera
 	if(gMorphView)
@@ -1432,6 +1399,43 @@ void LLPanelEditWearable::changeCamera(U8 subpart)
 			gMorphView->updateCamera();
 		}
 	}
+}
+
+//Singu note: this function was split off from LLPanelEditWearable::changeCamera
+// Return true if the current wearable is editable and update state accordingly.
+bool LLPanelEditWearable::updatePermissions()
+{
+	LLViewerWearable* wearable = getWearable();
+	LLViewerInventoryItem* item = wearable ? gInventory.getItem(wearable->getItemID()) : NULL;
+	U32 perm_mask = wearable ? PERM_NONE : PERM_ALL;
+	BOOL is_complete = wearable ? FALSE : TRUE;
+	bool can_export = false;
+	bool can_import = false;
+	if (item)
+	{
+		perm_mask = item->getPermissions().getMaskOwner();
+		is_complete = item->isComplete();
+		
+		//Singu note: allow to import values over any modifiable wearable (why not?).
+		{
+			can_import = true;
+	
+			// Exporting (of slider values) is allowed when the wearable is full perm, and owned by and created by the user.
+			// Of course, only modifiable is enough for the user to write down the values and enter them else where... but why make it easy for them to break the ToS.
+			if (is_complete && 
+				gAgent.getID() == item->getPermissions().getOwner() &&
+				gAgent.getID() == item->getPermissions().getCreator() &&
+				(PERM_ITEM_UNRESTRICTED &
+				perm_mask) == PERM_ITEM_UNRESTRICTED)
+			{
+				can_export = true;
+			}
+		}
+	}
+	setUIPermissions(perm_mask, is_complete);
+	mCustomizeFloater->childSetEnabled("Export", can_export);
+	mCustomizeFloater->childSetEnabled("Import", can_import);
+	return (perm_mask & PERM_MODIFY) && is_complete;
 }
 
 void LLPanelEditWearable::updateScrollingPanelList()

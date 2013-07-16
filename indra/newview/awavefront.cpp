@@ -52,6 +52,7 @@ typedef LLMemberListener<LLView> view_listener_t;
 namespace
 {
 	const std::string OBJ(".obj");
+
 	void save_wavefront_continued(WavefrontSaver* wfsaver, AIFilePicker* filepicker)
 	{
 		if (filepicker->hasFilename())
@@ -70,6 +71,25 @@ namespace
 		else llwarns << "No file; bailing" << llendl;
 
 		delete wfsaver;
+	}
+
+	void save_wavefront_picker(WavefrontSaver* wfsaver, std::string name)
+	{
+		AIFilePicker* filepicker = AIFilePicker::create();
+		filepicker->open(name);
+		filepicker->run(boost::bind(&save_wavefront_continued, wfsaver, filepicker));
+	}
+
+	void save_wavefront_on_confirm(const LLSD& notification, const LLSD& response, WavefrontSaver* wfsaver, std::string name)
+	{
+		if (LLNotificationsUtil::getSelectedOption(notification, response) == 0) // 0 - Proceed, first choice
+		{
+			save_wavefront_picker(wfsaver, name);
+		}
+		else
+		{
+			delete wfsaver;
+		}
 	}
 }
 
@@ -129,19 +149,19 @@ Wavefront::Wavefront(LLFace* face, LLPolyMesh* mesh, const LLXform* transform, c
 
 	const U16 start = face->getGeomStart();
 	const U32 end = start + (mesh ? mesh->getNumVertices() : vb->getNumVerts()) - 1; //vertices
-	for (int i = start; i <= end; ++i)
+	for (U32 i = start; i <= end; ++i)
 		vertices.push_back(std::make_pair(getVerts[i], getCoord[i]));
 
 	if (transform) Transform(vertices, transform);
 
-	for (int i = start; i <= end; ++i)
+	for (U32 i = start; i <= end; ++i)
 		normals.push_back(getNorms[i]);
 
 	if (transform_normals) Transform(normals, transform_normals);
 
 	const U32 pcount = mesh ? mesh->getNumFaces() : (vb->getNumIndices()/3); //indices
 	const U16 offset = face->getIndicesStart(); //indices
-	for (int i = 0; i < pcount; ++i)
+	for (U32 i = 0; i < pcount; ++i)
 	{
 		triangles.push_back(tri(getIndices[i * 3  + offset] + start, getIndices[i * 3 + 1 + offset] + start, getIndices[i * 3 + 2 + offset] + start));
 	}
@@ -204,12 +224,10 @@ namespace
 	{
 		if (const LLPermissions* perms = node->mPermissions)
 		{
-			if (!(gAgentID == perms->getCreator() || (LFSimFeatureHandler::instance().simSupportsExport() && gAgentID == perms->getOwner() && perms->getMaskEveryone() & PERM_EXPORT)))
+			if (gAgentID == perms->getCreator() || (LFSimFeatureHandler::instance().simSupportsExport() && gAgentID == perms->getOwner() && perms->getMaskEveryone() & PERM_EXPORT))
 			{
-				static const LLCachedControl<bool> notify("OBJExportNotifyFailed", false);
-				if (notify) LLNotificationsUtil::add("WavefrontExportPartial", LLSD().with("OBJECT", node->mName));
+				return true;
 			}
-			else return true;
 		}
 		return false;
 	}
@@ -221,10 +239,14 @@ namespace
 			{
 				WavefrontSaver* wfsaver = new WavefrontSaver; // deleted in callback
 				wfsaver->offset = -selection->getFirstRootObject()->getRenderPosition();
+				S32 total = 0;
+				S32 included = 0;
 				for (LLObjectSelection::iterator iter = selection->begin(); iter != selection->end(); ++iter)
 				{
+					total++;
 					LLSelectNode* node = *iter;
 					if (!can_export_node(node)) continue;
+					included++;
 					wfsaver->Add(node->getObject());
 				}
 				if (wfsaver->obj_v.empty())
@@ -235,9 +257,16 @@ namespace
 					return true;
 				}
 
-				AIFilePicker* filepicker = AIFilePicker::create();
-				filepicker->open(selection->getFirstNode()->mName.c_str()+OBJ);
-				filepicker->run(boost::bind(&save_wavefront_continued, wfsaver, filepicker));
+				if (total != included)
+				{
+					LLSD args;
+					args["TOTAL"] = total;
+					args["FAILED"] = total - included;
+					LLNotificationsUtil::add("WavefrontExportPartial", args, LLSD(), boost::bind(&save_wavefront_on_confirm, _1, _2, wfsaver, selection->getFirstNode()->mName.c_str() + OBJ));
+					return true;
+				}
+
+				save_wavefront_picker(wfsaver, selection->getFirstNode()->mName.c_str() + OBJ);
 			}
 			return true;
 		}
