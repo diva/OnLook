@@ -34,11 +34,11 @@
 // LLScrollListItem
 //---------------------------------------------------------------------------
 
-LLScrollListItem::LLScrollListItem( bool enabled, const LLSD& value, void* userdata )
+LLScrollListItem::LLScrollListItem( const Params& p )
 :	mSelected(FALSE),
-	mEnabled(enabled),
-	mUserdata(userdata),
-	mItemValue(value),
+	mEnabled(p.enabled),
+	mUserdata(p.userdata),
+	mItemValue(p.value),
 	mColumns()
 {
 }
@@ -49,9 +49,9 @@ LLScrollListItem::~LLScrollListItem()
 	std::for_each(mColumns.begin(), mColumns.end(), DeletePointer());
 }
 
-void LLScrollListItem::addColumn(const std::string& text, const LLFontGL* font, S32 width, U8 font_style, LLFontGL::HAlign font_alignment, bool visible)
+void LLScrollListItem::addColumn(const LLScrollListCell::Params& p)
 {
-	mColumns.push_back(new LLScrollListText(text, font, width, font_style, font_alignment, LLColor4::black, false, visible));
+	mColumns.push_back(LLScrollListCell::create(p));
 }
 
 void LLScrollListItem::setNumColumns(S32 columns)

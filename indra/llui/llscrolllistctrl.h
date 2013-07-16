@@ -42,8 +42,8 @@
 #include "llframetimer.h"
 
 #include "llscrollbar.h"
-
-class LLScrollListColumn;
+#include "llscrolllistitem.h"
+#include "llscrolllistcolumn.h"
 
 class LLScrollListCtrl : public LLUICtrl, public LLEditMenuHandler, 
 	public LLCtrlListInterface, public LLCtrlScrollInterface
@@ -95,6 +95,7 @@ public:
 	// LLCtrlListInterface functions
 	virtual S32  getItemCount() const;
 	// Adds a single column descriptor: ["name" : string, "label" : string, "width" : integer, "relwidth" : integer ]
+	virtual void addColumn(const LLScrollListColumn::Params& column, EAddPosition pos = ADD_BOTTOM);
 	virtual void addColumn(const LLSD& column, EAddPosition pos = ADD_BOTTOM);
 	virtual void clearColumns();
 	virtual void setColumnLabel(const std::string& column, const std::string& label);
@@ -106,6 +107,8 @@ public:
 	// "columns" => [ "column" => column name, "value" => value, "type" => type, "font" => font, "font-style" => style ], "id" => uuid
 	// Creates missing columns automatically.
 	virtual LLScrollListItem* addElement(const LLSD& element, EAddPosition pos = ADD_BOTTOM, void* userdata = NULL);
+	virtual LLScrollListItem* addRow(LLScrollListItem *new_item, const LLScrollListItem::Params& value, EAddPosition pos = ADD_BOTTOM);
+	virtual LLScrollListItem* addRow(const LLScrollListItem::Params& value, EAddPosition pos = ADD_BOTTOM);
 	// Simple add element. Takes a single array of:
 	// [ "value" => value, "font" => font, "font-style" => style ]
 	virtual void clearRows(); // clears all elements
@@ -419,7 +422,6 @@ private:
 	LLColor4		mFgUnselectedColor;
 	LLColor4		mFgDisabledColor;
 	LLColor4		mHighlightedColor;
-	LLColor4		mDefaultListTextColor;
 
 	S32				mBorderThickness;
 	callback_t		mOnDoubleClickCallback;

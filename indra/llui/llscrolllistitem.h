@@ -41,6 +41,30 @@ class LLScrollListItem
 {
 	friend class LLScrollListCtrl;
 public:
+	struct Params : public LLInitParam::Block<Params>
+	{
+		Optional<bool>		enabled;
+		Optional<void*>		userdata;
+		Optional<LLSD>		value;
+
+		Ignored				name; // use for localization tools
+		Ignored				type;
+		Ignored				length;
+
+		Multiple<LLScrollListCell::Params> columns;
+
+		Params()
+		:	enabled("enabled", true),
+			value("value"),
+			name("name"),
+			type("type"),
+			length("length"),
+			columns("columns")
+		{
+			addSynonym(columns, "column");
+			addSynonym(value, "id");
+		}
+	};
 
 	virtual ~LLScrollListItem();
 
@@ -59,7 +83,7 @@ public:
 	void	setRect(LLRect rect)			{ mRectangle = rect; }
 	LLRect	getRect() const					{ return mRectangle; }
 
-	void	addColumn( const std::string& text, const LLFontGL* font, S32 width = 0, U8 font_style = LLFontGL::NORMAL, LLFontGL::HAlign font_alignment = LLFontGL::LEFT, bool visible = true );
+	void	addColumn( const LLScrollListCell::Params& p );
 
 	void	setNumColumns(S32 columns);
 
@@ -74,7 +98,7 @@ public:
 	virtual void draw(const LLRect& rect, const LLColor4& fg_color, const LLColor4& bg_color, const LLColor4& highlight_color, S32 column_padding);
 
 protected:
-	LLScrollListItem( bool enabled = true, const LLSD& value = LLSD(), void* userdata = NULL );
+	LLScrollListItem( const Params& );
 
 private:
 	BOOL	mSelected;

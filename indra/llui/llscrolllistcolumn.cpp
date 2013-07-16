@@ -294,52 +294,46 @@ BOOL LLScrollColumnHeader::canResize()
 	return getVisible() && (mHasResizableElement || mColumn->mDynamicWidth);
 }
 
+void LLScrollListColumn::SortNames::declareValues()
+{
+	declare("ascending", LLScrollListColumn::ASCENDING);
+	declare("descending", LLScrollListColumn::DESCENDING);
+}
+
 //
 // LLScrollListColumn
 //
-// Default constructor
-LLScrollListColumn::LLScrollListColumn() : mName(), mSortingColumn(), mSortDirection(ASCENDING), mLabel(), mWidth(-1), mRelWidth(-1.0), mDynamicWidth(false), mMaxContentWidth(0), mIndex(-1), mParentCtrl(NULL), mHeader(NULL), mFontAlignment(LLFontGL::LEFT)
+/* Singu TODO: LLUICtrlFactory::getDefaultParams
+//static
+const LLScrollListColumn::Params& LLScrollListColumn::getDefaultParams()
 {
-}
+	return LLUICtrlFactory::getDefaultParams<LLScrollListColumn>();
+}*/
 
 
-LLScrollListColumn::LLScrollListColumn(const LLSD& sd, LLScrollListCtrl* parent)
+LLScrollListColumn::LLScrollListColumn(const Params& p, LLScrollListCtrl* parent)
 :	mWidth(0),
 	mIndex (-1),
 	mParentCtrl(parent),
-	mName(sd.get("name").asString()),
-	mLabel(sd.get("label").asString()),
+	mName(p.name),
+	mLabel(p.header.label),
 	mHeader(NULL),
 	mMaxContentWidth(0),
-	mDynamicWidth(sd.has("dynamicwidth") && sd.get("dynamicwidth").asBoolean()),
-	mRelWidth(-1.f),
-	mFontAlignment(LLFontGL::LEFT),
-	mSortingColumn(sd.has("sort") ? sd.get("sort").asString() : mName)
+	mDynamicWidth(p.width.dynamic_width),
+	mRelWidth(p.width.relative_width),
+	mFontAlignment(p.halign),
+	mSortingColumn(p.sort_column)
 {
-	if (sd.has("sort_ascending"))
+	if (p.sort_ascending.isProvided())
 	{
-		mSortDirection = sd.get("sort_ascending").asBoolean() ? ASCENDING : DESCENDING;
+		mSortDirection = p.sort_ascending() ? ASCENDING : DESCENDING;
 	}
 	else
 	{
-		mSortDirection = ASCENDING;
+		mSortDirection = p.sort_direction;
 	}
 
-	if (sd.has("relwidth") && sd.get("relwidth").asFloat() > 0)
-	{
-		mRelWidth = sd.get("relwidth").asFloat();
-		if (mRelWidth > 1) mRelWidth = 1;
-		mDynamicWidth = false;
-	}
-	else if (!mDynamicWidth)
-	{
-		setWidth(sd.get("width").asInteger());
-	}
-
-	if (sd.has("halign"))
-	{
-		mFontAlignment = (LLFontGL::HAlign)llclamp(sd.get("halign").asInteger(), (S32)LLFontGL::LEFT, (S32)LLFontGL::HCENTER);
-	}
+	setWidth(p.width.pixel_width);
 }
 
 void LLScrollListColumn::setWidth(S32 width)

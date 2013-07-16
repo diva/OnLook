@@ -778,7 +778,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 	BOOST_FOREACH(av_list_t::value_type& entry, mAvatars)
 	{
-		LLSD element;
+		LLScrollListItem::Params element;
 		LLUUID av_id;
 		std::string av_name;
 
@@ -825,33 +825,30 @@ void LLFloaterAvatarList::refreshAvatarList()
 			continue;
 		}
 
+		element.value = av_id;
 
-		element["id"] = av_id;
-
-		element["columns"][LIST_MARK]["column"] = "marked";
-		element["columns"][LIST_MARK]["type"] = "text";
+		LLScrollListCell::Params mark;
+		mark.column = "marked";
+		mark.type = "text";
 		if (entry->isMarked())
 		{
-			element["columns"][LIST_MARK]["value"] = "X";
-			element["columns"][LIST_MARK]["color"] = LLColor4::blue.getValue();
-			element["columns"][LIST_MARK]["font-style"] = "BOLD";
-		}
-		else
-		{
-			element["columns"][LIST_MARK]["value"] = "";
+			mark.value = "X";
+			mark.color = LLColor4::blue;
+			mark.font_style = "BOLD";
 		}
 
-		element["columns"][LIST_AVATAR_NAME]["column"] = "avatar_name";
-		element["columns"][LIST_AVATAR_NAME]["type"] = "text";
-		element["columns"][LIST_AVATAR_NAME]["value"] = av_name;
+		LLScrollListCell::Params name;
+		name.column = "avatar_name";
+		name.type = "text";
+		name.value = av_name;
 		if (entry->isFocused())
 		{
-			element["columns"][LIST_AVATAR_NAME]["font-style"] = "BOLD";
+			name.font_style = "BOLD";
 		}
 
 		//<edit> custom colors for certain types of avatars!
 		//Changed a bit so people can modify them in settings. And since they're colors, again it's possibly account-based. Starting to think I need a function just to determine that. - HgB
-		//element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapAvatar" ).getValue();
+		//name.color = gColors.getColor( "MapAvatar" );
 		LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(entry->getPosition());
 		LLUUID estate_owner = LLUUID::null;
 		if(parent_estate && parent_estate->isAlive())
@@ -895,12 +892,13 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 		name_color = name_color*0.5f + unselected_color*0.5f;
 
-		element["columns"][LIST_AVATAR_NAME]["color"] = name_color.getValue();
+		name.color = name_color;
 
 		char temp[32];
 		LLColor4 color = sDefaultListText;
-		element["columns"][LIST_DISTANCE]["column"] = "distance";
-		element["columns"][LIST_DISTANCE]["type"] = "text";
+		LLScrollListCell::Params dist;
+		dist.column = "distance";
+		dist.type = "text";
 		if (UnknownAltitude)
 		{
 			strcpy(temp, "?");
@@ -932,9 +930,10 @@ void LLFloaterAvatarList::refreshAvatarList()
 				snprintf(temp, sizeof(temp), "%d", (S32)distance);
 			}
 		}
-		element["columns"][LIST_DISTANCE]["value"] = temp;
-		element["columns"][LIST_DISTANCE]["color"] = color.getValue();
+		dist.value = temp;
+		dist.color = color;
 
+		LLScrollListCell::Params pos;
 		position = position - simpos;
 
 		S32 x = (S32)position.mdV[VX];
@@ -963,12 +962,13 @@ void LLFloaterAvatarList::refreshAvatarList()
 				strcat(temp, "E");
 			}
 		}
-		element["columns"][LIST_POSITION]["column"] = "position";
-		element["columns"][LIST_POSITION]["type"] = "text";
-		element["columns"][LIST_POSITION]["value"] = temp;
+		pos.column = "position";
+		pos.type = "text";
+		pos.value = temp;
 
-		element["columns"][LIST_ALTITUDE]["column"] = "altitude";
-		element["columns"][LIST_ALTITUDE]["type"] = "text";
+		LLScrollListCell::Params alt;
+		alt.column = "altitude";
+		alt.type = "text";
 		if (UnknownAltitude)
 		{
 			strcpy(temp, "?");
@@ -977,10 +977,11 @@ void LLFloaterAvatarList::refreshAvatarList()
 		{
 			snprintf(temp, sizeof(temp), "%d", (S32)position.mdV[VZ]);
 		}
-		element["columns"][LIST_ALTITUDE]["value"] = temp;
+		alt.value = temp;
 
-		element["columns"][LIST_ACTIVITY]["column"] = "activity";
-		element["columns"][LIST_ACTIVITY]["type"] = "icon";
+		LLScrollListCell::Params act;
+		act.column = "activity";
+		act.type = "icon";
 
 		std::string activity_icon = "";
 		std::string activity_tip = "";
@@ -1032,12 +1033,13 @@ void LLFloaterAvatarList::refreshAvatarList()
 			break;
 		}
 
-		element["columns"][LIST_ACTIVITY]["value"] = activity_icon;//icon_image_id; //"icn_active-speakers-dot-lvl0.tga";
-		//element["columns"][LIST_AVATAR_ACTIVITY]["color"] = icon_color.getValue();
-		element["columns"][LIST_ACTIVITY]["tool_tip"] = activity_tip;
+		act.value = activity_icon;//icon_image_id; //"icn_active-speakers-dot-lvl0.tga";
+		//act.color = icon_color;
+		act.tool_tip = activity_tip;
 
-		element["columns"][LIST_AGE]["column"] = "age";
-		element["columns"][LIST_AGE]["type"] = "text";
+		LLScrollListCell::Params agep;
+		agep.column = "age";
+		agep.type = "text";
 		color = sDefaultListText;
 		std::string age = boost::lexical_cast<std::string>(entry->mAge);
 		if (entry->mAge > -1)
@@ -1057,21 +1059,22 @@ void LLFloaterAvatarList::refreshAvatarList()
 		{
 			age = "?";
 		}
-		element["columns"][LIST_AGE]["value"] = age;
-		element["columns"][LIST_AGE]["color"] = color.getValue();
+		agep.value = age;
+		agep.color = color;
 
 		int dur = difftime(time(NULL), entry->getTime());
 		int hours = dur / 3600;
 		int mins = (dur % 3600) / 60;
 		int secs = (dur % 3600) % 60;
 
-		element["columns"][LIST_TIME]["column"] = "time";
-		element["columns"][LIST_TIME]["type"] = "text";
-		element["columns"][LIST_TIME]["value"] = llformat("%d:%02d:%02d", hours, mins, secs);
+		LLScrollListCell::Params time;
+		time.column = "time";
+		time.type = "text";
+		time.value = llformat("%d:%02d:%02d", hours, mins, secs);
 
-		element["columns"][LIST_CLIENT]["column"] = "client";
-		element["columns"][LIST_CLIENT]["type"] = "text";
-
+		LLScrollListCell::Params viewer;
+		viewer.column = "client";
+		viewer.type = "text";
 
 		static const LLCachedControl<LLColor4> avatar_name_color(gColors, "AvatarNameColor",LLColor4(0.98f, 0.69f, 0.36f, 1.f));
 		LLColor4 client_color(avatar_name_color);
@@ -1085,18 +1088,30 @@ void LLFloaterAvatarList::refreshAvatarList()
 				client_color = unselected_color;
 				client = "?";
 			}
+			viewer.value = client.c_str();
 		}
 		else
 		{
-			element["columns"][LIST_CLIENT]["value"] = getString("Out Of Range");
+			viewer.value = getString("Out Of Range");
 		}
 		//Blend to make the color show up better
 		client_color = client_color *.5f + unselected_color * .5f;
 
-		element["columns"][LIST_CLIENT]["color"] = client_color.getValue();
+		viewer.color = client_color;
+
+		// Add individual column cell params to the item param
+		element.columns.add(mark);
+		element.columns.add(name);
+		element.columns.add(dist);
+		element.columns.add(pos);
+		element.columns.add(alt);
+		element.columns.add(act);
+		element.columns.add(agep);
+		element.columns.add(time);
+		element.columns.add(viewer);
 
 		// Add to list
-		mAvatarList->addElement(element, ADD_BOTTOM);
+		mAvatarList->addRow(element);
 	}
 
 	// finish

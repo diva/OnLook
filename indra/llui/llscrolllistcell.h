@@ -33,6 +33,7 @@
 #include "lluistring.h"
 #include "v4color.h"
 #include "llui.h"
+#include "llinitparam.h"
 
 class LLCheckBoxCtrl;
 class LLSD;
@@ -48,7 +49,48 @@ class LLSD;
 class LLScrollListCell
 {
 public:
-	LLScrollListCell(S32 width = 0);
+	struct Params : public LLInitParam::Block<Params>
+	{
+		Optional<std::string>		type,
+									column;
+
+		Optional<S32>				width;
+		Optional<bool>				enabled,
+									visible;
+
+		Optional<void*>				userdata;
+		Optional<LLSD>				value;
+		Optional<std::string>		tool_tip;
+
+		Optional<std::string>		font;
+		Optional<LLColor4>			font_color;
+		Optional<LLFontGL::HAlign>	font_halign;
+		Optional<std::string>		font_style;
+
+		Optional<LLColor4>			color;
+
+		Params()
+		:	type("type", "text"),
+			column("column"),
+			width("width"),
+			enabled("enabled", true),
+			visible("visible", true),
+			value("value"),
+			tool_tip("tool_tip", ""),
+			font("font"/*, LLFontGL::getFontSansSerifSmall()*/),
+			font_color("font_color", LLColor4::black),
+			font_style("font-style"),
+			color("color", LLColor4::white),
+			font_halign("halign", LLFontGL::LEFT)
+		{
+			addSynonym(column, "name");
+			addSynonym(font_color, "font-color");
+		}
+	};
+
+	static LLScrollListCell* create(Params);
+
+	LLScrollListCell(const LLScrollListCell::Params&);
 	virtual ~LLScrollListCell() {};
 
 	virtual void			draw(const LLColor4& color, const LLColor4& highlight_color) const {};		// truncate to given width, if possible
@@ -74,6 +116,13 @@ private:
 	S32 mWidth;
 	std::string mToolTip;
 };
+
+class LLScrollListSpacer : public LLScrollListCell
+{
+public:
+	LLScrollListSpacer(const LLScrollListCell::Params& p) : LLScrollListCell(p) {}
+	/*virtual*/ ~LLScrollListSpacer() {};
+	/*virtual*/ void			draw(const LLColor4& color, const LLColor4& highlight_color) const {}
 };
 
 /*
@@ -82,7 +131,7 @@ private:
 class LLScrollListText : public LLScrollListCell
 {
 public:
-	LLScrollListText(const std::string& text, const LLFontGL* font, S32 width = 0, U8 font_style = LLFontGL::NORMAL, LLFontGL::HAlign font_alignment = LLFontGL::LEFT, LLColor4& color = LLColor4::black, BOOL use_color = FALSE, BOOL visible = TRUE);
+	LLScrollListText(const LLScrollListCell::Params&);
 	/*virtual*/ ~LLScrollListText();
 
 	/*virtual*/ void    draw(const LLColor4& color, const LLColor4& highlight_color) const;
@@ -128,8 +177,7 @@ private:
 class LLScrollListIcon : public LLScrollListCell
 {
 public:
-	LLScrollListIcon( LLUIImagePtr icon, S32 width = 0);
-	LLScrollListIcon(const LLSD& value, S32 width = 0);
+	LLScrollListIcon(const LLScrollListCell::Params& p);
 	/*virtual*/ ~LLScrollListIcon();
 	/*virtual*/ void	draw(const LLColor4& color, const LLColor4& highlight_color) const;
 	/*virtual*/ S32		getWidth() const;
@@ -145,6 +193,7 @@ public:
 private:
 	LLPointer<LLUIImage>	mIcon;
 	LLColor4				mColor;
+	LLFontGL::HAlign		mAlignment;
 	// <edit>
 	boost::function<bool (void)> mCallback;
 	// </edit>
@@ -156,7 +205,7 @@ private:
 class LLScrollListCheck : public LLScrollListCell
 {
 public:
-	LLScrollListCheck( LLCheckBoxCtrl* check_box, S32 width = 0);
+	LLScrollListCheck( const LLScrollListCell::Params&);
 	/*virtual*/ ~LLScrollListCheck();
 	/*virtual*/ void	draw(const LLColor4& color, const LLColor4& highlight_color) const;
 	/*virtual*/ S32		getHeight() const			{ return 0; }
@@ -176,7 +225,7 @@ private:
 class LLScrollListDate : public LLScrollListText
 {
 public:
-	LLScrollListDate( const LLDate& date, const LLFontGL* font, S32 width=0, U8 font_style = LLFontGL::NORMAL, LLFontGL::HAlign font_alignment = LLFontGL::LEFT, LLColor4& color = LLColor4::black, BOOL use_color = FALSE, BOOL visible = TRUE);
+	LLScrollListDate( const LLScrollListCell::Params& p );
 	virtual void	setValue(const LLSD& value);
 	virtual const LLSD getValue() const;
 

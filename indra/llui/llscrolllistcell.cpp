@@ -30,11 +30,44 @@
 #include "llscrolllistcell.h"
 
 #include "llcheckboxctrl.h"
+#include "llresmgr.h"
+
+//static
+LLScrollListCell* LLScrollListCell::create(LLScrollListCell::Params cell_p)
+{
+	LLScrollListCell* cell = NULL;
+
+	if (cell_p.type() == "icon")
+	{
+		cell = new LLScrollListIcon(cell_p);
+	}
+	else if (cell_p.type() == "checkbox")
+	{
+		cell = new LLScrollListCheck(cell_p);
+	}
+	else if (cell_p.type() == "date")
+	{
+		if (!cell_p.color.isProvided()) cell_p.color = LLUI::sColorsGroup->getColor("DefaultListText");
+		cell = new LLScrollListDate(cell_p);
+	}
+	else	// default is "text"
+	{
+		if (!cell_p.color.isProvided()) cell_p.color = LLUI::sColorsGroup->getColor("DefaultListText");
+		cell = new LLScrollListText(cell_p);
+	}
+
+	if (cell_p.value.isProvided())
+	{
+		cell->setValue(cell_p.value);
+	}
+
+	return cell;
+}
 
 
-LLScrollListCell::LLScrollListCell(S32 width)
-:	mWidth(width),
-	mToolTip()
+LLScrollListCell::LLScrollListCell(const LLScrollListCell::Params& p)
+:	mWidth(p.width),
+	mToolTip(p.tool_tip)
 {}
 
 // virtual
@@ -46,14 +79,15 @@ const LLSD LLScrollListCell::getValue() const
 //
 // LLScrollListIcon
 //
-LLScrollListIcon::LLScrollListIcon(const LLSD& value, S32 width)
-:	LLScrollListCell(width),
+LLScrollListIcon::LLScrollListIcon(const LLScrollListCell::Params& p)
+:	LLScrollListCell(p),
 	// <edit>
 	mCallback(NULL),
 	// </edit>
-	mColor(LLColor4::white)
+	mColor(p.color),
+	mAlignment(p.font_halign)
 {
-	setValue(value);
+	setValue(p.value().asString());
 }
 
 LLScrollListIcon::~LLScrollListIcon()
@@ -115,7 +149,20 @@ void LLScrollListIcon::draw(const LLColor4& color, const LLColor4& highlight_col
 {
 	if (mIcon)
 	{
-		mIcon->draw(0, 0, mColor);
+		switch(mAlignment)
+		{
+		case LLFontGL::LEFT:
+			mIcon->draw(0, 0, mColor);
+			break;
+		case LLFontGL::RIGHT:
+			mIcon->draw(getWidth() - mIcon->getWidth(), 0, mColor);
+			break;
+		case LLFontGL::HCENTER:
+			mIcon->draw((getWidth() - mIcon->getWidth()) / 2, 0, mColor);
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -124,15 +171,15 @@ void LLScrollListIcon::draw(const LLColor4& color, const LLColor4& highlight_col
 //
 U32 LLScrollListText::sCount = 0;
 
-LLScrollListText::LLScrollListText(const std::string& text, const LLFontGL* font, S32 width, U8 font_style, LLFontGL::HAlign font_alignment, LLColor4& color, BOOL use_color, BOOL visible)
-:	LLScrollListCell(width),
-	mText(text),
-	mFont(font),
-	mColor(color),
-	mUseColor(use_color),
-	mFontStyle(font_style),
-	mFontAlignment(font_alignment),
-	mVisible(visible),
+LLScrollListText::LLScrollListText(const LLScrollListCell::Params& p)
+:	LLScrollListCell(p),
+	mText(p.value().asString()),
+	mFont(p.font.isProvided() ? LLResMgr::getInstance()->getRes(p.font) : LLFontGL::getFontSansSerifSmall()),
+	mColor(p.color),
+	mUseColor(p.color.isProvided()),
+	mFontStyle(LLFontGL::getStyleFromString(p.font_style)),
+	mFontAlignment(p.font_halign),
+	mVisible(p.visible),
 	mHighlightCount( 0 ),
 	mHighlightOffset( 0 )
 {
@@ -302,22 +349,25 @@ void LLScrollListText::draw(const LLColor4& color, const LLColor4& highlight_col
 //
 // LLScrollListCheck
 //
-LLScrollListCheck::LLScrollListCheck(LLCheckBoxCtrl* check_box, S32 width)
-:	LLScrollListCell(width)
+LLScrollListCheck::LLScrollListCheck(const LLScrollListCell::Params& p)
+:	LLScrollListCell(p)
 {
-	mCheckBox = check_box;
+	mCheckBox = new LLCheckBoxCtrl("checkbox", LLRect(0, p.width, p.width, 0), "", NULL, NULL, p.value());
+	mCheckBox->setEnabled(p.enabled);
 
 	LLRect rect(mCheckBox->getRect());
-	if (width)
+	if (p.width)
 	{
-		rect.mRight = rect.mLeft + width;
+		rect.mRight = rect.mLeft + p.width;
 		mCheckBox->setRect(rect);
-		setWidth(width);
+		setWidth(p.width);
 	}
 	else
 	{
 		setWidth(rect.getWidth()); //check_box->getWidth();
 	}
+
+	mCheckBox->setColor(p.color);
 }
 
 
@@ -370,9 +420,9 @@ void LLScrollListCheck::setEnabled(BOOL enable)
 // LLScrollListDate
 //
 
-LLScrollListDate::LLScrollListDate( const LLDate& date, const LLFontGL* font, S32 width, U8 font_style, LLFontGL::HAlign font_alignment, LLColor4& color, BOOL use_color, BOOL visible)
-:	LLScrollListText(date.asRFC1123(), font, width, font_style, font_alignment, color, use_color, visible),
-	mDate(date)
+LLScrollListDate::LLScrollListDate( const LLScrollListCell::Params& p)
+:	LLScrollListText(p),
+	mDate(p.value().asDate())
 {}
 
 void LLScrollListDate::setValue(const LLSD& value)

@@ -31,6 +31,7 @@
 #include "llrect.h"
 #include "lluistring.h"
 #include "llbutton.h"
+#include "llinitparam.h"
 
 class LLScrollListColumn;
 class LLResizeBar;
@@ -75,9 +76,73 @@ public:
 		ASCENDING
 	} ESortDirection;
 
+	struct SortNames
+	:	public LLInitParam::TypeValuesHelper<LLScrollListColumn::ESortDirection, SortNames>
+	{
+		static void declareValues();
+	};
+
+	struct Params : public LLInitParam::Block<Params>
+	{
+		Optional<std::string>				name,
+											tool_tip;
+		Optional<std::string>				sort_column;
+		Optional<ESortDirection, SortNames>	sort_direction;
+		Optional<bool>						sort_ascending;
+
+		struct Width : public LLInitParam::ChoiceBlock<Width>
+		{
+			Alternative<bool>	dynamic_width;
+			Alternative<S32>		pixel_width;
+			Alternative<F32>		relative_width;
+
+			Width()
+			:	dynamic_width("dynamic_width", false),
+				pixel_width("width"),
+				relative_width("relative_width", -1.f)
+			{
+				addSynonym(dynamic_width, "dynamicwidth"); // Singu TODO: deprecate and remove
+				addSynonym(relative_width, "relwidth");
+			}
+		};
+		Optional<Width>						width;
+
+		// either an image or label is used in column header
+		struct Header : public LLInitParam::ChoiceBlock<Header>
+		{
+			Alternative<std::string>			label;
+			Alternative<std::string>			image_overlay;
+			Alternative<std::string>			image;
+
+			Header()
+			:	label("label"),
+				image_overlay("image_overlay"),
+				image("image")
+			{}
+		};
+		Optional<Header>					header;
+
+		Optional<LLFontGL::HAlign>			halign;
+
+		Params()
+		:	name("name"),
+			tool_tip("tool_tip"),
+			sort_column("sort_column"),
+			sort_direction("sort_direction"),
+			sort_ascending("sort_ascending", true),
+			halign("halign", LLFontGL::LEFT)
+		{
+			// default choice to "dynamic_width"
+			changeDefault(width.dynamic_width, true);
+
+			addSynonym(sort_column, "sort");
+		}
+	};
+
+	//static const Params& getDefaultParams();
+
 	//NOTE: this is default constructible so we can store it in a map.
-	LLScrollListColumn();
-	LLScrollListColumn(const LLSD& sd, LLScrollListCtrl* parent = NULL);
+	LLScrollListColumn(const Params& p = Params(), LLScrollListCtrl* = NULL);
 
 	void setWidth(S32 width);
 	S32 getWidth() const { return mWidth; }
