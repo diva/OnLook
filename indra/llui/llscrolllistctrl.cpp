@@ -1565,6 +1565,13 @@ BOOL LLScrollListCtrl::handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sti
 		handled = headerp->handleToolTip(x, y, msg, sticky_rect_screen);
 	}
 
+	// Singu Note: If all else fails, try to use our own tooltip
+	if (!handled)
+	{
+		msg = LLUI::sShowXUINames ? getShowNamesToolTip() : getToolTip();
+		handled = !msg.empty();
+	}
+
 	return handled;
 }
 
@@ -2550,6 +2557,10 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 	BOOL mouse_wheel_opaque = true;
 	node->getAttributeBOOL("mouse_wheel_opaque", mouse_wheel_opaque);
 	scroll_list->mMouseWheelOpaque = mouse_wheel_opaque;
+
+	std::string tool_tip;
+	node->getAttributeString("tool_tip", tool_tip);
+	scroll_list->setToolTip(tool_tip);
 
 	LLSD columns;
 	S32 index = 0;
