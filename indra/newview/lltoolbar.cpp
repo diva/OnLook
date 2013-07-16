@@ -35,41 +35,30 @@
 
 #include "lltoolbar.h"
 
-#include "imageids.h"
-#include "llfontgl.h"
-#include "llrect.h"
-#include "llparcel.h"
+#include "llbutton.h"
+#include "llflyoutbutton.h"
+#include "llscrolllistitem.h"
+#include "llui.h"
 
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llagentwearables.h"
-#include "llbutton.h"
-#include "llfocusmgr.h"
-#include "llviewercontrol.h"
-#include "llmenucommands.h"
-#include "llimview.h"
-#include "lluiconstants.h"
-#include "llvoavatarself.h"
-#include "lltooldraganddrop.h"
-#include "llfloaterchatterbox.h"
-#include "llfloaterfriends.h"
-#include "llfloaterinventory.h"
-#include "llfloatersnapshot.h"
-#include "llfloateravatarlist.h"
-#include "lltoolmgr.h"
-#include "llui.h"
-#include "llviewermenu.h"
 #include "llfirstuse.h"
 #include "llviewerparcelmgr.h"
-#include "lluictrlfactory.h"
-#include "llviewerwindow.h"
-#include "lltoolgrab.h"
-#include "llcombobox.h"
+#include "llfloateravatarlist.h"
 #include "llfloaterchat.h"
-#include "llfloatermute.h"
-#include "llimpanel.h"
-#include "llscrolllistctrl.h"
+#include "llfloaterchatterbox.h"
 #include "llfloatercustomize.h"
+#include "llfloaterfriends.h"
+#include "llfloaterinventory.h"
+#include "llfloatermute.h"
+#include "llfloatersnapshot.h"
+#include "llimpanel.h"
+#include "llimview.h"
+#include "llmenucommands.h"
+#include "lltoolmgr.h"
+#include "lltoolgrab.h"
+#include "llvoavatarself.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -78,6 +67,7 @@
 #if LL_DARWIN
 
 	#include "llresizehandle.h"
+	#include "llviewerwindow.h"
 
 	// This class draws like an LLResizeHandle but has no interactivity.
 	// It's just there to provide a cue to the user that the lower right corner of the window functions as a resize handle.
@@ -343,7 +333,7 @@ void LLToolBar::refresh()
 		mBuildBtn->setEnabled(!(gRlvHandler.hasBehaviour(RLV_BHVR_REZ) && gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)));
 
 		mMapBtn->setEnabled(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWWORLDMAP));
-		mRadarBtn->setEnabled(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWMINIMAP));
+		mRadarBtn->setEnabled(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWMINIMAP) && !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES));
 		mInventoryBtn->setEnabled(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWINV));
 	}
 // [/RLVa:KB]

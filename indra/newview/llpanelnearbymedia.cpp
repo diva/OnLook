@@ -33,7 +33,9 @@
 #include "llcombobox.h"
 #include "llresizebar.h"
 #include "llresizehandle.h"
+#include "llscrolllistcolumn.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "llslider.h"
 #include "llsliderctrl.h"
 #include "llagent.h"
@@ -475,7 +477,7 @@ void LLPanelNearByMedia::updateListItem(LLScrollListItem* item,
 		{
 			cell->setValue(name);
 		}
-		item->setToolTip(item_tooltip);
+		cell->setToolTip(item_tooltip);
 		
 		// *TODO: Make these font styles/colors configurable via XUI
 		U8 font_style = LLFontGL::NORMAL;

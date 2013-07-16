@@ -32,28 +32,19 @@
 
 #include "llviewerprecompiledheaders.h"
 
-#include "linden_common.h"
-
-#include <algorithm>
-
-//MK
-#include "llworld.h"
-#include "lleventpoll.h"
-#include "llagent.h"
-//mk
-#include "llappviewer.h"
 #include "llfloaterteleporthistory.h"
+
+#include "llappviewer.h"
 #include "llfloaterworldmap.h"
+#include "llscrolllistcolumn.h"
+#include "llscrolllistitem.h"
+#include "llsdserialize.h"
 #include "llslurl.h"
-#include "lltimer.h"
 #include "lluictrlfactory.h"
-#include "llurldispatcher.h"
-#include "llviewercontrol.h"
+#include "llurlaction.h"
 #include "llviewerwindow.h"
 #include "llwindow.h"
 #include "llweb.h"
-#include "llsdserialize.h"
-#include "llurlaction.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"

@@ -667,10 +667,6 @@
 			</text>
 			<spinner label="Horizontal (U)" name="TexOffsetU"/>
 			<spinner label="Vertical (V)" name="TexOffsetV"/>
-			<text name="textbox autofix">
-				Alinear textura para Media
-(Se debe subir primero)
-			</text>
 			<button label="Alinear" label_selected="Alinear" name="button align"  left="150" width="50"/>
 			<text name="textbox params" left="195" height="40">
 				Parámetros 

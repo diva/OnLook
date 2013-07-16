@@ -37,7 +37,6 @@
 #include <algorithm>
 #include <functional>
 
-#include "llcachename.h"
 #include "lldir.h"
 #include "lldispatcher.h"
 #include "llglheaders.h"
@@ -69,6 +68,7 @@
 #include "llnotifications.h"
 #include "llnotificationsutil.h"
 #include "llregioninfomodel.h"
+#include "llscrolllistitem.h"
 #include "llsliderctrl.h"
 #include "llspinctrl.h"
 #include "lltabcontainer.h"
@@ -355,7 +355,7 @@ void LLFloaterRegionInfo::processRegionInfo(LLMessageSystem* msg)
 	// extract message
 	std::string sim_name;
 	std::string sim_type = LLTrans::getString("land_type_unknown");
-	U32 region_flags;
+	U64 region_flags;
 	U8 agent_limit;
 	F32 object_bonus_factor;
 	U8 sim_access;
@@ -365,7 +365,6 @@ void LLFloaterRegionInfo::processRegionInfo(LLMessageSystem* msg)
 	BOOL use_estate_sun;
 	F32 sun_hour;
 	msg->getString("RegionInfo", "SimName", sim_name);
-	msg->getU32("RegionInfo", "RegionFlags", region_flags);
 	msg->getU8("RegionInfo", "MaxAgents", agent_limit);
 	msg->getF32("RegionInfo", "ObjectBonusFactor", object_bonus_factor);
 	msg->getU8("RegionInfo", "SimAccess", sim_access);
@@ -382,6 +381,17 @@ void LLFloaterRegionInfo::processRegionInfo(LLMessageSystem* msg)
 	{
 		msg->getString("RegionInfo2", "ProductName", sim_type);
 		LLTrans::findString(sim_type, sim_type); // try localizing sim product name
+	}
+
+	if (msg->has(_PREHASH_RegionInfo3))
+	{
+		msg->getU64("RegionInfo3", "RegionFlagsExtended", region_flags);
+	}
+	else
+	{
+		U32 flags = 0;
+		msg->getU32("RegionInfo", "RegionFlags", flags);
+		region_flags = flags;
 	}
 
 	// Disable Environment Tab when not supported
@@ -1081,8 +1091,10 @@ void LLPanelRegionDebugInfo::onClickTopColliders(void* data)
 	strings_t strings;
 	strings.push_back("1");	// one physics step
 	LLUUID invoice(LLFloaterRegionInfo::getLastInvoice());
-	LLFloaterTopObjects::show();
-	LLFloaterTopObjects::clearList();
+	LLFloaterTopObjects* instance = LLFloaterTopObjects::getInstance();
+	if(!instance) return;
+	instance->open();
+	instance->clearList();
 	self->sendEstateOwnerMessage(gMessageSystem, "colliders", invoice, strings);
 }
 
@@ -1093,8 +1105,10 @@ void LLPanelRegionDebugInfo::onClickTopScripts(void* data)
 	strings_t strings;
 	strings.push_back("6");	// top 5 scripts
 	LLUUID invoice(LLFloaterRegionInfo::getLastInvoice());
-	LLFloaterTopObjects::show();
-	LLFloaterTopObjects::clearList();
+	LLFloaterTopObjects* instance = LLFloaterTopObjects::getInstance();
+	if(!instance) return;
+	instance->open();
+	instance->clearList();
 	self->sendEstateOwnerMessage(gMessageSystem, "scripts", invoice, strings);
 }
 
@@ -1493,7 +1507,8 @@ bool LLPanelEstateInfo::addAllowedGroup(const LLSD& notification, const LLSD& re
 	LLFloaterGroupPicker* widget = LLFloaterGroupPicker::showInstance(LLSD(gAgent.getID()));
 	if (widget)
 	{
-		widget->setSelectCallback(addAllowedGroup2, NULL);
+		widget->removeNoneOption();
+		widget->setSelectGroupCallback(boost::bind(&LLPanelEstateInfo::addAllowedGroup2, this, _1));
 		if (parent_floater)
 		{
 			LLRect new_rect = gFloaterView->findNeighboringPosition(parent_floater, widget);
@@ -1683,9 +1698,8 @@ struct LLEstateAccessChangeInfo
 	uuid_vec_t mAgentOrGroupIDs; // List of agent IDs to apply to this change
 };
 
-// static
 // Special case callback for groups, since it has different callback format than names
-void LLPanelEstateInfo::addAllowedGroup2(LLUUID id, void*)
+void LLPanelEstateInfo::addAllowedGroup2(LLUUID id)
 {
 	LLSD payload;
 	payload["operation"] = (S32)ESTATE_ACCESS_ALLOWED_GROUP_ADD;
@@ -2339,8 +2353,8 @@ public:
 	// if we get an error response
 	/*virtual*/ void error(U32 status, const std::string& reason)
 	{
-		llinfos << "LLEstateChangeInfoResponder::error "
-			<< status << ": " << reason << llendl;
+		llinfos << "LLEstateChangeInfoResponder::error [status:"
+			<< status << "]: " << reason << llendl;
 	}
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return estateChangeInfoResponder_timeout; }
@@ -2698,7 +2712,7 @@ BOOL LLPanelEstateCovenant::sendUpdate()
 	return TRUE;
 }
 
-const std::string& LLPanelEstateCovenant::getEstateName() const
+std::string LLPanelEstateCovenant::getEstateName() const
 {
 	return mEstateNameText->getText();
 }
@@ -2749,7 +2763,7 @@ void LLPanelEstateCovenant::updateEstateOwnerName(const std::string& name)
 	}
 }
 
-const std::string& LLPanelEstateCovenant::getOwnerName() const
+std::string LLPanelEstateCovenant::getOwnerName() const
 {
 	return mEstateOwnerText->getText();
 }

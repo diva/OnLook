@@ -4,5 +4,4 @@
 	
 	<button label="OK" label_selected="OK" name="OK"/>
 	<button label="Abbrechen" label_selected="Abbrechen" name="Cancel"/>
-  <string name="none">keine</string>
 </floater>

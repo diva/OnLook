@@ -43,29 +43,25 @@
 #include "llnotificationsutil.h"
 #include "llparcel.h"
 #include "message.h"
-#include "lluserauth.h"
 
 #include "llagent.h"
 #include "llagentaccess.h"
 #include "llavataractions.h"
-#include "llavatarconstants.h" //For new Online check - HgB
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
-#include "llradiogroup.h"
 #include "llcombobox.h"
 #include "llfloaterauction.h"
 #include "llfloateravatarpicker.h"
 #include "llfloatergroups.h"
-#include "llfloatergroupinfo.h"
 #include "llfloaterscriptlimits.h"
 #include "llgroupactions.h"
 #include "lllineeditor.h"
 #include "llnamelistctrl.h"
-#include "llnotify.h"
 #include "llpanellandaudio.h"
 #include "llpanellandmedia.h"
 #include "llradiogroup.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "llselectmgr.h"
 #include "llspinctrl.h"
 #include "lltabcontainer.h"
@@ -221,16 +217,15 @@ void LLFloaterLand::onClose(bool app_quitting)
 LLFloaterLand::LLFloaterLand(const LLSD& seed)
 :	LLFloater(std::string("floaterland"), std::string("FloaterLandRect5"), std::string("About Land"))
 {
-	LLCallbackMap::map_t factory_map;
-	factory_map["land_general_panel"] = LLCallbackMap(createPanelLandGeneral, this);
-	factory_map["land_covenant_panel"] = LLCallbackMap(createPanelLandCovenant, this);
-	factory_map["land_objects_panel"] = LLCallbackMap(createPanelLandObjects, this);
-	factory_map["land_options_panel"] = LLCallbackMap(createPanelLandOptions, this);
-	factory_map["land_audio_panel"] =	LLCallbackMap(createPanelLandAudio, this);
-	factory_map["land_media_panel"] =	LLCallbackMap(createPanelLandMedia, this);
-	factory_map["land_access_panel"] =	LLCallbackMap(createPanelLandAccess, this);
+	mFactoryMap["land_general_panel"] = LLCallbackMap(createPanelLandGeneral, this);
+	mFactoryMap["land_covenant_panel"] = LLCallbackMap(createPanelLandCovenant, this);
+	mFactoryMap["land_objects_panel"] = LLCallbackMap(createPanelLandObjects, this);
+	mFactoryMap["land_options_panel"] = LLCallbackMap(createPanelLandOptions, this);
+	mFactoryMap["land_audio_panel"] =	LLCallbackMap(createPanelLandAudio, this);
+	mFactoryMap["land_media_panel"] =	LLCallbackMap(createPanelLandMedia, this);
+	mFactoryMap["land_access_panel"] =	LLCallbackMap(createPanelLandAccess, this);
 
-	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_about_land.xml", &factory_map, false);
+	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_about_land.xml", &getFactoryMap(), false);
 
 	sObserver = new LLParcelSelectionObserver();
 	LLViewerParcelMgr::getInstance()->addObserver( sObserver );
@@ -796,7 +791,7 @@ void LLPanelLandGeneral::refreshNames()
 	mTextOwner->setText(owner);
 
 	std::string group;
-	if(!parcel->getGroupID().isNull())
+	if (!parcel->getGroupID().isNull())
 	{
 		gCacheName->getGroupName(parcel->getGroupID(), group);
 	}
@@ -822,7 +817,6 @@ void LLPanelLandGeneral::refreshNames()
 // virtual
 void LLPanelLandGeneral::draw()
 {
-	//refreshNames();
 	LLPanel::draw();
 }
 
@@ -833,7 +827,7 @@ void LLPanelLandGeneral::onClickSetGroup()
 	LLFloaterGroupPicker* fg = LLFloaterGroupPicker::showInstance(LLSD(gAgent.getID()));
 	if (fg)
 	{
-		fg->setSelectCallback( cbGroupID, this);
+		fg->setSelectGroupCallback( boost::bind(&LLPanelLandGeneral::setGroup, this, _1 ));
 		if (parent_floater)
 		{
 			LLRect new_rect = gFloaterView->findNeighboringPosition(parent_floater, fg);
@@ -865,13 +859,6 @@ void LLPanelLandGeneral::onClickProfile()
 	{
 		LLAvatarActions::showProfile(parcel->getOwnerID());
 	}
-}
-
-// static
-void LLPanelLandGeneral::cbGroupID(LLUUID group_id, void* userdata)
-{
-	LLPanelLandGeneral* self = (LLPanelLandGeneral*)userdata;
-	self->setGroup(group_id);
 }
 
 // public
@@ -1128,7 +1115,6 @@ BOOL LLPanelLandObjects::postBuild()
 
 	mCleanOtherObjectsTime->setFocusLostCallback(boost::bind(&LLPanelLandObjects::onLostFocus, _1, this));
 	mCleanOtherObjectsTime->setCommitCallback(onCommitClean, this);
-
 	mCleanOtherObjectsTime->setPrevalidate(LLLineEditor::prevalidateNonNegativeS32);
 
 	mBtnRefresh = getChild<LLButton>("Refresh List");
@@ -1886,7 +1872,6 @@ BOOL LLPanelLandOptions::postBuild()
 	childSetCommitCallback("check landmark", onCommitAny, this);
 	mCheckLandmark->setVisible(!gHippoGridManager->getConnectedGrid()->isSecondLife());
 
-	
 	mCheckGroupScripts = getChild<LLCheckBoxCtrl>( "check group scripts");
 	childSetCommitCallback("check group scripts", onCommitAny, this);
 
@@ -2452,11 +2437,15 @@ BOOL LLPanelLandAccess::postBuild()
 	
 	mListAccess = getChild<LLNameListCtrl>("AccessList");
 	if (mListAccess)
+	{
 		mListAccess->sortByColumnIndex(0, TRUE); // ascending
+	}
 
 	mListBanned = getChild<LLNameListCtrl>("BannedList");
 	if (mListBanned)
+	{
 		mListBanned->sortByColumnIndex(0, TRUE); // ascending
+	}
 
 	return TRUE;
 }
@@ -2969,10 +2958,7 @@ void LLPanelLandCovenant::refresh()
 	}
 
 	LLTextBox* region_landtype = getChild<LLTextBox>("region_landtype_text");
-	if (region_landtype)
-	{
-		region_landtype->setText(region->getLocalizedSimProductName());
-	}
+	region_landtype->setText(region->getLocalizedSimProductName());
 	
 	LLTextBox* region_maturity = getChild<LLTextBox>("region_maturity_text");
 	if (region_maturity)
@@ -3022,11 +3008,8 @@ void LLPanelLandCovenant::updateCovenantText(const std::string &string)
 	if (self)
 	{
 		LLViewerTextEditor* editor = self->getChild<LLViewerTextEditor>("covenant_editor");
-		if (editor)
-		{
-			editor->setHandleEditKeysDirectly(TRUE);
-			editor->setText(string);
-		}
+		editor->setHandleEditKeysDirectly(TRUE);
+		editor->setText(string);
 	}
 }
 

@@ -964,4 +964,3 @@ void LLVoiceChannelP2P::setState(EState state)
 		LLRecentPeople::instance().add(mOtherUserID);
 	}
 }*/
-

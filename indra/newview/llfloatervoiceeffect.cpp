@@ -30,6 +30,7 @@
 #include "llfloatervoiceeffect.h"
 
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "lltexteditor.h" // For linked text hack
 #include "lltrans.h"
 #include "lluictrlfactory.h"

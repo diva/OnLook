@@ -46,6 +46,7 @@
 #include "llcombobox.h"
 #include "lllineeditor.h"
 #include "llnotificationsutil.h"
+#include "llscrolllistcolumn.h"
 #include "llscrolllistctrl.h"
 #include "llstatusbar.h"
 #include "lluiconstants.h"

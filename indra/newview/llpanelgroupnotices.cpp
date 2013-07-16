@@ -41,10 +41,9 @@
 #include "llviewerinventory.h"
 #include "llinventorydefines.h"
 #include "llinventoryfunctions.h"
-#include "llinventorymodel.h"
 #include "llinventoryicon.h"
+#include "llinventorymodel.h"
 #include "llagent.h"
-#include "lltooldraganddrop.h"
 
 #include "lllineeditor.h"
 #include "lltexteditor.h"
@@ -52,11 +51,11 @@
 #include "lliconctrl.h"
 #include "llcheckboxctrl.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "lltextbox.h"
 
 #include "roles_constants.h"
 #include "llviewerwindow.h"
-#include "llviewercontrol.h"
 #include "llviewermessage.h"
 #include "llnotificationsutil.h"
 #include "llgiveinventory.h"
@@ -86,16 +85,15 @@ public:
 								   EAcceptance* accept,
 								   std::string& tooltip_msg);
 	static LLView* fromXML(LLXMLNodePtr node, LLView* parent, class LLUICtrlFactory* factory);
+	void setPanel(LLPanelGroupNotices* panel) { mGroupNoticesPanel = panel; }
 
-	void setGroupNoticesPanel(LLPanelGroupNotices* panel) { mGroupNoticesPanel = panel; }
 protected:
 	LLPanelGroupNotices* mGroupNoticesPanel;
 };
 
 LLGroupDropTarget::LLGroupDropTarget(const LLDropTarget::Params& p)
 :	LLDropTarget(p)
-{
-}
+{}
 
 // static
 LLView* LLGroupDropTarget::fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFactory* factory)
@@ -144,6 +142,7 @@ BOOL LLGroupDropTarget::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 		case DAD_BODYPART:
 		case DAD_ANIMATION:
 		case DAD_GESTURE:
+		case DAD_CALLINGCARD:
 		{
 			LLViewerInventoryItem* inv_item = (LLViewerInventoryItem*)cargo_data;
 			if(gInventory.getItem(inv_item->getUUID())
@@ -167,7 +166,6 @@ BOOL LLGroupDropTarget::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 			break;
 		}
 		case DAD_CATEGORY:
-		case DAD_CALLINGCARD:
 		default:
 			*accept = ACCEPT_NO;
 			break;
@@ -269,9 +267,9 @@ BOOL LLPanelGroupNotices::postBuild()
 	mPanelCreateNotice = getChild<LLPanel>("panel_create_new_notice",recurse);
 	mPanelViewNotice = getChild<LLPanel>("panel_view_past_notice",recurse);
 
-	LLGroupDropTarget* group_drop_target = getChild<LLGroupDropTarget>("drop_target",recurse);
-	group_drop_target->setEntityID(mGroupID);
-	group_drop_target->setGroupNoticesPanel(this);
+	LLGroupDropTarget* target = getChild<LLGroupDropTarget>("drop_target",recurse);
+	target->setPanel(this);
+	target->setEntityID(mGroupID);
 
 	arrangeNoticeView(VIEW_PAST_NOTICE);
 
@@ -538,8 +536,7 @@ void LLPanelGroupNotices::showNotice(const std::string& subject,
 		mInventoryOffer = inventory_offer;
 
 		std::string icon_name = LLInventoryIcon::getIconName(mInventoryOffer->mType,
-												LLInventoryType::IT_TEXTURE,
-												0, FALSE);
+												LLInventoryType::IT_TEXTURE);
 
 		mViewInventoryIcon->setImage(icon_name);
 		mViewInventoryIcon->setVisible(TRUE);

@@ -2058,7 +2058,7 @@ class LLObjectInspect : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLFloaterInspect::show();
+		LLFloaterInspect::showInstance();
 		return true;
 	}
 };

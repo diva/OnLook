@@ -554,10 +554,6 @@
 			<text name="tex offset">
 				Décalage
 			</text>
-			<text name="textbox autofix">
-				Ajuster la texture du média
-(chargement préalable)
-			</text>
 			<button label="Ajuster" label_selected="Ajuster" left="140" name="button align" width="45"/>
 			<text name="textbox params">Paramètres</text>
 			<button label="Copier" name="copytextures" tool_tip="Copie les paramètres de la texture dans le presse papier"  width="55"/>

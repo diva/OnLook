@@ -31,49 +31,38 @@
  */
 
 #include "llviewerprecompiledheaders.h"
-
-#include <algorithm>
-
 #include "llpreviewgesture.h"
 
-// libraries
-#include "lldatapacker.h"
-#include "lldarray.h"
-#include "llinventorydefines.h"
-#include "llstring.h"
-#include "lldir.h"
-#include "llmultigesture.h"
-#include "llvfile.h"
-#include "lltrans.h"
-
-// newview
-#include "llagent.h"		// todo: remove
+#include "llagent.h"
+#include "llanimstatelabels.h"
 #include "llanimationstates.h"
+#include "llappviewer.h"			// gVFS
 #include "llassetuploadresponders.h"
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
 #include "llcombobox.h"
+#include "lldatapacker.h"
 #include "lldelayedgestureerror.h"
 #include "llfloatergesture.h" // for some label constants
 #include "llgesturemgr.h"
+#include "llinventorydefines.h"
 #include "llinventoryfunctions.h"
 #include "llinventorymodelbackgroundfetch.h"
 #include "llkeyboard.h"
 #include "lllineeditor.h"
+#include "llmultigesture.h"
 #include "llnotificationsutil.h"
 #include "llradiogroup.h"
+#include "llresmgr.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "lltextbox.h"
+#include "lltrans.h"
 #include "lluictrlfactory.h"
-#include "llviewerinventory.h"
-#include "llviewerobject.h"
+#include "llvfile.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
 #include "llviewerstats.h"
-#include "llviewerwindow.h"		// busycount
-#include "llappviewer.h"			// gVFS
-#include "llanimstatelabels.h"
-#include "llresmgr.h"
 
 
 // *TODO: Translate?
@@ -98,7 +87,7 @@ void LLInventoryGestureAvailable::done()
 {
 	for(uuid_vec_t::iterator it = mComplete.begin(); it != mComplete.end(); ++it)
 	{
-		LLPreview *preview = LLPreview::find((*it));
+		LLPreview* preview = LLPreview::find((*it));
 		if(preview)
 		{
 			preview->refresh();
@@ -557,6 +546,7 @@ static const std::string valid_key_to_string(KEY key)
 void LLPreviewGesture::addKeys()
 {
 	LLComboBox* combo = mKeyCombo;
+
 	combo->add( NONE_LABEL );
 	for (KEY key = ' '; key < KEY_NONE; key++)
 	{
@@ -686,7 +676,7 @@ void LLPreviewGesture::refresh()
 	if (mPreviewGesture || !is_complete)
 	{
 		
-		childSetEnabled("desc", FALSE);
+		getChildView("desc")->setEnabled(FALSE);
 		//mDescEditor->setEnabled(FALSE);
 		mTriggerEditor->setEnabled(FALSE);
 		mReplaceText->setEnabled(FALSE);
@@ -720,7 +710,7 @@ void LLPreviewGesture::refresh()
 
 	BOOL modifiable = item->getPermissions().allowModifyBy(gAgent.getID());
 
-	childSetEnabled("desc", modifiable);
+	getChildView("desc")->setEnabled(modifiable);
 	mTriggerEditor->setEnabled(TRUE);
 	mLibraryList->setEnabled(modifiable);
 	mStepList->setEnabled(modifiable);

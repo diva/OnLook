@@ -18,5 +18,4 @@
 	<button label="Suchen..." name="Search..."/>
 	<button label="Invite..." name="Invite..."/>
 	<button label="Titles..." name="Titles..."/>
-  <string name="none">keine</string>
 </panel>
