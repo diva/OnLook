@@ -111,7 +111,6 @@ LLSD LLSpeakerUpdateModeratorEvent::getValue()
 	return ret;
 }
 
-
 LLSpeakerTextModerationEvent::LLSpeakerTextModerationEvent(LLSpeaker* source)
 : LLEvent(source, "Speaker text moderation event")
 {
@@ -254,15 +253,58 @@ bool LLSpeakersDelayActionsStorage::onTimerActionCallback(const LLUUID& speaker_
 	return true;
 }
 
+//
+// ModerationResponder
+//
+
+class ModerationResponder : public LLHTTPClient::ResponderIgnoreBody
+{
+public:
+	ModerationResponder(const LLUUID& session_id)
+	{
+		mSessionID = session_id;
+	}
+
+	/*virtual*/ void error(U32 status, const std::string& reason)
+	{
+		llwarns << "ModerationResponder error [status:" << status << "]: " << reason << llendl;
+
+		if ( gIMMgr )
+		{
+			LLFloaterIMPanel* floaterp = gIMMgr->findFloaterBySession(mSessionID);
+			if (!floaterp) return;
+
+			//403 == you're not a mod
+			//should be disabled if you're not a moderator
+			if ( 403 == status )
+			{
+				floaterp->showSessionEventError(
+					"mute",
+					"not_a_mod_error");
+			}
+			else
+			{
+				floaterp->showSessionEventError(
+					"mute",
+					"generic_request_error");
+			}
+		}
+	}
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return moderationResponder_timeout; }
+	/*virtual*/ char const* getName(void) const { return "ModerationResponder"; }
+
+private:
+	LLUUID mSessionID;
+};
 
 //
 // LLSpeakerMgr
 //
 
 LLSpeakerMgr::LLSpeakerMgr(LLVoiceChannel* channelp) :
-	mVoiceChannel(channelp)
-, mVoiceModerated(false)
-, mModerateModeHandledFirstTime(false)
+	mVoiceChannel(channelp),
+	mVoiceModerated(false),
+	mModerateModeHandledFirstTime(false)
 {
 	static LLUICachedControl<F32> remove_delay ("SpeakerParticipantRemoveDelay", 10.0);
 
@@ -276,7 +318,10 @@ LLSpeakerMgr::~LLSpeakerMgr()
 
 LLPointer<LLSpeaker> LLSpeakerMgr::setSpeaker(const LLUUID& id, const std::string& name, LLSpeaker::ESpeakerStatus status, LLSpeaker::ESpeakerType type)
 {
-	if (id.isNull()) return NULL;
+	if (id.isNull())
+	{
+		return NULL;
+	}
 
 	LLPointer<LLSpeaker> speakerp;
 	if (mSpeakers.find(id) == mSpeakers.end())
@@ -358,12 +403,10 @@ void LLSpeakerMgr::update(BOOL resort_ok)
 
 	// update status of all current speakers
 	BOOL voice_channel_active = (!mVoiceChannel && LLVoiceClient::getInstance()->inProximalChannel()) || (mVoiceChannel && mVoiceChannel->isActive());
-	for (speaker_map_t::iterator speaker_it = mSpeakers.begin(); speaker_it != mSpeakers.end();)
+	for (speaker_map_t::iterator speaker_it = mSpeakers.begin(); speaker_it != mSpeakers.end(); speaker_it++)
 	{
 		LLUUID speaker_id = speaker_it->first;
 		LLSpeaker* speakerp = speaker_it->second;
-
-		speaker_it++;
 
 		if (voice_channel_active && LLVoiceClient::getInstance()->getVoiceEnabled(speaker_id))
 		{
@@ -461,22 +504,18 @@ void LLSpeakerMgr::update(BOOL resort_ok)
 
 void LLSpeakerMgr::updateSpeakerList()
 {
-	// are we bound to the currently active voice channel?
+	// Are we bound to the currently active voice channel?
 	if ((!mVoiceChannel && LLVoiceClient::getInstance()->inProximalChannel()) || (mVoiceChannel && mVoiceChannel->isActive()))
 	{
 		std::set<LLUUID> participants;
 		LLVoiceClient::getInstance()->getParticipantList(participants);
-		// add new participants to our list of known speakers
-		for (std::set<LLUUID>::iterator participant_it = participants.begin();
-			 participant_it != participants.end();
-			 ++participant_it)
+		// If we are, add all voice client participants to our list of known speakers
+		for (std::set<LLUUID>::iterator participant_it = participants.begin(); participant_it != participants.end(); ++participant_it)
 		{
 				setSpeaker(*participant_it,
 						   LLVoiceClient::getInstance()->getDisplayName(*participant_it),
 						   LLSpeaker::STATUS_VOICE_ACTIVE,
 						   (LLVoiceClient::getInstance()->isParticipantAvatar(*participant_it)?LLSpeaker::SPEAKER_AGENT:LLSpeaker::SPEAKER_EXTERNAL));
-
-
 		}
 	}
 }
@@ -730,47 +769,10 @@ void LLIMSpeakerMgr::updateSpeakers(const LLSD& update)
 		}
 	}
 }
-
-class ModerationResponder : public LLHTTPClient::ResponderIgnoreBody
-{
-public:
-	ModerationResponder(const LLUUID& session_id)
-	{
-		mSessionID = session_id;
-	}
-
-	/*virtual*/ void error(U32 status, const std::string& reason)
-	{
-		llwarns << "ModerationResponder error [status:" << status << "]: " << reason << llendl;
-
-		if ( gIMMgr )
-		{
-			LLFloaterIMPanel* floaterp = gIMMgr->findFloaterBySession(mSessionID);
-			if (!floaterp) return;
-
-			//403 == you're not a mod
-			//should be disabled if you're not a moderator
-			if ( 403 == status )
-			{
-				floaterp->showSessionEventError(
-					"mute",
-					"not_a_mod_error");
-			}
-			else
-			{
-				floaterp->showSessionEventError(
-					"mute",
-					"generic_request_error");
-			}
-		}
-	}
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return moderationResponder_timeout; }
-	/*virtual*/ char const* getName(void) const { return "ModerationResponder"; }
-
-private:
-	LLUUID mSessionID;
-};
-
+/*prep#
+	virtual void errorWithContent(U32 status, const std::string& reason, const LLSD& content)
+		llwarns << "ModerationResponder error [status:" << status << "]: " << content << llendl;
+		*/
 void LLIMSpeakerMgr::toggleAllowTextChat(const LLUUID& speaker_id)
 {
 	LLPointer<LLSpeaker> speakerp = findSpeaker(speaker_id);
@@ -957,4 +959,3 @@ void LLLocalSpeakerMgr::updateSpeakerList()
 		}
 	}
 }
-
