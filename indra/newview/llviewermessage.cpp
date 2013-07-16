@@ -36,6 +36,7 @@
 
 #include "llanimationstates.h"
 #include "llaudioengine.h" 
+#include "llavataractions.h"
 #include "llavatarnamecache.h"
 #include "../lscript/lscript_byteformat.h"	//Need LSCRIPTRunTimePermissionBits and SCRIPT_PERMISSION_*
 #include "lleconomy.h"
@@ -244,6 +245,10 @@ bool friendship_offer_callback(const LLSD& notification, const LLSD& response)
 		msg->addUUIDFast(_PREHASH_TransactionID, payload["session_id"]);
 		msg->sendReliable(LLHost(payload["sender"].asString()));
 		break;
+	case 3:
+		// profile
+		LLAvatarActions::showProfile(payload["from_id"]);
+		LLNotificationsUtil::add(notification["name"], notification["substitutions"], payload); //Respawn!
 	default:
 		// close button probably, possibly timed out
 		break;
