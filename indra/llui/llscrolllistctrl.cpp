@@ -779,13 +779,6 @@ void LLScrollListCtrl::updateColumns()
 	}
 }
 
-void LLScrollListCtrl::setDisplayHeading(BOOL display)
-{
-	mDisplayColumnHeaders = display;
-
-	updateLayout();
-}
-
 void LLScrollListCtrl::setHeadingHeight(S32 heading_height)
 {
 	mHeadingHeight = heading_height;

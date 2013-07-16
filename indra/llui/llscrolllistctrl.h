@@ -284,7 +284,6 @@ public:
 	bool updateColumnWidths();
 	S32 getMaxContentWidth() { return mMaxContentWidth; }
 
-	void setDisplayHeading(BOOL display);
 	void setHeadingHeight(S32 heading_height);
 	/**
 	 * Sets  max visible  lines without scroolbar, if this value equals to 0,
