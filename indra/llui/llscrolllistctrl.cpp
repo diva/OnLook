@@ -1694,8 +1694,6 @@ BOOL LLScrollListCtrl::handleMouseDown(S32 x, S32 y, MASK mask)
 		mSelectionChanged = false;
 
 		handleClick(x, y, mask);
-
-		setFocus(TRUE);
 	}
 
 	return TRUE;

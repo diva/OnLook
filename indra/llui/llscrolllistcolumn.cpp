@@ -32,6 +32,7 @@
 #include "llbutton.h"
 #include "llkeyboard.h" // For gKeyboard
 #include "llresizebar.h"
+#include "llscrolllistctrl.h"
 #include "lluictrlfactory.h"
 
 const S32 MIN_COLUMN_WIDTH = 20;
@@ -135,6 +136,8 @@ LLView*	LLScrollColumnHeader::findSnapEdge(S32& new_edge_val, const LLCoordGL& m
 	threshold = llmin(threshold, 10);
 
 	LLRect snap_rect = getSnapRect();
+
+	mColumn->mParentCtrl->calcMaxContentWidth();
 
 	S32 snap_delta = mColumn->mMaxContentWidth - snap_rect.getWidth();
 
