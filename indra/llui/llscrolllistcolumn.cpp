@@ -40,22 +40,11 @@ const S32 MIN_COLUMN_WIDTH = 20;
 // LLScrollColumnHeader
 //---------------------------------------------------------------------------
 LLScrollColumnHeader::LLScrollColumnHeader(const std::string& name, const LLRect& rect, LLScrollListColumn* column)
-:	LLButton("", rect),
+:	LLButton(name, rect, "square_btn_32x128.tga", "square_btn_selected_32x128.tga", LLStringUtil::null, NULL, LLFontGL::getFontSansSerifSmall()),
 	mColumn(column),
 	mHasResizableElement(FALSE)
 {
 	setClickedCallback(boost::bind(&LLScrollColumnHeader::onClick, this, _2));
-	setName(name); // Singu Note: Passing this to LLButton set the label, too, which we don't want in the case of column headers with images.
-	// Set base images for column header button
-	{
-		LLPointer<LLUIImage> selected = LLUI::getUIImage("square_btn_selected_32x128.tga");
-		LLPointer<LLUIImage> unselected = LLUI::getUIImage("square_btn_32x128.tga");
-		setImageUnselected(unselected);
-		setImageSelected(selected);
-		setImageDisabled(unselected);
-		setImageDisabledSelected(selected);
-	}
-	setFont(LLFontGL::getFontSansSerifSmall());
 	setHAlign(LLFontGL::LEFT);
 
 	// resize handles on left and right
