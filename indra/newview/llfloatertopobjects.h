@@ -39,7 +39,7 @@ class LLUICtrl;
 
 class LLFloaterTopObjects : public LLFloater, public LLSingleton<LLFloaterTopObjects>
 {
-	friend class LLSingleton;
+	friend class LLSingleton<LLFloaterTopObjects>;
 public:
 	// Opens the floater on screen.
 //	static void show();

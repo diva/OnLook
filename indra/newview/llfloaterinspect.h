@@ -46,7 +46,7 @@ class LLUICtrl;
 
 class LLFloaterInspect : public LLFloater, public LLSingleton<LLFloaterInspect>, public LLVOInventoryListener
 {
-	friend class LLSingleton;
+	friend class LLSingleton<LLFloaterInspect>;
 public:
 
 	static void showInstance();
