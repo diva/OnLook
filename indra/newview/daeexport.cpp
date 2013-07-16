@@ -307,6 +307,12 @@ bool DAESaver::saveDAE(std::string filename)
 	contributor->add("authoring_tool")->setCharData("Singularity Viewer Collada Export");
 
 	daeElement* geomLib = root->add("library_geometries");
+	daeElement* effects = root->add("library_effects");
+	daeElement* materials = root->add("library_materials");
+	daeElement* scene = root->add("library_visual_scenes visual_scene");
+	scene->setAttribute("id", "Scene");
+	scene->setAttribute("name", "Scene");
+
 	S32 prim_nr = 0;
 
 	for (obj_info_t::iterator obj_iter = mObjects.begin(); obj_iter != mObjects.end(); ++obj_iter)
@@ -375,7 +381,6 @@ bool DAESaver::saveDAE(std::string filename)
 		}
 
 		// Effects (face color, alpha)
-		daeElement* effects = root->add("library_effects");
 		for (S32 face_num = 0; face_num < num_faces; face_num++)
 		{
 			LLTextureEntry* te = obj->getTE(face_num);
@@ -390,7 +395,6 @@ bool DAESaver::saveDAE(std::string filename)
 		}
 
 		// Materials
-		daeElement* materials = root->add("library_materials");
 		for (S32 face_num = 0; face_num < num_faces; face_num++)
 		{
 			domMaterial* mat = (domMaterial*)materials->add("material");
@@ -398,11 +402,6 @@ bool DAESaver::saveDAE(std::string filename)
 			domElement* matEffect = mat->add("instance_effect");
 			matEffect->setAttribute("url", llformat("#%s-f%d-%s", geomID, face_num, "fx").c_str());
 		}
-
-		// Add scene
-		daeElement* scene = root->add("library_visual_scenes visual_scene");
-		scene->setAttribute("id", "Scene");
-		scene->setAttribute("name", "Scene");
 
 		daeElement* node = scene->add("node");
 		node->setAttribute("type", "NODE");
