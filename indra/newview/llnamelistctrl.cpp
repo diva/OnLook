@@ -177,8 +177,12 @@ LLScrollListItem* LLNameListCtrl::addElement(const LLSD& value, EAddPosition pos
 }
 LLScrollListItem* LLNameListCtrl::addNameItemRow(const LLSD& value, EAddPosition pos, void* userdata)
 {
+	// Singu Note: ScrollLists don't use "target" or "suffix", for now, just remove them
+	LLSD scroll_value = value;
+	scroll_value.erase("target");
+	scroll_value.erase("suffix");
 
-	LLScrollListItem* item = LLScrollListCtrl::addElement(value, pos, userdata);
+	LLScrollListItem* item = LLScrollListCtrl::addElement(scroll_value, pos, userdata);
 	if (!item) return NULL;
 
 	LLUUID id = item->getUUID();
