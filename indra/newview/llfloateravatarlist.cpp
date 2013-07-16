@@ -1088,7 +1088,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		}
 		else
 		{
-			element["columns"][LIST_CLIENT]["value"] = "Out Of Range";
+			element["columns"][LIST_CLIENT]["value"] = getString("Out Of Range");
 		}
 		//Blend to make the color show up better
 		client_color = client_color *.5f + unselected_color * .5f;
