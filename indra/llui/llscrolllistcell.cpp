@@ -33,7 +33,8 @@
 
 
 LLScrollListCell::LLScrollListCell(S32 width)
-:	mWidth(width)
+:	mWidth(width),
+	mToolTip()
 {}
 
 // virtual
@@ -157,6 +158,28 @@ void LLScrollListText::highlightText(S32 offset, S32 num_chars)
 BOOL LLScrollListText::isText() const
 {
 	return TRUE;
+}
+
+//virtual
+const std::string &LLScrollListText::getToolTip() const
+{
+	// If base class has a tooltip, return that
+	if (! LLScrollListCell::getToolTip().empty())
+		return LLScrollListCell::getToolTip();
+
+	// ...otherwise, return the value itself as the tooltip
+	return mText.getString();
+}
+
+// virtual
+BOOL LLScrollListText::needsToolTip() const
+{
+	// If base class has a tooltip, return that
+	if (LLScrollListCell::needsToolTip())
+		return LLScrollListCell::needsToolTip();
+
+	// ...otherwise, show tooltips for truncated text
+	return mFont->getWidth(mText.getString()) > getWidth();
 }
 
 //virtual

@@ -1598,18 +1598,11 @@ BOOL LLScrollListCtrl::handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sti
 	LLScrollListItem* hit_item = hitItem(x, y);
 	if (hit_item)
 	{
-		// If the item has a specific tool tip set by XUI use that first
-		std::string tooltip=hit_item->getToolTip();
-		if(!tooltip.empty())
-		{
-			msg=tooltip;
-			return TRUE;
-		}
-
 		LLScrollListCell* hit_cell = hit_item->getColumn(column_index);
 		if (!hit_cell) return FALSE;
 		if (hit_cell 
-			&& hit_cell->isText())
+			&& hit_cell->isText()
+			&& hit_cell->needsToolTip())
 		{
 			S32 row_index = getItemIndex(hit_item);
 			LLRect cell_rect = getCellRect(row_index, column_index);
@@ -1617,7 +1610,7 @@ BOOL LLScrollListCtrl::handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sti
 			LLRect sticky_rect;
 			localRectToScreen(cell_rect, sticky_rect_screen);
 
-			msg = hit_cell->getValue().asString();
+			msg = hit_cell->getToolTip();
 		}
 		handled = TRUE;
 	}

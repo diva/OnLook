@@ -57,10 +57,13 @@ public:
 	virtual S32				getHeight() const { return 0; }
 	virtual const LLSD		getValue() const;
 	virtual void			setValue(const LLSD& value) { }
+	virtual const std::string &getToolTip() const { return mToolTip; }
+	virtual void			setToolTip(const std::string &str) { mToolTip = str; }
 	virtual BOOL			getVisible() const { return TRUE; }
 	virtual void			setWidth(S32 width) { mWidth = width; }
 	virtual void			highlightText(S32 offset, S32 num_chars) {}
 	virtual BOOL			isText() const { return FALSE; }
+	virtual BOOL			needsToolTip() const { return ! mToolTip.empty(); }
 	virtual void			setColor(const LLColor4&) {}
 	virtual void			onCommit() {};
 
@@ -69,6 +72,8 @@ public:
 
 private:
 	S32 mWidth;
+	std::string mToolTip;
+};
 };
 
 /*
@@ -90,6 +95,8 @@ public:
 
 	/*virtual*/ void	setColor(const LLColor4&);
 	/*virtual*/ BOOL	isText() const;
+	/*virtual*/ const std::string &	getToolTip() const;
+	/*virtual*/ BOOL	needsToolTip() const;
 
 	S32				getTextWidth() const { return mTextWidth;}
 	void			setTextWidth(S32 value) { mTextWidth = value;}

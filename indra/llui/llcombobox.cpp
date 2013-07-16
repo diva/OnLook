@@ -187,7 +187,7 @@ LLView* LLComboBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *
 				{
 					std::string tool_tip = label;
 					child->getAttributeString("tool_tip", tool_tip);
-					item->setToolTip(tool_tip);
+					item->getColumn(0)->setToolTip(tool_tip);
 				}
 			}
 		}
