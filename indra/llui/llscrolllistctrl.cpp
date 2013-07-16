@@ -1612,8 +1612,7 @@ BOOL LLScrollListCtrl::handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sti
 	LLScrollColumnHeader* headerp = columnp->mHeader;
 	if (headerp && !handled)
 	{
-		headerp->handleToolTip(x, y, msg, sticky_rect_screen);
-		handled = !msg.empty();
+		handled = headerp->handleToolTip(x, y, msg, sticky_rect_screen);
 	}
 
 	return handled;

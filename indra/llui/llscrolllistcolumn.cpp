@@ -95,6 +95,22 @@ void LLScrollColumnHeader::draw()
 	LLButton::draw();
 }
 
+//virtual
+BOOL LLScrollColumnHeader::handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sticky_rect_screen)
+{
+	std::string tool_tip = LLUI::sShowXUINames ? getShowNamesToolTip() : getToolTip();
+	if (tool_tip.empty()) tool_tip = getLabelUnselected(); // Fallback on label
+
+	if (!tool_tip.empty())
+	{
+		msg = tool_tip;
+		// Convert rect local to screen coordinates
+		localPointToScreen(0, 0, &(sticky_rect_screen->mLeft), &(sticky_rect_screen->mBottom));
+		localPointToScreen(getRect().getWidth(), getRect().getHeight(), &(sticky_rect_screen->mRight), &(sticky_rect_screen->mTop));
+	}
+	return !tool_tip.empty();
+}
+
 BOOL LLScrollColumnHeader::handleDoubleClick(S32 x, S32 y, MASK mask)
 {
 	if (canResize() && mResizeBar->getRect().pointInRect(x, y))
