@@ -385,7 +385,7 @@ bool DAESaver::saveDAE(std::string filename)
 			daeElement* t = effect->add("profile_COMMON technique");
 			t->setAttribute("sid", "common");
 			domElement* phong = t->add("phong");
-			phong->add("diffuse color")->setCharData(llformat("%f %f %f 1", color.mV[0], color.mV[1], color.mV[2]).c_str());
+			phong->add("diffuse color")->setCharData(llformat("%f %f %f %f", color.mV[0], color.mV[1], color.mV[2], color.mV[3]).c_str());
 			phong->add("transparency float")->setCharData(llformat("%f", color.mV[3]).c_str());
 		}
 
