@@ -365,7 +365,6 @@ LLView* LLNameListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 
 	LLSD columns;
 	S32 index = 0;
-	//S32 total_static = 0;
 	LLXMLNodePtr child;
 	for (child = node->getFirstChild(); child.notNull(); child = child->getNextSibling())
 	{
@@ -377,21 +376,25 @@ LLView* LLNameListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 			std::string columnname(labelname);
 			child->getAttributeString("name", columnname);
 
-			BOOL columndynamicwidth = FALSE;
-			child->getAttributeBOOL("dynamicwidth", columndynamicwidth);
 
 			std::string sortname(columnname);
 			child->getAttributeString("sort", sortname);
 		
-			S32 columnwidth = -1;
 			if (child->hasAttribute("relwidth"))
 			{
 				F32 columnrelwidth = 0.f;
 				child->getAttributeF32("relwidth", columnrelwidth);
 				columns[index]["relwidth"] = columnrelwidth;
 			}
+			else if (child->hasAttribute("dynamicwidth"))
+			{
+				BOOL columndynamicwidth = FALSE;
+				child->getAttributeBOOL("dynamicwidth", columndynamicwidth);
+				columns[index]["dynamic_width"] = columndynamicwidth;
+			}
 			else
 			{
+				S32 columnwidth = -1;
 				child->getAttributeS32("width", columnwidth);
 				columns[index]["width"] = columnwidth;
 			}
@@ -399,12 +402,9 @@ LLView* LLNameListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 			LLFontGL::HAlign h_align = LLFontGL::LEFT;
 			h_align = LLView::selectFontHAlign(child);
 
-			//if(!columndynamicwidth) total_static += llmax(0, columnwidth);
-
 			columns[index]["name"] = columnname;
 			columns[index]["label"] = labelname;
 			columns[index]["halign"] = (S32)h_align;
-			columns[index]["dynamicwidth"] = columndynamicwidth;
 			columns[index]["sort"] = sortname;
 
 			index++;
