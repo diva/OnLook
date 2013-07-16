@@ -75,6 +75,8 @@
 #include "llview.h"
 #include "llselectmgr.h"
 
+#define ANY_FACE -1
+
 extern LLUUID gAgentID;
 
 //Typedefs used in other files, using here for consistency.
@@ -223,6 +225,62 @@ void DAESaver::addSource(daeElement* mesh, const char* src_id, std::string param
 	}
 }
 
+void DAESaver::addPolygons(daeElement* mesh, const char* geomID, const char* materialID, LLViewerObject* obj, int face_to_include)
+{
+	domPolylist* polylist = daeSafeCast<domPolylist>(mesh->add("polylist"));
+	polylist->setMaterial(materialID);
+
+	// Vertices semantic
+	{
+		domInputLocalOffset* input = daeSafeCast<domInputLocalOffset>(polylist->add("input"));
+		input->setSemantic("VERTEX");
+		input->setOffset(0);
+		input->setSource(llformat("#%s-%s", geomID, "vertices").c_str());
+	}
+
+	// Normals semantic
+	{
+		domInputLocalOffset* input = daeSafeCast<domInputLocalOffset>(polylist->add("input"));
+		input->setSemantic("NORMAL");
+		input->setOffset(0);
+		input->setSource(llformat("#%s-%s", geomID, "normals").c_str());
+	}
+
+	// UV semantic
+	{
+		domInputLocalOffset* input = daeSafeCast<domInputLocalOffset>(polylist->add("input"));
+		input->setSemantic("TEXCOORD");
+		input->setOffset(0);
+		input->setSource(llformat("#%s-%s", geomID, "map0").c_str());
+	}
+
+	// Save indices
+	domP* p = daeSafeCast<domP>(polylist->add("p"));
+	domPolylist::domVcount *vcount = daeSafeCast<domPolylist::domVcount>(polylist->add("vcount"));
+	S32 index_offset = 0;
+	S32 num_tris = 0;
+	for (S32 face_num = 0; face_num < obj->getVolume()->getNumVolumeFaces(); face_num++)
+	{
+		const LLVolumeFace* face = (LLVolumeFace*)&obj->getVolume()->getVolumeFace(face_num);
+
+		if (face_to_include == ANY_FACE || face_to_include == face_num)
+		{
+			for (S32 i = 0; i < face->mNumIndices; i++)
+			{
+				U16 index = index_offset + face->mIndices[i];
+				(p->getValue()).append(index);
+				if (i % 3 == 0)
+				{
+					(vcount->getValue()).append(3);
+					num_tris++;
+				}
+			}
+		}
+		index_offset += face->mNumVertices;
+	}
+	polylist->setCount(num_tris);
+}
+
 bool DAESaver::saveDAE(std::string filename)
 {
 	DAE dae;
@@ -249,9 +307,6 @@ bool DAESaver::saveDAE(std::string filename)
 	contributor->add("authoring_tool")->setCharData("Singularity Viewer Collada Export");
 
 	daeElement* geomLib = root->add("library_geometries");
-	daeElement* scene = root->add("library_visual_scenes visual_scene");
-	scene->setAttribute("id", "Scene");
-	scene->setAttribute("name", "Scene");
 	S32 prim_nr = 0;
 
 	for (obj_info_t::iterator obj_iter = mObjects.begin(); obj_iter != mObjects.end(); ++obj_iter)
@@ -273,6 +328,7 @@ bool DAESaver::saveDAE(std::string filename)
 		std::vector<F32> uv_data;
 
 		S32 num_faces = obj->getVolume()->getNumVolumeFaces();
+
 		for (S32 face_num = 0; face_num < num_faces; face_num++)
 		{
 			const LLVolumeFace* face = (LLVolumeFace*)&obj->getVolume()->getVolumeFace(face_num);
@@ -313,62 +369,47 @@ bool DAESaver::saveDAE(std::string filename)
 		}
 
 		// Add triangles
-		domPolylist* polylist = daeSafeCast<domPolylist>(mesh->add("polylist"));
-		polylist->setMaterial("mtl");
-
-		// Vertices semantic
-		{
-			domInputLocalOffset* input = daeSafeCast<domInputLocalOffset>(polylist->add("input"));
-			input->setSemantic("VERTEX");
-			input->setOffset(0);
-			input->setSource(llformat("#%s-%s", geomID, "vertices").c_str());
-		}
-
-		// Normals semantic
-		{
-			domInputLocalOffset* input = daeSafeCast<domInputLocalOffset>(polylist->add("input"));
-			input->setSemantic("NORMAL");
-			input->setOffset(0);
-			input->setSource(llformat("#%s-%s", geomID, "normals").c_str());
-		}
-
-		// UV semantic
-		{
-			domInputLocalOffset* input = daeSafeCast<domInputLocalOffset>(polylist->add("input"));
-			input->setSemantic("TEXCOORD");
-			input->setOffset(0);
-			input->setSource(llformat("#%s-%s", geomID, "map-0").c_str());
-		}
-
-		// Save indices
-		domP* p = daeSafeCast<domP>(polylist->add("p"));
-		domPolylist::domVcount *vcount = daeSafeCast<domPolylist::domVcount>(polylist->add("vcount"));
-		S32 index_offset = 0;
-		S32 num_tris = 0;
 		for (S32 face_num = 0; face_num < num_faces; face_num++)
 		{
-			const LLVolumeFace* face = (LLVolumeFace*)&obj->getVolume()->getVolumeFace(face_num);
-			for (S32 i = 0; i < face->mNumIndices; i++)
-			{
-				U16 index = index_offset + face->mIndices[i];
-				(p->getValue()).append(index);
-				if (i % 3 == 0)
-				{
-					(vcount->getValue()).append(3);
-					num_tris++;
-				}
-			}
-			index_offset += face->mNumVertices;
+			addPolygons(mesh, geomID, llformat("%s-f%d-%s", geomID, face_num, "material").c_str(), obj, face_num);
 		}
-		polylist->setCount(num_tris);
+
+		// Effects (face color, alpha)
+		daeElement* effects = root->add("library_effects");
+		for (S32 face_num = 0; face_num < num_faces; face_num++)
+		{
+			LLTextureEntry* te = obj->getTE(face_num);
+			LLColor4 color = te->getColor();
+			domEffect* effect = (domEffect*)effects->add("effect");
+			effect->setId(llformat("%s-f%d-%s", geomID, face_num, "fx").c_str());
+			daeElement* t = effect->add("profile_COMMON technique");
+			t->setAttribute("sid", "common");
+			domElement* phong = t->add("phong");
+			phong->add("diffuse color")->setCharData(llformat("%f %f %f 1", color.mV[0], color.mV[1], color.mV[2]).c_str());
+			phong->add("transparency float")->setCharData(llformat("%f", color.mV[3]).c_str());
+		}
+
+		// Materials
+		daeElement* materials = root->add("library_materials");
+		for (S32 face_num = 0; face_num < num_faces; face_num++)
+		{
+			domMaterial* mat = (domMaterial*)materials->add("material");
+			mat->setId(llformat("%s-f%d-%s", geomID, face_num, "material").c_str());
+			domElement* matEffect = mat->add("instance_effect");
+			matEffect->setAttribute("url", llformat("#%s-f%d-%s", geomID, face_num, "fx").c_str());
+		}
 
 		// Add scene
+		daeElement* scene = root->add("library_visual_scenes visual_scene");
+		scene->setAttribute("id", "Scene");
+		scene->setAttribute("name", "Scene");
+
 		daeElement* node = scene->add("node");
 		node->setAttribute("type", "NODE");
 		node->setAttribute("id", geomID);
 		node->setAttribute("name", geomID);
 
-		// Set tranform matrix (object position, rotation and scale)
+		// Set tranform matrix (node position, rotation and scale)
 		domMatrix* matrix = (domMatrix*)node->add("matrix");
 		LLXform srt;
 		srt.setScale(obj->getScale());
@@ -380,8 +421,20 @@ bool DAESaver::saveDAE(std::string filename)
 			for (int j=0; j<4; j++)
 				(matrix->getValue()).append(m4.mMatrix[j][i]);
 
+		// Geometry of the node
 		daeElement* nodeGeometry = node->add("instance_geometry");
+
+		// Bind materials
+		daeElement* tq = nodeGeometry->add("bind_material technique_common");
+		for (S32 face_num = 0; face_num < num_faces; face_num++)
+		{
+			daeElement* instanceMaterial = tq->add("instance_material");
+			instanceMaterial->setAttribute("symbol", llformat("%s-f%d-%s", geomID, face_num, "material").c_str());
+			instanceMaterial->setAttribute("target", llformat("#%s-f%d-%s", geomID, face_num, "material").c_str());
+		}
+
 		nodeGeometry->setAttribute("url", llformat("#%s-%s", geomID, "mesh").c_str());
+
 	}
 	root->add("scene instance_visual_scene")->setAttribute("url", "#Scene");
 

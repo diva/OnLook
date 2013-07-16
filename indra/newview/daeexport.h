@@ -41,6 +41,7 @@ public:
 
 private:
 	void addSource(daeElement* mesh, const char* src_id, std::string params, const std::vector<F32> &vals);
+	void addPolygons(daeElement* mesh, const char* geomID, const char* materialID, LLViewerObject* obj, int face_to_include);
 };
 
 #endif // DAEEXPORT_H_
