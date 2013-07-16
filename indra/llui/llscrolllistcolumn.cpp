@@ -87,6 +87,7 @@ void LLScrollColumnHeader::draw()
 //virtual
 BOOL LLScrollColumnHeader::handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sticky_rect_screen)
 {
+	if (!getRect().pointInRect(x,y)) return false;
 	std::string tool_tip = LLUI::sShowXUINames ? getShowNamesToolTip() : getToolTip();
 	if (tool_tip.empty()) tool_tip = getLabelUnselected(); // Fallback on label
 
