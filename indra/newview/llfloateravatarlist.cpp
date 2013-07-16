@@ -1071,8 +1071,6 @@ void LLFloaterAvatarList::refreshAvatarList()
 		element["columns"][LIST_CLIENT]["column"] = "client";
 		element["columns"][LIST_CLIENT]["type"] = "text";
 
-		//element["columns"][LIST_METADATA]["column"] = "metadata";
-		//element["columns"][LIST_METADATA]["type"] = "text";
 
 		static const LLCachedControl<LLColor4> avatar_name_color(gColors, "AvatarNameColor",LLColor4(0.98f, 0.69f, 0.36f, 1.f));
 		LLColor4 client_color(avatar_name_color);
@@ -1086,15 +1084,6 @@ void LLFloaterAvatarList::refreshAvatarList()
 				client_color = unselected_color;
 				client = "?";
 			}
-			element["columns"][LIST_CLIENT]["value"] = client.c_str();
-
-			// <dogmode>
-			// Don't expose Emerald's metadata.
-
-			//if(avatarp->extraMetadata.length())
-			//{
-			//	element["columns"][LIST_METADATA]["value"] = avatarp->extraMetadata.c_str();
-			//}
 		}
 		else
 		{
