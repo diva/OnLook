@@ -199,8 +199,6 @@ void LLFloaterTopObjects::handleReply(LLMessageSystem *msg, void** data)
 		LLSD element;
 
 		element["id"] = task_id;
-		element["object_name"] = name_buf;
-		element["owner_name"] = owner_buf;
 
 		LLSD columns;
 		S32 column_num = 0;
@@ -210,10 +208,6 @@ void LLFloaterTopObjects::handleReply(LLMessageSystem *msg, void** data)
 		
 		columns[column_num]["column"] = "name";
 		columns[column_num]["value"] = name_buf;
-		if (name_buf == owner_buf)
-		{
-			columns[column_num]["color"] = LLColor4::red.getValue();
-		}
 		columns[column_num++]["font"] = "SANSSERIF";
 
 		columns[column_num]["column"] = "owner";
@@ -244,7 +238,10 @@ void LLFloaterTopObjects::handleReply(LLMessageSystem *msg, void** data)
 			columns[column_num++]["font"] = "SANSSERIF";
 		}
 		element["columns"] = columns;
+		// Singu Note: We diverge slightly here to retain the legacy coloring of avatar names. when updating be sure that getColumn uses the same number as "name"
+		LLScrollListItem* item =
 		list->addElement(element);
+		if (name_buf == owner_buf) item->getColumn(1)->setColor(LLColor4::red);
 		
 		mObjectListData.append(element);
 		mObjectListIDs.push_back(task_id);
