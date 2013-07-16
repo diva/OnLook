@@ -495,6 +495,7 @@ void LLFloaterAvatarList::assessColumns()
 
 		client_col->mDynamicWidth =	!client_hidden;
 		name_col->mDynamicWidth =	 client_hidden;
+		mAvatarList->setNumDynamicColumns(1); // Dynamic width is set on only one column, be sure to let the list know, otherwise we may divide by zero
 
 		if(!client_hidden)
 		{
