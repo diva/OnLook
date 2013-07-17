@@ -509,6 +509,10 @@ void LLWorldMapView::draw()
 			else if(!info->getName().empty()) // Online sims should have names...
 			{
 				mesg = info->getName();
+
+				static const LLCachedControl<bool> show_avs("LiruMapShowAvCount");
+				if (show_avs) mesg += llformat(" (%d)", info->getAgentCount());
+
 				U8 access = info->getAccess();
 				switch(access)
 				{

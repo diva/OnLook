@@ -707,6 +707,17 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>LiruMapShowAvCount</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not to display the count of avatars in each region on the world map as part of the region name and maturity label.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>LiruNoTransactionClutter</key>
     <map>
       <key>Comment</key>
