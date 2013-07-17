@@ -3215,6 +3215,7 @@ The
 	<string name="NextStipendDay"       value="The next stipend day is " />
 	<string name="GroupIndividualShare" value="                      Group       Individual Share" />
 	<string name="GroupColumn"          value="                      Group" />
+	<string name="NoGroupDataFound">No group data found for group </string>
 
 	<!-- floater IM bonus_info: When a Linden with Admin/god status receives a new IM this displays the estate (Mainland vs. teen grid) of the source avatar.
 		This is to help Lindens when answering questions. -->

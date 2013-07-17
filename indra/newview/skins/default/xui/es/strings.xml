@@ -3134,6 +3134,9 @@ La
 	<string name="NextStipendDay"       value="Siguiente día de estipendio es " />
 	<string name="GroupIndividualShare" value="                      Grupo       Participación Individual" />
 	<string name="GroupColumn"          value="                      Grupo" />
+	<string name="NoGroupDataFound">
+		No se encontraron datos del grupo
+	</string>
 
 	<!-- floater IM bonus_info: When a Linden with Admin/god status receives a new IM this displays the estate (Mainland vs. teen grid) of the source avatar.
 		This is to help Lindens when answering questions. -->

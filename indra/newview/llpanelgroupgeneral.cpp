@@ -57,7 +57,7 @@
 #include "lltextbox.h"
 #include "lltexteditor.h"
 #include "lltexturectrl.h"
-#include "llviewercontrol.h"
+#include "lltrans.h"
 #include "llviewerwindow.h"
 
 #include "hippogridmanager.h"
@@ -395,8 +395,7 @@ bool LLPanelGroupGeneral::apply(std::string& mesg)
 		LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(mGroupID);
 		if (!gdatap)
 		{
-			// *TODO: Translate
-			mesg = std::string("No group data found for group ");
+			mesg = LLTrans::getString("NoGroupDataFound");
 			mesg.append(mGroupID.asString());
 			return false;
 		}
