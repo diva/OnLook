@@ -69,7 +69,7 @@
 	</text>
 	<button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
 	     height="16" label="Profile..." label_selected="" left_delta="174"
-	     mouse_opaque="true" name="BtnOwner" width="78" />
+	     mouse_opaque="true" name="BtnLastOwner" width="78" />
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom_delta="-16" drop_shadow_visible="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
