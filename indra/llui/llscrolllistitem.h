@@ -28,8 +28,6 @@
 #ifndef LLSCROLLLISTITEM_H
 #define LLSCROLLLISTITEM_H
 
-#include "llrefcount.h"
-#include "llhandle.h"
 #include "llsd.h"
 #include "llscrolllistcell.h"
 
@@ -37,7 +35,6 @@
 // LLScrollListItem
 //---------------------------------------------------------------------------
 class LLScrollListItem
- : public LLHandleProvider<LLScrollListItem> // Singu TODO: Break out into LLNameListItem
 {
 	friend class LLScrollListCtrl;
 public:

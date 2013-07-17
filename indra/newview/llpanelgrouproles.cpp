@@ -1528,19 +1528,17 @@ void LLPanelGroupMembersSubTab::addMemberToList(LLGroupMemberData* data)
 	LLUIString donated = getString("donation_area");
 	donated.setArg("[AREA]", llformat("%d", data->getContribution()));
 	
-	LLSD row;
-	row["id"] = data->getID();
+	LLNameListCtrl::NameItem item_params;
+	item_params.value = data->getID();
 
-	row["columns"][0]["column"] = "name";
-	row["columns"][0]["font"] = "SANSSERIF_SMALL";
+	item_params.columns.add().column("name").font/*.name*/("SANSSERIF_SMALL")/*.style("NORMAL")*/;
 	
-	row["columns"][1]["column"] = "donated";
-	row["columns"][1]["value"] = donated.getString();
+	item_params.columns.add().column("donated").value(donated.getString())
+			.font/*.name*/("SANSSERIF_SMALL")/*.style("NORMAL")*/;
 
-	row["columns"][2]["column"] = "online";
-	row["columns"][2]["value"] = data->getOnlineStatus();
-	row["columns"][2]["font"] = "SANSSERIF_SMALL";
-	mMembersList->addNameItemRow(row);
+	item_params.columns.add().column("online").value(data->getOnlineStatus())
+			.font/*.name*/("SANSSERIF_SMALL")/*.style("NORMAL")*/;
+	mMembersList->addNameItemRow(item_params);
 
 	mHasMatch = TRUE;
 }

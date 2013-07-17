@@ -1976,7 +1976,9 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 		keine
 	</string>
 	<string name="Unknown">(unbekannt)</string>
-	
+	<string name="NoGroupDataFound">
+		Für Gruppe wurden keine Gruppendaten gefunden
+	</string>
 	
 	
 	
