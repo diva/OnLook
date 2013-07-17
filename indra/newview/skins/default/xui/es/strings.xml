@@ -288,6 +288,12 @@
 	<string name="unavailable">Chat de Voz no disponible en esta ubicación</string>
 	<string name="hang_up">Desconectado del Chat de Voz</string>
 	<string name="conference-title">Chat multi-persona</string>
+	<string name="ScriptQuestionCautionChatGranted">
+		el objeto '[OBJECTNAME]', propiedad de  '[OWNERNAME]', ubicado en [REGIONNAME] en la posición [REGIONPOS], ha recibido permiso para: [PERMISSIONS].
+	</string>
+	<string name="ScriptQuestionCautionChatDenied">
+		al objeto '[OBJECTNAME]', propiedad de  '[OWNERNAME]', ubicado en [REGIONNAME] en la posición [REGIONPOS], se le ha denegado el permiso para: [PERMISSIONS].
+	</string>
 	<string name="ScriptTakeMoney">Transferir moneda de tu cuenta</string>
 	<string name="ActOnControlInputs">Actuar en tus controles de entrada</string>
 	<string name="RemapControlInputs">Reconfigurar tus controles de entrada</string>

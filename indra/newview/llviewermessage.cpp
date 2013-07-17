@@ -6740,9 +6740,7 @@ void notify_cautioned_script_question(const LLSD& notification, const LLSD& resp
 					perms.append(", ");
 				}
 
-				LLStringUtil::format_map_t args;
-				args["[CURRENCY]"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
-				perms.append(LLFloaterChat::getInstance()->getString(SCRIPT_QUESTIONS[i], args));
+				perms.append(LLTrans::getString(SCRIPT_QUESTIONS[i]));
 			}
 		}
 
@@ -6918,14 +6916,11 @@ void process_script_question(LLMessageSystem *msg, void **user_data)
 		{
 			if (questions & LSCRIPTRunTimePermissionBits[i])
 			{
-				LLStringUtil::format_map_t args;
-				args["[CURRENCY]"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
-				
 				count++;
-				script_question += "    " + LLFloaterChat::getInstance()->getString(SCRIPT_QUESTIONS[i], args) + "\n";
-
 				// check whether permission question should cause special caution dialog
 				caution |= (SCRIPT_QUESTION_IS_CAUTION[i]);
+
+				script_question += "    " + LLTrans::getString(SCRIPT_QUESTIONS[i]) + "\n";
 			}
 		}
 		args["QUESTIONS"] = script_question;
