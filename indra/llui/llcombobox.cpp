@@ -87,6 +87,7 @@ LLComboBox::LLComboBox(const std::string& name, const LLRect& rect, const std::s
 	mButton->setFont(LLFontGL::getFontSansSerifSmall());
 	mButton->setFollows(FOLLOWS_LEFT | FOLLOWS_BOTTOM | FOLLOWS_RIGHT);
 	mButton->setHAlign( LLFontGL::LEFT );
+	mButton->setRightHPad(2);
 
 	addChild(mButton);
 
@@ -910,10 +911,6 @@ BOOL LLComboBox::handleUnicodeCharHere(llwchar uni_char)
 void LLComboBox::setAllowTextEntry(BOOL allow, S32 max_chars, BOOL set_tentative)
 {
 	mAllowTextEntry = allow;
-	if(allow)
-		mButton->setRightHPad(2);
-	else
-		mButton->setRightHPad(LLBUTTON_H_PAD);
 
 	mTextEntryTentative = set_tentative;
 	mMaxChars = max_chars;
