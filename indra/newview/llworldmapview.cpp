@@ -67,13 +67,13 @@
 #include "llappviewer.h"				// Only for constants!
 #include "lltrans.h"
 
-#include "llglheaders.h"
-
 #include "hippogridmanager.h"
 
-// [RLVa:KB]
+// [RLVa:KB] - Checked: 2010-04-19 (RLVa-1.2.0f)
 #include "rlvhandler.h"
 // [/RLVa:KB]
+
+#include "llglheaders.h"
 
 // Basically a C++ implementation of the OCEAN_COLOR defined in mapstitcher.py 
 // Please ensure consistency between those 2 files (TODO: would be better to get that color from an asset source...)
@@ -499,19 +499,7 @@ void LLWorldMapView::draw()
 		{
 			LLFontGL* font = LLFontGL::getFontSansSerifSmall();
 			std::string mesg;
-		
-			//mesg = llformat("%d / %s (%s)",
-			//			info->mAgents,
-			//			info->mName.c_str(),
-			//			LLViewerRegion::accessToShortString(info->mAccess).c_str() );
-			// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-04 (RLVa-1.0.0a)
-			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
-			{
-				if(!info->getName().empty())
-					mesg = RlvStrings::getString(RLV_STRING_HIDDEN);
-			}
-			// [/RLVa:KB]
-			else if (info->isDown())
+			if (info->isDown())
 			{
 				if(info->getName().empty())
 					mesg = llformat( "(%s)", sStringsMap["offline"].c_str());
@@ -541,7 +529,10 @@ void LLWorldMapView::draw()
 					break;
 				}
 			}
-			if (!mesg.empty())
+//			if (!mesg.empty())
+// [RLVa:KB] - Checked: 2012-02-08 (RLVa-1.4.5) | Added: RLVa-1.4.5
+			if ( (!mesg.empty()) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )
+// [/RLVa:KB]
 			{
 				font->renderUTF8(
 					mesg, 0,
@@ -1375,7 +1366,7 @@ void LLWorldMapView::drawTracking(const LLVector3d& pos_global, const LLColor4& 
 	text_y = llclamp(text_y + vert_offset, TEXT_PADDING + vert_offset, getRect().getHeight() - llround(font->getLineHeight()) - TEXT_PADDING - vert_offset);
 
 	//if (label != "")
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a) | Added: RLVa-1.0.0a
+// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.4.5) | Added: RLVa-1.0.0
 	if ( (label != "") && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )
 // [/RLVa:KB]
 	{
@@ -1436,12 +1427,12 @@ BOOL LLWorldMapView::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* stic
 	{
 		LLViewerRegion *region = gAgent.getRegion();
 
-//		std::string message = llformat("%s (%s)", info->getName().c_str(), info->getAccessString().c_str());
-// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-04 (RLVa-1.0.0a)
+// [RLVa:KB] - Checked: 2010-04-19 (RLVa-1.4.5) | Modified: RLVa-1.4.5
 		std::string message = llformat("%s (%s)", 
-			(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) ? info->getName().c_str() : RlvStrings::getString(RLV_STRING_HIDDEN).c_str(), 
+			(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) ? info->getName().c_str() : RlvStrings::getString(RLV_STRING_HIDDEN_REGION).c_str(),
 				info->getAccessString().c_str());
 // [/RLVa:KB]
+//		std::string message = llformat("%s (%s)", info->getName().c_str(), info->getAccessString().c_str());
 
 		if (!info->isDown())
 		{
