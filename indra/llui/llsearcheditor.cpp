@@ -153,7 +153,7 @@ LLView* LLSearchEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 	S32 max_text_length = 128;
 	node->getAttributeS32("max_length", max_text_length);
 
-	std::string text = node->getValue().substr(0, max_text_length - 1);
+	//std::string text = node->getValue().substr(0, max_text_length - 1);
 
 	LLSearchEditor* search_editor = new LLSearchEditor("search_editor",
 								rect, 
@@ -165,7 +165,7 @@ LLView* LLSearchEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 		search_editor->setLabel(label);
 	}
 	
-	search_editor->setText(text);
+	//search_editor->setText(text);
 
 	search_editor->initFromXML(node, parent);
 	
