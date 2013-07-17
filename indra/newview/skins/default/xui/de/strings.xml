@@ -331,7 +331,7 @@
 	<string name="TrackYourCamera">Kameraverfolgung aktivieren</string>
   <string name="ControlYourCamera">Kamerasteuerung übernehmen</string>
   <string name="TeleportYourAgent">Avatar teleportieren</string>
-  <string name="OverrideAnimations">Überschreibe die Standard-Animationen</string>
+  <string name="OverrideYourAnimations">Überschreibe die Standard-Animationen</string>
 
 	<!-- Sim Access labels -->
 	<string name="SIM_ACCESS_PG">PG</string>

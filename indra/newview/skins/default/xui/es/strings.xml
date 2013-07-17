@@ -307,7 +307,7 @@
 	<string name="TrackYourCamera">Seguir tu cámara</string>
 	<string name="ControlYourCamera">Controlar tu cámara</string>
 	<string name="TeleportYourAgent">Teleportarte</string>	
-  <string name="OverrideAnimations">Reemplazando tus animaciones predeterminadas</string>
+  <string name="OverrideYourAnimations">Reemplazando tus animaciones predeterminadas</string>
   
 	<!-- Sim Access labels -->
 	<string name="SIM_ACCESS_PG">PG</string>
