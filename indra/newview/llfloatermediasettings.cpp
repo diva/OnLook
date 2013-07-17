@@ -52,7 +52,7 @@ LLFloaterMediaSettings::LLFloaterMediaSettings(const LLSD& key)
 	mMultipleMedia(false),
 	mMultipleValidMedia(false)
 {
-	LLUICtrlFactory::getInstance()->buildFloater(this,"floater_media_settings.xml");
+	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_media_settings.xml", NULL, false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
