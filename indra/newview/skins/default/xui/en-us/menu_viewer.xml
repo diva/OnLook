@@ -740,7 +740,7 @@
 		<menu_item_separator bottom="-243" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator3" width="250" />
 		<menu_item_check bottom="" enabled="false" height="" label="Edit Linked Parts" left=""
-		     mouse_opaque="true" name="Edit Linked Parts" shortcut="" width="">
+		     mouse_opaque="true" name="Edit Linked Parts" shortcut="control|shift|E">
 			<on_click function="ToggleControl" userdata="EditLinkedParts" />
 			<on_click function="Tools.EditLinkedParts" userdata="" />
 			<on_check control="EditLinkedParts" />
