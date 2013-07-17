@@ -1026,7 +1026,7 @@ void init_client_menu(LLMenuGL* menu)
 		sub = new LLMenuGL("Media");
 		sub->setCanTearOff(TRUE);
 		sub->addChild(new LLMenuItemCallGL("Reload MIME types", &LLMIMETypes::reload));
-		sub->addChild(new LLMenuItemCallGL("Web Browser Test", &handle_web_browser_test));
+		sub->addChild(new LLMenuItemCallGL("Web Browser Test", &handle_web_browser_test, NULL, NULL, KEY_F1));
 		menu->addChild( sub );
 		sub->createJumpKeys();
 	}
