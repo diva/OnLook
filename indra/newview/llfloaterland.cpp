@@ -1531,6 +1531,8 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 		return;
 	}
 	
+	const std::string FONT = "SANSSERIF";
+
 	// Extract all of the owners.
 	S32 rows = msg->getNumberOfBlocksFast(_PREHASH_Data);
 	//uuid_list_t return_ids;
@@ -1571,64 +1573,41 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 
 		BOOL in_sim = (std::find(avatar_ids.begin(), avatar_ids.end(), owner_id) != avatar_ids.end());
 
-		LLSD item;
-		item["id"] = owner_id;
-		LLSD& row = item["columns"];
-		LLSD icon_column;
-		LLSD status_column;
-		icon_column["type"] = "icon";
-		icon_column["column"] = "type";
-		status_column["font"] = "SANSSERIF";
-		status_column["column"] = "online_status";
+		LLNameListCtrl::NameItem item_params;
+		item_params.value = owner_id;
+		item_params.target = is_group_owned ? LLNameListCtrl::GROUP : LLNameListCtrl::INDIVIDUAL;
 
 		if (is_group_owned)
 		{
-			icon_column["value"] = self->mIconGroup->getName();
-			status_column["value"] = OWNER_GROUP;
+			item_params.columns.add().type("icon").value(self->mIconGroup->getName()).column("type");
+			item_params.columns.add().value(OWNER_GROUP).font(FONT).column("online_status");
 		}
 		else if (in_sim)
 		{
-			icon_column["value"] = self->mIconAvatarInSim->getName();
-			status_column["value"] = OWNER_INSIM;
+			item_params.columns.add().type("icon").value(self->mIconAvatarInSim->getName()).column("type");
+			item_params.columns.add().value(OWNER_INSIM).font(FONT).column("online_status");
 		}
 		else if (is_online)
 		{
-			icon_column["value"] = self->mIconAvatarOnline->getName();
-			status_column["value"] = OWNER_ONLINE;
+			item_params.columns.add().type("icon").value(self->mIconAvatarOnline->getName()).column("type");
+			item_params.columns.add().value(OWNER_ONLINE).font(FONT).column("online_status");
 		}
 		else  // offline
 		{
-			icon_column["value"] = self->mIconAvatarOffline->getName();
-			status_column["value"] = OWNER_OFFLINE;
+			item_params.columns.add().type("icon").value(self->mIconAvatarOffline->getName()).column("type");
+			item_params.columns.add().value(OWNER_OFFLINE).font(FONT).column("online_status");
 		}
-		row.append(icon_column);
-		row.append(status_column);
 
 		// Placeholder for name.
 		LLAvatarName av_name;
 		LLAvatarNameCache::get(owner_id, &av_name);
-		LLSD name_column;
-		name_column["value"] = av_name.getCompleteName();
-		name_column["font"] = "SANSSERIF";
-		name_column["column"] = "name";
-		row.append(name_column);
+		item_params.columns.add().value(av_name.getCompleteName()).font(FONT).column("name");
 
-		LLSD count_column;
-		count_column["value"] = llformat("%d", object_count);
-		count_column["font"] = "SANSSERIF";
-		count_column["column"] = "count";
-		row.append(count_column);
-		
-		LLSD time_column;
-		time_column["value"] = formatted_time((time_t)most_recent_time);
-		time_column["font"] = "SANSSERIF";
-		time_column["column"] = "mostrecent";
-		row.append(time_column);
+		object_count_str = llformat("%d", object_count);
+		item_params.columns.add().value(object_count_str).font(FONT).column("count");
+		item_params.columns.add().value(LLDate((time_t)most_recent_time)).font(FONT).column("mostrecent").type("date");
 
-		if(	is_group_owned )
-			self->mOwnerList->addGroupNameItem(item, ADD_BOTTOM);
-		else
-			self->mOwnerList->addNameItem(item, ADD_BOTTOM);
+		self->mOwnerList->addNameItemRow(item_params);
 
 		lldebugs << "object owner " << owner_id << " (" << (is_group_owned ? "group" : "agent")
 				<< ") owns " << object_count << " objects." << llendl;
