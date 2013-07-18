@@ -2230,7 +2230,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		{
 			if (!gIMMgr->hasSession(session_id) || gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseRepeat"))
 			{
-				busy_message(msg, from_id);
+				if (to_id.notNull()) busy_message(msg, from_id);
 			}
 
 			// now store incoming IM in chat history
