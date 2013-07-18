@@ -1922,6 +1922,11 @@ BOOL LLScrollListCtrl::handleHover(S32 x,S32 y,MASK mask)
 	return handled;
 }
 
+void LLScrollListCtrl::onMouseLeave(S32 x, S32 y, MASK mask)
+{
+	// clear mouse highlight
+	mouseOverHighlightNthItem(-1);
+}
 
 BOOL LLScrollListCtrl::handleKeyHere(KEY key,MASK mask )
 {
