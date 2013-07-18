@@ -2243,7 +2243,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				from_id,
 				name,
 				buffer,
-				LLStringUtil::null,
+				name,
 				dialog,
 				parent_estate_id,
 				region_id,
@@ -2272,7 +2272,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				from_id,
 				name,
 				buffer,
-				LLStringUtil::null,
+				name,
 				dialog,
 				parent_estate_id,
 				region_id,
@@ -2332,14 +2332,14 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				if (!LLAvatarNameCache::getPNSName(from_id, pns_name)) pns_name = name;
 				if (show_autoresponded)
 				{
-					gIMMgr->addMessage(session_id, from_id, LLStringUtil::null, LLTrans::getString("IM_autoresponded_to") + " " + pns_name);
+					gIMMgr->addMessage(session_id, from_id, name, LLTrans::getString("IM_autoresponded_to") + " " + pns_name);
 				}
 				if (LLViewerInventoryItem* item = gInventory.getItem(itemid))
 				{
 					LLGiveInventory::doGiveInventoryItem(from_id, item, computed_session_id);
 					if (show_autoresponded)
 					{
-							gIMMgr->addMessage(computed_session_id, from_id, LLStringUtil::null,
+							gIMMgr->addMessage(computed_session_id, from_id, name,
 								llformat("%s %s \"%s\"", pns_name.c_str(), LLTrans::getString("IM_autoresponse_sent_item").c_str(), item->getName().c_str()));
 					}
 				}
@@ -2410,7 +2410,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 					from_id,
 					name,
 					buffer,
-					LLStringUtil::null,
+					name,
 					dialog,
 					parent_estate_id,
 					region_id,
@@ -2500,14 +2500,14 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 
 					if (show_autoresponded)
 					{
-						gIMMgr->addMessage(session_id, from_id, LLStringUtil::null, LLTrans::getString("IM_autoresponded_to") + " " + pns_name);
+						gIMMgr->addMessage(session_id, from_id, name, LLTrans::getString("IM_autoresponded_to") + " " + pns_name);
 					}
 					if (LLViewerInventoryItem* item = gInventory.getItem(itemid))
 					{
 						LLGiveInventory::doGiveInventoryItem(from_id, item, computed_session_id);
 						if (show_autoresponded)
 						{
-							gIMMgr->addMessage(computed_session_id, from_id, LLStringUtil::null,
+							gIMMgr->addMessage(computed_session_id, from_id, name,
 									llformat("%s %s \"%s\"", pns_name.c_str(), LLTrans::getString("IM_autoresponse_sent_item").c_str(), item->getName().c_str()));
 						}
 					}
@@ -3318,6 +3318,7 @@ void busy_message (LLMessageSystem* msg, LLUUID from_id)
 		LLAgentUI::buildFullname(my_name);
 		std::string from_name;
 		msg->getStringFast(_PREHASH_MessageBlock, _PREHASH_FromAgentName, from_name);
+		from_name = LLCacheName::cleanFullName(from_name);
 		std::string response = gSavedPerAccountSettings.getText("BusyModeResponse");
 		pack_instant_message(
 			gMessageSystem,
@@ -3334,7 +3335,7 @@ void busy_message (LLMessageSystem* msg, LLUUID from_id)
 		if (!LLAvatarNameCache::getPNSName(from_id, pns_name)) pns_name = from_name;
 		LLUUID session_id;
 		msg->getUUIDFast(_PREHASH_MessageBlock, _PREHASH_ID, session_id);
-		if (gSavedPerAccountSettings.getBOOL("BusyModeResponseShow")) gIMMgr->addMessage(session_id, from_id, LLStringUtil::null, LLTrans::getString("IM_autoresponded_to") + " " + pns_name);
+		if (gSavedPerAccountSettings.getBOOL("BusyModeResponseShow")) gIMMgr->addMessage(session_id, from_id, from_name, LLTrans::getString("IM_autoresponded_to") + " " + pns_name);
 		if (!gSavedPerAccountSettings.getBOOL("BusyModeResponseItem")) return; // Not sending an item, finished
 		if (LLViewerInventoryItem* item = gInventory.getItem(static_cast<LLUUID>(gSavedPerAccountSettings.getString("BusyModeResponseItemID"))))
 		{
@@ -3343,7 +3344,7 @@ void busy_message (LLMessageSystem* msg, LLUUID from_id)
 			LLUUID computed_session_id = LLIMMgr::computeSessionID(static_cast<EInstantMessage>(d), from_id);
 			LLGiveInventory::doGiveInventoryItem(from_id, item, computed_session_id);
 			if (gSavedPerAccountSettings.getBOOL("BusyModeResponseShow"))
-				gIMMgr->addMessage(computed_session_id, from_id, LLStringUtil::null, llformat("%s %s \"%s\"", pns_name.c_str(), LLTrans::getString("IM_autoresponse_sent_item").c_str(), item->getName().c_str()));
+				gIMMgr->addMessage(computed_session_id, from_id, from_name, llformat("%s %s \"%s\"", pns_name.c_str(), LLTrans::getString("IM_autoresponse_sent_item").c_str(), item->getName().c_str()));
 		}
 	}
 }
