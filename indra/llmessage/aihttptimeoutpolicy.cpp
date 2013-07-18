@@ -739,6 +739,14 @@ AIHTTPTimeoutPolicyBase reply_15s(AIHTTPTimeoutPolicyBase::getDebugSettingsCurlT
 	replyOp15s
 	);
 
+// The LLEventPollResponder needs a reply delay of at least 60 seconds, and although that is the
+// default -- enforce it to be 60 seconds and not depend on CurlTimeoutReplyDelay because changing
+// it makes no sense or will break stuff.
+Reply replyOp60s(60);
+AIHTTPTimeoutPolicyBase reply_60s(AIHTTPTimeoutPolicyBase::getDebugSettingsCurlTimeout(),
+	replyOp60s
+	);
+
 // End of policy definitions.
 //=======================================================================================================
 
@@ -920,7 +928,7 @@ P(emeraldDicDownloader);
 P(environmentApplyResponder);
 P(environmentRequestResponder);
 P(estateChangeInfoResponder);
-P(eventPollResponder);
+P2(eventPollResponder,							reply_60s);
 P(fetchInventoryResponder);
 P(fetchScriptLimitsAttachmentInfoResponder);
 P(fetchScriptLimitsRegionDetailsResponder);
