@@ -2251,9 +2251,9 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			if (!gIMMgr->hasSession(session_id) || gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseRepeat"))
 				busy_message(msg, from_id);
 		}
-//		else if (offline == IM_ONLINE && !is_linden && (is_autorespond || is_autorespond_nonfriends || is_autorespond_muted) && name != SYSTEM_FROM)
+//		else if (to_id.notNull() && offline == IM_ONLINE && !is_linden && (is_autorespond || is_autorespond_nonfriends || is_autorespond_muted) && name != SYSTEM_FROM)
 // [RLVa:LF] - Same as above: Checked: 2010-11-30 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
-		else if (offline == IM_ONLINE && !is_linden && (is_autorespond || is_autorespond_nonfriends || is_autorespond_muted) && name != SYSTEM_FROM && gRlvHandler.canReceiveIM(from_id))
+		else if (to_id.notNull() && offline == IM_ONLINE && !is_linden && (is_autorespond || is_autorespond_nonfriends || is_autorespond_muted) && name != SYSTEM_FROM && gRlvHandler.canReceiveIM(from_id))
 // [/RLVa:LF]
 		{
 			// now store incoming IM in chat history
