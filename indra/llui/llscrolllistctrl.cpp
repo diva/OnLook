@@ -52,6 +52,7 @@
 #include "llcontrol.h"
 #include "llkeyboard.h"
 #include "llsdparam.h"
+#include "llmenugl.h"
 
 
 static LLRegisterWidget<LLScrollListCtrl> r("scroll_list");
@@ -131,6 +132,7 @@ LLScrollListCtrl::LLScrollListCtrl(const std::string& name, const LLRect& rect, 
 	mHighlightedItem(-1),
 	mBorder(NULL),
 	mSortCallback(NULL),
+	mPopupMenu(NULL),
 	mCommentTextView(NULL),
 	mNumDynamicWidthColumns(0),
 	mTotalStaticColumnWidth(0),
@@ -1724,6 +1726,21 @@ BOOL LLScrollListCtrl::handleMouseUp(S32 x, S32 y, MASK mask)
 	return LLUICtrl::handleMouseUp(x, y, mask);
 }
 
+// virtual
+BOOL LLScrollListCtrl::handleRightMouseDown(S32 x, S32 y, MASK mask)
+{
+	if (!mPopupMenu) return FALSE; // No menu, no bother
+	LLScrollListItem *item = hitItem(x, y);
+	if (item)
+	{
+		if (!item->getSelected()) selectItem(item); // Right click on unselected item is for that item only
+		mPopupMenu->buildDrawLabels();
+		LLMenuGL::showPopup(this, mPopupMenu, x, y);
+		return TRUE;
+	}
+	return FALSE;
+}
+
 BOOL LLScrollListCtrl::handleDoubleClick(S32 x, S32 y, MASK mask)
 {
 	//BOOL handled = FALSE;
@@ -2564,6 +2581,14 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 	std::string tool_tip;
 	node->getAttributeString("tool_tip", tool_tip);
 	scroll_list->setToolTip(tool_tip);
+
+	std::string menu_file;
+	if (node->getAttributeString("menu_file", menu_file))
+	{
+		LLMenuGL* menu = LLUICtrlFactory::getInstance()->buildMenu(menu_file, LLMenuGL::sMenuContainer);
+		LLMenuGL::sMenuContainer->addChild(menu);
+		scroll_list->setContextMenu(menu);
+	}
 
 	LLSD columns;
 	S32 index = 0;
