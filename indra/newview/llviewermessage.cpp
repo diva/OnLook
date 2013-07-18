@@ -3292,6 +3292,8 @@ void busy_message (LLMessageSystem* msg, LLUUID from_id)
 	{
 		std::string my_name;
 		LLAgentUI::buildFullname(my_name);
+		std::string from_name;
+		msg->getStringFast(_PREHASH_MessageBlock, _PREHASH_FromAgentName, from_name);
 		std::string response = gSavedPerAccountSettings.getText("BusyModeResponse");
 		pack_instant_message(
 			gMessageSystem,
@@ -3300,10 +3302,25 @@ void busy_message (LLMessageSystem* msg, LLUUID from_id)
 			gAgent.getSessionID(),
 			from_id,
 			my_name,
-			response,
+			replace_wildcards(response, from_id, from_name),
 			IM_ONLINE,
 			IM_BUSY_AUTO_RESPONSE);
 		gAgent.sendReliableMessage();
+		std::string pns_name;
+		if (!LLAvatarNameCache::getPNSName(from_id, pns_name)) pns_name = from_name;
+		LLUUID session_id;
+		msg->getUUIDFast(_PREHASH_MessageBlock, _PREHASH_ID, session_id);
+		if (gSavedPerAccountSettings.getBOOL("BusyModeResponseShow")) gIMMgr->addMessage(session_id, from_id, LLStringUtil::null, LLTrans::getString("IM_autoresponded_to") + " " + pns_name);
+		if (!gSavedPerAccountSettings.getBOOL("BusyModeResponseItem")) return; // Not sending an item, finished
+		if (LLViewerInventoryItem* item = gInventory.getItem(static_cast<LLUUID>(gSavedPerAccountSettings.getString("BusyModeResponseItemID"))))
+		{
+			U8 d;
+			msg->getU8Fast(_PREHASH_MessageBlock, _PREHASH_Dialog, d);
+			LLUUID computed_session_id = LLIMMgr::computeSessionID(static_cast<EInstantMessage>(d), from_id);
+			LLGiveInventory::doGiveInventoryItem(from_id, item, computed_session_id);
+			if (gSavedPerAccountSettings.getBOOL("BusyModeResponseShow"))
+				gIMMgr->addMessage(computed_session_id, from_id, LLStringUtil::null, llformat("%s %s \"%s\"", pns_name.c_str(), LLTrans::getString("IM_autoresponse_sent_item").c_str(), item->getName().c_str()));
+		}
 	}
 }
 
