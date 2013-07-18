@@ -149,7 +149,7 @@ void LLPanelGroupInvite::impl::addUsers(const std::vector<std::string>& names,
 		row["columns"][0]["column"] = "name";
 		row["columns"][0]["value"] = name;
 
-		mInvitees->addNameItem(row);
+		mInvitees->addElement(row);
 	}
 }
 
