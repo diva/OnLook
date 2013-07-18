@@ -9204,6 +9204,15 @@ class SinguVisibleDebugConsole : public view_listener_t
 	}
 };
 
+class VisibleNotSecondLife : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(!gHippoGridManager->getConnectedGrid()->isSecondLife());
+		return true;
+	}
+};
+
 void addMenu(view_listener_t *menu, const std::string& name)
 {
 	sMenus.push_back(menu);
@@ -9504,6 +9513,8 @@ void initialize_menus()
 		addMenu(new RlvEnableIfNot(), "RLV.EnableIfNot");
 	}
 // [/RLVa:KB]
+
+	addMenu(new VisibleNotSecondLife(), "VisibleNotSecondLife");
 
 	LLToolMgr::getInstance()->initMenu(sMenus);
 }
