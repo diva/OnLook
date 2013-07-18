@@ -1734,11 +1734,15 @@ BOOL LLScrollListCtrl::handleRightMouseDown(S32 x, S32 y, MASK mask)
 	if (item)
 	{
 		if (!item->getSelected()) selectItem(item); // Right click on unselected item is for that item only
-		mPopupMenu->buildDrawLabels();
-		LLMenuGL::showPopup(this, mPopupMenu, x, y);
-		return TRUE;
 	}
-	return FALSE;
+	else if (LLScrollListColumn* col = getColumn(getColumnIndexFromOffset(x)))
+	{
+		if (col->mHeader && col->mHeader->getRect().pointInRect(x,y)) // Right clicking a column header shouldn't bring up a menu
+			return FALSE;
+	}
+	mPopupMenu->buildDrawLabels();
+	LLMenuGL::showPopup(this, mPopupMenu, x, y);
+	return TRUE;
 }
 
 BOOL LLScrollListCtrl::handleDoubleClick(S32 x, S32 y, MASK mask)
