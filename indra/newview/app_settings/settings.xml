@@ -718,6 +718,17 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>LiruNewARCLimit</key>
+    <map>
+      <key>Comment</key>
+      <string>The high threshold number used to calculate the colors displayed for new ARC numbers, when LiruSensibleARC is false.  Default is 20000.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>20000</integer>
+    </map>
     <key>LiruNoTransactionClutter</key>
     <map>
       <key>Comment</key>

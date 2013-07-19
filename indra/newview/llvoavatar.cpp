@@ -8763,7 +8763,7 @@ void LLVOAvatar::idleUpdateRenderCost()
 	else
 	{
 		static const U32 ARC_BODY_PART_COST = 200;
-		static const U32 ARC_LIMIT = 20000;
+		static const LLCachedControl<U32> ARC_LIMIT("LiruNewARCLimit", 20000);
 
 		static std::set<LLUUID> all_textures;
 
