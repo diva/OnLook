@@ -1201,12 +1201,6 @@ const LLViewerJointAttachment *LLVOAvatarSelf::attachObject(LLViewerObject *view
 				gRlvAttachmentLocks.updateLockedHUD();
 		}
 // [/RLVa:KB]
-		bool detach_bridge = gSavedSettings.getBOOL("SGDetachBridge");
-		if (detach_bridge && RlvAttachPtLookup::getAttachPointIndex(viewer_object) == 127)
-		{
-			llinfos << "Bridge detected! detaching" << llendl;
-			LLAppearanceMgr::getInstance()->removeItemFromAvatar(attachment_id);
-		}
 
 	}
 

@@ -6208,6 +6208,11 @@ LLViewerJointAttachment* LLVOAvatar::getTargetAttachmentPoint(LLViewerObject* vi
 	if (!attachment)
 	{
 		llwarns << "Object attachment point invalid: " << attachmentID << llendl;
+		if (isSelf() && attachmentID == 127 && gSavedSettings.getBOOL("SGDetachBridge"))
+		{
+			llinfos << "Bridge detected! detaching" << llendl;
+			return 0;
+		}
 //		attachment = get_if_there(mAttachmentPoints, 1, (LLViewerJointAttachment*)NULL); // Arbitrary using 1 (chest)
 // [SL:KB] - Patch: Appearance-LegacyMultiAttachment | Checked: 2010-08-28 (Catznip-2.2.0a) | Added: Catznip2.1.2a
 		S32 idxAttachPt = 1;
