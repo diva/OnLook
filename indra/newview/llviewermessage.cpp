@@ -218,6 +218,10 @@ bool friendship_offer_callback(const LLSD& notification, const LLSD& response)
 	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	LLMessageSystem* msg = gMessageSystem;
 	const LLSD& payload = notification["payload"];
+
+	// add friend to recent people list
+	//LLRecentPeople::instance().add(payload["from_id"]);
+
 	switch(option)
 	{
 	case 0:
@@ -362,6 +366,7 @@ void process_layer_data(LLMessageSystem *mesgsys, void **user_data)
 
 	if(!regionp || gNoRender)
 	{
+		llwarns << "Invalid region for layer data." << llendl;
 		return;
 	}
 	S32 size;
@@ -1138,8 +1143,8 @@ bool check_offer_throttle(const std::string& from_name, bool check_only)
 					log_msg = LLTrans::getString("ItemsComingInTooFast", arg);
 				}
 
-				chat.mText = log_msg;
 				//this is kinda important, so actually put it on screen
+				chat.mText = log_msg;
 				LLFloaterChat::addChat(chat, FALSE, FALSE);
 
 				throttle_logged=true;
@@ -1386,12 +1391,20 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 	std::string log_message;
 	S32 button = LLNotificationsUtil::getSelectedOption(notification, response);
 
+	LLViewerInventoryCategory* catp = NULL;
+	catp = gInventory.getCategory(mObjectID);
+	LLViewerInventoryItem* itemp = NULL;
+	if(!catp)
+	{
+		itemp = (LLViewerInventoryItem*)gInventory.getItem(mObjectID);
+	}
+
 	// For muting, we need to add the mute, then decline the offer.
 	// This must be done here because:
 	// * callback may be called immediately,
 	// * adding the mute sends a message,
 	// * we can't build two messages at once.
-	if (2 == button)
+	if (2 == button) // Block
 	{
 		gCacheName->get(mFromID, mFromGroup, boost::bind(&inventory_offer_mute_callback,_1,_2,_3));
 	}
@@ -1415,12 +1428,6 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 	msg->addUUIDFast(_PREHASH_RegionID, LLUUID::null);
 	msg->addVector3Fast(_PREHASH_Position, gAgent.getPositionAgent());
 	LLInventoryObserver* opener = NULL;
-	LLViewerInventoryCategory* catp = gInventory.getCategory(mObjectID);
-	LLViewerInventoryItem* itemp = NULL;
-	if(!catp)
-	{
-		itemp = (LLViewerInventoryItem*)gInventory.getItem(mObjectID);
-	}
 
 	std::string from_string; // Used in the pop-up.
 	std::string chatHistory_string;  // Used in chat history.
@@ -1464,7 +1471,6 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 			}
 			else
 			{
-
 				from_string = LLTrans::getString("InvOfferAnObjectNamed") + " " + LLTrans::getString("'")
 				+ mFromName + LLTrans::getString("'") + " " + LLTrans::getString("InvOfferOwnedByUnknownUser");
 				chatHistory_string = mFromName + " " + LLTrans::getString("InvOfferOwnedByUnknownUser") + LLTrans::getString(".");
@@ -1476,7 +1482,7 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		from_string = chatHistory_string = mFromName;
 	}
 	
-	bool busy=FALSE;
+	bool busy = gAgent.getBusy();
 	
 // [RLVa:KB] - Checked: 2010-09-23 (RLVa-1.2.1e) | Added: RLVa-1.2.1e
 	bool fRlvNotifyAccepted = false;
@@ -1533,8 +1539,8 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		if (check_offer_throttle(mFromName, true))
 		{
 			log_message = chatHistory_string + " " + LLTrans::getString("InvOfferGaveYou") + " " + mDesc + LLTrans::getString(".");
- 			chat.mText = log_message;
- 			LLFloaterChat::addChatHistory(chat);
+			chat.mText = log_message;
+			LLFloaterChat::addChatHistory(chat);
 		}
 
 		// we will want to open this item when it comes back.
@@ -2690,7 +2696,8 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 
 				LLSD args;
 				args["MESSAGE"] = message;
-				LLNotificationsUtil::add("JoinGroup", args, payload, join_group_response);
+				// we shouldn't pass callback functor since it is registered in LLFunctorRegistration
+				LLNotificationsUtil::add("JoinGroup", args, payload);
 			}
 		}
 		break;
@@ -3309,7 +3316,7 @@ void busy_message (LLMessageSystem* msg, LLUUID from_id)
 		std::string from_name;
 		msg->getStringFast(_PREHASH_MessageBlock, _PREHASH_FromAgentName, from_name);
 		from_name = LLCacheName::cleanFullName(from_name);
-		std::string response = gSavedPerAccountSettings.getText("BusyModeResponse");
+		std::string response = gSavedPerAccountSettings.getString("BusyModeResponse");
 		pack_instant_message(
 			gMessageSystem,
 			gAgent.getID(),
@@ -6077,12 +6084,12 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 	// and agent ids for name lookup.
 	S32 transaction_type = 0;
 	LLUUID source_id;
-	BOOL is_source_group = false;
+	BOOL is_source_group = FALSE;
 	LLUUID dest_id;
-	BOOL is_dest_group = false;
+	BOOL is_dest_group = FALSE;
 	S32 amount = 0;
 	std::string item_description;
-	BOOL success = false;
+	BOOL success = FALSE;
 
 	msg->getS32("TransactionInfo", "TransactionType", transaction_type);
 	msg->getUUID("TransactionInfo", "SourceID", source_id);
@@ -6500,7 +6507,7 @@ bool handle_special_alerts(const std::string &pAlertName)
 
 void process_alert_core(const std::string& message, BOOL modal)
 {
-	// HACK -- handle callbacks for specific alerts
+	// HACK -- handle callbacks for specific alerts. It also is localized in notifications.xml
 	if ( message == "You died and have been teleported to your home location")
 	{
 		LLViewerStats::getInstance()->incStat(LLViewerStats::ST_KILLED_COUNT);
@@ -7014,14 +7021,19 @@ void process_script_question(LLMessageSystem *msg, void **user_data)
 		args["OBJECTNAME"] = object_name;
 		args["NAME"] = LLCacheName::cleanFullName(owner_name);
 
+		BOOL has_not_only_debit = questions ^ LSCRIPTRunTimePermissionBits[SCRIPT_PERMISSION_DEBIT];
 		// check the received permission flags against each permission
 		for (S32 i = 0; i < SCRIPT_PERMISSION_EOF; i++)
 		{
 			if (questions & LSCRIPTRunTimePermissionBits[i])
 			{
 				count++;
+
 				// check whether permission question should cause special caution dialog
 				caution |= (SCRIPT_QUESTION_IS_CAUTION[i]);
+
+				if (("ScriptTakeMoney" ==  SCRIPT_QUESTIONS[i]) && has_not_only_debit)
+					continue;
 
 				script_question += "    " + LLTrans::getString(SCRIPT_QUESTIONS[i]) + "\n";
 			}
@@ -7939,7 +7951,7 @@ void process_script_teleport_request(LLMessageSystem* msg, void**)
 
 	// remove above two lines and replace with below line
 	// to re-enable parcel browser for llMapDestination()
-	// LLURLDispatcher::dispatch(LLURLDispatcher::buildSLURL(sim_name, (S32)pos.mV[VX], (S32)pos.mV[VY], (S32)pos.mV[VZ]), FALSE);
+	// LLURLDispatcher::dispatch(LLSLURL::buildSLURL(sim_name, (S32)pos.mV[VX], (S32)pos.mV[VY], (S32)pos.mV[VZ]), FALSE);
 	
 }
 
@@ -8039,16 +8051,12 @@ void onCovenantLoadComplete(LLVFS *vfs,
 		}
 
 		file.read((U8*)buffer, file_length);		/* Flawfinder: ignore */
-		
 		// put a EOS at the end
 		buffer[file_length] = 0;
 		
 		if( (file_length > 19) && !strncmp( buffer, "Linden text version", 19 ) )
 		{
-			LLViewerTextEditor* editor =
-				new LLViewerTextEditor(std::string("temp"),
-						       LLRect(0,0,0,0),
-						       file_length+1);
+			LLViewerTextEditor * editor = new LLViewerTextEditor(std::string("temp"), LLRect(0,0,0,0), file_length+1);
 			if( !editor->importBuffer( buffer, file_length+1 ) )
 			{
 				LL_WARNS("Messaging") << "Problem importing estate covenant." << LL_ENDL;
