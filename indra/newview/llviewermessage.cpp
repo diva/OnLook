@@ -1684,6 +1684,13 @@ void inventory_offer_handler(LLOfferInfo* info)
 		return;
 	}
 
+	// If the user wants to, accept all offers of any kind
+	if (gSavedSettings.getBOOL("AutoAcceptAllNewInventory"))
+	{
+		info->forceResponse(IOR_ACCEPT);
+		return;
+	}
+
 	// Avoid the Accept/Discard dialog if the user so desires. JC
 	if (gSavedSettings.getBOOL("AutoAcceptNewInventory")
 		&& (info->mType == LLAssetType::AT_NOTECARD
