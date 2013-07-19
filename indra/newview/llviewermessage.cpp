@@ -1172,6 +1172,7 @@ bool check_asset_previewable(const LLAssetType::EType asset_type)
 
 void open_inventory_offer(const uuid_vec_t& objects, const std::string& from_name)
 {
+	if (gAgent.getBusy()) return;
 	for (uuid_vec_t::const_iterator obj_iter = objects.begin();
 		 obj_iter != objects.end();
 		 ++obj_iter)
