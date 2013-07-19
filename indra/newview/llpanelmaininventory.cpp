@@ -817,7 +817,11 @@ BOOL LLInventoryView::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 
 void LLInventoryView::changed(U32 mask)
 {
-	updateItemcountText();
+	// Singu note: only if there's a change we're interested in.
+	if ((mask & (LLInventoryObserver::ADD | LLInventoryObserver::REMOVE)) != 0)
+	{
+		updateItemcountText();
+	}
 }
 
 void LLInventoryView::draw()
