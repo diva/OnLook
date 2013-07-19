@@ -485,6 +485,17 @@ void LLInventoryPanel::modelChanged(U32 mask)
 		}
 
 		//////////////////////////////
+		// DESCRIPTION Operation (singu only)
+		// Alert listener.
+		if ((mask & LLInventoryObserver::DESCRIPTION))
+		{
+			if (view_item)
+			{
+				view_item->descriptionChanged();
+			}
+		}
+
+		//////////////////////////////
 		// REBUILD Operation
 		// Destroy and regenerate the UI.
 		if (mask & LLInventoryObserver::REBUILD)

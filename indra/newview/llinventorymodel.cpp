@@ -854,6 +854,10 @@ U32 LLInventoryModel::updateItem(const LLViewerInventoryItem* item)
 		{
 			mask |= LLInventoryObserver::LABEL;
 		}
+		if(old_item->getDescription() != item->getDescription())
+		{
+			mask |= LLInventoryObserver::DESCRIPTION;
+		}
 		old_item->copyViewerItem(item);
 		mask |= LLInventoryObserver::INTERNAL;
 	}

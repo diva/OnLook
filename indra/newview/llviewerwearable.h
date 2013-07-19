@@ -85,9 +85,9 @@ public:
 	// Something happened that requires the wearable's label to be updated (e.g. worn/unworn).
 	void				setUpdated() const;
 
-	// the wearable was worn. make sure the name of the wearable object matches the LLViewerInventoryItem,
+	// the wearable was worn. make sure the name and description of the wearable object matches the LLViewerInventoryItem,
 	// not the wearable asset itself.
-	void				refreshName();
+	void				refreshNameAndDescription();
 
 	// Update the baked texture hash.
 	/*virtual*/void		addToBakedTextureHash(LLMD5& hash) const;
