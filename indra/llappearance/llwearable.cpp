@@ -69,44 +69,6 @@ LLAssetType::EType LLWearable::getAssetType() const
 	return LLWearableType::getAssetType(mType);
 }
 
-extern void dump_visual_param(LLAPRFile& file, LLVisualParam const* viewer_param, F32 value);
-
-// Replace '--' with '- -', see http://en.wikipedia.org/wiki/XML#Comments
-std::string XMLCommentEscape(std::string const& comment)
-{
-  std::string result = comment;
-  std::string::size_type off = std::string::npos;
-  while ((off = result.rfind("--", off)) != std::string::npos)
-  {
-	result.replace(off, 2, "- -");
-  }
-  return result;
-}
-
-void LLWearable::archetypeExport(LLAPRFile& file) const
-{
-	apr_file_t* fp = file.getFileHandle();
-
-	apr_file_printf(fp, "\n\t\t<!--    wearable: %s -->\n", getTypeName().c_str());
-	apr_file_printf(fp,   "\t\t<!-- Name       : %s -->\n", XMLCommentEscape(mName).c_str());
-	apr_file_printf(fp,   "\t\t<!-- Description: %s -->\n", XMLCommentEscape(mDescription).c_str());
-	apr_file_printf(fp,   "\t\t<!--        date: %s -->\n", LLDate::now().asString().c_str());
-
-	for (visual_param_index_map_t::const_iterator iter = mVisualParamIndexMap.begin(); iter != mVisualParamIndexMap.end(); ++iter)
-	{
-		LLVisualParam const* param = iter->second;
-		dump_visual_param(file, param, param->getWeight());
-	}
-	for (te_map_t::const_iterator iter = mTEMap.begin(); iter != mTEMap.end(); ++iter)
-	{
-		S32 te = iter->first;
-		LLUUID const& image_id = iter->second->getID();
-		apr_file_printf(fp,   "\t\t<texture te=\"%i\" uuid=\"%s\"/>\n", te, image_id.asString().c_str());
-	}
-
-	apr_file_printf(fp, "\n");
-}
-
 BOOL LLWearable::exportFile(LLFILE* fp) const
 {
 	llofstream ofs(fp);

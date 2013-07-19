@@ -31,6 +31,7 @@
 #include "llavatarappearancedefines.h"
 
 class LLVOAvatar;
+class LLAPRFile;
 
 class LLViewerWearable : public LLWearable
 {
@@ -65,6 +66,8 @@ public:
 	static void			removeFromAvatar( LLWearableType::EType type, BOOL upload_bake ); 
 
 	/*virtual*/ EImportResult	importStream( std::istream& input_stream, LLAvatarAppearance* avatarp );
+
+	void archetypeExport(LLAPRFile& file) const;
 	
 	void				setParamsToDefaults();
 	void				setTexturesToDefaults();
