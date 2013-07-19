@@ -61,6 +61,7 @@
 #include "llviewermenu.h"
 #include "llviewermessage.h"
 #include "llviewerwindow.h"
+#include "llvoavatar.h" // For mIdleTimer reset
 #include "llnotify.h"
 #include "llviewerregion.h"
 
@@ -79,6 +80,8 @@ LLIMMgr* gIMMgr = NULL;
 //
 // Helper Functions
 //
+LLVOAvatar* find_avatar_from_object(const LLUUID& id);
+
 LLColor4 agent_chat_color(const LLUUID& id, const std::string& name, bool local_chat)
 {
 	if (id.isNull() || (name == SYSTEM_FROM))
@@ -516,6 +519,8 @@ void LLIMMgr::addMessage(
 				<< " by participant " << other_participant_id << llendl;
 		}
 	}
+
+	if (LLVOAvatar* from_avatar = find_avatar_from_object(target_id)) from_avatar->mIdleTimer.reset(); // Not idle, message sent to somewhere
 
 	// create IM window as necessary
 	if(!floater)

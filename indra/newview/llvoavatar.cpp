@@ -5419,16 +5419,20 @@ BOOL LLVOAvatar::processSingleAnimationStateChange( const LLUUID& anim_id, BOOL 
 		{
 			sitDown(TRUE);
 		}
-		else if(anim_id == ANIM_AGENT_SNAPSHOT && announce_snapshots)
+		else if(anim_id == ANIM_AGENT_SNAPSHOT)
 		{
-			std::string name;
-			LLAvatarNameCache::getPNSName(mID, name);
-			LLChat chat;
-			chat.mFromName = name;
-			chat.mText = name + " " + LLTrans::getString("took_a_snapshot") + ".";
-			chat.mURL = llformat("secondlife:///app/agent/%s/about",mID.asString().c_str());
-			chat.mSourceType = CHAT_SOURCE_SYSTEM;
-			LLFloaterChat::addChat(chat);
+			mIdleTimer.reset(); // Snapshot, not idle
+			if (announce_snapshots)
+			{
+				std::string name;
+				LLAvatarNameCache::getPNSName(mID, name);
+				LLChat chat;
+				chat.mFromName = name;
+				chat.mText = name + " " + LLTrans::getString("took_a_snapshot") + ".";
+				chat.mURL = llformat("secondlife:///app/agent/%s/about",mID.asString().c_str());
+				chat.mSourceType = CHAT_SOURCE_SYSTEM;
+				LLFloaterChat::addChat(chat);
+			}
 		}
 
 
@@ -6417,6 +6421,7 @@ BOOL LLVOAvatar::detachObject(LLViewerObject *viewer_object)
 //-----------------------------------------------------------------------------
 void LLVOAvatar::sitDown(BOOL bSitting)
 {
+	if (mIsSitting != bSitting) mIdleTimer.reset(); // Sitting changed, not idle
 	mIsSitting = bSitting;
 	if (isSelf())
 	{
@@ -7333,6 +7338,7 @@ void LLVOAvatar::addChat(const LLChat& chat)
 	}
 
 	mChatTimer.reset();
+	mIdleTimer.reset(); // Also reset idle timer
 }
 
 void LLVOAvatar::clearChat()
