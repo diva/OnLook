@@ -763,6 +763,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>LiruShowLastNameResident</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not to bypass stripping out the last name Resident</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>ContactsUseHorizontalButtons</key>
     <map>
       <key>Comment</key>

@@ -62,6 +62,8 @@ BOOL LLPanelGeneral::postBuild()
 	LLComboBox* namesystem_combobox = getChild<LLComboBox>("namesystem_combobox");
 	namesystem_combobox->setCurrentByIndex(gSavedSettings.getS32("PhoenixNameSystem"));
 
+	getChild<LLUICtrl>("show_resident_checkbox")->setValue(gSavedSettings.getBOOL("LiruShowLastNameResident"));
+
 	std::string login_location = gSavedSettings.getString("LoginLocation");
 	if(login_location != "last" && login_location != "home")
 		login_location = "last";
@@ -141,8 +143,10 @@ void LLPanelGeneral::apply()
 	gSavedSettings.setS32("RenderName", fade_out_combobox->getCurrentIndex());
 	
 	LLComboBox* namesystem_combobox = getChild<LLComboBox>("namesystem_combobox");
-	if(gSavedSettings.getS32("PhoenixNameSystem")!=namesystem_combobox->getCurrentIndex()){
+	LLUICtrl* show_resident_checkbox = getChild<LLUICtrl>("show_resident_checkbox");
+	if(gSavedSettings.getS32("PhoenixNameSystem")!=namesystem_combobox->getCurrentIndex() || gSavedSettings.getBOOL("LiruShowLastNameResident")!=show_resident_checkbox->getValue().asBoolean()){
 		gSavedSettings.setS32("PhoenixNameSystem", namesystem_combobox->getCurrentIndex());
+		gSavedSettings.setBOOL("LiruShowLastNameResident", show_resident_checkbox->getValue());
 		if(gAgent.getRegion()){
 			if(namesystem_combobox->getCurrentIndex()<=0 || namesystem_combobox->getCurrentIndex()>2) LLAvatarNameCache::setUseDisplayNames(false);
 			else LLAvatarNameCache::setUseDisplayNames(true);

@@ -15,6 +15,7 @@
 		<combo_item name="Display Names (with Username)" value="Display Names (with Username)">Display Names(w/Username)</combo_item>
 		<combo_item name="Display Names only" value="Display Names only">Display Names only</combo_item>
 	</combo_box>
+	<check_box bottom_delta="0" follows="top" height="16" label="Show Resident" left_delta="174" name="show_resident_checkbox"/>
 	<check_box bottom_delta="-25" follows="top" height="16" initial_value="true" label="Small Avatar Names" left="101" name="small_avatar_names_checkbox"/>
 	<check_box bottom_delta="-18" follows="top" height="16" initial_value="false" label="Hide My Name On My Screen" name="show_my_name_checkbox"/>
 	<text bottom_delta="-24" follows="top" height="16" left="10" name="group_titles_textbox">Group Titles:</text>
