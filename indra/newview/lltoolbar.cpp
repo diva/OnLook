@@ -294,7 +294,6 @@ void LLToolBar::refresh()
 		return;
 
 	static LLCachedControl<bool> show("ShowToolBar", true);
-	static LLCachedControl<bool> ascent_fly_always_enabled("AscentFlyAlwaysEnabled", true);
 	static LLCachedControl<bool> ascent_build_always_enabled("AscentBuildAlwaysEnabled", true);
 	BOOL mouselook = gAgentCamera.cameraMouselook();
 	setVisible(show && !mouselook);
@@ -310,7 +309,7 @@ void LLToolBar::refresh()
 		sitting = gAgentAvatarp->isSitting();
 	}
 
-	mFlyBtn->setEnabled((gAgent.canFly() || gAgent.getFlying() || ascent_fly_always_enabled) && !sitting );
+	mFlyBtn->setEnabled((gAgent.canFly() || gAgent.getFlying()) && !sitting );
 	mBuildBtn->setEnabled((LLViewerParcelMgr::getInstance()->allowAgentBuild() || ascent_build_always_enabled));
 
 	// Check to see if we're in build mode

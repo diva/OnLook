@@ -4605,7 +4605,7 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 
 	if (gAgent.getRegion()->getBlockFly())
 	{
-		gAgent.setFlying(gAgent.canFly());
+		gAgent.setFlying(false/*gAgent.canFly()*/);
 	}
 
 	// force simulator to recognize busy state
