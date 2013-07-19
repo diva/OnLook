@@ -1703,6 +1703,14 @@ void inventory_offer_handler(LLOfferInfo* info)
 		return;
 	}
 
+	if (gAgent.getBusy() && info->mIM != IM_TASK_INVENTORY_OFFERED) // busy mode must not affect interaction with objects (STORM-565)
+	{
+		// Until throttling is implemented, busy mode should reject inventory instead of silently
+		// accepting it.  SEE SL-39554
+		info->forceResponse(IOR_DECLINE);
+		return;
+	}
+
 	// Strip any SLURL from the message display. (DEV-2754)
 	std::string msg = info->mDesc;
 	int indx = msg.find(" ( http://slurl.com/secondlife/");
@@ -2770,12 +2778,14 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				// Same as closing window
 				info->forceResponse(IOR_DECLINE);
 			}
+			/* Singu Note: Handle this inside inventory_offer_handler so if the user wants to autoaccept offers, they can while busy.
 			else if (is_busy && dialog != IM_TASK_INVENTORY_OFFERED) // busy mode must not affect interaction with objects (STORM-565)
 			{
 				// Until throttling is implemented, busy mode should reject inventory instead of silently
 				// accepting it.  SEE SL-39554
 				info->forceResponse(IOR_DECLINE);
 			}
+			*/
 			else
 			{
 				inventory_offer_handler(info);
