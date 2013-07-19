@@ -199,11 +199,12 @@ LLScrollListItem* LLNameListCtrl::addNameItemRow(
 			// ...schedule a callback
 				// This is not correct and will likely lead to partially populated lists in cases where avatar names are not cached.
 				// *TODO : Change this to have 2 callbacks : one callback per list item and one for the whole list.
+				/* Singu Note: Indeed it does, for now let's not use it
 				if (mAvatarNameCacheConnection.connected())
 				{
 					mAvatarNameCacheConnection.disconnect();
 				}
-				mAvatarNameCacheConnection = LLAvatarNameCache::get(id,boost::bind(&LLNameListCtrl::onAvatarNameCache,this, _1, _2, item->getHandle()));
+				mAvatarNameCacheConnection =*/ LLAvatarNameCache::get(id,boost::bind(&LLNameListCtrl::onAvatarNameCache,this, _1, _2, item->getHandle()));
 		}
 			break;
 		}
@@ -262,7 +263,7 @@ void LLNameListCtrl::onAvatarNameCache(const LLUUID& agent_id,
 									   const LLAvatarName& av_name,
 									   LLHandle<LLNameListItem> item)
 {
-	mAvatarNameCacheConnection.disconnect();
+	//mAvatarNameCacheConnection.disconnect();
 
 	std::string name;
 	if (mShortNames)
