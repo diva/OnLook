@@ -171,7 +171,6 @@
 #include "shfloatermediaticker.h"
 #include "llpacketring.h"
 #include "aihttpview.h"
-#include "awavefront.h"
 // </edit>
 
 #include "scriptcounter.h"
@@ -225,6 +224,8 @@ void handle_test_load_url(void*);
 
 class AIHTTPView;
 
+void add_wave_listeners();
+void add_dae_listeners();
 //extern BOOL	gHideSelectedObjects;
 //extern BOOL gAllowSelectAvatar;
 //extern BOOL gDebugAvatarRotation;
@@ -489,11 +490,6 @@ void handle_mesh_save_obj(void*);
 void handle_mesh_load_obj(void*);
 void handle_morph_save_obj(void*);
 void handle_morph_load_obj(void*);
-void save_avatar_to_obj(LLVOAvatar *avatar);
-void save_selected_avatar_to_obj();
-void save_selected_objects_to_obj();
-void save_wavefront_continued(WavefrontSaver* wfsaver, AIFilePicker* filepicker);
-void handle_save_current_avatar_obj(void*);
 void handle_debug_avatar_textures(void*);
 void handle_dump_region_object_cache(void*);
 
@@ -706,8 +702,6 @@ void init_menus()
 	gAttachSubMenu = gMenuBarView->getChildMenuByName("Attach Object", TRUE);
 	gDetachSubMenu = gMenuBarView->getChildMenuByName("Detach Object", TRUE);
 
-	LLMenuGL*menu;
-
 	// <dogmode>
 	// Add in the pose stand -------------------------------------------
 	/*LLMenuGL* sub = new LLMenuGL("Pose Stand...");
@@ -721,6 +715,9 @@ void init_menus()
 	sub->addChild(new LLMenuItemCallGL(  "Legs Half Arms Out", &handle_pose_stand_lhao, NULL));
 	sub->addChild(new LLMenuItemCallGL(  "Stop Pose Stand", &handle_pose_stand_stop, NULL));
 	// </dogmode> ------------------------------------------------------*/
+
+	// TomY TODO convert these two
+	LLMenuGL*menu;
 
 	menu = new LLMenuGL(CLIENT_MENU_NAME);
 	menu->setCanTearOff(TRUE);
@@ -1029,7 +1026,7 @@ void init_client_menu(LLMenuGL* menu)
 		sub = new LLMenuGL("Media");
 		sub->setCanTearOff(TRUE);
 		sub->addChild(new LLMenuItemCallGL("Reload MIME types", &LLMIMETypes::reload));
-		sub->addChild(new LLMenuItemCallGL("Web Browser Test", &handle_web_browser_test));
+		sub->addChild(new LLMenuItemCallGL("Web Browser Test", &handle_web_browser_test, NULL, NULL, KEY_F1));
 		menu->addChild( sub );
 		sub->createJumpKeys();
 	}
@@ -2061,7 +2058,7 @@ class LLObjectInspect : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLFloaterInspect::show();
+		LLFloaterInspect::showInstance();
 		return true;
 	}
 };
@@ -6137,24 +6134,6 @@ class LLAvatarInviteToGroup : public view_listener_t
 	}
 };
 
-class LLAvatarSaveAsOBJ : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		save_selected_avatar_to_obj();
-		return true;
-	}
-};
-
-class LLSelectionSaveAsOBJ : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		save_selected_objects_to_obj();
-		return true;
-	}
-};
-
 class LLAvatarAddFriend : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -8538,104 +8517,6 @@ static void handle_morph_load_obj_continued(void* data, AIFilePicker* filepicker
 	morph_data->setMorphFromMesh(&mesh);
 }
 
-void handle_save_current_avatar_obj(void* data)
-{
-	if(gAgentAvatarp)
-		save_avatar_to_obj(gAgentAvatarp);
-}
-
-void save_selected_avatar_to_obj()
-{
-	LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
-	if(avatar)
-		save_avatar_to_obj(avatar);
-}
-
-void save_avatar_to_obj(LLVOAvatar *avatar)	
-{
-	std::string file_name = llformat("%s.obj", avatar->getFullname().c_str());
-	std::string full_path = gDirUtilp->getExpandedFilename(LL_PATH_NONE, file_name);
-
-	WavefrontSaver* wfsaver = new WavefrontSaver();
-	wfsaver->Add((LLVOAvatar*)avatar);
-
-	AIFilePicker* filepicker = AIFilePicker::create();
-	filepicker->open(full_path);
-	filepicker->run(boost::bind(&save_wavefront_continued, wfsaver, filepicker));
-}
-
-void save_selected_objects_to_obj()
-{
-	struct ff : public LLSelectedNodeFunctor
-	{
-		virtual bool apply(LLSelectNode* node)
-		{
-			return LLObjectBackup::getInstance()->validatePerms(node->mPermissions);
-		}
-	} func;
-
-	LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
-	
-	if(!selection)
-		return;
-
-	if (!selection->applyToNodes(&func, false))
-	{
-		llwarns << "Incorrect permissions: Wavefront OBJ export aborted" << llendl;
-		LLSD args;
-		args["REASON"] = "Insufficient Permissions";
-		LLNotificationsUtil::add("WavefrontExportFailed", args);
-		return;
-	}
-
-	std::string file_name = llformat("%s.obj", selection->getFirstNode()->mName.c_str());
-	std::string full_path = gDirUtilp->getExpandedFilename(LL_PATH_NONE, file_name);
-
-	WavefrontSaver* wfsaver = new WavefrontSaver();
-	LLSelectNode* root_one = (LLSelectNode *)*selection->root_begin();
-	wfsaver->offset = -root_one->getObject()->getRenderPosition();
-	for (LLObjectSelection::iterator iter = selection->begin();
-		iter != selection->end(); iter++)
-	{
-		LLSelectNode* node = *iter;
-		LLViewerObject* object = node->getObject();
-		wfsaver->Add(object);
-	}
-
-	AIFilePicker* filepicker = AIFilePicker::create();
-	filepicker->open(full_path);
-	filepicker->run(boost::bind(&save_wavefront_continued, wfsaver, filepicker));
-}
-
-void save_wavefront_continued(WavefrontSaver* wfsaver, AIFilePicker* filepicker)
-{
-	if (!filepicker->hasFilename())
-	{
-		llwarns << "No file; bailing" << llendl;
-		return;
-	}
-	std::string selected_filename = filepicker->getFilename();
-	LLFILE* fp = LLFile::fopen(selected_filename, "wb");
-	if (!fp)
-	{
-		llerrs << "can't open: " << selected_filename << llendl;
-		return;
-	}
-	try
-	{
-		wfsaver->saveFile(fp);
-	}
-	catch(int e)
-	{
-		llwarns << "An exception occurred while generating / saving OBJ file. Exception #" << e << llendl;
-	}
-	llinfos << "OBJ file saved to " << selected_filename << llendl;
-	LLSD args;
-	args["FILENAME"] = selected_filename;
-	LLNotificationsUtil::add("WavefrontExportSuccess", args);
-	fclose(fp);
-}
-
 // Returns a pointer to the avatar give the UUID of the avatar OR of an attachment the avatar is wearing.
 // Returns NULL on failure.
 LLVOAvatar* find_avatar_from_object( LLViewerObject* object )
@@ -9323,6 +9204,15 @@ class SinguVisibleDebugConsole : public view_listener_t
 	}
 };
 
+class VisibleNotSecondLife : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(!gHippoGridManager->getConnectedGrid()->isSecondLife());
+		return true;
+	}
+};
+
 void addMenu(view_listener_t *menu, const std::string& name)
 {
 	sMenus.push_back(menu);
@@ -9509,7 +9399,6 @@ void initialize_menus()
 	addMenu(new LLAvatarEnableFreezeEject(), "Avatar.EnableFreezeEject");
 	addMenu(new LLAvatarCopyUUID(), "Avatar.CopyUUID");
 	addMenu(new LLAvatarClientUUID(), "Avatar.ClientID");
-	addMenu(new LLAvatarSaveAsOBJ(), "Avatar.SaveAsOBJ");
 
 	// Object pie menu
 	addMenu(new LLObjectOpen(), "Object.Open");
@@ -9529,6 +9418,8 @@ void initialize_menus()
 	addMenu(new LLPowerfulWizard(), "Object.Explode");
 	addMenu(new LLCanIHasKillEmAll(), "Object.EnableDestroy");
 	addMenu(new LLOHGOD(), "Object.EnableExplode");
+	add_wave_listeners();
+	add_dae_listeners();
 	// </edit>
 	addMenu(new LLObjectMute(), "Object.Mute");
 	addMenu(new LLObjectBuy(), "Object.Buy");
@@ -9541,7 +9432,6 @@ void initialize_menus()
 	addMenu(new LLObjectExport(), "Object.Export");
 	addMenu(new LLObjectImport(), "Object.Import");
 	addMenu(new LLObjectImportUpload(), "Object.ImportUpload");
-	addMenu(new LLSelectionSaveAsOBJ(), "Object.SaveAsOBJ");
 
 
 	addMenu(new LLObjectEnableOpen(), "Object.EnableOpen");
@@ -9623,6 +9513,8 @@ void initialize_menus()
 		addMenu(new RlvEnableIfNot(), "RLV.EnableIfNot");
 	}
 // [/RLVa:KB]
+
+	addMenu(new VisibleNotSecondLife(), "VisibleNotSecondLife");
 
 	LLToolMgr::getInstance()->initMenu(sMenus);
 }

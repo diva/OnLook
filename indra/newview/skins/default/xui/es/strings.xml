@@ -288,6 +288,12 @@
 	<string name="unavailable">Chat de Voz no disponible en esta ubicación</string>
 	<string name="hang_up">Desconectado del Chat de Voz</string>
 	<string name="conference-title">Chat multi-persona</string>
+	<string name="ScriptQuestionCautionChatGranted">
+		el objeto '[OBJECTNAME]', propiedad de  '[OWNERNAME]', ubicado en [REGIONNAME] en la posición [REGIONPOS], ha recibido permiso para: [PERMISSIONS].
+	</string>
+	<string name="ScriptQuestionCautionChatDenied">
+		al objeto '[OBJECTNAME]', propiedad de  '[OWNERNAME]', ubicado en [REGIONNAME] en la posición [REGIONPOS], se le ha denegado el permiso para: [PERMISSIONS].
+	</string>
 	<string name="ScriptTakeMoney">Transferir moneda de tu cuenta</string>
 	<string name="ActOnControlInputs">Actuar en tus controles de entrada</string>
 	<string name="RemapControlInputs">Reconfigurar tus controles de entrada</string>
@@ -301,7 +307,7 @@
 	<string name="TrackYourCamera">Seguir tu cámara</string>
 	<string name="ControlYourCamera">Controlar tu cámara</string>
 	<string name="TeleportYourAgent">Teleportarte</string>	
-  <string name="OverrideAnimations">Reemplazando tus animaciones predeterminadas</string>
+  <string name="OverrideYourAnimations">Reemplazando tus animaciones predeterminadas</string>
   
 	<!-- Sim Access labels -->
 	<string name="SIM_ACCESS_PG">PG</string>
@@ -3125,12 +3131,18 @@ La
 	<string name="GodToolsObjectOwnedBy">Objeto [OBJECT] propiedad de [OWNER]</string>
 
 	<!-- groups -->
+	<string name="GroupsNone">
+		ninguno
+	</string>
 	<string name="Group" value=" (grupo)" />
 	<string name="Unknown">(Desconocido)</string>
 	<string name="SummaryForTheWeek"    value="Sumario para esta semana, comenzada el " />
 	<string name="NextStipendDay"       value="Siguiente día de estipendio es " />
 	<string name="GroupIndividualShare" value="                      Grupo       Participación Individual" />
 	<string name="GroupColumn"          value="                      Grupo" />
+	<string name="NoGroupDataFound">
+		No se encontraron datos del grupo
+	</string>
 
 	<!-- floater IM bonus_info: When a Linden with Admin/god status receives a new IM this displays the estate (Mainland vs. teen grid) of the source avatar.
 		This is to help Lindens when answering questions. -->

@@ -62,6 +62,7 @@ public:
 class LLAvatarJointMesh : public virtual LLAvatarJoint
 {
 protected:
+	friend class WavefrontSaver;
 	LLColor4					mColor;			// color value
 // 	LLColor4					mSpecular;		// specular color (always white for now)
 	F32							mShiny;			// shiny value
@@ -131,10 +132,6 @@ public:
 
 	void setIsTransparent(BOOL is_transparent) { mIsTransparent = is_transparent; }
 
-	// <edit>
-public:
-	LLFace* getFace() { return mFace; }
-	// </edit>
 private:
 	// Allocate skin data
 	BOOL allocateSkinData( U32 numSkinJoints );

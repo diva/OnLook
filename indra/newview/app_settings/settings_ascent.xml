@@ -642,6 +642,28 @@
 			<key>Value</key>
 			<boolean>0</boolean>
 		</map>
+    <key>OBJExportNotifyFailed</key>
+    <map>
+      <key>Comment</key>
+      <string>Show a notification when exporting to OBJ fails (both partially and completely)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>OBJExportNotifySuccess</key>
+    <map>
+      <key>Comment</key>
+      <string>Show a notification when exporting to OBJ succeeds</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
     <key>OBJExportSwapYZ</key>
     <map>
       <key>Comment</key>
@@ -653,5 +675,5 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
-  </map>
+    </map>
 </llsd>

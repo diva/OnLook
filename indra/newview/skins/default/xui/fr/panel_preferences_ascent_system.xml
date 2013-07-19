@@ -24,6 +24,7 @@
       <spinner label="Intervalle distance/affichage:" name="speed_rez_interval"/>
       <text name="speed_rez_seconds">secondes</text>
       <check_box name="use_web_profiles" label="Utiliser le profil web par défaut" tool_tip="Affiche les profils comme une page web plutôt que comme une fenêtre style v1"/>
+      <check_box name="use_web_search" label="Utiliser la Recherche web : style V2 au lieu de la traditionnelle : style V1" tool_tip="Ne fontionnera pas sur toutes les grilles"/>
     </panel>
 
     <panel label="Commandes Texte" name="Command Line">

@@ -320,6 +320,8 @@
 	<string name="connected">Connected</string>
 	<string name="unavailable">Voice not available at your current location</string>
 	<string name="hang_up">Disconnected from in-world Voice Chat</string>
+	<string name="ScriptQuestionCautionChatGranted">'[OBJECTNAME]', an object owned by '[OWNERNAME]', located in [REGIONNAME] at [REGIONPOS], has been granted permission to: [PERMISSIONS].</string>
+	<string name="ScriptQuestionCautionChatDenied">'[OBJECTNAME]', an object owned by '[OWNERNAME]', located in [REGIONNAME] at [REGIONPOS], has been denied permission to: [PERMISSIONS].</string>
 	<string name="ScriptTakeMoney">Take currency from you</string>
 	<string name="ActOnControlInputs">Act on your control inputs</string>
 	<string name="RemapControlInputs">Remap your control inputs</string>
@@ -333,7 +335,12 @@
 	<string name="TrackYourCamera">Track your camera</string>
   <string name="ControlYourCamera">Control your camera</string>
   <string name="TeleportYourAgent">Teleport you</string>
-  <string name="OverrideAnimations">Override your default animations</string>
+	<string name="JoinAnExperience">Join an experience</string> <!-- not used -->
+	<string name="SilentlyManageEstateAccess">Suppress alerts when managing estate access lists</string>
+	<string name="OverrideYourAnimations">Replace your default animations</string>
+	<string name="ScriptReturnObjects">Return objects on your behalf</string>
+	<string name="UnknownScriptPermission">(unknown)!</string>
+
 
 	<!-- Sim Access labels -->
 	<string name="SIM_ACCESS_PG">PG</string>
@@ -2046,6 +2053,38 @@ Returns a string that is the name of the animation that is being used for the sp
 llResetAnimationOverride(string anim_state)
 Resets the animation override of the specified animation state (anim_state) to the corresponding default value.
 	</string>
+	<string name="LSLTipText_llJson2List" translate="false">
+list llJson2List(string json)
+Converts the top level of the json string to a list.
+	</string>
+	<string name="LSLTipText_llList2Json" translate="false">
+string llList2Json(string type, list values)
+Converts either a strided list of key:value pairs to a JSON_OBJECT or a list of values to a JSON_ARRAY
+	</string>
+	<string name="LSLTipText_llJsonGetValue" translate="false">
+string llJsonGetValue(string json, list specifiers)
+Gets the value indicated by specifiers from the json string.
+	</string>
+	<string name="LSLTipText_llJsonSetValue" translate="false">
+string llJsonSetValue(string json, list specifiers, string value)
+Returns a new json string that is the json given with the value indicated by specifiers set to value.
+	</string>
+  <string name="LSLTipText_llJsonValueType" translate="false">
+string llJsonValueType(string json, list specifiers)
+Returns the type constant for the value in json indicated by specifiers.
+  </string>
+	<string name="LSLTipText_llReturnObjectsByID" translate="false">
+integer llReturnObjectsByID(list objects)
+Returns a list of objects by their IDs or an ERR_* flag.
+  </string>
+  <string name="LSLTipText_llReturnObjectsByOwner" translate="false">
+integer llReturnObjectsByOwner(key owner, integer scope)
+Returns all objects of a particular owner in the given scope or an ERR_* flag.
+  </string>
+  <string name="LSLTipText_llXorBase64" translate="false">
+string llXorBase64(string str1, string str2)
+Returns a string that is a Base64 XOR of Base64-formatted input strings.
+  </string>
 <!-- GOD FUNCTIONS -->
 	<string name="LSLTipText_llGodLikeRezObject">
 llGodLikeRezObject( key inventory, vector pos )
@@ -3208,12 +3247,14 @@ The
 	<string name="GodToolsObjectOwnedBy">Object [OBJECT] owned by [OWNER]</string>
 
 	<!-- groups -->
+	<string name="GroupsNone">none</string>
 	<string name="Group" value=" (group)" />
 	<string name="Unknown">(Unknown)</string>
 	<string name="SummaryForTheWeek"    value="Summary for this week, beginning on " />
 	<string name="NextStipendDay"       value="The next stipend day is " />
 	<string name="GroupIndividualShare" value="                      Group       Individual Share" />
 	<string name="GroupColumn"          value="                      Group" />
+	<string name="NoGroupDataFound">No group data found for group </string>
 
 	<!-- floater IM bonus_info: When a Linden with Admin/god status receives a new IM this displays the estate (Mainland vs. teen grid) of the source avatar.
 		This is to help Lindens when answering questions. -->

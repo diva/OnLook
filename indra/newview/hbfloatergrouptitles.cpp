@@ -41,8 +41,8 @@
 
 #include "llagent.h"
 #include "llgroupactions.h"
+#include "llscrolllistitem.h"
 #include "lluictrlfactory.h"
-#include "llviewercontrol.h"
 
 // static variable
 HBFloaterGroupTitles* HBFloaterGroupTitles::sInstance = NULL;

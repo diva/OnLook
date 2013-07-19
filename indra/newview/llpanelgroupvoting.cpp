@@ -32,24 +32,19 @@
 
 #include "llviewerprecompiledheaders.h"
 
-#include "roles_constants.h"
+#include "llpanelgroupvoting.h"
 
-#include "lllineeditor.h"
+#include "llbutton.h"
 #include "llnotificationsutil.h"
+#include "llradiogroup.h"
+#include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
+#include "llspinctrl.h"
 #include "lltextbox.h"
 #include "lltexteditor.h"
-#include "llscrolllistctrl.h"
-#include "llradiogroup.h"
-#include "llspinctrl.h"
-#include "llpanelgroupvoting.h"
-#include "llnamelistctrl.h"
-#include "llbutton.h"
-#include "llnotify.h"
 
 #include "llagent.h"
-#include "llfocusmgr.h"
 #include "llviewercontrol.h"
-#include "llviewerwindow.h"
 #include "llviewerregion.h"
 
 class AIHTTPTimeoutPolicy;

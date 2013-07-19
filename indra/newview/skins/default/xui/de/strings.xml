@@ -316,6 +316,8 @@
 	<string name="connected">Verbunden</string>
 	<string name="unavailable">Der aktuelle Standort unterstützt keine Voice-Kommunikation</string>
 	<string name="hang_up">Verbindung mit In-Welt-Voice-Chat getrennt</string>
+	<string name="ScriptQuestionCautionChatGranted">Dem Objekt „[OBJECTNAME]“, ein Objekt von „[OWNERNAME]“, in [REGIONNAME] [REGIONPOS], wurde folgende Berechtigung erteilt: [PERMISSIONS].</string>
+	<string name="ScriptQuestionCautionChatDenied">Dem Objekt „[OBJECTNAME]“, ein Objekt von „[OWNERNAME]“, in [REGIONNAME] [REGIONPOS], wurde folgende Berechtigung verweigert: [PERMISSIONS].</string>
 	<string name="ScriptTakeMoney">Take currency from you</string>
 	<string name="ActOnControlInputs">Steuerung festlegen</string>
 	<string name="RemapControlInputs">Steuerung neu zuweisen</string>
@@ -329,7 +331,7 @@
 	<string name="TrackYourCamera">Kameraverfolgung aktivieren</string>
   <string name="ControlYourCamera">Kamerasteuerung übernehmen</string>
   <string name="TeleportYourAgent">Avatar teleportieren</string>
-  <string name="OverrideAnimations">Überschreibe die Standard-Animationen</string>
+  <string name="OverrideYourAnimations">Überschreibe die Standard-Animationen</string>
 
 	<!-- Sim Access labels -->
 	<string name="SIM_ACCESS_PG">PG</string>
@@ -1972,9 +1974,13 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="GodToolsObjectOwnedBy">Objekt [OBJECT], Besitzer [OWNER]</string>
 
 	<!-- groups -->
-	
+	<string name="GroupsNone">
+		keine
+	</string>
 	<string name="Unknown">(unbekannt)</string>
-	
+	<string name="NoGroupDataFound">
+		Für Gruppe wurden keine Gruppendaten gefunden
+	</string>
 	
 	
 	

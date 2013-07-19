@@ -31,7 +31,7 @@
 
 #include "llavatarnamecache.h"	// IDEVO
 #include "llnotifications.h"
-#include "llnotificationsutil.h"	// for LLNotificationsUtil
+#include "llnotificationsutil.h"
 #include "roles_constants.h"    // for GP_MEMBER_INVITE
 
 #include "llagent.h"
@@ -75,6 +75,9 @@ void LLAvatarActions::requestFriendshipDialog(const LLUUID& id, const std::strin
 	payload["name"] = name;
 
 	LLNotificationsUtil::add("AddFriendWithMessage", args, payload, &callbackAddFriendWithMessage);
+
+	// add friend to recent people list
+	//LLRecentPeople::instance().add(id);
 }
 
 void on_avatar_name_friendship(const LLUUID& id, const LLAvatarName av_name)
@@ -218,7 +221,6 @@ static void on_avatar_name_cache_start_call(const LLUUID& agent_id,
 	make_ui_sound("UISndStartIM");
 }
 
-
 // static
 void LLAvatarActions::startCall(const LLUUID& id)
 {
@@ -240,8 +242,7 @@ void LLAvatarActions::startCall(const LLUUID& id)
 	}
 // [/RLVa:KB]
 
-	LLAvatarNameCache::get(id,
-		boost::bind(&on_avatar_name_cache_start_call, _1, _2));
+	LLAvatarNameCache::get(id, boost::bind(&on_avatar_name_cache_start_call, _1, _2));
 }
 
 // static
@@ -568,8 +569,8 @@ void LLAvatarActions::inviteToGroup(const LLUUID& id)
 	{
 		widget->center();
 		widget->setPowersMask(GP_MEMBER_INVITE);
-		//widget->removeNoneOption();
-		widget->setSelectCallback(callback_invite_to_group, (void*)&id);
+		widget->removeNoneOption();
+		widget->setSelectGroupCallback(boost::bind(callback_invite_to_group, _1, id));
 	}
 }
 
@@ -625,10 +626,10 @@ bool LLAvatarActions::handlePay(const LLSD& notification, const LLSD& response, 
 }
 
 // static
-void LLAvatarActions::callback_invite_to_group(LLUUID group_id, void* id)
+void LLAvatarActions::callback_invite_to_group(LLUUID group_id, LLUUID id)
 {
 	uuid_vec_t agent_ids;
-	agent_ids.push_back(*static_cast<const LLUUID*>(id));
+	agent_ids.push_back(id);
 
 	LLFloaterGroupInvite::showForGroup(group_id, &agent_ids);
 }
@@ -725,7 +726,6 @@ void LLAvatarActions::requestFriendship(const LLUUID& target_id, const std::stri
 
 	LLSD payload;
 	payload["from_id"] = target_id;
-	//payload["SUPPRESS_TOAST"] = true;
 	LLNotificationsUtil::add("FriendshipOffered", args, payload);
 }
 
@@ -754,4 +754,3 @@ bool LLAvatarActions::canBlock(const LLUUID& id)
 	bool is_self = id == gAgentID;
 	return !is_self && !is_linden;
 }
-

@@ -18,51 +18,6 @@
 	<string name="IM_end_log_string">
 		-- Fin del Registro --
 	</string>
-	<string name="ScriptQuestionCautionChatGranted">
-		el objeto '[OBJECTNAME]', propiedad de  '[OWNERNAME]', ubicado en [REGIONNAME] en la posición [REGIONPOS], ha recibido permiso para: [PERMISSIONS].
-	</string>
-	<string name="ScriptQuestionCautionChatDenied">
-		al objeto '[OBJECTNAME]', propiedad de  '[OWNERNAME]', ubicado en [REGIONNAME] en la posición [REGIONPOS], se le ha denegado el permiso para: [PERMISSIONS].
-	</string>
-	<string name="ScriptTakeMoney">
-		Transferir ([CURRENCY]) de tu cuenta
-	</string>
-	<string name="ActOnControlInputs">
-		Actuar en tus controles de entrada
-	</string>
-	<string name="RemapControlInputs">
-		Reconfigurar tus controles de entrada
-	</string>
-	<string name="AnimateYourAvatar">
-		Animar tu avatar
-	</string>
-	<string name="AttachToYourAvatar">
-		Anexarse a tu avatar
-	</string>
-	<string name="ReleaseOwnership">
-		Anular propiedad y pasar a ser público
-	</string>
-	<string name="LinkAndDelink">
-		Enlazarse y desenlazarse de otros objetos
-	</string>
-	<string name="AddAndRemoveJoints">
-		Añadir y quitar uniones con otros objetos
-	</string>
-	<string name="ChangePermissions">
-		Cambiar sus permisos
-	</string>
-	<string name="TrackYourCamera">
-		Seguir tu cámara
-	</string>
-	<string name="TeleportYourAgent">
-		Teleportarte
-	</string>
-	<string name="ControlYourCamera">
-		Controlar tu cámara
-	</string>
-	<string name="OverrideAnimations">
-		Reemplazar tus animaciones predeterminadas
-	</string>	
 	<layout_stack name="panels">
 		<layout_panel name="im_contents_panel">
 			<layout_stack name="im_contents_stack">

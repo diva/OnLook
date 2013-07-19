@@ -6791,6 +6791,7 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
        index="2"
        name="Ignore"
        text="Ignore"/>
+      <button index="3" name="Profile" text="Profile"/>
     </form>
   </notification>
 
@@ -6821,6 +6822,7 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
        index="2"
        name="Ignore"
        text="Ignore"/>
+      <button index="3" name="Profile" text="Profile"/>
     </form>
   </notification>
 
@@ -9688,21 +9690,23 @@ Would you like to enable announcing keys to objects in the sim?
   </notification>
 
   <notification
-   icon="alert.tga"
-   name="WavefrontExportFailed"
-   type="alert">
-Export to Wavefront OBJ file failed:
+   icon="alertmodal.tga"
+   name="WavefrontExportPartial"
+   type="alertmodal">
+Unable to include [FAILED] out of [TOTAL] objects in export due to insufficient permissions.
 
-[REASON]
+Do you wish to export anyway?
+    <usetemplate
+     name="okcancelbuttons"
+     yestext="Proceed"
+     notext="Cancel" />
   </notification>
 
   <notification
-   icon="notify.tga"
+   icon="notifytip.tga"
    name="WavefrontExportSuccess"
-   type="notify">
-Object successfully exported in Wavefront OBJ format to:
-
-[FILENAME]
+   type="notifytip">
+Object successfully exported to: [FILENAME]
   </notification>
 
 </notifications>

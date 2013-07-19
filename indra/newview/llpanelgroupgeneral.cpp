@@ -34,11 +34,8 @@
 
 #include "llpanelgroupgeneral.h"
 
-#include "lluictrlfactory.h"
 #include "llagent.h"
-#include "llavataractions.h"
-#include "llfloatergroups.h"
-#include "llgroupactions.h"
+#include "lluictrlfactory.h"
 #include "roles_constants.h"
 
 // UI elements
@@ -46,6 +43,8 @@
 #include "llcheckboxctrl.h"
 #include "llcombobox.h"
 #include "lldbstrings.h"
+#include "llavataractions.h"
+#include "llgroupactions.h"
 #include "llimview.h"
 #include "lllineeditor.h"
 #include "llnamebox.h"
@@ -57,7 +56,7 @@
 #include "lltextbox.h"
 #include "lltexteditor.h"
 #include "lltexturectrl.h"
-#include "llviewercontrol.h"
+#include "lltrans.h"
 #include "llviewerwindow.h"
 
 #include "hippogridmanager.h"
@@ -395,8 +394,7 @@ bool LLPanelGroupGeneral::apply(std::string& mesg)
 		LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(mGroupID);
 		if (!gdatap)
 		{
-			// *TODO: Translate
-			mesg = std::string("No group data found for group ");
+			mesg = LLTrans::getString("NoGroupDataFound");
 			mesg.append(mGroupID.asString());
 			return false;
 		}
@@ -838,23 +836,17 @@ void LLPanelGroupGeneral::addMember(LLGroupMemberData* member)
 	{
 		style = "BOLD";
 	}
-	LLSD row;
-	row["id"] = member->getID();
+	LLNameListCtrl::NameItem item_params;
+	item_params.value = member->getID();
 
-	row["columns"][0]["column"] = "name";
-	row["columns"][0]["font-style"] = style;
-	row["columns"][0]["font"] = "SANSSERIF_SMALL";
-	row["columns"][1]["column"] = "title";
-	row["columns"][1]["value"] = member->getTitle();
-	row["columns"][1]["font-style"] = style;
-	row["columns"][1]["font"] = "SANSSERIF_SMALL";	
+	LLScrollListCell::Params column;
+	item_params.columns.add().column("name").font/*.name*/("SANSSERIF_SMALL").font_style(style);
 
-	row["columns"][2]["column"] = "online";
-	row["columns"][2]["value"] = member->getOnlineStatus();
-	row["columns"][2]["font-style"] = style;
-	row["columns"][1]["font"] = "SANSSERIF_SMALL";	
+	item_params.columns.add().column("title").value(member->getTitle()).font/*.name*/("SANSSERIF_SMALL").font_style(style);
 
-	mListVisibleMembers->addNameItemRow(row);
+	item_params.columns.add().column("online").value(member->getOnlineStatus()).font/*.name*/("SANSSERIF_SMALL").font_style(style);
+
+	/*LLScrollListItem* member_row =*/ mListVisibleMembers->addNameItemRow(item_params);
 }
 
 void LLPanelGroupGeneral::onNameCache(const LLUUID& update_id, LLGroupMemberData* member, const LLAvatarName& av_name)

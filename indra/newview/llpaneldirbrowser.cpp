@@ -641,9 +641,9 @@ void LLPanelDirBrowser::processDirPlacesReply(LLMessageSystem* msg, void**)
 		content["name"] = name;
 
 		std::string buffer = llformat("%.0f", (F64)dwell);
-		row["columns"][3]["column"] = "dwell";
-		row["columns"][3]["value"] = buffer;
-		row["columns"][3]["font"] = "SANSSERIF_SMALL";
+		row["columns"][2]["column"] = "dwell";
+		row["columns"][2]["value"] = buffer;
+		row["columns"][2]["font"] = "SANSSERIF_SMALL";
 
 		list->addElement(row);
 		self->mResultsContents[parcel_id.asString()] = content;
@@ -1062,15 +1062,17 @@ void LLPanelDirBrowser::processDirLandReply(LLMessageSystem *msg, void**)
 			buffer = llformat("%d", sale_price);
 			non_auction_count++;
 		}
-		row["columns"][3]["column"] = "price";
+		row["columns"][2]["column"] = "price";
+		row["columns"][2]["value"] = buffer;
+		row["columns"][2]["font"] = "SANSSERIF_SMALL";
+
+		buffer = llformat("%d", actual_area);
+		row["columns"][3]["column"] = "area";
 		row["columns"][3]["value"] = buffer;
 		row["columns"][3]["font"] = "SANSSERIF_SMALL";
 
-		buffer = llformat("%d", actual_area);
-		row["columns"][4]["column"] = "area";
-		row["columns"][4]["value"] = buffer;
+		row["columns"][4]["column"] = "per_meter";
 		row["columns"][4]["font"] = "SANSSERIF_SMALL";
-
 		if (!auction)
 		{
 			F32 price_per_meter;
@@ -1084,21 +1086,17 @@ void LLPanelDirBrowser::processDirLandReply(LLMessageSystem *msg, void**)
 			}
 			// Prices are usually L$1 - L$10 / meter
 			buffer = llformat("%.1f", price_per_meter);
-			row["columns"][5]["column"] = "per_meter";
-			row["columns"][5]["value"] = buffer;
-			row["columns"][5]["font"] = "SANSSERIF_SMALL";
+			row["columns"][4]["value"] = buffer;
 		}
 		else
 		{
 			// Auctions start at L$1 per meter
-			row["columns"][5]["column"] = "per_meter";
-			row["columns"][5]["value"] = "1.0";
-			row["columns"][5]["font"] = "SANSSERIF_SMALL";
+			row["columns"][4]["value"] = "1.0";
 		}
 
-		row["columns"][6]["column"] = "landtype";
-		row["columns"][6]["value"] = land_type;
-		row["columns"][6]["font"] = "SANSSERIF_SMALL";
+		row["columns"][5]["column"] = "landtype";
+		row["columns"][5]["value"] = land_type;
+		row["columns"][5]["font"] = "SANSSERIF_SMALL";
 
 		list->addElement(row);
 		self->mResultsContents[parcel_id.asString()] = content;
@@ -1144,35 +1142,31 @@ LLSD LLPanelDirBrowser::createLandSale(const LLUUID& parcel_id, BOOL is_auction,
 	row["id"] = parcel_id;
 	LLUUID image_id;
 
+	row["columns"][0]["column"] = "icon";
+	row["columns"][0]["type"] = "icon";
 	// Icon and type
 	if(is_auction)
 	{
-		row["columns"][0]["column"] = "icon";
-		row["columns"][0]["type"] = "icon";
 		row["columns"][0]["value"] = "icon_auction.tga";
 
 		*type = AUCTION_CODE;
 	}
 	else if (is_for_sale)
 	{
-		row["columns"][0]["column"] = "icon";
-		row["columns"][0]["type"] = "icon";
 		row["columns"][0]["value"] = "icon_for_sale.tga";
 
 		*type = FOR_SALE_CODE;
 	}
 	else
 	{
-		row["columns"][0]["column"] = "icon";
-		row["columns"][0]["type"] = "icon";
 		row["columns"][0]["value"] = "icon_place.tga";
 
 		*type = PLACE_CODE;
 	}
 
-	row["columns"][2]["column"] = "name";
-	row["columns"][2]["value"] = name;
-	row["columns"][2]["font"] = "SANSSERIF";
+	row["columns"][1]["column"] = "name";
+	row["columns"][1]["value"] = name;
+	row["columns"][1]["font"] = "SANSSERIF";
 
 	return row;
 }

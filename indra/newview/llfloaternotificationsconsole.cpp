@@ -36,9 +36,9 @@
 #include "lluictrlfactory.h"
 #include "llbutton.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "llpanel.h"
 #include "llcombobox.h"
-#include "llviewertexteditor.h"
 
 const S32 NOTIFICATION_PANEL_HEADER_HEIGHT = 20;
 const S32 HEADER_PADDING = 38;
@@ -59,7 +59,7 @@ private:
 };
 
 LLNotificationChannelPanel::LLNotificationChannelPanel(const std::string& channel_name) 
-	: LLLayoutPanel(NOTIFICATION_PANEL_HEADER_HEIGHT,true,true)
+:	LLLayoutPanel(NOTIFICATION_PANEL_HEADER_HEIGHT,true,true)
 {
 	setName(channel_name);
 	mChannelPtr = LLNotifications::instance().getChannel(channel_name);
@@ -112,10 +112,15 @@ void LLNotificationChannelPanel::onClickNotification(void* user_data)
 {
 	LLNotificationChannelPanel* self = (LLNotificationChannelPanel*)user_data;
 	if (!self) return;
-	void* data = self->getChild<LLScrollListCtrl>("notifications_list")->getFirstSelected()->getUserdata();
-	if (data)
+	LLScrollListItem* firstselected = self->getChild<LLScrollListCtrl>("notifications_list")->getFirstSelected();
+	llassert(firstselected);
+	if (firstselected)
 	{
-		gFloaterView->getParentFloater(self)->addDependentFloater(new LLFloaterNotification((LLNotification*)data), TRUE);
+		void* data = firstselected->getUserdata();
+		if (data)
+		{
+			gFloaterView->getParentFloater(self)->addDependentFloater(new LLFloaterNotification((LLNotification*)data), TRUE);
+		}
 	}
 }
 
@@ -160,7 +165,9 @@ bool LLNotificationChannelPanel::update(const LLSD& payload, bool passed_filter)
 // LLFloaterNotificationConsole
 //
 LLFloaterNotificationConsole::LLFloaterNotificationConsole(const LLSD& key)
+: LLFloater()
 {
+	mCommitCallbackRegistrar.add("ClickAdd",     boost::bind(&LLFloaterNotificationConsole::onClickAdd, this));
 	LLUICtrlFactory::instance().buildFloater(this, "floater_notifications_console.xml");
 }
 
@@ -185,7 +192,7 @@ BOOL LLFloaterNotificationConsole::postBuild()
 	addChannel("Notifications");
 	addChannel("NotificationTips");
 
-	getChild<LLButton>("add_notification")->setClickedCallback(onClickAdd, this);
+//	getChild<LLButton>("add_notification")->setClickedCallback(onClickAdd, this);
 
 	LLComboBox* notifications = getChild<LLComboBox>("notification_types");
 	LLNotificationTemplates::TemplateNames names = LLNotificationTemplates::instance().getTemplateNames();
@@ -232,21 +239,21 @@ void LLFloaterNotificationConsole::updateResizeLimits()
 	setResizeLimits(getMinWidth(), LLFLOATER_HEADER_SIZE + HEADER_PADDING + ((NOTIFICATION_PANEL_HEADER_HEIGHT + 3) * stack.getNumPanels()));
 }
 
-void LLFloaterNotificationConsole::onClickAdd(void* user_data)
+void LLFloaterNotificationConsole::onClickAdd()
 {
-	LLFloaterNotificationConsole* floater = (LLFloaterNotificationConsole*)user_data;
-
-	std::string message_name = floater->getChild<LLComboBox>("notification_types")->getValue().asString();
+	std::string message_name = getChild<LLComboBox>("notification_types")->getValue().asString();
 	if (!message_name.empty())
 	{
-		LLNotifications::instance().add(message_name, LLSD());
+		LLNotifications::instance().add(message_name, LLSD(), LLSD());
 	}
 }
 
 
 //=============== LLFloaterNotification ================
 
-LLFloaterNotification::LLFloaterNotification(LLNotification* note) : mNote(note)
+LLFloaterNotification::LLFloaterNotification(LLNotification* note)
+:	LLFloater(),
+	mNote(note)
 {
 	LLUICtrlFactory::instance().buildFloater(this, "floater_notification.xml");
 }
@@ -254,7 +261,7 @@ LLFloaterNotification::LLFloaterNotification(LLNotification* note) : mNote(note)
 BOOL LLFloaterNotification::postBuild()
 {
 	setTitle(mNote->getName());
-	getChild<LLViewerTextEditor>("payload")->setText(mNote->getMessage());
+	getChild<LLUICtrl>("payload")->setValue(mNote->getMessage());
 
 	LLComboBox* responses_combo = getChild<LLComboBox>("response");
 	LLCtrlListInterface* response_list = responses_combo->getListInterface();

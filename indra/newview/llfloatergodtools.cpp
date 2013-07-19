@@ -62,7 +62,6 @@
 #include "llviewerwindow.h"
 #include "llworld.h"
 #include "llfloateravatarpicker.h"
-#include "llnotify.h"
 #include "llxfermanager.h"
 #include "llvlcomposition.h"
 #include "llsurface.h"
@@ -77,9 +76,9 @@
 
 const F32 SECONDS_BETWEEN_UPDATE_REQUESTS = 5.0f;
 
-// *****************************************************************************
+//*****************************************************************************
 // LLFloaterGodTools
-// *****************************************************************************
+//*****************************************************************************
 
 void LLFloaterGodTools::onOpen()
 {
@@ -100,6 +99,7 @@ void LLFloaterGodTools::onOpen()
 	}
 }
  
+
 // static
 void LLFloaterGodTools::refreshAll()
 {
@@ -121,36 +121,31 @@ LLFloaterGodTools::LLFloaterGodTools()
 	mCurrentHost(LLHost::invalid),
 	mUpdateTimer()
 {
-	LLCallbackMap::map_t factory_map;
-	factory_map["grid"] = LLCallbackMap(createPanelGrid, this);
-	factory_map["region"] = LLCallbackMap(createPanelRegion, this);
-	factory_map["objects"] = LLCallbackMap(createPanelObjects, this);
-	factory_map["request"] = LLCallbackMap(createPanelRequest, this);
-	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_god_tools.xml", &factory_map);
+	mFactoryMap["grid"] = LLCallbackMap(createPanelGrid, this);
+	mFactoryMap["region"] = LLCallbackMap(createPanelRegion, this);
+	mFactoryMap["objects"] = LLCallbackMap(createPanelObjects, this);
+	mFactoryMap["request"] = LLCallbackMap(createPanelRequest, this);
+	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_god_tools.xml", &getFactoryMap());
 }
 
 BOOL LLFloaterGodTools::postBuild()
 {
-	getChild<LLTabContainer>("GodTools Tabs")->setCommitCallback(boost::bind(&LLFloaterGodTools::onTabChanged,_1,_2));
-
 	sendRegionInfoRequest();
 	getChild<LLTabContainer>("GodTools Tabs")->selectTabByName("region");
-
-	childSetTextArg("land cost text", "[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
+	getChild<LLUICtrl>("land cost text")->setTextArg("[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 	return TRUE;
 }
-
 // static
 void* LLFloaterGodTools::createPanelGrid(void *userdata)
 {
-	return new LLPanelGridTools("grid");
+	return new LLPanelGridTools();
 }
 
 // static
 void* LLFloaterGodTools::createPanelRegion(void *userdata)
 {
 	LLFloaterGodTools* self = (LLFloaterGodTools*)userdata;
-	self->mPanelRegionTools = new LLPanelRegionTools("region");
+	self->mPanelRegionTools = new LLPanelRegionTools();
 	return self->mPanelRegionTools;
 }
 
@@ -158,14 +153,14 @@ void* LLFloaterGodTools::createPanelRegion(void *userdata)
 void* LLFloaterGodTools::createPanelObjects(void *userdata)
 {
 	LLFloaterGodTools* self = (LLFloaterGodTools*)userdata;
-	self->mPanelObjectTools = new LLPanelObjectTools("objects");
+	self->mPanelObjectTools = new LLPanelObjectTools();
 	return self->mPanelObjectTools;
 }
 
 // static
 void* LLFloaterGodTools::createPanelRequest(void *userdata)
 {
-	return new LLPanelRequestTools("region");
+	return new LLPanelRequestTools();
 }
 
 LLFloaterGodTools::~LLFloaterGodTools()
@@ -222,14 +217,6 @@ void LLFloaterGodTools::showPanel(const std::string& panel_name)
 	getChild<LLTabContainer>("GodTools Tabs")->selectTabByName(panel_name);
 	open();	/*Flawfinder: ignore*/
 	LLPanel *panel = getChild<LLTabContainer>("GodTools Tabs")->getCurrentPanel();
-	if (panel)
-		panel->setFocus(TRUE);
-}
-
-//static
-void LLFloaterGodTools::onTabChanged(LLUICtrl* ctrl, const LLSD& param)
-{
-	LLPanel* panel = (LLPanel*)ctrl->getChildView(param.asString(),false,false);
 	if (panel)
 		panel->setFocus(TRUE);
 }
@@ -403,9 +390,9 @@ void LLFloaterGodTools::sendGodUpdateRegionInfo()
 	}
 }
 
-// *****************************************************************************
+//*****************************************************************************
 // LLPanelRegionTools
-// *****************************************************************************
+//*****************************************************************************
 
 
 //   || Region |______________________________________
@@ -440,72 +427,37 @@ const F32 PRICE_PER_METER_MIN = 0.f;
 const F32 PRICE_PER_METER_MAX = 100.f;
 
 
-LLPanelRegionTools::LLPanelRegionTools(const std::string& title)
-: 	LLPanel(title)
+LLPanelRegionTools::LLPanelRegionTools()
+: 	LLPanel()
 {
+	mCommitCallbackRegistrar.add("RegionTools.ChangeAnything",	boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	mCommitCallbackRegistrar.add("RegionTools.ChangePrelude",	boost::bind(&LLPanelRegionTools::onChangePrelude, this));
+	mCommitCallbackRegistrar.add("RegionTools.BakeTerrain",		boost::bind(&LLPanelRegionTools::onBakeTerrain, this));
+	mCommitCallbackRegistrar.add("RegionTools.RevertTerrain",	boost::bind(&LLPanelRegionTools::onRevertTerrain, this));
+	mCommitCallbackRegistrar.add("RegionTools.SwapTerrain",		boost::bind(&LLPanelRegionTools::onSwapTerrain, this));
+	mCommitCallbackRegistrar.add("RegionTools.Refresh",			boost::bind(&LLPanelRegionTools::onRefresh, this));
+	mCommitCallbackRegistrar.add("RegionTools.ApplyChanges",	boost::bind(&LLPanelRegionTools::onApplyChanges, this));
+	mCommitCallbackRegistrar.add("RegionTools.SelectRegion",	boost::bind(&LLPanelRegionTools::onSelectRegion, this));
+	mCommitCallbackRegistrar.add("RegionTools.SaveState",		boost::bind(&LLPanelRegionTools::onSaveState, this));
 }
 
 BOOL LLPanelRegionTools::postBuild()
 {
-	LLLineEditor* region_name = getChild<LLLineEditor>("region name");
-	region_name->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	region_name->setKeystrokeCallback(boost::bind(&LLPanelRegionTools::onChangeSimName, this));
-	region_name->setPrevalidate(&LLLineEditor::prevalidatePrintableNotPipe);
+	getChild<LLLineEditor>("region name")->setKeystrokeCallback(boost::bind(&LLPanelRegionTools::onChangeSimName, this));
+	getChild<LLLineEditor>("region name")->setPrevalidate(&LLLineEditor::prevalidatePrintableNotPipe);
+	getChild<LLLineEditor>("estate")->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
+	getChild<LLLineEditor>("parentestate")->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
+	getChildView("parentestate")->setEnabled(FALSE);
+	getChild<LLLineEditor>("gridposx")->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
+	getChildView("gridposx")->setEnabled(FALSE);
+	getChild<LLLineEditor>("gridposy")->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
+	getChildView("gridposy")->setEnabled(FALSE);
 
-	getChild<LLUICtrl>("check prelude")->setCommitCallback(boost::bind(&LLPanelRegionTools:: onChangePrelude, this));
-	getChild<LLUICtrl>("check fixed sun")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	getChild<LLUICtrl>("check reset home")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	getChild<LLUICtrl>("check visible")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	getChild<LLUICtrl>("check damage")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	getChild<LLUICtrl>("block dwell")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	getChild<LLUICtrl>("block terraform")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	getChild<LLUICtrl>("allow transfer")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	getChild<LLUICtrl>("is sandbox")->setCommitCallback( boost::bind(&LLPanelRegionTools::onChangeAnything, this));
+	getChild<LLLineEditor>("redirectx")->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
+	getChild<LLLineEditor>("redirecty")->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
+
 	getChild<LLUICtrl>("is gaming")->setVisible((gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_GOD_FLOATER));
-	getChild<LLUICtrl>("is gaming")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
 	getChild<LLUICtrl>("hide from search")->setVisible(!gHippoGridManager->getConnectedGrid()->isSecondLife());
-	getChild<LLUICtrl>("hide from search")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-
-	childSetAction("Bake Terrain", boost::bind(&LLPanelRegionTools::onBakeTerrain, this));
-	childSetAction("Revert Terrain", boost::bind(&LLPanelRegionTools::onRevertTerrain, this));
-	childSetAction("Swap Terrain", boost::bind(&LLPanelRegionTools::onSwapTerrain, this));
-
-	LLLineEditor* estate = getChild<LLLineEditor>("estate name");
-	estate->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	estate->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
-
-	LLLineEditor* parentestate = getChild<LLLineEditor>("parentestate");
-	parentestate->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	parentestate->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
-	parentestate->setEnabled(false);
-
-	LLLineEditor* gridposx = getChild<LLLineEditor>("gridposx");
-	gridposx->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	gridposx->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
-	gridposx->setEnabled(false);
-
-	LLLineEditor* gridposy = getChild<LLLineEditor>("gridposy");
-	gridposy->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	gridposy->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
-	gridposy->setEnabled(false);
-
-	LLLineEditor* redirectx = getChild<LLLineEditor>("redirectx");
-	redirectx->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	redirectx->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
-
-	LLLineEditor* redirecty = getChild<LLLineEditor>("redirecty");
-	redirecty->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-	redirecty->setPrevalidate(&LLLineEditor::prevalidatePositiveS32);
-
-	getChild<LLUICtrl>("billable factor")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-
-	getChild<LLUICtrl>("land cost")->setCommitCallback(boost::bind(&LLPanelRegionTools::onChangeAnything, this));
-
-	getChild<LLButton>("Refresh")->setClickedCallback(boost::bind(&LLPanelRegionTools::onRefresh, this));
-	getChild<LLButton>("Apply")->setClickedCallback(boost::bind(&LLPanelRegionTools::onApplyChanges, this));
-
-	getChild<LLButton>("Select Region")->setClickedCallback(boost::bind(&LLPanelRegionTools::onSelectRegion, this));
-	getChild<LLButton>("Autosave now")->setClickedCallback(boost::bind(&LLPanelRegionTools::onSaveState,(void*)NULL));
 			 
 	return TRUE;
 }
@@ -592,8 +544,7 @@ void LLPanelRegionTools::enableAllWidgets()
 	getChildView("Autosave now")->setEnabled(TRUE);
 }
 
-//static
-void LLPanelRegionTools::onSaveState(void*)
+void LLPanelRegionTools::onSaveState(void* userdata)
 {
 	if (gAgent.isGodlike())
 	{
@@ -918,12 +869,13 @@ void LLPanelRegionTools::onSelectRegion()
 //      LEFT                             R2       RIGHT
 
 const F32 HOURS_TO_RADIANS = (2.f*F_PI)/24.f;
-const char FLOATER_GRID_ADMIN_TITLE[] = "Grid Administration";
 
 
-LLPanelGridTools::LLPanelGridTools(const std::string& name) :
-	LLPanel(name)
+LLPanelGridTools::LLPanelGridTools() :
+	LLPanel()
 {
+	mCommitCallbackRegistrar.add("GridTools.KickAllUsers", boost::bind(&LLPanelGridTools::onClickKickAll, this));
+	mCommitCallbackRegistrar.add("GridTools.FlushMapVisibilityCaches",		boost::bind(&LLPanelGridTools::onClickFlushMapVisibilityCaches, this));
 }
 
 // Destroys the object
@@ -933,16 +885,12 @@ LLPanelGridTools::~LLPanelGridTools()
 
 BOOL LLPanelGridTools::postBuild()
 {
-	childSetAction("Kick all users", boost::bind(&LLPanelGridTools::onClickKickAll, this));
-	childSetAction("Flush This Region's Map Visibility Caches", boost::bind(&LLPanelGridTools::onClickFlushMapVisibilityCaches, this));
-
 	return TRUE;
 }
 
 void LLPanelGridTools::refresh()
 {
 }
-
 
 void LLPanelGridTools::onClickKickAll()
 {
@@ -952,7 +900,7 @@ void LLPanelGridTools::onClickKickAll()
 // static
 bool LLPanelGridTools::confirmKick(const LLSD& notification, const LLSD& response)
 {
-	if (LLNotification::getSelectedOption(notification, response) == 0)
+	if (LLNotificationsUtil::getSelectedOption(notification, response) == 0)
 	{
 		LLSD payload;
 		payload["kick_message"] = response["message"].asString();
@@ -964,7 +912,7 @@ bool LLPanelGridTools::confirmKick(const LLSD& notification, const LLSD& respons
 // static
 bool LLPanelGridTools::finishKick(const LLSD& notification, const LLSD& response)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 
 	if (option == 0)
 	{
@@ -1036,10 +984,19 @@ bool LLPanelGridTools::flushMapVisibilityCachesConfirm(const LLSD& notification,
 //      LEFT                                      RIGHT
 
 // Default constructor
-LLPanelObjectTools::LLPanelObjectTools(const std::string& title) 
-	: 	LLPanel(title),
+LLPanelObjectTools::LLPanelObjectTools()
+	: 	LLPanel(),
 		mTargetAvatar()
 {
+	mCommitCallbackRegistrar.add("ObjectTools.ChangeAnything",		boost::bind(&LLPanelObjectTools::onChangeAnything, this));
+	mCommitCallbackRegistrar.add("ObjectTools.DeletePublicOwnedBy",	boost::bind(&LLPanelObjectTools::onClickDeletePublicOwnedBy, this));
+	mCommitCallbackRegistrar.add("ObjectTools.DeleteAllScriptedOwnedBy",		boost::bind(&LLPanelObjectTools::onClickDeleteAllScriptedOwnedBy, this));
+	mCommitCallbackRegistrar.add("ObjectTools.DeleteAllOwnedBy",		boost::bind(&LLPanelObjectTools::onClickDeleteAllOwnedBy, this));
+	mCommitCallbackRegistrar.add("ObjectTools.ApplyChanges",		boost::bind(&LLPanelObjectTools::onApplyChanges, this));
+	mCommitCallbackRegistrar.add("ObjectTools.Set",		boost::bind(&LLPanelObjectTools::onClickSet, this));
+	mCommitCallbackRegistrar.add("ObjectTools.GetTopColliders",		boost::bind(&LLPanelObjectTools::onGetTopColliders, this));
+	mCommitCallbackRegistrar.add("ObjectTools.GetTopScripts",		boost::bind(&LLPanelObjectTools::onGetTopScripts, this));
+	mCommitCallbackRegistrar.add("ObjectTools.GetScriptDigest",		boost::bind(&LLPanelObjectTools::onGetScriptDigest, this));
 }
 
 // Destroys the object
@@ -1050,22 +1007,6 @@ LLPanelObjectTools::~LLPanelObjectTools()
 
 BOOL LLPanelObjectTools::postBuild()
 {
-	getChild<LLUICtrl>("disable scripts")->setCommitCallback(boost::bind(&LLPanelObjectTools::onChangeAnything, this));
-	getChild<LLUICtrl>("disable collisions")->setCommitCallback(boost::bind(&LLPanelObjectTools::onChangeAnything, this));
-	getChild<LLUICtrl>("disable physics")->setCommitCallback(boost::bind(&LLPanelObjectTools::onChangeAnything, this));
-
-	childSetAction("Apply",  boost::bind(&LLPanelObjectTools::onApplyChanges, this));
-
-	childSetAction("Set Target", boost::bind(&LLPanelObjectTools::onClickSet, this));
-
-	childSetAction("Delete Target's Scripted Objects On Others Land",  boost::bind(&LLPanelObjectTools::onClickDeletePublicOwnedBy, this));
-	childSetAction("Delete Target's Scripted Objects On *Any* Land",  boost::bind(&LLPanelObjectTools::onClickDeleteAllScriptedOwnedBy, this));
-	childSetAction("Delete *ALL* Of Target's Objects",  boost::bind(&LLPanelObjectTools::onClickDeleteAllOwnedBy, this));
-
-	childSetAction("Get Top Colliders",  boost::bind(&LLPanelObjectTools::onGetTopColliders, this));
-	childSetAction("Get Top Scripts",  boost::bind(&LLPanelObjectTools::onGetTopScripts, this));
-	childSetAction("Scripts digest",  boost::bind(&LLPanelObjectTools::onGetScriptDigest, this));
-
 	refresh();
 	return TRUE;
 }
@@ -1154,29 +1095,30 @@ void LLPanelObjectTools::enableAllWidgets()
 	getChildView("Get Top Scripts")->setEnabled(TRUE);
 }
 
+
 void LLPanelObjectTools::onGetTopColliders()
 {
-	LLFloaterGodTools* god_tools = LLFloaterGodTools::instanceExists() ? LLFloaterGodTools::getInstance() : NULL;
-	if(!god_tools)
-		return;
+	LLFloaterTopObjects* instance = LLFloaterTopObjects::getInstance();
+	if(!instance) return;
+
 	if (gAgent.isGodlike())
 	{
-		LLFloaterTopObjects::show();
+		instance->open();
 		LLFloaterTopObjects::setMode(STAT_REPORT_TOP_COLLIDERS);
-		LLFloaterTopObjects::onRefresh(NULL);
+		instance->onRefresh();
 	}
 }
 
 void LLPanelObjectTools::onGetTopScripts()
 {
-	LLFloaterGodTools* god_tools = LLFloaterGodTools::instanceExists() ? LLFloaterGodTools::getInstance() : NULL;
-	if(!god_tools)
-		return;
+	LLFloaterTopObjects* instance = LLFloaterTopObjects::getInstance();
+	if(!instance) return;
+
 	if (gAgent.isGodlike())
 	{
-		LLFloaterTopObjects::show();
+		instance->open();
 		LLFloaterTopObjects::setMode(STAT_REPORT_TOP_SCRIPTS);
-		LLFloaterTopObjects::onRefresh(NULL);
+		instance->onRefresh();
 	}
 }
 
@@ -1282,7 +1224,7 @@ void LLPanelObjectTools::onClickSetBySelection(void* data)
 	LLPanelObjectTools* panelp = (LLPanelObjectTools*) data;
 	if (!panelp) return;
 
-	const BOOL non_root_ok = TRUE; 
+	const BOOL non_root_ok = TRUE;
 	LLSelectNode* node = LLSelectMgr::getInstance()->getSelection()->getFirstRootNode(NULL, non_root_ok);
 	if (!node) return;
 
@@ -1336,9 +1278,10 @@ void LLPanelObjectTools::onApplyChanges()
 const std::string SELECTION = "Selection";
 const std::string AGENT_REGION = "Agent Region";
 
-LLPanelRequestTools::LLPanelRequestTools(const std::string& name):
-	LLPanel(name)
+LLPanelRequestTools::LLPanelRequestTools():
+	LLPanel()
 {
+	mCommitCallbackRegistrar.add("GodTools.Request",		boost::bind(&LLPanelRequestTools::onClickRequest, this));
 }
 
 LLPanelRequestTools::~LLPanelRequestTools()
@@ -1347,8 +1290,6 @@ LLPanelRequestTools::~LLPanelRequestTools()
 
 BOOL LLPanelRequestTools::postBuild()
 {
-	childSetAction("Make Request", boost::bind(&LLPanelRequestTools::onClickRequest, this));
-
 	refresh();
 
 	return TRUE;

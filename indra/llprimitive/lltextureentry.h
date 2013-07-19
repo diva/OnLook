@@ -30,6 +30,8 @@
 #include "lluuid.h"
 #include "v4color.h"
 #include "llsd.h"
+#include "llmaterialid.h"
+#include "llmaterial.h"
 
 // These bits are used while unpacking TEM messages to tell which aspects of
 // the texture entry changed.
@@ -98,6 +100,10 @@ public:
 
 	void init(const LLUUID& tex_id, F32 scale_s, F32 scale_t, F32 offset_s, F32 offset_t, F32 rotation, U8 bump);
 
+	bool hasPendingMaterialUpdate() const { return mMaterialUpdatePending; }
+	bool isSelected() const { return mSelected; }
+	bool setSelected(bool sel) { bool prev_sel = mSelected; mSelected = sel; return prev_sel; }
+
 	// These return a TEM_ flag from above to indicate if something changed.
 	S32  setID (const LLUUID &tex_id);
 	S32  setColor(const LLColor4 &color);
@@ -121,6 +127,8 @@ public:
 	S32	 setTexGen(U8 texGen);
 	S32  setMediaTexGen(U8 media);
     S32  setGlow(F32 glow);
+	S32  setMaterialID(const LLMaterialID& pMaterialID);
+	S32  setMaterialParams(const LLMaterialPtr pMaterialParams);
 	
 	virtual const LLUUID &getID() const { return mID; }
 	const LLColor4 &getColor() const { return mColor; }
@@ -139,6 +147,8 @@ public:
 	U8	 getTexGen() const	{ return mMediaFlags & TEM_TEX_GEN_MASK; }
 	U8	 getMediaTexGen() const { return mMediaFlags; }
     F32  getGlow() const { return mGlow; }
+	const LLMaterialID& getMaterialID() const { return mMaterialID; };
+	const LLMaterialPtr getMaterialParams() const { return mMaterial; };
 
     // *NOTE: it is possible for hasMedia() to return true, but getMediaData() to return NULL.
     // CONVERSELY, it is also possible for hasMedia() to return false, but getMediaData()
@@ -188,11 +198,15 @@ public:
 	static const char* TEXTURE_MEDIA_DATA_KEY;
 
 protected:
+	bool                mSelected;
 	LLUUID				mID;					// Texture GUID
 	LLColor4			mColor;
 	U8					mBump;					// Bump map, shiny, and fullbright
 	U8					mMediaFlags;			// replace with web page, movie, etc.
 	F32                 mGlow;
+	bool                mMaterialUpdatePending;
+	LLMaterialID        mMaterialID;
+	LLMaterialPtr		mMaterial;
 
 	// Note the media data is not sent via the same message structure as the rest of the TE
 	LLMediaEntry*		mMediaEntry;			// The media data for the face

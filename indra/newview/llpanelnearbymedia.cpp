@@ -33,7 +33,9 @@
 #include "llcombobox.h"
 #include "llresizebar.h"
 #include "llresizehandle.h"
+#include "llscrolllistcolumn.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "llslider.h"
 #include "llsliderctrl.h"
 #include "llagent.h"
@@ -84,10 +86,11 @@ LLPanelNearByMedia::LLPanelNearByMedia(bool standalone_panel)
 {
 	mHoverTimer.stop();
 
-	mParcelAudioAutoStart = gSavedSettings.getBOOL(LLViewerMedia::AUTO_PLAY_MEDIA_SETTING) &&
-							gSavedSettings.getBOOL("MediaTentativeAutoPlay");
+	mParcelAudioAutoStart = gSavedSettings.getBOOL("MediaTentativeAutoPlay");
+							/*gSavedSettings.getBOOL(LLViewerMedia::AUTO_PLAY_MEDIA_SETTING) &&
+							gSavedSettings.getBOOL("MediaTentativeAutoPlay");*/
 
-	gSavedSettings.getControl(LLViewerMedia::AUTO_PLAY_MEDIA_SETTING)->getSignal()->connect(boost::bind(&LLPanelNearByMedia::handleMediaAutoPlayChanged, this, _2));
+	//gSavedSettings.getControl(LLViewerMedia::AUTO_PLAY_MEDIA_SETTING)->getSignal()->connect(boost::bind(&LLPanelNearByMedia::handleMediaAutoPlayChanged, this, _2));
 
 	mCommitCallbackRegistrar.add("MediaListCtrl.EnableAll",		boost::bind(&LLPanelNearByMedia::onClickEnableAll, this));
 	mCommitCallbackRegistrar.add("MediaListCtrl.DisableAll",		boost::bind(&LLPanelNearByMedia::onClickDisableAll, this));
@@ -474,7 +477,7 @@ void LLPanelNearByMedia::updateListItem(LLScrollListItem* item,
 		{
 			cell->setValue(name);
 		}
-		item->setToolTip(item_tooltip);
+		cell->setToolTip(item_tooltip);
 		
 		// *TODO: Make these font styles/colors configurable via XUI
 		U8 font_style = LLFontGL::NORMAL;
@@ -909,7 +912,7 @@ void LLPanelNearByMedia::onClickParcelAudioPlay()
 	}
 	else
 	{
-		gAudiop->startInternetStream(LLViewerMedia::getParcelAudioURL());
+		LLViewerParcelMedia::playStreamingMusic(LLViewerParcelMgr::getInstance()->getAgentParcel());
 	}
 }
 
@@ -1263,10 +1266,16 @@ void* createNearbyMediaPanel(void* userdata)
 	return new LLPanelNearByMedia(false);
 }
 
-LLFloaterNearbyMedia::LLFloaterNearbyMedia()
+LLFloaterNearbyMedia::LLFloaterNearbyMedia() : mPanel(NULL)
 {
 	mFactoryMap["nearby_media"] = LLCallbackMap(createNearbyMediaPanel, this);
 	LLUICtrlFactory::getInstance()->buildFloater(this,"floater_nearby_media.xml",&mFactoryMap,false);
+}
+
+/*virtual*/ BOOL LLFloaterNearbyMedia::postBuild()
+{
+	mPanel = getChild<LLPanelNearByMedia>("nearby_media",false,false);
+	return LLFloater::postBuild();
 }
 
 // static

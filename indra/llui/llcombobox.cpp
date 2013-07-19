@@ -2,31 +2,25 @@
  * @file llcombobox.cpp
  * @brief LLComboBox base class
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -48,6 +42,8 @@
 #include "llwindow.h"
 #include "llfloater.h"
 #include "llscrollbar.h"
+#include "llscrolllistcell.h"
+#include "llscrolllistitem.h"
 #include "llcontrol.h"
 #include "llfocusmgr.h"
 #include "lllineeditor.h"
@@ -58,10 +54,9 @@ S32 LLCOMBOBOX_HEIGHT = 0;
 S32 LLCOMBOBOX_WIDTH = 0;
 S32 MAX_COMBO_WIDTH = 500;
 
-static LLRegisterWidget<LLComboBox> r1("combo_box");
+static LLRegisterWidget<LLComboBox> register_combo_box("combo_box");
 
-LLComboBox::LLComboBox(	const std::string& name, const LLRect &rect, const std::string& label,
-	commit_callback_t commit_callback)
+LLComboBox::LLComboBox(const std::string& name, const LLRect& rect, const std::string& label, commit_callback_t commit_callback)
 :	LLUICtrl(name, rect, TRUE, commit_callback, FOLLOWS_LEFT | FOLLOWS_TOP),
 	mTextEntry(NULL),
 	mTextEntryTentative(TRUE),
@@ -81,9 +76,7 @@ LLComboBox::LLComboBox(	const std::string& name, const LLRect &rect, const std::
 {
 	// Always use text box 
 	// Text label button
-	mButton = new LLButton(mLabel,
-								LLRect(), 
-								LLStringUtil::null);
+	mButton = new LLButton(mLabel, LLRect(), LLStringUtil::null);
 	mButton->setImageUnselected(LLUI::getUIImage("square_btn_32x128.tga"));
 	mButton->setImageSelected(LLUI::getUIImage("square_btn_selected_32x128.tga"));
 	mButton->setImageDisabled(LLUI::getUIImage("square_btn_32x128.tga"));
@@ -94,19 +87,16 @@ LLComboBox::LLComboBox(	const std::string& name, const LLRect &rect, const std::
 	mButton->setFont(LLFontGL::getFontSansSerifSmall());
 	mButton->setFollows(FOLLOWS_LEFT | FOLLOWS_BOTTOM | FOLLOWS_RIGHT);
 	mButton->setHAlign( LLFontGL::LEFT );
-	if(mAllowTextEntry)
-	{
-		mButton->setRightHPad(2);
-	}
+	mButton->setRightHPad(2);
 
 	addChild(mButton);
 
 	// disallow multiple selection
-	mList = new LLScrollListCtrl(std::string("ComboBox"), LLRect(), 
+	mList = new LLScrollListCtrl(std::string("ComboBox"), LLRect(),
 								 boost::bind(&LLComboBox::onItemSelected, this, _2), FALSE);
-	mList->setVisible(FALSE);
+	mList->setVisible(false);
 	mList->setBgWriteableColor(mListColor);
-	mList->setCommitOnKeyboardMovement(FALSE);
+	mList->setCommitOnKeyboardMovement(false);
 	addChild(mList);
 
 	// Mouse-down on button will transfer mouse focus to the list
@@ -117,10 +107,9 @@ LLComboBox::LLComboBox(	const std::string& name, const LLRect &rect, const std::
 	mButton->setImageOverlay("combobox_arrow.tga", LLFontGL::RIGHT);
 
 	updateLayout();
-	
+
 	mTopLostSignalConnection = setTopLostCallback(boost::bind(&LLComboBox::hideList, this));
 }
-
 
 
 // virtual
@@ -131,16 +120,12 @@ LLXMLNodePtr LLComboBox::getXML(bool save_children) const
 	node->setName(LL_COMBO_BOX_TAG);
 
 	// Attributes
-
 	node->createChild("allow_text_entry", TRUE)->setBoolValue(mAllowTextEntry);
-
 	node->createChild("max_chars", TRUE)->setIntValue(mMaxChars);
 
 	// Contents
-
 	std::vector<LLScrollListItem*> data_list = mList->getAllData();
-	std::vector<LLScrollListItem*>::iterator data_itor;
-	for (data_itor = data_list.begin(); data_itor != data_list.end(); ++data_itor)
+	for (std::vector<LLScrollListItem*>::iterator data_itor = data_list.begin(); data_itor != data_list.end(); ++data_itor)
 	{
 		LLScrollListItem* item = *data_itor;
 		LLScrollListCell* cell = item->getColumn(0);
@@ -172,9 +157,7 @@ LLView* LLComboBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *
 	S32 max_chars = 20;
 	node->getAttributeS32("max_chars", max_chars);
 
-	LLComboBox* combo_box = new LLComboBox("combo_box",
-							rect, 
-							label);
+	LLComboBox* combo_box = new LLComboBox("combo_box", rect, label);
 	combo_box->setAllowTextEntry(allow_text_entry, max_chars);
 
 	const std::string& contents = node->getValue();
@@ -201,7 +184,7 @@ LLView* LLComboBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *
 				{
 					std::string tool_tip = label;
 					child->getAttributeString("tool_tip", tool_tip);
-					item->setToolTip(tool_tip);
+					item->getColumn(0)->setToolTip(tool_tip);
 				}
 			}
 		}
@@ -257,7 +240,6 @@ void LLComboBox::onCommit()
 		mTextEntry->setValue(getSimple());
 		mTextEntry->setTentative(FALSE);
 	}
-
 	setControlValue(getValue());
 	LLUICtrl::onCommit();
 }
@@ -304,7 +286,6 @@ void LLComboBox::resetTextDirty()
 		mTextEntry->resetDirty();
 	}
 }
-
 
 // add item "name" to menu
 LLScrollListItem* LLComboBox::add(const std::string& name, EAddPosition pos, BOOL enabled)
@@ -577,7 +558,7 @@ void LLComboBox::updateLayout()
 		if (!mTextEntry)
 		{
 			LLRect text_entry_rect(0, getRect().getHeight(), getRect().getWidth(), 0);
-			text_entry_rect.mRight -= llmax(8,mArrowImage->getWidth()) + 2 * LLUI::sConfigGroup->getS32("DropShadowButton");
+			text_entry_rect.mRight -= llmax(8,mArrowImage->getWidth()) + 2 * shadow_size;
 			// clear label on button
 			std::string cur_label = mButton->getLabelSelected();
 			mTextEntry = new LLLineEditor(std::string("combo_text_entry"),
@@ -590,9 +571,9 @@ void LLComboBox::updateLayout()
 			mTextEntry->setSelectAllonFocusReceived(TRUE);
 			mTextEntry->setHandleEditKeysDirectly(TRUE);
 			mTextEntry->setCommitOnFocusLost(FALSE);
+			mTextEntry->setFollows(FOLLOWS_ALL);
 			mTextEntry->setText(cur_label);
 			mTextEntry->setIgnoreTab(TRUE);
-			mTextEntry->setFollowsAll();
 			addChild(mTextEntry);
 		}
 		else
@@ -617,7 +598,7 @@ void LLComboBox::updateLayout()
 		{
 			mTextEntry->setVisible(FALSE);
 		}
-		mButton->setFollowsAll();
+		mButton->setFollows(FOLLOWS_ALL);
 	}
 }
 
@@ -754,10 +735,6 @@ void LLComboBox::hideList()
 		}
 	}
 }
-
-//------------------------------------------------------------------
-// static functions
-//------------------------------------------------------------------
 
 void LLComboBox::onButtonMouseDown()
 {
@@ -896,7 +873,10 @@ BOOL LLComboBox::handleKeyHere(KEY key, MASK mask)
 			return FALSE;
 		}
 		// if selection has changed, pop open list
-		else if (mList->getLastSelectedItem() != last_selected_item)
+		else if (mList->getLastSelectedItem() != last_selected_item
+					|| ((key == KEY_DOWN || key == KEY_UP)
+						&& mList->getCanSelect()
+						&& !mList->isEmpty()))
 		{
 			showList();
 		}
@@ -931,6 +911,7 @@ BOOL LLComboBox::handleUnicodeCharHere(llwchar uni_char)
 void LLComboBox::setAllowTextEntry(BOOL allow, S32 max_chars, BOOL set_tentative)
 {
 	mAllowTextEntry = allow;
+
 	mTextEntryTentative = set_tentative;
 	mMaxChars = max_chars;
 
@@ -1026,7 +1007,7 @@ void LLComboBox::updateSelection()
 	if(mSuppressAutoComplete) {
 		return;
 	}
-	
+
 	LLWString left_wstring = mTextEntry->getWText().substr(0, mTextEntry->getCursor());
 	// user-entered portion of string, based on assumption that any selected
     // text was a result of auto-completion
@@ -1234,170 +1215,5 @@ BOOL LLComboBox::operateOnAll(EOperation op)
 BOOL LLComboBox::selectItemRange( S32 first, S32 last )
 {
 	return mList->selectItemRange(first, last);
-}
-
-
-//
-// LLFlyoutButton
-//
-
-static LLRegisterWidget<LLFlyoutButton> r2("flyout_button");
-
-const S32 FLYOUT_BUTTON_ARROW_WIDTH = 24;
-
-LLFlyoutButton::LLFlyoutButton(
-		const std::string& name, 
-		const LLRect &rect,
-		const std::string& label)
-:		LLComboBox(name, rect, LLStringUtil::null),
-		mToggleState(FALSE),
-		mActionButton(NULL)
-{
-	// Always use text box 
-	// Text label button
-	mActionButton = new LLButton(label,
-					LLRect(), LLStringUtil::null, boost::bind(&LLFlyoutButton::onActionButtonClick, this));
-	mActionButton->setScaleImage(TRUE);
-	mActionButton->setFollowsAll();
-	mActionButton->setHAlign( LLFontGL::HCENTER );
-	mActionButton->setLabel(label);
-	addChild(mActionButton);
-
-	mActionButtonImage = LLUI::getUIImage("flyout_btn_left.tga");
-	mExpanderButtonImage = LLUI::getUIImage("flyout_btn_right.tga");
-	mActionButtonImageSelected = LLUI::getUIImage("flyout_btn_left_selected.tga");
-	mExpanderButtonImageSelected = LLUI::getUIImage("flyout_btn_right_selected.tga");
-	mActionButtonImageDisabled = LLUI::getUIImage("flyout_btn_left_disabled.tga");
-	mExpanderButtonImageDisabled = LLUI::getUIImage("flyout_btn_right_disabled.tga");
-
-	mActionButton->setImageSelected(mActionButtonImageSelected);
-	mActionButton->setImageUnselected(mActionButtonImage);
-	mActionButton->setImageDisabled(mActionButtonImageDisabled);
-	mActionButton->setImageDisabledSelected(LLPointer<LLUIImage>(NULL));
-
-	mButton->setImageSelected(mExpanderButtonImageSelected);
-	mButton->setImageUnselected(mExpanderButtonImage);
-	mButton->setImageDisabled(mExpanderButtonImageDisabled);
-	mButton->setImageDisabledSelected(LLPointer<LLUIImage>(NULL));
-	mButton->setRightHPad(6);
-
-	updateLayout();
-}
-
-// virtual
-LLXMLNodePtr LLFlyoutButton::getXML(bool save_children) const
-{
-	LLXMLNodePtr node = LLComboBox::getXML();
-
-	node->setName(LL_FLYOUT_BUTTON_TAG);
-
-	LLXMLNodePtr child;
-
-	for (child = node->getFirstChild(); child.notNull();)
-	{
-		if (child->hasName("combo_item"))
-		{
-			child->setName(LL_FLYOUT_BUTTON_ITEM_TAG);
-
-			//setName does a delete and add, so we have to start over
-			child = node->getFirstChild();
-		}
-		else
-		{
-			child = child->getNextSibling();
-		}
-	}
-
-	return node;
-}
-
-//static 
-LLView* LLFlyoutButton::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
-{
-	std::string label("");
-	node->getAttributeString("label", label);
-
-	LLRect rect;
-	createRect(node, rect, parent, LLRect());
-
-	LLFlyoutButton* flyout_button = new LLFlyoutButton("flyout_button",
-							rect, 
-							label);
-
-	std::string list_position;
-	node->getAttributeString("list_position", list_position);
-	if (list_position == "below")
-	{
-		flyout_button->mListPosition = BELOW;
-	}
-	else if (list_position == "above")
-	{
-		flyout_button->mListPosition = ABOVE;
-	}
-	
-
-	flyout_button->initFromXML(node, parent);
-
-	LLXMLNodePtr child;
-	for (child = node->getFirstChild(); child.notNull(); child = child->getNextSibling())
-	{
-		if (child->hasName("flyout_button_item"))
-		{
-			std::string label = child->getTextContents();
-
-			std::string value = label;
-			child->getAttributeString("value", value);
-
-			flyout_button->add(label, LLSD(value) );
-		}
-	}
-
-	flyout_button->updateLayout();
-
-	return flyout_button;
-}
-
-void LLFlyoutButton::updateLayout()
-{
-	LLComboBox::updateLayout();
-
-	mButton->setOrigin(getRect().getWidth() - FLYOUT_BUTTON_ARROW_WIDTH, 0);
-	mButton->reshape(FLYOUT_BUTTON_ARROW_WIDTH, getRect().getHeight());
-	mButton->setFollows(FOLLOWS_RIGHT | FOLLOWS_TOP | FOLLOWS_BOTTOM);
-	mButton->setTabStop(FALSE);
-	mButton->setImageOverlay(mListPosition == BELOW ? "down_arrow.tga" : "up_arrow.tga", LLFontGL::RIGHT);
-
-	mActionButton->setOrigin(0, 0);
-	mActionButton->reshape(getRect().getWidth() - FLYOUT_BUTTON_ARROW_WIDTH, getRect().getHeight());
-}
-
-void LLFlyoutButton::onActionButtonClick()
-{
-	// remember last list selection?
-	mList->deselect();
-	onCommit();
-}
-
-void LLFlyoutButton::draw()
-{
-	mActionButton->setToggleState(mToggleState);
-	mButton->setToggleState(mToggleState);
-
-	//FIXME: this should be an attribute of comboboxes, whether they have a distinct label or
-	// the label reflects the last selected item, for now we have to manually remove the label
-	mButton->setLabel(LLStringUtil::null);
-	LLComboBox::draw();	
-}
-
-void LLFlyoutButton::setEnabled(BOOL enabled)
-{
-	mActionButton->setEnabled(enabled);
-	LLComboBox::setEnabled(enabled);
-}
-
-
-void LLFlyoutButton::setToggleState(BOOL state)
-{
-	mToggleState = state;
 }
 

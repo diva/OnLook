@@ -381,15 +381,24 @@ void LLPanelPermissions::refresh()
 	
 	// Update creator text field
 	getChildView("Creator:")->setEnabled(TRUE);
+// [RLVa:KB] - Checked: 2010-11-02 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
+	BOOL creators_identical = FALSE;
+// [/RLVa:KB]
 	std::string creator_name;
-	bool creators_identical = LLSelectMgr::getInstance()->selectGetCreator(mCreatorID, creator_name);
+// [RLVa:KB] - Checked: 2010-11-02 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
+	creators_identical = LLSelectMgr::getInstance()->selectGetCreator(mCreatorID, creator_name);
+// [/RLVa:KB]
+//	LLSelectMgr::getInstance()->selectGetCreator(mCreatorID, creator_name);
 
-	getChild<LLUICtrl>("Creator Name")->setValue(creator_name);
-	getChildView("Creator Name")->setEnabled(TRUE);
-	getChildView("button creator profile")->setEnabled(creators_identical && mCreatorID.notNull());
+//	getChild<LLUICtrl>("Creator Name")->setValue(creator_name);
+//	getChildView("Creator Name")->setEnabled(TRUE);
+// [RLVa:KB] - Moved further down to avoid an annoying flicker when the text is set twice in a row
 
 	// Update owner text field
 	getChildView("Owner:")->setEnabled(TRUE);
+
+	// Update last owner text field
+	getChildView("Last Owner:")->setEnabled(TRUE);
 
 	std::string owner_name;
 	const BOOL owners_identical = LLSelectMgr::getInstance()->selectGetOwner(mOwnerID, owner_name);
@@ -419,31 +428,52 @@ void LLPanelPermissions::refresh()
 			}
 		}
 	}
+//	getChild<LLUICtrl>("Owner Name")->setValue(owner_name);
+//	getChildView("Owner Name")->setEnabled(TRUE);
+// [RLVa:KB] - Moved further down to avoid an annoying flicker when the text is set twice in a row
 
-// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
+// [RLVa:KB] - Checked: 2010-11-02 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
 	bool fRlvEnableOwner = true;
-	if ( (rlv_handler_t::isEnabled()) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) )
+	bool fRlvEnableCreator = true;
+	bool fRlvEnableLastOwner = true;
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 	{
-		// Only filter the owner name if: the selection is all owned by the same avie and not group owned
-		if ( (owners_identical) && (!LLSelectMgr::getInstance()->selectIsGroupOwned()) )
+		// Only anonymize the creator if all of the selection was created by the same avie who's also the owner or they're a nearby avie
+		if ( (creators_identical) && (mCreatorID != gAgent.getID()) && ((mCreatorID == mOwnerID) || (RlvUtil::isNearbyAgent(mCreatorID))) )
+		{
+			creator_name = RlvStrings::getAnonym(creator_name);
+			fRlvEnableOwner = false;
+		}
+
+		// Only anonymize the owner name if all of the selection is owned by the same avie and isn't group owned
+		if ( (owners_identical) && (!LLSelectMgr::getInstance()->selectIsGroupOwned()) && (mOwnerID != gAgent.getID()) )
 		{
 			owner_name = RlvStrings::getAnonym(owner_name);
-			fRlvEnableOwner = false;
+			fRlvEnableCreator = false;
+		}
+
+		if (RlvUtil::isNearbyAgent(mLastOwnerID))
+		{
+			creator_name = RlvStrings::getAnonym(creator_name);
+			fRlvEnableLastOwner = false;
 		}
 	}
 // [/RLVa:KB]
+	getChild<LLUICtrl>("Creator Name")->setValue(creator_name);
+	getChildView("Creator Name")->setEnabled(TRUE);
 
 	getChild<LLUICtrl>("Owner Name")->setValue(owner_name);
 	getChildView("Owner Name")->setEnabled(TRUE);
 //	childSetEnabled("button owner profile",owners_identical && (mOwnerID.notNull() || LLSelectMgr::getInstance()->selectIsGroupOwned()));
+//	getChildView("button last owner profile")->setEnabled(owners_identical && mLastOwnerID.notNull());
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
-	childSetEnabled("button owner profile",
-		fRlvEnableOwner && owners_identical && (mOwnerID.notNull() || LLSelectMgr::getInstance()->selectIsGroupOwned()));
+	getChildView("button owner profile")->setEnabled(fRlvEnableOwner && owners_identical && (mOwnerID.notNull() || LLSelectMgr::getInstance()->selectIsGroupOwned()));
+	getChildView("button creator profile")->setEnabled(fRlvEnableCreator && creators_identical && mCreatorID.notNull());
+	getChildView("button last owner profile")->setEnabled(fRlvEnableLastOwner && owners_identical && mLastOwnerID.notNull());
 // [/RLVa:KB]
 
 	getChild<LLUICtrl>("Last Owner Name")->setValue(last_owner_name);
 	getChildView("Last Owner Name")->setEnabled(TRUE);
-	getChildView("button last owner profile")->setEnabled(owners_identical && mLastOwnerID.notNull());
 
 	// update group text field
 	getChildView("Group:")->setEnabled(TRUE);
@@ -620,12 +650,10 @@ void LLPanelPermissions::refresh()
 	BOOL valid_base_perms = LLSelectMgr::getInstance()->selectGetPerm(PERM_BASE,
 									  &base_mask_on,
 									  &base_mask_off);
-
 	//BOOL valid_owner_perms =//
 	LLSelectMgr::getInstance()->selectGetPerm(PERM_OWNER,
 									  &owner_mask_on,
 									  &owner_mask_off);
-
 	BOOL valid_group_perms = LLSelectMgr::getInstance()->selectGetPerm(PERM_GROUP,
 									  &group_mask_on,
 									  &group_mask_off);
@@ -1037,10 +1065,9 @@ void LLPanelPermissions::onClickGroup()
 	if(owners_identical && (owner_id == gAgent.getID()))
 	{
 		LLFloaterGroupPicker* fg = LLFloaterGroupPicker::showInstance(LLSD(gAgent.getID()));
-
 		if (fg)
 		{
-			fg->setSelectCallback( cbGroupID, this );
+			fg->setSelectGroupCallback( boost::bind(&LLPanelPermissions::cbGroupID, this, _1) );
 
 			if (parent_floater)
 			{
@@ -1059,13 +1086,11 @@ void LLPanelPermissions::onClickOpenGroup()
 	LLGroupActions::show(group_id);
 }
 
-// static
-void LLPanelPermissions::cbGroupID(LLUUID group_id, void* userdata)
+void LLPanelPermissions::cbGroupID(LLUUID group_id)
 {
-	LLPanelPermissions* self = (LLPanelPermissions*)userdata;
-	if(self->mLabelGroupName)
+	if(mLabelGroupName)
 	{
-		self->mLabelGroupName->setNameID(group_id, TRUE);
+		mLabelGroupName->setNameID(group_id, TRUE);
 	}
 	LLSelectMgr::getInstance()->sendGroup(group_id);
 }

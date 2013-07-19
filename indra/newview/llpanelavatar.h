@@ -40,23 +40,11 @@
 #include "llavatarpropertiesprocessor.h"
 
 class LLAvatarName;
-class LLButton;
 class LLCheckBoxCtrl;
-class LLDropTarget;
-class LLInventoryItem;
 class LLLineEditor;
-class LLNameEditor;
 class LLPanelAvatar;
-class LLScrollListCtrl;
 class LLTabContainer;
-class LLTextBox;
-class LLTextEditor;
-class LLTextureCtrl;
-class LLUICtrl;
-class LLViewerTexture;
 class LLViewerObject;
-class LLMessageSystem;
-class LLIconCtrl;
 class LLMediaCtrl;
 class LLPanelPick;
 
@@ -328,7 +316,6 @@ public:
 	static void onClickGetKey(void *userdata);
 	static void onClickOK(		void *userdata);
 	static void onClickCancel(	void *userdata);
-	static void onClickMute(	void *userdata);
 
 private:
 	void enableOKIfReady();

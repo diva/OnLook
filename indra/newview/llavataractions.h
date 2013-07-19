@@ -187,7 +187,7 @@ private:
 	static bool handleKick(const LLSD& notification, const LLSD& response);
 	static bool handleFreeze(const LLSD& notification, const LLSD& response);
 	static bool handleUnfreeze(const LLSD& notification, const LLSD& response);
-	static void callback_invite_to_group(LLUUID group_id, void* id);
+	static void callback_invite_to_group(LLUUID group_id, LLUUID id);
 
 public:
 	// Just request friendship, no dialog.

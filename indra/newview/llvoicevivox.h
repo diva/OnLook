@@ -564,7 +564,6 @@ protected:
 		bool mNameResolved;
 		bool mInSLFriends;
 		bool mInVivoxBuddies;
-		bool mNeedsNameUpdate;
 	};
 
 	typedef std::map<std::string, buddyListEntry*> buddyListMap;
@@ -623,6 +622,7 @@ protected:
 	void lookupName(const LLUUID &id);
 	void onAvatarNameCache(const LLUUID& id, const LLAvatarName& av_name);
 	void avatarNameResolved(const LLUUID &id, const std::string &name);
+	boost::signals2::connection mAvatarNameCacheConnection;
 
 	/////////////////////////////
 	// Voice fonts
@@ -723,6 +723,8 @@ private:
 	std::string mRenderDevice;
 	bool mCaptureDeviceDirty;
 	bool mRenderDeviceDirty;
+
+	bool mIsInitialized;
 
 
 	bool checkParcelChanged(bool update = false);
@@ -1014,3 +1016,4 @@ protected:
 
 
 #endif //LL_VIVOX_VOICE_CLIENT_H
+

@@ -60,6 +60,7 @@
 #include "llpreviewtexture.h"
 #include "llpluginclassmedia.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "lltabcontainer.h"
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
@@ -520,7 +521,7 @@ BOOL LLPanelAvatarSecondLife::postBuild(void)
 
 	getChild<LLUICtrl>("Add Friend...")->setCommitCallback(boost::bind(LLAvatarActions::requestFriendshipDialog, boost::bind(&LLPanelAvatar::getAvatarID, pa)));
 	getChild<LLUICtrl>("Pay...")->setCommitCallback(boost::bind(LLAvatarActions::pay, boost::bind(&LLPanelAvatar::getAvatarID, pa)));
-	childSetAction("Mute", LLPanelAvatar::onClickMute, pa);
+	getChild<LLUICtrl>("Mute")->setCommitCallback(boost::bind(LLAvatarActions::toggleBlock, boost::bind(&LLPanelAvatar::getAvatarID, pa)));
 
 	getChild<LLUICtrl>("Offer Teleport...")->setCommitCallback(boost::bind(static_cast<void(*)(const LLUUID&)>(LLAvatarActions::offerTeleport), boost::bind(&LLPanelAvatar::getAvatarID, pa)));
 
@@ -1725,26 +1726,6 @@ void LLPanelAvatar::onClickGetKey(void *userdata)
 	llinfos << "Copy agent id: " << agent_id << llendl;
 
 	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(agent_id.asString()));
-}
-
-//-----------------------------------------------------------------------------
-// onClickMute()
-//-----------------------------------------------------------------------------
-void LLPanelAvatar::onClickMute(void *userdata)
-{
-	LLPanelAvatar* self = (LLPanelAvatar*) userdata;
-	
-	LLUUID agent_id = self->getAvatarID();
-
-	LLFloaterMute::showInstance();
-	if (LLAvatarActions::isBlocked(agent_id))
-	{
-		LLFloaterMute::getInstance()->selectMute(agent_id);
-	}
-	else
-	{
-		LLAvatarActions::toggleBlock(agent_id);
-	}
 }
 
 // static

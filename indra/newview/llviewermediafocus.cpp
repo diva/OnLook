@@ -414,7 +414,7 @@ void LLViewerMediaFocus::update()
 		normal = mHoverObjectNormal;
 	}
 	
-	if(media_impl && viewer_object)
+	if(media_impl && viewer_object && !media_impl->isForcedUnloaded())
 	{
 		// We have an object and impl to point at.
 		

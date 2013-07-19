@@ -244,14 +244,10 @@ protected:
 	virtual void	dirtyMesh(S32 priority) = 0; // Dirty the avatar mesh, with priority
 
 protected:
+	friend class WavefrontSaver;
 	typedef std::multimap<std::string, LLPolyMesh*> polymesh_map_t;
 	polymesh_map_t 									mPolyMeshes;
 	avatar_joint_list_t								mMeshLOD;
-
-// <edit>
-public:
-	const virtual avatar_joint_list_t& getMeshLOD() const { return mMeshLOD; }
-// </edit>
 
 /**                    Meshes
  **                                                                            **

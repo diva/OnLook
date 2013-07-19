@@ -43,6 +43,7 @@
 #include "llgroupmgr.h"
 #include "llnamelistctrl.h"
 #include "llnotificationsutil.h"
+#include "llscrolllistitem.h"
 #include "llspinctrl.h"
 #include "lltextbox.h"
 #include "llviewerobject.h"
@@ -148,7 +149,7 @@ void LLPanelGroupInvite::impl::addUsers(const std::vector<std::string>& names,
 		row["columns"][0]["column"] = "name";
 		row["columns"][0]["value"] = name;
 
-		mInvitees->addNameItem(row);
+		mInvitees->addElement(row);
 	}
 }
 

@@ -63,7 +63,7 @@ protected:
 	void onClickLastOwner();
 	void onClickGroup();
 	static void onClickOpenGroup();
-	static void cbGroupID(LLUUID group_id, void* userdata);
+		   void cbGroupID(LLUUID group_id);
 	static void onClickDeedToGroup(void*);
 	static void onClickCopyObjKey();
 

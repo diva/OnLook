@@ -46,6 +46,7 @@
 #include "llnotificationsutil.h"
 #include "llpanelgrouproles.h"
 #include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "lltabcontainer.h"
 #include "lltextbox.h"
 #include "lltexteditor.h"
@@ -503,13 +504,11 @@ void LLPanelGroupSubTab::setSearchFilter(const std::string& filter)
 
 void LLPanelGroupSubTab::activate()
 {
-	lldebugs << "LLPanelGroupSubTab::activate()" << llendl;
 	setOthersVisible(TRUE);
 }
 
 void LLPanelGroupSubTab::deactivate()
 {
-	lldebugs << "LLPanelGroupSubTab::deactivate()" << llendl;
 	setOthersVisible(FALSE);
 }
 
@@ -519,18 +518,10 @@ void LLPanelGroupSubTab::setOthersVisible(BOOL b)
 	{
 		mHeader->setVisible( b );
 	}
-	else
-	{
-		llwarns << "LLPanelGroupSubTab missing header!" << llendl;
-	}
 
 	if (mFooter)
 	{
 		mFooter->setVisible( b );
-	}
-	else
-	{
-		llwarns << "LLPanelGroupSubTab missing footer!" << llendl;
 	}
 }
 
@@ -1068,7 +1059,7 @@ void LLPanelGroupMembersSubTab::onEjectMembers(void *userdata)
 void LLPanelGroupMembersSubTab::handleEjectMembers()
 {
 	//send down an eject message
-	std::vector<LLUUID> selected_members;
+	uuid_vec_t selected_members;
 
 	std::vector<LLScrollListItem*> selection = mMembersList->getAllSelected();
 	if (selection.empty()) return;
@@ -1111,6 +1102,7 @@ void LLPanelGroupMembersSubTab::handleRoleCheck(const LLUUID& role_id,
 	for (std::vector<LLScrollListItem*>::iterator itor = selection.begin() ; 
 		 itor != selection.end(); ++itor)
 	{
+
 		member_id = (*itor)->getUUID();
 
 		//see if we requested a change for this member before
@@ -1403,7 +1395,7 @@ U64 LLPanelGroupMembersSubTab::getAgentPowersBasedOnRoleChanges(const LLUUID& ag
 
 	if ( role_change_datap )
 	{
-		std::vector<LLUUID> roles_to_be_removed;
+		uuid_vec_t roles_to_be_removed;
 
 		for (role_change_data_map_t::iterator role = role_change_datap->begin();
 			 role != role_change_datap->end(); ++ role)
@@ -1536,19 +1528,17 @@ void LLPanelGroupMembersSubTab::addMemberToList(LLGroupMemberData* data)
 	LLUIString donated = getString("donation_area");
 	donated.setArg("[AREA]", llformat("%d", data->getContribution()));
 	
-	LLSD row;
-	row["id"] = data->getID();
+	LLNameListCtrl::NameItem item_params;
+	item_params.value = data->getID();
 
-	row["columns"][0]["column"] = "name";
-	row["columns"][0]["font"] = "SANSSERIF_SMALL";
+	item_params.columns.add().column("name").font/*.name*/("SANSSERIF_SMALL")/*.style("NORMAL")*/;
 	
-	row["columns"][1]["column"] = "donated";
-	row["columns"][1]["value"] = donated.getString();
+	item_params.columns.add().column("donated").value(donated.getString())
+			.font/*.name*/("SANSSERIF_SMALL")/*.style("NORMAL")*/;
 
-	row["columns"][2]["column"] = "online";
-	row["columns"][2]["value"] = data->getOnlineStatus();
-	row["columns"][2]["font"] = "SANSSERIF_SMALL";
-	mMembersList->addNameItemRow(row);
+	item_params.columns.add().column("online").value(data->getOnlineStatus())
+			.font/*.name*/("SANSSERIF_SMALL")/*.style("NORMAL")*/;
+	mMembersList->addNameItemRow(item_params);
 
 	mHasMatch = TRUE;
 }
@@ -1678,6 +1668,7 @@ LLPanelGroupRolesSubTab::LLPanelGroupRolesSubTab(const std::string& name, const 
 	mMemberVisibleCheck(NULL),
 	mDeleteRoleButton(NULL),
 	mCreateRoleButton(NULL),
+
 	mHasRoleChange(FALSE)
 {
 }
@@ -2084,8 +2075,8 @@ void LLPanelGroupRolesSubTab::buildMembersList()
 			LLGroupRoleData* rdatap = (*rit).second;
 			if (rdatap)
 			{
-				std::vector<LLUUID>::const_iterator mit = rdatap->getMembersBegin();
-				std::vector<LLUUID>::const_iterator end = rdatap->getMembersEnd();
+				uuid_vec_t::const_iterator mit = rdatap->getMembersBegin();
+				uuid_vec_t::const_iterator end = rdatap->getMembersEnd();
 				for ( ; mit != end; ++mit)
 				{
 					mAssignedMembersList->addNameItem((*mit));
@@ -2423,9 +2414,7 @@ BOOL LLPanelGroupActionsSubTab::postBuildSubTab(LLView* root)
 void LLPanelGroupActionsSubTab::activate()
 {
 	LLPanelGroupSubTab::activate();
-	lldebugs << "LLPanelGroupActionsSubTab::activate()" << llendl;
 
-	
 	update(GC_ALL);
 }
 
