@@ -479,6 +479,8 @@ void LLInventoryPanel::modelChanged(U32 mask)
 
 					view_item->refresh();
 				}
+				// Singu note: let listeners know it was renamed.
+				view_item->rename(view_item->getLabel());
 			}
 		}
 
