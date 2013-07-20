@@ -6211,6 +6211,7 @@ LLViewerJointAttachment* LLVOAvatar::getTargetAttachmentPoint(LLViewerObject* vi
 		if (isSelf() && attachmentID == 127 && gSavedSettings.getBOOL("SGDetachBridge"))
 		{
 			llinfos << "Bridge detected! detaching" << llendl;
+			LLAppearanceMgr::getInstance()->removeItemFromAvatar(viewer_object->getAttachmentItemID());
 			return 0;
 		}
 //		attachment = get_if_there(mAttachmentPoints, 1, (LLViewerJointAttachment*)NULL); // Arbitrary using 1 (chest)
