@@ -123,7 +123,6 @@ public:
 	virtual void selectItem() {}
 	virtual BOOL isItemRenameable() const;
 	virtual BOOL renameItem(const std::string& new_name);
-	virtual void descriptionChanged(void) const;
 	virtual BOOL isItemMovable() const;
 	virtual BOOL isItemRemovable() const;
 	virtual BOOL removeItem();
@@ -429,11 +428,6 @@ BOOL LLTaskInvFVBridge::renameItem(const std::string& new_name)
 		}
 	}
 	return TRUE;
-}
-
-void LLTaskInvFVBridge::descriptionChanged(void) const
-{
-	// Nothing to do.
 }
 
 BOOL LLTaskInvFVBridge::isItemMovable() const
@@ -855,7 +849,6 @@ public:
 	virtual BOOL isItemRenameable() const;
 	// virtual BOOL isItemCopyable() const { return FALSE; }
 	virtual BOOL renameItem(const std::string& new_name);
-	virtual void descriptionChanged(void) const;
 	virtual BOOL isItemRemovable() const;
 	virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
 	virtual BOOL hasChildren() const;
@@ -894,12 +887,6 @@ BOOL LLTaskCategoryBridge::isItemRenameable() const
 BOOL LLTaskCategoryBridge::renameItem(const std::string& new_name)
 {
 	return FALSE;
-}
-
-void LLTaskCategoryBridge::descriptionChanged(void) const
-{
-	// A category has no description.
-	llerrs << "Calling LLTaskCategoryBridge::descriptionChanged" << llendl;
 }
 
 BOOL LLTaskCategoryBridge::isItemRemovable() const
@@ -1217,7 +1204,6 @@ public:
 
 	virtual BOOL isItemRenameable() const;
 	virtual BOOL renameItem(const std::string& new_name);
-	virtual void descriptionChanged(void) const;
 };
 
 BOOL LLTaskCallingCardBridge::isItemRenameable() const
@@ -1228,11 +1214,6 @@ BOOL LLTaskCallingCardBridge::isItemRenameable() const
 BOOL LLTaskCallingCardBridge::renameItem(const std::string& new_name)
 {
 	return FALSE;
-}
-
-void LLTaskCallingCardBridge::descriptionChanged(void) const
-{
-	// Nothing to do.
 }
 
 ///----------------------------------------------------------------------------

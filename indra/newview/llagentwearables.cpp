@@ -598,21 +598,29 @@ void LLAgentWearables::setWearableName(const LLUUID& item_id, const std::string&
 	}
 }
 
-void LLAgentWearables::descriptionChanged(LLUUID const& item_id)
+void LLAgentWearables::nameOrDescriptionChanged(LLUUID const& item_id)
 {
-	for (S32 i=0; i < LLWearableType::WT_COUNT; i++)
+	for (int i = 0; i < LLWearableType::WT_COUNT; ++i)
 	{
-		for (U32 j=0; j < getWearableCount((LLWearableType::EType)i); j++)
+		LLWearableType::EType type = (LLWearableType::EType)i;
+		for (U32 j = 0; j < getWearableCount(type); ++j)
 		{
-			LLUUID curr_item_id = getWearableItemID((LLWearableType::EType)i,j);
+			LLUUID curr_item_id = getWearableItemID(type, j);
 			if (curr_item_id == item_id)
 			{
-				LLViewerWearable* wearable = getViewerWearable((LLWearableType::EType)i,j);
+				LLViewerWearable* wearable = getViewerWearable(type, j);
 				llassert(wearable);
 				if (!wearable) continue;
 
 				wearable->refreshNameAndDescription();
-				break;
+				
+				// Update the name in the appearance editor.
+				if (LLFloaterCustomize::instanceExists())
+				{
+					LLFloaterCustomize::getInstance()->wearablesChanged(type);
+				}
+
+				return;
 			}
 		}
 	}
