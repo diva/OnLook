@@ -110,6 +110,39 @@
 	<string name="TooltipDragOntoOwnChild">No puedes mover una carpeta a su carpeta secundaria</string>
 	<string name="TooltipDragOntoSelf">No puedes mover una carpeta en si misma</string>
 
+	<!-- tooltips for Urls -->
+	<string name="TooltipHttpUrl">Pulsa para ver esta página web</string>
+	<string name="TooltipSLURL">Pulsa para ver la información de esta ubicación</string>
+	<string name="TooltipAgentUrl">Pulsa para ver el perfil de este Residente</string>
+	<string name="TooltipAgentInspect">Conoce mas a este Residente</string>
+	<string name="TooltipAgentMute">Pulsa para ignorar a este Residente</string>
+	<string name="TooltipAgentUnmute">Pulsa para dejar de ignorar a este Residente</string>
+	<string name="TooltipAgentIM">Pulsa para enviar un MI a este Residente</string>
+	<string name="TooltipAgentPay">Pulsa para hacerle un pago a este Residente</string>
+	<string name="TooltipAgentOfferTeleport">Pulsa para ofrecerle Teleporte a este Residente</string>
+	<string name="TooltipAgentRequestFriend">Pulsa para enviarle un pedido de amistad a este Residente</string>
+	<string name="TooltipGroupUrl">Pulsa para ver la descripción de este grupo</string>
+	<string name="TooltipEventUrl">Pulsa para ver la descripción de este evento</string>
+	<string name="TooltipClassifiedUrl">Pulsa para ver este aviso clasificado</string>
+	<string name="TooltipParcelUrl">Pulsa para ver la descripción de esta parcela</string>
+	<string name="TooltipTeleportUrl">Pulsa para teleportarte a esta ubicación</string>
+	<string name="TooltipObjectIMUrl">Pulsa para ver la descripción de este objeto</string>
+	<string name="TooltipMapUrl">Pulsa para ver esta ubicación en el mapa</string>
+	<string name="TooltipSLAPP">Pulsa para ejecutar el comando secondlife://</string>
+	<string name="CurrentURL" value=" CurrentURL: [CurrentURL]" />
+
+	<!-- text for SLURL labels -->
+	<string name="SLurlLabelTeleport">Teleportar a</string>
+	<string name="SLurlLabelShowOnMap">Mostrar Mapa de</string>
+
+	<!-- label strings for secondlife:///app/agent SLapps -->
+	<string name="SLappAgentMute">Ignorar</string>
+	<string name="SLappAgentUnmute">No Ignorar</string>
+	<string name="SLappAgentIM">MI</string>
+	<string name="SLappAgentPay">Pagar</string>
+	<string name="SLappAgentOfferTeleport">Ofrecer Teleporte a</string>
+	<string name="SLappAgentRequestFriend">Ofrecer Amistad</string>
+	
 	<!-- searching - generic -->
 	<string name="Searching">Buscando...</string>
 	<string name="NoneFound">Nada Hallado.</string>
@@ -287,13 +320,8 @@
 	<string name="connected">Conectado</string>
 	<string name="unavailable">Chat de Voz no disponible en esta ubicación</string>
 	<string name="hang_up">Desconectado del Chat de Voz</string>
-	<string name="conference-title">Chat multi-persona</string>
-	<string name="ScriptQuestionCautionChatGranted">
-		el objeto '[OBJECTNAME]', propiedad de  '[OWNERNAME]', ubicado en [REGIONNAME] en la posición [REGIONPOS], ha recibido permiso para: [PERMISSIONS].
-	</string>
-	<string name="ScriptQuestionCautionChatDenied">
-		al objeto '[OBJECTNAME]', propiedad de  '[OWNERNAME]', ubicado en [REGIONNAME] en la posición [REGIONPOS], se le ha denegado el permiso para: [PERMISSIONS].
-	</string>
+	<string name="ScriptQuestionCautionChatGranted">'[OBJECTNAME]', al objeto propiedad de '[OWNERNAME]', ubicado en [REGIONNAME]: [REGIONPOS], se le ha concedido permisos para: [PERMISSIONS].</string>
+	<string name="ScriptQuestionCautionChatDenied">'[OBJECTNAME]', al objeto propiedad de '[OWNERNAME]', ubicado en [REGIONNAME]: [REGIONPOS], se le ha denegado permisos para: [PERMISSIONS].</string>
 	<string name="ScriptTakeMoney">Transferir moneda de tu cuenta</string>
 	<string name="ActOnControlInputs">Actuar en tus controles de entrada</string>
 	<string name="RemapControlInputs">Reconfigurar tus controles de entrada</string>
@@ -307,11 +335,15 @@
 	<string name="TrackYourCamera">Seguir tu cámara</string>
 	<string name="ControlYourCamera">Controlar tu cámara</string>
 	<string name="TeleportYourAgent">Teleportarte</string>	
-  <string name="OverrideYourAnimations">Reemplazando tus animaciones predeterminadas</string>
+	<string name="JoinAnExperience">Unirse a una experiencia</string> <!-- not used -->
+	<string name="SilentlyManageEstateAccess">Suprimir alertas cuando administras listas de acceso del Estado</string>
+	<string name="OverrideYourAnimations">Reemplazar tus animaciones predeterminadas</string>
+	<string name="ScriptReturnObjects">Retornar objetos a tu inventario</string>
+	<string name="UnknownScriptPermission">(desconocido)!</string>
   
 	<!-- Sim Access labels -->
 	<string name="SIM_ACCESS_PG">PG</string>
-	<string name="SIM_ACCESS_MATURE">Mature</string>
+	<string name="SIM_ACCESS_MATURE">Moderado</string>
 	<string name="SIM_ACCESS_ADULT">Adulto</string>
 	<string name="SIM_ACCESS_DOWN">Desconectado</string>
 	<string name="SIM_ACCESS_MIN">Desconocido</string>
@@ -2018,6 +2050,38 @@ Returns a string that is the name of the animation that is being used for the sp
 llResetAnimationOverride(string anim_state)
 Resets the animation override of the specified animation state (anim_state) to the corresponding default value.
 	</string>
+	<string name="LSLTipText_llJson2List" translate="false">
+list llJson2List(string json)
+Converts the top level of the json string to a list.
+	</string>
+	<string name="LSLTipText_llList2Json" translate="false">
+string llList2Json(string type, list values)
+Converts either a strided list of key:value pairs to a JSON_OBJECT or a list of values to a JSON_ARRAY
+	</string>
+	<string name="LSLTipText_llJsonGetValue" translate="false">
+string llJsonGetValue(string json, list specifiers)
+Gets the value indicated by specifiers from the json string.
+	</string>
+	<string name="LSLTipText_llJsonSetValue" translate="false">
+string llJsonSetValue(string json, list specifiers, string value)
+Returns a new json string that is the json given with the value indicated by specifiers set to value.
+	</string>
+	<string name="LSLTipText_llJsonValueType" translate="false">
+string llJsonValueType(string json, list specifiers)
+Returns the type constant for the value in json indicated by specifiers.
+	</string>
+	<string name="LSLTipText_llReturnObjectsByID" translate="false">
+integer llReturnObjectsByID(list objects)
+Returns a list of objects by their IDs or an ERR_* flag.
+	</string>
+	<string name="LSLTipText_llReturnObjectsByOwner" translate="false">
+integer llReturnObjectsByOwner(key owner, integer scope)
+Returns all objects of a particular owner in the given scope or an ERR_* flag.
+	</string>
+	<string name="LSLTipText_llXorBase64" translate="false">
+string llXorBase64(string str1, string str2)
+Returns a string that is a Base64 XOR of Base64-formatted input strings.
+	</string>
 
 <!-- GOD FUNCTIONS -->
 	<string name="LSLTipText_llGodLikeRezObject">
@@ -2926,6 +2990,10 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="NotLoggedIn">Desconectado</string>
 
     <!-- Non-standard LLChat strings -->
+	<string name="ScriptCounting">Contando scripts, espera por favor...</string>
+    <string name="ScriptCountAvatar">Contados [SCRIPTS] scripts en [OBJECTS] Accesorios en [NAME].</string>
+    <string name="ScriptCountObject">Contados [SCRIPTS] scripts en [OBJECTS] objetos.</string>
+    <string name="ScriptDeleteObject">Borrados [SCRIPTS] scripts en [OBJECTS] objetos.</string>
     <string name="took_a_snapshot">ha tomado una fotografía</string>
 	 
 	<!-- Avatar busy/away mode -->
@@ -3131,18 +3199,14 @@ La
 	<string name="GodToolsObjectOwnedBy">Objeto [OBJECT] propiedad de [OWNER]</string>
 
 	<!-- groups -->
-	<string name="GroupsNone">
-		ninguno
-	</string>
+	<string name="GroupsNone">ninguno</string>
 	<string name="Group" value=" (grupo)" />
 	<string name="Unknown">(Desconocido)</string>
 	<string name="SummaryForTheWeek"    value="Sumario para esta semana, comenzada el " />
 	<string name="NextStipendDay"       value="Siguiente día de estipendio es " />
 	<string name="GroupIndividualShare" value="                      Grupo       Participación Individual" />
 	<string name="GroupColumn"          value="                      Grupo" />
-	<string name="NoGroupDataFound">
-		No se encontraron datos del grupo
-	</string>
+	<string name="NoGroupDataFound">Información no hallada para el grupo </string>
 
 	<!-- floater IM bonus_info: When a Linden with Admin/god status receives a new IM this displays the estate (Mainland vs. teen grid) of the source avatar.
 		This is to help Lindens when answering questions. -->
@@ -3646,6 +3710,7 @@ Si continuas recibiendo este mensaje, contacta con [SUPPORT_SITE].
 	<string name="Higher">Más Grande</string>
 	<string name="Hip Length">Largo de Cadera</string>
 	<string name="Hip Width">Ancho de Cadera</string>
+	<string name="Hover">Flotar</string>
 	<string name="In">Interior</string>
 	<string name="In Shdw Color">Color Sombra Interior</string>
 	<string name="In Shdw Opacity">Opacidad Sombra Interior</string>
@@ -3966,6 +4031,7 @@ Si continuas recibiendo este mensaje, contacta con [SUPPORT_SITE].
 	<!-- IM system messages -->
 	<string name="IM_announce_incoming">ha iniciado una sesión de IM contigo.</string>
 	<string name="IM_autoresponded_to">Respuesta Automática enviada a</string>
+	<string name="IM_autoresponse_minutes">[MINS] minutos</string>
 	<string name="IM_autoresponse_sent_item">se ha enviado un ítem con la respuesta automática</string>
 	<string name="Unnamed">(Sin nombre)</string>
 	<string name="inventory_item_offered_to">Ofrecido ítem de inventario a</string>	
@@ -4082,6 +4148,8 @@ Si continuas recibiendo este mensaje, contacta con [SUPPORT_SITE].
 
 	<string name="Home position set.">Posición de la Base definida.</string>
 
+  <string name="voice_morphing_url">http://secondlife.com/landing/voicemorphing</string>
+
 <!-- Financial operations strings -->
 	<string name="paid_you_ldollars">[NAME] te ha pagado [CURRENCY][AMOUNT] [REASON].</string>
 	<string name="paid_you_ldollars_no_reason">[NAME] te ha pagado [CURRENCY][AMOUNT].</string>
@@ -4161,7 +4229,7 @@ Denuncia</string>
   <string name="Female - Chuckle">Femenimo - Risa Suave</string>
   <string name="Female - Cry">Femenino - Llorar</string>
   <string name="Female - Embarrassed">Femenino - Ruborizada</string>
-  <string name="Female - Excuse me">Femeninoe - Disculpame</string>
+  <string name="Female - Excuse me">Femenino - Disculpame</string>
   <string name="Female - Get lost">Femenino - Déjame tranquila</string>
   <string name="Female - Blow kiss">Femenino - Lanzar un Beso</string>
   <string name="Female - Boo">Femenino - Abuchear</string>
@@ -4225,7 +4293,7 @@ Intenta entrecomillando el camino al editor.
 	<string name="BeaconScriptedTouch">Viendo balizas de objetos con scripts de función de toque (rojo)</string>
 	<string name="BeaconSound">Viendo balizas de sonidos (amarillo)</string>
 	<string name="BeaconMedia">Viendo balizas de medios (blanco)</string>
-	<string name="ParticleHiding">Oocultando PartículasHiding Particlesstring>
+	<string name="ParticleHiding">Ocultando Partículas</string>
 
 	<string name="Command_Profile_Label">Perfil</string>
 
@@ -4233,8 +4301,8 @@ Intenta entrecomillando el camino al editor.
 	<string name="Pathfinding_Wiki_URL">http://wiki.secondlife.com/wiki/Pathfinding_Tools_in_the_Second_Life_Viewer</string>
 	<string name="Pathfinding_Object_Attr_None">Ninguno</string>
 	<string name="Pathfinding_Object_Attr_Permanent">Afecta al navmesh</string>
-	<string name="Pathfinding_Object_Attr_Character">Caracter</string>
-	<string name="Pathfinding_Object_Attr_MultiSelect">(Multiple)</string>
+	<string name="Pathfinding_Object_Attr_Character">Personaje</string>
+	<string name="Pathfinding_Object_Attr_MultiSelect">(Múltiple)</string>
 
 	<!-- teleport_strings.xml's strings we need -->
 	<string name="completed_from">Teleporte completado desde</string>

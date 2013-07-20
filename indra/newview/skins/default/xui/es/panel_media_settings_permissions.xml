@@ -19,6 +19,7 @@
 	<text name="group_label">
 		Grupo:
 	</text>
+	<name_box  name="perms_group_name"/>
 	<check_box initial_value="false" label="Permitir la navegación e interactividad" name="perms_group_interact"/>
 	<check_box initial_value="false" label="Mostrar la barra de control" name="perms_group_control"/>
 	<text name="anyone_label">
