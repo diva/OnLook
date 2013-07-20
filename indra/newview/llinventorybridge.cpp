@@ -1724,11 +1724,6 @@ BOOL LLItemBridge::renameItem(const std::string& new_name)
 	return FALSE;
 }
 
-void LLItemBridge::descriptionChanged(void) const
-{
-	// Nothing to do.
-}
-
 BOOL LLItemBridge::removeItem()
 {
 	if(!isItemRemovable())
@@ -2968,12 +2963,6 @@ BOOL LLFolderBridge::renameItem(const std::string& new_name)
 	// return FALSE because we either notified observers (& therefore
 	// rebuilt) or we didn't update.
 	return FALSE;
-}
-
-void LLFolderBridge::descriptionChanged(void) const
-{
-	// A folder has no description.
-	llerrs << "Calling LLFolderBridge::descriptionChanged" << llendl;
 }
 
 BOOL LLFolderBridge::removeItem()
@@ -5480,11 +5469,6 @@ BOOL LLObjectBridge::renameItem(const std::string& new_name)
 	return FALSE;
 }
 
-void LLObjectBridge::descriptionChanged(void) const
-{
-	// Nothing to do.
-}
-
 // +=================================================+
 // |        LLLSLTextBridge                          |
 // +=================================================+
@@ -5643,11 +5627,11 @@ BOOL LLWearableBridge::renameItem(const std::string& new_name)
 	return LLItemBridge::renameItem(new_name);
 }
 
-void LLWearableBridge::descriptionChanged(void) const
+void LLWearableBridge::nameOrDescriptionChanged(void) const
 {
 	if (get_is_item_worn(mUUID))
 	{
-		gAgentWearables.descriptionChanged(mUUID);
+		gAgentWearables.nameOrDescriptionChanged(mUUID);
 	}
 }
 

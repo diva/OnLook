@@ -933,12 +933,7 @@ void LLPanelEditWearable::setWearableIndex(S32 index)
 
 	LLViewerWearable* wearable = gAgentWearables.getViewerWearable(mType,mCurrentIndex);
 
-	if(wearable == getWearable())
-		return;
-
-	mCurrentWearable = wearable;
-
-
+	// Singu note: Set title even if the wearable didn't change: the name might have changed (when renamed).
 	if(wearable)
 	{
 		childSetTextArg("title", "[DESC]", wearable->getName() );
@@ -949,6 +944,11 @@ void LLPanelEditWearable::setWearableIndex(S32 index)
 		childSetTextArg("title", "[DESC]", std::string(LLWearableType::getTypeLabel( mType )) );
 		childSetTextArg("title_no_modify", "[DESC]", std::string(LLWearableType::getTypeLabel( mType )));
 	}
+
+	if(wearable == getWearable())
+		return;
+
+	mCurrentWearable = wearable;
 
 	if(mActiveModal)
 		mActiveModal->close();

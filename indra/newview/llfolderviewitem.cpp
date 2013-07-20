@@ -615,12 +615,12 @@ void LLFolderViewItem::rename(const std::string& new_name)
 	}
 }
 
-void LLFolderViewItem::descriptionChanged(void) const
+void LLFolderViewItem::nameOrDescriptionChanged(void) const
 {
-	// We don't have a description, but the listener does!
+	// Inform the listeners. Our name was already updated (and we don't have a description).
 	if( mListener )
 	{
-		mListener->descriptionChanged();
+		mListener->nameOrDescriptionChanged();
 	}
 }
 

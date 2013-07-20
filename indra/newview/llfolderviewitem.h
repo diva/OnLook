@@ -277,8 +277,8 @@ public:
 
 	// just rename the object.
 	void rename(const std::string& new_name);
-	// Alert mListener that the description of this item changed.
-	void descriptionChanged(void) const;
+	// Alert mListener that the name or description of this item changed.
+	void nameOrDescriptionChanged(void) const;
 
 	// open
 	virtual void openItem( void );
