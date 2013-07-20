@@ -4584,8 +4584,7 @@ void LLCallingCardBridge::performAction(LLInventoryModel* model, std::string act
 		if (item && (item->getCreatorUUID() != gAgent.getID()) &&
 			(!item->getCreatorUUID().isNull()))
 		{
-			gIMMgr->setFloaterOpen(TRUE);
-			gIMMgr->addSession(item->getName(), IM_NOTHING_SPECIAL, item->getCreatorUUID());
+			LLAvatarActions::startIM(item->getCreatorUUID());
 		}
 	}
 	else if ("lure" == action)
@@ -4594,7 +4593,7 @@ void LLCallingCardBridge::performAction(LLInventoryModel* model, std::string act
 		if (item && (item->getCreatorUUID() != gAgent.getID()) &&
 			(!item->getCreatorUUID().isNull()))
 		{
-			handle_lure(item->getCreatorUUID());
+			LLAvatarActions::offerTeleport(item->getCreatorUUID());
 		}
 	}
 	else LLItemBridge::performAction(model, action);
