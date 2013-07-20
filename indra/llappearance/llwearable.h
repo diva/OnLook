@@ -78,8 +78,6 @@ public:
 
 	virtual void	writeToAvatar(LLAvatarAppearance* avatarp);
 
-	void						archetypeExport(LLAPRFile& file) const;
-
 	enum EImportResult
 	{
 		FAILURE = 0,

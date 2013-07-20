@@ -211,6 +211,7 @@ public:
 	virtual time_t getCreationDate() const;
 	virtual BOOL isItemRenameable() const;
 	virtual BOOL renameItem(const std::string& new_name);
+	virtual void descriptionChanged(void) const;
 	virtual BOOL removeItem();
 	virtual BOOL isItemCopyable() const;
 	virtual BOOL hasChildren() const { return FALSE; }
@@ -257,6 +258,7 @@ public:
 	static LLUIImagePtr getIcon(LLFolderType::EType preferred_type);
 
 	virtual BOOL renameItem(const std::string& new_name);
+	virtual void descriptionChanged(void) const;
 
 	virtual BOOL removeItem();
 	BOOL removeSystemFolder();
@@ -466,6 +468,7 @@ public:
 	virtual std::string getLabelSuffix() const;
 	virtual void			buildContextMenu(LLMenuGL& menu, U32 flags);
 	virtual BOOL renameItem(const std::string& new_name);
+	virtual void descriptionChanged(void) const;
 	LLInventoryObject* getObject() const;
 protected:
 	static LLUUID sContextMenuItemID;  // Only valid while the context menu is open.
@@ -499,6 +502,7 @@ public:
 	virtual void	buildContextMenu(LLMenuGL& menu, U32 flags);
 	virtual std::string getLabelSuffix() const;
 	virtual BOOL renameItem(const std::string& new_name);
+	virtual void descriptionChanged(void) const;
 	virtual LLWearableType::EType getWearableType() const { return mWearableType; }
 
 	static void		onWearOnAvatar( void* userdata );	// Access to wearOnAvatar() from menu

@@ -7649,7 +7649,7 @@ void dump_visual_param(LLAPRFile& file, LLVisualParam const* viewer_param, F32 v
 		wtype = vparam->getWearableType();
 	}
 	S32 u8_value = F32_to_U8(value,viewer_param->getMinWeight(),viewer_param->getMaxWeight());
-	apr_file_printf(file.getFileHandle(), "\t\t<param id=\"%d\" name=\"%s\" value=\"%.3f\" u8=\"%d\" type=\"%s\" wearable=\"%s\"/>\n",
+	apr_file_printf(file.getFileHandle(), "    <param id=\"%d\" name=\"%s\" value=\"%.3f\" u8=\"%d\" type=\"%s\" wearable=\"%s\"/>\n",
 					viewer_param->getID(), viewer_param->getName().c_str(), value, u8_value, type_string.c_str(),
 					LLWearableType::getTypeName(LLWearableType::EType(wtype)).c_str()
 //					param_location_name(vparam->getParamLocation()).c_str()
@@ -8311,21 +8311,42 @@ void LLVOAvatar::dumpArchetypeXML(const std::string& prefix, bool group_by_weara
 	dumpArchetypeXML_cont(fullpath, group_by_wearables);
 }
 
+// metaversion 1.0
+// ===============
+//
+// Added as child of <linden_genepool>:
+//
+//   <meta gridnick="secondlife" date="2013-07-16T16:49:00.40Z"/>
+//
+// Optionally, as child of <archetype>, the following node may appear:
+//
+//   <meta path="clothing/jackets" name="Purple jacket" description="A jacket with mainly the color purple">
+//
+// Furthermore, metaversion 1.0 and higher allow the occurance of one or more <archetype> blocks.
+// If this is used then it is strongly advised to use one <archetype> per wearable, so that
+// the the <meta> node makes sense (it then refers to the wearable of that <archetype>).
+//
+// The reason for this clumsy way to link wearable to extra meta data is to stay
+// compatible with the older format (no metaversion).
+//
 //static
-void LLVOAvatar::dumpArchetypeXML_header(LLAPRFile& file)
+void LLVOAvatar::dumpArchetypeXML_header(LLAPRFile& file, std::string const& archetype_name)
 {
 	apr_file_t* fp = file.getFileHandle();
 	apr_file_printf(fp, "<?xml version=\"1.0\" encoding=\"US-ASCII\" standalone=\"yes\"?>\n");
-	apr_file_printf(fp, "<linden_genepool version=\"1.0\">\n");
-	apr_file_printf(fp, "\n\t<archetype name=\"???\">\n");
+	apr_file_printf(fp, "<linden_genepool version=\"1.0\" metaversion=\"1.0\">\n");
+	apr_file_printf(fp, "  <meta gridnick=\"%s\" date=\"%s\"/>\n",
+		LLXMLNode::escapeXML(gHippoGridManager->getConnectedGrid()->getGridNick()).c_str(),
+		LLDate::now().asString().c_str());
+	apr_file_printf(fp, "  <archetype name=\"%s\">\n", archetype_name.c_str());
 }
 
 //static
 void LLVOAvatar::dumpArchetypeXML_footer(LLAPRFile& file)
 {
 	apr_file_t* fp = file.getFileHandle();
-	apr_file_printf(fp, "\t</archetype>\n");
-	apr_file_printf(fp, "\n</linden_genepool>\n");
+	apr_file_printf(fp, "  </archetype>\n");
+	apr_file_printf(fp, "</linden_genepool>\n");
 }
 
 void LLVOAvatar::dumpArchetypeXML_cont(std::string const& fullpath, bool group_by_wearables)

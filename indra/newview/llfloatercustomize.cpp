@@ -82,6 +82,7 @@
 
 #include "statemachine/aifilepicker.h"
 #include "llxmltree.h"
+#include "hippogridmanager.h"
 
 using namespace LLAvatarAppearanceDefines;
 
@@ -314,18 +315,21 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 	LLViewerWearable* edit_wearable = panel_edit_wearable->getWearable();
 
 	std::string const filename = filepicker->getFilename();
+	LLSD args(LLSD::emptyMap());
+	args["FILE"] = gDirUtilp->getBaseFileName(filename);
 
 	LLXmlTree xml;
 	BOOL success = xml.parseFile(filename, FALSE);
 	if (!success)
 	{
-		llwarns << "Could not read or parse wearable import file \"" << filename << "\"." << llendl;
+		LLNotificationsUtil::add("AIXMLImportParseError", args);
 		return;
 	}
     LLXmlTreeNode* root = xml.getRoot();
     if (!root)
     {
         llwarns << "No root node found in wearable import file: " << filename << llendl;
+		LLNotificationsUtil::add("AIXMLImportParseError", args);
         return;
     }
 
@@ -335,6 +339,7 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
     if (!root->hasName("linden_genepool"))
     {
         llwarns << "Invalid wearable import file (missing linden_genepool header): " << filename << llendl;
+		LLNotificationsUtil::add("AIXMLImportRootTypeError", args);
 		return;
     }
 	static LLStdStringHandle const version_string = LLXmlTree::addAttributeString("version");
@@ -342,6 +347,7 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 	if (!root->getFastAttributeString(version_string, version) || (version != "1.0"))
 	{
 		llwarns << "Invalid linden_genepool version: " << version << " in file: " << filename << llendl;
+		LLNotificationsUtil::add("AIXMLImportRootVersionError", args);
 		return;
 	}
 
@@ -352,6 +358,7 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 	if (!archetype_node)
 	{
 		llwarns << "No archetype in wearable import file: " << filename << llendl;
+		LLNotificationsUtil::add("AIXMLImportInvalidError", args);
 		return;
 	}
 
@@ -360,6 +367,7 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 	static LLStdStringHandle const value_string = LLXmlTree::addAttributeString("value");
 	static LLStdStringHandle const te_string = LLXmlTree::addAttributeString("te");
 	static LLStdStringHandle const uuid_string = LLXmlTree::addAttributeString("uuid");
+	bool found = false;
 	for(LLXmlTreeNode* child = archetype_node->getFirstChild(); child; child = archetype_node->getNextChild())
 	{
 		if (child->hasName("param"))
@@ -377,6 +385,7 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 			LLVisualParam* visual_param = edit_wearable->getVisualParam(id);
 			if (visual_param)
 			{
+				found = true;
 				visual_param->setWeight(value, FALSE);
 			}
 		}
@@ -396,13 +405,22 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 			LLWearableType::EType te_wearable_type = LLAvatarAppearanceDictionary::getTEWearableType(te_index);
 			if (te_wearable_type == edit_wearable->getType())
 			{
+				found = true;
 				panel_edit_wearable->setNewImageID(te_index, uuid);
 			}
 		}
 	}
-	edit_wearable->writeToAvatar(gAgentAvatarp);
-	gAgentAvatarp->updateVisualParams();
-	panel_edit_wearable->updateScrollingPanelUI();
+	if (found)
+	{
+		edit_wearable->writeToAvatar(gAgentAvatarp);
+		gAgentAvatarp->updateVisualParams();
+		panel_edit_wearable->updateScrollingPanelUI();
+	}
+	else
+	{
+		args["TYPE"] = panel_edit_wearable->LLPanel::getLabel();
+		LLNotificationsUtil::add("AIXMLImportWearableTypeMismatch", args);
+	}
 }
 
 // reX: new function
@@ -436,7 +454,7 @@ void LLFloaterCustomize::onBtnExport()
 		return;
 	}
 
-	std::string file_name = edit_wearable->getName() + "_" + edit_wearable->getTypeName() + "?000.xml";
+	std::string file_name = edit_wearable->getName() + "_" + gHippoGridManager->getConnectedGrid()->getGridNick() + "_" + edit_wearable->getTypeName() + "?000.xml";
 	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "");
 
 	AIFilePicker* filepicker = AIFilePicker::create();
@@ -453,15 +471,20 @@ void LLFloaterCustomize::onBtnExport_continued(LLViewerWearable* edit_wearable, 
 		return;
 	}
 
+	std::string filename = filepicker->getFilename();
+	LLSD args(LLSD::emptyMap());
+	args["FILE"] = filename;
+
 	LLAPRFile outfile;
-	outfile.open(filepicker->getFilename(), LL_APR_WB);
+	outfile.open(filename, LL_APR_WB);
 	if (!outfile.getFileHandle())
 	{
-		llwarns << "Could not open \"" << filepicker->getFilename() << "\" for writing." << llendl;
+		llwarns << "Could not open \"" << filename << "\" for writing." << llendl;
+		LLNotificationsUtil::add("AIXMLExportWriteError", args);
 		return;
 	}
 
-	LLVOAvatar::dumpArchetypeXML_header(outfile);
+	LLVOAvatar::dumpArchetypeXML_header(outfile, edit_wearable->getTypeName());
 	edit_wearable->archetypeExport(outfile);
 	LLVOAvatar::dumpArchetypeXML_footer(outfile);
 }
