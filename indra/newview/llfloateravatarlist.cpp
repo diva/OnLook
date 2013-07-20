@@ -586,6 +586,24 @@ void LLFloaterAvatarList::updateAvatarList()
 			std::string name;
 			const LLUUID &avid = avatar_ids[i];
 
+			if (avid.isNull())
+			{
+				//llinfos << "Key empty for avatar " << name << llendl;
+				continue;
+			}
+
+			LLAvatarListEntry* entry = getAvatarEntry(avid);
+
+			if (entry && !entry->mAgeAlert && entry->mAge >= 0) //Only announce age once per entry.
+			{
+				static const LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");
+				if ((U32)entry->mAge < sAvatarAgeAlertDays)
+				{
+					entry->mAgeAlert = true;
+					chat_avatar_status(entry->getName().c_str(), avid, ALERT_TYPE_AGE, true);
+				}
+			}
+
 			LLVector3d position;
 			LLVOAvatar* avatarp = gObjectList.findAvatar(avid);
 
@@ -615,13 +633,6 @@ void LLFloaterAvatarList::updateAvatarList()
 					}
 				}
 
-				if (avid.isNull())
-				{
-					//llinfos << "Key empty for avatar " << name << llendl;
-					continue;
-				}
-
-				LLAvatarListEntry* entry = getAvatarEntry(avid);
 				if (entry)
 				{
 					// Avatar already in list, update position
@@ -654,7 +665,6 @@ void LLFloaterAvatarList::updateAvatarList()
 					continue; //prevent (Loading...)
 				}
 
-				LLAvatarListEntry* entry = getAvatarEntry(avid);
 				if (entry)
 				{
 					// Avatar already in list, update position
@@ -701,6 +711,18 @@ void LLFloaterAvatarList::updateAvatarList()
 //	llinfos << "radar refresh: done" << llendl;
 
 	expireAvatarList();
+
+	if (mAvatars.empty())
+		setTitle(getString("Title"));
+	else if (mAvatars.size() == 1)
+		setTitle(getString("TitleOneAvatar"));
+	else
+	{
+		LLStringUtil::format_map_t args;
+		args["[COUNT]"] = boost::lexical_cast<std::string>(mAvatars.size());
+		setTitle(getString("TitleWithCount", args));
+	}
+
 	refreshAvatarList();
 	refreshTracker();
 }
@@ -1044,16 +1066,9 @@ void LLFloaterAvatarList::refreshAvatarList()
 		std::string age = boost::lexical_cast<std::string>(entry->mAge);
 		if (entry->mAge > -1)
 		{
-			static LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");
+			static const LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");
 			if ((U32)entry->mAge < sAvatarAgeAlertDays)
-			{
 				color = sRadarTextYoung;
-				if (!entry->mAgeAlert) //Only announce age once per entry.
-				{
-					entry->mAgeAlert = true;
-					chat_avatar_status(entry->getName().c_str(), av_id, ALERT_TYPE_AGE, true);
-				}
-			}
 		}
 		else
 		{
@@ -1120,17 +1135,6 @@ void LLFloaterAvatarList::refreshAvatarList()
 	mAvatarList->setScrollPos(scrollpos);
 	
 	mDirtyAvatarSorting = true;
-
-	if (mAvatars.empty())
-		setTitle(getString("Title"));
-	else if (mAvatars.size() == 1)
-		setTitle(getString("TitleOneAvatar"));
-	else
-	{
-		LLStringUtil::format_map_t args;
-		args["[COUNT]"] = boost::lexical_cast<std::string>(mAvatars.size());
-		setTitle(getString("TitleWithCount", args));
-	}
 
 //	llinfos << "radar refresh: done" << llendl;
 
