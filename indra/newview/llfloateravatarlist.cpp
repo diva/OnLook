@@ -617,7 +617,7 @@ void LLFloaterAvatarList::expireAvatarList()
 		else
 		{
 			entry->setPosition(entry->getPosition(), false, false, false, false); // Dead and gone
-			mAvatars.erase(it);
+			it = mAvatars.erase(it);
 		}
 	}
 }
