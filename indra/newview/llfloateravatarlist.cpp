@@ -200,6 +200,15 @@ void LLAvatarListEntry::processProperties(void* data, EAvatarProcessorType type)
 			int year, month, day;
 			sscanf(pAvatarData->born_on.c_str(),"%d/%d/%d",&month,&day,&year);
 			mAge = (day_clock::local_day() - date(year, month, day)).days();
+			if (!mAgeAlert && mAge >= 0) //Only announce age once per entry.
+			{
+				static const LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");
+				if ((U32)mAge < sAvatarAgeAlertDays)
+				{
+					mAgeAlert = true;
+					chat_avatar_status(mName, mID, ALERT_TYPE_AGE, true);
+				}
+			}
 			// If one wanted more information that gets displayed on profiles to be displayed, here would be the place to do it.
 		}
 	}
@@ -594,15 +603,6 @@ void LLFloaterAvatarList::updateAvatarList()
 
 			LLAvatarListEntry* entry = getAvatarEntry(avid);
 
-			if (entry && !entry->mAgeAlert && entry->mAge >= 0) //Only announce age once per entry.
-			{
-				static const LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");
-				if ((U32)entry->mAge < sAvatarAgeAlertDays)
-				{
-					entry->mAgeAlert = true;
-					chat_avatar_status(entry->getName().c_str(), avid, ALERT_TYPE_AGE, true);
-				}
-			}
 
 			LLVector3d position;
 			LLVOAvatar* avatarp = gObjectList.findAvatar(avid);
