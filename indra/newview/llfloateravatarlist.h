@@ -19,12 +19,23 @@
 #include "llscrolllistctrl.h"
 
 #include <time.h>
+#include <bitset>
 #include <map>
 #include <set>
 
 #include <boost/shared_ptr.hpp>
 
 class LLFloaterAvatarList;
+
+enum ERadarStatType
+{
+	STAT_TYPE_SIM,
+	STAT_TYPE_DRAW,
+	STAT_TYPE_SHOUTRANGE,
+	STAT_TYPE_CHATRANGE,
+	STAT_TYPE_AGE,
+	STAT_TYPE_SIZE
+};
 
 /**
  * @brief This class is used to hold data about avatars.
@@ -109,10 +120,6 @@ enum ACTIVITY_TYPE
 
 	bool isMarked() const { return mMarked; }
 
-	bool isDrawn() const { return (mInDrawFrame != U32_MAX); }
-
-	bool isInSim() const { return (mInSimFrame != U32_MAX); }
-
 	/**
 	 * @brief 'InList' signifies that the entry has been displayed in the floaters avatar list
 	 *  Until this happens our focusprev/focusnext logic should ignore this entry.
@@ -146,8 +153,12 @@ private:
 	bool mMarked;
 	bool mFocused;
 	bool mIsInList;
-	bool mAgeAlert;
 	int mAge;
+
+	/**
+	 * @brief Bitset to keep track of what stats still hold true about the avatar
+	 */
+	std::bitset<STAT_TYPE_SIZE> mStats;
 
 	/**
 	 * @brief Timer to keep track of whether avatars are still there
@@ -163,14 +174,6 @@ private:
 	 * @brief Last frame when this avatar was updated
 	 */
 	U32 mFrame;
-	//last frame when this avatar was in sim
-	U32 mInSimFrame;
-	//last frame when this avatar was in draw
-	U32 mInDrawFrame;
-	//last frame when this avatar was in shout range
-	U32 mInShoutFrame;
-	//last frame when this avatar was in chat range
-	U32 mInChatFrame;
 };
 
 
