@@ -617,15 +617,7 @@ void LLFloaterAvatarList::expireAvatarList()
 		else
 		{
 			entry->setPosition(entry->getPosition(), false, false, false, false); // Dead and gone
-			if(mAvatars.back() == *it)
-			{
-				mAvatars.pop_back();
-				return;
-			}
-			*it = mAvatars.back();
-			mAvatars.pop_back();
-			if(mAvatars.empty())
-				return;
+			mAvatars.erase(it);
 		}
 	}
 }
