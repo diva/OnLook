@@ -174,17 +174,13 @@ LLAvatarListEntry::LLAvatarListEntry(const LLUUID& id, const std::string &name, 
 		mActivityType(ACTIVITY_NEW), mActivityTimer(),
 		mIsInList(false), mAge(-1), mAgeAlert(false), mTime(time(NULL))
 {
-	if (mID.notNull())
-	{
-		LLAvatarPropertiesProcessor::getInstance()->addObserver(mID, this);
-		LLAvatarPropertiesProcessor::getInstance()->sendAvatarPropertiesRequest(mID);
-	}
+	LLAvatarPropertiesProcessor::getInstance()->addObserver(mID, this);
+	LLAvatarPropertiesProcessor::getInstance()->sendAvatarPropertiesRequest(mID);
 }
 
 LLAvatarListEntry::~LLAvatarListEntry()
 {
-	if (mID.notNull())
-		LLAvatarPropertiesProcessor::getInstance()->removeObserver(mID, this);
+	LLAvatarPropertiesProcessor::getInstance()->removeObserver(mID, this);
 }
 
 // virtual
@@ -761,12 +757,6 @@ void LLFloaterAvatarList::refreshAvatarList()
 		//aka 8 sims
 		if (side_distance > 2048.0f)
 		{
-			continue;
-		}
-
-		if (av_id.isNull())
-		{
-			//llwarns << "Avatar with null key somehow got into the list!" << llendl;
 			continue;
 		}
 
