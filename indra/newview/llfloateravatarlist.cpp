@@ -547,28 +547,13 @@ void LLFloaterAvatarList::updateAvatarList()
 
 
 	//todo: make this less of a hacked up copypasta from dales 1.18.
-	if(gAudiop != NULL)
-	{
-		LLAudioEngine::source_map::iterator iter;
-		for (iter = gAudiop->mAllSources.begin(); iter != gAudiop->mAllSources.end(); ++iter)
-		{
-			LLAudioSource *sourcep = iter->second;
-			LLUUID uuid = sourcep->getOwnerID();
-			LLAvatarListEntry *ent = getAvatarEntry(uuid);
-			if ( ent )
-			{
-				ent->setActivity(LLAvatarListEntry::ACTIVITY_SOUND);
-			}
-		}
-	}
-
-	LLVector3d mypos = gAgent.getPositionGlobal();
 
 	{
 		std::vector<LLUUID> avatar_ids;
 		std::vector<LLUUID> sorted_avatar_ids;
 		std::vector<LLVector3d> positions;
 
+		LLVector3d mypos = gAgent.getPositionGlobal();
 		LLWorld::instance().getAvatars(&avatar_ids, &positions, mypos, F32_MAX);
 
 		size_t i;
@@ -579,80 +564,52 @@ void LLFloaterAvatarList::updateAvatarList()
 
 		for (i = 0; i < count; ++i)
 		{
-			std::string name;
 			const LLUUID &avid = avatar_ids[i];
 
+			std::string name;
+			if (!LLAvatarNameCache::getPNSName(avid, name))
+				continue; //prevent (Loading...)
 
 			LLAvatarListEntry* entry = getAvatarEntry(avid);
 
+			LLVector3d position = positions[i];
 
-			LLVector3d position;
 			LLVOAvatar* avatarp = gObjectList.findAvatar(avid);
-
 			if (avatarp)
 			{
 				// Get avatar data
 				position = gAgent.getPosGlobalFromAgent(avatarp->getCharacterPosition());
-				name = avatarp->getFullname();
-
-				if (!LLAvatarNameCache::getPNSName(avatarp->getID(), name))
-					continue;
-
-				//duped for lower section
-				if (name.empty() || (name.compare(" ") == 0))// || (name.compare(gCacheName->getDefaultName()) == 0))
-				{
-					if (!gCacheName->getFullName(avid, name)) //seems redudant with LLAvatarNameCache::getPNSName above...
-					{
-						continue;
-					}
-				}
-
-				if (entry)
-				{
-					// Avatar already in list, update position
-					F32 dist = (F32)(position - mypos).magVec();
-					entry->setPosition(position, (avatarp->getRegion() == gAgent.getRegion()), true, dist < 20.0, dist < 100.0);
-					if(avatarp->isTyping())entry->setActivity(LLAvatarListEntry::ACTIVITY_TYPING);
-				}
-				else
-				{
-					// Avatar not there yet, add it
-					if(announce && avatarp->getRegion() == gAgent.getRegion())
-						announce_keys.push(avid);
-					mAvatars.push_back(LLAvatarListEntryPtr(new LLAvatarListEntry(avid, name, position)));
-				}
 			}
-			else
+
+			if (!entry)
 			{
-				if (i < positions.size())
-				{
-					position = positions[i];
-				}
-				else
-				{
-					continue;
-				}
+				// Avatar not there yet, add it
+				if(announce && gAgent.getRegion()->pointInRegionGlobal(position))
+					announce_keys.push(avid);
+				mAvatars.push_back(LLAvatarListEntryPtr(entry = new LLAvatarListEntry(avid, name, position)));
+			}
 
-				if (!LLAvatarNameCache::getPNSName(avid, name))
-				{
-					//name = gCacheName->getDefaultName();
-					continue; //prevent (Loading...)
-				}
+			// Announce position
+			F32 dist = (F32)(position - mypos).magVec();
+			entry->setPosition(position, gAgent.getRegion()->pointInRegionGlobal(position), avatarp, dist < 20.0, dist < 100.0);
 
-				if (entry)
+			// Mark as typing if they are typing
+			if (avatarp && avatarp->isTyping()) entry->setActivity(LLAvatarListEntry::ACTIVITY_TYPING);
+		}
+
+		// Set activity for anyone making sounds
+		if (gAudiop)
+		{
+			for (LLAudioEngine::source_map::iterator iter = gAudiop->mAllSources.begin(); iter != gAudiop->mAllSources.end(); ++iter)
+			{
+				LLAudioSource* sourcep = iter->second;
+				if (LLAvatarListEntry* entry = getAvatarEntry(sourcep->getOwnerID()))
 				{
-					// Avatar already in list, update position
-					F32 dist = (F32)(position - mypos).magVec();
-					entry->setPosition(position, gAgent.getRegion()->pointInRegionGlobal(position), false, dist < 20.0, dist < 100.0);
-				}
-				else
-				{
-					if(announce && gAgent.getRegion()->pointInRegionGlobal(position))
-						announce_keys.push(avid);
-					mAvatars.push_back(LLAvatarListEntryPtr(new LLAvatarListEntry(avid, name, position)));
+					entry->setActivity(LLAvatarListEntry::ACTIVITY_SOUND);
 				}
 			}
 		}
+
 		//let us send the keys in a more timely fashion
 		if (announce && !announce_keys.empty())
 		{
