@@ -168,7 +168,7 @@ void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool
 } //namespace
 
 LLAvatarListEntry::LLAvatarListEntry(const LLUUID& id, const std::string &name, const LLVector3d &position) :
-		mID(id), mName(name), mPosition(position), mDrawPosition(), mMarked(false), mFocused(false),
+		mID(id), mName(name), mPosition(position), mMarked(false), mFocused(false),
 		mUpdateTimer(), mFrame(gFrameCount), mInSimFrame(U32_MAX), mInDrawFrame(U32_MAX),
 		mInChatFrame(U32_MAX), mInShoutFrame(U32_MAX),
 		mActivityType(ACTIVITY_NEW), mActivityTimer(),
@@ -216,15 +216,6 @@ void LLAvatarListEntry::processProperties(void* data, EAvatarProcessorType type)
 
 void LLAvatarListEntry::setPosition(LLVector3d position, bool this_sim, bool drawn, bool chatrange, bool shoutrange)
 {
-	if (drawn)
-	{
-		mDrawPosition = position;
-	}
-	else if (mInDrawFrame == U32_MAX)
-	{
-		mDrawPosition.setZero();
-	}
-
 	mPosition = position;
 
 	mFrame = gFrameCount;

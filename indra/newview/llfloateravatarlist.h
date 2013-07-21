@@ -143,7 +143,6 @@ private:
 	std::string mName;
 	time_t mTime;
 	LLVector3d mPosition;
-	LLVector3d mDrawPosition;
 	bool mMarked;
 	bool mFocused;
 	bool mIsInList;
