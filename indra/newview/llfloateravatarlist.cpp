@@ -571,19 +571,6 @@ void LLFloaterAvatarList::updateAvatarList()
 
 		LLWorld::instance().getAvatars(&avatar_ids, &positions, mypos, F32_MAX);
 
-		sorted_avatar_ids = avatar_ids;
-		std::sort(sorted_avatar_ids.begin(), sorted_avatar_ids.end());
-
-		BOOST_FOREACH(std::vector<LLCharacter*>::value_type& iter, LLCharacter::sInstances)
-		{
-			LLUUID avid = iter->getID();
-
-			if (!std::binary_search(sorted_avatar_ids.begin(), sorted_avatar_ids.end(), avid))
-			{
-				avatar_ids.push_back(avid);
-			}
-		}
-
 		size_t i;
 		size_t count = avatar_ids.size();
 
@@ -595,11 +582,6 @@ void LLFloaterAvatarList::updateAvatarList()
 			std::string name;
 			const LLUUID &avid = avatar_ids[i];
 
-			if (avid.isNull())
-			{
-				//llinfos << "Key empty for avatar " << name << llendl;
-				continue;
-			}
 
 			LLAvatarListEntry* entry = getAvatarEntry(avid);
 
@@ -609,14 +591,6 @@ void LLFloaterAvatarList::updateAvatarList()
 
 			if (avatarp)
 			{
-				// Skip if avatar is dead(what's that?)
-				// or if the avatar is ourselves.
-				// or if the avatar is a dummy
-				if (avatarp->isDead() || avatarp->isSelf() || avatarp->mIsDummy)
-				{
-					continue;
-				}
-
 				// Get avatar data
 				position = gAgent.getPosGlobalFromAgent(avatarp->getCharacterPosition());
 				name = avatarp->getFullname();
