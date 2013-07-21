@@ -554,7 +554,8 @@ void LLFloaterAvatarList::updateAvatarList()
 		std::vector<LLVector3d> positions;
 
 		LLVector3d mypos = gAgent.getPositionGlobal();
-		LLWorld::instance().getAvatars(&avatar_ids, &positions, mypos, F32_MAX);
+		static const LLCachedControl<F32> radar_range_radius("RadarRangeRadius", 0);
+		LLWorld::instance().getAvatars(&avatar_ids, &positions, mypos, radar_range_radius ? radar_range_radius : F32_MAX);
 
 		size_t i;
 		size_t count = avatar_ids.size();
