@@ -73,18 +73,9 @@ const F32 DEAD_KEEP_TIME = 10.0f;
 
 extern U32 gFrameCount;
 
-typedef enum e_radar_alert_type
-{
-	ALERT_TYPE_SIM = 1,
-	ALERT_TYPE_DRAW = 2,
-	ALERT_TYPE_SHOUTRANGE = 4,
-	ALERT_TYPE_CHATRANGE = 8,
-	ALERT_TYPE_AGE = 16,
-} ERadarAlertType;
-
 namespace
 {
-void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool entering)
+void chat_avatar_status(std::string name, LLUUID key, ERadarStatType type, bool entering)
 {
 	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) return; //RLVa:LF Don't announce people are around when blind, that cheats the system.
 	static LLCachedControl<bool> radar_chat_alerts(gSavedSettings, "RadarChatAlerts");
@@ -100,35 +91,35 @@ void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool
 	args["[NAME]"] = name;
 	switch(type)
 	{
-		case ALERT_TYPE_SIM:
+		case STAT_TYPE_SIM:
 			if (radar_alert_sim)
 			{
 				args["[RANGE]"] = self->getString("the_sim");
 			}
 			break;
 
-		case ALERT_TYPE_DRAW:
+		case STAT_TYPE_DRAW:
 			if (radar_alert_draw)
 			{
 				args["[RANGE]"] = self->getString("draw_distance");
 			}
 			break;
 
-		case ALERT_TYPE_SHOUTRANGE:
+		case STAT_TYPE_SHOUTRANGE:
 			if (radar_alert_shout_range)
 			{
 				args["[RANGE]"] = self->getString("shout_range");
 			}
 			break;
 
-		case ALERT_TYPE_CHATRANGE:
+		case STAT_TYPE_CHATRANGE:
 			if (radar_alert_chat_range)
 			{
 				args["[RANGE]"] = self->getString("chat_range");
 			}
 			break;
 
-		case ALERT_TYPE_AGE:
+		case STAT_TYPE_AGE:
 			if (radar_alert_age)
 			{
 				LLChat chat;
@@ -138,6 +129,9 @@ void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool
 				chat.mSourceType = CHAT_SOURCE_SYSTEM;
 				LLFloaterChat::addChat(chat);
 			}
+			break;
+		default:
+			llassert(type);
 			break;
 	}
 	if (args.find("[RANGE]") != args.end())
@@ -168,23 +162,18 @@ void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool
 } //namespace
 
 LLAvatarListEntry::LLAvatarListEntry(const LLUUID& id, const std::string &name, const LLVector3d &position) :
-		mID(id), mName(name), mPosition(position), mDrawPosition(), mMarked(false), mFocused(false),
-		mUpdateTimer(), mFrame(gFrameCount), mInSimFrame(U32_MAX), mInDrawFrame(U32_MAX),
-		mInChatFrame(U32_MAX), mInShoutFrame(U32_MAX),
+		mID(id), mName(name), mPosition(position), mMarked(false), mFocused(false),
+		mUpdateTimer(), mFrame(gFrameCount), mStats(),
 		mActivityType(ACTIVITY_NEW), mActivityTimer(),
-		mIsInList(false), mAge(-1), mAgeAlert(false), mTime(time(NULL))
+		mIsInList(false), mAge(-1), mTime(time(NULL))
 {
-	if (mID.notNull())
-	{
-		LLAvatarPropertiesProcessor::getInstance()->addObserver(mID, this);
-		LLAvatarPropertiesProcessor::getInstance()->sendAvatarPropertiesRequest(mID);
-	}
+	LLAvatarPropertiesProcessor::getInstance()->addObserver(mID, this);
+	LLAvatarPropertiesProcessor::getInstance()->sendAvatarPropertiesRequest(mID);
 }
 
 LLAvatarListEntry::~LLAvatarListEntry()
 {
-	if (mID.notNull())
-		LLAvatarPropertiesProcessor::getInstance()->removeObserver(mID, this);
+	LLAvatarPropertiesProcessor::getInstance()->removeObserver(mID, this);
 }
 
 // virtual
@@ -200,6 +189,14 @@ void LLAvatarListEntry::processProperties(void* data, EAvatarProcessorType type)
 			int year, month, day;
 			sscanf(pAvatarData->born_on.c_str(),"%d/%d/%d",&month,&day,&year);
 			mAge = (day_clock::local_day() - date(year, month, day)).days();
+			if (!mStats[STAT_TYPE_AGE] && mAge >= 0) //Only announce age once per entry.
+			{
+				static const LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");
+				if ((U32)mAge < sAvatarAgeAlertDays)
+				{
+					chat_avatar_status(mName, mID, STAT_TYPE_AGE, mStats[STAT_TYPE_AGE] = true);
+				}
+			}
 			// If one wanted more information that gets displayed on profiles to be displayed, here would be the place to do it.
 		}
 	}
@@ -207,49 +204,25 @@ void LLAvatarListEntry::processProperties(void* data, EAvatarProcessorType type)
 
 void LLAvatarListEntry::setPosition(LLVector3d position, bool this_sim, bool drawn, bool chatrange, bool shoutrange)
 {
-	if (drawn)
-	{
-		mDrawPosition = position;
-	}
-	else if (mInDrawFrame == U32_MAX)
-	{
-		mDrawPosition.setZero();
-	}
-
 	mPosition = position;
 
 	mFrame = gFrameCount;
-	if (this_sim)
+
+	if (this_sim != mStats[STAT_TYPE_SIM])
 	{
-		if (mInSimFrame == U32_MAX)
-		{
-			chat_avatar_status(mName, mID, ALERT_TYPE_SIM, true);
-		}
-		mInSimFrame = mFrame;
+		chat_avatar_status(mName, mID, STAT_TYPE_SIM, mStats[STAT_TYPE_SIM] = this_sim);
 	}
-	if (drawn)
+	if (drawn != mStats[STAT_TYPE_DRAW])
 	{
-		if (mInDrawFrame == U32_MAX)
-		{
-			chat_avatar_status(mName, mID, ALERT_TYPE_DRAW, true);
-		}
-		mInDrawFrame = mFrame;
+		chat_avatar_status(mName, mID, STAT_TYPE_DRAW, mStats[STAT_TYPE_DRAW] = drawn);
 	}
-	if (shoutrange)
+	if (shoutrange != mStats[STAT_TYPE_SHOUTRANGE])
 	{
-		if (mInShoutFrame == U32_MAX)
-		{
-			chat_avatar_status(mName, mID, ALERT_TYPE_SHOUTRANGE, true);
-		}
-		mInShoutFrame = mFrame;
+		chat_avatar_status(mName, mID, STAT_TYPE_SHOUTRANGE, mStats[STAT_TYPE_SHOUTRANGE] = shoutrange);
 	}
-	if (chatrange)
+	if (chatrange != mStats[STAT_TYPE_CHATRANGE])
 	{
-		if (mInChatFrame == U32_MAX)
-		{
-			chat_avatar_status(mName, mID, ALERT_TYPE_CHATRANGE, true);
-		}
-		mInChatFrame = mFrame;
+		chat_avatar_status(mName, mID, STAT_TYPE_CHATRANGE, mStats[STAT_TYPE_CHATRANGE] = chatrange);
 	}
 
 	mUpdateTimer.start();
@@ -258,26 +231,6 @@ void LLAvatarListEntry::setPosition(LLVector3d position, bool this_sim, bool dra
 bool LLAvatarListEntry::getAlive()
 {
 	U32 current = gFrameCount;
-	if (mInSimFrame != U32_MAX && (current - mInSimFrame) >= 2)
-	{
-		mInSimFrame = U32_MAX;
-		chat_avatar_status(mName, mID, ALERT_TYPE_SIM, false);
-	}
-	if (mInDrawFrame != U32_MAX && (current - mInDrawFrame) >= 2)
-	{
-		mInDrawFrame = U32_MAX;
-		chat_avatar_status(mName, mID, ALERT_TYPE_DRAW, false);
-	}
-	if (mInShoutFrame != U32_MAX && (current - mInShoutFrame) >= 2)
-	{
-		mInShoutFrame = U32_MAX;
-		chat_avatar_status(mName, mID, ALERT_TYPE_SHOUTRANGE, false);
-	}
-	if (mInChatFrame != U32_MAX && (current - mInChatFrame) >= 2)
-	{
-		mInChatFrame = U32_MAX;
-		chat_avatar_status(mName, mID, ALERT_TYPE_CHATRANGE, false);
-	}
 	return ((current - mFrame) <= 2);
 }
 
@@ -538,42 +491,15 @@ void LLFloaterAvatarList::updateAvatarList()
 
 
 	//todo: make this less of a hacked up copypasta from dales 1.18.
-	if(gAudiop != NULL)
-	{
-		LLAudioEngine::source_map::iterator iter;
-		for (iter = gAudiop->mAllSources.begin(); iter != gAudiop->mAllSources.end(); ++iter)
-		{
-			LLAudioSource *sourcep = iter->second;
-			LLUUID uuid = sourcep->getOwnerID();
-			LLAvatarListEntry *ent = getAvatarEntry(uuid);
-			if ( ent )
-			{
-				ent->setActivity(LLAvatarListEntry::ACTIVITY_SOUND);
-			}
-		}
-	}
-
-	LLVector3d mypos = gAgent.getPositionGlobal();
 
 	{
 		std::vector<LLUUID> avatar_ids;
 		std::vector<LLUUID> sorted_avatar_ids;
 		std::vector<LLVector3d> positions;
 
-		LLWorld::instance().getAvatars(&avatar_ids, &positions, mypos, F32_MAX);
-
-		sorted_avatar_ids = avatar_ids;
-		std::sort(sorted_avatar_ids.begin(), sorted_avatar_ids.end());
-
-		BOOST_FOREACH(std::vector<LLCharacter*>::value_type& iter, LLCharacter::sInstances)
-		{
-			LLUUID avid = iter->getID();
-
-			if (!std::binary_search(sorted_avatar_ids.begin(), sorted_avatar_ids.end(), avid))
-			{
-				avatar_ids.push_back(avid);
-			}
-		}
+		LLVector3d mypos = gAgent.getPositionGlobal();
+		static const LLCachedControl<F32> radar_range_radius("RadarRangeRadius", 0);
+		LLWorld::instance().getAvatars(&avatar_ids, &positions, mypos, radar_range_radius ? radar_range_radius : F32_MAX);
 
 		size_t i;
 		size_t count = avatar_ids.size();
@@ -583,102 +509,52 @@ void LLFloaterAvatarList::updateAvatarList()
 
 		for (i = 0; i < count; ++i)
 		{
-			std::string name;
 			const LLUUID &avid = avatar_ids[i];
 
-			if (avid.isNull())
-			{
-				//llinfos << "Key empty for avatar " << name << llendl;
-				continue;
-			}
+			std::string name;
+			if (!LLAvatarNameCache::getPNSName(avid, name))
+				continue; //prevent (Loading...)
 
 			LLAvatarListEntry* entry = getAvatarEntry(avid);
 
-			if (entry && !entry->mAgeAlert && entry->mAge >= 0) //Only announce age once per entry.
-			{
-				static const LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");
-				if ((U32)entry->mAge < sAvatarAgeAlertDays)
-				{
-					entry->mAgeAlert = true;
-					chat_avatar_status(entry->getName().c_str(), avid, ALERT_TYPE_AGE, true);
-				}
-			}
+			LLVector3d position = positions[i];
 
-			LLVector3d position;
 			LLVOAvatar* avatarp = gObjectList.findAvatar(avid);
-
 			if (avatarp)
 			{
-				// Skip if avatar is dead(what's that?)
-				// or if the avatar is ourselves.
-				// or if the avatar is a dummy
-				if (avatarp->isDead() || avatarp->isSelf() || avatarp->mIsDummy)
-				{
-					continue;
-				}
-
 				// Get avatar data
 				position = gAgent.getPosGlobalFromAgent(avatarp->getCharacterPosition());
-				name = avatarp->getFullname();
-
-				if (!LLAvatarNameCache::getPNSName(avatarp->getID(), name))
-					continue;
-
-				//duped for lower section
-				if (name.empty() || (name.compare(" ") == 0))// || (name.compare(gCacheName->getDefaultName()) == 0))
-				{
-					if (!gCacheName->getFullName(avid, name)) //seems redudant with LLAvatarNameCache::getPNSName above...
-					{
-						continue;
-					}
-				}
-
-				if (entry)
-				{
-					// Avatar already in list, update position
-					F32 dist = (F32)(position - mypos).magVec();
-					entry->setPosition(position, (avatarp->getRegion() == gAgent.getRegion()), true, dist < 20.0, dist < 100.0);
-					if(avatarp->isTyping())entry->setActivity(LLAvatarListEntry::ACTIVITY_TYPING);
-				}
-				else
-				{
-					// Avatar not there yet, add it
-					if(announce && avatarp->getRegion() == gAgent.getRegion())
-						announce_keys.push(avid);
-					mAvatars.push_back(LLAvatarListEntryPtr(new LLAvatarListEntry(avid, name, position)));
-				}
 			}
-			else
+
+			if (!entry)
 			{
-				if (i < positions.size())
-				{
-					position = positions[i];
-				}
-				else
-				{
-					continue;
-				}
+				// Avatar not there yet, add it
+				if(announce && gAgent.getRegion()->pointInRegionGlobal(position))
+					announce_keys.push(avid);
+				mAvatars.push_back(LLAvatarListEntryPtr(entry = new LLAvatarListEntry(avid, name, position)));
+			}
 
-				if (!LLAvatarNameCache::getPNSName(avid, name))
-				{
-					//name = gCacheName->getDefaultName();
-					continue; //prevent (Loading...)
-				}
+			// Announce position
+			F32 dist = (F32)(position - mypos).magVec();
+			entry->setPosition(position, gAgent.getRegion()->pointInRegionGlobal(position), avatarp, dist < 20.0, dist < 96.0);
 
-				if (entry)
+			// Mark as typing if they are typing
+			if (avatarp && avatarp->isTyping()) entry->setActivity(LLAvatarListEntry::ACTIVITY_TYPING);
+		}
+
+		// Set activity for anyone making sounds
+		if (gAudiop)
+		{
+			for (LLAudioEngine::source_map::iterator iter = gAudiop->mAllSources.begin(); iter != gAudiop->mAllSources.end(); ++iter)
+			{
+				LLAudioSource* sourcep = iter->second;
+				if (LLAvatarListEntry* entry = getAvatarEntry(sourcep->getOwnerID()))
 				{
-					// Avatar already in list, update position
-					F32 dist = (F32)(position - mypos).magVec();
-					entry->setPosition(position, gAgent.getRegion()->pointInRegionGlobal(position), false, dist < 20.0, dist < 100.0);
-				}
-				else
-				{
-					if(announce && gAgent.getRegion()->pointInRegionGlobal(position))
-						announce_keys.push(avid);
-					mAvatars.push_back(LLAvatarListEntryPtr(new LLAvatarListEntry(avid, name, position)));
+					entry->setActivity(LLAvatarListEntry::ACTIVITY_SOUND);
 				}
 			}
 		}
+
 		//let us send the keys in a more timely fashion
 		if (announce && !announce_keys.empty())
 		{
@@ -740,15 +616,8 @@ void LLFloaterAvatarList::expireAvatarList()
 		}
 		else
 		{
-			if(mAvatars.back() == *it)
-			{
-				mAvatars.pop_back();
-				return;
-			}
-			*it = mAvatars.back();
-			mAvatars.pop_back();
-			if(mAvatars.empty())
-				return;
+			entry->setPosition(entry->getPosition(), false, false, false, false); // Dead and gone
+			it = mAvatars.erase(it);
 		}
 	}
 }
@@ -841,12 +710,6 @@ void LLFloaterAvatarList::refreshAvatarList()
 			continue;
 		}
 
-		if (av_id.isNull())
-		{
-			//llwarns << "Avatar with null key somehow got into the list!" << llendl;
-			continue;
-		}
-
 		element.value = av_id;
 
 		LLScrollListCell::Params mark;
@@ -924,7 +787,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		if (UnknownAltitude)
 		{
 			strcpy(temp, "?");
-			if (entry->isDrawn())
+			if (entry->mStats[STAT_TYPE_DRAW])
 			{
 				color = sRadarTextDrawDist;
 			}
@@ -945,7 +808,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 			}
 			else
 			{
-				if (entry->isDrawn())
+				if (entry->mStats[STAT_TYPE_DRAW])
 				{
 					color = sRadarTextDrawDist;
 				}
@@ -1733,7 +1596,7 @@ void LLFloaterAvatarList::onSelectName()
 		LLAvatarListEntry* entry = getAvatarEntry(agent_id);
 		if (entry)
 		{
-			BOOL enabled = entry->isDrawn();
+			BOOL enabled = entry->mStats[STAT_TYPE_DRAW];
 			childSetEnabled("focus_btn", enabled);
 			childSetEnabled("prev_in_list_btn", enabled);
 			childSetEnabled("next_in_list_btn", enabled);

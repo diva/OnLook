@@ -6964,6 +6964,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>RadarRangeRadius</key>
+    <map>
+      <key>Comment</key>
+      <string>How far away avatars on the radar can be, 0 for no limit</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>0</real>
+    </map>
     <key>RadarUpdateEnabled</key>
     <map>
       <key>Comment</key>
