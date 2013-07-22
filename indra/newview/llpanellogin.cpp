@@ -840,6 +840,13 @@ void LLPanelLogin::loadLoginPage()
 	gViewerWindow->setMenuBackgroundColor(false, !LLViewerLogin::getInstance()->isInProductionGrid());
 	gLoginMenuBarView->setBackgroundColor(gMenuBarView->getBackgroundColor());
 
+	std::string singularity_splash_uri = gSavedSettings.getString("SingularitySplashPagePrefix");
+	if (!singularity_splash_uri.empty())
+	{
+		params["original_page"] = login_uri.asString();
+		login_uri = LLURI::buildHTTP(singularity_splash_uri, gSavedSettings.getString("SingularitySplashPagePath"), params);
+	}
+
 	LLMediaCtrl* web_browser = sInstance->getChild<LLMediaCtrl>("login_html");
 	if (web_browser->getCurrentNavUrl() != login_uri.asString())
 	{

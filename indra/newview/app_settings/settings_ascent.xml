@@ -675,5 +675,27 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>SingularitySplashPagePrefix</key>
+    <map>
+      <key>Comment</key>
+      <string>Overlay page to display on the login splash string. Leave empty if you want unmodified grid splash page</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>http://singularityview.sourceforge.net</string>
+    </map>
+    <key>SingularitySplashPagePath</key>
+    <map>
+      <key>Comment</key>
+      <string>Path to the overlay page to display on the login splash string. Leave empty if you want unmodified grid splash page</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>splash/</string>
+    </map>
     </map>
 </llsd>
