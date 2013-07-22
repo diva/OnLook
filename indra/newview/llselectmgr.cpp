@@ -5926,6 +5926,12 @@ BOOL LLSelectNode::allowOperationOnNode(PermissionBit op, U64 group_proxy_power)
 		}
 	}
 
+	if (PERM_EXPORT == op)
+	{
+		// No proxy or god powers allowed.
+		return mPermissions->allowExportBy(gAgent.getID());
+	}
+
 	// Calculate proxy_agent_id and group_id to use for permissions checks.
 	// proxy_agent_id may be set to the object owner through group powers.
 	// group_id can only be set to the object's group, if the agent is in that group.
