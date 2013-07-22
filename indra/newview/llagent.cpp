@@ -3165,8 +3165,7 @@ BOOL LLAgent::allowOperation(PermissionBit op,
 							 U8 god_minimum)
 {
 	// Check god level.
-	// Singu note: We should never get here for PERM_EXPORT really, but if we do - then Gods are not above the law.
-	if (getGodLevel() >= god_minimum && PERM_EXPORT != op) return TRUE;
+	if (getGodLevel() >= god_minimum) return TRUE;
 
 	if (!perm.isOwned()) return FALSE;
 
@@ -3188,8 +3187,7 @@ BOOL LLAgent::allowOperation(PermissionBit op,
 	else
 	{
 		// Check for granted mod permissions.
-		// Singu note: do not allow proxy powers for exporting.
-		if ((PERM_OWNER != op && PERM_EXPORT != op) && isGrantedProxy(perm))
+		if ((PERM_OWNER != op) && isGrantedProxy(perm))
 		{
 			agent_proxy = owner_id;
 		}

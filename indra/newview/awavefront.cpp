@@ -30,6 +30,7 @@
 #include "llnotificationsutil.h"
 
 // newview includes
+#include "lfsimfeaturehandler.h"
 #include "llavatarappearancedefines.h"
 #include "llface.h"
 #include "llvoavatar.h"
@@ -219,6 +220,17 @@ void WavefrontSaver::Add(const LLViewerObject* some_vo)
 }
 namespace
 {
+	bool can_export_node(const LLSelectNode* node)
+	{
+		if (const LLPermissions* perms = node->mPermissions)
+		{
+			if (gAgentID == perms->getCreator() || (LFSimFeatureHandler::instance().simSupportsExport() && gAgentID == perms->getOwner() && perms->getMaskEveryone() & PERM_EXPORT))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 	class LFSaveSelectedObjects : public view_listener_t
 	{
 		bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata)
@@ -233,7 +245,7 @@ namespace
 				{
 					total++;
 					LLSelectNode* node = *iter;
-					if (!node->mPermissions->allowExportBy(gAgentID)) continue;
+					if (!can_export_node(node)) continue;
 					included++;
 					wfsaver->Add(node->getObject());
 				}
@@ -316,7 +328,7 @@ void WavefrontSaver::Add(const LLVOAvatar* av_vo) //adds attachments, too!
 				if (!c) continue;
 				if (const LLSelectNode* n = LLSelectMgr::getInstance()->getSelection()->findNode(const_cast<LLViewerObject*>(c)))
 				{
-					if (!n->mPermissions->allowExportBy(gAgentID)) continue;
+					if (!can_export_node(n)) continue;
 				}
 				else continue;
 				const LLVolume* vol = c->getVolume();

@@ -40,23 +40,6 @@ extern void mask_to_string(U32 mask, char* str);
 extern std::string mask_to_string(U32 mask);
 template<class T> class LLMetaClassT;
 
-// Interface of LFSimFeatureHandler.
-class LFSimFeatureHandlerInterface
-{
-private:
-	// LFSimFeatureHandler is a singleton.
-	static LFSimFeatureHandlerInterface* sInstance;
-
-protected:
-	LFSimFeatureHandlerInterface(void) { sInstance = this; }
-	virtual ~LFSimFeatureHandlerInterface() { }
-
-public:
-	virtual bool simSupportsExport() const = 0;
-
-	static LFSimFeatureHandlerInterface* ifInstance(void) { return sInstance; }
-};
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLPermissions
 //
@@ -291,7 +274,6 @@ public:
 	inline bool allowModifyBy(const LLUUID &agent_id, const LLUUID& group) const;
 	inline bool allowCopyBy(const LLUUID& agent_id, const LLUUID& group) const;
 	inline bool allowMoveBy(const LLUUID &agent_id, const LLUUID &group) const;
-	inline bool allowExportBy(const LLUUID &agent_id) const;	// Singu extension.
 
 	// This somewhat specialized function is meant for testing if the
 	// current owner is allowed to transfer to the specified agent id.
@@ -389,11 +371,6 @@ bool LLPermissions::allowTransferTo(const LLUUID &agent_id) const
 	{
 		return ((mOwner == agent_id) ? TRUE : allowOperationBy(PERM_TRANSFER, mOwner));
 	}
-}
-
-bool LLPermissions::allowExportBy(const LLUUID& agent) const
-{
-	return allowOperationBy(PERM_EXPORT, agent);
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

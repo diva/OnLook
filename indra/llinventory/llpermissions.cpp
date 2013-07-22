@@ -35,13 +35,6 @@
 #include "llsd.h"
 
 ///----------------------------------------------------------------------------
-/// Class LFSimFeatureHandlerInterface
-///----------------------------------------------------------------------------
-
-//static
-LFSimFeatureHandlerInterface* LFSimFeatureHandlerInterface::sInstance;
-
-///----------------------------------------------------------------------------
 /// Class LLPermissions
 ///----------------------------------------------------------------------------
 
@@ -482,14 +475,6 @@ BOOL LLPermissions::setNextOwnerBits(const LLUUID& agent, const LLUUID& group, B
 
 bool LLPermissions::allowOperationBy(PermissionBit op, const LLUUID& requester, const LLUUID& group) const
 {
-	// Singu extension: Make this function work for PERM_EXPORT operation (also on grids not supporting it).
-	if (op == PERM_EXPORT)
-	{
-		// Requester must always be the owner; on grids supporting PERM_EXPORT, that bit
-		// must be set in the mMaskEveryone mask, otherwise the requester must be the creator.
-		return (!mIsGroupOwned && (mOwner == requester) &&
-			    (mCreator == requester || (LFSimFeatureHandlerInterface::ifInstance()->simSupportsExport() && (mMaskEveryone & PERM_EXPORT))));
-	}
 	if(requester.isNull())
 	{
 		// ...system making request

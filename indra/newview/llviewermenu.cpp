@@ -2895,7 +2895,15 @@ class LLObjectEnableExport : public view_listener_t
 				const LLSD& userdata;
 				virtual bool apply(LLSelectNode* node)
 				{
-					return node->mPermissions->allowExportBy(gAgent.getID());
+					// Note: the actual permission checking algorithm depends on the grid TOS and must be
+					// performed for each prim and texture. This is done later in llviewerobjectbackup.cpp.
+					// This means that even if the item is enabled in the menu, the export may fail should
+					// the permissions not be met for each exported asset. The permissions check below
+					// therefore only corresponds to the minimal permissions requirement common to all grids.
+					LLPermissions *item_permissions = node->mPermissions;
+					return (gAgent.getID() == item_permissions->getOwner() &&
+							(gAgent.getID() == item_permissions->getCreator() ||
+							 (item_permissions->getMaskOwner() & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED));
 				}
 			};
 			ff * the_ff = new ff(userdata);

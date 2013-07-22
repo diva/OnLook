@@ -65,6 +65,7 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 
 // newview includes
+#include "lfsimfeaturehandler.h"
 #include "llface.h"
 #include "llvovolume.h"
 
@@ -116,6 +117,18 @@ namespace DAEExportUtil
 		}
 	}
 
+	bool canExportNode(const LLSelectNode* node)
+	{
+		if (const LLPermissions* perms = node->mPermissions)
+		{
+			if (gAgentID == perms->getCreator() || (LFSimFeatureHandler::instance().simSupportsExport() && gAgentID == perms->getOwner() && perms->getMaskEveryone() & PERM_EXPORT))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	void saveSelectedObject()
 	{
 		static const std::string file_ext = ".dae";
@@ -131,7 +144,7 @@ namespace DAEExportUtil
 			{
 				total++;
 				LLSelectNode* node = *iter;
-				if (!node->mPermissions->allowExportBy(gAgentID) || !node->getObject()->getVolume()) continue;
+				if (!canExportNode(node) || !node->getObject()->getVolume()) continue;
 				included++;
 				daesaver->Add(node->getObject(), node->mName);
 			}
