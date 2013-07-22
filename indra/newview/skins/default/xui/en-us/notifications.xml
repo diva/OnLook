@@ -165,7 +165,7 @@ Import Failure: the file &quot;[FILE]&quot; is not a linden_genepool XML file.
    icon="alertmodal.tga"
    name="AIXMLImportRootVersionError"
    type="alertmodal">
-Import Failure: the file &quot;[FILE]&quot; contains linden_genepool XML data of the wrong version. Version 1.0 is required.
+Import Failure: the file &quot;[FILE]&quot; contains linden_genepool XML data with the wrong [TAG]. Version &quot;[VERSIONMAJOR].0&quot; or less is required.
   </notification>
 
   <notification
@@ -176,11 +176,25 @@ Import Failure: the file &quot;[FILE]&quot; contains invalid data.
   </notification>
 
   <notification
+   icon="alertmodal.tga"
+   name="AIXMLImportDifferentGrid"
+   type="alertmodal">
+Import was successful but note that the wearable was exported on grid [EXPORTGRID] (and the current grid is [CURRENTGRID]). Texture UUIDs have NOT been applied!
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="AIXMLImportMixedGrid"
+   type="alertmodal">
+Import was successful but note that the wearable was exported on grid [EXPORTGRID] (and the current grid is [CURRENTGRID]). Texture UUIDs have been applied but might not exist here!
+  </notification>
+
+  <notification
    icon="alert.tga"
    name="AIXMLImportWearableTypeMismatch"
    type="alert">
 Import Warning: the file &quot;[FILE]&quot; does not contain a wearable of type [TYPE].
-Please select the correct type before importing.
+It contains an archetype of type [ARCHETYPENAME]. Please select the correct type before importing.
   </notification>
 
   <notification
