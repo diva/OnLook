@@ -220,16 +220,13 @@ void WavefrontSaver::Add(const LLViewerObject* some_vo)
 }
 namespace
 {
+	// Identical to the one in daeexport.cpp.
 	bool can_export_node(const LLSelectNode* node)
 	{
-		if (const LLPermissions* perms = node->mPermissions)
-		{
-			if (gAgentID == perms->getCreator() || (LFSimFeatureHandler::instance().simSupportsExport() && gAgentID == perms->getOwner() && perms->getMaskEveryone() & PERM_EXPORT))
-			{
-				return true;
-			}
-		}
-		return false;
+		LLPermissions* perms = node->mPermissions;	// Is perms ever NULL?
+		// This tests the PERM_EXPORT bit too, which is not really necessary (just checking if it's set
+		// on the root prim would suffice), but also isn't hurting.
+		return perms && perms->allowExportBy(gAgentID, LFSimFeatureHandler::instance().simSupportsExport());
 	}
 	class LFSaveSelectedObjects : public view_listener_t
 	{

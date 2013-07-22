@@ -117,16 +117,13 @@ namespace DAEExportUtil
 		}
 	}
 
-	bool canExportNode(const LLSelectNode* node)
+	// Identical to the one in awavefront.cpp
+	bool can_export_node(const LLSelectNode* node)
 	{
-		if (const LLPermissions* perms = node->mPermissions)
-		{
-			if (gAgentID == perms->getCreator() || (LFSimFeatureHandler::instance().simSupportsExport() && gAgentID == perms->getOwner() && perms->getMaskEveryone() & PERM_EXPORT))
-			{
-				return true;
-			}
-		}
-		return false;
+		LLPermissions* perms = node->mPermissions;	// Is perms ever NULL?
+		// This tests the PERM_EXPORT bit too, which is not really necessary (just checking if it's set
+		// on the root prim would suffice), but also isn't hurting.
+		return perms && perms->allowExportBy(gAgentID, LFSimFeatureHandler::instance().simSupportsExport());
 	}
 
 	void saveSelectedObject()
@@ -144,7 +141,7 @@ namespace DAEExportUtil
 			{
 				total++;
 				LLSelectNode* node = *iter;
-				if (!canExportNode(node) || !node->getObject()->getVolume()) continue;
+				if (!can_export_node(node) || !node->getObject()->getVolume()) continue;
 				included++;
 				daesaver->Add(node->getObject(), node->mName);
 			}

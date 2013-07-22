@@ -26,6 +26,7 @@
 
 #include "llviewerprecompiledheaders.h"
 
+#include "lfsimfeaturehandler.h"
 #include "llpaneleditwearable.h"
 #include "llpanel.h"
 #include "llviewerwearable.h"
@@ -1422,11 +1423,8 @@ bool LLPanelEditWearable::updatePermissions()
 	
 			// Exporting (of slider values) is allowed when the wearable is full perm, and owned by and created by the user.
 			// Of course, only modifiable is enough for the user to write down the values and enter them else where... but why make it easy for them to break the ToS.
-			if (is_complete && 
-				gAgent.getID() == item->getPermissions().getOwner() &&
-				gAgent.getID() == item->getPermissions().getCreator() &&
-				(PERM_ITEM_UNRESTRICTED &
-				perm_mask) == PERM_ITEM_UNRESTRICTED)
+			if (is_complete &&
+				(item->getPermissions().allowExportBy(gAgent.getID(), LFSimFeatureHandler::instance().simSupportsExport())))
 			{
 				can_export = true;
 			}

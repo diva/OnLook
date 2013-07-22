@@ -79,6 +79,7 @@
 #include "llviewerwindow.h"
 
 #include "hippogridmanager.h"
+#include "lfsimfeaturehandler.h"
 
 #include "llviewerobjectbackup.h" 
 
@@ -398,18 +399,7 @@ void LLObjectBackup::exportObject_continued(AIFilePicker* filepicker)
 
 bool LLObjectBackup::validatePerms(const LLPermissions *item_permissions)
 {
-	if (gHippoGridManager->getConnectedGrid()->isSecondLife())
-	{
-		// In Second Life, you must be the creator to be permitted to export the asset.
-		return (gAgent.getID() == item_permissions->getOwner() &&
-				gAgent.getID() == item_permissions->getCreator());
-	}
-	else
-	{
-		// Out of Second Life, simply check that the asset is full perms.
-		return (gAgent.getID() == item_permissions->getOwner() &&
-				(item_permissions->getMaskOwner() & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED);
-	}
+	return item_permissions->allowExportBy(gAgent.getID(), LFSimFeatureHandler::instance().simSupportsExport());
 }
 
 // So far, only Second Life forces TPVs to verify the creator for textures...

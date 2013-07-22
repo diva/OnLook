@@ -1098,3 +1098,9 @@ LLPermissions ll_permissions_from_sd(const LLSD& sd_perm)
 	rv.fix();
 	return rv;
 }
+
+bool LLPermissions::allowExportBy(LLUUID const& requester, bool supports_export) const
+{
+	return !mIsGroupOwned && requester == mOwner && (requester == mCreator || (supports_export && (mMaskEveryone & PERM_EXPORT)));
+}
+

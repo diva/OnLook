@@ -54,6 +54,7 @@
 #include "llappearancemgr.h"
 #include "llagentwearables.h"
 #include "jcfloaterareasearch.h"
+#include "lfsimfeaturehandler.h"
 
 #include "llagentpilot.h"
 #include "llcompilequeue.h"
@@ -2884,30 +2885,22 @@ class LLObjectEnableExport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool new_value = !!LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
-		if (new_value)
+		LLPermissions perms;
+		bool new_value = LLSelectMgr::getInstance()->selectGetPermissions(perms) && perms.isOwned();	// At least one object, accumulated permissions of all objects.
+		bool supports_export = LFSimFeatureHandler::instance().simSupportsExport();
+		if (new_value && !(supports_export && (perms.getMaskEveryone() & PERM_EXPORT)))				// No need to call allowExportBy if PERM_EXPORT is set on (all) root objects.
 		{
 			struct ff : public LLSelectedNodeFunctor
 			{
-				ff(const LLSD& data) : LLSelectedNodeFunctor(), userdata(data)
-				{
-				}
-				const LLSD& userdata;
+				bool mSupportsExport;
+				ff(bool supports_export) : mSupportsExport(supports_export) { }
 				virtual bool apply(LLSelectNode* node)
 				{
-					// Note: the actual permission checking algorithm depends on the grid TOS and must be
-					// performed for each prim and texture. This is done later in llviewerobjectbackup.cpp.
-					// This means that even if the item is enabled in the menu, the export may fail should
-					// the permissions not be met for each exported asset. The permissions check below
-					// therefore only corresponds to the minimal permissions requirement common to all grids.
-					LLPermissions *item_permissions = node->mPermissions;
-					return (gAgent.getID() == item_permissions->getOwner() &&
-							(gAgent.getID() == item_permissions->getCreator() ||
-							 (item_permissions->getMaskOwner() & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED));
+					return node->mPermissions->allowExportBy(gAgent.getID(), mSupportsExport);
 				}
 			};
-			ff * the_ff = new ff(userdata);
-			new_value = LLSelectMgr::getInstance()->getSelection()->applyToNodes(the_ff, false);
+			ff the_ff(supports_export);
+			new_value = LLSelectMgr::getInstance()->getSelection()->applyToNodes(&the_ff, false);
 		}
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;

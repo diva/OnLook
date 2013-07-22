@@ -275,6 +275,13 @@ public:
 	inline bool allowCopyBy(const LLUUID& agent_id, const LLUUID& group) const;
 	inline bool allowMoveBy(const LLUUID &agent_id, const LLUUID &group) const;
 
+	// Returns true if export is allowed.
+	// If a grid supports PERM_EXPORT then they should also check if (any) element
+	// has that bit set and allow exporting even when this function returns false,
+	// or pass supports_export as true, which causes to perform that check using
+	// these permissions.
+	bool allowExportBy(LLUUID const& requester, bool supports_export = false) const;
+
 	// This somewhat specialized function is meant for testing if the
 	// current owner is allowed to transfer to the specified agent id.
 	inline bool allowTransferTo(const LLUUID &agent_id) const;
