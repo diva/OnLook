@@ -1177,7 +1177,7 @@ void LLPanelPermissions::onCommitEveryoneCopy(LLUICtrl *ctrl, void *data)
 
 void LLPanelPermissions::onCommitExport(const LLSD& param)
 {
-	LLSelectMgr::getInstance()->selectionSetObjectPermissions(PERM_EVERYONE, param, PERM_EXPORT);
+	LLSelectMgr::getInstance()->selectionSetObjectPermissions(PERM_EVERYONE, param.asBoolean(), PERM_EXPORT);
 }
 
 // static
