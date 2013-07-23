@@ -33,38 +33,16 @@
 #ifndef LL_LLFLOATERCUSTOMIZE_H
 #define LL_LLFLOATERCUSTOMIZE_H
 
-#include <map>
-
 #include "llfloater.h"
-#include "llstring.h"
-#include "v3dmath.h"
-#include "lltimer.h"
-#include "llundo.h"
-#include "llviewermenu.h"
 #include "llwearable.h"
-#include "lliconctrl.h"
 #include "llsingleton.h"
 
-class LLButton;
-class LLIconCtrl;
-class LLColorSwatchCtrl;
-class LLGenePool;
 class LLInventoryObserver;
-class LLJoint;
-class LLLineEditor;
-class LLMakeOutfitDialog;
-class LLRadioGroup;
 class LLScrollContainer;
 class LLScrollingPanelList;
 class LLTabContainer;
-class LLTextBox;
-class LLTextureCtrl;
-class LLViewerJointMesh;
-class LLViewerVisualParam;
-class LLVisualParam;
-class LLVisualParamReset;
 class LLViewerWearable;
-class LLWearableSaveAsDialog;
+class LLVisualParamReset;
 class LLPanelEditWearable;
 class AIFilePicker;
 
@@ -78,7 +56,7 @@ public:
 	LLFloaterCustomize();
 	virtual ~LLFloaterCustomize();
 
-	// Inherted methods
+	// Inherited methods
 	/*virtual*/ BOOL 	postBuild();
 	/*virtual*/ void	onClose(bool app_quitting);
 	/*virtual*/ void	draw();
@@ -91,11 +69,11 @@ public:
 
 
 private:
-	// Initilization	
+	// Initialization
 	void			initWearablePanels();
 	void			initScrollingPanelList();
 
-	// Deinitilization
+	// Destruction
 	void			delayedClose(bool proceed, bool app_quitting);
 
 	// Setters/Getters
