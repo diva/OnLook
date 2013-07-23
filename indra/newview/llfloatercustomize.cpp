@@ -47,6 +47,7 @@
 #include "llradiogroup.h"
 #include "lltoolmgr.h"
 #include "llviewermenu.h"
+#include "lloutfitobserver.h"
 #include "llscrollcontainer.h"
 #include "llscrollingpanelparam.h"
 #include "llsliderctrl.h"
@@ -157,6 +158,11 @@ LLFloaterCustomize::LLFloaterCustomize()
 	mInventoryObserver = new LLFloaterCustomizeObserver(this);
 	gInventory.addObserver(mInventoryObserver);
 
+	LLOutfitObserver& outfit_observer =  LLOutfitObserver::instance();
+	outfit_observer.addBOFReplacedCallback(boost::bind(&LLFloaterCustomize::refreshCurrentOutfitName, this, ""));
+	outfit_observer.addBOFChangedCallback(boost::bind(&LLFloaterCustomize::refreshCurrentOutfitName, this, ""));
+	outfit_observer.addCOFChangedCallback(boost::bind(&LLFloaterCustomize::refreshCurrentOutfitName, this, ""));
+
 	LLCallbackMap::map_t factory_map;
 	const std::string &invalid_name = LLWearableType::getTypeName(LLWearableType::WT_INVALID);
 	for(U32 type=LLWearableType::WT_SHAPE;type<LLWearableType::WT_INVALID;++type)
@@ -191,6 +197,7 @@ BOOL LLFloaterCustomize::postBuild()
 {
 	getChild<LLUICtrl>("Make Outfit")->setCommitCallback(boost::bind(&LLFloaterCustomize::onBtnMakeOutfit, this));
 	getChild<LLUICtrl>("Save Outfit")->setCommitCallback(boost::bind(&LLAppearanceMgr::updateBaseOutfit, LLAppearanceMgr::getInstance()));
+	refreshCurrentOutfitName(); // Initialize tooltip for save outfit button
 	getChild<LLUICtrl>("Ok")->setCommitCallback(boost::bind(&LLFloaterCustomize::onBtnOk, this));
 	getChild<LLUICtrl>("Cancel")->setCommitCallback(boost::bind(&LLFloater::onClickClose, this));
 
@@ -222,6 +229,44 @@ BOOL LLFloaterCustomize::postBuild()
 	initScrollingPanelList();
 	
 	return TRUE;
+}
+
+void LLFloaterCustomize::refreshCurrentOutfitName(const std::string& name)
+{
+	LLUICtrl* save_outfit_btn = getChild<LLUICtrl>("Save Outfit");
+	// Set current outfit status (wearing/unsaved).
+	bool dirty = LLAppearanceMgr::getInstance()->isOutfitDirty();
+	//std::string cof_status_str = getString(dirty ? "Unsaved Changes" : "Now Wearing");
+	//mOutfitStatus->setText(cof_status_str);
+	save_outfit_btn->setEnabled(dirty); // No use saving unless dirty
+
+	if (name == "")
+	{
+		std::string outfit_name;
+		if (LLAppearanceMgr::getInstance()->getBaseOutfitName(outfit_name))
+		{
+				//mCurrentLookName->setText(outfit_name);
+				LLStringUtil::format_map_t args;
+				args["[OUTFIT]"] = outfit_name;
+				save_outfit_btn->setToolTip(getString("Save changes to", args));
+				return;
+		}
+
+		std::string string_name = gAgentWearables.isCOFChangeInProgress() ? "Changing outfits" : "No Outfit";
+		//mCurrentLookName->setText(getString(string_name));
+		save_outfit_btn->setToolTip(getString(string_name));
+		//mOpenOutfitBtn->setEnabled(FALSE);
+		save_outfit_btn->setEnabled(false); // Can't save right now
+	}
+	else
+	{
+		//mCurrentLookName->setText(name);
+		LLStringUtil::format_map_t args;
+		args["[OUTFIT]"] = name;
+		save_outfit_btn->setToolTip(getString("Save changes to", args));
+		// Can't just call update verbs since the folder link may not have been created yet.
+		//mOpenOutfitBtn->setEnabled(TRUE);
+	}
 }
 
 //static

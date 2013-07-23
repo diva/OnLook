@@ -1452,4 +1452,7 @@ one from scratch and wear it.
 	     mouse_opaque="true" name="Make Outfit" left="10" scale_image="true"
 	     width="100" />
     <button bottom="-536" follows="left|bottom" height="20" left="110" width="100" name="Save Outfit" label="Save Outfit"/>
+    <string name="Save changes to" value="Save changes to [OUTFIT]"/>
+    <string name="No Outfit" value="No Outfit"/>
+    <string name="Changing outfits" value="Changing outfits"/>
 </floater>

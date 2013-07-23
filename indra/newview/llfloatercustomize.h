@@ -83,6 +83,8 @@ public:
 	/*virtual*/ void	onClose(bool app_quitting);
 	/*virtual*/ void	draw();
 	
+	void refreshCurrentOutfitName(const std::string& name = "");
+
 	// Creation procedures
 	static void		editWearable(LLViewerWearable* wearable, bool disable_camera_switch);
 	static void		show();
