@@ -1887,28 +1887,24 @@ static bool parse_lure_bucket(const std::string& bucket,
 	tokenizer tokens(bucket, sep);
 	tokenizer::iterator iter = tokens.begin();
 
-	S32 gx,gy,rx,ry,rz,lx,ly,lz;
+	S32 e[8];
 	try
 	{
-		gx = boost::lexical_cast<S32>((*(iter)).c_str());
-		gy = boost::lexical_cast<S32>((*(++iter)).c_str());
-		rx = boost::lexical_cast<S32>((*(++iter)).c_str());
-		ry = boost::lexical_cast<S32>((*(++iter)).c_str());
-		rz = boost::lexical_cast<S32>((*(++iter)).c_str());
-		lx = boost::lexical_cast<S32>((*(++iter)).c_str());
-		ly = boost::lexical_cast<S32>((*(++iter)).c_str());
-		lz = boost::lexical_cast<S32>((*(++iter)).c_str());
+		for (int i = 0; i < 8 && iter != tokens.end(); ++i)
+		{
+			e[i] = boost::lexical_cast<S32>((*(iter++)).c_str());
+		}
 	}
 	catch( boost::bad_lexical_cast& )
 	{
 		LL_WARNS("parse_lure_bucket")
-			<< "Couldn't parse lure bucket."
+			<< "Couldn't parse lure bucket with content \"" << bucket << "\"."
 			<< LL_ENDL;
 		return false;
 	}
 	// Grab region access
 	region_access = SIM_ACCESS_MIN;
-	if (++iter != tokens.end())
+	if (iter != tokens.end())
 	{
 		std::string access_str((*iter).c_str());
 		LLStringUtil::trim(access_str);
@@ -1926,10 +1922,10 @@ static bool parse_lure_bucket(const std::string& bucket,
 		}
 	}
 
-	pos.setVec((F32)rx, (F32)ry, (F32)rz);
-	look_at.setVec((F32)lx, (F32)ly, (F32)lz);
+	pos.setVec((F32)e[2], (F32)e[3], (F32)e[4]);
+	look_at.setVec((F32)e[5], (F32)e[6], (F32)e[7]);
 
-	region_handle = to_region_handle(gx, gy);
+	region_handle = to_region_handle(e[0], e[1]);
 	return true;
 }
 
