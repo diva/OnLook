@@ -65,6 +65,7 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 
 // newview includes
+#include "lfsimfeaturehandler.h"
 #include "llface.h"
 #include "llvovolume.h"
 
@@ -116,6 +117,15 @@ namespace DAEExportUtil
 		}
 	}
 
+	// Identical to the one in awavefront.cpp
+	bool can_export_node(const LLSelectNode* node)
+	{
+		LLPermissions* perms = node->mPermissions;	// Is perms ever NULL?
+		// This tests the PERM_EXPORT bit too, which is not really necessary (just checking if it's set
+		// on the root prim would suffice), but also isn't hurting.
+		return perms && perms->allowExportBy(gAgentID, LFSimFeatureHandler::instance().simSupportsExport());
+	}
+
 	void saveSelectedObject()
 	{
 		static const std::string file_ext = ".dae";
@@ -131,7 +141,7 @@ namespace DAEExportUtil
 			{
 				total++;
 				LLSelectNode* node = *iter;
-				if (!node->mPermissions->allowExportBy(gAgentID) || !node->getObject()->getVolume()) continue;
+				if (!can_export_node(node) || !node->getObject()->getVolume()) continue;
 				included++;
 				daesaver->Add(node->getObject(), node->mName);
 			}

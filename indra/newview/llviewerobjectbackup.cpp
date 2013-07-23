@@ -79,6 +79,7 @@
 #include "llviewerwindow.h"
 
 #include "hippogridmanager.h"
+#include "lfsimfeaturehandler.h"
 
 #include "llviewerobjectbackup.h" 
 
@@ -398,7 +399,7 @@ void LLObjectBackup::exportObject_continued(AIFilePicker* filepicker)
 
 bool LLObjectBackup::validatePerms(const LLPermissions *item_permissions)
 {
-	return item_permissions->allowExportBy(gAgent.getID());
+	return item_permissions->allowExportBy(gAgent.getID(), LFSimFeatureHandler::instance().simSupportsExport());
 }
 
 // So far, only Second Life forces TPVs to verify the creator for textures...

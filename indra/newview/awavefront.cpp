@@ -30,6 +30,7 @@
 #include "llnotificationsutil.h"
 
 // newview includes
+#include "lfsimfeaturehandler.h"
 #include "llavatarappearancedefines.h"
 #include "llface.h"
 #include "llvoavatar.h"
@@ -219,6 +220,14 @@ void WavefrontSaver::Add(const LLViewerObject* some_vo)
 }
 namespace
 {
+	// Identical to the one in daeexport.cpp.
+	bool can_export_node(const LLSelectNode* node)
+	{
+		LLPermissions* perms = node->mPermissions;	// Is perms ever NULL?
+		// This tests the PERM_EXPORT bit too, which is not really necessary (just checking if it's set
+		// on the root prim would suffice), but also isn't hurting.
+		return perms && perms->allowExportBy(gAgentID, LFSimFeatureHandler::instance().simSupportsExport());
+	}
 	class LFSaveSelectedObjects : public view_listener_t
 	{
 		bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata)
@@ -233,7 +242,7 @@ namespace
 				{
 					total++;
 					LLSelectNode* node = *iter;
-					if (!node->mPermissions->allowExportBy(gAgentID)) continue;
+					if (!can_export_node(node)) continue;
 					included++;
 					wfsaver->Add(node->getObject());
 				}
@@ -316,7 +325,7 @@ void WavefrontSaver::Add(const LLVOAvatar* av_vo) //adds attachments, too!
 				if (!c) continue;
 				if (const LLSelectNode* n = LLSelectMgr::getInstance()->getSelection()->findNode(const_cast<LLViewerObject*>(c)))
 				{
-					if (!n->mPermissions->allowExportBy(gAgentID)) continue;
+					if (!can_export_node(n)) continue;
 				}
 				else continue;
 				const LLVolume* vol = c->getVolume();

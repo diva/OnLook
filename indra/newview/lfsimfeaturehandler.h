@@ -19,7 +19,6 @@
 #define LFSIMFEATUREHANDLER_H
 
 #include "llsingleton.h"
-#include "llpermissions.h"
 
 template<typename Type>
 class SignaledType
@@ -46,7 +45,7 @@ private:
 	Type mValue;
 };
 
-class LFSimFeatureHandler : public LFSimFeatureHandlerInterface, public LLSingleton<LFSimFeatureHandler>
+class LFSimFeatureHandler : public LLSingleton<LFSimFeatureHandler>
 {
 protected:
 	friend class LLSingleton<LFSimFeatureHandler>;
@@ -60,7 +59,7 @@ public:
 	boost::signals2::connection setSupportsExportCallback(const boost::signals2::signal<void()>::slot_type& slot);
 
 	// Accessors
-	/*virtual*/ bool simSupportsExport() const { return mSupportsExport; }
+	bool simSupportsExport() const { return mSupportsExport; }
 
 private:
 	// SignaledTypes
