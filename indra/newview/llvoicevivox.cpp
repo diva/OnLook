@@ -1445,7 +1445,7 @@ void LLVivoxVoiceClient::stateMachine()
 			{
 				setState(stateCaptureBufferPaused);
 			}
-			else if(checkParcelChanged() || (mNextAudioSession == NULL))
+			else if(checkParcelChanged() || (!mAreaVoiceDisabled && mNextAudioSession == NULL))
 			{
 				// the parcel is changed, or we have no pending audio sessions,
 				// so try to request the parcel voice info
@@ -1592,7 +1592,7 @@ void LLVivoxVoiceClient::stateMachine()
 					mSpatialCoordsDirty = false;
 				}
 				else
-					{
+				{
 					if(checkParcelChanged())
 					{
 						// if the parcel has changed, attempted to request the
@@ -4489,6 +4489,7 @@ bool LLVivoxVoiceClient::checkParcelChanged(bool update)
 				{
 					mCurrentParcelLocalID = parcelLocalID;
 					mCurrentRegionName = regionName;
+					mAreaVoiceDisabled = false;					// Now that we changed parcel, assume voice is not disabled until we get the parcel info back that says it is.
 				}
 				return true;
 			}
