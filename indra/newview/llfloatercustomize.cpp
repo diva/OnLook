@@ -629,7 +629,7 @@ void LLFloaterCustomize::updateVisiblity(bool force_disable_camera_switch/*=fals
 	{
 		if(force_disable_camera_switch || !gAgentCamera.cameraCustomizeAvatar() || !gAgentCamera.getCameraAnimating() || (gMorphView && gMorphView->getVisible()))
 		{
-			if(gAgentAvatarp)gAgentAvatarp->mSpecialRenderMode = 3;
+			if (gAgentAvatarp && gSavedSettings.getBOOL("AppearanceSpecialLighting")) gAgentAvatarp->mSpecialRenderMode = 3;
 			setVisibleAndFrontmost(TRUE);
 		}
 	}
