@@ -558,7 +558,9 @@ void LLPanel::initChildrenXML(LLXMLNodePtr node, LLUICtrlFactory* factory)
 			child->getAttributeString("name", string_name);
 			if (!string_name.empty())
 			{
-				mUIStrings[string_name] = child->getTextContents();
+				std::string contents = child->getTextContents();
+				child->getAttributeString("value", contents);
+				mUIStrings[string_name] = contents;
 			}
 		}
 		else

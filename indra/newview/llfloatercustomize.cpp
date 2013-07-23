@@ -32,53 +32,25 @@
 
 #include "llviewerprecompiledheaders.h"
 
-#include "llimagejpeg.h"
 #include "llfloatercustomize.h"
-#include "llfontgl.h"
-#include "llbutton.h"
-#include "lliconctrl.h"
-#include "llresmgr.h"
-#include "llmorphview.h"
-#include "llfloatertools.h"
+
 #include "llagent.h"
+#include "llagentcamera.h"
 #include "llagentwearables.h"
-#include "lltoolmorph.h"
-#include "llvoavatarself.h"
-#include "llradiogroup.h"
-#include "lltoolmgr.h"
-#include "llviewermenu.h"
+#include "llappearancemgr.h"
+#include "llmakeoutfitdialog.h"
+#include "llmorphview.h"
+#include "llnotificationsutil.h"
+#include "lloutfitobserver.h"
+#include "llpaneleditwearable.h"
 #include "llscrollcontainer.h"
 #include "llscrollingpanelparam.h"
-#include "llsliderctrl.h"
-#include "llviewerwindow.h"
-#include "llinventoryfunctions.h"
-#include "llinventoryobserver.h"
-#include "llinventoryicon.h"
 #include "lltextbox.h"
-#include "lllineeditor.h"
-#include "llviewertexturelist.h"
-#include "llfocusmgr.h"
-#include "llviewerwindow.h"
-#include "llviewercamera.h"
-#include "llappearance.h"
-#include "imageids.h"
-#include "llassetstorage.h"
-#include "lltexturectrl.h"
-#include "lltextureentry.h"
-#include "llwearablelist.h"
-#include "llviewerinventory.h"
-#include "lldbstrings.h"
-#include "llcolorswatch.h"
-#include "llglheaders.h"
-#include "llui.h"
-#include "llviewermessage.h"
-#include "llviewercontrol.h"
+#include "lltoolmorph.h"
 #include "lluictrlfactory.h"
-#include "llnotificationsutil.h"
-#include "llpaneleditwearable.h"
-#include "llmakeoutfitdialog.h"
-#include "llagentcamera.h"
-#include "llappearancemgr.h"
+#include "llviewerinventory.h"
+#include "llviewerwearable.h"
+#include "llvoavatarself.h"
 
 #include "statemachine/aifilepicker.h"
 #include "llxmltree.h"
@@ -158,6 +130,11 @@ LLFloaterCustomize::LLFloaterCustomize()
 	mInventoryObserver = new LLFloaterCustomizeObserver(this);
 	gInventory.addObserver(mInventoryObserver);
 
+	LLOutfitObserver& outfit_observer =  LLOutfitObserver::instance();
+	outfit_observer.addBOFReplacedCallback(boost::bind(&LLFloaterCustomize::refreshCurrentOutfitName, this, ""));
+	outfit_observer.addBOFChangedCallback(boost::bind(&LLFloaterCustomize::refreshCurrentOutfitName, this, ""));
+	outfit_observer.addCOFChangedCallback(boost::bind(&LLFloaterCustomize::refreshCurrentOutfitName, this, ""));
+
 	LLCallbackMap::map_t factory_map;
 	const std::string &invalid_name = LLWearableType::getTypeName(LLWearableType::WT_INVALID);
 	for(U32 type=LLWearableType::WT_SHAPE;type<LLWearableType::WT_INVALID;++type)
@@ -192,6 +169,7 @@ BOOL LLFloaterCustomize::postBuild()
 {
 	getChild<LLUICtrl>("Make Outfit")->setCommitCallback(boost::bind(&LLFloaterCustomize::onBtnMakeOutfit, this));
 	getChild<LLUICtrl>("Save Outfit")->setCommitCallback(boost::bind(&LLAppearanceMgr::updateBaseOutfit, LLAppearanceMgr::getInstance()));
+	refreshCurrentOutfitName(); // Initialize tooltip for save outfit button
 	getChild<LLUICtrl>("Ok")->setCommitCallback(boost::bind(&LLFloaterCustomize::onBtnOk, this));
 	getChild<LLUICtrl>("Cancel")->setCommitCallback(boost::bind(&LLFloater::onClickClose, this));
 
@@ -223,6 +201,44 @@ BOOL LLFloaterCustomize::postBuild()
 	initScrollingPanelList();
 	
 	return TRUE;
+}
+
+void LLFloaterCustomize::refreshCurrentOutfitName(const std::string& name)
+{
+	LLUICtrl* save_outfit_btn = getChild<LLUICtrl>("Save Outfit");
+	// Set current outfit status (wearing/unsaved).
+	bool dirty = LLAppearanceMgr::getInstance()->isOutfitDirty();
+	//std::string cof_status_str = getString(dirty ? "Unsaved Changes" : "Now Wearing");
+	//mOutfitStatus->setText(cof_status_str);
+	save_outfit_btn->setEnabled(dirty); // No use saving unless dirty
+
+	if (name == "")
+	{
+		std::string outfit_name;
+		if (LLAppearanceMgr::getInstance()->getBaseOutfitName(outfit_name))
+		{
+				//mCurrentLookName->setText(outfit_name);
+				LLStringUtil::format_map_t args;
+				args["[OUTFIT]"] = outfit_name;
+				save_outfit_btn->setToolTip(getString("Save changes to", args));
+				return;
+		}
+
+		std::string string_name = gAgentWearables.isCOFChangeInProgress() ? "Changing outfits" : "No Outfit";
+		//mCurrentLookName->setText(getString(string_name));
+		save_outfit_btn->setToolTip(getString(string_name));
+		//mOpenOutfitBtn->setEnabled(FALSE);
+		save_outfit_btn->setEnabled(false); // Can't save right now
+	}
+	else
+	{
+		//mCurrentLookName->setText(name);
+		LLStringUtil::format_map_t args;
+		args["[OUTFIT]"] = name;
+		save_outfit_btn->setToolTip(getString("Save changes to", args));
+		// Can't just call update verbs since the folder link may not have been created yet.
+		//mOpenOutfitBtn->setEnabled(TRUE);
+	}
 }
 
 //static
@@ -779,7 +795,7 @@ void LLFloaterCustomize::updateVisiblity(bool force_disable_camera_switch/*=fals
 	{
 		if(force_disable_camera_switch || !gAgentCamera.cameraCustomizeAvatar() || !gAgentCamera.getCameraAnimating() || (gMorphView && gMorphView->getVisible()))
 		{
-			if(gAgentAvatarp)gAgentAvatarp->mSpecialRenderMode = 3;
+			if (gAgentAvatarp && gSavedSettings.getBOOL("AppearanceSpecialLighting")) gAgentAvatarp->mSpecialRenderMode = 3;
 			setVisibleAndFrontmost(TRUE);
 		}
 	}
@@ -862,7 +878,7 @@ void LLFloaterCustomize::saveCurrentWearables()
 
 bool LLFloaterCustomize::onSaveDialog(const LLSD& notification, const LLSD& response )
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	if(option == 0)
 	{
 		saveCurrentWearables();

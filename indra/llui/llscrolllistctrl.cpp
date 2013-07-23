@@ -2616,9 +2616,17 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 			if (child->getAttributeString("sort", sortname))
 				columns[index]["sort"] = sortname;
 
-			BOOL sort_ascending = true;
-			if (child->getAttributeBOOL("sort_ascending", sort_ascending))
+			std::string sort_direction("ascending");
+			if (child->getAttributeString("sort_direction", sort_direction))
+			{
+				columns[index]["sort_direction"] = sort_direction;
+			}
+			else // Singu Note: if a scroll list does not provide sort_direction, provide sort_ascending to sort as expected
+			{
+				bool sort_ascending = true;
+				child->getAttribute_bool("sort_ascending", sort_ascending);
 				columns[index]["sort_ascending"] = sort_ascending;
+			}
 
 			S32 columnwidth = -1;
 			if (child->getAttributeS32("width", columnwidth))

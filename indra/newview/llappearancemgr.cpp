@@ -2080,13 +2080,11 @@ void LLAppearanceMgr::updateCOF(LLInventoryModel::item_array_t& body_items_new,
 
 void LLAppearanceMgr::updatePanelOutfitName(const std::string& name)
 {
-	// MULTI-WEARABLE TODO
-	/*LLSidepanelAppearance* panel_appearance =
-		dynamic_cast<LLSidepanelAppearance *>(LLFloaterSidePanelContainer::getPanel("appearance"));
+	LLFloaterCustomize* panel_appearance = LLFloaterCustomize::instanceExists() ? LLFloaterCustomize::getInstance() : NULL;
 	if (panel_appearance)
 	{
 		panel_appearance->refreshCurrentOutfitName(name);
-	}*/
+	}
 }
 
 void LLAppearanceMgr::createBaseOutfitLink(const LLUUID& category, LLPointer<LLInventoryCallback> link_waiter)
