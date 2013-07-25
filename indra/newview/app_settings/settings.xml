@@ -696,10 +696,10 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
-    <key>LiruLegacyOutfitStoreObjChanges</key>
+    <key>LiruLegacyLandmarks</key>
     <map>
       <key>Comment</key>
-      <string>While true, automatic detach is performed upon all copyable attachments just before legacy outfit creation to preserve any modifications to them.  As a last resort, setting this false allows creating a legacy outfit that won't save changes made to copyable attachments since wearing them or login.</string>
+      <string>When creating a new landmark, the legacy format (parcel name, region name (x, y, z)) will be used.</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -707,10 +707,10 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
-    <key>LiruLegacyLandmarks</key>
+    <key>LiruLegacyOutfitStoreObjChanges</key>
     <map>
       <key>Comment</key>
-      <string>When creating a new landmark, the legacy format (parcel name, region name (x, y, z)) will be used.</string>
+      <string>While true, automatic detach is performed upon all copyable attachments just before legacy outfit creation to preserve any modifications to them.  As a last resort, setting this false allows creating a legacy outfit that won't save changes made to copyable attachments since wearing them or login.</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
