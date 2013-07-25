@@ -6058,7 +6058,7 @@ class LLWorldCreateLandmark : public view_listener_t
 		LLUUID folder_id;
 		folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LANDMARK);
 		std::string pos_string;
-		LLAgentUI::buildLocationString(pos_string);
+		LLAgentUI::buildLocationString(pos_string, gSavedSettings.getBOOL("LiruLegacyLandmarks") ? LLAgentUI::LOCATION_FORMAT_NO_MATURITY : LLAgentUI::LOCATION_FORMAT_LANDMARK);
 		
 		create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
 							  folder_id, LLTransactionID::tnull,
