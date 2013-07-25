@@ -257,6 +257,7 @@ LLPointer<LLViewerTexture> gStartTexture;
 //
 extern S32 gStartImageWidth;
 extern S32 gStartImageHeight;
+extern std::string gWindowTitle;
 
 //
 // local globals
@@ -1550,7 +1551,7 @@ bool idle_startup()
 				{
 					name += " " + lastname;
 				}
-				gViewerWindow->getWindow()->setTitle(LLAppViewer::instance()->getWindowTitle() + "- " + name);
+				gViewerWindow->getWindow()->setTitle(gWindowTitle += "- " + name);
 				// Pass the user information to the voice chat server interface.
 				LLVoiceClient::getInstance()->userAuthorized(name, gAgentID);
 				// create the default proximal channel
