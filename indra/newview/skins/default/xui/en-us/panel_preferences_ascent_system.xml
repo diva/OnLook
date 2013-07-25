@@ -59,10 +59,12 @@
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineCalc" width="200"/>
       <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_15">Clear the chat history (usage: cmd)</text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" tool_tip="Clears the Chat History to prevent lag effects from chat spammers." name="AscentCmdLineClearChat" width="200"/>
+      <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_16">Open url/slurl (usage: cmd slurl)</text>
+      <line_editor bottom_delta="-20" follows="top" height="20" max_length="256" name="SinguCmdLineURL" width="200"/>
       <!-- Column Split -->
-      <view_border bevel_style="none" border_thickness="1" bottom_delta="-5" follows="top|left" height="295"
+      <view_border bevel_style="none" border_thickness="1" bottom_delta="-5" follows="top|left" height="333"
         left="230" name="CmdDivisor" width="0"/>
-      <text bottom_delta="277" follows="top" height="16" left_delta="10" name="cmd_line_text_9">Change Draw Distance (usage: cmd meters)</text>
+      <text bottom_delta="315" follows="top" height="16" left_delta="10" name="cmd_line_text_9">Change Draw Distance (usage: cmd meters)</text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineDrawDistance" width="200"/>
       <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_10">Teleport to cam position (usage: cmd)</text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdTeleportToCam" width="200"/>

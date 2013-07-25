@@ -74,6 +74,7 @@ LLPrefsAscentSys::LLPrefsAscentSys()
 	getChild<LLUICtrl>("AscentCmdLineMapTo")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitCmdLine, this, _1, _2));
 	getChild<LLUICtrl>("AscentCmdLineTP2")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitCmdLine, this, _1, _2));
 	getChild<LLUICtrl>("SinguCmdLineAway")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitCmdLine, this, _1, _2));
+	getChild<LLUICtrl>("SinguCmdLineURL")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitCmdLine, this, _1, _2));
 
 	//Security ----------------------------------------------------------------------------
 	getChild<LLUICtrl>("disable_click_sit_check")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitCheckBox, this, _1, _2));
@@ -179,6 +180,7 @@ void LLPrefsAscentSys::onCommitCmdLine(LLUICtrl* ctrl, const LLSD& value)
 		childSetEnabled("map_to_keep_pos",           enabled);
 		childSetEnabled("AscentCmdLineTP2",          enabled);
 		childSetEnabled("SinguCmdLineAway",          enabled);
+		childSetEnabled("SinguCmdLineURL",           enabled);
     }
 	else
 	{
@@ -240,6 +242,7 @@ void LLPrefsAscentSys::refreshValues()
     mCmdMapToKeepPos            = gSavedSettings.getBOOL("AscentMapToKeepPos");
     mCmdLineTP2                 = gSavedSettings.getString("AscentCmdLineTP2");
     mCmdLineAway                = gSavedSettings.getString("SinguCmdLineAway");
+	mCmdLineURL                 = gSavedSettings.getString("SinguCmdLineURL");
 
     //Security ----------------------------------------------------------------------------
     mBroadcastViewerEffects		= gSavedSettings.getBOOL("BroadcastViewerEffects");
@@ -314,6 +317,7 @@ void LLPrefsAscentSys::refresh()
     childSetEnabled("map_to_keep_pos",            mCmdLine);
     childSetEnabled("AscentCmdLineTP2",           mCmdLine);
     childSetEnabled("SinguCmdLineAway",           mCmdLine);
+	childSetEnabled("SinguCmdLineURL",            mCmdLine);
 
     //Security ----------------------------------------------------------------------------
     childSetValue("AscentCmdLinePos",           mCmdLinePos);
@@ -330,6 +334,7 @@ void LLPrefsAscentSys::refresh()
     childSetValue("AscentCmdLineMapTo",         mCmdLineMapTo);
     childSetValue("AscentCmdLineTP2",           mCmdLineTP2);
     childSetValue("SinguCmdLineAway",           mCmdLineAway);
+	childSetValue("SinguCmdLineURL",            mCmdLineURL);
 
 	//Build -------------------------------------------------------------------------------
 	childSetValue("alpha",               mAlpha);
@@ -392,6 +397,7 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("AscentMapToKeepPos",            mCmdMapToKeepPos);
     gSavedSettings.setString("AscentCmdLineTP2",			mCmdLineTP2);
     gSavedSettings.setString("SinguCmdLineAway",			mCmdLineAway);
+	gSavedSettings.setString("SinguCmdLineURL",				mCmdLineURL);
 
     //Security ----------------------------------------------------------------------------
     gSavedSettings.setBOOL("BroadcastViewerEffects",        mBroadcastViewerEffects);

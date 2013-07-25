@@ -598,6 +598,17 @@
 			<key>Value</key>
 			<string>/away</string>
 		</map>
+		<key>SinguCmdLineURL</key>
+		<map>
+			<key>Comment</key>
+			<string>Open SLURLS and URLs from chatbar.</string>
+			<key>Persist</key>
+			<integer>1</integer>
+			<key>Type</key>
+			<string>String</string>
+			<key>Value</key>
+			<string>/open</string>
+		</map>
 		<key>SinguCompleteNameProfiles</key>
 		<map>
 			<key>Comment</key>

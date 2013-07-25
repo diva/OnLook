@@ -237,8 +237,9 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 	static LLCachedControl<bool> sAscentCmdLineMapToKeepPos(gSavedSettings, "AscentMapToKeepPos");
 	static LLCachedControl<std::string> sAscentCmdLineCalc(gSavedSettings,  "AscentCmdLineCalc");
 	static LLCachedControl<std::string> sAscentCmdLineTP2(gSavedSettings,  "AscentCmdLineTP2");
-	static LLCachedControl<std::string> sSinguCmdLineClearChat(gSavedSettings,  "SinguCmdLineAway");
 	static LLCachedControl<std::string> sAscentCmdLineClearChat(gSavedSettings,  "AscentCmdLineClearChat");
+	static LLCachedControl<std::string> sSinguCmdLineAway(gSavedSettings,  "SinguCmdLineAway");
+	static LLCachedControl<std::string> sSinguCmdLineURL(gSavedSettings,  "SinguCmdLineURL");
 
 	if(sAscentCmdLine)
 	{
@@ -423,9 +424,17 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 				}
 				return false;
 			}
-			else if(command == utf8str_tolower(sSinguCmdLineClearChat))
+			else if(command == utf8str_tolower(sSinguCmdLineAway))
 			{
 				handle_fake_away_status(NULL);
+				return false;
+			}
+			else if(command == utf8str_tolower(sSinguCmdLineURL))
+			{
+				if (revised_text.length() > command.length() + 1)
+				{
+					LLUrlAction::clickAction(revised_text.substr(command.length()+1));
+				}
 				return false;
 			}
 			else if(command == "typingstop")
