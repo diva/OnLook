@@ -198,6 +198,11 @@ public:
 	 */
 	static void buildResidentsString(const uuid_vec_t& avatar_uuids, std::string& residents_string);
 
+	/**
+	 * Copy the selected avatar's UUID to clipboard
+	 */
+	static void copyUUIDs(const uuid_vec_t& id);
+
 private:
 	static bool callbackAddFriendWithMessage(const LLSD& notification, const LLSD& response);
 	static bool handleRemove(const LLSD& notification, const LLSD& response);

@@ -54,6 +54,9 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
+#include "llviewerwindow.h"
+#include "llwindow.h"
+
 extern const S32 TRANS_GIFT;
 void give_money(const LLUUID& uuid, LLViewerRegion* region, S32 amount, BOOL is_group = FALSE, S32 trx_type = TRANS_GIFT, const std::string& desc = LLStringUtil::null);
 void handle_lure(const uuid_vec_t& ids);
@@ -802,4 +805,25 @@ bool LLAvatarActions::canBlock(const LLUUID& id)
 	bool is_linden = LLMuteList::getInstance()->isLinden(id);
 	bool is_self = id == gAgentID;
 	return !is_self && !is_linden;
+}
+
+// static
+void LLAvatarActions::copyUUIDs(const uuid_vec_t& ids)
+{
+	std::string ids_string;
+	const std::string& separator = LLTrans::getString("words_separator");
+	for (uuid_vec_t::const_iterator it = ids.begin(); it != ids.end(); ++it)
+	{
+		const LLUUID& id = *it;
+		if (id.isNull())
+			continue;
+
+		if (!ids_string.empty())
+			ids_string.append(separator);
+
+		ids_string.append(id.asString());
+	}
+
+	if (!ids_string.empty())
+		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(ids_string));
 }
