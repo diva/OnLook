@@ -250,7 +250,6 @@ public:
 	typedef boost::shared_ptr<LLAvatarListEntry> LLAvatarListEntryPtr;
 	typedef std::vector< LLAvatarListEntryPtr > av_list_t;
 
-private:
 	// when a line editor loses keyboard focus, it is committed.
 	// commit callbacks are named onCommitWidgetName by convention.
 	//void onCommitBaz(LLUICtrl* ctrl, void *userdata);

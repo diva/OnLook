@@ -337,6 +337,87 @@ static void cmd_profile(const LLAvatarListEntry* entry);
 static void cmd_toggle_mark(LLAvatarListEntry* entry);
 static void cmd_ar(const LLAvatarListEntry* entry);
 static void cmd_teleport(const LLAvatarListEntry* entry);
+
+namespace
+{
+	typedef LLMemberListener<LLView> view_listener_t;
+	class RadarTrack : public view_listener_t
+	{
+		bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+		{
+			LLFloaterAvatarList::instance().onClickTrack();
+			return true;
+		}
+	};
+
+	class RadarMark : public view_listener_t
+	{
+		bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+		{
+			LLFloaterAvatarList::instance().doCommand(cmd_toggle_mark);
+			return true;
+		}
+	};
+
+	class RadarFocus : public view_listener_t
+	{
+		bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+		{
+			LLFloaterAvatarList::instance().onClickFocus();
+			return true;
+		}
+	};
+
+	class RadarFocusPrev : public view_listener_t
+	{
+		bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+		{
+			LLFloaterAvatarList::instance().focusOnPrev(userdata);
+			return true;
+		}
+	};
+
+	class RadarFocusNext : public view_listener_t
+	{
+		bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+		{
+			LLFloaterAvatarList::instance().focusOnNext(userdata);
+			return true;
+		}
+	};
+
+	class RadarTeleportTo : public view_listener_t
+	{
+		bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+		{
+			LLFloaterAvatarList::instance().doCommand(cmd_teleport, true);
+			return true;
+		}
+	};
+
+	class RadarAnnounceKeys : public view_listener_t
+	{
+		bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+		{
+			LLFloaterAvatarList::instance().sendKeys();
+			return true;
+		}
+	};
+}
+
+void addMenu(view_listener_t* menu, const std::string& name);
+
+void add_radar_listeners()
+{
+	addMenu(new RadarTrack(), "Radar.Track");
+	addMenu(new RadarMark(), "Radar.Mark");
+	addMenu(new RadarFocus(), "Radar.Focus");
+	addMenu(new RadarFocusPrev(), "Radar.FocusPrev");
+	addMenu(new RadarFocusNext(), "Radar.FocusNext");
+	addMenu(new RadarTeleportTo(), "Radar.TeleportTo");
+	addMenu(new RadarAnnounceKeys(), "Radar.AnnounceKeys");
+}
+
 BOOL LLFloaterAvatarList::postBuild()
 {
 	// Set callbacks
