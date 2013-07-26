@@ -7565,8 +7565,23 @@ void LLPipeline::renderDeferredLighting()
 					{
 						glh::vec3f v;
 						v.set_value(sinf(6.284f/8*j), cosf(6.284f/8*j), -(F32) i);
+#if 0
+						// Singu note: the call to mult_matrix_vec can crash, because it attempts to divide by zero.
 						v.normalize();
 						inv_trans.mult_matrix_vec(v);
+#else
+						// However, because afterwards we normalize the vector anyway, there is an alternative
+						// way to calculate the same thing without the division (which happens to be faster, too).
+						glh::vec4f src(v, v.length());				// Make a copy of the source and extent it with its length.
+						glh::vec4f dst;
+						inv_trans.mult_matrix_vec(src, dst);		// Do a normal 4D multiplication.
+						dst.get_value(v[0], v[1], v[2], dst[3]);	// Copy the first 3 coordinates to v.
+						// At this point v is equal to what it used to be, except for a constant factor (v.length() * dst[3]),
+						// but that doesn't matter because the next step is normalizaton. The old computation would crash
+						// if v.length() is zero in the commented out v.normalize(), and in inv_trans.mult_matrix_vec(v)
+						// if dst[3] is zero (which some times happens). Now we will only crash if v.length() is zero
+						// and well in the next line (but this never happens).	--Aleric
+#endif
 						v.normalize();
 						offset[(i*8+j)*3+0] = v.v[0];
 						offset[(i*8+j)*3+1] = v.v[2];
