@@ -649,7 +649,8 @@ una nueva y vistiéndotela.
 	<button label="Cancelar" label_selected="Cancelar" name="Cancel"/>
 	<button label="OK" label_selected="OK" name="Ok"/>
 	<button label="Hacer Vestuario..." label_selected="Hacer Vestuario..." name="Make Outfit" width="120"/>
-	<button name="Save Outfit" label="Guardar Vestuario" left="140" width="120"/>	
+	<button name="Save Outfit" label="Guardar Vestuario" left="140" width="120"/>
+    <string name="Save changes to" value="Guardar cambios en [OUTFIT]"/>	
 	<string name="No Outfit" value="No hay vestuario"/>
 	<string name="Changing outfits" value="Cambiar de vestuario"/>
 </floater>

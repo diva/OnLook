@@ -61,6 +61,10 @@
 				Limpiar historial de chat (uso: cmd)
 			</text>
 			<line_editor tool_tip="Limpia el Historial de chat para evitar el lag por efecto de los spammers de chat." name="AscentCmdLineClearChat"/>
+			<text name="cmd_line_text_16">
+				Abrir url/slurl (uso: cmd slurl)
+			</text>
+			<line_editor name="SinguCmdLineURL"/>
 			<!-- Column Split -->
 			<text name="cmd_line_text_9">
 				Cambiar Distancia de Dibujo (uso: cmd metros)
