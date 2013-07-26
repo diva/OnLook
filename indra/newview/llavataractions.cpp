@@ -379,6 +379,13 @@ void LLAvatarActions::showProfile(const LLUUID& id, bool web)
 	}
 }
 
+// static
+void LLAvatarActions::showProfiles(const uuid_vec_t& ids, bool web)
+{
+	for (uuid_vec_t::const_iterator it = ids.begin(); it != ids.end(); ++it)
+		showProfile(*it, web);
+}
+
 //static
 bool LLAvatarActions::profileVisible(const LLUUID& id)
 {
