@@ -1740,6 +1740,7 @@ BOOL LLScrollListCtrl::handleRightMouseDown(S32 x, S32 y, MASK mask)
 		if (col->mHeader && col->mHeader->getRect().pointInRect(x,y)) // Right clicking a column header shouldn't bring up a menu
 			return FALSE;
 	}
+	gFocusMgr.setKeyboardFocus(this); // Menu listeners rely on this
 	mPopupMenu->buildDrawLabels();
 	LLMenuGL::showPopup(this, mPopupMenu, x, y);
 	return TRUE;

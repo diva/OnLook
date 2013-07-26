@@ -1303,7 +1303,7 @@ bool LLFloaterAvatarList::onConfirmRadarChatKeys(const LLSD& notification, const
 	return false;
 }
 
-static void send_freeze(const LLUUID& avatar_id, bool freeze)
+void send_freeze(const LLUUID& avatar_id, bool freeze)
 {
 	U32 flags = 0x0;
 	if (!freeze)
@@ -1328,7 +1328,7 @@ static void send_freeze(const LLUUID& avatar_id, bool freeze)
 	}
 }
 
-static void send_eject(const LLUUID& avatar_id, bool ban)
+void send_eject(const LLUUID& avatar_id, bool ban)
 {	
 	LLMessageSystem* msg = gMessageSystem;
 	LLVOAvatar* avatarp = gObjectList.findAvatar(avatar_id);
