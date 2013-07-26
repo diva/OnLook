@@ -27,6 +27,7 @@
 #ifndef LL_LLAVATARACTIONS_H
 #define LL_LLAVATARACTIONS_H
 
+class LLAvatarName;
 class LLFloater;
 
 /**
@@ -180,6 +181,22 @@ public:
 	 * @return false if any one of the specified avatars a friend and not visibly online
 	 */
 	static bool canOfferTeleport(const uuid_vec_t& ids);
+
+	/**
+	 * Builds a string of residents' display names separated by "words_separator" string.
+	 *
+	 * @param avatar_names - a vector of given avatar names from which resulting string is built
+	 * @param residents_string - the resulting string
+	 */
+	static void buildResidentsString(std::vector<LLAvatarName> avatar_names, std::string& residents_string);
+
+	/**
+	 * Builds a string of residents' display names separated by "words_separator" string.
+	 *
+	 * @param avatar_uuids - a vector of given avatar uuids from which resulting string is built
+	 * @param residents_string - the resulting string
+	 */
+	static void buildResidentsString(const uuid_vec_t& avatar_uuids, std::string& residents_string);
 
 private:
 	static bool callbackAddFriendWithMessage(const LLSD& notification, const LLSD& response);

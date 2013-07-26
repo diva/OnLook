@@ -498,6 +498,48 @@ void LLAvatarActions::csr(const LLUUID& id)
 // Singu TODO: Share inventory code block should live here
 
 // static
+void LLAvatarActions::buildResidentsString(std::vector<LLAvatarName> avatar_names, std::string& residents_string)
+{
+	llassert(avatar_names.size() > 0);
+
+	std::sort(avatar_names.begin(), avatar_names.end());
+	const std::string& separator = LLTrans::getString("words_separator");
+	for (std::vector<LLAvatarName>::const_iterator it = avatar_names.begin(); ; )
+	{
+		residents_string.append((*it).getCompleteName());
+		if	(++it == avatar_names.end())
+		{
+			break;
+		}
+		residents_string.append(separator);
+	}
+}
+
+// static
+void LLAvatarActions::buildResidentsString(const uuid_vec_t& avatar_uuids, std::string& residents_string)
+{
+	std::vector<LLAvatarName> avatar_names;
+	uuid_vec_t::const_iterator it = avatar_uuids.begin();
+	for (; it != avatar_uuids.end(); ++it)
+	{
+		LLAvatarName av_name;
+		if (LLAvatarNameCache::get(*it, &av_name))
+		{
+			avatar_names.push_back(av_name);
+		}
+	}
+
+	// We should check whether the vector is not empty to pass the assertion
+	// that avatar_names.size() > 0 in LLAvatarActions::buildResidentsString.
+	if (!avatar_names.empty())
+	{
+		LLAvatarActions::buildResidentsString(avatar_names, residents_string);
+	}
+}
+
+// Singu TODO: Share inventory code block should live here, too
+
+// static
 void LLAvatarActions::toggleBlock(const LLUUID& id)
 {
 	std::string name;

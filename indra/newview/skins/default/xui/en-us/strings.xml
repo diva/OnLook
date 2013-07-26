@@ -4313,6 +4313,10 @@ Abuse Report</string>
   <string name="dance7">dance7</string>
   <string name="dance8">dance8</string>
   <string name="DefaultMimeType">none/none</string>
+
+  <!-- language specific white-space characters, delimiters, spacers, item separation symbols -->
+  <string name="words_separator" value=", "/>
+
   <string name="Chat">Chat</string>
 
  <!-- External editor status codes -->
