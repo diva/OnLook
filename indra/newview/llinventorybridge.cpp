@@ -3327,7 +3327,7 @@ void LLFolderBridge::buildContextMenuBaseOptions(U32 flags)
 			}
 		}
 
-		//Added by spatters to force inventory pull on right-click to display folder options correctly. 07-17-06
+		//Added by aura to force inventory pull on right-click to display folder options correctly. 07-17-06
 		mCallingCards = mWearables = FALSE;
 
 		LLIsType is_callingcard(LLAssetType::AT_CALLINGCARD);
