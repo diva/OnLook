@@ -237,8 +237,9 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 	static LLCachedControl<bool> sAscentCmdLineMapToKeepPos(gSavedSettings, "AscentMapToKeepPos");
 	static LLCachedControl<std::string> sAscentCmdLineCalc(gSavedSettings,  "AscentCmdLineCalc");
 	static LLCachedControl<std::string> sAscentCmdLineTP2(gSavedSettings,  "AscentCmdLineTP2");
-	static LLCachedControl<std::string> sSinguCmdLineClearChat(gSavedSettings,  "SinguCmdLineAway");
 	static LLCachedControl<std::string> sAscentCmdLineClearChat(gSavedSettings,  "AscentCmdLineClearChat");
+	static LLCachedControl<std::string> sSinguCmdLineAway(gSavedSettings,  "SinguCmdLineAway");
+	static LLCachedControl<std::string> sSinguCmdLineURL(gSavedSettings,  "SinguCmdLineURL");
 
 	if(sAscentCmdLine)
 	{
@@ -371,21 +372,16 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 			{
 				if (revised_text.length() > command.length() + 1) //Typing this command with no argument was causing a crash. -Madgeek
 				{
-					LLVector3d agentPos = gAgent.getPositionGlobal();
-					S32 agent_x = llround( (F32)fmod( agentPos.mdV[VX], (F64)REGION_WIDTH_METERS ) );
-					S32 agent_y = llround( (F32)fmod( agentPos.mdV[VY], (F64)REGION_WIDTH_METERS ) );
-					S32 agent_z = llround( (F32)agentPos.mdV[VZ] );
-					std::string region_name = LLWeb::escapeURL(revised_text.substr(command.length()+1));
+					LLSLURL slurl(LLWeb::escapeURL(revised_text.substr(command.length()+1)));
 
-					if(!sAscentCmdLineMapToKeepPos)
+					// The user wants to keep their position between MapTos and they have not passed a position (position is defaulted)
+					if (sAscentCmdLineMapToKeepPos && slurl.getPosition() == LLVector3(REGION_WIDTH_METERS/2, REGION_WIDTH_METERS/2, 0))
 					{
-						agent_x = 128;
-						agent_y = 128;
-						agent_z = 0;
+						LLVector3d agentPos = gAgent.getPositionGlobal();
+						slurl = LLSLURL(slurl.getRegion(), LLVector3(fmod(agentPos.mdV[VX], (F64)REGION_WIDTH_METERS), fmod(agentPos.mdV[VY], (F64)REGION_WIDTH_METERS), agentPos.mdV[VZ]));
 					}
 
-					LLSLURL slurl(region_name,LLVector3(agent_x,agent_y,agent_z));
-					LLUrlAction::teleportToLocation(std::string("secondlife:///app/teleport/")+slurl.getLocationString());
+					LLUrlAction::teleportToLocation(LLWeb::escapeURL(std::string("secondlife:///app/teleport/")+slurl.getLocationString()));
 				}
 				return false;
 			}
@@ -428,9 +424,17 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 				}
 				return false;
 			}
-			else if(command == utf8str_tolower(sSinguCmdLineClearChat))
+			else if(command == utf8str_tolower(sSinguCmdLineAway))
 			{
 				handle_fake_away_status(NULL);
+				return false;
+			}
+			else if(command == utf8str_tolower(sSinguCmdLineURL))
+			{
+				if (revised_text.length() > command.length() + 1)
+				{
+					LLUrlAction::clickAction(revised_text.substr(command.length()+1));
+				}
 				return false;
 			}
 			else if(command == "typingstop")

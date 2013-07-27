@@ -131,6 +131,20 @@ const F32 MAX_FIDGET_TIME = 20.f; // seconds
 LLAgent gAgent;
 std::string gAuthString;
 
+void camera_reset_on_motion()
+{
+	static const LLCachedControl<bool> motion_resets_cam("SinguMotionResetsCamera");
+	if (motion_resets_cam)
+	{
+		gAgentCamera.resetView();
+	}
+	else if (LLSelectMgr::getInstance()->getSelection()->isAttachment()) // If attachments are still selected during movement, bad things happen
+	{
+		LLSelectMgr::getInstance()->deselectAll();
+		if (gMenuHolder) gMenuHolder->hideMenus(); // Attachments may be selected through menus, deselection will invalidate these menus
+	}
+}
+
 class LLTeleportRequest
 {
 public:
@@ -540,7 +554,7 @@ void LLAgent::moveAt(S32 direction, bool reset)
 
 	if (reset)
 	{
-		gAgentCamera.resetView();
+		camera_reset_on_motion();
 	}
 }
 
@@ -563,7 +577,7 @@ void LLAgent::moveAtNudge(S32 direction)
 		setControlFlags(AGENT_CONTROL_NUDGE_AT_NEG);
 	}
 
-	gAgentCamera.resetView();
+	camera_reset_on_motion();
 }
 
 //-----------------------------------------------------------------------------
@@ -585,7 +599,7 @@ void LLAgent::moveLeft(S32 direction)
 		setControlFlags(AGENT_CONTROL_LEFT_NEG | AGENT_CONTROL_FAST_LEFT);
 	}
 
-	gAgentCamera.resetView();
+	camera_reset_on_motion();
 }
 
 //-----------------------------------------------------------------------------
@@ -607,7 +621,7 @@ void LLAgent::moveLeftNudge(S32 direction)
 		setControlFlags(AGENT_CONTROL_NUDGE_LEFT_NEG);
 	}
 
-	gAgentCamera.resetView();
+	camera_reset_on_motion();
 }
 
 //-----------------------------------------------------------------------------
@@ -629,7 +643,7 @@ void LLAgent::moveUp(S32 direction)
 		setControlFlags(AGENT_CONTROL_UP_NEG | AGENT_CONTROL_FAST_UP);
 	}
 
-	if (!isCrouch) gAgentCamera.resetView();
+	if (!isCrouch) camera_reset_on_motion();
 }
 
 //-----------------------------------------------------------------------------
@@ -650,7 +664,7 @@ void LLAgent::moveYaw(F32 mag, bool reset_view)
 
     if (reset_view)
 	{
-        gAgentCamera.resetView();
+        camera_reset_on_motion();
 	}
 }
 
@@ -783,7 +797,7 @@ void LLAgent::toggleFlying()
 	BOOL fly = !gAgent.getFlying();
 
 	gAgent.setFlying( fly );
-	gAgentCamera.resetView();
+	camera_reset_on_motion();
 }
 
 // static

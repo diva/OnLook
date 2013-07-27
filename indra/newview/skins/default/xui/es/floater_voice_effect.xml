@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater label="Lugares" name="voice_effects" title="TRANSFORMACIÓN DE VOZ">
+<floater name="voice_effects" title="Transformación de Voz">
 	<string name="no_voice_effect">
 		(Sin transformación de voz)
 	</string>
@@ -12,6 +12,8 @@
 	<string name="new_voice_effect">
 		(¡Nuevo!)
 	</string>
+	
+  <!--  effect names begin -->
 	<string name="effect_Arena">
 		Campo
 	</string>
@@ -120,6 +122,8 @@
 	<string name="effect_WhinyBot">
 		Robot llorica
 	</string>
+  <!--  effect names end -->
+  
 	<text name="preview_text">
 		Para probarla
 	</text>
@@ -128,7 +132,8 @@
 	</text>
 	<button label="Grabar" name="record_btn" tool_tip="Graba una muestra de tu voz."/>
 	<button label="Parar" name="record_stop_btn"/>
-	<text name="voice_morphing_link">
+	<button label="Activar" name="activate_btn"/>
+	<text_editor name="voice_morphing_link">
 		Suscríbete ahora
 	</text>
 	<scroll_list name="voice_effect_list" tool_tip="Graba una muestra de tu voz y pulsa en un efecto para ver cómo suena.">

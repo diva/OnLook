@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Seguridad" name="Media Settings Security">
 	<check_box initial_value="false" label="Permitir el acceso sólo a los patrones de URL especificados" name="whitelist_enable"/>
+	<scroll_list name="whitelist" />
+	<icon name="Parcel_Exp_Color"/>
 	<text name="home_url_fails_some_items_in_whitelist">
 		Están marcadas las entradas que la página web no 
 admite:

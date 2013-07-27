@@ -541,10 +541,18 @@ Toda esta región tiene activado el &apos;daño&apos;.
 Para que funcionen las armas los scripts deben estar activados.
 	</notification>
 	
+	<notification name="MultipleFacesSelected">
+Multiple faces are currently selected.
+If you continue this action, separate instances of media will be set on multiple faces of the object.
+To place the media on only one face, choose Select Face and click on the desired face of that object then click Add.
+		<tag>confirm</tag>
+		<usetemplate ignoretext="El Media será definido en las múltiples caras seleccionadas" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+	</notification>
+	
 	<notification name="MustBeInParcel">
 		Para configurar el Punto de llegada de la parcela, debes estar dentro de ella.
 	</notification>
-	
+
 	<notification name="PromptRecipientEmail">
 		Por favor, escribe una dirección de correo electrónica válida para el/los receptor/es.
 	</notification>
@@ -627,6 +635,13 @@ El pagar más hará que tu anuncio aparezca más arriba en la lista, y que tambi
 		¿Borrar el Anuncio Clasificado &apos;[NAME]&apos;?
 No se reembolsan las cuotas pagadas.
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+	</notification>
+
+	<notification name="DeleteMedia">
+		Has seleccionado borrar el media asociado a esta cara.
+¿Estás seguro que quieres continuar?
+		<tag>confirm</tag>
+		<usetemplate ignoretext="Confirmar antes de borrar el media de un objeto" name="okcancelignore" notext="No" yestext="Sí"/>
 	</notification>
 	
 	<notification name="ClassifiedSave">
@@ -1337,8 +1352,8 @@ Deberás reconfigurar el nombre y las opciones de la nueva parcela.
 		Mostrar los propietarios:
 El color de las parcelas indica el tipo de propietario.
 
-Verde = Su terreno
-Agua = Terreno de sus grupos
+Verde = Tu terreno
+Agua = Terreno de Tus grupos
 Rojo = Propiedad de otros
 Amarillo = En venta
 Morado = Para subasta
@@ -1565,12 +1580,26 @@ Si se vende una parcela transferida, el precio de venta se dividirá a partes ig
 	<notification name="ErrorMessage">
 		[ERROR_MESSAGE]
 	</notification>
-	
-	<notification name="AvatarMoved">
-		Tu localización [TYPE] no está disponible en estos momentos. [HELP]
+
+	<notification name="AvatarMovedDesired">
+		<tag>fail</tag>
+			La ubicación que buscas no está disponible actualmente.
 Has sido llevado a una región cercana.
 	</notification>
-	
+
+	<notification name="AvatarMovedLast">
+		<tag>fail</tag>
+			La ubicación solicitada no está disponible actualmente.
+Has sido llevado a una región cercana.
+	</notification>
+
+	<notification name="AvatarMovedHome">
+		<tag>fail</tag>
+			La ubicación de tu base no está disponible actualmente.
+Has sido llevado a una región cercana.
+Puedes querer definir una nueva ubicación base.
+	</notification>
+
 	<notification name="ClothingLoading">
 		Aún está descargándose tu ropa.
 Puedes usar normalmente [SECOND_LIFE], los demás residentes te verán correctamente.
@@ -1605,6 +1634,12 @@ Para caminar, usa las teclas del cursor.
 En cualquier momento, puedes pulsar la tecla F1 para conseguir ayuda o para aprender más acerca de [SECOND_LIFE].
 Por favor, elige el avatar masculino o femenino. Puedes cambiar más adelante tu elección.
 		<usetemplate name="okcancelbuttons" notext="Mujer" yestext="Varón"/>
+	</notification>
+
+	<notification name="CantTeleportToGrid">
+		No se puede hacer teleporte a [SLURL] porque está en un grid ([GRID]) distinto al grid actual ([CURRENT_GRID]).  Por favor, cierra tu visor e intenta nuevamente.
+		<tag>fail</tag>
+		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	
 	<notification name="NotEnoughCurrency">
@@ -1994,6 +2029,14 @@ Por favor, intenta con un nombre diferente.
 			<button name="OK" text="OK"/>
 			<button name="Cancel" text="Cancelar"/>
 		</form>
+	</notification>
+	
+	<notification name="TooManyTeleportOffers">
+		Has intentado enviar [OFFERS] ofertas de teleporte
+lo cual excede el límite de [LIMIT].
+		<tag>group</tag>
+		<tag>fail</tag>
+		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	
 	<notification name="OfferTeleportFromGod">
@@ -3754,6 +3797,8 @@ Por favor, reinténtalo en unos momentos.
 		<form name="form">
 			<button name="Accept" text="Aceptar"/>
 			<button name="Decline" text="Rehusar"/>
+			<button name="Ignore" text="Ignorar"/>
+			<button name="Profile" text="Perfil"/>
 		</form>
 	</notification>
 
@@ -3768,6 +3813,8 @@ Por favor, reinténtalo en unos momentos.
 		<form name="form">
 			<button name="Accept" text="Aceptar"/>
 			<button name="Decline" text="Rehusar"/>
+			<button name="Ignore" text="Ignorar"/>
+			<button name="Profile" text="Perfil"/>
 		</form>
 	</notification>
 	
@@ -3789,6 +3836,7 @@ Esto añadirá un ítem a tu inventario para que puedas enviar rápidamente a es
 		<form name="form">
 			<button name="Accept" text="Aceptar"/>
 			<button name="Decline" text="Rehusar"/>
+			<button name="Ignore" text="Ignorar"/>
 		</form>
 	</notification>
 	
@@ -3976,7 +4024,7 @@ Para mayor información busca &apos;Restrained Life&apos; en el wiki de SL.
 	</notification>
 	
 	<notification name="FirstRLVFartouch">
-		Se te ha restingido el tocar objetos lejanos: no serás capaz de tocar objetos más lejos de 1.5 metros de distancia de tu avatar hasta que la restricción sea levantada.
+		Se te ha restringido el tocar objetos lejanos: no serás capaz de tocar objetos más lejos de 1.5 metros de distancia de tu avatar hasta que la restricción sea levantada.
 
 Sugerencia: si un objeto está fuera de rango el cursor del ratón cambiará cuando pase sobre el y escucharás un sonido de error si intentas hacer clic en él.
 	</notification>
@@ -4117,13 +4165,32 @@ Pulsa Aceptar para entrar al chat o Rehusar para declinar la invitación. Pulsa 
 		Ha ocurrido un error intentando conectarte al [VOICE_CHANNEL_NAME]. Por favor, inténtalo más tarde.
 	</notification>
 	
+	<notification name="UnsupportedCommandSLURL">
+		El SLurl que has clicado no está soportado.
+		<tag>fail</tag>
+	</notification>
+
+	<notification name="BlockedSLURL">
+		<tag>security</tag>
+			Se ha recibido un SLurl de un navegador que no es de confianza y ha sido bloqueado por tu seguridad.
+	</notification>
+
+	<notification name="ThrottledSLURL">
+		<tag>security</tag>
+			Han sido recibidos múltiples SLurl de un navegador que no es de confianza en un período muy breve.
+Serán bloqueados por unos segundos por tu seguridad.
+	</notification>
+	
 	<notification name="ServerVersionChanged">
 		La región en la que has entrado está utilizando una versión diferente del simulador.
 Pulsa en este mensaje para ver más detalles.
 	</notification>
 	
-	<notification name="UnableToOpenCommandURL">
-		No puede abrirse desde este navegador la URL que has pulsado.
+	<notification name="ObjectMediaFailure">
+		Error de Servidor: ha fallado la obtención o actualización del media.
+&apos;[ERROR]&apos;
+		<tag>fail</tag>
+		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 
 	<notification name="MeshUploadError">
@@ -4215,6 +4282,14 @@ Has actualizado en forma local una textura base (baked) [RESOLUTION] para '[BODY
 
 Tu cuerpo, piel, pelo u ojos podrían ser los predeterminados
 		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+
+	<notification name="PopupAttempt">
+		Se ha bloqueado una ventana emergente.
+		<form name="form">
+			<ignore name="ignore" text="Habilitar todas las ventanas emergentes"/>
+			<button name="open" text="Abrir Ventana Emergente"/>
+		</form>
 	</notification>
 	
 	<notification label="Reiniciar Configuraciones" name="ResetSettingsComplete">
@@ -5443,5 +5518,16 @@ porque la parcela está llena.
 		Un objeto de tu propiedad ha solicitado claves de tu radar.
 ¿Deseas habilitar anunciar claves a los objetos en el sim?
 		<usetemplate name="yesnocancelbuttons" yestext="Si" notext="No" canceltext="No, ¡no volver a preguntar!"/>
+	</notification>
+	
+	<notification name="WavefrontExportPartial">
+		Incapaz de incluir [FAILED] de un total de [TOTAL] objetos debido a no tener permisos suficientes.
+
+¿Deseas exportar de todas maneras?
+		<usetemplate name="okcancelbuttons" yestext="Proceder" notext="Cancelar" />
+	</notification>
+
+	<notification name="WavefrontExportSuccess">
+		Los objetos han sido exportados satisfactoriamente a: [FILENAME]
 	</notification>
 </notifications>
