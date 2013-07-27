@@ -177,6 +177,7 @@ class LLVivoxVoiceClientMuteListObserver : public LLMuteListObserver
 	/* virtual */ void onChange()  { LLVivoxVoiceClient::getInstance()->muteListChanged();}
 };
 
+
 static LLVivoxVoiceClientMuteListObserver mutelist_listener;
 static bool sMuteListListener_listening = false;
 
@@ -836,20 +837,6 @@ void LLVivoxVoiceClient::stateMachine()
 						// SLIM SDK: these arguments are no longer necessary.
 //						std::string args = " -p tcp -h -c";
 						std::string loglevel = gSavedSettings.getString("VivoxDebugLevel");
-
-						// If we allow multiple instances of the viewer to start the voice
-						// daemon, set TEMPORARY random voice port
-						if (gSavedSettings.getBOOL("VoiceMultiInstance"))
-						{
-							LLControlVariable* voice_port = gSavedSettings.getControl("VoicePort");
-							if (voice_port)
-							{
-								const BOOL DO_NOT_PERSIST = FALSE;
-								S32 port_nr = 30000 + ll_rand(20000);
-								voice_port->setValue(LLSD(port_nr), DO_NOT_PERSIST);
-							}
-						}
-
 						if(loglevel.empty())
 						{
 							loglevel = "-0";	// turn logging off completely
@@ -858,9 +845,18 @@ void LLVivoxVoiceClient::stateMachine()
 						args += " -ll ";
 						args += loglevel;
 
-						// Tell voice gateway to listen to a specific port
+						// If we allow multiple instances of the viewer to start the voicedaemon
 						if (gSavedSettings.getBOOL("VoiceMultiInstance"))
 						{
+							// Set TEMPORARY random voice port
+							LLControlVariable* voice_port = gSavedSettings.getControl("VoicePort");
+							if (voice_port)
+							{
+								const BOOL DO_NOT_PERSIST = FALSE;
+								S32 port_nr = 30000 + ll_rand(20000);
+								voice_port->setValue(LLSD(port_nr), DO_NOT_PERSIST);
+							}
+							// Tell voice gateway to listen to a specific port
 							args += llformat(" -i 127.0.0.1:%u",  gSavedSettings.getU32("VoicePort"));
 						}
 
