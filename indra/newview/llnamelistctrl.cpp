@@ -360,11 +360,23 @@ LLView* LLNameListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 			std::string sortname(columnname);
 			child->getAttributeString("sort", sortname);
 		
-			if (child->hasAttribute("relwidth"))
+			if (child->hasAttribute("relative_width"))
+			{
+				F32 columnrelwidth = 0.f;
+				child->getAttributeF32("relative_width", columnrelwidth);
+				columns[index]["relative_width"] = columnrelwidth;
+			}
+			else if (child->hasAttribute("relwidth"))
 			{
 				F32 columnrelwidth = 0.f;
 				child->getAttributeF32("relwidth", columnrelwidth);
-				columns[index]["relwidth"] = columnrelwidth;
+				columns[index]["relative_width"] = columnrelwidth;
+			}
+			else if (child->hasAttribute("dynamic_width"))
+			{
+				BOOL columndynamicwidth = FALSE;
+				child->getAttributeBOOL("dynamic_width", columndynamicwidth);
+				columns[index]["dynamic_width"] = columndynamicwidth;
 			}
 			else if (child->hasAttribute("dynamicwidth"))
 			{
