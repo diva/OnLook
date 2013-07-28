@@ -6,7 +6,7 @@
 	<string name="TitleOneAvatar">Radar (1 Avatar)</string>
 	<string name="TitleWithCount">Radar ([COUNT] Avatars)</string>
 
-	<scroll_list name="avatar_list"
+	<scroll_list name="avatar_list" menu_file="menu_radar.xml"
 		    left="10" right="-10" top="-20" bottom="140" can_resize="true"
 		    column_padding="0" follows="left|top|bottom|right"
 		    draw_heading="true" multi_select="true" search_column="1"

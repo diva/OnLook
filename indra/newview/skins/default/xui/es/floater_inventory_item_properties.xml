@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="item properties" title="Propiedades Ítems de Inventario">
+	<icon name="IconLocked"/>
 	<text name="LabelItemNameTitle">
 		Nombre:
 	</text>
+	<line_editor name="LabelItemName"/>
 	<text name="LabelItemDescTitle">
 		Descripción:
 	</text>
+	<line_editor name="LabelItemDesc"/>
 	<text name="LabelCreatorTitle">
 		Creador:
 	</text>
@@ -20,6 +23,13 @@
 		Thrax Linden
 	</text>
 	<button label="Perfil..." label_selected="" name="BtnOwner"/>
+	<text name="LabelLastOwnerTitle">
+		Últ. Propiet.:
+	</text>
+	<text name="LabelLastOwnerName">
+		Eraseunavezun Linden
+	</text>
+	<button label="Perfil..." label_selected="" name="BtnLastOwner"/>
 	<text name="LabelAcquiredTitle">
 		Adquirido:
 	</text>
@@ -81,6 +91,7 @@
 	<text name="TextPrice">
 		Precio:  [CURRENCY]
 	</text>
+	<line_editor name="Edit Cost"/>
 	<string name="unknown">
 		(desconocido)
 	</string>

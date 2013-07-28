@@ -136,6 +136,7 @@
 #include "llnotify.h"
 #include "llpanellogin.h"
 #include "llparcel.h"
+#include "llregioninfomodel.h"
 #include "llselectmgr.h"
 #include "llstatusbar.h"
 #include "lltextureview.h"
@@ -6051,7 +6052,7 @@ class LLWorldCreateLandmark : public view_listener_t
 		LLUUID folder_id;
 		folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LANDMARK);
 		std::string pos_string;
-		LLAgentUI::buildLocationString(pos_string);
+		LLAgentUI::buildLocationString(pos_string, gSavedSettings.getBOOL("LiruLegacyLandmarks") ? LLAgentUI::LOCATION_FORMAT_NO_MATURITY : LLAgentUI::LOCATION_FORMAT_LANDMARK);
 		
 		create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
 							  folder_id, LLTransactionID::tnull,
@@ -9206,6 +9207,324 @@ class VisibleNotSecondLife : public view_listener_t
 	}
 };
 
+LLScrollListCtrl* get_focused_list()
+{
+	LLScrollListCtrl* list = dynamic_cast<LLScrollListCtrl*>(gFocusMgr.getKeyboardFocus());
+	llassert(list); // This listener only applies to lists
+	return list;
+}
+
+class ListEnableAnySelected : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(list->getNumSelected());
+		return true;
+	}
+};
+
+class ListEnableMultipleSelected : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(list->getNumSelected() > 1);
+		return true;
+	}
+};
+
+class ListEnableSingleSelected : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(list->getNumSelected() == 1);
+		return true;
+	}
+};
+
+class ListEnableCall : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(LLAvatarActions::canCall());
+		return true;
+	}
+};
+
+class ListEnableIsFriend : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(LLAvatarActions::isFriend(list->getStringUUIDSelectedItem()));
+		return true;
+	}
+};
+
+class ListEnableIsNotFriend : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(!LLAvatarActions::isFriend(list->getStringUUIDSelectedItem()));
+		return true;
+	}
+};
+
+class ListEnableMute : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		uuid_vec_t ids = list->getSelectedIDs();
+		bool can_block = true;
+		for (uuid_vec_t::const_iterator it = ids.begin(); can_block && it != ids.end(); ++it)
+			can_block = LLAvatarActions::canBlock(*it);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(can_block);
+		return true;
+	}
+};
+
+class ListEnableOfferTeleport : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(LLAvatarActions::canOfferTeleport(list->getSelectedIDs()));
+		return true;
+	}
+};
+
+class ListCopyUUIDs : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLAvatarActions::copyUUIDs(list->getSelectedIDs());
+		return true;
+	}
+};
+
+class ListOfferTeleport : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLAvatarActions::offerTeleport(list->getSelectedIDs());
+		return true;
+	}
+};
+
+class ListPay : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLAvatarActions::pay(list->getStringUUIDSelectedItem());
+		return true;
+	}
+};
+
+class ListRemoveFriend : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLAvatarActions::removeFriendDialog(list->getStringUUIDSelectedItem());
+		return true;
+	}
+};
+
+class ListRequestFriendship : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLAvatarActions::requestFriendshipDialog(list->getStringUUIDSelectedItem());
+		return true;
+	}
+};
+
+class ListShowProfile : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLAvatarActions::showProfiles(list->getSelectedIDs());
+		return true;
+	}
+};
+
+class ListStartAdhocCall : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLAvatarActions::startAdhocCall(list->getSelectedIDs());
+		return true;
+	}
+};
+
+class ListStartCall : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLAvatarActions::startCall(list->getStringUUIDSelectedItem());
+		return true;
+	}
+};
+
+class ListStartConference : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLAvatarActions::startConference(list->getSelectedIDs());
+		return true;
+	}
+};
+
+class ListStartIM : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLAvatarActions::startIM(list->getStringUUIDSelectedItem());
+		return true;
+	}
+};
+
+class ListAbuseReport : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLFloaterReporter::showFromObject(list->getStringUUIDSelectedItem());
+		return true;
+	}
+};
+
+// Create the args for administrative notifications used in lists, tossing the selected names into it.
+LLSD create_args(const uuid_vec_t& ids, const std::string& token)
+{
+	std::string names;
+	LLAvatarActions::buildResidentsString(ids, names);
+	LLSD args;
+	args[token] = names;
+	return args;
+}
+
+void parcel_mod_notice_callback(const uuid_vec_t& ids, S32 choice, boost::function<void (const LLUUID&, bool)> cb)
+{
+	if (ids.empty() || (choice != 1 && choice != 0)) return; // choice must be 1 or 0 to take action
+
+	for (uuid_vec_t::const_iterator it = ids.begin(); it != ids.end(); ++it)
+		cb(*it, choice);
+}
+
+void send_eject(const LLUUID& avatar_id, bool ban);
+class ListEject : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		const uuid_vec_t& ids = list->getSelectedIDs();
+		LLNotificationsUtil::add("EjectAvatarFullname", create_args(ids, "AVATAR_NAME"), LLSD(), boost::bind(parcel_mod_notice_callback, ids, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2), send_eject));
+		return true;
+	}
+};
+
+void send_freeze(const LLUUID& avatar_id, bool freeze);
+class ListFreeze : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		const uuid_vec_t& ids = list->getSelectedIDs();
+		LLNotificationsUtil::add("FreezeAvatarFullname", create_args(ids, "AVATAR_NAME"), LLSD(), boost::bind(parcel_mod_notice_callback, ids, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2), send_freeze));
+		return true;
+	}
+};
+
+void estate_bulk_eject(const uuid_vec_t& ids, bool ban, S32 zero)
+{
+	if (ids.empty() || zero != 0) return;
+	std::vector<std::string> strings;
+	strings[0] = gAgentID.asString(); // [0] = our agent id
+	for (uuid_vec_t::const_iterator it = ids.begin(); it != ids.end(); ++it)
+	{
+		LLUUID id(*it);
+		if (id.isNull()) continue;
+		strings[1] = id.asString(); // [1] = target agent id
+
+		LLRegionInfoModel::sendEstateOwnerMessage(gMessageSystem, "teleporthomeuser", LLFloaterRegionInfo::getLastInvoice(), strings);
+		if (ban)
+			LLPanelEstateInfo::sendEstateAccessDelta(ESTATE_ACCESS_BANNED_AGENT_ADD | ESTATE_ACCESS_ALLOWED_AGENT_REMOVE | ESTATE_ACCESS_NO_REPLY, id);
+	}
+}
+
+class ListEstateBan : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		const uuid_vec_t& ids = list->getSelectedIDs();
+		LLNotificationsUtil::add("EstateBanUser", create_args(ids, "EVIL_USER"), LLSD(), boost::bind(estate_bulk_eject, ids, true, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2)));
+		return true;
+	}
+};
+
+class ListEstateEject : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		const uuid_vec_t& ids = list->getSelectedIDs();
+		LLNotificationsUtil::add("EstateKickUser", create_args(ids, "EVIL_USER"), LLSD(), boost::bind(estate_bulk_eject, ids, false, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2)));
+		return true;
+	}
+};
+
+class ListToggleMute : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		uuid_vec_t ids = list->getSelectedIDs();
+		for (uuid_vec_t::const_iterator it = ids.begin(); it != ids.end(); ++it)
+			LLAvatarActions::toggleBlock(*it);
+		return true;
+	}
+};
+
 void addMenu(view_listener_t *menu, const std::string& name)
 {
 	sMenus.push_back(menu);
@@ -9508,6 +9827,32 @@ void initialize_menus()
 // [/RLVa:KB]
 
 	addMenu(new VisibleNotSecondLife(), "VisibleNotSecondLife");
+
+	// List-bound menus
+	addMenu(new ListEnableAnySelected(), "List.EnableAnySelected");
+	addMenu(new ListEnableMultipleSelected(), "List.EnableMultipleSelected");
+	addMenu(new ListEnableSingleSelected(), "List.EnableSingleSelected");
+	addMenu(new ListEnableCall(), "List.EnableCall");
+	addMenu(new ListEnableIsFriend(), "List.EnableIsFriend");
+	addMenu(new ListEnableIsNotFriend(), "List.EnableIsNotFriend");
+	addMenu(new ListEnableMute(), "List.EnableMute");
+	addMenu(new ListEnableOfferTeleport(), "List.EnableOfferTeleport");
+	addMenu(new ListCopyUUIDs(), "List.CopyUUIDs");
+	addMenu(new ListOfferTeleport(), "List.OfferTeleport");
+	addMenu(new ListPay(), "List.Pay");
+	addMenu(new ListRemoveFriend(), "List.RemoveFriend");
+	addMenu(new ListRequestFriendship(), "List.RequestFriendship");
+	addMenu(new ListShowProfile(), "List.ShowProfile");
+	addMenu(new ListStartAdhocCall(), "List.StartAdhocCall");
+	addMenu(new ListStartCall(), "List.StartCall");
+	addMenu(new ListStartConference(), "List.StartConference");
+	addMenu(new ListStartIM(), "List.StartIM");
+	addMenu(new ListAbuseReport(), "List.AbuseReport");
+	addMenu(new ListEject(), "List.ParcelEject");
+	addMenu(new ListFreeze(), "List.Freeze");
+	addMenu(new ListEstateBan(), "List.EstateBan");
+	addMenu(new ListEstateEject(), "List.EstateEject");
+	addMenu(new ListToggleMute(), "List.ToggleMute");
 
 	LLToolMgr::getInstance()->initMenu(sMenus);
 }

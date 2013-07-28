@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater name="top_objects" title="Objetos superiores">
+<floater name="top_objects" title="Objetos Superiores">
 	<string name="top_scripts_title">
 		Scripts según su uso
 	</string>
@@ -10,16 +10,16 @@
 		Tiempo
 	</string>
     <string name="top_colliders_title">
-		Objetos que colisionan
+		Objetos que Colisionan
 	</string>
 	<string name="top_colliders_text">
-		[COUNT] objetos con muchas posibles colisiones
+		[COUNT] objetos con muchas colisiones potenciales
 	</string>
 	<string name="colliders_score_label">
 		Resultado
 	</string>
     <string name="none_descriptor">
-		No se ha encontrado ninguno.
+		Ninguno Encontrado.
 	</string>
 	<text name="title_text">
 		Cargando...
@@ -28,34 +28,38 @@
 		<column label="Resultado" name="score"/>
 		<column label="Nombre" name="name"/>
 		<column label="Propietario" name="owner"/>
-		<column label="Posición" name="location"/>
-		<column label="Parcela" name="parcel"/>
+		<column label="Ubicación" name="location"/>
+        <column label="Parcela" name="parcel"/>
 		<column label="Tiempo" name="time"/>
 		<column label="URLs" name="URLs"/>
 		<column label="Memoria (KB)" name="memory"/>
 	</scroll_list>
 	<text name="id_text">
-		ID del objeto:
+		ID del Objeto:
 	</text>
-	<button label="Mostrar baliza" name="show_beacon_btn"/>
+	<line_editor name="id_editor"/>
+	<button label="Mostrar Balizas" name="show_beacon_btn"/>
 	<text name="obj_name_text">
-		Nombre del objeto:
+		Objeto:
 	</text>
+	<line_editor name="object_name_editor"/>
 	<button label="Filtro" name="filter_object_btn"/>
 	<text name="owner_name_text">
 		Propietario:
 	</text>
+	<line_editor name="owner_name_editor"/>
 	<button label="Filtro" name="filter_owner_btn"/>
 	<text name="parcel_name_text">
-		Parcela:
+        Parcel:
 	</text>
+	<line_editor name="parcel_name_editor"/>
 	<button label="Filtro" name="filter_parcel_btn"/>
-	<button label="Actualizar" name="refresh_btn"/>
-	<button label="Devolver lo seleccionado" name="return_selected_btn" width="190"/>
-	<button label="Devolver todo" left_delta="190" name="return_all_btn"/>
-	<button label="Teleportarse" name="teleport_to_btn"/>
-	<button label="Perfil" name="profile_btn"/>
-	<button label="Desactivar lo seleccionado" name="disable_selected_btn" width="190"/>
-	<button label="Desactivar todo" left_delta="190" name="disable_all_btn"/>
-	<button label="Expulsar del Estado" name="estate_kick_btn"/>
+	<button label="Actualizar" name="refresh_btn" right="-10" width="70" />
+	<button label="Devolver Seleccionado" name="return_selected_btn" width="152"/>
+	<button label="Devolver Todo" left_delta="160" name="return_all_btn" width="110" />
+	<button label="Teleportar a" left_delta="120" name="teleport_to_btn" width="130"/>
+	<button label="Perfil" left_delta="140" name="profile_btn" width="110" />
+	<button label="Desactivar Seleccionado" name="disable_selected_btn" width="152" />
+	<button label="Desactivar Todo" left_delta="160" name="disable_all_btn" width="110" />
+	<button label="Expulsar del Estado" left_delta="120" name="estate_kick_btn" width="130"/>
 </floater>

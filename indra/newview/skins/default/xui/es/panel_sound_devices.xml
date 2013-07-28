@@ -10,16 +10,24 @@
 		Dispositivo del sistema por defecto
 	</string>
 	<text name="Input">
-		Entrada
+		Entrada (mic):
 	</text>
+	<combo_box name="voice_input_device"/>
 	<text name="Output">
-		Salida
+		Salida (Parlantes):
 	</text>
+	<combo_box name="voice_output_device"/>
 	<text name="My volume label">
-		Mi volumen:
+		Nivel de Entrada:
 	</text>
-	<slider_bar initial_value="1.0" name="mic_volume_slider" tool_tip="Cambia el volumen usando este deslizable"/>
+	<volume_slider name="mic_volume_slider"
+	     tool_tip="Cambia el volumen usando este deslizable"/>
 	<text name="wait_text">
 		Por favor, espera
 	</text>
+	<locate name="bar0"/>
+	<locate name="bar1"/>
+	<locate name="bar2"/>
+	<locate name="bar3"/>
+	<locate name="bar4"/>
 </panel>

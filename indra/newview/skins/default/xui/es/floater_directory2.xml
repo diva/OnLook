@@ -13,6 +13,7 @@
 			<text name="find">
 				Buscar:
 			</text>
+			<line_editor name="name"/>
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
@@ -30,6 +31,7 @@
 				<column label="Conectado" name="online"/>
 				<column label="Miembros" name="members"/>
 			</scroll_list>
+			<text name="result_text"/>
 		</panel>
 		<!-- ======================== -->
 		<panel label="Clasificados" name="classified_panel">
@@ -42,6 +44,7 @@
 			<text name="find">
 				Buscar:
 			</text>
+			<line_editor name="name"/>
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
@@ -87,6 +90,7 @@
 				<column label="Nombre" name="name"/>
 				<column label="Precio" name="price"/>
 			</scroll_list>
+			<text name="result_text"/>
 			<button label="Sig. &gt;" label_selected="Sig. &gt;" name="Next &gt;"/>
 			<button label="&lt; Ant." label_selected="&lt; Ant." name="&lt; Prev"/>
 		</panel>
@@ -101,6 +105,7 @@
 			<text name="text2">
 				Buscar:
 			</text>
+			<line_editor name="name"/>
 			<radio_group name="date_mode">
 				<radio_item name="current">
 					En curso y próximos
@@ -170,6 +175,7 @@
 				<column label="" name="event_id"/>
 				<column label="Hora" name="time"/>
 			</scroll_list>
+			<text name="result_text"/>
 			<button label="Sig. &gt;" label_selected="Sig. &gt;" name="Next &gt;"/>
 			<button label="&lt; Ant." label_selected="&lt; Ant." name="&lt; Prev"/>
 		</panel>
@@ -213,6 +219,7 @@
 			<text name="areacheck_symbol">
 				m²
 			</text>
+			<line_editor name="priceedit"/>
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
 			<scroll_list name="results">
 				<column label="" name="icon"/>
@@ -223,6 +230,7 @@
 				<column label="Superficie" name="area"/>
 				<column label="[CURRENCY]/m²" name="per_meter"/>
 			</scroll_list>
+			<text name="result_text"/>
 			<button label="Sig. &gt;" label_selected="Sig. &gt;" name="Next &gt;"/>
 			<button label="&lt; Ant." label_selected="&lt; Ant." name="&lt; Prev"/>
 		</panel>
@@ -237,10 +245,11 @@
 			<text name="find">
 				Buscar:
 			</text>
+			<line_editor name="name"/>
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
-            <check_box name="filter_gaming" label="Ocultar Juegos de Azar"/>			
+			<check_box name="filter_gaming" label="Ocultar Juegos de Azar"/>			
 			<combo_box name="Category">
 				<combo_item name="AnyCategory">
 					Cualquier Categoría
@@ -336,6 +345,7 @@
 				<column abel="Nombre" name="name" />
 				<column label="Tráfico" name="dwell"/>
 			</scroll_list>
+			<text name="result_text"/>
 			<button label="Sig. &gt;" label_selected="Sig. &gt;" name="Next &gt;"/>
 			<button label="&lt; Ant." label_selected="&lt; Ant." name="&lt; Prev"/>
 		</panel>
@@ -350,12 +360,14 @@
 			<text name="find">
 				Buscar:
 			</text>
+			<line_editor name="name"/>
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
 			<scroll_list name="results">
 				<column label="" name="icon"/>
 				<column label="" name="type"/>
 				<column label="Nombre" name="name"/>
 			</scroll_list>
+			<text name="result_text"/>
 			<button label="Sig. &gt;" label_selected="Sig. &gt;" name="Next &gt;"/>
 			<button label="&lt; Ant." label_selected="&lt; Ant." name="&lt; Prev"/>
 		</panel>
@@ -372,6 +384,7 @@
 			<text name="find">
 				Buscar:
 			</text>
+			<line_editor name="name"/>
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
@@ -384,6 +397,15 @@
 				<column label="Miembros" name="members"/>
 				<column label="" name="score"/>
 			</scroll_list>
+			<text name="result_text"/>
 		</panel>
 	</tab_container>
+	<panel name="classified_details_panel"/>
+	<panel name="Panel Avatar"/>
+	<panel name="event_details_panel"/>
+	<panel name="group_details_panel_holder">
+		<panel name="group_details_panel"/>
+	</panel>
+	<panel name="place_details_panel"/>
+	<panel name="place_details_small_panel"/>
 </floater>

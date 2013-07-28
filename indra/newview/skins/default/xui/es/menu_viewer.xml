@@ -4,7 +4,7 @@
 		<menu_item_call label="Imagen ([UPLOADFEE])..." name="Upload Image"/>
 		<menu_item_call label="Sonido ([UPLOADFEE])..." name="Upload Sound"/>
 		<menu_item_call label="Animación ([UPLOADFEE])..." name="Upload Animation"/>
-		<menu_item_call label="Subir Malla..." name="Upload Mesh"/>
+		<menu_item_call label="Subir Modelo..." name="Upload Mesh"/>
 		<menu_item_call label="Masiva ([UPLOADFEE] por archivo)..." name="Bulk Upload"/>
 		<menu_item_call label="Importar XML" name="Import"/>
 		<menu_item_call label="Importar con Texturas" name="Import2"/>
@@ -19,7 +19,7 @@
 		<menu_item_call label="Guardar Foto en Disco" name="Snapshot to Disk"/>
 		<menu_item_call label="Salir" name="Quit"/>
 	</menu>
-	<!-- ======================================== -->
+	<!-- ============================= -->
 	<menu label="Editar" name="Edit" >
 		<menu_item_call label="Deshacer" name="Undo"/>
 		<menu_item_call label="Rehacer" name="Redo" />
@@ -58,12 +58,16 @@
 		<menu_item_separator label="-----------" name="separator8"/>
 		<menu_item_call label="Preferencias..." name="Preferences..."/>
 	</menu>
-	<!-- ================================= -->
+	<!-- ============================= -->
 	<menu label="Ver"  name="View" >
 		<menu_item_call label="Vista Subjetiva" name="Mouselook"/>
 		<menu_item_check label="Construir" name="Build"/>
 		<menu_item_check label="Flycam del Joystick" name="Joystick Flycam"/>
 		<menu_item_call label="Volver a Vista por Defecto" name="Reset View"/>
+		<menu_item_check label="Movimiento Reestablece la Cámara" name="Motion Resets Camera" shortcut="alt|shift|R">
+			<on_click function="ToggleControl" userdata="SinguMotionResetsCamera"/>
+			<on_check control="SinguMotionResetsCamera"/>
+		</menu_item_check>
 		<menu_item_call label="Mirar al último que habló" name="Look at Last Chatter"/>
 		<menu_item_check label="Barra de Herramientas" name="Toolbar"/>
 		<menu_item_check label="Chat Local" name="Chat History"/>
@@ -98,7 +102,7 @@
 		<menu_item_call label="Pantalla Completa" name="Toggle Fullscreen"/>
 		<menu_item_call label="Interfaz en tamaño Predeterminado" name="Set UI Size to Default"/>
 	</menu>
-	<!-- ========================================== -->
+	<!-- ============================= -->
 	<menu label="Mundo" name="World" >
 		<menu_item_call label="Chat" name="Chat"/>
 		<menu_item_check label="Correr Siempre" name="Always Run"/>
@@ -133,7 +137,7 @@
 			<menu_item_call label="Efectos de Post-Procesado" name="Post-Processing Effects"/>
 		</menu>
 	</menu>
-	<!-- ========================================== -->
+	<!-- ============================= -->
 	<menu label="Herramientas" left="0" name="Tools" >
 		<menu label="Seleccionar Herramienta" name="Select Tool">
 			<menu_item_call label="Foco" name="Focus"/>
@@ -149,6 +153,7 @@
 		<menu_item_check label="Mostrar objetos seleccionados ocultos" name="Show Hidden Selection"/>
 		<menu_item_check label="Mostrar radio de luz de la selección" name="Show Light Radius for Selection"/>
 		<menu_item_check label="Mostrar rayo indicador" name="Show Selection Beam"/>
+		<menu_item_call name="insert_tools"/>
 		<menu_item_check label="Ajustar a la cuadrícula" name="Snap to Grid"/>
 		<menu_item_call label="Ajustar Objetos XY a la cuadrícula" name="Snap Object XY to Grid"/>
 		<menu_item_call label="Usar Seleccionado como cuadrícula" name="Use Selection for Grid"/>
@@ -170,7 +175,7 @@
 		<menu_item_call label="Recoger una Copia" name="Take Copy"/>
 		<menu_item_call label="Devolver Objeto" name="Return..."/>
 		<menu_item_call label="Devolver Objeto al Contenido de Objetos" name="Save Object Back to Object Contents"/>
-		<menu_item_call label="Administrador - Borrar" name="Admin Delete"/>
+		<menu_item_call label="Administrador: Borrar" name="Admin Delete"/>
 		<menu_item_call label="Mostrar ventana de avisos/errores de Script " name="Show Script Warning/Error Window"/>
 		<menu label="Recompilar Scripts de la Selección" name="Recompile Scripts in Selection">
 			<menu_item_call label="Mono" name="Mono"/>
@@ -180,13 +185,14 @@
 		<menu_item_call label="Definir Ejecución de Scripts en la Selección" name="Set Scripts to Running in Selection"/>
 		<menu_item_call label="Definir la no ejecución de Scripts en la Selección" name="Set Scripts to Not Running in Selection"/>
 		<menu_item_call label="Borrar Scripts en la Selección" name="Remove Scripts in Selection"/>
+		<menu_item_call label="Contar Scripts en la Selección" name="Count Scripts in Selection"/>
 		<menu label="Pathfinding" name="Pathfinding">
 			<menu_item_check label="Conjuntos de Enlaces..." name="pathfinding_linksets_menu_item"/>
 			<menu_item_check label="Personajes..." name="pathfinding_characters_menu_item"/>
 			<menu_item_call label="Rebake de Región" name="pathfinding_rebake_navmesh_item"/>
 		</menu>
 	</menu>
-	<!-- =========================================== -->  
+	<!-- ============================= -->
 	<menu label="Ayuda" left="227" name="Help" >
 		<menu_item_call label="Ayuda de Second Life" name="Second Life Help"/>
 		<menu_item_call label="Tutorial" name="Tutorial"/>
@@ -208,4 +214,19 @@
 		</menu>
 		<menu_item_call label="Acerca de Singularity..." name="About Second Life..."/>
 	</menu>
+	<!-- ============================= -->
+	<menu label="Singularity" name="Singularity">
+		<menu_item_call label="Cerrar todos los diálogos" name="Close All Dialogs"/>
+		<menu_item_call label="Falso Estado Ausente" name="Fake Away Status"/>
+		<menu_item_call label="Forzar Sentarse en el Piso" name="Force Ground Sit"/>
+		<menu_item_call label="Animation Override..." name="Animation Override ..."/>
+		<menu_item_check label="Agilidad" name="Nimble"/>
+		<menu_item_check label="Búsqueda en Área" name="Object Area Search"/>
+		<menu_item_check label="Explorador de Sonidos" name="Sound Explorer"/>
+		<menu_item_check label="Lista Negra de Assets" name="Asset Blacklist"/>
+		<menu_item_check label="Mostrar Información de Audio" name="Streaming Audio Display"/>
+		<menu_item_check label="Pose Stand" name="Pose Stand"/>
+		<menu_item_check label="Consola de Depuración de Región" name="Region Debug Console"/>
+		<menu_item_call label="Redibujar" name="Rebake"/>
+	</menu>		
 </menu_bar>

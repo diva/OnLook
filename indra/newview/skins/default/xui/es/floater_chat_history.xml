@@ -7,7 +7,7 @@
 		Conectado
 	</string>
 	<string name="unavailable">
-		La Voz no está disponible en su ubicación actual
+		La Voz no está disponible en tu ubicación actual
 	</string>
 	<string name="hang_up">
 		Desconectado del Chat de Voz
@@ -30,6 +30,8 @@
 					<check_box label="Mostrar Texto Ignorado" name="show mutes"/>
 					<button label="Abrir Historial" name="chat_history_open" tool_tip="Pulsá aquí para abrir el historial de chat en un editor externo." left_delta="150"/>
 					<button label="&lt; &lt;" label_selected="&gt; &gt;" name="toggle_active_speakers_btn" tool_tip="Pulsa aqui para ver la lista de los participantes en esta sesión de MI"/>
+					<text_editor name="Chat History Editor"/>
+					<text_editor name="Chat History Editor with mute"/>
 				</layout_panel>
 				<layout_panel name="chat_layout_panel">
 					<panel name="chat_panel">
@@ -51,6 +53,7 @@
 					</panel>
 				</layout_panel>
 			</layout_stack>
-		</layout_panel>					
+		</layout_panel>
+		<layout_panel name="active_speakers_panel"/>
 	</layout_stack>
 </floater>

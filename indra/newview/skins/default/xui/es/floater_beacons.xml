@@ -4,14 +4,15 @@
 		<check_box label="Mantener balizas activas al cerrar" name="always_on"/>
 		<check_box label="Activar Balizas" name="beacons"/>
 		<check_box label="Activar los Realzados" name="highlights"/>
-    <text name="beacon_width_label">
-      Ancho de la Baliza:
-    </text>
+		<text name="beacon_width_label">
+			Ancho de la Baliza:
+		</text>
+		<slider name="beacon_width"/>
 		<check_box label="Objetos Materiales" name="physical"/>
 		<check_box label="Objetos con Scripts" name="scripted"/>
 		<check_box label="Solo Objetos con script de toque" name="touch_only"/>
 		<check_box label="Fuentes de Sonidos" name="sounds"/>
 		<check_box label="Fuentes de Partículas" name="particles"/>
 		<check_box label="Fuentes de media" name="moapbeacon"/>
-  </panel>
+	</panel>
 </floater>

@@ -18,7 +18,7 @@
 	<text name="loginuri_label">
 		URL de Inicio:
 	</text>
-	<button label="Actualizar Información del Grid" label_selected="Actualizar Info de Grids" name="btn_gridinfo" width="170" left="120" tool_tip="Recuperar toda la información del grid desde la URI de inicio de sesión indicada (sobreescribiendo las URLs actuales, ver Avanzado)"/>-->
+	<button label="Actualizar Información del Grid" name="btn_gridinfo" width="174" left="120" tool_tip="Recuperar toda la información del grid desde la URI de inicio de sesión indicada (sobreescribiendo las URLs actuales, ver Avanzado)"/>-->
 	<!-- Platform -->
 	<text name="platform_label">
 		Plataforma:
