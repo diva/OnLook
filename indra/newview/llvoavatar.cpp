@@ -2526,7 +2526,7 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 		{{
 				LLViewerJointAttachment* attachment = attachment_iter->second;
 				LLViewerObject* attached_object = attachment_iter->first;
-				BOOL visibleAttachment = visible || (attached_object && 
+				BOOL visibleAttachment = visible || (attached_object && attached_object->mDrawable.notNull() &&
 													!(attached_object->mDrawable->getSpatialBridge() &&
 													  attached_object->mDrawable->getSpatialBridge()->getRadius() < 2.0));
 
