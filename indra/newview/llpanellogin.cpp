@@ -795,12 +795,9 @@ void LLPanelLogin::loadLoginPage()
 		params["firstlogin"] = "TRUE"; // not bool: server expects string TRUE
  	}
  
- 	if(login_page_str.find("secondlife.com") == -1)
-	{
-		params["version"]= llformat("%d.%d.%d (%d)",
- 						gVersionMajor, gVersionMinor, gVersionPatch, gVersionBuild);
-		params["channel"] = gVersionChannel;
-	}
+	params["version"]= llformat("%d.%d.%d (%d)",
+				gVersionMajor, gVersionMinor, gVersionPatch, gVersionBuild);
+	params["channel"] = gVersionChannel;
 
 	// Grid
 
