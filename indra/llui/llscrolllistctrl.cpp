@@ -2545,6 +2545,19 @@ void LLScrollListCtrl::setScrollListParameters(LLXMLNodePtr node)
 		node->getAttributeS32("column_padding", column_padding);
 		setColumnPadding(column_padding);
 	}
+
+	if (node->hasAttribute("mouse_wheel_opaque"))
+	{
+		node->getAttribute_bool("mouse_wheel_opaque", mMouseWheelOpaque);
+	}
+
+	if (node->hasAttribute("menu_file"))
+	{
+		std::string menu_file;
+		node->getAttributeString("menu_file", menu_file);
+		mPopupMenu = LLUICtrlFactory::getInstance()->buildMenu(menu_file, LLMenuGL::sMenuContainer);
+		LLMenuGL::sMenuContainer->addChild(mPopupMenu);
+	}
 }
 
 // static
@@ -2578,22 +2591,6 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 	scroll_list->setScrollListParameters(node);
 	scroll_list->initFromXML(node, parent);
 	scroll_list->setSearchColumn(search_column);
-
-	BOOL mouse_wheel_opaque = true;
-	node->getAttributeBOOL("mouse_wheel_opaque", mouse_wheel_opaque);
-	scroll_list->mMouseWheelOpaque = mouse_wheel_opaque;
-
-	std::string tool_tip;
-	node->getAttributeString("tool_tip", tool_tip);
-	scroll_list->setToolTip(tool_tip);
-
-	std::string menu_file;
-	if (node->getAttributeString("menu_file", menu_file))
-	{
-		LLMenuGL* menu = LLUICtrlFactory::getInstance()->buildMenu(menu_file, LLMenuGL::sMenuContainer);
-		LLMenuGL::sMenuContainer->addChild(menu);
-		scroll_list->setContextMenu(menu);
-	}
 
 	LLSD columns;
 	S32 index = 0;
@@ -2634,8 +2631,9 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 				columns[index]["width"] = columnwidth;
 
 			F32 columnrelwidth = 0.f;
-			if (child->getAttributeF32("relwidth", columnrelwidth))
-				columns[index]["relwidth"] = columnrelwidth;
+			if (child->getAttributeF32("relative_width", columnrelwidth)
+			|| child->getAttributeF32("relwidth", columnrelwidth))
+				columns[index]["relative_width"] = columnrelwidth;
 
 			BOOL columndynamicwidth = false;
 			if (child->getAttributeBOOL("dynamic_width", columndynamicwidth)
