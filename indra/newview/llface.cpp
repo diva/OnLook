@@ -1252,19 +1252,37 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	LLColor4U color = (tep ? LLColor4U(tep->getColor()) : LLColor4U::white);
 
 	if (rebuild_color)	// FALSE if tep == NULL
-	{
-		if (tep)
+	{ //decide if shiny goes in alpha channel of color
+		if (tep && 
+			getPoolType() != LLDrawPool::POOL_ALPHA)  // <--- alpha channel MUST contain transparency, not shiny
 		{
-			GLfloat alpha[4] =
+			bool shiny_in_alpha = false;
+			
+			if (LLPipeline::sRenderDeferred)
+			{ //store shiny in alpha if we don't have a specular map
+				//if  (!mat || mat->getSpecularID().isNull())
+				{
+					shiny_in_alpha = true;
+				}
+			}
+			else
 			{
+				if(LLPipeline::sRenderBump && tep->getShiny())
+				{
+					shiny_in_alpha = true;
+				}
+			}
+			if(shiny_in_alpha)
+			{
+				GLfloat alpha[4] =
+				{
 				0.00f,
 				0.25f,
 				0.5f,
 				0.75f
-			};
+				};
 			
-			if (getPoolType() != LLDrawPool::POOL_ALPHA && (LLPipeline::sRenderDeferred || (LLPipeline::sRenderBump && tep->getShiny())))
-			{
+				llassert(tep->getShiny() <= 3);
 				color.mV[3] = U8 (alpha[tep->getShiny()] * 255);
 			}
 		}
