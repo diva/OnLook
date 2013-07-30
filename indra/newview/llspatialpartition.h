@@ -196,7 +196,7 @@ public:
 	};
 };
 
-LL_ALIGN_PREFIX(16)
+LL_ALIGN_PREFIX(64)
 class LLSpatialGroup : public LLOctreeListener<LLDrawable>
 {
 	friend class LLSpatialPartition;

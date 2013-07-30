@@ -112,41 +112,6 @@ void planarProjection(LLVector2 &tc, const LLVector4a& normal,
 	tc.mV[0] = 1.0f+((binormal.dot3(vec).getF32())*2 - 0.5f);
 }
 
-void sphericalProjection(LLVector2 &tc, const LLVector4a& normal,
-						 const LLVector4a &mCenter, const LLVector4a& vec)
-{	//BROKEN
-	/*tc.mV[0] = acosf(vd.mNormal * LLVector3(1,0,0))/3.14159f;
-	
-	tc.mV[1] = acosf(vd.mNormal * LLVector3(0,0,1))/6.284f;
-	if (vd.mNormal.mV[1] > 0)
-	{
-		tc.mV[1] = 1.0f-tc.mV[1];
-	}*/
-}
-
-void cylindricalProjection(LLVector2 &tc, const LLVector4a& normal, const LLVector4a &mCenter, const LLVector4a& vec)
-{	//BROKEN
-	/*LLVector3 binormal;
-	float d = vd.mNormal * LLVector3(1,0,0);
-	if (d >= 0.5f || d <= -0.5f)
-	{
-		binormal = LLVector3(0,1,0);
-	}
-	else{
-		binormal = LLVector3(1,0,0);
-	}
-	LLVector3 tangent = binormal % vd.mNormal;
-
-	tc.mV[1] = -((tangent*vec)*2 - 0.5f);
-
-	tc.mV[0] = acosf(vd.mNormal * LLVector3(1,0,0))/6.284f;
-
-	if (vd.mNormal.mV[1] < 0)
-	{
-		tc.mV[0] = 1.0f-tc.mV[0];
-	}*/
-}
-
 ////////////////////
 //
 // LLFace implementation
@@ -942,20 +907,10 @@ LLVector2 LLFace::surfaceToTexture(LLVector2 surface_coord, LLVector3 position, 
 		volume_normal.load3(mDrawablep->getVOVolume()->agentDirectionToVolume(normal).mV);
 		volume_normal.normalize3fast();
 		
-		switch (texgen)
+		if (texgen == LLTextureEntry::TEX_GEN_PLANAR)
 		{
-		case LLTextureEntry::TEX_GEN_PLANAR:
 			planarProjection(tc, volume_normal, center, volume_position);
-			break;
-		case LLTextureEntry::TEX_GEN_SPHERICAL:
-			sphericalProjection(tc, volume_normal, center, volume_position);
-			break;
-		case LLTextureEntry::TEX_GEN_CYLINDRICAL:
-			cylindricalProjection(tc, volume_normal, center, volume_position);
-			break;
-		default:
-			break;
-		}		
+		}
 	}
 
 	if (mTextureMatrix)	// if we have a texture matrix, use it
@@ -1297,19 +1252,37 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	LLColor4U color = (tep ? LLColor4U(tep->getColor()) : LLColor4U::white);
 
 	if (rebuild_color)	// FALSE if tep == NULL
-	{
-		if (tep)
+	{ //decide if shiny goes in alpha channel of color
+		if (tep && 
+			getPoolType() != LLDrawPool::POOL_ALPHA)  // <--- alpha channel MUST contain transparency, not shiny
 		{
-			GLfloat alpha[4] =
+			bool shiny_in_alpha = false;
+			
+			if (LLPipeline::sRenderDeferred)
+			{ //store shiny in alpha if we don't have a specular map
+				//if  (!mat || mat->getSpecularID().isNull())
+				{
+					shiny_in_alpha = true;
+				}
+			}
+			else
 			{
+				if(LLPipeline::sRenderBump && tep->getShiny())
+				{
+					shiny_in_alpha = true;
+				}
+			}
+			if(shiny_in_alpha)
+			{
+				GLfloat alpha[4] =
+				{
 				0.00f,
 				0.25f,
 				0.5f,
 				0.75f
-			};
+				};
 			
-			if (getPoolType() != LLDrawPool::POOL_ALPHA && (LLPipeline::sRenderDeferred || (LLPipeline::sRenderBump && tep->getShiny())))
-			{
+				llassert(tep->getShiny() <= 3);
 				color.mV[3] = U8 (alpha[tep->getShiny()] * 255);
 			}
 		}
@@ -1644,7 +1617,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 
 			if (!do_bump)
 			{ //not in atlas or not bump mapped, might be able to do a cheap update
-				mVertexBuffer->getTexCoord0Strider(tex_coords, mGeomIndex, mGeomCount);
+				mVertexBuffer->getTexCoord0Strider(tex_coords0, mGeomIndex, mGeomCount);
 
 				if (texgen != LLTextureEntry::TEX_GEN_PLANAR)
 				{
@@ -1655,12 +1628,12 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 						{
 							LLFastTimer t(FTM_FACE_TEX_QUICK_NO_XFORM);
 							S32 tc_size = (num_vertices*2*sizeof(F32)+0xF) & ~0xF;
-							LLVector4a::memcpyNonAliased16((F32*) tex_coords.get(), (F32*) vf.mTexCoords, tc_size);
+							LLVector4a::memcpyNonAliased16((F32*) tex_coords0.get(), (F32*) vf.mTexCoords, tc_size);
 						}
 						else
 						{
 							LLFastTimer t(FTM_FACE_TEX_QUICK_XFORM);
-							F32* dst = (F32*) tex_coords.get();
+							F32* dst = (F32*) tex_coords0.get();
 							LLVector4a* src = (LLVector4a*) vf.mTexCoords;
 
 							LLVector4a trans;
@@ -1706,7 +1679,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 							tmp = tmp * *mTextureMatrix;
 							tc.mV[0] = tmp.mV[0];
 							tc.mV[1] = tmp.mV[1];
-							*tex_coords++ = tc;	
+							*tex_coords0++ = tc;	
 						}
 					}
 				}
@@ -1729,7 +1702,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 							tc.mV[0] = tmp.mV[0];
 							tc.mV[1] = tmp.mV[1];
 				
-							*tex_coords++ = tc;	
+							*tex_coords0++ = tc;	
 						}
 					}
 					else
@@ -1745,7 +1718,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 						
 							xform(tc, cos_ang, sin_ang, os, ot, ms, mt);
 
-							*tex_coords++ = tc;	
+							*tex_coords0++ = tc;	
 						}
 					}
 				}
@@ -1758,9 +1731,13 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 			else
 			{ //either bump mapped or in atlas, just do the whole expensive loop
 				LLFastTimer t(FTM_FACE_TEX_DEFAULT);
-				mVertexBuffer->getTexCoord0Strider(tex_coords, mGeomIndex, mGeomCount, map_range);
 
 				std::vector<LLVector2> bump_tc;
+
+				LLStrider<LLVector2> dst;
+
+				mVertexBuffer->getTexCoord0Strider(dst, mGeomIndex, mGeomCount, map_range);
+
 		
 				for (S32 i = 0; i < num_vertices; i++)
 				{	
@@ -1776,20 +1753,10 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 				
 						vec.mul(scalea);
 
-						switch (texgen)
+						if (texgen == LLTextureEntry::TEX_GEN_PLANAR)
 						{
-							case LLTextureEntry::TEX_GEN_PLANAR:
-								planarProjection(tc, norm, center, vec);
-								break;
-							case LLTextureEntry::TEX_GEN_SPHERICAL:
-								sphericalProjection(tc, norm, center, vec);
-								break;
-							case LLTextureEntry::TEX_GEN_CYLINDRICAL:
-								cylindricalProjection(tc, norm, center, vec);
-								break;
-							default:
-								break;
-						}		
+							planarProjection(tc, norm, center, vec);
+						}
 					}
 
 					if (tex_mode && mTextureMatrix)
@@ -1804,8 +1771,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 						xform(tc, cos_ang, sin_ang, os, ot, ms, mt);
 					}
 
-
-					*tex_coords++ = tc;
+					*dst++ = tc;
 					if (do_bump)
 					{
 						bump_tc.push_back(tc);
@@ -1819,7 +1785,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 
 				if (do_bump)
 				{
-					mVertexBuffer->getTexCoord1Strider(tex_coords2, mGeomIndex, mGeomCount, map_range);
+					mVertexBuffer->getTexCoord1Strider(tex_coords1, mGeomIndex, mGeomCount, map_range);
 		
 					for (S32 i = 0; i < num_vertices; i++)
 					{
@@ -1843,10 +1809,11 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 						}
 
 						binormal.normalize3fast();
+
 						LLVector2 tc = bump_tc[i];
 						tc += LLVector2( bump_s_primary_light_ray.dot3(tangent).getF32(), bump_t_primary_light_ray.dot3(binormal).getF32() );
 					
-						*tex_coords2++ = tc;
+						*tex_coords1++ = tc;
 					}
 
 					if (map_range)

@@ -858,14 +858,25 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 					{ //dump every 128 lines
 
 						LL_WARNS("ShaderLoading") << "\n" << ostr.str() << llendl;
-						ostr.str("");
-						ostr.clear();
+						ostr = std::stringstream();
 					}
 
 				}
 
 				LL_WARNS("ShaderLoading") << "\n" << ostr.str() << llendl;
-#endif // LL_WINDOWS
+#else
+				std::string str;
+				
+				for (GLuint i = 0; i < count; i++) {
+					str.append(text[i]);
+					
+					if (i % 128 == 0)
+					{
+						LL_WARNS("ShaderLoading") << str << llendl;
+						str = "";
+					}
+				}
+#endif
 				glDeleteObjectARB(ret); //no longer need handle
 				ret = 0;
 			}	
