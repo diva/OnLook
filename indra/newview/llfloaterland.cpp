@@ -2677,13 +2677,13 @@ void LLPanelLandAccess::refresh_ui()
 				getChildView("HoursSpin")->setEnabled(can_manage_allowed);
 			}
 		}
-		getChildView("AccessList")->setEnabled(can_manage_allowed);
+		getChildView("AccessList")->setEnabled(true/*can_manage_allowed*/);
 		S32 allowed_list_count = parcel->mAccessList.size();
 		getChildView("add_allowed")->setEnabled(can_manage_allowed && allowed_list_count < PARCEL_MAX_ACCESS_LIST);
 		BOOL has_selected = (mListAccess && mListAccess->getSelectionInterface()->getFirstSelectedIndex() >= 0);
 		getChildView("remove_allowed")->setEnabled(can_manage_allowed && has_selected);
 		
-		getChildView("BannedList")->setEnabled(can_manage_banned);
+		getChildView("BannedList")->setEnabled(true/*can_manage_banned*/);
 		S32 banned_list_count = parcel->mBanList.size();
 		getChildView("add_banned")->setEnabled(can_manage_banned && banned_list_count < PARCEL_MAX_ACCESS_LIST);
 		has_selected = (mListBanned && mListBanned->getSelectionInterface()->getFirstSelectedIndex() >= 0);

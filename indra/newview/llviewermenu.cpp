@@ -1368,7 +1368,7 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 													(void*)LLPipeline::RENDER_DEBUG_TEXTURE_PRIORITY));
 	sub_menu->addChild(new LLMenuItemCheckGL("Avatar Rendering Cost",	&LLPipeline::toggleRenderDebug, NULL,
 													&LLPipeline::toggleRenderDebugControl,
-													(void*)LLPipeline::RENDER_DEBUG_SHAME));
+													(void*)LLPipeline::RENDER_DEBUG_SHAME, 'C', MASK_CONTROL|MASK_ALT|MASK_SHIFT));
 	sub_menu->addChild(new LLMenuItemCheckGL("Texture Area (sqrt(A))",&LLPipeline::toggleRenderDebug, NULL,
 													&LLPipeline::toggleRenderDebugControl,
 													(void*)LLPipeline::RENDER_DEBUG_TEXTURE_AREA));
@@ -1669,8 +1669,7 @@ void init_server_menu(LLMenuGL* menu)
 										 &is_god_customer_service, NULL));
 		sub->addChild(new LLMenuItemCallGL("Set to Linden Content",
 										 &handle_force_parcel_to_content,
-										 &is_god_customer_service, NULL,
-										 'C', MASK_SHIFT | MASK_ALT | MASK_CONTROL));
+										 &is_god_customer_service, NULL));
 		sub->addSeparator();
 		sub->addChild(new LLMenuItemCallGL("Claim Public Land",
 										 &handle_claim_public_land, &is_god_customer_service));
