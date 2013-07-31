@@ -52,6 +52,7 @@ struct 	LLEntryAndEdCore;
 class LLMenuBarGL;
 class LLKeywordToken;
 class AIFilePicker;
+class LLScriptEdContainer;
 
 // Inner, implementation class.  LLPreviewScript and LLLiveLSLEditor each own one of these.
 class LLScriptEdCore : public LLPanel
