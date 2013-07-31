@@ -1394,6 +1394,7 @@ LLPanelAvatar::LLPanelAvatar(
 	factory_map["My Notes"] = LLCallbackMap(createPanelAvatarNotes, this);
 	
 	mCommitCallbackRegistrar.add("Profile.Web", boost::bind(LLAvatarActions::showProfile, boost::bind(&LLPanelAvatar::getAvatarID, this), true));
+	mCommitCallbackRegistrar.add("Profile.TeleportRequest", boost::bind(LLAvatarActions::teleportRequest, boost::bind(&LLPanelAvatar::getAvatarID, this)));
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_avatar.xml", &factory_map);
 
 	selectTab(0);

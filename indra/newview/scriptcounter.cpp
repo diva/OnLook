@@ -149,6 +149,7 @@ void ScriptCounter::inventoryChanged(LLViewerObject* obj, LLInventoryObject::obj
 							//llinfos << "Deleting script " << id << " in " << objid << llendl;
 							obj->removeInventory(id);
 							--i; // Avoid iteration when removing, everything has shifted
+							end = inv->end();
 						}
 					}
 				}

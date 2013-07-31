@@ -683,7 +683,7 @@ void LLUpdateTaskInventoryResponder::uploadComplete(const LLSD& content)
 			}
 			else
 			{
-				LLLiveLSLEditor* preview = LLLiveLSLEditor::find(item_id, task_id);
+				LLLiveLSLEditor* preview = static_cast<LLLiveLSLEditor*>(LLPreview::find(item_id));
 				if (preview)
 				{
 					// Bytecode save completed

@@ -561,16 +561,14 @@ BOOL LLFloaterIMPanel::postBuild()
 		mInputEditor->setReplaceNewlinesWithSpaces( FALSE );
 		mInputEditor->setPassDelete( TRUE );
 
-		if (LLButton* btn = findChild<LLButton>("profile_callee_btn"))
+		if (LLUICtrl* ctrl = findChild<LLUICtrl>("instant_message_flyout"))
 		{
-			btn->setCommitCallback(boost::bind(LLAvatarActions::showProfile, mOtherParticipantUUID, false));
-			if (!mProfileButtonEnabled) btn->setEnabled(false);
+			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onFlyoutCommit, this, _2));
 		}
-		if (LLButton* btn = findChild<LLButton>("profile_tele_btn"))
-			btn->setCommitCallback(boost::bind(static_cast<void(*)(const LLUUID&)>(LLAvatarActions::offerTeleport), mOtherParticipantUUID));
 		if (LLButton* btn = findChild<LLButton>("group_info_btn"))
 			btn->setCommitCallback(boost::bind(LLGroupActions::show, mSessionUUID));
-		childSetAction("history_btn", onClickHistory, this);
+		if (LLUICtrl* ctrl = findChild<LLUICtrl>("history_btn"))
+			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickHistory, this));
 		if (LLUICtrl* ctrl = findChild<LLUICtrl>("rp_mode"))
 			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onRPMode, this, _2));
 
@@ -1061,17 +1059,30 @@ void LLFloaterIMPanel::onRPMode(const LLSD& value)
 	mRPMode = value.asBoolean();
 }
 
-// static
-void LLFloaterIMPanel::onClickHistory( void* userdata )
+void LLFloaterIMPanel::onFlyoutCommit(const LLSD& value)
 {
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*) userdata;
-	
-	if (self->mOtherParticipantUUID.notNull())
+	if (value.isUndefined())
+	{
+		LLAvatarActions::showProfile(mOtherParticipantUUID);
+		return;
+	}
+
+	int option = value.asInteger();
+	if (option == 1) onClickHistory();
+	else if (option == 2) LLAvatarActions::offerTeleport(mOtherParticipantUUID);
+	else if (option == 3) LLAvatarActions::teleportRequest(mOtherParticipantUUID);
+	else if (option == 4) LLAvatarActions::pay(mOtherParticipantUUID);
+	else if (option == 5) LLAvatarActions::inviteToGroup(mOtherParticipantUUID);
+}
+
+void LLFloaterIMPanel::onClickHistory()
+{
+	if (mOtherParticipantUUID.notNull())
 	{
 		char command[256];
 		// [Ansariel: Display name support]
-		//std::string fullname(gDirUtilp->getScrubbedFileName(self->getTitle()));
-		std::string fullname(gDirUtilp->getScrubbedFileName(self->mSessionLabel));
+		//std::string fullname(gDirUtilp->getScrubbedFileName(getTitle()));
+		std::string fullname(gDirUtilp->getScrubbedFileName(mSessionLabel));
 		// [/Ansariel: Display name support]
 		sprintf(command, "\"%s%s%s.txt\"", gDirUtilp->getPerAccountChatLogsDir().c_str(), gDirUtilp->getDirDelimiter().c_str(), fullname.c_str());
 		gViewerWindow->getWindow()->ShellEx(command);

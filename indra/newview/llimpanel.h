@@ -113,8 +113,9 @@ public:
 	void			onInputEditorKeystroke(LLLineEditor* caller);
 	static void		onTabClick( void* userdata );
 
-	static void		onClickHistory( void* userdata );
+	void			onClickHistory();
 	void			onRPMode(const LLSD& value);
+	void			onFlyoutCommit(const LLSD& value);
 	static void		onClickStartCall( void* userdata );
 	static void		onClickEndCall( void* userdata );
 	void			onClickToggleActiveSpeakers(const LLSD& value);

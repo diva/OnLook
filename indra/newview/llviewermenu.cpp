@@ -9316,6 +9316,17 @@ class ListCopyUUIDs : public view_listener_t
 	}
 };
 
+class ListInviteToGroup : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLAvatarActions::inviteToGroup(list->getStringUUIDSelectedItem());
+		return true;
+	}
+};
+
 class ListOfferTeleport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9356,6 +9367,17 @@ class ListRequestFriendship : public view_listener_t
 		LLScrollListCtrl* list = get_focused_list();
 		if (!list) return false;
 		LLAvatarActions::requestFriendshipDialog(list->getStringUUIDSelectedItem());
+		return true;
+	}
+};
+
+class ListRequestTeleport : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLAvatarActions::teleportRequest(list->getStringUUIDSelectedItem());
 		return true;
 	}
 };
@@ -9473,8 +9495,7 @@ class ListFreeze : public view_listener_t
 void estate_bulk_eject(const uuid_vec_t& ids, bool ban, S32 zero)
 {
 	if (ids.empty() || zero != 0) return;
-	std::vector<std::string> strings;
-	strings[0] = gAgentID.asString(); // [0] = our agent id
+	std::vector<std::string> strings(2, gAgentID.asString()); // [0] = our agent id
 	for (uuid_vec_t::const_iterator it = ids.begin(); it != ids.end(); ++it)
 	{
 		LLUUID id(*it);
@@ -9837,10 +9858,12 @@ void initialize_menus()
 	addMenu(new ListEnableMute(), "List.EnableMute");
 	addMenu(new ListEnableOfferTeleport(), "List.EnableOfferTeleport");
 	addMenu(new ListCopyUUIDs(), "List.CopyUUIDs");
+	addMenu(new ListInviteToGroup(), "List.InviteToGroup");
 	addMenu(new ListOfferTeleport(), "List.OfferTeleport");
 	addMenu(new ListPay(), "List.Pay");
 	addMenu(new ListRemoveFriend(), "List.RemoveFriend");
 	addMenu(new ListRequestFriendship(), "List.RequestFriendship");
+	addMenu(new ListRequestTeleport(), "List.RequestTeleport");
 	addMenu(new ListShowProfile(), "List.ShowProfile");
 	addMenu(new ListStartAdhocCall(), "List.StartAdhocCall");
 	addMenu(new ListStartCall(), "List.StartCall");

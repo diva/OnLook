@@ -11,9 +11,13 @@
 	<string name="default_text_label">Click here to instant message.</string>
 	<string name="unavailable_text_label">Text chat is not available for this call.</string>
 	<string name="inventory_item_offered">Inventory item offered</string>
-	<button bottom="-37" height="20" label="Profile" left="5" name="profile_callee_btn" width="80"/>
-	<button bottom="-37" follows="left|top" halign="center" height="20" label="History" left_delta="80" name="history_btn" visible="true" width="80"/>
-	<button bottom="-37" height="20" label="Teleport" left_delta="80" name="profile_tele_btn" width="80"/>
+    <flyout_button bottom="-37" height="20" label="Profile" left="5" name="instant_message_flyout" width="80" list_position="below">
+      <flyout_button_item label="History" name="history_btn" value="1"/>
+      <flyout_button_item label="Offer Teleport" name="profile_tele_btn" value="2"/>
+      <flyout_button_item label="Request Teleport" name="profile_tele_btn" value="3"/>
+      <flyout_button_item label="Pay" name="profile_tele_btn" value="4"/>
+      <flyout_button_item label="Invite To Group" name="profile_tele_btn" value="5"/>
+    </flyout_button>
 	<check_box bottom="-37" follows="top" height="20" left_delta="80" name="rp_mode">RP Mode</check_box>
 	<button bottom="-37" follows="left|top" height="20" image_overlay="icn_voice-call-start.tga" image_overlay_alignment="left" label="Call" left_delta="80" name="start_call_btn" width="80"/>
 	<button bottom="-37" follows="top" height="20" image_overlay="icn_voice-call-end.tga" image_overlay_alignment="left" label="End" name="end_call_btn" visible="false" width="80"/>
