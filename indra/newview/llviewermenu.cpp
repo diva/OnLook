@@ -9495,8 +9495,7 @@ class ListFreeze : public view_listener_t
 void estate_bulk_eject(const uuid_vec_t& ids, bool ban, S32 zero)
 {
 	if (ids.empty() || zero != 0) return;
-	std::vector<std::string> strings;
-	strings[0] = gAgentID.asString(); // [0] = our agent id
+	std::vector<std::string> strings(2, gAgentID.asString()); // [0] = our agent id
 	for (uuid_vec_t::const_iterator it = ids.begin(); it != ids.end(); ++it)
 	{
 		LLUUID id(*it);
