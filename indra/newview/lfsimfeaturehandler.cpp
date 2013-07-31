@@ -52,13 +52,19 @@ void LFSimFeatureHandler::setSupportedFeatures()
 	{
 		LLSD info;
 		region->getSimulatorFeatures(info);
-		//if (!gHippoGridManager->getCurrentGrid()->isSecondLife()) // Non-SL specific sim features
+		if (info.has("OpenSimExtras")) // OpenSim specific sim features
 		{
 			// For definition of OpenSimExtras please see
 			// http://opensimulator.org/wiki/SimulatorFeatures_Extras
-			mSupportsExport = info["OpenSimExtras"]["ExportSupported"].asBoolean();
-			mMapServerURL = info["OpenSimExtras"]["map-server-url"].asString();
-			mSearchURL = info["OpenSimExtras"]["search-server-url"].asString();
+			mSupportsExport = info["OpenSimExtras"].has("ExportSupported") ? info["OpenSimExtras"]["ExportSupported"].asBoolean() : false;
+			mMapServerURL = info["OpenSimExtras"].has("map-server-url") ? info["OpenSimExtras"]["map-server-url"].asString() : "";
+			mSearchURL = info["OpenSimExtras"].has("search-server-url") ? info["OpenSimExtras"]["search-server-url"].asString() : "";
+		}
+		else // OpenSim specifics are unsupported reset all to default
+		{
+			mSupportsExport = false;
+			mMapServerURL = "";
+			mSearchURL = "";
 		}
 	}
 }
