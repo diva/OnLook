@@ -1250,7 +1250,7 @@ public:
 void LLTaskLSLBridge::openItem()
 {
 	llinfos << "LLTaskLSLBridge::openItem() " << mUUID << llendl;
-	if(LLLiveLSLEditor::show(mUUID, mPanel->getTaskUUID()))
+	if(LLLiveLSLEditor::show(mUUID))
 	{
 		return;
 	}
@@ -1299,7 +1299,7 @@ void LLTaskLSLBridge::openItem()
 
 BOOL LLTaskLSLBridge::removeItem()
 {
-	LLLiveLSLEditor::hide(mUUID, mPanel->getTaskUUID());
+	LLLiveLSLEditor::hide(mUUID);
 	return LLTaskInvFVBridge::removeItem();
 }
 
