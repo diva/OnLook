@@ -331,6 +331,7 @@ void LLPrefsAscentChat::refreshValues()
     mBlockItemOfferSpam             = gSavedSettings.getBOOL("AntiSpamItemOffers");
     mBlockScriptSpam                = gSavedSettings.getBOOL("AntiSpamScripts");
     mBlockTeleportSpam              = gSavedSettings.getBOOL("AntiSpamTeleports");
+	mBlockTeleportRequestSpam       = gSavedSettings.getBOOL("AntiSpamTeleportRequests");
     mNotifyOnSpam                   = gSavedSettings.getBOOL("AntiSpamNotify");
     mSoundMulti                     = gSavedSettings.getU32("_NACL_AntiSpamSoundMulti");
     mNewLines                       = gSavedSettings.getU32("_NACL_AntiSpamNewlines");
@@ -548,6 +549,7 @@ void LLPrefsAscentChat::cancel()
 	gSavedSettings.setBOOL("AntiSpamItemOffers",             mBlockItemOfferSpam);
 	gSavedSettings.setBOOL("AntiSpamScripts",                mBlockScriptSpam);
 	gSavedSettings.setBOOL("AntiSpamTeleports",              mBlockTeleportSpam);
+	gSavedSettings.setBOOL("AntiSpamTeleportRequests",       mBlockTeleportRequestSpam);
 	gSavedSettings.setBOOL("AntiSpamNotify",                 mNotifyOnSpam);
     gSavedSettings.setU32("_NACL_AntiSpamSoundMulti",        mSoundMulti);
     gSavedSettings.setU32("_NACL_AntiSpamNewlines",          mNewLines);

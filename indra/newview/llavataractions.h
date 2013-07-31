@@ -101,6 +101,13 @@ public:
 	 * Give money to the avatar.
 	 */
 	static void pay(const LLUUID& id);
+
+	/**
+	 * Request teleport from other avatar
+	 */
+	static void teleportRequest(const LLUUID& id);
+	static void teleport_request_callback(const LLSD& notification, const LLSD& response);
+
 	/**
 	 * Block/unblock the avatar.
 	 */
@@ -211,6 +218,7 @@ private:
 	static bool handleFreeze(const LLSD& notification, const LLSD& response);
 	static bool handleUnfreeze(const LLSD& notification, const LLSD& response);
 	static void callback_invite_to_group(LLUUID group_id, LLUUID id);
+	static void on_avatar_name_cache_teleport_request(const LLUUID& id, const LLAvatarName& av_name);
 
 public:
 	// Just request friendship, no dialog.

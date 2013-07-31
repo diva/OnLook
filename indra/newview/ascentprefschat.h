@@ -107,6 +107,7 @@ protected:
     BOOL mBlockItemOfferSpam;
     BOOL mBlockScriptSpam;
     BOOL mBlockTeleportSpam;
+	bool mBlockTeleportRequestSpam;
     BOOL mNotifyOnSpam;
     BOOL mSoundMulti;
     U32  mNewLines;

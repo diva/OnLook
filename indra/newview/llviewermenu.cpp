@@ -9371,6 +9371,17 @@ class ListRequestFriendship : public view_listener_t
 	}
 };
 
+class ListRequestTeleport : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLAvatarActions::teleportRequest(list->getStringUUIDSelectedItem());
+		return true;
+	}
+};
+
 class ListShowProfile : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9853,6 +9864,7 @@ void initialize_menus()
 	addMenu(new ListPay(), "List.Pay");
 	addMenu(new ListRemoveFriend(), "List.RemoveFriend");
 	addMenu(new ListRequestFriendship(), "List.RequestFriendship");
+	addMenu(new ListRequestTeleport(), "List.RequestTeleport");
 	addMenu(new ListShowProfile(), "List.ShowProfile");
 	addMenu(new ListStartAdhocCall(), "List.StartAdhocCall");
 	addMenu(new ListStartCall(), "List.StartCall");
