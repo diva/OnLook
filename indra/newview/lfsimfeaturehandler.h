@@ -58,6 +58,7 @@ public:
 
 	// Connection setters
 	boost::signals2::connection setSupportsExportCallback(const boost::signals2::signal<void()>::slot_type& slot);
+	boost::signals2::connection setSearchURLCallback(const boost::signals2::signal<void()>::slot_type& slot);
 
 	// Accessors
 	bool simSupportsExport() const { return mSupportsExport; }
@@ -68,7 +69,7 @@ private:
 	// SignaledTypes
 	SignaledType<bool> mSupportsExport;
 	std::string mMapServerURL;
-	std::string mSearchURL;
+	SignaledType<std::string> mSearchURL;
 };
 
 #endif //LFSIMFEATUREHANDLER_H

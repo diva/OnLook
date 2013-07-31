@@ -68,3 +68,8 @@ boost::signals2::connection LFSimFeatureHandler::setSupportsExportCallback(const
 	return mSupportsExport.connect(slot);
 }
 
+boost::signals2::connection LFSimFeatureHandler::setSearchURLCallback(const boost::signals2::signal<void()>::slot_type& slot)
+{
+	return mSearchURL.connect(slot);
+}
+
