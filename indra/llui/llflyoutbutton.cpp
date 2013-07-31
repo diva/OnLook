@@ -114,6 +114,7 @@ LLView* LLFlyoutButton::fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFacto
 		if (child->hasName(LL_FLYOUT_BUTTON_ITEM_TAG))
 		{
 			std::string label(child->getTextContents());
+			child->getAttributeString("label", label);
 			std::string value(label);
 			child->getAttributeString("value", value);
 
