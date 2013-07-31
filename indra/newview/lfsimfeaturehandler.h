@@ -24,6 +24,7 @@ template<typename Type>
 class SignaledType
 {
 public:
+	SignaledType() : mValue() {}
 	SignaledType(Type b) : mValue(b) {}
 
 	template<typename Slot>
