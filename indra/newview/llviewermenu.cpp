@@ -2890,17 +2890,17 @@ class LLObjectEnableExport : public view_listener_t
 		bool supports_export = LFSimFeatureHandler::instance().simSupportsExport();
 		if (new_value && !(supports_export && (perms.getMaskEveryone() & PERM_EXPORT)))				// No need to call allowExportBy if PERM_EXPORT is set on (all) root objects.
 		{
-			struct ff : public LLSelectedNodeFunctor
+			bool can_export_any = false;
+			LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
+			for (LLObjectSelection::iterator node = selection->begin(); node != selection->end(); ++node)
 			{
-				bool mSupportsExport;
-				ff(bool supports_export) : mSupportsExport(supports_export) { }
-				virtual bool apply(LLSelectNode* node)
+				if ((*node)->mPermissions->allowExportBy(gAgent.getID(), supports_export))
 				{
-					return node->mPermissions->allowExportBy(gAgent.getID(), mSupportsExport);
+					can_export_any = true;
+					break;
 				}
-			};
-			ff the_ff(supports_export);
-			new_value = LLSelectMgr::getInstance()->getSelection()->applyToNodes(&the_ff, false);
+			}
+			new_value = can_export_any;
 		}
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
