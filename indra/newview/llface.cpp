@@ -1203,8 +1203,8 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	}
 
 	LLStrider<LLVector3> vert;
-	LLStrider<LLVector2> tex_coords;
-	LLStrider<LLVector2> tex_coords2;
+	LLStrider<LLVector2> tex_coords0;
+	LLStrider<LLVector2> tex_coords1;
 	LLStrider<LLVector3> norm;
 	LLStrider<LLColor4U> colors;
 	LLStrider<LLVector3> binorm;
