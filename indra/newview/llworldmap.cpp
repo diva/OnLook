@@ -49,6 +49,7 @@
 #include "llregionflags.h"
 #include "llworldmapmessage.h"
 #include "hippogridmanager.h"
+#include "lfsimfeaturehandler.h"
 
 bool LLWorldMap::sGotMapURL =  false;
 // Timers to temporise database requests
@@ -512,7 +513,7 @@ bool LLWorldMap::useWebMapTiles()
 {
 	static const LLCachedControl<bool> use_web_map_tiles("UseWebMapTiles",false);
 	return use_web_map_tiles &&
-		   (( gHippoGridManager->getConnectedGrid()->isSecondLife() || sGotMapURL));
+		   (( gHippoGridManager->getConnectedGrid()->isSecondLife() || sGotMapURL || !LFSimFeatureHandler::instance().mapServerURL().empty()));
 }
 
 void LLWorldMap::reloadItems(bool force)

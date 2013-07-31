@@ -60,10 +60,14 @@ public:
 
 	// Accessors
 	bool simSupportsExport() const { return mSupportsExport; }
+	std::string mapServerURL() const { return mMapServerURL; }
+	std::string searchURL() const { return mSearchURL; }
 
 private:
 	// SignaledTypes
 	SignaledType<bool> mSupportsExport;
+	std::string mMapServerURL;
+	std::string mSearchURL;
 };
 
 #endif //LFSIMFEATUREHANDLER_H

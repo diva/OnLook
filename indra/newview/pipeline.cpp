@@ -1415,12 +1415,32 @@ U32 LLPipeline::getPoolTypeFromTE(const LLTextureEntry* te, LLViewerTexture* ima
 		return 0;
 	}
 		
-	bool alpha = te->getColor().mV[3] < 0.999f;
+	LLMaterial* mat = te->getMaterialParams().get();
+
+	bool color_alpha = te->getColor().mV[3] < 0.999f;
+	bool alpha = color_alpha;
 	if (imagep)
 	{
 		alpha = alpha || (imagep->getComponents() == 4 && imagep->getType() != LLViewerTexture::MEDIA_TEXTURE) || (imagep->getComponents() == 2);
 	}
-
+	
+	if (alpha && mat)
+	{
+		switch (mat->getDiffuseAlphaMode())
+		{
+			case 1:
+				alpha = true; // Material's alpha mode is set to blend.  Toss it into the alpha draw pool.
+				break;
+			case 0: //alpha mode set to none, never go to alpha pool
+			case 3: //alpha mode set to emissive, never go to alpha pool
+				alpha = color_alpha;
+				break;
+			default: //alpha mode set to "mask", go to alpha pool if fullbright
+				alpha = color_alpha; // Material's alpha mode is set to none, mask, or emissive.  Toss it into the opaque material draw pool.
+				break;
+		}
+	}
+	
 	if (alpha)
 	{
 		return LLDrawPool::POOL_ALPHA;
@@ -2405,17 +2425,6 @@ BOOL LLPipeline::updateDrawableGeom(LLDrawable* drawablep, BOOL priority)
 	BOOL update_complete = drawablep->updateGeometry(priority);
 	if (update_complete && assertInitialized())
 	{
-		//Workaround for 'missing prims' until it's fixed upstream by LL.
-		//Sometimes clearing CLEAR_INVISIBLE and FORCE_INVISIBLE in LLPipeline::stateSort was too late. Do it here instead, before
-		//the rebuild state is picked up on and LLVolumeGeometryManager::rebuildGeom is called.
-		//If the FORCE_INVISIBLE isn't cleared before the rebuildGeom call, the geometry will NOT BE REBUILT!
-		if(drawablep->isState(LLDrawable::CLEAR_INVISIBLE))
-		{
-			// clear invisible flag here to avoid single frame glitch
-			drawablep->clearState(LLDrawable::FORCE_INVISIBLE|LLDrawable::CLEAR_INVISIBLE);
-			return false; //Defer to next mBuildQ1 iteration
-		}
-
 		drawablep->setState(LLDrawable::BUILT);
 		mGeometryChanges++;
 	}
@@ -3161,11 +3170,6 @@ void LLPipeline::stateSort(LLDrawable* drawablep, LLCamera& camera)
 		if (!drawablep->isState(LLDrawable::INVISIBLE|LLDrawable::FORCE_INVISIBLE))
 		{
 			drawablep->setVisible(camera, NULL, FALSE);
-		}
-		else if (drawablep->isState(LLDrawable::CLEAR_INVISIBLE))
-		{
-			// clear invisible flag here to avoid single frame glitch
-			drawablep->clearState(LLDrawable::FORCE_INVISIBLE|LLDrawable::CLEAR_INVISIBLE);
 		}
 	}
 
@@ -9739,11 +9743,13 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar)
 		LLVector4a left;
 		left.load3(camera.getLeftAxis().mV);
 		left.mul(left);
+		llassert(left.dot3(left).getF32() > F_APPROXIMATELY_ZERO);
 		left.normalize3fast();
 
 		LLVector4a up;
 		up.load3(camera.getUpAxis().mV);
 		up.mul(up);
+		llassert(up.dot3(up).getF32() > F_APPROXIMATELY_ZERO);
 		up.normalize3fast();
 
 		tdim.mV[0] = fabsf(half_height.dot3(left).getF32());

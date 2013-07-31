@@ -4128,7 +4128,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 		draw_vec[idx]->mEnd += facep->getGeomCount();
 		draw_vec[idx]->mVSize = llmax(draw_vec[idx]->mVSize, facep->getVirtualSize());
 
-		if (index >= draw_vec[idx]->mTextureList.size())
+		if (index < 255 && index >= draw_vec[idx]->mTextureList.size())
 		{
 			draw_vec[idx]->mTextureList.resize(index+1);
 			draw_vec[idx]->mTextureList[index] = tex;
@@ -4449,6 +4449,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 							bool can_be_shiny = mode == LLMaterial::DIFFUSE_ALPHA_MODE_NONE ||
 												mode == LLMaterial::DIFFUSE_ALPHA_MODE_EMISSIVE;
 							
+							bool is_deferred_simple = LLPipeline::sRenderDeferred && !fullbright;
 							if (mode == LLMaterial::DIFFUSE_ALPHA_MODE_MASK && te->getColor().mV[3] >= 0.999f)
 							{
 								pool->addRiggedFace(facep, fullbright ? LLDrawPoolAvatar::RIGGED_FULLBRIGHT : LLDrawPoolAvatar::RIGGED_SIMPLE);
@@ -4459,18 +4460,21 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 								{
 									pool->addRiggedFace(facep, fullbright ? LLDrawPoolAvatar::RIGGED_FULLBRIGHT_ALPHA : LLDrawPoolAvatar::RIGGED_ALPHA);
 								}
+								is_deferred_simple = false;
 							}
 							else if (gPipeline.canUseVertexShaders()
 								&& LLPipeline::sRenderBump 
 								&& te->getShiny() 
 								&& can_be_shiny)
 							{
-								pool->addRiggedFace(facep, fullbright ? LLDrawPoolAvatar::RIGGED_FULLBRIGHT_SHINY : LLDrawPoolAvatar::RIGGED_SHINY);
+								pool->addRiggedFace(facep, fullbright ? LLDrawPoolAvatar::RIGGED_FULLBRIGHT_SHINY : !LLPipeline::sRenderDeferred ? LLDrawPoolAvatar::RIGGED_SHINY : LLDrawPoolAvatar::RIGGED_SIMPLE);
 							}
 							else
 							{
 								pool->addRiggedFace(facep, fullbright ? LLDrawPoolAvatar::RIGGED_FULLBRIGHT : LLDrawPoolAvatar::RIGGED_SIMPLE);
 							}
+							if(is_deferred_simple)
+								pool->addRiggedFace(facep, LLDrawPoolAvatar::RIGGED_DEFERRED_SIMPLE);
 						}
 						else
 						{
@@ -5209,7 +5213,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 					&& te->getShiny() 
 					&& can_be_shiny)
 				{
-					registerFace(group, facep, fullbright ? LLRenderPass::PASS_FULLBRIGHT_SHINY : LLRenderPass::PASS_SHINY);
+					registerFace(group, facep, fullbright ? LLRenderPass::PASS_FULLBRIGHT_SHINY : (!LLPipeline::sRenderDeferred || hud_group) ? LLRenderPass::PASS_SHINY : LLRenderPass::PASS_SIMPLE);
 				}
 				else
 				{

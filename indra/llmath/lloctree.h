@@ -636,7 +636,10 @@ public:
 				parent = node->getOctParent();
 			}
 
-			node->insert(data);
+			if(node != this)
+			{
+				node->insert(data);
+			}
 		}
 
 		return false;
