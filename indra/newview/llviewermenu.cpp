@@ -9316,6 +9316,17 @@ class ListCopyUUIDs : public view_listener_t
 	}
 };
 
+class ListInviteToGroup : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLScrollListCtrl* list = get_focused_list();
+		if (!list) return false;
+		LLAvatarActions::inviteToGroup(list->getStringUUIDSelectedItem());
+		return true;
+	}
+};
+
 class ListOfferTeleport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9837,6 +9848,7 @@ void initialize_menus()
 	addMenu(new ListEnableMute(), "List.EnableMute");
 	addMenu(new ListEnableOfferTeleport(), "List.EnableOfferTeleport");
 	addMenu(new ListCopyUUIDs(), "List.CopyUUIDs");
+	addMenu(new ListInviteToGroup(), "List.InviteToGroup");
 	addMenu(new ListOfferTeleport(), "List.OfferTeleport");
 	addMenu(new ListPay(), "List.Pay");
 	addMenu(new ListRemoveFriend(), "List.RemoveFriend");
