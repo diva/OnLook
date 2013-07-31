@@ -1742,6 +1742,7 @@ BOOL LLScrollListCtrl::handleRightMouseDown(S32 x, S32 y, MASK mask)
 	}
 	gFocusMgr.setKeyboardFocus(this); // Menu listeners rely on this
 	mPopupMenu->buildDrawLabels();
+	mPopupMenu->updateParent(LLMenuGL::sMenuContainer);
 	LLMenuGL::showPopup(this, mPopupMenu, x, y);
 	return TRUE;
 }
@@ -2556,7 +2557,6 @@ void LLScrollListCtrl::setScrollListParameters(LLXMLNodePtr node)
 		std::string menu_file;
 		node->getAttributeString("menu_file", menu_file);
 		mPopupMenu = LLUICtrlFactory::getInstance()->buildMenu(menu_file, LLMenuGL::sMenuContainer);
-		LLMenuGL::sMenuContainer->addChild(mPopupMenu);
 	}
 }
 
