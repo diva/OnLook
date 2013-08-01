@@ -2074,7 +2074,7 @@ Por favor, intenta con un nombre diferente.
 		<tag>confirm</tag>
 		<form name="form">
 			<input name="message" type="text">
-				Teleport me to your location, please.
+				Por favor, Telepórtame a tu ubicación.
 			</input>
 			<button name="OK" text="OK"/>
 			<button name="Cancel" text="Cancelar"/>
