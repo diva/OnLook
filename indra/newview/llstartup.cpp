@@ -818,8 +818,8 @@ bool idle_startup()
 	if (STATE_BROWSER_INIT == LLStartUp::getStartupState())
 	{
 		LL_DEBUGS("AppInit") << "STATE_BROWSER_INIT" << LL_ENDL;
-		std::string msg = LLTrans::getString("LoginInitializingBrowser");
-		set_startup_status(0.03f, msg.c_str(), gAgent.mMOTD.c_str());
+		//std::string msg = LLTrans::getString("LoginInitializingBrowser");
+		//set_startup_status(0.03f, msg.c_str(), gAgent.mMOTD.c_str());
 		display_startup();
 		// LLViewerMedia::initBrowser();
 		LLStartUp::setStartupState( STATE_LOGIN_SHOW );
@@ -2881,6 +2881,7 @@ bool first_run_dialog_callback(const LLSD& notification, const LLSD& response)
 }
 
 
+LLColor4 get_text_color(const LLChat& chat, bool from_im = false); //llfloaterchat.cpp
 
 void set_startup_status(const F32 frac, const std::string& string, const std::string& msg)
 {
@@ -2894,12 +2895,17 @@ void set_startup_status(const F32 frac, const std::string& string, const std::st
 			LLChat chat;
 			chat.mText = new_d;
 			chat.mSourceType = (EChatSourceType)(CHAT_SOURCE_OBJECT+1);
-			LLFloaterChat::addChat(chat);
+			if(gConsole)
+				gConsole->addConsoleLine(chat.mText, gSavedSettings.getColor4("SystemChatColor"));
+			LLFloaterChat::addChatHistory(chat,false);
+
 			if(new_d == LLTrans::getString("LoginWaitingForRegionHandshake"))
 			{
 				chat.mText = "MOTD: "+msg;
 				chat.mSourceType = (EChatSourceType)(CHAT_SOURCE_OBJECT+1);
-				LLFloaterChat::addChat(chat);
+				if(gConsole)
+					gConsole->addConsoleLine(chat.mText, gSavedSettings.getColor4("SystemChatColor"));
+				LLFloaterChat::addChatHistory(chat,false);
 			}
 		}
 	}
