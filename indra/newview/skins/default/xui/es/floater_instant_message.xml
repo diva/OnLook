@@ -33,9 +33,13 @@
 	<string name="inventory_item_offered">
 		Ofrecido un Item de Inventario
 	</string>
-	<button label="Perfil" name="profile_callee_btn"/>
-	<button label="Teleportar" name="profile_tele_btn"/>
-	<button label="Historial" name="history_btn"/>
+	<flyout_button label="Perfil" name="instant_message_flyout">
+		<flyout_button_item label="Historial" name="history_btn"/>
+		<flyout_button_item label="Ofrecer Teleporte" name="profile_tele_btn"/>
+		<!--flyout_button_item label="Solicitar Teleporte" name="profile_tele_btn"/-->
+		<flyout_button_item label="Pagar" name="profile_tele_btn"/>
+		<flyout_button_item label="Invitar a Grupo" name="profile_tele_btn"/>
+    </flyout_button>
 	<check_box name="rp_mode">
 		Modo RP
 	</check_box>

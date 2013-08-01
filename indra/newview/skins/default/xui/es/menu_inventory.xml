@@ -70,6 +70,7 @@
 	<menu_item_call name="Animation Audition" label="Reproducir localmente" />
 	<menu_item_call name="Send Instant Message" label="Enviar MI"/>
 	<menu_item_call name="Offer Teleport..." label="Ofrecer Teleporte..."/>
+	<menu_item_call label="Solicitar Teleporte..." name="Request Teleport..."/>
 	<menu_item_call name="Conference Chat" label="Iniciar Conferencia Grupal"/>
 	<menu_item_call name="Activate" label="Activar"/>
 	<menu_item_call name="Deactivate" label="Desactivar"/>

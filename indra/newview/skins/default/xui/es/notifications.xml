@@ -2069,6 +2069,18 @@ Por favor, intenta con un nombre diferente.
 		</form>
 	</notification>
 	
+	<notification name="TeleportRequestPrompt">
+		Solicitar Teleporte a [NAME] con el mensaje siguiente
+		<tag>confirm</tag>
+		<form name="form">
+			<input name="message" type="text">
+				Teleport me to your location, please.
+			</input>
+			<button name="OK" text="OK"/>
+			<button name="Cancel" text="Cancelar"/>
+		</form>
+	</notification>	
+	
 	<notification name="TooManyTeleportOffers">
 		Has intentado enviar [OFFERS] ofertas de teleporte
 lo cual excede el límite de [LIMIT].
@@ -3814,6 +3826,19 @@ Por favor, reinténtalo en unos momentos.
 		<form name="form">
 			<button name="Teleport" text="Teleportar"/>
 			<button name="Cancel" text="Cancelar"/>
+		</form>
+	</notification>
+	
+	<notification name="TeleportRequest">
+		[NAME] está solicitando ser teleportado a tu ubicación.
+[MESSAGE]
+
+¿Ofrecerle Teleporte?
+		<tag>confirm</tag>
+		<form name="form">
+			<button name="Yes" text="Si"/>
+			<button name="No" text="No"/>
+			<button name="Profile" text="Perfil"/>
 		</form>
 	</notification>
 	
