@@ -105,6 +105,8 @@ protected:
     BOOL mBlockGroupInviteSpam;
 	BOOL mBlockGroupFeeInviteSpam;
     BOOL mBlockItemOfferSpam;
+	bool mBlockNotMineSpam;
+	bool mBlockNotFriendSpam;
     BOOL mBlockScriptSpam;
     BOOL mBlockTeleportSpam;
 	bool mBlockTeleportRequestSpam;
