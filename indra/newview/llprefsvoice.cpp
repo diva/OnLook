@@ -41,6 +41,7 @@
 #include "llkeyboard.h"
 #include "llmodaldialog.h"
 #include "llpanelvoicedevicesettings.h"
+#include "lltrans.h"
 #include "lluictrlfactory.h"
 
 
@@ -133,6 +134,12 @@ BOOL LLPrefsVoice::postBuild()
 	childSetValue("enable_voice_check", enable);
 	onCommitEnableVoiceChat(getChild<LLCheckBoxCtrl>("enable_voice_check"), this);
 
+	if (LLCheckBoxCtrl* check = getChild<LLCheckBoxCtrl>("enable_multivoice_check"))
+	{
+		check->setValue(gSavedSettings.getBOOL("VoiceMultiInstance"));
+		check->setLabel(getString("multivoice_label", LLTrans::getDefaultArgs()));
+	}
+
 	childSetValue("modifier_combo", gSavedSettings.getString("PushToTalkButton"));
 	childSetValue("voice_call_friends_only_check", gSavedSettings.getBOOL("VoiceCallsFriendsOnly"));
 	childSetValue("auto_disengage_mic_check", gSavedSettings.getBOOL("AutoDisengageMic"));
@@ -151,6 +158,7 @@ void LLPrefsVoice::apply()
 	gSavedSettings.setBOOL("PushToTalkToggle", childGetValue("push_to_talk_toggle_check"));
 	gSavedSettings.setS32("VoiceEarLocation", childGetValue("ear_location"));
 	gSavedSettings.setBOOL("LipSyncEnabled", childGetValue("enable_lip_sync_check"));
+	gSavedSettings.setBOOL("VoiceMultiInstance", childGetValue("enable_multivoice_check"));
 	
 	if (LLPanelVoiceDeviceSettings* voice_device_settings = getChild<LLPanelVoiceDeviceSettings>("device_settings_panel"))
 	{

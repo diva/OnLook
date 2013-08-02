@@ -2,6 +2,8 @@
 <panel border="true" bottom="-409" height="408" label="Voice Chat" left="102" name="chat" width="517">
 	<text bottom_delta="-20" follows="left|top" left_delta="12" name="voice_unavailable">Voice Chat Is Not Available</text>
 	<check_box bottom_delta="0" follows="top" height="16" initial_value="false" label="Enable voice chat" left="8" name="enable_voice_check"/>
+	<check_box bottom_delta="-18" follows="top" height="16" name="enable_multivoice_check"/>
+	<string value="Allow multiple instances of [APP_NAME] to use voice simultaneously (requires restart)" name="multivoice_label"/>
 	<radio_group bottom_delta="-46" draw_border="false" follows="top" height="40" left_delta="20" name="ear_location" width="364">
 		<radio_item bottom="-19" height="16" left="3" name="0">Hear Voice Chat from camera position.</radio_item>
 		<radio_item bottom="-35" height="16" name="1">Hear Voice Chat from avatar position.</radio_item>
