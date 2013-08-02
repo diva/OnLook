@@ -202,7 +202,7 @@ char const* HelloWorld::state_str_impl(state_type run_state) const
 //   with that state.
 // multiplex_impl() may never reentrant (cause itself to be called).
 // multiplex_impl() should end by callling either one of:
-//   idle(current_state), yield*(), finish() [or abort()].
+//   idle(), yield*(), finish() [or abort()].
 // Leaving multiplex_impl() without calling any of those might result in an
 //   immediate reentry, which could lead to 100% CPU usage unless the state
 //   is changed with set_state().
@@ -212,7 +212,7 @@ char const* HelloWorld::state_str_impl(state_type run_state) const
 //   the call back passed to run() will be called.
 // Upon return from the call back, the state machine object might be destructed
 //   (see below).
-// If idle(current_state) was called, and the state was (still) current_state,
+// If idle() was called, and the state was (still) current_state,
 //   then multiplex_impl() will not be called again until the state is
 //   advanced, or cont() is called.
 //
@@ -245,10 +245,9 @@ char const* HelloWorld::state_str_impl(state_type run_state) const
 // following functions can be called:
 //
 // - set_state(new_state)		--> Force the state to new_state. This voids any previous call to set_state() or idle().
-// - idle(current_state)		--> If the current state is still current_state (if there was no call to advance_state()
-// 									since the last call to set_state(current_state)) then go idle (do nothing until
-// 									cont() or advance_state() is called). If the current state is not current_state,
-// 									then multiplex_impl shall be reentered immediately upon return.
+// - idle()						--> If there was no call to advance_state() since the last call to set_state(current_state))
+//                                  then go idle (do nothing until cont() or advance_state() is called). If the current
+//                                  state is not current_state,	then multiplex_impl shall be reentered immediately upon return.
 // - finish()					--> Disables any scheduled runs.
 // 								--> finish_impl		--> [optional] kill()
 // 								--> call back
