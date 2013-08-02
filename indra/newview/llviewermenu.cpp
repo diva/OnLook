@@ -228,6 +228,7 @@ class AIHTTPView;
 
 void add_wave_listeners();
 void add_dae_listeners();
+void add_radar_listeners();
 //extern BOOL	gHideSelectedObjects;
 //extern BOOL gAllowSelectAvatar;
 //extern BOOL gDebugAvatarRotation;
@@ -9868,6 +9869,8 @@ void initialize_menus()
 	addMenu(new ListEstateBan(), "List.EstateBan");
 	addMenu(new ListEstateEject(), "List.EstateEject");
 	addMenu(new ListToggleMute(), "List.ToggleMute");
+
+	add_radar_listeners();
 
 	LLToolMgr::getInstance()->initMenu(sMenus);
 }
