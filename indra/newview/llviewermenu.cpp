@@ -9213,13 +9213,32 @@ LLScrollListCtrl* get_focused_list()
 	return list;
 }
 
+S32 get_focused_list_num_selected()
+{
+	if (LLScrollListCtrl* list = get_focused_list())
+		return list->getNumSelected();
+	return 0;
+}
+
+const LLUUID get_focused_list_id_selected()
+{
+	if (LLScrollListCtrl* list = get_focused_list())
+		return list->getStringUUIDSelectedItem();
+	return LLUUID::null;
+}
+
+const uuid_vec_t get_focused_list_ids_selected()
+{
+	if (LLScrollListCtrl* list = get_focused_list())
+		return list->getSelectedIDs();
+	return uuid_vec_t();
+}
+
 class ListEnableAnySelected : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(list->getNumSelected());
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(get_focused_list_num_selected());
 		return true;
 	}
 };
@@ -9228,9 +9247,7 @@ class ListEnableMultipleSelected : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(list->getNumSelected() > 1);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(get_focused_list_num_selected() > 1);
 		return true;
 	}
 };
@@ -9239,9 +9256,7 @@ class ListEnableSingleSelected : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(list->getNumSelected() == 1);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(get_focused_list_num_selected() == 1);
 		return true;
 	}
 };
@@ -9261,9 +9276,7 @@ class ListEnableIsFriend : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(LLAvatarActions::isFriend(list->getStringUUIDSelectedItem()));
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(LLAvatarActions::isFriend(get_focused_list_id_selected()));
 		return true;
 	}
 };
@@ -9272,9 +9285,7 @@ class ListEnableIsNotFriend : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(!LLAvatarActions::isFriend(list->getStringUUIDSelectedItem()));
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(!LLAvatarActions::isFriend(get_focused_list_id_selected()));
 		return true;
 	}
 };
@@ -9283,9 +9294,7 @@ class ListEnableMute : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		uuid_vec_t ids = list->getSelectedIDs();
+		const uuid_vec_t& ids = get_focused_list_ids_selected();
 		bool can_block = true;
 		for (uuid_vec_t::const_iterator it = ids.begin(); can_block && it != ids.end(); ++it)
 			can_block = LLAvatarActions::canBlock(*it);
@@ -9298,9 +9307,7 @@ class ListEnableOfferTeleport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(LLAvatarActions::canOfferTeleport(list->getSelectedIDs()));
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(LLAvatarActions::canOfferTeleport(get_focused_list_ids_selected()));
 		return true;
 	}
 };
@@ -9309,9 +9316,7 @@ class ListCopyUUIDs : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::copyUUIDs(list->getSelectedIDs());
+		LLAvatarActions::copyUUIDs(get_focused_list_ids_selected());
 		return true;
 	}
 };
@@ -9320,9 +9325,7 @@ class ListInviteToGroup : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::inviteToGroup(list->getStringUUIDSelectedItem());
+		LLAvatarActions::inviteToGroup(get_focused_list_id_selected());
 		return true;
 	}
 };
@@ -9331,9 +9334,7 @@ class ListOfferTeleport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::offerTeleport(list->getSelectedIDs());
+		LLAvatarActions::offerTeleport(get_focused_list_ids_selected());
 		return true;
 	}
 };
@@ -9342,9 +9343,7 @@ class ListPay : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::pay(list->getStringUUIDSelectedItem());
+		LLAvatarActions::pay(get_focused_list_id_selected());
 		return true;
 	}
 };
@@ -9353,9 +9352,7 @@ class ListRemoveFriend : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::removeFriendDialog(list->getStringUUIDSelectedItem());
+		LLAvatarActions::removeFriendDialog(get_focused_list_id_selected());
 		return true;
 	}
 };
@@ -9364,9 +9361,7 @@ class ListRequestFriendship : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::requestFriendshipDialog(list->getStringUUIDSelectedItem());
+		LLAvatarActions::requestFriendshipDialog(get_focused_list_id_selected());
 		return true;
 	}
 };
@@ -9375,9 +9370,7 @@ class ListRequestTeleport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::teleportRequest(list->getStringUUIDSelectedItem());
+		LLAvatarActions::teleportRequest(get_focused_list_id_selected());
 		return true;
 	}
 };
@@ -9386,9 +9379,7 @@ class ListShowProfile : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::showProfiles(list->getSelectedIDs());
+		LLAvatarActions::showProfiles(get_focused_list_ids_selected());
 		return true;
 	}
 };
@@ -9397,9 +9388,7 @@ class ListStartAdhocCall : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::startAdhocCall(list->getSelectedIDs());
+		LLAvatarActions::startAdhocCall(get_focused_list_ids_selected());
 		return true;
 	}
 };
@@ -9408,9 +9397,7 @@ class ListStartCall : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::startCall(list->getStringUUIDSelectedItem());
+		LLAvatarActions::startCall(get_focused_list_id_selected());
 		return true;
 	}
 };
@@ -9419,9 +9406,7 @@ class ListStartConference : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::startConference(list->getSelectedIDs());
+		LLAvatarActions::startConference(get_focused_list_ids_selected());
 		return true;
 	}
 };
@@ -9430,9 +9415,7 @@ class ListStartIM : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::startIM(list->getStringUUIDSelectedItem());
+		LLAvatarActions::startIM(get_focused_list_id_selected());
 		return true;
 	}
 };
@@ -9441,9 +9424,7 @@ class ListAbuseReport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLFloaterReporter::showFromObject(list->getStringUUIDSelectedItem());
+		LLFloaterReporter::showFromObject(get_focused_list_id_selected());
 		return true;
 	}
 };
@@ -9471,9 +9452,7 @@ class ListEject : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		const uuid_vec_t& ids = list->getSelectedIDs();
+		const uuid_vec_t& ids = get_focused_list_ids_selected();
 		LLNotificationsUtil::add("EjectAvatarFullname", create_args(ids, "AVATAR_NAME"), LLSD(), boost::bind(parcel_mod_notice_callback, ids, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2), send_eject));
 		return true;
 	}
@@ -9484,9 +9463,7 @@ class ListFreeze : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		const uuid_vec_t& ids = list->getSelectedIDs();
+		const uuid_vec_t& ids = get_focused_list_ids_selected();
 		LLNotificationsUtil::add("FreezeAvatarFullname", create_args(ids, "AVATAR_NAME"), LLSD(), boost::bind(parcel_mod_notice_callback, ids, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2), send_freeze));
 		return true;
 	}
@@ -9512,9 +9489,7 @@ class ListEstateBan : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		const uuid_vec_t& ids = list->getSelectedIDs();
+		const uuid_vec_t& ids = get_focused_list_ids_selected();
 		LLNotificationsUtil::add("EstateBanUser", create_args(ids, "EVIL_USER"), LLSD(), boost::bind(estate_bulk_eject, ids, true, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2)));
 		return true;
 	}
@@ -9524,9 +9499,7 @@ class ListEstateEject : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		const uuid_vec_t& ids = list->getSelectedIDs();
+		const uuid_vec_t& ids = get_focused_list_ids_selected();
 		LLNotificationsUtil::add("EstateKickUser", create_args(ids, "EVIL_USER"), LLSD(), boost::bind(estate_bulk_eject, ids, false, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2)));
 		return true;
 	}
@@ -9536,9 +9509,7 @@ class ListToggleMute : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		uuid_vec_t ids = list->getSelectedIDs();
+		const uuid_vec_t& ids = get_focused_list_ids_selected();
 		for (uuid_vec_t::const_iterator it = ids.begin(); it != ids.end(); ++it)
 			LLAvatarActions::toggleBlock(*it);
 		return true;
