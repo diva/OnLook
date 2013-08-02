@@ -2226,7 +2226,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	}
 
 	LLViewerObject *source = gObjectList.findObject(session_id); //Session ID is probably the wrong thing.
-	if (source)
+	if (source || (source = gObjectList.findObject(from_id)))
 	{
 		is_owned_by_me = source->permYouOwner();
 	}
