@@ -9312,6 +9312,15 @@ class ListEnableOfferTeleport : public view_listener_t
 	}
 };
 
+class ListVisibleWebProfile : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(get_focused_list_num_selected() && !(gSavedSettings.getBOOL("UseWebProfiles") || gSavedSettings.getString("WebProfileURL").empty()));
+		return true;
+	}
+};
+
 class ListCopyUUIDs : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9380,6 +9389,15 @@ class ListShowProfile : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		LLAvatarActions::showProfiles(get_focused_list_ids_selected());
+		return true;
+	}
+};
+
+class ListShowWebProfile : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLAvatarActions::showProfiles(get_focused_list_ids_selected(), true);
 		return true;
 	}
 };
@@ -9830,6 +9848,7 @@ void initialize_menus()
 	addMenu(new ListEnableIsNotFriend(), "List.EnableIsNotFriend");
 	addMenu(new ListEnableMute(), "List.EnableMute");
 	addMenu(new ListEnableOfferTeleport(), "List.EnableOfferTeleport");
+	addMenu(new ListVisibleWebProfile(), "List.VisibleWebProfile");
 	addMenu(new ListCopyUUIDs(), "List.CopyUUIDs");
 	addMenu(new ListInviteToGroup(), "List.InviteToGroup");
 	addMenu(new ListOfferTeleport(), "List.OfferTeleport");
@@ -9838,6 +9857,7 @@ void initialize_menus()
 	addMenu(new ListRequestFriendship(), "List.RequestFriendship");
 	addMenu(new ListRequestTeleport(), "List.RequestTeleport");
 	addMenu(new ListShowProfile(), "List.ShowProfile");
+	addMenu(new ListShowWebProfile(), "List.ShowWebProfile");
 	addMenu(new ListStartAdhocCall(), "List.StartAdhocCall");
 	addMenu(new ListStartCall(), "List.StartCall");
 	addMenu(new ListStartConference(), "List.StartConference");
