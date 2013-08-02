@@ -1671,11 +1671,63 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 	return false;
 }
 
+bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_owned_by_me)
+{
+	// First, check the master filter
+	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
+	if (antispam) return true;
+
+	// Second, check if this dialog type is even being filtered
+	switch(dialog)
+	{
+	case IM_GROUP_NOTICE:
+	case IM_GROUP_NOTICE_REQUESTED:
+		if (!gSavedSettings.getBOOL("AntiSpamGroupNotices")) return false;
+		break;
+	case IM_GROUP_INVITATION:
+		if (!gSavedSettings.getBOOL("AntiSpamGroupInvites")) return false;
+		break;
+	case IM_INVENTORY_OFFERED:
+	case IM_TASK_INVENTORY_OFFERED:
+		if (!gSavedSettings.getBOOL("AntiSpamItemOffers")) return false;
+		break;
+	case IM_FROM_TASK_AS_ALERT:
+		if (!gSavedSettings.getBOOL("AntiSpamAlerts")) return false;
+		break;
+	case IM_LURE_USER:
+		if (!gSavedSettings.getBOOL("AntiSpamTeleports")) return false;
+		break;
+	case IM_TELEPORT_REQUEST:
+		if (!gSavedSettings.getBOOL("AntiSpamTeleportRequests")) return false;
+		break;
+	case IM_FRIENDSHIP_OFFERED:
+		if (!gSavedSettings.getBOOL("AntiSpamFriendshipOffers")) return false;
+		break;
+	case IM_COUNT:
+		// Bit of a hack, we should never get here unless we did this on purpose, though, doesn't matter because we'd do nothing anyway
+		if (!gSavedSettings.getBOOL("AntiSpamScripts")) return false;
+		break;
+	default:
+		return false;
+	}
+
+	// Third, possibly filtered, check the filter bypasses
+	static LLCachedControl<bool> antispam_not_mine(gSavedSettings,"AntiSpamNotMine");
+	if (antispam_not_mine && is_owned_by_me)
+		return false;
+
+	static LLCachedControl<bool> antispam_not_friends(gSavedSettings,"AntiSpamNotFriends");
+	if (antispam_not_friends && is_friend)
+		return false;
+
+	// Last, definitely filter
+	return true;
+}
+
 void inventory_offer_handler(LLOfferInfo* info)
 {
 	// NaCl - Antispam Registry
-	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
-	if(antispam || gSavedSettings.getBOOL("AntiSpamItemOffers") || NACLAntiSpamRegistry::checkQueue((U32)NACLAntiSpamRegistry::QUEUE_INVENTORY,info->mFromID))
+	if (NACLAntiSpamRegistry::checkQueue((U32)NACLAntiSpamRegistry::QUEUE_INVENTORY,info->mFromID))
 		return;
 	// NaCl End
 	//If muted, don't even go through the messaging stuff.  Just curtail the offer here.
@@ -2071,7 +2123,6 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	{
 		return;
 	}
-	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
 	LLUUID from_id;
 	BOOL from_group;
 	LLUUID to_id;
@@ -2179,6 +2230,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	{
 		is_owned_by_me = source->permYouOwner();
 	}
+
+	// NaCl - Antispam
+	if (is_spam_filtered(dialog, is_friend, is_owned_by_me)) return;
+	// NaCl End
 
 	std::string separator_string(": ");
 	int message_offset = 0;
@@ -2545,10 +2600,6 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	case IM_GROUP_NOTICE:
 	case IM_GROUP_NOTICE_REQUESTED:
 		{
-			// NaCl - Antispam
-			if(antispam || gSavedSettings.getBOOL("AntiSpamGroupNotices"))
-				return;
-			// NaCl End
 			LL_INFOS("Messaging") << "Received IM_GROUP_NOTICE message." << LL_ENDL;
 			// Read the binary bucket for more information.
 			struct notice_bucket_header_t
@@ -2664,11 +2715,6 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		break;
 	case IM_GROUP_INVITATION:
 		{
-			// NaCl - Antispam
-			if (antispam || gSavedSettings.getBOOL("AntiSpamGroupInvites"))
-				return;
-			// NaCl End
-
 			//if (!is_linden && (is_busy || is_muted))
 			if ((is_busy || is_muted))
 			{
@@ -2718,10 +2764,6 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	case IM_TASK_INVENTORY_OFFERED:
 		// Someone has offered us some inventory.
 		{
-			// NaCl - Antispam
-			if(antispam || gSavedSettings.getBOOL("AntiSpamItemOffers"))
-				return;
-			// NaCl End
 			LLOfferInfo* info = new LLOfferInfo;
 			if (IM_INVENTORY_OFFERED == dialog)
 			{
@@ -2990,10 +3032,6 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		}
 		break;
 	case IM_FROM_TASK_AS_ALERT:
-		// NaCl - Antispam
-		if(antispam || (!is_owned_by_me &&  gSavedSettings.getBOOL("AntiSpamAlerts")))
-			return;
-		// NaCl End
 		if (is_busy && !is_owned_by_me)
 		{
 			return;
@@ -3022,7 +3060,6 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	case IM_LURE_USER:
 	case IM_TELEPORT_REQUEST:
 		{
-			if (antispam || gSavedSettings.getBOOL(dialog == IM_LURE_USER ? "AntiSpamTeleports" : "AntiSpamTeleportRequests")) return; //NaCl Antispam
 // [RLVa:KB] - Checked: 2010-12-11 (RLVa-1.2.2c) | Added: RLVa-1.2.2c
 			// If the lure sender is a specific @accepttp exception they will override muted and busy status
 			bool fRlvSummon = (rlv_handler_t::isEnabled()) && (gRlvHandler.isException(RLV_BHVR_ACCEPTTP, from_id));
@@ -3268,10 +3305,6 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 
 	case IM_FRIENDSHIP_OFFERED:
 		{
-			// NaCl - Antispam
-			if(antispam || gSavedSettings.getBOOL("AntiSpamFriendshipOffers"))
-				return;
-			// NaCl End
 			LLSD payload;
 			payload["from_id"] = from_id;
 			payload["session_id"] = session_id;;
@@ -3424,8 +3457,7 @@ static LLNotificationFunctorRegistration callingcard_offer_cb_reg("OfferCallingC
 void process_offer_callingcard(LLMessageSystem* msg, void**)
 {
 	// NaCl - Antispam
-	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
-	if(antispam || gSavedSettings.getBOOL("AntiSpamFriendshipOffers"))
+	if (is_spam_filtered(IM_FRIENDSHIP_OFFERED, false, false))
 		return;
 	// NaCl End
 	// someone has offered to form a friendship
@@ -6980,11 +7012,6 @@ static LLNotificationFunctorRegistration script_question_cb_reg_2("ScriptQuestio
 
 void process_script_question(LLMessageSystem *msg, void **user_data)
 {
-	// NaCl - Antispam
-	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
-	if(antispam || gSavedSettings.getBOOL("AntiSpamScripts"))
-		return;
-	// NaCl End
 	// *TODO: Translate owner name -> [FIRST] [LAST]
 
 	LLHost sender = msg->getSender();
@@ -7018,6 +7045,9 @@ void process_script_question(LLMessageSystem *msg, void **user_data)
 	std::string throttle_name = owner_name;
 	std::string self_name;
 	LLAgentUI::buildFullname( self_name );
+	// NaCl - Antispam
+	if (is_spam_filtered(IM_COUNT, false, owner_name == self_name)) return;
+	// NaCl End
 	if( owner_name == self_name )
 	{
 		throttle_name = taskid.getString();
@@ -7758,11 +7788,6 @@ static LLNotificationFunctorRegistration callback_script_dialog_reg_2("ScriptDia
 
 void process_script_dialog(LLMessageSystem* msg, void**)
 {
-	// NaCl - Antispam
-	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
-	if(antispam || gSavedSettings.getBOOL("AntiSpamScripts"))
-		return;
-	// NaCl End
 	S32 i;
 	LLSD payload;
 
@@ -7785,6 +7810,10 @@ void process_script_dialog(LLMessageSystem* msg, void**)
 		return;
 	// NaCl End
 	}
+
+	// NaCl - Antispam
+	if (owner_id.isNull() ? is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(object_id), object_id == gAgentID) : is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(owner_id), owner_id == gAgentID)) return;
+	// NaCl End
 
 	if (LLMuteList::getInstance()->isMuted(object_id) || LLMuteList::getInstance()->isMuted(owner_id))
 	{
@@ -7934,11 +7963,6 @@ void callback_load_url_name(const LLUUID& id, const std::string& full_name, bool
 
 void process_load_url(LLMessageSystem* msg, void**)
 {
-	// NaCl - Antispam
-	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
-	if(antispam || gSavedSettings.getBOOL("AntiSpamScripts"))
-		return;
-	// NaCl End
 	LLUUID object_id;
 	LLUUID owner_id;
 	BOOL owner_is_group;
@@ -7949,6 +7973,10 @@ void process_load_url(LLMessageSystem* msg, void**)
 	msg->getString("Data", "ObjectName", 256, object_name);
 	msg->getUUID(  "Data", "ObjectID", object_id);
 	msg->getUUID(  "Data", "OwnerID", owner_id);
+
+	// NaCl - Antispam
+	if (owner_id.isNull() ? is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(object_id), object_id == gAgentID) : is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(owner_id), owner_id == gAgentID)) return;
+	// NaCl End
 
 	// NaCl - Antispam Registry
 	if((owner_id.isNull()
@@ -8029,12 +8057,16 @@ void process_initiate_download(LLMessageSystem* msg, void**)
 
 void process_script_teleport_request(LLMessageSystem* msg, void**)
 {
-	// NaCl - Antispam
-	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
-	if(antispam || gSavedSettings.getBOOL("AntiSpamScripts"))
-		return;
-	// NaCl End
 	if (!gSavedSettings.getBOOL("ScriptsCanShowUI")) return;
+	// NaCl - Antispam
+	{
+		LLUUID object_id, owner_id;
+		msg->getUUID(  "Data", "ObjectID", object_id);
+		msg->getUUID(  "Data", "OwnerID", owner_id);
+
+		if (owner_id.isNull() ? is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(object_id), object_id == gAgentID) : is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(owner_id), owner_id == gAgentID)) return;
+	}
+	// NaCl End
 
 	std::string object_name;
 	std::string sim_name;
