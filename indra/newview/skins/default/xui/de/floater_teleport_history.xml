@@ -6,8 +6,8 @@
 		<column name="position" label="Position"/>
 		<column name="visited" label="Besucht"/>
 		<!--Hidden fields, used as storage for prebuilt strings, please keep at width 0-->
-		<column name="slurl" label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;"/>
-		<column name="simstring" label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;"/>
+		<column name="slurl" label=""/>
+		<column name="simstring" label=""/>
 	</scroll_list>
 	<button name="teleport" label="Teleportieren" tool_tip="Zu ausgewählter Position teleportieren"/>
 	<button name="show_on_map" label="Auf Karte zeigen" tool_tip="Karte auf Position zoomen"/>

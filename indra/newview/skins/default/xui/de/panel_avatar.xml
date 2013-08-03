@@ -16,9 +16,7 @@
 			<string name="NotAgeVerified">Nicht altersgeprüft</string>
       <button label="Copy Key:" tool_tip="Copy key to clipboard" name="copy_key"/>
       
-      <button name="web_profile" label="Web Profile">
-         
-      </button>
+      <button name="web_profile" label="Web Profile"/>
       <text name="Name:">Name:</text>
 			
 			<text name="online_yes">Zurzeit online</text>
@@ -32,8 +30,8 @@
 			<button label="?" label_selected="?" name="partner_help"/>
 			<line_editor name="partner_edit" tool_tip="Second Life Partner. Weitere Informationen finden Sie auf www.secondlife.com/partner">[NAME]</line_editor>
 			<text name="Photo:">Foto:</text>
-			<texture_picker label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="img" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
-			<button label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="bigimg"/>
+			<texture_picker label="" name="img" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+			<button label="" name="bigimg"/>
 			<text name="Groups:">Gruppen:</text>
 			
 			<string name="None">Keine</string>
@@ -49,7 +47,7 @@
 			<button label="Freund hinzufügen..." label_selected="Freund hinzufügen..." name="Add Friend..."/>
 			<button label="Zahlen..." label_selected="Zahlen..." name="Pay..."/>
 			<button label="Privatnachricht..." label_selected="Privatnachricht..." name="Instant Message..." tool_tip="Privatnachricht (IM)"/>
-			<button label="Blockieren" label_selected="Blockieren" name="Mute"/>
+			<button label="Stumm an/aus" name="Mute"/>
 			<button label="In Gruppe einladen" label_selected="In Gruppe einladen" name="GroupInvite_Button"/>
 		</panel>
 		<panel label="Web" name="WebProfile">
@@ -104,8 +102,8 @@
 		<panel label="1. Leben" name="1st Life">
 
 			<text name="Photo:">Foto:</text>
-			<texture_picker label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="img" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
-			<button label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="flbigimg"/>
+			<texture_picker label="" name="img" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+			<button label="" name="flbigimg"/>
 			<text name="Info:">Info:</text>
 			<text name="(250 chars)">250 Zeichen</text>
 			

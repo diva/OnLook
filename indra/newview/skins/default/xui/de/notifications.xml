@@ -69,6 +69,25 @@
     </form>
   </template>
 
+  <notification name="AIXMLExportWriteError">Export Failure: could not open file "[FILE]" for writing.</notification>
+
+  <notification name="AIXMLImportGridMismatch">Import Warning: could not apply textures: [FILE] was exported on grid "[GRIDNAME]" while the currentgrid is "[CURGRID]".</notification>
+
+  <notification name="AIXMLImportParseError">Import Failure: could not read or parse wearable import file "[FILE]".</notification>
+
+  <notification name="AIXMLImportRootTypeError">Import Failure: the file "[FILE]" is not a linden_genepool XML file.</notification>
+
+  <notification name="AIXMLImportRootVersionError">Import Failure: the file "[FILE]" contains linden_genepool XML data with the wrong [TAG]. Version "[VERSIONMAJOR].0" or less is required.</notification>
+
+  <notification name="AIXMLImportInvalidError">Import Failure: the file "[FILE]" contains invalid data.</notification>
+
+  <notification name="AIXMLImportDifferentGrid">Import was successful but note that the wearable was exported on grid [EXPORTGRID] (and the current grid is [CURRENTGRID]). Texture UUIDs have NOT been applied!</notification>
+
+  <notification name="AIXMLImportMixedGrid">Import was successful but note that the wearable was exported on grid [EXPORTGRID] (and the current grid is [CURRENTGRID]). Texture UUIDs have been applied but might not exist here!</notification>
+
+  <notification name="AIXMLImportWearableTypeMismatch">Import Warning: the file "[FILE]" does not contain a wearable of type [TYPE].
+It contains an archetype of type [ARCHETYPENAME]. Please select the correct type before importing.</notification>
+
   <notification name="MediaAlert">Der Besitzer der Parzelle m&#xF6;chte Ihren Viewer anweisen die folgende [TYPE] URL zu laden:[URL]Sie k&#xF6;nnen die korrespondierende Dom&#xE4;ne oder In-Welt Objekt-Skript-Server erlauben oder ablehnen."Erlauben" und "Verweigern" gelten nur f&#xFC;r die aktuelle Sitzung, w&#xE4;hrend "Immer sperren" bzw. "Immer erlauben" dann immer gelten.<form name="form">
     <button name="Allow" text="erlauben"/>
 	<button name="Deny" text="verbieten"/>
@@ -1153,6 +1172,11 @@ Bitte versuche einen anderen Namen.</notification>
       <button name="Cancel" text="Abbrechen"/>
     </form></notification>
 
+  <notification name="TeleportRequestPrompt">Request a teleport to [NAME] with the following message<tag>Best&#xE4;tigen</tag><form name="form">
+      <input name="message">Teleport me to your location, please.</input>
+      <button name="OK" text="OK"/>
+      <button name="Cancel" text="Abbrechen"/>
+    </form></notification>
   <notification name="TooManyTeleportOffers">Du versuchst  [OFFERS] Teleport anfragen zu senden
 welches die maximale anzahl an gleichzeitigen anfragen von [LIMIT] &#xFC;bersteigt.<tag>Gruppe</tag><tag>fehlgeschlagen</tag><usetemplate name="okbutton" yestext="OK"/></notification>
 
@@ -2143,6 +2167,15 @@ Versuchen Sie es in einigen Minuten erneut.</notification>
       <button name="Cancel" text="Abbrechen"/>
     </form></notification>
 
+  <notification name="TeleportRequest">[NAME] is requesting to be teleported to your location.
+[MESSAGE]
+
+Offer a teleport?<tag>Best&#xE4;tigen</tag><form name="form">
+      <button name="Yes" text="Ja"/>
+      <button name="No" text="Nein"/>
+      <button name="Profile" text="Profil"/>
+    </form></notification>
+
   <notification name="GotoURL">[MESSAGE]
 [URL]<form name="form">
       <button name="Later" text="Sp&#xE4;ter"/>
@@ -2157,6 +2190,7 @@ Versuchen Sie es in einigen Minuten erneut.</notification>
       <button name="Accept" text="Akzeptieren"/>
       <button name="Decline" text="Ablehnen"/>
       <button name="Ignore" text="Ignorieren"/>
+      <button name="Profile" text="Profil"/>
     </form></notification>
 
   <notification name="FriendshipOffered">Sie haben [TO_NAME] die Freundschaft angeboten.</notification>
@@ -2167,6 +2201,7 @@ Versuchen Sie es in einigen Minuten erneut.</notification>
       <button name="Accept" text="Akzeptieren"/>
       <button name="Decline" text="Ablehnen"/>
       <button name="Ignore" text="Ignorieren"/>
+      <button name="Profile" text="Profil"/>
     </form></notification>
 
   <notification name="FriendshipAccepted">[NAME] hat Ihr Freundschaftsangebot akzeptiert.</notification>
@@ -2998,5 +3033,11 @@ the parcel is full.<tag>fehlgeschlagen</tag></notification>
 
   <notification name="RadarChatKeysRequest">An object owned by you has requested keys from your radar.
 Would you like to enable announcing keys to objects in the sim?<usetemplate name="yesnocancelbuttons" yestext="Ja" canceltext="No, don't ask again!"/></notification>
+
+  <notification name="WavefrontExportPartial">Unable to include [FAILED] out of [TOTAL] objects in export due to insufficient permissions.
+
+Do you wish to export anyway?<usetemplate name="okcancelbuttons" yestext="Proceed"/></notification>
+
+  <notification name="WavefrontExportSuccess">Object successfully exported to: [FILENAME]</notification>
 
 </notifications>

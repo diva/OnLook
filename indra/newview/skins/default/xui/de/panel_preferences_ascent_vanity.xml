@@ -47,10 +47,10 @@
       <color_swatch label="Stummgeschaltet" name="muted_color_swatch" tool_tip="Color of Muted"/>
       <color_swatch label="Custom (Minimap)" name="custom_color_swatch" tool_tip="Color of users picked out on the minimap only"/>
       <text name="chat_color_text">Use colors for chat:</text>
-      <check_box label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="color_friend_check" tool_tip="Color Friend Chat"/>
-      <check_box label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="color_estate_owner_check" tool_tip="Color Estate Managers Chat"/>
-      <check_box label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="color_linden_check" tool_tip="Color Linden Chat"/>
-      <check_box label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="color_muted_check" tool_tip="Color Muted Chat"/>
+      <check_box label="" name="color_friend_check" tool_tip="Color Friend Chat"/>
+      <check_box label="" name="color_estate_owner_check" tool_tip="Color Estate Managers Chat"/>
+      <check_box label="" name="color_linden_check" tool_tip="Color Linden Chat"/>
+      <check_box label="" name="color_muted_check" tool_tip="Color Muted Chat"/>
       <!--check_box bottom_delta="0" control_name="ColorCustomChat" follows="top" height="20" label="" left_delta="54" name="color_custom_check" width="44" tool_tip="Color Custom Chat"/ Not implemented, yet.-->
     </panel>
     <panel label="Body Dynamics" name="Body Dynamics">
