@@ -101,7 +101,10 @@ Beschäftigt-Modus:</text>
       <check_box label="Skripts" name="Scripts"/>
       <check_box label="Teleport Offers" name="Teleport Offers"/>
       <check_box label="Gruppenmitteilungen" name="Group Notices"/>
-      <check_box label="Teleport Requests" name="Teleport Requests"/>
+      <!--check_box control_name="AntiSpamTeleportRequests" height="16" label="Teleport Requests" name="Teleport Requests" left="14" bottom_delta="-20"/-->
+      <text name="Except those from:">Except those from:</text>
+      <check_box label="My objects" name="My objects"/>
+      <check_box label="My friends" name="My friends"/>
       <check_box label="Enable Gesture Sounds" name="Enable Gesture Sounds"/>
     </panel>
 

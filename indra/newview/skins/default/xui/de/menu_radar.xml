@@ -2,6 +2,7 @@
 <menu name="Radar Menu">
   <menu label="Avatar" name="Avatar">
     <menu_item_call label="Profil" name="Profile"/>
+    <menu_item_call label="Web Profile" name="Web Profile"/>
     <menu_item_call label="Bezahlen" name="Pay"/>
     <menu_item_call label="Instant Message" name="Instant Message"/>
     <menu_item_call label="Conference Chat" name="Conference Chat"/>
@@ -42,7 +43,10 @@
   </menu>
   <menu label="Moderation" name="Moderation">
     <menu_item_call label="Mute/Unmute" name="Mute/Unmute"/>
-    <menu_item_call label="Missbrauch melden" name="Report Abuse"/>
+    <!--menu_item_call label="Report Abuse" name="Report Abuse">
+      <on_click function="List.ReportAbuse"/>
+      <on_visible function="List.EnableSingleSelected"/>
+    </menu_item_call-->
     
     <menu_item_call label="Einfrieren" name="Freeze"/>
     <menu_item_call label="Eject/Ban from Parcel" name="Eject/Ban from Parcel"/>
