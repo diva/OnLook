@@ -210,6 +210,10 @@ void LLPrefsAscentChat::onCommitDialogBlock(LLUICtrl* ctrl, const LLSD& value)
 		childSetEnabled("Item Offers",            !enabled);
 		childSetEnabled("Scripts",                !enabled);
 		childSetEnabled("Teleport Offers",        !enabled);
+		childSetEnabled("Teleport Requests",      !enabled);
+		childSetEnabled("Except those from:",     !enabled);
+		childSetEnabled("My objects",             !enabled);
+		childSetEnabled("My friends",             !enabled);
 	}
 }
 
@@ -329,6 +333,8 @@ void LLPrefsAscentChat::refreshValues()
 	mBlockGroupFeeInviteSpam        = gSavedSettings.getBOOL("AntiSpamGroupFeeInvites");
     mBlockGroupNoticeSpam           = gSavedSettings.getBOOL("AntiSpamGroupNotices");
     mBlockItemOfferSpam             = gSavedSettings.getBOOL("AntiSpamItemOffers");
+	mBlockNotFriendSpam        = gSavedSettings.getBOOL("AntiSpamNotFriend");
+	mBlockNotMineSpam          = gSavedSettings.getBOOL("AntiSpamNotMine");
     mBlockScriptSpam                = gSavedSettings.getBOOL("AntiSpamScripts");
     mBlockTeleportSpam              = gSavedSettings.getBOOL("AntiSpamTeleports");
 	mBlockTeleportRequestSpam       = gSavedSettings.getBOOL("AntiSpamTeleportRequests");
@@ -547,6 +553,8 @@ void LLPrefsAscentChat::cancel()
 	gSavedSettings.setBOOL("AntiSpamGroupInvites",           mBlockGroupInviteSpam);
 	gSavedSettings.setBOOL("AntiSpamGroupFeeInvites",		 mBlockGroupFeeInviteSpam);
 	gSavedSettings.setBOOL("AntiSpamItemOffers",             mBlockItemOfferSpam);
+	gSavedSettings.setBOOL("AntiSpamNotFriend",              mBlockNotFriendSpam);
+	gSavedSettings.setBOOL("AntiSpamNotMine",                mBlockNotMineSpam);
 	gSavedSettings.setBOOL("AntiSpamScripts",                mBlockScriptSpam);
 	gSavedSettings.setBOOL("AntiSpamTeleports",              mBlockTeleportSpam);
 	gSavedSettings.setBOOL("AntiSpamTeleportRequests",       mBlockTeleportRequestSpam);
