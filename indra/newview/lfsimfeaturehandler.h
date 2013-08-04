@@ -20,14 +20,13 @@
 
 #include "llsingleton.h"
 
-template<typename Type>
+template<typename Type, typename Slot = void()>
 class SignaledType
 {
 public:
 	SignaledType() : mValue() {}
 	SignaledType(Type b) : mValue(b) {}
 
-	template<typename Slot>
 	boost::signals2::connection connect(Slot slot) { return mSignal.connect(slot); }
 
 	SignaledType& operator =(Type val)
@@ -42,7 +41,7 @@ public:
 	operator Type() const { return mValue; }
 
 private:
-	boost::signals2::signal<void()> mSignal;
+	boost::signals2::signal<Slot> mSignal;
 	Type mValue;
 };
 
