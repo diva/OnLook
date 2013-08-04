@@ -10,7 +10,7 @@
   <button label="Keine" label_selected="Keine" name="None"/>
 	<check_box label="Ordner anzeigen" name="show_folders_check"/>
 	<check_box label="Sofort übernehmen" name="apply_immediate_check"/>
-	<button label="" label_selected="" name="Pipette"/>
+	
 	<button label="Abbrechen" label_selected="Abbrechen" name="Cancel"/>
 	<button label="Auswählen" label_selected="Auswählen" name="Select"/>
 	

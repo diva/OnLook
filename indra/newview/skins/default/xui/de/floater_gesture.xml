@@ -4,7 +4,7 @@
 	<scroll_list name="gesture_list">
 		<column label="Auslöser" name="trigger"/>
 		<column label="Key" name="shortcut"/>
-		<column label="" name="key"/>
+		
 		<column label="Name" name="name"/>
 	</scroll_list>
 	<button label="Neu" name="new_gesture_btn"/>

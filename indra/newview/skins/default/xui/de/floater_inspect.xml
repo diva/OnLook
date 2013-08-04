@@ -12,6 +12,6 @@
 		<column label="Erstellungsdatum" name="creation_date"/>
 		 
 	</scroll_list>
-	<button label="Besitzerprofil einsehen..." label_selected="" name="button owner" tool_tip="Profil des Besitzers des markierten Objekts einsehen"/>
-	<button label="Erstellerprofil einsehen..." label_selected="" name="button creator" tool_tip="Profil des ursprünglichen Erstellers des markierten Objekts einsehen"/>
+	<button label="Besitzerprofil einsehen..." name="button owner" tool_tip="Profil des Besitzers des markierten Objekts einsehen"/>
+	<button label="Erstellerprofil einsehen..." name="button creator" tool_tip="Profil des ursprünglichen Erstellers des markierten Objekts einsehen"/>
 </floater>

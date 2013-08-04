@@ -16,5 +16,5 @@
     </scroll_list>
     </layout_panel>
   </layout_stack>
-  <button name="header" label=""/>
+  
 </panel>

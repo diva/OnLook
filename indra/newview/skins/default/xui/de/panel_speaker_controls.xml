@@ -12,13 +12,13 @@
 			<scroll_list name="speakers_list">
 				
 				<column label="Name" name="speaker_name"/>
-				<column label="" name="speaking_status"/>
+				
 			</scroll_list>
 			<panel name="speaker_controls">
-				<button label="" name="profile_btn"/>
+				
 				<text name="resident_name">Rumpelstilzchen Megakrass</text>
 				
-				<button label="" name="mute_btn" tool_tip="Voice für diesen Einwohner stummschalten"/>
+				<button name="mute_btn" tool_tip="Voice für diesen Einwohner stummschalten"/>
 				<check_box label="Text stummschalten" name="mute_text_btn"/>
 			</panel>
 		</layout_panel>

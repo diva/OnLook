@@ -3,8 +3,8 @@
 	<tab_container name="Day Cycle Tabs">
 		<panel label="Tageszyklus" name="Day Cycle">
 			<button label="?" name="WLDayCycleHelp"/>
-			<multi_slider label="" name="WLTimeSlider"/>
-			<multi_slider label="" name="WLDayCycleKeys"/>
+			
+			
 			<text name="WL12am">0:00</text>
 			<text name="WL3am">3:00</text>
 			<text name="WL6am">6:00</text>

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="floater_lagmeter" title="Lag-Anzeige">
-	<button label="" label_selected="" name="client_lagmeter" tool_tip="Client-Lag-Status"/>
+	<button name="client_lagmeter" tool_tip="Client-Lag-Status"/>
 	<text name="client">Viewer:</text>
 	<text name="client_text">Normal</text>
 	
-	<button label="" label_selected="" name="network_lagmeter" tool_tip="Netzwerk-Lag-Status"/>
+	<button name="network_lagmeter" tool_tip="Netzwerk-Lag-Status"/>
 	<text name="network">Netzwerk:</text>
 	<text name="network_text">Normal</text>
 	
-	<button label="" label_selected="" name="server_lagmeter" tool_tip="Server-Lag-Status"/>
+	<button name="server_lagmeter" tool_tip="Server-Lag-Status"/>
 	<text name="server">Server:</text>
 	<text name="server_text">Normal</text>
 	

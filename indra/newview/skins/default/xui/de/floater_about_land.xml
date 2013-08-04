@@ -185,7 +185,7 @@ Nur große Parzellen können in der Suche aufgeführt werden.</string>
 			<text name="allow_label5">Einwohnern auf anderen Parzellen gestatten:</text>
 			<check_box label="Avatare auf dieser Parzelle sehen und mit ihnen reden" name="SeeAvatarsCheck" tool_tip="Erlaubt Einwohnern auf anderen Parzellen, Avatare auf dieser Parzelle zu sehen und mit ihnen zu chatten."/>
 			<text name="Snapshot:">Foto:</text>
-			<texture_picker label="" name="snapshot_ctrl" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+			<texture_picker name="snapshot_ctrl" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
 			<text name="landing_point">Landepunkt: [LANDING]</text>
 			<string name="landing_point_none">(keiner)</string>
 			<button label="Festlegen" label_selected="Festlegen" name="Set" tool_tip="Legt den Landepunkt fest, an dem Besucher ankommen. Legt die Position Ihres Avatars innerhalb dieser Parzelle fest."/>
@@ -215,7 +215,7 @@ Nur große Parzellen können in der Suche aufgeführt werden.</string>
 			<text name="Description:">Beschreibung:</text>
 			<line_editor name="url_description" tool_tip="Text, der neben der Abspielen/Laden-Schaltfläche angezeigt wird"/>
 			<text name="Media texture:">Textur:</text>
-			<texture_picker label="" name="media texture" tool_tip="Klicken Sie hier, um ein Bild auszuwählen"/>
+			<texture_picker name="media texture" tool_tip="Klicken Sie hier, um ein Bild auszuwählen"/>
 			<text name="replace_texture_help">(Objekte mit dieser Textur zeigen nach Anklicken
 des Abspielen-Pfeils den Film oder die Webseite an.)</text>
 			<text name="Options:">Medien-

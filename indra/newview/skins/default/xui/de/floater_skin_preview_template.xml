@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<multi_floater name="floater_chatterbox" title="">
+<multi_floater name="floater_chatterbox">
     
     <panel name="panel_littletoolbar">
         
-        <button label="" name="chat_btn" tool_tip="Chat-Leiste anzeigen.(Eingabe)"/>
+        <button name="chat_btn" tool_tip="Chat-Leiste anzeigen.(Eingabe)"/>
             
         <flyout_button label="Unterhalten" name="communicate_btn" tool_tip="Unterhalten Sie sich mit Freunden und in Gruppen."/>
         

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="Inventory" title="Inventar">
 	<filter_editor label="Suchanfrage hier eintippen" name="inventory search editor"/>
-  <button label="" name="collapse_btn" tool_tip="Alles Verbergen"/>
-   <button label="" name="Inventory.ExpandAll" tool_tip="Alles aufklappen"/>
-   <button label="" name="Inventory.ResetAll" tool_tip="Inventaranzeige zurücksetzen: Filter löschen und alle Ordner schliessen"/>
+  <button name="collapse_btn" tool_tip="Alles Verbergen"/>
+   <button name="Inventory.ExpandAll" tool_tip="Alles aufklappen"/>
+   <button name="Inventory.ResetAll" tool_tip="Inventaranzeige zurücksetzen: Filter löschen und alle Ordner schliessen"/>
  <text name="group_titles_textbox">Typ:</text>
 	<!-- Inventory Type Filter Labels -->
 	<string name="filter_type_all">Alle Typen</string>

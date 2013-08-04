@@ -6,10 +6,10 @@
       <scroll_list name="speakers_list">
         
         <column label="Name" name="speaker_name"/>
-        <column label="" name="speaking_status"/>
+        
       </scroll_list>
       
-      <button label="" name="mute_btn" tool_tip="Voice für diesen Einwohner stummschalten"/>
+      <button name="mute_btn" tool_tip="Voice für diesen Einwohner stummschalten"/>
     </layout_panel>
   </layout_stack>
 </floater>

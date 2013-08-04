@@ -23,7 +23,7 @@
 	<button label="End" name="end_call_btn"/>
 	<panel name="speaker_controls">
 		
-		<button label="" name="mute_btn" tool_tip="Voice stummschalten"/>
+		<button name="mute_btn" tool_tip="Voice stummschalten"/>
 	</panel>
 	
 	<line_editor label="Für Instant Message hier klicken" name="chat_editor"/>

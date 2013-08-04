@@ -39,11 +39,7 @@
 	<search_editor label="Nach Regionsname suchen" name="location" tool_tip="Geben Sie den Namen einer Region ein"/>
 	<button label="Suche" name="DoSearch" tool_tip="Nach einer Region suchen"/>
 	<text name="search_label">Suchergebnisse:</text>
-	<scroll_list name="search_results">
-		<column label="" name="icon"/>
-		<column label="" name="sim_name"/>
-		
-	</scroll_list>
+	
 	<text name="location_label">Standort:</text>
 	<spinner name="spin x" tool_tip="X-Koordinate der Position auf der Karte"/>
 	<spinner name="spin y" tool_tip="Y-Koordinate der Position auf der Karte"/>

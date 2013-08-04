@@ -10,7 +10,7 @@
   <check_box label="Sitzposition ändern" name="AOSitsEnabled"/>
   
   <text name="buttons_desc">Stehpositionen:</text>
-  <combo_box name="stands" label=""/>
+  
   <button name="prevstand" tool_tip="previous stand" label="&lt;&lt;"/>
   <button name="nextstand" tool_tip="next stand" label="&gt;&gt; "/>
   <check_box label="Zufällige Reihenfolge" name="AOStandRandomize"/>
@@ -27,38 +27,38 @@
     <panel label="Standardanimationen" name="tabdefaultanims">
     
       <text name="textdefaultwalk">Standardgang:</text>
-      <combo_box name="walks" label=""/>
+      
 
       <text name="textdefaultrun">Standardlauf:</text>
-      <combo_box name="runs" label=""/>
+      
       <text name="textdefaultjump">Standardsprung:</text>
-      <combo_box name="jumps" label=""/>
+      
       <text name="textdefaultsit">Standardsitz:</text>
-      <combo_box name="sits" label=""/>
+      
       <text name="textdefaultgsit">Standard Sitz am Boden:</text>
-      <combo_box name="gsits" label=""/>
+      
       <text name="textdefaultcrouch">Standard hocken:</text>
-      <combo_box name="crouchs" label=""/>
+      
       <text name="textdefaultcrouchwalk">Standard Schleichgang:</text>
-      <combo_box name="cwalks" label=""/>
+      
       <text name="textdefaultfall">Standard fallen:</text>
-      <combo_box name="falls" label=""/>
+      
       <text name="textdefaulthover">Standard schweben:</text>
-      <combo_box name="hovers" label=""/>
+      
       <text name="textdefaultfly">Standard fliegen:</text>
-      <combo_box name="flys" label=""/>
+      
       <text name="textdefaultflyslow">Standard langsam fliegen:</text>
-      <combo_box name="flyslows" label=""/>
+      
       <text name="textdefaultflyup">Standard hochfliegen:</text>
-      <combo_box name="flyups" label=""/>
+      
       <text name="textdefaultflydown">Standard herunterfliegen:</text>
-      <combo_box name="flydowns" label=""/>
+      
       <text name="textdefaultland">Standardlandung:</text>
-      <combo_box name="lands" label=""/>
+      
       <text name="textdefaultstandup">Standard aufstehen:</text>
-      <combo_box name="standups" label=""/>
+      
       <text name="textdefaultprejump">Standard Sprungbeginn:</text>
-      <combo_box name="prejumps" label=""/>
+      
   </panel>
 </tab_container>
 </floater>

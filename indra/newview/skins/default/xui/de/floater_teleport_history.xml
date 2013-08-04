@@ -6,8 +6,8 @@
 		<column name="position" label="Position"/>
 		<column name="visited" label="Besucht"/>
 		<!--Hidden fields, used as storage for prebuilt strings, please keep at width 0-->
-		<column name="slurl" label=""/>
-		<column name="simstring" label=""/>
+		
+		
 	</scroll_list>
 	<button name="teleport" label="Teleportieren" tool_tip="Zu ausgewählter Position teleportieren"/>
 	<button name="show_on_map" label="Auf Karte zeigen" tool_tip="Karte auf Position zoomen"/>

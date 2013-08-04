@@ -2,12 +2,12 @@
 <floater name="area search" title="Objektbereich Suche">
 	<text name="name_label">Name durchsuchen nach:</text>
 	<text name="desc_label">Beschreibung durchsuchen nach:</text>
-  <filter_editor name="Name query chunk" tool_tip=""/>
-  <filter_editor name="Description query chunk" tool_tip=""/>
+  
+  
 	<text name="owner_label">Eigentümer durchsuchen nach:</text>
 	<text name="group_label">Gruppe durchsuchen nach:</text>
-  <filter_editor name="Owner query chunk" tool_tip=""/>
-  <filter_editor name="Group query chunk" tool_tip=""/>
+  
+  
 	<scroll_list name="result_list">
 		<column name="Name" label="Name" tool_tip="Auf Eintrag doppelklicken, um Leuchtmarkierung auf Objektposition zu setzen."/>
     	<column name="Description" label="Beschreibung" tool_tip="Auf Eintrag doppelklicken, um Leuchtmarkierung auf Objektposition zu setzen."/>

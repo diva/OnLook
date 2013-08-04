@@ -2,13 +2,13 @@
 <floater name="floater_web_content" title="Web Browser" initial_mime_type="text/html">
   <layout_stack name="stack1">
     <layout_panel name="nav_controls">
-      <button tool_tip="Rückwärts" label="" name="back"/>
-        <button tool_tip="Vorwärts" label="" name="forward"/>
-      <button tool_tip="Navigation stoppen" label="" name="stop"/>
-      <button tool_tip="Seite neu laden" label="" name="reload"/>
+      <button tool_tip="Rückwärts" name="back"/>
+        <button tool_tip="Vorwärts" name="forward"/>
+      <button tool_tip="Navigation stoppen" name="stop"/>
+      <button tool_tip="Seite neu laden" name="reload"/>
       <combo_box name="address" tool_tip="URL hier eingeben"/>
       <icon name="media_secure_lock_flag" tool_tip="Sicheres Browsen"/>
-      <button tool_tip="Aktuelle URL im Desktop-Browser öffnen" label="" name="popexternal"/>
+      <button tool_tip="Aktuelle URL im Desktop-Browser öffnen" name="popexternal"/>
     </layout_panel>
     
     <layout_panel name="status_bar">

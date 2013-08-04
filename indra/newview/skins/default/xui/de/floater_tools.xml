@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="toolbox floater" title="" short_title="Bauen">
+<floater name="toolbox floater" short_title="Bauen">
 
 <!-- Main floater tabs -->
 
-	<button label="" label_selected="" name="button focus" tool_tip="Fokus">
+	<button name="button focus" tool_tip="Fokus">
 	  <button.commit_callback parameter="Fokus"/>
 	</button>
-	<button label="" label_selected="" name="button move" tool_tip="Bewegen">
+	<button name="button move" tool_tip="Bewegen">
 	  <button.commit_callback parameter="Bewegen"/>
 	</button>
-	<button label="" label_selected="" name="button edit" tool_tip="Bearbeiten">
+	<button name="button edit" tool_tip="Bearbeiten">
 	  <button.commit_callback parameter="Bearbeiten"/>
 	</button>
-	<button label="" label_selected="" name="button create" tool_tip="Erstellen">
+	<button name="button create" tool_tip="Erstellen">
 	  <button.commit_callback parameter="Erstellen"/>
 	</button>
-	<button label="" label_selected="" name="button land" tool_tip="Land">
+	<button name="button land" tool_tip="Land">
 	  <button.commit_callback parameter="Land"/>
 	</button>
 
@@ -61,21 +61,21 @@
 
 <!-- Create panel -->
 
-	<button label="" label_selected="" name="ToolCube" tool_tip="Würfel"/>
-	<button label="" label_selected="" name="ToolPrism" tool_tip="Prisma"/>
-	<button label="" label_selected="" name="ToolPyramid" tool_tip="Pyramide"/>
-	<button label="" label_selected="" name="ToolTetrahedron" tool_tip="Tetraeder"/>
-	<button label="" label_selected="" tool_tip="Zylinder" name="ToolCylinder"/>
-	<button label="" label_selected="" name="ToolHemiCylinder" tool_tip="Halbzylinder"/>
-	<button label="" label_selected="" name="ToolCone" tool_tip="Kegel"/>
-	<button label="" label_selected="" name="ToolHemiCone" tool_tip="Halbkegel"/>
-	<button label="" label_selected="" name="ToolSphere" tool_tip="Kugel"/>
-	<button label="" label_selected="" name="ToolHemiSphere" tool_tip="Halbkugel"/>
-	<button label="" label_selected="" name="ToolTorus" tool_tip="Torus"/>
-	<button label="" label_selected="" name="ToolTube" tool_tip="Rohr"/>
-	<button label="" label_selected="" name="ToolRing" tool_tip="Ring"/>
-	<button label="" label_selected="" name="ToolTree" tool_tip="Baum"/>
-	<button label="" label_selected="" name="ToolGrass" tool_tip="Gras"/>
+	<button name="ToolCube" tool_tip="Würfel"/>
+	<button name="ToolPrism" tool_tip="Prisma"/>
+	<button name="ToolPyramid" tool_tip="Pyramide"/>
+	<button name="ToolTetrahedron" tool_tip="Tetraeder"/>
+	<button tool_tip="Zylinder" name="ToolCylinder"/>
+	<button name="ToolHemiCylinder" tool_tip="Halbzylinder"/>
+	<button name="ToolCone" tool_tip="Kegel"/>
+	<button name="ToolHemiCone" tool_tip="Halbkegel"/>
+	<button name="ToolSphere" tool_tip="Kugel"/>
+	<button name="ToolHemiSphere" tool_tip="Halbkugel"/>
+	<button name="ToolTorus" tool_tip="Torus"/>
+	<button name="ToolTube" tool_tip="Rohr"/>
+	<button name="ToolRing" tool_tip="Ring"/>
+	<button name="ToolTree" tool_tip="Baum"/>
+	<button name="ToolGrass" tool_tip="Gras"/>
 	<check_box label="Auswahl behalten" name="checkbox sticky"/>
 	<check_box label="Auswahl kopieren" name="checkbox copy selection"/>
 	<check_box label="Mitte" name="checkbox copy centers"/>
@@ -319,9 +319,9 @@
 			<check_box label="Hell" name="Light Checkbox Ctrl" tool_tip="Verursacht, dass Objekt Licht emittiert"/>
 			<text name="label color">Farbe</text>
 			<text name="label texture">Textur</text>
-			<color_swatch label="" name="colorswatch" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
+			<color_swatch name="colorswatch" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
 			
-			 <texture_picker label="" name="light texture control" tool_tip="Klicken um Projektionsbild zu wählen (nur effektiv wenn verzögertes Rendering aktiv)"/>
+			 <texture_picker name="light texture control" tool_tip="Klicken um Projektionsbild zu wählen (nur effektiv wenn verzögertes Rendering aktiv)"/>
 			<spinner label="Intensität" name="Light Intensity"/>
 			<spinner label="FOV" name="Light FOV"/>
 			<spinner label="Radius" name="Light Radius"/>

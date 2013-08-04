@@ -13,7 +13,7 @@
     <combo_item name="mature">Mature-Inhalt</combo_item>
     <combo_item name="pg">PG-Inhalt</combo_item>
   </combo_box>
-	<combo_box label="" name="classified_category_combo"/>
+	
 	<button label="Aktualisieren" name="classified_update_btn"/>
 	<string name="ad_placed_paid">Anzeige: [DATE], [AMT] L$ für Eintrag bezahlt.</string>
 	<string name="update_txt">Aktualisieren</string>

@@ -125,7 +125,7 @@
 	<string name="TooltipObjectIMUrl">Anklicken, um Beschreibung des Objekts anzuzeigen</string>
 	<string name="TooltipMapUrl">Klicken, um diese Position auf der Karte anzuzeigen</string>
 	<string name="TooltipSLAPP">Anklicken, um Befehl secondlife:// auszuführen</string>
-	
+	<string name="CurrentURL" value=" CurrentURL: [CurrentURL]"/>
 
 	<!-- text for SLURL labels -->
 	<string name="SLurlLabelTeleport">Teleportieren zu</string>
@@ -1860,58 +1860,58 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="InventoryOutboxError2">is returning errors.</string>
 
 	<!-- use value="" because they have preceding spaces -->
-	
-	
-	
-	
-	
-	
-	
-	
+	<string name="no_transfer" value=" (no transfer)"/>
+	<string name="no_modify" value=" (no modify)"/>
+	<string name="no_copy" value=" (no copy)"/>
+	<string name="temporary" value=" (temporary)"/>
+	<string name="worn" value=" (worn)"/>
+	<string name="locked" value=" (locked)"/>
+	<string name="link" value=" (link)"/>
+	<string name="broken_link" value=" (broken_link)"/>
 	<string name="LoadingContents">Inhalte werden geladen...</string>
 	<string name="NoContents">Keine Inhalte</string>
-	
-	
-	
+	<string name="WornOnAttachmentPoint" value=" (worn on [ATTACHMENT_POINT])"/>
+	<string name="LockedOnAttachmentPoint" value=" (locked to [ATTACHMENT_POINT])"/>
+	<string name="ActiveGesture" value="[GESLABEL] (active)"/>
 	<!-- Inventory permissions -->
 	<string name="PermYes">Ja</string>
 	<string name="PermNo">Nein</string>
 
 	<!-- Gestures labels -->
     <!-- use value="" because they have preceding spaces -->
-    
-    
-	
-	
-	
-	
-	
-	
-	
-	
+    <string name="Chat Message" value=" Chat : "/>
+    <string name="Sound" value=" Sound : "/>
+	<string name="Wait" value=" --- Wait : "/>
+	<string name="AnimFlagStop" value=" Stop Animation :    "/>
+	<string name="AnimFlagStart" value=" Start Animation :   "/>
+	<string name="Wave" value=" Wave "/>
+	<string name="GestureActionNone" value="Keine"/>
+	<string name="HelloAvatar" value=" Hello, avatar! "/>
+	<string name="ViewAllGestures" value="  View All &gt;&gt;"/>
+	<string name="GetMoreGestures" value="  Get More &gt;&gt;"/>
 
 	<!-- inventory filter -->
     <!-- use value="" because they have preceding spaces -->
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	<string name="Animations" value=" Animations,"/>
+	<string name="Calling Cards" value=" Calling Cards,"/>
+	<string name="Clothing" value=" Clothing,"/>
+	<string name="Gestures" value=" Gestures,"/>
+	<string name="Landmarks" value=" Landmarks,"/>
+	<string name="Notecards" value=" Notecards,"/>
+	<string name="Objects" value=" Objects,"/>
+	<string name="Scripts" value=" Scripts,"/>
+	<string name="Sounds" value=" Sounds,"/>
+	<string name="Textures" value=" Textures,"/>
+	<string name="Snapshots" value=" Snapshots,"/>
+	<string name="No Filters" value="No "/>
+	<string name="Since Logoff" value=" - Since Logoff"/>
+	<string name="Worn" value=" - Worn"/>
 
 
 	<!-- inventory FVBridge -->
 	<!--  This is used in llpanelinventory.cpp when constructing a context menu for an item for Sale  -->
 	<string name="Buy">Kaufen</string>
-	<!-- Grid currency is appended automatically -->
+	<string name="Buyfor" value="Buy for "/><!-- Grid currency is appended automatically -->
 
 	<string name="Stone">Stein</string>
 	<string name="Metal">Metall</string>
@@ -1996,12 +1996,12 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 
 	<!-- groups -->
 	<string name="GroupsNone">keine</string>
-	
+	<string name="Group" value=" (group)"/>
 	<string name="Unknown">(unbekannt)</string>
-	
-	
-	
-	
+	<string name="SummaryForTheWeek" value="Summary for this week, beginning on "/>
+	<string name="NextStipendDay" value="The next stipend day is "/>
+	<string name="GroupIndividualShare" value="                      Group       Individual Share"/>
+	<string name="GroupColumn" value="                      Group"/>
 	<string name="NoGroupDataFound">No group data found for group</string>
 
 	<!-- floater IM bonus_info: When a Linden with Admin/god status receives a new IM this displays the estate (Mainland vs. teen grid) of the source avatar.
@@ -2084,7 +2084,7 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<!-- Region/Estate Covenant -->
 	<string name="RegionNoCovenant">Für diesen Grundbesitz fehlt der Vertrag.</string>
 	<string name="RegionNoCovenantOtherOwner">Für diesen Grundbesitz liegt kein Vertrag vor. Das Land auf diesem Grundbesitz wird vom Grundbesitzer und nicht von Linden Lab verkauft.  Für Informationen zum Verkauf setzen Sie sich bitte mit dem Grundbesitzer in Verbindung.</string>
-	
+	<string name="none_text" value=" (none) "/>
 
 	<!-- Environment settings -->
 	<string name="Local">Lokal</string>
@@ -2796,7 +2796,7 @@ Falls diese Meldung weiterhin angezeigt wird, wenden Sie sich bitte an [SUPPORT_
 	<string name="IM_autoresponse_sent_item">was sent auto-response item</string>
 	<string name="Unnamed">(Nicht benannt)</string>
 	<string name="inventory_item_offered_to">Inventory item offered to</string>
-	
+	<string name="Saved_message" value="(Saved [LONG_TIMESTAMP]) "/>
 	<string name="StartPointSet">Start point set</string>
 	<string name="EndPointSet">End point set</string>
 	<string name="MeasuredDistance">Distance: [DIST]</string>
@@ -2985,7 +2985,7 @@ Missbrauchsbericht</string>
   <string name="DefaultMimeType">Keine/Keiner</string>
 
   <!-- language specific white-space characters, delimiters, spacers, item separation symbols -->
-  
+  <string name="words_separator" value=", "/>
 
   <string name="Chat">Chat</string>
 

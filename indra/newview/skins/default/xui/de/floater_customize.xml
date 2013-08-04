@@ -400,7 +400,7 @@ und dieses anziehen.</text>
 	<button label="OK" label_selected="OK" name="Ok"/>
 	<button label="Outfit erstellen..." label_selected="Outfit erstellen..." name="Make Outfit"/>
     <button name="Save Outfit" label="Speichere Outfit"/>
-    
-    
-    
+    <string name="Save changes to" value="Save changes to [OUTFIT]"/>
+    <string name="No Outfit" value="No Outfit"/>
+    <string name="Changing outfits" value="Changing outfits"/>
 </floater>

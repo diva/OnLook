@@ -4,6 +4,6 @@
        die heruntergeladen werden können.
 
        Bitte wählen Sie Ihre Wahl und drücken Sie zum Download.</text>
-	<combo_box name="Emerald_combo_dics" tool_tip=""/>
+	
      <button label="Herunterladen" name="Emerald_dic_download"/>
 </floater>

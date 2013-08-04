@@ -104,7 +104,7 @@
 		<combo_item name="2:1">2:1</combo_item>
 		<combo_item name="Custom">Benutzerdefiniert</combo_item>
 	</combo_box>
-	<spinner label="" name="aspect_ratio"/>
+	
     <text name="aspect_one_label">:1</text>
 	<text name="layer_type_label">Aufnahme:</text>
 	<combo_box label="Bildebenen" name="layer_types">

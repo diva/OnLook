@@ -47,10 +47,10 @@
       <color_swatch label="Stummgeschaltet" name="muted_color_swatch" tool_tip="Color of Muted"/>
       <color_swatch label="Custom (Minimap)" name="custom_color_swatch" tool_tip="Color of users picked out on the minimap only"/>
       <text name="chat_color_text">Use colors for chat:</text>
-      <check_box label="" name="color_friend_check" tool_tip="Color Friend Chat"/>
-      <check_box label="" name="color_estate_owner_check" tool_tip="Color Estate Managers Chat"/>
-      <check_box label="" name="color_linden_check" tool_tip="Color Linden Chat"/>
-      <check_box label="" name="color_muted_check" tool_tip="Color Muted Chat"/>
+      <check_box name="color_friend_check" tool_tip="Color Friend Chat"/>
+      <check_box name="color_estate_owner_check" tool_tip="Color Estate Managers Chat"/>
+      <check_box name="color_linden_check" tool_tip="Color Linden Chat"/>
+      <check_box name="color_muted_check" tool_tip="Color Muted Chat"/>
       <!--check_box bottom_delta="0" control_name="ColorCustomChat" follows="top" height="20" label="" left_delta="54" name="color_custom_check" width="44" tool_tip="Color Custom Chat"/ Not implemented, yet.-->
     </panel>
     <panel label="Body Dynamics" name="Body Dynamics">

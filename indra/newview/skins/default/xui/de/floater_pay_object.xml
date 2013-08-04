@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="Give Money" title="">
+<floater name="Give Money">
 	<text name="payee_group">Gruppe bezahlen:</text>
 	<text name="payee_resident">Einwohner bezahlen:</text>
 	<text name="payee_name">[NAME]</text>

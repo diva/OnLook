@@ -30,8 +30,8 @@
 			<button label="?" label_selected="?" name="partner_help"/>
 			<line_editor name="partner_edit" tool_tip="Second Life Partner. Weitere Informationen finden Sie auf www.secondlife.com/partner">[NAME]</line_editor>
 			<text name="Photo:">Foto:</text>
-			<texture_picker label="" name="img" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
-			<button label="" name="bigimg"/>
+			<texture_picker name="img" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+			
 			<text name="Groups:">Gruppen:</text>
 			
 			<string name="None">Keine</string>
@@ -102,8 +102,8 @@
 		<panel label="1. Leben" name="1st Life">
 
 			<text name="Photo:">Foto:</text>
-			<texture_picker label="" name="img" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
-			<button label="" name="flbigimg"/>
+			<texture_picker name="img" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+			
 			<text name="Info:">Info:</text>
 			<text name="(250 chars)">250 Zeichen</text>
 			

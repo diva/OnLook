@@ -32,7 +32,7 @@
 	  <combo_item label="An anderen Avataren" name="OnOthers">An anderen Avataren</combo_item>
 	</combo_box>
 	<scroll_list name="media_list">			
-	  <column label="" name="media_checkbox_ctrl"/>
+	  
 	  <column label="Umgebung" name="media_proximity"/>
 	  <column label="Sichtbar" name="media_visibility"/>
 	  <column label="Klasse" name="media_class"/>
@@ -42,25 +42,25 @@
 	<panel name="media_controls_panel">
 	  <layout_stack name="media_controls" animate="false">
 		<layout_panel name="stop">
-		  <button name="stop_btn" label="" hover_glow_amount="0.15" tool_tip="Ausgewählte Medien stoppen"/>
+		  <button name="stop_btn" hover_glow_amount="0.15" tool_tip="Ausgewählte Medien stoppen"/>
 		</layout_panel>
 		<layout_panel name="play">
-		  <button name="play_btn" label="" hover_glow_amount="0.15" tool_tip="Ausgewählte Medien wiedergeben"/>
+		  <button name="play_btn" hover_glow_amount="0.15" tool_tip="Ausgewählte Medien wiedergeben"/>
 		</layout_panel>
 		<layout_panel name="pause">
-		  <button name="pause_btn" label="" hover_glow_amount="0.15" tool_tip="Ausgewählte Medien pausieren"/>
+		  <button name="pause_btn" hover_glow_amount="0.15" tool_tip="Ausgewählte Medien pausieren"/>
 		</layout_panel>
 		<layout_panel name="volume_slider_ctrl">
 		  <slider_bar name="volume_slider" tool_tip="Lautstärke für ausgewählte Medien"/>
 		</layout_panel>
 		<layout_panel name="mute">
-		  <button name="mute_btn" label="" hover_glow_amount="0.15" is_toggle="true" tool_tip="Audio für ausgewählte Medien stummschalten"/>
+		  <button name="mute_btn" hover_glow_amount="0.15" is_toggle="true" tool_tip="Audio für ausgewählte Medien stummschalten"/>
 		</layout_panel>
 		<layout_panel name="zoom">
-		  <button name="zoom_btn" label="" hover_glow_amount="0.15" tool_tip="Auf ausgewählte Medien zoomen"/>
+		  <button name="zoom_btn" hover_glow_amount="0.15" tool_tip="Auf ausgewählte Medien zoomen"/>
 		</layout_panel>
 		<layout_panel name="unzoom">
-		  <button name="unzoom_btn" label="" hover_glow_amount="0.15" tool_tip="Von ausgewählten Medien wegzoomen"/>
+		  <button name="unzoom_btn" hover_glow_amount="0.15" tool_tip="Von ausgewählten Medien wegzoomen"/>
 		</layout_panel>
 		
 	  </layout_stack>

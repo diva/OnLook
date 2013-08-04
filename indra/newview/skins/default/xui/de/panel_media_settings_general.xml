@@ -26,9 +26,9 @@
    
   <text name="size_label">Größe:</text>
   
-  <spinner label="" name="width_pixels"/>
+  
    
   <text name="X_label">X</text>
-  <spinner label="" name="height_pixels"/>
+  
  
 </panel>
