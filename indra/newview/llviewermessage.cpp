@@ -8058,14 +8058,9 @@ void process_initiate_download(LLMessageSystem* msg, void**)
 void process_script_teleport_request(LLMessageSystem* msg, void**)
 {
 	if (!gSavedSettings.getBOOL("ScriptsCanShowUI")) return;
+	
 	// NaCl - Antispam
-	{
-		LLUUID object_id, owner_id;
-		msg->getUUID(  "Data", "ObjectID", object_id);
-		msg->getUUID(  "Data", "OwnerID", owner_id);
-
-		if (owner_id.isNull() ? is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(object_id), object_id == gAgentID) : is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(owner_id), owner_id == gAgentID)) return;
-	}
+	if (is_spam_filtered(IM_COUNT, false, false)) return;
 	// NaCl End
 
 	std::string object_name;
