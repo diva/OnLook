@@ -1716,8 +1716,8 @@ bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_own
 	if (antispam_not_mine && is_owned_by_me)
 		return false;
 
-	static LLCachedControl<bool> antispam_not_friends(gSavedSettings,"AntiSpamNotFriends");
-	if (antispam_not_friends && is_friend)
+	static LLCachedControl<bool> antispam_not_friend(gSavedSettings,"AntiSpamNotFriend");
+	if (antispam_not_friend && is_friend)
 		return false;
 
 	// Last, definitely filter

@@ -1308,7 +1308,7 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
-    <key>AntiSpamNotFriends</key>
+    <key>AntiSpamNotFriend</key>
     <map>
       <key>Comment</key>
       <string>When true, dialogs from friends will not be blocked unless the _NACL_Antispam is true.</string>
