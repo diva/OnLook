@@ -372,7 +372,7 @@ namespace
 	{
 		bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 		{
-			LLFloaterAvatarList::instance().focusOnPrev(userdata);
+			LLFloaterAvatarList::instance().focusOnPrev(userdata.asInteger());
 			return true;
 		}
 	};
@@ -381,7 +381,7 @@ namespace
 	{
 		bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 		{
-			LLFloaterAvatarList::instance().focusOnNext(userdata);
+			LLFloaterAvatarList::instance().focusOnNext(userdata.asInteger());
 			return true;
 		}
 	};
