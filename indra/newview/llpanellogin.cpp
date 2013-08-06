@@ -187,12 +187,12 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	
 	reshape(rect.getWidth(), rect.getHeight());
 
-	LLComboBox* name_combo = sInstance->getChild<LLComboBox>("name_combo");
-	name_combo->setCommitCallback(boost::bind(LLPanelLogin::onSelectLoginEntry, _1, this));
-	name_combo->setFocusLostCallback(boost::bind(&LLPanelLogin::onLoginComboLostFocus, this, name_combo));
-	name_combo->setPrevalidate(LLLineEditor::prevalidatePrintableNotPipe);
-	name_combo->setSuppressTentative(true);
-	name_combo->setSuppressAutoComplete(true);
+	LLComboBox* username_combo(getChild<LLComboBox>("username_combo"));
+	username_combo->setCommitCallback(boost::bind(LLPanelLogin::onSelectLoginEntry, _1, this));
+	username_combo->setFocusLostCallback(boost::bind(&LLPanelLogin::onLoginComboLostFocus, this, username_combo));
+	username_combo->setPrevalidate(LLLineEditor::prevalidatePrintableNotPipe);
+	username_combo->setSuppressTentative(true);
+	username_combo->setSuppressAutoComplete(true);
 
 	childSetCommitCallback("remember_name_check", onNameCheckChanged);
 
@@ -349,7 +349,7 @@ void LLPanelLogin::setLoginHistory(LLSavedLogins const& login_history)
 {
 	sInstance->mLoginHistoryData = login_history;
 
-	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("name_combo");
+	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("username_combo");
 	llassert(login_combo);
 	login_combo->clear();
 
@@ -531,7 +531,7 @@ void LLPanelLogin::setFields(const std::string& firstname,
 		return;
 	}
 
-	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("name_combo");
+	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("username_combo");
 
 	llassert_always(firstname.find(' ') == std::string::npos);
 	login_combo->setLabel(nameJoin(firstname, lastname, false));
@@ -572,10 +572,10 @@ void LLPanelLogin::setFields(const LLSavedLoginEntry& entry, bool takeFocus)
 
 	LLCheckBoxCtrl* remember_pass_check = sInstance->getChild<LLCheckBoxCtrl>("remember_check");
 	std::string fullname = nameJoin(entry.getFirstName(), entry.getLastName(), entry.isSecondLife()); 
-	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("name_combo");
+	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("username_combo");
 	login_combo->setTextEntry(fullname);
 	login_combo->resetTextDirty();
-	//sInstance->childSetText("name_combo", fullname);
+	//sInstance->childSetText("username_combo", fullname);
 
 	std::string grid = entry.getGrid();
 	//grid comes via LLSavedLoginEntry, which uses full grid names, not nicks
@@ -615,7 +615,7 @@ void LLPanelLogin::getFields(std::string *firstname,
 		return;
 	}
 	
-	nameSplit(sInstance->getChild<LLComboBox>("name_combo")->getTextEntry(), *firstname, *lastname);
+	nameSplit(sInstance->getChild<LLComboBox>("username_combo")->getTextEntry(), *firstname, *lastname);
 	LLStringUtil::trim(*firstname);
 	LLStringUtil::trim(*lastname);
 	
@@ -891,7 +891,7 @@ void LLPanelLogin::onClickConnect(void *)
 		sInstance->setFocus(FALSE);
 
 		std::string first, last, password;
-		if (nameSplit(sInstance->getChild<LLComboBox>("name_combo")->getTextEntry(), first, last))
+		if (nameSplit(sInstance->getChild<LLComboBox>("username_combo")->getTextEntry(), first, last))
 		{
 			// has both first and last name typed
 			sInstance->mCallback(0, sInstance->mCallbackData);
@@ -1040,7 +1040,7 @@ void LLPanelLogin::onSelectLoginEntry(LLUICtrl* ctrl, void* data)
 {
 	if (sInstance)
 	{
-		LLComboBox* combo = sInstance->getChild<LLComboBox>("name_combo");
+		LLComboBox* combo = sInstance->getChild<LLComboBox>("username_combo");
 		if (ctrl == combo)
 		{
 			LLSD selected_entry = combo->getSelectedValue();

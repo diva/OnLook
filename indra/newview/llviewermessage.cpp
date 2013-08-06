@@ -1716,8 +1716,8 @@ bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_own
 	if (antispam_not_mine && is_owned_by_me)
 		return false;
 
-	static LLCachedControl<bool> antispam_not_friends(gSavedSettings,"AntiSpamNotFriends");
-	if (antispam_not_friends && is_friend)
+	static LLCachedControl<bool> antispam_not_friend(gSavedSettings,"AntiSpamNotFriend");
+	if (antispam_not_friend && is_friend)
 		return false;
 
 	// Last, definitely filter
@@ -8058,14 +8058,9 @@ void process_initiate_download(LLMessageSystem* msg, void**)
 void process_script_teleport_request(LLMessageSystem* msg, void**)
 {
 	if (!gSavedSettings.getBOOL("ScriptsCanShowUI")) return;
+	
 	// NaCl - Antispam
-	{
-		LLUUID object_id, owner_id;
-		msg->getUUID(  "Data", "ObjectID", object_id);
-		msg->getUUID(  "Data", "OwnerID", owner_id);
-
-		if (owner_id.isNull() ? is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(object_id), object_id == gAgentID) : is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(owner_id), owner_id == gAgentID)) return;
-	}
+	if (is_spam_filtered(IM_COUNT, false, false)) return;
 	// NaCl End
 
 	std::string object_name;

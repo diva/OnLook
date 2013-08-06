@@ -72,10 +72,10 @@
       <on_enable function="List.EnableSingleSelected"/>
     </menu_item_call>
     <menu_item_call label="Focus Next" name="Focus Next">
-      <on_click function="Radar.FocusNext"/>
+      <on_click function="Radar.FocusNext" userdata="0"/>
     </menu_item_call>
     <menu_item_call label="Focus Previous" name="Focus Previous">
-      <on_click function="Radar.FocusPrev"/>
+      <on_click function="Radar.FocusPrev" userdata="0"/>
     </menu_item_call>
     <menu_item_separator/>
     <menu_item_call label="Mark/Unmark" name="Mark/Unmark">
@@ -83,10 +83,10 @@
       <on_enable function="List.EnableAnySelected"/>
     </menu_item_call>
     <menu_item_call label="Focus Next Marked" name="Focus Next Marked">
-      <on_click function="Radar.FocusNext" userdata="true"/>
+      <on_click function="Radar.FocusNext" userdata="1"/>
     </menu_item_call>
     <menu_item_call label="Focus Previous Marked" name="Focus Previous Marked">
-      <on_click function="Radar.FocusPrev" userdata="true"/>
+      <on_click function="Radar.FocusPrev" userdata="1"/>
     </menu_item_call>
   </menu>
   <menu label="Alerts" name="Alerts" create_jump_keys="true">

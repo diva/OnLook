@@ -3436,6 +3436,9 @@ void reset_login()
 		gLoginMenuBarView->setEnabled( TRUE );
 	}
 
+	// Clear the console
+	if (gConsole) gConsole->clear();
+
 	// Hide any other stuff
 	LLFloaterMap::hideInstance();
 }
