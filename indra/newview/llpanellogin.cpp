@@ -245,6 +245,15 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	childSetAction("connect_btn", onClickConnect, this);
 
 	setDefaultBtn("connect_btn");
+	// Also set default button for subpanels, otherwise hitting enter in text entry fields won't login
+	{
+		LLButton* connect_btn(findChild<LLButton>("connect_btn"));
+		findChild<LLPanel>("name_panel")->setDefaultBtn(connect_btn);
+		findChild<LLPanel>("password_panel")->setDefaultBtn(connect_btn);
+		findChild<LLPanel>("grids_panel")->setDefaultBtn(connect_btn);
+		findChild<LLPanel>("location_panel")->setDefaultBtn(connect_btn);
+		findChild<LLPanel>("login_html")->setDefaultBtn(connect_btn);
+	}
 
 	childSetAction("grids_btn", onClickGrids, this);
 
@@ -888,7 +897,7 @@ void LLPanelLogin::onClickConnect(void *)
 	{
 
 		// JC - Make sure the fields all get committed.
-		sInstance->setFocus(FALSE);
+		gFocusMgr.setKeyboardFocus(NULL);
 
 		std::string first, last, password;
 		if (nameSplit(sInstance->getChild<LLComboBox>("username_combo")->getTextEntry(), first, last))

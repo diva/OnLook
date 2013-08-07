@@ -4,10 +4,8 @@
 		<column name="text" label="text"/>
 		<column name="state" label="state"/>
 	</scroll_list>
-	<combo_box name="untrusted_message_combo" tool_tip="Kein Vertrauen">
-	</combo_box>
-	<combo_box name="trusted_message_combo" tool_tip="Vertrauen">
-	</combo_box>
+	<combo_box name="untrusted_message_combo" tool_tip="Kein Vertrauen"/>
+	<combo_box name="trusted_message_combo" tool_tip="Vertrauen"/>
 	
 	<button name="send_btn" label="Senden" tool_tip="Senden (Strg+Enter)"/>
 </floater>

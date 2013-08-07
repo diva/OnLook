@@ -5,12 +5,8 @@
   
   <text name="home_url_fails_some_items_in_whitelist">Einträge, die für die Startseite nicht akzeptiert
 werden, sind markiert:</text>
-  <button label="Hinzufügen" name="whitelist_add"> 
-     
-  </button>
-  <button label="Löschen" name="whitelist_del"> 
-     
-  </button>
+  <button label="Hinzufügen" name="whitelist_add"/>
+  <button label="Löschen" name="whitelist_del"/>
   <text name="home_url_fails_whitelist">Warning: the home page specified in the General tab fails to 
 pass this whitelist.  It has been disabled until a valid entry 
 has been added.</text>

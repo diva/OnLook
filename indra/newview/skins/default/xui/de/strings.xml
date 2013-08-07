@@ -125,7 +125,7 @@
 	<string name="TooltipObjectIMUrl">Anklicken, um Beschreibung des Objekts anzuzeigen</string>
 	<string name="TooltipMapUrl">Klicken, um diese Position auf der Karte anzuzeigen</string>
 	<string name="TooltipSLAPP">Anklicken, um Befehl secondlife:// auszuführen</string>
-	
+	<string name="CurrentURL" value=" CurrentURL: [CurrentURL]"/>
 
 	<!-- text for SLURL labels -->
 	<string name="SLurlLabelTeleport">Teleportieren zu</string>
@@ -331,7 +331,12 @@
 	<string name="TrackYourCamera">Kameraverfolgung aktivieren</string>
   <string name="ControlYourCamera">Kamerasteuerung übernehmen</string>
   <string name="TeleportYourAgent">Avatar teleportieren</string>
-  <string name="OverrideYourAnimations">Überschreibe die Standard-Animationen</string>
+	<string name="JoinAnExperience">Join an experience</string> <!-- not used -->
+	<string name="SilentlyManageEstateAccess">Suppress alerts when managing estate access lists</string>
+	<string name="OverrideYourAnimations">Replace your default animations</string>
+	<string name="ScriptReturnObjects">Return objects on your behalf</string>
+	<string name="UnknownScriptPermission">(unknown)!</string>
+
 
 	<!-- Sim Access labels -->
 	<string name="SIM_ACCESS_PG">PG</string>
@@ -1226,6 +1231,22 @@ Set the animation (anim) that will play for the given animation state (anim_stat
 Returns a string that is the name of the animation that is being used for the specified animation state (anim_state).</string>
 	<string name="LSLTipText_llResetAnimationOverride">llResetAnimationOverride(string anim_state)
 Resets the animation override of the specified animation state (anim_state) to the corresponding default value.</string>
+	<string name="LSLTipText_llJson2List">list llJson2List(string json)
+Converts the top level of the json string to a list.</string>
+	<string name="LSLTipText_llList2Json">string llList2Json(string type, list values)
+Converts either a strided list of key:value pairs to a JSON_OBJECT or a list of values to a JSON_ARRAY</string>
+	<string name="LSLTipText_llJsonGetValue">string llJsonGetValue(string json, list specifiers)
+Gets the value indicated by specifiers from the json string.</string>
+	<string name="LSLTipText_llJsonSetValue">string llJsonSetValue(string json, list specifiers, string value)
+Returns a new json string that is the json given with the value indicated by specifiers set to value.</string>
+  <string name="LSLTipText_llJsonValueType">string llJsonValueType(string json, list specifiers)
+Returns the type constant for the value in json indicated by specifiers.</string>
+	<string name="LSLTipText_llReturnObjectsByID">integer llReturnObjectsByID(list objects)
+Returns a list of objects by their IDs or an ERR_* flag.</string>
+  <string name="LSLTipText_llReturnObjectsByOwner">integer llReturnObjectsByOwner(key owner, integer scope)
+Returns all objects of a particular owner in the given scope or an ERR_* flag.</string>
+  <string name="LSLTipText_llXorBase64">string llXorBase64(string str1, string str2)
+Returns a string that is a Base64 XOR of Base64-formatted input strings.</string>
 <!-- GOD FUNCTIONS -->
 	<string name="LSLTipText_llGodLikeRezObject">llGodLikeRezObject( key inventory, vector pos )
 Rez directly off of UUID if owner has god-bit set.
@@ -1839,58 +1860,58 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="InventoryOutboxError2">is returning errors.</string>
 
 	<!-- use value="" because they have preceding spaces -->
-	
-	
-	
-	
-	
-	
-	
-	
+	<string name="no_transfer" value=" (no transfer)"/>
+	<string name="no_modify" value=" (no modify)"/>
+	<string name="no_copy" value=" (no copy)"/>
+	<string name="temporary" value=" (temporary)"/>
+	<string name="worn" value=" (worn)"/>
+	<string name="locked" value=" (locked)"/>
+	<string name="link" value=" (link)"/>
+	<string name="broken_link" value=" (broken_link)"/>
 	<string name="LoadingContents">Inhalte werden geladen...</string>
 	<string name="NoContents">Keine Inhalte</string>
-	
-	
-	
+	<string name="WornOnAttachmentPoint" value=" (worn on [ATTACHMENT_POINT])"/>
+	<string name="LockedOnAttachmentPoint" value=" (locked to [ATTACHMENT_POINT])"/>
+	<string name="ActiveGesture" value="[GESLABEL] (active)"/>
 	<!-- Inventory permissions -->
 	<string name="PermYes">Ja</string>
 	<string name="PermNo">Nein</string>
 
 	<!-- Gestures labels -->
     <!-- use value="" because they have preceding spaces -->
-    
-    
-	
-	
-	
-	
-	
-	
-	
-	
+    <string name="Chat Message" value=" Chat : "/>
+    <string name="Sound" value=" Sound : "/>
+	<string name="Wait" value=" --- Wait : "/>
+	<string name="AnimFlagStop" value=" Stop Animation :    "/>
+	<string name="AnimFlagStart" value=" Start Animation :   "/>
+	<string name="Wave" value=" Wave "/>
+	<string name="GestureActionNone" value="Keine"/>
+	<string name="HelloAvatar" value=" Hello, avatar! "/>
+	<string name="ViewAllGestures" value="  View All &gt;&gt;"/>
+	<string name="GetMoreGestures" value="  Get More &gt;&gt;"/>
 
 	<!-- inventory filter -->
     <!-- use value="" because they have preceding spaces -->
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	<string name="Animations" value=" Animations,"/>
+	<string name="Calling Cards" value=" Calling Cards,"/>
+	<string name="Clothing" value=" Clothing,"/>
+	<string name="Gestures" value=" Gestures,"/>
+	<string name="Landmarks" value=" Landmarks,"/>
+	<string name="Notecards" value=" Notecards,"/>
+	<string name="Objects" value=" Objects,"/>
+	<string name="Scripts" value=" Scripts,"/>
+	<string name="Sounds" value=" Sounds,"/>
+	<string name="Textures" value=" Textures,"/>
+	<string name="Snapshots" value=" Snapshots,"/>
+	<string name="No Filters" value="No "/>
+	<string name="Since Logoff" value=" - Since Logoff"/>
+	<string name="Worn" value=" - Worn"/>
 
 
 	<!-- inventory FVBridge -->
 	<!--  This is used in llpanelinventory.cpp when constructing a context menu for an item for Sale  -->
 	<string name="Buy">Kaufen</string>
-	<!-- Grid currency is appended automatically -->
+	<string name="Buyfor" value="Buy for "/><!-- Grid currency is appended automatically -->
 
 	<string name="Stone">Stein</string>
 	<string name="Metal">Metall</string>
@@ -1974,16 +1995,14 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="GodToolsObjectOwnedBy">Objekt [OBJECT], Besitzer [OWNER]</string>
 
 	<!-- groups -->
-	<string name="GroupsNone">
-		keine
-	</string>
+	<string name="GroupsNone">keine</string>
+	<string name="Group" value=" (group)"/>
 	<string name="Unknown">(unbekannt)</string>
-	<string name="NoGroupDataFound">
-		Für Gruppe wurden keine Gruppendaten gefunden
-	</string>
-	
-	
-	
+	<string name="SummaryForTheWeek" value="Summary for this week, beginning on "/>
+	<string name="NextStipendDay" value="The next stipend day is "/>
+	<string name="GroupIndividualShare" value="                      Group       Individual Share"/>
+	<string name="GroupColumn" value="                      Group"/>
+	<string name="NoGroupDataFound">No group data found for group</string>
 
 	<!-- floater IM bonus_info: When a Linden with Admin/god status receives a new IM this displays the estate (Mainland vs. teen grid) of the source avatar.
 		This is to help Lindens when answering questions. -->
@@ -2065,7 +2084,7 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<!-- Region/Estate Covenant -->
 	<string name="RegionNoCovenant">Für diesen Grundbesitz fehlt der Vertrag.</string>
 	<string name="RegionNoCovenantOtherOwner">Für diesen Grundbesitz liegt kein Vertrag vor. Das Land auf diesem Grundbesitz wird vom Grundbesitzer und nicht von Linden Lab verkauft.  Für Informationen zum Verkauf setzen Sie sich bitte mit dem Grundbesitzer in Verbindung.</string>
-	
+	<string name="none_text" value=" (none) "/>
 
 	<!-- Environment settings -->
 	<string name="Local">Lokal</string>
@@ -2777,7 +2796,7 @@ Falls diese Meldung weiterhin angezeigt wird, wenden Sie sich bitte an [SUPPORT_
 	<string name="IM_autoresponse_sent_item">was sent auto-response item</string>
 	<string name="Unnamed">(Nicht benannt)</string>
 	<string name="inventory_item_offered_to">Inventory item offered to</string>
-	
+	<string name="Saved_message" value="(Saved [LONG_TIMESTAMP]) "/>
 	<string name="StartPointSet">Start point set</string>
 	<string name="EndPointSet">End point set</string>
 	<string name="MeasuredDistance">Distance: [DIST]</string>
@@ -2964,6 +2983,10 @@ Missbrauchsbericht</string>
   <string name="dance7">Tanzen7</string>
   <string name="dance8">Tanzen8</string>
   <string name="DefaultMimeType">Keine/Keiner</string>
+
+  <!-- language specific white-space characters, delimiters, spacers, item separation symbols -->
+  <string name="words_separator" value=", "/>
+
   <string name="Chat">Chat</string>
 
  <!-- External editor status codes -->

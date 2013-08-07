@@ -3,7 +3,7 @@
 	<text name="help_text">Sie können mehrere Einwohner in Ihre 
 Gruppe einladen. Klicken Sie hierzu
 auf „Einwohnerliste öffnen“.</text>
-	<button label="Einwohnerliste öffnen" name="add_button" tool_tip="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;"/>
+	<button label="Einwohnerliste öffnen" name="add_button"/>
 	<name_list name="invitee_list" tool_tip="Halten Sie zur Mehrfachauswahl die Strg-Taste gedrückt und klicken Sie auf die Einwohnernamen."/>
 	<button label="Auswahl aus Liste löschen" name="remove_button" tool_tip="Die oben ausgewählten Einwohner von der Einladungsliste entfernen."/>
 	<text name="role_text">Wählen Sie eine Rolle aus:</text>

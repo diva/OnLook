@@ -14,7 +14,7 @@
 			<check_box label="Adult-Inhalt" name="incadult"/>
             <check_box name="filter_gaming" label="Verstecke Glücksspiel"/>
 			<scroll_list name="results">
-				<column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="icon"/>
+				
 				<column label="Name" name="name"/>
 				<column label="Preis" name="price"/>
 				<column label="Zeit (PT)" name="date"/>
@@ -52,8 +52,8 @@
 			<button label="Suche" label_selected="Suche" name="Search"/>
 			<button label="Löschen" label_selected="Löschen" name="Delete"/>
 			<scroll_list name="results">
-				<column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="icon"/>
-				<column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="type"/>
+				
+				
 				<column label="Name" name="name"/>
 				<column label="Preis" name="price"/>
 			</scroll_list>
@@ -96,11 +96,11 @@
 			<button label="Suche" label_selected="Suche" name="Search"/>
 			<button label="Löschen" label_selected="Löschen" name="Delete"/>
 			<scroll_list name="results">
-				<column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="icon"/>
-				<column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="type"/>
+				
+				
 				<column label="Name" name="name"/>
 				<column label="Zeit (PT)" name="date"/>
-				<column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="event_id"/>
+				
 				<column label="Uhrzeit" name="time"/>
 			</scroll_list>
 			
@@ -131,8 +131,8 @@ Um direkt zu kaufen, klicken Sie auf dem betreffenden Land in der Titelleiste au
 			
 			<button label="Suche" label_selected="Suche" name="Search"/>
 			<scroll_list name="results">
-				<column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="icon"/>
-				<column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="type"/>
+				
+				
 				<column label="Name" name="name"/>
 				<column label="Typ" name="landtype"/>
 				<column label="L$ Preis" name="price"/>
@@ -188,8 +188,8 @@ Um direkt zu kaufen, klicken Sie auf dem betreffenden Land in der Titelleiste au
 			</combo_box>
 			<button label="Suche" label_selected="Suche" name="Search"/>
 			<scroll_list name="results">
-				<column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="icon"/>
-				<column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="type"/>
+				
+				
 				<column label="Name" name="name"/>
 				<column label="Verkehr" name="dwell"/>
 			</scroll_list>
@@ -204,8 +204,8 @@ Um direkt zu kaufen, klicken Sie auf dem betreffenden Land in der Titelleiste au
 	  
 		<button label="Suche" label_selected="Suche" name="Search"/>
       <scroll_list name="results">
-        <column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="icon"/>
-        <column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="type"/>
+        
+        
         <column label="Name" name="name"/>
       </scroll_list>
 			
@@ -225,19 +225,19 @@ Um direkt zu kaufen, klicken Sie auf dem betreffenden Land in der Titelleiste au
 			<check_box label="Adult-Inhalt" name="incadult"/>
             <check_box name="filter_gaming" label="Verstecke Glücksspiel"/>
 			<scroll_list name="results">
-				<column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="icon"/>
-				<column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="type"/>
+				
+				
 				<column label="Name" name="name"/>
 				<column label="Mitglieder" name="members"/>
-				<column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="score"/>
+				
 			</scroll_list>
 			
 		</panel>
     <panel label="Einkaufen" name="market_panel">
-      <button label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="back_btn"/>
-      <button label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="forward_btn"/>
-      <button label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="reload_btn"/>
-      <button label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" tooltip="Zurücksetzen" name="reset_btn"/>
+      
+      
+      
+      <button tooltip="Zurücksetzen" name="reset_btn"/>
       <web_browser name="market_browser" trusted_content="true"/>
       
       <string name="loading_text">Wird geladen...</string>

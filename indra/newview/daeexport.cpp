@@ -105,7 +105,7 @@ namespace DAEExportUtil
 		filepicker->run(boost::bind(&saveImpl, daesaver, filepicker));
 	}
 
-	void onPatialExportConfirm(const LLSD& notification, const LLSD& response, DAESaver* daesaver, std::string name)
+	void onPartialExportConfirm(const LLSD& notification, const LLSD& response, DAESaver* daesaver, std::string name)
 	{
 		if (LLNotificationsUtil::getSelectedOption(notification, response) == 0) // 0 - Proceed, first choice
 		{
@@ -158,7 +158,7 @@ namespace DAEExportUtil
 				LLSD args;
 				args["TOTAL"] = total;
 				args["FAILED"] = total - included;
-				LLNotificationsUtil::add("WavefrontExportPartial", args, LLSD(), boost::bind(&onPatialExportConfirm, _1, _2, daesaver, selection->getFirstNode()->mName.c_str() + file_ext));
+				LLNotificationsUtil::add("WavefrontExportPartial", args, LLSD(), boost::bind(&onPartialExportConfirm, _1, _2, daesaver, selection->getFirstNode()->mName.c_str() + file_ext));
 				return;
 			}
 
