@@ -78,7 +78,7 @@ public:
 	 * @brief	Set the values of the displayed fields from a populated history entry.
 	 * @param	entry	History entry containing all necessary fields.
 	 */
-	static void setFields(const LLSavedLoginEntry& entry, bool takeFocus = false);
+	static void setFields(const LLSavedLoginEntry& entry, bool takeFocus = true);
 
 	static void getFields(std::string *firstname, std::string *lastname, std::string *password);
 
