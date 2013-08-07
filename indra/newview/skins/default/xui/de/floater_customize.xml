@@ -394,12 +394,13 @@ und dieses anziehen.</text>
 	<text name="AvatarHeightText">Avatar-Größe</text>
 	<text name="HeightTextM">(metrisch)</text>
 	<text name="HeightTextI">(zöllisch)</text>
-    <button name="Import" label="Import"/>
-    <button name="Export" label="Export"/>	
+    <button name="Import" label="Import" tool_tip="Import to currently selected wearable; current wearable must be modifiable"/>
+    <button name="Export" label="Export" tool_tip="Export currently selected wearable; asset must be copy/mod/trans and you need to be the creator"/>
 	<button label="Abbrechen" label_selected="Abbrechen" name="Cancel"/>
 	<button label="OK" label_selected="OK" name="Ok"/>
 	<button label="Outfit erstellen..." label_selected="Outfit erstellen..." name="Make Outfit"/>
     <button name="Save Outfit" label="Speichere Outfit"/>
-	<string name="No Outfit" value="Kein Outfit"/>
-	<string name="Changing outfits" value="Outfits ändern"/>
+    <string name="Save changes to" value="Save changes to [OUTFIT]"/>
+    <string name="No Outfit" value="No Outfit"/>
+    <string name="Changing outfits" value="Changing outfits"/>
 </floater>

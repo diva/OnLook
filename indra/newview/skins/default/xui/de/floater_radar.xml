@@ -89,6 +89,7 @@
 				<check_box name="hide_client" label="Client"/>
 		</panel>
 	</tab_container>
+	<string name="Out Of Range">Out Of Range</string>
 	<string name="Moving">Bewegen</string>
 	<string name="Playing a gesture">Geste abspielen</string>
 	<string name="Playing a sound">Geräusch abspielen</string>

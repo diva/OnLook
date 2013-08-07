@@ -13,9 +13,7 @@ Bewegen Sie die Maus über die Optionen, um weitere Informationen anzuzeigen.</s
 	
 	<text name="group_key_text">Gruppen-UUID:</text>
       
-    <button name="copy_uri" label="URI kopieren">
-      
-    </button>
+    <button name="copy_uri" label="URI kopieren"/>
 	<text name="group_charter_label">Gruppencharta</text>
 	<texture_picker label="Gruppeninsignien" name="insignia" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
 	<text_editor name="charter">Gruppencharta</text_editor>

@@ -8,7 +8,6 @@
 		<flyout_button_item name="say_item">Sagen</flyout_button_item>
 		<flyout_button_item name="whisper_item">Flüstern</flyout_button_item>
 	</flyout_button>
-	<combo_box label="Gesten" name="Gesture">
-  </combo_box>
+	<combo_box label="Gesten" name="Gesture"/>
   <string name="gesture_label">Gesten</string>
 </panel>

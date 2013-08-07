@@ -25,6 +25,7 @@
       <spinner label="Draw Distance stepping Interval:" name="speed_rez_interval"/>
       <text name="speed_rez_seconds">Sekunden</text>
       <check_box name="use_web_profiles" label="Use web profiles instead of legacy v1 profiles" tool_tip="May not be available on certain grids"/>
+      <check_box name="use_web_search" label="Use web-based search instead of legacy v1 search" tool_tip="May not be available on certain grids"/>
     </panel>
 
     <panel label="Kommandozeile" name="Command Line">
@@ -44,6 +45,8 @@
       
       <text name="cmd_line_text_15">Chat-Historie löschen (Befehl: cmd)</text>
       <line_editor tool_tip="Löscht die Chat-Historie um Lag durch Spammer vorzubeugen." name="AscentCmdLineClearChat"/>
+      <text name="cmd_line_text_16">Open url/slurl (usage: cmd slurl)</text>
+      
       <!-- Column Split -->
       
       <text name="cmd_line_text_9">Ändert die Draw-Distance (Benutzung: cmd Distanz in Metern)</text>
