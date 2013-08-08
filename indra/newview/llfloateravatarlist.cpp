@@ -69,7 +69,7 @@
 /**
  * @brief How long to keep people who are gone in the list and in memory.
  */
-const F32 DEAD_KEEP_TIME = 10.0f;
+const F32 DEAD_KEEP_TIME = 0.5f;
 
 extern U32 gFrameCount;
 
