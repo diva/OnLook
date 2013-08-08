@@ -552,6 +552,7 @@ void LLPanelObject::getState( )
 	mBtnCopySize->setEnabled( enable_scale );
 	mBtnPasteSize->setEnabled( enable_scale );
 	mBtnPasteSizeClip->setEnabled( enable_scale );
+	mCtrlPosZ->setMaxValue(gHippoLimits->getMaxHeight());
 	mCtrlScaleX->setMaxValue(gHippoLimits->getMaxPrimScale());
 	mCtrlScaleY->setMaxValue(gHippoLimits->getMaxPrimScale());
 	mCtrlScaleZ->setMaxValue(gHippoLimits->getMaxPrimScale());
@@ -2569,7 +2570,7 @@ void LLPanelObject::onPastePos(void* user_data)
 	float region_width = LLWorld::getInstance()->getRegionWidthInMeters();
 	mClipboardPos.mV[VX] = llclamp( mClipboardPos.mV[VX], -3.5f, region_width);
 	mClipboardPos.mV[VY] = llclamp( mClipboardPos.mV[VY], -3.5f, region_width);
-	mClipboardPos.mV[VZ] = llclamp( mClipboardPos.mV[VZ], -3.5f, 4096.f);
+	mClipboardPos.mV[VZ] = llclamp( mClipboardPos.mV[VZ], -3.5f, gHippoLimits->getMaxHeight());
 	
 	self->mCtrlPosX->set( mClipboardPos.mV[VX] );
 	self->mCtrlPosY->set( mClipboardPos.mV[VY] );
@@ -2646,9 +2647,10 @@ void LLPanelObject::onPastePosClip(void* user_data)
 	std::string stringVec = wstring_to_utf8str(temp_string); 
 	if(!getvectorfromclip(stringVec, &mClipboardPos)) return;
 	
-	mClipboardPos.mV[VX] = llclamp(mClipboardPos.mV[VX], -3.5f, 256.f);
-	mClipboardPos.mV[VY] = llclamp(mClipboardPos.mV[VY], -3.5f, 256.f);
-	mClipboardPos.mV[VZ] = llclamp(mClipboardPos.mV[VZ], -3.5f, 4096.f);
+	float region_width = LLWorld::getInstance()->getRegionWidthInMeters();
+	mClipboardPos.mV[VX] = llclamp(mClipboardPos.mV[VX], -3.5f, region_width);
+	mClipboardPos.mV[VY] = llclamp(mClipboardPos.mV[VY], -3.5f, region_width);
+	mClipboardPos.mV[VZ] = llclamp(mClipboardPos.mV[VZ], -3.5f, gHippoLimits->getMaxHeight());
 	
 	self->mCtrlPosX->set( mClipboardPos.mV[VX] );
 	self->mCtrlPosY->set( mClipboardPos.mV[VY] );

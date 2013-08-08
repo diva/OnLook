@@ -316,7 +316,7 @@ LLSLURL::LLSLURL(const std::string& slurl)
 			     (F32(mPosition[VY]) < 0.f) || 
                              (mPosition[VY] > REGION_WIDTH_METERS) ||
 			     (F32(mPosition[VZ]) < 0.f) || 
-                             (mPosition[VZ] > REGION_HEIGHT_METERS))
+                             (mPosition[VZ] > 8192.f/*REGION_HEIGHT_METERS*/))
 			    {
 			      mType = INVALID;
 			      return;

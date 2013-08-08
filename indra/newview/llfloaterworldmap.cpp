@@ -758,7 +758,7 @@ void LLFloaterWorldMap::updateTeleportCoordsDisplay( const LLVector3d& pos )
 	// convert global specified position to a local one
 	F32 region_local_x = (F32)fmod( pos.mdV[VX], (F64)REGION_WIDTH_METERS );
 	F32 region_local_y = (F32)fmod( pos.mdV[VY], (F64)REGION_WIDTH_METERS );
-	F32 region_local_z = (F32)llclamp( pos.mdV[VZ], 0.0, (F64)REGION_HEIGHT_METERS );
+	F32 region_local_z = (F32)llclamp( pos.mdV[VZ], 0.0, 8192.0/*(F64)REGION_HEIGHT_METERS*/ );
 
 	// write in the values
 	childSetValue("spin x", region_local_x );
@@ -868,7 +868,7 @@ void LLFloaterWorldMap::updateLocation()
 void LLFloaterWorldMap::trackURL(const std::string& region_name, S32 x_coord, S32 y_coord, S32 z_coord)
 {
 	LLSimInfo* sim_info = LLWorldMap::getInstance()->simInfoFromName(region_name);
-	z_coord = llclamp(z_coord, 0, 4096);
+	z_coord = llclamp(z_coord, 0, 8192/*4096*/);
 	if (sim_info)
 	{
 		LLVector3 local_pos;

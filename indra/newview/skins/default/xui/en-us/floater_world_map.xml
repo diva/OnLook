@@ -170,7 +170,7 @@
           function="WMap.Coordinates" />
       </spinner>
 	<spinner bottom_delta="0" decimal_digits="0" follows="bottom|right" height="16"
-	     increment="1" initial_val="0" left_delta="50" max_val="4096" min_val="0"
+	     increment="1" initial_val="0" left_delta="50" max_val="8192" min_val="0"
 	     mouse_opaque="true" name="spin z"
 	     tool_tip="Z coordinate of location to show on map" width="48" >
         <spinner.commit_callback
