@@ -49,6 +49,10 @@
 			<button label="Iniciar Sesión" label_selected="Iniciar Sesión" name="connect_btn"/>
 		</layout_panel>
 	</layout_stack>
+	
+	<text name="create_new_account_text">
+		Crear una Cuenta
+	</text>	
 	<text name="forgot_password_text">
 		¿Olvidaste tu Nombre o tu Contraseña?
 	</text>

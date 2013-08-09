@@ -1,28 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="geminifloater" title="Animation Overrider">
-	<view_border name="ao_notecard"/>
-	<view_border name="ao_notecard_vis"/>
-	<text name="Give inventory" tool_tip="Arrastra aquí una nota de configuración de ZHAO. Las animaciones tienen que estar en la misma carpeta que la nota de configuración">
-		Arrastra aquí la nota del ZHAO II
-	</text>
-	<view_border name="ao_notecard_disp"/>
-	<text name="ao_nc_text" tool_tip="">
-		Utilizando: ITEM
-	</text>
+	<drop_target name="ao_notecard" tool_tip="Suelta aquí una nota de configuración de ZHAO. Las animaciones tienen que estar en la misma carpeta que la nota de configuración."/>
 	<button name="opencard" label="Ver Notecard"/>
 	<button name="reloadcard" label="Recargar"/>
-	<check_box control_name="AOEnabled" label="Activar animations override" name="AOEnabled"/>
-	<check_box control_name="AOSitsEnabled" label="Activar sits override" name="AOSitsEnabled"/>
+	<check_box control_name="AOEnabled" label="Activar Animaciones" name="AOEnabled"/>
+	<check_box control_name="AOSitsEnabled" label="Activar Sentado" name="AOSitsEnabled"/>
 	<text name="buttons_desc">
 		De Pie:
 	</text>
 	<combo_box name="stands" label=""/>
-	<button name="prevstand" tool_tip="Vista Previa de Pie" label="&lt;&lt;"/>
+	<button name="prevstand" tool_tip="Anterior Animación de Pie" label="&lt;&lt;"/>
 	<button name="nextstand" tool_tip="Siguiente Animación de Pie" label="&gt;&gt;"/>
 	<check_box control_name="AOStandRandomize" label="Orden de Reprodución al azar" name="AOStandRandomize"/>
 	<check_box control_name="AONoStandsInMouselook" label="Desactiva De Pie en Vista Subjetiva" name="AONoStandsInMouselook"/>
-	<check_box control_name="EnableAORemote" label="Mostrar AO En Barra de Herram." name="ao_remote_checkbox"/>
-	<spinner control_name="AOStandInterval" name="standtime" label="Tiempo de Ejecución:" label_width="120" tool_tip="Tiempo de ejecuón de la animación, en segundos" />
+	<check_box control_name="EnableAORemote" label="Mostrar AO en Barra de Herram." name="ao_remote_checkbox"/>
+	<spinner control_name="AOStandInterval" name="standtime" label="Tiempo de Ejecución:" label_width="120" tool_tip="Tiempo de ejecución de la animación, en segundos" />
 	<button name="newcard" label="Nueva Plantilla de Nota" />
 	<button label="Más &gt;&gt;" name="more_btn" tool_tip="Opciones Avanzadas" />
 	<button label="&lt;&lt; Menos" name="less_btn" tool_tip="Opciones Avanzadas" />

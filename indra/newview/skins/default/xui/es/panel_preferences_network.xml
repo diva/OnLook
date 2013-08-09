@@ -8,9 +8,10 @@
 		kbps (kilobits por segundo)
 	</text>
 	<text name="text_box3">
-		Ancho de Banda para Texturas:</text>
+		Ancho de Banda para Texturas:
+	</text>
 	<slider left_delta="160" name="tex_bandwidth"/>
-	<text name="text_box2">
+	<text name="text_box4">
 		kbps (kilobits por segundo)
 	</text>
 	<text bottom_delta="-25" follows="top" height="10" left="12" name="use_http_for">
