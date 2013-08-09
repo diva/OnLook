@@ -10,7 +10,7 @@
 	width="610"
 	height="380">
 
-  <drop_target bottom="-78" height="15" left="14" width="176" control_name="AOConfigNotecardID" fill_parent="true" name="ao_notecard" tool_tip="Drop a ZHAO notecard here. Animations have to be in the same Inventory folder as the notecard."/>
+  <drop_target bottom="-80" height="17" left="12" width="180" control_name="AOConfigNotecardID" fill_parent="true" name="ao_notecard" tool_tip="Drop a ZHAO notecard here. Animations have to be in the same Inventory folder as the notecard."/>
 
   <button
       name="opencard"

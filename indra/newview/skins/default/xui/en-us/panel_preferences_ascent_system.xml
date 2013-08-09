@@ -136,7 +136,7 @@
         <combo_item name="High" value="High">High</combo_item>
       </combo_box>
       <check_box name="EmeraldBuildPrefsEmbedItem" left="5" bottom_delta="-20" follows="top" initial_value="false" label="Put an item into new objects" control_name="EmeraldBuildPrefs_EmbedItem"/>
-       <drop_target control_name="EmeraldBuildPrefs_Item" bottom_delta="-5" left="10" height="15" name="build_item_add_disp_rect" width="270"/>
+       <drop_target control_name="EmeraldBuildPrefs_Item" bottom_delta="-3" left="9" height="17" name="build_item_add_disp_rect" width="274"/>
       <check_box bottom_delta="4" follows="top" left_delta="274" label="Highlight selected prims" name="EmBuildPrefsRenderHighlight_toggle" control_name="RenderHighlightSelections"/>
       <check_box bottom_delta="-20" follows="top" initial_value="false" label="Axis arrow on root prim position" tool_tip="Default behaviour is to show the axis on the center of mass of a linkset. If enabled, the axis will be shown on the root prim of the linkset instead." name="EmBuildPrefsActualRoot_toggle" control_name="AscentBuildPrefs_ActualRoot"/>
     </panel>
