@@ -209,7 +209,7 @@
 			     mouse_opaque="true" name="web_profile_help" width="18" />
 			<check_box bottom_delta="0" follows="right|top" font="SansSerifSmall" height="16"
 			     initial_value="false" label="Automatically load web profiles"
-			     left_delta="90" mouse_opaque="true" name="auto_load"
+			     left_delta="90" mouse_opaque="true" name="auto_load" control_name="AutoLoadWebProfiles"
 			     tool_tip="Automatically load ALL profile webpages without asking first."
 			     width="127" />
 			<web_browser border_visible="false" bottom="-444" follows="top|left|right" height="400"
