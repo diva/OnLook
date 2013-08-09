@@ -766,7 +766,7 @@
 			     text_enabled_color="0, 100, 40, 255" width="87" />
 			<spinner bottom_delta="-18" decimal_digits="4" follows="left|top" height="16"
 			     increment="0.01" initial_val="0" label="Z" label_width="10" left_delta="0"
-			     max_val="4096" min_val="-3.5" mouse_opaque="true" name="Pos Z"
+			     min_val="-3.5" mouse_opaque="true" name="Pos Z"
 			     text_enabled_color="0, 67, 132, 255" width="87" />
 			<button bottom_delta="35" follows="top|right" font="SansSerifSmall" halign="center"
 				 height="18" label="C" left_delta="90" mouse_opaque="true" name="copypos" enabled="true"

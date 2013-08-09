@@ -560,9 +560,9 @@ BOOL LLPanelAvatarWeb::postBuild(void)
 	url_edit->setKeystrokeCallback(boost::bind(&LLPanelAvatarWeb::onURLKeystroke,this,_1));
 	url_edit->setCommitCallback(boost::bind(&LLPanelAvatarWeb::onCommitURL,this,_2));
 
-	childSetAction("web_profile_help",onClickWebProfileHelp,this);
+	getChild<LLUICtrl>("load")->setCommitCallback(boost::bind(&LLPanelAvatarWeb::onCommitLoad, this, _2));
 
-	childSetControlName("auto_load","AutoLoadWebProfiles");
+	childSetAction("web_profile_help",onClickWebProfileHelp,this);
 
 	mWebBrowser = getChild<LLMediaCtrl>("profile_html");
 	mWebBrowser->addObserver(this);

@@ -42,6 +42,7 @@
 #include "lltextbox.h"
 #include "lltooldraganddrop.h"
 #include "lltrans.h"
+#include "llviewborder.h"
 
 static LLRegisterWidget<LLDropTarget> r("drop_target");
 
@@ -63,16 +64,23 @@ LLDropTarget::LLDropTarget(const LLDropTarget::Params& p)
 	setControlName(p.control_name, NULL);
 	mText->setOrigin(0, 0);
 	mText->setFollows(FOLLOWS_NONE);
+	mText->setMouseOpaque(false);
 	mText->setHAlign(LLFontGL::HCENTER);
-	mText->setBorderVisible(true);
-	mText->setBorderColor(LLUI::sColorsGroup->getColor("DefaultHighlightLight"));
+	mText->setVPad(1);
+
+	mBorder = new LLViewBorder("drop_border", p.rect, LLViewBorder::BEVEL_IN);
+	addChild(mBorder);
+
+	mBorder->setMouseOpaque(false);
 
 	if (p.fill_parent) fillParent(getParent());
+	if (!p.border_visible) mBorder->setBorderWidth(0);
 }
 
 LLDropTarget::~LLDropTarget()
 {
 	delete mText;
+	delete mBorder;
 }
 
 // static
@@ -89,7 +97,9 @@ void LLDropTarget::initFromXML(LLXMLNodePtr node, LLView* parent)
 	LLView::initFromXML(node, parent);
 
 	const LLRect& rect = getRect();
-	mText->setRect(LLRect(0, rect.getHeight(), rect.getWidth(), 0));
+	const LLRect child_rect(0, rect.getHeight(), rect.getWidth(), 0);
+	mText->setRect(child_rect);
+	mBorder->setRect(child_rect);
 
 	if (node->hasAttribute("name")) // Views can't have names, but drop targets can
 	{
@@ -110,6 +120,13 @@ void LLDropTarget::initFromXML(LLXMLNodePtr node, LLView* parent)
 		bool fill;
 		node->getAttribute_bool("fill_parent", fill);
 		if (fill) fillParent(parent);
+	}
+
+	if (node->hasAttribute("border_visible"))
+	{
+		bool border_visible;
+		node->getAttribute_bool("border_visible", border_visible);
+		if (!border_visible) mBorder->setBorderWidth(0);
 	}
 }
 
@@ -154,7 +171,9 @@ void LLDropTarget::fillParent(const LLView* parent)
 	}
 
 	// The following block enlarges the target, but maintains the desired size for the text and border
-	mText->setRect(getRect()); // mText takes over the old rectangle, since the position will now be relative to the parent's rectangle for the text.
+	const LLRect& rect = getRect(); // Children maintain the old rectangle
+	mText->setRect(rect);
+	mBorder->setRect(rect);
 	const LLRect& parent_rect = parent->getRect();
 	setRect(LLRect(0, parent_rect.getHeight(), parent_rect.getWidth(), 0));
 }
