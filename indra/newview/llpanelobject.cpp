@@ -2484,6 +2484,7 @@ namespace
 	bool texturePermsCheck(const LLUUID& id)
 	{
 		return (id.notNull() && !gInventory.isObjectDescendentOf(id, gInventory.getLibraryRootFolderID())
+			&& id != LLUUID(gSavedSettings.getString("DefaultObjectTexture"))
 			&& id != LLUUID(gSavedSettings.getString("UIImgWhiteUUID"))
 			&& id != LLUUID(gSavedSettings.getString("UIImgInvisibleUUID"))
 			&& id != LLUUID(std::string("8dcd4a48-2d37-4909-9f78-f7a9eb4ef903")) // alpha
