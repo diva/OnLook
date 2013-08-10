@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="floater_blacklist" title="Asset Blockliste">
+<floater name="floater_blacklist" title="Asset-Blacklist">
 	<button name="add_btn" label="Hinzufügen..."/>
 	<button name="remove_btn" label="Entfernen"/>
   <combo_box name="asset_combo" label="Asset Typ"/>

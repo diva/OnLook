@@ -17,7 +17,7 @@
   
   <check_box label="Skripts" name="check_script"/>
   
-  <check_box label="Sounds" name="check_sound"/>
+  <check_box label="Sound-Explorer" name="check_sound"/>
   
   <check_box label="Texturen" name="check_texture"/>
   

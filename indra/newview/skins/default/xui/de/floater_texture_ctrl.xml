@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="texture picker" title="Auswählen: Textur">
-	<string name="choose_picture">Zum Auswählen eines Bildes hier klicken</string>
+	<string name="choose_picture">Klicken, um ein Bild auszuwählen</string>
 	<text name="Multiple">Mehrfach</text>
 	<text name="unknown">Maße: [DIMENSIONS]</text>
 	<button label="Standard" label_selected="Standard" name="Default"/>

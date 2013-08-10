@@ -26,7 +26,7 @@
 
     <tab_container name="chatterbox_tabs">
         <panel name="test_1" label="Fokussiert">
-            <slider label="Regler" name="SliderTestName"/>
+            <slider label="Schieber" name="SliderTestName"/>
             <check_box name="check_box_test_1" label="Wahr"/>
         <check_box name="check_box_test_2" label="Unwahr"/>
             <text_editor name="Chat History Editor">Chat-Text</text_editor>

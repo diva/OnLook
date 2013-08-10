@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="voice_effects" title="Stimmenverstellung">
+<floater name="voice_effects" title="Voice-Morphing">
   <string name="no_voice_effect">(Kein Voice-Morphing)</string>
   <string name="active_voice_effect">(Aktiv)</string>
   <string name="unsubscribed_voice_effect">(nicht abonniert)</string>
@@ -34,7 +34,7 @@
   <string name="effect_Nightmare">Alptraum</string>
   <string name="effect_PopBot">PopBot</string>
   <string name="effect_Rachel">Rachel</string>
-  <string name="effect_Radio">Radio</string>
+  <string name="effect_Radio">Radiobutton</string>
   <string name="effect_Robot">Roboter</string>
   <string name="effect_Roxanne">Roxanne</string>
   <string name="effect_Rumble">Rumpeln</string>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="teleporthistory" title="Teleport Historie">
+<floater name="teleporthistory" title="Teleport-Liste">
 	<scroll_list name="places_list">
 		<column name="parcel" label="Parzelle"/>
 		<column name="region" label="Region"/>

@@ -3,21 +3,21 @@
 
   <strings>
     <!-- Primarily used when @showloc restricted -->
-    <string name="hidden_generic">(Hidden)</string>
-    <string name="hidden_parcel">(Hidden parcel)</string>
-    <string name="hidden_region">(Hidden region)</string>
+    <string name="hidden_generic">(Versteckt)</string>
+    <string name="hidden_parcel">(Versteckte Parzelle)</string>
+    <string name="hidden_region">(Versteckte Region)</string>
 
     <!-- Received/sent IMs will be replaced by the matching string when @recvim/sendim restricted -->
-    <string name="blocked_recvim">*** IM blocked by your viewer</string>
-    <string name="blocked_sendim">*** IM blocked by sender's viewer</string>
+    <string name="blocked_recvim">*** IM wurde von deinem Viewer blockiert.</string>
+    <string name="blocked_sendim">*** IM wurde vom Viewer des Senders blockiert.</string>
 
     <!-- Shown as notifications -->
-    <string name="blocked_generic">Unable to perform action due to RLV restrictions</string>
-    <string name="blocked_permattach">Attempt to attach '[OBJECT]' was denied due to RLV restrictions</string>
-    <string name="blocked_startim">Unable to start IM session with [RECIPIENT] due to RLV restrictions</string>
-    <string name="blocked_startconf">Unable to start conference with [RECIPIENT] due to RLV restrictions</string>
-    <string name="blocked_teleport">Unable to initiate teleport due to RLV restrictions</string>
-    <string name="blocked_viewxxx">Unable to open [TYPE] due to RLV restrictions</string>
+    <string name="blocked_generic">Aktion konnte aufgrund von RLV-Einschränkungen nicht durchgeführt werden.</string>
+    <string name="blocked_permattach">Der Versuch „[OBJECT]“ anzuhängen wurde aufgrund von RLV-Einschränkungen verweigert.</string>
+    <string name="blocked_startim">IM-Sitzung mit [RECIPIENT] konnte aufgrund von RLV-Einschränkungen nicht gestartet werden.</string>
+    <string name="blocked_startconf">Konferenz mit [RECIPIENT] konnte aufgrund von RLV-Einschränkungen nicht gestartet werden.</string>
+    <string name="blocked_teleport">Teleport konnte aufgrund von RLV-Einschränkungen nicht initialisiert werden.</string>
+    <string name="blocked_viewxxx">[TYPE] konnte aufgrund von RLV-Einschränkungen nicht geöffnet werden.</string>
 
     <!-- Sent as "Busy" messages to the remote party -->
     <string name="blocked_recvim_remote">The Resident you messaged is prevented from reading your instant messages at the moment, please try again later.</string>

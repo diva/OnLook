@@ -16,14 +16,14 @@
 	<button name="restrictpush" tool_tip="Kein Stoßen"/>
 	<button name="status_no_voice" tool_tip="Voice hier nicht möglich"/>
   <button name="status_SeeAV" tool_tip="Parcel has Avatar privacy"/>
-  <button name="pf_dirty" tool_tip="Sich bewegende Objekte können sich fehlerhaft verhalten bis der Navmesh der Region aktualisiert wurde."/>
-  <button name="pf_disabled" tool_tip="Dynamisches Pathfinding ist in dieser Region deaktiviert."/>
+  <button name="pf_dirty" tool_tip="Bewegliche Objekte verhalten sich in dieser Region u. U. erst dann korrekt, wenn die Region neu geformt wird."/>
+  <button name="pf_disabled" tool_tip="Dynamisches Pathfinding ist in dieser Region nicht aktiviert."/>
 	<button name="buyland" tool_tip="Diese Parzelle kaufen"/>
 
   <!-- Totally unsexy button hack to get a sexy bevel for sexy search bevel -brent -->
   
 
-  <line_editor label="Suche" name="search_editor" tool_tip="Suchen"/>
+  <line_editor label="Suchen" name="search_editor" tool_tip="Suchen"/>
 	<button name="search_btn" tool_tip="Suchen"/>
 	
 	<string name="packet_loss_tooltip">Paketverlust</string>

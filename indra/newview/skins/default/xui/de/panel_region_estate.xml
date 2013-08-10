@@ -22,7 +22,7 @@
     <button label="?" name="fixed_sun_help"/>
     
     <slider label="Phase" name="sun_hour_slider"/>
-    <button label="Übernehmen" name="apply_btn"/>
+    <button label="Anwenden" name="apply_btn"/>
 
     <text name="Only Allow">Allow access only to Residents who:</text>
     <check_box label="Have payment information on file" name="limit_payment" tool_tip="Residents must have payment information on file to access this estate."/>

@@ -7,7 +7,7 @@
 		<column name="icon_visible_online" tool_tip="Dieser Freund kann sehen ob sie online sind."/>
 		<column name="icon_visible_map" tool_tip="Dieser Freund kann ihre Position auf der Karte sehen."/>
 		<column name="icon_edit_mine" tool_tip="Dieser Freund kann deine Objekte editieren, löschen oder nehmen."/>
-		<column name="icon_visible_online_theirs" tool_tip="You can see when they are online (only updates on login)"/>
+		<column name="icon_visible_online_theirs" tool_tip="Du kannst sehen wenn sie Online sind (update nur beim Login)"/>
    		<column name="icon_visible_map_theirs" tool_tip="Du kannst die Position dieses Freundes auf der Karte sehen."/>
 		<column name="icon_edit_theirs" tool_tip="Sie können die Objekte dieses Freunds bearbeiten"/>
 		
@@ -17,8 +17,8 @@
 		<combo_item type="string" length="20" enabled="true" name="All" value="All">All</combo_item>
 	</combo_box-->
 	<!--text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" name="Contact Search:" width="110">Contact Search:</text-->
-  <filter_editor name="buddy_search_lineedit" label="Contact Search" tool_tip="The friend name you want to search for"/>
-	<button label="0" name="expand_collapse_btn" tool_tip="Expand/Collapse extra info"/>
+  <filter_editor name="buddy_search_lineedit" label="Kontakt suche" tool_tip="Der Name des Freundes den du suchen möchtest"/>
+	<button label="0" name="expand_collapse_btn" tool_tip="Ein und Ausklappen von mehr Informationen"/>
 	
 	<!--button bottom_delta="-25" follows="top|right" height="22" label="Set Contact" name="assign_btn" tool_tip="Assign a friend to a Contact Group" width="80"/-->
 	<button label="IM/Anruf" name="im_btn" tool_tip="Öffnet eine Instant-Message-Sitzung"/>
@@ -27,8 +27,8 @@
 	<button label="Zahlen..." name="pay_btn" tool_tip="Diesem Freund Linden-Dollar (L$) geben"/>
 	<button label="Entfernen..." name="remove_btn" tool_tip="Entfernt diese Person aus deiner Freundesliste"/>
 	<button label="Hinzufügen..." name="add_btn" tool_tip="Biete diesem Einwohner deine Freundschaft an"/>
-	<text name="friends">Online:</text>
+	<text name="friends">Online</text>
 	<text name="f_num">0000</text>
-	<text name="sel">Selected:</text>
+	<text name="sel">Ausgewählt:</text>
 	<text name="s_num">0000</text>		 
 </panel>

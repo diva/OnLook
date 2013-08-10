@@ -26,7 +26,7 @@
 				<string name="gesture_label">Gesten</string>
 				<line_editor label="Zum Chatten hier klicken." name="Chat Editor"/>
 				<flyout_button label="Sagen" name="Say" tool_tip="(Eingabe)">
-					<flyout_button_item name="shout_item">Rufen</flyout_button_item>
+					<flyout_button_item name="shout_item">Ruf-Reichweite</flyout_button_item>
 					<flyout_button_item name="say_item">Sagen</flyout_button_item>
 					<flyout_button_item name="whisper_item">Flüstern</flyout_button_item>
 				</flyout_button>

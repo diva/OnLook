@@ -4,8 +4,8 @@
 		<column label="Name" name="name" tool_tip="Name"/>
     <!--<column label="Active" name="is_active_group"
 		    tool_tip="Group is set as active" width="40" />-->
-    <column name="is_listed_group" tool_tip="Group is visible in profile."/>
-    <column name="is_chattable_group" tool_tip="Receive group chat"/>
+    <column name="is_listed_group" tool_tip="Gruppe ist im Profil sichtbar"/>
+    <column name="is_chattable_group" tool_tip="Gruppenmitteilungen erhalten"/>
     <column name="is_notice_group" tool_tip="Gruppenmitteilungen erhalten"/>
 	</scroll_list>
 	<text name="groupdesc">Die derzeit aktive Gruppe ist fett hervorgehoben.</text>
@@ -17,6 +17,6 @@
 	<button label="Verlassen" name="Leave"/>
 	<button label="Erstellen..." name="Create"/>
 	<button label="Suchen..." name="Search..."/>
-  	<button label="Invite..." name="Invite..."/>
-	<button label="Titles..." name="Titles..."/>
+  	<button label="Einladen..." name="Invite..."/>
+	<button label="Titel..." name="Titles..."/>
 </panel>

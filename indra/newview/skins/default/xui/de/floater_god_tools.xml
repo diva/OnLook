@@ -36,7 +36,7 @@
 			
 			<text name="land cost text">L$ pro qm:</text>
 			<button label="Aktualisieren" label_selected="Aktualisieren" name="Refresh" tool_tip="Klicken Sie hier, um die obigen Informationen zu aktualisieren."/>
-			<button label="Übernehmen" label_selected="Übernehmen" name="Apply" tool_tip="Klicken Sie hier, um die obigen Änderungen zu übernehmen."/>
+			<button label="Anwenden" label_selected="Anwenden" name="Apply" tool_tip="Klicken Sie hier, um die obigen Änderungen zu übernehmen."/>
 			<button label="Region auswählen" label_selected="Region auswählen" name="Select Region" tool_tip="Die gesamte Region mit dem Landwerkzeug auswählen."/>
 			<button label="Automatisch speichern" label_selected="Automatisch speichern" name="Autosave now" tool_tip="gzipped-Status im Autosave-Verzeichnis speichern."/>
 		</panel>
@@ -47,7 +47,7 @@
 			<check_box label="Skripts  deaktivieren" name="disable scripts" tool_tip="Skripts in dieser Region komplett abschalten"/>
 			<check_box label="Kollisionen  deaktivieren" name="disable collisions" tool_tip="Nicht-Avatar-Kollisionen in dieser Region komplett abschalten"/>
 			<check_box label="Physik deaktivieren" name="disable physics" tool_tip="Die Physik in dieser Region komplett abschalten"/>
-			<button label="Übernehmen" label_selected="Übernehmen" name="Apply" tool_tip="Klicken Sie hier, um die obigen Änderungen zu übernehmen."/>
+			<button label="Anwenden" label_selected="Anwenden" name="Apply" tool_tip="Klicken Sie hier, um die obigen Änderungen zu übernehmen."/>
 			<button label="Ziel festlegen" label_selected="Ziel festlegen" name="Set Target" tool_tip="Den Ziel-Avatar für das Löschen von Objekten auswählen."/>
 			<text name="target_avatar_name">(kein Ziel)</text>
 			<button label="Geskriptete Objekte des Ziels auf anderen Ländern löschen" label_selected="Geskriptete Objekte des Ziels auf anderen Ländern löschen" name="Delete Target's Scripted Objects On Others Land" tool_tip="Alle dem Ziel gehörenden geskripteten Objekte auf Land, das dem Ziel nicht gehört, löschen. Objekte (nicht kopierfähig) werden zurückgegeben."/>

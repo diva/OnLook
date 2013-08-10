@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="script search" title="Suchen / Ersetzen">
-	<check_box label="Groß-/Kleinschreibung irrelevant" name="case_text"/>
-	<button label="Suche" label_selected="Suche" name="search_btn"/>
-	<button label="Ersetzung" label_selected="Ersetzung" name="replace_btn"/>
+<floater name="script search" title="Suchen/Ersetzen">
+	<check_box label="Groß-/Kleinschreibung" name="case_text"/>
+	<button label="Suchen" label_selected="Suchen" name="search_btn"/>
+	<button label="Ersetzen" label_selected="Ersetzen" name="replace_btn"/>
 	<button label="Alle ersetzen" label_selected="Alle ersetzen" name="replace_all_btn"/>
-	<text name="search_label">Suche</text>
-	<text name="replace_label">Ersetzung</text>
+	<text name="search_label">Suchen</text>
+	<text name="replace_label">Ersetzen</text>
 	
 	
 </floater>

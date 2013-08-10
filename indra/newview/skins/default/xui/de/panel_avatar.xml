@@ -14,9 +14,9 @@
 			<string name="NoPaymentInfoOnFile">Keine Zahlungsinfo archiviert</string>
 			<string name="AgeVerified">Altersgeprüft</string>
 			<string name="NotAgeVerified">Nicht altersgeprüft</string>
-      <button label="Copy Key:" tool_tip="Copy key to clipboard" name="copy_key"/>
+      <button label="Kopiere Schlüssel" tool_tip="Schlüssel in die Zwischenablage kopieren" name="copy_key"/>
       
-      <button name="web_profile" label="Web Profile"/>
+      <button name="web_profile" label="Web Profil"/>
       <text name="Name:">Name:</text>
 			
 			<text name="online_yes">Zurzeit online</text>
@@ -30,7 +30,7 @@
 			<button label="?" label_selected="?" name="partner_help"/>
 			<line_editor name="partner_edit" tool_tip="Second Life Partner. Weitere Informationen finden Sie auf www.secondlife.com/partner">[NAME]</line_editor>
 			<text name="Photo:">Foto:</text>
-			<texture_picker name="img" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+			<texture_picker name="img" tool_tip="Klicken, um ein Bild auszuwählen"/>
 			
 			<text name="Groups:">Gruppen:</text>
 			
@@ -83,12 +83,12 @@
 			<text name="Languages:">Sprachen:</text>
 			
 		</panel>
-		<panel label="AUSWAHLEN" name="Picks">
+		<panel label="Empfehlungen" name="Picks">
 			<text name="Tell everyone about your favorite places in Second Life.">Erzähle von deinen Lieblingsorten in Second Life.</text>
 			<button label="Neu..." label_selected="Neu..." name="New..."/>
 			<button label="Löschen..." label_selected="Löschen..." name="Delete..."/>
-      		<button label="Import..." label_selected="Import..." name="Import..."/>
-     		<button label="Export..." label_selected="Export..." name="Export..."/>
+      		<button label="Importieren..." label_selected="Importieren..." name="Import..."/>
+     		<button label="Exportieren..." label_selected="Exportieren..." name="Export..."/>
 			
 			<text name="loading_text">Wird geladen...</text>
 		</panel>
@@ -102,7 +102,7 @@
 		<panel label="1. Leben" name="1st Life">
 
 			<text name="Photo:">Foto:</text>
-			<texture_picker name="img" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+			<texture_picker name="img" tool_tip="Klicken, um ein Bild auszuwählen"/>
 			
 			<text name="Info:">Info:</text>
 			<text name="(250 chars)">250 Zeichen</text>

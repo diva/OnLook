@@ -79,27 +79,27 @@
 		<menu_item_separator label="-----------" name="separator8"/>
 		<menu_item_call label="Einstellungen..." name="Preferences..."/>
 	</menu>
-	<menu label="Ansicht" name="View">
+	<menu label="Anzeigen" name="View">
 		<tearoff_menu label="~~~~~~~~~~~" name="~~~~~~~~~~~"/>
-		<menu_item_call label="Mouselook" name="Mouselook"/>
+		<menu_item_call label="Mouselook-Modus" name="Mouselook"/>
 		<menu_item_check label="Bauen" name="Build"/>
 		<menu_item_check label="Joystick-Flycam" name="Joystick Flycam"/>
 		<menu_item_call label="Ansicht zurücksetzen" name="Reset View"/>
 		<menu_item_check label="Motion Resets Camera" name="Motion Resets Camera"/>
 		<menu_item_call label="Letzten Chatter ansehen" name="Look at Last Chatter"/>
 		<menu_item_separator label="-----------" name="separator"/>
-		<menu_item_check label="Symbolleiste" name="Toolbar"/>
+		<menu_item_check label="Symbolleistenschaltflächen" name="Toolbar"/>
 		<menu_item_check label="Lokaler Chat" name="Chat History"/>
 		<menu_item_check label="Unterhalten" name="Instant Message"/>
 		<menu_item_check label="Inventar" name="Inventory"/>
 		<menu_item_check label="Aktive Sprecher" name="Active Speakers"/>
 		<menu_item_check label="Stummschalten-Liste" name="Mute List"/>
-		<menu_item_check label="Teleport Historie" name="Teleport History"/>
+		<menu_item_check label="Teleport-Liste" name="Teleport History"/>
 		<menu_item_check label="Medienfilter" name="Media Filter"/>
 		<menu_item_separator label="-----------" name="separator2"/>
 		<menu_item_check label="Kamerasteuerung" name="Camera Controls"/>
 		<menu_item_check label="Bewegungssteuerung" name="Movement Controls"/>
-		<menu_item_check label="Weltkarte" name="World Map"/>
+		<menu_item_check label="Karte" name="World Map"/>
 		<menu_item_check label="Minikarte" name="Mini-Map"/>
 		<menu_item_check label="Radar" name="Radar"/>
 		<menu_item_separator label="-----------" name="separator3"/>
@@ -160,7 +160,7 @@
 		<menu_item_call label="Region/Grundstück..." name="Region/Estate..."/>
 		
 		<menu_item_separator label="-----------" name="separator6"/>
-		<menu label="Umwelt-Einstellungen" name="Environment Settings">
+		<menu label="Umgebungseinstellungen" name="Environment Settings">
 			<menu_item_call label="Sonnenaufgang" name="Sunrise"/>
 			<menu_item_call label="Mittag" name="Noon"/>
 			<menu_item_call label="Sonnenuntergang" name="Sunset"/>
@@ -234,7 +234,7 @@
 		     mouse_opaque="true" name="Second Life Help" shortcut="F1" width="166">
 			<on_click function="ShowFloater" userdata="help f1" />
 		</menu_item_call-->
-		<menu_item_call label="Lernhilfe" name="Tutorial"/>
+		<menu_item_call label="Anleitung" name="Tutorial"/>
 		<menu_item_separator label="-----------" name="separator"/>
 		<menu_item_call label="Offizielles Linden-Blog..." name="Official Linden Blog..."/>
 		<menu_item_separator label="-----------" name="separator2"/>
@@ -270,9 +270,9 @@
 		
 		<menu_item_check label="Areal-Objektsuche" name="Object Area Search"/>
 		<menu_item_check label="Sound Explorer" name="Sound Explorer"/>
-		<menu_item_check label="Asset Blockliste" name="Asset Blacklist"/>
+		<menu_item_check label="Asset-Blacklist" name="Asset Blacklist"/>
 		<menu_item_check label="Streaming-Audio Anzeige" name="Streaming Audio Display"/>
-		<menu_item_check label="Posierstand" name="Pose Stand"/>
+		<menu_item_check label="Pose-Stand" name="Pose Stand"/>
 		<menu_item_check label="Region Debug Konsole" name="Region Debug Console"/>
 		
 		<menu_item_call label="Rebake" name="Rebake"/>

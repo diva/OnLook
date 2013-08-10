@@ -13,7 +13,7 @@
           <menu_item_call label="Start" name="Object Set Scripts to Running"/>
           <menu_item_call label="Stop" name="Object Set Scripts to Not Running"/>
           <menu_item_call label="Entfernen" name="Remove Scripts From Selection"/>
-          <menu_item_call label="Anzahl" name="ScriptCount"/>
+          <menu_item_call label="Zählen" name="ScriptCount"/>
           <menu_item_call label="Skript-Info" name="Script Info"/>
         </pie_menu>
 		<menu_item_call label="Untersuchen" name="Object Inspect"/>

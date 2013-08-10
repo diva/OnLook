@@ -3,7 +3,7 @@
 	<string name="default_needs_apply_text">Das Register enthält nicht übernommene Änderungen.</string>
 	<string name="want_apply_text">Diese Änderungen übernehmen?</string>
 	
-	<button label="Übernehmen" label_selected="Übernehmen" name="btn_apply"/>
+	<button label="Anwenden" label_selected="Anwenden" name="btn_apply"/>
 	<button label="Abbrechen" label_selected="Abbrechen" name="btn_cancel"/>
 	<button label="OK" label_selected="OK" name="btn_ok"/>
 	<button label="Aktualisieren" label_selected="Aktualisieren" name="btn_refresh"/>

@@ -5,12 +5,12 @@
 			<layout_stack name="chatbar_and_buttons">
 				
 				<layout_panel name="state_management_buttons_container">
-					<button label="Neue IM" label_selected="Neue IM" name="New IM" tool_tip="You have an instant message pending. Click to show IMs."/>
-					<button label="Set Not Busy" label_selected="Set Not Busy" name="Set Not Busy" tool_tip="Chat and IM is hidden for you. Click here to set yourself not busy."/>
-					<button label="Flycam" label_selected="Flycam" name="Flycam" tool_tip="Your camera is under joystick control, click here to release it."/>
-					<button label="Mouselook" label_selected="Mouselook" name="Mouselook" tool_tip="Use mouse to steer your view. If you have a gun, clicking will shoot."/>
+					<button label="Neue IM" label_selected="Neue IM" name="New IM" tool_tip="Sie haben eine ungelesene Instant Message. Klicken Sie um sie anzuzeigen."/>
+					<button label="Als unbeschäftigt anzeigen" label_selected="Als unbeschäftigt anzeigen" name="Set Not Busy" tool_tip="Chat und IM ist für Sie versteckt. Klicken Sie hier um sich unbeschäftigt anzuzeigen."/>
+					<button label="Flycam" label_selected="Flycam" name="Flycam" tool_tip="Ihre Kamera ist unter Joystick-Kontrolle. Klicken Sie hier zum beenden."/>
+					<button label="Mouselook-Modus" label_selected="Mouselook-Modus" name="Mouselook" tool_tip="Benutzen Sie Maus um die Ansicht zu steuern. Wenn sie eine Waffe haben, klicken Sie zum Schiessen."/>
 					<button label="Aufstehen" label_selected="Aufstehen" name="Stand Up" tool_tip="Klicken Sie hier, um aufzustehen."/>
-          <button label="Cancel TP" label_selected="Cancel TP" name="Cancel TP" tool_tip="Click here to cancel the current teleport process."/>
+          <button label="Teleport abbrechen" label_selected="Teleport abbrechen" name="Cancel TP" tool_tip="Klicken Sie hier um den aktuellen Teleport abzubrechen."/>
         </layout_panel>
         
 			</layout_stack>
@@ -20,5 +20,5 @@
 		
 		
 	</layout_stack>
-  <string name="unread_count_string_plural">New IMs</string>
+  <string name="unread_count_string_plural">Neue IMs</string>
 </panel>

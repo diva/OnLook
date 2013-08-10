@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="floater_explore_sounds" title="Sounds">
+<floater name="floater_explore_sounds" title="Sound-Explorer">
 	<text name="result_label">Soundquellen</text>
 	<check_box name="avatars_chk" label="Avatare"/>
 	<check_box name="objects_chk" label="Objekte"/>

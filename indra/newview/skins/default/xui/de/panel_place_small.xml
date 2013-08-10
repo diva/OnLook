@@ -12,7 +12,7 @@
 	<text name="location_label">Standort:</text>
 	
 	<button label="Teleportieren" name="teleport_btn"/>
-	<button label="Auf Karte zeigen" name="map_btn"/>
+	<button label="Karte" name="map_btn"/>
 	<button label="Gebote..." name="auction_btn"/>
 	<string name="traffic_text">Verkehr: [TRAFFIC]</string>
 	<string name="area_text">Gebiet: [AREA] qm.</string>

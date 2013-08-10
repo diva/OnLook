@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<panel label="Vanity" name="ascvan">
-  <tab_container label="Singularity Vanity" name="Ascent Vanity">
-    <panel label="Main" name="General">
-      <check_box label="Where applicable, save Vanity settings per-account." tool_tip="Saves settings per-account, allowing easier customization for alts." name="use_account_settings_check"/>
-      <check_box label="Hide the Teleport progress screens" tool_tip="If checked, the viewer will hide the teleport progress screen, allowing you to continue to read IMs." name="disable_tp_screen_check"/>
+<panel label="Aussehen" name="ascvan">
+  <tab_container label="Singularity System" name="Ascent Vanity">
+    <panel label="Haupt" name="General">
+      <check_box label="Wo möglich, speichere Einstellungen pro Account." tool_tip="Speichere Einstellungen pro akkount, erlaubt das einfache ändern für Alt Accounts." name="use_account_settings_check"/>
+      <check_box label="Verstecke den TP Bildschirm." tool_tip="If checked, the viewer will hide the teleport progress screen, allowing you to continue to read IMs." name="disable_tp_screen_check"/>
       <check_box label="Play the Teleport sound when moving between sims" tool_tip="Viewer will play the wooshing TP noise on teleport." name="tp_sound_check"/>
       <check_box label="Hide the Login/Logout progress screens" tool_tip="If checked, the viewer will hide the login/logout progress screen." name="disable_logout_screen_check"/>
       <check_box label="Disable chat, whisper and shout animations" tool_tip="Remove chat animations from your own avatar. Effect visible to everyone" name="disable_chat_animation"/>
@@ -12,7 +12,7 @@
       <check_box label="Announce when someone takes a snapshot" tool_tip="Won't announce for people who hide the fact that they are taking a snapshot." name="announce_snapshots"/>
       <check_box label="Announce music stream's metadata in local chat when tuned in" tool_tip="When a new song comes on, a message will be displayed in local chat with available information about the track." name="announce_stream_metadata"/>
       <check_box label="Make unfocused floaters opaque (requires refocusing each floater to take effect)" tool_tip="When a floater loses focus, it won't turn transparent with this enabled.  This may conflict with some skins." name="unfocused_floaters_opaque"/>
-      <check_box label="Show complete names (display name and username) in profiles" tool_tip="Disregards the global name display settings, will not work if display names are switched off." name="complete_name_profiles"/>
+      <check_box label="Zeige komplette Namen (Display Namen und Benutzernamen) in Profilen" tool_tip="Disregards the global name display settings, will not work if display names are switched off." name="complete_name_profiles"/>
       <check_box label="Let scripts steal focus when they can't compile due to errors" name="script_errors_steal_focus"/>
     </panel>
     <panel label="Tags/Colors" name="TagsColors">
@@ -44,7 +44,7 @@
       <color_swatch label="Freunde" name="friend_color_swatch" tool_tip="Color of Friends"/>
       <color_swatch label="Grundbesitz" name="estate_owner_color_swatch" tool_tip="Color of Estate Managers"/>
       <color_swatch label="Lindens" name="linden_color_swatch" tool_tip="Color of Lindens"/>
-      <color_swatch label="Stummgeschaltet" name="muted_color_swatch" tool_tip="Color of Muted"/>
+      <color_swatch label="Blockiert:" name="muted_color_swatch" tool_tip="Color of Muted"/>
       <color_swatch label="Custom (Minimap)" name="custom_color_swatch" tool_tip="Color of users picked out on the minimap only"/>
       <text name="chat_color_text">Use colors for chat:</text>
       <check_box name="color_friend_check" tool_tip="Color Friend Chat"/>

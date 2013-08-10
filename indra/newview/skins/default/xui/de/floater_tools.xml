@@ -21,7 +21,7 @@
 
 <!-- Focus panel -->
 
-	<check_box label="Zoom" name="radio zoom"/>
+	<check_box label="Zoomen" name="radio zoom"/>
 	     
 	
 	<check_box label="Orbit (Strg)" name="radio orbit"/>
@@ -90,7 +90,7 @@
 	<check_box label="Glätten" name="radio smooth"/>
 	<check_box label="Aufrauen" name="radio noise"/>
 	<check_box label="Zurücksetzen" name="radio revert"/>
-	<button label="Übernehmen" label_selected="Übernehmen" name="button apply to selection" tool_tip="Ausgewähltes Land ändern"/>
+	<button label="Anwenden" label_selected="Anwenden" name="button apply to selection" tool_tip="Ausgewähltes Land ändern"/>
 	<text name="Bulldozer:">Planierraupe:</text>
 	<text name="Dozer Size:">Größe</text>
 	
@@ -102,7 +102,7 @@
 <!-- Sub-tabs -->
 
 	<tab_container name="Object Info Tabs">
-		<panel label="Allgemein" name="General">
+		<panel label="Generell" name="General">
 			<text name="Name:">Name:</text>
 			
 			<text name="Description:">Beschreibung:</text>
@@ -119,7 +119,7 @@
 			<text name="Group:">Gruppe:</text>
 			
 			<button label="Festlegen" label_selected="Einstellen..." name="button set group"/>
-			<button label="Ansicht" label_selected="Öffnen" name="button open group"/>
+			<button label="Anzeigen" label_selected="Öffnen" name="button open group"/>
 			<text name="Permissions:">Berechtigungen:</text>
 			<text name="perm_modify">Sie können dieses Objekt ändern.</text>
 			<check_box label="Mit Gruppe teilen" name="checkbox share with group" tool_tip="Allen Mitgliedern der zugeordneten Gruppe die Erlaubnis erteilen, Ihre Berechtigungen für dieses Objekt zu teilen und zu verwenden. Sie müssen Übereignen, um Rollenbeschränkungen zu aktivieren."/>
@@ -129,7 +129,7 @@
 			<text name="text anyone can">Jeder kann:</text>
 			<check_box label="Bewegen" name="checkbox allow everyone move"/>
 			<check_box label="Kopieren" name="checkbox allow everyone copy"/>
-			<check_box name="checkbox allow export" label="Export"/>
+			<check_box name="checkbox allow export" label="Exportieren"/>
 			<check_box label="In Suche anzeigen" name="search_check" tool_tip="Dieses Objekt in Suchergebnissen anzeigen"/>
 			<check_box label="Zum Verkauf" name="checkbox for sale"/>
 			<text name="Cost">Preis:  L$</text>
@@ -149,7 +149,7 @@
 					used internally. JC -->
 			<combo_item name="Touch/grab(default)">Berühren/Greifen (Standard)</combo_item>
 				<combo_item name="Sitonobject">Sitzen</combo_item>
-				<combo_item name="Buyobject">Kaufen</combo_item>
+				<combo_item name="Buyobject">Objekt kaufen</combo_item>
 				<combo_item name="Payobject">Bezahlen</combo_item>
 				<combo_item name="Open">Öffnen</combo_item>
 				<combo_item name="Play">Parzellenmedien wiedergeben</combo_item>
@@ -170,8 +170,8 @@
 			<string name="text modify info 2">Sie können diese Objekte ändern.</string>
 			<string name="text modify info 3">Sie können dieses Objekt nicht ändern.</string>
 			<string name="text modify info 4">Sie können diese Objekte nicht ändern.</string>
-      <string name="text modify info 5">Sie können das Objekt nicht über Regionsgrenzen bearbeiten.</string>
-      <string name="text modify info 6">Sie können diese Objekte nicht über Regionsgrenzen bearbeiten.</string>
+      <string name="text modify info 5">Dieses Objekt kann nicht über eine Regionsgrenze hinweg geändert werden.</string>
+      <string name="text modify info 6">Diese Objekte können nicht über eine Regionsgrenze hinweg geändert werden.</string>
 			<string name="text modify warning">Gesamtes Objekt muss gewählt werden, um Berechtigungen festzulegen.</string>
 			<string name="Cost Default">Preis:L$</string>
 			<string name="Cost Total">Summe:L$</string>
@@ -194,8 +194,8 @@
 			<spinner label="X" name="Pos X"/>
 			<spinner label="Y" name="Pos Y"/>
 			<spinner label="Z" name="Pos Z"/>
-			<button label="de_DE.UTF-8" name="copypos" tool_tip="Kopiere Position"/>
-			<button label="P" name="pastepos" tool_tip="Füge Position ein"/>
+			<button label="C" name="copypos" tool_tip="Kopiere Position"/>
+			<button label="V" name="pastepos" tool_tip="Füge Position ein"/>
 			<button label="p" name="pasteposclip" tool_tip="Füge Position von Zwischenablage ein"/>
 							 
 				 
@@ -203,15 +203,15 @@
 			<spinner label="X" name="Scale X"/>
 			<spinner label="Y" name="Scale Y"/>
 			<spinner label="Z" name="Scale Z"/>
-			<button label="de_DE.UTF-8" name="copysize" tool_tip="Kopiere Größe"/>
-			<button label="P" name="pastesize" tool_tip="Füge Größe ein"/>
+			<button label="C" name="copysize" tool_tip="Kopiere Größe"/>
+			<button label="V" name="pastesize" tool_tip="Füge Größe ein"/>
 			<button label="p" name="pastesizeclip" tool_tip="Füge Größe von Zwischenablage ein"/>
 			<text name="label rotation">Rotation (Grad)</text>
 			<spinner label="X" name="Rot X"/>
 			<spinner label="Y" name="Rot Y"/>
 			<spinner label="Z" name="Rot Z"/>
-			<button label="de_DE.UTF-8" name="copyrot" tool_tip="Kopiere Drehung"/>
-			<button label="P" name="pasterot" tool_tip="Füge Drehung ein"/>
+			<button label="C" name="copyrot" tool_tip="Kopiere Drehung"/>
+			<button label="V" name="pasterot" tool_tip="Füge Drehung ein"/>
 			<button label="p" name="pasterotclip" tool_tip="Füge Drehung von Zwischenablage ein"/>
 			<text name="label material">Material</text>
 			<combo_box name="material">
@@ -286,7 +286,7 @@
 			<text name="text revolutions">Umdrehungen</text>
 			
 			
-			<texture_picker label="Textur für gestaltetes  Primitiv" name="sculpt texture control" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+			<texture_picker label="Textur für gestaltetes  Primitiv" name="sculpt texture control" tool_tip="Klicken, um ein Bild auszuwählen"/>
             <check_box label="Spiegeln" name="sculpt mirror control" tool_tip="Geformtes Primitiv entlang der X-Achse spiegeln."/>
             <check_box label="Wenden" name="sculpt invert control" tool_tip="Dreht die Normalen des geformten Primitivs von innen nach außen."/>
 			<text name="label sculpt type">Naht</text>
@@ -316,14 +316,14 @@
 			<spinner label="Erzwingen X" name="FlexForceX"/>
 			<spinner label="Erzwingen Y" name="FlexForceY"/>
 			<spinner label="Erzwingen Z" name="FlexForceZ"/>
-			<check_box label="Hell" name="Light Checkbox Ctrl" tool_tip="Verursacht, dass Objekt Licht emittiert"/>
+			<check_box label="Licht" name="Light Checkbox Ctrl" tool_tip="Verursacht, dass Objekt Licht emittiert"/>
 			<text name="label color">Farbe</text>
 			<text name="label texture">Textur</text>
 			<color_swatch name="colorswatch" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
 			
 			 <texture_picker name="light texture control" tool_tip="Klicken um Projektionsbild zu wählen (nur effektiv wenn verzögertes Rendering aktiv)"/>
 			<spinner label="Intensität" name="Light Intensity"/>
-			<spinner label="FOV" name="Light FOV"/>
+			<spinner label="Sichtfeld" name="Light FOV"/>
 			<spinner label="Radius" name="Light Radius"/>
 			<spinner label="Fokus" name="Light Focus"/>
 			<spinner label="Abnehmend" name="Light Falloff"/>
@@ -342,7 +342,7 @@
 <!-- Texture sub-tab -->
 
 		<panel label="Textur" name="Texture">
-			<texture_picker label="Textur" name="texture control" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+			<texture_picker label="Textur" name="texture control" tool_tip="Klicken, um ein Bild auszuwählen"/>
 			<color_swatch label="Farbe" name="colorswatch" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
 			<text name="color trans">Transparenz %</text>
 			
@@ -394,7 +394,7 @@
 			<string name="string repeats per face">Wiederholungen pro Fläche</string>
 			<text name="rpt">Kacheln pro Meter</text>
 			
-			<button label="Übernehmen" label_selected="Übernehmen" name="button apply"/>
+			<button label="Anwenden" label_selected="Anwenden" name="button apply"/>
 			<text name="tex offset">Versatz</text>
 			<spinner label="Horizontal (U)" name="TexOffsetU"/>
 			<spinner label="Vertikal (V)" name="TexOffsetV"/>
@@ -451,7 +451,7 @@
 	<string name="grid_local_text">Lokal</string>
 	<string name="grid_world_text">Welt</string>
 	<string name="grid_reference_text">Referenz</string>
-	<string name="grid_attachment_text">Anhang</string>
+	<string name="grid_attachment_text">Anhänge</string>
   <string name="status_selectprimequiv">, Kosten: [SEL_WEIGHT]</string>
   <string name="status_selectcount">Prims: [COUNT][PE_STRING]</string>
 </floater>

@@ -15,7 +15,7 @@
 	<string name="filter_type_notecard">Notizkarten</string>
 	<string name="filter_type_object">Objekte</string>
 	<string name="filter_type_script">Skripts</string>
-	<string name="filter_type_sound">Sounds</string>
+	<string name="filter_type_sound">Sound-Explorer</string>
 	<string name="filter_type_texture">Texturen</string>
 	<string name="filter_type_snapshot">Fotos</string>
 	<string name="filter_type_custom">Benutzerdefiniert...</string>
@@ -30,7 +30,7 @@
 		<combo_item name="filter_type_notecard">Notizkarten</combo_item>
 		<combo_item name="filter_type_object">Objekte</combo_item>
 		<combo_item name="filter_type_script">Skripts</combo_item>
-		<combo_item name="filter_type_sound">Sounds</combo_item>
+		<combo_item name="filter_type_sound">Sound-Explorer</combo_item>
 		<combo_item name="filter_type_texture">Texturen</combo_item>
 		<combo_item name="filter_type_snapshot">Fotos</combo_item>
 		
@@ -90,7 +90,7 @@
 			<menu_item_check label="Ordner immer nach Name" name="Folders Always By Name"/>
 			<menu_item_check label="Systemordner nach oben" name="System Folders To Top"/>
 		</menu>
-		<menu label="Suche" name="Search">
+		<menu label="Suchen" name="Search">
 			<menu_item_check label="Objektname" name="Item name"/>
 			<menu_item_check label="Beschreibung" name="Item description"/>
 			<menu_item_check label="Ersteller:" name="Item creatorr"/>

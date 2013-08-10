@@ -25,7 +25,7 @@ Mitglieder diese Fähigkeit haben.</text>
 		<panel label="Mitglieder" name="members_sub_tab" tool_tip="Mitglieder">
       <string name="donation_area">[AREA] m².</string>
 			
-			<button label="Suche" name="search_button"/>
+			<button label="Suchen" name="search_button"/>
 			<name_list name="member_list">
 				<column label="Mitgliedsname" name="name"/>
 				<column label="Übertragene Landanteile" name="donated"/>

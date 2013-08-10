@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="item properties" title="Inventarobjekt-Eigenschaften">
+<floater name="item properties" title="Eigenschaften: Inventarobjekt">
 	
 	<text name="LabelItemNameTitle">Name:</text>
 	
@@ -20,7 +20,7 @@
 	<check_box label="Bearbeiten" name="CheckOwnerModify"/>
 	<check_box label="Kopieren" name="CheckOwnerCopy"/>
 	<check_box label="Transferieren" name="CheckOwnerTransfer"/>
-	<check_box name="CheckOwnerExport" label="Export"/>
+	<check_box name="CheckOwnerExport" label="Exportieren"/>
 	<text name="BaseMaskDebug">B:</text>
 	<text name="OwnerMaskDebug">O:</text>
 	<text name="GroupMaskDebug">G:</text>
@@ -33,7 +33,7 @@
 	<text name="EveryoneLabel">Jeder kann:</text>
 	<check_box label="Kopieren" name="CheckEveryoneCopy"/>
 	<check_box label="Bewegen" name="CheckEveryoneMove"/>
-	<check_box name="CheckExport" label="Export"/>
+	<check_box name="CheckExport" label="Exportieren"/>
 	<text name="NextOwnerLabel">Nächster Eigentümer kann:</text>
 	<check_box label="Bearbeiten" name="CheckNextOwnerModify"/>
 	<check_box label="Kopieren" name="CheckNextOwnerCopy"/>

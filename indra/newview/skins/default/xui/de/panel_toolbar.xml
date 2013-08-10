@@ -22,7 +22,7 @@
 		  <button label="Foto" name="snapshot_btn" tool_tip="Einen Screenshot auf Festplatte oder im Inventar speichern."/>
 	  </layout_panel>
 	  <layout_panel name="panel9">
-		  <button label="Suche" name="directory_btn" tool_tip="Nach Orten, Events, Personen und mehr suchen."/>
+		  <button label="Suchen" name="directory_btn" tool_tip="Nach Orten, Events, Personen und mehr suchen."/>
 	  </layout_panel>
 	  <layout_panel name="panel10">
 		  <button label="Bauen" name="build_btn" tool_tip="Neue Objekte erstellen."/>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="Snapshot" title="Foto-Vorschau">
+<floater name="Snapshot" title="Foto-Anzeige">
 	<text name="file_size_label">Dateigröße: [SIZE] KB</text>
 	<text name="type_label">Ziel</text>
 	<radio_group label="Fototyp" name="snapshot_type_radio">

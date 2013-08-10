@@ -25,9 +25,9 @@ erstellen, darüber abstimmen und alte Anfragen anzeigen.</string>
 	<text name="duration_text">Tage</text>
 	
 	<radio_group name="majority" tool_tip="Benötigte Mehrheit.">
-      <radio_item>Simple Majority</radio_item>
-      <radio_item>2/3 Majority</radio_item>
-      <radio_item>Unanimous</radio_item>
+      <radio_item>Einfache Mehrheit</radio_item>
+      <radio_item>2/3 Mehrheit</radio_item>
+      <radio_item>Einstimmig</radio_item>
 	</radio_group>
 	<text name="start_lbl">Beginn:</text>
 	

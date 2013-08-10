@@ -16,7 +16,7 @@
       <flyout_button_item label="Teleport anbieten" name="profile_tele_btn"/>
       <!--flyout_button_item label="Request Teleport" name="profile_tele_btn" value="3"/-->
       <flyout_button_item label="Bezahlen" name="profile_tele_btn"/>
-      <flyout_button_item label="Invite To Group" name="profile_tele_btn"/>
+      <flyout_button_item label="Gruppeneinladung schicken" name="profile_tele_btn"/>
     </flyout_button>
 	<check_box name="rp_mode">RP Modus</check_box>
 	<button label="Anrufen" name="start_call_btn"/>

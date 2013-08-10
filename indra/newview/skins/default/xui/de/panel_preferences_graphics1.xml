@@ -29,7 +29,7 @@
 	</combo_box>
 	<check_box label="Verhältnis automatisch erkennen" name="aspect_auto_detect"/>
  <tab_container name="graphics_tab">
-	<panel label="Main" name="Main">
+	<panel label="Haupt" name="Main">
 	<text name="QualityText">Quality &amp; Performance:</text>
 	<text name="FasterText">Faster</text>
 	<text name="ShadersPrefText">Niedrig</text>
@@ -52,7 +52,7 @@
     <check_box label="Lokale Lichtquellen" name="LightingDetailRadio"/>
 	<check_box label="Einfache Shader" name="BasicShaders" tool_tip="Disabling this option may prevent some graphics card drivers from crashing."/>
 	<check_box label="Atmosphären-Shader" name="WindLightUseAtmosShaders"/>
-	<check_box label="Advanced Lighting Model" tool_tip="Deferred Shading" name="RenderDeferred"/>
+	<check_box label="Erw. Beleuchtungsmodell" tool_tip="Deferred Shading" name="RenderDeferred"/>
     <check_box label="Ambient Occlusion" name="UseSSAO"/>
 	<check_box label="Schärfentiefe" name="RenderDepthOfField"/>
   <text name="TerrainScaleText">Terrain Scale:</text>
@@ -103,7 +103,7 @@
     <check_box label="Vereinfachte Avatardarstellung" name="AvatarImpostors"/>
     <check_box label="Hardware-Hautberechnung" name="AvatarVertexProgram"/>
     <check_box label="Avatar-Kleidung" name="AvatarCloth"/>
-    <text name="TerrainDetailText">Terrain detail:</text>
+    <text name="TerrainDetailText">Terraindetails:</text>
     <radio_group name="TerrainDetailRadio">
 	  <radio_item name="0">Niedrig</radio_item>
 	  <radio_item name="2">Hoch</radio_item>

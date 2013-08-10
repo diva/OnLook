@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="floater_auction" title="Linden-Landverkauf starten">
+<floater name="floater_auction" title="Linden-Land-Verkauf starten">
 	
 	
 	<check_box label="Gelben Auswahlrahmen einschließen" name="fence_check"/>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="Day Cycle Floater" title="Tageszyklus-Editor">
 	<tab_container name="Day Cycle Tabs">
-		<panel label="Tageszyklus" name="Day Cycle">
+		<panel label="Tageszykl." name="Day Cycle">
 			<button label="?" name="WLDayCycleHelp"/>
 			
 			
@@ -23,7 +23,7 @@
 			<text name="WL6pmHash">|</text>
 			<text name="WL9pmHash">I</text>
 			<text name="WL12amHash2">|</text>
-			<button label="Schlüssel hinzufügen" label_selected="Schlüssel hinzufügen" name="WLAddKey"/>
+			<button label="Schlüssel hinzuf." label_selected="Schlüssel hinzuf." name="WLAddKey"/>
 			<button label="Schlüssel löschen" label_selected="Schlüssel löschen" name="WLDeleteKey"/>
 			<text name="WLCurKeyFrameText">Keyframe-Einstellungen:</text>
 			<text name="WLCurKeyTimeText">Key-Zeit:</text>
