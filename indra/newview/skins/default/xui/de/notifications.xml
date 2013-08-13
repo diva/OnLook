@@ -1901,9 +1901,9 @@ Ein Grid mit dem gleichen Namen existiert bereits.</notification>
 
   <notification name="GroupNotice">Betreff: [SUBJECT], Nachricht: [MESSAGE]</notification>
 
-  <notification name="FriendOnline">[FIRST] [LAST] ist online</notification>
+  <notification name="FriendOnline">[NAME] ist online</notification>
 
-  <notification name="FriendOffline">[FIRST] [LAST] ist offline</notification>
+  <notification name="FriendOffline">[NAME] ist offline</notification>
 
   <notification name="AddSelfFriend">Sie k&#xF6;nnen sich nicht selbst als Freund hinzuf&#xFC;gen.</notification>
 
@@ -1952,7 +1952,7 @@ Da dies Auswirkung auf die Kennworteingabe hat, sollten Sie die Taste besser aus
 
   <notification name="CannotRemoveProtectedCategories">Gesch&#xFC;tzte Kategorien k&#xF6;nnen nicht entfernt werden.</notification>
 
-  <notification name="OfferedCard">Sie haben [FIRST] [LAST] eine Visitenkarte angeboten.</notification>
+  <notification name="OfferedCard">Sie haben [NAME] eine Visitenkarte angeboten.</notification>
 
   <notification name="UnableToBuyWhileDownloading">Kauf nicht m&#xF6;glich. Objektdaten werden noch geladen.
 Bitte versuchen Sie es erneut.</notification>
@@ -2033,9 +2033,9 @@ Bitte Installiere das Plugin neu oder wende dich an den Verk&#xE4;ufer wenn du w
     </form></notification>
   <notification name="OwnedObjectsReturned">Ihre Objekte auf der ausgew&#xE4;hlten Parzelle wurden in Ihr Inventar transferiert.</notification>
 
-  <notification name="OtherObjectsReturned">Die Objekte von [FIRST] [LAST] auf dieser Parzelle wurden in das Inventar dieser Person transferiert.</notification>
+  <notification name="OtherObjectsReturned">Die Objekte von [NAME] auf dieser Parzelle wurden in das Inventar dieser Person transferiert.</notification>
 
-  <notification name="OtherObjectsReturned2">Die Objekte von [FIRST] [LAST] auf dieser
+  <notification name="OtherObjectsReturned2">Die Objekte von [NAME] auf dieser
 Parzelle von &#x201E;[NAME]&#x201C; wurden an ihren Eigent&#xFC;mer zur&#xFC;ckgegeben.</notification>
 
   <notification name="GroupObjectsReturned">Die mit der Gruppe [GROUPNAME] gemeinsam genutzten Objekte auf dieser Parzelle wurden in das Inventar ihrer Eigent&#xFC;mer transferiert.
@@ -2132,7 +2132,7 @@ Versuchen Sie es in einigen Minuten erneut.</notification>
 
   <notification name="NoValidParcel">Es konnte keine g&#xFC;ltige Parzelle gefunden werden.</notification>
 
-  <notification name="ObjectGiveItem">Das Objekt [OBJECTFROMNAME] von [FIRST] [LAST] hat Ihnen Folgendes &#xFC;bergeben: [OBJECTTYPE] ([OBJECTNAME]).<form name="form">
+  <notification name="ObjectGiveItem">Das Objekt [OBJECTFROMNAME] von [NAME] hat Ihnen Folgendes &#xFC;bergeben: [OBJECTTYPE] ([OBJECTNAME]).<form name="form">
       <button name="Keep" text="Behalten"/>
       <button name="Discard" text="Verwerfen"/>
       <button name="Mute" text="Blockieren"/>
@@ -2209,7 +2209,7 @@ Offer a teleport?<tag>Best&#xE4;tigen</tag><form name="form">
 
   <notification name="FriendshipDissolved">[NAME] hat Ihr Freundschaftsangebot abgelehnt.</notification>
 
-  <notification name="OfferCallingCard">[FIRST] [LAST] bietet Ihnen eine Visitenkarte an.
+  <notification name="OfferCallingCard">[NAME] bietet Ihnen eine Visitenkarte an.
 Dies erstellt ein Lesezeichen in Ihrem Inventar, damit Sie diesen Einwohner jederzeit &#xFC;ber IM erreichen.<form name="form">
       <button name="Accept" text="Akzeptieren"/>
       <button name="Decline" text="Ablehnen"/>
@@ -2257,7 +2257,7 @@ Anfrage gestatten?<form name="form">
       <button name="Details" text="Info..."/>
     </form></notification>
 
-  <notification name="ScriptDialog">[FIRST] [LAST]s &#x201E;[TITLE]&#x201C;
+  <notification name="ScriptDialog">[NAME]s &#x201E;[TITLE]&#x201C;
 [MESSAGE]<form name="form">
       <button name="Ignore" text="Ignorieren"/>
     </form></notification>
@@ -2361,11 +2361,11 @@ Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Gespr&#xE4;ch beizutreten, o
       <button name="Mute" text="Blockieren"/>
     </form></notification>
 
-  <notification name="AutoUnmuteByIM">[FIRST] [LAST] hat eine Instant Message erhalten; die Stummschaltung wurde aufgehoben.</notification>
+  <notification name="AutoUnmuteByIM">[NAME] hat eine Instant Message erhalten; die Stummschaltung wurde aufgehoben.</notification>
 
-  <notification name="AutoUnmuteByMoney">[FIRST] [LAST] hat Geld erhalten; die Stummschaltung wurde aufgehoben.</notification>
+  <notification name="AutoUnmuteByMoney">[NAME] hat Geld erhalten; die Stummschaltung wurde aufgehoben.</notification>
 
-  <notification name="AutoUnmuteByInventory">[FIRST] [LAST] wurde ein Inventarobjekt angeboten; die Stummschaltung wurde aufgehoben.</notification>
+  <notification name="AutoUnmuteByInventory">[NAME] wurde ein Inventarobjekt angeboten; die Stummschaltung wurde aufgehoben.</notification>
 
   <notification name="VoiceInviteGroup">[NAME] ist einem Voice-Chat mit der Gruppe [GROUP] beigetreten.
 Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Gespr&#xE4;ch beizutreten, oder auf &#x201E;Ablehnen&#x201C;, um die Einladung auszuschlagen. Klicken Sie auf &#x201E;Stummschalten&#x201C;, um diesen Anrufer stumm zu schalten.<form name="form">
