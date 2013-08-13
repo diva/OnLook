@@ -1526,7 +1526,7 @@ if (WINDOWS)
             ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
         )
 
-    add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit basic_plugin_filepicker)
+    add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit basic_plugin_filepicker winmm_shim)
 
     if (PACKAGE)
       add_custom_target(package ALL DEPENDS ${CMAKE_CFG_INTDIR}/touched.bat)
@@ -1813,6 +1813,17 @@ if (WINDOWS)
         COMMENT "Copying filepicker Plugin to the runtime folder."
         )
 
+	get_target_property(BUILT_WINMM_SHIM_PLUGIN winmm_shim LOCATION)
+    add_custom_command(
+        TARGET ${VIEWER_BINARY_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND}
+        ARGS
+          -E
+          copy_if_different
+          ${BUILT_WINMM_SHIM_PLUGIN}
+          ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}
+        COMMENT "Copying winmm.dll to the runtime folder."
+        )
   # Copying the mime_types.xml file to app_settings
   set(mime_types_source "${CMAKE_SOURCE_DIR}/newview/skins/default/xui/en-us")
   set(mime_types_dest "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/app_settings")
