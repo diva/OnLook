@@ -31,7 +31,7 @@ LFSimFeatureHandler::LFSimFeatureHandler()
 		LLEnvManagerNew::instance().setRegionChangeCallback(boost::bind(&LFSimFeatureHandler::handleRegionChange, this));
 }
 
-ExportPolicy LFSimFeatureHandler::exportPolicy(void) const
+ExportPolicy LFSimFeatureHandler::exportPolicy() const
 {
 	return gHippoGridManager->getCurrentGrid()->isSecondLife() ? ep_creator_only : (mSupportsExport ? ep_export_bit : ep_full_perm);
 }
