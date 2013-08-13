@@ -19,6 +19,7 @@
 #define LFSIMFEATUREHANDLER_H
 
 #include "llsingleton.h"
+#include "llpermissions.h"	// ExportPolicy
 
 template<typename Type, typename Signal = boost::signals2::signal<void()> >
 class SignaledType
@@ -63,6 +64,7 @@ public:
 	bool simSupportsExport() const { return mSupportsExport; }
 	std::string mapServerURL() const { return mMapServerURL; }
 	std::string searchURL() const { return mSearchURL; }
+	ExportPolicy exportPolicy() const;
 
 private:
 	// SignaledTypes

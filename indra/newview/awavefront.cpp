@@ -226,7 +226,7 @@ namespace
 		LLPermissions* perms = node->mPermissions;	// Is perms ever NULL?
 		// This tests the PERM_EXPORT bit too, which is not really necessary (just checking if it's set
 		// on the root prim would suffice), but also isn't hurting.
-		return perms && perms->allowExportBy(gAgentID, LFSimFeatureHandler::instance().simSupportsExport());
+		return perms && perms->allowExportBy(gAgentID, LFSimFeatureHandler::instance().exportPolicy());
 	}
 	class LFSaveSelectedObjects : public view_listener_t
 	{

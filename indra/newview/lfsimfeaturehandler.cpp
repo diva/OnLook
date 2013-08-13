@@ -31,6 +31,11 @@ LFSimFeatureHandler::LFSimFeatureHandler()
 		LLEnvManagerNew::instance().setRegionChangeCallback(boost::bind(&LFSimFeatureHandler::handleRegionChange, this));
 }
 
+ExportPolicy LFSimFeatureHandler::exportPolicy(void) const
+{
+	return gHippoGridManager->getCurrentGrid()->isSecondLife() ? ep_creator_only : (mSupportsExport ? ep_export_bit : ep_full_perm);
+}
+
 void LFSimFeatureHandler::handleRegionChange()
 {
 	if (LLViewerRegion* region = gAgent.getRegion())
