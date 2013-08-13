@@ -157,11 +157,11 @@
 			</text>
 			<check_box label="Permiso de Copia" tool_tip="El próximo propietario puede realizar copias de las creaciones" name="next_owner_copy"/>
 			<check_box label="Permiso de Modific." tool_tip="El próximo propietario puede editar y modificar las creaciones" name="next_owner_modify"/>
-			<check_box label="Permiso de Transf." tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer" control_name="NextOwnerTransfer"/>			
+			<check_box label="Permiso de Transf." tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer"/>
 			<check_box label="Inmaterial" name="EmPhantomToggle"/>
 			<check_box label="Material" name="EmPhysicalToggle"/>
-			<check_box label="Temporal" name="EmTemporaryToggle"/>	
-			<texture_picker label="     Textura" name="texture control" tool_tip="Pulsa para seleccionar una textura"/>			
+			<check_box label="Temporal" name="EmTemporaryToggle"/>
+			<texture_picker label="     Textura" name="texture control" tool_tip="Pulsa para seleccionar una textura"/>
 			<color_swatch label="      Color" name="colorswatch" tool_tip="Pulsa para abrir el selector de color"/>
 			<spinner label="Alfa" name="alpha" />
 			<spinner label="Brillo" name="glow"/>
@@ -186,7 +186,7 @@
 			<check_box name="EmeraldBuildPrefsEmbedItem" label="Colocar un item dentro del nuevo objeto"/>
 			<drop_target name="build_item_add_disp_rect"/>
 			<check_box label="Activar resaltado de prims seleccionados" name="EmBuildPrefsRenderHighlight_toggle" />
-			<check_box label="Mostrar Ejes en la posición del Prim Base" tool_tip="El comportamiento por defecto es mostrar el eje en el centro del conjunto de prims. Si está activado, el eje se muestra en la prim raíz del conjunto de enlaces." name="EmBuildPrefsActualRoot_toggle"/>			
+			<check_box label="Mostrar Ejes en la posición del Prim Base" tool_tip="El comportamiento por defecto es mostrar el eje en el centro del conjunto de prims. Si está activado, el eje se muestra en la prim raíz del conjunto de enlaces." name="EmBuildPrefsActualRoot_toggle"/>
 		</panel>
 	</tab_container>
 </panel>
