@@ -24,6 +24,11 @@
 	  <on_click function="MiniMap.Rotate" userdata="" />
 	  <on_check function="MiniMap.CheckRotate" userdata="" />
 	</menu_item_check>
+    <menu_item_check bottom_delta="-18" enabled="false" height="18" label="Show Objects"
+        left="0" mouse_opaque="true" name="Show Objects" width="128">
+      <on_click function="MiniMap.ShowObjects" userdata="" />
+      <on_check function="MiniMap.CheckShowObjects" userdata="" />
+    </menu_item_check>
 	<menu_item_separator />
 	<menu_item_call bottom_delta="-18" enabled = "false" height="18" label="Stop Tracking"
 		 left="0" mouse_opaque="true" name="Stop Tracking" width="128">

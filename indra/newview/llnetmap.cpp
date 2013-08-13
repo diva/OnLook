@@ -112,6 +112,8 @@ LLNetMap::LLNetMap(const std::string& name) :
 	(new LLCheckCenterMap())->registerListener(this, "MiniMap.CheckCenter");
 	(new LLRotateMap())->registerListener(this, "MiniMap.Rotate");
 	(new LLCheckRotateMap())->registerListener(this, "MiniMap.CheckRotate");
+	(new LLShowObjects())->registerListener(this, "MiniMap.ShowObjects");
+	(new LLCheckShowObjects())->registerListener(this, "MiniMap.CheckShowObjects");
 	(new LLStopTracking())->registerListener(this, "MiniMap.StopTracking");
 	(new LLEnableTracking())->registerListener(this, "MiniMap.EnableTracking");
 	(new LLShowAgentProfile())->registerListener(this, "MiniMap.ShowProfile");
@@ -341,11 +343,13 @@ void LLNetMap::draw()
 			U8 *default_texture = mObjectRawImagep->getData();
 			memset( default_texture, 0, mObjectImagep->getWidth() * mObjectImagep->getHeight() * mObjectImagep->getComponents() );
 
-			// Draw buildings
-			gObjectList.renderObjectsForMap(*this);
+			if (gSavedSettings.getBOOL("ShowMiniMapObjects"))
+			{						
+				gObjectList.renderObjectsForMap(*this); // Draw buildings.
+			}
 
 			mObjectImagep->setSubImage(mObjectRawImagep, 0, 0, mObjectImagep->getWidth(), mObjectImagep->getHeight());
-			
+		
 			map_timer.reset();
 		}
 
@@ -1133,6 +1137,21 @@ bool LLNetMap::LLCheckRotateMap::handleEvent(LLPointer<LLEvent> event, const LLS
 {
 	LLNetMap *self = mPtr;
 	BOOL enabled = gSavedSettings.getBOOL("MiniMapRotate");
+	self->findControl(userdata["control"].asString())->setValue(enabled);
+	return true;
+}
+
+bool LLNetMap::LLShowObjects::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	BOOL showobjects = gSavedSettings.getBOOL("ShowMiniMapObjects");
+	gSavedSettings.setBOOL("ShowMiniMapObjects", !showobjects);
+	return true;
+}
+
+bool LLNetMap::LLCheckShowObjects::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	LLNetMap *self = mPtr;
+	BOOL enabled = gSavedSettings.getBOOL("ShowMiniMapObjects"); 
 	self->findControl(userdata["control"].asString())->setValue(enabled);
 	return true;
 }
