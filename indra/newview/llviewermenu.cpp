@@ -2888,14 +2888,14 @@ class LLObjectEnableExport : public view_listener_t
 	{
 		LLPermissions perms;
 		bool new_value = LLSelectMgr::getInstance()->selectGetPermissions(perms) && perms.isOwned();	// At least one object, accumulated permissions of all objects.
-		bool supports_export = LFSimFeatureHandler::instance().simSupportsExport();
-		if (new_value && !(supports_export && (perms.getMaskEveryone() & PERM_EXPORT)))				// No need to call allowExportBy if PERM_EXPORT is set on (all) root objects.
+		ExportPolicy export_policy = LFSimFeatureHandler::instance().exportPolicy();
+		if (new_value && !(export_policy == ep_export_bit && (perms.getMaskEveryone() & PERM_EXPORT)))	// No need to call allowExportBy if PERM_EXPORT is set on (all) root objects.
 		{
 			bool can_export_any = false;
 			LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
 			for (LLObjectSelection::iterator node = selection->begin(); node != selection->end(); ++node)
 			{
-				if ((*node)->mPermissions->allowExportBy(gAgent.getID(), supports_export))
+				if ((*node)->mPermissions->allowExportBy(gAgent.getID(), export_policy))
 				{
 					can_export_any = true;
 					break;
