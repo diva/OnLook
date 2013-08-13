@@ -126,6 +126,9 @@ Puedes usar los siguientes comodines para personalizar tus respuestas: #n para n
 			<check_box label="Ofertas de Teleporte" name="Teleport Offers"/>
 			<check_box label="Avisos de Grupos" name="Group Notices"/>
 			<check_box control_name="AntiSpamTeleportRequests" label="Solicitudes de Teleporte" name="Teleport Requests"/>
+			<text name="Except those from:" >Excepto de :</text>
+			<check_box label="Mis objetos" name="My objects"/>
+			<check_box label="Mis amigos" name="My friends"/>
 			<check_box control_name="EnableGestureSounds" label="Habilitar Sonidos de Gestos" name="Enable Gesture Sounds"/>
 		</panel>
 		<!-- ============================= -->

@@ -81,7 +81,7 @@
 			<text name="Give item:">
 				Dar un Item:
 			</text>
-			<drop_target name="drop_target_rect" label="Arrastra hasta aquí un ítem de tu inventario." tool_tip="Arrastra hasta aquí ítems del inventario para dárselos a esta persona."/>
+			<drop_target name="drop_target_rect" label="Suelta aquí un ítem de tu inventario." tool_tip="Arrastra hasta aquí ítems del inventario para dárselos a esta persona."/>
 			<check_box label="Mostrar en la Búsqueda" name="allow_publish" tool_tip="Publicar información del Perfil en la búsqueda."/>
 			<button label="?" label_selected="?" name="?"/>
 			<button label="Localizar en el Mapa" label_selected="Localizar en el Mapa" name="Find on Map" left="10" width="135"/>

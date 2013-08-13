@@ -5,14 +5,14 @@
 	<slider label="Música" name="Music Volume"/>
 	<button label="" name="mute_music"/>
 	<slider label="Media" name="Media Volume"/>
-	<button label="" right="-28" ="mute_media"/>
+	<button label="" right="-28" name="mute_media"/>
 	<slider label="Voz" name="Voice Volume"/>
 	<button label="" name="mute_voice"/>
 	<slider label="Sonidos" name="SFX Volume"/>
 	<button label="" name="mute_sfx"/>
 	<slider label="Ambiente" name="Wind Volume"/>
 	<button label="" name="mute_wind"/>
-	<slider label="UI" name="UI Volume"/>
+	<slider label="Interfaz" name="UI Volume"/>
 	<button label="" name="mute_ui"/>
 	<button label="Media cercanos" name="nearby_media"/>
 </panel>
