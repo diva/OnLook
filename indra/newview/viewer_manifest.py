@@ -191,6 +191,11 @@ class WindowsManifest(ViewerManifest):
                                'llplugin', 'slplugin', self.args['configuration'], "SLPlugin.exe"),
                   "SLPlugin.exe")
 
+        # Plugin volume control
+        if self.prefix(src=self.args['configuration'], dst=""):
+            self.path("winmm.dll")
+            self.end_prefix()
+
         self.path(src="licenses-win32.txt", dst="licenses.txt")
 
         self.path("featuretable.txt")
@@ -200,7 +205,7 @@ class WindowsManifest(ViewerManifest):
             self.path("libhunspell.dll")
             self.end_prefix()
 
-		# For mesh upload
+        # For mesh upload
         if self.prefix(src=self.args['configuration'], dst=""):
             self.path("libcollada14dom22.dll")
             self.path("glod.dll")
