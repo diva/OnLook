@@ -208,7 +208,7 @@ void fetchScriptLimitsRegionInfoResponder::result(const LLSD& content)
 	}
 	else
 	{
-		LLFloaterScriptLimits* instance = LLFloaterScriptLimits::getInstance();
+		LLFloaterScriptLimits* instance = LLFloaterScriptLimits::findInstance();
 		if(!instance)
 		{
 			llwarns << "Failed to get llfloaterscriptlimits instance" << llendl;
@@ -282,7 +282,7 @@ void fetchScriptLimitsRegionSummaryResponder::result(const LLSD& content_ref)
 
 #endif
 
-	LLFloaterScriptLimits* instance = LLFloaterScriptLimits::getInstance();
+	LLFloaterScriptLimits* instance = LLFloaterScriptLimits::findInstance();
 	if(!instance)
 	{
 		llwarns << "Failed to get llfloaterscriptlimits instance" << llendl;
@@ -390,7 +390,7 @@ result (map)
 
 #endif
 
-	LLFloaterScriptLimits* instance = LLFloaterScriptLimits::getInstance();
+	LLFloaterScriptLimits* instance = LLFloaterScriptLimits::findInstance();
 
 	if(!instance)
 	{
@@ -478,7 +478,7 @@ void fetchScriptLimitsAttachmentInfoResponder::result(const LLSD& content_ref)
 
 #endif
 
-	LLFloaterScriptLimits* instance = LLFloaterScriptLimits::getInstance();
+	LLFloaterScriptLimits* instance = LLFloaterScriptLimits::findInstance();
 
 	if(!instance)
 	{
@@ -961,7 +961,7 @@ void LLPanelScriptLimitsRegionMemory::clearList()
 // static
 void LLPanelScriptLimitsRegionMemory::onClickRefresh(void* userdata)
 {
-	LLFloaterScriptLimits* instance = LLFloaterScriptLimits::getInstance();
+	LLFloaterScriptLimits* instance = LLFloaterScriptLimits::findInstance();
 	if(instance)
 	{
 		LLTabContainer* tab = instance->getChild<LLTabContainer>("scriptlimits_panels");
@@ -1016,7 +1016,7 @@ void LLPanelScriptLimitsRegionMemory::showBeacon()
 // static
 void LLPanelScriptLimitsRegionMemory::onClickHighlight(void* userdata)
 {
-	LLFloaterScriptLimits* instance = LLFloaterScriptLimits::getInstance();
+	LLFloaterScriptLimits* instance = LLFloaterScriptLimits::findInstance();
 	if(instance)
 	{
 		LLTabContainer* tab = instance->getChild<LLTabContainer>("scriptlimits_panels");
@@ -1121,7 +1121,7 @@ void LLPanelScriptLimitsRegionMemory::returnObjects()
 // static
 void LLPanelScriptLimitsRegionMemory::onClickReturn(void* userdata)
 {
-	LLFloaterScriptLimits* instance = LLFloaterScriptLimits::getInstance();
+	LLFloaterScriptLimits* instance = LLFloaterScriptLimits::findInstance();
 	if(instance)
 	{
 		LLTabContainer* tab = instance->getChild<LLTabContainer>("scriptlimits_panels");
@@ -1319,7 +1319,7 @@ void LLPanelScriptLimitsAttachment::setAttachmentSummary(LLSD content)
 // static
 void LLPanelScriptLimitsAttachment::onClickRefresh(void* userdata)
 {
-	LLFloaterScriptLimits* instance = LLFloaterScriptLimits::getInstance();
+	LLFloaterScriptLimits* instance = LLFloaterScriptLimits::findInstance();
 	if(instance)
 	{
 		LLTabContainer* tab = instance->getChild<LLTabContainer>("scriptlimits_panels");
