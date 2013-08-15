@@ -1391,6 +1391,14 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 	LLChat chat;
 	std::string log_message;
 	S32 button = LLNotificationsUtil::getSelectedOption(notification, response);
+	if (button == 3) // profile
+	{
+		LLAvatarActions::showProfile(mFromID);
+		LLNotification::Params p(notification["name"]);
+		p.substitutions(notification["substitutions"]).payload(notification["payload"]).functor(boost::bind(&LLOfferInfo::inventory_offer_callback, this, _1, _2));
+		LLNotifications::instance().add(p); //Respawn!
+		return false;
+	}
 
 	LLViewerInventoryCategory* catp = NULL;
 	catp = gInventory.getCategory(mObjectID);
