@@ -1903,6 +1903,11 @@ bool lure_callback(const LLSD& notification, const LLSD& response)
 			gAgent.teleportViaLure(lure_id, godlike);
 		}
 		break;
+	case 3:
+		// profile
+		LLAvatarActions::showProfile(from_id);
+		LLNotificationsUtil::add(notification["name"], notification["substitutions"], notification["payload"]); //Respawn!
+		break;
 	case 1:
 	default:
 		// decline
