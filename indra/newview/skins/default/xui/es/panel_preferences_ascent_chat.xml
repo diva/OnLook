@@ -67,6 +67,7 @@
 			<check_box label="Foco en nuevo mensaje instantáneo" name="chat_steal_focus"/>
 			<check_box label="Mostrar barra de chat local en ventana flotante (Requiere reiniciar)" tool_tip="Mostrar o no la barra de entrada de texto inferior en la barra flotante de chat." name="show_local_chat_floater_bar"/>
 			<check_box label="Usar botones horizontales para la ventana de contactos (Requiere Reiniciar)" tool_tip="Habilitado, los botones en los paneles de Amigos y Grupos se colocarán en la parte inferior del panel, ordendados horizontalmente, en vez de verticales a la derecha." name="horiz_butt"/>
+			<check_box label="Usar Nombres antiguos en la lista de participantes (Afecta a nuevos participantes)" tool_tip="Permite una mejor moderación de chats mostrando solo los nombres de usuario" name="legacy_speaker_names"/>
 			<check_box label="Colocar los Botones en la misma línea del nombre en los IMs (Sólo afecta en Nuevos MIs)" name="im_concise_butt"/>
 			<check_box label="Botones en chat de grupo en la línea del nombre del grupo (Afecta nuevos chats de grupo)" name="group_concise_butt"/>
 			<check_box label="Botones en la misma línea de título de conferencia (Afecta nuevas conferencias de Chat)" name="conf_concise_butt"/>
