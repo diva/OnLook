@@ -86,6 +86,7 @@ protected:
 	bool mOneLineConfButt;
 	bool mOnlyComm;
 	bool mItalicizeActions;
+	bool mLegacySpeakerNames;
 
 	//Autoresponse ------------------------------------------------------------------------
 	std::string mIMResponseAnyoneItemID;

@@ -88,7 +88,11 @@ void LLSpeaker::lookupName()
 
 void LLSpeaker::onNameCache(const LLAvatarName& full_name)
 {
-	LLAvatarNameCache::getPNSName(full_name, mDisplayName);
+	static const LLCachedControl<bool> legacy_name("LiruLegacySpeakerNames");
+	if (legacy_name)
+		mDisplayName = gCacheName->cleanFullName(full_name.getLegacyName());
+	else
+		LLAvatarNameCache::getPNSName(full_name, mDisplayName);
 }
 
 bool LLSpeaker::isInVoiceChannel()
