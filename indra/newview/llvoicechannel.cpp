@@ -279,7 +279,7 @@ void LLVoiceChannel::deactivate()
 			LLVoiceClient::getInstance()->getUserPTTState())
 		{
 			gSavedSettings.setBOOL("PTTCurrentlyEnabled", true);
-			LLVoiceClient::getInstance()->setUserPTTState(false); // Singu Note: Calling inputUserControlState(true) here sometimes(always?) toggled mic back on, likely due to the above setBOOL
+			LLVoiceClient::getInstance()->inputUserControlState(true);
 		}
 	}
 	LLVoiceClient::getInstance()->removeObserver(this);
