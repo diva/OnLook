@@ -1079,12 +1079,10 @@ void LLFloaterIMPanel::onClickHistory()
 {
 	if (mOtherParticipantUUID.notNull())
 	{
-		char command[256];
 		// [Ansariel: Display name support]
-		//std::string fullname(gDirUtilp->getScrubbedFileName(getTitle()));
-		std::string fullname(gDirUtilp->getScrubbedFileName(mSessionLabel));
+		//std::string command("\"" + LLLogChat::makeLogFileName(getTitle()) + "\"");
+		std::string command("\"" + LLLogChat::makeLogFileName(mSessionLabel) + "\"");
 		// [/Ansariel: Display name support]
-		sprintf(command, "\"%s%s%s.txt\"", gDirUtilp->getPerAccountChatLogsDir().c_str(), gDirUtilp->getDirDelimiter().c_str(), fullname.c_str());
 		gViewerWindow->getWindow()->ShellEx(command);
 
 		llinfos << command << llendl;

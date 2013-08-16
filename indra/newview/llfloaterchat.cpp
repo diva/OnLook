@@ -653,9 +653,7 @@ void LLFloaterChat::onClickToggleActiveSpeakers(void* userdata)
 // static
 void LLFloaterChat::onClickChatHistoryOpen(void* userdata)
 {
-	char command[256];
-
-	sprintf(command, "\"%s%s%s\"", gDirUtilp->getPerAccountChatLogsDir().c_str(), gDirUtilp->getDirDelimiter().c_str(), "chat.txt");
+	std::string command("\"" + LLLogChat::makeLogFileName("chat") + "\"");
 	gViewerWindow->getWindow()->ShellEx(command);
 
 	llinfos << command << llendl;
