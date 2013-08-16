@@ -47,14 +47,16 @@ std::string LLLogChat::makeLogFileName(std::string filename)
 	{
 		time_t now; 
 		time(&now); 
-		char dbuffer[20];               /* Flawfinder: ignore */ 
+		char dbuffer[100];               /* Flawfinder: ignore */
 		if (filename == "chat") 
 		{ 
-			strftime(dbuffer, 20, "-%Y-%m-%d", localtime(&now)); 
+			static const LLCachedControl<std::string> local_chat_date_format(gSavedPerAccountSettings, "LogFileLocalChatDateFormat", "-%Y-%m-%d");
+			strftime(dbuffer, 100, local_chat_date_format().c_str(), localtime(&now));
 		} 
 		else 
 		{ 
-			strftime(dbuffer, 20, "-%Y-%m", localtime(&now)); 
+			static const LLCachedControl<std::string> ims_date_format(gSavedPerAccountSettings, "LogFileIMsDateFormat", "-%Y-%m");
+			strftime(dbuffer, 100, ims_date_format().c_str(), localtime(&now));
 		} 
 		filename += dbuffer; 
 	}
