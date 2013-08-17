@@ -786,6 +786,7 @@ private:
 	{
 		earLocCamera = 0,		// ear at camera
 		earLocAvatar,			// ear at avatar
+        earLocSpeaker,          // eat at speaker, speakers not affected by position
 		earLocMixed				// ear at avatar location/camera direction
 	};
 
