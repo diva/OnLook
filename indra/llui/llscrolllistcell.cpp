@@ -238,8 +238,11 @@ BOOL LLScrollListText::needsToolTip() const
 	if (LLScrollListCell::needsToolTip())
 		return LLScrollListCell::needsToolTip();
 
+	/* Singu Note: To maintain legacy behavior, show tooltips for any text
 	// ...otherwise, show tooltips for truncated text
 	return mFont->getWidth(mText.getString()) > getWidth();
+	*/
+	return !mText.empty();
 }
 
 //virtual
