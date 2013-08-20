@@ -620,6 +620,28 @@
 			<key>Value</key>
 			<boolean>0</boolean>
 		</map>
+		<key>SinguDefaultEaseIn</key>
+		<map>
+			<key>Comment</key>
+			<string>Amount of time (in seconds) over which uploaded bvh animation blends in by default.</string>
+			<key>Persist</key>
+			<integer>1</integer>
+			<key>Type</key>
+			<string>F32</string>
+			<key>Value</key>
+			<real>0</real>
+		</map>
+		<key>SinguDefaultEaseOut</key>
+		<map>
+			<key>Comment</key>
+			<string>Amount of time (in seconds) over which uploaded bvh animation blends out by default.</string>
+			<key>Persist</key>
+			<integer>1</integer>
+			<key>Type</key>
+			<string>F32</string>
+			<key>Value</key>
+			<real>0</real>
+		</map>
 		<key>SinguMotionResetsCamera</key>
 		<map>
 			<key>Comment</key>
