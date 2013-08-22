@@ -1736,7 +1736,10 @@ void inventory_offer_handler(LLOfferInfo* info)
 {
 	// NaCl - Antispam Registry
 	if (NACLAntiSpamRegistry::checkQueue((U32)NACLAntiSpamRegistry::QUEUE_INVENTORY,info->mFromID))
+	{
+		delete info;
 		return;
+	}
 	// NaCl End
 	//If muted, don't even go through the messaging stuff.  Just curtail the offer here.
 	if (LLMuteList::getInstance()->isMuted(info->mFromID, info->mFromName))
