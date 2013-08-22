@@ -1391,7 +1391,7 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 	LLChat chat;
 	std::string log_message;
 	S32 button = LLNotificationsUtil::getSelectedOption(notification, response);
-	if (button == 3) // profile
+	if (button == 4) // profile
 	{
 		LLAvatarActions::showProfile(mFromID);
 		LLNotification::Params p(notification["name"]);

@@ -6735,7 +6735,7 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
        name="Mute"
        text="Mute"/>
       <button
-       index="3"
+       index="4"
        name="Profile"
        text="Profile"/>
     </form>
