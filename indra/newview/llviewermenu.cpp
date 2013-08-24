@@ -866,7 +866,7 @@ void init_client_menu(LLMenuGL* menu)
 	/*menu->addChild(new LLMenuItemCallGL("Reload settings/colors", 
 					&handle_reload_settings, NULL, NULL));*/
 	menu->addChild(new LLMenuItemCallGL("Reload personal setting overrides", 
-		&reload_personal_settings_overrides, NULL, NULL, KEY_F2, MASK_CONTROL|MASK_SHIFT));
+		&reload_personal_settings_overrides));
 
 	sub_menu = new LLMenuGL("HUD Info");
 	{
@@ -1298,38 +1298,43 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	sub_menu = new LLMenuGL("Features");
 	sub_menu->setCanTearOff(TRUE);
 	menu->addChild(sub_menu);
+#ifdef LL_LINUX
+	#define MODIFIER MASK_SHIFT
+#else
+	#define MODIFIER MASK_ALT
+#endif
 	sub_menu->addChild(new LLMenuItemCheckGL("UI",
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_UI, KEY_F1, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_UI, KEY_F1, MODIFIER|MASK_CONTROL));
 	sub_menu->addChild(new LLMenuItemCheckGL("Selected",
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_SELECTED, KEY_F2, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_SELECTED, KEY_F2, MODIFIER|MASK_CONTROL));
 	sub_menu->addChild(new LLMenuItemCheckGL("Highlighted",
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_HIGHLIGHTED, KEY_F3, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_HIGHLIGHTED, KEY_F3, MODIFIER|MASK_CONTROL));
 	sub_menu->addChild(new LLMenuItemCheckGL("Dynamic Textures",
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_DYNAMIC_TEXTURES, KEY_F4, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_DYNAMIC_TEXTURES, KEY_F4, MODIFIER|MASK_CONTROL));
 	sub_menu->addChild(new LLMenuItemCheckGL( "Foot Shadows", 
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FOOT_SHADOWS, KEY_F5, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FOOT_SHADOWS, KEY_F5, MODIFIER|MASK_CONTROL));
 	sub_menu->addChild(new LLMenuItemCheckGL("Fog",
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FOG, KEY_F6, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FOG, KEY_F6, MODIFIER|MASK_CONTROL));
 	sub_menu->addChild(new LLMenuItemCheckGL("Test FRInfo",
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FR_INFO, KEY_F8, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FR_INFO, KEY_F8, MODIFIER|MASK_CONTROL));
 	sub_menu->addChild(new LLMenuItemCheckGL( "Flexible Objects", 
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FLEXIBLE, KEY_F9, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FLEXIBLE, KEY_F9, MODIFIER|MASK_CONTROL));
 	sub_menu->createJumpKeys();
 
 	/////////////////////////////
