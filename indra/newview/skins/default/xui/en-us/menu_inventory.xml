@@ -257,6 +257,9 @@
 	     mouse_opaque="true" name="Teleport To Landmark" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="about" />
 	</menu_item_call>
+	<menu_item_call label="Show On Map" name="Show On Map">
+		<on_click function="Inventory.DoToSelected" userdata="show_on_map"/>
+	</menu_item_call>
 	<menu_item_separator name="Animation Separator" />
 	<menu_item_call bottom_delta="-18" height="18" label="Play in World" left="0"
 	     mouse_opaque="true" name="Animation Play" width="128">

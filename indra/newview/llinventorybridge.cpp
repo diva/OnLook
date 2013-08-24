@@ -78,6 +78,7 @@
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
 #include "llvoavatar.h"
+#include "llworldmap.h"
 #include "llwearable.h"
 #include "llwearablelist.h"
 
@@ -4437,6 +4438,7 @@ void LLLandmarkBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 
 		items.push_back(std::string("Landmark Separator"));
 		items.push_back(std::string("Teleport To Landmark"));
+		items.push_back(std::string("Show On Map"));
 	}
 
 	// Disable "About Landmark" menu item for
@@ -4445,6 +4447,7 @@ void LLLandmarkBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	if ((flags & FIRST_SELECTED_ITEM) == 0)
 	{
 		disabled_items.push_back(std::string("Teleport To Landmark"));
+		disabled_items.push_back(std::string("Show On Map"));
 	}
 
 	hide_context_entries(menu, items, disabled_items);
@@ -4482,6 +4485,14 @@ void LLLandmarkBridge::performAction(LLInventoryModel* model, std::string action
 		if(item)
 		{
 			open_landmark(item, std::string("  Landmark: ") + item->getName(), FALSE);
+		}
+	}
+	else if ("show_on_map" == action)
+	{
+		if (const LLViewerInventoryItem* item = getItem())
+		{
+			gFloaterWorldMap->trackLandmark(item->getUUID());
+			LLFloaterWorldMap::show(true);
 		}
 	}
 	else
