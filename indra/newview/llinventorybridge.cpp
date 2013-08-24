@@ -4254,6 +4254,22 @@ void LLTextureBridge::openItem()
 	}
 }
 
+bool LLTextureBridge::canSaveTexture()
+{
+	const LLInventoryModel* model = getInventoryModel();
+	if (!model)
+	{
+		return false;
+	}
+
+	const LLViewerInventoryItem* item = model->getItem(mUUID);
+	if (item)
+	{
+		return item->checkPermissionsSet(PERM_ITEM_UNRESTRICTED);
+	}
+	return false;
+}
+
 void LLTextureBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 {
 	lldebugs << "LLTextureBridge::buildContextMenu()" << llendl;
@@ -4274,13 +4290,12 @@ void LLTextureBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 
 		getClipboardEntries(true, items, disabled_items, flags);
 
-		/* Singu TODO
 		items.push_back(std::string("Texture Separator"));
 		items.push_back(std::string("Save As"));
 		if (!canSaveTexture())
 		{
 			disabled_items.push_back(std::string("Save As"));
-		}*/
+		}
 	}
 	hide_context_entries(menu, items, disabled_items);	
 }
@@ -4288,17 +4303,18 @@ void LLTextureBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 // virtual
 void LLTextureBridge::performAction(LLInventoryModel* model, std::string action)
 {
-	/* Singu TODO
 	if ("save_as" == action)
 	{
-		LLFloaterReg::showInstance("preview_texture", LLSD(mUUID), TAKE_FOCUS_YES);
-		LLPreviewTexture* preview_texture = LLFloaterReg::findTypedInstance<LLPreviewTexture>("preview_texture", mUUID);
+		const LLViewerInventoryItem* item(getItem());
+		if (!item) return;
+		open_texture(mUUID, std::string("Texture: ") + item->getName(), FALSE);
+		LLPreview* preview_texture = LLPreview::find(mUUID);
 		if (preview_texture)
 		{
-			preview_texture->openToSave();
+			preview_texture->saveAs();
 		}
 	}
-	else*/ LLItemBridge::performAction(model, action);
+	else LLItemBridge::performAction(model, action);
 }
 
 // +=================================================+

@@ -69,6 +69,7 @@
 	<menu_item_call name="Conference Chat" label="Démarrer le chat conférence"/>
 	<menu_item_call name="Activate" label="Activer"/>
 	<menu_item_call name="Deactivate" label="Désactiver"/>
+	<menu_item_call name="Save As" label="Enregistrer sous"/>
 	<menu_item_call name="Wearable And Object Wear" label="Porter"/>
 	<menu_item_call name="Wearable Add" label="Ajouter"/>
 	<menu_item_call name="Wearable Move Forward" label="&#9650; Haut"/>

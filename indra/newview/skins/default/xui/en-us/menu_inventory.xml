@@ -291,6 +291,10 @@
 	     name="Deactivate" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="deactivate" />
 	</menu_item_call>
+	<menu_item_separator name="Texture Separator"/>
+	<menu_item_call label="Save As" name="Save As">
+		<on_click function="Inventory.DoToSelected" userdata="save_as"/>
+	</menu_item_call>
 	<menu_item_separator name="Wearable And Object Separator" />
 	<menu_item_call bottom_delta="-18" height="18" label="Wear" left="0" mouse_opaque="true"
 	     name="Wearable And Object Wear" width="128">

@@ -55,6 +55,7 @@
 	<menu_item_call label="Iniciar conversa em conferência" name="Conference Chat"/>
 	<menu_item_call label="Ativar" name="Activate"/>
 	<menu_item_call label="Desativar" name="Deactivate"/>
+	<menu_item_call label="Salvar como" name="Save As"/>
 	<menu_item_call label="Retirar de você" name="Detach From Yourself"/>
 	<menu_item_call label="Recuperar Última Posição" name="Restore to Last Position"/>
 	<menu_item_call label="Vestir" name="Object Wear"/>
