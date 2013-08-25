@@ -477,7 +477,10 @@ void LLPanelGroupNotices::processNotices(LLMessageSystem* msg)
 		row["columns"][2]["value"] = name;
 
 		std::string buffer;
-		timeToFormattedString(t, gSavedSettings.getString("ShortDateFormat"), buffer);
+		std::string format(gSavedSettings.getString("ShortDateFormat"));
+		if (gSavedSettings.getBOOL("LiruGroupNoticeTimes"))
+			format += " " + gSavedSettings.getString("ShortTimeFormat");
+		timeToFormattedString(t, format, buffer);
 		row["columns"][3]["column"] = "date";
 		row["columns"][3]["value"] = buffer;
 
