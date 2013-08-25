@@ -174,6 +174,7 @@ void LLInventoryPanel::buildFolderView()
 	{
 		root_id = (preferred_type != LLFolderType::FT_NONE)
 				? gInventory.findCategoryUUIDForType(preferred_type, false, false)
+				: gInventory.getCategory(static_cast<LLUUID>(mStartFolder)) ? static_cast<LLUUID>(mStartFolder) // Singu Note: if start folder is an id of a folder, use it
 				: LLUUID::null;
 	}
 

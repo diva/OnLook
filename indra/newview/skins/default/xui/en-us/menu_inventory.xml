@@ -39,6 +39,9 @@
 	     mouse_opaque="true" name="Empty Lost And Found" width="128">
 		<on_click filter="" function="Inventory.EmptyLostAndFound" userdata="rename" />
 	</menu_item_call>
+	<menu_item_call label="Open in New Window" name="Open Folder In New Window">
+		<on_click function="Inventory.DoToSelected" userdata="open_in_new_window"/>
+	</menu_item_call>
 	<menu_item_call bottom_delta="-18" height="18" label="New Folder" left="0" mouse_opaque="true"
 	     name="New Folder" width="128">
 		<on_click filter="" function="Inventory.DoCreate" userdata="category" />

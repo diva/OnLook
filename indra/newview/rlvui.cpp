@@ -29,6 +29,7 @@
 #include "llvoavatar.h"
 #include "roles_constants.h"			// Group "powers"
 
+#include "lffloaterinvpanel.h"
 #include "llfloaterbeacons.h"
 #include "llfloatertools.h"
 #include "llfloaterenvsettings.h"
@@ -208,6 +209,7 @@ void RlvUIEnabler::onToggleShowInv(bool fQuitting)
 	if (!fEnable)
 	{
 		LLInventoryView::closeAll();
+		LFFloaterInvPanel::closeAll();
 	}
 }
 

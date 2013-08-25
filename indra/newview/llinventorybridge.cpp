@@ -34,6 +34,7 @@
 
 #include "lluictrlfactory.h"
 
+#include "lffloaterinvpanel.h"
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llagentwearables.h"
@@ -2771,6 +2772,14 @@ void LLFolderBridge::performAction(LLInventoryModel* model, std::string action)
 		
 		return;
 	}
+	else if ("open_in_new_window" == action)
+	{
+		LLInventoryModel* model = getInventoryModel();
+		LLViewerInventoryCategory* cat = getCategory();
+		if (!model || !cat) return;
+		LFFloaterInvPanel::show(mUUID, model, cat->getName());
+		return;
+	}
 	else if ("paste" == action)
 	{
 		pasteFromClipboard();
@@ -3370,6 +3379,8 @@ void LLFolderBridge::buildContextMenuFolderOptions(U32 flags)
 	if (isItemInTrash()) return;
 	if (!isAgentInventory()) return;
 	if (isOutboxFolder()) return;
+
+	mItems.push_back(std::string("Open Folder In New Window"));
 
 	LLFolderType::EType type = category->getPreferredType();
 	const bool is_system_folder = LLFolderType::lookupIsProtectedType(type);
