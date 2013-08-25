@@ -898,5 +898,5 @@ void LLAvatarActions::copyUUIDs(const uuid_vec_t& ids)
 	}
 
 	if (!ids_string.empty())
-		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(ids_string));
+		gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(ids_string));
 }

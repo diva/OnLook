@@ -197,7 +197,7 @@ void LLFloaterBlacklist::onClickCopyUUID(void* user_data)
 {
 	LLFloaterBlacklist* floaterp = (LLFloaterBlacklist*)user_data;
 	LLScrollListCtrl* list = floaterp->getChild<LLScrollListCtrl>("file_list");
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(list->getFirstSelected()->getColumn(0)->getValue().asString()));
+	gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(list->getFirstSelected()->getColumn(0)->getValue().asString()));
 }
 // static
 void LLFloaterBlacklist::onClickRemove(void* user_data)

@@ -131,7 +131,7 @@ void LLPanelGroupTab::handleClickHelp()
 
 static void copy_group_profile_uri(const LLUUID& id)
 {
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring("secondlife:///app/group/"+id.asString()+"/about"));
+	gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring("secondlife:///app/group/"+id.asString()+"/about"));
 }
 
 LLPanelGroup::LLPanelGroup(const LLUUID& group_id)

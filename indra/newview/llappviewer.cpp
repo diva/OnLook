@@ -1196,7 +1196,7 @@ bool LLAppViewer::mainLoop()
 				// Scan keyboard for movement keys.  Command keys and typing
 				// are handled by windows callbacks.  Don't do this until we're
 				// done initializing.  JC
-				if (gViewerWindow->mWindow->getVisible()
+				if (gViewerWindow->getWindow()->getVisible()
 					&& gViewerWindow->getActive()
 					&& !gViewerWindow->getWindow()->getMinimized()
 					&& LLStartUp::getStartupState() == STATE_STARTED
@@ -1282,7 +1282,7 @@ bool LLAppViewer::mainLoop()
 
 				// yield cooperatively when not running as foreground window
 				if (   gNoRender
-					   || (gViewerWindow && !gViewerWindow->mWindow->getVisible())
+					   || (gViewerWindow && !gViewerWindow->getWindow()->getVisible())
 						|| !gFocusMgr.getAppHasFocus())
 				{
 					// Sleep if we're not rendering, or the window is minimized.
@@ -2569,7 +2569,7 @@ bool LLAppViewer::initWindow()
 	
 	if (gSavedSettings.getBOOL("WindowMaximized"))
 	{
-		gViewerWindow->mWindow->maximize();
+		gViewerWindow->getWindow()->maximize();
 		gViewerWindow->getWindow()->setNativeAspectRatio(gSavedSettings.getF32("FullScreenAspectRatio"));
 	}
 
@@ -2607,7 +2607,7 @@ bool LLAppViewer::initWindow()
 	gViewerWindow->initBase();
 
 	// show viewer window
-	//gViewerWindow->mWindow->show();
+	//gViewerWindow->getWindow()->show();
 
 	LL_INFOS("AppInit") << "Window initialization done." << LL_ENDL;
 	return true;
@@ -2639,13 +2639,13 @@ void LLAppViewer::cleanupSavedSettings()
 
 	// save window position if not fullscreen
 	// as we don't track it in callbacks
-	BOOL fullscreen = gViewerWindow->mWindow->getFullscreen();
-	BOOL maximized = gViewerWindow->mWindow->getMaximized();
+	BOOL fullscreen = gViewerWindow->getWindow()->getFullscreen();
+	BOOL maximized = gViewerWindow->getWindow()->getMaximized();
 	if (!fullscreen && !maximized)
 	{
 		LLCoordScreen window_pos;
 
-		if (gViewerWindow->mWindow->getPosition(&window_pos))
+		if (gViewerWindow->getWindow()->getPosition(&window_pos))
 		{
 			gSavedSettings.setS32("WindowX", window_pos.mX);
 			gSavedSettings.setS32("WindowY", window_pos.mY);

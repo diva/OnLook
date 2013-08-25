@@ -1726,7 +1726,7 @@ void LLPanelAvatar::onClickGetKey(void *userdata)
 
 	llinfos << "Copy agent id: " << agent_id << llendl;
 
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(agent_id.asString()));
+	gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(agent_id.asString()));
 }
 
 // static
