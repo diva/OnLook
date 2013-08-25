@@ -2442,7 +2442,7 @@ void LLPanelObject::onCopyPos(void* user_data)
 	stringVec.append(shortfloat(newpos.mV[VZ]));
 	stringVec.append(">");
 
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(stringVec));
+	gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(stringVec));
 }
 
 void LLPanelObject::onCopySize(void* user_data)
@@ -2459,7 +2459,7 @@ void LLPanelObject::onCopySize(void* user_data)
 	stringVec.append(shortfloat(newpos.mV[VZ]));
 	stringVec.append(">");
 
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(stringVec));
+	gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(stringVec));
 }
 
 void LLPanelObject::onCopyRot(void* user_data)
@@ -2476,7 +2476,7 @@ void LLPanelObject::onCopyRot(void* user_data)
 	stringVec.append(shortfloat(newpos.mV[VZ]));
 	stringVec.append(">");
 
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(stringVec));
+	gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(stringVec));
 }
 
 namespace

@@ -234,7 +234,7 @@ public:
 	S32				getCurrentMouseDX()		const	{ return mCurrentMouseDelta.mX; }
 	S32				getCurrentMouseDY()		const	{ return mCurrentMouseDelta.mY; }
 	LLCoordGL		getCurrentMouseDelta()	const	{ return mCurrentMouseDelta; }
-	LLStat *		getMouseVelocityStat()		{ return &mMouseVelocityStat; }
+	LLStat*			getMouseVelocityStat()		{ return &mMouseVelocityStat; }
 	BOOL			getLeftMouseDown()	const	{ return mLeftMouseDown; }
 	BOOL			getMiddleMouseDown()	const	{ return mMiddleMouseDown; }
 	BOOL			getRightMouseDown()	const	{ return mRightMouseDown; }
@@ -406,12 +406,12 @@ private:
 	LLRect			getChatConsoleRect(); // Get optimal cosole rect.
 
 public:
-	LLWindow*		mWindow;						// graphical window object
 
 	void			unblockToolTips(){mToolTipBlocked = FALSE;}	//hack until LLToolTipMgr is ported.
 
 protected:
-	BOOL			mActive;
+	LLWindow*		mWindow;						// graphical window object
+	bool			mActive;
 	BOOL			mWantFullscreen;
 	BOOL			mShowFullscreenProgress;
 	LLRect			mWindowRectRaw;

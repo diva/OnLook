@@ -4454,7 +4454,7 @@ void LLViewerWindow::movieSize(S32 new_width, S32 new_height)
 		LLCoordScreen new_size(new_width + BORDERWIDTH, 
 							   new_height + BORDERHEIGHT);
 		BOOL disable_sync = gSavedSettings.getBOOL("DisableVerticalSync");
-		if (gViewerWindow->mWindow->getFullscreen())
+		if (gViewerWindow->getWindow()->getFullscreen())
 		{
 			LLGLState::checkStates();
 			LLGLState::checkTextureChannels();

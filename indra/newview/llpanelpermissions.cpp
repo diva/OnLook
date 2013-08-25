@@ -1135,7 +1135,7 @@ void LLPanelPermissions::onClickCopyObjKey()
 			output.append(object->getID().asString());
 		}
 	}
-	if (!output.empty()) gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(output));
+	if (!output.empty()) gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(output));
 }
 
 ///----------------------------------------------------------------------------

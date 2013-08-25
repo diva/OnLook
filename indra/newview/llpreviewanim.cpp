@@ -331,7 +331,7 @@ void LLPreviewAnim::copyAnimID(void *userdata)
 
 	if(item)
 	{
-		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(item->getAssetUUID().asString()));
+		gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(item->getAssetUUID().asString()));
 	}
 }
 // </edit>

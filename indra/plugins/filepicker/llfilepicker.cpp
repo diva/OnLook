@@ -911,7 +911,7 @@ OSStatus	LLFilePickerBase::doNavChooseDialog(ELoadFilter filter, std::string con
 	//   (It is destroyed by NavDialogDispose() below.)
 	error = NavCreateChooseFileDialog(&mNavOptions, NULL, eventProc, NULL, navOpenFilterProc, (void*)this, &navRef);
 
-	//gViewerWindow->mWindow->beforeDialog();
+	//gViewerWindow->getWindow()->beforeDialog();
 
 	if (error == noErr)
 	{
@@ -919,7 +919,7 @@ OSStatus	LLFilePickerBase::doNavChooseDialog(ELoadFilter filter, std::string con
 		error = NavDialogRun(navRef);
 	}
 
-	//gViewerWindow->mWindow->afterDialog();
+	//gViewerWindow->getWindow()->afterDialog();
 
 	if (error == noErr)
 		error = NavDialogGetReply(navRef, &navReply);
@@ -1081,7 +1081,7 @@ OSStatus	LLFilePickerBase::doNavSaveDialog(ESaveFilter filter, std::string const
 		}
 	}
 	
-	//gViewerWindow->mWindow->beforeDialog();
+	//gViewerWindow->getWindow()->beforeDialog();
 
 	// Run the dialog
 	if (error == noErr)
@@ -1090,7 +1090,7 @@ OSStatus	LLFilePickerBase::doNavSaveDialog(ESaveFilter filter, std::string const
 		error = NavDialogRun(navRef);
 	}
 
-	//gViewerWindow->mWindow->afterDialog();
+	//gViewerWindow->getWindow()->afterDialog();
 
 	if (error == noErr)
 		error = NavDialogGetReply(navRef, &navReply);
@@ -1439,7 +1439,7 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 {
 	bool rtn = FALSE;
 
-	//gViewerWindow->mWindow->beforeDialog();
+	//gViewerWindow->getWindow()->beforeDialog();
 
 	reset();
 	
@@ -1524,7 +1524,7 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 		rtn = (getFileCount() == 1);
 	}
 
-	//gViewerWindow->mWindow->afterDialog();
+	//gViewerWindow->getWindow()->afterDialog();
 
 	return rtn;
 }
@@ -1533,7 +1533,7 @@ bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder
 {
 	bool rtn = FALSE;
 
-	//gViewerWindow->mWindow->beforeDialog();
+	//gViewerWindow->getWindow()->beforeDialog();
 
 	reset();
 	
@@ -1581,7 +1581,7 @@ bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder
 		rtn = (getFileCount() == 1);
 	}
 
-	//gViewerWindow->mWindow->afterDialog();
+	//gViewerWindow->getWindow()->afterDialog();
 
 	return rtn;
 }
@@ -1590,7 +1590,7 @@ bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string cons
 {
 	bool rtn = FALSE;
 
-	//gViewerWindow->mWindow->beforeDialog();
+	//gViewerWindow->getWindow()->beforeDialog();
 
 	reset();
 	
@@ -1609,7 +1609,7 @@ bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string cons
 		rtn = !mFiles.empty();
 	}
 
-	//gViewerWindow->mWindow->afterDialog();
+	//gViewerWindow->getWindow()->afterDialog();
 
 	return rtn;
 }

@@ -2618,7 +2618,7 @@ class LLObjectCopyUUID : public view_listener_t
 		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
 		if(object)
 		{
-			gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(object->getID().asString()));
+			gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(object->getID().asString()));
 		}
 		return true;
 	}
@@ -3266,7 +3266,7 @@ class LLAvatarCopyUUID : public view_listener_t
 		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
 		if(!avatar) return true;
 		
-		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(avatar->getID().asString()));
+		gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(avatar->getID().asString()));
 		return true;
 	}
 };
@@ -3278,7 +3278,7 @@ class LLAvatarClientUUID : public view_listener_t
 		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
 		if(!avatar) return true;
 		const LLUUID clientID = SHClientTagMgr::instance().getClientID(avatar);
-		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(clientID.asString()));
+		gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(clientID.asString()));
 		return true;
 	}
 };
