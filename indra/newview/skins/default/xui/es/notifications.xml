@@ -3801,6 +3801,7 @@ Por favor, reinténtalo en unos momentos.
 			<button name="Keep" text="Guardar"/>
 			<button name="Discard" text="Descartar"/>
 			<button name="Mute" text="Ignorar"/>
+			<button name="Profile" text="Perfil"/>
 		</form>
 	</notification>
 	
@@ -3826,6 +3827,7 @@ Por favor, reinténtalo en unos momentos.
 		<form name="form">
 			<button name="Teleport" text="Teleportar"/>
 			<button name="Cancel" text="Cancelar"/>
+			<button name="Profile" text="Perfil"/>
 		</form>
 	</notification>
 	

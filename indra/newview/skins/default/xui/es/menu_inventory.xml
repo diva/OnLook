@@ -10,6 +10,7 @@
 	<menu_item_call label="Ejecutar Script" name="Task Set Running"/>
 	<menu_item_call name="Empty Trash" label="Vaciar Papelera"/>
 	<menu_item_call name="Empty Lost And Found" label="Vaciar Elementos Perdidos"/>
+	<menu_item_call label="Abrir en Nueva Ventana" name="Open Folder In New Window"/>
 	<menu_item_call name="New Folder" label="Carpeta nueva"/>
 	<menu_item_call name="New Script" label="Script nuevo"/>
 	<menu_item_call name="New Note" label="Nota nueva"/>
@@ -66,6 +67,8 @@
 	<menu_item_call name="Conference Chat Folder" label="Iniciar Conferencia Grupal"/>
 	<menu_item_call name="Sound Play" label="Reproducir"/>
 	<menu_item_call name="Teleport To Landmark" label="Sobre el hito"/>
+	<menu_item_call label="Mostrar en el Mapa" name="Show On Map"/>
+	<menu_item_separator name="Animation Separator" />	
 	<menu_item_call name="Animation Play" label="Reproducir en el mundo"/>
 	<menu_item_call name="Animation Audition" label="Reproducir localmente" />
 	<menu_item_call name="Send Instant Message" label="Enviar MI"/>
@@ -74,7 +77,9 @@
 	<menu_item_call name="Conference Chat" label="Iniciar Conferencia Grupal"/>
 	<menu_item_call name="Activate" label="Activar"/>
 	<menu_item_call name="Deactivate" label="Desactivar"/>
+	<menu_item_separator name="Texture Separator"/>
 	<menu_item_call label="Guardar como" name="Save As"/>
+	<menu_item_separator name="Wearable And Object Separator" />	
 	<menu_item_call name="Wearable And Object Wear" label="Vestirse Ítem"/>
 	<menu_item_call name="Wearable Add" label="Añadir al Vestuario"/>
 	<menu_item_call name="Wearable Move Forward" label="&#9650; Hacia Adelante"/>
